@@ -3,6 +3,7 @@
 #include "ImageResource.h"
 #include "DataResource.h"
 #include "SoundResource.h"
+#include "FontTheme.h"
 #include "LinkNode.h"
 
 namespace gre {
@@ -100,5 +101,6 @@ namespace gre {
 		AddExtendedLoaders();
 		Loaders.Add(new ResourceLoader(GID_ANIMATION, LoadAnimationResource)); 
 		Loaders.Add(new ResourceLoader(GID_FONT, LoadBitmapFontResource)); 
+		Loaders.Add(new ResourceLoader(GID_FONTTHEME, LoadFontTheme)); 
 	}
 }

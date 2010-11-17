@@ -14,79 +14,81 @@ namespace gorgonwidgets {
 		FetchPointers(file->Root->asFolder(1));
 		
 		FolderResource *fonts=file->Root->asFolder(2);
-		normal=fonts->asBitmapFont(0);
-		if(fonts->getCount()>1)
-			small=fonts->asBitmapFont(1);
+		fonttheme=dynamic_cast<gre::FontTheme *>(fonts->getItem(0));
+		normal=fonts->asBitmapFont(1);
+		if(fonts->getCount()>2)
+			small=fonts->asBitmapFont(2);
 		else
 			small=normal;
-		if(fonts->getCount()>2)
-			bold=fonts->asBitmapFont(2);
+		if(fonts->getCount()>3)
+			bold=fonts->asBitmapFont(3);
 		else
 			bold=normal;
-		if(fonts->getCount()>3)
-			italic=fonts->asBitmapFont(3);
+		if(fonts->getCount()>4)
+			italic=fonts->asBitmapFont(4);
 		else
 			italic=normal;
-		if(fonts->getCount()>4)
-			h3=fonts->asBitmapFont(4);
+		if(fonts->getCount()>5)
+			h3=fonts->asBitmapFont(5);
 		else
 			h3=normal;
-		if(fonts->getCount()>5)
-			h2=fonts->asBitmapFont(5);
+		if(fonts->getCount()>6)
+			h2=fonts->asBitmapFont(6);
 		else
 			h2=h3;
-		if(fonts->getCount()>6)
-			h1=fonts->asBitmapFont(6);
+		if(fonts->getCount()>7)
+			h1=fonts->asBitmapFont(7);
 		else
 			h1=h2;
 
 		FolderResource *frames=file->Root->asFolder(3);
 
 		background=frames->asImage(0);
+		background->SetResizingOptions(ResizableObject::Tile, ResizableObject::Tile);
 
-		selectionFrame=(RectangleResource*)frames->getItem(1);
+		selectionFrame=dynamic_cast<RectangleResource*>(frames->getItem(1));
 
 		if(frames->getCount()>1)
-			dialogFrame=(RectangleResource*)frames->getItem(2);
+			dialogFrame=dynamic_cast<RectangleResource*>(frames->getItem(2));
 		else
 			dialogFrame=selectionFrame;
 
 		if(frames->getCount()>2)
-			thickFrame=(RectangleResource*)frames->getItem(3);
+			thickFrame=dynamic_cast<RectangleResource*>(frames->getItem(3));
 		else
 			thickFrame=selectionFrame;
 
 		if(frames->getCount()>3)
-			thinFrame=(RectangleResource*)frames->getItem(4);
+			thinFrame=dynamic_cast<RectangleResource*>(frames->getItem(4));
 		else
 			thinFrame=selectionFrame;
 
 		if(frames->getCount()>4)
-			modalFrame=(RectangleResource*)frames->getItem(5);
+			modalFrame=dynamic_cast<RectangleResource*>(frames->getItem(5));
 		else
 			modalFrame=dialogFrame;
 
 		if(frames->getCount()>5)
-			pictureFrame=(RectangleResource*)frames->getItem(6);
+			pictureFrame=dynamic_cast<RectangleResource*>(frames->getItem(6));
 		else
 			pictureFrame=thinFrame;
 
 		if(frames->getCount()>6)
-			photoFrame=(RectangleResource*)frames->getItem(7);
+			photoFrame=dynamic_cast<RectangleResource*>(frames->getItem(7));
 		else
 			photoFrame=thickFrame;
 
 
 		FolderResource *separators=file->Root->asFolder(4);
-		hSeparator=(LineResource*)separators->getItem(0);
-		vSeparator=(LineResource*)separators->getItem(1);
+		hSeparator=dynamic_cast<LineResource*>(separators->getItem(0));
+		vSeparator=dynamic_cast<LineResource*>(separators->getItem(1));
 
 
 		FolderResource *buttons=file->Root->asFolder(5);
 
-		button=(ButtonBP*)buttons->getItem(0);
+		button=dynamic_cast<ButtonBP*>(buttons->getItem(0));
 		if(buttons->getCount()>1)
-			decorativeButton=(ButtonBP*)buttons->getItem(1);
+			decorativeButton=dynamic_cast<ButtonBP*>(buttons->getItem(1));
 		else
 			decorativeButton=button;
 
@@ -104,26 +106,26 @@ namespace gorgonwidgets {
 
 
 		FolderResource *textboxes=file->Root->asFolder(6);
-		textbox=(TextboxBP*)textboxes->getItem(0);
+		textbox=dynamic_cast<TextboxBP*>(textboxes->getItem(0));
 		if(textboxes->getCount()>1)
-			numberbox=(TextboxBP*)textboxes->getItem(1);
+			numberbox=dynamic_cast<TextboxBP*>(textboxes->getItem(1));
 		else
 			numberbox=textbox;
 		shortTextbox=textbox;
 		signitureTextbox=textbox;
 
 		FolderResource *checkboxes=file->Root->asFolder(7);
-		radioButton=checkbox=(CheckboxBP*)checkboxes->getItem(0);
+		radioButton=checkbox=dynamic_cast<CheckboxBP*>(checkboxes->getItem(0));
 		if(checkboxes->getCount()>1)
-			tabButton=(CheckboxBP*)checkboxes->getItem(1);
+			tabButton=dynamic_cast<CheckboxBP*>(checkboxes->getItem(1));
 		else
 			tabButton=radioButton;
 
 
 		FolderResource *sliders=file->Root->asFolder(8);
 
-		slider=progressor=(SliderBP*)sliders->getItem(0);
-		scroller=(SliderBP*)sliders->getItem(1);
+		slider=progressor=dynamic_cast<SliderBP*>(sliders->getItem(0));
+		scroller=dynamic_cast<SliderBP*>(sliders->getItem(1));
 
 		dialogScroller=scroller;
 		controlScroller=scroller;
@@ -144,7 +146,7 @@ namespace gorgonwidgets {
 			FolderResource *frames=file->Root->asFolder(9);
 
 			if(frames->Subitems.getCount()>0)
-				DialogBP=(FrameBP*)frames->getItem(0);
+				DialogBP=dynamic_cast<FrameBP*>(frames->getItem(0));
 			else
 				DialogBP=new FrameBP(dialogFrame, dialogScroller);
 		}
@@ -220,8 +222,8 @@ namespace gorgonwidgets {
 		return *btn;
 	}
 
-	CheckboxBase &WidgetRegistry::createCheckbox(IWidgetContainer &container, string text, int x, int y, int w, int h) {
-		CheckboxBase *chk=new CheckboxBase(checkbox, container);
+	Checkbox &WidgetRegistry::createCheckbox(IWidgetContainer &container, string text, int x, int y, int w, int h) {
+		Checkbox *chk=new Checkbox(checkbox, container);
 		chk->SetText(text);
 		chk->Move(x, y);
 		if(w==0)
@@ -231,8 +233,8 @@ namespace gorgonwidgets {
 		return *chk;
 	}
 
-	CheckboxBase &WidgetRegistry::createCheckbox(string text, int w, int h, int x, int y) {
-		CheckboxBase *chk=new CheckboxBase(checkbox);
+	Checkbox &WidgetRegistry::createCheckbox(string text, int w, int h, int x, int y) {
+		Checkbox *chk=new Checkbox(checkbox);
 		chk->SetText(text);
 		chk->Move(x, y);
 		if(w==0)
@@ -602,4 +604,5 @@ namespace gorgonwidgets {
 		return *frame;
 	}
 	class WidgetRegistry WidgetRegistry;
+	class WidgetRegistry WR;
 }

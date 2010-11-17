@@ -32,7 +32,7 @@ namespace gorgonwidgets {
 			SetText(text);
 			this->Move(X, Y);
 
-			PointerType=PointerTypes::Arrow;
+			PointerType=Pointer::Arrow;
 			nofocus=true;
 		}
 
@@ -51,7 +51,7 @@ namespace gorgonwidgets {
 			SetText(text);
 			this->Move(X, Y);
 
-			PointerType=PointerTypes::Arrow;
+			PointerType=Pointer::Arrow;
 			nofocus=true;
 		}
 		

@@ -48,18 +48,18 @@ namespace gre {
 		if(text=="") return;
 
 		int i;
-		if(Shadow.Type==Flat) {
+		if(Shadow.Type==ShadowParams::Flat) {
 			int x=X;
 			for(i=0;i<text.length();i++) {
 				ImageResource *img=Characters[text[i]];
-				img->DrawColored(target,x+Shadow.XDist,Y+Shadow.YDist,Shadow.Color);
-				x+=img->Width + Seperator;
+				img->DrawColored(target,x+Shadow.Offset.x,Y+Shadow.Offset.y,Shadow.Color);
+				x+=img->getWidth() + Seperator;
 			}
 		}
 		for(i=0;i<text.length();i++) {
 			ImageResource *img=Characters[text[i]];
 			img->DrawColored(target,X,Y,color);
-			X+=img->Width + Seperator;
+			X+=img->getWidth() + Seperator;
 		}
 	}
 
@@ -76,8 +76,8 @@ namespace gre {
 
 		if(text=="") return;
 
-		if(Shadow.Type==Flat)
-			Print(target,x+Shadow.XDist,y+Shadow.YDist,w,text,Shadow.Color,align);
+		if(Shadow.Type==ShadowParams::Flat)
+			Print(target,x+Shadow.Offset.x,y+Shadow.Offset.y,w,text,Shadow.Color,align);
 
 		if(w==0) {
 			/*align=TEXTALIGN_LEFT;
@@ -92,7 +92,7 @@ namespace gre {
 				nextline=true;
 			}
 			else {
-				llen+=Characters[(unsigned char)text[i]]->Width+Seperator;
+				llen+=Characters[(unsigned char)text[i]]->getWidth()+Seperator;
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
@@ -135,13 +135,13 @@ namespace gre {
 						int i;
 						for(i=0;i<Tabsize;i++) {
 							img->DrawColored(target, l, y, color);
-							l+=img->Width+Seperator;
+							l+=img->getWidth()+Seperator;
 						}
 					}
 					if(text[j]!='\r') {
 						ImageResource *img=Characters[(unsigned char)text[j]];
 						img->DrawColored(target, l, y, color);
-						l+=img->Width+Seperator;
+						l+=img->getWidth()+Seperator;
 					}
 				}
 				
@@ -246,7 +246,7 @@ namespace gre {
 				nextline=true;
 			}
 			else {
-				llen+=Characters[(unsigned char)text[i]]->Width+Seperator;
+				llen+=Characters[(unsigned char)text[i]]->getWidth()+Seperator;
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
@@ -316,16 +316,16 @@ namespace gre {
 						int i;
 						for(i=0;i<Tabsize;i++) {
 							img->DrawColored(target,l,y,color);
-							dist=img->Width+Seperator;
+							dist=img->getWidth()+Seperator;
 						}
 					}
 					if(text[j]!='\r') {
 						ImageResource *img=Characters[(unsigned char)text[j]];
-						if(Shadow.Type==Flat)
-							img->DrawColored(target,l+Shadow.XDist,y+Shadow.YDist,Shadow.Color);
+						if(Shadow.Type==ShadowParams::Flat)
+							img->DrawColored(target,l+Shadow.Offset.x,y+Shadow.Offset.y,Shadow.Color);
 
 						img->DrawColored(target,l,y,color);
-						dist=img->Width+Seperator;
+						dist=img->getWidth()+Seperator;
 					}
 					for(d=0;d<cchardetectxs;d++) {
 						if(chardetectxs[d].x<(l-sx)+dist/2) {
@@ -453,7 +453,7 @@ namespace gre {
 				nextline=true;
 			}
 			else {
-				llen+=Characters[(unsigned char)text[i]]->Width+Seperator;
+				llen+=Characters[(unsigned char)text[i]]->getWidth()+Seperator;
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
@@ -520,12 +520,12 @@ namespace gre {
 						ImageResource *img=Characters[(unsigned char)' '];
 						int i;
 						for(i=0;i<Tabsize;i++) {
-							dist=img->Width+Seperator;
+							dist=img->getWidth()+Seperator;
 						}
 					}
 					if(text[j]!='\r') {
 						ImageResource *img=Characters[(unsigned char)text[j]];
-						dist+=img->Width+Seperator;
+						dist+=img->getWidth()+Seperator;
 					}
 					for(d=0;d<cchardetectxs;d++) {
 						if(chardetectxs[d].x<(l-sx)+dist/2 && j<chardetectxs[d].data->Out.value) {

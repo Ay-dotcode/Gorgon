@@ -10,26 +10,27 @@ using namespace gre;
 namespace gge {
 	class GGEMain;
 
-	////Pointer types
-	enum PointerTypes {
-		////No pointer is selected or using default
-		None=0,
-		////Arrow / Pointer
-		Arrow=1,
-		////Wait / Hourglass
-		Wait=2,
-		////No / Not allowed
-		No=3,
-		////Text / Beam pointer
-		Text=4,
-		////Hand pointer
-		Hand=5,
-		////Drag / Closed hand pointer
-		Drag=6
-	};
-
 	class Pointer {
 	public:
+
+		////Pointer types
+		enum PointerTypes {
+			////No pointer is selected or using default
+			None=0,
+			////Arrow / Pointer
+			Arrow=1,
+			////Wait / Hourglass
+			Wait=2,
+			////No / Not allowed
+			No=3,
+			////Text / Beam pointer
+			Text=4,
+			////Hand pointer
+			Hand=5,
+			////Drag / Closed hand pointer
+			Drag=6
+		};
+
 		////The image of the pointer
 		Buffered2DGraphic *Image;
 		////Point of click
@@ -56,7 +57,7 @@ namespace gge {
 	/// animation or image resource
 	void FetchPointers(FolderResource *Folder);
 	////Adds a pointer to the list of pointers
-	Pointer *AddPointer(Buffered2DGraphic *Pointer, Point Hotspot, PointerTypes Type=None);
+	Pointer *AddPointer(Buffered2DGraphic *Pointer, Point Hotspot, Pointer::PointerTypes Type=Pointer::None);
 	////Removes a pointer from the list
 	void RemovePointer(Buffered2DGraphic *Pointer);
 	////Sets the given pointer as current one, this operation should be revered by
@@ -64,7 +65,7 @@ namespace gge {
 	int SetPointer(Pointer *Pointer);
 	////Sets the given pointer as current one, this operation should be revered by
 	/// using reset pointer with the returned integer
-	int SetPointer(PointerTypes Type);
+	int SetPointer(Pointer::PointerTypes Type);
 	////This function changes base pointer to the given one, it is best to use this function
 	/// once at the startup. This function or FetchFolders function should be called before 
 	/// calling show pointer function

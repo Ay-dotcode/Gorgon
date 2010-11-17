@@ -47,7 +47,7 @@ namespace gre {
 				assert(0);
 			}
 #endif
-			return (FolderResource*)Subitems[Index]; 
+			return dynamic_cast<FolderResource*>(Subitems[Index]); 
 		}
 		TextResource	*asText		(int Index) { 
 #ifdef _DEBUG
@@ -56,7 +56,7 @@ namespace gre {
 				assert(0);
 			}
 #endif
-			return (TextResource*)Subitems[Index]; 
+			return dynamic_cast<TextResource*>(Subitems[Index]); 
 		}
 		ImageResource	*asImage	(int Index) { 
 #ifdef _DEBUG
@@ -65,7 +65,7 @@ namespace gre {
 				assert(0);
 			}
 #endif
-			return (ImageResource*)Subitems[Index]; 
+			return dynamic_cast<ImageResource*>(Subitems[Index]); 
 		}
 		DataResource	*asData		(int Index) { 
 #ifdef _DEBUG
@@ -74,7 +74,7 @@ namespace gre {
 				assert(0);
 			}
 #endif
-			return (DataResource*)Subitems[Index]; 
+			return dynamic_cast<DataResource*>(Subitems[Index]); 
 		}
 		SoundResource	*asSound	(int Index) { 
 #ifdef _DEBUG
@@ -83,7 +83,7 @@ namespace gre {
 				assert(0);
 			}
 #endif
-			return (SoundResource*)Subitems[Index]; 
+			return dynamic_cast<SoundResource*>(Subitems[Index]); 
 		}
 		AnimationResource	*asAnimation(int Index) { 
 #ifdef _DEBUG
@@ -92,7 +92,7 @@ namespace gre {
 				assert(0);
 			}
 #endif
-			return (AnimationResource*)Subitems[Index]; 
+			return dynamic_cast<AnimationResource*>(Subitems[Index]); 
 		}
 		BitmapFontResource	*asBitmapFont		(int Index) { 
 #ifdef _DEBUG
@@ -101,7 +101,7 @@ namespace gre {
 				assert(0);
 			}
 #endif
-			return (BitmapFontResource*)Subitems[Index]; 
+			return dynamic_cast<BitmapFontResource*>(Subitems[Index]); 
 		}
 		
 		FolderResource() : ResourceBase() {

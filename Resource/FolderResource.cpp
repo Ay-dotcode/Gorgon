@@ -62,11 +62,9 @@ namespace gre {
 					fold->Subitems.AddItem(obj);
 
 					/*if(captions.getCount()>curcapname) {
-						obj->caption=new char[captions.getSize(curcapname)];
-						memcpy(obj->caption,captions[curcapname],captions.getSize(curcapname));
+						obj->caption=captions[curcapname];
 
-						obj->name=new char[names.getSize(curcapname)];
-						memcpy(obj->name,names[curcapname],names.getSize(curcapname));
+						obj->name=names[curcapname];
 					}*/
 				} else
 					DisplayMessage("Folder Resource","Unknown Node!!");

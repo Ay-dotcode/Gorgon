@@ -20,16 +20,16 @@ namespace gorgonwidgets {
 			case SS_Top:
 			case SS_Bottom:
 			case SS_Horizontal:
-				((Line*)Rule)->isVerticle=false;
+				dynamic_cast<Line*>(Rule)->isVertical=false;
 				if(Overlay)
-					((Line*)Overlay)->isVerticle=false;
+					dynamic_cast<Line*>(Overlay)->isVertical=false;
 				break;
 			case SS_Verticle:
 			case SS_Left:
 			case SS_Right:
-				((Line*)Rule)->isVerticle=true;
+				dynamic_cast<Line*>(Rule)->isVertical=true;
 				if(Overlay)
-					((Line*)Overlay)->isVerticle=true;
+					dynamic_cast<Line*>(Overlay)->isVertical=true;
 				break;
 		}
 	}
@@ -37,8 +37,8 @@ namespace gorgonwidgets {
 	void SliderElement::Prepare(gge::GGEMain *main) {
 		ResourceBase::Prepare(main);
 
-		Font=(BitmapFontResource*)file->FindObject(font_guid);
-		Sound=(SoundResource*)file->FindObject(sound_guid);
+		Font	=dynamic_cast<BitmapFontResource*>(file->FindObject(font_guid));
+		Sound	=dynamic_cast<SoundResource*>(file->FindObject(sound_guid));
 
 		int canim=0, cline=0;
 		LinkedListIterator<ResourceBase> it=Subitems;
@@ -46,19 +46,19 @@ namespace gorgonwidgets {
 		while(resource=it) {
 			if(resource->getGID()==GID_ANIMATION) {
 				if(canim==0)
-					Symbol=((AnimationResource*)resource)->getAnimation();
+					Symbol=dynamic_cast<AnimationResource*>(resource)->getAnimation();
 				else if(canim==1)
-					Tick=((AnimationResource*)resource)->getAnimation();
+					Tick=dynamic_cast<AnimationResource*>(resource)->getAnimation();
 
 				canim++;
 			}
 			if(resource->getGID()==GID_LINE) {
 				if(cline==0)
-					Rule=new Line((LineResource*)resource);
+					Rule=new Line(dynamic_cast<LineResource*>(resource));
 				else if(cline==1) {
-					Overlay=new Line((LineResource*)resource);
+					Overlay=new Line(dynamic_cast<LineResource*>(resource));
 
-					if(((Line*)Overlay)->Start==NULL) {
+					if(dynamic_cast<Line*>(Overlay)->Start==NULL) {
 						delete Overlay;
 						Overlay=NULL;
 					}
@@ -79,7 +79,7 @@ namespace gorgonwidgets {
 		int y;
 
 		if(!Overlay) return *this;
-		Line*overlay=(Line*)Overlay;
+		Line*overlay=dynamic_cast<Line*>(Overlay);
 		switch(style) {
 			case SS_Right:
 			case SS_Verticle:
@@ -194,7 +194,7 @@ namespace gorgonwidgets {
 	}
 	SliderElement &SliderElement::DrawTickNumbers(Colorizable2DLayer &Target, float Distance, float Start, float Increment, float End, string Format) {
 		float v, y, x;
-		char *temp=new char[Format.length()+20];
+		char temp[40];
 
 		switch(style) {
 			case SS_Right: 
@@ -203,14 +203,14 @@ namespace gorgonwidgets {
 			{
 				y=Target.H-Font->FontHeight();
 				for(v=Start;v<End;v+=Increment) {
-					sprintf(temp, Format.data(), v);
+					sprintf_s<40>(temp, Format.data(), v);
 
-					Font->Print(Target, 0, Round(y), Target.W, temp, ForeColor, TextAlign, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+					Font->Print(Target, 0, Round(y), Target.W, temp, ForeColor, TextAlign, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 					y-=Distance;
 				}
-				sprintf(temp, Format.data(), End);
+				sprintf_s<40>(temp, Format.data(), End);
 
-				Font->Print(Target, 0, y, Target.W, temp, ForeColor, TextAlign, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+				Font->Print(Target, 0, y, Target.W, temp, ForeColor, TextAlign, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 				y-=Distance;
 				
 
@@ -222,19 +222,19 @@ namespace gorgonwidgets {
 			{
 				x=0;
 				for(v=Start;v<End;v+=Increment) {
-					sprintf(temp, Format.data(), v);
+					sprintf_s<40>(temp, Format.data(), v);
 
 					/*if(v==Start && TextAlign==TEXTALIGN_CENTER)
 						Font->Print(Target, x, 0, 0, temp, ForeColor, TEXTALIGN_LEFT, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 					else*/
-						Font->Print(Target, Round(x), 0, 0, temp, ForeColor, TextAlign, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+						Font->Print(Target, Round(x), 0, 0, temp, ForeColor, TextAlign, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 					x+=Distance;
 				}
-				sprintf(temp, Format.data(), End);
+				sprintf_s<40>(temp, Format.data(), End);
 				/*if(TextAlign==TEXTALIGN_CENTER)
 					Font->Print(Target, Target->W, 0, 0, temp, ForeColor, TEXTALIGN_RIGHT, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 				else*/
-					Font->Print(Target, Target.W, 0, 0, temp, ForeColor, TextAlign, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+					Font->Print(Target, Target.W, 0, 0, temp, ForeColor, TextAlign, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 			}
 		}
 
@@ -254,7 +254,7 @@ namespace gorgonwidgets {
 					SliderLocationName *t;
 					while(t=Texts.next()) {
 						y=Target.H-((t->value-min)/(max-min))*Target.H;
-						Font->Print(Target, 0, y, Target.W, t->name, ForeColor, TextAlign, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+						Font->Print(Target, 0, y, Target.W, t->name, ForeColor, TextAlign, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 					}
 					
 
@@ -274,7 +274,7 @@ namespace gorgonwidgets {
 						else if(Round(x)==Target->W && TextAlign==TEXTALIGN_CENTER)
 							Font->Print(Target, x, 0, 0, *t, ForeColor, TEXTALIGN_RIGHT, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 						else*/
-							Font->Print(Target, x, 0, 0, t->name, ForeColor, TextAlign, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+							Font->Print(Target, x, 0, 0, t->name, ForeColor, TextAlign, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 					}
 					
 
@@ -292,7 +292,7 @@ namespace gorgonwidgets {
 					SliderLocationName *t;
 					while(t=Texts.next()) {
 
-						Font->Print(Target, 0, Round(y), Target.W, t->name, ForeColor, TextAlign, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+						Font->Print(Target, 0, Round(y), Target.W, t->name, ForeColor, TextAlign, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 						y-=Distance;
 					}
 					
@@ -308,11 +308,11 @@ namespace gorgonwidgets {
 					SliderLocationName *t;
 					while(t=Texts.next()) {
 						if(x==0 && TextAlign==TEXTALIGN_CENTER)
-							Font->Print(Target, x, 0, 0, t->name, ForeColor, TEXTALIGN_LEFT, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+							Font->Print(Target, x, 0, 0, t->name, ForeColor, TEXTALIGN_LEFT, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 						else if(Round(x)==Target.W && TextAlign==TEXTALIGN_CENTER)
-							Font->Print(Target, x, 0, 0, t->name, ForeColor, TEXTALIGN_RIGHT, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+							Font->Print(Target, x, 0, 0, t->name, ForeColor, TEXTALIGN_RIGHT, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 						else
-							Font->Print(Target, Round(x), 0, 0, t->name, ForeColor, TextAlign, ShadowParams(ShadowTypes::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
+							Font->Print(Target, Round(x), 0, 0, t->name, ForeColor, TextAlign, ShadowParams(ShadowParams::Flat,ShadowColor, ShadowOffset.x, ShadowOffset.y));
 						x+=Distance;
 					}
 					

@@ -68,6 +68,9 @@ namespace gre {
 
 		////Searches the given resource object within this file
 		ResourceBase *FindObject(Guid *guid) { 
+			if(guid==NULL)
+				return NULL;
+
 			if(guid->isEmpty()) 
 				return NULL;
 

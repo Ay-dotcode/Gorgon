@@ -3,6 +3,7 @@
 #include "GRE.h"
 #include "ResourceBase.h"
 #include "../Engine/Graphics.h"
+#include "ResizableObject.h"
 
 namespace gre {
 	class ResourceFile;
@@ -20,7 +21,7 @@ namespace gre {
 
 	////This is image resource that holds information about a single image. It supports
 	/// two color modes (ARGB and AL); lzma and jpg compressions
-	class ImageResource : public ResourceBase, public Colorizable2DGraphic, public Raw2DGraphic {
+	class ImageResource : public ResourceBase, public Colorizable2DGraphic, public Raw2DGraphic, public ResizableObject {
 		friend ResourceBase *LoadImageResource(ResourceFile* File, FILE* Data, int Size);
 	public:
 		////Not used, if paletted image is found, this holds its palette
@@ -33,12 +34,27 @@ namespace gre {
 		/// an image object. This flag is used by other systems.
 		bool LeaveData;
 
-		ImageResource() { Width=Height=0; isLoaded=LeaveData=false; Palette=NULL; Mode=ARGB_32BPP; }
+		ImageResource() { 
+			Raw2DGraphic::Width=Raw2DGraphic::Height=0; 
+			isLoaded=LeaveData=false; Palette=NULL; Mode=ARGB_32BPP; 
+			SetResizingOptions(ResizableObject::Single,ResizableObject::Single);
+		}
 
 		ImageResource(int Width, int Height, ColorMode Mode=ARGB_32BPP) {
 			isLoaded=LeaveData=true;
 			Palette=NULL;
-			this->Resize(Width, Height, Mode); 
+			this->Resize(Width, Height, Mode);
+			SetResizingOptions(ResizableObject::Single,ResizableObject::Single);
+		}
+
+		ImageResource(ImageResource &image, ResizableObject::Tiling Horizontal, ResizableObject::Tiling Vertical) {
+			*this=image;
+			SetResizingOptions(Horizontal, Vertical);
+		}
+
+		ImageResource(ImageResource *image, ResizableObject::Tiling Horizontal, ResizableObject::Tiling Vertical) {
+			*this=*image;
+			SetResizingOptions(Horizontal, Vertical);
 		}
 
 		void PNGExport(string filename);
@@ -63,6 +79,40 @@ namespace gre {
 
 		////Destroys used data
 		virtual ~ImageResource() { if(Palette) delete Palette; ResourceBase::~ResourceBase(); }
+
+
+
+		//For resizable interface
+		ResizableObject::Tiling HorizontalTiling;
+		ResizableObject::Tiling VerticalTiling;
+
+
+		void SetResizingOptions( ResizableObject::Tiling Horizontal, ResizableObject::Tiling Vertical ) {
+			this->HorizontalTiling=Horizontal;
+			this->VerticalTiling=Vertical;
+		}
+
+		virtual void DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
+		virtual void DrawResized(I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) {
+			DrawResized(&Target, X,Y,W,H,Align);
+		}
+		virtual int  Width(int W=-1) { 
+			if(W==-1) return getWidth();
+
+			return HorizontalTiling.Calculate(getWidth(), W); 
+		}
+		virtual int  Height(int H=-1) { 
+			if(H==-1) return getHeight(); 
+		
+			return VerticalTiling.Calculate(getHeight(), H); 
+		}
+		virtual void Reset(bool Reverse=false) {}
+		virtual void Reverse() {}
+		virtual void Play() {}
+		virtual void Pause() {}
+		virtual void setLoop(bool Loop) {}
+		virtual int getDuration() { return 0; }
+
 
 	protected:
 		////The file that this image resource is related, used for late loading

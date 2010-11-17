@@ -6,7 +6,7 @@
 #include "../Resource/ResourceFile.h"
 #include "../Engine/GGEMain.h"
 #include "../Resource/AnimationResource.h"
-#include "../Engine/ResizableObject.h"
+#include "../Resource/ResizableObject.h"
 #include <string>
 
 using namespace gre;

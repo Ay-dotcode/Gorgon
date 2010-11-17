@@ -15,6 +15,8 @@
 #include "Progressbar.h"
 #include "Spinner.h"
 #include "../Resource/ResourceFile.h"
+#include "../Resource/FontTheme.h"
+#include "../Engine/Font.h"
 #undef small
 
 using namespace gre;
@@ -65,6 +67,8 @@ namespace gorgonwidgets {
 						   *h3
 		;
 
+		FontTheme *fonttheme;
+
 		LineResource *hSeparator,
 					 *vSeparator,
 					 *detailsSeperator,
@@ -114,8 +118,8 @@ namespace gorgonwidgets {
 
 		Button &createPictureChooserButton(IWidgetContainer &container, int x=0, int y=0, int w=-1, int h=-1);
 
-		CheckboxBase &createCheckbox(IWidgetContainer &container, string text="", int x=0, int y=0, int w=0, int h=0);
-		CheckboxBase &createCheckbox(string text="", int w=0, int h=0, int x=0, int y=0);
+		Checkbox &createCheckbox(IWidgetContainer &container, string text="", int x=0, int y=0, int w=0, int h=0);
+		Checkbox &createCheckbox(string text="", int w=0, int h=0, int x=0, int y=0);
 
 		RadioButton &createRadioButton(IWidgetContainer &container, string text="", int x=0, int y=0, int w=0, int h=0);
 		RadioButton &createRadioButton(string text="", int w=0, int h=0, int x=0, int y=0);
@@ -186,6 +190,8 @@ namespace gorgonwidgets {
 
 		LinearOrganizer &createDialogLinearOrganizer(int w, int h, int x=0, int y=0, ScrollbarDisplayStates scroll=SDS_WhenNeeded);
 		LinearOrganizer &createDialogLinearOrganizer(int w, int h, ScrollbarDisplayStates scroll=SDS_WhenNeeded) { return createDialogLinearOrganizer(w, h, 0, 0, scroll); }
+
+		FontTheme &FontTheme() { return *fonttheme; }
 
 		RGBint titleColor;
 		RGBint textColor;

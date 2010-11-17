@@ -21,8 +21,8 @@ namespace gorgonwidgets {
 		if(Subitems.getFirstItem()->getGID()==GID_LINE)
 			Visual=new Line((LineResource*)Subitems.getFirstItem());
 
-		Font=(BitmapFontResource*)file->FindObject(font_guid);
-		Sound=(SoundResource*)file->FindObject(sound_guid);
+		Font	=dynamic_cast<BitmapFontResource*>(file->FindObject(font_guid));
+		Sound	=dynamic_cast<SoundResource*>(file->FindObject(sound_guid));
 	}
 
 	ButtonElement &ButtonElement::ReadyAnimation(bool Backwards) {
@@ -84,7 +84,7 @@ namespace gorgonwidgets {
 			ty=((Height-(TextMargins.Top+TextMargins.Bottom))-fh)/2;
 
 		if(Font)
-			Font->Print(TextTarget,0,ty,Width-(TextMargins.Right+TextMargins.Left),Caption,ForeColor,halign, ShadowParams(ShadowTypes::Flat, ShadowColor, ShadowOffset.x, ShadowOffset.y));
+			Font->Print(TextTarget,0,ty,Width-(TextMargins.Right+TextMargins.Left),Caption,ForeColor,halign, ShadowParams(ShadowParams::Flat, ShadowColor, ShadowOffset.x, ShadowOffset.y));
 
 		if(Icon) {
 			if(IconAlign & ALIGN_LEFT)

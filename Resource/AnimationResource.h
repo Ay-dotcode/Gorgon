@@ -4,7 +4,7 @@
 #include "ResourceBase.h"
 #include "../Engine/Animator.h"
 #include "ImageResource.h"
-#include "../Engine/ResizableObject.h"
+#include "../Resource/ResizableObject.h"
 
 namespace gre {
 	class ResourceFile;
@@ -24,7 +24,10 @@ namespace gre {
 		virtual void ProcessFrame(int frame);
 
 	public:
-		ImageAnimation(AnimationResource *parent);
+		ImageAnimation(AnimationResource *parent): DiscreteAnimatorBase(), parent(parent) 
+		{ init(); SetResizingOptions(ResizableObject::Single,ResizableObject::Single); }
+		ImageAnimation(AnimationResource *parent,  ResizableObject::Tiling Horizontal, ResizableObject::Tiling Vertical): DiscreteAnimatorBase(), parent(parent) 
+		{ init(); SetResizingOptions(Horizontal, Vertical); }
 
 		virtual void Reset(bool Reverse=false) {
 			Pause();
@@ -66,6 +69,11 @@ namespace gre {
 				Buffered2DGraphic::DrawTiled(Target, X, Y, W, H);
 		}
 		void DrawTiled(I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawTiled(&Target, X,Y, W,H); }
+		virtual void DrawResized(TilingDirection Tiling, I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
+			if(Texture.ID)
+				Buffered2DGraphic::DrawResized(Tiling, Target, X, Y, W, H);
+		}
+		virtual void DrawResized(TilingDirection Tiling, I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawResized(Tiling, &Target, X,Y, W,H); }
 
 		virtual void DrawHTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
 			if(Texture.ID)
@@ -84,13 +92,25 @@ namespace gre {
 		virtual int  Height(int H=-1);
 
 	public:
-		virtual void DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align);
-		virtual void DrawResized(I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align) { DrawResized(&Target, X,Y ,W,H, Align); }
+		virtual void DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
+		virtual void DrawResized(I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) { DrawResized(&Target, X,Y ,W,H, Align); }
+
+		ResizableObject::Tiling HorizontalTiling;
+		ResizableObject::Tiling VerticalTiling;
+
+
+		void SetResizingOptions( ResizableObject::Tiling Horizontal, ResizableObject::Tiling Vertical ) {
+			this->HorizontalTiling=Horizontal;
+			this->VerticalTiling=Vertical;
+		}
+
+
+	protected:
+		void init();
+
 	};
 
-	////This is basic text resource, it holds a simple string. This resource is mostly useless
-	/// because of data array resource. Still it can be used to hold a long text which is not
-	/// related with other data.
+	////
 	class AnimationResource : public ResourceBase {
 		friend ResourceBase *LoadAnimationResource(ResourceFile* File, FILE* Data, int Size);
 		friend class ImageAnimation;
@@ -104,9 +124,9 @@ namespace gre {
 		AnimationResource() : ResourceBase() { Durations=NULL; FrameCount=0; }
 
 		////Returns the width of the first image
-		int getWidth() { if(Subitems.getCount()>0) return ((ImageResource*)Subitems[0])->Width; return 0; }
+		int getWidth() { if(Subitems.getCount()>0) return ((ImageResource*)Subitems[0])->getWidth(); return 0; }
 		////Returns the height of the first image
-		int getHeight() { if(Subitems.getCount()>0) return ((ImageResource*)Subitems[0])->Height; return 0; }
+		int getHeight() { if(Subitems.getCount()>0) return ((ImageResource*)Subitems[0])->getHeight(); return 0; }
 		////Returns number of frames
 		int getFrameCount() { return FrameCount; }
 		////Creates a new Image animation from this resource

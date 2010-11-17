@@ -8,7 +8,14 @@
 #include <gl/gl.h>
 #include <gl/glu.h>
 #include <assert.h>
+#include <stdexcept>
 #include "../Utils/ManagedBuffer.h"
+
+#ifndef GL_BGR
+#define GL_BGR	0x80E0
+#define GL_BGRA	0x80E1
+#endif
+
 
 ////Namespace for Gorgon Game Engine
 namespace gge {
@@ -508,6 +515,27 @@ namespace gge {
 	public:
 		GLTexture Texture;
 
+		enum TilingDirection {
+			None,
+			Horizontal=1,
+			Vertical=2,
+			Both=3,
+		};
+
+		static TilingDirection Tiling(bool H, bool V) {
+			if(H) {
+				if(V)
+					return Both;
+				else
+					return Horizontal;
+			} else {
+				if(V)
+					return Vertical;
+				else
+					return None;
+			} 
+		}
+
 		Buffered2DGraphic() { Texture.ID=0; }
 
 		////Draws this object to the given target
@@ -533,10 +561,10 @@ namespace gge {
 		/// this image
 		virtual void Draw(I2DGraphicsTarget *Target,int X,int Y,int W,int H) { 
 #ifdef _DEBUG
-			if(Texture.ID==0) {
-				DisplayMessage("Buffered 2D Graphic","Invalid texture ID, image is not initialized.");
-				assert(0);
-			}
+			if(Texture.ID==0)
+				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
+			if(Target==NULL)
+				std::runtime_error("Target is NULL");
 #endif
 			Target->Draw(&Texture, X, Y, W, H);
 		}
@@ -548,10 +576,10 @@ namespace gge {
 		/// this image
 		virtual void Draw(I2DGraphicsTarget *Target,int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4, int Y4) { 
 #ifdef _DEBUG
-			if(Texture.ID==0) {
-				DisplayMessage("Buffered 2D Graphic","Invalid texture ID, image is not initialized.");
-				assert(0);
-			}
+			if(Texture.ID==0)
+				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
+			if(Target==NULL)
+				std::runtime_error("Target is NULL");
 #endif
 			Target->Draw(&Texture, X1,Y1, X2,Y2, X3,Y3, X4,Y4);
 		}
@@ -560,22 +588,47 @@ namespace gge {
 
 		virtual void DrawTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
 #ifdef _DEBUG
-			if(Texture.ID==0) {
-				DisplayMessage("Buffered 2D Graphic","Invalid texture ID, image is not initialized in tiled draw.");
-				assert(0);
-			}
+			if(Texture.ID==0)
+				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
+			if(Target==NULL)
+				std::runtime_error("Target is NULL");
 #endif
 			Target->DrawTiled(&Texture,X,Y,W,H);
 		}
 		virtual void DrawTiled(I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawTiled(&Target, X,Y, W,H); }
 
 
+		virtual void DrawResized(TilingDirection Tiling, I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
+#ifdef _DEBUG
+			if(Texture.ID==0)
+				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
+			if(Target==NULL)
+				std::runtime_error("Target is NULL");
+#endif
+			switch(Tiling) {
+				case None:
+					Target->Draw(&Texture,X,Y,W,H);
+					break;
+				case Horizontal:
+					Target->DrawHTiled(&Texture,X,Y,W,H);
+					break;
+				case Vertical:
+					Target->DrawVTiled(&Texture,X,Y,W,H);
+					break;
+				case Both:
+					Target->DrawTiled(&Texture,X,Y,W,H);
+					break;
+			}
+		}
+		virtual void DrawResized(TilingDirection Tiling, I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawResized(Tiling, &Target, X,Y, W,H); }
+
+
 		virtual void DrawHTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
 #ifdef _DEBUG
-			if(Texture.ID==0) {
-				DisplayMessage("Buffered 2D Graphic","Invalid texture ID, image is not initialized in tiled draw.");
-				assert(0);
-			}
+			if(Texture.ID==0)
+				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
+			if(Target==NULL)
+				std::runtime_error("Target is NULL");
 #endif
 			Target->DrawHTiled(&Texture,X,Y,W,H);
 		}
@@ -584,10 +637,10 @@ namespace gge {
 
 		virtual void DrawVTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
 #ifdef _DEBUG
-			if(Texture.ID==0) {
-				DisplayMessage("Buffered 2D Graphic","Invalid texture ID, image is not initialized in tiled draw.");
-				assert(0);
-			}
+			if(Texture.ID==0)
+				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
+			if(Target==NULL)
+				std::runtime_error("Target is NULL");
 #endif
 			Target->DrawVTiled(&Texture,X,Y,W,H);
 		}
@@ -616,10 +669,12 @@ namespace gge {
 	class Raw2DGraphic {
 	public:
 		ManagedBuffer<BYTE> Data;
+	protected:
 		int Width;
 		int Height;
 		ColorMode Mode;
 
+	public:
 		Raw2DGraphic() { Width=0; Height=0; Mode=ARGB_32BPP; }
 		Raw2DGraphic(Raw2DGraphic &graph) {
 			Data=graph.Data;
@@ -694,6 +749,9 @@ namespace gge {
 		}
 
 		~Raw2DGraphic() {  }
+		int getWidth() { return Width; }
+		int getHeight() { return Height; }
+		ColorMode getMode() { return Mode; }
 	};
 
 

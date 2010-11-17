@@ -85,7 +85,7 @@ namespace gorgonwidgets {
 
 		WidgetLayer &getLayer() { return layer; }
 		IWidgetContainer &getContainer() { return *container; }
-		PointerTypes PointerType;
+		Pointer::PointerTypes PointerType;
 
 		virtual void container_hide() {
 			if(pointerid) {

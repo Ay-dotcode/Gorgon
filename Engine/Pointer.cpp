@@ -75,11 +75,11 @@ namespace gge {
 		int i=0;
 		while(resource=it) {
 			if(resource->getGID()==GID_ANIMATION) {
-				AnimationResource *anim=(AnimationResource *)resource;
-				Pointers.Add( new Pointer(anim->getAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (PointerTypes)data->getInt(i)) );
+				AnimationResource *anim=dynamic_cast<AnimationResource *>(resource);
+				Pointers.Add( new Pointer(anim->getAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
 			} else if(resource->getGID()==GID_IMAGE) {
-				ImageResource *img=(ImageResource *)resource;
-				Pointers.Add( new Pointer(img, data->getPoint(i+1).x, data->getPoint(i+1).y, (PointerTypes)data->getInt(i)) );
+				ImageResource *img=dynamic_cast<ImageResource *>(resource);
+				Pointers.Add( new Pointer(img, data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
 			}
 
 			i+=2;
@@ -89,7 +89,7 @@ namespace gge {
 			BasePointer=Pointers[0];
 	}
 
-	Pointer *AddPointer(Buffered2DGraphic *pointer, Point Hotspot, PointerTypes Type) {
+	Pointer *AddPointer(Buffered2DGraphic *pointer, Point Hotspot, Pointer::PointerTypes Type) {
 		Pointer *ret=new Pointer(pointer, Hotspot.x, Hotspot.y, Type);
 		Pointers.Add( ret );
 		return ret;
@@ -100,11 +100,11 @@ namespace gge {
 	}
 
 	int SetPointer(Pointer *Pointer) {
-		return (int)ActivePointers.AddItem(Pointer, ActivePointers.HighestOrder()+1);
+		return reinterpret_cast<int>(ActivePointers.AddItem(Pointer, ActivePointers.HighestOrder()+1));
 	}
 
-	int SetPointer(PointerTypes Type) {
-		if(Type==PointerTypes::None)
+	int SetPointer(Pointer::PointerTypes Type) {
+		if(Type==Pointer::None)
 			return SetPointer(BasePointer);
 		Pointers.ResetIteration();
 		Pointer *pointer;
@@ -117,7 +117,7 @@ namespace gge {
 	}
 
 	void ResetPointer(int StackNo) {
-		ActivePointers.Remove((LinkedListItem<Pointer>*)StackNo);
+		ActivePointers.Remove(reinterpret_cast<LinkedListItem<Pointer>*>(StackNo));
 	}
 
 	void ChangeBasePointer(Pointer *Pointer) {

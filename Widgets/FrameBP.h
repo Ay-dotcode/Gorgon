@@ -16,7 +16,7 @@ namespace gorgonwidgets {
 		friend ResourceBase *LoadFrame(ResourceFile*,FILE*,int);
 	public:
 
-		FrameBP(RectangleResource *normal=NULL, SliderBP *scroller=NULL, PointerTypes pointer=PointerTypes::None) 
+		FrameBP(RectangleResource *normal=NULL, SliderBP *scroller=NULL, Pointer::PointerTypes pointer=Pointer::None) 
 		  : 
 			Normal(normal), Active(NULL),
 			InnerNormal(NULL), InnerActive(NULL),

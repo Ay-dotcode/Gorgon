@@ -11,11 +11,11 @@ using namespace gge;
 namespace gorgonwidgets {
 	class IWidgetBluePrint {
 	public:
-		IWidgetBluePrint() : useAlphaAnimation(false), PointerType(PointerTypes::None) { }
+		IWidgetBluePrint() : useAlphaAnimation(false), PointerType(Pointer::None) { }
 		virtual IWidgetObject *Create(IWidgetContainer& Container,int X,int Y,int Width,int Height)=0;
 		virtual IWidgetObject *Create(IWidgetContainer& Container,Point position,int Width,int Height);
 
 		bool useAlphaAnimation;
-		PointerTypes PointerType;
+		Pointer::PointerTypes PointerType;
 	};
 }

@@ -3,7 +3,7 @@
 #include "../Resource/ResourceBase.h"
 #include "../Resource/AnimationResource.h"
 #include "../Engine/Layer.h"
-#include "../Engine/ResizableObject.h"
+#include "../Resource/ResizableObject.h"
 #include "../Utils/Margins.h"
 
 using namespace gre;
@@ -90,8 +90,17 @@ namespace gorgonwidgets {
 		ResizableRect(RectangleResource *parent) { init(parent); }
 		ResizableRect(RectangleResource &parent) { init(&parent); }
 
-		virtual void DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align);
-		virtual void DrawResized(I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align) { DrawResized(&Target, X,Y, W,H, Align); }
+		ResizableRect(RectangleResource *parent, ResizableObject::IntegralSize HSizing, ResizableObject::IntegralSize VSizing) { 
+			init(parent); 
+			SetResizingOptions(HSizing,VSizing);
+		}
+		ResizableRect(RectangleResource &parent, ResizableObject::IntegralSize HSizing, ResizableObject::IntegralSize VSizing) { 
+			init(&parent); 
+			SetResizingOptions(HSizing,VSizing);
+		}
+
+		virtual void DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
+		virtual void DrawResized(I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) { DrawResized(&Target, X,Y, W,H, Align); }
 		virtual void DrawAround(I2DGraphicsTarget *Target, int X, int Y, int W, int H);
 		virtual void Reset(bool Reverse=false);
 		virtual void Reverse();
@@ -103,8 +112,20 @@ namespace gorgonwidgets {
 
 		virtual int getDuration() { if(animC) { return animC->getDuration(); } else { return animT->getDuration(); } }
 
+
+		ResizableObject::IntegralSize HSizing;
+		ResizableObject::IntegralSize VSizing;
+
+		void SetResizingOptions( ResizableObject::IntegralSize HSizing, ResizableObject::IntegralSize VSizing ) {
+			this->HSizing=HSizing;
+			this->VSizing=VSizing;
+		}
+
+		bool CenterOnly;
+
+		virtual Margins getBorderWidth() { return Parent->getBorderWidth(); }
+
 	protected:
-		bool centeronly;
 
 		void init(gorgonwidgets::RectangleResource *parent);
 	};

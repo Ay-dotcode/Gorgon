@@ -377,7 +377,7 @@ namespace gorgonwidgets {
 	void SliderBase::SetBluePrint(IWidgetBluePrint *BP) {
 		this->BluePrint=(SliderBP*)BP;
 		DetermineStyleGroup();
-		PointerType=PointerTypes::Arrow;
+		PointerType=Pointer::Arrow;
 	}
 
 	void SliderBase::Draw() {
@@ -1552,6 +1552,7 @@ namespace gorgonwidgets {
 			case SS_Top:
 			case SS_Bottom:
 			case SS_Horizontal:
+			default:
 				position=x;
 				position-=symbolelm->StartMargin;
 				w=rulesize.Width - (symbolelm->StartMargin + symbolelm->EndMargin);
@@ -1562,7 +1563,6 @@ namespace gorgonwidgets {
 	}
 	void SliderBase::MoveSymbolToSymbol(int x, int y) {
 		SliderElement *symbolelm=DetermineSymbolElement(currentsymbolstate,nextsymbolstate);
-		float v,position,h;
 		gge::Rectangle rulesize=RuleRectangle();
 
 		switch(style) {
@@ -1582,7 +1582,6 @@ namespace gorgonwidgets {
 	}
 	void SliderBase::MoveSymbolToTick(int x, int y) {
 		SliderElement *ruleelm=DetermineRuleElement(currentsymbolstate,nextsymbolstate);
-		float v,position,h;
 		gge::Rectangle rulesize=RuleRectangle();
 
 		switch(style) {
@@ -1601,7 +1600,6 @@ namespace gorgonwidgets {
 	}
 	void SliderBase::MoveSymbolToText(int x, int y) {
 		SliderElement *ruleelm=DetermineRuleElement(currentsymbolstate,nextsymbolstate);
-		float v,position,h;
 		gge::Rectangle rulesize=RuleRectangle();
 
 		switch(style) {

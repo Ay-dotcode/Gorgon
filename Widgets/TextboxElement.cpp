@@ -13,8 +13,8 @@ namespace gorgonwidgets {
 
 	void TextboxElement::Prepare(gge::GGEMain *main) {
 		ResourceBase::Prepare(main);
-		Font=(BitmapFontResource*)file->FindObject(font_guid);
-		Sound=(SoundResource*)file->FindObject(sound_guid);
+		Font	=dynamic_cast<BitmapFontResource*>(file->FindObject(font_guid));
+		Sound	=dynamic_cast<SoundResource*>(file->FindObject(sound_guid));
 
 		if(Subitems[0]->getGID()==GID_LINE) {
 			Visual=new Line((LineResource*)Subitems[0]);
@@ -185,7 +185,7 @@ namespace gorgonwidgets {
 					-Parent->scroll,ty,w,
 					Caption,
 					ForeColor,eprint,eprintcount,TEXTALIGN_LEFT,
-					ShadowParams(ShadowTypes::Flat,ShadowColor,ShadowOffset.x,ShadowOffset.y)
+					ShadowParams(ShadowParams::Flat,ShadowColor,ShadowOffset.x,ShadowOffset.y)
 				);
 				calign=TEXTALIGN_LEFT;
 			} else { //no scrolling, print normal text
@@ -202,7 +202,7 @@ namespace gorgonwidgets {
 					0,ty,w,
 					Caption,
 					ForeColor,eprint,eprintcount,halign,
-					ShadowParams(ShadowTypes::Flat,ShadowColor,ShadowOffset.x,ShadowOffset.y)
+					ShadowParams(ShadowParams::Flat,ShadowColor,ShadowOffset.x,ShadowOffset.y)
 					
 				);
 				Parent->scroll=0;

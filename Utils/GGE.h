@@ -2,6 +2,7 @@
 
 #include "math.h"
 #include "memory.h"
+#include "Binary.h"
 
 
 typedef unsigned long       DWORD;
@@ -225,6 +226,9 @@ namespace gge {
 		ALIGN_TOP=1,
 		ALIGN_BOTTOM=2,
 		ALIGN_MIDDLE=4,
+
+		ALIGN_MASK_VERTICAL=B8(00000111),
+		ALIGN_MASK_HORIZONTAL=B8(00111000),
 
 		ALIGN_TOP_LEFT=ALIGN_TOP | ALIGN_LEFT,
 		ALIGN_TOP_CENTER=ALIGN_TOP | ALIGN_CENTER,

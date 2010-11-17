@@ -386,13 +386,14 @@ namespace gorgonwidgets {
 
 	void FrameBP::Prepare(GGEMain *main) {
 		ResourceBase::Prepare(main);
-		Normal=(RectangleResource*)file->FindObject(guid_normal);
-		Active=(RectangleResource*)file->FindObject(guid_active);
-		InnerNormal=(RectangleResource*)file->FindObject(guid_innernormal);
-		InnerActive=(RectangleResource*)file->FindObject(guid_inneractive);
-		ScrollingNormal=(RectangleResource*)file->FindObject(guid_scrollingnormal);
-		ScrollingActive=(RectangleResource*)file->FindObject(guid_scrollingactive);
-		Scroller=(SliderBP*)file->FindObject(guid_scroller);
+
+		Normal			=dynamic_cast<RectangleResource*>(file->FindObject(guid_normal));
+		Active			=dynamic_cast<RectangleResource*>(file->FindObject(guid_active));
+		InnerNormal		=dynamic_cast<RectangleResource*>(file->FindObject(guid_innernormal));
+		InnerActive		=dynamic_cast<RectangleResource*>(file->FindObject(guid_inneractive));
+		ScrollingNormal	=dynamic_cast<RectangleResource*>(file->FindObject(guid_scrollingnormal));
+		ScrollingActive	=dynamic_cast<RectangleResource*>(file->FindObject(guid_scrollingactive));
+		Scroller		=dynamic_cast<SliderBP*		    >(file->FindObject(guid_scroller));
 	}
 
 }

@@ -1,4 +1,5 @@
 #include "CheckboxBP.h"
+#include "CheckboxBase.h"
 
 namespace gorgonwidgets {
 

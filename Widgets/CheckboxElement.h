@@ -1,12 +1,12 @@
 #pragma once
 
 #include "../Resource/ResourceBase.h"
-#include "../Resource/BitmapFontResource.h"
+#include "../Engine/Font.h"
 #include "../Resource/SoundResource.h"
 #include "../Resource/ResourceFile.h"
 #include "../Engine/GGEMain.h"
 #include "../Resource/AnimationResource.h"
-#include "../Engine/ResizableObject.h"
+#include "../Resource/ResizableObject.h"
 #include "../Utils/Margins.h"
 #include <string>
 
@@ -16,13 +16,26 @@ using namespace std;
 
 namespace gorgonwidgets {
 
+	class CheckboxBase;
+
 #define GID_CHECKBOX_ELEMENT			0x5250000
 #define GID_CHECKBOX_ELEMENT_PROPS		0x5250101
+#define GID_CHECKBOX_ELEMENT_PROPS2		0x5250102
 
 	class CheckboxElement : public ResourceBase {
 		friend ResourceBase *LoadCheckboxElement(ResourceFile*,FILE*,int);
 		friend class CheckboxStyleGroup;
 	public:
+
+		enum SymbolIconOrderConstants {
+			NoOverride	=-1,
+			SymbolFirst = 0,
+			IconFirst,
+			NoIcon,
+			NoSymbol,
+			NoSymbolNoIcon,
+		};
+
 		CheckboxElement(void);
 
 		virtual int getGID() { return GID_CHECKBOX_ELEMENT; }
@@ -33,25 +46,37 @@ namespace gorgonwidgets {
 		CheckboxElement &ReadyAnimation(bool Backwards);
 		CheckboxElement &Reverse();
 
-		BitmapFontResource *Font;
+		Font Font;
 		SoundResource *Sound;
-		RGBint ForeColor,ShadowColor;
-		Alignment TextAlign,IconAlign;
 		int Duration;
-		Margins TextMargins;
-		Margins IconMargins;
-		Point Offset;
+		RGBint ForeColor;
+		RGBint ShadowColor;
 		Point ShadowOffset;
+
+		int Lines;
+		SymbolIconOrderConstants SymbolIconOrder;
+
+		Alignment SymbolAlign;
+		Alignment IconAlign;
+		Alignment TextAlign;
+
+		Margins BorderMargin;
+		Margins BorderWidth;
+		bool AutoBorderWidth;
+		Margins ContentMargin;
+		Margins SymbolMargin;
+		Margins IconMargin;
+		Margins TextMargin;
+
+		CheckboxBase *base;
 
 
 	protected:
-		Guid *font_guid;
+		FontInitiator temp_font;
 		Guid *sound_guid;
 		ResourceFile *file;
 		ImageAnimation *symbol;
 		ResizableObject *border;
 		ResourceBase *bordertemplate;
-
-		int lines;
 	};
 }

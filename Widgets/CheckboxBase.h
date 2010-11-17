@@ -2,11 +2,10 @@
 
 #include "../Resource/ResourceBase.h"
 #include "../Resource/ResourceFile.h"
+#include "IWidgetContainer.h"
 #include "CheckboxBP.h"
 #include "../Engine/GGEMain.h"
 #include "../Engine/Layer.h"
-#include "IWidgetContainer.h"
-#include "RadioGroup.h"
 
 using namespace gge;
 using namespace gre;
@@ -14,6 +13,8 @@ using namespace gre;
 #define CHECKBOX_CLICK_DOWNDURATION	100
 
 namespace gorgonwidgets {
+	class CheckboxElement;
+
 	enum CheckboxStates {
 		CS_Normal,
 		CS_Disabled,
@@ -28,9 +29,10 @@ namespace gorgonwidgets {
 
 	class CheckboxBase : public IWidgetObject {
 		friend class CheckboxBP;
+		friend class CheckboxElement;
 	public:
-		CheckboxBase(CheckboxBP *BluePrint,IWidgetContainer &container,CheckboxTypes type=CT_Checkbox);
-		CheckboxBase(CheckboxBP *BluePrint,CheckboxTypes type=CT_Checkbox);
+		CheckboxBase(CheckboxBP *BluePrint,IWidgetContainer &container,CheckboxTypes type);
+		CheckboxBase(CheckboxBP *BluePrint,CheckboxTypes type);
 
 		CheckboxBase			&SetStyles(CheckboxStyleGroup* grp);
 
@@ -78,24 +80,18 @@ namespace gorgonwidgets {
 		CheckboxBase	&SimulateMouseOver();
 		CheckboxBase	&SimulateMouseOut();
 
-		operator bool() { return isChecked(); }
-		CheckboxBase &operator =(bool checked) { return SetChecked(checked); }
-
-
-		CheckboxStates	currentState();
-
-		virtual CheckboxBase	&Toggle(bool animate=true);
-		CheckboxBase	&Check(bool animate=true);
-		CheckboxBase	&Clear(bool animate=true);
-		CheckboxBase	&SetChecked(bool checked);
-
-		bool		isChecked() {
-			return checked;
-		}
 
 		EventChain<CheckboxBase, empty_event_params> ChangeEvent;
 
 	protected:
+		int linesoverride;
+		CheckboxElement::SymbolIconOrderConstants orderoverride;
+
+		CheckboxBase	&ToggleCheckbox(bool animate=true);
+		CheckboxBase	&SetCheckboxState(bool checked, bool animate=true);
+
+		CheckboxStates	currentState();
+
 		CheckboxStates prevstate;
 		CheckboxStates currentstate;
 		CheckboxStates nextstate;
@@ -112,6 +108,8 @@ namespace gorgonwidgets {
 		bool mover;
 		Colorizable2DLayer textlayer;
 
+		ImageAnimation *icon;
+
 		CheckboxBP *BluePrint;
 		CheckboxElement *et[4][4];
 		CheckboxElement *ct[4][4];
@@ -122,22 +120,5 @@ namespace gorgonwidgets {
 		
 		virtual bool mouse_event(MouseEventType event,int x,int y);
 		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier);
-	};
-
-	class RadioButton : public CheckboxBase, public IRadioButton {
-	public:
-		RadioButton(CheckboxBP *BluePrint,IWidgetContainer &container);
-		RadioButton(CheckboxBP *BluePrint);
-
-		virtual IRadioButton	&Clear();
-		virtual IRadioButton	&Check();
-		virtual bool			 isChecked();
-
-		virtual IWidgetObject &getWidget() { return *this; }
-
-
-		EventChain<RadioButton, empty_event_params> ChangeEvent;
-	protected:
-		void RadioBtn_Change(empty_event_params p,CheckboxBase &object,Any data,string name);
 	};
 }

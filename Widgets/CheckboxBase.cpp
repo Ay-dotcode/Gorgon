@@ -1,5 +1,6 @@
 #include "Checkbox.h"
 #include "../Engine/Wave.h"
+#include "CheckboxElement.h"
 
 namespace gge {
 	extern GGEMain *main;
@@ -24,7 +25,8 @@ namespace gorgonwidgets {
 		type(type), checked(false), statetransition(false),
 		mover(false), sticky(false),
 		ChangeEvent("Change", this),
-		textlayer(0, 0, 100, 100)
+		textlayer(0, 0, 100, 100),
+		icon(NULL)
 	{
 		this->PointerType=BluePrint->PointerType;
 
@@ -57,7 +59,9 @@ namespace gorgonwidgets {
 		type(type), checked(false), statetransition(false),
 		mover(false), sticky(false),
 		ChangeEvent("Change", this),
-		textlayer(0, 0, 100, 100)
+		textlayer(0, 0, 100, 100),
+		linesoverride(0), orderoverride(CheckboxElement::NoOverride),
+		icon(NULL)
 	{
 		this->PointerType=BluePrint->PointerType;
 
@@ -128,40 +132,82 @@ namespace gorgonwidgets {
 
 
 	CheckboxBase	&CheckboxBase::SetStyles(CheckboxStyleGroup* grp) {
-		if(grp->NormalStyle)
+		if(grp->NormalStyle) {
 			NormalStyle=new CheckboxElement(*grp->NormalStyle);
-		if(grp->HoverStyle)
+			NormalStyle->base=this;
+		}
+
+		if(grp->HoverStyle) {
 			HoverStyle=new CheckboxElement(*grp->HoverStyle);
-		if(grp->PressedStyle)
+			HoverStyle->base=this;
+		} else
+			HoverStyle=NULL;
+
+		if(grp->PressedStyle) {
 			PressedStyle=new CheckboxElement(*grp->PressedStyle);
-		if(grp->DisabledStyle)
+			PressedStyle->base=this;
+		} else
+			PressedStyle=NULL;
+
+		if(grp->DisabledStyle) {
 			DisabledStyle=new CheckboxElement(*grp->DisabledStyle);
-		if(grp->Normal2Hover)
+			DisabledStyle->base=this;
+		} else
+			DisabledStyle=NULL;
+ 
+		if(grp->Normal2Hover) {
 			Normal2Hover=new CheckboxElement(*grp->Normal2Hover);
-		if(grp->Normal2Pressed)
+			Normal2Hover->base=this;
+		} else
+			Normal2Hover=NULL;
+
+		if(grp->Normal2Pressed) {
 			Normal2Pressed=new CheckboxElement(*grp->Normal2Pressed);
-		if(grp->Hover2Pressed)
+			Normal2Pressed->base=this;
+		} else
+			Normal2Pressed=NULL;
+
+		if(grp->Hover2Pressed) {
 			Hover2Pressed=new CheckboxElement(*grp->Hover2Pressed);
+			Hover2Pressed->base=this;
+		} else
+			Hover2Pressed=NULL;
+
 		if(grp->Hover2Normal) {
 			if(grp->Hover2Normal==grp->Normal2Hover)
 				Hover2Normal=Normal2Hover;
 			else
 				Hover2Normal=new CheckboxElement(*grp->Hover2Normal);
-		}
+
+			Hover2Normal->base=this;
+		} else 
+			Hover2Normal=NULL;		
+
 		if(grp->Pressed2Normal) {
 			if(grp->Pressed2Normal==grp->Normal2Pressed)
 				Pressed2Normal=Normal2Pressed;
 			else
 				Pressed2Normal=new CheckboxElement(*grp->Pressed2Normal);
-		}
+
+			Pressed2Normal->base=this;
+		} else
+			Pressed2Normal=NULL;
+
 		if(grp->Pressed2Hover) {
 			if(grp->Pressed2Hover==grp->Hover2Pressed)
 				Pressed2Hover=Hover2Pressed;
 			else
 				Pressed2Hover=new CheckboxElement(*grp->Pressed2Hover);
-		}
-		if(grp->ToNextStyle)
+
+			Pressed2Hover->base=this;
+		} else
+			Pressed2Hover=NULL;
+
+		if(grp->ToNextStyle) {
 			ToNextStyle=new CheckboxElement(*grp->ToNextStyle);
+			ToNextStyle->base=this;
+		} else
+			ToNextStyle=NULL;
 
 		RevHover2NormalState=grp->RevHover2NormalState;
 		RevPressed2NormalState=grp->RevPressed2NormalState;
@@ -188,40 +234,126 @@ namespace gorgonwidgets {
 		et[CS_Disabled][CS_Disabled]=DisabledStyle;
 
 
-		if(grp->cNormalStyle)
+		if(grp->cNormalStyle) {
 			cNormalStyle=new CheckboxElement(*grp->cNormalStyle);
-		if(grp->cHoverStyle)
+		} else {
+			cNormalStyle=new CheckboxElement(*NormalStyle);
+		}
+
+		if(grp->cHoverStyle) {
 			cHoverStyle=new CheckboxElement(*grp->cHoverStyle);
-		if(grp->cPressedStyle)
+			cHoverStyle->base=this;
+		} else if(grp->HoverStyle) {
+			cHoverStyle=new CheckboxElement(*grp->HoverStyle);
+			cHoverStyle->base=this;
+		} else
+			cHoverStyle=NULL;
+
+		if(grp->cPressedStyle) {
 			cPressedStyle=new CheckboxElement(*grp->cPressedStyle);
-		if(grp->cDisabledStyle)
+			cPressedStyle->base=this;
+		} else if(grp->PressedStyle) {
+			cPressedStyle=new CheckboxElement(*grp->PressedStyle);
+			cPressedStyle->base=this;
+		} else
+			cPressedStyle=NULL;
+
+		if(grp->cDisabledStyle) {
 			cDisabledStyle=new CheckboxElement(*grp->cDisabledStyle);
-		if(grp->cNormal2Hover)
+			cDisabledStyle->base=this;
+		} else if(grp->DisabledStyle) {
+			cDisabledStyle=new CheckboxElement(*grp->DisabledStyle);
+			cDisabledStyle->base=this;
+		} else
+			cDisabledStyle=NULL;
+
+		if(grp->cNormal2Hover) {
 			cNormal2Hover=new CheckboxElement(*grp->cNormal2Hover);
-		if(grp->cNormal2Pressed)
+			cNormal2Hover->base=this;
+		} else if(grp->Normal2Hover) {
+			cNormal2Hover=new CheckboxElement(*grp->Normal2Hover);
+			cNormal2Hover->base=this;
+		} else
+			cNormal2Hover=NULL;
+
+		if(grp->cNormal2Pressed) {
 			cNormal2Pressed=new CheckboxElement(*grp->cNormal2Pressed);
-		if(grp->cHover2Pressed)
+			cNormal2Pressed->base=this;
+		} else if(grp->Normal2Pressed) {
+			cNormal2Pressed=new CheckboxElement(*grp->Normal2Pressed);
+			cNormal2Pressed->base=this;
+		} else
+			cNormal2Pressed=NULL;
+
+		if(grp->cHover2Pressed) {
 			cHover2Pressed=new CheckboxElement(*grp->cHover2Pressed);
+			cHover2Pressed->base=this;
+		} else if(grp->Hover2Pressed) {
+			cHover2Pressed=new CheckboxElement(*grp->Hover2Pressed);
+			cHover2Pressed->base=this;
+		} else
+			cHover2Pressed=NULL;
+
 		if(grp->cHover2Normal) {
 			if(grp->cHover2Normal==grp->cNormal2Hover)
 				cHover2Normal=cNormal2Hover;
 			else
 				cHover2Normal=new CheckboxElement(*grp->cHover2Normal);
-		}
+
+			cHover2Normal->base=this;
+		} else if(grp->Hover2Normal) {
+			if(grp->Hover2Normal==grp->Normal2Hover)
+				cHover2Normal=cNormal2Hover;
+			else
+				cHover2Normal=new CheckboxElement(*grp->Hover2Normal);
+
+			cHover2Normal->base=this;
+		} else
+			cHover2Normal=NULL;
+
 		if(grp->cPressed2Normal) {
 			if(grp->cPressed2Normal==grp->cNormal2Pressed)
 				cPressed2Normal=cNormal2Pressed;
 			else
 				cPressed2Normal=new CheckboxElement(*grp->cPressed2Normal);
-		}
+
+			cPressed2Normal->base=this;
+		} else if(grp->Pressed2Normal) {
+			if(grp->Pressed2Normal==grp->Normal2Pressed)
+				cPressed2Normal=cNormal2Pressed;
+			else
+				cPressed2Normal=new CheckboxElement(*grp->Pressed2Normal);
+
+			cPressed2Normal->base=this;
+		} else
+			cPressed2Normal=NULL;
+
+
 		if(grp->cPressed2Hover) {
 			if(grp->cPressed2Hover==grp->cHover2Pressed)
 				cPressed2Hover=cHover2Pressed;
 			else
 				cPressed2Hover=new CheckboxElement(*grp->cPressed2Hover);
-		}
-		if(grp->cToNextStyle)
+
+			cPressed2Normal->base=this;
+		} else if(grp->Pressed2Hover) {
+			if(grp->Pressed2Hover==grp->Hover2Pressed)
+				cPressed2Hover=cHover2Pressed;
+			else
+				cPressed2Hover=new CheckboxElement(*grp->Pressed2Hover);
+
+			cPressed2Hover->base=this;
+		} else
+			cPressed2Hover=NULL;
+
+		if(grp->cToNextStyle) {
 			cToNextStyle=new CheckboxElement(*grp->cToNextStyle);
+			cToNextStyle->base=this;
+		} else if(grp->ToNextStyle) {
+			cToNextStyle=new CheckboxElement(*grp->ToNextStyle);
+			cToNextStyle->base=this;
+		} else
+			cToNextStyle=NULL;
 
 		cRevHover2NormalState=grp->cRevHover2NormalState;
 		cRevPressed2NormalState=grp->cRevPressed2NormalState;
@@ -253,7 +385,7 @@ namespace gorgonwidgets {
 
 	CheckboxBase	&CheckboxBase::SimulateClicked() {
 		Transition(CS_Pressed,false,false,!checked);
-		Toggle(false);
+		ToggleCheckbox(false);
 		ClickEvent();
 
 		return *this;
@@ -389,7 +521,7 @@ namespace gorgonwidgets {
 				}
 			} else if(temporalstate) {
 				Transition(CS_Hover,false,false,!checked);
-				Toggle(false);
+				ToggleCheckbox(false);
 				temporalstate=false;
 			}
 		}
@@ -453,7 +585,7 @@ namespace gorgonwidgets {
 		case MOUSE_EVENT_LCLICK:
 			if(!sticky || !checked) {
 				Transition(CS_Pressed,false,false,!checked);
-				Toggle(false);
+				ToggleCheckbox(false);
 			}
 			ClickEvent();
 			
@@ -482,7 +614,7 @@ namespace gorgonwidgets {
 			SimulateRelease();
 			if(!sticky || !checked) {
 				Transition(CS_Pressed,false,false,!checked);
-				Toggle(false);
+				ToggleCheckbox(false);
 			} else
 				Transition(mover ? CS_Hover : CS_Normal);
 
@@ -498,30 +630,13 @@ namespace gorgonwidgets {
 		if(!state && nextstate==CS_Hover)
 			Transition(CS_Normal);
 	}
-
-	CheckboxBase &CheckboxBase::Clear(bool animate) {
-		if(checked) {
-			Toggle(animate);
-		}
+	CheckboxBase &CheckboxBase::SetCheckboxState(bool checked, bool animate) {
+		if(checked ^ this->checked)
+			ToggleCheckbox(animate);
 
 		return *this;
 	}
-	CheckboxBase &CheckboxBase::Check(bool animate) {
-		if(!checked) {
-			Toggle(animate);
-		}
-
-		return *this;
-	}
-	CheckboxBase &CheckboxBase::SetChecked(bool checked) {
-		if(checked)
-			Check();
-		else
-			Clear();
-
-		return *this;
-	}
-	CheckboxBase &CheckboxBase::Toggle(bool animate) {
+	CheckboxBase &CheckboxBase::ToggleCheckbox(bool animate) {
 		if(animate) {
 			SimulateClicked();
 		} else {
@@ -531,36 +646,5 @@ namespace gorgonwidgets {
 		}
 
 		return *this;
-	}
-
-	void RadioButton::RadioBtn_Change(empty_event_params p,CheckboxBase &object,Any data,string name) {
-		IRadioButton::ChangeEvent();
-	}
-	RadioButton::RadioButton(CheckboxBP *BluePrint,IWidgetContainer &container) : 
-		CheckboxBase(BluePrint,container,CT_RadioButton),
-		ChangeEvent("Change", this)
-	{
-		CheckboxBase::ChangeEvent.Register(this, &RadioButton::RadioBtn_Change);
-		IRadioButton::ChangeEvent=RadioButton::ChangeEvent;
-		sticky=true;
-	}
-	RadioButton::RadioButton(CheckboxBP *BluePrint) : 
-		CheckboxBase(BluePrint,CT_RadioButton),
-		ChangeEvent("Change", this)
-	{
-		CheckboxBase::ChangeEvent.Register(this, &RadioButton::RadioBtn_Change);
-		IRadioButton::ChangeEvent=RadioButton::ChangeEvent;
-		sticky=true;
-	}
-	IRadioButton	&RadioButton::Clear(){
-		CheckboxBase::Clear();
-		return *(IRadioButton*)this;
-	}
-	IRadioButton	&RadioButton::Check(){
-		CheckboxBase::Check();
-		return *(IRadioButton*)this;
-	}
-	bool			 RadioButton::isChecked() {
-		return checked;
 	}
 }

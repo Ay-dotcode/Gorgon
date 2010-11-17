@@ -1,5 +1,6 @@
 #include "Rectangle.h"
 #include "../Resource/ResourceFile.h"
+#include <stdexcept>
 
 namespace gorgonwidgets {
 	ResourceBase* LoadRectangleResource(ResourceFile* file,FILE* gfile,int sz) {
@@ -112,6 +113,8 @@ namespace gorgonwidgets {
 	}
 
 	void ResizableRect::init(gorgonwidgets::RectangleResource *parent) {
+		if(parent==NULL)
+			throw std::runtime_error("Supplied Resizable Rectangle parent is Null");
 		Parent=parent;
 		TileT=parent->TileT;
 		TileB=parent->TileB;
@@ -130,7 +133,7 @@ namespace gorgonwidgets {
 		animC=parent->animC->getAnimation();
 		animR=parent->animR->getAnimation();
 
-		centeronly=parent->centeronly;
+		CenterOnly=parent->centeronly;
 	}
 
 	void ResizableRect::DrawAround(I2DGraphicsTarget *Target, int X, int Y, int W, int H) {
@@ -139,25 +142,36 @@ namespace gorgonwidgets {
 
 	void ResizableRect::DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align) {
 
-		if(centeronly) {
-			if(TileCH) {
-				if(TileCV) {
-					animC->DrawTiled(Target, X, Y, W, H);
-				} else {
-					animC->DrawHTiled(Target, X, Y, W, H);
-				}
-			} else {
-				if(TileCV) {
-					animC->DrawVTiled(Target, X, Y, W, H);
-				} else {
-					animC->Draw(Target, X, Y, W, H);
-				}
-			}
+
+		if(CenterOnly) {
+			int w=HSizing.Calculate(W, 0, animC->Width());
+			int h=VSizing.Calculate(H, 0, animC->Height());
+			
+			animC->DrawResized(Buffered2DGraphic::Tiling(TileCH,TileCV), Target, X,Y, w,h);
 
 			return;
 		}
 
+		{
+			int w=HSizing.Calculate(W, Parent->leftwidth+Parent->rightwidth, animC->Width());
+			int h=VSizing.Calculate(H, Parent->topheight+Parent->bottomheight, animC->Height());
+
+			if(Align&ALIGN_MASK_HORIZONTAL==ALIGN_CENTER)
+				X+=(W-w)/2;
+			else if(Align&ALIGN_MASK_HORIZONTAL==ALIGN_RIGHT)
+				X+=(W-w);
+
+			if(Align&ALIGN_MASK_VERTICAL==ALIGN_MIDDLE)
+				Y+=(H-h)/2;
+			else if(Align&ALIGN_MASK_VERTICAL==ALIGN_BOTTOM)
+				Y+=(H-h);
+
+			W=w;
+			H=h;
+		}
+
 		int x=X,y=Y;
+
 
 		x+=Parent->TLx;
 		animTL->Draw(Target, x, y+Parent->TLy);

@@ -36,8 +36,8 @@ namespace gre {
 	void ImageAnimation::ProcessFrame(int frame) {
 		this->Texture = ((ImageResource*)parent->Subitems[frame])->Texture; 
 	}
-	ImageAnimation::ImageAnimation(AnimationResource *parent) : DiscreteAnimatorBase() {
-		this->parent=parent;
+
+	void ImageAnimation::init() {
 		if(parent->Subitems.getCount())
 			this->Texture = ((ImageResource*)parent->Subitems[0])->Texture; 
 		else
@@ -49,18 +49,43 @@ namespace gre {
 			Pause();
 	}
 	void ImageAnimation::DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align) {
+
+		int h=this->Height(H);
+		int w=this->Width(W);
+
 		if(Align & ALIGN_CENTER)
-			X+=(W-this->parent->getWidth())/2;
+			X+=(W-w)/2;
 		else if(Align & ALIGN_RIGHT)
-			X+= W-this->parent->getWidth();
+			X+= W-w;
 
 		if(Align & ALIGN_MIDDLE)
-			Y+=(H-this->parent->getHeight())/2;
+			Y+=(H-h)/2;
 		else if(Align & ALIGN_BOTTOM)
-			Y+= H-this->parent->getHeight();
+			Y+= H-h;
 
-		this->Draw(Target, X, Y);
+		if(VerticalTiling.Type==ResizableObject::Stretch) {
+			if(HorizontalTiling.Type==ResizableObject::Stretch) {
+				this->Draw(Target, X,Y , w,h);
+			} else {
+				this->DrawHTiled(Target, X,Y , w,h);
+			}
+		} else {
+			if(HorizontalTiling.Type==ResizableObject::Stretch) {
+				this->DrawVTiled(Target, X,Y , w,h);
+			} else {
+				this->DrawTiled(Target, X,Y , w,h);
+			}
+		}
 	}
-	int  ImageAnimation::Width(int W) { return parent->getWidth(); }
-	int  ImageAnimation::Height(int H) { return parent->getHeight(); }
+
+	int  ImageAnimation::Width(int W) { 
+		if(W==-1) return parent->getWidth();
+
+		return HorizontalTiling.Calculate(parent->getWidth(), W); 
+	}
+	int  ImageAnimation::Height(int H) { 
+			if(H==-1) return parent->getHeight(); 
+		
+			return VerticalTiling.Calculate(parent->getHeight(), H); 
+		}
 }

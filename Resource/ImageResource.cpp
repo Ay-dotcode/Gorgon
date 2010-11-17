@@ -14,6 +14,7 @@ namespace gre {
 		int tpos=ftell(Data)+Size;
 		bool lateloading=0;
 		//BYTE *compressionprops;
+		gge::ColorMode m;
 
 		while(ftell(Data)<tpos) {
 			int gid,size,tmpint;
@@ -21,10 +22,15 @@ namespace gre {
 			fread(&size,1,4,Data);
 
 			if(gid==GID_IMAGE_PROPS) {
-				fread(&img->Width,1,4,Data);
-				fread(&img->Height,1,4,Data);
-				fread(&img->Mode,1,4,Data);
+				int w, h;
+
+				fread(&w,1,4,Data);
+				fread(&h,1,4,Data);
+				fread(&m,1,4,Data);
 				fread(&tmpint,1,4,Data);
+
+				img->Resize(w,h,m);
+
 				if(size>16)
 					fread(&lateloading,1,1,Data);
 				else
@@ -49,7 +55,9 @@ namespace gre {
 
 					fseek(Data,size,SEEK_CUR);
 				} else {
-					img->Data.Resize(size);
+					if(img->Data.GetSize()!=size)
+						size=size;//throw std::runtime_error("Image data size mismatch!");
+
 					fread(img->Data,1,size,Data);
 
 					img->isLoaded=true;
@@ -62,8 +70,6 @@ namespace gre {
 					fseek(Data,size,SEEK_CUR);
 				} else {
 					if(img->Compression==GID_LZMA) {
-						img->Data.Resize(img->Width*img->Height*img->getBPP());
-
 						BYTE *tmpdata=new BYTE[size];
 						fread(tmpdata,1,size,Data);
 						size_t processed,processed2;
@@ -72,7 +78,7 @@ namespace gre {
 						LzmaDecodeProperties(&state.Properties,img->CompressionProps,LZMA_PROPERTIES_SIZE);
 						state.Probs = (CProb *)malloc(LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
 
-						LzmaDecode(&state,tmpdata,size,&processed,img->Data,img->Width*img->Height*img->getBPP(),&processed2);
+						LzmaDecode(&state,tmpdata,size,&processed,img->Data,img->getWidth()*img->getHeight()*img->getBPP(),&processed2);
 
 						free(state.Probs);
 						delete tmpdata;
@@ -106,19 +112,20 @@ namespace gre {
 						int channels=cinfo->num_components;
 
 						if(channels==3)
-							img->Mode=BGR;
+							m=BGR;
 						else if(channels==4)
-							img->Mode=ABGR_32BPP;
+							m=ABGR_32BPP;
 						else if(channels=1)
-							img->Mode=ALPHAONLY_8BPP;
+							m=ALPHAONLY_8BPP;
 
-						img->Data.Resize(img->Width*img->Height*channels);
+						if(img->getMode()!=m)
+							throw std::runtime_error("Image data size mismatch!");
 
-						int stride=img->Width*channels;
+						int stride=img->getWidth()*channels;
 						int rowsRead=0;
 
-						BYTE ** rowPtr = new BYTE * [img->Height];
-						for(i=0;i<img->Height;i++)
+						BYTE ** rowPtr = new BYTE * [img->getHeight()];
+						for(i=0;i<img->getHeight();i++)
 							rowPtr[i]=img->Data+stride*i;
 
 						while(cinfo->output_scanline < cinfo->output_height) {
@@ -150,7 +157,7 @@ namespace gre {
 		fseek(gfile,DataLocation,SEEK_SET);
 		
 		if(this->Compression==GID_LZMA) {
-			this->Data.Resize(this->Width*this->Height*this->getBPP());
+			this->Data.Resize(this->getWidth()*this->getHeight()*this->getBPP());
 			BYTE *tmpdata=new BYTE[DataSize];
 			fread(tmpdata,1,this->DataSize,gfile);
 			size_t processed,processed2;
@@ -159,7 +166,7 @@ namespace gre {
 			LzmaDecodeProperties(&state.Properties,this->CompressionProps,LZMA_PROPERTIES_SIZE);
 			state.Probs = (CProb *)malloc(LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
 
-			LzmaDecode(&state,tmpdata,DataSize,&processed,this->Data,this->Width*this->Height*this->getBPP(),&processed2);
+			LzmaDecode(&state,tmpdata,DataSize,&processed,this->Data,this->getWidth()*this->getHeight()*this->getBPP(),&processed2);
 
 			free(state.Probs);
 			delete tmpdata;
@@ -198,13 +205,13 @@ namespace gre {
 			else if(channels=1)
 				Mode=ALPHAONLY_8BPP;
 
-			Data.Resize(Width*Height*channels);
+			Data.Resize(getWidth()*getHeight()*channels);
 
-			int stride=Width*channels;
+			int stride=getWidth()*channels;
 			int rowsRead=0;
 
-			BYTE ** rowPtr = new BYTE * [Height];
-			for(i=0;i<Height;i++)
+			BYTE ** rowPtr = new BYTE * [getHeight()];
+			for(i=0;i<getHeight();i++)
 				rowPtr[i]=Data+stride*i;
 
 			while(cinfo->output_scanline < cinfo->output_height) {
@@ -234,7 +241,7 @@ namespace gre {
 		if(Texture.ID>0)
 			DestroyTexture(&Texture);
 
-		Texture = gge::GenerateTexture(Data, Width, Height, Mode);
+		Texture = gge::GenerateTexture(Data, getWidth(), getHeight(), getMode());
 	}
 
 	void ImageResource::PNGExport(string filename) {
@@ -253,12 +260,12 @@ namespace gre {
 		}
 		setjmp(png_jmpbuf(png_ptr));
 		png_init_io(png_ptr, file);
-		png_set_IHDR(png_ptr, info_ptr, Width, Height,
+		png_set_IHDR(png_ptr, info_ptr, getWidth(), getHeight(),
 	       8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
 	       PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-		BYTE *newdata=new BYTE[Width*Height*4];
-		for(i=0;i<Width*Height;i++) {
+		BYTE *newdata=new BYTE[getWidth()*getHeight()*4];
+		for(i=0;i<getWidth()*getHeight();i++) {
 			newdata[i*4+2]=Data[i*4+0];
 			newdata[i*4+1]=Data[i*4+1];
 			newdata[i*4+0]=Data[i*4+2];
@@ -266,9 +273,9 @@ namespace gre {
 		}
 
 		png_write_info(png_ptr, info_ptr);
-		BYTE **rows=new BYTE*[Height];
-		for(i=0;i<Height;i++) {
-			rows[i]=newdata+i*Width*4;
+		BYTE **rows=new BYTE*[getHeight()];
+		for(i=0;i<getHeight();i++) {
+			rows[i]=newdata+i*getWidth()*4;
 		}
 		png_write_image(png_ptr, rows);
 		png_write_end(png_ptr, NULL);
@@ -385,4 +392,35 @@ namespace gre {
 
 		return NoError;
 	}
+	void ImageResource::DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align) {
+
+
+		int h=this->Height(H);
+		int w=this->Width(W);
+
+		if(Align & ALIGN_CENTER)
+			X+=(W-w)/2;
+		else if(Align & ALIGN_RIGHT)
+			X+= W-w;
+
+		if(Align & ALIGN_MIDDLE)
+			Y+=(H-h)/2;
+		else if(Align & ALIGN_BOTTOM)
+			Y+= H-h;
+
+		if(VerticalTiling.Type==ResizableObject::Stretch) {
+			if(HorizontalTiling.Type==ResizableObject::Stretch) {
+				this->Draw(Target, X,Y , w,h);
+			} else {
+				this->DrawHTiled(Target, X,Y , w,h);
+			}
+		} else {
+			if(HorizontalTiling.Type==ResizableObject::Stretch) {
+				this->DrawVTiled(Target, X,Y , w,h);
+			} else {
+				this->DrawTiled(Target, X,Y , w,h);
+			}
+		}
+	}
+
 }

@@ -25,15 +25,15 @@
 
 
 namespace gge {
-	template <class _T>
+	template <class T_>
 	class basic_Margins2D {
 	public:
-		_T Left,Top , Right,Bottom;
+		T_ Left,Top , Right,Bottom;
 		
 		basic_Margins2D() {}
-		basic_Margins2D(_T All) : Left(All), Right(All), Top(All), Bottom(All) { }
-		basic_Margins2D(_T Horizontal, _T Verticle) : Left(Horizontal), Right(Horizontal), Top(Verticle), Bottom(Verticle) { }
-		basic_Margins2D(_T Left, _T Top, _T Right, _T Bottom) : 
+		basic_Margins2D(T_ All) : Left(All), Right(All), Top(All), Bottom(All) { }
+		basic_Margins2D(T_ Horizontal, T_ Vertical) : Left(Horizontal), Right(Horizontal), Top(Vertical), Bottom(Vertical) { }
+		basic_Margins2D(T_ Left, T_ Top, T_ Right, T_ Bottom) : 
 			Left(Left), Right(Right), Top(Top), Bottom(Bottom) { }
 
 
@@ -45,9 +45,9 @@ namespace gge {
 		}
 
 		////Calculates and returns the total margins in X axis
-		_T TotalX() const  { return Right+Left; }
+		T_ TotalX() const  { return Right+Left; }
 		////Calculates and returns the total margins in Y axis
-		_T TotalY() const { return Bottom+Top;  }
+		T_ TotalY() const { return Bottom+Top;  }
 
 		//scale, translate, rotate?, +, +=, -, -=, &&, ||
 		basic_Margins2D operator +(basic_Margins2D margin) {
@@ -61,10 +61,10 @@ namespace gge {
 
 			return *this;
 		}
-		basic_Margins2D operator +(_T margin) {
+		basic_Margins2D operator +(T_ margin) {
 			return basic_Margins2D(Left+margin, Top+margin, Right+margin, Bottom+margin);
 		}
-		basic_Margins2D &operator +=(_T margin) {
+		basic_Margins2D &operator +=(T_ margin) {
 			Left+=margin;
 			Top+=margin;
 			Right+=margin;
@@ -72,12 +72,28 @@ namespace gge {
 
 			return *this;
 		}
+
+		basic_Margins2D AddToTop(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
+			return basic_Margins2D(Left, Top+margin.TotalY()+val, Right, Bottom);
+		}
+
+		basic_Margins2D AddToLeft(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
+			return basic_Margins2D(Left+margin.TotalX()+val, Top, Right, Bottom);
+		}
+
+		basic_Margins2D AddToBottom(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
+			return basic_Margins2D(Left, Top, Right, Bottom+margin.TotalY()+val);
+		}
+
+		basic_Margins2D AddToRight(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
+			return basic_Margins2D(Left, Top, Right+margin.TotalX()+val, Bottom);
+		}
 	};
 
 #ifdef BOUNDS2D_EXISTS
-	template <typename _T, typename _R>
-	basic_Margins2D<_T> operator -(basic_Bounds2D<_T> b1, basic_Bounds2D<_R> b2) {
-		return basic_Margins2D<_T>(
+	template <typename T_, typename R_>
+	basic_Margins2D<T_> operator -(basic_Bounds2D<T_> b1, basic_Bounds2D<R_> b2) {
+		return basic_Margins2D<T_>(
 			b2.Left-b1.Left, b2.Top-b1.Top, b1.Right-b2.Right, b1.Bottom-b2.Bottom
 		);
 	}
@@ -85,8 +101,8 @@ namespace gge {
 
 	////Allows streaming of margins. It converts point to string,
 	/// every row is printed on a line enclosed in braces.
-	template <class _T>
-	std::ostream &operator << (std::ostream &out, basic_Margins2D<_T> &bounds) {
+	template <class T_>
+	std::ostream &operator << (std::ostream &out, basic_Margins2D<T_> &bounds) {
 		out<<"("<<bounds.Left<<", "<<bounds.Right<<", "<<bounds.Top<<", "<<bounds.Bottom<<")";
 
 		return out;
@@ -94,8 +110,8 @@ namespace gge {
 
 
 	////Adds the textual form of the point to another string.
-	template <class _T>
-	std::string &operator + (std::string &out, basic_Margins2D<_T> &margins) {
+	template <class T_>
+	std::string &operator + (std::string &out, basic_Margins2D<T_> &margins) {
 		return string+(string)margins;
 	}
 

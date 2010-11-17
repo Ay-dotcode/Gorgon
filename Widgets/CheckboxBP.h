@@ -4,7 +4,6 @@
 #include "IWidgetBluePrint.h"
 #include "CheckboxStyleGroup.h"
 #include "IWidgetContainer.h"
-#include "Checkbox.h"
 #include <math.h>
 
 using namespace gre;

@@ -14,12 +14,16 @@ namespace gge {
 	struct empty_event_params {
 	};
 
-	////Event handler types, used to determine how to dispatch
-	/// an event
-	enum EventHandlerTypes { Function, Class };
+	
+	class Empty {
+	};
 
+	
+	
+	
 	template<class O_, class P_> class EventChain;
 
+	
 	////Base of an event handler
 	template <class P_, class O_>
 	struct EventHandler {
@@ -30,6 +34,37 @@ namespace gge {
 		virtual void Fire(P_ params, O_ &caller, string eventname)=0;
 	};
 
+	template <class F_,class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler(F_ function, Any data) {
+		return NULL;
+	}
+	template <class F_, class R_, class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler(R_ *object, F_ function, Any data) {
+		return NULL;
+	}
+
+
+
+
+	template <class F_,class P_, class O_>
+	bool Compare(EventHandler<P_, O_> *obj, F_ function) {
+		return false;
+	}
+	template <class F_, class R_, class P_, class O_>
+	bool Compare(EventHandler<P_,O_> *obj, R_ *object, F_ function) {
+		return false;
+	}
+	template <class F_, class R_, class P_, class O_>
+	bool Compare(EventHandler<P_,O_> *obj, R_ &object, F_ function) {
+		return Compare(obj, &object, function);
+	}
+
+
+
+
+
+	
+	
 	////This is private event object that is used to
 	/// store function event handlers
 	template<class P_, class O_>
@@ -41,8 +76,141 @@ namespace gge {
 		virtual void Fire(P_ params, O_ &caller, string eventname) {
 			(*handler)(params, caller, data, eventname);
 		}
+
+	};
+	template <class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler( void(*function)(P_, O_ &, Any Data, string), Any data) {
+		return new EventHandlerFunction<P_, O_>(function, data);
+	}
+
+	template <class P_, class O_>
+	bool Compare(EventHandler<P_, O_> *obj, void(*function)(P_, O_ &, Any Data, string)) {
+		if(!dynamic_cast<EventHandlerFunction<P_,O_>*>(obj))
+			return false;
+
+		return function==dynamic_cast<EventHandlerFunction<P_,O_>*>(obj)->handler;
+	}
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class P_, class O_>
+	struct EventHandlerFunctionPlain : EventHandler<P_, O_> {
+		void(*handler)(P_, O_ &);
+
+		EventHandlerFunctionPlain(void(*handler)(P_, O_ &)) : EventHandler(NULL), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, string eventname) {
+			(*handler)(params, caller);
+		}
+
+		bool Compare(void(*function)(P_, O_ &), void*) {
+			if(handler==function)
+				return true;
+		}
 	};
 
+	template <class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler( void(*function)(P_, O_ &), Any data) {
+		return new EventHandlerFunctionPlain<P_, O_>(function);
+	}
+
+	template <class P_, class O_>
+	bool Compare(EventHandler<P_, O_> *obj, void(*function)(P_, O_ &)) {
+		if(!dynamic_cast<EventHandlerFunctionPlain<P_,O_>*>(obj))
+			return false;
+
+		return function==dynamic_cast<EventHandlerFunctionPlain<P_,O_>*>(obj)->handler;
+	}
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class P_, class O_>
+	struct EventHandlerFunctionEmpty : EventHandler<P_, O_> {
+		void(*handler)();
+
+		EventHandlerFunctionEmpty(void(*handler)()) : EventHandler(NULL), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, string eventname) {
+			(*handler)();
+		}
+
+		bool Compare(void(*function)(), void*) {
+			if(handler==function)
+				return true;
+		}
+	};
+
+
+	template <class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler( void(*function)(), Any data) {
+		return new EventHandlerFunctionEmpty<P_, O_>(function);
+	}
+	template <class P_, class O_>
+	bool Compare(EventHandler<P_, O_> *obj, void(*function)()) {
+		if(!dynamic_cast<EventHandlerFunctionEmpty<P_,O_>*>(obj))
+			return false;
+
+		return function==dynamic_cast<EventHandlerFunctionEmpty<P_,O_>*>(obj)->handler;
+	}
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class P_, class O_>
+	struct EventHandlerFunctionObjectOnly : EventHandler<P_, O_> {
+		void(*handler)(O_ &);
+
+		EventHandlerFunctionObjectOnly(void(*handler)(O_ &)) : EventHandler(NULL), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, string eventname) {
+			(*handler)(caller);
+		}
+
+		bool Compare(void(*function)(O_ &), void*) {
+			if(handler==function)
+				return true;
+		}
+	};
+
+
+	template <class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler( void(*function)(O_ &), Any data) {
+		return new EventHandlerFunctionObjectOnly<P_, O_>(function);
+	}
+	template <class P_, class O_>
+	bool Compare(EventHandler<P_, O_> *obj, void(*function)(O_ &)) {
+		if(!dynamic_cast<EventHandlerFunctionObjectOnly<P_,O_>*>(obj))
+			return false;
+
+		return function==dynamic_cast<EventHandlerFunctionObjectOnly<P_,O_>*>(obj)->handler;
+	}
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class P_, class O_>
+	struct EventHandlerFunctionParamOnly : EventHandler<P_, O_> {
+		void(*handler)(P_);
+
+		EventHandlerFunctionParamOnly(void(*handler)(P_)) : EventHandler(NULL), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, string eventname) {
+			(*handler)(params);
+		}
+
+		bool Compare(void(*function)(P_), void*) {
+			if(handler==function)
+				return true;
+		}
+	};
+	template <class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler( void(*function)(P_), Any data) {
+		return new EventHandlerFunctionParamOnly<P_, O_>(function);
+	}
+
+	template <class P_, class O_>
+	bool Compare(EventHandler<P_, O_> *obj, void(*function)(P_)) {
+		if(!dynamic_cast<EventHandlerFunctionParamOnly<P_,O_>*>(obj))
+			return false;
+
+		return function==dynamic_cast<EventHandlerFunctionParamOnly<P_,O_>*>(obj)->handler;
+	}
+	
+	
 	////This is private event object that is used to
 	/// store function event handlers
 	template<class R_, class P_, class O_>
@@ -56,11 +224,151 @@ namespace gge {
 		virtual void Fire(P_ params, O_ &caller, string eventname) {
 			(object->*handler)(params, caller, data, eventname);
 		}
+
 	};
 
-	class Empty {
+	template <class R_, class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler(R_ *object, void(__thiscall R_::*function)(P_, O_ &, Any, string), Any data) {
+		return new EventHandlerClass<R_, P_, O_>(object, function, data);
+	}
+	template <class R_, class P_, class O_>
+	bool Compare(EventHandler<P_,O_> *obj, R_ *object, void(__thiscall R_::*function)(P_, O_ &, Any, string)) {
+		if(!dynamic_cast<EventHandlerClass<R_, P_,O_>*>(obj))
+			return false;
+
+		return object==dynamic_cast<EventHandlerClass<R_, P_,O_>*>(obj)->object && function==dynamic_cast<EventHandlerClass<R_, P_,O_>*>(obj)->handler;
+	}
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class R_, class P_, class O_>
+	struct EventHandlerClassPlain : EventHandler<P_,O_> {
+		void(__thiscall R_::*handler)(P_, O_ &);
+
+		R_ *object;
+
+		EventHandlerClassPlain(R_ *object, void(__thiscall R_::*handler)(P_, O_ &)) : EventHandler(NULL), object(object), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, string eventname) {
+			(object->*handler)(params, caller);
+		}
+
+		bool Compare(void(__thiscall R_::*function)(P_, O_ &), void* object) {
+			if((void*)handler==function && this->object==object)
+				return true;
+		}
 	};
 
+
+
+	template <class R_, class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler(R_ *object, void(__thiscall R_::*function)(P_, O_ &), Any data) {
+		return new EventHandlerClassPlain<R_, P_, O_>(object, function);
+	}
+	template <class R_, class P_, class O_>
+	bool Compare(EventHandler<P_,O_> *obj, R_ *object, void(__thiscall R_::*function)(P_, O_ &)) {
+		if(!dynamic_cast<EventHandlerClassPlain<R_, P_,O_>*>(obj))
+			return false;
+
+		return object==dynamic_cast<EventHandlerClassPlain<R_, P_,O_>*>(obj)->object && function==dynamic_cast<EventHandlerClassPlain<R_, P_,O_>*>(obj)->handler;
+	}
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class R_, class P_, class O_>
+	struct EventHandlerClassEmpty : EventHandler<P_,O_> {
+		void(__thiscall R_::*handler)();
+
+		R_ *object;
+
+		EventHandlerClassEmpty(R_ *object, void(__thiscall R_::*handler)()) : EventHandler(NULL), object(object), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, string eventname) {
+			(object->*handler)();
+		}
+
+		bool Compare(void(__thiscall R_::*function)(), void* object) {
+			if((void*)handler==function && this->object==object)
+				return true;
+		}
+	};
+
+	template <class R_, class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler(R_ *object, void(__thiscall R_::*function)(), Any data) {
+		return new EventHandlerClassEmpty<R_, P_, O_>(obhect, function);
+	}
+	template <class R_, class P_, class O_>
+	bool Compare(EventHandler<P_,O_> *obj, R_ *object, void(__thiscall R_::*function)()) {
+		if(!dynamic_cast<EventHandlerClassEmpty<R_, P_,O_>*>(obj))
+			return false;
+
+		return object==dynamic_cast<EventHandlerClassEmpty<R_, P_,O_>*>(obj)->object && function==dynamic_cast<EventHandlerClassEmpty<R_, P_,O_>*>(obj)->handler;
+	}
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class R_, class P_, class O_>
+	struct EventHandlerClassObjectOnly : EventHandler<P_,O_> {
+		void(__thiscall R_::*handler)(O_ &);
+
+		R_ *object;
+
+		EventHandlerClassObjectOnly(R_ *object, void(__thiscall R_::*handler)(O_ &)) : EventHandler(NULL), object(object), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, string eventname) {
+			(object->*handler)(caller);
+		}
+
+		bool Compare(void(__thiscall R_::*function)(O_ &), void* object) {
+			if((void*)handler==function && this->object==object)
+				return true;
+		}
+	};
+
+	template <class R_, class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler(R_ *object, void(__thiscall R_::*function)(O_ &), Any data) {
+		return new EventHandlerClassObjectOnly<R_, P_, O_>(object, function);
+	}
+
+	template <class R_, class P_, class O_>
+	bool Compare(EventHandler<P_,O_> *obj, R_ *object, void(__thiscall R_::*function)(O_ &)) {
+		if(!dynamic_cast<EventHandlerClassObjectOnly<R_, P_,O_>*>(obj))
+			return false;
+
+		return object==dynamic_cast<EventHandlerClassObjectOnly<R_, P_,O_>*>(obj)->object && function==dynamic_cast<EventHandlerClassObjectOnly<R_, P_,O_>*>(obj)->handler;
+	}
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class R_, class P_, class O_>
+	struct EventHandlerClassParamOnly : EventHandler<P_,O_> {
+		void(__thiscall R_::*handler)(P_);
+
+		R_ *object;
+
+		EventHandlerClassParamOnly(R_ *object, void(__thiscall R_::*handler)(P_ )) : EventHandler(NULL), object(object), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, string eventname) {
+			(object->*handler)(caller);
+		}
+
+		bool Compare(void(__thiscall R_::*function)(P_), void* object) {
+			if((void*)handler==function && this->object==object)
+				return true;
+		}
+	};
+
+
+	template <class R_, class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler(R_ *object, void(__thiscall R_::*function)(P_), Any data) {
+		return new EventHandlerClassParamOnly<R_, P_, O_>(object, function);
+	}
+	template <class R_, class P_, class O_>
+	bool Compare(EventHandler<P_,O_> *obj, R_ *object, void(__thiscall R_::*function)(P_)) {
+		if(!dynamic_cast<EventHandlerClassParamOnly<R_, P_,O_>*>(obj))
+			return false;
+
+		return object==dynamic_cast<EventHandlerClassParamOnly<R_, P_,O_>*>(obj)->object && function==dynamic_cast<EventHandlerClassParamOnly<R_, P_,O_>*>(obj)->handler;
+	}
+	
+	
+	
 	////EventChain class is used to create event objects
 	/// that can be multi-handled. It is a template
 	/// so an event definer can define parameters
@@ -92,12 +400,12 @@ namespace gge {
 #else
 #warning "Warning: Copy constructor is not safe to use"
 #endif
-			events=(Collection<EventHandler<P_,O_>>*)(event.events);
+			events=dynamic_cast<Collection<EventHandler<P_,O_>>*>(event.events);
 			
 			(*refcount)++;
 		}
 
-		////Sets two event chains to work together
+		////Sets two event chains to work together, can be unsafe
 		template<class N_>
 		EventChain<O_, P_> &operator =(EventChain<N_, P_> &event) {
 			events->ResetIteration(true);
@@ -112,6 +420,7 @@ namespace gge {
 			object=event.object;
 			refcount=event.refcount;
 
+			//this is safe since no template arguments are used as regular variables
 			events=(Collection<EventHandler<P_,O_>>*)(event.events);
 			
 			(*refcount)++;
@@ -130,14 +439,11 @@ namespace gge {
 		/// void Handler(Parameters params, CallerObject* object, any data, string eventname)
 		///@handler	: handler function
 		///@data	: data to be passed to handler
-		int Register(void (*handler)(P_, O_ &, Any, string), Any data=NULL) {
-			EventHandlerFunction<P_, O_> *object=new EventHandlerFunction<P_, O_>(handler,data);
-
-			events->Add(object);
-#pragma warning(push)
-#pragma warning(disable:4311)
-			return (int)object;
-#pragma warning(pop)
+		template<class F_>
+		int Register(F_ handler, Any data=NULL) {
+			return AddHandler(
+				CreateEventHandler<P_, O_>(handler, data)
+			);
 		}
 
 		////Registers a class event handler. This handler
@@ -155,15 +461,11 @@ namespace gge {
 		///@receiver: handler object
 		///@handler	: handler function
 		///@data	: data to be passed to handler
-		template<class R_>
-		int Register(R_ *receiver, void (__thiscall R_::*handler)(P_, O_ &, Any, string), Any data=NULL) {
-			EventHandlerClass<R_, P_, O_> *object=new EventHandlerClass<R_, P_, O_>(receiver, handler,data);
-
-			events->Add(object);
-#pragma warning(push)
-#pragma warning(disable: 4311)
-			return (int)object;
-#pragma warning(pop)
+		template<class R_, class F_>
+		int Register(R_ *receiver, F_ handler, Any data=NULL) {
+			return AddHandler(
+				CreateEventHandler(receiver, handler, data)
+			);
 		}
 
 		////Registers a class event handler. This handler
@@ -189,6 +491,32 @@ namespace gge {
 
 
 
+		template<class F_>
+		void Unregister(F_ handler) {
+			events->ResetIteration(true);
+			EventHandler<P_, O_> *object;
+
+			while(object=events->previous()) {
+				if(Compare(object, handler)) {
+					RemoveHandler(object);
+					return;
+				}
+			}
+		}
+
+		template<class R_, class F_>
+		void Unregister(R_ *obj, F_ handler) {
+			events->ResetIteration(true);
+			EventHandler<P_, O_> *object;
+
+			while(object=events->previous()) {
+				if(Compare(object, obj, handler)) {
+					RemoveHandler(object);
+					return;
+				}
+			}
+		}
+
 		////This function triggers the event causing all 
 		/// handlers to be called
 		void operator()(P_ params) {
@@ -203,8 +531,10 @@ namespace gge {
 
 		////Unregisters a given handler token
 		void Unregister(int token) {
-			events->Remove((EventHandler<P_,O_>*)token);
+			RemoveHandler(reinterpret_cast<EventHandler<P_,O_>*>(token));
 		}
+
+		//***************** More Unregister functions ******************
 
 		////This function triggers the event causing all 
 		/// handlers to be called
@@ -238,12 +568,23 @@ namespace gge {
 		Collection<EventHandler<P_,O_>> *events;
 		int *refcount;
 
+		////Unregisters a given handler token
+		void RemoveHandler(EventHandler<P_, O_> *object) {
+			events->Remove(object);
+		}
+		int AddHandler(EventHandler<P_, O_> *object) {
+
+			events->Add(object);
+
+			return reinterpret_cast<int>(object);
+
+		}
+
 		void Destroy() {
 			(*refcount)--;
 			if(!*refcount) {
 				delete events;
 				delete refcount;
-				cout<<"Event Chain Destroyed\n";
 			}
 		}
 	};
