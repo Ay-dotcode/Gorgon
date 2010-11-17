@@ -1,0 +1,8 @@
+Input/Additional:
+Strmiids.lib winmm.lib OpenAL32.lib OpenGL32.lib glu32.lib libpng_ds.lib zlib_ds.lib pthreadVC2.lib
+
+Input/Ignore:
+libci.lib;libc.lib;libcpd.lib;libcmtd.lib
+
+General/Additional Library Directories
+..\lib
