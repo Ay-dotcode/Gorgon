@@ -18,6 +18,10 @@ typedef unsigned short      WORD;
 #include "Bounds2D.h"
 #include "Rectangle2D.h"
 
+#pragma warning(disable:4355)
+
+using namespace std;
+
 ////Gorgon Game Engine
 namespace gge {
 

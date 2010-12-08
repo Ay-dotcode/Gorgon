@@ -163,7 +163,7 @@ namespace gge {
 	}
 
 	void UnregisterKeyboardEvent(int id) {
-		KeyboardEventObjects.Remove(id);
+		KeyboardEventObjects.Delete(id);
 	}
 
 	void ProcessChar(int Char) {
@@ -242,7 +242,7 @@ namespace gge {
 		delete token->Item;
 		token->Item=NULL;
 
-		mouseevents.Remove(token);
+		mouseevents.Delete((MouseEventObject*)token);
 	}
 
 	bool BasicPointerTarget::PropagateMouseClickEvent(MouseEventType event, int x, int y, void *data) {

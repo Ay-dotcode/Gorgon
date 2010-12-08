@@ -3,8 +3,6 @@
 #include "collection.h"
 #include <string>
 
-using namespace std;
-
 namespace gge {
 #ifndef ANY_EXISTS
 	typedef void* Any;
@@ -31,7 +29,7 @@ namespace gge {
 
 		EventHandler(Any data) : data(data) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname)=0;
+		virtual void Fire(P_ params, O_ &caller, std::string eventname)=0;
 	};
 
 	template <class F_,class P_, class O_>
@@ -69,22 +67,22 @@ namespace gge {
 	/// store function event handlers
 	template<class P_, class O_>
 	struct EventHandlerFunction : EventHandler<P_, O_> {
-		void(*handler)(P_, O_ &, Any Data, string);
+		void(*handler)(P_, O_ &, Any Data, std::string);
 
-		EventHandlerFunction(void(*handler)(P_, O_ &, Any Data, string), Any data) : EventHandler(data), handler(handler) {}
+		EventHandlerFunction(void(*handler)(P_, O_ &, Any Data, std::string), Any data) : EventHandler(data), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(*handler)(params, caller, data, eventname);
 		}
 
 	};
 	template <class P_, class O_>
-	EventHandler<P_, O_> *CreateEventHandler( void(*function)(P_, O_ &, Any Data, string), Any data) {
+	EventHandler<P_, O_> *CreateEventHandler( void(*function)(P_, O_ &, Any Data, std::string), Any data) {
 		return new EventHandlerFunction<P_, O_>(function, data);
 	}
 
 	template <class P_, class O_>
-	bool Compare(EventHandler<P_, O_> *obj, void(*function)(P_, O_ &, Any Data, string)) {
+	bool Compare(EventHandler<P_, O_> *obj, void(*function)(P_, O_ &, Any Data, std::string)) {
 		if(!dynamic_cast<EventHandlerFunction<P_,O_>*>(obj))
 			return false;
 
@@ -98,7 +96,7 @@ namespace gge {
 
 		EventHandlerFunctionPlain(void(*handler)(P_, O_ &)) : EventHandler(NULL), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(*handler)(params, caller);
 		}
 
@@ -128,7 +126,7 @@ namespace gge {
 
 		EventHandlerFunctionEmpty(void(*handler)()) : EventHandler(NULL), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(*handler)();
 		}
 
@@ -158,7 +156,7 @@ namespace gge {
 
 		EventHandlerFunctionObjectOnly(void(*handler)(O_ &)) : EventHandler(NULL), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(*handler)(caller);
 		}
 
@@ -188,7 +186,7 @@ namespace gge {
 
 		EventHandlerFunctionParamOnly(void(*handler)(P_)) : EventHandler(NULL), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(*handler)(params);
 		}
 
@@ -209,30 +207,55 @@ namespace gge {
 
 		return function==dynamic_cast<EventHandlerFunctionParamOnly<P_,O_>*>(obj)->handler;
 	}
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class P_, class O_>
+	struct EventHandlerFunctionDataOnly : EventHandler<P_, O_> {
+		void(*handler)(Any);
+
+		EventHandlerFunctionDataOnly(void(*handler)(Any), Any data) : EventHandler(data), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			(*handler)(data);
+		}
+
+	};
+	template <class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler( void(*function)(Any Data), Any data) {
+		return new EventHandlerFunctionDataOnly<P_, O_>(function, data);
+	}
+
+	template <class P_, class O_>
+	bool Compare(EventHandler<P_, O_> *obj, void(*function)(Any Data)) {
+		if(!dynamic_cast<EventHandlerFunctionDataOnly<P_,O_>*>(obj))
+			return false;
+
+		return function==dynamic_cast<EventHandlerFunctionDataOnly<P_,O_>*>(obj)->handler;
+	}
 	
 	
 	////This is private event object that is used to
 	/// store function event handlers
 	template<class R_, class P_, class O_>
 	struct EventHandlerClass : EventHandler<P_,O_> {
-		void(__thiscall R_::*handler)(P_, O_ &, Any, string);
+		void(__thiscall R_::*handler)(P_, O_ &, Any, std::string);
 
 		R_ *object;
 
-		EventHandlerClass(R_ *object, void(__thiscall R_::*handler)(P_, O_ &, Any, string), Any data) : EventHandler(data), object(object), handler(handler) {}
+		EventHandlerClass(R_ *object, void(__thiscall R_::*handler)(P_, O_ &, Any, std::string), Any data) : EventHandler(data), object(object), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(object->*handler)(params, caller, data, eventname);
 		}
 
 	};
 
 	template <class R_, class P_, class O_>
-	EventHandler<P_, O_> *CreateEventHandler(R_ *object, void(__thiscall R_::*function)(P_, O_ &, Any, string), Any data) {
+	EventHandler<P_, O_> *CreateEventHandler(R_ *object, void(__thiscall R_::*function)(P_, O_ &, Any, std::string), Any data) {
 		return new EventHandlerClass<R_, P_, O_>(object, function, data);
 	}
 	template <class R_, class P_, class O_>
-	bool Compare(EventHandler<P_,O_> *obj, R_ *object, void(__thiscall R_::*function)(P_, O_ &, Any, string)) {
+	bool Compare(EventHandler<P_,O_> *obj, R_ *object, void(__thiscall R_::*function)(P_, O_ &, Any, std::string)) {
 		if(!dynamic_cast<EventHandlerClass<R_, P_,O_>*>(obj))
 			return false;
 
@@ -248,7 +271,7 @@ namespace gge {
 
 		EventHandlerClassPlain(R_ *object, void(__thiscall R_::*handler)(P_, O_ &)) : EventHandler(NULL), object(object), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(object->*handler)(params, caller);
 		}
 
@@ -281,7 +304,7 @@ namespace gge {
 
 		EventHandlerClassEmpty(R_ *object, void(__thiscall R_::*handler)()) : EventHandler(NULL), object(object), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(object->*handler)();
 		}
 
@@ -293,7 +316,7 @@ namespace gge {
 
 	template <class R_, class P_, class O_>
 	EventHandler<P_, O_> *CreateEventHandler(R_ *object, void(__thiscall R_::*function)(), Any data) {
-		return new EventHandlerClassEmpty<R_, P_, O_>(obhect, function);
+		return new EventHandlerClassEmpty<R_, P_, O_>(object, function);
 	}
 	template <class R_, class P_, class O_>
 	bool Compare(EventHandler<P_,O_> *obj, R_ *object, void(__thiscall R_::*function)()) {
@@ -312,7 +335,7 @@ namespace gge {
 
 		EventHandlerClassObjectOnly(R_ *object, void(__thiscall R_::*handler)(O_ &)) : EventHandler(NULL), object(object), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(object->*handler)(caller);
 		}
 
@@ -344,7 +367,7 @@ namespace gge {
 
 		EventHandlerClassParamOnly(R_ *object, void(__thiscall R_::*handler)(P_ )) : EventHandler(NULL), object(object), handler(handler) {}
 
-		virtual void Fire(P_ params, O_ &caller, string eventname) {
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
 			(object->*handler)(caller);
 		}
 
@@ -366,7 +389,38 @@ namespace gge {
 
 		return object==dynamic_cast<EventHandlerClassParamOnly<R_, P_,O_>*>(obj)->object && function==dynamic_cast<EventHandlerClassParamOnly<R_, P_,O_>*>(obj)->handler;
 	}
-	
+	////This is private event object that is used to
+	/// store function event handlers
+	template<class R_, class P_, class O_>
+	struct EventHandlerClassDataOnly : EventHandler<P_,O_> {
+		void(__thiscall R_::*handler)(Any);
+
+		R_ *object;
+
+		EventHandlerClassDataOnly(R_ *object, void(__thiscall R_::*handler)(Any), Any Data) : EventHandler(Data), object(object), handler(handler) {}
+
+		virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			(object->*handler)(data);
+		}
+
+		bool Compare(void(__thiscall R_::*function)(Any), void* object) {
+			if((void*)handler==function && this->object==object)
+				return true;
+		}
+	};
+
+
+	template <class R_, class P_, class O_>
+	EventHandler<P_, O_> *CreateEventHandler(R_ *object, void(__thiscall R_::*function)(Any), Any data) {
+		return new EventHandlerClassDataOnly<R_, P_, O_>(object, function, data);
+	}
+	template <class R_, class P_, class O_>
+	bool Compare(EventHandler<P_,O_> *obj, R_ *object, void(__thiscall R_::*function)(Any)) {
+		if(!dynamic_cast<EventHandlerClassDataOnly<R_, P_,O_>*>(obj))
+			return false;
+
+		return object==dynamic_cast<EventHandlerClassDataOnly<R_, P_,O_>*>(obj)->object && function==dynamic_cast<EventHandlerClassDataOnly<R_, P_,O_>*>(obj)->handler;
+	}
 	
 	
 	////EventChain class is used to create event objects
@@ -380,14 +434,16 @@ namespace gge {
 		EventChain {
 			template<class O_, class P_> friend class EventChain;
 	public:
+
+		typedef EventHandler<P_, O_> * Token;
+
+
 		////Constructor
 		///@Name	: Name of the event
 		///@Object	: Source of the event
-		EventChain(string Name,O_ *Object) : 
+		EventChain(std::string Name,O_ *Object=NULL) : 
 		  eventname(Name), object(Object), refcount(new int(1)), events(new Collection<EventHandler<P_,O_>>)
-		{
-			cout<<"Event Chain Created \n";
-		}
+		{ }
 
 		////Copy constructor, not safe to use, is not tested properly
 		///@event   : Event object to be copied from
@@ -436,11 +492,29 @@ namespace gge {
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
 		/// handlers. Handler function template is 
-		/// void Handler(Parameters params, CallerObject* object, any data, string eventname)
+		/// void Handler(Parameters params, CallerObject* object, any data, std::string eventname)
 		///@handler	: handler function
 		///@data	: data to be passed to handler
 		template<class F_>
-		int Register(F_ handler, Any data=NULL) {
+		Token Register(F_ handler) {
+			return AddHandler(
+				CreateEventHandler<P_, O_>(handler, NULL)
+			);
+		}
+
+		////Registers an event handler. Every event handler
+		/// can specify data to be passed to handler
+		/// that can be used to identify who is registered
+		/// the event. This function returns event token
+		/// that can be used to remove this handler. The
+		/// token is not an id or sequential number
+		/// therefore, it should not be altered to find other
+		/// handlers. Handler function template is 
+		/// void Handler(Parameters params, CallerObject* object, any data, std::string eventname)
+		///@handler	: handler function
+		///@data	: data to be passed to handler
+		template<class F_>
+		Token Register(F_ *handler, Any data) {
 			return AddHandler(
 				CreateEventHandler<P_, O_>(handler, data)
 			);
@@ -455,16 +529,16 @@ namespace gge {
 		/// that can be used to remove this handler. The
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
-		/// handlers. Handler function template is 
-		/// void Handler(Parameters params, CallerObject* object, any data, string eventname)
+		/// handlers. Handler function full template is 
+		/// void Handler(Parameters params, CallerObject* object, any data, std::string eventname)
 		/// EventParams parameters)
 		///@receiver: handler object
 		///@handler	: handler function
 		///@data	: data to be passed to handler
 		template<class R_, class F_>
-		int Register(R_ *receiver, F_ handler, Any data=NULL) {
+		Token Register(R_ *receiver, F_ handler, Any data=NULL) {
 			return AddHandler(
-				CreateEventHandler(receiver, handler, data)
+				CreateEventHandler<R_, P_, O_>(receiver, handler, data)
 			);
 		}
 
@@ -477,20 +551,40 @@ namespace gge {
 		/// that can be used to remove this handler. The
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
-		/// handlers. Handler function template is 
-		/// void Handler(Parameters params, CallerObject* object, any data, string eventname)
+		/// handlers. Handler function full template is 
+		/// void Handler(Parameters params, CallerObject* object, any data, std::string eventname)
 		/// EventParams parameters)
 		///@receiver: handler object
 		///@handler	: handler function
 		///@data	: data to be passed to handler
-		template<class R_>
-		int RegisterClass(R_ *receiver, void (__thiscall R_::*handler)(P_, O_ &, Any, string), Any data=NULL) {
-
-			return Register(receiver, handler, data);
+		template<class R_, class F_>
+		Token Register(R_ &receiver, F_ handler, Any data=NULL) {
+			return Register(&receiver, handler, data);
 		}
 
-
-
+		////Registers a class event handler. This handler
+		/// should be a non static function of
+		/// the given object. Event handler
+		/// can specify data to be passed to handler
+		/// that can be used to identify who is registered
+		/// the event. This function returns event token
+		/// that can be used to remove this handler. The
+		/// token is not an id or sequential number
+		/// therefore, it should not be altered to find other
+		/// handlers. Handler function full template is 
+		/// void Handler(Parameters params, CallerObject* object, any data, std::string eventname)
+		/// EventParams parameters)
+		///@receiver: handler object
+		///@handler	: handler function
+		///@data	: data to be passed to handler
+		template<class R_, class F_>
+		Token RegisterClass(R_ *receiver, F_ handler, Any data=NULL) {
+			return AddHandler(
+				CreateEventHandler<R_, P_, O_>(receiver, handler, data)
+			);
+		}
+		
+		////Unregisters the given event handler using handler function
 		template<class F_>
 		void Unregister(F_ handler) {
 			events->ResetIteration(true);
@@ -504,6 +598,7 @@ namespace gge {
 			}
 		}
 
+		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		void Unregister(R_ *obj, F_ handler) {
 			events->ResetIteration(true);
@@ -515,6 +610,34 @@ namespace gge {
 					return;
 				}
 			}
+		}
+
+
+		////Unregisters the given handler referenced by the object and function
+		template<class R_, class F_>
+		void UnregisterClass(R_ &obj, F_ handler) {
+			Unregister(&obj, handler);
+		}
+
+		////Unregisters the given handler referenced by the object and function
+		template<class R_, class F_>
+		void UnregisterClass(R_ *obj, F_ handler) {
+			events->ResetIteration(true);
+			EventHandler<P_, O_> *object;
+
+			while(object=events->previous()) {
+				if(Compare(object, obj, handler)) {
+					RemoveHandler(object);
+					return;
+				}
+			}
+		}
+
+
+		////Unregisters the given handler referenced by the object and function
+		template<class R_, class F_>
+		void Unregister(R_ &obj, F_ handler) {
+			Unregister(&obj, handler);
 		}
 
 		////This function triggers the event causing all 
@@ -553,7 +676,7 @@ namespace gge {
 			Fire(P_());
 		}
 
-		const string &GetName() const { return eventname; }
+		const std::string &GetName() const { return eventname; }
 
 		~EventChain() {
 			Destroy();
@@ -561,7 +684,7 @@ namespace gge {
 
 	protected:
 		////Name of the event
-		string eventname;
+		std::string eventname;
 		////Source of the events
 		O_ *object;
 		////Collection of event handlers
@@ -572,18 +695,18 @@ namespace gge {
 		void RemoveHandler(EventHandler<P_, O_> *object) {
 			events->Remove(object);
 		}
-		int AddHandler(EventHandler<P_, O_> *object) {
+		Token AddHandler(EventHandler<P_, O_> *object) {
 
 			events->Add(object);
 
-			return reinterpret_cast<int>(object);
+			return (Token)(object);
 
 		}
 
 		void Destroy() {
 			(*refcount)--;
 			if(!*refcount) {
-				delete events;
+				events->Destroy();
 				delete refcount;
 			}
 		}

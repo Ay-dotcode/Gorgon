@@ -2,15 +2,16 @@
 
 #include "GRE.h"
 #include "ResourceBase.h"
-#include "TextResource.h"
-#include "ImageResource.h"
-#include "DataResource.h"
-#include "SoundResource.h"
-#include "AnimationResource.h"
-#include "BitmapFontResource.h"
 
 namespace gre {
 	class ResourceFile;
+	class FolderResource;
+	class TextResource;
+	class ImageResource;
+	class DataResource;
+	class SoundResource;
+	class AnimationResource;
+	class BitmapFontResource;
 	
 	////This function loads a folder resource from the given file
 	ResourceBase *LoadFolderResource(ResourceFile* File, FILE* Data, int Size);
@@ -40,69 +41,13 @@ namespace gre {
 		FolderResource	&operator << (ResourceBase &resource) { Subitems.AddItem(&resource); return *this; }
 
 		////Returns the given subitem with folder resource type. Used to avoid type casting
-		FolderResource	*asFolder	(int Index) { 
-#ifdef _DEBUG
-			if(Subitems[Index]->getGID()!=GID_FOLDER) {
-				DisplayMessage("Folder Resource","Non folder item requested as folder!");
-				assert(0);
-			}
-#endif
-			return dynamic_cast<FolderResource*>(Subitems[Index]); 
-		}
-		TextResource	*asText		(int Index) { 
-#ifdef _DEBUG
-			if(Subitems[Index]->getGID()!=GID_TEXT) {
-				DisplayMessage("Folder Resource","Non text item requested as text!");
-				assert(0);
-			}
-#endif
-			return dynamic_cast<TextResource*>(Subitems[Index]); 
-		}
-		ImageResource	*asImage	(int Index) { 
-#ifdef _DEBUG
-			if(Subitems[Index]->getGID()!=GID_IMAGE) {
-				DisplayMessage("Folder Resource","Non image item requested as image!");
-				assert(0);
-			}
-#endif
-			return dynamic_cast<ImageResource*>(Subitems[Index]); 
-		}
-		DataResource	*asData		(int Index) { 
-#ifdef _DEBUG
-			if(Subitems[Index]->getGID()!=GID_DATAARRAY) {
-				DisplayMessage("Folder Resource","Non data item requested as data!");
-				assert(0);
-			}
-#endif
-			return dynamic_cast<DataResource*>(Subitems[Index]); 
-		}
-		SoundResource	*asSound	(int Index) { 
-#ifdef _DEBUG
-			if(Subitems[Index]->getGID()!=GID_SOUND) {
-				DisplayMessage("Folder Resource","Non sound item requested as sound!");
-				assert(0);
-			}
-#endif
-			return dynamic_cast<SoundResource*>(Subitems[Index]); 
-		}
-		AnimationResource	*asAnimation(int Index) { 
-#ifdef _DEBUG
-			if(Subitems[Index]->getGID()!=GID_ANIMATION) {
-				DisplayMessage("Folder Resource","Non animation item requested as animation!");
-				assert(0);
-			}
-#endif
-			return dynamic_cast<AnimationResource*>(Subitems[Index]); 
-		}
-		BitmapFontResource	*asBitmapFont		(int Index) { 
-#ifdef _DEBUG
-			if(Subitems[Index]->getGID()!=GID_FONT) {
-				DisplayMessage("Folder Resource","Non bitmap font item requested as bitmap font!");
-				assert(0);
-			}
-#endif
-			return dynamic_cast<BitmapFontResource*>(Subitems[Index]); 
-		}
+		FolderResource	*asFolder	(int Index);
+		TextResource	*asText		(int Index);
+		ImageResource	*asImage	(int Index);
+		DataResource	*asData		(int Index);
+		SoundResource	*asSound	(int Index);
+		AnimationResource	*asAnimation(int Index);
+		BitmapFontResource	*asBitmapFont		(int Index);
 		
 		FolderResource() : ResourceBase() {
 			EntryPoint=-1;

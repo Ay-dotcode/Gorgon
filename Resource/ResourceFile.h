@@ -25,8 +25,6 @@ namespace gre {
 		}
 	};
 
-	////This class represent a resource file, allowing
-	/// it to be loaded or saved.
 	class Redirect {
 	public:
 		Redirect(Guid &source, Guid &target) : 

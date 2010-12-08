@@ -33,16 +33,13 @@ namespace gorgonwidgets {
 
 	//Vertical
 		if(isVertical) { 
-			if(IntegralSize.Type==ResizableObject::Automatic) {
-				IntegralSize.Overhead = 
+			int h=IntegralSize.Calculate(
+				H,
 					(DrawStart ? Start->Height() : 0)+
-					(DrawEnd   ? End->Height() : 0)
-				;
+					(DrawEnd   ? End->Height() : 0),
+				Loop->Height()
+			);
 
-				IntegralSize.Increment=Loop->Height();
-			}
-
-			int h=IntegralSize.Calculate(H);
 			int ow=Parent->Width;
 			int w=Tiling.Calculate(ow, W);
 
@@ -119,16 +116,12 @@ namespace gorgonwidgets {
 	//Horizontal
 		} else { 
 
-			if(IntegralSize.Type==ResizableObject::Automatic) {
-				IntegralSize.Overhead = 
+			int w=IntegralSize.Calculate(
+				W,
 					(DrawStart ? Start->Width() : 0)+
-					(DrawEnd   ? End->Width() : 0)
-				;
-
-				IntegralSize.Increment=Loop->Width();
-			}
-
-			int w=IntegralSize.Calculate(W);
+					(DrawEnd   ? End->Width() : 0),
+				IntegralSize.Increment=Loop->Width()
+			);
 			int oh=Parent->Height;
 			int h=Tiling.Calculate(oh, H);
 

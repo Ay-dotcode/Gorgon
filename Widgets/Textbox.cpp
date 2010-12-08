@@ -1,5 +1,6 @@
 #include "Textbox.h"
 #include "../Engine/Wave.h"
+#include "../Resource/SoundResource.h"
 
 namespace gge {
 	extern GGEMain *main;

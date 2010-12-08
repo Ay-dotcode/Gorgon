@@ -6,9 +6,6 @@
 #include "../Engine/Graphics.h"
 #include "../Resource/ResourceBase.h"
 
-#define GID_RESIZABLEOBJECT			0x05130000
-#define GID_RESIZABLEOBJECT_PROPS	0x05130101
-
 namespace gre {
 
 	class ResourceFile;
@@ -84,7 +81,7 @@ namespace gre {
 			Overhead(0), Increment(0), Type(Continous), CalculationMethod(SmallerThanGivenSize)
 			{ }
 
-			int Calculate(int w, int AutoOverhead=0, int AutoIncrement=0) {
+			int Calculate(int w, int AutoOverhead=0, int AutoIncrement=1) {
 				if(Type==Continous)
 					return w;
 
@@ -160,20 +157,4 @@ namespace gre {
 		virtual gge::Margins getBorderWidth() { return gge::Margins(0); }
 	};
 
-	class ResizableObjectInitiator : public ResourceBase {
-	public:
-		Guid *target;
-		ResizableObject::TileOption		HTile, VTile;
-		ResizableObject::IntegralSize	HIntegral, VIntegral;
-
-		virtual int getGID() { return GID_RESIZABLEOBJECT; }
-
-		////Currently does nothing
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
-
-		operator ResizableObject *();
-
-	};
-
-	ResourceBase *LoadResizableObject(ResourceFile* File, FILE* Data, int Size);
 }

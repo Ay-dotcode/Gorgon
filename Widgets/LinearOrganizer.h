@@ -45,6 +45,7 @@ namespace gorgonwidgets {
 		Collection<LinearOrganizerObject> Objects;
 
 		int LineHeight;
+		int LineWidth;
 
 		~LinearOrganizerLine() { Objects.Destroy(); }
 	};
@@ -90,8 +91,8 @@ namespace gorgonwidgets {
 		virtual IWidgetObject &AddWidget(IWidgetObject &Widget) { return *AddWidget(&Widget); }
 		virtual IWidgetObject &RemoveWidget(IWidgetObject &Widget) { return *RemoveWidget(&Widget); }
 
-		void setPadding(int Padding) { setPadding(Bounds(Padding,Padding,Padding,Padding)); }
-		void setPadding(Bounds Padding) {
+		void setPadding(int Padding) { setPadding(Margins(Padding,Padding,Padding,Padding)); }
+		void setPadding(Margins Padding) {
 			this->Padding=Padding;
 			adjustlocations();
 		}
@@ -128,9 +129,9 @@ namespace gorgonwidgets {
 
 		LinearOrganizer &operator <<(string text) {
 			if(text.substr(0,2)=="**" && text.substr(text.length()-2,2)=="**")
-				*this<<WidgetRegistry.createBoldLabel(text.substr(2,text.length()-4));
+				*this<<WR.createBoldLabel(text.substr(2,text.length()-4));
 			else
-				*this<<WidgetRegistry.createFieldLabel(text);
+				*this<<WR.createFieldLabel(text);
 
 			return *this;
 		}
@@ -173,8 +174,25 @@ namespace gorgonwidgets {
 		static LinearOrganizerModifier fixedmode;
 		static LinearOrganizerModifier removeall;
 
+		virtual Size2D ContentSize() {
+			int max_x=0,max_y=0;
+			foreach(LinearOrganizerColumn, column, Columns) {
+				int y=0;
+				int colx=0;
+				foreach(LinearOrganizerLine, line, column->Lines) {
+					if(line->LineWidth+colx>max_x) max_x=line->LineWidth+colx;
+
+					y+=line->LineHeight;
+				}
+
+				if(y>max_y) max_y=y;
+			}
+
+			return Size2D(max_x, max_y);
+		}
+
 	protected:
-		Bounds Padding;
+		Margins Padding;
 		int IntegralHeight;
 		int ColumnDistance;
 

@@ -165,6 +165,7 @@ loopyend:
 
 			target=new BYTE[cx*cy*2];	
 			A8ToA8L8(cx,cy,data,target);
+			delete data;
 			data=target;
 
 			mode=AGRAYSCALE_16BPP;
@@ -176,9 +177,6 @@ loopyend:
 
 		glTexImage2D(GL_TEXTURE_2D,0,getBPP(mode),sl2(cx),sl2(cy),0,colormode,GL_UNSIGNED_BYTE,NULL);
 		glTexSubImage2D(GL_TEXTURE_2D,0,0,0,cx,cy,colormode,GL_UNSIGNED_BYTE,data);
-
-		if(target)
-			delete target;
 	}
 	GLTexture GenerateTexture(BYTE *data,int cx,int cy,ColorMode mode) {
 

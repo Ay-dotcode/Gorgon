@@ -16,6 +16,7 @@
 #include "SliderElement.h"
 #include "SliderStyleGroup.h"
 #include "FrameBP.h"
+#include "ResizableObjectResource.h"
 
 #define DIALOG_LAYER_ZORDER		-10
 
@@ -49,5 +50,7 @@ namespace gorgonwidgets {
 		File->Loaders.Add(new ResourceLoader(GID_SLIDER_ELEMENT, LoadSliderElement)); 
 
 		File->Loaders.Add(new ResourceLoader(GID_FRAME, LoadFrame)); 
+
+		File->Loaders.Add(new ResourceLoader(GID_RESIZABLEOBJECT, LoadResizableObject)); 
 	}
 }

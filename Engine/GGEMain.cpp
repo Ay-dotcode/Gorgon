@@ -2,7 +2,7 @@
 #include <atlbase.h>
 
 namespace gge {
-	GGEMain *main;
+	GGEMain *main=NULL;
 
 	GGEMain::GGEMain(char *SystemName, InstanceHandle Instance, int Width, int Height, int BitDepth, bool FullScreen) :
 		SystemName(SystemName),
@@ -12,7 +12,8 @@ namespace gge {
 		BitDepth(BitDepth),
 		FullScreen(FullScreen),
 		BeforeRenderEvent("BeforeRender", this),
-		AfterRenderEvent("AfterRender", this)
+		AfterRenderEvent("AfterRender", this),
+		Window(NULL)
 	{
 
 		W=Width;
@@ -22,16 +23,26 @@ namespace gge {
 
 		gge::AddPointerTarget(this,0);
 
-		Window_Activate=NULL;
-		Window_Deactivate=NULL;
-		Window_Destroy=NULL;
-
 		CurrentTime=GetTime();
 
 		CoInitialize(NULL);
 		main=this;
 
 		FPS=50;
+	}
+
+	void GGEMain::Setup(int Width, int Height, int BitDepth, bool FullScreen) {
+#ifdef _DEBUG
+		if(Window!=NULL)
+			throw std::runtime_error("System already initialized.");
+#elif
+		if(Window!=NULL)
+			return;
+#endif
+		this->Width=W=Width;
+		this->Height=H=Height;
+		this->BitDepth=BitDepth;
+		this->FullScreen=FullScreen;
 	}
 
 	GGEMain::~GGEMain() {
@@ -103,9 +114,7 @@ namespace gge {
 	}
 
 	void GGEMain::UnregisterInterval(IntervalObject *Interval) {
-		IntervalObjects.Remove(Interval);
-
-		delete Interval;
+		IntervalObjects.Delete(Interval);
 	}
 
 	void GGEMain::InitializeAll(const char *Title, gge::IconHandle Icon, int X, int Y) {

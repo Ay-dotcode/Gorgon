@@ -52,7 +52,7 @@ namespace gorgonwidgets {
 		int cy=Visual->Width(layer.H);
 	
 		if(!SelectionRect)
-			SelectionRect=&WidgetRegistry.createSelectionFrame();
+			SelectionRect=&WR.createSelectionFrame();
 
 		textlayer.Clear();
 		textlayer.X=x+TextMargins.Left;

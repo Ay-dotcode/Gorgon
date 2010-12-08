@@ -52,8 +52,10 @@ out:
 					object->object.Move(x, y + (line->LineHeight-object->object.Height())/2 );
 					x+=object->object.Width()+Padding.Right;
 				}
+				line->LineWidth=x;
 
 				y+=line->LineHeight+Padding.Bottom;
+				line->LineHeight+=Padding.Top+Padding.Bottom;
 			}
 		}
 				
@@ -70,7 +72,7 @@ out:
 		currentcolumn=Columns[0];
 		currentline=currentcolumn->Lines[0];
 
-		Padding=Bounds(2,2, 2,2);
+		Padding=Margins(2,2, 2,2);
 		IntegralHeight=0;
 		ColumnDistance=15; 
 		currentsizemode=autosize;

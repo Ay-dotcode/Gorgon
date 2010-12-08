@@ -9,7 +9,7 @@ namespace gge {
 	extern int trX,trY;
 	extern int scX,scY,scW,scH;
 
-	CustomLayer::CustomLayer(CustomRenderer Renderer,int X, int Y, int W, int H) {
+	CustomLayer::CustomLayer(CustomRenderer Renderer,int X, int Y, int W, int H) : LayerBase() {
 		this->X=X;
 		this->Y=Y;
 		this->W=W;

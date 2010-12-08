@@ -100,8 +100,8 @@ namespace gge {
 			break;
 		case WM_RBUTTONDBLCLK:
 			{
-				int x=lParam%0x10000;
-				int y=lParam>>16;
+				int x=(int)lParam%0x10000;
+				int y=(int)lParam>>16;
 				
 				ProcessMouseDblClick(2,x,y);
 			}
@@ -379,7 +379,7 @@ namespace gge {
 			DispatchMessage( &msg );
 		}
 	}
-	void DisplayMessage(char *Title, char *Text) {
+	void DisplayMessage(const char *Title, const char *Text) {
 		MessageBox(NULL,Text,Title,0);
 	}
 	void ShowOSPointer() {
@@ -414,6 +414,9 @@ namespace gge {
 	}
 	void InitializeOS() {
 		ospointerdisplayed=true;
+	}
+	void gge::Sleep(int ms) {
+		::Sleep(ms);
 	}
 }
 #endif

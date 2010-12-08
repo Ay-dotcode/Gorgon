@@ -25,7 +25,7 @@ namespace geffects {
 		////Initializes the effect
 		LayerMover(LayerBase *Target) :
 			speed(0,0),
-			current(Target->X, Target->Y),
+			current((float)Target->X, (float)Target->Y),
 			Target(Target), FinishedEvent("Finished", this)
 		{
 			AnimatorBase::FinishedEvent=FinishedEvent;
@@ -33,7 +33,7 @@ namespace geffects {
 		////Initializes the effect
 		LayerMover(LayerBase &Target) :
 			speed(0,0),
-			current(Target.X, Target.Y),
+			current((float)Target.X, (float)Target.Y),
 			Target(&Target), FinishedEvent("Finished", this)
 		{
 			AnimatorBase::FinishedEvent=FinishedEvent;

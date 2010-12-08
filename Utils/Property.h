@@ -2,7 +2,6 @@
 
 #define PROPERTY_DEFINED
 
-//ENTIRELY UNTEST, EVEN FOR COMPILATION
 
 template<class T_, class C_>
 class Property {
@@ -23,29 +22,40 @@ public:
 	{ }
 
 	operator T_() { 
-		return getter(); 
+		return (Object.*getter)(); 
 	}
 
 	Property &operator =(T_ value) { 
-		setter(value);
+		(Object.*setter)(value);
+
+		return *this;
+	}
+
+	template <class O_>
+	Property &operator =(O_ value) { 
+		(Object.*setter)(value);
 
 		return *this;
 	}
 
 	template <class AC_>
 	Property &operator =(const Property<T_, AC_> &prop) {
-		setter(prop);
+		(Object.*setter)(prop);
 
 		return *this;
 	}
 };
+
+
+//THIS PART IS INCOMPLETE, IF IT CAUSES
+//PROBLEMS JUST COMMENT OUT
 
 //Specializations to allow operators
 //we should allow specializations for
 //int, float, char, double uint, uchar
 //string
 template<class C_>
-class Property {
+class Property<int, C_> {
 public:
 	typedef int(C_::*Getter)() const;
 	typedef void (C_::*Setter)(int);
@@ -196,18 +206,6 @@ public:
 	}
 
 	template<class T_>
-	int operator &&=(T_ v) {
-		setter(getter()&&v);
-		return getter();
-	}
-
-	template<class T_>
-	int operator ||=(T_ v) {
-		setter(getter()||v);
-		return getter();
-	}
-
-	template<class T_>
 	int operator &=(T_ v) {
 		setter(getter()|v);
 		return getter();
@@ -239,3 +237,5 @@ public:
 };
 
 
+
+#define	INIT_PROPERTY(name, classtype) name(this, &classtype::get##name, &classtype::set##name)

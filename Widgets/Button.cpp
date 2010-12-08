@@ -402,7 +402,7 @@ namespace gorgonwidgets {
 	}
 	void	Button::SetBluePrint(IWidgetBluePrint *BP) {
 		this->BluePrint=(ButtonBP*)BP;
-		Resize(this->width,this->width);
+		Resize(this->width,this->height);
 	}
 
 	bool Button::mouse_event(MouseEventType event,int x,int y) {

@@ -20,7 +20,7 @@ namespace gorgonwidgets {
 		void SetRange(float Min, float Max, float steps=-1) { setMinimum(Min); setMaximum(Max); if(steps>0) setSteps(steps); }
 		void setMinimum(float Min) { minimum=Min; setSpeed(vps); }
 		void setMaximum(float Max) { maximum=Max; setSpeed(vps); }
-		void setDecimalPoints(int points) { char tmp[30]; sprintf(tmp, "%%.%if", points); numberformat=tmp; setValue(value); }
+		void setDecimalPoints(int points) { char tmp[30]; sprintf_s<30>(tmp, "%%.%if", points); numberformat=tmp; setValue(value); }
 
 		void setSteps(float steps) { buttonincrement=steps; this->steps=steps; setValue(this->value); setSpeed(vps); }
 
@@ -31,7 +31,7 @@ namespace gorgonwidgets {
 		bool isAttached() { return attachedto!=NULL; }
 		Textbox &getHost() { return *attachedto; }
 
-		void setSpeed(float valuepersecond) { ButtonMoveTime=(maximum-minimum)/valuepersecond; vps=valuepersecond; }
+		void setSpeed(float valuepersecond) { ButtonMoveTime=(int)((maximum-minimum)/valuepersecond); vps=valuepersecond; }
 
 		virtual ~Spinner() { Detach(); SliderBase::~SliderBase(); }
 		virtual void goUp() { if(buttonincrement<vps/main->FPS) buttonincrement=vps/main->FPS; SliderBase::goUp(); }
@@ -58,9 +58,9 @@ namespace gorgonwidgets {
 		void attached_keyboard(keyboard_event_params p, Textbox &textbox, Any, string name);
 
 		Textbox *attachedto;
-		int eventtoken;
-		int lostfocuseventtoken;
-		int keyboardeventtoken;
+		EventChain<Textbox,			text_change_event_params>	::Token eventtoken;
+		EventChain<IWidgetObject,	empty_event_params>			::Token lostfocuseventtoken;
+		EventChain<Textbox,			keyboard_event_params>		::Token keyboardeventtoken;
 		float vps;
 
 		void init();

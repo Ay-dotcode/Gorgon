@@ -11,7 +11,7 @@ namespace gorgonwidgets {
 
 		virtual void SetRange(float min, float max) { minimum=min; maximum=max; }
 		virtual void setValue(float value) { SliderBase::setValue(value); }
-		virtual int getValue() { return value; }
+		virtual int getValue() { return (int)value; }
 
 		void setMinimum(float Min) { minimum=Min; }
 		void setMaximum(float Max) { maximum=Max; }
@@ -32,7 +32,7 @@ namespace gorgonwidgets {
 			return v;
 		}
 		float operator =(float value) { setValue(value); return value; }
-		int operator =(int value) { setValue(value); return value; }
+		int operator =(int value) { setValue((float)value); return value; }
 
 		using SliderBase::Height;
 		using SliderBase::Width;

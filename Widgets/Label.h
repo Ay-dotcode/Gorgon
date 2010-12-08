@@ -101,7 +101,7 @@ namespace gorgonwidgets {
 			} else {
 				EPrintData ep[1];
 				ep[0].Type=EMT_PositionDetect;
-				ep[0].CharPosition=text.length();
+				ep[0].CharPosition=(int)text.length();
 
 				Font->Print_Test(0,0, width, text, ep,1, Align);
 				IWidgetObject::Resize(width, ep[0].Out.position.y);

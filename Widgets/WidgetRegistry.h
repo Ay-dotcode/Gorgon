@@ -203,5 +203,5 @@ namespace gorgonwidgets {
 
 	};
 
-	extern WidgetRegistry WidgetRegistry;
+	extern WidgetRegistry WR;
 }

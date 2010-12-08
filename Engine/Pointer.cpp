@@ -4,6 +4,8 @@
 #include "GraphicLayers.h"
 #include "GGEMain.h"
 #include "../Resource/FolderResource.h"
+#include "../Resource/AnimationResource.h"
+#include "../Resource/DataResource.h"
 #include "../Resource/GRE.h"
 #include "OS.h"
 

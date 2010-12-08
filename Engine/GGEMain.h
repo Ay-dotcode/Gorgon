@@ -75,6 +75,8 @@ namespace gge {
 		////Handle of the application instance
 		inline InstanceHandle getInstance() { return Instance; }
 
+		void Setup(int Width=800, int Height=600, int BitDepth=32, bool FullScreen=false);
+
 		////Current system time. This time does not change in a given game loop
 		unsigned int CurrentTime;
 
@@ -145,14 +147,6 @@ namespace gge {
 		void UnregisterInterval(IntervalObject *Interval);
 
 
-		////This notification is triggered when the window activates
-		Notification Window_Activate;
-		////This notification is triggered when the window deactivates
-		Notification Window_Deactivate;
-		////This notification is triggered when the window is destroyed.
-		/// There is no way to prevent destruction after this notification is
-		/// issued. Also graphic and sound functions will not work.
-		Notification Window_Destroy;
 		////This event is triggered before rendering, after intervals
 		EventChain<GGEMain, empty_event_params> BeforeRenderEvent;
 		////This event is triggered after rendering before the next

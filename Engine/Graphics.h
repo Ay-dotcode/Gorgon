@@ -651,6 +651,7 @@ namespace gge {
 	////This is a graphics object with colorization support
 	class Colorizable2DGraphic : public Buffered2DGraphic {
 	public:
+
 		virtual void DrawColored(I2DColorizableGraphicsTarget *Target,int X,int Y,RGBint Color) { 
 #ifdef _DEBUG
 			if(Texture.ID==0) {

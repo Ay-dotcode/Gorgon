@@ -27,13 +27,6 @@ namespace gorgonwidgets {
 		verticlescrollbar(NULL),
 		verticlescrollbarstate(SDS_WhenNeeded),
 		noactivate(false),
-		outerborderwidth(bp.OuterBorderWidth),
-		scrollbarmargin(bp.ScrollbarMargin),
-		innerbordermargin(bp.InnerBorderMargin),
-		innerborderwidth(bp.InnerBorderWidth),
-		scrollingbordermargin(bp.ScrollingBorderMargin),
-		scrollingborderwidth(bp.ScrollingBorderWidth),
-		contentmargin(bp.ContentMargin),
 		maxvscroll(0),
 		BoxLayer(
 			bp.ContentMargin.Left,
@@ -47,6 +40,26 @@ namespace gorgonwidgets {
 		
 		IWidgetObject::Move(X,Y);
 		IWidgetObject::Resize(W,H);
+
+
+		SetBluePrint(&bp);
+		init();
+	}
+
+	void Frame::SetBluePrint(IWidgetBluePrint *BP) {
+		FrameBP *Bp=dynamic_cast<FrameBP*>(BP);
+
+		if(!Bp) return;
+
+		FrameBP &bp=*Bp;
+
+		outerborderwidth		= bp.OuterBorderWidth;
+		scrollbarmargin			= bp.ScrollbarMargin;
+		innerbordermargin		= bp.InnerBorderMargin;
+		innerborderwidth		= bp.InnerBorderWidth;
+		scrollingbordermargin	= bp.ScrollingBorderMargin;
+		scrollingborderwidth	= bp.ScrollingBorderWidth;
+		contentmargin			= bp.ContentMargin;
 
 #define p_checkandassign(obj, source)	if(bp.source) { obj=new ResizableRect(bp.source); } else { obj=NULL; }
 		p_checkandassign(normal, Normal);
@@ -78,8 +91,6 @@ namespace gorgonwidgets {
 		if(bp.Scroller) {
 			this->SetVerticleScrollbar(new Scrollbar(bp.Scroller, ScrollbarAlignments::SA_Verticle));
 		}
-
-		init();
 	}
 
 	void Frame::init()
@@ -114,7 +125,7 @@ namespace gorgonwidgets {
 
 #define p_drawit(what) what->DrawResized(layer, border.Left, border.Top, layer.W-border.TotalX(), layer.H-border.TotalY(), ALIGN_MIDDLE_CENTER)
 
-		static ResizableRect r(WidgetRegistry.createSelectionFrame());
+		static ResizableRect r(WR.createSelectionFrame());
 		
 
 		if(isFocussed() && active) {
@@ -193,14 +204,17 @@ namespace gorgonwidgets {
 	void Frame::adjustlocations() {
 		BoxLayer.X=0;
 		BoxLayer.Y=0;
-		BoxLayer.W=layer.W;
-		BoxLayer.H=layer.H;
+		usable.Width=BoxLayer.W=layer.W;
+		usable.Height=BoxLayer.H=layer.H;
 
 		if(normal) {
 			BoxLayer.X+=outerborderwidth.Left;
 			BoxLayer.Y+=outerborderwidth.Top;
 			BoxLayer.W-=outerborderwidth.TotalX();
 			BoxLayer.H-=outerborderwidth.TotalY();
+
+			usable.Width-=outerborderwidth.TotalX();
+			usable.Height-=outerborderwidth.TotalY();
 		}
 
 		if(innernormal) {
@@ -208,6 +222,9 @@ namespace gorgonwidgets {
 			BoxLayer.Y+=innerborderwidth.Top+innerbordermargin.Top;
 			BoxLayer.W-=innerborderwidth.TotalX()+innerbordermargin.TotalX();
 			BoxLayer.H-=innerborderwidth.TotalY()+innerbordermargin.TotalY();
+
+			usable.Width-=innerborderwidth.TotalX()+innerbordermargin.TotalX();
+			usable.Height-=innerborderwidth.TotalY()+innerbordermargin.TotalY();
 		}
 
 		if(scrollingnormal) {
@@ -215,6 +232,9 @@ namespace gorgonwidgets {
 			BoxLayer.Y	+= scrollingbordermargin.Top;
 			BoxLayer.W	-= scrollingbordermargin.TotalX();
 			BoxLayer.H	-= scrollingbordermargin.TotalY();
+
+			usable.Width-=scrollingbordermargin.TotalX();
+			usable.Height-=scrollingbordermargin.TotalY();
 		}
 
 		ScrollingLayer.W	= BoxLayer.W;
@@ -242,6 +262,9 @@ namespace gorgonwidgets {
 			BaseLayer.Y		 =contentmargin.Top;
 			ScrollingLayer.H+=contentmargin.TotalY();
 		}
+
+			usable.Width -=contentmargin.TotalX();
+			usable.Height-=contentmargin.TotalY();
 
 		if(verticlescrollbar) {
 			bool display=false;

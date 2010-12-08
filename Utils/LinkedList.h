@@ -8,27 +8,27 @@
 #define NULL	0
 #endif
 
-template <class T_>
+template <class T_, class SK_=float, int growth=10>
 class LinkedList;
-template <class T_>
+template <class T_, class SK_=float, int growth=10>
 class LinkedListIterator;
-template <class T_>
+template <class T_, class SK_=float, int growth=10>
 class LinkedListOrderedIterator;
 
 ////This class is a wrapper to all objects that will be added
 /// to a linked list. This wrapper contains linked list structure,
 /// order, the item and few other useful functions.
-template <class T_>
+template <class T_, class SK_=float, int growth=10>
 class LinkedListItem {
-	friend class LinkedList<T_>;
-	friend class LinkedListIterator<T_>;
-	friend class LinkedListOrderedIterator<T_>;
+	friend class LinkedList<T_,SK_,growth>;
+	friend class LinkedListIterator<T_,SK_,growth>;
+	friend class LinkedListOrderedIterator<T_,SK_,growth>;
 protected:
-	LinkedListItem<T_> *prev,*next,*order_prev,*order_next;
-	LinkedList<T_> *parent;
-	float Order;
+	LinkedListItem<T_, SK_, growth> *prev,*next,*order_prev,*order_next;
+	LinkedList<T_,SK_,growth> *parent;
+	SK_ Order;
 	
-	LinkedListItem(LinkedList<T_> *parent) {
+	LinkedListItem(LinkedList<T_, SK_,growth> *parent) {
 		prev=next=order_prev=order_next=NULL;
 		this->parent=parent;
 	}
@@ -38,48 +38,49 @@ public:
 	T_ *Item;
 	////Returns the next element in the list,
 	/// if this is the last item returns NULL
-	LinkedListItem<T_> *getNext() {
+	LinkedListItem<T_, SK_,growth> *getNext() {
 		return next;
 	}
 	////Returns the previous element in the list,
 	/// if this is the first item returns NULL
-	LinkedListItem<T_> *getPrevious() {
+	LinkedListItem<T_, SK_,growth> *getPrevious() {
 		return prev;
 	}
 	////Returns the next element in the ordered list,
 	/// if this is the last item returns NULL
-	LinkedListItem<T_> *getOrderedNext() {
+	LinkedListItem<T_, SK_,growth> *getOrderedNext() {
 		return order_next;
 	}
 	////Returns the previous element in the ordered list,
 	/// if this is the first item returns NULL
-	LinkedListItem<T_> *getOrderedPrevious() {
+	LinkedListItem<T_, SK_,growth> *getOrderedPrevious() {
 		return order_prev;
 	}
-	LinkedList<T_> *getParent() { return parent; }
+	LinkedList<T_, SK_,growth> *getParent() { return parent; }
 
 	////Returns the order of this list item
-	float getOrder() { return Order; }
+	SK_ getOrder() { return Order; }
 	////Changes the order of this item
-	void setOrder(float Order) {
+	void setOrder(SK_ Order) {
 		if(parent!=NULL)
 			parent->setOrderOf(this,Order);
 	}
 };
 
 
-template <class T_>
 ////This iterator class iterates through unsorted linked list
+template <class T_, class SK_, int growth>
 class LinkedListIterator : public IIterator<T_> {
-	friend class LinkedList<T_>;
+	friend class LinkedList<T_, SK_,growth>;
 protected:
-	LinkedListItem<T_> *start,*current;
-	bool reverse;
+	LinkedListItem<T_, SK_,growth> *start,*current;
+	bool reverse, autodestroy;
 
-	LinkedListIterator(LinkedListItem<T_> *start,bool reverse) {
+	LinkedListIterator(LinkedListItem<T_, SK_, growth> *start,bool reverse,bool autodestroy=false) {
 		current=start;
 		this->start=start;
 		this->reverse=reverse;
+		this->autodestroy=autodestroy;
 	}
 
 public:
@@ -97,8 +98,11 @@ public:
 	virtual T_* get() {
 		T_ *item;
 
-		if(current==NULL)
+		if(current==NULL) {
+			if(autodestroy)
+				delete this;
 			return NULL;
+		}
 
 		item=current->Item;
 
@@ -110,17 +114,26 @@ public:
 		return item;
 	}
 
-	////This method gets the next item and moves item pointer to the next one
 	virtual T_* peek() {
+
+		if(current==NULL) {
+			if(autodestroy)
+				delete this;
+			return NULL;
+		}
+
 		return current->Item;
 	}
 
 	////This method gets the next list item and moves item pointer to the next one
-	LinkedListItem<T_>* getitem() {
-		if(current==NULL)
+	LinkedListItem<T_, SK_, growth>* getitem() {
+		if(current==NULL) {
+			if(autodestroy)
+				delete this;
 			return NULL;
+		}
 
-		LinkedListItem<T_>* item=current;
+		LinkedListItem<T_, SK_, growth>* item=current;
 
 		if(reverse)
 			current=current->prev;
@@ -130,21 +143,22 @@ public:
 		return item;
 	}
 	////This method gets the next item and moves item pointer to the next one
-	virtual operator LinkedListItem<T_>*() {
+	virtual operator LinkedListItem<T_, SK_, growth>*() {
 		return getitem();
 	}
 };
 ////This iterator class iterates through sorted linked list
-template <class T_>
+template <class T_, class SK_, int growth>
 class LinkedListOrderedIterator : public IIterator<T_> {
-	friend class LinkedList<T_>;
+	friend class LinkedList<T_, SK_, growth>;
 protected:
-	LinkedListItem<T_> *start,*current;
-	bool reverse;
+	LinkedListItem<T_, SK_, growth> *start,*current;
+	bool reverse, autodestroy;
 
-	LinkedListOrderedIterator(LinkedListItem<T_>* start,bool reverse) {
+	LinkedListOrderedIterator(LinkedListItem<T_, SK_, growth>* start,bool reverse,bool autodestroy=false) {
 		current=this->start=start;
 		this->reverse=reverse;
+		this->autodestroy=autodestroy;
 	}
 
 public:
@@ -162,8 +176,11 @@ public:
 	virtual T_* get() {
 		T_ *item;
 
-		if(current==NULL)
+		if(current==NULL) {
+			if(autodestroy)
+				delete this;
 			return NULL;
+		}
 
 		item=current->Item;
 
@@ -175,17 +192,26 @@ public:
 		return item;
 	}
 
-	////This method gets the next item and moves item pointer to the next one
 	virtual T_* peek() {
+
+		if(current==NULL) {
+			if(autodestroy)
+				delete this;
+			return NULL;
+		}
+
 		return current->Item;
 	}
 
 	////This method gets the next list item and moves item pointer to the next one
-	LinkedListItem<T_>* getitem() {
-		if(current==NULL)
+	LinkedListItem<T_, SK_, growth>* getitem() {
+		if(current==NULL) {
+			if(autodestroy)
+				delete this;
 			return NULL;
+		}
 
-		LinkedListItem<T_>* item=current;
+		LinkedListItem<T_, SK_, growth>* item=current;
 
 		if(reverse)
 			current=current->order_prev;
@@ -195,70 +221,70 @@ public:
 		return item;
 	}
 	////This method gets the next item and moves item pointer to the next one
-	virtual operator LinkedListItem<T_>*() {
+	virtual operator LinkedListItem<T_, SK_, growth>*() {
 		return getitem();
 	}
 };
-
 
 
 ////This class is a linked list structure.
 /// It allows insert and remove operations
 /// as well as sorted item query and iterators.
-template <class T_>
+template <class T_, class SK_, int growth>
 class LinkedList {
 
-	friend class LinkedListIterator<T_>;
+	friend class LinkedListIterator<T_, SK_, growth>;
 
 protected:
 	int poolid;
 	int count;
-	LinkedListItem<T_> **Pool;
-	LinkedListItem<T_> *first,*last,*order_first,*order_last;
+	LinkedListItem<T_, SK_, growth> **Pool;
+	LinkedListItem<T_, SK_, growth> *first,*last,*order_first,*order_last;
 
 	void grow() {
-		Pool=new LinkedListItem<T_>*[growth];
+		Pool=new LinkedListItem<T_, SK_, growth>*[growth];
 		int i;
 		for(i=0;i<growth;i++)
-			Pool[i]=new LinkedListItem<T_>(this);
+			Pool[i]=new LinkedListItem<T_, SK_, growth>(this);
 
 		poolid=growth-1;
 	}
 
-	LinkedListItem<T_>* obtain() {
+	LinkedListItem<T_, SK_, growth>* obtain() {
 		if(poolid<0)
 			grow();
 
 		return Pool[poolid--];
 	}
 public:
-	////The amount of growth for each step
-	int growth;
+
+	enum {
+		Ordered,
+		OrderedReverse,
+		Normal,
+		Reverse
+	} IterationType;
+
 	////Returns number of elements
 	int getCount() {
 		return count;
 	}
 
 	////Basic constructor
-	LinkedList() {
-		count=0;
-		poolid=-1,
-		growth=10;
-		first=last=NULL;
-		order_first=order_last=NULL;
-	}
+	LinkedList() : count(0), poolid(-1), Pool(NULL), first(NULL), last(NULL), order_first(NULL), order_last(NULL), IterationType(Ordered)
+	{ }
 
 	////Changes the order of an item
 	///@Position: position of the item to be reordered
 	///@Order	: The new order
-	void setOrderOf(int Position,float Order) {
+	void setOrderOf(int Position,SK_ Order) {
 		setOrderOf(ItemAt(Position),Order);
 	}
 
 	////Changes the order of an item
 	///@Item	: The item to be reordered
 	///@Order	: The new order
-	void setOrderOf(LinkedListItem<T_> *Item,float Order) {
+	void setOrderOf(LinkedListItem<T_, SK_, growth> *Item,SK_ Order) {
 		if(Item==NULL)
 			return;
 
@@ -281,9 +307,9 @@ public:
 
 		bool done=false;
 
-		LinkedListOrderedIterator<T_> i=GetOrderedIterator();
-		LinkedListItem<T_> *item;
-		LinkedListItem<T_> *ret=Item;
+		LinkedListOrderedIterator<T_, SK_, growth> i=GetOrderedIterator();
+		LinkedListItem<T_, SK_, growth> *item;
+		LinkedListItem<T_, SK_, growth> *ret=Item;
 		while(item=i) {
 			if(item->Order>=ret->Order) {
 				if(item->order_prev!=NULL)
@@ -316,7 +342,7 @@ public:
 	}
 
 	////Removes an item from the list
-	void Remove(LinkedListItem<T_> *item) {
+	void Remove(LinkedListItem<T_, SK_, growth> *item) {
 		if(item==NULL)
 			return;
 
@@ -387,36 +413,36 @@ public:
 
 	////Gets the first item in list.
 	/// Returns item wrapper
-	LinkedListItem<T_> *getFirst() {
+	LinkedListItem<T_, SK_, growth> *getFirst() {
 		return first;
 	}
 
 	////Gets the last item in list.
 	/// Returns item wrapper
-	LinkedListItem<T_> *getLast() {
+	LinkedListItem<T_, SK_, growth> *getLast() {
 		return last;
 	}
 
 	////Gets the first item in ordered list.
 	/// Returns item wrapper
-	LinkedListItem<T_> *getOrderedFirst() {
+	LinkedListItem<T_, SK_, growth> *getOrderedFirst() {
 		return order_first;
 	}
 
 	////Gets the last item in ordered list.
 	/// Returns item wrapper
-	LinkedListItem<T_> *getOrderedLast() {
+	LinkedListItem<T_, SK_, growth> *getOrderedLast() {
 		return order_last;
 	}
 
-	float HighestOrder() {
+	SK_ HighestOrder() {
 		if(order_last)
 			return order_last->Order;
 
 		return 0;
 	}
 
-	float LowestOrder() {
+	SK_ LowestOrder() {
 		if(order_first)
 			return order_first->Order;
 
@@ -428,7 +454,7 @@ public:
 		if(Item==NULL)
 			return;
 		
-		LinkedListItem<T_>* item=FindListItem(Item);
+		LinkedListItem<T_, SK_, growth>* item=FindListItem(Item);
 		if(item==NULL)
 			return;
 
@@ -493,7 +519,7 @@ public:
 
 	////Returns an item from a given position
 	T_ *operator [](int Position) {
-		LinkedListItem<T_>* item=ListItemAt(Position);
+		LinkedListItem<T_, SK_, growth>* item=ListItemAt(Position);
 		if(item)
 			return item->Item;
 		else
@@ -502,7 +528,7 @@ public:
 
 	////Returns an item from a given position
 	T_ *ItemAt(int Position) {
-		LinkedListItem<T_>* item=ListItemAt(Position);
+		LinkedListItem<T_, SK_, growth>* item=ListItemAt(Position);
 		if(item)
 			return item->Item;
 		else
@@ -510,9 +536,9 @@ public:
 	}
 
 	////Returns a list item from a given position
-	LinkedListItem<T_> *ListItemAt(int Position) {
-		LinkedListIterator<T_> i=(*this);
-		LinkedListItem<T_> *item;
+	LinkedListItem<T_, SK_, growth> *ListItemAt(int Position) {
+		LinkedListIterator<T_, SK_, growth> i=(*this);
+		LinkedListItem<T_, SK_, growth> *item;
 
 		while(item=i)
 			if(Position--==0)
@@ -523,7 +549,7 @@ public:
 
 	////Returns an item from a given ordered position
 	T_ *OrderedItemAt(int Position) {
-		LinkedListItem<T_>* item=OrderedListItemAt(Position);
+		LinkedListItem<T_, SK_, growth>* item=OrderedListItemAt(Position);
 		if(item)
 			return item->Item;
 		else
@@ -531,9 +557,9 @@ public:
 	}
 
 	////Returns a list item from a given ordered position
-	LinkedListItem<T_> *OrderedListItemAt(int Position) {
-		LinkedListOrderedIterator<T_> i=(*this);
-		LinkedListItem<T_> *item;
+	LinkedListItem<T_, SK_, growth> *OrderedListItemAt(int Position) {
+		LinkedListOrderedIterator<T_, SK_, growth> i=(*this);
+		LinkedListItem<T_, SK_, growth> *item;
 
 		while(item=i)
 			if(Position--==0)
@@ -544,9 +570,9 @@ public:
 
 	////Searches a specific item in the list and returns the list item.
 	/// If item is not found NULL is returned
-	LinkedListItem<T_> *FindListItem(T_ *Item) {
-		LinkedListIterator<T_> it=*this;
-		LinkedListItem<T_> *item;
+	LinkedListItem<T_, SK_, growth> *FindListItem(T_ *Item) {
+		LinkedListIterator<T_, SK_, growth> it=*this;
+		LinkedListItem<T_, SK_, growth> *item;
 		while(item=it) {
 			if(item->Item==Item)
 				return item;
@@ -554,9 +580,9 @@ public:
 
 		return NULL;
 	}
-	LinkedListItem<T_> &FindListItem(T_ &Item) {
-		LinkedListIterator<T_> it=*this;
-		LinkedListItem<T_> *item;
+	LinkedListItem<T_, SK_, growth> &FindListItem(T_ &Item) {
+		LinkedListIterator<T_, SK_, growth> it=*this;
+		LinkedListItem<T_, SK_, growth> *item;
 		while(item=it) {
 			if(*item->Item==Item)
 				return *item;
@@ -565,7 +591,7 @@ public:
 		return NULL;
 	}
 	////Creates an ordered iterator object
-	operator LinkedListOrderedIterator<T_>() {
+	operator LinkedListOrderedIterator<T_, SK_, growth>() {
 		return GetOrderedIterator();
 	}
 
@@ -583,53 +609,57 @@ public:
 	}
 
 	////Creates an iterator object
-	operator LinkedListIterator<T_>() {
+	operator LinkedListIterator<T_, SK_, growth>() {
 		return GetIterator();
 	}
 	////Creates an iterator object
 	operator IIterator<T_>*() {
-		IIterator<T_>* it= new LinkedListOrderedIterator<T_>(order_first,false);
-
-		return it;
+		switch(IterationType) {
+			case Ordered:
+				return new LinkedListOrderedIterator<T_, SK_, growth>(order_first,false, true);
+			case OrderedReverse:
+				return new LinkedListOrderedIterator<T_, SK_, growth>(order_last,true, true);
+			case Reverse:
+				return new LinkedListIterator<T_, SK_, growth>(last,true, true);
+			case Normal:
+			default:
+				return new LinkedListIterator<T_, SK_, growth>(first,false, true);
+		}
 	}
 
 	////Creates an iterator object
-	LinkedListIterator<T_> GetIterator() {
-		return LinkedListIterator<T_>(first,false);
+	virtual LinkedListIterator<T_, SK_, growth> GetIterator() {
+		return LinkedListIterator<T_, SK_, growth>(first,false);
 	}
 
 	////Creates a reverse iterator object
-	LinkedListIterator<T_> GetReverseIterator() {
-		return LinkedListIterator<T_>(last,true);
+	virtual LinkedListIterator<T_, SK_, growth> GetReverseIterator() {
+		return LinkedListIterator<T_, SK_, growth>(last,true);
 	}
 
 	////Creates an ordered iterator object
-	LinkedListOrderedIterator<T_> GetOrderedIterator() {
-		return LinkedListOrderedIterator<T_>(order_first,false);
+	virtual LinkedListOrderedIterator<T_, SK_, growth> GetOrderedIterator() {
+		return LinkedListOrderedIterator<T_, SK_, growth>(order_first,false);
 	}
 
 	////Creates an ordered reverse iterator object
-	LinkedListOrderedIterator<T_> GetReverseOrderedIterator() {
-		return LinkedListOrderedIterator<T_>(order_last,true);
+	virtual LinkedListOrderedIterator<T_, SK_, growth> GetReverseOrderedIterator() {
+		return LinkedListOrderedIterator<T_, SK_, growth>(order_last,true);
 	}
 
-	LinkedListItem<T_> *AddItem(T_ *Item) { return AddItem(Item, 0); }
+	LinkedListItem<T_, SK_, growth> *Add(T_ *Item, SK_ Order=SK_()) { return AddItem(Item, Order); }
 
-	LinkedListItem<T_> *Add(T_ *Item) { return AddItem(Item, 0); }
+	LinkedListItem<T_, SK_, growth> *Add(T_& Item, SK_ Order=SK_()) { return AddItem(&Item, Order);}
 
-	LinkedListItem<T_> *Add(T_& Item) { return AddItem(&Item, 0);}
-
-	LinkedListItem<T_> *AddItem(T_& Item) { return AddItem(&Item, 0);}
-
-	LinkedListItem<T_> *AddItem(T_& Item,float Order) { return AddItem(&Item, Order);}
+	LinkedListItem<T_, SK_, growth> *AddItem(T_& Item,SK_ Order=SK_()) { return AddItem(&Item, Order);}
 
 
 	////Adds a new item to the list. This function returns the list item
 	/// that surrounds the newly added item
 	///@Item	: The item to be added to the list
 	///@Order	: The order of the item to be added
-	LinkedListItem<T_> *AddItem(T_ *Item,float Order) {
-		LinkedListItem<T_> *ret=obtain();
+	LinkedListItem<T_, SK_, growth> *AddItem(T_ *Item,SK_ Order=SK_()) {
+		LinkedListItem<T_, SK_, growth> *ret=obtain();
 		count++;
 
 		ret->Order=Order;
@@ -649,12 +679,12 @@ public:
 			last->next=ret;
 			last=ret;
 
-			LinkedListOrderedIterator<T_> i=GetOrderedIterator();
-			LinkedListItem<T_> *item;
+			LinkedListOrderedIterator<T_, SK_, growth> i=GetOrderedIterator();
+			LinkedListItem<T_, SK_, growth> *item;
 
 			bool done=false;
 
-			while( (item=i) ) {
+			while(item=i) {
 				if(item->Order>=ret->Order) {
 					if(item->order_prev!=NULL)
 						item->order_prev->order_next=ret;

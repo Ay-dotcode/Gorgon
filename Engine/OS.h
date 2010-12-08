@@ -54,7 +54,7 @@ namespace gge {
 	WindowHandle CreateWin(const char *Name, const char *Title, IconHandle Icon, InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
 	////This function shows a OS message box to display errors, for other messages
 	/// its better to use in-game dialogs
-	void DisplayMessage(char *Title, char *Text);
+	void DisplayMessage(const char *Title, const char *Text);
 	////Hides the pointer displayed by OS
 	void HideOSPointer();
 	////Shows the pointer displayed by OS
@@ -68,6 +68,8 @@ namespace gge {
 	void ProcessMessage();
 	////Initializes OS subsystem by setting up events
 	void InitializeOS();
+	////Sleep function, should be in ms
+	void Sleep(int);
 
 	extern EventChain<Empty, empty_event_params> WindowActivateEvent;
 	extern EventChain<Empty, empty_event_params> WindowDeactivateEvent;

@@ -26,8 +26,8 @@ namespace gge {
 
 		LayerBase() : parent(NULL) { }
 
-		virtual LayerBase *Add(LayerBase *layer, int Order=0) { layer->parent=this; SubLayers.AddItem(layer, (float)Order); return layer; }
-		virtual LayerBase &Add(LayerBase &layer, int Order=0) { layer.parent=this; SubLayers.AddItem(&layer, (float)Order); return layer; }
+		virtual LayerBase *Add(LayerBase *layer, int Order=0) { if(layer->parent) layer->parent->Remove(layer); layer->parent=this; SubLayers.AddItem(layer, (float)Order); return layer; }
+		virtual LayerBase &Add(LayerBase &layer, int Order=0) { if(layer.parent) layer.parent->Remove(layer); layer.parent=this; SubLayers.AddItem(&layer, (float)Order); return layer; }
 		virtual void Remove(LayerBase *layer) { SubLayers.Remove(layer); }
 		virtual void Remove(LayerBase &layer) { SubLayers.Remove(&layer); }
 		////Size of layer
@@ -57,6 +57,35 @@ namespace gge {
 				return (int)parent->SubLayers.FindListItem(this)->getOrder(); 
 			else
 				return 0;
+		}
+
+		void Move(int X,int Y) {
+			this->X=X;
+			this->Y=Y;
+		}
+
+		void Resize(int W, int H) {
+			this->W=W;
+			this->H=H;
+		}
+
+		void SetRectangle(Rectangle rect) {
+			X=rect.Left;
+			Y=rect.Top;
+			W=rect.Width;
+			H=rect.Height;
+		}
+
+		void SetRectangle(int Left, int Top, int Width, int Height) {
+			X=Left;
+			Y=Top;
+			W=Width;
+			H=Height;
+		}
+
+		virtual ~LayerBase() {
+			if(parent)
+				parent->Remove(this);
 		}
 
 	protected:

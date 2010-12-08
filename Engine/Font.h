@@ -88,6 +88,7 @@ namespace gge {
 
 	class FontInitiator {
 	public:
+		FontInitiator() : file(NULL) { }
 		Guid *guid_theme;
 		Font::FontStyle Style;
 		RGBint Color;

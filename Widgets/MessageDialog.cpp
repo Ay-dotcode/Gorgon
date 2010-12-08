@@ -11,9 +11,9 @@ namespace gorgonwidgets {
 
 	MessageDialog::MessageDialog(std::string Message, int Width, int Height, int X, int Y) :
 		Message(Message), Title(), Width(Width), Height(Height), X(X), Y(Y),
-		frame(WidgetRegistry.DialogFrameBP()), 
-		title(WidgetRegistry.createTitleLabel(frame, "")), message(WidgetRegistry.createDialogLabel(frame, Message)),
-		btnOK(WidgetRegistry.createDialogButton(frame, "OK"))
+		frame(WR.DialogFrameBP()), 
+		title(WR.createTitleLabel(frame, "")), message(WR.createDialogLabel(frame, Message)),
+		btnOK(WR.createDialogButton(frame, "OK"))
 	{	
 		frame.Hide();
 		toplevels.getFirstItem()->AddDialog(frame);
@@ -30,9 +30,9 @@ namespace gorgonwidgets {
 
 	MessageDialog::MessageDialog(IWidgetContainer &container, std::string Message, int Width, int Height, int X, int Y) :
 		Message(Message), Title(), Width(Width), Height(Height), X(X), Y(Y), 
-		frame(WidgetRegistry.DialogFrameBP()), 
-		title(WidgetRegistry.createTitleLabel(frame, "")), message(WidgetRegistry.createDialogLabel(frame, Message)),
-		btnOK(WidgetRegistry.createDialogButton(frame, "OK"))
+		frame(WR.DialogFrameBP()), 
+		title(WR.createTitleLabel(frame, "")), message(WR.createDialogLabel(frame, Message)),
+		btnOK(WR.createDialogButton(frame, "OK"))
 	{
 		frame.Hide();
 		container.AddDialog(frame);
@@ -146,9 +146,9 @@ namespace gorgonwidgets {
 	}
 
 	MessageDialog::~MessageDialog() {
-		WidgetRegistry.Delete(message);
-		WidgetRegistry.Delete(title);
-		WidgetRegistry.Delete(btnOK);
+		WR.Delete(message);
+		WR.Delete(title);
+		WR.Delete(btnOK);
 	}
 
 	void MessageDialog::btnOK_click	(empty_event_params p, Button &button, Any data, string event) {

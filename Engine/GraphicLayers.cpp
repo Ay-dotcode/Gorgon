@@ -7,7 +7,7 @@ namespace gge {
 	extern MouseEventObject *pressedObject;
 	int scX,scY,scW,scH;
 
-	Basic2DLayer::Basic2DLayer(int X,int Y,int W,int H) {
+	Basic2DLayer::Basic2DLayer(int X,int Y,int W,int H) : LayerBase() {
 		this->X=X;
 		this->Y=Y;
 		this->W=W;
@@ -17,7 +17,7 @@ namespace gge {
 		EnableClipping=false;
 	}
 
-	Basic2DLayer::Basic2DLayer(gge::Rectangle r) {
+	Basic2DLayer::Basic2DLayer(gge::Rectangle r) : LayerBase() {
 		this->X=r.Left;
 		this->Y=r.Top;
 		this->W=r.Width;
@@ -569,7 +569,7 @@ namespace gge {
 		glPopAttrib();
 	}
 
-	Colorizable2DLayer::Colorizable2DLayer(int X,int Y,int W,int H) {
+	Colorizable2DLayer::Colorizable2DLayer(int X,int Y,int W,int H) : LayerBase() {
 		Ambient=RGBint(0xffffffff);
 		this->X=X;
 		this->Y=Y;
@@ -579,7 +579,7 @@ namespace gge {
 		isVisible=true;
 		EnableClipping=false;
 	}
-	Colorizable2DLayer::Colorizable2DLayer(gge::Rectangle r){
+	Colorizable2DLayer::Colorizable2DLayer(gge::Rectangle r) : LayerBase() {
 		Ambient=RGBint(0xffffffff);
 		this->X=r.Left;
 		this->Y=r.Top;
@@ -1292,7 +1292,7 @@ namespace gge {
 
 		glPopAttrib();
 	}
-	Basic2DRawGraphicsLayer::Basic2DRawGraphicsLayer(int X,int Y,int W,int H) {
+	Basic2DRawGraphicsLayer::Basic2DRawGraphicsLayer(int X,int Y,int W,int H) : LayerBase() {
 		this->X=X;
 		this->Y=Y;
 		this->W=W;

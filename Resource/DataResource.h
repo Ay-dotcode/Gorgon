@@ -2,6 +2,9 @@
 
 #include "GRE.h"
 #include "ResourceBase.h"
+#include "../Utils/Margins.h"
+#include "../Utils/Size2D.h"
+#include "../Engine/Font.h"
 
 namespace gre {
 	class ResourceFile;
@@ -20,7 +23,9 @@ namespace gre {
 		////4 byte integer point data
 		DT_Point,
 		////4 byte integer rectangle data
-		DT_Rectangle
+		DT_Rectangle,
+		////Resource Link
+		DT_Link,
 	};
 
 	////Data resource interface
@@ -28,6 +33,8 @@ namespace gre {
 	public:
 		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
 		string name;
+
+		virtual void Prepare(ResourceFile *File) { }
 	};
 
 	////Integer data
@@ -74,6 +81,7 @@ namespace gre {
 		PointData(Point value) { this->value=value; }
 
 		operator Point() { return value; }
+		operator Size2D() { return value; }
 	};
 
 	////Rectangle data
@@ -89,6 +97,40 @@ namespace gre {
 		Bounds getBounds() { return (Bounds)value; }
 		operator Bounds() { return (Bounds)value; }
 		operator Rectangle() { return value; }
+		operator Margins() { return Margins(value.Left,value.Top,value.Width,value.Height); }
+	};
+
+	////Link data
+	class LinkData : public IData {
+	public:
+		////02030C02h (Basic, Data resource, Data types, integer)
+		virtual int getGID() { return GID_DATAARRAY_LINK; }
+		int getObjectGID() { if(value) return value->getGID(); return 0; }
+		ResourceBase *value;
+		Guid *guid;
+
+		LinkData(Guid *guid) : value(NULL) { this->guid=new Guid(*guid); }
+		operator ResourceBase *() { return value; }
+		operator ResourceBase &() { if(!value) throw runtime_error("Target is not set"); return *value; }
+		ResourceBase &Get() { if(!value) throw runtime_error("Target is not set"); return *value; }
+
+		virtual void Prepare(ResourceFile *File);
+	};
+
+	//Font data
+	class FontData : public IData {
+	public:
+		////03300C01h (Gaming, FontTheme, Data types, font)
+		virtual int getGID() { return 0x03300C01; }
+		Font value;
+		FontInitiator initiator;
+
+		FontData(Font &font) { value=font; }
+		FontData(FontInitiator &font) { initiator=font; }
+		operator Font() { return value; }
+		virtual void Prepare(ResourceFile *File) {
+			value=(Font)initiator;
+		}
 	};
 
 	////This is data resource which holds an array of basic data types. These types are
@@ -111,6 +153,12 @@ namespace gre {
 		RectangleData  *Add(gge::Rectangle value) { return (RectangleData*)Data[Data.Add(new RectangleData(value))]; }
 		////Adds a new rectangle to this resource
 		RectangleData  *Add(Bounds value) { return (RectangleData*)Data[Data.Add(new RectangleData(value))]; }
+		////Adds a new rectangle to this resource
+		FontData	   *Add(Font value) { return (FontData*)Data[Data.Add(new FontData(value))]; }
+		////Adds a new rectangle to this resource
+		FontData	   *Add(FontInitiator value) { return (FontData*)Data[Data.Add(new FontData(value))]; }
+		////Adds a new integer value to this resource
+		LinkData *Add(Guid *value) { return (LinkData*)Data[Data.Add(new LinkData(value))]; }
 
 		////Returns item at index
 		IData *operator [] (int Index) { return Data[Index]; }
@@ -124,10 +172,20 @@ namespace gre {
 		const char *getText(int Index) { return ((StringData*)Data[Index])->value.data(); }
 		////Returns point at index
 		Point getPoint(int Index) { return ((PointData*)Data[Index])->value; }
+		////Returns size at index
+		Size2D getSize2D(int Index) { return ((PointData*)Data[Index])->value; }
 		////Returns rectangle at index
 		gge::Rectangle getRectangle(int Index) { return ((RectangleData*)Data[Index])->value; }
+		////Returns margins at index
+		gge::Margins getMargins(int Index) { return *((RectangleData*)Data[Index]); }
 		////Returns bounds at index
 		Bounds getBounds(int Index) { return ((RectangleData*)Data[Index])->getBounds(); }
+		////Returns resource object from a link
+		ResourceBase &getLink(int Index) { return ((LinkData*)Data[Index])->Get(); }
+		////Returns font object
+		Font getFont(int Index) { return ((FontData*)Data[Index])->value; }
+		////Returns number of items in the array
+		int getCount() { return Data.getCount(); }
 		
 		////02030000h (Basic, Data resource)
 		virtual int getGID() { return GID_DATAARRAY; }
@@ -135,5 +193,10 @@ namespace gre {
 		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
 
 		virtual ~DataResource() { Data.Destroy(); ResourceBase::~ResourceBase(); }
+
+		virtual void Prepare(GGEMain *main) { foreach(IData, data, Data) data->Prepare(file); }
+
+	protected:
+		ResourceFile *file;
 	};
 }

@@ -1,5 +1,6 @@
 #include "WidgetRegistry.h"
 #include "LinearOrganizer.h"
+#include "../Resource/DataResource.h"
 
 namespace gorgonwidgets {
 	
@@ -603,6 +604,7 @@ namespace gorgonwidgets {
 
 		return *frame;
 	}
-	class WidgetRegistry WidgetRegistry;
+
+	
 	class WidgetRegistry WR;
 }

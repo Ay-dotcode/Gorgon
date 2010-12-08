@@ -8,7 +8,7 @@ namespace gge {
 
 	class CustomLayer : public LayerBase {
 	public:
-		CustomLayer(CustomRenderer Renderer, int X, int Y, int W, int H);
+		CustomLayer(CustomRenderer Renderer, int X=0, int Y=0, int W=100, int H=100);
 
 		virtual void Render();
 

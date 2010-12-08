@@ -45,8 +45,8 @@ namespace gorgonwidgets {
 
 		WidgetLayer &getBaseLayer() { return BaseLayer; }
 
-		virtual int			getUsableWidth() { return IWidgetObject::Width(); }
-		virtual int			getUsableHeight() { return IWidgetObject::Height(); }
+		virtual int			getUsableWidth() { return usable.Width; }
+		virtual int			getUsableHeight() { return usable.Height; }
 
 		using IWidgetObject::Show;
 		using IWidgetObject::Hide;
@@ -78,7 +78,7 @@ namespace gorgonwidgets {
 			return Widget; 
 		}
 
-		virtual void SetBluePrint(IWidgetBluePrint *BP) { }
+		virtual void SetBluePrint(IWidgetBluePrint *BP);
 		virtual void on_focus_event(bool state,IWidgetObject *related) { isactive=state; };
 		
 		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier) {
@@ -132,10 +132,21 @@ namespace gorgonwidgets {
 
 		Point Overhead() { 
 			return Point(
-				IWidgetObject::width-BoxLayer.W,
-				IWidgetObject::height-BoxLayer.H
+				IWidgetObject::width-usable.Width,
+				IWidgetObject::height-usable.Height
 			);
 		}
+
+		virtual Size2D ContentSize() {
+			int max_x=0,max_y=0;
+			foreach(IWidgetObject, object, Subobjects) {
+				if(object->X()+object->Width()>max_x) max_x=object->X()+object->Width();
+				if(object->Y()+object->Height()>max_y) max_y=object->Y()+object->Height();
+			}
+
+			return Size2D(max_x, max_y);
+		}
+
 
 		EventChain<Frame, keyboard_event_params> KeyboardEvent;
 		EventChain<Frame, keyboard_event_params> KeypreviewEvent;
@@ -180,6 +191,8 @@ namespace gorgonwidgets {
 		ScrollbarDisplayStates verticlescrollbarstate;
 		bool noactivate;
 		int maxvscroll;
+
+		Size2D usable;
 
 		void init();
 

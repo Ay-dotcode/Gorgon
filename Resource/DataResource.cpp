@@ -4,6 +4,7 @@
 namespace gre {
 	ResourceBase *LoadDataResource(ResourceFile* File, FILE* Data, int Size) {
 		DataResource *dat=new DataResource;
+		dat->file=File;
 
 		int tpos=ftell(Data)+Size;
 		while(ftell(Data)<tpos) {
@@ -11,6 +12,7 @@ namespace gre {
 			float tmpfloat;
 			Point tmppoint;
 			gge::Rectangle tmprect;
+			Guid *tmpguid=NULL;
 
 			char *tmpstr;
 			fread(&gid,1,4,Data);
@@ -46,10 +48,33 @@ namespace gre {
 
 				dat->Add(tmprect);
 			}
-			else
+			else if(gid==GID_DATAARRAY_LINK) {
+				tmpguid=new Guid(Data);
+
+				dat->Add(tmpguid);
+
+				delete tmpguid;
+				tmpguid=NULL;
+			}
+			else if(gid==0x03300C01) {
+				FontInitiator f;
+				fread(&tmpint, 4,1, Data);
+				fread(&size, 4,1, Data);
+				f=Font::Load(File, Data,size);
+				f.file=File;
+
+				dat->Add(f);
+			}
+			else //should query for pluginable data items
 				EatChunk(Data,size);
 		}
 
 		return dat;
 	}
+
+	
+	void LinkData::Prepare(ResourceFile *File) { 
+		value=File->Root->FindObject(guid);
+	}
+
 }

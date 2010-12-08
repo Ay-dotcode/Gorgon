@@ -73,6 +73,12 @@ namespace gre {
 
 		////Returns Bytes/Pixel information
 		int getBPP() { return gge::getBPP(Mode); }
+ 
+		////Returns the width of the first image
+		int getWidth() { return Raw2DGraphic::Width; }
+		////Returns the height of the first image
+		int getHeight() { return Raw2DGraphic::Height; }
+
 
 		////Destroys used data
 		void destroy() { Data--; if(Palette) delete Palette; }

@@ -25,7 +25,7 @@ namespace geffects {
 		////Initializes the effect
 		LayerResizer(LayerBase *Target) :
 			speed(0,0 , 0,0),
-			current(Target->X, Target->Y, Target->W, Target->H),
+			current((float)Target->X, (float)Target->Y, (float)Target->W, (float)Target->H),
 			Target(Target),
 			FinishedEvent("Finished", this)
 		{
@@ -35,7 +35,7 @@ namespace geffects {
 		////Initializes the effect
 		LayerResizer(LayerBase &Target) :
 			speed(0,0 , 0,0),
-			current(Target.X, Target.Y, Target.W, Target.H),
+			current((float)Target.X, (float)Target.Y, (float)Target.W, (float)Target.H),
 			Target(&Target),
 			FinishedEvent("Finished", this)
 		{

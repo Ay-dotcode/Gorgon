@@ -1,4 +1,5 @@
 #include "Tinting.h"
+#include "../Engine/GGEMain.h"
 
 namespace geffects {
 	void Tinting::Setup(RGBint From, RGBint To, int Time) {
@@ -22,11 +23,12 @@ namespace geffects {
 		}
 
 		this->progressed=0;
+		this->lasttick=main->CurrentTime;
 		this->Play();
 	}
 
 	bool Tinting::isFinished() {
-		return current.a==to.a && current.r==to.r && current.g==to.g && current.g==to.b;
+		return current.a==to.a && current.r==to.r && current.g==to.g && current.b==to.b;
 	}
 
 	void Tinting::Process(int Time) {

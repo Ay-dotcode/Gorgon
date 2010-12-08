@@ -28,7 +28,7 @@ namespace gge {
 		bool EnableClipping;
 
 		////Default constructor to initialize variables
-		Basic2DLayer(int X, int Y, int W, int H);
+		Basic2DLayer(int X=0, int Y=0, int W=100, int H=100);
 		Basic2DLayer(gge::Rectangle r);
 
 		////Draws a simple image to the screen.
@@ -70,7 +70,7 @@ namespace gge {
 		////Whether or not enable clipping
 		bool EnableClipping;
 		////Default constructor to initialize variables
-		Colorizable2DLayer(int X, int Y, int W, int H);
+		Colorizable2DLayer(int X=0, int Y=0, int W=100, int H=100);
 		Colorizable2DLayer(gge::Rectangle r);
 
 		////This list contains surfaces to be drawn
@@ -117,7 +117,7 @@ namespace gge {
 		PAClassList<RawSurface> Surfaces;
 
 		////Default constructor to initialize variables
-		Basic2DRawGraphicsLayer(int X, int Y, int W, int H);
+		Basic2DRawGraphicsLayer(int X=0, int Y=0, int W=100, int H=100);
 
 		////Draws a given data to the screen
 		virtual void Draw(BYTE *Image, int Width, int Height, ColorMode Mode,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4);
@@ -129,7 +129,7 @@ namespace gge {
 	};
 	class WidgetLayer :  public BasicPointerTarget, public Basic2DLayer {
 	public:
-		WidgetLayer(int X,int Y,int W,int H) : Basic2DLayer(X,Y,W,H) {
+		WidgetLayer(int X=0, int Y=0, int W=100, int H=100) : Basic2DLayer(X,Y,W,H) {
 		}
 		////Renders this layer
 		virtual void Render() { Basic2DLayer::Render(); }

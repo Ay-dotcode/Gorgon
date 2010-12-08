@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstring>
-#include <exception>
-#include <stdlib.h>
+#include <stdexcept>
+#include <cstdlib>
 
 namespace gge {
 	template <class T_>
@@ -62,11 +62,11 @@ namespace gge {
 
 		void Resize(int size) {
 			if(noresizer)
-				throw runtime_error("Cannot resize");
+				throw std::runtime_error("Cannot resize");
 			if(*data)
-				*data=(T_*) realloc(*data, size*sizeof(T_));
+				*data=(T_*) std::realloc(*data, size*sizeof(T_));
 			else {
-				*data=(T_*) malloc(size*sizeof(T_));
+				*data=(T_*) std::malloc(size*sizeof(T_));
 			}
 
 			*this->size=size;

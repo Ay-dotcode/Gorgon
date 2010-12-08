@@ -17,7 +17,7 @@ namespace gorgonwidgets {
 		Scrollbar(SliderBP *BP, ScrollbarAlignments Alignment);
 
 		virtual void setValue(int value) { 
-			if(alignment==SS_Verticle) value=maximum-value; SliderBase::setValue((float)value); 
+			if(alignment==SS_Verticle) value=maximum-(float)value; SliderBase::setValue((float)value); 
 		}
 		virtual int getValue() { 
 			if(alignment==SS_Verticle) return (int)(maximum-value); else return (int)value; 
