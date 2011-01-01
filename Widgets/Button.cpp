@@ -1,10 +1,7 @@
 #include "Button.h"
 #include "../Engine/Wave.h"
 #include <cstring>
-
-namespace gge {
-	extern GGEMain *main;
-}
+#include "../Engine/GGEMain.h"
 
 namespace gorgonwidgets {
 	Button::Button(ButtonBP *BluePrint,IWidgetContainer &container) : 
@@ -288,7 +285,7 @@ namespace gorgonwidgets {
 
 		if(currentstate!=nextstate) {
 			if(elm) {
-				currentanimstart=main->CurrentTime;
+				currentanimstart=Main.CurrentTime;
 
 				if(elm==DetermineElement(prevstate,currentstate)) {
 					int remaining=(int)currentanimend-currentanimstart;
@@ -319,13 +316,13 @@ namespace gorgonwidgets {
 
 					elm->ReadyAnimation(reverse);
 					elm->Activate();
-					currentanimstart=main->CurrentTime;
+					currentanimstart=Main.CurrentTime;
 					if(elm->Duration==0) {
 						elm->setLoop(false);
-						currentanimend=main->CurrentTime+elm->getAnimationDuration();
+						currentanimend=Main.CurrentTime+elm->getAnimationDuration();
 					} else {
 						elm->setLoop(true);
-						currentanimend=main->CurrentTime+elm->Duration;
+						currentanimend=Main.CurrentTime+elm->Duration;
 					}
 				}
 			} else {
@@ -335,7 +332,7 @@ namespace gorgonwidgets {
 				elm->setLoop(true);
 				elm->Activate();
 				if(temporal) {
-					currentanimend=main->CurrentTime+BUTTON_CLICK_DOWNDURATION;
+					currentanimend=Main.CurrentTime+BUTTON_CLICK_DOWNDURATION;
 				}
 
 				if(elm)
@@ -349,10 +346,10 @@ namespace gorgonwidgets {
 	}
 
 	void Button::ProgressionCheck() {
-		if(main->CurrentTime>currentanimend) {
+		if(Main.CurrentTime>currentanimend) {
 			if(currentstate!=nextstate) {
 				if(temporalstate) {
-					currentanimend=main->CurrentTime+BUTTON_CLICK_DOWNDURATION;
+					currentanimend=Main.CurrentTime+BUTTON_CLICK_DOWNDURATION;
 					temporalstate=false;
 				} else {
 					Transition(nextstate,false,true);

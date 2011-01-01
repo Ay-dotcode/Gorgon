@@ -2,36 +2,31 @@
 #include <atlbase.h>
 
 namespace gge {
-	GGEMain *main=NULL;
+	GGEMain Main;
 
-	GGEMain::GGEMain(char *SystemName, InstanceHandle Instance, int Width, int Height, int BitDepth, bool FullScreen) :
-		SystemName(SystemName),
-		Instance(Instance),
-		Width(Width)  ,
-		Height(Height),
-		BitDepth(BitDepth),
-		FullScreen(FullScreen),
+	GGEMain::GGEMain() :
+		SystemName(""),
+		Instance(NULL),
+		Width(800)  ,
+		Height(600),
+		BitDepth(32),
+		FullScreen(false),
 		BeforeRenderEvent("BeforeRender", this),
 		AfterRenderEvent("AfterRender", this),
 		Window(NULL)
 	{
 
-		W=Width;
-		H=Height;
 		X=0;
 		Y=0;
-
-		gge::AddPointerTarget(this,0);
+		isVisible=true;
 
 		CurrentTime=GetTime();
 
 		CoInitialize(NULL);
-		main=this;
-
 		FPS=50;
 	}
 
-	void GGEMain::Setup(int Width, int Height, int BitDepth, bool FullScreen) {
+	void GGEMain::Setup(string SystemName, InstanceHandle Instance,int Width, int Height, int BitDepth, bool FullScreen) {
 #ifdef _DEBUG
 		if(Window!=NULL)
 			throw std::runtime_error("System already initialized.");
@@ -39,6 +34,8 @@ namespace gge {
 		if(Window!=NULL)
 			return;
 #endif
+		this->SystemName=SystemName;
+		this->Instance=Instance;
 		this->Width=W=Width;
 		this->Height=H=Height;
 		this->BitDepth=BitDepth;
@@ -84,7 +81,7 @@ namespace gge {
 
 	void IntervalObject::Reset() {
 		Enabled=true;
-		LastSignal=main->CurrentTime;
+		LastSignal=Main.CurrentTime;
 	}
 
 	void GGEMain::AfterRender() {
@@ -117,15 +114,17 @@ namespace gge {
 		IntervalObjects.Delete(Interval);
 	}
 
-	void GGEMain::InitializeAll(const char *Title, gge::IconHandle Icon, int X, int Y) {
-		main->InitializeOS();
-		main->CreateWin(Title, Icon, X, Y);
-		main->InitializeGraphics();
-		main->InitializeSound();
-		main->InitializeInput();
-		main->InitializeAnimation();
-		main->InitializePointer();
-		main->InitializeWidgets();
+	void GGEMain::InitializeAll(string Title, gge::IconHandle Icon, int X, int Y) {
+		InitializeOS();
+		CreateWin(Title, Icon, X, Y);
+		InitializeGraphics();
+		InitializeSound();
+		InitializeInput();
+		gge::AddPointerTarget(this,0); 
+
+		InitializeAnimation();
+		InitializePointer();
+		InitializeWidgets();
 	}
 
 }

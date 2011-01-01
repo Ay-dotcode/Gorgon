@@ -12,7 +12,7 @@ namespace gge {
 	}
 
 	void InitializeAnimation(GGEMain *main) {
-		main->RegisterInterval(0, NULL, Animator_Signal);
+		Main.RegisterInterval(0, NULL, Animator_Signal);
 	}
 
 	AnimatorBase::AnimatorBase() : 
@@ -23,9 +23,9 @@ namespace gge {
 
 		///*Assigning default values
 		pauseat=-1;
-		pausedat=main->CurrentTime;
+		pausedat=Main.CurrentTime;
 		speed=1;
-		lasttick=main->CurrentTime;
+		lasttick=Main.CurrentTime;
 		ispaused=false;
 		progressed=0;
 	}
@@ -44,7 +44,7 @@ namespace gge {
 
 	void AnimatorBase::Pause() {
 		ispaused=true;
-		pausedat=main->CurrentTime;
+		pausedat=Main.CurrentTime;
 	}
 
 	void AnimatorBase::PauseAt(int ms) {
@@ -59,8 +59,8 @@ namespace gge {
 		if(isFinished()) return;
 
 		if(!ispaused) {
-			ProgressBy(main->CurrentTime-lasttick);
-			lasttick=main->CurrentTime;
+			ProgressBy(Main.CurrentTime-lasttick);
+			lasttick=Main.CurrentTime;
 		}
 	}
 
@@ -99,7 +99,7 @@ namespace gge {
 	}
 
 	void AnimatorBase::Play() {
-		lasttick=main->CurrentTime;
+		lasttick=Main.CurrentTime;
 		ispaused=false;
 	}
 

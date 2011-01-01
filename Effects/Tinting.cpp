@@ -23,7 +23,7 @@ namespace geffects {
 		}
 
 		this->progressed=0;
-		this->lasttick=main->CurrentTime;
+		this->lasttick=Main.CurrentTime;
 		this->Play();
 	}
 

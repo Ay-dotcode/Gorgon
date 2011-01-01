@@ -63,7 +63,7 @@ namespace gge {
 
 
 		glColor4f(1,1,1,1);
-		glViewport(X, (main->H-Y)-H, W, H);
+		glViewport(X, (Main.H-Y)-H, W, H);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
@@ -90,7 +90,7 @@ namespace gge {
 		glMatrixMode(GL_MODELVIEW);
 		glColor4fv(CurrentLayerColor.vect);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		glViewport(0, 0, main->W, main->H);
+		glViewport(0, 0, Main.W, Main.H);
 		
 		scX=pscX;
 		scY=pscY;

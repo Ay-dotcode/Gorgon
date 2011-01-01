@@ -4,10 +4,7 @@
 #ifndef SLIDER_TIMEOUT
 #define SLIDER_TIMEOUT	250
 #endif
-
-namespace gge {
-	extern GGEMain *main;
-}
+#include "../Engine/GGEMain.h"
 
 
 namespace gorgonwidgets {
@@ -96,7 +93,7 @@ namespace gorgonwidgets {
 		AlwaysShowCap(false),
 		numberformat("%.0f"),
 		rulelayer(0,0, 100,100), ticklayer(0,0, width,height),
-		textlayer(0,0, width, height), textwlayer(0,0,main->W, main->H),
+		textlayer(0,0, width, height), textwlayer(0,0,Main.W, Main.H),
 		overlayer(0,0, 100,100), symbollayer(0,0, 0,0)
 
 	{
@@ -134,7 +131,7 @@ namespace gorgonwidgets {
 		AlwaysShowCap(false),
 		numberformat("%.0f"),
 		rulelayer(0,0, 100,100), ticklayer(0,0, width,height),
-		textlayer(0,0, width, height), textwlayer(0,0,main->W, main->H),
+		textlayer(0,0, width, height), textwlayer(0,0,Main.W, Main.H),
 		overlayer(0,0, 100,100), symbollayer(0,0, 0,0)
 
 	{
@@ -190,17 +187,17 @@ namespace gorgonwidgets {
 		btnUp->Hide();
 		btnDown->Hide();
 
-		rulemouseevent=rulelayer.RegisterMouseEvent(0,0,main->W,main->H,this,fn_rule_mouse,fn_rule_mouse,fn_rule_mouse,fn_rule_mouse,fn_rule_mouse,fn_rule_mouse)->Item;
+		rulemouseevent=rulelayer.RegisterMouseEvent(0,0,Main.W,Main.H,this,fn_rule_mouse,fn_rule_mouse,fn_rule_mouse,fn_rule_mouse,fn_rule_mouse,fn_rule_mouse)->Item;
 		rulemouseevent->Enabled=false;
 
-		symbolmouseevent=symbollayer.RegisterMouseEvent(0,0,main->W,main->H,this,fn_symbol_mouse,fn_symbol_mouse,fn_symbol_mouse,fn_symbol_mouse,fn_symbol_mouse,fn_symbol_mouse)->Item;
+		symbolmouseevent=symbollayer.RegisterMouseEvent(0,0,Main.W,Main.H,this,fn_symbol_mouse,fn_symbol_mouse,fn_symbol_mouse,fn_symbol_mouse,fn_symbol_mouse,fn_symbol_mouse)->Item;
 		symbolmouseevent->Enabled=false;
 
-		tickmouseevent=ticklayer.RegisterMouseEvent(0,0,main->W,main->H,this,fn_tick_mouse,fn_tick_mouse,fn_tick_mouse,fn_tick_mouse,fn_tick_mouse,fn_tick_mouse)->Item;
+		tickmouseevent=ticklayer.RegisterMouseEvent(0,0,Main.W,Main.H,this,fn_tick_mouse,fn_tick_mouse,fn_tick_mouse,fn_tick_mouse,fn_tick_mouse,fn_tick_mouse)->Item;
 		tickmouseevent->Enabled=false;
 
 		textlayer.Add(textwlayer,0);
-		textmouseevent=textwlayer.RegisterMouseEvent(0,0,main->W,main->H,this,fn_text_mouse,fn_text_mouse,fn_text_mouse,fn_text_mouse,fn_text_mouse,fn_text_mouse)->Item;
+		textmouseevent=textwlayer.RegisterMouseEvent(0,0,Main.W,Main.H,this,fn_text_mouse,fn_text_mouse,fn_text_mouse,fn_text_mouse,fn_text_mouse,fn_text_mouse)->Item;
 		textmouseevent->Enabled=false;
 
 		btnUp->PressEvent.Register(this, &SliderBase::btnUp_press);
@@ -848,7 +845,7 @@ namespace gorgonwidgets {
 
 		if(currentrulestate!=nextrulestate) {
 			if(elm) {
-				currentruleanimstart=main->CurrentTime;
+				currentruleanimstart=Main.CurrentTime;
 
 				if(elm==DetermineRuleElement(prevrulestate,currentrulestate)) {
 					int remaining=(int)currentruleanimend-currentruleanimstart;
@@ -861,14 +858,14 @@ namespace gorgonwidgets {
 					currentruleanimend=currentruleanimstart+elm->Duration-remaining;
 				} else {
 					elm->ReadyAnimation(false);
-					currentruleanimend=main->CurrentTime+elm->Duration;
+					currentruleanimend=Main.CurrentTime+elm->Duration;
 				}
 			} else {
 				prevrulestate=currentrulestate;
 				currentrulestate=nextrulestate;
 				elm=DetermineRuleElement(currentrulestate,nextrulestate);
 				if(temporal) {
-					currentruleanimend=main->CurrentTime+SLIDER_CLICK_DOWNDURATION;
+					currentruleanimend=Main.CurrentTime+SLIDER_CLICK_DOWNDURATION;
 				}
 
 				if(elm)
@@ -901,7 +898,7 @@ namespace gorgonwidgets {
 
 		if(currentsymbolstate!=nextsymbolstate) {
 			if(elm) {
-				currentsymbolanimstart=main->CurrentTime;
+				currentsymbolanimstart=Main.CurrentTime;
 
 				if(elm==DetermineSymbolElement(prevsymbolstate,currentsymbolstate)) {
 					int remaining=(int)currentsymbolanimend-currentsymbolanimstart;
@@ -914,14 +911,14 @@ namespace gorgonwidgets {
 					currentsymbolanimend=currentsymbolanimstart+elm->Duration-remaining;
 				} else {
 					elm->ReadyAnimation(false);
-					currentsymbolanimend=main->CurrentTime+elm->Duration;
+					currentsymbolanimend=Main.CurrentTime+elm->Duration;
 				}
 			} else {
 				prevsymbolstate=currentsymbolstate;
 				currentsymbolstate=nextsymbolstate;
 				elm=DetermineSymbolElement(currentsymbolstate,nextsymbolstate);
 				if(temporal) {
-					currentsymbolanimend=main->CurrentTime+SLIDER_CLICK_DOWNDURATION;
+					currentsymbolanimend=Main.CurrentTime+SLIDER_CLICK_DOWNDURATION;
 				}
 
 				if(elm)
@@ -955,7 +952,7 @@ namespace gorgonwidgets {
 
 		if(currenttickstate!=nexttickstate) {
 			if(elm) {
-				currenttickanimstart=main->CurrentTime;
+				currenttickanimstart=Main.CurrentTime;
 
 				if(elm==DetermineTickElement(prevtickstate,currenttickstate)) {
 					int remaining=(int)currenttickanimend-currenttickanimstart;
@@ -968,14 +965,14 @@ namespace gorgonwidgets {
 					currenttickanimend=currenttickanimstart+elm->Duration-remaining;
 				} else {
 					elm->ReadyAnimation(false);
-					currenttickanimend=main->CurrentTime+elm->Duration;
+					currenttickanimend=Main.CurrentTime+elm->Duration;
 				}
 			} else {
 				prevtickstate=currenttickstate;
 				currenttickstate=nexttickstate;
 				elm=DetermineTickElement(currenttickstate,nexttickstate);
 				if(temporal) {
-					currenttickanimend=main->CurrentTime+SLIDER_CLICK_DOWNDURATION;
+					currenttickanimend=Main.CurrentTime+SLIDER_CLICK_DOWNDURATION;
 				}
 
 				if(elm)
@@ -1008,7 +1005,7 @@ namespace gorgonwidgets {
 
 		if(currentoverlaystate!=nextoverlaystate) {
 			if(elm) {
-				currentoverlayanimstart=main->CurrentTime;
+				currentoverlayanimstart=Main.CurrentTime;
 
 				if(elm==DetermineOverlayElement(prevoverlaystate,currentoverlaystate)) {
 					int remaining=(int)currentoverlayanimend-currentoverlayanimstart;
@@ -1021,14 +1018,14 @@ namespace gorgonwidgets {
 					currentoverlayanimend=currentoverlayanimstart+elm->Duration-remaining;
 				} else {
 					elm->ReadyAnimation(false);
-					currentoverlayanimend=main->CurrentTime+elm->Duration;
+					currentoverlayanimend=Main.CurrentTime+elm->Duration;
 				}
 			} else {
 				prevoverlaystate=currentoverlaystate;
 				currentoverlaystate=nextoverlaystate;
 				elm=DetermineOverlayElement(currentoverlaystate,nextoverlaystate);
 				if(temporal) {
-					currentoverlayanimend=main->CurrentTime+SLIDER_CLICK_DOWNDURATION;
+					currentoverlayanimend=Main.CurrentTime+SLIDER_CLICK_DOWNDURATION;
 				}
 
 				if(elm)
@@ -1492,10 +1489,10 @@ namespace gorgonwidgets {
 
 		if(!delayclicks)
 			time=intervaltimeout;
-		goup=main->RegisterInterval(time, this, fn_goUp);
+		goup=Main.RegisterInterval(time, this, fn_goUp);
 	}
 	void SliderBase::stopUp() {
-		main->UnregisterInterval(goup);
+		Main.UnregisterInterval(goup);
 		goup=NULL;
 		golarge=false;
 	}
@@ -1509,10 +1506,10 @@ namespace gorgonwidgets {
 
 		if(!delayclicks)
 			time=intervaltimeout;
-		godown=main->RegisterInterval(time, this, fn_goDown);
+		godown=Main.RegisterInterval(time, this, fn_goDown);
 	}
 	void SliderBase::stopDown() {
-		main->UnregisterInterval(godown);
+		Main.UnregisterInterval(godown);
 		godown=NULL;
 		golarge=false;
 	}
@@ -1617,10 +1614,10 @@ namespace gorgonwidgets {
 		setValue(CalcMoveSymbolTo(x,y));
 	}
 	void SliderBase::ProgressionCheck() {
-		if(main->CurrentTime>currentruleanimend) {
+		if(Main.CurrentTime>currentruleanimend) {
 			if(currentrulestate!=nextrulestate) {
 				if(temporalrulestate) {
-					currentruleanimend=main->CurrentTime+SLIDER_CLICK_DOWNDURATION;
+					currentruleanimend=Main.CurrentTime+SLIDER_CLICK_DOWNDURATION;
 					temporalrulestate=false;
 				} else {
 					RuleTransition(nextrulestate,false,true);
@@ -1630,10 +1627,10 @@ namespace gorgonwidgets {
 				temporalrulestate=false;
 			}
 		}
-		if(main->CurrentTime>currentsymbolanimend) {
+		if(Main.CurrentTime>currentsymbolanimend) {
 			if(currentsymbolstate!=nextsymbolstate) {
 				if(temporalsymbolstate) {
-					currentsymbolanimend=main->CurrentTime+SLIDER_CLICK_DOWNDURATION;
+					currentsymbolanimend=Main.CurrentTime+SLIDER_CLICK_DOWNDURATION;
 					temporalsymbolstate=false;
 				} else {
 					SymbolTransition(nextsymbolstate,false,true);
@@ -1643,10 +1640,10 @@ namespace gorgonwidgets {
 				temporalsymbolstate=false;
 			}
 		}
-		if(main->CurrentTime>currenttickanimend) {
+		if(Main.CurrentTime>currenttickanimend) {
 			if(currenttickstate!=nexttickstate) {
 				if(temporaltickstate) {
-					currenttickanimend=main->CurrentTime+SLIDER_CLICK_DOWNDURATION;
+					currenttickanimend=Main.CurrentTime+SLIDER_CLICK_DOWNDURATION;
 					temporaltickstate=false;
 				} else {
 					TickTransition(nexttickstate,false,true);
@@ -1656,10 +1653,10 @@ namespace gorgonwidgets {
 				temporaltickstate=false;
 			}
 		}
-		if(main->CurrentTime>currentoverlayanimend) {
+		if(Main.CurrentTime>currentoverlayanimend) {
 			if(currentoverlaystate!=nextoverlaystate) {
 				if(temporaloverlaystate) {
-					currentoverlayanimend=main->CurrentTime+SLIDER_CLICK_DOWNDURATION;
+					currentoverlayanimend=Main.CurrentTime+SLIDER_CLICK_DOWNDURATION;
 					temporaloverlaystate=false;
 				} else {
 					OverlayTransition(nextoverlaystate,false,true);

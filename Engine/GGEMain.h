@@ -2,6 +2,7 @@
 
 #include "OS.h"
 #include "Sound.h"
+#include "Pointer.h"
 #include "../Utils/Any.h"
 #include "../Utils/EventChain.h"
 #include "Graphics.h"
@@ -11,8 +12,6 @@
 #include "../Widgets/WidgetMain.h"
 
 namespace gge {
-	void InitializePointer(GGEMain *Main);
-
 	struct IntervalObject;
 
 	////Function definition required to handle interval signal events
@@ -67,15 +66,15 @@ namespace gge {
 		/// return active bitdepth, only the specified value
 		inline int getBitDepth() { return BitDepth; }
 		////Whether running in windowed mode
-		inline int getFullScreen() { return FullScreen; }
+		inline bool getFullScreen() { return FullScreen; }
 		////The name of the system (code name of the game)
-		inline char *getSystemName() { return SystemName; }
+		inline string getSystemName() { return SystemName; }
 		////Handle of the window
 		inline WindowHandle getWindow() { return Window; }
 		////Handle of the application instance
 		inline InstanceHandle getInstance() { return Instance; }
 
-		void Setup(int Width=800, int Height=600, int BitDepth=32, bool FullScreen=false);
+		void Setup(string SystemName, InstanceHandle Instance, int Width=800, int Height=600, int BitDepth=32, bool FullScreen=false);
 
 		////Current system time. This time does not change in a given game loop
 		unsigned int CurrentTime;
@@ -91,11 +90,7 @@ namespace gge {
 		}
 
 		////Constructor
-		///@SystemName	: The name of the system (code name of the game)
-		/// should contain alpha numeric characters obeying
-		/// variable naming rules
-		///@Instance	: Handle of the application instance
-		GGEMain(char *SystemName, InstanceHandle Instance, int Width=800, int Height=600, int BitDepth=32, bool FullScreen=false);
+		GGEMain();
 
 		////This function should be called within the game loop before anything else
 		void BeforeGameLoop();
@@ -113,7 +108,7 @@ namespace gge {
 		////This function creates the game window. You may specify title, icon and position
 		/// of the window. However, position is ignored if this is a fullscreen application.
 		/// OS should be initialized before calling this function
-		WindowHandle CreateWin(const char *Title, IconHandle Icon, int X=0, int Y=0) {
+		WindowHandle CreateWin(string Title, IconHandle Icon, int X=0, int Y=0) {
 			Window=gge::CreateWin(SystemName,Title,Icon,Instance,X,Y,Width,Height,BitDepth,FullScreen);
 			return Window;
 		}
@@ -127,16 +122,19 @@ namespace gge {
 		////Initializes input subsystem. All check on keyboard state before calling
 		/// this method is error prone. This method should be called before any
 		/// call to BeforeGameLoop function.
-		void		 InitializeInput() { gge::InitializeInput(); }
+		void		 InitializeInput() { 
+			gge::InitializeInput(); 
+			gge::AddPointerTarget(this,0); 
+		}
 		////Initializes OS subsystem allowing it to setup events. Should be called before creating a window
 		void		 InitializeOS() { gge::InitializeOS(); }
 		////Initializes all systems creating the main window
-		void		 InitializeAll(const char *Title, IconHandle Icon, int X=0, int Y=0);
+		void		 InitializeAll(string Title, IconHandle Icon, int X=0, int Y=0);
 		////Initializes Animation subsystem. Before calling this function, animations does not progress
 		/// automatically.
 		void		 InitializeAnimation() { gge::InitializeAnimation(this); }
 		////Initializes Pointer subsystem. Before calling this function, pointers cannot be used
-		void		 InitializePointer() { gge::InitializePointer(this); }
+		void		 InitializePointer() { Pointers.Initialize(*this); }
 		void		 InitializeWidgets() { gorgonwidgets::InitializeWidgets(this); }
 
 		////Registers a signal handler to be called in every given time. Exact time passed from the
@@ -168,7 +166,7 @@ namespace gge {
 		////The name of the system (code name of the game)
 		/// should contain alpha numeric characters obeying
 		/// variable naming rules
-		char *SystemName;
+		string SystemName;
 		////Handle of the window
 		WindowHandle Window;
 		////Handle of the application instance
@@ -177,5 +175,5 @@ namespace gge {
 		Collection<IntervalObject> IntervalObjects;
 	};
 
-	extern GGEMain *main;
+	extern GGEMain Main;
 }

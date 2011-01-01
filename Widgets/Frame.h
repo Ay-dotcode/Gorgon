@@ -202,7 +202,7 @@ namespace gorgonwidgets {
 
 		virtual void container_hide() {
 			if(pointerid) {
-				gge::ResetPointer(pointerid);
+				Pointers.Reset(pointerid);
 				pointerid=0;
 			}
 

@@ -51,7 +51,7 @@ namespace gge {
 	///@Width		: The width of the window
 	///@Height		: The height of the window
 	///@FullScreen	: Whether to create a fullscreen window
-	WindowHandle CreateWin(const char *Name, const char *Title, IconHandle Icon, InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
+	WindowHandle CreateWin(string Name, string Title, IconHandle Icon, InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
 	////This function shows a OS message box to display errors, for other messages
 	/// its better to use in-game dialogs
 	void DisplayMessage(const char *Title, const char *Text);

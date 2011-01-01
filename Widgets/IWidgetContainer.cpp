@@ -1,11 +1,7 @@
 #include "IWidgetContainer.h"
 #include "IWidgetObject.h"
 #include "WidgetMain.h"
-#include "../engine/GGEMain.h"
-
-namespace gge {
-	extern GGEMain *main;
-}
+#include "../Engine/GGEMain.h"
 
 namespace gorgonwidgets {
 
@@ -17,7 +13,7 @@ namespace gorgonwidgets {
 		isactive(false), allowdefaultactions(true), allowtabswitch(true),
 		isenabled(true), 
 		BaseLayer(X,Y, W,H), 
-		ExtenderLayer(0,0, main->W,main->H), ObjectLayer(0,0, W,H), BackgroundLayer(0,0, W,H)
+		ExtenderLayer(0,0, Main.W,Main.H), ObjectLayer(0,0, W,H), BackgroundLayer(0,0, W,H)
 	{
 		BaseLayer.Add(ExtenderLayer, -1);
 		BaseLayer.Add(ObjectLayer, 0);

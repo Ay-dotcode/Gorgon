@@ -1,4 +1,5 @@
 #include "IWidgetObject.h"
+#include "../Engine/GGEMain.h"
 
 namespace gorgonwidgets {
 
@@ -10,11 +11,11 @@ namespace gorgonwidgets {
 
 			if(event==MOUSE_EVENT_OVER && iwo->pointerid)
 				if(iwo->pointer)
-					iwo->pointerid=gge::SetPointer(iwo->pointer);
+					iwo->pointerid=Pointers.Set(iwo->pointer);
 				else
-					iwo->pointerid=gge::SetPointer(iwo->PointerType);
+					iwo->pointerid=Pointers.Set(iwo->PointerType);
 			else if(event==MOUSE_EVENT_OUT && iwo->pointerid>0) {
-				gge::ResetPointer(iwo->pointerid);
+				Pointers.Reset(iwo->pointerid);
 				iwo->pointerid=0;
 			}
 
@@ -70,7 +71,7 @@ namespace gorgonwidgets {
 		layer.isVisible=false;
 
 		if(pointerid) {
-			gge::ResetPointer(pointerid);
+			Pointers.Reset(pointerid);
 			pointerid=0;
 		}
 
@@ -119,5 +120,14 @@ namespace gorgonwidgets {
 			container=NULL;
 		}
 	}
+	
+
+	void IWidgetObject::container_hide() {
+		if(pointerid) {
+			Pointers.Reset(pointerid);
+			pointerid=0;
+		}
+	}
+
 
 }

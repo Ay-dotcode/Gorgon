@@ -1,10 +1,7 @@
 #include "Checkbox.h"
 #include "../Engine/Wave.h"
 #include "CheckboxElement.h"
-
-namespace gge {
-	extern GGEMain *main;
-}
+#include "../Engine/GGEMain.h"
 
 namespace gorgonwidgets {
 	CheckboxBase::CheckboxBase(CheckboxBP *BluePrint,IWidgetContainer &container,CheckboxTypes type) : 
@@ -455,19 +452,19 @@ namespace gorgonwidgets {
 
 		if(statetransition) {
 			if(!elm){
-				currentanimstart=main->CurrentTime;
+				currentanimstart=Main.CurrentTime;
 				currentanimend=0;
 			}
 			else {
 				elm->ReadyAnimation(false);
-				currentanimstart=main->CurrentTime;
+				currentanimstart=Main.CurrentTime;
 				currentanimend=currentanimstart+elm->Duration;
 			}
 		}
 
 		if(currentstate!=nextstate) {
 			if(elm) {
-				currentanimstart=main->CurrentTime;
+				currentanimstart=Main.CurrentTime;
 
 				if(elm==DetermineElement(prevstate,currentstate)) {
 					int remaining=(int)currentanimend-currentanimstart;
@@ -480,14 +477,14 @@ namespace gorgonwidgets {
 					currentanimend=currentanimstart+elm->Duration-remaining;
 				} else {
 					elm->ReadyAnimation(false);
-					currentanimend=main->CurrentTime+elm->Duration;
+					currentanimend=Main.CurrentTime+elm->Duration;
 				}
 			} else {
 				prevstate=currentstate;
 				currentstate=nextstate;
 				elm=DetermineElement(currentstate,nextstate);
 				if(temporal) {
-					currentanimend=main->CurrentTime+CHECKBOX_CLICK_DOWNDURATION;
+					currentanimend=Main.CurrentTime+CHECKBOX_CLICK_DOWNDURATION;
 				}
 
 				if(elm)
@@ -501,7 +498,7 @@ namespace gorgonwidgets {
 	}
 
 	void CheckboxBase::ProgressionCheck() {
-		if(main->CurrentTime>currentanimend) {
+		if(Main.CurrentTime>currentanimend) {
 			if(statetransition) {
 				statetransition=false;
 
@@ -514,7 +511,7 @@ namespace gorgonwidgets {
 
 			if(currentstate!=nextstate) {
 				if(temporalstate) {
-					currentanimend=main->CurrentTime+CHECKBOX_CLICK_DOWNDURATION;
+					currentanimend=Main.CurrentTime+CHECKBOX_CLICK_DOWNDURATION;
 					temporalstate=false;
 				} else {
 					Transition(nextstate,false,true);

@@ -295,7 +295,7 @@ namespace gge {
 		return 0;
 	}
 
-	WindowHandle CreateWin(const char *Name, const char *Title, IconHandle Icon, InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
+	WindowHandle CreateWin(string Name, string Title, IconHandle Icon, InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
 		WNDCLASSEX windclass;
 
 		HWND ret;
@@ -308,7 +308,7 @@ namespace gge {
 		windclass.hCursor=LoadCursor(NULL, NULL);
 		windclass.hInstance=(HINSTANCE)Instance;
 		windclass.lpfnWndProc=WndProc;
-		windclass.lpszClassName=Name;
+		windclass.lpszClassName=Name.c_str();
 		windclass.lpszMenuName=NULL;
 		windclass.hIcon=(HICON)Icon;
 		windclass.hIconSm=(HICON)Icon;
@@ -332,9 +332,9 @@ namespace gge {
 
 		///*Creating window
 		if(!FullScreen)
-			ret=CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, Name, Title, WS_MINIMIZEBOX | WS_SYSMENU | WS_CLIPSIBLINGS |WS_CLIPCHILDREN ,CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, (HINSTANCE)Instance, NULL);
+			ret=CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, Name.c_str(), Title.c_str(), WS_MINIMIZEBOX | WS_SYSMENU | WS_CLIPSIBLINGS |WS_CLIPCHILDREN ,CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, (HINSTANCE)Instance, NULL);
 		else																							   
-			ret=CreateWindowA(Name, Title, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, (HINSTANCE)Instance, NULL);
+			ret=CreateWindowA(Name.c_str(), Title.c_str(), WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, (HINSTANCE)Instance, NULL);
 
 		///*Adjusting window size and position
 		ShowWindow(ret,1);

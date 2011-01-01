@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Utils/GGE.h"
+#include "../Utils/LinkedList.h"
 #include "Graphics.h"
 
 namespace gre { class FolderResource; }
@@ -9,6 +10,8 @@ using namespace gre;
 
 namespace gge {
 	class GGEMain;
+	class Basic2DLayer;
+
 
 	class Pointer {
 	public:
@@ -49,34 +52,54 @@ namespace gge {
 		}
 	};
 
-	////Initializes Pointer Subsystem
-	void InitializePointer(GGEMain *Main);
-	////Fetches list of pointers from a given folder resource. The given folder shall contain
-	/// a data file as the first item containing two entries per pointer. First entry must be
-	/// the Type(integer) ranging 0-6, second is Hotspot(point). Every pointer should be either
-	/// animation or image resource
-	void FetchPointers(FolderResource *Folder);
-	////Adds a pointer to the list of pointers
-	Pointer *AddPointer(Buffered2DGraphic *Pointer, Point Hotspot, Pointer::PointerTypes Type=Pointer::None);
-	////Removes a pointer from the list
-	void RemovePointer(Buffered2DGraphic *Pointer);
-	////Sets the given pointer as current one, this operation should be revered by
-	/// using reset pointer with the returned integer
-	int SetPointer(Pointer *Pointer);
-	////Sets the given pointer as current one, this operation should be revered by
-	/// using reset pointer with the returned integer
-	int SetPointer(Pointer::PointerTypes Type);
-	////This function changes base pointer to the given one, it is best to use this function
-	/// once at the startup. This function or FetchFolders function should be called before 
-	/// calling show pointer function
-	void ChangeBasePointer(Pointer *Pointer);
-	////Removes a given stack no from pointer display list. The displayed pointer is always
-	/// the one at the top. But any pointer can be removed from the list without the requirement
-	/// of being on top. 
-	void ResetPointer(int StackNo);
-	////Shows current pointer, ChangeBasePointer or FetchPointers function should be called before
-	/// calling this function
-	void ShowPointer();
-	////Hides current pointer
-	void HidePointer();
+
+	class Cpointers : public Collection<Pointer, 10> {
+	public:
+		////Initializes Pointer Subsystem
+		void Initialize(GGEMain &Main);
+		////Fetches list of pointers from a given folder resource. The given folder shall contain
+		/// a data file as the first item containing two entries per pointer. First entry must be
+		/// the Type(integer) ranging 0-6, second is Hotspot(point). Every pointer should be either
+		/// animation or image resource
+		void Fetch(FolderResource *Folder);
+		////Adds a pointer to the list of pointers
+		Pointer *Add(Buffered2DGraphic *Pointer, Point Hotspot, Pointer::PointerTypes Type=Pointer::None);
+		////Sets the given pointer as current one, this operation should be revered by
+		/// using reset pointer with the returned integer
+		int Set(Pointer *Pointer);
+		////Sets the given pointer as current one, this operation should be revered by
+		/// using reset pointer with the returned integer
+		int Set(Pointer::PointerTypes Type);
+		////This function changes base pointer to the given one, it is best to use this function
+		/// once at the startup. This function or FetchFolders function should be called before 
+		/// calling show pointer function
+		void ChangeBase(Pointer *Pointer);
+		////Removes a given stack no from pointer display list. The displayed pointer is always
+		/// the one at the top. But any pointer can be removed from the list without the requirement
+		/// of being on top. 
+		void Reset(int StackNo);
+		////Shows current pointer, ChangeBasePointer or FetchPointers function should be called before
+		/// calling this function
+		void Show();
+		////Hides current pointer
+		void Hide();
+
+		Cpointers() : PointerLayer(NULL), BasePointer(NULL), PointerVisible(false), OSPointerVisible(true) { }
+
+	protected:
+		LinkedList<Pointer> ActivePointers;
+		Basic2DLayer *PointerLayer;
+		Pointer *BasePointer;
+		bool PointerVisible;
+		bool OSPointerVisible;
+
+
+		//Event handlers
+		void Window_Activate();
+		void Window_Deactivate();
+		void Draw(GGEMain &caller);
+	};
+
+	extern Cpointers Pointers;
+
 }

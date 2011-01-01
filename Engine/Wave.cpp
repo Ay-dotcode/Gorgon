@@ -12,9 +12,9 @@ namespace gge {
 		finishedstateisknown=0;
 
 		if(maxWaveDistance)
-			isavailable= (source=Create3DSoundController(buffer, maxWaveDistance));
+			isavailable= (bool)(source=Create3DSoundController(buffer, maxWaveDistance));
 		else
-			isavailable= (source=CreateSoundController(buffer));
+			isavailable= (bool)(source=CreateSoundController(buffer));
 
 		Waves.Add(this);
 	}

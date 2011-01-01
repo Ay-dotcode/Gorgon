@@ -87,12 +87,7 @@ namespace gorgonwidgets {
 		IWidgetContainer &getContainer() { return *container; }
 		Pointer::PointerTypes PointerType;
 
-		virtual void container_hide() {
-			if(pointerid) {
-				gge::ResetPointer(pointerid);
-				pointerid=0;
-			}
-		}
+		virtual void container_hide();
 
 	protected:
 		int keyboardeventid;

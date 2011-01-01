@@ -12,7 +12,7 @@ namespace gorgonwidgets {
 		titleColor=colors->getInt(1);
 		hintColor=colors->getInt(2);
 
-		FetchPointers(file->Root->asFolder(1));
+		Pointers.Fetch(file->Root->asFolder(1));
 		
 		FolderResource *fonts=file->Root->asFolder(2);
 		fonttheme=dynamic_cast<gre::FontTheme *>(fonts->getItem(0));

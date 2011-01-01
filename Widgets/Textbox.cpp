@@ -1,10 +1,7 @@
 #include "Textbox.h"
 #include "../Engine/Wave.h"
 #include "../Resource/SoundResource.h"
-
-namespace gge {
-	extern GGEMain *main;
-}
+#include "../Engine/GGEMain.h"
 
 namespace gorgonwidgets {
 	Textbox::Textbox(TextboxBP *BluePrint,IWidgetContainer &container) : 
@@ -299,7 +296,7 @@ namespace gorgonwidgets {
 
 		if(currentstate!=nextstate) {
 			if(elm) {
-				currentanimstart=main->CurrentTime;
+				currentanimstart=Main.CurrentTime;
 
 				if(elm==DetermineElement(prevstate,currentstate)) {
 					unsigned int remaining=currentanimend-currentanimstart;
@@ -307,7 +304,7 @@ namespace gorgonwidgets {
 					elm->Reverse();
 					currentanimend=currentanimstart+elm->Duration-remaining;
 				} else {
-					currentanimend=main->CurrentTime+elm->Duration;
+					currentanimend=Main.CurrentTime+elm->Duration;
 				}
 			} else {
 				currentstate=nextstate;
@@ -323,7 +320,7 @@ namespace gorgonwidgets {
 	}
 
 	void Textbox::ProgressionCheck() {
-		if(main->CurrentTime>currentanimend) {
+		if(Main.CurrentTime>currentanimend) {
 			if(currentstate!=nextstate) {
 				Transition(nextstate,true);
 			}

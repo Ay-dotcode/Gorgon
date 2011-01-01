@@ -5,7 +5,7 @@
 #include "Textbox.h"
 
 namespace gge {
-	extern GGEMain *main;
+	extern GGEMain Main;
 }
 
 namespace gorgonwidgets {
@@ -34,9 +34,9 @@ namespace gorgonwidgets {
 		void setSpeed(float valuepersecond) { ButtonMoveTime=(int)((maximum-minimum)/valuepersecond); vps=valuepersecond; }
 
 		virtual ~Spinner() { Detach(); SliderBase::~SliderBase(); }
-		virtual void goUp() { if(buttonincrement<vps/main->FPS) buttonincrement=vps/main->FPS; SliderBase::goUp(); }
+		virtual void goUp() { if(buttonincrement<vps/Main.FPS) buttonincrement=vps/Main.FPS; SliderBase::goUp(); }
 		virtual void stopUp() { buttonincrement=steps; SliderBase::stopUp(); }
-		virtual void goDown() { if(buttonincrement<vps/main->FPS) buttonincrement=vps/main->FPS; SliderBase::goDown(); }
+		virtual void goDown() { if(buttonincrement<vps/Main.FPS) buttonincrement=vps/Main.FPS; SliderBase::goDown(); }
 		virtual void stopDown() { buttonincrement=steps; SliderBase::stopDown(); }
 
 				
