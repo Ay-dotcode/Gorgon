@@ -7,14 +7,14 @@ namespace gorgonwidgets {
 	void WidgetRegistry::DiscoverWidgets(ResourceFile *file) {
 		//these indices subject to change
 
-		DataResource *colors=file->Root->asData(0);
+		DataResource *colors=file->Root().asData(0);
 		textColor=colors->getInt(0);
 		titleColor=colors->getInt(1);
 		hintColor=colors->getInt(2);
 
-		Pointers.Fetch(file->Root->asFolder(1));
+		Pointers.Fetch(file->Root().asFolder(1));
 		
-		FolderResource *fonts=file->Root->asFolder(2);
+		FolderResource *fonts=file->Root().asFolder(2);
 		fonttheme=dynamic_cast<gre::FontTheme *>(fonts->getItem(0));
 		normal=fonts->asBitmapFont(1);
 		if(fonts->getCount()>2)
@@ -42,7 +42,7 @@ namespace gorgonwidgets {
 		else
 			h1=h2;
 
-		FolderResource *frames=file->Root->asFolder(3);
+		FolderResource *frames=file->Root().asFolder(3);
 
 		background=frames->asImage(0);
 		background->SetResizingOptions(ResizableObject::Tile, ResizableObject::Tile);
@@ -80,12 +80,12 @@ namespace gorgonwidgets {
 			photoFrame=thickFrame;
 
 
-		FolderResource *separators=file->Root->asFolder(4);
+		FolderResource *separators=file->Root().asFolder(4);
 		hSeparator=dynamic_cast<LineResource*>(separators->getItem(0));
 		vSeparator=dynamic_cast<LineResource*>(separators->getItem(1));
 
 
-		FolderResource *buttons=file->Root->asFolder(5);
+		FolderResource *buttons=file->Root().asFolder(5);
 
 		button=dynamic_cast<ButtonBP*>(buttons->getItem(0));
 		if(buttons->getCount()>1)
@@ -106,7 +106,7 @@ namespace gorgonwidgets {
 		colorChooser=button;
 
 
-		FolderResource *textboxes=file->Root->asFolder(6);
+		FolderResource *textboxes=file->Root().asFolder(6);
 		textbox=dynamic_cast<TextboxBP*>(textboxes->getItem(0));
 		if(textboxes->getCount()>1)
 			numberbox=dynamic_cast<TextboxBP*>(textboxes->getItem(1));
@@ -115,7 +115,7 @@ namespace gorgonwidgets {
 		shortTextbox=textbox;
 		signitureTextbox=textbox;
 
-		FolderResource *checkboxes=file->Root->asFolder(7);
+		FolderResource *checkboxes=file->Root().asFolder(7);
 		radioButton=checkbox=dynamic_cast<CheckboxBP*>(checkboxes->getItem(0));
 		if(checkboxes->getCount()>1)
 			tabButton=dynamic_cast<CheckboxBP*>(checkboxes->getItem(1));
@@ -123,7 +123,7 @@ namespace gorgonwidgets {
 			tabButton=radioButton;
 
 
-		FolderResource *sliders=file->Root->asFolder(8);
+		FolderResource *sliders=file->Root().asFolder(8);
 
 		slider=progressor=dynamic_cast<SliderBP*>(sliders->getItem(0));
 		scroller=dynamic_cast<SliderBP*>(sliders->getItem(1));
@@ -143,8 +143,8 @@ namespace gorgonwidgets {
 		heatbar=progressor;
 		spinner=slider;
 
-		if(file->Root->Subitems.getCount()>9) {
-			FolderResource *frames=file->Root->asFolder(9);
+		if(file->Root().Subitems.getCount()>9) {
+			FolderResource *frames=file->Root().asFolder(9);
 
 			if(frames->Subitems.getCount()>0)
 				DialogBP=dynamic_cast<FrameBP*>(frames->getItem(0));

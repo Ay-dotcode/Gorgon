@@ -450,6 +450,9 @@ namespace gge {
 		////Clears drawing buffer, in layer architecture this request only affects
 		/// the layer itself, not sub-layers
 		virtual void Clear()=0;
+
+		virtual int Width()  =0;
+		virtual int Height() =0;
 	};
 
 	////This is a graphics target with colorization support

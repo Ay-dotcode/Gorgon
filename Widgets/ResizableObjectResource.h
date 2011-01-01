@@ -27,7 +27,9 @@ namespace gorgonwidgets {
 
 		operator gre::ResizableObject *();
 
-		operator gre::ResizableObject &();
+		operator gre::ResizableObject &() { return Generate(); }
+
+		gre::ResizableObject &Generate();
 
 		virtual void Prepare(GGEMain *main);
 

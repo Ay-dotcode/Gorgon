@@ -63,6 +63,9 @@ namespace gge {
 		/// the request to the sub-layers
 		virtual void Render();
 		virtual void Clear() { Surfaces.Clear(); }
+
+		virtual int Width() { return W; }
+		virtual int Height() { return H; }
 	};
 	////This layer is a 2D graphics target and also has colorization support
 	class Colorizable2DLayer : public I2DColorizableGraphicsTarget, public LayerBase {
@@ -108,6 +111,9 @@ namespace gge {
 		///@W		: the width of the image to be drawn
 		/// if it is more than the size of the image
 		virtual void DrawVTiled(GLTexture *Image,int X,int Y,int W,int H);
+
+		virtual int Width() { return W; }
+		virtual int Height() { return H; }
 	};
 	class Basic2DRawGraphicsLayer : public I2DRawGraphicsTarget, public LayerBase {
 	public:

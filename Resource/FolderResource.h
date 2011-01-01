@@ -48,6 +48,11 @@ namespace gre {
 		SoundResource	*asSound	(int Index);
 		AnimationResource	*asAnimation(int Index);
 		BitmapFontResource	*asBitmapFont		(int Index);
+
+		template <typename T_>
+		T_ &Get(int Index) {
+			return dynamic_cast<T_&>(*(Subitems[Index]));
+		}
 		
 		FolderResource() : ResourceBase() {
 			EntryPoint=-1;

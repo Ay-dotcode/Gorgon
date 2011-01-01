@@ -74,7 +74,7 @@ namespace gre {
 
 	
 	void LinkData::Prepare(ResourceFile *File) { 
-		value=File->Root->FindObject(guid);
+		value=File->Root().FindObject(guid);
 	}
 
 }

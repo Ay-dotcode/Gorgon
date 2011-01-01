@@ -50,7 +50,7 @@ namespace gorgonwidgets {
 	}
 
 	void ResizableObjectResource::Prepare(GGEMain *main) {
-		target=file->Root->FindObject(guid_target);
+		target=file->Root().FindObject(guid_target);
 	}
 
 	ResizableObjectResource::operator ResizableObject *(){
@@ -77,7 +77,7 @@ namespace gorgonwidgets {
 		}
 	}
 
-	ResizableObjectResource::operator ResizableObject &(){
+	ResizableObject &ResizableObjectResource::Generate (){
 		if(target) {
 			switch(target->getGID()) {
 				case GID_ANIMATION:

@@ -5,7 +5,7 @@ using namespace gge;
 
 namespace gre {
 	void LinkNodeResource::Resolve() {
-		ResourceBase *parent=File->Root->FindParent(guid);
+		ResourceBase *parent=File->Root().FindParent(guid);
 		File->Redirects.Add(new Redirect(*this->guid, target));
 
 		if(parent) {
@@ -13,7 +13,7 @@ namespace gre {
 			LinkedListItem<ResourceBase> *item;
 			while(item=it) {
 				if(item->Item->isEqual(guid)) {
-					item->Item=File->Root->FindObject(&target);
+					item->Item=File->Root().FindObject(&target);
 					break;
 				}
 			}

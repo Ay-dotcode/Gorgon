@@ -84,7 +84,7 @@ namespace gre {
 		void destroy() { Data--; if(Palette) delete Palette; }
 
 		////Destroys used data
-		virtual ~ImageResource() { if(Palette) delete Palette; ResourceBase::~ResourceBase(); }
+		virtual ~ImageResource() { if(Palette) delete Palette; }
 
 
 

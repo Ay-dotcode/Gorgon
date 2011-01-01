@@ -63,8 +63,8 @@ namespace gre {
 		fread(&size,1,4,data);
 
 		///*Load first element
-		Root=(FolderResource*)LoadFolderResource(this,data,size);
-		Root->Resolve();
+		root=(FolderResource*)LoadFolderResource(this,data,size);
+		root->Resolve();
 
 		isloaded=1;
 

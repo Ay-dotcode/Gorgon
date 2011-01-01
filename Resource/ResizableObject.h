@@ -144,17 +144,21 @@ namespace gre {
 			return is;
 		}
 
-		virtual void DrawResized(gge::I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align)=0;
-		virtual void DrawResized(gge::I2DGraphicsTarget &Target, int X, int Y, int W, int H, gge::Alignment Align) { DrawResized(&Target, X, Y, W, H, Align); }
+		virtual void DrawResized(gge::I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align=ALIGN_CENTER) =0;
+		virtual void DrawResized(gge::I2DGraphicsTarget &Target, int X, int Y, int W, int H, gge::Alignment Align=ALIGN_CENTER) { DrawResized(&Target, X, Y, W, H, Align); }
+		virtual void DrawResized(gge::I2DGraphicsTarget *Target, int X=0, int Y=0, gge::Alignment Align=ALIGN_CENTER) { DrawResized(Target, X, Y, Target->Width(), Target->Height(), Align); }
+		virtual void DrawResized(gge::I2DGraphicsTarget &Target, int X=0, int Y=0, gge::Alignment Align=ALIGN_CENTER) { DrawResized(&Target, X, Y, Target.Width(), Target.Height(), Align); }
 		virtual int  Width(int W=-1)=0;
 		virtual int  Height(int H=-1)=0;
-		virtual void Reset(bool Reverse=false)=0;
-		virtual void Reverse()=0;
-		virtual void Play()=0;
-		virtual void Pause()=0;
-		virtual void setLoop(bool Loop)=0;
-		virtual int  getDuration()=0;
+		virtual void Reset(bool Reverse=false) {}
+		virtual void Reverse() {}
+		virtual void Play() {}
+		virtual void Pause() {}
+		virtual void setLoop(bool Loop) {}
+		virtual int  getDuration() { return 0; }
 		virtual gge::Margins getBorderWidth() { return gge::Margins(0); }
+
+		virtual ~ResizableObject() {}
 	};
 
 }

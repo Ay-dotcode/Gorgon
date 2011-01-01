@@ -88,7 +88,6 @@ namespace gre {
 		return fold;
 	}
 
-
 	
 		////Returns the given subitem with folder resource type. Used to avoid type casting
 	FolderResource	*FolderResource::asFolder	(int Index) { 

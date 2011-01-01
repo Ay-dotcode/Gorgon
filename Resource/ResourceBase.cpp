@@ -61,13 +61,7 @@ namespace gre {
 		if(guid)
 			delete guid;
 
-		LinkedListIterator<ResourceBase>it=Subitems;
-		ResourceBase *resource;
-
-		while(resource=it) {
-			if(resource)
-				delete resource;
-		}
+		Subitems.Destroy();
 	}
 
 }

@@ -9,11 +9,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\GGE\Utils\Bounds2D.h"
+					RelativePath=".\GGE\Utils\Binary.h"
 					>
 				</File>
 				<File
-					RelativePath=".\GGE\Utils\Margins.h"
+					RelativePath=".\GGE\Utils\Bounds2D.h"
 					>
 				</File>
 				<File
@@ -41,11 +41,19 @@
 					>
 				</File>
 				<File
+					RelativePath=".\GGE\Utils\Margins.h"
+					>
+				</File>
+				<File
 					RelativePath=".\GGE\Utils\PAClassList.h"
 					>
 				</File>
 				<File
 					RelativePath=".\GGE\Utils\Point2D.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GGE\Utils\Property.h"
 					>
 				</File>
 				<File
@@ -84,6 +92,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\GGE\Engine\Font.h"
+						>
+					</File>
+					<File
+						RelativePath=".\GGE\Engine\FontRenderer.h"
+						>
+					</File>
+					<File
 						RelativePath=".\GGE\Engine\GGEMain.h"
 						>
 					</File>
@@ -116,10 +132,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\GGE\Engine\ResizableObject.h"
-						>
-					</File>
-					<File
 						RelativePath=".\GGE\Engine\Sound.h"
 						>
 					</File>
@@ -137,6 +149,10 @@
 					</File>
 					<File
 						RelativePath=".\GGE\Engine\CustomLayer.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\GGE\Engine\Font.cpp"
 						>
 					</File>
 					<File
@@ -260,6 +276,10 @@
 						>
 					</File>
 					<File
+						RelativePath=".\GGE\Resource\FontTheme.h"
+						>
+					</File>
+					<File
 						RelativePath=".\GGE\Resource\GRE.h"
 						>
 					</File>
@@ -268,7 +288,7 @@
 						>
 					</File>
 					<File
-						RelativePath=".\GGE\Resource\LinkNode.h"
+						RelativePath=".\GGE\Resource\ResizableObject.h"
 						>
 					</File>
 					<File
@@ -305,6 +325,10 @@
 					</File>
 					<File
 						RelativePath=".\GGE\Resource\FolderResource.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\GGE\Resource\FontTheme.cpp"
 						>
 					</File>
 					<File
@@ -375,6 +399,10 @@
 							>
 						</File>
 						<File
+							RelativePath=".\GGE\Widgets\ResizableObjectResource.h"
+							>
+						</File>
+						<File
 							RelativePath=".\GGE\Widgets\WidgetMain.h"
 							>
 						</File>
@@ -408,6 +436,10 @@
 						</File>
 						<File
 							RelativePath=".\GGE\Widgets\Rectangle.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\ResizableObjectResource.cpp"
 							>
 						</File>
 						<File
@@ -512,54 +544,6 @@
 						</File>
 						<File
 							RelativePath=".\GGE\Widgets\TextboxStyleGroup.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Checkbox"
-					>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Checkbox.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxBP.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxElement.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxStyleGroup.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Sources"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Checkbox.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxBP.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxElement.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxLoader.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxStyleGroup.cpp"
 							>
 						</File>
 					</Filter>
@@ -768,6 +752,62 @@
 						</File>
 						<File
 							RelativePath=".\GGE\Widgets\MessageDialog.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="Checkbox"
+					>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath=".\GGE\Widgets\Checkbox.h"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\CheckboxBase.h"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\CheckboxBP.h"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\CheckboxElement.h"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\CheckboxStyleGroup.h"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="Sources"
+						>
+						<File
+							RelativePath=".\GGE\Widgets\Checkbox.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\CheckboxBase.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\CheckboxBP.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\CheckboxElement.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\CheckboxLoader.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\GGE\Widgets\CheckboxStyleGroup.cpp"
 							>
 						</File>
 					</Filter>
@@ -1081,6 +1121,18 @@
 					</File>
 					<File
 						RelativePath=".\GGE\External\XmlParser\xmlParser.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="StackWalker"
+					>
+					<File
+						RelativePath=".\GGE\External\StackWalker\StackWalker.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\GGE\External\StackWalker\StackWalker.h"
 						>
 					</File>
 				</Filter>

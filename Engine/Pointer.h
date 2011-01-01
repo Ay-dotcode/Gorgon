@@ -62,6 +62,7 @@ namespace gge {
 		/// the Type(integer) ranging 0-6, second is Hotspot(point). Every pointer should be either
 		/// animation or image resource
 		void Fetch(FolderResource *Folder);
+		void Fetch(FolderResource &Folder) { Fetch(&Folder); }
 		////Adds a pointer to the list of pointers
 		Pointer *Add(Buffered2DGraphic *Pointer, Point Hotspot, Pointer::PointerTypes Type=Pointer::None);
 		////Sets the given pointer as current one, this operation should be revered by

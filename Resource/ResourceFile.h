@@ -43,8 +43,7 @@ namespace gre {
 		int FileType;
 		////File version
 		int FileVersion;
-		////The root folder, root changes while loading a file
-		FolderResource *Root;
+		FolderResource &Root() { return *root; }
 		////When loading or saving a file represents code of the error.
 		/// If no error occurs has the value of 0.
 		int ErrorNo;
@@ -77,7 +76,7 @@ namespace gre {
 					guid=redirect->target;
 			}
 			
-			return Root->FindObject(guid); 
+			return root->FindObject(guid); 
 		}
 
 		////Adds basic resource loaders 
@@ -89,8 +88,12 @@ namespace gre {
 		////Adds game resource loaders
 		void AddGameLoaders();
 
-		void Prepare(GGEMain &main) { Root->Prepare(&main); }
-		void Prepare(GGEMain *main) { Root->Prepare(main); }
+		void Prepare(GGEMain &main) { root->Prepare(&main); }
+		void Prepare(GGEMain *main) { root->Prepare(main); }
+
+	protected:
+		////The root folder, root changes while loading a file
+		FolderResource *root;
 
 	private:
 		bool isloaded;
