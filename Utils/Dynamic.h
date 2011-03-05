@@ -52,6 +52,10 @@ namespace gge {
 
 
 		T_* operator -> () {
+#ifdef _DEBUG
+			if(!object)
+				throw std::bad_cast();
+#endif
 			return object;
 		}
 
@@ -73,8 +77,10 @@ namespace gge {
 		}
 
 		void Destroy() {
-			delete object;
-			object=NULL;
+			if(object) {
+				delete object;
+				object=NULL;
+			}
 		}
 
 		~Dynamic() {

@@ -5,38 +5,11 @@
 #include "../Utils/EventChain.h"
 
 #ifdef WIN32
-#ifdef __cplusplus
-extern "C" {            /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
-	__declspec(dllimport) unsigned long __stdcall timeGetTime(void);
-#ifdef __cplusplus
-}                       /* End of extern "C" { */
-#endif  /* __cplusplus */
 #endif
+
+#include "OS.Win32.h"
 
 namespace gge {
-
-#ifdef WIN32
-
-#define WM_USER                         0x0400
-	////Handle for window
-	typedef unsigned long	WindowHandle;
-	////Handle for icon
-	typedef unsigned long	IconHandle;
-	////Handle for application instance
-	typedef unsigned long	InstanceHandle;
-	////Handle for cursor
-	typedef unsigned long	CursorHandle;
-	////Handle for Device Context
-	typedef unsigned long	DeviceHandle;
-
-	////Window message to process video operation
-	#define WM_VIDEO_NOTIFY  WM_USER+3
-
-	////This function returns the current time
-	inline unsigned int GetTime() { return timeGetTime(); }
-#else
-#endif
 
 	extern CursorHandle defaultcursor;
 	extern bool ospointerdisplayed;
