@@ -2,11 +2,11 @@
 
 using namespace gge;
 
-namespace gge {
+namespace gge { namespace input {
 
-	bool isAlternateKey=false;
+	bool KeyboardModifier::isAlternate=false;
+	KeyboardModifier::Type KeyboardModifier::Current=KeyboardModifier::None;
 
-	KeyboardModifier KeyboardModifiers;
 	Collection<KeyboardEventObject> KeyboardEventObjects;
 	LinkedList<BasicPointerTarget> PointerTargets;
 	MouseEventObject *hoveredObject=NULL;
@@ -15,8 +15,8 @@ namespace gge {
 
 	bool hoverfound=false;
 
-	void InitializeInput() {
-		KeyboardModifiers=KEYB_MOD_NONE;
+	void Initialize() {
+		
 	}
 
 	LinkedListItem<BasicPointerTarget> *AddPointerTarget(BasicPointerTarget *target, int order) {
@@ -49,153 +49,155 @@ namespace gge {
 		}
 	}
 	
-	void ProcessMousePosition(WindowHandle Window) {
-		Point pnt;
-		pnt=getMousePosition(Window);
+	namespace system {
+		void ProcessMousePosition(os::WindowHandle Window) {
+			Point pnt;
+			pnt=os::input::getMousePosition(Window);
 
-		int x=pnt.x;
-		int y=pnt.y;
+			int x=pnt.x;
+			int y=pnt.y;
 
-		hoverfound=false;
-		propagateevent(MOUSE_EVENT_MOVE, x, y);
-		if(!hoverfound && hoveredObject) {
-			if(hoveredObject->out)
-				hoveredObject->out(MOUSE_EVENT_OUT, x, y, hoveredObject->data);
-			hoveredObject=NULL;
+			hoverfound=false;
+			propagateevent(MOUSE_EVENT_MOVE, x, y);
+			if(!hoverfound && hoveredObject) {
+				if(hoveredObject->out)
+					hoveredObject->out(MOUSE_EVENT_OUT, x, y, hoveredObject->data);
+				hoveredObject=NULL;
+			}
 		}
-	}
 
-	void ProcessMouseClick(int button,int x,int y) {
-		MouseEventType event;
-		if(button==1)
-			event=MOUSE_EVENT_LCLICK;
-		if(button==2)
-			event=MOUSE_EVENT_RCLICK;
-		if(button==4)
-			event=MOUSE_EVENT_MCLICK;
-		if(button==101)
-			event=MOUSE_EVENT_X1CLICK;
-		if(button==102)
-			event=MOUSE_EVENT_X2CLICK;
-
-
-		propagateevent(event, x, y);
-		pressedObject=NULL;
-	}
-
-	void ProcessMouseDown(int button,int x,int y) {
-
-		MouseButtons=(MouseEventType)(MouseButtons | button);
-
-		MouseEventType event;
-		if(button==1)
-			event=MOUSE_EVENT_LDOWN;
-		if(button==2)
-			event=MOUSE_EVENT_RDOWN;
-		if(button==4)
-			event=MOUSE_EVENT_MDOWN;
-		if(button==101)
-			event=MOUSE_EVENT_X1DOWN;
-		if(button==102)
-			event=MOUSE_EVENT_X2DOWN;
-
-		propagateevent(event, x, y);
-	}
-
-	void ProcessMouseUp(int button,int x,int y){
-
-		MouseButtons=(MouseEventType)(MouseButtons & ~button);
-
-		MouseEventType event;
-		if(button==1)
-			event=MOUSE_EVENT_LUP;
-		if(button==2)
-			event=MOUSE_EVENT_RUP;
-		if(button==4)
-			event=MOUSE_EVENT_MUP;
-		if(button==101)
-			event=MOUSE_EVENT_X1UP;
-		if(button==102)
-			event=MOUSE_EVENT_X2UP;
-
-		propagateevent(event, x, y);
-	}
-
-	void ProcessMouseDblClick(int button,int x,int y){
-		MouseEventType event;
-		if(button==1)
-			event=MOUSE_EVENT_LDBLCLICK;
-		if(button==2)
-			event=MOUSE_EVENT_RDBLCLICK;
-		if(button==4)
-			event=MOUSE_EVENT_MDBLCLICK;
-		if(button==101)
-			event=MOUSE_EVENT_X1DBLCLICK;
-		if(button==102)
-			event=MOUSE_EVENT_X2DBLCLICK;
-
-		propagateevent(event, x, y);
-	}
-
-	void ProcessVScroll(int amount,int x,int y){
-
-		propagatescrollevent(amount, MOUSE_EVENT_VSCROLLL, x, y);
-	}
-
-	void ProcessHScroll(int amount,int x,int y){
-
-		propagatescrollevent(amount, MOUSE_EVENT_HSCROLLL, x, y);
-	}
-
-	int	 RegisterKeyboardEvent(void *data,KeyboardEvent Char,KeyboardEvent Down,KeyboardEvent Up,bool Modified) {
-		KeyboardEventObject *obj=new KeyboardEventObject;
-		
-		obj->data=data;
-		obj->chr=Char;
-		obj->down=Down;
-		obj->up=Up;
-		obj->id=KeyboardEventObjects.Add(obj);
-		obj->Modified=Modified;
-		obj->Enabled=true;
+		void ProcessMouseClick(int button,int x,int y) {
+			MouseEventType event;
+			if(button==1)
+				event=MOUSE_EVENT_LCLICK;
+			if(button==2)
+				event=MOUSE_EVENT_RCLICK;
+			if(button==4)
+				event=MOUSE_EVENT_MCLICK;
+			if(button==101)
+				event=MOUSE_EVENT_X1CLICK;
+			if(button==102)
+				event=MOUSE_EVENT_X2CLICK;
 
 
-		return obj->id;
-	}
+			propagateevent(event, x, y);
+			pressedObject=NULL;
+		}
 
-	void UnregisterKeyboardEvent(int id) {
-		KeyboardEventObjects.Delete(id);
-	}
+		void ProcessMouseDown(int button,int x,int y) {
 
-	void ProcessChar(int Char) {
+			MouseButtons=(MouseEventType)(MouseButtons | button);
+
+			MouseEventType event;
+			if(button==1)
+				event=MOUSE_EVENT_LDOWN;
+			if(button==2)
+				event=MOUSE_EVENT_RDOWN;
+			if(button==4)
+				event=MOUSE_EVENT_MDOWN;
+			if(button==101)
+				event=MOUSE_EVENT_X1DOWN;
+			if(button==102)
+				event=MOUSE_EVENT_X2DOWN;
+
+			propagateevent(event, x, y);
+		}
+
+		void ProcessMouseUp(int button,int x,int y){
+
+			MouseButtons=(MouseEventType)(MouseButtons & ~button);
+
+			MouseEventType event;
+			if(button==1)
+				event=MOUSE_EVENT_LUP;
+			if(button==2)
+				event=MOUSE_EVENT_RUP;
+			if(button==4)
+				event=MOUSE_EVENT_MUP;
+			if(button==101)
+				event=MOUSE_EVENT_X1UP;
+			if(button==102)
+				event=MOUSE_EVENT_X2UP;
+
+			propagateevent(event, x, y);
+		}
+
+		void ProcessMouseDblClick(int button,int x,int y){
+			MouseEventType event;
+			if(button==1)
+				event=MOUSE_EVENT_LDBLCLICK;
+			if(button==2)
+				event=MOUSE_EVENT_RDBLCLICK;
+			if(button==4)
+				event=MOUSE_EVENT_MDBLCLICK;
+			if(button==101)
+				event=MOUSE_EVENT_X1DBLCLICK;
+			if(button==102)
+				event=MOUSE_EVENT_X2DBLCLICK;
+
+			propagateevent(event, x, y);
+		}
+
+		void ProcessVScroll(int amount,int x,int y){
+
+			propagatescrollevent(amount, MOUSE_EVENT_VSCROLLL, x, y);
+		}
+
+		void ProcessHScroll(int amount,int x,int y){
+
+			propagatescrollevent(amount, MOUSE_EVENT_HSCROLLL, x, y);
+		}
+
+		int	 RegisterKeyboardEvent(void *data,KeyboardEvent Char,KeyboardEvent Down,KeyboardEvent Up,bool Modified) {
+			KeyboardEventObject *obj=new KeyboardEventObject;
+			
+			obj->data=data;
+			obj->chr=Char;
+			obj->down=Down;
+			obj->up=Up;
+			obj->id=KeyboardEventObjects.Add(obj);
+			obj->Modified=Modified;
+			obj->Enabled=true;
+
+
+			return obj->id;
+		}
+
+		void UnregisterKeyboardEvent(int id) {
+			KeyboardEventObjects.Delete(id);
+		}
+
+		void ProcessChar(int Char) {
+			KeyboardEventObject *kevent;
+			KeyboardEventObjects.ResetIteration(true);
+			while(kevent=KeyboardEventObjects.previous()) {
+				if(kevent->Enabled && kevent->chr && (!KeyboardModifier::Check() || kevent->Modified))
+					if(kevent->chr(KEYB_EVENT_CHR, Char, KeyboardModifier::Current, kevent->data))
+						return;
+			}
+		}
+
+		void ProcessKeyDown(int Key) {
+			KeyboardEventObject *kevent;
+			KeyboardEventObjects.ResetIteration(true);
+			while(kevent=KeyboardEventObjects.previous()) {
+				if(kevent->Enabled && kevent->down && (!KeyboardModifier::Check() || kevent->Modified))
+					if(kevent->down(KEYB_EVENT_DOWN, Key, KeyboardModifier::Current, kevent->data))
+						return;
+			}
+		}
+
+		void ProcessKeyUp(int Key) {
 		KeyboardEventObject *kevent;
 		KeyboardEventObjects.ResetIteration(true);
 		while(kevent=KeyboardEventObjects.previous()) {
-			if(kevent->Enabled && kevent->chr && (!CheckModifier(KeyboardModifiers) || kevent->Modified))
-				if(kevent->chr(KEYB_EVENT_CHR, Char, KeyboardModifiers, kevent->data))
+			if(kevent->Enabled && kevent->up && (!KeyboardModifier::Check() || kevent->Modified))
+				if(kevent->up(KEYB_EVENT_UP, Key, KeyboardModifier::Current, kevent->data))
 					return;
 		}
 	}
 
-	void ProcessKeyDown(int Key) {
-		KeyboardEventObject *kevent;
-		KeyboardEventObjects.ResetIteration(true);
-		while(kevent=KeyboardEventObjects.previous()) {
-			if(kevent->Enabled && kevent->down && (!CheckModifier(KeyboardModifiers) || kevent->Modified))
-				if(kevent->down(KEYB_EVENT_DOWN, Key, KeyboardModifiers, kevent->data))
-					return;
-		}
 	}
-
-	void ProcessKeyUp(int Key) {
-		KeyboardEventObject *kevent;
-		KeyboardEventObjects.ResetIteration(true);
-		while(kevent=KeyboardEventObjects.previous()) {
-			if(kevent->Enabled && kevent->up && (!CheckModifier(KeyboardModifiers) || kevent->Modified))
-				if(kevent->up(KEYB_EVENT_UP, Key, KeyboardModifiers, kevent->data))
-					return;
-		}
-	}
-
 	void EnableKeyboardEvent(int id) {
 		KeyboardEventObjects[id]->Enabled=true;
 	}
@@ -423,4 +425,4 @@ namespace gge {
 			return PropagateMouseHScrollEvent(amount, event, x, y, data);
 
 	}
-}
+} }

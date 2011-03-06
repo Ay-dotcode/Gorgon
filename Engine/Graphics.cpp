@@ -9,7 +9,7 @@ namespace gge {
 	extern int scX,scY,scW,scH;
 	extern int trX,trY;
 
-	DeviceHandle InitializeGraphics(WindowHandle hWnd, int BitDepth, int Width, int Height) {
+	os::DeviceHandle InitializeGraphics(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {
 		///!Platform specific
 #ifdef WIN32
 		///*Preparing device context, platform specific
@@ -85,7 +85,7 @@ namespace gge {
 		glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 		glLoadIdentity();									// Reset The Modelview Matrix
 
-		return (DeviceHandle)hDC;
+		return (os::DeviceHandle)hDC;
 	}
 	RECT makerect(int x, int y, int w, int h) {	
 		RECT ret;
@@ -252,7 +252,7 @@ loopyend:
 		scH=ScreenSize.y;
 	}
 
-	void PostRender(DeviceHandle hDC) {
+	void PostRender(os::DeviceHandle hDC) {
 		///*Swapping back and front buffers
 		SwapBuffers( (HDC)hDC );
 	}

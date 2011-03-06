@@ -658,7 +658,7 @@ namespace gge {
 		virtual void DrawColored(I2DColorizableGraphicsTarget *Target,int X,int Y,RGBint Color) { 
 #ifdef _DEBUG
 			if(Texture.ID==0) {
-				DisplayMessage("Colorizable 2D Graphic","Invalid texture ID, image is not initialized.");
+				os::DisplayMessage("Colorizable 2D Graphic","Invalid texture ID, image is not initialized.");
 				assert(0);
 			}
 #endif
@@ -695,7 +695,7 @@ namespace gge {
 		virtual void DrawRaw(I2DRawGraphicsTarget *Target,int X,int Y) { 
 #ifdef _DEBUG
 			if(Data.GetSize()==0) {
-				DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
+				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
 				assert(0);
 			}
 #endif
@@ -705,7 +705,7 @@ namespace gge {
 		virtual void DrawRaw(I2DRawGraphicsTarget *Target,int X,int Y, int W, int H) { 
 #ifdef _DEBUG
 			if(Data==NULL) {
-				DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
+				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
 				assert(0);
 			}
 #endif
@@ -715,7 +715,7 @@ namespace gge {
 		virtual void DrawRaw(I2DRawGraphicsTarget *Target,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) {
 #ifdef _DEBUG
 			if(Data==NULL) {
-				DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
+				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
 				assert(0);
 			}
 #endif
@@ -725,7 +725,7 @@ namespace gge {
 		virtual void DrawRawFlipped(I2DRawGraphicsTarget *Target,int X,int Y) { 
 #ifdef _DEBUG
 			if(Data==NULL) {
-				DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
+				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
 				assert(0);
 			}
 #endif
@@ -735,7 +735,7 @@ namespace gge {
 		virtual void DrawRawFlipped(I2DRawGraphicsTarget *Target,int X,int Y, int W, int H) { 
 #ifdef _DEBUG
 			if(Data==NULL) {
-				DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
+				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
 				assert(0);
 			}
 #endif
@@ -768,7 +768,7 @@ namespace gge {
 	/// returns created device context
 	///@hWnd		: Handle for the target window
 	///@BitDepth	: Used if fullscreen, changed bitdepth of screen
-	DeviceHandle InitializeGraphics(WindowHandle hWnd, int BitDepth, int Width, int Height);
+	os::DeviceHandle InitializeGraphics(os::WindowHandle hWnd, int BitDepth, int Width, int Height);
 	////Creates rectangle structure based on give parameters
 	//RECT makerect(int x, int y, int w, int h);
 	////Converts Alpha only image to Alpha and Luminance (grayscale) image.
@@ -797,7 +797,7 @@ namespace gge {
 	////Performs post render tasks
 	///@hDC			: Device context that is created by
 	/// initialize graphics function
-	void PostRender(DeviceHandle Device);
+	void PostRender(os::DeviceHandle Device);
 
 	extern Point ScreenSize;
 }

@@ -62,7 +62,7 @@ namespace gorgonwidgets {
 
 		virtual void SetBluePrint(IWidgetBluePrint *BP) { }
 	
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier) {
+		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
 			return false;
 		}
 

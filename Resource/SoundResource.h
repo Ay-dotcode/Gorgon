@@ -24,7 +24,7 @@ namespace gre {
 		////Wave data
 		BYTE *Data;
 		////Format
-		WaveFormat Format;
+		gge::sound::system::WaveFormat Format;
 		////Size of the data
 		int Size;
 
@@ -36,8 +36,8 @@ namespace gre {
 		virtual ~SoundResource() { destroy(); ResourceBase::~ResourceBase(); }
 
 		////When this file is prepared to be used, this value will be used to store sound buffer
-		SoundBufferHandle Buffer;
+		gge::sound::system::SoundBufferHandle Buffer;
 
-		Wave *CreateWave() { return new Wave(Buffer); }
+		gge::sound::Wave *CreateWave() { return new gge::sound::Wave(Buffer); }
 	};
 }

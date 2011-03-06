@@ -4,18 +4,24 @@
 #include "Sound.h"
 #include "../Utils/Collection.h"
 
-namespace gge {
-	////This function initializes garbage collection subsystem
-	void InitWaveGarbageCollect(GGEMain *gge);
-
-	////This function checks finished waves that are marked as
-	/// garbage collectable and destroys them.
-	void CollectWaveGarbage();
+namespace gge { namespace sound {
 
 	class Wave;
+
+	namespace system {
+		////This function initializes garbage collection subsystem
+		void InitWaveGarbageCollect(GGEMain *gge);
+
+		////This function checks finished waves that are marked as
+		/// garbage collectable and destroys them.
+		void CollectWaveGarbage();
+	}
+
 	////This is function definition required to signal
 	/// when a wave finishes its execution
-	typedef void(*wavefinish)(Wave *wave);
+	typedef void(*wavefinish)(Wave &wave);
+
+
 
 	////Class to control wave-type sounds, this class handles
 	/// the creation of controller and supports 3D positioning
@@ -26,19 +32,19 @@ namespace gge {
 		////default constructor requires buffer handle.
 		///@maxWaveDistance	: if specified the generated sound controller
 		/// will have 3D properties
-		Wave(SoundBufferHandle Buffer, int maxWaveDistance=0);
+		Wave(system::SoundBufferHandle Buffer, int maxWaveDistance=0);
 		////Plays this sound once
-		Wave* Play();
+		Wave& Play();
 		////Plays this sound continously until stopped
-		Wave* Loop();
+		Wave& Loop();
 		////Stops the sound
-		Wave* Stop();
+		Wave& Stop();
 		////Used to adjust the volume, it can decrease or increase the
 		/// output, 1.0 is volume at 100% while 0.25 is at 25%
-		Wave* SetVolume(float Volume);
+		Wave& SetVolume(float Volume);
 		////Adjusts 3D position of the current sound source allowing
 		/// attuniation to take place.
-		Wave* Set3DPosition(float x,float y,float z);
+		Wave& Set3DPosition(float x,float y,float z);
 
 		////Used to check if sound is being played
 		bool isPlaying();
@@ -60,12 +66,12 @@ namespace gge {
 		////Whether finished event is fired or not
 		bool finishedstateisknown;
 		////The wave buffer
-		SoundBufferHandle	buffer;
+		system::SoundBufferHandle	buffer;
 		////The controller
-		SoundControlHandle	source;
+		system::SoundControlHandle	source;
 		////Whether this sound is available to be played
 		bool isavailable;
 	};
 
 
-}
+} }

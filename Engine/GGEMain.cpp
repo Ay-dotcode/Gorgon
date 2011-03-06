@@ -1,5 +1,4 @@
 #include "GGEMain.h"
-#include <atlbase.h>
 
 namespace gge {
 	GGEMain Main;
@@ -20,13 +19,12 @@ namespace gge {
 		Y=0;
 		isVisible=true;
 
-		CurrentTime=GetTime();
+		CurrentTime=os::GetTime();
 
-		CoInitialize(NULL);
 		FPS=50;
 	}
 
-	void GGEMain::Setup(string SystemName, InstanceHandle Instance,int Width, int Height, int BitDepth, bool FullScreen) {
+		void GGEMain::Setup(string SystemName, os::InstanceHandle Instance,int Width, int Height, int BitDepth, bool FullScreen) {
 #ifdef _DEBUG
 		if(Window!=NULL)
 			throw std::runtime_error("System already initialized.");
@@ -43,14 +41,13 @@ namespace gge {
 	}
 
 	GGEMain::~GGEMain() {
-		CoUninitialize();
 	}
 
 	void GGEMain::BeforeGameLoop() {
 		static unsigned int lastFPSUpdate=CurrentTime;
 		static int fpscounter=0;
 		///*Setting game time
-		CurrentTime=GetTime();
+		CurrentTime=os::GetTime();
 		if(CurrentTime-lastFPSUpdate>=1000) {
 			FPS=fpscounter;
 			fpscounter=1;
@@ -58,7 +55,7 @@ namespace gge {
 		} else
 			fpscounter++;
 
-		gge::ProcessMessage();
+		os::system::ProcessMessage();
 		ProcessMousePosition(Window);
 	}
 
@@ -87,7 +84,7 @@ namespace gge {
 	void GGEMain::AfterRender() {
 		AfterRenderEvent();
 
-		Sleep(1);
+		os::Sleep(1);
 	}
 
 	void GGEMain::Render() {
@@ -114,13 +111,13 @@ namespace gge {
 		IntervalObjects.Delete(Interval);
 	}
 
-	void GGEMain::InitializeAll(string Title, gge::IconHandle Icon, int X, int Y) {
+	void GGEMain::InitializeAll(string Title, os::IconHandle Icon, int X, int Y) {
 		InitializeOS();
-		CreateWin(Title, Icon, X, Y);
+		CreateWindow(Title, Icon, X, Y);
 		InitializeGraphics();
 		InitializeSound();
 		InitializeInput();
-		gge::AddPointerTarget(this,0); 
+		gge::input::AddPointerTarget(this,0); 
 
 		InitializeAnimation();
 		InitializePointer();

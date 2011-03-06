@@ -232,7 +232,7 @@ namespace gorgonwidgets {
 			object->SetFocus();
 	}
 
-	bool IWidgetContainer::keyboard_event_subitems(KeyboardEventType event,int keycode,KeyboardModifier modifier) {
+	bool IWidgetContainer::keyboard_event_subitems(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
 		bool ret=false;
 		if(this->Focussed) {
 			if(this->Focussed->isEnabled() && this->Focussed->isVisible())
@@ -243,15 +243,15 @@ namespace gorgonwidgets {
 			return true;
 	}
 
-	bool IWidgetContainer::keyboard_event_actions(KeyboardEventType event,int keycode,KeyboardModifier modifier) {
+	bool IWidgetContainer::keyboard_event_actions(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
 		if(allowtabswitch) {
 			//do default button handling
 			if(event==KEYB_EVENT_CHR && keycode==9) {
-				if((modifier&~KEYB_MOD_ALTERNATIVE)==KEYB_MOD_NONE) {
+				if((modifier&~KeyboardModifier::Alternate)==KeyboardModifier::None) {
 					FocusNext();
 					return true;
 				}
-				else if((modifier&~KEYB_MOD_ALTERNATIVE)==KEYB_MOD_SHIFT) {
+				else if((modifier&~KeyboardModifier::Alternate)==KeyboardModifier::Shift) {
 					FocusPrevious();
 					return true;
 				}
@@ -259,12 +259,12 @@ namespace gorgonwidgets {
 		}
 	
 		if(allowdefaultactions) {
-			if(event==KeyboardEventType::KEYB_EVENT_DOWN && keycode==13 && modifier==KEYB_MOD_NONE) {
+			if(event==KeyboardEventType::KEYB_EVENT_DOWN && keycode==13 && modifier==KeyboardModifier::None) {
 				if(Default)
 					return Default->keyb_event(event,keycode,modifier);
 			}
 
-			if(event==KEYB_EVENT_DOWN && keycode==27 && modifier==KEYB_MOD_NONE) {
+			if(event==KEYB_EVENT_DOWN && keycode==27 && modifier==KeyboardModifier::None) {
 				if(Cancel)
 					return Cancel->keyb_event(event,13,modifier);
 
@@ -275,7 +275,7 @@ namespace gorgonwidgets {
 		return false;
 	}
 
-	bool IWidgetContainer::keyboard_event(KeyboardEventType event,int keycode,KeyboardModifier modifier) {
+	bool IWidgetContainer::keyboard_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
 
 		if(keyboard_event_subitems(event,keycode,modifier))
 			return true;

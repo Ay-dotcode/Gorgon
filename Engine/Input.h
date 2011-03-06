@@ -6,41 +6,82 @@
 #include "OS.h"
 #include "../Utils/Utils.h"
 
-namespace gge {
+namespace gge { namespace input {
 	class BasicPointerTarget;
-	////Types of keyboard modifiers
-	enum KeyboardModifier {
-		////No modifier
-		KEYB_MOD_NONE=0,
-		////Shift key is pressed
-		KEYB_MOD_SHIFT=1,
-		////Control key is pressed
-		KEYB_MOD_CTRL=2,
-		////Shift and control keys are presses
-		KEYB_MOD_SHIFT_CTRL=3,
-		////Alt key is pressed
-		KEYB_MOD_ALT=4,
-		////Shift and alt keys are pressed
-		KEYB_MOD_SHIFT_ALT=5,
-		////Control and alt keys are pressed
-		KEYB_MOD_CTRL_ALT=6,
-		////Shift control and alt keys are pressed
-		KEYB_MOD_SHIFT_CTRL_ALT=7,
-		////Windows / Super key is pressed
-		KEYB_MOD_WIN=8,
-		////Menu key is pressed
-		KEYB_MOD_MENU=16,
-		////This flag is set when alternate version of
-		/// the key is pressed, alternative keys should
-		/// not be relied since not all keyboards have them
-		/// this is no longer used, check isAlternateKey
-		/// variable
-		KEYB_MOD_ALTERNATIVE=32,
-		//KEYB_MOD_RIGHTSHIFT=33 ...
+
+	class KeyboardModifier {
+	public:
+		enum Type {
+			None		= 0,
+			Shift		= 1,
+			Ctrl		= 2,
+			Alt			= 4,
+			Win			= 8,
+			Menu		=16,
+			Alternate	=32,
+
+			ShiftCtrl	= Shift | Ctrl ,
+			ShiftAlt	= Shift | Alt  ,
+			CtrlAlt		= Ctrl  | Alt  ,
+			ShiftCtrlAlt= Shift | Ctrl | Alt ,
+		};
+
+		static bool isAlternate;
+		static Type Current;
+
+		////Checks the the current state of the keyboard if there are any real modifiers
+		/// in effect (Namely control, alt, and windows keys)
+		static bool Check(Type m1) {
+			return m1&Ctrl || m1&Shift || m1&Win;
+		}
+
+		static bool Check() {
+			return Current&Ctrl || Current&Shift || Current&Win;
+		}
+
+		static Type Remove(Type m1, Type m2) {
+			return Type(m1 & ~m2);
+		}
+
+		static Type Add(Type m1, Type m2) {
+			return Type(m1 | m2);
+		}
+
+		static void Remove(Type m2) {
+			Current=Type(Current & ~m2);
+		}
+
+		static void Add(Type m2) {
+			Current=Type(Current | m2);
+		}
+
+
+	private:
+		KeyboardModifier();
 	};
 
-	////Whether pressed key is an alternate key (e.g. numpad or right shift)
-	extern bool isAlternateKey;
+	////Bitwise OR operation on KeyboardModifier enumeration
+	inline KeyboardModifier::Type operator | (KeyboardModifier::Type m1, KeyboardModifier::Type m2) {
+		return KeyboardModifier::Type( m1|m2 );
+	}
+
+	////Bitwise AND operation on KeyboardModifier enumeration
+	inline KeyboardModifier::Type operator & (KeyboardModifier::Type m1, KeyboardModifier::Type m2) {
+		return KeyboardModifier::Type( m1&m2 );
+	}
+
+	////Bitwise EQUAL OR operation on KeyboardModifier enumeration
+	inline KeyboardModifier::Type operator |= (KeyboardModifier::Type m1, KeyboardModifier::Type m2) {
+		return KeyboardModifier::Type( m1|m2 );
+	}
+
+	////Bitwise EQUAL AND operation on KeyboardModifier enumeration
+	inline KeyboardModifier::Type operator &= (KeyboardModifier::Type m1, KeyboardModifier::Type m2) {
+		return KeyboardModifier::Type( m1&m2 );
+	}
+
+
+
 
 	////Types of mouse event
 	enum MouseEventType {
@@ -130,7 +171,7 @@ namespace gge {
 	////Defines how a mouse scroll event handing function should be
 	typedef bool (*MouseScrollEvent)(int amount, MouseEventType event, int x, int y, void *data);
 	////Defines how a keyboard event handling functoin should be
-	typedef bool (*KeyboardEvent)(KeyboardEventType event, int keycode, KeyboardModifier modifier, void *data);
+	typedef bool (*KeyboardEvent)(KeyboardEventType event, int keycode, KeyboardModifier::Type modifier, void *data);
 
 	////Mouse event object is used internally to keep track of mouse event handlers
 	struct MouseEventObject {
@@ -186,6 +227,7 @@ namespace gge {
 		////Whether this 
 		bool Enabled;
 	};
+	extern MouseEventObject *pressedObject;
 	
 	////Registers a keyboard event handler object, event handler function should be in this format:
 	/// bool (KeyboardEventType event, int keycode, KeyboardModifier modifier, void *data)
@@ -206,40 +248,42 @@ namespace gge {
 	void  EnableKeyboardEvent (int Index);
 
 
-	////Processes a given char, this function intended to be called from OS
-	/// sub-system, however a knowledgable attempt to call from elsewhere is
-	/// also valid
-	///@Char	: Character code (8bit ASCII or equivalent (ISO-8859))
-	void ProcessChar(int Char);
-	////Processes a given key as pressed, this function intended to be called from OS
-	/// sub-system, however a knowledgable attempt to call from elsewhere is
-	/// also valid
-	///@Key		: The keyboard code of the pressed key
-	void ProcessKeyDown(int Key);
-	////Processes a given key as released, this function intended to be called from OS
-	/// sub-system, however a knowledgable attempt to call from elsewhere is
-	/// also valid
-	///@Key		: The keyboard code of the pressed key
-	void ProcessKeyUp(int Key);
+	namespace system {
+		////Processes a given char, this function intended to be called from OS
+		/// sub-system, however a knowledgable attempt to call from elsewhere is
+		/// also valid
+		///@Char	: Character code (8bit ASCII or equivalent (ISO-8859))
+		void ProcessChar(int Char);
+		////Processes a given key as pressed, this function intended to be called from OS
+		/// sub-system, however a knowledgable attempt to call from elsewhere is
+		/// also valid
+		///@Key		: The keyboard code of the pressed key
+		void ProcessKeyDown(int Key);
+		////Processes a given key as released, this function intended to be called from OS
+		/// sub-system, however a knowledgable attempt to call from elsewhere is
+		/// also valid
+		///@Key		: The keyboard code of the pressed key
+		void ProcessKeyUp(int Key);
 
-	////Processes the current mouse position this information is taken from OS subsystem
-	void ProcessMousePosition(WindowHandle Window);
-	////Processes click of mouse button
-	///@button	: button number 1 for left, 2 for right and 4 for middle
-	void ProcessMouseClick(int button, int x, int y);
-	////Processes given mouse button as pressed
-	///@button	: button number 1 for left, 2 for right and 4 for middle
-	void ProcessMouseDown(int button,int x,int y);
-	////Processes given mouse button as released
-	///@button	: button number 1 for left, 2 for right and 4 for middle
-	void ProcessMouseUp(int button,int x,int y);
-	////Processes double click action
-	///@button	: button number 1 for left, 2 for right and 4 for middle
-	void ProcessMouseDblClick(int button,int x,int y);
-	////Processes verticle scroll
-	void ProcessVScroll(int amount,int x,int y);
-	////Processes horizontal scroll
-	void ProcessHScroll(int amount,int x,int y);
+		////Processes the current mouse position this information is taken from OS subsystem
+		void ProcessMousePosition(os::WindowHandle Window);
+		////Processes click of mouse button
+		///@button	: button number 1 for left, 2 for right and 4 for middle
+		void ProcessMouseClick(int button, int x, int y);
+		////Processes given mouse button as pressed
+		///@button	: button number 1 for left, 2 for right and 4 for middle
+		void ProcessMouseDown(int button,int x,int y);
+		////Processes given mouse button as released
+		///@button	: button number 1 for left, 2 for right and 4 for middle
+		void ProcessMouseUp(int button,int x,int y);
+		////Processes double click action
+		///@button	: button number 1 for left, 2 for right and 4 for middle
+		void ProcessMouseDblClick(int button,int x,int y);
+		////Processes verticle scroll
+		void ProcessVScroll(int amount,int x,int y);
+		////Processes horizontal scroll
+		void ProcessHScroll(int amount,int x,int y);
+	}
 
 	////This interface defines a class that can be used
 	/// as a common target of mouse events
@@ -323,45 +367,6 @@ namespace gge {
 
 	};
 
-	////Bitwise OR operation on KeyboardModifier enumeration
-	inline KeyboardModifier operator | (KeyboardModifier m1, KeyboardModifier m2) {
-		return (KeyboardModifier)((int)m1|(int)m2);
-	}
-
-	////Bitwise AND operation on KeyboardModifier enumeration
-	inline KeyboardModifier operator & (KeyboardModifier m1, KeyboardModifier m2) {
-		return (KeyboardModifier)((int)m1&(int)m2);
-	}
-
-	////Bitwise EQUAL OR operation on KeyboardModifier enumeration
-	inline KeyboardModifier operator |= (KeyboardModifier m1, KeyboardModifier m2) {
-		return (KeyboardModifier)((int)m1|(int)m2);
-	}
-
-	////Bitwise EQUAL AND operation on KeyboardModifier enumeration
-	inline KeyboardModifier operator &= (KeyboardModifier m1, KeyboardModifier m2) {
-		return (KeyboardModifier)((int)m1&(int)m2);
-	}
-
-
-	////Checks the the current state of the keyboard if there are any real modifiers
-	/// in effect (Namely control, alt, and windows keys)
-	inline bool CheckModifier(KeyboardModifier m1) {
-		return m1&KEYB_MOD_CTRL || m1&KEYB_MOD_ALT || m1&KEYB_MOD_WIN;
-	}
-
-
-	////This function can be used internally to remove the second keyboard modifier
-	/// from the first one
-	inline void RemoveModifier(KeyboardModifier &m1,KeyboardModifier m2) {
-		m1=m1&(KeyboardModifier)(~m2);
-	}
-	////This function add a keyboard modifier to another one
-	inline void AddModifier(KeyboardModifier &m1,KeyboardModifier m2) {
-		m1=m1|m2;
-	}
-
-	extern KeyboardModifier KeyboardModifiers;
 	extern MouseEventType MouseButtons;
 	extern Collection<KeyboardEventObject> KeyboardEventObjects;
 	////This is the object that is hovered, if mouse moves out of it
@@ -376,5 +381,8 @@ namespace gge {
 	////Removes a previously registered pointer target
 	void RemovePointerTarget(LinkedListItem<BasicPointerTarget> *target);
 	////Initializes Input system
-	void InitializeInput();
-}
+	void Initialize();
+} }
+
+using namespace gge::input;
+using namespace gge::input::system;

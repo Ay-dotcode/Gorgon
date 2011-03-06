@@ -36,8 +36,6 @@ namespace gge {
 		void Stop() { pControl->Stop(); }
 		////Loads a given file
 		void Loadfile(wchar_t *Filename);
-		////Main object
-		GGEMain *main;
 		////Whether this object is destroyed. A destroyed object can be restored by reloading
 		/// media file
 		bool isDestroyed;
@@ -48,7 +46,7 @@ namespace gge {
 		void Destroy() { _destroy(); }
 
 		////Initializes the object
-		Multimedia(GGEMain *main);
+		Multimedia();
 
 		////Fired when playback is finished, occurs before auto destroy if it is set.
 		EventChain<Multimedia, empty_event_params> Finished;

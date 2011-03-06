@@ -12,7 +12,7 @@ using namespace gge;
 namespace gorgonwidgets {
 	class VirtualFrame;
 
-	bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier,void *data);
+	bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier,void *data);
 	extern LinkedList<VirtualFrame> toplevels;
 
 	class VirtualFrame : public IWidgetContainer {

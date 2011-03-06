@@ -145,7 +145,5 @@ namespace gre {
 		int FrameCount;
 		////Frame durations
 		int *Durations;
-		////Main object
-		GGEMain *main;
 	};
 }

@@ -26,7 +26,7 @@ namespace gge {
 	void Multimedia::_destroy() {
 		isDestroyed=true;
 		pGB->Abort();
-		pME->SetNotifyWindow((int)main->getWindow(), WM_VIDEO_NOTIFY, NULL);
+		pME->SetNotifyWindow((int)Main.getWindow(), WM_VIDEO_NOTIFY, NULL);
 		pControl->Release();
 		pME->Release();
 		pVW->Release();
@@ -38,15 +38,14 @@ namespace gge {
 
 		delete pGB;
 		
-		UpdateWindow((HWND)main->getWindow());
+		UpdateWindow((HWND)Main.getWindow());
 	}
 
-	Multimedia::Multimedia(GGEMain *main) :
+	Multimedia::Multimedia() :
 		Finished("Finished", this),
 		isDestroyed(false),
-		main(main),
-		Width(main->getWidth()),
-		Height(main->getHeight()),
+		Width(Main.getWidth()),
+		Height(Main.getHeight()),
 		X(0), Y(0), AutoDestroy(true)
 	{
 		int hr=CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,IID_IGraphBuilder, (void **)&pGB);
@@ -58,9 +57,20 @@ namespace gge {
 	void Multimedia::Loadfile(wchar_t *Filename) {
 		pGB->RenderFile(Filename, NULL);
 
-		pVW->put_Owner((int)main->getWindow());
+		pVW->put_Owner((int)Main.getWindow());
 		pVW->put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 		pVW->SetWindowPosition(X, Y, Width, Height);
-		pME->SetNotifyWindow((int)main->getWindow(), WM_VIDEO_NOTIFY,(int)this);
+		pME->SetNotifyWindow((int)Main.getWindow(), WM_VIDEO_NOTIFY,(int)this);
 	}
+
+	class _MultimediaInit {
+	public:
+		_MultimediaInit() {
+			CoInitialize(NULL);
+		}
+
+		~_MultimediaInit() {
+			CoUninitialize();
+		}
+	} mminit;
 }

@@ -11,57 +11,53 @@
 
 namespace gge {
 
-	void Cpointers::Window_Activate() {
+	void PointerCollection::Window_Activate() {
 		this->Show();
 	}
 
-	void Cpointers::Window_Deactivate() {
+	void PointerCollection::Window_Deactivate() {
 		this->Hide();
 	}
 
-	void Cpointers::Draw(GGEMain &caller) {
+	void PointerCollection::Draw(GGEMain &caller) {
 		if(!BasePointer || !PointerVisible)
 			return;
 
 		Point pnt;
-		pnt=getMousePosition(caller.getWindow());
+		pnt=os::input::getMousePosition(caller.getWindow());
 
 		PointerLayer->Clear();
 
 		if(pnt.x<0 || pnt.y<0 || pnt.x>caller.getWidth() || pnt.y>caller.getHeight()) {
-			ShowOSPointer();
+			os::ShowPointer();
 			OSPointerVisible=true;
 			return;
 		} else if(OSPointerVisible) {
 			OSPointerVisible=false;
-			HideOSPointer();
+			os::HidePointer();
 		}
 
 		Pointer *pointer=ActivePointers.getOrderedLastItem();
 		if(pointer==NULL)
 			pointer=BasePointer;
 
-		int x,y;
 
-		x=pnt.x-pointer->HotspotX;
-		y=pnt.y-pointer->HotspotY;
-
-		pointer->Image->Draw(PointerLayer, x, y);
+		pointer->Image->Draw(PointerLayer, pnt-pointer->Hotspot);
 	}
 
-	void Cpointers::Initialize(GGEMain &Main) {
-		PointerLayer=(Basic2DLayer*)Main.Add( new Basic2DLayer(0, 0, Main.getWidth(), Main.getHeight()) , -100 );
+	void PointerCollection::Initialize(GGEMain &Main) {
+		PointerLayer=dynamic_cast<Basic2DLayer*>(Main.Add( new Basic2DLayer(0, 0, Main.getWidth(), Main.getHeight()) , -100 ));
 
-		WindowActivateEvent.Register(this, &Cpointers::Window_Activate);
-		WindowDeactivateEvent.Register(this, &Cpointers::Window_Deactivate);
+		os::window::Activated.Register(this, &PointerCollection::Window_Activate);
+		os::window::Deactivated.Register(this, &PointerCollection::Window_Deactivate);
 
-		Main.BeforeRenderEvent.Register(this, &Cpointers::Draw);
+		Main.BeforeRenderEvent.Register(this, &PointerCollection::Draw);
 
-		HideOSPointer();
+		os::HidePointer();
 		PointerLayer->isVisible=false;
 	}
 
-	void Cpointers::Fetch(FolderResource *Folder) {
+	void PointerCollection::Fetch(FolderResource *Folder) {
 		DataResource *data=Folder->asData(0);
 		
 		LinkedListIterator<ResourceBase> it=Folder->Subitems;
@@ -85,17 +81,17 @@ namespace gge {
 			BasePointer=(*this)[0];
 	}
 
-	Pointer *Cpointers::Add(Buffered2DGraphic *pointer, Point Hotspot, Pointer::PointerTypes Type) {
+	Pointer *PointerCollection::Add(Buffered2DGraphic *pointer, Point Hotspot, Pointer::PointerTypes Type) {
 		Pointer *ret=new Pointer(pointer, Hotspot.x, Hotspot.y, Type);
 		Collection<Pointer, 10>::Add( ret );
 		return ret;
 	}
 
-	int Cpointers::Set(Pointer *Pointer) {
+	int PointerCollection::Set(Pointer *Pointer) {
 		return reinterpret_cast<int>(ActivePointers.AddItem(Pointer, ActivePointers.HighestOrder()+1));
 	}
 
-	int Cpointers::Set(Pointer::PointerTypes Type) {
+	int PointerCollection::Set(Pointer::PointerTypes Type) {
 		if(Type==Pointer::None)
 			return Set(BasePointer);
 		this->ResetIteration();
@@ -108,29 +104,29 @@ namespace gge {
 		return Set(BasePointer);
 	}
 
-	void Cpointers::Reset(int StackNo) {
+	void PointerCollection::Reset(int StackNo) {
 		ActivePointers.Remove(reinterpret_cast<LinkedListItem<Pointer>*>(StackNo));
 	}
 
-	void Cpointers::ChangeBase(Pointer *Pointer) {
+	void PointerCollection::ChangeBase(Pointer *Pointer) {
 		BasePointer=Pointer;
 	}
 
-	void Cpointers::Show() {
+	void PointerCollection::Show() {
 		PointerVisible=true;
-		HideOSPointer();
-		HideOSPointer();
-		HideOSPointer();
+		os::HidePointer();
+		os::HidePointer();
+		os::HidePointer();
 
 		PointerLayer->isVisible=true;
 	}
 
-	void Cpointers::Hide() {
+	void PointerCollection::Hide() {
 		PointerVisible=false;
 
 		PointerLayer->isVisible=false;
 	}
 
-	Cpointers Pointers;
+	PointerCollection Pointers;
 
 }

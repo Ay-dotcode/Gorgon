@@ -5,7 +5,6 @@
 
 namespace gge {
 	extern RGBfloat CurrentLayerColor;
-	extern GGEMain *main;
 	extern int trX,trY;
 	extern int scX,scY,scW,scH;
 

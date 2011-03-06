@@ -4,7 +4,6 @@
 namespace gge {
 	RGBfloat CurrentLayerColor;
 	int trX,trY;
-	extern MouseEventObject *pressedObject;
 	int scX,scY,scW,scH;
 
 	Basic2DLayer::Basic2DLayer(int X,int Y,int W,int H) : LayerBase() {
@@ -1301,7 +1300,7 @@ namespace gge {
 		isVisible=true;
 		EnableClipping=false;
 	}
-	bool WidgetLayer::PropagateMouseEvent(gge::MouseEventType event, int x, int y, void *data) {
+	bool WidgetLayer::PropagateMouseEvent(MouseEventType event, int x, int y, void *data) {
 		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&MOUSE_EVENT_UP) || (pressedObject && event&MOUSE_EVENT_MOVE)) ) {
 			if(LayerBase::PropagateMouseEvent(event, x, y, data))
 				return true;
@@ -1314,7 +1313,7 @@ namespace gge {
 
 		return false;
 	}
-	bool WidgetLayer::PropagateMouseScrollEvent(int amount, gge::MouseEventType event, int x, int y, void *data) {
+	bool WidgetLayer::PropagateMouseScrollEvent(int amount, MouseEventType event, int x, int y, void *data) {
 		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H)) ) {
 			if(LayerBase::PropagateMouseScrollEvent(amount, event, x, y, data))
 				return true;

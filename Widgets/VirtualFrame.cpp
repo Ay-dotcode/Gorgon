@@ -38,7 +38,7 @@ namespace gorgonwidgets {
 		DisableKeyboardEvent(keyboardid);
 	}
 
-	bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier,void *data) {
+	bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier,void *data) {
 		if(data) {
 			return ((VirtualFrame*)data)->keyboard_event(event,keycode,modifier);
 		}

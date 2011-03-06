@@ -657,7 +657,7 @@ namespace gorgonwidgets {
 			IWidgetContainer::Deactivate();
 	}
 
-	bool SliderBase::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier) {
+	bool SliderBase::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
 		if(passivemode) return false;
 		if(event==KEYB_EVENT_DOWN && keycode==38) {
 			goUp();

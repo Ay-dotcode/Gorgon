@@ -78,7 +78,7 @@ namespace gre {
 						obj->name=names[curcapname];
 					}*/
 				} else
-					DisplayMessage("Folder Resource","Unknown Node!!");
+					os::DisplayMessage("Folder Resource","Unknown Node!!");
 
 				curcapname++;
 			}
@@ -93,7 +93,7 @@ namespace gre {
 	FolderResource	*FolderResource::asFolder	(int Index) { 
 #ifdef _DEBUG
 			if(Subitems[Index]->getGID()!=GID_FOLDER) {
-				DisplayMessage("Folder Resource","Non folder item requested as folder!");
+				os::DisplayMessage("Folder Resource","Non folder item requested as folder!");
 				assert(0);
 			}
 #endif
@@ -102,7 +102,7 @@ namespace gre {
 	TextResource	*FolderResource::asText		(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index]->getGID()!=GID_TEXT) {
-			DisplayMessage("Folder Resource","Non text item requested as text!");
+			os::DisplayMessage("Folder Resource","Non text item requested as text!");
 			assert(0);
 		}
 #endif
@@ -111,7 +111,7 @@ namespace gre {
 	ImageResource	*FolderResource::asImage	(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index]->getGID()!=GID_IMAGE) {
-			DisplayMessage("Folder Resource","Non image item requested as image!");
+			os::DisplayMessage("Folder Resource","Non image item requested as image!");
 			assert(0);
 		}
 #endif
@@ -120,7 +120,7 @@ namespace gre {
 	DataResource	*FolderResource::asData		(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index]->getGID()!=GID_DATAARRAY) {
-			DisplayMessage("Folder Resource","Non data item requested as data!");
+			os::DisplayMessage("Folder Resource","Non data item requested as data!");
 			assert(0);
 		}
 #endif
@@ -129,7 +129,7 @@ namespace gre {
 	SoundResource	*FolderResource::asSound	(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index]->getGID()!=GID_SOUND) {
-			DisplayMessage("Folder Resource","Non sound item requested as sound!");
+			os::DisplayMessage("Folder Resource","Non sound item requested as sound!");
 			assert(0);
 		}
 #endif
@@ -138,7 +138,7 @@ namespace gre {
 	AnimationResource	*FolderResource::asAnimation	(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index]->getGID()!=GID_ANIMATION) {
-			DisplayMessage("Folder Resource","Non animation item requested as animation!");
+			os::DisplayMessage("Folder Resource","Non animation item requested as animation!");
 			assert(0);
 		}
 #endif
@@ -147,7 +147,7 @@ namespace gre {
 	BitmapFontResource	*FolderResource::asBitmapFont	(int Index) { 
 #ifdef _DEBUG
 			if(Subitems[Index]->getGID()!=GID_FONT) {
-				DisplayMessage("Folder Resource","Non bitmap font item requested as bitmap font!");
+				os::DisplayMessage("Folder Resource","Non bitmap font item requested as bitmap font!");
 				assert(0);
 			}
 #endif

@@ -14,11 +14,11 @@ namespace gorgonwidgets {
 
 	struct keyboard_event_params {
 		KeyboardEventType event;
-		KeyboardModifier modifier;
+		KeyboardModifier::Type modifier;
 		int keycode;
 		bool &isused;
 
-		keyboard_event_params(KeyboardEventType event, int keycode, KeyboardModifier modifier, bool &isused) :
+		keyboard_event_params(KeyboardEventType event, int keycode, KeyboardModifier::Type modifier, bool &isused) :
 			event(event), 
 			modifier(modifier),
 			keycode(keycode), 
@@ -73,7 +73,7 @@ namespace gorgonwidgets {
 		virtual void			SetContainer(IWidgetContainer &container);
 		virtual void			Detach();
 	
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier)=0;
+		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier)=0;
 		virtual bool mouse_event(MouseEventType event,int x,int y)=0;
 
 		EventChain<IWidgetObject, empty_event_params> ClickEvent;

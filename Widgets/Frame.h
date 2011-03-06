@@ -81,7 +81,7 @@ namespace gorgonwidgets {
 		virtual void SetBluePrint(IWidgetBluePrint *BP);
 		virtual void on_focus_event(bool state,IWidgetObject *related) { isactive=state; };
 		
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier) {
+		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
 			bool ret=false;
 			keyboard_event_params p(event, keycode, modifier,ret);
 			KeypreviewEvent(p);

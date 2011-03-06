@@ -233,7 +233,7 @@ namespace gre {
 	void ImageResource::Prepare(GGEMain *main) {
 #ifdef _DEBUG
 			if(Data==NULL) {
-				DisplayMessage("Image Resource","Data is not loaded yet.");
+				os::DisplayMessage("Image Resource","Data is not loaded yet.");
 				assert(0);
 			}
 #endif

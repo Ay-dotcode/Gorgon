@@ -96,7 +96,7 @@ namespace gorgonwidgets {
 		void ProgressionCheck();
 		
 		virtual bool mouse_event(MouseEventType event,int x,int y);
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier);
+		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
 
 		bool mousedown;
 

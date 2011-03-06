@@ -385,7 +385,7 @@ namespace gorgonwidgets {
 		return true;
 	}
 
-	bool Textbox::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier) {
+	bool Textbox::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
 		if(!isvisible)
 			return false;
 
@@ -446,7 +446,7 @@ namespace gorgonwidgets {
 			}
 		}
 		if(event==KEYB_EVENT_DOWN) {
-			if( modifier==KEYB_MOD_NONE ) {
+			if( modifier==KeyboardModifier::None ) {
 				switch(keycode) {
 				case 35: //End
 					SetCaretPosition(text.length());
@@ -486,7 +486,7 @@ namespace gorgonwidgets {
 				}
 			}
 		} else {
-			if(modifier==KEYB_MOD_SHIFT) {
+			if(modifier==KeyboardModifier::Shift) {
 				switch(keycode) {
 				case 35: //End
 					if(caretposition==selectend) {

@@ -13,7 +13,7 @@
 	}
 
 
-	namespace gge {
+	namespace gge { namespace os {
 
 		////Handle for window
 		typedef unsigned long	WindowHandle;
@@ -32,7 +32,7 @@
 		////This function returns the current time
 		inline unsigned int GetTime() { return timeGetTime(); }
 
-	}
+	} }
 
 
 

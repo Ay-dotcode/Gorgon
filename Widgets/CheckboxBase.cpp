@@ -592,22 +592,22 @@ namespace gorgonwidgets {
 		return true;
 	}
 
-	bool CheckboxBase::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier) {
+	bool CheckboxBase::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
 		if(!isvisible)
 			return false;
 
-		if((modifier==KEYB_MOD_NONE || modifier==KEYB_MOD_ALTERNATIVE) && event==KEYB_EVENT_DOWN && keycode==13) {
+		if((modifier==KeyboardModifier::None || modifier==KeyboardModifier::Alternate) && event==KEYB_EVENT_DOWN && keycode==13) {
 			if(!sticky || !checked) {
 				SimulateClicked();
 			}
 			return true;
 		}
-		if(modifier==KEYB_MOD_NONE && event==KEYB_EVENT_DOWN && keycode==32) {
+		if(modifier==KeyboardModifier::None && event==KEYB_EVENT_DOWN && keycode==32) {
 			SimulatePressed();
 
 			return true;
 		}
-		if(modifier==KEYB_MOD_NONE && event==KEYB_EVENT_UP && keycode==32) {
+		if(modifier==KeyboardModifier::None && event==KEYB_EVENT_UP && keycode==32) {
 			SimulateRelease();
 			if(!sticky || !checked) {
 				Transition(CS_Pressed,false,false,!checked);

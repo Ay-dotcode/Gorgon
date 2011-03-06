@@ -37,23 +37,28 @@ namespace gge {
 		////The image of the pointer
 		Buffered2DGraphic *Image;
 		////Point of click
-		int HotspotX;
-		////Point of click
-		int HotspotY;
+		Point Hotspot;
 		////Type of the pointer
 		PointerTypes Type;
 
 		////Initializes a pointer
 		Pointer(Buffered2DGraphic *pointer, int HotspotX, int HotspotY, PointerTypes Type) {
 			this->Image=pointer;
-			this->HotspotX=HotspotX;
-			this->HotspotY=HotspotY;
+			this->Hotspot.x=HotspotX;
+			this->Hotspot.y=HotspotY;
+			this->Type=Type;
+		}
+
+		////Initializes a pointer
+		Pointer(Buffered2DGraphic &pointer, Point Hotspot, PointerTypes Type) {
+			this->Image=&pointer;
+			this->Hotspot=Hotspot;
 			this->Type=Type;
 		}
 	};
 
 
-	class Cpointers : public Collection<Pointer, 10> {
+	class PointerCollection : public Collection<Pointer, 10> {
 	public:
 		////Initializes Pointer Subsystem
 		void Initialize(GGEMain &Main);
@@ -64,7 +69,11 @@ namespace gge {
 		void Fetch(FolderResource *Folder);
 		void Fetch(FolderResource &Folder) { Fetch(&Folder); }
 		////Adds a pointer to the list of pointers
-		Pointer *Add(Buffered2DGraphic *Pointer, Point Hotspot, Pointer::PointerTypes Type=Pointer::None);
+		Pointer *Add(Buffered2DGraphic *Pointer, Point Hotspot=Point(2,2), Pointer::PointerTypes Type=Pointer::None);
+		////Adds a pointer to the list of pointers
+		Pointer &Add(Buffered2DGraphic &Pointer, Point Hotspot=Point(2,2), Pointer::PointerTypes Type=Pointer::None) {
+			return *Add(&Pointer, Hotspot, Type);
+		}
 		////Sets the given pointer as current one, this operation should be revered by
 		/// using reset pointer with the returned integer
 		int Set(Pointer *Pointer);
@@ -75,6 +84,7 @@ namespace gge {
 		/// once at the startup. This function or FetchFolders function should be called before 
 		/// calling show pointer function
 		void ChangeBase(Pointer *Pointer);
+		void ChangeBase(Pointer &Pointer) { ChangeBase(&Pointer); }
 		////Removes a given stack no from pointer display list. The displayed pointer is always
 		/// the one at the top. But any pointer can be removed from the list without the requirement
 		/// of being on top. 
@@ -85,7 +95,7 @@ namespace gge {
 		////Hides current pointer
 		void Hide();
 
-		Cpointers() : PointerLayer(NULL), BasePointer(NULL), PointerVisible(false), OSPointerVisible(true) { }
+		PointerCollection() : PointerLayer(NULL), BasePointer(NULL), PointerVisible(false), OSPointerVisible(true) { }
 
 	protected:
 		LinkedList<Pointer> ActivePointers;
@@ -101,6 +111,6 @@ namespace gge {
 		void Draw(GGEMain &caller);
 	};
 
-	extern Cpointers Pointers;
+	extern PointerCollection Pointers;
 
 }

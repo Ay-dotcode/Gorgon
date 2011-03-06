@@ -2,7 +2,6 @@
 
 namespace gge {
 	extern int trX,trY;
-	extern MouseEventObject *pressedObject;
 
 	bool InputLayer::PropagateMouseEvent(MouseEventType event, int x, int y, void *data) {
 		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&MOUSE_EVENT_UP) || (pressedObject && event&MOUSE_EVENT_MOVE)) ) {

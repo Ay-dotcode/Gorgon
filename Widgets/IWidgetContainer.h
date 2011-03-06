@@ -69,7 +69,7 @@ namespace gorgonwidgets {
 		virtual Basic2DLayer		&GetBackgroundLayer() { return BackgroundLayer; }
 		virtual void				RedrawBackground() { BackgroundLayer.Clear(); BackgroundRedrawEvent(); }
 
-		virtual bool keyboard_event(KeyboardEventType event,int keycode,KeyboardModifier modifier);
+		virtual bool keyboard_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
 
 		int Order;
 
@@ -81,8 +81,8 @@ namespace gorgonwidgets {
 
 	protected:
 
-		virtual bool keyboard_event_subitems(KeyboardEventType event,int keycode,KeyboardModifier modifier);
-		virtual bool keyboard_event_actions(KeyboardEventType event,int keycode,KeyboardModifier modifier);
+		virtual bool keyboard_event_subitems(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
+		virtual bool keyboard_event_actions(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
 
 		WidgetLayer  BaseLayer;
 		WidgetLayer  ExtenderLayer;

@@ -234,7 +234,7 @@ namespace gorgonwidgets {
 		void ProgressionCheck();
 
 		virtual void on_focus_event(bool state,IWidgetObject *related);
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier modifier);
+		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
 
 		virtual void setButtonPositions();
 		virtual void setSymbolPosition(bool instant=false);

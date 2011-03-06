@@ -133,7 +133,7 @@ namespace gge {
 		////Clear the contents of the layer
 		virtual void Clear() { Surfaces.Clear(); }
 	};
-	class WidgetLayer :  public BasicPointerTarget, public Basic2DLayer {
+	class WidgetLayer :  public input::BasicPointerTarget, public Basic2DLayer {
 	public:
 		WidgetLayer(int X=0, int Y=0, int W=100, int H=100) : Basic2DLayer(X,Y,W,H) {
 		}

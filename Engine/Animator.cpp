@@ -3,7 +3,6 @@
 
 namespace gge {
 	Collection<AnimatorBase> Animators;
-	extern GGEMain *main;
 
 	void Animator_Signal(IntervalObject *interval, void *data) {
 		Animators.ResetIteration();
@@ -124,12 +123,12 @@ namespace gge {
 	void DiscreteAnimatorBase::GotoFrame(int Frame) {
 #ifdef _DEBUG
 		if(Frame<0) {
-			DisplayMessage("Discreate animation","Negative frame requested!");
+			os::DisplayMessage("Discreate animation","Negative frame requested!");
 			assert(0);
 			return;
 		}
 		if(Frame>totalframes) {
-			DisplayMessage("Discreate animation","Specified frame does not exists!");
+			os::DisplayMessage("Discreate animation","Specified frame does not exists!");
 			assert(0);
 			return;
 		}
@@ -182,7 +181,7 @@ namespace gge {
 	void DiscreteAnimatorBase::setTotalFrames(int total) {
 #ifdef _DEBUG
 		if(total==0) {
-			DisplayMessage("Discreate animation","Empty total frames requested!");
+			os::DisplayMessage("Discreate animation","Empty total frames requested!");
 			assert(0);
 		}
 #endif
@@ -206,7 +205,7 @@ namespace gge {
 
 #ifdef _DEBUG
 		if(duration==0) {
-			DisplayMessage("Discreate animation","Empty duration animation!");
+			os::DisplayMessage("Discreate animation","Empty duration animation!");
 			assert(0);
 		}
 #endif
@@ -224,7 +223,7 @@ namespace gge {
 
 #ifdef _DEBUG
 		if(averagedurations==0) {
-			DisplayMessage("Discreate animation","Trying to process an empty animation!");
+			os::DisplayMessage("Discreate animation","Trying to process an empty animation!");
 			assert(0);
 		}
 #endif
@@ -258,7 +257,7 @@ namespace gge {
 		int targetframe;
 #ifdef _DEBUG
 		if(guessedframe<0) {
-			DisplayMessage("Discreate animation","Guessed frame is lower than 0??");
+			os::DisplayMessage("Discreate animation","Guessed frame is lower than 0??");
 			guessedframe=0;
 		} else if(guessedframe>=totalframes) {
 			guessedframe=totalframes-1;
@@ -292,10 +291,10 @@ namespace gge {
 		}
 #ifdef _DEBUG
 		if(targetframe<0) {
-			DisplayMessage("Discreate animation","Target frame is lower than 0!");
+			os::DisplayMessage("Discreate animation","Target frame is lower than 0!");
 			guessedframe=0;
 		} else if(targetframe>=totalframes) {
-			DisplayMessage("Discreate animation","Target frame is higher than totalframes!");
+			os::DisplayMessage("Discreate animation","Target frame is higher than totalframes!");
 			assert(0);
 		}
 #endif

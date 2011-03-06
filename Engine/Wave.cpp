@@ -1,10 +1,32 @@
 #include "Wave.h"
 
-namespace gge {
-	////For garbage collection
-	static Collection<Wave> Waves;
+namespace gge { namespace sound {
 
-	Wave::Wave(SoundBufferHandle buffer, int maxWaveDistance) {
+	namespace system {
+		////For garbage collection
+		static Collection<Wave> Waves;
+		void InitWaveGarbageCollect(GGEMain *main) {
+			main->AfterRenderEvent.Register(CollectWaveGarbage);
+		}
+
+		void CollectWaveGarbage() {
+			Waves.ResetIteration();
+			Wave *wave;
+
+			while(wave=Waves.next()) {
+				if(!wave->isPlaying()) {
+					if(wave->AutoDestruct) {
+						Waves.Remove(wave);
+						delete wave;
+					} else {
+						if(wave->finished) wave->finished(*wave);
+					}
+				}
+			}
+		}
+	}
+
+	Wave::Wave(system::SoundBufferHandle buffer, int maxWaveDistance) {
 		buffer=buffer;
 		isavailable=false;
 		AutoDestruct=true;
@@ -12,57 +34,49 @@ namespace gge {
 		finishedstateisknown=0;
 
 		if(maxWaveDistance)
-			isavailable= (bool)(source=Create3DSoundController(buffer, maxWaveDistance));
+			isavailable= (bool)(source=system::Create3DSoundController(buffer, maxWaveDistance));
 		else
-			isavailable= (bool)(source=CreateSoundController(buffer));
+			isavailable= (bool)(source=system::CreateSoundController(buffer));
 
-		Waves.Add(this);
+		system::Waves.Add(this);
 	}
 
-	void WaveGarbageCollect_fire(empty_event_params params, GGEMain &main, Any data, string eventname) {
-		CollectWaveGarbage();
-	}
-
-	void InitWaveGarbageCollect(GGEMain *main) {
-		main->AfterRenderEvent.Register(WaveGarbageCollect_fire);
-	}
-
-	Wave* Wave::Play() {
+	Wave& Wave::Play() {
 		finishedstateisknown=0;
-		
+
 		alSourcei(source,AL_LOOPING,0);
 		alSourcePlay(source);
-		return this;
+		return *this;
 	}
 
 	Wave::~Wave() {
 		_destroy();
 	}
-	
-	Wave* Wave::Loop() {
+
+	Wave& Wave::Loop() {
 		finishedstateisknown=0;
 		alSourcei(source, AL_LOOPING, 1);
 		alSourcePlay(source);
-		return this;
+		return *this;
 	}
-	
-	Wave* Wave::SetVolume(float Volume) {
+
+	Wave& Wave::SetVolume(float Volume) {
 		alSourcef(source, AL_GAIN, Volume);
 
-		return this;
+		return *this;
 	}
-	
-	Wave* Wave::Set3DPosition(float x,float y,float z) {
+
+	Wave& Wave::Set3DPosition(float x,float y,float z) {
 		alSource3f(source, AL_POSITION, x, y, z);
 
-		return this;
+		return *this;
 	}
-	
-	Wave* Wave::Stop() {
+
+	Wave& Wave::Stop() {
 		alSourceStop(source);
-		return this;
+		return *this;
 	}
-	
+
 	void Wave::_destroy() {
 		isavailable=false;
 		alDeleteSources(1,&source);
@@ -75,19 +89,4 @@ namespace gge {
 		return status==AL_PLAYING;
 	}
 
-	void CollectWaveGarbage() {
-		Waves.ResetIteration();
-		Wave *wave;
-
-		while(wave=Waves.next()) {
-			if(wave->AutoDestruct) {
-				if(!wave->isPlaying()) {
-					Waves.Remove(wave);
-					wave->_destroy();
-					delete wave;
-					wave=NULL;
-				}
-			}
-		}
-	}
-}
+} }
