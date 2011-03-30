@@ -73,7 +73,7 @@ namespace gorgonwidgets {
 				chk->guid_pressed2hover=new Guid(gfile);
 				chk->guid_tonextstyle=new Guid(gfile);
 
-				BYTE byt;
+				Byte byt;
 				fread(&byt,1,1,gfile);
 				chk->RevHover2NormalState=byt;
 				fread(&byt,1,1,gfile);

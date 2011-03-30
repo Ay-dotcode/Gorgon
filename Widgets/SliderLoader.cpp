@@ -64,7 +64,7 @@ namespace gorgonwidgets {
 				slider->guid=new Guid(gfile);
 				break;
 			case GID_SLIDER_GRP_PROPS:
-				BYTE byt;
+				Byte byt;
 
 				fread(&slider->Style,4,1,gfile);
 				fread(&slider->PreferredWidth,4,1,gfile);

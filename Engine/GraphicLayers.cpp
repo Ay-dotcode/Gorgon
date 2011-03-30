@@ -1179,7 +1179,7 @@ namespace gge {
 		}
 	}
 
-	void Basic2DRawGraphicsLayer::Draw(BYTE *Image, int Width, int Height, gge::ColorMode Mode, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
+	void Basic2DRawGraphicsLayer::Draw(Byte *Image, int Width, int Height, gge::ColorMode Mode, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
 		RawSurface *surface=Surfaces.Add();
 
 		surface->Data=Image;

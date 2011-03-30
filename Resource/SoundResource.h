@@ -22,7 +22,7 @@ namespace gre {
 		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
 
 		////Wave data
-		BYTE *Data;
+		Byte *Data;
 		////Format
 		gge::sound::system::WaveFormat Format;
 		////Size of the data

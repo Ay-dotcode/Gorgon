@@ -69,7 +69,7 @@ namespace gorgonwidgets {
 		steps=1;
 		buttonincrement=1;
 
-		SliderBase::ChangeEvent=ChangeEvent;
+		SliderBase::ChangeEvent.DoubleLink(ChangeEvent);
 
 		this->Hide();
 		delayclicks=true;

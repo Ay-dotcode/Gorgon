@@ -238,7 +238,6 @@ namespace gorgonwidgets {
 			}
 		}
 
-		delete[] temp;
 		return *this;
 	}
 	SliderElement &SliderElement::DrawTickNames(Colorizable2DLayer &Target, float Distance, Collection<SliderLocationName> &Texts, bool useLocations, float min, float max) {

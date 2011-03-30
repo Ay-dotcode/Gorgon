@@ -49,11 +49,11 @@ namespace gre {
 				if(Type==Integral) {
 					switch(CalculationMethod) {
 						case SmallerThanGivenSize:
-							return gge::Max(floor((float)Requested/Original), 1)*Original;
+							return (int)gge::Max(floor((float)Requested/Original), 1)*Original;
 						case ClosestToGivenSize:
-							return gge::Max(gge::Round((float)Requested/Original), 1)*Original;
+							return (int)gge::Max(gge::Round((float)Requested/Original), 1)*Original;
 						case FillTheGivenSize:
-							return gge::Max(ceil((float)Requested/Original), 1)*Original;
+							return (int)gge::Max(ceil((float)Requested/Original), 1)*Original;
 					}
 				}
 
@@ -94,11 +94,11 @@ namespace gre {
 				}
 
 				if(CalculationMethod==SmallerThanGivenSize)
-					return gge::Max(floor( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
+					return (int)gge::Max(floor( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
 				else if(CalculationMethod==ClosestToGivenSize)
-					return gge::Max(gge::Round( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
+					return (int)gge::Max(gge::Round( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
 				else
-					return gge::Max(ceil( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
+					return (int)gge::Max(ceil( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
 			}
 		};
 

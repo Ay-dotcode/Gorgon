@@ -7,7 +7,7 @@ namespace gre {
 		SoundResource *snd=new SoundResource;
 
 		int tpos=ftell(Data)+Size,buffersize;
-		BYTE *compressionprops=NULL;
+		Byte *compressionprops=NULL;
 		while(ftell(Data)<tpos) {
 			int gid,size,compression=0;
 
@@ -33,18 +33,18 @@ namespace gre {
 			}
 			else if(gid==GID_SOUND_WAVE) {
 				snd->Size=size;
-				snd->Data=new BYTE[size];
+				snd->Data=new Byte[size];
 				fread(snd->Data,1,size,Data);
 			} else if(gid==GID_SOUND_CMP_PROPS) {
 				fread(&compression,1,4,Data);
 				if(compression==GID_LZMA) {
-					compressionprops=new BYTE[LZMA_PROPERTIES_SIZE];
+					compressionprops=new Byte[LZMA_PROPERTIES_SIZE];
 					fread(compressionprops,1,LZMA_PROPERTIES_SIZE,Data);
 				}
 			} else if(gid==GID_SOUND_CMP_WAVE) {
-				snd->Data=new BYTE[buffersize];
+				snd->Data=new Byte[buffersize];
 				snd->Size=buffersize;
-				BYTE *tmpdata=new BYTE[size];
+				Byte *tmpdata=new Byte[size];
 				fread(tmpdata,1,size,Data);
 				size_t processed,processed2;
 				CLzmaDecoderState state;

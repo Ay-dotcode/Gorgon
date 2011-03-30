@@ -117,9 +117,9 @@ namespace gge {
 
 		RGBint(unsigned int i) { memcpy(this,&i,4); }
 		RGBint(int i) { memcpy(this,&i,4); }
-		RGBint(BYTE a, BYTE r, BYTE g, BYTE b) : a(a), r(r), g(g), b(b) { }
-		RGBint(RGBfloat f) { a=(BYTE)(f.a*255); r=(BYTE)(f.r*255); g=(BYTE)(f.g*255); b=(BYTE)(f.b*255); }
-		RGBint(float lum) { a=255; r=(BYTE)lum*255; g=(BYTE)lum*255; b=(BYTE)lum*255; }
+		RGBint(Byte a, Byte r, Byte g, Byte b) : a(a), r(r), g(g), b(b) { }
+		RGBint(RGBfloat f) { a=(Byte)(f.a*255); r=(Byte)(f.r*255); g=(Byte)(f.g*255); b=(Byte)(f.b*255); }
+		RGBint(float lum) { a=255; r=(Byte)lum*255; g=(Byte)lum*255; b=(Byte)lum*255; }
 		RGBint() { }
 		
 		////Converts RGBint structure to ARGB integer
@@ -135,7 +135,7 @@ namespace gge {
 			return *this;
 		}
 		RGBint &operator =(float lum) { 
-			a=255; r=(BYTE)(lum*255); g=(BYTE)(lum*255); b=(BYTE)(lum*255);
+			a=255; r=(Byte)(lum*255); g=(Byte)(lum*255); b=(Byte)(lum*255);
 			return *this;
 		}
 
@@ -176,9 +176,9 @@ namespace gge {
 		}
 		
 		RGBint &operator *=(float c) {
-			r=(BYTE)(r*c);
-			g=(BYTE)(g*c);
-			b=(BYTE)(b*c);
+			r=(Byte)(r*c);
+			g=(Byte)(g*c);
+			b=(Byte)(b*c);
 
 			return *this;
 		}
@@ -186,17 +186,17 @@ namespace gge {
 		RGBint operator *(float c) {
 			RGBint color;
 			
-			color.r=(BYTE)(r*c);
-			color.g=(BYTE)(g*c);
-			color.b=(BYTE)(b*c);
+			color.r=(Byte)(r*c);
+			color.g=(Byte)(g*c);
+			color.b=(Byte)(b*c);
 
 			return color;
 		}
 		
 		RGBint &operator /=(float c) {
-			r=(BYTE)(r/c);
-			g=(BYTE)(g/c);
-			b=(BYTE)(b/c);
+			r=(Byte)(r/c);
+			g=(Byte)(g/c);
+			b=(Byte)(b/c);
 
 			return *this;
 		}
@@ -204,9 +204,9 @@ namespace gge {
 		RGBint operator /(float c) {
 			RGBint color;
 			
-			color.r=(BYTE)(r/c);
-			color.g=(BYTE)(g/c);
-			color.b=(BYTE)(b/c);
+			color.r=(Byte)(r/c);
+			color.g=(Byte)(g/c);
+			color.b=(Byte)(b/c);
 
 			return color;
 		}
@@ -258,9 +258,9 @@ namespace gge {
 						a=aa;
 				}
 
-				r=(BYTE)(r*alpham1+color.r*alpha);
-				g=(BYTE)(g*alpham1+color.g*alpha);
-				b=(BYTE)(b*alpham1+color.b*alpha);
+				r=(Byte)(r*alpham1+color.r*alpha);
+				g=(Byte)(g*alpham1+color.g*alpha);
+				b=(Byte)(b*alpham1+color.b*alpha);
 			}
 		}
 
@@ -501,17 +501,17 @@ namespace gge {
 		///@Y3		: bottom-right corner
 		///@X4		: bottom-left corner
 		///@Y4		: bottom-left corner
-		virtual void Draw(BYTE *Image, int Width, int Height, ColorMode Mode,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4)=0;
+		virtual void Draw(Byte *Image, int Width, int Height, ColorMode Mode,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4)=0;
 		////Draws a simple image to the screen.
 		/// This function supports scaling.
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
-		_inline virtual void Draw(BYTE *Image, int Width, int Height, ColorMode Mode,int X,int Y,int W,int H) { Draw(Image,Width,Height,Mode,X,Y,X+W,Y,X+W,Y+H,X,Y+H); }
+		_inline virtual void Draw(Byte *Image, int Width, int Height, ColorMode Mode,int X,int Y,int W,int H) { Draw(Image,Width,Height,Mode,X,Y,X+W,Y,X+W,Y+H,X,Y+H); }
 		////Draws a simple image to the screen.
 		/// This function does not support any transformations
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
-		_inline virtual void Draw(BYTE *Image, int Width, int Height, ColorMode Mode,int X,int Y) { Draw(Image,Width,Height,Mode,X,Y,X+Width,Y,X+Width,Y+Height,X,Y+Height); }
+		_inline virtual void Draw(Byte *Image, int Width, int Height, ColorMode Mode,int X,int Y) { Draw(Image,Width,Height,Mode,X,Y,X+Width,Y,X+Width,Y+Height,X,Y+Height); }
 	};
 	////This is a basic drawing object
 	class Buffered2DGraphic {
@@ -672,7 +672,7 @@ namespace gge {
 	////This is a basic drawing object
 	class Raw2DGraphic {
 	public:
-		ManagedBuffer<BYTE> Data;
+		ManagedBuffer<Byte> Data;
 	protected:
 		int Width;
 		int Height;
@@ -778,14 +778,14 @@ namespace gge {
 	///               should be 1 byte/pix
 	///@Destination	: Destination data array, data is copied without
 	///               any justification, should be allocated for 2 byte/pix
-	void A8ToA8L8(int Width, int Height, BYTE *Source, BYTE *Destination);
+	void A8ToA8L8(int Width, int Height, Byte *Source, Byte *Destination);
 	////This function sets the current texture to given data
-	void SetTexture(BYTE *data, int cx, int cy, ColorMode mode);
+	void SetTexture(Byte *data, int cx, int cy, ColorMode mode);
 	////This function creates a texture from the given data and
 	/// returns texture information in a structure
 	///@Image		: Image data
 	///@Mode		: Color mode
-	GLTexture GenerateTexture(BYTE *Image,int Width,int Height,ColorMode Mode);
+	GLTexture GenerateTexture(Byte *Image,int Width,int Height,ColorMode Mode);
 	void DestroyTexture(GLTexture *texture);
 	////Returns equivalent OpenGL color mode constant
 	///@Mode		: GGE color mode constant

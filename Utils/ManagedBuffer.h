@@ -1,3 +1,29 @@
+//DESCRIPTION
+//	ManagedBuffer is an array that manages reference counting
+//	and auto destruction of its buffer if no variable references
+//	to that buffer. It has copy semantics which links copied object
+//	to the source object. The contents of the buffer can be accessed
+//	as a different type, but in that case the buffer cannot be resized
+
+//REQUIRES:
+//	---
+
+//LICENSE
+//	This program is free software: you can redistribute it and/or modify
+//	it under the terms of the Lesser GNU General Public License as published by
+//	the Free Software Foundation, either version 3 of the License, or
+//	(at your option) any later version.
+//
+//	This program is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//	Lesser GNU General Public License for more details.
+//
+//	You should have received a copy of the Lesser GNU General Public License
+//	along with this program. If not, see < http://www.gnu.org/licenses/ >.
+
+//COPYRIGHT
+//	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 #pragma once
 
 #include <cstring>
@@ -17,8 +43,6 @@ namespace gge {
 			*data=NULL;
 			size=new int();
 			*size=0;
-			noresize=new int();
-			*noresize=0;
 		}
 
 		ManagedBuffer(int size) : sizefactor(1), noresizer(false) {
@@ -27,17 +51,23 @@ namespace gge {
 			data=new T_*();
 			*data=NULL;
 			this->size=new int();
-			noresize=new int();
-			*noresize=0;
 			Resize(size);
 		}
 
-		ManagedBuffer(ManagedBuffer &buf) : sizefactor(1), noresizer(false) {
+		ManagedBuffer(const ManagedBuffer &buf) : sizefactor(1), noresizer(false) {
 			data=buf.data;
 			refcnt=buf.refcnt;
 			size=buf.size;
-			noresize=noresize;
 			sizefactor=buf.sizefactor;
+			(*refcnt)++;
+		}
+
+		template<class O_>
+		ManagedBuffer(float factor, ManagedBuffer<O_> &buf) : sizefactor(factor), noresizer(true) {
+			data=(T_**)buf.data;
+			refcnt=buf.refcnt;
+			size=buf.size;
+			(*refcnt)++;
 		}
 
 		template<class O_>
@@ -45,13 +75,11 @@ namespace gge {
 			data=(T_**)buf->data;
 			refcnt=buf->refcnt;
 			size=buf->size;
-			noresize=buf->noresize;
-
-			(*noresize)++;
+			(*refcnt)++;
 		}
 
 		template<class O_>
-		ManagedBuffer<O_> &Cast(O_ *none=NULL) {
+		ManagedBuffer<O_> &Cast() {
 			if((sizeof(T_)*(*size))%sizeof(O_))
 				throw runtime_error("Cannot cast, size mismatch");
 
@@ -63,30 +91,38 @@ namespace gge {
 		void Resize(int size) {
 			if(noresizer)
 				throw std::runtime_error("Cannot resize");
-			if(*data)
+
+			if(size==*(this->size))
+				return;
+
+			if(*data) {
 				*data=(T_*) std::realloc(*data, size*sizeof(T_));
-			else {
+			} else if(size==0) {
+				std::free(*data);
+				*data=NULL;
+			} else {
 				*data=(T_*) std::malloc(size*sizeof(T_));
 			}
 
 			*this->size=size;
 		}
 
-		ManagedBuffer &operator =(ManagedBuffer &buf) {
+		ManagedBuffer &operator =(const ManagedBuffer &buf) {
+			if(this==&buf) return *this;
 			RemoveReference();
 
 			if(!(*refcnt)) {
 				delete refcnt;
 				delete size;
 				delete data;
-				delete noresize;
 			}
 
 			data=buf.data;
 			refcnt=buf.refcnt;
 			size=buf.size;
-			noresize=buf.noresize;
 			sizefactor=buf.sizefactor;
+			noresizer=buf.noresizer;
+			(*refcnt)++;
 
 			return *this;
 		}
@@ -129,9 +165,6 @@ namespace gge {
 				delete refcnt;
 				delete size;
 				delete data;
-				if(noresizer)
-					(*noresize)--;
-				delete noresize;
 			}
 		}
 		int getReferenceCount() {
@@ -167,12 +200,18 @@ namespace gge {
 
 		inline T_ &operator [] (int index) {
 #ifdef _DEBUG
+#ifndef _DEBUG_FASTBUFFER
 			if(index<0 || index>=GetSize()) {
 				throw std::runtime_error("Index out of bounds");
 			}
 #endif
+#endif
 
 			return (*data)[index];
+		}
+
+		inline T_ *operator () (int index) {
+			return &((*data)[index]);
 		}
 		operator T_*() {
 #ifdef _DEBUG
@@ -189,7 +228,6 @@ namespace gge {
 	private:
 		T_ **data;
 		int *size;
-		int *noresize;
 
 		bool noresizer;
 

@@ -96,7 +96,7 @@ namespace gge {
 
 		return ret;
 	}
-	void A8ToA8L8(int cx,int cy,BYTE *data,BYTE *dest)
+	void A8ToA8L8(int cx,int cy,Byte *data,Byte *dest)
 	{
 		int icx=cx,icy=cy;
 		
@@ -145,10 +145,10 @@ loopyend:
 			pop edi
 		}
 	}
-	void SetTexture(BYTE *data, int cx, int cy, ColorMode mode) {
+	void SetTexture(Byte *data, int cx, int cy, ColorMode mode) {
 		GLenum colormode=getGLColorMode(mode);
 
-		BYTE *target=NULL;
+		Byte *target=NULL;
 
 		///*Setting Texture Parameters to
 		/// Magnify filter: Linear,
@@ -163,7 +163,7 @@ loopyend:
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
 			glPixelStorei(GL_PACK_ALIGNMENT, 2);
 
-			target=new BYTE[cx*cy*2];	
+			target=new Byte[cx*cy*2];	
 			A8ToA8L8(cx,cy,data,target);
 			delete data;
 			data=target;
@@ -178,7 +178,7 @@ loopyend:
 		glTexImage2D(GL_TEXTURE_2D,0,getBPP(mode),sl2(cx),sl2(cy),0,colormode,GL_UNSIGNED_BYTE,NULL);
 		glTexSubImage2D(GL_TEXTURE_2D,0,0,0,cx,cy,colormode,GL_UNSIGNED_BYTE,data);
 	}
-	GLTexture GenerateTexture(BYTE *data,int cx,int cy,ColorMode mode) {
+	GLTexture GenerateTexture(Byte *data,int cx,int cy,ColorMode mode) {
 
 		GLTexture ret;
 		ret.CalcuateCoordinates(cx,cy);

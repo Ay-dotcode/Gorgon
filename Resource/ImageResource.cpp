@@ -45,7 +45,7 @@ namespace gre {
 			else if(gid==GID_IMAGE_CMP_PROPS) {
 				fread(&img->Compression,1,4,Data);
 				if(img->Compression==GID_LZMA) {
-					img->CompressionProps=new BYTE[LZMA_PROPERTIES_SIZE];
+					img->CompressionProps=new Byte[LZMA_PROPERTIES_SIZE];
 					fread(img->CompressionProps,1,LZMA_PROPERTIES_SIZE,Data);
 				}
 			} else if(gid==GID_IMAGE_DATA) {
@@ -70,7 +70,7 @@ namespace gre {
 					fseek(Data,size,SEEK_CUR);
 				} else {
 					if(img->Compression==GID_LZMA) {
-						BYTE *tmpdata=new BYTE[size];
+						Byte *tmpdata=new Byte[size];
 						fread(tmpdata,1,size,Data);
 						size_t processed,processed2;
 						CLzmaDecoderState state;
@@ -124,7 +124,7 @@ namespace gre {
 						int stride=img->getWidth()*channels;
 						int rowsRead=0;
 
-						BYTE ** rowPtr = new BYTE * [img->getHeight()];
+						Byte ** rowPtr = new Byte * [img->getHeight()];
 						for(i=0;i<img->getHeight();i++)
 							rowPtr[i]=img->Data+stride*i;
 
@@ -140,7 +140,7 @@ namespace gre {
 					img->isLoaded=true;
 				}
 			} else if(gid==GID_IMAGE_PALETTE) {
-				img->Palette=new BYTE[size];
+				img->Palette=new Byte[size];
 				fread(img->Palette,1,size,Data);
 			}
 		}
@@ -158,7 +158,7 @@ namespace gre {
 		
 		if(this->Compression==GID_LZMA) {
 			this->Data.Resize(this->getWidth()*this->getHeight()*this->getBPP());
-			BYTE *tmpdata=new BYTE[DataSize];
+			Byte *tmpdata=new Byte[DataSize];
 			fread(tmpdata,1,this->DataSize,gfile);
 			size_t processed,processed2;
 			CLzmaDecoderState state;
@@ -210,7 +210,7 @@ namespace gre {
 			int stride=getWidth()*channels;
 			int rowsRead=0;
 
-			BYTE ** rowPtr = new BYTE * [getHeight()];
+			Byte ** rowPtr = new Byte * [getHeight()];
 			for(i=0;i<getHeight();i++)
 				rowPtr[i]=Data+stride*i;
 
@@ -228,6 +228,8 @@ namespace gre {
 		fclose(gfile);
 
 		this->isLoaded=true;
+
+		return true;
 	}
 
 	void ImageResource::Prepare(GGEMain *main) {
@@ -264,7 +266,7 @@ namespace gre {
 	       8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
 	       PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-		BYTE *newdata=new BYTE[getWidth()*getHeight()*4];
+		Byte *newdata=new Byte[getWidth()*getHeight()*4];
 		for(i=0;i<getWidth()*getHeight();i++) {
 			newdata[i*4+2]=Data[i*4+0];
 			newdata[i*4+1]=Data[i*4+1];
@@ -273,7 +275,7 @@ namespace gre {
 		}
 
 		png_write_info(png_ptr, info_ptr);
-		BYTE **rows=new BYTE*[getHeight()];
+		Byte **rows=new Byte*[getHeight()];
 		for(i=0;i<getHeight();i++) {
 			rows[i]=newdata+i*getWidth()*4;
 		}

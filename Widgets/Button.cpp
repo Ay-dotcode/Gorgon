@@ -35,7 +35,7 @@ namespace gorgonwidgets {
 
 		Resize(-1,-1);
 
-		IWidgetObject::ClickEvent=ClickEvent;
+		IWidgetObject::ClickEvent.DoubleLink(ClickEvent);
 	}
 	Button::Button(ButtonBP *BluePrint) : 
 		IWidgetObject(),
@@ -68,7 +68,7 @@ namespace gorgonwidgets {
 
 		Resize(-1,-1);
 
-		IWidgetObject::ClickEvent=ClickEvent;
+		IWidgetObject::ClickEvent.DoubleLink(ClickEvent);
 	}
 
 	ButtonStates Button::currentState() {

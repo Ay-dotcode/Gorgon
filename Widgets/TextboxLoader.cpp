@@ -85,7 +85,7 @@ namespace gorgonwidgets {
 				txt->guid_active2normal=new Guid(gfile);
 				txt->guid_active2hover=new Guid(gfile);
 
-				BYTE byt;
+				Byte byt;
 				fread(&byt,1,1,gfile);
 				txt->RevHover2NormalState=byt;
 				fread(&byt,1,1,gfile);

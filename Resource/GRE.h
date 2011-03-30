@@ -17,7 +17,7 @@ namespace gre {
 	////The Guid class is used for Guid operations
 	class Guid {
 	protected:
-		BYTE *bytes;
+		Byte *bytes;
 		int *ints;
 
 	public:
@@ -47,7 +47,7 @@ namespace gre {
 
 		////Creates a guid from the give array, if NULL is given
 		/// an empty guid is created
-		Guid(BYTE *bytes) {
+		Guid(Byte *bytes) {
 			init();
 
 			if(!bytes)
@@ -124,7 +124,7 @@ namespace gre {
 
 	private:
 		void init() {
-			bytes=new BYTE[16];
+			bytes=new Byte[16];
 			ints=(int*)bytes;
 		}
 	};

@@ -158,7 +158,7 @@ namespace gre {
 	}
 	void BitmapFontResource::Print(I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, RGBint color, EPrintData *Data, int DataLen, TextAlignment Align, ShadowParams Shadow) {
 		if(text=="") {
-			int i,d;
+			int d;
 			int xpos=0;
 			if(Align==TEXTALIGN_CENTER)
 				xpos=w/2;

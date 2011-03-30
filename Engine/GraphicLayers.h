@@ -13,7 +13,7 @@ namespace gge {
 
 	////_private
 	struct RawSurface : public BasicSurface {
-		BYTE *Data;
+		Byte *Data;
 		ColorMode Mode;
 		int Width;
 		int Height;
@@ -126,7 +126,7 @@ namespace gge {
 		Basic2DRawGraphicsLayer(int X=0, int Y=0, int W=100, int H=100);
 
 		////Draws a given data to the screen
-		virtual void Draw(BYTE *Image, int Width, int Height, ColorMode Mode,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4);
+		virtual void Draw(Byte *Image, int Width, int Height, ColorMode Mode,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4);
 
 		////Renders this layer
 		virtual void Render();

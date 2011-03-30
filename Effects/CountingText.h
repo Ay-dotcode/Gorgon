@@ -44,7 +44,7 @@ namespace geffects {
 			Decimals(Decimals),
 			from(0), to(0), speed(0), current(0), FinishedEvent("Finished", this)
 		{ 
-			AnimatorBase::FinishedEvent=FinishedEvent;
+			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
 		}
 
 		float Current() { return current; }

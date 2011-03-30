@@ -28,7 +28,7 @@ namespace geffects {
 			current((float)Target->X, (float)Target->Y),
 			Target(Target), FinishedEvent("Finished", this)
 		{
-			AnimatorBase::FinishedEvent=FinishedEvent;
+			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
 		}
 		////Initializes the effect
 		LayerMover(LayerBase &Target) :
@@ -36,7 +36,7 @@ namespace geffects {
 			current((float)Target.X, (float)Target.Y),
 			Target(&Target), FinishedEvent("Finished", this)
 		{
-			AnimatorBase::FinishedEvent=FinishedEvent;
+			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
 		}
 		////Sets source and destination to the given values and allows time duration to reach the
 		/// destination

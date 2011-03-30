@@ -28,7 +28,7 @@ namespace geffects {
 			Target(Target),
 			FinishedEvent("Finished", this)
 		{
-			AnimatorBase::FinishedEvent=FinishedEvent;
+			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
 		}
 
 		////Initializes the effect
@@ -38,7 +38,7 @@ namespace geffects {
 			Target(&Target),
 			FinishedEvent("Finished", this)
 		{
-			AnimatorBase::FinishedEvent=FinishedEvent;
+			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
 		}
 		
 		////Sets source and destination to the given values and allows time duration to reach the

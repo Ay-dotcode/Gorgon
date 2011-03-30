@@ -12,7 +12,7 @@ namespace gorgonwidgets {
 		ChangeEvent("Change", this)
 	{
 		CheckboxBase::ChangeEvent.Register(this, &RadioButton::RadioBtn_Change);
-		IRadioButton::ChangeEvent=RadioButton::ChangeEvent;
+		IRadioButton::ChangeEvent.DoubleLink(RadioButton::ChangeEvent);
 		sticky=true;
 	}
 	RadioButton::RadioButton(CheckboxBP *BluePrint) : 
@@ -20,7 +20,7 @@ namespace gorgonwidgets {
 		ChangeEvent("Change", this)
 	{
 		CheckboxBase::ChangeEvent.Register(this, &RadioButton::RadioBtn_Change);
-		IRadioButton::ChangeEvent=RadioButton::ChangeEvent;
+		IRadioButton::ChangeEvent.DoubleLink(RadioButton::ChangeEvent);
 		sticky=true;
 	}
 	IRadioButton	&RadioButton::Clear(){

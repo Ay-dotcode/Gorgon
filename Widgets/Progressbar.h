@@ -19,14 +19,14 @@ namespace gorgonwidgets {
 		float getMaximum() { return maximum; }
 
 		float operator++ () {
-			float v=getValue();
+			float v=(float)getValue();
 			setValue(v+1);
 
 			return v;
 		}
 
 		float operator+= (float value) {
-			float v=getValue();
+			float v=(float)getValue();
 			setValue(v+value);
 
 			return v;

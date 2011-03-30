@@ -1,6 +1,6 @@
 #pragma once
 
-#define foreach(type, name, container)	for(IIterator<type> &name##_it(*container); type *name=getIteratorItem(name##_it);)
+#define foreach(type, name, container)	for(IIterator<type > &name##_it(*(IIterator<type >*)container); type *name=getIteratorItem(name##_it);)
 
 #ifndef NULL
 #define NULL	0

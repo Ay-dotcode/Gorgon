@@ -25,7 +25,7 @@ namespace gre {
 		friend ResourceBase *LoadImageResource(ResourceFile* File, FILE* Data, int Size);
 	public:
 		////Not used, if paletted image is found, this holds its palette
-		BYTE *Palette;
+		Byte *Palette;
 		////Whether image is loaded or not. Image that are marked as late loading
 		/// are not loaded in initial load request. Image data can be retrived by
 		/// calling Load function.
@@ -124,7 +124,7 @@ namespace gre {
 		////The file that this image resource is related, used for late loading
 		ResourceFile *File;
 		////Compression properties read from file, used for late loading
-		BYTE *CompressionProps;
+		Byte *CompressionProps;
 		////Compression mode, not suitable for saving, used for late loading
 		int Compression;
 		////Size of the image data within the file, used for late loading

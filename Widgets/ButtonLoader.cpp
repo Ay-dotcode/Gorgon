@@ -76,7 +76,7 @@ namespace gorgonwidgets {
 				btn->guid_pressed2normal=new Guid(gfile);
 				btn->guid_pressed2hover=new Guid(gfile);
 
-				BYTE byt;
+				Byte byt;
 				fread(&byt,1,1,gfile);
 				btn->RevHover2NormalState=byt;
 				fread(&byt,1,1,gfile);

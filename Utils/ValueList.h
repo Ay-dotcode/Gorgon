@@ -23,7 +23,7 @@ public:
 	
 	~ValueList()
 	{
-		if(buffer.getReferenceCount()==1)
+		if(buffer.getReferenceCount()<=1)
 			delete count;
 	}
 	
@@ -47,7 +47,7 @@ public:
 	
 	_T &operator [] (int Index)
 	{
-#ifdef DEBUG
+#ifdef _DEBUG
 		_T t;
 		if(Index<0 || Index>*count)
 			return t;
@@ -57,22 +57,18 @@ public:
 	}
 
 	ValueList &operator = (ValueList &list) {
-		if(!buffer.getReferenceCount())
+		if(buffer.getReferenceCount()<=1)
 			delete count;
 
 		buffer=list.buffer;
 		count=list.count;
-
-		buffer++;
 
 		return *this;
 	}
 	
 	void Destroy()
 	{
-		buffer--;
-		if(!buffer.getReferenceCount())
-			delete count;
+		buffer.Resize(0);
 	}
 
 	void Clear()

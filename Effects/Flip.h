@@ -23,7 +23,7 @@ namespace geffects {
 		EventChain<FlipEffect, empty_event_params> FinishedEvent;
 
 		FlipEffect() : FinishedEvent("Finished", this) { 
-			AnimatorBase::FinishedEvent=FinishedEvent;
+			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
 			Initialize(); 
 		}
 

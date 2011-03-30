@@ -110,8 +110,8 @@ namespace gorgonwidgets {
 		MouseEventObject *mitem=mouseevent->Item;
 		mouseevent->Item->vscroll=frame_scroll;
 
-		IWidgetObject::GotFocusEvent=GotFocusEvent;
-		IWidgetObject::LostFocusEvent=LostFocusEvent;
+		IWidgetObject::GotFocusEvent.DoubleLink(GotFocusEvent);
+		IWidgetObject::LostFocusEvent.DoubleLink(LostFocusEvent);
 
 		adjustlocations();
 	}

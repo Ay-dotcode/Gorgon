@@ -40,6 +40,6 @@ namespace gorgonwidgets {
 
 		numberformat="%.0f";
 
-		SliderBase::ChangeEvent=ChangeEvent;
+		SliderBase::ChangeEvent.DoubleLink(ChangeEvent);
 	}
 }
