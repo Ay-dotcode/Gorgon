@@ -13,12 +13,12 @@ using namespace gge;
 namespace gorgonwidgets {
 
 	struct keyboard_event_params {
-		KeyboardEventType event;
-		KeyboardModifier::Type modifier;
+		input::KeyboardEventType event;
+		input::KeyboardModifier::Type modifier;
 		int keycode;
 		bool &isused;
 
-		keyboard_event_params(KeyboardEventType event, int keycode, KeyboardModifier::Type modifier, bool &isused) :
+		keyboard_event_params(input::KeyboardEventType event, int keycode, input::KeyboardModifier::Type modifier, bool &isused) :
 			event(event), 
 			modifier(modifier),
 			keycode(keycode), 
@@ -32,7 +32,7 @@ namespace gorgonwidgets {
 		friend class IWidgetObject;
 		friend class IWidgetContainer;
 		friend class IWidgetBluePrint;
-		friend bool fn_mouse_event(MouseEventType event,int x,int y,void *data);
+		friend bool fn_mouse_event(input::MouseEventType event,int x,int y,void *data);
 
 	public:
 		IWidgetObject();
@@ -73,13 +73,13 @@ namespace gorgonwidgets {
 		virtual void			SetContainer(IWidgetContainer &container);
 		virtual void			Detach();
 	
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier)=0;
-		virtual bool mouse_event(MouseEventType event,int x,int y)=0;
+		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier)=0;
+		virtual bool mouse_event(input::MouseEventType event,int x,int y)=0;
 
-		EventChain<IWidgetObject, empty_event_params> ClickEvent;
-		EventChain<IWidgetObject, empty_event_params> GotFocusEvent;
-		EventChain<IWidgetObject, empty_event_params> LostFocusEvent;
-		EventChain<IWidgetObject, empty_event_params> RelocateEvent;
+		utils::EventChain<IWidgetObject> ClickEvent;
+		utils::EventChain<IWidgetObject> GotFocusEvent;
+		utils::EventChain<IWidgetObject> LostFocusEvent;
+		utils::EventChain<IWidgetObject> RelocateEvent;
 
 		void *Data;
 
@@ -92,7 +92,7 @@ namespace gorgonwidgets {
 	protected:
 		int keyboardeventid;
 		Pointer *pointer;
-		MouseEventToken mouseevent;
+		input::MouseEventToken mouseevent;
 		bool isenabled,isvisible;
 		int x,y,width,height;
 		string text;

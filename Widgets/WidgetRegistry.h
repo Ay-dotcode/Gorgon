@@ -197,8 +197,8 @@ namespace gorgonwidgets {
 		RGBint textColor;
 		RGBint hintColor;
 
-		Collection<IWidgetObject> Widgets;
-		Collection<ResizableRect> Rectangles;
+		utils::Collection<IWidgetObject> Widgets;
+		utils::Collection<ResizableRect> Rectangles;
 
 
 	};

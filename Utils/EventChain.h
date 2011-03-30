@@ -515,6 +515,34 @@ namespace gge { namespace utils {
 		bool Compare(EventHandler<P_, O_> *obj, std::function<void()> function) {
 			return false;
 		}
+
+
+		////This is private event object that is used to
+		/// store function event handlers
+		template<class P_, class O_>
+		struct EventHandlerLambdaParamOnly : public EventHandler<P_, O_> {
+			std::function<void(P_)> handler;
+
+			EventHandlerLambdaParamOnly(std::function<void(P_)> handler) : EventHandler<P_, O_>(Any()), handler(handler) {}
+
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+				(handler)(params);
+			}
+
+			bool Compare(std::function<void(P_)> function, void*) {
+				return false;
+			}
+		};
+
+
+		template <class P_, class O_>
+		EventHandler<P_, O_> *CreateEventHandler( std::function<void(P_)> function, Any data) {
+			return new EventHandlerLambdaParamOnly<P_, O_>(function);
+		}
+		template <class P_, class O_>
+		bool Compare(EventHandler<P_, O_> *obj, std::function<void(P_)> function) {
+			return false;
+		}
 #endif
 
 	} }
@@ -546,6 +574,20 @@ namespace gge { namespace utils {
 		///@Object	: Source of the event
 		EventChain(O_ *Object=NULL) : 
 		eventname(""), object(Object)
+		{ }
+
+		////Constructor
+		///@Name	: Name of the event
+		///@Object	: Source of the event
+		EventChain(std::string Name,O_ &Object) : 
+		eventname(Name), object(&Object)
+		{ }
+
+		////Constructor
+		///@Name	: Name of the event
+		///@Object	: Source of the event
+		EventChain(O_ &Object) : 
+		eventname(""), object(&Object)
 		{ }
 
 		////Registers an event handler. Every event handler
@@ -606,7 +648,7 @@ namespace gge { namespace utils {
 		///@data	: EventHandler<P_, O_>::data to be passed to handler
 		template<class R_, class F_>
 		Token Register(R_ &receiver, F_ handler, Any data=Any()) {
-			return Register(&receiver, handler, EventHandler<P_, O_>::data);
+			return Register(&receiver, handler, data);
 		}
 
 		template<class R_, class F_>
@@ -622,9 +664,14 @@ namespace gge { namespace utils {
 		}
 
 #ifndef NOLAMBDA
-		Token RegisterLambda(std::function<void()> handler, Any data=Any()) {
+		Token RegisterLambda(std::function<void()> handler) {
 			return AddHandler(
-				prvt::eventchain::CreateEventHandler<P_, O_>(handler, data)
+				prvt::eventchain::CreateEventHandler<P_, O_>(handler, Any())
+				);
+		}
+		Token RegisterLambdaWithParam(std::function<void(P_)> handler) {
+			return AddHandler(
+				prvt::eventchain::CreateEventHandler<P_, O_>(handler, Any())
 				);
 		}
 #endif
@@ -648,14 +695,14 @@ namespace gge { namespace utils {
 			target.RegisterClass< EventChain<O_, P_>, MyFire >(
 				this, 
 				(MyFire) &EventChain<R_, P_>::linkedfire,
-				NULL
+				Any()
 			);
 
 			return AddHandler(
 				prvt::eventchain::CreateEventHandler<EventChain<R_, P_>, P_, O_>(
 					&target, 
 					(TargetFire) &EventChain<R_, P_>::linkedfire,
-					NULL							  
+					Any()							  
 				)
 			);
 		}
@@ -804,5 +851,3 @@ namespace gge { namespace utils {
 
 	};
 } }
-
-using namespace gge::utils;

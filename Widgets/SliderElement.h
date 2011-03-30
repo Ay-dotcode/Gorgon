@@ -63,8 +63,8 @@ namespace gorgonwidgets {
 		SliderElement &DrawRule(WidgetLayer &Target);
 		SliderElement &DrawTickMarks(WidgetLayer &Target, float Distance);
 		SliderElement &DrawTickNumbers(Colorizable2DLayer &Target, float Distance, float Start, float Increment, float End, string Format);
-		SliderElement &DrawTickNames(Colorizable2DLayer &Target, float Distance, Collection<SliderLocationName> &Texts,bool useLocations, float min, float max);
-		SliderElement &DrawLocatedTicks(WidgetLayer &Target, float Distance, Collection<SliderLocationName> &Texts, float min, float max);
+		SliderElement &DrawTickNames(Colorizable2DLayer &Target, float Distance, utils::Collection<SliderLocationName> &Texts,bool useLocations, float min, float max);
+		SliderElement &DrawLocatedTicks(WidgetLayer &Target, float Distance, utils::Collection<SliderLocationName> &Texts, float min, float max);
 		SliderElement &DrawSymbol(WidgetLayer &Target);
 		SliderElement &DrawOverlay(Basic2DLayer &Target);
 		SliderElement &ReadyAnimation(bool Backwards);

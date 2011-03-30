@@ -143,8 +143,8 @@ namespace gge {
 	protected:
 		////Processes the mouse event for the current layer, default
 		/// handling is to pass the request to the sub-layers
-		virtual bool PropagateMouseEvent(MouseEventType event, int x, int y, void *data);
-		virtual bool PropagateMouseScrollEvent(int amount, MouseEventType event, int x, int y, void *data);
+		virtual bool PropagateMouseEvent(input::MouseEventType event, int x, int y, void *data);
+		virtual bool PropagateMouseScrollEvent(int amount, input::MouseEventType event, int x, int y, void *data);
 	};
 
 }

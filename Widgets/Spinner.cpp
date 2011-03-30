@@ -1,7 +1,7 @@
 #include "Spinner.h"
 
 namespace gorgonwidgets {
-	void Spinner::attached_changed(text_change_event_params p, Textbox &textbox, Any data, string name) {
+	void Spinner::attached_changed(Textbox &textbox) {
 		if(textbox.GetText().length()>0) {
 			const char *t=textbox.GetText().data();
 			for(;*t!=0;t++)
@@ -13,28 +13,28 @@ namespace gorgonwidgets {
 		}
 	}
 
-	void Spinner::attached_lostfocus(empty_event_params p, IWidgetObject &textbox, Any data, string name) {
+	void Spinner::attached_lostfocus(IWidgetObject &textbox) {
 		setValue(atof(textbox.GetText().data()));
 	}
 
-	void Spinner::attached_keyboard(keyboard_event_params p, Textbox &textbox, Any data, string name) {
-		if(p.event==KEYB_EVENT_DOWN && p.keycode==38) {
+	void Spinner::attached_keyboard(keyboard_event_params p, Textbox &textbox) {
+		if(p.event==input::KEYB_EVENT_DOWN && p.keycode==38) {
 			goUp();
 			p.isused=true;
 			cancelclick=false;
 		}
-		if(p.event==KEYB_EVENT_UP && p.keycode==38) {
+		if(p.event==input::KEYB_EVENT_UP && p.keycode==38) {
 			stopUp();
 			if(!cancelclick)
 				Up();
 			p.isused=true;
 		}
-		if(p.event==KEYB_EVENT_DOWN && p.keycode==40) {
+		if(p.event==input::KEYB_EVENT_DOWN && p.keycode==40) {
 			goDown();
 			p.isused=true;
 			cancelclick=false;
 		}
-		if(p.event==KEYB_EVENT_UP && p.keycode==40) {
+		if(p.event==input::KEYB_EVENT_UP && p.keycode==40) {
 			stopDown();
 			if(!cancelclick)
 				Down();

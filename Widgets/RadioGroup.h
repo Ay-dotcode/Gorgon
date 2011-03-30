@@ -2,7 +2,6 @@
 
 #include <string>
 
-using namespace std;
 
 #include "IWidgetObject.h"
 #include "../Utils/Collection.h"
@@ -18,9 +17,9 @@ namespace gorgonwidgets {
 
 		virtual IWidgetObject &getWidget()=0;
 
-		Any RadioData;
+		utils::Any RadioData;
 		
-		EventChain<IRadioButton, empty_event_params> ChangeEvent;
+		utils::EventChain<IRadioButton> ChangeEvent;
 	};
 
 	template<class T_>
@@ -35,12 +34,12 @@ namespace gorgonwidgets {
 	template<class T_=int>
 	class RadioButtonGroup {
 	public:
-		Collection<IRadioButton> Buttons;
+		utils::Collection<IRadioButton> Buttons;
 
 		RadioButtonGroup() : ChangeEvent("Change", this), selected(NULL) { }
 
-		void Radio_Change(empty_event_params params, IRadioButton &caller,Any data,string name) {
-			RadioButtonGroup* rbg=(RadioButtonGroup*)data;
+		void Radio_Change(utils::empty_event_params params, IRadioButton &caller,utils::Any data,string name) {
+			RadioButtonGroup* rbg=dynamic_cast<RadioButtonGroup*>(data);
 
 			if(caller.isChecked())
 				rbg->activate(caller);
@@ -88,7 +87,7 @@ namespace gorgonwidgets {
 			}
 		}
 
-		EventChain<RadioButtonGroup, radiogroup_change_event<T_>> ChangeEvent;
+		utils::EventChain<RadioButtonGroup, radiogroup_change_event<T_> > ChangeEvent;
 
 
 

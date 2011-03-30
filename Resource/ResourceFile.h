@@ -36,8 +36,8 @@ namespace gre {
 	class ResourceFile {
 	public:
 		////Resource Loaders
-		Collection<ResourceLoader> Loaders;
-		Collection<Redirect> Redirects;
+		utils::Collection<ResourceLoader> Loaders;
+		utils::Collection<Redirect> Redirects;
 
 		////File type
 		int FileType;

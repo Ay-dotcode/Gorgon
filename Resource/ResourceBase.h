@@ -39,7 +39,7 @@ namespace gre {
 
 		////Subitems that this resource object have. Some of the subitems
 		/// can be hidden therefore, this is not guaranteed to be complete
-		LinkedList<ResourceBase> Subitems;
+		utils::LinkedList<ResourceBase> Subitems;
 
 		////Searches the public children of this resource object
 		virtual ResourceBase *FindObject(Guid *guid);

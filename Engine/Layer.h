@@ -2,13 +2,14 @@
 
 #include "../Utils/Collection.h"
 #include "../Utils/LinkedList.h"
+
 #include "Input.h"
 
 namespace gge {
 	////This class is the base class for all layer types.
 	/// All common methods are implemented with a common way.
 	/// This class always implements basic processing functions.
-	/// Derived classes can override them. Unless overriden these
+	/// Derived classes can override them. Unless overridden these
 	/// basic functions only propagate the call.
 	class LayerBase {
 	public:
@@ -17,7 +18,7 @@ namespace gge {
 		bool isVisible;
 		////Sub-layers that this layer holds, all the sub-layers are
 		/// considered to be above current layer
-		LinkedList<LayerBase> SubLayers;
+		utils::LinkedList<LayerBase> SubLayers;
 
 		////Parent layer
 		LayerBase *parent;

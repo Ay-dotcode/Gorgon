@@ -56,10 +56,10 @@ namespace gorgonwidgets {
 	class SliderBase : public IWidgetObject, IWidgetContainer
 	{
 		friend class SliderBP;
-		friend bool fn_rule_mouse(MouseEventType event,int x,int y,void *data);
-		friend bool fn_symbol_mouse(MouseEventType event,int x,int y,void *data);
-		friend bool fn_text_mouse(MouseEventType event,int x,int y,void *data);
-		friend bool fn_tick_mouse(MouseEventType event,int x,int y,void *data);
+		friend bool fn_rule_mouse(input::MouseEventType event,int x,int y,void *data);
+		friend bool fn_symbol_mouse(input::MouseEventType event,int x,int y,void *data);
+		friend bool fn_text_mouse(input::MouseEventType event,int x,int y,void *data);
+		friend bool fn_tick_mouse(input::MouseEventType event,int x,int y,void *data);
 		friend void fn_goDown(IntervalObject *interval, void *data);
 		friend void fn_goUp(IntervalObject *interval, void *data);
 
@@ -117,14 +117,14 @@ namespace gorgonwidgets {
 
 		~SliderBase() { if(btnUp) delete btnUp; if(btnDown) delete btnDown; /* also delete style objects */}
 	protected:
-		void btnUp_press(empty_event_params parameters, Button &object, Any data, string eventname);
-		void btnUp_release(empty_event_params parameters, Button &object, Any data, string eventname);
-		void btnUp_click(empty_event_params parameters, Button &object, Any data, string eventname);
-		void btnDown_press(empty_event_params parameters, Button &object, Any data, string eventname);
-		void btnDown_release(empty_event_params parameters, Button &object, Any data, string eventname);
-		void btnDown_click(empty_event_params parameters, Button &object, Any data, string eventname);
+		void btnUp_press    ();
+		void btnUp_release  ();
+		void btnUp_click    ();
+		void btnDown_press  ();
+		void btnDown_release();
+		void btnDown_click  ();
 
-		EventChain<SliderBase, slider_change_event_params> ChangeEvent;
+		utils::EventChain<SliderBase, slider_change_event_params> ChangeEvent;
 
 		int SlidingDuration;
 		int SlidingDurationValueMod;
@@ -139,18 +139,18 @@ namespace gorgonwidgets {
 		SliderBase(SliderBP *BluePrint, SliderStyles Style);
 		virtual void SetStyles(SliderStyleGroup* grp);
 
-		virtual bool mouse_event(MouseEventType event,int x,int y);
-		virtual bool rule_mouse(MouseEventType event,int x,int y);
-		virtual bool symbol_mouse(MouseEventType event,int x,int y);
-		virtual bool tick_mouse(MouseEventType event,int x,int y);
-		virtual bool text_mouse(MouseEventType event,int x,int y);
+		virtual bool mouse_event(input::MouseEventType event,int x,int y);
+		virtual bool rule_mouse(input::MouseEventType event,int x,int y);
+		virtual bool symbol_mouse(input::MouseEventType event,int x,int y);
+		virtual bool tick_mouse(input::MouseEventType event,int x,int y);
+		virtual bool text_mouse(input::MouseEventType event,int x,int y);
 
 		void Setup(SliderTickSyle tickstyle, bool showsymbol, bool showrule, bool showbuttons, bool showoverlay, SliderRuleActions ruleaction,bool EnableSymbolDrag,bool EnableTickClick);
 
-		MouseEventObject *rulemouseevent;
-		MouseEventObject *symbolmouseevent;
-		MouseEventObject *tickmouseevent;
-		MouseEventObject *textmouseevent;
+		input::MouseEventObject *rulemouseevent;
+		input::MouseEventObject *symbolmouseevent;
+		input::MouseEventObject *tickmouseevent;
+		input::MouseEventObject *textmouseevent;
 
 		Button *btnUp, *btnDown;
 
@@ -203,7 +203,7 @@ namespace gorgonwidgets {
 
 		virtual void setValue(float value);
 		
-		Collection<SliderLocationName> ticknames;
+		utils::Collection<SliderLocationName> ticknames;
 
 		Colorizable2DLayer textlayer;
 		WidgetLayer textwlayer;
@@ -234,7 +234,7 @@ namespace gorgonwidgets {
 		void ProgressionCheck();
 
 		virtual void on_focus_event(bool state,IWidgetObject *related);
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
+		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
 
 		virtual void setButtonPositions();
 		virtual void setSymbolPosition(bool instant=false);

@@ -36,9 +36,9 @@ namespace gge { namespace os {
 	}
 
 	namespace window {
-		extern EventChain<Empty, empty_event_params> Activated;
-		extern EventChain<Empty, empty_event_params> Deactivated;
-		extern EventChain<Empty, empty_event_params> Destroyed;
+		extern utils::EventChain<> Activated;
+		extern utils::EventChain<> Deactivated;
+		extern utils::EventChain<> Destroyed;
 
 		////This function creates a window
 		///@Name		: Identifier name for the window, should abide by variable naming rules
@@ -49,7 +49,7 @@ namespace gge { namespace os {
 		///@Top			: Distance of the window from the top of the screen
 		///@Width		: The width of the window
 		///@Height		: The height of the window
-		///@FullScreen	: Whether to create a fullscreen window
+		///@FullScreen	: Whether to create a full screen window
 		WindowHandle CreateWindow(string Name, string Title, os::IconHandle Icon, os::InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
 	}
 

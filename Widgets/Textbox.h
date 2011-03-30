@@ -7,8 +7,6 @@
 #include "../Engine/GraphicLayers.h"
 #include "IWidgetContainer.h"
 
-using namespace gge;
-using namespace gre;
 
 namespace gorgonwidgets {
 	enum TextboxStates {
@@ -67,8 +65,8 @@ namespace gorgonwidgets {
 
 		virtual	void	SetText(string text);
 
-		EventChain<Textbox, text_change_event_params> ChangeEvent;
-		EventChain<Textbox, keyboard_event_params> KeyboardEvent;
+		utils::EventChain<Textbox, text_change_event_params> ChangeEvent;
+		utils::EventChain<Textbox, keyboard_event_params> KeyboardEvent;
 
 
 		bool AlwaysShowSelection;
@@ -95,8 +93,8 @@ namespace gorgonwidgets {
 		void Transition(TextboxStates target,bool progression=false);
 		void ProgressionCheck();
 		
-		virtual bool mouse_event(MouseEventType event,int x,int y);
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
+		virtual bool mouse_event(input::MouseEventType event,int x,int y);
+		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
 
 		bool mousedown;
 

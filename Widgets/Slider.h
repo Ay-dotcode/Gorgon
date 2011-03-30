@@ -78,7 +78,7 @@ namespace gorgonwidgets {
 			return ss.str();
 		}
 
-		EventChain<Slider, slider_change_event_params> ChangeEvent;
+		utils::EventChain<Slider> ChangeEvent;
 
 	protected:
 		float tickdistance;

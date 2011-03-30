@@ -30,7 +30,7 @@ namespace gorgonwidgets {
 		void Prepare(gge::GGEMain *main);
 
 	protected:
-		Collection<TextboxStyleGroup> StyleGroups;
+		utils::Collection<TextboxStyleGroup> StyleGroups;
 		Guid *guid_typingsound;
 		ResourceFile *file;
 	};

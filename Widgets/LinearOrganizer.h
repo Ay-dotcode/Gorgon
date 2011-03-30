@@ -42,7 +42,7 @@ namespace gorgonwidgets {
 
 		LinearOrganizerColumn *parent;
 
-		Collection<LinearOrganizerObject> Objects;
+		utils::Collection<LinearOrganizerObject> Objects;
 
 		int LineHeight;
 		int LineWidth;
@@ -61,7 +61,7 @@ namespace gorgonwidgets {
 		}
 
 		LinearOrganizer *parent;
-		Collection<LinearOrganizerLine> Lines;
+		utils::Collection<LinearOrganizerLine> Lines;
 
 		~LinearOrganizerColumn() { Lines.Destroy(); }
 		
@@ -201,7 +201,7 @@ namespace gorgonwidgets {
 		int currentcolumnnum;
 		LinearOrganizerSizeMode currentsizemode;
 
-		LinkedList<LinearOrganizerColumn> Columns;
+		utils::LinkedList<LinearOrganizerColumn> Columns;
 		LinearOrganizerColumn *currentcolumn;
 		LinearOrganizerLine *currentline;
 

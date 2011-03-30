@@ -1,7 +1,7 @@
 #include "Selectbar.h"
 
 namespace gorgonwidgets {
-	void Selectbar::base_change(slider_change_event_params p, SliderBase &slider, Any data, string eventname) {
+	void Selectbar::base_change() {
 		ChangeEvent(selectbar_change_params(getValue(), getData()));
 	}
 	

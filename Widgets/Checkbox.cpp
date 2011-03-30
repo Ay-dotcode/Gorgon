@@ -4,7 +4,7 @@
 namespace gorgonwidgets {
 
 
-	void RadioButton::RadioBtn_Change(empty_event_params p,CheckboxBase &object,Any data,string name) {
+	void RadioButton::RadioBtn_Change() {
 		IRadioButton::ChangeEvent();
 	}
 	RadioButton::RadioButton(CheckboxBP *BluePrint,IWidgetContainer &container) : 

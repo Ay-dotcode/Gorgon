@@ -28,7 +28,7 @@ namespace gorgonwidgets {
 			DisabledStyle=NormalStyle;
 
 		int c=0;
-		LinkedListIterator<ResourceBase> it=Subitems;
+		utils::LinkedListIterator<ResourceBase> it=Subitems;
 		ResourceBase *resource;
 		while(resource=it) {
 			if(resource->getGID()==GID_BUTTON) {

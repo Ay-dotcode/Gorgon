@@ -1,7 +1,7 @@
 #include "Scrollbar.h"
 
 namespace gorgonwidgets {
-	void Scrollbar::slider_changed(slider_change_event_params p, SliderBase &slider, Any data, string name) {
+	void Scrollbar::slider_changed() {
 		IScroller::ChangeEvent();
 	}
 	Scrollbar::Scrollbar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, ScrollbarAlignments Alignment) : 

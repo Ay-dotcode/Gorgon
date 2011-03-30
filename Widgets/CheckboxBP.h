@@ -26,6 +26,6 @@ namespace gorgonwidgets {
 		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
 
 	protected:
-		Collection<CheckboxStyleGroup> StyleGroups;
+		utils::Collection<CheckboxStyleGroup> StyleGroups;
 	};
 }

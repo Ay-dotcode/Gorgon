@@ -335,7 +335,7 @@ namespace gorgonwidgets {
 
 		return ret;
 	}
-	bool Textbox::mouse_event(MouseEventType event,int x,int y) {
+	bool Textbox::mouse_event(input::MouseEventType event,int x,int y) {
 		static int firstselect;
 		if(!isvisible || !container->isVisible())
 			return false;
@@ -346,17 +346,17 @@ namespace gorgonwidgets {
 		TextboxElement *elm=DetermineElement(currentstate,nextstate);
 
 		switch(event) {
-		case MOUSE_EVENT_OVER:
+		case input::MOUSE_EVENT_OVER:
 			SimulateMouseOver();
 			break;
-		case MOUSE_EVENT_OUT:
+		case input::MOUSE_EVENT_OUT:
 			SimulateMouseOut();
 			break;
-		case MOUSE_EVENT_LDOWN:
+		case input::MOUSE_EVENT_LDOWN:
 			firstselect=selectend=selectstart=caretposition=elm->detectChar(x);
 			mousedown=true;
 			break;
-		case MOUSE_EVENT_LUP:
+		case input::MOUSE_EVENT_LUP:
 			selectend=caretposition=elm->detectChar(x);
 			if(selectend<firstselect) {
 				selectstart=selectend;
@@ -365,7 +365,7 @@ namespace gorgonwidgets {
 			mousedown=false;
 			this->SetFocus();
 			break;
-		case MOUSE_EVENT_MOVE:
+		case input::MOUSE_EVENT_MOVE:
 			if(mousedown) {
 				selectend=caretposition=elm->detectChar(x);
 
@@ -376,7 +376,7 @@ namespace gorgonwidgets {
 			}
 
 			break;
-		case MOUSE_EVENT_LCLICK:
+		case input::MOUSE_EVENT_LCLICK:
 			ClickEvent();
 
 			break;
@@ -385,7 +385,7 @@ namespace gorgonwidgets {
 		return true;
 	}
 
-	bool Textbox::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
+	bool Textbox::keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
 		if(!isvisible)
 			return false;
 
@@ -395,7 +395,7 @@ namespace gorgonwidgets {
 		if(isused)
 			return true;
 
-		if(event==KEYB_EVENT_CHR) {
+		if(event==input::KEYB_EVENT_CHR) {
 			switch(keycode) {
 			case 8: //backspace
 				if(selectstart!=selectend) {
@@ -445,8 +445,8 @@ namespace gorgonwidgets {
 				}
 			}
 		}
-		if(event==KEYB_EVENT_DOWN) {
-			if( modifier==KeyboardModifier::None ) {
+		if(event==input::KEYB_EVENT_DOWN) {
+			if( modifier==input::KeyboardModifier::None ) {
 				switch(keycode) {
 				case 35: //End
 					SetCaretPosition(text.length());
@@ -486,7 +486,7 @@ namespace gorgonwidgets {
 				}
 			}
 		} else {
-			if(modifier==KeyboardModifier::Shift) {
+			if(modifier==input::KeyboardModifier::Shift) {
 				switch(keycode) {
 				case 35: //End
 					if(caretposition==selectend) {

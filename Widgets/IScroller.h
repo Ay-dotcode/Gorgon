@@ -2,7 +2,6 @@
 
 #include "IWidgetObject.h"
 
-using namespace gge;
 
 namespace gorgonwidgets {
 	class IScroller {
@@ -18,6 +17,6 @@ namespace gorgonwidgets {
 		virtual void ScrollUp(int Amount=1)=0;
 		virtual void ScrollDown(int Amount=1)=0;
 
-		EventChain<IScroller, empty_event_params> ChangeEvent;
+		utils::EventChain<IScroller> ChangeEvent;
 	};
 }

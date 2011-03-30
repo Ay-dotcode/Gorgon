@@ -52,7 +52,7 @@ namespace gge { namespace utils {
 		}
 
 		template <class T_>
-		Any(T_ data) {
+		explicit Any(T_ data) {
 			size=sizeof(T_);
 			content=std::malloc(size);
 			*reinterpret_cast<T_*>(content)=data;

@@ -15,7 +15,7 @@ namespace gorgonwidgets {
 	};
 
 	class Frame : public IWidgetObject, public IWidgetContainer {
-		friend bool frame_scroll(int amount, MouseEventType event, int x, int y, void *data);
+		friend bool frame_scroll(int amount, input::MouseEventType event, int x, int y, void *data);
 	public:
 		Frame(FrameBP &bp, IWidgetContainer &Container, int X=0, int Y=0, int W=100, int H=100, bool Dialog=false);
 		Frame(FrameBP &bp, int X=0, int Y=0, int W=100, int H=100, bool Dialog=false);
@@ -81,7 +81,7 @@ namespace gorgonwidgets {
 		virtual void SetBluePrint(IWidgetBluePrint *BP);
 		virtual void on_focus_event(bool state,IWidgetObject *related) { isactive=state; };
 		
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
+		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
 			bool ret=false;
 			keyboard_event_params p(event, keycode, modifier,ret);
 			KeypreviewEvent(p);
@@ -102,7 +102,7 @@ namespace gorgonwidgets {
 			return keyboard_event_actions(event, keycode, modifier);
 		}
 
-		virtual bool mouse_event(MouseEventType event,int x,int y);
+		virtual bool mouse_event(input::MouseEventType event,int x,int y);
 
 
 		void SetMargins(int margin) { SetMargins(Margins(margin, margin, margin, margin)); }
@@ -148,11 +148,11 @@ namespace gorgonwidgets {
 		}
 
 
-		EventChain<Frame, keyboard_event_params> KeyboardEvent;
-		EventChain<Frame, keyboard_event_params> KeypreviewEvent;
+		utils::EventChain<Frame, keyboard_event_params> KeyboardEvent;
+		utils::EventChain<Frame, keyboard_event_params> KeypreviewEvent;
 
-		EventChain<Frame, empty_event_params> GotFocusEvent;
-		EventChain<Frame, empty_event_params> LostFocusEvent;
+		utils::EventChain<Frame> GotFocusEvent;
+		utils::EventChain<Frame> LostFocusEvent;
 
 		bool AllowDrag;
 
@@ -196,7 +196,7 @@ namespace gorgonwidgets {
 
 		void init();
 
-		void frame_verticlescroll(empty_event_params parameters, IScroller &object, Any data, string eventname) {
+		void frame_verticlescroll(IScroller &object) {
 			ScrollingLayer.Y=-object.getValue();
 		}
 
@@ -207,7 +207,7 @@ namespace gorgonwidgets {
 			}
 
 	
-			LinkedListIterator<IWidgetObject>it= Subobjects;
+			utils::LinkedListIterator<IWidgetObject>it= Subobjects;
 			IWidgetObject* widget;
 			while(widget=it)
 				widget->container_hide();
@@ -216,7 +216,7 @@ namespace gorgonwidgets {
 
 		virtual void adjustlocations();
 
-		void subobject_relocate(empty_event_params parameters, IWidgetObject &object, Any data, string eventname) {
+		void subobject_relocate(IWidgetObject &object) {
 			if(verticlescrollbar)
 				if(&object==verticlescrollbar->GetWidgetObject())
 					return;

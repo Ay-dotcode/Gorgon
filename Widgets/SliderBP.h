@@ -30,7 +30,7 @@ namespace gorgonwidgets {
 
 
 	protected:
-		Collection<SliderStyleGroup> StyleGroups;
+		utils::Collection<SliderStyleGroup> StyleGroups;
 		Guid *guid_ticksound;
 		ResourceFile *file;
 	};

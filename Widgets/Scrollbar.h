@@ -42,7 +42,7 @@ namespace gorgonwidgets {
 	protected:
 		ScrollbarAlignments alignment;
 
-		void slider_changed(slider_change_event_params p, SliderBase &slider, Any data, string name);
+		void slider_changed();
 		void init();
 	};
 }

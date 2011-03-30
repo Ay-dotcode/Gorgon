@@ -46,9 +46,9 @@ namespace gorgonwidgets {
 		virtual IWidgetObject &getWidget() { return *this; }
 
 
-		EventChain<RadioButton, empty_event_params> ChangeEvent;
+		utils::EventChain<RadioButton> ChangeEvent;
 	protected:
-		void RadioBtn_Change(empty_event_params p,CheckboxBase &object,Any data,string name);
+		void RadioBtn_Change();
 	};
 
 

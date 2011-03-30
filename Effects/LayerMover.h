@@ -17,7 +17,7 @@ namespace geffects {
 	public:
 		////This event is fired when the animation
 		/// completes
-		EventChain<LayerMover, empty_event_params> FinishedEvent;
+		utils::EventChain<LayerMover> FinishedEvent;
 
 		////Target of this effect
 		LayerBase *Target;

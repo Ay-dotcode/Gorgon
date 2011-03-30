@@ -17,7 +17,7 @@ namespace geffects {
 	public:
 		////This event is fired when the animation
 		/// completes
-		EventChain<LayerResizer, empty_event_params> FinishedEvent;
+		utils::EventChain<LayerResizer> FinishedEvent;
 
 		////Target of this effect
 		LayerBase *Target;

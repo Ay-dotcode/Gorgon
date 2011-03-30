@@ -1,12 +1,11 @@
 #pragma once 
 
 #include "../Utils/LinkedList.h"
-//#include "../Engine/GGEMain.h"
 #include "../Engine/Input.h"
 #include "../Engine/GraphicLayers.h"
+
 #include "IWidgetContainer.h"
 
-using namespace gge;
 
 namespace gorgonwidgets {
 	class IWidgetObject;
@@ -27,7 +26,7 @@ namespace gorgonwidgets {
 		IWidgetContainer &operator += (IWidgetObject &Widget);
 		IWidgetContainer &operator -= (IWidgetObject &Widget);
 
-		IWidgetContainer(LayerBase &Parent, int X, int Y, int W, int H, int Order=0);
+		IWidgetContainer(gge::LayerBase &Parent, int X, int Y, int W, int H, int Order=0);
 		IWidgetContainer(int X=0, int Y=0, int W=100, int H=100, int Order=0);
 
 		virtual void				Show() { BaseLayer.isVisible=true; }
@@ -58,22 +57,22 @@ namespace gorgonwidgets {
 		virtual int					getOrder() { return BaseLayer.getOrder(); }
 		virtual void				ZOrder(int Order=-1) { BaseLayer.setOrder(Order); }
 
-		virtual void				SetLayer(LayerBase *layer) { 
+		virtual void				SetLayer(gge::LayerBase *layer) { 
 			int Order=getOrder();
 			if(BaseLayer.parent) BaseLayer.parent->Remove(BaseLayer);
 			layer->Add(BaseLayer, Order);
 		}
-		virtual void				SetLayer(LayerBase &layer) { SetLayer(&layer); }
+		virtual void				SetLayer(gge::LayerBase &layer) { SetLayer(&layer); }
 
 
-		virtual Basic2DLayer		&GetBackgroundLayer() { return BackgroundLayer; }
+		virtual gge::Basic2DLayer	&GetBackgroundLayer() { return BackgroundLayer; }
 		virtual void				RedrawBackground() { BackgroundLayer.Clear(); BackgroundRedrawEvent(); }
 
-		virtual bool keyboard_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
+		virtual bool keyboard_event(gge::input::KeyboardEventType event,int keycode,gge::input::KeyboardModifier::Type modifier);
 
 		int Order;
 
-		EventChain<IWidgetContainer, empty_event_params> BackgroundRedrawEvent;
+		utils::EventChain<IWidgetContainer> BackgroundRedrawEvent;
 
 		WidgetLayer &getBaseLayer() { return BaseLayer; }
 		WidgetLayer &getObjectLayer() { return ObjectLayer; }
@@ -81,15 +80,15 @@ namespace gorgonwidgets {
 
 	protected:
 
-		virtual bool keyboard_event_subitems(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
-		virtual bool keyboard_event_actions(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
+		virtual bool keyboard_event_subitems(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
+		virtual bool keyboard_event_actions(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
 
 		WidgetLayer  BaseLayer;
 		WidgetLayer  ExtenderLayer;
 		WidgetLayer  ObjectLayer;
-		Basic2DLayer BackgroundLayer;
+		gge::Basic2DLayer BackgroundLayer;
 
-		LinkedList<IWidgetObject> Subobjects;
+		utils::LinkedList<IWidgetObject> Subobjects;
 		IWidgetObject* Focussed;
 		IWidgetObject* Default;
 		IWidgetObject* Cancel;

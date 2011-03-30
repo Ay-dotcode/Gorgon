@@ -27,6 +27,6 @@ namespace gorgonwidgets {
 		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
 
 	protected:
-		Collection<ButtonStyleGroup> StyleGroups;
+		utils::Collection<ButtonStyleGroup> StyleGroups;
 	};
 }

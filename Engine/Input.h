@@ -3,8 +3,9 @@
 #include "../Utils/LinkedList.h"
 #include "../Utils/Collection.h"
 #include "../Utils/GGE.h"
-#include "OS.h"
 #include "../Utils/Utils.h"
+
+#include "OS.h"
 
 namespace gge { namespace input {
 	class BasicPointerTarget;
@@ -130,10 +131,10 @@ namespace gge { namespace input {
 		MOUSE_EVENT_MOVE,
 		////Check if the mouse is over the target
 		/// application should not perform any mouse over
-		/// operation if the event is recieved
+		/// operation if the event is received
 		MOUSE_EVENT_OVER_CHECK,
 
-		////Verticle mouse scrolling is used
+		////Vertical mouse scrolling is used
 		MOUSE_EVENT_VSCROLLL,
 		////Horizontal mouse scrolling is used
 		MOUSE_EVENT_HSCROLLL,
@@ -165,12 +166,12 @@ namespace gge { namespace input {
 
 	struct MouseEventObject;
 	////Token given by registering a mouse event
-	typedef	LinkedListItem<MouseEventObject> (*MouseEventToken);
+	typedef	utils::LinkedListItem<MouseEventObject> (*MouseEventToken);
 	////Defines how a mouse event handing function should be
 	typedef bool (*MouseEvent)(MouseEventType event, int x, int y, void *data);
 	////Defines how a mouse scroll event handing function should be
 	typedef bool (*MouseScrollEvent)(int amount, MouseEventType event, int x, int y, void *data);
-	////Defines how a keyboard event handling functoin should be
+	////Defines how a keyboard event handling function should be
 	typedef bool (*KeyboardEvent)(KeyboardEventType event, int keycode, KeyboardModifier::Type modifier, void *data);
 
 	////Mouse event object is used internally to keep track of mouse event handlers
@@ -193,7 +194,7 @@ namespace gge { namespace input {
 		MouseEvent up;
 		////Mouse double click event handler
 		MouseEvent dblclick;
-		////Verticle scroll event
+		////Vertical scroll event
 		MouseScrollEvent vscroll;
 		////Horizontal scroll event (don't rely on it most mice do not have horizontal scroll)
 		MouseScrollEvent hscroll;
@@ -250,17 +251,17 @@ namespace gge { namespace input {
 
 	namespace system {
 		////Processes a given char, this function intended to be called from OS
-		/// sub-system, however a knowledgable attempt to call from elsewhere is
+		/// sub-system, however a knowledgeable attempt to call from elsewhere is
 		/// also valid
 		///@Char	: Character code (8bit ASCII or equivalent (ISO-8859))
 		void ProcessChar(int Char);
 		////Processes a given key as pressed, this function intended to be called from OS
-		/// sub-system, however a knowledgable attempt to call from elsewhere is
+		/// sub-system, however a knowledgeable attempt to call from elsewhere is
 		/// also valid
 		///@Key		: The keyboard code of the pressed key
 		void ProcessKeyDown(int Key);
 		////Processes a given key as released, this function intended to be called from OS
-		/// sub-system, however a knowledgable attempt to call from elsewhere is
+		/// sub-system, however a knowledgeable attempt to call from elsewhere is
 		/// also valid
 		///@Key		: The keyboard code of the pressed key
 		void ProcessKeyUp(int Key);
@@ -279,7 +280,7 @@ namespace gge { namespace input {
 		////Processes double click action
 		///@button	: button number 1 for left, 2 for right and 4 for middle
 		void ProcessMouseDblClick(int button,int x,int y);
-		////Processes verticle scroll
+		////Processes vertical scroll
 		void ProcessVScroll(int amount,int x,int y);
 		////Processes horizontal scroll
 		void ProcessHScroll(int amount,int x,int y);
@@ -290,7 +291,7 @@ namespace gge { namespace input {
 	class BasicPointerTarget {
 	public:
 		////The array of mouse events
-		LinkedList<MouseEventObject> mouseevents;
+		utils::LinkedList<MouseEventObject> mouseevents;
 
 		////This function propagates the mouse event to mouse events
 		/// registered for this target if any of one of the targets is
@@ -368,7 +369,7 @@ namespace gge { namespace input {
 	};
 
 	extern MouseEventType MouseButtons;
-	extern Collection<KeyboardEventObject> KeyboardEventObjects;
+	extern utils::Collection<KeyboardEventObject> KeyboardEventObjects;
 	////This is the object that is hovered, if mouse moves out of it
 	/// it should receive mouse out event
 	extern MouseEventObject *hoveredObject;
@@ -377,12 +378,9 @@ namespace gge { namespace input {
 	/// Lower level targets should be registered to their attached
 	/// targets, these pointer targets receive event coordinates
 	/// unaltered
-	LinkedListItem<BasicPointerTarget> * AddPointerTarget(BasicPointerTarget *target, int order);
+	utils::LinkedListItem<BasicPointerTarget> * AddPointerTarget(BasicPointerTarget *target, int order);
 	////Removes a previously registered pointer target
-	void RemovePointerTarget(LinkedListItem<BasicPointerTarget> *target);
+	void RemovePointerTarget(utils::LinkedListItem<BasicPointerTarget> *target);
 	////Initializes Input system
 	void Initialize();
 } }
-
-using namespace gge::input;
-using namespace gge::input::system;

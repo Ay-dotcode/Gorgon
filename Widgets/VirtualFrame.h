@@ -12,8 +12,8 @@ using namespace gge;
 namespace gorgonwidgets {
 	class VirtualFrame;
 
-	bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier,void *data);
-	extern LinkedList<VirtualFrame> toplevels;
+	bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier,void *data);
+	extern utils::LinkedList<VirtualFrame> toplevels;
 
 	class VirtualFrame : public IWidgetContainer {
 	protected:
@@ -21,13 +21,13 @@ namespace gorgonwidgets {
 	public:
 		VirtualFrame(LayerBase &Parent, int X, int Y, int W, int H, int Order=0) : 
 		  IWidgetContainer(Parent, X, Y, W, H, Order) {	
-			 keyboardid=RegisterKeyboardEvent(this, keyb_event, keyb_event, keyb_event, true);
+			 keyboardid=input::RegisterKeyboardEvent(this, keyb_event, keyb_event, keyb_event, true);
 			 toplevels.Add(this);
 		}
 
 		VirtualFrame(LayerBase *Parent, int X, int Y, int W, int H, int Order=0) : 
 		  IWidgetContainer(*Parent, X, Y, W, H, Order) {	
-			 keyboardid=RegisterKeyboardEvent(this, keyb_event, keyb_event, keyb_event, true);
+			 keyboardid=input::RegisterKeyboardEvent(this, keyb_event, keyb_event, keyb_event, true);
 			 toplevels.Add(this);
 		}
 
@@ -41,7 +41,7 @@ namespace gorgonwidgets {
 		bool activetoplevel;
 
 		virtual ~VirtualFrame() {
-			UnregisterKeyboardEvent(keyboardid);
+			input::UnregisterKeyboardEvent(keyboardid);
 			toplevels.Remove(this);
 		}
 	};

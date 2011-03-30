@@ -1,11 +1,11 @@
 #include "VirtualFrame.h"
 
 namespace gorgonwidgets {
-	LinkedList<VirtualFrame> toplevels;
+	utils::LinkedList<VirtualFrame> toplevels;
 
 	void DeactivateAll() {
 		VirtualFrame *frm;
-		LinkedListIterator<VirtualFrame> it=toplevels;
+		utils::LinkedListIterator<VirtualFrame> it=toplevels;
 		while(frm=it) {
 			frm->Deactivate();
 		}
@@ -13,7 +13,7 @@ namespace gorgonwidgets {
 
 	void VirtualFrame::Draw() {
 		if(!isVisible()) return;
-		LinkedListOrderedIterator<IWidgetObject> it=Subobjects;
+		utils::LinkedListOrderedIterator<IWidgetObject> it=Subobjects;
 		IWidgetObject *item;
 
 		while(item=it) {
@@ -30,15 +30,15 @@ namespace gorgonwidgets {
 
 	void VirtualFrame::Activate() {
 		isactive=true;
-		EnableKeyboardEvent(keyboardid);
+		input::EnableKeyboardEvent(keyboardid);
 	}
 
 	void VirtualFrame::Deactivate() {
 		isactive=false;
-		DisableKeyboardEvent(keyboardid);
+		input::DisableKeyboardEvent(keyboardid);
 	}
 
-	bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier,void *data) {
+	bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier,void *data) {
 		if(data) {
 			return ((VirtualFrame*)data)->keyboard_event(event,keycode,modifier);
 		}

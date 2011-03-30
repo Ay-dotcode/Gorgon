@@ -8,19 +8,19 @@
 
 
 namespace gorgonwidgets {
-	bool fn_rule_mouse(MouseEventType event,int x,int y,void *data) {
+	bool fn_rule_mouse(input::MouseEventType event,int x,int y,void *data) {
 		return ((SliderBase*)data)->rule_mouse(event, x, y);
 	}
 
-	bool fn_symbol_mouse(MouseEventType event,int x,int y,void *data) {
+	bool fn_symbol_mouse(input::MouseEventType event,int x,int y,void *data) {
 		return ((SliderBase*)data)->symbol_mouse(event, x, y);
 	}
 
-	bool fn_tick_mouse(MouseEventType event,int x,int y,void *data) {
+	bool fn_tick_mouse(input::MouseEventType event,int x,int y,void *data) {
 		return ((SliderBase*)data)->tick_mouse(event, x, y);
 	}
 
-	bool fn_text_mouse(MouseEventType event,int x,int y,void *data) {
+	bool fn_text_mouse(input::MouseEventType event,int x,int y,void *data) {
 		return ((SliderBase*)data)->text_mouse(event, x, y);
 	}
 	void fn_goUp(IntervalObject *interval, void *data) {
@@ -36,27 +36,26 @@ namespace gorgonwidgets {
 
 
 
-	void SliderBase::btnUp_press(empty_event_params parameters, Button &object, Any data, string eventname) {
+	void SliderBase::btnUp_press() {
 		goUp();
 		cancelclick=false;
 	}
-	void SliderBase::btnUp_click(empty_event_params parameters, Button &object, Any data, string eventname) {
+	void SliderBase::btnUp_click() {
 		if(!cancelclick)
 			Up();
 	}
-	void SliderBase::btnUp_release(empty_event_params parameters, Button &object, Any data, string eventname) {
+	void SliderBase::btnUp_release() {
 		stopUp();
 	}
-	void SliderBase::btnDown_press(empty_event_params parameters, Button &object, Any data, string eventname) {
-		//data->Down();
+	void SliderBase::btnDown_press() {
 		goDown();
 		cancelclick=false;
 	}
-	void SliderBase::btnDown_click(empty_event_params parameters, Button &object, Any data, string eventname) {
+	void SliderBase::btnDown_click() {
 		if(!cancelclick)
 			Down();
 	}
-	void SliderBase::btnDown_release(empty_event_params parameters, Button &object, Any data, string eventname) {
+	void SliderBase::btnDown_release() {
 		stopDown();
 	}
 

@@ -1,15 +1,17 @@
 #pragma once
 
+#include "../Utils/Any.h"
+#include "../Utils/EventChain.h"
+
+#include "../Widgets/WidgetMain.h"
+
 #include "OS.h"
 #include "Sound.h"
 #include "Pointer.h"
-#include "../Utils/Any.h"
-#include "../Utils/EventChain.h"
 #include "Graphics.h"
 #include "Input.h"
 #include "Layer.h"
 #include "Animator.h"
-#include "../Widgets/WidgetMain.h"
 
 namespace gge {
 	struct IntervalObject;
@@ -50,7 +52,7 @@ namespace gge {
 	/// prevent it, multiple GGEMain classes are not possible currently.
 	/// Before calling any initialization function apart from OS, a window should be created.
 	/// GGEMain is also the topmost layer.
-	class GGEMain : public LayerBase, public BasicPointerTarget {
+	class GGEMain : public LayerBase, public input::BasicPointerTarget {
 	public:
 		////Handle of the device context specifying drawable area of
 		/// the created window. Can be changed but should be modified with care
@@ -62,7 +64,7 @@ namespace gge {
 		inline int getWidth() { return Width; }
 		////Height of the graphics area
 		inline int getHeight() { return Height; }
-		////Bitdepth of screen if running fullscreen, this function does not
+		////Bitdepth of screen if running full screen, this function does not
 		/// return active bitdepth, only the specified value
 		inline int getBitDepth() { return BitDepth; }
 		////Whether running in windowed mode
@@ -80,12 +82,12 @@ namespace gge {
 		unsigned int CurrentTime;
 
 		////This is the top-level mouse event propagator
-		virtual bool PropagateMouseEvent(MouseEventType event, int x, int y, void *data) {
+		virtual bool PropagateMouseEvent(input::MouseEventType event, int x, int y, void *data) {
 			return LayerBase::PropagateMouseEvent(event, x, y, data);
 		}
 
 		////This is the top-level mouse event propagator
-		virtual bool PropagateMouseScrollEvent(int amount, MouseEventType event, int x, int y, void *data) {
+		virtual bool PropagateMouseScrollEvent(int amount, input::MouseEventType event, int x, int y, void *data) {
 			return LayerBase::PropagateMouseScrollEvent(amount, event, x, y, data);
 		}
 
@@ -106,7 +108,7 @@ namespace gge {
 		void AfterRender();
 
 		////This function creates the game window. You may specify title, icon and position
-		/// of the window. However, position is ignored if this is a fullscreen application.
+		/// of the window. However, position is ignored if this is a full screen application.
 		/// OS should be initialized before calling this function
 		os::WindowHandle CreateWindow(string Title, os::IconHandle Icon, int X=0, int Y=0) {
 			Window=os::window::CreateWindow(SystemName,Title,Icon,Instance,X,Y,Width,Height,BitDepth,FullScreen);
@@ -146,10 +148,10 @@ namespace gge {
 
 
 		////This event is triggered before rendering, after intervals
-		EventChain<GGEMain, empty_event_params> BeforeRenderEvent;
+		utils::EventChain<GGEMain, utils::empty_event_params> BeforeRenderEvent;
 		////This event is triggered after rendering before the next
 		/// game loop
-		EventChain<GGEMain, empty_event_params> AfterRenderEvent;
+		utils::EventChain<GGEMain, utils::empty_event_params> AfterRenderEvent;
 
 		////Destructor, cleans up resources
 		~GGEMain();
@@ -172,7 +174,7 @@ namespace gge {
 		////Handle of the application instance
 		os::InstanceHandle Instance;
 
-		Collection<IntervalObject> IntervalObjects;
+		utils::Collection<IntervalObject> IntervalObjects;
 	};
 
 	extern GGEMain Main;

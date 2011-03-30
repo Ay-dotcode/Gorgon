@@ -9,8 +9,6 @@
 #include "../Engine/GraphicLayers.h"
 #include "IWidgetContainer.h"
 
-using namespace gge;
-using namespace gre;
 
 #define BUTTON_CLICK_DOWNDURATION	100
 
@@ -68,11 +66,11 @@ namespace gorgonwidgets {
 		ImageResource *PressedIcon;
 		ImageResource *DisabledIcon;
 
-		virtual bool mouse_event(MouseEventType event,int x,int y);
+		virtual bool mouse_event(input::MouseEventType event,int x,int y);
 
-		EventChain<Button, empty_event_params> ClickEvent;
-		EventChain<Button, empty_event_params> PressEvent;
-		EventChain<Button, empty_event_params> ReleaseEvent;
+		utils::EventChain<Button> ClickEvent;
+		utils::EventChain<Button> PressEvent;
+		utils::EventChain<Button> ReleaseEvent;
 
 	protected:
 		ButtonStates prevstate;
@@ -90,6 +88,6 @@ namespace gorgonwidgets {
 		void ProgressionCheck();
 
 		virtual void on_focus_event(bool state,IWidgetObject *related);
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
+		virtual bool keyb_event(input::KeyboardEventType event,int keycode, input::KeyboardModifier::Type modifier);
 	};
 }

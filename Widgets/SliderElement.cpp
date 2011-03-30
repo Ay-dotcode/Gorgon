@@ -41,7 +41,7 @@ namespace gorgonwidgets {
 		Sound	=dynamic_cast<SoundResource*>(file->FindObject(sound_guid));
 
 		int canim=0, cline=0;
-		LinkedListIterator<ResourceBase> it=Subitems;
+		utils::LinkedListIterator<ResourceBase> it=Subitems;
 		ResourceBase *resource;
 		while(resource=it) {
 			if(resource->getGID()==GID_ANIMATION) {

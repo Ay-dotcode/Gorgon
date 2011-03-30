@@ -58,7 +58,7 @@ namespace gge {
 	};
 
 
-	class PointerCollection : public Collection<Pointer, 10> {
+	class PointerCollection : public utils::Collection<Pointer, 10> {
 	public:
 		////Initializes Pointer Subsystem
 		void Initialize(GGEMain &Main);
@@ -98,7 +98,7 @@ namespace gge {
 		PointerCollection() : PointerLayer(NULL), BasePointer(NULL), PointerVisible(false), OSPointerVisible(true) { }
 
 	protected:
-		LinkedList<Pointer> ActivePointers;
+		utils::LinkedList<Pointer> ActivePointers;
 		Basic2DLayer *PointerLayer;
 		Pointer *BasePointer;
 		bool PointerVisible;

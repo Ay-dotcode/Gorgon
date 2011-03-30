@@ -139,7 +139,7 @@ namespace gre {
 		friend ResourceBase *LoadDataResource(ResourceFile* File, FILE* Data, int Size);
 	public:
 		////Data collection
-		Collection<IData> Data;
+		utils::Collection<IData> Data;
 
 		////Adds a new integer value to this resource
 		IntegerData *Add(int value) { return (IntegerData*)Data[Data.Add(new IntegerData(value))]; }

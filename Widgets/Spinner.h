@@ -51,16 +51,16 @@ namespace gorgonwidgets {
 		}
 
 	protected:
-		EventChain<Spinner, slider_change_event_params> ChangeEvent;
+		utils::EventChain<Spinner, slider_change_event_params> ChangeEvent;
 
-		void attached_changed(text_change_event_params p,Textbox &textbox, Any, string name);
-		void attached_lostfocus(empty_event_params p, IWidgetObject &textbox, Any, string name);
-		void attached_keyboard(keyboard_event_params p, Textbox &textbox, Any, string name);
+		void attached_changed(Textbox &textbox);
+		void attached_lostfocus(IWidgetObject &textbox);
+		void attached_keyboard(keyboard_event_params p, Textbox &textbox);
 
 		Textbox *attachedto;
-		EventChain<Textbox,			text_change_event_params>	::Token eventtoken;
-		EventChain<IWidgetObject,	empty_event_params>			::Token lostfocuseventtoken;
-		EventChain<Textbox,			keyboard_event_params>		::Token keyboardeventtoken;
+		utils::EventChain<Textbox,			text_change_event_params>	::Token eventtoken;
+		utils::EventChain<IWidgetObject>								::Token lostfocuseventtoken;
+		utils::EventChain<Textbox,			keyboard_event_params>		::Token keyboardeventtoken;
 		float vps;
 
 		void init();

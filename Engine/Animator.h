@@ -24,11 +24,11 @@ namespace gge {
 		~AnimatorBase();
 		////This event is fired when the animation
 		/// completes
-		EventChain<AnimatorBase, empty_event_params> FinishedEvent;
+		utils::EventChain<AnimatorBase, utils::empty_event_params> FinishedEvent;
 		////This event is fired whenever the animation
 		/// is interrupted when it reaches the time
 		/// specified by PauseAt function
-		EventChain<AnimatorBase, empty_event_params> InterruptedEvent;
+		utils::EventChain<AnimatorBase, utils::empty_event_params> InterruptedEvent;
 
 		////Starts or continues animation
 		virtual void Play();
@@ -110,11 +110,11 @@ namespace gge {
 		DiscreteAnimatorBase();
 		////Fired whenever a frame change occurs when EventOnFrameChange
 		/// flag is set
-		EventChain<DiscreteAnimatorBase, frame_changed_event_params> FrameChangedEvent;
+		utils::EventChain<DiscreteAnimatorBase, frame_changed_event_params> FrameChangedEvent;
 		////This event is fired whenever the animation
 		/// is interrupted when it reaches the frame
 		/// specified by PauseAtFrame function
-		EventChain<DiscreteAnimatorBase, empty_event_params> FrameInterruptedEvent;
+		utils::EventChain<DiscreteAnimatorBase, utils::empty_event_params> FrameInterruptedEvent;
 		////This function sets the current frame to the given value.
 		/// Animation time is moved to the beginning of the given frame
 		///@Frame		: the frame to go
@@ -201,7 +201,7 @@ namespace gge {
 		virtual int* FrameDurations()=0;
 		////Processes the current time to determine current frame
 		virtual void Process(int time);
-		////Can be overriden to process a frame,
+		////Can be overridden to process a frame,
 		/// a default method doing nothing is provided
 		virtual void ProcessFrame(int frame);
 		////This function returns whether this animation is finished

@@ -62,12 +62,12 @@ namespace gorgonwidgets {
 
 		virtual void SetBluePrint(IWidgetBluePrint *BP) { }
 	
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
+		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
 			return false;
 		}
 
-		virtual bool mouse_event(MouseEventType event,int x,int y) {
-			if(event==MOUSE_EVENT_LCLICK) {
+		virtual bool mouse_event(input::MouseEventType event,int x,int y) {
+			if(event==input::MOUSE_EVENT_LCLICK) {
 				ClickEvent();
 				return true;
 			}

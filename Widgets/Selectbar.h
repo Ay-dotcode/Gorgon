@@ -14,10 +14,10 @@ namespace gorgonwidgets {
 	
 	struct selectbar_change_params {
 		string  value;
-		Any		data;
-		selectbar_change_params(string value, Any data) : value(value), data(data) {}
+		utils::Any		data;
+		selectbar_change_params(string value, utils::Any data) : value(value), data(data) {}
 	};
-
+	
 	class Selectbar : public SliderBase {
 	public:
 		Selectbar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, SelectbarOrientations Orientation);
@@ -34,16 +34,16 @@ namespace gorgonwidgets {
 		void Add(string text, void *data=NULL) { numberofticks++; maximum++; ticknames.Add(new SliderLocationName(string(text), data)); SliderBase::setValue(value); }
 		void Remove(string text) { numberofticks--; int i=FindValue(text); if(value>i) value--; maximum--; ticknames.Remove(i); SliderBase::setValue(value); }
 
-		Any getData() { return ticknames[(int)value]->data; }
-		void setData(Any data) { SliderBase::setValue((float)FindData(data)); }
+		utils::Any getData() { return utils::Any(ticknames[(int)value]->data); }
+		void setData(utils::Any data) { SliderBase::setValue((float)FindData(data)); }
 
-		EventChain<Selectbar, selectbar_change_params> ChangeEvent;
+		utils::EventChain<Selectbar, selectbar_change_params> ChangeEvent;
 	protected:
 
-		void base_change(slider_change_event_params p, SliderBase &slider, Any data, string eventname);
+		void base_change();
 
 		int FindValue(string value) { int i=0; ticknames.ResetIteration(); SliderLocationName *s;while(s=ticknames.next()) { if(s->name==value) return i; i++; } }
-		int FindData(Any data) { int i=0; ticknames.ResetIteration(); SliderLocationName *s;while(s=ticknames.next()) { if(s->data==data) return i; i++; } }
+		int FindData(utils::Any data) { int i=0; ticknames.ResetIteration(); SliderLocationName *s;while(s=ticknames.next()) { if(s->data==data) return i; i++; } }
 
 		void init();
 	};

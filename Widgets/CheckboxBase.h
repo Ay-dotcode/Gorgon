@@ -7,8 +7,6 @@
 #include "../Engine/GGEMain.h"
 #include "../Engine/Layer.h"
 
-using namespace gge;
-using namespace gre;
 
 #define CHECKBOX_CLICK_DOWNDURATION	100
 
@@ -81,7 +79,7 @@ namespace gorgonwidgets {
 		CheckboxBase	&SimulateMouseOut();
 
 
-		EventChain<CheckboxBase, empty_event_params> ChangeEvent;
+		utils::EventChain<CheckboxBase> ChangeEvent;
 
 	protected:
 		int linesoverride;
@@ -118,7 +116,7 @@ namespace gorgonwidgets {
 		void ProgressionCheck();
 		virtual void on_focus_event(bool state,IWidgetObject *related);
 		
-		virtual bool mouse_event(MouseEventType event,int x,int y);
-		virtual bool keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier);
+		virtual bool mouse_event(input::MouseEventType event,int x,int y);
+		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
 	};
 }
