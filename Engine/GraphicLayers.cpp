@@ -1,6 +1,9 @@
 #include "GraphicLayers.h"
 #pragma warning(disable:4244)
 
+using namespace gge::utils;
+using namespace gge::input;
+
 namespace gge {
 	RGBfloat CurrentLayerColor;
 	int trX,trY;

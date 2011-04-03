@@ -16,7 +16,7 @@ namespace geffects {
 	public:
 		////This event is fired when the animation
 		/// completes
-		EventChain<Tinting, empty_event_params> FinishedEvent;
+		utils::EventChain<Tinting> FinishedEvent;
 
 		////Target of this effect
 		I2DColorizableGraphicsTarget *Target;

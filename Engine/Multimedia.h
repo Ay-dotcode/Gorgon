@@ -49,6 +49,6 @@ namespace gge {
 		Multimedia();
 
 		////Fired when playback is finished, occurs before auto destroy if it is set.
-		EventChain<Multimedia, empty_event_params> Finished;
+		utils::EventChain<Multimedia> Finished;
 	};
 }

@@ -12,7 +12,7 @@
 
 #define BUTTON_CLICK_DOWNDURATION	100
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum ButtonStates {
 		BS_Normal,
 		BS_Disabled,
@@ -90,4 +90,4 @@ namespace gorgonwidgets {
 		virtual void on_focus_event(bool state,IWidgetObject *related);
 		virtual bool keyb_event(input::KeyboardEventType event,int keycode, input::KeyboardModifier::Type modifier);
 	};
-}
+} }

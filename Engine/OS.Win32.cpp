@@ -2,6 +2,9 @@
 #include "input.h"
 #include "Multimedia.h"
 
+using namespace gge::input;
+using namespace gge::input::system;
+
 #ifdef WIN32
 
 #	define WINVER 0x0500
@@ -60,9 +63,9 @@
 		}
 		}
 		namespace window {
-			EventChain<Empty, empty_event_params> Activated("WindowActivated",NULL);
-			EventChain<Empty, empty_event_params> Deactivated("WindowDectivated",NULL);
-			EventChain<Empty, empty_event_params> Destroyed("WindowDestroyed",NULL);
+			utils::EventChain<> Activated	("WindowActivated" );
+			utils::EventChain<> Deactivated ("WindowDectivated");
+			utils::EventChain<> Destroyed	("WindowDestroyed" );
 
 
 			//!Private

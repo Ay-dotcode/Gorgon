@@ -2,7 +2,7 @@
 
 namespace gre {
 	void ResourceBase::Prepare(GGEMain *main) {
-		LinkedListIterator<ResourceBase>it=Subitems;
+		utils::LinkedListIterator<ResourceBase>it=Subitems;
 		ResourceBase *resource;
 
 		while(resource=it) {
@@ -11,7 +11,7 @@ namespace gre {
 	}
 
 	void ResourceBase::Resolve() {
-		LinkedListIterator<ResourceBase>it=Subitems;
+		utils::LinkedListIterator<ResourceBase>it=Subitems;
 		ResourceBase *resource;
 
 		while(resource=it) {
@@ -20,7 +20,7 @@ namespace gre {
 	}
 
 	ResourceBase *ResourceBase::FindObject(Guid *guid) {
-		LinkedListIterator<ResourceBase>it=Subitems;
+		utils::LinkedListIterator<ResourceBase>it=Subitems;
 		ResourceBase *resource;
 
 		while(resource=it) {
@@ -36,7 +36,7 @@ namespace gre {
 	}
 
 	ResourceBase *ResourceBase::FindParent(Guid *guid) {
-		LinkedListIterator<ResourceBase>it=Subitems;
+		utils::LinkedListIterator<ResourceBase>it=Subitems;
 		ResourceBase *resource;
 
 		while(resource=it) {

@@ -3,7 +3,7 @@
 #include <cstring>
 #include "../Engine/GGEMain.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	Button::Button(ButtonBP *BluePrint,IWidgetContainer &container) : 
 		IWidgetObject(container),
 		BluePrint(BluePrint),
@@ -360,7 +360,7 @@ namespace gorgonwidgets {
 			}
 		}
 	}
-	ButtonElement *Button::DetermineElement(gorgonwidgets::ButtonStates currentstate, gorgonwidgets::ButtonStates nextstate) {
+	ButtonElement *Button::DetermineElement(gge::widgets::ButtonStates currentstate, gge::widgets::ButtonStates nextstate) {
 		ButtonElement *ret=NULL;
 		ret=et[currentstate][nextstate];
 
@@ -370,20 +370,20 @@ namespace gorgonwidgets {
 
 		return ret;
 	}
-	bool Button::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
+	bool Button::keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
 		if(!isvisible)
 			return false;
 
-		if((modifier==KeyboardModifier::None || modifier==KeyboardModifier::Alternate) && event==KEYB_EVENT_DOWN && keycode==13) {
+		if((modifier==input::KeyboardModifier::None || modifier==input::KeyboardModifier::Alternate) && event==input::KEYB_EVENT_DOWN && keycode==13) {
 			SimulateClicked();
 			return true;
 		}
-		if(modifier==KeyboardModifier::None && event==KEYB_EVENT_DOWN && keycode==32) {
+		if(modifier==input::KeyboardModifier::None && event==input::KEYB_EVENT_DOWN && keycode==32) {
 			SimulatePressed();
 
 			return true;
 		}
-		if(modifier==KeyboardModifier::None && event==KEYB_EVENT_UP && keycode==32) {
+		if(modifier==input::KeyboardModifier::None && event==input::KEYB_EVENT_UP && keycode==32) {
 			SimulateRelease();
 			ClickEvent();
 
@@ -402,25 +402,25 @@ namespace gorgonwidgets {
 		Resize(this->width,this->height);
 	}
 
-	bool Button::mouse_event(MouseEventType event,int x,int y) {
+	bool Button::mouse_event(input::MouseEventType event,int x,int y) {
 		switch(event) {
-		case MOUSE_EVENT_OVER:
+		case input::MOUSE_EVENT_OVER:
 			SimulateMouseOver();
 			break;
-		case MOUSE_EVENT_OUT:
+		case input::MOUSE_EVENT_OUT:
 			SimulateMouseOut();
 			break;
-		case MOUSE_EVENT_LDOWN:
+		case input::MOUSE_EVENT_LDOWN:
 			this->SetFocus();
 
 			mstate=BS_Pressed;
 			SimulatePressed();
 			break;
-		case MOUSE_EVENT_LUP:
+		case input::MOUSE_EVENT_LUP:
 			SimulateRelease();
 			mstate=BS_Normal;
 			break;
-		case MOUSE_EVENT_LCLICK:
+		case input::MOUSE_EVENT_LCLICK:
 			ClickEvent();
 			
 			break;
@@ -428,4 +428,4 @@ namespace gorgonwidgets {
 
 		return true;
 	}
-}
+} }

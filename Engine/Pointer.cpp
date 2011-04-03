@@ -60,7 +60,7 @@ namespace gge {
 	void PointerCollection::Fetch(FolderResource *Folder) {
 		DataResource *data=Folder->asData(0);
 		
-		LinkedListIterator<ResourceBase> it=Folder->Subitems;
+		utils::LinkedListIterator<ResourceBase> it=Folder->Subitems;
 		ResourceBase *resource;
 		resource=it;
 
@@ -68,10 +68,10 @@ namespace gge {
 		while(resource=it) {
 			if(resource->getGID()==GID_ANIMATION) {
 				AnimationResource *anim=dynamic_cast<AnimationResource *>(resource);
-				Collection<Pointer, 10>::Add( new Pointer(anim->getAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
+				utils::Collection<Pointer, 10>::Add( new Pointer(anim->getAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
 			} else if(resource->getGID()==GID_IMAGE) {
 				ImageResource *img=dynamic_cast<ImageResource *>(resource);
-				Collection<Pointer, 10>::Add( new Pointer(img, data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
+				utils::Collection<Pointer, 10>::Add( new Pointer(img, data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
 			}
 
 			i+=2;
@@ -83,7 +83,7 @@ namespace gge {
 
 	Pointer *PointerCollection::Add(Buffered2DGraphic *pointer, Point Hotspot, Pointer::PointerTypes Type) {
 		Pointer *ret=new Pointer(pointer, Hotspot.x, Hotspot.y, Type);
-		Collection<Pointer, 10>::Add( ret );
+		utils::Collection<Pointer, 10>::Add( ret );
 		return ret;
 	}
 
@@ -105,7 +105,7 @@ namespace gge {
 	}
 
 	void PointerCollection::Reset(int StackNo) {
-		ActivePointers.Remove(reinterpret_cast<LinkedListItem<Pointer>*>(StackNo));
+		ActivePointers.Remove(reinterpret_cast<utils::LinkedListItem<Pointer>*>(StackNo));
 	}
 
 	void PointerCollection::ChangeBase(Pointer *Pointer) {

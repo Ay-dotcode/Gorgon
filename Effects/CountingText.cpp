@@ -23,11 +23,11 @@ namespace geffects {
 		char text[50];
 
 		if(Format.length()) {
-			sprintf(text, Format.data(), current);
+			sprintf_s<50>(text, Format.data(), current);
 		} else {
 			char tmp[10];
-			sprintf(tmp, "%%.%if", Decimals);
-			sprintf(text, tmp, current);
+			sprintf_s<10>(tmp, "%%.%if", Decimals);
+			sprintf_s<50>(text, tmp, current);
 		}
 
 		Font->Print(target, X, Y, Width, text, Color, Align, Shadow);

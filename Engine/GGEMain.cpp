@@ -56,7 +56,7 @@ namespace gge {
 			fpscounter++;
 
 		os::system::ProcessMessage();
-		ProcessMousePosition(Window);
+		input::system::ProcessMousePosition(Window);
 	}
 
 	void GGEMain::BeforeRender() {

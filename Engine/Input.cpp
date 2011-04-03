@@ -1,6 +1,7 @@
 #include "Input.h"
 
 using namespace gge;
+using namespace utils;
 
 namespace gge { namespace input {
 

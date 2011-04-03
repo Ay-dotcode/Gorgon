@@ -1,6 +1,8 @@
 #include "Animator.h"
 #include "GGEMain.h"
 
+using namespace gge::utils;
+
 namespace gge {
 	Collection<AnimatorBase> Animators;
 

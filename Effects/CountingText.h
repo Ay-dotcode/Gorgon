@@ -16,7 +16,7 @@ namespace geffects {
 	public:
 		////This event is fired when the animation
 		/// completes
-		EventChain<CountingText, empty_event_params> FinishedEvent;
+		utils::EventChain<CountingText> FinishedEvent;
 
 		////Color of the text, default is black
 		RGBint Color;

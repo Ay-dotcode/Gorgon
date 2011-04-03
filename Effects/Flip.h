@@ -20,7 +20,7 @@ namespace geffects {
 	public:
 		////This event is fired when the animation
 		/// completes
-		EventChain<FlipEffect, empty_event_params> FinishedEvent;
+		utils::EventChain<FlipEffect> FinishedEvent;
 
 		FlipEffect() : FinishedEvent("Finished", this) { 
 			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);

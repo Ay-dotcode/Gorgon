@@ -1,9 +1,12 @@
 #include "Layer.h"
 
+using namespace gge::input;
+using namespace gge::utils;
+
 namespace gge {
 	extern int trX,trY;
 
-	bool InputLayer::PropagateMouseEvent(MouseEventType event, int x, int y, void *data) {
+	bool InputLayer::PropagateMouseEvent(input::MouseEventType event, int x, int y, void *data) {
 		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&MOUSE_EVENT_UP) || (pressedObject && event&MOUSE_EVENT_MOVE)) ) {
 			if(LayerBase::PropagateMouseEvent(event, x-X, y-Y, data))
 				return true;

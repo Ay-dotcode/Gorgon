@@ -4,7 +4,7 @@ namespace gge { namespace sound {
 
 	namespace system {
 		////For garbage collection
-		static Collection<Wave> Waves;
+		static utils::Collection<Wave> Waves;
 		void InitWaveGarbageCollect(GGEMain *main) {
 			main->AfterRenderEvent.Register(CollectWaveGarbage);
 		}
@@ -34,9 +34,9 @@ namespace gge { namespace sound {
 		finishedstateisknown=0;
 
 		if(maxWaveDistance)
-			isavailable= (bool)(source=system::Create3DSoundController(buffer, maxWaveDistance));
+			isavailable= (source=system::Create3DSoundController(buffer, maxWaveDistance)) != 0;
 		else
-			isavailable= (bool)(source=system::CreateSoundController(buffer));
+			isavailable= (source=system::CreateSoundController(buffer)) != 0;
 
 		system::Waves.Add(this);
 	}

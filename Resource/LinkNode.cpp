@@ -9,8 +9,8 @@ namespace gre {
 		File->Redirects.Add(new Redirect(*this->guid, target));
 
 		if(parent) {
-			LinkedListIterator<ResourceBase> it=parent->Subitems;
-			LinkedListItem<ResourceBase> *item;
+			utils::LinkedListIterator<ResourceBase> it=parent->Subitems;
+			utils::LinkedListItem<ResourceBase> *item;
 			while(item=it) {
 				if(item->Item->isEqual(guid)) {
 					item->Item=File->Root().FindObject(&target);
@@ -27,7 +27,7 @@ namespace gre {
 
 		int tpos=ftell(Data)+Size;
 		while(ftell(Data)<tpos) {
-			int gid,size,tmpint;
+			int gid,size;
 
 			fread(&gid,1,4,Data);
 			fread(&size,1,4,Data);

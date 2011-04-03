@@ -137,7 +137,7 @@ namespace gge {
 		void		 InitializeAnimation() { gge::InitializeAnimation(this); }
 		////Initializes Pointer subsystem. Before calling this function, pointers cannot be used
 		void		 InitializePointer() { Pointers.Initialize(*this); }
-		void		 InitializeWidgets() { gorgonwidgets::InitializeWidgets(this); }
+		void		 InitializeWidgets() { gge::widgets::InitializeWidgets(this); }
 
 		////Registers a signal handler to be called in every given time. Exact time passed from the
 		/// last signal can be checked using LastSignal variable of the IntervalObject
