@@ -9,7 +9,7 @@
 
 using namespace gre;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_TEXTBOX			0x05830000
 #define GID_TEXTBOX_PROPS	0x05830101
@@ -34,4 +34,4 @@ namespace gorgonwidgets {
 		Guid *guid_typingsound;
 		ResourceFile *file;
 	};
-}
+} }

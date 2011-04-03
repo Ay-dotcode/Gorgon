@@ -8,7 +8,7 @@
 #include "SliderElement.h"
 #include "SliderStyleGroup.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	ResourceBase* LoadSlider(ResourceFile* file,FILE* gfile,int sz) {
 		SliderBP *slider =new SliderBP();
@@ -169,4 +169,4 @@ namespace gorgonwidgets {
 	}
 
 
-}
+} }

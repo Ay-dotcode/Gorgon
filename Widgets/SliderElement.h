@@ -19,7 +19,7 @@ using namespace std;
 #define GID_SLIDER_ELEMENT_PROPS	0x05260101
 
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class Slider;
 
 	enum SliderStyles {
@@ -105,4 +105,4 @@ namespace gorgonwidgets {
 		ResizableObject *Symbol;
 		Buffered2DGraphic *Tick;
 	};
-}
+} }

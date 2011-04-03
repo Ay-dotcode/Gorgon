@@ -1,6 +1,6 @@
 #include "SliderStyleGroup.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	SliderStyleGroup::SliderStyleGroup(void)
 	{
@@ -41,4 +41,4 @@ namespace gorgonwidgets {
 			}
 		}
 	}
-}
+} }

@@ -3,7 +3,7 @@
 #include "Line.h"
 #include "WidgetRegistry.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	TextboxElement::TextboxElement(void) {
 		Visual=NULL;
 		Parent=NULL;
@@ -240,4 +240,4 @@ namespace gorgonwidgets {
 
 		return eprint[1].Out.value;
 	}
-}
+} }

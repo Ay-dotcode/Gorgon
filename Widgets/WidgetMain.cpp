@@ -20,7 +20,7 @@
 
 #define DIALOG_LAYER_ZORDER		-10
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	WidgetLayer *DialogLayer=NULL;
 
 	void InitializeWidgets(GGEMain *Main) {
@@ -53,4 +53,4 @@ namespace gorgonwidgets {
 
 		File->Loaders.Add(new ResourceLoader(GID_RESIZABLEOBJECT, LoadResizableObject)); 
 	}
-}
+} }

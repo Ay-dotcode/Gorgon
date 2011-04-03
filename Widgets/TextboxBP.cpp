@@ -1,6 +1,6 @@
 #include "TextboxBP.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	TextboxBP::TextboxBP(void) {
 		TypingSound=NULL;
@@ -22,4 +22,4 @@ namespace gorgonwidgets {
 
 		TypingSound=(SoundResource*)file->FindObject(guid_typingsound);
 	}
-}
+} }

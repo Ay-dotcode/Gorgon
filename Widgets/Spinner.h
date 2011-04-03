@@ -8,11 +8,11 @@ namespace gge {
 	extern GGEMain Main;
 }
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class Spinner : public SliderBase {
 	public:
-		Spinner(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container);
-		Spinner(gorgonwidgets::SliderBP *BP);
+		Spinner(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container);
+		Spinner(gge::widgets::SliderBP *BP);
 
 		void setValue(float value);
 		float getValue() { return value; }
@@ -67,4 +67,4 @@ namespace gorgonwidgets {
 
 		void changeValue(float value) { SliderBase::setValue(value); if(this->value!=value) setValue(this->value); }
 	};
-}
+} }

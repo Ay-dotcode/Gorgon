@@ -21,7 +21,7 @@
 
 using namespace gre;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	class LinearOrganizer;
 
@@ -204,4 +204,4 @@ namespace gorgonwidgets {
 	};
 
 	extern WidgetRegistry WR;
-}
+} }

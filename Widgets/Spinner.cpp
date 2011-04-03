@@ -1,6 +1,6 @@
 #include "Spinner.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	void Spinner::attached_changed(Textbox &textbox) {
 		if(textbox.GetText().length()>0) {
 			const char *t=textbox.GetText().data();
@@ -42,7 +42,7 @@ namespace gorgonwidgets {
 		}
 	}
 
-	Spinner::Spinner(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container) : 
+	Spinner::Spinner(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container) : 
 		SliderBase(BP, container, SS_Verticle),
 		eventtoken(0), lostfocuseventtoken(0), keyboardeventtoken(0),
 		attachedto(NULL),
@@ -51,7 +51,7 @@ namespace gorgonwidgets {
 		init();
 	}
 
-	Spinner::Spinner(gorgonwidgets::SliderBP *BP) : 
+	Spinner::Spinner(gge::widgets::SliderBP *BP) : 
 		SliderBase(BP, SS_Verticle),
 		eventtoken(0), lostfocuseventtoken(0), keyboardeventtoken(0),
 		attachedto(NULL),
@@ -75,7 +75,7 @@ namespace gorgonwidgets {
 		delayclicks=true;
 	}
 
-	void Spinner::AttachTo(gorgonwidgets::Textbox *textbox) {
+	void Spinner::AttachTo(gge::widgets::Textbox *textbox) {
 		DetachFrom();
 
 		attachedto=textbox;
@@ -118,4 +118,4 @@ namespace gorgonwidgets {
 			attachedto->SetText(tmp); 
 		}
 	}
-}
+} }

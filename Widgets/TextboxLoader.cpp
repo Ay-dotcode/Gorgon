@@ -4,7 +4,7 @@
 #include "TextboxElement.h"
 #include "Line.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	void eatchunk(FILE* f,int size);
 
 	ResourceBase* LoadTextbox(ResourceFile* file,FILE* gfile,int sz) {
@@ -166,4 +166,4 @@ namespace gorgonwidgets {
 	}
 
 
-}
+} }

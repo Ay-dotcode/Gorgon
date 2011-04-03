@@ -9,7 +9,7 @@
 using namespace gre;
 using namespace gge;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class VirtualFrame;
 
 	bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier,void *data);
@@ -45,4 +45,4 @@ namespace gorgonwidgets {
 			toplevels.Remove(this);
 		}
 	};
-}
+} }

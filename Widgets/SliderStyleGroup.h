@@ -6,7 +6,7 @@
 
 using namespace gre;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_SLIDER_GRP			0x5360000
 #define GID_SLIDER_GRP_PROPS	0x5360101
@@ -63,4 +63,4 @@ namespace gorgonwidgets {
 			 *guid_pressed2hover	;
 	};
 
-}
+} }

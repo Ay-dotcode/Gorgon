@@ -1,6 +1,6 @@
 #include "VirtualFrame.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	utils::LinkedList<VirtualFrame> toplevels;
 
 	void DeactivateAll() {
@@ -46,4 +46,4 @@ namespace gorgonwidgets {
 		return false;
 	}
 
-}
+} }

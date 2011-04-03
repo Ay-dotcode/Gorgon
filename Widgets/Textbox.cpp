@@ -3,7 +3,7 @@
 #include "../Resource/SoundResource.h"
 #include "../Engine/GGEMain.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	Textbox::Textbox(TextboxBP *BluePrint,IWidgetContainer &container) : 
 		IWidgetObject(container),
 		NormalStyle(NULL), HoverStyle(NULL),
@@ -326,7 +326,7 @@ namespace gorgonwidgets {
 			}
 		}
 	}
-	TextboxElement *Textbox::DetermineElement(gorgonwidgets::TextboxStates currentstate, gorgonwidgets::TextboxStates nextstate) {
+	TextboxElement *Textbox::DetermineElement(gge::widgets::TextboxStates currentstate, gge::widgets::TextboxStates nextstate) {
 		TextboxElement *ret=NULL;
 		ret=et[currentstate][nextstate];
 		if(ret==NULL && currentstate==nextstate) {
@@ -557,4 +557,4 @@ namespace gorgonwidgets {
 				Transition(TS_Normal);
 		Draw();
 	}
-}
+} }

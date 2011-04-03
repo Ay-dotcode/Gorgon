@@ -16,10 +16,11 @@ using namespace gge;
 using namespace gre;
 
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	void RegisterWidgetLoaders(ResourceFile *File);
 	inline void RegisterWidgetLoaders(ResourceFile &File) { RegisterWidgetLoaders(&File); }
 	void InitializeWidgets(GGEMain *Main);
 
 	extern WidgetLayer *DialogLayer;
-};
+} }
+

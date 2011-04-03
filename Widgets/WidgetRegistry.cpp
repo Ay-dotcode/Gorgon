@@ -2,7 +2,7 @@
 #include "LinearOrganizer.h"
 #include "../Resource/DataResource.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	
 	void WidgetRegistry::DiscoverWidgets(ResourceFile *file) {
 		//these indices subject to change
@@ -309,7 +309,7 @@ namespace gorgonwidgets {
 	}
 
 	Scrollbar &WidgetRegistry::createVScrollbar(IWidgetContainer &container, int w, int h, int max) {
-		Scrollbar *sc=new Scrollbar(scroller, container, ScrollbarAlignments::SA_Verticle);
+		Scrollbar *sc=new Scrollbar(scroller, container, SA_Verticle);
 		if(w==-1)
 			w=0;
 		if(h==-1)
@@ -356,7 +356,7 @@ namespace gorgonwidgets {
 
 		Textbox *txt=new Textbox(bp, container);
 		char text[30];
-		sprintf(text, "%.2f", value);
+		sprintf_s<30>(text, "%.2f", value);
 		txt->SetText(text);
 		txt->Move(x, y);
 		if(w==-1)
@@ -376,7 +376,7 @@ namespace gorgonwidgets {
 
 		Textbox *txt=new Textbox(bp);
 		char text[30];
-		sprintf(text, "%.2f", value);
+		sprintf_s<30>(text, "%.2f", value);
 		txt->SetText(text);
 		txt->Move(x, y);
 		if(w==-1)
@@ -607,4 +607,4 @@ namespace gorgonwidgets {
 
 	
 	class WidgetRegistry WR;
-}
+} }

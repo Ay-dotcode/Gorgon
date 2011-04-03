@@ -8,7 +8,7 @@
 #include "IWidgetContainer.h"
 
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum TextboxStates {
 		TS_Normal,
 		TS_Disabled,
@@ -99,4 +99,4 @@ namespace gorgonwidgets {
 		bool mousedown;
 
 	};
-}
+} }

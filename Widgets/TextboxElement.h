@@ -13,7 +13,7 @@ using namespace gre;
 using namespace gge;
 using namespace std;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_TEXTBOX_ELEMENT			0x5230000
 #define GID_TEXTBOX_ELEMENT_PROPS	0x5230101
@@ -61,4 +61,4 @@ namespace gorgonwidgets {
 		ResizableObject *SelectionRect;
 		Bounds SelectionOffset;
 	};
-}
+} }

@@ -1,6 +1,6 @@
 #include "TextboxStyleGroup.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	TextboxStyleGroup::TextboxStyleGroup(void)
 	{
@@ -27,4 +27,4 @@ namespace gorgonwidgets {
 			DisabledStyle=NormalStyle;
 	}
 
-}
+} }
