@@ -4,7 +4,7 @@
 #include "SliderBase.h"
 #include "SliderBP.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum SelectbarOrientations {
 		SBO_Left=SS_Left,
 		SBO_Right=SS_Right,
@@ -20,8 +20,8 @@ namespace gorgonwidgets {
 	
 	class Selectbar : public SliderBase {
 	public:
-		Selectbar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, SelectbarOrientations Orientation);
-		Selectbar(gorgonwidgets::SliderBP *BP, SelectbarOrientations Orientation);
+		Selectbar(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container, SelectbarOrientations Orientation);
+		Selectbar(gge::widgets::SliderBP *BP, SelectbarOrientations Orientation);
 
 		void setValue(string value) {  SliderBase::setValue((float)FindValue(value)); }
 		string getValue() { return ticknames[(int)value]->name; }
@@ -47,4 +47,5 @@ namespace gorgonwidgets {
 
 		void init();
 	};
-}
+} }
+

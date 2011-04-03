@@ -1,18 +1,18 @@
 #include "Selectbar.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	void Selectbar::base_change() {
 		ChangeEvent(selectbar_change_params(getValue(), getData()));
 	}
 	
-	Selectbar::Selectbar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, SelectbarOrientations Orientation) : 
+	Selectbar::Selectbar(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container, SelectbarOrientations Orientation) : 
 		SliderBase(BP,container,(SliderStyles)Orientation),
 		ChangeEvent("Change", this)
 	{
 		init();
 	}
 	
-	Selectbar::Selectbar(gorgonwidgets::SliderBP *BP, SelectbarOrientations Orientation) : 
+	Selectbar::Selectbar(gge::widgets::SliderBP *BP, SelectbarOrientations Orientation) : 
 		SliderBase(BP,(SliderStyles)Orientation),
 		ChangeEvent("Change", this)
 	{
@@ -32,4 +32,5 @@ namespace gorgonwidgets {
 
 		SliderBase::ChangeEvent.Register(this, &Selectbar::base_change);
 	}
-}
+} }
+
