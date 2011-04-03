@@ -1,6 +1,6 @@
 #include "CheckboxStyleGroup.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	CheckboxStyleGroup::CheckboxStyleGroup(void) {
 	}
@@ -46,4 +46,4 @@ namespace gorgonwidgets {
 			cDisabledStyle=cNormalStyle;
 	}
 
-}
+} }

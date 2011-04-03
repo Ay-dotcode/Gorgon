@@ -5,7 +5,7 @@
 
 using namespace gre;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_BUTTON_GRP			0x5340000
 #define GID_BUTTON_GRP_PROPS	0x5340101
@@ -59,4 +59,4 @@ namespace gorgonwidgets {
 			 *guid_pressed2hover	;
 	};
 
-}
+} }

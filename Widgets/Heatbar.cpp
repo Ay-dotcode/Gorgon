@@ -1,13 +1,13 @@
 #include "Heatbar.h"
 
-namespace gorgonwidgets {
-	Heatbar::Heatbar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, HeatbarDirections direction) : 
+namespace gge { namespace widgets {
+	Heatbar::Heatbar(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container, HeatbarDirections direction) : 
 		Progressbar(BP,container) 
 	{
 		init(direction);
 	}
 
-	Heatbar::Heatbar(gorgonwidgets::SliderBP *BP, HeatbarDirections direction) : 
+	Heatbar::Heatbar(gge::widgets::SliderBP *BP, HeatbarDirections direction) : 
 		Progressbar(BP) 
 	{
 		init(direction);
@@ -27,4 +27,4 @@ namespace gorgonwidgets {
 		setNumberDistance(numberdistance);
 		AlwaysShowCap=true;
 	}
-}
+} }

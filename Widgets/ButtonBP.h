@@ -9,7 +9,7 @@
 
 using namespace gre;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_BUTTON			0x05840000
 #define GID_BUTTON_PROPS	0x05840101
@@ -29,4 +29,4 @@ namespace gorgonwidgets {
 	protected:
 		utils::Collection<ButtonStyleGroup> StyleGroups;
 	};
-}
+} }

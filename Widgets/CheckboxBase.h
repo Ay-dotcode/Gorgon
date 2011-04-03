@@ -10,7 +10,7 @@
 
 #define CHECKBOX_CLICK_DOWNDURATION	100
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class CheckboxElement;
 
 	enum CheckboxStates {
@@ -119,4 +119,4 @@ namespace gorgonwidgets {
 		virtual bool mouse_event(input::MouseEventType event,int x,int y);
 		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
 	};
-}
+} }

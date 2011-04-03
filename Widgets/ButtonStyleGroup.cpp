@@ -1,6 +1,6 @@
 #include "ButtonStyleGroup.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	ButtonStyleGroup::ButtonStyleGroup(void) {
 	}
@@ -26,4 +26,4 @@ namespace gorgonwidgets {
 			DisabledStyle=NormalStyle;
 	}
 
-}
+} }

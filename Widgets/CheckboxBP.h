@@ -8,7 +8,7 @@
 
 using namespace gre;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_CHECKBOX			0x05850000
 #define GID_CHECKBOX_PROPS		0x05850101
@@ -28,4 +28,4 @@ namespace gorgonwidgets {
 	protected:
 		utils::Collection<CheckboxStyleGroup> StyleGroups;
 	};
-}
+} }

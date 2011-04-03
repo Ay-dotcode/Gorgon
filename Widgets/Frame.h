@@ -7,7 +7,7 @@
 #include "FrameBP.h"
 
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum ScrollbarDisplayStates {
 		SDS_Never,
 		SDS_WhenNeeded,
@@ -225,4 +225,4 @@ namespace gorgonwidgets {
 		}
 
 	};
-}
+} }

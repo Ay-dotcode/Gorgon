@@ -5,7 +5,7 @@
 #include "Line.h"
 #include "Rectangle.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	ResourceBase* LoadCheckbox(ResourceFile* file,FILE* gfile,int sz) {
 		CheckboxBP *chk =new CheckboxBP();
@@ -205,4 +205,4 @@ namespace gorgonwidgets {
 	}
 
 
-}
+} }

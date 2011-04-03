@@ -1,7 +1,7 @@
 #include "CheckboxBP.h"
 #include "CheckboxBase.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	CheckboxBP::CheckboxBP(void) {
 	}
@@ -14,4 +14,4 @@ namespace gorgonwidgets {
 		
 		return chk;
 	}
-}
+} }

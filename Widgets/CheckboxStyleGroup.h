@@ -5,7 +5,7 @@
 
 using namespace gre;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_CHECKBOX_GRP			0x5350000
 #define GID_CHECKBOX_GRP_PROPS		0x5350101
@@ -92,4 +92,4 @@ namespace gorgonwidgets {
 
 	};
 
-}
+} }

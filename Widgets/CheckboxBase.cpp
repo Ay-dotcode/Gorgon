@@ -3,7 +3,7 @@
 #include "CheckboxElement.h"
 #include "../Engine/GGEMain.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	CheckboxBase::CheckboxBase(CheckboxBP *BluePrint,IWidgetContainer &container,CheckboxTypes type) : 
 		IWidgetObject(container),
 		BluePrint(BluePrint),
@@ -425,9 +425,9 @@ namespace gorgonwidgets {
 		if(statetransition && targetvalue==-1)
 			return;
 
-		if(targetvalue!=checked && targetvalue!=-1) {
+		if(bool(targetvalue)!=checked && targetvalue!=-1) {
 			statetransition=true;
-			statetransitiontarget=targetvalue;
+			statetransitiontarget=bool(targetvalue);
 			
 			currentstate=target;
 			nextstate=target;
@@ -523,7 +523,7 @@ namespace gorgonwidgets {
 			}
 		}
 	}
-	CheckboxElement *CheckboxBase::DetermineElement(gorgonwidgets::CheckboxStates currentstate, gorgonwidgets::CheckboxStates nextstate) {
+	CheckboxElement *CheckboxBase::DetermineElement(gge::widgets::CheckboxStates currentstate, gge::widgets::CheckboxStates nextstate) {
 		CheckboxElement *ret=NULL;
 
 		if(statetransition) {
@@ -553,7 +553,7 @@ namespace gorgonwidgets {
 	}
 
 
-	bool CheckboxBase::mouse_event(MouseEventType event,int x,int y) {
+	bool CheckboxBase::mouse_event(input::MouseEventType event,int x,int y) {
 		if(!isvisible || !container->isVisible())
 			return false;
 
@@ -561,25 +561,25 @@ namespace gorgonwidgets {
 			return true;
 
 		switch(event) {
-		case MOUSE_EVENT_OVER:
+		case input::MOUSE_EVENT_OVER:
 			SimulateMouseOver();
 			mover=true;
 			break;
-		case MOUSE_EVENT_OUT:
+		case input::MOUSE_EVENT_OUT:
 			SimulateMouseOut();
 			mover=false;
 			break;
-		case MOUSE_EVENT_LDOWN:
+		case input::MOUSE_EVENT_LDOWN:
 			this->SetFocus();
 
 			mstate=CS_Pressed;
 			SimulatePressed();
 			break;
-		case MOUSE_EVENT_LUP:
+		case input::MOUSE_EVENT_LUP:
 			SimulateRelease();
 			mstate=CS_Normal;
 			break;
-		case MOUSE_EVENT_LCLICK:
+		case input::MOUSE_EVENT_LCLICK:
 			if(!sticky || !checked) {
 				Transition(CS_Pressed,false,false,!checked);
 				ToggleCheckbox(false);
@@ -592,22 +592,22 @@ namespace gorgonwidgets {
 		return true;
 	}
 
-	bool CheckboxBase::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
+	bool CheckboxBase::keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
 		if(!isvisible)
 			return false;
 
-		if((modifier==KeyboardModifier::None || modifier==KeyboardModifier::Alternate) && event==KEYB_EVENT_DOWN && keycode==13) {
+		if((modifier==input::KeyboardModifier::None || modifier==input::KeyboardModifier::Alternate) && event==input::KEYB_EVENT_DOWN && keycode==13) {
 			if(!sticky || !checked) {
 				SimulateClicked();
 			}
 			return true;
 		}
-		if(modifier==KeyboardModifier::None && event==KEYB_EVENT_DOWN && keycode==32) {
+		if(modifier==input::KeyboardModifier::None && event==input::KEYB_EVENT_DOWN && keycode==32) {
 			SimulatePressed();
 
 			return true;
 		}
-		if(modifier==KeyboardModifier::None && event==KEYB_EVENT_UP && keycode==32) {
+		if(modifier==input::KeyboardModifier::None && event==input::KEYB_EVENT_UP && keycode==32) {
 			SimulateRelease();
 			if(!sticky || !checked) {
 				Transition(CS_Pressed,false,false,!checked);
@@ -644,4 +644,4 @@ namespace gorgonwidgets {
 
 		return *this;
 	}
-}
+} }

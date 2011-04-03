@@ -8,7 +8,7 @@
 #include "ButtonElement.h"
 #include "ButtonStyleGroup.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	void eatchunk(FILE* f,int size);
 
 	ResourceBase* LoadButton(ResourceFile* file,FILE* gfile,int sz) {
@@ -148,4 +148,4 @@ namespace gorgonwidgets {
 	}
 
 
-}
+} }

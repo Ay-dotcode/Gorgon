@@ -1,11 +1,11 @@
 #include "Indicatorbar.h"
 
-namespace gorgonwidgets {
-	Indicatorbar::Indicatorbar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, IndicatorbarDirections direction) : Progressbar(BP,container) {
+namespace gge { namespace widgets {
+	Indicatorbar::Indicatorbar(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container, IndicatorbarDirections direction) : Progressbar(BP,container) {
 		init(direction);
 	}
 
-	Indicatorbar::Indicatorbar(gorgonwidgets::SliderBP *BP, IndicatorbarDirections direction) : Progressbar(BP) {
+	Indicatorbar::Indicatorbar(gge::widgets::SliderBP *BP, IndicatorbarDirections direction) : Progressbar(BP) {
 		init(direction);
 	}
 
@@ -22,4 +22,4 @@ namespace gorgonwidgets {
 		OverlaySlidingDurationValueMod=200;
 		setNumberDistance(numberdistance);
 	}
-}
+} }

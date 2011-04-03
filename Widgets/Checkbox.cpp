@@ -1,7 +1,7 @@
 #include "Checkbox.h"
 
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 
 	void RadioButton::RadioBtn_Change() {
@@ -34,4 +34,4 @@ namespace gorgonwidgets {
 	bool			 RadioButton::isChecked() {
 		return checked;
 	}
-}
+} }

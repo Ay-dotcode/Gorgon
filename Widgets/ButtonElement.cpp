@@ -1,6 +1,6 @@
 #include "ButtonElement.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	ButtonElement::ButtonElement(void) {
 		font_guid=NULL;
 		sound_guid=NULL;
@@ -109,4 +109,4 @@ namespace gorgonwidgets {
 
 		return *this;
 	}
-}
+} }

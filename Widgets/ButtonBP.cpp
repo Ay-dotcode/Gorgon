@@ -1,6 +1,6 @@
 #include "ButtonBP.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	ButtonBP::ButtonBP(void) {
 	}
@@ -13,4 +13,4 @@ namespace gorgonwidgets {
 		
 		return btn;
 	}
-}
+} }

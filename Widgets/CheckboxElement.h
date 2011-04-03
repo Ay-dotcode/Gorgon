@@ -14,7 +14,7 @@ using namespace gre;
 using namespace gge;
 using namespace std;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	class CheckboxBase;
 
@@ -79,4 +79,4 @@ namespace gorgonwidgets {
 		ResizableObject *border;
 		ResourceBase *bordertemplate;
 	};
-}
+} }

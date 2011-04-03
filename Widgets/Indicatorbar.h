@@ -3,7 +3,7 @@
 #include "Progressbar.h"
 #include "SliderBase.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum IndicatorbarDirections {
 		IBD_Left=SS_Left,
 		IBD_Right=SS_Right,
@@ -12,7 +12,7 @@ namespace gorgonwidgets {
 	};
 	class Indicatorbar : public Progressbar {
 	public:
-		Indicatorbar(SliderBP *BP, gorgonwidgets::IWidgetContainer &container, IndicatorbarDirections direction);
+		Indicatorbar(SliderBP *BP, gge::widgets::IWidgetContainer &container, IndicatorbarDirections direction);
 		Indicatorbar(SliderBP *BP, IndicatorbarDirections direction);
 
 		virtual void SetRange(float min, float max) { minimum=min; maximum=max; setNumberDistance(numberdistance); }
@@ -44,4 +44,4 @@ namespace gorgonwidgets {
 
 		void init(IndicatorbarDirections direction);
 	};
-}
+} }

@@ -2,7 +2,7 @@
 
 #include "IWidgetContainer.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	struct DialogAction {
 		DialogAction() : Cancel(false) { }
 
@@ -20,4 +20,4 @@ namespace gorgonwidgets {
 
 		virtual bool isVisible() = 0;
 	};
-}
+} }

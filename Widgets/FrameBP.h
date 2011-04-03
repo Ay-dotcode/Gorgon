@@ -8,7 +8,7 @@
 #define GID_FRAME		0x05880000
 #define GID_FRAME_PROPS	0x05880101
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class SliderBP;
 	ResourceBase *LoadFrame(ResourceFile*,FILE*,int);
 
@@ -72,4 +72,4 @@ namespace gorgonwidgets {
 
 	};
 
-}
+} }

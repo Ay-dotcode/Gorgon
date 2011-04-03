@@ -3,14 +3,14 @@
 #include "Progressbar.h"
 #include "SliderBase.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum HeatbarDirections {
 		HBD_Left=SS_Left,
 		HBD_Right=SS_Right
 	};
 	class Heatbar : public Progressbar {
 	public:
-		Heatbar(SliderBP *BP, gorgonwidgets::IWidgetContainer &container, HeatbarDirections direction);
+		Heatbar(SliderBP *BP, gge::widgets::IWidgetContainer &container, HeatbarDirections direction);
 		Heatbar(SliderBP *BP, HeatbarDirections direction);
 
 		virtual void SetRange(float min, float max) { minimum=min; maximum=max; setNumberDistance(numberdistance); }
@@ -34,4 +34,4 @@ namespace gorgonwidgets {
 
 		void init(HeatbarDirections direction);
 	};
-}
+} }

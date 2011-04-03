@@ -6,8 +6,8 @@
 #define FRAME_SCROLL	3
 #endif
 
-namespace gorgonwidgets {
-	bool frame_scroll(int amount, MouseEventType event, int x, int y, void *data) {
+namespace gge { namespace widgets {
+	bool frame_scroll(int amount, input::MouseEventType event, int x, int y, void *data) {
 		Frame* frame=(Frame*)data;
 		if(frame->verticlescrollbar==NULL)
 			return false;
@@ -89,7 +89,7 @@ namespace gorgonwidgets {
 
 
 		if(bp.Scroller) {
-			this->SetVerticleScrollbar(new Scrollbar(bp.Scroller, ScrollbarAlignments::SA_Verticle));
+			this->SetVerticleScrollbar(new Scrollbar(bp.Scroller, SA_Verticle));
 		}
 	}
 
@@ -107,7 +107,7 @@ namespace gorgonwidgets {
 		BaseLayer.Y=0;
 		BaseLayer.EnableClipping=true;
 
-		MouseEventObject *mitem=mouseevent->Item;
+		input::MouseEventObject *mitem=mouseevent->Item;
 		mouseevent->Item->vscroll=frame_scroll;
 
 		IWidgetObject::GotFocusEvent.DoubleLink(GotFocusEvent);
@@ -165,7 +165,7 @@ namespace gorgonwidgets {
 		//r.DrawResized(layer, verticlescrollbar->GetWidgetObject()->X(),verticlescrollbar->GetWidgetObject()->Y(), 16,verticlescrollbar->GetWidgetObject()->Height(),Alignment::ALIGN_CENTER);
 		//r.DrawResized(layer, verticlescrollbar->GetWidgetObject()->X(),verticlescrollbar->GetWidgetObject()->Y(), 16,verticlescrollbar->GetWidgetObject()->Height(),Alignment::ALIGN_CENTER);
 
-		LinkedListOrderedIterator<IWidgetObject> it=Subobjects;
+		utils::LinkedListOrderedIterator<IWidgetObject> it=Subobjects;
 		IWidgetObject *item;
 
 		while(item=it) {
@@ -176,7 +176,7 @@ namespace gorgonwidgets {
 		if(verticlescrollbar) verticlescrollbar->GetWidgetObject()->Draw();
 	}
 
-	void Frame::SetVerticleScrollbar(gorgonwidgets::IScroller &scrollbar) {
+	void Frame::SetVerticleScrollbar(gge::widgets::IScroller &scrollbar) {
 		if(verticlescrollbar) delete verticlescrollbar;
 		verticlescrollbar=&scrollbar;
 
@@ -326,26 +326,26 @@ namespace gorgonwidgets {
 	}
 
 
-	bool Frame::mouse_event(MouseEventType event,int x,int y) {
-		if(event&MOUSE_EVENT_DOWN)
+	bool Frame::mouse_event(input::MouseEventType event,int x,int y) {
+		if(event&input::MOUSE_EVENT_DOWN)
 			IWidgetObject::SetFocus();
 
 		static int prevx=0,prevy=0;
 		static bool mdown=false;
 
 		if(AllowDrag) {
-			if(event==MOUSE_EVENT_LDOWN) {
+			if(event==input::MOUSE_EVENT_LDOWN) {
 				prevx=x;
 				prevy=y;
 
 				mdown=true;
 			}
 
-			if(event==MOUSE_EVENT_LUP) {
+			if(event==input::MOUSE_EVENT_LUP) {
 				mdown=false;
 			}
 
-			if(event==MOUSE_EVENT_MOVE && mdown) {
+			if(event==input::MOUSE_EVENT_MOVE && mdown) {
 				Move(this->x+x-prevx, this->y+y-prevy);
 				/*prevx=x;
 				prevy=y;*/
@@ -377,7 +377,7 @@ namespace gorgonwidgets {
 			case GID_FRAME_PROPS:
 				fread(&frame->PointerType,1,4,gfile);
 				fread(&tmpint,1,4,gfile);
-				frame->AutoBorderWidth=(bool)tmpint;
+				frame->AutoBorderWidth=tmpint!=0;
 				fread(&frame->OuterBorderWidth,4,4,gfile);
 				fread(&frame->ScrollbarMargin,4,4,gfile);
 				fread(&frame->InnerBorderMargin,4,4,gfile);
@@ -419,4 +419,4 @@ namespace gorgonwidgets {
 		Scroller		=dynamic_cast<SliderBP*		    >(file->FindObject(guid_scroller));
 	}
 
-}
+} }

@@ -9,7 +9,7 @@
 #include "RadioGroup.h"
 
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	class Checkbox : public CheckboxBase {
 	public:
@@ -52,4 +52,4 @@ namespace gorgonwidgets {
 	};
 
 
-}
+} }

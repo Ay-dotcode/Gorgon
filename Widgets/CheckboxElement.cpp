@@ -3,7 +3,7 @@
 #include "Rectangle.h"
 #include "CheckboxBase.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	CheckboxElement::CheckboxElement(void) : symbol(NULL), border(NULL), bordertemplate(NULL), Lines(1), base(NULL) {
 	}
 
@@ -278,4 +278,4 @@ namespace gorgonwidgets {
 
 		return *this;
 	}
-}
+} }
