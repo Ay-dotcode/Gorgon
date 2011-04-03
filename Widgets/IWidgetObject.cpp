@@ -1,20 +1,20 @@
 #include "IWidgetObject.h"
 #include "../Engine/GGEMain.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
-	bool fn_mouse_event(MouseEventType event,int x,int y,void *data) {
+	bool fn_mouse_event(input::MouseEventType event,int x,int y,void *data) {
 		IWidgetObject* iwo=(IWidgetObject*)data;
 		if(iwo->isVisible()) {
 			if(!iwo->isEnabled())
 				return true;
 
-			if(event==MOUSE_EVENT_OVER && iwo->pointerid)
+			if(event==input::MOUSE_EVENT_OVER && iwo->pointerid)
 				if(iwo->pointer)
 					iwo->pointerid=Pointers.Set(iwo->pointer);
 				else
 					iwo->pointerid=Pointers.Set(iwo->PointerType);
-			else if(event==MOUSE_EVENT_OUT && iwo->pointerid>0) {
+			else if(event==input::MOUSE_EVENT_OUT && iwo->pointerid>0) {
 				Pointers.Reset(iwo->pointerid);
 				iwo->pointerid=0;
 			}
@@ -130,4 +130,4 @@ namespace gorgonwidgets {
 	}
 
 
-}
+} }

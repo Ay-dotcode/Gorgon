@@ -3,7 +3,7 @@
 #include "IWidgetObject.h"
 
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class IScroller {
 	public:
 		IScroller() : ChangeEvent("Change", this) { }
@@ -19,4 +19,4 @@ namespace gorgonwidgets {
 
 		utils::EventChain<IScroller> ChangeEvent;
 	};
-}
+} }

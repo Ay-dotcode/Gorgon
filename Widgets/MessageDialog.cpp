@@ -3,11 +3,11 @@
 #include "VirtualFrame.h"
 #include "../Engine/GGEMain.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
-	extern 	LinkedList<VirtualFrame> toplevels;
+	extern 	utils::LinkedList<VirtualFrame> toplevels;
 
-	Collection<MessageDialog> MessageDialogs;
+	utils::Collection<MessageDialog> MessageDialogs;
 
 	MessageDialog::MessageDialog(std::string Message, int Width, int Height, int X, int Y) :
 		Message(Message), Title(), Width(Width), Height(Height), X(X), Y(Y),
@@ -151,11 +151,11 @@ namespace gorgonwidgets {
 		WR.Delete(btnOK);
 	}
 
-	void MessageDialog::btnOK_click	(empty_event_params p, Button &button, Any data, string event) {
+	void MessageDialog::btnOK_click	() {
 		Hide();
 	}
 
-	void MessageDialog::frame_focus	(empty_event_params p, Frame &frame, Any data, string event) {
+	void MessageDialog::frame_focus	(Frame &frame) {
 		frame.ZOrder();
 	}
 	MessageDialog &ShowMessage(string Message, string Title, int Width,int Height, int X,int Y) {
@@ -180,4 +180,4 @@ namespace gorgonwidgets {
 		return *dialog;
 	}
 
-}
+} }

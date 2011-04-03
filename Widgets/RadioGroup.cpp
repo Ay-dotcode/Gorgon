@@ -3,5 +3,5 @@
 using namespace std;
 using namespace gge;
 
-namespace gorgonwidgets {
-}
+namespace gge { namespace widgets {
+} }

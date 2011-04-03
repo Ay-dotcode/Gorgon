@@ -3,10 +3,10 @@
 #include "SliderBase.h"
 #include "IProgressor.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class Progressbar : public SliderBase, public IProgressor {
 	public:
-		Progressbar(SliderBP *BP, gorgonwidgets::IWidgetContainer &container);
+		Progressbar(SliderBP *BP, gge::widgets::IWidgetContainer &container);
 		Progressbar(SliderBP *BP);
 
 		virtual void SetRange(float min, float max) { minimum=min; maximum=max; }
@@ -44,4 +44,4 @@ namespace gorgonwidgets {
 	protected:
 		void init();
 	};
-}
+} }

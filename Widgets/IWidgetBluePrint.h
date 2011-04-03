@@ -8,7 +8,7 @@
 
 using namespace gge;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class IWidgetBluePrint {
 	public:
 		IWidgetBluePrint() : useAlphaAnimation(false), PointerType(Pointer::None) { }
@@ -18,4 +18,5 @@ namespace gorgonwidgets {
 		bool useAlphaAnimation;
 		Pointer::PointerTypes PointerType;
 	};
-}
+} }
+

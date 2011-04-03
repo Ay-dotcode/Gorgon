@@ -9,7 +9,7 @@
 using namespace gre;
 using namespace gge;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_RECT		0x05120000
 #define	GID_RECT_PROPS	0x05120101
@@ -127,6 +127,6 @@ namespace gorgonwidgets {
 
 	protected:
 
-		void init(gorgonwidgets::RectangleResource *parent);
+		void init(gge::widgets::RectangleResource *parent);
 	};
-}
+} }

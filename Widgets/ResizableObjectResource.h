@@ -8,7 +8,7 @@
 #define GID_RESIZABLEOBJECT			0x05130000
 #define GID_RESIZABLEOBJECT_PROPS	0x05130101
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class ResizableObjectResource : public gre::ResourceBase {
 		friend ResourceBase *LoadResizableObject(ResourceFile* File, FILE* Data, int Size);
 
@@ -39,4 +39,4 @@ namespace gorgonwidgets {
 	};
 
 	ResourceBase *LoadResizableObject(ResourceFile* File, FILE* Data, int Size);
-}
+} }

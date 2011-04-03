@@ -1,6 +1,6 @@
 #include "LinearOrganizer.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	IWidgetObject *LinearOrganizer::AddWidget(IWidgetObject *Widget) {
 		currentline->Objects.Add(new LinearOrganizerObject(*Widget, currentline));
@@ -85,4 +85,5 @@ out:
 	LinearOrganizerModifier LinearOrganizer::nextline=&lo_nextline_;
 	LinearOrganizerModifier LinearOrganizer::fixedmode=&lo_fixedmode_;
 	LinearOrganizerModifier LinearOrganizer::removeall=&lo_removeall_;
-}
+} }
+

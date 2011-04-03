@@ -7,7 +7,7 @@
 #include "../Engine/GGEMain.h"
 
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	bool fn_rule_mouse(input::MouseEventType event,int x,int y,void *data) {
 		return ((SliderBase*)data)->rule_mouse(event, x, y);
 	}
@@ -61,7 +61,7 @@ namespace gorgonwidgets {
 
 
 
-	SliderBase::SliderBase(gorgonwidgets::SliderBP *BluePrint, IWidgetContainer &Container, SliderStyles Style) :
+	SliderBase::SliderBase(gge::widgets::SliderBP *BluePrint, IWidgetContainer &Container, SliderStyles Style) :
 		IWidgetContainer(0, 0, 100, 100, 0),
 		IWidgetObject(Container),
 		BluePrint(BluePrint),
@@ -99,7 +99,7 @@ namespace gorgonwidgets {
 		init();
 	}
 
-	SliderBase::SliderBase(gorgonwidgets::SliderBP *BluePrint, SliderStyles Style) :
+	SliderBase::SliderBase(gge::widgets::SliderBP *BluePrint, SliderStyles Style) :
 		IWidgetContainer(0, 0, 100, 100, 0),
 		IWidgetObject(),
 		BluePrint(BluePrint),
@@ -168,7 +168,7 @@ namespace gorgonwidgets {
 		overlayresizer->Setup(gge::Rectangle(0,0,100,100),gge::Rectangle(0,0,100,100),0);
 
 
-		if(style!=SliderStyles::SS_Horizontal && style!=SliderStyles::SS_Verticle)
+		if(style!=SS_Horizontal && style!=SS_Verticle)
 			tickstyle=STS_None;
 		else
 			tickstyle=STS_Ticks;
@@ -299,7 +299,7 @@ namespace gorgonwidgets {
 		setSymbolPosition(true);
 	}
 
-	void SliderBase::SetStyles(gorgonwidgets::SliderStyleGroup *grp) {
+	void SliderBase::SetStyles(gge::widgets::SliderStyleGroup *grp) {
 		StyleGroup=grp;
 		if(grp->NormalStyle)
 			NormalStyle=new SliderElement(*grp->NormalStyle);
@@ -379,7 +379,7 @@ namespace gorgonwidgets {
 	void SliderBase::Draw() {
 		if(!isVisible()) return;
 
-		LinkedListOrderedIterator<IWidgetObject> it=Subobjects;
+		utils::LinkedListOrderedIterator<IWidgetObject> it=Subobjects;
 		IWidgetObject *item;
 
 		while(item=it) {
@@ -656,82 +656,82 @@ namespace gorgonwidgets {
 			IWidgetContainer::Deactivate();
 	}
 
-	bool SliderBase::keyb_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
+	bool SliderBase::keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
 		if(passivemode) return false;
-		if(event==KEYB_EVENT_DOWN && keycode==38) {
+		if(event==input::KEYB_EVENT_DOWN && keycode==38) {
 			goUp();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==KEYB_EVENT_UP && keycode==38) {
+		if(event==input::KEYB_EVENT_UP && keycode==38) {
 			stopUp();
 			if(!cancelclick)
 				Up();
 
 			return true;
 		}
-		if(event==KEYB_EVENT_DOWN && keycode==40) {
+		if(event==input::KEYB_EVENT_DOWN && keycode==40) {
 			goDown();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==KEYB_EVENT_UP && keycode==40) {
+		if(event==input::KEYB_EVENT_UP && keycode==40) {
 			stopDown();
 			if(!cancelclick)
 				Down();
 
 			return true;
 		}
-		if(event==KEYB_EVENT_DOWN && keycode==39) {
+		if(event==input::KEYB_EVENT_DOWN && keycode==39) {
 			goUp();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==KEYB_EVENT_UP && keycode==39) {
+		if(event==input::KEYB_EVENT_UP && keycode==39) {
 			stopUp();
 			if(!cancelclick)
 				Up();
 
 			return true;
 		}
-		if(event==KEYB_EVENT_DOWN && keycode==37) {
+		if(event==input::KEYB_EVENT_DOWN && keycode==37) {
 			goDown();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==KEYB_EVENT_UP && keycode==37) {
+		if(event==input::KEYB_EVENT_UP && keycode==37) {
 			stopDown();
 			if(!cancelclick)
 				Down();
 
 			return true;
 		}
-		if(event==KEYB_EVENT_DOWN && keycode==33) {
+		if(event==input::KEYB_EVENT_DOWN && keycode==33) {
 			golarge=true;
 			goUp();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==KEYB_EVENT_UP && keycode==33) {
+		if(event==input::KEYB_EVENT_UP && keycode==33) {
 			stopUp();
 			if(!cancelclick)
 				Up();
 
 			return true;
 		}
-		if(event==KEYB_EVENT_DOWN && keycode==34) {
+		if(event==input::KEYB_EVENT_DOWN && keycode==34) {
 			golarge=true;
 			goDown();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==KEYB_EVENT_UP && keycode==34) {
+		if(event==input::KEYB_EVENT_UP && keycode==34) {
 			stopDown();
 			if(!cancelclick)
 				Down();
@@ -1229,13 +1229,13 @@ namespace gorgonwidgets {
 		}
 
 	}
-	bool SliderBase::mouse_event(MouseEventType event,int x,int y) {
+	bool SliderBase::mouse_event(input::MouseEventType event,int x,int y) {
 		if(passivemode) return true;
 		switch(event) {
-		case MOUSE_EVENT_OVER:
+		case input::MOUSE_EVENT_OVER:
 			TickTransition(SS_Hover);
 			break;
-		case MOUSE_EVENT_OUT:
+		case input::MOUSE_EVENT_OUT:
 			if(!isFocussed()) 
 				TickTransition(SS_Normal);
 
@@ -1244,18 +1244,18 @@ namespace gorgonwidgets {
 		return true;
 	}
 
-	bool SliderBase::rule_mouse(MouseEventType event,int x,int y) {
+	bool SliderBase::rule_mouse(input::MouseEventType event,int x,int y) {
 		static int px, py;
 		if(passivemode) return true;
 
 		switch(event) {
-		case MOUSE_EVENT_OVER:
+		case input::MOUSE_EVENT_OVER:
 			RuleTransition(SS_Hover);
 			return mouse_event(event, x, y);
-		case MOUSE_EVENT_OUT:
+		case input::MOUSE_EVENT_OUT:
 			RuleTransition(SS_Normal);
 			return mouse_event(event, x, y);
-		case MOUSE_EVENT_LDOWN:
+		case input::MOUSE_EVENT_LDOWN:
 			if(!nofocus)
 				this->SetFocus();
 			RuleTransition(SS_Pressed);
@@ -1279,7 +1279,7 @@ namespace gorgonwidgets {
 
 			mstate=SS_Pressed;
 			break;
-		case MOUSE_EVENT_LUP:
+		case input::MOUSE_EVENT_LUP:
 			if(!isFocussed())
 				RuleTransition(SS_Normal);
 			else
@@ -1292,11 +1292,11 @@ namespace gorgonwidgets {
 
 			mstate=SS_Normal;
 			break;
-		case MOUSE_EVENT_LCLICK:
+		case input::MOUSE_EVENT_LCLICK:
 			ClickEvent();
 			
 			break;
-		case MOUSE_EVENT_MOVE:
+		case input::MOUSE_EVENT_MOVE:
 			if(mstate==SS_Pressed) {
 				if(ruleaction==SRA_JumpTo && (px!=x || py!=y))
 					MoveSymbolTo(x,y);
@@ -1310,20 +1310,20 @@ namespace gorgonwidgets {
 
 		return true;
 	}
-	bool SliderBase::symbol_mouse(MouseEventType event,int x,int y) {
+	bool SliderBase::symbol_mouse(input::MouseEventType event,int x,int y) {
 		static int px, py, ix, iy;
 		if(passivemode) return true;
 
 		switch(event) {
-		case MOUSE_EVENT_OVER:
+		case input::MOUSE_EVENT_OVER:
 			SymbolTransition(SS_Hover);
 
 			return mouse_event(event, x, y);
-		case MOUSE_EVENT_OUT:
+		case input::MOUSE_EVENT_OUT:
 			SymbolTransition(SS_Normal);
 
 			return mouse_event(event, x, y);
-		case MOUSE_EVENT_LDOWN:
+		case input::MOUSE_EVENT_LDOWN:
 			if(!nofocus)
 				this->SetFocus();
 			SymbolTransition(SS_Pressed);
@@ -1333,16 +1333,16 @@ namespace gorgonwidgets {
 
 			mstate=SS_Pressed;
 			break;
-		case MOUSE_EVENT_LUP:
+		case input::MOUSE_EVENT_LUP:
 			SymbolTransition(SS_Hover);
 
 			mstate=SS_Normal;
 			break;
-		case MOUSE_EVENT_LCLICK:
+		case input::MOUSE_EVENT_LCLICK:
 			ClickEvent();
 			
 			break;
-		case MOUSE_EVENT_MOVE:
+		case input::MOUSE_EVENT_MOVE:
 			if(mstate==SS_Pressed) {
 
 				if(x!=px || y!=py)
@@ -1358,15 +1358,15 @@ namespace gorgonwidgets {
 
 		return true;
 	}
-	bool SliderBase::tick_mouse(MouseEventType event,int x,int y) {
+	bool SliderBase::tick_mouse(input::MouseEventType event,int x,int y) {
 		static int px, py;
 		if(passivemode) return true;
 
 		switch(event) {
-		case MOUSE_EVENT_OVER:
-		case MOUSE_EVENT_OUT:
+		case input::MOUSE_EVENT_OVER:
+		case input::MOUSE_EVENT_OUT:
 			return mouse_event(event, x, y);
-		case MOUSE_EVENT_LDOWN:
+		case input::MOUSE_EVENT_LDOWN:
 			if(!nofocus)
 				this->SetFocus();
 
@@ -1376,7 +1376,7 @@ namespace gorgonwidgets {
 
 			mstate=SS_Pressed;
 			break;
-		case MOUSE_EVENT_LUP:
+		case input::MOUSE_EVENT_LUP:
 			if(goup)
 				stopUp();
 			if(godown)
@@ -1384,11 +1384,11 @@ namespace gorgonwidgets {
 
 			mstate=SS_Normal;
 			break;
-		case MOUSE_EVENT_LCLICK:
+		case input::MOUSE_EVENT_LCLICK:
 			ClickEvent();
 			
 			break;
-		case MOUSE_EVENT_MOVE:
+		case input::MOUSE_EVENT_MOVE:
 			if(mstate==SS_Pressed) {
 				if(px!=x || py!=y)
 					MoveSymbolToTick(x,y);
@@ -1402,15 +1402,15 @@ namespace gorgonwidgets {
 
 		return true;
 	}
-	bool SliderBase::text_mouse(MouseEventType event,int x,int y) {
+	bool SliderBase::text_mouse(input::MouseEventType event,int x,int y) {
 		static int px, py;
 		if(passivemode) return true;
 
 		switch(event) {
-		case MOUSE_EVENT_OVER:
-		case MOUSE_EVENT_OUT:
+		case input::MOUSE_EVENT_OVER:
+		case input::MOUSE_EVENT_OUT:
 			return mouse_event(event, x, y);
-		case MOUSE_EVENT_LDOWN:
+		case input::MOUSE_EVENT_LDOWN:
 			if(!nofocus)
 				this->SetFocus();
 
@@ -1420,7 +1420,7 @@ namespace gorgonwidgets {
 
 			mstate=SS_Pressed;
 			break;
-		case MOUSE_EVENT_LUP:
+		case input::MOUSE_EVENT_LUP:
 
 			if(goup)
 				stopUp();
@@ -1429,11 +1429,11 @@ namespace gorgonwidgets {
 
 			mstate=SS_Normal;
 			break;
-		case MOUSE_EVENT_LCLICK:
+		case input::MOUSE_EVENT_LCLICK:
 			ClickEvent();
 			
 			break;
-		case MOUSE_EVENT_MOVE:
+		case input::MOUSE_EVENT_MOVE:
 			if(mstate==SS_Pressed) {
 				if(px!=x || py!=y)
 					MoveSymbolToText(x,y);
@@ -1666,4 +1666,4 @@ namespace gorgonwidgets {
 			}
 		}
 	}
-}
+} }

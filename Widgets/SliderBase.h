@@ -19,7 +19,7 @@ using namespace geffects;
 
 #define SLIDER_CLICK_DOWNDURATION	100
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum SliderStates {
 		SS_Normal,
 		SS_Disabled,
@@ -264,4 +264,5 @@ namespace gorgonwidgets {
 		bool passivemode;
 		float prevrat;
 	};
-}
+} }
+

@@ -5,7 +5,7 @@
 #include "SliderBase.h"
 #include "IWidgetContainer.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum ScrollbarAlignments {
 		SA_Verticle=SS_Verticle,
 		SA_Horizontal=SS_Horizontal
@@ -13,11 +13,11 @@ namespace gorgonwidgets {
 
 	class Scrollbar : public IScroller, public SliderBase {
 	public:
-		Scrollbar(SliderBP *BP, gorgonwidgets::IWidgetContainer &container, ScrollbarAlignments Alignment);
+		Scrollbar(SliderBP *BP, gge::widgets::IWidgetContainer &container, ScrollbarAlignments Alignment);
 		Scrollbar(SliderBP *BP, ScrollbarAlignments Alignment);
 
 		virtual void setValue(int value) { 
-			if(alignment==SS_Verticle) value=(maximum-value); SliderBase::setValue((float)value); 
+			if(alignment==SS_Verticle) value=(int)(maximum-value); SliderBase::setValue((float)value); 
 		}
 		virtual int getValue() { 
 			if(alignment==SS_Verticle) return (int)(maximum-value); else return (int)value; 
@@ -45,4 +45,4 @@ namespace gorgonwidgets {
 		void slider_changed();
 		void init();
 	};
-}
+} }

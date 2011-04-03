@@ -12,7 +12,7 @@
 using namespace gre;
 using namespace gge;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_LINE		0x05110000
 #define	GID_LINE_PROPS	0x05110101
@@ -110,4 +110,4 @@ namespace gorgonwidgets {
 				return Margins((DrawStart ? Start->Width() : 0), 0, (DrawEnd   ? End->Width() : 0), 0);
 		}
 	};
-}
+} }

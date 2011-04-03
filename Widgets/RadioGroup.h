@@ -6,7 +6,7 @@
 #include "IWidgetObject.h"
 #include "../Utils/Collection.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class IRadioButton {
 	public:
 		virtual IRadioButton	&Clear()=0;
@@ -107,4 +107,4 @@ namespace gorgonwidgets {
 		}
 		IRadioButton *selected;
 	};
-}
+} }

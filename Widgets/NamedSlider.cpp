@@ -1,13 +1,13 @@
 #include "NamedSlider.h"
 
-namespace gorgonwidgets {
-	NamedSlider::NamedSlider(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, NamedSliderDirections direction) : 
+namespace gge { namespace widgets {
+	NamedSlider::NamedSlider(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container, NamedSliderDirections direction) : 
 		Slider(BP,container,(SliderStyles)direction), numberdistance(0)
 	{
 		init();
 	}
 
-	NamedSlider::NamedSlider(gorgonwidgets::SliderBP *BP, NamedSliderDirections direction) : 
+	NamedSlider::NamedSlider(gge::widgets::SliderBP *BP, NamedSliderDirections direction) : 
 		Slider(BP,(SliderStyles)direction), numberdistance(0)
 	{
 		init();
@@ -16,4 +16,5 @@ namespace gorgonwidgets {
 	void NamedSlider::init() {
 		Setup(STS_LocatedTicksNames,true,true,false,false,SRA_JumpTo,true,true);
 	}
-}
+} }
+

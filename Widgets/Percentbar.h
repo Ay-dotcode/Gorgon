@@ -3,14 +3,14 @@
 #include "Progressbar.h"
 #include "SliderBase.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum PercentbarDirections {
 		PBD_Top=SS_Top,
 		PBD_Bottom=SS_Bottom
 	};
 	class Percentbar : public Progressbar {
 	public:
-		Percentbar(SliderBP *BP, gorgonwidgets::IWidgetContainer &container, PercentbarDirections direction);
+		Percentbar(SliderBP *BP, gge::widgets::IWidgetContainer &container, PercentbarDirections direction);
 		Percentbar(SliderBP *BP, PercentbarDirections direction);
 
 		virtual void SetRange(float min, float max) { minimum=min; maximum=max; setNumberDistance(numberdistance); }
@@ -33,4 +33,4 @@ namespace gorgonwidgets {
 
 		void init(PercentbarDirections direction);
 	};
-}
+} }

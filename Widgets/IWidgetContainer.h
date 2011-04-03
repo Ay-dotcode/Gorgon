@@ -7,7 +7,7 @@
 #include "IWidgetContainer.h"
 
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class IWidgetObject;
 
 	class IWidgetContainer {
@@ -97,4 +97,4 @@ namespace gorgonwidgets {
 		bool allowtabswitch;
 		bool allowdefaultactions;
 	};
-}
+} }

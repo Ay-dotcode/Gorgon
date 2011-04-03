@@ -1,11 +1,11 @@
 #include "Progressbar.h"
 
-namespace gorgonwidgets {
-	Progressbar::Progressbar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container) : SliderBase(BP,container,SS_Horizontal) {
+namespace gge { namespace widgets {
+	Progressbar::Progressbar(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container) : SliderBase(BP,container,SS_Horizontal) {
 		init();
 	}
 
-	Progressbar::Progressbar(gorgonwidgets::SliderBP *BP) : SliderBase(BP,SS_Horizontal) {
+	Progressbar::Progressbar(gge::widgets::SliderBP *BP) : SliderBase(BP,SS_Horizontal) {
 		init();
 	}
 
@@ -21,4 +21,5 @@ namespace gorgonwidgets {
 
 		SetPassive();
 	}
-}
+} }
+

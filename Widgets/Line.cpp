@@ -2,7 +2,7 @@
 #include "../Resource/ResourceFile.h"
 #include <stdexcept>
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	LineResource::LineResource(void) {
 		animStart=NULL;
@@ -275,4 +275,4 @@ namespace gorgonwidgets {
 		this->Loop->setLoop(Loop);
 		End->setLoop(Loop);
 	}
-}
+} }

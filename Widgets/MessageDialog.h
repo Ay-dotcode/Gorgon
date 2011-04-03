@@ -5,7 +5,7 @@
 #include "Label.h"
 #include "Button.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	////Used to display messages. Dialog boxes should be 
 	/// pooled to increase performance. See WidgetRegistry for
 	/// pooled message dialogs.
@@ -51,8 +51,8 @@ namespace gorgonwidgets {
 		Label &title, &message;
 		Button &btnOK;
 
-		void btnOK_click	(empty_event_params p, Button &button, Any data, string event);
-		void frame_focus	(empty_event_params p, Frame &frame, Any data, string event);
+		void btnOK_click	();
+		void frame_focus	(Frame &frame);
 		
 	};
 
@@ -75,4 +75,4 @@ namespace gorgonwidgets {
 		return ShowMessage(msg.str(), "", Width,Height, X,Y);
 	}
 
-}
+} }

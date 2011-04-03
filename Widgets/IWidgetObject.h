@@ -10,7 +10,7 @@
 using namespace std;
 using namespace gge;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	struct keyboard_event_params {
 		input::KeyboardEventType event;
@@ -106,4 +106,5 @@ namespace gorgonwidgets {
 
 		IWidgetContainer *container;
 	};
-}
+} }
+

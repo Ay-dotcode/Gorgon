@@ -1,15 +1,15 @@
 #include "Scrollbar.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	void Scrollbar::slider_changed() {
 		IScroller::ChangeEvent();
 	}
-	Scrollbar::Scrollbar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, ScrollbarAlignments Alignment) : 
+	Scrollbar::Scrollbar(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container, ScrollbarAlignments Alignment) : 
 		SliderBase(BP,container,(SliderStyles)Alignment), alignment(Alignment)
 	{
 		init();
 	}
-	Scrollbar::Scrollbar(gorgonwidgets::SliderBP *BP, ScrollbarAlignments Alignment) : 
+	Scrollbar::Scrollbar(gge::widgets::SliderBP *BP, ScrollbarAlignments Alignment) : 
 		SliderBase(BP,(SliderStyles)Alignment), alignment(Alignment)
 	{
 		init();
@@ -57,4 +57,5 @@ namespace gorgonwidgets {
 		setMaximum(100);
 		setValue(0);
 	}
-}
+} }
+

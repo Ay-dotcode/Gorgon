@@ -1,11 +1,11 @@
 #include "Percentbar.h"
 
-namespace gorgonwidgets {
-	Percentbar::Percentbar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, PercentbarDirections direction) : Progressbar(BP,container) {
+namespace gge { namespace widgets {
+	Percentbar::Percentbar(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container, PercentbarDirections direction) : Progressbar(BP,container) {
 		init(direction);
 	}
 
-	Percentbar::Percentbar(gorgonwidgets::SliderBP *BP, PercentbarDirections direction) : Progressbar(BP) {
+	Percentbar::Percentbar(gge::widgets::SliderBP *BP, PercentbarDirections direction) : Progressbar(BP) {
 		init(direction);
 	}
 
@@ -25,4 +25,5 @@ namespace gorgonwidgets {
 		setNumberofTicks(11);
 		setNumberFormat(0,"%%");
 	}
-}
+} }
+

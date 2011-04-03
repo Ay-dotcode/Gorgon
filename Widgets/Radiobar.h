@@ -3,11 +3,11 @@
 #include "SliderBase.h"
 #include "SliderBP.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class Radiobar : public SliderBase {
 	public:
-		Radiobar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container);
-		Radiobar(gorgonwidgets::SliderBP *BP);
+		Radiobar(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container);
+		Radiobar(gge::widgets::SliderBP *BP);
 
 		void setValue(float value) { SliderBase::setValue(value); }
 		float getValue() { return value; }
@@ -39,11 +39,12 @@ namespace gorgonwidgets {
 		bool isShowingTicks() { return tickstyle&STS_Ticks; }
 		bool isShowingButtons() { return showbuttons; }
 
-		EventChain<Radiobar, slider_change_event_params> ChangeEvent;
+		utils::EventChain<Radiobar, slider_change_event_params> ChangeEvent;
 
 	protected:
 		float tickdistance;
 
 		void init();
 	};
-}
+} }
+

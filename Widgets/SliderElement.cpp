@@ -1,7 +1,7 @@
 #include "SliderElement.h"
 #include "Slider.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	SliderElement::SliderElement() {
 		font_guid=NULL;
 		sound_guid=NULL;
@@ -240,7 +240,7 @@ namespace gorgonwidgets {
 
 		return *this;
 	}
-	SliderElement &SliderElement::DrawTickNames(Colorizable2DLayer &Target, float Distance, Collection<SliderLocationName> &Texts, bool useLocations, float min, float max) {
+	SliderElement &SliderElement::DrawTickNames(Colorizable2DLayer &Target, float Distance, utils::Collection<SliderLocationName> &Texts, bool useLocations, float min, float max) {
 		float x, y;
 
 		if(useLocations) {
@@ -323,7 +323,7 @@ namespace gorgonwidgets {
 
 		return *this;
 	}
-	SliderElement &SliderElement::DrawLocatedTicks(WidgetLayer &Target, float Distance, Collection<SliderLocationName> &Texts, float min, float max) {
+	SliderElement &SliderElement::DrawLocatedTicks(WidgetLayer &Target, float Distance, utils::Collection<SliderLocationName> &Texts, float min, float max) {
 		float x, y;
 
 		switch(style) {
@@ -382,4 +382,4 @@ namespace gorgonwidgets {
 
 		return *this;
 	}
-}
+} }

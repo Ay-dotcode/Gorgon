@@ -1,7 +1,7 @@
 #include "SliderBP.h"
 #include <assert.h>
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	SliderBP::SliderBP(void) {
 		TickSound=NULL;
@@ -23,4 +23,5 @@ namespace gorgonwidgets {
 
 		TickSound=(SoundResource*)file->FindObject(guid_ticksound);
 	}
-}
+} }
+

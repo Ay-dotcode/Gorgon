@@ -2,7 +2,7 @@
 #include "../Resource/ResourceFile.h"
 #include <stdexcept>
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	ResourceBase* LoadRectangleResource(ResourceFile* file,FILE* gfile,int sz) {
 		RectangleResource *Rect =new RectangleResource();
 
@@ -112,7 +112,7 @@ namespace gorgonwidgets {
 		TileCV=false;
 	}
 
-	void ResizableRect::init(gorgonwidgets::RectangleResource *parent) {
+	void ResizableRect::init(gge::widgets::RectangleResource *parent) {
 		if(parent==NULL)
 			throw std::runtime_error("Supplied Resizable Rectangle parent is Null");
 		Parent=parent;
@@ -296,4 +296,4 @@ namespace gorgonwidgets {
 		animB->setLoop(Loop);
 		animBR->setLoop(Loop);
 	}
-}
+} }

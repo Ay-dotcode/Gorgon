@@ -3,7 +3,7 @@
 #include "WidgetMain.h"
 #include "../Engine/GGEMain.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	IWidgetContainer::IWidgetContainer(LayerBase &Parent, int X, int Y, int W, int H, int Order) :
 		BackgroundRedrawEvent("BackgroudRedraw", this),Order(Order),
@@ -51,7 +51,7 @@ namespace gorgonwidgets {
 
 		this->Deactivate();
 	
-		LinkedListIterator<IWidgetObject>it= Subobjects;
+		utils::LinkedListIterator<IWidgetObject>it= Subobjects;
 		IWidgetObject* widget;
 		while(widget=it)
 			widget->container_hide();
@@ -70,7 +70,7 @@ namespace gorgonwidgets {
 
 	IWidgetObject *IWidgetContainer::AddWidget(IWidgetObject *Widget) {
 		Widget->Detach();
-		LinkedListItem<IWidgetObject> *item=Subobjects.AddItem(Widget,Subobjects.HighestOrder()+1);
+		utils::LinkedListItem<IWidgetObject> *item=Subobjects.AddItem(Widget,Subobjects.HighestOrder()+1);
 		Widget->container=this;
 
 		ObjectLayer.Add(Widget->getLayer(),-item->getOrder());
@@ -88,7 +88,7 @@ namespace gorgonwidgets {
 
 	IWidgetObject &IWidgetContainer::AddWidget(IWidgetObject &Widget) {
 		Widget.Detach();
-		LinkedListItem<IWidgetObject> *item=Subobjects.AddItem(&Widget,Subobjects.HighestOrder()+1);
+		utils::LinkedListItem<IWidgetObject> *item=Subobjects.AddItem(&Widget,Subobjects.HighestOrder()+1);
 		Widget.container=this;
 
 		ObjectLayer.Add(Widget.getLayer(),-item->getOrder());
@@ -107,7 +107,7 @@ namespace gorgonwidgets {
 	IWidgetObject *IWidgetContainer::AddDialog(IWidgetObject *Widget) {
 		Widget->Detach();
 		Widget->container=this;
-		LinkedListItem<IWidgetObject> *item=Subobjects.AddItem(Widget,Subobjects.HighestOrder()+1);
+		utils::LinkedListItem<IWidgetObject> *item=Subobjects.AddItem(Widget,Subobjects.HighestOrder()+1);
 
 		DialogLayer->Add(Widget->getLayer(),-item->getOrder());
 
@@ -175,7 +175,7 @@ namespace gorgonwidgets {
 	void IWidgetContainer::FocusNext() {
 		IWidgetObject *object=NULL;
 
-		LinkedListItem<IWidgetObject>* item=Subobjects.FindListItem(Focussed);
+		utils::LinkedListItem<IWidgetObject>* item=Subobjects.FindListItem(Focussed);
 
 		if(item) {
 			while(item->getOrderedNext()) {
@@ -204,7 +204,7 @@ namespace gorgonwidgets {
 	void IWidgetContainer::FocusPrevious() {
 		IWidgetObject *object=NULL;
 
-		LinkedListItem<IWidgetObject>* item=Subobjects.FindListItem(Focussed);
+		utils::LinkedListItem<IWidgetObject>* item=Subobjects.FindListItem(Focussed);
 
 		if(item) {
 			while(item->getOrderedPrevious()) {
@@ -216,7 +216,7 @@ namespace gorgonwidgets {
 			}
 
 			if(!object) {
-				LinkedListOrderedIterator<IWidgetObject> it=Subobjects.GetReverseOrderedIterator();
+				utils::LinkedListOrderedIterator<IWidgetObject> it=Subobjects.GetReverseOrderedIterator();
 				
 				while(IWidgetObject *item=it)
 					if(!item->nofocus) {
@@ -232,7 +232,7 @@ namespace gorgonwidgets {
 			object->SetFocus();
 	}
 
-	bool IWidgetContainer::keyboard_event_subitems(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
+	bool IWidgetContainer::keyboard_event_subitems(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
 		bool ret=false;
 		if(this->Focussed) {
 			if(this->Focussed->isEnabled() && this->Focussed->isVisible())
@@ -243,15 +243,15 @@ namespace gorgonwidgets {
 			return true;
 	}
 
-	bool IWidgetContainer::keyboard_event_actions(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
+	bool IWidgetContainer::keyboard_event_actions(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
 		if(allowtabswitch) {
 			//do default button handling
-			if(event==KEYB_EVENT_CHR && keycode==9) {
-				if((modifier&~KeyboardModifier::Alternate)==KeyboardModifier::None) {
+			if(event==input::KEYB_EVENT_CHR && keycode==9) {
+				if((modifier&~input::KeyboardModifier::Alternate)==input::KeyboardModifier::None) {
 					FocusNext();
 					return true;
 				}
-				else if((modifier&~KeyboardModifier::Alternate)==KeyboardModifier::Shift) {
+				else if((modifier&~input::KeyboardModifier::Alternate)==input::KeyboardModifier::Shift) {
 					FocusPrevious();
 					return true;
 				}
@@ -259,12 +259,12 @@ namespace gorgonwidgets {
 		}
 	
 		if(allowdefaultactions) {
-			if(event==KeyboardEventType::KEYB_EVENT_DOWN && keycode==13 && modifier==KeyboardModifier::None) {
+			if(event==input::KeyboardEventType::KEYB_EVENT_DOWN && keycode==13 && modifier==input::KeyboardModifier::None) {
 				if(Default)
 					return Default->keyb_event(event,keycode,modifier);
 			}
 
-			if(event==KEYB_EVENT_DOWN && keycode==27 && modifier==KeyboardModifier::None) {
+			if(event==input::KEYB_EVENT_DOWN && keycode==27 && modifier==input::KeyboardModifier::None) {
 				if(Cancel)
 					return Cancel->keyb_event(event,13,modifier);
 
@@ -275,7 +275,7 @@ namespace gorgonwidgets {
 		return false;
 	}
 
-	bool IWidgetContainer::keyboard_event(KeyboardEventType event,int keycode,KeyboardModifier::Type modifier) {
+	bool IWidgetContainer::keyboard_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
 
 		if(keyboard_event_subitems(event,keycode,modifier))
 			return true;
@@ -283,4 +283,4 @@ namespace gorgonwidgets {
 		return keyboard_event_actions(event,keycode,modifier);
 	}
 
-}
+} }

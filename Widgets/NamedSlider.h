@@ -3,7 +3,7 @@
 #include "Slider.h"
 #include "SliderBase.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	enum NamedSliderDirections {
 		NSD_Left=SS_Left,
 		NSD_Right=SS_Right,
@@ -12,7 +12,7 @@ namespace gorgonwidgets {
 	};
 	class NamedSlider : public Slider {
 	public:
-		NamedSlider(SliderBP *BP, gorgonwidgets::IWidgetContainer &container, NamedSliderDirections direction);
+		NamedSlider(SliderBP *BP, gge::widgets::IWidgetContainer &container, NamedSliderDirections direction);
 		NamedSlider(SliderBP *BP, NamedSliderDirections direction);
 
 		virtual void SetRange(float min, float max) { minimum=min; maximum=max; setNumberDistance(numberdistance); }
@@ -34,4 +34,5 @@ namespace gorgonwidgets {
 
 		void init();
 	};
-}
+} }
+

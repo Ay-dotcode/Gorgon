@@ -1,14 +1,14 @@
 #include "Radiobar.h"
 
-namespace gorgonwidgets {
-	Radiobar::Radiobar(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container) : 
+namespace gge { namespace widgets {
+	Radiobar::Radiobar(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container) : 
 		SliderBase(BP,container,SS_Bottom),
 		ChangeEvent("Change", this)
 	{
 		init();
 	}
 
-	Radiobar::Radiobar(gorgonwidgets::SliderBP *BP) : 
+	Radiobar::Radiobar(gge::widgets::SliderBP *BP) : 
 		SliderBase(BP,SS_Bottom),
 		ChangeEvent("Change", this)
 	{
@@ -32,4 +32,5 @@ namespace gorgonwidgets {
 
 		SliderBase::ChangeEvent.DoubleLink(ChangeEvent);
 		}
-}
+} }
+

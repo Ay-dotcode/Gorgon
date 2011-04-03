@@ -3,7 +3,7 @@
 #include "Rectangle.h"
 #include <stdexcept>
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	ResourceBase *LoadResizableObject(ResourceFile* File, FILE* Data, int Size) {
 		ResizableObjectResource *r=new ResizableObjectResource();
 		r->file=File;
@@ -100,4 +100,4 @@ namespace gorgonwidgets {
 			}
 		}
 	}
-}
+} }

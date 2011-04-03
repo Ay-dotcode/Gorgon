@@ -8,7 +8,7 @@
 
 using namespace gre;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 #define GID_SLIDER			0x05860000
 #define GID_SLIDER_PROPS	0x05860101
@@ -34,4 +34,4 @@ namespace gorgonwidgets {
 		Guid *guid_ticksound;
 		ResourceFile *file;
 	};
-}
+} }

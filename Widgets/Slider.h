@@ -3,11 +3,11 @@
 #include "SliderBase.h"
 #include "SliderBP.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class Slider : public SliderBase {
 	public:
-		Slider(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, SliderStyles Style);
-		Slider(gorgonwidgets::SliderBP *BP, SliderStyles Style);
+		Slider(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container, SliderStyles Style);
+		Slider(gge::widgets::SliderBP *BP, SliderStyles Style);
 
 		void setValue(float value) { SliderBase::setValue(value); }
 		float getValue() { return value; }
@@ -78,11 +78,12 @@ namespace gorgonwidgets {
 			return ss.str();
 		}
 
-		utils::EventChain<Slider> ChangeEvent;
+		utils::EventChain<Slider, slider_change_event_params> ChangeEvent;
 
 	protected:
 		float tickdistance;
 
 		void init();
 	};
-}
+} }
+

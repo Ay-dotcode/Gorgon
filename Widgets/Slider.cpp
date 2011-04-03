@@ -1,14 +1,14 @@
 #include "Slider.h"
 
-namespace gorgonwidgets {
-	Slider::Slider(gorgonwidgets::SliderBP *BP, gorgonwidgets::IWidgetContainer &container, SliderStyles Style) : 
+namespace gge { namespace widgets {
+	Slider::Slider(gge::widgets::SliderBP *BP, gge::widgets::IWidgetContainer &container, SliderStyles Style) : 
 		SliderBase(BP,container,Style),
 		ChangeEvent("Change", this)
 	{
 		init();
 	}
 
-	Slider::Slider(gorgonwidgets::SliderBP *BP,  SliderStyles Style) : 
+	Slider::Slider(gge::widgets::SliderBP *BP,  SliderStyles Style) : 
 		SliderBase(BP,Style),
 		ChangeEvent("Change", this)
 	{
@@ -42,4 +42,5 @@ namespace gorgonwidgets {
 
 		SliderBase::ChangeEvent.DoubleLink(ChangeEvent);
 	}
-}
+} }
+

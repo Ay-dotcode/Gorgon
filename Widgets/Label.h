@@ -7,7 +7,7 @@
 using namespace gge;
 using namespace gre;
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 	class Label : public IWidgetObject {
 	public:
 		BitmapFontResource *Font;
@@ -131,4 +131,5 @@ namespace gorgonwidgets {
 			IWidgetObject::Resize(Font->TextWidth(text), Font->FontHeight());
 		}
 	};
-}
+} }
+

@@ -6,7 +6,7 @@
 #include "WidgetRegistry.h"
 #include "../Utils/Size2D.h"
 
-namespace gorgonwidgets {
+namespace gge { namespace widgets {
 
 	class LinearOrganizerLine;
 	class LinearOrganizerColumn;
@@ -218,4 +218,5 @@ namespace gorgonwidgets {
 	inline void lo_fixedmode_(LinearOrganizer &organizer) { organizer.currentsizemode=fixedsize; }
 	inline void lo_removeall_(LinearOrganizer &organizer) { organizer.RemoveAll(); }
 
-}
+} }
+
