@@ -553,7 +553,7 @@ namespace gge { namespace widgets {
 	}
 
 
-	bool CheckboxBase::mouse_event(input::MouseEventType event,int x,int y) {
+	bool CheckboxBase::mouse(input::MouseEventType event,int x,int y) {
 		if(!isvisible || !container->isVisible())
 			return false;
 
@@ -592,22 +592,22 @@ namespace gge { namespace widgets {
 		return true;
 	}
 
-	bool CheckboxBase::keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
+	bool CheckboxBase::keyboard(input::KeyboardEvent::Type event,int keycode) {
 		if(!isvisible)
 			return false;
 
-		if((modifier==input::KeyboardModifier::None || modifier==input::KeyboardModifier::Alternate) && event==input::KEYB_EVENT_DOWN && keycode==13) {
+		if(!input::KeyboardModifier::Check() && event==input::KeyboardEvent::Down && keycode==13) {
 			if(!sticky || !checked) {
 				SimulateClicked();
 			}
 			return true;
 		}
-		if(modifier==input::KeyboardModifier::None && event==input::KEYB_EVENT_DOWN && keycode==32) {
+		if(!input::KeyboardModifier::Check() && event==input::KeyboardEvent::Down && keycode==32) {
 			SimulatePressed();
 
 			return true;
 		}
-		if(modifier==input::KeyboardModifier::None && event==input::KEYB_EVENT_UP && keycode==32) {
+		if(!input::KeyboardModifier::Check() && event==input::KeyboardEvent::Up && keycode==32) {
 			SimulateRelease();
 			if(!sticky || !checked) {
 				Transition(CS_Pressed,false,false,!checked);

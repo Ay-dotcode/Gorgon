@@ -36,21 +36,21 @@
 
 
 namespace gge { namespace utils {
-	template <class T_, class SK_=float, int growth=10>
+	template <class T_, class SK_=int, int growth=10>
 	class LinkedList;
-	template <class T_, class SK_=float, int growth=10>
+	template <class T_, class SK_=int, int growth=10>
 	class LinkedListIterator;
-	template <class T_, class SK_=float, int growth=10>
+	template <class T_, class SK_=int, int growth=10>
 	class LinkedListOrderedIterator;
-	template <class T_, class SK_=float, int growth=10>
+	template <class T_, class SK_=int, int growth=10>
 	class LinkedListItemIterator;
-	template <class T_, class SK_=float, int growth=10>
+	template <class T_, class SK_=int, int growth=10>
 	class LinkedListOrderedItemIterator;
 
 	////This class is a wrapper to all objects that will be added
 	/// to a linked list. This wrapper contains linked list structure,
 	/// order, the item and few other useful functions.
-	template <class T_, class SK_=float, int growth=10>
+	template <class T_, class SK_=int, int growth=10>
 	class LinkedListItem {
 		friend class LinkedList<T_,SK_,growth>;
 		friend class LinkedListIterator<T_,SK_,growth>;

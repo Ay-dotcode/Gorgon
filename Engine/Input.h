@@ -6,6 +6,7 @@
 #include "../Utils/Utils.h"
 
 #include "OS.h"
+#include "../Utils/ConsumableEvent.h"
 
 namespace gge { namespace input {
 	class BasicPointerTarget;
@@ -17,9 +18,7 @@ namespace gge { namespace input {
 			Shift		= 1,
 			Ctrl		= 2,
 			Alt			= 4,
-			Win			= 8,
-			Menu		=16,
-			Alternate	=32,
+			Super		= 8,
 
 			ShiftCtrl	= Shift | Ctrl ,
 			ShiftAlt	= Shift | Alt  ,
@@ -33,11 +32,11 @@ namespace gge { namespace input {
 		////Checks the the current state of the keyboard if there are any real modifiers
 		/// in effect (Namely control, alt, and windows keys)
 		static bool Check(Type m1) {
-			return m1&Ctrl || m1&Shift || m1&Win;
+			return m1&Ctrl || m1&Alt || m1&Super;
 		}
 
 		static bool Check() {
-			return Current&Ctrl || Current&Shift || Current&Win;
+			return Current&Ctrl || Current&Alt || Current&Super;
 		}
 
 		static Type Remove(Type m1, Type m2) {
@@ -54,6 +53,10 @@ namespace gge { namespace input {
 
 		static void Add(Type m2) {
 			Current=Type(Current | m2);
+		}
+
+		static bool IsModified() {
+			return Check();
 		}
 
 
@@ -81,6 +84,24 @@ namespace gge { namespace input {
 		return KeyboardModifier::Type( m1&m2 );
 	}
 
+	class KeyCodes {
+	public:
+		static const int Shift;
+		static const int Control;
+		static const int Alt;
+		static const int Super;
+
+		//!TODO: list all keycode except ASCII ones
+/*		static const int Home;
+		static const int End;
+		static const int PageUp;
+		static const int PageDown;
+		static const int Left;
+		static const int Top;
+		static const int Right;
+		static const int Bottom;
+	*/
+	};
 
 
 
@@ -155,13 +176,18 @@ namespace gge { namespace input {
 	};
 
 	////Types of keyboard events
-	enum KeyboardEventType {
-		////A character is typed (O/S controlled, i.e. repeating keys)
-		KEYB_EVENT_CHR,
-		////A key is pressed
-		KEYB_EVENT_DOWN,
-		////A key is released
-		KEYB_EVENT_UP
+	class KeyboardEvent {
+	public:
+		enum Type {
+			////A character is typed (O/S controlled, i.e. repeating keys)
+			Char,
+			////A key is pressed
+			Down,
+			////A key is released
+			Up
+		} event;
+
+		int keycode;
 	};
 
 	struct MouseEventObject;
@@ -171,8 +197,6 @@ namespace gge { namespace input {
 	typedef bool (*MouseEvent)(MouseEventType event, int x, int y, void *data);
 	////Defines how a mouse scroll event handing function should be
 	typedef bool (*MouseScrollEvent)(int amount, MouseEventType event, int x, int y, void *data);
-	////Defines how a keyboard event handling function should be
-	typedef bool (*KeyboardEvent)(KeyboardEventType event, int keycode, KeyboardModifier::Type modifier, void *data);
 
 	////Mouse event object is used internally to keep track of mouse event handlers
 	struct MouseEventObject {
@@ -208,45 +232,7 @@ namespace gge { namespace input {
 		////Whether this mouse event is enabled
 		bool Enabled;
 	};
-
-	////Keyboard event objects are internally used to track keyboard event handlers
-	struct KeyboardEventObject {
-		////This is the event handler that is fired when a char is typed
-		/// either by pressing a key or pressing a key and holding it to repeat
-		KeyboardEvent chr;
-		////This event handler is called when a key is pressed
-		KeyboardEvent down;
-		////This event handler is called when a key is released
-		KeyboardEvent up;
-		////ID of the keyboard event, can be used to enable/disable/cancel this
-		/// event set
-		int id;
-		////Any data that is left to be passed to event handlers
-		void *data;
-		////Whether these events accept modified keys (i.e. when a modifier is set)
-		bool Modified;
-		////Whether this 
-		bool Enabled;
-	};
 	extern MouseEventObject *pressedObject;
-	
-	////Registers a keyboard event handler object, event handler function should be in this format:
-	/// bool (KeyboardEventType event, int keycode, KeyboardModifier modifier, void *data)
-	/// and should return true if the key is processed or blocked and false if the key should be passed
-	/// to next event object
-	///@data	: the data to be passed to handlers
-	///@Char	: This is the event handler that is fired when a char is typed
-	/// either by pressing a key or pressing a key and holding it to repeat
-	///@Down	: This event handler is called when a key is pressed
-	///@Up		: This event handler is called when a key is released
-	int	  RegisterKeyboardEvent(void *data,KeyboardEvent Char,KeyboardEvent Down=NULL,KeyboardEvent Up=NULL,bool AllowModified=false);
-	////Unregisters a keyboard event object
-	///@id		: the identifier returned by RegisterKeyboardEvent function
-	void  UnregisterKeyboardEvent(int id);
-	////Disables a keyboard event, unlike unregister this state is not permanent
-	void  DisableKeyboardEvent(int Index);
-	////Enables a keyboard event
-	void  EnableKeyboardEvent (int Index);
 
 
 	namespace system {
@@ -361,15 +347,15 @@ namespace gge { namespace input {
 		virtual bool PropagateMouseOverEvent(MouseEventType event, int x, int y, void *data);
 		////This internal function propagates out event
 		virtual bool PropagateMouseOutEvent(MouseEventType event, int x, int y, void *data);
-		////This internal function propagates verticle scroll event
+		////This internal function propagates vertical scroll event
 		virtual bool PropagateMouseVScrollEvent(int amount, MouseEventType event, int x, int y, void *data);
 		////This internal function propagates horizontal scroll event
 		virtual bool PropagateMouseHScrollEvent(int amount, MouseEventType event, int x, int y, void *data);
 
 	};
 
+	extern utils::ConsumableEvent<utils::Empty, KeyboardEvent> KeyboardEvents;
 	extern MouseEventType MouseButtons;
-	extern utils::Collection<KeyboardEventObject> KeyboardEventObjects;
 	////This is the object that is hovered, if mouse moves out of it
 	/// it should receive mouse out event
 	extern MouseEventObject *hoveredObject;

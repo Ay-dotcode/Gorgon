@@ -68,7 +68,7 @@ namespace gge { namespace widgets {
 		virtual gge::Basic2DLayer	&GetBackgroundLayer() { return BackgroundLayer; }
 		virtual void				RedrawBackground() { BackgroundLayer.Clear(); BackgroundRedrawEvent(); }
 
-		virtual bool keyboard_event(gge::input::KeyboardEventType event,int keycode,gge::input::KeyboardModifier::Type modifier);
+		virtual bool keyboard_event(gge::input::KeyboardEvent::Type event,int keycode);
 
 		int Order;
 
@@ -80,8 +80,8 @@ namespace gge { namespace widgets {
 
 	protected:
 
-		virtual bool keyboard_event_subitems(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
-		virtual bool keyboard_event_actions(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
+		virtual bool keyboard_event_subitems(input::KeyboardEvent::Type event,int keycode);
+		virtual bool keyboard_event_actions(input::KeyboardEvent::Type event,int keycode);
 
 		WidgetLayer  BaseLayer;
 		WidgetLayer  ExtenderLayer;

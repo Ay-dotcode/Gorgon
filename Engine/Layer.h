@@ -27,8 +27,8 @@ namespace gge {
 
 		LayerBase() : parent(NULL) { }
 
-		virtual LayerBase *Add(LayerBase *layer, int Order=0) { if(layer->parent) layer->parent->Remove(layer); layer->parent=this; SubLayers.AddItem(layer, (float)Order); return layer; }
-		virtual LayerBase &Add(LayerBase &layer, int Order=0) { if(layer.parent) layer.parent->Remove(layer); layer.parent=this; SubLayers.AddItem(&layer, (float)Order); return layer; }
+		virtual LayerBase *Add(LayerBase *layer, int Order=0) { if(layer->parent) layer->parent->Remove(layer); layer->parent=this; SubLayers.AddItem(layer, Order); return layer; }
+		virtual LayerBase &Add(LayerBase &layer, int Order=0) { if(layer.parent) layer.parent->Remove(layer); layer.parent=this; SubLayers.AddItem(&layer, Order); return layer; }
 		virtual void Remove(LayerBase *layer) { SubLayers.Remove(layer); }
 		virtual void Remove(LayerBase &layer) { SubLayers.Remove(&layer); }
 		////Size of layer
@@ -45,7 +45,7 @@ namespace gge {
 
 		void setOrder(int Order) {
 			if(parent)
-				parent->SubLayers.FindListItem(this)->setOrder((float)Order);
+				parent->SubLayers.FindListItem(this)->setOrder(Order);
 		}
 
 		void OrderToTop() {

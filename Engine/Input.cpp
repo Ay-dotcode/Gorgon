@@ -8,16 +8,16 @@ namespace gge { namespace input {
 	bool KeyboardModifier::isAlternate=false;
 	KeyboardModifier::Type KeyboardModifier::Current=KeyboardModifier::None;
 
-	Collection<KeyboardEventObject> KeyboardEventObjects;
 	LinkedList<BasicPointerTarget> PointerTargets;
 	MouseEventObject *hoveredObject=NULL;
 	MouseEventObject *pressedObject=NULL;
 	MouseEventType MouseButtons=MOUSE_EVENT_NONE;
+	utils::ConsumableEvent<utils::Empty, KeyboardEvent> KeyboardEvents;
 
 	bool hoverfound=false;
 
 	void Initialize() {
-		
+
 	}
 
 	LinkedListItem<BasicPointerTarget> *AddPointerTarget(BasicPointerTarget *target, int order) {
@@ -49,7 +49,7 @@ namespace gge { namespace input {
 				break;
 		}
 	}
-	
+
 	namespace system {
 		void ProcessMousePosition(os::WindowHandle Window) {
 			Point pnt;
@@ -140,97 +140,64 @@ namespace gge { namespace input {
 		}
 
 		void ProcessVScroll(int amount,int x,int y){
-
 			propagatescrollevent(amount, MOUSE_EVENT_VSCROLLL, x, y);
 		}
 
 		void ProcessHScroll(int amount,int x,int y){
-
 			propagatescrollevent(amount, MOUSE_EVENT_HSCROLLL, x, y);
 		}
 
-		int	 RegisterKeyboardEvent(void *data,KeyboardEvent Char,KeyboardEvent Down,KeyboardEvent Up,bool Modified) {
-			KeyboardEventObject *obj=new KeyboardEventObject;
-			
-			obj->data=data;
-			obj->chr=Char;
-			obj->down=Down;
-			obj->up=Up;
-			obj->id=KeyboardEventObjects.Add(obj);
-			obj->Modified=Modified;
-			obj->Enabled=true;
-
-
-			return obj->id;
-		}
-
-		void UnregisterKeyboardEvent(int id) {
-			KeyboardEventObjects.Delete(id);
-		}
 
 		void ProcessChar(int Char) {
-			KeyboardEventObject *kevent;
-			KeyboardEventObjects.ResetIteration(true);
-			while(kevent=KeyboardEventObjects.previous()) {
-				if(kevent->Enabled && kevent->chr && (!KeyboardModifier::Check() || kevent->Modified))
-					if(kevent->chr(KEYB_EVENT_CHR, Char, KeyboardModifier::Current, kevent->data))
-						return;
-			}
+			KeyboardEvent params;
+			params.keycode=Char;
+			params.event=KeyboardEvent::Char;
+
+			KeyboardEvents(params);
 		}
 
 		void ProcessKeyDown(int Key) {
-			KeyboardEventObject *kevent;
-			KeyboardEventObjects.ResetIteration(true);
-			while(kevent=KeyboardEventObjects.previous()) {
-				if(kevent->Enabled && kevent->down && (!KeyboardModifier::Check() || kevent->Modified))
-					if(kevent->down(KEYB_EVENT_DOWN, Key, KeyboardModifier::Current, kevent->data))
-						return;
-			}
+			KeyboardEvent params;
+			params.keycode=Key;
+			params.event=KeyboardEvent::Down;
+
+			KeyboardEvents(params);
 		}
 
 		void ProcessKeyUp(int Key) {
-		KeyboardEventObject *kevent;
-		KeyboardEventObjects.ResetIteration(true);
-		while(kevent=KeyboardEventObjects.previous()) {
-			if(kevent->Enabled && kevent->up && (!KeyboardModifier::Check() || kevent->Modified))
-				if(kevent->up(KEYB_EVENT_UP, Key, KeyboardModifier::Current, kevent->data))
-					return;
+			KeyboardEvent params;
+			params.keycode=Key;
+			params.event=KeyboardEvent::Up;
+
+			KeyboardEvents(params);
 		}
-	}
 
 	}
-	void EnableKeyboardEvent(int id) {
-		KeyboardEventObjects[id]->Enabled=true;
-	}
 
-	void DisableKeyboardEvent(int id) {
-		KeyboardEventObjects[id]->Enabled=false;
-	}
-	
 	MouseEventToken BasicPointerTarget::RegisterMouseEvent(Bounds bounds, void *data, 
-			MouseEvent click, MouseEvent over, MouseEvent out,
-			MouseEvent move , MouseEvent down, MouseEvent up , MouseEvent doubleclick) {
+		MouseEvent click, MouseEvent over, MouseEvent out,
+		MouseEvent move , MouseEvent down, MouseEvent up , MouseEvent doubleclick) {
 
-				MouseEventObject *meo=new MouseEventObject;
+			MouseEventObject *meo=new MouseEventObject;
 
-				meo->bounds=bounds;
-				meo->data=data;
-				meo->Enabled=true;
-				meo->click=click;
-				meo->over=over;
-				meo->out=out;
-				meo->move=move;
-				meo->down=down;
-				meo->up=up;
-				meo->dblclick=doubleclick;
-				meo->parent=this;
-				meo->checkover=NULL;
-				meo->vscroll=NULL;
-				meo->hscroll=NULL;
+			meo->bounds=bounds;
+			meo->data=data;
+			meo->Enabled=true;
+			meo->click=click;
+			meo->over=over;
+			meo->out=out;
+			meo->move=move;
+			meo->down=down;
+			meo->up=up;
+			meo->dblclick=doubleclick;
+			meo->parent=this;
+			meo->checkover=NULL;
+			meo->vscroll=NULL;
+			meo->hscroll=NULL;
 
-				MouseEventToken token=mouseevents.AddItem(meo, 0);
+			MouseEventToken token=mouseevents.AddItem(meo, 0);
 
-				return token;
+			return token;
 	}
 
 	void BasicPointerTarget::DisableMouseEvent(MouseEventToken token) {
@@ -380,7 +347,7 @@ namespace gge { namespace input {
 							if(hoveredObject)
 								if(hoveredObject->out)
 									hoveredObject->out(MOUSE_EVENT_OUT, x, y, hoveredObject->data);
-							if(object->over(MouseEventType::MOUSE_EVENT_OVER, x, y, object->data)) {
+							if(object->over(MOUSE_EVENT_OVER, x, y, object->data)) {
 
 								hoveredObject=object;
 								hoverfound=true;
@@ -425,5 +392,6 @@ namespace gge { namespace input {
 		else if(event == MOUSE_EVENT_HSCROLLL)
 			return PropagateMouseHScrollEvent(amount, event, x, y, data);
 
+		return false;
 	}
 } }

@@ -17,7 +17,6 @@ typedef unsigned short      WORD;
 
 #pragma warning(disable:4355)
 
-using namespace std;
 
 ////Gorgon Game Engine
 namespace gge {

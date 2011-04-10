@@ -6,35 +6,35 @@ namespace gge { namespace widgets {
 			const char *t=textbox.GetText().data();
 			for(;*t!=0;t++)
 				if(*t!='.' && (*t<'0' || *t>'9')) {
-					setValue(atof(textbox.GetText().data()));
+					setValue((float)atof(textbox.GetText().data()));
 					return;
 				}
-			changeValue(atof(textbox.GetText().data()));
+			changeValue((float)atof(textbox.GetText().data()));
 		}
 	}
 
 	void Spinner::attached_lostfocus(IWidgetObject &textbox) {
-		setValue(atof(textbox.GetText().data()));
+		setValue((float)atof(textbox.GetText().data()));
 	}
 
 	void Spinner::attached_keyboard(keyboard_event_params p, Textbox &textbox) {
-		if(p.event==input::KEYB_EVENT_DOWN && p.keycode==38) {
+		if(p.event==input::KeyboardEvent::Down && p.keycode==38) {
 			goUp();
 			p.isused=true;
 			cancelclick=false;
 		}
-		if(p.event==input::KEYB_EVENT_UP && p.keycode==38) {
+		if(p.event==input::KeyboardEvent::Up && p.keycode==38) {
 			stopUp();
 			if(!cancelclick)
 				Up();
 			p.isused=true;
 		}
-		if(p.event==input::KEYB_EVENT_DOWN && p.keycode==40) {
+		if(p.event==input::KeyboardEvent::Down && p.keycode==40) {
 			goDown();
 			p.isused=true;
 			cancelclick=false;
 		}
-		if(p.event==input::KEYB_EVENT_UP && p.keycode==40) {
+		if(p.event==input::KeyboardEvent::Up && p.keycode==40) {
 			stopDown();
 			if(!cancelclick)
 				Down();
@@ -84,7 +84,7 @@ namespace gge { namespace widgets {
 		lostfocuseventtoken=attachedto->LostFocusEvent.Register(this, &Spinner::attached_lostfocus);
 		keyboardeventtoken=attachedto->KeyboardEvent.Register(this, &Spinner::attached_keyboard);
 
-		setValue(atof(attachedto->GetText().data()));
+		setValue((float)atof(attachedto->GetText().data()));
 
 		Show();
 		
@@ -114,7 +114,7 @@ namespace gge { namespace widgets {
 		SliderBase::setValue(value);
 		if(attachedto) { 
 			char tmp[30]; 
-			sprintf(tmp, numberformat.data(), this->value); 
+			sprintf_s<30>(tmp, numberformat.data(), this->value); 
 			attachedto->SetText(tmp); 
 		}
 	}

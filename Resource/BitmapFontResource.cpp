@@ -47,7 +47,7 @@ namespace gre {
 	void BitmapFontResource::Print(I2DColorizableGraphicsTarget *target, int X, int Y, string text, RGBint color, ShadowParams Shadow) {
 		if(text=="") return;
 
-		int i;
+		unsigned int i;
 		if(Shadow.Type==ShadowParams::Flat) {
 			int x=X;
 			for(i=0;i<text.length();i++) {
@@ -366,7 +366,7 @@ namespace gre {
 		}	}
 	void BitmapFontResource::Print_Test(int x, int y, int w, string text, EPrintData *Data, int DataLen, TextAlignment Align) {
 		if(text=="") {
-			int i,d;
+			int d;
 			int xpos=0;
 			if(Align==TEXTALIGN_CENTER)
 				xpos=w/2;

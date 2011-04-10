@@ -19,7 +19,9 @@ namespace gre {
 		Filename=filename;
 
 		///*Check file existance
-		FILE *data=fopen(filename.data(),"rb");
+		FILE *data;
+		errno_t err;
+		err=fopen_s(&data, filename.data(), "rb");
 		if(data==NULL) {
 			ErrorText=ERT_FILENOTFOUND;
 			ErrorNo  =ERR_FILENOTFOUND;

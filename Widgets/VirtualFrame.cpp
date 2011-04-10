@@ -30,20 +30,16 @@ namespace gge { namespace widgets {
 
 	void VirtualFrame::Activate() {
 		isactive=true;
-		input::EnableKeyboardEvent(keyboardid);
+		input::KeyboardEvents.Enable(keyboardid);
 	}
 
 	void VirtualFrame::Deactivate() {
 		isactive=false;
-		input::DisableKeyboardEvent(keyboardid);
+		input::KeyboardEvents.Disable(keyboardid);
 	}
 
-	bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier,void *data) {
-		if(data) {
-			return ((VirtualFrame*)data)->keyboard_event(event,keycode,modifier);
-		}
-
-		return false;
+	bool VirtualFrame::keyboard(input::KeyboardEvent params) {
+		return keyboard_event(params.event,params.keycode);
 	}
 
 } }

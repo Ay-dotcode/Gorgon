@@ -13,7 +13,7 @@ namespace gge { namespace widgets {
 		int tmp;
 
 		while(ftell(Data)<tpos) {
-			int gid,size,tmpint;
+			int gid,size;
 			fread(&gid,1,4,Data);
 			fread(&size,1,4,Data);
 
@@ -74,7 +74,8 @@ namespace gge { namespace widgets {
 				default:
 					return NULL;
 			}
-		}
+		} else
+			return NULL;
 	}
 
 	ResizableObject &ResizableObjectResource::Generate (){
@@ -98,6 +99,7 @@ namespace gge { namespace widgets {
 				default:
 					throw runtime_error("Resizable object resource is not set");
 			}
-		}
+		} else
+			throw std::runtime_error("target not set");
 	}
 } }

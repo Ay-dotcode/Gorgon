@@ -656,82 +656,82 @@ namespace gge { namespace widgets {
 			IWidgetContainer::Deactivate();
 	}
 
-	bool SliderBase::keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
+	bool SliderBase::keyboard(input::KeyboardEvent::Type event,int keycode) {
 		if(passivemode) return false;
-		if(event==input::KEYB_EVENT_DOWN && keycode==38) {
+		if(event==input::KeyboardEvent::Down && keycode==38) {
 			goUp();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_UP && keycode==38) {
+		if(event==input::KeyboardEvent::Up && keycode==38) {
 			stopUp();
 			if(!cancelclick)
 				Up();
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_DOWN && keycode==40) {
+		if(event==input::KeyboardEvent::Down && keycode==40) {
 			goDown();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_UP && keycode==40) {
+		if(event==input::KeyboardEvent::Up && keycode==40) {
 			stopDown();
 			if(!cancelclick)
 				Down();
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_DOWN && keycode==39) {
+		if(event==input::KeyboardEvent::Down && keycode==39) {
 			goUp();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_UP && keycode==39) {
+		if(event==input::KeyboardEvent::Up && keycode==39) {
 			stopUp();
 			if(!cancelclick)
 				Up();
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_DOWN && keycode==37) {
+		if(event==input::KeyboardEvent::Down && keycode==37) {
 			goDown();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_UP && keycode==37) {
+		if(event==input::KeyboardEvent::Up && keycode==37) {
 			stopDown();
 			if(!cancelclick)
 				Down();
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_DOWN && keycode==33) {
+		if(event==input::KeyboardEvent::Down && keycode==33) {
 			golarge=true;
 			goUp();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_UP && keycode==33) {
+		if(event==input::KeyboardEvent::Up && keycode==33) {
 			stopUp();
 			if(!cancelclick)
 				Up();
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_DOWN && keycode==34) {
+		if(event==input::KeyboardEvent::Down && keycode==34) {
 			golarge=true;
 			goDown();
 			cancelclick=false;
 
 			return true;
 		}
-		if(event==input::KEYB_EVENT_UP && keycode==34) {
+		if(event==input::KeyboardEvent::Up && keycode==34) {
 			stopDown();
 			if(!cancelclick)
 				Down();
@@ -1229,7 +1229,7 @@ namespace gge { namespace widgets {
 		}
 
 	}
-	bool SliderBase::mouse_event(input::MouseEventType event,int x,int y) {
+	bool SliderBase::mouse(input::MouseEventType event,int x,int y) {
 		if(passivemode) return true;
 		switch(event) {
 		case input::MOUSE_EVENT_OVER:
@@ -1251,10 +1251,10 @@ namespace gge { namespace widgets {
 		switch(event) {
 		case input::MOUSE_EVENT_OVER:
 			RuleTransition(SS_Hover);
-			return mouse_event(event, x, y);
+			return mouse(event, x, y);
 		case input::MOUSE_EVENT_OUT:
 			RuleTransition(SS_Normal);
-			return mouse_event(event, x, y);
+			return mouse(event, x, y);
 		case input::MOUSE_EVENT_LDOWN:
 			if(!nofocus)
 				this->SetFocus();
@@ -1318,11 +1318,11 @@ namespace gge { namespace widgets {
 		case input::MOUSE_EVENT_OVER:
 			SymbolTransition(SS_Hover);
 
-			return mouse_event(event, x, y);
+			return mouse(event, x, y);
 		case input::MOUSE_EVENT_OUT:
 			SymbolTransition(SS_Normal);
 
-			return mouse_event(event, x, y);
+			return mouse(event, x, y);
 		case input::MOUSE_EVENT_LDOWN:
 			if(!nofocus)
 				this->SetFocus();
@@ -1365,7 +1365,7 @@ namespace gge { namespace widgets {
 		switch(event) {
 		case input::MOUSE_EVENT_OVER:
 		case input::MOUSE_EVENT_OUT:
-			return mouse_event(event, x, y);
+			return mouse(event, x, y);
 		case input::MOUSE_EVENT_LDOWN:
 			if(!nofocus)
 				this->SetFocus();
@@ -1409,7 +1409,7 @@ namespace gge { namespace widgets {
 		switch(event) {
 		case input::MOUSE_EVENT_OVER:
 		case input::MOUSE_EVENT_OUT:
-			return mouse_event(event, x, y);
+			return mouse(event, x, y);
 		case input::MOUSE_EVENT_LDOWN:
 			if(!nofocus)
 				this->SetFocus();

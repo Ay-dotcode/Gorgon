@@ -116,7 +116,7 @@ namespace gge { namespace widgets {
 		void ProgressionCheck();
 		virtual void on_focus_event(bool state,IWidgetObject *related);
 		
-		virtual bool mouse_event(input::MouseEventType event,int x,int y);
-		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
+		virtual bool mouse(input::MouseEventType event,int x,int y);
+		virtual bool keyboard(input::KeyboardEvent::Type event,int keycode);
 	};
 } }

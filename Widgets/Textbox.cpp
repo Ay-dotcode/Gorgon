@@ -335,7 +335,7 @@ namespace gge { namespace widgets {
 
 		return ret;
 	}
-	bool Textbox::mouse_event(input::MouseEventType event,int x,int y) {
+	bool Textbox::mouse(input::MouseEventType event,int x,int y) {
 		static int firstselect;
 		if(!isvisible || !container->isVisible())
 			return false;
@@ -385,17 +385,17 @@ namespace gge { namespace widgets {
 		return true;
 	}
 
-	bool Textbox::keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
+	bool Textbox::keyboard(input::KeyboardEvent::Type event,int keycode) {
 		if(!isvisible)
 			return false;
 
 		bool isused=false;
-		KeyboardEvent(keyboard_event_params(event, keycode, modifier, isused));
+		KeyboardEvent(keyboard_event_params(event, keycode, input::KeyboardModifier::Current, isused));
 
 		if(isused)
 			return true;
 
-		if(event==input::KEYB_EVENT_CHR) {
+		if(event==input::KeyboardEvent::Char) {
 			switch(keycode) {
 			case 8: //backspace
 				if(selectstart!=selectend) {
@@ -435,7 +435,7 @@ namespace gge { namespace widgets {
 					}
 
 					char t[2];
-					sprintf(t,"%c",keycode);
+					sprintf_s<2>(t,"%c",keycode);
 					this->SetText(this->GetText().insert(caretposition,t));
 					SetCaretPosition(caretposition+1);
 					pars.current=this->GetText();
@@ -445,8 +445,8 @@ namespace gge { namespace widgets {
 				}
 			}
 		}
-		if(event==input::KEYB_EVENT_DOWN) {
-			if( modifier==input::KeyboardModifier::None ) {
+		if(event==input::KeyboardEvent::Down) {
+			if( !input::KeyboardModifier::Check() ) {
 				switch(keycode) {
 				case 35: //End
 					SetCaretPosition(text.length());
@@ -486,7 +486,7 @@ namespace gge { namespace widgets {
 				}
 			}
 		} else {
-			if(modifier==input::KeyboardModifier::Shift) {
+			if(input::KeyboardModifier::Current==input::KeyboardModifier::Shift) {
 				switch(keycode) {
 				case 35: //End
 					if(caretposition==selectend) {

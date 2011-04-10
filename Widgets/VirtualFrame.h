@@ -12,7 +12,6 @@ using namespace gge;
 namespace gge { namespace widgets {
 	class VirtualFrame;
 
-	bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier,void *data);
 	extern utils::LinkedList<VirtualFrame> toplevels;
 
 	class VirtualFrame : public IWidgetContainer {
@@ -21,13 +20,13 @@ namespace gge { namespace widgets {
 	public:
 		VirtualFrame(LayerBase &Parent, int X, int Y, int W, int H, int Order=0) : 
 		  IWidgetContainer(Parent, X, Y, W, H, Order) {	
-			 keyboardid=input::RegisterKeyboardEvent(this, keyb_event, keyb_event, keyb_event, true);
+			 keyboardid=input::KeyboardEvents.Register(this, &VirtualFrame::keyboard);
 			 toplevels.Add(this);
 		}
 
 		VirtualFrame(LayerBase *Parent, int X, int Y, int W, int H, int Order=0) : 
 		  IWidgetContainer(*Parent, X, Y, W, H, Order) {	
-			 keyboardid=input::RegisterKeyboardEvent(this, keyb_event, keyb_event, keyb_event, true);
+			  keyboardid=input::KeyboardEvents.Register(this, &VirtualFrame::keyboard);
 			 toplevels.Add(this);
 		}
 
@@ -37,12 +36,15 @@ namespace gge { namespace widgets {
 		virtual void				Deactivate();
 		
 		virtual void Draw();
-		int keyboardid;
+		utils::ConsumableEvent<>::Token keyboardid;
 		bool activetoplevel;
 
 		virtual ~VirtualFrame() {
-			input::UnregisterKeyboardEvent(keyboardid);
+			input::KeyboardEvents.Unregister(this, &VirtualFrame::keyboardid);
 			toplevels.Remove(this);
 		}
+
+	protected:
+		bool keyboard(input::KeyboardEvent params);
 	};
 } }

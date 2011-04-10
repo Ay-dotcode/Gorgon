@@ -370,20 +370,20 @@ namespace gge { namespace widgets {
 
 		return ret;
 	}
-	bool Button::keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
+	bool Button::keyboard(input::KeyboardEvent::Type event,int keycode) {
 		if(!isvisible)
 			return false;
 
-		if((modifier==input::KeyboardModifier::None || modifier==input::KeyboardModifier::Alternate) && event==input::KEYB_EVENT_DOWN && keycode==13) {
+		if(!input::KeyboardModifier::Check() && event==input::KeyboardEvent::Down && keycode==13) {
 			SimulateClicked();
 			return true;
 		}
-		if(modifier==input::KeyboardModifier::None && event==input::KEYB_EVENT_DOWN && keycode==32) {
+		if(!input::KeyboardModifier::Check() && event==input::KeyboardEvent::Down && keycode==32) {
 			SimulatePressed();
 
 			return true;
 		}
-		if(modifier==input::KeyboardModifier::None && event==input::KEYB_EVENT_UP && keycode==32) {
+		if(!input::KeyboardModifier::Check() && event==input::KeyboardEvent::Up && keycode==32) {
 			SimulateRelease();
 			ClickEvent();
 
@@ -402,7 +402,7 @@ namespace gge { namespace widgets {
 		Resize(this->width,this->height);
 	}
 
-	bool Button::mouse_event(input::MouseEventType event,int x,int y) {
+	bool Button::mouse(input::MouseEventType event,int x,int y) {
 		switch(event) {
 		case input::MOUSE_EVENT_OVER:
 			SimulateMouseOver();

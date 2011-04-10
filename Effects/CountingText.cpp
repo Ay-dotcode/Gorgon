@@ -1,5 +1,8 @@
 #include "CountingText.h"
 
+using namespace gge;
+using namespace gre;
+
 namespace geffects {
 	void CountingText::Setup(float From, float To, int Time) {
 		if(Time)

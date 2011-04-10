@@ -232,26 +232,25 @@ namespace gge { namespace widgets {
 			object->SetFocus();
 	}
 
-	bool IWidgetContainer::keyboard_event_subitems(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
+	bool IWidgetContainer::keyboard_event_subitems(input::KeyboardEvent::Type event,int keycode) {
 		bool ret=false;
 		if(this->Focussed) {
 			if(this->Focussed->isEnabled() && this->Focussed->isVisible())
-				ret=this->Focussed->keyb_event(event,keycode,modifier);
+				ret=this->Focussed->keyboard(event,keycode);
 		}
 
-		if(ret)
-			return true;
+		return ret;
 	}
 
-	bool IWidgetContainer::keyboard_event_actions(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
+	bool IWidgetContainer::keyboard_event_actions(input::KeyboardEvent::Type event,int keycode) {
 		if(allowtabswitch) {
 			//do default button handling
-			if(event==input::KEYB_EVENT_CHR && keycode==9) {
-				if((modifier&~input::KeyboardModifier::Alternate)==input::KeyboardModifier::None) {
+			if(event==input::KeyboardEvent::Char && keycode==9) {
+				if(!input::KeyboardModifier::IsModified()) {
 					FocusNext();
 					return true;
 				}
-				else if((modifier&~input::KeyboardModifier::Alternate)==input::KeyboardModifier::Shift) {
+				else if(input::KeyboardModifier::Current==input::KeyboardModifier::Shift) {
 					FocusPrevious();
 					return true;
 				}
@@ -259,14 +258,14 @@ namespace gge { namespace widgets {
 		}
 	
 		if(allowdefaultactions) {
-			if(event==input::KeyboardEventType::KEYB_EVENT_DOWN && keycode==13 && modifier==input::KeyboardModifier::None) {
+			if(event==input::KeyboardEvent::Down && keycode==13 && !input::KeyboardModifier::Check()) {
 				if(Default)
-					return Default->keyb_event(event,keycode,modifier);
+					return Default->keyboard(event,keycode);
 			}
 
-			if(event==input::KEYB_EVENT_DOWN && keycode==27 && modifier==input::KeyboardModifier::None) {
+			if(event==input::KeyboardEvent::Down && keycode==27 && !input::KeyboardModifier::Check()) {
 				if(Cancel)
-					return Cancel->keyb_event(event,13,modifier);
+					return Cancel->keyboard(event,13);
 
 				this->Deactivate();
 			}
@@ -275,12 +274,12 @@ namespace gge { namespace widgets {
 		return false;
 	}
 
-	bool IWidgetContainer::keyboard_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
+	bool IWidgetContainer::keyboard_event(input::KeyboardEvent::Type event,int keycode) {
 
-		if(keyboard_event_subitems(event,keycode,modifier))
+		if(keyboard_event_subitems(event,keycode))
 			return true;
 
-		return keyboard_event_actions(event,keycode,modifier);
+		return keyboard_event_actions(event,keycode);
 	}
 
 } }

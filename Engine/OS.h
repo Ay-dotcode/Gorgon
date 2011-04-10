@@ -6,6 +6,8 @@
 
 #include "OS.Win32.h"
 
+using std::string;
+
 namespace gge { namespace os {
 	////Initializes OS subsystem by setting up events
 	void Initialize();

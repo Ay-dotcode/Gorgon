@@ -23,7 +23,7 @@ namespace gge { namespace widgets {
 		int getNumberofTicks() { return numberofticks; }
 		void setNumberDistance(float distance) { numberedtickdistance=distance/((maximum-minimum)/(numberofticks-1)); numberdistance=distance; }
 		void setNumberFormat(string Format) { numberformat=Format; }
-		void setNumberFormat(int decimal, string unit="") { char tmp[50]; sprintf(tmp, "%%.%if%s", decimal, unit.data()); setNumberFormat(tmp); }
+		void setNumberFormat(int decimal, string unit="") { char tmp[50]; sprintf_s<50>(tmp, "%%.%if%s", decimal, unit.data()); setNumberFormat(tmp); }
 		string getNumberFormat() { return numberformat; }
 
 		bool isShowingNumbers() { return tickstyle&STS_Numbers; }

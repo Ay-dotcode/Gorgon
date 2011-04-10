@@ -16,9 +16,7 @@
 namespace gre {
 
 	ResourceBase *LoadFolderResource(ResourceFile* File, FILE* Data, int Size) {
-		char *tmpstr;
 		int tpos=ftell(Data)+Size;
-		int i;
 		int curcapname=0;
 		FolderResource *fold=new FolderResource();
 		fold->EntryPoint=ftell(Data);

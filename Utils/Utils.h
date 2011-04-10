@@ -29,16 +29,7 @@ namespace gge {
 	}
 
 	inline int Round(float num) {
-		if(floor(num)==num)
-			return (int)num;
-
-		if(num>0 && num-floor(num)>0.5) 
-			return (int)num+1; 
-		
-		if(num<0 && num-floor(num)<0.5) 
-			return (int)num-1; 
-		
-		return (int)num; 
+		return (int)(num+0.5f); 
 	}
 	
 	template <class T_, class U_>

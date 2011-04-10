@@ -16,7 +16,8 @@ namespace gre {
 		Signature=1,
 		ErrorHandlerProblem=2,
 		OutofMemory=4,
-		UnimplementedType
+		UnimplementedType,
+		FileNotFound
 	};
 
 	////This is image resource that holds information about a single image. It supports
@@ -57,7 +58,7 @@ namespace gre {
 			SetResizingOptions(Horizontal, Vertical);
 		}
 
-		void PNGExport(string filename);
+		bool PNGExport(string filename);
 		
 		////02020000h (Basic, Image)
 		virtual int getGID() { return GID_IMAGE; }

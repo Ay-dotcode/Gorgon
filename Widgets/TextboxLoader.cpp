@@ -12,7 +12,7 @@ namespace gge { namespace widgets {
 		ResourceBase *obj;
 		int animcount=0;
 
-		int gid,size,i,cnt=0;
+		int gid,size,cnt=0;
 
 		int tpos=ftell(gfile)+sz;
 		while(ftell(gfile)<tpos) {
@@ -59,7 +59,7 @@ namespace gge { namespace widgets {
 	ResourceBase* LoadTextboxStyleGroup(ResourceFile* file,FILE* gfile,int sz) {
 		TextboxStyleGroup *txt =new TextboxStyleGroup();
 
-		int gid,size,i,cnt=0;
+		int gid,size,cnt=0;
 
 		int tpos=ftell(gfile)+sz;
 		while(ftell(gfile)<tpos) {
@@ -113,7 +113,7 @@ namespace gge { namespace widgets {
 	ResourceBase* LoadTextboxElement(ResourceFile* file,FILE* gfile,int sz) {
 		TextboxElement *txt =new TextboxElement();
 
-		int gid,size,i,cnt=0;
+		int gid,size,cnt=0;
 
 		int tpos=ftell(gfile)+sz;
 		while(ftell(gfile)<tpos) {

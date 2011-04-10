@@ -231,14 +231,21 @@ using namespace gge::input::system;
 					break;
 
 				case WM_KEYDOWN:
-					if(lParam&1<<24)
+					if(lParam&1<<24) //Ctrl & Alt
 						KeyboardModifier::isAlternate=true;
 					else
 						KeyboardModifier::isAlternate=false;
 
-					if(lParam==0x360001)
-						KeyboardModifier::Add(KeyboardModifier::Alternate);
+					if(lParam==0x360001) //Shift
+						KeyboardModifier::isAlternate=true;
 
+					if(wParam==VK_RWIN) { //Win
+						KeyboardModifier::isAlternate=true;
+						wParam=VK_LWIN;
+					}
+
+					ProcessKeyDown(wParam);
+					KeyboardModifier::isAlternate=false;
 
 					switch(wParam) {
 					case VK_CONTROL:
@@ -251,17 +258,12 @@ using namespace gge::input::system;
 						KeyboardModifier::Add(KeyboardModifier::Alt);
 						break;
 					case VK_LWIN:
-						KeyboardModifier::Remove(KeyboardModifier::Alternate);
-						KeyboardModifier::Add(KeyboardModifier::Win);
+						KeyboardModifier::Add(KeyboardModifier::Super);
 						break;
 					case VK_RWIN:
-						KeyboardModifier::Add(KeyboardModifier::Alternate);
-						KeyboardModifier::Add(KeyboardModifier::Win);
+						KeyboardModifier::Add(KeyboardModifier::Super);
 						break;
-					default:
-						KeyboardModifier::Remove(KeyboardModifier::Alternate);
 					}
-					ProcessKeyDown(wParam);
 						
 					break; 
 				case WM_KEYUP:
@@ -270,7 +272,17 @@ using namespace gge::input::system;
 					else
 						KeyboardModifier::isAlternate=false;
 
+					if(lParam==0x360001)
+						KeyboardModifier::isAlternate=true;
+
+					if(wParam==VK_RWIN) {
+						KeyboardModifier::isAlternate=true;
+						wParam=VK_LWIN;
+					}
+
 					ProcessKeyUp(wParam);
+					KeyboardModifier::isAlternate=false;
+
 					switch(wParam) {
 					case VK_CONTROL:
 						KeyboardModifier::Remove(KeyboardModifier::Ctrl);
@@ -282,15 +294,13 @@ using namespace gge::input::system;
 						KeyboardModifier::Remove(KeyboardModifier::Alt);
 						break;
 					case VK_LWIN:
-						KeyboardModifier::Remove(KeyboardModifier::Alternate);
-						KeyboardModifier::Remove(KeyboardModifier::Win);
+						KeyboardModifier::Remove(KeyboardModifier::Super);
 						break;
 					case VK_RWIN:
-						KeyboardModifier::Remove(KeyboardModifier::Alternate);
-						KeyboardModifier::Remove(KeyboardModifier::Win);
+						KeyboardModifier::Remove(KeyboardModifier::Super);
 						break;
 					}
-						
+					
 					break; 
 				case WM_CHAR:
 					/*if(lParam&1<<24)
@@ -432,7 +442,18 @@ using namespace gge::input::system;
 			}
 
 		}
-	} }
+
+
+	} 
+
+	namespace input {
+		const int KeyCodes::Shift = VK_SHIFT;
+		const int KeyCodes::Control = VK_CONTROL;
+		const int KeyCodes::Alt = VK_MENU;
+		const int KeyCodes::Super = VK_LWIN;
+	}
+
+}
 
 
 #endif

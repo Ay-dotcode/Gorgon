@@ -153,7 +153,11 @@ namespace gre {
 			return false;
 
 		int i;
-		FILE *gfile=fopen(File->getFilename().data(),"rb");
+		FILE *gfile;
+		errno_t err;
+		err=fopen_s(&gfile, File->getFilename().data(), "rb");
+		if(err != 0) return false;
+
 		fseek(gfile,DataLocation,SEEK_SET);
 		
 		if(this->Compression==GID_LZMA) {
@@ -246,19 +250,23 @@ namespace gre {
 		Texture = gge::GenerateTexture(Data, getWidth(), getHeight(), getMode());
 	}
 
-	void ImageResource::PNGExport(string filename) {
+	bool ImageResource::PNGExport(string filename) {
 		int i;
-		FILE*file=fopen(filename.data(),"wb");
+		errno_t err;
+		FILE*file;
+		err=fopen_s(&file,filename.data(),"wb");
+		if(err != 0) return false;
+		
 
 		png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 		if (!png_ptr)
-		   return;
+		   return false;
 
 		png_infop info_ptr = png_create_info_struct(png_ptr);
 		if (!info_ptr) {
 		   png_destroy_write_struct(&png_ptr,
 			 (png_infopp)NULL);
-		   return;
+		   return false;
 		}
 		setjmp(png_jmpbuf(png_ptr));
 		png_init_io(png_ptr, file);
@@ -284,6 +292,8 @@ namespace gre {
 
 
 		fclose(file);
+
+		return true;
 	}
 	PNGReadError ImageResource::ImportPNG(string filename) {
 
@@ -293,7 +303,10 @@ namespace gre {
 		unsigned long width,height;
 		int bit_depth,color_type;
 
-		FILE *infile=fopen(filename.c_str(),"rb");
+		FILE *infile;
+		errno_t err;
+		err=fopen_s(&infile, filename.c_str(), "rb");
+		if(err != 0) return FileNotFound;
 
 	    unsigned char sig[8];
 

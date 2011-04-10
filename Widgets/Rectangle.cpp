@@ -6,7 +6,7 @@ namespace gge { namespace widgets {
 	ResourceBase* LoadRectangleResource(ResourceFile* file,FILE* gfile,int sz) {
 		RectangleResource *Rect =new RectangleResource();
 
-		int gid,size,i,cnt=0;
+		int gid,size,cnt=0;
 
 		int tpos=ftell(gfile)+sz;
 		while(ftell(gfile)<tpos) {
@@ -156,14 +156,14 @@ namespace gge { namespace widgets {
 			int w=HSizing.Calculate(W, Parent->leftwidth+Parent->rightwidth, animC->Width());
 			int h=VSizing.Calculate(H, Parent->topheight+Parent->bottomheight, animC->Height());
 
-			if(Align&ALIGN_MASK_HORIZONTAL==ALIGN_CENTER)
+			if( (Align&ALIGN_MASK_HORIZONTAL) ==ALIGN_CENTER)
 				X+=(W-w)/2;
-			else if(Align&ALIGN_MASK_HORIZONTAL==ALIGN_RIGHT)
+			else if( (Align&ALIGN_MASK_HORIZONTAL) ==ALIGN_RIGHT)
 				X+=(W-w);
 
-			if(Align&ALIGN_MASK_VERTICAL==ALIGN_MIDDLE)
+			if( (Align&ALIGN_MASK_VERTICAL) ==ALIGN_MIDDLE)
 				Y+=(H-h)/2;
-			else if(Align&ALIGN_MASK_VERTICAL==ALIGN_BOTTOM)
+			else if( (Align&ALIGN_MASK_VERTICAL) ==ALIGN_BOTTOM)
 				Y+=(H-h);
 
 			W=w;

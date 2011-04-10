@@ -19,7 +19,7 @@ namespace gge { namespace widgets {
 				iwo->pointerid=0;
 			}
 
-			return iwo->mouse_event(event,x,y);
+			return iwo->mouse(event,x,y);
 		}
 
 		return false;

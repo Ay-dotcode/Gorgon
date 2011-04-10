@@ -2,8 +2,7 @@
 
 #include "Flip.h"
 
-#define PI		3.1416f
-#define PIO2	1.5708f
+using namespace gre;
 
 namespace geffects {
 	void FlipEffect::Draw(I2DGraphicsTarget *Layer,int X,int Y) {
@@ -16,7 +15,7 @@ namespace geffects {
 		} else {
 			float ang=((float)AnimatorBase::currentTime()/ETA)*PI;
 			bool rev=false;
-			if(ang>PIO2) {
+			if(ang>PI/2) {
 				ang=PI-ang;
 				rev=true;
 			}

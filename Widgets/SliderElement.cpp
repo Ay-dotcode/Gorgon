@@ -155,8 +155,8 @@ namespace gge { namespace widgets {
 	}
 	SliderElement &SliderElement::DrawTickMarks(WidgetLayer &Target, float Distance) {
 		float y,x;
-		float w=Target.W;
-		float h=Target.H;
+		float w=(float)Target.W;
+		float h=(float)Target.H;
 
 		if(Distance==0)
 			return *this;
@@ -286,7 +286,7 @@ namespace gge { namespace widgets {
 				case SS_Left: 
 				case SS_Verticle: 
 				{
-					y=Target.H;
+					y=(float)Target.H;
 					Texts.ResetIteration();
 					SliderLocationName *t;
 					while(t=Texts.next()) {
@@ -335,7 +335,7 @@ namespace gge { namespace widgets {
 				SliderLocationName *t;
 				while(t=Texts.next()) {
 					y=Target.H-((t->value-min)/(max-min))*Target.H;
-					Tick->Draw(Target, 0, y);
+					Tick->Draw(Target, 0, Round(y));
 				}
 				
 

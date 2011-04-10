@@ -62,11 +62,11 @@ namespace gge { namespace widgets {
 
 		virtual void SetBluePrint(IWidgetBluePrint *BP) { }
 	
-		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
+		virtual bool keyboard(input::KeyboardEvent::Type event,int keycode) {
 			return false;
 		}
 
-		virtual bool mouse_event(input::MouseEventType event,int x,int y) {
+		virtual bool mouse(input::MouseEventType event,int x,int y) {
 			if(event==input::MOUSE_EVENT_LCLICK) {
 				ClickEvent();
 				return true;

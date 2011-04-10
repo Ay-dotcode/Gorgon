@@ -20,7 +20,7 @@ namespace gge { namespace widgets {
 		void setTickDistance(float Distance) { numberedtickdistance*=tickdistance/Distance; tickdistance=Distance; numberofticks=(maximum-minimum)/tickdistance+1; }
 		void setNumberDistance(float Distance) { numberedtickdistance=Distance/tickdistance; }
 		void setNumberFormat(string Format) { numberformat=Format; }
-		void setNumberFormat(int decimal, string unit="") { char tmp[50]; sprintf(tmp, "%%.%if%s", decimal, unit.data()); setNumberFormat(tmp); }
+		void setNumberFormat(int decimal, string unit="") { char tmp[50]; sprintf_s<50>(tmp, "%%.%if%s", decimal, unit.data()); setNumberFormat(tmp); }
 		float getMinimum() { return minimum; }
 		float getMaximum() { return maximum; }
 		float getSteps() { return steps; }

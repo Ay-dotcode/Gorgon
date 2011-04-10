@@ -6,14 +6,11 @@
 #include "../Engine/Graphics.h"
 #include "../Engine/Layer.h"
 
-using namespace gge;
-using namespace gre;
-
 namespace geffects {
 
 	////This effect moves a given layer. Moving operation is animated from a given
 	/// value to another one
-	class LayerMover : public AnimatorBase {
+	class LayerMover : public gge::AnimatorBase {
 	public:
 		////This event is fired when the animation
 		/// completes

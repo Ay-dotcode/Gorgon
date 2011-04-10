@@ -139,7 +139,7 @@ namespace gge { namespace widgets {
 		SliderBase(SliderBP *BluePrint, SliderStyles Style);
 		virtual void SetStyles(SliderStyleGroup* grp);
 
-		virtual bool mouse_event(input::MouseEventType event,int x,int y);
+		virtual bool mouse(input::MouseEventType event,int x,int y);
 		virtual bool rule_mouse(input::MouseEventType event,int x,int y);
 		virtual bool symbol_mouse(input::MouseEventType event,int x,int y);
 		virtual bool tick_mouse(input::MouseEventType event,int x,int y);
@@ -234,7 +234,7 @@ namespace gge { namespace widgets {
 		void ProgressionCheck();
 
 		virtual void on_focus_event(bool state,IWidgetObject *related);
-		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier);
+		virtual bool keyboard(input::KeyboardEvent::Type event,int keycode);
 
 		virtual void setButtonPositions();
 		virtual void setSymbolPosition(bool instant=false);

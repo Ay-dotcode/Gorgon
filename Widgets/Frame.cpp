@@ -326,7 +326,7 @@ namespace gge { namespace widgets {
 	}
 
 
-	bool Frame::mouse_event(input::MouseEventType event,int x,int y) {
+	bool Frame::mouse(input::MouseEventType event,int x,int y) {
 		if(event&input::MOUSE_EVENT_DOWN)
 			IWidgetObject::SetFocus();
 

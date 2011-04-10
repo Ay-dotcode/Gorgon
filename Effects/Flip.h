@@ -6,8 +6,6 @@
 #include "../Engine/Graphics.h"
 #include "../Engine/GraphicLayers.h"
 
-using namespace gre;
-
 namespace geffects {
 	enum FlipSide {
 		EAFS_Top=1,
@@ -16,7 +14,7 @@ namespace geffects {
 		EAFS_Right,
 	};
 
-	class FlipEffect : public AnimatorBase, public Buffered2DGraphic {
+	class FlipEffect : public gge::AnimatorBase, public gge::Buffered2DGraphic {
 	public:
 		////This event is fired when the animation
 		/// completes
@@ -30,7 +28,7 @@ namespace geffects {
 		void Flip(int ETA);
 		void CenterPivot();
 
-		Buffered2DGraphic *Front,*Back;
+		gge::Buffered2DGraphic *Front,*Back;
 		FlipSide Side;
 		bool Backside;
 		bool Flipping;

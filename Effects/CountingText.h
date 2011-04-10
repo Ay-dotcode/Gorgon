@@ -6,8 +6,6 @@
 #include "../Engine/Graphics.h"
 #include "../Resource/BitmapFontResource.h"
 
-using namespace gge;
-using namespace gre;
 
 namespace geffects {
 
@@ -21,9 +19,9 @@ namespace geffects {
 		////Color of the text, default is black
 		RGBint Color;
 		////Text shadow, default is none
-		ShadowParams Shadow;
+		gge::ShadowParams Shadow;
 		////Alignment of the text, default is left
-		TextAlignment Align;
+		gge::TextAlignment Align;
 		////Width of the text
 		int Width;
 		////Number of decimal places, default is 0
@@ -31,7 +29,7 @@ namespace geffects {
 		////Customized printing format, printf style that can feature a %f as the current value
 		string Format;
 		////The font to be used
-		BitmapFontResource *Font;
+		gre::BitmapFontResource *Font;
 
 
 		////Initializes the effect

@@ -231,11 +231,11 @@ namespace gge {
 		operator float() { return AccurateLuminance()/255.0f; }
 
 		string HTMLColor() {
-			stringstream str2;
-			stringstream str;
+			std::stringstream str2;
+			std::stringstream str;
 			str2<<std::hex<<((int)(*this)&0x00ffffff);
 
-			str<<"#"<<fixed<<setw(6)<<setfill('0')<<str2.str();
+			str<<"#"<<std::fixed<<std::setw(6)<<std::setfill('0')<<str2.str();
 
 			return str.str();
 		}
@@ -271,7 +271,7 @@ namespace gge {
 		int operator !() { return (r<<16)+(g<<8)+b+(a<<24); }
 	};
 
-	inline ostream &operator <<(ostream &stream, RGBint color) {
+	inline std::ostream &operator <<(std::ostream &stream, RGBint color) {
 		stream<<(string)color;
 
 		return stream;

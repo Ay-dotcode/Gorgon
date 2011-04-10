@@ -7,18 +7,19 @@
 #include "../Utils/Any.h"
 #include "../Utils/EventChain.h"
 
+#pragma warning(disable: 4800)
+
 using namespace std;
-using namespace gge;
 
 namespace gge { namespace widgets {
 
 	struct keyboard_event_params {
-		input::KeyboardEventType event;
+		input::KeyboardEvent::Type event;
 		input::KeyboardModifier::Type modifier;
 		int keycode;
 		bool &isused;
 
-		keyboard_event_params(input::KeyboardEventType event, int keycode, input::KeyboardModifier::Type modifier, bool &isused) :
+		keyboard_event_params(input::KeyboardEvent::Type event, int keycode, input::KeyboardModifier::Type modifier, bool &isused) :
 			event(event), 
 			modifier(modifier),
 			keycode(keycode), 
@@ -73,8 +74,8 @@ namespace gge { namespace widgets {
 		virtual void			SetContainer(IWidgetContainer &container);
 		virtual void			Detach();
 	
-		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier)=0;
-		virtual bool mouse_event(input::MouseEventType event,int x,int y)=0;
+		virtual bool keyboard(input::KeyboardEvent::Type event,int keycode)=0;
+		virtual bool mouse(input::MouseEventType event,int x,int y)=0;
 
 		utils::EventChain<IWidgetObject> ClickEvent;
 		utils::EventChain<IWidgetObject> GotFocusEvent;

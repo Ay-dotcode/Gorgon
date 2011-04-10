@@ -81,13 +81,13 @@ namespace gge { namespace widgets {
 		virtual void SetBluePrint(IWidgetBluePrint *BP);
 		virtual void on_focus_event(bool state,IWidgetObject *related) { isactive=state; };
 		
-		virtual bool keyb_event(input::KeyboardEventType event,int keycode,input::KeyboardModifier::Type modifier) {
+		virtual bool keyboard(input::KeyboardEvent::Type event,int keycode) {
 			bool ret=false;
-			keyboard_event_params p(event, keycode, modifier,ret);
+			keyboard_event_params p(event, keycode, input::KeyboardModifier::Current,ret);
 			KeypreviewEvent(p);
 			if(ret) return true;
 
-			ret=keyboard_event_subitems(event, keycode, modifier);
+			ret=keyboard_event_subitems(event, keycode);
 			if(ret && Focussed)
 				ScrollIntoView(Focussed);
 
@@ -99,10 +99,10 @@ namespace gge { namespace widgets {
 			if(ret)
 				return true;
 
-			return keyboard_event_actions(event, keycode, modifier);
+			return keyboard_event_actions(event, keycode);
 		}
 
-		virtual bool mouse_event(input::MouseEventType event,int x,int y);
+		virtual bool mouse(input::MouseEventType event,int x,int y);
 
 
 		void SetMargins(int margin) { SetMargins(Margins(margin, margin, margin, margin)); }

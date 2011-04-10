@@ -9,7 +9,7 @@ namespace gre {
 		
 		int tpos=ftell(Data)+Size;
 		while(ftell(Data)<tpos) {
-			int gid,size,tmpint;
+			int gid,size;
 			fread(&gid,1,4,Data);
 			fread(&size,1,4,Data);
 
