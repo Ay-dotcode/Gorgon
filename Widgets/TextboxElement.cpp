@@ -3,6 +3,8 @@
 #include "Line.h"
 #include "WidgetRegistry.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 	TextboxElement::TextboxElement(void) {
 		Visual=NULL;
@@ -44,7 +46,7 @@ namespace gge { namespace widgets {
 		return *this;
 	}
 
-	TextboxElement &TextboxElement::Draw(WidgetLayer &layer,Colorizable2DLayer &textlayer,string Caption) {
+	TextboxElement &TextboxElement::Draw(WidgetLayer &layer,graphics::Colorizable2DLayer &textlayer,string Caption) {
 		int x=Offset.x;
 		int y=Offset.y;
 		

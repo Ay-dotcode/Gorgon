@@ -61,10 +61,10 @@ namespace gge { namespace widgets {
 		Button	&SetCancel();
 		Button	&SetNormal();
 
-		ImageResource *Icon;
-		ImageResource *HoverIcon;
-		ImageResource *PressedIcon;
-		ImageResource *DisabledIcon;
+		resource::ImageResource *Icon;
+		resource::ImageResource *HoverIcon;
+		resource::ImageResource *PressedIcon;
+		resource::ImageResource *DisabledIcon;
 
 		virtual bool mouse(input::MouseEventType event,int x,int y);
 
@@ -80,7 +80,7 @@ namespace gge { namespace widgets {
 		unsigned int currentanimstart;
 		unsigned int currentanimend;
 		bool temporalstate;
-		Colorizable2DLayer textlayer,iconlayer;
+		graphics::Colorizable2DLayer textlayer,iconlayer;
 		ButtonBP *BluePrint;
 		ButtonElement *et[4][4];
 		ButtonElement *DetermineElement(ButtonStates currentstate,ButtonStates nextstate);

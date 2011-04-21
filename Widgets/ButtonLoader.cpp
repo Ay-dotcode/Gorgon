@@ -8,6 +8,8 @@
 #include "ButtonElement.h"
 #include "ButtonStyleGroup.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 	void eatchunk(FILE* f,int size);
 

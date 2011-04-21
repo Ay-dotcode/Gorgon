@@ -1,7 +1,7 @@
 #include "FontTheme.h"
 #include "ResourceFile.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	ResourceBase *LoadFontTheme(ResourceFile* File, FILE* Data, int Size) {
 		FontTheme *ft=new FontTheme;
 
@@ -46,4 +46,4 @@ namespace gre {
 		H2Font		= dynamic_cast<FontRenderer*>(file->FindObject(guid_h2));
 		H3Font		= dynamic_cast<FontRenderer*>(file->FindObject(guid_h3));
 	}
-}
+} }

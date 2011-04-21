@@ -21,18 +21,18 @@ typedef unsigned short      WORD;
 ////Gorgon Game Engine
 namespace gge {
 
-	template <class _T>
-	inline basic_Rectangle2D<_T>::basic_Rectangle2D(const basic_Bounds2D<_T> &bounds) :
+	template <class T_>
+	inline basic_Rectangle2D<T_>::basic_Rectangle2D(const basic_Bounds2D<T_> &bounds) :
 		Left(bounds.Left), Top(bounds.Top), Width(bounds.Width()), Height(bounds.Height())
 	{ }
 
-	template <class _T>
-	inline basic_Rectangle2D<_T>::operator basic_Bounds2D<_T>() {
-		return basic_Bounds2D<_T>(*this);
+	template <class T_>
+	inline basic_Rectangle2D<T_>::operator basic_Bounds2D<T_>() {
+		return basic_Bounds2D<T_>(*this);
 	}
 
-	template <class _T>
-	inline basic_Rectangle2D<_T>& basic_Rectangle2D<_T>::operator =(const basic_Bounds2D<_T> &bounds) {
+	template <class T_>
+	inline basic_Rectangle2D<T_>& basic_Rectangle2D<T_>::operator =(const basic_Bounds2D<T_> &bounds) {
 		Left=bounds.Left;
 		Top=bounds.Top;
 		Width=bounds.Width();
@@ -41,18 +41,18 @@ namespace gge {
 		return *this;
 	}
 
-	template <class _T>
-	inline basic_Bounds2D<_T>::basic_Bounds2D(const basic_Rectangle2D<_T> &rectangle) :
+	template <class T_>
+	inline basic_Bounds2D<T_>::basic_Bounds2D(const basic_Rectangle2D<T_> &rectangle) :
 		Left(rectangle.Left), Top(rectangle.Top), Right(rectangle.Right()), Bottom(rectangle.Bottom())
 	{ }
 
-	template <class _T>
-	inline basic_Bounds2D<_T>::operator basic_Rectangle2D<_T>() {
-		return basic_Rectangle2D<_T>(*this);
+	template <class T_>
+	inline basic_Bounds2D<T_>::operator basic_Rectangle2D<T_>() {
+		return basic_Rectangle2D<T_>(*this);
 	}
 
-	template <class _T>
-	inline basic_Bounds2D<_T>& basic_Bounds2D<_T>::operator =(const basic_Rectangle2D<_T> &rect) {
+	template <class T_>
+	inline basic_Bounds2D<T_>& basic_Bounds2D<T_>::operator =(const basic_Rectangle2D<T_> &rect) {
 		Left=rect.Left;
 		Top=rect.Top;
 		Right=rect.Right();

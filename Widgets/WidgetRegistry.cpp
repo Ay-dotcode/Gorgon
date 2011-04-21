@@ -2,6 +2,8 @@
 #include "LinearOrganizer.h"
 #include "../Resource/DataResource.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 	
 	void WidgetRegistry::DiscoverWidgets(ResourceFile *file) {
@@ -15,7 +17,7 @@ namespace gge { namespace widgets {
 		Pointers.Fetch(file->Root().asFolder(1));
 		
 		FolderResource *fonts=file->Root().asFolder(2);
-		fonttheme=dynamic_cast<gre::FontTheme *>(fonts->getItem(0));
+		fonttheme=dynamic_cast<resource::FontTheme *>(fonts->getItem(0));
 		normal=fonts->asBitmapFont(1);
 		if(fonts->getCount()>2)
 			small=fonts->asBitmapFont(2);

@@ -6,7 +6,9 @@
 #include "../Utils/Size2D.h"
 #include "../Engine/Font.h"
 
-namespace gre {
+#include <stdexcept>
+
+namespace gge { namespace resource {
 	class ResourceFile;
 	
 	////This function loads a text resource from the given file
@@ -111,8 +113,8 @@ namespace gre {
 
 		LinkData(Guid *guid) : value(NULL) { this->guid=new Guid(*guid); }
 		operator ResourceBase *() { return value; }
-		operator ResourceBase &() { if(!value) throw runtime_error("Target is not set"); return *value; }
-		ResourceBase &Get() { if(!value) throw runtime_error("Target is not set"); return *value; }
+		operator ResourceBase &() { if(!value) throw std::runtime_error("Target is not set"); return *value; }
+		ResourceBase &Get() { if(!value) throw std::runtime_error("Target is not set"); return *value; }
 
 		virtual void Prepare(ResourceFile *File);
 	};
@@ -199,4 +201,4 @@ namespace gre {
 	protected:
 		ResourceFile *file;
 	};
-}
+} }

@@ -6,7 +6,7 @@
 #include "ImageResource.h"
 #include "../Resource/ResizableObject.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	class ResourceFile;
 	
 	////This function loads a text resource from the given file
@@ -15,7 +15,7 @@ namespace gre {
 	class AnimationResource;
 
 	////This class draws an animated image
-	class ImageAnimation : public DiscreteAnimatorBase, public Buffered2DGraphic, public ResizableObject {
+	class ImageAnimation : public DiscreteAnimatorBase, public graphics::Buffered2DGraphic, public ResizableObject {
 		friend class AnimationResource;
 	public:
 	protected:
@@ -47,53 +47,53 @@ namespace gre {
 		virtual void Pause() { DiscreteAnimatorBase::Pause(); }
 		virtual void setLoop(bool Loop) { islooping=Loop; }
 		virtual int getDuration() { return DiscreteAnimatorBase::duration; }
-		virtual void Draw(I2DGraphicsTarget *Target,int X,int Y) { 
+		virtual void Draw(graphics::I2DGraphicsTarget *Target,int X,int Y) { 
 			Draw(Target, X, Y, Texture.W, Texture.H);
 		}
-		void Draw(I2DGraphicsTarget &Target,int X,int Y) { Draw(&Target, X,Y); }
+		void Draw(graphics::I2DGraphicsTarget &Target,int X,int Y) { Draw(&Target, X,Y); }
 
-		virtual void Draw(I2DGraphicsTarget *Target,int X,int Y,int W,int H) { 
+		virtual void Draw(graphics::I2DGraphicsTarget *Target,int X,int Y,int W,int H) { 
 			if(Texture.ID)
-				Buffered2DGraphic::Draw(Target, X, Y, W, H);
+				graphics::Buffered2DGraphic::Draw(Target, X, Y, W, H);
 		}
-		void Draw(I2DGraphicsTarget &Target,int X,int Y,int W,int H) { Draw(&Target, X,Y, W,H); }
+		void Draw(graphics::I2DGraphicsTarget &Target,int X,int Y,int W,int H) { Draw(&Target, X,Y, W,H); }
 
-		virtual void Draw(I2DGraphicsTarget *Target,int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4, int Y4) { 
+		virtual void Draw(graphics::I2DGraphicsTarget *Target,int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4, int Y4) { 
 			if(Texture.ID)
 				Buffered2DGraphic::Draw(Target, X1, Y1, X2, Y2, X3, Y3, X4, Y4);
 		}
-		void Draw(I2DGraphicsTarget &Target,int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4, int Y4) { Draw(&Target, X1,Y1, X2,Y2, X3,Y3, X4,Y4); }
+		void Draw(graphics::I2DGraphicsTarget &Target,int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4, int Y4) { Draw(&Target, X1,Y1, X2,Y2, X3,Y3, X4,Y4); }
 
-		virtual void DrawTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
+		virtual void DrawTiled(graphics::I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
 			if(Texture.ID)
-				Buffered2DGraphic::DrawTiled(Target, X, Y, W, H);
+				graphics::Buffered2DGraphic::DrawTiled(Target, X, Y, W, H);
 		}
-		void DrawTiled(I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawTiled(&Target, X,Y, W,H); }
-		virtual void DrawResized(TilingDirection Tiling, I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
+		void DrawTiled(graphics::I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawTiled(&Target, X,Y, W,H); }
+		virtual void DrawResized(TilingDirection Tiling, graphics::I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
 			if(Texture.ID)
-				Buffered2DGraphic::DrawResized(Tiling, Target, X, Y, W, H);
+				graphics::Buffered2DGraphic::DrawResized(Tiling, Target, X, Y, W, H);
 		}
-		virtual void DrawResized(TilingDirection Tiling, I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawResized(Tiling, &Target, X,Y, W,H); }
+		virtual void DrawResized(TilingDirection Tiling, graphics::I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawResized(Tiling, &Target, X,Y, W,H); }
 
-		virtual void DrawHTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
+		virtual void DrawHTiled(graphics::I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
 			if(Texture.ID)
-				Buffered2DGraphic::DrawHTiled(Target, X, Y, W, H);
+				graphics::Buffered2DGraphic::DrawHTiled(Target, X, Y, W, H);
 		}
-		void DrawHTiled(I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawHTiled(&Target, X,Y, W,H); }
+		void DrawHTiled(graphics::I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawHTiled(&Target, X,Y, W,H); }
 
-		virtual void DrawVTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
+		virtual void DrawVTiled(graphics::I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
 			if(Texture.ID)
-				Buffered2DGraphic::DrawVTiled(Target, X, Y, W, H);
+				graphics::Buffered2DGraphic::DrawVTiled(Target, X, Y, W, H);
 		}
-		void DrawVTiled(I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawVTiled(&Target, X,Y, W,H); }
+		void DrawVTiled(graphics::I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawVTiled(&Target, X,Y, W,H); }
 
 
 		virtual int  Width(int W=-1);
 		virtual int  Height(int H=-1);
 
 	public:
-		virtual void DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
-		virtual void DrawResized(I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) { DrawResized(&Target, X,Y ,W,H, Align); }
+		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
+		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) { DrawResized(&Target, X,Y ,W,H, Align); }
 
 		ResizableObject::Tiling HorizontalTiling;
 		ResizableObject::Tiling VerticalTiling;
@@ -146,4 +146,4 @@ namespace gre {
 		////Frame durations
 		int *Durations;
 	};
-}
+} }

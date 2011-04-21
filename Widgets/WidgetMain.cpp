@@ -18,6 +18,8 @@
 #include "FrameBP.h"
 #include "ResizableObjectResource.h"
 
+using namespace gge::resource;
+
 #define DIALOG_LAYER_ZORDER		-10
 
 namespace gge { namespace widgets {
@@ -52,5 +54,32 @@ namespace gge { namespace widgets {
 		File->Loaders.Add(new ResourceLoader(GID_FRAME, LoadFrame)); 
 
 		File->Loaders.Add(new ResourceLoader(GID_RESIZABLEOBJECT, LoadResizableObject)); 
+	}
+	
+	bool WidgetLayer::PropagateMouseEvent(input::MouseEventType event, int x, int y, void *data) {
+		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&input::MOUSE_EVENT_UP) || (input::pressedObject && event&input::MOUSE_EVENT_MOVE)) ) {
+			if(LayerBase::PropagateMouseEvent(event, x, y, data))
+				return true;
+
+			if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&input::MOUSE_EVENT_UP) || (input::pressedObject->parent==this && event&input::MOUSE_EVENT_MOVE)) )
+				return BasicPointerTarget::PropagateMouseEvent(event, x-X, y-Y, data);
+			else
+				return false;
+		}
+
+		return false;
+	}
+	bool WidgetLayer::PropagateMouseScrollEvent(int amount, input::MouseEventType event, int x, int y, void *data) {
+		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H)) ) {
+			if(LayerBase::PropagateMouseScrollEvent(amount, event, x, y, data))
+				return true;
+
+			if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H)) )
+				return BasicPointerTarget::PropagateMouseScrollEvent(amount, event, x-X, y-Y, data);
+			else
+				return false;
+		}
+
+		return false;
 	}
 } }

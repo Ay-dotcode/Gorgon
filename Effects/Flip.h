@@ -6,7 +6,7 @@
 #include "../Engine/Graphics.h"
 #include "../Engine/GraphicLayers.h"
 
-namespace geffects {
+namespace gge { namespace effects {
 	enum FlipSide {
 		EAFS_Top=1,
 		EAFS_Left,
@@ -14,7 +14,7 @@ namespace geffects {
 		EAFS_Right,
 	};
 
-	class FlipEffect : public gge::AnimatorBase, public gge::Buffered2DGraphic {
+	class FlipEffect : public AnimatorBase, public graphics::Buffered2DGraphic {
 	public:
 		////This event is fired when the animation
 		/// completes
@@ -28,7 +28,7 @@ namespace geffects {
 		void Flip(int ETA);
 		void CenterPivot();
 
-		gge::Buffered2DGraphic *Front,*Back;
+		graphics::Buffered2DGraphic *Front,*Back;
 		FlipSide Side;
 		bool Backside;
 		bool Flipping;
@@ -38,8 +38,8 @@ namespace geffects {
 		Point PivotFront;
 		Point PivotBack;
 
-		virtual void Draw(I2DGraphicsTarget *Layer, int X, int Y);
-		virtual void Draw(I2DGraphicsTarget &Layer, int X, int Y) { Draw(&Layer, X,Y); }
+		virtual void Draw(graphics::I2DGraphicsTarget *Layer, int X, int Y);
+		virtual void Draw(graphics::I2DGraphicsTarget &Layer, int X, int Y) { Draw(&Layer, X,Y); }
 
 	protected:
 		void Initialize();
@@ -47,4 +47,4 @@ namespace geffects {
 		virtual bool isFinished() { return AnimatorBase::currentTime()>=ETA; }
 		virtual void Process(int Time);
 	};
-};
+} }

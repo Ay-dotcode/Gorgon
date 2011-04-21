@@ -1,6 +1,8 @@
 #include "SliderElement.h"
 #include "Slider.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 	SliderElement::SliderElement() {
 		font_guid=NULL;
@@ -74,7 +76,7 @@ namespace gge { namespace widgets {
 
 		return *this;
 	}
-	SliderElement &SliderElement::DrawOverlay(Basic2DLayer &Target) {
+	SliderElement &SliderElement::DrawOverlay(graphics::Basic2DLayer &Target) {
 		int h,w;
 		int y;
 
@@ -192,7 +194,7 @@ namespace gge { namespace widgets {
 
 		return *this;
 	}
-	SliderElement &SliderElement::DrawTickNumbers(Colorizable2DLayer &Target, float Distance, float Start, float Increment, float End, string Format) {
+	SliderElement &SliderElement::DrawTickNumbers(graphics::Colorizable2DLayer &Target, float Distance, float Start, float Increment, float End, string Format) {
 		float v, y, x;
 		char temp[40];
 
@@ -240,7 +242,7 @@ namespace gge { namespace widgets {
 
 		return *this;
 	}
-	SliderElement &SliderElement::DrawTickNames(Colorizable2DLayer &Target, float Distance, utils::Collection<SliderLocationName> &Texts, bool useLocations, float min, float max) {
+	SliderElement &SliderElement::DrawTickNames(graphics::Colorizable2DLayer &Target, float Distance, utils::Collection<SliderLocationName> &Texts, bool useLocations, float min, float max) {
 		float x, y;
 
 		if(useLocations) {

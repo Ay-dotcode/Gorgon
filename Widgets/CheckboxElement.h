@@ -10,9 +10,6 @@
 #include "../Utils/Margins.h"
 #include <string>
 
-using namespace gre;
-using namespace gge;
-using namespace std;
 
 namespace gge { namespace widgets {
 
@@ -22,8 +19,8 @@ namespace gge { namespace widgets {
 #define GID_CHECKBOX_ELEMENT_PROPS		0x5250101
 #define GID_CHECKBOX_ELEMENT_PROPS2		0x5250102
 
-	class CheckboxElement : public ResourceBase {
-		friend ResourceBase *LoadCheckboxElement(ResourceFile*,FILE*,int);
+	class CheckboxElement : public resource::ResourceBase {
+		friend resource::ResourceBase *LoadCheckboxElement(resource::ResourceFile*,FILE*,int);
 		friend class CheckboxStyleGroup;
 	public:
 
@@ -40,17 +37,17 @@ namespace gge { namespace widgets {
 
 		virtual int getGID() { return GID_CHECKBOX_ELEMENT; }
 		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
 
-		CheckboxElement &Draw(WidgetLayer &layer,Colorizable2DLayer &textlayer,string &caption);
+		CheckboxElement &Draw(WidgetLayer &layer,graphics::Colorizable2DLayer &textlayer,string &caption);
 		CheckboxElement &ReadyAnimation(bool Backwards);
 		CheckboxElement &Reverse();
 
 		Font Font;
-		SoundResource *Sound;
+		resource::SoundResource *Sound;
 		int Duration;
-		RGBint ForeColor;
-		RGBint ShadowColor;
+		graphics::RGBint ForeColor;
+		graphics::RGBint ShadowColor;
 		Point ShadowOffset;
 
 		int Lines;
@@ -74,9 +71,9 @@ namespace gge { namespace widgets {
 	protected:
 		FontInitiator temp_font;
 		Guid *sound_guid;
-		ResourceFile *file;
-		ImageAnimation *symbol;
-		ResizableObject *border;
-		ResourceBase *bordertemplate;
+		resource::ResourceFile *file;
+		resource::ImageAnimation *symbol;
+		resource::ResizableObject *border;
+		resource::ResourceBase *bordertemplate;
 	};
 } }

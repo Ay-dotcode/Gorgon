@@ -13,7 +13,7 @@
 
 
 
-namespace gre {
+namespace gge { namespace resource {
 
 	ResourceBase *LoadFolderResource(ResourceFile* File, FILE* Data, int Size) {
 		int tpos=ftell(Data)+Size;
@@ -152,4 +152,4 @@ namespace gre {
 			return dynamic_cast<BitmapFontResource*>(Subitems[Index]); 
 		}
 
-}
+} }

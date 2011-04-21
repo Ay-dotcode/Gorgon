@@ -7,8 +7,6 @@
 #include "Button.h"
 #include <math.h>
 
-using namespace gre;
-
 namespace gge { namespace widgets {
 
 #define GID_BUTTON			0x05840000
@@ -16,15 +14,15 @@ namespace gge { namespace widgets {
 #define GID_BUTTON_NAMES	0x05840102
 #define GID_BUTTON_NAME		0x05840103
 
-	class ButtonBP : public ResourceBase, public IWidgetBluePrint
+	class ButtonBP : public resource::ResourceBase, public IWidgetBluePrint
 	{
-		friend ResourceBase *LoadButton(ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadButton(resource::ResourceFile*,FILE*,int);
 		friend class Button;
 	public:
 		ButtonBP(void);
 		virtual int getGID() { return GID_BUTTON; }
 		virtual IWidgetObject *Create(IWidgetContainer &Container,int X,int Y,int Cx,int Cy);
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
 
 	protected:
 		utils::Collection<ButtonStyleGroup> StyleGroups;

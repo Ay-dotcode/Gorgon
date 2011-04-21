@@ -4,7 +4,7 @@
 #include "../Engine/Input.h"
 #include "../Engine/GraphicLayers.h"
 
-#include "IWidgetContainer.h"
+#include "WidgetMain.h"
 
 
 namespace gge { namespace widgets {
@@ -65,8 +65,8 @@ namespace gge { namespace widgets {
 		virtual void				SetLayer(gge::LayerBase &layer) { SetLayer(&layer); }
 
 
-		virtual gge::Basic2DLayer	&GetBackgroundLayer() { return BackgroundLayer; }
-		virtual void				RedrawBackground() { BackgroundLayer.Clear(); BackgroundRedrawEvent(); }
+		virtual graphics::Basic2DLayer	&GetBackgroundLayer()	{ return BackgroundLayer; }
+		virtual void					RedrawBackground()		{ BackgroundLayer.Clear(); BackgroundRedrawEvent(); }
 
 		virtual bool keyboard_event(gge::input::KeyboardEvent::Type event,int keycode);
 
@@ -76,7 +76,7 @@ namespace gge { namespace widgets {
 
 		WidgetLayer &getBaseLayer() { return BaseLayer; }
 		WidgetLayer &getObjectLayer() { return ObjectLayer; }
-		Basic2DLayer &getBackgroundLayer() { return BackgroundLayer; }
+		graphics::Basic2DLayer &getBackgroundLayer() { return BackgroundLayer; }
 
 	protected:
 
@@ -86,7 +86,7 @@ namespace gge { namespace widgets {
 		WidgetLayer  BaseLayer;
 		WidgetLayer  ExtenderLayer;
 		WidgetLayer  ObjectLayer;
-		gge::Basic2DLayer BackgroundLayer;
+		graphics::Basic2DLayer BackgroundLayer;
 
 		utils::LinkedList<IWidgetObject> Subobjects;
 		IWidgetObject* Focussed;

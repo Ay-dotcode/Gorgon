@@ -7,7 +7,7 @@
 #include "../Resource/BitmapFontResource.h"
 
 
-namespace geffects {
+namespace gge { namespace effects {
 
 	////This effect displays a counting number going from a given value to another one.
 	class CountingText : public AnimatorBase {
@@ -17,7 +17,7 @@ namespace geffects {
 		utils::EventChain<CountingText> FinishedEvent;
 
 		////Color of the text, default is black
-		RGBint Color;
+		graphics::RGBint Color;
 		////Text shadow, default is none
 		gge::ShadowParams Shadow;
 		////Alignment of the text, default is left
@@ -29,11 +29,11 @@ namespace geffects {
 		////Customized printing format, printf style that can feature a %f as the current value
 		string Format;
 		////The font to be used
-		gre::BitmapFontResource *Font;
+		resource::BitmapFontResource *Font;
 
 
 		////Initializes the effect
-		CountingText(BitmapFontResource *Font=NULL, RGBint color=RGBint(0xff000000), int Width=0, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams(), int Decimals=0) : 
+		CountingText(resource::BitmapFontResource *Font=NULL, graphics::RGBint color=graphics::RGBint(0xff000000), int Width=0, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams(), int Decimals=0) : 
 			Color(color),
 			Font(Font),
 			Shadow(Shadow),
@@ -53,7 +53,7 @@ namespace geffects {
 		void Setup(float To, int Time) { Setup(current, To, Time); }
 		
 		////Prints the current text to a layer
-		void Print(I2DColorizableGraphicsTarget *target, int X, int Y);
+		void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y);
 
 	protected:
 		float from;
@@ -65,4 +65,4 @@ namespace geffects {
 		virtual bool isFinished();
 		virtual void Process(int Time);
 	};
-}
+} }

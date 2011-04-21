@@ -2,9 +2,9 @@
 
 #include "../Engine/Graphics.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	class ResourceFile;
-}
+} }
 
 namespace gge {
 
@@ -48,20 +48,20 @@ namespace gge {
 		ShadowTypes Type;
 		Point Offset;
 		////Shadow color
-		RGBint Color;
+		graphics::RGBint Color;
 
 		ShadowParams() : Type(None), Offset(Point(1,2)), Color(0x60808080) 
 		{ }
 
-		ShadowParams(ShadowTypes Type, RGBint color, int XDist, int YDist) : 
+		ShadowParams(ShadowTypes Type, graphics::RGBint color, int XDist, int YDist) : 
 			Type(Type), Offset(Point(XDist, YDist)), Color(color) 
 		{ }
 
-		ShadowParams(ShadowTypes Type, RGBint color, Point Offset=Point(1,2)) : 
+		ShadowParams(ShadowTypes Type, graphics::RGBint color, Point Offset=Point(1,2)) : 
 			Type(Type), Color(color), Offset(Offset) 
 		{ }
 
-		static ShadowParams Load(gre::ResourceFile* file,FILE* gfile,int sz) {
+		static ShadowParams Load(resource::ResourceFile* file,FILE* gfile,int sz) {
 			ShadowParams s;
 
 			fread(&s.Type, 4,1, gfile);
@@ -112,11 +112,11 @@ namespace gge {
 		friend class Font;
 	protected:
 		////Prints the given text to the target using given color.
-		virtual void Print(I2DColorizableGraphicsTarget *target, int X, int Y, string Text, RGBint Color, ShadowParams Shadow=ShadowParams())=0;
+		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, string Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams())=0;
 		////Prints the given text to the target using given color. Text is wrapped and aligned as necessary
-		virtual void Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, RGBint Color, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams())=0;
+		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams())=0;
 		////This method is extended to cover meta functionality for advanced text rendering
-		virtual void Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, RGBint Color, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams())=0;
+		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams())=0;
 		////This method is extended to cover meta functionality for advanced text rendering. This function does not render the given text
 		/// it only processes meta data
 		virtual void Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align)=0;

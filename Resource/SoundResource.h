@@ -5,7 +5,7 @@
 #include "../Engine/Sound.h"
 #include "../Engine/Wave.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	class ResourceFile;
 	
 	////This function loads a sound resource from the given file
@@ -40,4 +40,4 @@ namespace gre {
 
 		gge::sound::Wave *CreateWave() { return new gge::sound::Wave(Buffer); }
 	};
-}
+} }

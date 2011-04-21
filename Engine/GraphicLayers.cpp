@@ -4,7 +4,7 @@
 using namespace gge::utils;
 using namespace gge::input;
 
-namespace gge {
+namespace gge { namespace graphics {
 	RGBfloat CurrentLayerColor;
 	int trX,trY;
 	int scX,scY,scW,scH;
@@ -28,7 +28,7 @@ namespace gge {
 
 		EnableClipping=false;
 	}
-	void Basic2DLayer::Draw(gge::GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
+	void Basic2DLayer::Draw(GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
 		BasicSurface *surface=Surfaces.Add();
 
 		surface->setTexture(Image);
@@ -68,7 +68,7 @@ namespace gge {
 				surface->TextureCoords[2].t=(float)H/Image->H;
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=(float)H/Image->H;
 				surface->VertexCoords[3].x=X;
@@ -99,7 +99,7 @@ namespace gge {
 					surface->TextureCoords[2].t=(float)H/Image->H;
 					surface->VertexCoords[2].x=x+Image->W;
 					surface->VertexCoords[2].y=Y+H;
-		 
+
 					surface->TextureCoords[3].s=0;
 					surface->TextureCoords[3].t=(float)H/Image->H;
 					surface->VertexCoords[3].x=x;
@@ -126,7 +126,7 @@ namespace gge {
 				surface->TextureCoords[2].t=(float)H/Image->H;
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=(float)H/Image->H;
 				surface->VertexCoords[3].x=x;
@@ -159,7 +159,7 @@ namespace gge {
 					surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 					surface->VertexCoords[2].x=X+W;
 					surface->VertexCoords[2].y=y+Image->H;
-		 
+
 					surface->TextureCoords[3].s=0;
 					surface->TextureCoords[3].t=Image->ImageCoord[3].t;
 					surface->VertexCoords[3].x=X;
@@ -186,7 +186,7 @@ namespace gge {
 				surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[3].x=X;
@@ -219,7 +219,7 @@ namespace gge {
 						surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 						surface->VertexCoords[2].x=x+Image->W;
 						surface->VertexCoords[2].y=cy;
-			 
+
 						surface->TextureCoords[3].s=0;
 						surface->TextureCoords[3].t=Image->ImageCoord[3].t;
 						surface->VertexCoords[3].x=x;
@@ -246,12 +246,12 @@ namespace gge {
 					surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 					surface->VertexCoords[2].x=X+W;
 					surface->VertexCoords[2].y=cy;
-		 
+
 					surface->TextureCoords[3].s=0;
 					surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 					surface->VertexCoords[3].x=x;
 					surface->VertexCoords[3].y=cy;
-					
+
 				}
 
 				//this part is the last partial row
@@ -280,7 +280,7 @@ namespace gge {
 					surface->TextureCoords[2].t=pty;
 					surface->VertexCoords[2].x=x+Image->W;
 					surface->VertexCoords[2].y=cy;
-		 
+
 					surface->TextureCoords[3].s=0;
 					surface->TextureCoords[3].t=pty;
 					surface->VertexCoords[3].x=x;
@@ -307,7 +307,7 @@ namespace gge {
 				surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[3].x=x;
@@ -339,7 +339,7 @@ namespace gge {
 			surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
- 
+
 			surface->TextureCoords[3].s=0;
 			surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[3].x=X;
@@ -370,7 +370,7 @@ namespace gge {
 				surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 				surface->VertexCoords[2].x=x+Image->W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 				surface->VertexCoords[3].x=x;
@@ -397,7 +397,7 @@ namespace gge {
 			surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
- 
+
 			surface->TextureCoords[3].s=0;
 			surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[3].x=x;
@@ -427,45 +427,18 @@ namespace gge {
 			surface->TextureCoords[2].t=(float)H/Image->H;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
- 
+
 			surface->TextureCoords[3].s=0;
 			surface->TextureCoords[3].t=(float)H/Image->H;
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
 		} else {
-				//we leave at least a portion of an image to the last part
-				//so that there will be less controls
-				int y=Y,ty=Y+H-Image->H;
-				//draw whole parts where image is texture repeated in
-				//x axis, we only need to draw multiple images for y axis
-				for(y=Y;y<ty;y+=Image->H) {
-					BasicSurface *surface=Surfaces.Add();
-
-					surface->setTexture(Image);
-					surface->CreateTextureCoords();
-
-					surface->TextureCoords[0].s=0;
-					surface->TextureCoords[0].t=0;
-					surface->VertexCoords[0].x=X;
-					surface->VertexCoords[0].y=y;
-
-					surface->TextureCoords[1].s=Image->ImageCoord[1].s;
-					surface->TextureCoords[1].t=0;
-					surface->VertexCoords[1].x=X+W;
-					surface->VertexCoords[1].y=y;
-
-					surface->TextureCoords[2].s=Image->ImageCoord[2].s;
-					surface->TextureCoords[2].t=Image->ImageCoord[2].t;
-					surface->VertexCoords[2].x=X+W;
-					surface->VertexCoords[2].y=y+Image->H;
-		 
-					surface->TextureCoords[3].s=0;
-					surface->TextureCoords[3].t=Image->ImageCoord[3].t;
-					surface->VertexCoords[3].x=X;
-					surface->VertexCoords[3].y=y+Image->H;
-				}
-
-				//last image (might be partial)
+			//we leave at least a portion of an image to the last part
+			//so that there will be less controls
+			int y=Y,ty=Y+H-Image->H;
+			//draw whole parts where image is texture repeated in
+			//x axis, we only need to draw multiple images for y axis
+			for(y=Y;y<ty;y+=Image->H) {
 				BasicSurface *surface=Surfaces.Add();
 
 				surface->setTexture(Image);
@@ -482,14 +455,41 @@ namespace gge {
 				surface->VertexCoords[1].y=y;
 
 				surface->TextureCoords[2].s=Image->ImageCoord[2].s;
-				surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
+				surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 				surface->VertexCoords[2].x=X+W;
-				surface->VertexCoords[2].y=Y+H;
-	 
+				surface->VertexCoords[2].y=y+Image->H;
+
 				surface->TextureCoords[3].s=0;
-				surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
+				surface->TextureCoords[3].t=Image->ImageCoord[3].t;
 				surface->VertexCoords[3].x=X;
-				surface->VertexCoords[3].y=Y+H;
+				surface->VertexCoords[3].y=y+Image->H;
+			}
+
+			//last image (might be partial)
+			BasicSurface *surface=Surfaces.Add();
+
+			surface->setTexture(Image);
+			surface->CreateTextureCoords();
+
+			surface->TextureCoords[0].s=0;
+			surface->TextureCoords[0].t=0;
+			surface->VertexCoords[0].x=X;
+			surface->VertexCoords[0].y=y;
+
+			surface->TextureCoords[1].s=Image->ImageCoord[1].s;
+			surface->TextureCoords[1].t=0;
+			surface->VertexCoords[1].x=X+W;
+			surface->VertexCoords[1].y=y;
+
+			surface->TextureCoords[2].s=Image->ImageCoord[2].s;
+			surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
+			surface->VertexCoords[2].x=X+W;
+			surface->VertexCoords[2].y=Y+H;
+
+			surface->TextureCoords[3].s=0;
+			surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
+			surface->VertexCoords[3].x=X;
+			surface->VertexCoords[3].y=Y+H;
 		}
 	}
 
@@ -540,14 +540,14 @@ namespace gge {
 			BasicSurface *surface=Surfaces[i];
 			glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
 			glBegin(GL_QUADS);
-				glTexCoord2fv(surface->TextureCoords[0].vect);
-				glVertex3fv(surface->VertexCoords[0].vect);
-				glTexCoord2fv(surface->TextureCoords[1].vect);
-				glVertex3fv(surface->VertexCoords[1].vect);
-				glTexCoord2fv(surface->TextureCoords[2].vect);
-				glVertex3fv(surface->VertexCoords[2].vect);
-				glTexCoord2fv(surface->TextureCoords[3].vect);
-				glVertex3fv(surface->VertexCoords[3].vect);
+			glTexCoord2fv(surface->TextureCoords[0].vect);
+			glVertex3fv(surface->VertexCoords[0].vect);
+			glTexCoord2fv(surface->TextureCoords[1].vect);
+			glVertex3fv(surface->VertexCoords[1].vect);
+			glTexCoord2fv(surface->TextureCoords[2].vect);
+			glVertex3fv(surface->VertexCoords[2].vect);
+			glTexCoord2fv(surface->TextureCoords[3].vect);
+			glVertex3fv(surface->VertexCoords[3].vect);
 			glEnd();
 		}
 
@@ -560,7 +560,7 @@ namespace gge {
 		glPopMatrix();
 		trX-=X;
 		trY-=Y;
-		
+
 		if(EnableClipping) {
 			scX=pscX;
 			scY=pscY;
@@ -647,14 +647,14 @@ namespace gge {
 			glColor4f(surface->Color.r*CurrentLayerColor.r,surface->Color.g*CurrentLayerColor.g,surface->Color.b*CurrentLayerColor.b,surface->Color.a*CurrentLayerColor.a);
 			glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
 			glBegin(GL_QUADS);
-				glTexCoord2fv(surface->TextureCoords[0].vect);
-				glVertex3fv(surface->VertexCoords[0].vect);
-				glTexCoord2fv(surface->TextureCoords[1].vect);
-				glVertex3fv(surface->VertexCoords[1].vect);
-				glTexCoord2fv(surface->TextureCoords[2].vect);
-				glVertex3fv(surface->VertexCoords[2].vect);
-				glTexCoord2fv(surface->TextureCoords[3].vect);
-				glVertex3fv(surface->VertexCoords[3].vect);
+			glTexCoord2fv(surface->TextureCoords[0].vect);
+			glVertex3fv(surface->VertexCoords[0].vect);
+			glTexCoord2fv(surface->TextureCoords[1].vect);
+			glVertex3fv(surface->VertexCoords[1].vect);
+			glTexCoord2fv(surface->TextureCoords[2].vect);
+			glVertex3fv(surface->VertexCoords[2].vect);
+			glTexCoord2fv(surface->TextureCoords[3].vect);
+			glVertex3fv(surface->VertexCoords[3].vect);
 			glEnd();
 		}
 
@@ -671,7 +671,7 @@ namespace gge {
 		glPopMatrix();
 		trX-=X;
 		trY-=Y;
-		
+
 		if(EnableClipping) {
 			scX=pscX;
 			scY=pscY;
@@ -683,7 +683,7 @@ namespace gge {
 
 	}
 
-	void Colorizable2DLayer::Draw(gge::GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4, RGBint color) {
+	void Colorizable2DLayer::Draw(GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4, RGBint color) {
 		ColorizableSurface *surface=Surfaces.Add();
 
 		surface->setTexture(Image);
@@ -701,7 +701,7 @@ namespace gge {
 		surface->Color=ToRGBfloat(color);
 	}
 
-	void Colorizable2DLayer::Draw(gge::GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
+	void Colorizable2DLayer::Draw(GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
 		ColorizableSurface *surface=Surfaces.Add();
 
 		surface->setTexture(Image);
@@ -743,7 +743,7 @@ namespace gge {
 				surface->TextureCoords[2].t=(float)H/Image->H;
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=(float)H/Image->H;
 				surface->VertexCoords[3].x=X;
@@ -775,7 +775,7 @@ namespace gge {
 					surface->TextureCoords[2].t=(float)H/Image->H;
 					surface->VertexCoords[2].x=x+Image->W;
 					surface->VertexCoords[2].y=Y+H;
-		 
+
 					surface->TextureCoords[3].s=0;
 					surface->TextureCoords[3].t=(float)H/Image->H;
 					surface->VertexCoords[3].x=x;
@@ -803,7 +803,7 @@ namespace gge {
 				surface->TextureCoords[2].t=(float)H/Image->H;
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=(float)H/Image->H;
 				surface->VertexCoords[3].x=x;
@@ -837,7 +837,7 @@ namespace gge {
 					surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 					surface->VertexCoords[2].x=X+W;
 					surface->VertexCoords[2].y=y+Image->H;
-		 
+
 					surface->TextureCoords[3].s=0;
 					surface->TextureCoords[3].t=Image->ImageCoord[3].t;
 					surface->VertexCoords[3].x=X;
@@ -865,7 +865,7 @@ namespace gge {
 				surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[3].x=X;
@@ -899,7 +899,7 @@ namespace gge {
 						surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 						surface->VertexCoords[2].x=x+Image->W;
 						surface->VertexCoords[2].y=cy;
-			 
+
 						surface->TextureCoords[3].s=0;
 						surface->TextureCoords[3].t=Image->ImageCoord[3].t;
 						surface->VertexCoords[3].x=x;
@@ -927,12 +927,12 @@ namespace gge {
 					surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 					surface->VertexCoords[2].x=X+W;
 					surface->VertexCoords[2].y=cy;
-		 
+
 					surface->TextureCoords[3].s=0;
 					surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 					surface->VertexCoords[3].x=x;
 					surface->VertexCoords[3].y=cy;
-					
+
 				}
 
 				//this part is the last partial row
@@ -962,7 +962,7 @@ namespace gge {
 					surface->TextureCoords[2].t=pty;
 					surface->VertexCoords[2].x=x+Image->W;
 					surface->VertexCoords[2].y=cy;
-		 
+
 					surface->TextureCoords[3].s=0;
 					surface->TextureCoords[3].t=pty;
 					surface->VertexCoords[3].x=x;
@@ -990,7 +990,7 @@ namespace gge {
 				surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[3].x=x;
@@ -1023,7 +1023,7 @@ namespace gge {
 			surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
- 
+
 			surface->TextureCoords[3].s=0;
 			surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[3].x=X;
@@ -1055,7 +1055,7 @@ namespace gge {
 				surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 				surface->VertexCoords[2].x=x+Image->W;
 				surface->VertexCoords[2].y=Y+H;
-	 
+
 				surface->TextureCoords[3].s=0;
 				surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 				surface->VertexCoords[3].x=x;
@@ -1083,7 +1083,7 @@ namespace gge {
 			surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
- 
+
 			surface->TextureCoords[3].s=0;
 			surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[3].x=x;
@@ -1114,46 +1114,18 @@ namespace gge {
 			surface->TextureCoords[2].t=(float)H/Image->H;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
- 
+
 			surface->TextureCoords[3].s=0;
 			surface->TextureCoords[3].t=(float)H/Image->H;
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
 		} else {
-				//we leave at least a portion of an image to the last part
-				//so that there will be less controls
-				int y=Y,ty=Y+H-Image->H;
-				//draw whole parts where image is texture repeated in
-				//x axis, we only need to draw multiple images for y axis
-				for(y=Y;y<ty;y+=Image->H) {
-					ColorizableSurface *surface=Surfaces.Add();
-					surface->Color.a=surface->Color.r=surface->Color.g=surface->Color.b=1;
-
-					surface->setTexture(Image);
-					surface->CreateTextureCoords();
-
-					surface->TextureCoords[0].s=0;
-					surface->TextureCoords[0].t=0;
-					surface->VertexCoords[0].x=X;
-					surface->VertexCoords[0].y=y;
-
-					surface->TextureCoords[1].s=Image->ImageCoord[1].s;
-					surface->TextureCoords[1].t=0;
-					surface->VertexCoords[1].x=X+W;
-					surface->VertexCoords[1].y=y;
-
-					surface->TextureCoords[2].s=Image->ImageCoord[2].s;
-					surface->TextureCoords[2].t=Image->ImageCoord[2].t;
-					surface->VertexCoords[2].x=X+W;
-					surface->VertexCoords[2].y=y+Image->H;
-		 
-					surface->TextureCoords[3].s=0;
-					surface->TextureCoords[3].t=Image->ImageCoord[3].t;
-					surface->VertexCoords[3].x=X;
-					surface->VertexCoords[3].y=y+Image->H;
-				}
-
-				//last image (might be partial)
+			//we leave at least a portion of an image to the last part
+			//so that there will be less controls
+			int y=Y,ty=Y+H-Image->H;
+			//draw whole parts where image is texture repeated in
+			//x axis, we only need to draw multiple images for y axis
+			for(y=Y;y<ty;y+=Image->H) {
 				ColorizableSurface *surface=Surfaces.Add();
 				surface->Color.a=surface->Color.r=surface->Color.g=surface->Color.b=1;
 
@@ -1171,18 +1143,46 @@ namespace gge {
 				surface->VertexCoords[1].y=y;
 
 				surface->TextureCoords[2].s=Image->ImageCoord[2].s;
-				surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
+				surface->TextureCoords[2].t=Image->ImageCoord[2].t;
 				surface->VertexCoords[2].x=X+W;
-				surface->VertexCoords[2].y=Y+H;
-	 
+				surface->VertexCoords[2].y=y+Image->H;
+
 				surface->TextureCoords[3].s=0;
-				surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
+				surface->TextureCoords[3].t=Image->ImageCoord[3].t;
 				surface->VertexCoords[3].x=X;
-				surface->VertexCoords[3].y=Y+H;
+				surface->VertexCoords[3].y=y+Image->H;
+			}
+
+			//last image (might be partial)
+			ColorizableSurface *surface=Surfaces.Add();
+			surface->Color.a=surface->Color.r=surface->Color.g=surface->Color.b=1;
+
+			surface->setTexture(Image);
+			surface->CreateTextureCoords();
+
+			surface->TextureCoords[0].s=0;
+			surface->TextureCoords[0].t=0;
+			surface->VertexCoords[0].x=X;
+			surface->VertexCoords[0].y=y;
+
+			surface->TextureCoords[1].s=Image->ImageCoord[1].s;
+			surface->TextureCoords[1].t=0;
+			surface->VertexCoords[1].x=X+W;
+			surface->VertexCoords[1].y=y;
+
+			surface->TextureCoords[2].s=Image->ImageCoord[2].s;
+			surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
+			surface->VertexCoords[2].x=X+W;
+			surface->VertexCoords[2].y=Y+H;
+
+			surface->TextureCoords[3].s=0;
+			surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
+			surface->VertexCoords[3].x=X;
+			surface->VertexCoords[3].y=Y+H;
 		}
 	}
 
-	void Basic2DRawGraphicsLayer::Draw(Byte *Image, int Width, int Height, gge::ColorMode Mode, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
+	void Basic2DRawGraphicsLayer::Draw(Byte *Image, int Width, int Height, ColorMode Mode, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
 		RawSurface *surface=Surfaces.Add();
 
 		surface->Data=Image;
@@ -1264,14 +1264,14 @@ namespace gge {
 			SetTexture(surface->Data, surface->Width, surface->Height, surface->Mode);
 
 			glBegin(GL_QUADS);
-				glTexCoord2fv(surface->TextureCoords[0].vect);
-				glVertex3fv(surface->VertexCoords[0].vect);
-				glTexCoord2fv(surface->TextureCoords[1].vect);
-				glVertex3fv(surface->VertexCoords[1].vect);
-				glTexCoord2fv(surface->TextureCoords[2].vect);
-				glVertex3fv(surface->VertexCoords[2].vect);
-				glTexCoord2fv(surface->TextureCoords[3].vect);
-				glVertex3fv(surface->VertexCoords[3].vect);
+			glTexCoord2fv(surface->TextureCoords[0].vect);
+			glVertex3fv(surface->VertexCoords[0].vect);
+			glTexCoord2fv(surface->TextureCoords[1].vect);
+			glVertex3fv(surface->VertexCoords[1].vect);
+			glTexCoord2fv(surface->TextureCoords[2].vect);
+			glVertex3fv(surface->VertexCoords[2].vect);
+			glTexCoord2fv(surface->TextureCoords[3].vect);
+			glVertex3fv(surface->VertexCoords[3].vect);
 			glEnd();
 		}
 
@@ -1284,7 +1284,7 @@ namespace gge {
 		glPopMatrix();
 		trX-=X;
 		trY-=Y;
-		
+
 		if(EnableClipping) {
 			scX=pscX;
 			scY=pscY;
@@ -1303,30 +1303,4 @@ namespace gge {
 		isVisible=true;
 		EnableClipping=false;
 	}
-	bool WidgetLayer::PropagateMouseEvent(MouseEventType event, int x, int y, void *data) {
-		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&MOUSE_EVENT_UP) || (pressedObject && event&MOUSE_EVENT_MOVE)) ) {
-			if(LayerBase::PropagateMouseEvent(event, x, y, data))
-				return true;
-
-			if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&MOUSE_EVENT_UP) || (pressedObject->parent==this && event&MOUSE_EVENT_MOVE)) )
-				return BasicPointerTarget::PropagateMouseEvent(event, x-X, y-Y, data);
-			else
-				return false;
-		}
-
-		return false;
-	}
-	bool WidgetLayer::PropagateMouseScrollEvent(int amount, MouseEventType event, int x, int y, void *data) {
-		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H)) ) {
-			if(LayerBase::PropagateMouseScrollEvent(amount, event, x, y, data))
-				return true;
-
-			if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H)) )
-				return BasicPointerTarget::PropagateMouseScrollEvent(amount, event, x-X, y-Y, data);
-			else
-				return false;
-		}
-
-		return false;
-	}
-}
+} }

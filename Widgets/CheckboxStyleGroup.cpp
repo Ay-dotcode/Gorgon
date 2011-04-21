@@ -1,5 +1,7 @@
 #include "CheckboxStyleGroup.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 
 	CheckboxStyleGroup::CheckboxStyleGroup(void) {

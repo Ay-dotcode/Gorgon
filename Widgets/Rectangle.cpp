@@ -2,6 +2,9 @@
 #include "../Resource/ResourceFile.h"
 #include <stdexcept>
 
+using namespace gge::resource;
+using std::max;
+
 namespace gge { namespace widgets {
 	ResourceBase* LoadRectangleResource(ResourceFile* file,FILE* gfile,int sz) {
 		RectangleResource *Rect =new RectangleResource();
@@ -136,18 +139,18 @@ namespace gge { namespace widgets {
 		CenterOnly=parent->centeronly;
 	}
 
-	void ResizableRect::DrawAround(I2DGraphicsTarget *Target, int X, int Y, int W, int H) {
+	void ResizableRect::DrawAround(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H) {
 		DrawResized(Target, X-Parent->leftwidth, Y-Parent->topheight, W+Parent->leftwidth+Parent->rightwidth, H+Parent->topheight+Parent->bottomheight, ALIGN_MIDDLE_CENTER);
 	}
 
-	void ResizableRect::DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align) {
+	void ResizableRect::DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align) {
 
 
 		if(CenterOnly) {
 			int w=HSizing.Calculate(W, 0, animC->Width());
 			int h=VSizing.Calculate(H, 0, animC->Height());
 			
-			animC->DrawResized(Buffered2DGraphic::Tiling(TileCH,TileCV), Target, X,Y, w,h);
+			animC->DrawResized(graphics::Buffered2DGraphic::Tiling(TileCH,TileCV), Target, X,Y, w,h);
 
 			return;
 		}

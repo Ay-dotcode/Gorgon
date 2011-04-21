@@ -3,7 +3,7 @@
 
 using namespace gge;
 
-namespace gre {
+namespace gge { namespace resource {
 	void LinkNodeResource::Resolve() {
 		ResourceBase *parent=File->Root().FindParent(guid);
 		File->Redirects.Add(new Redirect(*this->guid, target));
@@ -46,4 +46,4 @@ namespace gre {
 		return link;
 	}
 
-}
+} }

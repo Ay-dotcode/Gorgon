@@ -11,7 +11,7 @@
 #define		GID_FONTTHEME		0x03300000
 #define		GID_FONTTHEME_PROPS	0x03300804
 
-namespace gre {
+namespace gge { namespace resource {
 	class ResourceFile;
 
 	ResourceBase *LoadFontTheme(ResourceFile* File, FILE* Data, int Size);
@@ -169,4 +169,4 @@ namespace gre {
 		ResourceFile *file;
 
 	};
-};
+} }

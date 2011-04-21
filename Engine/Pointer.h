@@ -4,13 +4,10 @@
 #include "../Utils/LinkedList.h"
 #include "Graphics.h"
 
-namespace gre { class FolderResource; }
-
-using namespace gre;
-
 namespace gge {
 	class GGEMain;
-	class Basic2DLayer;
+	namespace graphics { class Basic2DLayer; }
+	namespace resource { class FolderResource; }
 
 
 	class Pointer {
@@ -35,14 +32,14 @@ namespace gge {
 		};
 
 		////The image of the pointer
-		Buffered2DGraphic *Image;
+		graphics::Buffered2DGraphic *Image;
 		////Point of click
 		Point Hotspot;
 		////Type of the pointer
 		PointerTypes Type;
 
 		////Initializes a pointer
-		Pointer(Buffered2DGraphic *pointer, int HotspotX, int HotspotY, PointerTypes Type) {
+		Pointer(graphics::Buffered2DGraphic *pointer, int HotspotX, int HotspotY, PointerTypes Type) {
 			this->Image=pointer;
 			this->Hotspot.x=HotspotX;
 			this->Hotspot.y=HotspotY;
@@ -50,7 +47,7 @@ namespace gge {
 		}
 
 		////Initializes a pointer
-		Pointer(Buffered2DGraphic &pointer, Point Hotspot, PointerTypes Type) {
+		Pointer(graphics::Buffered2DGraphic &pointer, Point Hotspot, PointerTypes Type) {
 			this->Image=&pointer;
 			this->Hotspot=Hotspot;
 			this->Type=Type;
@@ -66,12 +63,12 @@ namespace gge {
 		/// a data file as the first item containing two entries per pointer. First entry must be
 		/// the Type(integer) ranging 0-6, second is Hotspot(point). Every pointer should be either
 		/// animation or image resource
-		void Fetch(FolderResource *Folder);
-		void Fetch(FolderResource &Folder) { Fetch(&Folder); }
+		void Fetch(resource::FolderResource *Folder);
+		void Fetch(resource::FolderResource &Folder) { Fetch(&Folder); }
 		////Adds a pointer to the list of pointers
-		Pointer *Add(Buffered2DGraphic *Pointer, Point Hotspot=Point(2,2), Pointer::PointerTypes Type=Pointer::None);
+		Pointer *Add(graphics::Buffered2DGraphic *Pointer, Point Hotspot=Point(2,2), Pointer::PointerTypes Type=Pointer::None);
 		////Adds a pointer to the list of pointers
-		Pointer &Add(Buffered2DGraphic &Pointer, Point Hotspot=Point(2,2), Pointer::PointerTypes Type=Pointer::None) {
+		Pointer &Add(graphics::Buffered2DGraphic &Pointer, Point Hotspot=Point(2,2), Pointer::PointerTypes Type=Pointer::None) {
 			return *Add(&Pointer, Hotspot, Type);
 		}
 		////Sets the given pointer as current one, this operation should be revered by
@@ -99,7 +96,7 @@ namespace gge {
 
 	protected:
 		utils::LinkedList<Pointer> ActivePointers;
-		Basic2DLayer *PointerLayer;
+		graphics::Basic2DLayer *PointerLayer;
 		Pointer *BasePointer;
 		bool PointerVisible;
 		bool OSPointerVisible;

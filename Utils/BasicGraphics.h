@@ -1,23 +1,19 @@
 #pragma once
 
 #ifdef GRAPH_USEDOUBLE
-	#define graphtype double
-	#define sinfn	sin
-	#define cosfn	cos
-	#define tanfn	tan
-	#define atanfn	atan
+namespace gge {
+#	define graphtype double
+}
 
-	#ifndef PI
-		#define PI	3.1415926535898
-	#endif
+#	ifndef PI
+#		define PI	3.1415926535898
+#	endif
 #else
-	#define graphtype float
-	#define sinfn	sinf
-	#define cosfn	cosf
-	#define tanfn	tanf
-	#define atanfn	atanf
+namespace gge {
+#	define graphtype float
+}
 
-	#ifndef PI
-		#define PI	3.1415926535898f
-	#endif
+#	ifndef PI
+#		define PI	3.1415926535898f
+#	endif
 #endif

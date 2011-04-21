@@ -5,7 +5,7 @@
 #include <cstring>
 #include "ManagedBuffer.h"
 
-template <class _T>
+template <class T_>
 class ValueList
 {
 public:
@@ -32,7 +32,7 @@ public:
 		return *count;
 	}
 	
-	void Add(_T data)
+	void Add(T_ data)
 	{
 		if(*count==buffer.GetSize())
 			grow();
@@ -45,10 +45,10 @@ public:
 		if(*count<0) *count=0;
 	}
 	
-	_T &operator [] (int Index)
+	T_ &operator [] (int Index)
 	{
 #ifdef _DEBUG
-		_T t;
+		T_ t;
 		if(Index<0 || Index>*count)
 			return t;
 #endif
@@ -80,12 +80,12 @@ public:
 		buffer.Resize(buffer.GetSize()+amount);
 	}
 
-	_T *getList() {
+	T_ *getList() {
 		return buffer.GetBuffer();
 	}
 
 private:
-	ManagedBuffer<_T> buffer;
+	ManagedBuffer<T_> buffer;
 	int *count;
 	
 	void grow()

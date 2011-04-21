@@ -1,7 +1,7 @@
 #include "DataResource.h"
 #include "ResourceFile.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	ResourceBase *LoadDataResource(ResourceFile* File, FILE* Data, int Size) {
 		DataResource *dat=new DataResource;
 		dat->file=File;
@@ -77,4 +77,4 @@ namespace gre {
 		value=File->Root().FindObject(guid);
 	}
 
-}
+} }

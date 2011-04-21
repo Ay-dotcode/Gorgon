@@ -4,21 +4,20 @@
 #include "SliderElement.h"
 #include "Button.h"
 
-using namespace gre;
 
 namespace gge { namespace widgets {
 
 #define GID_SLIDER_GRP			0x5360000
 #define GID_SLIDER_GRP_PROPS	0x5360101
 
-	class SliderStyleGroup : public ResourceBase
+	class SliderStyleGroup : public resource::ResourceBase
 	{
-		friend ResourceBase* LoadSliderStyleGroup(ResourceFile*,FILE*,int);
+		friend resource::ResourceBase* LoadSliderStyleGroup(resource::ResourceFile*,FILE*,int);
 	public:
 		SliderStyleGroup(void);
 		virtual int getGID() { return GID_SLIDER_GRP; }
-		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual void Prepare(GGEMain *main);
+		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
 
 		int PreferredWidth;
 		int PreferredHeight;
@@ -49,7 +48,7 @@ namespace gge { namespace widgets {
 
 	protected:
 
-		ResourceFile* file;
+		resource::ResourceFile* file;
 
 		Guid *guid_normalstyle		,
 			 *guid_hoverstyle		,

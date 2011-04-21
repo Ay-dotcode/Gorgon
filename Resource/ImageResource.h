@@ -5,7 +5,7 @@
 #include "../Engine/Graphics.h"
 #include "ResizableObject.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	class ResourceFile;
 	
 	////This function loads a text resource from the given file
@@ -22,26 +22,27 @@ namespace gre {
 
 	////This is image resource that holds information about a single image. It supports
 	/// two color modes (ARGB and AL); lzma and jpg compressions
-	class ImageResource : public ResourceBase, public Colorizable2DGraphic, public Raw2DGraphic, public ResizableObject {
+	class ImageResource : public ResourceBase, public graphics::Colorizable2DGraphic, public graphics::Raw2DGraphic, public ResizableObject {
 		friend ResourceBase *LoadImageResource(ResourceFile* File, FILE* Data, int Size);
 	public:
 		////Not used, if paletted image is found, this holds its palette
 		Byte *Palette;
 		////Whether image is loaded or not. Image that are marked as late loading
-		/// are not loaded in initial load request. Image data can be retrived by
+		/// are not loaded in initial load request. Image data can be retrieved by
 		/// calling Load function.
 		bool isLoaded;
 		////Whether to leave the data after this image resource is transformed into
 		/// an image object. This flag is used by other systems.
 		bool LeaveData;
 
-		ImageResource() { 
-			Raw2DGraphic::Width=Raw2DGraphic::Height=0; 
-			isLoaded=LeaveData=false; Palette=NULL; Mode=ARGB_32BPP; 
+		ImageResource() {
+			graphics::Raw2DGraphic::Width=graphics::Raw2DGraphic::Height=0; 
+			isLoaded=LeaveData=false; Palette=NULL; 
+			Mode=graphics::ARGB_32BPP; 
 			SetResizingOptions(ResizableObject::Single,ResizableObject::Single);
 		}
 
-		ImageResource(int Width, int Height, ColorMode Mode=ARGB_32BPP) {
+		ImageResource(int Width, int Height, graphics::ColorMode Mode=graphics::ARGB_32BPP) {
 			isLoaded=LeaveData=true;
 			Palette=NULL;
 			this->Resize(Width, Height, Mode);
@@ -73,7 +74,7 @@ namespace gre {
 		PNGReadError ImportPNG(string filename);
 
 		////Returns Bytes/Pixel information
-		int getBPP() { return gge::getBPP(Mode); }
+		int getBPP() { return graphics::getBPP(Mode); }
  
 		////Returns the width of the first image
 		int getWidth() { return Raw2DGraphic::Width; }
@@ -99,8 +100,8 @@ namespace gre {
 			this->VerticalTiling=Vertical;
 		}
 
-		virtual void DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
-		virtual void DrawResized(I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) {
+		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
+		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) {
 			DrawResized(&Target, X,Y,W,H,Align);
 		}
 		virtual int  Width(int W=-1) { 
@@ -133,4 +134,4 @@ namespace gre {
 		////Location of image data within the file, used for late loading
 		long DataLocation;
 	};
-}
+} }

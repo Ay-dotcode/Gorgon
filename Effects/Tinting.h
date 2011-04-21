@@ -5,10 +5,7 @@
 #include "../Engine/Animator.h"
 #include "../Engine/Graphics.h"
 
-using namespace gge;
-using namespace gre;
-
-namespace geffects {
+namespace gge { namespace effects {
 
 	////This effect tints a given colorizable target. Tinting is animated from a given
 	/// value to another one
@@ -19,10 +16,10 @@ namespace geffects {
 		utils::EventChain<Tinting> FinishedEvent;
 
 		////Target of this effect
-		I2DColorizableGraphicsTarget *Target;
+		graphics::I2DColorizableGraphicsTarget *Target;
 
 		////Initializes the effect
-		Tinting(I2DColorizableGraphicsTarget *Target) : 
+		Tinting(graphics::I2DColorizableGraphicsTarget *Target) : 
 			from(), to(), current(), 
 			speed(0, 0,0,0),
 			Target(Target),
@@ -32,7 +29,7 @@ namespace geffects {
 		}
 
 		////Initializes the effect
-		Tinting(I2DColorizableGraphicsTarget &Target) : 
+		Tinting(graphics::I2DColorizableGraphicsTarget &Target) : 
 			from(), to(), current(), 
 			speed(0, 0,0,0),
 			Target(&Target),
@@ -43,17 +40,17 @@ namespace geffects {
 		
 		////Sets source and destination to the given values and allows time duration to reach the
 		/// destination
-		void Setup(RGBint From, RGBint To, int Time);
+		void Setup(graphics::RGBint From, graphics::RGBint To, int Time);
 		////Sets current destination to the given value and allows time duration to reach it
-		void Setup(RGBint To, int Time) { Setup(current, To, Time); }
+		void Setup(graphics::RGBint To, int Time) { Setup(current, To, Time); }
 
 	protected:
-		RGBfloat from;
-		RGBfloat to;
-		RGBfloat current;
-		RGBfloat speed;
+		graphics::RGBfloat from;
+		graphics::RGBfloat to;
+		graphics::RGBfloat current;
+		graphics::RGBfloat speed;
 
 		virtual bool isFinished();
 		virtual void Process(int Time);
 	};
-}
+} }

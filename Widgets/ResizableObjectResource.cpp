@@ -3,6 +3,11 @@
 #include "Rectangle.h"
 #include <stdexcept>
 
+using namespace gge::resource;
+
+using std::runtime_error;
+
+
 namespace gge { namespace widgets {
 	ResourceBase *LoadResizableObject(ResourceFile* File, FILE* Data, int Size) {
 		ResizableObjectResource *r=new ResizableObjectResource();

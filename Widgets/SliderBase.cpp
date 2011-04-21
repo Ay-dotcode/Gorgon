@@ -1,10 +1,14 @@
 #include "SliderBase.h"
 #include "../Engine/Wave.h"
 #include "WidgetRegistry.h"
-#ifndef SLIDER_TIMEOUT
-#define SLIDER_TIMEOUT	250
-#endif
 #include "../Engine/GGEMain.h"
+
+
+#ifndef SLIDER_TIMEOUT
+#	define SLIDER_TIMEOUT	250
+#endif
+
+using namespace gge::resource;
 
 
 namespace gge { namespace widgets {
@@ -155,7 +159,7 @@ namespace gge { namespace widgets {
 
 		symbollayer.EnableClipping=false;
 		layer.Add(symbollayer, 1);
-		symbolmover=new LayerMover(symbollayer);
+		symbolmover=new effects::LayerMover(symbollayer);
 		symbolmover->Setup(Point(0,0), Point(0,0), 0);
 
 		layer.Add(rulelayer,3);
@@ -164,7 +168,7 @@ namespace gge { namespace widgets {
 		overlayer.isVisible=false;
 		layer.Add(overlayer,2);
 
-		overlayresizer=new LayerResizer(overlayer);
+		overlayresizer=new effects::LayerResizer(overlayer);
 		overlayresizer->Setup(gge::Rectangle(0,0,100,100),gge::Rectangle(0,0,100,100),0);
 
 
@@ -1482,9 +1486,9 @@ namespace gge { namespace widgets {
 		if(goup) return;
 		int time=SLIDER_TIMEOUT;
 		if(golarge)
-			intervaltimeout=(FastMoveTime/(maximum-minimum))*largeincrement;
+			intervaltimeout=(int)(FastMoveTime/(maximum-minimum))*largeincrement;
 		else
-			intervaltimeout=(ButtonMoveTime/(maximum-minimum))*buttonincrement;
+			intervaltimeout=(int)(ButtonMoveTime/(maximum-minimum))*buttonincrement;
 
 		if(!delayclicks)
 			time=intervaltimeout;

@@ -6,9 +6,6 @@
 #include "IWidgetObject.h"
 #include "IWidgetContainer.h"
 
-using namespace gre;
-using namespace gge;
-
 namespace gge { namespace widgets {
 	class VirtualFrame;
 

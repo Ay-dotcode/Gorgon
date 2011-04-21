@@ -6,10 +6,7 @@
 #include "../Engine/Graphics.h"
 #include "../Engine/Layer.h"
 
-using namespace gge;
-using namespace gre;
-
-namespace geffects {
+namespace gge { namespace effects {
 
 	////This effect resizes a given layer. Resize operation is animated from a given
 	/// value to another one
@@ -56,4 +53,4 @@ namespace geffects {
 		virtual bool isFinished();
 		virtual void Process(int Time);
 	};
-}
+} }

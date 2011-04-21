@@ -4,7 +4,7 @@
 #include "ResourceBase.h"
 
 
-namespace gre {
+namespace gge { namespace resource {
 	class LinkNodeResource : public ResourceBase {
 		friend ResourceBase *LoadLinkNodeResource(ResourceFile* File, FILE* Data, int Size);
 	public:
@@ -24,4 +24,4 @@ namespace gre {
 		ResourceFile* File;
 	};
 
-}
+} }

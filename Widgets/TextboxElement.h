@@ -9,10 +9,6 @@
 #include "../Resource/ResizableObject.h"
 #include <string>
 
-using namespace gre;
-using namespace gge;
-using namespace std;
-
 namespace gge { namespace widgets {
 
 #define GID_TEXTBOX_ELEMENT			0x5230000
@@ -20,25 +16,25 @@ namespace gge { namespace widgets {
 
 	class Textbox;
 
-	class TextboxElement : public ResourceBase
+	class TextboxElement : public resource::ResourceBase
 	{
-		friend ResourceBase *LoadTextboxElement(ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadTextboxElement(resource::ResourceFile*,FILE*,int);
 		friend class TextboxStyleGroup;
 		friend class Textbox;
 	public:
 		TextboxElement(void);
 
 		virtual int getGID() { return GID_TEXTBOX_ELEMENT; }
-		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual void Prepare(GGEMain *main);
+		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
 
-		TextboxElement &Draw(WidgetLayer &layer,Colorizable2DLayer &textlayer,string Caption);
+		TextboxElement &Draw(WidgetLayer &layer,graphics::Colorizable2DLayer &textlayer,string Caption);
 		TextboxElement &ReadyAnimation(bool Backwards);
 		TextboxElement &Reverse();
 
-		BitmapFontResource *Font;
-		SoundResource *Sound;
-		RGBint ForeColor,ShadowColor,SelectionColor,SelectionHighlight,SelectionShadow;
+		resource::BitmapFontResource *Font;
+		resource::SoundResource *Sound;
+		graphics::RGBint ForeColor,ShadowColor,SelectionColor,SelectionHighlight,SelectionShadow;
 		Alignment TextAlign;
 		int Duration;
 		Bounds TextMargins;
@@ -47,18 +43,18 @@ namespace gge { namespace widgets {
 		int detectChar(int x);
 		Textbox *Parent;
 
-		ImageAnimation *Caret;
+		resource::ImageAnimation *Caret;
 
 
 	protected:
 		Guid *font_guid;
 		Guid *sound_guid;
-		ResourceFile *file;
+		resource::ResourceFile *file;
 		int lx;
 		TextAlignment calign;
 
-		ResizableObject *Visual;
-		ResizableObject *SelectionRect;
+		resource::ResizableObject *Visual;
+		resource::ResizableObject *SelectionRect;
 		Bounds SelectionOffset;
 	};
 } }

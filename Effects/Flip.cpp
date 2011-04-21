@@ -2,9 +2,10 @@
 
 #include "Flip.h"
 
-using namespace gre;
+using namespace gge::resource;
+using namespace gge::graphics;
 
-namespace geffects {
+namespace gge { namespace effects {
 	void FlipEffect::Draw(I2DGraphicsTarget *Layer,int X,int Y) {
 		if(isFinished()) {
 			if(Backside) {
@@ -184,4 +185,4 @@ namespace geffects {
 			Backside=!Backside;
 		}
 	}
-};
+} }

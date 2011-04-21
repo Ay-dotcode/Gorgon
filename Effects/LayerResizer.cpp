@@ -1,5 +1,5 @@
 #include "LayerResizer.h"
-namespace geffects {
+namespace gge { namespace effects {
 	void LayerResizer::Setup(gge::Rectangle From, gge::Rectangle To, int Time) {
 
 		from=From;
@@ -88,4 +88,4 @@ namespace geffects {
 		}
 		Target->H=Round(current.Height);
 	}
-}
+} }

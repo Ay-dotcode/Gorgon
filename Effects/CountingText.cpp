@@ -1,9 +1,10 @@
 #include "CountingText.h"
 
 using namespace gge;
-using namespace gre;
+using namespace gge::graphics;
+using namespace gge::resource;
 
-namespace geffects {
+namespace gge { namespace effects {
 	void CountingText::Setup(float From, float To, int Time) {
 		if(Time)
 			speed=(To-From)/Time;
@@ -47,4 +48,4 @@ namespace geffects {
 				current=to;
 		}
 	}
-}
+} }

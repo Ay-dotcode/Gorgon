@@ -3,8 +3,10 @@
 #include "WidgetRegistry.h"
 
 #ifndef FRAME_SCROLL
-#define FRAME_SCROLL	3
+#	define FRAME_SCROLL	3
 #endif
+
+using namespace gge::resource;
 
 namespace gge { namespace widgets {
 	bool frame_scroll(int amount, input::MouseEventType event, int x, int y, void *data) {

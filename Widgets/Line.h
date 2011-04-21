@@ -9,9 +9,6 @@
 #include "../Utils/Margins.h"
 #include "WidgetMain.h"
 
-using namespace gre;
-using namespace gge;
-
 namespace gge { namespace widgets {
 
 #define GID_LINE		0x05110000
@@ -20,18 +17,18 @@ namespace gge { namespace widgets {
 	class Line;
 
 
-	ResourceBase *LoadLineResource(ResourceFile* File, FILE* Data, int Size);
-	class LineResource : public ResourceBase {
-		friend ResourceBase *LoadLineResource(ResourceFile* File, FILE* Data, int Size);
+	resource::ResourceBase *LoadLineResource(resource::ResourceFile* File, FILE* Data, int Size);
+	class LineResource : public resource::ResourceBase {
+		friend ResourceBase *LoadLineResource(resource::ResourceFile* File, FILE* Data, int Size);
 	public:
 		LineResource();
 		virtual int getGID() { return GID_LINE; }
-		virtual bool Save(gre::ResourceFile * File, FILE * Data) { return true; }
+		virtual bool Save(resource::ResourceFile * File, FILE * Data) { return true; }
 
 
-		AnimationResource *animStart;
-		AnimationResource *animLoop;
-		AnimationResource *animEnd;
+		resource::AnimationResource *animStart;
+		resource::AnimationResource *animLoop;
+		resource::AnimationResource *animEnd;
 
 
 		bool isTiled;
@@ -42,35 +39,35 @@ namespace gge { namespace widgets {
 	};
 
 
-	class Line : public ResizableObject {
+	class Line : public resource::ResizableObject {
 	public:
 		LineResource *Parent;
 		bool isVertical;
 		bool isTiled;
 		bool DrawStart, DrawEnd;
 
-		ResizableObject::Tiling Tiling;
-		ResizableObject::IntegralSize IntegralSize;
+		resource::ResizableObject::Tiling Tiling;
+		resource::ResizableObject::IntegralSize IntegralSize;
 
 
-		ImageAnimation *Start, *Loop, *End;
+		resource::ImageAnimation *Start, *Loop, *End;
 
-		Line(LineResource *parent) : Tiling(ResizableObject::Single) { SetParent(parent); }
-		Line(LineResource &parent) : Tiling(ResizableObject::Single) { SetParent(parent); }
+		Line(LineResource *parent) : Tiling(resource::ResizableObject::Single) { SetParent(parent); }
+		Line(LineResource &parent) : Tiling(resource::ResizableObject::Single) { SetParent(parent); }
 
-		Line(LineResource *parent, ResizableObject::Tiling Tiling, ResizableObject::IntegralSize IntegralSize ) 
+		Line(LineResource *parent, resource::ResizableObject::Tiling Tiling, resource::ResizableObject::IntegralSize IntegralSize ) 
 		{ SetParent(parent);  SetResizingOptions(Tiling, IntegralSize); }
 
 		void SetParent(LineResource *parent)  ;
 		void SetParent(LineResource &parent)  { SetParent(&parent); }
 
-		void SetResizingOptions( ResizableObject::Tiling Tiling, ResizableObject::IntegralSize IntegralSize ) {
+		void SetResizingOptions( resource::ResizableObject::Tiling Tiling, resource::ResizableObject::IntegralSize IntegralSize ) {
 			this->Tiling=Tiling;
 			this->IntegralSize=IntegralSize;
 		}
 
-		virtual void DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
-		virtual void DrawResized(I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER)
+		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
+		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER)
 		{ DrawResized(&Target, X,Y, W,H, Align); }
 		virtual void Reset(bool Reverse=false);
 		virtual void Reverse();

@@ -2,7 +2,7 @@
 #include "ResourceFile.h"
 #include "../External/LZMA/LzmaDecode.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	ResourceBase *LoadSoundResource(ResourceFile* File, FILE* Data, int Size) {
 		SoundResource *snd=new SoundResource;
 
@@ -61,4 +61,4 @@ namespace gre {
 
 		return snd;
 	}
-}
+} }

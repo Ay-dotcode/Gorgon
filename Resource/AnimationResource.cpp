@@ -2,7 +2,7 @@
 #include "ResourceFile.h"
 #include "ImageResource.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	ResourceBase *LoadAnimationResource(ResourceFile* File, FILE* Data, int Size) {
 		AnimationResource *anim=new AnimationResource;
 
@@ -48,7 +48,7 @@ namespace gre {
 		else
 			Pause();
 	}
-	void ImageAnimation::DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align) {
+	void ImageAnimation::DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align) {
 
 		int h=this->Height(H);
 		int w=this->Width(W);
@@ -88,4 +88,4 @@ namespace gre {
 		
 			return VerticalTiling.Calculate(parent->getHeight(), H); 
 		}
-}
+} }

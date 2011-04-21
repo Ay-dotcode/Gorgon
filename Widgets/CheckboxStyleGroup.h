@@ -3,8 +3,6 @@
 #include "../Resource/ResourceBase.h"
 #include "CheckboxElement.h"
 
-using namespace gre;
-
 namespace gge { namespace widgets {
 
 #define GID_CHECKBOX_GRP			0x5350000
@@ -15,14 +13,14 @@ namespace gge { namespace widgets {
 		CT_RadioButton
 	};
 
-	class CheckboxStyleGroup : public ResourceBase
+	class CheckboxStyleGroup : public resource::ResourceBase
 	{
-		friend ResourceBase* LoadCheckboxStyleGroup(ResourceFile*,FILE*,int);
+		friend resource::ResourceBase* LoadCheckboxStyleGroup(resource::ResourceFile*,FILE*,int);
 	public:
 		CheckboxStyleGroup(void);
 		virtual int getGID() { return GID_CHECKBOX_GRP; }
 		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
 
 		CheckboxTypes CheckboxType;
 
@@ -63,7 +61,7 @@ namespace gge { namespace widgets {
 						cRevToNextStyle;
 
 	protected:
-		ResourceFile* file;
+		resource::ResourceFile* file;
 
 		Guid *guid_normalstyle	,
 			 *guid_hoverstyle	,

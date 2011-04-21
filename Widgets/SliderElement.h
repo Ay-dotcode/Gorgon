@@ -11,10 +11,6 @@
 #include "Rectangle.h"
 #include <string>
 
-using namespace gre;
-using namespace gge;
-using namespace std;
-
 #define GID_SLIDER_ELEMENT			0x05260000
 #define GID_SLIDER_ELEMENT_PROPS	0x05260101
 
@@ -48,25 +44,25 @@ namespace gge { namespace widgets {
 		}
 	};
 
-	class SliderElement : public ResourceBase
+	class SliderElement : public resource::ResourceBase
 	{
-		friend ResourceBase *LoadSliderElement(ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadSliderElement(resource::ResourceFile*,FILE*,int);
 		friend class SliderStyleGroup;
 		friend class SliderBase;
 	public:
 		SliderElement(void);
 
 		virtual int getGID() { return GID_SLIDER_ELEMENT; }
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
 		virtual void Prepare(gge::GGEMain *main);
 
 		SliderElement &DrawRule(WidgetLayer &Target);
 		SliderElement &DrawTickMarks(WidgetLayer &Target, float Distance);
-		SliderElement &DrawTickNumbers(Colorizable2DLayer &Target, float Distance, float Start, float Increment, float End, string Format);
-		SliderElement &DrawTickNames(Colorizable2DLayer &Target, float Distance, utils::Collection<SliderLocationName> &Texts,bool useLocations, float min, float max);
+		SliderElement &DrawTickNumbers(graphics::Colorizable2DLayer &Target, float Distance, float Start, float Increment, float End, string Format);
+		SliderElement &DrawTickNames(graphics::Colorizable2DLayer &Target, float Distance, utils::Collection<SliderLocationName> &Texts,bool useLocations, float min, float max);
 		SliderElement &DrawLocatedTicks(WidgetLayer &Target, float Distance, utils::Collection<SliderLocationName> &Texts, float min, float max);
 		SliderElement &DrawSymbol(WidgetLayer &Target);
-		SliderElement &DrawOverlay(Basic2DLayer &Target);
+		SliderElement &DrawOverlay(graphics::Basic2DLayer &Target);
 		SliderElement &ReadyAnimation(bool Backwards);
 		SliderElement &Reverse();
 
@@ -74,9 +70,9 @@ namespace gge { namespace widgets {
 
 		int Duration;
 
-		BitmapFontResource *Font;
-		SoundResource *Sound;
-		RGBint ForeColor,ShadowColor;
+		resource::BitmapFontResource *Font;
+		resource::SoundResource *Sound;
+		graphics::RGBint ForeColor,ShadowColor;
 		Point Offset;
 		Point ShadowOffset;
 		Point TextOffset;
@@ -96,13 +92,13 @@ namespace gge { namespace widgets {
 	protected:
 		Guid *font_guid;
 		Guid *sound_guid;
-		ResourceFile *file;
+		resource::ResourceFile *file;
 
 		SliderStyles style;
 
-		ResizableObject *Rule;
-		ResizableObject *Overlay;
-		ResizableObject *Symbol;
-		Buffered2DGraphic *Tick;
+		resource::ResizableObject *Rule;
+		resource::ResizableObject *Overlay;
+		resource::ResizableObject *Symbol;
+		graphics::Buffered2DGraphic *Tick;
 	};
 } }

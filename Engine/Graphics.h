@@ -2,9 +2,11 @@
 
 #include "../Utils/GGE.h"
 #include "OS.h"
+
 #define WINGDIAPI	__declspec(dllimport)
 #define APIENTRY	__stdcall
 #define CALLBACK	__stdcall
+
 #include <gl/gl.h>
 #include <gl/glu.h>
 #include <assert.h>
@@ -12,13 +14,17 @@
 #include "../Utils/ManagedBuffer.h"
 
 #ifndef GL_BGR
-#define GL_BGR	0x80E0
-#define GL_BGRA	0x80E1
+#	define GL_BGR	0x80E0
+#	define GL_BGRA	0x80E1
+#endif
+
+#ifndef PI
+#	define PI	3.1415926535898f
 #endif
 
 
 ////Namespace for Gorgon Game Engine
-namespace gge {
+namespace gge { namespace graphics {
 	union TexturePosition { struct{float s,t;}; float vect[2];};
 	union VertexPosition { struct{float x,y,z;};float vect[3];};
 
@@ -38,18 +44,40 @@ namespace gge {
 		ARGB_32BPP = RGB | ALPHA,
 		////4-byte revered RGB color with alpha
 		ABGR_32BPP = BGR | ALPHA,
-		////1-byte palletted color mode, is not available yet
+		////1-byte palleted color mode, is not available yet
 		PALLETTED_8BPP = PALLETTED,
 		////2-byte palleted color mode with alpha, is not available yet
 		APALLETTED_16BPP = PALLETTED | ALPHA,
 		////1-byte alpha only color mode, converted to AGRAYSCALE_16BPP
 		ALPHAONLY_8BPP = ALPHA,
-		////1-byte gray (luminiance) only color mode, is not available yet
+		////1-byte gray (luminance) only color mode, is not available yet
 		GRAYSCALE_8BPP = GRAY,
-		////2-byte gray (luminiance) color mode with alpha
+		////2-byte gray (luminance) color mode with alpha
 		AGRAYSCALE_16BPP = GRAY | ALPHA
 	};
 
+	////Logarithm Base 2
+	inline int log2(int num) {
+		int i=0;
+		int s=1;
+		while(num-s>0) {
+			i++;
+			s<<=1;
+		}
+
+		return i;
+	}
+
+	////Rounds the given number to the lowest 2^n (where n is integer) number 
+	/// that is higher than the given number
+	inline int sl2(int num) {
+		int s=1;
+		while(num-s>0) {
+			s<<=1;
+		}
+
+		return s;
+	}
 
 
 	////This structure contains all necessary information
@@ -79,7 +107,23 @@ namespace gge {
 
 		////Calculates the necessary coordinates from
 		/// the give image size
-		void CalcuateCoordinates(int W,int H);
+		void CalcuateCoordinates(int W,int H) {
+			this->W=W;
+			this->H=H;
+			TW=sl2(W);//+0.0001
+			TH=sl2(H);//+0.0001
+			S=(float)W/TW;
+			T=(float)H/TH;
+
+			ImageCoord[0].s=0;
+			ImageCoord[0].t=0;
+			ImageCoord[1].s=S;
+			ImageCoord[1].t=0;
+			ImageCoord[2].s=S;
+			ImageCoord[2].t=T;
+			ImageCoord[3].s=0;
+			ImageCoord[3].t=T;
+		}
 	};
 
 	union RGBfloat {
@@ -366,27 +410,6 @@ namespace gge {
 	inline RGBint ToRGBint(unsigned int argb) { RGBint r(argb); return r; }
 	////Converts an int color to RGBint structure
 	inline RGBint ToRGBint(int argb) { RGBint r(argb); return r; }
-	////Logarithm Base 2
-	inline int log2(int num) {
-		int i=0;
-		int s=1;
-		while(num-s>0) {
-			i++;
-			s<<=1;
-		}
-
-		return i;
-	}
-
-	////Rounds the given number to the lowest 2^n (where n is integer) number that is higher than the given number
-	inline int sl2(int num) {
-		int s=1;
-		while(num-s>0) {
-			s<<=1;
-		}
-
-		return s;
-	}
 
 	////Returns the Bytes required for a given color mode
 	inline int getBPP(ColorMode color_mode) {
@@ -405,8 +428,8 @@ namespace gge {
 		}
 	}
 
-	///This interface defines a class that can be used
-	///as a common drawing target
+	////This interface defines a class that can be used
+	/// as a common drawing target
 	class I2DGraphicsTarget {
 	public:
 		////Draws a simple image to the screen.
@@ -441,7 +464,7 @@ namespace gge {
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
 		virtual void DrawHTiled(GLTexture *Image,int X,int Y,int W,int H)=0;
-		////Draws a veritically tiled image to the screen
+		////Draws a vertically tiled image to the screen
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
 		///@W		: the width of the image to be drawn
@@ -768,7 +791,7 @@ namespace gge {
 	/// returns created device context
 	///@hWnd		: Handle for the target window
 	///@BitDepth	: Used if fullscreen, changed bitdepth of screen
-	os::DeviceHandle InitializeGraphics(os::WindowHandle hWnd, int BitDepth, int Width, int Height);
+	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height);
 	////Creates rectangle structure based on give parameters
 	//RECT makerect(int x, int y, int w, int h);
 	////Converts Alpha only image to Alpha and Luminance (grayscale) image.
@@ -800,4 +823,4 @@ namespace gge {
 	void PostRender(os::DeviceHandle Device);
 
 	extern Point ScreenSize;
-}
+} }

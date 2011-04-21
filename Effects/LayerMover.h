@@ -6,7 +6,7 @@
 #include "../Engine/Graphics.h"
 #include "../Engine/Layer.h"
 
-namespace geffects {
+namespace gge { namespace effects {
 
 	////This effect moves a given layer. Moving operation is animated from a given
 	/// value to another one
@@ -50,4 +50,4 @@ namespace geffects {
 		virtual bool isFinished();
 		virtual void Process(int Time);
 	};
-}
+} }

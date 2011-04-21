@@ -5,7 +5,7 @@
 #include "Definitions.h"
 #include "FolderResource.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	////This is Resource loader function prototype
 	typedef ResourceBase* (*ResourceLoaderFunction)(ResourceFile* File, FILE* Data, int Size);
 
@@ -101,4 +101,4 @@ namespace gre {
 	};
 
 	inline void EatChunk(FILE *Data, int Size) { fseek(Data, Size, SEEK_CUR); }
-}
+} }

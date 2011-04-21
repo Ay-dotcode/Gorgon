@@ -5,6 +5,8 @@
 #include "Line.h"
 #include "Rectangle.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 
 	ResourceBase* LoadCheckbox(ResourceFile* file,FILE* gfile,int sz) {

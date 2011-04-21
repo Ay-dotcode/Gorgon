@@ -3,6 +3,8 @@
 #include "../Resource/SoundResource.h"
 #include "../Engine/GGEMain.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 	Textbox::Textbox(TextboxBP *BluePrint,IWidgetContainer &container) : 
 		IWidgetObject(container),

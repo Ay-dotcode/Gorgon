@@ -6,7 +6,7 @@
 #include "../Engine/Graphics.h"
 #include "../Resource/ResourceBase.h"
 
-namespace gre {
+namespace gge { namespace resource {
 
 	class ResourceFile;
 
@@ -144,10 +144,10 @@ namespace gre {
 			return is;
 		}
 
-		virtual void DrawResized(gge::I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align=ALIGN_CENTER) =0;
-		virtual void DrawResized(gge::I2DGraphicsTarget &Target, int X, int Y, int W, int H, gge::Alignment Align=ALIGN_CENTER) { DrawResized(&Target, X, Y, W, H, Align); }
-		virtual void DrawResized(gge::I2DGraphicsTarget *Target, int X=0, int Y=0, gge::Alignment Align=ALIGN_CENTER) { DrawResized(Target, X, Y, Target->Width(), Target->Height(), Align); }
-		virtual void DrawResized(gge::I2DGraphicsTarget &Target, int X=0, int Y=0, gge::Alignment Align=ALIGN_CENTER) { DrawResized(&Target, X, Y, Target.Width(), Target.Height(), Align); }
+		virtual void DrawResized(gge::graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align=ALIGN_CENTER) =0;
+		virtual void DrawResized(gge::graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, gge::Alignment Align=ALIGN_CENTER) { DrawResized(&Target, X, Y, W, H, Align); }
+		virtual void DrawResized(gge::graphics::I2DGraphicsTarget *Target, int X=0, int Y=0, gge::Alignment Align=ALIGN_CENTER) { DrawResized(Target, X, Y, Target->Width(), Target->Height(), Align); }
+		virtual void DrawResized(gge::graphics::I2DGraphicsTarget &Target, int X=0, int Y=0, gge::Alignment Align=ALIGN_CENTER) { DrawResized(&Target, X, Y, Target.Width(), Target.Height(), Align); }
 		virtual int  Width(int W=-1)=0;
 		virtual int  Height(int H=-1)=0;
 		virtual void Reset(bool Reverse=false) {}
@@ -161,4 +161,4 @@ namespace gre {
 		virtual ~ResizableObject() {}
 	};
 
-}
+} }

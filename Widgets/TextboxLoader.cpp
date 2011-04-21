@@ -4,6 +4,8 @@
 #include "TextboxElement.h"
 #include "Line.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 	void eatchunk(FILE* f,int size);
 

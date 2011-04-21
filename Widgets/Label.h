@@ -4,21 +4,18 @@
 #include "../Resource/BitmapFontResource.h"
 #include "../Engine/GraphicLayers.h"
 
-using namespace gge;
-using namespace gre;
-
 namespace gge { namespace widgets {
 	class Label : public IWidgetObject {
 	public:
-		BitmapFontResource *Font;
-		RGBint Color;
+		resource::BitmapFontResource *Font;
+		graphics::RGBint Color;
 		ShadowParams Shadow;
-		Colorizable2DLayer textlayer;
+		graphics::Colorizable2DLayer textlayer;
 		TextAlignment Align;
 		bool Ghost;
 
-		Label(IWidgetContainer &container, BitmapFontResource *font, string text, int X=0, int Y=0, bool autosize=true, int W=100, 
-		TextAlignment align=TEXTALIGN_LEFT, RGBint color=0xff000000, ShadowParams shadow=ShadowParams()) : 
+		Label(IWidgetContainer &container, resource::BitmapFontResource *font, string text, int X=0, int Y=0, bool autosize=true, int W=100, 
+		TextAlignment align=TEXTALIGN_LEFT, graphics::RGBint color=0xff000000, ShadowParams shadow=ShadowParams()) : 
 			IWidgetObject(container),autosize(autosize),
 			Font(font), Color(color), Shadow(shadow),
 			Align(align), textlayer(0,0, INT_MAX,INT_MAX), Ghost(true)
@@ -36,8 +33,8 @@ namespace gge { namespace widgets {
 			nofocus=true;
 		}
 
-		Label(BitmapFontResource *font, string text, int X=0, int Y=0, bool autosize=true, int W=100, 
-		TextAlignment align=TEXTALIGN_LEFT, RGBint color=0xff000000, ShadowParams shadow=ShadowParams()) : 
+		Label(resource::BitmapFontResource *font, string text, int X=0, int Y=0, bool autosize=true, int W=100, 
+		TextAlignment align=TEXTALIGN_LEFT, graphics::RGBint color=0xff000000, ShadowParams shadow=ShadowParams()) : 
 			IWidgetObject(),autosize(autosize),
 			Font(font), Color(color), Shadow(shadow),
 			Align(align), textlayer(0,0, INT_MAX,INT_MAX), Ghost(true)

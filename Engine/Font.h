@@ -3,9 +3,9 @@
 #include "FontRenderer.h"
 #include "../Resource/ResourceFile.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	class FontTheme; 
-};
+} }
 
 namespace gge {
 	class FontInitiator;
@@ -26,19 +26,19 @@ namespace gge {
 
 		Font::Font();
 		Font(const Font &);
-		Font(gre::FontTheme &Theme, RGBint Color=RGBint(0xf0001000), FontStyle Style=Normal, ShadowParams Shadow=ShadowParams());
-		Font(gre::FontTheme *Theme, RGBint Color=RGBint(0xf0001000), FontStyle Style=Normal, ShadowParams Shadow=ShadowParams());
+		Font(resource::FontTheme &Theme, graphics::RGBint Color=graphics::RGBint(0xf0001000), FontStyle Style=Normal, ShadowParams Shadow=ShadowParams());
+		Font(resource::FontTheme *Theme, graphics::RGBint Color=graphics::RGBint(0xf0001000), FontStyle Style=Normal, ShadowParams Shadow=ShadowParams());
 
 		Font &operator =(Font &);
 		Font &operator =(const FontStyle);
 		
 
-		static FontInitiator Load(ResourceFile* file,FILE* gfile,int sz);
+		static FontInitiator Load(resource::ResourceFile* file,FILE* gfile,int sz);
 
 
-		gre::FontTheme *Theme;
+		resource::FontTheme *Theme;
 		FontStyle Style;
-		RGBint Color;
+		graphics::RGBint Color;
 		ShadowParams Shadow;
 
 		//Info functions
@@ -50,36 +50,36 @@ namespace gge {
 
 		//Print Functions
 		////Prints the given text to the target using given color.
-		void Print(I2DColorizableGraphicsTarget *target, int X, int Y, string Text);
+		void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, string Text);
 		////Prints the given text to the target using given color. Text is wrapped and aligned as necessary
-		void Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, TextAlignment Align=TEXTALIGN_LEFT);
+		void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, TextAlignment Align=TEXTALIGN_LEFT);
 		////This method is extended to cover meta functionality for advanced text rendering
-		void Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT);
+		void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT);
 		////This method is extended to cover meta functionality for advanced text rendering. This function does not render the given text
 		/// it only processes meta data
 		void Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align);
 
 
 		//Target references
-		void Print(I2DColorizableGraphicsTarget &target, int X, int Y, string Text) 
+		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, string Text) 
 		{ Print(&target, X, Y, Text); }
-		void Print(I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, TextAlignment Align=TEXTALIGN_LEFT) 
+		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, TextAlignment Align=TEXTALIGN_LEFT) 
 		{ Print(&target, X, Y, W, Text, Align); }
-		void Print(I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT)
+		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT)
 		{ Print(&target, X, Y, W, Text, Data, DataLen, Align); }
 
-		void Print(I2DColorizableGraphicsTarget &target, Point p, string Text) 
+		void Print(graphics::I2DColorizableGraphicsTarget &target, Point p, string Text) 
 		{ Print(&target, p.x, p.y, Text); }
-		void Print(I2DColorizableGraphicsTarget &target, Point p, int W, string Text, TextAlignment Align=TEXTALIGN_LEFT) 
+		void Print(graphics::I2DColorizableGraphicsTarget &target, Point p, int W, string Text, TextAlignment Align=TEXTALIGN_LEFT) 
 		{ Print(&target, p.x, p.y, W, Text, Align); }
-		void Print(I2DColorizableGraphicsTarget &target, Point p, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT)
+		void Print(graphics::I2DColorizableGraphicsTarget &target, Point p, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT)
 		{ Print(&target, p.x, p.y, W, Text, Data, DataLen, Align); }
 
-		void Print(I2DColorizableGraphicsTarget *target, Point p, string Text) 
+		void Print(graphics::I2DColorizableGraphicsTarget *target, Point p, string Text) 
 		{ Print(target, p.x, p.y, Text); }
-		void Print(I2DColorizableGraphicsTarget *target, Point p, int W, string Text, TextAlignment Align=TEXTALIGN_LEFT) 
+		void Print(graphics::I2DColorizableGraphicsTarget *target, Point p, int W, string Text, TextAlignment Align=TEXTALIGN_LEFT) 
 		{ Print(target, p.x, p.y, W, Text, Align); }
-		void Print(I2DColorizableGraphicsTarget *target, Point p, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT)
+		void Print(graphics::I2DColorizableGraphicsTarget *target, Point p, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT)
 		{ Print(target, p.x, p.y, W, Text, Data, DataLen, Align); }
 
 	protected:
@@ -91,9 +91,9 @@ namespace gge {
 		FontInitiator() : file(NULL) { }
 		Guid *guid_theme;
 		Font::FontStyle Style;
-		RGBint Color;
+		graphics::RGBint Color;
 		ShadowParams Shadow;
-		ResourceFile *file;
+		resource::ResourceFile *file;
 
 		operator Font();
 	};

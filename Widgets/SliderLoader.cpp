@@ -8,6 +8,8 @@
 #include "SliderElement.h"
 #include "SliderStyleGroup.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 
 	ResourceBase* LoadSlider(ResourceFile* file,FILE* gfile,int sz) {

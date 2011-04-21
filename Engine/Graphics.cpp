@@ -3,13 +3,13 @@
 #include <windows.h>
 
 #endif
-namespace gge {
+namespace gge { namespace graphics {
 	Point ScreenSize;
 	extern RGBfloat CurrentLayerColor;
 	extern int scX,scY,scW,scH;
 	extern int trX,trY;
 
-	os::DeviceHandle InitializeGraphics(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {
+	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {
 		///!Platform specific
 #ifdef WIN32
 		///*Preparing device context, platform specific
@@ -196,23 +196,7 @@ loopyend:
 		glDeleteTextures(1, &texture->ID);
 		texture->ID=0;
 	}
-	void GLTexture::CalcuateCoordinates(int cx,int cy) {
-		W=cx;
-		H=cy;
-		TW=sl2(cx);//+0.0001
-		TH=sl2(cy);//+0.0001
-		S=(float)cx/TW;
-		T=(float)cy/TH;
 
-		ImageCoord[0].s=0;
-		ImageCoord[0].t=0;
-		ImageCoord[1].s=S;
-		ImageCoord[1].t=0;
-		ImageCoord[2].s=S;
-		ImageCoord[2].t=T;
-		ImageCoord[3].s=0;
-		ImageCoord[3].t=T;
-	}
 	GLenum getGLColorMode(ColorMode color_mode) {
 		switch(color_mode) {
 		case ALPHAONLY_8BPP:
@@ -256,4 +240,4 @@ loopyend:
 		///*Swapping back and front buffers
 		SwapBuffers( (HDC)hDC );
 	}
-}
+} }

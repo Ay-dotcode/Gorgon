@@ -3,10 +3,14 @@
 #include "GGEMain.h"
 #include <gl/gl.h>
 
+using namespace gge::graphics;
+
 namespace gge {
-	extern RGBfloat CurrentLayerColor;
-	extern int trX,trY;
-	extern int scX,scY,scW,scH;
+	namespace graphics {
+		extern RGBfloat CurrentLayerColor;
+		extern int trX,trY;
+		extern int scX,scY,scW,scH;
+	}
 
 	CustomLayer::CustomLayer(CustomRenderer Renderer,int X, int Y, int W, int H) : LayerBase() {
 		this->X=X;

@@ -1,7 +1,9 @@
 #include "Tinting.h"
 #include "../Engine/GGEMain.h"
 
-namespace geffects {
+using namespace gge::graphics;
+
+namespace gge { namespace effects {
 	void Tinting::Setup(RGBint From, RGBint To, int Time) {
 
 		from=From;
@@ -80,4 +82,4 @@ namespace geffects {
 		}
 		Target->Ambient.b=current.b*255;
 	}
-}
+} }

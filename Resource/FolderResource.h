@@ -3,7 +3,7 @@
 #include "GRE.h"
 #include "ResourceBase.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	class ResourceFile;
 	class FolderResource;
 	class TextResource;
@@ -63,4 +63,4 @@ namespace gre {
 			EntryPoint=-1;
 		}
 	};
-}
+} }

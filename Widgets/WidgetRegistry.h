@@ -19,8 +19,6 @@
 #include "../Engine/Font.h"
 #undef small
 
-using namespace gre;
-
 namespace gge { namespace widgets {
 
 	class LinearOrganizer;
@@ -58,7 +56,7 @@ namespace gge { namespace widgets {
 					*tabButton
 		;
 
-		BitmapFontResource *small,
+		resource::BitmapFontResource *small,
 						   *normal,
 						   *bold,
 						   *italic,
@@ -67,7 +65,7 @@ namespace gge { namespace widgets {
 						   *h3
 		;
 
-		FontTheme *fonttheme;
+		resource::FontTheme *fonttheme;
 
 		LineResource *hSeparator,
 					 *vSeparator,
@@ -109,7 +107,7 @@ namespace gge { namespace widgets {
 
 		FrameBP		*DialogBP;
 
-		ImageResource* background;
+		resource::ImageResource* background;
 
 		Button &createButton(IWidgetContainer &container, string text="", int x=0, int y=0, int w=-1, int h=-1);
 		Button &createButton(string text="", int w=-1, int h=-1, int x=0, int y=0);
@@ -179,8 +177,8 @@ namespace gge { namespace widgets {
 			Widgets.Delete(object);
 		}
 
-		void DiscoverWidgets(ResourceFile *file);
-		void DiscoverWidgets(ResourceFile &file) { DiscoverWidgets(&file); }
+		void DiscoverWidgets(resource::ResourceFile *file);
+		void DiscoverWidgets(resource::ResourceFile &file) { DiscoverWidgets(&file); }
 
 		FrameBP &DialogFrameBP(bool hasScroll=false);
 		FrameBP &PictureFrameBP(bool hasScroll=false);
@@ -191,11 +189,11 @@ namespace gge { namespace widgets {
 		LinearOrganizer &createDialogLinearOrganizer(int w, int h, int x=0, int y=0, ScrollbarDisplayStates scroll=SDS_WhenNeeded);
 		LinearOrganizer &createDialogLinearOrganizer(int w, int h, ScrollbarDisplayStates scroll=SDS_WhenNeeded) { return createDialogLinearOrganizer(w, h, 0, 0, scroll); }
 
-		FontTheme &FontTheme() { return *fonttheme; }
+		resource::FontTheme &FontTheme() { return *fonttheme; }
 
-		RGBint titleColor;
-		RGBint textColor;
-		RGBint hintColor;
+		graphics::RGBint titleColor;
+		graphics::RGBint textColor;
+		graphics::RGBint hintColor;
 
 		utils::Collection<IWidgetObject> Widgets;
 		utils::Collection<ResizableRect> Rectangles;

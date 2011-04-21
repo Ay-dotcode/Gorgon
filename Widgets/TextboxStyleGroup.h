@@ -3,21 +3,19 @@
 #include "../Resource/ResourceBase.h"
 #include "TextboxElement.h"
 
-using namespace gre;
-
 namespace gge { namespace widgets {
 
 #define GID_TEXTBOX_GRP			0x5330000
 #define GID_TEXTBOX_GRP_PROPS	0x5330101
 
-	class TextboxStyleGroup : public ResourceBase
+	class TextboxStyleGroup : public resource::ResourceBase
 	{
-		friend ResourceBase* LoadTextboxStyleGroup(ResourceFile*,FILE*,int);
+		friend resource::ResourceBase* LoadTextboxStyleGroup(resource::ResourceFile*,FILE*,int);
 	public:
 		TextboxStyleGroup(void);
 		virtual int getGID() { return GID_TEXTBOX_GRP; }
 		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
 
 		enum {
 			SIZE_RESIZABLE,
@@ -44,7 +42,7 @@ namespace gge { namespace widgets {
 						RevActive2NormalState;
 
 	protected:
-		ResourceFile* file;
+		resource::ResourceFile* file;
 
 		Guid *guid_normalstyle	,
 			 *guid_hoverstyle	,

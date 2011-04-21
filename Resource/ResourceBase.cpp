@@ -1,6 +1,6 @@
 #include "ResourceBase.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	void ResourceBase::Prepare(GGEMain *main) {
 		utils::LinkedListIterator<ResourceBase>it=Subitems;
 		ResourceBase *resource;
@@ -64,4 +64,4 @@ namespace gre {
 		Subitems.Destroy();
 	}
 
-}
+} }

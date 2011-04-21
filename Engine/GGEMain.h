@@ -117,7 +117,7 @@ namespace gge {
 
 		////Initializes graphic subsystem. All graphic related functions will fail if
 		/// called before this method. 
-		os::DeviceHandle InitializeGraphics() { Device = gge::InitializeGraphics(Window, BitDepth, Width, Height); return Device; }
+		os::DeviceHandle InitializeGraphics() { Device = gge::graphics::Initialize(Window, BitDepth, Width, Height); return Device; }
 		////Initializes sound subsystem. All sound related functions will fail if
 		/// called before this method.
 		void		 InitializeSound() { gge::sound::system::InitializeSound(Window); }

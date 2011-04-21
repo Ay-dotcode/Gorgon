@@ -5,8 +5,8 @@
 #define MAX_CHAR_DETECTS	10
 #endif
 
-namespace gre {
-	ResourceBase *LoadBitmapFontResource(ResourceFile* File, FILE* Data, int Size) {
+namespace gge { namespace resource {
+	ResourceBase *LoadBitmapFontResource(resource::ResourceFile* File, FILE* Data, int Size) {
 		BitmapFontResource *font=new BitmapFontResource;
 		int chmap[256];
 		int cpos=0,i;
@@ -44,7 +44,7 @@ namespace gre {
 
 		return font;
 	}
-	void BitmapFontResource::Print(I2DColorizableGraphicsTarget *target, int X, int Y, string text, RGBint color, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, string text, graphics::RGBint color, ShadowParams Shadow) {
 		if(text=="") return;
 
 		unsigned int i;
@@ -63,7 +63,7 @@ namespace gre {
 		}
 	}
 
-	void BitmapFontResource::Print(I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, RGBint color, TextAlignment align, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, graphics::RGBint color, TextAlignment align, ShadowParams Shadow) {
 		int i;
 		int l=x;
 		int lstart=0,lword=0;
@@ -144,7 +144,7 @@ namespace gre {
 						l+=img->getWidth()+Seperator;
 					}
 				}
-				
+
 				if(text[lword+1]=='\n')
 					lword++;
 
@@ -156,7 +156,7 @@ namespace gre {
 			}
 		}
 	}
-	void BitmapFontResource::Print(I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, RGBint color, EPrintData *Data, int DataLen, TextAlignment Align, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment Align, ShadowParams Shadow) {
 		if(text=="") {
 			int d;
 			int xpos=0;
@@ -167,14 +167,14 @@ namespace gre {
 
 			for(d=0;d<DataLen;d++) {
 				switch(Data[d].Type) {
-					case EMT_PositionDetect:
-						Data[d].Out.position.x=xpos;
-						Data[d].Out.position.y=0;
-						break;
-					case EMT_Spacing:
-						Data[d].Out.position.x=xpos;
-						Data[d].Out.position.y=0;
-						break;
+				case EMT_PositionDetect:
+					Data[d].Out.position.x=xpos;
+					Data[d].Out.position.y=0;
+					break;
+				case EMT_Spacing:
+					Data[d].Out.position.x=xpos;
+					Data[d].Out.position.y=0;
+					break;
 				}
 			}
 			return;
@@ -197,20 +197,20 @@ namespace gre {
 		bool nextline=false;
 		struct {int x;EPrintData*data;} chardetectxs[MAX_CHAR_DETECTS];
 		int cchardetectxs=0;
-		
+
 		for(d=0;d<DataLen;d++) {
 			switch(Data[d].Type) {
-				case EMT_Wrap:
-					nowrap=!Data[d].In.value;
-					break;
-				case EMT_CharacterDetect:
-					if(cchardetectxs<MAX_CHAR_DETECTS) {
-						Data[d].Out.value=text.length();
-						chardetectxs[cchardetectxs].x=Data[d].In.position.x;
-						chardetectxs[cchardetectxs].data=Data+d;
-						cchardetectxs++;
-					}
-					break;
+			case EMT_Wrap:
+				nowrap=!Data[d].In.value;
+				break;
+			case EMT_CharacterDetect:
+				if(cchardetectxs<MAX_CHAR_DETECTS) {
+					Data[d].Out.value=text.length();
+					chardetectxs[cchardetectxs].x=Data[d].In.position.x;
+					chardetectxs[cchardetectxs].data=Data+d;
+					cchardetectxs++;
+				}
+				break;
 			}
 		}
 
@@ -233,10 +233,10 @@ namespace gre {
 			for(d=0;d<DataLen;d++) {
 				if(Data[d].CharPosition==i) {
 					switch(Data[d].Type) {
-						case EMT_Spacing:
-							llen+=Data[d].In.position.x-Seperator; 
-							y+=Data[d].In.position.y; 
-							break;
+					case EMT_Spacing:
+						llen+=Data[d].In.position.x-Seperator; 
+						y+=Data[d].In.position.y; 
+						break;
 					}
 				}
 			}
@@ -288,25 +288,25 @@ namespace gre {
 					for(d=0;d<DataLen;d++) {
 						if(Data[d].CharPosition==j) {
 							switch(Data[d].Type) {
-								case EMT_Spacing:
-									Data[d].Out.position.x=l-sx;
-									Data[d].Out.position.y=y-sy;
+							case EMT_Spacing:
+								Data[d].Out.position.x=l-sx;
+								Data[d].Out.position.y=y-sy;
 
-									l+=Data[d].In.position.x-Seperator; 
-									y+=Data[d].In.position.y; 
-									break;
-								case EMT_PositionDetect:
-									Data[d].Out.position.x=l-sx;
-									Data[d].Out.position.y=y-sy;
-									break;
-								case EMT_Color:
-									color=Data[d].In.color;
+								l+=Data[d].In.position.x-Seperator; 
+								y+=Data[d].In.position.y; 
+								break;
+							case EMT_PositionDetect:
+								Data[d].Out.position.x=l-sx;
+								Data[d].Out.position.y=y-sy;
+								break;
+							case EMT_Color:
+								color=Data[d].In.color;
 
-									break;
-								case EMT_ShadowColor:
-									Shadow.Color=Data[d].In.color;
+								break;
+							case EMT_ShadowColor:
+								Shadow.Color=Data[d].In.color;
 
-									break;
+								break;
 							}
 						}
 					}
@@ -333,9 +333,9 @@ namespace gre {
 						}
 					}
 					l+=dist;
-				
+
 				}
-				
+
 				if(text[lword+1]=='\n')
 					lword++;
 
@@ -350,17 +350,17 @@ namespace gre {
 		for(d=0;d<DataLen;d++) {
 			if(Data[d].CharPosition==i) {
 				switch(Data[d].Type) {
-					case EMT_Spacing:
-						Data[d].Out.position.x=l-sx;
-						Data[d].Out.position.y=y-sy;
+				case EMT_Spacing:
+					Data[d].Out.position.x=l-sx;
+					Data[d].Out.position.y=y-sy;
 
-						l+=Data[d].In.position.x-Seperator; 
-						y+=Data[d].In.position.y; 
-						break;
-					case EMT_PositionDetect:
-						Data[d].Out.position.x=l-sx;
-						Data[d].Out.position.y=y-sy;
-						break;
+					l+=Data[d].In.position.x-Seperator; 
+					y+=Data[d].In.position.y; 
+					break;
+				case EMT_PositionDetect:
+					Data[d].Out.position.x=l-sx;
+					Data[d].Out.position.y=y-sy;
+					break;
 				}
 			}
 		}	}
@@ -375,14 +375,14 @@ namespace gre {
 
 			for(d=0;d<DataLen;d++) {
 				switch(Data[d].Type) {
-					case EMT_PositionDetect:
-						Data[d].Out.position.x=xpos;
-						Data[d].Out.position.y=0;
-						break;
-					case EMT_Spacing:
-						Data[d].Out.position.x=xpos;
-						Data[d].Out.position.y=0;
-						break;
+				case EMT_PositionDetect:
+					Data[d].Out.position.x=xpos;
+					Data[d].Out.position.y=0;
+					break;
+				case EMT_Spacing:
+					Data[d].Out.position.x=xpos;
+					Data[d].Out.position.y=0;
+					break;
 				}
 			}
 			return;
@@ -405,20 +405,20 @@ namespace gre {
 		bool nextline=false;
 		struct {int x;EPrintData*data;} chardetectxs[MAX_CHAR_DETECTS];
 		int cchardetectxs=0;
-		
+
 		for(d=0;d<DataLen;d++) {
 			switch(Data[d].Type) {
-				case EMT_Wrap:
-					nowrap=!Data[d].In.value;
-					break;
-				case EMT_CharacterDetect:
-					if(cchardetectxs<MAX_CHAR_DETECTS) {
-						Data[d].Out.value=text.length();
-						chardetectxs[cchardetectxs].x=Data[d].In.position.x;
-						chardetectxs[cchardetectxs].data=Data+d;
-						cchardetectxs++;
-					}
-					break;
+			case EMT_Wrap:
+				nowrap=!Data[d].In.value;
+				break;
+			case EMT_CharacterDetect:
+				if(cchardetectxs<MAX_CHAR_DETECTS) {
+					Data[d].Out.value=text.length();
+					chardetectxs[cchardetectxs].x=Data[d].In.position.x;
+					chardetectxs[cchardetectxs].data=Data+d;
+					cchardetectxs++;
+				}
+				break;
 			}
 		}
 
@@ -440,10 +440,10 @@ namespace gre {
 			for(d=0;d<DataLen;d++) {
 				if(Data[d].CharPosition==i) {
 					switch(Data[d].Type) {
-						case EMT_Spacing:
-							llen+=Data[d].In.position.x-Seperator; 
-							y+=Data[d].In.position.y; 
-							break;
+					case EMT_Spacing:
+						llen+=Data[d].In.position.x-Seperator; 
+						y+=Data[d].In.position.y; 
+						break;
 					}
 				}
 			}
@@ -495,23 +495,23 @@ namespace gre {
 					for(d=0;d<DataLen;d++) {
 						if(Data[d].CharPosition==j) {
 							switch(Data[d].Type) {
-								case EMT_Spacing:
-									Data[d].Out.position.x=l-sx;
-									Data[d].Out.position.y=y-sy;
+							case EMT_Spacing:
+								Data[d].Out.position.x=l-sx;
+								Data[d].Out.position.y=y-sy;
 
-									l+=Data[d].In.position.x-Seperator; 
-									y+=Data[d].In.position.y; 
-									break;
-								case EMT_PositionDetect:
-									Data[d].Out.position.x=l-sx;
-									Data[d].Out.position.y=y-sy;
-									break;
-								case EMT_Color:
+								l+=Data[d].In.position.x-Seperator; 
+								y+=Data[d].In.position.y; 
+								break;
+							case EMT_PositionDetect:
+								Data[d].Out.position.x=l-sx;
+								Data[d].Out.position.y=y-sy;
+								break;
+							case EMT_Color:
 
-									break;
-								case EMT_ShadowColor:
+								break;
+							case EMT_ShadowColor:
 
-									break;
+								break;
 							}
 						}
 					}
@@ -533,9 +533,9 @@ namespace gre {
 						}
 					}
 					l+=dist;
-				
+
 				}
-				
+
 				if(text[lword+1]=='\n')
 					lword++;
 
@@ -550,18 +550,19 @@ namespace gre {
 		for(d=0;d<DataLen;d++) {
 			if(Data[d].CharPosition==i) {
 				switch(Data[d].Type) {
-					case EMT_Spacing:
-						Data[d].Out.position.x=l-sx;
-						Data[d].Out.position.y=y-sy;
+				case EMT_Spacing:
+					Data[d].Out.position.x=l-sx;
+					Data[d].Out.position.y=y-sy;
 
-						l+=Data[d].In.position.x-Seperator; 
-						y+=Data[d].In.position.y; 
-						break;
-					case EMT_PositionDetect:
-						Data[d].Out.position.x=l-sx;
-						Data[d].Out.position.y=y-sy;
-						break;
+					l+=Data[d].In.position.x-Seperator; 
+					y+=Data[d].In.position.y; 
+					break;
+				case EMT_PositionDetect:
+					Data[d].Out.position.x=l-sx;
+					Data[d].Out.position.y=y-sy;
+					break;
 				}
 			}
-		}	}
-}
+		}	
+	}
+} }

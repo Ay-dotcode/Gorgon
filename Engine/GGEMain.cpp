@@ -28,7 +28,7 @@ namespace gge {
 #ifdef _DEBUG
 		if(Window!=NULL)
 			throw std::runtime_error("System already initialized.");
-#elif
+#else
 		if(Window!=NULL)
 			return;
 #endif
@@ -88,9 +88,9 @@ namespace gge {
 	}
 
 	void GGEMain::Render() {
-		gge::PreRender();
+		graphics::PreRender();
 		LayerBase::Render();
-		gge::PostRender(Device);
+		graphics::PostRender(Device);
 	}
 
 	IntervalObject *GGEMain::RegisterInterval(unsigned int Timeout, void* Data, IntervalSignalEvent Signal) {

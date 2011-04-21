@@ -13,10 +13,6 @@
 #include "SliderBP.h"
 #include "Frame.h"
 
-using namespace gge;
-using namespace gre;
-using namespace geffects;
-
 #define SLIDER_CLICK_DOWNDURATION	100
 
 namespace gge { namespace widgets {
@@ -205,15 +201,15 @@ namespace gge { namespace widgets {
 		
 		utils::Collection<SliderLocationName> ticknames;
 
-		Colorizable2DLayer textlayer;
+		graphics::Colorizable2DLayer textlayer;
 		WidgetLayer textwlayer;
 		WidgetLayer ticklayer;
 		WidgetLayer	symbollayer;
 		WidgetLayer	rulelayer;
-		Basic2DLayer	overlayer;
+		graphics::Basic2DLayer	overlayer;
 
-		LayerMover *symbolmover;
-		LayerResizer *overlayresizer;
+		effects::LayerMover *symbolmover;
+		effects::LayerResizer *overlayresizer;
 
 		IntervalObject *goup;
 		IntervalObject *godown;
@@ -265,4 +261,3 @@ namespace gge { namespace widgets {
 		float prevrat;
 	};
 } }
-

@@ -8,11 +8,8 @@
 #include <assert.h>
 #endif
 
-using namespace std;
-using namespace gge;
-
 ////This namespace contains Gorgon Resource System.
-namespace gre {
+namespace gge { 
 
 	////The Guid class is used for Guid operations
 	class Guid {
@@ -129,6 +126,8 @@ namespace gre {
 		}
 	};
 
-	class ResourceFile;
-	class ResourceBase;
+	namespace resource {
+		class ResourceFile;
+		class ResourceBase;
+	}
 }

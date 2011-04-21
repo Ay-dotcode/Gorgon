@@ -1,5 +1,7 @@
 #include "ButtonElement.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 	ButtonElement::ButtonElement(void) {
 		font_guid=NULL;
@@ -50,7 +52,7 @@ namespace gge { namespace widgets {
 	}
 
 
-	ButtonElement &ButtonElement::Draw(WidgetLayer &Target,Colorizable2DLayer &TextTarget,Colorizable2DLayer &IconTarget,string Caption,Buffered2DGraphic *Icon) {
+	ButtonElement &ButtonElement::Draw(WidgetLayer &Target,graphics::Colorizable2DLayer &TextTarget,graphics::Colorizable2DLayer &IconTarget,string Caption,graphics::Buffered2DGraphic *Icon) {
 		int X=Offset.x;
 		int Y=Offset.y;
 		int Width=Visual->Width(Target.W);

@@ -3,6 +3,8 @@
 #include <cstring>
 #include "../Engine/GGEMain.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 	Button::Button(ButtonBP *BluePrint,IWidgetContainer &container) : 
 		IWidgetObject(container),

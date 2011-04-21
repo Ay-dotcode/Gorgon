@@ -104,9 +104,9 @@ namespace gge { namespace widgets {
 		bool statetransition;
 		bool statetransitiontarget;
 		bool mover;
-		Colorizable2DLayer textlayer;
+		graphics::Colorizable2DLayer textlayer;
 
-		ImageAnimation *icon;
+		resource::ImageAnimation *icon;
 
 		CheckboxBP *BluePrint;
 		CheckboxElement *et[4][4];

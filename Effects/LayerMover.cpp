@@ -1,6 +1,6 @@
 #include "LayerMover.h"
 
-namespace geffects {
+namespace gge { namespace effects {
 	void LayerMover::Setup(Point From, Point To, int Time) {
 
 		from=From;
@@ -55,4 +55,4 @@ namespace geffects {
 		Target->Y=current.y;
 
 	}
-}
+} }

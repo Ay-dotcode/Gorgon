@@ -9,6 +9,8 @@
 #include "../Resource/GRE.h"
 #include "OS.h"
 
+using namespace gge::resource;
+
 namespace gge {
 
 	void PointerCollection::Window_Activate() {
@@ -46,7 +48,7 @@ namespace gge {
 	}
 
 	void PointerCollection::Initialize(GGEMain &Main) {
-		PointerLayer=dynamic_cast<Basic2DLayer*>(Main.Add( new Basic2DLayer(0, 0, Main.getWidth(), Main.getHeight()) , -100 ));
+		PointerLayer=dynamic_cast<graphics::Basic2DLayer*>(Main.Add( new graphics::Basic2DLayer(0, 0, Main.getWidth(), Main.getHeight()) , -100 ));
 
 		os::window::Activated.Register(this, &PointerCollection::Window_Activate);
 		os::window::Deactivated.Register(this, &PointerCollection::Window_Deactivate);
@@ -81,7 +83,7 @@ namespace gge {
 			BasePointer=(*this)[0];
 	}
 
-	Pointer *PointerCollection::Add(Buffered2DGraphic *pointer, Point Hotspot, Pointer::PointerTypes Type) {
+	Pointer *PointerCollection::Add(graphics::Buffered2DGraphic *pointer, Point Hotspot, Pointer::PointerTypes Type) {
 		Pointer *ret=new Pointer(pointer, Hotspot.x, Hotspot.y, Type);
 		utils::Collection<Pointer, 10>::Add( ret );
 		return ret;

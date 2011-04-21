@@ -1,16 +1,28 @@
+//DESCRIPTION
+//	This file allows programmers to use binary numbers. These numbers
+//	are parsed at compile time
+
+//REQUIRES:
+//	---
+
+//LICENSE
+//	Public Domain
+//
+//	This program is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+//AUTHOR
+//	Tom Torfs
 #pragma once
 
-
-/* Binary constant generator macro
-By Tom Torfs - donated to the public domain
-*/
 
 /* All macro's evaluate to compile-time constants */
 
 /* *** helper macros *** /
 
 /* turn a numeric literal into a hex constant
-(avoids problems with leading zeroes)
+(avoids problems with leading zeros)
 8-bit constants max value 0x11111111, always fits in unsigned long
 */
 #define HEX__(n) 0x##n##LU
@@ -27,14 +39,14 @@ By Tom Torfs - donated to the public domain
 
 /* *** user macros *** /
 
-/* for upto 8-bit binary constants */
+/* for up to 8-bit binary constants */
 #define B8(d) ((unsigned char)B8__(HEX__(d)))
 
-/* for upto 16-bit binary constants, MSB first */
+/* for up to 16-bit binary constants, MSB first */
 #define B16(dmsb,dlsb) (((unsigned short)B8(dmsb)<<8) \
 + B8(dlsb))
 
-/* for upto 32-bit binary constants, MSB first */
+/* for up to 32-bit binary constants, MSB first */
 #define B32(dmsb,db2,db3,dlsb) (((unsigned long)B8(dmsb)<<24) \
 + ((unsigned long)B8(db2)<<16) \
 + ((unsigned long)B8(db3)<<8) \

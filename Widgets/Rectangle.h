@@ -6,35 +6,32 @@
 #include "../Resource/ResizableObject.h"
 #include "../Utils/Margins.h"
 
-using namespace gre;
-using namespace gge;
-
 namespace gge { namespace widgets {
 
 #define GID_RECT		0x05120000
 #define	GID_RECT_PROPS	0x05120101
 
-	ResourceBase *LoadRectangleResource(ResourceFile* File, FILE* Data, int Size);
+	resource::ResourceBase *LoadRectangleResource(resource::ResourceFile* File, FILE* Data, int Size);
 
-	class RectangleResource : public ResourceBase
+	class RectangleResource : public resource::ResourceBase
 	{
-		friend ResourceBase *LoadRectangleResource(ResourceFile* File, FILE* Data, int Size);
+		friend resource::ResourceBase *LoadRectangleResource(resource::ResourceFile* File, FILE* Data, int Size);
 		friend class ResizableRect;
 	public:
 		virtual int getGID() { return GID_RECT; }
 		RectangleResource();
 
-		virtual bool Save(gre::ResourceFile * File, FILE * Data) { return true; }
+		virtual bool Save(resource::ResourceFile * File, FILE * Data) { return true; }
 
-		AnimationResource *animTL;
-		AnimationResource *animT;
-		AnimationResource *animTR;
-		AnimationResource *animL;
-		AnimationResource *animC;
-		AnimationResource *animR;
-		AnimationResource *animBL;
-		AnimationResource *animB;
-		AnimationResource *animBR;
+		resource::AnimationResource *animTL;
+		resource::AnimationResource *animT;
+		resource::AnimationResource *animTR;
+		resource::AnimationResource *animL;
+		resource::AnimationResource *animC;
+		resource::AnimationResource *animR;
+		resource::AnimationResource *animBL;
+		resource::AnimationResource *animB;
+		resource::AnimationResource *animBR;
 
 		bool TileT,
 			 TileB,
@@ -67,7 +64,7 @@ namespace gge { namespace widgets {
 		bool centeronly;
 	};
 
-	class ResizableRect : public ResizableObject {
+	class ResizableRect : public resource::ResizableObject {
 	public:
 		RectangleResource *Parent;
 		bool TileT,
@@ -77,15 +74,15 @@ namespace gge { namespace widgets {
 			 TileCH,
 			 TileCV;
 
-		ImageAnimation *animTL;
-		ImageAnimation *animT;
-		ImageAnimation *animTR;
-		ImageAnimation *animL;
-		ImageAnimation *animC;
-		ImageAnimation *animR;
-		ImageAnimation *animBL;
-		ImageAnimation *animB;
-		ImageAnimation *animBR;
+		resource::ImageAnimation *animTL;
+		resource::ImageAnimation *animT;
+		resource::ImageAnimation *animTR;
+		resource::ImageAnimation *animL;
+		resource::ImageAnimation *animC;
+		resource::ImageAnimation *animR;
+		resource::ImageAnimation *animBL;
+		resource::ImageAnimation *animB;
+		resource::ImageAnimation *animBR;
 
 		ResizableRect(RectangleResource *parent) { init(parent); }
 		ResizableRect(RectangleResource &parent) { init(&parent); }
@@ -99,9 +96,9 @@ namespace gge { namespace widgets {
 			SetResizingOptions(HSizing,VSizing);
 		}
 
-		virtual void DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
-		virtual void DrawResized(I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) { DrawResized(&Target, X,Y, W,H, Align); }
-		virtual void DrawAround(I2DGraphicsTarget *Target, int X, int Y, int W, int H);
+		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
+		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) { DrawResized(&Target, X,Y, W,H, Align); }
+		virtual void DrawAround(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H);
 		virtual void Reset(bool Reverse=false);
 		virtual void Reverse();
 		virtual void Play();

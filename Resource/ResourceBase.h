@@ -7,7 +7,7 @@
 
 using namespace gge;
 
-namespace gre {
+namespace gge { namespace resource {
 
 	////This class is the base for all Gorgon Resources
 	class ResourceBase {
@@ -47,4 +47,4 @@ namespace gre {
 		////Searches the public children of this resource object
 		virtual ResourceBase *FindParent(Guid *guid);
 	};
-}
+} }

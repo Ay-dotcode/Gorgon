@@ -26,28 +26,28 @@
 
 namespace gge {
 #ifndef BOUNDS2D_EXISTS
-	template <class _T> class basic_Bounds2D;
+	template <class T_> class basic_Bounds2D;
 #endif
 
-	template <class _T>
+	template <class T_>
 	class basic_Rectangle2D {
 	public:
-		_T Left,Top , Width,Height;
+		T_ Left,Top , Width,Height;
 		
 		basic_Rectangle2D() {}
-		basic_Rectangle2D(_T Left, _T Top, _T Width, _T Height) : 
+		basic_Rectangle2D(T_ Left, T_ Top, T_ Width, T_ Height) : 
 			Left(Left), Top(Top), Width(Width),Height(Height)
 		{ }
 			
-		basic_Rectangle2D(basic_Point2D<_T> TopLeft, basic_Size2D<_T> HeightWidth) : 
+		basic_Rectangle2D(basic_Point2D<T_> TopLeft, basic_Size2D<T_> HeightWidth) : 
 			Left(TopLeft.x), Top(TopLeft.y), Width(HeightWidth.Width), Height(HeightWidth.Height)
 		{ }
 			
-		basic_Rectangle2D(basic_Point2D<_T> TopLeft, int Width, int Height) : 
+		basic_Rectangle2D(basic_Point2D<T_> TopLeft, int Width, int Height) : 
 			Left(TopLeft.x), Top(TopLeft.y), Width(Width), Height(Height)
 		{ }
 		
-		basic_Rectangle2D(basic_Point2D<_T> TopLeft, basic_Point2D<_T> BottomRight) :
+		basic_Rectangle2D(basic_Point2D<T_> TopLeft, basic_Point2D<T_> BottomRight) :
 			Left(TopLeft.x), Top(TopLeft.y),
 			Width(BottomRight.x-TopLeft.x),	Height(BottomRight.y-TopLeft.y)
 		{ }
@@ -57,24 +57,24 @@ namespace gge {
 			Left(rect.Left), Top(rect.Top), Width(rect.Width), Height(rect.Height)
 		{ }
 
-		basic_Rectangle2D(const basic_Bounds2D<_T> &bounds);
+		basic_Rectangle2D(const basic_Bounds2D<T_> &bounds);
 
-		operator basic_Bounds2D<_T>();
+		operator basic_Bounds2D<T_>();
 
-		basic_Rectangle2D& operator =(const basic_Bounds2D<_T> &bounds);
+		basic_Rectangle2D& operator =(const basic_Bounds2D<T_> &bounds);
 
 		////Calculates and returns the width of the region
-		_T Right() const { return Width +Left; }
+		T_ Right() const { return Width +Left; }
 		////Calculates and returns the height of the region
-		_T Bottom() const { return Height+Top;  }
+		T_ Bottom() const { return Height+Top;  }
 
 		//scale, translate, rotate?, +, +=, -, -=, &&, ||
 	};
 
 	////Allows streaming of point. It converts point to string,
 	/// every row is printed on a line enclosed in braces.
-	template <class _T>
-	std::ostream &operator << (std::ostream &out, basic_Rectangle2D<_T> &Rectangle) {
+	template <class T_>
+	std::ostream &operator << (std::ostream &out, basic_Rectangle2D<T_> &Rectangle) {
 		out<<"< "<<Rectangle.Left<<"-"<<Rectangle.Width<<" , "<<Rectangle.Top<<"-"<<Rectangle.Height<<" >";
 
 		return out;
@@ -82,8 +82,8 @@ namespace gge {
 
 
 	////Adds the textual form of the point to another string.
-	template <class _T>
-	std::string &operator + (std::string &out, basic_Rectangle2D<_T> &Rectangle) {
+	template <class T_>
+	std::string &operator + (std::string &out, basic_Rectangle2D<T_> &Rectangle) {
 		return string+(string)Rectangle;
 	}
 

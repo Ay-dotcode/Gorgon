@@ -176,7 +176,7 @@ namespace gge { namespace widgets {
 		bool verticlescrollbardisplayed;
 		
 		WidgetLayer		BoxLayer;
-		Basic2DLayer	ScrollingLayer;
+		graphics::Basic2DLayer	ScrollingLayer;
 
 		Margins outerborderwidth;
 		Margins scrollbarmargin;

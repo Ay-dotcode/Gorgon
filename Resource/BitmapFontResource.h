@@ -5,7 +5,7 @@
 #include "ImageResource.h"
 #include "../Engine/FontRenderer.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	class ResourceFile;
 
 
@@ -35,7 +35,7 @@ namespace gre {
 		/// An image might be used in more than one character.
 		ImageResource *Characters[256];
 
-		////Horizontal seperation distance between two characters
+		////Horizontal separation distance between two characters
 		short Seperator;
 		////Vertical spacing of this font, this value is multiplicative
 		/// where 1 is 100% of the character height.
@@ -43,22 +43,22 @@ namespace gre {
 
 	//protected:
 		////Prints the given text to the target using given color.
-		virtual void Print(I2DColorizableGraphicsTarget *target, int X, int Y, string Text, RGBint Color, ShadowParams Shadow=ShadowParams());
+		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, string Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams());
 		////Prints the given text to the target using given color. Text is wrapped and aligned as necessary
-		virtual void Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, RGBint Color, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams());
+		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams());
 		////This method is extended to cover meta functionality for advanced text rendering
-		virtual void Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, RGBint Color, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams());
+		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams());
 		////This method is extended to cover meta functionality for advanced text rendering. This function does not render the given text
 		/// it only processes meta data
 		virtual void Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align);
 
 
 
-		void Print(I2DColorizableGraphicsTarget &target, int X, int Y, string Text, RGBint Color, ShadowParams Shadow=ShadowParams()) 
+		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, string Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams()) 
 		{ Print(&target, X, Y, Text, Color, Shadow); }
-		void Print(I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, RGBint Color, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams()) 
+		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams()) 
 		{ Print(&target, X, Y, W, Text, Color, Align, Shadow); }
-		void Print(I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, RGBint Color, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams())
+		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams())
 		{ Print(&target, X, Y, W, Text, Color, Data, DataLen, Align, Shadow); }
 
 		////Returns the height of this font, all characters have same height
@@ -73,4 +73,4 @@ namespace gre {
 			return w; 
 		}
 	};
-}
+} }

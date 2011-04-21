@@ -3,21 +3,19 @@
 #include "../Resource/ResourceBase.h"
 #include "ButtonElement.h"
 
-using namespace gre;
-
 namespace gge { namespace widgets {
 
 #define GID_BUTTON_GRP			0x5340000
 #define GID_BUTTON_GRP_PROPS	0x5340101
 
-	class ButtonStyleGroup : public ResourceBase
+	class ButtonStyleGroup : public resource::ResourceBase
 	{
-		friend ResourceBase* LoadButtonStyleGroup(ResourceFile*,FILE*,int);
+		friend resource::ResourceBase* LoadButtonStyleGroup(resource::ResourceFile*,FILE*,int);
 	public:
 		ButtonStyleGroup(void);
 		virtual int getGID() { return GID_BUTTON_GRP; }
 		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
 
 		enum {
 			SIZE_RESIZABLE,
@@ -45,7 +43,7 @@ namespace gge { namespace widgets {
 
 	protected:
 
-		ResourceFile* file;
+		resource::ResourceFile* file;
 
 		Guid *guid_normalstyle		,
 			 *guid_hoverstyle		,

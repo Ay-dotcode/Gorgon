@@ -1,6 +1,9 @@
 #include "Font.h"
 #include "../Resource/FontTheme.h"
 
+using namespace gge::resource;
+using namespace gge::graphics;
+
 namespace gge {
 	Font::Font(FontTheme &Theme, RGBint Color, FontStyle Style, ShadowParams Shadow) :
 	  Theme(&Theme), Style(Style), Color(Color), Shadow(Shadow)

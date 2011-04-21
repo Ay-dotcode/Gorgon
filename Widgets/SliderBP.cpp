@@ -21,7 +21,7 @@ namespace gge { namespace widgets {
 	void SliderBP::Prepare(gge::GGEMain *main) {
 		ResourceBase::Prepare(main);
 
-		TickSound=(SoundResource*)file->FindObject(guid_ticksound);
+		TickSound=dynamic_cast<resource::SoundResource*>(file->FindObject(guid_ticksound));
 	}
 } }
 

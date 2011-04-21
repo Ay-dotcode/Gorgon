@@ -3,7 +3,7 @@
 #include "GRE.h"
 #include "ResourceBase.h"
 
-namespace gre {
+namespace gge { namespace resource {
 	class ResourceFile;
 	
 	////This function loads a text resource from the given file
@@ -23,4 +23,4 @@ namespace gre {
 		////Currently does nothing
 		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
 	};
-}
+} }

@@ -9,7 +9,7 @@
 #include "LinkNode.h"
 #include "FontTheme.h"
 
-namespace gre {
+namespace gge { namespace resource {
 
 	bool ResourceFile::LoadFile(string filename) {
 		char sgn[7];
@@ -109,4 +109,4 @@ namespace gre {
 		Loaders.Add(new ResourceLoader(GID_FONTTHEME, LoadFontTheme)); 
 		Loaders.Add(new ResourceLoader(GID_FONTTHEME, LoadFontTheme)); 
 	}
-}
+} }

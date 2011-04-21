@@ -6,8 +6,6 @@
 #include "IWidgetContainer.h"
 #include <math.h>
 
-using namespace gre;
-
 namespace gge { namespace widgets {
 
 #define GID_SLIDER			0x05860000
@@ -15,23 +13,23 @@ namespace gge { namespace widgets {
 #define GID_SLIDER_NAMES	0x05860102
 #define GID_SLIDER_NAME		0x05860103
 
-	class SliderBP : public ResourceBase, public IWidgetBluePrint
+	class SliderBP : public resource::ResourceBase, public IWidgetBluePrint
 	{
-		friend ResourceBase *LoadSlider(ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadSlider(resource::ResourceFile*,FILE*,int);
 		friend class SliderBase;
 	public:
-		SoundResource *TickSound;
+		resource::SoundResource *TickSound;
 
 		SliderBP();
 		virtual int getGID() { return GID_SLIDER; }
 		virtual IWidgetObject *Create(IWidgetContainer &Container,int X,int Y,int Cx,int Cy);
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
 		void Prepare(gge::GGEMain *main);
 
 
 	protected:
 		utils::Collection<SliderStyleGroup> StyleGroups;
 		Guid *guid_ticksound;
-		ResourceFile *file;
+		resource::ResourceFile *file;
 	};
 } }

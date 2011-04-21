@@ -1,3 +1,27 @@
+//DESCRIPTION
+//	This file contains class Point which is compatible with 2 variable
+//	point structures but offers extra functionality
+
+//REQUIRES:
+//	---
+
+//LICENSE
+//	This program is free software: you can redistribute it and/or modify
+//	it under the terms of the Lesser GNU General Public License as published by
+//	the Free Software Foundation, either version 3 of the License, or
+//	(at your option) any later version.
+//
+//	This program is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//	Lesser GNU General Public License for more details.
+//
+//	You should have received a copy of the Lesser GNU General Public License
+//	along with this program. If not, see < http://www.gnu.org/licenses/ >.
+
+//COPYRIGHT
+//	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
+
 #pragma once
 
 #include <iostream>
@@ -24,31 +48,31 @@
 #define POINT2D_EXISTS
 
 #ifdef VECTOR_EXISTS
-#error "Include Point2D before including Vector header to obtain extra functionality"
+#	error "Include Point2D before including Vector header to obtain extra functionality"
 #endif
 
 
 
 namespace gge {
 
-	template <class _T>
+	template <class T_>
 	class basic_Point2D {
 	public:
-		_T x,y;
+		T_ x,y;
 
 		basic_Point2D() {}
-		basic_Point2D(_T X, _T Y) : x(X), y(Y) {  }
-		template <class _U>
-		basic_Point2D(const basic_Point2D<_U> &point) : x(point.x), y(point.y) { }
+		basic_Point2D(T_ X, T_ Y) : x(X), y(Y) {  }
+		template <class U_>
+		basic_Point2D(const basic_Point2D<U_> &point) : x(point.x), y(point.y) { }
 
-		template <class _U>
-		basic_Point2D& operator =(const basic_Point2D<_U> &point) { x=point.x; y=point.y; return *this; }
+		template <class U_>
+		basic_Point2D& operator =(const basic_Point2D<U_> &point) { x=point.x; y=point.y; return *this; }
 
-		graphtype Distance(basic_Point2D &point) {
+		graphtype Distance(const basic_Point2D &point) {
 			return std::sqrt( (graphtype)(x-point.x)*(x-point.x) + (y-point.y)*(y-point.y) );
 		}
 
-		graphtype Distance() {
+		graphtype Distance() const {
 			return std::sqrt( (graphtype)(x*x) + (y*y) );
 		}
 
@@ -56,118 +80,108 @@ namespace gge {
 			return basic_Point2D(x-point.x, y-point.y);
 		}
 
-		basic_Point2D operator - (_T value) {
+		basic_Point2D operator - (T_ value) const {
 			return basic_Point2D(x-value, y-value);
 		}
 
-		basic_Point2D operator + (basic_Point2D &point) {
+		basic_Point2D operator + (const basic_Point2D &point) const {
 			return basic_Point2D(x+point.x, y+point.y);
 		}
 
-		basic_Point2D operator + (_T value) {
+		basic_Point2D operator + (T_ value) const {
 			return basic_Point2D(x+value, y+value);
 		}
 
-		template <class _U>
-		basic_Point2D operator * (_U value) {
+		template <class U_>
+		basic_Point2D operator * (U_ value) const {
 			return basic_Point2D(x*value, y*value);
 		}
 
-		graphtype operator *(basic_Point2D<_T> &value) {
+		graphtype operator *(const basic_Point2D<T_> &value) const {
 			return x*value.x+y*value.y;
 		}
 
-		template <class _U>
-		basic_Point2D operator / (_U value) {
+		template <class U_>
+		basic_Point2D operator / (U_ value) const {
 			return basic_Point2D(x/value, y/value);
 		}
 
-		basic_Point2D &operator -= (basic_Point2D &point) {
+		basic_Point2D &operator -= (const basic_Point2D &point) {
 			x-=point.x;
 			y-=point.y;
 			return *this;
 		}
 
-		basic_Point2D &operator -= (_T value) {
+		basic_Point2D &operator -= (T_ value) {
 			x-=value;
 			y-=value;
 			return *this;
 		}
 
-		basic_Point2D &operator += (basic_Point2D &point) {
+		basic_Point2D &operator += (const basic_Point2D &point) {
 			x+=point.x;
 			y+=point.y;
 			return *this;
 		}
 
-		basic_Point2D &operator += (_T value) {
+		basic_Point2D &operator += (T_ value) {
 			x+=value;
 			y+=value;
 			return *this;
 		}
 
-		template <class _U>
-		basic_Point2D &operator *= (_U value) {
+		template <class U_>
+		basic_Point2D &operator *= (U_ value) {
 			x*=value;
 			y*=value;
 			return *this;
 		}
 
-		template <class _U>
-		basic_Point2D &operator /= (_U value) {
+		template <class U_>
+		basic_Point2D &operator /= (U_ value) {
 			x/=value;
 			y/=value;
 			return *this;
 		}
 
-		graphtype Angle(basic_Point2D &point) {
-			graphtype slope=Slope(point);
-			if(x<point.x)
-				return std::atan(slope)+PI;
-			else if(y<point.y)
-				return std::atan(slope)+PI*2;
-			else
-				return std::atan(slope);
+		graphtype Angle(const basic_Point2D &origin) const {
+			return atan2(y-origin.y, x-origin.x);
 		}
 
-		graphtype Angle() {
-			graphtype slope=Slope();
-			if(x<0)
-				return std::atan(slope)+PI;
-			else if(y<0)
-				return std::atan(slope)+PI*2;
-			else
-				return std::atan(slope);
+		graphtype Angle() const {
+			return atan2(y, x);
 		}
 
-		graphtype Slope(basic_Point2D &point) {
+		graphtype Slope(const basic_Point2D &point) const {
 			return (graphtype)(y-point.y)/(x-point.x);
 		}
 
-		graphtype Slope() {
+		graphtype Slope() const {
 			return (graphtype)y/x;
 		}
 
-		bool Compare(basic_Point2D &point) {
-			_T v=std::numeric_limits<_T>::epsilon();
+		///!!!Do i have to change this
+		bool Compare(const basic_Point2D &point) const {
+			T_ v=std::numeric_limits<T_>::epsilon();
 			if(v<1)
 				v*=5;
 
 			//for double and float operations
-			_T dist1=x-point.x;
-			_T dist2=y-point.y;
+			T_ dist1=x-point.x;
+			T_ dist2=y-point.y;
 			return  dist1<=v && dist1>=-v && dist2<=v && dist2>=-v;
 		}
 
-		bool operator == (basic_Point2D &point) {
+		//or at least this one
+		bool operator == (const basic_Point2D &point) const {
 			return Compare(point);
 		}
 
-		bool operator !=(basic_Point2D &point) {
+		bool operator !=(const basic_Point2D &point) const {
 			return !Compare(point);
 		}
 
-		basic_Point2D &operator = (basic_Point2D &point) {
+		basic_Point2D &operator = (const basic_Point2D &point) {
 			x=point.x;
 			y=point.y;
 
@@ -176,7 +190,7 @@ namespace gge {
 
 #ifdef GRAPH_XMLSERVICES
 		//only supported for scalar values
-		std::string toXMLAttributes() {
+		std::string toXMLAttributes() const {
 			std::ostringstream str;
 			
 			str.precision(Point2D_DecimalPoints);
@@ -186,7 +200,7 @@ namespace gge {
 		}
 
 		//only supported for scalar values
-		std::string toXMLTag() {
+		std::string toXMLTag() const {
 			std::ostringstream str;
 			
 			str.precision(Point2D_DecimalPoints);
@@ -204,33 +218,33 @@ namespace gge {
 		}
 #endif
 
-		void Translate(_T x, _T y) {
+		void Translate(T_ x, T_ y) {
 			this->x+=x;
 			this->y+=y;
 		}
-		template <class _U>
-		void Scale(_U size) {
+		template <class U_>
+		void Scale(U_ size) {
 			x *= size;
 			y *= size;
 		}
-		template <class _U>
-		void Scale(_U sizex, _U sizey) {
+		template <class U_>
+		void Scale(U_ sizex, U_ sizey) {
 			x *= sizex;
 			y *= sizey;
 		}
-		template <class _U>
-		void Scale(_U size, basic_Point2D origin) {
+		template <class U_>
+		void Scale(U_ size, basic_Point2D origin) {
 			x = (x-origin.x)*size+origin.x;
 			y = (y-origin.y)*size+origin.y;
 		}
-		template <class _U>
-		void Scale(_U sizex, _U sizey, basic_Point2D origin) {
+		template <class U_>
+		void Scale(U_ sizex, U_ sizey, basic_Point2D origin) {
 			x = (x-origin.x)*sizex+origin.x;
 			y = (y-origin.y)*sizey+origin.y;
 		}
 		////no template on this since cos and cosf cannot be used as such
 		void Rotate(graphtype angle) {
-			_T new_x;
+			T_ new_x;
 			graphtype cosa=cosfn(angle), sina=sinfn(angle);
 			new_x = x*cosa - y*sina;
 			y     = x*sina + y*cosa;
@@ -238,7 +252,7 @@ namespace gge {
 			x     = new_x;
 		}
 		void Rotate(graphtype angle, basic_Point2D origin) {
-			graphtype cosa=cosfn(angle), sina=sinfn(angle);
+			graphtype cosa=std::cos(angle), sina=std::sin(angle);
 
 			basic_Point2D temp=*this-origin;
 
@@ -247,27 +261,27 @@ namespace gge {
 
 			*this += origin;
 		}
-		template <class _U>
-		void SkewX(_U rate) {
+		template <class U_>
+		void SkewX(U_ rate) {
 			x += y*rate;
 		}
-		template <class _U>
-		void SkewY(_U rate) {
+		template <class U_>
+		void SkewY(U_ rate) {
 			y += x*rate;
 		}
-		template <class _U>
-		void SkewX(_U rate, basic_Point2D origin) {
+		template <class U_>
+		void SkewX(U_ rate, basic_Point2D origin) {
 			x += (y-origin.y)*rate;
 		}
-		template <class _U>
-		void SkewY(_U rate, basic_Point2D origin) {
+		template <class U_>
+		void SkewY(U_ rate, basic_Point2D origin) {
 			y += (x-origin.x)*rate;
 		}
 		void ReflectX() {
-			y = -y;
+			x = -x;
 		}
 		void ReflectY() {
-			x = -x;
+			y = -y;
 		}
 		void HorizontalMirror() {
 			ReflectY();
@@ -276,10 +290,10 @@ namespace gge {
 			ReflectX();
 		}
 		void ReflectX(basic_Point2D origin) {
-			y = -y+origin.y*2;
+			x = -x+origin.x*2;
 		}
 		void ReflectY(basic_Point2D origin) {
-			x = -x+origin.x*2;
+			y = -y+origin.y*2;
 		}
 		void HorizontalMirror(basic_Point2D origin) {
 			ReflectY(origin);
@@ -292,11 +306,11 @@ namespace gge {
 		}*/
 
 		template <class U_>
-		static basic_Point2D CreateFrom(basic_Point2D point, U_ magnitute, graphtype angle) {
+		static basic_Point2D CreateFrom(const basic_Point2D &point, U_ magnitute, graphtype angle) {
 			return point+basic_Point2D(magnitute*std::cos(angle), magnitute*std::sin(angle));
 		}
 
-		operator std::string() {
+		operator std::string() const {
 			std::ostringstream str;
 
 			str.precision(Point2D_DecimalPoints);
@@ -310,8 +324,8 @@ namespace gge {
 
 	////Allows streaming of point. It converts point to string,
 	/// every row is printed on a line enclosed in braces.
-	template <class _T>
-	std::ostream &operator << (std::ostream &out, basic_Point2D<_T> &point) {
+	template <class T_>
+	std::ostream &operator << (std::ostream &out, const basic_Point2D<T_> &point) {
 		out<<"("<<point.x<<", "<<point.y<<")";
 
 		return out;
@@ -319,8 +333,8 @@ namespace gge {
 
 
 	////Adds the textual form of the point to another string.
-	template <class _T>
-	std::string &operator + (std::string &out, basic_Point2D<_T> &point) {
+	template <class T_>
+	std::string &operator + (std::string &out, const basic_Point2D<T_> &point) {
 		return string+(string)point;
 	}
 

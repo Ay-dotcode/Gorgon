@@ -3,6 +3,8 @@
 #include "Rectangle.h"
 #include "CheckboxBase.h"
 
+using namespace gge::resource;
+
 namespace gge { namespace widgets {
 	CheckboxElement::CheckboxElement(void) : symbol(NULL), border(NULL), bordertemplate(NULL), Lines(1), base(NULL) {
 	}
@@ -38,7 +40,7 @@ namespace gge { namespace widgets {
 		return *this;
 	}
 
-	CheckboxElement &CheckboxElement::Draw(WidgetLayer &layer,Colorizable2DLayer &textlayer,string &caption) {
+	CheckboxElement &CheckboxElement::Draw(WidgetLayer &layer,graphics::Colorizable2DLayer &textlayer,string &caption) {
 		SymbolIconOrderConstants symboliconorder=SymbolIconOrder;
 		Margins cm; //current margin
 		

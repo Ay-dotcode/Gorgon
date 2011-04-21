@@ -12,7 +12,7 @@
 /// is cleared and built again. Should be used with care. This
 /// list does not have support for item removal, it can only be
 /// cleared.
-template <class _T>
+template <class T_>
 class PAClassList {
 public:
 	////Amount of growth when this object runs out of space
@@ -44,7 +44,7 @@ public:
 	/// does not make any initialization unless a growth is 
 	/// required. The returned object should be considered
 	/// dirty.
-	_T* Add() {
+	T_* Add() {
 		if(count==alloc)
 			grow();
 		
@@ -52,7 +52,7 @@ public:
 	}
 	
 	////Indexes an item, does not do bound check
-	_T* operator [] (int Index) {
+	T_* operator [] (int Index) {
 		return list[Index];
 	}
 	
@@ -76,30 +76,30 @@ public:
 	/// amount of items. It also initializes the newly
 	/// created objects
 	void AllocateFor(int amount) {
-		list=(_T**)realloc(list,sizeof(_T*)*(alloc+amount));
+		list=(T_**)realloc(list,sizeof(T_*)*(alloc+amount));
 		for(int i=alloc;i<alloc+growth;i++)
-			list[i]=new _T;
+			list[i]=new T_;
 
 		alloc+=amount;
 	}
 
 private:
-	_T **list;
+	T_ **list;
 	int alloc,count;
 	
 	void init() {
-		list=(_T**)malloc(sizeof(_T*)*growth);
+		list=(T_**)malloc(sizeof(T_*)*growth);
 		alloc=growth;
 		for(int i=0;i<alloc;i++)
-			list[i]=new _T;
+			list[i]=new T_;
 
 		count=0;
 	}
 	
 	void grow() {
-		list=(_T**)realloc(list,sizeof(_T*)*(alloc+growth));
+		list=(T_**)realloc(list,sizeof(T_*)*(alloc+growth));
 		for(int i=alloc;i<alloc+growth;i++)
-			list[i]=new _T;
+			list[i]=new T_;
 
 		alloc+=growth;
 	}

@@ -5,7 +5,10 @@
 #include "../External/PNG/png.h"
 #include "../Engine/GGEMain.h"
 
-namespace gre {
+using namespace gge::resource;
+using namespace gge::graphics;
+
+namespace gge { namespace resource {
 	ResourceBase *LoadImageResource(ResourceFile* File, FILE* Data, int Size) {
 		int i;
 		ImageResource *img=new ImageResource;
@@ -14,7 +17,7 @@ namespace gre {
 		int tpos=ftell(Data)+Size;
 		bool lateloading=0;
 		//BYTE *compressionprops;
-		gge::ColorMode m;
+		graphics::ColorMode m;
 
 		while(ftell(Data)<tpos) {
 			int gid,size,tmpint;
@@ -112,11 +115,11 @@ namespace gre {
 						int channels=cinfo->num_components;
 
 						if(channels==3)
-							m=BGR;
+							m=graphics::BGR;
 						else if(channels==4)
-							m=ABGR_32BPP;
+							m=graphics::ABGR_32BPP;
 						else if(channels=1)
-							m=ALPHAONLY_8BPP;
+							m=graphics::ALPHAONLY_8BPP;
 
 						if(img->getMode()!=m)
 							throw std::runtime_error("Image data size mismatch!");
@@ -203,11 +206,11 @@ namespace gre {
 			int channels=cinfo->num_components;
 
 			if(channels==3)
-				Mode=BGR;
+				Mode=graphics::BGR;
 			else if(channels==4)
-				Mode=ABGR_32BPP;
+				Mode=graphics::ABGR_32BPP;
 			else if(channels=1)
-				Mode=ALPHAONLY_8BPP;
+				Mode=graphics::ALPHAONLY_8BPP;
 
 			Data.Resize(getWidth()*getHeight()*channels);
 
@@ -247,7 +250,7 @@ namespace gre {
 		if(Texture.ID>0)
 			DestroyTexture(&Texture);
 
-		Texture = gge::GenerateTexture(Data, getWidth(), getHeight(), getMode());
+		Texture = graphics::GenerateTexture(Data, getWidth(), getHeight(), getMode());
 	}
 
 	bool ImageResource::PNGExport(string filename) {
@@ -382,7 +385,7 @@ namespace gre {
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
 
-		Resize(width,height,ColorMode::ARGB_32BPP);
+		Resize(width,height,graphics::ColorMode::ARGB_32BPP);
 
 		//currently only RGB is supported
 		if(pChannels!=3)
@@ -390,10 +393,10 @@ namespace gre {
 
 		for(int y=0;y<height;y++) {
 			for(int x=0;x<width;x++) {
-				Raw2DGraphic::Data.operator []((x+y*width)*4+2)=row_pointers[y][x*3];
-				Raw2DGraphic::Data.operator []((x+y*width)*4+1)=row_pointers[y][x*3+1];
-				Raw2DGraphic::Data.operator []((x+y*width)*4+0)=row_pointers[y][x*3+2];
-				Raw2DGraphic::Data.operator []((x+y*width)*4+3)=0xff;
+				Raw2DGraphic::Data[(x+y*width)*4+2]=row_pointers[y][x*3];
+				Raw2DGraphic::Data[(x+y*width)*4+1]=row_pointers[y][x*3+1];
+				Raw2DGraphic::Data[(x+y*width)*4+0]=row_pointers[y][x*3+2];
+				Raw2DGraphic::Data[(x+y*width)*4+3]=0xff;
 			}
 		}
 		
@@ -438,4 +441,4 @@ namespace gre {
 		}
 	}
 
-}
+} }

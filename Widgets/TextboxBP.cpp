@@ -20,6 +20,6 @@ namespace gge { namespace widgets {
 		if(!Caret->Subitems.getCount())
 			Caret=NULL;
 
-		TypingSound=(SoundResource*)file->FindObject(guid_typingsound);
+		TypingSound=(resource::SoundResource*)file->FindObject(guid_typingsound);
 	}
 } }

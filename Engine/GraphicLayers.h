@@ -5,7 +5,7 @@
 #include "../Utils/PAClassList.h"
 #include "Graphics.h"
 
-namespace gge {
+namespace gge { namespace graphics {
 	////_private
 	struct ColorizableSurface : public BasicSurface {
 		RGBfloat Color; 
@@ -133,18 +133,5 @@ namespace gge {
 		////Clear the contents of the layer
 		virtual void Clear() { Surfaces.Clear(); }
 	};
-	class WidgetLayer :  public input::BasicPointerTarget, public Basic2DLayer {
-	public:
-		WidgetLayer(int X=0, int Y=0, int W=100, int H=100) : Basic2DLayer(X,Y,W,H) {
-		}
-		////Renders this layer
-		virtual void Render() { Basic2DLayer::Render(); }
 
-	protected:
-		////Processes the mouse event for the current layer, default
-		/// handling is to pass the request to the sub-layers
-		virtual bool PropagateMouseEvent(input::MouseEventType event, int x, int y, void *data);
-		virtual bool PropagateMouseScrollEvent(int amount, input::MouseEventType event, int x, int y, void *data);
-	};
-
-}
+} }

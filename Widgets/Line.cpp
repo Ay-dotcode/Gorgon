@@ -2,6 +2,10 @@
 #include "../Resource/ResourceFile.h"
 #include <stdexcept>
 
+using namespace gge::resource;
+using std::max;
+
+
 namespace gge { namespace widgets {
 
 	LineResource::LineResource(void) {
@@ -29,7 +33,7 @@ namespace gge { namespace widgets {
 	}
 
 
-	void Line::DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align) {
+	void Line::DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align) {
 
 	//Vertical
 		if(isVertical) { 
@@ -195,7 +199,7 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	ResourceBase* LoadLineResource(ResourceFile* file,FILE* gfile,int sz) {
+	resource::ResourceBase* LoadLineResource(resource::ResourceFile* file,FILE* gfile,int sz) {
 		LineResource *line =new LineResource();
 
 		int gid,size,cnt=0;

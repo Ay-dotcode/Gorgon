@@ -61,7 +61,7 @@ namespace gge { namespace widgets {
 		Textbox &SelectAll();
 
 		TextboxStates	currentState();
-		ImageAnimation *Caret;
+		resource::ImageAnimation *Caret;
 
 		virtual	void	SetText(string text);
 
@@ -78,7 +78,7 @@ namespace gge { namespace widgets {
 		TextboxStates nextstate;
 		unsigned int currentanimstart;
 		unsigned int currentanimend;
-		Colorizable2DLayer textlayer;
+		graphics::Colorizable2DLayer textlayer;
 
 		TextboxBP *BluePrint;
 		unsigned int caretposition;
