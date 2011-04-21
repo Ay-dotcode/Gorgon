@@ -66,7 +66,7 @@ namespace gge {
 		basic_Point2D(const basic_Point2D<U_> &point) : x(point.x), y(point.y) { }
 
 		template <class U_>
-		basic_Point2D& operator =(const basic_Point2D<U_> &point) { x=point.x; y=point.y; return *this; }
+		basic_Point2D& operator =(const basic_Point2D<U_> &point) { x=T_(point.x); y=T_(point.y); return *this; }
 
 		graphtype Distance(const basic_Point2D &point) {
 			return std::sqrt( (graphtype)(x-point.x)*(x-point.x) + (y-point.y)*(y-point.y) );

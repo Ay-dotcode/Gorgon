@@ -43,7 +43,7 @@ namespace gge { namespace graphics {
 
 		HGLRC hRC;
 		hRC = wglCreateContext( hDC );
-		bool r=wglMakeCurrent(hDC,hRC);
+		wglMakeCurrent(hDC,hRC);
 #endif
 
 		ScreenSize.x=Width;

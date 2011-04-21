@@ -70,7 +70,8 @@ namespace gge { namespace sound {
 			return source;
 		}
 
-		SoundControlHandle Create3DSoundController(SoundBufferHandle Buffer, int maxWaveDistance) {
+		gge::sound::system::SoundControlHandle Create3DSoundController( SoundBufferHandle Buffer, float maxWaveDistance )
+		{
 			SoundControlHandle source;
 
 			alGetError();

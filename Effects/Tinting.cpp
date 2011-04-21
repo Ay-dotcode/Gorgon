@@ -44,7 +44,7 @@ namespace gge { namespace effects {
 			if(current.a>to.a)
 				current.a=to.a;
 		}
-		Target->Ambient.a=current.a*255;
+		Target->Ambient.a=(Byte)current.a*255;
 
 		if(from.r>to.r) {
 			current.r=from.r+Time*speed.r;
@@ -56,7 +56,7 @@ namespace gge { namespace effects {
 			if(current.r>to.r)
 				current.r=to.r;
 		}
-		Target->Ambient.r=current.r*255;
+		Target->Ambient.r=(Byte)current.r*255;
 
 		if(from.g>to.g) {
 			current.g=from.g+Time*speed.g;
@@ -68,7 +68,7 @@ namespace gge { namespace effects {
 			if(current.g>to.g)
 				current.g=to.g;
 		}
-		Target->Ambient.g=current.g*255;
+		Target->Ambient.g=(Byte)current.g*255;
 
 		if(from.b>to.b) {
 			current.b=from.b+Time*speed.b;
@@ -80,6 +80,6 @@ namespace gge { namespace effects {
 			if(current.b>to.b)
 				current.b=to.b;
 		}
-		Target->Ambient.b=current.b*255;
+		Target->Ambient.b=(Byte)current.b*255;
 	}
 } }

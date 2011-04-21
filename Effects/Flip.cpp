@@ -37,17 +37,17 @@ namespace gge { namespace effects {
 			FlipSide cside=Side;
 			if(Backside ^ rev) {
 				switch(Side) {
-					case EAFS_Top:
-						cside=EAFS_Bottom;
+					case Top:
+						cside=Bottom;
 						break;
-					case EAFS_Left:
-						cside=EAFS_Right;
+					case Left:
+						cside=Right;
 						break;
-					case EAFS_Bottom:
-						cside=EAFS_Top;
+					case Bottom:
+						cside=Top;
 						break;
-					case EAFS_Right:
-						cside=EAFS_Left;
+					case Right:
+						cside=Left;
 						break;
 				}
 			}
@@ -62,7 +62,7 @@ namespace gge { namespace effects {
 			float tmp;
 
 			switch(cside) {
-				case EAFS_Top:
+				case Top:
 					tmp=(sin(ang)*cx)*Perspective;
 
 					y1-=pivot.y;
@@ -79,7 +79,7 @@ namespace gge { namespace effects {
 					x3+=tmp;
 					x4-=tmp;
 					break;
-				case EAFS_Left:
+				case Left:
 					tmp=(sin(ang)*cy)*Perspective;
 
 					x1-=pivot.x;
@@ -96,7 +96,7 @@ namespace gge { namespace effects {
 					y2-=tmp;
 					y3+=tmp;
 					break;
-				case EAFS_Bottom:
+				case Bottom:
 					tmp=(sin(ang)*cx)*Perspective;
 
 					y1-=pivot.y;
@@ -113,7 +113,7 @@ namespace gge { namespace effects {
 					x1-=tmp;
 					x2+=tmp;
 					break;
-				case EAFS_Right:
+				case Right:
 					tmp=(sin(ang)*cy)*Perspective;
 
 					x1-=pivot.x;
@@ -153,7 +153,7 @@ namespace gge { namespace effects {
 		Flipping=false;
 		Backside=false;
 		ETA=0;
-		Side=EAFS_Top;
+		Side=Top;
 
 		PivotFront.x=0;
 		PivotFront.y=0;

@@ -2,14 +2,14 @@
 namespace gge { namespace effects {
 	void LayerResizer::Setup(gge::Rectangle From, gge::Rectangle To, int Time) {
 
-		from=From;
+		from=Rectangle2D(From);
 		current=from;
 		to=To;
 
-		Target->X=from.Left;
-		Target->Y=from.Top;
-		Target->W=from.Width;
-		Target->H=from.Height;
+		Target->X=(int)from.Left;
+		Target->Y=(int)from.Top;
+		Target->W=(int)from.Width;
+		Target->H=(int)from.Height;
 		this->progressed=0;
 
 		if(Time) {
@@ -25,10 +25,10 @@ namespace gge { namespace effects {
 			speed.Width=0;
 			speed.Height=0;
 			current=from=to;
-			Target->X=to.Left;
-			Target->Y=to.Top;
-			Target->W=to.Width;
-			Target->H=to.Height;
+			Target->X=(int)to.Left;
+			Target->Y=(int)to.Top;
+			Target->W=(int)to.Width;
+			Target->H=(int)to.Height;
 		}
 	}
 

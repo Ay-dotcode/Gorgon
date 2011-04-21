@@ -54,7 +54,7 @@ namespace gge {
 
 		template <class U>
 		basic_Rectangle2D(const basic_Rectangle2D<U> &rect) : 
-			Left(rect.Left), Top(rect.Top), Width(rect.Width), Height(rect.Height)
+			Left(T_(rect.Left)), Top(T_(rect.Top)), Width(T_(rect.Width)), Height(T_(rect.Height))
 		{ }
 
 		basic_Rectangle2D(const basic_Bounds2D<T_> &bounds);

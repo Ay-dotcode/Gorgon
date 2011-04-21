@@ -220,7 +220,7 @@ namespace gge { namespace widgets {
 				line->isTiled=t!=0;
 				if(size>4) {
 					fread(&t,4,1,gfile);
-					line->isVertical=t;
+					line->isVertical=t!=0;
 					if(size>8)
 						EatChunk(gfile,size-8);
 				}

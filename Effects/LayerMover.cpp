@@ -7,8 +7,8 @@ namespace gge { namespace effects {
 		current=from;
 		to=To;
 
-		Target->X=from.x;
-		Target->Y=from.y;
+		Target->X=(int)from.x;
+		Target->Y=(int)from.y;
 		this->progressed=0;
 
 		if(Time) {
@@ -19,8 +19,8 @@ namespace gge { namespace effects {
 			speed.x=0;
 			speed.y=0;
 			current=from=to;
-			Target->X=to.x;
-			Target->Y=to.y;
+			Target->X=(int)to.x;
+			Target->Y=(int)to.y;
 		}
 	}
 
@@ -39,7 +39,7 @@ namespace gge { namespace effects {
 			if(current.x>to.x)
 				current.x=to.x;
 		}
-		Target->X=current.x;
+		Target->X=(int)current.x;
 
 
 		if(from.y>to.y) {
@@ -52,7 +52,7 @@ namespace gge { namespace effects {
 			if(current.y>to.y)
 				current.y=to.y;
 		}
-		Target->Y=current.y;
+		Target->Y=(int)current.y;
 
 	}
 } }

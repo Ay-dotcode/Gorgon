@@ -13,6 +13,10 @@
 #include <stdexcept>
 #include "../Utils/ManagedBuffer.h"
 
+#undef WINGDIAPI
+#undef APIENTRY
+#undef CALLBACK
+
 #ifndef GL_BGR
 #	define GL_BGR	0x80E0
 #	define GL_BGRA	0x80E1

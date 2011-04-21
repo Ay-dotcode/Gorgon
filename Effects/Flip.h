@@ -7,15 +7,15 @@
 #include "../Engine/GraphicLayers.h"
 
 namespace gge { namespace effects {
-	enum FlipSide {
-		EAFS_Top=1,
-		EAFS_Left,
-		EAFS_Bottom,
-		EAFS_Right,
-	};
 
 	class FlipEffect : public AnimatorBase, public graphics::Buffered2DGraphic {
 	public:
+		enum FlipSide {
+			Top=1,
+			Left,
+			Bottom,
+			Right,
+		};
 		////This event is fired when the animation
 		/// completes
 		utils::EventChain<FlipEffect> FinishedEvent;

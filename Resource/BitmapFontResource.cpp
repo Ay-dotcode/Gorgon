@@ -64,7 +64,7 @@ namespace gge { namespace resource {
 	}
 
 	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, graphics::RGBint color, TextAlignment align, ShadowParams Shadow) {
-		int i;
+		unsigned i;
 		int l=x;
 		int lstart=0,lword=0;
 		int llen=0;
@@ -151,7 +151,7 @@ namespace gge { namespace resource {
 				lstart=lword+1;
 				i=lword;
 				llen=0;
-				y+=fh*VerticalSpacing;
+				y+=int(fh*VerticalSpacing);
 				nextline=false;
 			}
 		}
@@ -343,7 +343,7 @@ namespace gge { namespace resource {
 				i=lword;
 				llen=0;
 				if(!nowrap)
-					y+=fh*VerticalSpacing;
+					y+=int(fh*VerticalSpacing);
 				nextline=false;
 			}
 		}
@@ -543,7 +543,7 @@ namespace gge { namespace resource {
 				i=lword;
 				llen=0;
 				if(!nowrap)
-					y+=fh*VerticalSpacing;
+					y+=int(fh*VerticalSpacing);
 				nextline=false;
 			}
 		}

@@ -32,7 +32,7 @@ namespace gge { namespace sound {
 		////default constructor requires buffer handle.
 		///@maxWaveDistance	: if specified the generated sound controller
 		/// will have 3D properties
-		Wave(system::SoundBufferHandle Buffer, int maxWaveDistance=0);
+		Wave(system::SoundBufferHandle Buffer, float maxWaveDistance=0.0f);
 		////Plays this sound once
 		Wave& Play();
 		////Plays this sound continously until stopped

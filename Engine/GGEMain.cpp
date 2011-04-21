@@ -14,7 +14,6 @@ namespace gge {
 		AfterRenderEvent("AfterRender", this),
 		Window(NULL)
 	{
-
 		X=0;
 		Y=0;
 		isVisible=true;
@@ -24,7 +23,7 @@ namespace gge {
 		FPS=50;
 	}
 
-		void GGEMain::Setup(string SystemName, os::InstanceHandle Instance,int Width, int Height, int BitDepth, bool FullScreen) {
+	void GGEMain::Setup(string SystemName, os::InstanceHandle Instance,int Width, int Height, int BitDepth, bool FullScreen) {
 #ifdef _DEBUG
 		if(Window!=NULL)
 			throw std::runtime_error("System already initialized.");

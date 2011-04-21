@@ -63,7 +63,7 @@ namespace gge { namespace sound {
 
 		////Creates a new sound controller with 3D positional properties. maxWaveDistance
 		/// allows the control of attenuation
-		SoundControlHandle Create3DSoundController(SoundBufferHandle Buffer, int maxWaveDistance);
+		SoundControlHandle Create3DSoundController(SoundBufferHandle Buffer, float maxWaveDistance);
 
 		////Used to identify if sound is available
 		extern bool	isAvailable;

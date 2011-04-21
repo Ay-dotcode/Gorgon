@@ -26,7 +26,7 @@ namespace gge { namespace sound {
 		}
 	}
 
-	Wave::Wave(system::SoundBufferHandle buffer, int maxWaveDistance) {
+	Wave::Wave(system::SoundBufferHandle buffer, float maxWaveDistance) {
 		buffer=buffer;
 		isavailable=false;
 		AutoDestruct=true;

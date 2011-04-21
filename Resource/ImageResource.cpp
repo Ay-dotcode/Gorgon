@@ -385,14 +385,14 @@ namespace gge { namespace resource {
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
 
-		Resize(width,height,graphics::ColorMode::ARGB_32BPP);
+		Resize(width,height,graphics::ARGB_32BPP);
 
 		//currently only RGB is supported
 		if(pChannels!=3)
 			return UnimplementedType;
 
-		for(int y=0;y<height;y++) {
-			for(int x=0;x<width;x++) {
+		for(unsigned y=0;y<height;y++) {
+			for(unsigned x=0;x<width;x++) {
 				Raw2DGraphic::Data[(x+y*width)*4+2]=row_pointers[y][x*3];
 				Raw2DGraphic::Data[(x+y*width)*4+1]=row_pointers[y][x*3+1];
 				Raw2DGraphic::Data[(x+y*width)*4+0]=row_pointers[y][x*3+2];

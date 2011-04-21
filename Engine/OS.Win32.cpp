@@ -7,8 +7,8 @@ using namespace gge::input::system;
 
 #ifdef WIN32
 
-#	define WINVER 0x0500
-#	define _WIN32_WINNT 0x0500
+//#	define WINVER 0x0500
+//#	define _WIN32_WINNT 0x0500
 #	include <windows.h>
 #	undef CreateWindow
 #	undef Rectangle
