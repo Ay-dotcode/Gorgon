@@ -9,7 +9,7 @@ using namespace gge::resource;
 namespace gge { namespace widgets {
 	void eatchunk(FILE* f,int size);
 
-	ResourceBase* LoadTextbox(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadTextbox(File* file,FILE* gfile,int sz) {
 		TextboxBP *txt =new TextboxBP();
 		ResourceBase *obj;
 		int animcount=0;
@@ -23,12 +23,12 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_TEXTBOX_PROPS:
-				txt->guid_typingsound=new Guid(gfile);
+				txt->guid_typingsound.Load(gfile);
 				fread(&txt->PointerType,1,4,gfile);
 
 				break;
 			case GID_GUID:
-				txt->guid=new Guid(gfile);
+				txt->guid.Load(gfile);
 				break;
 			case GID_TEXTBOX_GRP:
 				obj=file->LoadObject(gfile,gid,size);
@@ -58,7 +58,7 @@ namespace gge { namespace widgets {
 		return txt;
 	}
 
-	ResourceBase* LoadTextboxStyleGroup(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadTextboxStyleGroup(File* file,FILE* gfile,int sz) {
 		TextboxStyleGroup *txt =new TextboxStyleGroup();
 
 		int gid,size,cnt=0;
@@ -70,22 +70,22 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				txt->guid=new Guid(gfile);
+				txt->guid.Load(gfile);
 				break;
 			case GID_TEXTBOX_GRP_PROPS:
 				fread(&txt->SizeMode,4,1,gfile);
 				fread(&txt->PreferredWidth,4,1,gfile);
 				fread(&txt->PreferredHeight,4,1,gfile);
 
-				txt->guid_normalstyle=new Guid(gfile);
-				txt->guid_hoverstyle=new Guid(gfile);
-				txt->guid_activestyle=new Guid(gfile);
-				txt->guid_normal2hover=new Guid(gfile);
-				txt->guid_normal2active=new Guid(gfile);
-				txt->guid_hover2active=new Guid(gfile);
-				txt->guid_hover2normal=new Guid(gfile);
-				txt->guid_active2normal=new Guid(gfile);
-				txt->guid_active2hover=new Guid(gfile);
+				txt->guid_normalstyle.Load(gfile);
+				txt->guid_hoverstyle.Load(gfile);
+				txt->guid_activestyle.Load(gfile);
+				txt->guid_normal2hover.Load(gfile);
+				txt->guid_normal2active.Load(gfile);
+				txt->guid_hover2active.Load(gfile);
+				txt->guid_hover2normal.Load(gfile);
+				txt->guid_active2normal.Load(gfile);
+				txt->guid_active2hover.Load(gfile);
 
 				Byte byt;
 				fread(&byt,1,1,gfile);
@@ -95,7 +95,7 @@ namespace gge { namespace widgets {
 				fread(&byt,1,1,gfile);
 				txt->RevActive2NormalState=byt;
 
-				txt->guid_disabledstyle=new Guid(gfile);
+				txt->guid_disabledstyle.Load(gfile);
 
 				EatChunk(gfile,size-175);
 				break;
@@ -112,7 +112,7 @@ namespace gge { namespace widgets {
 		return txt;
 	}
 
-	ResourceBase* LoadTextboxElement(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadTextboxElement(File* file,FILE* gfile,int sz) {
 		TextboxElement *txt =new TextboxElement();
 
 		int gid,size,cnt=0;
@@ -124,11 +124,11 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				txt->guid=new Guid(gfile);
+				txt->guid.Load(gfile);
 				break;
 			case GID_TEXTBOX_ELEMENT_PROPS:
-				txt->font_guid=new Guid(gfile);
-				txt->sound_guid=new Guid(gfile);
+				txt->font_guid.Load(gfile);
+				txt->sound_guid.Load(gfile);
 
 				fread(&txt->ForeColor,4,1,gfile);
 				fread(&txt->Duration,4,1,gfile);

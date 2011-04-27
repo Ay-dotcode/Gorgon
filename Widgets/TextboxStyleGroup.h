@@ -10,12 +10,12 @@ namespace gge { namespace widgets {
 
 	class TextboxStyleGroup : public resource::ResourceBase
 	{
-		friend resource::ResourceBase* LoadTextboxStyleGroup(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase* LoadTextboxStyleGroup(resource::File*,FILE*,int);
 	public:
 		TextboxStyleGroup(void);
 		virtual int getGID() { return GID_TEXTBOX_GRP; }
-		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
+		virtual void Prepare(gge::GGEMain &main, gge::resource::File &file);
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
 
 		enum {
 			SIZE_RESIZABLE,
@@ -42,18 +42,18 @@ namespace gge { namespace widgets {
 						RevActive2NormalState;
 
 	protected:
-		resource::ResourceFile* file;
+		resource::File* file;
 
-		Guid *guid_normalstyle	,
-			 *guid_hoverstyle	,
-			 *guid_activestyle	,
-			 *guid_disabledstyle,
-			 *guid_normal2hover	,
-			 *guid_normal2active,
-			 *guid_hover2active	,
-			 *guid_hover2normal	,
-			 *guid_active2normal,
-			 *guid_active2hover	;
+		utils::SGuid guid_normalstyle	,
+			 guid_hoverstyle	,
+			 guid_activestyle	,
+			 guid_disabledstyle,
+			 guid_normal2hover	,
+			 guid_normal2active,
+			 guid_hover2active	,
+			 guid_hover2normal	,
+			 guid_active2normal,
+			 guid_active2hover	;
 	};
 
 } }

@@ -7,10 +7,10 @@
 #include "../Resource/ResizableObject.h"
 
 namespace gge { namespace resource {
-	class ResourceFile;
+	class File;
 	
 	////This function loads a text resource from the given file
-	ResourceBase *LoadAnimationResource(ResourceFile* File, FILE* Data, int Size);
+	ResourceBase *LoadAnimationResource(File* File, FILE* Data, int Size);
 
 	class AnimationResource;
 
@@ -112,13 +112,13 @@ namespace gge { namespace resource {
 
 	////
 	class AnimationResource : public ResourceBase {
-		friend ResourceBase *LoadAnimationResource(ResourceFile* File, FILE* Data, int Size);
+		friend ResourceBase *LoadAnimationResource(File* File, FILE* Data, int Size);
 		friend class ImageAnimation;
 	public:
 		////03010000h (Gaming, Animation)
 		virtual int getGID() { return GID_ANIMATION; }
 		////Currently does nothing
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(File *File, FILE *Data) { return false; }
 		
 		////Default constructor
 		AnimationResource() : ResourceBase() { Durations=NULL; FrameCount=0; }

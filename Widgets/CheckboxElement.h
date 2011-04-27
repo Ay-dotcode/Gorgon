@@ -20,7 +20,7 @@ namespace gge { namespace widgets {
 #define GID_CHECKBOX_ELEMENT_PROPS2		0x5250102
 
 	class CheckboxElement : public resource::ResourceBase {
-		friend resource::ResourceBase *LoadCheckboxElement(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadCheckboxElement(resource::File*,FILE*,int);
 		friend class CheckboxStyleGroup;
 	public:
 
@@ -36,8 +36,8 @@ namespace gge { namespace widgets {
 		CheckboxElement(void);
 
 		virtual int getGID() { return GID_CHECKBOX_ELEMENT; }
-		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
+		virtual void Prepare(gge::GGEMain &main, gge::resource::File &file);
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
 
 		CheckboxElement &Draw(WidgetLayer &layer,graphics::Colorizable2DLayer &textlayer,string &caption);
 		CheckboxElement &ReadyAnimation(bool Backwards);
@@ -70,8 +70,8 @@ namespace gge { namespace widgets {
 
 	protected:
 		FontInitiator temp_font;
-		Guid *sound_guid;
-		resource::ResourceFile *file;
+		utils::SGuid sound_guid;
+		resource::File *file;
 		resource::ImageAnimation *symbol;
 		resource::ResizableObject *border;
 		resource::ResourceBase *bordertemplate;

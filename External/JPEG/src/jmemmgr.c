@@ -24,6 +24,9 @@
  * memory then you shouldn't care about a little bit of unused code...)
  */
 
+//Modified by CK
+#define _CRT_SECURE_NO_WARNINGS
+
 #define JPEG_INTERNALS
 #define AM_MEMORY_MANAGER	/* we define jvirt_Xarray_control structs */
 #include "jinclude.h"

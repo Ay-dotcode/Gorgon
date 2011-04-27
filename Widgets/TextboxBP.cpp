@@ -15,7 +15,7 @@ namespace gge { namespace widgets {
 		return txt;
 	}
 
-	void TextboxBP::Prepare(gge::GGEMain *main) {
+	void TextboxBP::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 		if(!Caret->Subitems.getCount())
 			Caret=NULL;

@@ -16,20 +16,20 @@ namespace gge { namespace widgets {
 
 	class TextboxBP : public resource::ResourceBase, public IWidgetBluePrint
 	{
-		friend ResourceBase *LoadTextbox(resource::ResourceFile*,FILE*,int);
+		friend ResourceBase *LoadTextbox(resource::File*,FILE*,int);
 		friend class Textbox;
 	public:
 		TextboxBP(void);
 		virtual int getGID() { return GID_TEXTBOX; }
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
 		virtual IWidgetObject *Create(IWidgetContainer &Container,int X,int Y,int Cx,int Cy);
 		resource::SoundResource *TypingSound;
 		resource::AnimationResource *Caret;
-		void Prepare(GGEMain *main);
+		void Prepare(GGEMain &main);
 
 	protected:
 		utils::Collection<TextboxStyleGroup> StyleGroups;
-		Guid *guid_typingsound;
-		resource::ResourceFile *file;
+		utils::SGuid guid_typingsound;
+		resource::File *file;
 	};
 } }

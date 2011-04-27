@@ -4,7 +4,7 @@
 #include "ResourceBase.h"
 
 namespace gge { namespace resource {
-	class ResourceFile;
+	class File;
 	class FolderResource;
 	class TextResource;
 	class ImageResource;
@@ -14,11 +14,11 @@ namespace gge { namespace resource {
 	class BitmapFontResource;
 	
 	////This function loads a folder resource from the given file
-	ResourceBase *LoadFolderResource(ResourceFile* File, FILE* Data, int Size);
+	ResourceBase *LoadFolderResource(File* File, FILE* Data, int Size);
 
 	////This is basic folder resource, it holds other resources.
 	class FolderResource : public ResourceBase {
-		friend ResourceBase *LoadFolderResource(ResourceFile* File, FILE* Data, int Size);
+		friend ResourceBase *LoadFolderResource(File* File, FILE* Data, int Size);
 	public:
 		////Entry point of this resource within the physical file. If
 		/// no file is associated with this resource this value is -1.
@@ -27,7 +27,7 @@ namespace gge { namespace resource {
 		////01010000h, (System, Folder)
 		virtual int getGID() { return GID_FOLDER; }
 		////Currently does nothing
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(File *File, FILE *Data) { return false; }
 
 		////Returns the number of items contained
 		int			 getCount() { return Subitems.getCount(); }

@@ -13,7 +13,7 @@ using namespace gge::resource;
 namespace gge { namespace widgets {
 	void eatchunk(FILE* f,int size);
 
-	ResourceBase* LoadButton(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadButton(File* file,FILE* gfile,int sz) {
 		ButtonBP *btn =new ButtonBP();
 		ResourceBase *obj;
 
@@ -26,7 +26,7 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				btn->guid=new Guid(gfile);
+				btn->guid.Load(gfile);
 				break;
 			case GID_BUTTON_GRP:
 				obj=file->LoadObject(gfile,gid,size);
@@ -49,7 +49,7 @@ namespace gge { namespace widgets {
 		return btn;
 	}
 
-	ResourceBase* LoadButtonStyleGroup(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadButtonStyleGroup(File* file,FILE* gfile,int sz) {
 		ButtonStyleGroup *btn =new ButtonStyleGroup();
 
 		int gid,size,cnt=0;
@@ -61,22 +61,22 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				btn->guid=new Guid(gfile);
+				btn->guid.Load(gfile);
 				break;
 			case GID_BUTTON_GRP_PROPS:
 				fread(&btn->SizeMode,4,1,gfile);
 				fread(&btn->PreferredWidth,4,1,gfile);
 				fread(&btn->PreferredHeight,4,1,gfile);
 
-				btn->guid_normalstyle=new Guid(gfile);
-				btn->guid_hoverstyle=new Guid(gfile);
-				btn->guid_pressedstyle=new Guid(gfile);
-				btn->guid_normal2hover=new Guid(gfile);
-				btn->guid_normal2pressed=new Guid(gfile);
-				btn->guid_hover2pressed=new Guid(gfile);
-				btn->guid_hover2normal=new Guid(gfile);
-				btn->guid_pressed2normal=new Guid(gfile);
-				btn->guid_pressed2hover=new Guid(gfile);
+				btn->guid_normalstyle.Load(gfile);
+				btn->guid_hoverstyle.Load(gfile);
+				btn->guid_pressedstyle.Load(gfile);
+				btn->guid_normal2hover.Load(gfile);
+				btn->guid_normal2pressed.Load(gfile);
+				btn->guid_hover2pressed.Load(gfile);
+				btn->guid_hover2normal.Load(gfile);
+				btn->guid_pressed2normal.Load(gfile);
+				btn->guid_pressed2hover.Load(gfile);
 
 				Byte byt;
 				fread(&byt,1,1,gfile);
@@ -86,7 +86,7 @@ namespace gge { namespace widgets {
 				fread(&byt,1,1,gfile);
 				btn->RevPressed2NormalState=byt;
 
-				btn->guid_disabledstyle=new Guid(gfile);
+				btn->guid_disabledstyle.Load(gfile);
 
 				EatChunk(gfile,size-175);
 				break;
@@ -103,7 +103,7 @@ namespace gge { namespace widgets {
 		return btn;
 	}
 
-	ResourceBase* LoadButtonElement(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadButtonElement(File* file,FILE* gfile,int sz) {
 		ButtonElement *btn =new ButtonElement();
 
 		int gid,size,cnt=0;
@@ -115,11 +115,11 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				btn->guid=new Guid(gfile);
+				btn->guid.Load(gfile);
 				break;
 			case GID_BUTTON_ELEMENT_PROPS:
-				btn->font_guid=new Guid(gfile);
-				btn->sound_guid=new Guid(gfile);
+				btn->font_guid.Load(gfile);
+				btn->sound_guid.Load(gfile);
 
 				fread(&btn->ForeColor,4,1,gfile);
 				fread(&btn->Duration,4,1,gfile);

@@ -17,13 +17,13 @@ namespace gge { namespace widgets {
 	class Line;
 
 
-	resource::ResourceBase *LoadLineResource(resource::ResourceFile* File, FILE* Data, int Size);
+	resource::ResourceBase *LoadLineResource(resource::File* File, FILE* Data, int Size);
 	class LineResource : public resource::ResourceBase {
-		friend ResourceBase *LoadLineResource(resource::ResourceFile* File, FILE* Data, int Size);
+		friend ResourceBase *LoadLineResource(resource::File* File, FILE* Data, int Size);
 	public:
 		LineResource();
 		virtual int getGID() { return GID_LINE; }
-		virtual bool Save(resource::ResourceFile * File, FILE * Data) { return true; }
+		virtual bool Save(resource::File * File, FILE * Data) { return true; }
 
 
 		resource::AnimationResource *animStart;

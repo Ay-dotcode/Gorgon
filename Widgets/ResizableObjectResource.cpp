@@ -9,7 +9,7 @@ using std::runtime_error;
 
 
 namespace gge { namespace widgets {
-	ResourceBase *LoadResizableObject(ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadResizableObject(File* File, FILE* Data, int Size) {
 		ResizableObjectResource *r=new ResizableObjectResource();
 		r->file=File;
 
@@ -23,10 +23,10 @@ namespace gge { namespace widgets {
 			fread(&size,1,4,Data);
 
 			if(gid==GID_GUID) {
-				r->guid=new Guid(Data);
+				r->guid.Load(Data);
 			}
 			if(gid==GID_RESIZABLEOBJECT_PROPS) {
-				r->guid_target	= new Guid(Data);
+				r->guid_target.Load(Data);
 				fread(&r->HTile, 4,1, Data);
 				fread(&r->VTile, 4,1, Data);
 

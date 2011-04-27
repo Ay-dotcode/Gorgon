@@ -11,17 +11,17 @@ namespace gge { namespace widgets {
 #define GID_RECT		0x05120000
 #define	GID_RECT_PROPS	0x05120101
 
-	resource::ResourceBase *LoadRectangleResource(resource::ResourceFile* File, FILE* Data, int Size);
+	resource::ResourceBase *LoadRectangleResource(resource::File* File, FILE* Data, int Size);
 
 	class RectangleResource : public resource::ResourceBase
 	{
-		friend resource::ResourceBase *LoadRectangleResource(resource::ResourceFile* File, FILE* Data, int Size);
+		friend resource::ResourceBase *LoadRectangleResource(resource::File* File, FILE* Data, int Size);
 		friend class ResizableRect;
 	public:
 		virtual int getGID() { return GID_RECT; }
 		RectangleResource();
 
-		virtual bool Save(resource::ResourceFile * File, FILE * Data) { return true; }
+		virtual bool Save(resource::File * File, FILE * Data) { return true; }
 
 		resource::AnimationResource *animTL;
 		resource::AnimationResource *animT;

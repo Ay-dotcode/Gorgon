@@ -2,7 +2,7 @@
 #include "ResourceFile.h"
 
 namespace gge { namespace resource {
-	ResourceBase *LoadFontTheme(ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadFontTheme(File* File, FILE* Data, int Size) {
 		FontTheme *ft=new FontTheme;
 
 		ft->file=File;
@@ -14,16 +14,16 @@ namespace gge { namespace resource {
 			fread(&size,1,4,Data);
 
 			if(gid==GID_GUID) {
-				ft->guid=new Guid(Data);
+				ft->guid.Load(Data);
 			}
 			if(gid==GID_FONTTHEME_PROPS) {
-				ft->guid_normal	=new Guid(Data);
-				ft->guid_bold	=new Guid(Data);
-				ft->guid_italic	=new Guid(Data);
-				ft->guid_small	=new Guid(Data);
-				ft->guid_h1		=new Guid(Data);
-				ft->guid_h2		=new Guid(Data);
-				ft->guid_h3		=new Guid(Data);
+				ft->guid_normal	.Load(Data);
+				ft->guid_bold	.Load(Data);
+				ft->guid_italic	.Load(Data);
+				ft->guid_small	.Load(Data);
+				ft->guid_h1		.Load(Data);
+				ft->guid_h2		.Load(Data);
+				ft->guid_h3		.Load(Data);
 
 
 				if(size!=(7*16))
@@ -35,7 +35,7 @@ namespace gge { namespace resource {
 		return ft;
 	}
 
-	void FontTheme::Prepare(gge::GGEMain *main) {
+	void FontTheme::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 
 		NormalFont	= dynamic_cast<FontRenderer*>(file->FindObject(guid_normal));

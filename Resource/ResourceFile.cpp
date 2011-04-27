@@ -11,7 +11,7 @@
 
 namespace gge { namespace resource {
 
-	bool ResourceFile::LoadFile(string filename) {
+	bool File::LoadFile(string filename) {
 		char sgn[7];
 
 		ErrorText=NULL;
@@ -75,7 +75,7 @@ namespace gge { namespace resource {
 		return true;
 	}
 
-	ResourceBase *ResourceFile::LoadObject(FILE *Data, int GID, int Size) {
+	ResourceBase *File::LoadObject(FILE *Data, int GID, int Size) {
 		ResourceLoader *loader;
 		Loaders.ResetIteration();
 
@@ -89,7 +89,7 @@ namespace gge { namespace resource {
 		return NULL;
 	}
 
-	void ResourceFile::AddBasicLoaders() {
+	void File::AddBasicLoaders() {
 		Loaders.Add(new ResourceLoader(GID_FOLDER, LoadFolderResource)); 
 		Loaders.Add(new ResourceLoader(GID_LINKNODE, LoadLinkNodeResource)); 
 		Loaders.Add(new ResourceLoader(GID_TEXT, LoadTextResource)); 
@@ -97,12 +97,12 @@ namespace gge { namespace resource {
 		Loaders.Add(new ResourceLoader(GID_DATAARRAY, LoadDataResource)); 
 	}
 
-	void ResourceFile::AddExtendedLoaders() {
+	void File::AddExtendedLoaders() {
 		AddBasicLoaders();
 		Loaders.Add(new ResourceLoader(GID_SOUND, LoadSoundResource)); 
 	}
 
-	void ResourceFile::AddGameLoaders() {
+	void File::AddGameLoaders() {
 		AddExtendedLoaders();
 		Loaders.Add(new ResourceLoader(GID_ANIMATION, LoadAnimationResource)); 
 		Loaders.Add(new ResourceLoader(GID_FONT, LoadBitmapFontResource)); 

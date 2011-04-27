@@ -12,6 +12,9 @@
  * is shoved onto the user.
  */
 
+//Modified by CK
+#define _CRT_SECURE_NO_WARNINGS
+
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"

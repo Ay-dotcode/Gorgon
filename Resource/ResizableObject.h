@@ -8,7 +8,7 @@
 
 namespace gge { namespace resource {
 
-	class ResourceFile;
+	class File;
 
 	class ResizableObject {
 	public:

@@ -2,7 +2,7 @@
 #include "ResourceFile.h"
 
 namespace gge { namespace resource {
-	ResourceBase *LoadDataResource(ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadDataResource(File* File, FILE* Data, int Size) {
 		DataResource *dat=new DataResource;
 		dat->file=File;
 
@@ -12,7 +12,7 @@ namespace gge { namespace resource {
 			float tmpfloat;
 			Point tmppoint;
 			gge::Rectangle tmprect;
-			Guid *tmpguid=NULL;
+			utils::SGuid tmpguid;
 
 			char *tmpstr;
 			fread(&gid,1,4,Data);
@@ -26,7 +26,7 @@ namespace gge { namespace resource {
 				dat->Add(tmpstr);
 			}
 			else if(gid==GID_GUID) {
-				dat->guid=new Guid(Data);
+				dat->guid.Load(Data);
 			}
 			else if(gid==GID_DATAARRAY_INT) {
 				fread(&tmpint,1,4,Data);
@@ -49,12 +49,9 @@ namespace gge { namespace resource {
 				dat->Add(tmprect);
 			}
 			else if(gid==GID_DATAARRAY_LINK) {
-				tmpguid=new Guid(Data);
+				tmpguid.Load(Data);
 
 				dat->Add(tmpguid);
-
-				delete tmpguid;
-				tmpguid=NULL;
 			}
 			else if(gid==0x03300C01) {
 				FontInitiator f;
@@ -73,7 +70,7 @@ namespace gge { namespace resource {
 	}
 
 	
-	void LinkData::Prepare(ResourceFile *File) { 
+	void LinkData::Prepare(File *File) { 
 		value=File->Root().FindObject(guid);
 	}
 

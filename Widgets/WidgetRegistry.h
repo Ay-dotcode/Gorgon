@@ -177,8 +177,8 @@ namespace gge { namespace widgets {
 			Widgets.Delete(object);
 		}
 
-		void DiscoverWidgets(resource::ResourceFile *file);
-		void DiscoverWidgets(resource::ResourceFile &file) { DiscoverWidgets(&file); }
+		void DiscoverWidgets(resource::File *file);
+		void DiscoverWidgets(resource::File &file) { DiscoverWidgets(&file); }
 
 		FrameBP &DialogFrameBP(bool hasScroll=false);
 		FrameBP &PictureFrameBP(bool hasScroll=false);

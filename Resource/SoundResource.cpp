@@ -3,7 +3,7 @@
 #include "../External/LZMA/LzmaDecode.h"
 
 namespace gge { namespace resource {
-	ResourceBase *LoadSoundResource(ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadSoundResource(File* File, FILE* Data, int Size) {
 		SoundResource *snd=new SoundResource;
 
 		int tpos=ftell(Data)+Size,buffersize;
@@ -29,7 +29,7 @@ namespace gge { namespace resource {
 					fseek(Data,size-20,SEEK_CUR);
 			} 
 			else if(gid==GID_GUID) {
-				snd->guid=new Guid(Data);
+				snd->guid.Load(Data);
 			}
 			else if(gid==GID_SOUND_WAVE) {
 				snd->Size=size;

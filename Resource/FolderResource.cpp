@@ -15,7 +15,7 @@
 
 namespace gge { namespace resource {
 
-	ResourceBase *LoadFolderResource(ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadFolderResource(File* File, FILE* Data, int Size) {
 		int tpos=ftell(Data)+Size;
 		int curcapname=0;
 		FolderResource *fold=new FolderResource();
@@ -62,7 +62,9 @@ namespace gge { namespace resource {
 
 				EatChunk(Data, size);
 			} else if(gid==GID_GUID) {
-				fold->guid=new Guid(Data);
+				fold->guid.LoadLong(Data);
+			} else if(gid==GID_SGUID) {
+				fold->guid.Load(Data);
 			} else {
 				///*Load sub resource
 				ResourceBase *obj=File->LoadObject(Data,gid,size);

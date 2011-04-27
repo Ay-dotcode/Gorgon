@@ -46,15 +46,15 @@ namespace gge { namespace widgets {
 
 	class SliderElement : public resource::ResourceBase
 	{
-		friend resource::ResourceBase *LoadSliderElement(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadSliderElement(resource::File*,FILE*,int);
 		friend class SliderStyleGroup;
 		friend class SliderBase;
 	public:
 		SliderElement(void);
 
 		virtual int getGID() { return GID_SLIDER_ELEMENT; }
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
-		virtual void Prepare(gge::GGEMain *main);
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
+		virtual void Prepare(gge::GGEMain &main, gge::resource::File &file);
 
 		SliderElement &DrawRule(WidgetLayer &Target);
 		SliderElement &DrawTickMarks(WidgetLayer &Target, float Distance);
@@ -90,9 +90,9 @@ namespace gge { namespace widgets {
 
 
 	protected:
-		Guid *font_guid;
-		Guid *sound_guid;
-		resource::ResourceFile *file;
+		utils::SGuid font_guid;
+		utils::SGuid sound_guid;
+		resource::File *file;
 
 		SliderStyles style;
 

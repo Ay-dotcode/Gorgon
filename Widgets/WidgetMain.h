@@ -9,12 +9,12 @@ namespace gge {
 }
 
 namespace gge { namespace resource {
-	class ResourceFile;
+	class File;
 } }
 
 namespace gge { namespace widgets {
-	void RegisterWidgetLoaders(resource::ResourceFile *File);
-	inline void RegisterWidgetLoaders(resource::ResourceFile &File) { RegisterWidgetLoaders(&File); }
+	void RegisterWidgetLoaders(resource::File *File);
+	inline void RegisterWidgetLoaders(resource::File &File) { RegisterWidgetLoaders(&File); }
 	void InitializeWidgets(GGEMain *Main);
 
 	class WidgetLayer :  public input::BasicPointerTarget, public graphics::Basic2DLayer {

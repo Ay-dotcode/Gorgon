@@ -1,62 +1,70 @@
 #pragma once
 
-#define CURVERSION			0x00010000
-
-#define ERRNO_ERR			0
-#define	ERR_FILENOTFOUND	1
-#define	ERR_SIGNITURE		2
-#define	ERR_VERSION			3
-#define	ERR_CONTAINMENT		4
-
-#define ERT_FILENOTFOUND	"Cannot find the file specified"
-#define ERT_SIGNITURE		"Signiture mismatch"
-#define ERT_VERSION			"Version mismatch"
-#define ERT_CONTAINMENT		"The supplied file is does not contains any data and its representation is invalid."
-
-#define GID_FOLDER			0x01010000
-#define GID_FOLDER_NAMES	0x01010101
-#define GID_FOLDER_NAME		0x01010102
-
-#define GID_LINKNODE		0x01020000
-#define GID_LINKNODETARGET	0x00000011
+namespace gge { namespace resource {
+	static const int CurrentVersion			=	0x00010000;
 
 
-#define GID_TEXT			0x02010000
-#define GID_LZMA			0xF0030100
-#define GID_JPEG			0xF0030300
+	//Gorgon IDs for standard resource types
+	namespace GID {
+		typedef int Type;
 
-#define GID_IMAGE			0x02020000
-#define GID_IMAGE_PROPS		0x02020101
-#define GID_IMAGE_CMP_PROPS	0x02020102
-#define GID_IMAGE_DATA		0x02020501
-#define GID_IMAGE_PALETTE	0x02020502
-#define GID_IMAGE_CMP_DATA	0x02020601
+		//////////////////////////////////////////////////////////////////////////
+		// System GIDs
+		static const Type Folder				= 0x01010000;
+		static const Type Folder_Names			= 0x01010101;
+		static const Type Folder_Name			= 0x01010102;
 
-#define GID_DATAARRAY		0x02030000
-#define GID_DATAARRAY_TEXT	0x02030C01
-#define GID_DATAARRAY_INT	0x02030C02
-#define GID_DATAARRAY_FLOAT	0x02030C03
-#define GID_DATAARRAY_POINT	0x02030C04
-#define GID_DATAARRAY_RECT	0x02030C05
-#define GID_DATAARRAY_LINK	0x02030C07
-#define GID_DATAARRAY_NAMES	0x02030101
-#define GID_DATAARRAY_NAME	0x02030102
+		static const Type LinkNode				= 0x01020000;
+		static const Type LinkNode_Target		= 0x00000011;
+		//////////////////////////////////////////////////////////////////////////
 
-#define GID_ANIMATION		0x03100000
-#define GID_ANIMATION_IMAGE	0x03110000
-#define GID_ANIMATION_DUR	0x03100101
-#define GID_ANIMATION_NAMES	0x03100102
-#define GID_ANIMATION_NAME	0x03100103
+		//////////////////////////////////////////////////////////////////////////
+		// Special
+		static const Type Guid					= 0x00000010;
+		static const Type SGuid					= 0x00000011;
 
-#define GID_FONT			0x03200000
-#define GID_FONT_CHARMAP	0x03200101
-#define GID_FONT_IMAGE		0x03210000
-#define GID_FONT_SEPERATOR	0x03200804
+		static const Type LZMA					= 0xF0030100;
+		static const Type JPEG					= 0xF0030300;
+		//////////////////////////////////////////////////////////////////////////
+		
+		//////////////////////////////////////////////////////////////////////////
+		// Basic resources
+		static const Type Text					= 0x02010000;
 
-#define GID_SOUND			0x04010000
-#define GID_SOUND_PROPS		0x04010101
-#define GID_SOUND_WAVE		0x04010801
-#define GID_SOUND_CMP_WAVE	0x04010802
-#define GID_SOUND_CMP_PROPS	0x04010803
+		static const Type Image					= 0x02020000;
+		static const Type Image_Props			= 0x02020101;
+		static const Type Image_Cmp_Props		= 0x02020102;
+		static const Type Image_Data			= 0x02020501;
+		static const Type Image_Cmp_Data		= 0x02020601;
+		static const Type Image_Palette			= 0x02020502;
 
-#define GID_GUID			0x00000010
+		static const Type Data					= 0x02030000;
+		static const Type Data_Text				= 0x02030C01;
+		static const Type Data_Int				= 0x02030C02;
+		static const Type Data_Float			= 0x02030C03;
+		static const Type Data_Point			= 0x02030C04;
+		static const Type Data_Rect				= 0x02030C05;
+		static const Type Data_Link				= 0x02030C07;
+		static const Type Data_Names			= 0x02030101;
+		static const Type Data_Name				= 0x02030102;
+
+		//////////////////////////////////////////////////////////////////////////
+		// Gaming resources
+		static const Type Animation				= 0x03100000;
+		static const Type Animation_Image		= 0x03110000;
+		static const Type Animation_Durations	= 0x03100101;
+		static const Type Animation_Names		= 0x03100102;
+		static const Type Animation_Name		= 0x03100103;
+
+		static const Type Font					= 0x03200000;
+		static const Type Font_Charmap			= 0x03200101;
+		static const Type Font_Image			= 0x03210000;
+		static const Type Font_Props			= 0x03200804;
+
+		static const Type Sound					= 0x04010000;
+		static const Type Sound_Props			= 0x04010101;
+		static const Type Sound_Wave			= 0x04010801;
+		static const Type Sound_Cmp_Wave		= 0x04010802;
+		static const Type Sound_Cmp_Props		= 0x04010803;
+	};
+} }

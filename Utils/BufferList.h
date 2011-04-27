@@ -1,3 +1,5 @@
+//Depreciated, use std::vector instead
+
 #pragma once
 
 #include <malloc.h>

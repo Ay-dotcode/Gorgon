@@ -1,5 +1,9 @@
 #pragma once
 
+#include <stdexcept>
+#include <iostream>
+#include <fstream>
+
 #include "GRE.h"
 #include "../Utils/Collection.h"
 #include "Definitions.h"
@@ -7,7 +11,7 @@
 
 namespace gge { namespace resource {
 	////This is Resource loader function prototype
-	typedef ResourceBase* (*ResourceLoaderFunction)(ResourceFile* File, FILE* Data, int Size);
+	typedef ResourceBase& (*ResourceLoaderFunction)(File& File, FILE& Data, int Size);
 
 	////This class defines a resource loader
 	class ResourceLoader {
@@ -27,52 +31,74 @@ namespace gge { namespace resource {
 
 	class Redirect {
 	public:
-		Redirect(Guid &source, Guid &target) : 
-		  source(new Guid(source)), target(new Guid(target)) { }
-		Guid *source;
-		Guid *target;
+		Redirect(utils::SGuid &source, utils::SGuid &target) : 
+		  source(source), target(target) { }
+
+		utils::SGuid source;
+		utils::SGuid target;
 	};
 
-	class ResourceFile {
+	class load_error : public std::runtime_error {
+	public:
+
+		enum ErrorType {
+			FileNotFound	= 1,
+			Signature		= 2,
+			VersionMismatch	= 3,
+			Containment		= 4
+		};
+
+		class strings {
+		public:
+			static const string FileNotFound	= "Cannot find the file specified";
+			static const string Signature		= "Signature mismatch";
+			static const string VersionMismatch	= "Version mismatch";
+			static const string Containment		= "The supplied file is does not contain any data or its representation is invalid.";
+		};
+
+
+		load_error(ErrorType number, const string &text) : runtime_error(text), number(number) {
+
+		}
+
+		load_error(ErrorType number, const chqr *text) : runtime_error(text), number(number) {
+
+		}
+
+		ErrorType number;
+	};
+
+	class File {
 	public:
 		////Resource Loaders
 		utils::Collection<ResourceLoader> Loaders;
 		utils::Collection<Redirect> Redirects;
 
 		////File type
-		int FileType;
+		GID::Type FileType;
 		////File version
 		int FileVersion;
 		FolderResource &Root() { return *root; }
-		////When loading or saving a file represents code of the error.
-		/// If no error occurs has the value of 0.
-		int ErrorNo;
-		////When loading or saving a file represents error text.
-		/// If no error occurs, this variable is set to NULL.
-		char *ErrorText;
 		////Returns the filename used for the last load or save operation
-		string getFilename() { return Filename; }
+		string getFilename() const { return Filename; }
 
 		////Loads a given file modifying error variables
 		///@Filename	: File to be loaded
-		bool LoadFile(string Filename);
+		bool LoadFile(const string &Filename);
 
 		////Returns if a file is loaded
-		bool isLoaded() { return isloaded; }
+		bool isLoaded() const { return isloaded; }
 
 		////Loads a resource object from the given file, GID and size
-		ResourceBase *LoadObject(FILE *Data, int GID, int Size);
+		ResourceBase &LoadObject(std::ifstream &Data, int GID, int Size);
 
 		////Searches the given resource object within this file
-		ResourceBase *FindObject(Guid *guid) { 
-			if(guid==NULL)
-				return NULL;
-
-			if(guid->isEmpty()) 
+		ResourceBase *FindObject(utils::SGuid guid) { 
+			if(guid.isEmpty()) 
 				return NULL;
 
 			foreach(Redirect, redirect, Redirects) {
-				if(redirect->source->isEqual(*guid))
+				if(redirect->source==guid)
 					guid=redirect->target;
 			}
 			
@@ -88,8 +114,9 @@ namespace gge { namespace resource {
 		////Adds game resource loaders
 		void AddGameLoaders();
 
-		void Prepare(GGEMain &main) { root->Prepare(&main); }
-		void Prepare(GGEMain *main) { root->Prepare(main); }
+		void Prepare(GGEMain &main) { root->Prepare(main); }
+		void Prepare(GGEMain *main) { root->Prepare(*main); }
+		void Prepare() { root->Prepare(Main); }
 
 	protected:
 		////The root folder, root changes while loading a file

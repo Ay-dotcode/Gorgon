@@ -6,14 +6,14 @@ using namespace gge;
 namespace gge { namespace resource {
 	void LinkNodeResource::Resolve() {
 		ResourceBase *parent=File->Root().FindParent(guid);
-		File->Redirects.Add(new Redirect(*this->guid, target));
+		File->Redirects.Add(new Redirect(this->guid, target));
 
 		if(parent) {
 			utils::LinkedListIterator<ResourceBase> it=parent->Subitems;
 			utils::LinkedListItem<ResourceBase> *item;
 			while(item=it) {
 				if(item->Item->isEqual(guid)) {
-					item->Item=File->Root().FindObject(&target);
+					item->Item=File->Root().FindObject(target);
 					break;
 				}
 			}
@@ -22,7 +22,7 @@ namespace gge { namespace resource {
 		}
 	}
 
-	ResourceBase *LoadLinkNodeResource(ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadLinkNodeResource(File* File, FILE* Data, int Size) {
 		LinkNodeResource *link=new LinkNodeResource;
 
 		int tpos=ftell(Data)+Size;
@@ -33,10 +33,10 @@ namespace gge { namespace resource {
 			fread(&size,1,4,Data);
 
 			if(gid==GID_GUID) {
-				link->guid=new Guid(Data);
+				link->guid.Load(Data);
 			}
 			else if(gid==GID_LINKNODETARGET) {
-				link->target.ReadFrom(Data);
+				link->target.Load(Data);
 			}
 			else
 				EatChunk(Data,size);

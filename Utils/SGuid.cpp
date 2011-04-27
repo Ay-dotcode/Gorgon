@@ -1,8 +1,12 @@
 //DESCRIPTION
-//	This file contains definitions for basic graphics systems.
+//	This file contains SGuid, short GUID class which is an 8-byte
+//	unique identifier, may not be unique between instances however,
+//	while operating on same data SGUID advances its serial to the
+//	highest known serial, in addition to that current time and a
+//	random component guarantees uniqueness.
 
 //REQUIRES:
-//	---
+//	GGE/Utils/Random
 
 //LICENSE
 //	This program is free software: you can redistribute it and/or modify
@@ -21,20 +25,28 @@
 //COPYRIGHT
 //	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 
-#pragma once
 
-#undef Pi
+#include "SGuid.h"
+#include <sstream>
 
-#ifdef GRAPH_USEDOUBLE
-namespace gge {
-	typedef double FloatingPoint;
+namespace gge { namespace utils {
 
-	static const FloatingPoint Pi = 3.1415926535898;
-}
-#else
-namespace gge {
-	typedef float FloatingPoint;
+	unsigned SGuid::serial = 0;
+	const SGuid SGuid::Empty = SGuid(0,0);
 
-	static const FloatingPoint Pi = 3.1415926535898f;
-}
-#endif
+
+
+	SGuid::operator std::string() const {
+		std::stringstream ss;
+
+		ss
+			<<std::setfill('0')<<std::hex
+			<<std::setw(6)<<((ints[1]>>8) & 0xffffff)<<"-"
+			<<std::setw(6)<<(*(int*)(bytes+2) & 0xffffff)<<"-"
+			<<std::setw(4)<<(ints[0] & 0xffff)
+			;
+
+		return ss.str();
+	}
+
+} }

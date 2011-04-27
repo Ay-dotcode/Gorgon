@@ -3,7 +3,7 @@
 #include "../Engine/Graphics.h"
 
 namespace gge { namespace resource {
-	class ResourceFile;
+	class File;
 } }
 
 namespace gge {
@@ -61,7 +61,7 @@ namespace gge {
 			Type(Type), Color(color), Offset(Offset) 
 		{ }
 
-		static ShadowParams Load(resource::ResourceFile* file,FILE* gfile,int sz) {
+		static ShadowParams Load(resource::File* file,FILE* gfile,int sz) {
 			ShadowParams s;
 
 			fread(&s.Type, 4,1, gfile);

@@ -10,10 +10,10 @@
 
 namespace gge { namespace widgets {
 	class SliderBP;
-	resource::ResourceBase *LoadFrame(resource::ResourceFile*,FILE*,int);
+	resource::ResourceBase *LoadFrame(resource::File*,FILE*,int);
 
 	class FrameBP : public resource::ResourceBase, public IWidgetBluePrint {
-		friend resource::ResourceBase *LoadFrame(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadFrame(resource::File*,FILE*,int);
 	public:
 
 		FrameBP(RectangleResource *normal=NULL, SliderBP *scroller=NULL, Pointer::PointerTypes pointer=Pointer::None) 
@@ -34,7 +34,7 @@ namespace gge { namespace widgets {
 		}
 
 		virtual int getGID() { return GID_FRAME; }
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
 
 		RectangleResource *Normal;
 		RectangleResource *Active;
@@ -60,15 +60,15 @@ namespace gge { namespace widgets {
 		virtual void Prepare(GGEMain *main);
 
 	protected:
-		Guid *guid_normal;
-		Guid *guid_active;
-		Guid *guid_innernormal;
-		Guid *guid_inneractive;
-		Guid *guid_scrollingnormal;
-		Guid *guid_scrollingactive;
+		utils::SGuid guid_normal;
+		utils::SGuid guid_active;
+		utils::SGuid guid_innernormal;
+		utils::SGuid guid_inneractive;
+		utils::SGuid guid_scrollingnormal;
+		utils::SGuid guid_scrollingactive;
 
-		Guid *guid_scroller;
-		resource::ResourceFile *file;
+		utils::SGuid guid_scroller;
+		resource::File *file;
 
 	};
 

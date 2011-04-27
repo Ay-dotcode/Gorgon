@@ -1,5 +1,7 @@
 //DESCRIPTION
-//	Allows dynamic memory allocation for objects
+//	Allows dynamic memory allocation for objects. This class is used for
+//	convenience. Since it is not logical for const references, this
+//	class is not const correct.
 
 //REQUIRES:
 //	---
@@ -22,6 +24,11 @@
 //	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 //	
 
+//USAGE
+// For function SomeType &Funct(); which creates an non-copyable object
+// Dynamic SomeVar(Funct());
+// This will destroy the generated object when they run out of scope.
+
 #pragma once
 
 
@@ -31,15 +38,11 @@
 #include <stdexcept>
 
 
-namespace gge {
+namespace gge { namespace utils {
 
 	template <class T_>
 	class Dynamic {
 	public:
-
-		//Dynamic(T_ obj) {
-		//	object=new T_(obj);
-		//}
 
 		Dynamic(T_ &obj) {
 			object=&obj;
@@ -51,13 +54,6 @@ namespace gge {
 
 		Dynamic() : object(NULL) { }
 
-		
-		//Dynamic &operator = (T_ obj) {
-		//	if(object)
-		//		delete object;
-
-		//	object=new T_(obj);
-		//}
 
 		Dynamic &operator = (T_ &obj) {
 			if(object)
@@ -95,7 +91,7 @@ namespace gge {
 		}
 
 
-		int Size() {
+		int Size() const {
 			return sizeof(T_);
 		}
 
@@ -121,4 +117,4 @@ namespace gge {
 
 	};
 
-}
+} }

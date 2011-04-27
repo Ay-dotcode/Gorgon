@@ -59,25 +59,27 @@ namespace gge {
 		T_ Left,Top , Right,Bottom;
 		
 		basic_Bounds2D() {}
+		explicit basic_Bounds2D(T_ value) : Left(value), Top(value), Right(value), Bottom(value)
+		{ }
 		basic_Bounds2D(T_ Left, T_ Top, T_ Right, T_ Bottom) {
 			this->Left=Left;
 			this->Right=Right;
 			this->Top=Top;
 			this->Bottom=Bottom;
 		}
-		basic_Bounds2D(basic_Point2D<T_> TopLeft, basic_Point2D<T_> BottomRight) {
+		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, const basic_Point2D<T_> &BottomRight) {
 			this->Left=TopLeft.x;
 			this->Top=TopLeft.y;
 			this->Right=BottomRight.x;
 			this->Bottom=BottomRight.y;
 		}
-		basic_Bounds2D(basic_Point2D<T_> TopLeft, basic_Size2D<T_> HeightWidth) {
+		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, const basic_Size2D<T_> &HeightWidth) {
 			this->Left=TopLeft.x;
 			this->Top=TopLeft.y;
 			this->Right=TopLeft.x+HeightWidth.x;
 			this->Bottom=TopLeft.y+HeightWidth.y;
 		}
-		basic_Bounds2D(basic_Point2D<T_> TopLeft, int Width, int Height) {
+		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, int Width, int Height) {
 			this->Left=TopLeft.x;
 			this->Top=TopLeft.y;
 			this->Right=TopLeft.x+Width;
@@ -85,9 +87,9 @@ namespace gge {
 		}
 		basic_Bounds2D(const basic_Rectangle2D<T_> &bounds);
 
-		operator basic_Rectangle2D<T_>();
+		operator basic_Rectangle2D<T_>() const;
 
-		operator std::string() {
+		operator std::string() const {
 			std::ostringstream str;
 			str<<"{"<<Left<<","<<Top<<" - "<<Right<<","<<Bottom<<"}";
 
@@ -101,13 +103,32 @@ namespace gge {
 		////Calculates and returns the height of the region
 		T_ Height() const { return Bottom-Top;  }
 
-		//scale, translate, rotate?, +, +=, -, -=, &&, ||
+		basic_Bounds2D Intesect(const basic_Bounds2D &b) {
+			return basic_Bounds2D(
+				Left  > b.Left  ? Left  : b.Left  , 
+				Top   > b.Top   ? Top   : b.Top   , 
+				Right < b.Right ? Right : b.Right , 
+				Bottom< b.Bottom? Bottom: b.Bottom
+			);
+		}
+
+		basic_Bounds2D Union(const basic_Bounds2D &b) {
+			return basic_Bounds2D(
+				Left  < b.Left  ? Left  : b.Left  , 
+				Top   < b.Top   ? Top   : b.Top   , 
+				Right > b.Right ? Right : b.Right , 
+				Bottom> b.Bottom? Bottom: b.Bottom
+			);
+		}
+
+		//scale, translate, rotate?, &, |, &=, |=, - as well (determining margin range)
+		//+ and - with margins, parse from text
 	};
 
-	////Allows streaming of point. It converts point to string,
-	/// every row is printed on a line enclosed in braces.
+	////Allows streaming of bounds. in string representation, bounds is show as
+	//// < x_s - x_e , y_s - y_e >
 	template <class T_>
-	std::ostream &operator << (std::ostream &out, basic_Bounds2D<T_> &bounds) {
+	std::ostream &operator << (std::ostream &out, const basic_Bounds2D<T_> &bounds) {
 		out<<"< "<<bounds.Left<<"-"<<bounds.Right<<" , "<<bounds.Top<<"-"<<bounds.Bottom<<" >";
 
 		return out;
@@ -116,16 +137,12 @@ namespace gge {
 
 	////Adds the textual form of the point to another string.
 	template <class T_>
-	std::string &operator + (std::string &out, basic_Bounds2D<T_> &bounds) {
+	std::string &operator + (std::string &out, const basic_Bounds2D<T_> &bounds) {
 		return string+(string)bounds;
 	}
 
 
-#ifdef GRAPH_USEDOUBLE
-	typedef basic_Bounds2D<double> Bounds2D;
-#else
-	typedef basic_Bounds2D<float> Bounds2D;
-#endif
+	typedef basic_Bounds2D<FloatingPoint> Bounds2D;
 
 	typedef basic_Bounds2D<int> Bounds;
 }

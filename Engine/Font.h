@@ -33,7 +33,7 @@ namespace gge {
 		Font &operator =(const FontStyle);
 		
 
-		static FontInitiator Load(resource::ResourceFile* file,FILE* gfile,int sz);
+		static FontInitiator Load(resource::File* file,FILE* gfile,int sz);
 
 
 		resource::FontTheme *Theme;
@@ -89,11 +89,11 @@ namespace gge {
 	class FontInitiator {
 	public:
 		FontInitiator() : file(NULL) { }
-		Guid *guid_theme;
+		utils::SGuid guid_theme;
 		Font::FontStyle Style;
 		graphics::RGBint Color;
 		ShadowParams Shadow;
-		resource::ResourceFile *file;
+		resource::File *file;
 
 		operator Font();
 	};

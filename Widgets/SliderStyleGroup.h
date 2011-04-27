@@ -12,12 +12,12 @@ namespace gge { namespace widgets {
 
 	class SliderStyleGroup : public resource::ResourceBase
 	{
-		friend resource::ResourceBase* LoadSliderStyleGroup(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase* LoadSliderStyleGroup(resource::File*,FILE*,int);
 	public:
 		SliderStyleGroup(void);
 		virtual int getGID() { return GID_SLIDER_GRP; }
-		virtual void Prepare(GGEMain *main);
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
+		virtual void Prepare(GGEMain &main);
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
 
 		int PreferredWidth;
 		int PreferredHeight;
@@ -48,18 +48,18 @@ namespace gge { namespace widgets {
 
 	protected:
 
-		resource::ResourceFile* file;
+		resource::File* file;
 
-		Guid *guid_normalstyle		,
-			 *guid_hoverstyle		,
-			 *guid_pressedstyle		,
-			 *guid_disabledstyle	,
-			 *guid_normal2hover		,
-			 *guid_normal2pressed	,
-			 *guid_hover2pressed	,
-			 *guid_hover2normal		,
-			 *guid_pressed2normal	,
-			 *guid_pressed2hover	;
+		utils::SGuid guid_normalstyle		,
+			 guid_hoverstyle		,
+			 guid_pressedstyle		,
+			 guid_disabledstyle	,
+			 guid_normal2hover		,
+			 guid_normal2pressed	,
+			 guid_hover2pressed	,
+			 guid_hover2normal		,
+			 guid_pressed2normal	,
+			 guid_pressed2hover	;
 	};
 
 } }

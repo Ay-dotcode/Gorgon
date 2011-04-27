@@ -15,7 +15,7 @@ namespace gge { namespace widgets {
 
 	class SliderBP : public resource::ResourceBase, public IWidgetBluePrint
 	{
-		friend resource::ResourceBase *LoadSlider(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadSlider(resource::File*,FILE*,int);
 		friend class SliderBase;
 	public:
 		resource::SoundResource *TickSound;
@@ -23,13 +23,13 @@ namespace gge { namespace widgets {
 		SliderBP();
 		virtual int getGID() { return GID_SLIDER; }
 		virtual IWidgetObject *Create(IWidgetContainer &Container,int X,int Y,int Cx,int Cy);
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
-		void Prepare(gge::GGEMain *main);
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
+		void Prepare(gge::GGEMain &main, gge::resource::File &file);
 
 
 	protected:
 		utils::Collection<SliderStyleGroup> StyleGroups;
-		Guid *guid_ticksound;
-		resource::ResourceFile *file;
+		utils::SGuid guid_ticksound;
+		resource::File *file;
 	};
 } }

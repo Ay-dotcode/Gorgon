@@ -5,7 +5,7 @@ namespace gge { namespace widgets {
 	ButtonStyleGroup::ButtonStyleGroup(void) {
 	}
 
-	void ButtonStyleGroup::Prepare(gge::GGEMain *main) {
+	void ButtonStyleGroup::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 		NormalStyle		= dynamic_cast<ButtonElement*>( file->FindObject(guid_normalstyle	));
 		HoverStyle		= dynamic_cast<ButtonElement*>( file->FindObject(guid_hoverstyle	));

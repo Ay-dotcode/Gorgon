@@ -82,12 +82,12 @@ namespace gge {
 	}
 
 
-	FontInitiator Font::Load(ResourceFile* file,FILE* gfile,int sz) {
+	FontInitiator Font::Load(File* file,FILE* gfile,int sz) {
 		FontInitiator f;
 
 		f.file=file;
 
-		f.guid_theme=new Guid(gfile);
+		f.guid_theme.Load(gfile);
 		fread(&f.Style,4,1,gfile);
 		fread(&f.Color,4,1,gfile);
 

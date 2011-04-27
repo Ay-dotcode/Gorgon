@@ -6,7 +6,7 @@ using namespace gge::resource;
 using std::max;
 
 namespace gge { namespace widgets {
-	ResourceBase* LoadRectangleResource(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadRectangleResource(File* file,FILE* gfile,int sz) {
 		RectangleResource *Rect =new RectangleResource();
 
 		int gid,size,cnt=0;
@@ -18,7 +18,7 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				Rect->guid=new Guid(gfile);
+				Rect->guid.Load(gfile);
 				break;
 			case GID_RECT_PROPS:
 				int t[6];

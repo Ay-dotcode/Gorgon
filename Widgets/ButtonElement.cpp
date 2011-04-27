@@ -3,10 +3,7 @@
 using namespace gge::resource;
 
 namespace gge { namespace widgets {
-	ButtonElement::ButtonElement(void) {
-		font_guid=NULL;
-		sound_guid=NULL;
-
+	ButtonElement::ButtonElement(void) : font_guid(nullptr), sound_guid(nullptr) {
 		Visual=NULL;
 		TextAlign=ALIGN_MIDDLE_CENTER;
 		IconAlign=ALIGN_MIDDLE_CENTER;
@@ -14,7 +11,7 @@ namespace gge { namespace widgets {
 		IconMargins=Bounds(0,0,0,0);
 	}
 
-	void ButtonElement::Prepare(gge::GGEMain *main) {
+	void ButtonElement::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 		if(Subitems.getFirstItem()->getGID()==GID_ANIMATION)
 			Visual=new ImageAnimation((AnimationResource*)Subitems.getFirstItem());

@@ -6,7 +6,7 @@ namespace gge { namespace widgets {
 	{
 	}
 
-	void TextboxStyleGroup::Prepare(gge::GGEMain *main) {
+	void TextboxStyleGroup::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 		NormalStyle		= (TextboxElement*) file->FindObject(guid_normalstyle	);
 		HoverStyle		= (TextboxElement*) file->FindObject(guid_hoverstyle	);

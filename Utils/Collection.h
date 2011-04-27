@@ -65,7 +65,7 @@ namespace gge { namespace utils {
 		{ 	}
 
 		////Returns number of elements
-		int getCount() {
+		int getCount() const {
 			return *count;
 		}
 
@@ -221,7 +221,7 @@ namespace gge { namespace utils {
 		}
 
 		////Searches the position of a given item, if not found -1 is returned
-		int Find(T_ *Item) {
+		int Find(T_ *Item) const {
 			int i, j=0;
 			for(i=0;i<list.GetSize();i++) {
 				if(Item==list[i])
@@ -233,7 +233,7 @@ namespace gge { namespace utils {
 			return -1;
 		}
 		////Searches the position of a given item, if not found -1 is returned
-		int Find(T_ &Item) {
+		int Find(T_ &Item) const {
 			return Find(&Item);
 		}
 
@@ -241,7 +241,7 @@ namespace gge { namespace utils {
 		/// parameter. If there is more than one, first one is returned.
 		/// Start parameter can be used to discover more items. For this function
 		/// to compile, you should use a type that supports comparison
-		int Search(T_ &Item, int start=0) {
+		int Search(T_ &Item, int start=0) const {
 			int i, j=0;
 			for(i=start;i<list.GetSize();i++) {
 				if(Item==*list[i])
@@ -257,7 +257,7 @@ namespace gge { namespace utils {
 		/// parameter. If there is more than one, first one is returned.
 		/// Start parameter can be used to discover more items. For this function
 		/// to compile, you should use a type that supports comparison
-		int ReverseSearch(T_ &Item, int start=-1) {
+		int ReverseSearch(T_ &Item, int start=-1) const {
 			int i, j=*count-1;
 
 			if(start==-1)	
@@ -279,7 +279,7 @@ namespace gge { namespace utils {
 		/// Start parameter can be used to discover more items. This variant 
 		/// allows you to specify comparator function, UNTESTED
 		template <bool (*F_)(T_ &,T_&)>
-		int Search(T_ &Item, int start=0) {
+		int Search(T_ &Item, int start=0) const  {
 			int i, j=0;
 			for(i=start;i<list.GetSize();i++) {
 				if(F(Item,*list[i]))
@@ -293,7 +293,7 @@ namespace gge { namespace utils {
 
 
 		////Returns the item at a given index
-		T_* operator [] (int Index) {
+		T_& operator [] (int Index) {
 			if(Index<0 || Index>list.GetSize())
 				return NULL;
 
@@ -311,7 +311,25 @@ namespace gge { namespace utils {
 		}
 
 		////Returns the item at a given index
-		T_& operator () (int Index) {
+		const T_& operator [] (int Index) const  {
+			if(Index<0 || Index>list.GetSize())
+				return NULL;
+
+			int i,j;
+			j=0;
+
+			for(i=0;i<list.GetSize();i++) {
+				if(list[i]) j++;
+				if((j-1)==Index) {
+					return list[i];
+				}
+			}
+
+			return NULL;
+		}
+
+		////Returns the item at a given index
+		T_* operator () (int Index) {
 			if(Index<0 || Index>list.GetSize())
 				throw std::out_of_range("Index requested is out of range");
 
@@ -328,15 +346,15 @@ namespace gge { namespace utils {
 			throw std::out_of_range("Index requested is out of range");
 		}
 
-		prvt::CollectionIterator<T_> &ForwardIterator() {
+		prvt::CollectionIterator<T_> &ForwardIterator() const {
 			return prvt::CollectionIterator<T_>(list, *count, false);
 		}
 
-		prvt::CollectionIterator<T_> &BackwardIterator() {
+		prvt::CollectionIterator<T_> &BackwardIterator() const {
 			return prvt::CollectionIterator<T_>(list, *count, true);
 		}
 
-		operator IIterator<T_>*() {
+		operator IIterator<T_>*() const {
 			prvt::CollectionIterator<T_> *it=new prvt::CollectionIterator<T_>(list, *count, false, true);
 
 			return it;
@@ -345,7 +363,7 @@ namespace gge { namespace utils {
 		////Restarts the iteration, this function should be called before
 		/// using next and previous functions.
 		///@reverse: This parameter denotes the direction of the iteration
-		void ResetIteration(bool reverse=false) {
+		void ResetIteration(bool reverse=false) const {
 			if(reverse)
 				lastservedindex=*count;
 			else
@@ -355,7 +373,7 @@ namespace gge { namespace utils {
 		////Returns the next item in the collection, moving
 		/// iteration pointer to the next item. ResetIteration 
 		/// should be called prior to this function
-		T_* next() {
+		T_* next() const {
 			if(*count==0)
 				return NULL;
 
@@ -373,7 +391,7 @@ getnext:
 		////Returns the previous item in the collection, moving
 		/// iteration pointer to the previous item. ResetIteration 
 		/// should be called prior to this function
-		T_* previous() {
+		T_* previous() const {
 			if(*count==0)
 				return NULL;
 
@@ -425,7 +443,7 @@ getprev:
 	private:
 		ManagedBuffer<T_*> list;
 		int *count;
-		int lastservedindex;
+		mutable int lastservedindex;
 
 		void init() {
 			list.Resize(growth);
@@ -447,7 +465,7 @@ getprev:
 		template <class T_>
 		class CollectionIterator : public IIterator<T_> {
 		public:
-			CollectionIterator(ManagedBuffer<T_*> &list, int count, bool reverse=false, bool autodestroy=false) : 
+			CollectionIterator(const ManagedBuffer<T_*> &list, int count, bool reverse=false, bool autodestroy=false) : 
 			  list(list), count(count), reverse(reverse), autodestroy(autodestroy)
 			  {
 				  if(reverse)
@@ -463,7 +481,7 @@ getprev:
 					  return next();
 			  }
 
-			  virtual T_ *peek() {
+			  virtual T_ *peek() const {
 				  if(reverse)
 					  return peekprevious();
 				  else
@@ -548,11 +566,11 @@ getprev:
 			  }
 
 
-			  virtual bool eof() {
+			  virtual bool eof() const {
 				  return !peek();
 			  }
-
-			  virtual void reset() {
+			  
+			  virtual void reset() const  {
 				  if(reverse)
 					  lastservedindex=count;
 				  else
@@ -562,7 +580,7 @@ getprev:
 			  virtual ~CollectionIterator() {}
 
 		protected:
-			ManagedBuffer<T_*> &list;
+			const ManagedBuffer<T_*> &list;
 			int count;
 			bool reverse;
 			int lastservedindex;

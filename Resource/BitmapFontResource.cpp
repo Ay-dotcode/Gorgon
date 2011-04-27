@@ -6,7 +6,7 @@
 #endif
 
 namespace gge { namespace resource {
-	ResourceBase *LoadBitmapFontResource(resource::ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadBitmapFontResource(resource::File* File, FILE* Data, int Size) {
 		BitmapFontResource *font=new BitmapFontResource;
 		int chmap[256];
 		int cpos=0,i;
@@ -22,7 +22,7 @@ namespace gge { namespace resource {
 				fread(chmap,256,4,Data);
 			}
 			else if(gid==GID_GUID) {
-				font->guid=new Guid(Data);
+				font->guid.Load(Data);
 			}
 			else if(gid==GID_FONT_IMAGE) {
 				ImageResource *img=(ImageResource*)LoadImageResource(File,Data,size);

@@ -10,20 +10,20 @@
 
 namespace gge { namespace widgets {
 	class ResizableObjectResource : public resource::ResourceBase {
-		friend resource::ResourceBase *LoadResizableObject(resource::ResourceFile* File, FILE* Data, int Size);
+		friend resource::ResourceBase *LoadResizableObject(resource::File* File, FILE* Data, int Size);
 
 	public:
-		Guid *guid_target;
+		utils::SGuid guid_target;
 		resource::ResourceBase *target;
 		resource::ResizableObject::TileOption		HTile, VTile;
 		resource::ResizableObject::IntegralSize	HIntegral, VIntegral;
-
-		ResizableObjectResource() : guid_target(NULL), target(NULL) { }
+		
+		ResizableObjectResource() : guid_target(nullptr), target(nullptr) { }
 
 		virtual int getGID() { return GID_RESIZABLEOBJECT; }
 
 		////Currently does nothing
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
 
 		operator resource::ResizableObject *();
 
@@ -31,12 +31,12 @@ namespace gge { namespace widgets {
 
 		resource::ResizableObject &Generate();
 
-		virtual void Prepare(GGEMain *main);
+		virtual void Prepare(GGEMain &main);
 
 	protected:
-		resource::ResourceFile *file;
+		resource::File *file;
 
 	};
 
-	resource::ResourceBase *LoadResizableObject(resource::ResourceFile* File, FILE* Data, int Size);
+	resource::ResourceBase *LoadResizableObject(resource::File* File, FILE* Data, int Size);
 } }

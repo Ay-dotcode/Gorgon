@@ -1,7 +1,8 @@
 #include "ResourceBase.h"
 
 namespace gge { namespace resource {
-	void ResourceBase::Prepare(GGEMain *main) {
+	void ResourceBase::Prepare( GGEMain &main )
+	{
 		utils::LinkedListIterator<ResourceBase>it=Subitems;
 		ResourceBase *resource;
 
@@ -19,11 +20,8 @@ namespace gge { namespace resource {
 		}
 	}
 
-	ResourceBase *ResourceBase::FindObject(Guid *guid) {
-		utils::LinkedListIterator<ResourceBase>it=Subitems;
-		ResourceBase *resource;
-
-		while(resource=it) {
+	ResourceBase *ResourceBase::FindObject(utils::SGuid guid) const {
+		foreach(ResourceBase, resource, Subitems)  {
 			if(resource->isEqual(guid))
 				return resource;
 
@@ -35,13 +33,10 @@ namespace gge { namespace resource {
 		return NULL;
 	}
 
-	ResourceBase *ResourceBase::FindParent(Guid *guid) {
-		utils::LinkedListIterator<ResourceBase>it=Subitems;
-		ResourceBase *resource;
-
-		while(resource=it) {
+	ResourceBase *ResourceBase::FindParent(utils::SGuid guid) const {
+		const_foreach(ResourceBase, resource, Subitems)  {
 			if(resource->isEqual(guid))
-				return this;
+				return const_cast<ResourceBase*>(this);
 
 			resource=resource->FindParent(guid);
 			if(resource)
@@ -51,16 +46,9 @@ namespace gge { namespace resource {
 		return NULL;
 	}
 
-	ResourceBase::ResourceBase() {
-		name="";
-		caption="";
-		guid=NULL;
-	}
+	ResourceBase::ResourceBase() : guid(nullptr), name(""), caption("") { }
 
 	ResourceBase::~ResourceBase() {
-		if(guid)
-			delete guid;
-
 		Subitems.Destroy();
 	}
 

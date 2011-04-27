@@ -1,6 +1,7 @@
 //DESCRIPTION
 //	This file contains class Any which is a container for any type and
-//	supports boxing, unboxing and copying; does not use RTTI
+//	supports boxing, unboxing and copying; does not use RTTI, use with
+//	care. Best be used with built in types or POD structures
 
 //REQUIRES:
 //	---
@@ -26,6 +27,7 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <stdexcept>
 
 #include "UtilsBase.h"
 
@@ -60,6 +62,9 @@ namespace gge { namespace utils {
 
 		template <class T_>
 		operator T_ &() {
+			if(sizeof(T_)!=size) {
+				throw std::bad_cast("Cannot cast, sizes are different");
+			}
 			return *reinterpret_cast<T_*>(content);
 		}
 
@@ -67,36 +72,41 @@ namespace gge { namespace utils {
 			return *this;
 		}
 	
-		Any &operator =(Any &any) {
+		Any &operator =(const Any &any) {
 			size=any.size;
 			content=malloc(size);
-			std::memcpy(content, any.content, size);
+			memcpy(content, any.content, size);
 
 			return *this;
 		}
 
 		template <class T_>
-		bool operator ==(T_ &content) {
+		bool operator ==(const T_ &content) const  {
 			return *reinterpret_cast<T_*>this->content==content;
 		}
 
 		template <class T_>
-		bool operator !=(T_ &content) {
+		bool operator !=(const T_ &content) const  {
 			return *content!=content;
 		}
 
-		bool isSet() {
+		bool isSet() const  {
 			return content!=NULL;
 		}
 		
 		template <class T_>
-		void SetData(T_ data) {
+		void SetData(const T_ &data) {
 			size=sizeof(T_);
 			content=std::malloc(size);
 			*reinterpret_cast<T_*>(content)=data;
 		}
 
-		void clear() {
+		template <class T_>
+		T_ *operator ->() {
+			return reinterpret_cast<T_*>(data);
+		}
+
+		void Clear() {
 			size=0;
 			content=NULL;
 		}

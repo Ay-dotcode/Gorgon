@@ -13,7 +13,7 @@ namespace gge { namespace widgets {
 		SelectionOffset=Bounds(0,0,0,0);
 	}
 
-	void TextboxElement::Prepare(gge::GGEMain *main) {
+	void TextboxElement::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 		Font	=dynamic_cast<BitmapFontResource*>(file->FindObject(font_guid));
 		Sound	=dynamic_cast<SoundResource*>(file->FindObject(sound_guid));

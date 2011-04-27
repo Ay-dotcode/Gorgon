@@ -6,10 +6,10 @@
 #include "ResizableObject.h"
 
 namespace gge { namespace resource {
-	class ResourceFile;
+	class File;
 	
 	////This function loads a text resource from the given file
-	ResourceBase *LoadImageResource(ResourceFile* File, FILE* Data, int Size);
+	ResourceBase *LoadImageResource(File* File, FILE* Data, int Size);
 
 	enum PNGReadError {
 		NoError=0,
@@ -23,7 +23,7 @@ namespace gge { namespace resource {
 	////This is image resource that holds information about a single image. It supports
 	/// two color modes (ARGB and AL); lzma and jpg compressions
 	class ImageResource : public ResourceBase, public graphics::Colorizable2DGraphic, public graphics::Raw2DGraphic, public ResizableObject {
-		friend ResourceBase *LoadImageResource(ResourceFile* File, FILE* Data, int Size);
+		friend ResourceBase *LoadImageResource(File* File, FILE* Data, int Size);
 	public:
 		////Not used, if paletted image is found, this holds its palette
 		Byte *Palette;
@@ -64,7 +64,7 @@ namespace gge { namespace resource {
 		////02020000h (Basic, Image)
 		virtual int getGID() { return GID_IMAGE; }
 		////Currently does nothing
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(File *File, FILE *Data) { return false; }
 		////Loads image data from the file. This function is required for late
 		/// loading.
 		bool Load();
@@ -124,7 +124,7 @@ namespace gge { namespace resource {
 
 	protected:
 		////The file that this image resource is related, used for late loading
-		ResourceFile *File;
+		File *File;
 		////Compression properties read from file, used for late loading
 		Byte *CompressionProps;
 		////Compression mode, not suitable for saving, used for late loading

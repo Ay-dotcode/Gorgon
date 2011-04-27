@@ -12,35 +12,35 @@
 #define		GID_FONTTHEME_PROPS	0x03300804
 
 namespace gge { namespace resource {
-	class ResourceFile;
+	class File;
 
-	ResourceBase *LoadFontTheme(ResourceFile* File, FILE* Data, int Size);
+	ResourceBase *LoadFontTheme(File* File, FILE* Data, int Size);
 
 	class FontTheme : public ResourceBase {
-		friend ResourceBase *LoadFontTheme(ResourceFile* File, FILE* Data, int Size);
+		friend ResourceBase *LoadFontTheme(File* File, FILE* Data, int Size);
 
 	public:
 
 		virtual int getGID() { return GID_FONTTHEME; }
 
 		////Currently does nothing
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(File *File, FILE *Data) { return false; }
 
 		FontTheme() : ResourceBase(),
-			NormalFont(NULL),
-			BoldFont(NULL),
-			ItalicFont(NULL),
-			SmallFont(NULL),
-			H1Font(NULL),
-			H2Font(NULL),
-			H3Font(NULL),
-			guid_normal(NULL),
-			guid_bold(NULL),
-			guid_italic(NULL),
-			guid_small(NULL),
-			guid_h1(NULL),
-			guid_h2(NULL),
-			guid_h3(NULL)
+			NormalFont(nullptr),
+			BoldFont(nullptr),
+			ItalicFont(nullptr),
+			SmallFont(nullptr),
+			H1Font(nullptr),
+			H2Font(nullptr),
+			H3Font(nullptr),
+			guid_normal(nullptr),
+			guid_bold(nullptr),
+			guid_italic(nullptr),
+			guid_small(nullptr),
+			guid_h1(nullptr),
+			guid_h2(nullptr),
+			guid_h3(nullptr)
 		{ }
 
 		FontTheme(FontRenderer *Normal,FontRenderer *Bold=NULL,FontRenderer *Italic=NULL,
@@ -54,13 +54,13 @@ namespace gge { namespace resource {
 			H1Font(H1),
 			H2Font(H2),
 			H3Font(H3),
-			guid_normal(NULL),
-			guid_bold(NULL),
-			guid_italic(NULL),
-			guid_small(NULL),
-			guid_h1(NULL),
-			guid_h2(NULL),
-			guid_h3(NULL)
+			guid_normal(nullptr),
+			guid_bold(nullptr),
+			guid_italic(nullptr),
+			guid_small(nullptr),
+			guid_h1(nullptr),
+			guid_h2(nullptr),
+			guid_h3(nullptr)
 		{ }
 
 		virtual void Prepare(GGEMain *main);
@@ -157,16 +157,16 @@ namespace gge { namespace resource {
 						*H3Font
 		;
 
-		Guid			*guid_normal,
-						*guid_bold,
-						*guid_italic,
-						*guid_small,
-						*guid_h1,
-						*guid_h2,
-						*guid_h3
+		utils::SGuid	guid_normal,
+						guid_bold,
+						guid_italic,
+						guid_small,
+						guid_h1,
+						guid_h2,
+						guid_h3
 		;
 
-		ResourceFile *file;
+		File *file;
 
 	};
 } }

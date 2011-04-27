@@ -9,7 +9,7 @@ using namespace gge::resource;
 
 namespace gge { namespace widgets {
 
-	ResourceBase* LoadCheckbox(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadCheckbox(File* file,FILE* gfile,int sz) {
 		CheckboxBP *chk =new CheckboxBP();
 		ResourceBase *obj;
 
@@ -22,7 +22,7 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				chk->guid=new Guid(gfile);
+				chk->guid.Load(gfile);
 				break;
 			case GID_CHECKBOX_GRP:
 				obj=file->LoadObject(gfile,gid,size);
@@ -45,7 +45,7 @@ namespace gge { namespace widgets {
 		return chk;
 	}
 
-	ResourceBase* LoadCheckboxStyleGroup(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadCheckboxStyleGroup(File* file,FILE* gfile,int sz) {
 		CheckboxStyleGroup *chk =new CheckboxStyleGroup();
 
 		int gid,size,cnt=0;
@@ -57,23 +57,23 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				chk->guid=new Guid(gfile);
+				chk->guid.Load(gfile);
 				break;
 			case GID_CHECKBOX_GRP_PROPS:
 				fread(&chk->CheckboxType,4,1,gfile);
 				fread(&chk->PreferredWidth,4,1,gfile);
 				fread(&chk->PreferredHeight,4,1,gfile);
 
-				chk->guid_normalstyle=new Guid(gfile);
-				chk->guid_hoverstyle=new Guid(gfile);
-				chk->guid_pressedstyle=new Guid(gfile);
-				chk->guid_normal2hover=new Guid(gfile);
-				chk->guid_normal2pressed=new Guid(gfile);
-				chk->guid_hover2pressed=new Guid(gfile);
-				chk->guid_hover2normal=new Guid(gfile);
-				chk->guid_pressed2normal=new Guid(gfile);
-				chk->guid_pressed2hover=new Guid(gfile);
-				chk->guid_tonextstyle=new Guid(gfile);
+				chk->guid_normalstyle.Load(gfile);
+				chk->guid_hoverstyle.Load(gfile);
+				chk->guid_pressedstyle.Load(gfile);
+				chk->guid_normal2hover.Load(gfile);
+				chk->guid_normal2pressed.Load(gfile);
+				chk->guid_hover2pressed.Load(gfile);
+				chk->guid_hover2normal.Load(gfile);
+				chk->guid_pressed2normal.Load(gfile);
+				chk->guid_pressed2hover.Load(gfile);
+				chk->guid_tonextstyle.Load(gfile);
 
 				Byte byt;
 				fread(&byt,1,1,gfile);
@@ -83,18 +83,18 @@ namespace gge { namespace widgets {
 				fread(&byt,1,1,gfile);
 				chk->RevPressed2NormalState=byt;
 
-				chk->guid_disabledstyle=new Guid(gfile);
+				chk->guid_disabledstyle.Load(gfile);
 
-				chk->guid_cnormalstyle=new Guid(gfile);
-				chk->guid_choverstyle=new Guid(gfile);
-				chk->guid_cpressedstyle=new Guid(gfile);
-				chk->guid_cnormal2hover=new Guid(gfile);
-				chk->guid_cnormal2pressed=new Guid(gfile);
-				chk->guid_chover2pressed=new Guid(gfile);
-				chk->guid_chover2normal=new Guid(gfile);
-				chk->guid_cpressed2normal=new Guid(gfile);
-				chk->guid_cpressed2hover=new Guid(gfile);
-				chk->guid_ctonextstyle=new Guid(gfile);
+				chk->guid_cnormalstyle.Load(gfile);
+				chk->guid_choverstyle.Load(gfile);
+				chk->guid_cpressedstyle.Load(gfile);
+				chk->guid_cnormal2hover.Load(gfile);
+				chk->guid_cnormal2pressed.Load(gfile);
+				chk->guid_chover2pressed.Load(gfile);
+				chk->guid_chover2normal.Load(gfile);
+				chk->guid_cpressed2normal.Load(gfile);
+				chk->guid_cpressed2hover.Load(gfile);
+				chk->guid_ctonextstyle.Load(gfile);
 
 				fread(&byt,1,1,gfile);
 				chk->RevHover2NormalState=byt;
@@ -105,7 +105,7 @@ namespace gge { namespace widgets {
 				fread(&byt,1,1,gfile);
 				chk->cRevToNextStyle=byt;
 
-				chk->guid_cdisabledstyle=new Guid(gfile);
+				chk->guid_cdisabledstyle.Load(gfile);
 
 				EatChunk(gfile,size-371);
 				break;
@@ -122,7 +122,7 @@ namespace gge { namespace widgets {
 		return chk;
 	}
 
-	ResourceBase* LoadCheckboxElement(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadCheckboxElement(File* file,FILE* gfile,int sz) {
 		CheckboxElement *chk =new CheckboxElement();
 
 		int gid,size,cnt=0, size2, gid2;
@@ -137,12 +137,12 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				chk->guid=new Guid(gfile);
+				chk->guid.Load(gfile);
 				break;
 			case GID_CHECKBOX_ELEMENT_PROPS:
 
-				/*chk->font_guid=*/new Guid(gfile);
-				chk->sound_guid=new Guid(gfile);
+				/*chk->font_guid=*/utils::SGuid().Load(gfile);
+				chk->sound_guid.Load(gfile);
 
 
 				fread(&chk->ForeColor,4,1,gfile);
@@ -167,7 +167,7 @@ namespace gge { namespace widgets {
 				fread(&size2, 4,1, gfile);
 
 				chk->temp_font=Font::Load(file, gfile, size2);
-				chk->sound_guid=new Guid(gfile);
+				chk->sound_guid.Load(gfile);
 
 				fread(&chk->Duration,4,1,gfile);
 

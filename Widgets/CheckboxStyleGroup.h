@@ -15,12 +15,12 @@ namespace gge { namespace widgets {
 
 	class CheckboxStyleGroup : public resource::ResourceBase
 	{
-		friend resource::ResourceBase* LoadCheckboxStyleGroup(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase* LoadCheckboxStyleGroup(resource::File*,FILE*,int);
 	public:
 		CheckboxStyleGroup(void);
 		virtual int getGID() { return GID_CHECKBOX_GRP; }
-		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
+		virtual void Prepare(gge::GGEMain &main, gge::resource::File &file);
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
 
 		CheckboxTypes CheckboxType;
 
@@ -61,31 +61,31 @@ namespace gge { namespace widgets {
 						cRevToNextStyle;
 
 	protected:
-		resource::ResourceFile* file;
+		resource::File* file;
 
-		Guid *guid_normalstyle	,
-			 *guid_hoverstyle	,
-			 *guid_pressedstyle	,
-			 *guid_disabledstyle,
-			 *guid_normal2hover	,
-			 *guid_normal2pressed,
-			 *guid_hover2pressed,
-			 *guid_hover2normal	,
-			 *guid_pressed2normal,
-			 *guid_pressed2hover,
-			 *guid_tonextstyle	;
+		utils::SGuid guid_normalstyle	,
+			 guid_hoverstyle	,
+			 guid_pressedstyle	,
+			 guid_disabledstyle ,
+			 guid_normal2hover	,
+			 guid_normal2pressed,
+			 guid_hover2pressed ,
+			 guid_hover2normal	,
+			 guid_pressed2normal,
+			 guid_pressed2hover ,
+			 guid_tonextstyle	;
 
-		Guid*guid_cnormalstyle		,
-			*guid_choverstyle		,
-			*guid_cpressedstyle		,
-			*guid_cdisabledstyle	,
-			*guid_cnormal2hover		,
-			*guid_cnormal2pressed	,
-			*guid_chover2pressed	,
-			*guid_chover2normal		,
-			*guid_cpressed2normal	,
-			*guid_cpressed2hover	,
-			*guid_ctonextstyle		;
+		utils::SGuid guid_cnormalstyle		,
+			guid_choverstyle		,
+			guid_cpressedstyle		,
+			guid_cdisabledstyle		,
+			guid_cnormal2hover		,
+			guid_cnormal2pressed	,
+			guid_chover2pressed		,
+			guid_chover2normal		,
+			guid_cpressed2normal	,
+			guid_cpressed2hover		,
+			guid_ctonextstyle		;
 
 
 	};

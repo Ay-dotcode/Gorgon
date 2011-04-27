@@ -68,12 +68,12 @@ namespace gge {
 		template <class U_>
 		basic_Point2D& operator =(const basic_Point2D<U_> &point) { x=T_(point.x); y=T_(point.y); return *this; }
 
-		graphtype Distance(const basic_Point2D &point) {
-			return std::sqrt( (graphtype)(x-point.x)*(x-point.x) + (y-point.y)*(y-point.y) );
+		FloatingPoint Distance(const basic_Point2D &point) {
+			return std::sqrt( (FloatingPoint)(x-point.x)*(x-point.x) + (y-point.y)*(y-point.y) );
 		}
 
-		graphtype Distance() const {
-			return std::sqrt( (graphtype)(x*x) + (y*y) );
+		FloatingPoint Distance() const {
+			return std::sqrt( (FloatingPoint)(x*x) + (y*y) );
 		}
 
 		basic_Point2D operator - (basic_Point2D &point) {
@@ -97,7 +97,7 @@ namespace gge {
 			return basic_Point2D(x*value, y*value);
 		}
 
-		graphtype operator *(const basic_Point2D<T_> &value) const {
+		FloatingPoint operator *(const basic_Point2D<T_> &value) const {
 			return x*value.x+y*value.y;
 		}
 
@@ -144,20 +144,20 @@ namespace gge {
 			return *this;
 		}
 
-		graphtype Angle(const basic_Point2D &origin) const {
+		FloatingPoint Angle(const basic_Point2D &origin) const {
 			return atan2(y-origin.y, x-origin.x);
 		}
 
-		graphtype Angle() const {
+		FloatingPoint Angle() const {
 			return atan2(y, x);
 		}
 
-		graphtype Slope(const basic_Point2D &point) const {
-			return (graphtype)(y-point.y)/(x-point.x);
+		FloatingPoint Slope(const basic_Point2D &point) const {
+			return (FloatingPoint)(y-point.y)/(x-point.x);
 		}
 
-		graphtype Slope() const {
-			return (graphtype)y/x;
+		FloatingPoint Slope() const {
+			return (FloatingPoint)y/x;
 		}
 
 		///!!!Do i have to change this
@@ -243,16 +243,16 @@ namespace gge {
 			y = (y-origin.y)*sizey+origin.y;
 		}
 		////no template on this since cos and cosf cannot be used as such
-		void Rotate(graphtype angle) {
+		void Rotate(FloatingPoint angle) {
 			T_ new_x;
-			graphtype cosa=cosfn(angle), sina=sinfn(angle);
+			FloatingPoint cosa=cosfn(angle), sina=sinfn(angle);
 			new_x = x*cosa - y*sina;
 			y     = x*sina + y*cosa;
 
 			x     = new_x;
 		}
-		void Rotate(graphtype angle, basic_Point2D origin) {
-			graphtype cosa=std::cos(angle), sina=std::sin(angle);
+		void Rotate(FloatingPoint angle, basic_Point2D origin) {
+			FloatingPoint cosa=std::cos(angle), sina=std::sin(angle);
 
 			basic_Point2D temp=*this-origin;
 
@@ -306,7 +306,7 @@ namespace gge {
 		}*/
 
 		template <class U_>
-		static basic_Point2D CreateFrom(const basic_Point2D &point, U_ magnitute, graphtype angle) {
+		static basic_Point2D CreateFrom(const basic_Point2D &point, U_ magnitute, FloatingPoint angle) {
 			return point+basic_Point2D(magnitute*std::cos(angle), magnitute*std::sin(angle));
 		}
 
@@ -339,7 +339,7 @@ namespace gge {
 	}
 
 
-	typedef basic_Point2D<graphtype> Point2D;
+	typedef basic_Point2D<FloatingPoint> Point2D;
 
 	typedef basic_Point2D<int> Point;
 

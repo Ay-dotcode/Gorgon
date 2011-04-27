@@ -6,7 +6,7 @@ namespace gge { namespace widgets {
 	{
 	}
 
-	void SliderStyleGroup::Prepare(gge::GGEMain *main) {
+	void SliderStyleGroup::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 
 		NormalStyle		= (SliderElement*) file->FindObject(guid_normalstyle	);

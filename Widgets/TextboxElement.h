@@ -18,15 +18,15 @@ namespace gge { namespace widgets {
 
 	class TextboxElement : public resource::ResourceBase
 	{
-		friend resource::ResourceBase *LoadTextboxElement(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadTextboxElement(resource::File*,FILE*,int);
 		friend class TextboxStyleGroup;
 		friend class Textbox;
 	public:
 		TextboxElement(void);
 
 		virtual int getGID() { return GID_TEXTBOX_ELEMENT; }
-		virtual void Prepare(GGEMain *main);
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
+		virtual void Prepare(GGEMain &main);
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
 
 		TextboxElement &Draw(WidgetLayer &layer,graphics::Colorizable2DLayer &textlayer,string Caption);
 		TextboxElement &ReadyAnimation(bool Backwards);
@@ -47,9 +47,9 @@ namespace gge { namespace widgets {
 
 
 	protected:
-		Guid *font_guid;
-		Guid *sound_guid;
-		resource::ResourceFile *file;
+		utils::SGuid font_guid;
+		utils::SGuid sound_guid;
+		resource::File *file;
 		int lx;
 		TextAlignment calign;
 

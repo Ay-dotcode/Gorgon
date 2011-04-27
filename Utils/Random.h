@@ -7,7 +7,7 @@ namespace gge {
 	template <>
 	inline double Random(double useless) { return (double)Random<float>()*Random<float>(); }
 	template <>
-	inline int Random(int useless) { return rand(); }
+	inline int Random(int useless) { return rand()+(rand()<<16); }
 	template <>
 	inline unsigned char Random(unsigned char useless) { return rand()%256; }
 

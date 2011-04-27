@@ -7,7 +7,7 @@ namespace gge { namespace widgets {
 	CheckboxStyleGroup::CheckboxStyleGroup(void) {
 	}
 
-	void CheckboxStyleGroup::Prepare(gge::GGEMain *main) {
+	void CheckboxStyleGroup::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 		NormalStyle		= (CheckboxElement*) file->FindObject(guid_normalstyle		);
 		HoverStyle		= (CheckboxElement*) file->FindObject(guid_hoverstyle		);

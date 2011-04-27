@@ -9,7 +9,7 @@ namespace gge { namespace widgets {
 	CheckboxElement::CheckboxElement(void) : symbol(NULL), border(NULL), bordertemplate(NULL), Lines(1), base(NULL) {
 	}
 
-	void CheckboxElement::Prepare(gge::GGEMain *main) {
+	void CheckboxElement::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 		Font	=(gge::Font)temp_font;
 		Sound	=dynamic_cast<SoundResource*>(file->FindObject(sound_guid));

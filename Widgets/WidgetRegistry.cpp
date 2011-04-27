@@ -6,7 +6,7 @@ using namespace gge::resource;
 
 namespace gge { namespace widgets {
 	
-	void WidgetRegistry::DiscoverWidgets(ResourceFile *file) {
+	void WidgetRegistry::DiscoverWidgets(File *file) {
 		//these indices subject to change
 
 		DataResource *colors=file->Root().asData(0);

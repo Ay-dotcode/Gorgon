@@ -29,7 +29,7 @@ namespace gge { namespace widgets {
 		DialogLayer=new WidgetLayer(0, 0, Main->getWidth(), Main->getHeight());
 		Main->Add(DialogLayer,DIALOG_LAYER_ZORDER);
 	}
-	void RegisterWidgetLoaders(ResourceFile *File) {
+	void RegisterWidgetLoaders(File *File) {
 		File->AddExtendedLoaders();
 		File->AddGameLoaders();
 		File->Loaders.Add(new ResourceLoader(GID_LINE, LoadLineResource)); 

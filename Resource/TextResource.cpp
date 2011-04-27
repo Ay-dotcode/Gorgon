@@ -2,7 +2,7 @@
 #include "ResourceFile.h"
 
 namespace gge { namespace resource {
-	ResourceBase *LoadTextResource(ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadTextResource(File* File, FILE* Data, int Size) {
 		char *tmpstr=new char[Size+1];
 
 		fread(tmpstr,1,Size,Data);

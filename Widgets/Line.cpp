@@ -199,7 +199,7 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	resource::ResourceBase* LoadLineResource(resource::ResourceFile* file,FILE* gfile,int sz) {
+	resource::ResourceBase* LoadLineResource(resource::File* file,FILE* gfile,int sz) {
 		LineResource *line =new LineResource();
 
 		int gid,size,cnt=0;
@@ -211,7 +211,7 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				line->guid=new Guid(gfile);
+				line->guid.Load(gfile);
 				break;
 			case GID_LINE_PROPS:
 				int t;

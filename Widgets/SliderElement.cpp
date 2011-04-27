@@ -4,10 +4,7 @@
 using namespace gge::resource;
 
 namespace gge { namespace widgets {
-	SliderElement::SliderElement() {
-		font_guid=NULL;
-		sound_guid=NULL;
-
+	SliderElement::SliderElement() : font_guid(nullptr), sound_guid(nullptr)  {
 		Overlay=NULL;
 		Rule=NULL;
 		Symbol=NULL;
@@ -36,7 +33,7 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	void SliderElement::Prepare(gge::GGEMain *main) {
+	void SliderElement::Prepare(gge::GGEMain &main, gge::resource::File &file) {
 		ResourceBase::Prepare(main);
 
 		Font	=dynamic_cast<BitmapFontResource*>(file->FindObject(font_guid));

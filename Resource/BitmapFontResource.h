@@ -6,19 +6,19 @@
 #include "../Engine/FontRenderer.h"
 
 namespace gge { namespace resource {
-	class ResourceFile;
+	class File;
 
 
 
 	////This function loads a bitmap font from the given file
-	ResourceBase *LoadBitmapFontResource(ResourceFile* File, FILE* Data, int Size);
+	ResourceBase *LoadBitmapFontResource(File* File, FILE* Data, int Size);
 
 	////This is bitmap font. Bitmap fonts contains every character as images. It has its
 	/// pros and cons. Being bitmap, these fonts do not require extra rendering. They are
 	/// independent of OS and does not require any additional libraries. However, they have
 	/// no scaling, rotation capabilities without losing detail.
 	class BitmapFontResource : public ResourceBase, public FontRenderer {
-		friend ResourceBase *LoadBitmapFontResource(ResourceFile* File, FILE* Data, int Size);
+		friend ResourceBase *LoadBitmapFontResource(File* File, FILE* Data, int Size);
 		friend class Font;
 	public:
 		////Size of the tabs in spaces, default is 4
@@ -26,7 +26,7 @@ namespace gge { namespace resource {
 		////03020000h (Game, Bitmap font)
 		virtual int getGID() { return GID_FONT; }
 		////Currently does nothing
-		virtual bool Save(ResourceFile *File, FILE *Data) { return false; }
+		virtual bool Save(File *File, FILE *Data) { return false; }
 
 		////Default constructor
 		BitmapFontResource() : ResourceBase() { Tabsize=4; memset(Characters, 0, 256*sizeof(ImageResource*)); VerticalSpacing=1.0f; }

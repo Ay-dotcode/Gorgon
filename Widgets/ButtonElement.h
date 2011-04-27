@@ -18,14 +18,14 @@ namespace gge { namespace widgets {
 
 	class ButtonElement : public resource::ResourceBase
 	{
-		friend resource::ResourceBase *LoadButtonElement(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase *LoadButtonElement(resource::File*,FILE*,int);
 		friend class ButtonStyleGroup;
 	public:
 		ButtonElement(void);
 
 		virtual int getGID() { return GID_BUTTON_ELEMENT; }
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
-		virtual void Prepare(gge::GGEMain *main);
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
+		virtual void Prepare(gge::GGEMain &main, gge::resource::File &file);
 
 		ButtonElement &Draw(WidgetLayer &Target,graphics::Colorizable2DLayer &TextTarget,graphics::Colorizable2DLayer &IconTarget,string Caption,graphics::Buffered2DGraphic *Icon);
 		ButtonElement &ReadyAnimation(bool Backwards);
@@ -49,9 +49,9 @@ namespace gge { namespace widgets {
 		Point ShadowOffset;
 
 	protected:
-		Guid *font_guid;
-		Guid *sound_guid;
-		resource::ResourceFile *file;
+		utils::SGuid font_guid;
+		utils::SGuid sound_guid;
+		resource::File *file;
 		resource::ResizableObject *Visual;
 	};
 } }

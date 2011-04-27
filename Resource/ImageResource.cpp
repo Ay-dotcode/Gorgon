@@ -9,7 +9,7 @@ using namespace gge::resource;
 using namespace gge::graphics;
 
 namespace gge { namespace resource {
-	ResourceBase *LoadImageResource(ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadImageResource(File* File, FILE* Data, int Size) {
 		int i;
 		ImageResource *img=new ImageResource;
 		img->File=File;
@@ -43,7 +43,10 @@ namespace gge { namespace resource {
 					fseek(Data,size-17,SEEK_CUR);
 			} 
 			else if(gid==GID_GUID) {
-				img->guid=new Guid(Data);
+				img->guid.LoadLong(Data);
+			}
+			else if(gid==GID_SGUID) {
+				img->guid.Load(Data);
 			}
 			else if(gid==GID_IMAGE_CMP_PROPS) {
 				fread(&img->Compression,1,4,Data);

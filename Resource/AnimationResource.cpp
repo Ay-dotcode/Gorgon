@@ -3,7 +3,7 @@
 #include "ImageResource.h"
 
 namespace gge { namespace resource {
-	ResourceBase *LoadAnimationResource(ResourceFile* File, FILE* Data, int Size) {
+	ResourceBase *LoadAnimationResource(File* File, FILE* Data, int Size) {
 		AnimationResource *anim=new AnimationResource;
 
 		int tpos=ftell(Data)+Size;
@@ -17,7 +17,7 @@ namespace gge { namespace resource {
 
 				fread(anim->Durations,size,1,Data);
 			} else if(gid==GID_GUID) {
-				anim->guid=new Guid(Data);
+				anim->guid.Load(Data);
 			} else if(gid==GID_ANIMATION_IMAGE) {
 				anim->Subitems.Add(LoadImageResource(File,Data,size));
 			} else {

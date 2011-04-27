@@ -10,12 +10,12 @@ namespace gge { namespace widgets {
 
 	class ButtonStyleGroup : public resource::ResourceBase
 	{
-		friend resource::ResourceBase* LoadButtonStyleGroup(resource::ResourceFile*,FILE*,int);
+		friend resource::ResourceBase* LoadButtonStyleGroup(resource::File*,FILE*,int);
 	public:
 		ButtonStyleGroup(void);
 		virtual int getGID() { return GID_BUTTON_GRP; }
-		virtual void Prepare(gge::GGEMain *main);
-		virtual bool Save(resource::ResourceFile *File, FILE *Data) { return false; }
+		virtual void Prepare(gge::GGEMain &main, gge::resource::File &file);
+		virtual bool Save(resource::File *File, FILE *Data) { return false; }
 
 		enum {
 			SIZE_RESIZABLE,
@@ -43,18 +43,18 @@ namespace gge { namespace widgets {
 
 	protected:
 
-		resource::ResourceFile* file;
+		resource::File* file;
 
-		Guid *guid_normalstyle		,
-			 *guid_hoverstyle		,
-			 *guid_pressedstyle		,
-			 *guid_disabledstyle	,
-			 *guid_normal2hover		,
-			 *guid_normal2pressed	,
-			 *guid_hover2pressed	,
-			 *guid_hover2normal		,
-			 *guid_pressed2normal	,
-			 *guid_pressed2hover	;
+		utils::SGuid guid_normalstyle		,
+			 guid_hoverstyle		,
+			 guid_pressedstyle		,
+			 guid_disabledstyle	,
+			 guid_normal2hover		,
+			 guid_normal2pressed	,
+			 guid_hover2pressed	,
+			 guid_hover2normal		,
+			 guid_pressed2normal	,
+			 guid_pressed2hover	;
 	};
 
 } }

@@ -357,7 +357,7 @@ namespace gge { namespace widgets {
 		return true;
 	}
 
-	ResourceBase *LoadFrame(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase *LoadFrame(File* file,FILE* gfile,int sz) {
 		FrameBP *frame =new FrameBP();
 		ResourceBase *obj;
 
@@ -374,7 +374,7 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				frame->guid=new Guid(gfile);
+				frame->guid.Load(gfile);
 				break;
 			case GID_FRAME_PROPS:
 				fread(&frame->PointerType,1,4,gfile);
@@ -388,13 +388,13 @@ namespace gge { namespace widgets {
 				fread(&frame->ScrollingBorderWidth,4,4,gfile);
 				fread(&frame->ContentMargin,4,4,gfile);
 
-				frame->guid_normal=new Guid(gfile);
-				frame->guid_active=new Guid(gfile);
-				frame->guid_innernormal=new Guid(gfile);
-				frame->guid_inneractive=new Guid(gfile);
-				frame->guid_scrollingnormal=new Guid(gfile);
-				frame->guid_scrollingactive=new Guid(gfile);
-				frame->guid_scroller=new Guid(gfile);
+				frame->guid_normal.Load(gfile);
+				frame->guid_active.Load(gfile);
+				frame->guid_innernormal.Load(gfile);
+				frame->guid_inneractive.Load(gfile);
+				frame->guid_scrollingnormal.Load(gfile);
+				frame->guid_scrollingactive.Load(gfile);
+				frame->guid_scroller.Load(gfile);
 
 				EatChunk(gfile,size-(4*2+16*7 + 16*7));
 				break;

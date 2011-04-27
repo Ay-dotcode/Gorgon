@@ -12,7 +12,7 @@ using namespace gge::resource;
 
 namespace gge { namespace widgets {
 
-	ResourceBase* LoadSlider(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadSlider(File* file,FILE* gfile,int sz) {
 		SliderBP *slider =new SliderBP();
 		ResourceBase *obj;
 
@@ -25,7 +25,7 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				slider->guid=new Guid(gfile);
+				slider->guid.Load(gfile);
 				break;
 			case GID_SLIDER_GRP:
 				obj=file->LoadObject(gfile,gid,size);
@@ -36,7 +36,7 @@ namespace gge { namespace widgets {
 				break;
 			case GID_SLIDER_PROPS:
 				fread(&slider->PointerType,1,4,gfile);
-				slider->guid_ticksound=new Guid(gfile);
+				slider->guid_ticksound.Load(gfile);
 
 				EatChunk(gfile,size-20);
 				break;
@@ -51,7 +51,7 @@ namespace gge { namespace widgets {
 		return slider;
 	}
 
-	ResourceBase* LoadSliderStyleGroup(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadSliderStyleGroup(File* file,FILE* gfile,int sz) {
 		SliderStyleGroup *slider =new SliderStyleGroup();
 
 		int gid,size,cnt=0;
@@ -63,7 +63,7 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				slider->guid=new Guid(gfile);
+				slider->guid.Load(gfile);
 				break;
 			case GID_SLIDER_GRP_PROPS:
 				Byte byt;
@@ -80,15 +80,15 @@ namespace gge { namespace widgets {
 				fread(&slider->DownArrowSize.x,4,1,gfile);
 				fread(&slider->DownArrowSize.y,4,1,gfile);
 
-				slider->guid_normalstyle=new Guid(gfile);
-				slider->guid_hoverstyle=new Guid(gfile);
-				slider->guid_pressedstyle=new Guid(gfile);
-				slider->guid_normal2hover=new Guid(gfile);
-				slider->guid_normal2pressed=new Guid(gfile);
-				slider->guid_hover2pressed=new Guid(gfile);
-				slider->guid_hover2normal=new Guid(gfile);
-				slider->guid_pressed2normal=new Guid(gfile);
-				slider->guid_pressed2hover=new Guid(gfile);
+				slider->guid_normalstyle.Load(gfile);
+				slider->guid_hoverstyle.Load(gfile);
+				slider->guid_pressedstyle.Load(gfile);
+				slider->guid_normal2hover.Load(gfile);
+				slider->guid_normal2pressed.Load(gfile);
+				slider->guid_hover2pressed.Load(gfile);
+				slider->guid_hover2normal.Load(gfile);
+				slider->guid_pressed2normal.Load(gfile);
+				slider->guid_pressed2hover.Load(gfile);
 
 				fread(&byt,1,1,gfile);
 				slider->RevHover2NormalState=byt;
@@ -97,7 +97,7 @@ namespace gge { namespace widgets {
 				fread(&byt,1,1,gfile);
 				slider->RevPressed2NormalState=byt;
 
-				slider->guid_disabledstyle=new Guid(gfile);
+				slider->guid_disabledstyle.Load(gfile);
 
 				EatChunk(gfile,size-(9*4 + 4*1 + 10*16));
 				break;
@@ -114,7 +114,7 @@ namespace gge { namespace widgets {
 		return slider;
 	}
 
-	ResourceBase* LoadSliderElement(ResourceFile* file,FILE* gfile,int sz) {
+	ResourceBase* LoadSliderElement(File* file,FILE* gfile,int sz) {
 		SliderElement *slider =new SliderElement();
 
 		int gid,size,cnt=0;
@@ -126,11 +126,11 @@ namespace gge { namespace widgets {
 
 			switch(gid) {
 			case GID_GUID:
-				slider->guid=new Guid(gfile);
+				slider->guid.Load(gfile);
 				break;
 			case GID_SLIDER_ELEMENT_PROPS:
-				slider->font_guid=new Guid(gfile);
-				slider->sound_guid=new Guid(gfile);
+				slider->font_guid.Load(gfile);
+				slider->sound_guid.Load(gfile);
 
 				fread(&slider->ForeColor,4,1,gfile);
 				fread(&slider->Duration,4,1,gfile);

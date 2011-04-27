@@ -123,12 +123,12 @@ namespace gge { namespace utils {
 
 	public:
 		////This method resets the iterator
-		virtual void reset() {
+		virtual void reset() const  {
 			current=start;
 		}
 
 		////This method returns whether iterator is at the last item
-		virtual bool eof() {
+		virtual bool eof() const  {
 			return (current==NULL);
 		}
 
@@ -152,7 +152,9 @@ namespace gge { namespace utils {
 			return item;
 		}
 
-		virtual T_* peek() {
+		////This method gets the next item and moves item pointer to the next one
+		virtual const T_* get() const {
+			const T_ *item;
 
 			if(current==NULL) {
 				if(autodestroy)
@@ -160,23 +162,7 @@ namespace gge { namespace utils {
 				return NULL;
 			}
 
-			return current->Item;
-		}
-
-		operator T_*() { return get(); }
-		operator T_&() { return *get(); }
-		T_ *operator ->() { return get(); }
-		T_ &operator *() { return *get(); }
-
-		////This method gets the next list item and moves item pointer to the next one
-		LinkedListItem<T_, SK_, growth>* getitem() {
-			if(current==NULL) {
-				if(autodestroy)
-					delete this;
-				return NULL;
-			}
-
-			LinkedListItem<T_, SK_, growth>* item=current;
+			item=current->Item;
 
 			if(reverse)
 				current=current->prev;
@@ -185,9 +171,15 @@ namespace gge { namespace utils {
 
 			return item;
 		}
-		////This method gets the next item and moves item pointer to the next one
-		virtual operator LinkedListItem<T_, SK_, growth>*() {
-			return getitem();
+
+		virtual T_* peek() {
+			if(current==NULL) {
+				if(autodestroy)
+					delete this;
+				return NULL;
+			}
+
+			return current->Item;
 		}
 	};
 
@@ -207,12 +199,12 @@ namespace gge { namespace utils {
 
 	public:
 		////This method resets the iterator
-		virtual void reset() {
+		virtual void reset() const  {
 			current=start;
 		}
 
 		////This method returns whether iterator is at the last item
-		virtual bool eof() {
+		virtual bool eof() const  {
 			return (current==NULL);
 		}
 
@@ -236,7 +228,27 @@ namespace gge { namespace utils {
 			return item;
 		}
 
-		virtual T_* peek() {
+		////This method gets the next item and moves item pointer to the next one
+		virtual const T_* get() const {
+			T_ *item;
+
+			if(current==NULL) {
+				if(autodestroy)
+					delete this;
+				return NULL;
+			}
+
+			item=current->Item;
+
+			if(reverse)
+				current=current->order_prev;
+			else
+				current=current->order_next;
+
+			return item;
+		}
+
+		virtual T_* peek() const  {
 
 			if(current==NULL) {
 				if(autodestroy)
@@ -251,6 +263,11 @@ namespace gge { namespace utils {
 		operator T_&() { return *get(); }
 		T_ *operator ->() { return get(); }
 		T_ &operator *() { return *get(); }
+
+		operator const T_*() const { return get(); }
+		operator const T_&() const { return *get(); }
+		const T_ *operator ->() const { return get(); }
+		const T_ &operator *() const { return *get(); }
 
 
 		////This method gets the next list item and moves item pointer to the next one
@@ -272,6 +289,10 @@ namespace gge { namespace utils {
 		}
 		////This method gets the next item and moves item pointer to the next one
 		virtual operator LinkedListItem<T_, SK_, growth>*() {
+			return getitem();
+		}
+		////This method gets the next item and moves item pointer to the next one
+		virtual operator const LinkedListItem<T_, SK_, growth>*() const {
 			return getitem();
 		}
 	};
@@ -294,12 +315,12 @@ namespace gge { namespace utils {
 
 	public:
 		////This method resets the iterator
-		virtual void reset() {
+		virtual void reset() const  {
 			current=start;
 		}
 
 		////This method returns whether iterator is at the last item
-		virtual bool eof() {
+		virtual bool eof() const  {
 			return (current==NULL);
 		}
 
@@ -323,7 +344,27 @@ namespace gge { namespace utils {
 			return item;
 		}
 
-		virtual LinkedListItem<T_, SK_,growth> * peek() {
+		////This method gets the next item and moves item pointer to the next one
+		virtual  const LinkedListItem<T_, SK_,growth> *get() const  {
+			LinkedListItem<T_, SK_,growth> *item;
+
+			if(current==NULL) {
+				if(autodestroy)
+					delete this;
+				return NULL;
+			}
+
+			item=current;
+
+			if(reverse)
+				current=current->prev;
+			else
+				current=current->next;
+
+			return item;
+		}
+
+		virtual LinkedListItem<T_, SK_,growth> * peek() const {
 
 			if(current==NULL) {
 				if(autodestroy)
@@ -359,6 +400,34 @@ namespace gge { namespace utils {
 		}
 		////This method gets the next item and moves item pointer to the next one
 		operator T_*() {
+			return getobject();
+		}
+
+		operator const LinkedListItem<T_, SK_,growth>*() const { return get(); }
+		operator const LinkedListItem<T_, SK_,growth>&() const { return *get(); }
+		const LinkedListItem<T_, SK_,growth> *operator ->() const { return get(); }
+		const LinkedListItem<T_, SK_,growth> &operator *() const { return *get(); }
+
+
+		////This method gets the next list item and moves item pointer to the next one
+		const T_ *getobject() const  {
+			if(current==NULL) {
+				if(autodestroy)
+					delete this;
+				return NULL;
+			}
+
+			T_* item=current->Item;
+
+			if(reverse)
+				current=current->prev;
+			else
+				current=current->next;
+
+			return item;
+		}
+		////This method gets the next item and moves item pointer to the next one
+		operator const T_*() const  {
 			return getobject();
 		}
 	};
@@ -856,7 +925,21 @@ namespace gge { namespace utils {
 			return GetIterator();
 		}
 		////Creates an iterator object
-		operator IIterator<T_>*() {
+		operator IIterator<T_>*()  {
+			switch(IterationType) {
+			case Ordered:
+				return new LinkedListOrderedIterator<T_, SK_, growth>(order_first,false, true);
+			case OrderedReverse:
+				return new LinkedListOrderedIterator<T_, SK_, growth>(order_last,true, true);
+			case Reverse:
+				return new LinkedListIterator<T_, SK_, growth>(last,true, true);
+			case Normal:
+			default:
+				return new LinkedListIterator<T_, SK_, growth>(first,false, true);
+			}
+		}
+		////Creates an iterator object
+		operator const IIterator<T_>*() const {
 			switch(IterationType) {
 			case Ordered:
 				return new LinkedListOrderedIterator<T_, SK_, growth>(order_first,false, true);
