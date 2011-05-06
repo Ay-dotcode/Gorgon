@@ -1,3 +1,5 @@
+//INTERNAL, NO SUPPORT YET
+//To do: use block allocation, might be faster
 #pragma once
 
 #include <malloc.h>

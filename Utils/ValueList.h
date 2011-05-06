@@ -1,4 +1,8 @@
 
+//Depreciated, use std::vector instead
+// might be useful if fixed. not much different 
+// from vector tough
+
 #ifndef __VALUELIST__
 #define __VALUELIST__
 

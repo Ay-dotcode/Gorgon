@@ -27,7 +27,7 @@ namespace gge {
 	{ }
 
 	template <class T_>
-	inline basic_Rectangle2D<T_>::operator basic_Bounds2D<T_>() {
+	inline basic_Rectangle2D<T_>::operator basic_Bounds2D<T_>() const {
 		return basic_Bounds2D<T_>(*this);
 	}
 

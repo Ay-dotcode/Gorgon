@@ -31,5 +31,6 @@
 #	define	NULL	0
 #endif
 
-
-typedef unsigned char Byte;
+namespace gge {
+	typedef unsigned char Byte;
+}

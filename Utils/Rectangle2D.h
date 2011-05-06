@@ -1,3 +1,28 @@
+//DESCRIPTION
+//	This file contains the class Rectangle2D which defines a rectangular
+//	region using top, left corner and width and height information.
+//	Missing some operators.
+
+//REQUIRES:
+//	---
+
+//LICENSE
+//	This program is free software: you can redistribute it and/or modify
+//	it under the terms of the Lesser GNU General Public License as published by
+//	the Free Software Foundation, either version 3 of the License, or
+//	(at your option) any later version.
+//
+//	This program is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//	Lesser GNU General Public License for more details.
+//
+//	You should have received a copy of the Lesser GNU General Public License
+//	along with this program. If not, see < http://www.gnu.org/licenses/ >.
+
+//COPYRIGHT
+//	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
+
 #pragma once
 
 #include <iostream>
@@ -14,6 +39,7 @@
 #endif
 
 #include "Point2D.h"
+#include "Size2D.h"
 
 
 #ifdef GGE_XMLSERVICES
@@ -24,7 +50,7 @@
 #define RECTANGLE2D_EXISTS
 
 
-namespace gge {
+namespace gge { namespace utils {
 #ifndef BOUNDS2D_EXISTS
 	template <class T_> class basic_Bounds2D;
 #endif
@@ -39,15 +65,15 @@ namespace gge {
 			Left(Left), Top(Top), Width(Width),Height(Height)
 		{ }
 			
-		basic_Rectangle2D(basic_Point2D<T_> TopLeft, basic_Size2D<T_> HeightWidth) : 
+		basic_Rectangle2D(const basic_Point2D<T_> &TopLeft, const basic_Size2D<T_> &HeightWidth) : 
 			Left(TopLeft.x), Top(TopLeft.y), Width(HeightWidth.Width), Height(HeightWidth.Height)
 		{ }
 			
-		basic_Rectangle2D(basic_Point2D<T_> TopLeft, int Width, int Height) : 
+		basic_Rectangle2D(const basic_Point2D<T_> &TopLeft, int Width, int Height) : 
 			Left(TopLeft.x), Top(TopLeft.y), Width(Width), Height(Height)
 		{ }
 		
-		basic_Rectangle2D(basic_Point2D<T_> TopLeft, basic_Point2D<T_> BottomRight) :
+		basic_Rectangle2D(const basic_Point2D<T_> &TopLeft, const basic_Point2D<T_> &BottomRight) :
 			Left(TopLeft.x), Top(TopLeft.y),
 			Width(BottomRight.x-TopLeft.x),	Height(BottomRight.y-TopLeft.y)
 		{ }
@@ -59,7 +85,7 @@ namespace gge {
 
 		basic_Rectangle2D(const basic_Bounds2D<T_> &bounds);
 
-		operator basic_Bounds2D<T_>();
+		operator basic_Bounds2D<T_>() const;
 
 		basic_Rectangle2D& operator =(const basic_Bounds2D<T_> &bounds);
 
@@ -68,14 +94,16 @@ namespace gge {
 		////Calculates and returns the height of the region
 		T_ Bottom() const { return Height+Top;  }
 
+		void SetRight(T_ right) { Width=right-Left; }
+		void SetBottom(T_ bottom) { Height=bottom-Top; }
+
 		//scale, translate, rotate?, +, +=, -, -=, &&, ||
 	};
 
-	////Allows streaming of point. It converts point to string,
-	/// every row is printed on a line enclosed in braces.
+	////Allows streaming of Rectangle
 	template <class T_>
-	std::ostream &operator << (std::ostream &out, basic_Rectangle2D<T_> &Rectangle) {
-		out<<"< "<<Rectangle.Left<<"-"<<Rectangle.Width<<" , "<<Rectangle.Top<<"-"<<Rectangle.Height<<" >";
+	std::ostream &operator << (std::ostream &out, const basic_Rectangle2D<T_> &Rectangle) {
+		out<<"< "<<Rectangle.Left<<", "<<Rectangle.Top<<", "<<Rectangle.Width<<"x"<<Rectangle.Height<<" >";
 
 		return out;
 	}
@@ -83,16 +111,12 @@ namespace gge {
 
 	////Adds the textual form of the point to another string.
 	template <class T_>
-	std::string &operator + (std::string &out, basic_Rectangle2D<T_> &Rectangle) {
+	std::string &operator + (const std::string &out, const basic_Rectangle2D<T_> &Rectangle) {
 		return string+(string)Rectangle;
 	}
 
 
-#ifdef GRAPH_USEDOUBLE
-	typedef basic_Rectangle2D<double> Rectangle2D;
-#else
-	typedef basic_Rectangle2D<float> Rectangle2D;
-#endif
+	typedef basic_Rectangle2D<FloatingPoint> Rectangle2D;
 
 	typedef basic_Rectangle2D<int> Rectangle;
-}
+} }

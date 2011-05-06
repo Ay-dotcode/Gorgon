@@ -76,7 +76,7 @@ namespace gge {
 			return std::sqrt( (FloatingPoint)(x*x) + (y*y) );
 		}
 
-		basic_Point2D operator - (basic_Point2D &point) {
+		basic_Point2D operator - (const basic_Point2D &point) const {
 			return basic_Point2D(x-point.x, y-point.y);
 		}
 
@@ -160,7 +160,7 @@ namespace gge {
 			return (FloatingPoint)y/x;
 		}
 
-		///!!!Do i have to change this
+		///!!!Do i have to change this??
 		bool Compare(const basic_Point2D &point) const {
 			T_ v=std::numeric_limits<T_>::epsilon();
 			if(v<1)
@@ -210,7 +210,7 @@ namespace gge {
 		}
 
 		//only supported for scalar values
-		void fromXML(XMLNode node) {
+		void fromXML(const XMLNode &node) {
 			if(node.getAttribute("x", 0))
 				x=atof(node.getAttribute("x", 0));
 			if(node.getAttribute("y", 0))
@@ -233,12 +233,12 @@ namespace gge {
 			y *= sizey;
 		}
 		template <class U_>
-		void Scale(U_ size, basic_Point2D origin) {
+		void Scale(U_ size, const basic_Point2D &origin) {
 			x = (x-origin.x)*size+origin.x;
 			y = (y-origin.y)*size+origin.y;
 		}
 		template <class U_>
-		void Scale(U_ sizex, U_ sizey, basic_Point2D origin) {
+		void Scale(U_ sizex, U_ sizey, const basic_Point2D &origin) {
 			x = (x-origin.x)*sizex+origin.x;
 			y = (y-origin.y)*sizey+origin.y;
 		}
@@ -251,7 +251,7 @@ namespace gge {
 
 			x     = new_x;
 		}
-		void Rotate(FloatingPoint angle, basic_Point2D origin) {
+		void Rotate(FloatingPoint angle, const basic_Point2D &origin) {
 			FloatingPoint cosa=std::cos(angle), sina=std::sin(angle);
 
 			basic_Point2D temp=*this-origin;
@@ -270,11 +270,11 @@ namespace gge {
 			y += x*rate;
 		}
 		template <class U_>
-		void SkewX(U_ rate, basic_Point2D origin) {
+		void SkewX(U_ rate, const basic_Point2D &origin) {
 			x += (y-origin.y)*rate;
 		}
 		template <class U_>
-		void SkewY(U_ rate, basic_Point2D origin) {
+		void SkewY(U_ rate, const basic_Point2D &origin) {
 			y += (x-origin.x)*rate;
 		}
 		void ReflectX() {
@@ -289,21 +289,18 @@ namespace gge {
 		void VerticleMirror() {
 			ReflectX();
 		}
-		void ReflectX(basic_Point2D origin) {
+		void ReflectX(const basic_Point2D &origin) {
 			x = -x+origin.x*2;
 		}
-		void ReflectY(basic_Point2D origin) {
+		void ReflectY(const basic_Point2D &origin) {
 			y = -y+origin.y*2;
 		}
-		void HorizontalMirror(basic_Point2D origin) {
+		void HorizontalMirror(const basic_Point2D &origin) {
 			ReflectY(origin);
 		}
-		void VerticleMirror(basic_Point2D origin) {
+		void VerticleMirror(const basic_Point2D &origin) {
 			ReflectX(origin);
 		}
-		/*operator _T() {
-			return Distance();
-		}*/
 
 		template <class U_>
 		static basic_Point2D CreateFrom(const basic_Point2D &point, U_ magnitute, FloatingPoint angle) {

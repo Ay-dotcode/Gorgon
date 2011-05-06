@@ -1056,4 +1056,4 @@ namespace gge { namespace utils {
 			return ret;
 		}
 	};
-}}
+} }

@@ -1,3 +1,28 @@
+//DESCRIPTION
+//	This file contains the class Margins2D which stores margins for a rectangular
+//	object. Include Utils/Bounds2D before this file for additional functionality
+//	allowing subtraction of two Bounds objects, adding or subtracting Margins
+//	object to/from Bounds objects.
+
+//REQUIRES:
+//	GGE/Utils/Bounds2D (optional)
+
+//LICENSE
+//	This program is free software: you can redistribute it and/or modify
+//	it under the terms of the Lesser GNU General Public License as published by
+//	the Free Software Foundation, either version 3 of the License, or
+//	(at your option) any later version.
+//
+//	This program is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//	Lesser GNU General Public License for more details.
+//
+//	You should have received a copy of the Lesser GNU General Public License
+//	along with this program. If not, see < http://www.gnu.org/licenses/ >.
+
+//COPYRIGHT
+//	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 #pragma once
 
 #include <iostream>
@@ -92,15 +117,28 @@ namespace gge {
 
 #ifdef BOUNDS2D_EXISTS
 	template <typename T_, typename R_>
-	basic_Margins2D<T_> operator -(basic_Bounds2D<T_> b1, basic_Bounds2D<R_> b2) {
+	basic_Margins2D<T_> operator -(const basic_Bounds2D<T_> &b1, const basic_Bounds2D<R_> &b2) {
 		return basic_Margins2D<T_>(
 			b2.Left-b1.Left, b2.Top-b1.Top, b1.Right-b2.Right, b1.Bottom-b2.Bottom
-		);
+			);
+	}
+
+	template <typename T_, typename R_>
+	basic_Bounds2D<T_> operator +(const basic_Bounds2D<T_> &b, const basic_Margins2D<R_> &m) {
+		return basic_Bounds2D<T_>(
+			b.Left-m.Left, b.Top-m.Top, b.Right+m.Right, b.Bottom+m.Bottom
+			);
+	}
+
+	template <typename T_, typename R_>
+	basic_Bounds2D<T_> operator -(const basic_Bounds2D<T_> &b, const basic_Margins2D<R_> &m) {
+		return basic_Bounds2D<T_>(
+			b.Left+m.Left, b.Top+m.Top, b.Right-m.Right, b.Bottom-m.Bottom
+			);
 	}
 #endif
 
-	////Allows streaming of margins. It converts point to string,
-	/// every row is printed on a line enclosed in braces.
+	////Allows streaming of margins.
 	template <class T_>
 	std::ostream &operator << (std::ostream &out, basic_Margins2D<T_> &bounds) {
 		out<<"("<<bounds.Left<<", "<<bounds.Right<<", "<<bounds.Top<<", "<<bounds.Bottom<<")";

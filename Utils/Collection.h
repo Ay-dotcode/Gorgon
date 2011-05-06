@@ -1,10 +1,10 @@
 //DESCRIPTION
 //	Collection class is an unsorted add/remove list with consistent IDs
-//	for its members. Allows iteration through foreach macro. Also hosts
-//	search function
+//	for its members. Allows iteration through using std methods macro. 
+//	Also hosts search iteration
 
 //REQUIRES:
-//	gge::utils::private::Iterator
+//	gge::utils::IteratorBase
 //	gge::utils::ManagedBuffer
 
 //LICENSE
@@ -25,6 +25,8 @@
 //	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 
 #pragma once
+#pragma warning(push) //This is used in initializer list, it is forwarded to be stored for later use
+#pragma warning(disable: 4355)
 
 #include <cstdlib>
 #include <cstring>
@@ -34,21 +36,309 @@
 #include "ManagedBuffer.h"
 #include "UtilsBase.h"
 
-
 namespace gge { namespace utils {
-	namespace prvt {
-		template <class T_>
-		class CollectionIterator;
-	}
-
 
 	template <class T_, int growth=50>
 	class Collection {
 		template<class T__, int g__>
 		friend class Collection;
-	public:
-		////The amount of growth for each step
 
+		#pragma region "Iterators"
+		template<class O_, class C_, int g_>
+		class Iterator_ : public IteratorBase<Iterator_<O_, C_, g_>, O_> {
+			friend class IteratorBase<Iterator_, O_>;
+			friend class Collection;
+
+		public:
+			Iterator_() : Col(NULL), Offset(-1), IteratorBase<Iterator_, O_>(*this) { }
+			Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset), IteratorBase<Iterator_, O_>(*this) {
+			}
+
+		protected:
+			Iterator_(C_ &c, int offset=0) : Col(&c), Offset(offset), IteratorBase<Iterator_, O_>(*this) {
+			}
+
+		protected:
+			O_ &current() {
+				if(!isvalid())
+					throw std::out_of_range("Iterator is not valid.");
+
+				return *Col->list[Offset];
+			}
+
+			bool isvalid() const {
+				return Offset!=-1;
+			}
+
+			bool moveby(int amount) {
+				//sanity check
+				if(amount==0)  return isvalid();
+
+				int new_off=Offset;
+
+				if(!isvalid()) {
+					if(amount>0)
+						//new_off = -1;
+						return false; //?
+					else
+						new_off = Col->list.GetSize();
+				}
+
+
+				if(amount>0) {
+					int l=Col->list.GetSize();
+					while(amount && ++new_off < l) {
+						if(Col->list[new_off]) 
+							amount--;
+					}
+
+					if(new_off == Col->list.GetSize()) {
+						Offset=-1;
+						return false;
+					} else {
+						Offset=new_off;
+						return true;
+					}
+				} else {
+					while(amount && --new_off >= 0) {
+						if(Col->list[new_off]) 
+							amount++;
+					}
+
+					if(new_off == -1) {
+						Offset=-1;
+						return false;
+					} else {
+						Offset=new_off;
+						return true;
+					}
+				}
+			}
+
+			bool compare(const Iterator_ &it) {
+				return it.Offset==Offset;
+			}
+
+			void set(const Iterator_ &it) {
+				Col=it.Col;
+				Offset=it.Offset;
+			}
+
+			int distance(const Iterator_ &it) const {
+				int new_off=Offset;
+				int dist=0;
+				int l=Col->list.GetSize();
+
+				if(it.Offset==Offset)
+					return 0;
+
+				if(it.Offset==-1) {
+					while(new_off < l) {
+						if(Col->list[new_off]) 
+							dist++;
+					}
+
+					return dist;
+				}
+
+
+				if(it.Offset-Offset >= 0) {
+					while(it.Offset-Offset && ++new_off < l) {
+						if(Col->list[new_off]) 
+							dist++;
+					}
+				}
+				else {
+					while(it.Offset-Offset && --new_off >= 0) {
+						if(Col->list[new_off]) 
+							dist--;
+					}
+				}
+
+				return dist;
+			}
+
+			bool isbefore(const Iterator_ &it) const {
+				if(Offset==-1)
+					return false;
+
+				if(it.Offset <= Offset) 
+					return false;
+
+				int new_off=Offset;
+				int l=Col->list.GetSize();
+				while(new_off < it.Offset && new_off < l) {
+					if(Col->list[new_off])
+						return true;
+				}
+
+				return false;
+			}
+
+		public:
+			void Remove() {
+				Col->removeat(Offset);
+			}
+
+			void Delete() {
+				Col->deleteat(Offset);
+			}
+
+			Iterator_ &operator =(const Iterator_ &iterator) {
+				set(iterator);
+
+				return *this;
+			}
+
+		protected:
+			C_ *Col;
+			int Offset;
+		};
+
+		template<class O_, class C_, int g_>
+		class SearchIterator_ : public SearchIteratorBase<SearchIterator_<O_, C_, g_>, O_, Iterator_<O_,C_,g_>> {
+			friend class SearchIteratorBase<SearchIterator_, O_, Iterator_<O_,C_,g_>>;
+			friend class Collection;
+
+		public:
+			SearchIterator_(const SearchIterator_ &it) : Col(it.Col), Offset(it.Offset), SearchIteratorBase<SearchIterator_, O_, Iterator_<O_,C_,g_>>(*this) {
+				if(it.Search)
+					Search=new T_(*it.Search);
+				else
+					Search=NULL;
+			}
+
+			SearchIterator_() : Col(NULL), Offset(-1), Search(NULL), SearchIteratorBase<SearchIterator_, O_, Iterator_<O_,C_,g_>>(*this) {
+			}
+
+		protected:
+			SearchIterator_(C_ &c, const T_ &search, int offset=0) : 
+			  Col(&c), Offset(offset), Search(new T_(search)), SearchIteratorBase<SearchIterator_, O_, Iterator_<O_,C_,g_>>(*this) {
+				if(offset==-1) {
+					moveby(-1);
+				}
+				else if(!(current()==search)) {
+					moveby(1);
+				}
+			}
+
+		protected:
+			O_ &current() {
+				if(!isvalid())
+					throw std::out_of_range("Iterator is not valid.");
+
+				return *Col->list[Offset];
+			}
+
+			bool isvalid() const {
+				return Offset!=-1;
+			}
+
+			bool moveby(int amount) {
+				//sanity check
+				if(amount==0)  return isvalid();
+
+				int new_off=Offset;
+
+				if(!isvalid()) {
+					if(amount>0)
+						//new_off = -1;
+						return false; //?
+					else if(Search)
+						new_off = Col->list.GetSize();
+					else //if search is not set then don't do anything
+						return false;
+				}
+
+
+				if(amount>0) {
+					int l=Col->list.GetSize();
+					while(amount && ++new_off < l) {
+						if(Col->list[new_off]) 
+							if(*Col->list[new_off]==*Search)
+								amount--;
+					}
+
+					if(new_off == Col->list.GetSize()) {
+						Offset=-1;
+						return false;
+					} else {
+						Offset=new_off;
+						return true;
+					}
+				} else {
+					while(amount && --new_off >= 0) {
+						if(Col->list[new_off]) 
+							if(*Col->list[new_off]==*Search)
+								amount++;
+					}
+
+					if(new_off == -1) {
+						Offset=-1;
+						return false;
+					} else {
+						Offset=new_off;
+						return true;
+					}
+				}
+			}
+
+			bool compare(const SearchIterator_<O_,C_,g_> &it) {
+				return it.Offset==Offset;
+			}
+
+			Iterator_<O_,C_,g_> cast() {
+				return Iterator<O_,C_,g_>(Col, Offset);
+			}
+
+			bool isbefore(const SearchIterator_<O_,C_,g_> &it) const {
+				if(Offset==-1)
+					return false;
+
+				if(it.Offset <= Offset) 
+					return false;
+
+				int new_off=Offset;
+				int l=Col->list.GetSize();
+				while(new_off < it.Offset && new_off < l) {
+					if(Col->list[new_off])
+						return true;
+				}
+
+				return false;
+			}
+
+
+		public:
+			void Remove() {
+				Col->removeat(Offset);
+			}
+
+			void Delete() {
+				Col->deleteat(Offset);
+			}
+
+			~SearchIterator_() {
+				if(Search)
+					delete Search;
+
+				Search=NULL;
+			}
+		protected:
+			C_ *Col;
+			int Offset;
+			T_ *Search;
+		};
+
+	public:
+		typedef Iterator_<      T_,      Collection, growth>	  Iterator;
+		typedef Iterator_<const T_,const Collection, growth> ConstIterator;
+		typedef SearchIterator_<      T_,      Collection, growth>	    SearchIterator;
+		typedef SearchIterator_<const T_,const Collection, growth> ConstSearchIterator;
+
+#pragma endregion
+
+	public:
 		Collection() : count(new int(0)) {
 			init();
 		}
@@ -221,19 +511,34 @@ namespace gge { namespace utils {
 		}
 
 		////Searches the position of a given item, if not found -1 is returned
-		int Find(T_ *Item) const {
-			int i, j=0;
+		Iterator Find(T_ *Item) {
+			int i;
 			for(i=0;i<list.GetSize();i++) {
 				if(Item==list[i])
-					return j;
-
-				if(list[i]) j++;
+					return Iterator(*this, i);
 			}
 
-			return -1;
+			return Iterator(*this, -1);
 		}
+	
 		////Searches the position of a given item, if not found -1 is returned
-		int Find(T_ &Item) const {
+		Iterator Find(T_ &Item) {
+			return Find(&Item);
+		}
+
+		////Searches the position of a given item, if not found -1 is returned
+		ConstIterator Find(T_ *Item) const {
+			int i;
+			for(i=0;i<list.GetSize();i++) {
+				if(Item==list[i])
+					return ConstIterator(*this, i);
+			}
+
+			return ConstIterator(*this, -1);
+		}
+		
+		////Searches the position of a given item, if not found -1 is returned
+		ConstIterator Find(T_ &Item) const {
 			return Find(&Item);
 		}
 
@@ -241,169 +546,108 @@ namespace gge { namespace utils {
 		/// parameter. If there is more than one, first one is returned.
 		/// Start parameter can be used to discover more items. For this function
 		/// to compile, you should use a type that supports comparison
-		int Search(T_ &Item, int start=0) const {
-			int i, j=0;
-			for(i=start;i<list.GetSize();i++) {
-				if(Item==*list[i])
-					return j;
-
-				if(list[i]) j++;
-			}
-
-			return -1;
+		SearchIterator Search(const T_ &Item, Iterator start)  {
+			return SearchIterator(*this, Item, start.Offset);
 		}
 
-		////Searches the collection for the item that is equal to the given
-		/// parameter. If there is more than one, first one is returned.
-		/// Start parameter can be used to discover more items. For this function
-		/// to compile, you should use a type that supports comparison
-		int ReverseSearch(T_ &Item, int start=-1) const {
-			int i, j=*count-1;
+		SearchIterator Search(const T_ &Item)  {
+			return SearchIterator(*this, Item, 0);
+		}
+		
+		ConstSearchIterator Search(const T_ &Item, Iterator start) const {
+			return ConstSearchIterator(*this, Item, start.Offset);
+		}
 
-			if(start==-1)	
-				start=*count-1;
+		ConstSearchIterator Search(const T_ &Item) const {
+			return ConstSearchIterator(*this, Item, 0);
+		}
 
-			for(i=list.GetSize();i>=0;i--) {
-				if(j<=start && Item==*list[i])
-					return j;
+		SearchIterator ReverseSearch(const T_ &Item)  {
+			return SearchIterator(*this, Item, -1);
+		}
 
-				if(list[i]) j--;
-			}
-
-			return -1;
+		ConstSearchIterator ReverseSearch(const T_ &Item) const {
+			return ConstSearchIterator(*this, Item, -1);
 		}
 
 
-		////Searches the collection for the item that is equal to the given
-		/// parameter. If there is more than one, first one is returned.
-		/// Start parameter can be used to discover more items. This variant 
-		/// allows you to specify comparator function, UNTESTED
-		template <bool (*F_)(T_ &,T_&)>
-		int Search(T_ &Item, int start=0) const  {
-			int i, j=0;
-			for(i=start;i<list.GetSize();i++) {
-				if(F(Item,*list[i]))
-					return j;
 
-				if(list[i]) j++;
-			}
+		T_ &Get(int Index) {
+			T_ *r=get_(Index);
 
-			return -1;
+			if(r==NULL)
+				throw std::out_of_range("Index out of range");
+
+			return *r;
 		}
 
+		const T_ &Get(int Index) const {
+			const T_ *r=get_(Index);
+
+			if(r==NULL)
+				throw std::out_of_range("Index out of range");
+
+			return *r;
+		}
 
 		////Returns the item at a given index
 		T_& operator [] (int Index) {
-			if(Index<0 || Index>list.GetSize())
-				return NULL;
-
-			int i,j;
-			j=0;
-
-			for(i=0;i<list.GetSize();i++) {
-				if(list[i]) j++;
-				if((j-1)==Index) {
-					return list[i];
-				}
-			}
-
-			return NULL;
+			return Get(Index);
 		}
 
 		////Returns the item at a given index
 		const T_& operator [] (int Index) const  {
-			if(Index<0 || Index>list.GetSize())
-				return NULL;
-
-			int i,j;
-			j=0;
-
-			for(i=0;i<list.GetSize();i++) {
-				if(list[i]) j++;
-				if((j-1)==Index) {
-					return list[i];
-				}
-			}
-
-			return NULL;
+			return Get(Index);
 		}
 
 		////Returns the item at a given index
 		T_* operator () (int Index) {
-			if(Index<0 || Index>list.GetSize())
-				throw std::out_of_range("Index requested is out of range");
-
-			int i,j;
-			j=0;
-
-			for(i=0;i<list.GetSize();i++) {
-				if(list[i]) j++;
-				if((j-1)==Index) {
-					return *(list[i]);
-				}
-			}
-
-			throw std::out_of_range("Index requested is out of range");
+			return get_(Index);
 		}
 
-		prvt::CollectionIterator<T_> &ForwardIterator() const {
-			return prvt::CollectionIterator<T_>(list, *count, false);
+		////Returns the item at a given index
+		const T_* operator () (int Index) const {
+			return get_(Index);
 		}
 
-		prvt::CollectionIterator<T_> &BackwardIterator() const {
-			return prvt::CollectionIterator<T_>(list, *count, true);
+		Iterator begin() {
+			return Iterator(*this, 0);
 		}
 
-		operator IIterator<T_>*() const {
-			prvt::CollectionIterator<T_> *it=new prvt::CollectionIterator<T_>(list, *count, false, true);
-
-			return it;
+		Iterator end() {
+			return Iterator(*this, -1);
 		}
 
-		////Restarts the iteration, this function should be called before
-		/// using next and previous functions.
-		///@reverse: This parameter denotes the direction of the iteration
-		void ResetIteration(bool reverse=false) const {
-			if(reverse)
-				lastservedindex=*count;
-			else
-				lastservedindex=-1;
+		SearchIterator send() {
+			return SearchIterator();
 		}
 
-		////Returns the next item in the collection, moving
-		/// iteration pointer to the next item. ResetIteration 
-		/// should be called prior to this function
-		T_* next() const {
-			if(*count==0)
-				return NULL;
-
-getnext:
-			if(lastservedindex+1>=list.GetSize())
-				return NULL;
-
-			lastservedindex++;
-			if(!list[lastservedindex])
-				goto getnext;
-
-			return list[lastservedindex];
+		Iterator First() {
+			return Iterator(*this, 0);
 		}
 
-		////Returns the previous item in the collection, moving
-		/// iteration pointer to the previous item. ResetIteration 
-		/// should be called prior to this function
-		T_* previous() const {
-			if(*count==0)
-				return NULL;
+		Iterator Last() {
+			return --(Iterator(*this, -1));
+		}
 
-getprev:
-			if(lastservedindex-1<0)
-				return NULL;
+		ConstIterator begin() const {
+			return ConstIterator(*this, 0);
+		}
 
-			lastservedindex--;
-			if(!list[lastservedindex])
-				goto getprev;
+		ConstIterator end() const {
+			return ConstIterator(*this, -1);
+		}
 
-			return list[lastservedindex];
+		ConstSearchIterator send() const {
+			return ConstSearchIterator();
+		}
+
+		ConstIterator First() const {
+			return ConstIterator(*this, 0);
+		}
+
+		ConstIterator Last() const {
+			return --(ConstIterator(*this, -1));
 		}
 
 		////Removes all items from the list, allocated memory for the
@@ -416,7 +660,7 @@ getprev:
 		////Clears the contents of the collection and releases the memory
 		/// used for the list. Items are not freed.
 		void Collapse() {
-			Clear();
+			*count=0;
 
 			list.Resize(0);
 		}
@@ -433,159 +677,66 @@ getprev:
 			*count=0;
 		}
 
-
 		////Allocates memory for the given amount of items
 		void AllocateFor(int amount) {
-			list.Resize(list.GetSize()+amount);
-			std::memset(list.GetBuffer()+(list.GetSize()-amount)*sizeof(T_*), 0, sizeof(T_*)*amount);
+			grow(amount);
 		}
 
-	private:
+	protected:
 		ManagedBuffer<T_*> list;
 		int *count;
-		mutable int lastservedindex;
 
 		void init() {
 			list.Resize(growth);
 			std::memset(list.GetBuffer(),0,sizeof(T_*)*list.GetSize());
 
 			*count=0;
-			lastservedindex=-1;
 		}
 
-		void grow() {
-			list.Resize(list.GetSize()+growth);
+		void grow(int amount=growth) {
+			list.Resize(list.GetSize()+amount);
 
-			std::memset(list.GetBuffer()+(list.GetSize()-growth)*sizeof(T_*),0,sizeof(T_*)*growth);
+			std::memset(list.GetBuffer()+(list.GetSize()-amount)*sizeof(T_*),0,sizeof(T_*)*amount);
+		}
+
+		void removeat(int absolutepos) {
+			list[absolutepos]=NULL;
+		}
+
+		void deleteat(int absolutepos) {
+			delete list[absolutepos];
+			list[absolutepos]=NULL;
+		}
+
+		T_ *get_(int Index) {
+			if(Index<0 || Index>list.GetSize())
+				return NULL;
+
+			int i,j;
+			j=0;
+
+			if(Index>list.GetSize()) {
+				for(i=list.GetSize()-1;i>=0;i--) {
+					if(list[i]) j++;
+					if((j-1)==Index) {
+						return list[i];
+					}
+				}
+			} 
+			else {
+				for(i=0;i<list.GetSize();i++) {
+					if(list[i]) j++;
+					if((j-1)==Index) {
+						return list[i];
+					}
+				}
+			}
+
+			return NULL;
 		}
 	};
 
-
-	namespace prvt {
-		template <class T_>
-		class CollectionIterator : public IIterator<T_> {
-		public:
-			CollectionIterator(const ManagedBuffer<T_*> &list, int count, bool reverse=false, bool autodestroy=false) : 
-			  list(list), count(count), reverse(reverse), autodestroy(autodestroy)
-			  {
-				  if(reverse)
-					  lastservedindex=count;
-				  else
-					  lastservedindex=-1;
-			  }
-
-			  virtual T_ *get() {
-				  if(reverse)
-					  return previous();
-				  else
-					  return next();
-			  }
-
-			  virtual T_ *peek() const {
-				  if(reverse)
-					  return peekprevious();
-				  else
-					  return peeknext();
-
-			  }
-
-			  T_ *peeknext() {
-				  if(count==0)
-					  return NULL;
-
-				  int l=lastservedindex;
-
-				getnext:
-				  if(l+1>=list.GetSize())
-					  return NULL;
-
-				  l++;
-				  if(!list[l])
-					  goto getnext;
-
-				  return list[l];
-			  }
-
-			  T_* peekprevious() {
-				  if(count==0)
-					  return NULL;
-
-				  int l=lastservedindex;
-
-				getprev:
-				  if(l-1<0)
-					  return NULL;
-
-				  l--;
-				  if(!list[l])
-					  goto getprev;
-
-				  return list[l];
-			  }
-
-			  T_ *next() {
-				  if(count==0) {
-					  if(autodestroy)
-						  delete this;
-					  return NULL;
-				  }
-
-getnext:
-				  if(lastservedindex+1>=list.GetSize()) {
-					  if(autodestroy)
-						  delete this;
-					  return NULL;
-				  }
-
-				  lastservedindex++;
-				  if(!list[lastservedindex])
-					  goto getnext;
-
-				  return list[lastservedindex];
-			  }
-
-			  T_* previous() {
-				  if(count==0) {
-					  if(autodestroy)
-						  delete this;
-					  return NULL;
-				  }
-
-getprev:
-				  if(lastservedindex-1<0) {
-					  if(autodestroy)
-						  delete this;
-					  return NULL;
-				  }
-
-				  lastservedindex--;
-				  if(!list[lastservedindex])
-					  goto getprev;
-
-				  return list[lastservedindex];
-			  }
-
-
-			  virtual bool eof() const {
-				  return !peek();
-			  }
-			  
-			  virtual void reset() const  {
-				  if(reverse)
-					  lastservedindex=count;
-				  else
-					  lastservedindex=-1;
-			  }
-
-			  virtual ~CollectionIterator() {}
-
-		protected:
-			const ManagedBuffer<T_*> &list;
-			int count;
-			bool reverse;
-			int lastservedindex;
-			bool autodestroy;
-		};
-	}
-
 } }
+
+#pragma warning(pop)
+

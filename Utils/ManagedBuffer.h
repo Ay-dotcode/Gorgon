@@ -37,7 +37,7 @@ namespace gge { namespace utils {
 		friend class ManagedBuffer;
 		friend void std::swap<T_>(ManagedBuffer<T_> &left, ManagedBuffer<T_> &right);
 	public:
-		ManagedBuffer() : refcnt(new int(1)), data(new T_*(nullptr)), size(new int(0)) 
+		ManagedBuffer() : refcnt(new int(1)), data(new T_*(nullptr)), size_(new int(0)) 
 		{ }
 
 		ManagedBuffer(int size) : refcnt(new int(1)), data(new T_*(nullptr)), size(new int(0)) 
@@ -45,7 +45,7 @@ namespace gge { namespace utils {
 			Resize(size);
 		}
 
-		ManagedBuffer(const ManagedBuffer &buf) : data(buf.data), refcnt(buf.refcnt), size(buf.size) {
+		ManagedBuffer(const ManagedBuffer &buf) : data(buf.data), refcnt(buf.refcnt), size_(buf.size_) {
 			AddReference();
 		}
 
@@ -57,20 +57,20 @@ namespace gge { namespace utils {
 
 			if(!(*refcnt)) {
 				delete refcnt;
-				delete size;
+				delete size_;
 				delete data;
 			}
 
 			data=buf.data;
 			refcnt=buf.refcnt;
-			size=buf.size;
+			size_=buf.size_;
 			AddReference();
 
 			return *this;
 		}
 
 		void Resize(int size) {
-			if(size==*(this->size))
+			if(size==*(this->size_))
 				return;
 
 			if(size==0) {
@@ -84,7 +84,7 @@ namespace gge { namespace utils {
 				*data=(T_*) std::malloc(size*sizeof(T_));
 			}
 
-			*this->size=size;
+			*this->size_=size;
 		}
 
 		inline T_ *GetBuffer() {
@@ -109,7 +109,7 @@ namespace gge { namespace utils {
 
 		int GetSize() const {
 			if(*data)
-				return (*size);
+				return (*size_);
 			else
 				return 0;
 		}
@@ -125,7 +125,7 @@ namespace gge { namespace utils {
 			if(*refcnt==0 && *data) {
 				std::free(*data);
 				*data=NULL;
-				*size=0;
+				*size_=0;
 			}
 		}
 
@@ -166,6 +166,14 @@ namespace gge { namespace utils {
 			return (*data)[index];
 		}
 
+		inline T_ &Get(int index) {
+			return (*this)[index];
+		}
+
+		inline const T_ &Get(int index) const {
+			return (*this)[index];
+		}
+
 		inline T_ *operator () (int index) {
 			return &((*data)[index]);
 		}
@@ -201,7 +209,7 @@ namespace gge { namespace utils {
 
 			if(!*data) {
 				delete refcnt;
-				delete size;
+				delete size_;
 				delete data;
 			}
 		}
@@ -215,7 +223,7 @@ namespace gge { namespace utils {
 			if(*data==NULL)
 				return NULL;
 
-			return (*data)+*size;
+			return (*data)+*size_;
 		}
 
 		const T_ *begin() const {
@@ -226,23 +234,27 @@ namespace gge { namespace utils {
 			if(*data==NULL)
 				return NULL;
 
-			return (*data)+*size;
+			return (*data)+*size_;
+		}
+
+		int size() const {
+			return GetSize();
 		}
 #pragma endregion
 
 	private:
 		T_ **data;
-		int *size;
+		int *size_;
 
 		////Reference count
 		mutable int *refcnt;
 	};
-}
+} }
 
 namespace std {
 	//untested for std compatibility, swaps to buffers in O(1)
 	template<class T_>
-	void swap(gge::ManagedBuffer<T_> &left,gge::ManagedBuffer<T_> &right) {
+	void swap(gge::utils::ManagedBuffer<T_> &left,gge::utils::ManagedBuffer<T_> &right) {
 		T_** d;
 		int *s;
 		int *rc;
@@ -267,4 +279,4 @@ namespace std {
 		right.noresizer=nr;
 		right.sizefactor=sf;
 	}
-} }
+}

@@ -2,6 +2,7 @@
 //	This file contains the class Bounds2D which defines bounds of an object
 //	with left,top ; right,bottom coordinates. This class can be converted
 //	to rectangle class (top,left ; width,height)
+//	Missing some operators.
 
 //REQUIRES:
 //	---
@@ -44,6 +45,9 @@
 #include "../External/XmlParser/xmlParser.h"
 #endif
 
+#ifdef MARGINS2D_EXISTS
+#	error "Include bounds before margins for extra features"
+#endif
 
 #define BOUNDS2D_EXISTS
 

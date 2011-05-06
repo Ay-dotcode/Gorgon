@@ -1,115 +1,123 @@
-////The Guid class is used for Guid operations
-class Guid {
-protected:
-	Byte *bytes;
-	int *ints;
+//Depreciated
+// Use SGuid instead, probably will not work
+#pragma once
 
-public:
-	////Empty constructor
-	Guid() {
-		init();
-	}
+#include "UtilsBase.h"
 
-	Guid(Guid &guid) {
-		init();
 
-		ints[0]=guid.ints[0];
-		ints[1]=guid.ints[1];
-		ints[2]=guid.ints[2];
-		ints[3]=guid.ints[3];
-	}
+namespace gge { namespace utils {
+	////The Guid class is used for Guid operations
+	class Guid {
+	protected:
+		Byte *bytes;
+		int *ints;
 
-	////Creates a guid from given integers
-	Guid(int p1, int p2, int p3, int p4) {
-		init();
-
-		ints[0]=p1;
-		ints[1]=p2;
-		ints[2]=p3;
-		ints[3]=p4;
-	}
-
-	////Creates a guid from the give array, if NULL is given
-	/// an empty guid is created
-	Guid(Byte *bytes) {
-		init();
-
-		if(!bytes)
-			Empty();
-		else {
-			int i;
-			for(i=0;i<16;i++)
-				this->bytes[i]=bytes[i];
+	public:
+		////Empty constructor
+		Guid() {
+			init();
 		}
-	}
 
-	////Reads a guid from a file
-	Guid(FILE* file) {
-		init();
+		Guid(Guid &guid) {
+			init();
 
-		fread(bytes, 1, 16, file);
-	}
+			ints[0]=guid.ints[0];
+			ints[1]=guid.ints[1];
+			ints[2]=guid.ints[2];
+			ints[3]=guid.ints[3];
+		}
 
-	////Reads a guid from a file
-	void ReadFrom(FILE* file) {
-		fread(bytes, 1, 16, file);
-	}
+		////Creates a guid from given integers
+		Guid(int p1, int p2, int p3, int p4) {
+			init();
 
-	////Deletes used data
-	~Guid() {
-		delete bytes;
-	}
+			ints[0]=p1;
+			ints[1]=p2;
+			ints[2]=p3;
+			ints[3]=p4;
+		}
 
-	////Empties this guid
-	inline void Empty() {
-		ints[0]=0;
-		ints[1]=0;
-		ints[2]=0;
-		ints[3]=0;
-	}
+		////Creates a guid from the give array, if NULL is given
+		/// an empty guid is created
+		Guid(Byte *bytes) {
+			init();
 
-	////Checks if this guid is empty
-	inline bool isEmpty() {
-		if(ints[0]==0 && ints[1]==0 && ints[2]==0 && ints[3]==0)
-			return true;
+			if(!bytes)
+				Empty();
+			else {
+				int i;
+				for(i=0;i<16;i++)
+					this->bytes[i]=bytes[i];
+			}
+		}
 
-		return false;
-	}
+		////Reads a guid from a file
+		Guid(FILE* file) {
+			init();
 
-	////Compares two guids
-	inline bool isEqual(Guid &guid) {
-		if(guid.ints[0]==ints[0] && guid.ints[1]==ints[1] && guid.ints[2]==ints[2] && guid.ints[3]==ints[3])
-			return true;
+			fread(bytes, 1, 16, file);
+		}
 
-		return false;
-	}
+		////Reads a guid from a file
+		void ReadFrom(FILE* file) {
+			fread(bytes, 1, 16, file);
+		}
 
-	////Compares two guids
-	inline bool isEqual(Guid *guid) {
-		if(guid==NULL)
-			return isEmpty();
+		////Deletes used data
+		~Guid() {
+			delete bytes;
+		}
 
-		if(guid->ints[0]==ints[0] && guid->ints[1]==ints[1] && guid->ints[2]==ints[2] && guid->ints[3]==ints[3])
-			return true;
+		////Empties this guid
+		inline void Empty() {
+			ints[0]=0;
+			ints[1]=0;
+			ints[2]=0;
+			ints[3]=0;
+		}
 
-		return false;
-	}
+		////Checks if this guid is empty
+		inline bool isEmpty() {
+			if(ints[0]==0 && ints[1]==0 && ints[2]==0 && ints[3]==0)
+				return true;
 
-	////Compares two guids
-	inline bool operator ==(Guid &guid) { return isEqual(guid); }
+			return false;
+		}
 
-	////Compares two guids
-	inline bool operator ==(Guid *guid) { return isEqual(guid); }
+		////Compares two guids
+		inline bool isEqual(Guid &guid) {
+			if(guid.ints[0]==ints[0] && guid.ints[1]==ints[1] && guid.ints[2]==ints[2] && guid.ints[3]==ints[3])
+				return true;
 
-	////Writes this guid to a file
-	inline void Write(FILE *file) {
-		fwrite(bytes, 1, 16, file);
-	}
+			return false;
+		}
 
-private:
-	void init() {
-		bytes=new Byte[16];
-		ints=(int*)bytes;
-	}
-};
+		////Compares two guids
+		inline bool isEqual(Guid *guid) {
+			if(guid==NULL)
+				return isEmpty();
 
+			if(guid->ints[0]==ints[0] && guid->ints[1]==ints[1] && guid->ints[2]==ints[2] && guid->ints[3]==ints[3])
+				return true;
+
+			return false;
+		}
+
+		////Compares two guids
+		inline bool operator ==(Guid &guid) { return isEqual(guid); }
+
+		////Compares two guids
+		inline bool operator ==(Guid *guid) { return isEqual(guid); }
+
+		////Writes this guid to a file
+		inline void Write(FILE *file) {
+			fwrite(bytes, 1, 16, file);
+		}
+
+	private:
+		void init() {
+			bytes=new Byte[16];
+			ints=(int*)bytes;
+		}
+	};
+} }
