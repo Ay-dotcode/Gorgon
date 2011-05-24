@@ -85,7 +85,7 @@ namespace gge { namespace utils {
 
 		template <class F_,class P_, class O_>
 		bool Compare(EventHandler<P_, O_> *obj, F_ function) {
-			return false;
+			return falase;
 		}
 		template <class F_, class R_, class P_, class O_>
 		bool Compare(EventHandler<P_,O_> *obj, R_ *object, F_ function) {
@@ -710,13 +710,10 @@ namespace gge { namespace utils {
 		////Unregisters the given event handler using handler function
 		template<class F_>
 		void Unregister(F_ handler) {
-			events->ResetIteration(true);
-			prvt::eventchain::EventHandler<P_, O_> *object;
-
-			while( object=events->previous() ) {
-				if(prvt::eventchain::Compare(object, handler)) {
-					RemoveHandler(object);
-					return;
+			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
+				it.isValid();it.Next()) {
+				if(prvt::eventchain::Compare(&(*it), handler)) {
+					it.Delete();
 				}
 			}
 		}
@@ -724,14 +721,11 @@ namespace gge { namespace utils {
 		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		void Unregister(R_ *obj, F_ handler) {
-			events->ResetIteration(true);
-			prvt::eventchain::EventHandler<P_, O_> *object;
-
-			while(object=events->previous()) {
-				if(prvt::eventchain::Compare(object, obj, handler)) {
-					RemoveHandler(object);
-					return;
-				}
+			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
+				it.isValid();it.Next()) {
+					if(prvt::eventchain::Compare(*it, obj, handler)) {
+						it.Delete();
+					}
 			}
 		}
 
@@ -743,15 +737,7 @@ namespace gge { namespace utils {
 		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		void UnregisterClass(R_ *obj, F_ handler) {
-			events->ResetIteration(true);
-			prvt::eventchain::EventHandler<P_, O_> *object;
-
-			while(object=events->previous()) {
-				if(prvt::eventchain::Compare(object, obj, handler)) {
-					RemoveHandler(object);
-					return;
-				}
-			}
+			Unregister<R_, F_>(obj,handler);
 		}
 
 		////Unregisters the given handler referenced by the object and function
@@ -762,7 +748,7 @@ namespace gge { namespace utils {
 
 		////Unregisters a given handler token
 		void Unregister(Token token) {
-			RemoveHandler(reinterpret_cast< prvt::eventchain::EventHandler<P_,O_>* >(token));
+			events.Delete(reinterpret_cast< prvt::eventchain::EventHandler<P_,O_>* >(token));
 		}
 
 		////This function triggers the event causing all 
@@ -780,11 +766,9 @@ namespace gge { namespace utils {
 		////This function triggers the event causing all 
 		/// handlers to be called
 		void Fire(P_ params) {
-			events.ResetIteration(true);
-			prvt::eventchain::EventHandler<P_, O_> *object;
-
-			while(object=events.previous()) {
-				object->Fire(params, *this->object, eventname);
+			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
+				it.isValid();it.Next()) {
+				it->Fire(params, *this->object, eventname);
 			}
 		}
 
@@ -805,12 +789,8 @@ namespace gge { namespace utils {
 		////Source of the events
 		O_ *object;
 		////Collection of event handlers
-		Collection<prvt::eventchain::EventHandler<P_,O_> > events;
+		Collection<prvt::eventchain::EventHandler<P_,O_>, 5 > events;
 
-		////Unregisters a given handler token
-		void RemoveHandler(prvt::eventchain::EventHandler<P_, O_> *object) {
-			events.Remove(object);
-		}
 		Token AddHandler(prvt::eventchain::EventHandler<P_, O_> *object) {
 			events.Add(object);
 

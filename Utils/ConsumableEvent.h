@@ -8,7 +8,7 @@
 //	NOLAMBDA 
 
 //REQUIRES:
-//	gge::utils::LinkedList
+//	gge::utils::SortedCollection
 //	gge::utils::Any
 
 //LICENSE
@@ -44,7 +44,7 @@
 
 #include "UtilsBase.h"
 #include "Any.h"
-#include "LinkedList.h"
+#include "SortedCollection.h"
 #include "EventChain.h"
 
 
@@ -796,9 +796,9 @@ namespace gge { namespace utils {
 		////Unregisters the given event handler using handler function
 		template<class F_>
 		void Unregister(F_ handler) {
-			foreach(ITEMTYPE_, object, events) {
-				if(Compare(object->Item, handler)) {
-					RemoveHandler(object);
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+				if(Compare(&(*it), handler)) {
+					it.Delete();
 					return;
 				}
 			}
@@ -807,11 +807,9 @@ namespace gge { namespace utils {
 		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		void Unregister(R_ *obj, F_ handler) {
-			using namespace prvt::consumableevent;
-
-			foreach(ITEMTYPE_, object, events) {
-				if(Compare(object->Item, obj, handler)) {
-					RemoveHandler(object);
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+				if(Compare(&(*it),obj, handler)) {
+					it.Delete();
 					return;
 				}
 			}
@@ -820,8 +818,8 @@ namespace gge { namespace utils {
 		////Unregisters the given event handler using handler function
 		template<class F_>
 		Token Find(F_ handler) {
-			foreach(ITEMTYPE_, object, events) {
-				if(Compare(object->Item, handler)) {
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+				if(Compare(&(*it), handler)) {
 
 					return reinterpret_cast<Token> (object);
 				}
@@ -831,10 +829,8 @@ namespace gge { namespace utils {
 		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		Token Find(R_ *obj, F_ handler) {
-			using namespace prvt::consumableevent;
-
-			foreach(ITEMTYPE_, object, events) {
-				if(Compare(object->Item, obj, handler)) {
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+				if(Compare(&(*it), obj, handler)) {
 
 					return reinterpret_cast<Token> (object);
 				}
@@ -849,11 +845,9 @@ namespace gge { namespace utils {
 		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		void UnregisterClass(R_ *obj, F_ handler) {
-			using namespace prvt::consumableevent;
-
-			foreach(ITEMTYPE_, object, events) {
-				if(Compare(object->Item, obj, handler)) {
-					RemoveHandler(object);
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+				if(Compare(&(*it), obj, handler)) {
+					it.Delete();
 					return;
 				}
 			}
@@ -867,7 +861,7 @@ namespace gge { namespace utils {
 
 		////Unregisters a given handler token
 		void Unregister(Token token) {
-			RemoveHandler(reinterpret_cast< ITEMTYPE_* >(token));
+			reinterpret_cast< ITEMTYPE_* >(token).Delete();
 		}
 
 		void MakeFirst(Token token) {
@@ -939,9 +933,9 @@ namespace gge { namespace utils {
 		////This function triggers the event causing all 
 		/// handlers to be called
 		bool Fire(P_ params) {
-			foreach(HANDLER_ , object, events) {
-				if(object->enabled)
-					if(object->Fire(params, *this->object, eventname))
+			for(SortedCollection<HANDLER_, int>::Iterator it=events.First();it.isValid();it.Next()) {
+				if(it->enabled)
+					if(it->Fire(params, *this->object, eventname))
 						return true;
 			}
 
@@ -956,30 +950,34 @@ namespace gge { namespace utils {
 
 		const std::string &GetName() const { return eventname; }
 
+		void SetName(const std::string &name) {
+			eventname=name;
+		}
+
 		~ConsumableEvent() {
 		}
 
 	protected:
-		typedef LinkedListItem<prvt::consumableevent::EventHandler<P_, O_>, int> ITEMTYPE_ ;
+		typedef typename SortedCollection<prvt::consumableevent::EventHandler<P_, O_>, int>::Wrapper ITEMTYPE_ ;
 		typedef prvt::consumableevent::EventHandler<P_, O_> HANDLER_;
 		////Name of the event
 		std::string eventname;
 		////Source of the events
 		O_ *object;
 		////Collection of event handlers
-		LinkedList<HANDLER_,int> events;
+		SortedCollection<HANDLER_,int> events;
 
 		////Unregisters a given handler token
 		void RemoveHandler(ITEMTYPE_ *object) {
-			events.Remove(object);
+			object->Delete();
 		}
 		Token AddHandler(HANDLER_ *object) {
-			ITEMTYPE_ *item = events.Add(object);
+			ITEMTYPE_ *item = &events.Add(object);
 
 			return reinterpret_cast<int>(item);
 		}
 		Token AddHandler(HANDLER_ *object, int order) {
-			ITEMTYPE_ *item = events.Add(object, order);
+			ITEMTYPE_ *item = &events.Add(object, order);
 
 			return reinterpret_cast<int>(item);
 		}

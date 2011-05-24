@@ -1,7 +1,16 @@
 //DESCRIPTION
 //	Collection class is an unsorted add/remove list with consistent IDs
-//	for its members. Allows iteration through using std methods macro. 
-//	Also hosts search iteration
+//	for its members. Allows iteration using std methods. 
+//	Also hosts search iteration. This Collection is preferable for small
+//	number of objects, it does not host any optimizations for access speed;
+//	however, it has a very small memory overhead. Total size of the object
+//	is 16 bytes. It can be passed by value, contents will not be duplicated
+//	instead it will ref count the object list. 
+//	
+//	IMPORTANT: Stored objects are not duplicated nor destroyed at the end
+//	of the collection's life time. To destruct objects that are contained
+//	within use .Destroy() method. This applies for removed objects, use
+//	delete to destruct and remove them
 
 //REQUIRES:
 //	gge::utils::IteratorBase
@@ -25,8 +34,6 @@
 //	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 
 #pragma once
-#pragma warning(push) //This is used in initializer list, it is forwarded to be stored for later use
-#pragma warning(disable: 4355)
 
 #include <cstdlib>
 #include <cstring>
@@ -43,31 +50,47 @@ namespace gge { namespace utils {
 		template<class T__, int g__>
 		friend class Collection;
 
-		#pragma region "Iterators"
+//		Iterators
 		template<class O_, class C_, int g_>
 		class Iterator_ : public IteratorBase<Iterator_<O_, C_, g_>, O_> {
 			friend class IteratorBase<Iterator_, O_>;
 			friend class Collection;
 
 		public:
-			Iterator_() : Col(NULL), Offset(-1), IteratorBase<Iterator_, O_>(*this) { }
-			Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset), IteratorBase<Iterator_, O_>(*this) {
+			Iterator_() : Col(NULL), Offset(-1)
+			Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
 			}
 
 		protected:
-			Iterator_(C_ &c, int offset=0) : Col(&c), Offset(offset), IteratorBase<Iterator_, O_>(*this) {
+			Iterator_(C_ &c, int offset=0) : Col(&c), Offset(offset) {
 			}
 
 		protected:
+			O_ &current() const {
+				if(!isvalid())
+					throw std::out_of_range("Iterator is not valid.");
+
+				if(!Col->list[Offset])
+					throw std::out_of_range("Iterator is not valid.");
+
+
+				return *Col->list[Offset];
+			}
+
 			O_ &current() {
 				if(!isvalid())
 					throw std::out_of_range("Iterator is not valid.");
+
+				if(!Col->list[Offset])
+					if(!moveby(1))
+						throw std::out_of_range("Iterator is not valid.");
+
 
 				return *Col->list[Offset];
 			}
 
 			bool isvalid() const {
-				return Offset!=-1;
+				return Offset!=-1 && (*Col->count)!=0 && Col->list[Offset];
 			}
 
 			bool moveby(int amount) {
@@ -115,7 +138,7 @@ namespace gge { namespace utils {
 				}
 			}
 
-			bool compare(const Iterator_ &it) {
+			bool compare(const Iterator_ &it) const {
 				return it.Offset==Offset;
 			}
 
@@ -136,6 +159,8 @@ namespace gge { namespace utils {
 					while(new_off < l) {
 						if(Col->list[new_off]) 
 							dist++;
+
+						new_off++;
 					}
 
 					return dist;
@@ -176,10 +201,14 @@ namespace gge { namespace utils {
 			}
 
 		public:
+			//!! Template compatibility for collections
+			//should not work for const iterators
 			void Remove() {
 				Col->removeat(Offset);
 			}
 
+			//!! Template compatibility for collections
+			//should not work for const iterators
 			void Delete() {
 				Col->deleteat(Offset);
 			}
@@ -190,30 +219,55 @@ namespace gge { namespace utils {
 				return *this;
 			}
 
+			int Location() {
+				int l=Col->getSize();
+				int location;
+
+				if(Offset > l/2) {
+					int newoff=Offset;
+					while(newoff<l) {
+						if(Col->list[newoff])
+							location++;
+
+						newoff++;
+					}
+
+					return l-location;
+				} else {
+					int newoff=Offset;
+					while(--newoff>=0) {
+						if(Col->list[newoff])
+							location++;
+					}
+
+					return location;
+				}
+			}
+
 		protected:
 			C_ *Col;
 			int Offset;
 		};
 
 		template<class O_, class C_, int g_>
-		class SearchIterator_ : public SearchIteratorBase<SearchIterator_<O_, C_, g_>, O_, Iterator_<O_,C_,g_>> {
-			friend class SearchIteratorBase<SearchIterator_, O_, Iterator_<O_,C_,g_>>;
+		class SearchIterator_ : public IteratorBase<SearchIterator_<O_, C_, g_>, O_> {
+			friend class IteratorBase<SearchIterator_, O_>;
 			friend class Collection;
 
 		public:
-			SearchIterator_(const SearchIterator_ &it) : Col(it.Col), Offset(it.Offset), SearchIteratorBase<SearchIterator_, O_, Iterator_<O_,C_,g_>>(*this) {
+			SearchIterator_(const SearchIterator_ &it) : Col(it.Col), Offset(it.Offset) {
 				if(it.Search)
 					Search=new T_(*it.Search);
 				else
 					Search=NULL;
 			}
 
-			SearchIterator_() : Col(NULL), Offset(-1), Search(NULL), SearchIteratorBase<SearchIterator_, O_, Iterator_<O_,C_,g_>>(*this) {
+			SearchIterator_() : Col(NULL), Offset(-1), Search(NULL) {
 			}
 
 		protected:
 			SearchIterator_(C_ &c, const T_ &search, int offset=0) : 
-			  Col(&c), Offset(offset), Search(new T_(search)), SearchIteratorBase<SearchIterator_, O_, Iterator_<O_,C_,g_>>(*this) {
+			  Col(&c), Offset(offset), Search(new T_(search)) {
 				if(offset==-1) {
 					moveby(-1);
 				}
@@ -223,7 +277,7 @@ namespace gge { namespace utils {
 			}
 
 		protected:
-			O_ &current() {
+			O_ &current() const {
 				if(!isvalid())
 					throw std::out_of_range("Iterator is not valid.");
 
@@ -283,7 +337,7 @@ namespace gge { namespace utils {
 				}
 			}
 
-			bool compare(const SearchIterator_<O_,C_,g_> &it) {
+			bool compare(const SearchIterator_<O_,C_,g_> &it) const {
 				return it.Offset==Offset;
 			}
 
@@ -308,14 +362,58 @@ namespace gge { namespace utils {
 				return false;
 			}
 
+			int distance(const SearchIterator_ &it) const {
+				int new_off=Offset;
+				int dist=0;
+				int l=Col->list.GetSize();
+
+				if(it.Offset==Offset)
+					return 0;
+
+				if(Search==NULL)
+					return 0;
+
+				if(it.Offset==-1) {
+					while(new_off < l) {
+						if(Col->list[new_off] && Col->list[new_off]==Search) 
+							dist++;
+
+						new_off++;
+					}
+
+					return dist;
+				}
+
+
+				if(it.Offset-Offset >= 0) {
+					while(it.Offset-Offset && ++new_off < l) {
+						if(Col->list[new_off] && Col->list[new_off]==Search) 
+							dist++;
+					}
+				}
+				else {
+					while(it.Offset-Offset && --new_off >= 0) {
+						if(Col->list[new_off] && Col->list[new_off]==Search) 
+							dist--;
+					}
+				}
+
+				return dist;
+			}
 
 		public:
+			//!! Template compatibility for collections
 			void Remove() {
 				Col->removeat(Offset);
 			}
 
+			//!! Template compatibility for collections
 			void Delete() {
 				Col->deleteat(Offset);
+			}
+
+			operator Iterator_<O_,C_,g_>() const {
+				return Iterator<O_,C_,g_>(Col, Offset);
 			}
 
 			~SearchIterator_() {
@@ -332,11 +430,23 @@ namespace gge { namespace utils {
 
 	public:
 		typedef Iterator_<      T_,      Collection, growth>	  Iterator;
-		typedef Iterator_<const T_,const Collection, growth> ConstIterator;
+		class ConstIterator : public Iterator_<const T_,const Collection, growth> {
+		public:
+			ConstIterator(const Iterator &it) {
+				Col=it.Col;
+				Offset=it.Offset;
+			}
+		};
 		typedef SearchIterator_<      T_,      Collection, growth>	    SearchIterator;
-		typedef SearchIterator_<const T_,const Collection, growth> ConstSearchIterator;
+		class ConstSearchIterator : public SearchIterator_<const T_,const Collection, growth> {
+		public:
+			ConstSearchIterator(const SearchIterator &it) {
+				Col=it.Col;
+				Offset=it.Offset;
+			}
+		};
 
-#pragma endregion
+//#pragma endregion
 
 	public:
 		Collection() : count(new int(0)) {
@@ -354,6 +464,7 @@ namespace gge { namespace utils {
 		list(col.list), count(col.count)
 		{ 	}
 
+		//!! Template compatibility for collections
 		////Returns number of elements
 		int getCount() const {
 			return *count;
@@ -379,6 +490,7 @@ namespace gge { namespace utils {
 				return i;
 		}
 
+		//!! Template compatibility for collections
 		////Adds a new item to the list and returns its index.
 		/// When an item is removed its index is released and given
 		/// to the next object. However, when an index is given it
@@ -510,7 +622,7 @@ namespace gge { namespace utils {
 			Delete(&data);
 		}
 
-		////Searches the position of a given item, if not found -1 is returned
+		////Searches the position of a given item, if not found invalid iterator returned
 		Iterator Find(T_ *Item) {
 			int i;
 			for(i=0;i<list.GetSize();i++) {
@@ -520,13 +632,13 @@ namespace gge { namespace utils {
 
 			return Iterator(*this, -1);
 		}
-	
-		////Searches the position of a given item, if not found -1 is returned
+
+		////Searches the position of a given item, if not found invalid iterator returned
 		Iterator Find(T_ &Item) {
 			return Find(&Item);
 		}
 
-		////Searches the position of a given item, if not found -1 is returned
+		////Searches the position of a given item, if not found invalid iterator returned
 		ConstIterator Find(T_ *Item) const {
 			int i;
 			for(i=0;i<list.GetSize();i++) {
@@ -536,10 +648,28 @@ namespace gge { namespace utils {
 
 			return ConstIterator(*this, -1);
 		}
-		
-		////Searches the position of a given item, if not found -1 is returned
+
+		////Searches the position of a given item, if not found invalid iterator returned
 		ConstIterator Find(T_ &Item) const {
 			return Find(&Item);
+		}
+
+		////Searches the position of a given item, if not found -1 is returned
+		int FindLocation(T_ *Item) const {
+			int i, p=0;
+			for(i=0;i<list.GetSize();i++) {
+				if(Item==list[i])
+					return p;
+				else if(list[i])
+					p++;
+			}
+
+			return -1;
+		}
+
+		////Searches the position of a given item, if not found -1 is returned
+		int FindLocation(T_ &Item) const {
+			return FindLocation(&Item);
 		}
 
 		////Searches the collection for the item that is equal to the given
@@ -622,10 +752,12 @@ namespace gge { namespace utils {
 			return SearchIterator();
 		}
 
+		//!! Template compatibility for collections, lists
 		Iterator First() {
 			return Iterator(*this, 0);
 		}
 
+		//!! Template compatibility for collections, lists
 		Iterator Last() {
 			return --(Iterator(*this, -1));
 		}
@@ -642,14 +774,17 @@ namespace gge { namespace utils {
 			return ConstSearchIterator();
 		}
 
+		//!! Template compatibility for collections, lists
 		ConstIterator First() const {
 			return ConstIterator(*this, 0);
 		}
 
+		//!! Template compatibility for collections, lists
 		ConstIterator Last() const {
 			return --(ConstIterator(*this, -1));
 		}
 
+		//!! Template compatibility for collections
 		////Removes all items from the list, allocated memory for the
 		/// list stays
 		void Clear() {
@@ -665,6 +800,7 @@ namespace gge { namespace utils {
 			list.Resize(0);
 		}
 
+		//!! Template compatibility for collections
 		////Destroys the entire collection, effectively deleting the contents
 		/// and the list {
 		void Destroy() {
@@ -677,6 +813,7 @@ namespace gge { namespace utils {
 			*count=0;
 		}
 
+		//!! Template compatibility for lists
 		////Allocates memory for the given amount of items
 		void AllocateFor(int amount) {
 			grow(amount);
@@ -701,11 +838,13 @@ namespace gge { namespace utils {
 
 		void removeat(int absolutepos) {
 			list[absolutepos]=NULL;
+			(*count)--;
 		}
 
 		void deleteat(int absolutepos) {
 			delete list[absolutepos];
 			list[absolutepos]=NULL;
+			(*count)--;
 		}
 
 		T_ *get_(int Index) {
@@ -737,6 +876,4 @@ namespace gge { namespace utils {
 	};
 
 } }
-
-#pragma warning(pop)
 

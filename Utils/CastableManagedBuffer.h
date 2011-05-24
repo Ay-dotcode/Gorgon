@@ -1,3 +1,7 @@
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!! REQUIRES TESTING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 //DESCRIPTION
 //	CastableManagedBuffer is an array that manages reference counting
 //	and auto destruction of its buffer if no variable references
@@ -6,7 +10,7 @@
 //	as a different type, but in that case the buffer cannot be resized
 
 //REQUIRES:
-//	---
+//	gge::utils::RefCount
 
 //LICENSE
 //	This program is free software: you can redistribute it and/or modify
@@ -32,35 +36,32 @@
 
 namespace gge { namespace utils {
 	template <class T_>
-	class CastableManagedBuffer {
+	class CastableManagedBuffer : RefCounter<CastableManagedBuffer<T_> > {
 		template<class O_>
 		friend class CastableManagedBuffer;
+		friend class RefCounter;
 		friend void std::swap<T_>(CastableManagedBuffer<T_> &left, CastableManagedBuffer<T_> &right);
 	public:
 		CastableManagedBuffer() : sizefactor(1), noresizer(false) {
-			refcnt=new int();
-			*refcnt=1;
 			data=new T_*();
 			*data=NULL;
-			size=new int();
-			*size=0;
+			size_=new int();
+			*size_=0;
 		}
 
 		CastableManagedBuffer(int size) : sizefactor(1), noresizer(false) {
-			refcnt=new int();
-			*refcnt=1;
 			data=new T_*();
 			*data=NULL;
-			this->size=new int();
+			this->size_=new int();
 			Resize(size);
 		}
 
-		CastableManagedBuffer(const CastableManagedBuffer &buf) : sizefactor(1), noresizer(false) {
+		CastableManagedBuffer(const CastableManagedBuffer &buf) : RefCounter<CastableManagedBuffer>(buf), 
+			sizefactor(1), noresizer(false) {
+
 			data=buf.data;
-			refcnt=buf.refcnt;
-			size=buf.size;
+			size_=buf.size_;
 			sizefactor=buf.sizefactor;
-			AddReference();
 		}
 
 
@@ -74,7 +75,7 @@ namespace gge { namespace utils {
 			if( sizeof(T_)%sizeof(O_) && sizeof(O_)%sizeof(T_) ) 
 				throw runtime_error("Cannot cast, size mismatch");
 
-			return CastableManagedBuffer<O_>((float)sizeof(T_)/sizeof(O_), this);
+			return CastableManagedBuffer<O_>((factor*(float)sizeof(T_))/sizeof(O_), this);
 		}
 
 		//works in O(1), no copying or conversion is done, 
@@ -85,14 +86,14 @@ namespace gge { namespace utils {
 			if( sizeof(T_)%sizeof(O_) && sizeof(O_)%sizeof(T_) ) 
 				throw runtime_error("Cannot cast, size mismatch");
 
-			return const CastableManagedBuffer<O_>((float)sizeof(T_)/sizeof(O_), this);
+			return const CastableManagedBuffer<O_>((factor*(float)sizeof(T_))/sizeof(O_), this);
 		}
 
 		void Resize(int size) {
 			if(noresizer)
 				throw std::runtime_error("Cannot resize");
 
-			if(size==*(this->size))
+			if(size==*(this->size_))
 				return;
 
 			if(*data) {
@@ -104,25 +105,18 @@ namespace gge { namespace utils {
 				*data=(T_*) std::malloc(size*sizeof(T_));
 			}
 
-			*this->size=size;
+			*this->size_=size;
 		}
 
 		CastableManagedBuffer &operator =(const CastableManagedBuffer &buf) {
 			if(this==&buf) return *this;
-			RemoveReference();
 
-			if(!(*refcnt)) {
-				delete refcnt;
-				delete size;
-				delete data;
-			}
+			refassign(buf);
 
 			data=buf.data;
-			refcnt=buf.refcnt;
-			size=buf.size;
+			size_=buf.size_;
 			sizefactor=buf.sizefactor;
 			noresizer=buf.noresizer;
-			AddReference();
 
 			return *this;
 		}
@@ -149,40 +143,25 @@ namespace gge { namespace utils {
 
 		int GetSize() const {
 			if(*data)
-				return (int)((*size)*sizefactor);
+				return (int)((*size_)*sizefactor);
 			else
 				return 0;
 		}
 
 		void AddReference() const {
-			(*refcnt)++;
+			addref();
 		}
 
 		void RemoveReference() {
-			if(*refcnt>0)
-				(*refcnt)--;
-
-			if(*refcnt==0 && *data) {
-				std::free(*data);
-				*data=NULL;
-				*size=0;
-			}
+			removeref();
 		}
 
 		void RemoveReference() const {
-			if(*refcnt>0)
-				(*refcnt)--;
-
-			if(*refcnt==0 && *data) {
-				throw std::runtime_error("Cannot destroy a const buffer");
-			}
+			removeref();
 		}
 
 		int getReferenceCount() const {
-			if(*data)
-				return *refcnt;
-			else
-				return 0;
+			return getrefcount();
 		}
 
 		inline T_ &operator [] (int index) {
@@ -240,15 +219,10 @@ namespace gge { namespace utils {
 		const T_* operator +(int offset) const { return (*this)(offset); }
 
 		~CastableManagedBuffer() {
-			RemoveReference();
-			if(!*data) {
-				delete refcnt;
-				delete size;
-				delete data;
-			}
+			destructref();
 		}
 
-		#pragma region "std compatibility"
+//		std compatibility
 		T_ *begin() {
 			return *data;
 		}
@@ -268,36 +242,52 @@ namespace gge { namespace utils {
 				return NULL;
 			return (*data)+GetSize();
 		}
-#pragma endregion
+
+		int size() const {
+			return *size_;
+		}
+
+	protected:
+		void dealloc() {
+			Resize(0);
+		}
+
+		void destroy() {
+			delete size_;
+
+			if(data)
+				delete *data;
+
+			delete data;
+		}
+
 
 	private:
 		template<class O_>
-		CastableManagedBuffer(float factor, CastableManagedBuffer<O_> &buf) : sizefactor(factor) {
+		CastableManagedBuffer(float factor, CastableManagedBuffer<O_> &buf) : 
+			RefCounter<CastableManagedBuffer>(buf), sizefactor(factor) {
+
 			noresizer = sizeof(O_) != sizeof(T_);
 			data=(T_**)buf.data;
-			refcnt=buf.refcnt;
-			size=buf.size;
-			AddReference();
+			size_=buf.size;
 		}
 
 		template<class O_>
-		CastableManagedBuffer(float factor, CastableManagedBuffer<O_> *buf) : sizefactor(factor) {
+		CastableManagedBuffer(float factor, CastableManagedBuffer<O_> *buf) :
+			RefCounter<CastableManagedBuffer>(buf), sizefactor(factor) {
+
 			noresizer = sizeof(O_) != sizeof(T_);
 			data=(T_**)buf->data;
-			refcnt=buf->refcnt;
-			size=buf->size;
-			AddReference();
+			size_=buf->size;
 		}
 
 		T_ **data;
-		int *size;
+		int *size_;
 
 		bool noresizer;
 
 		float sizefactor;
 
-		////Reference count
-		mutable int *refcnt;
 	};
 }
 

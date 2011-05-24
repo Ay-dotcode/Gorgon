@@ -52,15 +52,15 @@ using namespace gge::input::system;
 			CursorHandle defaultcursor;
 			bool pointerdisplayed;
 			void ProcessMessage() {
-			MSG msg;
-			if( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) ) {
-				GetMessage(&msg, NULL, 0, 0 );
+				MSG msg;
+				if( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) ) {
+					GetMessage(&msg, NULL, 0, 0 );
 
-				// Translate and dispatch the message
-				TranslateMessage( &msg ); 
-				DispatchMessage( &msg );
+					// Translate and dispatch the message
+					TranslateMessage( &msg ); 
+					DispatchMessage( &msg );
+				}
 			}
-		}
 		}
 		namespace window {
 			utils::EventChain<> Activated	("WindowActivated" );

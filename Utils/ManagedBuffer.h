@@ -6,7 +6,7 @@
 //	as a different type use CastableManagedBuffer instead
 
 //REQUIRES:
-//	---
+//	gge::utils::RefCount
 
 //LICENSE
 //	This program is free software: you can redistribute it and/or modify
@@ -30,41 +30,36 @@
 #include <stdexcept>
 #include <cstdlib>
 
+#include "RefCounter.h"
+
 namespace gge { namespace utils {
 	template <class T_>
-	class ManagedBuffer {
+	class ManagedBuffer : RefCounter<ManagedBuffer<T_> > {
 		template<class O_>
 		friend class ManagedBuffer;
 		friend void std::swap<T_>(ManagedBuffer<T_> &left, ManagedBuffer<T_> &right);
+		friend class RefCounter<ManagedBuffer>;
 	public:
-		ManagedBuffer() : refcnt(new int(1)), data(new T_*(nullptr)), size_(new int(0)) 
+		ManagedBuffer() : data(new T_*(nullptr)), size_(new int(0)) 
 		{ }
 
-		ManagedBuffer(int size) : refcnt(new int(1)), data(new T_*(nullptr)), size(new int(0)) 
+		ManagedBuffer(int size) : data(new T_*(nullptr)), size(new int(0)) 
 		{
 			Resize(size);
 		}
 
-		ManagedBuffer(const ManagedBuffer &buf) : data(buf.data), refcnt(buf.refcnt), size_(buf.size_) {
-			AddReference();
+		ManagedBuffer(const ManagedBuffer &buf) : data(buf.data), RefCounter<ManagedBuffer>(buf), size_(buf.size_) {
 		}
 
 		ManagedBuffer &operator =(const ManagedBuffer &buf) {
 			if(this==&buf) return *this;
 			if(this->data==buf->data) return *this;
 
-			RemoveReference();
-
-			if(!(*refcnt)) {
-				delete refcnt;
-				delete size_;
-				delete data;
-			}
+			refassign(buf);
 
 			data=buf.data;
 			refcnt=buf.refcnt;
 			size_=buf.size_;
-			AddReference();
 
 			return *this;
 		}
@@ -112,34 +107,6 @@ namespace gge { namespace utils {
 				return (*size_);
 			else
 				return 0;
-		}
-
-		void AddReference() const {
-			(*refcnt)++;
-		}
-
-		void RemoveReference() {
-			if(*refcnt>0)
-				(*refcnt)--;
-
-			if(*refcnt==0 && *data) {
-				std::free(*data);
-				*data=NULL;
-				*size_=0;
-			}
-		}
-
-		void RemoveReference() const {
-			if(*refcnt>0)
-				(*refcnt)--;
-
-			if(*refcnt==0 && *data) {
-				throw std::runtime_error("Cannot destroy a const buffer");
-			}
-		}
-
-		int getReferenceCount() const {
-			return *refcnt;
 		}
 
 		inline T_ &operator [] (int index) {
@@ -204,17 +171,38 @@ namespace gge { namespace utils {
 
 		const T_* operator +(int offset) const { return (*this)(offset); }
 
-		~ManagedBuffer() {
-			RemoveReference();
-
-			if(!*data) {
-				delete refcnt;
-				delete size_;
-				delete data;
-			}
+		void AddReference() const {
+			addref();
 		}
 
-		#pragma region "std compatibility"
+		void RemoveReference() const {
+			removeref();
+		}
+
+		void RemoveReference() {
+			removeref();
+		}
+
+		int getReferenceCount() const {
+			return getrefcount();
+		}
+
+		~ManagedBuffer() {
+			destructref();
+		}
+
+		T_ *First() {
+			return *data;
+		}
+
+		T_ *Last() {
+			if(*data==NULL)
+				return NULL;
+
+			return (*data)+(*size_-1);
+		}
+
+		//std compatibility
 		inline T_ *begin() {
 			return *data;
 		}
@@ -240,14 +228,24 @@ namespace gge { namespace utils {
 		int size() const {
 			return GetSize();
 		}
-#pragma endregion
+
+	protected:
+		void dealloc() {
+			Resize(0);
+		}
+
+		void destroy() {
+			delete size_;
+			
+			if(data)
+				delete *data;
+
+			delete data;
+		}
 
 	private:
 		T_ **data;
 		int *size_;
-
-		////Reference count
-		mutable int *refcnt;
 	};
 } }
 
@@ -280,3 +278,4 @@ namespace std {
 		right.sizefactor=sf;
 	}
 }
+
