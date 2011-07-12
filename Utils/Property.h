@@ -1,100 +1,413 @@
+//DESCRIPTION
+//	Property classes allows property access much like vb and c#.
+//	There are different property types for different tasks.
+//	You should use the property type that suits your needs.
+
+//REQUIRES:
+//	std::string
+
+//LICENSE
+//	This program is free software: you can redistribute it and/or modify
+//	it under the terms of the Lesser GNU General Public License as published by
+//	the Free Software Foundation, either version 3 of the License, or
+//	(at your option) any later version.
+//
+//	This program is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//	Lesser GNU General Public License for more details.
+//
+//	You should have received a copy of the Lesser GNU General Public License
+//	along with this program. If not, see < http://www.gnu.org/licenses/ >.
+
+//COPYRIGHT
+//	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
+
 #pragma once
 
 #define PROPERTY_DEFINED
 
-//This is generic property that can be set and retrieved
-// good for enums mostly, its ok to use with POD  structs
-// but you better not to use it with complex data types.
-template<class C_, class T_>
-class Property {
-public:
-	typedef T_(C_::*Getter)() const;
-	typedef void (C_::*Setter)(T_);
+#include "UtilsBase.h"
+#include <string>
+#include <iostream>
 
-protected:
-	C_		&Object;
-	Getter	getter;
-	Setter	setter;
+namespace gge { namespace utils {
 
-public:
-	Property(C_ &Object, Getter getter, Setter setter) : Object(Object), getter(getter), setter(setter) 
-	{ }
+	//This is generic property that can be set and retrieved
+	// good for enums mostly, its ok to use with POD structs
+	// but you better not to use it with complex data types.
+	template<class C_, class T_>
+	class Property {
+	public:
+		typedef T_(C_::*Getter)() const;
+		typedef void (C_::*Setter)(const T_&);
 
-	Property(C_ *Object, Getter getter, Setter setter) : Object(*Object), getter(getter), setter(setter) 
-	{ }
+	protected:
+		C_		&Object;
+		Getter	getter;
+		Setter	setter;
 
-	operator T_() { 
-		return (Object.*getter)(); 
+	public:
+		Property(C_ *Object, Getter getter, Setter setter) : Object(*Object), getter(getter), setter(setter) 
+		{ }
+
+		operator T_() { 
+			return (Object.*getter)(); 
+		}
+
+		operator const T_() const { 
+			return (Object.*getter)(); 
+		}
+
+		Property &operator =(const T_ &value) { 
+			(Object.*setter)(value);
+
+			return *this;
+		}
+
+		template <class O_>
+		Property &operator =(const O_ &value) { 
+			(Object.*setter)(value);
+
+			return *this;
+		}
+
+		template <class AC_>
+		Property &operator =(const Property<AC_, T_> &prop) {
+			(Object.*setter)((T_)prop);
+
+			return *this;
+		}
+
+		bool operator ==(const T_ &v) const {
+			return (Object.*getter)()==v;
+		}
+
+		bool operator !=(const T_ &v) const {
+			return (Object.*getter)()!=v;
+		}
+	};
+
+
+	//THIS PART IS INCOMPLETE
+	//should support arithmetic operators
+	// including +, * ..., +=, ... 
+	// ==, <, >
+	// but not &, &&
+	// float, int, double, math/Complex
+	template<class C_, class T_>
+	class NumericProperty : public Property<C_, T_> {
+	public:
+		NumericProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+		{ }
+
+		template <class O_>
+		NumericProperty &operator =(const O_ &value) { 
+			(Object.*setter)(value);
+
+			return *this;
+		}
+
+		template <class AC_>
+		NumericProperty &operator =(const Property<AC_, T_> &prop) {
+			(Object.*setter)((T_)prop);
+
+			return *this;
+		}
+
+		T_ operator ++(int) {
+			T_ v=(Object.*getter)();
+			T_ k=v;
+			k++;
+			(Object.*setter)(k);
+			return v;
+		}
+
+		T_ operator --(int) {
+			T_ v=(Object.*getter)();
+			T_ k=v;
+			k--;
+			(Object.*setter)(k);
+			return v;
+		}
+
+		T_ operator ++() {
+			T_ v=(Object.*getter)();
+			v++;
+			(Object.*setter)(v);
+			return v;
+		}
+
+		T_ operator --() {
+			T_ v=(Object.*getter)();
+			v--;
+			(Object.*setter)(v);
+			return v;
+		}
+
+		T_ operator +(const T_ &v) const {
+			return (Object.*getter)() + v;
+		}
+
+		T_ operator -(const T_ &v) const {
+			return (Object.*getter)() - v;
+		}
+
+		T_ operator *(const T_ &v) const {
+			return (Object.*getter)() * v;
+		}
+
+		T_ operator /(const T_ &v) const {
+			return (Object.*getter)() / v;
+		}
+
+		T_ operator +=(const T_ &v) {
+			(Object.*setter)((Object.*getter)()+v);
+			return (Object.*getter)();
+		}
+
+		T_ operator -=(const T_ &v) {
+			(Object.*setter)((Object.*getter)()-v);
+			return (Object.*getter)();
+		}
+
+		T_ operator *=(const T_ &v) {
+			(Object.*setter)((Object.*getter)()*v);
+			return (Object.*getter)();
+		}
+
+		T_ operator /=(const T_ &v) {
+			(Object.*setter)((Object.*getter)()/v);
+			return (Object.*getter)();
+		}
+
+		bool operator >(const T_ &v) const {
+			return (Object.*getter)()>v;
+		}
+
+		bool operator <(const T_ &v) const {
+			return (Object.*getter)()<v;
+		}
+
+		bool operator >=(const T_ &v) const {
+			return (Object.*getter)()>=v;
+		}
+
+		bool operator <=(const T_ &v) const {
+			return (Object.*getter)()<=v;
+		}
+	};
+
+	//should support logic operators
+	// &&, ||, !, and equalities ==, !=
+	// bool mostly
+	template<class C_, class T_=bool>
+	class BooleanProperty : public Property<C_, T_> {
+	public:
+		BooleanProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+		{ }
+
+		template <class O_>
+		BooleanProperty &operator =(const O_ &value) { 
+			(Object.*setter)(value);
+
+			return *this;
+		}
+
+		template <class AC_>
+		BooleanProperty &operator =(const Property<AC_, T_> &prop) {
+			(Object.*setter)((T_)prop);
+
+			return *this;
+		}
+
+		bool operator &&(const T_ &v) const {
+			return (Object.*getter)() && v;
+		}
+
+		bool operator ||(const T_ &v) const {
+			return (Object.*getter)() || v;
+		}
+
+		bool operator !() const {
+			return !(Object.*getter)();
+		}
+	};
+
+	//should allow everything that numeric
+	// supports and |, &, ~, ...
+	// unsigned int, GGE/Byte
+	template<class C_, class T_=Byte>
+	class BinaryProperty : public NumericProperty<C_,T_> {
+	public:
+		BinaryProperty(C_ *Object, Getter getter, Setter setter) : NumericProperty(Object, getter, setter) 
+		{ }
+
+		template <class O_>
+		BinaryProperty &operator =(const O_ &value) { 
+			(Object.*setter)(T_(value));
+
+			return *this;
+		}
+
+		template <class AC_>
+		BinaryProperty &operator =(const Property<AC_, T_> &prop) {
+			(Object.*setter)((T_)prop);
+
+			return *this;
+		}
+
+		//NOT REQUIRED
+		//T_ operator | (const T_ &v) const {
+		//	return (Object.*getter)() | v;
+		//}
+
+		//T_ operator & (const T_ &v) const {
+		//	return (Object.*getter)() & v;
+		//}
+
+		T_ operator |= (const T_ &v) {
+			(Object.*setter)((Object.*getter)() | v);
+			return (Object.*getter)();
+		}
+
+		T_ operator &= (const T_ &v) {
+			(Object.*setter)((Object.*getter)() & v);
+			return (Object.*getter)();
+		}
+
+		T_ operator ^= (const T_ &v) {
+			(Object.*setter)((Object.*getter)() ^ v);
+			return (Object.*getter)();
+		}
+	};
+
+	//Object property allows the consumers of the property
+	//to be able to access objects member functions and 
+	//variables in const manner
+	template<class C_, class T_>
+	class ObjectProperty : public Property<C_, T_> {
+		ObjectProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+		{ }
+
+		template <class O_>
+		ObjectProperty &operator =(const O_ &value) { 
+			(Object.*setter)(value);
+
+			return *this;
+		}
+
+		template <class AC_>
+		ObjectProperty &operator =(const Property<AC_, T_> &prop) {
+			(Object.*setter)((T_)prop);
+
+			return *this;
+		}
+
+		const T_ &operator *() const {
+			return (Object.*getter)();
+		}
+
+		const T_ *operator ->() const {
+			return &(Object.*getter)();
+		}
+	};
+
+	//Object property allows the consumers of the property
+	//to be able to access objects member functions and 
+	//variables in
+	// This version allows modification of it
+	template<class C_, class T_>
+	class MutableObjectProperty : public Property<C_, T_> {
+		MutableObjectProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+		{ }
+
+		template <class O_>
+		MutableObjectProperty &operator =(const O_ &value) { 
+			(Object.*setter)(value);
+
+			return *this;
+		}
+
+		template <class AC_>
+		ObjectProperty &operator =(const Property<AC_, T_> &prop) {
+			(Object.*setter)((T_)prop);
+
+			return *this;
+		}
+
+		T_ &operator *() {
+			return (Object.*getter)();
+		}
+
+		T_ *operator ->() {
+			return &(Object.*getter)();
+		}
+	};
+
+	//Think more on this
+	template<class C_, class T_>
+	class ReferenceProperty {
+
+	};
+
+	//should support everything that string class
+	// supports +, +=, length()
+	// string
+	template<class C_, class T_>
+	class TextualProperty : public Property<C_, T_> {
+	public:
+		TextualProperty(C_ *Object, Getter getter, Setter setter) : Property<C_,T_>(Object, getter, setter) 
+		{ }
+
+		template <class O_>
+		TextualProperty &operator =(const O_ &value) { 
+			(Object.*setter)(T_(value));
+
+			return *this;
+		}
+
+		template <class AC_>
+		TextualProperty &operator =(const Property<AC_, T_> &prop) {
+			(Object.*setter)((T_)prop);
+
+			return *this;
+		}
+
+		T_ operator +(const T_ &v) {
+			return (Object.*getter)()+v;
+		}
+
+		void operator +=(const T_ &v) {
+			return (Object.*setter)((Object.*getter)()+v);
+		}
+
+		int length() const {
+			return (Object.*getter)().length();
+		}
+
+		const char *c_str() const {
+			return (Object.*getter)().c_str();
+		}
+
+		T_ substr(typename T_::size_type off=0U, typename T_::size_type len=T_::npos) const {
+			return (Object.*getter)().substr(off,len);
+		}
+
+		//.find, .find_..., .erase
+
+
+	};
+
+	template <class C_,class T_>
+	inline std::ostream &operator <<(std::ostream &out, const TextualProperty<C_,T_> &p) {
+		out<<(T_)p;
+
+		return out;
 	}
-
-	Property &operator =(T_ value) { 
-		(Object.*setter)(value);
-
-		return *this;
-	}
-
-	template <class O_>
-	Property &operator =(O_ value) { 
-		(Object.*setter)(value);
-
-		return *this;
-	}
-
-	template <class AC_>
-	Property &operator =(const Property<AC_, T_> &prop) {
-		(Object.*setter)((T_)prop);
-
-		return *this;
-	}
-};
-
-
-//THIS PART IS INCOMPLETE
-//should support arithmetic operators
-// including +, * ..., +=, ... 
-// ==, <, >
-// but not &, &&
-// float, int, double, math/Complex
-template<class C_, class T_>
-class NumericProperty {
-
-};
-
-//should support logic operators
-// &&, ||, !, and equalities ==, !=
-// boolean mostly
-template<class C_, class T_>
-class BooleanProperty {
-
-};
-
-//should allow everything that numeric
-// supports + |, &, ~, ...
-// unsigned int, GGE/Byte
-template<class C_, class T_>
-class BinaryProperty {
-
-};
-
-//should allow reference, r-value and pointer
-// assignment, -> and * operators
-template<class C_, class T_>
-class ReferenceProperty {
-
-};
-
-//similar to reference property but without
-// a setter
-template<class C_, class T_>
-class FixedReferenceProperty {
-
-};
-
-//should support everything that string class
-// supports +, +=, length()
-template<class C_, class T_>
-class TextualProperty {
-
-};
 
 #define	INIT_PROPERTY(classtype, name) name(this, &classtype::get##name, &classtype::set##name)
+
+#define MAP_PROPERTY(type, name, variable) type get##name() const { return variable; } void set##name(const type &v) { variable=v; } type variable;
+
+} }
