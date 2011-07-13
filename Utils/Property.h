@@ -2,6 +2,9 @@
 //	Property classes allows property access much like vb and c#.
 //	There are different property types for different tasks.
 //	You should use the property type that suits your needs.
+//	If necessary you should derive your own property object.
+//	But do not forget to add assignment operators, as they
+//	are not inherited.
 
 //REQUIRES:
 //	std::string
@@ -35,7 +38,8 @@ namespace gge { namespace utils {
 
 	//This is generic property that can be set and retrieved
 	// good for enums mostly, its ok to use with POD structs
-	// but you better not to use it with complex data types.
+	// for direct assignment but better not to use it with 
+	// complex data types.
 	template<class C_, class T_>
 	class Property {
 	public:
@@ -90,7 +94,10 @@ namespace gge { namespace utils {
 
 
 	//THIS PART IS INCOMPLETE
-	//should support arithmetic operators
+	
+	
+	
+	//Supports arithmetic operators
 	// including +, * ..., +=, ... 
 	// ==, <, >
 	// but not &, &&
@@ -198,7 +205,7 @@ namespace gge { namespace utils {
 		}
 	};
 
-	//should support logic operators
+	//Supports logic operators
 	// &&, ||, !, and equalities ==, !=
 	// bool mostly
 	template<class C_, class T_=bool>
@@ -316,7 +323,8 @@ namespace gge { namespace utils {
 	//Object property allows the consumers of the property
 	//to be able to access objects member functions and 
 	//variables in
-	// This version allows modification of it
+	// This version allows modification of it, however 
+	// modifications are not propagated to the object itself
 	template<class C_, class T_>
 	class MutableObjectProperty : public Property<C_, T_> {
 		MutableObjectProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
@@ -343,11 +351,62 @@ namespace gge { namespace utils {
 		T_ *operator ->() {
 			return &(Object.*getter)();
 		}
+
+		const T_ &operator *() const {
+			return (Object.*getter)();
+		}
+
+		const T_ *operator ->() const {
+			return &(Object.*getter)();
+		}
 	};
 
-	//Think more on this
+	//Reference object, host class has less control over the property object
+	// however, it can be modified effecting the result. Therefore, if user
+	// modifies the object the host class is not informed. At least good for
+	// fetching object from other sources when necessary. Can be used to delay
+	// loading resources.
 	template<class C_, class T_>
-	class ReferenceProperty {
+	class ReferenceProperty : public Property<C_, T_*> {
+		ReferenceProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+		{ }
+
+		template <class O_>
+		ReferenceProperty &operator =(const O_ &value) { 
+			(Object.*setter)(&value);
+
+			return *this;
+		}
+
+		template <class O_>
+		ReferenceProperty &operator =(const O_ *value) { 
+			(Object.*setter)(value);
+
+			return *this;
+		}
+
+		template <class AC_>
+		ObjectProperty &operator =(const Property<AC_, T_> &prop) {
+			(Object.*setter)((T_)prop);
+
+			return *this;
+		}
+
+		T_ &operator *() {
+			return *(Object.*getter)();
+		}
+
+		T_ *operator ->() {
+			return (Object.*getter)();
+		}
+
+		const T_ &operator *() const {
+			return *(Object.*getter)();
+		}
+
+		const T_ *operator ->() const {
+			return (Object.*getter)();
+		}
 
 	};
 
@@ -394,7 +453,198 @@ namespace gge { namespace utils {
 			return (Object.*getter)().substr(off,len);
 		}
 
-		//.find, .find_..., .erase
+		typename T_::size_type find ( const T_& str, typename T_::size_type pos = 0 ) const {
+			return (Object.*getter)().find(str, pos);
+		}
+		typename T_::size_type find ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
+			return (Object.*getter)().find(s, pos, n);
+		}
+		typename T_::size_type find ( const char* s, typename T_::size_type pos = 0 ) const {
+			return (Object.*getter)().find(s, pos);
+		}
+		typename T_::size_type find ( char c, typename T_::size_type pos = 0 ) const {
+			return (Object.*getter)().find(c, pos);
+		}
+
+		typename T_::size_type rfind ( const T_& str, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().rfind(str, pos);
+		}
+		typename T_::size_type rfind ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
+			return (Object.*getter)().rfind(s, pos, n);
+		}
+		typename T_::size_type rfind ( const char* s, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().rfind(s, pos);
+		}
+		typename T_::size_type rfind ( char c, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().rfind(c, pos);
+		}
+
+		typename T_::size_type find_first_of ( const T_& str, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_first_of(str, pos);
+		}
+		typename T_::size_type find_first_of ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
+			return (Object.*getter)().find_first_of(s, pos, n);
+		}
+		typename T_::size_type find_first_of ( const char* s, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_first_of(s, pos);
+		}
+		typename T_::size_type find_first_of ( char c, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_first_of(c, pos);
+		}
+
+		typename T_::size_type find_last_of ( const T_& str, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_last_of(str, pos);
+		}
+		typename T_::size_type find_last_of ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
+			return (Object.*getter)().find_last_of(s, pos, n);
+		}
+		typename T_::size_type find_last_of ( const char* s, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_last_of(s, pos);
+		}
+		typename T_::size_type find_last_of ( char c, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_last_of(c, pos);
+		}
+
+		typename T_::size_type find_first_not_of ( const T_& str, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_first_not_of(str, pos);
+		}
+		typename T_::size_type find_first_not_of ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
+			return (Object.*getter)().find_first_not_of(s, pos, n);
+		}
+		typename T_::size_type find_first_not_of ( const char* s, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_first_not_of(s, pos);
+		}
+		typename T_::size_type find_first_not_of ( char c, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_first_not_of(c, pos);
+		}
+
+		typename T_::size_type find_last_not_of ( const T_& str, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_last_not_of(str, pos);
+		}
+		typename T_::size_type find_last_not_of ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
+			return (Object.*getter)().find_last_not_of(s, pos, n);
+		}
+		typename T_::size_type find_last_not_of ( const char* s, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_last_not_of(s, pos);
+		}
+		typename T_::size_type find_last_not_of ( char c, typename T_::size_type pos = T_::npos ) const {
+			return (Object.*getter)().find_last_not_of(c, pos);
+		}
+
+		/*
+		char &operator[] (typename T_::size_type pos) {
+			return (Object.*getter)()[pos];
+		}
+		*/
+
+		const char &operator[] (typename T_::size_type pos) const {
+			return (Object.*getter)()[pos];
+		}
+		
+		void clear() {
+			T_ s=(Object.*getter)();
+			s.clear();
+			(Object.*setter)(s);
+		}
+
+		TextualProperty &append(const T_ &str) {
+			T_ s=(Object.*getter)();
+			s.append(str);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty & append(const T_ &str, typename T_::size_type pos, typename T_::size_type n) {
+			T_ s=(Object.*getter)();
+			s.append(str, pos, n);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty &append(const char *str, typename T_::size_type n) {
+			T_ s=(Object.*getter)();
+			s.append(str, n);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty &append(const char *str) {
+			T_ s=(Object.*getter)();
+			s.append(str);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty &append(typename T_::size_type n, char c) {
+			T_ s=(Object.*getter)();
+			s.append(n, c);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		template <class InputIterator>
+		TextualProperty& append ( InputIterator first, InputIterator last ) {
+			T_ s=(Object.*getter)();
+			s.append<InputIterator>(first, last);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty &erase(typename T_::size_type pos = 0, typename T_::size_type n = T_::npos) {
+			T_ s=(Object.*getter)();
+			s.erase(pos, n);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty &insert(typename T_::size_type pos, const T_ str) {
+			T_ s=(Object.*getter)();
+			s.insert(pos, str);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty &insert(typename T_::size_type pos1, const T_ str, typename T_::size_type pos2, typename T_::size_type n = T_::npos) {
+			T_ s=(Object.*getter)();
+			s.erase(pos1, str, pos2, n);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty &insert(typename T_::size_type pos, const char *str, typename T_::size_type n) {
+			T_ s=(Object.*getter)();
+			s.insert(pos, str, n);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty &insert(typename T_::size_type pos, const char *str) {
+			T_ s=(Object.*getter)();
+			s.insert(pos, str);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		TextualProperty &insert(typename T_::size_type pos, typename T_::size_type n, char c) {
+			T_ s=(Object.*getter)();
+			s.insert(pos, n, c);
+			(Object.*setter)(s);
+
+			return *this;
+		}
+
+		
 
 
 	};
@@ -408,6 +658,7 @@ namespace gge { namespace utils {
 
 #define	INIT_PROPERTY(classtype, name) name(this, &classtype::get##name, &classtype::set##name)
 
+//Good for testing nothing else, you probably should use normal variables if you need something like this.
 #define MAP_PROPERTY(type, name, variable) type get##name() const { return variable; } void set##name(const type &v) { variable=v; } type variable;
 
 } }
