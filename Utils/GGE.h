@@ -1,3 +1,6 @@
+//TO BE MOVED
+
+
 #pragma once
 
 #include "math.h"
@@ -21,68 +24,73 @@ typedef unsigned short      WORD;
 ////Gorgon Game Engine
 namespace gge {
 
-	template <class T_>
-	inline basic_Rectangle2D<T_>::basic_Rectangle2D(const basic_Bounds2D<T_> &bounds) :
-		Left(bounds.Left), Top(bounds.Top), Width(bounds.Width()), Height(bounds.Height())
-	{ }
+	class Alignment {
+	public:
+		enum Type {
+			Left	= B8(00001000),
+			Right	= B8(00010000),
+			Center	= B8(00100000),
 
-	template <class T_>
-	inline basic_Rectangle2D<T_>::operator basic_Bounds2D<T_>() const {
-		return basic_Bounds2D<T_>(*this);
-	}
+			Top		= B8(00000001),
+			Bottom	= B8(00000010),
+			Middle	= B8(00000100),
 
-	template <class T_>
-	inline basic_Rectangle2D<T_>& basic_Rectangle2D<T_>::operator =(const basic_Bounds2D<T_> &bounds) {
-		Left=bounds.Left;
-		Top=bounds.Top;
-		Width=bounds.Width();
-		Height=bounds.Height();
+			Top_Left		= Top	 | Left		,
+			Top_Center		= Top	 | Center	,
+			Top_Right		= Top	 | Right	,
 
-		return *this;
-	}
+			Bottom_Left		= Bottom | Left		,
+			Bottom_Right	= Bottom | Right	,
+			Bottom_Center	= Bottom | Center	,
 
-	template <class T_>
-	inline basic_Bounds2D<T_>::basic_Bounds2D(const basic_Rectangle2D<T_> &rectangle) :
-		Left(rectangle.Left), Top(rectangle.Top), Right(rectangle.Right()), Bottom(rectangle.Bottom())
-	{ }
+			Middle_Left		= Middle | Left		,
+			Middle_Center	= Middle | Center	,
+			Middle_Right	= Middle | Right	,
+		};
 
-	template <class T_>
-	inline basic_Bounds2D<T_>::operator basic_Rectangle2D<T_>() {
-		return basic_Rectangle2D<T_>(*this);
-	}
+		const int Mask_Vertical	  = B8(00000111);
+		const int Mask_Horizontal = B8(00111000);
+		const int Mask_Used = B8(00111111);
+		const int Mask_Invalid = ~Mask_Used;
 
-	template <class T_>
-	inline basic_Bounds2D<T_>& basic_Bounds2D<T_>::operator =(const basic_Rectangle2D<T_> &rect) {
-		Left=rect.Left;
-		Top=rect.Top;
-		Right=rect.Right();
-		Bottom=rect.Bottom();
+		bool isLeft(Type t) {
+			return t&Mask_Horizontal == Left;
+		}
 
-		return *this;
-	}
+		bool isRight(Type t) {
+			return t&Mask_Horizontal == Right;
+		}
 
+		bool isCenter(Type t) {
+			return t&Mask_Horizontal == Center;
+		}
 
-	////2D alignment constants
-	enum Alignment {
-		ALIGN_LEFT=8,
-		ALIGN_RIGHT=16,
-		ALIGN_CENTER=32,
+		bool isTop(Type t) {
+			return t&Mask_Vertical == Top;
+		}
 
-		ALIGN_TOP=1,
-		ALIGN_BOTTOM=2,
-		ALIGN_MIDDLE=4,
+		bool isBottom(Type t) {
+			return t&Mask_Vertical == Bottom;
+		}
 
-		ALIGN_MASK_VERTICAL  = B8(00000111),
-		ALIGN_MASK_HORIZONTAL= B8(00111000),
+		bool isMiddle(Type t) {
+			return t&Mask_Vertical == Middle;
+		}
 
-		ALIGN_TOP_LEFT=ALIGN_TOP | ALIGN_LEFT,
-		ALIGN_TOP_CENTER=ALIGN_TOP | ALIGN_CENTER,
-		ALIGN_TOP_RIGHT=ALIGN_TOP | ALIGN_RIGHT,
-		ALIGN_MIDDLE_LEFT=ALIGN_MIDDLE | ALIGN_LEFT,
-		ALIGN_MIDDLE_CENTER=ALIGN_MIDDLE | ALIGN_CENTER,
-		ALIGN_MIDDLE_RIGHT=ALIGN_MIDDLE | ALIGN_RIGHT,
-		ALIGN_BOTTOM_LEFT=ALIGN_BOTTOM | ALIGN_LEFT,
-		ALIGN_BOTTOM_CENTER=ALIGN_BOTTOM | ALIGN_CENTER,
-		ALIGN_BOTTOM_RIGHT=ALIGN_BOTTOM | ALIGN_RIGHT,
-	};
+		bool isValid(Type t) {
+			if(t&Mask_Invalid)
+				return false;
+
+			int h=t&Mask_Horizontal;
+			if( !(h==Left || h==Right || h==Center) )
+				return false;
+
+			int v=t&Mask_Vertical;
+			if( !(v==Top || v==Bottom || v==Middle) )
+				return false;
+
+			return true;
+		}
+	}; 
+
 }

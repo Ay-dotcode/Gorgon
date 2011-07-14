@@ -84,6 +84,10 @@ namespace gge {
 			return basic_Point2D(x-value, y-value);
 		}
 
+		basic_Point2D operator -() const {
+			return basic_Point2D(-x, -y);
+		}
+
 		basic_Point2D operator + (const basic_Point2D &point) const {
 			return basic_Point2D(x+point.x, y+point.y);
 		}

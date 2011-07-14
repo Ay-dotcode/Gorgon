@@ -1,6 +1,6 @@
 //DESCRIPTION
-//	This file contains functions to perform file system operations.
-//	All functions here should be cross platform.
+//	This file contains some basic math functions which STDLib cannot
+//	fully satisfy.
 
 //REQUIRES:
 //	---
@@ -23,18 +23,28 @@
 //	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 
 
-#pragma once
+#include <cmath>
 
-#include <sys/stat.h> 
-#include <string> 
 
-namespace gge { namespace utils { namespace io {
-	inline bool isPathExists(const std::string Filename) {
-		struct stat inf;
+namespace gge { namespace utils {
 
-		if(Filename[Filename.length()-1]=='\\')
-			return stat(Filename.substr(0, Filename.length()-1).c_str(), &inf)==0;
-		else
-			return stat(Filename.c_str(), &inf)==0;
+	template <class T_>
+	inline int Round(T_ num) {
+		return (int)(num+0.5f); 
 	}
-} } }
+
+	template <class T_>
+	inline float Round(T_ num, int digits) {
+		T_ d=std::pow(10.0f, digits);
+		return ((int)(num*d+0.5f))/d;
+	}
+
+	template <class T_, class U_>
+	T_ Max(T_ num1, U_ num2) { return num1>num2 ? num1 : num2; }
+
+	template <class T_, class U_>
+	T_ Min(T_ num1, U_ num2) { return num1<num2 ? num1 : num2; }
+
+
+}}
+

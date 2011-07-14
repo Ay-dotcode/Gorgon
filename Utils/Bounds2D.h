@@ -52,7 +52,7 @@
 #define BOUNDS2D_EXISTS
 
 
-namespace gge {
+namespace gge { namespace utils {
 #ifndef RECTANGLE2D_EXISTS
 	template <class T_> class basic_Rectangle2D;
 #endif
@@ -65,29 +65,28 @@ namespace gge {
 		basic_Bounds2D() {}
 		explicit basic_Bounds2D(T_ value) : Left(value), Top(value), Right(value), Bottom(value)
 		{ }
-		basic_Bounds2D(T_ Left, T_ Top, T_ Right, T_ Bottom) {
-			this->Left=Left;
-			this->Right=Right;
-			this->Top=Top;
-			this->Bottom=Bottom;
+		basic_Bounds2D(T_ Left, T_ Top, T_ Right, T_ Bottom) : Left(Left), Top(Top), Right(Right), Bottom(Bottom)
+		{
+			if(Left>Right) std::swap(Left,Right);
+			if(Top>Bottom) std::swap(Top,Bottom);
 		}
-		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, const basic_Point2D<T_> &BottomRight) {
-			this->Left=TopLeft.x;
-			this->Top=TopLeft.y;
-			this->Right=BottomRight.x;
-			this->Bottom=BottomRight.y;
+		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, const basic_Point2D<T_> &BottomRight) : 
+		Left(TopLeft.x), Top(TopLeft.y), Right(BottomRight.x), Bottom(BottomRight.y)
+		{
+			if(Left>Right) std::swap(Left,Right);
+			if(Top>Bottom) std::swap(Top,Bottom);
 		}
-		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, const basic_Size2D<T_> &HeightWidth) {
-			this->Left=TopLeft.x;
-			this->Top=TopLeft.y;
-			this->Right=TopLeft.x+HeightWidth.x;
-			this->Bottom=TopLeft.y+HeightWidth.y;
+		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, const basic_Size2D<T_> &HeightWidth) :
+		Left(TopLeft.x), Top(TopLeft.y), Right(TopLeft.x+HeightWidth.Width), Bottom(TopLeft.y+HeightWidth.Height)
+		{
+			if(Left>Right) std::swap(Left,Right);
+			if(Top>Bottom) std::swap(Top,Bottom);
 		}
-		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, int Width, int Height) {
-			this->Left=TopLeft.x;
-			this->Top=TopLeft.y;
-			this->Right=TopLeft.x+Width;
-			this->Bottom=TopLeft.y+Height;
+		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, int Width, int Height) :
+		Left(TopLeft.x), Top(TopLeft.y), Right(TopLeft.x+Width), Bottom(TopLeft.y+Height)
+		{
+			if(Left>Right) std::swap(Left,Right);
+			if(Top>Bottom) std::swap(Top,Bottom);
 		}
 		basic_Bounds2D(const basic_Rectangle2D<T_> &bounds);
 
@@ -107,7 +106,7 @@ namespace gge {
 		////Calculates and returns the height of the region
 		T_ Height() const { return Bottom-Top;  }
 
-		basic_Bounds2D Intesect(const basic_Bounds2D &b) {
+		basic_Bounds2D Intersect(const basic_Bounds2D &b) const {
 			return basic_Bounds2D(
 				Left  > b.Left  ? Left  : b.Left  , 
 				Top   > b.Top   ? Top   : b.Top   , 
@@ -116,7 +115,7 @@ namespace gge {
 			);
 		}
 
-		basic_Bounds2D Union(const basic_Bounds2D &b) {
+		basic_Bounds2D Union(const basic_Bounds2D &b) const {
 			return basic_Bounds2D(
 				Left  < b.Left  ? Left  : b.Left  , 
 				Top   < b.Top   ? Top   : b.Top   , 
@@ -125,8 +124,126 @@ namespace gge {
 			);
 		}
 
-		//scale, translate, rotate?, &, |, &=, |=, - as well (determining margin range)
-		//+ and - with margins, parse from text
+		basic_Point2D<T_> TopLeft() const {
+			return basic_Point2D<T_>(Left, Top);
+		}
+
+		basic_Point2D<T_> Center() const {
+			return basic_Point2D<T_>(Left+Width()/2, Top+Height()/2);
+		}
+
+		basic_Point2D<T_> BottomRight() const {
+			return basic_Point2D<T_>(Right, Bottom);
+		}
+
+		basic_Bounds2D Scale(FloatingPoint s) const {
+			return Scale(s, Center());
+		}
+
+		basic_Bounds2D Scale(const Size2D &s) const {
+			return Scale(s.Width, s.Height, Center());
+		}
+
+		basic_Bounds2D Scale(FloatingPoint x, FloatingPoint y) const {
+			return Scale(x,y, Center());
+		}
+
+		basic_Bounds2D Scale(FloatingPoint s, const basic_Point2D<T_> &pivot) const {
+			return basic_Bounds2D(
+				(Left  - pivot.x)*s + pivot.x,
+				(Top   - pivot.y)*s + pivot.y,
+				(Right - pivot.x)*s + pivot.x,
+				(Bottom- pivot.y)*s + pivot.y
+			);
+		}
+
+		basic_Bounds2D Scale(const Size2D &s, const basic_Point2D<T_> &pivot) const {
+			return Scale(s.Width,s.Height, pivot);
+		}
+
+		basic_Bounds2D Scale(FloatingPoint x, FloatingPoint y, const basic_Point2D<T_> &pivot) const {
+			return basic_Bounds2D(
+				(Left  - pivot.x)*x + pivot.x,
+				(Top   - pivot.y)*x + pivot.y,
+				(Right - pivot.x)*y + pivot.x,
+				(Bottom- pivot.y)*y + pivot.y
+			);
+		}
+
+		basic_Bounds2D Translate(const basic_Point2D<T_> &amount) const {
+			return basic_Bounds2D(
+				Left+amount.x,
+				Top+amount.y,
+				Right+amount.x,
+				Bottom+amount.y
+			);
+		}
+
+		basic_Bounds2D operator +(const basic_Bounds2D &b) const {
+			return Union(b);
+		}
+
+		basic_Bounds2D operator |(const basic_Bounds2D &b) const {
+			return Union(b);
+		}
+
+		basic_Bounds2D operator &(const basic_Bounds2D &b) const {
+			return Intersect(b);
+		}
+
+		basic_Bounds2D &operator +=(const basic_Bounds2D &b) const {
+			Left  =Left  < b.Left  ? Left  : b.Left  ;
+			Top   =Top   < b.Top   ? Top   : b.Top   ;
+			Right =Right > b.Right ? Right : b.Right ;
+			Bottom=Bottom> b.Bottom? Bottom: b.Bottom;
+
+			return *this;
+		}
+
+		basic_Bounds2D &operator |=(const basic_Bounds2D &b) const {
+			Left  =Left  < b.Left  ? Left  : b.Left  ;
+			Top   =Top   < b.Top   ? Top   : b.Top   ;
+			Right =Right > b.Right ? Right : b.Right ;
+			Bottom=Bottom> b.Bottom? Bottom: b.Bottom;
+
+			return *this;
+		}
+
+		basic_Bounds2D &operator &=(const basic_Bounds2D &b) const {
+			Left  =Left  > b.Left  ? Left  : b.Left  ;
+			Top   =Top   > b.Top   ? Top   : b.Top   ;
+			Right =Right < b.Right ? Right : b.Right ;
+			Bottom=Bottom< b.Bottom? Bottom: b.Bottom;
+
+			return *this;
+		}
+
+		static basic_Bounds2D Parse(std::string s) {
+			static char tospace[] = ",-<>";
+
+			std::string::size_type pos;
+			while( (pos=s.find_first_of(tospace)) != std::string::npos ) {
+				s[pos]=' ';
+			}
+
+			basic_Rectangle2D ret;
+
+			istringstream is(s);
+			is>>ret.Left;
+			is>>ret.Right;
+			is>>ret.Top;
+			is>>ret.Bottom;
+
+			if(is.fail()) {
+				throw std::runtime_error("Input string is not properly formatted");
+			}
+
+			return ret;
+		}
+
+		bool isInside(const basic_Point2D<T_> &p) const {
+			return p.x>Left && p.y>Top && p.x<Right && p.y<Bottom;
+		}
 	};
 
 	////Allows streaming of bounds. in string representation, bounds is show as
@@ -149,4 +266,53 @@ namespace gge {
 	typedef basic_Bounds2D<FloatingPoint> Bounds2D;
 
 	typedef basic_Bounds2D<int> Bounds;
-}
+
+
+#ifdef RECTANGLE2D_EXISTS
+# ifndef GGE_RECT_BOUNDS_SYNERGY
+#   define GGE_RECT_BOUNDS_SYNERGY
+
+	template <class T_>
+	inline basic_Rectangle2D<T_>::basic_Rectangle2D(const basic_Bounds2D<T_> &bounds) :
+	Left(bounds.Left), Top(bounds.Top), Width(bounds.Width()), Height(bounds.Height())
+	{ }
+
+	template <class T_>
+	inline basic_Rectangle2D<T_>::operator basic_Bounds2D<T_>() const {
+		return basic_Bounds2D<T_>(*this);
+	}
+
+	template <class T_>
+	inline basic_Rectangle2D<T_>& basic_Rectangle2D<T_>::operator =(const basic_Bounds2D<T_> &bounds) {
+		Left=bounds.Left;
+		Top=bounds.Top;
+		Width=bounds.Width();
+		Height=bounds.Height();
+
+		return *this;
+	}
+
+	template <class T_>
+	inline basic_Bounds2D<T_>::basic_Bounds2D(const basic_Rectangle2D<T_> &rectangle) :
+	Left(rectangle.Left), Top(rectangle.Top), Right(rectangle.Right()), Bottom(rectangle.Bottom())
+	{ }
+
+	template <class T_>
+	inline basic_Bounds2D<T_>::operator basic_Rectangle2D<T_>() {
+		return basic_Rectangle2D<T_>(*this);
+	}
+
+	template <class T_>
+	inline basic_Bounds2D<T_>& basic_Bounds2D<T_>::operator =(const basic_Rectangle2D<T_> &rect) {
+		Left=rect.Left;
+		Top=rect.Top;
+		Right=rect.Right();
+		Bottom=rect.Bottom();
+
+		return *this;
+	}
+
+#  endif
+#endif
+
+} }
