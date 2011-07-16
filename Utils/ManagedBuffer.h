@@ -202,7 +202,7 @@ namespace gge { namespace utils {
 			return (*data)+(*size_-1);
 		}
 
-		//std compatibility
+		//stl compatibility
 		inline T_ *begin() {
 			return *data;
 		}
