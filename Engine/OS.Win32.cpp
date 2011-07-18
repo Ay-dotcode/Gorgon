@@ -91,7 +91,7 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseDown(1,x,y);
+						ProcessMouseDown(mouse::Event::Left,x,y);
 					}
 					break;
 				case WM_LBUTTONUP:
@@ -99,8 +99,8 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseUp(1,x,y);
-						ProcessMouseClick(1,x,y);
+						ProcessMouseUp(mouse::Event::Left,x,y);
+						ProcessMouseClick(mouse::Event::Left,x,y);
 					}
 					break;
 				case WM_LBUTTONDBLCLK:
@@ -108,7 +108,7 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseDblClick(1,x,y);
+						ProcessMouseDblClick(mouse::Event::Left,x,y);
 					}
 					break;
 
@@ -117,7 +117,7 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseDown(2,x,y);
+						ProcessMouseDown(mouse::Event::Right,x,y);
 					}
 					break;
 				case WM_RBUTTONUP:
@@ -125,8 +125,8 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseUp(2,x,y);
-						ProcessMouseClick(2,x,y);
+						ProcessMouseUp(mouse::Event::Right,x,y);
+						ProcessMouseClick(mouse::Event::Right,x,y);
 					}
 					break;
 				case WM_RBUTTONDBLCLK:
@@ -134,7 +134,7 @@ using namespace gge::input::system;
 						int x=(int)lParam%0x10000;
 						int y=(int)lParam>>16;
 						
-						ProcessMouseDblClick(2,x,y);
+						ProcessMouseDblClick(mouse::Event::Right,x,y);
 					}
 					break;
 
@@ -143,7 +143,7 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseDown(4,x,y);
+						ProcessMouseDown(mouse::Event::Middle,x,y);
 					}
 					break;
 				case WM_MBUTTONUP:
@@ -151,8 +151,8 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseUp(4,x,y);
-						ProcessMouseClick(4,x,y);
+						ProcessMouseUp(mouse::Event::Middle,x,y);
+						ProcessMouseClick(mouse::Event::Middle,x,y);
 					}
 					break;
 				case WM_MBUTTONDBLCLK:
@@ -160,7 +160,7 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseDblClick(4,x,y);
+						ProcessMouseDblClick(mouse::Event::Middle,x,y);
 					}
 					break;
 
@@ -171,10 +171,10 @@ using namespace gge::input::system;
 						
 						switch(GET_XBUTTON_WPARAM(wParam)) {
 						case 1:
-							ProcessMouseDown(101,x,y);
+							ProcessMouseDown(mouse::Event::X1,x,y);
 							break;
 						case 2:
-							ProcessMouseDown(102,x,y);
+							ProcessMouseDown(mouse::Event::X2,x,y);
 							break;
 						}
 					}
@@ -187,12 +187,12 @@ using namespace gge::input::system;
 						
 						switch(GET_XBUTTON_WPARAM(wParam)) {
 						case 1:
-							ProcessMouseUp(101,x,y);
-							ProcessMouseClick(101,x,y);
+							ProcessMouseUp(mouse::Event::X1,x,y);
+							ProcessMouseClick(mouse::Event::X1,x,y);
 							break;
 						case 2:
-							ProcessMouseUp(102,x,y);
-							ProcessMouseClick(102,x,y);
+							ProcessMouseUp(mouse::Event::X2,x,y);
+							ProcessMouseClick(mouse::Event::X2,x,y);
 							break;
 						}
 					}
@@ -204,10 +204,10 @@ using namespace gge::input::system;
 						
 						switch(GET_XBUTTON_WPARAM(wParam)) {
 						case 1:
-							ProcessMouseDblClick(101,x,y);
+							ProcessMouseDblClick(mouse::Event::X1,x,y);
 							break;
 						case 2:
-							ProcessMouseDblClick(102,x,y);
+							ProcessMouseDblClick(mouse::Event::X2,x,y);
 							break;
 						}
 					}
@@ -232,72 +232,72 @@ using namespace gge::input::system;
 
 				case WM_KEYDOWN:
 					if(lParam&1<<24) //Ctrl & Alt
-						KeyboardModifier::isAlternate=true;
+						keyboard::Modifier::isAlternate=true;
 					else
-						KeyboardModifier::isAlternate=false;
+						keyboard::Modifier::isAlternate=false;
 
 					if(lParam==0x360001) //Shift
-						KeyboardModifier::isAlternate=true;
+						keyboard::Modifier::isAlternate=true;
 
 					if(wParam==VK_RWIN) { //Win
-						KeyboardModifier::isAlternate=true;
+						keyboard::Modifier::isAlternate=true;
 						wParam=VK_LWIN;
 					}
 
 					ProcessKeyDown(wParam);
-					KeyboardModifier::isAlternate=false;
+					keyboard::Modifier::isAlternate=false;
 
 					switch(wParam) {
 					case VK_CONTROL:
-						KeyboardModifier::Add(KeyboardModifier::Ctrl);
+						keyboard::Modifier::Add(keyboard::Modifier::Ctrl);
 						break;
 					case VK_SHIFT:
-						KeyboardModifier::Add(KeyboardModifier::Shift);
+						keyboard::Modifier::Add(keyboard::Modifier::Shift);
 						break;
 					case VK_MENU:
-						KeyboardModifier::Add(KeyboardModifier::Alt);
+						keyboard::Modifier::Add(keyboard::Modifier::Alt);
 						break;
 					case VK_LWIN:
-						KeyboardModifier::Add(KeyboardModifier::Super);
+						keyboard::Modifier::Add(keyboard::Modifier::Super);
 						break;
 					case VK_RWIN:
-						KeyboardModifier::Add(KeyboardModifier::Super);
+						keyboard::Modifier::Add(keyboard::Modifier::Super);
 						break;
 					}
 						
 					break; 
 				case WM_KEYUP:
 					if(lParam&1<<24)
-						KeyboardModifier::isAlternate=true;
+						keyboard::Modifier::isAlternate=true;
 					else
-						KeyboardModifier::isAlternate=false;
+						keyboard::Modifier::isAlternate=false;
 
 					if(lParam==0x360001)
-						KeyboardModifier::isAlternate=true;
+						keyboard::Modifier::isAlternate=true;
 
 					if(wParam==VK_RWIN) {
-						KeyboardModifier::isAlternate=true;
+						keyboard::Modifier::isAlternate=true;
 						wParam=VK_LWIN;
 					}
 
 					ProcessKeyUp(wParam);
-					KeyboardModifier::isAlternate=false;
+					keyboard::Modifier::isAlternate=false;
 
 					switch(wParam) {
 					case VK_CONTROL:
-						KeyboardModifier::Remove(KeyboardModifier::Ctrl);
+						keyboard::Modifier::Remove(keyboard::Modifier::Ctrl);
 						break;
 					case VK_SHIFT:
-						KeyboardModifier::Remove(KeyboardModifier::Shift);
+						keyboard::Modifier::Remove(keyboard::Modifier::Shift);
 						break;
 					case VK_MENU:
-						KeyboardModifier::Remove(KeyboardModifier::Alt);
+						keyboard::Modifier::Remove(keyboard::Modifier::Alt);
 						break;
 					case VK_LWIN:
-						KeyboardModifier::Remove(KeyboardModifier::Super);
+						keyboard::Modifier::Remove(keyboard::Modifier::Super);
 						break;
 					case VK_RWIN:
-						KeyboardModifier::Remove(KeyboardModifier::Super);
+						keyboard::Modifier::Remove(keyboard::Modifier::Super);
 						break;
 					}
 					
@@ -311,15 +311,15 @@ using namespace gge::input::system;
 					ProcessChar(wParam);
 					break; 
 				case WM_SYSKEYDOWN:
-					KeyboardModifier::Add(KeyboardModifier::Alt);
+					keyboard::Modifier::Add(keyboard::Modifier::Alt);
 					break; 
 				case WM_SYSKEYUP:
-					KeyboardModifier::Remove(KeyboardModifier::Alt);
+					keyboard::Modifier::Remove(keyboard::Modifier::Alt);
 					break; 
 				case WM_SYSCHAR:
-					KeyboardModifier::Add(KeyboardModifier::Alt);
+					keyboard::Modifier::Add(keyboard::Modifier::Alt);
 					ProcessChar(wParam);
-					KeyboardModifier::Remove(KeyboardModifier::Alt);
+					keyboard::Modifier::Remove(keyboard::Modifier::Alt);
 					break;
 				case WM_VIDEO_NOTIFY:
 					if(lParam) {
@@ -428,10 +428,10 @@ using namespace gge::input::system;
 			}
 		}
 		namespace input {
-			Point getMousePosition(WindowHandle Window) {
+			utils::Point getMousePosition(WindowHandle Window) {
 				POINT pnt;
 				RECT winrect;
-				Point ret;
+				utils::Point ret;
 				GetWindowRect((HWND)Window, &winrect);
 				GetCursorPos(&pnt);
 
@@ -447,10 +447,47 @@ using namespace gge::input::system;
 	} 
 
 	namespace input {
-		const int KeyCodes::Shift = VK_SHIFT;
-		const int KeyCodes::Control = VK_CONTROL;
-		const int KeyCodes::Alt = VK_MENU;
-		const int KeyCodes::Super = VK_LWIN;
+		const int keyboard::KeyCodes::Shift		= VK_SHIFT;
+		const int keyboard::KeyCodes::Control	= VK_CONTROL;
+		const int keyboard::KeyCodes::Alt		= VK_MENU;
+		const int keyboard::KeyCodes::Super		= VK_LWIN;
+
+		const int keyboard::KeyCodes::Home		= VK_HOME;
+		const int keyboard::KeyCodes::End		= VK_END;
+		const int keyboard::KeyCodes::Insert	= VK_INSERT;
+		const int keyboard::KeyCodes::Delete	= VK_DELETE;
+		const int keyboard::KeyCodes::PageUp	= VK_PRIOR;
+		const int keyboard::KeyCodes::PageDown	= VK_NEXT;
+
+		const int keyboard::KeyCodes::Left		= VK_LEFT;
+		const int keyboard::KeyCodes::Up		= VK_UP;
+		const int keyboard::KeyCodes::Right		= VK_RIGHT;
+		const int keyboard::KeyCodes::Down		= VK_DOWN;
+
+		const int keyboard::KeyCodes::PrintScreen=VK_SNAPSHOT;
+		const int keyboard::KeyCodes::Pause		= VK_PAUSE;
+
+		const int keyboard::KeyCodes::CapsLock	= VK_CAPITAL;
+		const int keyboard::KeyCodes::NumLock	= VK_NUMLOCK;
+
+		const int keyboard::KeyCodes::Enter		= VK_RETURN;
+		const int keyboard::KeyCodes::Backspace	= VK_BACK;
+		const int keyboard::KeyCodes::Escape	= VK_ESCAPE;
+		const int keyboard::KeyCodes::Tab		= VK_TAB;
+		const int keyboard::KeyCodes::Space		= VK_SPACE;
+
+		const int keyboard::KeyCodes::F1		= VK_F1;
+		const int keyboard::KeyCodes::F2		= VK_F2;
+		const int keyboard::KeyCodes::F3		= VK_F3;
+		const int keyboard::KeyCodes::F4		= VK_F4;
+		const int keyboard::KeyCodes::F5		= VK_F5;
+		const int keyboard::KeyCodes::F6		= VK_F6;
+		const int keyboard::KeyCodes::F7		= VK_F7;
+		const int keyboard::KeyCodes::F8		= VK_F8;
+		const int keyboard::KeyCodes::F9		= VK_F9;
+		const int keyboard::KeyCodes::F10		= VK_F10;
+		const int keyboard::KeyCodes::F11		= VK_F11;
+		const int keyboard::KeyCodes::F12		= VK_F12;
 	}
 
 }

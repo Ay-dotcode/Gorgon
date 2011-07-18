@@ -18,11 +18,11 @@ namespace gge { namespace resource {
 	enum DataTypes {
 		////4 byte Integer data
 		DT_Integer,
-		////Floating point (4 byte)
+		////Floating utils::Point (4 byte)
 		DT_Float,
 		////String data
 		DT_String,
-		////4 byte integer point data
+		////4 byte integer utils::Point data
 		DT_Point,
 		////4 byte integer rectangle data
 		DT_Rectangle,
@@ -43,7 +43,7 @@ namespace gge { namespace resource {
 	class IntegerData : public IData {
 	public:
 		////02030C02h (Basic, Data resource, Data types, integer)
-		virtual int getGID() { return GID_DATAARRAY_INT; }
+		virtual int getGID() const { return GID::Data_Int; }
 		int value;
 
 		IntegerData(int value) { this->value=value; }
@@ -54,7 +54,7 @@ namespace gge { namespace resource {
 	class FloatData : public IData {
 	public:
 		////02030C03h (Basic, Data resource, Data types, float)
-		virtual int getGID() { return GID_DATAARRAY_FLOAT; }
+		virtual int getGID() const { return GID::Data_Float; }
 		float value;
 
 		FloatData(float value) { this->value=value; }
@@ -65,7 +65,7 @@ namespace gge { namespace resource {
 	class StringData : public IData {
 	public:
 		////02030C01h (Basic, Data resource, Data types, text)
-		virtual int getGID() { return GID_DATAARRAY_TEXT; }
+		virtual int getGID() const { return GID::Data_Text; }
 		string value;
 
 		StringData(string value) { this->value=value; }
@@ -73,40 +73,37 @@ namespace gge { namespace resource {
 		operator const char *() { return value.c_str(); }
 	};
 
-	////Point data
+	////utils::Point data
 	class PointData : public IData {
 	public:
-		////02030C04h (Basic, Data resource, Data types, point)
-		virtual int getGID() { return GID_DATAARRAY_POINT; }
-		Point value;
+		////02030C04h (Basic, Data resource, Data types, utils::Point)
+		virtual int getGID() const { return GID::Data_Point; }
+		utils::Point value;
 
-		PointData(Point value) { this->value=value; }
+		PointData(utils::Point value) { this->value=value; }
 
-		operator Point() { return value; }
-		operator Size2D() { return value; }
+		operator utils::Point() { return value; }
+		operator utils::Size() { return value; }
 	};
 
 	////Rectangle data
 	class RectangleData : public IData {
 	public:
 		////02030C05h (Basic, Data resource, Data types, rectangle)
-		virtual int getGID() { return GID_DATAARRAY_RECT; }
-		gge::Rectangle value;
+		virtual int getGID() const { return GID::Data_Rect; }
+		utils::Rectangle value;
 
-		RectangleData(gge::Rectangle value)	{ this->value=value; }
-		RectangleData(Bounds value)		{ this->value=value; }
+		RectangleData(utils::Rectangle value)	{ this->value=value; }
 
-		Bounds getBounds() { return (Bounds)value; }
-		operator Bounds() { return (Bounds)value; }
-		operator Rectangle() { return value; }
-		operator Margins() { return Margins(value.Left,value.Top,value.Width,value.Height); }
+		operator utils::Rectangle() { return value; }
+		operator utils::Margins() { return utils::Margins(value.Left,value.Top,value.Width,value.Height); }
 	};
 
 	////Link data
 	class LinkData : public IData {
 	public:
 		////02030C02h (Basic, Data resource, Data types, integer)
-		virtual int getGID() { return GID_DATAARRAY_LINK; }
+		virtual int getGID() const { return GID::Data_Link; }
 		int getObjectGID() { if(value) return value->getGID(); return 0; }
 		ResourceBase *value;
 		utils::SGuid guid;
@@ -123,7 +120,7 @@ namespace gge { namespace resource {
 	class FontData : public IData {
 	public:
 		////03300C01h (Gaming, FontTheme, Data types, font)
-		virtual int getGID() { return 0x03300C01; }
+		virtual int getGID() const { return 0x03300C01; }
 		Font value;
 		FontInitiator initiator;
 
@@ -136,7 +133,7 @@ namespace gge { namespace resource {
 	};
 
 	////This is data resource which holds an array of basic data types. These types are
-	/// integer, float, string, point and rectangle.
+	/// integer, float, string, utils::Point and rectangle.
 	class DataResource : public ResourceBase {
 		friend ResourceBase *LoadDataResource(File* File, FILE* Data, int Size);
 	public:
@@ -144,59 +141,60 @@ namespace gge { namespace resource {
 		utils::Collection<IData> Data;
 
 		////Adds a new integer value to this resource
-		IntegerData *Add(int value) { return dynamic_cast<IntegerData*>(Data[Data.Add(new IntegerData(value))]); }
+		IntegerData		&Add(int value);
 		////Adds a new float value to this resource
-		FloatData   *Add(float value) { return dynamic_cast<FloatData*>(Data[Data.Add(new FloatData(value))]); }
+		FloatData		&Add(float value);
 		////Adds a new string value to this resource
-		StringData  *Add(string value) { return dynamic_cast<StringData*>(Data[Data.Add(new StringData(value))]); }
-		////Adds a new point value to this resource
-		PointData  *Add(Point value) { return dynamic_cast<PointData*>(Data[Data.Add(new PointData(value))]); }
+		StringData		&Add(string value);
+		////Adds a new utils::Point value to this resource
+		PointData		&Add(utils::Point value);
 		////Adds a new rectangle to this resource
-		RectangleData  *Add(gge::Rectangle value) { return dynamic_cast<RectangleData*>(Data[Data.Add(new RectangleData(value))]); }
+		RectangleData	&Add(utils::Rectangle value);
 		////Adds a new rectangle to this resource
-		RectangleData  *Add(Bounds value) { return dynamic_cast<RectangleData*>(Data[Data.Add(new RectangleData(value))]); }
+		FontData		&Add(Font value);
 		////Adds a new rectangle to this resource
-		FontData	   *Add(Font value) { return dynamic_cast<FontData*>(Data[Data.Add(new FontData(value))]); }
-		////Adds a new rectangle to this resource
-		FontData	   *Add(FontInitiator value) { return dynamic_cast<FontData*>(Data[Data.Add(new FontData(value))]); }
+		FontData		&Add(FontInitiator value);
 		////Adds a new integer value to this resource
-		LinkData *Add(utils::SGuid value) { return dynamic_cast<LinkData*>(Data[Data.Add(new LinkData(value))]); }
+		LinkData		&Add(utils::SGuid value);
 
 		////Returns item at index
-		IData *operator [] (int Index) { return Data[Index]; }
+		IData *operator [] (int Index) { return &Data[Index]; }
 		////Returns integer at index
-		int getInt(int Index) { return dynamic_cast<IntegerData*>(Data[Index])->value; }
+		int getInt(int Index) { return dynamic_cast<IntegerData&>(Data[Index]).value; }
 		////Returns float at index
-		float getFloat(int Index) { return dynamic_cast<FloatData*>(Data[Index])->value; }
+		float getFloat(int Index) { return dynamic_cast<FloatData&>(Data[Index]).value; }
 		////Returns string at index
-		string getString(int Index) { return dynamic_cast<StringData*>(Data[Index])->value; }
+		string getString(int Index) { return dynamic_cast<StringData&>(Data[Index]).value; }
 		////Returns char array at index
-		const char *getText(int Index) { return dynamic_cast<StringData*>(Data[Index])->value.data(); }
-		////Returns point at index
-		Point getPoint(int Index) { return dynamic_cast<PointData*>(Data[Index])->value; }
+		const char *getText(int Index) { return dynamic_cast<StringData&>(Data[Index]).value.data(); }
+		////Returns utils::Point at index
+		utils::Point getPoint(int Index) { return dynamic_cast<PointData&>(Data[Index]).value; }
 		////Returns size at index
-		Size2D getSize2D(int Index) { return dynamic_cast<PointData*>(Data[Index])->value; }
+		utils::Size getSize(int Index) { return dynamic_cast<PointData&>(Data[Index]).value; }
 		////Returns rectangle at index
-		gge::Rectangle getRectangle(int Index) { return dynamic_cast<RectangleData*>(Data[Index])->value; }
-		////Returns margins at index
-		gge::Margins getMargins(int Index) { return *dynamic_cast<RectangleData*>(Data[Index]); }
-		////Returns bounds at index
-		Bounds getBounds(int Index) { return dynamic_cast<RectangleData*>(Data[Index])->getBounds(); }
+		utils::Rectangle getRectangle(int Index) { return dynamic_cast<RectangleData&>(Data[Index]).value; }
+		////Returns utils::Margins at index
+		utils::Margins getMargins(int Index) { return dynamic_cast<RectangleData&>(Data[Index]); }
+		////Returns utils::Bounds at index
+		utils::Bounds getBounds(int Index) { return dynamic_cast<RectangleData&>(Data[Index]).value; }
 		////Returns resource object from a link
-		ResourceBase &getLink(int Index) { return dynamic_cast<LinkData*>(Data[Index])->Get(); }
+		ResourceBase &getLink(int Index) { return dynamic_cast<LinkData&>(Data[Index]).Get(); }
 		////Returns font object
-		Font getFont(int Index) { return dynamic_cast<FontData*>(Data[Index])->value; }
+		Font getFont(int Index) { return dynamic_cast<FontData&>(Data[Index]).value; }
 		////Returns number of items in the array
 		int getCount() { return Data.getCount(); }
 		
 		////02030000h (Basic, Data resource)
-		virtual int getGID() { return GID_DATAARRAY; }
+		virtual int getGID() const { return GID::Data; }
 		////Currently does nothing
 		virtual bool Save(File *File, FILE *Data) { return false; }
 
 		virtual ~DataResource() { Data.Destroy(); ResourceBase::~ResourceBase(); }
 
-		virtual void Prepare(GGEMain *main) { foreach(IData, data, Data) data->Prepare(file); }
+		virtual void Prepare(GGEMain *main) { 
+			for(utils::Collection<IData>::Iterator i=Data.First();i.isValid();i.Next()) 
+				i->Prepare(file); 
+		}
 
 	protected:
 		File *file;

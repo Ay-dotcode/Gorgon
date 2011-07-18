@@ -53,7 +53,7 @@
 
 
 
-namespace gge {
+namespace gge { namespace utils {
 
 	template <class T_>
 	class basic_Point2D {
@@ -63,7 +63,7 @@ namespace gge {
 		basic_Point2D() {}
 		basic_Point2D(T_ X, T_ Y) : x(X), y(Y) {  }
 		template <class U_>
-		basic_Point2D(const basic_Point2D<U_> &point) : x(point.x), y(point.y) { }
+		basic_Point2D(const basic_Point2D<U_> &point) : x((T_)point.x), y((T_)point.y) { }
 
 		template <class U_>
 		basic_Point2D& operator =(const basic_Point2D<U_> &point) { x=T_(point.x); y=T_(point.y); return *this; }
@@ -344,4 +344,4 @@ namespace gge {
 
 	typedef basic_Point2D<int> Point;
 
-}
+} }

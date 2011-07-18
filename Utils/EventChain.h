@@ -820,12 +820,10 @@ namespace gge { namespace utils {
 		}
 
 		void linkedfire(P_ params) {
-			events.ResetIteration(true);
-			prvt::eventchain::EventHandler<P_, O_> *object;
-
-			while(object=events.previous()) {
-				if(!checklinkedfire(object))
-					object->Fire(params, *this->object, eventname);
+			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
+				it.isValid();it.Next()) {
+				if(!checklinkedfire(it.CurrentPtr()))
+					it->Fire(params, *this->object, eventname);
 			}
 		}
 

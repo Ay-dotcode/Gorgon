@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../Utils/GGE.h"
-#include "../Utils/Utils.h"
+#include "../Engine/GGE.h"
 #include "../Utils/SGuid.h"
 #include <string>
 #ifdef _DEBUG

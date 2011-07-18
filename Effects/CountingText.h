@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Utils/GGE.h"
 #include "../Resource/GRE.h"
 #include "../Engine/Animator.h"
 #include "../Engine/Graphics.h"
@@ -21,7 +20,7 @@ namespace gge { namespace effects {
 		////Text shadow, default is none
 		gge::ShadowParams Shadow;
 		////Alignment of the text, default is left
-		gge::TextAlignment Align;
+		gge::TextAlignment::Type Align;
 		////Width of the text
 		int Width;
 		////Number of decimal places, default is 0
@@ -33,7 +32,7 @@ namespace gge { namespace effects {
 
 
 		////Initializes the effect
-		CountingText(resource::BitmapFontResource *Font=NULL, graphics::RGBint color=graphics::RGBint(0xff000000), int Width=0, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams(), int Decimals=0) : 
+		CountingText(resource::BitmapFontResource *Font=NULL, graphics::RGBint color=graphics::RGBint(0xff000000), int Width=0, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams(), int Decimals=0) : 
 			Color(color),
 			Font(Font),
 			Shadow(Shadow),

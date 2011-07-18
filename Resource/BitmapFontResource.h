@@ -24,7 +24,7 @@ namespace gge { namespace resource {
 		////Size of the tabs in spaces, default is 4
 		int Tabsize;
 		////03020000h (Game, Bitmap font)
-		virtual int getGID() { return GID_FONT; }
+		virtual int getGID() { return GID::Font; }
 		////Currently does nothing
 		virtual bool Save(File *File, FILE *Data) { return false; }
 
@@ -45,9 +45,9 @@ namespace gge { namespace resource {
 		////Prints the given text to the target using given color.
 		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, string Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams());
 		////Prints the given text to the target using given color. Text is wrapped and aligned as necessary
-		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams());
+		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams());
 		////This method is extended to cover meta functionality for advanced text rendering
-		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams());
+		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams());
 		////This method is extended to cover meta functionality for advanced text rendering. This function does not render the given text
 		/// it only processes meta data
 		virtual void Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align);
@@ -56,9 +56,9 @@ namespace gge { namespace resource {
 
 		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, string Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams()) 
 		{ Print(&target, X, Y, Text, Color, Shadow); }
-		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams()) 
+		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams()) 
 		{ Print(&target, X, Y, W, Text, Color, Align, Shadow); }
-		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment Align=TEXTALIGN_LEFT, ShadowParams Shadow=ShadowParams())
+		void Print(graphics::I2DColorizableGraphicsTarget &target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams())
 		{ Print(&target, X, Y, W, Text, Color, Data, DataLen, Align, Shadow); }
 
 		////Returns the height of this font, all characters have same height

@@ -1,9 +1,13 @@
 #pragma once
 
 #include "../Utils/Collection.h"
-#include "../Utils/LinkedList.h"
+#include "../Utils/Point2D.h"
+#include "../Utils/SortedCollection.h"
 
 #include "Input.h"
+#include "../Utils/Size2D.h"
+#include "../Utils/Rectangle2D.h"
+#include "../Utils/Bounds2D.h"
 
 namespace gge {
 	////This class is the base class for all layer types.
@@ -18,70 +22,103 @@ namespace gge {
 		bool isVisible;
 		////Sub-layers that this layer holds, all the sub-layers are
 		/// considered to be above current layer
-		utils::LinkedList<LayerBase> SubLayers;
+		utils::SortedCollection<LayerBase> SubLayers;
 
 		////Parent layer
 		LayerBase *parent;
-		////Main class for GGE
-		//GGEMain *main;
+		utils::SortedCollection<LayerBase>::Wrapper   *wrapper;
+		utils::Bounds BoundingBox;
 
-		LayerBase() : parent(NULL) { }
+		LayerBase() : 
+			parent(NULL), 
+			wrapper(NULL),
+			isVisible(true)
+		{ }
 
-		virtual LayerBase *Add(LayerBase *layer, int Order=0) { if(layer->parent) layer->parent->Remove(layer); layer->parent=this; SubLayers.AddItem(layer, Order); return layer; }
-		virtual LayerBase &Add(LayerBase &layer, int Order=0) { if(layer.parent) layer.parent->Remove(layer); layer.parent=this; SubLayers.AddItem(&layer, Order); return layer; }
-		virtual void Remove(LayerBase *layer) { SubLayers.Remove(layer); }
-		virtual void Remove(LayerBase &layer) { SubLayers.Remove(&layer); }
-		////Size of layer
-		int W;
-		////Size of layer
-		int H;
-		////Position of layer
-		int X;
-		////Position of layer
-		int Y;
+		LayerBase(const utils::Bounds &b) : 
+			parent(NULL), 
+			wrapper(NULL), 
+			BoundingBox(b),
+			isVisible(true)
+		{ }
+
+		LayerBase(int L, int T, int R, int B) : 
+			parent(NULL), 
+			wrapper(NULL), 
+			BoundingBox(L,T,R,B),
+			isVisible(true)
+		{ }
+
+		LayerBase(int X,int Y);
+
+		LayerBase(const utils::Point &p);
+
+		virtual LayerBase *Add(LayerBase *layer, int Order=0) {
+			if(layer->parent) 
+				layer->parent->Remove(layer);
+
+			layer->parent=this;
+			layer->wrapper=&SubLayers.Add(layer, Order); 
+
+			return layer; 
+		}
+		virtual LayerBase &Add(LayerBase &layer, int Order=0) { 
+			return *Add(&layer,Order);
+		}
+		virtual void Remove(LayerBase *layer) { 
+			SubLayers.Remove(layer);
+			layer->parent=NULL;
+			layer->wrapper=NULL;
+		}
+		virtual void Remove(LayerBase &layer) { 
+			SubLayers.Remove(&layer); 
+			layer.parent=NULL;
+			layer.wrapper=NULL;
+		}
+		
 		////Renders the current layer, default handling is to pass
 		/// the request to the sub-layers
 		virtual void Render();
 
 		void setOrder(int Order) {
-			if(parent)
-				parent->SubLayers.FindListItem(this)->setOrder(Order);
+			if(parent && wrapper)
+				wrapper->Reorder(Order);
 		}
 
 		void OrderToTop() {
-			if(parent)
-				parent->SubLayers.FindListItem(this)->setOrder(parent->SubLayers.LowestOrder()-1);
+			if(parent && wrapper)
+				wrapper->Reorder(parent->SubLayers.LowestOrder()-1);
 		}
 
-		int getOrder() { 
-			if(parent)
-				return (int)parent->SubLayers.FindListItem(this)->getOrder(); 
+		int getOrder() const { 
+			if(parent && wrapper)
+				return wrapper->GetKey(); 
 			else
 				return 0;
 		}
 
 		void Move(int X,int Y) {
-			this->X=X;
-			this->Y=Y;
+			BoundingBox.MoveTo(X,Y);
 		}
 
 		void Resize(int W, int H) {
-			this->W=W;
-			this->H=H;
+			BoundingBox.SetSize(W, H);
 		}
 
-		void SetRectangle(Rectangle rect) {
-			X=rect.Left;
-			Y=rect.Top;
-			W=rect.Width;
-			H=rect.Height;
+		void Move(const utils::Point &p) {
+			BoundingBox.MoveTo(p);
+		}
+
+		void Resize(const utils::Size &s) {
+			BoundingBox.SetSize(s);
+		}
+
+		void SetRectangle(utils::Rectangle rect) {
+			BoundingBox=rect;
 		}
 
 		void SetRectangle(int Left, int Top, int Width, int Height) {
-			X=Left;
-			Y=Top;
-			W=Width;
-			H=Height;
+			BoundingBox=utils::Bounds(Left, Top, Width, Height);
 		}
 
 		virtual ~LayerBase() {
@@ -89,22 +126,25 @@ namespace gge {
 				parent->Remove(this);
 		}
 
-	protected:
 		////Processes the mouse event for the current layer, default
 		/// handling is to pass the request to the sub-layers
-		virtual bool PropagateMouseEvent(input::MouseEventType event, int x, int y, void *data);
-		virtual bool PropagateMouseScrollEvent(int amount, input::MouseEventType event, int x, int y, void *data);
+		virtual bool PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);
+
+	protected:
 	};
 
-	class InputLayer : public LayerBase, public input::BasicPointerTarget {
+	class InputLayer : public LayerBase, public input::mouse::EventProvider {
 	public:
-		InputLayer(int X, int Y, int W, int H) : LayerBase() {
-			this->X=X;
-			this->Y=Y;
-			this->W=W;
-			this->H=H;
-		}
-		virtual bool PropagateMouseEvent(input::MouseEventType event, int x, int y, void *data);
-		virtual bool PropagateMouseScrollEvent(int amount, input::MouseEventType event, int x, int y, void *data);
+ 		InputLayer() : LayerBase() { }
+
+		InputLayer(const utils::Bounds &b) : LayerBase(b) { }
+
+		InputLayer(int L, int T, int R, int B) : LayerBase(L,T,R,B) { }
+
+		InputLayer(int X,int Y) : LayerBase(X,Y) { }
+
+		InputLayer(const utils::Point &p) : LayerBase(p) { }
+
+		virtual bool PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);
 	};
 }

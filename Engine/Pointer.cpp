@@ -1,6 +1,6 @@
 #include "Pointer.h"
 #include "../Utils/Collection.h"
-#include "../Utils/LinkedList.h"
+#include "../Utils/SortedCollection.h"
 #include "GraphicLayers.h"
 #include "GGEMain.h"
 #include "../Resource/FolderResource.h"
@@ -10,6 +10,7 @@
 #include "OS.h"
 
 using namespace gge::resource;
+using namespace gge::utils;
 
 namespace gge {
 
@@ -39,16 +40,20 @@ namespace gge {
 			os::HidePointer();
 		}
 
-		Pointer *pointer=ActivePointers.getOrderedLastItem();
-		if(pointer==NULL)
+		Pointer *pointer;
+		
+		if(ActivePointers.GetSize()==0)
 			pointer=BasePointer;
+		else
+			pointer=ActivePointers.LastItem().GetPtr();
 
 
 		pointer->Image->Draw(PointerLayer, pnt-pointer->Hotspot);
 	}
 
-	void PointerCollection::Initialize(GGEMain &Main) {
-		PointerLayer=dynamic_cast<graphics::Basic2DLayer*>(Main.Add( new graphics::Basic2DLayer(0, 0, Main.getWidth(), Main.getHeight()) , -100 ));
+	void PointerCollection::Initialize(GGEMain &Main, int LayerOrder) {
+		PointerLayer=new graphics::Basic2DLayer(0, 0, Main.getWidth(), Main.getHeight());
+		Main.Add( PointerLayer , LayerOrder );
 
 		os::window::Activated.Register(this, &PointerCollection::Window_Activate);
 		os::window::Deactivated.Register(this, &PointerCollection::Window_Deactivate);
@@ -61,18 +66,14 @@ namespace gge {
 
 	void PointerCollection::Fetch(FolderResource *Folder) {
 		DataResource *data=Folder->asData(0);
-		
-		utils::LinkedListIterator<ResourceBase> it=Folder->Subitems;
-		ResourceBase *resource;
-		resource=it;
 
 		int i=0;
-		while(resource=it) {
-			if(resource->getGID()==GID_ANIMATION) {
-				AnimationResource *anim=dynamic_cast<AnimationResource *>(resource);
+		for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First();resource.isValid();resource.Next()) {
+			if(resource->getGID()==GID::Animation) {
+				AnimationResource *anim=dynamic_cast<AnimationResource *>(resource.CurrentPtr());
 				utils::Collection<Pointer, 10>::Add( new Pointer(anim->getAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
-			} else if(resource->getGID()==GID_IMAGE) {
-				ImageResource *img=dynamic_cast<ImageResource *>(resource);
+			} else if(resource->getGID()==GID::Image) {
+				ImageResource *img=dynamic_cast<ImageResource *>(resource.CurrentPtr());
 				utils::Collection<Pointer, 10>::Add( new Pointer(img, data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
 			}
 
@@ -80,7 +81,7 @@ namespace gge {
 		}
 
 		if(i>0)
-			BasePointer=(*this)[0];
+			BasePointer=&(*this)[0];
 	}
 
 	Pointer *PointerCollection::Add(graphics::Buffered2DGraphic *pointer, Point Hotspot, Pointer::PointerTypes Type) {
@@ -90,15 +91,13 @@ namespace gge {
 	}
 
 	int PointerCollection::Set(Pointer *Pointer) {
-		return reinterpret_cast<int>(ActivePointers.AddItem(Pointer, ActivePointers.HighestOrder()+1));
+		return reinterpret_cast<Token>(&ActivePointers.Add(Pointer, ActivePointers.HighestOrder()+1));
 	}
 
 	int PointerCollection::Set(Pointer::PointerTypes Type) {
 		if(Type==Pointer::None)
 			return Set(BasePointer);
-		this->ResetIteration();
-		Pointer *pointer;
-		while(pointer=this->next()) {
+		for(Collection<Pointer,10>::Iterator pointer=this->First();pointer.isValid();pointer.Next()) {
 			if(pointer->Type==Type)
 				return Set(pointer);
 		}
@@ -107,7 +106,7 @@ namespace gge {
 	}
 
 	void PointerCollection::Reset(int StackNo) {
-		ActivePointers.Remove(reinterpret_cast<utils::LinkedListItem<Pointer>*>(StackNo));
+		ActivePointers.Remove(*reinterpret_cast<utils::SortedCollection<Pointer>::Wrapper*>(StackNo));
 	}
 
 	void PointerCollection::ChangeBase(Pointer *Pointer) {

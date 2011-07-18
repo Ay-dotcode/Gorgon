@@ -62,7 +62,7 @@ namespace gge { namespace resource {
 		bool PNGExport(string filename);
 		
 		////02020000h (Basic, Image)
-		virtual int getGID() { return GID_IMAGE; }
+		virtual int getGID() { return GID::Image; }
 		////Currently does nothing
 		virtual bool Save(File *File, FILE *Data) { return false; }
 		////Loads image data from the file. This function is required for late
@@ -83,7 +83,7 @@ namespace gge { namespace resource {
 
 
 		////Destroys used data
-		void destroy() { Data--; if(Palette) delete Palette; }
+		void destroy() { Data.RemoveReference(); if(Palette) delete Palette; }
 
 		////Destroys used data
 		virtual ~ImageResource() { if(Palette) delete Palette; }
@@ -100,8 +100,8 @@ namespace gge { namespace resource {
 			this->VerticalTiling=Vertical;
 		}
 
-		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
-		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) {
+		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment::Type Align=Alignment::Middle_Center);
+		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment::Type Align=Alignment::Middle_Center) {
 			DrawResized(&Target, X,Y,W,H,Align);
 		}
 		virtual int  Width(int W=-1) { 

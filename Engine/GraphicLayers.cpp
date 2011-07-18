@@ -1,33 +1,16 @@
 #include "GraphicLayers.h"
 #pragma warning(disable:4244)
 
+
+
 using namespace gge::utils;
 using namespace gge::input;
 
 namespace gge { namespace graphics {
 	RGBfloat CurrentLayerColor;
-	int trX,trY;
-	int scX,scY,scW,scH;
+	Point translate;
+	Rectangle scissors;
 
-	Basic2DLayer::Basic2DLayer(int X,int Y,int W,int H) : LayerBase() {
-		this->X=X;
-		this->Y=Y;
-		this->W=W;
-		this->H=H;
-		isVisible=true;
-
-		EnableClipping=false;
-	}
-
-	Basic2DLayer::Basic2DLayer(gge::Rectangle r) : LayerBase() {
-		this->X=r.Left;
-		this->Y=r.Top;
-		this->W=r.Width;
-		this->H=r.Height;
-		isVisible=true;
-
-		EnableClipping=false;
-	}
 	void Basic2DLayer::Draw(GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
 		BasicSurface *surface=Surfaces.Add();
 
@@ -494,45 +477,38 @@ namespace gge { namespace graphics {
 	}
 
 	void Basic2DLayer::Render() {
-		int pscX,pscY,pscW,pscH;
+		Rectangle psc;
 		if(!isVisible) return;
 		glPushAttrib(GL_SCISSOR_BIT);
 
 		glPushMatrix();
-		glTranslatef(X, Y, 0);
-		trX+=X;
-		trY+=Y;
+		glTranslatef(BoundingBox.Left, BoundingBox.Top, 0);
+		translate+=BoundingBox.TopLeft();
 
 		if(EnableClipping) {
-			pscX=scX;
-			pscY=scY;
-			pscW=scW;
-			pscH=scH;
+			psc=scissors;
 
-			int r=scX+scW;
-			int b=scY+scH;
+			int r=scissors.Right();
+			int b=scissors.Bottom();
 
 			glEnable(GL_SCISSOR_TEST);
-			if(trX>scX)
-				scX=trX;
-			if(trY>scY)
-				scY=trY;
-			if(trY+H<b)
-				b=(H+trY);
-			if(trX+W<r)
-				r=(W+trX);
+			if(translate.x>scissors.Left)
+				scissors.Left=translate.x;
+			if(translate.y>scissors.Top)
+				scissors.Top=translate.y;
+			if(translate.y+BoundingBox.Height()<b)
+				b=(translate.y+BoundingBox.Height());
+			if(translate.x+BoundingBox.Width()<r)
+				r=(translate.x+BoundingBox.Width());
 
-			scW=r-scX;
-			scH=b-scY;
+			scissors.SetRight(r);
+			scissors.SetBottom(b);
 
-			if(scH<=0 || scW<=0) {
-				scX=pscX;
-				scY=pscY;
-				scW=pscW;
-				scH=pscH;
+			if(r<=scissors.Left || b<=scissors.Top) {
+				return;
 			}
 
-			glScissor(scX, (ScreenSize.y-scY)-scH, scW, scH);
+			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height, scissors.Width, scissors.Height);
 		}
 
 		int i;
@@ -551,89 +527,56 @@ namespace gge { namespace graphics {
 			glEnd();
 		}
 
-		LayerBase *layer;
-		LinkedListOrderedIterator<LayerBase> it=SubLayers.GetReverseOrderedIterator();
-		while(layer=it) {
-			layer->Render();
+		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+			i->Render();
 		}
 
 		glPopMatrix();
-		trX-=X;
-		trY-=Y;
+		translate-=BoundingBox.TopLeft();
 
 		if(EnableClipping) {
-			scX=pscX;
-			scY=pscY;
-			scW=pscW;
-			scH=pscH;
+			scissors=psc;
 		}
 
 		glPopAttrib();
 	}
 
-	Colorizable2DLayer::Colorizable2DLayer(int X,int Y,int W,int H) : LayerBase() {
-		Ambient=RGBint(0xffffffff);
-		this->X=X;
-		this->Y=Y;
-		this->W=W;
-		this->H=H;
-
-		isVisible=true;
-		EnableClipping=false;
-	}
-	Colorizable2DLayer::Colorizable2DLayer(gge::Rectangle r) : LayerBase() {
-		Ambient=RGBint(0xffffffff);
-		this->X=r.Left;
-		this->Y=r.Top;
-		this->W=r.Width;
-		this->H=r.Height;
-
-		isVisible=true;
-		EnableClipping=false;
-	}
 	void Colorizable2DLayer::Render() {
-		int pscX,pscY,pscW,pscH;
-
+		Rectangle psc;
 		if(!isVisible) return;
+		if(Ambient.a==0) return;
 		glPushAttrib(GL_SCISSOR_BIT);
 
-
 		glPushMatrix();
-		glTranslatef(X, Y, 0);
-		trX+=X;
-		trY+=Y;
+		glTranslatef(BoundingBox.Left, BoundingBox.Top, 0);
+		translate+=BoundingBox.TopLeft();
 
 		if(EnableClipping) {
-			pscX=scX;
-			pscY=scY;
-			pscW=scW;
-			pscH=scH;
+			psc=scissors;
 
-			int r=scX+scW;
-			int b=scY+scH;
+			int r=scissors.Right();
+			int b=scissors.Bottom();
 
 			glEnable(GL_SCISSOR_TEST);
-			if(trX>scX)
-				scX=trX;
-			if(trY>scY)
-				scY=trY;
-			if(trY+H<b)
-				b=(H+trY);
-			if(trX+W<r)
-				r=(W+trX);
+			if(translate.x>scissors.Left)
+				scissors.Left=translate.x;
+			if(translate.y>scissors.Top)
+				scissors.Top=translate.y;
+			if(translate.y+BoundingBox.Height()<b)
+				b=(translate.y+BoundingBox.Height());
+			if(translate.x+BoundingBox.Width()<r)
+				r=(translate.x+BoundingBox.Width());
 
-			scW=r-scX;
-			scH=b-scY;
+			scissors.SetRight(r);
+			scissors.SetBottom(b);
 
-			if(scH<=0 || scW<=0) {
-				scX=pscX;
-				scY=pscY;
-				scW=pscW;
-				scH=pscH;
+			if(r<=scissors.Left || b<=scissors.Top) {
+				return;
 			}
 
-			glScissor(scX, (ScreenSize.y-scY)-scH, scW, scH);
+			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height, scissors.Width, scissors.Height);
 		}
+
 
 		RGBfloat prevcolor=CurrentLayerColor;
 		CurrentLayerColor.a*=(float)Ambient.a/255;
@@ -659,24 +602,20 @@ namespace gge { namespace graphics {
 		}
 
 		glColor4fv(CurrentLayerColor.vect);
-		LayerBase *layer;
-		LinkedListOrderedIterator<LayerBase> it=SubLayers.GetReverseOrderedIterator();
-		while(layer=it) {
-			layer->Render();
+		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+			i->Render();
 		}
+
 
 		CurrentLayerColor=prevcolor;
 		glColor4fv(prevcolor.vect);
 
+
 		glPopMatrix();
-		trX-=X;
-		trY-=Y;
+		translate-=BoundingBox.TopLeft();
 
 		if(EnableClipping) {
-			scX=pscX;
-			scY=pscY;
-			scW=pscW;
-			scH=pscH;
+			scissors=psc;
 		}
 
 		glPopAttrib();
@@ -1214,47 +1153,38 @@ namespace gge { namespace graphics {
 		surface->VertexCoords[3].y=Y4;
 	}
 	void Basic2DRawGraphicsLayer::Render() {
+		Rectangle psc;
 		if(!isVisible) return;
-		int pscX,pscY,pscW,pscH;
-
 		glPushAttrib(GL_SCISSOR_BIT);
 
-
 		glPushMatrix();
-		glTranslatef(X, Y, 0);
-		trX+=X;
-		trY+=Y;
+		glTranslatef(BoundingBox.Left, BoundingBox.Top, 0);
+		translate+=BoundingBox.TopLeft();
 
 		if(EnableClipping) {
-			pscX=scX;
-			pscY=scY;
-			pscW=scW;
-			pscH=scH;
+			psc=scissors;
 
-			int r=scX+scW;
-			int b=scY+scH;
+			int r=scissors.Right();
+			int b=scissors.Bottom();
 
 			glEnable(GL_SCISSOR_TEST);
-			if(trX>scX)
-				scX=trX;
-			if(trY>scY)
-				scY=trY;
-			if(trY+H<b)
-				b=(H+trY);
-			if(trX+W<r)
-				r=(W+trX);
+			if(translate.x>scissors.Left)
+				scissors.Left=translate.x;
+			if(translate.y>scissors.Top)
+				scissors.Top=translate.y;
+			if(translate.y+BoundingBox.Height()<b)
+				b=(translate.y+BoundingBox.Height());
+			if(translate.x+BoundingBox.Width()<r)
+				r=(translate.x+BoundingBox.Width());
 
-			scW=r-scX;
-			scH=b-scY;
+			scissors.SetRight(r);
+			scissors.SetBottom(b);
 
-			if(scH<=0 || scW<=0) {
-				scX=pscX;
-				scY=pscY;
-				scW=pscW;
-				scH=pscH;
+			if(r<=scissors.Left || b<=scissors.Top) {
+				return;
 			}
 
-			glScissor(scX, (ScreenSize.y-scY)-scH, scW, scH);
+			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height, scissors.Width, scissors.Height);
 		}
 
 		int i;
@@ -1275,32 +1205,19 @@ namespace gge { namespace graphics {
 			glEnd();
 		}
 
-		LayerBase *layer;
-		LinkedListOrderedIterator<LayerBase> it=SubLayers.GetReverseOrderedIterator();
-		while(layer=it) {
-			layer->Render();
+
+		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+			i->Render();
 		}
 
 		glPopMatrix();
-		trX-=X;
-		trY-=Y;
+		translate-=BoundingBox.TopLeft();
 
 		if(EnableClipping) {
-			scX=pscX;
-			scY=pscY;
-			scW=pscW;
-			scH=pscH;
+			scissors=psc;
 		}
 
 		glPopAttrib();
-	}
-	Basic2DRawGraphicsLayer::Basic2DRawGraphicsLayer(int X,int Y,int W,int H) : LayerBase() {
-		this->X=X;
-		this->Y=Y;
-		this->W=W;
-		this->H=H;
 
-		isVisible=true;
-		EnableClipping=false;
 	}
 } }

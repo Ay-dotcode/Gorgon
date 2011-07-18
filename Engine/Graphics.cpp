@@ -2,12 +2,15 @@
 #ifdef WIN32
 #include <windows.h>
 
+
+using namespace gge::utils;
+
 #endif
 namespace gge { namespace graphics {
-	Point ScreenSize;
+	Size ScreenSize;
 	extern RGBfloat CurrentLayerColor;
-	extern int scX,scY,scW,scH;
-	extern int trX,trY;
+	extern utils::Rectangle scissors;
+	extern Point translate;
 
 	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {
 		///!Platform specific
@@ -46,8 +49,8 @@ namespace gge { namespace graphics {
 		wglMakeCurrent(hDC,hRC);
 #endif
 
-		ScreenSize.x=Width;
-		ScreenSize.y=Height;
+		ScreenSize.Width=Width;
+		ScreenSize.Height=Height;
 
 		///*Setting OpenGL parameters
 		glShadeModel(GL_SMOOTH);							// Enables Smooth Shading
@@ -86,15 +89,6 @@ namespace gge { namespace graphics {
 		glLoadIdentity();									// Reset The Modelview Matrix
 
 		return (os::DeviceHandle)hDC;
-	}
-	RECT makerect(int x, int y, int w, int h) {	
-		RECT ret;
-		ret.left=x;
-		ret.right=x+w;
-		ret.top=y;
-		ret.bottom=y+h;
-
-		return ret;
 	}
 	void A8ToA8L8(int cx,int cy,Byte *data,Byte *dest)
 	{
@@ -229,11 +223,8 @@ loopyend:
 		CurrentLayerColor.g=1;
 		CurrentLayerColor.b=1;
 
-		trX=0;
-		trY=0;
-		scX=scY=0;
-		scW=ScreenSize.x;
-		scH=ScreenSize.y;
+		translate=Point(0,0);
+		scissors=utils::Rectangle(0, 0, ScreenSize);
 	}
 
 	void PostRender(os::DeviceHandle hDC) {

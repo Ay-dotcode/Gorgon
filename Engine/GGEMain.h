@@ -3,7 +3,7 @@
 #include "../Utils/Any.h"
 #include "../Utils/EventChain.h"
 
-#include "../Widgets/WidgetMain.h"
+//#include "../Widgets/WidgetMain.h"
 
 #include "OS.h"
 #include "Sound.h"
@@ -32,12 +32,12 @@ namespace gge {
 		////This variable is used internally to track when
 		/// this interval is signaled
 		unsigned int LastSignal;
-		////The data to ba passed signal handler
+		////The data to be passed signal handler
 		void *Data;
-		////Wheter this object is enabled, when enabled
+		////Whether this object is enabled, when enabled
 		/// this interval will continue from where it left
 		/// most probably triggering a signal in the next
-		/// signal check, this behaviour can be prevented by
+		/// signal check, this behavior can be prevented by
 		/// setting LastSignal to current time while enabling
 		/// the interval object
 		bool Enabled;
@@ -52,7 +52,7 @@ namespace gge {
 	/// prevent it, multiple GGEMain classes are not possible currently.
 	/// Before calling any initialization function apart from OS, a window should be created.
 	/// GGEMain is also the topmost layer.
-	class GGEMain : public LayerBase, public input::BasicPointerTarget {
+	class GGEMain : public LayerBase{
 	public:
 		////Handle of the device context specifying drawable area of
 		/// the created window. Can be changed but should be modified with care
@@ -80,16 +80,6 @@ namespace gge {
 
 		////Current system time. This time does not change in a given game loop
 		unsigned int CurrentTime;
-
-		////This is the top-level mouse event propagator
-		virtual bool PropagateMouseEvent(input::MouseEventType event, int x, int y, void *data) {
-			return LayerBase::PropagateMouseEvent(event, x, y, data);
-		}
-
-		////This is the top-level mouse event propagator
-		virtual bool PropagateMouseScrollEvent(int amount, input::MouseEventType event, int x, int y, void *data) {
-			return LayerBase::PropagateMouseScrollEvent(amount, event, x, y, data);
-		}
 
 		////Constructor
 		GGEMain();
@@ -126,7 +116,6 @@ namespace gge {
 		/// call to BeforeGameLoop function.
 		void		 InitializeInput() { 
 			gge::input::Initialize(); 
-			gge::input::AddPointerTarget(this,0); 
 		}
 		////Initializes OS subsystem allowing it to setup events. Should be called before creating a window
 		void		 InitializeOS() { gge::os::Initialize(); }
@@ -137,7 +126,7 @@ namespace gge {
 		void		 InitializeAnimation() { gge::InitializeAnimation(this); }
 		////Initializes Pointer subsystem. Before calling this function, pointers cannot be used
 		void		 InitializePointer() { Pointers.Initialize(*this); }
-		void		 InitializeWidgets() { gge::widgets::InitializeWidgets(this); }
+		//void		 InitializeWidgets() { gge::widgets::InitializeWidgets(this); }
 
 		////Registers a signal handler to be called in every given time. Exact time passed from the
 		/// last signal can be checked using LastSignal variable of the IntervalObject

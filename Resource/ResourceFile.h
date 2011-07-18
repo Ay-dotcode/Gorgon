@@ -50,10 +50,10 @@ namespace gge { namespace resource {
 
 		class strings {
 		public:
-			static const string FileNotFound	= "Cannot find the file specified";
-			static const string Signature		= "Signature mismatch";
-			static const string VersionMismatch	= "Version mismatch";
-			static const string Containment		= "The supplied file is does not contain any data or its representation is invalid.";
+			static const string FileNotFound	;
+			static const string Signature		;
+			static const string VersionMismatch	;
+			static const string Containment		;
 		};
 
 
@@ -61,7 +61,7 @@ namespace gge { namespace resource {
 
 		}
 
-		load_error(ErrorType number, const chqr *text) : runtime_error(text), number(number) {
+		load_error(ErrorType number, const char *text) : runtime_error(text), number(number) {
 
 		}
 
@@ -97,9 +97,9 @@ namespace gge { namespace resource {
 			if(guid.isEmpty()) 
 				return NULL;
 
-			foreach(Redirect, redirect, Redirects) {
-				if(redirect->source==guid)
-					guid=redirect->target;
+			for(utils::Collection<Redirect>::Iterator i=Redirects.First();i.isValid();i.Next()) {
+				if(i->source==guid)
+					guid=i->target;
 			}
 			
 			return root->FindObject(guid); 

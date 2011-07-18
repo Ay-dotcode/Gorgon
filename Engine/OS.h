@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Utils/GGE.h"
+#include "../Utils/Point2D.h"
 #include "../Utils/Any.h"
 #include "../Utils/EventChain.h"
 
@@ -33,7 +33,7 @@ namespace gge { namespace os {
 
 	namespace input {
 		////Gets the position of the cursor
-		Point getMousePosition(os::WindowHandle Window);
+		utils::Point getMousePosition(os::WindowHandle Window);
 		inline bool isPointerDisplayed() { return system::pointerdisplayed; }
 	}
 

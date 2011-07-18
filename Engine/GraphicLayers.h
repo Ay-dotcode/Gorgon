@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Utils/GGE.h"
+#include "GGE.h"
 #include "Layer.h"
 #include "../Utils/PAClassList.h"
 #include "Graphics.h"
@@ -27,9 +27,21 @@ namespace gge { namespace graphics {
 		////Whether or not enable clipping
 		bool EnableClipping;
 
-		////Default constructor to initialize variables
-		Basic2DLayer(int X=0, int Y=0, int W=100, int H=100);
-		Basic2DLayer(gge::Rectangle r);
+
+		Basic2DLayer() : LayerBase() { init(); }
+
+		Basic2DLayer(const utils::Bounds &b) : LayerBase(b) { init(); }
+
+		Basic2DLayer(int L, int T, int R, int B) : LayerBase(L,T,R,B) { init(); }
+
+		Basic2DLayer(int X,int Y) : LayerBase(X,Y) { init(); }
+
+		Basic2DLayer(const utils::Point &p) : LayerBase(p) { init(); }
+
+		void init() {
+			isVisible=true;
+			EnableClipping=false;
+		}
 
 		////Draws a simple image to the screen.
 		/// In this draw function every corner can be specified
@@ -53,7 +65,7 @@ namespace gge { namespace graphics {
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
 		virtual void DrawHTiled(GLTexture *Image,int X,int Y,int W,int H);
-		////Draws a veritically tiled image to the screen
+		////Draws a vertically tiled image to the screen
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
 		///@W		: the width of the image to be drawn
@@ -64,8 +76,8 @@ namespace gge { namespace graphics {
 		virtual void Render();
 		virtual void Clear() { Surfaces.Clear(); }
 
-		virtual int Width() { return W; }
-		virtual int Height() { return H; }
+		virtual int Width() { return BoundingBox.Width(); }
+		virtual int Height() { return BoundingBox.Height(); }
 	};
 	////This layer is a 2D graphics target and also has colorization support
 	class Colorizable2DLayer : public I2DColorizableGraphicsTarget, public LayerBase {
@@ -73,8 +85,22 @@ namespace gge { namespace graphics {
 		////Whether or not enable clipping
 		bool EnableClipping;
 		////Default constructor to initialize variables
-		Colorizable2DLayer(int X=0, int Y=0, int W=100, int H=100);
-		Colorizable2DLayer(gge::Rectangle r);
+
+		Colorizable2DLayer() : LayerBase() { init(); }
+
+		Colorizable2DLayer(const utils::Bounds &b) : LayerBase(b) { init(); }
+
+		Colorizable2DLayer(int L, int T, int R, int B) : LayerBase(L,T,R,B) { init(); }
+
+		Colorizable2DLayer(int X,int Y) : LayerBase(X,Y) { init(); }
+
+		Colorizable2DLayer(const utils::Point &p) : LayerBase(p) { init(); }
+
+		void init() {
+			Ambient=RGBint(0xffffffff);
+			isVisible=true;
+			EnableClipping=false;
+		}
 
 		////This list contains surfaces to be drawn
 		PAClassList<ColorizableSurface> Surfaces;
@@ -105,15 +131,15 @@ namespace gge { namespace graphics {
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
 		virtual void DrawHTiled(GLTexture *Image,int X,int Y,int W,int H);
-		////Draws a veritically tiled image to the screen
+		////Draws a vertically tiled image to the screen
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
 		///@W		: the width of the image to be drawn
 		/// if it is more than the size of the image
 		virtual void DrawVTiled(GLTexture *Image,int X,int Y,int W,int H);
 
-		virtual int Width() { return W; }
-		virtual int Height() { return H; }
+		virtual int Width() { return BoundingBox.Width(); }
+		virtual int Height() { return BoundingBox.Height(); }
 	};
 	class Basic2DRawGraphicsLayer : public I2DRawGraphicsTarget, public LayerBase {
 	public:
@@ -122,11 +148,23 @@ namespace gge { namespace graphics {
 		////This list contains surfaces to be drawn
 		PAClassList<RawSurface> Surfaces;
 
-		////Default constructor to initialize variables
-		Basic2DRawGraphicsLayer(int X=0, int Y=0, int W=100, int H=100);
-
 		////Draws a given data to the screen
 		virtual void Draw(Byte *Image, int Width, int Height, ColorMode Mode,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4);
+	
+		void init() {
+			isVisible=true;
+			EnableClipping=false;
+		}
+
+		Basic2DRawGraphicsLayer() : LayerBase() { init(); }
+
+		Basic2DRawGraphicsLayer(const utils::Bounds &b) : LayerBase(b) { init(); }
+
+		Basic2DRawGraphicsLayer(int L, int T, int R, int B) : LayerBase(L,T,R,B) { init(); }
+
+		Basic2DRawGraphicsLayer(int X,int Y) : LayerBase(X,Y) { init(); }
+
+		Basic2DRawGraphicsLayer(const utils::Point &p) : LayerBase(p) { init(); }
 
 		////Renders this layer
 		virtual void Render();

@@ -1,79 +1,62 @@
 #include "Layer.h"
+#include "GGEMain.h"
 
 using namespace gge::input;
 using namespace gge::utils;
 
 namespace gge {
 	namespace graphics {
-		extern int trX,trY;
+		extern Point translate;
 	}
 	using namespace graphics;
 
-	bool InputLayer::PropagateMouseEvent(input::MouseEventType event, int x, int y, void *data) {
-		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&MOUSE_EVENT_UP) || (pressedObject && event&MOUSE_EVENT_MOVE)) ) {
-			if(LayerBase::PropagateMouseEvent(event, x-X, y-Y, data))
-				return true;
+	bool InputLayer::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
+		if(LayerBase::PropagateMouseEvent(event, location, amount))
+			return true;
 
-			if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&MOUSE_EVENT_UP) || (pressedObject->parent==this && event&MOUSE_EVENT_MOVE)) )
-				return BasicPointerTarget::PropagateMouseEvent(event, x-X, y-Y, data);
-			else
-				return false;
-		}
-
-		return false;
+		return EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount);
 	}
 
-	bool LayerBase::PropagateMouseEvent(MouseEventType event, int x, int y, void *data) {
-		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&MOUSE_EVENT_UP) || (pressedObject && event&MOUSE_EVENT_MOVE)) ) {
-			LinkedListOrderedIterator<LayerBase> it=SubLayers;
-			LayerBase *layer;
-			
-			while(layer=it)
-				if(layer->PropagateMouseEvent(event, x-X, y-Y, data))
+	bool LayerBase::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
+		if( 
+			(isVisible && BoundingBox.isInside(location)) || 
+			input::mouse::Event::isUp(event) || 
+			(event&input::mouse::Event::Out) || 
+			(input::mouse::PressedObject && (event&input::mouse::Event::Move)) ) 
+		{
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
 					return true;
-		}
-
-		return false;
-	}
-
-	bool InputLayer::PropagateMouseScrollEvent(int amount, MouseEventType event, int x, int y, void *data) {
-		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H)) ) {
-			if(LayerBase::PropagateMouseScrollEvent(amount, event, x-X, y-Y, data))
-				return true;
-
-			if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H) || (event&MOUSE_EVENT_UP) || (pressedObject->parent==this && event&MOUSE_EVENT_MOVE)) )
-				return BasicPointerTarget::PropagateMouseScrollEvent(amount, event, x-X, y-Y, data);
-			else
-				return false;
-		}
-
-		return false;
-	}
-
-	bool LayerBase::PropagateMouseScrollEvent(int amount, MouseEventType event, int x, int y, void *data) {
-		if( isVisible && ((x>X && y>Y && x<X+W && y<Y+H)) ) {
-			LinkedListOrderedIterator<LayerBase> it=SubLayers;
-			LayerBase *layer;
-			
-			while(layer=it)
-				if(layer->PropagateMouseScrollEvent(amount, event, x-X, y-Y, data))
-					return true;
+			}
 		}
 
 		return false;
 	}
 
 	void LayerBase::Render() {
-		trX+=X;
-		trY+=Y;
+		translate+=BoundingBox.TopLeft();
 		if(isVisible) {
-			LinkedListOrderedIterator<LayerBase> it=SubLayers.GetReverseOrderedIterator();
-			LayerBase *layer;
-			
-			while(layer=it)
-				layer->Render();
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+				i->Render();
+			}
 		}
-		trX-=X;
-		trY-=Y;
+		translate-=BoundingBox.TopLeft();
+	}
+
+	LayerBase::LayerBase(int X,int Y ) : 
+		parent(NULL), 
+		wrapper(NULL), 
+		BoundingBox(X, Y, X+Main.getWidth(), Y+Main.getHeight()),
+		isVisible(true) {
+
+	}
+
+	LayerBase::LayerBase( const utils::Point &p ) : 
+		parent(NULL), 
+		wrapper(NULL), 
+		BoundingBox(p.x, p.y, p.x+Main.getWidth(), p.y+Main.getHeight()),
+		isVisible(true)
+	{
+
 	}
 }

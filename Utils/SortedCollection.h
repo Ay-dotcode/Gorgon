@@ -51,7 +51,7 @@
 namespace gge { namespace utils {
 	//SortedCollection is a linked list and cannot
 	//employ object pools
-	template<class T_, class K_>
+	template<class T_, class K_=int>
 	class SortedCollection : RefCounter<SortedCollection<T_, K_> > {
 		friend class Iterator_;
 		friend class RefCounter<SortedCollection>;
@@ -101,6 +101,14 @@ namespace gge { namespace utils {
 				return key;
 			}
 
+			T_ &Get() {
+				return *item;
+			}
+
+			T_ *GetPtr() {
+				return item;
+			}
+
 			void Reorder(const K_ &key) {
 				parent->Reorder(*this, key);
 			}
@@ -143,6 +151,13 @@ namespace gge { namespace utils {
 			Iterator_(const Iterator_&it) : Current(it.Current) {
 			}
 
+			Wrapper &GetWrapper() {
+				if(!Current)
+					throw std::out_of_range("Current item does not exists");
+
+				return *Current;
+			}
+
 			void Reorder(const K_ &key)  {
 				if(Current) {
 					Current->parent->Reorder(*this, key);
@@ -179,7 +194,7 @@ namespace gge { namespace utils {
 		protected:
 			O_& current() const {
 				if(!Current)
-					throw runtime_error("Invalid location");
+					throw std::runtime_error("Invalid location");
 				return *(Current->item);
 			}
 
@@ -567,6 +582,30 @@ namespace gge { namespace utils {
 				Reorder(*item.Current, key);
 		}
 
+		void Remove(Iterator &item) {
+			if(item.Current==NULL)
+				return;
+
+			Wrapper &w=*item.Current;
+			item.Current=item.Current->next;
+
+			Remove(w);
+
+			return;
+		}
+
+		void Delete(Iterator &item) {
+			if(item.Current==NULL)
+				return;
+
+			Wrapper &w=*item.Current;
+			item.Current=item.Current->next;
+
+			Remove(w);
+
+			return;
+		}
+
 		void Remove(Wrapper &item) {
 			if(item.previous) {
 				item.previous->next=item.next;
@@ -597,7 +636,8 @@ namespace gge { namespace utils {
 		}
 
 		void Remove(T_ *item) {
-			Remove(Find(item));
+			Iterator it=Find(item);
+			Remove(it);
 		}
 
 		void Delete(T_ *item) {
@@ -636,30 +676,6 @@ namespace gge { namespace utils {
 			Remove(item);
 
 			return *this;
-		}
-
-		void Remove(Iterator &item) {
-			if(item.Current==NULL)
-				return;
-
-			Wrapper &w=item.Current;
-			item.Current=item.Current->next;
-
-			Remove(w);
-
-			return;
-		}
-
-		void Delete(Iterator &item) {
-			if(item.Current==NULL)
-				return;
-
-			Wrapper &w=*item.Current;
-			item.Current=item.Current->next;
-
-			Remove(w);
-
-			return;
 		}
 
 		SortedCollection &operator -=(Iterator &item) {
@@ -758,7 +774,7 @@ namespace gge { namespace utils {
 		}
 
 		T_ &Get(int Index) {
-			T_ *r=get_(Index);
+			T_ *r=get_(Index)->GetPtr();
 
 			if(r==NULL)
 				throw std::out_of_range("Index out of range");
@@ -816,7 +832,7 @@ namespace gge { namespace utils {
 		}
 
 		Iterator Last() {
-			return Iterator(*tail, this, this);
+			return Iterator(*tail, this);
 		}
 
 		ConstIterator begin() const {

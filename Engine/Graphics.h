@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Utils/GGE.h"
+#include "GGE.h"
 #include "OS.h"
 
 #define WINGDIAPI	__declspec(dllimport)
@@ -11,7 +11,12 @@
 #include <gl/glu.h>
 #include <assert.h>
 #include <stdexcept>
+#include <string>
+
 #include "../Utils/ManagedBuffer.h"
+#include "../Utils/Point2D.h"
+#include "../Utils/Rectangle2D.h"
+#include "../Utils/Size2D.h"
 
 #undef WINGDIAPI
 #undef APIENTRY
@@ -571,13 +576,13 @@ namespace gge { namespace graphics {
 		////Draws this object to the given target
 		///@Target	: The target that will be used to draw
 		/// this image
-		virtual void Draw(I2DGraphicsTarget *Target,Point pnt) { 
+		virtual void Draw(I2DGraphicsTarget *Target,utils::Point pnt) { 
 			Draw(Target, pnt.x, pnt.y, Texture.W, Texture.H);
 		}
 		////Draws this object to the given target
 		///@Target	: The target that will be used to draw
 		/// this image
-		virtual void Draw(I2DGraphicsTarget &Target,Point pnt) { 
+		virtual void Draw(I2DGraphicsTarget &Target,utils::Point pnt) { 
 			Draw(Target, pnt.x, pnt.y, Texture.W, Texture.H);
 		}
 		virtual void Draw(I2DGraphicsTarget *Target,int X,int Y) { 
@@ -699,7 +704,7 @@ namespace gge { namespace graphics {
 	////This is a basic drawing object
 	class Raw2DGraphic {
 	public:
-		ManagedBuffer<Byte> Data;
+		utils::ManagedBuffer<Byte> Data;
 	protected:
 		int Width;
 		int Height;
@@ -712,8 +717,6 @@ namespace gge { namespace graphics {
 			Width=graph.Width;
 			Height=graph.Height;
 			Mode=graph.Mode;
-			
-			Data++;
 		}
 
 		////Draws this object to the given target
@@ -826,5 +829,5 @@ namespace gge { namespace graphics {
 	/// initialize graphics function
 	void PostRender(os::DeviceHandle Device);
 
-	extern Point ScreenSize;
+	extern utils::Size ScreenSize;
 } }

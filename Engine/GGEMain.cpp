@@ -14,8 +14,7 @@ namespace gge {
 		AfterRenderEvent("AfterRender", this),
 		Window(NULL)
 	{
-		X=0;
-		Y=0;
+		BoundingBox=utils::Bounds(0,0, Width,Height);
 		isVisible=true;
 
 		CurrentTime=os::GetTime();
@@ -33,10 +32,12 @@ namespace gge {
 #endif
 		this->SystemName=SystemName;
 		this->Instance=Instance;
-		this->Width=W=Width;
-		this->Height=H=Height;
+		this->Width=Width;
+		this->Height=Height;
 		this->BitDepth=BitDepth;
 		this->FullScreen=FullScreen;
+
+		BoundingBox.SetSize(Width, Height);
 	}
 
 	GGEMain::~GGEMain() {
@@ -62,10 +63,7 @@ namespace gge {
 		BeforeRenderEvent();
 
 		///*Processing interval objects
-		IntervalObjects.ResetIteration();
-		IntervalObject *interval;
-
-		while(interval=IntervalObjects.next()) {
+		for(utils::Collection<IntervalObject>::Iterator interval=IntervalObjects.First();interval.isValid();interval.Next()) {
 			if(interval->Enabled)
 				if(CurrentTime-interval->LastSignal>interval->Timeout) {
 					interval->Signal(interval, interval->Data);
@@ -116,11 +114,10 @@ namespace gge {
 		InitializeGraphics();
 		InitializeSound();
 		InitializeInput();
-		gge::input::AddPointerTarget(this,0); 
 
 		InitializeAnimation();
 		InitializePointer();
-		InitializeWidgets();
+		//InitializeWidgets();
 	}
 
 }

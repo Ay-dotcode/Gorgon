@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Utils/GGE.h"
-#include "../Utils/LinkedList.h"
+#include "GGE.h"
+#include "../Utils/SortedCollection.h"
 #include "Graphics.h"
 
 namespace gge {
@@ -34,7 +34,7 @@ namespace gge {
 		////The image of the pointer
 		graphics::Buffered2DGraphic *Image;
 		////Point of click
-		Point Hotspot;
+		utils::Point Hotspot;
 		////Type of the pointer
 		PointerTypes Type;
 
@@ -47,7 +47,7 @@ namespace gge {
 		}
 
 		////Initializes a pointer
-		Pointer(graphics::Buffered2DGraphic &pointer, Point Hotspot, PointerTypes Type) {
+		Pointer(graphics::Buffered2DGraphic &pointer, utils::Point Hotspot, PointerTypes Type) {
 			this->Image=&pointer;
 			this->Hotspot=Hotspot;
 			this->Type=Type;
@@ -57,8 +57,11 @@ namespace gge {
 
 	class PointerCollection : public utils::Collection<Pointer, 10> {
 	public:
+
+		typedef int Token;
+
 		////Initializes Pointer Subsystem
-		void Initialize(GGEMain &Main);
+		void Initialize(GGEMain &Main, int LayerOrder=-100);
 		////Fetches list of pointers from a given folder resource. The given folder shall contain
 		/// a data file as the first item containing two entries per pointer. First entry must be
 		/// the Type(integer) ranging 0-6, second is Hotspot(point). Every pointer should be either
@@ -66,9 +69,9 @@ namespace gge {
 		void Fetch(resource::FolderResource *Folder);
 		void Fetch(resource::FolderResource &Folder) { Fetch(&Folder); }
 		////Adds a pointer to the list of pointers
-		Pointer *Add(graphics::Buffered2DGraphic *Pointer, Point Hotspot=Point(2,2), Pointer::PointerTypes Type=Pointer::None);
+		Pointer *Add(graphics::Buffered2DGraphic *Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerTypes Type=Pointer::None);
 		////Adds a pointer to the list of pointers
-		Pointer &Add(graphics::Buffered2DGraphic &Pointer, Point Hotspot=Point(2,2), Pointer::PointerTypes Type=Pointer::None) {
+		Pointer &Add(graphics::Buffered2DGraphic &Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerTypes Type=Pointer::None) {
 			return *Add(&Pointer, Hotspot, Type);
 		}
 		////Sets the given pointer as current one, this operation should be revered by
@@ -95,7 +98,7 @@ namespace gge {
 		PointerCollection() : PointerLayer(NULL), BasePointer(NULL), PointerVisible(false), OSPointerVisible(true) { }
 
 	protected:
-		utils::LinkedList<Pointer> ActivePointers;
+		utils::SortedCollection<Pointer> ActivePointers;
 		graphics::Basic2DLayer *PointerLayer;
 		Pointer *BasePointer;
 		bool PointerVisible;

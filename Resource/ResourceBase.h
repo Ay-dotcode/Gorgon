@@ -30,7 +30,7 @@ namespace gge { namespace resource {
 		virtual bool Save(File *File, FILE *Data)=0;
 
 		////This function tests whether this object has the given utils::SGuid
-		bool isEqual(utils::SGuid guid) const { return guid==this->guid; }
+		bool isEqual(const utils::SGuid &guid) const { return guid==this->guid; }
 
 		////utils::SGuid to identify this resource object
 		utils::SGuid guid;
@@ -41,7 +41,7 @@ namespace gge { namespace resource {
 
 		////Subitems that this resource object have. Some of the sub items
 		/// can be hidden therefore, this is not guaranteed to be complete
-		utils::LinkedList<ResourceBase> Subitems;
+		utils::SortedCollection<ResourceBase> Subitems;
 
 		////Searches the public children of this resource object
 		virtual ResourceBase *FindObject(utils::SGuid guid) const;

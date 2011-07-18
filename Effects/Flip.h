@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Utils/GGE.h"
 #include "../Resource/GRE.h"
 #include "../Engine/Animator.h"
 #include "../Engine/Graphics.h"
@@ -35,8 +34,8 @@ namespace gge { namespace effects {
 		float Perspective;
 		int ETA;
 
-		Point PivotFront;
-		Point PivotBack;
+		utils::Point PivotFront;
+		utils::Point PivotBack;
 
 		virtual void Draw(graphics::I2DGraphicsTarget *Layer, int X, int Y);
 		virtual void Draw(graphics::I2DGraphicsTarget &Layer, int X, int Y) { Draw(&Layer, X,Y); }

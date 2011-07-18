@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Utils/GGE.h"
 #include "../Resource/GRE.h"
 #include "../Engine/Animator.h"
 #include "../Engine/Graphics.h"
@@ -20,32 +19,20 @@ namespace gge { namespace effects {
 		LayerBase *Target;
 
 		////Initializes the effect
-		LayerMover(LayerBase *Target) :
-			speed(0,0),
-			current((float)Target->X, (float)Target->Y),
-			Target(Target), FinishedEvent("Finished", this)
-		{
-			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
-		}
+		LayerMover(LayerBase *Target);
 		////Initializes the effect
-		LayerMover(LayerBase &Target) :
-			speed(0,0),
-			current((float)Target.X, (float)Target.Y),
-			Target(&Target), FinishedEvent("Finished", this)
-		{
-			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
-		}
+		LayerMover(LayerBase &Target);
 		////Sets source and destination to the given values and allows time duration to reach the
 		/// destination
-		void Setup(Point From, Point To, int Time);
+		void Setup(utils::Point From, utils::Point To, int Time);
 		////Sets current destination to the given value and allows time duration to reach it
-		void Setup(Point To, int Time) { Setup(Point((int)current.x,(int)current.y), To, Time); }
+		void Setup(utils::Point To, int Time);
 
 	protected:
-		Point2D from;
-		Point2D to;
-		Point2D current;
-		Point2D speed;
+		utils::Point2D from;
+		utils::Point2D to;
+		utils::Point2D current;
+		utils::Point2D speed;
 
 		virtual bool isFinished();
 		virtual void Process(int Time);

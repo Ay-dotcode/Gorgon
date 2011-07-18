@@ -1,22 +1,12 @@
-//TO BE MOVED
-
-
 #pragma once
 
-#include "math.h"
-#include "memory.h"
-#include "Binary.h"
-#include "UtilsBase.h"
+#include "../Utils/UtilsBase.h"
+#include "../Utils/Binary.h"
 
 
 typedef unsigned long       DWORD;
 typedef int                 BOOL;
 typedef unsigned short      WORD;
-
-
-#include "Point2D.h"
-#include "Bounds2D.h"
-#include "Rectangle2D.h"
 
 #pragma warning(disable:4355)
 
@@ -48,33 +38,33 @@ namespace gge {
 			Middle_Right	= Middle | Right	,
 		};
 
-		const int Mask_Vertical	  = B8(00000111);
-		const int Mask_Horizontal = B8(00111000);
-		const int Mask_Used = B8(00111111);
-		const int Mask_Invalid = ~Mask_Used;
+		static const int Mask_Vertical		= B8(00000111);
+		static const int Mask_Horizontal	= B8(00111000);
+		static const int Mask_Used			= B8(00111111);
+		static const int Mask_Invalid		= ~Mask_Used;
 
 		bool isLeft(Type t) {
-			return t&Mask_Horizontal == Left;
+			return (t&Mask_Horizontal) == Left;
 		}
 
 		bool isRight(Type t) {
-			return t&Mask_Horizontal == Right;
+			return (t&Mask_Horizontal) == Right;
 		}
 
 		bool isCenter(Type t) {
-			return t&Mask_Horizontal == Center;
+			return (t&Mask_Horizontal) == Center;
 		}
 
 		bool isTop(Type t) {
-			return t&Mask_Vertical == Top;
+			return (t&Mask_Vertical) == Top;
 		}
 
 		bool isBottom(Type t) {
-			return t&Mask_Vertical == Bottom;
+			return (t&Mask_Vertical) == Bottom;
 		}
 
 		bool isMiddle(Type t) {
-			return t&Mask_Vertical == Middle;
+			return (t&Mask_Vertical) == Middle;
 		}
 
 		bool isValid(Type t) {

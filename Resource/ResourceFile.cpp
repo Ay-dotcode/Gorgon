@@ -11,41 +11,33 @@
 
 namespace gge { namespace resource {
 
-	bool File::LoadFile(string filename) {
+	bool File::LoadFile(const string &Filename) {
 		char sgn[7];
 
-		ErrorText=NULL;
-		ErrorNo=0;
-		Filename=filename;
+		this->Filename=Filename;
 
-		///*Check file existance
+		///*Check file existence
 		FILE *data;
 		errno_t err;
-		err=fopen_s(&data, filename.data(), "rb");
+		err=fopen_s(&data, Filename.data(), "rb");
 		if(data==NULL) {
-			ErrorText=ERT_FILENOTFOUND;
-			ErrorNo  =ERR_FILENOTFOUND;
-			return false;
+			throw load_error(load_error::FileNotFound, load_error::strings::FileNotFound);
 		}
 
 
 		fread(sgn,6,1,data);
 		sgn[6]=0;
-		///*Check file signiture
+		///*Check file signature
 		if(strcmp(sgn,"GORGON")!=0) {
-			ErrorText=ERT_SIGNITURE;
-			ErrorNo  =ERR_SIGNITURE;
 			fclose(data);
-			return false;
+			throw load_error(load_error::Signature, load_error::strings::Signature);
 		}
 
 		///*Check file version
 		fread(&FileVersion,1,4,data);
-		if(FileVersion>CURVERSION) {
-			ErrorText=ERT_VERSION;
-			ErrorNo  =ERR_SIGNITURE;
+		if(FileVersion>CurrentVersion) {
 			fclose(data);
-			return false;
+			throw load_error(load_error::VersionMismatch, load_error::strings::VersionMismatch);
 		}
 
 		///*Load file type
@@ -54,11 +46,9 @@ namespace gge { namespace resource {
 		///*Check first element
 		int tmpint;
 		fread(&tmpint,1,4,data);
-		if(tmpint!=GID_FOLDER) {
-			ErrorText=ERT_CONTAINMENT;
-			ErrorNo  =ERR_CONTAINMENT;
+		if(tmpint!=GID::Folder) {
 			fclose(data);
-			return false;
+			throw load_error(load_error::Containment, load_error::strings::Containment);
 		}
 
 		int size;
@@ -109,4 +99,10 @@ namespace gge { namespace resource {
 		Loaders.Add(new ResourceLoader(GID_FONTTHEME, LoadFontTheme)); 
 		Loaders.Add(new ResourceLoader(GID_FONTTHEME, LoadFontTheme)); 
 	}
+
+	const string load_error::strings::FileNotFound		= "Cannot find the file specified";
+	const string load_error::strings::Signature			= "Signature mismatch";
+	const string load_error::strings::VersionMismatch	= "Version mismatch";
+	const string load_error::strings::Containment		= "The supplied file is does not contain any data or its representation is invalid.";
+
 } }

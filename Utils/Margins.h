@@ -49,7 +49,7 @@
 #define MARGINS2D_EXISTS
 
 
-namespace gge {
+namespace gge { namespace utils {
 	template <class T_>
 	class basic_Margins2D {
 	public:
@@ -161,4 +161,4 @@ namespace gge {
 #endif
 
 	typedef basic_Margins2D<int> Margins;
-}
+} }

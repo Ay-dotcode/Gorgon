@@ -10,6 +10,7 @@
 //REQUIRES:
 //	gge::utils::SortedCollection
 //	gge::utils::Any
+//	std::unordered_map
 
 //LICENSE
 //	This program is free software: you can redistribute it and/or modify
@@ -46,6 +47,7 @@
 #include "Any.h"
 #include "SortedCollection.h"
 #include "EventChain.h"
+#include <unordered_map>
 
 
 
@@ -559,6 +561,10 @@ namespace gge { namespace utils {
 	public:
 
 		typedef int Token;
+		static const Token NullToken = 0;
+
+		//To be used by owner
+		std::unordered_map<P_, Token> TokenList;
 
 		////Constructor
 		///@Name	: Name of the event
@@ -773,6 +779,7 @@ namespace gge { namespace utils {
 		}
 
 		template<class R_>
+		
 		Token DoubleLink(ConsumableEvent<R_, P_> &target, int order) {
 			typedef bool(ConsumableEvent<O_,P_>::*MyFire	)(P_) ;
 			typedef bool(ConsumableEvent<R_,P_>::*TargetFire)(P_);
@@ -791,28 +798,6 @@ namespace gge { namespace utils {
 					Any()
 				), order
 			);
-		}
-
-		////Unregisters the given event handler using handler function
-		template<class F_>
-		void Unregister(F_ handler) {
-			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
-				if(Compare(&(*it), handler)) {
-					it.Delete();
-					return;
-				}
-			}
-		}
-
-		////Unregisters the given handler referenced by the object and function
-		template<class R_, class F_>
-		void Unregister(R_ *obj, F_ handler) {
-			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
-				if(Compare(&(*it),obj, handler)) {
-					it.Delete();
-					return;
-				}
-			}
 		}
 
 		////Unregisters the given event handler using handler function
@@ -837,6 +822,28 @@ namespace gge { namespace utils {
 			}
 		}
 
+		////Unregisters the given event handler using handler function
+		template<class F_>
+		void Unregister(F_ handler) {
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+				if(Compare(&(*it), handler)) {
+					Unregister(reinterpret_cast<Token>(&it.GetWrapper()));
+					return;
+				}
+			}
+		}
+
+		////Unregisters the given handler referenced by the object and function
+		template<class R_, class F_>
+		void Unregister(R_ *obj, F_ handler) {
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+				if(Compare(&(*it),obj, handler)) {
+					Unregister(reinterpret_cast<Token>(&it.GetWrapper()));
+					return;
+				}
+			}
+		}
+
 		template<class R_, class F_>
 		void UnregisterClass(R_ &obj, F_ handler) {
 			Unregister(&obj, handler);
@@ -847,7 +854,7 @@ namespace gge { namespace utils {
 		void UnregisterClass(R_ *obj, F_ handler) {
 			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
 				if(Compare(&(*it), obj, handler)) {
-					it.Delete();
+					Unregister(reinterpret_cast<Token>(&it.GetWrapper()));
 					return;
 				}
 			}
@@ -861,7 +868,12 @@ namespace gge { namespace utils {
 
 		////Unregisters a given handler token
 		void Unregister(Token token) {
-			reinterpret_cast< ITEMTYPE_* >(token).Delete();
+			for(std::map<P_, Token>::iterator i=TokenList.begin();i!=TokenList.end();++i) {
+				if(i->second==token)
+					i->second=NullToken;
+			}
+
+			reinterpret_cast< ITEMTYPE_* >(token)->Delete();
 		}
 
 		void MakeFirst(Token token) {
@@ -918,33 +930,44 @@ namespace gge { namespace utils {
 			return item->Item->enabled;
 		}
 
+		bool Fire(Token token, P_ params) {
+			if(token==NullToken)
+				return false;
+
+			return reinterpret_cast< ITEMTYPE_* >(token)->Get().Fire(params, *this->object, eventname);
+		}
+
+		bool Fire(Token token) {
+			Fire(token, P_());
+		}
+
 		////This function triggers the event causing all 
 		/// handlers to be called
-		bool operator()(P_ params) {
+		Token operator()(P_ params) {
 			return Fire(params);
 		}
 
 		////This function triggers the event causing all 
 		/// handlers to be called
-		bool operator()() {
+		Token operator()() {
 			return Fire();
 		}
 
 		////This function triggers the event causing all 
 		/// handlers to be called
-		bool Fire(P_ params) {
+		Token Fire(P_ params) {
 			for(SortedCollection<HANDLER_, int>::Iterator it=events.First();it.isValid();it.Next()) {
 				if(it->enabled)
 					if(it->Fire(params, *this->object, eventname))
-						return true;
+						return reinterpret_cast<Token>(&it.GetWrapper());
 			}
 
-			return false;
+			return 0;
 		}
 
 		////This function triggers the event causing all 
 		/// handlers to be called
-		bool Fire() {
+		Token Fire() {
 			return Fire(P_());
 		}
 
@@ -974,12 +997,12 @@ namespace gge { namespace utils {
 		Token AddHandler(HANDLER_ *object) {
 			ITEMTYPE_ *item = &events.Add(object);
 
-			return reinterpret_cast<int>(item);
+			return reinterpret_cast<Token>(item);
 		}
 		Token AddHandler(HANDLER_ *object, int order) {
 			ITEMTYPE_ *item = &events.Add(object, order);
 
-			return reinterpret_cast<int>(item);
+			return reinterpret_cast<Token>(item);
 		}
 
 

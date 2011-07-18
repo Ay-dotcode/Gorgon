@@ -1,5 +1,7 @@
 #include "Wave.h"
 
+using namespace gge::utils;
+
 namespace gge { namespace sound {
 
 	namespace system {
@@ -10,14 +12,10 @@ namespace gge { namespace sound {
 		}
 
 		void CollectWaveGarbage() {
-			Waves.ResetIteration();
-			Wave *wave;
-
-			while(wave=Waves.next()) {
+			for(Collection<Wave>::Iterator wave=Waves.First();wave.isValid();wave.Next()) {
 				if(!wave->isPlaying()) {
 					if(wave->AutoDestruct) {
-						Waves.Remove(wave);
-						delete wave;
+						wave.Delete();
 					} else {
 						if(wave->finished) wave->finished(*wave);
 					}

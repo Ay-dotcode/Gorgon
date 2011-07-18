@@ -1,15 +1,16 @@
 #include "LayerResizer.h"
+#include "..\Utils\BasicMath.h"
+
+using namespace gge::utils;
+
 namespace gge { namespace effects {
-	void LayerResizer::Setup(gge::Rectangle From, gge::Rectangle To, int Time) {
+	void LayerResizer::Setup(utils::Rectangle From, utils::Rectangle To, int Time) {
 
 		from=Rectangle2D(From);
 		current=from;
 		to=To;
 
-		Target->X=(int)from.Left;
-		Target->Y=(int)from.Top;
-		Target->W=(int)from.Width;
-		Target->H=(int)from.Height;
+		Target->BoundingBox=from;
 		this->progressed=0;
 
 		if(Time) {
@@ -25,15 +26,16 @@ namespace gge { namespace effects {
 			speed.Width=0;
 			speed.Height=0;
 			current=from=to;
-			Target->X=(int)to.Left;
-			Target->Y=(int)to.Top;
-			Target->W=(int)to.Width;
-			Target->H=(int)to.Height;
+			Target->BoundingBox=to;
 		}
 	}
 
+	void LayerResizer::Setup( utils::Rectangle To, int Time ) {
+		Setup(utils::Rectangle(Round(current.Left), Round(current.Top), Round(current.Width), Round(current.Height)), To, Time);
+	}
+
 	bool LayerResizer::isFinished() {
-		return current.Left==to.Left && current.Top==to.Top && current.Width==to.Width && current.Height==to.Height;
+		return current==to;
 	}
 
 	void LayerResizer::Process(int Time) {
@@ -47,7 +49,7 @@ namespace gge { namespace effects {
 			if(current.Left>to.Left)
 				current.Left=to.Left;
 		}
-		Target->X=Round(current.Left);
+		Target->BoundingBox.Left=Round(current.Left);
 
 
 		if(from.Top>to.Top) {
@@ -60,7 +62,7 @@ namespace gge { namespace effects {
 			if(current.Top>to.Top)
 				current.Top=to.Top;
 		}
-		Target->Y=Round(current.Top);
+		Target->BoundingBox.Top=Round(current.Top);
 
 
 		if(from.Width>to.Width) {
@@ -73,7 +75,6 @@ namespace gge { namespace effects {
 			if(current.Width>to.Width)
 				current.Width=to.Width;
 		}
-		Target->W=Round(current.Width);
 
 
 		if(from.Height>to.Height) {
@@ -86,6 +87,7 @@ namespace gge { namespace effects {
 			if(current.Height>to.Height)
 				current.Height=to.Height;
 		}
-		Target->H=Round(current.Height);
+
+		Target->BoundingBox.SetSize(Round(current.Width), Round(current.Height));
 	}
 } }

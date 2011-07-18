@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Utils/GGE.h"
 #include "../Resource/GRE.h"
 #include "../Engine/Animator.h"
 #include "../Engine/Graphics.h"

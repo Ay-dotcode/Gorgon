@@ -88,6 +88,8 @@ namespace gge { namespace utils {
 			if(Left>Right) std::swap(Left,Right);
 			if(Top>Bottom) std::swap(Top,Bottom);
 		}
+		template<class O_>
+		basic_Bounds2D(const basic_Bounds2D<O_> &r) : Left((T_)r.Left), Top((T_)r.Top), Right((T_)r.Right), Bottom((T_)r.Bottom) {}
 		basic_Bounds2D(const basic_Rectangle2D<T_> &bounds);
 
 		operator basic_Rectangle2D<T_>() const;
@@ -179,6 +181,14 @@ namespace gge { namespace utils {
 			);
 		}
 
+		bool operator ==(const basic_Bounds2D &b) const {
+			return Left==b.Left && Top==b.Top && Right==b.Right && Bottom==b.Bottom;
+		}
+
+		bool operator !=(const basic_Bounds2D &b) const {
+			return Left!=b.Left || Top!=b.Top || Right!=b.Right || Bottom!=b.Bottom;
+		}
+
 		basic_Bounds2D operator +(const basic_Bounds2D &b) const {
 			return Union(b);
 		}
@@ -244,6 +254,30 @@ namespace gge { namespace utils {
 		bool isInside(const basic_Point2D<T_> &p) const {
 			return p.x>Left && p.y>Top && p.x<Right && p.y<Bottom;
 		}
+
+		void SetSize(const basic_Size2D<T_> &s) {
+			Right = Left + s.Width;
+			Bottom= Top  + s.Height;
+		}
+
+		void SetSize(T_ Width, T_ Height) {
+			Right = Left + Width;
+			Bottom= Top  + Height;
+		}
+
+		void MoveTo(const basic_Point2D<T_> &p) {
+			Right = (Right-Left)+p.x	;
+			Bottom= (Bottom-Top)+p.y	;
+			Left  = p.x	;
+			Top   = p.y ;
+		}
+		
+		void MoveTo(T_ x, T_ y) {
+			Right = (Right-Left)+x	;
+			Bottom= (Bottom-Top)+y	;
+			Left  = x;
+			Top   = y;
+		}
 	};
 
 	////Allows streaming of bounds. in string representation, bounds is show as
@@ -298,7 +332,7 @@ namespace gge { namespace utils {
 	{ }
 
 	template <class T_>
-	inline basic_Bounds2D<T_>::operator basic_Rectangle2D<T_>() {
+	inline basic_Bounds2D<T_>::operator basic_Rectangle2D<T_>() const {
 		return basic_Rectangle2D<T_>(*this);
 	}
 

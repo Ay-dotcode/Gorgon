@@ -1,239 +1,711 @@
 #pragma once
 
-#include "../Utils/LinkedList.h"
+#include "../Utils/SortedCollection.h"
 #include "../Utils/Collection.h"
-#include "../Utils/GGE.h"
-#include "../Utils/Utils.h"
+#include "GGE.h"
 
 #include "OS.h"
 #include "../Utils/ConsumableEvent.h"
+#include "../Utils/Bounds2D.h"
 
 namespace gge { namespace input {
 	class BasicPointerTarget;
 
-	class KeyboardModifier {
-	public:
-		enum Type {
-			None		= 0,
-			Shift		= 1,
-			Ctrl		= 2,
-			Alt			= 4,
-			Super		= 8,
 
-			ShiftCtrl	= Shift | Ctrl ,
-			ShiftAlt	= Shift | Alt  ,
-			CtrlAlt		= Ctrl  | Alt  ,
-			ShiftCtrlAlt= Shift | Ctrl | Alt ,
+	namespace keyboard {
+		class Modifier {
+		public:
+			enum Type {
+				None		= 0,
+				Shift		= 1,
+				Ctrl		= 2,
+				Alt			= 4,
+				Super		= 8,
+
+				ShiftCtrl	= Shift | Ctrl ,
+				ShiftAlt	= Shift | Alt  ,
+				CtrlAlt		= Ctrl  | Alt  ,
+				ShiftCtrlAlt= Shift | Ctrl | Alt ,
+			};
+
+			static bool isAlternate;
+			static Type Current;
+
+			////Checks the the current state of the keyboard if there are any real modifiers
+			/// in effect (Namely control, alt, and windows keys)
+			static bool Check(Type m1) {
+				return m1&Ctrl || m1&Alt || m1&Super;
+			}
+
+			static bool Check() {
+				return Current&Ctrl || Current&Alt || Current&Super;
+			}
+
+			static Type Remove(Type m1, Type m2) {
+				return Type(m1 & ~m2);
+			}
+
+			static Type Add(Type m1, Type m2) {
+				return Type(m1 | m2);
+			}
+
+			static void Remove(Type m2) {
+				Current=Type(Current & ~m2);
+			}
+
+			static void Add(Type m2) {
+				Current=Type(Current | m2);
+			}
+
+			static bool IsModified() {
+				return Check();
+			}
+
+
+		private:
+			Modifier();
 		};
 
-		static bool isAlternate;
-		static Type Current;
-
-		////Checks the the current state of the keyboard if there are any real modifiers
-		/// in effect (Namely control, alt, and windows keys)
-		static bool Check(Type m1) {
-			return m1&Ctrl || m1&Alt || m1&Super;
+		////Bitwise OR operation on KeyboardModifier enumeration
+		inline Modifier::Type operator | (Modifier::Type m1, Modifier::Type m2) {
+			return Modifier::Type( m1|m2 );
 		}
 
-		static bool Check() {
-			return Current&Ctrl || Current&Alt || Current&Super;
+		////Bitwise AND operation on KeyboardModifier enumeration
+		inline Modifier::Type operator & (Modifier::Type m1, Modifier::Type m2) {
+			return Modifier::Type( m1&m2 );
 		}
 
-		static Type Remove(Type m1, Type m2) {
-			return Type(m1 & ~m2);
+		////Bitwise EQUAL OR operation on KeyboardModifier enumeration
+		inline Modifier::Type operator |= (Modifier::Type m1, Modifier::Type m2) {
+			return Modifier::Type( m1|m2 );
 		}
 
-		static Type Add(Type m1, Type m2) {
-			return Type(m1 | m2);
+		////Bitwise EQUAL AND operation on KeyboardModifier enumeration
+		inline Modifier::Type operator &= (Modifier::Type m1, Modifier::Type m2) {
+			return Modifier::Type( m1&m2 );
 		}
 
-		static void Remove(Type m2) {
-			Current=Type(Current & ~m2);
-		}
+		class KeyCodes {
+		public:
+			static const int Shift;
+			static const int Control;
+			static const int Alt;
+			static const int Super;
 
-		static void Add(Type m2) {
-			Current=Type(Current | m2);
-		}
+			static const int Home;
+			static const int End;
+			static const int Insert;
+			static const int Delete;
+			static const int PageUp;
+			static const int PageDown;
 
-		static bool IsModified() {
-			return Check();
-		}
+			static const int Left;
+			static const int Up;
+			static const int Right;
+			static const int Down;
+
+			static const int PrintScreen;
+			static const int Pause;
+
+			static const int CapsLock;
+			static const int NumLock;
+
+			static const int Enter;
+			static const int Tab;
+			static const int Backspace;
+			static const int Space;
+			static const int Escape;
+
+			static const int F1;
+			static const int F2;
+			static const int F3;
+			static const int F4;
+			static const int F5;
+			static const int F6;
+			static const int F7;
+			static const int F8;
+			static const int F9;
+			static const int F10;
+			static const int F11;
+			static const int F12;
+		};
 
 
-	private:
-		KeyboardModifier();
-	};
+		////Types of keyboard events
+		class Event {
+		public:
+			enum Type {
+				////A character is typed (O/S controlled, i.e. repeating keys)
+				Char,
+				////A key is pressed
+				Down,
+				////A key is released
+				Up
+			} event;
 
-	////Bitwise OR operation on KeyboardModifier enumeration
-	inline KeyboardModifier::Type operator | (KeyboardModifier::Type m1, KeyboardModifier::Type m2) {
-		return KeyboardModifier::Type( m1|m2 );
+			int keycode;
+
+			Event() { }
+			Event(Type event, int keycode) : event(event), keycode(keycode) { }
+
+			bool operator ==(const Event &r) const {
+				return (event==r.event)&&(keycode==r.keycode);
+			}
+		};
 	}
+} }
 
-	////Bitwise AND operation on KeyboardModifier enumeration
-	inline KeyboardModifier::Type operator & (KeyboardModifier::Type m1, KeyboardModifier::Type m2) {
-		return KeyboardModifier::Type( m1&m2 );
-	}
-
-	////Bitwise EQUAL OR operation on KeyboardModifier enumeration
-	inline KeyboardModifier::Type operator |= (KeyboardModifier::Type m1, KeyboardModifier::Type m2) {
-		return KeyboardModifier::Type( m1|m2 );
-	}
-
-	////Bitwise EQUAL AND operation on KeyboardModifier enumeration
-	inline KeyboardModifier::Type operator &= (KeyboardModifier::Type m1, KeyboardModifier::Type m2) {
-		return KeyboardModifier::Type( m1&m2 );
-	}
-
-	class KeyCodes {
+namespace std { //for consumable event's token list
+	template<>
+	class hash<gge::input::keyboard::Event>
+		: public unary_function<gge::input::keyboard::Event, size_t>
+	{	// hash functor
 	public:
-		static const int Shift;
-		static const int Control;
-		static const int Alt;
-		static const int Super;
+		typedef gge::input::keyboard::Event _Kty;
 
-		//!TODO: list all keycode except ASCII ones
-/*		static const int Home;
-		static const int End;
-		static const int PageUp;
-		static const int PageDown;
-		static const int Left;
-		static const int Top;
-		static const int Right;
-		static const int Bottom;
-	*/
+		size_t operator()(const _Kty& _Keyval) const {	
+			return _Keyval.event<<16 ^ _Keyval.keycode;
+		}
 	};
+}
+
+namespace gge { namespace input {
+	namespace keyboard {
+		extern utils::ConsumableEvent<utils::Empty, Event> Events;
+	}
+
+	namespace mouse {
+
+		class HandlerBase;
+		class Event;
+
+		class MouseTarget {
+
+		};
+
+		class Event {
+		public:
+			enum Type {
+				None		= 0,
+
+				Left		= 1<<0,
+				Right		= 1<<1,
+				Middle		= 1<<2,
+				X1			= 1<<3,
+				X2			= 1<<4,
+
+				Click		= 1<<5,
+				Down		= 1<<6,
+				Up			= 1<<7,
+				DoubleClick	= 1<<8,
+
+				Over		= 1<<9,
+				Out			= 1<<10,
+				Move		= 1<<11,
+				VScroll		= 1<<12,
+				HScroll		= 1<<13,
+
+				OverCheck	= 1<<14,
 
 
+				Left_Click	= Left	| Click,
+				Right_Click	= Right	| Click,
+				Middle_Click= Middle| Click,
+				X1_Click	= X1	| Click,
+				X2_Click	= X2	| Click,
 
-	////Types of mouse event
-	enum MouseEventType {
-		MOUSE_EVENT_NONE=0,
-		MOUSE_EVENT_LEFT=1,
-		MOUSE_EVENT_RIGHT=2,
-		MOUSE_EVENT_MIDDLE=4,
+				Left_Down	= Left	| Down,
+				Right_Down	= Right	| Down,
+				Middle_Down	= Middle| Down,
+				X1_Down		= X1	| Down,
+				X2_Down		= X2	| Down,
 
-		MOUSE_EVENT_CLICK=0,
-		////Left click
-		MOUSE_EVENT_LCLICK=1,
-		////Right click
-		MOUSE_EVENT_RCLICK=2,
-		////Middle click
-		MOUSE_EVENT_MCLICK=4,
+				Left_Up		= Left	| Up,
+				Right_Up	= Right	| Up,
+				Middle_Up	= Middle| Up,
+				X1_Up		= X1	| Up,
+				X2_Up		= X2	| Up,
 
-		MOUSE_EVENT_DOWN=8,
-		////Left button down
-		MOUSE_EVENT_LDOWN=9,
-		////Right button down
-		MOUSE_EVENT_RDOWN=10,
-		////Middle button down
-		MOUSE_EVENT_MDOWN=12,
+				Left_DoubleClick	= Left	| DoubleClick,
+				Right_DoubleClick	= Right	| DoubleClick,
+				Middle_DoubleClick	= Middle| DoubleClick,
+				X1_DoubleClick		= X1	| DoubleClick,
+				X2_DoubleClick		= X2	| DoubleClick,
 
-		MOUSE_EVENT_UP=16,
-		////Left button up
-		MOUSE_EVENT_LUP=17,
-		////Right button up
-		MOUSE_EVENT_RUP=18,
-		////Middle button up
-		MOUSE_EVENT_MUP=20,
+				ButtonMask			= B8 (00001111),
+				AllButOverCheck		= B16(00011111,11111111),
+			};
 
-		MOUSE_EVENT_DBLCLICK=32,
-		////Left button double click
-		MOUSE_EVENT_LDBLCLICK=33,
-		////Right button double click
-		MOUSE_EVENT_RDBLCLICK=34,
-		////Middle button double click
-		MOUSE_EVENT_MDBLCLICK=36,
+			static bool isClick(Type t) {
+				return (t&ButtonMask) && (t&Click);
+			}
 
-		////Mouse is over the target
-		MOUSE_EVENT_OVER,
-		////Mouse is out of the target
-		MOUSE_EVENT_OUT,
-		////Mouse moves within the target
-		MOUSE_EVENT_MOVE,
-		////Check if the mouse is over the target
-		/// application should not perform any mouse over
-		/// operation if the event is received
-		MOUSE_EVENT_OVER_CHECK,
+			static bool isDown(Type t) {
+				return (t&ButtonMask) && (t&Down);
+			}
 
-		////Vertical mouse scrolling is used
-		MOUSE_EVENT_VSCROLLL,
-		////Horizontal mouse scrolling is used
-		MOUSE_EVENT_HSCROLLL,
+			static bool isUp(Type t) {
+				return (t&ButtonMask) && (t&Up);
+			}
+
+			static bool isDoubleClick(Type t) {
+				return (t&ButtonMask) && (t&DoubleClick);
+			}
+
+			static bool isLeft(Type t) {
+				return (t&Left);
+			}
+
+			static bool isRight(Type t) {
+				return (t&Right)!=0;
+			}
+
+			static bool isMiddle(Type t) {
+				return (t&Middle)!=0;
+			}
+
+			static Type getButton(Type t) {
+				return (Type)(t&ButtonMask);
+			}
+
+			static bool isX1(Type t) {
+				return (t&X1)!=0;
+			}
+
+			static bool isX2(Type t) {
+				return (t&X2)!=0;
+			}
+
+			class Target {
+			public:
+
+				Target(HandlerBase *handler, Event::Type eventmask=AllButOverCheck) : EventMask(eventmask) ,handler(handler)  {
+
+				}
+
+				Event::Type EventMask;
+				HandlerBase *handler;
+
+				virtual bool Fire(Event::Type event, utils::Point location, int amount);
+
+			};
+		};
+
+		Event::Type operator | (Event::Type l, Event::Type r) {
+			return (Event::Type)((int)l|r);
+		}
+
+		Event::Type operator & (Event::Type l, Event::Type r) {
+			return (Event::Type)((int)l&r);
+		}
+
+		Event::Type operator ~ (Event::Type l) {
+			return (Event::Type)(~(int)l);
+		}
+
+		class EventChain {
+		private:
+
+		public:
+			class Object : public Event::Target {
+				friend class EventChain;
+			public:
+				Object(HandlerBase *handler, utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck) : Event::Target(handler, eventmask), Bounds(bounds), enabled(true) {
+
+				}
+				~Object();
+
+				utils::Bounds Bounds;
+
+				void Reorder(int order) {
+					wrapper->Reorder(order);
+				}
+
+				int GetOrder() const {
+					return wrapper->GetKey();
+				}
+
+				void Remove();
+
+				void Enable() {
+					enabled=true;
+				}
+
+				void Disable() {
+					enabled=false;
+				}
+
+				void ToggleEnabled() {
+					enabled=!enabled;
+				}
+
+				bool isEnabled() const {
+					return enabled;
+				}
+
+				virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+					if(!enabled)
+						return false;
+
+					return Event::Target::Fire(event, location, amount);
+				}
+
+			private:
+				utils::SortedCollection<Object>::Wrapper * wrapper;
+
+				bool enabled;
+			};
+
+			bool Fire(Event::Type event, utils::Point location, int amount) {
+				for(utils::SortedCollection<Object>::Iterator i=Events.First();i.isValid();i.Next()) {
+					i->Fire(event, location, amount);
+				}
+			}
+
+			utils::SortedCollection<Object> Events;
+
+
+		private:
+			Object &Register(HandlerBase *handler, utils::Bounds bounds, Event::Type eventmask) {
+				Object *obj=new Object(
+					handler,
+					bounds,
+					eventmask
+				);
+
+				obj->wrapper=&Events.Add(obj);
+
+				return *obj;
+			}
+
+		public:
+			Object &Register(bool (*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Bounds bounds, utils::Any data, Event::Type eventmask=Event::AllButOverCheck);
+
+			Object &Register(bool (*fn)(Event::Type event, utils::Point location, int amount), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+
+			Object &Register(bool (*fn)(Event::Type event, utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+
+			Object &Register(bool (*fn)(utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+
+			Object &Register(bool (*fn)(), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Register(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Bounds bounds, utils::Any data, Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Register(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Register(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Register(R_ &object, bool (R_::*fn)(utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Register(R_ &object, bool (R_::*fn)(), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+		};
+
+		////This is a code base to help with mouse events
+		class EventProvider {
+		public:
+
+			virtual bool PropagateMouseEvent(Event::Type event, utils::Point location, int amount);
+
+			EventChain MouseEvents;
+
+		protected:
+
+		};
+
+		class EventCallback {
+		private:
+
+		public:
+			class Object : public Event::Target {
+				friend class EventCallback;
+			public:
+				Object(HandlerBase *handler, Event::Type eventmask=Event::AllButOverCheck) : Event::Target(handler, eventmask), enabled(true) {
+
+				}
+				~Object();
+
+				void Enable() {
+					enabled=true;
+				}
+
+				void Disable() {
+					enabled=false;
+				}
+
+				void ToggleEnabled() {
+					enabled=!enabled;
+				}
+
+				bool isEnabled() const {
+					return enabled;
+				}
+
+				virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+					if(!enabled)
+						return false;
+
+					return Event::Target::Fire(event, location, amount);
+				}
+
+			private:
+				utils::SortedCollection<Object>::Wrapper * wrapper;
+
+				bool enabled;
+			};
+
+			operator bool() {
+				if(!object)
+					return false;
+				if(!object->isEnabled())
+					return false;
+
+				return true;
+			}
+
+			bool Fire(Event::Type event, utils::Point location, int amount) {
+				if(object)
+					object->Fire(event, location, amount);
+				else
+					return false;
+			}
+
+			Object *object;
+
+
+		private:
+			Object &Set(HandlerBase *handler, Event::Type eventmask) {
+				if(object)
+					delete object;
+
+				object=new Object(
+					handler,
+					eventmask
+				);
+
+				return *object;
+			}
+
+		public:
+			Object &Set(bool (*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Any data, Event::Type eventmask=Event::AllButOverCheck);
+
+			Object &Set(bool (*fn)(Event::Type event, utils::Point location, int amount), Event::Type eventmask=Event::AllButOverCheck);
+
+			Object &Set(bool (*fn)(Event::Type event, utils::Point location), Event::Type eventmask=Event::AllButOverCheck);
+
+			Object &Set(bool (*fn)(utils::Point location), Event::Type eventmask=Event::AllButOverCheck);
+
+			Object &Set(bool (*fn)(), Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Set(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Any data, Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Set(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Set(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Set(R_ &object, bool (R_::*fn)(utils::Point location), Event::Type eventmask=Event::AllButOverCheck);
+
+			template <class R_>
+			Object &Set(R_ &object, bool (R_::*fn)(), Event::Type eventmask=Event::AllButOverCheck);
+
+			void Reset() {
+				if(object)
+					delete object;
+
+				object=NULL;
+			}
+		};
+
+		////This is a code base to help with mouse events
+		class CallbackProvider {
+		public:
+
+			virtual bool PropagateMouseEvent(Event::Type event, utils::Point location, int amount);
+
+			EventCallback Callback;
+
+		protected:
+
+		};
+
+		class HandlerBase{
+		public:
+			utils::Any data;
+
+			HandlerBase(utils::Any data) : data(data) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) = 0;
+		};
+		class FullFunctionHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)(Event::Type event, utils::Point location, int amount, utils::Any data);
+			Handler fn;
+
+			FullFunctionHandler(Handler fn, utils::Any data) : HandlerBase(data), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return fn(event, location, amount, data);
+			}
+		};
+
+		class FunctionHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)(Event::Type event, utils::Point location, int amount);
+			Handler fn;
+
+			FunctionHandler(Handler fn) : HandlerBase(utils::Any()), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return fn(event, location, amount);
+			}
+		};
+
+		class NoAmountFunctionHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)(Event::Type event, utils::Point location);
+			Handler fn;
+
+			NoAmountFunctionHandler(Handler fn) : HandlerBase(utils::Any()), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return fn(event, location);
+			}
+		};
+
+		class LocationOnlyFunctionHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)(utils::Point location);
+			Handler fn;
+
+			LocationOnlyFunctionHandler(Handler fn) : HandlerBase(utils::Any()), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return fn(location);
+			}
+		};
+
+		class EmptyFunctionHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)();
+			Handler fn;
+
+			EmptyFunctionHandler(Handler fn) : HandlerBase(utils::Any()), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return fn();
+			}
+		};
+
+		template <class R_>
+		class FullClassHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)(Event::Type event, utils::Point location, int amount, utils::Any data);
+			Handler fn;
+			R_ *object;
+
+			FullClassHandler(R_ *object, Handler fn, utils::Any data) : HandlerBase(data), object(object), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return (object->*fn)(event, location, amount, data);
+			}
+		};
+
+		template <class R_>
+		class ClassHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)(Event::Type event, utils::Point location, int amount);
+			Handler fn;
+			R_ *object;
+
+			ClassHandler(R_ *object, Handler fn) : HandlerBase(utils::Any()), object(object), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return (object->*fn)(event, location, amount);
+			}
+		};
+
+		template <class R_>
+		class NoAmountClassHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)(Event::Type event, utils::Point location);
+			Handler fn;
+			R_ *object;
+
+			NoAmountClassHandler(R_ *object, Handler fn) : HandlerBase(utils::Any()), object(object), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return (object->*fn)(event, location);
+			}
+		};
+
+		template <class R_>
+		class LocationOnlyClassHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)(utils::Point location);
+			Handler fn;
+			R_ *object;
+
+			LocationOnlyClassHandler(R_ *object, Handler fn) : HandlerBase(utils::Any()), object(object), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return (object->*fn)(location);
+			}
+		};
+
+		template <class R_>
+		class EmptyClassHandler : public HandlerBase {
+		public:
+			typedef bool (*Handler)();
+			Handler fn;
+			R_ *object;
+
+			EmptyClassHandler(R_ *object, Handler fn) : HandlerBase(utils::Any()), object(object), fn(fn) {
+
+			}
+
+			virtual bool Fire(Event::Type event, utils::Point location, int amount) {
+				return (object->*fn)();
+			}
+		};
+
 		
-		
-		MOUSE_EVENT_X1=64,
-		MOUSE_EVENT_X1CLICK=MOUSE_EVENT_X1 | MOUSE_EVENT_CLICK,
-		MOUSE_EVENT_X1DOWN=MOUSE_EVENT_X1 | MOUSE_EVENT_DOWN,
-		MOUSE_EVENT_X1UP=MOUSE_EVENT_X1 | MOUSE_EVENT_DOWN,
-		MOUSE_EVENT_X1DBLCLICK=MOUSE_EVENT_X1 | MOUSE_EVENT_DBLCLICK,
+		extern Event::Type		PressedButtons;
 
-		MOUSE_EVENT_X2=128,
-		MOUSE_EVENT_X2CLICK=MOUSE_EVENT_X2 | MOUSE_EVENT_CLICK,
-		MOUSE_EVENT_X2DOWN=MOUSE_EVENT_X2 | MOUSE_EVENT_DOWN,
-		MOUSE_EVENT_X2UP=MOUSE_EVENT_X2 | MOUSE_EVENT_DOWN,
-		MOUSE_EVENT_X2DBLCLICK=MOUSE_EVENT_X2 | MOUSE_EVENT_DBLCLICK,
-		
-	};
+		extern Event::Target	*HoveredObject;
+		extern Event::Target	*PressedObject;
 
-	////Types of keyboard events
-	class KeyboardEvent {
-	public:
-		enum Type {
-			////A character is typed (O/S controlled, i.e. repeating keys)
-			Char,
-			////A key is pressed
-			Down,
-			////A key is released
-			Up
-		} event;
-
-		int keycode;
-	};
-
-	struct MouseEventObject;
-	////Token given by registering a mouse event
-	typedef	utils::LinkedListItem<MouseEventObject> (*MouseEventToken);
-	////Defines how a mouse event handing function should be
-	typedef bool (*MouseEvent)(MouseEventType event, int x, int y, void *data);
-	////Defines how a mouse scroll event handing function should be
-	typedef bool (*MouseScrollEvent)(int amount, MouseEventType event, int x, int y, void *data);
-
-	////Mouse event object is used internally to keep track of mouse event handlers
-	struct MouseEventObject {
-		////Bounds of the event area, this variable is relative to the enclosing layer
-		Bounds bounds;
-		////Mouse over event handler
-		MouseEvent over;
-		////Mouse over event check handler
-		MouseEvent checkover;
-		////Mouse out event handler
-		MouseEvent out;
-		////Mouse click event handler
-		MouseEvent click;
-		////Mouse move event handler
-		MouseEvent move;
-		////Mouse down event handler
-		MouseEvent down;
-		////Mouse up event handler
-		MouseEvent up;
-		////Mouse double click event handler
-		MouseEvent dblclick;
-		////Vertical scroll event
-		MouseScrollEvent vscroll;
-		////Horizontal scroll event (don't rely on it most mice do not have horizontal scroll)
-		MouseScrollEvent hscroll;
-		////The token given by register mouse event
-		MouseEventToken *token;
-		BasicPointerTarget *parent;
-		////Any data that is left to be passed to event handlers
-		void *data;
-		////Whether mouse is reported to be over this region
-		bool isover;
-		////Whether this mouse event is enabled
-		bool Enabled;
-	};
-	extern MouseEventObject *pressedObject;
-
+		extern utils::Point	PressedPoint;
+		extern utils::Point	CurrentPoint;
+	}
 
 	namespace system {
 		////Processes a given char, this function intended to be called from OS
@@ -255,7 +727,7 @@ namespace gge { namespace input {
 		////Processes the current mouse position this information is taken from OS subsystem
 		void ProcessMousePosition(os::WindowHandle Window);
 		////Processes click of mouse button
-		///@button	: button number 1 for left, 2 for right and 4 for middle
+		///@button	: button number 1 for left, 2 for right  and 4 for middle
 		void ProcessMouseClick(int button, int x, int y);
 		////Processes given mouse button as pressed
 		///@button	: button number 1 for left, 2 for right and 4 for middle
@@ -270,103 +742,13 @@ namespace gge { namespace input {
 		void ProcessVScroll(int amount,int x,int y);
 		////Processes horizontal scroll
 		void ProcessHScroll(int amount,int x,int y);
+
+		extern bool hoverfound;
 	}
 
-	////This interface defines a class that can be used
-	/// as a common target of mouse events
-	class BasicPointerTarget {
-	public:
-		////The array of mouse events
-		utils::LinkedList<MouseEventObject> mouseevents;
 
-		////This function propagates the mouse event to mouse events
-		/// registered for this target if any of one of the targets is
-		/// the receiver of the event function will return true and 
-		/// propagation will terminate, this function is responsible
-		/// to determine who will receive the event
-		///@event	: the type of the mouse event
-		///@x		: Position of the event	
-		///@y		: Position of the event	
-		///@data	: Always null, used to preserve compatibility
-		virtual bool PropagateMouseEvent(MouseEventType event, int x, int y, void *data);
 
-		////This function propagates the mouse scroll event to mouse events
-		/// registered for this target if any of one of the targets is
-		/// the receiver of the event function will return true and 
-		/// propagation will terminate, this function is responsible
-		/// to determine who will receive the event
-		///@amount	: amount of scrolling
-		///@event	: the type of the mouse event
-		///@x		: Position of the event	
-		///@y		: Position of the event	
-		///@data	: Always null, used to preserve compatibility
-		virtual bool PropagateMouseScrollEvent(int amount, MouseEventType event, int x, int y, void *data);
-		////This function registers a mouse event with the given coordinates,
-		/// data and event handlers. This function returns mouse event token that
-		/// can be used to modify event properties, events are created in enabled state
-		MouseEventToken RegisterMouseEvent(int x, int y, int w, int h, void *data, 
-			MouseEvent click	, MouseEvent over=NULL, MouseEvent out=NULL,
-			MouseEvent move=NULL, MouseEvent down=NULL, MouseEvent up=NULL, MouseEvent doubleclick=NULL) {
-				Bounds b(x,y,x+w,y+h);
-				return RegisterMouseEvent(b,data,click,over,out,move,down,up,doubleclick);
-		}
-		////This function registers a mouse event with the given coordinates,
-		/// data and event handlers. This function returns mouse event token that
-		/// can be used to modify event properties, events are created in enabled state
-		MouseEventToken RegisterMouseEvent(Point position, int w, int h, void *data, 
-			MouseEvent click	, MouseEvent over=NULL, MouseEvent out=NULL,
-			MouseEvent move=NULL, MouseEvent down=NULL, MouseEvent up=NULL, MouseEvent doubleclick=NULL) {
-				Bounds b(position,w,h);
-				return RegisterMouseEvent(b,data,click,over,out,move,down,up,doubleclick);
-		}
-		////This function registers a mouse event with the given coordinates,
-		/// data and event handlers. This function returns mouse event token that
-		/// can be used to modify event properties, events are created in enabled state
-		MouseEventToken RegisterMouseEvent(Bounds bounds, void *data, 
-			MouseEvent click	, MouseEvent over=NULL, MouseEvent out=NULL,
-			MouseEvent move=NULL, MouseEvent down=NULL, MouseEvent up=NULL, MouseEvent doubleclick=NULL);
-		////This function disables a mouse event
-		void DisableMouseEvent(MouseEventToken token);
-		////This function enables a mouse event
-		void EnableMouseEvent(MouseEventToken token);
-		////This function removes the given mouse event
-		void RemoveMouseEvent(MouseEventToken token);
 
-	protected:
-		////This internal function propagates click events
-		virtual bool PropagateMouseClickEvent(MouseEventType event, int x, int y, void *data);
-		////This internal function propagates down events
-		virtual bool PropagateMouseDownEvent(MouseEventType event, int x, int y, void *data);
-		////This internal function propagates up events
-		virtual bool PropagateMouseUpEvent(MouseEventType event, int x, int y, void *data);
-		////This internal function propagates double click events
-		virtual bool PropagateMouseDblClickEvent(MouseEventType event, int x, int y, void *data);
-		////This internal function propagates move event
-		virtual bool PropagateMouseMoveEvent(MouseEventType event, int x, int y, void *data);
-		////This internal function propagates over event
-		virtual bool PropagateMouseOverEvent(MouseEventType event, int x, int y, void *data);
-		////This internal function propagates out event
-		virtual bool PropagateMouseOutEvent(MouseEventType event, int x, int y, void *data);
-		////This internal function propagates vertical scroll event
-		virtual bool PropagateMouseVScrollEvent(int amount, MouseEventType event, int x, int y, void *data);
-		////This internal function propagates horizontal scroll event
-		virtual bool PropagateMouseHScrollEvent(int amount, MouseEventType event, int x, int y, void *data);
-
-	};
-
-	extern utils::ConsumableEvent<utils::Empty, KeyboardEvent> KeyboardEvents;
-	extern MouseEventType MouseButtons;
-	////This is the object that is hovered, if mouse moves out of it
-	/// it should receive mouse out event
-	extern MouseEventObject *hoveredObject;
-
-	////This function registers a top level pointer target.
-	/// Lower level targets should be registered to their attached
-	/// targets, these pointer targets receive event coordinates
-	/// unaltered
-	utils::LinkedListItem<BasicPointerTarget> * AddPointerTarget(BasicPointerTarget *target, int order);
-	////Removes a previously registered pointer target
-	void RemovePointerTarget(utils::LinkedListItem<BasicPointerTarget> *target);
 	////Initializes Input system
 	void Initialize();
 } }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Utils/GGE.h"
+#include "GGE.h"
 #include "../External/OpenAL/alc.h"
 #include "../External/OpenAL/al.h"
 #include "OS.h"

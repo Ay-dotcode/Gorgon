@@ -80,7 +80,7 @@ namespace gge { namespace resource {
 			Print(target,x+Shadow.Offset.x,y+Shadow.Offset.y,w,text,Shadow.Color,align);
 
 		if(w==0) {
-			/*align=TEXTALIGN_LEFT;
+			/*align=TextAlignment::Left;
 			w=10000;*/
 			wrap=false;
 		}
@@ -117,7 +117,7 @@ namespace gge { namespace resource {
 
 			if(nextline) {
 				switch(align) {
-				case TEXTALIGN_LEFT:
+				case TextAlignment::Left:
 					l=x;
 					break;
 				case TEXTALIGN_CENTER:
@@ -219,7 +219,7 @@ namespace gge { namespace resource {
 			nowrap=true;
 
 		switch(Align) {
-		case TEXTALIGN_LEFT:
+		case TextAlignment::Left:
 			l=x;
 			break;
 		case TEXTALIGN_CENTER:
@@ -271,7 +271,7 @@ namespace gge { namespace resource {
 
 			if(nextline) {
 				switch(Align) {
-				case TEXTALIGN_LEFT:
+				case TextAlignment::Left:
 					l=x;
 					break;
 				case TEXTALIGN_CENTER:
@@ -426,7 +426,7 @@ namespace gge { namespace resource {
 			nowrap=true;
 
 		switch(Align) {
-		case TEXTALIGN_LEFT:
+		case TextAlignment::Left:
 			l=x;
 			break;
 		case TEXTALIGN_CENTER:
@@ -478,7 +478,7 @@ namespace gge { namespace resource {
 
 			if(nextline) {
 				switch(Align) {
-				case TEXTALIGN_LEFT:
+				case TextAlignment::Left:
 					l=x;
 					break;
 				case TEXTALIGN_CENTER:

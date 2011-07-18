@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../Utils/GGE.h"
 #include "../Resource/GRE.h"
 #include "../Engine/Animator.h"
 #include "../Engine/Graphics.h"
 #include "../Engine/Layer.h"
+#include "../Utils/Rectangle2D.h"
 
 namespace gge { namespace effects {
 
@@ -22,7 +22,7 @@ namespace gge { namespace effects {
 		////Initializes the effect
 		LayerResizer(LayerBase *Target) :
 			speed(0,0 , 0,0),
-			current((float)Target->X, (float)Target->Y, (float)Target->W, (float)Target->H),
+			current((utils::Bounds2D)Target->BoundingBox),
 			Target(Target),
 			FinishedEvent("Finished", this)
 		{
@@ -32,7 +32,7 @@ namespace gge { namespace effects {
 		////Initializes the effect
 		LayerResizer(LayerBase &Target) :
 			speed(0,0 , 0,0),
-			current((float)Target.X, (float)Target.Y, (float)Target.W, (float)Target.H),
+			current((utils::Bounds2D)Target.BoundingBox),
 			Target(&Target),
 			FinishedEvent("Finished", this)
 		{
@@ -40,15 +40,15 @@ namespace gge { namespace effects {
 		}
 		////Sets source and destination to the given values and allows time duration to reach the
 		/// destination
-		void Setup(gge::Rectangle From, gge::Rectangle To, int Time);
+		void Setup(utils::Rectangle From, utils::Rectangle To, int Time);
 		////Sets current destination to the given value and allows time duration to reach it
-		void Setup(gge::Rectangle To, int Time) { Setup(gge::Rectangle(Round(current.Left), Round(current.Top), Round(current.Width), Round(current.Height)), To, Time); }
+		void Setup(utils::Rectangle To, int Time);
 
 	protected:
-		Rectangle2D from;
-		Rectangle2D to;
-		Rectangle2D current;
-		Rectangle2D speed;
+		utils::Rectangle2D from;
+		utils::Rectangle2D to;
+		utils::Rectangle2D current;
+		utils::Rectangle2D speed;
 
 		virtual bool isFinished();
 		virtual void Process(int Time);

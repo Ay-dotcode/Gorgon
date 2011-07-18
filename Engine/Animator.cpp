@@ -7,9 +7,8 @@ namespace gge {
 	Collection<AnimatorBase> Animators;
 
 	void Animator_Signal(IntervalObject *interval, void *data) {
-		Animators.ResetIteration();
-		foreach(AnimatorBase, anim, Animators)
-			anim->Progress();
+		for(Collection<AnimatorBase>::Iterator i=Animators.First();i.isValid();i.Next())
+			i->Progress();
 	}
 
 	void InitializeAnimation(GGEMain *main) {

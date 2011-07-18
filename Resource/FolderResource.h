@@ -25,20 +25,20 @@ namespace gge { namespace resource {
 		int EntryPoint;
 
 		////01010000h, (System, Folder)
-		virtual int getGID() { return GID_FOLDER; }
+		virtual int getGID() { return GID::Folder; }
 		////Currently does nothing
 		virtual bool Save(File *File, FILE *Data) { return false; }
 
 		////Returns the number of items contained
-		int			 getCount() { return Subitems.getCount(); }
+		int			 getCount() { return Subitems.GetSize(); }
 		////Returns an item with the given index
-		ResourceBase	*getItem (int Index) { return Subitems[Index]; }
+		ResourceBase	*getItem (int Index) { return &Subitems[Index]; }
 		////Returns an item with the given index
-		ResourceBase	&operator [] (int Index) { return *(Subitems[Index]); }
+		ResourceBase	&operator [] (int Index) { return (Subitems[Index]); }
 		////Adds a new resource to this folder
-		void	Add(ResourceBase *resource) { Subitems.AddItem(resource); }
+		void	Add(ResourceBase *resource) { Subitems.Add(resource); }
 		////Adds a new resource to this folder
-		FolderResource	&operator << (ResourceBase &resource) { Subitems.AddItem(&resource); return *this; }
+		FolderResource	&operator << (ResourceBase &resource) { Subitems.Add(resource); return *this; }
 
 		////Returns the given subitem with folder resource type. Used to avoid type casting
 		FolderResource	*asFolder	(int Index);

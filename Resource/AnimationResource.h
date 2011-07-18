@@ -92,8 +92,8 @@ namespace gge { namespace resource {
 		virtual int  Height(int H=-1);
 
 	public:
-		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER);
-		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment Align=ALIGN_MIDDLE_CENTER) { DrawResized(&Target, X,Y ,W,H, Align); }
+		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment::Type Align=Alignment::Middle_Center);
+		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment::Type Align=Alignment::Middle_Center) { DrawResized(&Target, X,Y ,W,H, Align); }
 
 		ResizableObject::Tiling HorizontalTiling;
 		ResizableObject::Tiling VerticalTiling;
@@ -116,7 +116,7 @@ namespace gge { namespace resource {
 		friend class ImageAnimation;
 	public:
 		////03010000h (Gaming, Animation)
-		virtual int getGID() { return GID_ANIMATION; }
+		virtual int getGID() { return GID::Animation; }
 		////Currently does nothing
 		virtual bool Save(File *File, FILE *Data) { return false; }
 		
@@ -124,14 +124,14 @@ namespace gge { namespace resource {
 		AnimationResource() : ResourceBase() { Durations=NULL; FrameCount=0; }
 
 		////Returns the width of the first image
-		int getWidth() { if(Subitems.getCount()>0) return ((ImageResource*)Subitems[0])->getWidth(); return 0; }
+		int getWidth() { if(Subitems.GetSize()>0) return dynamic_cast<ImageResource&>(Subitems[0]).getWidth(); return 0; }
 		////Returns the height of the first image
-		int getHeight() { if(Subitems.getCount()>0) return ((ImageResource*)Subitems[0])->getHeight(); return 0; }
+		int getHeight() { if(Subitems.GetSize()>0) return dynamic_cast<ImageResource&>(Subitems[0]).getHeight(); return 0; }
 		////Returns number of frames
 		int getFrameCount() { return FrameCount; }
 		////Creates a new Image animation from this resource
 		ImageAnimation *getAnimation() { 
-			if(Subitems.getCount()) {
+			if(Subitems.GetSize()) {
 				ImageAnimation *ret=new ImageAnimation(this); 
 				return ret;
 			} else

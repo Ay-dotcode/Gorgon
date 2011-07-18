@@ -53,7 +53,7 @@ namespace gge { namespace resource {
 		int h=this->Height(H);
 		int w=this->Width(W);
 
-		if(Align & ALIGN_CENTER)
+		if(Align & Alignment::Center)
 			X+=(W-w)/2;
 		else if(Align & ALIGN_RIGHT)
 			X+= W-w;

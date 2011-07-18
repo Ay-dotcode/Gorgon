@@ -74,9 +74,22 @@ namespace gge { namespace utils {
 				Height=-Height;
 			}
 		}
-			
+
 		basic_Rectangle2D(const basic_Point2D<T_> &TopLeft, const basic_Size2D<T_> &HeightWidth) : 
-			Left(TopLeft.x), Top(TopLeft.y), Width(HeightWidth.Width), Height(HeightWidth.Height)
+		Left(TopLeft.x), Top(TopLeft.y), Width(HeightWidth.Width), Height(HeightWidth.Height)
+		{
+			if(Width<0) {
+				Left=Left+Width;
+				Width=-Width;
+			}
+			if(Height<0) {
+				Top=Top+Height;
+				Height=-Height;
+			}
+		}
+
+		basic_Rectangle2D(T_ Left, T_ Top, const basic_Size2D<T_> &HeightWidth) : 
+		Left(Left), Top(Top), Width(HeightWidth.Width), Height(HeightWidth.Height)
 		{
 			if(Width<0) {
 				Left=Left+Width;
@@ -144,8 +157,23 @@ namespace gge { namespace utils {
 		////Calculates and returns the height of the region
 		T_ Bottom() const { return Height+Top;  }
 
-		void SetRight(T_ right) { Width=right-Left; }
-		void SetBottom(T_ bottom) { Height=bottom-Top; }
+		void SetRight(T_ right) { 
+			if(right>Left) 
+				Width=right-Left; 
+			else {
+				Width=Left-right;
+				Left=right;
+			}
+		}
+		void SetBottom(T_ bottom) {
+			if(bottom>Top) 
+				Height=bottom-Top; 
+			else {
+				Height=Top-bottom;
+				Top=bottom;
+			}
+		}
+
 		void SetSize(const basic_Size2D<T_> &s) { 
 			Width=s.Width;
 			Height=s.Height;
@@ -225,6 +253,14 @@ namespace gge { namespace utils {
 
 		basic_Point2D<T_> BottomRight() const {
 			return basic_Point2D<T_>(Left+Width,Top+Height);
+		}
+
+		bool operator ==(const basic_Rectangle2D &r) const {
+			return Left==r.Left && Top==r.Top && Width==r.Width && Height==r.Height;
+		}
+
+		bool operator !=(const basic_Rectangle2D &r) const {
+			return Left!=r.Left || Top!=r.Top || Width!=r.Width || Height!=r.Height;
 		}
 
 		basic_Rectangle2D operator +(const basic_Point2D<T_> &amount) const {

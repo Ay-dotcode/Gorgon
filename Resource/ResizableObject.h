@@ -1,8 +1,7 @@
 #pragma once
 
 #include "../Utils/Margins.h"
-#include "../Utils/GGE.h"
-#include "../Utils/Utils.h"
+#include "../Utils/BasicMath.h"
 #include "../Engine/Graphics.h"
 #include "../Resource/ResourceBase.h"
 
@@ -49,11 +48,11 @@ namespace gge { namespace resource {
 				if(Type==Integral) {
 					switch(CalculationMethod) {
 						case SmallerThanGivenSize:
-							return (int)gge::Max(floor((float)Requested/Original), 1)*Original;
+							return (int)utils::Max(floor((float)Requested/Original), 1)*Original;
 						case ClosestToGivenSize:
-							return (int)gge::Max(gge::Round((float)Requested/Original), 1)*Original;
+							return (int)utils::Max(utils::Round((float)Requested/Original), 1)*Original;
 						case FillTheGivenSize:
-							return (int)gge::Max(ceil((float)Requested/Original), 1)*Original;
+							return (int)utils::Max(ceil((float)Requested/Original), 1)*Original;
 					}
 				}
 
@@ -94,11 +93,11 @@ namespace gge { namespace resource {
 				}
 
 				if(CalculationMethod==SmallerThanGivenSize)
-					return (int)gge::Max(floor( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
+					return (int)utils::Max(floor( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
 				else if(CalculationMethod==ClosestToGivenSize)
-					return (int)gge::Max(gge::Round( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
+					return (int)utils::Max(utils::Round( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
 				else
-					return (int)gge::Max(ceil( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
+					return (int)utils::Max(ceil( ((float)(w-Overhead)) / Increment ), 0)  * Increment + Overhead;
 			}
 		};
 
@@ -144,10 +143,10 @@ namespace gge { namespace resource {
 			return is;
 		}
 
-		virtual void DrawResized(gge::graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align=ALIGN_CENTER) =0;
-		virtual void DrawResized(gge::graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, gge::Alignment Align=ALIGN_CENTER) { DrawResized(&Target, X, Y, W, H, Align); }
-		virtual void DrawResized(gge::graphics::I2DGraphicsTarget *Target, int X=0, int Y=0, gge::Alignment Align=ALIGN_CENTER) { DrawResized(Target, X, Y, Target->Width(), Target->Height(), Align); }
-		virtual void DrawResized(gge::graphics::I2DGraphicsTarget &Target, int X=0, int Y=0, gge::Alignment Align=ALIGN_CENTER) { DrawResized(&Target, X, Y, Target.Width(), Target.Height(), Align); }
+		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment::Type Align=Alignment::Center) =0;
+		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment::Type Align=Alignment::Center) { DrawResized(&Target, X, Y, W, H, Align); }
+		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X=0, int Y=0, Alignment::Type Align=Alignment::Center) { DrawResized(Target, X, Y, Target->Width(), Target->Height(), Align); }
+		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X=0, int Y=0, Alignment::Type Align=Alignment::Center) { DrawResized(&Target, X, Y, Target.Width(), Target.Height(), Align); }
 		virtual int  Width(int W=-1)=0;
 		virtual int  Height(int H=-1)=0;
 		virtual void Reset(bool Reverse=false) {}
@@ -156,7 +155,7 @@ namespace gge { namespace resource {
 		virtual void Pause() {}
 		virtual void setLoop(bool Loop) {}
 		virtual int  getDuration() { return 0; }
-		virtual gge::Margins getBorderWidth() { return gge::Margins(0); }
+		virtual utils::Margins getBorderWidth() { return utils::Margins(0); }
 
 		virtual ~ResizableObject() {}
 	};

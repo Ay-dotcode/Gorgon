@@ -53,7 +53,7 @@ namespace gge { namespace utils {
 
 		ManagedBuffer &operator =(const ManagedBuffer &buf) {
 			if(this==&buf) return *this;
-			if(this->data==buf->data) return *this;
+			if(this->data==buf.data) return *this;
 
 			refassign(buf);
 

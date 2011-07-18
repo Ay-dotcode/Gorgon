@@ -1,5 +1,7 @@
 #include "LayerMover.h"
 
+using namespace gge::utils;
+
 namespace gge { namespace effects {
 	void LayerMover::Setup(Point From, Point To, int Time) {
 
@@ -7,8 +9,7 @@ namespace gge { namespace effects {
 		current=from;
 		to=To;
 
-		Target->X=(int)from.x;
-		Target->Y=(int)from.y;
+		Target->BoundingBox.MoveTo(from);
 		this->progressed=0;
 
 		if(Time) {
@@ -19,13 +20,16 @@ namespace gge { namespace effects {
 			speed.x=0;
 			speed.y=0;
 			current=from=to;
-			Target->X=(int)to.x;
-			Target->Y=(int)to.y;
+			Target->BoundingBox.MoveTo(to);
 		}
 	}
 
+	void LayerMover::Setup( utils::Point To, int Time ) {
+		Setup(Point((int)current.x,(int)current.y), To, Time);
+	}
+
 	bool LayerMover::isFinished() {
-		return current.x==to.x && current.y==to.y;
+		return current==to;
 	}
 
 	void LayerMover::Process(int Time) {
@@ -39,7 +43,6 @@ namespace gge { namespace effects {
 			if(current.x>to.x)
 				current.x=to.x;
 		}
-		Target->X=(int)current.x;
 
 
 		if(from.y>to.y) {
@@ -52,7 +55,22 @@ namespace gge { namespace effects {
 			if(current.y>to.y)
 				current.y=to.y;
 		}
-		Target->Y=(int)current.y;
+		Target->BoundingBox.MoveTo(current);
 
 	}
+
+	LayerMover::LayerMover( LayerBase *Target ) :
+	speed(0,0),
+		current(Target->BoundingBox.TopLeft()),
+		Target(Target), FinishedEvent("Finished", this) {
+		AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
+	}
+
+	LayerMover::LayerMover( LayerBase &Target ) :
+	speed(0,0),
+		current(Target.BoundingBox.TopLeft()),
+		Target(&Target), FinishedEvent("Finished", this) {
+		AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
+	}
+
 } }

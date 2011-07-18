@@ -81,6 +81,15 @@ namespace gge { namespace utils {
 		T_ &Current() const {
 			return iterator().current();
 		}
+		////Returns current item
+		T_ *CurrentPtr() {
+			return &iterator().current();
+		}
+
+		////Returns current item
+		T_ *CurrentPtr() const {
+			return &iterator().current();
+		}
 
 		////Moves the iterator by the given amount
 		bool MoveBy(int amount) {

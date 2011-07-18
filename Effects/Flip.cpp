@@ -4,6 +4,7 @@
 
 using namespace gge::resource;
 using namespace gge::graphics;
+using namespace gge::utils;
 
 namespace gge { namespace effects {
 	void FlipEffect::Draw(I2DGraphicsTarget *Layer,int X,int Y) {

@@ -4,69 +4,48 @@
 #include <gl/gl.h>
 
 using namespace gge::graphics;
+using namespace gge::utils;
 
 namespace gge {
 	namespace graphics {
 		extern RGBfloat CurrentLayerColor;
-		extern int trX,trY;
-		extern int scX,scY,scW,scH;
-	}
-
-	CustomLayer::CustomLayer(CustomRenderer Renderer,int X, int Y, int W, int H) : LayerBase() {
-		this->X=X;
-		this->Y=Y;
-		this->W=W;
-		this->H=H;
-		this->Renderer=Renderer;
-
-		Xs=-10;
-		Xe= 10;
-		Ys=-10;
-		Ye= 10;
-		Zs=-10;
-		Ze= 10;
+		extern Point translate;
+		extern Rectangle scissors;
 	}
 
 	void CustomLayer::Render() {
-		int pscX,pscY,pscW,pscH;
-		trX+=X;
-		trY+=Y;
+		Rectangle psc;
+		translate+=BoundingBox.TopLeft();
 		glPushAttrib(GL_SCISSOR_BIT);
 		glEnable(GL_SCISSOR_TEST);
 
-		pscX=scX;
-		pscY=scY;
-		pscW=scW;
-		pscH=scH;
+		psc=scissors;
 
-		int r=scX+scW;
-		int b=scY+scH;
+		int r=scissors.Right();
+		int b=scissors.Bottom();
 
 		glEnable(GL_SCISSOR_TEST);
-		if(trX>scX)
-			scX=trX;
-		if(trY>scY)
-			scY=trY;
-		if(trY+H<b)
-			b=(H+trY);
-		if(trX+W<r)
-			r=(W+trX);
+		if(translate.x>scissors.Left)
+			scissors.Left=translate.x;
+		if(translate.y>scissors.Top)
+			scissors.Top=translate.y;
+		if(translate.y+BoundingBox.Height()<b)
+			b=(translate.y+BoundingBox.Height());
+		if(translate.x+BoundingBox.Width()<r)
+			r=(translate.x+BoundingBox.Width());
 
-		scW=r-scX;
-		scH=b-scY;
+		scissors.SetRight(r);
+		scissors.SetBottom(b);
 
-		if(scH<=0 || scW<=0) {
-			scX=pscX;
-			scY=pscY;
-			scW=pscW;
-			scH=pscH;
+		if(r<=scissors.Left || b<=scissors.Top) {
+			return;
 		}
 
-		glScissor(scX, (ScreenSize.y-scY)-scH, scW, scH);
+		glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height, scissors.Width, scissors.Height);
 
 
 		glColor4f(1,1,1,1);
-		glViewport(X, (Main.H-Y)-H, W, H);
+		glViewport(BoundingBox.Left, (Main.getHeight()-BoundingBox.Top)-BoundingBox.Height(), BoundingBox.Width(), BoundingBox.Height());
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
@@ -81,7 +60,7 @@ namespace gge {
 		glBindTexture(GL_TEXTURE_2D, -1);
 		glDepthFunc(GL_LESS);
 
-		this->Renderer();
+		Renderer();
 
 		glDepthFunc(GL_LEQUAL);
 
@@ -93,15 +72,21 @@ namespace gge {
 		glMatrixMode(GL_MODELVIEW);
 		glColor4fv(CurrentLayerColor.vect);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		glViewport(0, 0, Main.W, Main.H);
+		glViewport(0, 0, Main.getWidth(), Main.getHeight());
 		
-		scX=pscX;
-		scY=pscY;
-		scW=pscW;
-		scH=pscH;
+		scissors=psc;
 
 		glPopAttrib();
-		trX-=X;
-		trY-=Y;
+		translate-=BoundingBox.TopLeft();
 	}
+
+	void CustomLayer::init() {
+		Xs=-10;
+		Xe= 10;
+		Ys=-10;
+		Ye= 10;
+		Zs=-10;
+		Ze= 10;
+	}
+
 }

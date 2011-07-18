@@ -2,8 +2,8 @@
 
 
 #include "GGEMain.h"
-#include <dshow.h>
 #include <atlbase.h>
+#include <dshow.h>
 #include "../Utils/Any.h"
 #include "../Utils/EventChain.h"
 

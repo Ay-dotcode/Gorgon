@@ -59,17 +59,17 @@ namespace gge {
 		if(r=getRenderer())
 			r->Print(target, X, Y, Text, Color, Shadow);
 	}
-	void Font::Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, TextAlignment Align) {
+	void Font::Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, TextAlignment::Type Align) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			r->Print(target, X, Y, W, Text, Color, Align, Shadow);
 	}
-	void Font::Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align) {
+	void Font::Print(I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			r->Print(target, X, Y, W, Text, Color, Data, DataLen, Align, Shadow);
 	}
-	void Font::Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align) {
+	void Font::Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			r->Print_Test(X, Y, W, Text, Data, DataLen, Align);
