@@ -33,7 +33,7 @@ namespace gge {
 		Font &operator =(const FontStyle);
 
 
-		static FontInitiator Load(resource::File* file,FILE* gfile,int sz);
+		static FontInitiator Load(resource::File &File, std::istream &Data, int Size);
 
 
 		resource::FontTheme *Theme;

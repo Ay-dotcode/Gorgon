@@ -9,17 +9,17 @@ namespace gge { namespace resource {
 	class File;
 	
 	////This function loads a sound resource from the given file
-	ResourceBase *LoadSoundResource(File* File, FILE* Data, int Size);
+	ResourceBase *LoadSoundResource(File &File, std::istream &Data, int Size);
 
 	////This is sound resource. It may contain 22kHz or 44kHz mono or stereo wave files.
-	/// Also supports lzma compression. No native sound compression is supported.
+	/// Also supports LZMA compression. No native sound compression is supported.
 	class SoundResource : public ResourceBase {
-		friend ResourceBase *LoadSoundResource(File* File, FILE* Data, int Size);
+		friend ResourceBase *LoadSoundResource(File &File, std::istream &Data, int Size);
 	public:
 		////04010000h (Extended, Sound)
-		virtual int getGID() { return GID_SOUND; }
+		virtual GID::Type getGID() const { return GID::Sound; }
 		////Currently does nothing
-		virtual bool Save(File *File, FILE *Data) { return false; }
+		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////Wave data
 		Byte *Data;

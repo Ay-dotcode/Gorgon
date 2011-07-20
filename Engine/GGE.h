@@ -43,31 +43,31 @@ namespace gge {
 		static const int Mask_Used			= B8(00111111);
 		static const int Mask_Invalid		= ~Mask_Used;
 
-		bool isLeft(Type t) {
+		static bool isLeft(Type t) {
 			return (t&Mask_Horizontal) == Left;
 		}
 
-		bool isRight(Type t) {
+		static bool isRight(Type t) {
 			return (t&Mask_Horizontal) == Right;
 		}
 
-		bool isCenter(Type t) {
+		static bool isCenter(Type t) {
 			return (t&Mask_Horizontal) == Center;
 		}
 
-		bool isTop(Type t) {
+		static bool isTop(Type t) {
 			return (t&Mask_Vertical) == Top;
 		}
 
-		bool isBottom(Type t) {
+		static bool isBottom(Type t) {
 			return (t&Mask_Vertical) == Bottom;
 		}
 
-		bool isMiddle(Type t) {
+		static bool isMiddle(Type t) {
 			return (t&Mask_Vertical) == Middle;
 		}
 
-		bool isValid(Type t) {
+		static bool isValid(Type t) {
 			if(t&Mask_Invalid)
 				return false;
 

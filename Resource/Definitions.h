@@ -61,6 +61,11 @@ namespace gge { namespace resource {
 		static const Type Font_Image			= 0x03210000;
 		static const Type Font_Props			= 0x03200804;
 
+		static const Type FontTheme				= 0x03300000;
+		static const Type FontTheme_Props		= 0x03300804;
+
+		//////////////////////////////////////////////////////////////////////////
+		// Extended resources
 		static const Type Sound					= 0x04010000;
 		static const Type Sound_Props			= 0x04010101;
 		static const Type Sound_Wave			= 0x04010801;

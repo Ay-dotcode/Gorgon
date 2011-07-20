@@ -76,6 +76,10 @@ namespace gge { namespace utils {
 			Set(serial, random, time);
 		}
 
+		SGuid(std::istream &in) {
+			Load(in);
+		}
+
 		void Set(unsigned serial, unsigned random, unsigned time) {
 			//time component - 2
 			ints[0] = (time & 0xffff);
@@ -120,7 +124,7 @@ namespace gge { namespace utils {
 		}
 
 		inline
-		void Load(std::ifstream &file) {
+		void Load(std::istream &file) {
 			file.read((char*)bytes, 8);
 
 			checknewserial();
@@ -133,7 +137,7 @@ namespace gge { namespace utils {
 		}
 
 		inline
-		void LoadLong(std::ifstream &file) {
+		void LoadLong(std::istream &file) {
 			file.read((char*)bytes, 8);
 			file.read((char*)bytes, 8);
 		}

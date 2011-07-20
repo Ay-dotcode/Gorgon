@@ -14,17 +14,17 @@
 namespace gge { namespace resource {
 	class File;
 
-	ResourceBase *LoadFontTheme(File* File, FILE* Data, int Size);
+	ResourceBase *LoadFontTheme(File &File, std::istream &Data, int Size);
 
 	class FontTheme : public ResourceBase {
-		friend ResourceBase *LoadFontTheme(File* File, FILE* Data, int Size);
+		friend ResourceBase *LoadFontTheme(File &File, std::istream &Data, int Size);
 
 	public:
 
-		virtual int getGID() { return GID_FONTTHEME; }
+		virtual GID::Type getGID() const { return GID::FontTheme; }
 
 		////Currently does nothing
-		virtual bool Save(File *File, FILE *Data) { return false; }
+		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		FontTheme() : ResourceBase(),
 			NormalFont(nullptr),
@@ -63,7 +63,7 @@ namespace gge { namespace resource {
 			guid_h3(nullptr)
 		{ }
 
-		virtual void Prepare(GGEMain *main);
+		virtual void Prepare(GGEMain &main);
 
 		virtual FontRenderer *DetermineRenderer(Font::FontStyle Style=Font::Normal) {
 			if(Style==Font::Normal)

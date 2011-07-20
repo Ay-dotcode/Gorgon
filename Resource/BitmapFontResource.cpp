@@ -6,25 +6,29 @@
 #endif
 
 namespace gge { namespace resource {
-	ResourceBase *LoadBitmapFontResource(resource::File* File, FILE* Data, int Size) {
+	ResourceBase *LoadBitmapFontResource(File &File, std::istream &Data, int Size) {
 		BitmapFontResource *font=new BitmapFontResource;
 		int chmap[256];
 		int cpos=0,i;
+
 		font->Seperator=1;
 
-		int tpos=ftell(Data)+Size;
-		while(ftell(Data)<tpos) {
+		int target=Data.tellg()+Size;
+		while(Data.tellg()<target) {
 			int gid,size;
-			fread(&gid,1,4,Data);
-			fread(&size,1,4,Data);
+			ReadFrom(Data, gid);
+			ReadFrom(Data, size);
 
-			if(gid==GID_FONT_CHARMAP) {
-				fread(chmap,256,4,Data);
+			if(gid==GID::Font_Charmap) {
+				Data.read((char*)chmap, 4*256);
 			}
-			else if(gid==GID_GUID) {
+			else if(gid==GID::Guid) {
+				font->guid.LoadLong(Data);
+			}
+			else if(gid==GID::SGuid) {
 				font->guid.Load(Data);
 			}
-			else if(gid==GID_FONT_IMAGE) {
+			else if(gid==GID::Font_Image) {
 				ImageResource *img=(ImageResource*)LoadImageResource(File,Data,size);
 
 				for(i=0;i<256;i++)
@@ -34,8 +38,10 @@ namespace gge { namespace resource {
 				font->Subitems.Add(img);
 				cpos++;
 			}
-			else if(gid==GID_FONT_SEPERATOR) {
-				fread(&font->Seperator,1,2,Data);
+			else if(gid==GID::Font_Props) {
+				ReadFrom(Data,font->Seperator);
+				ReadFrom(Data,font->VerticalSpacing);
+				ReadFrom(Data,font->Baseline);
 			}
 			else {
 				EatChunk(Data,size);
@@ -63,7 +69,7 @@ namespace gge { namespace resource {
 		}
 	}
 
-	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, graphics::RGBint color, TextAlignment align, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, graphics::RGBint color, TextAlignment::Type align, ShadowParams Shadow) {
 		unsigned i;
 		int l=x;
 		int lstart=0,lword=0;
@@ -120,10 +126,10 @@ namespace gge { namespace resource {
 				case TextAlignment::Left:
 					l=x;
 					break;
-				case TEXTALIGN_CENTER:
+				case TextAlignment::Center:
 					l=x+(w-lww)/2;
 					break;
-				case TEXTALIGN_RIGHT:
+				case TextAlignment::Right:
 					l=x+(w-lww);
 					break;
 
@@ -151,27 +157,27 @@ namespace gge { namespace resource {
 				lstart=lword+1;
 				i=lword;
 				llen=0;
-				y+=int(fh*VerticalSpacing);
+				y+=VerticalSpacing;
 				nextline=false;
 			}
 		}
 	}
-	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment Align, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment::Type Align, ShadowParams Shadow) {
 		if(text=="") {
 			int d;
 			int xpos=0;
-			if(Align==TEXTALIGN_CENTER)
+			if(Align==TextAlignment::Center)
 				xpos=w/2;
-			else if(Align==TEXTALIGN_RIGHT)
+			else if(Align==TextAlignment::Right)
 				xpos=w;
 
 			for(d=0;d<DataLen;d++) {
 				switch(Data[d].Type) {
-				case EMT_PositionDetect:
+				case EPrintData::PositionDetect:
 					Data[d].Out.position.x=xpos;
 					Data[d].Out.position.y=0;
 					break;
-				case EMT_Spacing:
+				case EPrintData::Spacing:
 					Data[d].Out.position.x=xpos;
 					Data[d].Out.position.y=0;
 					break;
@@ -200,10 +206,10 @@ namespace gge { namespace resource {
 
 		for(d=0;d<DataLen;d++) {
 			switch(Data[d].Type) {
-			case EMT_Wrap:
+			case EPrintData::Wrap:
 				nowrap=!Data[d].In.value;
 				break;
-			case EMT_CharacterDetect:
+			case EPrintData::CharacterDetect:
 				if(cchardetectxs<MAX_CHAR_DETECTS) {
 					Data[d].Out.value=text.length();
 					chardetectxs[cchardetectxs].x=Data[d].In.position.x;
@@ -222,10 +228,10 @@ namespace gge { namespace resource {
 		case TextAlignment::Left:
 			l=x;
 			break;
-		case TEXTALIGN_CENTER:
+		case TextAlignment::Center:
 			l=x+w/2;
 			break;
-		case TEXTALIGN_RIGHT:
+		case TextAlignment::Right:
 			l=x+w;
 			break;
 		}
@@ -233,7 +239,7 @@ namespace gge { namespace resource {
 			for(d=0;d<DataLen;d++) {
 				if(Data[d].CharPosition==i) {
 					switch(Data[d].Type) {
-					case EMT_Spacing:
+					case EPrintData::Spacing:
 						llen+=Data[d].In.position.x-Seperator; 
 						y+=Data[d].In.position.y; 
 						break;
@@ -274,10 +280,10 @@ namespace gge { namespace resource {
 				case TextAlignment::Left:
 					l=x;
 					break;
-				case TEXTALIGN_CENTER:
+				case TextAlignment::Center:
 					l=x+(w-lww)/2;
 					break;
-				case TEXTALIGN_RIGHT:
+				case TextAlignment::Right:
 					l=x+(w-lww);
 					break;
 				}
@@ -288,22 +294,22 @@ namespace gge { namespace resource {
 					for(d=0;d<DataLen;d++) {
 						if(Data[d].CharPosition==j) {
 							switch(Data[d].Type) {
-							case EMT_Spacing:
+							case EPrintData::Spacing:
 								Data[d].Out.position.x=l-sx;
 								Data[d].Out.position.y=y-sy;
 
 								l+=Data[d].In.position.x-Seperator; 
 								y+=Data[d].In.position.y; 
 								break;
-							case EMT_PositionDetect:
+							case EPrintData::PositionDetect:
 								Data[d].Out.position.x=l-sx;
 								Data[d].Out.position.y=y-sy;
 								break;
-							case EMT_Color:
+							case EPrintData::Color:
 								color=Data[d].In.color;
 
 								break;
-							case EMT_ShadowColor:
+							case EPrintData::ShadowColor:
 								Shadow.Color=Data[d].In.color;
 
 								break;
@@ -343,43 +349,43 @@ namespace gge { namespace resource {
 				i=lword;
 				llen=0;
 				if(!nowrap)
-					y+=int(fh*VerticalSpacing);
+					y+=VerticalSpacing;
 				nextline=false;
 			}
 		}
 		for(d=0;d<DataLen;d++) {
 			if(Data[d].CharPosition==i) {
 				switch(Data[d].Type) {
-				case EMT_Spacing:
+				case EPrintData::Spacing:
 					Data[d].Out.position.x=l-sx;
 					Data[d].Out.position.y=y-sy;
 
 					l+=Data[d].In.position.x-Seperator; 
 					y+=Data[d].In.position.y; 
 					break;
-				case EMT_PositionDetect:
+				case EPrintData::PositionDetect:
 					Data[d].Out.position.x=l-sx;
 					Data[d].Out.position.y=y-sy;
 					break;
 				}
 			}
 		}	}
-	void BitmapFontResource::Print_Test(int x, int y, int w, string text, EPrintData *Data, int DataLen, TextAlignment Align) {
+	void BitmapFontResource::Print_Test(int x, int y, int w, string text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
 		if(text=="") {
 			int d;
 			int xpos=0;
-			if(Align==TEXTALIGN_CENTER)
+			if(Align==TextAlignment::Center)
 				xpos=w/2;
-			else if(Align==TEXTALIGN_RIGHT)
+			else if(Align==TextAlignment::Right)
 				xpos=w;
 
 			for(d=0;d<DataLen;d++) {
 				switch(Data[d].Type) {
-				case EMT_PositionDetect:
+				case EPrintData::PositionDetect:
 					Data[d].Out.position.x=xpos;
 					Data[d].Out.position.y=0;
 					break;
-				case EMT_Spacing:
+				case EPrintData::Spacing:
 					Data[d].Out.position.x=xpos;
 					Data[d].Out.position.y=0;
 					break;
@@ -408,10 +414,10 @@ namespace gge { namespace resource {
 
 		for(d=0;d<DataLen;d++) {
 			switch(Data[d].Type) {
-			case EMT_Wrap:
+			case EPrintData::Wrap:
 				nowrap=!Data[d].In.value;
 				break;
-			case EMT_CharacterDetect:
+			case EPrintData::CharacterDetect:
 				if(cchardetectxs<MAX_CHAR_DETECTS) {
 					Data[d].Out.value=text.length();
 					chardetectxs[cchardetectxs].x=Data[d].In.position.x;
@@ -429,10 +435,10 @@ namespace gge { namespace resource {
 		case TextAlignment::Left:
 			l=x;
 			break;
-		case TEXTALIGN_CENTER:
+		case TextAlignment::Center:
 			l=x+w/2;
 			break;
-		case TEXTALIGN_RIGHT:
+		case TextAlignment::Right:
 			l=x+w;
 			break;
 		}
@@ -440,7 +446,7 @@ namespace gge { namespace resource {
 			for(d=0;d<DataLen;d++) {
 				if(Data[d].CharPosition==i) {
 					switch(Data[d].Type) {
-					case EMT_Spacing:
+					case EPrintData::Spacing:
 						llen+=Data[d].In.position.x-Seperator; 
 						y+=Data[d].In.position.y; 
 						break;
@@ -481,10 +487,10 @@ namespace gge { namespace resource {
 				case TextAlignment::Left:
 					l=x;
 					break;
-				case TEXTALIGN_CENTER:
+				case TextAlignment::Center:
 					l=x+(w-lww)/2;
 					break;
-				case TEXTALIGN_RIGHT:
+				case TextAlignment::Right:
 					l=x+(w-lww);
 					break;
 				}
@@ -495,21 +501,21 @@ namespace gge { namespace resource {
 					for(d=0;d<DataLen;d++) {
 						if(Data[d].CharPosition==j) {
 							switch(Data[d].Type) {
-							case EMT_Spacing:
+							case EPrintData::Spacing:
 								Data[d].Out.position.x=l-sx;
 								Data[d].Out.position.y=y-sy;
 
 								l+=Data[d].In.position.x-Seperator; 
 								y+=Data[d].In.position.y; 
 								break;
-							case EMT_PositionDetect:
+							case EPrintData::PositionDetect:
 								Data[d].Out.position.x=l-sx;
 								Data[d].Out.position.y=y-sy;
 								break;
-							case EMT_Color:
+							case EPrintData::Color:
 
 								break;
-							case EMT_ShadowColor:
+							case EPrintData::ShadowColor:
 
 								break;
 							}
@@ -543,21 +549,21 @@ namespace gge { namespace resource {
 				i=lword;
 				llen=0;
 				if(!nowrap)
-					y+=int(fh*VerticalSpacing);
+					y+=VerticalSpacing;
 				nextline=false;
 			}
 		}
 		for(d=0;d<DataLen;d++) {
 			if(Data[d].CharPosition==i) {
 				switch(Data[d].Type) {
-				case EMT_Spacing:
+				case EPrintData::Spacing:
 					Data[d].Out.position.x=l-sx;
 					Data[d].Out.position.y=y-sy;
 
 					l+=Data[d].In.position.x-Seperator; 
 					y+=Data[d].In.position.y; 
 					break;
-				case EMT_PositionDetect:
+				case EPrintData::PositionDetect:
 					Data[d].Out.position.x=l-sx;
 					Data[d].Out.position.y=y-sy;
 					break;

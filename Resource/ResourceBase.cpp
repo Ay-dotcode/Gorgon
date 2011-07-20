@@ -1,46 +1,49 @@
 #include "ResourceBase.h"
 
-namespace gge { namespace resource {
-	void ResourceBase::Prepare( GGEMain &main )
-	{
-		utils::LinkedListIterator<ResourceBase>it=Subitems;
-		ResourceBase *resource;
+using namespace gge::utils;
 
-		while(resource=it) {
+namespace gge { namespace resource {
+	void ResourceBase::Prepare( GGEMain &main ) {
+		for(SortedCollection<ResourceBase>::Iterator resource=Subitems.First();
+			resource.isValid(); resource.Next()) {
+
 			resource->Prepare(main);
 		}
 	}
 
 	void ResourceBase::Resolve() {
-		utils::LinkedListIterator<ResourceBase>it=Subitems;
-		ResourceBase *resource;
+		for(SortedCollection<ResourceBase>::Iterator resource=Subitems.First();
+			resource.isValid(); resource.Next()) {
 
-		while(resource=it) {
 			resource->Resolve();
 		}
 	}
 
-	ResourceBase *ResourceBase::FindObject(utils::SGuid guid) const {
-		foreach(ResourceBase, resource, Subitems)  {
+	ResourceBase *ResourceBase::FindObject(utils::SGuid guid) {
+		for(SortedCollection<ResourceBase>::Iterator resource=Subitems.First();
+			resource.isValid(); resource.Next()) {
+
 			if(resource->isEqual(guid))
 				return resource;
 
-			resource=resource->FindObject(guid);
-			if(resource)
-				return resource;
+			ResourceBase *temp=resource->FindObject(guid);
+			if(temp)
+				return temp;
 		}
 
 		return NULL;
 	}
 
-	ResourceBase *ResourceBase::FindParent(utils::SGuid guid) const {
-		const_foreach(ResourceBase, resource, Subitems)  {
-			if(resource->isEqual(guid))
-				return const_cast<ResourceBase*>(this);
+	ResourceBase *ResourceBase::FindParent(utils::SGuid guid) {
+		for(SortedCollection<ResourceBase>::Iterator resource=Subitems.First();
+			resource.isValid(); resource.Next()) {
 
-			resource=resource->FindParent(guid);
-			if(resource)
-				return resource;
+			if(resource->isEqual(guid))
+				return this;
+
+			ResourceBase *temp=resource->FindParent(guid);
+			if(temp)
+				return temp;
 		}
 
 		return NULL;

@@ -12,7 +12,7 @@ namespace gge { namespace resource {
 	class File;
 	
 	////This function loads a text resource from the given file
-	ResourceBase *LoadDataResource(File* File, FILE* Data, int Size);
+	ResourceBase *LoadDataResource(File &File, std::istream &Data, int Size);
 
 	////This is the data types that a data resource can contain
 	enum DataTypes {
@@ -33,7 +33,7 @@ namespace gge { namespace resource {
 	////Data resource interface
 	class IData : public ResourceBase {
 	public:
-		virtual bool Save(File *File, FILE *Data) { return false; }
+		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		string name;
 
 		virtual void Prepare(File *File) { }
@@ -135,7 +135,7 @@ namespace gge { namespace resource {
 	////This is data resource which holds an array of basic data types. These types are
 	/// integer, float, string, utils::Point and rectangle.
 	class DataResource : public ResourceBase {
-		friend ResourceBase *LoadDataResource(File* File, FILE* Data, int Size);
+		friend ResourceBase *LoadDataResource(File &File, std::istream &Data, int Size);
 	public:
 		////Data collection
 		utils::Collection<IData> Data;
@@ -185,16 +185,13 @@ namespace gge { namespace resource {
 		int getCount() { return Data.getCount(); }
 		
 		////02030000h (Basic, Data resource)
-		virtual int getGID() const { return GID::Data; }
+		virtual GID::Type getGID() const { return GID::Data; }
 		////Currently does nothing
-		virtual bool Save(File *File, FILE *Data) { return false; }
+		virtual bool Save(File &File,std::ostream &Data) { return false; }
 
 		virtual ~DataResource() { Data.Destroy(); ResourceBase::~ResourceBase(); }
 
-		virtual void Prepare(GGEMain *main) { 
-			for(utils::Collection<IData>::Iterator i=Data.First();i.isValid();i.Next()) 
-				i->Prepare(file); 
-		}
+		virtual void Prepare(GGEMain &main);
 
 	protected:
 		File *file;

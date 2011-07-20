@@ -360,8 +360,14 @@ namespace gge { namespace input {
 			return handler->Fire(event, location, amount);
 		}
 
-		EventChain::Object::~Object() {
+		Event::Target::~Target() {
 			delete handler;
+		}
+
+		EventChain::Object::~Object() {
+		}
+
+		EventCallback::Object::~Object() {
 		}
 
 	}

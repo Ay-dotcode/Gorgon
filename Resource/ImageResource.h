@@ -9,22 +9,22 @@ namespace gge { namespace resource {
 	class File;
 	
 	////This function loads a text resource from the given file
-	ResourceBase *LoadImageResource(File* File, FILE* Data, int Size);
-
-	enum PNGReadError {
-		NoError=0,
-		Signature=1,
-		ErrorHandlerProblem=2,
-		OutofMemory=4,
-		UnimplementedType,
-		FileNotFound
-	};
+	ResourceBase *LoadImageResource(File& File, std::istream &Data, int Size);
 
 	////This is image resource that holds information about a single image. It supports
 	/// two color modes (ARGB and AL); lzma and jpg compressions
 	class ImageResource : public ResourceBase, public graphics::Colorizable2DGraphic, public graphics::Raw2DGraphic, public ResizableObject {
-		friend ResourceBase *LoadImageResource(File* File, FILE* Data, int Size);
+		friend ResourceBase *LoadImageResource(File &File, std::istream &Data, int Size);
 	public:
+		enum PNGReadError {
+			NoError=0,
+			Signature=1,
+			ErrorHandlerProblem=2,
+			OutofMemory=4,
+			UnimplementedType,
+			FileNotFound
+		};
+
 		////Not used, if paletted image is found, this holds its palette
 		Byte *Palette;
 		////Whether image is loaded or not. Image that are marked as late loading
@@ -62,14 +62,14 @@ namespace gge { namespace resource {
 		bool PNGExport(string filename);
 		
 		////02020000h (Basic, Image)
-		virtual int getGID() { return GID::Image; }
+		virtual GID::Type getGID() const { return GID::Image; }
 		////Currently does nothing
-		virtual bool Save(File *File, FILE *Data) { return false; }
+		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		////Loads image data from the file. This function is required for late
 		/// loading.
 		bool Load();
 
-		virtual void Prepare(GGEMain *main);
+		virtual void Prepare(GGEMain &main);
 
 		PNGReadError ImportPNG(string filename);
 
@@ -132,6 +132,6 @@ namespace gge { namespace resource {
 		////Size of the image data within the file, used for late loading
 		int DataSize;
 		////Location of image data within the file, used for late loading
-		long DataLocation;
+		int DataLocation;
 	};
 } }

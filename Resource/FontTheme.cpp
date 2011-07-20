@@ -1,33 +1,51 @@
 #include "FontTheme.h"
 #include "ResourceFile.h"
 
+using namespace gge::utils;
+using namespace std;
+
 namespace gge { namespace resource {
-	ResourceBase *LoadFontTheme(File* File, FILE* Data, int Size) {
+	ResourceBase *LoadFontTheme(File &File, std::istream &Data, int Size) {
 		FontTheme *ft=new FontTheme;
 
-		ft->file=File;
+		ft->file=&File;
 		
-		int tpos=ftell(Data)+Size;
-		while(ftell(Data)<tpos) {
+		int target=Data.tellg()+Size;
+		while(Data.tellg()<target) {
 			int gid,size;
-			fread(&gid,1,4,Data);
-			fread(&size,1,4,Data);
 
-			if(gid==GID_GUID) {
-				ft->guid.Load(Data);
+			ReadFrom(Data, gid);
+			ReadFrom(Data, size);
+
+			if(gid==GID::Guid) {
+				ft->guid.LoadLong(Data);
 			}
-			if(gid==GID_FONTTHEME_PROPS) {
-				ft->guid_normal	.Load(Data);
-				ft->guid_bold	.Load(Data);
-				ft->guid_italic	.Load(Data);
-				ft->guid_small	.Load(Data);
-				ft->guid_h1		.Load(Data);
-				ft->guid_h2		.Load(Data);
-				ft->guid_h3		.Load(Data);
+			else if(gid==GID::SGuid) {
+				ft->guid.Load(Data);
+			} 
+			else if(gid==GID::FontTheme_Props) {
+				if(size==7*16) {
+					ft->guid_normal	.LoadLong(Data);
+					ft->guid_bold	.LoadLong(Data);
+					ft->guid_italic	.LoadLong(Data);
+					ft->guid_small	.LoadLong(Data);
+					ft->guid_h1		.LoadLong(Data);
+					ft->guid_h2		.LoadLong(Data);
+					ft->guid_h3		.LoadLong(Data);
+				}
+				else {
+					ft->guid_normal	.Load(Data);
+					ft->guid_bold	.Load(Data);
+					ft->guid_italic	.Load(Data);
+					ft->guid_small	.Load(Data);
+					ft->guid_h1		.Load(Data);
+					ft->guid_h2		.Load(Data);
+					ft->guid_h3		.Load(Data);
 
+					if(size!=(7*8))
+						Data.seekg(size-(7*8),ios::cur);
+				}
 
-				if(size!=(7*16))
-					fseek(Data,size-(7*16),SEEK_CUR);
 			} 
 
 		}
@@ -35,7 +53,7 @@ namespace gge { namespace resource {
 		return ft;
 	}
 
-	void FontTheme::Prepare(gge::GGEMain &main, gge::resource::File &file) {
+	void FontTheme::Prepare(gge::GGEMain &main) {
 		ResourceBase::Prepare(main);
 
 		NormalFont	= dynamic_cast<FontRenderer*>(file->FindObject(guid_normal));

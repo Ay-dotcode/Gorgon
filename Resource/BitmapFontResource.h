@@ -11,25 +11,29 @@ namespace gge { namespace resource {
 
 
 	////This function loads a bitmap font from the given file
-	ResourceBase *LoadBitmapFontResource(File* File, FILE* Data, int Size);
+	ResourceBase *LoadBitmapFontResource(File &File, std::istream &Data, int Size);
 
 	////This is bitmap font. Bitmap fonts contains every character as images. It has its
 	/// pros and cons. Being bitmap, these fonts do not require extra rendering. They are
 	/// independent of OS and does not require any additional libraries. However, they have
 	/// no scaling, rotation capabilities without losing detail.
 	class BitmapFontResource : public ResourceBase, public FontRenderer {
-		friend ResourceBase *LoadBitmapFontResource(File* File, FILE* Data, int Size);
+		friend ResourceBase *LoadBitmapFontResource(File &File, std::istream &Data, int Size);
 		friend class Font;
 	public:
 		////Size of the tabs in spaces, default is 4
 		int Tabsize;
 		////03020000h (Game, Bitmap font)
-		virtual int getGID() { return GID::Font; }
+		virtual GID::Type getGID() const { return GID::Font; }
 		////Currently does nothing
-		virtual bool Save(File *File, FILE *Data) { return false; }
+		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////Default constructor
-		BitmapFontResource() : ResourceBase() { Tabsize=4; memset(Characters, 0, 256*sizeof(ImageResource*)); VerticalSpacing=1.0f; }
+		BitmapFontResource() : ResourceBase() { 
+			Tabsize=4; 
+			memset(Characters, 0, 256*sizeof(ImageResource*)); 
+			VerticalSpacing=22; 
+		}
 
 		////Images that represents characters. 8bit ASCII encoding is used. 
 		/// An image might be used in more than one character.
@@ -37,9 +41,11 @@ namespace gge { namespace resource {
 
 		////Horizontal separation distance between two characters
 		short Seperator;
-		////Vertical spacing of this font, this value is multiplicative
-		/// where 1 is 100% of the character height.
-		float VerticalSpacing;
+		////Vertical spacing of this font (px)
+		int VerticalSpacing;
+		////Baseline from the top
+		int Baseline;
+
 
 	//protected:
 		////Prints the given text to the target using given color.
@@ -50,7 +56,7 @@ namespace gge { namespace resource {
 		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams());
 		////This method is extended to cover meta functionality for advanced text rendering. This function does not render the given text
 		/// it only processes meta data
-		virtual void Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment Align);
+		virtual void Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment::Type Align);
 
 
 

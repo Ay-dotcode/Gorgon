@@ -7,77 +7,79 @@
 
 using namespace gge::resource;
 using namespace gge::graphics;
+using namespace std;
 
 namespace gge { namespace resource {
-	ResourceBase *LoadImageResource(File* File, FILE* Data, int Size) {
+	ResourceBase *LoadImageResource(File& File, istream &Data, int Size) {
 		int i;
 		ImageResource *img=new ImageResource;
-		img->File=File;
+		img->File=&File;
 
-		int tpos=ftell(Data)+Size;
-		bool lateloading=0;
+		bool lateloading=false;
 		//BYTE *compressionprops;
 		graphics::ColorMode m;
 
-		while(ftell(Data)<tpos) {
-			int gid,size,tmpint;
-			fread(&gid,1,4,Data);
-			fread(&size,1,4,Data);
+		int target=Data.tellg()+Size;
+		while(Data.tellg()<target) {
+			int gid,size;
+			ReadFrom(Data, gid);
+			ReadFrom(Data, size);
 
-			if(gid==GID_IMAGE_PROPS) {
+			if(gid==GID::Image_Props) {
 				int w, h;
 
-				fread(&w,1,4,Data);
-				fread(&h,1,4,Data);
-				fread(&m,1,4,Data);
-				fread(&tmpint,1,4,Data);
+				ReadFrom(Data,w);
+				ReadFrom(Data,h);
+				ReadFrom(Data,m);
+				ReadFrom<int>(Data);
 
 				img->Resize(w,h,m);
 
-				if(size>16)
-					fread(&lateloading,1,1,Data);
-				else
-					fseek(Data,1,SEEK_CUR);
+				if(size>16) {
+					lateloading=ReadFrom<char>(Data)!=0;
+				}
 
 				if(size!=17)
-					fseek(Data,size-17,SEEK_CUR);
+					Data.seekg(size-17,ios::cur);
 			} 
-			else if(gid==GID_GUID) {
+			else if(gid==GID::Guid) {
 				img->guid.LoadLong(Data);
 			}
-			else if(gid==GID_SGUID) {
+			else if(gid==GID::SGuid) {
 				img->guid.Load(Data);
 			}
-			else if(gid==GID_IMAGE_CMP_PROPS) {
-				fread(&img->Compression,1,4,Data);
-				if(img->Compression==GID_LZMA) {
+			else if(gid==GID::Image_Cmp_Props) {
+				ReadFrom(Data, img->Compression);
+
+				if(img->Compression==GID::LZMA) {
 					img->CompressionProps=new Byte[LZMA_PROPERTIES_SIZE];
-					fread(img->CompressionProps,1,LZMA_PROPERTIES_SIZE,Data);
+					Data.read((char*)img->CompressionProps, LZMA_PROPERTIES_SIZE);
 				}
-			} else if(gid==GID_IMAGE_DATA) {
+			} else if(gid==GID::Image_Data) {
 				if(lateloading) {
-					img->DataLocation=ftell(Data);
+					img->DataLocation=(int)Data.tellg();
 					img->DataSize=size;
 
-					fseek(Data,size,SEEK_CUR);
+					Data.seekg(size,ios::cur);
 				} else {
 					if(img->Data.GetSize()!=size)
-						size=size;//throw std::runtime_error("Image data size mismatch!");
+						throw std::runtime_error("Image data size mismatch!");
 
-					fread(img->Data,1,size,Data);
+					Data.read((char*)img->Data.GetBuffer(),size);
 
 					img->isLoaded=true;
 				}
-			} else if(gid==GID_IMAGE_CMP_DATA) {
+			} else if(gid==GID::Image_Cmp_Data) {
 				if(lateloading) {
-					img->DataLocation=ftell(Data);
+					img->DataLocation=(int)Data.tellg();
 					img->DataSize=size;
 
-					fseek(Data,size,SEEK_CUR);
+					Data.seekg(size,ios::cur);
 				} else {
-					if(img->Compression==GID_LZMA) {
+					if(img->Compression==GID::LZMA) {
 						Byte *tmpdata=new Byte[size];
-						fread(tmpdata,1,size,Data);
+						Data.read((char*)tmpdata, size);
+
 						size_t processed,processed2;
 						CLzmaDecoderState state;
 
@@ -89,8 +91,8 @@ namespace gge { namespace resource {
 						free(state.Probs);
 						delete tmpdata;
 						delete img->CompressionProps;
-					} else if(img->Compression==GID_JPEG) {
-						int cpos=ftell(Data);
+					} else if(img->Compression==GID::JPEG) {
+						int cpos=(int)Data.tellg();
 						jpeg_decompress_struct cinf;
 						jpeg_decompress_struct* cinfo=&cinf;
 
@@ -104,8 +106,11 @@ namespace gge { namespace resource {
 						//Initialize the decompression object
 						jpeg_create_decompress(cinfo);
 
+						FILE *data2;
+						fopen_s(&data2, File.getFilename().c_str(), "rb");
+						fseek(data2,cpos,SEEK_SET);
 						//Specify the data source
-						jpeg_stdio_src(cinfo, Data);
+						jpeg_stdio_src(cinfo, data2);
 						cinfo->src->fill_input_buffer(cinfo);
 
 						//Decode the jpeg data into the image
@@ -140,14 +145,15 @@ namespace gge { namespace resource {
 						}
 
 						delete rowPtr;
-						fseek(Data,cpos+size,SEEK_SET);
+						fclose(data2);
+						Data.seekg(size, ios::cur);
 					}
 
 					img->isLoaded=true;
 				}
-			} else if(gid==GID_IMAGE_PALETTE) {
+			} else if(gid==GID::Image_Palette) {
 				img->Palette=new Byte[size];
-				fread(img->Palette,1,size,Data);
+				Data.read((char*)img->Palette, size);
 			}
 		}
 
@@ -161,12 +167,13 @@ namespace gge { namespace resource {
 		int i;
 		FILE *gfile;
 		errno_t err;
+		//To be compatible with JPEG read
 		err=fopen_s(&gfile, File->getFilename().data(), "rb");
 		if(err != 0) return false;
 
 		fseek(gfile,DataLocation,SEEK_SET);
 		
-		if(this->Compression==GID_LZMA) {
+		if(this->Compression==GID::LZMA) {
 			this->Data.Resize(this->getWidth()*this->getHeight()*this->getBPP());
 			Byte *tmpdata=new Byte[DataSize];
 			fread(tmpdata,1,this->DataSize,gfile);
@@ -181,7 +188,7 @@ namespace gge { namespace resource {
 			free(state.Probs);
 			delete tmpdata;
 			delete this->CompressionProps;
-		} else if(Compression==GID_JPEG) {
+		} else if(Compression==GID::JPEG) {
 			jpeg_decompress_struct cinf;
 			jpeg_decompress_struct* cinfo=&cinf;
 
@@ -242,7 +249,7 @@ namespace gge { namespace resource {
 		return true;
 	}
 
-	void ImageResource::Prepare(GGEMain *main) {
+	void ImageResource::Prepare(GGEMain &main) {
 #ifdef _DEBUG
 			if(Data==NULL) {
 				os::DisplayMessage("Image Resource","Data is not loaded yet.");
@@ -301,7 +308,7 @@ namespace gge { namespace resource {
 
 		return true;
 	}
-	PNGReadError ImageResource::ImportPNG(string filename) {
+	ImageResource::PNGReadError ImageResource::ImportPNG(string filename) {
 
 		png_structp png_ptr;
 		png_infop info_ptr;
@@ -312,27 +319,27 @@ namespace gge { namespace resource {
 		FILE *infile;
 		errno_t err;
 		err=fopen_s(&infile, filename.c_str(), "rb");
-		if(err != 0) return FileNotFound;
+		if(err != 0) return ImageResource::FileNotFound;
 
 	    unsigned char sig[8];
 
 		fread(sig, 1, 8, infile);
 		if (!png_check_sig(sig, 8))
-			return Signature;
+			return ImageResource::Signature;
 
 		png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL,NULL);
 		if (!png_ptr)
-			return OutofMemory;   /* out of memory */
+			return ImageResource::OutofMemory;   /* out of memory */
 
 		info_ptr = png_create_info_struct(png_ptr);
 		if (!info_ptr) {
 			png_destroy_read_struct(&png_ptr, NULL, NULL);
-			return OutofMemory;   /* out of memory */
+			return ImageResource::OutofMemory;   /* out of memory */
 		}
 
 		if (setjmp(png_ptr->jmpbuf)) {
 			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-			return ErrorHandlerProblem;
+			return ImageResource::ErrorHandlerProblem;
 		}
 
 		png_init_io(png_ptr, infile);
@@ -375,7 +382,7 @@ namespace gge { namespace resource {
 
 		if (image_data == NULL) {
 			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-			return OutofMemory;
+			return ImageResource::OutofMemory;
 		}
 
 		for (i = 0;  i < height;  ++i)
@@ -392,7 +399,7 @@ namespace gge { namespace resource {
 
 		//currently only RGB is supported
 		if(pChannels!=3)
-			return UnimplementedType;
+			return ImageResource::UnimplementedType;
 
 		for(unsigned y=0;y<height;y++) {
 			for(unsigned x=0;x<width;x++) {
@@ -413,7 +420,7 @@ namespace gge { namespace resource {
 
 		return NoError;
 	}
-	void ImageResource::DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align) {
+	void ImageResource::DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment::Type Align) {
 
 
 		int h=this->Height(H);
@@ -421,12 +428,12 @@ namespace gge { namespace resource {
 
 		if(Align & Alignment::Center)
 			X+=(W-w)/2;
-		else if(Align & ALIGN_RIGHT)
+		else if(Align & Alignment::Right)
 			X+= W-w;
 
-		if(Align & ALIGN_MIDDLE)
+		if(Alignment::isMiddle(Align))
 			Y+=(H-h)/2;
-		else if(Align & ALIGN_BOTTOM)
+		else if(Alignment::isBottom(Align))
 			Y+= H-h;
 
 		if(VerticalTiling.Type==ResizableObject::Stretch) {

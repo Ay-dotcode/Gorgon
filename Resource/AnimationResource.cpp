@@ -2,25 +2,34 @@
 #include "ResourceFile.h"
 #include "ImageResource.h"
 
+using namespace gge::utils;
+using namespace std;
+
 namespace gge { namespace resource {
-	ResourceBase *LoadAnimationResource(File* File, FILE* Data, int Size) {
+	ResourceBase *LoadAnimationResource(File &File, std::istream &Data, int Size) {
 		AnimationResource *anim=new AnimationResource;
 
-		int tpos=ftell(Data)+Size;
-		while(ftell(Data)<tpos) {
+		int target=Data.tellg()+Size;
+		while(Data.tellg()<target) {
 			int gid,size;
-			fread(&gid,1,4,Data);
-			fread(&size,1,4,Data);
+			ReadFrom(Data, gid);
+			ReadFrom(Data, size);
 
-			if(gid==GID_ANIMATION_DUR) {
+			if(gid==GID::Animation_Durations) {
 				anim->Durations=new int[size/4];
 
-				fread(anim->Durations,size,1,Data);
-			} else if(gid==GID_GUID) {
+				Data.read((char*)anim->Durations,size);
+			} 
+			else if(gid==GID::Guid) {
+				anim->guid.LoadLong(Data);
+			} 
+			else if(gid==GID::SGuid) {
 				anim->guid.Load(Data);
-			} else if(gid==GID_ANIMATION_IMAGE) {
+			} 
+			else if(gid==GID::Animation_Image) {
 				anim->Subitems.Add(LoadImageResource(File,Data,size));
-			} else {
+			} 
+			else {
 				EatChunk(Data,size);
 			}
 		}
@@ -34,12 +43,12 @@ namespace gge { namespace resource {
 		return parent->Durations; 
 	}
 	void ImageAnimation::ProcessFrame(int frame) {
-		this->Texture = ((ImageResource*)parent->Subitems[frame])->Texture; 
+		this->Texture = dynamic_cast<ImageResource&>(parent->Subitems[frame]).Texture; 
 	}
 
 	void ImageAnimation::init() {
 		if(parent->Subitems.getCount())
-			this->Texture = ((ImageResource*)parent->Subitems[0])->Texture; 
+			this->Texture = dynamic_cast<ImageResource&>(parent->Subitems[0]).Texture; 
 		else
 			this->Texture.ID = 0;
 
@@ -48,19 +57,19 @@ namespace gge { namespace resource {
 		else
 			Pause();
 	}
-	void ImageAnimation::DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment Align) {
+	void ImageAnimation::DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment::Type Align) {
 
 		int h=this->Height(H);
 		int w=this->Width(W);
 
-		if(Align & Alignment::Center)
+		if(Alignment::isCenter(Align))
 			X+=(W-w)/2;
-		else if(Align & ALIGN_RIGHT)
+		else if(Alignment::isRight(Align))
 			X+= W-w;
 
-		if(Align & ALIGN_MIDDLE)
+		if(Alignment::isMiddle(Align))
 			Y+=(H-h)/2;
-		else if(Align & ALIGN_BOTTOM)
+		else if(Alignment::isBottom(Align))
 			Y+= H-h;
 
 		if(VerticalTiling.Type==ResizableObject::Stretch) {

@@ -289,18 +289,20 @@ namespace gge { namespace input {
 
 				virtual bool Fire(Event::Type event, utils::Point location, int amount);
 
+				virtual ~Target();
+
 			};
 		};
 
-		Event::Type operator | (Event::Type l, Event::Type r) {
+		inline Event::Type operator | (Event::Type l, Event::Type r) {
 			return (Event::Type)((int)l|r);
 		}
 
-		Event::Type operator & (Event::Type l, Event::Type r) {
+		inline Event::Type operator & (Event::Type l, Event::Type r) {
 			return (Event::Type)((int)l&r);
 		}
 
-		Event::Type operator ~ (Event::Type l) {
+		inline Event::Type operator ~ (Event::Type l) {
 			return (Event::Type)(~(int)l);
 		}
 
@@ -314,7 +316,7 @@ namespace gge { namespace input {
 				Object(HandlerBase *handler, utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck) : Event::Target(handler, eventmask), Bounds(bounds), enabled(true) {
 
 				}
-				~Object();
+				virtual ~Object();
 
 				utils::Bounds Bounds;
 
@@ -428,7 +430,7 @@ namespace gge { namespace input {
 				Object(HandlerBase *handler, Event::Type eventmask=Event::AllButOverCheck) : Event::Target(handler, eventmask), enabled(true) {
 
 				}
-				~Object();
+				virtual ~Object();
 
 				void Enable() {
 					enabled=true;
@@ -728,16 +730,16 @@ namespace gge { namespace input {
 		void ProcessMousePosition(os::WindowHandle Window);
 		////Processes click of mouse button
 		///@button	: button number 1 for left, 2 for right  and 4 for middle
-		void ProcessMouseClick(int button, int x, int y);
+		void ProcessMouseClick(mouse::Event::Type button, int x, int y);
 		////Processes given mouse button as pressed
 		///@button	: button number 1 for left, 2 for right and 4 for middle
-		void ProcessMouseDown(int button,int x,int y);
+		void ProcessMouseDown(mouse::Event::Type button,int x,int y);
 		////Processes given mouse button as released
 		///@button	: button number 1 for left, 2 for right and 4 for middle
-		void ProcessMouseUp(int button,int x,int y);
+		void ProcessMouseUp(mouse::Event::Type button,int x,int y);
 		////Processes double click action
 		///@button	: button number 1 for left, 2 for right and 4 for middle
-		void ProcessMouseDblClick(int button,int x,int y);
+		void ProcessMouseDblClick(mouse::Event::Type button,int x,int y);
 		////Processes vertical scroll
 		void ProcessVScroll(int amount,int x,int y);
 		////Processes horizontal scroll

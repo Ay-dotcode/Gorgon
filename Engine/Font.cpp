@@ -82,21 +82,21 @@ namespace gge {
 	}
 
 
-	FontInitiator Font::Load(File* file,FILE* gfile,int sz) {
+	FontInitiator Font::Load(File &File, std::istream &Data, int Size) {
 		FontInitiator f;
 
-		f.file=file;
+		f.file=&File;
 
-		f.guid_theme.Load(gfile);
-		fread(&f.Style,4,1,gfile);
-		fread(&f.Color,4,1,gfile);
+		f.guid_theme.Load(Data);
+		f.Style=(Font::FontStyle)ReadFrom<int>(Data);
+		ReadFrom(Data, f.Color);
 
 		int gid, size;
 
-		fread(&gid, 4,1, gfile);
-		fread(&size,4,1, gfile);
+		ReadFrom(Data, gid);
+		ReadFrom(Data, size);
 
-		f.Shadow=ShadowParams::Load(file,gfile,size);
+		f.Shadow=ShadowParams::Load(File,Data,size);
 
 		return f;
 	}

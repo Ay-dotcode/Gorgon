@@ -9,69 +9,64 @@
 #include "LinkNode.h"
 #include "FontTheme.h"
 
+using namespace std;
+using namespace gge::utils;
+
 namespace gge { namespace resource {
 
-	bool File::LoadFile(const string &Filename) {
+	void File::LoadFile(const string &Filename) {
 		char sgn[7];
 
 		this->Filename=Filename;
 
 		///*Check file existence
-		FILE *data;
-		errno_t err;
-		err=fopen_s(&data, Filename.data(), "rb");
-		if(data==NULL) {
+
+		ifstream data;
+		data.open(Filename, ios::in | ios::binary);
+		if(data.fail())
 			throw load_error(load_error::FileNotFound, load_error::strings::FileNotFound);
-		}
 
 
-		fread(sgn,6,1,data);
-		sgn[6]=0;
 		///*Check file signature
-		if(strcmp(sgn,"GORGON")!=0) {
-			fclose(data);
+		data.read(sgn, 6);
+		sgn[6]=0;
+		if(string("GORGON")!=sgn)
 			throw load_error(load_error::Signature, load_error::strings::Signature);
-		}
 
 		///*Check file version
-		fread(&FileVersion,1,4,data);
-		if(FileVersion>CurrentVersion) {
-			fclose(data);
+		ReadFrom(data, FileVersion);
+		if(FileVersion>CurrentVersion)
 			throw load_error(load_error::VersionMismatch, load_error::strings::VersionMismatch);
-		}
 
 		///*Load file type
-		fread(&FileType,1,4,data);
+		ReadFrom(data, FileType);
 
 		///*Check first element
-		int tmpint;
-		fread(&tmpint,1,4,data);
-		if(tmpint!=GID::Folder) {
-			fclose(data);
+		if(ReadFrom<int>(data)!=GID::Folder)
 			throw load_error(load_error::Containment, load_error::strings::Containment);
-		}
 
 		int size;
-		fread(&size,1,4,data);
+		ReadFrom(data, size);
 
 		///*Load first element
-		root=(FolderResource*)LoadFolderResource(this,data,size);
+		root=dynamic_cast<FolderResource*>(LoadFolderResource(*this, data, size));
+		if(!root)
+			throw load_error(load_error::Containment, load_error::strings::Containment);
+
 		root->Resolve();
 
-		isloaded=1;
+		isloaded=true;
 
 		///*Close file
-		fclose(data);
-		return true;
+		data.close();
 	}
 
-	ResourceBase *File::LoadObject(FILE *Data, int GID, int Size) {
-		ResourceLoader *loader;
-		Loaders.ResetIteration();
+	ResourceBase *File::LoadObject(istream &Data, int GID, int Size) {
+		for(utils::Collection<ResourceLoader>::Iterator loader=Loaders.First();
+			loader.isValid(); loader.Next()) {
 
-		while(loader=Loaders.next()) {
-			if(loader->GID==GID) {
-				return loader->Loader(this, Data, Size);
+			if(loader->GId==GID) {
+				return loader->Loader(*this, Data, Size);
 			}
 		}
 
@@ -80,24 +75,36 @@ namespace gge { namespace resource {
 	}
 
 	void File::AddBasicLoaders() {
-		Loaders.Add(new ResourceLoader(GID_FOLDER, LoadFolderResource)); 
-		Loaders.Add(new ResourceLoader(GID_LINKNODE, LoadLinkNodeResource)); 
-		Loaders.Add(new ResourceLoader(GID_TEXT, LoadTextResource)); 
-		Loaders.Add(new ResourceLoader(GID_IMAGE, LoadImageResource)); 
-		Loaders.Add(new ResourceLoader(GID_DATAARRAY, LoadDataResource)); 
+		Loaders.Add(new ResourceLoader(GID::Folder, LoadFolderResource)); 
+		Loaders.Add(new ResourceLoader(GID::LinkNode, LoadLinkNodeResource)); 
+		Loaders.Add(new ResourceLoader(GID::Text, LoadTextResource)); 
+		Loaders.Add(new ResourceLoader(GID::Image, LoadImageResource)); 
+		Loaders.Add(new ResourceLoader(GID::Data, LoadDataResource)); 
 	}
 
 	void File::AddExtendedLoaders() {
 		AddBasicLoaders();
-		Loaders.Add(new ResourceLoader(GID_SOUND, LoadSoundResource)); 
+		Loaders.Add(new ResourceLoader(GID::Sound, LoadSoundResource)); 
 	}
 
 	void File::AddGameLoaders() {
 		AddExtendedLoaders();
-		Loaders.Add(new ResourceLoader(GID_ANIMATION, LoadAnimationResource)); 
-		Loaders.Add(new ResourceLoader(GID_FONT, LoadBitmapFontResource)); 
-		Loaders.Add(new ResourceLoader(GID_FONTTHEME, LoadFontTheme)); 
-		Loaders.Add(new ResourceLoader(GID_FONTTHEME, LoadFontTheme)); 
+		Loaders.Add(new ResourceLoader(GID::Animation, LoadAnimationResource)); 
+		Loaders.Add(new ResourceLoader(GID::Font, LoadBitmapFontResource)); 
+		Loaders.Add(new ResourceLoader(GID::FontTheme, LoadFontTheme)); 
+		Loaders.Add(new ResourceLoader(GID::FontTheme, LoadFontTheme)); 
+	}
+
+	ResourceBase * File::FindObject( utils::SGuid guid ) {
+		if(guid.isEmpty()) 
+			return NULL;
+
+		for(utils::Collection<Redirect>::Iterator i=Redirects.First();i.isValid();i.Next()) {
+			if(i->source==guid)
+				guid=i->target;
+		}
+
+		return root->FindObject(guid);
 	}
 
 	const string load_error::strings::FileNotFound		= "Cannot find the file specified";

@@ -42,7 +42,7 @@ namespace gge {
 
 		Pointer *pointer;
 		
-		if(ActivePointers.GetSize()==0)
+		if(ActivePointers.getCount()==0)
 			pointer=BasePointer;
 		else
 			pointer=ActivePointers.LastItem().GetPtr();

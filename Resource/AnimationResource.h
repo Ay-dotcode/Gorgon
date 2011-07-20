@@ -10,7 +10,7 @@ namespace gge { namespace resource {
 	class File;
 	
 	////This function loads a text resource from the given file
-	ResourceBase *LoadAnimationResource(File* File, FILE* Data, int Size);
+	ResourceBase *LoadAnimationResource(File &File, std::istream &Data, int Size);
 
 	class AnimationResource;
 
@@ -112,26 +112,26 @@ namespace gge { namespace resource {
 
 	////
 	class AnimationResource : public ResourceBase {
-		friend ResourceBase *LoadAnimationResource(File* File, FILE* Data, int Size);
+		friend ResourceBase *LoadAnimationResource(File &File, std::istream &Data, int Size);
 		friend class ImageAnimation;
 	public:
 		////03010000h (Gaming, Animation)
-		virtual int getGID() { return GID::Animation; }
+		virtual GID::Type getGID() const { return GID::Animation; }
 		////Currently does nothing
-		virtual bool Save(File *File, FILE *Data) { return false; }
+		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		
 		////Default constructor
 		AnimationResource() : ResourceBase() { Durations=NULL; FrameCount=0; }
 
 		////Returns the width of the first image
-		int getWidth() { if(Subitems.GetSize()>0) return dynamic_cast<ImageResource&>(Subitems[0]).getWidth(); return 0; }
+		int getWidth() { if(Subitems.getCount()>0) return dynamic_cast<ImageResource&>(Subitems[0]).getWidth(); return 0; }
 		////Returns the height of the first image
-		int getHeight() { if(Subitems.GetSize()>0) return dynamic_cast<ImageResource&>(Subitems[0]).getHeight(); return 0; }
+		int getHeight() { if(Subitems.getCount()>0) return dynamic_cast<ImageResource&>(Subitems[0]).getHeight(); return 0; }
 		////Returns number of frames
 		int getFrameCount() { return FrameCount; }
 		////Creates a new Image animation from this resource
 		ImageAnimation *getAnimation() { 
-			if(Subitems.GetSize()) {
+			if(Subitems.getCount()) {
 				ImageAnimation *ret=new ImageAnimation(this); 
 				return ret;
 			} else

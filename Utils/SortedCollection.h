@@ -109,6 +109,14 @@ namespace gge { namespace utils {
 				return item;
 			}
 
+			void SetItem(T_ &item) {
+				this->item=&item;
+			}
+
+			void SetItem(T_ *item) {
+				this->item=item;
+			}
+
 			void Reorder(const K_ &key) {
 				parent->Reorder(*this, key);
 			}
@@ -769,7 +777,7 @@ namespace gge { namespace utils {
 			return -1;
 		}
 
-		int GetSize() const {
+		int getCount() const {
 			return *count;
 		}
 

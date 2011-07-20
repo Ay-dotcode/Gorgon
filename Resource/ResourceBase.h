@@ -7,15 +7,18 @@
 #include "GRE.h"
 #include "Definitions.h"
 
+#include <fstream>
+
 using namespace gge;
 
 namespace gge { namespace resource {
+
 
 	////This class is the base for all Gorgon Resources
 	class ResourceBase {
 	public:
 		////This function shall return Gorgon ID of this resource
-		virtual int getGID() const = 0;
+		virtual GID::Type getGID() const = 0;
 		////This function shall prepare this resource to be used
 		/// after file is loaded, default behavior is to pass
 		/// the request to children
@@ -27,7 +30,7 @@ namespace gge { namespace resource {
 		virtual ~ResourceBase();
 		
 		////This function shall save this resource to the given file
-		virtual bool Save(File *File, FILE *Data)=0;
+		virtual bool Save(File &File, std::ostream &Data)=0;
 
 		////This function tests whether this object has the given utils::SGuid
 		bool isEqual(const utils::SGuid &guid) const { return guid==this->guid; }
@@ -44,9 +47,9 @@ namespace gge { namespace resource {
 		utils::SortedCollection<ResourceBase> Subitems;
 
 		////Searches the public children of this resource object
-		virtual ResourceBase *FindObject(utils::SGuid guid) const;
+		virtual ResourceBase *FindObject(utils::SGuid guid);
 
 		////Searches the public children of this resource object
-		virtual ResourceBase *FindParent(utils::SGuid guid) const;
+		virtual ResourceBase *FindParent(utils::SGuid guid);
 	};
 } }

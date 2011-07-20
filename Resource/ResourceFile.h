@@ -10,23 +10,22 @@
 #include "FolderResource.h"
 
 namespace gge { namespace resource {
-	////This is Resource loader function prototype
-	typedef ResourceBase& (*ResourceLoaderFunction)(File& File, FILE& Data, int Size);
 
 	////This class defines a resource loader
 	class ResourceLoader {
 	public:
+		////This is Resource loader function prototype
+		typedef std::function<ResourceBase* (File&, std::istream&, int)> LoaderFunction;
+
 		////Gorgon ID of the resource
-		int GID;
+		GID::Type GId;
 
 		////Load handler function
-		ResourceLoaderFunction Loader;
+		LoaderFunction Loader;
 
 		////Filling constructor
-		ResourceLoader(int gid, ResourceLoaderFunction loader) {
-			GID=gid;
-			Loader=loader;
-		}
+		ResourceLoader(GID::Type gid, LoaderFunction loader) : GId(gid), Loader(loader) 
+		{ }
 	};
 
 	class Redirect {
@@ -72,7 +71,7 @@ namespace gge { namespace resource {
 	public:
 		////Resource Loaders
 		utils::Collection<ResourceLoader> Loaders;
-		utils::Collection<Redirect> Redirects;
+		utils::Collection<Redirect>		  Redirects;
 
 		////File type
 		GID::Type FileType;
@@ -82,28 +81,18 @@ namespace gge { namespace resource {
 		////Returns the filename used for the last load or save operation
 		string getFilename() const { return Filename; }
 
-		////Loads a given file modifying error variables
+		////Loads a given file throws load_error
 		///@Filename	: File to be loaded
-		bool LoadFile(const string &Filename);
+		void LoadFile(const string &Filename);
 
 		////Returns if a file is loaded
 		bool isLoaded() const { return isloaded; }
 
 		////Loads a resource object from the given file, GID and size
-		ResourceBase &LoadObject(std::ifstream &Data, int GID, int Size);
+		ResourceBase *LoadObject(std::istream &Data, int GID, int Size);
 
 		////Searches the given resource object within this file
-		ResourceBase *FindObject(utils::SGuid guid) { 
-			if(guid.isEmpty()) 
-				return NULL;
-
-			for(utils::Collection<Redirect>::Iterator i=Redirects.First();i.isValid();i.Next()) {
-				if(i->source==guid)
-					guid=i->target;
-			}
-			
-			return root->FindObject(guid); 
-		}
+		ResourceBase *FindObject(utils::SGuid guid);
 
 		////Adds basic resource loaders 
 		void AddBasicLoaders();
@@ -127,5 +116,31 @@ namespace gge { namespace resource {
 		string Filename;
 	};
 
-	inline void EatChunk(FILE *Data, int Size) { fseek(Data, Size, SEEK_CUR); }
+	inline void EatChunk(std::istream &file, std::streamoff Size) { file.seekg(Size, std::ios::cur); }
+
+	template<class T_>
+	inline void ReadFrom(std::istream &file, T_ &object) {
+		file.read(reinterpret_cast<char*>(&object), sizeof(object));
+	}
+
+	template<>
+	inline void ReadFrom<std::string>(std::istream &file, std::string &object) {
+		int temp;
+		ReadFrom(file, temp);
+		char *text=new char[temp];
+		file.read(text, temp);
+		object.assign(text,temp);
+	}
+
+	template<class T_>
+	inline T_ ReadFrom(std::istream &file) {
+		T_ object;
+		file.read(reinterpret_cast<char*>(&object), sizeof(object));
+
+		return object;
+	}
 } }
+
+inline int operator +(const std::streampos &l, int r) {
+	return (int)l + r;
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Engine/Graphics.h"
+#include "../Resource/ResourceFile.h"
 
 namespace gge { namespace resource {
 	class File;
@@ -47,14 +48,14 @@ namespace gge {
 			Type(Type), Color(color), Offset(Offset) 
 		{ }
 
-		static ShadowParams Load(resource::File* file,FILE* gfile,int sz) {
+		static ShadowParams Load(resource::File &File, std::istream &Data, int Size) {
 			ShadowParams s;
 
-			fread(&s.Type, 4,1, gfile);
+			s.Type=(ShadowTypes)resource::ReadFrom<int>(Data);
 
 			if(s.Type==ShadowParams::Flat) {
-				fread(&s.Offset, 4,2, gfile);
-				fread(&s.Color, 4,1, gfile);
+				resource::ReadFrom(Data, s.Offset);
+				resource::ReadFrom(Data, s.Color);
 			}
 
 			return s;
