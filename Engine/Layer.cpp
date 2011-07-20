@@ -59,4 +59,14 @@ namespace gge {
 	{
 
 	}
+
+	LayerBase::LayerBase() : 
+		parent(NULL), 
+		wrapper(NULL),
+		isVisible(true),
+		BoundingBox(Main.BoundingBox)
+	{
+
+	}
+
 }

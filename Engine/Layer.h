@@ -29,11 +29,7 @@ namespace gge {
 		utils::SortedCollection<LayerBase>::Wrapper   *wrapper;
 		utils::Bounds BoundingBox;
 
-		LayerBase() : 
-			parent(NULL), 
-			wrapper(NULL),
-			isVisible(true)
-		{ }
+		LayerBase();
 
 		LayerBase(const utils::Bounds &b) : 
 			parent(NULL), 
