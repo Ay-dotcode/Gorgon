@@ -67,8 +67,8 @@ namespace gge { namespace utils {
 		{ }
 		basic_Bounds2D(T_ Left, T_ Top, T_ Right, T_ Bottom) : Left(Left), Top(Top), Right(Right), Bottom(Bottom)
 		{
-			if(Left>Right) std::swap(Left,Right);
-			if(Top>Bottom) std::swap(Top,Bottom);
+			if(this->Left>this->Right) std::swap(this->Left,this->Right);
+			if(this->Top>this->Bottom) std::swap(this->Top,this->Bottom);
 		}
 		basic_Bounds2D(const basic_Point2D<T_> &TopLeft, const basic_Point2D<T_> &BottomRight) : 
 		Left(TopLeft.x), Top(TopLeft.y), Right(BottomRight.x), Bottom(BottomRight.y)

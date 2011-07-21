@@ -307,6 +307,7 @@ namespace gge { namespace input {
 		}
 
 		class EventChain {
+			friend class EventProvider;
 		private:
 
 		public:
@@ -360,11 +361,12 @@ namespace gge { namespace input {
 			};
 
 			bool Fire(Event::Type event, utils::Point location, int amount) {
-				for(utils::SortedCollection<Object>::Iterator i=Events.First();i.isValid();i.Next()) {
+				for(utils::SortedCollection<Object>::Iterator i=Events.Last();i.isValid();i.Previous()) {
 					i->Fire(event, location, amount);
 				}
 			}
 
+		protected:
 			utils::SortedCollection<Object> Events;
 
 
@@ -406,6 +408,10 @@ namespace gge { namespace input {
 
 			template <class R_>
 			Object &Register(R_ &object, bool (R_::*fn)(), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+
+			void Unregister(Object &obj);
+
+			void Unregister(Object *obj);
 		};
 
 		////This is a code base to help with mouse events
@@ -421,6 +427,7 @@ namespace gge { namespace input {
 		};
 
 		class EventCallback {
+			friend class CallbackProvider;
 		private:
 
 		public:

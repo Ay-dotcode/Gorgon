@@ -55,6 +55,7 @@ namespace gge {
 		///@Speed		: speed of the animation, default is 1 while
 		/// 0 effectively stops the animation
 		virtual void setSpeed(float Speed);
+		virtual float getSpeed() { return speed; }
 		////Returns the current time of the animation
 		int currentTime();
 		////Returns whether the animation is playing
@@ -145,6 +146,12 @@ namespace gge {
 				AnimatorBase::setSpeed(-Speed);
 			else
 				AnimatorBase::setSpeed( Speed);
+		}
+		virtual float getSpeed() { 
+			if(gobackwards)
+				return -speed; 
+			else
+				return speed; 
 		}
 		////Returns whether the animation is playing
 		/// backwards

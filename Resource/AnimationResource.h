@@ -5,6 +5,7 @@
 #include "../Engine/Animator.h"
 #include "ImageResource.h"
 #include "../Resource/ResizableObject.h"
+#include "../Utils/Point2D.h"
 
 namespace gge { namespace resource {
 	class File;
@@ -51,6 +52,8 @@ namespace gge { namespace resource {
 			Draw(Target, X, Y, Texture.W, Texture.H);
 		}
 		void Draw(graphics::I2DGraphicsTarget &Target,int X,int Y) { Draw(&Target, X,Y); }
+		void Draw(graphics::I2DGraphicsTarget &Target,utils::Point p) { Draw(Target, p.x,p.y); }
+		void Draw(graphics::I2DGraphicsTarget *Target,utils::Point p) { Draw(Target, p.x,p.y); }
 
 		virtual void Draw(graphics::I2DGraphicsTarget *Target,int X,int Y,int W,int H) { 
 			if(Texture.ID)

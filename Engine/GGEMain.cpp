@@ -1,4 +1,10 @@
 #include "GGEMain.h"
+#include "Sound.h"
+#include "Pointer.h"
+#include "Graphics.h"
+#include "Input.h"
+#include "Animator.h"
+//#include "../Widgets/WidgetMain.h"
 
 namespace gge {
 	GGEMain Main;
@@ -119,5 +125,38 @@ namespace gge {
 		InitializePointer();
 		//InitializeWidgets();
 	}
+
+	os::DeviceHandle GGEMain::InitializeGraphics() {
+		Device = gge::graphics::Initialize(Window, BitDepth, Width, Height); return Device;
+	}
+
+	void GGEMain::InitializeSound() {
+		gge::sound::system::InitializeSound(Window);
+	}
+
+	void GGEMain::InitializeInput() {
+		gge::input::Initialize();
+	}
+
+	void GGEMain::InitializeOS() {
+		gge::os::Initialize();
+	}
+
+	void GGEMain::InitializeAnimation() {
+		gge::InitializeAnimation(this);
+	}
+
+	void GGEMain::InitializePointer() {
+		Pointers.Initialize(*this);
+	}
+
+	os::WindowHandle GGEMain::CreateWindow( string Title, os::IconHandle Icon, int X/*=0*/, int Y/*=0*/ ) {
+		Window=os::window::CreateWindow(SystemName,Title,Icon,Instance,X,Y,Width,Height,BitDepth,FullScreen);
+		return Window;
+	}
+
+	//void GGEMain::InitializeWidgets() {
+	//	gge::widgets::InitializeWidgets(this);
+	//}
 
 }

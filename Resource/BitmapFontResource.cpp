@@ -151,7 +151,9 @@ namespace gge { namespace resource {
 					}
 				}
 
-				if(text[lword+1]=='\n')
+				if(text.length()-1==lword)
+					;
+				else if(text[lword+1]=='\n')
 					lword++;
 
 				lstart=lword+1;

@@ -26,7 +26,7 @@ namespace gge { namespace input {
 		bool EventProvider::PropagateMouseEvent(Event::Type event, utils::Point location, int amount) {
 			if(Event::isClick(event)) {
 				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
-					if(&(*i)==PressedObject && i->Bounds.isInside(location)) {
+					if((!PressedObject || &(*i)==PressedObject) && i->Bounds.isInside(location)) {
 						if(i->Fire(event, location-i->Bounds.TopLeft(), amount))
 							return true;
 					}
@@ -68,7 +68,7 @@ namespace gge { namespace input {
 							}
 						}
 						else if(!PressedObject || PressedObject==&(*i)) {
-							ret = i->Fire(Event::Over, location-i->Bounds.TopLeft(), amount);
+							ret = i->Fire(Event::Move, location-i->Bounds.TopLeft(), amount);
 						}
 
 						if(&(*i)==HoveredObject)
@@ -241,6 +241,14 @@ namespace gge { namespace input {
 				bounds,
 				eventmask
 				);
+		}
+
+		void EventChain::Unregister( Object &obj ) {
+			obj.Remove();
+		}
+
+		void EventChain::Unregister( Object *obj ) {
+			obj->Remove();
 		}
 
 
@@ -425,19 +433,28 @@ namespace gge { namespace input {
 			if(mouse::PressedPoint.Distance(utils::Point(x,y))<mouse::DragDistance)
 				Main.PropagateMouseEvent(mouse::Event::Click | button, utils::Point(x,y), 0);
 
-			mouse::PressedObject=NULL;
+			if(mouse::PressedButtons==mouse::Event::None)
+				mouse::PressedObject=NULL;
 		}
 
 		void ProcessMouseDown(mouse::Event::Type button,int x,int y) {
 			mouse::PressedButtons = mouse::PressedButtons | button;
 			mouse::PressedPoint   = utils::Point(x,y);
 
-			Main.PropagateMouseEvent(mouse::Event::Down | button, utils::Point(x,y), 0);
+			if(mouse::PressedObject)
+				mouse::PressedObject->Fire(mouse::Event::Down | button, utils::Point(x,y), 0);
+			else
+				Main.PropagateMouseEvent(mouse::Event::Down | button, utils::Point(x,y), 0);
 		}
 
 		void ProcessMouseUp(mouse::Event::Type button,int x,int y){
+			if(button==mouse::Event::Left)
+				button=button;
 			mouse::PressedButtons = mouse::PressedButtons & ~button;
-			Main.PropagateMouseEvent(mouse::Event::Up | button, utils::Point(x,y), 0);
+			if(mouse::PressedObject)
+				mouse::PressedObject->Fire(mouse::Event::Up | button, utils::Point(x,y), 0);
+
+			//Main.PropagateMouseEvent(mouse::Event::Up | button, utils::Point(x,y), 0);
 		}
 
 		void ProcessMouseDblClick(mouse::Event::Type button,int x,int y){

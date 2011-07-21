@@ -87,14 +87,18 @@ namespace gge {
 	Pointer *PointerCollection::Add(graphics::Buffered2DGraphic *pointer, Point Hotspot, Pointer::PointerTypes Type) {
 		Pointer *ret=new Pointer(pointer, Hotspot.x, Hotspot.y, Type);
 		utils::Collection<Pointer, 10>::Add( ret );
+		
+		if(!BasePointer)
+			BasePointer=ret;
+
 		return ret;
 	}
 
-	int PointerCollection::Set(Pointer *Pointer) {
+	PointerCollection::Token PointerCollection::Set(Pointer *Pointer) {
 		return reinterpret_cast<Token>(&ActivePointers.Add(Pointer, ActivePointers.HighestOrder()+1));
 	}
 
-	int PointerCollection::Set(Pointer::PointerTypes Type) {
+	PointerCollection::Token PointerCollection::Set(Pointer::PointerTypes Type) {
 		if(Type==Pointer::None)
 			return Set(BasePointer);
 		for(Collection<Pointer,10>::Iterator pointer=this->First();pointer.isValid();pointer.Next()) {
@@ -105,7 +109,7 @@ namespace gge {
 		return Set(BasePointer);
 	}
 
-	void PointerCollection::Reset(int StackNo) {
+	void PointerCollection::Reset(PointerCollection::Token StackNo) {
 		ActivePointers.Remove(*reinterpret_cast<utils::SortedCollection<Pointer>::Wrapper*>(StackNo));
 	}
 

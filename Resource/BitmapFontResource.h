@@ -40,7 +40,7 @@ namespace gge { namespace resource {
 		ImageResource *Characters[256];
 
 		////Horizontal separation distance between two characters
-		short Seperator;
+		int Seperator;
 		////Vertical spacing of this font (px)
 		int VerticalSpacing;
 		////Baseline from the top

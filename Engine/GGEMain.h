@@ -2,16 +2,10 @@
 
 #include "../Utils/Any.h"
 #include "../Utils/EventChain.h"
-
-//#include "../Widgets/WidgetMain.h"
-
 #include "OS.h"
-#include "Sound.h"
-#include "Pointer.h"
-#include "Graphics.h"
-#include "Input.h"
+
+
 #include "Layer.h"
-#include "Animator.h"
 
 namespace gge {
 	struct IntervalObject;
@@ -100,33 +94,28 @@ namespace gge {
 		////This function creates the game window. You may specify title, icon and position
 		/// of the window. However, position is ignored if this is a full screen application.
 		/// OS should be initialized before calling this function
-		os::WindowHandle CreateWindow(string Title, os::IconHandle Icon, int X=0, int Y=0) {
-			Window=os::window::CreateWindow(SystemName,Title,Icon,Instance,X,Y,Width,Height,BitDepth,FullScreen);
-			return Window;
-		}
+		os::WindowHandle CreateWindow(string Title, os::IconHandle Icon, int X=0, int Y=0);
 
 		////Initializes graphic subsystem. All graphic related functions will fail if
 		/// called before this method. 
-		os::DeviceHandle InitializeGraphics() { Device = gge::graphics::Initialize(Window, BitDepth, Width, Height); return Device; }
+		os::DeviceHandle InitializeGraphics();
 		////Initializes sound subsystem. All sound related functions will fail if
 		/// called before this method.
-		void		 InitializeSound() { gge::sound::system::InitializeSound(Window); }
+		void		 InitializeSound();
 		////Initializes input subsystem. All check on keyboard state before calling
 		/// this method is error prone. This method should be called before any
 		/// call to BeforeGameLoop function.
-		void		 InitializeInput() { 
-			gge::input::Initialize(); 
-		}
+		void		 InitializeInput();
 		////Initializes OS subsystem allowing it to setup events. Should be called before creating a window
-		void		 InitializeOS() { gge::os::Initialize(); }
+		void		 InitializeOS();
 		////Initializes all systems creating the main window
 		void		 InitializeAll(string Title, os::IconHandle Icon, int X=0, int Y=0);
 		////Initializes Animation subsystem. Before calling this function, animations does not progress
 		/// automatically.
-		void		 InitializeAnimation() { gge::InitializeAnimation(this); }
+		void		 InitializeAnimation();
 		////Initializes Pointer subsystem. Before calling this function, pointers cannot be used
-		void		 InitializePointer() { Pointers.Initialize(*this); }
-		//void		 InitializeWidgets() { gge::widgets::InitializeWidgets(this); }
+		void		 InitializePointer();
+		//void		 InitializeWidgets();
 
 		////Registers a signal handler to be called in every given time. Exact time passed from the
 		/// last signal can be checked using LastSignal variable of the IntervalObject
@@ -135,6 +124,14 @@ namespace gge {
 		/// it cannot be used after this function is called
 		void UnregisterInterval(IntervalObject *Interval);
 
+
+		void MoveWindow(int X, int Y) {
+			os::window::MoveWindow(Window, X, Y);
+		}
+
+		void MoveWindow(utils::Point p) {
+			os::window::MoveWindow(Window, p);
+		}
 
 		////This event is triggered before rendering, after intervals
 		utils::EventChain<GGEMain, utils::empty_event_params> BeforeRenderEvent;

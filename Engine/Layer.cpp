@@ -24,7 +24,7 @@ namespace gge {
 			(event&input::mouse::Event::Out) || 
 			(input::mouse::PressedObject && (event&input::mouse::Event::Move)) ) 
 		{
-			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
 				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
 					return true;
 			}

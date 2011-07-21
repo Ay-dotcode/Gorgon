@@ -27,7 +27,7 @@ namespace gge { namespace resource {
 				anim->guid.Load(Data);
 			} 
 			else if(gid==GID::Animation_Image) {
-				anim->Subitems.Add(LoadImageResource(File,Data,size));
+				anim->Subitems.Add(LoadImageResource(File,Data,size), anim->Subitems.HighestOrder()+1);
 			} 
 			else {
 				EatChunk(Data,size);

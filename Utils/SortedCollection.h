@@ -156,7 +156,7 @@ namespace gge { namespace utils {
 			Iterator_(Wrapper &item) : Current(item), parent(item.parent) {
 			}
 
-			Iterator_(const Iterator_&it) : Current(it.Current) {
+			Iterator_(const Iterator_&it) : Current(it.Current), parent(it.parent) {
 			}
 
 			Wrapper &GetWrapper() {
@@ -195,7 +195,7 @@ namespace gge { namespace utils {
 				if(Current) {
 					return Current->key;
 				} else {
-					throw runtime_error("Invalid location");
+					throw std::runtime_error("Invalid location");
 				}
 			}
 
@@ -404,6 +404,8 @@ namespace gge { namespace utils {
 
 						break;
 					}
+
+					c=c->next;
 				}
 			}
 
@@ -649,7 +651,8 @@ namespace gge { namespace utils {
 		}
 
 		void Delete(T_ *item) {
-			Delete(Find(item));
+			Iterator it=Find(item);
+			Delete(it);
 		}
 
 		SortedCollection &operator -=(T_ *item) {
@@ -659,11 +662,13 @@ namespace gge { namespace utils {
 		}
 
 		void Remove(T_ &item) {
-			Remove(Find(item));
+			Iterator it=Find(item);
+			Remove(it);
 		}
 
 		void Delete(T_ &item) {
-			Delete(Find(item));
+			Iterator it=Find(item);
+			Delete(it);
 		}
 
 		SortedCollection &operator -=(T_ &item) {

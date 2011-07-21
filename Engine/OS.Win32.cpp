@@ -410,6 +410,9 @@ using namespace gge::input::system;
 				return (WindowHandle)ret;
 			}
 
+			void MoveWindow(WindowHandle h, utils::Point p) {
+				SetWindowPos((HWND)h, 0, p.x,p.y, 0,0, SWP_NOSIZE | SWP_NOZORDER);
+			}
 
 		}
 	

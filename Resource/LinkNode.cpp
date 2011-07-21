@@ -16,14 +16,14 @@ namespace gge { namespace resource {
 				item.isValid(); item.Next()) {
 				if(item->isEqual(guid)) {
 					ResourceBase *t=File->Root().FindObject(target);
-					if(t) {
+//					if(t) {
 						item.GetWrapper().SetItem(t);
-						break;
-					}
-					else {
-						item.Delete();
-						return;
-					}
+					//	break;
+					//}
+					//else {
+					//	item.Delete();
+					//	return;
+					//}
 				}
 			}
 
