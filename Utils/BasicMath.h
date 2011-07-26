@@ -22,6 +22,7 @@
 //COPYRIGHT
 //	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 
+#pragma once
 
 #include <cmath>
 
@@ -29,22 +30,34 @@
 namespace gge { namespace utils {
 
 	template <class T_>
-	inline int Round(T_ num) {
-		return (int)(num+0.5f); 
+	inline T_ Round(T_ num) {
+		return std::floor(num+0.5f); 
 	}
 
 	template <class T_>
-	inline float Round(T_ num, int digits) {
+	inline T_ Round(const T_ &num, int digits) {
 		T_ d=std::pow(10.0f, digits);
-		return ((int)(num*d+0.5f))/d;
+		return std::floor(num*d+0.5f)/d;
+	}
+
+	//accepts both terminals as in range
+	template <class T_, class U_, class V_>
+	bool InRange(const T_ &num, const U_ &n1, const V_ &n2) {
+		if(n1<n2)
+			return num>=n1 && num<=n2;
+		else
+			return num>=n2 && num<=n1;
 	}
 
 	template <class T_, class U_>
-	T_ Max(T_ num1, U_ num2) { return num1>num2 ? num1 : num2; }
-
+	T_ Max(const T_ &num1, const U_ &num2) { return num1>num2 ? num1 : num2; }
+	
 	template <class T_, class U_>
-	T_ Min(T_ num1, U_ num2) { return num1<num2 ? num1 : num2; }
+	T_ Min(const T_ &num1, const U_ &num2) { return num1<num2 ? num1 : num2; }
 
-
+	template <class T_>
+	inline T_ PositiveMod(const T_ &num, const T_ &mod) {
+		return num<0 ? mod + (num%mod) : num%mod;
+	}
 }}
 

@@ -109,7 +109,9 @@ namespace gge {
 		////Initializes OS subsystem allowing it to setup events. Should be called before creating a window
 		void		 InitializeOS();
 		////Initializes all systems creating the main window
-		void		 InitializeAll(string Title, os::IconHandle Icon, int X=0, int Y=0);
+		void		 InitializeAll(string Title, os::IconHandle Icon, int X, int Y);
+		////Initializes all systems creating the main window and centering
+		void		 InitializeAll(string Title, os::IconHandle Icon);
 		////Initializes Animation subsystem. Before calling this function, animations does not progress
 		/// automatically.
 		void		 InitializeAnimation();
@@ -126,11 +128,13 @@ namespace gge {
 
 
 		void MoveWindow(int X, int Y) {
-			os::window::MoveWindow(Window, X, Y);
+			if(!FullScreen)
+				os::window::MoveWindow(Window, X, Y);
 		}
 
 		void MoveWindow(utils::Point p) {
-			os::window::MoveWindow(Window, p);
+			if(!FullScreen)
+				os::window::MoveWindow(Window, p);
 		}
 
 		////This event is triggered before rendering, after intervals

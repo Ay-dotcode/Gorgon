@@ -1,7 +1,9 @@
 #include "OS.h"
 #include "input.h"
 #include "Multimedia.h"
+#include "..\Utils\Point2D.h"
 
+using namespace gge::utils;
 using namespace gge::input;
 using namespace gge::input::system;
 
@@ -71,6 +73,7 @@ using namespace gge::input::system;
 			//!Private
 			POINT overhead;
 			HWND curwin;
+			Point cursorlocation=Point(0,0);
 
 			LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
@@ -218,7 +221,7 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessVScroll(GET_WHEEL_DELTA_WPARAM(wParam)/120,x-overhead.x,y-overhead.y);
+						ProcessVScroll(GET_WHEEL_DELTA_WPARAM(wParam)/120,cursorlocation.x,cursorlocation.y);
 					}
 					break;
 				case WM_MOUSEHWHEEL:
@@ -226,7 +229,7 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessHScroll(GET_WHEEL_DELTA_WPARAM(wParam)/120,x-overhead.x,y-overhead.y);
+						ProcessHScroll(GET_WHEEL_DELTA_WPARAM(wParam)/120,cursorlocation.x,cursorlocation.y);
 					}
 					break;
 
@@ -414,6 +417,21 @@ using namespace gge::input::system;
 				SetWindowPos((HWND)h, 0, p.x,p.y, 0,0, SWP_NOSIZE | SWP_NOZORDER);
 			}
 
+			utils::Rectangle UsableScreenMetrics(int Monitor) {
+				utils::Rectangle r;
+
+				RECT rect;
+
+				SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+
+				r.Left=rect.left;
+				r.Top=rect.left;
+				r.SetRight(rect.right);
+				r.SetBottom(rect.bottom);
+
+				return r;
+			}
+
 		}
 	
 		void ShowPointer() {
@@ -440,6 +458,8 @@ using namespace gge::input::system;
 
 				ret.x=pnt.x-(window::overhead.x+winrect.left);
 				ret.y=pnt.y-(window::overhead.y+winrect.top);
+
+				os::window::cursorlocation=ret;
 
 				return ret;
 			}

@@ -38,56 +38,33 @@ namespace gge { namespace graphics {
 	union VertexPosition { struct{float x,y,z;};float vect[3];};
 
 	////GGE Color mode constants
-	enum ColorMode {
-		////RGB base color mode
-		RGB = 1,
-		////Palleted base color mode
-		PALLETTED = 2,
-		////Gray base color mode
-		GRAY = 4,
-		////Alpha base color mode
-		ALPHA = 8,
-		////BGR base color mode
-		BGR = 16,
-		////4-byte RGB color with alpha
-		ARGB_32BPP = RGB | ALPHA,
-		////4-byte revered RGB color with alpha
-		ABGR_32BPP = BGR | ALPHA,
-		////1-byte palleted color mode, is not available yet
-		PALLETTED_8BPP = PALLETTED,
-		////2-byte palleted color mode with alpha, is not available yet
-		APALLETTED_16BPP = PALLETTED | ALPHA,
-		////1-byte alpha only color mode, converted to AGRAYSCALE_16BPP
-		ALPHAONLY_8BPP = ALPHA,
-		////1-byte gray (luminance) only color mode, is not available yet
-		GRAYSCALE_8BPP = GRAY,
-		////2-byte gray (luminance) color mode with alpha
-		AGRAYSCALE_16BPP = GRAY | ALPHA
+	namespace ColorMode {
+		enum Type {
+			////RGB base color mode
+			RGB = 1,
+			////Palleted base color mode
+			Palleted = 2,
+			////Gray base color mode
+			Grayscale = 4,
+			////Alpha base color mode
+			Alpha = 8,
+			////BGR base color mode
+			BGR = 16,
+			////4-byte RGB color with alpha
+			ARGB = RGB | Alpha,
+			////4-byte revered RGB color with alpha
+			ABGR = BGR | Alpha,
+			////2-byte palleted color mode with alpha, is not available yet
+			Palleted_Alpha = Palleted | Alpha,
+			////2-byte gray (luminance) color mode with alpha
+			Grayscale_Alpha = Grayscale | Alpha
+		};
 	};
 
-	////Logarithm Base 2
-	inline int log2(int num) {
-		int i=0;
-		int s=1;
-		while(num-s>0) {
-			i++;
-			s<<=1;
-		}
-
-		return i;
+	namespace system {
+		int sl2(int num);
+		int log2(int num);
 	}
-
-	////Rounds the given number to the lowest 2^n (where n is integer) number 
-	/// that is higher than the given number
-	inline int sl2(int num) {
-		int s=1;
-		while(num-s>0) {
-			s<<=1;
-		}
-
-		return s;
-	}
-
 
 	////This structure contains all necessary information
 	/// of a texture. Using this information, image can be
@@ -119,8 +96,8 @@ namespace gge { namespace graphics {
 		void CalcuateCoordinates(int W,int H) {
 			this->W=W;
 			this->H=H;
-			TW=sl2(W);//+0.0001
-			TH=sl2(H);//+0.0001
+			TW=system::sl2(W);//+0.0001
+			TH=system::sl2(H);//+0.0001
 			S=(float)W/TW;
 			T=(float)H/TH;
 
@@ -135,7 +112,10 @@ namespace gge { namespace graphics {
 		}
 	};
 
+	struct RGBint;
+
 	union RGBfloat {
+		RGBfloat(const RGBint &);
 		RGBfloat() { }
 		RGBfloat(float a, float r, float g, float b) : a(a), r(r), g(g), b(b) { }
 
@@ -156,6 +136,12 @@ namespace gge { namespace graphics {
 			////Alpha value
 			float a;
 		};
+
+		bool operator ==(const RGBfloat &c) const {
+			return a==c.a && r==c.r && g==c.g && b==c.b;
+		}
+
+		RGBfloat &operator =(const RGBint &c);
 
 		float vect[4];
 	};
@@ -330,6 +316,22 @@ namespace gge { namespace graphics {
 		return stream;
 	}
 
+	inline RGBfloat::RGBfloat(const RGBint &c) {
+		a=(float)c.a/255;
+		r=(float)c.r/255;
+		g=(float)c.g/255;
+		b=(float)c.b/255;
+	}
+
+	inline RGBfloat &RGBfloat::operator =(const RGBint &c) {
+		a=(float)c.a/255;
+		r=(float)c.r/255;
+		g=(float)c.g/255;
+		b=(float)c.b/255;
+
+		return *this;
+	}
+
 	////Color range definition from one color
 	/// to another, this also includes alpha
 	struct RGBRangeint {
@@ -421,413 +423,139 @@ namespace gge { namespace graphics {
 	inline RGBint ToRGBint(int argb) { RGBint r(argb); return r; }
 
 	////Returns the Bytes required for a given color mode
-	inline int getBPP(ColorMode color_mode) {
+	inline int getBPP(ColorMode::Type color_mode) {
 		switch(color_mode) {
-		case GRAYSCALE_8BPP:
-		case PALLETTED_8BPP:
-		case ALPHAONLY_8BPP:
+		case ColorMode::Grayscale:
+		case ColorMode::Alpha:
+		case ColorMode::Palleted:
 			return 1;
-		case APALLETTED_16BPP:
-		case AGRAYSCALE_16BPP:
+		case ColorMode::Palleted_Alpha:
+		case ColorMode::Grayscale_Alpha:
 			return 2;
-		case RGB:
+		case ColorMode::RGB:
+		case ColorMode::BGR:
 			return 3;
 		default:
 			return 4;
 		}
 	}
 
-	////This interface defines a class that can be used
-	/// as a common drawing target
-	class I2DGraphicsTarget {
+	class Tiling2D {
 	public:
-		////Draws a simple image to the screen.
-		/// In this draw function every corner can be specified
-		/// thus various transformations can be made
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		///@X1		: top-left corner
-		///@Y1		: top-left corner
-		///@X2		: top-right corner
-		///@Y2		: top-right corner
-		///@X3		: bottom-right corner
-		///@Y3		: bottom-right corner
-		///@X4		: bottom-left corner
-		///@Y4		: bottom-left corner
-		virtual void Draw(GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4)=0;
-		////Draws a simple image to the screen.
-		/// This function supports scaling.
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		inline virtual void Draw(GLTexture *Image,int X,int Y,int W,int H) { Draw(Image,X,Y,X+W,Y,X+W,Y+H,X,Y+H); }
-		////Draws a simple image to the screen.
-		/// This function does not support any transformations
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		inline virtual void Draw(GLTexture *Image,int X,int Y) { Draw(Image,X,Y,X+Image->W,Y,X+Image->W,Y+Image->H,X,Y+Image->H); }
-		////Draws a tiled image to the screen
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		virtual void DrawTiled(GLTexture *Image,int X,int Y,int W,int H)=0;
-		////Draws a horizontally tiled image to the screen
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		virtual void DrawHTiled(GLTexture *Image,int X,int Y,int W,int H)=0;
-		////Draws a vertically tiled image to the screen
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		///@W		: the width of the image to be drawn
-		/// if it is more than the size of the image
-		virtual void DrawVTiled(GLTexture *Image,int X,int Y,int W,int H)=0;
-		////Clears drawing buffer, in layer architecture this request only affects
-		/// the layer itself, not sub-layers
-		virtual void Clear()=0;
-
-		virtual int Width()  =0;
-		virtual int Height() =0;
-	};
-
-	////This is a graphics target with colorization support
-	class I2DColorizableGraphicsTarget : public I2DGraphicsTarget {
-	public:
-		////Global ambient color of this layer
-		RGBint Ambient;
-		////Draws a simple image to the screen.
-		/// In this draw function every corner can be specified
-		/// thus various transformations can be made
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		///@X1		: top-left corner
-		///@Y1		: top-left corner
-		///@X2		: top-right corner
-		///@Y2		: top-right corner
-		///@X3		: bottom-right corner
-		///@Y3		: bottom-right corner
-		///@X4		: bottom-left corner
-		///@Y4		: bottom-left corner
-		virtual void Draw(GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, RGBint Color)=0;
-		////Draws a simple image to the screen.
-		/// This function supports scaling.
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		inline virtual void Draw(GLTexture *Image,int X,int Y,int W,int H, RGBint Color) { Draw(Image,X,Y,X+W,Y,X+W,Y+H,X,Y+H,Color); }
-		////Draws a simple image to the screen.
-		/// This function does not support any transformations
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		inline virtual void Draw(GLTexture *Image,int X,int Y, RGBint Color) { Draw(Image,X,Y,X+Image->W,Y,X+Image->W,Y+Image->H,X,Y+Image->H,Color); }
-	};
-
-	class I2DRawGraphicsTarget {
-	public:
-		////Draws a simple image to the screen.
-		/// In this draw function every corner can be specified
-		/// thus various transformations can be made
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		///@X1		: top-left corner
-		///@Y1		: top-left corner
-		///@X2		: top-right corner
-		///@Y2		: top-right corner
-		///@X3		: bottom-right corner
-		///@Y3		: bottom-right corner
-		///@X4		: bottom-left corner
-		///@Y4		: bottom-left corner
-		virtual void Draw(Byte *Image, int Width, int Height, ColorMode Mode,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4)=0;
-		////Draws a simple image to the screen.
-		/// This function supports scaling.
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		_inline virtual void Draw(Byte *Image, int Width, int Height, ColorMode Mode,int X,int Y,int W,int H) { Draw(Image,Width,Height,Mode,X,Y,X+W,Y,X+W,Y+H,X,Y+H); }
-		////Draws a simple image to the screen.
-		/// This function does not support any transformations
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		_inline virtual void Draw(Byte *Image, int Width, int Height, ColorMode Mode,int X,int Y) { Draw(Image,Width,Height,Mode,X,Y,X+Width,Y,X+Width,Y+Height,X,Y+Height); }
-	};
-	////This is a basic drawing object
-	class Buffered2DGraphic {
-	public:
-		GLTexture Texture;
-
-		enum TilingDirection {
-			None,
-			Horizontal=1,
-			Vertical=2,
-			Both=3,
+		enum Type {
+			None		= 0,
+			Horizontal	= 1, 
+			Vertical	= 2,
+			Both		= 3,
 		};
 
-		static TilingDirection Tiling(bool H, bool V) {
-			if(H) {
-				if(V)
-					return Both;
-				else
-					return Horizontal;
-			} else {
-				if(V)
-					return Vertical;
-				else
-					return None;
-			} 
+		static Type Tile(bool H, bool V) {
+			return (H ?
+				(V ? Both     : Horizontal) :
+				(V ? Vertical : None)
+			);
 		}
-
-		Buffered2DGraphic() { Texture.ID=0; }
-
-		////Draws this object to the given target
-		///@Target	: The target that will be used to draw
-		/// this image
-		virtual void Draw(I2DGraphicsTarget *Target,utils::Point pnt) { 
-			Draw(Target, pnt.x, pnt.y, Texture.W, Texture.H);
-		}
-		////Draws this object to the given target
-		///@Target	: The target that will be used to draw
-		/// this image
-		virtual void Draw(I2DGraphicsTarget &Target,utils::Point pnt) { 
-			Draw(Target, pnt.x, pnt.y, Texture.W, Texture.H);
-		}
-		virtual void Draw(I2DGraphicsTarget *Target,int X,int Y) { 
-			Draw(Target, X, Y, Texture.W, Texture.H);
-		}
-		virtual void Draw(I2DGraphicsTarget &Target,int X,int Y) { Draw(&Target, X,Y); }
-
-
-		////Draws this object to the given target with the specified size
-		///@Target	: The target that will be used to draw
-		/// this image
-		virtual void Draw(I2DGraphicsTarget *Target,int X,int Y,int W,int H) { 
-#ifdef _DEBUG
-			if(Texture.ID==0)
-				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
-			if(Target==NULL)
-				std::runtime_error("Target is NULL");
-#endif
-			Target->Draw(&Texture, X, Y, W, H);
-		}
-		virtual void Draw(I2DGraphicsTarget &Target,int X,int Y,int W,int H) { Draw(&Target, X,Y, W,H); }
-
-
-		////Draws this object to the given target with the specified size
-		///@Target	: The target that will be used to draw
-		/// this image
-		virtual void Draw(I2DGraphicsTarget *Target,int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4, int Y4) { 
-#ifdef _DEBUG
-			if(Texture.ID==0)
-				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
-			if(Target==NULL)
-				std::runtime_error("Target is NULL");
-#endif
-			Target->Draw(&Texture, X1,Y1, X2,Y2, X3,Y3, X4,Y4);
-		}
-		virtual void Draw(I2DGraphicsTarget &Target,int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4, int Y4) { Draw(&Target, X1,Y1, X2,Y2, X3,Y3, X4,Y4); }
-
-
-		virtual void DrawTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
-#ifdef _DEBUG
-			if(Texture.ID==0)
-				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
-			if(Target==NULL)
-				std::runtime_error("Target is NULL");
-#endif
-			Target->DrawTiled(&Texture,X,Y,W,H);
-		}
-		virtual void DrawTiled(I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawTiled(&Target, X,Y, W,H); }
-
-
-		virtual void DrawResized(TilingDirection Tiling, I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
-#ifdef _DEBUG
-			if(Texture.ID==0)
-				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
-			if(Target==NULL)
-				std::runtime_error("Target is NULL");
-#endif
-			switch(Tiling) {
-				case None:
-					Target->Draw(&Texture,X,Y,W,H);
-					break;
-				case Horizontal:
-					Target->DrawHTiled(&Texture,X,Y,W,H);
-					break;
-				case Vertical:
-					Target->DrawVTiled(&Texture,X,Y,W,H);
-					break;
-				case Both:
-					Target->DrawTiled(&Texture,X,Y,W,H);
-					break;
-			}
-		}
-		virtual void DrawResized(TilingDirection Tiling, I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawResized(Tiling, &Target, X,Y, W,H); }
-
-
-		virtual void DrawHTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
-#ifdef _DEBUG
-			if(Texture.ID==0)
-				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
-			if(Target==NULL)
-				std::runtime_error("Target is NULL");
-#endif
-			Target->DrawHTiled(&Texture,X,Y,W,H);
-		}
-		virtual void DrawHTiled(I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawHTiled(&Target, X,Y, W,H); }
-
-
-		virtual void DrawVTiled(I2DGraphicsTarget *Target,int X,int Y, int W, int H) { 
-#ifdef _DEBUG
-			if(Texture.ID==0)
-				std::runtime_error("Invalid texture ID, image is not initialized in tiled draw.");
-			if(Target==NULL)
-				std::runtime_error("Target is NULL");
-#endif
-			Target->DrawVTiled(&Texture,X,Y,W,H);
-		}
-		virtual void DrawVTiled(I2DGraphicsTarget &Target,int X,int Y, int W, int H) { DrawVTiled(Target, X,Y, W,H); }
 	};
 
-
-	////This is a graphics object with colorization support
-	class Colorizable2DGraphic : public Buffered2DGraphic {
+	class SizeController2D {
 	public:
+		enum TilingType {
+			//Should work as Continous if object is sizable
+			Single					= B8(00000000),
+			//Should work as Continous if object is sizable
+			Stretch					= B8(00000010),
 
-		virtual void DrawColored(I2DColorizableGraphicsTarget *Target,int X,int Y,RGBint Color) { 
-#ifdef _DEBUG
-			if(Texture.ID==0) {
-				os::DisplayMessage("Colorizable 2D Graphic","Invalid texture ID, image is not initialized.");
-				assert(0);
-			}
-#endif
-			Target->Draw(&Texture, X, Y, Color);
-		}
-		virtual void DrawColored(I2DColorizableGraphicsTarget &Target,int X,int Y,RGBint Color) { DrawColored(&Target, X,Y, Color); }
+			/*
+			Integral	= B8(00000100),
+			Smaller		= B8(00001000),
+			Closest		= B8(00010000),
+			Best		= B8(00100000),
+			*/
 
-		inline void DrawColored(I2DColorizableGraphicsTarget *Target,int X,int Y,unsigned int Color) { DrawColored(Target,X,Y,ToRGBint(Color)); }
+			//An object can either be sizable or tilable
+			Continous			= B8(00000001),
+			Integral_Smaller	= B8(00001101),
+			Integral_Fill		= B8(00010101),
+			Integral_Best		= B8(00100101),
+
+			Tile_Continous			= B8(00000001),
+			Tile_Integral_Smaller	= B8(00001101),
+			Tile_Integral_Fill		= B8(00010101),
+			Tile_Integral_Best		= B8(00100101),
+		} HorizontalTiling, VerticalTiling;
+
+		Alignment::Type Align;
+
+		class Integral {
+		public:
+			int Overhead;
+			int Increment;
+		} Horizontal, Vertical;
+
+		static const SizeController2D TileFit;
+		static const SizeController2D StretchFit;
 	};
 
-	////This is a basic drawing object
-	class Raw2DGraphic {
-	public:
-		utils::ManagedBuffer<Byte> Data;
-	protected:
-		int Width;
-		int Height;
-		ColorMode Mode;
+	
 
-	public:
-		Raw2DGraphic() { Width=0; Height=0; Mode=ARGB_32BPP; }
-		Raw2DGraphic(Raw2DGraphic &graph) {
-			Data=graph.Data;
-			Width=graph.Width;
-			Height=graph.Height;
-			Mode=graph.Mode;
-		}
-
-		////Draws this object to the given target
-		///@Target	: The target that will be used to draw
-		/// this image
-		virtual void DrawRaw(I2DRawGraphicsTarget *Target,int X,int Y) { 
-#ifdef _DEBUG
-			if(Data.GetSize()==0) {
-				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
-				assert(0);
-			}
-#endif
-			Target->Draw(Data, Width, Height, Mode, X, Y);
-		}
-
-		virtual void DrawRaw(I2DRawGraphicsTarget *Target,int X,int Y, int W, int H) { 
-#ifdef _DEBUG
-			if(Data==NULL) {
-				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
-				assert(0);
-			}
-#endif
-			Target->Draw(Data, Width, Height, Mode, X, Y, W, H);
-		}
-
-		virtual void DrawRaw(I2DRawGraphicsTarget *Target,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) {
-#ifdef _DEBUG
-			if(Data==NULL) {
-				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
-				assert(0);
-			}
-#endif
-			Target->Draw(Data, Width, Height, Mode, X1, Y1, X2, Y2, X3, Y3, X4, Y4);
-		}
-
-		virtual void DrawRawFlipped(I2DRawGraphicsTarget *Target,int X,int Y) { 
-#ifdef _DEBUG
-			if(Data==NULL) {
-				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
-				assert(0);
-			}
-#endif
-			Target->Draw(Data, Width, Height, Mode, X, Y+Height, X+Width, Y+Height, X+Width, Y, X, Y);
-		}
-
-		virtual void DrawRawFlipped(I2DRawGraphicsTarget *Target,int X,int Y, int W, int H) { 
-#ifdef _DEBUG
-			if(Data==NULL) {
-				os::DisplayMessage("Raw 2D Graphic","Empty data, image is not initialized.");
-				assert(0);
-			}
-#endif
-			Target->Draw(Data, Width, Height, Mode, X, Y+H, X+W, Y+H, X+W, Y, X, Y);
-		}
-
-		virtual void Resize(int Width, int Height, ColorMode Mode) {
-			int bits=getBPP(Mode);
-
-			Data.Resize(Width*Height*bits);
-
-			this->Width=Width;
-			this->Height=Height;
-			this->Mode=Mode;
-		}
-
-		~Raw2DGraphic() {  }
-		int getWidth() { return Width; }
-		int getHeight() { return Height; }
-		ColorMode getMode() { return Mode; }
-	};
-
-
-
-	////Finds integer log of base 2
-	inline int log2(int num);
-	////Finds nearest 2^n value that is larger than num
-	inline int sl2(int num);
 	////Initializes OpenGL graphics with the given parameters,
 	/// returns created device context
 	///@hWnd		: Handle for the target window
 	///@BitDepth	: Used if fullscreen, changed bitdepth of screen
 	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height);
-	////Creates rectangle structure based on give parameters
-	//RECT makerect(int x, int y, int w, int h);
-	////Converts Alpha only image to Alpha and Luminance (grayscale) image.
-	/// Destination array should be allocated. This algorithm is optimized
-	/// for speed.
-	///@Source		: Source data array, no justification is needed,
-	///               should be 1 byte/pix
-	///@Destination	: Destination data array, data is copied without
-	///               any justification, should be allocated for 2 byte/pix
-	void A8ToA8L8(int Width, int Height, Byte *Source, Byte *Destination);
-	////This function sets the current texture to given data
-	void SetTexture(Byte *data, int cx, int cy, ColorMode mode);
-	////This function creates a texture from the given data and
-	/// returns texture information in a structure
-	///@Image		: Image data
-	///@Mode		: Color mode
-	GLTexture GenerateTexture(Byte *Image,int Width,int Height,ColorMode Mode);
-	void DestroyTexture(GLTexture *texture);
-	////Returns equivalent OpenGL color mode constant
-	///@Mode		: GGE color mode constant
-	GLenum getGLColorMode(ColorMode Mode);
-	////Returns required bytes per pixel for a given color mode
-	int getBPP(ColorMode Mode);
-	////Cleans render buffer and prepares for rendering
-	void PreRender();
-	////Performs post render tasks
-	///@hDC			: Device context that is created by
-	/// initialize graphics function
-	void PostRender(os::DeviceHandle Device);
+
+	namespace system {
+
+		////Logarithm Base 2
+		inline int log2(int num) {
+			int i=0;
+			int s=1;
+			while(num-s>0) {
+				i++;
+				s<<=1;
+			}
+
+			return i;
+		}
+
+		////Rounds the given number to the lowest 2^n (where n is integer) number 
+		/// that is higher than the given number
+		inline int sl2(int num) {
+			int s=1;
+			while(num-s>0) {
+				s<<=1;
+			}
+
+			return s;
+		}
+		////Creates rectangle structure based on give parameters
+		//RECT makerect(int x, int y, int w, int h);
+		////Converts Alpha only image to Alpha and Luminance (grayscale) image.
+		/// Destination array should be allocated. This algorithm is optimized
+		/// for speed.
+		///@Source		: Source data array, no justification is needed,
+		///               should be 1 byte/pix
+		///@Destination	: Destination data array, data is copied without
+		///               any justification, should be allocated for 2 byte/pix
+		void A8ToA8L8(int Width, int Height, Byte *Source, Byte *Destination);
+		////This function sets the current texture to given data
+		void SetTexture(Byte *data, int cx, int cy, ColorMode::Type mode);
+		////This function creates a texture from the given data and
+		/// returns texture information in a structure
+		///@Image		: Image data
+		///@Mode		: Color mode
+		GLTexture GenerateTexture(Byte *Image,int Width,int Height,ColorMode::Type Mode);
+		void DestroyTexture(GLTexture *texture);
+		////Returns equivalent OpenGL color mode constant
+		///@Mode		: GGE color mode constant
+		GLenum getGLColorMode(ColorMode::Type Mode);
+		////Cleans render buffer and prepares for rendering
+		void PreRender();
+		////Performs post render tasks
+		///@hDC			: Device context that is created by
+		/// initialize graphics function
+		void PostRender(os::DeviceHandle Device);
+	}
 
 	extern utils::Size ScreenSize;
 } }

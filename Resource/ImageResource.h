@@ -4,6 +4,8 @@
 #include "ResourceBase.h"
 #include "../Engine/Graphics.h"
 #include "ResizableObject.h"
+#include "../Engine/Animation.h"
+#include "../Engine/Image.h"
 
 namespace gge { namespace resource {
 	class File;
@@ -13,7 +15,10 @@ namespace gge { namespace resource {
 
 	////This is image resource that holds information about a single image. It supports
 	/// two color modes (ARGB and AL); lzma and jpg compressions
-	class ImageResource : public ResourceBase, public graphics::Colorizable2DGraphic, public graphics::Raw2DGraphic, public ResizableObject {
+	class ImageResource : 
+		public ResourceBase, public ResizableObject, public graphics::RectangularGraphic2D, public ResizableObjectProvider, 
+		protected graphics::ImageData, protected graphics::TextureImage
+	{
 		friend ResourceBase *LoadImageResource(File &File, std::istream &Data, int Size);
 	public:
 		enum PNGReadError {
@@ -35,28 +40,12 @@ namespace gge { namespace resource {
 		/// an image object. This flag is used by other systems.
 		bool LeaveData;
 
-		ImageResource() {
-			graphics::Raw2DGraphic::Width=graphics::Raw2DGraphic::Height=0; 
+		ImageResource() : animation::AnimationBase(), TextureImage(), ImageData() {
 			isLoaded=LeaveData=false; Palette=NULL; 
-			Mode=graphics::ARGB_32BPP; 
-			SetResizingOptions(ResizableObject::Single,ResizableObject::Single);
 		}
 
-		ImageResource(int Width, int Height, graphics::ColorMode Mode=graphics::ARGB_32BPP) {
-			isLoaded=LeaveData=true;
-			Palette=NULL;
+		ImageResource(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::AnimationBase(), TextureImage(), ImageData() {
 			this->Resize(Width, Height, Mode);
-			SetResizingOptions(ResizableObject::Single,ResizableObject::Single);
-		}
-
-		ImageResource(ImageResource &image, ResizableObject::Tiling Horizontal, ResizableObject::Tiling Vertical) {
-			*this=image;
-			SetResizingOptions(Horizontal, Vertical);
-		}
-
-		ImageResource(ImageResource *image, ResizableObject::Tiling Horizontal, ResizableObject::Tiling Vertical) {
-			*this=*image;
-			SetResizingOptions(Horizontal, Vertical);
 		}
 
 		bool PNGExport(string filename);
@@ -74,13 +63,9 @@ namespace gge { namespace resource {
 		PNGReadError ImportPNG(string filename);
 
 		////Returns Bytes/Pixel information
-		int getBPP() { return graphics::getBPP(Mode); }
+		int GetBPP() { return graphics::getBPP(Mode); }
+		graphics::ColorMode::Type GetMode() { return Mode; }
  
-		////Returns the width of the first image
-		int getWidth() { return Raw2DGraphic::Width; }
-		////Returns the height of the first image
-		int getHeight() { return Raw2DGraphic::Height; }
-
 
 		////Destroys used data
 		void destroy() { Data.RemoveReference(); if(Palette) delete Palette; }
@@ -88,41 +73,48 @@ namespace gge { namespace resource {
 		////Destroys used data
 		virtual ~ImageResource() { if(Palette) delete Palette; }
 
+		using RectangularGraphic2D::GetHeight;
+		using RectangularGraphic2D::GetWidth;
 
+		virtual void DeleteAnimation() { } //if used as animation, it will not be deleted
+		virtual ImageResource &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return *this; }
+		virtual ImageResource &CreateAnimation(bool create=false) { return *this; }
 
-		//For resizable interface
-		ResizableObject::Tiling HorizontalTiling;
-		ResizableObject::Tiling VerticalTiling;
+		virtual graphics::RectangularGraphic2D &GraphicAt(unsigned time) { return *this; }
 
-
-		void SetResizingOptions( ResizableObject::Tiling Horizontal, ResizableObject::Tiling Vertical ) {
-			this->HorizontalTiling=Horizontal;
-			this->VerticalTiling=Vertical;
-		}
-
-		virtual void DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment::Type Align=Alignment::Middle_Center);
-		virtual void DrawResized(graphics::I2DGraphicsTarget &Target, int X, int Y, int W, int H, Alignment::Type Align=Alignment::Middle_Center) {
-			DrawResized(&Target, X,Y,W,H,Align);
-		}
-		virtual int  Width(int W=-1) { 
-			if(W==-1) return getWidth();
-
-			return HorizontalTiling.Calculate(getWidth(), W); 
-		}
-		virtual int  Height(int H=-1) { 
-			if(H==-1) return getHeight(); 
-		
-			return VerticalTiling.Calculate(getHeight(), H); 
-		}
-		virtual void Reset(bool Reverse=false) {}
-		virtual void Reverse() {}
-		virtual void Play() {}
-		virtual void Pause() {}
-		virtual void setLoop(bool Loop) {}
-		virtual int getDuration() { return 0; }
+		using TextureImage::GetTexture;
 
 
 	protected:
+		virtual animation::ProgressResult::Type Progress() { return animation::ProgressResult::None; };
+
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) 
+		{ drawto(Target, graphics::Tiling2D::Both, X,Y, W,H); } 
+
+		virtual void drawin(graphics::ImageTarget2D& Target, graphics::SizeController2D &controller, int X, int Y, int W, int H) 
+		{ drawto(Target, controller, X,Y, W,H); };
+
+		virtual int calculatewidth (int w=-1) const { return getimagewidth(); }
+		virtual int calculateheight(int h=-1) const { return getimageheight(); }
+
+		virtual int calculatewidth (const graphics::SizeController2D &controller, int w=-1) const  { return calculatewidthusing(controller,w); }
+		virtual int calculateheight(const graphics::SizeController2D &controller, int h=-1) const  { return calculateheightusing(controller,h); }
+
+		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) 
+		{ drawto(Target, X1,Y1, X2,Y2, X3,Y3, X4,Y4, S1,U1, S2,U2, S3,U3, S4,U4); }
+		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) 
+		{ drawto(Target, X1,Y1, X2,Y2, X3,Y3, X4,Y4); }
+		virtual void drawstretched(graphics::ImageTarget2D& Target, int X, int Y, int W, int H)
+		{ drawto(Target, X,Y, W,H); }
+		virtual void draw(graphics::ImageTarget2D& Target, graphics::Tiling2D::Type Tiling, int X, int Y, int W, int H)
+		{ drawto(Target, Tiling, X,Y, W,H); }
+		virtual void draw(graphics::ImageTarget2D& Target, graphics::SizeController2D &controller, int X, int Y, int W, int H)
+		{ drawto(Target, controller, X,Y, W,H); }
+
+		virtual int getwidth () const { if(Texture.ID) return getimagewidth(); else return ImageData::GetWidth(); }
+		virtual int getheight() const { if(Texture.ID) return getimageheight(); else return ImageData::GetHeight(); }
+
+
 		////The file that this image resource is related, used for late loading
 		File *File;
 		////Compression properties read from file, used for late loading

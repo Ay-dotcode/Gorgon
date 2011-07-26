@@ -30,6 +30,10 @@ namespace gge { namespace resource {
 
 		SoundResource() { Buffer=NULL; Data=NULL; Size=0; Format.BitsPerSample=Format.Channels=0; }
 
+		operator gge::sound::system::SoundBufferHandle() {
+			return Buffer;
+		}
+
 		////Destroys used data
 		void destroy() { if(Data) delete Data; }
 		////Destroys used data
@@ -39,5 +43,7 @@ namespace gge { namespace resource {
 		gge::sound::system::SoundBufferHandle Buffer;
 
 		gge::sound::Wave *CreateWave() { return new gge::sound::Wave(Buffer); }
+
+		virtual void Prepare(GGEMain &main);
 	};
 } }

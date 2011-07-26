@@ -11,15 +11,15 @@ namespace gge { namespace effects {
 		to=To;
 
 		Target->BoundingBox=from;
-		this->progressed=0;
+
+		if(Controller)
+			Controller->ResetProgress();
 
 		if(Time) {
 			speed.Left=(float)(to.Left-from.Left)/Time;
 			speed.Top=(float)(to.Top-from.Top)/Time;
 			speed.Width=(float)(to.Width-from.Width)/Time;
 			speed.Height=(float)(to.Height-from.Height)/Time;
-
-			this->Play();
 		} else {
 			speed.Left=0;
 			speed.Top=0;
@@ -31,14 +31,22 @@ namespace gge { namespace effects {
 	}
 
 	void LayerResizer::Setup( utils::Rectangle To, int Time ) {
-		Setup(utils::Rectangle(Round(current.Left), Round(current.Top), Round(current.Width), Round(current.Height)), To, Time);
+		Setup(utils::Rectangle((int)Round(current.Left), (int)Round(current.Top), (int)Round(current.Width), (int)Round(current.Height)), To, Time);
 	}
 
-	bool LayerResizer::isFinished() {
-		return current==to;
-	}
+	animation::ProgressResult::Type LayerResizer::Progress() {
+		if(from==to)
+			return animation::ProgressResult::Finished;
 
-	void LayerResizer::Process(int Time) {
+		if(!Controller)
+			return animation::ProgressResult::None;
+
+		if(Controller->GetProgress()<0) {
+			throw std::runtime_error("LayerMover cannot handle negative animation time.");
+		}
+
+		int Time=Controller->GetProgress();
+
 		if(from.Left>to.Left) {
 			current.Left=from.Left+Time*speed.Left;
 
@@ -49,7 +57,7 @@ namespace gge { namespace effects {
 			if(current.Left>to.Left)
 				current.Left=to.Left;
 		}
-		Target->BoundingBox.Left=Round(current.Left);
+		Target->BoundingBox.Left=(int)Round(current.Left);
 
 
 		if(from.Top>to.Top) {
@@ -62,7 +70,7 @@ namespace gge { namespace effects {
 			if(current.Top>to.Top)
 				current.Top=to.Top;
 		}
-		Target->BoundingBox.Top=Round(current.Top);
+		Target->BoundingBox.Top=(int)Round(current.Top);
 
 
 		if(from.Width>to.Width) {
@@ -88,6 +96,12 @@ namespace gge { namespace effects {
 				current.Height=to.Height;
 		}
 
-		Target->BoundingBox.SetSize(Round(current.Width), Round(current.Height));
+		Target->BoundingBox.SetSize((int)Round(current.Width), (int)Round(current.Height));
+
+
+		if(from==to)
+			return animation::ProgressResult::Finished;
+		else
+			return animation::ProgressResult::None;
 	}
 } }

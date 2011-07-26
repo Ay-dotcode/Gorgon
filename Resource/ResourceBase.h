@@ -8,6 +8,7 @@
 #include "Definitions.h"
 
 #include <fstream>
+#include <iosfwd>
 
 using namespace gge;
 

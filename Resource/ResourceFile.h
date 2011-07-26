@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
+#include <functional>
 
 #include "GRE.h"
 #include "../Utils/Collection.h"

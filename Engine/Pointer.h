@@ -3,6 +3,7 @@
 #include "GGE.h"
 #include "../Utils/SortedCollection.h"
 #include "Graphics.h"
+#include "Graphic2D.h"
 
 namespace gge {
 	class GGEMain;
@@ -32,14 +33,14 @@ namespace gge {
 		};
 
 		////The image of the pointer
-		graphics::Buffered2DGraphic *Image;
+		graphics::Graphic2D *Image;
 		////Point of click
 		utils::Point Hotspot;
 		////Type of the pointer
 		PointerTypes Type;
 
 		////Initializes a pointer
-		Pointer(graphics::Buffered2DGraphic *pointer, int HotspotX, int HotspotY, PointerTypes Type) {
+		Pointer(graphics::Graphic2D *pointer, int HotspotX, int HotspotY, PointerTypes Type) {
 			this->Image=pointer;
 			this->Hotspot.x=HotspotX;
 			this->Hotspot.y=HotspotY;
@@ -47,7 +48,7 @@ namespace gge {
 		}
 
 		////Initializes a pointer
-		Pointer(graphics::Buffered2DGraphic &pointer, utils::Point Hotspot, PointerTypes Type) {
+		Pointer(graphics::Graphic2D &pointer, utils::Point Hotspot, PointerTypes Type) {
 			this->Image=&pointer;
 			this->Hotspot=Hotspot;
 			this->Type=Type;
@@ -69,9 +70,9 @@ namespace gge {
 		void Fetch(resource::FolderResource *Folder);
 		void Fetch(resource::FolderResource &Folder) { Fetch(&Folder); }
 		////Adds a pointer to the list of pointers
-		Pointer *Add(graphics::Buffered2DGraphic *Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerTypes Type=Pointer::None);
+		Pointer *Add(graphics::RectangularGraphic2D *Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerTypes Type=Pointer::None);
 		////Adds a pointer to the list of pointers
-		Pointer &Add(graphics::Buffered2DGraphic &Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerTypes Type=Pointer::None) {
+		Pointer &Add(graphics::RectangularGraphic2D &Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerTypes Type=Pointer::None) {
 			return *Add(&Pointer, Hotspot, Type);
 		}
 		////Sets the given pointer as current one, this operation should be revered by

@@ -71,7 +71,7 @@ namespace gge {
 		for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First();resource.isValid();resource.Next()) {
 			if(resource->getGID()==GID::Animation) {
 				AnimationResource *anim=dynamic_cast<AnimationResource *>(resource.CurrentPtr());
-				utils::Collection<Pointer, 10>::Add( new Pointer(anim->getAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
+				utils::Collection<Pointer, 10>::Add( new Pointer(&anim->CreateAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
 			} else if(resource->getGID()==GID::Image) {
 				ImageResource *img=dynamic_cast<ImageResource *>(resource.CurrentPtr());
 				utils::Collection<Pointer, 10>::Add( new Pointer(img, data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
@@ -84,7 +84,7 @@ namespace gge {
 			BasePointer=&(*this)[0];
 	}
 
-	Pointer *PointerCollection::Add(graphics::Buffered2DGraphic *pointer, Point Hotspot, Pointer::PointerTypes Type) {
+	Pointer *PointerCollection::Add(graphics::RectangularGraphic2D *pointer, Point Hotspot, Pointer::PointerTypes Type) {
 		Pointer *ret=new Pointer(pointer, Hotspot.x, Hotspot.y, Type);
 		utils::Collection<Pointer, 10>::Add( ret );
 		

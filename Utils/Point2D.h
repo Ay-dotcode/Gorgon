@@ -43,6 +43,7 @@
 #ifdef GGE_XMLSERVICES
 #include "../External/XmlParser/xmlParser.h"
 #endif
+#include "BasicMath.h"
 
 
 #define POINT2D_EXISTS
@@ -250,18 +251,18 @@ namespace gge { namespace utils {
 		void Rotate(FloatingPoint angle) {
 			T_ new_x;
 			FloatingPoint cosa=cosfn(angle), sina=sinfn(angle);
-			new_x = x*cosa - y*sina;
-			y     = x*sina + y*cosa;
+			new_x = (int)Round(x*cosa - y*sina);
+			y     = (int)Round(x*sina + y*cosa);
 
-			x     = new_x;
+			x     = (int)Round(new_x);
 		}
 		void Rotate(FloatingPoint angle, const basic_Point2D &origin) {
 			FloatingPoint cosa=std::cos(angle), sina=std::sin(angle);
 
 			basic_Point2D temp=*this-origin;
 
-			x	= temp.x*cosa - temp.y*sina;
-			y   = temp.x*sina + temp.y*cosa;
+			x	= (int)Round(temp.x*cosa - temp.y*sina);
+			y   = (int)Round(temp.x*sina + temp.y*cosa);
 
 			*this += origin;
 		}

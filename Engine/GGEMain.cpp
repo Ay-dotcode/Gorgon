@@ -3,8 +3,11 @@
 #include "Pointer.h"
 #include "Graphics.h"
 #include "Input.h"
-#include "Animator.h"
+#include "Animation.h"
 //#include "../Widgets/WidgetMain.h"
+#include "..\Utils\Rectangle2D.h"
+
+using namespace gge::utils;
 
 namespace gge {
 	GGEMain Main;
@@ -91,9 +94,9 @@ namespace gge {
 	}
 
 	void GGEMain::Render() {
-		graphics::PreRender();
+		graphics::system::PreRender();
 		LayerBase::Render();
-		graphics::PostRender(Device);
+		graphics::system::PostRender(Device);
 	}
 
 	IntervalObject *GGEMain::RegisterInterval(unsigned int Timeout, void* Data, IntervalSignalEvent Signal) {
@@ -126,6 +129,21 @@ namespace gge {
 		//InitializeWidgets();
 	}
 
+	void GGEMain::InitializeAll(string Title, os::IconHandle Icon) {
+		InitializeOS();
+		Rectangle r=os::window::UsableScreenMetrics();
+		r.Width-=Width;
+		r.Height-=Height;
+		CreateWindow(Title, Icon, r.Left+r.Width/2, r.Top+r.Height/4);
+		InitializeGraphics();
+		InitializeSound();
+		InitializeInput();
+
+		InitializeAnimation();
+		InitializePointer();
+		//InitializeWidgets();
+	}
+
 	os::DeviceHandle GGEMain::InitializeGraphics() {
 		Device = gge::graphics::Initialize(Window, BitDepth, Width, Height); return Device;
 	}
@@ -143,7 +161,7 @@ namespace gge {
 	}
 
 	void GGEMain::InitializeAnimation() {
-		gge::InitializeAnimation(this);
+		gge::animation::Initialize(*this);
 	}
 
 	void GGEMain::InitializePointer() {

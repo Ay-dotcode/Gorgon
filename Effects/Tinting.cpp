@@ -2,6 +2,7 @@
 #include "../Engine/GGEMain.h"
 
 using namespace gge::graphics;
+using namespace gge::animation;
 
 namespace gge { namespace effects {
 	void Tinting::Setup(RGBint From, RGBint To, int Time) {
@@ -24,16 +25,22 @@ namespace gge { namespace effects {
 			speed.b=0;
 		}
 
-		this->progressed=0;
-		this->lasttick=Main.CurrentTime;
-		this->Play();
+		Controller->ResetProgress();
 	}
 
-	bool Tinting::isFinished() {
-		return current.a==to.a && current.r==to.r && current.g==to.g && current.b==to.b;
-	}
+	animation::ProgressResult::Type Tinting::Progress() {
+		if(from==to)
+			return animation::ProgressResult::Finished;
 
-	void Tinting::Process(int Time) {
+		if(!Controller)
+			return animation::ProgressResult::None;
+
+		if(Controller->GetProgress()<0) {
+			throw std::runtime_error("Tinting cannot handle negative animation time.");
+		}
+
+		int Time=Controller->GetProgress();
+
 		if(from.a>to.a) {
 			current.a=from.a+Time*speed.a;
 
@@ -81,5 +88,29 @@ namespace gge { namespace effects {
 				current.b=to.b;
 		}
 		Target->Ambient.b=(Byte)current.b*255;
+
+		if(from==to)
+			return animation::ProgressResult::Finished;
+		else
+			return animation::ProgressResult::None;
+
 	}
+
+	Tinting::Tinting( graphics::Colorizable2DLayer &Target, bool create/*=false*/ ) : 
+		AnimationBase(create),
+		from(0), to(0), current(0), 
+		speed(0, 0,0,0),
+		Target(&Target)
+	{
+	}
+
+
+	Tinting::Tinting( graphics::Colorizable2DLayer *Target, bool create/*=false*/ ) : 
+		AnimationBase(create),
+		from(0), to(0), current(0), 
+		speed(0, 0,0,0),
+		Target(Target)
+	{
+	}
+
 } }

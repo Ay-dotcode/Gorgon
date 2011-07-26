@@ -1,6 +1,7 @@
 #include "AnimationResource.h"
 #include "ResourceFile.h"
 #include "ImageResource.h"
+#include "..\Utils\BasicMath.h"
 
 using namespace gge::utils;
 using namespace std;
@@ -16,9 +17,16 @@ namespace gge { namespace resource {
 			ReadFrom(Data, size);
 
 			if(gid==GID::Animation_Durations) {
-				anim->Durations=new int[size/4];
+				unsigned t=0;
 
-				Data.read((char*)anim->Durations,size);
+				for(int i=0;i<size/4;i++) {
+					unsigned d=ReadFrom<int>(Data);
+					anim->Frames.push_back(AnimationResourceFrame(d,t));
+
+					t+=d;
+				}
+
+				anim->TotalLength=t;
 			} 
 			else if(gid==GID::Guid) {
 				anim->guid.LoadLong(Data);
@@ -34,67 +42,103 @@ namespace gge { namespace resource {
 			}
 		}
 
+		int i=0;
+		for(SortedCollection<ResourceBase>::Iterator it=anim->Subitems.First();it.isValid();it.Next(), i++)
+			anim->Frames[i].Image=&dynamic_cast<ImageResource&>(*it);
+
 		anim->FrameCount=anim->Subitems.getCount();
 
 		return anim;
 	}
 
-	int* ImageAnimation::FrameDurations() { 
-		return parent->Durations; 
-	}
-	void ImageAnimation::ProcessFrame(int frame) {
-		this->Texture = dynamic_cast<ImageResource&>(parent->Subitems[frame]).Texture; 
-	}
 
-	void ImageAnimation::init() {
-		if(parent->Subitems.getCount())
-			this->Texture = dynamic_cast<ImageResource&>(parent->Subitems[0]).Texture; 
-		else
-			this->Texture.ID = 0;
+	animation::ProgressResult::Type ImageAnimation::Progress() {
+		if(Controller && parent.Frames.size()) { 
+			if(Controller->GetType()==animation::AnimationTimer::Discrete) {
+				animation::DiscreteController *dc = dynamic_cast<animation::DiscreteController *>(Controller);
 
-		if(parent->FrameCount)
-			setTotalFrames(parent->FrameCount);
-		else
-			Pause();
-	}
-	void ImageAnimation::DrawResized(graphics::I2DGraphicsTarget *Target, int X, int Y, int W, int H, Alignment::Type Align) {
+				int cf=dc->CurrentFrame();
+				int fc=parent.FrameCount;
 
-		int h=this->Height(H);
-		int w=this->Width(W);
+				if(cf<0) {
+					Texture.ID=0;
+					return animation::ProgressResult::None;
+				}
 
-		if(Alignment::isCenter(Align))
-			X+=(W-w)/2;
-		else if(Alignment::isRight(Align))
-			X+= W-w;
+				Texture=parent[cf].GetTexture();
 
-		if(Alignment::isMiddle(Align))
-			Y+=(H-h)/2;
-		else if(Alignment::isBottom(Align))
-			Y+= H-h;
-
-		if(VerticalTiling.Type==ResizableObject::Stretch) {
-			if(HorizontalTiling.Type==ResizableObject::Stretch) {
-				this->Draw(Target, X,Y , w,h);
-			} else {
-				this->DrawHTiled(Target, X,Y , w,h);
+				return animation::ProgressResult::None;
 			}
-		} else {
-			if(HorizontalTiling.Type==ResizableObject::Stretch) {
-				this->DrawVTiled(Target, X,Y , w,h);
-			} else {
-				this->DrawTiled(Target, X,Y , w,h);
+			else {
+				animation::ProgressResult::Type ret=animation::ProgressResult::None;
+
+				int t=Controller->GetProgress();
+				int tl=(int)parent.GetTotalLength();
+
+				Texture=parent.ImageAt(PositiveMod(t,tl)).GetTexture();
+
+				return ret;
 			}
+		}
+		else {
+			Texture.ID=0;
+
+			return animation::ProgressResult::None;
 		}
 	}
 
-	int  ImageAnimation::Width(int W) { 
-		if(W==-1) return parent->getWidth();
-
-		return HorizontalTiling.Calculate(parent->getWidth(), W); 
+	ImageAnimation::ImageAnimation( AnimationResource &parent, animation::AnimationTimer &controller, bool owner ) : 
+	animation::AnimationBase(controller, owner), parent(parent)
+	{
+		Texture=parent.ImageAt(0).GetTexture();
 	}
-	int  ImageAnimation::Height(int H) { 
-			if(H==-1) return parent->getHeight(); 
-		
-			return VerticalTiling.Calculate(parent->getHeight(), H); 
+
+	ImageAnimation::ImageAnimation( AnimationResource &parent, bool create ) : 
+	animation::AnimationBase(create), parent(parent)
+	{
+		Texture=parent.ImageAt(0).GetTexture();
+	}
+
+
+
+	int AnimationResource::FrameAt( unsigned t ) const {
+		if(Subitems.getCount()==0) return -1;
+
+		if(t>=(Frames.end()-1)->Start)
+			return FrameCount-1;
+
+		int Guessed=(int)floor( ((float)t/TotalLength)*FrameCount );
+
+		if(Frames[Guessed].Start>t) {
+			while(Frames[Guessed].Start>t)
+				Guessed--;
+
+			return Guessed;
 		}
+		else if(Frames[Guessed+1].Start<t) {
+			while(Frames[Guessed+1].Start<t)
+				Guessed++;
+
+			return Guessed;
+		} 
+		else
+			return Guessed;
+	}
+
+	int AnimationResource::StartOf(unsigned Frame) const {
+		return Frames[Frame].Start;
+	}
+
+	int AnimationResource::GetDuration() const {
+		return TotalLength;
+	}
+
+	int AnimationResource::GetDuration(unsigned Frame) const {
+		return Frames[Frame].Duration;
+	}
+
+	int AnimationResource::GetNumberofFrames() const {
+		return Frames.size();
+	}
+
 } }

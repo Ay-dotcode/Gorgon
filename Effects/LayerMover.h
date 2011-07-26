@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Resource/GRE.h"
-#include "../Engine/Animator.h"
+#include "../Engine/Animation.h"
 #include "../Engine/Graphics.h"
 #include "../Engine/Layer.h"
 
@@ -9,19 +9,22 @@ namespace gge { namespace effects {
 
 	////This effect moves a given layer. Moving operation is animated from a given
 	/// value to another one
-	class LayerMover : public gge::AnimatorBase {
+	class LayerMover : public animation::AnimationBase {
 	public:
-		////This event is fired when the animation
-		/// completes
-		utils::EventChain<LayerMover> FinishedEvent;
 
 		////Target of this effect
 		LayerBase *Target;
 
 		////Initializes the effect
-		LayerMover(LayerBase *Target);
+		LayerMover(LayerBase *Target, animation::AnimationTimer &controller, bool owner=false);
 		////Initializes the effect
-		LayerMover(LayerBase &Target);
+		LayerMover(LayerBase &Target, animation::AnimationTimer &controller, bool owner=false);
+
+		////Initializes the effect
+		LayerMover(LayerBase *Target, bool create=false);
+		////Initializes the effect
+		LayerMover(LayerBase &Target, bool create=false);
+
 		////Sets source and destination to the given values and allows time duration to reach the
 		/// destination
 		void Setup(utils::Point From, utils::Point To, int Time);
@@ -35,6 +38,6 @@ namespace gge { namespace effects {
 		utils::Point2D speed;
 
 		virtual bool isFinished();
-		virtual void Process(int Time);
+		virtual animation::ProgressResult::Type Progress();
 	};
 } }

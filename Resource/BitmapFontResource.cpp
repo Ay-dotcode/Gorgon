@@ -1,9 +1,12 @@
 #include "BitmapFontResource.h"
 #include "ResourceFile.h"
+#include "..\Engine\Graphics.h"
 
 #ifndef MAX_CHAR_DETECTS
 #define MAX_CHAR_DETECTS	10
 #endif
+
+using namespace gge::graphics;
 
 namespace gge { namespace resource {
 	ResourceBase *LoadBitmapFontResource(File &File, std::istream &Data, int Size) {
@@ -50,26 +53,33 @@ namespace gge { namespace resource {
 
 		return font;
 	}
-	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, string text, graphics::RGBint color, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int X, int Y, string text, graphics::RGBint color, ShadowParams Shadow) {
 		if(text=="") return;
+
+		RGBint cc=target->GetCurrentColor();
 
 		unsigned int i;
 		if(Shadow.Type==ShadowParams::Flat) {
 			int x=X;
+			target->SetCurrentColor(Shadow.Color);
 			for(i=0;i<text.length();i++) {
 				ImageResource *img=Characters[text[i]];
-				img->DrawColored(target,x+Shadow.Offset.x,Y+Shadow.Offset.y,Shadow.Color);
-				x+=img->getWidth() + Seperator;
+				img->Draw(target,x+Shadow.Offset.x,Y+Shadow.Offset.y);
+				x+=img->GetWidth() + Seperator;
 			}
 		}
+
+		target->SetCurrentColor(color);
 		for(i=0;i<text.length();i++) {
 			ImageResource *img=Characters[text[i]];
-			img->DrawColored(target,X,Y,color);
-			X+=img->getWidth() + Seperator;
+			img->Draw(target,X,Y);
+			X+=img->GetWidth() + Seperator;
 		}
+
+		target->SetCurrentColor(cc);
 	}
 
-	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, graphics::RGBint color, TextAlignment::Type align, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, string text, graphics::RGBint color, TextAlignment::Type align, ShadowParams Shadow) {
 		unsigned i;
 		int l=x;
 		int lstart=0,lword=0;
@@ -82,8 +92,12 @@ namespace gge { namespace resource {
 
 		if(text=="") return;
 
+
 		if(Shadow.Type==ShadowParams::Flat)
 			Print(target,x+Shadow.Offset.x,y+Shadow.Offset.y,w,text,Shadow.Color,align);
+
+		RGBint cc=target->GetCurrentColor();
+		target->SetCurrentColor(color);
 
 		if(w==0) {
 			/*align=TextAlignment::Left;
@@ -98,7 +112,7 @@ namespace gge { namespace resource {
 				nextline=true;
 			}
 			else {
-				llen+=Characters[(unsigned char)text[i]]->getWidth()+Seperator;
+				llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
@@ -140,14 +154,14 @@ namespace gge { namespace resource {
 						ImageResource *img=Characters[(unsigned char)' '];
 						int i;
 						for(i=0;i<Tabsize;i++) {
-							img->DrawColored(target, l, y, color);
-							l+=img->getWidth()+Seperator;
+							img->Draw(target, l, y);
+							l+=img->GetWidth()+Seperator;
 						}
 					}
 					if(text[j]!='\r') {
 						ImageResource *img=Characters[(unsigned char)text[j]];
-						img->DrawColored(target, l, y, color);
-						l+=img->getWidth()+Seperator;
+						img->Draw(target, l, y);
+						l+=img->GetWidth()+Seperator;
 					}
 				}
 
@@ -163,8 +177,14 @@ namespace gge { namespace resource {
 				nextline=false;
 			}
 		}
+
+		target->SetCurrentColor(cc);
 	}
-	void BitmapFontResource::Print(graphics::I2DColorizableGraphicsTarget *target, int x, int y, int w, string text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment::Type Align, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, string text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment::Type Align, ShadowParams Shadow) {
+
+		RGBint cc=target->GetCurrentColor();
+		target->SetCurrentColor(color);
+
 		if(text=="") {
 			int d;
 			int xpos=0;
@@ -254,7 +274,7 @@ namespace gge { namespace resource {
 				nextline=true;
 			}
 			else {
-				llen+=Characters[(unsigned char)text[i]]->getWidth()+Seperator;
+				llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
@@ -323,17 +343,26 @@ namespace gge { namespace resource {
 						ImageResource *img=Characters[(unsigned char)' '];
 						int i;
 						for(i=0;i<Tabsize;i++) {
-							img->DrawColored(target,l,y,color);
-							dist=img->getWidth()+Seperator;
+							if(Shadow.Type==ShadowParams::Flat) {
+								target->SetCurrentColor(Shadow.Color);
+								img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
+							}
+
+							target->SetCurrentColor(color);
+							img->Draw(target,l,y);
+							dist=img->GetWidth()+Seperator;
 						}
 					}
 					if(text[j]!='\r') {
 						ImageResource *img=Characters[(unsigned char)text[j]];
-						if(Shadow.Type==ShadowParams::Flat)
-							img->DrawColored(target,l+Shadow.Offset.x,y+Shadow.Offset.y,Shadow.Color);
+						if(Shadow.Type==ShadowParams::Flat) {
+							target->SetCurrentColor(Shadow.Color);
+							img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
+						}
 
-						img->DrawColored(target,l,y,color);
-						dist=img->getWidth()+Seperator;
+						target->SetCurrentColor(color);
+						img->Draw(target,l,y);
+						dist=img->GetWidth()+Seperator;
 					}
 					for(d=0;d<cchardetectxs;d++) {
 						if(chardetectxs[d].x<(l-sx)+dist/2) {
@@ -371,7 +400,11 @@ namespace gge { namespace resource {
 					break;
 				}
 			}
-		}	}
+		}	
+
+		target->SetCurrentColor(cc);
+
+	}
 	void BitmapFontResource::Print_Test(int x, int y, int w, string text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
 		if(text=="") {
 			int d;
@@ -461,7 +494,7 @@ namespace gge { namespace resource {
 				nextline=true;
 			}
 			else {
-				llen+=Characters[(unsigned char)text[i]]->getWidth()+Seperator;
+				llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
@@ -528,12 +561,12 @@ namespace gge { namespace resource {
 						ImageResource *img=Characters[(unsigned char)' '];
 						int i;
 						for(i=0;i<Tabsize;i++) {
-							dist=img->getWidth()+Seperator;
+							dist=img->GetWidth()+Seperator;
 						}
 					}
 					if(text[j]!='\r') {
 						ImageResource *img=Characters[(unsigned char)text[j]];
-						dist+=img->getWidth()+Seperator;
+						dist+=img->GetWidth()+Seperator;
 					}
 					for(d=0;d<cchardetectxs;d++) {
 						if(chardetectxs[d].x<(l-sx)+dist/2 && j<chardetectxs[d].data->Out.value) {

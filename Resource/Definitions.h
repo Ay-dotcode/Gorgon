@@ -47,6 +47,8 @@ namespace gge { namespace resource {
 		static const Type Data_Link				= 0x02030C07;
 		static const Type Data_Names			= 0x02030101;
 		static const Type Data_Name				= 0x02030102;
+		static const Type Data_Font				= 0x03300C01;
+		static const Type Data_Color			= 0x02030D02;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Gaming resources

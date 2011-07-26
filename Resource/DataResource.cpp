@@ -47,10 +47,14 @@ namespace gge { namespace resource {
 			else if(gid==GID::Data_Link) {
 				tmpguid.Load(Data);
 
-				dat->Add(SGuid(Data));
+				dat->Add(tmpguid);
 			}
-			else if(gid==0x03300C01) {
+			else if(gid==GID::Data_Color) {
+				dat->Add(ReadFrom<int>(Data));
+			}
+			else if(gid==GID::Data_Font) {
 				FontInitiator f;
+				ReadFrom<int>(Data);//useless gid
 				f=Font::Load(File, Data, ReadFrom<int>(Data));
 				f.file=&File;
 

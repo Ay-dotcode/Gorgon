@@ -787,7 +787,7 @@ namespace gge { namespace utils {
 		}
 
 		T_ &Get(int Index) {
-			T_ *r=get_(Index)->GetPtr();
+			Wrapper *r=get_(Index);
 
 			if(r==NULL)
 				throw std::out_of_range("Index out of range");
@@ -796,7 +796,7 @@ namespace gge { namespace utils {
 		}
 		
 		const T_ &Get(int Index) const {
-			const T_ *r=get_(Index);
+			const Wrapper *r=get_(Index);
 
 			if(r==NULL)
 				throw std::out_of_range("Index out of range");
@@ -904,6 +904,24 @@ namespace gge { namespace utils {
 				return NULL;
 
 			Wrapper *c=*head;
+
+			while(c) {
+				if(!Index)
+					return c;
+
+				Index--;
+				c=c->next;
+			}
+
+
+			return NULL;
+		}
+
+		const Wrapper *get_(int Index) const {
+			if(Index<0 || Index>*count)
+				return NULL;
+
+			const Wrapper *c=*head;
 
 			while(c) {
 				if(!Index)

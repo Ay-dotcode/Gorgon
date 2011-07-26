@@ -33,13 +33,14 @@
 #include <cstring>
 #include <stdexcept>
 #include <cstdlib>
+#include "RefCounter.h"
 
 namespace gge { namespace utils {
 	template <class T_>
 	class CastableManagedBuffer : RefCounter<CastableManagedBuffer<T_> > {
 		template<class O_>
 		friend class CastableManagedBuffer;
-		friend class RefCounter;
+		friend class RefCounter<CastableManagedBuffer<T_> >;
 		friend void std::swap<T_>(CastableManagedBuffer<T_> &left, CastableManagedBuffer<T_> &right);
 	public:
 		CastableManagedBuffer() : sizefactor(1), noresizer(false) {
@@ -289,12 +290,13 @@ namespace gge { namespace utils {
 		float sizefactor;
 
 	};
-}
+
+} }
 
 namespace std {
 	//untested for std compatibility, swaps to buffers in O(1)
 	template<class T_>
-	void swap(gge::CastableManagedBuffer<T_> &left,gge::CastableManagedBuffer<T_> &right) {
+	void swap(gge::utils::CastableManagedBuffer<T_> &left,gge::utils::CastableManagedBuffer<T_> &right) {
 		T_** d;
 		int *s;
 		int *rc;
@@ -319,4 +321,4 @@ namespace std {
 		right.noresizer=nr;
 		right.sizefactor=sf;
 	}
-} }
+}

@@ -90,145 +90,152 @@ namespace gge { namespace graphics {
 
 		return (os::DeviceHandle)hDC;
 	}
-	void A8ToA8L8(int cx,int cy,Byte *data,Byte *dest)
-	{
-		int icx=cx,icy=cy;
-		
-		__asm {
-			; A8 (actually saved as a) data to 
-			; A8L8
 
-			; push everything so we can use them at will
-			push edi		; destination array
-			push esi		; source array
-			push ecx		; x
-			push edx		; y
-			push ebx		; temp
-			
-			mov  edi,dest	; destination data
-			mov  esi,data	; source data
+	namespace system {
+		void A8ToA8L8(int cx,int cy,Byte *data,Byte *dest)
+		{
+			int icx=cx,icy=cy;
+
+			__asm {
+				; A8 (actually saved as a) data to 
+					; A8L8
+
+					; push everything so we can use them at will
+					push edi		; destination array
+					push esi		; source array
+					push ecx		; x
+					push edx		; y
+					push ebx		; temp
+
+					mov  edi,dest	; destination data
+					mov  esi,data	; source data
 
 
-			mov edx,0		; y=0
-loopystart:
-			cmp edx,[icy]	; if y=cy
-			je loopyend		; break y loop
+					mov edx,0		; y=0
+	loopystart:
+				cmp edx,[icy]	; if y=cy
+					je loopyend		; break y loop
 
-			mov ecx,0		; x=0
-loopxstart:
-			cmp ecx,[icx]	; if x=cx
-			je loopxend		; break x loop
-			
-			mov byte ptr[edi],0xff
-			inc edi
+					mov ecx,0		; x=0
+	loopxstart:
+				cmp ecx,[icx]	; if x=cx
+					je loopxend		; break x loop
 
-			movsb
+					mov byte ptr[edi],0xff
+					inc edi
 
-			inc ecx			; x++
-			jmp loopxstart	; next
-loopxend:
-			inc edx			; y++
-			jmp loopystart	; next
-loopyend:
+					movsb
 
-			; restore everything
-			pop ebx
-			pop ecx
-			pop edx
-			pop esi
-			pop edi
+					inc ecx			; x++
+					jmp loopxstart	; next
+	loopxend:
+				inc edx			; y++
+					jmp loopystart	; next
+	loopyend:
+
+				; restore everything
+					pop ebx
+					pop ecx
+					pop edx
+					pop esi
+					pop edi
+			}
+		}
+		GLenum getGLColorMode(ColorMode::Type color_mode) {
+			switch(color_mode) {
+			case ColorMode::Alpha:
+				return GL_ALPHA;
+			case ColorMode::Grayscale_Alpha:
+				return GL_LUMINANCE_ALPHA;
+			case ColorMode::BGR:
+				return GL_BGR;
+			case ColorMode::RGB:
+				return GL_RGB;
+			case ColorMode::ABGR:
+				return GL_RGBA;
+			case ColorMode::ARGB:
+				return GL_BGRA;
+			default:
+				return GL_BGRA;
+			}
+		}
+		void SetTexture(Byte *data, int cx, int cy, ColorMode::Type mode) {
+			GLenum colormode=getGLColorMode(mode);
+
+			Byte *target=NULL;
+
+			///*Setting Texture Parameters to
+			/// Magnify filter: Linear,
+			/// Minify filter:  Linear,
+			/// Border color:   Transparent
+			glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BORDER_COLOR, 0x0);
+
+			if(mode==ColorMode::Alpha) {
+				///*If alpha only, converted to grayscale alpha
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+				glPixelStorei(GL_PACK_ALIGNMENT, 2);
+
+				target=new Byte[cx*cy*2];	
+				A8ToA8L8(cx,cy,data,target);
+				delete data;
+				data=target;
+
+				mode=ColorMode::Grayscale_Alpha;
+				colormode=GL_LUMINANCE_ALPHA;
+			} else {
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+				glPixelStorei(GL_PACK_ALIGNMENT, 4);
+			}
+
+			glTexImage2D(GL_TEXTURE_2D,0,getBPP(mode),sl2(cx),sl2(cy),0,colormode,GL_UNSIGNED_BYTE,NULL);
+			glTexSubImage2D(GL_TEXTURE_2D,0,0,0,cx,cy,colormode,GL_UNSIGNED_BYTE,data);
+		}
+		GLTexture GenerateTexture(Byte *data,int cx,int cy,ColorMode::Type mode) {
+
+			GLTexture ret;
+			ret.CalcuateCoordinates(cx,cy);
+
+			///*Create the texture object
+			glGenTextures(1,&ret.ID);
+			glBindTexture(GL_TEXTURE_2D,ret.ID);
+
+			SetTexture(data,cx,cy,mode);
+
+			return ret;
+		}
+
+		void DestroyTexture(GLTexture *texture) {
+			glDeleteTextures(1, &texture->ID);
+			texture->ID=0;
+		}
+
+		void PreRender() {
+			///*Resetting OpenGL parameters
+			glDisable(GL_SCISSOR_TEST);
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+
+			///*Clearing buffers
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			CurrentLayerColor.a=1;
+			CurrentLayerColor.r=1;
+			CurrentLayerColor.g=1;
+			CurrentLayerColor.b=1;
+
+			translate=Point(0,0);
+			scissors=utils::Rectangle(0, 0, ScreenSize);
+		}
+
+		void PostRender(os::DeviceHandle hDC) {
+			///*Swapping back and front buffers
+			SwapBuffers( (HDC)hDC );
 		}
 	}
-	void SetTexture(Byte *data, int cx, int cy, ColorMode mode) {
-		GLenum colormode=getGLColorMode(mode);
 
-		Byte *target=NULL;
+	const SizeController2D SizeController2D::TileFit;
+	const SizeController2D SizeController2D::StretchFit;
 
-		///*Setting Texture Parameters to
-		/// Magnify filter: Linear,
-		/// Minify filter:  Linear,
-		/// Border color:   Transparent
-		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BORDER_COLOR, 0x0);
 
-		if(mode==ALPHAONLY_8BPP) {
-			///*If alpha only, converted to grayscale alpha
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
-			glPixelStorei(GL_PACK_ALIGNMENT, 2);
-
-			target=new Byte[cx*cy*2];	
-			A8ToA8L8(cx,cy,data,target);
-			delete data;
-			data=target;
-
-			mode=AGRAYSCALE_16BPP;
-			colormode=GL_LUMINANCE_ALPHA;
-		} else {
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-			glPixelStorei(GL_PACK_ALIGNMENT, 4);
-		}
-
-		glTexImage2D(GL_TEXTURE_2D,0,getBPP(mode),sl2(cx),sl2(cy),0,colormode,GL_UNSIGNED_BYTE,NULL);
-		glTexSubImage2D(GL_TEXTURE_2D,0,0,0,cx,cy,colormode,GL_UNSIGNED_BYTE,data);
-	}
-	GLTexture GenerateTexture(Byte *data,int cx,int cy,ColorMode mode) {
-
-		GLTexture ret;
-		ret.CalcuateCoordinates(cx,cy);
-
-		///*Create the texture object
-		glGenTextures(1,&ret.ID);
-		glBindTexture(GL_TEXTURE_2D,ret.ID);
-
-		SetTexture(data,cx,cy,mode);
-
-		return ret;
-	}
-
-	void DestroyTexture(GLTexture *texture) {
-		glDeleteTextures(1, &texture->ID);
-		texture->ID=0;
-	}
-
-	GLenum getGLColorMode(ColorMode color_mode) {
-		switch(color_mode) {
-		case ALPHAONLY_8BPP:
-			return GL_ALPHA;
-		case AGRAYSCALE_16BPP:
-			return GL_LUMINANCE_ALPHA;
-		case RGB:
-			return GL_BGR;
-		case BGR:
-			return GL_RGB;
-		case ABGR_32BPP:
-			return GL_RGBA;
-		case ARGB_32BPP:
-			return GL_BGRA;
-		default:
-			return GL_BGRA;
-		}
-	}
-
-	void PreRender() {
-		///*Resetting OpenGL parameters
-		glDisable(GL_SCISSOR_TEST);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		///*Clearing buffers
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		CurrentLayerColor.a=1;
-		CurrentLayerColor.r=1;
-		CurrentLayerColor.g=1;
-		CurrentLayerColor.b=1;
-
-		translate=Point(0,0);
-		scissors=utils::Rectangle(0, 0, ScreenSize);
-	}
-
-	void PostRender(os::DeviceHandle hDC) {
-		///*Swapping back and front buffers
-		SwapBuffers( (HDC)hDC );
-	}
 } }

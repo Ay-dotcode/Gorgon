@@ -10,12 +10,13 @@ namespace gge { namespace effects {
 		to=To;
 
 		Target->BoundingBox.MoveTo(from);
-		this->progressed=0;
+		
+		if(Controller)
+			Controller->ResetProgress();
 
 		if(Time) {
 			speed.x=(float)(to.x-from.x)/Time;
 			speed.y=(float)(to.y-from.y)/Time;
-			this->Play();
 		} else {
 			speed.x=0;
 			speed.y=0;
@@ -32,7 +33,19 @@ namespace gge { namespace effects {
 		return current==to;
 	}
 
-	void LayerMover::Process(int Time) {
+	animation::ProgressResult::Type LayerMover::Progress() {
+		if(from==to)
+			return animation::ProgressResult::Finished;
+
+		if(!Controller)
+			return animation::ProgressResult::None;
+
+		if(Controller->GetProgress()<0) {
+			throw std::runtime_error("LayerMover cannot handle negative animation time.");
+		}
+
+		int Time=Controller->GetProgress();
+
 		if(from.x>to.x) {
 			current.x=from.x+Time*speed.x;
 
@@ -57,20 +70,32 @@ namespace gge { namespace effects {
 		}
 		Target->BoundingBox.MoveTo(current);
 
+
+		if(from==to)
+			return animation::ProgressResult::Finished;
+		else
+			return animation::ProgressResult::None;
 	}
 
-	LayerMover::LayerMover( LayerBase *Target ) :
-	speed(0,0),
+	LayerMover::LayerMover( LayerBase *Target, animation::AnimationTimer &controller, bool owner ) :
+		AnimationBase(controller, owner),
+		speed(0,0),
 		current(Target->BoundingBox.TopLeft()),
-		Target(Target), FinishedEvent("Finished", this) {
-		AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
+		Target(Target)
+	{
 	}
 
-	LayerMover::LayerMover( LayerBase &Target ) :
-	speed(0,0),
+	LayerMover::LayerMover( LayerBase &Target, animation::AnimationTimer &controller, bool owner ) :
+		AnimationBase(controller, owner),
+		speed(0,0),
 		current(Target.BoundingBox.TopLeft()),
-		Target(&Target), FinishedEvent("Finished", this) {
-		AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
+		Target(&Target) 
+	{
+	}
+
+	LayerMover::LayerMover( LayerBase *Target, bool create/*=false*/ )
+	{
+
 	}
 
 } }

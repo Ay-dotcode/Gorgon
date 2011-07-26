@@ -1,6 +1,7 @@
 #include "SoundResource.h"
 #include "ResourceFile.h"
 #include "../External/LZMA/LzmaDecode.h"
+#include "../Engine/Sound.h"
 
 using namespace std;
 using namespace gge::sound;
@@ -75,4 +76,9 @@ namespace gge { namespace resource {
 
 		return snd;
 	}
+
+	void SoundResource::Prepare( GGEMain &main ) {
+		Buffer=sound::system::CreateSoundBuffer(Format, Data, Size);
+	}
+
 } }

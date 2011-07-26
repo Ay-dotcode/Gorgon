@@ -833,7 +833,7 @@ namespace gge { namespace utils {
 		void grow(int amount=growth) {
 			list.Resize(list.GetSize()+amount);
 
-			std::memset(list.GetBuffer()+(list.GetSize()-amount)*sizeof(T_*),0,sizeof(T_*)*amount);
+			std::memset(list.GetBuffer()+(list.GetSize()-amount),0,sizeof(T_*)*amount);
 		}
 
 		void removeat(int absolutepos) {

@@ -2,6 +2,7 @@
 
 #include "../Engine/Graphics.h"
 #include "../Resource/ResourceFile.h"
+#include "GraphicTargets2D.h"
 
 namespace gge { namespace resource {
 	class File;
@@ -117,11 +118,11 @@ namespace gge {
 		friend class Font;
 	protected:
 		////Prints the given text to the target using given color.
-		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, string Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams())=0;
+		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, string Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams())=0;
 		////Prints the given text to the target using given color. Text is wrapped and aligned as necessary
-		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams())=0;
+		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams())=0;
 		////This method is extended to cover meta functionality for advanced text rendering
-		virtual void Print(graphics::I2DColorizableGraphicsTarget *target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams())=0;
+		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams())=0;
 		////This method is extended to cover meta functionality for advanced text rendering. This function does not render the given text
 		/// it only processes meta data
 		virtual void Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment::Type Align)=0;

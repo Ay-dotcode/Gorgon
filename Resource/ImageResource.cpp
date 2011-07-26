@@ -17,7 +17,7 @@ namespace gge { namespace resource {
 
 		bool lateloading=false;
 		//BYTE *compressionprops;
-		graphics::ColorMode m;
+		graphics::ColorMode::Type m;
 
 		int target=Data.tellg()+Size;
 		while(Data.tellg()<target) {
@@ -86,7 +86,7 @@ namespace gge { namespace resource {
 						LzmaDecodeProperties(&state.Properties,img->CompressionProps,LZMA_PROPERTIES_SIZE);
 						state.Probs = (CProb *)malloc(LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
 
-						LzmaDecode(&state,tmpdata,size,&processed,img->Data,img->getWidth()*img->getHeight()*img->getBPP(),&processed2);
+						LzmaDecode(&state,tmpdata,size,&processed,img->Data,img->getwidth()*img->getheight()*img->GetBPP	(),&processed2);
 
 						free(state.Probs);
 						delete tmpdata;
@@ -123,20 +123,20 @@ namespace gge { namespace resource {
 						int channels=cinfo->num_components;
 
 						if(channels==3)
-							m=graphics::BGR;
+							m=graphics::ColorMode::BGR;
 						else if(channels==4)
-							m=graphics::ABGR_32BPP;
+							m=graphics::ColorMode::ABGR;
 						else if(channels=1)
-							m=graphics::ALPHAONLY_8BPP;
+							m=graphics::ColorMode::Alpha;
 
-						if(img->getMode()!=m)
+						if(img->GetMode()!=ColorMode::ARGB)
 							throw std::runtime_error("Image data size mismatch!");
 
-						int stride=img->getWidth()*channels;
+						int stride=img->GetWidth()*channels;
 						int rowsRead=0;
 
-						Byte ** rowPtr = new Byte * [img->getHeight()];
-						for(i=0;i<img->getHeight();i++)
+						Byte ** rowPtr = new Byte * [img->getheight()];
+						for(i=0;i<img->GetHeight();i++)
 							rowPtr[i]=img->Data+stride*i;
 
 						while(cinfo->output_scanline < cinfo->output_height) {
@@ -174,7 +174,7 @@ namespace gge { namespace resource {
 		fseek(gfile,DataLocation,SEEK_SET);
 		
 		if(this->Compression==GID::LZMA) {
-			this->Data.Resize(this->getWidth()*this->getHeight()*this->getBPP());
+			this->Data.Resize(this->GetWidth()*this->GetHeight()*this->GetBPP());
 			Byte *tmpdata=new Byte[DataSize];
 			fread(tmpdata,1,this->DataSize,gfile);
 			size_t processed,processed2;
@@ -183,7 +183,7 @@ namespace gge { namespace resource {
 			LzmaDecodeProperties(&state.Properties,this->CompressionProps,LZMA_PROPERTIES_SIZE);
 			state.Probs = (CProb *)malloc(LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
 
-			LzmaDecode(&state,tmpdata,DataSize,&processed,this->Data,this->getWidth()*this->getHeight()*this->getBPP(),&processed2);
+			LzmaDecode(&state,tmpdata,DataSize,&processed,this->Data,this->GetWidth()*this->GetHeight()*this->GetBPP(),&processed2);
 
 			free(state.Probs);
 			delete tmpdata;
@@ -216,19 +216,19 @@ namespace gge { namespace resource {
 			int channels=cinfo->num_components;
 
 			if(channels==3)
-				Mode=graphics::BGR;
+				Mode=graphics::ColorMode::BGR;
 			else if(channels==4)
-				Mode=graphics::ABGR_32BPP;
+				Mode=graphics::ColorMode::ABGR;
 			else if(channels=1)
-				Mode=graphics::ALPHAONLY_8BPP;
+				Mode=graphics::ColorMode::Alpha;
 
-			Data.Resize(getWidth()*getHeight()*channels);
+			Data.Resize(GetWidth()*GetHeight()*channels);
 
-			int stride=getWidth()*channels;
+			int stride=GetWidth()*channels;
 			int rowsRead=0;
 
-			Byte ** rowPtr = new Byte * [getHeight()];
-			for(i=0;i<getHeight();i++)
+			Byte ** rowPtr = new Byte * [GetHeight()];
+			for(i=0;i<GetHeight();i++)
 				rowPtr[i]=Data+stride*i;
 
 			while(cinfo->output_scanline < cinfo->output_height) {
@@ -258,9 +258,9 @@ namespace gge { namespace resource {
 #endif
 		
 		if(Texture.ID>0)
-			DestroyTexture(&Texture);
+			system::DestroyTexture(&Texture);
 
-		Texture = graphics::GenerateTexture(Data, getWidth(), getHeight(), getMode());
+		Texture = graphics::system::GenerateTexture(Data, GetWidth(), GetHeight(), GetMode());
 	}
 
 	bool ImageResource::PNGExport(string filename) {
@@ -283,12 +283,12 @@ namespace gge { namespace resource {
 		}
 		setjmp(png_jmpbuf(png_ptr));
 		png_init_io(png_ptr, file);
-		png_set_IHDR(png_ptr, info_ptr, getWidth(), getHeight(),
+		png_set_IHDR(png_ptr, info_ptr, GetWidth(), GetHeight(),
 	       8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
 	       PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-		Byte *newdata=new Byte[getWidth()*getHeight()*4];
-		for(i=0;i<getWidth()*getHeight();i++) {
+		Byte *newdata=new Byte[GetWidth()*GetHeight()*4];
+		for(i=0;i<GetWidth()*GetHeight();i++) {
 			newdata[i*4+2]=Data[i*4+0];
 			newdata[i*4+1]=Data[i*4+1];
 			newdata[i*4+0]=Data[i*4+2];
@@ -296,9 +296,9 @@ namespace gge { namespace resource {
 		}
 
 		png_write_info(png_ptr, info_ptr);
-		Byte **rows=new Byte*[getHeight()];
-		for(i=0;i<getHeight();i++) {
-			rows[i]=newdata+i*getWidth()*4;
+		Byte **rows=new Byte*[GetHeight()];
+		for(i=0;i<GetHeight();i++) {
+			rows[i]=newdata+i*GetWidth()*4;
 		}
 		png_write_image(png_ptr, rows);
 		png_write_end(png_ptr, NULL);
@@ -395,7 +395,7 @@ namespace gge { namespace resource {
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
 
-		Resize(width,height,graphics::ARGB_32BPP);
+		Resize(width,height,graphics::ColorMode::ARGB);
 
 		//currently only RGB is supported
 		if(pChannels!=3)
@@ -403,10 +403,10 @@ namespace gge { namespace resource {
 
 		for(unsigned y=0;y<height;y++) {
 			for(unsigned x=0;x<width;x++) {
-				Raw2DGraphic::Data[(x+y*width)*4+2]=row_pointers[y][x*3];
-				Raw2DGraphic::Data[(x+y*width)*4+1]=row_pointers[y][x*3+1];
-				Raw2DGraphic::Data[(x+y*width)*4+0]=row_pointers[y][x*3+2];
-				Raw2DGraphic::Data[(x+y*width)*4+3]=0xff;
+				Data[(x+y*width)*4+2]=row_pointers[y][x*3];
+				Data[(x+y*width)*4+1]=row_pointers[y][x*3+1];
+				Data[(x+y*width)*4+0]=row_pointers[y][x*3+2];
+				Data[(x+y*width)*4+3]=0xff;
 			}
 		}
 		
@@ -419,36 +419,6 @@ namespace gge { namespace resource {
 		fclose(infile);
 
 		return NoError;
-	}
-	void ImageResource::DrawResized(I2DGraphicsTarget *Target, int X, int Y, int W, int H, gge::Alignment::Type Align) {
-
-
-		int h=this->Height(H);
-		int w=this->Width(W);
-
-		if(Align & Alignment::Center)
-			X+=(W-w)/2;
-		else if(Align & Alignment::Right)
-			X+= W-w;
-
-		if(Alignment::isMiddle(Align))
-			Y+=(H-h)/2;
-		else if(Alignment::isBottom(Align))
-			Y+= H-h;
-
-		if(VerticalTiling.Type==ResizableObject::Stretch) {
-			if(HorizontalTiling.Type==ResizableObject::Stretch) {
-				this->Draw(Target, X,Y , w,h);
-			} else {
-				this->DrawHTiled(Target, X,Y , w,h);
-			}
-		} else {
-			if(HorizontalTiling.Type==ResizableObject::Stretch) {
-				this->DrawVTiled(Target, X,Y , w,h);
-			} else {
-				this->DrawTiled(Target, X,Y , w,h);
-			}
-		}
 	}
 
 } }

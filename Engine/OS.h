@@ -5,6 +5,7 @@
 #include "../Utils/EventChain.h"
 
 #include "OS.Win32.h"
+#include "../Utils/Rectangle2D.h"
 
 using std::string;
 
@@ -42,6 +43,9 @@ namespace gge { namespace os {
 		extern utils::EventChain<> Deactivated;
 		extern utils::EventChain<> Destroyed;
 
+		//Monitor parameter is ignored for now
+		utils::Rectangle UsableScreenMetrics(int Monitor=0);
+
 		////This function creates a window
 		///@Name		: Identifier name for the window, should abide by variable naming rules
 		///@Title		: Title of the window
@@ -55,7 +59,7 @@ namespace gge { namespace os {
 		WindowHandle CreateWindow(string Name, string Title, os::IconHandle Icon, os::InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
 
 		void MoveWindow(WindowHandle,utils::Point);
-		inline void MoveWindow(WindowHandle h,int X,int Y) { MoveWindow(h,X,Y); }
+		inline void MoveWindow(WindowHandle h,int X,int Y) { MoveWindow(h,utils::Point(X,Y)); }
 	}
 
 } }

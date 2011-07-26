@@ -7,22 +7,22 @@ using namespace gge::graphics;
 using namespace gge::utils;
 
 namespace gge { namespace effects {
-	void FlipEffect::Draw(I2DGraphicsTarget *Layer,int X,int Y) {
-		if(isFinished()) {
+	void FlipEffect::draw(ImageTarget2D &Layer,int X,int Y) {
+		if(!Flipping) {
 			if(Backside) {
 				Back->Draw(Layer, X, Y);
 			} else {
 				Front->Draw(Layer, X, Y);
 			}
 		} else {
-			float ang=((float)AnimatorBase::currentTime()/ETA)*PI;
+			float ang=((float)GetProgress()/ETA)*PI;
 			bool rev=false;
 			if(ang>PI/2) {
 				ang=PI-ang;
 				rev=true;
 			}
 
-			Buffered2DGraphic *img=NULL;
+			RectangularGraphic2D *img=NULL;
 			int cx,cy;
 			if(Backside ^ rev) {
 				img=Back;
@@ -32,8 +32,8 @@ namespace gge { namespace effects {
 			if(img==NULL)
 				return;
 
-			cx=img->Texture.W;
-			cy=img->Texture.H;
+			cx=img->GetWidth();
+			cy=img->GetHeight();
 
 			FlipSide cside=Side;
 			if(Backside ^ rev) {
@@ -138,13 +138,14 @@ namespace gge { namespace effects {
 	}
 
 	void FlipEffect::Flip(int ETA) {
+		Reset();
+
 		if(this->ETA!=0) {
 			Backside=!Backside;
-			progressed=this->ETA-progressed;
+			SetProgress(this->ETA-GetProgress());
 		}
 
 		this->ETA=ETA;
-		Play();
 		Flipping=true;
 	}
 
@@ -160,30 +161,32 @@ namespace gge { namespace effects {
 		PivotFront.y=0;
 		PivotBack.x=0;
 		PivotBack.y=0;
-
-		Pause();
 	}
 
 	void FlipEffect::CenterPivot() {
 		if(Front) {
-			PivotFront.x=Front->Texture.W /2;
-			PivotFront.y=Front->Texture.H /2;
+			PivotFront.x=Front->GetWidth() /2;
+			PivotFront.y=Front->GetHeight() /2;
 		}
 		else if(Back) {
-			PivotFront.x=Back->Texture.W /2;
-			PivotFront.y=Back->Texture.H /2;
+			PivotFront.x=Back->GetWidth() /2;
+			PivotFront.y=Back->GetHeight() /2;
 		}
 
 		PivotBack=PivotFront;
 	}
 
-	void FlipEffect::Process(int Time) {
-		if(Time>=ETA) {
+	animation::ProgressResult::Type FlipEffect::Progress() {
+		if(GetProgress()>=ETA) {
 			ETA=0;
-			Pause();
-			progressed=0;
 			Flipping=false;
 			Backside=!Backside;
+
+			return animation::ProgressResult::Finished;
 		}
+
+		return animation::ProgressResult::None;
 	}
+
+
 } }

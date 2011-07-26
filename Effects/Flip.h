@@ -1,13 +1,14 @@
 #pragma once
 
 #include "../Resource/GRE.h"
-#include "../Engine/Animator.h"
 #include "../Engine/Graphics.h"
 #include "../Engine/GraphicLayers.h"
+#include "../Engine/Graphic2D.h"
+#include "../Engine/Animation.h"
 
 namespace gge { namespace effects {
 
-	class FlipEffect : public AnimatorBase, public graphics::Buffered2DGraphic {
+	class FlipEffect : public animation::AnimationBase, public graphics::Graphic2D {
 	public:
 		enum FlipSide {
 			Top=1,
@@ -15,19 +16,19 @@ namespace gge { namespace effects {
 			Bottom,
 			Right,
 		};
-		////This event is fired when the animation
-		/// completes
-		utils::EventChain<FlipEffect> FinishedEvent;
 
-		FlipEffect() : FinishedEvent("Finished", this) { 
-			AnimatorBase::FinishedEvent.DoubleLink(FinishedEvent);
+		FlipEffect(animation::AnimationTimer &controller, bool owner=false) : AnimationBase(controller,owner) { 
+			Initialize(); 
+		}
+
+		explicit FlipEffect(bool create=false) : AnimationBase(create) { 
 			Initialize(); 
 		}
 
 		void Flip(int ETA);
 		void CenterPivot();
 
-		graphics::Buffered2DGraphic *Front,*Back;
+		graphics::RectangularGraphic2D *Front,*Back;
 		FlipSide Side;
 		bool Backside;
 		bool Flipping;
@@ -37,13 +38,28 @@ namespace gge { namespace effects {
 		utils::Point PivotFront;
 		utils::Point PivotBack;
 
-		virtual void Draw(graphics::I2DGraphicsTarget *Layer, int X, int Y);
-		virtual void Draw(graphics::I2DGraphicsTarget &Layer, int X, int Y) { Draw(&Layer, X,Y); }
-
 	protected:
 		void Initialize();
 
-		virtual bool isFinished() { return AnimatorBase::currentTime()>=ETA; }
-		virtual void Process(int Time);
+		virtual animation::ProgressResult::Type Progress();
+
+		virtual void draw(graphics::ImageTarget2D& Target, int X, int Y);
+
+		void SetProgress(int progress) {
+			if(Controller)
+				Controller->SetProgress(progress);
+		}
+
+		int GetProgress() {
+			if(Controller)
+				return Controller->GetProgress();
+			else
+				return 0;
+		}
+
+		void Reset() {
+			if(Controller)
+				Controller->ResetProgress();
+		}
 	};
 } }
