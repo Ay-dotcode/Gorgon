@@ -19,6 +19,8 @@ namespace gge { namespace widgets {
 
 	class LineResource;
 
+	LineResource *LoadLineResource(resource::File& File, std::istream &Data, int Size);
+
 	class Line : public resource::ResizableObject {
 	public:
 		Line(LineResource &parent, animation::AnimationTimer &controller, bool owner=false);
@@ -27,6 +29,12 @@ namespace gge { namespace widgets {
 		LineResource &parent;
 
 		utils::Margins BorderWidth();
+
+		virtual ~Line() {
+			start->DeleteAnimation();
+			loop->DeleteAnimation();
+			end->DeleteAnimation();
+		}
 
 	protected:
 		virtual animation::ProgressResult::Type Progress();
@@ -45,6 +53,24 @@ namespace gge { namespace widgets {
 	};
 
 
+	class MaskedLine : public Line {
+	public:
+		MaskedLine(LineResource &parent, animation::AnimationTimer &controller, LineResource *mask, bool owner=false);
+		MaskedLine(LineResource &parent, LineResource *mask, bool create=false);
+
+		virtual ~MaskedLine() {
+			delete Mask;
+		}
+
+	protected:
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H); 
+
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H);;
+
+		Line *Mask;
+	};
+
+
 	class LineResource : public resource::ResourceBase, virtual public resource::ResizableObjectProvider, 
 		virtual public animation::DiscreteAnimationProvider 
 	{
@@ -59,16 +85,26 @@ namespace gge { namespace widgets {
 		LineResource(animation::RectangularGraphic2DSequenceProvider &start ,animation::RectangularGraphic2DSequenceProvider &loop, 
 			animation::RectangularGraphic2DSequenceProvider &end, OrientationType Orientation=Horizontal, bool IsLoopTiled=true) : 
 			Orientation(Orientation), IsLoopTiled(IsLoopTiled),
-			start(&start), loop(&loop), end(&end)
+			start(&start), loop(&loop), end(&end), Mask(NULL)
 		{ }
 
 		virtual GID::Type getGID() const { return GID::Line; }
 
-		virtual Line &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return *new Line(*this, controller,owner); }
-		virtual Line &CreateAnimation(bool create=false) { return *new Line(*this, create); }
+		virtual Line &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return CreateResizableObject(controller,owner); }
+		virtual Line &CreateAnimation(bool create=false) { return CreateResizableObject(create); }
 
-		virtual Line &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { return *new Line(*this, controller,owner); }
-		virtual Line &CreateResizableObject(bool create=false) { return *new Line(*this, create); }
+		virtual Line &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) {
+			if(Mask==NULL)
+				return *new Line(*this, controller,owner); 
+			else
+				return *new MaskedLine(*this, controller, Mask,owner); 
+		}
+		virtual Line &CreateResizableObject(bool create=false) { 
+			if(Mask==NULL)
+				return *new Line(*this, create); 
+			else
+				return *new MaskedLine(*this, Mask, create); 
+		}
 
 		OrientationType Orientation;
 
@@ -104,9 +140,17 @@ namespace gge { namespace widgets {
 		virtual int		 StartOf(unsigned Frame) const { return loop->StartOf(Frame); }
 		virtual	int		 EndOf(unsigned Frame) const { return loop->EndOf(Frame); }
 
+		virtual void Prepare(GGEMain &main) {
+			ResourceBase::Prepare(main);
+			Mask=dynamic_cast<LineResource*>(file->Root().FindObject(mask));
+		}
+
 
 	protected:
 		animation::RectangularGraphic2DSequenceProvider *start, *loop, *end;
+		LineResource *Mask;
+		utils::SGuid mask;
+		resource::File *file;
 	};
 
 
@@ -157,6 +201,17 @@ namespace gge { namespace widgets {
 	}
 	
 
-	LineResource *LoadLineResource(resource::File& File, std::istream &Data, int Size);
+	inline MaskedLine::MaskedLine(LineResource &parent, animation::AnimationTimer &controller, LineResource *mask, bool owner/*=false*/) : 
+	Line(parent, controller, owner) {
+		Mask=&mask->CreateResizableObject(controller);
+	}
+
+	inline MaskedLine::MaskedLine(LineResource &parent, LineResource *mask, bool create/*=false*/) : 
+	Line(parent, create) {
+		if(Controller)
+			Mask=&mask->CreateResizableObject(*Controller);
+		else
+			Mask=&mask->CreateResizableObject();
+	}
 
 }}

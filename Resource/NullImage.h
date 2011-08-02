@@ -57,7 +57,7 @@ namespace gge { namespace resource {
 		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) 
 		{  } 
 
-		virtual void drawin(graphics::ImageTarget2D& Target, graphics::SizeController2D &controller, int X, int Y, int W, int H) 
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) 
 		{  };
 
 		virtual int calculatewidth (int w=-1) const { return w; }

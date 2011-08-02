@@ -27,6 +27,7 @@ namespace gge { namespace graphics {
 		PAClassList<BasicSurface> Surfaces;
 		////Whether or not enable clipping
 		bool EnableClipping;
+		BasicSurface::DrawMode DrawMode;
 
 
 		Basic2DLayer() : LayerBase() { init(); }
@@ -42,6 +43,7 @@ namespace gge { namespace graphics {
 		void init() {
 			isVisible=true;
 			EnableClipping=false;
+			DrawMode=BasicSurface::Normal;
 		}
 
 		////Draws a simple image to the screen.
@@ -102,6 +104,10 @@ namespace gge { namespace graphics {
 
 		virtual int GetWidth() const { return BoundingBox.Width(); }
 		virtual int GetHeight() const { return BoundingBox.Height(); }
+
+		virtual BasicSurface::DrawMode GetDrawMode() const { return DrawMode; }
+		virtual void SetDrawMode(BasicSurface::DrawMode mode) { DrawMode=mode; }
+
 	};
 
 	////This layer is a 2D graphics target and also has colorization support
@@ -109,6 +115,7 @@ namespace gge { namespace graphics {
 	public:
 		////Whether or not enable clipping
 		bool EnableClipping;
+		BasicSurface::DrawMode DrawMode;
 		////Default constructor to initialize variables
 
 		Colorizable2DLayer() : LayerBase() { init(); }
@@ -126,6 +133,7 @@ namespace gge { namespace graphics {
 			CurrentColor=RGBint(0xffffffff);
 			isVisible=true;
 			EnableClipping=false;
+			DrawMode=BasicSurface::Normal;
 		}
 
 		////This list contains surfaces to be drawn
@@ -198,6 +206,9 @@ namespace gge { namespace graphics {
 		virtual void SetCurrentColor(RGBint color) { CurrentColor=color; }
 		virtual void SetCurrentColor(RGBfloat color) { CurrentColor=color; }
 		virtual RGBint GetCurrentColor() { return CurrentColor; }
+
+		virtual BasicSurface::DrawMode GetDrawMode() const { return DrawMode; }
+		virtual void SetDrawMode(BasicSurface::DrawMode mode) { DrawMode=mode; }
 
 	protected:
 		RGBfloat CurrentColor;

@@ -1,8 +1,11 @@
 #include "GraphicLayers.h"
 #pragma warning(disable:4244)
 
-
-
+#define GL_FUNC_ADD 0x8006
+#define GL_MIN		0x8007
+#define GL_MAX		0x8008
+#define GL_BLEND_EQUATION                                  0x8009
+ 
 using namespace gge::utils;
 using namespace gge::input;
 using namespace gge::graphics::system;
@@ -27,6 +30,7 @@ namespace gge { namespace graphics {
 
 		surface->VertexCoords[3].x=X4;
 		surface->VertexCoords[3].y=Y4;
+		surface->Mode=DrawMode;
 	}
 
 	void Basic2DLayer::Draw(GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4,  float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) {
@@ -47,18 +51,19 @@ namespace gge { namespace graphics {
 
 		surface->CreateTextureCoords();
 
-		float w=Image->ImageCoord[2].s, h=Image->ImageCoord[2].t;
-		surface->TextureCoords[0].s=w*S1;
-		surface->TextureCoords[0].t=h*U1;
+		float w=Image->W, h=Image->H;
+		surface->TextureCoords[0].s=S1/w;
+		surface->TextureCoords[0].t=U1/h;
 
-		surface->TextureCoords[1].s=w*S2;
-		surface->TextureCoords[1].t=h*U2;
+		surface->TextureCoords[1].s=S2/w;
+		surface->TextureCoords[1].t=U2/h;
 
-		surface->TextureCoords[2].s=w*S3;
-		surface->TextureCoords[2].t=h*U3;
+		surface->TextureCoords[2].s=S3/w;
+		surface->TextureCoords[2].t=U3/h;
 
-		surface->TextureCoords[3].s=w*S4;
-		surface->TextureCoords[3].t=h*U4;
+		surface->TextureCoords[3].s=S4/w;
+		surface->TextureCoords[3].t=U4/h;
+		surface->Mode=DrawMode;
 	}
 
 	void Basic2DLayer::DrawTiled(GLTexture *Image,int X,int Y,int W,int H) {
@@ -89,6 +94,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=(float)H/Image->H;
 				surface->VertexCoords[3].x=X;
 				surface->VertexCoords[3].y=Y+H;
+				surface->Mode=DrawMode;
 			} else { //only height is 2^n
 				//we leave at least a portion of an image to the last part
 				//so that there will be less controls
@@ -120,6 +126,7 @@ namespace gge { namespace graphics {
 					surface->TextureCoords[3].t=(float)H/Image->H;
 					surface->VertexCoords[3].x=x;
 					surface->VertexCoords[3].y=Y+H;
+					surface->Mode=DrawMode;
 				}
 
 				//last image (might be partial)
@@ -147,6 +154,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=(float)H/Image->H;
 				surface->VertexCoords[3].x=x;
 				surface->VertexCoords[3].y=Y+H;
+				surface->Mode=DrawMode;
 			}
 		} else {
 			if(sl2(Image->W) == Image->W) { //only width is 2^n
@@ -180,6 +188,7 @@ namespace gge { namespace graphics {
 					surface->TextureCoords[3].t=Image->ImageCoord[3].t;
 					surface->VertexCoords[3].x=X;
 					surface->VertexCoords[3].y=y+Image->H;
+					surface->Mode=DrawMode;
 				}
 
 				//last image (might be partial)
@@ -207,6 +216,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[3].x=X;
 				surface->VertexCoords[3].y=Y+H;
+				surface->Mode=DrawMode;
 			} else { //if the image has no 2^n dimensions
 				//we move row by row
 				int y=Y,ty=Y+H-Image->H;
@@ -240,6 +250,7 @@ namespace gge { namespace graphics {
 						surface->TextureCoords[3].t=Image->ImageCoord[3].t;
 						surface->VertexCoords[3].x=x;
 						surface->VertexCoords[3].y=cy;
+						surface->Mode=DrawMode;
 					}
 
 					//partial image at the end of x axis, only x axis is partial
@@ -267,6 +278,7 @@ namespace gge { namespace graphics {
 					surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 					surface->VertexCoords[3].x=x;
 					surface->VertexCoords[3].y=cy;
+					surface->Mode=DrawMode;
 
 				}
 
@@ -301,6 +313,7 @@ namespace gge { namespace graphics {
 					surface->TextureCoords[3].t=pty;
 					surface->VertexCoords[3].x=x;
 					surface->VertexCoords[3].y=cy;
+					surface->Mode=DrawMode;
 				}
 
 				//partial image at the end of x axis at last row, both axis are partial
@@ -329,6 +342,7 @@ namespace gge { namespace graphics {
 				surface->VertexCoords[3].x=x;
 				surface->VertexCoords[3].y=Y+H;
 
+				surface->Mode=DrawMode;
 			}
 		}
 	}
@@ -360,6 +374,7 @@ namespace gge { namespace graphics {
 			surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
+			surface->Mode=DrawMode;
 		} else {
 			//we leave at least a portion of an image to the last part
 			//so that there will be less controls
@@ -391,6 +406,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 				surface->VertexCoords[3].x=x;
 				surface->VertexCoords[3].y=Y+H;
+				surface->Mode=DrawMode;
 			}
 
 			//last image (might be partial)
@@ -418,6 +434,7 @@ namespace gge { namespace graphics {
 			surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 			surface->VertexCoords[3].x=x;
 			surface->VertexCoords[3].y=Y+H;	
+			surface->Mode=DrawMode;
 		}
 	}
 
@@ -448,6 +465,7 @@ namespace gge { namespace graphics {
 			surface->TextureCoords[3].t=(float)H/Image->H;
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
+			surface->Mode=DrawMode;
 		} else {
 			//we leave at least a portion of an image to the last part
 			//so that there will be less controls
@@ -479,6 +497,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=Image->ImageCoord[3].t;
 				surface->VertexCoords[3].x=X;
 				surface->VertexCoords[3].y=y+Image->H;
+				surface->Mode=DrawMode;
 			}
 
 			//last image (might be partial)
@@ -506,6 +525,7 @@ namespace gge { namespace graphics {
 			surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
+			surface->Mode=DrawMode;
 		}
 	}
 
@@ -545,9 +565,32 @@ namespace gge { namespace graphics {
 		}
 
 		int i;
+		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
+
 		for(i=0;i<Surfaces.getCount();i++) {
 			BasicSurface *surface=Surfaces[i];
 			glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
+			if(surface->Mode!=currentdrawmode) {
+				currentdrawmode=surface->Mode;
+
+				if(currentdrawmode==BasicSurface::Normal) {
+					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE );
+					glClear(GL_COLOR_BUFFER_BIT);
+					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+				}
+				else if(currentdrawmode==BasicSurface::AlphaOnly) {
+					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+					glClear(GL_COLOR_BUFFER_BIT);
+					glBlendFunc(GL_DST_COLOR, GL_ZERO);
+				}
+				else if(currentdrawmode==BasicSurface::UseDestinationAlpha) {
+					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE );
+					glBlendFunc(GL_DST_ALPHA,GL_ONE_MINUS_DST_ALPHA);
+				}
+
+			}
+
 			glBegin(GL_QUADS);
 			glTexCoord2fv(surface->TextureCoords[0].vect);
 			glVertex3fv(surface->VertexCoords[0].vect);
@@ -558,6 +601,7 @@ namespace gge { namespace graphics {
 			glTexCoord2fv(surface->TextureCoords[3].vect);
 			glVertex3fv(surface->VertexCoords[3].vect);
 			glEnd();
+
 		}
 
 		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
@@ -571,7 +615,10 @@ namespace gge { namespace graphics {
 			scissors=psc;
 		}
 
+		//make sure everything is back in its place
 		glPopAttrib();
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	}
 
 
@@ -592,6 +639,7 @@ namespace gge { namespace graphics {
 		surface->VertexCoords[3].y=Y4;
 
 		surface->Color=ToRGBfloat(CurrentColor);
+		surface->Mode=DrawMode;
 	}
 
 	void Colorizable2DLayer::Draw(GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4,  float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) {
@@ -612,20 +660,21 @@ namespace gge { namespace graphics {
 
 		surface->CreateTextureCoords();
 
-		float w=Image->ImageCoord[2].s, h=Image->ImageCoord[2].t;
-		surface->TextureCoords[0].s=S1;
-		surface->TextureCoords[0].t=U1;
+		float w=Image->W, h=Image->H;
+		surface->TextureCoords[0].s=S1/w;
+		surface->TextureCoords[0].t=U1/h;
 
-		surface->TextureCoords[1].s=S2;
-		surface->TextureCoords[1].t=U2;
+		surface->TextureCoords[1].s=S2/w;
+		surface->TextureCoords[1].t=U2/h;
 
-		surface->TextureCoords[2].s=S3;
-		surface->TextureCoords[2].t=h*U3;
+		surface->TextureCoords[2].s=S3/w;
+		surface->TextureCoords[2].t=U3/h;
 
-		surface->TextureCoords[3].s=S4;
-		surface->TextureCoords[3].t=U4;
+		surface->TextureCoords[3].s=S4/w;
+		surface->TextureCoords[3].t=U4/h;
 
 		surface->Color=ToRGBfloat(CurrentColor);
+		surface->Mode=DrawMode;
 	}
 
 	void Colorizable2DLayer::DrawTiled(GLTexture *Image,int X,int Y,int W,int H) {
@@ -657,12 +706,13 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=(float)H/Image->H;
 				surface->VertexCoords[3].x=X;
 				surface->VertexCoords[3].y=Y+H;
+				surface->Mode=DrawMode;
 			} else { //only height is 2^n
 				//we leave at least a portion of an image to the last part
 				//so that there will be less controls
 				int x=X,tx=X+W-Image->W;
 				//draw whole parts where image is texture repeated in
-				//y axis, we only need to draw multiple images for x axis
+				//y axis, we only need to draw multiple images fr x axis
 				for(x=X;x<tx;x+=Image->W) { 
 					ColorizableSurface *surface=Surfaces.Add();
 					surface->Color=ToRGBfloat(CurrentColor);
@@ -689,6 +739,7 @@ namespace gge { namespace graphics {
 					surface->TextureCoords[3].t=(float)H/Image->H;
 					surface->VertexCoords[3].x=x;
 					surface->VertexCoords[3].y=Y+H;
+					surface->Mode=DrawMode;
 				}
 
 				//last image (might be partial)
@@ -717,6 +768,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=(float)H/Image->H;
 				surface->VertexCoords[3].x=x;
 				surface->VertexCoords[3].y=Y+H;
+				surface->Mode=DrawMode;
 			}
 		} else {
 			if(sl2(Image->W) == Image->W) { //only width is 2^n
@@ -751,6 +803,7 @@ namespace gge { namespace graphics {
 					surface->TextureCoords[3].t=1;
 					surface->VertexCoords[3].x=X;
 					surface->VertexCoords[3].y=y+Image->H;
+					surface->Mode=DrawMode;
 				}
 
 				//last image (might be partial)
@@ -779,6 +832,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=(float)(H-(y-Y))/Image->H;
 				surface->VertexCoords[3].x=X;
 				surface->VertexCoords[3].y=Y+H;
+				surface->Mode=DrawMode;
 			} else { //if the image has no 2^n dimensions
 				//we move row by row
 				int y=Y,ty=Y+H-Image->H;
@@ -813,6 +867,7 @@ namespace gge { namespace graphics {
 						surface->TextureCoords[3].t=1;
 						surface->VertexCoords[3].x=x;
 						surface->VertexCoords[3].y=cy;
+						surface->Mode=DrawMode;
 					}
 
 					//partial image at the end of x axis, only x axis is partial
@@ -842,6 +897,7 @@ namespace gge { namespace graphics {
 					surface->VertexCoords[3].x=x;
 					surface->VertexCoords[3].y=cy;
 
+					surface->Mode=DrawMode;
 				}
 
 				//this part is the last partial row
@@ -876,6 +932,7 @@ namespace gge { namespace graphics {
 					surface->TextureCoords[3].t=pty;
 					surface->VertexCoords[3].x=x;
 					surface->VertexCoords[3].y=cy;
+					surface->Mode=DrawMode;
 				}
 
 				//partial image at the end of x axis at last row, both axis are partial
@@ -904,6 +961,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
 				surface->VertexCoords[3].x=x;
 				surface->VertexCoords[3].y=Y+H;
+				surface->Mode=DrawMode;
 
 			}
 		}
@@ -937,6 +995,7 @@ namespace gge { namespace graphics {
 			surface->TextureCoords[3].t=1;
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
+			surface->Mode=DrawMode;
 		} else {
 			//we leave at least a portion of an image to the last part
 			//so that there will be less controls
@@ -969,6 +1028,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=1;
 				surface->VertexCoords[3].x=x;
 				surface->VertexCoords[3].y=Y+H;
+				surface->Mode=DrawMode;
 			}
 
 			//last image (might be partial)
@@ -997,6 +1057,7 @@ namespace gge { namespace graphics {
 			surface->TextureCoords[3].t=1;
 			surface->VertexCoords[3].x=x;
 			surface->VertexCoords[3].y=Y+H;	
+			surface->Mode=DrawMode;
 		}
 	}
 
@@ -1028,6 +1089,7 @@ namespace gge { namespace graphics {
 			surface->TextureCoords[3].t=(float)H/Image->H;
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
+			surface->Mode=DrawMode;
 		} else {
 			//we leave at least a portion of an image to the last part
 			//so that there will be less controls
@@ -1060,6 +1122,7 @@ namespace gge { namespace graphics {
 				surface->TextureCoords[3].t=1;
 				surface->VertexCoords[3].x=X;
 				surface->VertexCoords[3].y=y+Image->H;
+				surface->Mode=DrawMode;
 			}
 
 			//last image (might be partial)
@@ -1088,6 +1151,7 @@ namespace gge { namespace graphics {
 			surface->TextureCoords[3].t=(float)(H-(y-Y))/Image->H;
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
+			surface->Mode=DrawMode;
 		}
 	}
 
@@ -1135,8 +1199,30 @@ namespace gge { namespace graphics {
 		CurrentLayerColor.b*=(float)Ambient.b/255;
 
 		int i;
+		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
+
 		for(i=0;i<Surfaces.getCount();i++) {
 			ColorizableSurface *surface=Surfaces[i];
+
+			if(surface->Mode!=currentdrawmode) {
+				currentdrawmode=surface->Mode;
+
+				if(currentdrawmode==BasicSurface::Normal) {
+					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE );
+					glClear(GL_COLOR_BUFFER_BIT);
+					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+				}
+				else if(currentdrawmode==BasicSurface::AlphaOnly) {
+					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+					glClear(GL_COLOR_BUFFER_BIT);
+					glBlendFunc(GL_DST_COLOR, GL_ZERO);
+				}
+				else if(currentdrawmode==BasicSurface::UseDestinationAlpha) {
+					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE );
+					glBlendFunc(GL_DST_ALPHA,GL_ONE_MINUS_DST_ALPHA);
+				}
+			}
 			glColor4f(surface->Color.r*CurrentLayerColor.r,surface->Color.g*CurrentLayerColor.g,surface->Color.b*CurrentLayerColor.b,surface->Color.a*CurrentLayerColor.a);
 			glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
 			glBegin(GL_QUADS);

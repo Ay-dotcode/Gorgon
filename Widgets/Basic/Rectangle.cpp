@@ -43,6 +43,7 @@ namespace gge { namespace widgets {
 		RectangularGraphic2DSequenceProvider * l=NULL, *c=NULL, * r=NULL;
 		RectangularGraphic2DSequenceProvider *bl=NULL, *b=NULL, *br=NULL;
 		bool istiled=true;
+		SGuid mask;
 		RectangleResource::TilingInfo tile;
 		tile.Top=true;
 		tile.Left=true;
@@ -65,6 +66,7 @@ namespace gge { namespace widgets {
 				g.Load(Data);
 			}
 			else if(gid==GID::Rectangle_Props) {
+				mask.Load(Data);
 				tile.Center_Horizontal=ReadFrom<int>(Data)!=0;
 				tile.Center_Vertical=ReadFrom<int>(Data)!=0;
 				tile.Top=ReadFrom<int>(Data)!=0;
@@ -72,8 +74,8 @@ namespace gge { namespace widgets {
 				tile.Left=ReadFrom<int>(Data)!=0;
 				tile.Right=ReadFrom<int>(Data)!=0;
 
-				if(size>24)
-					EatChunk(Data,size-24);
+				if(size>32)
+					EatChunk(Data,size-32);
 			}
 			else if(gid==resource::GID::Animation) {
 				anims.push_back(LoadAnimationResource(File, Data, size));
@@ -102,6 +104,8 @@ namespace gge { namespace widgets {
 			rectangle->Subitems.Add(*i, rectangle->Subitems.HighestOrder()+1);
 		}
 
+		rectangle->mask=mask;
+		rectangle->file=&File;
 		return rectangle;
 	}
 
@@ -202,6 +206,121 @@ namespace gge { namespace widgets {
 		);
 
 		br->Draw(Target, X+(W-br->GetWidth()), Y+(H-br->GetHeight()));
+	}
+
+	void MaskedRectangle::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) {
+
+		RectangleResource::TilingInfo tiling=parent.Tiling;
+
+		Target.SetDrawMode(graphics::BasicSurface::AlphaOnly);
+		Mask->DrawIn(Target, X,Y, W,H);
+		Target.SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
+
+		//CENTER
+		c->Draw(Target, Tiling2D::Tile(tiling.Center_Horizontal, tiling.Center_Vertical), 
+			X+l->GetWidth(), Y+t->GetHeight(),
+			W-(l->GetWidth()+r->GetWidth()), H-(t->GetHeight()+b->GetHeight())
+		);
+
+		Target.SetDrawMode(graphics::BasicSurface::Normal);
+
+
+
+		//TOP
+		tl->Draw(Target, X, Y);
+
+		t->Draw(Target, Tiling2D::Tile(tiling.Top, false), 
+			X+tl->GetWidth(), Y,
+			W - (tl->GetWidth() + tr->GetWidth()), tr->GetHeight()
+		);
+
+		tr->Draw(Target, X+(W-tr->GetWidth()), Y);
+
+
+
+		//CENTER
+		l->Draw(Target, Tiling2D::Tile(false, tiling.Left), 
+			X, Y+tl->GetHeight(),
+			l->GetWidth(), H-(tl->GetHeight()+bl->GetHeight())
+		);
+
+		r->Draw(Target, Tiling2D::Tile(false, tiling.Right), 
+			X+(H-r->GetWidth()), Y+tr->GetHeight(),
+			r->GetWidth(), H-(tr->GetHeight()+br->GetHeight())
+		);
+
+
+
+		//BOTTOM
+		bl->Draw(Target, X, Y+(H-bl->GetHeight()));
+
+		b->Draw(Target, Tiling2D::Tile(tiling.Bottom, false), 
+			X+tl->GetWidth(), Y+(H-b->GetHeight()),
+			W - (bl->GetWidth() + br->GetWidth()), br->GetHeight()
+		);
+
+		br->Draw(Target, X+(W-br->GetWidth()), Y+(H-br->GetHeight()));
+	}
+
+	void MaskedRectangle::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) {
+		Target.SetDrawMode(graphics::BasicSurface::AlphaOnly);
+		Mask->DrawIn(Target, controller, X,Y, W,H);
+		Target.SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
+
+		RectangleResource::TilingInfo tiling=parent.Tiling;
+		int w=W, h=H;
+
+		W=controller.CalculateWidth(W, c->GetWidth(), l->GetWidth()+r->GetWidth());
+		H=controller.CalculateHeight(H, c->GetWidth(), t->GetHeight()+b->GetHeight());
+
+		Point p=Alignment::CalculateLocation(controller.Align, utils::Rectangle(X,Y,W,H),Size(w,h));
+		X=p.x;
+		Y=p.y;
+
+		//CENTER
+		c->Draw(Target, Tiling2D::Tile(tiling.Center_Horizontal, tiling.Center_Vertical), 
+			X, Y,
+			W, H
+		);
+
+		Target.SetDrawMode(graphics::BasicSurface::Normal);
+		//return;
+
+		//TOP
+		tl->Draw(Target, X, Y);
+
+		t->Draw(Target, Tiling2D::Tile(tiling.Top, false), 
+			X+tl->GetWidth(), Y,
+			W - (tl->GetWidth() + tr->GetWidth()), tr->GetHeight()
+		);
+
+		tr->Draw(Target, X+(W-tr->GetWidth()), Y);
+
+
+
+		//CENTER
+		l->Draw(Target, Tiling2D::Tile(false, tiling.Left), 
+			X, Y+tl->GetHeight(),
+			l->GetWidth(), H-(tl->GetHeight()+bl->GetHeight())
+		);
+
+		r->Draw(Target, Tiling2D::Tile(false, tiling.Right), 
+			X+(W-r->GetWidth()), Y+tr->GetHeight(),
+			r->GetWidth(), H-(tr->GetHeight()+br->GetHeight())
+		);
+
+
+
+		//BOTTOM
+		bl->Draw(Target, X, Y+(H-bl->GetHeight()));
+
+		b->Draw(Target, Tiling2D::Tile(tiling.Bottom, false), 
+			X+tl->GetWidth(), Y+(H-b->GetHeight()),
+			W - (bl->GetWidth() + br->GetWidth()), br->GetHeight()
+		);
+
+		br->Draw(Target, X+(W-br->GetWidth()), Y+(H-br->GetHeight()));
+
 	}
 
 	animation::ProgressResult::Type Rectangle::Progress() {

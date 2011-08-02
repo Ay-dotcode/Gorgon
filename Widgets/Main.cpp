@@ -11,6 +11,7 @@ namespace gge { namespace widgets {
 
 
 	void RegisterLoaders(resource::File &File) {
+		File.AddGameLoaders();
 		File.Loaders.Add(new resource::ResourceLoader(GID::Line, LoadLineResource)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::Rectangle, LoadRectangleResource)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::ResizableObj, LoadResizableObjectResource)); 

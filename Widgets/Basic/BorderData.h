@@ -48,6 +48,10 @@ namespace gge { namespace widgets {
 		utils::Margins Margins;
 		utils::Margins Padding;
 		utils::Margins BorderWidth;
+		
+		virtual ~BorderData() {
+			object->DeleteAnimation();
+		}
 
 	protected:
 		resource::ResizableObject *object;
@@ -123,6 +127,9 @@ namespace gge { namespace widgets {
 		bool AutoBorderWidth;
 
 		virtual void Prepare(GGEMain &main);
+
+		virtual ~BorderDataResource() {
+		}
 
 	protected:
 		BorderDataResource() : object(NULL) { }

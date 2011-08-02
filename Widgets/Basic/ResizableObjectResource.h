@@ -27,6 +27,10 @@ namespace gge { namespace widgets {
 
 		graphics::SizeController2D SizeController;
 
+		virtual	~ResizableObject() {
+			delete object;
+		}
+
 	protected:
 		resource::ResizableObject *object;
 		virtual animation::ProgressResult::Type Progress() 
@@ -100,6 +104,9 @@ namespace gge { namespace widgets {
 		graphics::SizeController2D SizeController;
 
 		virtual void Prepare(GGEMain &main);
+
+		virtual ~ResizableObjectResource() {
+		}
 
 	protected:
 		ResizableObjectResource() : object(NULL) { }

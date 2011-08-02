@@ -4,10 +4,14 @@
 #include "..\..\Resource\ResizableObject.h"
 #include "..\Definitions.h"
 #include "..\..\Utils\Margins.h"
+#include "..\..\Resource\ResourceFile.h"
 
 namespace gge { namespace widgets {
 
 	class RectangleResource;
+
+	RectangleResource *LoadRectangleResource(resource::File& File, std::istream &Data, int Size);
+
 
 	class Rectangle : public resource::ResizableObject {
 	public:
@@ -18,6 +22,18 @@ namespace gge { namespace widgets {
 
 		utils::Margins BorderWidth() {
 			return utils::Margins(l->GetWidth(), t->GetHeight(), r->GetWidth(), b->GetHeight());
+		}
+
+		virtual ~Rectangle() { 
+			tl->DeleteAnimation();  
+			t->DeleteAnimation();
+			tr->DeleteAnimation();
+			l->DeleteAnimation();
+			c->DeleteAnimation();
+			r->DeleteAnimation();
+			bl->DeleteAnimation();
+			b->DeleteAnimation();
+			br->DeleteAnimation();
 		}
 
 	protected:
@@ -40,9 +56,27 @@ namespace gge { namespace widgets {
 		;
 	};
 
+	class MaskedRectangle : public Rectangle {
+	public:
+		MaskedRectangle(RectangleResource &parent, animation::AnimationTimer &controller, RectangleResource *mask, bool owner=false);
+		MaskedRectangle(RectangleResource &parent, RectangleResource *mask, bool create=false);
+
+		Rectangle *Mask;
+
+		virtual ~MaskedRectangle() {
+			delete Mask;
+		}
+
+	protected:
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H);
+
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H);
+	};
+
 	class RectangleResource : public resource::ResourceBase, virtual public resource::ResizableObjectProvider, 
 		virtual public animation::DiscreteAnimationProvider 
 	{
+		friend RectangleResource *LoadRectangleResource(resource::File& File, std::istream &Data, int Size);
 	public:
 
 		struct TilingInfo {
@@ -63,16 +97,31 @@ namespace gge { namespace widgets {
 			Tiling(Tiling),
 			tl(&tl), t (&t ), tr(&tr),
 			l ( &l), c (&c ), r ( &r),
-			bl(&bl), b (&b ), br(&br)
+			bl(&bl), b (&b ), br(&br),
+			Mask(NULL)
 		{ }
 
 		virtual GID::Type getGID() const { return GID::Rectangle; }
 
-		virtual Rectangle &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return *new Rectangle(*this, controller,owner); }
-		virtual Rectangle &CreateAnimation(bool create=false) { return *new Rectangle(*this, create); }
+		virtual Rectangle &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) {
+			return CreateResizableObject(controller, owner);
+		}
+		virtual Rectangle &CreateAnimation(bool create=false) {
+			return CreateResizableObject(create);
+		}
 
-		virtual Rectangle &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { return *new Rectangle(*this, controller,owner); }
-		virtual Rectangle &CreateResizableObject(bool create=false) { return *new Rectangle(*this, create); }
+		virtual Rectangle &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { 
+			if(Mask==NULL)
+				return *new Rectangle(*this, controller,owner); 
+			else
+				return *new MaskedRectangle(*this, controller, Mask,owner); 
+		}
+		virtual Rectangle &CreateResizableObject(bool create=false) { 
+			if(Mask==NULL)
+				return *new Rectangle(*this, create); 
+			else
+				return *new MaskedRectangle(*this, Mask, create); 
+		}
 
 		const animation::RectangularGraphic2DSequenceProvider &GetTL() const { return *tl; }
 		animation::RectangularGraphic2DSequenceProvider &GetTL() { return *tl; }
@@ -134,13 +183,21 @@ namespace gge { namespace widgets {
 		virtual int		 StartOf(unsigned Frame) const { return c->StartOf(Frame); }
 		virtual	int		 EndOf(unsigned Frame) const { return c->EndOf(Frame); }
 
+		virtual void Prepare(GGEMain &main) {
+			ResourceBase::Prepare(main);
+			Mask=dynamic_cast<RectangleResource*>(file->Root().FindObject(mask));
+		}
 
+		RectangleResource *Mask;
 	protected:
 		animation::RectangularGraphic2DSequenceProvider 
 			*tl, *t , *tr,
 			*l , *c , *r ,
 			*bl, *b , *br
 		;
+
+		utils::SGuid mask;
+		resource::File *file;
 	};
 
 	inline int Rectangle::calculatewidth (int w) const {
@@ -193,6 +250,20 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	RectangleResource *LoadRectangleResource(resource::File& File, std::istream &Data, int Size);
+
+	inline MaskedRectangle::MaskedRectangle(RectangleResource &parent, animation::AnimationTimer &controller, RectangleResource *mask, bool owner/*=false*/) : 
+	Rectangle(parent, controller, owner) {
+		Mask=&mask->CreateResizableObject(controller);
+	}
+
+	inline MaskedRectangle::MaskedRectangle(RectangleResource &parent, RectangleResource *mask, bool create/*=false*/) : 
+	Rectangle(parent, create) {
+		if(Controller)
+			Mask=&mask->CreateResizableObject(*Controller);
+		else
+			Mask=&mask->CreateResizableObject();
+	}
+
+
 
 }}

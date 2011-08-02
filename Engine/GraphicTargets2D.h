@@ -48,6 +48,9 @@ namespace gge { namespace graphics {
 		utils::Size GetSize() { 
 			return utils::Size(GetWidth(), GetHeight()); 
 		}
+		
+		virtual BasicSurface::DrawMode GetDrawMode() const = 0;
+		virtual void SetDrawMode(BasicSurface::DrawMode mode) = 0 ;
 	};
 
 	class ColorizableTarget {

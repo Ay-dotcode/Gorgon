@@ -345,8 +345,14 @@ namespace gge { namespace graphics {
 		////Whether this surface has its own texture coordinates
 		bool hasOwnTextureCoords;
 
+		enum DrawMode {
+			Normal,
+			AlphaOnly,
+			UseDestinationAlpha
+		} Mode;
+
 		////Empty constructor
-		BasicSurface() {
+		BasicSurface() : Mode(Normal) {
 			Texture=NULL;
 			hasOwnTextureCoords=false;
 			VertexCoords[0].z=0;
