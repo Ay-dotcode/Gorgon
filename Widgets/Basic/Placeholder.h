@@ -1,0 +1,43 @@
+#pragma once
+
+#include "..\..\Resource\ResourceBase.h"
+#include "..\Definitions.h"
+#include "..\..\Utils\Margins.h"
+#include "..\..\Utils\Size2D.h"
+
+
+namespace gge { namespace widgets {
+
+	class PlaceholderResource;
+
+	PlaceholderResource *LoadPlaceholderResource(resource::File& File, std::istream &Data, int Size);
+
+	struct Placeholder {
+		enum PlaceholderSizingMode {
+			//Obtainer is free to use any size
+			Free=0,
+			//Obtainer should try to use the minimum size
+			Specified,
+			//Obtainer should allocate maximum size available for this placeholder
+			MaximumAvailable,
+			//Size of the placeholder should be determined using contents
+			Contents
+		};
+
+		Alignment::Type Align;		
+		utils::Margins Margins;
+		PlaceholderSizingMode SizingMode;
+		utils::Size Minimum;
+
+		Placeholder() : Align(Alignment::Middle_Center), Margins(0), SizingMode(Free), Minimum(0,0)
+		{ }
+
+	};
+
+	class PlaceholderResource : public Placeholder, public resource::ResourceBase {
+	public:
+
+		virtual GID::Type getGID() const { return GID::Placeholder; }
+	};
+
+}}

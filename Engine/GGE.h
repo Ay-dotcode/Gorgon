@@ -16,8 +16,7 @@ typedef unsigned short      WORD;
 ////Gorgon Game Engine
 namespace gge {
 
-	class Alignment {
-	public:
+	namespace Alignment {
 		enum Type {
 			Left	= B8(00001000),
 			Right	= B8(00010000),
@@ -46,7 +45,7 @@ namespace gge {
 		static const int Mask_Invalid		= ~Mask_Used;
 
 		template<class T_>
-		static utils::basic_Point2D<T_> CalculateLocation(Type Align, utils::basic_Rectangle2D<T_> object, utils::basic_Size2D<T_> target) {
+		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, utils::basic_Rectangle2D<T_> object, utils::basic_Size2D<T_> target) {
 			utils::basic_Point2D<T_> p=object.TopLeft();
 
 			if(isCenter(Align))
@@ -62,31 +61,31 @@ namespace gge {
 			return p;
 		}
 
-		static bool isLeft(Type t) {
+		inline bool isLeft(Type t) {
 			return (t&Mask_Horizontal) == Left;
 		}
 
-		static bool isRight(Type t) {
+		inline bool isRight(Type t) {
 			return (t&Mask_Horizontal) == Right;
 		}
 
-		static bool isCenter(Type t) {
+		inline bool isCenter(Type t) {
 			return (t&Mask_Horizontal) == Center;
 		}
 
-		static bool isTop(Type t) {
+		inline bool isTop(Type t) {
 			return (t&Mask_Vertical) == Top;
 		}
 
-		static bool isBottom(Type t) {
+		inline bool isBottom(Type t) {
 			return (t&Mask_Vertical) == Bottom;
 		}
 
-		static bool isMiddle(Type t) {
+		inline bool isMiddle(Type t) {
 			return (t&Mask_Vertical) == Middle;
 		}
 
-		static bool isValid(Type t) {
+		inline bool isValid(Type t) {
 			if(t&Mask_Invalid)
 				return false;
 

@@ -5,6 +5,7 @@
 #include "Basic\Rectangle.h"
 #include "Basic\ResizableObjectResource.h"
 #include "Basic\BorderData.h"
+#include "Basic\Placeholder.h"
 
 namespace gge { namespace widgets {
 
@@ -14,6 +15,7 @@ namespace gge { namespace widgets {
 		File.Loaders.Add(new resource::ResourceLoader(GID::Rectangle, LoadRectangleResource)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::ResizableObj, LoadResizableObjectResource)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::BorderData, LoadBorderDataResource)); 
+		File.Loaders.Add(new resource::ResourceLoader(GID::Placeholder, LoadPlaceholderResource)); 
 	}
 
 	void Init(GGEMain &Main) {
