@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="gge::resource::ResourceBase" Collapsed="true">
+    <Position X="6.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAKACgACBQAQAAAAAAAAEAEAEAAAAAAAAgAgAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Resource\ResourceBase.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::resource::ResizableObject" Collapsed="true">
+    <Position X="7.75" Y="2.5" Width="2" />
+    <InheritanceLine Type="gge::graphics::SizelessGraphic2D">
+      <InheritanceModifierLabel ManuallyPlaced="true">
+        <Position X="-0.909" Y="0.06" />
+      </InheritanceModifierLabel>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Resource\ResizableObject.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::resource::ResizableObjectProvider" Collapsed="true">
+    <Position X="7.25" Y="9.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Resource\ResizableObject.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::animation::RectangularGraphic2DSequenceProvider" Collapsed="true">
+    <Position X="10.5" Y="9.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Animation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::graphics::ImageData" Collapsed="true">
+    <Position X="13.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAJIAAAAAAAAAAAMBAAAAAABAAAAAAAEEAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Image.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::graphics::SizelessGraphic2D" Collapsed="true">
+    <Position X="9.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIACAQAAAAABQAAAAAAAAAAAAAgAAAAAAIACAAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Graphic2D.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::animation::AnimationBase" Collapsed="true">
+    <Position X="7" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQgAgAAAAAAIAAEAEAAAAAAAABAAACSAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Animation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::animation::DiscreteAnimationProvider" Collapsed="true">
+    <Position X="10.75" Y="10.5" Width="2.25" />
+    <InheritanceLine Type="gge::animation::AnimationProvider">
+      <InheritanceModifierLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.06" Y="0.067" Height="0.182" Width="0.802" />
+      </InheritanceModifierLabel>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAQAAgAAAAAAABAAAAAAQA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Animation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::graphics::Image2D" Collapsed="true">
+    <Position X="11.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Graphic2D.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::graphics::RectangularGraphic2D" Collapsed="true">
+    <Position X="11.25" Y="2" Width="2" />
+    <InheritanceLine Type="gge::graphics::Graphic2D">
+      <InheritanceModifierLabel ManuallyPlaced="true">
+        <Position X="-0.882" Y="0.074" />
+      </InheritanceModifierLabel>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAgCAAAIAAABAAAAAAAEAAAAAAEAAAQA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Graphic2D.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::graphics::Graphic2D" Collapsed="true">
+    <Position X="13" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Graphic2D.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::animation::AnimationProvider" Collapsed="true">
+    <Position X="8.75" Y="12.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Animation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::graphics::ImageTexture" Collapsed="true">
+    <Position X="11.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACASAAAAAAAABAIAAABAAAAAAAAAAAIIAEAAAQA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Image.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="gge::animation::RectangularGraphic2DAnimation" Collapsed="true">
+    <Position X="4.25" Y="2.5" Width="2.5" />
+    <InheritanceLine Type="gge::graphics::RectangularGraphic2D" ManuallyRouted="true" FixedFromPoint="true">
+      <Path>
+        <Point X="11.312" Y="2.82" />
+        <Point X="11.312" Y="3.695" />
+        <Point X="5.5" Y="3.695" />
+        <Point X="5.5" Y="3.32" />
+      </Path>
+    </InheritanceLine>
+    <InheritanceLine Type="gge::animation::AnimationBase">
+      <InheritanceModifierLabel ManuallyPlaced="true">
+        <Position X="-0.877" Y="0.069" />
+      </InheritanceModifierLabel>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>E:\Programs\Games\GGE-Test\Sources\GGE\Engine\Animation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

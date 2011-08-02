@@ -74,6 +74,11 @@ namespace gge { namespace utils {
 		////Calculates and returns the total margins in Y axis
 		T_ TotalY() const { return Bottom+Top;  }
 
+		////Calculates and returns the total margins in X axis
+		T_ Horizontal() const  { return Right+Left; }
+		////Calculates and returns the total margins in Y axis
+		T_ Vertical() const { return Bottom+Top;  }
+
 		//scale, translate, rotate?, +, +=, -, -=, &&, ||
 		basic_Margins2D operator +(basic_Margins2D margin) {
 			return basic_Margins2D(Left+margin.Left, Top+margin.Top, Right+margin.Right, Bottom+margin.Bottom);

@@ -99,7 +99,13 @@ namespace gge { namespace animation {
 		double mprogress;
 	};
 
-	class DiscreteInfoProvider {
+	class AnimationProvider {
+	public:
+		virtual AnimationBase &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
+		virtual AnimationBase &CreateAnimation(bool create=false) = 0;
+	};
+
+	class DiscreteAnimationProvider : virtual public AnimationProvider {
 	public:
 		//if there is a single frame, duration should be 0
 		virtual int GetDuration() const					= 0;
@@ -115,7 +121,7 @@ namespace gge { namespace animation {
 
 	class DiscreteController : public AnimationController {
 	public:
-		DiscreteController(DiscreteInfoProvider &info) : AnimationController(), 
+		DiscreteController(DiscreteAnimationProvider &info) : AnimationController(), 
 			islooping(true), info(info), pauseatframe(-1), currentframe(-1)
 		{ }
 
@@ -162,7 +168,7 @@ namespace gge { namespace animation {
 		bool islooping;
 		int pauseatframe;
 		int currentframe;
-		DiscreteInfoProvider &info;
+		DiscreteAnimationProvider &info;
 	};
 
 	class AnimationBase {
@@ -186,22 +192,29 @@ namespace gge { namespace animation {
 		AnimationTimer *Controller;
 		bool owner;
 	};
+	
+	class RectangularGraphic2DAnimation : virtual public graphics::RectangularGraphic2D, virtual public AnimationBase {
 
+	};
+
+/*
 	class Graphic2DAnimation : public virtual AnimationBase, public graphics::RectangularGraphic2D {
 	protected:
 
 		Graphic2DAnimation() : AnimationBase() { }
 		Graphic2DAnimation(AnimationTimer &Controller) : AnimationBase(Controller) { }
-	};
+	};*/
 
-	class AnimationProvider {
+	//class Graphic2DAnimationProvider : public AnimationProvider {
+	//public:
+	//	virtual Graphic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
+	//	virtual Graphic2DAnimation &CreateAnimation(bool create=false) = 0;
+	//};
+
+ 	class RectangularGraphic2DSequenceProvider : virtual public DiscreteAnimationProvider {
 	public:
-		virtual AnimationBase &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
-		virtual AnimationBase &CreateAnimation(bool create=false) = 0;
-	};
-
-	class Graphic2DAnimationProvider : public AnimationProvider {
-		virtual Graphic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
-		virtual Graphic2DAnimation &CreateAnimation(bool create=false) = 0;
+		virtual RectangularGraphic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
+		virtual RectangularGraphic2DAnimation &CreateAnimation(bool create=false) = 0;
+		virtual graphics::RectangularGraphic2D &ImageAt(int time)=0;
 	};
 } }

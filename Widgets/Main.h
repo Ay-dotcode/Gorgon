@@ -1,0 +1,20 @@
+#pragma once
+
+//This file is the main entry file of Widgets, 
+// this contains the function that allows loading
+// widget files
+// 
+
+#include "..\Resource\ResourceFile.h"
+#include "..\Engine\GGEMain.h"
+
+
+namespace gge { namespace widgets {
+
+	void RegisterLoaders(resource::File &File);
+	inline void RegisterLoaders(resource::File *File) { RegisterLoaders(*File); }
+
+	void Init(GGEMain &Main);
+
+}}
+

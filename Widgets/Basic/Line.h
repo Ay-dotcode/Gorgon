@@ -1,0 +1,162 @@
+#pragma once
+
+//Line is a primitive resizable object. It can either be
+// horizontal or vertical. It is composed of 3 parts
+// and center part can either be tiled or scaled.
+// 
+
+#include "..\..\Resource\ResourceBase.h"
+#include "..\Definitions.h"
+#include "..\..\Resource\ResizableObject.h"
+#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\NullImage.h"
+#include "..\..\Engine\Animation.h"
+#include "..\..\Utils\Margins.h"
+
+
+
+namespace gge { namespace widgets {
+
+	class LineResource;
+
+	class Line : public resource::ResizableObject {
+	public:
+		Line(LineResource &parent, animation::AnimationTimer &controller, bool owner=false);
+		Line(LineResource &parent, bool create=false);
+
+		LineResource &parent;
+
+		utils::Margins BorderWidth();
+
+	protected:
+		virtual animation::ProgressResult::Type Progress();
+
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H); 
+
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H);;
+
+		virtual int calculatewidth (int w=-1) const;
+		virtual int calculateheight(int h=-1) const;
+
+		virtual int calculatewidth (const graphics::SizeController2D &controller, int w=-1) const;
+		virtual int calculateheight(const graphics::SizeController2D &controller, int h=-1) const;
+
+		animation::RectangularGraphic2DAnimation *start, *loop, *end;
+	};
+
+
+	class LineResource : public resource::ResourceBase, virtual public resource::ResizableObjectProvider, 
+		virtual public animation::DiscreteAnimationProvider 
+	{
+		friend LineResource *LoadLineResource(resource::File& File, std::istream &Data, int Size);
+	public:
+
+		enum OrientationType {
+			Horizontal=0,
+			Vertical
+		};
+
+		LineResource(animation::RectangularGraphic2DSequenceProvider &start ,animation::RectangularGraphic2DSequenceProvider &loop, 
+			animation::RectangularGraphic2DSequenceProvider &end, OrientationType Orientation=Horizontal, bool IsLoopTiled=true) : 
+			Orientation(Orientation), IsLoopTiled(IsLoopTiled),
+			start(&start), loop(&loop), end(&end)
+		{ }
+
+		virtual GID::Type getGID() const { return GID::Line; }
+
+		virtual Line &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return *new Line(*this, controller,owner); }
+		virtual Line &CreateAnimation(bool create=false) { return *new Line(*this, create); }
+
+		virtual Line &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { return *new Line(*this, controller,owner); }
+		virtual Line &CreateResizableObject(bool create=false) { return *new Line(*this, create); }
+
+		OrientationType Orientation;
+
+		bool IsVertical() { return Orientation==Vertical; }
+
+		bool IsHorizontal() { return Orientation==Horizontal; }
+
+		const animation::RectangularGraphic2DSequenceProvider &GetStart() const { return *start; }
+		animation::RectangularGraphic2DSequenceProvider &GetStart() { return *start; }
+		void SetStart(animation::RectangularGraphic2DSequenceProvider &val) { start = &val; }
+
+		const animation::RectangularGraphic2DSequenceProvider &GetLoop() const { return *loop; }
+		animation::RectangularGraphic2DSequenceProvider &GetLoop() { return *loop; }
+		void SetLoop(animation::RectangularGraphic2DSequenceProvider &val) { loop = &val; }
+
+		const animation::RectangularGraphic2DSequenceProvider &GetEnd() const { return *end; }
+		animation::RectangularGraphic2DSequenceProvider &GetEnd() { return *end; }
+		void SetEnd(animation::RectangularGraphic2DSequenceProvider &val) { end = &val; }
+
+		void SetSources(animation::RectangularGraphic2DSequenceProvider &Start ,animation::RectangularGraphic2DSequenceProvider &Loop, animation::RectangularGraphic2DSequenceProvider &End) {
+			start=&Start;
+			loop=&Loop;
+			end=&End;
+		}
+
+		bool IsLoopTiled;
+
+		virtual int GetDuration() const	 { return loop->GetDuration(); }
+		virtual int GetDuration(unsigned Frame) const { return loop->GetDuration(Frame); }
+		virtual int GetNumberofFrames() const { return loop->GetNumberofFrames(); }
+
+		virtual int		 FrameAt(unsigned Time) const { return loop->FrameAt(Time); }
+		virtual int		 StartOf(unsigned Frame) const { return loop->StartOf(Frame); }
+		virtual	int		 EndOf(unsigned Frame) const { return loop->EndOf(Frame); }
+
+
+	protected:
+		animation::RectangularGraphic2DSequenceProvider *start, *loop, *end;
+	};
+
+
+	inline int Line::calculatewidth (int w) const {
+		return (parent.IsHorizontal() ? w : loop->GetWidth()); 
+	}
+	inline int Line::calculateheight(int h) const { 
+		return (parent.IsVertical() ? h : loop->GetHeight()); 
+	}
+	inline int Line::calculatewidth (const graphics::SizeController2D &controller, int w) const  { 
+		if(parent.IsHorizontal())
+			return controller.CalculateWidth(w, loop->GetWidth(), start->GetWidth()+end->GetWidth());
+		else
+			return controller.CalculateWidth(w, loop->GetWidth());
+	}
+	inline int Line::calculateheight (const graphics::SizeController2D &controller, int h) const  { 
+		if(parent.IsVertical())
+			return controller.CalculateHeight(h, loop->GetHeight(), start->GetHeight()+end->GetHeight());
+		else
+			return controller.CalculateHeight(h, loop->GetHeight());
+	}
+
+	inline Line::Line(LineResource &parent, animation::AnimationTimer &controller, bool owner/*=false*/) : parent(parent), AnimationBase(controller, owner) {
+		start=&parent.GetStart().CreateAnimation(controller);
+		loop=&parent.GetLoop().CreateAnimation(controller);
+		end=&parent.GetEnd().CreateAnimation(controller);
+	}
+
+	inline Line::Line(LineResource &parent, bool create/*=false*/) : parent(parent), AnimationBase(create) {
+		if(Controller) {
+			start=&parent.GetStart().CreateAnimation(*Controller);
+			loop=&parent.GetLoop().CreateAnimation(*Controller);
+			end=&parent.GetEnd().CreateAnimation(*Controller);
+		}
+		else {
+			start=&parent.GetStart().CreateAnimation();
+			loop=&parent.GetLoop().CreateAnimation();
+			end=&parent.GetEnd().CreateAnimation();
+		}
+	}
+
+
+	inline utils::Margins Line::BorderWidth() {
+		if(parent.Orientation==LineResource::Horizontal)
+			return utils::Margins(start->GetWidth(), 0, end->GetWidth(),0);
+		else
+			return utils::Margins(0, start->GetHeight(), 0, end->GetHeight());
+	}
+	
+
+	LineResource *LoadLineResource(resource::File& File, std::istream &Data, int Size);
+
+}}

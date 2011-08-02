@@ -37,6 +37,7 @@ namespace gge { namespace resource {
 		static const Type Image_Data			= 0x02020501;
 		static const Type Image_Cmp_Data		= 0x02020601;
 		static const Type Image_Palette			= 0x02020502;
+		static const Type Image_NULL			= 0x0202A100;
 
 		static const Type Data					= 0x02030000;
 		static const Type Data_Text				= 0x02030C01;

@@ -75,39 +75,39 @@ namespace gge { namespace graphics {
 
 
 		//Draw size controlled
-		void DrawIn(ImageTarget2D &target, SizeController2D &controller, int X, int Y, int W, int H) {
+		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, int X, int Y, int W, int H) {
 			drawin(target, controller, X,Y, W,H);
 		}
-		void DrawIn(ImageTarget2D *target, SizeController2D &controller, int X, int Y, int W, int H) {
+		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, int X, int Y, int W, int H) {
 			drawin(*target, controller, X,Y, W,H);
 		}
 
-		void DrawIn(ImageTarget2D &target, SizeController2D &controller, utils::Point p, int W, int H) {
+		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, utils::Point p, int W, int H) {
 			drawin(target, controller, p.x,p.y, W,H);
 		}
-		void DrawIn(ImageTarget2D *target, SizeController2D &controller, utils::Point p, int W, int H) {
+		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, utils::Point p, int W, int H) {
 			drawin(*target, controller, p.x,p.y, W,H);
 		}
 
-		void DrawIn(ImageTarget2D &target, SizeController2D &controller, int X, int Y, utils::Size s) {
+		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, int X, int Y, utils::Size s) {
 			drawin(target, controller, X,Y, s.Width, s.Height);
 		}
-		void DrawIn(ImageTarget2D *target, SizeController2D &controller, int X, int Y, utils::Size s) {
+		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, int X, int Y, utils::Size s) {
 			drawin(*target, controller, X,Y, s.Width, s.Height);
 		}
 
-		void DrawIn(ImageTarget2D &target, SizeController2D &controller, utils::Point p, utils::Size s) {
+		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, utils::Point p, utils::Size s) {
 			drawin(target, controller, p.x,p.y, s.Width, s.Height);
 		}
-		void DrawIn(ImageTarget2D *target, SizeController2D &controller, utils::Point p, utils::Size s) {
+		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, utils::Point p, utils::Size s) {
 			drawin(*target, controller, p.x,p.y, s.Width, s.Height);
 		}
 
 
-		void DrawIn(ImageTarget2D &target, SizeController2D &controller, utils::Rectangle r) {
+		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, utils::Rectangle r) {
 			drawin(target, controller, r.Left,r.Top, r.Width, r.Height);
 		}
-		void DrawIn(ImageTarget2D *target, SizeController2D &controller, utils::Rectangle r) {
+		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, utils::Rectangle r) {
 			drawin(*target, controller, r.Left,r.Top, r.Width, r.Height);
 		}
 
@@ -142,7 +142,7 @@ namespace gge { namespace graphics {
 
 	protected:
 		virtual void drawin(ImageTarget2D& Target, int X, int Y, int W, int H) = 0;
-		virtual void drawin(ImageTarget2D& Target, SizeController2D &controller, int X, int Y, int W, int H) = 0;
+		virtual void drawin(ImageTarget2D& Target, const SizeController2D &controller, int X, int Y, int W, int H) = 0;
 
 		virtual int calculatewidth (int w=-1) const = 0;
 		virtual int calculateheight(int h=-1) const = 0;
@@ -153,7 +153,7 @@ namespace gge { namespace graphics {
 
 
 	////This is a basic drawing object
-	class RectangularGraphic2D : public Graphic2D, public SizelessGraphic2D {
+	class RectangularGraphic2D : public virtual Graphic2D, public virtual SizelessGraphic2D {
 	public:
 		//public methods
 
@@ -388,5 +388,9 @@ namespace gge { namespace graphics {
 		virtual int getheight() const = 0;
 	};
 
+	class Image2D : public virtual RectangularGraphic2D {
+	public:
+		virtual GLTexture &GetTexture() = 0;
+	};
 
 } }

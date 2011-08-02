@@ -31,7 +31,7 @@ namespace gge { namespace resource {
 		virtual ~ResourceBase();
 		
 		////This function shall save this resource to the given file
-		virtual bool Save(File &File, std::ostream &Data)=0;
+		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////This function tests whether this object has the given utils::SGuid
 		bool isEqual(const utils::SGuid &guid) const { return guid==this->guid; }

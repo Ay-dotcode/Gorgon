@@ -117,6 +117,8 @@ namespace gge {
 		void		 InitializeAnimation();
 		////Initializes Pointer subsystem. Before calling this function, pointers cannot be used
 		void		 InitializePointer();
+		////Initializes Pointer subsystem. Before calling this function, pointers cannot be used
+		void		 InitializeResource();
 		//void		 InitializeWidgets();
 
 		////Registers a signal handler to be called in every given time. Exact time passed from the

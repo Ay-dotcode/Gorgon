@@ -32,7 +32,7 @@ namespace gge { namespace resource {
 				font->guid.Load(Data);
 			}
 			else if(gid==GID::Font_Image) {
-				ImageResource *img=(ImageResource*)LoadImageResource(File,Data,size);
+				ImageResource *img=LoadImageResource(File,Data,size);
 
 				for(i=0;i<256;i++)
 					if(chmap[i]==cpos)

@@ -1,5 +1,6 @@
 #include "ImageResource.h"
 #include "ResourceFile.h"
+#include "NullImage.h"
 #include "../External/LZMA/LzmaDecode.h"
 #include "../External/JPEG/jpeglib.h"
 #include "../External/PNG/png.h"
@@ -10,7 +11,7 @@ using namespace gge::graphics;
 using namespace std;
 
 namespace gge { namespace resource {
-	ResourceBase *LoadImageResource(File& File, istream &Data, int Size) {
+	ImageResource *LoadImageResource(File& File, istream &Data, int Size) {
 		int i;
 		ImageResource *img=new ImageResource;
 		img->File=&File;
@@ -18,7 +19,7 @@ namespace gge { namespace resource {
 		bool lateloading=false;
 		//BYTE *compressionprops;
 		graphics::ColorMode::Type m;
-
+		 
 		int target=Data.tellg()+Size;
 		while(Data.tellg()<target) {
 			int gid,size;
@@ -421,4 +422,5 @@ namespace gge { namespace resource {
 		return NoError;
 	}
 
+	NullImage *NullImage::ni;
 } }

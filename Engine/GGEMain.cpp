@@ -6,6 +6,7 @@
 #include "Animation.h"
 //#include "../Widgets/WidgetMain.h"
 #include "..\Utils\Rectangle2D.h"
+#include "..\Resource\Main.h"
 
 using namespace gge::utils;
 
@@ -125,6 +126,7 @@ namespace gge {
 		InitializeInput();
 
 		InitializeAnimation();
+		InitializeResource();
 		InitializePointer();
 		//InitializeWidgets();
 	}
@@ -140,6 +142,7 @@ namespace gge {
 		InitializeInput();
 
 		InitializeAnimation();
+		InitializeResource();
 		InitializePointer();
 		//InitializeWidgets();
 	}
@@ -171,6 +174,10 @@ namespace gge {
 	os::WindowHandle GGEMain::CreateWindow( string Title, os::IconHandle Icon, int X/*=0*/, int Y/*=0*/ ) {
 		Window=os::window::CreateWindow(SystemName,Title,Icon,Instance,X,Y,Width,Height,BitDepth,FullScreen);
 		return Window;
+	}
+
+	void GGEMain::InitializeResource() {
+		gge::resource::Init(*this);
 	}
 
 	//void GGEMain::InitializeWidgets() {

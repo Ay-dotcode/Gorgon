@@ -3,6 +3,9 @@
 #include "..\Utils\CastableManagedBuffer.h"
 #include "Graphics.h"
 #include "GraphicTargets2D.h"
+#include "Graphic2D.h"
+
+
 
 
 namespace gge { namespace graphics {
@@ -42,56 +45,51 @@ namespace gge { namespace graphics {
 	};
 
 
-	class TextureImage {
+	class ImageTexture : public virtual Image2D {
 	public:
 
-		virtual int getimagewidth () const { return Texture.W; }
-		virtual int getimageheight() const { return Texture.H; };
-
-		void drawto(ImageTarget2D &target, int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4,int Y4) {
-			target.Draw(&Texture,X1,Y1,X2,Y2,X3,Y3,X4,Y4);
+		ImageTexture() {
+			Texture.ID= 0;
+			Texture.W = 0;
+			Texture.H = 0;
 		}
 
-		void drawto(ColorizableImageTarget2D &target, int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4,int Y4, RGBint color) {
-			target.SetCurrentColor(color);
-			target.Draw(&Texture,X1,Y1,X2,Y2,X3,Y3,X4,Y4);
+		//void drawto(ImageTarget2D& Target, const SizeController2D &controller, int X, int Y, int W, int H);
+
+		virtual GLTexture &GetTexture() { return Texture; }
+
+	protected:
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) 
+		{ Target.Draw(&Texture,graphics::Tiling2D::Both, X,Y,W,H); } 
+
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) ;
+
+		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) 
+		{ Target.Draw(&Texture,X1,Y1,X2,Y2,X3,Y3,X4,Y4,S1,U1,S2,U2,S3,U3,S4,U4); }
+		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) 
+		{ Target.Draw(&Texture,X1,Y1,X2,Y2,X3,Y3,X4,Y4); }
+		virtual void drawstretched(graphics::ImageTarget2D& Target, int X, int Y, int W, int H)
+		{ Target.Draw(&Texture, X,Y,W,H); }
+		virtual void draw(graphics::ImageTarget2D& Target, graphics::Tiling2D::Type Tiling, int X, int Y, int W, int H)
+		{ Target.Draw(&Texture,Tiling, X,Y,W,H); }
+
+		virtual int getwidth () const { return Texture.W; }
+		virtual int getheight() const { return Texture.H; }
+
+
+		virtual int calculatewidth (int W=-1) const { return Texture.W; }
+		virtual int calculateheight(int H=-1) const { return Texture.H; }
+
+		virtual int calculatewidth(const SizeController2D &controller, int W=-1 ) const {
+			return controller.CalculateWidth(W, getwidth());
 		}
-
-		void drawto(ImageTarget2D &target, int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4,int Y4,float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) {
-			target.Draw(&Texture,X1,Y1,X2,Y2,X3,Y3,X4,Y4,S1,U1,S2,U2,S3,U3,S4,U4);
+		virtual int calculateheight(const SizeController2D &controller, int H=-1 ) const {
+			return controller.CalculateWidth(H, getheight());
 		}
-
-		void drawto(ColorizableImageTarget2D &target, int X1,int Y1, int X2,int Y2, int X3,int Y3, int X4,int Y4,float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4, RGBint color) {
-			target.SetCurrentColor(color);
-			target.Draw(&Texture,X1,Y1,X2,Y2,X3,Y3,X4,Y4,S1,U1,S2,U2,S3,U3,S4,U4);
-		}
-
-		void drawto(ImageTarget2D &target, int X,int Y, int W,int H) {
-			target.Draw(&Texture, X,Y,W,H);
-		}
-
-		void drawto(ColorizableImageTarget2D &target, int X,int Y, int W,int H, RGBint color) {
-			target.SetCurrentColor(color);
-			target.Draw(&Texture, X,Y,W,H);
-		}
-
-		void drawto(ImageTarget2D &target, Tiling2D::Type Tiling, int X,int Y, int W,int H) {
-			target.Draw(&Texture,Tiling, X,Y,W,H);
-		}
-
-		void drawto(ColorizableImageTarget2D &target, Tiling2D::Type Tiling, int X,int Y, int W,int H, RGBint color) {
-			target.SetCurrentColor(color);
-			target.Draw(&Texture,Tiling, X,Y,W,H);
-		}
-
-		void drawto(ImageTarget2D& Target, SizeController2D &controller, int X, int Y, int W, int H);
-
-		int calculatewidthusing(const SizeController2D &controller, int w) const;
-		int calculateheightusing(const SizeController2D &controller, int h) const;
-
-		GLTexture &GetTexture() { return Texture; }
 
 	protected:
 		GLTexture Texture;
 	};
+
+
 } }

@@ -415,7 +415,7 @@ namespace gge { namespace utils {
 		}
 
 		Wrapper &Add(T_ &item, const K_ &key = K_()) {
-			return Add(item, key);
+			return Add(&item, key);
 		}
 
 		SortedCollection &operator +=(T_ &item) {

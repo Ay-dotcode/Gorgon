@@ -15,6 +15,7 @@
 
 #include "../Utils/ManagedBuffer.h"
 #include "../Utils/Point2D.h"
+#include "../Utils/Bounds2D.h"
 #include "../Utils/Rectangle2D.h"
 #include "../Utils/Size2D.h"
 
@@ -77,10 +78,6 @@ namespace gge { namespace graphics {
 		int W;
 		////Height of the image (not texture's)
 		int H;
-		////Width of the texture
-		int TW;
-		////Height of the texture
-		int TH;
 
 		////S (texture x) position for the width of the image
 		float S;
@@ -96,19 +93,15 @@ namespace gge { namespace graphics {
 		void CalcuateCoordinates(int W,int H) {
 			this->W=W;
 			this->H=H;
-			TW=system::sl2(W);//+0.0001
-			TH=system::sl2(H);//+0.0001
-			S=(float)W/TW;
-			T=(float)H/TH;
 
 			ImageCoord[0].s=0;
 			ImageCoord[0].t=0;
-			ImageCoord[1].s=S;
+			ImageCoord[1].s=1;
 			ImageCoord[1].t=0;
-			ImageCoord[2].s=S;
-			ImageCoord[2].t=T;
+			ImageCoord[2].s=1;
+			ImageCoord[2].t=1;
 			ImageCoord[3].s=0;
-			ImageCoord[3].t=T;
+			ImageCoord[3].t=1;
 		}
 	};
 
@@ -459,6 +452,9 @@ namespace gge { namespace graphics {
 
 	class SizeController2D {
 	public:
+		SizeController2D() : HorizontalTiling(Single), VerticalTiling(Single), Align(Alignment::Middle_Center)
+		{ }
+
 		enum TilingType {
 			//Should work as Continous if object is sizable
 			Single					= B8(00000000),
@@ -472,7 +468,9 @@ namespace gge { namespace graphics {
 			Best		= B8(00100000),
 			*/
 
-			//An object can either be sizable or tilable
+			//An object can either be sizable or tilable, 
+			// Careful! there is code to be updated if 
+			// integrals and tiles are changed to be different
 			Continous			= B8(00000001),
 			Integral_Smaller	= B8(00001101),
 			Integral_Fill		= B8(00010101),
@@ -486,14 +484,64 @@ namespace gge { namespace graphics {
 
 		Alignment::Type Align;
 
-		class Integral {
-		public:
-			int Overhead;
-			int Increment;
-		} Horizontal, Vertical;
-
 		static const SizeController2D TileFit;
 		static const SizeController2D StretchFit;
+
+		int CalculateWidth(int W, int Increment) const {
+			if(HorizontalTiling==SizeController2D::Tile_Integral_Best) {
+				return (int)utils::Round((double)W/Increment)*Increment;
+			}
+			else if(HorizontalTiling==SizeController2D::Tile_Integral_Smaller) {
+				return (int)std::floor((double)W/Increment)*Increment;
+			}
+			else if(HorizontalTiling==SizeController2D::Tile_Integral_Fill) {
+				return (int)std::ceil((double)W/Increment)*Increment;
+			}
+			else
+				return W;
+		}
+
+		int CalculateWidth(int W, int Increment, int Overhead) const {
+			if(HorizontalTiling==SizeController2D::Integral_Best) {
+				return (int)utils::Round((double)(W-Overhead)/Increment)*Increment+Overhead;
+			}
+			else if(HorizontalTiling==SizeController2D::Integral_Smaller) {
+				return (int)std::floor((double)(W-Overhead)/Increment)*Increment+Overhead;
+			}
+			else if(HorizontalTiling==SizeController2D::Integral_Fill) {
+				return (int)std::ceil((double)(W-Overhead)/Increment)*Increment+Overhead;
+			}
+			else
+				return W;
+		}
+
+		int CalculateHeight(int H, int Increment) const {
+			if(VerticalTiling==SizeController2D::Tile_Integral_Best) {
+				return (int)utils::Round((double)H/Increment)*Increment;
+			}
+			else if(VerticalTiling==SizeController2D::Tile_Integral_Smaller) {
+				return (int)std::floor((double)H/Increment)*Increment;
+			}
+			else if(VerticalTiling==SizeController2D::Tile_Integral_Fill) {
+				return (int)std::ceil((double)H/Increment)*Increment;
+			}
+			else
+				return H;
+		}
+
+		int CalculateHeight(int H, int Increment, int Overhead) const {
+			if(VerticalTiling==SizeController2D::Integral_Best) {
+				return (int)utils::Round((double)(H-Overhead)/Increment)*Increment+Overhead;
+			}
+			else if(VerticalTiling==SizeController2D::Integral_Smaller) {
+				return (int)std::floor((double)(H-Overhead)/Increment)*Increment+Overhead;
+			}
+			else if(VerticalTiling==SizeController2D::Integral_Fill) {
+				return (int)std::ceil((double)(H-Overhead)/Increment)*Increment+Overhead;
+			}
+			else
+				return H;
+		}
 	};
 
 	

@@ -2,6 +2,8 @@
 
 #include "../Utils/UtilsBase.h"
 #include "../Utils/Binary.h"
+#include "../Utils/Size2D.h"
+#include "../Utils/Rectangle2D.h"
 
 
 typedef unsigned long       DWORD;
@@ -42,6 +44,23 @@ namespace gge {
 		static const int Mask_Horizontal	= B8(00111000);
 		static const int Mask_Used			= B8(00111111);
 		static const int Mask_Invalid		= ~Mask_Used;
+
+		template<class T_>
+		static utils::basic_Point2D<T_> CalculateLocation(Type Align, utils::basic_Rectangle2D<T_> object, utils::basic_Size2D<T_> target) {
+			utils::basic_Point2D<T_> p=object.TopLeft();
+
+			if(isCenter(Align))
+				p.x+=(target.Width-object.Width)/2;
+			else if(isRight(Align))
+				p.x+=target.Width-object.Width;
+
+			if(isMiddle(Align))
+				p.y+=(target.Height-object.Height)/2;
+			else if(isRight(Align))
+				p.y+=target.Height-object.Height;
+
+			return p;
+		}
 
 		static bool isLeft(Type t) {
 			return (t&Mask_Horizontal) == Left;

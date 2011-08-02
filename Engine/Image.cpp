@@ -8,12 +8,12 @@ using namespace gge::utils;
 
 namespace gge { namespace graphics {
 
-	void TextureImage::drawto(ImageTarget2D& Target, SizeController2D &controller, int X, int Y, int W, int H) {
+	void ImageTexture::drawin(ImageTarget2D& Target, const SizeController2D &controller, int X, int Y, int W, int H) {
 		bool HTile=false, VTile=false;
-		int w,h;
+		int w=W,h=H;
 		if(controller.HorizontalTiling==SizeController2D::Single) {
 			HTile=false;
-			w=getimagewidth();
+			w=getwidth();
 
 			if(Alignment::isCenter(controller.Align))
 				X+=(W-w)/2;
@@ -31,15 +31,7 @@ namespace gge { namespace graphics {
 		else {
 			HTile=true;
 
-			if(controller.HorizontalTiling==SizeController2D::Tile_Integral_Best) {
-				w=(int)Round((double)(W-controller.Horizontal.Overhead)/controller.Horizontal.Increment)*controller.Horizontal.Increment+controller.Horizontal.Overhead;
-			}
-			else if(controller.HorizontalTiling==SizeController2D::Tile_Integral_Smaller) {
-				w=(int)floor((double)(W-controller.Horizontal.Overhead)/controller.Horizontal.Increment)*controller.Horizontal.Increment+controller.Horizontal.Overhead;
-			}
-			else if(controller.HorizontalTiling==SizeController2D::Tile_Integral_Fill) {
-				w=(int)ceil((double)(W-controller.Horizontal.Overhead)/controller.Horizontal.Increment)*controller.Horizontal.Increment+controller.Horizontal.Overhead;
-			}
+			w=calculatewidth(controller, W);
 
 			if(Alignment::isCenter(controller.Align))
 				X+=(W-w)/2;
@@ -52,7 +44,7 @@ namespace gge { namespace graphics {
 
 		if(controller.VerticalTiling==SizeController2D::Single) {
 			VTile=false;
-			h=getimagewidth();
+			h=getheight();
 
 			if(Alignment::isMiddle(controller.Align))
 				Y+=(H-h)/2;
@@ -70,57 +62,17 @@ namespace gge { namespace graphics {
 		else {
 			VTile=true;
 
-			if(controller.VerticalTiling==SizeController2D::Tile_Integral_Best) {
-				h=(int)Round((double)(H-controller.Vertical.Overhead)/controller.Vertical.Increment)*controller.Vertical.Increment+controller.Vertical.Overhead;
-			}
-			else if(controller.VerticalTiling==SizeController2D::Tile_Integral_Smaller) {
-				h=(int)floor((double)(H-controller.Vertical.Overhead)/controller.Vertical.Increment)*controller.Vertical.Increment+controller.Vertical.Overhead;
-			}
-			else if(controller.VerticalTiling==SizeController2D::Tile_Integral_Fill) {
-				h=(int)ceil((double)(H-controller.Vertical.Overhead)/controller.Vertical.Increment)*controller.Vertical.Increment+controller.Vertical.Overhead;
-			}
+			h=calculateheight(controller, H);
 
 			if(Alignment::isMiddle(controller.Align))
 				Y+=(H-h)/2;
 			else if(Alignment::isBottom(controller.Align))
 				Y+=(H-h);
 		}
+
+		Target.Draw(&Texture, Tiling2D::Tile(HTile, VTile), X,Y,w,h);
 	}
 
-
-	int TextureImage::calculatewidthusing(const SizeController2D &controller, int W ) const {
-		if(controller.HorizontalTiling==SizeController2D::Single) {
-			return getimagewidth();
-		}
-		else if(controller.HorizontalTiling==SizeController2D::Tile_Integral_Best) {
-			return (int)Round((double)(W-controller.Horizontal.Overhead)/controller.Horizontal.Increment)*controller.Horizontal.Increment+controller.Horizontal.Overhead;
-		}
-		else if(controller.HorizontalTiling==SizeController2D::Tile_Integral_Smaller) {
-			return (int)floor((double)(W-controller.Horizontal.Overhead)/controller.Horizontal.Increment)*controller.Horizontal.Increment+controller.Horizontal.Overhead;
-		}
-		else if(controller.HorizontalTiling==SizeController2D::Tile_Integral_Fill) {
-			return (int)ceil((double)(W-controller.Horizontal.Overhead)/controller.Horizontal.Increment)*controller.Horizontal.Increment+controller.Horizontal.Overhead;
-		}
-		else
-			return W;
-	}
-
-	int TextureImage::calculateheightusing(const SizeController2D &controller, int H ) const {
-		if(controller.VerticalTiling==SizeController2D::Single) {
-			return getimagewidth();
-		}
-		else if(controller.VerticalTiling==SizeController2D::Tile_Integral_Best) {
-			return (int)Round((double)(H-controller.Vertical.Overhead)/controller.Vertical.Increment)*controller.Vertical.Increment+controller.Vertical.Overhead;
-		}
-		else if(controller.VerticalTiling==SizeController2D::Tile_Integral_Smaller) {
-			return (int)floor((double)(H-controller.Vertical.Overhead)/controller.Vertical.Increment)*controller.Vertical.Increment+controller.Vertical.Overhead;
-		}
-		else if(controller.VerticalTiling==SizeController2D::Tile_Integral_Fill) {
-			return (int)ceil((double)(H-controller.Vertical.Overhead)/controller.Vertical.Increment)*controller.Vertical.Increment+controller.Vertical.Overhead;
-		}
-		else
-			return H;
-	}
 
 
 

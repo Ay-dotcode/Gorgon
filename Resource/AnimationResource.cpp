@@ -4,10 +4,11 @@
 #include "..\Utils\BasicMath.h"
 
 using namespace gge::utils;
+using namespace gge::graphics;
 using namespace std;
 
 namespace gge { namespace resource {
-	ResourceBase *LoadAnimationResource(File &File, std::istream &Data, int Size) {
+	AnimationResource *LoadAnimationResource(File &File, std::istream &Data, int Size) {
 		AnimationResource *anim=new AnimationResource;
 
 		int target=Data.tellg()+Size;
@@ -60,6 +61,8 @@ namespace gge { namespace resource {
 				int cf=dc->CurrentFrame();
 				int fc=parent.FrameCount;
 
+				cf=cf % fc;
+
 				if(cf<0) {
 					Texture.ID=0;
 					return animation::ProgressResult::None;
@@ -75,7 +78,10 @@ namespace gge { namespace resource {
 				int t=Controller->GetProgress();
 				int tl=(int)parent.GetTotalLength();
 
-				Texture=parent.ImageAt(PositiveMod(t,tl)).GetTexture();
+				
+				GLTexture &tx=parent.ImageAt(PositiveMod(t,tl)).GetTexture();
+				if(tx.ID!=Texture.ID)
+					Texture=tx;
 
 				return ret;
 			}
@@ -125,20 +131,5 @@ namespace gge { namespace resource {
 			return Guessed;
 	}
 
-	int AnimationResource::StartOf(unsigned Frame) const {
-		return Frames[Frame].Start;
-	}
-
-	int AnimationResource::GetDuration() const {
-		return TotalLength;
-	}
-
-	int AnimationResource::GetDuration(unsigned Frame) const {
-		return Frames[Frame].Duration;
-	}
-
-	int AnimationResource::GetNumberofFrames() const {
-		return Frames.size();
-	}
 
 } }

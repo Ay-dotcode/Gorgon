@@ -7,25 +7,30 @@
 #include "../Engine/Animation.h"
 #include "../Engine/Image.h"
 
+#pragma warning(push)
+#pragma warning(disable:4250)
+
 namespace gge { namespace resource {
 	class File;
-	
+	class ImageResource;
+
 	////This function loads a text resource from the given file
-	ResourceBase *LoadImageResource(File& File, std::istream &Data, int Size);
+	ImageResource *LoadImageResource(File& File, std::istream &Data, int Size);
 
 	////This is image resource that holds information about a single image. It supports
 	/// two color modes (ARGB and AL); lzma and jpg compressions
 	class ImageResource : 
-		public ResourceBase, public ResizableObject, public graphics::RectangularGraphic2D, public ResizableObjectProvider, 
-		protected graphics::ImageData, protected graphics::TextureImage
+		public ResourceBase, virtual public ResizableObject, virtual public ResizableObjectProvider, 
+		virtual public animation::RectangularGraphic2DSequenceProvider, virtual public graphics::ImageTexture,
+		public graphics::ImageData, virtual public animation::RectangularGraphic2DAnimation
 	{
-		friend ResourceBase *LoadImageResource(File &File, std::istream &Data, int Size);
+		friend ImageResource *LoadImageResource(File &File, std::istream &Data, int Size);
 	public:
 		enum PNGReadError {
 			NoError=0,
 			Signature=1,
 			ErrorHandlerProblem=2,
-			OutofMemory=4,
+			OutofMemory=4, 
 			UnimplementedType,
 			FileNotFound
 		};
@@ -40,11 +45,11 @@ namespace gge { namespace resource {
 		/// an image object. This flag is used by other systems.
 		bool LeaveData;
 
-		ImageResource() : animation::AnimationBase(), TextureImage(), ImageData() {
+		ImageResource() : animation::AnimationBase(), ImageTexture(), ImageData() {
 			isLoaded=LeaveData=false; Palette=NULL; 
 		}
 
-		ImageResource(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::AnimationBase(), TextureImage(), ImageData() {
+		ImageResource(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::AnimationBase(), ImageTexture(), ImageData() {
 			this->Resize(Width, Height, Mode);
 		}
 
@@ -73,47 +78,51 @@ namespace gge { namespace resource {
 		////Destroys used data
 		virtual ~ImageResource() { if(Palette) delete Palette; }
 
-		using RectangularGraphic2D::GetHeight;
-		using RectangularGraphic2D::GetWidth;
-
+		/* FOR ANIMATION INTERFACES */
 		virtual void DeleteAnimation() { } //if used as animation, it will not be deleted
 		virtual ImageResource &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return *this; }
 		virtual ImageResource &CreateAnimation(bool create=false) { return *this; }
 
+		virtual ImageResource &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { return *this; }
+		virtual ImageResource &CreateResizableObject(bool create=false) { return *this; }
+
 		virtual graphics::RectangularGraphic2D &GraphicAt(unsigned time) { return *this; }
 
-		using TextureImage::GetTexture;
+		virtual graphics::Image2D & ImageAt(int time) { return *this; }
 
+		virtual int GetDuration() const	{ return 1; }
+		virtual int GetDuration(unsigned Frame) const { return 1; }
+		virtual int GetNumberofFrames() const { return 1; }
+
+		//Caller is responsible to supply a time between 0 and GetDuration()-1, if no frame exists it should return -1
+		virtual int		 FrameAt(unsigned Time) const { return 0; }
+		//Should always return a time between 0 and GetDuration unless Frame does not exists it should return -1
+		virtual int		 StartOf(unsigned Frame) const { return 0; }
+		virtual	int		 EndOf(unsigned Frame) const { return 1; }
+		/* ... */
+
+		virtual int GetWidth() const {
+			if(Texture.ID) {
+				return ImageTexture::GetWidth();
+			}
+			else {
+				return ImageData::GetWidth();
+			}
+		}
+
+		virtual int GetHeight() const {
+			if(Texture.ID) {
+				return ImageTexture::GetHeight();
+			}
+			else {
+				return ImageData::GetHeight();
+			}
+		}
+
+		using graphics::ImageTexture::drawin;
 
 	protected:
 		virtual animation::ProgressResult::Type Progress() { return animation::ProgressResult::None; };
-
-		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) 
-		{ drawto(Target, graphics::Tiling2D::Both, X,Y, W,H); } 
-
-		virtual void drawin(graphics::ImageTarget2D& Target, graphics::SizeController2D &controller, int X, int Y, int W, int H) 
-		{ drawto(Target, controller, X,Y, W,H); };
-
-		virtual int calculatewidth (int w=-1) const { return getimagewidth(); }
-		virtual int calculateheight(int h=-1) const { return getimageheight(); }
-
-		virtual int calculatewidth (const graphics::SizeController2D &controller, int w=-1) const  { return calculatewidthusing(controller,w); }
-		virtual int calculateheight(const graphics::SizeController2D &controller, int h=-1) const  { return calculateheightusing(controller,h); }
-
-		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) 
-		{ drawto(Target, X1,Y1, X2,Y2, X3,Y3, X4,Y4, S1,U1, S2,U2, S3,U3, S4,U4); }
-		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) 
-		{ drawto(Target, X1,Y1, X2,Y2, X3,Y3, X4,Y4); }
-		virtual void drawstretched(graphics::ImageTarget2D& Target, int X, int Y, int W, int H)
-		{ drawto(Target, X,Y, W,H); }
-		virtual void draw(graphics::ImageTarget2D& Target, graphics::Tiling2D::Type Tiling, int X, int Y, int W, int H)
-		{ drawto(Target, Tiling, X,Y, W,H); }
-		virtual void draw(graphics::ImageTarget2D& Target, graphics::SizeController2D &controller, int X, int Y, int W, int H)
-		{ drawto(Target, controller, X,Y, W,H); }
-
-		virtual int getwidth () const { if(Texture.ID) return getimagewidth(); else return ImageData::GetWidth(); }
-		virtual int getheight() const { if(Texture.ID) return getimageheight(); else return ImageData::GetHeight(); }
-
 
 		////The file that this image resource is related, used for late loading
 		File *File;
@@ -127,3 +136,5 @@ namespace gge { namespace resource {
 		int DataLocation;
 	};
 } }
+
+#pragma warning(pop)

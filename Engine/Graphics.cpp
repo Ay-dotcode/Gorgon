@@ -172,6 +172,8 @@ namespace gge { namespace graphics {
 			glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BORDER_COLOR, 0x0);
 
+			int bytes=getBPP(mode);
+
 			if(mode==ColorMode::Alpha) {
 				///*If alpha only, converted to grayscale alpha
 				glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
@@ -189,7 +191,7 @@ namespace gge { namespace graphics {
 				glPixelStorei(GL_PACK_ALIGNMENT, 4);
 			}
 
-			glTexImage2D(GL_TEXTURE_2D,0,getBPP(mode),sl2(cx),sl2(cy),0,colormode,GL_UNSIGNED_BYTE,NULL);
+			glTexImage2D(GL_TEXTURE_2D,0,getBPP(mode),cx,cy,0,colormode,GL_UNSIGNED_BYTE,NULL);
 			glTexSubImage2D(GL_TEXTURE_2D,0,0,0,cx,cy,colormode,GL_UNSIGNED_BYTE,data);
 		}
 		GLTexture GenerateTexture(Byte *data,int cx,int cy,ColorMode::Type mode) {

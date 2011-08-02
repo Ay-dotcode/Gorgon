@@ -613,17 +613,17 @@ namespace gge { namespace graphics {
 		surface->CreateTextureCoords();
 
 		float w=Image->ImageCoord[2].s, h=Image->ImageCoord[2].t;
-		surface->TextureCoords[0].s=w*S1;
-		surface->TextureCoords[0].t=h*U1;
+		surface->TextureCoords[0].s=S1;
+		surface->TextureCoords[0].t=U1;
 
-		surface->TextureCoords[1].s=w*S2;
-		surface->TextureCoords[1].t=h*U2;
+		surface->TextureCoords[1].s=S2;
+		surface->TextureCoords[1].t=U2;
 
-		surface->TextureCoords[2].s=w*S3;
+		surface->TextureCoords[2].s=S3;
 		surface->TextureCoords[2].t=h*U3;
 
-		surface->TextureCoords[3].s=w*S4;
-		surface->TextureCoords[3].t=h*U4;
+		surface->TextureCoords[3].s=S4;
+		surface->TextureCoords[3].t=U4;
 
 		surface->Color=ToRGBfloat(CurrentColor);
 	}
@@ -675,12 +675,12 @@ namespace gge { namespace graphics {
 					surface->VertexCoords[0].x=x;
 					surface->VertexCoords[0].y=Y;
 
-					surface->TextureCoords[1].s=Image->ImageCoord[1].s;
+					surface->TextureCoords[1].s=1;
 					surface->TextureCoords[1].t=0;
 					surface->VertexCoords[1].x=x+Image->W;
 					surface->VertexCoords[1].y=Y;
 
-					surface->TextureCoords[2].s=Image->ImageCoord[2].s;
+					surface->TextureCoords[2].s=1;
 					surface->TextureCoords[2].t=(float)H/Image->H;
 					surface->VertexCoords[2].x=x+Image->W;
 					surface->VertexCoords[2].y=Y+H;
@@ -703,12 +703,12 @@ namespace gge { namespace graphics {
 				surface->VertexCoords[0].x=x;
 				surface->VertexCoords[0].y=Y;
 
-				surface->TextureCoords[1].s=Image->ImageCoord[1].s*((float)(W-(x-X))/Image->W);
+				surface->TextureCoords[1].s=(float)(W-(x-X))/Image->W;
 				surface->TextureCoords[1].t=0;
 				surface->VertexCoords[1].x=X+W;
 				surface->VertexCoords[1].y=Y;
 
-				surface->TextureCoords[2].s=Image->ImageCoord[2].s*((float)(W-(x-X))/Image->W);
+				surface->TextureCoords[2].s=(float)(W-(x-X))/Image->W;
 				surface->TextureCoords[2].t=(float)H/Image->H;
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
@@ -743,12 +743,12 @@ namespace gge { namespace graphics {
 					surface->VertexCoords[1].y=y;
 
 					surface->TextureCoords[2].s=(float)W/Image->W;
-					surface->TextureCoords[2].t=Image->ImageCoord[2].t;
+					surface->TextureCoords[2].t=1;
 					surface->VertexCoords[2].x=X+W;
 					surface->VertexCoords[2].y=y+Image->H;
 
 					surface->TextureCoords[3].s=0;
-					surface->TextureCoords[3].t=Image->ImageCoord[3].t;
+					surface->TextureCoords[3].t=1;
 					surface->VertexCoords[3].x=X;
 					surface->VertexCoords[3].y=y+Image->H;
 				}
@@ -771,12 +771,12 @@ namespace gge { namespace graphics {
 				surface->VertexCoords[1].y=y;
 
 				surface->TextureCoords[2].s=(float)W/Image->W;
-				surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
+				surface->TextureCoords[2].t=(float)(H-(y-Y))/Image->H;
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
 
 				surface->TextureCoords[3].s=0;
-				surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
+				surface->TextureCoords[3].t=(float)(H-(y-Y))/Image->H;
 				surface->VertexCoords[3].x=X;
 				surface->VertexCoords[3].y=Y+H;
 			} else { //if the image has no 2^n dimensions
@@ -799,18 +799,18 @@ namespace gge { namespace graphics {
 						surface->VertexCoords[0].x=x;
 						surface->VertexCoords[0].y=y;
 
-						surface->TextureCoords[1].s=Image->ImageCoord[1].s;
+						surface->TextureCoords[1].s=1;
 						surface->TextureCoords[1].t=0;
 						surface->VertexCoords[1].x=x+Image->W;
 						surface->VertexCoords[1].y=y;
 
-						surface->TextureCoords[2].s=Image->ImageCoord[2].s;
-						surface->TextureCoords[2].t=Image->ImageCoord[2].t;
+						surface->TextureCoords[2].s=1;
+						surface->TextureCoords[2].t=1;
 						surface->VertexCoords[2].x=x+Image->W;
 						surface->VertexCoords[2].y=cy;
 
 						surface->TextureCoords[3].s=0;
-						surface->TextureCoords[3].t=Image->ImageCoord[3].t;
+						surface->TextureCoords[3].t=1;
 						surface->VertexCoords[3].x=x;
 						surface->VertexCoords[3].y=cy;
 					}
@@ -827,18 +827,18 @@ namespace gge { namespace graphics {
 					surface->VertexCoords[0].x=x;
 					surface->VertexCoords[0].y=y;
 
-					surface->TextureCoords[1].s=Image->ImageCoord[1].s*((float)(W-(x-X))/Image->W);
+					surface->TextureCoords[1].s=(float)(W-(x-X))/Image->W;
 					surface->TextureCoords[1].t=0;
 					surface->VertexCoords[1].x=X+W;
 					surface->VertexCoords[1].y=y;
 
-					surface->TextureCoords[2].s=Image->ImageCoord[2].s*((float)(W-(x-X))/Image->W);
-					surface->TextureCoords[2].t=Image->ImageCoord[2].t;
+					surface->TextureCoords[2].s=(float)(W-(x-X))/Image->W;
+					surface->TextureCoords[2].t=1;
 					surface->VertexCoords[2].x=X+W;
 					surface->VertexCoords[2].y=cy;
 
 					surface->TextureCoords[3].s=0;
-					surface->TextureCoords[3].t=Image->ImageCoord[2].t;
+					surface->TextureCoords[3].t=1;
 					surface->VertexCoords[3].x=x;
 					surface->VertexCoords[3].y=cy;
 
@@ -862,12 +862,12 @@ namespace gge { namespace graphics {
 					surface->VertexCoords[0].x=x;
 					surface->VertexCoords[0].y=y;
 
-					surface->TextureCoords[1].s=Image->ImageCoord[1].s;
+					surface->TextureCoords[1].s=1;
 					surface->TextureCoords[1].t=0;
 					surface->VertexCoords[1].x=x+Image->W;
 					surface->VertexCoords[1].y=y;
 
-					surface->TextureCoords[2].s=Image->ImageCoord[2].s;
+					surface->TextureCoords[2].s=1;
 					surface->TextureCoords[2].t=pty;
 					surface->VertexCoords[2].x=x+Image->W;
 					surface->VertexCoords[2].y=cy;
@@ -890,13 +890,13 @@ namespace gge { namespace graphics {
 				surface->VertexCoords[0].x=x;
 				surface->VertexCoords[0].y=y;
 
-				surface->TextureCoords[1].s=Image->ImageCoord[1].s*((float)(W-(x-X))/Image->W);
+				surface->TextureCoords[1].s=(float)(W-(x-X))/Image->W;
 				surface->TextureCoords[1].t=0;
 				surface->VertexCoords[1].x=X+W;
 				surface->VertexCoords[1].y=y;
 
-				surface->TextureCoords[2].s=Image->ImageCoord[2].s*((float)(W-(x-X))/Image->W);
-				surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
+				surface->TextureCoords[2].s=(float)(W-(x-X))/Image->W;
+				surface->TextureCoords[2].t=(float)(H-(y-Y))/Image->H;
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=Y+H;
 
@@ -929,12 +929,12 @@ namespace gge { namespace graphics {
 			surface->VertexCoords[1].y=Y;
 
 			surface->TextureCoords[2].s=(float)W/Image->W;
-			surface->TextureCoords[2].t=Image->ImageCoord[2].t;
+			surface->TextureCoords[2].t=1;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
 
 			surface->TextureCoords[3].s=0;
-			surface->TextureCoords[3].t=Image->ImageCoord[2].t;
+			surface->TextureCoords[3].t=1;
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
 		} else {
@@ -955,18 +955,18 @@ namespace gge { namespace graphics {
 				surface->VertexCoords[0].x=x;
 				surface->VertexCoords[0].y=Y;
 
-				surface->TextureCoords[1].s=Image->ImageCoord[1].s;
+				surface->TextureCoords[1].s=1;
 				surface->TextureCoords[1].t=0;
 				surface->VertexCoords[1].x=x+Image->W;
 				surface->VertexCoords[1].y=Y;
 
-				surface->TextureCoords[2].s=Image->ImageCoord[2].s;
-				surface->TextureCoords[2].t=Image->ImageCoord[2].t;
+				surface->TextureCoords[2].s=1;
+				surface->TextureCoords[2].t=1;
 				surface->VertexCoords[2].x=x+Image->W;
 				surface->VertexCoords[2].y=Y+H;
 
 				surface->TextureCoords[3].s=0;
-				surface->TextureCoords[3].t=Image->ImageCoord[2].t;
+				surface->TextureCoords[3].t=1;
 				surface->VertexCoords[3].x=x;
 				surface->VertexCoords[3].y=Y+H;
 			}
@@ -983,18 +983,18 @@ namespace gge { namespace graphics {
 			surface->VertexCoords[0].x=x;
 			surface->VertexCoords[0].y=Y;
 
-			surface->TextureCoords[1].s=Image->ImageCoord[1].s*((float)(W-(x-X))/Image->W);
+			surface->TextureCoords[1].s=(float)(W-(x-X))/Image->W;
 			surface->TextureCoords[1].t=0;
 			surface->VertexCoords[1].x=X+W;
 			surface->VertexCoords[1].y=Y;
 
-			surface->TextureCoords[2].s=Image->ImageCoord[2].s*((float)(W-(x-X))/Image->W);
-			surface->TextureCoords[2].t=Image->ImageCoord[2].t;
+			surface->TextureCoords[2].s=(float)(W-(x-X))/Image->W;
+			surface->TextureCoords[2].t=1;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
 
 			surface->TextureCoords[3].s=0;
-			surface->TextureCoords[3].t=Image->ImageCoord[2].t;
+			surface->TextureCoords[3].t=1;
 			surface->VertexCoords[3].x=x;
 			surface->VertexCoords[3].y=Y+H;	
 		}
@@ -1014,12 +1014,12 @@ namespace gge { namespace graphics {
 			surface->VertexCoords[0].x=X;
 			surface->VertexCoords[0].y=Y;
 
-			surface->TextureCoords[1].s=Image->ImageCoord[1].s;
+			surface->TextureCoords[1].s=1;
 			surface->TextureCoords[1].t=0;
 			surface->VertexCoords[1].x=X+W;
 			surface->VertexCoords[1].y=Y;
 
-			surface->TextureCoords[2].s=Image->ImageCoord[2].s;
+			surface->TextureCoords[2].s=1;
 			surface->TextureCoords[2].t=(float)H/Image->H;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
@@ -1046,18 +1046,18 @@ namespace gge { namespace graphics {
 				surface->VertexCoords[0].x=X;
 				surface->VertexCoords[0].y=y;
 
-				surface->TextureCoords[1].s=Image->ImageCoord[1].s;
+				surface->TextureCoords[1].s=1;
 				surface->TextureCoords[1].t=0;
 				surface->VertexCoords[1].x=X+W;
 				surface->VertexCoords[1].y=y;
 
-				surface->TextureCoords[2].s=Image->ImageCoord[2].s;
-				surface->TextureCoords[2].t=Image->ImageCoord[2].t;
+				surface->TextureCoords[2].s=1;
+				surface->TextureCoords[2].t=1;
 				surface->VertexCoords[2].x=X+W;
 				surface->VertexCoords[2].y=y+Image->H;
 
 				surface->TextureCoords[3].s=0;
-				surface->TextureCoords[3].t=Image->ImageCoord[3].t;
+				surface->TextureCoords[3].t=1;
 				surface->VertexCoords[3].x=X;
 				surface->VertexCoords[3].y=y+Image->H;
 			}
@@ -1074,18 +1074,18 @@ namespace gge { namespace graphics {
 			surface->VertexCoords[0].x=X;
 			surface->VertexCoords[0].y=y;
 
-			surface->TextureCoords[1].s=Image->ImageCoord[1].s;
+			surface->TextureCoords[1].s=1;
 			surface->TextureCoords[1].t=0;
 			surface->VertexCoords[1].x=X+W;
 			surface->VertexCoords[1].y=y;
 
-			surface->TextureCoords[2].s=Image->ImageCoord[2].s;
-			surface->TextureCoords[2].t=Image->ImageCoord[2].t*((float)(H-(y-Y))/Image->H);
+			surface->TextureCoords[2].s=1;
+			surface->TextureCoords[2].t=(float)(H-(y-Y))/Image->H;
 			surface->VertexCoords[2].x=X+W;
 			surface->VertexCoords[2].y=Y+H;
 
 			surface->TextureCoords[3].s=0;
-			surface->TextureCoords[3].t=Image->ImageCoord[3].t*((float)(H-(y-Y))/Image->H);
+			surface->TextureCoords[3].t=(float)(H-(y-Y))/Image->H;
 			surface->VertexCoords[3].x=X;
 			surface->VertexCoords[3].y=Y+H;
 		}
