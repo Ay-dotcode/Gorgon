@@ -11,22 +11,63 @@ namespace gge {
 	using namespace graphics;
 
 	bool InputLayer::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
-		if(LayerBase::PropagateMouseEvent(event, location, amount))
-			return true;
+		if(event==input::mouse::Event::Over) {
+			bool ret=false;
 
-		return EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount);
+			if(EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
+				ret=true;
+
+			if(LayerBase::PropagateMouseEvent(event, location, amount))
+				ret=true;
+
+			return ret;
+		} 
+		else if(event==input::mouse::Event::Out) {
+			bool ret=false;
+
+			if(LayerBase::PropagateMouseEvent(event, location, amount))
+				ret=true;
+
+			if(EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
+				ret=true;
+
+			return ret;
+		} 
+		else {
+			if(LayerBase::PropagateMouseEvent(event, location, amount))
+				return true;
+
+			return EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount);
+		}
 	}
 
 	bool LayerBase::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
-		if( 
-			(isVisible && BoundingBox.isInside(location)) || 
-			input::mouse::Event::isUp(event) || 
-			(event&input::mouse::Event::Out) || 
-			(input::mouse::PressedObject && (event&input::mouse::Event::Move)) ) 
-		{
-			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
+		if(event==input::mouse::Event::Over) {
+			if(!(isVisible && BoundingBox.isInside(location)))
+				return false;
+			
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
 				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
 					return true;
+			}
+		}
+		else if(event==input::mouse::Event::Out) {
+			int isin=(isVisible && BoundingBox.isInside(location)) ? 1 : 0;
+
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
+				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), isin))
+					return true;
+			}
+		}
+		else {
+			if(
+				(isVisible && BoundingBox.isInside(location)) || 
+				(input::mouse::PressedObject && (event&input::mouse::Event::Move))  )
+			{
+				for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
+					if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
+						return true;
+				}
 			}
 		}
 

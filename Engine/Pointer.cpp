@@ -110,6 +110,8 @@ namespace gge {
 	}
 
 	void PointerCollection::Reset(PointerCollection::Token StackNo) {
+		if(StackNo==0) return;
+
 		ActivePointers.Remove(*reinterpret_cast<utils::SortedCollection<Pointer>::Wrapper*>(StackNo));
 	}
 

@@ -280,7 +280,7 @@ namespace gge { namespace input {
 			class Target {
 			public:
 
-				Target(HandlerBase *handler, Event::Type eventmask=AllButOverCheck) : EventMask(eventmask) ,handler(handler)  {
+				Target(HandlerBase *handler, Event::Type eventmask=AllButOverCheck) : EventMask(eventmask) ,handler(handler), IsOver(false)  {
 
 				}
 
@@ -290,6 +290,8 @@ namespace gge { namespace input {
 				virtual bool Fire(Event::Type event, utils::Point location, int amount);
 
 				virtual ~Target();
+
+				bool IsOver;
 
 			};
 		};
@@ -709,7 +711,6 @@ namespace gge { namespace input {
 		
 		extern Event::Type		PressedButtons;
 
-		extern Event::Target	*HoveredObject;
 		extern Event::Target	*PressedObject;
 
 		extern utils::Point	PressedPoint;

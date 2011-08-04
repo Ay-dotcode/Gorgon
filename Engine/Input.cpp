@@ -15,7 +15,6 @@ namespace gge { namespace input {
 
 	namespace mouse {
 		Event::Type		PressedButtons	= Event::None;
-		Event::Target	*HoveredObject	= NULL;
 		Event::Target	*PressedObject	= NULL;
 
 		utils::Point	PressedPoint	= utils::Point(0,0);
@@ -46,42 +45,54 @@ namespace gge { namespace input {
 
 				return false;
 			}
-			else if(event==Event::Move) {
-				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
+			else if(event==Event::Over) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.Last();i.isValid();i.Previous()) {
+					bool isover=false;
 					if(i->Bounds.isInside(location)) {
-						if(i->EventMask & Event::OverCheck)
-							if(!i->Fire(Event::OverCheck, location-i->Bounds.TopLeft(), 0))
-								continue;
-
-						bool ret=false;
-
-						if(i->EventMask & Event::Over && &(*i)!=HoveredObject && !PressedObject) {
-							ret = i->Fire(Event::Over, location-i->Bounds.TopLeft(), amount);
-
-							if(ret) {
-								if(HoveredObject)
-									HoveredObject->Fire(Event::Out, utils::Point(0,0), 0);
-
-								HoveredObject = &(*i);
-
-								i->Fire(Event::Move, location-i->Bounds.TopLeft(), amount);
-							}
+						if(i->EventMask & Event::OverCheck) {
+							if(i->Fire(Event::OverCheck, location-i->Bounds.TopLeft(), 0))
+								isover=true;
 						}
-						else if(!PressedObject || PressedObject==&(*i)) {
-							ret = i->Fire(Event::Move, location-i->Bounds.TopLeft(), amount);
-						}
+						else
+							isover=true;
+					}
 
-						if(&(*i)==HoveredObject)
-							system::hoverfound=true;
+					if(!i->IsOver && isover) {
+						bool ret=i->Fire(Event::Over, location-i->Bounds.TopLeft(), amount);
 
-						if(ret || &(*i)==HoveredObject)
+						i->IsOver=ret;
+
+						if(ret)
 							return true;
 					}
 				}
 
 				return false;
 			}
-			else { //Scrolls, double click
+			else if(event==Event::Out) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
+					bool isover=false;
+					if(i->Bounds.isInside(location)) {
+						if(i->EventMask & Event::OverCheck) {
+							if(i->Fire(Event::OverCheck, location-i->Bounds.TopLeft(), 0))
+								isover=true;
+						}
+						else
+							isover=true;
+					}
+
+					if(amount==0)
+						isover=false;
+
+					if(i->IsOver && !isover) {
+						i->Fire(Event::Out, location-i->Bounds.TopLeft(), amount);
+						i->IsOver=false;
+					}
+				}
+
+				return false;
+			}
+			else { //Scrolls, double click, mouse move
 				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
 					if(i->Bounds.isInside(location)) {
 						if(i->Fire(event, location-i->Bounds.TopLeft(), amount))
@@ -112,35 +123,42 @@ namespace gge { namespace input {
 
 				return false;
 			}
-			else if(event==Event::Move) {
-				if(Callback.object->EventMask & Event::OverCheck)
+			else if(event==Event::Over) {
+				bool isover=true;
+				if(Callback.object->EventMask & Event::OverCheck) {
 					if(!Callback.object->Fire(Event::OverCheck, location, 0))
-						return false;
-
-				bool ret=false;
-
-				if(Callback.object->EventMask & Event::Over && Callback.object!=HoveredObject && !PressedObject) {
-					ret = Callback.object->Fire(Event::Over, location, amount);
-
-					if(ret) {
-						if(HoveredObject)
-							HoveredObject->Fire(Event::Out, utils::Point(0,0), 0);
-
-						HoveredObject = Callback.object;
-
-						Callback.object->Fire(Event::Move, location, amount);
-					}
-				}
-				else if(!PressedObject || PressedObject==Callback.object) {
-					ret = Callback.object->Fire(Event::Over, location, amount);
+						isover=false;
 				}
 
-				if(Callback.object==HoveredObject)
-					system::hoverfound=true;
+				if(!Callback.object->IsOver && isover) {
+					bool ret=Callback.object->Fire(Event::Over, location, amount);
 
-				return (ret || Callback.object==HoveredObject);
+					Callback.object->IsOver=ret;
+
+					if(ret)
+						return true;
+				}
+
+				return false;
 			}
-			else { //Scrolls, double click
+			else if(event==Event::Out) {
+				bool isover=true;
+				if(Callback.object->EventMask & Event::OverCheck) {
+					if(!Callback.object->Fire(Event::OverCheck, location, 0))
+						isover=false;
+				}
+
+				if(amount==0)
+					isover=false;
+
+				if(Callback.object->IsOver && !isover) {
+					Callback.object->Fire(Event::Out, location, amount);
+					Callback.object->IsOver=false;
+				}
+
+				return false;
+			}
+			else { //Scrolls, double click, mouse move
 				if(Callback.object->Fire(event, location, amount))
 					return true;
 
@@ -352,9 +370,6 @@ namespace gge { namespace input {
 			if(PressedObject==this)
 				PressedObject=NULL;
 
-			if(HoveredObject==this)
-				HoveredObject=NULL;
-
 			wrapper->Delete();
 		}
 
@@ -421,12 +436,14 @@ namespace gge { namespace input {
 			mouse::CurrentPoint=os::input::getMousePosition(Window);
 
 			hoverfound=false;
+			Main.PropagateMouseEvent(mouse::Event::Over, mouse::CurrentPoint, 0);
 			Main.PropagateMouseEvent(mouse::Event::Move, mouse::CurrentPoint, 0);
+			Main.PropagateMouseEvent(mouse::Event::Out , mouse::CurrentPoint, 0);
 
-			if(!hoverfound && mouse::HoveredObject && !mouse::PressedObject) {
-				mouse::HoveredObject->Fire(mouse::Event::Out, mouse::CurrentPoint, 0);
-				mouse::HoveredObject=NULL;
-			}
+			//if(!hoverfound && mouse::HoveredObject && !mouse::PressedObject) {
+			//	mouse::HoveredObject->Fire(mouse::Event::Out, mouse::CurrentPoint, 0);
+			//	mouse::HoveredObject=NULL;
+			//}
 		}
 
 		void ProcessMouseClick(mouse::Event::Type button,int x,int y) {
