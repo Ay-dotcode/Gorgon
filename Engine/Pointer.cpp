@@ -71,10 +71,10 @@ namespace gge {
 		for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First();resource.isValid();resource.Next()) {
 			if(resource->getGID()==GID::Animation) {
 				AnimationResource *anim=dynamic_cast<AnimationResource *>(resource.CurrentPtr());
-				utils::Collection<Pointer, 10>::Add( new Pointer(&anim->CreateAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
+				utils::Collection<Pointer, 10>::Add( new Pointer(&anim->CreateAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerType)data->getInt(i)) );
 			} else if(resource->getGID()==GID::Image) {
 				ImageResource *img=dynamic_cast<ImageResource *>(resource.CurrentPtr());
-				utils::Collection<Pointer, 10>::Add( new Pointer(img, data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerTypes)data->getInt(i)) );
+				utils::Collection<Pointer, 10>::Add( new Pointer(img, data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerType)data->getInt(i)) );
 			}
 
 			i+=2;
@@ -84,7 +84,7 @@ namespace gge {
 			BasePointer=&(*this)[0];
 	}
 
-	Pointer *PointerCollection::Add(graphics::RectangularGraphic2D *pointer, Point Hotspot, Pointer::PointerTypes Type) {
+	Pointer *PointerCollection::Add(graphics::RectangularGraphic2D *pointer, Point Hotspot, Pointer::PointerType Type) {
 		Pointer *ret=new Pointer(pointer, Hotspot.x, Hotspot.y, Type);
 		utils::Collection<Pointer, 10>::Add( ret );
 		
@@ -98,7 +98,7 @@ namespace gge {
 		return reinterpret_cast<Token>(&ActivePointers.Add(Pointer, ActivePointers.HighestOrder()+1));
 	}
 
-	PointerCollection::Token PointerCollection::Set(Pointer::PointerTypes Type) {
+	PointerCollection::Token PointerCollection::Set(Pointer::PointerType Type) {
 		if(Type==Pointer::None)
 			return Set(BasePointer);
 		for(Collection<Pointer,10>::Iterator pointer=this->First();pointer.isValid();pointer.Next()) {

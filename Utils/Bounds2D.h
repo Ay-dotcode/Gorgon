@@ -138,6 +138,10 @@ namespace gge { namespace utils {
 			return basic_Point2D<T_>(Right, Bottom);
 		}
 
+		basic_Size2D<T_> GetSize() const {
+			return basic_Size2D<T_>(Width(), Height());
+		}
+
 		basic_Bounds2D Scale(FloatingPoint s) const {
 			return Scale(s, Center());
 		}

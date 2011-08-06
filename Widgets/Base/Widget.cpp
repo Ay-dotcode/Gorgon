@@ -12,12 +12,46 @@ namespace gge { namespace widgets {
 
 		return Container->setfocus(this);
 	}
-
-	bool WidgetBase::located(ContainerBase *container, int Order) {
-		Container=container;
-		BaseLayer=&container->CreateWidgetLayer(Order);
+	
+	bool WidgetBase::locating(ContainerBase *container, int Order) {
+		Detach();
 
 		return true;
+	}
+
+	void WidgetBase::call_container_widget_visibility_change(bool state) {
+		if(Container)
+			Container->widget_visibility_change(this, state);
+	}
+
+	void WidgetBase::call_container_forceremovefocus() {
+		if(Container)
+			Container->ForceRemoveFocus();
+	}
+
+	void WidgetBase::located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
+		locateto(container, Order, w);
+
+		Redraw();
+	}
+
+	bool WidgetBase::IsFocussed() {
+		return Container->GetFocussed()==this;
+	}
+
+	void WidgetBase::locateto(ContainerBase* container, int Order, utils::SortedCollection<WidgetBase>::Wrapper * w) {
+		Container=container;
+		BaseLayer=&container->CreateWidgetLayer(Order);
+		wrapper=w;
+	}
+
+	void WidgetBase::call_container_removefocus() {
+		if(Container && IsFocussed())
+			Container->RemoveFocus();
+	}
+
+	void WidgetBase::SetContainer(ContainerBase &container) {
+		container.AddWidget(this);
 	}
 
 

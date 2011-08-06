@@ -241,6 +241,10 @@ namespace gge { namespace input {
 				return (t&ButtonMask) && (t&Click);
 			}
 
+			static bool isScroll(Type t) {
+				return t==VScroll || t==HScroll;
+			}
+
 			static bool isDown(Type t) {
 				return (t&ButtonMask) && (t&Down);
 			}

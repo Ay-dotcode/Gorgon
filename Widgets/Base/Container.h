@@ -99,6 +99,14 @@ namespace gge { namespace widgets {
 				}
 			}
 
+			//roll again from bottom
+			for(auto it=Widgets.First();it.isValid() && &(*it)!=Focussed;it.Next()) {
+				if(it->isvisible && it->isenabled) {
+					if(it->Focus())
+						return true;
+				}
+			}
+
 			return false;
 		}
 		virtual bool FocusPrevious() {
@@ -106,6 +114,14 @@ namespace gge { namespace widgets {
 				return false;
 
 			for(auto it=Widgets.Find(Focussed)-1;it.isValid();it.Previous()) {
+				if(it->isvisible && it->isenabled) {
+					if(it->Focus())
+						return true;
+				}
+			}
+
+			//roll again from bottom
+			for(auto it=Widgets.Last();it.isValid() && &(*it)!=Focussed;it.Previous()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -159,10 +175,12 @@ namespace gge { namespace widgets {
 
 		//A container or the target widget has right to reject add requests
 		virtual bool AddWidget	 (WidgetBase &widget, int Order=0) {
-			if(!call_widget_located(widget, Order))
+			if(!call_widget_locating(widget, Order))
 				return false;
 
-			Widgets.Add(widget, Order);
+			utils::SortedCollection<WidgetBase>::Wrapper *w=&Widgets.Add(widget, Order);
+
+			call_widget_located(widget, w, Order);
 
 			Reorganize();
 
@@ -210,7 +228,10 @@ namespace gge { namespace widgets {
 		virtual void Deactivate() = 0;
 
 
-		virtual void Redraw() = 0;
+		virtual void Redraw() {
+			for(auto it=Widgets.First();it.isValid();it.Next())
+				it->Redraw();
+		}
 		virtual void Reorganize() {
 			if(Organizer) {
 				Organizer->Reorganize();
@@ -279,12 +300,12 @@ namespace gge { namespace widgets {
 			if(accesskeysenabled) {
 				//Enter/Esc -> Type of access keys
 				//!!Might need to change to IButton
-				if(Default && event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Enter) {
+				if(Default && Default->IsVisible() && Default->IsEnabled() && event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Enter) {
 					if(Default->KeyboardEvent(input::keyboard::Event::Char, input::keyboard::KeyCodes::Enter))
 						return true;
 				}
 
-				if(Cancel && event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Escape) {
+				if(Cancel && Cancel->IsVisible() && Cancel->IsEnabled() && event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Escape) {
 					if(Cancel->KeyboardEvent(input::keyboard::Event::Char, input::keyboard::KeyCodes::Enter))
 						return true;
 				}
@@ -292,8 +313,9 @@ namespace gge { namespace widgets {
 				//Access keys
 				if(event==input::keyboard::Event::Char && (!input::keyboard::Modifier::Check() || input::keyboard::Modifier::Current==input::keyboard::Modifier::Alt)) {
 					if(AccessKeys[Key])
-						if(AccessKeys[Key]->Focus())
-							return true;
+						if(AccessKeys[Key]->IsVisible() && AccessKeys[Key]->IsEnabled())
+							if(AccessKeys[Key]->Focus())
+								return true;
 				}
 			}
 
@@ -334,6 +356,12 @@ namespace gge { namespace widgets {
 			return true;
 		}
 
+		void widget_visibility_change(WidgetBase *widget, bool state) {
+			if(state==false && widget==Focussed)
+				FocusNext();
+
+			Reorganize();
+		}
 
 
 		//FRIENDSHIP HELPERS
@@ -343,13 +371,18 @@ namespace gge { namespace widgets {
 			return widget->loosefocus(force);
 		}
 
-		bool call_widget_located(WidgetBase &widget, int Order)  {
-			widget.located(this,Order);
+		bool call_widget_locating(WidgetBase &widget, int Order)  {
+			widget.locating(this,Order);
 		}
 
 		bool call_widget_detach(WidgetBase &widget)  {
 			widget.detach(this);
 		}
+
+		void call_widget_located(WidgetBase &widget, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order)  {
+			widget.located(this,w,Order);
+		}
+
 
 
 

@@ -23,84 +23,184 @@ namespace gge { namespace widgets {
 		virtual void SetBlueprint(Blueprint &bp)=0;
 
 
-		bool IsVisible();
-		void Show();
-		void Hide();
-		void ToggleVisibility();
-		void SetVisibility(bool visible);
+
+		virtual bool IsVisible() { return isvisible; }
+		inline  bool IsHidden()  { return !IsVisible(); }
+		virtual void Show(bool setfocus=false) { 
+			isvisible=true;
+			call_container_widget_visibility_change(true);			
+		}
+		virtual void Hide() {
+			isvisible=false; 
+			call_container_widget_visibility_change(false);
+		}
+		//Virtual status of the following two functions might change
+		void ToggleVisibility() { 
+			if(!isvisible)	Show(); 
+			else			Hide();  
+		}
+		void SetVisibility(bool visible) { 
+			if(visible && !isvisible)		Show(); 
+			else if(!visible && isvisible)	Hide(); 
+		}
 
 
-		bool IsEnabled();
-		bool IsDisabled();
-		void Enable();
-		void Disable();
-		void ToggleEnabled();
-		void SetEnabled(bool enabled);
+		virtual bool IsEnabled()  { return isenabled; }
+		inline  bool IsDisabled() { return !IsEnabled(); }
+		virtual void Enable() { isenabled=true; }
+		virtual void Disable() { isenabled=false; }
+		//!!Virtual status of the following two functions might change
+		void ToggleEnabled() { 
+			if(!isenabled)	Enable(); 
+			else			Disable();
+		}
+		void SetEnabled(bool enabled) {
+			if(enabled && !isenabled)		Enable();
+			else if(!enabled && isenabled)	Disable();
+		}
 
 
-		utils::Size GetSize();
-		int GetWidth();
-		int GetHeight();
-		void Resize(int W, int H);
-		void Resize(utils::Size Size);
-		void SetWidth(int W);
-		void SetHeight(int H);
+
+		virtual utils::Size GetSize() { return size; }
+		int GetWidth() { return GetSize().Width; }
+		int GetHeight() { return GetSize().Height; }
+		virtual void Resize(utils::Size Size) { 
+			size=Size;
+			if(BaseLayer)
+				BaseLayer->Resize(Size);
+
+			Redraw();
+		}
+		void Resize(int W, int H) { Resize(utils::Size(W,H)); }
+		void SetWidth(int W)  { Resize(W, size.Height); }
+		void SetHeight(int H) { Resize(size.Width,  H); }
 
 
-		utils::Point GetLocation();
-		int GetX();
-		int GetY();
-		int GetLeft();
-		int GetTop();
-		void Move(int X, int Y);
-		void Move(utils::Point location);
-		void SetX(int X);
-		void SetY(int Y);
-		void SetLeft(int X);
-		void SetTop(int Y);
+
+		virtual utils::Point GetLocation() { return location; }
+		int GetX()    { return GetLocation().x; }
+		int GetY()    { return GetLocation().y; }
+		int GetLeft() { return GetLocation().x; }
+		int GetTop()  { return GetLocation().y; }
+		virtual void Move(utils::Point Location) {
+			location=Location;
+			if(BaseLayer)
+				BaseLayer->Move(Location);
+		}
+		void Move(int X, int Y) { Move(utils::Point(X,Y)); }
+		void SetX(int X) { Move(utils::Point(X,location.y)); }
+		void SetY(int Y) { Move(utils::Point(location.x,Y)); }
+		void SetLeft(int X) { Move(utils::Point(X,location.y)); }
+		void SetTop(int Y) { Move(utils::Point(location.x,Y)); }
 
 
-		utils::Bounds    GetBounds();
-		utils::Rectangle GetRectangle();
-		void SetBounds(utils::Bounds b);
-		void SetRectangle(utils::Rectangle r);
+		virtual utils::Bounds    GetBounds() { return utils::Bounds(GetLocation(), GetSize()); }
+		virtual utils::Rectangle GetRectangle() { return utils::Rectangle(GetLocation(), GetSize()); }
+		virtual void SetBounds(utils::Bounds b) { Move(b.TopLeft()); Resize(b.GetSize()); }
+		virtual void SetRectangle(utils::Rectangle r) { Move(r.TopLeft()); Resize(r.GetSize()); }
 
 
-		bool IsFocussed();
-		bool Focus();
-		bool SetFocus(bool focus);
-		bool RemoveFocus(); //Should call Container->RemoveFocus
-		void ForceRemoveFocus();
+		virtual bool IsFocussed();
+		virtual bool Focus() {
+			call_container_setfocus();
+
+			Focus();
+
+			return true;
+		}
+		bool SetFocus(bool focus) {
+			if(focus && !IsFocussed()) {
+				call_container_setfocus();
+				return true;
+			}
+			else if(!focus && IsFocussed())
+				return RemoveFocus();
+		}
+		virtual bool RemoveFocus() {
+			if(IsFocussed()) {
+				call_container_removefocus();
+				return true;
+			}
+			else
+				return false;
+		}
+		virtual void ForceRemoveFocus() {
+			if(IsFocussed())
+				call_container_forceremovefocus();
+		}
 
 
-		int  GetZOrder();
-		void SetZOrder();
-		void ToTop();
-		void ToBottom();
+		virtual int  GetZOrder() {
+			if(!BaseLayer)
+				return 0;
 
-		int  GetFocusOrder();
-		void SetFocusOrder();
-		void FocusOrderToTop();
-		void FocusOrderToBottom();
+			return BaseLayer->GetOrder();
+		}
+		virtual void SetZOrder(int Order) {
+			if(BaseLayer)
+				BaseLayer->SetOrder(Order);
+		}
+		virtual void ToTop() {
+			if(BaseLayer)
+				BaseLayer->OrderToTop();
+		}
+		virtual void ToBottom() {
+			if(BaseLayer)
+				BaseLayer->OrderToBottom();
+		}
+
+		virtual int  GetFocusOrder() {
+			if(!wrapper)
+				return 0;
+
+			wrapper->GetKey();
+		}
+		virtual void SetFocusOrder(int Order) {
+			if(wrapper)
+				wrapper->Reorder(Order);
+		}
+		void FocusOrderToTop() {
+			if(wrapper)
+				SetFocusOrder(wrapper->GetParent().LowestOrder()-1);
+		}
+		void FocusOrderToBottom() {
+			if(wrapper)
+				SetFocusOrder(wrapper->GetParent().HighestOrder()+1);
+		}
 
 
-		ContainerBase *GetContainer();
-		bool HasContainer();
+		virtual ContainerBase *GetContainer() { return Container; }
+		virtual bool HasContainer() { return Container!=NULL; }
 		void SetContainer(ContainerBase &container);
-		void SetContainer(ContainerBase *container);
-		void Detach();
+		void SetContainer(ContainerBase *container) { if(!container) Detach(); else SetContainer(*container); }
+		virtual void Detach() {}
 
-		WidgetLayer *GetBaseLayer();
-
-
-		Pointer::PointerTypes GetPointer();
-		void SetPointer(Pointer::PointerTypes pointer);
-		void ResetPointer();
+		virtual WidgetLayer *GetBaseLayer() { return BaseLayer; }
 
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, int Key);
+		virtual Pointer::PointerType GetPointer() { return pointer; }
+		virtual void SetPointer(Pointer::PointerType Pointer) { pointer=Pointer; }
+		virtual void ResetPointer() { pointer=Pointer::None; }
 
-		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);
+
+		virtual bool KeyboardEvent(input::keyboard::Event::Type event, int Key) {
+			return false;
+		}
+
+		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
+			static PointerCollection::Token t=0;
+			if(event==input::mouse::Event::Over && pointer!=Pointer::None)
+				t=Pointers.Set(pointer);
+			else if(event==input::mouse::Event::Out) {
+				Pointers.Reset(t);
+				t=0;
+			}
+
+			return !input::mouse::Event::isScroll(event);
+		}
+
+
+		virtual void Redraw()=0;
 
 
 
@@ -111,8 +211,12 @@ namespace gge { namespace widgets {
 	protected:
 
 		//TO BE CALLED BY CONTAINER
-		virtual bool loosefocus(bool force) { return true; }
-		virtual bool located(ContainerBase *container, int Order);
+		virtual bool loosefocus(bool force) { LostFocus(); return true; }
+		virtual bool locating(ContainerBase *container, int Order);
+		virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order);
+
+		void locateto(ContainerBase* container, int Order, utils::SortedCollection<WidgetBase>::Wrapper * w);
+
 		bool detach(ContainerBase *container) {
 			Container=NULL;
 			delete BaseLayer;
@@ -122,16 +226,22 @@ namespace gge { namespace widgets {
 		
 		//FRIEND HELPERS
 		bool call_container_setfocus();
-
+		void call_container_widget_visibility_change(bool state);
+		void call_container_removefocus();
+		void call_container_forceremovefocus();
 
 		WidgetLayer   *BaseLayer;
 		ContainerBase *Container;
 
 		bool isvisible;
 		bool isenabled;
-	
+
 		utils::Point location;
-		utils::Size	 size;
+		utils::Size  size;
+
+		Pointer::PointerType pointer;
+
+		utils::SortedCollection<WidgetBase>::Wrapper *wrapper;
 	};
 
 }}

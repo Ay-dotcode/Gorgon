@@ -16,7 +16,7 @@ namespace gge { namespace widgets {
 		virtual WidgetBase &CreateWidget() = 0;
 
 		int AlphaAnimation;
-		Pointer::PointerTypes Pointer;
+		Pointer::PointerType Pointer;
 	};
 
 }}

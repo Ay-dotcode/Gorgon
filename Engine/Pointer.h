@@ -15,7 +15,7 @@ namespace gge {
 	public:
 
 		////Pointer types
-		enum PointerTypes {
+		enum PointerType {
 			////No pointer is selected or using default
 			None=0,
 			////Arrow / Pointer
@@ -37,10 +37,10 @@ namespace gge {
 		////Point of click
 		utils::Point Hotspot;
 		////Type of the pointer
-		PointerTypes Type;
+		PointerType Type;
 
 		////Initializes a pointer
-		Pointer(graphics::Graphic2D *pointer, int HotspotX, int HotspotY, PointerTypes Type) {
+		Pointer(graphics::Graphic2D *pointer, int HotspotX, int HotspotY, PointerType Type) {
 			this->Image=pointer;
 			this->Hotspot.x=HotspotX;
 			this->Hotspot.y=HotspotY;
@@ -48,7 +48,7 @@ namespace gge {
 		}
 
 		////Initializes a pointer
-		Pointer(graphics::Graphic2D &pointer, utils::Point Hotspot, PointerTypes Type) {
+		Pointer(graphics::Graphic2D &pointer, utils::Point Hotspot, PointerType Type) {
 			this->Image=&pointer;
 			this->Hotspot=Hotspot;
 			this->Type=Type;
@@ -70,17 +70,17 @@ namespace gge {
 		void Fetch(resource::FolderResource *Folder);
 		void Fetch(resource::FolderResource &Folder) { Fetch(&Folder); }
 		////Adds a pointer to the list of pointers
-		Pointer *Add(graphics::RectangularGraphic2D *Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerTypes Type=Pointer::None);
+		Pointer *Add(graphics::RectangularGraphic2D *Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerType Type=Pointer::None);
 		////Adds a pointer to the list of pointers
-		Pointer &Add(graphics::RectangularGraphic2D &Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerTypes Type=Pointer::None) {
+		Pointer &Add(graphics::RectangularGraphic2D &Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerType Type=Pointer::None) {
 			return *Add(&Pointer, Hotspot, Type);
 		}
-		////Sets the given pointer as current one, this operation should be revered by
+		////Sets the given pointer as current one, this operation should be reversed by
 		/// using reset pointer with the returned integer
-		int Set(Pointer *Pointer);
-		////Sets the given pointer as current one, this operation should be revered by
+		Token Set(Pointer *Pointer);
+		////Sets the given pointer as current one, this operation should be reversed by
 		/// using reset pointer with the returned integer
-		int Set(Pointer::PointerTypes Type);
+		Token Set(Pointer::PointerType Type);
 		////This function changes base pointer to the given one, it is best to use this function
 		/// once at the startup. This function or FetchFolders function should be called before 
 		/// calling show pointer function
@@ -89,7 +89,7 @@ namespace gge {
 		////Removes a given stack no from pointer display list. The displayed pointer is always
 		/// the one at the top. But any pointer can be removed from the list without the requirement
 		/// of being on top. 
-		void Reset(int StackNo);
+		void Reset(Token StackNo);
 		////Shows current pointer, ChangeBasePointer or FetchPointers function should be called before
 		/// calling this function
 		void Show();

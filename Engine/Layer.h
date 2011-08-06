@@ -76,7 +76,7 @@ namespace gge {
 		/// the request to the sub-layers
 		virtual void Render();
 
-		void setOrder(int Order) {
+		void SetOrder(int Order) {
 			if(parent && wrapper)
 				wrapper->Reorder(Order);
 		}
@@ -86,7 +86,12 @@ namespace gge {
 				wrapper->Reorder(parent->SubLayers.LowestOrder()-1);
 		}
 
-		int getOrder() const { 
+		void OrderToBottom() {
+			if(parent && wrapper)
+				wrapper->Reorder(parent->SubLayers.HighestOrder()+1);
+		}
+
+		int GetOrder() const { 
 			if(parent && wrapper)
 				return wrapper->GetKey(); 
 			else

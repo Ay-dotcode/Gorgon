@@ -255,6 +255,10 @@ namespace gge { namespace utils {
 			return basic_Point2D<T_>(Left+Width,Top+Height);
 		}
 
+		basic_Size2D<T_> GetSize() const {
+			return basic_Size2D<T_>(Width,Height);
+		}
+
 		bool operator ==(const basic_Rectangle2D &r) const {
 			return Left==r.Left && Top==r.Top && Width==r.Width && Height==r.Height;
 		}

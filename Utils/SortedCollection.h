@@ -66,6 +66,8 @@ namespace gge { namespace utils {
 			Wrapper *previous;
 			SortedCollection *parent;
 
+			Wrapper() {}
+
 		public:
 			operator T_ &() {
 				return *item;
@@ -131,6 +133,10 @@ namespace gge { namespace utils {
 
 			int GetLocation() {
 				return parent->FindLocation(*this);
+			}
+
+			SortedCollection &GetParent() {
+				return *parent;
 			}
 		};
 
