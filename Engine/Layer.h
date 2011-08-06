@@ -114,7 +114,11 @@ namespace gge {
 		}
 
 		void SetRectangle(int Left, int Top, int Width, int Height) {
-			BoundingBox=utils::Bounds(Left, Top, Width, Height);
+			BoundingBox=utils::Rectangle(Left, Top, Width, Height);
+		}
+
+		void SetBounds(int Left, int Top, int Right, int Bottom) {
+			BoundingBox=utils::Bounds(Left, Top, Right, Bottom);
 		}
 
 		virtual ~LayerBase() {

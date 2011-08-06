@@ -12,7 +12,7 @@ namespace gge { namespace input {
 	class BasicPointerTarget;
 
 
-	namespace keyboard {
+	namespace keyboard { 
 		class Modifier {
 		public:
 			enum Type {
@@ -424,6 +424,8 @@ namespace gge { namespace input {
 
 			EventChain MouseEvents;
 
+			virtual ~EventProvider();
+
 		protected:
 
 		};
@@ -542,7 +544,7 @@ namespace gge { namespace input {
 
 			virtual bool PropagateMouseEvent(Event::Type event, utils::Point location, int amount);
 
-			EventCallback Callback;
+			EventCallback MouseCallback;
 
 		protected:
 

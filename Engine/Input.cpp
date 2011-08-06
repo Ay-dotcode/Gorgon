@@ -104,20 +104,28 @@ namespace gge { namespace input {
 			}
 		}
 
+		EventProvider::~EventProvider() {
+			for(utils::SortedCollection<EventChain::Object>::Iterator it=MouseEvents.Events.First();it.isValid();it.Next())
+				if(&(*it)==PressedObject)
+					PressedObject=NULL;
+
+			MouseEvents.Events.Destroy();
+		}
+
 		bool CallbackProvider::PropagateMouseEvent(Event::Type event, utils::Point location, int amount) {
-			if(!Callback) return false;
+			if(!MouseCallback) return false;
 
 			if(Event::isClick(event)) {
-				if(Callback.object==PressedObject) {
-					if(Callback.object->Fire(event, location, amount))
+				if(MouseCallback.object==PressedObject) {
+					if(MouseCallback.object->Fire(event, location, amount))
 						return true;
 				}
 
 				return false;
 			}
 			else if(Event::isDown(event)) {
-				if(Callback.object->Fire(event, location, amount)) {
-					mouse::PressedObject=Callback.object;
+				if(MouseCallback.object->Fire(event, location, amount)) {
+					mouse::PressedObject=MouseCallback.object;
 					return true;
 				}
 
@@ -125,15 +133,15 @@ namespace gge { namespace input {
 			}
 			else if(event==Event::Over) {
 				bool isover=true;
-				if(Callback.object->EventMask & Event::OverCheck) {
-					if(!Callback.object->Fire(Event::OverCheck, location, 0))
+				if(MouseCallback.object->EventMask & Event::OverCheck) {
+					if(!MouseCallback.object->Fire(Event::OverCheck, location, 0))
 						isover=false;
 				}
 
-				if(!Callback.object->IsOver && isover) {
-					bool ret=Callback.object->Fire(Event::Over, location, amount);
+				if(!MouseCallback.object->IsOver && isover) {
+					bool ret=MouseCallback.object->Fire(Event::Over, location, amount);
 
-					Callback.object->IsOver=ret;
+					MouseCallback.object->IsOver=ret;
 
 					if(ret)
 						return true;
@@ -143,23 +151,23 @@ namespace gge { namespace input {
 			}
 			else if(event==Event::Out) {
 				bool isover=true;
-				if(Callback.object->EventMask & Event::OverCheck) {
-					if(!Callback.object->Fire(Event::OverCheck, location, 0))
+				if(MouseCallback.object->EventMask & Event::OverCheck) {
+					if(!MouseCallback.object->Fire(Event::OverCheck, location, 0))
 						isover=false;
 				}
 
 				if(amount==0)
 					isover=false;
 
-				if(Callback.object->IsOver && !isover) {
-					Callback.object->Fire(Event::Out, location, amount);
-					Callback.object->IsOver=false;
+				if(MouseCallback.object->IsOver && !isover) {
+					MouseCallback.object->Fire(Event::Out, location, amount);
+					MouseCallback.object->IsOver=false;
 				}
 
 				return false;
 			}
 			else { //Scrolls, double click, mouse move
-				if(Callback.object->Fire(event, location, amount))
+				if(MouseCallback.object->Fire(event, location, amount))
 					return true;
 
 				return false;
@@ -438,7 +446,7 @@ namespace gge { namespace input {
 			hoverfound=false;
 			Main.PropagateMouseEvent(mouse::Event::Over, mouse::CurrentPoint, 0);
 			Main.PropagateMouseEvent(mouse::Event::Move, mouse::CurrentPoint, 0);
-			Main.PropagateMouseEvent(mouse::Event::Out , mouse::CurrentPoint, 0);
+			Main.PropagateMouseEvent(mouse::Event::Out , mouse::CurrentPoint, 1);
 
 			//if(!hoverfound && mouse::HoveredObject && !mouse::PressedObject) {
 			//	mouse::HoveredObject->Fire(mouse::Event::Out, mouse::CurrentPoint, 0);

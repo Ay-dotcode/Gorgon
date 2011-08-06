@@ -12,6 +12,9 @@ namespace gge {
 
 	bool InputLayer::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
 		if(event==input::mouse::Event::Over) {
+			if(!(isVisible && BoundingBox.isInside(location)))
+				return false;
+
 			bool ret=false;
 
 			if(EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
@@ -25,15 +28,20 @@ namespace gge {
 		else if(event==input::mouse::Event::Out) {
 			bool ret=false;
 
-			if(LayerBase::PropagateMouseEvent(event, location, amount))
+			int isin=(isVisible && BoundingBox.isInside(location)) ? 1 : 0;
+
+			if(LayerBase::PropagateMouseEvent(event, location, amount & isin))
 				ret=true;
 
-			if(EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
+			if(EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount & isin))
 				ret=true;
 
 			return ret;
 		} 
 		else {
+			if(!(isVisible && BoundingBox.isInside(location)))
+				return false;
+
 			if(LayerBase::PropagateMouseEvent(event, location, amount))
 				return true;
 
@@ -43,21 +51,28 @@ namespace gge {
 
 	bool LayerBase::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
 		if(event==input::mouse::Event::Over) {
+			bool ret=false;
+
 			if(!(isVisible && BoundingBox.isInside(location)))
 				return false;
 			
 			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
 				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
-					return true;
+					ret=true;
 			}
+
+			return ret;
 		}
 		else if(event==input::mouse::Event::Out) {
+			bool ret=false;
 			int isin=(isVisible && BoundingBox.isInside(location)) ? 1 : 0;
 
 			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
-				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), isin))
-					return true;
+				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), isin & amount))
+					ret=true;
 			}
+
+			return ret;
 		}
 		else {
 			if(
