@@ -29,7 +29,7 @@ namespace gge {
 		Font(resource::FontTheme &Theme, graphics::RGBint Color=graphics::RGBint(0xf0001000), FontStyle Style=Normal, ShadowParams Shadow=ShadowParams());
 		Font(resource::FontTheme *Theme, graphics::RGBint Color=graphics::RGBint(0xf0001000), FontStyle Style=Normal, ShadowParams Shadow=ShadowParams());
 
-		Font &operator =(Font &);
+		Font &operator =(const Font &);
 		Font &operator =(const FontStyle);
 
 

@@ -1,10 +1,10 @@
 #pragma once
 
 
+#include <limits>
 #include "Blueprint.h"
 #include "..\..\Utils\Point2D.h"
 #include "..\..\Utils\Size2D.h"
-#include <limits>
 #include "../../Engine/Pointer.h"
 #include "../Basic/WidgetLayer.h"
 
@@ -18,9 +18,23 @@ namespace gge { namespace widgets {
 	public:
 
 
+		WidgetBase() : 
+			Container(NULL),
+			location(0,0),
+			size(0,0),
+			BaseLayer(NULL),
+			wrapper(NULL),
+			isvisible(true),
+			isenabled(true),
+			pointer(Pointer::None),
+			GotFocus("GotFocus", this),
+			LostFocus("LostFocus", this)
+		{ }
+
+
 		//Every widget should be given their own blueprints
 		// otherwise an invalid cast will occur
-		virtual void SetBlueprint(Blueprint &bp)=0;
+		virtual void SetBlueprint(const Blueprint &bp)=0;
 
 
 
@@ -153,7 +167,7 @@ namespace gge { namespace widgets {
 			if(!wrapper)
 				return 0;
 
-			wrapper->GetKey();
+			return wrapper->GetKey();
 		}
 		virtual void SetFocusOrder(int Order) {
 			if(wrapper)
@@ -173,7 +187,7 @@ namespace gge { namespace widgets {
 		virtual bool HasContainer() { return Container!=NULL; }
 		void SetContainer(ContainerBase &container);
 		void SetContainer(ContainerBase *container) { if(!container) Detach(); else SetContainer(*container); }
-		virtual void Detach() {}
+		virtual void Detach();
 
 		virtual WidgetLayer *GetBaseLayer() { return BaseLayer; }
 
@@ -189,6 +203,10 @@ namespace gge { namespace widgets {
 
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			static PointerCollection::Token t=0;
+
+			if(input::mouse::Event::isClick(event))
+				Focus();
+
 			if(event==input::mouse::Event::Over && pointer!=Pointer::None)
 				t=Pointers.Set(pointer);
 			else if(event==input::mouse::Event::Out) {
@@ -207,6 +225,10 @@ namespace gge { namespace widgets {
 		utils::EventChain<WidgetBase> GotFocus;
 		utils::EventChain<WidgetBase> LostFocus;
 
+		~WidgetBase() {
+			Detach();
+		}
+
 
 	protected:
 
@@ -217,10 +239,13 @@ namespace gge { namespace widgets {
 
 		void locateto(ContainerBase* container, int Order, utils::SortedCollection<WidgetBase>::Wrapper * w);
 
-		bool detach(ContainerBase *container) {
+		virtual bool detach(ContainerBase *container) {
 			Container=NULL;
 			delete BaseLayer;
 			BaseLayer=NULL;
+			wrapper=NULL;
+
+			return true;
 		}
 		
 		

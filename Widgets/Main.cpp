@@ -9,6 +9,8 @@
 
 namespace gge { namespace widgets {
 
+	VirtualPanel TopLevel;
+
 
 	void RegisterLoaders(resource::File &File) {
 		File.AddGameLoaders();
@@ -20,7 +22,11 @@ namespace gge { namespace widgets {
 	}
 
 	void Init(GGEMain &Main) {
+		LayerBase *layer;
+		layer=new LayerBase();
 
+		Main.Add(layer, 1);
+		TopLevel.LandOn(*layer);
 	}
 
 }}

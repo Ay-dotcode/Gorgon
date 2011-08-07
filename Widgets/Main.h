@@ -7,6 +7,7 @@
 
 #include "..\Resource\ResourceFile.h"
 #include "..\Engine\GGEMain.h"
+#include "Base\VirtualPanel.h"
 
 
 namespace gge { namespace widgets {
@@ -16,5 +17,6 @@ namespace gge { namespace widgets {
 
 	void Init(GGEMain &Main);
 
-}}
+	extern VirtualPanel TopLevel;
 
+}}

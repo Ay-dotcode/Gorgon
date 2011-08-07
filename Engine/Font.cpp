@@ -21,7 +21,7 @@ namespace gge {
 	  Theme(NULL), Style(Normal), Color(0x0), Shadow(ShadowParams())
 	{ }
 
-	Font &Font::operator =(Font &f) {
+	Font &Font::operator =(const Font &f) {
 		Theme=f.Theme;
 		Style=f.Style;
 		Color=f.Color;

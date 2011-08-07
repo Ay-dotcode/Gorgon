@@ -43,6 +43,9 @@ namespace gge { namespace widgets {
 		Container=container;
 		BaseLayer=&container->CreateWidgetLayer(Order);
 		wrapper=w;
+		BaseLayer->MouseCallback.Set(*this, &WidgetBase::MouseEvent);
+		BaseLayer->Move(location);
+		BaseLayer->Resize(size);
 	}
 
 	void WidgetBase::call_container_removefocus() {
@@ -52,6 +55,13 @@ namespace gge { namespace widgets {
 
 	void WidgetBase::SetContainer(ContainerBase &container) {
 		container.AddWidget(this);
+	}
+
+	void WidgetBase::Detach() {
+		if(!Container)
+			return;
+
+		Container->RemoveWidget(this);
 	}
 
 

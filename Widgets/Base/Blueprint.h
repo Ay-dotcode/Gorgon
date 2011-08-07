@@ -9,7 +9,7 @@ namespace gge { namespace widgets {
 
 	class WidgetBase;
 
-	class Blueprint: public resource::ResourceBase {
+	class Blueprint {
 	public:
 		Blueprint() : AlphaAnimation(0), Pointer(gge::Pointer::None)
 		{ }

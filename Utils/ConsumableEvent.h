@@ -868,7 +868,7 @@ namespace gge { namespace utils {
 
 		////Unregisters a given handler token
 		void Unregister(Token token) {
-			for(std::map<P_, Token>::iterator i=TokenList.begin();i!=TokenList.end();++i) {
+			for(std::unordered_map<P_, Token>::iterator i=TokenList.begin();i!=TokenList.end();++i) {
 				if(i->second==token)
 					i->second=NullToken;
 			}
@@ -915,19 +915,19 @@ namespace gge { namespace utils {
 		void Enable(Token token) {
 			ITEMTYPE_ *item=reinterpret_cast<ITEMTYPE_*>(token);
 
-			item->Item->enabled=true;
+			item->Get().enabled=true;
 		}
 
 		void Disable(Token token) {
 			ITEMTYPE_ *item=reinterpret_cast<ITEMTYPE_*>(token);
 
-			item->Item->enabled=false;
+			item->Get().enabled=false;
 		}
 
 		bool IsEnabled(Token token) {
 			ITEMTYPE_ *item=reinterpret_cast<ITEMTYPE_*>(token);
 
-			return item->Item->enabled;
+			return item->Get().enabled;
 		}
 
 		bool Fire(Token token, P_ params) {

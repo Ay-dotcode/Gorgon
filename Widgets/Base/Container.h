@@ -15,6 +15,21 @@ namespace gge { namespace widgets {
 		friend class WidgetBase;
 	public:
 
+
+		ContainerBase() : 
+			Default(NULL),
+			Cancel(NULL),
+			Focussed(NULL),
+			PrevFocus(NULL),
+			size(0,0),
+			isvisible(true),
+			isenabled(true),
+			tabswitch(true),
+			accesskeysenabled(true),
+			Organizer(NULL)
+		{ }
+
+
 		virtual bool IsVisible() { return isvisible; }
 		inline  bool IsHidden()  { return !IsVisible(); }
 		virtual void Show(bool setfocus=false) { 
@@ -100,7 +115,7 @@ namespace gge { namespace widgets {
 			}
 
 			//roll again from bottom
-			for(auto it=Widgets.First();it.isValid() && &(*it)!=Focussed;it.Next()) {
+			for(auto it=Widgets.First();it.isValid() && it.CurrentPtr()!=Focussed;it.Next()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -133,12 +148,16 @@ namespace gge { namespace widgets {
 
 		//Should remove currently focused item and should not set any other in place
 		virtual bool RemoveFocus() {
+			if(!focus_changing(NULL))
+				return false;
+
 			if(!call_widget_loosefocus(Focussed))
 				return false;
 
 			PrevFocus=Focussed;
 			Focussed=NULL;
 
+			focus_changed(NULL);
 			return true;
 		}
 		virtual void ForceRemoveFocus() {
@@ -146,6 +165,8 @@ namespace gge { namespace widgets {
 
 			PrevFocus=Focussed;
 			Focussed=NULL;
+
+			focus_changed(NULL);
 		}
 
 		
@@ -169,8 +190,8 @@ namespace gge { namespace widgets {
 
 
 		virtual WidgetLayer &CreateWidgetLayer(int Order=0) = 0;
-		virtual LayerBase   &CreateBackgroundLayer(int Order=0) = 0;
-		virtual LayerBase   &CreateExtenderLayer() = 0;
+		virtual LayerBase   &CreateBackgroundLayer() = 0;
+		virtual WidgetLayer &CreateExtenderLayer() = 0;
 
 
 		//A container or the target widget has right to reject add requests
@@ -220,7 +241,7 @@ namespace gge { namespace widgets {
 			if(widget==NULL)
 				return false;
 
-			RemoveWidget(*widget); 
+			return RemoveWidget(*widget); 
 		}
 
 
@@ -229,8 +250,13 @@ namespace gge { namespace widgets {
 
 
 		virtual void Redraw() {
-			for(auto it=Widgets.First();it.isValid();it.Next())
-				it->Redraw();
+			if(!IsVisible())
+				return;
+
+			for(auto it=Widgets.First();it.isValid();it.Next()) {
+				if(it->IsVisible())
+					it->Redraw();
+			}
 		}
 		virtual void Reorganize() {
 			if(Organizer) {
@@ -251,6 +277,8 @@ namespace gge { namespace widgets {
 				if(it->second==&widget)
 					return it->first;
 			}
+
+			return 0;
 		}
 		virtual WidgetBase *GetAccessTarget(int Key) { return AccessKeys[Key]; }
 		bool IsAccessKeysEnabled() { return accesskeysenabled; }
@@ -274,7 +302,9 @@ namespace gge { namespace widgets {
 		//utils::EventChain<ContainerBase, input::keyboard::Event> KeyboardEvent;
 
 
-		~ContainerBase();
+		~ContainerBase() {
+			delete Organizer; //?
+		}
 
 
 	protected:
@@ -327,7 +357,7 @@ namespace gge { namespace widgets {
 					return true;
 			}
 
-			PerformStandardKeyboardActions(event, Key);
+			return PerformStandardKeyboardActions(event, Key);
 		}
 
 
@@ -372,15 +402,15 @@ namespace gge { namespace widgets {
 		}
 
 		bool call_widget_locating(WidgetBase &widget, int Order)  {
-			widget.locating(this,Order);
+			return widget.locating(this,Order);
 		}
 
 		bool call_widget_detach(WidgetBase &widget)  {
-			widget.detach(this);
+			return widget.detach(this);
 		}
 
 		void call_widget_located(WidgetBase &widget, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order)  {
-			widget.located(this,w,Order);
+			return widget.located(this,w,Order);
 		}
 
 

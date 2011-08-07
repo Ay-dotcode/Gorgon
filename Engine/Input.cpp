@@ -219,56 +219,6 @@ namespace gge { namespace input {
 				);
 		}
 
-		template <class R_>
-		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Register(
-				new EmptyClassHandler(object,fn),
-				bounds,
-				eventmask
-				);
-		}
-
-		template <class R_>
-		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(utils::Point location), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Register(
-				new LocationOnlyClassHandler(object,fn),
-				bounds,
-				eventmask
-				);
-		}
-
-		template <class R_>
-		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Register(
-				new NoAmountClassHandler(object,fn),
-				bounds,
-				eventmask
-				);
-		}
-
-		template <class R_>
-		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Register(
-				new ClassHandler(object,fn),
-				bounds,
-				eventmask
-				);
-		}
-
-		template <class R_>
-		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Bounds bounds, utils::Any data, Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Register(
-				new FullClassHandler(object,fn,data),
-				bounds,
-				eventmask
-				);
-		}
-
 		void EventChain::Unregister( Object &obj ) {
 			obj.Remove();
 		}
@@ -318,56 +268,6 @@ namespace gge { namespace input {
 		{
 			return Set(
 				new EmptyFunctionHandler(fn),
-				
-				eventmask
-				);
-		}
-
-		template <class R_>
-		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(), Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Set(
-				new EmptyClassHandler(object,fn),
-				
-				eventmask
-				);
-		}
-
-		template <class R_>
-		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(utils::Point location), Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Set(
-				new LocationOnlyClassHandler(object,fn),
-				
-				eventmask
-				);
-		}
-
-		template <class R_>
-		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Set(
-				new NoAmountClassHandler(object,fn),
-				
-				eventmask
-				);
-		}
-
-		template <class R_>
-		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Set(
-				new ClassHandler(object,fn),
-				
-				eventmask
-				);
-		}
-
-		template <class R_>
-		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Any data, Event::Type eventmask/*=AllUsed*/ )
-		{
-			return Set(
-				new FullClassHandler(object,fn,data),
 				
 				eventmask
 				);

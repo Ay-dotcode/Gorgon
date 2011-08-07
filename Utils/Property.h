@@ -413,7 +413,7 @@ namespace gge { namespace utils {
 	//should support everything that string class
 	// supports +, +=, length()
 	// string
-	template<class C_, class T_>
+	template<class C_, class T_=std::string>
 	class TextualProperty : public Property<C_, T_> {
 	public:
 		TextualProperty(C_ *Object, Getter getter, Setter setter) : Property<C_,T_>(Object, getter, setter) 
