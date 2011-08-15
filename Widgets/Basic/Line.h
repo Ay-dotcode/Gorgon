@@ -39,9 +39,9 @@ namespace gge { namespace widgets {
 	protected:
 		virtual animation::ProgressResult::Type Progress();
 
-		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H); 
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const; 
 
-		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H);;
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const;
 
 		virtual int calculatewidth (int w=-1) const;
 		virtual int calculateheight(int h=-1) const;
@@ -63,9 +63,9 @@ namespace gge { namespace widgets {
 		}
 
 	protected:
-		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H); 
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const; 
 
-		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H);;
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const;
 
 		Line *Mask;
 	};
@@ -140,9 +140,9 @@ namespace gge { namespace widgets {
 		virtual int		 StartOf(unsigned Frame) const { return loop->StartOf(Frame); }
 		virtual	int		 EndOf(unsigned Frame) const { return loop->EndOf(Frame); }
 
-		virtual void Prepare(GGEMain &main) {
-			ResourceBase::Prepare(main);
-			Mask=dynamic_cast<LineResource*>(file->Root().FindObject(mask));
+		virtual void Prepare(GGEMain &main, resource::File &file) {
+			ResourceBase::Prepare(main, file);
+			Mask=dynamic_cast<LineResource*>(file.Root().FindObject(mask));
 		}
 
 
@@ -150,7 +150,6 @@ namespace gge { namespace widgets {
 		animation::RectangularGraphic2DSequenceProvider *start, *loop, *end;
 		LineResource *Mask;
 		utils::SGuid mask;
-		resource::File *file;
 	};
 
 

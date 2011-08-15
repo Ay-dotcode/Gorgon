@@ -59,13 +59,13 @@ namespace gge { namespace graphics {
 		///@Y3		: bottom-right corner
 		///@X4		: bottom-left corner
 		///@Y4		: bottom-left corner
-		virtual void Draw(GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4);
+		virtual void Draw(const GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4);
 
-		virtual void Draw(GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4);
+		virtual void Draw(const GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4);
 
-		virtual void Draw(GLTexture *Image, int X, int Y, int W, int H) { Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H); }
+		virtual void Draw(const GLTexture *Image, int X, int Y, int W, int H) { Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H); }
 
-		virtual void Draw(GLTexture *Image, Tiling2D::Type Tiling, int X, int Y, int W, int H) {
+		virtual void Draw(const GLTexture *Image, Tiling2D::Type Tiling, int X, int Y, int W, int H) {
 			switch(Tiling) {
 			case Tiling2D::None:
 				Draw(Image,X,Y, W,H);
@@ -85,17 +85,17 @@ namespace gge { namespace graphics {
 		////Draws a tiled image to the screen
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
-		void DrawTiled(GLTexture *Image,int X,int Y,int W,int H);
+		void DrawTiled(const GLTexture *Image,int X,int Y,int W,int H);
 		////Draws a horizontally tiled image to the screen
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
-		void DrawHTiled(GLTexture *Image,int X,int Y,int W,int H);
+		void DrawHTiled(const GLTexture *Image,int X,int Y,int W,int H);
 		////Draws a vertically tiled image to the screen
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
 		///@W		: the width of the image to be drawn
 		/// if it is more than the size of the image
-		void DrawVTiled(GLTexture *Image,int X,int Y,int W,int H);
+		void DrawVTiled(const GLTexture *Image,int X,int Y,int W,int H);
 
 		////Renders the current layer, default handling is to pass
 		/// the request to the sub-layers
@@ -152,13 +152,13 @@ namespace gge { namespace graphics {
 		///@Y3		: bottom-right corner
 		///@X4		: bottom-left corner
 		///@Y4		: bottom-left corner
-		virtual void Draw(GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4);
+		virtual void Draw(const GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4);
 
-		virtual void Draw(GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4);
+		virtual void Draw(const GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4);
 
-		virtual void Draw(GLTexture *Image, int X, int Y, int W, int H) { Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H); }
+		virtual void Draw(const GLTexture *Image, int X, int Y, int W, int H) { Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H); }
 
-		virtual void Draw(GLTexture *Image, Tiling2D::Type Tiling, int X, int Y, int W, int H) {
+		virtual void Draw(const GLTexture *Image, Tiling2D::Type Tiling, int X, int Y, int W, int H) {
 			switch(Tiling) {
 			case Tiling2D::None:
 				Draw(Image,X,Y, W,H);
@@ -178,17 +178,17 @@ namespace gge { namespace graphics {
 		////Draws a tiled image to the screen
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
-		void DrawTiled(GLTexture *Image,int X,int Y,int W,int H);
+		void DrawTiled(const GLTexture *Image,int X,int Y,int W,int H);
 		////Draws a horizontally tiled image to the screen
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
-		void DrawHTiled(GLTexture *Image,int X,int Y,int W,int H);
+		void DrawHTiled(const GLTexture *Image,int X,int Y,int W,int H);
 		////Draws a vertically tiled image to the screen
 		///@Image	: image texture to be drawn, this can be obtained
 		/// using generate texture function
 		///@W		: the width of the image to be drawn
 		/// if it is more than the size of the image
-		void DrawVTiled(GLTexture *Image,int X,int Y,int W,int H);
+		void DrawVTiled(const GLTexture *Image,int X,int Y,int W,int H);
 
 
 

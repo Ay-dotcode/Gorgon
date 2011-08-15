@@ -36,10 +36,10 @@ namespace gge { namespace widgets {
 		virtual animation::ProgressResult::Type Progress() 
 		{ return animation::ProgressResult::None; }
 
-		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) 
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const 
 		{ object->DrawIn(Target, SizeController, X, Y, W, H); }
 
-		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H)
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const
 		{ object->DrawIn(Target, controller, X, Y, W, H); }
 
 		virtual int calculatewidth (int w=-1) const
@@ -103,7 +103,7 @@ namespace gge { namespace widgets {
 
 		graphics::SizeController2D SizeController;
 
-		virtual void Prepare(GGEMain &main);
+		virtual void Prepare(GGEMain &main, resource::File &file);
 
 		virtual ~ResizableObjectResource() {
 		}
@@ -113,8 +113,6 @@ namespace gge { namespace widgets {
 
 		resource::ResizableObjectProvider *object;
 		utils::SGuid target;
-
-		resource::File *file;
 
 	};
 

@@ -79,7 +79,6 @@ namespace gge { namespace widgets {
 		line=new LineResource(*start, *loop, *end, orientation,istiled);
 		line->guid=g;
 		line->mask=mask;
-		line->file=&File;
 
 		for(auto i=anims.begin(); i!=anims.end(); i++) {
 			line->Subitems.Add(*i, line->Subitems.HighestOrder()+1);
@@ -89,7 +88,7 @@ namespace gge { namespace widgets {
 	}
 
 
-	void Line::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) {
+	void Line::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const {
 		RectangularGraphic2D &start=*this->start;
 		RectangularGraphic2D &loop =*this->loop;
 		RectangularGraphic2D &end  =*this->end;
@@ -116,7 +115,7 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	void Line::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) {
+	void Line::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const {
 		RectangularGraphic2D &start=*this->start;
 		RectangularGraphic2D &loop =*this->loop;
 		RectangularGraphic2D &end  =*this->end;
@@ -173,7 +172,7 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	void MaskedLine::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) {
+	void MaskedLine::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const {
 		RectangularGraphic2D &start=*this->start;
 		RectangularGraphic2D &loop =*this->loop;
 		RectangularGraphic2D &end  =*this->end;
@@ -213,7 +212,7 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	void MaskedLine::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) {
+	void MaskedLine::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const {
 		RectangularGraphic2D &start=*this->start;
 		RectangularGraphic2D &loop =*this->loop;
 		RectangularGraphic2D &end  =*this->end;

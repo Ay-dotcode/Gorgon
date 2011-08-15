@@ -29,6 +29,28 @@ namespace gge { namespace widgets {
 		PlaceholderSizingMode SizingMode;
 		utils::Size Minimum;
 
+		utils::Size GetSize(utils::Size ideal, utils::Size maximum) {
+			utils::Size size=ideal;
+
+			switch (SizingMode) {
+			case Contents:
+			case Free:
+				if(Minimum.Width>ideal.Width)
+					size.Width=Minimum.Width;
+				if(Minimum.Height>ideal.Height)
+					size.Height=Minimum.Height;
+
+				return size;
+
+			case MaximumAvailable:
+				return maximum;
+
+			case Specified:
+			default:
+				return Minimum;
+			}
+		}
+
 		Placeholder() : Align(Alignment::Middle_Center), Margins(0), SizingMode(Free), Minimum(0,0)
 		{ }
 

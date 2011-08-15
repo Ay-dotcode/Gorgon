@@ -250,7 +250,7 @@ namespace gge { namespace resource {
 		return true;
 	}
 
-	void ImageResource::Prepare(GGEMain &main) {
+	void ImageResource::Prepare(GGEMain &main, resource::File &file) {
 #ifdef _DEBUG
 			if(Data==NULL) {
 				os::DisplayMessage("Image Resource","Data is not loaded yet.");

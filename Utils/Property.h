@@ -292,6 +292,7 @@ namespace gge { namespace utils {
 	//Object property allows the consumers of the property
 	//to be able to access objects member functions and 
 	//variables in const manner
+	// Should allow non-const versions, should have a version allows null
 	template<class C_, class T_>
 	class ObjectProperty : public Property<C_, T_> {
 		ObjectProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 

@@ -59,18 +59,18 @@ namespace gge { namespace graphics {
 		virtual GLTexture &GetTexture() { return Texture; }
 
 	protected:
-		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) 
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const
 		{ Target.Draw(&Texture,graphics::Tiling2D::Both, X,Y,W,H); } 
 
-		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) ;
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const ;
 
-		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) 
+		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4)  const
 		{ Target.Draw(&Texture,X1,Y1,X2,Y2,X3,Y3,X4,Y4,S1,U1,S2,U2,S3,U3,S4,U4); }
-		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) 
+		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4)  const
 		{ Target.Draw(&Texture,X1,Y1,X2,Y2,X3,Y3,X4,Y4); }
-		virtual void drawstretched(graphics::ImageTarget2D& Target, int X, int Y, int W, int H)
+		virtual void drawstretched(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const
 		{ Target.Draw(&Texture, X,Y,W,H); }
-		virtual void draw(graphics::ImageTarget2D& Target, graphics::Tiling2D::Type Tiling, int X, int Y, int W, int H)
+		virtual void draw(graphics::ImageTarget2D& Target, graphics::Tiling2D::Type Tiling, int X, int Y, int W, int H) const
 		{ Target.Draw(&Texture,Tiling, X,Y,W,H); }
 
 		virtual int getwidth () const { return Texture.W; }

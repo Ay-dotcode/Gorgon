@@ -53,7 +53,7 @@ namespace gge { namespace resource {
 		if(!root)
 			throw load_error(load_error::Containment, load_error::strings::Containment);
 
-		root->Resolve();
+		root->Resolve(*this);
 
 		isloaded=true;
 

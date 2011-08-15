@@ -104,9 +104,9 @@ namespace gge { namespace resource {
 		////Adds game resource loaders
 		void AddGameLoaders();
 
-		void Prepare(GGEMain &main) { root->Prepare(main); }
-		void Prepare(GGEMain *main) { root->Prepare(*main); }
-		void Prepare() { root->Prepare(Main); }
+		void Prepare(GGEMain &main) { root->Prepare(main, *this); }
+		void Prepare(GGEMain *main) { root->Prepare(*main, *this); }
+		void Prepare() { root->Prepare(Main, *this); }
 
 	protected:
 		////The root folder, root changes while loading a file
@@ -120,23 +120,23 @@ namespace gge { namespace resource {
 	inline void EatChunk(std::istream &file, std::streamoff Size) { file.seekg(Size, std::ios::cur); }
 
 	template<class T_>
-	inline void ReadFrom(std::istream &file, T_ &object) {
-		file.read(reinterpret_cast<char*>(&object), sizeof(object));
+	inline void ReadFrom(std::istream &Data, T_ &object) {
+		Data.read(reinterpret_cast<char*>(&object), sizeof(object));
 	}
 
 	template<>
-	inline void ReadFrom<std::string>(std::istream &file, std::string &object) {
+	inline void ReadFrom<std::string>(std::istream &Data, std::string &object) {
 		int temp;
-		ReadFrom(file, temp);
+		ReadFrom(Data, temp);
 		char *text=new char[temp];
-		file.read(text, temp);
+		Data.read(text, temp);
 		object.assign(text,temp);
 	}
 
 	template<class T_>
-	inline T_ ReadFrom(std::istream &file) {
+	inline T_ ReadFrom(std::istream &Data) {
 		T_ object;
-		file.read(reinterpret_cast<char*>(&object), sizeof(object));
+		Data.read(reinterpret_cast<char*>(&object), sizeof(object));
 
 		return object;
 	}

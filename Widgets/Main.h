@@ -18,5 +18,15 @@ namespace gge { namespace widgets {
 	void Init(GGEMain &Main);
 
 	extern VirtualPanel TopLevel;
+	extern utils::Collection<WidgetBase> DrawQueue;
+
+
+	namespace AutosizeModes {
+		enum Type {
+			None,
+			GrowOnly,
+			Autosize
+		};
+	};
 
 }}

@@ -39,9 +39,9 @@ namespace gge { namespace widgets {
 	protected:
 		virtual animation::ProgressResult::Type Progress();
 
-		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H); 
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const; 
 
-		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H);;
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const;
 
 		virtual int calculatewidth (int w=-1) const;
 		virtual int calculateheight(int h=-1) const;
@@ -68,9 +68,9 @@ namespace gge { namespace widgets {
 		}
 
 	protected:
-		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H);
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const;
 
-		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H);
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const;
 	};
 
 	class RectangleResource : public resource::ResourceBase, virtual public resource::ResizableObjectProvider, 
@@ -183,9 +183,9 @@ namespace gge { namespace widgets {
 		virtual int		 StartOf(unsigned Frame) const { return c->StartOf(Frame); }
 		virtual	int		 EndOf(unsigned Frame) const { return c->EndOf(Frame); }
 
-		virtual void Prepare(GGEMain &main) {
-			ResourceBase::Prepare(main);
-			Mask=dynamic_cast<RectangleResource*>(file->Root().FindObject(mask));
+		virtual void Prepare(GGEMain &main, resource::File &file) {
+			ResourceBase::Prepare(main, file);
+			Mask=dynamic_cast<RectangleResource*>(file.Root().FindObject(mask));
 		}
 
 		RectangleResource *Mask;
@@ -197,7 +197,6 @@ namespace gge { namespace widgets {
 		;
 
 		utils::SGuid mask;
-		resource::File *file;
 	};
 
 	inline int Rectangle::calculatewidth (int w) const {

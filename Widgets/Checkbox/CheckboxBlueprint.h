@@ -1,0 +1,532 @@
+#pragma once
+
+#pragma warning(push)
+#pragma warning(disable:4351)
+
+#include "..\..\Utils\Collection.h"
+#include "..\..\Utils\SGuid.h"
+#include "..\Base\BluePrint.h"
+#include "..\Basic\BorderData.h"
+#include "..\..\Engine\Font.h"
+#include "..\Basic\Placeholder.h"
+#include "..\..\Resource\SoundResource.h"
+#include "..\..\Utils\Size2D.h"
+#include "..\..\Resource\NullImage.h"
+#include "..\..\Engine\Wave.h"
+#include <map>
+
+
+
+namespace gge { namespace widgets {
+
+	//only service classes will be here
+	namespace checkbox {
+
+		class Blueprint;
+
+		Blueprint *Load(resource::File& File, std::istream &Data, int Size);
+
+		class Blueprint : public widgets::Blueprint, public resource::ResourceBase {
+			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
+		public:
+
+			//format: 0xtf, f: from, t: to
+			enum FocusType : unsigned {
+				//Not valid unless determining transitions
+				FT_None				= 0x00,
+				NotFocused			= 0x01,
+				Focused				= 0x02,
+			};
+
+			struct FocusMode {
+				FocusMode(FocusType from=NotFocused, FocusType to=FT_None) : from(from), to(to)
+				{ }
+
+				FocusType from : 4;
+				FocusType to   : 4;
+
+				bool operator <(const FocusMode &f) const {
+					if(to<f.to)
+						return true;
+					else if(to>f.to)
+						return false;
+					else						
+						return from<f.from;
+				}
+
+				bool operator ==(const FocusMode &f) const {
+					return from==f.from && to==f.to;
+				}
+
+				FocusMode swap() {
+					return FocusMode(to,from);
+				}
+			};
+
+			typedef int StateType;
+
+			struct StateMode {
+				StateMode(StateType from=1, StateType to=0) : from(from), to(to)
+				{ }
+
+				StateType from : 4;
+				StateType to   : 4;
+
+				bool operator <(const StateMode &s) const {
+					if(to<s.to)
+						return true;
+					else if(to>s.to)
+						return false;
+					else						
+						return from<s.from;
+				}
+
+				bool operator ==(const StateMode &s) const {
+					return from==s.from && to==s.to;
+				}
+
+				StateMode swap() {
+					return StateMode(to,from);
+				}
+			};
+
+			class Group;
+
+			struct GroupMode {
+				GroupMode(FocusMode focus=FocusMode(), StateMode state=StateMode()) : focus(focus), state(state)
+				{ }
+
+				GroupMode(FocusType focus_from, int state_from, FocusType focus_to=FT_None, int state_to=0) : 
+				focus(focus_from,focus_to), state(state_from,state_to)
+				{ }
+
+				GroupMode(const Group &g);
+
+				FocusMode focus;
+				StateMode state;
+
+				bool operator <(const GroupMode &e) const {
+					if(focus<e.focus)
+						return true;
+					else if(focus==e.focus)
+						return state<e.state;
+					else						
+						return false;
+				}
+			};
+
+			enum StateNumbers {
+				Single=1,
+				Dual,
+				Tri
+			};
+
+			enum StyleType {
+				YT_None	=0,
+				Normal	=1,
+				Hover	=2,
+				Down	=4,
+				Disabled=8
+			};
+
+			struct StyleMode {
+				StyleMode(StyleType from=YT_None, StyleType to=YT_None) : from(from), to(to)
+				{ }
+
+				StyleType from;
+				StyleType to;
+
+				StyleMode swap() {
+					return StyleMode(to, from);
+				}
+			};
+
+			enum SizingMode {
+				Full=0,
+				Auto=1
+			};
+
+			enum LineContentType {
+				Empty			= 0,
+				Symbol			= 1,
+				Text			= 2,
+				Icon			= 4,
+			};
+
+			struct LineContents {
+				LineContents(LineContentType First=Empty, LineContentType Second=Empty, LineContentType Third=Empty) :
+					First(First), Second(Second), Third(Third)
+				{ }
+
+				LineContents(int v) {
+					*this=*(reinterpret_cast<LineContents*>(&v));
+				}
+
+				LineContentType First  : 4;
+				LineContentType Second : 4;
+				LineContentType Third  : 4;
+			};
+
+			enum AnimationDirection {
+				Missing  = 0,
+				Forward  = 1,
+				Backward =-1,
+			};
+
+			struct AnimationInfo {
+				AnimationInfo(AnimationDirection direction=Missing,int duration=-1) : direction(direction), duration(duration)
+				{ }
+
+				operator bool() {
+					return direction!=Missing;
+				}
+
+				AnimationDirection direction;
+				int duration;
+			};
+
+			enum TransitionType {
+				   NoTransition,
+				StyleTransition,
+				StateTransition,
+				FocusTransition,
+			};
+
+			enum HeightType {
+				SizedToContents,
+				Fixed,
+				MaximumAvailable
+			};
+
+			class Element;
+
+			class Line : public resource::ResourceBase {
+				friend Line *LoadLine(resource::File& File, std::istream &Data, int Size);
+				friend class Blueprint;
+			public:
+
+				Line() : Border(NULL)
+				{ }
+
+				GID::Type getGID() const { return GID::Checkbox_Line; }
+
+				BorderDataResource *Border;
+				LineContents		Contents;
+				SizingMode			WidthMode;
+				HeightType		    HeightMode;
+				int					Height;
+				Alignment::Type		Align;//!vertical component of the alignment is not used
+
+				LineContentType		GetContent(int id) {
+					if(id==0) {
+						return Contents.First;
+					}
+					else if(id==1) {
+						return Contents.Second;
+					}
+					else {
+						return Contents.Third;
+					}
+				}
+
+
+				virtual void Prepare(GGEMain &main, resource::File &file);
+
+			protected:
+				utils::SGuid border;
+			};
+
+
+			class Element : public resource::ResourceBase {
+				friend Blueprint::Element *LoadElement(resource::File& File, std::istream &Data, int Size);
+				friend class Blueprint;
+			public:
+				Element() : Symbol(NULL), Sound(NULL), Border(NULL), Overlay(NULL), Font(NULL),
+					SymbolPlaceholder(NULL), TextPlaceholder(NULL), IconPlaceholder(NULL),
+					Duration(-1), Lines()
+				{ }
+
+				GID::Type getGID() const { return GID::Checkbox_Element; }
+
+				int Duration;
+
+				BorderDataResource			*Border;
+				resource::
+					ResizableObjectProvider	*Symbol;
+				Font						*Font;
+				Placeholder					*SymbolPlaceholder;
+				Placeholder					*TextPlaceholder;
+				Placeholder					*IconPlaceholder;
+				resource::SoundResource		*Sound;
+				BorderDataResource			*Overlay;
+
+				Line *Lines[3];
+
+				template<class T_, int id>
+				T_ *Get() const {
+					throw std::runtime_error("No such variable");
+				}
+
+				template<>
+				BorderDataResource *Get<BorderDataResource, 1>() const {
+					return Border;
+				}
+				template<>
+				resource::ResizableObjectProvider *Get<resource::ResizableObjectProvider, 2>() const {
+					return Symbol;
+				}
+				template<>
+				gge::Font *Get<gge::Font, 3>() const {
+					return Font;
+				}
+				template<>
+				Placeholder *Get<Placeholder, 4>() const {
+					return SymbolPlaceholder;
+				}
+				template<>
+				Placeholder *Get<Placeholder, 5>() const {
+					return TextPlaceholder;
+				}
+				template<>
+				Placeholder *Get<Placeholder, 6>() const {
+					return IconPlaceholder;
+				}
+				template<>
+				resource::SoundResource *Get<resource::SoundResource, 7>() const {
+					return Sound;
+				}
+				template<>
+				BorderDataResource *Get<BorderDataResource, 8>() const {
+					return Overlay;
+				}
+				template<>
+				Line *Get<Line, 11>() const {
+					return Lines[0];
+				}
+				template<>
+				Line *Get<Line, 12>() const {
+					return Lines[1];
+				}
+				template<>
+				Line *Get<Line, 13>() const {
+					return Lines[2];
+				}
+
+				virtual void Prepare(GGEMain &main, resource::File &file);
+
+
+				~Element() {
+					utils::CheckAndDelete(Font);
+				}
+
+			protected:
+				utils::SGuid border;
+				utils::SGuid symbol;
+				FontInitiator font;
+				utils::SGuid symbolplaceholder;
+				utils::SGuid textplaceholder;
+				utils::SGuid iconplaceholder;
+				utils::SGuid sound;
+				utils::SGuid overlay;
+				utils::SGuid lines[3];
+
+			};
+
+			class Group : public resource::ResourceBase {
+				friend Group *LoadGroup(resource::File& File, std::istream &Data, int Size);
+				friend class Blueprint;
+			public:
+
+				Group() : Mapping(),
+					Normal(NULL), Hover(NULL), Down(NULL), Disabled(NULL),
+					NormalToHover(NULL), NormalToDown(NULL), NormalToDisabled(NULL), HoverToDown(NULL),
+					HoverToNormal(NULL), DownToNormal(NULL), DisabledToNormal(NULL), DownToHover(NULL)
+				{ }
+
+				GID::Type getGID() const { return GID::Checkbox_Group; }
+
+
+				FocusMode Focus;
+				StateMode State;
+
+
+				Element *Normal;
+				Element *Hover;
+				Element *Down;
+				Element *Disabled;
+
+				Element *NormalToHover;
+				Element *NormalToDown;
+				Element *NormalToDisabled;
+				Element *HoverToDown;
+
+				Element *HoverToNormal;
+				Element *DownToNormal;
+				Element *DisabledToNormal;
+				Element *DownToHover;
+
+
+				virtual void Prepare(GGEMain &main, resource::File &file);
+
+
+				~Group() {
+				}
+
+
+			protected:
+				utils::SGuid normal;
+				utils::SGuid hover;
+				utils::SGuid down;
+				utils::SGuid disabled;
+				
+				utils::SGuid normaltohover;
+				utils::SGuid normaltodown;
+				utils::SGuid normaltodisabled;
+				utils::SGuid hovertodown;
+
+				utils::SGuid hovertonormal;
+				utils::SGuid downtonormal;
+				utils::SGuid disabledtonormal;
+				utils::SGuid downtohover;
+
+				Element *Mapping[5][5];
+			};
+
+			Blueprint() : States(Single), DefaultSize(0,0), Mapping()
+			{ }
+
+
+
+
+			AnimationInfo hasstyleanimation(FocusMode f, StateMode s, StyleMode style) const  {
+				if(Mapping[GroupMode(f,s)]) {
+					if(Mapping[GroupMode(f,s)]->Mapping[style.to][style.from])
+						return AnimationInfo(Forward,Mapping[GroupMode(f,s)]->Mapping[style.to][style.from]->Duration);
+
+					if(Mapping[GroupMode(f,s)]->Mapping[style.from][style.to])
+						return AnimationInfo(Backward,Mapping[GroupMode(f,s)]->Mapping[style.to][style.from]->Duration);
+				}
+
+				return Missing;
+			}
+
+			AnimationInfo HasStyleAnimation(FocusMode focus, StateMode state, StyleMode style) const;
+			AnimationInfo HasStateAnimation(StateMode state) const;
+			AnimationInfo HasFocusAnimation(FocusMode focus) const;
+
+
+			//Group of size 5 is required
+			void GetAlternatives(Group** &groups, FocusMode focus, StateMode state) const;
+
+			template<class T_, int id>
+			T_ *Get(Group **groups, StyleMode style, TransitionType &type) const {
+				for(int i=0;i<5 && groups[i];i++) {
+					Blueprint::Group *group=groups[i];
+
+					if(group->Mapping[style.from][style.to] && group->Mapping[style.from][style.to]->Get<T_,id>()) {
+						if(style.to!=0)
+							type=Blueprint::StyleTransition;
+						else if(group->Focus.to!=Blueprint::FT_None)
+							type=Blueprint::FocusTransition;
+						else if(group->State.to!=0)
+							type=Blueprint::StateTransition;
+						else
+							type=Blueprint::NoTransition;
+
+						return group->Mapping[style.from][style.to]->Get<T_,id>();
+					}
+
+					if(style.to!=Blueprint::YT_None) {
+						if(group->Mapping[style.to][style.from] && group->Mapping[style.to][style.from]->Get<T_,id>()) {
+							if(group->Focus.to!=Blueprint::FT_None)
+								type=Blueprint::FocusTransition;
+							else if(group->State.to!=0)
+								type=Blueprint::StateTransition;
+							else
+								type=Blueprint::StyleTransition;
+
+							return group->Mapping[style.to][style.from]->Get<T_,id>();
+						}
+					}
+
+					if(style.to!=Blueprint::YT_None || style.from!=Blueprint::Normal) {
+						if(group->Mapping[Blueprint::Normal][Blueprint::YT_None] && group->Mapping[Blueprint::Normal][Blueprint::YT_None]->Get<T_,id>()) {
+							if(group->Focus.to!=Blueprint::FT_None)
+								type=Blueprint::FocusTransition;
+							else if(group->State.to!=0)
+								type=Blueprint::StateTransition;
+							else
+								type=Blueprint::NoTransition;
+
+							return group->Mapping[Blueprint::Normal][Blueprint::YT_None]->Get<T_,id>();
+						}
+					}
+				}
+
+				return NULL;
+			}
+
+			BorderDataResource *GetOuterBorder(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<BorderDataResource, 1>(groups, style, type);
+			}
+			resource::ResizableObjectProvider *GetSymbol(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<resource::ResizableObjectProvider, 2>(groups, style, type);
+			}
+			Font *GetFont(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<Font, 3>(groups, style, type);
+			}
+			Placeholder *GetSymbolPlaceholder(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<Placeholder, 4>(groups, style, type);
+			}
+			Placeholder *GetTextPlaceholder(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<Placeholder, 5>(groups, style, type);
+			}
+			Placeholder *GetIconPlaceholder(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<Placeholder, 6>(groups, style, type);
+			}
+			resource::SoundResource *GetSound(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<resource::SoundResource, 7>(groups, style, type);
+			}
+			BorderDataResource *GetOverlay(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<BorderDataResource, 8>(groups, style, type);
+			}
+			Line *GetLine(int id, Group **groups, StyleMode style, TransitionType &type) const {
+				if(id==1)
+					return Get<Line, 11>(groups, style, type);
+				else if(id==2)
+					return Get<Line, 12>(groups, style, type);
+				else
+					return Get<Line, 13>(groups, style, type);
+			}
+			Line *GetLine1(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<Line, 11>(groups, style, type);
+			}
+			Line *GetLine2(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<Line, 12>(groups, style, type);
+			}
+			Line *GetLine3(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<Line, 13>(groups, style, type);
+			}
+
+
+
+			StateNumbers States;
+			utils::Size  DefaultSize;
+
+			utils::Collection<Group> Groups;
+
+			virtual GID::Type getGID() const { return GID::Checkbox; }
+
+			//not really but being unable to use [] makes life miserable
+			mutable std::map<GroupMode, Group*> Mapping;
+
+		protected:
+
+
+		};
+
+	}
+
+}}
+
+#pragma warning(pop)

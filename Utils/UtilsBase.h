@@ -33,4 +33,15 @@
 
 namespace gge {
 	typedef unsigned char Byte;
+
+	namespace utils {
+		template<class T_>
+		void CheckAndDelete(T_ *&elm) {
+			if(elm) {
+				delete elm;
+				elm=NULL;
+			}
+		}
+	}
+
 }

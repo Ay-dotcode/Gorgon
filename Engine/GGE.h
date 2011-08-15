@@ -45,8 +45,8 @@ namespace gge {
 		static const int Mask_Invalid		= ~Mask_Used;
 
 		template<class T_>
-		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, utils::basic_Rectangle2D<T_> object, utils::basic_Size2D<T_> target) {
-			utils::basic_Point2D<T_> p=object.TopLeft();
+		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, utils::basic_Rectangle2D<T_> target, utils::basic_Size2D<T_> object) {
+			utils::basic_Point2D<T_> p=target.TopLeft();
 
 			if(isCenter(Align))
 				p.x+=(target.Width-object.Width)/2;
@@ -57,6 +57,23 @@ namespace gge {
 				p.y+=(target.Height-object.Height)/2;
 			else if(isRight(Align))
 				p.y+=target.Height-object.Height;
+
+			return p;
+		}
+
+		template<class T_>
+		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, utils::basic_Bounds2D<T_> target, utils::basic_Size2D<T_> object) {
+			utils::basic_Point2D<T_> p=target.TopLeft();
+
+			if(isCenter(Align))
+				p.x+=(target.Width()-object.Width)/2;
+			else if(isRight(Align))
+				p.x+=target.Width()-object.Width;
+
+			if(isMiddle(Align))
+				p.y+=(target.Height()-object.Height)/2;
+			else if(isRight(Align))
+				p.y+=target.Height()-object.Height;
 
 			return p;
 		}
@@ -99,6 +116,7 @@ namespace gge {
 
 			return true;
 		}
+
 	}; 
 
 }

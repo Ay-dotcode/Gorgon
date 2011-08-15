@@ -77,7 +77,7 @@ namespace gge { namespace resource {
 		return snd;
 	}
 
-	void SoundResource::Prepare( GGEMain &main ) {
+	void SoundResource::Prepare( GGEMain &main, File &file ) {
 		Buffer=sound::system::CreateSoundBuffer(Format, Data, Size);
 	}
 

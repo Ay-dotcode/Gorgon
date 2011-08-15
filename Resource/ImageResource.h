@@ -63,7 +63,7 @@ namespace gge { namespace resource {
 		/// loading.
 		bool Load();
 
-		virtual void Prepare(GGEMain &main);
+		virtual void Prepare(GGEMain &main, File &file);
 
 		PNGReadError ImportPNG(string filename);
 

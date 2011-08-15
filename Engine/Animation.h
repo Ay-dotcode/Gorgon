@@ -164,6 +164,9 @@ namespace gge { namespace animation {
 		virtual void Play();
 		virtual void ResetProgress();
 
+		//finished and paused events are created using info
+		virtual void Obtained(ProgressResult::Type r, AnimationBase &source) { }
+
 	protected:
 		bool islooping;
 		int pauseatframe;

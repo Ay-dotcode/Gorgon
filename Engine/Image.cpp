@@ -8,7 +8,7 @@ using namespace gge::utils;
 
 namespace gge { namespace graphics {
 
-	void ImageTexture::drawin(ImageTarget2D& Target, const SizeController2D &controller, int X, int Y, int W, int H) {
+	void ImageTexture::drawin(ImageTarget2D& Target, const SizeController2D &controller, int X, int Y, int W, int H) const {
 		bool HTile=false, VTile=false;
 		int w=W,h=H;
 		if(controller.HorizontalTiling==SizeController2D::Single) {

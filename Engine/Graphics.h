@@ -370,15 +370,15 @@ namespace gge { namespace graphics {
 		}
 
 		////Changes current texture to the given one
-		void setTexture(GLTexture *texture) {
+		void setTexture(const GLTexture *texture) {
 			DeleteTextureCoords();
 
 			this->Texture=texture;
-			TextureCoords=texture->ImageCoord;
+			TextureCoords=const_cast<TexturePosition*>((const TexturePosition*)texture->ImageCoord);
 		}
 
 		////Returns current texture
-		GLTexture *getTexture() {
+		const GLTexture *getTexture() {
 			return Texture;
 		}
 
@@ -407,7 +407,7 @@ namespace gge { namespace graphics {
 		}
 	protected:
 		////The texture to be used
-		GLTexture *Texture;
+		const GLTexture *Texture;
 	};
 
 	////this structure is used to ease conversions

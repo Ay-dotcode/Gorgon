@@ -124,16 +124,16 @@ namespace gge { namespace utils {
 		}
 
 		inline
-		void Load(std::istream &file) {
-			file.read((char*)bytes, 8);
+		void Load(std::istream &Data) {
+			Data.read((char*)bytes, 8);
 
 			checknewserial();
 		}
 
 		inline
-		void LoadLong(FILE *file) {
-			fread(bytes, 1, 8, file);
-			fread(bytes, 1, 8, file);
+		void LoadLong(FILE *Data) {
+			fread(bytes, 1, 8, Data);
+			fread(bytes, 1, 8, Data);
 		}
 
 		inline

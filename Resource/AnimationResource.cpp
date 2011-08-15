@@ -78,8 +78,18 @@ namespace gge { namespace resource {
 				int t=Controller->GetProgress();
 				int tl=(int)parent.GetTotalLength();
 
-				
-				GLTexture &tx=parent.ImageAt(PositiveMod(t,tl)).GetTexture();
+				//this will cause the animation to loop if its simple timer
+				//and stop if it is controlled.
+				if( t>=parent.StartOf(parent.GetNumberofFrames()-1) ) {
+					ret=animation::ProgressResult::Finished;
+				}
+				if(t<0) {
+					t=0;
+					ret=animation::ProgressResult::Finished;
+				}
+
+				t=PositiveMod(t,tl);
+				GLTexture &tx=parent.ImageAt(t).GetTexture();
 				if(tx.ID!=Texture.ID)
 					Texture=tx;
 

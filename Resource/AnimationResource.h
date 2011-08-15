@@ -33,7 +33,6 @@ namespace gge { namespace resource {
 
 	protected:
 		virtual animation::ProgressResult::Type Progress();
-
 	};
 
 

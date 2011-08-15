@@ -44,6 +44,8 @@ namespace gge { namespace resource {
 
 		gge::sound::Wave *CreateWave() { return new gge::sound::Wave(Buffer); }
 
-		virtual void Prepare(GGEMain &main);
+		gge::sound::Wave *Create3DWave(float maxWaveDistance) { return new gge::sound::Wave(Buffer,	maxWaveDistance); }
+
+		virtual void Prepare(GGEMain &main, File &file);
 	};
 } }

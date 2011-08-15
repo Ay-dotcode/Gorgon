@@ -26,10 +26,21 @@ namespace gge { namespace widgets {
 
 		BorderData(resource::ResizableObject &object, bool autowidth=true) : object(&object), Margins(0), Padding(0) {
 			if(autowidth) {
-				if(typeid(object)==typeid(Rectangle)) {
+				if(typeid(object)==typeid(widgets::ResizableObject)) {
+					widgets::ResizableObject& ro=dynamic_cast<widgets::ResizableObject&>(object);
+					if(dynamic_cast<Rectangle*>(&ro.GetObject())) {
+						BorderWidth=dynamic_cast<Rectangle&>(ro.GetObject()).BorderWidth();
+					}
+					else if(dynamic_cast<Line*>(&ro.GetObject())) {
+						BorderWidth=dynamic_cast<Line&>(ro.GetObject()).BorderWidth();
+					}
+					else
+						BorderWidth=utils::Margins(0);	
+				}
+				else if(dynamic_cast<Rectangle*>(&object)) {
 					BorderWidth=dynamic_cast<Rectangle&>(object).BorderWidth();
 				}
-				else if(typeid(object)==typeid(Line)) {
+				else if(dynamic_cast<Line*>(&object)) {
 					BorderWidth=dynamic_cast<Line&>(object).BorderWidth();
 				}
 				else
@@ -40,7 +51,7 @@ namespace gge { namespace widgets {
 		resource::ResizableObject &GetObject() { return *object; }
 		void SetObject(resource::ResizableObject &object) { this->object	=&object; }
 
-		utils::Bounds ContentBounds(utils::Bounds outer) { return ((outer-BorderWidth)-Padding)-Margins; }
+		utils::Bounds ContentBounds(utils::Bounds outer) { return ((outer-BorderWidth)-Padding); }
 		utils::Bounds DrawingBound(utils::Bounds outer) { return outer-Margins; }
 
 		void DrawAround(graphics::ImageTarget2D& Target, utils::Bounds bounds) { DrawIn(Target, utils::Rectangle(bounds+BorderWidth+Padding+Margins)); }
@@ -58,24 +69,23 @@ namespace gge { namespace widgets {
 		virtual animation::ProgressResult::Type Progress() 
 		{ return animation::ProgressResult::None; }
 
-		//Draw functions should honor margins, padding and border width
-		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) 
-		{ object->DrawIn(Target, X+Margins.Left, Y+Margins.Top, W-Margins.Horizontal(), H-Margins.Vertical()); }
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const
+		{ object->DrawIn(Target, X, Y, W, H); }
 
-		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H)
-		{ object->DrawIn(Target, controller, X+Margins.Left, Y+Margins.Top, W-Margins.Horizontal(), H-Margins.Vertical()); }
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const
+		{ object->DrawIn(Target, controller, X, Y, W, H); }
 
 		virtual int calculatewidth (int w=-1) const
-		{ return object->CalculateWidth(w-Margins.Horizontal()); }
+		{ return object->CalculateWidth(w); }
 
 		virtual int calculateheight(int h=-1) const
-		{ return object->CalculateHeight(h-Margins.Vertical()); }
+		{ return object->CalculateHeight(h); }
 
 		virtual int calculatewidth (const graphics::SizeController2D &controller, int w=-1) const
-		{ return object->CalculateWidth(controller, w-Margins.Horizontal()); }
+		{ return object->CalculateWidth(controller, w); }
 
 		virtual int calculateheight(const graphics::SizeController2D &controller, int h=-1) const
-		{ return object->CalculateHeight(controller, h-Margins.Vertical()); }
+		{ return object->CalculateHeight(controller, h); }
 	};
 
 	class BorderDataResource : public resource::ResourceBase, virtual public resource::ResizableObjectProvider {
@@ -87,7 +97,8 @@ namespace gge { namespace widgets {
 
 		virtual BorderData &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { 
 			BorderData *bd=new BorderData(object->CreateResizableObject(controller, owner), AutoBorderWidth);
-			bd->BorderWidth=BorderWidth;
+			if(!AutoBorderWidth)
+				bd->BorderWidth=BorderWidth;
 			bd->Margins=Margins;
 			bd->Padding=Padding;
 
@@ -96,7 +107,8 @@ namespace gge { namespace widgets {
 
 		virtual BorderData &CreateResizableObject(bool create=false) { 
 			BorderData *bd=new BorderData(object->CreateResizableObject(create), AutoBorderWidth);
-			bd->BorderWidth=BorderWidth;
+			if(!AutoBorderWidth)
+				bd->BorderWidth=BorderWidth;
 			bd->Margins=Margins;
 			bd->Padding=Padding;
 
@@ -126,7 +138,7 @@ namespace gge { namespace widgets {
 		utils::Margins BorderWidth;
 		bool AutoBorderWidth;
 
-		virtual void Prepare(GGEMain &main);
+		virtual void Prepare(GGEMain &main, resource::File &file);
 
 		virtual ~BorderDataResource() {
 		}
@@ -136,7 +148,6 @@ namespace gge { namespace widgets {
 		ResizableObjectResource *object;
 
 		utils::SGuid target;
-		resource::File* file;
 	};
 
 }}

@@ -68,7 +68,7 @@ namespace gge { namespace resource {
 		{ Print(&target, X, Y, W, Text, Color, Data, DataLen, Align, Shadow); }
 
 		////Returns the height of this font, all characters have same height
-		virtual int FontHeight() { return Characters['T']->GetHeight(); }
+		virtual int FontHeight() { return VerticalSpacing; }
 		////Returns the width of the given text
 		virtual int TextWidth(string Text) { 
 			int i, w=0; 
@@ -78,5 +78,7 @@ namespace gge { namespace resource {
 		
 			return w; 
 		}
+		virtual int TextHeight(string Text, int W);
+		virtual int FontBaseline() { return Baseline; }
 	};
 } }

@@ -8,9 +8,11 @@
 #include "../Resource/DataResource.h"
 #include "../Resource/GRE.h"
 #include "OS.h"
+#include "Animation.h"
 
 using namespace gge::resource;
 using namespace gge::utils;
+using namespace gge::animation;
 
 namespace gge {
 
@@ -68,14 +70,9 @@ namespace gge {
 		DataResource *data=Folder->asData(0);
 
 		int i=0;
-		for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First();resource.isValid();resource.Next()) {
-			if(resource->getGID()==GID::Animation) {
-				AnimationResource *anim=dynamic_cast<AnimationResource *>(resource.CurrentPtr());
-				utils::Collection<Pointer, 10>::Add( new Pointer(&anim->CreateAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerType)data->getInt(i)) );
-			} else if(resource->getGID()==GID::Image) {
-				ImageResource *img=dynamic_cast<ImageResource *>(resource.CurrentPtr());
-				utils::Collection<Pointer, 10>::Add( new Pointer(img, data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerType)data->getInt(i)) );
-			}
+		for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First()+1;resource.isValid();resource.Next()) {
+			RectangularGraphic2DSequenceProvider *anim=dynamic_cast<RectangularGraphic2DSequenceProvider *>(resource.CurrentPtr());
+			utils::Collection<Pointer, 10>::Add( new Pointer(&anim->CreateAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerType)data->getInt(i)) );
 
 			i+=2;
 		}

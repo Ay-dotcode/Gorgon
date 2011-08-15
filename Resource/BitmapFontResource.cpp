@@ -606,4 +606,89 @@ namespace gge { namespace resource {
 			}
 		}	
 	}
+
+	int BitmapFontResource::TextHeight(string text, int w) {
+		unsigned i;
+		int l=0;
+		int lstart=0,lword=0;
+		int llen=0;
+		int lww=0;
+		int fh=FontHeight();
+		int j;
+		int y=0;
+		bool nextline=false;
+		bool wrap=true;
+
+		if(text=="") return 0;
+
+
+		if(w==0) {
+			/*align=TextAlignment::Left;
+			w=10000;*/
+			wrap=false;
+		}
+
+		for(i=0;i<text.length();i++) {
+			if(text[i]=='\n') {
+				lword=i-1;
+				lww=llen;
+				nextline=true;
+			}
+			else {
+				llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
+
+				if(text[i]==' ' || text[i]==',' || text[i]==')') {
+					lword=i;
+					lww=llen;
+				}
+
+				if(llen>w && wrap) {
+					if(lword<=lstart) {
+						lword=i;
+						lww=llen;
+					}
+
+					nextline=true;
+				}
+				if(i==text.length()-1) {
+					lword=i;
+					lww=llen;
+
+					nextline=true;
+				}
+			}
+
+			if(nextline) {
+				l=0;
+
+				for(j=lstart;j<lword+1;j++) {
+					if(text[j]=='\t') {
+						ImageResource *img=Characters[(unsigned char)' '];
+						int i;
+						for(i=0;i<Tabsize;i++) {
+							l+=img->GetWidth()+Seperator;
+						}
+					}
+					if(text[j]!='\r') {
+						ImageResource *img=Characters[(unsigned char)text[j]];
+						l+=img->GetWidth()+Seperator;
+					}
+				}
+
+				if(text.length()-1==lword)
+					;
+				else if(text[lword+1]=='\n')
+					lword++;
+
+				lstart=lword+1;
+				i=lword;
+				llen=0;
+				y+=VerticalSpacing;
+				nextline=false;
+			}
+		}
+
+		return y;
+	}
+
 } }

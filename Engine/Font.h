@@ -43,7 +43,9 @@ namespace gge {
 
 		//Info functions
 		int FontHeight();
-		int TextWidth(string Text);
+		int FontBaseline();
+		int TextWidth(std::string Text);
+		int TextHeight(std::string Text, int W);
 
 
 

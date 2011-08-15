@@ -13,7 +13,6 @@ namespace gge { namespace widgets {
 	public:
 		Blueprint() : AlphaAnimation(0), Pointer(gge::Pointer::None)
 		{ }
-		virtual WidgetBase &CreateWidget() = 0;
 
 		int AlphaAnimation;
 		Pointer::PointerType Pointer;

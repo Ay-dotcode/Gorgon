@@ -36,7 +36,7 @@ namespace gge { namespace resource {
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		string name;
 
-		virtual void Prepare(File *File) { }
+		virtual void Prepare(File &File) { }
 	};
 
 	////Integer data
@@ -113,7 +113,7 @@ namespace gge { namespace resource {
 		operator ResourceBase &() { if(!value) throw std::runtime_error("Target is not set"); return *value; }
 		ResourceBase &Get() { if(!value) throw std::runtime_error("Target is not set"); return *value; }
 
-		virtual void Prepare(File *File);
+		virtual void Prepare(File &File);
 	};
 
 	//Font data
@@ -127,7 +127,7 @@ namespace gge { namespace resource {
 		FontData(Font &font) { value=font; }
 		FontData(FontInitiator &font) { initiator=font; }
 		operator Font() { return value; }
-		virtual void Prepare(File *File) {
+		virtual void Prepare(File &File) {
 			value=(Font)initiator;
 		}
 	};
@@ -191,7 +191,7 @@ namespace gge { namespace resource {
 
 		virtual ~DataResource() { Data.Destroy(); ResourceBase::~ResourceBase(); }
 
-		virtual void Prepare(GGEMain &main);
+		virtual void Prepare(GGEMain &main, File &file);
 
 	protected:
 		File *file;

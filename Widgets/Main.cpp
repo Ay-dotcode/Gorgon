@@ -6,10 +6,22 @@
 #include "Basic\ResizableObjectResource.h"
 #include "Basic\BorderData.h"
 #include "Basic\Placeholder.h"
+#include "Checkbox\CheckboxBlueprint.h"
 
 namespace gge { namespace widgets {
 
 	VirtualPanel TopLevel;
+	utils::Collection<WidgetBase> DrawQueue;
+
+
+	void Draw_Signal(IntervalObject *interval, void *data) {
+		for(utils::Collection<WidgetBase>::Iterator i=DrawQueue.First();i.isValid();i.Next()) {
+			i->waitingforredraw=false;
+			i->draw();
+		}
+
+		DrawQueue.Clear();
+	}
 
 
 	void RegisterLoaders(resource::File &File) {
@@ -19,6 +31,8 @@ namespace gge { namespace widgets {
 		File.Loaders.Add(new resource::ResourceLoader(GID::ResizableObj, LoadResizableObjectResource)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::BorderData, LoadBorderDataResource)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::Placeholder, LoadPlaceholderResource)); 
+
+		File.Loaders.Add(new resource::ResourceLoader(GID::Checkbox, checkbox::Load)); 
 	}
 
 	void Init(GGEMain &Main) {
@@ -27,6 +41,8 @@ namespace gge { namespace widgets {
 
 		Main.Add(layer, 1);
 		TopLevel.LandOn(*layer);
+
+		Main.RegisterInterval(1, NULL, &Draw_Signal);
 	}
 
 }}

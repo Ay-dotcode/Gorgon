@@ -11,16 +11,21 @@ namespace gge { namespace resource {
 namespace gge {
 
 	////Text alignment constants
-	class TextAlignment {
-	public:
+	namespace TextAlignment {
 		enum Type {
 			Left		= 8 ,
 			Center		= 32,
 			Right		= 16,
 		};
 
-	private:
-		TextAlignment() {}
+		inline Type GetHorizontal(Alignment::Type align)  {
+			if(Alignment::isLeft(align))
+				return Left;
+			else if(Alignment::isRight(align))
+				return Right;
+			else
+				return Center;
+		}
 	};
 
 	////Base type for shadow parameters
@@ -128,7 +133,10 @@ namespace gge {
 		virtual void Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment::Type Align)=0;
 
 		virtual int FontHeight()=0;
+		virtual int FontBaseline()=0;
 		virtual int TextWidth(string Text)=0;
+		virtual int TextHeight(string Text, int W)=0;
+
 	};
 
 }

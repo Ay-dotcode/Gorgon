@@ -62,8 +62,22 @@ namespace gge { namespace widgets {
 
 		virtual bool IsEnabled()  { return isenabled; }
 		inline  bool IsDisabled() { return !IsEnabled(); }
-		virtual void Enable() { isenabled=true; }
-		virtual void Disable() { isenabled=false; }
+		virtual void Enable() { 
+			if(!IsEnabled()) {
+				isenabled=true;
+				for(auto it=Widgets.First();it.isValid();it.Next()) {
+					call_widget_containerenabledchanged(*it, true);
+				}
+			} 
+		}
+		virtual void Disable() { 
+			if(IsEnabled()) {
+				isenabled=false;
+				for(auto it=Widgets.First();it.isValid();it.Next()) {
+					call_widget_containerenabledchanged(*it, false);
+				}
+			} 
+		}
 		//!!Virtual status of the following two functions might change
 		void ToggleEnabled() { 
 			if(!isenabled)	Enable(); 
@@ -249,13 +263,13 @@ namespace gge { namespace widgets {
 		virtual void Deactivate() = 0;
 
 
-		virtual void Redraw() {
+		virtual void Draw() {
 			if(!IsVisible())
 				return;
 
 			for(auto it=Widgets.First();it.isValid();it.Next()) {
 				if(it->IsVisible())
-					it->Redraw();
+					it->Draw();
 			}
 		}
 		virtual void Reorganize() {
@@ -269,10 +283,16 @@ namespace gge { namespace widgets {
 			Reorganize();
 		}
 
-		 
-		virtual void RegisterAccessKey(WidgetBase &widget, int Key) { AccessKeys[Key]=&widget; }
-		virtual void RemoveAccessKey  (WidgetBase &widget, int Key) { AccessKeys[Key]=NULL; }
-		virtual int  GetAccessKey(WidgetBase &widget) {
+		
+		//Widgets are responsible of removing previous access key if a single one is supported
+		virtual void SetAccessKey  (WidgetBase &widget, input::keyboard::Key Key) { 
+			if(AccessKeys[Key])
+				AccessKeys[Key]->accesskeystatechanged();
+
+			AccessKeys[Key]=&widget; 
+		}
+		virtual void ResetAccessKey(int Key) { AccessKeys[Key]=NULL; }
+		virtual input::keyboard::Key  GetAccessKey(WidgetBase &widget) {
 			for(auto it=AccessKeys.begin();it!=AccessKeys.end();++it) {
 				if(it->second==&widget)
 					return it->first;
@@ -282,10 +302,38 @@ namespace gge { namespace widgets {
 		}
 		virtual WidgetBase *GetAccessTarget(int Key) { return AccessKeys[Key]; }
 		bool IsAccessKeysEnabled() { return accesskeysenabled; }
-		void EnableAccessKeys() { accesskeysenabled=true; }
-		void DisableAccessKeys() { accesskeysenabled=false; }
-		void ToggleAccessKeysEnabledState() { accesskeysenabled=!accesskeysenabled; }
-		void SetAccessKeysEnabledState(bool state) { accesskeysenabled=state; }
+		void EnableAccessKeys() { 
+			if(!accesskeysenabled) {
+				accesskeysenabled=true;
+
+				for(auto it=AccessKeys.begin();it!=AccessKeys.end();++it) {
+					if(it->second)
+						it->second->accesskeystatechanged();
+				}
+			}
+		}
+		void DisableAccessKeys() { 
+			if(accesskeysenabled) {
+				accesskeysenabled=false;
+
+				for(auto it=AccessKeys.begin();it!=AccessKeys.end();++it) {
+					if(it->second)
+						it->second->accesskeystatechanged();
+				}
+			}
+		}
+		void ToggleAccessKeysEnabledState() { 
+			if(!accesskeysenabled)
+				EnableAccessKeys();
+			else
+				DisableAccessKeys(); 
+		}
+		void SetAccessKeysEnabledState(bool state) { 
+			if(state)
+				EnableAccessKeys();
+			else
+				DisableAccessKeys(); 
+		}
 
 
 		Organizer *GetOrganizer() { return Organizer; }
@@ -312,7 +360,7 @@ namespace gge { namespace widgets {
 		virtual bool focus_changing(WidgetBase *newwidget) { return true; }
 		virtual void focus_changed (WidgetBase *newwidget) { }
 
-		bool PerformStandardKeyboardActions(input::keyboard::Event::Type event, int Key) {
+		bool PerformStandardKeyboardActions(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			//Tab switch
 			if(tabswitch) {
 				if(event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Tab) {
@@ -331,12 +379,12 @@ namespace gge { namespace widgets {
 				//Enter/Esc -> Type of access keys
 				//!!Might need to change to IButton
 				if(Default && Default->IsVisible() && Default->IsEnabled() && event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Enter) {
-					if(Default->KeyboardEvent(input::keyboard::Event::Char, input::keyboard::KeyCodes::Enter))
+					if(Default->Accessed())
 						return true;
 				}
 
 				if(Cancel && Cancel->IsVisible() && Cancel->IsEnabled() && event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Escape) {
-					if(Cancel->KeyboardEvent(input::keyboard::Event::Char, input::keyboard::KeyCodes::Enter))
+					if(Cancel->Accessed())
 						return true;
 				}
 
@@ -344,14 +392,14 @@ namespace gge { namespace widgets {
 				if(event==input::keyboard::Event::Char && (!input::keyboard::Modifier::Check() || input::keyboard::Modifier::Current==input::keyboard::Modifier::Alt)) {
 					if(AccessKeys[Key])
 						if(AccessKeys[Key]->IsVisible() && AccessKeys[Key]->IsEnabled())
-							if(AccessKeys[Key]->Focus())
+							if(AccessKeys[Key]->Accessed())
 								return true;
 				}
 			}
 
 			return false;
 		}
-		bool DistributeKeyboardEvent(input::keyboard::Event::Type event, int Key) {
+		bool DistributeKeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			if(Focussed) {
 				if(Focussed->KeyboardEvent(event, Key))
 					return true;
@@ -413,6 +461,14 @@ namespace gge { namespace widgets {
 			return widget.located(this,w,Order);
 		}
 
+		void call_widget_accesskeystatechanged(WidgetBase &widget)  {
+			widget.accesskeystatechanged();
+		}
+
+		void call_widget_containerenabledchanged(WidgetBase &widget, bool state) {
+			widget.containerenabledchanged(state);
+		}
+
 
 
 
@@ -431,7 +487,7 @@ namespace gge { namespace widgets {
 
 
 		utils::SortedCollection<WidgetBase> Widgets;
-		std::map<int, WidgetBase*> AccessKeys;
+		std::map<input::keyboard::Key, WidgetBase*> AccessKeys;
 
 	};
 

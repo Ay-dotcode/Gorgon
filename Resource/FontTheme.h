@@ -63,7 +63,7 @@ namespace gge { namespace resource {
 			guid_h3(nullptr)
 		{ }
 
-		virtual void Prepare(GGEMain &main);
+		virtual void Prepare(GGEMain &main, File &file);
 
 		virtual FontRenderer *DetermineRenderer(Font::FontStyle Style=Font::Normal) {
 			if(Style==Font::Normal)
@@ -165,8 +165,6 @@ namespace gge { namespace resource {
 						guid_h2,
 						guid_h3
 		;
-
-		File *file;
 
 	};
 } }

@@ -24,6 +24,16 @@ namespace gge { namespace sound {
 		}
 	}
 
+	Wave::Wave() {
+		buffer=0;
+		isavailable=false;
+		AutoDestruct=true;
+		finished=NULL;
+		finishedstateisknown=0;
+
+		system::Waves.Add(this);
+	}
+
 	Wave::Wave(system::SoundBufferHandle buffer, float maxWaveDistance) {
 		buffer=buffer;
 		isavailable=false;

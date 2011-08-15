@@ -10,6 +10,8 @@ namespace gge { namespace widgets {
 
 		static const Type FileType			= 0x050100ff;
 
+
+
 		static const Type Line				= 0x05110000;
 		static const Type Line_Props		= 0x05110101;
 
@@ -24,6 +26,21 @@ namespace gge { namespace widgets {
 
 		static const Type Placeholder		= 0x05150000;
 		static const Type Placeholder_Props	= 0x05150101;
+
+
+
+		static const Type Checkbox				= 0x05850000;
+		static const Type Checkbox_Props		= 0x05850101;
+
+		static const Type Checkbox_Group		= 0x05854000;
+		static const Type Checkbox_Group_Props	= 0x05854001;
+
+		static const Type Checkbox_Element		= 0x05855000;
+		static const Type Checkbox_Element_Props= 0x05855001;
+
+		static const Type Checkbox_Line			= 0x05856000;
+		static const Type Checkbox_Line_Props	= 0x05856001;
+
 
 	}
 

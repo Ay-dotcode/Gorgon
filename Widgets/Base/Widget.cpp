@@ -32,7 +32,7 @@ namespace gge { namespace widgets {
 	void WidgetBase::located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
 		locateto(container, Order, w);
 
-		Redraw();
+		Draw();
 	}
 
 	bool WidgetBase::IsFocussed() {

@@ -23,9 +23,9 @@ namespace gge { namespace resource {
 		////This function shall prepare this resource to be used
 		/// after file is loaded, default behavior is to pass
 		/// the request to children
-		virtual void Prepare(GGEMain &main);
+		virtual void Prepare(GGEMain &main, File &file);
 		////This function shall resolve links or similar constructs
-		virtual void Resolve();
+		virtual void Resolve(File &file);
 
 		ResourceBase();
 		virtual ~ResourceBase();

@@ -16,8 +16,7 @@ namespace gge { namespace resource {
 		////Currently does nothing
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
-		virtual void Resolve();
-		virtual void Prepare(GGEMain &main) { }
+		virtual void Resolve(File &file);
 
 	protected:
 		utils::SGuid target;

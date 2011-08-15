@@ -13,8 +13,11 @@ namespace gge { namespace widgets {
 
 	class ContainerBase;
 
+	extern utils::Collection<WidgetBase> DrawQueue;
+
 	class WidgetBase {
 		friend class ContainerBase;
+		friend void Draw_Signal(IntervalObject *interval, void *data);
 	public:
 
 
@@ -28,7 +31,8 @@ namespace gge { namespace widgets {
 			isenabled(true),
 			pointer(Pointer::None),
 			GotFocus("GotFocus", this),
-			LostFocus("LostFocus", this)
+			LostFocus("LostFocus", this),
+			waitingforredraw(false)
 		{ }
 
 
@@ -83,7 +87,7 @@ namespace gge { namespace widgets {
 			if(BaseLayer)
 				BaseLayer->Resize(Size);
 
-			Redraw();
+			Draw();
 		}
 		void Resize(int W, int H) { Resize(utils::Size(W,H)); }
 		void SetWidth(int W)  { Resize(W, size.Height); }
@@ -197,7 +201,7 @@ namespace gge { namespace widgets {
 		virtual void ResetPointer() { pointer=Pointer::None; }
 
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, int Key) {
+		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			return false;
 		}
 
@@ -218,7 +222,16 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual void Redraw()=0;
+		void Draw() {
+			if(waitingforredraw) return;
+
+			DrawQueue.Add(this);
+			waitingforredraw=true;
+		}
+
+		virtual bool Accessed() {
+			return Focus();
+		}
 
 
 
@@ -232,10 +245,14 @@ namespace gge { namespace widgets {
 
 	protected:
 
+		virtual void draw()=0;
+
 		//TO BE CALLED BY CONTAINER
 		virtual bool loosefocus(bool force) { LostFocus(); return true; }
 		virtual bool locating(ContainerBase *container, int Order);
 		virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order);
+		virtual void accesskeystatechanged() { }
+		virtual void containerenabledchanged(bool state) { }
 
 		void locateto(ContainerBase* container, int Order, utils::SortedCollection<WidgetBase>::Wrapper * w);
 
@@ -260,6 +277,8 @@ namespace gge { namespace widgets {
 
 		bool isvisible;
 		bool isenabled;
+
+		bool waitingforredraw;
 
 		utils::Point location;
 		utils::Size  size;

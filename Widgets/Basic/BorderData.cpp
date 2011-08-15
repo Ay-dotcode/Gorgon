@@ -49,15 +49,13 @@ namespace gge { namespace widgets {
 			}
 		}
 
-		bdr->file=&File;
-
 		return bdr;
 	}
 
-	void BorderDataResource::Prepare(GGEMain &main) {
-		ResourceBase::Prepare(main);
+	void BorderDataResource::Prepare(GGEMain &main, resource::File &file) {
+		ResourceBase::Prepare(main, file);
 
-		ResizableObjectResource *ror= dynamic_cast<ResizableObjectResource *>(file->Root().FindObject(target));
+		ResizableObjectResource *ror= dynamic_cast<ResizableObjectResource *>(file.Root().FindObject(target));
 
 		if(ror==NULL)
 			ror=new ResizableObjectResource(NullImage::Get(), SizeController2D());

@@ -6,7 +6,7 @@ using namespace gge::utils;
 using namespace std;
 
 namespace gge { namespace resource {
-	void LinkNodeResource::Resolve() {
+	void LinkNodeResource::Resolve(resource::File &file) {
 		ResourceBase *parent=File->Root().FindParent(guid);
 		File->Redirects.Add(new Redirect(this->guid, target));
 
@@ -15,7 +15,7 @@ namespace gge { namespace resource {
 			for(SortedCollection<ResourceBase>::Iterator item=parent->Subitems.First();
 				item.isValid(); item.Next()) {
 				if(item->isEqual(guid)) {
-					ResourceBase *t=File->Root().FindObject(target);
+					ResourceBase *t=file.Root().FindObject(target);
 //					if(t) {
 						item.GetWrapper().SetItem(t);
 					//	break;

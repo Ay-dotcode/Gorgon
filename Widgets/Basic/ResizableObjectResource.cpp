@@ -45,15 +45,14 @@ namespace gge { namespace widgets {
 			}
 		}
 
-		rol->file = &File;
 		return rol;
 	}
 
 
-	void ResizableObjectResource::Prepare(GGEMain &main) {
-		ResourceBase::Prepare(main);
+	void ResizableObjectResource::Prepare(GGEMain &main, resource::File &file) {
+		ResourceBase::Prepare(main, file);
 
-		resource::ResizableObjectProvider *provider= dynamic_cast<resource::ResizableObjectProvider *>(file->Root().FindObject(target));
+		resource::ResizableObjectProvider *provider= dynamic_cast<resource::ResizableObjectProvider *>(file.Root().FindObject(target));
 
 		if(provider==NULL)
 			provider=&resource::NullImage::Get();

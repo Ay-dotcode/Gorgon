@@ -68,8 +68,8 @@ namespace gge { namespace resource {
 	}
 
 	
-	void LinkData::Prepare(File *File) { 
-		value=File->Root().FindObject(guid);
+	void LinkData::Prepare(File &File) { 
+		value=File.Root().FindObject(guid);
 	}
 
 
@@ -129,7 +129,7 @@ namespace gge { namespace resource {
 		return o;
 	}
 
-	void DataResource::Prepare( GGEMain &main ) {
+	void DataResource::Prepare( GGEMain &main, File &file ) {
 		for(utils::Collection<IData>::Iterator i=Data.First();i.isValid();i.Next()) 
 			i->Prepare(file);
 	}

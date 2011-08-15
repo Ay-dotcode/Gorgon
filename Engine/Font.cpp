@@ -44,10 +44,24 @@ namespace gge {
 		else
 			return 0;
 	}
+	int Font::FontBaseline() {
+		FontRenderer *r;
+		if(r=getRenderer())
+			return r->FontBaseline();
+		else
+			return 0;
+	}
 	int Font::TextWidth(string Text) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			return r->TextWidth(Text);
+		else
+			return 0;
+	}
+	int Font::TextHeight(string Text, int W) {
+		FontRenderer *r;
+		if(r=getRenderer())
+			return r->TextHeight(Text, W);
 		else
 			return 0;
 	}

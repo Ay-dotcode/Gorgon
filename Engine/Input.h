@@ -13,8 +13,11 @@ namespace gge { namespace input {
 
 
 	namespace keyboard { 
+		typedef int Key;
+
 		class Modifier {
 		public:
+
 			enum Type {
 				None		= 0,
 				Shift		= 1,
@@ -88,47 +91,47 @@ namespace gge { namespace input {
 
 		class KeyCodes {
 		public:
-			static const int Shift;
-			static const int Control;
-			static const int Alt;
-			static const int Super;
+			static const Key Shift;
+			static const Key Control;
+			static const Key Alt;
+			static const Key Super;
 
-			static const int Home;
-			static const int End;
-			static const int Insert;
-			static const int Delete;
-			static const int PageUp;
-			static const int PageDown;
+			static const Key Home;
+			static const Key End;
+			static const Key Insert;
+			static const Key Delete;
+			static const Key PageUp;
+			static const Key PageDown;
 
-			static const int Left;
-			static const int Up;
-			static const int Right;
-			static const int Down;
+			static const Key Left;
+			static const Key Up;
+			static const Key Right;
+			static const Key Down;
 
-			static const int PrintScreen;
-			static const int Pause;
+			static const Key PrintScreen;
+			static const Key Pause;
 
-			static const int CapsLock;
-			static const int NumLock;
+			static const Key CapsLock;
+			static const Key NumLock;
 
-			static const int Enter;
-			static const int Tab;
-			static const int Backspace;
-			static const int Space;
-			static const int Escape;
+			static const Key Enter;
+			static const Key Tab;
+			static const Key Backspace;
+			static const Key Space;
+			static const Key Escape;
 
-			static const int F1;
-			static const int F2;
-			static const int F3;
-			static const int F4;
-			static const int F5;
-			static const int F6;
-			static const int F7;
-			static const int F8;
-			static const int F9;
-			static const int F10;
-			static const int F11;
-			static const int F12;
+			static const Key F1;
+			static const Key F2;
+			static const Key F3;
+			static const Key F4;
+			static const Key F5;
+			static const Key F6;
+			static const Key F7;
+			static const Key F8;
+			static const Key F9;
+			static const Key F10;
+			static const Key F11;
+			static const Key F12;
 		};
 
 
@@ -144,7 +147,7 @@ namespace gge { namespace input {
 				Up
 			} event;
 
-			int keycode;
+			Key keycode;
 
 			Event() { }
 			Event(Type event, int keycode) : event(event), keycode(keycode) { }

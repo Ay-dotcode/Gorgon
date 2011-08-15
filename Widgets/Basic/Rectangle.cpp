@@ -105,12 +105,11 @@ namespace gge { namespace widgets {
 		}
 
 		rectangle->mask=mask;
-		rectangle->file=&File;
 		return rectangle;
 	}
 
 
-	void Rectangle::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) {
+	void Rectangle::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const {
 
 		RectangleResource::TilingInfo tiling=parent.Tiling;
 
@@ -155,7 +154,7 @@ namespace gge { namespace widgets {
 		br->Draw(Target, X+(W-br->GetWidth()), Y+(H-br->GetHeight()));
 	}
 
-	void Rectangle::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) {
+	void Rectangle::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const {
 
 		RectangleResource::TilingInfo tiling=parent.Tiling;
 		int w=W, h=H;
@@ -208,7 +207,7 @@ namespace gge { namespace widgets {
 		br->Draw(Target, X+(W-br->GetWidth()), Y+(H-br->GetHeight()));
 	}
 
-	void MaskedRectangle::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) {
+	void MaskedRectangle::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const {
 
 		RectangleResource::TilingInfo tiling=parent.Tiling;
 
@@ -262,7 +261,7 @@ namespace gge { namespace widgets {
 		br->Draw(Target, X+(W-br->GetWidth()), Y+(H-br->GetHeight()));
 	}
 
-	void MaskedRectangle::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) {
+	void MaskedRectangle::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const {
 		Target.SetDrawMode(graphics::BasicSurface::AlphaOnly);
 		Mask->DrawIn(Target, controller, X,Y, W,H);
 		Target.SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);

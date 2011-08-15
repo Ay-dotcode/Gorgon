@@ -3,19 +3,19 @@
 using namespace gge::utils;
 
 namespace gge { namespace resource {
-	void ResourceBase::Prepare( GGEMain &main ) {
+	void ResourceBase::Prepare(GGEMain &main, File &file) {
 		for(SortedCollection<ResourceBase>::Iterator resource=Subitems.First();
 			resource.isValid(); resource.Next()) {
 
-			resource->Prepare(main);
+			resource->Prepare(main, file);
 		}
 	}
 
-	void ResourceBase::Resolve() {
+	void ResourceBase::Resolve(File &file) {
 		for(SortedCollection<ResourceBase>::Iterator resource=Subitems.First();
 			resource.isValid(); resource.Next()) {
 
-			resource->Resolve();
+			resource->Resolve(file);
 		}
 	}
 

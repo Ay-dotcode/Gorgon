@@ -7,8 +7,6 @@ using namespace std;
 namespace gge { namespace resource {
 	ResourceBase *LoadFontTheme(File &File, std::istream &Data, int Size) {
 		FontTheme *ft=new FontTheme;
-
-		ft->file=&File;
 		
 		int target=Data.tellg()+Size;
 		while(Data.tellg()<target) {
@@ -53,15 +51,15 @@ namespace gge { namespace resource {
 		return ft;
 	}
 
-	void FontTheme::Prepare(gge::GGEMain &main) {
-		ResourceBase::Prepare(main);
+	void FontTheme::Prepare(gge::GGEMain &main, File &file) {
+		ResourceBase::Prepare(main,file);
 
-		NormalFont	= dynamic_cast<FontRenderer*>(file->FindObject(guid_normal));
-		BoldFont	= dynamic_cast<FontRenderer*>(file->FindObject(guid_bold));
-		ItalicFont	= dynamic_cast<FontRenderer*>(file->FindObject(guid_italic));
-		SmallFont	= dynamic_cast<FontRenderer*>(file->FindObject(guid_small));
-		H1Font		= dynamic_cast<FontRenderer*>(file->FindObject(guid_h1));
-		H2Font		= dynamic_cast<FontRenderer*>(file->FindObject(guid_h2));
-		H3Font		= dynamic_cast<FontRenderer*>(file->FindObject(guid_h3));
+		NormalFont	= dynamic_cast<FontRenderer*>(file.FindObject(guid_normal));
+		BoldFont	= dynamic_cast<FontRenderer*>(file.FindObject(guid_bold));
+		ItalicFont	= dynamic_cast<FontRenderer*>(file.FindObject(guid_italic));
+		SmallFont	= dynamic_cast<FontRenderer*>(file.FindObject(guid_small));
+		H1Font		= dynamic_cast<FontRenderer*>(file.FindObject(guid_h1));
+		H2Font		= dynamic_cast<FontRenderer*>(file.FindObject(guid_h2));
+		H3Font		= dynamic_cast<FontRenderer*>(file.FindObject(guid_h3));
 	}
 } }

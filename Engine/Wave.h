@@ -33,9 +33,11 @@ namespace gge { namespace sound {
 		///@maxWaveDistance	: if specified the generated sound controller
 		/// will have 3D properties
 		Wave(system::SoundBufferHandle Buffer, float maxWaveDistance=0.0f);
+		////This will create non functioning wave
+		Wave();
 		////Plays this sound once
 		Wave& Play();
-		////Plays this sound continously until stopped
+		////Plays this sound continuously until stopped
 		Wave& Loop();
 		////Stops the sound
 		Wave& Stop();

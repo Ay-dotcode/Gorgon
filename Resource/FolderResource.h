@@ -49,14 +49,28 @@ namespace gge { namespace resource {
 		AnimationResource	*asAnimation(int Index);
 		BitmapFontResource	*asBitmapFont		(int Index);
 
+		//if you run into problems with dynamic_cast use CGet instead
 		template <typename T_>
 		T_ &Get(int Index) {
 			return dynamic_cast<T_&>(Subitems[Index]);
 		}
 
+		//if you run into problems with dynamic_cast use CGetPtr instead
 		template <typename T_>
 		T_ *GetPtr(int Index) {
 			return dynamic_cast<T_*>(&Subitems[Index]);
+		}
+
+		//try to use Get instead of this
+		template <typename T_>
+		T_ &CGet(int Index) {
+			return (T_&)(Subitems[Index]);
+		}
+
+		//try to use GetPtr instead of this
+		template <typename T_>
+		T_ *CGetPtr(int Index) {
+			return (T_*)(&Subitems[Index]);
 		}
 		
 		FolderResource() : ResourceBase() {

@@ -3,7 +3,7 @@
 
 namespace gge { namespace graphics {
 
-	void RectangularGraphic2D::DrawRotated( ImageTarget2D& Target, utils::Point p, float angle, utils::Point origin/*=utils::Point(0,0)*/ )
+	void RectangularGraphic2D::DrawRotated( ImageTarget2D& Target, utils::Point p, float angle, utils::Point origin/*=utils::Point(0,0)*/ ) const
 	{
 		int W=getwidth();
 		int H=getheight();
