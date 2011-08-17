@@ -72,7 +72,7 @@ namespace gge { namespace animation {
 				pauseat=-1;
 				Paused(source_param(NULL));
 			}
-			else if(pauseat>0 && speed<0 && pauseat>=progress) {
+			else if(pauseat>=0 && speed<0 && pauseat>=progress) {
 				ispaused=true;
 				pauseat=-1;
 				Paused(source_param(NULL));
@@ -89,9 +89,11 @@ namespace gge { namespace animation {
 
 	void AnimationController::Obtained( ProgressResult::Type r, AnimationBase &source ) {
 		if(r==ProgressResult::Finished) {
-			isfinished=true;
-			ispaused=true;
-			Finished(source_param(&source));
+			if(!isfinished) {
+				isfinished=true;
+				ispaused=true;
+				Finished(source_param(&source));
+			}
 		}
 		if(r==ProgressResult::Pause) {
 			ispaused=true;

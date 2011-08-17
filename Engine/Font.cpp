@@ -51,14 +51,14 @@ namespace gge {
 		else
 			return 0;
 	}
-	int Font::TextWidth(string Text) {
+	int Font::TextWidth(const string &Text) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			return r->TextWidth(Text);
 		else
 			return 0;
 	}
-	int Font::TextHeight(string Text, int W) {
+	int Font::TextHeight(const string &Text, int W) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			return r->TextHeight(Text, W);
@@ -68,22 +68,22 @@ namespace gge {
 
 
 	//Print Functions
-	void Font::Print(ColorizableImageTarget2D *target, int X, int Y, string Text) {
+	void Font::Print(ColorizableImageTarget2D *target, int X, int Y, const string &Text) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			r->Print(target, X, Y, Text, Color, Shadow);
 	}
-	void Font::Print(ColorizableImageTarget2D *target, int X, int Y, int W, string Text, TextAlignment::Type Align) {
+	void Font::Print(ColorizableImageTarget2D *target, int X, int Y, int W, const string &Text, TextAlignment::Type Align) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			r->Print(target, X, Y, W, Text, Color, Align, Shadow);
 	}
-	void Font::Print(ColorizableImageTarget2D *target, int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
+	void Font::Print(ColorizableImageTarget2D *target, int X, int Y, int W, const string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			r->Print(target, X, Y, W, Text, Color, Data, DataLen, Align, Shadow);
 	}
-	void Font::Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
+	void Font::Print_Test(int X, int Y, int W, const string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
 		FontRenderer *r;
 		if(r=getRenderer())
 			r->Print_Test(X, Y, W, Text, Data, DataLen, Align);
@@ -102,16 +102,17 @@ namespace gge {
 		f.file=&File;
 
 		f.guid_theme.Load(Data);
-		f.Style=(Font::FontStyle)ReadFrom<int>(Data);
-		ReadFrom(Data, f.Color);
+		if(f.guid_theme) {
+			f.Style=(Font::FontStyle)ReadFrom<int>(Data);
+			ReadFrom(Data, f.Color);
 
-		int gid, size;
+			int gid, size;
 
-		ReadFrom(Data, gid);
-		ReadFrom(Data, size);
+			ReadFrom(Data, gid);
+			ReadFrom(Data, size);
 
-		f.Shadow=ShadowParams::Load(File,Data,size);
-
+			f.Shadow=ShadowParams::Load(File,Data,size);
+		}
 		return f;
 	}
 

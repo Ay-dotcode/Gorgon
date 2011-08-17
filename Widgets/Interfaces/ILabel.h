@@ -14,7 +14,7 @@ namespace gge { namespace widgets {
 	class ILabel {
 	public:
 
-		ILabel() : Text(this, &ILabel::gettext, &ILabel::settext),settingfocus(false)
+		ILabel() : INIT_PROPERTY(ILabel, Text),settingfocus(false)
 		{ }
 
 		utils::TextualProperty<ILabel> Text;
@@ -29,11 +29,14 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
+		virtual WidgetBase *GetWidget() {
+			return NULL;
+		}
 
 	protected:
 		//REQUIRED
-		virtual void settext(const std::string &text) = 0;
-		virtual std::string gettext() const = 0;
+		virtual void setText(const std::string &text) = 0;
+		virtual std::string getText() const = 0;
 
 
 		//SUPPLIED

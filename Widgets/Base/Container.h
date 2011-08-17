@@ -286,10 +286,12 @@ namespace gge { namespace widgets {
 		
 		//Widgets are responsible of removing previous access key if a single one is supported
 		virtual void SetAccessKey  (WidgetBase &widget, input::keyboard::Key Key) { 
-			if(AccessKeys[Key])
-				AccessKeys[Key]->accesskeystatechanged();
+			WidgetBase *w=AccessKeys[Key];
 
 			AccessKeys[Key]=&widget; 
+
+			if(w)
+				w->accesskeystatechanged();
 		}
 		virtual void ResetAccessKey(int Key) { AccessKeys[Key]=NULL; }
 		virtual input::keyboard::Key  GetAccessKey(WidgetBase &widget) {
@@ -378,12 +380,12 @@ namespace gge { namespace widgets {
 			if(accesskeysenabled) {
 				//Enter/Esc -> Type of access keys
 				//!!Might need to change to IButton
-				if(Default && Default->IsVisible() && Default->IsEnabled() && event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Enter) {
+				if(Default && Default->IsVisible() && Default->IsEnabled() && event==input::keyboard::Event::Char && (!input::keyboard::Modifier::Check() || input::keyboard::Modifier::Current==input::keyboard::Modifier::Ctrl) && Key==input::keyboard::KeyCodes::Enter) {
 					if(Default->Accessed())
 						return true;
 				}
 
-				if(Cancel && Cancel->IsVisible() && Cancel->IsEnabled() && event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Escape) {
+				if(Cancel && Cancel->IsVisible() && Cancel->IsEnabled() && event==input::keyboard::Event::Char && !input::keyboard::Modifier::Check() && Key==input::keyboard::KeyCodes::Escape) {
 					if(Cancel->Accessed())
 						return true;
 				}

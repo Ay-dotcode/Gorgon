@@ -36,6 +36,13 @@ namespace gge { namespace widgets {
 			end->DeleteAnimation();
 		}
 
+		virtual void SetController( animation::AnimationTimer &controller, bool owner=false ) {
+			AnimationBase::SetController(controller, owner);
+			start->SetController(controller);
+			loop->SetController(controller);
+			end->SetController(controller);
+		}
+
 	protected:
 		virtual animation::ProgressResult::Type Progress();
 

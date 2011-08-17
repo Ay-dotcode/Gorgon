@@ -53,7 +53,7 @@ namespace gge { namespace resource {
 
 		return font;
 	}
-	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int X, int Y, string text, graphics::RGBint color, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int X, int Y, const std::string &text, graphics::RGBint color, ShadowParams Shadow) {
 		if(text=="") return;
 
 		RGBint cc=target->GetCurrentColor();
@@ -79,7 +79,7 @@ namespace gge { namespace resource {
 		target->SetCurrentColor(cc);
 	}
 
-	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, string text, graphics::RGBint color, TextAlignment::Type align, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, const std::string &text, graphics::RGBint color, TextAlignment::Type align, ShadowParams Shadow) {
 		unsigned i;
 		int l=x;
 		int lstart=0,lword=0;
@@ -180,7 +180,7 @@ namespace gge { namespace resource {
 
 		target->SetCurrentColor(cc);
 	}
-	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, string text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment::Type Align, ShadowParams Shadow) {
+	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, const std::string &text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment::Type Align, ShadowParams Shadow) {
 
 		RGBint cc=target->GetCurrentColor();
 		target->SetCurrentColor(color);
@@ -405,7 +405,7 @@ namespace gge { namespace resource {
 		target->SetCurrentColor(cc);
 
 	}
-	void BitmapFontResource::Print_Test(int x, int y, int w, string text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
+	void BitmapFontResource::Print_Test(int x, int y, int w, const std::string &text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
 		if(text=="") {
 			int d;
 			int xpos=0;
@@ -537,15 +537,15 @@ namespace gge { namespace resource {
 						if(Data[d].CharPosition==j) {
 							switch(Data[d].Type) {
 							case EPrintData::Spacing:
-								Data[d].Out.position.x=l-sx;
-								Data[d].Out.position.y=y-sy;
+								Data[d].Out.position.x=l/*-sx*/;
+								Data[d].Out.position.y=y/*-sy*/;
 
 								l+=Data[d].In.position.x-Seperator; 
 								y+=Data[d].In.position.y; 
 								break;
 							case EPrintData::PositionDetect:
-								Data[d].Out.position.x=l-sx;
-								Data[d].Out.position.y=y-sy;
+								Data[d].Out.position.x=l/*-sx*/;
+								Data[d].Out.position.y=y/*-sy*/;
 								break;
 							case EPrintData::Color:
 
@@ -607,7 +607,7 @@ namespace gge { namespace resource {
 		}	
 	}
 
-	int BitmapFontResource::TextHeight(string text, int w) {
+	int BitmapFontResource::TextHeight(const std::string &text, int w) {
 		unsigned i;
 		int l=0;
 		int lstart=0,lword=0;

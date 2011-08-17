@@ -114,7 +114,7 @@ namespace gge { namespace widgets {
 				}
 				else if(gid==GID::Checkbox_Group_Props) {
 					bp->State = (Blueprint::StateMode)ReadFrom<int>(Data);
-					bp->Focus = (Blueprint::FocusType)ReadFrom<int>(Data);
+					bp->Focus = Blueprint::FocusType(ReadFrom<int>(Data));
 
 					bp->normal.Load(Data);
 					bp->hover.Load(Data);
@@ -198,32 +198,32 @@ namespace gge { namespace widgets {
 		Blueprint::AnimationInfo Blueprint::HasStyleAnimation(FocusMode f, StateMode s, StyleMode style) const {
 			Blueprint::AnimationInfo ret;
 
-			ret=hasstyleanimation(FocusMode(),StateMode(),style);
-			if(!ret)
-				return ret;
-
 			ret=hasstyleanimation(FocusMode(),s,style);
-			if(!ret)
+			if(ret)
 				return ret;
 
 			ret=hasstyleanimation(f,StateMode(),style);
-			if(!ret)
+			if(ret)
+				return ret;
+
+			ret=hasstyleanimation(FocusMode(),StateMode(),style);
+			if(ret)
 				return ret;
 
 			if(f.to!=Blueprint::FT_None) {
 				ret=hasstyleanimation(f.swap(),StateMode(),style);
-				if(!ret)
+				if(ret)
 					return ret;
 			}
 			
 			if(s.to!=0) {
 				ret=hasstyleanimation(FocusMode(),s.swap(),style);
-				if(!ret)
+				if(ret)
 					return ret;
 			}
 
 			ret=hasstyleanimation(f,s,style);
-			if(!ret)
+			if(ret)
 				return ret;
 
 			return Missing;
@@ -231,22 +231,20 @@ namespace gge { namespace widgets {
 
 		Blueprint::AnimationInfo Blueprint::HasStateAnimation(StateMode state) const {
 			if(Mapping[GroupMode(FocusMode(),state)])
-				return Blueprint::Forward;
+				return Blueprint::AnimationInfo(Blueprint::Forward,Mapping[GroupMode(FocusMode(),state)]->Normal->Duration);
 
-			state.swap();
 			if(Mapping[GroupMode(FocusMode(),state)])
-				return Blueprint::Backward;
+				return Blueprint::AnimationInfo(Blueprint::Backward,Mapping[GroupMode(FocusMode(),state)]->Normal->Duration);
 
 			return Blueprint::Missing;
 		}
 
 		Blueprint::AnimationInfo Blueprint::HasFocusAnimation(FocusMode focus) const {
 			if(Mapping[GroupMode(focus,StateMode())])
-				return Blueprint::Forward;
+				return Blueprint::AnimationInfo(Blueprint::Forward,Mapping[GroupMode(focus,StateMode())]->Normal->Duration);
 
-			focus.swap();
-			if(Mapping[GroupMode(focus,StateMode())])
-				return Blueprint::Backward;
+			if(Mapping[GroupMode(focus.swap(),StateMode())])
+				return Blueprint::AnimationInfo(Blueprint::Backward,Mapping[GroupMode(focus.swap(),StateMode())]->Normal->Duration);
 
 			return Blueprint::Missing;
 		}
@@ -276,14 +274,14 @@ namespace gge { namespace widgets {
 					groups[i++]=Mapping[gm(fm(), sm())];
 			}
 			else if(focus.to==Blueprint::FT_None) {
-				if(Mapping[gm(focus, sm())])
-					groups[i++]=Mapping[gm(focus, sm())];
-
 				if(Mapping[gm(fm(), state)])
 					groups[i++]=Mapping[gm(fm(), state)];
 
 				if(Mapping[gm(fm(), state.swap())])
 					groups[i++]=Mapping[gm(fm(), state.swap())];
+
+				if(Mapping[gm(focus, sm())])
+					groups[i++]=Mapping[gm(focus, sm())];
 
 				if(focus.from!=Blueprint::NotFocused) { //means we already did it with focus, sm()
 					if(Mapping[gm(fm(), sm())])
@@ -294,11 +292,11 @@ namespace gge { namespace widgets {
 				if(Mapping[gm(focus, sm())])
 					groups[i++]=Mapping[gm(focus, sm())];
 
-				if(Mapping[gm(fm(), state)])
-					groups[i++]=Mapping[gm(fm(), state)];
-
 				if(Mapping[gm(focus.swap(), sm())])
 					groups[i++]=Mapping[gm(focus.swap(), sm())];
+
+				if(Mapping[gm(fm(), state)])
+					groups[i++]=Mapping[gm(fm(), state)];
 
 				if(state.from!=1) { //means we already did it with fm(), state
 					if(Mapping[gm(fm(), sm())])
@@ -381,6 +379,8 @@ namespace gge { namespace widgets {
 			Border				=dynamic_cast<BorderDataResource*>(file.FindObject(border));
 			Symbol				=dynamic_cast<resource::ResizableObjectProvider*>(file.FindObject(symbol));
 			Font				=new gge::Font((gge::Font)font);
+			if(!Font->Theme)
+				utils::CheckAndDelete(Font);
 			SymbolPlaceholder	=dynamic_cast<Placeholder*>(file.FindObject(symbolplaceholder));
 			TextPlaceholder		=dynamic_cast<Placeholder*>(file.FindObject(textplaceholder));
 			IconPlaceholder		=dynamic_cast<Placeholder*>(file.FindObject(iconplaceholder));

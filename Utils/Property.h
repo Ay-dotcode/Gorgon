@@ -362,53 +362,48 @@ namespace gge { namespace utils {
 		}
 	};
 
-	//Reference object, host class has less control over the property object
-	// however, it can be modified effecting the result. Therefore, if user
-	// modifies the object the host class is not informed. At least good for
-	// fetching object from other sources when necessary. Can be used to delay
-	// loading resources.
+	//Reference object
 	template<class C_, class T_>
-	class ReferenceProperty : public Property<C_, T_*> {
-		ReferenceProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+	class ReferenceProperty {
+		typedef T_*(C_::*Getter)() const;
+		typedef void (C_::*Setter)(T_*);
+
+	protected:
+		C_		&Object;
+		Getter	getter;
+		Setter	setter;
+
+	public:
+		ReferenceProperty(C_ *Object, Getter getter, Setter setter) : Object(*Object), getter(getter), setter(setter) 
 		{ }
 
-		template <class O_>
-		ReferenceProperty &operator =(const O_ &value) { 
-			(Object.*setter)(&value);
-
-			return *this;
+		operator T_ *() {
+			return (Object.*getter)();
 		}
 
-		template <class O_>
-		ReferenceProperty &operator =(const O_ *value) { 
+		ReferenceProperty &operator =(T_ *value) { 
 			(Object.*setter)(value);
 
 			return *this;
 		}
 
-		template <class AC_>
-		ObjectProperty &operator =(const Property<AC_, T_> &prop) {
-			(Object.*setter)((T_)prop);
+		ReferenceProperty &operator =(T_ &value) { 
+			(Object.*setter)(&value);
 
 			return *this;
 		}
 
-		T_ &operator *() {
-			return *(Object.*getter)();
+		bool operator ==(const T_ &v) const {
+			return (Object.*getter)()==v;
+		}
+
+		bool operator !=(const T_ &v) const {
+			return (Object.*getter)()!=v;
 		}
 
 		T_ *operator ->() {
 			return (Object.*getter)();
 		}
-
-		const T_ &operator *() const {
-			return *(Object.*getter)();
-		}
-
-		const T_ *operator ->() const {
-			return (Object.*getter)();
-		}
-
 	};
 
 	//should support everything that string class

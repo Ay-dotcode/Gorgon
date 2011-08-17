@@ -66,7 +66,7 @@ namespace gge { namespace widgets {
 		virtual bool IsEnabled()  { return isenabled; }
 		inline  bool IsDisabled() { return !IsEnabled(); }
 		virtual void Enable() { isenabled=true; }
-		virtual void Disable() { isenabled=false; }
+		virtual void Disable();
 		//!!Virtual status of the following two functions might change
 		void ToggleEnabled() { 
 			if(!isenabled)	Enable(); 
@@ -122,7 +122,7 @@ namespace gge { namespace widgets {
 		virtual bool Focus() {
 			call_container_setfocus();
 
-			Focus();
+			GotFocus();
 
 			return true;
 		}

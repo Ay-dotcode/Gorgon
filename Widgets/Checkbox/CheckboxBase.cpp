@@ -1,9 +1,11 @@
 #include "CheckboxBase.h"
 #include "..\..\Utils\Size2D.h"
+#include "..\..\Resource\BitmapFontResource.h"
 
 using namespace gge::utils;
 using namespace gge::resource;
 using namespace gge::graphics;
+using namespace gge::resource;
 using namespace std;
 
 namespace gge { namespace widgets {
@@ -41,6 +43,11 @@ namespace gge { namespace widgets {
 						nh=font->FontHeight();
 					}
 					break;
+				case Blueprint::Symbol:
+					if(symbol && drawsymbol) {
+						nh=symbol->CalculateHeight(0);
+					}
+					break;
 				}
 
 				h=max(nh,h);
@@ -50,6 +57,7 @@ namespace gge { namespace widgets {
 				h+=lineborder->BorderWidth.TotalY() + lineborder->Padding.TotalY();
 				int margin=(lineborder->Margins.Top > prevymargin ? lineborder->Margins.TotalY() : lineborder->Margins.Bottom);
 				h+=margin;
+				prevymargin=lineborder->Margins.Bottom;
 			}
 			else
 				prevymargin=0;
@@ -76,6 +84,12 @@ namespace gge { namespace widgets {
 				lineborder->SetController(getanimation(transition));
 			}
 
+			if(lineborder) {
+				y+=(lineborder->Margins.Top > prevymargin ? lineborder->Margins.Top-prevymargin : 0);
+				prevymargin=lineborder->Margins.Bottom;
+			}
+			else
+				prevymargin=0;
 
 			//get id use line height and calculate new location
 			if(Alignment::isMiddle(line->Align))
@@ -86,8 +100,8 @@ namespace gge { namespace widgets {
 			h=reqh;
 
 			//determine content bounds
-			Bounds exterior(0,y,BaseLayer->BoundingBox.Right,y+h);
-			Bounds bounds  (0,y,innerlayer.BoundingBox.Right,y+h);
+			Bounds exterior(0,y,BaseLayer->BoundingBox.Width(),y+h);
+			Bounds bounds  (0,y,innerlayer.BoundingBox.Width(),y+h);
 
 			//exterior is not draw on inner layer which is already padded
 			if(border) {
@@ -115,7 +129,7 @@ namespace gge { namespace widgets {
 						if(iconp) {
 							sizes[i]=iconp->GetSize(icon->GetSize(), icon->GetSize()).Width;
 
-							totalmargin=(iconp->Margins.Left>pmargin ? iconp->Margins.TotalX()-pmargin : iconp->Margins.Right);
+							totalmargin+=(iconp->Margins.Left>pmargin ? iconp->Margins.TotalX()-pmargin : iconp->Margins.Right);
 							pmargin=iconp->Margins.Right;
 
 							if(iconp->SizingMode==Placeholder::MaximumAvailable)
@@ -134,7 +148,7 @@ namespace gge { namespace widgets {
 						if(textp) {
 							sizes[i]=0; //text size is not fixed and might be larger than the given area
 
-							totalmargin=(textp->Margins.Left>pmargin ? textp->Margins.TotalX()-pmargin : textp->Margins.Right);
+							totalmargin+=(textp->Margins.Left>pmargin ? textp->Margins.TotalX()-pmargin : textp->Margins.Right);
 							pmargin=textp->Margins.Right;
 
 							if(textp->SizingMode==Placeholder::MaximumAvailable)
@@ -237,6 +251,8 @@ namespace gge { namespace widgets {
 							itembounds.Left=x;
 							itembounds.Top =y;
 							itembounds.SetSize(sizes[i], h);
+							itembounds.Top-=iconp->Margins.Top;
+							itembounds.Bottom+=iconp->Margins.Bottom;
 
 							align=iconp->Align;
 							x+=iconp->Margins.Right;
@@ -252,6 +268,7 @@ namespace gge { namespace widgets {
 
 						icon->Draw(innerlayer, targetlocation);
 					}
+
 					break;
 
 				case Blueprint::Text:
@@ -265,9 +282,11 @@ namespace gge { namespace widgets {
 							itembounds.Left=x;
 							itembounds.Top =y;
 							itembounds.SetSize(sizes[i], h);
+							itembounds.Top-=textp->Margins.Top;
+							itembounds.Bottom+=textp->Margins.Bottom;
 
-							align=iconp->Align;
-							x+=iconp->Margins.Right;
+							align=textp->Align;
+							x+=textp->Margins.Right;
 						}
 						else {
 							if(maximumsized==0 || extra<0) {
@@ -284,18 +303,97 @@ namespace gge { namespace widgets {
 
 						targetlocation=Alignment::CalculateLocation(align, itembounds, Size(font->TextWidth(text),th));
 
-						if(textwrap)
+						if(textwrap) {
 							font->Print(innerlayer, Point(itembounds.Left,targetlocation.y),itembounds.Width(),text,TextAlignment::GetHorizontal(align));
-						else
+						}
+						else {
 							font->Print(innerlayer, targetlocation,text);
+						}
+						if(underline) {
+							int ch=-1;
+							for(int i=0;i<(int)text.length();i++) {
+								if(tolower(text[i])==underline) {
+									ch=i;
+									break;
+								}
+							}
+
+							if(ch>-1) {
+								EPrintData eprint[3];
+								eprint[0].Type=EPrintData::Wrap;
+								eprint[0].In.value=1;
+								eprint[1].Type=EPrintData::PositionDetect;
+								eprint[1].CharPosition=ch;
+								eprint[2].Type=EPrintData::PositionDetect;
+								eprint[2].CharPosition=ch+1;
+
+								if(textwrap) {
+									font->Print_Test(Point(itembounds.Left,targetlocation.y),itembounds.Width(),
+										text,eprint,3,TextAlignment::GetHorizontal(align));
+								}
+								else {
+									eprint[0].In.value=0;
+									font->Print_Test(targetlocation,itembounds.Width(),
+										text,eprint,3,TextAlignment::Left);
+								}
+
+								if(dynamic_cast<BitmapFontResource*>(font->getRenderer())) {
+									ImageResource *im=dynamic_cast<BitmapFontResource*>(font->getRenderer())->Characters['_'];
+									innerlayer.SetCurrentColor(font->Color);
+									im->DrawStretched(innerlayer, 
+										eprint[1].Out.position.x-1,eprint[1].Out.position.y+(font->FontHeight()-font->FontBaseline())/2,
+										2+eprint[2].Out.position.x-eprint[1].Out.position.x, im->GetHeight()
+									);
+									innerlayer.SetCurrentColor(0xffffffff);
+								}
+							}
+						}
 					}
 
 					break;
 
 				case Blueprint::Symbol:
-					//!TODO
+					if(symbol && drawsymbol) {
+						if(symbolp) {
+							if(symbolp->SizingMode==Placeholder::MaximumAvailable || maximumsized==0 || extra<0) {
+								sizes[i]+=extra;
+							}
+
+							x+=(symbolp->Margins.Left>pmargin ? symbolp->Margins.Left-pmargin : 0);
+							itembounds.Left=x;
+							itembounds.Top =y;
+							itembounds.SetSize(sizes[i], h);
+							itembounds.Top-=symbolp->Margins.Top;
+							itembounds.Bottom+=symbolp->Margins.Bottom;
+
+							align=symbolp->Align;
+							x+=symbolp->Margins.Right;
+						}
+						else {
+							if(maximumsized==0 || extra<0) {
+								sizes[i]+=extra;
+							}
+							itembounds=utils::Rectangle(x,y,sizes[i],h);
+						}
+
+						int sh=symbol->CalculateHeight(0);
+						if(sh==0) { 
+							if(symbolp)
+								sh=h-symbolp->Margins.TotalY();
+							else 
+								sh=h;
+						}
+						int sw=symbol->CalculateWidth(0);
+						if(sw==0)
+							sw=sh;
+
+						targetlocation=Alignment::CalculateLocation(align, itembounds, Size(sw, sh));
+
+						symbol->DrawIn(innerlayer, targetlocation, Size(sw, sh));
+					}
 
 					break;
+
 				}
 
 				x+=sizes[i];
@@ -448,7 +546,7 @@ namespace gge { namespace widgets {
 			}
 
 			//draw lines
-			int y=inner.Top;
+			int y=0;//inner.Top;
 			for(int i=1;i<=3;i++) {
 				if(lines[i]) {
 					drawline(i, linetransitions[i], y, lineheights_org[i], lineheights[i], prevymargin);
@@ -457,7 +555,7 @@ namespace gge { namespace widgets {
 			}
 
 			if(overlay) {
-				overlay->DrawIn(BaseLayer, BaseLayer->BoundingBox);
+				overlay->DrawIn(BaseLayer, outer);
 			}
 
 
@@ -465,28 +563,30 @@ namespace gge { namespace widgets {
 			delete[] groups;
 		}
 
-		void Base::setfocusstate(Blueprint::FocusType type) {
+		void Base::setfocus(Blueprint::FocusType type) {
 			if(!bp) {
 				focus.from=type;
 				return;
 			}
 
 			if(focus.from!=type || focus.to!=Blueprint::FT_None) {
-				Blueprint::AnimationInfo info=bp->HasFocusAnimation(Blueprint::FocusMode(focus.from, type));
+				Blueprint::AnimationInfo info;
+				if(focus.from==type)
+					info=bp->HasFocusAnimation(Blueprint::FocusMode(focus.to, type));
+				else
+					info=bp->HasFocusAnimation(Blueprint::FocusMode(focus.from, type));
 
 				if(info) {
 					if(focus.from==type) {
 						if(info.direction==focus_anim.GetSpeed()) {
-							focus_queue.push(type);
+							next_focus=type;
 							return;
 						}
 						else
 							focus.from=focus.to;
 					}
 					else if(focus.to==type) {
-						//should not be empty
-						//if(!focus_queue.empty()) 
-						focus_queue.pop();
+						next_focus=Blueprint::FT_None;
 
 						return;
 					}
@@ -494,6 +594,12 @@ namespace gge { namespace widgets {
 					if(info.duration==-2) {
 						info.duration=-1;
 						focus_anim_loop=true;
+					}
+					else if(info.duration==0) {
+						focus.from=type;
+						Draw();
+
+						return;
 					}
 					else
 						focus_anim_loop=false;
@@ -504,6 +610,8 @@ namespace gge { namespace widgets {
 						focus_anim.SetPauseAt(0);
 
 					focus_anim.SetSpeed((float)info.direction);
+					focus_anim.ClearFinished();
+					focus_anim.Resume();
 
 					focus.to=type;
 				}
@@ -514,32 +622,201 @@ namespace gge { namespace widgets {
 			Draw();
 		}
 
+		void Base::setstate(int type) {
+			currentstate=type;
+			if(!bp) {
+				state.from=type;
+				return;
+			}
+
+			if(state.from!=type || state.to!=0) {
+				if(state.from!=type && state.to!=type && state.to!=0) {
+					next_state=type;
+					return;
+				}
+				Blueprint::AnimationInfo info;
+				if(state.from==type)
+					info=bp->HasStateAnimation(Blueprint::StateMode(state.to, type));
+				else
+					info=bp->HasStateAnimation(Blueprint::StateMode(state.from, type));
+
+				if(info) {
+					if(state.from==type) {
+						if(info.direction==state_anim.GetSpeed()) {
+							next_state=type;
+							return;
+						}
+						else
+							state.from=state.to;
+					}
+					else if(state.to==type) {
+						next_state=0;
+
+						return;
+					}
+
+					if(info.duration==-2) {
+						info.duration=-1;
+						state_anim_loop=true;
+					}
+					else
+						state_anim_loop=false;
+
+					if(info.direction==Blueprint::Forward)
+						state_anim.SetPauseAt(info.duration);
+					else
+						state_anim.SetPauseAt(0);
+
+					state_anim.SetSpeed((float)info.direction);
+					state_anim.ClearFinished();
+					state_anim.Resume();
+
+					state.to=type;
+				}
+				else {
+					state.from=type;
+					state.to=0;
+
+					if(next_state!=0) {
+						int v=next_style;
+
+
+						next_state=0;
+						setstate(v);
+					}
+				}
+			}
+
+			Draw();
+		}
+
+		void Base::setstyle(Blueprint::StyleType type) {
+			if(!bp) {
+				style.from=type;
+				return;
+			}
+
+			if(style.from!=type || style.to!=Blueprint::YT_None) {
+				if(style.from!=type && style.to!=type && style.to!=Blueprint::YT_None) {
+					next_style=type;
+					return;
+				}
+				if(style.from==Blueprint::Disabled && type!=Blueprint::Normal || style.from!=Blueprint::Normal && type==Blueprint::Disabled) {
+					next_style=type;
+					type=Blueprint::Normal;
+				}
+				Blueprint::AnimationInfo info;
+				if(style.from==type)
+					info=bp->HasStyleAnimation(focus,state,Blueprint::StyleMode(style.to, type));
+				else
+					info=bp->HasStyleAnimation(focus,state,Blueprint::StyleMode(style.from, type));
+
+				if(info) {
+					if(style.from==type) {
+						if(info.direction==style_anim.GetSpeed()) {
+							next_style=type;
+							return;
+						}
+						else
+							style.from=style.to;
+					}
+					else if(style.to==type) {
+						next_style=Blueprint::YT_None;
+
+						return;
+					}
+
+					if(info.duration==-2) {
+						info.duration=-1;
+						style_anim_loop=true;
+					}
+					else
+						style_anim_loop=false;
+
+					if(info.direction==Blueprint::Forward)
+						style_anim.SetPauseAt(info.duration);
+					else
+						style_anim.SetPauseAt(0);
+
+					style_anim.SetSpeed((float)info.direction);
+					style_anim.ClearFinished();
+					style_anim.Resume();
+
+					style.to=type;
+				}
+				else {
+					style.from=type;
+					style.to=Blueprint::YT_None;
+
+					if(next_style!=Blueprint::YT_None) {
+						Blueprint::StyleType v=next_style, t=Blueprint::YT_None;
+
+						if(style.from==Blueprint::Down && next_style==Blueprint::Normal) {
+							triggerwait();
+
+							return;
+						}
+
+						if(style.from!=Blueprint::Normal) {
+							if(next_style==Blueprint::Disabled) {
+								v=Blueprint::Normal;
+								t=next_style;
+							}
+						}
+						else if(style.from==Blueprint::Disabled) {
+							if(next_style!=Blueprint::Normal) {
+								v=Blueprint::Normal;
+								t=next_style;
+							}
+						}
+
+						next_style=t;
+						setstyle(v);
+					}
+				}
+			}
+
+			Draw();
+		}
+
 		bool Base::Focus() {
 			if(!cangetfocus)
+				return false;
+
+			if(!IsEnabled())
 				return false;
 
 			if(IsFocussed())
 				return true;
 
-			setfocusstate(Blueprint::Focused);
+			WidgetBase::Focus();
+			setfocus(Blueprint::Focused);
 
 			return true;
 		}
+	
 		bool Base::loosefocus(bool force) {
 			if(!IsFocussed())
 				return true;
 
-			setfocusstate(Blueprint::NotFocused);
+			setfocus(Blueprint::NotFocused);
 
 			return true;
 		}
 
 		void Base::Enable() {
-			throw std::exception("The method or operation is not implemented.");
+			WidgetBase::Enable();
+			
+			if(mouseover)
+				setstyle(Blueprint::Hover);
+			else
+				setstyle(Blueprint::Normal);
 		}
 
 		void Base::Disable() {
-			throw std::exception("The method or operation is not implemented.");
+			WidgetBase::Disable();
+			
+			setstyle(Blueprint::Disabled);
 		}
 
 		utils::Size Base::GetSize() {
@@ -549,33 +826,96 @@ namespace gge { namespace widgets {
 				return WidgetBase::GetSize();
 		}
 
+		void Base::containerenabledchanged(bool state) {
+			//!TODO
+		}
+
 		void Base::focus_anim_finished() {
 			if(focus.to==Blueprint::FT_None && focus_anim_loop)
 				focus_anim.ResetProgress();
 
+			if(focus.to==Blueprint::FT_None)
+				return;
+
+			focus_anim.Pause();
 			focus.from=focus.to;
 			focus.to=Blueprint::FT_None;
 
-			if(!focus_queue.empty()) {
-				Blueprint::FocusType v=focus_queue.front();
-				focus_queue.pop();
+			if(next_focus!=Blueprint::FT_None) {
+				Blueprint::FocusType v=next_focus;
+				next_focus=Blueprint::FT_None;
 
-				setfocusstate(v);
+				setfocus(v);
 			}
 
 			Draw();
 		}
 
-		void Base::containerenabledchanged(bool state) {
-
-		}
-
 		void Base::state_anim_finished() {
+			if(state.to==0 && state_anim_loop)
+				state_anim.ResetProgress();
 
+			if(state.to==0 && next_state==0)
+				return;
+
+			state_anim.Pause();
+
+			if(state.to!=0) {
+				state.from=state.to;
+				state.to=0;
+			}
+
+			if(next_state!=0) {
+				int v=next_style;
+
+				next_state=0;
+				setstate(v);
+			}
+
+			Draw();
 		}
 
 		void Base::style_anim_finished() {
+			if(style.to==Blueprint::YT_None && style_anim_loop)
+				style_anim.ResetProgress();
 
+			if(style.to==Blueprint::YT_None && next_style==Blueprint::YT_None)
+				return;
+
+			style_anim.Pause();
+
+			if(style.to!=Blueprint::YT_None) {
+				style.from=style.to;
+				style.to=Blueprint::YT_None;
+			}
+
+			if(next_style!=Blueprint::YT_None) {
+				Blueprint::StyleType v=next_style, t=Blueprint::YT_None;
+
+				if(style.from==Blueprint::Down && next_style==Blueprint::Normal) {
+					triggerwait();
+
+					return;
+				}
+
+				if(style.from!=Blueprint::Normal) {
+					if(next_style==Blueprint::Disabled) {
+						v=Blueprint::Normal;
+						t=next_style;
+					}
+				}
+				else if(style.from==Blueprint::Disabled) {
+					if(next_style!=Blueprint::Normal) {
+						v=Blueprint::Normal;
+						t=next_style;
+					}
+				}
+
+				next_style=t;
+				setstyle(v);
+			}
+
+			Draw();
 		}
 
 		bool Base::detach(ContainerBase *container) {

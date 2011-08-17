@@ -39,7 +39,13 @@ namespace gge { namespace widgets {
 			};
 
 			struct FocusMode {
-				FocusMode(FocusType from=NotFocused, FocusType to=FT_None) : from(from), to(to)
+				FocusMode() : from(NotFocused), to(FT_None)
+				{ }
+
+				FocusMode(FocusType from, FocusType to) : from(from), to(to)
+				{ }
+
+				FocusMode(int i) : from(FocusType(i%0x10)), to(FocusType(i/0x10))
 				{ }
 
 				FocusType from : 4;
@@ -126,11 +132,11 @@ namespace gge { namespace widgets {
 				Normal	=1,
 				Hover	=2,
 				Down	=4,
-				Disabled=8
+				Disabled=5
 			};
 
 			struct StyleMode {
-				StyleMode(StyleType from=YT_None, StyleType to=YT_None) : from(from), to(to)
+				StyleMode(StyleType from=Normal, StyleType to=YT_None) : from(from), to(to)
 				{ }
 
 				StyleType from;
@@ -389,7 +395,7 @@ namespace gge { namespace widgets {
 				utils::SGuid disabledtonormal;
 				utils::SGuid downtohover;
 
-				Element *Mapping[5][5];
+				Element *Mapping[6][6];
 			};
 
 			Blueprint() : States(Single), DefaultSize(0,0), Mapping()
@@ -400,10 +406,10 @@ namespace gge { namespace widgets {
 
 			AnimationInfo hasstyleanimation(FocusMode f, StateMode s, StyleMode style) const  {
 				if(Mapping[GroupMode(f,s)]) {
-					if(Mapping[GroupMode(f,s)]->Mapping[style.to][style.from])
-						return AnimationInfo(Forward,Mapping[GroupMode(f,s)]->Mapping[style.to][style.from]->Duration);
-
 					if(Mapping[GroupMode(f,s)]->Mapping[style.from][style.to])
+						return AnimationInfo(Forward,Mapping[GroupMode(f,s)]->Mapping[style.from][style.to]->Duration);
+
+					if(Mapping[GroupMode(f,s)]->Mapping[style.to][style.from])
 						return AnimationInfo(Backward,Mapping[GroupMode(f,s)]->Mapping[style.to][style.from]->Duration);
 				}
 

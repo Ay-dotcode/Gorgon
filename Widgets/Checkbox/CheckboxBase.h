@@ -8,13 +8,18 @@
 #include <queue>
 #include "..\Main.h"
 
+#ifndef CHECKBOX_CLICK_DOWNDURATION
+#	define	CHECKBOX_CLICK_DOWNDURATION	75
+#endif
+
 namespace gge { namespace widgets {
 	namespace checkbox {
 		class Base : public WidgetBase {
 		public:
 			Base(bool cangetfocus, AutosizeModes::Type autosize,bool textwrap, bool drawsymbol,bool drawicon) : text(""),
 				cangetfocus(cangetfocus), autosize(autosize), textwrap(textwrap), underline(),
-				drawsymbol(drawsymbol), drawicon(drawicon), icon(NULL)
+				drawsymbol(drawsymbol), drawicon(drawicon), icon(NULL), currentstate(1),
+				mouseover(false), mousedown(false), next_focus(Blueprint::FT_None), next_state(0), next_style(Blueprint::YT_None)
 			{
 				focus_anim.Pause();
 				focus_anim.Finished.Register(this, &Base::focus_anim_finished);
@@ -27,6 +32,9 @@ namespace gge { namespace widgets {
 				style_anim.Pause();
 				style_anim.Finished.Register(this, &Base::style_anim_finished);
 				style_anim.Paused.Register(this, &Base::style_anim_finished);
+
+				wait_timeout.Pause();
+				wait_timeout.Paused.Register(this, &Base::up);
 
 				innerlayer.EnableClipping=true;
 
@@ -43,8 +51,6 @@ namespace gge { namespace widgets {
 			}
 
 			virtual bool Focus();
-
-			void setfocusstate(Blueprint::FocusType type);
 
 			virtual void Disable();
 
@@ -66,22 +72,67 @@ namespace gge { namespace widgets {
 					return style_anim;
 			}
 
-
 			int lineheight(Blueprint::Line *line, int &prevymargin);
-
 
 			void drawline(int id, Blueprint::TransitionType transition, int y, int reqh, int h, int &prevymargin);
 
 
 			//SERVICES TO CLIENT
 			void setstate(int state);
-			int  getstate() const;
+			int  getstate() const {
+				return currentstate;
+			}
 
-			void down();
-			void up();
-			void click(); //this call down, and up also calls clickcompleted
-			void over();
-			void out();
+			void setfocus(Blueprint::FocusType type);
+
+			void setstyle(Blueprint::StyleType type);
+
+			void down() {
+				if(!IsEnabled()) return;
+
+				mousedown=true;
+				setstyle(Blueprint::Down);
+			}
+			void up() {
+				if(!IsEnabled()) return;
+
+				mousedown=false;
+				if(mouseover)
+					setstyle(Blueprint::Hover);
+				else
+					setstyle(Blueprint::Normal);
+			}
+			void click() {
+				if(!IsEnabled()) return;
+
+				down();
+
+				if(style.to==Blueprint::YT_None) {
+					next_style=Blueprint::Normal;
+					triggerwait();
+				}
+				else
+					up();
+			}
+			void triggerwait() {
+				wait_timeout.ResetProgress();
+				wait_timeout.Play();
+				wait_timeout.SetPauseAt(CHECKBOX_CLICK_DOWNDURATION);
+			}
+			void over() {
+				mouseover=true;
+				if(!IsEnabled()) return;
+
+				if(!mousedown)
+					setstyle(Blueprint::Hover);
+			}
+			void out() {
+				mouseover=false;
+				if(!IsEnabled()) return;
+
+				if(!mousedown)
+					setstyle(Blueprint::Normal);
+			}
 
 			void setautosize(AutosizeModes::Type autosize) {
 				this->autosize=autosize;
@@ -124,12 +175,12 @@ namespace gge { namespace widgets {
 				return underline;
 			}
 			
-			void seticon(const graphics::RectangularGraphic2D *icon) {
+			void seticon(graphics::RectangularGraphic2D *icon) {
 				this->icon=icon;
 
 				Draw();
 			}
-			const graphics::RectangularGraphic2D *geticon() const {
+			graphics::RectangularGraphic2D *geticon() const {
 				return this->icon;
 			}
 
@@ -147,6 +198,7 @@ namespace gge { namespace widgets {
 			animation::AnimationController focus_anim;
 			animation::AnimationController state_anim;
 			animation::AnimationController style_anim;
+			animation::AnimationController wait_timeout;
 
 			bool focus_anim_loop;
 			bool state_anim_loop;
@@ -174,9 +226,11 @@ namespace gge { namespace widgets {
 			Blueprint::StateMode state;
 			Blueprint::StyleMode style;
 
-			std::queue<Blueprint::FocusType> focus_queue;
-			std::queue<Blueprint::StateType> state_queue;
-			std::queue<Blueprint::StyleType> style_queue;
+			Blueprint::StateType currentstate;
+
+			Blueprint::FocusType next_focus;
+			Blueprint::StateType next_state;
+			Blueprint::StyleType next_style;
 
 			std::map<resource::ResizableObjectProvider*, resource::ResizableObject*> ImageCache;
 			std::map<BorderDataResource*, BorderData*> BorderCache;
@@ -194,7 +248,10 @@ namespace gge { namespace widgets {
 			bool drawsymbol;
 			bool drawicon;
 
-			const graphics::RectangularGraphic2D *icon;
+			bool mouseover;
+			bool mousedown;
+
+			graphics::RectangularGraphic2D *icon;
 
 			graphics::Colorizable2DLayer innerlayer;
 

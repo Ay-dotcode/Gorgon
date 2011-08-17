@@ -81,10 +81,16 @@ namespace gge { namespace graphics {
 		virtual int calculateheight(int H=-1) const { return Texture.H; }
 
 		virtual int calculatewidth(const SizeController2D &controller, int W=-1 ) const {
+			if(controller.HorizontalTiling==SizeController2D::Single)
+				return getwidth();
+
 			return controller.CalculateWidth(W, getwidth());
 		}
 		virtual int calculateheight(const SizeController2D &controller, int H=-1 ) const {
-			return controller.CalculateWidth(H, getheight());
+			if(controller.HorizontalTiling==SizeController2D::Single)
+				return getheight();
+
+			return controller.CalculateHeight(H, getheight());
 		}
 
 	protected:

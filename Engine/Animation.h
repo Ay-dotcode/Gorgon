@@ -77,6 +77,7 @@ namespace gge { namespace animation {
 
 		bool IsPaused() { return ispaused; }
 		bool IsFinished() { return isfinished; }
+		void ClearFinished() { isfinished=false; }
 
 		virtual void ResetProgress();
 

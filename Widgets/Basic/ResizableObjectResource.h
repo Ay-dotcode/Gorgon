@@ -31,6 +31,11 @@ namespace gge { namespace widgets {
 			delete object;
 		}
 
+		virtual void SetController( animation::AnimationTimer &controller, bool owner=false ) {
+			AnimationBase::SetController(controller, owner);
+			object->SetController(controller);
+		}
+
 	protected:
 		resource::ResizableObject *object;
 		virtual animation::ProgressResult::Type Progress() 

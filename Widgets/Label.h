@@ -13,7 +13,8 @@ namespace gge { namespace widgets {
 		Label(std::string text="") : Base(false, AutosizeModes::None, true, false, true),
 			INIT_PROPERTY(Label, Autosize),
 			INIT_PROPERTY(Label, TextWrap),
-			INIT_PROPERTY(Label, Accesskey)
+			INIT_PROPERTY(Label, Accesskey),
+			INIT_PROPERTY(Label, Icon)
 		{
 			Text=text;
 		}
@@ -37,18 +38,6 @@ namespace gge { namespace widgets {
 			Accesskey=0;
 		}
 
-
-		const graphics::RectangularGraphic2D *GetIcon() const {
-			return Base::geticon();
-		}
-
-		void SetIcon(const graphics::RectangularGraphic2D *icon) {
-			Base::seticon(icon);
-		}
-
-		void SetIcon(const graphics::RectangularGraphic2D &icon) {
-			Base::seticon(&icon);
-		}
 		
 		void RemoveIcon() {
 			Base::seticon(NULL);
@@ -57,8 +46,17 @@ namespace gge { namespace widgets {
 		utils::Property<Label, AutosizeModes::Type> Autosize;
 		utils::NumericProperty<Label, input::keyboard::Key> Accesskey;
 		utils::BooleanProperty<Label> TextWrap;
+		utils::ReferenceProperty<Label, graphics::RectangularGraphic2D> Icon;
 
 	protected:
+
+		graphics::RectangularGraphic2D *getIcon() const {
+			return Base::geticon();
+		}
+
+		void setIcon(graphics::RectangularGraphic2D *icon) {
+			Base::seticon(icon);
+		}
 
 		AutosizeModes::Type getAutosize() const {
 			return Base::getautosize();
@@ -89,11 +87,11 @@ namespace gge { namespace widgets {
 			Base::setunderline(Container->GetAccessKey(*this));
 		}
 
-		virtual std::string gettext() const {
+		virtual std::string getText() const {
 			return Base::gettext();
 		}
 
-		virtual void settext(const std::string &text)  {
+		virtual void setText(const std::string &text)  {
 			Base::settext(text);
 		}
 	};

@@ -54,10 +54,10 @@ namespace gge { namespace resource {
 
 		virtual animation::ProgressResult::Type Progress() { return animation::ProgressResult::None; };
 
-		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) 
+		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const
 		{  } 
 
-		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) 
+		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H)  const
 		{  };
 
 		virtual int calculatewidth (int w=-1) const { return w; }
@@ -66,15 +66,15 @@ namespace gge { namespace resource {
 		virtual int calculatewidth (const graphics::SizeController2D &controller, int w=-1) const  { return controller.CalculateWidth(w, 1); }
 		virtual int calculateheight(const graphics::SizeController2D &controller, int h=-1) const  { return controller.CalculateHeight(h, 1); }
 
-		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) 
+		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4)  const
 		{  }
-		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) 
+		virtual void draw(graphics::ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4)  const
 		{  }
-		virtual void drawstretched(graphics::ImageTarget2D& Target, int X, int Y, int W, int H)
+		virtual void drawstretched(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const
 		{  }
-		virtual void draw(graphics::ImageTarget2D& Target, graphics::Tiling2D::Type Tiling, int X, int Y, int W, int H)
+		virtual void draw(graphics::ImageTarget2D& Target, graphics::Tiling2D::Type Tiling, int X, int Y, int W, int H) const
 		{  }
-		virtual void draw(graphics::ImageTarget2D& Target, graphics::SizeController2D &controller, int X, int Y, int W, int H)
+		virtual void draw(graphics::ImageTarget2D& Target, graphics::SizeController2D &controller, int X, int Y, int W, int H) const
 		{  }
 
 		virtual int getwidth () const { return 1; }

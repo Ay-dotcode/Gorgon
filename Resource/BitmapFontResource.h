@@ -49,28 +49,31 @@ namespace gge { namespace resource {
 
 	//protected:
 		////Prints the given text to the target using given color.
-		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, string Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams());
+		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, const std::string &Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams());
 		////Prints the given text to the target using given color. Text is wrapped and aligned as necessary
-		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams());
+		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, int W, const std::string &Text, graphics::RGBint Color, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams());
 		////This method is extended to cover meta functionality for advanced text rendering
-		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams());
+		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, int W, const std::string &Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams());
 		////This method is extended to cover meta functionality for advanced text rendering. This function does not render the given text
 		/// it only processes meta data
-		virtual void Print_Test(int X, int Y, int W, string Text, EPrintData *Data, int DataLen, TextAlignment::Type Align);
+		virtual void Print_Test(int X, int Y, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align);
+		void Print_Test(utils::Point p, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
+			Print_Test(p.x, p.y, W, Text, Data, DataLen, Align);
+		}
 
 
 
-		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y, string Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams()) 
+		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y, const std::string &Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams()) 
 		{ Print(&target, X, Y, Text, Color, Shadow); }
-		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y, int W, string Text, graphics::RGBint Color, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams()) 
+		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y, int W, const std::string &Text, graphics::RGBint Color, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams()) 
 		{ Print(&target, X, Y, W, Text, Color, Align, Shadow); }
-		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y, int W, string Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams())
+		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y, int W, const std::string &Text, graphics::RGBint Color, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left, ShadowParams Shadow=ShadowParams())
 		{ Print(&target, X, Y, W, Text, Color, Data, DataLen, Align, Shadow); }
 
 		////Returns the height of this font, all characters have same height
 		virtual int FontHeight() { return VerticalSpacing; }
 		////Returns the width of the given text
-		virtual int TextWidth(string Text) { 
+		virtual int TextWidth(const std::string &Text) { 
 			int i, w=0; 
 			const char *text=Text.c_str(); 
 			for(i=0;text[i];i++) 
@@ -78,7 +81,7 @@ namespace gge { namespace resource {
 		
 			return w; 
 		}
-		virtual int TextHeight(string Text, int W);
+		virtual int TextHeight(const std::string &Text, int W);
 		virtual int FontBaseline() { return Baseline; }
 	};
 } }

@@ -694,14 +694,14 @@ namespace gge { namespace utils {
 
 			target.RegisterClass< EventChain<O_, P_>, MyFire >(
 				this, 
-				(MyFire) &EventChain<R_, P_>::linkedfire,
+				(MyFire) &EventChain<O_, P_>::linkedfire<R_>,
 				Any()
 			);
 
 			return AddHandler(
 				prvt::eventchain::CreateEventHandler<EventChain<R_, P_>, P_, O_>(
 					&target, 
-					(TargetFire) &EventChain<R_, P_>::linkedfire,
+					(TargetFire) &EventChain<R_, P_>::linkedfire<O_>,
 					Any()							  
 				)
 			);
@@ -806,23 +806,25 @@ namespace gge { namespace utils {
 		//assignment operator is disabled
 		EventChain<O_,P_> operator =(const EventChain<O_, P_> &);
 
+		template<class R_>
 		bool checklinkedfire(prvt::eventchain::EventHandler<P_, O_> *object) {
-			prvt::eventchain::EventHandlerClassParamOnly<EventChain, P_, O_> *obj=dynamic_cast<prvt::eventchain::EventHandlerClassParamOnly<EventChain, P_, O_> *>(object);
+			prvt::eventchain::EventHandlerClassParamOnly<EventChain<R_, P_>, P_, O_> *obj=dynamic_cast<prvt::eventchain::EventHandlerClassParamOnly<EventChain<R_, P_>, P_, O_> *>(object);
 
 			if(obj!=NULL) {
 				EventChain *ec;
-				ec=dynamic_cast<EventChain*>(obj->object);
-				if(ec!=NULL && obj->handler == &EventChain::linkedfire)
+				ec=(EventChain<O_>*)(obj->object);
+				if(typeid(obj->object)==typeid(EventChain<R_>*) && obj->handler == &EventChain<R_>::linkedfire<O_>)
 					return true;
 			}
 
 			return false;
 		}
 
+		template<class R_>
 		void linkedfire(P_ params) {
 			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
 				it.isValid();it.Next()) {
-				if(!checklinkedfire(it.CurrentPtr()))
+				if(!checklinkedfire<R_>(it.CurrentPtr()))
 					it->Fire(params, *this->object, eventname);
 			}
 		}

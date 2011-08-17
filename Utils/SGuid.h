@@ -162,6 +162,10 @@ namespace gge { namespace utils {
 			return ints[0]==0 && ints[1]==0;
 		}
 
+		operator bool() {
+			return !isEmpty();
+		}
+
 		static const SGuid Empty;
 
 	protected:

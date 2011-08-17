@@ -64,5 +64,11 @@ namespace gge { namespace widgets {
 		Container->RemoveWidget(this);
 	}
 
+	void WidgetBase::Disable() {
+		isenabled=false; 
+		if(IsFocussed() && Container)
+			Container->FocusNext();
+	}
+
 
 }}
