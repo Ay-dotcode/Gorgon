@@ -17,6 +17,7 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Label, Icon)
 		{
 			Text=text;
+			Autosize=AutosizeModes::Autosize;
 		}
 
 		Label &operator =(const std::string &s) {

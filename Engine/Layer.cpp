@@ -39,7 +39,7 @@ namespace gge {
 			return ret;
 		} 
 		else {
-			if(!(isVisible && BoundingBox.isInside(location)))
+			if(!(isVisible && BoundingBox.isInside(location)) && !(event==input::mouse::Event::Move && input::mouse::PressedObject))
 				return false;
 
 			if(LayerBase::PropagateMouseEvent(event, location, amount))

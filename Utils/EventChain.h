@@ -723,7 +723,7 @@ namespace gge { namespace utils {
 		void Unregister(R_ *obj, F_ handler) {
 			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
 				it.isValid();it.Next()) {
-					if(prvt::eventchain::Compare(*it, obj, handler)) {
+					if(prvt::eventchain::Compare<R_, P_, O_>(&(*it), obj, handler)) {
 						it.Delete();
 					}
 			}

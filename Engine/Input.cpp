@@ -92,7 +92,17 @@ namespace gge { namespace input {
 
 				return false;
 			}
-			else { //Scrolls, double click, mouse move
+			else if(event==Event::Move && PressedObject) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
+					if(PressedObject==&(*i)) {
+						if(i->Fire(event, location-i->Bounds.TopLeft(), amount))
+							return true;
+					}
+				}
+
+				return false;
+			}
+			else { //Scrolls, double click
 				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
 					if(i->Bounds.isInside(location)) {
 						if(i->Fire(event, location-i->Bounds.TopLeft(), amount))
@@ -162,6 +172,14 @@ namespace gge { namespace input {
 				if(MouseCallback.object->IsOver && !isover) {
 					MouseCallback.object->Fire(Event::Out, location, amount);
 					MouseCallback.object->IsOver=false;
+				}
+
+				return false;
+			}
+			else if(event==Event::Move && PressedObject) {
+				if(PressedObject==MouseCallback.object) {
+					if(MouseCallback.object->Fire(event, location, amount))
+						return true;
 				}
 
 				return false;

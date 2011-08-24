@@ -54,7 +54,7 @@ namespace gge { namespace animation {
 	AnimationController::AnimationController() : AnimationTimer(), 
 		ispaused(false), isfinished(false), speed(1.f),
 		Finished("Finished", this),
-		Paused("Paused", this)
+		Paused("Paused", this), pauseat(-1)
 	{
 
 	}

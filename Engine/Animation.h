@@ -84,6 +84,9 @@ namespace gge { namespace animation {
 		void SetPauseAt(int t) {
 			pauseat=t;
 		}
+		int GetPauseAt() const {
+			return pauseat;
+		}
 		void RemovePauseAt() {
 			pauseat=-1;
 		}
@@ -189,7 +192,9 @@ namespace gge { namespace animation {
 
 
 		virtual ProgressResult::Type Progress() = 0;
-		virtual void DeleteAnimation() { delete this; }
+		virtual void DeleteAnimation() { 
+			delete this; 
+		}
 
 
 	protected:
@@ -221,4 +226,6 @@ namespace gge { namespace animation {
 		virtual RectangularGraphic2DAnimation &CreateAnimation(bool create=false) = 0;
 		virtual graphics::RectangularGraphic2D &ImageAt(int time)=0;
 	};
+
+	extern utils::Collection<AnimationBase> Animations;
 } }

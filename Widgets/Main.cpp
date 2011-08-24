@@ -6,7 +6,9 @@
 #include "Basic\ResizableObjectResource.h"
 #include "Basic\BorderData.h"
 #include "Basic\Placeholder.h"
+
 #include "Checkbox\CheckboxBlueprint.h"
+#include "Slider\SliderBlueprint.h"
 
 namespace gge { namespace widgets {
 
@@ -33,6 +35,7 @@ namespace gge { namespace widgets {
 		File.Loaders.Add(new resource::ResourceLoader(GID::Placeholder, LoadPlaceholderResource)); 
 
 		File.Loaders.Add(new resource::ResourceLoader(GID::Checkbox, checkbox::Load)); 
+		File.Loaders.Add(new resource::ResourceLoader(GID::Slider, slider::Load)); 
 	}
 
 	void Init(GGEMain &Main) {

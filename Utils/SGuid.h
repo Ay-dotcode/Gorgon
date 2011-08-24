@@ -116,6 +116,10 @@ namespace gge { namespace utils {
 
 		operator std::string() const;
 
+		std::string ToString() const {
+			return (std::string)(*this);
+		}
+
 		inline
 		void Load(FILE *file) {
 			fread(bytes, 1, 8, file);

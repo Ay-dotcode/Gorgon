@@ -19,6 +19,7 @@ namespace gge { namespace widgets {
 		{
 			Text=text;
 			changeevent.DoubleLink(ICheckbox::changeevent);
+			Autosize=AutosizeModes::Autosize;
 		}
 
 		template<class T_>
@@ -33,6 +34,7 @@ namespace gge { namespace widgets {
 			changeevent.DoubleLink(ICheckbox::clickevent);
 
 			changeevent.Register(fn);
+			Autosize=AutosizeModes::Autosize;
 		}
 		
 
@@ -70,7 +72,7 @@ namespace gge { namespace widgets {
 				break;
 			}
 
-			return !input::mouse::Event::isScroll(event);
+			return WidgetBase::MouseEvent(event, location, amount);
 		}
 
 		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {

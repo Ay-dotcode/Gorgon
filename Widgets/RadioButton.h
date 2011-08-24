@@ -1,56 +1,35 @@
 #pragma once
 
 
-#include "Interfaces\IButton.h"
+#include "Interfaces\IOption.h"
 #include "Checkbox\CheckboxBase.h"
 #include "..\Utils\Property.h"
 
 
 namespace gge { namespace widgets {
 
-	class Button : public IButton, public checkbox::Base {
+	template<class T_=int>
+	class RadioButton : public IOption<T_>, public checkbox::Base {
 	public:
-		Button(std::string text="") : Base(true, AutosizeModes::None, false, false, true),
-			INIT_PROPERTY(Button, Autosize),
-			INIT_PROPERTY(Button, TextWrap),
-			INIT_PROPERTY(Button, Accesskey),
-			clickevent("ClickEvent", this)
+		RadioButton(std::string text="") : Base(true, AutosizeModes::None, false, true, false),
+			INIT_PROPERTY(RadioButton, Autosize),
+			INIT_PROPERTY(RadioButton, TextWrap),
+			INIT_PROPERTY(RadioButton, Accesskey),
+			changeevent("ChangeEvent", this)
 		{
 			Text=text;
-			clickevent.DoubleLink(IButton::clickevent);
+			changeevent.DoubleLink(IOption::changeevent);
+			Autosize=AutosizeModes::Autosize;
 		}
-
-		template<class T_>
-		Button(T_ fn, std::string text="") : Base(true, AutosizeModes::None, true, false, true),
-			INIT_PROPERTY(Button, Autosize),
-			INIT_PROPERTY(Button, TextWrap),
-			INIT_PROPERTY(Button, Accesskey),
-			clickevent("ClickEvent", this)
-		{
-			Text=text;
-			clickevent.DoubleLink(IButton::clickevent);
-
-			clickevent.Register(fn);
-		}
-
-		Button &operator =(const std::string &s) {
-			Text=s;
-
-			return *this;
-		}
-
 
 		void RemoveAccesskey() {
 			Accesskey=0;
 		}
 
-		void RemoveIcon() {
-			Base::seticon(NULL);
-		}
 
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			//handle mouse events
-			
+
 			if(input::mouse::Event::isDown(event)) {
 				Focus();
 			}
@@ -69,8 +48,10 @@ namespace gge { namespace widgets {
 				Base::out();
 				break;
 			case input::mouse::Event::Left_Click:
-				if(IsEnabled())
-					clickevent();
+				if(IsEnabled()) {
+					change();
+					changeevent();
+				}
 
 				break;
 			}
@@ -82,56 +63,69 @@ namespace gge { namespace widgets {
 			if(!IsEnabled())
 				return false;
 
-			if(Key==input::keyboard::KeyCodes::Enter && event==input::keyboard::Event::Char && !input::keyboard::Modifier::Check()) {
-				Fire();
-				return true;
-			}
-			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Down && !input::keyboard::Modifier::Check()) {
+			if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Down && !input::keyboard::Modifier::Check()) {
 				Base::down();
 				return true;
 			}
 			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Up && !input::keyboard::Modifier::Check()) {
 				Base::up();
-				clickevent();
+				change();
+				changeevent();
 
 				return true;
+			}
+
+			if((Key==input::keyboard::KeyCodes::Up || Key==input::keyboard::KeyCodes::Left)  && event==input::keyboard::Event::Down && !input::keyboard::Modifier::Check()) {
+				if(parent)
+					parent->SetToPrev();
+			}
+
+			if((Key==input::keyboard::KeyCodes::Down || Key==input::keyboard::KeyCodes::Right)  && event==input::keyboard::Event::Down && !input::keyboard::Modifier::Check()) {
+				if(parent)
+					parent->SetToNext();
 			}
 
 
 			return false;
 		}
 
-		void Fire() {
-			if(!IsEnabled())
-				return;
-
-			Base::click();
-			clickevent();
-		}
-
 		virtual bool Accessed() {
 			if(!IsEnabled())
 				return false;
 
-			Fire();
+			Base::click();
+			change();
+			changeevent();
 
 			return true;
 		}
 
-		utils::Property<Button, AutosizeModes::Type> Autosize;
-		utils::NumericProperty<Button, input::keyboard::Key> Accesskey;
-		utils::BooleanProperty<Button> TextWrap;
+		utils::EventChain<RadioButton> &ChangeEvent() {
+			return changeevent;
+		}
+
+		utils::Property<RadioButton, AutosizeModes::Type> Autosize;
+		utils::NumericProperty<RadioButton, input::keyboard::Key> Accesskey;
+		utils::BooleanProperty<RadioButton> TextWrap;
 
 	protected:
 
-		utils::EventChain<Button> clickevent;
-
-		graphics::RectangularGraphic2D *getIcon() const {
-			return Base::geticon();
+		void change() {
+			setState(CheckboxState::Checked);
 		}
 
-		void setIcon(graphics::RectangularGraphic2D *icon) {
-			Base::seticon(icon);
+		utils::EventChain<RadioButton> changeevent;
+
+		virtual void setState(const bool &state) {
+			if(state) {
+				Base::setstate(2);
+			}
+			else {
+				Base::setstate(1);
+			}
+		}
+		virtual bool getState() const {
+			return Base::getstate()==2;
 		}
 
 		AutosizeModes::Type getAutosize() const {
@@ -172,5 +166,14 @@ namespace gge { namespace widgets {
 		}
 	};
 
+	template<class T_>
+	class RadioGroup : public OptionGroup<T_, RadioButton<T_> > {
+	public:
+
+		RadioGroup &operator = (const T_ &value) { Set(value); }
+	};
+
+	//template<class T_>
+	//typedef OptionGroup<T_, RadioButton<T_> > RadioGroup;
 
 }}

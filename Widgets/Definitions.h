@@ -42,6 +42,17 @@ namespace gge { namespace widgets {
 		static const Type Checkbox_Line_Props	= 0x05856001;
 
 
+
+		static const Type Slider				= 0x05860000;
+		static const Type Slider_Props			= 0x05860101;
+
+		static const Type Slider_Group			= 0x05864000;
+		static const Type Slider_Group_Props	= 0x05864001;
+
+		static const Type Slider_Element		= 0x05865000;
+		static const Type Slider_Element_Props	= 0x05865001;
+
+
 	}
 
 }}

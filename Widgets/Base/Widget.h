@@ -21,8 +21,7 @@ namespace gge { namespace widgets {
 	public:
 
 
-		WidgetBase() : 
-			Container(NULL),
+		WidgetBase() : Container(NULL),
 			location(0,0),
 			size(0,0),
 			BaseLayer(NULL),
@@ -32,7 +31,8 @@ namespace gge { namespace widgets {
 			pointer(Pointer::None),
 			GotFocus("GotFocus", this),
 			LostFocus("LostFocus", this),
-			waitingforredraw(false)
+			waitingforredraw(false),
+			mousetoken(0)
 		{ }
 
 
@@ -63,7 +63,7 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual bool IsEnabled()  { return isenabled; }
+		virtual bool IsEnabled();
 		inline  bool IsDisabled() { return !IsEnabled(); }
 		virtual void Enable() { isenabled=true; }
 		virtual void Disable();
@@ -206,23 +206,21 @@ namespace gge { namespace widgets {
 		}
 
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
-			static PointerCollection::Token t=0;
-
 			if(input::mouse::Event::isClick(event))
 				Focus();
 
 			if(event==input::mouse::Event::Over && pointer!=Pointer::None)
-				t=Pointers.Set(pointer);
+				mousetoken=Pointers.Set(pointer);
 			else if(event==input::mouse::Event::Out) {
-				Pointers.Reset(t);
-				t=0;
+				Pointers.Reset(mousetoken);
+				mousetoken=0;
 			}
 
 			return !input::mouse::Event::isScroll(event);
 		}
 
 
-		void Draw() {
+		virtual void Draw() {
 			if(waitingforredraw) return;
 
 			DrawQueue.Add(this);
@@ -279,6 +277,8 @@ namespace gge { namespace widgets {
 		bool isenabled;
 
 		bool waitingforredraw;
+
+		PointerCollection::Token mousetoken;
 
 		utils::Point location;
 		utils::Size  size;

@@ -431,18 +431,28 @@ namespace gge { namespace utils {
 	public:
 		typedef Iterator_<      T_,      Collection, growth>	  Iterator;
 		class ConstIterator : public Iterator_<const T_,const Collection, growth> {
+			friend class Collection;
 		public:
 			ConstIterator(const Iterator &it) {
 				Col=it.Col;
 				Offset=it.Offset;
 			}
+
+		protected:
+			ConstIterator(const Collection &c, int offset=0) : Iterator_(c, offset) {
+			}
 		};
 		typedef SearchIterator_<      T_,      Collection, growth>	    SearchIterator;
 		class ConstSearchIterator : public SearchIterator_<const T_,const Collection, growth> {
+			friend class Collection;
 		public:
 			ConstSearchIterator(const SearchIterator &it) {
 				Col=it.Col;
 				Offset=it.Offset;
+			}
+
+		protected:
+			ConstSearchIterator(const Collection &c, const T_ &search, int offset=0) : SearchIterator_(c, search, offset) {
 			}
 		};
 
@@ -725,7 +735,7 @@ namespace gge { namespace utils {
 			return Get(Index);
 		}
 
-		////Returns the item at a given index
+		//Returns the item at a given index
 		const T_& operator [] (int Index) const  {
 			return Get(Index);
 		}
@@ -735,7 +745,7 @@ namespace gge { namespace utils {
 			return get_(Index);
 		}
 
-		////Returns the item at a given index
+		//Returns the item at a given index
 		const T_* operator () (int Index) const {
 			return get_(Index);
 		}

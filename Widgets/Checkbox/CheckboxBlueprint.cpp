@@ -74,9 +74,9 @@ namespace gge { namespace widgets {
 					bp->lines[1].Load(Data);
 					bp->lines[2].Load(Data);
 					bp->symbol.Load(Data);
-					bp->symbolplaceholder.Load(Data);
-					bp->textplaceholder.Load(Data);
-					bp->iconplaceholder.Load(Data);
+					bp->symbolplace.Load(Data);
+					bp->textplace.Load(Data);
+					bp->iconplace.Load(Data);
 					bp->sound.Load(Data);
 					bp->overlay.Load(Data);
 
@@ -198,6 +198,10 @@ namespace gge { namespace widgets {
 		Blueprint::AnimationInfo Blueprint::HasStyleAnimation(FocusMode f, StateMode s, StyleMode style) const {
 			Blueprint::AnimationInfo ret;
 
+			ret=hasstyleanimation(f,s,style);
+			if(ret)
+				return ret;
+
 			ret=hasstyleanimation(FocusMode(),s,style);
 			if(ret)
 				return ret;
@@ -206,11 +210,7 @@ namespace gge { namespace widgets {
 			if(ret)
 				return ret;
 
-			ret=hasstyleanimation(FocusMode(),StateMode(),style);
-			if(ret)
-				return ret;
-
-			if(f.to!=Blueprint::FT_None) {
+			if(f.to!=Blueprint::Focus_None) {
 				ret=hasstyleanimation(f.swap(),StateMode(),style);
 				if(ret)
 					return ret;
@@ -222,7 +222,7 @@ namespace gge { namespace widgets {
 					return ret;
 			}
 
-			ret=hasstyleanimation(f,s,style);
+			ret=hasstyleanimation(FocusMode(),StateMode(),style);
 			if(ret)
 				return ret;
 
@@ -255,7 +255,7 @@ namespace gge { namespace widgets {
 			typedef Blueprint::StateMode sm;
 			int i=0;
 
-			if(focus.to==Blueprint::FT_None && state.to==0) {
+			if(focus.to==Blueprint::Focus_None && state.to==0) {
 				//???????????????????????????????????????????
 				//if(Mapping[gm(focus, state)])
 				//	groups[i++]=Mapping[gm(focus, state)];
@@ -273,7 +273,7 @@ namespace gge { namespace widgets {
 				if(Mapping[gm(fm(), sm())])
 					groups[i++]=Mapping[gm(fm(), sm())];
 			}
-			else if(focus.to==Blueprint::FT_None) {
+			else if(focus.to==Blueprint::Focus_None) {
 				if(Mapping[gm(fm(), state)])
 					groups[i++]=Mapping[gm(fm(), state)];
 
@@ -334,16 +334,16 @@ namespace gge { namespace widgets {
 			resource::ResourceBase::Prepare(main,file);
 
 			Normal			=dynamic_cast<Blueprint::Element*>(file.FindObject(normal));
-			Mapping[Blueprint::Normal][Blueprint::YT_None]=Normal;
+			Mapping[Blueprint::Normal][Blueprint::Style_None]=Normal;
 			
 			Hover			=dynamic_cast<Blueprint::Element*>(file.FindObject(hover));
-			Mapping[Blueprint::Hover][Blueprint::YT_None]=Hover;
+			Mapping[Blueprint::Hover][Blueprint::Style_None]=Hover;
 
 			Down			=dynamic_cast<Blueprint::Element*>(file.FindObject(down));
-			Mapping[Blueprint::Down][Blueprint::YT_None]=Down;
+			Mapping[Blueprint::Down][Blueprint::Style_None]=Down;
 
 			Disabled		=dynamic_cast<Blueprint::Element*>(file.FindObject(disabled));
-			Mapping[Blueprint::Disabled][Blueprint::YT_None]=Disabled;
+			Mapping[Blueprint::Disabled][Blueprint::Style_None]=Disabled;
 
 
 			NormalToHover	=dynamic_cast<Blueprint::Element*>(file.FindObject(normaltohover));
@@ -381,9 +381,9 @@ namespace gge { namespace widgets {
 			Font				=new gge::Font((gge::Font)font);
 			if(!Font->Theme)
 				utils::CheckAndDelete(Font);
-			SymbolPlaceholder	=dynamic_cast<Placeholder*>(file.FindObject(symbolplaceholder));
-			TextPlaceholder		=dynamic_cast<Placeholder*>(file.FindObject(textplaceholder));
-			IconPlaceholder		=dynamic_cast<Placeholder*>(file.FindObject(iconplaceholder));
+			SymbolPlace	=dynamic_cast<Placeholder*>(file.FindObject(symbolplace));
+			TextPlace		=dynamic_cast<Placeholder*>(file.FindObject(textplace));
+			IconPlace		=dynamic_cast<Placeholder*>(file.FindObject(iconplace));
 			Sound				=dynamic_cast<resource::SoundResource*>(file.FindObject(sound));
 			Overlay				=dynamic_cast<BorderDataResource*>(file.FindObject(overlay));
 

@@ -11,7 +11,7 @@ using namespace std;
 namespace gge { namespace widgets {
 	namespace checkbox {
 
-		int Base::lineheight(Blueprint::Line *line, int &prevymargin) {
+		int Base::lineheight(Blueprint::Line *line, int &prevymargin, int w) {
 			if(line->HeightMode==Blueprint::Fixed)
 				return line->Height;
 
@@ -40,7 +40,10 @@ namespace gge { namespace widgets {
 
 				case Blueprint::Text:
 					if(font && text!="") {
-						nh=font->FontHeight();
+						if(w==0)
+							nh=font->FontHeight();
+						else
+							nh=font->TextHeight(text, w);
 					}
 					break;
 				case Blueprint::Symbol:
@@ -154,8 +157,8 @@ namespace gge { namespace widgets {
 							if(textp->SizingMode==Placeholder::MaximumAvailable)
 								maximumsized++;
 						}
-						else if(line->WidthMode==Blueprint::Auto)
-							sizes[i]=textp->GetSize(Size(w,0), Size(w,0)).Width;
+						else
+							sizes[i]=0;
 
 						knownw+=sizes[i];
 						total++;
@@ -167,7 +170,7 @@ namespace gge { namespace widgets {
 						if(symbolp) {
 							if(w==0)
 								w=bounds.Height()-symbolp->Margins.TotalY();
-							
+
 							sizes[i]=symbolp->GetSize(Size(w,0), Size(w,0)).Width;
 
 							totalmargin=(symbolp->Margins.Left>pmargin ? symbolp->Margins.TotalX()-pmargin : symbolp->Margins.Right);
@@ -343,7 +346,7 @@ namespace gge { namespace widgets {
 									im->DrawStretched(innerlayer, 
 										eprint[1].Out.position.x-1,eprint[1].Out.position.y+(font->FontHeight()-font->FontBaseline())/2,
 										2+eprint[2].Out.position.x-eprint[1].Out.position.x, im->GetHeight()
-									);
+										);
 									innerlayer.SetCurrentColor(0xffffffff);
 								}
 							}
@@ -406,65 +409,14 @@ namespace gge { namespace widgets {
 
 			BaseLayer->Clear();
 			innerlayer.Clear();
+			overlayer.Clear();
 
 			if(!bp)
 				return;
 
-			Blueprint::Group **groups=new Blueprint::Group *[5];
-
-			bp->GetAlternatives(groups, focus, state);
-
-			//prepare resources
-			Blueprint::TransitionType transition;
-
-			symbolp=bp->GetSymbolPlaceholder(groups, style, transition);
-			textp=bp->GetTextPlaceholder(groups, style, transition);
-			iconp=bp->GetIconPlaceholder(groups, style, transition);
-
-
-			ResizableObjectProvider *provider;
-			BorderDataResource		*bprovider;
-			symbol=NULL;
-			border=NULL;
-			overlay=NULL;
-
-			font=bp->GetFont(groups, style, transition);
-			provider=bp->GetSymbol(groups, style, transition);
-			if(provider) {
-				if(ImageCache[provider])
-					symbol=ImageCache[provider];
-				else {
-					symbol=&provider->CreateResizableObject();
-					ImageCache[provider]=symbol;
-				}
-
-				symbol->SetController(getanimation(transition));
-			}
-			bprovider=bp->GetOuterBorder(groups, style, transition);
-			if(bprovider) {
-				if(BorderCache[bprovider])
-					border=BorderCache[bprovider];
-				else {
-					border=&bprovider->CreateResizableObject();
-					BorderCache[bprovider]=border;
-				}
-
-				border->SetController(getanimation(transition));
-			}
-			bprovider=bp->GetOverlay(groups, style, transition);
-			if(bprovider) {
-				if(BorderCache[bprovider])
-					overlay=BorderCache[bprovider];
-				else {
-					overlay=&bprovider->CreateResizableObject();
-					BorderCache[bprovider]=overlay;
-				}
-
-				overlay->SetController(getanimation(transition));
-			}
+			prepare();
 
 			//setup lines and heights
-			Blueprint::TransitionType linetransitions[4];
 			int lineheights[4]={};
 			int lineheights_org[4]={};
 			int totalknownlineheights=0;
@@ -473,9 +425,6 @@ namespace gge { namespace widgets {
 
 			int prevymargin=0;
 			for(int i=1;i<=3;i++) {
-				lines[i]=bp->GetLine(i, groups, style, transition);
-				linetransitions[i]=transition;
-
 				if(lines[i]) {
 					totallines++;
 					lineheights[i]=lineheight(lines[i], prevymargin);
@@ -498,6 +447,7 @@ namespace gge { namespace widgets {
 				inner=border->ContentBounds(outer);
 			}
 			innerlayer.BoundingBox=inner;
+			overlayer.BoundingBox=outer;
 			extra=inner.Height()-totalknownlineheights;
 
 			for(int i=1;i<=3;i++)
@@ -511,7 +461,7 @@ namespace gge { namespace widgets {
 					if(lines[i] && lines[i]->HeightMode==Blueprint::MaximumAvailable) {
 						lineheights[i]+=distribute;
 						extra-=distribute;
-						
+
 						if(--k==0)
 							lineheights[i]+=extra;
 					}
@@ -555,12 +505,8 @@ namespace gge { namespace widgets {
 			}
 
 			if(overlay) {
-				overlay->DrawIn(BaseLayer, outer);
+				overlay->DrawIn(overlayer, outer);
 			}
-
-
-
-			delete[] groups;
 		}
 
 		void Base::setfocus(Blueprint::FocusType type) {
@@ -569,7 +515,7 @@ namespace gge { namespace widgets {
 				return;
 			}
 
-			if(focus.from!=type || focus.to!=Blueprint::FT_None) {
+			if(focus.from!=type || focus.to!=Blueprint::Focus_None) {
 				Blueprint::AnimationInfo info;
 				if(focus.from==type)
 					info=bp->HasFocusAnimation(Blueprint::FocusMode(focus.to, type));
@@ -586,11 +532,11 @@ namespace gge { namespace widgets {
 							focus.from=focus.to;
 					}
 					else if(focus.to==type) {
-						next_focus=Blueprint::FT_None;
+						next_focus=Blueprint::Focus_None;
 
 						return;
 					}
-					
+
 					if(info.duration==-2) {
 						info.duration=-1;
 						focus_anim_loop=true;
@@ -696,8 +642,8 @@ namespace gge { namespace widgets {
 				return;
 			}
 
-			if(style.from!=type || style.to!=Blueprint::YT_None) {
-				if(style.from!=type && style.to!=type && style.to!=Blueprint::YT_None) {
+			if(style.from!=type || style.to!=Blueprint::Style_None) {
+				if(style.from!=type && style.to!=type && style.to!=Blueprint::Style_None) {
 					next_style=type;
 					return;
 				}
@@ -721,7 +667,7 @@ namespace gge { namespace widgets {
 							style.from=style.to;
 					}
 					else if(style.to==type) {
-						next_style=Blueprint::YT_None;
+						next_style=Blueprint::Style_None;
 
 						return;
 					}
@@ -746,10 +692,10 @@ namespace gge { namespace widgets {
 				}
 				else {
 					style.from=type;
-					style.to=Blueprint::YT_None;
+					style.to=Blueprint::Style_None;
 
-					if(next_style!=Blueprint::YT_None) {
-						Blueprint::StyleType v=next_style, t=Blueprint::YT_None;
+					if(next_style!=Blueprint::Style_None) {
+						Blueprint::StyleType v=next_style, t=Blueprint::Style_None;
 
 						if(style.from==Blueprint::Down && next_style==Blueprint::Normal) {
 							triggerwait();
@@ -794,7 +740,7 @@ namespace gge { namespace widgets {
 
 			return true;
 		}
-	
+
 		bool Base::loosefocus(bool force) {
 			if(!IsFocussed())
 				return true;
@@ -806,7 +752,7 @@ namespace gge { namespace widgets {
 
 		void Base::Enable() {
 			WidgetBase::Enable();
-			
+
 			if(mouseover)
 				setstyle(Blueprint::Hover);
 			else
@@ -815,35 +761,46 @@ namespace gge { namespace widgets {
 
 		void Base::Disable() {
 			WidgetBase::Disable();
-			
+
 			setstyle(Blueprint::Disabled);
 		}
 
 		utils::Size Base::GetSize() {
-			if(autosize==AutosizeModes::None)
-				return WidgetBase::GetSize();
-			else
-				return WidgetBase::GetSize();
+			prepare();
+
+			return currentsize;
 		}
 
 		void Base::containerenabledchanged(bool state) {
-			//!TODO
+			if(style.from == Blueprint::Disabled || style.to == Blueprint::Disabled) {
+				if(IsEnabled()) {
+					if(mouseover)
+						setstyle(Blueprint::Hover);
+					else
+						setstyle(Blueprint::Normal);
+				}					
+			}
+			else {
+				if(!IsEnabled()) {
+					setstyle(Blueprint::Disabled);
+				}
+			}
 		}
 
 		void Base::focus_anim_finished() {
-			if(focus.to==Blueprint::FT_None && focus_anim_loop)
+			if(focus.to==Blueprint::Focus_None && focus_anim_loop)
 				focus_anim.ResetProgress();
 
-			if(focus.to==Blueprint::FT_None)
+			if(focus.to==Blueprint::Focus_None)
 				return;
 
 			focus_anim.Pause();
 			focus.from=focus.to;
-			focus.to=Blueprint::FT_None;
+			focus.to=Blueprint::Focus_None;
 
-			if(next_focus!=Blueprint::FT_None) {
+			if(next_focus!=Blueprint::Focus_None) {
 				Blueprint::FocusType v=next_focus;
-				next_focus=Blueprint::FT_None;
+				next_focus=Blueprint::Focus_None;
 
 				setfocus(v);
 			}
@@ -876,21 +833,21 @@ namespace gge { namespace widgets {
 		}
 
 		void Base::style_anim_finished() {
-			if(style.to==Blueprint::YT_None && style_anim_loop)
+			if(style.to==Blueprint::Style_None && style_anim_loop)
 				style_anim.ResetProgress();
 
-			if(style.to==Blueprint::YT_None && next_style==Blueprint::YT_None)
+			if(style.to==Blueprint::Style_None && next_style==Blueprint::Style_None)
 				return;
 
 			style_anim.Pause();
 
-			if(style.to!=Blueprint::YT_None) {
+			if(style.to!=Blueprint::Style_None) {
 				style.from=style.to;
-				style.to=Blueprint::YT_None;
+				style.to=Blueprint::Style_None;
 			}
 
-			if(next_style!=Blueprint::YT_None) {
-				Blueprint::StyleType v=next_style, t=Blueprint::YT_None;
+			if(next_style!=Blueprint::Style_None) {
+				Blueprint::StyleType v=next_style, t=Blueprint::Style_None;
 
 				if(style.from==Blueprint::Down && next_style==Blueprint::Normal) {
 					triggerwait();
@@ -920,13 +877,344 @@ namespace gge { namespace widgets {
 
 		bool Base::detach(ContainerBase *container) {
 			innerlayer.parent=NULL;
+			overlayer.parent=NULL;
 			return WidgetBase::detach(container);
 		}
 
 		void Base::located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
 			WidgetBase::located(container, w, Order);
-			if(BaseLayer)
-				BaseLayer->Add(innerlayer, 0);
+			if(BaseLayer) {
+				BaseLayer->Add(innerlayer, 1);
+				BaseLayer->Add(overlayer, -1);
+			}
+		}
+
+		void Base::prepare() {
+			if(!unprepared)
+				return;
+
+			if(!bp) {
+				unprepared=false;
+				return;
+			}
+
+			Blueprint::Group **groups=new Blueprint::Group *[5];
+
+			bp->GetAlternatives(groups, focus, state);
+
+			//prepare resources
+			Blueprint::TransitionType transition;
+
+			symbolp=bp->GetSymbolPlace(groups, style, transition);
+			textp=bp->GetTextPlace(groups, style, transition);
+			iconp=bp->GetIconPlace(groups, style, transition);
+
+
+			ResizableObjectProvider *provider;
+			BorderDataResource		*bprovider;
+			symbol=NULL;
+			border=NULL;
+			overlay=NULL;
+
+			font=bp->GetFont(groups, style, transition);
+			provider=bp->GetSymbol(groups, style, transition);
+			if(provider) {
+				if(ImageCache[provider])
+					symbol=ImageCache[provider];
+				else {
+					symbol=&provider->CreateResizableObject();
+					ImageCache[provider]=symbol;
+				}
+
+				symbol->SetController(getanimation(transition));
+			}
+			bprovider=bp->GetOuterBorder(groups, style, transition);
+			if(bprovider) {
+				if(BorderCache[bprovider])
+					border=BorderCache[bprovider];
+				else {
+					border=&bprovider->CreateResizableObject(true);
+					BorderCache[bprovider]=border;
+				}
+
+				border->SetController(getanimation(transition));
+			}
+			bprovider=bp->GetOverlay(groups, style, transition);
+			if(bprovider) {
+				if(BorderCache[bprovider])
+					overlay=BorderCache[bprovider];
+				else {
+					overlay=&bprovider->CreateResizableObject();
+					BorderCache[bprovider]=overlay;
+				}
+
+				overlay->SetController(getanimation(transition));
+			}
+
+			for(int i=1;i<=3;i++) {
+				lines[i]=bp->GetLine(i, groups, style, transition);
+				linetransitions[i]=transition;
+			}
+
+			delete[] groups;
+
+			unprepared=false;
+
+			calculatesize();
+		}
+
+		void Base::calculatesize() {
+			int textw=0;
+
+			if(autosize==AutosizeModes::None) {
+				currentsize=WidgetBase::size;
+			}
+			else {
+				if(textwrap) {
+					currentsize.Width=WidgetBase::size.Width;
+
+#pragma region "Text Width calculate"
+					if(font && text!="")
+						for(int l=1;l<=3;l++) {
+							auto line=lines[l];
+							if(!line)
+								continue;
+
+							if(line->Contents.First!=Blueprint::Text && line->Contents.Second!=Blueprint::Text &&line->Contents.Third!=Blueprint::Text)
+								continue;
+
+							int knownw=0;
+							int totalmargin=0;
+							int pmargin=0;
+
+							//calculate current height, required for w=h stuff
+							int ch=0;
+							for(int i=0;i<3;i++) {
+								switch(line->GetContent(i)) {
+								case Blueprint::Icon:
+									if(icon && drawicon) {
+										ch=max(ch, icon->GetHeight());
+									}
+									break;
+								case Blueprint::Text:
+									if(font && text!="") {
+										ch=max(ch, font->FontHeight());
+									}
+									break;
+								case Blueprint::Symbol:
+									if(symbol && drawsymbol) {
+										ch=max(ch, symbol->CalculateHeight(0));
+									}
+									break;
+								}
+							}
+
+							for(int i=0;i<3;i++) {
+								switch(line->GetContent(i)) {
+								case Blueprint::Icon:
+									if(icon && drawicon) {
+										if(iconp) {
+											knownw+=iconp->GetSize(icon->GetSize(), icon->GetSize()).Width;
+
+											totalmargin+=(iconp->Margins.Left>pmargin ? iconp->Margins.TotalX()-pmargin : iconp->Margins.Right);
+											pmargin=iconp->Margins.Right;
+										}
+										else {
+											knownw+=icon->GetWidth();
+										}
+									}
+									break;
+								case Blueprint::Text:
+									if(font && text!="" && textp) {
+										totalmargin+=(textp->Margins.Left>pmargin ? textp->Margins.TotalX()-pmargin : textp->Margins.Right);
+										pmargin=textp->Margins.Right;
+									}
+									break;
+								case Blueprint::Symbol:
+									if(symbol && drawsymbol) {
+										int w=symbol->CalculateWidth(0);
+										if(symbolp) {
+											if(w==0)
+												w=ch-symbolp->Margins.TotalY();
+
+											knownw+=symbolp->GetSize(Size(w,0), Size(w,0)).Width;
+
+											totalmargin=(symbolp->Margins.Left>pmargin ? symbolp->Margins.TotalX()-pmargin : symbolp->Margins.Right);
+											pmargin=symbolp->Margins.Right;
+										}
+										else {
+											if(w==0)
+												w=ch;
+
+											knownw+=w;
+										}
+									}
+									break;
+								}
+							}
+
+							knownw+=totalmargin;
+
+							BorderDataResource *bprovider=line->Border;
+							BorderData *lineborder=NULL;
+							if(bprovider) {
+								if(BorderCache[bprovider])
+									lineborder=BorderCache[bprovider];
+								else {
+									lineborder=&bprovider->CreateResizableObject();
+									BorderCache[bprovider]=lineborder;
+								}
+							}
+
+							if(lineborder) {
+								knownw+=lineborder->BorderWidth.TotalX()+lineborder->Padding.TotalX();
+							}
+
+							textw=currentsize.Width-knownw;
+
+							break;
+						}
+#pragma endregion
+				}
+				else {
+#pragma region "Width calculate"
+					int mlw=0;
+					for(int l=1;l<=3;l++) {
+						auto line=lines[l];
+						if(!line)
+							continue;
+
+						int knownw=0;
+						int totalmargin=0;
+						int pmargin=0;
+
+						//calculate current height, required for w=h stuff
+						int ch=0;
+						for(int i=0;i<3;i++) {
+							switch(line->GetContent(i)) {
+							case Blueprint::Icon:
+								if(icon && drawicon) {
+									ch=max(ch, icon->GetHeight());
+								}
+								break;
+							case Blueprint::Text:
+								if(font && text!="") {
+									ch=max(ch, font->FontHeight());
+								}
+								break;
+							case Blueprint::Symbol:
+								if(symbol && drawsymbol) {
+									ch=max(ch, symbol->CalculateHeight(0));
+								}
+								break;
+							}
+						}
+
+						for(int i=0;i<3;i++) {
+							switch(line->GetContent(i)) {
+							case Blueprint::Icon:
+								if(icon && drawicon) {
+									if(iconp) {
+										knownw+=iconp->GetSize(icon->GetSize(), icon->GetSize()).Width;
+
+										totalmargin+=(iconp->Margins.Left>pmargin ? iconp->Margins.TotalX()-pmargin : iconp->Margins.Right);
+										pmargin=iconp->Margins.Right;
+									}
+									else {
+										knownw+=icon->GetWidth();
+									}
+								}
+								break;
+							case Blueprint::Text:
+								if(font && text!="") {
+									int w=font->TextWidth(text);
+									if(textp) {
+										knownw+=w;
+
+										totalmargin+=(textp->Margins.Left>pmargin ? textp->Margins.TotalX()-pmargin : textp->Margins.Right);
+										pmargin=textp->Margins.Right;
+									}
+									else
+										knownw+=w;
+								}
+								break;
+							case Blueprint::Symbol:
+								if(symbol && drawsymbol) {
+									int w=symbol->CalculateWidth(0);
+									if(symbolp) {
+										if(w==0)
+											w=ch-symbolp->Margins.TotalY();
+
+										knownw+=symbolp->GetSize(Size(w,0), Size(w,0)).Width;
+
+										totalmargin=(symbolp->Margins.Left>pmargin ? symbolp->Margins.TotalX()-pmargin : symbolp->Margins.Right);
+										pmargin=symbolp->Margins.Right;
+									}
+									else {
+										if(w==0)
+											w=ch;
+
+										knownw+=w;
+									}
+								}
+								break;
+							}
+						}
+
+						knownw+=totalmargin;
+
+						BorderDataResource *bprovider=line->Border;
+						BorderData *lineborder=NULL;
+						if(bprovider) {
+							if(BorderCache[bprovider])
+								lineborder=BorderCache[bprovider];
+							else {
+								lineborder=&bprovider->CreateResizableObject();
+								BorderCache[bprovider]=lineborder;
+							}
+						}
+
+						if(lineborder) {
+							knownw+=lineborder->BorderWidth.TotalX()+lineborder->Padding.TotalX();
+						}
+
+						mlw=max(mlw, knownw);
+
+
+					}
+#pragma endregion
+
+					currentsize.Width=mlw;
+					if(border) {
+						currentsize.Width+=border->BorderWidth.TotalX()+border->Padding.TotalX();
+					}
+				}
+
+				//height calculate
+				int prevymargin=0;
+				int h=0;
+				for(int l=1;l<=3;l++) {
+					auto line=lines[l];
+					if(!line)
+						continue;
+
+					h+=lineheight(line, prevymargin,textw);
+				}
+
+				currentsize.Height=h;
+				if(border) {
+					currentsize.Height+=border->BorderWidth.TotalY()+border->Padding.TotalY();
+				}	
+			}
+
+			if(autosize==AutosizeModes::GrowOnly) {
+				if(currentsize.Width<WidgetBase::size.Width)
+					currentsize.Width=WidgetBase::size.Width;
+				if(currentsize.Height<WidgetBase::size.Height)
+					currentsize.Height=WidgetBase::size.Height;
+			}
+
+			BaseLayer->Resize(currentsize);
 		}
 
 	}

@@ -30,45 +30,6 @@ namespace gge { namespace widgets {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:
 
-			//format: 0xtf, f: from, t: to
-			enum FocusType : unsigned {
-				//Not valid unless determining transitions
-				FT_None				= 0x00,
-				NotFocused			= 0x01,
-				Focused				= 0x02,
-			};
-
-			struct FocusMode {
-				FocusMode() : from(NotFocused), to(FT_None)
-				{ }
-
-				FocusMode(FocusType from, FocusType to) : from(from), to(to)
-				{ }
-
-				FocusMode(int i) : from(FocusType(i%0x10)), to(FocusType(i/0x10))
-				{ }
-
-				FocusType from : 4;
-				FocusType to   : 4;
-
-				bool operator <(const FocusMode &f) const {
-					if(to<f.to)
-						return true;
-					else if(to>f.to)
-						return false;
-					else						
-						return from<f.from;
-				}
-
-				bool operator ==(const FocusMode &f) const {
-					return from==f.from && to==f.to;
-				}
-
-				FocusMode swap() {
-					return FocusMode(to,from);
-				}
-			};
-
 			typedef int StateType;
 
 			struct StateMode {
@@ -102,7 +63,7 @@ namespace gge { namespace widgets {
 				GroupMode(FocusMode focus=FocusMode(), StateMode state=StateMode()) : focus(focus), state(state)
 				{ }
 
-				GroupMode(FocusType focus_from, int state_from, FocusType focus_to=FT_None, int state_to=0) : 
+				GroupMode(FocusType focus_from, int state_from, FocusType focus_to=Focus_None, int state_to=0) : 
 				focus(focus_from,focus_to), state(state_from,state_to)
 				{ }
 
@@ -125,26 +86,6 @@ namespace gge { namespace widgets {
 				Single=1,
 				Dual,
 				Tri
-			};
-
-			enum StyleType {
-				YT_None	=0,
-				Normal	=1,
-				Hover	=2,
-				Down	=4,
-				Disabled=5
-			};
-
-			struct StyleMode {
-				StyleMode(StyleType from=Normal, StyleType to=YT_None) : from(from), to(to)
-				{ }
-
-				StyleType from;
-				StyleType to;
-
-				StyleMode swap() {
-					return StyleMode(to, from);
-				}
 			};
 
 			enum SizingMode {
@@ -171,24 +112,6 @@ namespace gge { namespace widgets {
 				LineContentType First  : 4;
 				LineContentType Second : 4;
 				LineContentType Third  : 4;
-			};
-
-			enum AnimationDirection {
-				Missing  = 0,
-				Forward  = 1,
-				Backward =-1,
-			};
-
-			struct AnimationInfo {
-				AnimationInfo(AnimationDirection direction=Missing,int duration=-1) : direction(direction), duration(duration)
-				{ }
-
-				operator bool() {
-					return direction!=Missing;
-				}
-
-				AnimationDirection direction;
-				int duration;
 			};
 
 			enum TransitionType {
@@ -242,13 +165,12 @@ namespace gge { namespace widgets {
 				utils::SGuid border;
 			};
 
-
 			class Element : public resource::ResourceBase {
 				friend Blueprint::Element *LoadElement(resource::File& File, std::istream &Data, int Size);
 				friend class Blueprint;
 			public:
 				Element() : Symbol(NULL), Sound(NULL), Border(NULL), Overlay(NULL), Font(NULL),
-					SymbolPlaceholder(NULL), TextPlaceholder(NULL), IconPlaceholder(NULL),
+					SymbolPlace(NULL), TextPlace(NULL), IconPlace(NULL),
 					Duration(-1), Lines()
 				{ }
 
@@ -260,9 +182,9 @@ namespace gge { namespace widgets {
 				resource::
 					ResizableObjectProvider	*Symbol;
 				Font						*Font;
-				Placeholder					*SymbolPlaceholder;
-				Placeholder					*TextPlaceholder;
-				Placeholder					*IconPlaceholder;
+				Placeholder					*SymbolPlace;
+				Placeholder					*TextPlace;
+				Placeholder					*IconPlace;
 				resource::SoundResource		*Sound;
 				BorderDataResource			*Overlay;
 
@@ -287,15 +209,15 @@ namespace gge { namespace widgets {
 				}
 				template<>
 				Placeholder *Get<Placeholder, 4>() const {
-					return SymbolPlaceholder;
+					return SymbolPlace;
 				}
 				template<>
 				Placeholder *Get<Placeholder, 5>() const {
-					return TextPlaceholder;
+					return TextPlace;
 				}
 				template<>
 				Placeholder *Get<Placeholder, 6>() const {
-					return IconPlaceholder;
+					return IconPlace;
 				}
 				template<>
 				resource::SoundResource *Get<resource::SoundResource, 7>() const {
@@ -329,9 +251,9 @@ namespace gge { namespace widgets {
 				utils::SGuid border;
 				utils::SGuid symbol;
 				FontInitiator font;
-				utils::SGuid symbolplaceholder;
-				utils::SGuid textplaceholder;
-				utils::SGuid iconplaceholder;
+				utils::SGuid symbolplace;
+				utils::SGuid textplace;
+				utils::SGuid iconplace;
 				utils::SGuid sound;
 				utils::SGuid overlay;
 				utils::SGuid lines[3];
@@ -398,8 +320,10 @@ namespace gge { namespace widgets {
 				Element *Mapping[6][6];
 			};
 
-			Blueprint() : States(Single), DefaultSize(0,0), Mapping()
-			{ }
+			Blueprint() : States(Single), Mapping()
+			{
+				DefaultSize=utils::Size(120,40);
+			}
 
 
 
@@ -432,7 +356,7 @@ namespace gge { namespace widgets {
 					if(group->Mapping[style.from][style.to] && group->Mapping[style.from][style.to]->Get<T_,id>()) {
 						if(style.to!=0)
 							type=Blueprint::StyleTransition;
-						else if(group->Focus.to!=Blueprint::FT_None)
+						else if(group->Focus.to!=Blueprint::Focus_None)
 							type=Blueprint::FocusTransition;
 						else if(group->State.to!=0)
 							type=Blueprint::StateTransition;
@@ -442,9 +366,9 @@ namespace gge { namespace widgets {
 						return group->Mapping[style.from][style.to]->Get<T_,id>();
 					}
 
-					if(style.to!=Blueprint::YT_None) {
+					if(style.to!=Blueprint::Style_None) {
 						if(group->Mapping[style.to][style.from] && group->Mapping[style.to][style.from]->Get<T_,id>()) {
-							if(group->Focus.to!=Blueprint::FT_None)
+							if(group->Focus.to!=Blueprint::Focus_None)
 								type=Blueprint::FocusTransition;
 							else if(group->State.to!=0)
 								type=Blueprint::StateTransition;
@@ -455,16 +379,16 @@ namespace gge { namespace widgets {
 						}
 					}
 
-					if(style.to!=Blueprint::YT_None || style.from!=Blueprint::Normal) {
-						if(group->Mapping[Blueprint::Normal][Blueprint::YT_None] && group->Mapping[Blueprint::Normal][Blueprint::YT_None]->Get<T_,id>()) {
-							if(group->Focus.to!=Blueprint::FT_None)
+					if(style.to!=Blueprint::Style_None || style.from!=Blueprint::Normal) {
+						if(group->Mapping[Blueprint::Normal][Blueprint::Style_None] && group->Mapping[Blueprint::Normal][Blueprint::Style_None]->Get<T_,id>()) {
+							if(group->Focus.to!=Blueprint::Focus_None)
 								type=Blueprint::FocusTransition;
 							else if(group->State.to!=0)
 								type=Blueprint::StateTransition;
 							else
 								type=Blueprint::NoTransition;
 
-							return group->Mapping[Blueprint::Normal][Blueprint::YT_None]->Get<T_,id>();
+							return group->Mapping[Blueprint::Normal][Blueprint::Style_None]->Get<T_,id>();
 						}
 					}
 				}
@@ -481,13 +405,13 @@ namespace gge { namespace widgets {
 			Font *GetFont(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<Font, 3>(groups, style, type);
 			}
-			Placeholder *GetSymbolPlaceholder(Group **groups, StyleMode style, TransitionType &type) const {
+			Placeholder *GetSymbolPlace(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<Placeholder, 4>(groups, style, type);
 			}
-			Placeholder *GetTextPlaceholder(Group **groups, StyleMode style, TransitionType &type) const {
+			Placeholder *GetTextPlace(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<Placeholder, 5>(groups, style, type);
 			}
-			Placeholder *GetIconPlaceholder(Group **groups, StyleMode style, TransitionType &type) const {
+			Placeholder *GetIconPlace(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<Placeholder, 6>(groups, style, type);
 			}
 			resource::SoundResource *GetSound(Group **groups, StyleMode style, TransitionType &type) const {
@@ -517,9 +441,7 @@ namespace gge { namespace widgets {
 
 
 			StateNumbers States;
-			utils::Size  DefaultSize;
 
-			utils::Collection<Group> Groups;
 
 			virtual GID::Type getGID() const { return GID::Checkbox; }
 

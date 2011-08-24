@@ -7,6 +7,7 @@
 
 #include "Layer.h"
 
+
 namespace gge {
 	struct IntervalObject;
 

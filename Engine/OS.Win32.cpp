@@ -431,7 +431,6 @@ using namespace gge::input::system;
 
 				return r;
 			}
-
 		}
 	
 		void ShowPointer() {

@@ -70,5 +70,12 @@ namespace gge { namespace widgets {
 			Container->FocusNext();
 	}
 
+	bool WidgetBase::IsEnabled() {
+		if(!Container)
+			return isenabled; 
+		else
+			return isenabled && Container->IsEnabled();
+	}
+
 
 }}

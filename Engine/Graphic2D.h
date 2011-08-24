@@ -147,7 +147,7 @@ namespace gge { namespace graphics {
 		int CalculateHeight(const SizeController2D &controller, int H=-1) const {
 			return calculateheight(controller, H);
 		}
-		utils::Size	CalculateCalculateSize(const SizeController2D &controller, int W=-1, int H=-1) const {
+		utils::Size	CalculateSize(const SizeController2D &controller, int W=-1, int H=-1) const {
 			return utils::Size(calculatewidth(controller, W), calculateheight(controller, H));
 		}
 		utils::Size	CalculateSize(const SizeController2D &controller, utils::Size s) const {

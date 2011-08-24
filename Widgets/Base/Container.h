@@ -209,9 +209,12 @@ namespace gge { namespace widgets {
 
 
 		//A container or the target widget has right to reject add requests
-		virtual bool AddWidget	 (WidgetBase &widget, int Order=0) {
+		virtual bool AddWidget	 (WidgetBase &widget, int Order=std::numeric_limits<int>::min()) {
 			if(!call_widget_locating(widget, Order))
 				return false;
+
+			if(Order==std::numeric_limits<int>::min())
+				Order=Widgets.HighestOrder()+1;
 
 			utils::SortedCollection<WidgetBase>::Wrapper *w=&Widgets.Add(widget, Order);
 
@@ -245,7 +248,7 @@ namespace gge { namespace widgets {
 
 			return true;
 		}
-		bool AddWidget	 (WidgetBase *widget, int Order=0) { 
+		bool AddWidget	 (WidgetBase *widget, int Order=std::numeric_limits<int>::min()) { 
 			if(widget==NULL)
 				return false;
 
@@ -267,7 +270,7 @@ namespace gge { namespace widgets {
 			if(!IsVisible())
 				return;
 
-			for(auto it=Widgets.First();it.isValid();it.Next()) {
+			for(auto it=Widgets.Last();it.isValid();it.Previous()) {
 				if(it->IsVisible())
 					it->Draw();
 			}
@@ -366,7 +369,7 @@ namespace gge { namespace widgets {
 			//Tab switch
 			if(tabswitch) {
 				if(event==input::keyboard::Event::Char && Key==input::keyboard::KeyCodes::Tab) {
-					if(!input::keyboard::Modifier::Check()) {
+					if(input::keyboard::Modifier::Current==input::keyboard::Modifier::None) {
 						FocusNext();
 						return true;
 					}

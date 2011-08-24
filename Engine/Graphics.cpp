@@ -231,13 +231,16 @@ namespace gge { namespace graphics {
 		}
 
 		void PostRender(os::DeviceHandle hDC) {
+			glFlush();
 			///*Swapping back and front buffers
 			SwapBuffers( (HDC)hDC );
 		}
 	}
 
-	const SizeController2D SizeController2D::TileFit;
-	const SizeController2D SizeController2D::StretchFit;
+	const SizeController2D SizeController2D::TileFit(Tile_Continous, Tile_Continous);
+	const SizeController2D SizeController2D::StretchFit(Stretch, Stretch);
+	const SizeController2D SizeController2D::SingleTopLeft(Single, Single, Alignment::Top_Left);
+	const SizeController2D SizeController2D::SingleBottomRight(Single, Single, Alignment::Bottom_Right);
 
 
 } }

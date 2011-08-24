@@ -22,7 +22,7 @@ public:
 	
 	////Default constructor sets growth to 50
 	PAClassList() {
-		growth=50;
+		growth=45;
 		init();
 	}
 	

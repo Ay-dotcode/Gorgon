@@ -5,6 +5,8 @@ namespace gge { namespace graphics {
 
 	void RectangularGraphic2D::DrawRotated( ImageTarget2D& Target, utils::Point p, float angle, utils::Point origin/*=utils::Point(0,0)*/ ) const
 	{
+		angle*=Pi/180;
+
 		int W=getwidth();
 		int H=getheight();
 
@@ -14,10 +16,10 @@ namespace gge { namespace graphics {
 		utils::Point p3=p;
 		utils::Point p4=p;
 
-		p1.x+=W;
 		p2.x+=W;
-		p2.y+=H;
+		p3.x+=W;
 		p3.y+=H;
+		p4.y+=H;
 
 		p1.Rotate(angle, origin);
 		p2.Rotate(angle, origin);

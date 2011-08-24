@@ -45,7 +45,7 @@ namespace gge {
 		static const int Mask_Invalid		= ~Mask_Used;
 
 		template<class T_>
-		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, utils::basic_Rectangle2D<T_> target, utils::basic_Size2D<T_> object) {
+		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, const utils::basic_Rectangle2D<T_> &target, const utils::basic_Size2D<T_> &object) {
 			utils::basic_Point2D<T_> p=target.TopLeft();
 
 			if(isCenter(Align))
@@ -62,7 +62,7 @@ namespace gge {
 		}
 
 		template<class T_>
-		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, utils::basic_Bounds2D<T_> target, utils::basic_Size2D<T_> object) {
+		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, const utils::basic_Bounds2D<T_> &target, const utils::basic_Size2D<T_> &object) {
 			utils::basic_Point2D<T_> p=target.TopLeft();
 
 			if(isCenter(Align))

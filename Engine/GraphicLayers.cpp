@@ -604,6 +604,7 @@ namespace gge { namespace graphics {
 
 		}
 
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
 			i->Render();
 		}
@@ -1237,6 +1238,7 @@ namespace gge { namespace graphics {
 			glEnd();
 		}
 
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glColor4fv(CurrentLayerColor.vect);
 		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
 			i->Render();

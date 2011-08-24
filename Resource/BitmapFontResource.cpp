@@ -317,15 +317,15 @@ namespace gge { namespace resource {
 						if(Data[d].CharPosition==j) {
 							switch(Data[d].Type) {
 							case EPrintData::Spacing:
-								Data[d].Out.position.x=l-sx;
-								Data[d].Out.position.y=y-sy;
+								Data[d].Out.position.x=l;
+								Data[d].Out.position.y=y;
 
 								l+=Data[d].In.position.x-Seperator; 
 								y+=Data[d].In.position.y; 
 								break;
 							case EPrintData::PositionDetect:
-								Data[d].Out.position.x=l-sx;
-								Data[d].Out.position.y=y-sy;
+								Data[d].Out.position.x=l;
+								Data[d].Out.position.y=y;
 								break;
 							case EPrintData::Color:
 								color=Data[d].In.color;
@@ -388,15 +388,15 @@ namespace gge { namespace resource {
 			if(Data[d].CharPosition==i) {
 				switch(Data[d].Type) {
 				case EPrintData::Spacing:
-					Data[d].Out.position.x=l-sx;
-					Data[d].Out.position.y=y-sy;
+					Data[d].Out.position.x=l;
+					Data[d].Out.position.y=y;
 
 					l+=Data[d].In.position.x-Seperator; 
 					y+=Data[d].In.position.y; 
 					break;
 				case EPrintData::PositionDetect:
-					Data[d].Out.position.x=l-sx;
-					Data[d].Out.position.y=y-sy;
+					Data[d].Out.position.x=l;
+					Data[d].Out.position.y=y;
 					break;
 				}
 			}
@@ -592,15 +592,15 @@ namespace gge { namespace resource {
 			if(Data[d].CharPosition==i) {
 				switch(Data[d].Type) {
 				case EPrintData::Spacing:
-					Data[d].Out.position.x=l-sx;
-					Data[d].Out.position.y=y-sy;
+					Data[d].Out.position.x=l;
+					Data[d].Out.position.y=y;
 
 					l+=Data[d].In.position.x-Seperator; 
 					y+=Data[d].In.position.y; 
 					break;
 				case EPrintData::PositionDetect:
-					Data[d].Out.position.x=l-sx;
-					Data[d].Out.position.y=y-sy;
+					Data[d].Out.position.x=l;
+					Data[d].Out.position.y=y;
 					break;
 				}
 			}

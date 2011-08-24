@@ -47,10 +47,12 @@ namespace gge { namespace resource {
 
 		ImageResource() : animation::AnimationBase(), ImageTexture(), ImageData() {
 			isLoaded=LeaveData=false; Palette=NULL; 
+			animation::Animations.Remove(this);
 		}
 
 		ImageResource(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::AnimationBase(), ImageTexture(), ImageData() {
 			this->Resize(Width, Height, Mode);
+			animation::Animations.Remove(this);
 		}
 
 		bool PNGExport(string filename);

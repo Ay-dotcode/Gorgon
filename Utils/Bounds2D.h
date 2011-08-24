@@ -256,7 +256,7 @@ namespace gge { namespace utils {
 		}
 
 		bool isInside(const basic_Point2D<T_> &p) const {
-			return p.x>Left && p.y>Top && p.x<Right && p.y<Bottom;
+			return p.x>=Left && p.y>=Top && p.x<Right && p.y<Bottom;
 		}
 
 		void SetSize(const basic_Size2D<T_> &s) {
@@ -266,6 +266,14 @@ namespace gge { namespace utils {
 
 		void SetSize(T_ Width, T_ Height) {
 			Right = Left + Width;
+			Bottom= Top  + Height;
+		}
+
+		void SetWidth(T_ Width) {
+			Right = Left + Width;
+		}
+
+		void SetHeight(T_ Height) {
 			Bottom= Top  + Height;
 		}
 

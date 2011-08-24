@@ -17,9 +17,9 @@ namespace gge { namespace widgets {
 		class Base : public WidgetBase {
 		public:
 			Base(bool cangetfocus, AutosizeModes::Type autosize,bool textwrap, bool drawsymbol,bool drawicon) : text(""),
-				cangetfocus(cangetfocus), autosize(autosize), textwrap(textwrap), underline(),
-				drawsymbol(drawsymbol), drawicon(drawicon), icon(NULL), currentstate(1),
-				mouseover(false), mousedown(false), next_focus(Blueprint::FT_None), next_state(0), next_style(Blueprint::YT_None)
+				cangetfocus(cangetfocus), autosize(autosize), textwrap(textwrap), underline(), currentsize(0,0),
+				drawsymbol(drawsymbol), drawicon(drawicon), icon(NULL), currentstate(1), unprepared(true),
+				mouseover(false), mousedown(false), next_focus(Blueprint::Focus_None), next_state(0), next_style(Blueprint::Style_None)
 			{
 				focus_anim.Pause();
 				focus_anim.Finished.Register(this, &Base::focus_anim_finished);
@@ -38,14 +38,16 @@ namespace gge { namespace widgets {
 
 				innerlayer.EnableClipping=true;
 
-				//!later: separate draw and object determination
 				draw();
 			}
-		
+
 			virtual void SetBlueprint(const widgets::Blueprint &bp)  {
 				this->bp=static_cast<const Blueprint*>(&bp);
-				if(GetSize().Width==0)
+				if(WidgetBase::size.Width==0)
 					Resize(this->bp->DefaultSize);
+
+				if(autosize!=AutosizeModes::None && Container)
+					Container->WidgetBoundsChanged();
 
 				Draw();
 			}
@@ -56,23 +58,21 @@ namespace gge { namespace widgets {
 
 			virtual void Enable();
 
+			virtual void Draw() {
+				unprepared=true;
+				WidgetBase::Draw();
+			}
+
 			//call calculate objects if this widget is waiting in the draw queue
 			//to make sure everything object is ready
 			virtual utils::Size GetSize();
 
 		protected:
+			virtual void prepare();
+
 			virtual void draw();
 
-			animation::AnimationController &getanimation(Blueprint::TransitionType transition) {
-				if(transition==Blueprint::FocusTransition)
-					return focus_anim;
-				else if(transition==Blueprint::StateTransition)
-					return state_anim;
-				else
-					return style_anim;
-			}
-
-			int lineheight(Blueprint::Line *line, int &prevymargin);
+			int lineheight(Blueprint::Line *line, int &prevymargin, int w=0);
 
 			void drawline(int id, Blueprint::TransitionType transition, int y, int reqh, int h, int &prevymargin);
 
@@ -107,7 +107,7 @@ namespace gge { namespace widgets {
 
 				down();
 
-				if(style.to==Blueprint::YT_None) {
+				if(style.to==Blueprint::Style_None) {
 					next_style=Blueprint::Normal;
 					triggerwait();
 				}
@@ -139,7 +139,8 @@ namespace gge { namespace widgets {
 
 				Draw();
 
-				Container->WidgetBoundsChanged();
+				if(Container)
+					Container->WidgetBoundsChanged();
 			}
 			AutosizeModes::Type getautosize() const {
 				return autosize;
@@ -160,6 +161,9 @@ namespace gge { namespace widgets {
 			void settext(const std::string &text) {
 				this->text=text;
 
+				if(autosize!=AutosizeModes::None && Container)
+					Container->WidgetBoundsChanged();
+
 				Draw();
 			}
 			std::string gettext() const {
@@ -174,7 +178,7 @@ namespace gge { namespace widgets {
 			input::keyboard::Key getunderline() const {
 				return underline;
 			}
-			
+
 			void seticon(graphics::RectangularGraphic2D *icon) {
 				this->icon=icon;
 
@@ -193,6 +197,11 @@ namespace gge { namespace widgets {
 
 			//TO BE OVERLOADED
 			virtual void clickcompleted() { } //is this necessary?? probably no
+
+			virtual bool detach(ContainerBase *container);
+
+			virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order);
+
 
 
 			animation::AnimationController focus_anim;
@@ -216,12 +225,17 @@ namespace gge { namespace widgets {
 
 			Blueprint::Line *lines[4];
 
-			virtual bool detach(ContainerBase *container);
-
-			virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order);
-
-
 		private:
+			animation::AnimationController &getanimation(Blueprint::TransitionType transition) {
+				if(transition==Blueprint::FocusTransition)
+					return focus_anim;
+				else if(transition==Blueprint::StateTransition)
+					return state_anim;
+				else
+					return style_anim;
+			}
+
+
 			Blueprint::FocusMode focus;
 			Blueprint::StateMode state;
 			Blueprint::StyleMode style;
@@ -238,7 +252,7 @@ namespace gge { namespace widgets {
 			void focus_anim_finished();
 			void state_anim_finished();
 			void style_anim_finished();
-
+			void calculatesize();
 			//mostly for access key, the given key, if found, will be underlined.
 			//it will be drawn stretched (probably)
 			input::keyboard::Key underline;
@@ -251,9 +265,15 @@ namespace gge { namespace widgets {
 			bool mouseover;
 			bool mousedown;
 
+			bool unprepared;
+			utils::Size currentsize;
+
+			Blueprint::TransitionType linetransitions[4];
+
 			graphics::RectangularGraphic2D *icon;
 
 			graphics::Colorizable2DLayer innerlayer;
+			graphics::Colorizable2DLayer overlayer;
 
 			std::string text;
 

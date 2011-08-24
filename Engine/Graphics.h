@@ -458,8 +458,6 @@ namespace gge { namespace graphics {
 
 	class SizeController2D {
 	public:
-		SizeController2D() : HorizontalTiling(Single), VerticalTiling(Single), Align(Alignment::Middle_Center)
-		{ }
 
 		enum TilingType {
 			//Should work as Continous if object is sizable
@@ -488,10 +486,16 @@ namespace gge { namespace graphics {
 			Tile_Integral_Best		= B8(00100101),
 		} HorizontalTiling, VerticalTiling;
 
+
+		SizeController2D(TilingType HorizontalTiling=Single, TilingType VerticalTiling=Single, Alignment::Type Align=Alignment::Middle_Center) : 
+			HorizontalTiling(HorizontalTiling), VerticalTiling(VerticalTiling), Align(Align)
+		{ }
 		Alignment::Type Align;
 
 		static const SizeController2D TileFit;
 		static const SizeController2D StretchFit;
+		static const SizeController2D SingleTopLeft;
+		static const SizeController2D SingleBottomRight;
 
 		int CalculateWidth(int W, int Increment) const {
 			if(HorizontalTiling==SizeController2D::Tile_Integral_Best) {

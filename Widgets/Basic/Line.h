@@ -167,16 +167,26 @@ namespace gge { namespace widgets {
 		return (parent.IsVertical() ? h : loop->GetHeight()); 
 	}
 	inline int Line::calculatewidth (const graphics::SizeController2D &controller, int w) const  { 
-		if(parent.IsHorizontal())
+		if(parent.IsHorizontal()) {
 			return controller.CalculateWidth(w, loop->GetWidth(), start->GetWidth()+end->GetWidth());
-		else
+		}
+		else {
+			if(controller.VerticalTiling==graphics::SizeController2D::Single)
+				return loop->GetWidth();
+
 			return controller.CalculateWidth(w, loop->GetWidth());
+		}
 	}
 	inline int Line::calculateheight (const graphics::SizeController2D &controller, int h) const  { 
-		if(parent.IsVertical())
+		if(parent.IsVertical()) {
 			return controller.CalculateHeight(h, loop->GetHeight(), start->GetHeight()+end->GetHeight());
-		else
+		}
+		else {
+			if(controller.HorizontalTiling==graphics::SizeController2D::Single)
+				return loop->GetHeight();
+
 			return controller.CalculateHeight(h, loop->GetHeight());
+		}
 	}
 
 	inline Line::Line(LineResource &parent, animation::AnimationTimer &controller, bool owner/*=false*/) : parent(parent), AnimationBase(controller, owner) {
