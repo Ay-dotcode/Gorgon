@@ -26,7 +26,8 @@ namespace gge { namespace widgets {
 			isenabled(true),
 			tabswitch(true),
 			accesskeysenabled(true),
-			Organizer(NULL)
+			Organizer(NULL),
+			UpHandler(NULL)
 		{ }
 
 
@@ -241,6 +242,8 @@ namespace gge { namespace widgets {
 				RemoveDefault();
 			if(Cancel==&widget)
 				RemoveCancel();
+			if(UpHandler==&widget)
+				UpHandler=NULL;
 
 			Widgets.Remove(it);
 
@@ -406,8 +409,20 @@ namespace gge { namespace widgets {
 		}
 		bool DistributeKeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			if(Focussed) {
-				if(Focussed->KeyboardEvent(event, Key))
+				if(event==input::keyboard::Event::Up && UpHandler) {
+					UpHandler->KeyboardEvent(event, Key);
+					UpHandler=NULL;
+				}
+				else if(Focussed->KeyboardEvent(event, Key)) {
+					if(event==input::keyboard::Event::Down)
+						UpHandler=Focussed;
+
 					return true;
+				}
+				else {
+					//if(event==input::keyboard::Event::Down)
+					//	UpHandler=NULL;
+				}
 			}
 
 			return PerformStandardKeyboardActions(event, Key);
@@ -487,6 +502,7 @@ namespace gge { namespace widgets {
 		WidgetBase *Cancel;
 		WidgetBase *Focussed;
 		WidgetBase *PrevFocus;
+		WidgetBase *UpHandler;
 
 		widgets::Organizer *Organizer;
 

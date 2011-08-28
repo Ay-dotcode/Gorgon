@@ -75,6 +75,8 @@ namespace gge { namespace widgets {
 				break;
 			}
 
+			mouseevent(input::mouse::Event(event, location, amount));
+
 			return WidgetBase::MouseEvent(event, location, amount);
 		}
 
@@ -122,9 +124,20 @@ namespace gge { namespace widgets {
 		utils::NumericProperty<Button, input::keyboard::Key> Accesskey;
 		utils::BooleanProperty<Button> TextWrap;
 
+		utils::EventChain<Button> &ClickEvent() {
+			return clickevent;
+		}
+
+		utils::EventChain<Button, input::mouse::Event> &MouseEvent() {
+			return mouseevent;
+		}
+
+
 	protected:
 
 		utils::EventChain<Button> clickevent;
+
+		utils::EventChain<Button, input::mouse::Event> mouseevent;
 
 		graphics::RectangularGraphic2D *getIcon() const {
 			return Base::geticon();

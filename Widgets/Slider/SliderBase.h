@@ -4,6 +4,12 @@
 #include "..\Base\Widget.h"
 #include <map>
 #include "..\Main.h"
+#include "..\Basic\PetContainer.h"
+#include "..\Button.h"
+
+#ifndef LARGE_KEY_TIMEOUT_MULT
+#	define LARGE_KEY_TIMEOUT_MULT	2
+#endif
 
 
 namespace gge { namespace widgets {
@@ -47,8 +53,8 @@ namespace gge { namespace widgets {
 		};
 #pragma endregion
 
-		//if you need to work with big ints (>16M), use long or unsigned, otherwise smooth sliding
-		//will not work for you.
+		//if you need to work with big ints (>16M), use long or unsigned, or manually set floattype to double
+		//because the default float type for int is float and smooth sliding may not work for you.
 		// RETAIN ABOVE COMMENT IN ALL CHILD CLASSES
 		//Template parameter must allow +, -, / and (float) operators, for enums T_=int should be used
 		// and enum should be mapped manually to ints
@@ -60,9 +66,11 @@ namespace gge { namespace widgets {
 			Base(T_ value=T_(0), T_ minimum=T_(0), T_ maximum=T_(100), T_ steps=std::numeric_limits<T_>::epsilon(), T_ smallchange=T_(1), T_ largechange=T_(10)) : passivemode(false),
 				orientation(Blueprint::Vertical), next_style(Blueprint::Style_None),
 				value(value), minimum(minimum), maximum(maximum), steps(steps), autosize(AutosizeModes::Autosize),
-				smallchange(smallchange), largechange(largechange), unprepared(false),
-				rule_region(0,0,0,0), ticks_region(0,0,0,0), numbers_region(0,0,0,0),
-				smoothvalue(floattype(value)), symbol_mdown(false), symbol_mover(false), valuehover(false)
+				smallchange(smallchange), largechange(largechange), unprepared(false), buttonlayer(*this, &Base::IsEnabled, &Base::IsVisible),
+				rule_region(0,0,0,0), ticks_region(0,0,0,0), numbers_region(0,0,0,0), bp(NULL), rule_over(false),
+				smoothvalue(floattype(value)), symbol_mdown(false), symbol_mover(false), value_over(false), golarge(false),
+				upbutton(NULL), downbutton(NULL), key_repeat_timeout(200), goingup(false), goingdown(false), 
+				indst_value(minimum),indst_smoothvalue(floattype(minimum))
 			{
 				if(this->steps==0)
 					this->steps=1;
@@ -76,6 +84,8 @@ namespace gge { namespace widgets {
 				style_anim.Paused.Register(this, &Base::style_anim_finished);
 
 				smooth.controller.Pause();
+				smooth.indst_controller.Pause();
+				key_repeat.Pause();
 				SetController(smooth.controller);
 
 				symbollayer.MouseCallback.Set(*this, &Base::symbol_mouse);
@@ -89,9 +99,10 @@ namespace gge { namespace widgets {
 				if(WidgetBase::size.Width==0)
 					Resize(this->bp->DefaultSize);
 
+				setupbuttons();
+
 				Draw();
 			}
-
 			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount)  {
 				if(passivemode) return true;
 
@@ -99,87 +110,119 @@ namespace gge { namespace widgets {
 
 				if(event==input::mouse::Event::Left_Click) {
 					if(ishorizontal()) {
-						if(rule_region.isInside(location)) {
-							if(actions.rule_action==LargeChange) {
-								if(valueperpixel*(location.x-value_start)+minimum>value) {
-									setvalue_smooth(value+largechange);
-									value_changed();
-								}
-								else if(valueperpixel*(location.x-value_start)+minimum<value) {
-									setvalue_smooth(value-largechange);
-									value_changed();
-								}
-							}
-							else if(actions.rule_action==Goto) {
-								setvalue_smooth(T_(valueperpixel*(location.x-value_start))+minimum);
-								value_changed();
-							}
-						}
-						if(ticks_region.isInside(location) && actions.tick_click) {
-							floattype i=markers.tickdistance;
-							floattype v=Round(valueperpixel*(location.x-value_start)/i)*i+minimum;
-							v=Round(v/i)*i;
+						int x;
+						if(display.inverseaxis)
+							x=value_end-location.x;
+						else
+							x=(location.x-value_start);
 
-							setvalue_smooth(T_(v));
+						if(numbers_region.isInside(location) && actions.number_click) {
+							setvalue_smooth(gettextvalue(x));
 							value_changed();
 						}
-						if(numbers_region.isInside(location) && actions.number_click) {
-							floattype i=markers.tickdistance*markers.numberdistance;
-							floattype v=Round(valueperpixel*(location.x-value_start)/i)*i+minimum;
-							v=Round(v/i)*i;
-
-							setvalue_smooth(T_(v));
+						else if(ticks_region.isInside(location) && actions.tick_click) {
+							setvalue_smooth(gettickvalue(x));
+							value_changed();
+						}
+						else if(rule_region.isInside(location) && actions.rule_action!=NoAction) {
+							setvalue_smooth(getrulevalue(x));
 							value_changed();
 						}
 					}
-				}
-				else {
-					//!
+					else {
+						int y;
+						if(display.inverseaxis)
+							y=value_end-location.y;
+						else
+							y=(location.y-value_start);
+
+						if(numbers_region.isInside(location) && actions.number_click) {
+							setvalue_smooth(gettextvalue(y));
+							value_changed();
+						}
+						else if(ticks_region.isInside(location) && actions.tick_click) {
+							setvalue_smooth(gettickvalue(y));
+							value_changed();
+						}
+						else if(rule_region.isInside(location) && actions.rule_action!=NoAction) {
+							setvalue_smooth(getrulevalue(y));
+							value_changed();
+						}
+					}
 				}
 
 				if(event==input::mouse::Event::Move) {
 					if(ishorizontal()) {
-						if(rule_region.isInside(location)) {
-							if(actions.rule_action==Goto) {
-								floattype v=valueperpixel*(location.x-value_start)+minimum;
-								v=Round(v/steps)*steps;
+						int x;
+						if(display.inverseaxis)
+							x=value_end-location.x;
+						else
+							x=(location.x-value_start);
 
-								hovervalue=T_(v);
-								valuehover=true;
-
-								Draw();
-							}
-						}
-						if(ticks_region.isInside(location) && actions.tick_click) {
-							floattype i=markers.tickdistance;
-							floattype v=Round(valueperpixel*(location.x-value_start)/i)*i+minimum;
-							v=Round(v/i)*i;
-							v=Round(v/steps)*steps;
-
-							hovervalue=T_(v);
-							valuehover=true;
+						if(numbers_region.isInside(location) && actions.number_click) {
+							hovervalue=gettextvalue(x);
+							value_over=true;
 
 							Draw();
 						}
-						if(numbers_region.isInside(location) && actions.number_click) {
-							floattype i=markers.tickdistance*markers.numberdistance;
-							floattype v=Round(valueperpixel*(location.x-value_start)/i)*i+minimum;
-							v=Round(v/i)*i;
-							v=Round(v/steps)*steps;
+						else if(ticks_region.isInside(location) && actions.tick_click) {
+							hovervalue=gettickvalue(x);
+							value_over=true;
 
-							hovervalue=T_(v);
-							valuehover=true;
+							Draw();
+						}
+						else if(rule_region.isInside(location)) {
+							hovervalue=getrulevalue(x);
+							value_over=true;
 
 							Draw();
 						}
 					}
-				}
-				else {
-					//!
+					else {
+						int y;
+						if(display.inverseaxis)
+							y=value_end-location.y;
+						else
+							y=(location.y-value_start);
+
+
+						if(numbers_region.isInside(location) && actions.number_click) {
+							hovervalue=gettextvalue(y);
+							value_over=true;
+
+							Draw();
+						}
+						else if(ticks_region.isInside(location) && actions.tick_click) {
+							hovervalue=gettickvalue(y);
+							value_over=true;
+
+							Draw();
+						}
+						else if(rule_region.isInside(location)) {
+							hovervalue=getrulevalue(y);
+							value_over=true;
+
+							Draw();
+						}
+					}
+
+					if(rule_region.isInside(location)) {
+						if(!rule_over) {
+							rule_over=true;
+							Draw();
+						}
+					}
+					else {
+						if(rule_over) {
+							rule_over=false;
+							Draw();
+						}
+					}
 				}
 
 				if(event==input::mouse::Event::Out) {
-					valuehover=false;
+					value_over=false;
+					rule_over=false;
 
 					Draw();
 				}
@@ -226,6 +269,9 @@ namespace gge { namespace widgets {
 
 			virtual utils::Size GetSize();
 
+			virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key);
+
+
 
 		protected:
 			enum RuleAction {
@@ -237,11 +283,11 @@ namespace gge { namespace widgets {
 			class numberformat {
 			public:
 				numberformat(std::string units="", std::string prefix="", int decimals=-1, bool hex=false) : units(units),
-					prefix(prefix), decimals(decimals), hex(hex)
+					prefix(prefix), decimals(decimals), hex(hex), separator(" - ")
 				{ }
 
 				numberformat(int decimals, std::string units="") : units(units),
-					prefix(""), decimals(decimals), hex(false)
+					prefix(""), decimals(decimals), hex(false), separator(" - ")
 				{ }
 
 				bool operator ==(const numberformat &format) const {
@@ -254,9 +300,12 @@ namespace gge { namespace widgets {
 
 				std::string units;
 				std::string prefix;
+				std::string separator;
 				int decimals;
 				bool hex;
 			};
+
+			Button *upbutton, *downbutton;
 
 			void prepare();
 
@@ -282,6 +331,7 @@ namespace gge { namespace widgets {
 				innerlayer.parent=NULL;
 				overlayer.parent=NULL;
 				symbollayer.parent=NULL;
+				buttonlayer.BaseLayer.parent=NULL;
 				return WidgetBase::detach(container);
 			}
 
@@ -290,6 +340,7 @@ namespace gge { namespace widgets {
 				if(BaseLayer) {
 					BaseLayer->Add(innerlayer, 1);
 					BaseLayer->Add(symbollayer, 0);
+					BaseLayer->Add(buttonlayer, 0);
 					BaseLayer->Add(overlayer, -1);
 				}
 			}
@@ -318,37 +369,43 @@ namespace gge { namespace widgets {
 			virtual void value_changed() { }
 
 			//subject to change
-			void setupdisplay(bool symbol, bool rule, bool indicator, bool buttons, bool value, Alignment::Type valuelocation=Alignment::Middle_Center) {
+			void setupdisplay(bool symbol, bool rule, bool indicator, bool buttons, bool value, bool invertaxis=false, bool centerindicator=false, Alignment::Type valuelocation=Alignment::Middle_Center) {
 				display.symbol=symbol;
 				display.rule=rule;
 				display.indicator=indicator;
 				display.buttons=buttons;
 				display.value=value;
+				display.inverseaxis=invertaxis;
+				display.centerindicator=centerindicator;
 				this->valuelocation=valuelocation;
 
 				Draw();
 			}
 
 			//speed is percent per second
-			void setsmoothingmode(bool symbol, bool indicator, bool value, float speed=100) {
+			void setsmoothingmode(bool symbol, bool indicator, bool value, bool valuedisplay=true, float speed=100) {
 				smooth.symbol=symbol;
 				smooth.indicator=indicator;
 				smooth.value=value;
+				smooth.valuedisplay=valuedisplay;
 				smooth.speed=speed;
 
 				Draw();
 			}
 
-			void setmarkers(bool ticks, bool numbers, floattype tickdistance=10, int numberdistance=2) {
+			//named locations disable regular ticks and numbers, but showticks and shownumbers will be used to determine
+			//what will be drawn for named locations
+			void setmarkers(bool ticks, bool numbers, bool namedlocations, floattype tickdistance=10, int numberdistance=2) {
 				markers.ticks=ticks;
 				markers.tickdistance=tickdistance;
 				markers.numbers=numbers;
 				markers.numberdistance=numberdistance;
+				markers.namedlocations=namedlocations;
 
 				Draw();
 			}
 
-			void setactions(bool symbol_drag, RuleAction rule_action, bool tick_click, bool number_click) {
+			void setactions(bool symbol_drag, RuleAction rule_action, bool keyboard, bool tick_click=false, bool number_click=false) {
 				actions.symbol_drag=symbol_drag;
 				actions.rule_action=rule_action;
 				actions.tick_click=tick_click;
@@ -383,12 +440,13 @@ namespace gge { namespace widgets {
 						int duration = int(1000*((value-smoothvalue)/(maximum-minimum))*(100/smooth.speed));
 						duration=abs(duration);
 
-						smooth.stepvalue=(value-smoothvalue)/duration;
-						smooth.sourcevalue=smoothvalue;
-						smooth.targetvalue=value;
+						if(duration>0) {
+							smooth.stepvalue=(value-smoothvalue)/duration;
+							smooth.sourcevalue=smoothvalue;
+							smooth.targetvalue=value;
 
-
-						smooth.controller.Play();
+							smooth.controller.Play();
+						}
 					}
 					else {
 						smoothvalue=floattype(value);
@@ -401,6 +459,9 @@ namespace gge { namespace widgets {
 			void setvalue_smooth(T_ value) {
 				if(!smooth.value) {
 					setvalue((value));
+
+					value_changed();
+
 					return;
 				}
 				if(value<minimum) value=minimum;
@@ -449,7 +510,9 @@ namespace gge { namespace widgets {
 				if(smooth.targetvalue<m) smooth.targetvalue=m;
 
 				if(minimum!=m) {
+					T_ d=indst_value-minimum;
 					minimum=m;
+					indst_value=minimum+d;
 
 					Draw();
 				}
@@ -487,6 +550,16 @@ namespace gge { namespace widgets {
 			}
 			bool getshowticks() const {
 				return markers.ticks;
+			}
+
+			void setshowvalue(bool value) {
+				if(value!=display.value) {
+					display.value=value;
+					Draw();
+				}
+			}
+			bool getshowvalue() const {
+				return display.value;
 			}
 
 			void settickdistance(floattype distance) {
@@ -549,7 +622,7 @@ namespace gge { namespace widgets {
 			}
 
 			void setnumberformat(numberformat value) {
-				if(format!=value) {
+				if(format!=value && markers.numbers) {
 					format=value;
 
 					Draw();
@@ -557,6 +630,28 @@ namespace gge { namespace widgets {
 			}
 			numberformat getnumberformat() const {
 				return format;
+			}
+
+			void setvalueformat(numberformat value) {
+				if(valueformat!=value && display.value) {
+					valueformat=value;
+
+					Draw();
+				}
+			}
+			numberformat getvalueformat() const {
+				return valueformat;
+			}
+
+			void setvaluelocation(Alignment::Type value) {
+				if(valuelocation!=value && display.value) {
+					valuelocation=value;
+
+					Draw();
+				}
+			}
+			Alignment::Type getvaluelocation() const {
+				return valuelocation;
 			}
 
 			void setautosize(const AutosizeModes::Type &value) {
@@ -571,6 +666,152 @@ namespace gge { namespace widgets {
 				return autosize;
 			}
 
+			void setkeyrepeattimeout(const int &value) {
+				key_repeat_timeout=value;
+			}
+			int getkeyrepeattimeout() const {
+				return key_repeat_timeout;
+			}
+
+			void setaxisinverse(const bool &value) {
+				if(display.inverseaxis!=value) {
+					display.inverseaxis=value;
+
+					Draw();
+				}
+			}
+			bool getaxisinverse() const {
+				return display.inverseaxis;
+			}
+
+			void setcenterindicator(const bool &value) {
+				if(display.centerindicator!=value) {
+					display.centerindicator=value;
+
+					Draw();
+				}
+			}
+			T_ getcenterindicator() const {
+				return display.centerindicator;
+			}
+
+			void setindicatorstart(const T_ &value) {
+				if(indst_value!=value) {
+					indst_value=value;
+
+					if(smooth.indicator && display.indicatorstart) {
+						smooth.indst_controller.ResetProgress();
+
+						int duration = int(1000*((indst_value-indst_smoothvalue)/(maximum-minimum))*(100/smooth.speed));
+						duration=abs(duration);
+
+						if(duration>0) {
+							smooth.indst_stepvalue=(value-indst_smoothvalue)/duration;
+							smooth.indst_sourcevalue=indst_smoothvalue;
+							smooth.indst_targetvalue=indst_value;
+
+							smooth.indst_controller.Play();
+						}
+					}
+					else {
+						indst_smoothvalue=floattype(value);
+					}
+
+					Draw();
+				}
+			}
+			T_ getindicatorstart() const {
+				return indst_value;
+			}
+
+			void setshowindicatorstart(const bool &value) {
+				if(display.indicatorstart!=value) {
+					display.indicatorstart=value;
+
+					Draw();
+				}
+			}
+			bool getshowindicatorstart() const {
+				return display.indicatorstart;
+			}
+
+			void smallincrease() {
+				if(display.inverseaxis)
+					setvalue_smooth(value-smallchange);
+				else
+					setvalue_smooth(value+smallchange);
+				Draw();
+			}
+
+			void smalldecrease() {
+				if(display.inverseaxis)
+					setvalue_smooth(value+smallchange);
+				else
+					setvalue_smooth(value-smallchange);
+				Draw();
+			}
+
+			void largeincrease() {
+				if(display.inverseaxis)
+					setvalue_smooth(value-largechange);
+				else
+					setvalue_smooth(value+largechange);
+				Draw();
+			}
+
+			void largedecrease() {
+				if(display.inverseaxis)
+					setvalue_smooth(value+largechange);
+				else
+					setvalue_smooth(value-largechange);
+				Draw();
+			}
+
+			void tomax() {
+				if(display.inverseaxis) {
+					setvalue_smooth(minimum);
+				}
+				else {
+					setvalue_smooth(maximum);
+				}
+
+			}
+
+			void tomin() {
+				if(display.inverseaxis) {
+					setvalue_smooth(maximum);
+				}
+				else {
+					setvalue_smooth(minimum);
+				}
+
+			}
+
+			void begin_goup() {
+				goingup=true;
+				goingdown=false;
+
+				key_repeat.Play();
+			}
+
+			void begin_godown() {
+				goingup=false;
+				goingdown=true;
+
+				key_repeat.Play();
+			}
+
+			void end_goup() {
+				goingup=false;
+
+				key_repeat.Pause();
+			}
+
+			void end_godown() {
+				goingdown=false;
+
+				key_repeat.Pause();
+			}
 
 			bool symbol_mouse(input::mouse::Event::Type event, utils::Point location, int amount) {
 				if(passivemode)
@@ -595,10 +836,22 @@ namespace gge { namespace widgets {
 					if(location!=symbol_mdownpos) {
 						T_ v;
 						if(ishorizontal()) {
-							v=(T_)Round((location.x-symbol_mdownpos.x+symbollayer.BoundingBox.Left-symbol_zero)*valueperpixel+minimum);
+							int x=location.x-symbol_mdownpos.x+symbollayer.BoundingBox.Left-symbol_zero;
+							if(display.inverseaxis)
+								x=value_end-x;
+							else
+								x=x-value_start;
+
+							v=(T_)Round(x*valueperpixel+minimum);
 						}
 						else {
-							v=(T_)Round((location.y-symbol_mdownpos.y+symbollayer.BoundingBox.Top-symbol_zero)*valueperpixel+minimum);
+							int y=location.y-symbol_mdownpos.y+symbollayer.BoundingBox.Top-symbol_zero;
+							if(display.inverseaxis)
+								y=value_end-y;
+							else
+								y=y-value_start;
+
+							v=(T_)Round(y*valueperpixel+minimum);
 						}
 
 						setvalue(v);
@@ -637,147 +890,35 @@ namespace gge { namespace widgets {
 				return true;
 			}
 
-		private:
-			animation::AnimationController &getanimation(Blueprint::TransitionType transition) {
-				if(transition==Blueprint::FocusTransition)
-					return focus_anim;
-				else
-					return style_anim;
+			void upbutton_mouse(input::mouse::Event event) {
+				if(event.event==input::mouse::Event::Left_Down) {
+					Focus();
+
+					if(!goingup) {
+						smalldecrease();
+						golarge=false;
+						begin_goup();
+					}
+				}
+				else if(event.event==input::mouse::Event::Left_Up) {
+					end_goup();
+				}
 			}
 
-			void focus_anim_finished();
-			void style_anim_finished();
+			void downbutton_mouse(input::mouse::Event event) {
+				Focus();
 
-			utils::Point symbol_mdownpos;
-			bool symbol_mdown;
-			bool symbol_mover;
-			int symbol_zero;
-
-
-			int value_start;//pixel
-			float valueperpixel;
-
-			bool valuehover;
-			T_ hovervalue;
-
-			AutosizeModes::Type autosize;
-
-			numberformat format;
-
-			T_ value;
-			typename floattype smoothvalue;
-			T_ minimum;
-			T_ maximum;
-
-			T_ smallchange;
-			T_ largechange;
-
-			T_ steps;
-
-			bool unprepared;
-
-			Blueprint::OrientationType  orientation;
-
-			Blueprint::FocusMode focus;
-			Blueprint::StyleMode style;
-
-			Blueprint::FocusType next_focus;
-			Blueprint::StyleType next_style;
-
-			animation::AnimationController focus_anim;
-			animation::AnimationController style_anim;
-			animation::AnimationTimer	   idle_anim;
-
-
-			Placeholder *symbolp;
-			Placeholder *tickp;
-			Placeholder *textp;
-			BorderData *border;
-			BorderData *overlay;
-			BorderData *rule;
-			BorderData *indicator;
-			BorderData *ruleoverlay;
-			animation::RectangularGraphic2DAnimation *symbol;
-			animation::RectangularGraphic2DAnimation *tick;
-			animation::RectangularGraphic2DAnimation *tick_hover;
-			Font *font;
-			Font *font_hover;
-
-
-			utils::Bounds rule_region, ticks_region, numbers_region;
-
-			bool focus_anim_loop;
-			bool style_anim_loop;
-
-			const Blueprint *bp;
-
-			class cdisplay {
-			public:
-				cdisplay() : symbol(true),
-					rule(true),
-					indicator(false),
-					buttons(true),
-					value(false)
-				{ }
-				
-
-				bool 
-					symbol,
-					rule,
-					indicator,
-					buttons,
-					value
-				;
-			} display;
-
-			class cmarkers {
-			public:
-				cmarkers() : ticks(false), numbers(false), tickdistance(10), numberdistance(2)
-				{ }
-
-				bool ticks;
-				bool numbers;
-				floattype tickdistance;
-				int numberdistance;
-			} markers;
-
-			class csmooth {
-			public:
-				csmooth() : indicator(true), symbol(true), value(false), speed(100), stepvalue(0)
-				{ }
-
-				bool symbol;
-				bool indicator;
-				bool value;
-				float speed; //percent/sec
-				animation::AnimationController controller;
-				floattype stepvalue;
-				floattype sourcevalue;
-				T_ targetvalue;
-
-				bool issmooth() { return symbol || indicator || value; }
-			} smooth;
-
-			class cactions {
-			public:
-				cactions() : symbol_drag(true), rule_action(Goto), tick_click(false), number_click(false)
-				{ }
-
-				bool symbol_drag;
-				RuleAction rule_action;
-				bool tick_click;
-				bool number_click;
-			} actions;
-
-			bool passivemode;
-			Alignment::Type valuelocation;
-
-			graphics::Colorizable2DLayer innerlayer;
-			graphics::Colorizable2DLayer overlayer;
-			WidgetLayer symbollayer;
-
-			std::map<animation::RectangularGraphic2DSequenceProvider*, animation::RectangularGraphic2DAnimation*> ImageCache;
-			std::map<BorderDataResource*, BorderData*> BorderCache;
+				if(event.event==input::mouse::Event::Left_Down) {
+					if(!goingup) {
+						smallincrease();
+						golarge=false;
+						begin_godown();
+					}
+				}
+				else if(event.event==input::mouse::Event::Left_Up) {
+					end_godown();
+				}
+			}
 
 			virtual animation::ProgressResult::Type Progress() {
 				if(!smooth.controller.IsPaused()) {
@@ -803,10 +944,338 @@ namespace gge { namespace widgets {
 					Draw();
 				}
 
+				if(!smooth.indst_controller.IsPaused()) {
+					indst_smoothvalue=smooth.indst_sourcevalue+smooth.indst_stepvalue*smooth.indst_controller.GetProgress();
+
+					if(smooth.indst_stepvalue>0 && indst_smoothvalue>=smooth.indst_targetvalue) {
+						smooth.indst_controller.Pause();
+						indst_smoothvalue=floattype(smooth.indst_targetvalue);
+					}
+					else if(smooth.indst_stepvalue<0 && indst_smoothvalue<=smooth.indst_targetvalue) {
+						smooth.indst_controller.Pause();
+						indst_smoothvalue=floattype(smooth.indst_targetvalue);
+					}
+
+					Draw();
+				}
+
+				if(golarge) {
+					if(goingup) {
+						while(key_repeat.GetProgress()>key_repeat_timeout*LARGE_KEY_TIMEOUT_MULT) {
+							key_repeat.SetProgress(key_repeat.GetProgress()-key_repeat_timeout*LARGE_KEY_TIMEOUT_MULT);
+							largedecrease();
+						}
+					}
+
+					if(goingdown) {
+						while(key_repeat.GetProgress()>key_repeat_timeout*LARGE_KEY_TIMEOUT_MULT) {
+							key_repeat.SetProgress(key_repeat.GetProgress()-key_repeat_timeout*LARGE_KEY_TIMEOUT_MULT);
+							largeincrease();
+						}
+					}
+				}
+				else {
+					if(goingup) {
+						while(key_repeat.GetProgress()>key_repeat_timeout) {
+							key_repeat.SetProgress(key_repeat.GetProgress()-key_repeat_timeout);
+							smalldecrease();
+						}
+					}
+
+					if(goingdown) {
+						while(key_repeat.GetProgress()>key_repeat_timeout) {
+							key_repeat.SetProgress(key_repeat.GetProgress()-key_repeat_timeout);
+							smallincrease();
+						}
+					}
+				}
+
 				return animation::ProgressResult::None;
 			}
+
+			void addnamedlocation(T_ location, const std::string &name="") {
+				namedlocations[location]=name;
+			}
+
+			void removenamedlocation(T_ location) {
+				namedlocations.erase(location);
+			}
+
+			T_ gettickvalue(int x);
+
+			T_ gettextvalue(int x);
+
+			T_ getrulevalue(int x);
+
+		private:
+			std::map<T_, std::string> namedlocations;
+
+			animation::AnimationController &getanimation(Blueprint::TransitionType transition) {
+				if(transition==Blueprint::FocusTransition)
+					return focus_anim;
+				else
+					return style_anim;
+			}
+
+			void focus_anim_finished();
+			void style_anim_finished();
+
+			utils::Point symbol_mdownpos;
+			bool symbol_mdown;
+			bool symbol_mover;
+			int symbol_zero;
+
+			bool rule_over;
+
+
+			int value_start;//pixel
+			int value_end;
+			floattype valueperpixel;
+
+			bool value_over;
+			T_ hovervalue;
+
+			AutosizeModes::Type autosize;
+
+			numberformat format;
+			numberformat valueformat;
+
+			T_ value;
+			floattype smoothvalue;
+			T_ minimum;
+			T_ maximum;
+
+			T_ smallchange;
+			T_ largechange;
+
+			T_ steps;
+
+			T_ indst_value;
+			floattype indst_smoothvalue;
+
+			bool unprepared;
+
+			Blueprint::OrientationType  orientation;
+
+			Blueprint::FocusMode focus;
+			Blueprint::StyleMode style;
+
+			Blueprint::FocusType next_focus;
+			Blueprint::StyleType next_style;
+
+			animation::AnimationController focus_anim;
+			animation::AnimationController style_anim;
+			animation::AnimationTimer	   idle_anim;
+
+
+			animation::AnimationController key_repeat;
+			int key_repeat_timeout;
+			bool goingup, goingdown;
+			bool golarge;
+
+
+
+
+			Placeholder *symbolp;
+			Placeholder *tickp;
+			Placeholder *textp;
+			Placeholder *valuep;
+			BorderData *border;
+			BorderData *overlay;
+			BorderData *rule;
+			BorderData *indicator;
+			BorderData *tickmarkborder;
+			BorderData *ruleoverlay;
+			animation::RectangularGraphic2DAnimation *symbol;
+			animation::RectangularGraphic2DAnimation *tick;
+			animation::RectangularGraphic2DAnimation *tick_hover;
+			Font *font;
+			Font *font_hover;
+			Font *valuefont;
+			Font *valuefont_ind;
+
+
+			utils::Bounds rule_region, ticks_region, numbers_region;
+
+			bool focus_anim_loop;
+			bool style_anim_loop;
+
+			const Blueprint *bp;
+
+			class cdisplay {
+			public:
+				cdisplay() : symbol(true),
+					rule(true),
+					indicator(false),
+					buttons(true),
+					value(false),
+					inverseaxis(false),
+					centerindicator(false),
+					indicatorstart(false)
+				{ }
+				
+
+				bool 
+					symbol,
+					rule,
+					indicator,
+					buttons,
+					value,
+					inverseaxis,
+					centerindicator,
+					indicatorstart
+				;
+			} display;
+
+			class cmarkers {
+			public:
+				cmarkers() : ticks(false), numbers(false), tickdistance(10), numberdistance(2), namedlocations(false)
+				{ }
+
+				bool ticks;
+				bool numbers;
+				floattype tickdistance;
+				int numberdistance;
+				bool namedlocations;
+
+
+			} markers;
+
+			class csmooth {
+			public:
+				csmooth() : indicator(true), symbol(true), value(false), speed(100), stepvalue(0), valuedisplay(false), indst_stepvalue(0)
+				{ }
+
+				bool symbol;
+				bool indicator;
+				bool value;
+				bool valuedisplay;
+				float speed; //percent/sec
+				animation::AnimationController controller;
+				floattype stepvalue;
+				floattype sourcevalue;
+				T_ targetvalue;
+
+				animation::AnimationController indst_controller;
+				floattype indst_stepvalue;
+				floattype indst_sourcevalue;
+				T_ indst_targetvalue;
+
+				bool issmooth() { return symbol || indicator || value || valuedisplay; }
+			} smooth;
+
+			class cactions {
+			public:
+				cactions() : symbol_drag(true), rule_action(Goto), tick_click(false), number_click(false), keyboard(true)
+				{ }
+
+				bool symbol_drag;
+				RuleAction rule_action;
+				bool tick_click;
+				bool number_click;
+				bool keyboard;
+			} actions;
+
+			bool passivemode;
+			Alignment::Type valuelocation;
+
+			graphics::Colorizable2DLayer innerlayer;
+			graphics::Colorizable2DLayer overlayer;
+			WidgetLayer symbollayer;
+			PetContainer<Base> buttonlayer;
+
+			std::map<animation::RectangularGraphic2DSequenceProvider*, animation::RectangularGraphic2DAnimation*> ImageCache;
+			std::map<BorderDataResource*, BorderData*> BorderCache;
+
+
+			void setupbuttons();
+			void drawtick(floattype v, utils::Point &location, bool reverse, utils::Size &size);
+			void drawtext(floattype v, Alignment::Type align, const std::string &str, utils::Bounds &inner, utils::Point &location, bool reverse, utils::Size &size);
+			int drawvalue(utils::Bounds &inner, int distance, bool reverse);
+			void printvalue(int x, int y, int w);
+
 		};
 
+		template<class T_, class floattype>
+		T_ gge::widgets::slider::Base<T_, floattype>::getrulevalue(int x) {
+
+			if(actions.rule_action==LargeChange) {
+				T_ v=(T_)Round(x*valueperpixel)+minimum;
+				if(v>value) {
+					if(value<maximum)
+						return value+largechange;
+					else
+						return value;
+				}
+				else {
+					if(value>minimum)
+						return value-largechange;
+					else
+						return value;
+				}
+			}
+			else {
+				T_ v=(T_)Round(x*valueperpixel/steps)*steps+minimum;
+
+				if(v<minimum) v=minimum;
+				if(v>maximum) v=maximum;
+
+				return v;
+			}
+
+		}
+
+		template<class T_, class floattype>
+		T_ gge::widgets::slider::Base<T_, floattype>::gettextvalue(int x) {
+			if(markers.namedlocations) {
+				T_ v=(T_)Round(x*valueperpixel)+minimum;
+				T_ mindist=maximum-minimum;
+				T_ dval=v;
+
+				for(auto i=namedlocations.begin();i!=namedlocations.end();++i) {
+					T_ d=std::abs(i->first-v);
+					if(d<mindist && i->second!="") {
+						dval=i->first;
+						mindist=d;
+					}
+				}
+
+				return dval;
+			}
+			else {
+				floattype i=markers.tickdistance*markers.numberdistance;
+				floattype v=x*valueperpixel+minimum;
+				v=Round(v/i)*i;
+
+				return T_(v);
+			}
+		}
+
+		template<class T_, class floattype>
+		T_ gge::widgets::slider::Base<T_, floattype>::gettickvalue(int x) {
+			if(markers.namedlocations) {
+				T_ v=(T_)Round(x*valueperpixel)+minimum;
+				T_ mindist=maximum-minimum;
+				T_ dval=T_(v);
+
+				for(auto i=namedlocations.begin();i!=namedlocations.end();++i) {
+					T_ d=std::abs(i->first-v);
+					if(d<mindist) {
+						dval=i->first;
+						mindist=d;
+					}
+				}
+
+				return dval;
+			}
+			else {
+				floattype i=markers.tickdistance;
+				floattype v=x*valueperpixel+minimum;
+				v=Round(v/i)*i;
+
+				return T_(v);
+			}
+		}
 
 		template<class T_, class floattype>
 		void gge::widgets::slider::Base<T_, floattype>::style_anim_finished() {
@@ -1030,6 +1499,12 @@ namespace gge { namespace widgets {
 						if(border) {
 							s=border->BorderWidth.TotalX()+border->Padding.TotalX();
 						}
+						if(display.buttons) {
+							if(upbutton)
+								s+=upbutton->GetWidth();
+							if(downbutton)
+								s+=downbutton->GetWidth();
+						}
 						size.Width=rule->CalculateWidth(WidgetBase::size.Width-s)+s;
 					}
 
@@ -1058,7 +1533,11 @@ namespace gge { namespace widgets {
 					}
 
 					//value display
-					//if()
+					if(display.value && valuefont && (Alignment::isTop(valuelocation)||Alignment::isBottom(valuelocation))) {
+						h+=valuefont->FontHeight();
+						if(valuep)
+							h+=valuep->Margins.TotalY();
+					}
 
 					size.Height=h;
 				}
@@ -1068,7 +1547,19 @@ namespace gge { namespace widgets {
 						if(border) {
 							s=border->BorderWidth.TotalY()+border->Padding.TotalY();
 						}
+						if(display.buttons) {
+							if(upbutton)
+								s+=upbutton->GetHeight();
+							if(downbutton)
+								s+=downbutton->GetHeight();
+						}
 						size.Height=rule->CalculateHeight(WidgetBase::size.Width-s)+s;
+					}
+
+					if(display.value && valuefont && (Alignment::isTop(valuelocation)||Alignment::isBottom(valuelocation))) {
+						size.Height+=valuefont->FontHeight();
+						if(valuep)
+							size.Height+=valuep->Margins.TotalY();
 					}
 
 					int w=0;
@@ -1108,7 +1599,28 @@ namespace gge { namespace widgets {
 					}
 
 					//value display
-					//if()
+					if(display.value && valuefont) {
+						int vw=0;
+						if(border)
+							vw+=border->BorderWidth.TotalX()+border->Padding.TotalX();
+
+						stringstream ss;
+						if(valueformat.hex)
+							ss<<std::hex;
+						if(valueformat.decimals>-1)
+							ss<<std::setprecision(valueformat.decimals);
+						ss<<valueformat.prefix;
+						ss<<maximum;
+						ss<<valueformat.units;
+
+						vw+=valuefont->TextWidth(ss.str());
+
+						if(valuep)
+							vw+=valuep->Margins.TotalY();
+
+						if(vw>w)
+							w=vw;
+					}
 
 					size.Width=w;
 				}
@@ -1148,6 +1660,7 @@ namespace gge { namespace widgets {
 			symbolp=NULL;
 			tickp=NULL;
 			textp=NULL;
+			valuep=NULL;
 			border=NULL;
 			overlay=NULL;
 			rule=NULL;
@@ -1156,8 +1669,11 @@ namespace gge { namespace widgets {
 			symbol=NULL;
 			tick=NULL;
 			tick_hover=NULL;
+			tickmarkborder=NULL;
 			font=NULL;
 			font_hover=NULL;
+			valuefont=NULL;
+			valuefont_ind=NULL;
 
 
 			Blueprint::TransitionType transition;
@@ -1165,12 +1681,15 @@ namespace gge { namespace widgets {
 			symbolp=bp->GetSymbolPlace(groups, style, transition);
 			tickp=bp->GetTickmarkPlace(groups, Blueprint::Normal, transition);
 			textp=bp->GetTextPlace(groups, Blueprint::Normal, transition);
+			valuep=bp->GetValuePlace(groups, Blueprint::Normal, transition);
 			font=bp->GetFont(groups, Blueprint::Normal, transition);
+			valuefont=bp->GetValueFont(groups, Blueprint::Normal, transition);
 
 			font_hover=bp->GetFont(groups, Blueprint::Hover, transition);
+			valuefont_ind=bp->GetValueFont(groups, Blueprint::Hover, transition);
 
 
-			bprovider=bp->GetOuterBorder(groups, style, transition);
+			bprovider=bp->GetOuterBorder(groups, Blueprint::Normal, transition);
 			if(bprovider) {
 				if(BorderCache[bprovider])
 					border=BorderCache[bprovider];
@@ -1182,7 +1701,7 @@ namespace gge { namespace widgets {
 				border->SetController(idle_anim);
 			}
 
-			bprovider=bp->GetOverlay(groups, style, transition);
+			bprovider=bp->GetOverlay(groups, Blueprint::Normal, transition);
 			if(bprovider) {
 				if(BorderCache[bprovider])
 					overlay=BorderCache[bprovider];
@@ -1194,8 +1713,7 @@ namespace gge { namespace widgets {
 				overlay->SetController(idle_anim);
 			}
 
-			//!detect ruler mouse over
-			bprovider=bp->GetRuler(groups, Blueprint::Normal, transition);
+			bprovider=bp->GetRuler(groups, (rule_over ? Blueprint::Hover : Blueprint::Normal), transition);
 			if(bprovider) {
 				if(BorderCache[bprovider])
 					rule=BorderCache[bprovider];
@@ -1219,7 +1737,7 @@ namespace gge { namespace widgets {
 				indicator->SetController(idle_anim);
 			}
 
-			bprovider=bp->GetRulerOverlay(groups, Blueprint::Normal, transition);
+			bprovider=bp->GetRulerOverlay(groups, (rule_over ? Blueprint::Hover : Blueprint::Normal), transition);
 			if(bprovider) {
 				if(BorderCache[bprovider])
 					ruleoverlay=BorderCache[bprovider];
@@ -1266,6 +1784,18 @@ namespace gge { namespace widgets {
 
 				tick_hover->SetController(idle_anim);
 			}
+
+			bprovider=bp->GetTickmarkBorder(groups, Blueprint::Normal, transition);
+			if(bprovider) {
+				if(BorderCache[bprovider])
+					tickmarkborder=BorderCache[bprovider];
+				else {
+					tickmarkborder=&bprovider->CreateResizableObject();
+					BorderCache[bprovider]=tickmarkborder;
+				}
+
+				tickmarkborder->SetController(idle_anim);
+			}
 		}
 
 		template<class T_, class floattype>
@@ -1293,14 +1823,13 @@ namespace gge { namespace widgets {
 			Bounds inner=outer;
 			int	   distance=0;
 
+			if(outer.Width()==0 || outer.Height()==0)
+				return;
+
 			if(border) {
 				inner=border->ContentBounds(outer);
 			}
-			if(symbol && symbolp && display.symbol) {
-				if(symbolp->Margins.Top<0)
-					inner.Top-=symbolp->Margins.Top;
-			}
-			innerlayer.BoundingBox=inner;
+			buttonlayer.BaseLayer.BoundingBox=outer;
 			overlayer.BoundingBox=outer;
 
 
@@ -1309,16 +1838,51 @@ namespace gge { namespace widgets {
 				border->DrawIn(BaseLayer, outer);
 			}
 
+			int button_top=0;
+			int button_bottom=0;
+
+			//buttons
+			if(display.buttons) {
+				if(ishorizontal()) {
+					if(upbutton) {
+						upbutton->Move(inner.TopLeft());
+						button_top=upbutton->GetWidth();
+					}
+					if(downbutton) {
+						downbutton->Move(inner.Right-downbutton->GetWidth(), inner.Top);
+						button_bottom=downbutton->GetWidth();
+					}
+					inner.Left+=button_top;
+					inner.Right-=button_bottom;
+				}
+				else {
+					if(upbutton) {
+						upbutton->Move(inner.TopLeft());
+						button_top=upbutton->GetHeight();
+					}
+					if(downbutton) {
+						downbutton->Move(inner.Left, inner.Bottom-downbutton->GetHeight());
+						button_bottom=downbutton->GetHeight();
+					}
+					inner.Top+=button_top;
+					inner.Bottom-=button_bottom;
+				}
+			}
+
+			innerlayer.BoundingBox=inner;
+
 
 			//CALCULATE VALUE RANGE
 			if(ishorizontal()) {
 				if(rule) {
 					value_start=inner.Left+rule->Margins.Left+rule->BorderWidth.Left;
+					value_end=value_start+inner.Width()-(rule->Margins.TotalX()+rule->BorderWidth.TotalX());
 
 					valueperpixel=floattype(maximum-minimum)/(inner.Width()-(rule->Margins.TotalX()+rule->BorderWidth.TotalX()));
 				}
 				else {
 					value_start=inner.Left;
+					value_end=value_start+inner.Width();
 
 					valueperpixel=floattype(maximum-minimum)/inner.Width();
 				}
@@ -1326,91 +1890,326 @@ namespace gge { namespace widgets {
 			else {
 				if(rule) {
 					value_start=inner.Top+rule->Margins.Top+rule->BorderWidth.Top;
+					value_end=value_start+inner.Height()-(rule->Margins.TotalY()+rule->BorderWidth.TotalY());
 
-					valueperpixel=floattype(maximum-minimum)/inner.Height()-(rule->Margins.TotalY()+rule->BorderWidth.TotalY());
+					valueperpixel=floattype(maximum-minimum)/(inner.Height()-(rule->Margins.TotalY()+rule->BorderWidth.TotalY()));
 				}
 				else {
 					value_start=inner.Top;
+					value_end=value_start+inner.Height();
 
 					valueperpixel=floattype(maximum-minimum)/inner.Height();
 				}
 			}
+			if(display.centerindicator) {
+				value_start+=(value_end-value_start)/2;
+				valueperpixel*=2;
+			}
 
-
-			//check and draw value
-
-
-
-			//DRAWING RULE
+			//ORIENTATION MODIFICATION
 			SizeController2D szc;
-			if(orientation==Blueprint::Top || orientation==Blueprint::Left) {
+			bool reverse;
+			if(!(tick && markers.ticks && markers.tickdistance) && !(font && markers.numbers && markers.numberdistance)) {
+				szc=SizeController2D::SingleMiddleCenter;
+				reverse=false;
+			}
+			else if(orientation==Blueprint::Top || orientation==Blueprint::Left) {
 				szc=SizeController2D::SingleBottomRight;
+				reverse=true;
 			}
 			else {
 				szc=SizeController2D::SingleTopLeft;
+				reverse=false;
 			}
+
+
+
+			//DRAWING VALUE
+			if(display.value && valuefont && Alignment::isTop(valuelocation)) {
+				drawvalue(inner, distance, reverse);
+			}
+			if(display.value && valuefont && isvertical()) {
+				if(Alignment::isBottom(valuelocation)) {
+					inner.Bottom-=valuefont->FontHeight();
+					if(valuep)
+						inner.Bottom-=valuep->Margins.TotalY();
+				}
+				else {
+					inner.Top+=valuefont->FontHeight();
+					if(valuep)
+						inner.Top+=valuep->Margins.TotalY();
+				}
+			}
+
+
+			
+			int ruledistance=distance;
+			utils::Bounds rulebounds=inner;
+			//DRAWING RULE
 			if(display.rule && rule) {
-				if(rule) {
-					rule->DrawIn(BaseLayer, szc, inner-rule->Margins);
-
-					switch(orientation) {
-						case Blueprint::Bottom:
-						case Blueprint::Top:
-						case Blueprint::Horizontal:
-							rule_region=Bounds(inner.Left, distance, inner.Right, distance);
-							distance+=rule->Margins.TotalY()+rule->CalculateHeight(szc,(inner-rule->Margins).Height());
-							rule_region.Bottom=distance;
-							break;
-						case Blueprint::Right:
-						case Blueprint::Left:
-						case Blueprint::Vertical:
-							rule_region=Bounds(distance, inner.Top, distance, inner.Top);
-							distance+=rule->Margins.TotalX()+rule->CalculateHeight(szc,(inner-rule->Margins).Width());
-							rule_region.Right=distance;
-							break;
-					}
+				rulebounds=inner-rule->Margins;
+				if(ishorizontal()) {
+					if(reverse)
+						rulebounds.Bottom-=distance;
+					else
+						rulebounds.Top+=distance;
 				}
+				else {
+					if(reverse)
+						rulebounds.Right-=distance;
+					else
+						rulebounds.Left+=distance;
+				}
+				rule->DrawIn(BaseLayer, szc, rulebounds);
 
-				//!!check and draw value
-
-				if(display.indicator && indicator) {
-					Bounds b = inner-(rule->BorderWidth+indicator->Margins);
-					b=b+indicator->BorderWidth;
-					if(ishorizontal()) {
-						b.SetWidth(int((b.Width()-indicator->BorderWidth.TotalX())*floattype(smoothvalue-minimum)/maximum)+indicator->BorderWidth.TotalX());
+				if(ishorizontal()) {
+					rule_region=Bounds(inner.Left, distance, inner.Right, distance);
+					distance+=rule->Margins.TotalY()+rule->CalculateHeight(szc,(inner-rule->Margins).Height());
+					if(reverse) {
+						rule_region.Top=inner.Bottom-distance;
+						rule_region.Bottom=inner.Bottom;
 					}
 					else {
-						b.SetHeight(int((b.Height()-indicator->BorderWidth.TotalY())*floattype(smoothvalue-minimum)/maximum)+indicator->BorderWidth.TotalY());
+						rule_region.Bottom=distance;
 					}
-
-					BaseLayer->SetDrawMode(graphics::BasicSurface::AlphaOnly);
-					indicator->DrawIn(BaseLayer, szc, b);
-					BaseLayer->SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
-					indicator->DrawIn(BaseLayer, szc, b);
-					BaseLayer->SetDrawMode(graphics::BasicSurface::Normal);
 				}
-			}
-			else {
-
-				//!!check and draw value
-
-				if(display.indicator) {
-					Bounds b = inner;
-					b=b+indicator->BorderWidth-indicator->Margins;
-					if(ishorizontal()) {
-						b.SetWidth(int((b.Width()-indicator->BorderWidth.TotalX())*(smoothvalue-minimum)/maximum)+indicator->BorderWidth.TotalX());
+				else {
+					rule_region=Bounds(distance, inner.Top, distance, inner.Bottom);
+					distance+=rule->Margins.TotalX()+rule->CalculateWidth(szc,(inner-rule->Margins).Width());
+					if(reverse) {
+						rule_region.Right=inner.Right-distance;
+						rule_region.Right=inner.Right;
 					}
 					else {
-						b.SetHeight(int((b.Height()-indicator->BorderWidth.TotalY())*(smoothvalue-minimum)/maximum)+indicator->BorderWidth.TotalY());
+						rule_region.Right=distance;
+					}
+				}
+
+
+			}
+
+			//DRAW INDICATOR
+			if(display.indicator && indicator) {
+
+				T_ indval=value;
+				T_ indst=indst_value;
+				if(smooth.indicator) {
+					indval=(T_)smoothvalue;
+					indst=(T_)indst_smoothvalue;
+				}
+
+				Bounds b = rulebounds+rule->Margins-(indicator->Margins)+indicator->BorderWidth;
+				if(rule && display.rule) {
+					b=b-rule->BorderWidth;
+				}
+
+				if(ishorizontal()) {
+					int w=rulebounds.Width();
+					int l=indicator->Margins.Left-indicator->BorderWidth.Left;
+					int r=indicator->BorderWidth.TotalX()-indicator->Margins.TotalX();
+
+					if(rule) {
+						l+=rule->BorderWidth.Left+rule->Margins.Left;
+						w-=rule->BorderWidth.TotalX();
 					}
 
-					BaseLayer->SetDrawMode(graphics::BasicSurface::AlphaOnly);
-					indicator->DrawIn(BaseLayer, szc, b);
-					BaseLayer->SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
-					indicator->DrawIn(BaseLayer, szc, b);
-					BaseLayer->SetDrawMode(graphics::BasicSurface::Normal);
+					if(display.indicatorstart) {
+						if(display.inverseaxis) {
+							if(indst>indval) {
+								b.Right=l+w-(int)Round(w*floattype(indval-minimum)/maximum)+r;
+								b.Left=l+w-(int)Round(w*floattype(indst-minimum)/maximum);
+							}
+							else {
+								b.Right=l+w-(int)Round(w*floattype(indst-minimum)/maximum)+r;
+								b.Left=l+w-(int)Round(w*floattype(indval-minimum)/maximum);
+							}
+						}
+						else {
+							if(indst>indval) {
+								b.Left=l+(int)Round(w*floattype(indval-minimum)/maximum);
+								b.Right=l+(int)Round(w*floattype(indst-minimum)/maximum)+r;
+							}
+							else {
+								b.Left=l+(int)Round(w*floattype(indst-minimum)/maximum);
+								b.Right=l+(int)Round(w*floattype(indval-minimum)/maximum)+r;
+							}
+						}
+					}
+					else {
+						if(display.centerindicator) {
+							b.Left=l-(int)Round(w*floattype(indval-minimum)/maximum)/2+w/2;
+							b.Right=l+(int)Round(w*floattype(indval-minimum)/maximum)/2+w/2+r;
+						}
+						else if(display.inverseaxis) {
+							b.Right=l+w+r;
+							b.Left=l+w-(int)Round(w*floattype(indval-minimum)/maximum);
+						}
+						else {
+							b.Left=l;
+							b.Right=l+(int)Round(w*floattype(indval-minimum)/maximum)+r;
+						}
+					}
+				}
+				else {
+					int h=rulebounds.Height();
+					int t=indicator->Margins.Top-indicator->BorderWidth.Top;
+					int bt=indicator->BorderWidth.TotalY()-indicator->Margins.TotalY();
+
+					if(rule) {
+						t+=rule->BorderWidth.Top+rule->Margins.Top;
+						h-=rule->BorderWidth.TotalY();
+					}
+
+					if(display.indicatorstart) {
+						if(display.inverseaxis) {
+							if(indst>indval) {
+								b.Bottom=t+h-(int)Round(h*floattype(indval-minimum)/maximum)+bt;
+								b.Top=t+h-(int)Round(h*floattype(indst-minimum)/maximum);
+							}
+							else {
+								b.Bottom=t+h-(int)Round(h*floattype(indst-minimum)/maximum)+bt;
+								b.Top=t+h-(int)Round(h*floattype(indval-minimum)/maximum);
+							}
+						}
+						else {
+							if(indst>indval) {
+								b.Top=t+(int)Round(h*floattype(indval-minimum)/maximum);
+								b.Bottom=t+(int)Round(h*floattype(indst-minimum)/maximum)+bt;
+							}
+							else {
+								b.Top=t+(int)Round(h*floattype(indst-minimum)/maximum);
+								b.Bottom=t+(int)Round(h*floattype(indval-minimum)/maximum)+bt;
+							}
+						}
+					}
+					else {
+						if(display.centerindicator) {
+							b.Top=t-(int)Round(h*floattype(indval-minimum)/maximum)/2+h/2;
+							b.Bottom=t+(int)Round(h*floattype(indval-minimum)/maximum)/2+h/2+bt;
+						}
+						else if(display.inverseaxis) {
+							b.Bottom=t+h+bt;
+							b.Top=t+h-(int)Round(h*floattype(indval-minimum)/maximum);
+						}
+						else {
+							b.Top=t;
+							b.Bottom=t+(int)Round(h*floattype(indval-minimum)/maximum)+bt;
+						}
+					}
+				}
+
+				BaseLayer->SetDrawMode(graphics::BasicSurface::AlphaOnly);
+				indicator->DrawIn(BaseLayer, szc, b);
+				BaseLayer->SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
+				indicator->DrawIn(BaseLayer, szc, b);
+				BaseLayer->SetDrawMode(graphics::BasicSurface::Normal);
+			}
+
+			//DRAW VALUE
+			if(display.value && Alignment::isMiddle(valuelocation) && valuefont && valuefont_ind) {
+				int x,y,w,h;
+				if(rule && display.rule) {
+					h=rule->CalculateHeight(szc, 0)-rule->Margins.TotalY()-rule->Padding.TotalY();
+					if(valuep) {
+						h-=valuep->Margins.TotalY();
+					}
+					y=(h-valuefont->FontBaseline())/2+rule->Margins.Top +rule->Padding.Top-innerlayer.BoundingBox.Top;
+					x=rule->Margins.Left+rule->BorderWidth.Left+rule->Padding.Left-innerlayer.BoundingBox.Left;
+					w=outer.Width()-rule->Margins.TotalX()-rule->BorderWidth.TotalX()-rule->Padding.TotalX();
+				}
+				else {
+					h=rule->CalculateHeight(szc, 0);
+					if(valuep) {
+						h-=valuep->Margins.TotalY();
+					}
+					y=(h-valuefont->FontBaseline())/2-innerlayer.BoundingBox.Top;
+					x=-innerlayer.BoundingBox.Left;
+					w=outer.Width();
+				}
+
+				if(valuep) {
+					x+=valuep->Margins.Left;
+					y+=valuep->Margins.Top;
+					w-=valuep->Margins.TotalX();
+				}
+
+				printvalue(x, y, w);
+			}
+
+			//DRAWING MARKER BORDER
+			if(tickmarkborder) {
+				int sz=0;
+				if(markers.ticks && markers.tickdistance && tick) {
+					Size size=tick->GetSize();
+					if(tickp) {
+						size=tickp->GetSize(tick->GetSize(), inner.GetSize());
+						size=size+Size(tickp->Margins.TotalX(),tickp->Margins.TotalY());
+					}
+
+					if(ishorizontal())
+						sz+=size.Height;
+					else
+						sz+=size.Width;
+				}
+				if(markers.numbers && markers.tickdistance && markers.numberdistance && font) {
+					Size size=Size(0, font->FontHeight());
+					if(tickp) {
+						size=textp->GetSize(size, inner.GetSize());
+						size=size+Size(textp->Margins.TotalX(),textp->Margins.TotalY());
+					}
+
+					if(ishorizontal())
+						sz+=size.Height;
+					else
+						sz+=size.Width;
+				}
+
+				if(sz>0) {
+					if(ishorizontal()) {
+						if(reverse) {
+							int h=sz-tickmarkborder->Margins.TotalY();
+							tickmarkborder->DrawIn(
+								BaseLayer, 
+								inner.Left+tickmarkborder->Margins.Left, 
+								inner.Bottom-(distance+tickmarkborder->Margins.Bottom+h),
+								inner.Width()-tickmarkborder->Margins.TotalX(),
+								h
+							);
+						}
+						else {
+							tickmarkborder->DrawIn(
+								BaseLayer, 
+								inner.Left+tickmarkborder->Margins.Left, 
+								inner.Top+distance+tickmarkborder->Margins.Top,
+								inner.Width()-tickmarkborder->Margins.TotalX(),
+								sz-tickmarkborder->Margins.TotalY()
+							);
+						}
+					}
+					else {
+						if(reverse) {
+							int w=sz-tickmarkborder->Margins.TotalX();
+							tickmarkborder->DrawIn(
+								BaseLayer, 
+								inner.Right-(distance+tickmarkborder->Margins.Right+w),
+								inner.Top+tickmarkborder->Margins.Top, 
+								w,
+								inner.Height()-tickmarkborder->Margins.TotalY()
+							);
+						}
+						else {
+							tickmarkborder->DrawIn(
+								BaseLayer, 
+								inner.Left+distance+tickmarkborder->Margins.Left,
+								inner.Top+tickmarkborder->Margins.Top, 
+								sz-tickmarkborder->Margins.TotalX(),
+								inner.Height()-tickmarkborder->Margins.TotalY()
+							);
+						}
+					}
 				}
 			}
+
 
 			//DRAWING TICKS
 			if(markers.ticks && markers.tickdistance && tick) {
@@ -1435,40 +2234,94 @@ namespace gge { namespace widgets {
 				Point location=p-Alignment::CalculateLocation(align, Bounds(Point(0,0),size), Size(0,0));
 
 				if(ishorizontal()) {
-					location.x+=value_start;
 					location.y+=distance;
 
 					ticks_region=Bounds(inner.Left, distance, inner.Right, distance+size.Height);
 				}
 				else {
-					location.y+=value_start;
 					location.x+=distance;
 
 					ticks_region=Bounds(distance, inner.Top, distance+size.Width, inner.Bottom);
 				}
 
 				floattype mn=ceil(minimum/markers.tickdistance)*markers.tickdistance;
-				for(floattype v=mn;v<=maximum;v+=markers.tickdistance) {
-					animation::RectangularGraphic2DAnimation *ttick=tick;
-					if((v==smoothvalue && smooth.symbol) || (v==value) || (v==hovervalue && valuehover)) {
-						ttick=tick_hover;
+				floattype st=floattype(mn), ed=floattype(maximum);
+
+				if(tickp && rule) {
+					bool insiderule=false;
+
+					switch(orientation) {
+					case Blueprint::Left:
+						if(tickp->Margins.Right<-size.Height/2)
+							insiderule=true;
+						break;
+					case Blueprint::Right:
+					case Blueprint::Vertical:
+						if(tickp->Margins.Left<-size.Height/2)
+							insiderule=true;
+						break;
+
+					case Blueprint::Top:
+						if(tickp->Margins.Bottom<-size.Height/2)
+							insiderule=true;
+						break;
+					case Blueprint::Bottom:
+					case Blueprint::Horizontal:
+					default:
+						if(tickp->Margins.Top<-size.Height/2)
+							insiderule=true;
+						break;
 					}
+
+					if(insiderule) {
+						if(display.centerindicator) {
+							ed-=markers.tickdistance;
+						}
+						else {
+							st+=markers.tickdistance;
+							ed-=markers.tickdistance;
+						}
+					}
+				}
+
+				if(markers.namedlocations) {
+					for(auto i=namedlocations.begin();i!=namedlocations.end();++i) {
+						drawtick(floattype(i->first), location, reverse, size);
+					}
+				} 
+				else {
+					for(floattype v=st;v<=ed;v+=markers.tickdistance) {
+						drawtick(v, location, reverse, size);
+					}
+				}
+
+				if(reverse) {
 					if(ishorizontal()) {
-						ttick->Draw(innerlayer, Point(location.x+int((v-minimum)/valueperpixel), location.y)-innerlayer.BoundingBox.TopLeft());
+						int h=ticks_region.Height();
+						ticks_region.Top=innerlayer.BoundingBox.Height()-(ticks_region.Top+size.Height);
+						ticks_region.SetHeight(h);
 					}
 					else {
-						ttick->Draw(BaseLayer, Point(location.x, location.y+int((v-minimum)/valueperpixel))-innerlayer.BoundingBox.TopLeft());
+						int w=ticks_region.Width();
+						ticks_region.Left=innerlayer.BoundingBox.Width()-(ticks_region.Left+size.Width);
+						ticks_region.SetWidth(w);
 					}
 				}
 
 				if(tickp) {
 					if(ishorizontal()) {
 						distance+=tickp->Margins.TotalY()+size.Height;
-						ticks_region.Bottom+=tickp->Margins.Bottom;
+						if(reverse)
+							ticks_region.Top-=tickp->Margins.Top;
+						else
+							ticks_region.Bottom+=tickp->Margins.Bottom;
 					}
 					else {
 						distance+=tickp->Margins.TotalX()+size.Width;
-						ticks_region.Right+=tickp->Margins.Right;
+						if(reverse)
+							ticks_region.Left-=tickp->Margins.Left;
+						else
+							ticks_region.Right+=tickp->Margins.Right;
 					}
 				}
 				else {
@@ -1480,7 +2333,7 @@ namespace gge { namespace widgets {
 				}
 			}
 
-			//!!numbers
+			//DRAWING NUMBERS
 			if(markers.numbers && markers.tickdistance && markers.numberdistance && font) {
 				Point p(0,0);
 				Size size=Size(0, font->FontHeight());
@@ -1503,74 +2356,54 @@ namespace gge { namespace widgets {
 				Point location=p-Alignment::CalculateLocation(align, Bounds(Point(0,0),size), Size(0,0));
 
 				if(ishorizontal()) {
-					location.x+=value_start;
+					//location.x+=value_start;
 					location.y+=distance;
 
 					numbers_region=Bounds(inner.Left, distance, inner.Right, distance+size.Height);
 				}
 				else {
-					location.y+=value_start;
+					//location.y+=value_start;
 					location.x+=distance;
 
 					numbers_region=Bounds(distance, inner.Top, distance+size.Width, inner.Bottom);
 				}
 
-				stringstream ss;
-				if(format.hex)
-					ss<<std::hex;
-				if(format.decimals>-1)
-					ss<<std::setprecision(format.decimals);
-
-				floattype mn=ceil(minimum/(markers.tickdistance*markers.numberdistance))*markers.tickdistance*markers.numberdistance;
-
-				for(floattype v=(floattype)mn;v<=maximum;v+=markers.tickdistance*markers.numberdistance) {
-					Font *tfont=font;
-					if((v==smoothvalue && smooth.symbol) || (v==value) || (v==hovervalue && valuehover)) {
-						tfont=font_hover;
+				if(markers.namedlocations) {
+					for(auto i=namedlocations.begin();i!=namedlocations.end();++i) {
+						drawtext(floattype(i->first), align, i->second, inner, location, reverse, size);
 					}
-					ss.str(string());
-					ss<<format.prefix;
-					ss<<v;
-					ss<<format.units;
+				}
+				else {
+					stringstream ss;
+					if(format.hex)
+						ss<<std::hex;
+					if(format.decimals>-1)
+						ss<<std::fixed<<std::setprecision(format.decimals);
 
-					TextAlignment::Type talign=TextAlignment::GetHorizontal(align);
+					floattype mn=ceil(minimum/(markers.tickdistance*markers.numberdistance))*markers.tickdistance*markers.numberdistance;
 
-					int toffset=0; //temp offset
+					for(floattype v=(floattype)mn;v<=maximum;v+=markers.tickdistance*markers.numberdistance) {
+						ss.str(string());
+						ss<<format.prefix;
+						ss<<v;
+						ss<<format.units;
+						std::string str=ss.str();
 
-					if(talign==TextAlignment::Center) {
-						if(v==mn) {
-							if(font->TextWidth(ss.str())/2>value_start) {
-								if(rule && ishorizontal())
-									toffset=-(rule->BorderWidth.Left+rule->Margins.Left);
-								else if(rule && isvertical())
-									toffset=-(rule->BorderWidth.Top+rule->Margins.Top);
+						drawtext(v, align, str, inner, location, reverse, size);
 
-								talign=TextAlignment::Left;
-							}
-						}
-						if(v==maximum) {
-							if(font->TextWidth(ss.str())/2>inner.Right-(value_start+(maximum-minimum)/valueperpixel-inner.Left)) {
-								if(rule && ishorizontal())
-									toffset=+(rule->BorderWidth.Right+rule->Margins.Right);
-								else if(rule && isvertical())
-									toffset=+(rule->BorderWidth.Bottom+rule->Margins.Bottom);
-
-								talign=TextAlignment::Right;
-							}
-						}
 					}
+				}
 
+				if(reverse) {
 					if(ishorizontal()) {
-						tfont->Print(
-							innerlayer, Point(location.x+int((v-minimum)/valueperpixel)+toffset, location.y)-innerlayer.BoundingBox.TopLeft(),
-							0, ss.str(), talign
-						);
+						int h=numbers_region.Height();
+						numbers_region.Top=innerlayer.BoundingBox.Height()-(numbers_region.Top+size.Height);
+						numbers_region.SetHeight(h);
 					}
 					else {
-						tfont->Print(
-							innerlayer, Point(location.x, location.y+int((v-minimum)/valueperpixel)+toffset)-innerlayer.BoundingBox.TopLeft(),
-							0, ss.str(), talign
-						);
+						int w=numbers_region.Width();
+						numbers_region.Left=innerlayer.BoundingBox.Width()-(numbers_region.Left+size.Width);
+						numbers_region.SetWidth(w);
 					}
 				}
 
@@ -1592,13 +2425,19 @@ namespace gge { namespace widgets {
 				}
 			}
 
-
-			//!!check and draw value
+			//DRAWING VALUE
+			if(display.value && valuefont && Alignment::isBottom(valuelocation)) {
+				distance = drawvalue(inner, distance, reverse);
+			}
 
 
 			//DRAWING RULE OVERLAY
 			if(ruleoverlay && display.rule) {
-				ruleoverlay->DrawIn(overlayer, inner-ruleoverlay->Margins);
+				utils::Bounds b=rulebounds-ruleoverlay->Margins;
+				if(rule)
+					b=b+rule->Margins;
+
+				ruleoverlay->DrawIn(overlayer, szc, b);
 			}
 
 
@@ -1627,25 +2466,53 @@ namespace gge { namespace widgets {
 				Point location=p-Alignment::CalculateLocation(align, Bounds(Point(0,0),size), Size(0,0));
 
 				if(ishorizontal()) {
-					location.x+=value_start;
-
 					symbol_zero=location.x;
 
+					int x;
+					T_ v;
 					if(smooth.symbol)
-						location.x+=int((smoothvalue-minimum)/valueperpixel);
+						v=(T_)smoothvalue;
 					else
-						location.x+=int((value-minimum)/valueperpixel);
+						v=value;
+
+					x=(int)Round((v-minimum)/valueperpixel);
+
+					if(display.inverseaxis) {
+						location.x=location.x + (value_end-x);
+					}
+					else {
+						location.x=location.x+x+value_start;
+					}
 				}
 				else {
-					location.y+=value_start;
-
 					symbol_zero=location.y;
 
+					int y;
+					T_ v;
 					if(smooth.symbol)
-						location.y+=int((smoothvalue-minimum)/valueperpixel);
+						v=(T_)smoothvalue;
 					else
-						location.y+=int((value-minimum)/valueperpixel);
+						v=value;
+
+					y=(int)Round((v-minimum)/valueperpixel);
+
+						if(display.inverseaxis) {
+							location.y=location.y + (value_end-y);
+						}
+						else {
+							location.y=location.y+y+value_start;
+						}
 				}
+
+				if(reverse) {
+					if(ishorizontal()) {
+						location.y=inner.Bottom-(location.y+size.Height);
+					} 
+					else {
+						location.x=inner.Right-(location.x+size.Width);
+					}
+				}
+
 				symbollayer.Move(location);
 				symbollayer.Resize(size);
 				symbol->Draw(symbollayer,0,0);
@@ -1656,12 +2523,370 @@ namespace gge { namespace widgets {
 				overlay->DrawIn(overlayer, outer);
 			}
 
+
+			buttonlayer.Draw();
+
 		} //end of method
 
 
+		template<class T_, class floattype>
+		void Base<T_, floattype>::setupbuttons() {
+			if(display.buttons) {
+				utils::CheckAndDelete(upbutton);
+				utils::CheckAndDelete(downbutton);
 
+				if(bp) {
+					upbutton=new Button;
+					if(bp->GetOrientationBaseGroup(orientation) && bp->GetOrientationBaseGroup(orientation)->UpButton)
+						upbutton->SetBlueprint(*bp->GetOrientationBaseGroup(orientation)->UpButton);
+					upbutton->SetContainer(buttonlayer);
+					//upbutton->ClickEvent().Register(this,&Base::smalldecrease);
+					upbutton->MouseEvent().Register(this,&Base::upbutton_mouse);
+
+					downbutton=new Button;
+					if(bp->GetOrientationBaseGroup(orientation) && bp->GetOrientationBaseGroup(orientation)->DownButton)
+						downbutton->SetBlueprint(*bp->GetOrientationBaseGroup(orientation)->DownButton);
+					downbutton->SetContainer(buttonlayer);
+					//downbutton->ClickEvent().Register(this,&Base::smallincrease);
+					downbutton->MouseEvent().Register(this,&Base::downbutton_mouse);
+				}
+			}
+		}
+
+
+		template<class T_, class floattype>
+		bool Base<T_, floattype>::KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+			using namespace input::keyboard;
+
+			if(!IsEnabled() || ispassive() || !actions.keyboard)
+				return false;
+
+			if(event==Event::Down && (Key==KeyCodes::Up || Key==KeyCodes::Left)) {
+				if(!goingup) {
+					smalldecrease();
+					golarge=false;
+					begin_goup();
+				}
+
+				return true;
+			}
+			if(event==Event::Up	&& (Key==KeyCodes::Up || Key==KeyCodes::Left)) {
+				end_goup();
+
+				return true;
+			}
+
+			if(event==Event::Down && (Key==KeyCodes::Down || Key==KeyCodes::Right)) {
+				if(!goingdown) {
+					smallincrease();
+					golarge=false;
+					begin_godown();
+				}
+
+				return true;
+			}
+			if(event==Event::Up	&& (Key==KeyCodes::Down || Key==KeyCodes::Right)) {
+				end_godown();
+
+				return true;
+			}
+
+			if(event==Event::Down && Key==KeyCodes::PageUp) {
+				if(!goingup) {
+					largedecrease();
+					golarge=true;
+					begin_goup();
+				}
+
+				return true;
+			}
+			if(event==Event::Up	&& Key==KeyCodes::PageUp) {
+				end_goup();
+
+				return true;
+			}
+
+			if(event==Event::Down && Key==KeyCodes::PageDown) {
+				if(!goingdown) {
+					largeincrease();
+					golarge=true;
+					begin_godown();
+				}
+
+				return true;
+			}
+			if(event==Event::Up	&& Key==KeyCodes::PageDown) {
+				end_godown();
+
+				return true;
+			}
+
+			if(event==Event::Up && Key==KeyCodes::Home) {
+				tomin();
+
+				return true;
+			}
+
+			if(event==Event::Up && Key==KeyCodes::End) {
+				tomax();
+
+				return true;
+			}
+
+			return false;
+		}
+
+
+		template<class T_, class floattype>
+		void Base<T_, floattype>::drawtick(floattype v, utils::Point &location, bool reverse, utils::Size &size) {
+			animation::RectangularGraphic2DAnimation *ttick=tick;
+			if((v==smoothvalue && smooth.symbol) || (v==value) || (v==hovervalue && value_over)) {
+				ttick=tick_hover;
+			}
+			if(ishorizontal()) {
+				int x;
+				if(display.inverseaxis) {
+					x=location.x+( value_end-(int)Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Left;
+				}
+				else {
+					x=value_start+location.x+(int)Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Left;
+				}
+
+				if(display.centerindicator) {
+					ttick->Draw(innerlayer, 
+						x, 
+						location.y-innerlayer.BoundingBox.Top
+					);
+					if(v!=minimum) {
+						ttick->Draw(innerlayer, 
+							2*value_start-(x-location.x)+location.x,
+							location.y-innerlayer.BoundingBox.Top
+						);
+					}
+				}
+				else if(reverse) {
+					ttick->Draw(innerlayer, 
+						x, 
+						innerlayer.BoundingBox.Height()-(location.y+size.Height)
+					);
+				}
+				else {
+					ttick->Draw(innerlayer, 
+						x, 
+						location.y-innerlayer.BoundingBox.Top
+					);
+				}
+			}
+			else {
+				int y;
+				if(display.inverseaxis) {
+					y=location.y+( value_end-(int)Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Top;
+				}
+				else {
+					y=value_start+location.y+(int)Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Top;
+				}
+
+				if(reverse) {
+					ttick->Draw(innerlayer, 
+						innerlayer.BoundingBox.Width()-(location.x+size.Width),
+						y
+					);
+				}
+				else {
+					ttick->Draw(innerlayer, 
+						location.x-innerlayer.BoundingBox.Left, 
+						y
+					);
+				}
+			}
+		}
+
+
+		template<class T_, class floattype>
+		void Base<T_, floattype>::drawtext(floattype v, Alignment::Type align, const std::string &str, utils::Bounds &inner, utils::Point &location, bool reverse, utils::Size &size) {
+			Font *tfont=font;
+			if((v==smoothvalue && smooth.symbol) || (v==value) || (v==hovervalue && value_over)) {
+				tfont=font_hover;
+			}
+			TextAlignment::Type talign=TextAlignment::GetHorizontal(align);
+
+			int toffset=0; //temp offset
+
+			if(talign==TextAlignment::Center && ishorizontal()) {
+				if(font->TextWidth(str)/2>value_start) {
+					if(rule) {
+						if(display.inverseaxis) {
+							toffset=+(rule->BorderWidth.Right+rule->Margins.Right);
+						}
+						else {
+							toffset=-(rule->BorderWidth.Left+rule->Margins.Left);
+						}
+					}
+
+					if(display.inverseaxis) {
+						talign=TextAlignment::Right;
+					}
+					else {
+						talign=TextAlignment::Left;
+					}
+				}
+				if(font->TextWidth(str)/2>inner.Right-(value_start+(maximum-minimum)/valueperpixel-inner.Left)) {
+					if(rule && ishorizontal()) {
+						if(display.inverseaxis) {
+							toffset=-(rule->BorderWidth.Left+rule->Margins.Left);
+						}
+						else {
+							toffset=+(rule->BorderWidth.Right+rule->Margins.Right);
+						}
+					}
+
+					if(display.inverseaxis) {
+						talign=TextAlignment::Left;
+					}
+					else {
+						talign=TextAlignment::Right;
+					}
+				}
+			}
+
+			if(ishorizontal()) {
+				int x;
+				if(display.inverseaxis) {
+					x=toffset+location.x+( value_end-(int)Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Left;
+				}
+				else {
+					x=toffset+value_start+location.x+(int)Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Left;
+				}
+
+				if(reverse) {
+					tfont->Print(
+						innerlayer, 
+						x,
+						innerlayer.BoundingBox.Height()-(location.y+size.Height),
+						0, str, talign
+					);
+				}
+				else {
+					tfont->Print(
+						innerlayer, 
+						x, 
+						location.y-innerlayer.BoundingBox.Top,
+						0, str, talign
+					);
+				}
+			}
+			else {
+				int y;
+				if(display.inverseaxis) {
+					y=toffset+location.y+( value_end-(int)Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Top;
+				}
+				else {
+					y=toffset+value_start+location.y+(int)Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Top;
+				}
+
+				if(reverse) {
+					tfont->Print(
+						innerlayer, 
+						innerlayer.BoundingBox.Width()-(location.x+size.Width),
+						y,
+						0, str, talign
+					);
+
+				}
+				else {
+					tfont->Print(
+						innerlayer, 
+						location.x-innerlayer.BoundingBox.Left, 
+						y,
+						0, str, talign
+					);
+				}
+			}
+		}
+
+
+		template<class T_, class floattype>
+		int Base<T_, floattype>::drawvalue(utils::Bounds &inner, int distance, bool reverse) {
+			int x=0,y=0, w=inner.Width();
+			if(ishorizontal())
+				y+=distance;
+			else
+				x+=distance;
+			if(reverse) {
+				if(ishorizontal())
+					y=inner.Height()-y-valuefont->FontHeight();
+			}
+			if(valuep) {
+				x+=valuep->Margins.Left;
+				y+=valuep->Margins.Top;
+				w-=valuep->Margins.TotalX();
+			}
+
+			printvalue(x, y, w);
+
+			if(ishorizontal()) {
+				distance+=valuefont->FontHeight();
+				if(valuep)
+					distance+=valuep->Margins.TotalY();
+			}
+			return distance;
+		}
+
+
+		template<class T_, class floattype>
+		void Base<T_, floattype>::printvalue(int x, int y, int w) {
+			stringstream ss;
+			if(valueformat.hex)
+				ss<<std::hex;
+			if(valueformat.decimals>-1)
+				ss<<std::fixed<<std::setprecision(valueformat.decimals);
+			
+			if(display.indicatorstart) {
+				T_ v=value, indst=indst_value;
+
+				if(smooth.valuedisplay) {
+					v=T_(smoothvalue);
+					indst=T_(indst_smoothvalue);
+				}
+
+				if(indst<v) {
+					ss<<valueformat.prefix;
+					ss<<indst;
+					ss<<valueformat.units;
+					ss<<valueformat.separator;
+					ss<<valueformat.prefix;
+					ss<<v;
+					ss<<valueformat.units;
+				}
+				else {
+					ss<<valueformat.prefix;
+					ss<<v;
+					ss<<valueformat.units;
+					ss<<valueformat.separator;
+					ss<<valueformat.prefix;
+					ss<<indst;
+					ss<<valueformat.units;
+				}
+
+			}
+			else {
+				ss<<valueformat.prefix;
+				if(smooth.valuedisplay)
+					ss<<T_(smoothvalue);
+				else
+					ss<<value;
+				ss<<valueformat.units;
+			}
+
+			valuefont->Print(innerlayer, 
+				x, y, w,
+				ss.str(),
+				TextAlignment::GetHorizontal(valuelocation)
+			);
+		}
 
 
 	}
 
 } }
+

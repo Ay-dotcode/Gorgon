@@ -241,6 +241,7 @@ namespace gge { namespace graphics {
 	const SizeController2D SizeController2D::StretchFit(Stretch, Stretch);
 	const SizeController2D SizeController2D::SingleTopLeft(Single, Single, Alignment::Top_Left);
 	const SizeController2D SizeController2D::SingleBottomRight(Single, Single, Alignment::Bottom_Right);
+	const SizeController2D SizeController2D::SingleMiddleCenter(Single, Single, Alignment::Middle_Center);
 
 
 } }

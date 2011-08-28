@@ -7,6 +7,9 @@ namespace gge { namespace widgets {
 
 		//nothing probably, slider::Base is template
 
+
+
+
 	}
 
 } }

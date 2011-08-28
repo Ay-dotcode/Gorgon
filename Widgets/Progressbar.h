@@ -11,8 +11,8 @@ namespace gge { namespace widgets {
 		{
 			Base::setorientation(slider::Blueprint::Horizontal);
 			Base::setupdisplay(false, true, true, false, false);
-			Base::setsmoothingmode(false, true, false, 100);
-			Base::setmarkers(false, false);
+			Base::setsmoothingmode(false, true, false, true, 100);
+			Base::setmarkers(false, false, false);
 			setpassive();
 		}
 

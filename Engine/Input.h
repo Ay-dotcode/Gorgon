@@ -301,6 +301,14 @@ namespace gge { namespace input {
 				bool IsOver;
 
 			};
+
+			Event(Type event=None, utils::Point location=utils::Point(0,0), int amount=0) :
+				event(event), location(location), amount(amount)
+			{ }
+
+			Type event;
+			utils::Point location;
+			int amount;
 		};
 
 		inline Event::Type operator | (Event::Type l, Event::Type r) {

@@ -18,7 +18,7 @@ namespace gge { namespace widgets {
 		public:
 			Base(bool cangetfocus, AutosizeModes::Type autosize,bool textwrap, bool drawsymbol,bool drawicon) : text(""),
 				cangetfocus(cangetfocus), autosize(autosize), textwrap(textwrap), underline(), currentsize(0,0),
-				drawsymbol(drawsymbol), drawicon(drawicon), icon(NULL), currentstate(1), unprepared(true),
+				drawsymbol(drawsymbol), drawicon(drawicon), icon(NULL), currentstate(1), unprepared(true), bp(NULL),
 				mouseover(false), mousedown(false), next_focus(Blueprint::Focus_None), next_state(0), next_style(Blueprint::Style_None)
 			{
 				focus_anim.Pause();

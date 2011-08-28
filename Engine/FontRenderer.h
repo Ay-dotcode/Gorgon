@@ -121,7 +121,7 @@ namespace gge {
 
 	class FontRenderer {
 		friend class Font;
-	protected:
+	public:
 		////Prints the given text to the target using given color.
 		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, const std::string &Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams())=0;
 		////Prints the given text to the target using given color. Text is wrapped and aligned as necessary

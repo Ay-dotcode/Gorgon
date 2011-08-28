@@ -496,6 +496,7 @@ namespace gge { namespace graphics {
 		static const SizeController2D StretchFit;
 		static const SizeController2D SingleTopLeft;
 		static const SizeController2D SingleBottomRight;
+		static const SizeController2D SingleMiddleCenter;
 
 		int CalculateWidth(int W, int Increment) const {
 			if(HorizontalTiling==SizeController2D::Tile_Integral_Best) {

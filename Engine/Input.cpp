@@ -349,7 +349,10 @@ namespace gge { namespace input {
 			params.keycode=Key;
 			params.event=keyboard::Event::Down;
 
-			keyboard::Events.Fire(keyboard::Events.TokenList[params], keyboard::Event(keyboard::Event::Up, Key));
+			if(keyboard::Events.TokenList[params]!=keyboard::Events.NullToken)
+				keyboard::Events.Fire(keyboard::Events.TokenList[params], keyboard::Event(keyboard::Event::Up, Key));
+			else
+				keyboard::Events.Fire(keyboard::Event(keyboard::Event::Up, Key));
 			keyboard::Events.TokenList[params]=keyboard::Events.NullToken;
 		}
 

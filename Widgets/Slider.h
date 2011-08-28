@@ -28,9 +28,9 @@ namespace gge { namespace widgets {
 		{
 			Base::setorientation(slider::Blueprint::Bottom);
 			Base::setupdisplay(true, true, false, false, false);
-			Base::setsmoothingmode(true, false, false, 100);
-			Base::setmarkers(true, true, 10, 5);
-			Base::setactions(true, Base::Goto, true, true);
+			Base::setsmoothingmode(true, false, false, true, 100);
+			Base::setmarkers(true, true, false, 10, 5);
+			Base::setactions(true, Base::Goto, true, true, true);
 			Base::setactive();
 
 			ISlider::changeevent.DoubleLink(changeevent);
@@ -98,6 +98,8 @@ namespace gge { namespace widgets {
 			return OrientationType(Base::getorientation());
 		}
 		void setOrientation(const OrientationType &orientation) {
+			Base::setaxisinverse(orientation==Left || orientation==Right);
+
 			Base::setorientation(slider::Blueprint::OrientationType(orientation));
 		}
 
@@ -110,6 +112,7 @@ namespace gge { namespace widgets {
 
 		void setTickDistance(const floattype &value) {
 			Base::settickdistance(value);
+			Base::setlargechange(T_(value));
 		}
 		floattype getTickDistance() const {
 			return Base::gettickdistance();
@@ -131,6 +134,7 @@ namespace gge { namespace widgets {
 
 		void setStepsize(const T_ &value) {
 			Base::setsteps(value);
+			Base::setsmallchange(max(value,1));
 		}
 		T_ getStepsize() const {
 			return Base::getsteps();
