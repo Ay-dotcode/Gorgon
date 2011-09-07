@@ -18,14 +18,16 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Scrollbar, AnimationDuration),
 			INIT_PROPERTY(Scrollbar, Orientation),
 			INIT_PROPERTY(Scrollbar, LargeChange),
-			INIT_PROPERTY(Scrollbar, SmallChange)
+			INIT_PROPERTY(Scrollbar, SmallChange),
+			INIT_PROPERTY(Scrollbar, AllowFocus)
 		{
 			Base::setorientation(slider::Blueprint::Vertical);
 			Base::setupdisplay(true, true, false, true, false);
 			Base::setsmoothingmode(true, false, true, false, 100);
 			Base::setmarkers(false, false, false);
 			Base::setactions(true, Base::LargeChange, true);
-			Base::setsmallchange(5);
+			Base::setsmallchange(18);
+			Base::setlargechange(120);
 			Base::setactive();
 
 			IScroller::changeevent.DoubleLink(changeevent);
@@ -46,6 +48,7 @@ namespace gge { namespace widgets {
 		utils::Property<Scrollbar, OrientationType> Orientation;
 		utils::NumericProperty<Scrollbar, T_> LargeChange;
 		utils::NumericProperty<Scrollbar, T_> SmallChange;
+		utils::BooleanProperty<Scrollbar> AllowFocus;
 
 		utils::EventChain<Scrollbar> &ChangeEvent() {
 			return changeevent;
@@ -102,6 +105,13 @@ namespace gge { namespace widgets {
 		}
 		T_ getSmallChange() const {
 			return Base::getsmallchange();
+		}
+
+		void setAllowFocus(const bool &value) {
+			Base::setcangetfocus(value);
+		}
+		bool getAllowFocus() const {
+			return Base::getcangetfocus();
 		}
 
 

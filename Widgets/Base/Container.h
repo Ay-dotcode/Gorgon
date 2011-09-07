@@ -221,7 +221,7 @@ namespace gge { namespace widgets {
 
 			call_widget_located(widget, w, Order);
 
-			Reorganize();
+			WidgetBoundsChanged();
 
 			return true;
 		}
@@ -247,7 +247,7 @@ namespace gge { namespace widgets {
 
 			Widgets.Remove(it);
 
-			Reorganize();
+			WidgetBoundsChanged();
 
 			return true;
 		}
@@ -269,7 +269,7 @@ namespace gge { namespace widgets {
 		virtual void Deactivate() = 0;
 
 
-		virtual void Draw() {
+		virtual void RedrawAll() {
 			if(!IsVisible())
 				return;
 
@@ -443,7 +443,7 @@ namespace gge { namespace widgets {
 			if(!focus_changing(widget))
 				return false;
 
-			if(Focussed)
+			if(Focussed && Focussed!=widget)
 				if(!call_widget_loosefocus(Focussed))
 					return false;
 

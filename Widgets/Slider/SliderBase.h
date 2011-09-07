@@ -70,7 +70,7 @@ namespace gge { namespace widgets {
 				rule_region(0,0,0,0), ticks_region(0,0,0,0), numbers_region(0,0,0,0), bp(NULL), rule_over(false),
 				smoothvalue(floattype(value)), symbol_mdown(false), symbol_mover(false), value_over(false), golarge(false),
 				upbutton(NULL), downbutton(NULL), key_repeat_timeout(200), goingup(false), goingdown(false), 
-				indst_value(minimum),indst_smoothvalue(floattype(minimum))
+				indst_value(minimum),indst_smoothvalue(floattype(minimum)), cangetfocus(true)
 			{
 				if(this->steps==0)
 					this->steps=1;
@@ -98,6 +98,12 @@ namespace gge { namespace widgets {
 				this->bp=static_cast<const Blueprint*>(&bp);
 				if(WidgetBase::size.Width==0)
 					Resize(this->bp->DefaultSize);
+
+				for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
+					utils::CheckAndDelete(i->second);
+
+				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
+					utils::CheckAndDelete(i->second);
 
 				setupbuttons();
 
@@ -228,7 +234,7 @@ namespace gge { namespace widgets {
 				}
 
 
-				return true;
+				return WidgetBase::MouseEvent(event, location, amount);
 			}
 
 			virtual void Disable()  {
@@ -248,6 +254,9 @@ namespace gge { namespace widgets {
 
 			virtual bool Focus() {
 				if(passivemode)
+					return false;
+
+				if(!cangetfocus)
 					return false;
 
 				if(!IsEnabled())
@@ -343,6 +352,7 @@ namespace gge { namespace widgets {
 					BaseLayer->Add(buttonlayer, 0);
 					BaseLayer->Add(overlayer, -1);
 				}
+				containerenabledchanged(container->IsEnabled());
 			}
 
 			virtual bool loosefocus(bool force)  {
@@ -735,6 +745,15 @@ namespace gge { namespace widgets {
 				return display.indicatorstart;
 			}
 
+			void setcangetfocus(const bool &value) {
+				cangetfocus=value;
+				if(!cangetfocus && IsFocussed())
+					RemoveFocus();
+			}
+			bool getcangetfocus() const {
+				return cangetfocus;
+			}
+
 			void smallincrease() {
 				if(display.inverseaxis)
 					setvalue_smooth(value-smallchange);
@@ -1075,7 +1094,6 @@ namespace gge { namespace widgets {
 
 
 
-
 			Placeholder *symbolp;
 			Placeholder *tickp;
 			Placeholder *textp;
@@ -1177,6 +1195,7 @@ namespace gge { namespace widgets {
 			} actions;
 
 			bool passivemode;
+			bool cangetfocus;
 			Alignment::Type valuelocation;
 
 			graphics::Colorizable2DLayer innerlayer;
@@ -1553,7 +1572,7 @@ namespace gge { namespace widgets {
 							if(downbutton)
 								s+=downbutton->GetHeight();
 						}
-						size.Height=rule->CalculateHeight(WidgetBase::size.Width-s)+s;
+						size.Height=rule->CalculateHeight(WidgetBase::size.Height-s)+s;
 					}
 
 					if(display.value && valuefont && (Alignment::isTop(valuelocation)||Alignment::isBottom(valuelocation))) {
@@ -1796,6 +1815,8 @@ namespace gge { namespace widgets {
 
 				tickmarkborder->SetController(idle_anim);
 			}
+
+			unprepared=false;
 		}
 
 		template<class T_, class floattype>
@@ -2524,7 +2545,7 @@ namespace gge { namespace widgets {
 			}
 
 
-			buttonlayer.Draw();
+			//buttonlayer.Draw();
 
 		} //end of method
 

@@ -1,8 +1,10 @@
 #include "Layer.h"
 #include "GGEMain.h"
+#include "Graphics.h"
 
 using namespace gge::input;
 using namespace gge::utils;
+using namespace gge::graphics::system;
 
 namespace gge {
 	namespace graphics {
@@ -91,11 +93,16 @@ namespace gge {
 
 	void LayerBase::Render() {
 		translate+=BoundingBox.TopLeft();
+		glPushMatrix();
+		glTranslatef((float)BoundingBox.Left, (float)BoundingBox.Top, 0);
+
 		if(isVisible) {
 			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
 				i->Render();
 			}
 		}
+
+		glPopMatrix();
 		translate-=BoundingBox.TopLeft();
 	}
 

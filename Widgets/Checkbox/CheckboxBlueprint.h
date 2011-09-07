@@ -379,6 +379,8 @@ namespace gge { namespace widgets {
 						}
 					}
 
+					//from -> None
+
 					if(style.to!=Blueprint::Style_None || style.from!=Blueprint::Normal) {
 						if(group->Mapping[Blueprint::Normal][Blueprint::Style_None] && group->Mapping[Blueprint::Normal][Blueprint::Style_None]->Get<T_,id>()) {
 							if(group->Focus.to!=Blueprint::Focus_None)

@@ -9,6 +9,7 @@
 
 #include "Checkbox\CheckboxBlueprint.h"
 #include "Slider\SliderBlueprint.h"
+#include "Panel\PanelBlueprint.h"
 
 namespace gge { namespace widgets {
 
@@ -36,6 +37,7 @@ namespace gge { namespace widgets {
 
 		File.Loaders.Add(new resource::ResourceLoader(GID::Checkbox, checkbox::Load)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::Slider, slider::Load)); 
+		File.Loaders.Add(new resource::ResourceLoader(GID::Panel, panel::Load)); 
 	}
 
 	void Init(GGEMain &Main) {

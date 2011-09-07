@@ -887,6 +887,7 @@ namespace gge { namespace widgets {
 				BaseLayer->Add(innerlayer, 1);
 				BaseLayer->Add(overlayer, -1);
 			}
+			containerenabledchanged(container->IsEnabled());
 		}
 
 		void Base::prepare() {

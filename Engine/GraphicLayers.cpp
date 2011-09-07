@@ -1,11 +1,6 @@
 #include "GraphicLayers.h"
 #pragma warning(disable:4244)
 
-#define GL_FUNC_ADD 0x8006
-#define GL_MIN		0x8007
-#define GL_MAX		0x8008
-#define GL_BLEND_EQUATION                                  0x8009
- 
 using namespace gge::utils;
 using namespace gge::input;
 using namespace gge::graphics::system;
@@ -13,7 +8,7 @@ using namespace gge::graphics::system;
 namespace gge { namespace graphics {
 	RGBfloat CurrentLayerColor;
 	Point translate;
-	Rectangle scissors;
+	Bounds scissors;
 
 	void Basic2DLayer::Draw(const GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
 		BasicSurface *surface=Surfaces.Add();
@@ -541,27 +536,21 @@ namespace gge { namespace graphics {
 		if(EnableClipping) {
 			psc=scissors;
 
-			int r=scissors.Right();
-			int b=scissors.Bottom();
-
 			glEnable(GL_SCISSOR_TEST);
 			if(translate.x>scissors.Left)
 				scissors.Left=translate.x;
 			if(translate.y>scissors.Top)
 				scissors.Top=translate.y;
-			if(translate.y+BoundingBox.Height()<b)
-				b=(translate.y+BoundingBox.Height());
-			if(translate.x+BoundingBox.Width()<r)
-				r=(translate.x+BoundingBox.Width());
+			if(translate.y+BoundingBox.Height()<scissors.Bottom)
+				scissors.Bottom=(translate.y+BoundingBox.Height());
+			if(translate.x+BoundingBox.Width()<scissors.Right)
+				scissors.Right=(translate.x+BoundingBox.Width());
 
-			scissors.SetRight(r);
-			scissors.SetBottom(b);
-
-			if(r<=scissors.Left || b<=scissors.Top) {
-				return;
+			if(scissors.Right<=scissors.Left || scissors.Bottom<=scissors.Top) {
+				goto end;
 			}
 
-			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height, scissors.Width, scissors.Height);
+			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height(), scissors.Width(), scissors.Height());
 		}
 
 		int i;
@@ -609,11 +598,13 @@ namespace gge { namespace graphics {
 			i->Render();
 		}
 
+end:
 		glPopMatrix();
 		translate-=BoundingBox.TopLeft();
 
 		if(EnableClipping) {
 			scissors=psc;
+			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height(), scissors.Width(), scissors.Height());
 		}
 
 		//make sure everything is back in its place
@@ -1166,38 +1157,33 @@ namespace gge { namespace graphics {
 		glTranslatef(BoundingBox.Left, BoundingBox.Top, 0);
 		translate+=BoundingBox.TopLeft();
 
-		if(EnableClipping) {
-			psc=scissors;
-
-			int r=scissors.Right();
-			int b=scissors.Bottom();
-
-			glEnable(GL_SCISSOR_TEST);
-			if(translate.x>scissors.Left)
-				scissors.Left=translate.x;
-			if(translate.y>scissors.Top)
-				scissors.Top=translate.y;
-			if(translate.y+BoundingBox.Height()<b)
-				b=(translate.y+BoundingBox.Height());
-			if(translate.x+BoundingBox.Width()<r)
-				r=(translate.x+BoundingBox.Width());
-
-			scissors.SetRight(r);
-			scissors.SetBottom(b);
-
-			if(r<=scissors.Left || b<=scissors.Top) {
-				return;
-			}
-
-			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height, scissors.Width, scissors.Height);
-		}
-
 
 		RGBfloat prevcolor=CurrentLayerColor;
 		CurrentLayerColor.a*=(float)Ambient.a/255;
 		CurrentLayerColor.r*=(float)Ambient.r/255;
 		CurrentLayerColor.g*=(float)Ambient.g/255;
 		CurrentLayerColor.b*=(float)Ambient.b/255;
+
+
+		if(EnableClipping) {
+			psc=scissors;
+
+			glEnable(GL_SCISSOR_TEST);
+			if(translate.x>scissors.Left)
+				scissors.Left=translate.x;
+			if(translate.y>scissors.Top)
+				scissors.Top=translate.y;
+			if(translate.y+BoundingBox.Height()<scissors.Bottom)
+				scissors.Bottom=(translate.y+BoundingBox.Height());
+			if(translate.x+BoundingBox.Width()<scissors.Right)
+				scissors.Right=(translate.x+BoundingBox.Width());
+
+			if(scissors.Right<=scissors.Left || scissors.Bottom<=scissors.Top) {
+				goto end;
+			}
+
+			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height(), scissors.Width(), scissors.Height());
+		}
 
 		int i;
 		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
@@ -1216,7 +1202,9 @@ namespace gge { namespace graphics {
 				}
 				else if(currentdrawmode==BasicSurface::AlphaOnly) {
 					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+					glClearColor(0,0,0,CurrentLayerColor.a);
 					glClear(GL_COLOR_BUFFER_BIT);
+					glClearColor(0,0,0,1);
 					glBlendFunc(GL_DST_COLOR, GL_ZERO);
 				}
 				else if(currentdrawmode==BasicSurface::UseDestinationAlpha) {
@@ -1224,7 +1212,11 @@ namespace gge { namespace graphics {
 					glBlendFunc(GL_DST_ALPHA,GL_ONE_MINUS_DST_ALPHA);
 				}
 			}
-			glColor4f(surface->Color.r*CurrentLayerColor.r,surface->Color.g*CurrentLayerColor.g,surface->Color.b*CurrentLayerColor.b,surface->Color.a*CurrentLayerColor.a);
+			if(currentdrawmode==BasicSurface::AlphaOnly)
+				glColor4f(surface->Color.r*CurrentLayerColor.r,surface->Color.g*CurrentLayerColor.g,surface->Color.b*CurrentLayerColor.b,surface->Color.a);
+			else
+				glColor4f(surface->Color.r*CurrentLayerColor.r,surface->Color.g*CurrentLayerColor.g,surface->Color.b*CurrentLayerColor.b,surface->Color.a*CurrentLayerColor.a);
+
 			glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
 			glBegin(GL_QUADS);
 			glTexCoord2fv(surface->TextureCoords[0].vect);
@@ -1244,7 +1236,7 @@ namespace gge { namespace graphics {
 			i->Render();
 		}
 
-
+end:
 		CurrentLayerColor=prevcolor;
 		glColor4fv(prevcolor.vect);
 
@@ -1254,10 +1246,12 @@ namespace gge { namespace graphics {
 
 		if(EnableClipping) {
 			scissors=psc;
+			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height(), scissors.Width(), scissors.Height());
 		}
 
 		glPopAttrib();
-
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	}
 
 } }

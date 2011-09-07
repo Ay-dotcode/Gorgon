@@ -41,7 +41,7 @@ namespace gge { namespace widgets {
 			return changeevent;
 		}
 
-		NumericProperty<IScroller, T_> &Value;
+		utils::NumericProperty<IScroller, T_> &Value;
 
 	protected:
 		//REQUIRED

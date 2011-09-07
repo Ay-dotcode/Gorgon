@@ -46,10 +46,14 @@ namespace gge { namespace widgets {
 		inline  bool IsHidden()  { return !IsVisible(); }
 		virtual void Show(bool setfocus=false) { 
 			isvisible=true;
-			call_container_widget_visibility_change(true);			
+			if(BaseLayer)
+				BaseLayer->isVisible=isvisible;
+			call_container_widget_visibility_change(true);
 		}
 		virtual void Hide() {
 			isvisible=false; 
+			if(BaseLayer)
+				BaseLayer->isVisible=isvisible;
 			call_container_widget_visibility_change(false);
 		}
 		//Virtual status of the following two functions might change
@@ -82,13 +86,7 @@ namespace gge { namespace widgets {
 		virtual utils::Size GetSize() { return size; }
 		int GetWidth() { return GetSize().Width; }
 		int GetHeight() { return GetSize().Height; }
-		virtual void Resize(utils::Size Size) { 
-			size=Size;
-			if(BaseLayer)
-				BaseLayer->Resize(Size);
-
-			Draw();
-		}
+		virtual void Resize(utils::Size Size);
 		void Resize(int W, int H) { Resize(utils::Size(W,H)); }
 		void SetWidth(int W)  { Resize(W, size.Height); }
 		void SetHeight(int H) { Resize(size.Width,  H); }
@@ -100,11 +98,7 @@ namespace gge { namespace widgets {
 		int GetY()    { return GetLocation().y; }
 		int GetLeft() { return GetLocation().x; }
 		int GetTop()  { return GetLocation().y; }
-		virtual void Move(utils::Point Location) {
-			location=Location;
-			if(BaseLayer)
-				BaseLayer->Move(Location);
-		}
+		virtual void Move(utils::Point Location);
 		void Move(int X, int Y) { Move(utils::Point(X,Y)); }
 		void SetX(int X) { Move(utils::Point(X,location.y)); }
 		void SetY(int Y) { Move(utils::Point(location.x,Y)); }
@@ -256,8 +250,7 @@ namespace gge { namespace widgets {
 
 		virtual bool detach(ContainerBase *container) {
 			Container=NULL;
-			delete BaseLayer;
-			BaseLayer=NULL;
+			utils::CheckAndDelete(BaseLayer);
 			wrapper=NULL;
 
 			return true;

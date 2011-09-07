@@ -3,17 +3,17 @@
 #include "GGEMain.h"
 #include <gl/gl.h>
 
-using namespace gge::graphics;
-using namespace gge::utils;
-
 namespace gge {
 	namespace graphics {
 		extern RGBfloat CurrentLayerColor;
-		extern Point translate;
-		extern Rectangle scissors;
+		extern utils::Point translate;
+		extern utils::Bounds scissors;
 	}
 
 	void CustomLayer::Render() {
+		using namespace gge::utils;
+		using namespace gge::graphics;
+
 		Rectangle psc;
 		translate+=BoundingBox.TopLeft();
 		glPushAttrib(GL_SCISSOR_BIT);
@@ -21,8 +21,8 @@ namespace gge {
 
 		psc=scissors;
 
-		int r=scissors.Right();
-		int b=scissors.Bottom();
+		int r=scissors.Right;
+		int b=scissors.Bottom;
 
 		glEnable(GL_SCISSOR_TEST);
 		if(translate.x>scissors.Left)
@@ -34,14 +34,14 @@ namespace gge {
 		if(translate.x+BoundingBox.Width()<r)
 			r=(translate.x+BoundingBox.Width());
 
-		scissors.SetRight(r);
-		scissors.SetBottom(b);
+		scissors.Right=r;
+		scissors.Bottom=b;
 
-		if(r<=scissors.Left || b<=scissors.Top) {
+		if(scissors.Right<=scissors.Left || scissors.Bottom<=scissors.Top) {
 			return;
 		}
 
-		glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height, scissors.Width, scissors.Height);
+		glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height(), scissors.Width(), scissors.Height());
 
 
 		glColor4f(1,1,1,1);

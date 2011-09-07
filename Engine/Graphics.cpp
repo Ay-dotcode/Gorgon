@@ -9,7 +9,7 @@ using namespace gge::utils;
 namespace gge { namespace graphics {
 	Size ScreenSize;
 	extern RGBfloat CurrentLayerColor;
-	extern utils::Rectangle scissors;
+	extern utils::Bounds scissors;
 	extern Point translate;
 
 	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {

@@ -49,6 +49,12 @@ namespace gge { namespace widgets {
 				if(autosize!=AutosizeModes::None && Container)
 					Container->WidgetBoundsChanged();
 
+				for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
+					utils::CheckAndDelete(i->second);
+
+				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
+					utils::CheckAndDelete(i->second);
+
 				Draw();
 			}
 

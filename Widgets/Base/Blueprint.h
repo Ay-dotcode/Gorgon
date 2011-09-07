@@ -57,7 +57,9 @@ namespace gge { namespace widgets {
 			Normal		=1,
 			Hover		=2,
 			Down		=4,
-			Disabled	=5
+			Disabled	=5,
+			Active=Hover,
+			Moving=Down
 		};
 
 		struct StyleMode {

@@ -60,6 +60,8 @@ namespace gge {
 	public:
 
 		typedef int Token;
+		static const Token NullToken = 0;
+
 
 		////Initializes Pointer Subsystem
 		void Initialize(GGEMain &Main, int LayerOrder=-100);

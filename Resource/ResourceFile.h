@@ -95,6 +95,11 @@ namespace gge { namespace resource {
 		////Searches the given resource object within this file
 		ResourceBase *FindObject(utils::SGuid guid);
 
+		template<class T_>
+		void FindObject(utils::SGuid guid, T_ *&object) {
+			object=dynamic_cast<T_*>(FindObject(guid));
+		}
+		
 		////Adds basic resource loaders 
 		void AddBasicLoaders();
 

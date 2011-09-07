@@ -53,6 +53,14 @@ namespace gge { namespace widgets {
 		static const Type Slider_Element_Props	= 0x05865001;
 
 
+
+		static const Type Panel					= 0x05880000;
+		static const Type Panel_Props			= 0x05880101;
+
+		static const Type Panel_Element			= 0x05885000;
+		static const Type Panel_Element_Props	= 0x05885001;
+
+
 	}
 
 }}

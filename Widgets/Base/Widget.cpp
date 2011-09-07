@@ -41,9 +41,12 @@ namespace gge { namespace widgets {
 
 	void WidgetBase::locateto(ContainerBase* container, int Order, utils::SortedCollection<WidgetBase>::Wrapper * w) {
 		Container=container;
+		utils::CheckAndDelete(BaseLayer);
 		BaseLayer=&container->CreateWidgetLayer(Order);
 		wrapper=w;
 		BaseLayer->MouseCallback.Set(*this, &WidgetBase::MouseEvent);
+		if(BaseLayer)
+			BaseLayer->isVisible=isvisible;
 		BaseLayer->Move(location);
 		BaseLayer->Resize(size);
 	}
@@ -75,6 +78,26 @@ namespace gge { namespace widgets {
 			return isenabled; 
 		else
 			return isenabled && Container->IsEnabled();
+	}
+
+	void WidgetBase::Resize(utils::Size Size) {
+		size=Size;
+		if(BaseLayer)
+			BaseLayer->Resize(Size);
+
+		if(Container)
+			Container->WidgetBoundsChanged();
+
+		Draw();
+	}
+
+	void WidgetBase::Move(utils::Point Location) {
+		location=Location;
+		if(BaseLayer)
+			BaseLayer->Move(Location);
+
+		if(Container)
+			Container->WidgetBoundsChanged();
 	}
 
 
