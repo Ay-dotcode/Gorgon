@@ -43,6 +43,11 @@ namespace gge { namespace widgets {
 
 			virtual void SetBlueprint(const widgets::Blueprint &bp)  {
 				this->bp=static_cast<const Blueprint*>(&bp);
+
+				if(this->bp) {
+					this->pointer=bp.Pointer;
+				}
+
 				if(WidgetBase::size.Width==0)
 					Resize(this->bp->DefaultSize);
 

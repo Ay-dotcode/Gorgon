@@ -19,7 +19,7 @@ namespace gge { namespace widgets {
 		ContainerBase() : 
 			Default(NULL),
 			Cancel(NULL),
-			Focussed(NULL),
+			Focused(NULL),
 			PrevFocus(NULL),
 			size(0,0),
 			isvisible(true),
@@ -36,7 +36,7 @@ namespace gge { namespace widgets {
 		virtual void Show(bool setfocus=false) { 
 			isvisible=true;
 			
-			if(setfocus && !Focussed) {
+			if(setfocus && !Focused) {
 				bool done=false;
 				if(PrevFocus)
 					done=PrevFocus->Focus();
@@ -47,7 +47,7 @@ namespace gge { namespace widgets {
 		virtual void Hide() {
 			isvisible=false; 
 
-			if(Focussed)
+			if(Focused)
 				RemoveFocus();
 		}
 		//Virtual status of the following two functions might change
@@ -102,8 +102,8 @@ namespace gge { namespace widgets {
 		void SetHeight(int H) { Resize(size.Width,  H); }
 
 
-		virtual WidgetBase *GetFocussed() { return Focussed; }
-		virtual bool HasFocussed() { return Focussed!=NULL; }
+		virtual WidgetBase *GetFocused() { return Focused; }
+		virtual bool HasFocused() { return Focused!=NULL; }
 		//focuses to the first item that can take it, if no items can get focus returns false.
 		virtual bool FocusFirst() {
 			if(!isvisible || !isenabled)
@@ -122,7 +122,7 @@ namespace gge { namespace widgets {
 			if(!isvisible || !isenabled)
 				return false;
 
-			for(auto it=Widgets.Find(Focussed)+1;it.isValid();it.Next()) {
+			for(auto it=Widgets.Find(Focused)+1;it.isValid();it.Next()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -130,7 +130,7 @@ namespace gge { namespace widgets {
 			}
 
 			//roll again from bottom
-			for(auto it=Widgets.First();it.isValid() && it.CurrentPtr()!=Focussed;it.Next()) {
+			for(auto it=Widgets.First();it.isValid() && it.CurrentPtr()!=Focused;it.Next()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -143,7 +143,7 @@ namespace gge { namespace widgets {
 			if(!isvisible || !isenabled)
 				return false;
 
-			for(auto it=Widgets.Find(Focussed)-1;it.isValid();it.Previous()) {
+			for(auto it=Widgets.Find(Focused)-1;it.isValid();it.Previous()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -151,7 +151,7 @@ namespace gge { namespace widgets {
 			}
 
 			//roll again from bottom
-			for(auto it=Widgets.Last();it.isValid() && &(*it)!=Focussed;it.Previous()) {
+			for(auto it=Widgets.Last();it.isValid() && &(*it)!=Focused;it.Previous()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -166,20 +166,20 @@ namespace gge { namespace widgets {
 			if(!focus_changing(NULL))
 				return false;
 
-			if(!call_widget_loosefocus(Focussed))
+			if(!call_widget_loosefocus(Focused))
 				return false;
 
-			PrevFocus=Focussed;
-			Focussed=NULL;
+			PrevFocus=Focused;
+			Focused=NULL;
 
 			focus_changed(NULL);
 			return true;
 		}
 		virtual void ForceRemoveFocus() {
-			call_widget_loosefocus(Focussed, true);
+			call_widget_loosefocus(Focused, true);
 
-			PrevFocus=Focussed;
-			Focussed=NULL;
+			PrevFocus=Focused;
+			Focused=NULL;
 
 			focus_changed(NULL);
 		}
@@ -235,7 +235,7 @@ namespace gge { namespace widgets {
 			if(!call_widget_detach(widget))
 				return false;
 
-			if(Focussed==&widget)
+			if(Focused==&widget)
 				if(!FocusNext())
 					RemoveFocus();
 			if(Default==&widget)
@@ -408,14 +408,14 @@ namespace gge { namespace widgets {
 			return false;
 		}
 		bool DistributeKeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
-			if(Focussed) {
+			if(Focused) {
 				if(event==input::keyboard::Event::Up && UpHandler) {
 					UpHandler->KeyboardEvent(event, Key);
 					UpHandler=NULL;
 				}
-				else if(Focussed->KeyboardEvent(event, Key)) {
+				else if(Focused->KeyboardEvent(event, Key)) {
 					if(event==input::keyboard::Event::Down)
-						UpHandler=Focussed;
+						UpHandler=Focused;
 
 					return true;
 				}
@@ -443,11 +443,11 @@ namespace gge { namespace widgets {
 			if(!focus_changing(widget))
 				return false;
 
-			if(Focussed && Focussed!=widget)
-				if(!call_widget_loosefocus(Focussed))
+			if(Focused && Focused!=widget)
+				if(!call_widget_loosefocus(Focused))
 					return false;
 
-			Focussed=widget;
+			Focused=widget;
 
 			focus_changed(widget);
 
@@ -455,7 +455,7 @@ namespace gge { namespace widgets {
 		}
 
 		void widget_visibility_change(WidgetBase *widget, bool state) {
-			if(state==false && widget==Focussed)
+			if(state==false && widget==Focused)
 				FocusNext();
 
 			Reorganize();
@@ -500,7 +500,7 @@ namespace gge { namespace widgets {
 
 		WidgetBase *Default;
 		WidgetBase *Cancel;
-		WidgetBase *Focussed;
+		WidgetBase *Focused;
 		WidgetBase *PrevFocus;
 		WidgetBase *UpHandler;
 

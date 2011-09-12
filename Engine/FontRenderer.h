@@ -96,6 +96,15 @@ namespace gge {
 		union {
 			struct {
 				int x,y;
+
+				operator utils::Point() const {
+					return utils::Point(x,y);
+				}
+
+				void operator =(utils::Point v) {
+					x=v.x;
+					y=v.y;
+				}
 			} position;
 			unsigned int color;
 			int value;
@@ -105,6 +114,15 @@ namespace gge {
 		union {
 			struct {
 				int x,y;
+
+				void operator =(utils::Point v) {
+					x=v.x;
+					y=v.y;
+				}
+
+				operator utils::Point() const {
+					return utils::Point(x,y);
+				}
 			} position;
 			int value;
 		} Out;

@@ -350,10 +350,10 @@ namespace gge { namespace resource {
 
 							target->SetCurrentColor(color);
 							img->Draw(target,l,y);
-							dist=img->GetWidth()+Seperator;
+							dist+=img->GetWidth()+Seperator;
 						}
 					}
-					if(text[j]!='\r') {
+					else if(text[j]!='\r') {
 						ImageResource *img=Characters[(unsigned char)text[j]];
 						if(Shadow.Type==ShadowParams::Flat) {
 							target->SetCurrentColor(Shadow.Color);
@@ -365,7 +365,7 @@ namespace gge { namespace resource {
 						dist=img->GetWidth()+Seperator;
 					}
 					for(d=0;d<cchardetectxs;d++) {
-						if(chardetectxs[d].x<(l-sx)+dist/2) {
+						if(chardetectxs[d].x<l+dist/2) { //!y
 							chardetectxs[d].data->Out.value=j;
 						}
 					}
@@ -561,15 +561,15 @@ namespace gge { namespace resource {
 						ImageResource *img=Characters[(unsigned char)' '];
 						int i;
 						for(i=0;i<Tabsize;i++) {
-							dist=img->GetWidth()+Seperator;
+							dist+=img->GetWidth()+Seperator;
 						}
 					}
-					if(text[j]!='\r') {
+					else if(text[j]!='\r') {
 						ImageResource *img=Characters[(unsigned char)text[j]];
-						dist+=img->GetWidth()+Seperator;
+						dist=img->GetWidth()+Seperator;
 					}
 					for(d=0;d<cchardetectxs;d++) {
-						if(chardetectxs[d].x<(l-sx)+dist/2 && j<chardetectxs[d].data->Out.value) {
+						if(chardetectxs[d].x<l+dist/2 && j<chardetectxs[d].data->Out.value) {//!y??
 							chardetectxs[d].data->Out.value=j;
 						}
 					}

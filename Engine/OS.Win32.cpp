@@ -257,9 +257,6 @@ using namespace gge::input::system;
 					case VK_SHIFT:
 						keyboard::Modifier::Add(keyboard::Modifier::Shift);
 						break;
-					case VK_MENU:
-						keyboard::Modifier::Add(keyboard::Modifier::Alt);
-						break;
 					case VK_LWIN:
 						keyboard::Modifier::Add(keyboard::Modifier::Super);
 						break;
@@ -463,6 +460,29 @@ using namespace gge::input::system;
 				return ret;
 			}
 
+		}
+
+		std::string GetClipbardText() {
+			HANDLE clip;
+			if (OpenClipboard(NULL)) 
+				clip = GetClipboardData(CF_TEXT);
+
+			return std::string((char*) clip);
+		}
+
+		void SetClipboardText(const std::string &text) {
+			if(OpenClipboard(NULL))
+			{
+				HGLOBAL clipbuffer;
+				char * buffer;
+				EmptyClipboard();
+				clipbuffer = GlobalAlloc(GMEM_DDESHARE, text.length()+1);
+				buffer = (char*)GlobalLock(clipbuffer);
+				strcpy_s(buffer, text.length()+1, text.c_str());
+				GlobalUnlock(clipbuffer);
+				SetClipboardData(CF_TEXT,clipbuffer);
+				CloseClipboard();
+			}
 		}
 
 

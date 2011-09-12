@@ -25,6 +25,9 @@ namespace gge { namespace os {
 	////Shows the pointer displayed by OS
 	void ShowPointer();
 
+	std::string GetClipbardText();
+	void SetClipboardText(const std::string &text);
+
 	namespace system {
 		////This function processes OS messages
 		void ProcessMessage();

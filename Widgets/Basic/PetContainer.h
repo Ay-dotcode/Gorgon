@@ -92,8 +92,8 @@ namespace gge { namespace widgets {
 
 
 		bool KeyboardEvent(input::keyboard::Event event) { 
-			if(Focussed) {
-				if(Focussed->KeyboardEvent(event.event, event.keycode))
+			if(Focused) {
+				if(Focused->KeyboardEvent(event.event, event.keycode))
 					return true;
 			}
 

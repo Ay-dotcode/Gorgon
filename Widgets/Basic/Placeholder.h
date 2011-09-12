@@ -29,7 +29,7 @@ namespace gge { namespace widgets {
 		PlaceholderSizingMode SizingMode;
 		utils::Size Minimum;
 
-		utils::Size GetSize(utils::Size ideal, utils::Size maximum) {
+		utils::Size GetSize(utils::Size ideal, utils::Size maximum) const {
 			utils::Size size=ideal;
 
 			switch (SizingMode) {

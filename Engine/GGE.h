@@ -4,6 +4,8 @@
 #include "../Utils/Binary.h"
 #include "../Utils/Size2D.h"
 #include "../Utils/Rectangle2D.h"
+#include "../Utils/Bounds2D.h"
+#include "../Utils/Margins.h"
 
 
 typedef unsigned long       DWORD;
@@ -78,6 +80,40 @@ namespace gge {
 			return p;
 		}
 
+		template<class T_>
+		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, const utils::basic_Rectangle2D<T_> &target, const utils::basic_Size2D<T_> &object, const utils::Margins &margins) {
+			utils::basic_Point2D<T_> p=target.TopLeft()+margins.TopLeft();
+
+			if(isCenter(Align))
+				p.x+=(target.Width-object.Width-margins.TotalX())/2;
+			else if(isRight(Align))
+				p.x+=target.Width-object.Width-margins.TotalX();
+
+			if(isMiddle(Align))
+				p.y+=(target.Height-object.Height-margins.TotalY())/2;
+			else if(isRight(Align))
+				p.y+=target.Height-object.Height-margins.TotalY();
+
+			return p;
+		}
+
+		template<class T_>
+		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, const utils::basic_Bounds2D<T_> &target, const utils::basic_Size2D<T_> &object, const utils::Margins &margins) {
+			utils::basic_Point2D<T_> p=target.TopLeft()+margins.TopLeft();
+
+			if(isCenter(Align))
+				p.x+=(target.Width()-object.Width-margins.TotalX())/2;
+			else if(isRight(Align))
+				p.x+=target.Width()-object.Width-margins.TotalX();
+
+			if(isMiddle(Align))
+				p.y+=(target.Height()-object.Height-margins.TotalY())/2;
+			else if(isRight(Align))
+				p.y+=target.Height()-object.Height-margins.TotalY();
+
+			return p;
+		}
+
 		inline bool isLeft(Type t) {
 			return (t&Mask_Horizontal) == Left;
 		}
@@ -117,6 +153,29 @@ namespace gge {
 			return true;
 		}
 
+		inline Type setLeft(Type t) {
+			return (Type)( (t&Mask_Vertical) | Left);
+		}
+
+		inline Type setRight(Type t) {
+			return (Type)( (t&Mask_Vertical) | Right);
+		}
+
+		inline Type setCenter(Type t) {
+			return (Type)( (t&Mask_Vertical) | Center);
+		}
+
+		inline Type setTop(Type t) {
+			return (Type)( (t&Mask_Horizontal) | Top);
+		}
+
+		inline Type setBottom(Type t) {
+			return (Type)( (t&Mask_Horizontal) | Bottom);
+		}
+
+		inline Type setMiddle(Type t) {
+			return (Type)( (t&Mask_Horizontal) | Middle);
+		}
 	}; 
 
 }

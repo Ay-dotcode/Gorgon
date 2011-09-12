@@ -112,7 +112,7 @@ namespace gge { namespace widgets {
 		virtual void SetRectangle(utils::Rectangle r) { Move(r.TopLeft()); Resize(r.GetSize()); }
 
 
-		virtual bool IsFocussed();
+		virtual bool IsFocused();
 		virtual bool Focus() {
 			call_container_setfocus();
 
@@ -121,15 +121,15 @@ namespace gge { namespace widgets {
 			return true;
 		}
 		bool SetFocus(bool focus) {
-			if(focus && !IsFocussed()) {
+			if(focus && !IsFocused()) {
 				call_container_setfocus();
 				return true;
 			}
-			else if(!focus && IsFocussed())
+			else if(!focus && IsFocused())
 				return RemoveFocus();
 		}
 		virtual bool RemoveFocus() {
-			if(IsFocussed()) {
+			if(IsFocused()) {
 				call_container_removefocus();
 				return true;
 			}
@@ -137,7 +137,7 @@ namespace gge { namespace widgets {
 				return false;
 		}
 		virtual void ForceRemoveFocus() {
-			if(IsFocussed())
+			if(IsFocused())
 				call_container_forceremovefocus();
 		}
 
@@ -200,7 +200,7 @@ namespace gge { namespace widgets {
 		}
 
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
-			if(input::mouse::Event::isClick(event))
+			if(input::mouse::Event::isClick(event) && !IsFocused())
 				Focus();
 
 			if(event==input::mouse::Event::Over && pointer!=Pointer::None)

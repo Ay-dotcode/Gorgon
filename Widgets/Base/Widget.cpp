@@ -35,8 +35,8 @@ namespace gge { namespace widgets {
 		Draw();
 	}
 
-	bool WidgetBase::IsFocussed() {
-		return Container->GetFocussed()==this;
+	bool WidgetBase::IsFocused() {
+		return Container->GetFocused()==this;
 	}
 
 	void WidgetBase::locateto(ContainerBase* container, int Order, utils::SortedCollection<WidgetBase>::Wrapper * w) {
@@ -52,7 +52,7 @@ namespace gge { namespace widgets {
 	}
 
 	void WidgetBase::call_container_removefocus() {
-		if(Container && IsFocussed())
+		if(Container && IsFocused())
 			Container->RemoveFocus();
 	}
 
@@ -69,7 +69,7 @@ namespace gge { namespace widgets {
 
 	void WidgetBase::Disable() {
 		isenabled=false; 
-		if(IsFocussed() && Container)
+		if(IsFocused() && Container)
 			Container->FocusNext();
 	}
 

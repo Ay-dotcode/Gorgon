@@ -118,7 +118,22 @@ namespace gge { namespace utils {
 		basic_Margins2D AddToRight(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
 			return basic_Margins2D(Left, Top, Right+margin.TotalX()+val, Bottom);
 		}
+
+		basic_Point2D<T_> TopLeft() const {
+			return basic_Point2D<T_>(Left, Top);
+		}
 	};
+
+	template <typename T_, typename R_>
+	basic_Size2D<T_> operator +(const basic_Size2D<T_> &s, const basic_Margins2D<R_> &m) {
+		return basic_Size2D<T_>(s.Width+m.TotalX(), s.Height+m.TotalY());
+	}
+
+	template <typename T_, typename R_>
+	basic_Size2D<T_> operator -(const basic_Size2D<T_> &s, const basic_Margins2D<R_> &m) {
+		return basic_Size2D<T_>(s.Width-m.TotalX(), s.Height-m.TotalY());
+	}
+
 
 #ifdef BOUNDS2D_EXISTS
 	template <typename T_, typename R_>

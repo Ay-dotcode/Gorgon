@@ -15,7 +15,7 @@ namespace gge { namespace widgets {
 		//format: 0xtf, f: from, t: to
 		enum FocusType : unsigned {
 			//Not valid unless determining transitions
-			Focus_None				= 0x00,
+			Focus_None			= 0x00,
 			NotFocused			= 0x01,
 			Focused				= 0x02,
 		};
@@ -59,7 +59,8 @@ namespace gge { namespace widgets {
 			Down		=4,
 			Disabled	=5,
 			Active=Hover,
-			Moving=Down
+			Moving=Down,
+			Focused_Style=Down
 		};
 
 		struct StyleMode {

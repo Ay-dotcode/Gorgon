@@ -58,8 +58,8 @@ namespace gge {
 		void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left);
 		////This method is extended to cover meta functionality for advanced text rendering. This function does not render the given text
 		/// it only processes meta data
-		void Print_Test(int X, int Y, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align);
-		void Print_Test(utils::Point p, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
+		void Print_Test(int X, int Y, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left);
+		void Print_Test(utils::Point p, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left) {
 			Print_Test(p.x, p.y, W, Text, Data, DataLen, Align);
 		}
 

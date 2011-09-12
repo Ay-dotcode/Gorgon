@@ -246,7 +246,7 @@ namespace gge { namespace widgets {
 			BGAlpha=255;
 
 			BorderDataResource		*bprovider;
-			animation::RectangularGraphic2DSequenceProvider *iprovider;
+			//animation::RectangularGraphic2DSequenceProvider *iprovider;
 			bool transition;
 
 			if(bp) {
@@ -284,7 +284,7 @@ namespace gge { namespace widgets {
 		void Base::focus_changed(WidgetBase *newwidget) {
 			using namespace gge::utils;
 			if(newwidget) {
-				if(!IsFocussed())
+				if(!IsFocused())
 					Focus();
 
 
@@ -301,7 +301,7 @@ namespace gge { namespace widgets {
 				}
 			}
 			else if(!allownofocus) {
-				if(IsFocussed())
+				if(IsFocused())
 					RemoveFocus();
 			}
 		}

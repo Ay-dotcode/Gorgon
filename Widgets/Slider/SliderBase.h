@@ -105,6 +105,10 @@ namespace gge { namespace widgets {
 				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
 					utils::CheckAndDelete(i->second);
 
+				if(this->bp) {
+					this->pointer=bp.Pointer;
+				}
+
 				setupbuttons();
 
 				Draw();
@@ -262,7 +266,7 @@ namespace gge { namespace widgets {
 				if(!IsEnabled())
 					return false;
 
-				if(IsFocussed())
+				if(IsFocused())
 					return true;
 
 				WidgetBase::Focus();
@@ -356,7 +360,7 @@ namespace gge { namespace widgets {
 			}
 
 			virtual bool loosefocus(bool force)  {
-				if(!IsFocussed())
+				if(!IsFocused())
 					return true;
 
 				if(!symbol_mdown) {
@@ -747,7 +751,7 @@ namespace gge { namespace widgets {
 
 			void setcangetfocus(const bool &value) {
 				cangetfocus=value;
-				if(!cangetfocus && IsFocussed())
+				if(!cangetfocus && IsFocused())
 					RemoveFocus();
 			}
 			bool getcangetfocus() const {

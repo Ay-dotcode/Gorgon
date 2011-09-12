@@ -61,6 +61,13 @@ namespace gge { namespace widgets {
 		static const Type Panel_Element_Props	= 0x05885001;
 
 
+		static const Type Textbox				= 0x05830000;
+		static const Type Textbox_Props			= 0x05830101;
+
+		static const Type Textbox_Element		= 0x05835000;
+		static const Type Textbox_Element_Props	= 0x05835001;
+
+
 	}
 
 }}

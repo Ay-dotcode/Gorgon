@@ -732,7 +732,7 @@ namespace gge { namespace widgets {
 			if(!IsEnabled())
 				return false;
 
-			if(IsFocussed())
+			if(IsFocused())
 				return true;
 
 			WidgetBase::Focus();
@@ -742,7 +742,7 @@ namespace gge { namespace widgets {
 		}
 
 		bool Base::loosefocus(bool force) {
-			if(!IsFocussed())
+			if(!IsFocused())
 				return true;
 
 			setfocus(Blueprint::NotFocused);

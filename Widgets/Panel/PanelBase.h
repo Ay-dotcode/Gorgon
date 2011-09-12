@@ -86,7 +86,7 @@ namespace gge { namespace widgets {
 
 
 			virtual bool IsActive() {
-				return WidgetBase::IsFocussed();
+				return WidgetBase::IsFocused();
 			}
 
 			virtual LayerBase &CreateBackgroundLayer()  {
@@ -146,9 +146,8 @@ namespace gge { namespace widgets {
 				Move(GetLocation()+amount);
 			}
 
-			virtual void focus_changed(WidgetBase *newwidget);
 			virtual bool Focus() {
-				if(!Focussed) {
+				if(!Focused) {
 					if(!allownofocus) {
 						if(!FocusFirst())
 							return false;
@@ -160,7 +159,7 @@ namespace gge { namespace widgets {
 
 					return WidgetBase::Focus();
 				}
-				else if(!IsFocussed()) {
+				else if(!IsFocused()) {
 					setstyle(widgets::Blueprint::Active);
 
 					return WidgetBase::Focus();
@@ -183,6 +182,10 @@ namespace gge { namespace widgets {
 				if(this->bp)
 					if(this->bp->Scroller)
 						vscroll.bar.SetBlueprint(*this->bp->Scroller);
+
+				if(this->bp) {
+					this->pointer=bp.Pointer;
+				}
 
 				Draw();
 			}
@@ -208,8 +211,9 @@ namespace gge { namespace widgets {
 
 			virtual void draw();
 
+			virtual void focus_changed(WidgetBase *newwidget);
 			virtual bool loosefocus(bool force) {
-				if(!Focussed) {
+				if(!Focused) {
 					setstyle(widgets::Blueprint::Normal);
 					return true;
 				}
