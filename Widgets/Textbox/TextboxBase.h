@@ -16,7 +16,7 @@ namespace gge { namespace widgets {
 		class Base : public WidgetBase {
 		public:
 
-			Base() : controls(*this, &Base::IsEnabled, &Base::IsVisible),
+			Base() : controls(*this),
 				bp(NULL), next_style(widgets::Blueprint::Style_None),
 				scroll(0,0), vscroll(true), mhover(false), caretlocation(0), selectionstart(0),
 				caret(NULL), selection(NULL), textlocation(0,0), mdown(false)
@@ -95,6 +95,7 @@ namespace gge { namespace widgets {
 			virtual bool detach(ContainerBase *container) {
 				innerlayer.parent=NULL;
 				overlayer.parent=NULL;
+				controls.BaseLayer.parent=NULL;
 
 				return true;
 			}
@@ -116,6 +117,7 @@ namespace gge { namespace widgets {
 				WidgetBase::located(container, w, Order);
 
 				BaseLayer->Add(innerlayer,1);
+				BaseLayer->Add(controls, 0);
 				BaseLayer->Add(overlayer, -1);
 
 				//adjustscrolls();

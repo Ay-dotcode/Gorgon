@@ -68,6 +68,8 @@ namespace gge { namespace widgets {
 		static const Type Textbox_Element_Props	= 0x05835001;
 
 
+		static const Type Listbox				= 0x05870000;
+		static const Type Listbox_Props			= 0x05870101;
 	}
 
 }}

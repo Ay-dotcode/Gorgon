@@ -27,7 +27,8 @@ namespace gge { namespace widgets {
 			tabswitch(true),
 			accesskeysenabled(true),
 			Organizer(NULL),
-			UpHandler(NULL)
+			UpHandler(NULL),
+			organizing(false)
 		{ }
 
 
@@ -100,6 +101,10 @@ namespace gge { namespace widgets {
 		void Resize(int W, int H) { Resize(utils::Size(W,H)); }
 		void SetWidth(int W)  { Resize(W, size.Height); }
 		void SetHeight(int H) { Resize(size.Width,  H); }
+
+		virtual utils::Size GetUsableSize() { return GetSize(); }
+		int GetUsableWidth() { return GetUsableSize().Width; }
+		int GetUsableHeight() { return GetUsableSize().Height; }
 
 
 		virtual WidgetBase *GetFocused() { return Focused; }
@@ -279,8 +284,13 @@ namespace gge { namespace widgets {
 			}
 		}
 		virtual void Reorganize() {
-			if(Organizer) {
-				Organizer->Reorganize();
+			if(!organizing) {
+				organizing=true;
+				if(Organizer) {
+					Organizer->Reorganize();
+				}
+
+				organizing=false;
 			}
 		}
 
@@ -346,12 +356,16 @@ namespace gge { namespace widgets {
 
 		Organizer *GetOrganizer() { return Organizer; }
 		bool HasOrganizer() { return Organizer!=NULL; }
-		virtual void SetOrganizer(Organizer &organizer) { 
+		virtual void SetOrganizer(Organizer &organizer) {
+			if(Organizer) 
+				Organizer->SetAttached(NULL);
+
 			Organizer=&organizer;
+			Organizer->SetAttached(this);
 			Reorganize();
 		}
-		void SetOrganizer(Organizer *organizer) { SetOrganizer(*organizer); }
-		virtual void RemoveOrganizer() { Organizer=NULL; }
+		void SetOrganizer(Organizer *organizer) { if(organizer) SetOrganizer(*organizer); else RemoveOrganizer(); }
+		virtual void RemoveOrganizer() { if(Organizer) Organizer->SetAttached(NULL); Organizer=NULL; }
 
 
 		//*Might* be useful
@@ -362,6 +376,7 @@ namespace gge { namespace widgets {
 			delete Organizer; //?
 		}
 
+		utils::SortedCollection<WidgetBase> Widgets;
 
 	protected:
 
@@ -496,6 +511,7 @@ namespace gge { namespace widgets {
 		bool isenabled;
 		bool tabswitch;
 		bool accesskeysenabled;
+		bool organizing;
 		utils::Size size;
 
 		WidgetBase *Default;
@@ -507,7 +523,6 @@ namespace gge { namespace widgets {
 		widgets::Organizer *Organizer;
 
 
-		utils::SortedCollection<WidgetBase> Widgets;
 		std::map<input::keyboard::Key, WidgetBase*> AccessKeys;
 
 	};

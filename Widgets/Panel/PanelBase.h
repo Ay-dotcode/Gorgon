@@ -19,7 +19,7 @@ namespace gge { namespace widgets {
 
 			Base() : innermargins(0),
 				allownofocus(false), allowmove(false), allowresize(false),
-				controls(*this, &Base::IsEnabled, &Base::IsVisible),
+				controls(*this),
 				bp(NULL), next_style(widgets::Blueprint::Style_None),
 				move_mdown(false), move_ongoing(false), padding(5),
 				move_pointer(PointerCollection::NullToken), scroll(0,0),
@@ -110,6 +110,8 @@ namespace gge { namespace widgets {
 				return *layer;
 			}
 
+			using WidgetBase::ForceRemoveFocus;
+
 			virtual void RedrawAll() {
 				ContainerBase::RedrawAll();
 				WidgetBase::Draw();
@@ -132,6 +134,11 @@ namespace gge { namespace widgets {
 
 			virtual utils::Size GetSize() {
 				return WidgetBase::GetSize();
+			}
+
+			virtual utils::Size GetUsableSize() {
+				//!?
+				return innerlayer.BoundingBox.GetSize();
 			}
 
 			virtual bool RemoveFocus() {

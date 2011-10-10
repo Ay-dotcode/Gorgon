@@ -180,6 +180,19 @@ namespace gge { namespace widgets {
 
 		Target.SetDrawMode(graphics::BasicSurface::AlphaOnly);
 		Mask->DrawIn(Target, X,Y, W,H);
+		//Loop
+		if(parent.Orientation==LineResource::Horizontal) {
+			loop.Draw(Target, Tiling2D::Tile(parent.IsLoopTiled, false), 
+				X+start.GetWidth(), Y+(H-loop.GetHeight())/2,
+				W - (start.GetWidth() + end.GetWidth()), loop.GetHeight()
+				);
+		}
+		else {
+			loop.Draw(Target, Tiling2D::Tile(false, parent.IsLoopTiled), 
+				X+(W-loop.GetWidth())/2, Y+start.GetHeight(),
+				loop.GetWidth(), H - (start.GetHeight() + end.GetHeight())
+				);
+		}
 		Target.SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
 
 		//Loop
@@ -219,11 +232,55 @@ namespace gge { namespace widgets {
 
 		Target.SetDrawMode(graphics::BasicSurface::AlphaOnly);
 		Mask->DrawIn(Target, controller, X,Y, W,H);
+		if(parent.Orientation==LineResource::Horizontal) {
+			int w, h;
+
+			w=controller.CalculateWidth(W, loop.GetWidth(), start.GetWidth()+end.GetWidth());
+			h=controller.CalculateHeight(H, loop.GetHeight());
+
+			Point p=Alignment::CalculateLocation(controller.Align, Rectangle(X,Y,w,h), Size(W,H));
+			X=p.x;
+			Y=p.y;
+
+
+			graphics::SizeController2D c=controller;
+
+			if(parent.IsLoopTiled)
+				c.HorizontalTiling=SizeController2D::Tile_Continous;
+			else
+				c.HorizontalTiling=SizeController2D::Stretch;
+
+			loop.DrawIn(Target, c, 
+				X+start.GetWidth(), Y,
+				w - (start.GetWidth() + end.GetWidth()), h
+				);
+		}
+		else {
+			int w, h;
+
+			w=controller.CalculateWidth(W, loop.GetWidth());
+			h=controller.CalculateHeight(H, loop.GetHeight(), start.GetHeight()+end.GetHeight());
+
+			Point p=Alignment::CalculateLocation(controller.Align, Rectangle(X,Y,w,h), Size(W,H));
+
+
+			graphics::SizeController2D c=controller;
+
+			if(parent.IsLoopTiled)
+				c.VerticalTiling=SizeController2D::Tile_Continous;
+			else
+				c.VerticalTiling=SizeController2D::Stretch;
+
+			loop.DrawIn(Target, c, 
+				X+start.GetWidth(), Y,
+				w - (start.GetWidth() + end.GetWidth()), h
+				);
+		}
+
+
 		Target.SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
 
-
-
-
+		
 
 		if(parent.Orientation==LineResource::Horizontal) {
 			int w, h;
@@ -267,9 +324,9 @@ namespace gge { namespace widgets {
 			graphics::SizeController2D c=controller;
 
 			if(parent.IsLoopTiled)
-				c.HorizontalTiling=SizeController2D::Tile_Continous;
+				c.VerticalTiling=SizeController2D::Tile_Continous;
 			else
-				c.HorizontalTiling=SizeController2D::Stretch;
+				c.VerticalTiling=SizeController2D::Stretch;
 
 			loop.DrawIn(Target, c, 
 				X+start.GetWidth(), Y,

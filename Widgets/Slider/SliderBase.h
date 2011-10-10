@@ -66,7 +66,7 @@ namespace gge { namespace widgets {
 			Base(T_ value=T_(0), T_ minimum=T_(0), T_ maximum=T_(100), T_ steps=std::numeric_limits<T_>::epsilon(), T_ smallchange=T_(1), T_ largechange=T_(10)) : passivemode(false),
 				orientation(Blueprint::Vertical), next_style(Blueprint::Style_None),
 				value(value), minimum(minimum), maximum(maximum), steps(steps), autosize(AutosizeModes::Autosize),
-				smallchange(smallchange), largechange(largechange), unprepared(false), buttonlayer(*this, &Base::IsEnabled, &Base::IsVisible),
+				smallchange(smallchange), largechange(largechange), unprepared(false), buttonlayer(*this),
 				rule_region(0,0,0,0), ticks_region(0,0,0,0), numbers_region(0,0,0,0), bp(NULL), rule_over(false),
 				smoothvalue(floattype(value)), symbol_mdown(false), symbol_mover(false), value_over(false), golarge(false),
 				upbutton(NULL), downbutton(NULL), key_repeat_timeout(200), goingup(false), goingdown(false), 

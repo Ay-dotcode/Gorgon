@@ -13,8 +13,7 @@ namespace gge { namespace widgets {
 
 		typedef bool (T_::*ControlFn)();
 
-		PetContainer(T_ &parent, ControlFn IsEnabledFn=NULL, ControlFn IsVisibleFn=NULL) : parent(parent),
-			IsEnabledFn(IsEnabledFn), IsVisibleFn(IsVisibleFn),
+		PetContainer(T_ &parent) : parent(parent),
 			ContainerBase(), BaseLayer(), isactive(false)
 		{ }
 
@@ -35,17 +34,15 @@ namespace gge { namespace widgets {
 		}
 
 		virtual bool IsEnabled() {
-			if(IsEnabledFn)
-				if(!(parent.*IsEnabledFn)())
-					return false;
+			if(!parent.IsEnabled())
+				return false;
 
 			return ContainerBase::IsEnabled();
 		}
 
 		virtual bool IsVisible()  {
-			if(IsVisibleFn)
-				if(!(parent.*IsVisibleFn)())
-					return false;
+			if(parent.IsVisible())
+				return false;
 
 			return BaseLayer.isVisible;
 		}
@@ -82,12 +79,20 @@ namespace gge { namespace widgets {
 		}
 
 		virtual void focus_changed(WidgetBase *newwidget)  {
-			if(newwidget)
+			if(newwidget) {
 				isactive=true;
+				parent.Focus();
+			}
 		}
 
 		operator LayerBase &() {
 			return BaseLayer;
+		}
+
+		void InformEnabledChange() {
+			for(auto it=Widgets.First();it.isValid();it.Next()) {
+				call_widget_containerenabledchanged(*it, false);
+			}
 		}
 
 
@@ -101,9 +106,6 @@ namespace gge { namespace widgets {
 		}
 
 		LayerBase BaseLayer;
-
-		ControlFn IsVisibleFn;
-		ControlFn IsEnabledFn;
 
 	protected:
 

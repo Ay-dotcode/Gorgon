@@ -93,13 +93,17 @@ namespace gge { namespace utils {
 				return Offset!=-1 && (*Col->count)!=0 && Col->list[Offset];
 			}
 
+			bool isinrange() const {
+				return Offset!=-1 && (*Col->count)!=0;
+			}
+
 			bool moveby(int amount) {
 				//sanity check
 				if(amount==0)  return isvalid();
 
 				int new_off=Offset;
 
-				if(!isvalid()) {
+				if(!isinrange()) {
 					if(amount>0)
 						//new_off = -1;
 						return false; //?

@@ -9,12 +9,13 @@ namespace gge { namespace widgets {
 		friend class ContainerBase;
 	public:
 
+		Organizer() : attachedto(NULL) {}
+
 		virtual void Reorganize() = 0;
 
 	protected:
 		virtual void SetAttached(ContainerBase *attached);
 
-	private:
 		ContainerBase *attachedto;
 	};
 

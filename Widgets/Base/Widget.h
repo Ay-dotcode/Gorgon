@@ -230,7 +230,8 @@ namespace gge { namespace widgets {
 		utils::EventChain<WidgetBase> GotFocus;
 		utils::EventChain<WidgetBase> LostFocus;
 
-		~WidgetBase() {
+		virtual ~WidgetBase() {
+			DrawQueue.Remove(this);
 			Detach();
 		}
 
