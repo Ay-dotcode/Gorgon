@@ -211,15 +211,16 @@ namespace gge { namespace widgets {
 
 		RectangleResource::TilingInfo tiling=parent.Tiling;
 
-		Target.SetDrawMode(graphics::BasicSurface::AlphaOnly);
-		Mask->DrawIn(Target, X,Y, W,H);
-		Target.SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
+		Target.SetDrawMode(graphics::BasicSurface::Offscreen);
 
 		//CENTER
 		c->Draw(Target, Tiling2D::Tile(tiling.Center_Horizontal, tiling.Center_Vertical), 
 			X+l->GetWidth(), Y+t->GetHeight(),
 			W-(l->GetWidth()+r->GetWidth()), H-(t->GetHeight()+b->GetHeight())
 		);
+
+		Target.SetDrawMode(graphics::BasicSurface::OffscreenAlphaOnly);
+		Mask->DrawIn(Target, X,Y, W,H);
 
 		Target.SetDrawMode(graphics::BasicSurface::Normal);
 
@@ -262,9 +263,7 @@ namespace gge { namespace widgets {
 	}
 
 	void MaskedRectangle::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const {
-		Target.SetDrawMode(graphics::BasicSurface::AlphaOnly);
-		Mask->DrawIn(Target, controller, X,Y, W,H);
-		Target.SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
+		Target.SetDrawMode(graphics::BasicSurface::Offscreen);
 
 		RectangleResource::TilingInfo tiling=parent.Tiling;
 		int w=W, h=H;
@@ -281,6 +280,9 @@ namespace gge { namespace widgets {
 			X, Y,
 			W, H
 		);
+
+		Target.SetDrawMode(graphics::BasicSurface::OffscreenAlphaOnly);
+		Mask->DrawIn(Target, controller, X,Y, W,H);
 
 		Target.SetDrawMode(graphics::BasicSurface::Normal);
 		//return;

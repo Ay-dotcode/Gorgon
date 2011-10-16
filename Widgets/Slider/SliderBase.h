@@ -2123,9 +2123,9 @@ namespace gge { namespace widgets {
 					}
 				}
 
-				BaseLayer->SetDrawMode(graphics::BasicSurface::AlphaOnly);
+				BaseLayer->SetDrawMode(graphics::BasicSurface::Offscreen);
 				indicator->DrawIn(BaseLayer, szc, b);
-				BaseLayer->SetDrawMode(graphics::BasicSurface::UseDestinationAlpha);
+				BaseLayer->SetDrawMode(graphics::BasicSurface::OffscreenAlphaOnly);
 				indicator->DrawIn(BaseLayer, szc, b);
 				BaseLayer->SetDrawMode(graphics::BasicSurface::Normal);
 			}

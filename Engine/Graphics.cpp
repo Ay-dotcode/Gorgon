@@ -1,4 +1,5 @@
 #include "Graphics.h"
+
 #ifdef WIN32
 #include <windows.h>
 
@@ -6,13 +7,43 @@
 using namespace gge::utils;
 
 #endif
+
+GLenum gee() {
+	return glGetError();
+}
+
 namespace gge { namespace graphics {
 	Size ScreenSize;
 	extern RGBfloat CurrentLayerColor;
 	extern utils::Bounds scissors;
 	extern Point translate;
 
+	namespace system { 	
+		GLuint FBTexture;
+		GLuint FrameBuffer; 
+
+		bool OffscreenRendering=false;
+	}
+
+	const GLenum GL_FRAMEBUFFER=0x8D40;
+	const GLenum GL_COLOR_ATTACHMENT0=0x8CE0;
+	const GLenum GL_GENERATE_MIPMAP=0x8191;
+
+	typedef void(__stdcall *glGenFramebuffers_t)(int, GLuint*);
+	typedef void(__stdcall *glBindFramebuffer_t)(GLenum, GLuint);
+	typedef void(__stdcall *glFramebufferTexture2D_t)(GLenum, GLenum, GLenum, GLuint, GLint);
+	typedef GLenum(__stdcall *glCheckFramebufferStatus_t)(GLenum);
+	typedef void(__stdcall *glGenerateMipmap_t)(GLenum);
+
+	glGenFramebuffers_t glGenFramebuffers;
+	//glDeleteFramebuffers_t glDeleteFramebuffers;
+	glBindFramebuffer_t glBindFramebuffer;
+	glFramebufferTexture2D_t glFramebufferTexture2D;
+	glCheckFramebufferStatus_t glCheckFramebufferStatus;
+	glGenerateMipmap_t glGenerateMipmap;
+
 	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {
+		using namespace gge::graphics::system;
 		///!Platform specific
 #ifdef WIN32
 		///*Preparing device context, platform specific
@@ -48,6 +79,38 @@ namespace gge { namespace graphics {
 		hRC = wglCreateContext( hDC );
 		wglMakeCurrent(hDC,hRC);
 #endif
+
+		const char *gl_extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+		const char *gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+		const char *gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+		const char *gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+
+		bool support_framebuffer_object=false, support_framebuffer_via_ext=false;
+
+		// If OpenGL version >= 3, framebuffer objects are core - enable regardless of extension
+		// (the flags are initialised to false)
+		if (atof(gl_version) >= 3.0)
+		{
+			support_framebuffer_object = true;
+			support_framebuffer_via_ext = false;
+		}
+		else
+		{
+			// Detect framebuffer object support via ARB (for OpenGL version < 3) - also uses non-EXT names
+			if (strstr(gl_extensions, "ARB_framebuffer_object") != 0)
+			{
+				support_framebuffer_object = true;
+				support_framebuffer_via_ext = false;
+			}
+			// Detect framebuffer object support via EXT (for OpenGL version < 3) - uses the EXT names
+			else if (strstr(gl_extensions, "EXT_framebuffer_object") != 0)
+			{
+				support_framebuffer_object = true;
+				support_framebuffer_via_ext = true;
+			}
+		}
+
+
 
 		ScreenSize.Width=Width;
 		ScreenSize.Height=Height;
@@ -87,6 +150,44 @@ namespace gge { namespace graphics {
 		//position
 		glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 		glLoadIdentity();									// Reset The Modelview Matrix
+
+
+		if (support_framebuffer_object)
+		{
+			// If support is via EXT (OpenGL version < 3), add the EXT suffix; otherwise functions are core (OpenGL version >= 3)
+			// or ARB without the EXT suffix, so just get the functions on their own.
+			std::string suffix = (support_framebuffer_via_ext ? "EXT" : "");
+
+			glGenFramebuffers = (glGenFramebuffers_t)wglGetProcAddress((std::string("glGenFramebuffers") + suffix).c_str());
+			//glDeleteFramebuffers = (glDeleteFramebuffers_t)wglGetProcAddress((std::string("glDeleteFramebuffers") + suffix).c_str());
+			glBindFramebuffer = (glBindFramebuffer_t)wglGetProcAddress((std::string("glBindFramebuffer") + suffix).c_str());
+			glFramebufferTexture2D = (glFramebufferTexture2D_t)wglGetProcAddress((std::string("glFramebufferTexture2D") + suffix).c_str());
+			glCheckFramebufferStatus = (glCheckFramebufferStatus_t)wglGetProcAddress((std::string("glCheckFramebufferStatus") + suffix).c_str());
+			glGenerateMipmap = (glGenerateMipmap_t)wglGetProcAddress((std::string("glGenerateMipmap") + suffix).c_str());
+
+			glGenTextures(1, &FBTexture);
+			glBindTexture(GL_TEXTURE_2D, FBTexture);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ScreenSize.Width, ScreenSize.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+			// Create a FBO in anticipation of render-to-texture
+			glGenFramebuffers(1, &system::FrameBuffer);
+			system::SetRenderTarget(system::FrameBuffer);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBTexture, 0);
+
+			GLenum status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+			system::SetRenderTarget(0);
+		} else {
+			system::FrameBuffer=0;
+			os::DisplayMessage("Device compatibility", "No frame buffer is supported, there might be problems with rendering.");
+		}
+
 
 		return (os::DeviceHandle)hDC;
 	}
@@ -234,6 +335,29 @@ namespace gge { namespace graphics {
 			glFlush();
 			///*Swapping back and front buffers
 			SwapBuffers( (HDC)hDC );
+		}
+
+		void SetRenderTarget(GLuint Target) {
+			glBindFramebuffer(GL_FRAMEBUFFER, Target);
+		}
+
+		void DumpOffscreen() {
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+			glLoadIdentity();
+			glBindTexture(GL_TEXTURE_2D, system::FBTexture);
+			glGenerateMipmap(GL_TEXTURE_2D);
+			glBegin(GL_QUADS);
+				glTexCoord2f(0,1);
+				glVertex3f(0,0,0);
+				glTexCoord2f(1,1);
+				glVertex3f(ScreenSize.Width,0,0);
+				glTexCoord2f(1,0);
+				glVertex3f(ScreenSize.Width, ScreenSize.Height,0);
+				glTexCoord2f(0,0);
+				glVertex3f(0, ScreenSize.Height,0);
+			glEnd();
+			glPopMatrix();
 		}
 	}
 

@@ -347,8 +347,8 @@ namespace gge { namespace graphics {
 
 		enum DrawMode {
 			Normal,
-			AlphaOnly,
-			UseDestinationAlpha
+			OffscreenAlphaOnly,
+			Offscreen
 		} Mode;
 
 		////Empty constructor
@@ -614,6 +614,13 @@ namespace gge { namespace graphics {
 		///@hDC			: Device context that is created by
 		/// initialize graphics function
 		void PostRender(os::DeviceHandle Device);
+
+		void SetRenderTarget(GLuint Target);
+		void DumpOffscreen();
+
+		extern GLuint FrameBuffer;
+		extern GLuint FBTexture;
+		extern bool   OffscreenRendering;
 	}
 
 	extern utils::Size ScreenSize;

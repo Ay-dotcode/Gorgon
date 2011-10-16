@@ -26,6 +26,8 @@ namespace gge { namespace graphics {
 		surface->VertexCoords[3].x=X4;
 		surface->VertexCoords[3].y=Y4;
 		surface->Mode=DrawMode;
+
+		
 	}
 
 	void Basic2DLayer::Draw(const GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4,  float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) {
@@ -529,6 +531,7 @@ namespace gge { namespace graphics {
 		if(!isVisible) return;
 		glPushAttrib(GL_SCISSOR_BIT);
 
+		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glTranslatef(BoundingBox.Left, BoundingBox.Top, 0);
 		translate+=BoundingBox.TopLeft();
@@ -562,20 +565,38 @@ namespace gge { namespace graphics {
 			if(surface->Mode!=currentdrawmode) {
 				currentdrawmode=surface->Mode;
 
-				if(currentdrawmode==BasicSurface::Normal) {
-					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE );
-					glClear(GL_COLOR_BUFFER_BIT);
-					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+				if(currentdrawmode==BasicSurface::Normal && system::OffscreenRendering) {
+					system::OffscreenRendering=false;
+					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+					system::SetRenderTarget(0);
+					DumpOffscreen();
 				}
-				else if(currentdrawmode==BasicSurface::AlphaOnly) {
+				else if(currentdrawmode==BasicSurface::Offscreen) {
+					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+					if(!system::OffscreenRendering) {
+						system::SetRenderTarget(FrameBuffer);
+						glClearColor(1,1,1,0);
+						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+						glClear(GL_COLOR_BUFFER_BIT);
+						glClearColor(0,0,0,1);
+
+						system::OffscreenRendering=true;
+					}
+				}
+				else if(currentdrawmode==BasicSurface::OffscreenAlphaOnly) {
+					if(!system::OffscreenRendering) {
+						system::SetRenderTarget(FrameBuffer);
+						glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+						glClearColor(1,1,1,1);
+						glClear(GL_COLOR_BUFFER_BIT);
+						glClearColor(0,0,0,1);
+
+						system::OffscreenRendering=true;
+					}
 					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-					glClear(GL_COLOR_BUFFER_BIT);
 					glBlendFunc(GL_DST_COLOR, GL_ZERO);
-				}
-				else if(currentdrawmode==BasicSurface::UseDestinationAlpha) {
-					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE );
-					glBlendFunc(GL_DST_ALPHA,GL_ONE_MINUS_DST_ALPHA);
 				}
 
 			}
@@ -591,6 +612,14 @@ namespace gge { namespace graphics {
 			glVertex3fv(surface->VertexCoords[3].vect);
 			glEnd();
 
+		}
+		
+		if(system::OffscreenRendering) {
+			system::OffscreenRendering=false;
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			system::SetRenderTarget(0);
+			DumpOffscreen();
 		}
 
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -1147,6 +1176,10 @@ end:
 		//}
 	}
 
+	GLenum ge() {
+		return glGetError();
+	}
+
 	void Colorizable2DLayer::Render() {
 		Rectangle psc;
 		if(!isVisible) return;
@@ -1194,28 +1227,43 @@ end:
 			if(surface->Mode!=currentdrawmode) {
 				currentdrawmode=surface->Mode;
 
-				if(currentdrawmode==BasicSurface::Normal) {
-					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE );
-					glClear(GL_COLOR_BUFFER_BIT);
-					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+				if(currentdrawmode==BasicSurface::Normal && system::OffscreenRendering) {
+					system::OffscreenRendering=false;
+					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+					system::SetRenderTarget(0);
+					DumpOffscreen();
 				}
-				else if(currentdrawmode==BasicSurface::AlphaOnly) {
+				else if(currentdrawmode==BasicSurface::Offscreen) {
+					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+					if(!system::OffscreenRendering) {
+						system::SetRenderTarget(FrameBuffer);
+						glClearColor(1,1,1,0);
+						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+						glClear(GL_COLOR_BUFFER_BIT);
+						glClearColor(0,0,0,1);
+
+						system::OffscreenRendering=true;
+					}
+				}
+				else if(currentdrawmode==BasicSurface::OffscreenAlphaOnly) {
+					if(!system::OffscreenRendering) {
+						system::SetRenderTarget(FrameBuffer);
+						glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+						glClearColor(1,1,1,1);
+						glClear(GL_COLOR_BUFFER_BIT);
+						glClearColor(0,0,0,1);
+
+						system::OffscreenRendering=true;
+					}
 					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-					glClearColor(0,0,0,CurrentLayerColor.a);
-					glClear(GL_COLOR_BUFFER_BIT);
-					glClearColor(0,0,0,1);
 					glBlendFunc(GL_DST_COLOR, GL_ZERO);
 				}
-				else if(currentdrawmode==BasicSurface::UseDestinationAlpha) {
-					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE );
-					glBlendFunc(GL_DST_ALPHA,GL_ONE_MINUS_DST_ALPHA);
-				}
+
 			}
-			if(currentdrawmode==BasicSurface::AlphaOnly)
-				glColor4f(surface->Color.r*CurrentLayerColor.r,surface->Color.g*CurrentLayerColor.g,surface->Color.b*CurrentLayerColor.b,surface->Color.a);
-			else
-				glColor4f(surface->Color.r*CurrentLayerColor.r,surface->Color.g*CurrentLayerColor.g,surface->Color.b*CurrentLayerColor.b,surface->Color.a*CurrentLayerColor.a);
+
+			glColor4f(surface->Color.r*CurrentLayerColor.r,surface->Color.g*CurrentLayerColor.g,surface->Color.b*CurrentLayerColor.b,surface->Color.a*CurrentLayerColor.a);
 
 			glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
 			glBegin(GL_QUADS);
@@ -1228,6 +1276,15 @@ end:
 			glTexCoord2fv(surface->TextureCoords[3].vect);
 			glVertex3fv(surface->VertexCoords[3].vect);
 			glEnd();
+		}
+
+
+		if(system::OffscreenRendering) {
+			system::OffscreenRendering=false;
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			system::SetRenderTarget(0);
+			DumpOffscreen();
 		}
 
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
