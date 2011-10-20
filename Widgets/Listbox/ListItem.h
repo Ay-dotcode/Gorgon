@@ -92,6 +92,10 @@ namespace gge { namespace widgets {
 			return false;
 		}
 
+		bool IsSelected() {
+			return Base::getstate()==2;
+		}
+
 		virtual bool Accessed() {
 			if(!IsEnabled())
 				return false;
@@ -103,20 +107,12 @@ namespace gge { namespace widgets {
 		}
 
 
-		void setSelectionType(const SelectionTypes &value) {
-			selectiontype=value;
-		}
-		SelectionTypes getSelectionType() const {
-			return selectiontype;
-		}
-
 		WidgetBase &GetWidget() {
 			return *this;
 		}
 
 
 	protected:
-		SelectionTypes selectiontype;
 		ToggleNotifyFunction &toggle;
 
 		void settoggle(ToggleNotifyFunction &toggle) {

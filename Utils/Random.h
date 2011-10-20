@@ -28,6 +28,16 @@
 #include <cstdlib>
 
 namespace gge { namespace utils {
+
+	static char* randomstrings[] = {
+		"lorem", "ipsum", "sit", "amet", "consectetur", "adipisicing", "elit", "sed", "do", "eiusmod", 
+		"tempor", "incididunt", "ut", "labore", "et", "dolore", "magna", "aliqua", "ut", 
+		"enim", "adum", "minim", "veniam", "quis", "nostrud", "exercitation", "ullamco", "laboris",
+		"nisi", "aliquip", "ex", "ea", "commodo", "consequat", "duis", "aute", "irure",
+		"in", "reprehenderit", "voluptate", "velit", "esse", "cillum", "dolore", "eustate", "fugiat", 
+		"nulla", "pariatur", "excepteur", "sint"
+	};
+
 	template <class T_>
 	T_ Random()                            { return ((T_)std::rand())/RAND_MAX; }
 	template <>
@@ -36,6 +46,8 @@ namespace gge { namespace utils {
 	inline int Random<int>()               { return std::rand()+(rand()<<16); }
 	template <>
 	inline Byte Random<Byte>()             { return std::rand()%256; }
+	template <>
+	inline char Random<char>()             { return std::rand()%256-128; }
 
 
 	template<class T_>
@@ -43,7 +55,12 @@ namespace gge { namespace utils {
 	template<>
 	inline Byte Random(Byte min, Byte max) { return (Random<Byte>()%(max-min)) + min; }
 	template<>
+	inline char Random(char min, char max) { return (Random<char>()%(max-min)) + min; }
+	template<>
 	inline int Random(int min, int max)    { return (Random<int>()%(max-min)) + min; }
+
+	template <>
+	inline std::string Random<std::string>()             { return randomstrings[Random(0,50)]; }
 
 	template<class T_, class I_>
 	void RandomFill(I_ &begin, I_ &end)	{

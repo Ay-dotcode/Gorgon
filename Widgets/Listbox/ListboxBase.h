@@ -116,6 +116,7 @@ namespace gge { namespace widgets {
 
 			PetContainer<Base> controls;
 
+			//!Need a new panel that allows removal of tab function
 			Panel panel;
 			
 

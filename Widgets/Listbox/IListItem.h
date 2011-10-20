@@ -21,12 +21,6 @@ namespace gge { namespace widgets {
 	class IListItem {
 	public:
 
-		enum SelectionTypes {
-			SingleSelect,
-			ToggleSelect, //click toggles
-			MultiSelect, //control click adds to selected, support for shift multi select and drag multi select
-		};
-
 		typedef utils::EventChain<listbox::Base<T_, CF_>, IListItem*> ToggleNotifyFunction;
 
 		IListItem(T_ value) : INIT_PROPERTY(IListItem, Value)

@@ -8,10 +8,6 @@ using namespace gge::utils;
 
 #endif
 
-GLenum gee() {
-	return glGetError();
-}
-
 namespace gge { namespace graphics {
 	Size ScreenSize;
 	extern RGBfloat CurrentLayerColor;
@@ -351,11 +347,11 @@ namespace gge { namespace graphics {
 				glTexCoord2f(0,1);
 				glVertex3f(0,0,0);
 				glTexCoord2f(1,1);
-				glVertex3f(ScreenSize.Width,0,0);
+				glVertex3f((float)ScreenSize.Width,0,0);
 				glTexCoord2f(1,0);
-				glVertex3f(ScreenSize.Width, ScreenSize.Height,0);
+				glVertex3f((float)ScreenSize.Width, (float)ScreenSize.Height,0);
 				glTexCoord2f(0,0);
-				glVertex3f(0, ScreenSize.Height,0);
+				glVertex3f(0, (float)ScreenSize.Height,0);
 			glEnd();
 			glPopMatrix();
 		}

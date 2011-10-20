@@ -561,23 +561,24 @@ namespace gge { namespace graphics {
 
 		for(i=0;i<Surfaces.getCount();i++) {
 			BasicSurface *surface=Surfaces[i];
-			glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
 			if(surface->Mode!=currentdrawmode) {
 				currentdrawmode=surface->Mode;
 
-				if(currentdrawmode==BasicSurface::Normal && system::OffscreenRendering) {
-					system::OffscreenRendering=false;
+				if(currentdrawmode==BasicSurface::Normal) {
 					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-					system::SetRenderTarget(0);
-					DumpOffscreen();
+					if(system::OffscreenRendering) {
+						system::SetRenderTarget(0);
+						system::OffscreenRendering=false;
+						DumpOffscreen();
+					}
 				}
 				else if(currentdrawmode==BasicSurface::Offscreen) {
 					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 					if(!system::OffscreenRendering) {
 						system::SetRenderTarget(FrameBuffer);
-						glClearColor(1,1,1,0);
+						glClearColor(0,0,0,0);
 						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 						glClear(GL_COLOR_BUFFER_BIT);
 						glClearColor(0,0,0,1);
@@ -589,7 +590,7 @@ namespace gge { namespace graphics {
 					if(!system::OffscreenRendering) {
 						system::SetRenderTarget(FrameBuffer);
 						glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-						glClearColor(1,1,1,1);
+						glClearColor(0,0,0,0);
 						glClear(GL_COLOR_BUFFER_BIT);
 						glClearColor(0,0,0,1);
 
@@ -601,6 +602,7 @@ namespace gge { namespace graphics {
 
 			}
 
+			glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
 			glBegin(GL_QUADS);
 			glTexCoord2fv(surface->TextureCoords[0].vect);
 			glVertex3fv(surface->VertexCoords[0].vect);
@@ -1176,10 +1178,6 @@ end:
 		//}
 	}
 
-	GLenum ge() {
-		return glGetError();
-	}
-
 	void Colorizable2DLayer::Render() {
 		Rectangle psc;
 		if(!isVisible) return;
@@ -1239,7 +1237,7 @@ end:
 					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 					if(!system::OffscreenRendering) {
 						system::SetRenderTarget(FrameBuffer);
-						glClearColor(1,1,1,0);
+						glClearColor(0,0,0,0);
 						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 						glClear(GL_COLOR_BUFFER_BIT);
 						glClearColor(0,0,0,1);
@@ -1251,7 +1249,7 @@ end:
 					if(!system::OffscreenRendering) {
 						system::SetRenderTarget(FrameBuffer);
 						glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-						glClearColor(1,1,1,1);
+						glClearColor(0,0,0,0);
 						glClear(GL_COLOR_BUFFER_BIT);
 						glClearColor(0,0,0,1);
 
