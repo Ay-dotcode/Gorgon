@@ -10,7 +10,7 @@
 #include "..\Basic\PetContainer.h"
 #include "..\Interfaces\IScroller.h"
 #include "..\Scrollbar.h"
-#include "..\Panel.h"
+#include "..\Panel\ControlledPanel.h"
 #include "IListItem.h"
 #include "Organizers/ListOrganizer.h"
 
@@ -31,6 +31,7 @@ namespace gge { namespace widgets {
 				controls.AddWidget(panel);
 				panel.Move(0,0);
 				panel.SetOrganizer(organizer);
+				panel.AllowTabSwitch=false;
 			}
 
 
@@ -117,7 +118,7 @@ namespace gge { namespace widgets {
 			PetContainer<Base> controls;
 
 			//!Need a new panel that allows removal of tab function
-			Panel panel;
+			ControlledPanel panel;
 			
 
 			ListOrganizer organizer;

@@ -280,6 +280,9 @@ namespace gge { namespace widgets {
 		Pointer::PointerType pointer;
 
 		utils::SortedCollection<WidgetBase>::Wrapper *wrapper;
+
+		private:
+			WidgetBase(const WidgetBase &wb);
 	};
 
 }}

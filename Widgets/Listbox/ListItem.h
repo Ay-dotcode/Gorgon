@@ -30,8 +30,28 @@ namespace gge { namespace widgets {
 			toggle(toggle)
 		{ }
 
+		ListItem(const ListItem &li) : IListItem(T_()), Base(true, AutosizeModes::None, false, false, true), toggle(toggle) {
+			Value=li.value;
+		}
+
+
 		//Drag
 
+		operator T_() {
+			return value;
+		}
+
+		void operator =(const T_ &value) {
+			Value=value;
+		}
+
+		void operator =(const ListItem &value) {
+			Value=value.value;
+		}
+
+		bool operator <(const ListItem &value) {
+			return this->value<value.value;
+		}
 
 
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
@@ -141,6 +161,7 @@ namespace gge { namespace widgets {
 		}
 
 		T_ value;
+
 	};
 
 	template<class T_, void(*CF_)(const T_ &, std::string &)>

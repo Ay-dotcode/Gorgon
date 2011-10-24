@@ -946,7 +946,7 @@ namespace gge { namespace utils {
 
 			while(c) {
 				Wrapper *t=c;
-				c=c.next;
+				c=c->next;
 				delete t;
 			}
 

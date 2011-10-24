@@ -38,6 +38,8 @@ namespace gge { namespace widgets {
 				vscroll.bar.Hide();
 				vscroll.bar.SetContainer(controls);
 				vscroll.bar.AllowFocus=false;
+				vscroll.bar.SmallChange=60;
+				vscroll.bar.LargeChange=120;
 				vscroll.bar.ChangeEvent().Register(this, &Base::vscroll_change);
 			}
 
@@ -350,9 +352,24 @@ namespace gge { namespace widgets {
 				return vscroll.autohide;
 			}
 
+			void setallowtabswitch(const bool &value) {
+				tabswitch=value;
+			}
+			bool getallowtabswitch() const {
+				return tabswitch;
+			}
+
 			void style_anim_finished();
 
 			void setstyle(Blueprint::StyleType type);
+
+			Scrollbar<> &getvscroller() {
+				return vscroll.bar;
+			}
+
+			const Scrollbar<> &getvscroller() const {
+				return vscroll.bar;
+			}
 
 
 			const Blueprint *bp;
@@ -392,6 +409,8 @@ namespace gge { namespace widgets {
 			bool allowmove;
 			bool allowresize;
 			bool allownofocus;
+
+
 			class cscroll {
 			public:
 				cscroll(bool allow) : allow(allow), show(allow), 

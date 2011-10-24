@@ -289,6 +289,9 @@ namespace gge { namespace widgets {
 			std::string text;
 
 			const Blueprint *bp;
+
+		private:
+			Base(const Base &);
 		};
 	}
 }}

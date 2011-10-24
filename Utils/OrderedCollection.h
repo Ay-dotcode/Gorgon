@@ -578,7 +578,7 @@ namespace gge { namespace utils {
 		}
 
 		////Searches the position of a given item, if not found invalid iterator returned
-		ConstIterator Find(T_ *Item) const {
+		ConstIterator Find(const T_ *Item) const {
 			int i;
 			for(i=0;i<list.GetSize();i++) {
 				if(Item==list[i])
@@ -589,12 +589,12 @@ namespace gge { namespace utils {
 		}
 
 		////Searches the position of a given item, if not found invalid iterator returned
-		ConstIterator Find(T_ &Item) const {
+		ConstIterator Find(const T_ &Item) const {
 			return Find(&Item);
 		}
 
 		////Searches the position of a given item, if not found -1 is returned
-		int FindLocation(T_ *Item) const {
+		int FindLocation(const T_ *Item) const {
 			int i;
 			for(i=0;i<list.GetSize();i++) {
 				if(Item==list[i])
@@ -605,7 +605,7 @@ namespace gge { namespace utils {
 		}
 
 		////Searches the position of a given item, if not found -1 is returned
-		int FindLocation(T_ &Item) const {
+		int FindLocation(const T_ &Item) const {
 			return FindLocation(&Item);
 		}
 

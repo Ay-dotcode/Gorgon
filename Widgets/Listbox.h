@@ -37,26 +37,52 @@ namespace gge { namespace widgets {
 
 		ListItem &Add(const T_ &value=T_()) {
 			ListItem *li=new ListItem(notifyevent);
-			if(bp->Item)
-				li->SetBlueprint(*bp->Item);
-
 			li->Value=value;
-			add(*li);
-			OrderedCollection::Add(li);
+
+			Add(*li);
 
 			return *li;
 		}
 
-		ListItem &Insert(const ListItem &before, const T_ &value=T_()) {
-
-		}
-
 		void Add(ListItem &item) {
+			if(bp->Item)
+				item.SetBlueprint(*bp->Item);
 
+			OrderedCollection::Add(item);
+			add(item);
 		}
 
-		void Insert(const ListItem &before, ListItem &item) {
+		ListItem &Insert(const T_ &value, const ListItem &before) {
+			return Insert(value, &before);
+		}
 
+		void Insert(ListItem &item, const ListItem &before) {
+			Insert(item, &before);
+		}
+
+		ListItem &Insert(const T_ &value, const ListItem *before) {
+			ListItem *li=new ListItem(notifyevent);
+			li->Value=value;
+
+			Insert(*li, before);
+
+			return *li;
+		}
+
+		void Insert(ListItem &item, const ListItem *before) {
+			if(bp->Item)
+				item.SetBlueprint(*bp->Item);
+
+			OrderedCollection::Insert(item, before);
+			reorganize();
+		}
+
+		ListItem &Insert(const T_ &value, const  T_ &before) {
+			return Insert(value, Find(before));
+		}
+
+		void Insert(ListItem &item, const T_ &before) {
+			Insert(item, Find(before));
 		}
 
 		void Remove(ListItem &item) {
@@ -76,6 +102,15 @@ namespace gge { namespace widgets {
 					it.Delete();
 				}
 			}
+		}
+
+		ListItem *Find(const T_ &value) {
+			for(auto it=First();it.isValid();it.Next()) {
+				if(it->Value==value)
+					return it.CurrentPtr();
+			}
+
+			return NULL;
 		}
 
 		Iterator First() {
@@ -183,6 +218,22 @@ namespace gge { namespace widgets {
 
 		utils::Property<Listbox, SelectionTypes> SelectionType;
 
+		virtual void SetBlueprint(const widgets::Blueprint &bp) {
+			Base::SetBlueprint(bp);
+
+			for(auto it=First();it.isValid();it.Next())
+				it->SetBlueprint(*Base::bp->Item);
+
+			if(GetCount())
+				panel.SmallScroll=2*First()->GetHeight();
+			else
+				panel.SmallScroll=2*Base::bp->Item->DefaultSize.Height;
+
+			panel.LargeScroll=panel.GetUsableSize().Height-panel.SmallScroll;
+			if(panel.LargeScroll<panel.GetUsableSize().Height/2)
+				panel.LargeScroll=panel.GetUsableSize().Height/2;
+		}
+
 	protected:
 		utils::EventChain<Base, IListItem<T_, CF_>*> notifyevent;
 
@@ -252,6 +303,18 @@ namespace gge { namespace widgets {
 					callcheck(*item);
 					active=item;
 				}
+			}
+		}
+
+		void reorganize() {
+			//panel.Widgets.Clear();
+
+			for(auto it=First();it.isValid();it.Next()) {
+				panel.RemoveWidget(*it);
+			}
+
+			for(auto it=First();it.isValid();it.Next()) {
+				add(*it);
 			}
 		}
 	};
