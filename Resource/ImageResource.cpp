@@ -5,9 +5,12 @@
 #include "../External/JPEG/jpeglib.h"
 #include "../External/PNG/png.h"
 #include "../Engine/GGEMain.h"
+#include <cmath>
+#include "../Utils/BasicMath.h"
 
 using namespace gge::resource;
 using namespace gge::graphics;
+using namespace gge::utils;
 using namespace std;
 
 namespace gge { namespace resource {
@@ -161,8 +164,8 @@ namespace gge { namespace resource {
 		return img;
 	}
 
-	bool ImageResource::Load() {
-		if(isLoaded)
+	bool ImageResource::Load(bool force) {
+		if(isLoaded && !force)
 			return false;
 
 		int i;
@@ -421,6 +424,161 @@ namespace gge { namespace resource {
 
 		return NoError;
 	}
+
+	inline float gaussian(float amount, int dist) {
+		return exp(-(float)dist*(float)dist/(2*amount*amount))/sqrt(2*Pi*amount*amount);
+	}
+
+	ImageResource &ImageResource::Blur(float amount, int windowsize/*=-1*/) {
+		if(windowsize==-1)
+			windowsize=max(1,int(amount*1.5));
+
+		ImageResource *img=new ImageResource(Width+windowsize*2,Height+windowsize*2,Mode);
+
+		if(Mode==ColorMode::ARGB || Mode==ColorMode::ABGR) {
+			blurargb(amount, windowsize, img);
+		}
+		else {
+			bluralpha(amount, windowsize, img);
+		}
+
+		return *img;
+	}
+
+	void ImageResource::blurargb(float amount, int windowsize, ImageResource *img) {
+		float *kernel=new float[windowsize+1];
+		for(int i=0;i<=windowsize;i++)
+			kernel[i]=gaussian(amount, i);
+
+		int newimw=img->Width, newimh=img->Height;
+		int bpp=GetBPP();
+
+		for(int y=0;y<newimh;y++) {
+			for(int x=0;x<newimw;x++) {
+				for(int c=0;c<4;c++) {
+					float sum=0, sum_weights=0;
+					for(int yy=-windowsize;yy<=windowsize;yy++) {
+						for(int xx=-windowsize;xx<=windowsize;xx++) {
+							int oldcoordx=x+xx-windowsize, oldcoordy=y+yy-windowsize;
+
+							if(oldcoordx>=0 && oldcoordy>=0 && oldcoordx<Width && oldcoordy<Height) {
+								sum+=kernel[abs(xx)]*kernel[abs(yy)]*Data[ (oldcoordx+oldcoordy*Width)*bpp+c ];
+								sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
+							}
+						}
+					}
+
+					img->Data[ (x+y*img->Width)*bpp+c ]=(int)Round(sum/sum_weights);
+				}
+			}
+		}
+
+		delete[] kernel;
+	}
+
+	void ImageResource::bluralpha(float amount, int windowsize, ImageResource *img) {
+		float *kernel=new float[windowsize+1];
+		for(int i=0;i<=windowsize;i++)
+			kernel[i]=gaussian(amount, i);
+
+		int newimw=img->Width, newimh=img->Height;
+		int bpp=GetBPP();
+
+		for(int y=0;y<newimh;y++) {
+			for(int x=0;x<newimw;x++) {
+				float sum=0, sum_weights=0;
+				for(int yy=-windowsize;yy<=windowsize;yy++) {
+					for(int xx=-windowsize;xx<=windowsize;xx++) {
+						int oldcoordx=x+xx-windowsize, oldcoordy=y+yy-windowsize;
+
+						if(oldcoordx>=0 && oldcoordy>=0 && oldcoordx<Width && oldcoordy<Height) {
+							sum+=kernel[abs(xx)]*kernel[abs(yy)]*Data[ (oldcoordx+oldcoordy*Width) ];
+							sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
+						}
+					}
+				}
+
+				img->Data[ (x+y*img->Width) ]=(int)Round(sum/sum_weights);
+			}
+		}
+
+		delete[] kernel;
+	}
+
+	ImageResource &ImageResource::Shadow(float amount, int windowsize/*=-1*/) {
+		if(windowsize==-1)
+			windowsize=max(1,int(amount*1.5));
+
+		ImageResource *img=new ImageResource(Width+windowsize*2,Height+windowsize*2,ColorMode::Alpha);
+
+		if(Mode==ColorMode::ARGB || Mode==ColorMode::ABGR) {
+			shadowargb(amount, windowsize, img);
+		}
+		else {
+			shadowalpha(amount, windowsize, img);
+		}
+
+		return *img;
+	}
+
+	void ImageResource::shadowargb(float amount, int windowsize, ImageResource *img) {
+		float *kernel=new float[windowsize+1];
+		for(int i=0;i<=windowsize;i++)
+			kernel[i]=gaussian(amount, i);
+
+		int newimw=img->Width, newimh=img->Height;
+		int bpp=GetBPP();
+
+		for(int y=0;y<newimh;y++) {
+			for(int x=0;x<newimw;x++) {
+				float sum=0, sum_weights=0;
+				for(int yy=-windowsize;yy<=windowsize;yy++) {
+					for(int xx=-windowsize;xx<=windowsize;xx++) {
+						int oldcoordx=x+xx-windowsize, oldcoordy=y+yy-windowsize;
+
+						if(oldcoordx>=0 && oldcoordy>=0 && oldcoordx<Width && oldcoordy<Height) {
+							sum+=kernel[abs(xx)]*kernel[abs(yy)]*Data[ (oldcoordx+oldcoordy*Width)*bpp+3 ];
+							sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
+						}
+					}
+				}
+
+				img->Data[ (x+y*img->Width) ]=(int)Round(sum/sum_weights);
+			}
+		}
+
+		delete[] kernel;
+	}
+
+	void ImageResource::shadowalpha(float amount, int windowsize, ImageResource *img) {
+		float *kernel=new float[windowsize+1];
+		for(int i=0;i<=windowsize;i++)
+			kernel[i]=gaussian(amount, i);
+
+		int newimw=img->Width, newimh=img->Height;
+		int bpp=GetBPP();
+
+		for(int y=0;y<newimh;y++) {
+			for(int x=0;x<newimw;x++) {
+				float sum=0, sum_weights=0;
+				for(int yy=-windowsize;yy<=windowsize;yy++) {
+					for(int xx=-windowsize;xx<=windowsize;xx++) {
+						int oldcoordx=x+xx-windowsize, oldcoordy=y+yy-windowsize;
+
+						if(oldcoordx>=0 && oldcoordy>=0 && oldcoordx<Width && oldcoordy<Height) {
+							sum+=kernel[abs(xx)]*kernel[abs(yy)]*Data[ oldcoordx+oldcoordy*Width ];
+							sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
+						}
+					}
+				}
+
+				img->Data[ (x+y*img->Width) ]=(int)Round(sum/sum_weights);
+			}
+		}
+
+		delete[] kernel;
+	}
+
 
 	NullImage *NullImage::ni;
 } }

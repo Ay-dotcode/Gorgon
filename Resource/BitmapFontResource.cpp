@@ -7,6 +7,8 @@
 #endif
 
 using namespace gge::graphics;
+using namespace gge::utils;
+using namespace std;
 
 namespace gge { namespace resource {
 	ResourceBase *LoadBitmapFontResource(File &File, std::istream &Data, int Size) {
@@ -689,6 +691,36 @@ namespace gge { namespace resource {
 		}
 
 		return y;
+	}
+
+	BitmapFontResource & BitmapFontResource::Blur(float amount, int windowsize/*=-1*/) {
+		BitmapFontResource *font=new BitmapFontResource;
+
+		if(windowsize==-1)
+			windowsize=max(1,int(amount*1.5));
+
+		font->Seperator=Seperator-windowsize*2;
+		font->VerticalSpacing=VerticalSpacing-windowsize*2;
+		font->Baseline=Baseline+windowsize;
+
+		for(SortedCollection<ResourceBase>::Iterator it=Subitems.First();it.isValid();it.Next()) {
+			ImageResource *img=dynamic_cast<ImageResource*>(it.CurrentPtr());
+
+			if(img) {
+				font->Subitems.Add(img->Blur(amount, windowsize), font->Subitems.HighestOrder()+1);
+			}
+			else {
+				font->Subitems.Add(*it, it.GetKey());
+			}
+		}
+
+		for(int i=0;i<256;i++) {
+			int loc=Subitems.FindLocation(Characters[i]);
+			if(loc>=0)
+				font->Characters[i]=dynamic_cast<ImageResource*>(font->Subitems(loc));
+		}
+
+		return *font;
 	}
 
 } }

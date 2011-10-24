@@ -830,7 +830,7 @@ namespace gge { namespace utils {
 
 		////Returns the item at a given index
 		T_* operator () (int Index) {
-			return get_(Index);
+			return get_(Index)->item;
 		}
 
 		////Returns the item at a given index

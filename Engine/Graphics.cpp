@@ -278,7 +278,7 @@ namespace gge { namespace graphics {
 
 				target=new Byte[cx*cy*2];	
 				A8ToA8L8(cx,cy,data,target);
-				delete data;
+				//delete data;
 				data=target;
 
 				mode=ColorMode::Grayscale_Alpha;

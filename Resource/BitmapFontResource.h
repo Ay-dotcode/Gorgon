@@ -46,6 +46,8 @@ namespace gge { namespace resource {
 		////Baseline from the top
 		int Baseline;
 
+		BitmapFontResource &Blur(float amount, int windowsize=-1);
+
 
 	//protected:
 		////Prints the given text to the target using given color.

@@ -63,7 +63,7 @@ namespace gge { namespace resource {
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		////Loads image data from the file. This function is required for late
 		/// loading.
-		bool Load();
+		bool Load(bool force=false);
 
 		virtual void Prepare(GGEMain &main, File &file);
 
@@ -103,6 +103,9 @@ namespace gge { namespace resource {
 		virtual	int		 EndOf(unsigned Frame) const { return 1; }
 		/* ... */
 
+		ImageResource &Blur(float amount, int windowsize=-1);
+		ImageResource &Shadow(float amount, int windowsize=-1);
+
 		virtual int GetWidth() const {
 			if(Texture.ID) {
 				return ImageTexture::GetWidth();
@@ -136,6 +139,12 @@ namespace gge { namespace resource {
 		int DataSize;
 		////Location of image data within the file, used for late loading
 		int DataLocation;
+
+		void blurargb(float amount, int windowsize, ImageResource *img);
+		void bluralpha(float amount, int windowsize, ImageResource *img);
+
+		void shadowargb(float amount, int windowsize, ImageResource *img);
+		void shadowalpha(float amount, int windowsize, ImageResource *img);
 	};
 } }
 
