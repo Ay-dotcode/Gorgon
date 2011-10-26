@@ -463,8 +463,8 @@ namespace gge { namespace resource {
 
 							if(oldcoordx>=0 && oldcoordy>=0 && oldcoordx<Width && oldcoordy<Height) {
 								sum+=kernel[abs(xx)]*kernel[abs(yy)]*Data[ (oldcoordx+oldcoordy*Width)*bpp+c ];
-								sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
 							}
+							sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
 						}
 					}
 
@@ -493,8 +493,8 @@ namespace gge { namespace resource {
 
 						if(oldcoordx>=0 && oldcoordy>=0 && oldcoordx<Width && oldcoordy<Height) {
 							sum+=kernel[abs(xx)]*kernel[abs(yy)]*Data[ (oldcoordx+oldcoordy*Width) ];
-							sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
 						}
+						sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
 					}
 				}
 
@@ -538,8 +538,8 @@ namespace gge { namespace resource {
 
 						if(oldcoordx>=0 && oldcoordy>=0 && oldcoordx<Width && oldcoordy<Height) {
 							sum+=kernel[abs(xx)]*kernel[abs(yy)]*Data[ (oldcoordx+oldcoordy*Width)*bpp+3 ];
-							sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
 						}
+						sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
 					}
 				}
 
@@ -567,8 +567,8 @@ namespace gge { namespace resource {
 
 						if(oldcoordx>=0 && oldcoordy>=0 && oldcoordx<Width && oldcoordy<Height) {
 							sum+=kernel[abs(xx)]*kernel[abs(yy)]*Data[ oldcoordx+oldcoordy*Width ];
-							sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
 						}
+						sum_weights+=kernel[abs(xx)]*kernel[abs(yy)];
 					}
 				}
 

@@ -34,7 +34,8 @@ namespace gge {
 		////Types of available text shadows
 		enum ShadowTypes {
 			None=0,
-			Flat=1
+			Flat=1,
+			DropShadow=2
 		};
 
 		////Type of the shadow
@@ -42,16 +43,25 @@ namespace gge {
 		utils::Point Offset;
 		////Shadow color
 		graphics::RGBint Color;
+		float Blur;
 
-		ShadowParams() : Type(None), Offset(utils::Point(1,2)), Color(0x60808080) 
+		ShadowParams() : Type(None), Offset(utils::Point(1,2)), Color(0x60808080), Blur(1) 
 		{ }
 
 		ShadowParams(ShadowTypes Type, graphics::RGBint color, int XDist, int YDist) : 
-			Type(Type), Offset(utils::Point(XDist, YDist)), Color(color) 
+		Type(Type), Offset(utils::Point(XDist, YDist)), Color(color) 
 		{ }
 
 		ShadowParams(ShadowTypes Type, graphics::RGBint color, utils::Point Offset=utils::Point(1,2)) : 
-			Type(Type), Color(color), Offset(Offset) 
+		Type(Type), Color(color), Offset(Offset) 
+		{ }
+
+		ShadowParams(ShadowTypes Type, graphics::RGBint color, float blur, int XDist, int YDist) : 
+		Type(Type), Offset(utils::Point(XDist, YDist)), Color(color), Blur(blur)
+		{ }
+
+		ShadowParams(ShadowTypes Type, graphics::RGBint color, float blur, utils::Point Offset=utils::Point(1,2)) : 
+		Type(Type), Color(color), Offset(Offset), Blur(blur)
 		{ }
 
 		static ShadowParams Load(resource::File &File, std::istream &Data, int Size) {
@@ -62,6 +72,11 @@ namespace gge {
 			if(s.Type==ShadowParams::Flat) {
 				resource::ReadFrom(Data, s.Offset);
 				resource::ReadFrom(Data, s.Color);
+			}
+			else if(s.Type==ShadowParams::DropShadow) {
+				resource::ReadFrom(Data, s.Offset);
+				resource::ReadFrom(Data, s.Color);
+				resource::ReadFrom(Data, s.Blur);
 			}
 
 			return s;

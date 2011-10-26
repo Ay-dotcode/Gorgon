@@ -70,6 +70,11 @@ namespace gge { namespace resource {
 				x+=img->GetWidth() + Seperator;
 			}
 		}
+		else if(Shadow.Type==ShadowParams::DropShadow) {
+			BitmapFontResource &shadow=Blur(Shadow.Blur);
+			int sizediff=(shadow.TextWidth(" ")-TextWidth(" "))/2;
+			shadow.Print(target, X+Shadow.Offset.x-sizediff, Y+Shadow.Offset.y-sizediff, text, Shadow.Color);
+		}
 
 		target->SetCurrentColor(color);
 		for(i=0;i<text.length();i++) {
@@ -97,6 +102,11 @@ namespace gge { namespace resource {
 
 		if(Shadow.Type==ShadowParams::Flat)
 			Print(target,x+Shadow.Offset.x,y+Shadow.Offset.y,w,text,Shadow.Color,align);
+		else if(Shadow.Type==ShadowParams::DropShadow) {
+			BitmapFontResource &shadow=Blur(Shadow.Blur);
+			int sizediff=(shadow.TextWidth(" ")-TextWidth(" "))/2;
+			shadow.Print(target, x+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff, w, text, Shadow.Color, align);
+		}
 
 		RGBint cc=target->GetCurrentColor();
 		target->SetCurrentColor(color);
@@ -186,6 +196,14 @@ namespace gge { namespace resource {
 
 		RGBint cc=target->GetCurrentColor();
 		target->SetCurrentColor(color);
+		
+		int sizediff;
+		BitmapFontResource *shadow;
+
+		if(Shadow.Type==ShadowParams::DropShadow) {
+			shadow=&Blur(Shadow.Blur);
+			sizediff=(shadow->TextWidth(" ")-TextWidth(" "))/2;
+		}
 
 		if(text=="") {
 			int d;
@@ -349,6 +367,10 @@ namespace gge { namespace resource {
 								target->SetCurrentColor(Shadow.Color);
 								img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
 							}
+							else if(Shadow.Type==ShadowParams::DropShadow) {
+								target->SetCurrentColor(Shadow.Color);
+								shadow->Characters[(unsigned char)' ']->Draw(target, l+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff);
+							}
 
 							target->SetCurrentColor(color);
 							img->Draw(target,l,y);
@@ -360,6 +382,10 @@ namespace gge { namespace resource {
 						if(Shadow.Type==ShadowParams::Flat) {
 							target->SetCurrentColor(Shadow.Color);
 							img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
+						}
+						else if(Shadow.Type==ShadowParams::DropShadow) {
+							target->SetCurrentColor(Shadow.Color);
+							shadow->Characters[(unsigned char)text[j]]->Draw(target, l+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff);
 						}
 
 						target->SetCurrentColor(color);
@@ -694,13 +720,16 @@ namespace gge { namespace resource {
 	}
 
 	BitmapFontResource & BitmapFontResource::Blur(float amount, int windowsize/*=-1*/) {
+		if(Shadows[amount])
+			return *Shadows[amount];
+
 		BitmapFontResource *font=new BitmapFontResource;
 
 		if(windowsize==-1)
 			windowsize=max(1,int(amount*1.5));
 
 		font->Seperator=Seperator-windowsize*2;
-		font->VerticalSpacing=VerticalSpacing-windowsize*2;
+		font->VerticalSpacing=VerticalSpacing;
 		font->Baseline=Baseline+windowsize;
 
 		for(SortedCollection<ResourceBase>::Iterator it=Subitems.First();it.isValid();it.Next()) {
@@ -720,7 +749,27 @@ namespace gge { namespace resource {
 				font->Characters[i]=dynamic_cast<ImageResource*>(font->Subitems(loc));
 		}
 
+		Shadows[amount]=font;
+		font->noshadows=true;
+		font->Prepare(Main, *file);
 		return *font;
+	}
+
+	void BitmapFontResource::Prepare(GGEMain &main, File &file) {
+		ResourceBase::Prepare(main, file);
+		this->file=&file;
+		
+		if(!noshadows) {
+			Blur(1);
+			Blur(1.6);
+		}
+	}
+
+	BitmapFontResource::~BitmapFontResource() {
+		for(auto it=Shadows.begin();it!=Shadows.end();++it) {
+			delete it->second;
+			it->second=NULL;
+		}
 	}
 
 } }

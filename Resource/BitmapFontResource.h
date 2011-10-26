@@ -4,6 +4,7 @@
 #include "ResourceBase.h"
 #include "ImageResource.h"
 #include "../Engine/FontRenderer.h"
+#include <map>
 
 namespace gge { namespace resource {
 	class File;
@@ -29,10 +30,12 @@ namespace gge { namespace resource {
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////Default constructor
-		BitmapFontResource() : ResourceBase() { 
+		BitmapFontResource() : ResourceBase(), noshadows(false) { 
 			Tabsize=4; 
 			memset(Characters, 0, 256*sizeof(ImageResource*)); 
-			VerticalSpacing=22; 
+			VerticalSpacing=22;
+
+			Shadows[0]=this;
 		}
 
 		////Images that represents characters. 8bit ASCII encoding is used. 
@@ -85,5 +88,15 @@ namespace gge { namespace resource {
 		}
 		virtual int TextHeight(const std::string &Text, int W);
 		virtual int FontBaseline() { return Baseline; }
+
+		virtual void Prepare(GGEMain &main, File &file);
+
+		virtual ~BitmapFontResource();
+
+		std::map<float, BitmapFontResource*> Shadows;
+
+	protected:
+		bool noshadows;
+		File *file;
 	};
 } }
