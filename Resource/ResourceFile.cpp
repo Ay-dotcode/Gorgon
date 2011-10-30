@@ -75,7 +75,7 @@ namespace gge { namespace resource {
 	}
 
 	void File::AddBasicLoaders() {
-		Loaders.Add(new ResourceLoader(GID::Folder, LoadFolderResource)); 
+		Loaders.Add(new ResourceLoader(GID::Folder, std::bind(LoadFolderResource, placeholders::_1, placeholders::_2, placeholders::_3, false)));
 		Loaders.Add(new ResourceLoader(GID::LinkNode, LoadLinkNodeResource)); 
 		Loaders.Add(new ResourceLoader(GID::Text, LoadTextResource)); 
 		Loaders.Add(new ResourceLoader(GID::Image, LoadImageResource)); 

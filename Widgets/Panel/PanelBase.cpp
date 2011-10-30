@@ -222,7 +222,7 @@ namespace gge { namespace widgets {
 			//	Draw();
 			scrollinglayer.BoundingBox=Bounds(Point(0,0), size);
 
-			//!scrolling border margins
+		//TODO scrolling border margins
 			background.BoundingBox=scrollinglayer.BoundingBox;
 			widgetlayer.BoundingBox=scrollinglayer.BoundingBox;
 			extenderlayer.BoundingBox=scrollinglayer.BoundingBox;

@@ -70,7 +70,7 @@ using namespace gge::input::system;
 			utils::EventChain<> Destroyed	("WindowDestroyed" );
 
 
-			//!Private
+		//TODO Private
 			POINT overhead;
 			HWND curwin;
 			Point cursorlocation=Point(0,0);

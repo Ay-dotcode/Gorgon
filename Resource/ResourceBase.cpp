@@ -13,9 +13,12 @@ namespace gge { namespace resource {
 
 	void ResourceBase::Resolve(File &file) {
 		for(SortedCollection<ResourceBase>::Iterator resource=Subitems.First();
-			resource.isValid(); resource.Next()) {
+			resource.isValid();) {
 
-			resource->Resolve(file);
+			ResourceBase &r=resource;
+			resource.Next();
+
+			r.Resolve(file);
 		}
 	}
 

@@ -66,7 +66,7 @@ namespace gge { namespace utils {
 		}
 
 
-		//!CASTING CONSTRUCTORS REMOVED, USE CAST FUNCTION INSTEAD
+	//TODO CASTING CONSTRUCTORS REMOVED, USE CAST FUNCTION INSTEAD
 
 		//works in O(1), no copying or conversion is done, 
 		template<class O_>

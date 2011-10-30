@@ -18,6 +18,8 @@ namespace gge { namespace resource {
 
 		virtual void Resolve(File &file);
 
+		ResourceBase *GetTarget(resource::File &file);
+
 	protected:
 		utils::SGuid target;
 		File* File;

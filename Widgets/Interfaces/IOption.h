@@ -251,7 +251,7 @@ namespace gge { namespace widgets {
 		O_ *currentoption;
 	};
 
-	//!support: replace with c++0x partial specialization typedef
+//TODO support: replace with c++0x partial specialization typedef
 	template<class T_>
 	void gge::widgets::IOption<T_>::setgroup(IOptionGroup<T_> *grp) {
 		IOptionGroup<T_> *pparent=parent;

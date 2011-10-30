@@ -82,6 +82,7 @@ namespace gge { namespace resource {
 
 		/* FOR ANIMATION INTERFACES */
 		virtual void DeleteAnimation() { } //if used as animation, it will not be deleted
+	//TODO ownership has issues in here
 		virtual ImageResource &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return *this; }
 		virtual ImageResource &CreateAnimation(bool create=false) { return *this; }
 

@@ -41,6 +41,8 @@ namespace gge { namespace widgets {
 				draw();
 			}
 
+			using WidgetBase::SetBlueprint;
+
 			virtual void SetBlueprint(const widgets::Blueprint &bp)  {
 				this->bp=static_cast<const Blueprint*>(&bp);
 

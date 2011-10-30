@@ -205,13 +205,13 @@ namespace gge { namespace utils {
 			}
 
 		public:
-			//!! Template compatibility for collections
+		//TODO ! Template compatibility for collections
 			//should not work for const iterators
 			void Remove() {
 				Col->removeat(Offset);
 			}
 
-			//!! Template compatibility for collections
+		//TODO ! Template compatibility for collections
 			//should not work for const iterators
 			void Delete() {
 				Col->deleteat(Offset);
@@ -406,12 +406,12 @@ namespace gge { namespace utils {
 			}
 
 		public:
-			//!! Template compatibility for collections
+		//TODO ! Template compatibility for collections
 			void Remove() {
 				Col->removeat(Offset);
 			}
 
-			//!! Template compatibility for collections
+		//TODO ! Template compatibility for collections
 			void Delete() {
 				Col->deleteat(Offset);
 			}
@@ -478,7 +478,7 @@ namespace gge { namespace utils {
 		list(col.list), count(col.count)
 		{ 	}
 
-		//!! Template compatibility for collections
+	//TODO ! Template compatibility for collections
 		////Returns number of elements
 		int getCount() const {
 			return *count;
@@ -504,7 +504,7 @@ namespace gge { namespace utils {
 				return i;
 		}
 
-		//!! Template compatibility for collections
+	//TODO ! Template compatibility for collections
 		////Adds a new item to the list and returns its index.
 		/// When an item is removed its index is released and given
 		/// to the next object. However, when an index is given it
@@ -766,12 +766,12 @@ namespace gge { namespace utils {
 			return SearchIterator();
 		}
 
-		//!! Template compatibility for collections, lists
+	//TODO ! Template compatibility for collections, lists
 		Iterator First() {
 			return Iterator(*this, 0);
 		}
 
-		//!! Template compatibility for collections, lists
+	//TODO ! Template compatibility for collections, lists
 		Iterator Last() {
 			return --(Iterator(*this, -1));
 		}
@@ -788,17 +788,17 @@ namespace gge { namespace utils {
 			return ConstSearchIterator();
 		}
 
-		//!! Template compatibility for collections, lists
+	//TODO ! Template compatibility for collections, lists
 		ConstIterator First() const {
 			return ConstIterator(*this, 0);
 		}
 
-		//!! Template compatibility for collections, lists
+	//TODO ! Template compatibility for collections, lists
 		ConstIterator Last() const {
 			return --(ConstIterator(*this, -1));
 		}
 
-		//!! Template compatibility for collections
+	//TODO ! Template compatibility for collections
 		////Removes all items from the list, allocated memory for the
 		/// list stays
 		void Clear() {
@@ -814,7 +814,7 @@ namespace gge { namespace utils {
 			list.Resize(0);
 		}
 
-		//!! Template compatibility for collections
+	//TODO ! Template compatibility for collections
 		////Destroys the entire collection, effectively deleting the contents
 		/// and the list {
 		void Destroy() {
@@ -827,7 +827,7 @@ namespace gge { namespace utils {
 			*count=0;
 		}
 
-		//!! Template compatibility for lists
+	//TODO ! Template compatibility for lists
 		////Allocates memory for the given amount of items
 		void AllocateFor(int amount) {
 			grow(amount);
@@ -1295,7 +1295,7 @@ namespace gge { namespace utils {
 		list(col.list), count(col.count)
 		{ 	}
 
-		//!! Template compatibility for collections
+	//TODO ! Template compatibility for collections
 		////Returns number of elements
 		int getCount() const {
 			return *count;
@@ -1440,12 +1440,12 @@ namespace gge { namespace utils {
 			return SearchIterator();
 		}
 
-		//!! Template compatibility for collections, lists
+	//TODO ! Template compatibility for collections, lists
 		Iterator First() {
 			return Iterator(*this, 0);
 		}
 
-		//!! Template compatibility for collections, lists
+	//TODO ! Template compatibility for collections, lists
 		Iterator Last() {
 			return --(Iterator(*this, -1));
 		}
@@ -1462,12 +1462,12 @@ namespace gge { namespace utils {
 			return ConstSearchIterator();
 		}
 
-		//!! Template compatibility for collections, lists
+	//TODO ! Template compatibility for collections, lists
 		ConstIterator First() const {
 			return ConstIterator(*this, 0);
 		}
 
-		//!! Template compatibility for collections, lists
+	//TODO ! Template compatibility for collections, lists
 		ConstIterator Last() const {
 			return --(ConstIterator(*this, -1));
 		}

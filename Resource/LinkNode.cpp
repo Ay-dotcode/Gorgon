@@ -16,19 +16,23 @@ namespace gge { namespace resource {
 				item.isValid(); item.Next()) {
 				if(item->isEqual(guid)) {
 					ResourceBase *t=file.Root().FindObject(target);
-//					if(t) {
+					if(t) {
 						item.GetWrapper().SetItem(t);
-					//	break;
-					//}
-					//else {
-					//	item.Delete();
-					//	return;
-					//}
+						break;
+					}
+					else {
+						item.Delete();
+						return;
+					}
 				}
 			}
 
 			delete this;
 		}
+	}
+
+	ResourceBase * LinkNodeResource::GetTarget(resource::File &file) {
+		return file.Root().FindObject(target);
 	}
 
 	ResourceBase *LoadLinkNodeResource(File &File, istream &Data, int Size) {

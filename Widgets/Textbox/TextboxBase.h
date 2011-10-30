@@ -284,7 +284,7 @@ namespace gge { namespace widgets {
 			Blueprint::StyleMode style;
 			Blueprint::StyleType next_style;
 
-			//!Animations, idle, transition, animation finish function
+		//TODO Animations, idle, transition, animation finish function
 			animation::AnimationController style_anim;
 			animation::AnimationTimer	   idle_anim;
 			bool style_anim_loop;

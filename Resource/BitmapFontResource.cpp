@@ -393,7 +393,7 @@ namespace gge { namespace resource {
 						dist=img->GetWidth()+Seperator;
 					}
 					for(d=0;d<cchardetectxs;d++) {
-						if(chardetectxs[d].x<l+dist/2) { //!y
+						if(chardetectxs[d].x<l+dist/2) {//TODO y
 							chardetectxs[d].data->Out.value=j;
 						}
 					}

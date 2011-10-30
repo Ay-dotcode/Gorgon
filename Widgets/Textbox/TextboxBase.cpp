@@ -55,7 +55,7 @@ namespace gge { namespace widgets {
 
 
 			//Draw text
-			//!Wrap
+		//TODO Wrap
 			if(font) {
 				if(text!="") {
 					EPrintData eprint[10]={};

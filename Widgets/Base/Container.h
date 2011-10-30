@@ -80,7 +80,7 @@ namespace gge { namespace widgets {
 				}
 			} 
 		}
-		//!!Virtual status of the following two functions might change
+	//TODO !Virtual status of the following two functions might change
 		void ToggleEnabled() { 
 			if(!isenabled)	Enable(); 
 			else			Disable();
@@ -190,7 +190,7 @@ namespace gge { namespace widgets {
 		}
 
 		
-		//!!Might need to be changed to IButton or something similar
+	//TODO !Might need to be changed to IButton or something similar
 		//not a good idea to put ordinary widget here.
 		virtual WidgetBase *GetDefault() { return Default; }
 		virtual bool HasDefault() { return Default!=NULL; }
@@ -400,7 +400,7 @@ namespace gge { namespace widgets {
 
 			if(accesskeysenabled) {
 				//Enter/Esc -> Type of access keys
-				//!!Might need to change to IButton
+			//TODO !Might need to change to IButton
 				if(Default && Default->IsVisible() && Default->IsEnabled() && event==input::keyboard::Event::Char && (!input::keyboard::Modifier::Check() || input::keyboard::Modifier::Current==input::keyboard::Modifier::Ctrl) && Key==input::keyboard::KeyCodes::Enter) {
 					if(Default->Accessed())
 						return true;

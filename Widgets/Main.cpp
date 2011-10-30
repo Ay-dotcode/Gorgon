@@ -12,6 +12,7 @@
 #include "Panel\PanelBlueprint.h"
 #include "Textbox\TextboxBlueprint.h"
 #include "Listbox\ListboxBlueprint.h"
+#include "WidgetRegistry.h"
 
 namespace gge { namespace widgets {
 
@@ -42,6 +43,9 @@ namespace gge { namespace widgets {
 		File.Loaders.Add(new resource::ResourceLoader(GID::Panel, panel::Load)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::Textbox, textbox::Load)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::Listbox, listbox::Load)); 
+
+		File.Loaders.Add(new resource::ResourceLoader(GID::WR, LoadWR)); 
+
 	}
 
 	void Init(GGEMain &Main) {

@@ -220,7 +220,13 @@ namespace gge { namespace animation {
 	//	virtual Graphic2DAnimation &CreateAnimation(bool create=false) = 0;
 	//};
 
- 	class RectangularGraphic2DSequenceProvider : virtual public DiscreteAnimationProvider {
+ 	class RectangularGraphic2DAnimationProvider : virtual public AnimationProvider {
+	public:
+		virtual RectangularGraphic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
+		virtual RectangularGraphic2DAnimation &CreateAnimation(bool create=false) = 0;
+	};
+
+ 	class RectangularGraphic2DSequenceProvider : virtual public RectangularGraphic2DAnimationProvider, virtual public DiscreteAnimationProvider {
 	public:
 		virtual RectangularGraphic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
 		virtual RectangularGraphic2DAnimation &CreateAnimation(bool create=false) = 0;

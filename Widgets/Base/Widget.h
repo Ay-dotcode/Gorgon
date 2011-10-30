@@ -40,6 +40,11 @@ namespace gge { namespace widgets {
 		// otherwise an invalid cast will occur
 		virtual void SetBlueprint(const Blueprint &bp)=0;
 
+		virtual void SetBlueprint(const Blueprint *bp) {
+			if(bp)
+				SetBlueprint(*bp);
+		}
+
 
 
 		virtual bool IsVisible() { return isvisible; }
@@ -71,7 +76,7 @@ namespace gge { namespace widgets {
 		inline  bool IsDisabled() { return !IsEnabled(); }
 		virtual void Enable() { isenabled=true; }
 		virtual void Disable();
-		//!!Virtual status of the following two functions might change
+	//TODO !Virtual status of the following two functions might change
 		void ToggleEnabled() { 
 			if(!isenabled)	Enable(); 
 			else			Disable();

@@ -14,15 +14,17 @@ namespace gge { namespace resource {
 	class BitmapFontResource;
 	
 	////This function loads a folder resource from the given file
-	ResourceBase *LoadFolderResource(File &File, std::istream &Data, int Size);
+	ResourceBase *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames=false);
 
 	////This is basic folder resource, it holds other resources.
 	class FolderResource : public ResourceBase {
-		friend ResourceBase *LoadFolderResource(File &File, std::istream &Data, int Size);
+		friend ResourceBase *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames);
 	public:
 		////Entry point of this resource within the physical file. If
 		/// no file is associated with this resource this value is -1.
 		int EntryPoint;
+
+		bool LoadNames;
 
 		////01010000h, (System, Folder)
 		virtual GID::Type getGID() const { return GID::Folder; }
@@ -73,7 +75,7 @@ namespace gge { namespace resource {
 			return (T_*)(&Subitems[Index]);
 		}
 		
-		FolderResource() : ResourceBase() {
+		FolderResource() : ResourceBase(), LoadNames(false) {
 			EntryPoint=-1;
 		}
 	};
