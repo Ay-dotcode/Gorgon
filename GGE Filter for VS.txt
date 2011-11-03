@@ -1,1140 +1,1312 @@
-		<Filter
-			Name="GGE"
-			>
-			<Filter
-				Name="Utils"
-				>
-				<File
-					RelativePath=".\GGE\Utils\BasicGraphics.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Binary.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Bounds2D.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\BufferList.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Collection.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\EventChain.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\GGE.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\LinkedList.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\ManagedBuffer.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Margins.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\PAClassList.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Point2D.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Property.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Random.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Rectangle2D.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Size2D.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\Utils.h"
-					>
-				</File>
-				<File
-					RelativePath=".\GGE\Utils\ValueList.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Engine"
-				>
-				<Filter
-					Name="Headers"
-					>
-					<File
-						RelativePath=".\GGE\Engine\Animator.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\CustomLayer.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Font.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\FontRenderer.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\GGEMain.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\GraphicLayers.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Graphics.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Input.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Layer.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Multimedia.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\OS.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Pointer.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Sound.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Wave.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="Sources"
-					>
-					<File
-						RelativePath=".\GGE\Engine\Animator.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\CustomLayer.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Font.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\GGEMain.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\GraphicLayers.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Graphics.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Input.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Layer.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Multimedia.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Pointer.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Sound.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Wave.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Engine\Windows.cpp"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="Effects"
-					>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Effects\CountingText.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Effects\Flip.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Effects\LayerMover.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Effects\LayerResizer.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Effects\Tinting.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Sources"
-						>
-						<File
-							RelativePath=".\GGE\Effects\CountingText.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Effects\Flip.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Effects\LayerMover.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Effects\LayerResizer.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Effects\Tinting.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="Resource"
-				>
-				<Filter
-					Name="Headers"
-					>
-					<File
-						RelativePath=".\GGE\Resource\AnimationResource.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\BitmapFontResource.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\DataResource.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\Definitions.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\FolderResource.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\FontTheme.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\GRE.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\ImageResource.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\ResizableObject.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\ResourceBase.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\ResourceFile.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\SoundResource.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\TextResource.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="Sources"
-					>
-					<File
-						RelativePath=".\GGE\Resource\AnimationResource.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\BitmapFontResource.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\DataResource.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\FolderResource.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\FontTheme.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\ImageResource.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\LinkNode.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\ResourceBase.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\ResourceFile.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\SoundResource.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\Resource\TextResource.cpp"
-						>
-					</File>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="Widgets"
-				>
-				<Filter
-					Name="!"
-					>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\IProgressor.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\IScroller.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\IWidgetBluePrint.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\IWidgetContainer.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\IWidgetObject.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Line.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\RadioGroup.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Rectangle.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\ResizableObjectResource.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\WidgetMain.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\WidgetRegistry.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Sources"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\IWidgetBluePrint.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\IWidgetContainer.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\IWidgetObject.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Line.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\RadioGroup.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Rectangle.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\ResizableObjectResource.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\WidgetMain.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\WidgetRegistry.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Button"
-					>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Button.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\ButtonBP.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\ButtonElement.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\ButtonStyleGroup.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Sources"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Button.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\ButtonBP.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\ButtonElement.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\ButtonLoader.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\ButtonStyleGroup.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Textbox"
-					>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Textbox.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\TextboxBP.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\TextboxElement.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\TextboxStyleGroup.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Sources"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Textbox.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\TextboxBP.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\TextboxElement.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\TextboxLoader.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\TextboxStyleGroup.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Slider"
-					>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Heatbar.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Indicatorbar.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\NamedSlider.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Percentbar.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Progressbar.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Radiobar.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Scrollbar.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Selectbar.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Slider.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\SliderBase.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\SliderBP.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\SliderElement.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\SliderStyleGroup.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Spinner.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Sources"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Heatbar.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Indicatorbar.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\NamedSlider.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Percentbar.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Progressbar.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Radiobar.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Scrollbar.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Selectbar.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Slider.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\SliderBase.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\SliderBP.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\SliderElement.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\SliderLoader.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\SliderStyleGroup.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Spinner.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Layout"
-					>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\LinearOrganizer.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Source"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\LinearOrganizer.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Common"
-					>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Frame.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\FrameBP.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\Label.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\VirtualFrame.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Sources"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Frame.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\VirtualFrame.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Dialogs"
-					>
-					<Filter
-						Name="Sources"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\MessageDialog.cpp"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\IDialog.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\MessageDialog.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Checkbox"
-					>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Checkbox.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxBase.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxBP.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxElement.h"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxStyleGroup.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="Sources"
-						>
-						<File
-							RelativePath=".\GGE\Widgets\Checkbox.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxBase.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxBP.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxElement.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxLoader.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\GGE\Widgets\CheckboxStyleGroup.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="3rd party"
-				>
-				<Filter
-					Name="JPEG"
-					>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\cderror.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\cdjpeg.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcapimin.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcapistd.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jccoefct.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jccolor.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcdctmgr.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jchuff.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jchuff.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcinit.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcmainct.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcmarker.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcmaster.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcomapi.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jconfig.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\jconfig.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcparam.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcphuff.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcprepct.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jcsample.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jctrans.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdapimin.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdapistd.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdatadst.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdatasrc.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdcoefct.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdcolor.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdct.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jddctmgr.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdhuff.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdhuff.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdinput.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdmainct.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdmarker.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdmaster.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdmerge.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdphuff.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdpostct.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdsample.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jdtrans.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jerror.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jerror.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\jerror.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jfdctflt.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jfdctfst.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jfdctint.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jidctflt.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jidctfst.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jidctint.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jidctred.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jinclude.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jmemansi.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jmemmgr.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jmemsys.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jmorecfg.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\jmorecfg.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jpegint.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jpeglib.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\jpeglib.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jquant1.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jquant2.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jutils.c"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\jversion.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\JPEG\src\transupp.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="LZMA"
-					>
-					<File
-						RelativePath=".\GGE\External\LZMA\LzmaDecode.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\LZMA\LzmaDecode.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\LZMA\LzmaTypes.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="png"
-					>
-					<File
-						RelativePath=".\GGE\External\png\png.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\png\pngconf.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\png\zconf.h"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\png\zlib.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="XML Parser"
-					>
-					<File
-						RelativePath=".\GGE\External\XmlParser\xmlParser.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\XmlParser\xmlParser.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="StackWalker"
-					>
-					<File
-						RelativePath=".\GGE\External\StackWalker\StackWalker.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\GGE\External\StackWalker\StackWalker.h"
-						>
-					</File>
-				</Filter>
-			</Filter>
-		</Filter>
+This file contains two parts
+
+1> This part is to replace anything below <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" /> 
+
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <UseOfMfc>Static</UseOfMfc>
+    <UseOfAtl>Static</UseOfAtl>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../build/bin/\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">../build/bin/\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../build/$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">../build/$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../bin/\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../build/$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4355;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Strmiids.lib;winmm.lib;OpenAL32.lib;OpenGL32.lib;glu32.lib;libpng_ds.lib;zlib_ds.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ManifestFile>$(IntDir)$(TargetFileName).manifest</ManifestFile>
+      <IgnoreSpecificDefaultLibraries>libci.lib;libc.lib;libcpd.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4355;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Strmiids.lib;winmm.lib;OpenAL32.lib;OpenGL32.lib;glu32.lib;libpng_ds.lib;zlib_ds.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ManifestFile>$(IntDir)$(TargetFileName).manifest</ManifestFile>
+      <IgnoreSpecificDefaultLibraries>libci.lib;libc.lib;libcpd.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <Profile>true</Profile>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4355;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Strmiids.lib;winmm.lib;OpenAL32.lib;OpenGL32.lib;glu32.lib;libpng.lib;zlib.lib;pthreadVC2.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\Lib;</AdditionalLibraryDirectories>
+      <ManifestFile>$(IntDir)$(TargetFileName).manifest</ManifestFile>
+      <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+      <Profile>true</Profile>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Sources\GGE\Engine\GGE.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Graphic2D.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\GraphicTargets2D.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Image.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\AnimationResource.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\BitmapFontResource.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\DataResource.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\FolderResource.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\FontTheme.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\ImageResource.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\Main.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\NullImage.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\ResizableObject.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\ResourceFile.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\SoundResource.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\TextResource.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\Definitions.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\GRE.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\LinkNode.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\ResourceBase.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\jconfig.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\jerror.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\jmorecfg.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\jpeglib.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\cderror.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\cdjpeg.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jchuff.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jconfig.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jdct.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jdhuff.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jerror.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jinclude.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jmemsys.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jmorecfg.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jpegint.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jpeglib.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jversion.h" />
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\transupp.h" />
+    <ClInclude Include="..\Sources\GGE\External\png\png.h" />
+    <ClInclude Include="..\Sources\GGE\External\png\pngconf.h" />
+    <ClInclude Include="..\Sources\GGE\External\png\zconf.h" />
+    <ClInclude Include="..\Sources\GGE\External\png\zlib.h" />
+    <ClInclude Include="..\Sources\GGE\External\dirent.h" />
+    <ClInclude Include="..\Sources\GGE\External\pThread\pthread.h" />
+    <ClInclude Include="..\Sources\GGE\External\pThread\sched.h" />
+    <ClInclude Include="..\Sources\GGE\External\pThread\semaphore.h" />
+    <ClInclude Include="..\Sources\GGE\External\XmlParser\xmlParser.h" />
+    <ClInclude Include="..\Sources\GGE\External\LZMA\LzmaDecode.h" />
+    <ClInclude Include="..\Sources\GGE\External\LZMA\LzmaTypes.h" />
+    <ClInclude Include="..\Sources\GGE\External\OpenAL\al.h" />
+    <ClInclude Include="..\Sources\GGE\External\OpenAL\alc.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\CustomLayer.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Font.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\GGEMain.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\GraphicLayers.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Input.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Multimedia.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Pointer.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Sound.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Animation.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\FontRenderer.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Graphics.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Layer.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\OS.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\Wave.h" />
+    <ClInclude Include="..\Sources\GGE\Engine\OS.Win32.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Any.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\BasicGraphics.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Binary.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Bounds2D.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\BufferList.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\CastableManagedBuffer.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Collection.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\ConsumableEvent.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Dynamic.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\EventChain.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\FileSystemHelper.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Guid.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Iterator.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\ManagedBuffer.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Margins.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\OrderedCollection.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\PAClassList.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Point2D.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Property.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Random.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Rectangle2D.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\SGuid.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Size2D.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\SortedCollection.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\UtilsBase.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\ValueList.h" />
+    <ClInclude Include="..\Sources\GGE\Effects\CountingText.h" />
+    <ClInclude Include="..\Sources\GGE\Effects\Flip.h" />
+    <ClInclude Include="..\Sources\GGE\Effects\LayerMover.h" />
+    <ClInclude Include="..\Sources\GGE\Effects\LayerResizer.h" />
+    <ClInclude Include="..\Sources\GGE\Effects\Tinting.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\Blueprint.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\Container.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\Organizer.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\VirtualPanel.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\Widget.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\BorderData.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\Line.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\PetContainer.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\Placeholder.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\Rectangle.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\ResizableObjectResource.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\WidgetLayer.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Button.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Checkbox.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Checkbox\CheckboxBase.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Checkbox\CheckboxBlueprint.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Definitions.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\IButton.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\ICheckbox.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\ILabel.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\IOption.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\IProgressor.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\IScroller.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\ISlider.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\ITextbox.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Label.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox\IListItem.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox\ListboxBase.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox\ListboxBlueprint.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox\ListItem.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Main.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Organizers\ListOrganizer.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Panel.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Panel\ControlledPanel.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Panel\PanelBase.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Panel\PanelBlueprint.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Percentbar.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Progressbar.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\RadioButton.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Scrollbar.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Slider.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Slider\SliderBase.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Slider\SliderBlueprint.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Textbox.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Textbox\TextboxBase.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Textbox\TextboxBlueprint.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\WidgetRegistry.h" />
+    <ClInclude Include="..\Sources\Project\SimpleLabel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Sources\GGE\Effects\CountingText.cpp" />
+    <ClCompile Include="..\Sources\GGE\Effects\Flip.cpp" />
+    <ClCompile Include="..\Sources\GGE\Effects\LayerMover.cpp" />
+    <ClCompile Include="..\Sources\GGE\Effects\LayerResizer.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Graphic2D.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Image.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\AnimationResource.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\BitmapFontResource.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\DataResource.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\FolderResource.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\FontTheme.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\ImageResource.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\LinkNode.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\Main.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)\Resource%(Filename).obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">$(IntDir)\Resource%(Filename).obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)\Resource%(Filename).obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\ResourceBase.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\ResourceFile.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\SoundResource.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\TextResource.cpp" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcapimin.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcapistd.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jccoefct.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jccolor.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcdctmgr.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jchuff.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcinit.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcmainct.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcmarker.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcmaster.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcomapi.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcparam.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcphuff.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcprepct.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcsample.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jctrans.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdapimin.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdapistd.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdatadst.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdatasrc.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdcoefct.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdcolor.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jddctmgr.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdhuff.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdinput.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdmainct.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdmarker.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdmaster.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdmerge.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdphuff.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdpostct.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdsample.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdtrans.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jerror.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jfdctflt.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jfdctfst.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jfdctint.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jidctflt.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jidctfst.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jidctint.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jidctred.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jmemansi.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jmemmgr.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jquant1.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jquant2.c" />
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jutils.c" />
+    <ClCompile Include="..\Sources\GGE\External\XmlParser\xmlParser.cpp" />
+    <ClCompile Include="..\Sources\GGE\External\LZMA\LzmaDecode.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Graphics.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\OS.Win32.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Animation.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\CustomLayer.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Font.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\GGEMain.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\GraphicLayers.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Input.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Layer.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Multimedia.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Pointer.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Sound.cpp" />
+    <ClCompile Include="..\Sources\GGE\Engine\Wave.cpp" />
+    <ClCompile Include="..\Sources\GGE\Utils\Random.cpp" />
+    <ClCompile Include="..\Sources\GGE\Utils\SGuid.cpp" />
+    <ClCompile Include="..\Sources\GGE\Effects\Tinting.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Base\Organizer.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Base\Widget.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\BorderData.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\Line.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\Placeholder.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\Rectangle.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\ResizableObjectResource.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Checkbox\CheckboxBase.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Checkbox\CheckboxBlueprint.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Listbox\ListboxBase.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Listbox\ListboxBlueprint.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Main.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)\Widget%(Filename).obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">$(IntDir)\Widget%(Filename).obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Panel\PanelBase.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Panel\PanelBlueprint.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Slider\SliderBase.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Slider\SliderBlueprint.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Textbox\TextboxBase.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Textbox\TextboxBlueprint.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\WidgetRegistry.cpp" />
+    <ClCompile Include="..\Sources\Project\GGE-Test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Sources\GGE\Resource\Image &amp; Animation.cd" />
+    <None Include="..\Sources\GGE\Resource\Image &amp; Animation.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\Sources\GGE\Widgets\ClassDiagram.cd" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
+
+
+***********************************************
+* FIRST PART ENDS HERE                        *
+***********************************************
+
+
+This part will replace .filters file
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="GGE">
+      <UniqueIdentifier>{f20c4f7c-776b-4757-af2d-aec42f65c31b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Resource">
+      <UniqueIdentifier>{bef3f925-41e0-45c2-acb5-b2b081feecfc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Resource\Headers">
+      <UniqueIdentifier>{c6d4e9b0-2e21-4f2a-920c-8850852ad996}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Resource\Sources">
+      <UniqueIdentifier>{f74d81f1-a285-4fa1-aab8-9fb7b8c51451}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Externals">
+      <UniqueIdentifier>{f126e60e-a21e-4d1f-ad43-b13c083fd2af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Externals\JPEG">
+      <UniqueIdentifier>{c9f4a0f1-c8e7-4065-9d34-b6305e58918f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Externals\JPEG\Source">
+      <UniqueIdentifier>{d0ad216a-ec91-48ef-9697-cc53497d0333}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Externals\PNG">
+      <UniqueIdentifier>{15a4fbba-fbf9-489a-9b38-8e6575ab64f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Externals\DirEnt">
+      <UniqueIdentifier>{46844b1f-7ab1-4d31-821e-4f8e3845778b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Externals\pThread">
+      <UniqueIdentifier>{517ee18d-8a42-45aa-82df-8a763cd34131}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Externals\XML">
+      <UniqueIdentifier>{f240dbe4-fad0-4297-ae5d-ec4cf8cfc8b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Externals\LZMA">
+      <UniqueIdentifier>{023879b7-e208-497d-884f-a1fd02c05dc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Externals\OpenAL">
+      <UniqueIdentifier>{e00ae1ed-52fb-40bb-8217-414b46eb0f69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Engine">
+      <UniqueIdentifier>{5652a8eb-a1d1-46ea-a637-912e0133b1fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Engine\Headers">
+      <UniqueIdentifier>{82282cb5-0c97-49f4-8380-c1fedc6933a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Engine\Win32">
+      <UniqueIdentifier>{6d02996c-faf3-469f-8a83-ff2e4138120f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Engine\Sources">
+      <UniqueIdentifier>{75f37a11-f022-49a2-aeb8-8741b4130c38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Effects">
+      <UniqueIdentifier>{17bbfa40-75f9-4a0a-a7cb-67f79c9c4454}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Effects\Sources">
+      <UniqueIdentifier>{16752fe7-5eac-467e-9505-76047c471313}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Project">
+      <UniqueIdentifier>{de2dddcc-e03c-41d8-9b96-49cd9476b31e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Utils">
+      <UniqueIdentifier>{cc83e5c3-7443-4a2f-943e-4bcec89e2536}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets">
+      <UniqueIdentifier>{a0060d26-e15a-4250-9ec0-f00e6274b48e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\System">
+      <UniqueIdentifier>{00fe0c66-c4e8-4232-ac7e-366f27995d22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Basic">
+      <UniqueIdentifier>{2618c7ea-b9b4-49ba-8672-77820b9e9fda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Basic\Headers">
+      <UniqueIdentifier>{bc8a267d-44af-40a9-bc42-5fa60ff38ef3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Basic\Sources">
+      <UniqueIdentifier>{bf0d9a20-4a05-467e-b6c0-b6d5662ee036}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Base">
+      <UniqueIdentifier>{4b1b03a3-6705-4e66-a2ef-34ca645fd0dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Interfaces">
+      <UniqueIdentifier>{5527ddbc-5fc2-4320-813a-76ed7ede0c47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Checkbox">
+      <UniqueIdentifier>{46afe2a8-9c6f-4f80-bf3d-ccf4819b2d92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Checkbox\Headers">
+      <UniqueIdentifier>{285e272f-805b-4996-b50f-dbbbe3232c94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Checkbox\Sources">
+      <UniqueIdentifier>{cc36942e-a605-4403-822c-c2040ef24ecc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Slider">
+      <UniqueIdentifier>{ef5610cf-d62f-4309-ac11-626c664445cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Slider\Headers">
+      <UniqueIdentifier>{36bd1029-cee3-4084-9417-7fc7abb1eada}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Slider\Sources">
+      <UniqueIdentifier>{3dfe96c9-3e4d-4e3a-8479-586447c47629}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Panel">
+      <UniqueIdentifier>{ad3bc056-9a3e-4c25-9ffe-1afc60c0c29c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Textbox">
+      <UniqueIdentifier>{7c801fb0-366e-49b8-8eb9-066988546d68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Listbox">
+      <UniqueIdentifier>{eafa5f5e-e025-4df2-9f21-c963c4ca7eb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Panel\Headers">
+      <UniqueIdentifier>{83bb8225-e664-47c0-a087-37f53a896958}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Panel\Sources">
+      <UniqueIdentifier>{ae77532b-857a-4606-a8bb-c2b6a1561ebb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Listbox\Headers">
+      <UniqueIdentifier>{9a008b58-7cc4-401d-ab0b-57b6039dce38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Listbox\Soruces">
+      <UniqueIdentifier>{5a9a7e61-6e35-4c2a-b2a6-4528528a8e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GGE\Widgets\Organizers">
+      <UniqueIdentifier>{f531cc7f-2ff6-41d4-aa78-acb78b4daafa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Sources\GGE\Resource\AnimationResource.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\BitmapFontResource.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\DataResource.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\FolderResource.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\FontTheme.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\ImageResource.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\ResourceFile.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\SoundResource.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\TextResource.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\Definitions.h">
+      <Filter>GGE\Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\GRE.h">
+      <Filter>GGE\Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\LinkNode.h">
+      <Filter>GGE\Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\ResourceBase.h">
+      <Filter>GGE\Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\jconfig.h">
+      <Filter>GGE\Externals\JPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\jerror.h">
+      <Filter>GGE\Externals\JPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\jmorecfg.h">
+      <Filter>GGE\Externals\JPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\jpeglib.h">
+      <Filter>GGE\Externals\JPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\cderror.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\cdjpeg.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jchuff.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jconfig.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jdct.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jdhuff.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jerror.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jinclude.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jmemsys.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jmorecfg.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jpegint.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jpeglib.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\jversion.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\JPEG\src\transupp.h">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\png\png.h">
+      <Filter>GGE\Externals\PNG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\png\pngconf.h">
+      <Filter>GGE\Externals\PNG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\png\zconf.h">
+      <Filter>GGE\Externals\PNG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\png\zlib.h">
+      <Filter>GGE\Externals\PNG</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\dirent.h">
+      <Filter>GGE\Externals\DirEnt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\pThread\pthread.h">
+      <Filter>GGE\Externals\pThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\pThread\sched.h">
+      <Filter>GGE\Externals\pThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\pThread\semaphore.h">
+      <Filter>GGE\Externals\pThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\XmlParser\xmlParser.h">
+      <Filter>GGE\Externals\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\LZMA\LzmaDecode.h">
+      <Filter>GGE\Externals\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\LZMA\LzmaTypes.h">
+      <Filter>GGE\Externals\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\OpenAL\al.h">
+      <Filter>GGE\Externals\OpenAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\External\OpenAL\alc.h">
+      <Filter>GGE\Externals\OpenAL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\CustomLayer.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Font.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\GGEMain.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\GraphicLayers.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Input.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Multimedia.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Pointer.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Sound.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\FontRenderer.h">
+      <Filter>GGE\Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Layer.h">
+      <Filter>GGE\Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\OS.h">
+      <Filter>GGE\Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Wave.h">
+      <Filter>GGE\Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\OS.Win32.h">
+      <Filter>GGE\Engine\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Effects\CountingText.h">
+      <Filter>GGE\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Effects\Flip.h">
+      <Filter>GGE\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Effects\LayerMover.h">
+      <Filter>GGE\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Effects\LayerResizer.h">
+      <Filter>GGE\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Effects\Tinting.h">
+      <Filter>GGE\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Any.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\BasicGraphics.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Binary.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Bounds2D.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\BufferList.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\CastableManagedBuffer.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Collection.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\ConsumableEvent.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Dynamic.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\EventChain.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\FileSystemHelper.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Guid.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Iterator.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\ManagedBuffer.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Margins.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\PAClassList.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Point2D.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Property.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Random.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Rectangle2D.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\SGuid.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Size2D.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\UtilsBase.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\ValueList.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\GGE.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\SortedCollection.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Graphic2D.h">
+      <Filter>GGE\Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\GraphicTargets2D.h">
+      <Filter>GGE\Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Animation.h">
+      <Filter>GGE\Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Main.h">
+      <Filter>GGE\Widgets\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Definitions.h">
+      <Filter>GGE\Widgets\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Graphics.h">
+      <Filter>GGE\Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\ResizableObject.h">
+      <Filter>GGE\Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\NullImage.h">
+      <Filter>GGE\Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\Main.h">
+      <Filter>GGE\Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\Line.h">
+      <Filter>GGE\Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\Rectangle.h">
+      <Filter>GGE\Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\ResizableObjectResource.h">
+      <Filter>GGE\Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\BorderData.h">
+      <Filter>GGE\Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\Placeholder.h">
+      <Filter>GGE\Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\WidgetLayer.h">
+      <Filter>GGE\Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\Widget.h">
+      <Filter>GGE\Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\Blueprint.h">
+      <Filter>GGE\Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\Container.h">
+      <Filter>GGE\Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\Organizer.h">
+      <Filter>GGE\Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Base\VirtualPanel.h">
+      <Filter>GGE\Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\Project\SimpleLabel.h">
+      <Filter>Project</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\ILabel.h">
+      <Filter>GGE\Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Checkbox\CheckboxBlueprint.h">
+      <Filter>GGE\Widgets\Checkbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Checkbox\CheckboxBase.h">
+      <Filter>GGE\Widgets\Checkbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\IButton.h">
+      <Filter>GGE\Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\ICheckbox.h">
+      <Filter>GGE\Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\IOption.h">
+      <Filter>GGE\Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Slider\SliderBase.h">
+      <Filter>GGE\Widgets\Slider\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Slider\SliderBlueprint.h">
+      <Filter>GGE\Widgets\Slider\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\IProgressor.h">
+      <Filter>GGE\Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\ISlider.h">
+      <Filter>GGE\Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Button.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Checkbox.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Label.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\RadioButton.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Progressbar.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Slider.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Scrollbar.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Basic\PetContainer.h">
+      <Filter>GGE\Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\IScroller.h">
+      <Filter>GGE\Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Percentbar.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Panel.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Textbox\TextboxBlueprint.h">
+      <Filter>GGE\Widgets\Textbox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\ITextbox.h">
+      <Filter>GGE\Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Textbox.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Textbox\TextboxBase.h">
+      <Filter>GGE\Widgets\Textbox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Panel\PanelBase.h">
+      <Filter>GGE\Widgets\Panel\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Panel\PanelBlueprint.h">
+      <Filter>GGE\Widgets\Panel\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox\ListboxBase.h">
+      <Filter>GGE\Widgets\Listbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox\ListboxBlueprint.h">
+      <Filter>GGE\Widgets\Listbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox\ListItem.h">
+      <Filter>GGE\Widgets\Listbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox\IListItem.h">
+      <Filter>GGE\Widgets\Listbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Listbox.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Organizers\ListOrganizer.h">
+      <Filter>GGE\Widgets\Organizers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\OrderedCollection.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Panel\ControlledPanel.h">
+      <Filter>GGE\Widgets\Panel\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\WidgetRegistry.h">
+      <Filter>GGE\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Engine\Image.h">
+      <Filter>GGE\Engine</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Sources\GGE\Resource\AnimationResource.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\BitmapFontResource.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\DataResource.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\FolderResource.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\FontTheme.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\ImageResource.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\LinkNode.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\ResourceBase.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\ResourceFile.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\SoundResource.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\TextResource.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcapimin.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcapistd.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jccoefct.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jccolor.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcdctmgr.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jchuff.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcinit.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcmainct.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcmarker.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcmaster.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcomapi.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcparam.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcphuff.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcprepct.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jcsample.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jctrans.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdapimin.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdapistd.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdatadst.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdatasrc.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdcoefct.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdcolor.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jddctmgr.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdhuff.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdinput.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdmainct.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdmarker.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdmaster.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdmerge.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdphuff.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdpostct.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdsample.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jdtrans.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jerror.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jfdctflt.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jfdctfst.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jfdctint.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jidctflt.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jidctfst.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jidctint.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jidctred.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jmemansi.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jmemmgr.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jquant1.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jquant2.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\JPEG\src\jutils.c">
+      <Filter>GGE\Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\XmlParser\xmlParser.cpp">
+      <Filter>GGE\Externals\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\External\LZMA\LzmaDecode.cpp">
+      <Filter>GGE\Externals\LZMA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Graphics.cpp">
+      <Filter>GGE\Engine\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\OS.Win32.cpp">
+      <Filter>GGE\Engine\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\CustomLayer.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Font.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\GGEMain.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\GraphicLayers.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Input.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Layer.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Multimedia.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Pointer.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Sound.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Wave.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Effects\Tinting.cpp">
+      <Filter>GGE\Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\Project\GGE-Test.cpp">
+      <Filter>Project</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Utils\Random.cpp">
+      <Filter>GGE\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Utils\SGuid.cpp">
+      <Filter>GGE\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Graphic2D.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Animation.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Engine\Image.cpp">
+      <Filter>GGE\Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Effects\CountingText.cpp">
+      <Filter>GGE\Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Effects\Flip.cpp">
+      <Filter>GGE\Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Effects\LayerMover.cpp">
+      <Filter>GGE\Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Effects\LayerResizer.cpp">
+      <Filter>GGE\Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Main.cpp">
+      <Filter>GGE\Widgets\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\Main.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\Line.cpp">
+      <Filter>GGE\Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\Rectangle.cpp">
+      <Filter>GGE\Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\ResizableObjectResource.cpp">
+      <Filter>GGE\Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\BorderData.cpp">
+      <Filter>GGE\Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Basic\Placeholder.cpp">
+      <Filter>GGE\Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Base\Widget.cpp">
+      <Filter>GGE\Widgets\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Checkbox\CheckboxBlueprint.cpp">
+      <Filter>GGE\Widgets\Checkbox\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Checkbox\CheckboxBase.cpp">
+      <Filter>GGE\Widgets\Checkbox\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Slider\SliderBlueprint.cpp">
+      <Filter>GGE\Widgets\Slider\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Slider\SliderBase.cpp">
+      <Filter>GGE\Widgets\Slider\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Textbox\TextboxBlueprint.cpp">
+      <Filter>GGE\Widgets\Textbox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Textbox\TextboxBase.cpp">
+      <Filter>GGE\Widgets\Textbox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Panel\PanelBase.cpp">
+      <Filter>GGE\Widgets\Panel\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Panel\PanelBlueprint.cpp">
+      <Filter>GGE\Widgets\Panel\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Listbox\ListboxBase.cpp">
+      <Filter>GGE\Widgets\Listbox\Soruces</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Listbox\ListboxBlueprint.cpp">
+      <Filter>GGE\Widgets\Listbox\Soruces</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Base\Organizer.cpp">
+      <Filter>GGE\Widgets\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\WidgetRegistry.cpp">
+      <Filter>GGE\Widgets\Basic\Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Sources\GGE\Resource\Image &amp; Animation.cd">
+      <Filter>GGE\Resource</Filter>
+    </None>
+    <None Include="..\Sources\GGE\Resource\Image &amp; Animation.png">
+      <Filter>GGE\Resource</Filter>
+    </None>
+    <None Include="..\Sources\GGE\Widgets\ClassDiagram.cd">
+      <Filter>GGE\Widgets\System</Filter>
+    </None>
+  </ItemGroup>
+</Project>
+
+
