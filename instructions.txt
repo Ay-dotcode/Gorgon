@@ -1,4 +1,0 @@
-+ Checkout GGE
-- Create lib folder outside project folder and checkout GGE-lib inside it
-- Create a new VS Windows project, choose empty
-- Save your project and quit

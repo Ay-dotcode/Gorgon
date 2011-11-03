@@ -7,6 +7,7 @@
 #include "..\..\Utils\EventChain.h"
 #include "Organizer.h"
 #include "..\Basic\WidgetLayer.h"
+#include <limits>
 
 
 namespace gge { namespace widgets {

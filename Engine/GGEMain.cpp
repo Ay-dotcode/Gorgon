@@ -128,7 +128,6 @@ namespace gge {
 		InitializeAnimation();
 		InitializeResource();
 		InitializePointer();
-		//InitializeWidgets();
 	}
 
 	void GGEMain::InitializeAll(string Title, os::IconHandle Icon) {

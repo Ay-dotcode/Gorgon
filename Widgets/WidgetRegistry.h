@@ -18,7 +18,7 @@ namespace gge { namespace widgets {
 	class WidgetRegistry {
 	public:
 
-		WidgetRegistry() : Icons(icons) {}
+		WidgetRegistry() : Icons(icons), Pictures(pictures) {}
 
 		void SetWRR(WidgetRegistryResource &wrr);
 
@@ -90,7 +90,7 @@ namespace gge { namespace widgets {
 		class CIcons : public CCollection<animation::RectangularGraphic2DSequenceProvider> {
 			friend class WidgetRegistry;
 		public:
-			
+
 			//this creates a new animation and you are responsible to delete it, 
 			//use .DeleteAnimation to delete the object safely
 			animation::RectangularGraphic2DAnimation &operator () (const std::string &key, bool create=true) {
@@ -105,11 +105,12 @@ namespace gge { namespace widgets {
 
 		protected:
 			CIcons(std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> &parent) : CCollection(parent) { }
-		} Icons;
+		} Icons, Pictures;
 
 
 	protected:
 		std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> icons;
+		std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> pictures;
 	};
 
 	WidgetRegistryResource *LoadWR(resource::File& File, std::istream &Data, int Size);

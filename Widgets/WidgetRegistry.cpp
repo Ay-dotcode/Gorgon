@@ -93,6 +93,13 @@ namespace gge { namespace widgets {
 			}
 			catch(...) { }//don't insert if it is not an animation
 		}
+
+		for(auto it=wrr.Get<FolderResource>(13).Subitems.First();it.isValid();it.Next()) {
+			try {
+				pictures.insert(pair<string, RectangularGraphic2DSequenceProvider&>(it->name, dynamic_cast<RectangularGraphic2DSequenceProvider&>(*it)));
+			}
+			catch(...) { }//don't insert if it is not an animation
+		}
 	}
 
 

@@ -3,7 +3,10 @@
 * code to autoexp.dat in folder:      *
 * Common7\Packages\Debugger from      *
 * installation folder under           *
-* [Visualizer] section                *
+* [Visualizer] section, default       *
+* installation  folder for Visual     *
+* Studio 2010 is C:\Program Files\    *
+* Microsoft Visual Studio 10.0        *
 ***************************************
 
 gge::utils::Collection<*> {

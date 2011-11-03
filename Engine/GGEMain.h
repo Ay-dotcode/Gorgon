@@ -1,5 +1,7 @@
 #pragma once
 
+#undef CreateWindow
+
 #include "../Utils/Any.h"
 #include "../Utils/EventChain.h"
 #include "OS.h"

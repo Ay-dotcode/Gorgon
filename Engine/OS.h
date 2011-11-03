@@ -59,7 +59,7 @@ namespace gge { namespace os {
 		///@Width		: The width of the window
 		///@Height		: The height of the window
 		///@FullScreen	: Whether to create a full screen window
-		WindowHandle CreateWindow(string Name, string Title, os::IconHandle Icon, os::InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
+		WindowHandle CreateWindow(std::string Name, string Title, os::IconHandle Icon, os::InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
 
 		void MoveWindow(WindowHandle,utils::Point);
 		inline void MoveWindow(WindowHandle h,int X,int Y) { MoveWindow(h,utils::Point(X,Y)); }
