@@ -79,6 +79,13 @@ namespace gge { namespace graphics {
 			drawin(*target, b.Left,b.Top, b.Width(), b.Height());
 		}
 
+		void DrawIn(ImageTarget2D &target) const {
+			drawin(target, 0,0, target.GetSize().Width, target.GetSize().Height);
+		}
+		void DrawIn(ImageTarget2D *target) const {
+			drawin(*target, 0,0, target->GetSize().Width, target->GetSize().Height);
+		}
+
 
 
 		//Draw size controlled

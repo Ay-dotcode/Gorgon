@@ -195,7 +195,7 @@ namespace gge { namespace utils {
 					return false;
 
 				int new_off=Offset;
-				int l=Col->list.getCount();
+				int l=Col->list.GetSize();
 				while(new_off < it.Offset && new_off < l) {
 					if(Col->list[new_off])
 						return true;

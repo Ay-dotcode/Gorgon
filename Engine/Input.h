@@ -7,6 +7,7 @@
 #include "OS.h"
 #include "../Utils/ConsumableEvent.h"
 #include "../Utils/Bounds2D.h"
+#include <functional>
 
 namespace gge { namespace input {
 	class BasicPointerTarget;
@@ -163,7 +164,7 @@ namespace std { //for consumable event's token list
 	template<>
 	class hash<gge::input::keyboard::Event>
 		: public unary_function<gge::input::keyboard::Event, size_t>
-	{	// hash functor
+	{	// hash F_
 	public:
 		typedef gge::input::keyboard::Event _Kty;
 
@@ -388,7 +389,7 @@ namespace gge { namespace input {
 
 
 		private:
-			Object &Register(HandlerBase *handler, utils::Bounds bounds, Event::Type eventmask) {
+			Object &registr(HandlerBase *handler, utils::Bounds bounds, Event::Type eventmask) {
 				Object *obj=new Object(
 					handler,
 					bounds,
@@ -426,6 +427,22 @@ namespace gge { namespace input {
 			template <class R_>
 			Object &Register(R_ &object, bool (R_::*fn)(), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
 
+			template<class F_>
+			typename utils::count_arg<F_, 0, Object &>::type 
+				RegisterLambda(F_ f, utils::Bounds bounds, Event::Type eventmask);
+
+			template<class F_>
+			typename utils::count_arg<F_, 1, Object &>::type 
+				RegisterLambda(F_ f, utils::Bounds bounds, Event::Type eventmask);
+
+			template<class F_>
+			typename utils::count_arg<F_, 2, Object &>::type 
+				RegisterLambda(F_ f, utils::Bounds bounds, Event::Type eventmask);
+
+			template<class F_>
+			typename utils::count_arg<F_, 3, Object &>::type 
+				RegisterLambda(F_ f, utils::Bounds bounds, Event::Type eventmask);
+
 			void Unregister(Object &obj);
 
 			void Unregister(Object *obj);
@@ -444,6 +461,7 @@ namespace gge { namespace input {
 		protected:
 
 		};
+
 
 		class EventCallback {
 			friend class CallbackProvider;
@@ -510,7 +528,7 @@ namespace gge { namespace input {
 
 
 		private:
-			Object &Set(HandlerBase *handler, Event::Type eventmask) {
+			Object &set(HandlerBase *handler, Event::Type eventmask) {
 				if(object)
 					delete object;
 
@@ -548,6 +566,18 @@ namespace gge { namespace input {
 			template <class R_>
 			Object &Set(R_ &object, bool (R_::*fn)(), Event::Type eventmask=Event::AllButOverCheck);
 
+			template<class F_>
+			typename utils::count_arg<F_, 0, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::AllButOverCheck);
+
+			template<class F_>
+			typename utils::count_arg<F_, 1, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::AllButOverCheck);
+
+			template<class F_>
+			typename utils::count_arg<F_, 2, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::AllButOverCheck);
+
+			template<class F_>
+			typename utils::count_arg<F_, 3, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::AllButOverCheck);
+			
 			void Reset() {
 				if(object)
 					delete object;
@@ -727,6 +757,50 @@ namespace gge { namespace input {
 				return (object->*fn)();
 			}
 		};
+		class FullLambdaHandler : public HandlerBase {
+		public:
+			typedef std::function<bool(Event::Type, utils::Point, int)> Handler;
+			Handler fn;
+
+			FullLambdaHandler(Handler fn) : HandlerBase(utils::Any()), fn(fn) {}
+
+			virtual	bool Fire(Event::Type event, utils::Point location, int amount) {
+				return fn(event, location, amount);
+			}
+		};
+		class NoAmountLambdaHandler : public HandlerBase {
+		public:
+			typedef std::function<bool(Event::Type, utils::Point)> Handler;
+			Handler fn;
+
+			NoAmountLambdaHandler(Handler fn) : HandlerBase(utils::Any()), fn(fn) {}
+
+			virtual	bool Fire(Event::Type event, utils::Point location, int amount) {
+				return fn(event, location);
+			}
+		};
+		class LocationOnlyLambdaHandler : public HandlerBase {
+		public:
+			typedef std::function<bool(utils::Point)> Handler;
+			Handler fn;
+
+			LocationOnlyLambdaHandler(Handler fn) : HandlerBase(utils::Any()), fn(fn) {}
+
+			virtual	bool Fire(Event::Type event, utils::Point location, int amount) {
+				return fn(location);
+			}
+		};
+		class EmptyLambdaHandler : public HandlerBase {
+		public:
+			typedef std::function<bool()> Handler;
+			Handler fn;
+
+			EmptyLambdaHandler(Handler fn) : HandlerBase(utils::Any()), fn(fn) {}
+
+			virtual	bool Fire(Event::Type event, utils::Point location, int amount) {
+				return fn();
+			}
+		};
 
 		
 		extern Event::Type		PressedButtons;
@@ -742,7 +816,7 @@ namespace gge { namespace input {
 		template <class R_>
 		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new EmptyClassHandler<R_>(&object,fn),
 				bounds,
 				eventmask
@@ -752,7 +826,7 @@ namespace gge { namespace input {
 		template <class R_>
 		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(utils::Point location), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new LocationOnlyClassHandler<R_>(&object,fn),
 				bounds,
 				eventmask
@@ -762,7 +836,7 @@ namespace gge { namespace input {
 		template <class R_>
 		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new NoAmountClassHandler<R_>(&object,fn),
 				bounds,
 				eventmask
@@ -772,7 +846,7 @@ namespace gge { namespace input {
 		template <class R_>
 		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new ClassHandler<R_>(&object,fn),
 				bounds,
 				eventmask
@@ -782,8 +856,48 @@ namespace gge { namespace input {
 		template <class R_>
 		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Bounds bounds, utils::Any data, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new FullClassHandler<R_>(&object,fn,data),
+				bounds,
+				eventmask
+				);
+		}
+
+		template <class F_>
+		typename utils::count_arg<F_, 0, EventChain::Object &>::type EventChain::RegisterLambda( F_ fn, utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
+		{
+			return registr(
+				new EmptyLambdaHandler(fn,data),
+				bounds,
+				eventmask
+				);
+		}
+
+		template <class F_>
+		typename utils::count_arg<F_, 1, EventChain::Object &>::type EventChain::RegisterLambda( F_ fn, utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
+		{
+			return registr(
+				new LocationOnlyLambdaHandler(fn,data),
+				bounds,
+				eventmask
+				);
+		}
+
+		template <class F_>
+		typename utils::count_arg<F_, 2, EventChain::Object &>::type EventChain::RegisterLambda( F_ fn, utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
+		{
+			return registr(
+				new NoAmountLambdaHandler(fn,data),
+				bounds,
+				eventmask
+				);
+		}
+
+		template <class F_>
+		typename utils::count_arg<F_, 3, EventChain::Object &>::type EventChain::RegisterLambda( F_ fn, utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
+		{
+			return registr(
+				new FullLambdaHandler(fn,data),
 				bounds,
 				eventmask
 				);
@@ -792,7 +906,7 @@ namespace gge { namespace input {
 		template <class R_>
 		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(), Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new EmptyClassHandler<R_>(&object,fn),
 
 				eventmask
@@ -802,7 +916,7 @@ namespace gge { namespace input {
 		template <class R_>
 		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(utils::Point location), Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new LocationOnlyClassHandler<R_>(&object,fn),
 
 				eventmask
@@ -812,7 +926,7 @@ namespace gge { namespace input {
 		template <class R_>
 		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new NoAmountClassHandler<R_>(&object,fn),
 
 				eventmask
@@ -822,7 +936,7 @@ namespace gge { namespace input {
 		template <class R_>
 		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new ClassHandler<R_>(&object,fn),
 
 				eventmask
@@ -832,8 +946,44 @@ namespace gge { namespace input {
 		template <class R_>
 		EventCallback::Object & EventCallback::Set( R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Any data, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new FullClassHandler<R_>(&object,fn,data),
+
+				eventmask
+				);
+		}
+
+		template<class F_>
+		typename utils::count_arg<F_, 0, EventCallback::Object &>::type EventCallback::SetLambda(F_ f, Event::Type eventmask) {
+			return set(
+				new EmptyLambdaHandler(f),
+
+				eventmask
+				);
+		}
+
+		template<class F_>
+		typename utils::count_arg<F_, 1, EventCallback::Object &>::type EventCallback::SetLambda(F_ f, Event::Type eventmask) {
+			return set(
+				new LocationOnlyLambdaHandler(f),
+
+				eventmask
+				);
+		}
+
+		template<class F_>
+		typename utils::count_arg<F_, 2, EventCallback::Object &>::type EventCallback::SetLambda(F_ f, Event::Type eventmask) {
+			return set(
+				new NoAmountLambdaHandler(f),
+
+				eventmask
+				);
+		}
+
+		template<class F_>
+		typename utils::count_arg<F_, 3, EventCallback::Object &>::type EventCallback::SetLambda(F_ f, Event::Type eventmask) {
+			return set(
+				new FullLambdaHandler(f),
 
 				eventmask
 				);

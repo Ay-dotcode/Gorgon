@@ -285,7 +285,6 @@ This file contains two parts
     <ClInclude Include="..\Sources\GGE\Widgets\Textbox\TextboxBase.h" />
     <ClInclude Include="..\Sources\GGE\Widgets\Textbox\TextboxBlueprint.h" />
     <ClInclude Include="..\Sources\GGE\Widgets\WidgetRegistry.h" />
-    <ClInclude Include="..\Sources\Project\SimpleLabel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\GGE\Effects\CountingText.cpp" />
@@ -396,7 +395,6 @@ This file contains two parts
     <ClCompile Include="..\Sources\GGE\Widgets\Textbox\TextboxBase.cpp" />
     <ClCompile Include="..\Sources\GGE\Widgets\Textbox\TextboxBlueprint.cpp" />
     <ClCompile Include="..\Sources\GGE\Widgets\WidgetRegistry.cpp" />
-    <ClCompile Include="..\Sources\Project\GGE-Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Sources\GGE\Resource\Image &amp; Animation.cd" />
@@ -873,9 +871,6 @@ This part will replace .filters file
     <ClInclude Include="..\Sources\GGE\Widgets\Base\VirtualPanel.h">
       <Filter>GGE\Widgets\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Sources\Project\SimpleLabel.h">
-      <Filter>Project</Filter>
-    </ClInclude>
     <ClInclude Include="..\Sources\GGE\Widgets\Interfaces\ILabel.h">
       <Filter>GGE\Widgets\Interfaces</Filter>
     </ClInclude>
@@ -1204,9 +1199,6 @@ This part will replace .filters file
     </ClCompile>
     <ClCompile Include="..\Sources\GGE\Effects\Tinting.cpp">
       <Filter>GGE\Effects\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sources\Project\GGE-Test.cpp">
-      <Filter>Project</Filter>
     </ClCompile>
     <ClCompile Include="..\Sources\GGE\Utils\Random.cpp">
       <Filter>GGE\Utils</Filter>

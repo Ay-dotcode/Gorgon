@@ -194,7 +194,7 @@ namespace gge { namespace input {
 
 		EventChain::Object & EventChain::Register( bool (*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Bounds bounds, utils::Any data, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new FullFunctionHandler(fn,data),
 				bounds,
 				eventmask
@@ -203,7 +203,7 @@ namespace gge { namespace input {
 
 		EventChain::Object & EventChain::Register( bool (*fn)(Event::Type event, utils::Point location, int amount), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new FunctionHandler(fn),
 				bounds,
 				eventmask
@@ -212,7 +212,7 @@ namespace gge { namespace input {
 
 		EventChain::Object & EventChain::Register( bool (*fn)(Event::Type event, utils::Point location), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new NoAmountFunctionHandler(fn),
 				bounds,
 				eventmask
@@ -221,7 +221,7 @@ namespace gge { namespace input {
 
 		EventChain::Object & EventChain::Register( bool (*fn)(utils::Point location), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new LocationOnlyFunctionHandler(fn),
 				bounds,
 				eventmask
@@ -230,7 +230,7 @@ namespace gge { namespace input {
 
 		EventChain::Object & EventChain::Register( bool (*fn)(), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Register(
+			return registr(
 				new EmptyFunctionHandler(fn),
 				bounds,
 				eventmask
@@ -248,7 +248,7 @@ namespace gge { namespace input {
 
 		EventCallback::Object & EventCallback::Set( bool (*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Any data, Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new FullFunctionHandler(fn,data),
 				
 				eventmask
@@ -257,7 +257,7 @@ namespace gge { namespace input {
 
 		EventCallback::Object & EventCallback::Set( bool (*fn)(Event::Type event, utils::Point location, int amount), Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new FunctionHandler(fn),
 				
 				eventmask
@@ -266,7 +266,7 @@ namespace gge { namespace input {
 
 		EventCallback::Object & EventCallback::Set( bool (*fn)(Event::Type event, utils::Point location), Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new NoAmountFunctionHandler(fn),
 				
 				eventmask
@@ -275,7 +275,7 @@ namespace gge { namespace input {
 
 		EventCallback::Object & EventCallback::Set( bool (*fn)(utils::Point location), Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new LocationOnlyFunctionHandler(fn),
 				
 				eventmask
@@ -284,13 +284,13 @@ namespace gge { namespace input {
 
 		EventCallback::Object & EventCallback::Set( bool (*fn)(), Event::Type eventmask/*=AllUsed*/ )
 		{
-			return Set(
+			return set(
 				new EmptyFunctionHandler(fn),
-				
+
 				eventmask
 				);
 		}
-
+		
 
 		void EventChain::Object::Remove() {
 			if(PressedObject==this)

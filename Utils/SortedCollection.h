@@ -522,8 +522,9 @@ namespace gge { namespace utils {
 						Wrapper *c=w->previous;
 
 						//detach
-						w->previous->next=NULL;
-						*tail=w->previous;
+						w->previous->next=w->next;
+						w->next->previous=w->previous;
+						//*tail=w->previous;
 
 						//find suitable
 						while(c) {
@@ -555,8 +556,9 @@ namespace gge { namespace utils {
 					Wrapper *c=w->next;
 
 					//detach
-					w->next->previous=NULL;
-					*head=w->next;
+					w->next->previous=w->previous;
+					w->previous->next=w->next;
+					//*head=w->next;
 
 					//find suitable
 					while(c) {

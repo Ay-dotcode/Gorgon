@@ -290,6 +290,16 @@ namespace gge { namespace utils {
 			Left  = x;
 			Top   = y;
 		}
+
+		//!More operator are needed
+		basic_Bounds2D &operator +=(const basic_Point2D<T_> &p) {
+			Left   += p.x;
+			Top    += p.y;
+			Right  += p.x;
+			Bottom += p.y;
+
+			return *this;
+		}
 	};
 
 	////Allows streaming of bounds. in string representation, bounds is show as

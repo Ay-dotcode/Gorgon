@@ -201,10 +201,16 @@ namespace gge { namespace animation {
 		AnimationTimer *Controller;
 		bool owner;
 	};
-	
-	class RectangularGraphic2DAnimation : virtual public graphics::RectangularGraphic2D, virtual public AnimationBase {
+#pragma warning(push)
+#pragma warning(disable:4250)
+	class Basic2DAnimation : virtual public graphics::Graphic2D, virtual public AnimationBase {
 
 	};
+
+	class RectangularGraphic2DAnimation : virtual public Basic2DAnimation, virtual public graphics::RectangularGraphic2D {
+
+	};
+#pragma warning(pop)
 
 /*
 	class Graphic2DAnimation : public virtual AnimationBase, public graphics::RectangularGraphic2D {
@@ -220,7 +226,13 @@ namespace gge { namespace animation {
 	//	virtual Graphic2DAnimation &CreateAnimation(bool create=false) = 0;
 	//};
 
- 	class RectangularGraphic2DAnimationProvider : virtual public AnimationProvider {
+	class Basic2DAnimationProvider : virtual public AnimationProvider {
+	public:
+		virtual Basic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
+		virtual Basic2DAnimation &CreateAnimation(bool create=false) = 0;
+	};
+
+	class RectangularGraphic2DAnimationProvider : virtual public Basic2DAnimationProvider {
 	public:
 		virtual RectangularGraphic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
 		virtual RectangularGraphic2DAnimation &CreateAnimation(bool create=false) = 0;

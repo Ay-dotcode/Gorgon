@@ -711,26 +711,30 @@ namespace gge { namespace utils {
 		}
 
 #ifndef NOLAMBDA
-		Token RegisterLambda(std::function<bool()> handler, int order) {
+		template <class F_>
+		typename count_arg<F_, 0, Token>::type RegisterLambda(F_ handler, int order) {
 			return AddHandler(
-				prvt::consumableevent::CreateEventHandler<P_, O_>(handler, Any()),
+				prvt::consumableevent::CreateEventHandler<P_, O_>(std::function<bool()>(handler), Any()),
 				order
 			);
 		}
-		Token RegisterLambdaWithParam(std::function<bool(P_)> handler, int order) {
+		template <class F_>
+		typename count_arg<F_, 1, Token>::type RegisterLambda(F_ handler, int order) {
 			return AddHandler(
-				prvt::consumableevent::CreateEventHandler<P_, O_>(handler, Any()),
+				prvt::consumableevent::CreateEventHandler<P_, O_>(std::function<bool(P_)>(handler), Any()),
 				order
 			);
 		}
-		Token RegisterLambda(std::function<bool()> handler) {
+		template <class F_>
+		typename count_arg<F_, 0, Token>::type RegisterLambda(F_ handler) {
 			return AddHandler(
-				prvt::consumableevent::CreateEventHandler<P_, O_>(handler, Any())
+				prvt::consumableevent::CreateEventHandler<P_, O_>(std::function<bool()>(handler), Any())
 			);
 		}
-		Token RegisterLambdaWithParam(std::function<bool(P_)> handler) {
+		template <class F_>
+		typename count_arg<F_, 1, Token>::type RegisterLambda(F_ handler) {
 			return AddHandler(
-				prvt::consumableevent::CreateEventHandler<P_, O_>(handler, Any())
+				prvt::consumableevent::CreateEventHandler<P_, O_>(std::function<bool(P_)>(handler), Any())
 			);
 		}
 #endif

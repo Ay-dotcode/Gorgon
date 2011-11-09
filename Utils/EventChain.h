@@ -56,6 +56,35 @@ namespace gge { namespace utils {
 	};
 
 
+	//****
+	//Solution to function<> parameters, solved by Nawaz@stackoverflow
+	template <typename T>
+	struct function_traits : public function_traits<decltype(&T::operator())>
+	{};
+
+	template <typename C, typename R>
+	struct function_traits<R(C::*)() const> { enum { arity = 0 }; };
+
+	template <typename C, typename R, typename T0>
+	struct function_traits<R(C::*)(T0) const> { enum { arity = 1 }; };
+
+	template <typename C, typename R, typename T0, typename T1>
+	struct function_traits<R(C::*)(T0,T1) const> { enum { arity = 2 }; };
+
+	template <typename C, typename R, typename T0, typename T1, typename T2>
+	struct function_traits<R(C::*)(T0,T1,T2) const> { enum { arity = 3 }; };
+
+	template <typename C, typename R, typename T0, typename T1, typename T2, typename T3>
+	struct function_traits<R(C::*)(T0,T1,T2,T3) const> { enum { arity = 4 }; };
+
+	template <typename C, typename R, typename T0, typename T1, typename T2, typename T3, typename T4>
+	struct function_traits<R(C::*)(T0,T1,T2,T3,T4) const> { enum { arity = 5 }; };
+
+	template<typename Functor, size_t NArgs, typename Type_=void>
+	struct count_arg : std::enable_if<function_traits<Functor>::arity==NArgs, Type_>
+	{};
+	//****
+
 
 	template<class O_, class P_> class EventChain;
 
@@ -664,14 +693,16 @@ namespace gge { namespace utils {
 		}
 
 #ifndef NOLAMBDA
-		Token RegisterLambda(std::function<void()> handler) {
+		template <class F_>
+		typename count_arg<F_, 0, Token>::type RegisterLambda(F_ handler) {
 			return AddHandler(
-				prvt::eventchain::CreateEventHandler<P_, O_>(handler, Any())
+				prvt::eventchain::CreateEventHandler<P_, O_>(std::function<void()>(handler), Any())
 				);
 		}
-		Token RegisterLambdaWithParam(std::function<void(P_)> handler) {
+		template <class F_>
+		typename count_arg<F_, 1, Token>::type RegisterLambda(F_ handler) {
 			return AddHandler(
-				prvt::eventchain::CreateEventHandler<P_, O_>(handler, Any())
+				prvt::eventchain::CreateEventHandler<P_, O_>(std::function<void(P_)>(handler), Any())
 				);
 		}
 #endif
