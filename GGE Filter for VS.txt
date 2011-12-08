@@ -220,6 +220,7 @@ This file contains two parts
     <ClInclude Include="..\Sources\GGE\Utils\Guid.h" />
     <ClInclude Include="..\Sources\GGE\Utils\Iterator.h" />
     <ClInclude Include="..\Sources\GGE\Utils\ManagedBuffer.h" />
+    <ClInclude Include="..\Sources\GGE\Utils\Map2D.h" />
     <ClInclude Include="..\Sources\GGE\Utils\Margins.h" />
     <ClInclude Include="..\Sources\GGE\Utils\OrderedCollection.h" />
     <ClInclude Include="..\Sources\GGE\Utils\PAClassList.h" />
@@ -773,6 +774,9 @@ This part will replace .filters file
       <Filter>GGE\Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\Sources\GGE\Utils\ManagedBuffer.h">
+      <Filter>GGE\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Utils\Map2D.h">
       <Filter>GGE\Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\Sources\GGE\Utils\Margins.h">
