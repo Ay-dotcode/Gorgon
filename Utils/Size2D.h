@@ -36,6 +36,7 @@
 #ifdef GGE_XMLSERVICES
 #include "../External/XmlParser/xmlParser.h"
 #endif
+#include <iosfwd>
 
 
 #define SIZE2D_EXISTS
@@ -114,6 +115,13 @@ namespace gge { namespace utils {
 		T_ Area() const { return Width*Height; }
 
 	};
+
+	template<class T_>
+	static std::ostream &operator <<(std::ostream &out, const basic_Size2D<T_> &size) {
+		out<<size.Width<<"x"<<size.Height;
+
+		return out;
+	}
 
 	typedef basic_Size2D<int> Size;
 	typedef basic_Size2D<FloatingPoint> Size2D;

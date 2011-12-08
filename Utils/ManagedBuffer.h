@@ -43,12 +43,13 @@ namespace gge { namespace utils {
 		ManagedBuffer() : data(new T_*(nullptr)), size_(new int(0)) 
 		{ }
 
-		ManagedBuffer(int size) : data(new T_*(nullptr)), size(new int(0)) 
+		ManagedBuffer(int size) : data(new T_*(nullptr)), size_(new int(0)) 
 		{
 			Resize(size);
 		}
 
-		ManagedBuffer(const ManagedBuffer &buf) : data(buf.data), RefCounter<ManagedBuffer>(buf), size_(buf.size_) {
+		ManagedBuffer(ManagedBuffer &buf) : data(buf.data), RefCounter(buf), size_(buf.size_) {
+			addref();
 		}
 
 		ManagedBuffer &operator =(const ManagedBuffer &buf) {
