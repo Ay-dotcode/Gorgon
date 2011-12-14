@@ -70,6 +70,8 @@ namespace gge { namespace widgets {
 				return WidgetBase::Focus();
 			}
 
+			using WidgetBase::SetBlueprint;
+
 			virtual void SetBlueprint(const widgets::Blueprint &bp);
 
 			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);

@@ -8,6 +8,7 @@
 #include <map>
 #include "../Engine/Animation.h"
 #include "Checkbox/CheckboxBlueprint.h"
+#include "Textbox/TextboxBlueprint.h"
 
 
 
@@ -18,7 +19,10 @@ namespace gge { namespace widgets {
 	class WidgetRegistry {
 	public:
 
-		WidgetRegistry() : Icons(icons), Pictures(pictures) {}
+		WidgetRegistry() : Icons(icons), Pictures(pictures), 
+			Button(NULL), Label(NULL), Textbox(NULL),
+			Checkbox(NULL), RadioButton(NULL)
+		{}
 
 		void SetWRR(WidgetRegistryResource &wrr);
 
@@ -41,6 +45,7 @@ namespace gge { namespace widgets {
 			Font Success;
 			Font Tooltip;
 			Font Fixed;
+			Font Decorative;
 		} Fonts;
 
 		class CColors {
@@ -62,12 +67,110 @@ namespace gge { namespace widgets {
 		checkbox::Blueprint *Button;
 		class CButtons {
 		public:
-			CButtons() : Button(NULL) {
+			CButtons() : Button(NULL),
+				Dialog(NULL),
+				Menu(NULL),
+				Tool(NULL),
+				Navigation(NULL),
+				Large(NULL),
+				Small(NULL),
+				Browse(NULL),
+				Symbol(NULL)
+			{
 			}
 
-			checkbox::Blueprint *Button;
+			checkbox::Blueprint 
+				*Button,
+				*Dialog,
+				*Menu,
+				*Tool,
+				*Navigation,
+				*Large,
+				*Small,
+				*Browse,
+				*Symbol
+			;
 		} Buttons;
 		
+		checkbox::Blueprint *Label;
+		class CLabels {
+		public:
+			CLabels() : Label(NULL),
+				Title(NULL),
+				DataCaption(NULL),
+				Bold(NULL),
+				Heading(NULL),
+				Subheading(NULL),
+				ListCaption(NULL),
+				Required(NULL),
+				Hint(NULL),
+				Tooltip(NULL),
+				Link(NULL)
+			{
+			}
+
+			checkbox::Blueprint 
+				*Label,
+				*Title,
+				*DataCaption,
+				*Bold,
+				*Heading,
+				*Subheading,
+				*ListCaption,
+				*Required,
+				*Hint,
+				*Tooltip,
+				*Link
+			;
+
+		} Labels;
+
+		textbox::Blueprint *Textbox;
+		class CTextboxes {
+		public:
+			CTextboxes() : Textbox(NULL),
+				Numberbox(NULL),
+				Small(NULL),
+				Password(NULL),
+				TextEdit(NULL),
+				CodeEdit(NULL)
+			{
+			}
+
+			textbox::Blueprint 
+				*Textbox,
+				*Numberbox,
+				*Small,
+				*Password,
+				*TextEdit,
+				*CodeEdit
+			;
+		} Textboxes;
+
+		checkbox::Blueprint *Checkbox;
+		checkbox::Blueprint *RadioButton;
+
+		class CCheckboxes {
+		public:
+			CCheckboxes(): Checkbox(NULL) ,
+				Radio(NULL),
+				Toggle(NULL),
+				More(NULL),
+				MenuCheck(NULL),
+				MenuRadio(NULL),
+				Lock(NULL)
+			{ }
+
+			checkbox::Blueprint 
+				*Checkbox,
+				*Radio,
+				*Toggle,
+				*More,
+				*MenuCheck,
+				*MenuRadio,
+				*Lock
+			;
+		} Checkboxes;
 
 		template<class T_>
 		class CCollection {
@@ -87,7 +190,7 @@ namespace gge { namespace widgets {
 			std::map<std::string, T_&> &parent;
 		};
 
-		class CIcons : public CCollection<animation::RectangularGraphic2DSequenceProvider> {
+		class CImageCollection : public CCollection<animation::RectangularGraphic2DSequenceProvider> {
 			friend class WidgetRegistry;
 		public:
 
@@ -104,7 +207,7 @@ namespace gge { namespace widgets {
 			}
 
 		protected:
-			CIcons(std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> &parent) : CCollection(parent) { }
+			CImageCollection(std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> &parent) : CCollection(parent) { }
 		} Icons, Pictures;
 
 
