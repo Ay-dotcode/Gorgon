@@ -8,9 +8,8 @@ using namespace gge::graphics;
 using namespace std;
 
 namespace gge { namespace resource {
-	AnimationResource *LoadAnimationResource(File &File, std::istream &Data, int Size) {
-		AnimationResource *anim=new AnimationResource;
 
+	void LoadAnimationResourceEx(AnimationResource *anim, File &File, std::istream &Data, int Size) {
 		int target=Data.tellg()+Size;
 		while(Data.tellg()<target) {
 			int gid,size;
@@ -39,7 +38,7 @@ namespace gge { namespace resource {
 				anim->Subitems.Add(LoadImageResource(File,Data,size), anim->Subitems.HighestOrder()+1);
 			} 
 			else {
-				EatChunk(Data,size);
+				anim->LoadExtra(File, Data, gid, size);
 			}
 		}
 
@@ -48,10 +47,15 @@ namespace gge { namespace resource {
 			anim->Frames[i].Image=&dynamic_cast<ImageResource&>(*it);
 
 		anim->FrameCount=anim->Subitems.getCount();
+	}
+
+
+	AnimationResource *LoadAnimationResource(File &File, std::istream &Data, int Size) {
+		AnimationResource *anim=new AnimationResource;
+		LoadAnimationResourceEx(anim, File, Data, Size);
 
 		return anim;
 	}
-
 
 	animation::ProgressResult::Type ImageAnimation::Progress() {
 		if(Controller && parent.Frames.size()) { 
@@ -139,6 +143,10 @@ namespace gge { namespace resource {
 		} 
 		else
 			return Guessed;
+	}
+
+	void AnimationResource::LoadExtra(File &File, std::istream &Data, GID::Type gid, int size) {
+		EatChunk(Data, size);
 	}
 
 

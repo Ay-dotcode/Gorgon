@@ -171,7 +171,7 @@ namespace gge { namespace widgets {
 			return controller.CalculateWidth(w, loop->GetWidth(), start->GetWidth()+end->GetWidth());
 		}
 		else {
-			if(controller.VerticalTiling==graphics::SizeController2D::Single)
+			if(controller.HorizontalTiling==graphics::SizeController2D::Single)
 				return loop->GetWidth();
 
 			return controller.CalculateWidth(w, loop->GetWidth());
@@ -182,7 +182,7 @@ namespace gge { namespace widgets {
 			return controller.CalculateHeight(h, loop->GetHeight(), start->GetHeight()+end->GetHeight());
 		}
 		else {
-			if(controller.HorizontalTiling==graphics::SizeController2D::Single)
+			if(controller.VerticalTiling==graphics::SizeController2D::Single)
 				return loop->GetHeight();
 
 			return controller.CalculateHeight(h, loop->GetHeight());

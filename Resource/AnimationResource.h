@@ -53,6 +53,7 @@ namespace gge { namespace resource {
 	{
 
 		friend AnimationResource *LoadAnimationResource(File &File, std::istream &Data, int Size);
+		friend void LoadAnimationResourceEx(AnimationResource *anim, File &File, std::istream &Data, int Size);
 		friend class ImageAnimation;
 		friend class DiscreteImageAnimation;
 	public:
@@ -125,6 +126,8 @@ namespace gge { namespace resource {
 		////Frame durations
 		std::vector<AnimationResourceFrame> Frames;
 		unsigned TotalLength;
+
+		virtual void LoadExtra(File &File, std::istream &Data, GID::Type gid, int size);
 	};
 } }
 

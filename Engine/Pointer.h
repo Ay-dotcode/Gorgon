@@ -48,6 +48,21 @@ namespace gge {
 		}
 
 		////Initializes a pointer
+		Pointer(graphics::Graphic2D *pointer, utils::Point Hotspot, PointerType Type) {
+			this->Image=pointer;
+			this->Hotspot=Hotspot;
+			this->Type=Type;
+		}
+
+		////Initializes a pointer
+		Pointer(graphics::Graphic2D &pointer, int HotspotX, int HotspotY, PointerType Type) {
+			this->Image=&pointer;
+			this->Hotspot.x=HotspotX;
+			this->Hotspot.y=HotspotY;
+			this->Type=Type;
+		}
+
+		////Initializes a pointer
 		Pointer(graphics::Graphic2D &pointer, utils::Point Hotspot, PointerType Type) {
 			this->Image=&pointer;
 			this->Hotspot=Hotspot;

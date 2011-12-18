@@ -300,9 +300,9 @@ namespace gge { namespace widgets {
 
 						int th;
 						if(textwrap) 
-							th=font->TextHeight(text, itembounds.Width())-(font->FontHeight()-font->FontBaseline());
+							th=font->TextHeight(text, itembounds.Width())-(font->FontHeight()-font->FontBaseline())/2;
 						else
-							th=font->FontBaseline();
+							th=(font->FontHeight()+font->FontBaseline())/2;
 
 						targetlocation=Alignment::CalculateLocation(align, itembounds, Size(font->TextWidth(text),th));
 
@@ -344,7 +344,7 @@ namespace gge { namespace widgets {
 									ImageResource *im=dynamic_cast<BitmapFontResource*>(font->getRenderer())->Characters['_'];
 									innerlayer.SetCurrentColor(font->Color);
 									im->DrawStretched(innerlayer, 
-										eprint[1].Out.position.x-1,eprint[1].Out.position.y+(font->FontHeight()-font->FontBaseline())/2,
+										eprint[1].Out.position.x-1,eprint[1].Out.position.y,
 										2+eprint[2].Out.position.x-eprint[1].Out.position.x, im->GetHeight()
 										);
 									innerlayer.SetCurrentColor(0xffffffff);
@@ -423,11 +423,17 @@ namespace gge { namespace widgets {
 			int totallines=0;
 			int maximumsizedlines=0;
 
+			Bounds outer=Bounds(Point(0,0),BaseLayer->BoundingBox.GetSize());
+			Bounds inner=outer;
+			if(border) {
+				inner=border->ContentBounds(outer);
+			}
+
 			int prevymargin=0;
 			for(int i=1;i<=3;i++) {
 				if(lines[i]) {
 					totallines++;
-					lineheights[i]=lineheight(lines[i], prevymargin);
+					lineheights[i]=lineheight(lines[i], prevymargin, inner.Width());
 
 					if(lineheights[i]>0)
 						totalknownlineheights+=lineheights[i];
@@ -441,11 +447,6 @@ namespace gge { namespace widgets {
 			//if no one is specified as maximum available and there is still available size,
 			//give it to the last one
 			int extra;
-			Bounds outer=Bounds(Point(0,0),BaseLayer->BoundingBox.GetSize());
-			Bounds inner=outer;
-			if(border) {
-				inner=border->ContentBounds(outer);
-			}
 			innerlayer.BoundingBox=inner;
 			overlayer.BoundingBox=outer;
 			extra=inner.Height()-totalknownlineheights;
@@ -510,6 +511,8 @@ namespace gge { namespace widgets {
 		}
 
 		void Base::setfocus(Blueprint::FocusType type) {
+			event=true;
+
 			if(!bp) {
 				focus.from=type;
 				return;
@@ -569,6 +572,8 @@ namespace gge { namespace widgets {
 		}
 
 		void Base::setstate(int type) {
+			event=true;
+
 			currentstate=type;
 			if(!bp) {
 				state.from=type;
@@ -605,6 +610,12 @@ namespace gge { namespace widgets {
 						info.duration=-1;
 						state_anim_loop=true;
 					}
+					else if(info.duration==0) {
+						state.from=type;
+						Draw();
+
+						return;
+					}
 					else
 						state_anim_loop=false;
 
@@ -633,10 +644,14 @@ namespace gge { namespace widgets {
 				}
 			}
 
+			event=true;
+
 			Draw();
 		}
 
 		void Base::setstyle(Blueprint::StyleType type) {
+			event=true;
+
 			if(!bp) {
 				style.from=type;
 				return;
@@ -675,6 +690,32 @@ namespace gge { namespace widgets {
 					if(info.duration==-2) {
 						info.duration=-1;
 						style_anim_loop=true;
+					}
+					else if(info.duration==0) {
+						style.to=type;
+
+						//!!TODO: Create check for sound part and move this to there
+						Blueprint::Group **groups=new Blueprint::Group *[5];
+
+						bp->GetAlternatives(groups, focus, state);
+
+						//prepare resources
+						Blueprint::TransitionType transition;
+
+						if(event) {
+							SoundResource *snd=bp->GetSound(groups, style, transition);
+							if(snd)
+								snd->CreateWave()->Play();
+
+							event=false;
+						}
+						///******************************************************
+
+						style.to=Blueprint::Style_None;
+						style.from=type;
+						Draw();
+
+						return;
 					}
 					else
 						style_anim_loop=false;
@@ -905,6 +946,14 @@ namespace gge { namespace widgets {
 
 			//prepare resources
 			Blueprint::TransitionType transition;
+
+			if(event) {
+				SoundResource *snd=bp->GetSound(groups, style, transition);
+				if(snd)
+					snd->CreateWave()->Play();
+
+				event=false;
+			}
 
 			symbolp=bp->GetSymbolPlace(groups, style, transition);
 			textp=bp->GetTextPlace(groups, style, transition);

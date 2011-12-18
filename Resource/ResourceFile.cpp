@@ -8,6 +8,7 @@
 #include "FontTheme.h"
 #include "LinkNode.h"
 #include "FontTheme.h"
+#include "PointerResource.h"
 
 using namespace std;
 using namespace gge::utils;
@@ -90,6 +91,7 @@ namespace gge { namespace resource {
 	void File::AddGameLoaders() {
 		AddExtendedLoaders();
 		Loaders.Add(new ResourceLoader(GID::Animation, LoadAnimationResource)); 
+		Loaders.Add(new ResourceLoader(GID::Pointer, LoadPointerResource)); 
 		Loaders.Add(new ResourceLoader(GID::Font, LoadBitmapFontResource)); 
 		Loaders.Add(new ResourceLoader(GID::FontTheme, LoadFontTheme)); 
 		Loaders.Add(new ResourceLoader(GID::FontTheme, LoadFontTheme)); 

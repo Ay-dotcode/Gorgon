@@ -59,6 +59,9 @@ namespace gge { namespace resource {
 		static const Type Animation_Names		= 0x03100102;
 		static const Type Animation_Name		= 0x03100103;
 
+		static const Type Pointer				= 0x03D10000;
+		static const Type Pointer_Props			= 0x03D10101;
+
 		static const Type Font					= 0x03200000;
 		static const Type Font_Charmap			= 0x03200101;
 		static const Type Font_Image			= 0x03210000;

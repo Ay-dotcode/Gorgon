@@ -7,6 +7,7 @@
 #include "../Resource/AnimationResource.h"
 #include "../Resource/DataResource.h"
 #include "../Resource/GRE.h"
+#include "../Resource/PointerResource.h"
 #include "OS.h"
 #include "Animation.h"
 
@@ -67,18 +68,30 @@ namespace gge {
 	}
 
 	void PointerCollection::Fetch(FolderResource *Folder) {
-		DataResource *data=Folder->asData(0);
+		if(Folder->getCount()==0) return;
 
-		int i=0;
-		for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First()+1;resource.isValid();resource.Next()) {
-			RectangularGraphic2DSequenceProvider *anim=dynamic_cast<RectangularGraphic2DSequenceProvider *>(resource.CurrentPtr());
-			utils::Collection<Pointer, 10>::Add( new Pointer(&anim->CreateAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerType)data->getInt(i)) );
+		if(Folder->getItem(0)->getGID()==GID::Data) {
+			DataResource *data=Folder->asData(0);
 
-			i+=2;
+			int i=0;
+			for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First()+1;resource.isValid();resource.Next()) {
+				RectangularGraphic2DSequenceProvider *anim=dynamic_cast<RectangularGraphic2DSequenceProvider *>(resource.CurrentPtr());
+				utils::Collection<Pointer, 10>::Add( new Pointer(&anim->CreateAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerType)data->getInt(i)) );
+
+				i+=2;
+			}
+
+			if(i>0)
+				BasePointer=&(*this)[0];
 		}
+		else {
+			for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First();resource.isValid();resource.Next()) {
+				resource::PointerResource *ptr=dynamic_cast<resource::PointerResource *>(resource.CurrentPtr());
+				utils::Collection<Pointer, 10>::Add( new Pointer(ptr->CreateAnimation(true), ptr->Hotspot, ptr->Type) );
+			}
 
-		if(i>0)
 			BasePointer=&(*this)[0];
+		}
 	}
 
 	Pointer *PointerCollection::Add(graphics::RectangularGraphic2D *pointer, Point Hotspot, Pointer::PointerType Type) {

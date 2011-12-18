@@ -6,6 +6,7 @@
 #include "..\Main.h"
 #include "..\Basic\PetContainer.h"
 #include "..\Button.h"
+#include "..\..\Engine\Graphics.h"
 
 #ifndef LARGE_KEY_TIMEOUT_MULT
 #	define LARGE_KEY_TIMEOUT_MULT	2
@@ -93,6 +94,7 @@ namespace gge { namespace widgets {
 				innerlayer.EnableClipping=true;
 			}
 
+			using WidgetBase::SetBlueprint;
 
 			virtual void SetBlueprint(const widgets::Blueprint &bp)  {
 				this->bp=static_cast<const Blueprint*>(&bp);
@@ -444,7 +446,7 @@ namespace gge { namespace widgets {
 				if(value<minimum) value=minimum;
 				if(value>maximum) value=maximum;
 
-				value=T_(Round(float(value)/steps)*steps);
+				value=T_(utils::Round(float(value)/steps)*steps);
 
 				if(this->value!=value) {
 					this->value=value;
@@ -481,7 +483,7 @@ namespace gge { namespace widgets {
 				if(value<minimum) value=minimum;
 				if(value>maximum) value=maximum;
 
-				value=T_(Round(float(value)/steps)*steps);
+				value=T_(utils::Round(float(value)/steps)*steps);
 
 				if(smooth.targetvalue!=value) {
 					smooth.controller.ResetProgress();
@@ -865,7 +867,7 @@ namespace gge { namespace widgets {
 							else
 								x=x-value_start;
 
-							v=(T_)Round(x*valueperpixel+minimum);
+							v=(T_)utils::Round(x*valueperpixel+minimum);
 						}
 						else {
 							int y=location.y-symbol_mdownpos.y+symbollayer.BoundingBox.Top-symbol_zero;
@@ -874,7 +876,7 @@ namespace gge { namespace widgets {
 							else
 								y=y-value_start;
 
-							v=(T_)Round(y*valueperpixel+minimum);
+							v=(T_)utils::Round(y*valueperpixel+minimum);
 						}
 
 						setvalue(v);
@@ -958,7 +960,7 @@ namespace gge { namespace widgets {
 
 					if(smooth.value) {
 						if(value!=smoothvalue) {
-							value=T_(Round(smoothvalue));
+							value=T_(utils::Round(smoothvalue));
 
 							value_changed();
 						}
@@ -1223,7 +1225,7 @@ namespace gge { namespace widgets {
 		T_ gge::widgets::slider::Base<T_, floattype>::getrulevalue(int x) {
 
 			if(actions.rule_action==LargeChange) {
-				T_ v=(T_)Round(x*valueperpixel)+minimum;
+				T_ v=(T_)utils::Round(x*valueperpixel)+minimum;
 				if(v>value) {
 					if(value<maximum)
 						return value+largechange;
@@ -1238,7 +1240,7 @@ namespace gge { namespace widgets {
 				}
 			}
 			else {
-				T_ v=(T_)Round(x*valueperpixel/steps)*steps+minimum;
+				T_ v=(T_)utils::Round(x*valueperpixel/steps)*steps+minimum;
 
 				if(v<minimum) v=minimum;
 				if(v>maximum) v=maximum;
@@ -1251,7 +1253,7 @@ namespace gge { namespace widgets {
 		template<class T_, class floattype>
 		T_ gge::widgets::slider::Base<T_, floattype>::gettextvalue(int x) {
 			if(markers.namedlocations) {
-				T_ v=(T_)Round(x*valueperpixel)+minimum;
+				T_ v=(T_)utils::Round(x*valueperpixel)+minimum;
 				T_ mindist=maximum-minimum;
 				T_ dval=v;
 
@@ -1268,7 +1270,7 @@ namespace gge { namespace widgets {
 			else {
 				floattype i=markers.tickdistance*markers.numberdistance;
 				floattype v=x*valueperpixel+minimum;
-				v=Round(v/i)*i;
+				v=utils::Round(v/i)*i;
 
 				return T_(v);
 			}
@@ -1277,7 +1279,7 @@ namespace gge { namespace widgets {
 		template<class T_, class floattype>
 		T_ gge::widgets::slider::Base<T_, floattype>::gettickvalue(int x) {
 			if(markers.namedlocations) {
-				T_ v=(T_)Round(x*valueperpixel)+minimum;
+				T_ v=(T_)utils::Round(x*valueperpixel)+minimum;
 				T_ mindist=maximum-minimum;
 				T_ dval=T_(v);
 
@@ -1294,7 +1296,7 @@ namespace gge { namespace widgets {
 			else {
 				floattype i=markers.tickdistance;
 				floattype v=x*valueperpixel+minimum;
-				v=Round(v/i)*i;
+				v=utils::Round(v/i)*i;
 
 				return T_(v);
 			}
@@ -1514,7 +1516,7 @@ namespace gge { namespace widgets {
 
 			prepare();
 
-			Size size=WidgetBase::size;
+			utils::Size size=WidgetBase::size;
 			if(autosize!=AutosizeModes::None) {
 				if(ishorizontal()) {
 					if(rule && display.rule) {
@@ -1550,7 +1552,7 @@ namespace gge { namespace widgets {
 
 					if(font && markers.numbers) {
 						if(textp)
-							h+=textp->GetSize(Size(0,font->FontHeight()), Size(0,font->FontHeight())).Height+textp->Margins.TotalY();
+							h+=textp->GetSize(utils::Size(0,font->FontHeight()), utils::Size(0,font->FontHeight())).Height+textp->Margins.TotalY();
 						else
 							h+=font->FontHeight();
 					}
@@ -1614,7 +1616,7 @@ namespace gge { namespace widgets {
 						ss<<format.units;
 
 						if(textp) {
-							w+=textp->GetSize(Size(0,font->TextWidth(ss.str())), Size(0,font->TextWidth(ss.str()))).Height+textp->Margins.TotalY();
+							w+=textp->GetSize(utils::Size(0,font->TextWidth(ss.str())), utils::Size(0,font->TextWidth(ss.str()))).Height+textp->Margins.TotalY();
 						}
 						else {
 							w+=font->TextWidth(ss.str());
@@ -1627,7 +1629,7 @@ namespace gge { namespace widgets {
 						if(border)
 							vw+=border->BorderWidth.TotalX()+border->Padding.TotalX();
 
-						stringstream ss;
+						std::stringstream ss;
 						if(valueformat.hex)
 							ss<<std::hex;
 						if(valueformat.decimals>-1)
@@ -1932,18 +1934,18 @@ namespace gge { namespace widgets {
 			}
 
 			//ORIENTATION MODIFICATION
-			SizeController2D szc;
+			graphics::SizeController2D szc;
 			bool reverse;
 			if(!(tick && markers.ticks && markers.tickdistance) && !(font && markers.numbers && markers.numberdistance)) {
-				szc=SizeController2D::SingleMiddleCenter;
+				szc=graphics::SizeController2D::SingleMiddleCenter;
 				reverse=false;
 			}
 			else if(orientation==Blueprint::Top || orientation==Blueprint::Left) {
-				szc=SizeController2D::SingleBottomRight;
+				szc=graphics::SizeController2D::SingleBottomRight;
 				reverse=true;
 			}
 			else {
-				szc=SizeController2D::SingleTopLeft;
+				szc=graphics::SizeController2D::SingleTopLeft;
 				reverse=false;
 			}
 
@@ -2041,37 +2043,37 @@ namespace gge { namespace widgets {
 					if(display.indicatorstart) {
 						if(display.inverseaxis) {
 							if(indst>indval) {
-								b.Right=l+w-(int)Round(w*floattype(indval-minimum)/maximum)+r;
-								b.Left=l+w-(int)Round(w*floattype(indst-minimum)/maximum);
+								b.Right=l+w-(int)utils::Round(w*floattype(indval-minimum)/maximum)+r;
+								b.Left=l+w-(int)utils::Round(w*floattype(indst-minimum)/maximum);
 							}
 							else {
-								b.Right=l+w-(int)Round(w*floattype(indst-minimum)/maximum)+r;
-								b.Left=l+w-(int)Round(w*floattype(indval-minimum)/maximum);
+								b.Right=l+w-(int)utils::Round(w*floattype(indst-minimum)/maximum)+r;
+								b.Left=l+w-(int)utils::Round(w*floattype(indval-minimum)/maximum);
 							}
 						}
 						else {
 							if(indst>indval) {
-								b.Left=l+(int)Round(w*floattype(indval-minimum)/maximum);
-								b.Right=l+(int)Round(w*floattype(indst-minimum)/maximum)+r;
+								b.Left=l+(int)utils::Round(w*floattype(indval-minimum)/maximum);
+								b.Right=l+(int)utils::Round(w*floattype(indst-minimum)/maximum)+r;
 							}
 							else {
-								b.Left=l+(int)Round(w*floattype(indst-minimum)/maximum);
-								b.Right=l+(int)Round(w*floattype(indval-minimum)/maximum)+r;
+								b.Left=l+(int)utils::Round(w*floattype(indst-minimum)/maximum);
+								b.Right=l+(int)utils::Round(w*floattype(indval-minimum)/maximum)+r;
 							}
 						}
 					}
 					else {
 						if(display.centerindicator) {
-							b.Left=l-(int)Round(w*floattype(indval-minimum)/maximum)/2+w/2;
-							b.Right=l+(int)Round(w*floattype(indval-minimum)/maximum)/2+w/2+r;
+							b.Left=l-(int)utils::Round(w*floattype(indval-minimum)/maximum)/2+w/2;
+							b.Right=l+(int)utils::Round(w*floattype(indval-minimum)/maximum)/2+w/2+r;
 						}
 						else if(display.inverseaxis) {
 							b.Right=l+w+r;
-							b.Left=l+w-(int)Round(w*floattype(indval-minimum)/maximum);
+							b.Left=l+w-(int)utils::Round(w*floattype(indval-minimum)/maximum);
 						}
 						else {
 							b.Left=l;
-							b.Right=l+(int)Round(w*floattype(indval-minimum)/maximum)+r;
+							b.Right=l+(int)utils::Round(w*floattype(indval-minimum)/maximum)+r;
 						}
 					}
 				}
@@ -2088,37 +2090,37 @@ namespace gge { namespace widgets {
 					if(display.indicatorstart) {
 						if(display.inverseaxis) {
 							if(indst>indval) {
-								b.Bottom=t+h-(int)Round(h*floattype(indval-minimum)/maximum)+bt;
-								b.Top=t+h-(int)Round(h*floattype(indst-minimum)/maximum);
+								b.Bottom=t+h-(int)utils::Round(h*floattype(indval-minimum)/maximum)+bt;
+								b.Top=t+h-(int)utils::Round(h*floattype(indst-minimum)/maximum);
 							}
 							else {
-								b.Bottom=t+h-(int)Round(h*floattype(indst-minimum)/maximum)+bt;
-								b.Top=t+h-(int)Round(h*floattype(indval-minimum)/maximum);
+								b.Bottom=t+h-(int)utils::Round(h*floattype(indst-minimum)/maximum)+bt;
+								b.Top=t+h-(int)utils::Round(h*floattype(indval-minimum)/maximum);
 							}
 						}
 						else {
 							if(indst>indval) {
-								b.Top=t+(int)Round(h*floattype(indval-minimum)/maximum);
-								b.Bottom=t+(int)Round(h*floattype(indst-minimum)/maximum)+bt;
+								b.Top=t+(int)utils::Round(h*floattype(indval-minimum)/maximum);
+								b.Bottom=t+(int)utils::Round(h*floattype(indst-minimum)/maximum)+bt;
 							}
 							else {
-								b.Top=t+(int)Round(h*floattype(indst-minimum)/maximum);
-								b.Bottom=t+(int)Round(h*floattype(indval-minimum)/maximum)+bt;
+								b.Top=t+(int)utils::Round(h*floattype(indst-minimum)/maximum);
+								b.Bottom=t+(int)utils::Round(h*floattype(indval-minimum)/maximum)+bt;
 							}
 						}
 					}
 					else {
 						if(display.centerindicator) {
-							b.Top=t-(int)Round(h*floattype(indval-minimum)/maximum)/2+h/2;
-							b.Bottom=t+(int)Round(h*floattype(indval-minimum)/maximum)/2+h/2+bt;
+							b.Top=t-(int)utils::Round(h*floattype(indval-minimum)/maximum)/2+h/2;
+							b.Bottom=t+(int)utils::Round(h*floattype(indval-minimum)/maximum)/2+h/2+bt;
 						}
 						else if(display.inverseaxis) {
 							b.Bottom=t+h+bt;
-							b.Top=t+h-(int)Round(h*floattype(indval-minimum)/maximum);
+							b.Top=t+h-(int)utils::Round(h*floattype(indval-minimum)/maximum);
 						}
 						else {
 							b.Top=t;
-							b.Bottom=t+(int)Round(h*floattype(indval-minimum)/maximum)+bt;
+							b.Bottom=t+(int)utils::Round(h*floattype(indval-minimum)/maximum)+bt;
 						}
 					}
 				}
@@ -2165,10 +2167,10 @@ namespace gge { namespace widgets {
 			if(tickmarkborder) {
 				int sz=0;
 				if(markers.ticks && markers.tickdistance && tick) {
-					Size size=tick->GetSize();
+					utils::Size size=tick->GetSize();
 					if(tickp) {
 						size=tickp->GetSize(tick->GetSize(), inner.GetSize());
-						size=size+Size(tickp->Margins.TotalX(),tickp->Margins.TotalY());
+						size=size+utils::Size(tickp->Margins.TotalX(),tickp->Margins.TotalY());
 					}
 
 					if(ishorizontal())
@@ -2177,10 +2179,10 @@ namespace gge { namespace widgets {
 						sz+=size.Width;
 				}
 				if(markers.numbers && markers.tickdistance && markers.numberdistance && font) {
-					Size size=Size(0, font->FontHeight());
+					utils::Size size=utils::Size(0, font->FontHeight());
 					if(tickp) {
 						size=textp->GetSize(size, inner.GetSize());
-						size=size+Size(textp->Margins.TotalX(),textp->Margins.TotalY());
+						size=size+utils::Size(textp->Margins.TotalX(),textp->Margins.TotalY());
 					}
 
 					if(ishorizontal())
@@ -2239,7 +2241,7 @@ namespace gge { namespace widgets {
 			//DRAWING TICKS
 			if(markers.ticks && markers.tickdistance && tick) {
 				Point p(0,0);
-				Size size=tick->GetSize();
+				utils::Size size=tick->GetSize();
 				Alignment::Type align;
 				if(orientation==Blueprint::Bottom || orientation==Blueprint::Horizontal)
 					align=Alignment::Top_Center;
@@ -2256,7 +2258,7 @@ namespace gge { namespace widgets {
 					align=tickp->Align;
 				}
 
-				Point location=p-Alignment::CalculateLocation(align, Bounds(Point(0,0),size), Size(0,0));
+				Point location=p-Alignment::CalculateLocation(align, Bounds(Point(0,0),size), utils::Size(0,0));
 
 				if(ishorizontal()) {
 					location.y+=distance;
@@ -2361,7 +2363,7 @@ namespace gge { namespace widgets {
 			//DRAWING NUMBERS
 			if(markers.numbers && markers.tickdistance && markers.numberdistance && font) {
 				Point p(0,0);
-				Size size=Size(0, font->FontHeight());
+				utils::Size size=utils::Size(0, font->FontHeight());
 				Alignment::Type align;
 				if(orientation==Blueprint::Bottom || orientation==Blueprint::Horizontal)
 					align=Alignment::Top_Center;
@@ -2378,7 +2380,7 @@ namespace gge { namespace widgets {
 					align=textp->Align;
 				}
 
-				Point location=p-Alignment::CalculateLocation(align, Bounds(Point(0,0),size), Size(0,0));
+				Point location=p-Alignment::CalculateLocation(align, Bounds(Point(0,0),size), utils::Size(0,0));
 
 				if(ishorizontal()) {
 					//location.x+=value_start;
@@ -2399,7 +2401,7 @@ namespace gge { namespace widgets {
 					}
 				}
 				else {
-					stringstream ss;
+					std::stringstream ss;
 					if(format.hex)
 						ss<<std::hex;
 					if(format.decimals>-1)
@@ -2470,7 +2472,7 @@ namespace gge { namespace widgets {
 			//DRAWING SYMBOL
 			if(symbol && display.symbol) {
 				Point p(0,0);
-				Size size=symbol->GetSize();
+				utils::Size size=symbol->GetSize();
 				Alignment::Type align;
 				if(orientation==Blueprint::Bottom || orientation==Blueprint::Horizontal)
 					align=Alignment::Top_Center;
@@ -2488,7 +2490,7 @@ namespace gge { namespace widgets {
 					align=symbolp->Align;
 				}
 
-				Point location=p-Alignment::CalculateLocation(align, Bounds(Point(0,0),size), Size(0,0));
+				Point location=p-Alignment::CalculateLocation(align, Bounds(Point(0,0),size), utils::Size(0,0));
 
 				if(ishorizontal()) {
 					symbol_zero=location.x;
@@ -2500,7 +2502,7 @@ namespace gge { namespace widgets {
 					else
 						v=value;
 
-					x=(int)Round((v-minimum)/valueperpixel);
+					x=(int)utils::Round((v-minimum)/valueperpixel);
 
 					if(display.inverseaxis) {
 						location.x=location.x + (value_end-x);
@@ -2519,7 +2521,7 @@ namespace gge { namespace widgets {
 					else
 						v=value;
 
-					y=(int)Round((v-minimum)/valueperpixel);
+					y=(int)utils::Round((v-minimum)/valueperpixel);
 
 						if(display.inverseaxis) {
 							location.y=location.y + (value_end-y);
@@ -2671,10 +2673,10 @@ namespace gge { namespace widgets {
 			if(ishorizontal()) {
 				int x;
 				if(display.inverseaxis) {
-					x=location.x+( value_end-(int)Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Left;
+					x=location.x+( value_end-(int)utils::Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Left;
 				}
 				else {
-					x=value_start+location.x+(int)Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Left;
+					x=value_start+location.x+(int)utils::Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Left;
 				}
 
 				if(display.centerindicator) {
@@ -2705,10 +2707,10 @@ namespace gge { namespace widgets {
 			else {
 				int y;
 				if(display.inverseaxis) {
-					y=location.y+( value_end-(int)Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Top;
+					y=location.y+( value_end-(int)utils::Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Top;
 				}
 				else {
-					y=value_start+location.y+(int)Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Top;
+					y=value_start+location.y+(int)utils::Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Top;
 				}
 
 				if(reverse) {
@@ -2777,10 +2779,10 @@ namespace gge { namespace widgets {
 			if(ishorizontal()) {
 				int x;
 				if(display.inverseaxis) {
-					x=toffset+location.x+( value_end-(int)Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Left;
+					x=toffset+location.x+( value_end-(int)utils::Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Left;
 				}
 				else {
-					x=toffset+value_start+location.x+(int)Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Left;
+					x=toffset+value_start+location.x+(int)utils::Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Left;
 				}
 
 				if(reverse) {
@@ -2803,10 +2805,10 @@ namespace gge { namespace widgets {
 			else {
 				int y;
 				if(display.inverseaxis) {
-					y=toffset+location.y+( value_end-(int)Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Top;
+					y=toffset+location.y+( value_end-(int)utils::Round((v-minimum)/valueperpixel) )-innerlayer.BoundingBox.Top;
 				}
 				else {
-					y=toffset+value_start+location.y+(int)Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Top;
+					y=toffset+value_start+location.y+(int)utils::Round((v-minimum)/valueperpixel)-innerlayer.BoundingBox.Top;
 				}
 
 				if(reverse) {
@@ -2860,7 +2862,7 @@ namespace gge { namespace widgets {
 
 		template<class T_, class floattype>
 		void Base<T_, floattype>::printvalue(int x, int y, int w) {
-			stringstream ss;
+			std::stringstream ss;
 			if(valueformat.hex)
 				ss<<std::hex;
 			if(valueformat.decimals>-1)

@@ -177,6 +177,8 @@ namespace gge { namespace widgets {
 					return true;
 			}
 
+			using WidgetBase::SetBlueprint;
+
 			virtual void SetBlueprint(const widgets::Blueprint &bp) {
 				this->bp=static_cast<const Blueprint*>(&bp);
 				if(WidgetBase::size.Width==0)

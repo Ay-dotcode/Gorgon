@@ -104,7 +104,10 @@ namespace gge { namespace widgets {
 
 		FolderResource *folder;
 
-		folder=&wrr.Get<FolderResource>(2);
+		Pointers.Fetch(wrr.Get<FolderResource>(2));
+		Pointers.Show();
+
+		folder=&wrr.Get<FolderResource>(3);
 		Buttons.Button=Button=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
 		Buttons.Dialog		= GetWithDefault(folder, *wrr.file, 1, Buttons.Button);
 		Buttons.Menu		= GetWithDefault(folder, *wrr.file, 2, Buttons.Button);
@@ -116,7 +119,26 @@ namespace gge { namespace widgets {
 		Buttons.Browse		= GetWithDefault(folder, *wrr.file, 8, Buttons.Symbol);
 
 
+		folder=&wrr.Get<FolderResource>(4);
+		Textboxes.Textbox=Textbox=dynamic_cast<textbox::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
+		Textboxes.Numberbox	= GetWithDefault(folder, *wrr.file, 1, Textboxes.Textbox);
+		Textboxes.Small		= GetWithDefault(folder, *wrr.file, 2, Textboxes.Textbox);
+		Textboxes.Password	= GetWithDefault(folder, *wrr.file, 3, Textboxes.Textbox);
+		Textboxes.TextEdit	= GetWithDefault(folder, *wrr.file, 4, Textboxes.Textbox);
+		Textboxes.CodeEdit	= GetWithDefault(folder, *wrr.file, 5, Textboxes.TextEdit);
+
+
 		folder=&wrr.Get<FolderResource>(5);
+		Checkboxes.Checkbox=Checkbox=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
+		Checkboxes.Radio=RadioButton=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(1).GetTarget(*wrr.file));
+		Checkboxes.Toggle	= GetWithDefault(folder, *wrr.file, 2, Checkboxes.Checkbox);
+		Checkboxes.More		= GetWithDefault(folder, *wrr.file, 3, Checkboxes.Checkbox);
+		Checkboxes.MenuCheck= GetWithDefault(folder, *wrr.file, 4, Checkboxes.Checkbox);
+		Checkboxes.MenuRadio= GetWithDefault(folder, *wrr.file, 5, Checkboxes.Radio);
+		Checkboxes.Lock		= GetWithDefault(folder, *wrr.file, 6, Checkboxes.Checkbox);
+
+
+		folder=&wrr.Get<FolderResource>(6);
 		Labels.Label=Label=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
 		Labels.Title		= GetWithDefault(folder, *wrr.file, 1, Labels.Label);
 		Labels.DataCaption	= GetWithDefault(folder, *wrr.file, 2, Labels.Title);
@@ -129,37 +151,75 @@ namespace gge { namespace widgets {
 		Labels.Tooltip		= GetWithDefault(folder, *wrr.file, 9, Labels.Label);
 		Labels.Link			= GetWithDefault(folder, *wrr.file, 10, Labels.Label);
 
-		
-		folder=&wrr.Get<FolderResource>(3);
-		Textboxes.Textbox=Textbox=dynamic_cast<textbox::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
-		Textboxes.Numberbox	= GetWithDefault(folder, *wrr.file, 1, Textboxes.Textbox);
-		Textboxes.Small		= GetWithDefault(folder, *wrr.file, 2, Textboxes.Textbox);
-		Textboxes.Password	= GetWithDefault(folder, *wrr.file, 3, Textboxes.Textbox);
-		Textboxes.TextEdit	= GetWithDefault(folder, *wrr.file, 4, Textboxes.Textbox);
-		Textboxes.CodeEdit	= GetWithDefault(folder, *wrr.file, 5, Textboxes.TextEdit);
+
+		folder=&wrr.Get<FolderResource>(7);
+		Listboxes.Listbox=Listbox=dynamic_cast<listbox::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
+		Listboxes.Action	= GetWithDefault(folder, *wrr.file, 1, Listboxes.Listbox);
+		Listboxes.Picture	= GetWithDefault(folder, *wrr.file, 2, Listboxes.Listbox);
+		Listboxes.File		= GetWithDefault(folder, *wrr.file, 3, Listboxes.Listbox);
+		Listboxes.FileView	= GetWithDefault(folder, *wrr.file, 4, Listboxes.Listbox);
+		Listboxes.Folder	= GetWithDefault(folder, *wrr.file, 5, Listboxes.File);
+		Listboxes.DataTable	= GetWithDefault(folder, *wrr.file, 6, Listboxes.Listbox);
+		Listboxes.Detailed	= GetWithDefault(folder, *wrr.file, 7, Listboxes.DataTable);
+		Listboxes.Checklist	= GetWithDefault(folder, *wrr.file, 8, Listboxes.Listbox);
+		Listboxes.Radiolist	= GetWithDefault(folder, *wrr.file, 9, Listboxes.Checklist);
+		Listboxes.Edit		= GetWithDefault(folder, *wrr.file, 10, Listboxes.Listbox);
 
 
-		folder=&wrr.Get<FolderResource>(4);
-		Checkboxes.Checkbox=Checkbox=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
-		Checkboxes.Radio=RadioButton=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(1).GetTarget(*wrr.file));
-		Checkboxes.Toggle	= GetWithDefault(folder, *wrr.file, 2, Checkboxes.Checkbox);
-		Checkboxes.More		= GetWithDefault(folder, *wrr.file, 3, Checkboxes.Checkbox);
-		Checkboxes.MenuCheck= GetWithDefault(folder, *wrr.file, 4, Checkboxes.Checkbox);
-		Checkboxes.MenuRadio= GetWithDefault(folder, *wrr.file, 5, Checkboxes.Radio);
-		Checkboxes.Lock		= GetWithDefault(folder, *wrr.file, 6, Checkboxes.Checkbox);
+		folder=&wrr.Get<FolderResource>(8);
+		Sliders.Slider=Slider=dynamic_cast<slider::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
+		Sliders.Selectbar	 = GetWithDefault(folder, *wrr.file, 2, Sliders.Slider);
+		Sliders.ImageSelector= GetWithDefault(folder, *wrr.file, 3, Sliders.Selectbar);
+		Sliders.Named		 = GetWithDefault(folder, *wrr.file, 4, Sliders.Selectbar);
+		Sliders.Radiobar	 = GetWithDefault(folder, *wrr.file, 5, Sliders.Selectbar);
+		Sliders.NumberSpinner= GetWithDefault(folder, *wrr.file, 8, Sliders.Slider);
+		Sliders.ItemSpinner	 = GetWithDefault(folder, *wrr.file, 9, Sliders.NumberSpinner);
+
+		Scrollbars.Scrollbar=Scrollbar=dynamic_cast<slider::Blueprint*>(folder->Get<LinkNodeResource>(1).GetTarget(*wrr.file));
+		Scrollbars.Dialog	= GetWithDefault(folder, *wrr.file, 6, Scrollbars.Scrollbar);
+		Scrollbars.Picture	= GetWithDefault(folder, *wrr.file, 7, Scrollbars.Scrollbar);
 
 
+		folder=&wrr.Get<FolderResource>(9);
+		Progressbars.Progressbar=Progressbar=dynamic_cast<slider::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
+		Progressbars.File		 = GetWithDefault(folder, *wrr.file, 1, Progressbars.Progressbar);
+		Progressbars.Working	 = GetWithDefault(folder, *wrr.file, 2, Progressbars.Progressbar);
+		Progressbars.Loading	 = GetWithDefault(folder, *wrr.file, 3, Progressbars.Progressbar);
+		Progressbars.Download	 = GetWithDefault(folder, *wrr.file, 4, Progressbars.Progressbar);
+		Progressbars.Percent	 = GetWithDefault(folder, *wrr.file, 6, Progressbars.Progressbar);
 
-		for(auto it=wrr.Get<FolderResource>(12).Subitems.First();it.isValid();it.Next()) {
+		Progressbars.Unknown=dynamic_cast<animation::RectangularGraphic2DAnimationProvider*>(folder->Get<LinkNodeResource>(5).GetTarget(*wrr.file));
+		if(!Progressbars.Unknown)
+			Progressbars.Unknown=&resource::NullImage::Get();
+
+		folder=&wrr.Get<FolderResource>(10);
+		Panels.Panel=Panel=dynamic_cast<panel::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
+		Panels.OverlayControls	= GetWithDefault(folder, *wrr.file, 1, Panels.Panel);
+		Panels.Window			= GetWithDefault(folder, *wrr.file, 2, Panels.Panel);
+		Panels.DialogWindow		= GetWithDefault(folder, *wrr.file, 3, Panels.Window);
+		Panels.Toolbar			= GetWithDefault(folder, *wrr.file, 4, Panels.Panel);
+		Panels.Menubar			= GetWithDefault(folder, *wrr.file, 5, Panels.Toolbar);
+		Panels.ToolWindow		= GetWithDefault(folder, *wrr.file, 6, Panels.Window);
+		Panels.SettingsWindow	= GetWithDefault(folder, *wrr.file, 7, Panels.Window);
+
+
+		for(auto it=wrr.Get<FolderResource>(14).Subitems.First();it.isValid();it.Next()) {
 			try {
 				icons.insert(pair<string, RectangularGraphic2DSequenceProvider&>(it->name, dynamic_cast<RectangularGraphic2DSequenceProvider&>(*it)));
 			}
 			catch(...) { }//don't insert if it is not an animation
 		}
 
-		for(auto it=wrr.Get<FolderResource>(13).Subitems.First();it.isValid();it.Next()) {
+		for(auto it=wrr.Get<FolderResource>(15).Subitems.First();it.isValid();it.Next()) {
 			try {
 				pictures.insert(pair<string, RectangularGraphic2DSequenceProvider&>(it->name, dynamic_cast<RectangularGraphic2DSequenceProvider&>(*it)));
+			}
+			catch(...) { }//don't insert if it is not an animation
+		}
+
+		for(auto it=wrr.Get<FolderResource>(16).Subitems.First();it.isValid();it.Next()) {
+			try {
+				sounds.insert(pair<string, SoundResource&>(it->name, dynamic_cast<SoundResource&>(*it)));
 			}
 			catch(...) { }//don't insert if it is not an animation
 		}

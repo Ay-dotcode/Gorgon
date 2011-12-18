@@ -398,6 +398,30 @@ namespace gge { namespace widgets {
 				return NULL;
 			}
 
+			template<class T_, int id>
+			T_ *GetNoInverse(Group **groups, StyleMode style, TransitionType &type) const {
+				for(int i=0;i<5 && groups[i];i++) {
+					Blueprint::Group *group=groups[i];
+
+					if(group->Mapping[style.from][style.to] && group->Mapping[style.from][style.to]->Get<T_,id>()) {
+						if(style.to!=0)
+							type=Blueprint::StyleTransition;
+						else if(group->Focus.to!=Blueprint::Focus_None)
+							type=Blueprint::FocusTransition;
+						else if(group->State.to!=0)
+							type=Blueprint::StateTransition;
+						else
+							type=Blueprint::NoTransition;
+
+						return group->Mapping[style.from][style.to]->Get<T_,id>();
+					}
+
+					//from -> None
+				}
+
+				return NULL;
+			}
+
 			BorderDataResource *GetOuterBorder(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<BorderDataResource, 1>(groups, style, type);
 			}
@@ -417,7 +441,7 @@ namespace gge { namespace widgets {
 				return Get<Placeholder, 6>(groups, style, type);
 			}
 			resource::SoundResource *GetSound(Group **groups, StyleMode style, TransitionType &type) const {
-				return Get<resource::SoundResource, 7>(groups, style, type);
+				return GetNoInverse<resource::SoundResource, 7>(groups, style, type);
 			}
 			BorderDataResource *GetOverlay(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<BorderDataResource, 8>(groups, style, type);

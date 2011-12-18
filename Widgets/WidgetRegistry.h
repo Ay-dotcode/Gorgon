@@ -9,6 +9,8 @@
 #include "../Engine/Animation.h"
 #include "Checkbox/CheckboxBlueprint.h"
 #include "Textbox/TextboxBlueprint.h"
+#include "Listbox/ListboxBase.h"
+#include "Slider/SliderBlueprint.h"
 
 
 
@@ -19,9 +21,10 @@ namespace gge { namespace widgets {
 	class WidgetRegistry {
 	public:
 
-		WidgetRegistry() : Icons(icons), Pictures(pictures), 
-			Button(NULL), Label(NULL), Textbox(NULL),
-			Checkbox(NULL), RadioButton(NULL)
+		WidgetRegistry() : Icons(icons), Pictures(pictures), Sounds(sounds),
+			Button(), Label(), Textbox(),
+			Checkbox(), RadioButton(), Listbox(), Slider(), Scrollbar(),
+			Progressbar(), Panel(), Window()
 		{}
 
 		void SetWRR(WidgetRegistryResource &wrr);
@@ -91,7 +94,53 @@ namespace gge { namespace widgets {
 				*Symbol
 			;
 		} Buttons;
-		
+
+		textbox::Blueprint *Textbox;
+		class CTextboxes {
+		public:
+			CTextboxes() : Textbox(NULL),
+				Numberbox(NULL),
+				Small(NULL),
+				Password(NULL),
+				TextEdit(NULL),
+				CodeEdit(NULL)
+			{
+			}
+
+			textbox::Blueprint 
+				*Textbox,
+				*Numberbox,
+				*Small,
+				*Password,
+				*TextEdit,
+				*CodeEdit
+			;
+		} Textboxes;
+
+		checkbox::Blueprint *Checkbox;
+		checkbox::Blueprint *RadioButton;
+		class CCheckboxes {
+		public:
+			CCheckboxes(): Checkbox(NULL) ,
+				Radio(NULL),
+				Toggle(NULL),
+				More(NULL),
+				MenuCheck(NULL),
+				MenuRadio(NULL),
+				Lock(NULL)
+			{ }
+
+			checkbox::Blueprint 
+				*Checkbox,
+				*Radio,
+				*Toggle,
+				*More,
+				*MenuCheck,
+				*MenuRadio,
+				*Lock
+			;
+		} Checkboxes;
+
 		checkbox::Blueprint *Label;
 		class CLabels {
 		public:
@@ -121,59 +170,110 @@ namespace gge { namespace widgets {
 				*Hint,
 				*Tooltip,
 				*Link
-			;
+				;
 
 		} Labels;
 
-		textbox::Blueprint *Textbox;
-		class CTextboxes {
+		listbox::Blueprint *Listbox;
+		class CListboxes {
 		public:
-			CTextboxes() : Textbox(NULL),
-				Numberbox(NULL),
-				Small(NULL),
-				Password(NULL),
-				TextEdit(NULL),
-				CodeEdit(NULL)
-			{
-			}
-
-			textbox::Blueprint 
-				*Textbox,
-				*Numberbox,
-				*Small,
-				*Password,
-				*TextEdit,
-				*CodeEdit
-			;
-		} Textboxes;
-
-		checkbox::Blueprint *Checkbox;
-		checkbox::Blueprint *RadioButton;
-
-		class CCheckboxes {
-		public:
-			CCheckboxes(): Checkbox(NULL) ,
-				Radio(NULL),
-				Toggle(NULL),
-				More(NULL),
-				MenuCheck(NULL),
-				MenuRadio(NULL),
-				Lock(NULL)
+			CListboxes() : Listbox(), Action(), Picture(), File(), FileView(),
+				Folder(), DataTable(), Detailed(), Checklist(), Radiolist(),
+				Edit()
 			{ }
 
-			checkbox::Blueprint 
-				*Checkbox,
-				*Radio,
-				*Toggle,
-				*More,
-				*MenuCheck,
-				*MenuRadio,
-				*Lock
+			listbox::Blueprint 
+				*Listbox,
+				*Action,
+				*Picture,
+				*File,
+				*FileView,
+				*Folder,
+				*DataTable,
+				*Detailed,
+				*Checklist,
+				*Radiolist,
+				*Edit;
+
+		} Listboxes;
+
+		slider::Blueprint *Slider;
+		slider::Blueprint *Scrollbar;
+		slider::Blueprint *Progressbar;
+		class CSliders {
+		public:
+
+			CSliders() : Slider(), Selectbar(), ImageSelector(), Named(),
+				Radiobar(), NumberSpinner(), ItemSpinner()
+			{ }
+
+			slider::Blueprint 
+				*Slider,
+				*Selectbar,
+				*ImageSelector,
+				*Named,
+				*Radiobar,
+				*NumberSpinner,
+				*ItemSpinner
 			;
-		} Checkboxes;
+		} Sliders;
+		class CScrollbars {
+		public:
+			CScrollbars() : Scrollbar(), Dialog(), Picture()
+			{ }
+
+			slider::Blueprint
+				*Scrollbar,
+				*Dialog,
+				*Picture
+			;
+		} Scrollbars;
+		class CProgressbars {
+		public:
+
+			CProgressbars() : Progressbar(), File(), Working(), Loading(),
+				Download(), Percent(), Unknown()
+			{ }
+
+			slider::Blueprint
+				*Progressbar,
+				*File,
+				*Working,
+				*Loading,
+				*Download,
+				*Percent
+			;
+
+			animation::RectangularGraphic2DAnimationProvider *Unknown;
+
+		} Progressbars;
+
+		panel::Blueprint *Panel;
+		panel::Blueprint *Window;
+		class CPanels {
+		public:
+
+			CPanels() : Panel(), OverlayControls(), Window(), DialogWindow(),
+				Toolbar(), Menubar(), ToolWindow(), SettingsWindow()
+			{ }
+
+
+			panel::Blueprint 
+				*Panel,
+				*OverlayControls,
+				*Window,
+				*DialogWindow,
+				*Toolbar,
+				*Menubar,
+				*ToolWindow,
+				*SettingsWindow
+			;
+		} Panels;
+
+
 
 		template<class T_>
-		class CCollection {
+		class Collection {
 			friend class WidgetRegistry;
 		public:
 			T_ &operator [](const std::string &key) {
@@ -185,12 +285,12 @@ namespace gge { namespace widgets {
 				}
 			}
 		protected:
-			CCollection(std::map<std::string, T_&> &parent) : parent(parent) { }
+			Collection(std::map<std::string, T_&> &parent) : parent(parent) { }
 
 			std::map<std::string, T_&> &parent;
 		};
 
-		class CImageCollection : public CCollection<animation::RectangularGraphic2DSequenceProvider> {
+		class ImageCollection : public Collection<animation::RectangularGraphic2DSequenceProvider> {
 			friend class WidgetRegistry;
 		public:
 
@@ -207,13 +307,33 @@ namespace gge { namespace widgets {
 			}
 
 		protected:
-			CImageCollection(std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> &parent) : CCollection(parent) { }
+			ImageCollection(std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> &parent) : Collection(parent) { }
 		} Icons, Pictures;
+
+		class SoundCollection : public Collection<resource::SoundResource> {
+			friend class WidgetRegistry;
+		public:
+			//this creates a new animation and you are responsible to delete it, 
+			//use .DeleteAnimation to delete the object safely
+			sound::Wave &operator () (const std::string &key) {
+				return *(this->operator [](key).CreateWave());
+			}
+
+			//this creates a new animation and you are responsible to delete it, 
+			//use .DeleteAnimation to delete the object safely
+			sound::Wave &operator () (const std::string &key, float maxdistance) {
+				return *(this->operator [](key).Create3DWave(maxdistance));
+			}
+
+		protected:
+			SoundCollection(std::map<std::string, resource::SoundResource&> &parent) : Collection(parent) { }
+		} Sounds;
 
 
 	protected:
 		std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> icons;
 		std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> pictures;
+		std::map<std::string, resource::SoundResource&> sounds;
 	};
 
 	WidgetRegistryResource *LoadWR(resource::File& File, std::istream &Data, int Size);

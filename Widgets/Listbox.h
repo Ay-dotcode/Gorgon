@@ -45,7 +45,7 @@ namespace gge { namespace widgets {
 		}
 
 		void Add(ListItem &item) {
-			if(bp->Item)
+			if(bp && bp->Item)
 				item.SetBlueprint(*bp->Item);
 
 			OrderedCollection::Add(item);
@@ -70,7 +70,7 @@ namespace gge { namespace widgets {
 		}
 
 		void Insert(ListItem &item, const ListItem *before) {
-			if(bp->Item)
+			if(bp && bp->Item)
 				item.SetBlueprint(*bp->Item);
 
 			OrderedCollection::Insert(item, before);
@@ -217,6 +217,8 @@ namespace gge { namespace widgets {
 		}
 
 		utils::Property<Listbox, SelectionTypes> SelectionType;
+
+		using WidgetBase::SetBlueprint;
 
 		virtual void SetBlueprint(const widgets::Blueprint &bp) {
 			Base::SetBlueprint(bp);

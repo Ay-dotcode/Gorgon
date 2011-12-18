@@ -42,6 +42,12 @@ namespace gge { namespace widgets {
 			Accesskey=0;
 		}
 
+		Checkbox &operator =(bool checked) {
+			if(checked)
+				setState(CheckboxState::Checked);
+			else
+				setState(CheckboxState::Unchecked);
+		}
 
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			//handle mouse events
