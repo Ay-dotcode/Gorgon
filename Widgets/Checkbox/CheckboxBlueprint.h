@@ -301,6 +301,8 @@ namespace gge { namespace widgets {
 				}
 
 
+				Element *Mapping[6][6];
+
 			protected:
 				utils::SGuid normal;
 				utils::SGuid hover;
@@ -316,8 +318,6 @@ namespace gge { namespace widgets {
 				utils::SGuid downtonormal;
 				utils::SGuid disabledtonormal;
 				utils::SGuid downtohover;
-
-				Element *Mapping[6][6];
 			};
 
 			Blueprint() : States(Single), Mapping()

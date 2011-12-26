@@ -122,6 +122,32 @@ namespace gge { namespace utils {
 		basic_Point2D<T_> TopLeft() const {
 			return basic_Point2D<T_>(Left, Top);
 		}
+
+		basic_Margins2D operator -(const basic_Margins2D &right) const {
+			return basic_Margins2D(Left-right.Left, Top-right.Top, Right-right.Right, Bottom-right.Bottom);
+		}
+
+		basic_Margins2D operator +(const basic_Margins2D &right) const {
+			return basic_Margins2D(Left+right.Left, Top+right.Top, Right+right.Right, Bottom+right.Bottom);
+		}
+
+		basic_Margins2D &operator -=(const basic_Margins2D &right) {
+			Left-=right.Left;
+			Top-=right.Top;
+			Right-=right.Right;
+			Bottom-=right.Bottom;
+
+			return *this;
+		}
+
+		basic_Margins2D &operator +=(const basic_Margins2D &right) {
+			Left+=right.Left;
+			Top+=right.Top;
+			Right+=right.Right;
+			Bottom+=right.Bottom;
+
+			return *this;
+		}
 	};
 
 	template <typename T_, typename R_>

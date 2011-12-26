@@ -19,8 +19,7 @@ namespace gge { namespace widgets {
 			Base(bool cangetfocus, AutosizeModes::Type autosize,bool textwrap, bool drawsymbol,bool drawicon) : text(""),
 				cangetfocus(cangetfocus), autosize(autosize), textwrap(textwrap), underline(), currentsize(0,0),
 				drawsymbol(drawsymbol), drawicon(drawicon), icon(NULL), currentstate(1), unprepared(true), bp(NULL),
-				mouseover(false), mousedown(false), next_focus(Blueprint::Focus_None), next_state(0), next_style(Blueprint::Style_None),
-				event(false)
+				mouseover(false), mousedown(false), next_focus(Blueprint::Focus_None), next_state(0), next_style(Blueprint::Style_None)
 			{
 				focus_anim.Pause();
 				focus_anim.Finished.Register(this, &Base::focus_anim_finished);
@@ -101,52 +100,16 @@ namespace gge { namespace widgets {
 
 			void setstyle(Blueprint::StyleType type);
 
-			void down() {
-				if(!IsEnabled()) return;
-
-				mousedown=true;
-				setstyle(Blueprint::Down);
-			}
-			void up() {
-				if(!IsEnabled()) return;
-
-				mousedown=false;
-				if(mouseover)
-					setstyle(Blueprint::Hover);
-				else
-					setstyle(Blueprint::Normal);
-			}
-			void click() {
-				if(!IsEnabled()) return;
-
-				down();
-
-				if(style.to==Blueprint::Style_None) {
-					next_style=Blueprint::Normal;
-					triggerwait();
-				}
-				else
-					up();
-			}
+			void down();
+			void up();
+			void click();
 			void triggerwait() {
 				wait_timeout.ResetProgress();
 				wait_timeout.Play();
 				wait_timeout.SetPauseAt(CHECKBOX_CLICK_DOWNDURATION);
 			}
-			void over() {
-				mouseover=true;
-				if(!IsEnabled()) return;
-
-				if(!mousedown)
-					setstyle(Blueprint::Hover);
-			}
-			void out() {
-				mouseover=false;
-				if(!IsEnabled()) return;
-
-				if(!mousedown)
-					setstyle(Blueprint::Normal);
-			}
+			void over();
+			void out();
 
 			void setautosize(AutosizeModes::Type autosize) {
 				this->autosize=autosize;
@@ -292,8 +255,6 @@ namespace gge { namespace widgets {
 			std::string text;
 
 			const Blueprint *bp;
-			
-			bool event;
 
 		private:
 			Base(const Base &);

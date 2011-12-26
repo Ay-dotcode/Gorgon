@@ -511,8 +511,6 @@ namespace gge { namespace widgets {
 		}
 
 		void Base::setfocus(Blueprint::FocusType type) {
-			event=true;
-
 			if(!bp) {
 				focus.from=type;
 				return;
@@ -572,8 +570,6 @@ namespace gge { namespace widgets {
 		}
 
 		void Base::setstate(int type) {
-			event=true;
-
 			currentstate=type;
 			if(!bp) {
 				state.from=type;
@@ -644,44 +640,48 @@ namespace gge { namespace widgets {
 				}
 			}
 
-			event=true;
-
 			Draw();
 		}
 
 		void Base::setstyle(Blueprint::StyleType type) {
-			event=true;
-
 			if(!bp) {
 				style.from=type;
 				return;
 			}
 
 			if(style.from!=type || style.to!=Blueprint::Style_None) {
+				//If there is another transition, move it to the next
 				if(style.from!=type && style.to!=type && style.to!=Blueprint::Style_None) {
 					next_style=type;
 					return;
 				}
+				//Disabled can only be access from normal
 				if(style.from==Blueprint::Disabled && type!=Blueprint::Normal || style.from!=Blueprint::Normal && type==Blueprint::Disabled) {
 					next_style=type;
 					type=Blueprint::Normal;
 				}
+
 				Blueprint::AnimationInfo info;
-				if(style.from==type)
+				
+				if(style.from==type) //This means that to is not empty and we have to revert
 					info=bp->HasStyleAnimation(focus,state,Blueprint::StyleMode(style.to, type));
 				else
 					info=bp->HasStyleAnimation(focus,state,Blueprint::StyleMode(style.from, type));
 
 				if(info) {
+					//This means that to is not empty and we have to revert
 					if(style.from==type) {
+						//If there is no way to revert set to to next
 						if(info.direction==style_anim.GetSpeed()) {
 							next_style=type;
+
 							return;
 						}
-						else
+						else { // reverse
 							style.from=style.to;
+						}
 					}
-					else if(style.to==type) {
+					else if(style.to==type) { //overriding previous event
 						next_style=Blueprint::Style_None;
 
 						return;
@@ -692,25 +692,6 @@ namespace gge { namespace widgets {
 						style_anim_loop=true;
 					}
 					else if(info.duration==0) {
-						style.to=type;
-
-						//!!TODO: Create check for sound part and move this to there
-						Blueprint::Group **groups=new Blueprint::Group *[5];
-
-						bp->GetAlternatives(groups, focus, state);
-
-						//prepare resources
-						Blueprint::TransitionType transition;
-
-						if(event) {
-							SoundResource *snd=bp->GetSound(groups, style, transition);
-							if(snd)
-								snd->CreateWave()->Play();
-
-							event=false;
-						}
-						///******************************************************
-
 						style.to=Blueprint::Style_None;
 						style.from=type;
 						Draw();
@@ -776,6 +757,14 @@ namespace gge { namespace widgets {
 			if(IsFocused())
 				return true;
 
+			if(bp) {
+				if(bp->Mapping[Blueprint::GroupMode(Blueprint::NotFocused, 1, Blueprint::Focused, 0)] &&
+					bp->Mapping[Blueprint::GroupMode(Blueprint::NotFocused, 1, Blueprint::Focused, 0)]->Normal &&
+					bp->Mapping[Blueprint::GroupMode(Blueprint::NotFocused, 1, Blueprint::Focused, 0)]->Normal->Sound) {
+						bp->Mapping[Blueprint::GroupMode(Blueprint::NotFocused, 1, Blueprint::Focused, 0)]->Normal->Sound->CreateWave()->Play();
+				}
+			}
+
 			WidgetBase::Focus();
 			setfocus(Blueprint::Focused);
 
@@ -786,12 +775,17 @@ namespace gge { namespace widgets {
 			if(!IsFocused())
 				return true;
 
+			//!SND
+
 			setfocus(Blueprint::NotFocused);
 
 			return true;
 		}
 
 		void Base::Enable() {
+			if(!IsEnabled()) {
+				//!SND
+			}
 			WidgetBase::Enable();
 
 			if(mouseover)
@@ -801,6 +795,9 @@ namespace gge { namespace widgets {
 		}
 
 		void Base::Disable() {
+			if(IsEnabled()) {
+				//!SND
+			}
 			WidgetBase::Disable();
 
 			setstyle(Blueprint::Disabled);
@@ -939,21 +936,12 @@ namespace gge { namespace widgets {
 				unprepared=false;
 				return;
 			}
-
 			Blueprint::Group **groups=new Blueprint::Group *[5];
 
 			bp->GetAlternatives(groups, focus, state);
 
 			//prepare resources
 			Blueprint::TransitionType transition;
-
-			if(event) {
-				SoundResource *snd=bp->GetSound(groups, style, transition);
-				if(snd)
-					snd->CreateWave()->Play();
-
-				event=false;
-			}
 
 			symbolp=bp->GetSymbolPlace(groups, style, transition);
 			textp=bp->GetTextPlace(groups, style, transition);
@@ -1265,6 +1253,68 @@ namespace gge { namespace widgets {
 			}
 
 			BaseLayer->Resize(currentsize);
+		}
+
+		void Base::down() {
+			if(!IsEnabled()) return;
+
+			if(!mousedown) {
+				//!SND
+			}
+
+			mousedown=true;
+			setstyle(Blueprint::Down);
+		}
+
+		void Base::up() {
+			if(!IsEnabled()) return;
+
+			if(mousedown) {
+				//!SND
+			}
+
+			mousedown=false;
+			if(mouseover)
+				setstyle(Blueprint::Hover);
+			else
+				setstyle(Blueprint::Normal);
+		}
+
+		void Base::click() {
+			if(!IsEnabled()) return;
+
+			down();
+
+			if(style.to==Blueprint::Style_None) {
+				next_style=Blueprint::Normal;
+				triggerwait();
+			}
+			else
+				up();
+		}
+
+		void Base::over() {
+			if(!mouseover) {
+				//!SND
+			}
+
+			mouseover=true;
+			if(!IsEnabled()) return;
+
+			if(!mousedown)
+				setstyle(Blueprint::Hover);
+		}
+
+		void Base::out() {
+			if(mouseover) {
+				//!SND
+			}
+
+			mouseover=false;
+			if(!IsEnabled()) return;
+
+			if(!mousedown)
+				setstyle(Blueprint::Normal);
 		}
 
 	}

@@ -57,10 +57,14 @@ namespace gge { namespace widgets {
 			}
 
 			if(overlay) {
+				Margins tm;
+				if(outerborder) {
+					tm=outerborder->BorderWidth-overlay->BorderWidth;
+				}
 				overlay->DrawIn(overlayer, 
-					overlay->Margins.Left, overlay->Margins.Top,
-					outer.Width()-overlay->Margins.TotalX(),
-					outer.Height()-overlay->Margins.TotalY()
+					overlay->Margins.Left+tm.Left, overlay->Margins.Top+tm.Top,
+					outer.Width()-overlay->Margins.TotalX()-tm.TotalX(),
+					outer.Height()-overlay->Margins.TotalY()-tm.TotalY()
 				);
 			}
 
