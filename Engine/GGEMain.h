@@ -14,7 +14,7 @@ namespace gge {
 	struct IntervalObject;
 
 	////Function definition required to handle interval signal events
-	typedef void (*IntervalSignalEvent)(IntervalObject *interval, void *data);
+	typedef std::function<void(IntervalObject &, utils::Any)> IntervalSignalEvent;
 
 	////Function definition to handle notifications
 	typedef void (*Notification)();
@@ -30,7 +30,7 @@ namespace gge {
 		/// this interval is signaled
 		unsigned int LastSignal;
 		////The data to be passed signal handler
-		void *Data;
+		utils::Any Data;
 		////Whether this object is enabled, when enabled
 		/// this interval will continue from where it left
 		/// most probably triggering a signal in the next
@@ -126,7 +126,7 @@ namespace gge {
 
 		////Registers a signal handler to be called in every given time. Exact time passed from the
 		/// last signal can be checked using LastSignal variable of the IntervalObject
-		IntervalObject *RegisterInterval(unsigned int Timeout, void* Data, IntervalSignalEvent Signal);
+		IntervalObject *RegisterInterval(unsigned int Timeout, IntervalSignalEvent Signal, utils::Any Data=utils::Any(NULL));
 		////Unregisters and destroys given interval. Given interval object is destroyed therefore,
 		/// it cannot be used after this function is called
 		void UnregisterInterval(IntervalObject *Interval);

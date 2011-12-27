@@ -13,7 +13,7 @@ namespace gge { namespace animation {
 
 	unsigned LastTick;
 
-	void Animator_Signal(IntervalObject *interval, void *data) {
+	void Animator_Signal(IntervalObject &interval, utils::Any data) {
 		unsigned progressed=Main.CurrentTime-LastTick;
 		if(progressed==0) return;
 
@@ -33,7 +33,7 @@ namespace gge { namespace animation {
 	}
 
 	void Initialize(GGEMain &main) {
-		main.RegisterInterval(0, NULL, Animator_Signal);
+		main.RegisterInterval(0, Animator_Signal);
 		LastTick=main.CurrentTime;
 	}
 

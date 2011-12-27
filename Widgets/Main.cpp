@@ -20,7 +20,7 @@ namespace gge { namespace widgets {
 	utils::Collection<WidgetBase> DrawQueue;
 
 
-	void Draw_Signal(IntervalObject *interval, void *data) {
+	void Draw_Signal(IntervalObject &interval, void *data) {
 		for(utils::Collection<WidgetBase>::Iterator i=DrawQueue.First();i.isValid();i.Next()) {
 			i->waitingforredraw=false;
 			i->draw();
@@ -55,7 +55,7 @@ namespace gge { namespace widgets {
 		Main.Add(layer, 1);
 		TopLevel.LandOn(*layer);
 
-		Main.RegisterInterval(1, NULL, &Draw_Signal);
+		Main.RegisterInterval(1, &Draw_Signal);
 	}
 
 }}

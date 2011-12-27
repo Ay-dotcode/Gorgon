@@ -76,7 +76,7 @@ namespace gge {
 		for(utils::Collection<IntervalObject>::Iterator interval=IntervalObjects.First();interval.isValid();interval.Next()) {
 			if(interval->Enabled)
 				if(CurrentTime-interval->LastSignal>interval->Timeout) {
-					interval->Signal(interval, interval->Data);
+					interval->Signal(*interval, interval->Data);
 					interval->LastSignal=CurrentTime;
 				}
 		}
@@ -100,7 +100,7 @@ namespace gge {
 		graphics::system::PostRender(Device);
 	}
 
-	IntervalObject *GGEMain::RegisterInterval(unsigned int Timeout, void* Data, IntervalSignalEvent Signal) {
+	IntervalObject *GGEMain::RegisterInterval(unsigned int Timeout, IntervalSignalEvent Signal, utils::Any Data) {
 		IntervalObject *interval=new IntervalObject;
 
 		interval->Data=Data;

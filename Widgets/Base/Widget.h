@@ -17,7 +17,7 @@ namespace gge { namespace widgets {
 
 	class WidgetBase {
 		friend class ContainerBase;
-		friend void Draw_Signal(IntervalObject *interval, void *data);
+		friend void Draw_Signal(IntervalObject &interval, void *data);
 	public:
 
 
