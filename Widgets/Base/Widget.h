@@ -7,6 +7,7 @@
 #include "..\..\Utils\Size2D.h"
 #include "../../Engine/Pointer.h"
 #include "../Basic/WidgetLayer.h"
+#include "../../Resource/SoundResource.h"
 
 
 namespace gge { namespace widgets {
@@ -242,6 +243,8 @@ namespace gge { namespace widgets {
 
 
 	protected:
+			
+		void playsound(resource::SoundResource *snd);
 
 		virtual void draw()=0;
 

@@ -570,6 +570,9 @@ namespace gge { namespace widgets {
 		}
 
 		void Base::setstate(int type) {
+			if(currentstate!=type) {
+				playsound(Blueprint::NotFocused, Blueprint::Focus_None, currentstate,type,Blueprint::Normal, Blueprint::Style_None);
+			}
 			currentstate=type;
 			if(!bp) {
 				state.from=type;
@@ -747,6 +750,16 @@ namespace gge { namespace widgets {
 			Draw();
 		}
 
+		void Base::playsound(Blueprint::FocusType focusfrom, Blueprint::FocusType focusto, int statefrom, int stateto, Blueprint::StyleType from, Blueprint::StyleType to) {
+			if(bp) {
+				if(bp->Mapping[Blueprint::GroupMode(focusfrom, statefrom, focusto, stateto)] &&
+					bp->Mapping[Blueprint::GroupMode(focusfrom, statefrom, focusto, stateto)]->Mapping[from][to] &&
+					bp->Mapping[Blueprint::GroupMode(focusfrom, statefrom, focusto, stateto)]->Mapping[from][to]->Sound) {
+						WidgetBase::playsound(bp->Mapping[Blueprint::GroupMode(focusfrom, statefrom, focusto, stateto)]->Mapping[from][to]->Sound);
+				}
+			}
+		}
+
 		bool Base::Focus() {
 			if(!cangetfocus)
 				return false;
@@ -756,14 +769,9 @@ namespace gge { namespace widgets {
 
 			if(IsFocused())
 				return true;
+			
+			playsound(Blueprint::NotFocused, Blueprint::Focused,1,0,Blueprint::Normal, Blueprint::Style_None);
 
-			if(bp) {
-				if(bp->Mapping[Blueprint::GroupMode(Blueprint::NotFocused, 1, Blueprint::Focused, 0)] &&
-					bp->Mapping[Blueprint::GroupMode(Blueprint::NotFocused, 1, Blueprint::Focused, 0)]->Normal &&
-					bp->Mapping[Blueprint::GroupMode(Blueprint::NotFocused, 1, Blueprint::Focused, 0)]->Normal->Sound) {
-						bp->Mapping[Blueprint::GroupMode(Blueprint::NotFocused, 1, Blueprint::Focused, 0)]->Normal->Sound->CreateWave()->Play();
-				}
-			}
 
 			WidgetBase::Focus();
 			setfocus(Blueprint::Focused);
@@ -775,7 +783,7 @@ namespace gge { namespace widgets {
 			if(!IsFocused())
 				return true;
 
-			//!SND
+			playsound(Blueprint::Focused, Blueprint::NotFocused, 1,0,Blueprint::Normal, Blueprint::Style_None);
 
 			setfocus(Blueprint::NotFocused);
 
@@ -784,7 +792,7 @@ namespace gge { namespace widgets {
 
 		void Base::Enable() {
 			if(!IsEnabled()) {
-				//!SND
+				playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Disabled, Blueprint::Normal);
 			}
 			WidgetBase::Enable();
 
@@ -796,7 +804,7 @@ namespace gge { namespace widgets {
 
 		void Base::Disable() {
 			if(IsEnabled()) {
-				//!SND
+				playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Normal, Blueprint::Disabled);
 			}
 			WidgetBase::Disable();
 
@@ -1259,7 +1267,7 @@ namespace gge { namespace widgets {
 			if(!IsEnabled()) return;
 
 			if(!mousedown) {
-				//!SND
+				playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Normal, Blueprint::Down);
 			}
 
 			mousedown=true;
@@ -1270,7 +1278,7 @@ namespace gge { namespace widgets {
 			if(!IsEnabled()) return;
 
 			if(mousedown) {
-				//!SND
+				playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Down, Blueprint::Normal);
 			}
 
 			mousedown=false;
@@ -1295,7 +1303,7 @@ namespace gge { namespace widgets {
 
 		void Base::over() {
 			if(!mouseover) {
-				//!SND
+				playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Normal, Blueprint::Hover);
 			}
 
 			mouseover=true;
@@ -1307,7 +1315,7 @@ namespace gge { namespace widgets {
 
 		void Base::out() {
 			if(mouseover) {
-				//!SND
+				playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Hover, Blueprint::Normal);
 			}
 
 			mouseover=false;

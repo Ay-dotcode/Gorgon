@@ -42,33 +42,16 @@ namespace gge { namespace widgets {
 				return WidgetBase::IsEnabled();
 			}
 
-			virtual void Enable() {
-				if(!IsEnabled()) {
-					setstyle(widgets::Blueprint::Normal);
-					WidgetBase::Enable();
-				}
-			}
+			virtual void Enable();
 
-			virtual void Disable() {
-				if(IsEnabled()) {
-					setstyle(widgets::Blueprint::Disabled);
-
-					WidgetBase::Disable();
-				}
-
-			}
+			virtual void Disable();
 
 			virtual void Draw() {
 				unprepared=true;
 				WidgetBase::Draw();
 			}
 
-			virtual bool Focus() {
-				if(IsEnabled() && IsVisible())
-					setstyle(widgets::Blueprint::Focused_Style);
-
-				return WidgetBase::Focus();
-			}
+			virtual bool Focus();
 
 			using WidgetBase::SetBlueprint;
 
@@ -85,14 +68,7 @@ namespace gge { namespace widgets {
 
 			virtual void draw();
 
-			virtual bool loosefocus(bool force) {
-				if(mhover)
-					setstyle(widgets::Blueprint::Hover);
-				else
-					setstyle(widgets::Blueprint::Normal);
-
-				return true;
-			}
+			virtual bool loosefocus(bool force);
 
 			virtual bool detach(ContainerBase *container) {
 				innerlayer.parent=NULL;
@@ -266,6 +242,8 @@ namespace gge { namespace widgets {
 					Draw();
 				}
 			}
+
+			void playsound(Blueprint::StyleType stylefrom, Blueprint::StyleType styleto);
 
 		private:
 			class cscroll {

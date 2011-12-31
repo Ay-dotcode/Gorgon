@@ -69,8 +69,10 @@ namespace gge { namespace widgets {
 				Base::out();
 				break;
 			case input::mouse::Event::Left_Click:
-				if(IsEnabled())
+				if(IsEnabled()) {
+					playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Down, Blueprint::Style_None);
 					clickevent();
+				}
 
 				break;
 			}
@@ -94,6 +96,7 @@ namespace gge { namespace widgets {
 			}
 			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Up && !input::keyboard::Modifier::Check()) {
 				Base::up();
+				playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Down, Blueprint::Style_None);
 				clickevent();
 
 				return true;
@@ -108,6 +111,7 @@ namespace gge { namespace widgets {
 				return;
 
 			Base::click();
+			playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Down, Blueprint::Style_None);
 			clickevent();
 		}
 

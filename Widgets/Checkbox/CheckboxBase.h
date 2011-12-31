@@ -202,6 +202,8 @@ namespace gge { namespace widgets {
 
 			Blueprint::Line *lines[4];
 
+			void playsound(Blueprint::FocusType focusfrom, Blueprint::FocusType focusto, int statefrom, int stateto, Blueprint::StyleType stylefrom, Blueprint::StyleType styleto);
+
 		private:
 			animation::AnimationController &getanimation(Blueprint::TransitionType transition) {
 				if(transition==Blueprint::FocusTransition)
@@ -211,6 +213,7 @@ namespace gge { namespace widgets {
 				else
 					return style_anim;
 			}
+
 
 
 			Blueprint::FocusMode focus;

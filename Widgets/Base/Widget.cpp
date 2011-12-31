@@ -100,5 +100,15 @@ namespace gge { namespace widgets {
 			Container->WidgetBoundsChanged();
 	}
 
+	void WidgetBase::playsound(resource::SoundResource *snd) {
+		int x=location.x+size.Width/2;
+		int y=location.y+size.Height/2;
+		if(Container) {
+			x+=Container->AbsoluteLeft();
+			y+=Container->AbsoluteTop();
+		}
+		snd->Create3DWave((Main.getWidth()+Main.getHeight())/8.0f)->Play().Set3DPosition((float)x, (float)y, 0);
+	}
+
 
 }}

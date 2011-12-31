@@ -213,6 +213,8 @@ namespace gge { namespace widgets {
 				adjustscrolls();
 			}
 
+			virtual utils::Point AbsoluteLocation();
+
 		protected:
 			void adjustlayers();
 

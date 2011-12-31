@@ -193,6 +193,8 @@ namespace gge { namespace widgets {
 				return Get<BorderDataResource, 8>(style, transition);
 			}
 
+			Element *Mapping[6][6];
+
 
 		protected:
 			utils::SGuid selection;
@@ -215,8 +217,6 @@ namespace gge { namespace widgets {
 			utils::SGuid focusedtonormal;
 			utils::SGuid disabledtonormal;
 			utils::SGuid focusedtohover;
-
-			Element *Mapping[6][6];
 
 
 		};

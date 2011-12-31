@@ -107,6 +107,16 @@ namespace gge { namespace widgets {
 		int GetUsableWidth() { return GetUsableSize().Width; }
 		int GetUsableHeight() { return GetUsableSize().Height; }
 
+		virtual utils::Point AbsoluteLocation() {
+			return utils::Point(0,0);
+		}
+		int AbsoluteLeft() {
+			return AbsoluteLocation().x;
+		}
+		int AbsoluteTop() {
+			return AbsoluteLocation().y;
+		}
+
 
 		virtual WidgetBase *GetFocused() { return Focused; }
 		virtual bool HasFocused() { return Focused!=NULL; }

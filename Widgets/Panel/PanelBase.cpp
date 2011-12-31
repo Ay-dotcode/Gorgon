@@ -385,6 +385,14 @@ namespace gge { namespace widgets {
 			vscroll.bar.Move(innerlayer.BoundingBox.Right+padding.Right, innerlayer.BoundingBox.Top);
 		}
 
+		utils::Point Base::AbsoluteLocation() {
+			if(Container) {
+				return Container->AbsoluteLocation()+location;
+			}
+			else
+				return location;
+		}
+
 	}
 }}
 

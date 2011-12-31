@@ -1,4 +1,5 @@
 #include "Sound.h"
+#include "GGEMain.h"
 
 namespace gge { namespace sound {
 
@@ -21,6 +22,8 @@ namespace gge { namespace sound {
 			alcMakeContextCurrent(context);
 
 			isAvailable=true;
+
+			environment::SetListener3DPosition(Main.getWidth()/2,Main.getHeight()/2,0);
 
 			return ERRNO_ERR;
 		}

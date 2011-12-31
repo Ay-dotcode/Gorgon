@@ -123,6 +123,15 @@ namespace gge { namespace widgets {
 			input::keyboard::Events.Unregister(KeyboardToken);
 		}
 
+		virtual utils::Point AbsoluteLocation()  {
+			if(HasBaseLayer()) {
+				return BaseLayer->BoundingBox.TopLeft();
+			}
+			else {
+				return utils::Point(0,0);
+			}
+		}
+
 
 	protected:
 		LayerBase *BaseLayer;

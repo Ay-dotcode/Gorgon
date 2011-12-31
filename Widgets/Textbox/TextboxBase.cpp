@@ -391,12 +391,14 @@ namespace gge { namespace widgets {
 
 			if(event==Event::Over) {
 				if(!IsFocused()) {
+					//!SND
 					setstyle(widgets::Blueprint::Hover);
 				}
 				mhover=true;
 			}
 			if(event==Event::Out) {
 				if(!IsFocused()) {
+					//!SND
 					setstyle(widgets::Blueprint::Normal);
 				}
 				mhover=true;
@@ -443,25 +445,51 @@ namespace gge { namespace widgets {
 			if(event==Event::Down && Modifier::Current==Modifier::None) {
 				if(Key==KeyCodes::Left) {
 					setcaretlocation(caretlocation-1);
+
+					if(bp) {
+						if(bp->TypeSound)
+							WidgetBase::playsound(bp->TypeSound);
+					}
 					
 					return true;
 				}
 				if(Key==KeyCodes::Right) {
 					setcaretlocation(caretlocation+1);
 
+					if(bp) {
+						if(bp->TypeSound)
+							WidgetBase::playsound(bp->TypeSound);
+					}
+
 					return true;
 				}
 				if(Key==KeyCodes::Home) {
 					setcaretlocation(0);
+
+					if(bp) {
+						if(bp->TypeSound)
+							WidgetBase::playsound(bp->TypeSound);
+					}
 
 					return true;
 				}
 				if(Key==KeyCodes::End) {
 					setcaretlocation(text.length());
 
+					if(bp) {
+						if(bp->TypeSound)
+							WidgetBase::playsound(bp->TypeSound);
+					}
+
 					return true;
 				}
 				if(Key==KeyCodes::Delete) {
+
+					if(bp) {
+						if(bp->TypeSound)
+							WidgetBase::playsound(bp->TypeSound);
+					}
+
 					if(caretlocation!=selectionstart) {
 						if(selectionstart<caretlocation) {
 							text.erase(selectionstart, caretlocation-selectionstart);
@@ -491,26 +519,51 @@ namespace gge { namespace widgets {
 				if(Key==KeyCodes::Left) {
 					setselection(selectionstart, caretlocation-1);
 
+					if(bp) {
+						if(bp->TypeSound)
+							WidgetBase::playsound(bp->TypeSound);
+					}
+
 					return true;
 				}
 				if(Key==KeyCodes::Right) {
 					setselection(selectionstart, caretlocation+1);
+
+					if(bp) {
+						if(bp->TypeSound)
+							WidgetBase::playsound(bp->TypeSound);
+					}
 
 					return true;
 				}
 				if(Key==KeyCodes::Home) {
 					setselection(selectionstart, 0);
 
+					if(bp) {
+						if(bp->TypeSound)
+							WidgetBase::playsound(bp->TypeSound);
+					}
+
 					return true;
 				}
 				if(Key==KeyCodes::End) {
 					setselection(selectionstart, text.length());
+
+					if(bp) {
+						if(bp->TypeSound)
+							WidgetBase::playsound(bp->TypeSound);
+					}
 
 					return true;
 				}
 			}
 
 			if(event==Event::Char && !Modifier::Check()) {
+				if(bp) {
+					if(bp->TypeSound)
+						WidgetBase::playsound(bp->TypeSound);
+				}
+
 				if(Key==KeyCodes::Backspace) {
 					if(caretlocation!=selectionstart) {
 						if(selectionstart<caretlocation) {
@@ -679,6 +732,53 @@ namespace gge { namespace widgets {
 			}
 
 			Draw();
+		}
+
+		void Base::playsound(Blueprint::StyleType stylefrom, Blueprint::StyleType styleto) {
+			if(bp) {
+				if(bp->Mapping[stylefrom][styleto] && bp->Mapping[stylefrom][styleto]->Sound) {
+					WidgetBase::playsound(bp->Mapping[stylefrom][styleto]->Sound);
+				}
+			}
+		}
+
+		bool Base::Focus() {
+			if(!IsEnabled() || !IsVisible())
+				return;
+
+			if(!IsFocused()) {
+				//!SND
+			}
+
+			setstyle(widgets::Blueprint::Focused_Style);
+
+			return WidgetBase::Focus();
+		}
+
+		void Base::Enable() {
+			if(!IsEnabled()) {
+				//!SND
+				setstyle(widgets::Blueprint::Normal);
+				WidgetBase::Enable();
+			}
+		}
+
+		void Base::Disable() {
+			if(IsEnabled()) {
+				//!SND
+				setstyle(widgets::Blueprint::Disabled);
+
+				WidgetBase::Disable();
+			}
+		}
+
+		bool Base::loosefocus(bool force) {
+			if(mhover)
+				setstyle(widgets::Blueprint::Hover);
+			else
+				setstyle(widgets::Blueprint::Normal);
+
+			return true;
 		}
 
 
