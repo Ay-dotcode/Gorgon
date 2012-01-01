@@ -121,6 +121,8 @@ namespace gge { namespace widgets {
 				WidgetBase::MouseEvent(event, location, amount);
 
 				if(event==input::mouse::Event::Left_Click) {
+					playsound(Blueprint::NotFocused, Blueprint::Focus_None, Blueprint::Down, Blueprint::Style_None);
+
 					if(ishorizontal()) {
 						int x;
 						if(display.inverseaxis)
@@ -232,7 +234,13 @@ namespace gge { namespace widgets {
 					}
 				}
 
+				if(event==input::mouse::Event::Over) {
+					playsound(Blueprint::NotFocused, Blueprint::Focus_None, Blueprint::Normal, Blueprint::Hover);
+
+				}
+
 				if(event==input::mouse::Event::Out) {
+					playsound(Blueprint::NotFocused, Blueprint::Focus_None, Blueprint::Hover, Blueprint::Normal);
 					value_over=false;
 					rule_over=false;
 
@@ -244,12 +252,19 @@ namespace gge { namespace widgets {
 			}
 
 			virtual void Disable()  {
+				if(IsEnabled()) {
+					playsound(Blueprint::NotFocused, Blueprint::Focus_None, Blueprint::Normal, Blueprint::Disabled);
+				}
+
 				WidgetBase::Disable();
 
 				setstyle(Blueprint::Disabled);
 			}
 
 			virtual void Enable()  {
+				if(!IsEnabled()) {
+					playsound(Blueprint::NotFocused, Blueprint::Focus_None, Blueprint::Disabled, Blueprint::Normal);
+				}
 				WidgetBase::Enable();
 
 				if(symbol_mover)
@@ -270,6 +285,8 @@ namespace gge { namespace widgets {
 
 				if(IsFocused())
 					return true;
+
+				playsound(Blueprint::NotFocused, Blueprint::Focused, Blueprint::Normal, Blueprint::Style_None);
 
 				WidgetBase::Focus();
 				setfocus(Blueprint::Focused);
@@ -294,6 +311,16 @@ namespace gge { namespace widgets {
 				LargeChange,
 				Goto
 			};
+
+			void playsound(Blueprint::FocusType focusfrom, Blueprint::FocusType focusto, Blueprint::StyleType from, Blueprint::StyleType to) {
+				if(bp) {
+					if(bp->Mapping[Blueprint::GroupMode(orientation, focusfrom, focusto)] &&
+						bp->Mapping[Blueprint::GroupMode(orientation, focusfrom, focusto)]->Mapping[from][to] &&
+						bp->Mapping[Blueprint::GroupMode(orientation, focusfrom, focusto)]->Mapping[from][to]->Sound) {
+							WidgetBase::playsound(bp->Mapping[Blueprint::GroupMode(orientation, focusfrom, focusto)]->Mapping[from][to]->Sound);
+					}
+				}
+			}
 
 			class numberformat {
 			public:
@@ -364,6 +391,8 @@ namespace gge { namespace widgets {
 			virtual bool loosefocus(bool force)  {
 				if(!IsFocused())
 					return true;
+
+				playsound(Blueprint::Focused, Blueprint::Focus_None, Blueprint::Normal, Blueprint::Style_None);
 
 				if(!symbol_mdown) {
 					setfocus(Blueprint::NotFocused);

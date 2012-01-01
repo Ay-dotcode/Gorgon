@@ -234,6 +234,8 @@ namespace gge { namespace widgets {
 				~Group() {
 				}
 
+				Element *Mapping[6][6];
+
 
 			protected:
 				utils::SGuid normal;
@@ -255,8 +257,6 @@ namespace gge { namespace widgets {
 				utils::SGuid downbutton;
 				utils::SGuid upplace;
 				utils::SGuid downplace;
-
-				Element *Mapping[6][6];
 			};
 
 

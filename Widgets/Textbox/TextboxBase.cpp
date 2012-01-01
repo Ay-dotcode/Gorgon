@@ -391,14 +391,16 @@ namespace gge { namespace widgets {
 
 			if(event==Event::Over) {
 				if(!IsFocused()) {
-					//!SND
+					playsound(widgets::Blueprint::Normal, widgets::Blueprint::Hover);
+
 					setstyle(widgets::Blueprint::Hover);
 				}
 				mhover=true;
 			}
 			if(event==Event::Out) {
 				if(!IsFocused()) {
-					//!SND
+					playsound(widgets::Blueprint::Hover, widgets::Blueprint::Normal);
+
 					setstyle(widgets::Blueprint::Normal);
 				}
 				mhover=true;
@@ -744,10 +746,10 @@ namespace gge { namespace widgets {
 
 		bool Base::Focus() {
 			if(!IsEnabled() || !IsVisible())
-				return;
+				return false;
 
 			if(!IsFocused()) {
-				//!SND
+				playsound(widgets::Blueprint::Normal, Blueprint::Active);
 			}
 
 			setstyle(widgets::Blueprint::Focused_Style);
@@ -757,7 +759,7 @@ namespace gge { namespace widgets {
 
 		void Base::Enable() {
 			if(!IsEnabled()) {
-				//!SND
+				playsound(widgets::Blueprint::Disabled, widgets::Blueprint::Normal);
 				setstyle(widgets::Blueprint::Normal);
 				WidgetBase::Enable();
 			}
@@ -765,7 +767,7 @@ namespace gge { namespace widgets {
 
 		void Base::Disable() {
 			if(IsEnabled()) {
-				//!SND
+				playsound(widgets::Blueprint::Normal, widgets::Blueprint::Disabled);
 				setstyle(widgets::Blueprint::Disabled);
 
 				WidgetBase::Disable();
@@ -773,6 +775,10 @@ namespace gge { namespace widgets {
 		}
 
 		bool Base::loosefocus(bool force) {
+			if(IsFocused()) {
+				playsound(widgets::Blueprint::Active, widgets::Blueprint::Active);
+			}
+
 			if(mhover)
 				setstyle(widgets::Blueprint::Hover);
 			else
