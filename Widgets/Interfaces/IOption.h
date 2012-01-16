@@ -229,6 +229,38 @@ namespace gge { namespace widgets {
 			return NULL;
 		}
 
+		typename utils::Collection<O_>::Iterator First() {
+			return Options.First();
+		}
+
+		typename utils::Collection<O_>::Iterator Last() {
+			return Options.Last();
+		}
+
+		typename utils::Collection<O_>::Iterator begin() {
+			return Options.begin();
+		}
+
+		typename utils::Collection<O_>::Iterator end() {
+			return Options.end();
+		}
+
+		typename utils::Collection<O_>::ConstIterator First() const {
+			return Options.First();
+		}
+
+		typename utils::Collection<O_>::ConstIterator Last() const {
+			return Options.Last();
+		}
+
+		typename utils::Collection<O_>::ConstIterator begin() const {
+			return Options.begin();
+		}
+
+		typename utils::Collection<O_>::ConstIterator end() const {
+			return Options.end();
+		}
+
 		utils::EventChain<OptionGroup> &ChangeEvent() { return changeevent; }
 
 	protected:

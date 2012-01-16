@@ -381,6 +381,10 @@ namespace gge { namespace utils {
 			return (Object.*getter)();
 		}
 
+		operator T_ *() const {
+			return (Object.*getter)();
+		}
+
 		ReferenceProperty &operator =(T_ *value) { 
 			(Object.*setter)(value);
 
@@ -403,6 +407,18 @@ namespace gge { namespace utils {
 
 		T_ *operator ->() {
 			return (Object.*getter)();
+		}
+
+		T_ *GetPtr() {
+			return (Object.*getter)();
+		}
+
+		T_ &Get() {
+			T_ *o=(Object.*getter)();
+			if(o)
+				return *o;
+			else
+				throw std::runtime_error("Property is empty");
 		}
 	};
 

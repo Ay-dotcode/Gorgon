@@ -538,4 +538,10 @@ namespace gge { namespace widgets {
 
 	};
 
+	static ContainerBase &operator <<(ContainerBase &container, WidgetBase &widget) {
+		widget.SetContainer(container);
+
+		return container;
+	}
+
 }}

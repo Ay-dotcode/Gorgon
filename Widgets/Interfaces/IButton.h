@@ -39,6 +39,10 @@ namespace gge { namespace widgets {
 
 		utils::EventChain<IButton> &ClickEvent() { return clickevent; }
 
+		virtual WidgetBase *GetWidget() {
+			return NULL;
+		}
+
 	protected:
 		//REQUIRED
 		virtual void setText(const std::string &text) = 0;

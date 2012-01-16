@@ -83,14 +83,6 @@ namespace gge { namespace utils {
 		basic_Margins2D operator +(basic_Margins2D margin) {
 			return basic_Margins2D(Left+margin.Left, Top+margin.Top, Right+margin.Right, Bottom+margin.Bottom);
 		}
-		basic_Margins2D &operator +=(basic_Margins2D margin) {
-			Left+=margin.Left;
-			Top+=margin.Top;
-			Right+=margin.Right;
-			Bottom+=margin.Bottom;
-
-			return *this;
-		}
 		basic_Margins2D operator +(T_ margin) {
 			return basic_Margins2D(Left+margin, Top+margin, Right+margin, Bottom+margin);
 		}
@@ -199,6 +191,15 @@ namespace gge { namespace utils {
 		return string+(string)margins;
 	}
 
+	template<class T_>
+	basic_Margins2D<T_> &operator +=(basic_Margins2D<T_> &l, const basic_Margins2D<T_> &r) {
+		l.Left+=r.Left;
+		l.Top+=r.Top;
+		l.Right+=r.Right;
+		l.Bottom+=r.Bottom;
+
+		return l;
+	}
 
 #ifdef GRAPH_USEDOUBLE
 	typedef basic_Margins2D<double> Margins2D;

@@ -785,7 +785,7 @@ namespace gge { namespace utils {
 			if(Index<0 || Index>*count)
 				return NULL;
 
-			return list[Index]
+			return list[Index];
 		}
 	};
 

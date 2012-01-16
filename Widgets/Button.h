@@ -137,6 +137,10 @@ namespace gge { namespace widgets {
 		}
 
 
+		virtual WidgetBase *GetWidget() {
+			return this;
+		}
+
 	protected:
 
 		utils::EventChain<Button> clickevent;

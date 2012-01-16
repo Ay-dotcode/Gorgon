@@ -3,7 +3,6 @@
 
 #include "..\Base\Widget.h"
 #include "..\Interfaces\IScroller.h"
-#include "..\Interfaces\IButton.h"
 #include "PanelBlueprint.h"
 #include <map>
 #include <queue>
@@ -11,6 +10,8 @@
 #include "..\Basic\PetContainer.h"
 #include "..\Interfaces\IScroller.h"
 #include "..\Scrollbar.h"
+#include "..\StatefulLabel.h"
+#include "..\..\Utils\OrderedCollection.h"
 
 namespace gge { namespace widgets {
 	namespace panel {
@@ -19,11 +20,12 @@ namespace gge { namespace widgets {
 
 			Base() : innermargins(0),
 				allownofocus(false), allowmove(false), allowresize(false),
-				controls(*this),
+				controls(*this),dialogcontrols(*this),
 				bp(NULL), next_style(widgets::Blueprint::Style_None),
 				move_mdown(false), move_ongoing(false), padding(5),
 				move_pointer(PointerCollection::NullToken), scroll(0,0),
-				vscroll(true), scrollmargins(0)
+				vscroll(true), scrollmargins(0), controlmargins(0),
+				scrollingborder(NULL), innerborder(NULL)
 			{
 				innerlayer.Add(scrollinglayer);
 				scrollinglayer.Add(background, 1);
@@ -41,9 +43,14 @@ namespace gge { namespace widgets {
 				vscroll.bar.SmallChange=60;
 				vscroll.bar.LargeChange=120;
 				vscroll.bar.ChangeEvent().Register(this, &Base::vscroll_change);
+
+				title.Hide();
+				title.SetContainer(controls);
+				title.Autosize=AutosizeModes::None;
+				title.TextWrap=false;
 			}
 
-			virtual bool IsVisible() {
+			virtual bool IsVisible() const {
 				return WidgetBase::IsVisible();
 			}
 
@@ -58,7 +65,7 @@ namespace gge { namespace widgets {
 			}
 
 
-			virtual bool IsEnabled() {
+			virtual bool IsEnabled() const {
 				return WidgetBase::IsEnabled();
 			}
 
@@ -119,13 +126,23 @@ namespace gge { namespace widgets {
 				WidgetBase::Draw();
 			}
 
+			using WidgetBase::SetHeight;
+			using WidgetBase::SetWidth;
+			using WidgetBase::GetHeight;
+			using WidgetBase::GetWidth;
+
+
 			virtual void Resize(utils::Size Size) {
+				controls.Resize(Size);
+				dialogcontrols.Resize(Size);
 				WidgetBase::Resize(Size);
 
-				adjustscrolls();
+				adjustcontrols();
 			}
 
 			void Resize(int W, int H) {
+				controls.Resize(utils::Size(W,H));
+				dialogcontrols.Resize(utils::Size(W,H));
 				WidgetBase::Resize(utils::Size(W,H));
 			}
 
@@ -139,7 +156,6 @@ namespace gge { namespace widgets {
 			}
 
 			virtual utils::Size GetUsableSize() {
-			//TODO ?
 				return innerlayer.BoundingBox.GetSize();
 			}
 
@@ -148,7 +164,7 @@ namespace gge { namespace widgets {
 			}
 
 			virtual void Deactivate() {
-				WidgetBase::RemoveFocus();
+				RemoveFocus();
 			}
 
 			void MoveBy(utils::Point amount) {
@@ -166,29 +182,42 @@ namespace gge { namespace widgets {
 
 					setstyle(widgets::Blueprint::Active);
 
+					title.State=title.State_2;
 					return WidgetBase::Focus();
 				}
 				else if(!IsFocused()) {
 					setstyle(widgets::Blueprint::Active);
 
-					return WidgetBase::Focus();
+					bool ret=WidgetBase::Focus();
+					if(ret) title.State=title.State_2;
+					return ret;
 				}
-				else
+				else {
+					title.State=title.State_2;
 					return true;
+				}
 			}
 
 			using WidgetBase::SetBlueprint;
 
 			virtual void SetBlueprint(const widgets::Blueprint &bp) {
 				this->bp=static_cast<const Blueprint*>(&bp);
-				if(WidgetBase::size.Width==0)
-					Resize(this->bp->DefaultSize);
-
 				for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
 					utils::CheckAndDelete(i->second);
 
+				if(WidgetBase::size.Width==0)
+					Resize(this->bp->DefaultSize);
+
 				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
 					utils::CheckAndDelete(i->second);
+
+				for(auto i=titlebuttons.begin();i!=titlebuttons.end();++i)
+					if(dynamic_cast<Button*>(&*i))
+						i->SetBlueprint(this->bp->TitleButton);
+
+				for(auto i=dialogbuttons.begin();i!=dialogbuttons.end();++i)
+					if(dynamic_cast<Button*>(&*i))
+						i->SetBlueprint(this->bp->DialogButton);
 
 				if(this->bp)
 					if(this->bp->Scroller)
@@ -196,8 +225,10 @@ namespace gge { namespace widgets {
 
 				if(this->bp) {
 					this->pointer=bp.Pointer;
+					title.SetBlueprint(this->bp->TitleLabel);
 				}
 
+				adjustcontrols();
 				Draw();
 			}
 
@@ -220,6 +251,8 @@ namespace gge { namespace widgets {
 
 			void adjustscrolls();
 
+			void adjustcontrols();
+
 			void prepare();
 
 			virtual void draw();
@@ -228,17 +261,20 @@ namespace gge { namespace widgets {
 			virtual bool loosefocus(bool force) {
 				if(!Focused) {
 					setstyle(widgets::Blueprint::Normal);
+					title.State=title.State_1;
 					return true;
 				}
 
 				if(force) {
 					ContainerBase::ForceRemoveFocus();
 					setstyle(widgets::Blueprint::Normal);
+					title.State=title.State_1;
 					return true;
 				}
 				else {
 					if(ContainerBase::RemoveFocus()) {
 						setstyle(widgets::Blueprint::Normal);
+						title.State=title.State_1;
 						return true;
 					}
 					else
@@ -249,6 +285,7 @@ namespace gge { namespace widgets {
 			virtual bool detach(ContainerBase *container) {
 				innerlayer.parent=NULL;
 				controls.BaseLayer.parent=NULL;
+				dialogcontrols.BaseLayer.parent=NULL;
 				overlayer.parent=NULL;
 
 				return true;
@@ -271,12 +308,13 @@ namespace gge { namespace widgets {
 				WidgetBase::located(container, w, Order);
 				
 				BaseLayer->Add(innerlayer,1);
+				BaseLayer->Add(dialogcontrols,0);
 				BaseLayer->Add(controls,0);
 				BaseLayer->Add(overlayer, -1);
 
 				containerenabledchanged(container->IsEnabled());
 
-				adjustscrolls();
+				adjustcontrols();
 			}
 
 			void setupvscroll(bool allow, bool show, bool autohide, bool dragscroll=false) {
@@ -293,6 +331,35 @@ namespace gge { namespace widgets {
 			}
 			bool getallowmove() const {
 				return allowmove;
+			}
+
+			void setshowtitle(bool value) {
+				if(value!=showtitle) {
+					showtitle = value;
+					title.SetVisibility(value);
+					adjustcontrols();
+
+					Draw();
+				}
+			}
+			bool getshowtitle() const {
+				return showtitle;
+			}
+
+			void settitle(const std::string &value) {
+				if(title.Text!=value) {
+					title.Text = value;
+				}
+			}
+			std::string gettitle() const {
+				return title.Text;
+			}
+
+			void seticon(graphics::RectangularGraphic2D *value) {
+				title.Icon = value;
+			}
+			graphics::RectangularGraphic2D *geticon() const {
+				return title.Icon;
 			}
 
 			void setallowresize(const bool &value) {
@@ -363,6 +430,51 @@ namespace gge { namespace widgets {
 				return tabswitch;
 			}
 
+			/*void setshowtitlebtn(const bool &value) {
+				if(showtitlebtn!=value) {
+					showtitlebtn = value;
+					adjustcontrols();
+				}
+			}
+			bool getshowtitlebtn() const {
+				return showtitlebtn;
+			}
+
+			void setshowdialogbtn(const bool &value) {
+				if(showdialogbtn!=value) {
+					showdialogbtn = value;
+					adjustcontrols();
+				}
+			}
+			bool getshowdialogbtn() const {
+				return showdialogbtn;
+			}*/
+
+			BorderData *getouterborder() const { return outerborder; }
+			BorderData *getinnerborder() const { return innerborder; }
+			BorderData *getscrollingborder() const { return scrollingborder; }
+			//BorderData *gettitleborder() const { return titleborder; }
+			//BorderData *getdialogborder() const { return dialogborder; }
+			
+			utils::Margins getcontrolmargins() const { return controlmargins; }
+
+
+			void placetitlebutton(WidgetBase &btn) {
+				btn.SetContainer(controls);
+				if(bp && dynamic_cast<Button*>(&btn))
+					btn.SetBlueprint(bp->TitleButton);
+
+				adjustcontrols();
+			}
+
+			void placedialogbutton(WidgetBase &btn) {
+				btn.SetContainer(dialogcontrols);
+				if(bp && dynamic_cast<Button*>(&btn))
+					btn.SetBlueprint(bp->DialogButton);
+
+				adjustcontrols();
+			}
+
 			void style_anim_finished();
 
 			void setstyle(Blueprint::StyleType type);
@@ -384,7 +496,8 @@ namespace gge { namespace widgets {
 
 			//for scrollbar, title buttons, etc
 			PetContainer<Base> controls;
-
+			//for dialog buttons
+			PetContainer<Base> dialogcontrols;
 
 			animation::AnimationTimer &getanimation(bool transition) {
 				if(transition)
@@ -409,10 +522,22 @@ namespace gge { namespace widgets {
 				}
 			}
 
+			//After any modification to this collection call adjust controls
+			//To add a new button create it and send to placebutton function
+			utils::OrderedCollection<WidgetBase> titlebuttons;
+			utils::OrderedCollection<WidgetBase> dialogbuttons;
+
+			StatefulLabel title;
+
 		private:
 			bool allowmove;
 			bool allowresize;
 			bool allownofocus;
+
+			bool showtitle;
+			//bool showtitlebtn;
+			//bool showdialogbtn;
+
 
 
 			class cscroll {
@@ -450,6 +575,10 @@ namespace gge { namespace widgets {
 
 
 			BorderData *outerborder;
+			BorderData *innerborder; //!TODO: Draw
+			BorderData *scrollingborder; //!TODO: Draw
+			BorderData *titleborder; //!TODO: Draw
+			BorderData *dialogborder; //!TODO: Draw
 			BorderData *overlay;
 			Byte Alpha, BGAlpha;
 
@@ -461,6 +590,7 @@ namespace gge { namespace widgets {
 
 			utils::Margins innermargins;
 			utils::Margins scrollmargins;
+			utils::Margins controlmargins;
 			utils::Point   scroll;
 		};
 	}

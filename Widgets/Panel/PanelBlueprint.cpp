@@ -136,7 +136,7 @@ namespace gge { namespace widgets {
 			ResourceBase::Prepare(main, file);
 
 			file.FindObject(scroller, Scroller);
-			file.FindObject(titlelabel, TitleButton);
+			file.FindObject(titlelabel, TitleLabel);
 			file.FindObject(titlebutton, TitleButton);
 			file.FindObject(titlebuttonplace, TitleButtonPlace);
 			file.FindObject(dialogbutton, DialogButton);

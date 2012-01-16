@@ -12,8 +12,8 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(ControlledPanel, LargeScroll),
 			INIT_PROPERTY(ControlledPanel, AllowTabSwitch)
 		{
-			setallowmove(true);
-			setupvscroll(true, true, false);
+			setallowmove(false);
+			setupvscroll(true, true, true);
 		}
 
 		utils::Property<ControlledPanel, utils::Margins> Padding;

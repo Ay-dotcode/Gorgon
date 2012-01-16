@@ -75,15 +75,15 @@ namespace gge { namespace utils {
 			return basic_Size2D(size.Width+Width, size.Height+Height);
 		}
 		basic_Size2D operator -(const basic_Size2D  &size) const { 
-			return basic_Size2D(size.Width-Width, size.Height-Height);
+			return basic_Size2D(Width-size.Width, Height-size.Height);
 		}
 		template<class _U>
 		basic_Size2D operator *(_U size) { 
-			return basic_Size2D(size.Width*size, size.Height*size); 
+			return basic_Size2D(this->Width*size, this->Height*size); 
 		}
 		template<class _U>
 		basic_Size2D operator /(_U size) { 
-			return basic_Size2D(size.Width/size, size.Height/size); 
+			return basic_Size2D(this->Width/size, this->Height/size); 
 		}
 		basic_Size2D operator +=(const basic_Size2D  &size) { 
 			Width=size.Width  +Width;
@@ -92,8 +92,8 @@ namespace gge { namespace utils {
 			return *this;
 		}
 		basic_Size2D operator -=(const basic_Size2D  &size) { 
-			Width=size.Width  -Width;
-			Height=size.Height-Height;
+			Width=Width-size.Width;
+			Height=Height-size.Height;
 
 			return *this;
 		}
@@ -106,12 +106,13 @@ namespace gge { namespace utils {
 		}
 		template<class _U>
 		basic_Size2D operator /=(_U size) { 
-			Width=size.Width  /Width;
-			Height=size.Height/Height;
+			Width/=size.Width;
+			Height/=size.Height;
 
 			return *this;
 		}
 
+		T_ Cells() const { return Width*Height; }
 		T_ Area() const { return Width*Height; }
 
 	};

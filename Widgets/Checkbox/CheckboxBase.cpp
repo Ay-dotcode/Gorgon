@@ -11,7 +11,7 @@ using namespace std;
 namespace gge { namespace widgets {
 	namespace checkbox {
 
-		int Base::lineheight(Blueprint::Line *line, int &prevymargin, int w) {
+		int Base::lineheight(Blueprint::Line *line, int w) {
 			if(line->HeightMode==Blueprint::Fixed)
 				return line->Height;
 
@@ -28,13 +28,23 @@ namespace gge { namespace widgets {
 				}
 			}
 
+			if(lineborder) {
+				w-=lineborder->Margins.TotalX()+lineborder->BorderWidth.TotalX();
+			}
+
 
 			for(int i=0;i<3;i++) {
 				int nh=0;
 				switch(line->GetContent(i)) {
 				case Blueprint::Icon:
 					if(icon && drawicon) {
-						nh=icon->GetHeight();
+
+						if(iconp) {
+							nh=iconp->GetSize(icon->GetSize(), icon->GetSize()).Height;
+							nh+=iconp->Margins.TotalY();
+						}
+						else 
+							nh=icon->GetHeight();
 					}
 					break;
 
@@ -44,11 +54,20 @@ namespace gge { namespace widgets {
 							nh=font->FontHeight();
 						else
 							nh=font->TextHeight(text, w);
+
+						if(textp)
+							nh+=textp->Margins.TotalY();
 					}
 					break;
 				case Blueprint::Symbol:
 					if(symbol && drawsymbol) {
-						nh=symbol->CalculateHeight(0);
+
+						if(symbolp) {
+							nh=symbolp->GetSize(symbol->CalculateSize(0,0), symbol->CalculateSize(0,0)).Height;
+							nh+=symbolp->Margins.TotalY();
+						}
+						else 
+							nh=symbol->CalculateHeight(0);
 					}
 					break;
 				}
@@ -58,18 +77,15 @@ namespace gge { namespace widgets {
 
 			if(lineborder) {
 				h+=lineborder->BorderWidth.TotalY() + lineborder->Padding.TotalY();
-				int margin=(lineborder->Margins.Top > prevymargin ? lineborder->Margins.TotalY() : lineborder->Margins.Bottom);
+				int margin=lineborder->Margins.TotalY();
 				h+=margin;
-				prevymargin=lineborder->Margins.Bottom;
 			}
-			else
-				prevymargin=0;
 
 
 			return h;
 		}
 
-		void Base::drawline(int id, Blueprint::TransitionType transition, int y, int reqh, int h, int &prevymargin) {
+		void Base::drawline(int id, Blueprint::TransitionType transition, int y, int reqh, int h) {
 			//Blueprint::TransitionType transition;
 
 			//prepare resources
@@ -88,11 +104,8 @@ namespace gge { namespace widgets {
 			}
 
 			if(lineborder) {
-				y+=(lineborder->Margins.Top > prevymargin ? lineborder->Margins.Top-prevymargin : 0);
-				prevymargin=lineborder->Margins.Bottom;
+				y+=lineborder->Margins.Top;
 			}
-			else
-				prevymargin=0;
 
 			//get id use line height and calculate new location
 			if(Alignment::isMiddle(line->Align))
@@ -115,6 +128,8 @@ namespace gge { namespace widgets {
 
 			if(lineborder) {
 				bounds=lineborder->ContentBounds(bounds);
+				bounds.Left+=lineborder->Margins.Left;
+				bounds.Right-=lineborder->Margins.Right;
 			}
 
 
@@ -132,8 +147,7 @@ namespace gge { namespace widgets {
 						if(iconp) {
 							sizes[i]=iconp->GetSize(icon->GetSize(), icon->GetSize()).Width;
 
-							totalmargin+=(iconp->Margins.Left>pmargin ? iconp->Margins.TotalX()-pmargin : iconp->Margins.Right);
-							pmargin=iconp->Margins.Right;
+							totalmargin+=iconp->Margins.TotalX();
 
 							if(iconp->SizingMode==Placeholder::MaximumAvailable)
 								maximumsized++;
@@ -151,8 +165,7 @@ namespace gge { namespace widgets {
 						if(textp) {
 							sizes[i]=0; //text size is not fixed and might be larger than the given area
 
-							totalmargin+=(textp->Margins.Left>pmargin ? textp->Margins.TotalX()-pmargin : textp->Margins.Right);
-							pmargin=textp->Margins.Right;
+							totalmargin+=textp->Margins.TotalX();
 
 							if(textp->SizingMode==Placeholder::MaximumAvailable)
 								maximumsized++;
@@ -173,8 +186,7 @@ namespace gge { namespace widgets {
 
 							sizes[i]=symbolp->GetSize(Size(w,0), Size(w,0)).Width;
 
-							totalmargin=(symbolp->Margins.Left>pmargin ? symbolp->Margins.TotalX()-pmargin : symbolp->Margins.Right);
-							pmargin=symbolp->Margins.Right;
+							totalmargin=symbolp->Margins.TotalX();
 
 							if(textp->SizingMode==Placeholder::MaximumAvailable)
 								maximumsized++;
@@ -250,12 +262,12 @@ namespace gge { namespace widgets {
 								sizes[i]+=extra;
 							}
 
-							x+=(iconp->Margins.Left>pmargin ? iconp->Margins.Left-pmargin : 0);
+							x+=iconp->Margins.Left;
 							itembounds.Left=x;
 							itembounds.Top =y;
 							itembounds.SetSize(sizes[i], h);
-							itembounds.Top-=iconp->Margins.Top;
-							itembounds.Bottom+=iconp->Margins.Bottom;
+							itembounds.Top+=iconp->Margins.Top;
+							itembounds.Bottom-=iconp->Margins.Bottom;
 
 							align=iconp->Align;
 							x+=iconp->Margins.Right;
@@ -281,12 +293,12 @@ namespace gge { namespace widgets {
 								sizes[i]+=extra;
 							}
 
-							x+=(textp->Margins.Left>pmargin ? textp->Margins.Left-pmargin : 0);
+							x+=textp->Margins.Left;
 							itembounds.Left=x;
 							itembounds.Top =y;
 							itembounds.SetSize(sizes[i], h);
-							itembounds.Top-=textp->Margins.Top;
-							itembounds.Bottom+=textp->Margins.Bottom;
+							itembounds.Top+=textp->Margins.Top;
+							itembounds.Bottom-=textp->Margins.Bottom;
 
 							align=textp->Align;
 							x+=textp->Margins.Right;
@@ -362,12 +374,12 @@ namespace gge { namespace widgets {
 								sizes[i]+=extra;
 							}
 
-							x+=(symbolp->Margins.Left>pmargin ? symbolp->Margins.Left-pmargin : 0);
+							x+=symbolp->Margins.Left;
 							itembounds.Left=x;
 							itembounds.Top =y;
 							itembounds.SetSize(sizes[i], h);
-							itembounds.Top-=symbolp->Margins.Top;
-							itembounds.Bottom+=symbolp->Margins.Bottom;
+							itembounds.Top+=symbolp->Margins.Top;
+							itembounds.Bottom-=symbolp->Margins.Bottom;
 
 							align=symbolp->Align;
 							x+=symbolp->Margins.Right;
@@ -429,11 +441,10 @@ namespace gge { namespace widgets {
 				inner=border->ContentBounds(outer);
 			}
 
-			int prevymargin=0;
 			for(int i=1;i<=3;i++) {
 				if(lines[i]) {
 					totallines++;
-					lineheights[i]=lineheight(lines[i], prevymargin, inner.Width());
+					lineheights[i]=lineheight(lines[i], inner.Width());
 
 					if(lineheights[i]>0)
 						totalknownlineheights+=lineheights[i];
@@ -500,7 +511,7 @@ namespace gge { namespace widgets {
 			int y=0;//inner.Top;
 			for(int i=1;i<=3;i++) {
 				if(lines[i]) {
-					drawline(i, linetransitions[i], y, lineheights_org[i], lineheights[i], prevymargin);
+					drawline(i, linetransitions[i], y, lineheights_org[i], lineheights[i]);
 					y+=lineheights[i];
 				}
 			}
@@ -1237,14 +1248,13 @@ namespace gge { namespace widgets {
 				}
 
 				//height calculate
-				int prevymargin=0;
 				int h=0;
 				for(int l=1;l<=3;l++) {
 					auto line=lines[l];
 					if(!line)
 						continue;
 
-					h+=lineheight(line, prevymargin,textw);
+					h+=lineheight(line,textw);
 				}
 
 				currentsize.Height=h;

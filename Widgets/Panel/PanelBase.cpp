@@ -67,8 +67,6 @@ namespace gge { namespace widgets {
 					outer.Height()-overlay->Margins.TotalY()-tm.TotalY()
 				);
 			}
-
-			
 		}
 
 		void Base::style_anim_finished() {
@@ -204,10 +202,14 @@ namespace gge { namespace widgets {
 
 			Bounds outer=BaseLayer->BoundingBox;
 			Bounds inner=Bounds(0,0,outer.Width(), outer.Height());
-			inner=inner-innermargins-padding-scrollmargins;
+			inner=inner-innermargins-padding-scrollmargins-controlmargins;
 
 			if(outerborder)
 				inner=inner-(outerborder->BorderWidth+outerborder->Padding);
+
+			if(innerborder) {
+				inner=inner-innerborder->Margins;
+			}
 
 			overlayer.BoundingBox=Bounds(0,0,outer.Width(), outer.Height());
 			//if(innerlayer.BoundingBox!=inner)
@@ -226,14 +228,17 @@ namespace gge { namespace widgets {
 			//	Draw();
 			scrollinglayer.BoundingBox=Bounds(Point(0,0), size);
 
-		//TODO scrolling border margins
+			//TODO scrolling border margins
+			if(scrollingborder) {
+				scrollinglayer.BoundingBox=scrollinglayer.BoundingBox-scrollingborder->Margins;
+			}
 			background.BoundingBox=scrollinglayer.BoundingBox;
 			widgetlayer.BoundingBox=scrollinglayer.BoundingBox;
 			extenderlayer.BoundingBox=scrollinglayer.BoundingBox;
 
-			//allows extra 1/2 scroll
-			if(scroll.y<-(size.Height-inner.Height()) && (size.Height-inner.Height())>0) {
-				vscrollto(size.Height-inner.Height());
+			//allows extra 1/5 scroll
+			if(scroll.y<-(size.Height-inner.Height()+inner.Height()/5) && (size.Height-inner.Height())>0) {
+				vscrollto(size.Height-inner.Height()+inner.Height()/5);
 			}
 
 			scrollinglayer.Move(scroll);
@@ -276,6 +281,42 @@ namespace gge { namespace widgets {
 					}
 
 					overlay->SetController(getanimation(transition));
+				}
+
+				bprovider=bp->GetInnerBorder(style, transition);
+				if(bprovider) {
+					if(BorderCache[bprovider])
+						innerborder=BorderCache[bprovider];
+					else {
+						innerborder=&bprovider->CreateResizableObject();
+						BorderCache[bprovider]=innerborder;
+					}
+
+					innerborder->SetController(getanimation(transition));
+				}
+
+				bprovider=bp->GetScrollingBorder(style, transition);
+				if(bprovider) {
+					if(BorderCache[bprovider])
+						scrollingborder=BorderCache[bprovider];
+					else {
+						scrollingborder=&bprovider->CreateResizableObject();
+						BorderCache[bprovider]=scrollingborder;
+					}
+
+					scrollingborder->SetController(getanimation(transition));
+				}
+
+				bprovider=bp->GetTitleBorder(style, transition);
+				if(bprovider) {
+					if(BorderCache[bprovider])
+						titleborder=BorderCache[bprovider];
+					else {
+						titleborder=&bprovider->CreateResizableObject();
+						BorderCache[bprovider]=titleborder;
+					}
+
+					titleborder->SetController(getanimation(transition));
 				}
 
 				Alpha=bp->GetOpacity(style);
@@ -351,6 +392,8 @@ namespace gge { namespace widgets {
 
 			if(vscroll.allow && event==input::mouse::Event::VScroll) {
 				vscrollby(-amount);
+
+				return true;
 			}
 
 			return WidgetBase::MouseEvent(event, location, amount);
@@ -362,6 +405,8 @@ namespace gge { namespace widgets {
 			int yscrollrange=scrollinglayer.BoundingBox.Height()-innerlayer.BoundingBox.Height();
 			if(yscrollrange<0)
 				yscrollrange=0;
+			else
+				yscrollrange+=innerlayer.BoundingBox.Height()/5;
 
 			int pmax=vscroll.bar.Max;
 			vscroll.bar.Max=yscrollrange;
@@ -391,6 +436,129 @@ namespace gge { namespace widgets {
 			}
 			else
 				return location;
+		}
+
+		void Base::adjustcontrols() {
+			controlmargins.Top=0;
+			controlmargins.Bottom=0;
+			int tbuttonw=0, tbuttonx=0;
+
+			prepare();
+
+			Margins bordermargins(0);
+			if(outerborder) {
+				bordermargins=outerborder->BorderWidth+outerborder->Padding;
+			}
+			if(innerborder) {
+				bordermargins+=innerborder->Margins;
+			}
+
+			if(titlebuttons.getCount()>0/* && showtitlebtn*/) {
+				int height=titlebuttons[0].GetHeight();
+
+				Alignment::Type align(Alignment::Middle_Right);
+				Margins margins(0);
+
+				if(this->bp && this->bp->TitleButtonPlace) {
+					align=this->bp->TitleButtonPlace->Align;
+					height=this->bp->TitleButtonPlace->Minimum.Height;
+					margins=this->bp->TitleButtonPlace->Margins;
+				}
+
+				if(TextAlignment::GetHorizontal(align)==TextAlignment::Left) {
+					int x=margins.Left;
+					for(auto i=titlebuttons.Last();i.isValid();i.Previous()) {
+						if(i->IsVisible()) {
+							int y=Alignment::CalculateLocation(align, Bounds(0,margins.Top, 0,height+margins.TotalY()), Size(0,i->GetHeight())).y;
+
+							i->Move(x,y);
+							x+=i->GetWidth();
+						}
+					}
+
+					tbuttonx=x;
+					tbuttonw=x;
+				}
+				else {
+					int x=WidgetBase::size.Width-margins.Right;
+					for(auto i=titlebuttons.Last();i.isValid();i.Previous()) {
+						if(i->IsVisible()) {
+							int y=Alignment::CalculateLocation(align, Bounds(0,margins.Top, 0,height+margins.TotalY()), Size(0,i->GetHeight())).y;
+
+							x-=i->GetWidth();
+							i->Move(x,y);
+						}
+					}
+
+					tbuttonw=WidgetBase::size.Width-x;
+				}
+
+				controlmargins.Top=max(height+margins.TotalY()-bordermargins.Top,0);
+			}
+
+			if(dialogbuttons.getCount()>0/* && showdialogbtn*/) {
+				int height=dialogbuttons[0].GetHeight();
+
+				Alignment::Type align(Alignment::Middle_Right);
+				Margins margins(0);
+
+				if(this->bp && this->bp->DialogButtonPlace) {
+					align=this->bp->DialogButtonPlace->Align;
+					height=this->bp->DialogButtonPlace->Minimum.Height;
+					margins=this->bp->DialogButtonPlace->Margins;
+				}
+
+				int ymod=0;
+				if(TextAlignment::GetHorizontal(align)==TextAlignment::Left) {
+					int x=margins.Left;
+					int cw=0;
+					for(auto i=dialogbuttons.Last();i.isValid();i.Previous()) {
+						if(i->IsVisible()) {
+							int y=Alignment::CalculateLocation(align, Bounds(0,controls.BaseLayer.BoundingBox.Bottom-height-margins.TotalY(), 0,controls.BaseLayer.BoundingBox.Bottom-margins.Bottom), Size(0,i->GetHeight())).y;
+
+							if(cw+i->GetWidth()>controls	.GetWidth()-margins.TotalX() && cw>0) {
+								ymod+=height;
+								cw=0;
+								x=margins.Left;
+							}
+
+							i->Move(x,y-margins.Bottom-ymod);
+							x+=i->GetWidth();
+							cw+=i->GetWidth();
+						}
+					}
+				}
+				else {
+					int x=WidgetBase::size.Width-margins.Right;
+					int cw=0;
+					for(auto i=dialogbuttons.Last();i.isValid();i.Previous()) {
+						if(i->IsVisible()) {
+							int y=Alignment::CalculateLocation(align, Bounds(0,controls.BaseLayer.BoundingBox.Bottom-(height+margins.TotalY()), 0,controls.BaseLayer.BoundingBox.Bottom-margins.Bottom), Size(0,i->GetHeight())).y;
+
+							if(cw+i->GetWidth()>controls	.BaseLayer.BoundingBox.Width()-margins.TotalX() && cw>0) {
+								ymod+=height;
+								cw=0;
+								x=WidgetBase::size.Width-margins.Right;
+							}
+
+							x-=i->GetWidth();
+							i->Move(x,y-ymod);
+							cw+=i->GetWidth();
+						}
+					}
+				}
+
+				controlmargins.Bottom=max(height+ymod+margins.TotalY()-bordermargins.Bottom,0);
+			}
+
+			if(showtitle) {
+				controlmargins.Top=max(controlmargins.Top,title.GetHeight()-bordermargins.Top);
+				title.SetWidth(WidgetBase::size.Width-tbuttonw);
+				title.SetX(tbuttonx);
+			}
+
+
+			adjustscrolls();
 		}
 
 	}

@@ -21,3 +21,4 @@ namespace gge { namespace widgets {
 		virtual bool isVisible() = 0;
 	};
 } }
+m öçxcz<<zx

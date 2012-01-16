@@ -9,8 +9,8 @@ namespace gge { namespace widgets {
 
 		Panel() : INIT_PROPERTY(Panel, Padding)
 		{
-			setallowmove(true);
-			setupvscroll(true, true, false);
+			setallowmove(false);
+			setupvscroll(true, true, true);
 		}
 
 		utils::Property<Panel, utils::Margins> Padding;

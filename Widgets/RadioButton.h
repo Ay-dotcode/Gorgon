@@ -173,6 +173,15 @@ namespace gge { namespace widgets {
 		RadioGroup &operator = (const T_ &value) { Set(value); }
 	};
 
+	template<class T_>
+	static ContainerBase &operator <<(ContainerBase &container, RadioGroup<T_> &rg) {
+		for(auto i=rg.First();i.isValid();i.Next()) {
+			container<<*i;
+		}
+
+		return container;
+	}
+
 	//template<class T_>
 	//typedef OptionGroup<T_, RadioButton<T_> > RadioGroup;
 

@@ -51,7 +51,9 @@ namespace gge { namespace widgets {
 				}
 
 				if(WidgetBase::size.Width==0)
-					Resize(this->bp->DefaultSize);
+					SetWidth(this->bp->DefaultSize.Width);
+				if(WidgetBase::size.Height==0)
+					SetHeight(this->bp->DefaultSize.Height);
 
 				if(autosize!=AutosizeModes::None && Container)
 					Container->WidgetBoundsChanged();
@@ -85,9 +87,9 @@ namespace gge { namespace widgets {
 
 			virtual void draw();
 
-			int lineheight(Blueprint::Line *line, int &prevymargin, int w=0);
+			int lineheight(Blueprint::Line *line, int w=0);
 
-			void drawline(int id, Blueprint::TransitionType transition, int y, int reqh, int h, int &prevymargin);
+			void drawline(int id, Blueprint::TransitionType transition, int y, int reqh, int h);
 
 
 			//SERVICES TO CLIENT

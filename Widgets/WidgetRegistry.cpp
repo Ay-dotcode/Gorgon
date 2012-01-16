@@ -195,7 +195,7 @@ namespace gge { namespace widgets {
 		folder=&wrr.Get<FolderResource>(10);
 		Panels.Panel=Panel=dynamic_cast<panel::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
 		Panels.OverlayControls	= GetWithDefault(folder, *wrr.file, 1, Panels.Panel);
-		Panels.Window			= GetWithDefault(folder, *wrr.file, 2, Panels.Panel);
+		Window=Panels.Window	= GetWithDefault(folder, *wrr.file, 2, Panels.Panel);
 		Panels.DialogWindow		= GetWithDefault(folder, *wrr.file, 3, Panels.Window);
 		Panels.Toolbar			= GetWithDefault(folder, *wrr.file, 4, Panels.Panel);
 		Panels.Menubar			= GetWithDefault(folder, *wrr.file, 5, Panels.Toolbar);

@@ -23,7 +23,7 @@ namespace gge { namespace sound {
 
 			isAvailable=true;
 
-			environment::SetListener3DPosition(Main.getWidth()/2,Main.getHeight()/2,0);
+			environment::SetListener3DPosition(Main.getWidth()/2.f,Main.getHeight()/2.f,0);
 
 			return ERRNO_ERR;
 		}

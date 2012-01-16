@@ -48,8 +48,8 @@ namespace gge { namespace widgets {
 
 
 
-		virtual bool IsVisible() { return isvisible; }
-		inline  bool IsHidden()  { return !IsVisible(); }
+		virtual bool IsVisible() const { return isvisible; }
+		inline  bool IsHidden() const  { return !IsVisible(); }
 		virtual void Show(bool setfocus=false) { 
 			isvisible=true;
 			if(BaseLayer)
@@ -73,8 +73,8 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual bool IsEnabled();
-		inline  bool IsDisabled() { return !IsEnabled(); }
+		virtual bool IsEnabled() const;
+		inline  bool IsDisabled() const { return !IsEnabled(); }
 		virtual void Enable() { isenabled=true; }
 		virtual void Disable();
 	//TODO !Virtual status of the following two functions might change
