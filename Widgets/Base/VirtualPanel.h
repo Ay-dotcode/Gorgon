@@ -8,6 +8,7 @@
 namespace gge { namespace widgets {
 
 	class VirtualPanel : public ContainerBase {
+		friend void Init(GGEMain &Main);
 	public:
 
 		VirtualPanel() : 

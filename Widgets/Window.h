@@ -3,6 +3,7 @@
 #include "Panel/PanelBase.h"
 #include "Button.h"
 #include "Main.h"
+#include "WidgetRegistry.h"
 
 namespace gge { namespace widgets {
 
@@ -58,7 +59,7 @@ namespace gge { namespace widgets {
 			if(allow)
 				ForcedClose();
 		}
-		void ForcedClose() {
+		virtual void ForcedClose() {
 			Hide();
 		}
 

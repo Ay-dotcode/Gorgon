@@ -11,6 +11,7 @@
 #include "Textbox/TextboxBlueprint.h"
 #include "Listbox/ListboxBase.h"
 #include "Slider/SliderBlueprint.h"
+#include "../Resource/NullImage.h"
 
 
 
@@ -276,12 +277,15 @@ namespace gge { namespace widgets {
 		class Collection {
 			friend class WidgetRegistry;
 		public:
-			T_ &operator [](const std::string &key) {
+			virtual T_ &operator [](const std::string &key) {
 				if(parent.count(key)) {
 					return parent.find(key)->second;
 				}
-				else {
+				else if(parent.count("")) {
 					return parent.find("")->second;
+				}
+				else {
+					throw std::runtime_error("Cannot find item and no fallback is supplied");
 				}
 			}
 		protected:
@@ -293,6 +297,18 @@ namespace gge { namespace widgets {
 		class ImageCollection : public Collection<animation::RectangularGraphic2DSequenceProvider> {
 			friend class WidgetRegistry;
 		public:
+
+			virtual animation::RectangularGraphic2DSequenceProvider &operator [](const std::string &key) {
+				if(parent.count(key)) {
+					return parent.find(key)->second;
+				}
+				else if(parent.count("")) {
+					return parent.find("")->second;
+				}
+				else {
+					return resource::NullImage::Get();
+				}
+			}
 
 			//this creates a new animation and you are responsible to delete it, 
 			//use .DeleteAnimation to delete the object safely

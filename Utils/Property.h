@@ -76,6 +76,10 @@ namespace gge { namespace utils {
 			return *this;
 		}
 
+		T_ operator *() const {
+			return (Object.*getter)();
+		}
+
 		template <class AC_>
 		Property &operator =(const Property<AC_, T_> &prop) {
 			(Object.*setter)((T_)prop);

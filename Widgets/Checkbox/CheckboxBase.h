@@ -128,7 +128,7 @@ namespace gge { namespace widgets {
 			void settextwrap(bool textwrap) {
 				this->textwrap=textwrap;
 
-				if(autosize)
+				if(autosize && Container)
 					Container->WidgetBoundsChanged();
 
 				Draw();

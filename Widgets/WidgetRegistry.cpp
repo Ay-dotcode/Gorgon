@@ -205,21 +205,87 @@ namespace gge { namespace widgets {
 
 		for(auto it=wrr.Get<FolderResource>(14).Subitems.First();it.isValid();it.Next()) {
 			try {
-				icons.insert(pair<string, RectangularGraphic2DSequenceProvider&>(it->name, dynamic_cast<RectangularGraphic2DSequenceProvider&>(*it)));
+				if(it->name=="") {
+					icons.insert(pair<string, RectangularGraphic2DSequenceProvider&>(it->name, dynamic_cast<RectangularGraphic2DSequenceProvider&>(*it)));
+					continue;
+				}
+
+				string name=it->name;
+				string::size_type pos;
+				do {
+					pos=name.find_first_of(',');
+					
+					if(pos==string::npos)
+						pos=name.length();
+					
+					string n=name.substr(0, pos);
+					
+					if(pos<name.length())
+						name=name.substr(pos+1);
+					else
+						name="";
+
+					if(n!="")
+						icons.insert(pair<string, RectangularGraphic2DSequenceProvider&>(n, dynamic_cast<RectangularGraphic2DSequenceProvider&>(*it)));
+				} while(name!="");
 			}
 			catch(...) { }//don't insert if it is not an animation
 		}
 
 		for(auto it=wrr.Get<FolderResource>(15).Subitems.First();it.isValid();it.Next()) {
 			try {
-				pictures.insert(pair<string, RectangularGraphic2DSequenceProvider&>(it->name, dynamic_cast<RectangularGraphic2DSequenceProvider&>(*it)));
+				if(it->name=="") {
+					pictures.insert(pair<string, RectangularGraphic2DSequenceProvider&>(it->name, dynamic_cast<RectangularGraphic2DSequenceProvider&>(*it)));
+					continue;
+				}
+
+				string name=it->name;
+				string::size_type pos;
+				do {
+					pos=name.find_first_of(',');
+
+					if(pos==string::npos)
+						pos=name.length();
+
+					string n=name.substr(0, pos);
+
+					if(pos<name.length())
+						name=name.substr(pos+1);
+					else
+						name="";
+
+					if(n!="")
+						pictures.insert(pair<string, RectangularGraphic2DSequenceProvider&>(n, dynamic_cast<RectangularGraphic2DSequenceProvider&>(*it)));
+				} while(name!="");
 			}
 			catch(...) { }//don't insert if it is not an animation
 		}
 
 		for(auto it=wrr.Get<FolderResource>(16).Subitems.First();it.isValid();it.Next()) {
 			try {
-				sounds.insert(pair<string, SoundResource&>(it->name, dynamic_cast<SoundResource&>(*it)));
+				if(it->name=="") {
+					sounds.insert(pair<string, SoundResource&>(it->name, dynamic_cast<SoundResource&>(*it)));
+					continue;
+				}
+
+				string name=it->name;
+				string::size_type pos;
+				do {
+					pos=name.find_first_of(',');
+
+					if(pos==string::npos)
+						pos=name.length();
+
+					string n=name.substr(0, pos);
+
+					if(pos<name.length())
+						name=name.substr(pos+1);
+					else
+						name="";
+
+					if(n!="")
+						sounds.insert(pair<string, SoundResource&>(n, dynamic_cast<SoundResource&>(*it)));
+				} while(name!="");
 			}
 			catch(...) { }//don't insert if it is not an animation
 		}

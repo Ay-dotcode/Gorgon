@@ -235,7 +235,24 @@ namespace gge { namespace widgets {
 			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);
 
 			virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
-				return ContainerBase::DistributeKeyboardEvent(event, Key);
+				bool ret=ContainerBase::DistributeKeyboardEvent(event, Key);
+				
+				if(ret) return true;
+
+				if(event==input::keyboard::Event::Char && (!input::keyboard::Modifier::Check() || input::keyboard::Modifier::Current==input::keyboard::Modifier::Alt)) {
+					if(dialogcontrols.GetAccessKeys()[Key])
+						if(dialogcontrols.GetAccessKeys()[Key]->IsVisible() && dialogcontrols.GetAccessKeys()[Key]->IsEnabled())
+							if(dialogcontrols.GetAccessKeys()[Key]->Accessed())
+								return true;
+				}
+				if(event==input::keyboard::Event::Char && (!input::keyboard::Modifier::Check() || input::keyboard::Modifier::Current==input::keyboard::Modifier::Alt)) {
+					if(controls.GetAccessKeys()[Key])
+						if(controls.GetAccessKeys()[Key]->IsVisible() && controls.GetAccessKeys()[Key]->IsEnabled())
+							if(controls.GetAccessKeys()[Key]->Accessed())
+								return true;
+				}
+
+				return false;
 			}
 
 			virtual void WidgetBoundsChanged() { 

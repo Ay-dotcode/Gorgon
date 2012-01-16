@@ -13,6 +13,7 @@
 #include "Textbox\TextboxBlueprint.h"
 #include "Listbox\ListboxBlueprint.h"
 #include "WidgetRegistry.h"
+#include "..\Engine\Input.h"
 
 namespace gge { namespace widgets {
 
@@ -56,6 +57,8 @@ namespace gge { namespace widgets {
 		TopLevel.LandOn(*layer);
 
 		Main.RegisterInterval(1, &Draw_Signal);
+
+		input::keyboard::Events.SetOrder(TopLevel.KeyboardToken,-1);
 	}
 
 }}

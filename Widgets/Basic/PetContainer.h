@@ -95,6 +95,10 @@ namespace gge { namespace widgets {
 			}
 		}
 
+		std::map<input::keyboard::Key, WidgetBase*> &GetAccessKeys() {
+			return AccessKeys;
+		}
+
 
 		bool KeyboardEvent(input::keyboard::Event event) { 
 			if(Focused) {

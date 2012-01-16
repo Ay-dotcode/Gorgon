@@ -913,7 +913,7 @@ namespace gge { namespace utils {
 		void SetOrder(Token token, int order) {
 			ITEMTYPE_ *item=reinterpret_cast<ITEMTYPE_*>(token);
 
-			item->setOrder(order);
+			item->Reorder(order);
 		}
 
 		void Enable(Token token) {

@@ -55,6 +55,9 @@ namespace gge { namespace widgets {
 			if(BaseLayer)
 				BaseLayer->isVisible=isvisible;
 			call_container_widget_visibility_change(true);
+
+			if(setfocus)
+				Focus();
 		}
 		virtual void Hide() {
 			isvisible=false; 
