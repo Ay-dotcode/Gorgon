@@ -809,6 +809,10 @@ namespace gge { namespace utils {
 			Fire(P_());
 		}
 
+		void Clear() {
+			events.Destroy();
+		}
+
 		const std::string &GetName() const { return eventname; }
 
 		~EventChain() {

@@ -3,9 +3,9 @@
 #include "../DialogWindow.h"
 #include "../Label.h"
 
-namespace gge { namespace widgets {
+namespace gge { namespace widgets { namespace dialog {
 
-	class MessageDialog : public DialogWindow {
+	class Message : public DialogWindow {
 	public:
 		enum DialogIcon {
 			None	= 0,
@@ -15,26 +15,26 @@ namespace gge { namespace widgets {
 			Canceled= 4,
 		};
 
-		MessageDialog() : INIT_PROPERTY(MessageDialog, Message)
+		Message() : INIT_PROPERTY(Message, MessageText), INIT_PROPERTY(Message, ButtonText)
 		{
 			init();
 		}
 
 		template<class T_>
-		MessageDialog(const T_ &msg) : INIT_PROPERTY(MessageDialog, Message) {
+		Message(const T_ &msg) : INIT_PROPERTY(Message, MessageText), INIT_PROPERTY(Message, ButtonText) {
 			init();
 			Message=msg;
 		}
 
 		template<class T_>
-		MessageDialog(const T_ &msg, std::string icon) : INIT_PROPERTY(MessageDialog, Message) {
+		Message(const T_ &msg, const std::string &icon) : INIT_PROPERTY(Message, MessageText), INIT_PROPERTY(Message, ButtonText) {
 			init();
 			Message=msg;
 			SetIcon(icon);
 		}
 
 		template<class T_>
-		MessageDialog(const T_ &msg, DialogIcon icon) : INIT_PROPERTY(MessageDialog, Message) {
+		Message(const T_ &msg, DialogIcon icon) : INIT_PROPERTY(Message, MessageText), INIT_PROPERTY(Message, ButtonText) {
 			init();
 			Message=msg;
 			SetIcon(icon);
@@ -63,8 +63,6 @@ namespace gge { namespace widgets {
 		}
 
 		virtual void ForcedClose() {
-
-
 			DialogWindow::ForcedClose();
 		}
 
@@ -79,17 +77,19 @@ namespace gge { namespace widgets {
 			message.SetBlueprint(WR.Label);
 		}
 
-		void SetIcon(std::string icon);
-		void SetIcon(DialogIcon icon);
+		Message &SetIcon(const std::string &icon);
+		Message &SetIcon(DialogIcon icon);
+		void RemoveIcon();
 
 		virtual void MoveToCenter() {
 			DialogWindow::MoveToCenter();
 			autocenter=true;
 		}
 
-		utils::TextualProperty<MessageDialog> Message;
+		utils::TextualProperty<Message> MessageText;
+		utils::TextualProperty<Message> ButtonText;
 
-		~MessageDialog();
+		~Message();
 
 	protected:
 		Label message;
@@ -111,7 +111,6 @@ namespace gge { namespace widgets {
 			dialogbuttons.Add(ok);
 			placedialogbutton(ok);
 			ok.Text="OK";
-			ok.Accesskey='o';
 			this->SetDefault(ok);
 			this->SetCancel(ok);
 
@@ -122,17 +121,24 @@ namespace gge { namespace widgets {
 
 		void resize();
 
-		void setMessage(const std::string &value) {
+		void setMessageText(const std::string &value) {
 			if(message.Text!=value) {
 				message.Text=value;
 				resize();
 			}
 		}
-		std::string getMessage() const {
+		std::string getMessageText() const {
 			return message.Text;
+		}
+
+		void setButtonText(const std::string &value) {
+			ok.Text=value;
+		}
+		std::string getButtonText() const {
+			return ok.Text;
 		}
 	};
 
-	MessageDialog &ShowMessage(string Message, string Title="");
+	Message &ShowMessage(const string &Message, const string &Title="");
 
-}}
+}}}
