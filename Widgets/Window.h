@@ -134,6 +134,7 @@ namespace gge { namespace widgets {
 
 		void gotfocus() {
 			WidgetBase::ToTop();
+			FocusOrderToTop();
 		}
 
 		void setPadding(const utils::Margins &value) {

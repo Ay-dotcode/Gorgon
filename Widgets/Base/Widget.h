@@ -51,19 +51,23 @@ namespace gge { namespace widgets {
 		virtual bool IsVisible() const { return isvisible; }
 		inline  bool IsHidden() const  { return !IsVisible(); }
 		virtual void Show(bool setfocus=false) { 
-			isvisible=true;
-			if(BaseLayer)
-				BaseLayer->isVisible=isvisible;
-			call_container_widget_visibility_change(true);
+			if(!isvisible) {
+				isvisible=true;
+				if(BaseLayer)
+					BaseLayer->isVisible=isvisible;
+				call_container_widget_visibility_change(true);
+			}
 
 			if(setfocus)
 				Focus();
 		}
 		virtual void Hide() {
-			isvisible=false; 
-			if(BaseLayer)
-				BaseLayer->isVisible=isvisible;
-			call_container_widget_visibility_change(false);
+			if(isvisible) {
+				isvisible=false; 
+				if(BaseLayer)
+					BaseLayer->isVisible=isvisible;
+				call_container_widget_visibility_change(false);
+			}
 		}
 		//Virtual status of the following two functions might change
 		void ToggleVisibility() { 

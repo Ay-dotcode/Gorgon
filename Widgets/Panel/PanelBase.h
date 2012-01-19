@@ -60,8 +60,8 @@ namespace gge { namespace widgets {
 			}
 
 			virtual void Hide() {
-				ContainerBase::Hide();
 				WidgetBase::Hide();
+				ContainerBase::Hide();
 			}
 
 

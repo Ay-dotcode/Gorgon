@@ -712,7 +712,9 @@ namespace gge { namespace widgets {
 
 			this->bp=static_cast<const Blueprint*>(&bp);
 			if(WidgetBase::size.Width==0)
-				Resize(this->bp->DefaultSize);
+				SetWidth(this->bp->DefaultSize.Width);
+			if(WidgetBase::size.Height==0)
+				SetHeight(this->bp->DefaultSize.Height);
 
 			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
 				utils::CheckAndDelete(i->second);

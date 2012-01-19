@@ -152,6 +152,7 @@ This file contains two parts
     <ClInclude Include="..\Sources\GGE\Resource\ImageResource.h" />
     <ClInclude Include="..\Sources\GGE\Resource\Main.h" />
     <ClInclude Include="..\Sources\GGE\Resource\NullImage.h" />
+    <ClInclude Include="..\Sources\GGE\Resource\PointerResource.h" />
     <ClInclude Include="..\Sources\GGE\Resource\ResizableObject.h" />
     <ClInclude Include="..\Sources\GGE\Resource\ResourceFile.h" />
     <ClInclude Include="..\Sources\GGE\Resource\SoundResource.h" />
@@ -286,7 +287,10 @@ This file contains two parts
     <ClInclude Include="..\Sources\GGE\Widgets\Textbox\TextboxBase.h" />
     <ClInclude Include="..\Sources\GGE\Widgets\Textbox\TextboxBlueprint.h" />
     <ClInclude Include="..\Sources\GGE\Widgets\WidgetRegistry.h" />
-  </ItemGroup>
+    <ClInclude Include="..\Sources\GGE\Widgets\Dialogs\Query.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Dialogs\Message.h" />
+    <ClInclude Include="..\Sources\GGE\Widgets\Dialogs\TextInput.h" />
+	</ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\GGE\Effects\CountingText.cpp" />
     <ClCompile Include="..\Sources\GGE\Effects\Flip.cpp" />
@@ -396,6 +400,12 @@ This file contains two parts
     <ClCompile Include="..\Sources\GGE\Widgets\Textbox\TextboxBase.cpp" />
     <ClCompile Include="..\Sources\GGE\Widgets\Textbox\TextboxBlueprint.cpp" />
     <ClCompile Include="..\Sources\GGE\Widgets\WidgetRegistry.cpp" />
+    <ClCompile Include="..\Sources\GGE\Resource\PointerResource.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Dialogs\Query.cpp" />
+    <ClCompile Include="..\Sources\GGE\Widgets\Dialogs\Message.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/MessageDialog.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Dialogs\TextInput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Sources\GGE\Resource\Image &amp; Animation.cd" />
@@ -986,6 +996,18 @@ This part will replace .filters file
     <ClInclude Include="..\Sources\GGE\Engine\Image.h">
       <Filter>GGE\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Resource\PointerResource.h">
+      <Filter>GGE\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Dialogs\Query.h">
+      <Filter>GGE\Widgets\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Dialogs\Message.h">
+      <Filter>GGE\Widgets\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sources\GGE\Widgets\Dialogs\TextInput.h">
+      <Filter>GGE\Widgets\Dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Sources\GGE\Resource\AnimationResource.cpp">
@@ -1290,6 +1312,18 @@ This part will replace .filters file
     </ClCompile>
     <ClCompile Include="..\Sources\GGE\Widgets\WidgetRegistry.cpp">
       <Filter>GGE\Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Resource\PointerResource.cpp">
+      <Filter>GGE\Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Dialogs\Query.cpp">
+      <Filter>GGE\Widgets\Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Dialogs\Message.cpp">
+      <Filter>GGE\Widgets\Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sources\GGE\Widgets\Dialogs\TextInput.cpp">
+      <Filter>GGE\Widgets\Code</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

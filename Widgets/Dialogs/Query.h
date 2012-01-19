@@ -6,22 +6,35 @@
 
 namespace gge { namespace widgets { namespace dialog {
 
+	class Query;
+
+	Query &AskConfirm(const std::string &Confirm, const string &Title="");
+
 	class Query : public DialogWindow {
+		friend Query &AskConfirm(const std::string &Confirm, const string &Title);
 	public:
 
-		Query() : INIT_PROPERTY(Query, QueryText), INIT_PROPERTY(Query, YesButtonText), INIT_PROPERTY(Query, NoButtonText)
+		Query() : INIT_PROPERTY(Query, QueryText), 
+			INIT_PROPERTY(Query, YesButtonText), INIT_PROPERTY(Query, NoButtonText), 
+			INIT_PROPERTY(Query, CancelButtonText), INIT_PROPERTY(Query, ShowCancel)
 		{
 			init();
 		}
 
 		template<class T_>
-		Query(const T_ &msg) : INIT_PROPERTY(Query, QueryText), INIT_PROPERTY(Query, YesButtonText), INIT_PROPERTY(Query, NoButtonText) {
+		Query(const T_ &msg) : INIT_PROPERTY(Query, QueryText), 
+			INIT_PROPERTY(Query, YesButtonText), INIT_PROPERTY(Query, NoButtonText), 
+			INIT_PROPERTY(Query, CancelButtonText), INIT_PROPERTY(Query, ShowCancel)
+		{
 			init();
 			Query=msg;
 		}
 
 		template<class T_>
-		Query(const T_ &msg, std::string icon) : INIT_PROPERTY(Query, QueryText), INIT_PROPERTY(Query, YesButtonText), INIT_PROPERTY(Query, NoButtonText) {
+		Query(const T_ &msg, std::string icon) : INIT_PROPERTY(Query, QueryText), 
+			INIT_PROPERTY(Query, YesButtonText), INIT_PROPERTY(Query, NoButtonText), 
+			INIT_PROPERTY(Query, CancelButtonText), INIT_PROPERTY(Query, ShowCancel) 
+		{
 			init();
 			Query=msg;
 			SetIcon(icon);
@@ -75,6 +88,8 @@ namespace gge { namespace widgets { namespace dialog {
 		utils::TextualProperty<Query> QueryText;
 		utils::TextualProperty<Query> YesButtonText;
 		utils::TextualProperty<Query> NoButtonText;
+		utils::TextualProperty<Query> CancelButtonText;
+		utils::BooleanProperty<Query> ShowCancel;
 
 		~Query();
 
@@ -82,7 +97,7 @@ namespace gge { namespace widgets { namespace dialog {
 
 	protected:
 		Label query;
-		Button yes,no;
+		Button yes,no,cancel;
 		bool iconowner;
 		bool autosize;
 		bool autocenter;
@@ -99,13 +114,13 @@ namespace gge { namespace widgets { namespace dialog {
 
 			SetIcon("question");
 
-			dialogbuttons.Add(yes);
-			placedialogbutton(yes);
-			yes.Text="Yes";
-			yes.Accesskey='y';
-			this->SetDefault(yes);
-			yes.ClickEvent().RegisterLambda([&]{ RepliedEvent(true); Close();});
 
+			dialogbuttons.Add(cancel);
+			placedialogbutton(cancel);
+			cancel.Text="Cancel";
+			cancel.Accesskey='c';
+			cancel.ClickEvent().RegisterLambda([&]{ Close();});
+			cancel.Hide();
 
 			dialogbuttons.Add(no);
 			placedialogbutton(no);
@@ -114,11 +129,50 @@ namespace gge { namespace widgets { namespace dialog {
 			this->SetCancel(no);
 			no.ClickEvent().RegisterLambda([&]{ RepliedEvent(false); Close();});
 
+			dialogbuttons.Add(yes);
+			placedialogbutton(yes);
+			yes.Text="Yes";
+			yes.Accesskey='y';
+			this->SetDefault(yes);
+			yes.ClickEvent().RegisterLambda([&]{ RepliedEvent(true); Close();});
+
+			yes.Autosize=AutosizeModes::GrowOnly;
+			no.Autosize=AutosizeModes::GrowOnly;
+
+			CloseButton=false;
+
 
 			MoveToCenter();
 		}
 
 		void resize();
+
+		void reset() {
+			QueryText="";
+			Title="";
+
+			yes.RemoveFocus();
+			no.RemoveFocus();
+			cancel.RemoveFocus();
+
+			SetIcon("question");
+			MoveToCenter();
+			if(bp)
+				SetWidth(bp->DefaultSize.Width);
+			Autosize();
+			
+			RepliedEvent.Clear();
+			ClosingEvent.Clear();
+			RollUpEvent.Clear();
+			RollDownEvent.Clear();
+
+			autosize=true;
+			autocenter=true;
+			YesButtonText="Yes";
+			NoButtonText="No";
+			CancelButtonText="Cancel";
+			ShowCancel=false;
+		}
 
 		void setQueryText(const std::string &value) {
 			if(query.Text!=value) {
@@ -145,8 +199,32 @@ namespace gge { namespace widgets { namespace dialog {
 		std::string getNoButtonText() const {
 			return no.Text;
 		}
-	};
 
-	Query &QueryUser(const string &Confirm, const string &Title="");
+		void setCancelButtonText(const std::string &value) {
+			cancel.Text=value;
+			cancel.Accesskey=std::tolower(value[0]);
+		}
+		std::string getCancelButtonText() const {
+			return cancel.Text;
+		}
+
+		void setShowCancel(const bool &value) {
+			if(cancel.IsVisible()!=value) {
+				cancel.ToggleVisibility();
+				CloseButton=value;
+				adjustcontrols();			
+
+				if(value) {
+					SetCancel(cancel);
+				}
+				else {
+					SetCancel(no);
+				}
+			}
+		}
+		bool getShowCancel() const {
+			return cancel.IsVisible();
+		}
+	};
 
 }}}

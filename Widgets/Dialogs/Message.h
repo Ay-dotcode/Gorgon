@@ -5,7 +5,12 @@
 
 namespace gge { namespace widgets { namespace dialog {
 
+	class Message;
+
+	Message &ShowMessage(const std::string &Message, const std::string &Title="");
+
 	class Message : public DialogWindow {
+		friend Message &ShowMessage(const string &msg, const string &Title);
 	public:
 		enum DialogIcon {
 			None	= 0,
@@ -113,6 +118,7 @@ namespace gge { namespace widgets { namespace dialog {
 			ok.Text="OK";
 			this->SetDefault(ok);
 			this->SetCancel(ok);
+			ok.Autosize=AutosizeModes::GrowOnly;
 
 			ok.ClickEvent().RegisterLambda([&]{Close();});
 
@@ -120,6 +126,27 @@ namespace gge { namespace widgets { namespace dialog {
 		}
 
 		void resize();
+
+		void reset() {
+			MessageText="";
+			Title="";
+
+			ok.RemoveFocus();
+
+			RemoveIcon();
+			MoveToCenter();
+			if(bp)
+				SetWidth(bp->DefaultSize.Width);
+			Autosize();
+
+			ClosingEvent.Clear();
+			RollUpEvent.Clear();
+			RollDownEvent.Clear();
+
+			autosize=true;
+			autocenter=true;
+			ok.Text="OK";
+		}
 
 		void setMessageText(const std::string &value) {
 			if(message.Text!=value) {
@@ -138,7 +165,5 @@ namespace gge { namespace widgets { namespace dialog {
 			return ok.Text;
 		}
 	};
-
-	Message &ShowMessage(const string &Message, const string &Title="");
 
 }}}

@@ -1,5 +1,7 @@
 #include "Message.h"
 
+using std::string;
+
 namespace gge { namespace widgets { namespace dialog {
 
 	char *dialogicons[] = {"","success","error","warning","canceled"};
@@ -64,15 +66,10 @@ namespace gge { namespace widgets { namespace dialog {
 			Messages.push_back(m);
 		}
 
+		m->reset();
 		m->Title=Title;
 		m->MessageText=msg;
 		m->Show(true);
-		m->RemoveIcon();
-		m->MoveToCenter();
-		m->Autosize();
-		m->ClosingEvent.Clear();
-		m->RollUpEvent.Clear();
-		m->RollDownEvent.Clear();
 
 		return *m;
 	}

@@ -1,36 +1,39 @@
-#include "Query.h"
+#include "TextInput.h"
 
 using std::string;
 
 namespace gge { namespace widgets { namespace dialog {
 
-	std::vector<Query*> Queries;
+	std::vector<TextInput*> TextInputs;
 
 
 
 
-	void Query::SetIcon(const std::string &icon) {
+	TextInput &TextInput::SetIcon(const std::string &icon) {
 		if(Icon!=NULL && iconowner && dynamic_cast<animation::RectangularGraphic2DAnimation*>(Icon.GetPtr()))
 			dynamic_cast<animation::RectangularGraphic2DAnimation*>(Icon.GetPtr())->DeleteAnimation();
 
 		Icon=WR.Icons(icon);
 		iconowner=true;
+
+		return *this;
 	}
 
-	void Query::RemoveIcon() {
+	void TextInput::RemoveIcon() {
 		if(Icon!=NULL && iconowner && dynamic_cast<animation::RectangularGraphic2DAnimation*>(Icon.GetPtr()))
 			dynamic_cast<animation::RectangularGraphic2DAnimation*>(Icon.GetPtr())->DeleteAnimation();
 		Icon=NULL;
 	}
 
-	Query::~Query() {
+	TextInput::~TextInput() {
 		if(iconowner && dynamic_cast<animation::RectangularGraphic2DAnimation*>(Icon.GetPtr()))
 			dynamic_cast<animation::RectangularGraphic2DAnimation*>(Icon.GetPtr())->DeleteAnimation();
 	}
 
-	void Query::resize() {
+	void TextInput::resize() {
 		if(GetUsableWidth()>0 && autosize) {
-			SetHeight(query.GetHeight()+GetHeight()-GetUsableHeight()+(*Padding).Bottom);
+			SetHeight(message.GetHeight()+(*Padding).Bottom+input.GetHeight()+GetHeight()-GetUsableHeight()+(*Padding).Bottom);
+			input.SetY(message.GetHeight()+(*Padding).Bottom);
 
 			autosize=true;
 
@@ -39,24 +42,25 @@ namespace gge { namespace widgets { namespace dialog {
 		}
 	}
 
-	Query &AskConfirm(const string &query, const string &Title) {
-		Query *m=NULL;
-		for(auto it=Queries.begin();it!=Queries.end();++it) {
+	TextInput &AskText(const string &msg, const std::string Default, const string &Title) {
+		TextInput *m=NULL;
+		for(auto it=TextInputs.begin();it!=TextInputs.end();++it) {
 			if(!(*it)->IsVisible()) {
 				m=*it;
+				break;
 			}
 		}
 
 		if(!m) {
-			m=new Query;
+			m=new TextInput;
+			TextInputs.push_back(m);
 		}
 
 		m->reset();
-
 		m->Title=Title;
-		m->QueryText=query;
+		m->MessageText=msg;
+		m->InputText=Default;
 		m->Show(true);
-		
 
 		return *m;
 	}
