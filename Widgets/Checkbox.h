@@ -122,6 +122,13 @@ namespace gge { namespace widgets {
 
 	protected:
 
+		virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
+			Base::located(container, w, Order);
+
+			if(container && getunderline())
+				container->SetAccessKey(*this, getunderline());
+		}
+
 		void change() {
 			switch(Base::getstate()) {
 			case 1:
@@ -190,7 +197,9 @@ namespace gge { namespace widgets {
 		}
 
 		void setAccesskey(const input::keyboard::Key &key) {
-			Container->SetAccessKey(*this, key);
+			if(Container) {
+				Container->SetAccessKey(*this, key);
+			}
 			Base::setunderline(key);
 		}
 

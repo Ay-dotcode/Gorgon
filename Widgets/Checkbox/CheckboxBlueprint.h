@@ -325,6 +325,8 @@ namespace gge { namespace widgets {
 				DefaultSize=utils::Size(120,40);
 			}
 
+			virtual void Prepare(GGEMain &main, resource::File &file);
+
 
 
 

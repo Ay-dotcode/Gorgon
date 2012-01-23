@@ -70,6 +70,10 @@ namespace gge { namespace resource {
 
 	class File {
 	public:
+		File() : root(new FolderResource), LoadNames(false) {
+
+		}
+
 		////Resource Loaders
 		utils::Collection<ResourceLoader> Loaders;
 		utils::Collection<Redirect>		  Redirects;
@@ -78,6 +82,7 @@ namespace gge { namespace resource {
 		GID::Type FileType;
 		////File version
 		int FileVersion;
+		bool LoadNames;
 		FolderResource &Root() { return *root; }
 		////Returns the filename used for the last load or save operation
 		string getFilename() const { return Filename; }

@@ -50,6 +50,9 @@ namespace gge { namespace widgets {
 				if(LayerBase::PropagateMouseEvent(event, location, amount & isin))
 					ret=true;
 
+				if(ret)
+					isin=false;
+
 				if(CallbackProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount & isin))
 					ret=true;
 

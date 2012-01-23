@@ -112,15 +112,14 @@ namespace gge { namespace utils {
 		NumericProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
 		{ }
 
-		template <class O_>
-		NumericProperty &operator =(const O_ &value) { 
+		NumericProperty &operator =(const T_ &value) { 
 			(Object.*setter)(value);
 
 			return *this;
 		}
 
-		template <class AC_>
-		NumericProperty &operator =(const Property<AC_, T_> &prop) {
+		template <class AC_, class O_>
+		NumericProperty &operator =(const Property<AC_, O_> &prop) {
 			(Object.*setter)((T_)prop);
 
 			return *this;

@@ -25,6 +25,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstdlib>
 
 
 namespace gge { namespace utils {
@@ -59,5 +60,23 @@ namespace gge { namespace utils {
 	inline T_ PositiveMod(const T_ &num, const T_ &mod) {
 		return num<0 ? mod + (num%mod) : num%mod;
 	}
+
+	template <class T_>
+	T_ StrToNumber(const std::string &value, int base=10) {
+		char *n;
+		return std::strtol(value.c_str(), &n, base);
+	}
+
+	template <>
+	inline float StrToNumber<float>(const std::string &value, int base) {
+		return (float)std::atof(value.c_str());
+	}
+
+	template <>
+	inline double StrToNumber<double>(const std::string &value, int base) {
+		return std::atof(value.c_str());
+	}
+
+
 }}
 

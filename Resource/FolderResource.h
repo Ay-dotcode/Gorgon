@@ -2,6 +2,7 @@
 
 #include "GRE.h"
 #include "ResourceBase.h"
+#include <map>
 
 namespace gge { namespace resource {
 	class File;
@@ -14,17 +15,18 @@ namespace gge { namespace resource {
 	class BitmapFontResource;
 	
 	////This function loads a folder resource from the given file
-	ResourceBase *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames=false);
+	FolderResource *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames=false);
 
 	////This is basic folder resource, it holds other resources.
 	class FolderResource : public ResourceBase {
-		friend ResourceBase *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames);
+		friend FolderResource *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames);
 	public:
+		FolderResource() : ResourceBase(), reallyloadnames(false), EntryPoint(-1) 
+		{ }
+
 		////Entry point of this resource within the physical file. If
 		/// no file is associated with this resource this value is -1.
 		int EntryPoint;
-
-		bool LoadNames;
 
 		////01010000h, (System, Folder)
 		virtual GID::Type getGID() const { return GID::Folder; }
@@ -74,9 +76,51 @@ namespace gge { namespace resource {
 		T_ *CGetPtr(int Index) {
 			return (T_*)(&Subitems[Index]);
 		}
-		
-		FolderResource() : ResourceBase(), LoadNames(false) {
-			EntryPoint=-1;
+
+		bool Exists(int Index) const {
+			return Index>=0 && Index<Subitems.getCount();
 		}
+
+		bool Exists(const std::string &Index) const {
+			return namedlist.count(Index)>0;
+		}
+
+		//if you run into problems with dynamic_cast use CGet instead
+		template <typename T_>
+		T_ &Get(const std::string &Index) {
+			if(namedlist.count(Index)>0 && dynamic_cast<T_*>(namedlist[Index]))
+				return *dynamic_cast<T_*>(namedlist[Index]);
+			else
+				throw std::runtime_error("Requested item cannot be found");
+		}
+
+		//if you run into problems with dynamic_cast use CGetPtr instead
+		template <typename T_>
+		T_ *GetPtr(const std::string & Index) {
+			return dynamic_cast<T_*>(namedlist[Index]);
+		}
+
+		//try to use Get instead of this
+		template <typename T_>
+		T_ &CGet(const std::string & Index) {
+			if(namedlist.count(Index)>0)
+				return *(T_*)(namedlist[Index]);
+			else
+				throw std::runtime_error("Requested item cannot be found");
+		}
+
+		//try to use GetPtr instead of this
+		template <typename T_>
+		T_ *CGetPtr(const std::string & Index) {
+			return (T_*)(namedlist[Index]);
+		}
+
+		virtual void Prepare(GGEMain &main, File &file);
+
+
+
+	protected:
+		bool reallyloadnames;
+		std::map<std::string, ResourceBase*> namedlist;
 	};
 } }

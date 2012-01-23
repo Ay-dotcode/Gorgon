@@ -35,6 +35,9 @@ namespace gge {
 			if(LayerBase::PropagateMouseEvent(event, location, amount & isin))
 				ret=true;
 
+			if(ret)
+				isin=false;
+
 			if(EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount & isin))
 				ret=true;
 
@@ -58,20 +61,21 @@ namespace gge {
 			if(!(isVisible && BoundingBox.isInside(location)))
 				return false;
 			
-			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
 				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
-					ret=true;
+					return true;
 			}
 
-			return ret;
 		}
 		else if(event==input::mouse::Event::Out) {
 			bool ret=false;
 			int isin=(isVisible && BoundingBox.isInside(location)) ? 1 : 0;
 
 			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
-				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), isin & amount))
+				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), isin & amount)) {
 					ret=true;
+					isin=false;
+				}
 			}
 
 			return ret;

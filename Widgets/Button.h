@@ -51,22 +51,29 @@ namespace gge { namespace widgets {
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			//handle mouse events
 			
+			bool ret=false;
+
 			if(input::mouse::Event::isDown(event)) {
 				Focus();
+				ret = true;
 			}
 
 			switch (event) {
 			case input::mouse::Event::Left_Down:
 				Base::down();
+				ret = true;
 				break;
 			case input::mouse::Event::Left_Up:
 				Base::up();
+				ret = true;
 				break;
 			case input::mouse::Event::Over:
 				Base::over();
+				ret = true;
 				break;
 			case input::mouse::Event::Out:
 				Base::out();
+				ret = true;
 				break;
 			case input::mouse::Event::Left_Click:
 				if(IsEnabled()) {
@@ -74,11 +81,15 @@ namespace gge { namespace widgets {
 					clickevent();
 				}
 
+				ret = true;
 				break;
 			}
 
 			mouseevent(input::mouse::Event(event, location, amount));
 
+			if(ret) 
+				return true;
+				
 			return WidgetBase::MouseEvent(event, location, amount);
 		}
 

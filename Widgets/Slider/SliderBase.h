@@ -92,6 +92,8 @@ namespace gge { namespace widgets {
 				symbollayer.MouseCallback.Set(*this, &Base::symbol_mouse);
 
 				innerlayer.EnableClipping=true;
+
+				smooth.targetvalue=value;
 			}
 
 			using WidgetBase::SetBlueprint;
@@ -954,7 +956,16 @@ namespace gge { namespace widgets {
 						begin_goup();
 					}
 				}
-				else if(event.event==input::mouse::Event::Left_Up) {
+				else if(event.event==input::mouse::Event::Right_Down) {
+					Focus();
+
+					if(!goingup) {
+						largedecrease();
+						golarge=true;
+						begin_goup();
+					}
+				}
+				else if(input::mouse::Event::isUp(event.event)) {
 					end_goup();
 				}
 			}
@@ -969,7 +980,14 @@ namespace gge { namespace widgets {
 						begin_godown();
 					}
 				}
-				else if(event.event==input::mouse::Event::Left_Up) {
+				else if(event.event==input::mouse::Event::Right_Down) {
+					if(!goingup) {
+						largeincrease();
+						golarge=true;
+						begin_godown();
+					}
+				}
+				else if(input::mouse::Event::isUp(event.event)) {
 					end_godown();
 				}
 			}
@@ -1061,6 +1079,8 @@ namespace gge { namespace widgets {
 
 			T_ getrulevalue(int x);
 
+			bool golarge;
+
 		private:
 			std::map<T_, std::string> namedlocations;
 
@@ -1125,7 +1145,6 @@ namespace gge { namespace widgets {
 			animation::AnimationController key_repeat;
 			int key_repeat_timeout;
 			bool goingup, goingdown;
-			bool golarge;
 
 
 
@@ -1631,6 +1650,13 @@ namespace gge { namespace widgets {
 							w+=tickp->GetSize(tick->GetSize(), tick->GetSize()).Width+tickp->Margins.TotalX();
 						else
 							w+=tick->GetWidth();
+					}
+
+					if(display.buttons) {
+						int bw=0;
+						if(upbutton) bw=upbutton->GetWidth();
+						if(downbutton) bw=std::max(bw, downbutton->GetWidth());
+						w=std::max(bw, w);
 					}
 
 					if(font && markers.numbers) {

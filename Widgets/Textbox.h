@@ -50,6 +50,10 @@ namespace gge { namespace widgets {
 		}
 
 
+		virtual WidgetBase *GetWidget() {
+			return this;
+		}
+
 		utils::NumericProperty<Textbox, int> CaretLocation;
 		bool AutoSelectAll;
 

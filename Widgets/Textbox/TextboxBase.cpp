@@ -58,9 +58,9 @@ namespace gge { namespace widgets {
 		//TODO Wrap
 			if(font) {
 				if(text!="") {
-					EPrintData eprint[10]={};
+					EPrintData eprint[3]={};
 
-					int tw=font->TextWidth(text);
+					int tw=font->TextWidth(prefix+text+suffix);
 					int th=font->FontHeight();
 
 					Point location;
@@ -85,19 +85,26 @@ namespace gge { namespace widgets {
 
 					//check for caret position
 					eprint[0].Type=EPrintData::PositionDetect;
-					eprint[0].CharPosition=caretlocation;
+					eprint[0].CharPosition=caretlocation+(int)prefix.length();
 
-					font->Print_Test(location, 0, text, eprint, 1);
+					font->Print_Test(location, 0, prefix+text+suffix, eprint, 1);
 					caretposition=Alignment::CalculateLocation(bp->CaretPlace.Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace.Margins);
 
+					if(caretlocation==text.length() && tw+caretimagew>inner.Width()) {
+						scroll.x=inner.Width()-(tw+caretimagew);
+					}
+					else if(caretlocation==0 && tw+caretimagew>inner.Width()) {
+						scroll.x=0;
+					}
+					else {
+						if(eprint[0].Out.position.x<-caretposition.x)
+							scroll.x=-eprint[0].Out.position.x+location.x-caretposition.x;
+						if(eprint[0].Out.position.x>-caretimagew+inner.Width()-caretposition.x)
+							scroll.x=inner.Width()+location.x-eprint[0].Out.position.x-caretimagew-caretposition.x;
+					}
 
-					if(eprint[0].Out.position.x<-caretposition.x)
-						scroll.x=-eprint[0].Out.position.x+location.x-caretposition.x;
-					if(eprint[0].Out.position.x>-caretimagew+inner.Width()-caretposition.x)
-						scroll.x=inner.Width()+location.x-eprint[0].Out.position.x-caretimagew-caretposition.x;
 
-
-					if(tw+caretimagew<inner.Width()) {
+					if(tw+caretimagew<=inner.Width()) {
 						location=Alignment::CalculateLocation(bp->Align, Bounds(0,0,inner.Width(), inner.Height()), Size(tw,th));
 						if(scroll.x>0)
 							location.x+=scroll.x;
@@ -108,17 +115,17 @@ namespace gge { namespace widgets {
 					}
 
 					//after possible scrolling
-					font->Print_Test(location, 0, text, eprint, 1);
+					font->Print_Test(location, 0, prefix+text+suffix, eprint, 1);
 					caretposition=eprint[0].Out.position;
 					caretposition=Alignment::CalculateLocation(bp->CaretPlace.Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace.Margins);
 
 
 					if(!IsFocused() || !caret) {
-						font->Print(innerlayer, location, 0, text);
+						font->Print(innerlayer, location, 0, prefix+text+suffix);
 					}
 					else {
 						eprint[0].Type=EPrintData::Spacing;
-						eprint[0].CharPosition=caretlocation;
+						eprint[0].CharPosition=caretlocation+prefix.length();
 						eprint[0].In.position.x=caretsize.Width;
 						eprint[0].In.position.y=0;
 
@@ -126,12 +133,12 @@ namespace gge { namespace widgets {
 
 						if(selstart!=selend && selection) {
 							eprint[1].Type=EPrintData::PositionDetect;
-							eprint[1].CharPosition=selstart;
+							eprint[1].CharPosition=selstart+prefix.length();
 
 							eprint[2].Type=EPrintData::PositionDetect;
-							eprint[2].CharPosition=selend;
+							eprint[2].CharPosition=selend+prefix.length();
 
-							font->Print_Test(location, 0, text, eprint, 3);
+							font->Print_Test(location, 0, prefix+text+suffix, eprint, 3);
 
 							Bounds selb(eprint[1].Out.position, eprint[2].Out.position);
 							selb.Bottom+=th;
@@ -143,7 +150,7 @@ namespace gge { namespace widgets {
 
 
 
-						font->Print(innerlayer, location, 0, text, eprint, 1);
+						font->Print(innerlayer, location, 0, prefix+text+suffix, eprint, 1);
 						textlocation=location;
 
 						caret->Draw(innerlayer, caretposition);
@@ -358,12 +365,12 @@ namespace gge { namespace widgets {
 					eprint.Type=EPrintData::CharacterDetect;
 					eprint.In.position=location;
 
-					font->Print_Test(textlocation, 0, text, &eprint, 1);
+					font->Print_Test(textlocation, 0, prefix+text+suffix, &eprint, 1);
 
 					if(input::keyboard::Modifier::Current==input::keyboard::Modifier::Shift)
-						setselection(selectionstart, eprint.Out.value);
+						setselection(selectionstart, eprint.Out.value-prefix.length());
 					else
-						setcaretlocation(eprint.Out.value);
+						setcaretlocation(eprint.Out.value-prefix.length());
 
 					mdown=true;
 					lastlocation=location;
@@ -379,7 +386,7 @@ namespace gge { namespace widgets {
 
 					font->Print_Test(textlocation, 0, text, &eprint, 1);
 
-					setselection(selectionstart, eprint.Out.value);
+					setselection(selectionstart, eprint.Out.value-prefix.length());
 
 					lastlocation=location;
 				}
@@ -621,7 +628,6 @@ namespace gge { namespace widgets {
 						return true;
 					}
 				}
-
 			}
 
 			if(event==Event::Down && Modifier::Current==Modifier::Ctrl) {
@@ -632,18 +638,7 @@ namespace gge { namespace widgets {
 				}
 				else if(Key=='v' || Key=='V') {
 					string s=os::GetClipbardText();
-					if(s!="") {
-						if(s.length()<64)
-							validatetext(s);
-						else {
-							string s2;
-							for(int i=0;i<(int)s.length();i+=63) {
-								s2=s.substr(i, 63);
-								validatetext(s2);
-								s.replace(i, 63, s2);
-							}
-						}
-					}
+					validatetext(s);
 
 					if(s!="") {
 						if(caretlocation!=selectionstart) {

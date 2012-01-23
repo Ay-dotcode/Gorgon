@@ -88,6 +88,10 @@ namespace gge { namespace widgets {
 		if(Container)
 			Container->WidgetBoundsChanged();
 
+		BoundsChanged();
+
+
+
 		Draw();
 	}
 
@@ -98,6 +102,8 @@ namespace gge { namespace widgets {
 
 		if(Container)
 			Container->WidgetBoundsChanged();
+
+		BoundsChanged();
 	}
 
 	void WidgetBase::playsound(resource::SoundResource *snd) {

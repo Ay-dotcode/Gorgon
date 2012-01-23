@@ -13,6 +13,7 @@ namespace gge { namespace resource {
 		static const Type Folder				= 0x01010000;
 		static const Type Folder_Names			= 0x01010101;
 		static const Type Folder_Name			= 0x01010102;
+		static const Type Folder_Props			= 0x01010103;
 
 		static const Type LinkNode				= 0x01020000;
 		static const Type LinkNode_Target		= 0x01020010;

@@ -16,6 +16,8 @@ using namespace gge::utils;
 namespace gge { namespace resource {
 
 	void File::LoadFile(const string &Filename) {
+		CheckAndDelete(root);
+
 		char sgn[7];
 
 		this->Filename=Filename;
@@ -50,7 +52,7 @@ namespace gge { namespace resource {
 		ReadFrom(data, size);
 
 		///*Load first element
-		root=dynamic_cast<FolderResource*>(LoadFolderResource(*this, data, size));
+		root=LoadFolderResource(*this, data, size,LoadNames);
 		if(!root)
 			throw load_error(load_error::Containment, load_error::strings::Containment);
 

@@ -102,8 +102,8 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseUp(mouse::Event::Left,x,y);
 						ProcessMouseClick(mouse::Event::Left,x,y);
+						ProcessMouseUp(mouse::Event::Left,x,y);
 					}
 					break;
 				case WM_LBUTTONDBLCLK:
@@ -128,8 +128,8 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseUp(mouse::Event::Right,x,y);
 						ProcessMouseClick(mouse::Event::Right,x,y);
+						ProcessMouseUp(mouse::Event::Right,x,y);
 					}
 					break;
 				case WM_RBUTTONDBLCLK:
@@ -154,8 +154,8 @@ using namespace gge::input::system;
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 						
-						ProcessMouseUp(mouse::Event::Middle,x,y);
 						ProcessMouseClick(mouse::Event::Middle,x,y);
+						ProcessMouseUp(mouse::Event::Middle,x,y);
 					}
 					break;
 				case WM_MBUTTONDBLCLK:
@@ -190,12 +190,12 @@ using namespace gge::input::system;
 						
 						switch(GET_XBUTTON_WPARAM(wParam)) {
 						case 1:
-							ProcessMouseUp(mouse::Event::X1,x,y);
 							ProcessMouseClick(mouse::Event::X1,x,y);
+							ProcessMouseUp(mouse::Event::X1,x,y);
 							break;
 						case 2:
-							ProcessMouseUp(mouse::Event::X2,x,y);
 							ProcessMouseClick(mouse::Event::X2,x,y);
+							ProcessMouseUp(mouse::Event::X2,x,y);
 							break;
 						}
 					}

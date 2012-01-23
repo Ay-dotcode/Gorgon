@@ -16,7 +16,7 @@ using namespace gge::utils;
 
 namespace gge { namespace resource {
 
-	ResourceBase *LoadFolderResource(File &File, istream &Data, int Size, bool LoadNames) {
+	FolderResource *LoadFolderResource(File &File, istream &Data, int Size, bool LoadNames) {
 		int targetpos=Data.tellg()+Size;
 		char Namebuffer[256];
 		vector<string> names;
@@ -31,10 +31,7 @@ namespace gge { namespace resource {
 			ReadFrom(Data, size);
 
 			if(gid==GID::Folder_Names) {
-				///*Names and captions will not be loaded to preserve memory
-				///* Should be rewritten if needed again!!
-				
-				if(LoadNames) {
+				if(LoadNames && fold->reallyloadnames) {
 					int targetpos=Data.tellg()+size;
 					while(Data.tellg()<targetpos) {
 						GID::Type gid; 
@@ -70,13 +67,28 @@ namespace gge { namespace resource {
 			else if(gid==GID::SGuid) {
 				fold->guid.Load(Data);
 			} 
+			else if(gid==GID::Folder_Props) {
+				fold->reallyloadnames=ReadFrom<int>(Data) ? true : false;
+
+				EatChunk(Data, size-4);
+			}
+			else if(gid==GID::Folder) {
+				FolderResource *obj=LoadFolderResource(File, Data, size, LoadNames);
+
+				fold->Subitems.Add(obj, fold->Subitems.HighestOrder()+1);
+				if(LoadNames && namec!=names.end()) {
+					obj->name=*namec;
+					++namec;
+				}
+
+			}
 			else {
 				///*Load sub resource
 				ResourceBase *obj=File.LoadObject(Data,gid,size);
 
 				if(obj!=NULL) {
 					fold->Subitems.Add(obj, fold->Subitems.HighestOrder()+1);
-					if(LoadNames && namec!=names.end()) {
+					if(LoadNames && fold->reallyloadnames && namec!=names.end()) {
 						obj->name=*namec;
 						++namec;
 					}
@@ -158,5 +170,14 @@ namespace gge { namespace resource {
 #endif
 			return dynamic_cast<BitmapFontResource*>(&Subitems[Index]); 
 		}
+
+	void FolderResource::Prepare(GGEMain &main, File &file) {
+		ResourceBase::Prepare(main, file);
+		
+		for(auto it=Subitems.First();it.isValid();it.Next()) {
+			if(it->name!="")
+				namedlist.insert(std::pair<std::string, ResourceBase*>(it->name,it.CurrentPtr()));
+		}
+	}
 
 } }

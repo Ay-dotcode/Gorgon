@@ -23,7 +23,7 @@ namespace gge { namespace widgets {
 		  utils::TextualProperty<ITextbox> Text;
 
 
-		  operator std::string() {
+		  operator std::string() const {
 			  return Text;
 		  }
 
@@ -31,6 +31,10 @@ namespace gge { namespace widgets {
 			  Text=s;
 
 			  return *this;
+		  }
+
+		  virtual WidgetBase *GetWidget() {
+			  return NULL;
 		  }
 
 		  utils::EventChain<ITextbox> &ChangeEvent() { return changeevent; }

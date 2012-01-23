@@ -70,6 +70,8 @@ namespace gge { namespace input {
 				return false;
 			}
 			else if(event==Event::Out) {
+				bool ret=false;
+
 				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
 					bool isover=false;
 					if(i->Bounds.isInside(location)) {
@@ -83,6 +85,9 @@ namespace gge { namespace input {
 
 					if(amount==0)
 						isover=false;
+
+					if(isover)
+						return true;
 
 					if(i->IsOver && !isover) {
 						i->Fire(Event::Out, location-i->Bounds.TopLeft(), amount);
@@ -126,7 +131,7 @@ namespace gge { namespace input {
 			if(!MouseCallback) return false;
 
 			if(Event::isClick(event)) {
-				if(MouseCallback.object==PressedObject) {
+				if(MouseCallback.object==PressedObject || !PressedObject) {
 					if(MouseCallback.object->Fire(event, location, amount))
 						return true;
 				}
@@ -148,7 +153,10 @@ namespace gge { namespace input {
 						isover=false;
 				}
 
-				if(!MouseCallback.object->IsOver && isover) {
+				if(MouseCallback.object->IsOver)
+					return true;
+
+				if(isover) {
 					bool ret=MouseCallback.object->Fire(Event::Over, location, amount);
 
 					MouseCallback.object->IsOver=ret;
@@ -168,6 +176,9 @@ namespace gge { namespace input {
 
 				if(amount==0)
 					isover=false;
+
+				if(isover)
+					return true;
 
 				if(MouseCallback.object->IsOver && !isover) {
 					MouseCallback.object->Fire(Event::Out, location, amount);
@@ -376,11 +387,12 @@ namespace gge { namespace input {
 		}
 
 		void ProcessMouseClick(mouse::Event::Type button,int x,int y) {
-			if(mouse::PressedPoint.Distance(utils::Point(x,y))<mouse::DragDistance)
+			if(mouse::PressedPoint.Distance(utils::Point(x,y))<mouse::DragDistance) {
+				//!If there is a pressed object dont propagate
+
 				Main.PropagateMouseEvent(mouse::Event::Click | button, utils::Point(x,y), 0);
 
-			if(mouse::PressedButtons==mouse::Event::None)
-				mouse::PressedObject=NULL;
+			}
 		}
 
 		void ProcessMouseDown(mouse::Event::Type button,int x,int y) {
@@ -394,11 +406,11 @@ namespace gge { namespace input {
 		}
 
 		void ProcessMouseUp(mouse::Event::Type button,int x,int y){
-			if(button==mouse::Event::Left)
-				button=button;
 			mouse::PressedButtons = mouse::PressedButtons & ~button;
-			if(mouse::PressedObject)
+			if(mouse::PressedObject) {
 				mouse::PressedObject->Fire(mouse::Event::Up | button, utils::Point(x,y), 0);
+				mouse::PressedObject=NULL;
+			}
 
 			//Main.PropagateMouseEvent(mouse::Event::Up | button, utils::Point(x,y), 0);
 		}

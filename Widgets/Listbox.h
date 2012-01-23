@@ -10,7 +10,7 @@
 
 namespace gge { namespace widgets {
 
-	//multi select, direction keys, insert
+	//multi select, direction keys
 
 	//This listbox is not for 100s of items
 	template<class T_=std::string, void(*CF_)(const T_ &, std::string &)=listbox::CastToString<T_> >

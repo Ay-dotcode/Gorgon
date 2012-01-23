@@ -185,12 +185,6 @@ namespace gge { namespace widgets {
 				}
 			}
 
-			for(auto it=bp->Subitems.First();it.isValid();it.Next()) {
-				Blueprint::Group &g=dynamic_cast<Blueprint::Group &>(*it);
-
-				bp->Mapping[g] = &g;
-			}
-
 
 			return bp;
 		}
@@ -322,6 +316,16 @@ namespace gge { namespace widgets {
 
 			for(;i<5;i++)
 				groups[i]=NULL;
+		}
+
+		void Blueprint::Prepare(GGEMain &main, resource::File &file) {
+			ResourceBase::Prepare(main, file);
+			
+			for(auto it=Subitems.First();it.isValid();it.Next()) {
+				Blueprint::Group &g=dynamic_cast<Blueprint::Group &>(*it);
+
+				Mapping[g] = &g;
+			}
 		}
 
 

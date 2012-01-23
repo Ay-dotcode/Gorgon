@@ -242,6 +242,7 @@ namespace gge { namespace widgets {
 
 		utils::EventChain<WidgetBase> GotFocus;
 		utils::EventChain<WidgetBase> LostFocus;
+		utils::EventChain<WidgetBase> BoundsChanged;
 
 		virtual ~WidgetBase() {
 			DrawQueue.Remove(this);
@@ -250,7 +251,7 @@ namespace gge { namespace widgets {
 
 
 	protected:
-			
+		
 		void playsound(resource::SoundResource *snd);
 
 		virtual void draw()=0;

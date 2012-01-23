@@ -197,11 +197,31 @@ namespace gge { namespace widgets {
 				return selectionstart;
 			}
 
+			void setprefix(const std::string &value) {
+				if(prefix!=value) {
+					prefix = value;
+					
+					Draw();
+				}
+			}
+			std::string getprefix() const {
+				return prefix;
+			}
+
+			void setsuffix(const std::string &value) {
+				if(suffix!=value) {
+					suffix = value;
+
+					Draw();
+				}
+			}
+			std::string getsuffix() const {
+				return suffix;
+			}
+
 			virtual void textchanged() {}
-			//only partial text is sent to this function
-			//guaranteed to contain no more than 63 chars
-			//if required it will be called multiple times
-			virtual void validatetext(std::string &str) {} 
+			//validates user input. only partial string is sent
+			virtual void validatetext(std::string &str) {}
 
 
 			void style_anim_finished();
@@ -287,7 +307,7 @@ namespace gge { namespace widgets {
 
 			Font *font;
 
-			std::string text;
+			std::string text, prefix, suffix;
 
 
 			//?

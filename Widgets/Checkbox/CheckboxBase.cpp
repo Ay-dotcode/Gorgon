@@ -1270,7 +1270,8 @@ namespace gge { namespace widgets {
 					currentsize.Height=WidgetBase::size.Height;
 			}
 
-			BaseLayer->Resize(currentsize);
+			if(BaseLayer)
+				BaseLayer->Resize(currentsize);
 		}
 
 		void Base::down() {
