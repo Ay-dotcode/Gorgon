@@ -47,7 +47,7 @@ namespace gge { namespace widgets {
 
 			Bounds target=attachedto->GetWidget()->GetBounds();
 
-			Move(target.Right+margin,target.Top);
+			WidgetBase::Move(utils::Point(target.Right+margin,target.Top));
 			SetHeight(target.Height());
 		}
 
@@ -89,6 +89,11 @@ namespace gge { namespace widgets {
 			return Base::Focus();
 		}
 		
+		using WidgetBase::Move;
+		virtual void Move(utils::Point target) {
+			if(!attachedto)
+				WidgetBase::Move(target);
+		}
 
 	protected:
 

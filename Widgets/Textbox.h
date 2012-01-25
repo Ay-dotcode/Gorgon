@@ -13,6 +13,7 @@ namespace gge { namespace widgets {
 		Textbox(std::string text="") : Base(),
 			changeevent("ChangeEvent", this),
 			INIT_PROPERTY(Textbox, CaretLocation),
+			INIT_PROPERTY(Textbox, Readonly),
 			AutoSelectAll(false)
 		{
 			Text=text;
@@ -55,6 +56,7 @@ namespace gge { namespace widgets {
 		}
 
 		utils::NumericProperty<Textbox, int> CaretLocation;
+		utils::BooleanProperty<Textbox> Readonly;
 		bool AutoSelectAll;
 
 
@@ -78,6 +80,13 @@ namespace gge { namespace widgets {
 		}
 		int getCaretLocation() const {
 			return Base::getcaretlocation();
+		}
+
+		void setReadonly(const bool &value) {
+			setreadonly(value);
+		}
+		bool getReadonly() const {
+			return getreadonly();
 		}
 
 	};

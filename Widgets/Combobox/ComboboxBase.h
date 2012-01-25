@@ -26,7 +26,7 @@ namespace gge { namespace widgets {
 		class Base : public WidgetBase {
 		public:
 
-			Base(const T_ &value=T_()) : bp(NULL),  controls(*this)
+			Base(const T_ &value=T_()) : bp(NULL),  controls(*this), isextended(false)
 			{
 				controls.AddWidget(dropbutton);
 				controls.AddWidget(textbox);
@@ -129,6 +129,8 @@ namespace gge { namespace widgets {
 			virtual void draw() {}
 
 			virtual bool loosefocus(bool force) {
+				shrink();
+
 				if(force) {
 					textbox.ForceRemoveFocus();
 					return true;
@@ -169,25 +171,33 @@ namespace gge { namespace widgets {
 			}
 
 			virtual void extend() {
-				isextended=true;
-				if(auto li=listbox.Find(value))
-					li->Signal();
-				else
-					listbox.ClearSelection();
+				if(!isextended) {
+					isextended=true;
+					if(auto li=listbox.Find(value))
+						li->Signal();
+					else
+						listbox.ClearSelection();
 
-				listbox.Show(true);
-				if(!dropbutton)
-					dropbutton=true;
+					listbox.Show(true);
+					if(!dropbutton)
+						dropbutton=true;
+				}
+			}
+
+			virtual bool IsExtended() {
+				return isextended;
 			}
 
 			virtual void shrink() {
-				isextended=false;
-				bool focus=listbox.IsFocused();
-				listbox.Hide();
-				if(dropbutton)
-					dropbutton=false;
-				if(focus)
-					textbox.Focus();
+				if(isextended) {
+					isextended=false;
+					bool focus=listbox.IsFocused();
+					listbox.Hide();
+					if(dropbutton)
+						dropbutton=false;
+					if(focus)
+						textbox.Focus();
+				}
 			}
 
 			virtual void valuechanged() {}

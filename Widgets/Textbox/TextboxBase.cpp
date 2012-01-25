@@ -451,7 +451,7 @@ namespace gge { namespace widgets {
 		bool Base::KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			using namespace gge::input::keyboard;
 
-			if(readonly || passive) {
+			if(passive) {
 				return false;
 			}
 			
@@ -497,6 +497,8 @@ namespace gge { namespace widgets {
 					return true;
 				}
 				if(Key==KeyCodes::Delete) {
+					if(readonly)
+						return false;
 
 					if(bp) {
 						if(bp->TypeSound)
@@ -577,7 +579,7 @@ namespace gge { namespace widgets {
 						WidgetBase::playsound(bp->TypeSound);
 				}
 
-				if(Key==KeyCodes::Backspace) {
+				if(!readonly && Key==KeyCodes::Backspace) {
 					if(caretlocation!=selectionstart) {
 						if(selectionstart<caretlocation) {
 							text.erase(selectionstart, caretlocation-selectionstart);
@@ -603,7 +605,7 @@ namespace gge { namespace widgets {
 
 					return true;
 				}
-				else {
+				else if(!readonly) {
 
 					if(Key >= 32) {
 						if(caretlocation!=selectionstart) {
@@ -640,7 +642,7 @@ namespace gge { namespace widgets {
 
 					return true;
 				}
-				else if(Key=='v' || Key=='V') {
+				else if(!readonly && (Key=='v' || Key=='V')) {
 					string s=os::GetClipbardText();
 					validatetext(s);
 
@@ -676,7 +678,7 @@ namespace gge { namespace widgets {
 
 					return true;
 				}
-				else if(Key=='x' || Key=='X') {
+				else if(!readonly && (Key=='x' || Key=='X')) {
 					if(caretlocation!=selectionstart) {
 						if(selectionstart<caretlocation) {
 							os::SetClipboardText(text.substr(selectionstart, caretlocation-selectionstart));
