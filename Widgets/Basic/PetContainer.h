@@ -89,7 +89,7 @@ namespace gge { namespace widgets {
 			return BaseLayer;
 		}
 
-		void InformEnabledChange() {
+		void InformEnabledChange(bool state) {
 			for(auto it=Widgets.First();it.isValid();it.Next()) {
 				call_widget_containerenabledchanged(*it, false);
 			}
@@ -116,6 +116,44 @@ namespace gge { namespace widgets {
 		bool isactive;
 		T_ &parent;
 
+
+	};
+
+	template<class T_>
+	class ExtendedPetContiner : public PetContainer<T_> {
+	public:
+		LayerBase ExtenderLayer;
+
+		ExtendedPetContiner(T_ &parent) : PetContainer(parent), extenderbase(NULL) {
+
+		}
+
+		void AttachTo(LayerBase *layer, LayerBase *extender, int order=0) {
+			if(layer && extender) {
+				CheckAndDelete(extenderbase);
+				extenderbase=extender;
+				layer->Add(BaseLayer, order);
+				extender->Add(ExtenderLayer, order);
+			}
+			else {
+				BaseLayer.parent=NULL;
+				ExtenderLayer.parent=NULL;
+				CheckAndDelete(extenderbase);
+			}
+		}
+		void AttachTo(LayerBase &layer, LayerBase &extender, int order=0) {
+			AttachTo(&layer, &extender, order);
+		}
+
+		virtual widgets::WidgetLayer &CreateExtenderLayer()  {
+			widgets::WidgetLayer *layer=new widgets::WidgetLayer;
+			ExtenderLayer.Add(layer, BaseLayer.SubLayers.LowestOrder()-1);
+
+			return *layer;
+		}
+
+	protected:
+		LayerBase *extenderbase;
 
 	};
 

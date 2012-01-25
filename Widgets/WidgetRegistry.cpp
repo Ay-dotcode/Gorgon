@@ -203,6 +203,12 @@ namespace gge { namespace widgets {
 		Panels.SettingsWindow	= GetWithDefault(folder, *wrr.file, 7, Panels.Window);
 
 
+		folder=&wrr.Get<FolderResource>(11);
+		Others.Combobox=Combobox=dynamic_cast<combobox::Blueprint*>(folder->Get<LinkNodeResource>(3).GetTarget(*wrr.file));
+		Others.Autocomplete	= GetWithDefault(folder, *wrr.file, 4, Others.Combobox);
+		Others.JumpList	= GetWithDefault(folder, *wrr.file, 5, Others.Combobox);
+
+
 		for(auto it=wrr.Get<FolderResource>(14).Subitems.First();it.isValid();it.Next()) {
 			try {
 				if(it->name=="") {

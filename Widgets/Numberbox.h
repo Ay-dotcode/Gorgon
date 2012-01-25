@@ -136,7 +136,8 @@ namespace gge { namespace widgets {
 		}
 
 		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
-			KeyEvent(input::keyboard::Event(event, Key));
+			if(KeyEvent(input::keyboard::Event(event, Key)))
+				return true;
 			
 			return Base::KeyboardEvent(event,Key);
 		}

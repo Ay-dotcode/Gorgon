@@ -8,12 +8,7 @@ namespace gge { namespace widgets {
 	class ListItem;
 
 	template<class T_, void(*CF_)(const T_ &, std::string &)>
-	class ListItemModifier {
-	protected:
-		void callcheck(ListItem<T_, CF_> &li);
-		void callclear(ListItem<T_, CF_> &li);
-		void callsettoggle(ListItem<T_, CF_> &li, typename IListItem<T_, CF_>::ToggleNotifyFunction &toggle);
-	};
+	class ListItemModifier;
 
 	template<class T_, void(*CF_)(const T_ &, std::string &)>
 	class ListItem : public IListItem<T_, CF_>, public checkbox::Base {
@@ -21,17 +16,18 @@ namespace gge { namespace widgets {
 		friend class ListItemModifier<T_, CF_>;
 	public:
 
+		template <class R_>
+		ListItem(R_ *receiver, void(R_::*handler)(IListItem*,bool), const T_ &value) : 
+			IListItem(value), Base(true, AutosizeModes::None, false, false, true)
+		{
+			settoggle(receiver, handler);
+		}
 
-		ListItem(ToggleNotifyFunction &toggle, const T_ &value) : IListItem(value), Base(true, AutosizeModes::None, false, false, true),
-			toggle(toggle)
-		{ }
-
-		ListItem(ToggleNotifyFunction &toggle) : IListItem(T_()), Base(true, AutosizeModes::None, false, false, true),
-			toggle(toggle)
-		{ }
-
-		ListItem(const ListItem &li) : IListItem(T_()), Base(true, AutosizeModes::None, false, false, true), toggle(toggle) {
-			Value=li.value;
+		template <class R_>
+		ListItem(R_ *receiver, void(R_::*handler)(IListItem*,bool)) : 
+			IListItem(T_()), Base(true, AutosizeModes::None, false, false, true)
+		{
+			settoggle(receiver, handler);
 		}
 
 
@@ -76,7 +72,8 @@ namespace gge { namespace widgets {
 				break;
 			case input::mouse::Event::Left_Click:
 				if(IsEnabled()) {
-					toggle(this);
+					if(notifier)
+						notifier->Fire(this,true);
 				}
 
 				break;
@@ -96,14 +93,16 @@ namespace gge { namespace widgets {
 			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Up && !input::keyboard::Modifier::Check()) {
 				Base::up();
 
-				toggle(this);
+				if(notifier)
+					notifier->Fire(this,true);
 
 				return true;
 			}
 			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Up && !input::keyboard::Modifier::Check()) {
 				Base::up();
 
-				toggle(this);
+				if(notifier)
+					notifier->Fire(this,true);
 
 				return true;
 			}
@@ -121,23 +120,32 @@ namespace gge { namespace widgets {
 				return false;
 
 			Base::click();
-			toggle(this);
+			if(notifier)
+				notifier->Fire(this,true);
 
 			return true;
 		}
 
+		virtual void Signal() {
+			Base::click();
+			if(notifier)
+				notifier->Fire(this,false);
+		}
 
 		WidgetBase &GetWidget() {
 			return *this;
 		}
 
+		virtual ~ListItem() {  }
 
 	protected:
-		ToggleNotifyFunction &toggle;
-
-		void settoggle(ToggleNotifyFunction &toggle) {
-			this->toggle=toggle;
+		template<class R_>
+		void settoggle(R_ *receiver, void(R_::*handler)(IListItem*,bool)) {
+			utils::CheckAndDelete(notifier);
+			notifier=new prvt::listnotifyholder<T_,CF_,R_>(receiver, handler);
 		}
+
+		ListItem(const ListItem &li);
 
 		virtual T_ getValue() const {
 			return value;
@@ -165,15 +173,15 @@ namespace gge { namespace widgets {
 	};
 
 	template<class T_, void(*CF_)(const T_ &, std::string &)>
-	void ListItemModifier<T_,CF_>::callcheck(ListItem<T_, CF_> &li) { li.check(); }
-
-	template<class T_, void(*CF_)(const T_ &, std::string &)>
-	void ListItemModifier<T_,CF_>::callclear(ListItem<T_, CF_> &li) { li.clear(); }
-
-	template<class T_, void(*CF_)(const T_ &, std::string &)>
-	void ListItemModifier<T_,CF_>::callsettoggle(ListItem<T_, CF_> &li, typename IListItem<T_, CF_>::ToggleNotifyFunction &toggle) {
-		this->toggle=toggle;
-	}
+	class ListItemModifier {
+	protected:
+		void callcheck(ListItem<T_, CF_> &li) { li.check(); }
+		void callclear(ListItem<T_, CF_> &li) { li.clear(); }
+		template <class R_>
+		void callsettoggle(ListItem<T_, CF_> &li, R_ *target, void(R_::*handler)(IListItem<T_, CF_>*,bool)) {
+			li.settoggle(target, handler);
+		}
+	};
 
 
 }}

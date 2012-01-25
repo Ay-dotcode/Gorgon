@@ -219,7 +219,7 @@ namespace gge { namespace widgets {
 		void ToggleTabSwitchEnabledState() { tabswitch=!tabswitch; }
 		void SetTabSwitchEnabledState(bool state) { tabswitch = state; }
 
-
+		//The ownership lies with the caller
 		virtual WidgetLayer &CreateWidgetLayer(int Order=0) = 0;
 		virtual LayerBase   &CreateBackgroundLayer() = 0;
 		virtual WidgetLayer &CreateExtenderLayer() = 0;

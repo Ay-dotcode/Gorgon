@@ -33,7 +33,8 @@ namespace gge { namespace widgets {
 			GotFocus("GotFocus", this),
 			LostFocus("LostFocus", this),
 			waitingforredraw(false),
-			mousetoken(0)
+			mousetoken(0),
+			targetextender(false)
 		{ }
 
 
@@ -147,7 +148,7 @@ namespace gge { namespace widgets {
 				return true;
 			}
 			else
-				return false;
+				return true;
 		}
 		virtual void ForceRemoveFocus() {
 			if(IsFocused())
@@ -238,6 +239,21 @@ namespace gge { namespace widgets {
 			return Focus();
 		}
 
+		virtual void SetIsExtender(bool value) {
+			if(value!=targetextender) {
+				targetextender=value;
+
+				if(Container)
+					SetContainer(Container);
+			}
+		}
+		void MakeExtender() {
+			SetIsExtender(true);
+		}
+		bool GetIsExtender() const {
+			return targetextender;
+		}
+
 
 
 		utils::EventChain<WidgetBase> GotFocus;
@@ -285,6 +301,7 @@ namespace gge { namespace widgets {
 
 		bool isvisible;
 		bool isenabled;
+		bool targetextender;
 
 		bool waitingforredraw;
 

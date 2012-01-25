@@ -30,13 +30,14 @@ namespace gge { namespace widgets {
 		typedef OrderedCollection<ListItem>::ConstSearchIterator ConstSearchIterator;
 
 		Listbox() : selectiontype(SingleSelect), active(NULL),
-			INIT_PROPERTY(Listbox, SelectionType)
+			INIT_PROPERTY(Listbox, SelectionType),
+			INIT_PROPERTY(Listbox, AutoHeight),
+			ItemClickedEvent("ItemClicked", this)
 		{
-			notifyevent.Register(this, &Listbox::togglenotify);
 		}
 
 		ListItem &Add(const T_ &value=T_()) {
-			ListItem *li=new ListItem(notifyevent);
+			ListItem *li=new ListItem(this, &Listbox::togglenotify);
 			li->Value=value;
 
 			Add(*li);
@@ -48,6 +49,7 @@ namespace gge { namespace widgets {
 			if(bp && bp->Item)
 				item.SetBlueprint(*bp->Item);
 
+			callsettoggle(item, this, &Listbox::togglenotify);
 			OrderedCollection::Add(item);
 			add(item);
 		}
@@ -61,7 +63,7 @@ namespace gge { namespace widgets {
 		}
 
 		ListItem &Insert(const T_ &value, const ListItem *before) {
-			ListItem *li=new ListItem(notifyevent);
+			ListItem *li=new ListItem(this, &Listbox::togglenotify);
 			li->Value=value;
 
 			Insert(*li, before);
@@ -73,7 +75,9 @@ namespace gge { namespace widgets {
 			if(bp && bp->Item)
 				item.SetBlueprint(*bp->Item);
 
+			callsettoggle(item, this, &Listbox::togglenotify);
 			OrderedCollection::Insert(item, before);
+			add(item);
 			reorganize();
 		}
 
@@ -86,19 +90,19 @@ namespace gge { namespace widgets {
 		}
 
 		void Remove(ListItem &item) {
-			item.Detach();
-			items.Remove(item);
+			remove(item);
+			this->Remove(item);
 		}
 
 		void Delete(ListItem &item) {
-			item.Detach();
-			items.Delete(item);
+			remove(item);
+			this->Delete(item);
 		}
 
 		void DeleteAll(const T_ &value) {
 			for(auto it=First();it.isValid();it.Next()) {
 				if(it->Value==value) {
-					it->Detach();
+					remove(*it);
 					it.Delete();
 				}
 			}
@@ -159,11 +163,13 @@ namespace gge { namespace widgets {
 
 		void Destroy() {
 			panel.Widgets.Clear();
+			adjustheight();
 			OrderedCollection::Destroy();
 		}
 
 		void Clear() {
 			panel.Widgets.Clear();
+			adjustheight();
 			OrderedCollection::Clear();
 		}
 
@@ -234,11 +240,20 @@ namespace gge { namespace widgets {
 			panel.LargeScroll=panel.GetUsableSize().Height-panel.SmallScroll;
 			if(panel.LargeScroll<panel.GetUsableSize().Height/2)
 				panel.LargeScroll=panel.GetUsableSize().Height/2;
+
+			adjustheight();
 		}
 
-	protected:
-		utils::EventChain<Base, IListItem<T_, CF_>*> notifyevent;
+		void ClearSelection() {
+			clearall();
+		}
 
+		//!Keyboard handling
+
+		utils::EventChain<Listbox, ListItem&> ItemClickedEvent;
+		utils::BooleanProperty<Listbox> AutoHeight;
+
+	protected:
 		void setSelectionType(const SelectionTypes &value) {
 			if(selectiontype==MultiSelect && value!=MultiSelect) {
 				selected.Clear();
@@ -259,12 +274,14 @@ namespace gge { namespace widgets {
 				if(it!=item) callclear(*it);
 		}
 
-		void togglenotify(IListItem<T_, CF_> *li) {
+		void togglenotify(IListItem<T_, CF_> *li, bool raise) {
 			ListItem* item=dynamic_cast<ListItem*>(li);
 			if(!item) return;
 
 			if(selectiontype==SingleSelect) {
-				callclear(*active);
+				if(active)
+					callclear(*active);
+
 				active=item;
 				callcheck(*active);
 			}
@@ -306,6 +323,9 @@ namespace gge { namespace widgets {
 					active=item;
 				}
 			}
+
+			if(raise)
+				ItemClickedEvent(*item);
 		}
 
 		void reorganize() {
@@ -318,6 +338,13 @@ namespace gge { namespace widgets {
 			for(auto it=First();it.isValid();it.Next()) {
 				add(*it);
 			}
+		}
+
+		void setAutoHeight(const bool &value) {
+			setautoheight(value);
+		}
+		bool getAutoHeight() const {
+			return getautoheight();
 		}
 	};
 

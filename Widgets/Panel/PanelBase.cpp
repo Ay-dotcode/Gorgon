@@ -234,7 +234,8 @@ namespace gge { namespace widgets {
 			}
 			background.BoundingBox=scrollinglayer.BoundingBox;
 			widgetlayer.BoundingBox=scrollinglayer.BoundingBox;
-			extenderlayer.BoundingBox=scrollinglayer.BoundingBox;
+			extenderlayer.BoundingBox.Top=scrollinglayer.BoundingBox.Top;
+			extenderlayer.BoundingBox.Left=scrollinglayer.BoundingBox.Left;
 
 			//allows extra 1/5 scroll
 			if(scroll.y<-(size.Height-inner.Height()+inner.Height()/5) && (size.Height-inner.Height())>0) {
@@ -242,6 +243,8 @@ namespace gge { namespace widgets {
 			}
 
 			scrollinglayer.Move(scroll);
+
+			extenderlayer.Move(innerlayer.BoundingBox.TopLeft()+scrollinglayer.BoundingBox.TopLeft());
 		}
 
 		void Base::prepare() {

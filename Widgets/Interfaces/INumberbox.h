@@ -40,7 +40,7 @@ namespace gge { namespace widgets {
 		  }
 
 		  utils::EventChain<INumberbox> &ChangeEvent() { return changeevent; }
-		  utils::EventChain<INumberbox, input::keyboard::Event> KeyEvent;
+		  utils::ConsumableEvent<INumberbox, input::keyboard::Event> KeyEvent;
 
 	protected:
 		//REQUIRED

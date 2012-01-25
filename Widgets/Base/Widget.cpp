@@ -36,13 +36,19 @@ namespace gge { namespace widgets {
 	}
 
 	bool WidgetBase::IsFocused() {
-		return Container->GetFocused()==this;
+		if(Container)
+			return Container->GetFocused()==this;
+		else
+			return false;
 	}
 
 	void WidgetBase::locateto(ContainerBase* container, int Order, utils::SortedCollection<WidgetBase>::Wrapper * w) {
 		Container=container;
 		utils::CheckAndDelete(BaseLayer);
-		BaseLayer=&container->CreateWidgetLayer(Order);
+		if(targetextender)
+			BaseLayer=&container->CreateExtenderLayer();
+		else
+			BaseLayer=&container->CreateWidgetLayer(Order);
 		wrapper=w;
 		BaseLayer->MouseCallback.Set(*this, &WidgetBase::MouseEvent);
 		if(BaseLayer)
@@ -65,6 +71,7 @@ namespace gge { namespace widgets {
 			return;
 
 		Container->RemoveWidget(this);
+		utils::CheckAndDelete(BaseLayer);
 	}
 
 	void WidgetBase::Disable() {

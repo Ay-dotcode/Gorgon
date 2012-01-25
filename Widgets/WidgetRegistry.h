@@ -9,6 +9,7 @@
 #include "../Engine/Animation.h"
 #include "Checkbox/CheckboxBlueprint.h"
 #include "Textbox/TextboxBlueprint.h"
+#include "Combobox/ComboboxBlueprint.h"
 #include "Listbox/ListboxBase.h"
 #include "Slider/SliderBlueprint.h"
 #include "../Resource/NullImage.h"
@@ -25,7 +26,7 @@ namespace gge { namespace widgets {
 		WidgetRegistry() : Icons(icons), Pictures(pictures), Sounds(sounds),
 			Button(), Label(), Textbox(),
 			Checkbox(), RadioButton(), Listbox(), Slider(), Scrollbar(),
-			Progressbar(), Panel(), Window()
+			Progressbar(), Panel(), Window(), Combobox()
 		{}
 
 		void SetWRR(WidgetRegistryResource &wrr);
@@ -198,6 +199,7 @@ namespace gge { namespace widgets {
 
 		} Listboxes;
 
+
 		slider::Blueprint *Slider;
 		slider::Blueprint *Scrollbar;
 		slider::Blueprint *Progressbar;
@@ -270,6 +272,18 @@ namespace gge { namespace widgets {
 				*SettingsWindow
 			;
 		} Panels;
+
+		combobox::Blueprint *Combobox;
+
+		class COthers {
+		public:
+			COthers() : Combobox(), Autocomplete(), JumpList()
+			{ }
+
+			combobox::Blueprint *Combobox;
+			combobox::Blueprint *Autocomplete;
+			combobox::Blueprint *JumpList;
+		} Others;
 
 
 

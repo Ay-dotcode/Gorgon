@@ -120,7 +120,7 @@ namespace gge { namespace widgets {
 					caretposition=Alignment::CalculateLocation(bp->CaretPlace.Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace.Margins);
 
 
-					if(!IsFocused() || !caret) {
+					if(!IsFocused() || !caret || passive || noselection) {
 						font->Print(innerlayer, location, 0, prefix+text+suffix);
 					}
 					else {
@@ -156,7 +156,7 @@ namespace gge { namespace widgets {
 						caret->Draw(innerlayer, caretposition);
 					}
 				}
-				else if(IsFocused()) {
+				else if(IsFocused() && !passive && !noselection) {
 					Point caretposition(0,0);
 					Point location;
 					int th=font->FontHeight();
@@ -450,6 +450,10 @@ namespace gge { namespace widgets {
 
 		bool Base::KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			using namespace gge::input::keyboard;
+
+			if(readonly || passive) {
+				return false;
+			}
 			
 			if(event==Event::Down && Modifier::Current==Modifier::None) {
 				if(Key==KeyCodes::Left) {

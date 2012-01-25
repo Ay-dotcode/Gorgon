@@ -26,7 +26,7 @@ namespace gge { namespace widgets {
 		class Base : public WidgetBase {
 		public:
 
-			Base() : bp(NULL),  controls(*this)
+			Base() : bp(NULL),  controls(*this), autoheight(false)
 			{
 				controls.AddWidget(panel);
 				panel.Move(0,0);
@@ -64,7 +64,7 @@ namespace gge { namespace widgets {
 			virtual void SetBlueprint(const widgets::Blueprint &bp);
 
 			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
-				return panel.MouseEvent(event, location, amount);
+				return false;
 			}
 
 			virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
@@ -73,7 +73,10 @@ namespace gge { namespace widgets {
 
 			virtual void Resize(utils::Size Size) {
 				WidgetBase::Resize(Size);
-				panel.Resize(Size);
+				if(autoheight)
+					panel.SetWidth(Size.Width);
+				else
+					panel.Resize(Size);
 				controls.Resize(Size);
 			}
 			
@@ -83,6 +86,14 @@ namespace gge { namespace widgets {
 
 			virtual void add(IListItem<T_, CF_> &item) {
 				panel.AddWidget(item.GetWidget());
+				if(autoheight)
+					adjustheight();
+			}
+
+			virtual void remove(IListItem<T_, CF_> &item) {
+				item.GetWidget().Detach();
+				if(autoheight)
+					adjustheight();
 			}
 
 			virtual void draw() {}
@@ -103,7 +114,7 @@ namespace gge { namespace widgets {
 			}
 
 			virtual void containerenabledchanged(bool state) {
-				controls.InformEnabledChange();
+				controls.InformEnabledChange(state);
 			}
 
 			virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
@@ -112,17 +123,43 @@ namespace gge { namespace widgets {
 				BaseLayer->Add(controls);
 			}
 
+			void setautoheight(const bool &value) {
+				if(autoheight!=value) {
+					autoheight = value;
+					adjustheight();
+				}
+			}
+			bool getautoheight() const {
+				return autoheight;
+			}
+
+			void adjustheight() {
+				if(autoheight) {
+					panel.SetHeight(200);
+					int h=0;
+					for(auto it=panel.Widgets.First();it.isValid();it.Next()) {
+						if(it->IsVisible())
+							h+=it->GetHeight();
+					}
+					h+=panel.GetHeight()-panel.GetUsableHeight();
+					panel.SetHeight(std::min(h+1,size.Height));
+				}
+				else {
+					panel.SetHeight(size.Height);
+				}
+			}
+
 
 			const Blueprint *bp;
 
 			PetContainer<Base> controls;
 
-		//TODO Need a new panel that allows removal of tab function
 			ControlledPanel panel;
 			
 
 			ListOrganizer organizer;
 		private:
+			bool autoheight;
 		};
 
 		template<class T_, void(*CF_)(const T_ &, std::string &)>
@@ -136,7 +173,11 @@ namespace gge { namespace widgets {
 				panel.SetBlueprint(*this->bp->Panel);
 
 			if(WidgetBase::size.Width==0)
-				Resize(this->bp->DefaultSize);
+				SetWidth(this->bp->DefaultSize.Width);
+			if(WidgetBase::size.Height==0)
+				SetHeight(this->bp->DefaultSize.Height);
+
+			adjustheight();
 		}
 
 	}

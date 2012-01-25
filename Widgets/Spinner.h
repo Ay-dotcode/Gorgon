@@ -103,8 +103,11 @@ namespace gge { namespace widgets {
 				setvalue(attachedto->Value);
 		}
 
-		void attached_keyboard(input::keyboard::Event event) {
-			Base::KeyboardEvent(event.event, event.keycode);
+		bool attached_keyboard(input::keyboard::Event event) {
+			if(event.keycode==input::keyboard::KeyCodes::Left || event.keycode==input::keyboard::KeyCodes::Right)
+				return false;
+
+			return Base::KeyboardEvent(event.event, event.keycode);
 		}
 
 

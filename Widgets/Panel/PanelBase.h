@@ -30,7 +30,6 @@ namespace gge { namespace widgets {
 				innerlayer.Add(scrollinglayer);
 				scrollinglayer.Add(background, 1);
 				scrollinglayer.Add(widgetlayer, 0);
-				scrollinglayer.Add(extenderlayer, -1);
 				innerlayer.EnableClipping=true;
 
 				style_anim.Pause();
@@ -85,10 +84,7 @@ namespace gge { namespace widgets {
 					setstyle(widgets::Blueprint::Disabled);
 
 					WidgetBase::Disable();
-
-					for(auto it=Widgets.First();it.isValid();it.Next()) {
-						call_widget_containerenabledchanged(*it, true);
-					}
+					ContainerBase::Disable();
 				}
 
 			}
@@ -304,8 +300,23 @@ namespace gge { namespace widgets {
 				controls.BaseLayer.parent=NULL;
 				dialogcontrols.BaseLayer.parent=NULL;
 				overlayer.parent=NULL;
+				overlayer.parent=NULL;
 
 				return true;
+			}
+
+			virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
+				WidgetBase::located(container, w, Order);
+
+				BaseLayer->Add(innerlayer,1);
+				BaseLayer->Add(dialogcontrols,0);
+				BaseLayer->Add(controls,0);
+				BaseLayer->Add(extenderlayer, -1);
+				BaseLayer->Add(overlayer, -2);
+
+				containerenabledchanged(container->IsEnabled());
+
+				adjustcontrols();
 			}
 
 			virtual void containerenabledchanged(bool state) {
@@ -319,19 +330,6 @@ namespace gge { namespace widgets {
 						setstyle(widgets::Blueprint::Disabled);
 					}
 				}
-			}
-
-			virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
-				WidgetBase::located(container, w, Order);
-				
-				BaseLayer->Add(innerlayer,1);
-				BaseLayer->Add(dialogcontrols,0);
-				BaseLayer->Add(controls,0);
-				BaseLayer->Add(overlayer, -1);
-
-				containerenabledchanged(container->IsEnabled());
-
-				adjustcontrols();
 			}
 
 			void setupvscroll(bool allow, bool show, bool autohide, bool dragscroll=false) {

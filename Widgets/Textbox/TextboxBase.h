@@ -19,7 +19,8 @@ namespace gge { namespace widgets {
 			Base() : controls(*this),
 				bp(NULL), next_style(widgets::Blueprint::Style_None),
 				scroll(0,0), vscroll(true), mhover(false), caretlocation(0), selectionstart(0),
-				caret(NULL), selection(NULL), textlocation(0,0), mdown(false)
+				caret(NULL), selection(NULL), textlocation(0,0), mdown(false), passive(false),
+				readonly(false), noselection(false)
 			{
 				innerlayer.EnableClipping=true;
 
@@ -219,6 +220,47 @@ namespace gge { namespace widgets {
 				return suffix;
 			}
 
+			void makepassive() {
+				if(!passive) {
+					setstyle(widgets::Blueprint::Normal);
+					passive=true;
+					Draw();
+				}
+			}
+			void makeactive() {
+				if(passive) {
+					passive=false;
+					Draw();
+				}
+			}
+			void setpassive(const bool &value) {
+				value ? makepassive() : makeactive();
+			}
+			bool getpassive() const {
+				return passive;
+			}
+
+			void setreadonly(const bool &value) {
+				if(readonly!=value) {
+					readonly = value;
+
+					Draw();
+				}
+			}
+			bool getreadonly() const {
+				return readonly;
+			}
+
+			void setnoselection(const bool &value) {
+				if(noselection!=value) {
+					noselection = value;
+					Draw();
+				}
+			}
+			bool getnoselection() const {
+				return noselection;
+			}
+
 			virtual void textchanged() {}
 			//validates user input. only partial string is sent
 			virtual void validatetext(std::string &str) {}
@@ -304,6 +346,10 @@ namespace gge { namespace widgets {
 
 			bool mhover;
 			bool mdown;
+
+			bool passive;
+			bool readonly;
+			bool noselection;
 
 			Font *font;
 
