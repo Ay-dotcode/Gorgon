@@ -15,6 +15,7 @@
 #include "WidgetRegistry.h"
 #include "..\Engine\Input.h"
 #include "Combobox\ComboboxBlueprint.h"
+#include "TabPanel.h"
 
 namespace gge { namespace widgets {
 
@@ -46,6 +47,7 @@ namespace gge { namespace widgets {
 		File.Loaders.Add(new resource::ResourceLoader(GID::Textbox, textbox::Load)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::Listbox, listbox::Load)); 
 		File.Loaders.Add(new resource::ResourceLoader(GID::Combobox, combobox::Load)); 
+		File.Loaders.Add(new resource::ResourceLoader(GID::Tabpanel, tabpanel::Load)); 
 
 		File.Loaders.Add(new resource::ResourceLoader(GID::WR, LoadWR)); 
 	}

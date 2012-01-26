@@ -70,10 +70,14 @@ namespace gge { namespace widgets {
 
 		static const Type Listbox				= 0x05870000;
 		static const Type Listbox_Props			= 0x05870101;
-
+		
 
 		static const Type Combobox				= 0x05890000;
 		static const Type Combobox_Props		= 0x05890101;
+
+
+		static const Type Tabpanel				= 0x058a0000;
+		static const Type Tabpanel_Props		= 0x058a0101;
 
 
 		static const Type WR					= 0x05100000;
