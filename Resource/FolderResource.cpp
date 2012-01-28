@@ -20,7 +20,7 @@ namespace gge { namespace resource {
 		int targetpos=Data.tellg()+Size;
 		char Namebuffer[256];
 		vector<string> names;
-		vector<string>::iterator namec;
+		vector<string>::iterator namec=names.begin();
 
 		FolderResource *fold=new FolderResource();
 		fold->EntryPoint=(int)Data.tellg(); //forced to int because the system uses only 32 bits for size
