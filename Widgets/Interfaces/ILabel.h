@@ -48,12 +48,12 @@ namespace gge { namespace widgets {
 		template<class T_>
 		bool default_focusreceived(T_ *Container) {
 
-			if(Container && !settingfocus) {
-				settingfocus=true;
-				return Container->FocusNext();
-			}
+			//if(Container && !settingfocus) {
+			//	settingfocus=true;
+			//	return Container->FocusNext();
+			//}
 
-			settingfocus=false;
+			//settingfocus=false;
 			return false;
 		}
 
