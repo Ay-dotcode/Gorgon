@@ -59,6 +59,15 @@ namespace gge { namespace utils {
 	template<>
 	inline int Random(int min, int max)    { return (Random<int>()%(max-min)) + min; }
 
+	template<class T_>
+	T_ Random(Range<T_> range)              { return Random<T_>()*(range.Difference()) + range.start; }
+	template<>
+	inline Byte Random(Range<Byte> range) { return (Random<Byte>()%(range.Difference())) + range.start; }
+	template<>
+	inline char Random(Range<char> range) { return (Random<char>()%(range.Difference())) + range.start; }
+	template<>
+	inline int Random(Range<int> range)    { return (Random<int>()%(range.Difference())) + range.start; }
+
 	template <>
 	inline std::string Random<std::string>()             { return randomstrings[Random(0,50)]; }
 

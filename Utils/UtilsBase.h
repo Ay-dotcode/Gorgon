@@ -42,6 +42,18 @@ namespace gge {
 				elm=NULL;
 			}
 		}
+
+		template <class T_>
+		class Range {
+		public:
+			T_ start, end;
+			Range() {}
+			Range(const T_ &start, const T_ &end) : start(start), end(end) {}
+
+			T_ Difference() {
+				return end-start;
+			}
+		};
 	}
 
 }
