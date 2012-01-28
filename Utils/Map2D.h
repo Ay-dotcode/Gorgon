@@ -576,35 +576,35 @@ namespace gge { namespace utils {
 
 		SequenceCheckResult<T_> CheckAllForSequence(int atleast) const {
 			SequenceCheckResult<T_> ret=CheckRowsForSequence(atleast);
-			if(ret.direction!=None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>::None) return ret;
 
 			ret=CheckColumnsForSequence(atleast);
-			if(ret.direction!=None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>::None) return ret;
 
 			ret=CheckDiagonalsForSequence(atleast);
-			if(ret.direction!=None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>::None) return ret;
 		}
 
 		SequenceCheckResult<T_> CheckAllForSequenceOf(const T_ &value, int atleast) const {
 			SequenceCheckResult<T_> ret=CheckRowsForSequenceOf(value, atleast);
-			if(ret.direction!=None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>::None) return ret;
 
 			ret=CheckColumnsForSequenceOf(value, atleast);
-			if(ret.direction!=None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>::None) return ret;
 
 			ret=CheckDiagonalsForSequenceOf(value, atleast);
-			if(ret.direction!=None) return ret;
+			return ret;
 		}
 
 		SequenceCheckResult<T_> CheckAllForSequenceNotOf(const T_ &value, int atleast) const {
 			SequenceCheckResult<T_> ret=CheckRowsForSequenceNotOf(value, atleast);
-			if(ret.direction!=None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>None) return ret;
 
 			ret=CheckColumnsForSequenceNotOf(value, atleast);
-			if(ret.direction!=None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>None) return ret;
 
 			ret=CheckDiagonalsForSequenceNotOf(value, atleast);
-			if(ret.direction!=None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>None) return ret;
 		}
 
 		SequenceCheckResult<T_> CheckAllForSequence() const {
