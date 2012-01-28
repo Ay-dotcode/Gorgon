@@ -1454,7 +1454,7 @@ namespace gge { namespace utils {
 		}
 
 		void Resize(Size size) {
-			Resize(width, height);
+			Resize(size.Width, size.Height);
 		}
 
 	protected:
