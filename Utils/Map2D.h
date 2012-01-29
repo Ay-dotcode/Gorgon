@@ -162,6 +162,12 @@ namespace gge { namespace utils {
 
 			return me().buffer[x + y*me().getwidth()];
 		}
+		//Returns the specified member. Fires an exception in debug, no checks are
+		// performed in release. You may use this function for assignment as well
+		// map(2,4)=Player_X;
+		T_ &operator ()(utils::Point location) {
+			return (*this)(location.x, location.y);
+		}
 
 		//Returns the specified member. Fires an exception in debug, no checks are
 		// performed in release
@@ -174,11 +180,18 @@ namespace gge { namespace utils {
 			return me().buffer[x + y*me().getwidth()];
 		}
 
+		const T_ &operator ()(utils::Point location) const {
+			return (*this)(location.x, location.y);
+		}
+
 		//Changes the value of the specified element. If the element is not found
 		// nothing will be done.
 		void Set(int x, int y, const T_ &value) {
 			if(!(x<0 || x>=me().getwidth() || y<0 || y>=me().getheight()))
 				me().buffer[x+y*me().getwidth()]=value;
+		}
+		void Set(utils::Point location, const T_ &value) {
+			Set(location.x, location.y,value)
 		}
 
 		//Returns the value at the given cell. If the element is not found
@@ -188,6 +201,12 @@ namespace gge { namespace utils {
 				return me().buffer[x+y*me().getwidth()];
 
 			return T_();
+		}
+
+		//Returns the value at the given cell. If the element is not found
+		// a new object will be returned. This function returns by value.
+		T_ Get(utils::Point location) const {
+			return Get(location.x, location.y);
 		}
 
 		//Returns the size of the map
