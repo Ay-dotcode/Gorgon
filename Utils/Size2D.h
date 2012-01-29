@@ -112,6 +112,10 @@ namespace gge { namespace utils {
 			return *this;
 		}
 
+		operator basic_Point2D<T_>() const {
+			return basic_Point2D<T_>(Width, Height);
+		}
+
 		T_ Cells() const { return Width*Height; }
 		T_ Area() const { return Width*Height; }
 
