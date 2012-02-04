@@ -68,12 +68,12 @@ namespace gge { namespace widgets {
 
 		void Remove(ListItem &item) {
 			listbox.Remove(item);
-			this->Remove(item);
+			OrderedCollection::Remove(item);
 		}
 
 		void Delete(ListItem &item) {
 			listbox.Remove(item);
-			this->Delete(item);
+			OrderedCollection::Delete(item);
 		}
 
 		void DeleteAll(const T_ &value) {

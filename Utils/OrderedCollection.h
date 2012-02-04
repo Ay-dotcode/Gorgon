@@ -282,7 +282,7 @@ namespace gge { namespace utils {
 			}
 
 		protected:
-			ConstIterator(const Collection &c, int offset=0) : Iterator_(c, offset) {
+			ConstIterator(const OrderedCollection &c, int offset=0) : Iterator_(c, offset) {
 			}
 		};
 		typedef SearchIterator_<      T_,      OrderedCollection, growth>	    SearchIterator;
@@ -708,7 +708,7 @@ namespace gge { namespace utils {
 		}
 
 		ConstSearchIterator send() const {
-			return ConstSearchIterator();
+			return ConstSearchIterator(*this,T_());
 		}
 
 	//TODO ! Template compatibility for collections, lists

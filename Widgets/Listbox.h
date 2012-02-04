@@ -91,12 +91,12 @@ namespace gge { namespace widgets {
 
 		void Remove(ListItem &item) {
 			remove(item);
-			this->Remove(item);
+			OrderedCollection::Remove(item);
 		}
 
 		void Delete(ListItem &item) {
 			remove(item);
-			this->Delete(item);
+			OrderedCollection::Delete(item);
 		}
 
 		void DeleteAll(const T_ &value) {

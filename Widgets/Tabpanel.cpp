@@ -55,7 +55,61 @@ namespace gge { namespace widgets {
 			if(p)
 				Placeholder=*p;
 		}
-
 	}
+
+
+
+	void Tabpanel::SetBlueprint(const widgets::Blueprint &bp) {
+		this->bp=static_cast<const tabpanel::Blueprint*>(&bp);
+		if(this->bp) {
+			for(auto it=First();it.isValid();it.Next()) {
+				it->SetBlueprint(this->bp->Panel);
+			}
+
+			for(auto it=controls.Widgets.First();it.isValid();it.Next()) {
+				if(dynamic_cast<RadioButton<NamedPanel*> *>(it.CurrentPtr()))
+					dynamic_cast<RadioButton<NamedPanel*> &>(*it).SetBlueprint(this->bp->Radio);
+			}
+		}
+	}
+
+	bool Tabpanel::Focus() {
+		for(auto it=First();it.isValid();it.Next()) {
+			if(it->IsVisible())
+				return it->Focus();
+		}
+
+		return false;
+	}
+
+	void Tabpanel::Disable() {
+		controls.InformEnabledChange(false);
+	}
+
+	void Tabpanel::Enable() {
+		controls.InformEnabledChange(true);
+	}
+
+	void Tabpanel::Resize(utils::Size Size) {
+		controls.Resize(Size);
+	}
+
+	bool Tabpanel::KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		return controls.KeyboardEvent(input::keyboard::Event(event, Key));
+	}
+
+	bool Tabpanel::loosefocus(bool force) {
+		if(force)
+			controls.ForceRemoveFocus();
+		else
+			return controls.RemoveFocus();
+
+		return true;
+	}
+
+	void Tabpanel::reorganize() {
+		//!adjust radio buttons
+	}
+
 
 }}

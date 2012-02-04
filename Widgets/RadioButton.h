@@ -4,6 +4,7 @@
 #include "Interfaces\IOption.h"
 #include "Checkbox\CheckboxBase.h"
 #include "..\Utils\Property.h"
+#include "Interfaces\ICheckbox.h"
 
 
 namespace gge { namespace widgets {

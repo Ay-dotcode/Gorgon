@@ -163,7 +163,7 @@ namespace gge { namespace widgets {
 			if(s!=gettext())
 				settext(s);
 
-			value=Conv_(s, 10);
+			value=Conv_(s, usehex ? 16 : 10);
 
 			changeevent();
 		}
