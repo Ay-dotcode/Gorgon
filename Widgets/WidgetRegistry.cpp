@@ -204,6 +204,9 @@ namespace gge { namespace widgets {
 
 
 		folder=&wrr.Get<FolderResource>(11);
+		Others.Tabpanel=Panels.Tabpanel=dynamic_cast<tabpanel::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
+		Others.Tooltab = GetWithDefault(folder, *wrr.file, 1, Others.Tabpanel);
+		Others.Settingstab = GetWithDefault(folder, *wrr.file, 2, Others.Tabpanel);
 		Others.Combobox=Combobox=dynamic_cast<combobox::Blueprint*>(folder->Get<LinkNodeResource>(3).GetTarget(*wrr.file));
 		Others.Autocomplete	= GetWithDefault(folder, *wrr.file, 4, Others.Combobox);
 		Others.JumpList	= GetWithDefault(folder, *wrr.file, 5, Others.Combobox);

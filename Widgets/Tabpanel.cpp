@@ -2,6 +2,7 @@
 #include "../Resource/ResourceFile.h"
 
 using namespace gge::resource;
+using namespace gge::utils;
 
 namespace gge { namespace widgets {
 
@@ -71,9 +72,13 @@ namespace gge { namespace widgets {
 					dynamic_cast<RadioButton<NamedPanel*> &>(*it).SetBlueprint(this->bp->Radio);
 			}
 		}
+
+		reorganize();
 	}
 
 	bool Tabpanel::Focus() {
+		WidgetBase::Focus();
+
 		for(auto it=First();it.isValid();it.Next()) {
 			if(it->IsVisible())
 				return it->Focus();
@@ -83,15 +88,22 @@ namespace gge { namespace widgets {
 	}
 
 	void Tabpanel::Disable() {
+		WidgetBase::Disable();
+		
 		controls.InformEnabledChange(false);
 	}
 
 	void Tabpanel::Enable() {
+		WidgetBase::Enable();
+		
 		controls.InformEnabledChange(true);
 	}
 
 	void Tabpanel::Resize(utils::Size Size) {
+		WidgetBase::Resize(Size);
+
 		controls.Resize(Size);
+		reorganize();
 	}
 
 	bool Tabpanel::KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
@@ -108,7 +120,127 @@ namespace gge { namespace widgets {
 	}
 
 	void Tabpanel::reorganize() {
-		//!adjust radio buttons
+		auto btn=buttons.First();
+		int x=0;
+		int y=0;
+		bool newbutton=false;
+
+		if(!bp)
+			return;
+
+		if(bp->Placeholder.SizingMode==bp->Placeholder.Contents || bp->Placeholder.SizingMode==bp->Placeholder.Free || bp->Placeholder.Minimum.Height==0) {
+			if(btn.isValid()) {
+				y=btn->GetHeight();
+			}
+		}
+		else {
+			y=bp->Placeholder.Minimum.Height;
+		}
+
+		y+=bp->Placeholder.Margins.TotalY();
+
+
+		for(auto it=First();it.isValid();it.Next()) {
+			it->SetY(y);
+			it->SetHeight(size.Height-y);
+
+			if(btn.isValid()) {
+				RadioButton<NamedPanel*> &rad=*btn;
+
+				rad.Text=it->Title;
+				rad.Move(x,bp->Placeholder.Margins.Top);
+				rad.Value=it.CurrentPtr();
+				x+=rad.GetWidth();
+				rad.Show();
+
+				if(it->IsVisible())
+					rad.Check();
+				else
+					rad.Uncheck();
+
+				btn.Next();
+			}
+			else {
+				RadioButton<NamedPanel*> &rad=*new RadioButton<NamedPanel*>;
+
+				newbutton=true;
+				
+				rad.SetContainer(controls);
+				if(bp)
+					rad.SetBlueprint(bp->Radio);
+
+				buttons.Add(rad);
+				rad.Autosize=AutosizeModes::GrowOnly;
+				rad.Text=it->Title;
+				rad.Move(x,bp->Placeholder.Margins.Top);
+				rad.Value=it.CurrentPtr();
+				rad.ChangeEvent().Register(this,&Tabpanel::tab_click);
+
+				if(it->IsVisible())
+					rad.Check();
+				else
+					rad.Uncheck();
+
+				x+=rad.GetWidth();
+			}
+		}
+
+		for(;btn.isValid();btn.Next())
+			btn->Hide();
+
+		x=Alignment::CalculateLocation(bp->Placeholder.Align, Bounds(0,0,size.Width,size.Height),Size(x, y), bp->Placeholder.Margins).x;
+		for(btn=buttons.First();btn.isValid();btn.Next()) {
+			btn->SetX(x);
+			x+=btn->GetWidth();
+		}
+
+		if(y==bp->Placeholder.Margins.TotalY() && newbutton)
+			reorganize();
+	}
+
+	void Tabpanel::tab_click(RadioButton<NamedPanel*> &object) {
+		Activate(object.Value);
+	}
+
+	void Tabpanel::Activate(NamedPanel *panel) {
+		for(auto it=First();it.isValid();it.Next()) {
+			it->Hide();
+		}
+
+		if(panel)
+			panel->Show(true);
+
+		active=panel;
+
+		for(auto it=buttons.First();it.isValid();it.Next()) {
+			if(it->Value==panel)
+				it->Check();
+			else
+				it->Uncheck();
+		}
+	}
+
+	void Tabpanel::Remove(NamedPanel &item) {
+		if(&item==active) {
+			if(GetCount()==1) {
+				Activate(NULL);
+			}
+			else {
+				for(auto it=First();it.isValid();it.Next()) {
+					if(it.CurrentPtr()==&item) {
+						it.Next();
+						if(it.isValid())
+							Activate(*it);
+						else
+							Activate(*First());
+					}
+				}
+			}
+		}
+
+		controls.RemoveWidget(item);
+		reorganize();
+		OrderedCollection::Remove(item);
 	}
 
 

@@ -13,6 +13,7 @@
 #include "Listbox/ListboxBase.h"
 #include "Slider/SliderBlueprint.h"
 #include "../Resource/NullImage.h"
+#include "TabPanel.h"
 
 
 
@@ -257,7 +258,7 @@ namespace gge { namespace widgets {
 		public:
 
 			CPanels() : Panel(), OverlayControls(), Window(), DialogWindow(),
-				Toolbar(), Menubar(), ToolWindow(), SettingsWindow()
+				Toolbar(), Menubar(), ToolWindow(), SettingsWindow(), Tabpanel()
 			{ }
 
 
@@ -271,15 +272,19 @@ namespace gge { namespace widgets {
 				*ToolWindow,
 				*SettingsWindow
 			;
+			tabpanel::Blueprint *Tabpanel;
 		} Panels;
 
 		combobox::Blueprint *Combobox;
 
 		class COthers {
 		public:
-			COthers() : Combobox(), Autocomplete(), JumpList()
+			COthers() : Combobox(), Autocomplete(), JumpList(), Tabpanel(), Tooltab(), Settingstab()
 			{ }
 
+			tabpanel::Blueprint *Tabpanel;
+			tabpanel::Blueprint *Tooltab;
+			tabpanel::Blueprint *Settingstab;
 			combobox::Blueprint *Combobox;
 			combobox::Blueprint *Autocomplete;
 			combobox::Blueprint *JumpList;

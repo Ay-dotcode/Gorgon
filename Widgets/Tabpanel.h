@@ -43,7 +43,7 @@ namespace gge { namespace widgets {
 		typedef OrderedCollection<NamedPanel>::SearchIterator SearchIterator;
 		typedef OrderedCollection<NamedPanel>::ConstSearchIterator ConstSearchIterator;
 
-		Tabpanel() : bp(NULL), controls(*this) {
+		Tabpanel() : bp(NULL), controls(*this), active(NULL) {
 
 		}
 
@@ -52,8 +52,6 @@ namespace gge { namespace widgets {
 		
 		using WidgetBase::SetBlueprint;
 		virtual void SetBlueprint(const Blueprint &bp);
-
-		virtual bool detach(ContainerBase *container);
 
 		virtual void Draw() {
 			for(auto it=First();it.isValid();it.Next()) {
@@ -72,25 +70,6 @@ namespace gge { namespace widgets {
 		virtual void draw() { }
 
 		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key);
-
-		virtual void Detach() {
-			controls.BaseLayer.parent=NULL;
-		}
-
-		virtual bool loosefocus(bool force);
-
-		virtual bool locating(ContainerBase *container, int Order) {
-			WidgetBase::locating(container, Order);
-			
-			if(BaseLayer)
-				BaseLayer->Add(controls);
-			else
-				controls.BaseLayer.parent=NULL;
-		}
-
-		virtual void containerenabledchanged(bool state) {
-			controls.InformEnabledChange(state);
-		}
 
 
 		NamedPanel &Add(const std::string &title) {
@@ -114,6 +93,9 @@ namespace gge { namespace widgets {
 				item.Hide();
 
 			reorganize();
+
+			if(!active)
+				Activate(item);
 		}
 
 		NamedPanel &Insert(const std::string &title, const NamedPanel &before) {
@@ -144,27 +126,34 @@ namespace gge { namespace widgets {
 
 
 			reorganize();
+			if(!active)
+				Activate(item);
 		}
 
-		void Remove(NamedPanel &item) {
-			controls.RemoveWidget(item);
-			reorganize();
-			OrderedCollection::Remove(item);
-		}
+		void Remove(NamedPanel &item);
 
 		void Delete(NamedPanel &item) {
-			controls.RemoveWidget(item);
-			reorganize();
-			OrderedCollection::Delete(item);
+			Remove(item);
+			delete &item;
 		}
 
-		NamedPanel *Find(const std::string &value) {
+		void Activate(NamedPanel &panel) {
+			Activate(&panel);
+		}
+
+		void Activate(NamedPanel *panel);
+
+		NamedPanel *GetActive() {
+			return active;
+		}
+
+		NamedPanel &Find(const std::string &value) {
 			for(auto it=First();it.isValid();it.Next()) {
 				if(it->Title==value)
-					return it.CurrentPtr();
+					return *it;
 			}
 
-			return NULL;
+			throw std::runtime_error("Cannot find the tab specified");
 		}
 
 		Iterator First() {
@@ -220,9 +209,34 @@ namespace gge { namespace widgets {
 		void reorganize();
 
 	protected:
-		RadioGroup<Panel*> buttons;
-		PetContainer<Tabpanel> controls;
+		RadioGroup<NamedPanel*> buttons;
+		ExtendedPetContiner<Tabpanel> controls;
 		const tabpanel::Blueprint *bp;
+
+		NamedPanel *active;
+
+		virtual bool detach(ContainerBase *container) {
+			controls.BaseLayer.parent=NULL;
+
+			return WidgetBase::detach(container);
+		}
+
+		virtual bool loosefocus(bool force);
+
+		virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
+			WidgetBase::located(container, w, Order);
+
+			if(container)
+				controls.AttachTo(BaseLayer, &container->CreateExtenderLayer());
+			else
+				controls.AttachTo(NULL,NULL);
+		}
+
+		virtual void containerenabledchanged(bool state) {
+			controls.InformEnabledChange(state);
+		}
+
+		void tab_click(RadioButton<NamedPanel*> &object);
 	};
 
 }}

@@ -130,7 +130,7 @@ namespace gge { namespace widgets {
 
 		void AttachTo(LayerBase *layer, LayerBase *extender, int order=0) {
 			if(layer && extender) {
-				CheckAndDelete(extenderbase);
+				utils::CheckAndDelete(extenderbase);
 				extenderbase=extender;
 				layer->Add(BaseLayer, order);
 				extender->Add(ExtenderLayer, order);
@@ -138,7 +138,7 @@ namespace gge { namespace widgets {
 			else {
 				BaseLayer.parent=NULL;
 				ExtenderLayer.parent=NULL;
-				CheckAndDelete(extenderbase);
+				utils::CheckAndDelete(extenderbase);
 			}
 		}
 		void AttachTo(LayerBase &layer, LayerBase &extender, int order=0) {

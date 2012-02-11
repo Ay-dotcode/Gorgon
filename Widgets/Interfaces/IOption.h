@@ -40,15 +40,15 @@ namespace gge { namespace widgets {
 		operator T_() const {
 			return Value;
 		}
+		virtual void Uncheck() {
+			State=false;
+		}
 
 		utils::EventChain<IOption> &ChangeEvent() { return changeevent; }
 
 		T_ Value;
 
 	protected:
-		virtual void Uncheck() {
-			State=false;
-		}
 
 		void setgroup(IOptionGroup<T_> *grp);
 
