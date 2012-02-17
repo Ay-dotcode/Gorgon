@@ -15,6 +15,16 @@ using namespace gge::utils;
 using namespace std;
 
 namespace gge { namespace resource {
+
+	void ReadDataFromInputStream(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead) {
+		if(!png_ptr->io_ptr)
+			return;  
+
+		istream& inputStream = *(istream*)(png_ptr->io_ptr);
+		inputStream.read((char*)outBytes,byteCountToRead);
+
+	} 
+
 	ImageResource *LoadImageResource(File& File, istream &Data, int Size) {
 		int i;
 		ImageResource *img=new ImageResource;
@@ -29,6 +39,7 @@ namespace gge { namespace resource {
 			int gid,size;
 			ReadFrom(Data, gid);
 			ReadFrom(Data, size);
+			auto currenttarget=Data.tellg()+size;
 
 			if(gid==GID::Image_Props) {
 				int w, h;
@@ -80,7 +91,8 @@ namespace gge { namespace resource {
 					img->DataSize=size;
 
 					Data.seekg(size,ios::cur);
-				} else {
+				} 
+				else {
 					if(img->Compression==GID::LZMA) {
 						Byte *tmpdata=new Byte[size];
 						Data.read((char*)tmpdata, size);
@@ -96,7 +108,8 @@ namespace gge { namespace resource {
 						free(state.Probs);
 						delete tmpdata;
 						delete img->CompressionProps;
-					} else if(img->Compression==GID::JPEG) {
+					} 
+					else if(img->Compression==GID::JPEG) {
 						int cpos=(int)Data.tellg();
 						jpeg_decompress_struct cinf;
 						jpeg_decompress_struct* cinfo=&cinf;
@@ -151,14 +164,111 @@ namespace gge { namespace resource {
 
 						delete rowPtr;
 						fclose(data2);
+					} 
+					else if(img->Compression==GID::PNG) {
+						png_structp png_ptr;
+						png_infop info_ptr;
+
+						unsigned long width,height;
+						int bit_depth,color_type;
+
+						unsigned char sig[8];
+
+						ReadFrom(Data,sig);
+						if (!png_check_sig(sig, 8))
+							goto errorout;
+
+						png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL,NULL);
+						if (!png_ptr)
+							goto errorout;
+
+						info_ptr = png_create_info_struct(png_ptr);
+						if (!info_ptr) {
+							png_destroy_read_struct(&png_ptr, NULL, NULL);
+							goto errorout;
+						}
+
+						png_set_read_fn(png_ptr, dynamic_cast<istream*>(&Data), &ReadDataFromInputStream);
+
+						png_set_sig_bytes(png_ptr, 8);
+						png_read_info(png_ptr, info_ptr);
+
+						png_get_IHDR(png_ptr, info_ptr, (png_uint_32*)&width, (png_uint_32*)&height, &bit_depth,
+							&color_type, NULL, NULL, NULL);
+
+
+						if (color_type == PNG_COLOR_TYPE_PALETTE)
+							png_set_expand(png_ptr);
+						if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+							png_set_expand(png_ptr);
+						if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+							png_set_expand(png_ptr);
+						if (color_type == PNG_COLOR_TYPE_PALETTE)
+							png_set_palette_to_rgb(png_ptr);
+						if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+							png_set_expand_gray_1_2_4_to_8(png_ptr);
+						if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+							png_set_tRNS_to_alpha(png_ptr);
+						if (bit_depth == 16)
+							png_set_strip_16(png_ptr);
+						if (color_type == PNG_COLOR_TYPE_GRAY ||
+							color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+							png_set_gray_to_rgb(png_ptr);
+
+						unsigned int  i, rowbytes;
+						unsigned char **  row_pointers=new unsigned char*[height];
+
+						png_read_update_info(png_ptr, info_ptr);
+
+						int pRowbytes = rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+						int pChannels = (int)png_get_channels(png_ptr, info_ptr);
+
+						unsigned char *image_data;
+
+						image_data = new unsigned char[rowbytes*height];
+
+						if (image_data == NULL) {
+							png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+							goto errorout;
+						}
+
+						for (i = 0;  i < height;  ++i)
+							row_pointers[i] = image_data + i*rowbytes;
+
+						png_read_image(png_ptr, row_pointers);
+
+						png_read_end(png_ptr, NULL);
+
+						png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
+
+						//currently only RGB is supported
+						if(pChannels!=4)
+							goto errorout;
+
+						for(unsigned y=0;y<height;y++) {
+							for(unsigned x=0;x<width;x++) {
+								img->Data[(x+y*width)*4+2]=row_pointers[y][x*4];
+								img->Data[(x+y*width)*4+1]=row_pointers[y][x*4+1];
+								img->Data[(x+y*width)*4+0]=row_pointers[y][x*4+2];
+								img->Data[(x+y*width)*4+3]=row_pointers[y][x*4+3];
+							}
+						}
+
+						delete[] row_pointers;
+						delete[] image_data;
+
+						img->isLoaded=true;
 					}
 					else {
-						Data.seekg(size, ios::cur);
+errorout:
+						Data.seekg(currenttarget, ios::beg);
 					}
 
 					img->isLoaded=true;
 				}
-			} else if(gid==GID::Image_Palette) {
+			} 
+			else if(gid==GID::Image_Palette) {
 				img->Palette=new Byte[size];
 				Data.read((char*)img->Palette, size);
 			}

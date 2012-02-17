@@ -915,6 +915,9 @@
     <ClInclude Include="External\Theora\src\x86_vc\x86int.h">
       <Filter>Externals\Theora</Filter>
     </ClInclude>
+    <ClInclude Include="Widgets\LayerWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">

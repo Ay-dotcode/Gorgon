@@ -129,6 +129,11 @@ namespace gge { namespace resource {
 
 	inline void EatChunk(std::istream &file, std::streamoff Size) { file.seekg(Size, std::ios::cur); }
 
+	template<int B_, class T_>
+	inline void ReadFrom(std::istream &Data, T_ &object) {
+		Data.read(reinterpret_cast<char*>(&object), B_);
+	}
+
 	template<class T_>
 	inline void ReadFrom(std::istream &Data, T_ &object) {
 		Data.read(reinterpret_cast<char*>(&object), sizeof(object));

@@ -311,6 +311,7 @@
     <ClInclude Include="Widgets\Interfaces\ISlider.h" />
     <ClInclude Include="Widgets\Interfaces\ITextbox.h" />
     <ClInclude Include="Widgets\Label.h" />
+    <ClInclude Include="Widgets\LayerWidget.h" />
     <ClInclude Include="Widgets\Listbox.h" />
     <ClInclude Include="Widgets\Listbox\IListItem.h" />
     <ClInclude Include="Widgets\Listbox\ListboxBase.h" />
