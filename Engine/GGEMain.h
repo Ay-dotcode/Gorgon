@@ -131,6 +131,8 @@ namespace gge {
 		/// it cannot be used after this function is called
 		void UnregisterInterval(IntervalObject *Interval);
 
+		void Exit(int code);
+
 
 		void MoveWindow(int X, int Y) {
 			if(!FullScreen)

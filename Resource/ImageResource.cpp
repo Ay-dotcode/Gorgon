@@ -1,9 +1,10 @@
+#include "../External/PNG/png.h"
+#include "../External/PNG/pngstruct.h"
 #include "ImageResource.h"
 #include "ResourceFile.h"
 #include "NullImage.h"
 #include "../External/LZMA/LzmaDecode.h"
 #include "../External/JPEG/jpeglib.h"
-#include "../External/PNG/png.h"
 #include "../Engine/GGEMain.h"
 #include <cmath>
 #include "../Utils/BasicMath.h"
@@ -150,6 +151,8 @@ namespace gge { namespace resource {
 
 						delete rowPtr;
 						fclose(data2);
+					}
+					else {
 						Data.seekg(size, ios::cur);
 					}
 
@@ -341,7 +344,7 @@ namespace gge { namespace resource {
 			return ImageResource::OutofMemory;   /* out of memory */
 		}
 
-		if (setjmp(png_ptr->jmpbuf)) {
+		if (setjmp(png_ptr->longjmp_buffer)) {
 			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 			return ImageResource::ErrorHandlerProblem;
 		}
@@ -350,7 +353,7 @@ namespace gge { namespace resource {
 		png_set_sig_bytes(png_ptr, 8);
 		png_read_info(png_ptr, info_ptr);
 
-		png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth,
+		png_get_IHDR(png_ptr, info_ptr, (png_uint_32*)&width, (png_uint_32*)&height, &bit_depth,
 			&color_type, NULL, NULL, NULL);
 
 
@@ -363,7 +366,7 @@ namespace gge { namespace resource {
 		if (color_type == PNG_COLOR_TYPE_PALETTE)
 			png_set_palette_to_rgb(png_ptr);
 		if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-			png_set_gray_1_2_4_to_8(png_ptr);
+			png_set_expand_gray_1_2_4_to_8(png_ptr);
 		if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
 			png_set_tRNS_to_alpha(png_ptr);
 		if (bit_depth == 16)

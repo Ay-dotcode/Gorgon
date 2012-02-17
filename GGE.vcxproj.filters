@@ -1,0 +1,1514 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Effects">
+      <UniqueIdentifier>{8e3a1196-3067-4cf3-8c25-cf124406b820}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Effects\Sources">
+      <UniqueIdentifier>{50d845f0-6114-4ad2-acd1-d99703020169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets">
+      <UniqueIdentifier>{a176233b-751a-4ef0-a3b8-2886340c3dc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\System">
+      <UniqueIdentifier>{a01d7392-3d69-4134-a558-2829df3e3cc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Basic">
+      <UniqueIdentifier>{16ceeb41-2490-4ed7-8560-f2208b35dfcc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Basic\Headers">
+      <UniqueIdentifier>{cad25856-dd6c-43c3-ac62-4863f2da4f30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Basic\Sources">
+      <UniqueIdentifier>{50c5945b-4886-489c-844c-1838dbc9974b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Base">
+      <UniqueIdentifier>{82aac016-8fc6-46f0-bcf7-eaa55ce5db3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Interfaces">
+      <UniqueIdentifier>{76dd686e-a6f7-4a77-99d3-d51f2db9421d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Checkbox">
+      <UniqueIdentifier>{9db2bf45-fa5e-486f-96f8-b3bb7968d2cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Checkbox\Headers">
+      <UniqueIdentifier>{5786ebbc-78dd-488a-8de3-09480eb40e84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Checkbox\Sources">
+      <UniqueIdentifier>{5ba474d5-a7e3-44df-aca0-4bc3e3b6c734}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Slider">
+      <UniqueIdentifier>{ca77020b-7827-48cf-8fac-7af626bb4049}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Slider\Headers">
+      <UniqueIdentifier>{042e6638-4078-4493-bbce-dbacfebbf7b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Slider\Sources">
+      <UniqueIdentifier>{2581dc3a-6ab7-438b-bfa6-13799579ccdd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Panel">
+      <UniqueIdentifier>{5bd7c98b-0c37-4bdf-91f5-5b57e4eb9fee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Panel\Headers">
+      <UniqueIdentifier>{81997539-0ebf-4de3-b516-55117eded3ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Panel\Sources">
+      <UniqueIdentifier>{fb818625-0ebf-4419-af5e-a2de0a69651d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Textbox">
+      <UniqueIdentifier>{1b2a3efc-0faf-4abe-9410-e2ed644a6d18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Listbox">
+      <UniqueIdentifier>{5b480082-d6fb-497b-a5aa-66c2020be4f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Listbox\Headers">
+      <UniqueIdentifier>{2fe457e7-b221-46f0-b0a2-9e721660b63c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Listbox\Soruces">
+      <UniqueIdentifier>{619f3c01-cda8-4193-84a1-f0aa0d155f04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Organizers">
+      <UniqueIdentifier>{c01a1114-d984-45a0-a4ff-f170a53bf0c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Code">
+      <UniqueIdentifier>{b6deae3a-1040-4e2f-8e5a-98cd90ddb277}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Code\Headers">
+      <UniqueIdentifier>{f53a5b39-0305-40a9-b7df-46713ffd528c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Code\Sources">
+      <UniqueIdentifier>{ecde62d8-e72d-4ad6-af83-49c9851d7208}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Dialogs">
+      <UniqueIdentifier>{e36c6cb8-d8aa-4ea9-92f2-16d20d3839c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Combobox">
+      <UniqueIdentifier>{2674b05e-441f-4b85-aa55-97906062628c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Combobox\Headers">
+      <UniqueIdentifier>{32ca4881-430b-4198-aed4-6901c8c88ba6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Combobox\Source">
+      <UniqueIdentifier>{5c7d5d6c-849a-413d-be9a-7ee54e0fa566}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{485fab0d-9b04-4560-80fb-c07b2e569655}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Headers">
+      <UniqueIdentifier>{1a994856-687a-4689-be4d-40dbb8a0efe4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Win32">
+      <UniqueIdentifier>{9a9357aa-1304-46ca-9abe-bf6d7b20d2fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Sources">
+      <UniqueIdentifier>{a79d9978-75c7-44b6-9b86-00af6bb356aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals">
+      <UniqueIdentifier>{e80ab4a5-fbc4-4876-9057-85c226a22a31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\JPEG">
+      <UniqueIdentifier>{02871436-a81a-4af2-80a1-f9dac4abc1aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\JPEG\Source">
+      <UniqueIdentifier>{4b1dcff6-d66f-48d8-b984-1aa9ac3e4c53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\PNG">
+      <UniqueIdentifier>{43152b33-3fd1-41fc-94f5-ae9bae4d1dbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\DirEnt">
+      <UniqueIdentifier>{1ecd49c7-f587-4270-92d1-466fe4e1e282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\pThread">
+      <UniqueIdentifier>{616b0c4c-2126-416b-a2d3-90aa8b9da7be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\XML">
+      <UniqueIdentifier>{535f65bd-81f0-4c7a-85ae-fbb3c3ef5231}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\LZMA">
+      <UniqueIdentifier>{7512c583-8b00-4b14-bede-54676047bff1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\OpenAL">
+      <UniqueIdentifier>{f783e39a-e2c0-4e56-bc6f-0d90f1374686}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{b85f20ae-fb97-4cbf-985b-f832a81c357b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Headers">
+      <UniqueIdentifier>{572a94c0-0b2b-4b57-93fd-a93cffb89a0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Sources">
+      <UniqueIdentifier>{967f367d-cef5-4170-a984-44e005d22c53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{8c654264-4743-46ce-89f2-6935f9e74276}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\PNG\Sources">
+      <UniqueIdentifier>{57b021ed-c475-4d09-987e-f335526eee62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\OGG">
+      <UniqueIdentifier>{a573ddff-9197-4895-8eea-8602bcfb98f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\Theora">
+      <UniqueIdentifier>{4fe7051e-dc4d-466a-b8f1-44a2d6db9441}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\Vorbis">
+      <UniqueIdentifier>{5c458160-c201-49c4-9b2a-4be8ed692079}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\TheoraPlayback">
+      <UniqueIdentifier>{78d2a14b-2fd6-4661-a80e-6a2ac69268d7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Effects\CountingText.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\Flip.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\LayerMover.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\LayerResizer.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\Tinting.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Button.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Checkbox.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Combobox.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\DialogWindow.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Label.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Listbox.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Numberbox.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Panel.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Percentbar.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Progressbar.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\RadioButton.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Scrollbar.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Slider.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Spinner.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\StatefulLabel.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Tabpanel.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Textbox.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\WidgetRegistry.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Window.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Definitions.h">
+      <Filter>Widgets\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Main.h">
+      <Filter>Widgets\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Basic\BorderData.h">
+      <Filter>Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Basic\Line.h">
+      <Filter>Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Basic\PetContainer.h">
+      <Filter>Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Basic\Placeholder.h">
+      <Filter>Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Basic\Rectangle.h">
+      <Filter>Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Basic\ResizableObjectResource.h">
+      <Filter>Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Basic\WidgetLayer.h">
+      <Filter>Widgets\Basic\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Base\Blueprint.h">
+      <Filter>Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Base\Container.h">
+      <Filter>Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Base\Organizer.h">
+      <Filter>Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Base\VirtualPanel.h">
+      <Filter>Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Base\Widget.h">
+      <Filter>Widgets\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Interfaces\IButton.h">
+      <Filter>Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Interfaces\ICheckbox.h">
+      <Filter>Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Interfaces\ILabel.h">
+      <Filter>Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Interfaces\INumberbox.h">
+      <Filter>Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Interfaces\IOption.h">
+      <Filter>Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Interfaces\IProgressor.h">
+      <Filter>Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Interfaces\IScroller.h">
+      <Filter>Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Interfaces\ISlider.h">
+      <Filter>Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Interfaces\ITextbox.h">
+      <Filter>Widgets\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Checkbox\CheckboxBase.h">
+      <Filter>Widgets\Checkbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Checkbox\CheckboxBlueprint.h">
+      <Filter>Widgets\Checkbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Slider\SliderBase.h">
+      <Filter>Widgets\Slider\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Slider\SliderBlueprint.h">
+      <Filter>Widgets\Slider\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Panel\ControlledPanel.h">
+      <Filter>Widgets\Panel\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Panel\PanelBase.h">
+      <Filter>Widgets\Panel\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Panel\PanelBlueprint.h">
+      <Filter>Widgets\Panel\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Textbox\TextboxBase.h">
+      <Filter>Widgets\Textbox</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Textbox\TextboxBlueprint.h">
+      <Filter>Widgets\Textbox</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Listbox\IListItem.h">
+      <Filter>Widgets\Listbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Listbox\ListboxBase.h">
+      <Filter>Widgets\Listbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Listbox\ListboxBlueprint.h">
+      <Filter>Widgets\Listbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Listbox\ListItem.h">
+      <Filter>Widgets\Listbox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Organizers\ListOrganizer.h">
+      <Filter>Widgets\Organizers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\TabPanelPanel.h">
+      <Filter>Widgets\Code\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Basic\PetTextbox.h">
+      <Filter>Widgets\Code\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Dialogs\Query.h">
+      <Filter>Widgets\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Dialogs\Message.h">
+      <Filter>Widgets\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Dialogs\TextInput.h">
+      <Filter>Widgets\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Combobox\ComboboxBase.h">
+      <Filter>Widgets\Combobox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Combobox\ComboboxBlueprint.h">
+      <Filter>Widgets\Combobox\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\GGE.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CustomLayer.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Font.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\GGEMain.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\GraphicLayers.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Input.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Pointer.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Sound.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphic2D.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\GraphicTargets2D.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Animation.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FontRenderer.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Layer.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OS.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Wave.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OS.Win32.h">
+      <Filter>Engine\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\jconfig.h">
+      <Filter>Externals\JPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\jerror.h">
+      <Filter>Externals\JPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\jmorecfg.h">
+      <Filter>Externals\JPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\jpeglib.h">
+      <Filter>Externals\JPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\cderror.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\cdjpeg.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jchuff.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jconfig.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jdct.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jdhuff.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jerror.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jinclude.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jmemsys.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jmorecfg.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jpegint.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jpeglib.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\jversion.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\JPEG\src\transupp.h">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="External\png\png.h">
+      <Filter>Externals\PNG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\png\pngconf.h">
+      <Filter>Externals\PNG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\png\zconf.h">
+      <Filter>Externals\PNG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\png\zlib.h">
+      <Filter>Externals\PNG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\dirent.h">
+      <Filter>Externals\DirEnt</Filter>
+    </ClInclude>
+    <ClInclude Include="External\pThread\pthread.h">
+      <Filter>Externals\pThread</Filter>
+    </ClInclude>
+    <ClInclude Include="External\pThread\sched.h">
+      <Filter>Externals\pThread</Filter>
+    </ClInclude>
+    <ClInclude Include="External\pThread\semaphore.h">
+      <Filter>Externals\pThread</Filter>
+    </ClInclude>
+    <ClInclude Include="External\XmlParser\xmlParser.h">
+      <Filter>Externals\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="External\LZMA\LzmaDecode.h">
+      <Filter>Externals\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="External\LZMA\LzmaTypes.h">
+      <Filter>Externals\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="External\OpenAL\al.h">
+      <Filter>Externals\OpenAL</Filter>
+    </ClInclude>
+    <ClInclude Include="External\OpenAL\alc.h">
+      <Filter>Externals\OpenAL</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\AnimationResource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\BitmapFontResource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\DataResource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\FolderResource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\FontTheme.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\ImageResource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PointerResource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\ResourceFile.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\SoundResource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\TextResource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Main.h">
+      <Filter>Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\NullImage.h">
+      <Filter>Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\ResizableObject.h">
+      <Filter>Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Definitions.h">
+      <Filter>Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\GRE.h">
+      <Filter>Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\LinkNode.h">
+      <Filter>Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\ResourceBase.h">
+      <Filter>Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Any.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\BasicGraphics.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\BasicMath.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Binary.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Bounds2D.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\BufferList.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\CastableManagedBuffer.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Collection.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ConsumableEvent.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Dynamic.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\EventChain.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\FileSystemHelper.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Guid.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Iterator.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ManagedBuffer.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Map2D.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Margins.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\OrderedCollection.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\PAClassList.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Point2D.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Property.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Random.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Rectangle2D.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SGuid.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Size2D.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SortedCollection.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\UtilsBase.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ValueList.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="External\png\pnginfo.h">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="External\png\pngpriv.h">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="External\png\pngstruct.h">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="External\png\pngdebug.h">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="External\png\pnglibconf.h">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ogg\os_types.h">
+      <Filter>Externals\OGG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ogg\ogg.h">
+      <Filter>Externals\OGG</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\apiwrapper.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\bitpack.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\codec.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\cpu.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\dct.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\decint.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\dequant.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\encint.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\enquant.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\huffdec.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\huffenc.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\huffman.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\internal.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\mathops.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\modedec.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\ocintrin.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\quant.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\theora.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\theoradec.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\theoraenc.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\window.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\backends.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\bitrate.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\codebook.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\codec.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\codec_internal.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\envelope.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\floor_all.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\books\floor\floor_books.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\highlevel.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\lookup.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\lookup_data.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\lpc.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\lsp.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\masking.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\mdct.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\misc.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\os.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\psy.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\psych_11.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\psych_16.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\psych_44.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\psych_8.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\registry.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\books\coupled\res_books_stereo.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\books\uncoupled\res_books_uncoupled.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\residue_16.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\residue_44.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\residue_44u.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\residue_8.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\scales.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\setup_11.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\setup_16.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\setup_22.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\setup_32.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\setup_44.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\setup_44u.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\setup_8.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\modes\setup_X.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\src\smallft.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\vorbisenc.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\vorbis\vorbisfile.h">
+      <Filter>Externals\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\src\Endianess.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraDataSource.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraPlayer.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\OpenAL_AudioInterface.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraAsync.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraUtil.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraException.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraVideoClip.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraFrameQueue.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraTimer.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraExport.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraVideoFrame.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraVideoManager.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraWorkerThread.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraAudioInterface.h">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\VideoFactory.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\VideoTexture.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\x86_vc\mmxfrag.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\x86_vc\mmxloop.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\x86_vc\x86enc.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Theora\src\x86_vc\x86int.h">
+      <Filter>Externals\Theora</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Effects\CountingText.cpp">
+      <Filter>Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\Flip.cpp">
+      <Filter>Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\LayerMover.cpp">
+      <Filter>Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\LayerResizer.cpp">
+      <Filter>Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\Tinting.cpp">
+      <Filter>Effects\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Main.cpp">
+      <Filter>Widgets\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Basic\BorderData.cpp">
+      <Filter>Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Basic\Line.cpp">
+      <Filter>Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Basic\Placeholder.cpp">
+      <Filter>Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Basic\Rectangle.cpp">
+      <Filter>Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Basic\ResizableObjectResource.cpp">
+      <Filter>Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\WidgetRegistry.cpp">
+      <Filter>Widgets\Basic\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Base\Organizer.cpp">
+      <Filter>Widgets\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Base\Widget.cpp">
+      <Filter>Widgets\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Checkbox\CheckboxBase.cpp">
+      <Filter>Widgets\Checkbox\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Checkbox\CheckboxBlueprint.cpp">
+      <Filter>Widgets\Checkbox\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Slider\SliderBlueprint.cpp">
+      <Filter>Widgets\Slider\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Panel\PanelBase.cpp">
+      <Filter>Widgets\Panel\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Panel\PanelBlueprint.cpp">
+      <Filter>Widgets\Panel\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Textbox\TextboxBase.cpp">
+      <Filter>Widgets\Textbox</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Textbox\TextboxBlueprint.cpp">
+      <Filter>Widgets\Textbox</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Listbox\ListboxBase.cpp">
+      <Filter>Widgets\Listbox\Soruces</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Listbox\ListboxBlueprint.cpp">
+      <Filter>Widgets\Listbox\Soruces</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Dialogs\Message.cpp">
+      <Filter>Widgets\Code\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Dialogs\TextInput.cpp">
+      <Filter>Widgets\Code\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Dialogs\Query.cpp">
+      <Filter>Widgets\Code\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Tabpanel.cpp">
+      <Filter>Widgets\Code\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Combobox\ComboboxBlueprint.cpp">
+      <Filter>Widgets\Combobox\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics.cpp">
+      <Filter>Engine\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OS.Win32.cpp">
+      <Filter>Engine\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphic2D.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Image.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Animation.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CustomLayer.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Font.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\GGEMain.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\GraphicLayers.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Input.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Layer.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Pointer.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Sound.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Wave.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcapimin.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcapistd.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jccoefct.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jccolor.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcdctmgr.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jchuff.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcinit.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcmainct.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcmarker.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcmaster.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcomapi.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcparam.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcphuff.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcprepct.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jcsample.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jctrans.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdapimin.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdapistd.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdatadst.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdatasrc.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdcoefct.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdcolor.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jddctmgr.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdhuff.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdinput.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdmainct.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdmarker.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdmaster.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdmerge.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdphuff.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdpostct.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdsample.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jdtrans.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jerror.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jfdctflt.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jfdctfst.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jfdctint.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jidctflt.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jidctfst.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jidctint.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jidctred.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jmemansi.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jmemmgr.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jquant1.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jquant2.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\JPEG\src\jutils.c">
+      <Filter>Externals\JPEG\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="External\XmlParser\xmlParser.cpp">
+      <Filter>Externals\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="External\LZMA\LzmaDecode.cpp">
+      <Filter>Externals\LZMA</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\AnimationResource.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\BitmapFontResource.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\DataResource.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\FolderResource.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\FontTheme.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\ImageResource.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\LinkNode.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Main.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PointerResource.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\ResourceBase.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\ResourceFile.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\SoundResource.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\TextResource.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Random.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\SGuid.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngmem.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngpread.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngread.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngrio.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngrtran.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngrutil.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngset.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngtest.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngtrans.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngwio.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngwrite.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngwtran.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngwutil.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\png.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngerror.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\png\pngget.c">
+      <Filter>Externals\PNG\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ogg\src\bitwise.c">
+      <Filter>Externals\OGG</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ogg\src\framing.c">
+      <Filter>Externals\OGG</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\analyze.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\apiwrapper.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\bitpack.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\cpu.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\decapiwrapper.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\decinfo.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\decode.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\dequant.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\encapiwrapper.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\encfrag.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\encinfo.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\encode.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\enquant.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\fdct.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\fragment.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\huffdec.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\huffenc.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\idct.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\info.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\internal.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\mathops.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\mcenc.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxencfrag.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\quant.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\rate.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86\sse2fdct.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\state.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\tokenize.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\analysis.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\bitrate.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\block.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\codebook.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\envelope.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\floor0.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\floor1.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\info.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\lookup.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\lpc.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\lsp.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\mapping0.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\mdct.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\psy.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\registry.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\res0.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\sharedbook.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\smallft.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\synthesis.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\vorbisenc.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\vorbisfile.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\window.c">
+      <Filter>Externals\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\OpenAL_AudioInterface.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraAsync.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraUtil.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraException.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoClip.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraFrameQueue.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraTimer.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoFrame.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoManager.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraWorkerThread.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraAudioInterface.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp">
+      <Filter>Externals\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\VideoFactory.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\VideoTexture.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxfdct.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxfrag.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxidct.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxstate.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\x86enc.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\x86state.c">
+      <Filter>Externals\Theora</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Widgets\ClassDiagram.cd">
+      <Filter>Widgets\System</Filter>
+    </None>
+    <None Include="Widgets\Widgets.cd">
+      <Filter>Widgets\System</Filter>
+    </None>
+    <None Include="Resource\Image &amp; Animation.cd">
+      <Filter>Resource</Filter>
+    </None>
+    <None Include="Resource\Image &amp; Animation.png">
+      <Filter>Resource</Filter>
+    </None>
+  </ItemGroup>
+</Project>

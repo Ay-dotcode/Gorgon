@@ -3,9 +3,17 @@
 #include "GGE.h"
 #include "OS.h"
 
-#define WINGDIAPI	__declspec(dllimport)
-#define APIENTRY	__stdcall
-#define CALLBACK	__stdcall
+#ifndef WINGDIAPI
+#	define WINGDIAPI	__declspec(dllimport)
+#endif
+
+#ifndef APIENTRY
+#	define APIENTRY	__stdcall
+#endif
+
+#ifndef CALLBACK
+#	define CALLBACK	__stdcall
+#endif
 
 #include <gl/gl.h>
 #include <gl/glu.h>

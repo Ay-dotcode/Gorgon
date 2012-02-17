@@ -761,7 +761,7 @@ namespace gge { namespace resource {
 		
 		if(!noshadows) {
 			Blur(1);
-			Blur(1.6);
+			Blur(1.6f);
 		}
 	}
 

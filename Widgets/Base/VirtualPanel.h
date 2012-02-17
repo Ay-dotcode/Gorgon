@@ -20,6 +20,18 @@ namespace gge { namespace widgets {
 			input::keyboard::Events.Disable(KeyboardToken);
 		}
 
+		VirtualPanel(int) : 
+		ContainerBase(), BaseLayer(NULL), 
+			BackgroundLayer(), WidgetLayer(), 
+			ExtenderLayer(), isactive(false)
+		{
+		}
+
+		void init() {
+			KeyboardToken=input::keyboard::Events.Register(this, &VirtualPanel::KeyboardEvent);
+			input::keyboard::Events.Disable(KeyboardToken);
+		}
+
 
 		LayerBase *GetBaseLayer() {
 			return BaseLayer;

@@ -151,7 +151,7 @@ namespace gge { namespace effects {
 
 	void FlipEffect::Initialize() {
 		Front=Back=NULL;
-		Perspective=0.0125;
+		Perspective=0.0125f;
 		Flipping=false;
 		Backside=false;
 		ETA=0;

@@ -3,14 +3,14 @@
 #include "Panel/PanelBase.h"
 #include "../Utils/Property.h"
 
-namespace gge { namespace widgets {
-	class NamedPanel : public panel::Base {
+namespace gge { namespace widgets { namespace tabpanel {
+	class Panel : public panel::Base {
 
 	public:
 
-		NamedPanel() : 
-		  INIT_PROPERTY(NamedPanel, Padding),
-		  INIT_PROPERTY(NamedPanel, Title),
+		Panel() : 
+		  INIT_PROPERTY(tabpanel::Panel, Padding),
+		  INIT_PROPERTY(tabpanel::Panel, Title),
 		  TitleChangedEvent("TitleChanged", this)
 		{
 			setallowmove(false);
@@ -19,10 +19,10 @@ namespace gge { namespace widgets {
 
 
 
-		utils::Property<NamedPanel, utils::Margins> Padding;
-		utils::TextualProperty<NamedPanel> Title;
+		utils::Property<tabpanel::Panel, utils::Margins> Padding;
+		utils::TextualProperty<tabpanel::Panel> Title;
 
-		utils::EventChain<NamedPanel> TitleChangedEvent;
+		utils::EventChain<tabpanel::Panel> TitleChangedEvent;
 
 
 	protected:
@@ -45,4 +45,4 @@ namespace gge { namespace widgets {
 
 	};
 
-}}
+}}}

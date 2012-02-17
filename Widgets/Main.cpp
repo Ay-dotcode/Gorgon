@@ -19,7 +19,7 @@
 
 namespace gge { namespace widgets {
 
-	VirtualPanel TopLevel;
+	VirtualPanel TopLevel(0);
 	utils::Collection<WidgetBase> DrawQueue;
 
 
@@ -57,6 +57,7 @@ namespace gge { namespace widgets {
 		layer=new LayerBase();
 
 		Main.Add(layer, 1);
+		TopLevel.init();
 		TopLevel.LandOn(*layer);
 
 		Main.RegisterInterval(1, &Draw_Signal);

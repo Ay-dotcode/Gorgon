@@ -35,11 +35,15 @@ using namespace gge::input::system;
 #	endif
 
 	namespace gge { namespace os {
+		bool quiting=false;
+
 		void DisplayMessage(const char *Title, const char *Text) {
 			MessageBox(NULL,Text,Title,0);
 		}
 		void Quit(int ret) {
 			PostQuitMessage(ret);
+			CloseWindow((HWND)Main.getWindow());
+			quiting=true;
 			exit(ret);
 		}
 		void Initialize() {
@@ -77,6 +81,9 @@ using namespace gge::input::system;
 
 			LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
+				if(quiting)
+					return NULL;
+
 				switch(message)
 				{
 				case WM_ACTIVATE:
@@ -320,12 +327,6 @@ using namespace gge::input::system;
 					keyboard::Modifier::Add(keyboard::Modifier::Alt);
 					ProcessChar(wParam);
 					keyboard::Modifier::Remove(keyboard::Modifier::Alt);
-					break;
-				case WM_VIDEO_NOTIFY:
-					if(lParam) {
-						Multimedia* vid=((Multimedia*)lParam);
-						vid->ProcessMsg();
-					}
 					break;
 				case WM_DESTROY:
 					Destroyed();

@@ -26,9 +26,6 @@
 		////Handle for Device Context
 		typedef unsigned long	DeviceHandle;
 
-		////Window message to process video operation
-#		define WM_VIDEO_NOTIFY  WM_USER+3
-
 		////This function returns the current time
 		inline unsigned int GetTime() { return timeGetTime(); }
 

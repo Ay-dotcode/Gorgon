@@ -8,7 +8,7 @@
 #include "Panel.h"
 #include "RadioButton.h"
 #include "../Utils/OrderedCollection.h"
-#include "NamedPanel.h"
+#include "TabPanelPanel.h"
 
 namespace gge { namespace widgets {
 	
@@ -34,14 +34,14 @@ namespace gge { namespace widgets {
 		};
 	}
 
-	class Tabpanel : public WidgetBase, utils::OrderedCollection<NamedPanel> {
+	class Tabpanel : public WidgetBase, utils::OrderedCollection<tabpanel::Panel> {
 	public:
 
 
-		typedef OrderedCollection<NamedPanel>::Iterator Iterator;
-		typedef OrderedCollection<NamedPanel>::ConstIterator ConstIterator;
-		typedef OrderedCollection<NamedPanel>::SearchIterator SearchIterator;
-		typedef OrderedCollection<NamedPanel>::ConstSearchIterator ConstSearchIterator;
+		typedef OrderedCollection<tabpanel::Panel>::Iterator Iterator;
+		typedef OrderedCollection<tabpanel::Panel>::ConstIterator ConstIterator;
+		typedef OrderedCollection<tabpanel::Panel>::SearchIterator SearchIterator;
+		typedef OrderedCollection<tabpanel::Panel>::ConstSearchIterator ConstSearchIterator;
 
 		Tabpanel() : bp(NULL), controls(*this), active(NULL) {
 
@@ -72,8 +72,8 @@ namespace gge { namespace widgets {
 		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key);
 
 
-		NamedPanel &Add(const std::string &title) {
-			NamedPanel *panel=new NamedPanel;
+		tabpanel::Panel &Add(const std::string &title) {
+			tabpanel::Panel *panel=new tabpanel::Panel;
 			panel->Title=title;
 
 			Add(*panel);
@@ -81,7 +81,7 @@ namespace gge { namespace widgets {
 			return *panel;
 		}
 
-		void Add(NamedPanel &item) {
+		void Add(tabpanel::Panel &item) {
 			if(bp)
 				item.SetBlueprint(bp->Panel);
 
@@ -98,16 +98,16 @@ namespace gge { namespace widgets {
 				Activate(item);
 		}
 
-		NamedPanel &Insert(const std::string &title, const NamedPanel &before) {
+		tabpanel::Panel &Insert(const std::string &title, const tabpanel::Panel &before) {
 			return Insert(title, &before);
 		}
 
-		void Insert(NamedPanel &item, const NamedPanel &before) {
+		void Insert(tabpanel::Panel &item, const tabpanel::Panel &before) {
 			Insert(item, &before);
 		}
 
-		NamedPanel &Insert(const std::string &value, const NamedPanel *before) {
-			NamedPanel *panel=new NamedPanel;
+		tabpanel::Panel &Insert(const std::string &value, const tabpanel::Panel *before) {
+			tabpanel::Panel *panel=new tabpanel::Panel;
 			panel->Title=value;
 
 			Insert(*panel, before);
@@ -115,7 +115,7 @@ namespace gge { namespace widgets {
 			return *panel;
 		}
 
-		void Insert(NamedPanel &item, const NamedPanel *before) {
+		void Insert(tabpanel::Panel &item, const tabpanel::Panel *before) {
 			if(bp)
 				item.SetBlueprint(*bp->Panel);
 
@@ -130,24 +130,24 @@ namespace gge { namespace widgets {
 				Activate(item);
 		}
 
-		void Remove(NamedPanel &item);
+		void Remove(tabpanel::Panel &item);
 
-		void Delete(NamedPanel &item) {
+		void Delete(tabpanel::Panel &item) {
 			Remove(item);
 			delete &item;
 		}
 
-		void Activate(NamedPanel &panel) {
+		void Activate(tabpanel::Panel &panel) {
 			Activate(&panel);
 		}
 
-		void Activate(NamedPanel *panel);
+		void Activate(tabpanel::Panel *panel);
 
-		NamedPanel *GetActive() {
+		tabpanel::Panel *GetActive() {
 			return active;
 		}
 
-		NamedPanel &Find(const std::string &value) {
+		tabpanel::Panel &Find(const std::string &value) {
 			for(auto it=First();it.isValid();it.Next()) {
 				if(it->Title==value)
 					return *it;
@@ -209,11 +209,11 @@ namespace gge { namespace widgets {
 		void reorganize();
 
 	protected:
-		RadioGroup<NamedPanel*> buttons;
+		RadioGroup<tabpanel::Panel*> buttons;
 		ExtendedPetContiner<Tabpanel> controls;
 		const tabpanel::Blueprint *bp;
 
-		NamedPanel *active;
+		tabpanel::Panel *active;
 
 		virtual bool detach(ContainerBase *container) {
 			controls.BaseLayer.parent=NULL;
@@ -236,7 +236,7 @@ namespace gge { namespace widgets {
 			controls.InformEnabledChange(state);
 		}
 
-		void tab_click(RadioButton<NamedPanel*> &object);
+		void tab_click(RadioButton<tabpanel::Panel*> &object);
 	};
 
 }}

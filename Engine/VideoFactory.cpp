@@ -1,10 +1,11 @@
 #include "VideoFactory.h"
-#include "..\..\Sources\GGE\Engine\Graphics.h"
-#include "..\..\Sources\GGE\External\TheoraPlayback\TheoraVideoClip.h"
-#include "..\..\Sources\GGE\External\TheoraPlayback\TheoraPlayer.h"
-#include "..\..\Sources\GGE\External\TheoraPlayback\TheoraDataSource.h"
-#include "..\..\Sources\GGE\External\TheoraPlayback\OpenAL_AudioInterface.h"
-#include "..\..\Sources\GGE\External\TheoraPlayback\TheoraVideoManager.h"
+#include "Graphics.h"
+#include "VideoTexture.h"
+#include "..\External\TheoraPlayback\TheoraVideoClip.h"
+#include "..\External\TheoraPlayback\TheoraPlayer.h"
+#include "..\External\TheoraPlayback\TheoraDataSource.h"
+#include "..\External\TheoraPlayback\OpenAL_AudioInterface.h"
+#include "..\External\TheoraPlayback\TheoraVideoManager.h"
 
 // Eser: autoRestart param should be somewhere else
 // maybe we should consider making it a class property.
@@ -60,7 +61,7 @@ namespace gge { namespace graphics {
 	}
 
 
-	void VideoTexture::GetNextFrame() {
+	/*void VideoTexture::GetNextFrame() {
 		// Eser: not sure using statics to measure the past time the right decision here
 		// i'd rather having a different timer which calculates the time diff between last & current frames.
 		static unsigned int time = Main.CurrentTime;
@@ -91,11 +92,12 @@ namespace gge { namespace graphics {
 		if(frame) {
 			unsigned char* Data = frame->getBuffer();
 			if(!mAudioOnly) {
-				graphics::system::UpdateTexture(Data, ColorMode::RGB, Texture);
+				//!Fix me
+				//graphics::system::UpdateTexture(Data, ColorMode::RGB, Texture);
 			}
 
 			mVideoClip->popFrame();
 	//				delete frame;
 		}
-	}
+	}*/
 }}

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "..\..\Sources\GGE\Engine\OS.Win32.h"
-#include "..\..\Sources\GGE\Engine\GGEMain.h"
-#include "..\..\Sources\GGE\Engine\Image.h"
+#include "OS.Win32.h"
+#include "GGEMain.h"
+#include "Image.h"
 
 class TheoraVideoManager;
 class TheoraVideoClip;

@@ -179,6 +179,10 @@ namespace gge {
 		gge::resource::Init(*this);
 	}
 
+	void GGEMain::Exit(int code) {
+		os::Quit(code);
+	}
+
 	//void GGEMain::InitializeWidgets() {
 	//	gge::widgets::InitializeWidgets(this);
 	//}

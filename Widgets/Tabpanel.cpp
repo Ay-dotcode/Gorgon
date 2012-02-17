@@ -68,8 +68,8 @@ namespace gge { namespace widgets {
 			}
 
 			for(auto it=controls.Widgets.First();it.isValid();it.Next()) {
-				if(dynamic_cast<RadioButton<NamedPanel*> *>(it.CurrentPtr()))
-					dynamic_cast<RadioButton<NamedPanel*> &>(*it).SetBlueprint(this->bp->Radio);
+				if(dynamic_cast<RadioButton<tabpanel::Panel*> *>(it.CurrentPtr()))
+					dynamic_cast<RadioButton<tabpanel::Panel*> &>(*it).SetBlueprint(this->bp->Radio);
 			}
 		}
 
@@ -145,7 +145,7 @@ namespace gge { namespace widgets {
 			it->SetHeight(size.Height-y);
 
 			if(btn.isValid()) {
-				RadioButton<NamedPanel*> &rad=*btn;
+				RadioButton<tabpanel::Panel*> &rad=*btn;
 
 				rad.Text=it->Title;
 				rad.Move(x,bp->Placeholder.Margins.Top);
@@ -161,7 +161,7 @@ namespace gge { namespace widgets {
 				btn.Next();
 			}
 			else {
-				RadioButton<NamedPanel*> &rad=*new RadioButton<NamedPanel*>;
+				RadioButton<tabpanel::Panel*> &rad=*new RadioButton<tabpanel::Panel*>;
 
 				newbutton=true;
 				
@@ -198,11 +198,11 @@ namespace gge { namespace widgets {
 			reorganize();
 	}
 
-	void Tabpanel::tab_click(RadioButton<NamedPanel*> &object) {
+	void Tabpanel::tab_click(RadioButton<tabpanel::Panel*> &object) {
 		Activate(object.Value);
 	}
 
-	void Tabpanel::Activate(NamedPanel *panel) {
+	void Tabpanel::Activate(tabpanel::Panel *panel) {
 		for(auto it=First();it.isValid();it.Next()) {
 			it->Hide();
 		}
@@ -220,7 +220,7 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	void Tabpanel::Remove(NamedPanel &item) {
+	void Tabpanel::Remove(tabpanel::Panel &item) {
 		if(&item==active) {
 			if(GetCount()==1) {
 				Activate(NULL);

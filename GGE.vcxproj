@@ -1,0 +1,731 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4BF881EE-D1AE-4E04-82FE-69FE3E8CE643}</ProjectGuid>
+    <RootNamespace>GGE</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>NotSet</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>../../Lib/</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>../../Lib/</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4355</DisableSpecificWarnings>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>OpenGL32.lib;OpenAL32.lib;zlib_ds.lib;winmm.lib;gdi32.lib</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>../../Lib</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <PreprocessorDefinitions>WIN32;_WINDOWS</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4355</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>../../Lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenGL32.lib;OpenAL32.lib;zlib_ds.lib;winmm.lib;gdi32.lib</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Effects\CountingText.h" />
+    <ClInclude Include="Effects\Flip.h" />
+    <ClInclude Include="Effects\LayerMover.h" />
+    <ClInclude Include="Effects\LayerResizer.h" />
+    <ClInclude Include="Effects\Tinting.h" />
+    <ClInclude Include="Engine\Animation.h" />
+    <ClInclude Include="Engine\CustomLayer.h" />
+    <ClInclude Include="Engine\Font.h" />
+    <ClInclude Include="Engine\FontRenderer.h" />
+    <ClInclude Include="Engine\GGE.h" />
+    <ClInclude Include="Engine\GGEMain.h" />
+    <ClInclude Include="Engine\Graphic2D.h" />
+    <ClInclude Include="Engine\GraphicLayers.h" />
+    <ClInclude Include="Engine\Graphics.h" />
+    <ClInclude Include="Engine\GraphicTargets2D.h" />
+    <ClInclude Include="Engine\Image.h" />
+    <ClInclude Include="Engine\Input.h" />
+    <ClInclude Include="Engine\Layer.h" />
+    <ClInclude Include="Engine\OS.h" />
+    <ClInclude Include="Engine\OS.Win32.h" />
+    <ClInclude Include="Engine\Pointer.h" />
+    <ClInclude Include="Engine\Sound.h" />
+    <ClInclude Include="Engine\VideoFactory.h" />
+    <ClInclude Include="Engine\VideoTexture.h" />
+    <ClInclude Include="Engine\Wave.h" />
+    <ClInclude Include="External\dirent.h" />
+    <ClInclude Include="External\JPEG\jconfig.h" />
+    <ClInclude Include="External\JPEG\jerror.h" />
+    <ClInclude Include="External\JPEG\jmorecfg.h" />
+    <ClInclude Include="External\JPEG\jpeglib.h" />
+    <ClInclude Include="External\JPEG\src\cderror.h" />
+    <ClInclude Include="External\JPEG\src\cdjpeg.h" />
+    <ClInclude Include="External\JPEG\src\jchuff.h" />
+    <ClInclude Include="External\JPEG\src\jconfig.h" />
+    <ClInclude Include="External\JPEG\src\jdct.h" />
+    <ClInclude Include="External\JPEG\src\jdhuff.h" />
+    <ClInclude Include="External\JPEG\src\jerror.h" />
+    <ClInclude Include="External\JPEG\src\jinclude.h" />
+    <ClInclude Include="External\JPEG\src\jmemsys.h" />
+    <ClInclude Include="External\JPEG\src\jmorecfg.h" />
+    <ClInclude Include="External\JPEG\src\jpegint.h" />
+    <ClInclude Include="External\JPEG\src\jpeglib.h" />
+    <ClInclude Include="External\JPEG\src\jversion.h" />
+    <ClInclude Include="External\JPEG\src\transupp.h" />
+    <ClInclude Include="External\LZMA\LzmaDecode.h" />
+    <ClInclude Include="External\LZMA\LzmaTypes.h" />
+    <ClInclude Include="External\ogg\ogg.h" />
+    <ClInclude Include="External\ogg\os_types.h" />
+    <ClInclude Include="External\OpenAL\al.h" />
+    <ClInclude Include="External\OpenAL\alc.h" />
+    <ClInclude Include="External\png\png.h" />
+    <ClInclude Include="External\png\pngconf.h" />
+    <ClInclude Include="External\png\pngdebug.h" />
+    <ClInclude Include="External\png\pnginfo.h" />
+    <ClInclude Include="External\png\pnglibconf.h" />
+    <ClInclude Include="External\png\pngpriv.h" />
+    <ClInclude Include="External\png\pngstruct.h" />
+    <ClInclude Include="External\png\zconf.h" />
+    <ClInclude Include="External\png\zlib.h" />
+    <ClInclude Include="External\pThread\pthread.h" />
+    <ClInclude Include="External\pThread\sched.h" />
+    <ClInclude Include="External\pThread\semaphore.h" />
+    <ClInclude Include="External\TheoraPlayback\OpenAL_AudioInterface.h" />
+    <ClInclude Include="External\TheoraPlayback\src\Endianess.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraAsync.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraAudioInterface.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraDataSource.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraException.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraExport.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraFrameQueue.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraPlayer.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraTimer.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraUtil.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraVideoClip.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraVideoFrame.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraVideoManager.h" />
+    <ClInclude Include="External\TheoraPlayback\TheoraWorkerThread.h" />
+    <ClInclude Include="External\Theora\codec.h" />
+    <ClInclude Include="External\Theora\src\apiwrapper.h" />
+    <ClInclude Include="External\Theora\src\bitpack.h" />
+    <ClInclude Include="External\Theora\src\cpu.h" />
+    <ClInclude Include="External\Theora\src\dct.h" />
+    <ClInclude Include="External\Theora\src\decint.h" />
+    <ClInclude Include="External\Theora\src\dequant.h" />
+    <ClInclude Include="External\Theora\src\encint.h" />
+    <ClInclude Include="External\Theora\src\enquant.h" />
+    <ClInclude Include="External\Theora\src\huffdec.h" />
+    <ClInclude Include="External\Theora\src\huffenc.h" />
+    <ClInclude Include="External\Theora\src\huffman.h" />
+    <ClInclude Include="External\Theora\src\internal.h" />
+    <ClInclude Include="External\Theora\src\mathops.h" />
+    <ClInclude Include="External\Theora\src\modedec.h" />
+    <ClInclude Include="External\Theora\src\ocintrin.h" />
+    <ClInclude Include="External\Theora\src\quant.h" />
+    <ClInclude Include="External\Theora\src\x86_vc\mmxfrag.h" />
+    <ClInclude Include="External\Theora\src\x86_vc\mmxloop.h" />
+    <ClInclude Include="External\Theora\src\x86_vc\x86enc.h" />
+    <ClInclude Include="External\Theora\src\x86_vc\x86int.h" />
+    <ClInclude Include="External\Theora\theora.h" />
+    <ClInclude Include="External\Theora\theoradec.h" />
+    <ClInclude Include="External\Theora\theoraenc.h" />
+    <ClInclude Include="External\vorbis\codec.h" />
+    <ClInclude Include="External\vorbis\src\backends.h" />
+    <ClInclude Include="External\vorbis\src\bitrate.h" />
+    <ClInclude Include="External\vorbis\src\books\coupled\res_books_stereo.h" />
+    <ClInclude Include="External\vorbis\src\books\floor\floor_books.h" />
+    <ClInclude Include="External\vorbis\src\books\uncoupled\res_books_uncoupled.h" />
+    <ClInclude Include="External\vorbis\src\codebook.h" />
+    <ClInclude Include="External\vorbis\src\codec_internal.h" />
+    <ClInclude Include="External\vorbis\src\envelope.h" />
+    <ClInclude Include="External\vorbis\src\highlevel.h" />
+    <ClInclude Include="External\vorbis\src\lookup.h" />
+    <ClInclude Include="External\vorbis\src\lookup_data.h" />
+    <ClInclude Include="External\vorbis\src\lpc.h" />
+    <ClInclude Include="External\vorbis\src\lsp.h" />
+    <ClInclude Include="External\vorbis\src\masking.h" />
+    <ClInclude Include="External\vorbis\src\mdct.h" />
+    <ClInclude Include="External\vorbis\src\misc.h" />
+    <ClInclude Include="External\vorbis\src\modes\floor_all.h" />
+    <ClInclude Include="External\vorbis\src\modes\psych_11.h" />
+    <ClInclude Include="External\vorbis\src\modes\psych_16.h" />
+    <ClInclude Include="External\vorbis\src\modes\psych_44.h" />
+    <ClInclude Include="External\vorbis\src\modes\psych_8.h" />
+    <ClInclude Include="External\vorbis\src\modes\residue_16.h" />
+    <ClInclude Include="External\vorbis\src\modes\residue_44.h" />
+    <ClInclude Include="External\vorbis\src\modes\residue_44u.h" />
+    <ClInclude Include="External\vorbis\src\modes\residue_8.h" />
+    <ClInclude Include="External\vorbis\src\modes\setup_11.h" />
+    <ClInclude Include="External\vorbis\src\modes\setup_16.h" />
+    <ClInclude Include="External\vorbis\src\modes\setup_22.h" />
+    <ClInclude Include="External\vorbis\src\modes\setup_32.h" />
+    <ClInclude Include="External\vorbis\src\modes\setup_44.h" />
+    <ClInclude Include="External\vorbis\src\modes\setup_44u.h" />
+    <ClInclude Include="External\vorbis\src\modes\setup_8.h" />
+    <ClInclude Include="External\vorbis\src\modes\setup_X.h" />
+    <ClInclude Include="External\vorbis\src\os.h" />
+    <ClInclude Include="External\vorbis\src\psy.h" />
+    <ClInclude Include="External\vorbis\src\registry.h" />
+    <ClInclude Include="External\vorbis\src\scales.h" />
+    <ClInclude Include="External\vorbis\src\smallft.h" />
+    <ClInclude Include="External\vorbis\src\window.h" />
+    <ClInclude Include="External\vorbis\vorbisenc.h" />
+    <ClInclude Include="External\vorbis\vorbisfile.h" />
+    <ClInclude Include="External\XmlParser\xmlParser.h" />
+    <ClInclude Include="Resource\AnimationResource.h" />
+    <ClInclude Include="Resource\BitmapFontResource.h" />
+    <ClInclude Include="Resource\DataResource.h" />
+    <ClInclude Include="Resource\Definitions.h" />
+    <ClInclude Include="Resource\FolderResource.h" />
+    <ClInclude Include="Resource\FontTheme.h" />
+    <ClInclude Include="Resource\GRE.h" />
+    <ClInclude Include="Resource\ImageResource.h" />
+    <ClInclude Include="Resource\LinkNode.h" />
+    <ClInclude Include="Resource\Main.h" />
+    <ClInclude Include="Resource\NullImage.h" />
+    <ClInclude Include="Resource\PointerResource.h" />
+    <ClInclude Include="Resource\ResizableObject.h" />
+    <ClInclude Include="Resource\ResourceBase.h" />
+    <ClInclude Include="Resource\ResourceFile.h" />
+    <ClInclude Include="Resource\SoundResource.h" />
+    <ClInclude Include="Resource\TextResource.h" />
+    <ClInclude Include="Utils\Any.h" />
+    <ClInclude Include="Utils\BasicGraphics.h" />
+    <ClInclude Include="Utils\BasicMath.h" />
+    <ClInclude Include="Utils\Binary.h" />
+    <ClInclude Include="Utils\Bounds2D.h" />
+    <ClInclude Include="Utils\BufferList.h" />
+    <ClInclude Include="Utils\CastableManagedBuffer.h" />
+    <ClInclude Include="Utils\Collection.h" />
+    <ClInclude Include="Utils\ConsumableEvent.h" />
+    <ClInclude Include="Utils\Dynamic.h" />
+    <ClInclude Include="Utils\EventChain.h" />
+    <ClInclude Include="Utils\FileSystemHelper.h" />
+    <ClInclude Include="Utils\Guid.h" />
+    <ClInclude Include="Utils\Iterator.h" />
+    <ClInclude Include="Utils\ManagedBuffer.h" />
+    <ClInclude Include="Utils\Map2D.h" />
+    <ClInclude Include="Utils\Margins.h" />
+    <ClInclude Include="Utils\OrderedCollection.h" />
+    <ClInclude Include="Utils\PAClassList.h" />
+    <ClInclude Include="Utils\Point2D.h" />
+    <ClInclude Include="Utils\Property.h" />
+    <ClInclude Include="Utils\Random.h" />
+    <ClInclude Include="Utils\Rectangle2D.h" />
+    <ClInclude Include="Utils\SGuid.h" />
+    <ClInclude Include="Utils\Size2D.h" />
+    <ClInclude Include="Utils\SortedCollection.h" />
+    <ClInclude Include="Utils\UtilsBase.h" />
+    <ClInclude Include="Utils\ValueList.h" />
+    <ClInclude Include="Widgets\Base\Blueprint.h" />
+    <ClInclude Include="Widgets\Base\Container.h" />
+    <ClInclude Include="Widgets\Base\Organizer.h" />
+    <ClInclude Include="Widgets\Base\VirtualPanel.h" />
+    <ClInclude Include="Widgets\Base\Widget.h" />
+    <ClInclude Include="Widgets\Basic\BorderData.h" />
+    <ClInclude Include="Widgets\Basic\Line.h" />
+    <ClInclude Include="Widgets\Basic\PetContainer.h" />
+    <ClInclude Include="Widgets\Basic\PetTextbox.h" />
+    <ClInclude Include="Widgets\Basic\Placeholder.h" />
+    <ClInclude Include="Widgets\Basic\Rectangle.h" />
+    <ClInclude Include="Widgets\Basic\ResizableObjectResource.h" />
+    <ClInclude Include="Widgets\Basic\WidgetLayer.h" />
+    <ClInclude Include="Widgets\Button.h" />
+    <ClInclude Include="Widgets\Checkbox.h" />
+    <ClInclude Include="Widgets\Checkbox\CheckboxBase.h" />
+    <ClInclude Include="Widgets\Checkbox\CheckboxBlueprint.h" />
+    <ClInclude Include="Widgets\Combobox.h" />
+    <ClInclude Include="Widgets\Combobox\ComboboxBase.h" />
+    <ClInclude Include="Widgets\Combobox\ComboboxBlueprint.h" />
+    <ClInclude Include="Widgets\Definitions.h" />
+    <ClInclude Include="Widgets\Dialogs\Message.h" />
+    <ClInclude Include="Widgets\Dialogs\Query.h" />
+    <ClInclude Include="Widgets\Dialogs\TextInput.h" />
+    <ClInclude Include="Widgets\DialogWindow.h" />
+    <ClInclude Include="Widgets\Interfaces\IButton.h" />
+    <ClInclude Include="Widgets\Interfaces\ICheckbox.h" />
+    <ClInclude Include="Widgets\Interfaces\ILabel.h" />
+    <ClInclude Include="Widgets\Interfaces\INumberbox.h" />
+    <ClInclude Include="Widgets\Interfaces\IOption.h" />
+    <ClInclude Include="Widgets\Interfaces\IProgressor.h" />
+    <ClInclude Include="Widgets\Interfaces\IScroller.h" />
+    <ClInclude Include="Widgets\Interfaces\ISlider.h" />
+    <ClInclude Include="Widgets\Interfaces\ITextbox.h" />
+    <ClInclude Include="Widgets\Label.h" />
+    <ClInclude Include="Widgets\Listbox.h" />
+    <ClInclude Include="Widgets\Listbox\IListItem.h" />
+    <ClInclude Include="Widgets\Listbox\ListboxBase.h" />
+    <ClInclude Include="Widgets\Listbox\ListboxBlueprint.h" />
+    <ClInclude Include="Widgets\Listbox\ListItem.h" />
+    <ClInclude Include="Widgets\Main.h" />
+    <ClInclude Include="Widgets\Numberbox.h" />
+    <ClInclude Include="Widgets\Organizers\ListOrganizer.h" />
+    <ClInclude Include="Widgets\Panel.h" />
+    <ClInclude Include="Widgets\Panel\ControlledPanel.h" />
+    <ClInclude Include="Widgets\Panel\PanelBase.h" />
+    <ClInclude Include="Widgets\Panel\PanelBlueprint.h" />
+    <ClInclude Include="Widgets\Percentbar.h" />
+    <ClInclude Include="Widgets\Progressbar.h" />
+    <ClInclude Include="Widgets\RadioButton.h" />
+    <ClInclude Include="Widgets\Scrollbar.h" />
+    <ClInclude Include="Widgets\Slider.h" />
+    <ClInclude Include="Widgets\Slider\SliderBase.h" />
+    <ClInclude Include="Widgets\Slider\SliderBlueprint.h" />
+    <ClInclude Include="Widgets\Spinner.h" />
+    <ClInclude Include="Widgets\StatefulLabel.h" />
+    <ClInclude Include="Widgets\Tabpanel.h" />
+    <ClInclude Include="Widgets\TabPanelPanel.h" />
+    <ClInclude Include="Widgets\Textbox.h" />
+    <ClInclude Include="Widgets\Textbox\TextboxBase.h" />
+    <ClInclude Include="Widgets\Textbox\TextboxBlueprint.h" />
+    <ClInclude Include="Widgets\WidgetRegistry.h" />
+    <ClInclude Include="Widgets\Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Effects\CountingText.cpp" />
+    <ClCompile Include="Effects\Flip.cpp" />
+    <ClCompile Include="Effects\LayerMover.cpp" />
+    <ClCompile Include="Effects\LayerResizer.cpp" />
+    <ClCompile Include="Effects\Tinting.cpp" />
+    <ClCompile Include="Engine\Animation.cpp" />
+    <ClCompile Include="Engine\CustomLayer.cpp" />
+    <ClCompile Include="Engine\Font.cpp" />
+    <ClCompile Include="Engine\GGEMain.cpp" />
+    <ClCompile Include="Engine\Graphic2D.cpp" />
+    <ClCompile Include="Engine\GraphicLayers.cpp" />
+    <ClCompile Include="Engine\Graphics.cpp" />
+    <ClCompile Include="Engine\Image.cpp" />
+    <ClCompile Include="Engine\Input.cpp" />
+    <ClCompile Include="Engine\Layer.cpp" />
+    <ClCompile Include="Engine\OS.Win32.cpp" />
+    <ClCompile Include="Engine\Pointer.cpp" />
+    <ClCompile Include="Engine\Sound.cpp" />
+    <ClCompile Include="Engine\VideoFactory.cpp" />
+    <ClCompile Include="Engine\VideoTexture.cpp" />
+    <ClCompile Include="Engine\Wave.cpp" />
+    <ClCompile Include="External\JPEG\src\jcapimin.c" />
+    <ClCompile Include="External\JPEG\src\jcapistd.c" />
+    <ClCompile Include="External\JPEG\src\jccoefct.c" />
+    <ClCompile Include="External\JPEG\src\jccolor.c" />
+    <ClCompile Include="External\JPEG\src\jcdctmgr.c" />
+    <ClCompile Include="External\JPEG\src\jchuff.c" />
+    <ClCompile Include="External\JPEG\src\jcinit.c" />
+    <ClCompile Include="External\JPEG\src\jcmainct.c" />
+    <ClCompile Include="External\JPEG\src\jcmarker.c" />
+    <ClCompile Include="External\JPEG\src\jcmaster.c" />
+    <ClCompile Include="External\JPEG\src\jcomapi.c" />
+    <ClCompile Include="External\JPEG\src\jcparam.c" />
+    <ClCompile Include="External\JPEG\src\jcphuff.c" />
+    <ClCompile Include="External\JPEG\src\jcprepct.c" />
+    <ClCompile Include="External\JPEG\src\jcsample.c" />
+    <ClCompile Include="External\JPEG\src\jctrans.c" />
+    <ClCompile Include="External\JPEG\src\jdapimin.c" />
+    <ClCompile Include="External\JPEG\src\jdapistd.c" />
+    <ClCompile Include="External\JPEG\src\jdatadst.c" />
+    <ClCompile Include="External\JPEG\src\jdatasrc.c" />
+    <ClCompile Include="External\JPEG\src\jdcoefct.c" />
+    <ClCompile Include="External\JPEG\src\jdcolor.c" />
+    <ClCompile Include="External\JPEG\src\jddctmgr.c" />
+    <ClCompile Include="External\JPEG\src\jdhuff.c" />
+    <ClCompile Include="External\JPEG\src\jdinput.c" />
+    <ClCompile Include="External\JPEG\src\jdmainct.c" />
+    <ClCompile Include="External\JPEG\src\jdmarker.c" />
+    <ClCompile Include="External\JPEG\src\jdmaster.c" />
+    <ClCompile Include="External\JPEG\src\jdmerge.c" />
+    <ClCompile Include="External\JPEG\src\jdphuff.c" />
+    <ClCompile Include="External\JPEG\src\jdpostct.c" />
+    <ClCompile Include="External\JPEG\src\jdsample.c" />
+    <ClCompile Include="External\JPEG\src\jdtrans.c" />
+    <ClCompile Include="External\JPEG\src\jerror.c" />
+    <ClCompile Include="External\JPEG\src\jfdctflt.c" />
+    <ClCompile Include="External\JPEG\src\jfdctfst.c" />
+    <ClCompile Include="External\JPEG\src\jfdctint.c" />
+    <ClCompile Include="External\JPEG\src\jidctflt.c" />
+    <ClCompile Include="External\JPEG\src\jidctfst.c" />
+    <ClCompile Include="External\JPEG\src\jidctint.c" />
+    <ClCompile Include="External\JPEG\src\jidctred.c" />
+    <ClCompile Include="External\JPEG\src\jmemansi.c" />
+    <ClCompile Include="External\JPEG\src\jmemmgr.c" />
+    <ClCompile Include="External\JPEG\src\jquant1.c" />
+    <ClCompile Include="External\JPEG\src\jquant2.c" />
+    <ClCompile Include="External\JPEG\src\jutils.c" />
+    <ClCompile Include="External\LZMA\LzmaDecode.cpp" />
+    <ClCompile Include="External\ogg\src\bitwise.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\ogg\src\framing.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\png\png.c" />
+    <ClCompile Include="External\png\pngerror.c" />
+    <ClCompile Include="External\png\pngget.c" />
+    <ClCompile Include="External\png\pngmem.c" />
+    <ClCompile Include="External\png\pngpread.c" />
+    <ClCompile Include="External\png\pngread.c" />
+    <ClCompile Include="External\png\pngrio.c" />
+    <ClCompile Include="External\png\pngrtran.c" />
+    <ClCompile Include="External\png\pngrutil.c" />
+    <ClCompile Include="External\png\pngset.c" />
+    <ClCompile Include="External\png\pngtest.c" />
+    <ClCompile Include="External\png\pngtrans.c" />
+    <ClCompile Include="External\png\pngwio.c" />
+    <ClCompile Include="External\png\pngwrite.c" />
+    <ClCompile Include="External\png\pngwtran.c" />
+    <ClCompile Include="External\png\pngwutil.c" />
+    <ClCompile Include="External\TheoraPlayback\src\OpenAL_AudioInterface.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraAsync.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraAudioInterface.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraException.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraFrameQueue.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraTimer.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraUtil.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoClip.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoFrame.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoManager.cpp" />
+    <ClCompile Include="External\TheoraPlayback\src\TheoraWorkerThread.cpp" />
+    <ClCompile Include="External\Theora\src\analyze.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\apiwrapper.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\bitpack.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\cpu.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\decapiwrapper.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\decinfo.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\decode.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\dequant.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\encapiwrapper.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\encfrag.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\encinfo.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\encode.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\enquant.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\fdct.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\fragment.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\huffdec.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\huffenc.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\idct.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\info.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/Theorainfo.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/Theorainfo.obj</ObjectFileName>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\internal.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\mathops.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\mcenc.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\quant.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\rate.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\state.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\tokenize.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86\sse2fdct.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxencfrag.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxfdct.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxfrag.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxidct.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\mmxstate.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\x86enc.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\Theora\src\x86_vc\x86state.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\analysis.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\bitrate.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\block.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\codebook.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\envelope.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\floor0.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\floor1.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\info.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/Vorbisinfo.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/Vorbisinfo.obj</ObjectFileName>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\lookup.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\lpc.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\lsp.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\mapping0.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\mdct.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\psy.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\registry.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\res0.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\sharedbook.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\smallft.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\synthesis.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\vorbisenc.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\vorbisfile.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\vorbis\src\window.c">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="External\XmlParser\xmlParser.cpp" />
+    <ClCompile Include="Resource\AnimationResource.cpp" />
+    <ClCompile Include="Resource\BitmapFontResource.cpp" />
+    <ClCompile Include="Resource\DataResource.cpp" />
+    <ClCompile Include="Resource\FolderResource.cpp" />
+    <ClCompile Include="Resource\FontTheme.cpp" />
+    <ClCompile Include="Resource\ImageResource.cpp" />
+    <ClCompile Include="Resource\LinkNode.cpp" />
+    <ClCompile Include="Resource\Main.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)\ResourceMain.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Resource\PointerResource.cpp" />
+    <ClCompile Include="Resource\ResourceBase.cpp" />
+    <ClCompile Include="Resource\ResourceFile.cpp" />
+    <ClCompile Include="Resource\SoundResource.cpp" />
+    <ClCompile Include="Resource\TextResource.cpp" />
+    <ClCompile Include="Utils\Random.cpp" />
+    <ClCompile Include="Utils\SGuid.cpp" />
+    <ClCompile Include="Widgets\Base\Organizer.cpp" />
+    <ClCompile Include="Widgets\Base\Widget.cpp" />
+    <ClCompile Include="Widgets\Basic\BorderData.cpp" />
+    <ClCompile Include="Widgets\Basic\Line.cpp" />
+    <ClCompile Include="Widgets\Basic\Placeholder.cpp" />
+    <ClCompile Include="Widgets\Basic\Rectangle.cpp" />
+    <ClCompile Include="Widgets\Basic\ResizableObjectResource.cpp" />
+    <ClCompile Include="Widgets\Checkbox\CheckboxBase.cpp" />
+    <ClCompile Include="Widgets\Checkbox\CheckboxBlueprint.cpp" />
+    <ClCompile Include="Widgets\Combobox\ComboboxBlueprint.cpp" />
+    <ClCompile Include="Widgets\Dialogs\Message.cpp" />
+    <ClCompile Include="Widgets\Dialogs\Query.cpp" />
+    <ClCompile Include="Widgets\Dialogs\TextInput.cpp" />
+    <ClCompile Include="Widgets\Listbox\ListboxBase.cpp" />
+    <ClCompile Include="Widgets\Listbox\ListboxBlueprint.cpp" />
+    <ClCompile Include="Widgets\Main.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)\WidgetMain.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Widgets\Panel\PanelBase.cpp" />
+    <ClCompile Include="Widgets\Panel\PanelBlueprint.cpp" />
+    <ClCompile Include="Widgets\Slider\SliderBlueprint.cpp" />
+    <ClCompile Include="Widgets\Tabpanel.cpp" />
+    <ClCompile Include="Widgets\Textbox\TextboxBase.cpp" />
+    <ClCompile Include="Widgets\Textbox\TextboxBlueprint.cpp" />
+    <ClCompile Include="Widgets\WidgetRegistry.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Image &amp; Animation.cd" />
+    <None Include="Resource\Image &amp; Animation.png">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Widgets\ClassDiagram.cd" />
+    <None Include="Widgets\Widgets.cd" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
