@@ -53,6 +53,15 @@ namespace gge { namespace widgets {
 				);
 			}
 
+			if(innerborder) {
+				innerborder->DrawIn(BaseLayer, 
+					outerborder->Margins.Left+innerborder->Margins.Left+outerborder->BorderWidth.Left-innerborder->BorderWidth.Left, 
+					outerborder->Margins.Top+innerborder->Margins.Top+outerborder->BorderWidth.Top-innerborder->BorderWidth.Top, 
+					outer.Width()-outerborder->Margins.TotalX()-innerborder->Margins.TotalX()-outerborder->BorderWidth.TotalX()+innerborder->BorderWidth.TotalX(),
+					outer.Height()-outerborder->Margins.TotalY()-innerborder->Margins.TotalY()-outerborder->BorderWidth.TotalY()+innerborder->BorderWidth.TotalY()
+				);
+			}
+
 
 			//Draw text
 		//TODO Wrap
@@ -310,6 +319,7 @@ namespace gge { namespace widgets {
 
 
 			outerborder=NULL;
+			innerborder=NULL;
 			overlay=NULL;
 			font=NULL;
 
@@ -326,6 +336,18 @@ namespace gge { namespace widgets {
 				else {
 					outerborder=&bprovider->CreateResizableObject();
 					BorderCache[bprovider]=outerborder;
+				}
+
+				outerborder->SetController(getanimation(transition));
+			}
+
+			bprovider=bp->GetInnerBorder(style, transition);
+			if(bprovider) {
+				if(BorderCache[bprovider])
+					innerborder=BorderCache[bprovider];
+				else {
+					innerborder=&bprovider->CreateResizableObject();
+					BorderCache[bprovider]=innerborder;
 				}
 
 				outerborder->SetController(getanimation(transition));
@@ -786,6 +808,8 @@ namespace gge { namespace widgets {
 				setstyle(widgets::Blueprint::Hover);
 			else
 				setstyle(widgets::Blueprint::Normal);
+
+			WidgetBase::loosefocus(force);
 
 			return true;
 		}

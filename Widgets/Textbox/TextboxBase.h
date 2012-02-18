@@ -20,7 +20,7 @@ namespace gge { namespace widgets {
 				bp(NULL), next_style(widgets::Blueprint::Style_None),
 				scroll(0,0), vscroll(true), mhover(false), caretlocation(0), selectionstart(0),
 				caret(NULL), selection(NULL), textlocation(0,0), mdown(false), passive(false),
-				readonly(false), noselection(false)
+				readonly(false), noselection(false), outerborder(NULL), innerborder(NULL)
 			{
 				innerlayer.EnableClipping=true;
 
@@ -335,7 +335,7 @@ namespace gge { namespace widgets {
 
 
 
-			BorderData *outerborder;
+			BorderData *outerborder,*innerborder;
 			BorderData *overlay;
 			BorderData *selection;
 

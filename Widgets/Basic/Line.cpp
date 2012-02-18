@@ -239,8 +239,8 @@ namespace gge { namespace widgets {
 				c.HorizontalTiling=SizeController2D::Stretch;
 
 			loop.DrawIn(Target, c, 
-				X+start.GetWidth(), Y,
-				w - (start.GetWidth() + end.GetWidth()), h
+				X, Y,
+				w, h
 			);
 
 			Target.SetDrawMode(graphics::BasicSurface::OffscreenAlphaOnly);
@@ -269,8 +269,8 @@ namespace gge { namespace widgets {
 				c.VerticalTiling=SizeController2D::Stretch;
 
 			loop.DrawIn(Target, c, 
-				X+start.GetWidth(), Y,
-				w - (start.GetWidth() + end.GetWidth()), h
+				X, Y,
+				w, h
 			);
 
 

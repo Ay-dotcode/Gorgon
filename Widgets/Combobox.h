@@ -172,17 +172,12 @@ namespace gge { namespace widgets {
 		//returns selected item
 		//returns last selected if listbox is in multi select
 		ListItem *GetItem() {
-			return active;
+			return Find(getvalue());
 		}
 
 		//returns last selected if listbox is in multi select
 		ListItem *GetSelectedItem() {
-			return active;
-		}
-
-		//works only for multi select
-		utils::ConstCollection<ListItem> GetSelectedItems() {
-			return selected;
+			return Find(getvalue());
 		}
 
 		template<class C_>
@@ -195,6 +190,42 @@ namespace gge { namespace widgets {
 		void AddRange(const I_ &begin, const I_ &end) {
 			for(auto it=begin;it!=end;++it)
 				Add(*it);
+		}
+
+		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+			if(event==input::keyboard::Event::Up) {
+				//if(!isextended) {
+					if(!input::keyboard::Modifier::IsModified()) {
+						if(Key==input::keyboard::KeyCodes::Down) {
+							auto it=OrderedCollection::Find(GetSelectedItem());
+
+							if(!it.isValid()) {
+								if(GetCount())
+									setvalue(OrderedCollection::get_(0)->Value);
+							}
+							else {
+								it.Next();
+								if(it.isValid()) {
+									setvalue(it->Value);
+								}
+							}
+
+							return true;
+						}
+						else if(Key==input::keyboard::KeyCodes::Up) {
+							auto it=OrderedCollection::Find(GetSelectedItem());
+							it.Previous();
+							if(it.isValid()) {
+								setvalue(it->Value);
+							}
+
+							return true;
+						}
+					}
+				//}
+			}
+
+			return Base::KeyboardEvent(event, Key);
 		}
 			
 		utils::EventChain<Combobox> ValueChanged;

@@ -137,11 +137,11 @@ namespace gge { namespace widgets {
 			delete &item;
 		}
 
-		void Activate(tabpanel::Panel &panel) {
-			Activate(&panel);
+		void Activate(tabpanel::Panel &panel, bool setfocus=false) {
+			Activate(&panel,setfocus);
 		}
 
-		void Activate(tabpanel::Panel *panel);
+		void Activate(tabpanel::Panel *panel, bool setfocus=false);
 
 		tabpanel::Panel *GetActive() {
 			return active;

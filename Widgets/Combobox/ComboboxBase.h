@@ -65,6 +65,14 @@ namespace gge { namespace widgets {
 				WidgetBase::Disable();
 			}
 
+			virtual bool Focus() {
+				if(!IsFocused()) {
+					WidgetBase::Focus();
+
+					textbox.Focus();
+				}
+				return true;
+			}
 
 			using WidgetBase::SetBlueprint;
 			virtual void SetBlueprint(const widgets::Blueprint &bp);
@@ -92,18 +100,15 @@ namespace gge { namespace widgets {
 				if(event==input::keyboard::Event::Char) {
 					if(isextended) {
 						if(!input::keyboard::Modifier::IsModified()) {
-							if(Key==input::keyboard::KeyCodes::Escape) {
+							if(Key==input::keyboard::KeyCodes::Enter || Key==input::keyboard::KeyCodes::Escape) {
 								shrink();
 								return true;
-							}
-							else if(Key==input::keyboard::KeyCodes::Down || Key==input::keyboard::KeyCodes::Up) {
-								return listbox.KeyboardEvent(event, Key);
 							}
 						}
 					}
 					else {
 						if(!input::keyboard::Modifier::IsModified()) {
-							if(Key==input::keyboard::KeyCodes::Enter || Key==input::keyboard::KeyCodes::Down) {
+							if(Key==input::keyboard::KeyCodes::Enter) {
 								extend();
 								return true;
 							}
@@ -190,11 +195,11 @@ namespace gge { namespace widgets {
 			virtual void shrink() {
 				if(isextended) {
 					isextended=false;
-					bool focus=listbox.IsFocused();
+					
 					listbox.Hide();
 					if(dropbutton)
 						dropbutton=false;
-					if(focus)
+					if(IsFocused())
 						textbox.Focus();
 				}
 			}

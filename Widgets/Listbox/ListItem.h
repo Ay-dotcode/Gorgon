@@ -79,7 +79,15 @@ namespace gge { namespace widgets {
 				break;
 			}
 
-			return WidgetBase::MouseEvent(event, location, amount);
+
+			if(event==input::mouse::Event::Over && pointer!=Pointer::None)
+				mousetoken=Pointers.Set(pointer);
+			else if(event==input::mouse::Event::Out) {
+				Pointers.Reset(mousetoken);
+				mousetoken=0;
+			}
+
+			return !input::mouse::Event::isScroll(event);
 		}
 
 		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {

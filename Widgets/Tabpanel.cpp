@@ -199,16 +199,16 @@ namespace gge { namespace widgets {
 	}
 
 	void Tabpanel::tab_click(RadioButton<tabpanel::Panel*> &object) {
-		Activate(object.Value);
+		Activate(object.Value, true);
 	}
 
-	void Tabpanel::Activate(tabpanel::Panel *panel) {
+	void Tabpanel::Activate(tabpanel::Panel *panel, bool setfocus) {
 		for(auto it=First();it.isValid();it.Next()) {
 			it->Hide();
 		}
 
 		if(panel)
-			panel->Show(true);
+			panel->Show(setfocus);
 
 		active=panel;
 

@@ -54,6 +54,7 @@ namespace gge { namespace widgets {
 			}
 
 			virtual void Show(bool setfocus=true) {
+				ContainerBase::isvisible=true;
 				WidgetBase::Show(setfocus);
 				ContainerBase::Show();
 			}
