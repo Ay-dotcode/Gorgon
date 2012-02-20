@@ -731,7 +731,8 @@ namespace gge { namespace widgets {
 			if(this->bp==&bp)
 				return;
 
-			utils::CheckAndDelete(caret);
+			if(caret)
+				caret->DeleteAnimation();
 
 			this->bp=static_cast<const Blueprint*>(&bp);
 			if(WidgetBase::size.Width==0)
@@ -740,10 +741,16 @@ namespace gge { namespace widgets {
 				SetHeight(this->bp->DefaultSize.Height);
 
 			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
-				utils::CheckAndDelete(i->second);
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			BorderCache.clear();
 
 			for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
-				utils::CheckAndDelete(i->second);
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			ImageCache.clear();
 
 			if(this->bp) {
 				this->pointer=bp.Pointer;

@@ -17,6 +17,11 @@ namespace gge { namespace widgets {
 			return true;
 		}
 
+
+		virtual bool Focus() {
+			return false;
+		}
+
 		using WidgetBase::SetBlueprint;
 		virtual void SetBlueprint(const Blueprint &bp) {
 
@@ -29,11 +34,11 @@ namespace gge { namespace widgets {
 			layer.Resize(Size);
 		}
 
-		operator LayerBase() {
+		operator WidgetLayer() {
 			return layer;
 		}
 
-		LayerBase &GetLayer() {
+		WidgetLayer &GetLayer() {
 			return layer;
 		}
 
@@ -59,7 +64,7 @@ namespace gge { namespace widgets {
 				layer.parent=NULL;
 		}
 
-		graphics::Basic2DLayer layer;
+		WidgetLayer layer;
 	};
 
 

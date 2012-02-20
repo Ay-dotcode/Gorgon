@@ -27,7 +27,16 @@ namespace gge { namespace widgets {
 		}
 
 		virtual bool Focus()  {
-			return ILabel::default_focusreceived(Container);
+			return false;//ILabel::default_focusreceived(Container);
+		}
+
+		virtual bool Accessed() {
+			auto it=Container->Widgets.Find(this);
+			it.Next();
+			if(it.isValid())
+				it->Focus();
+
+			return true;
 		}
 
 

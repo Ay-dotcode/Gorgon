@@ -59,10 +59,16 @@ namespace gge { namespace widgets {
 					Container->WidgetBoundsChanged();
 
 				for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
-					utils::CheckAndDelete(i->second);
+					if(i->second)
+						i->second->DeleteAnimation();
+
+				BorderCache.clear();
 
 				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
-					utils::CheckAndDelete(i->second);
+					if(i->second)
+						i->second->DeleteAnimation();
+
+				ImageCache.clear();
 
 				Draw();
 			}

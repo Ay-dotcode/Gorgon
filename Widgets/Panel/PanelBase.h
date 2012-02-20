@@ -200,13 +200,21 @@ namespace gge { namespace widgets {
 			virtual void SetBlueprint(const widgets::Blueprint &bp) {
 				this->bp=static_cast<const Blueprint*>(&bp);
 				for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
-					utils::CheckAndDelete(i->second);
+					if(i->second)
+						i->second->DeleteAnimation();
 
-				if(WidgetBase::size.Width==0)
-					Resize(this->bp->DefaultSize);
+				BorderCache.clear();
 
 				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
-					utils::CheckAndDelete(i->second);
+					if(i->second)
+						i->second->DeleteAnimation();
+
+				ImageCache.clear();
+
+				if(WidgetBase::size.Width==0)
+					SetWidth(this->bp->DefaultSize.Width);
+				if(WidgetBase::size.Height==0)
+					SetHeight(this->bp->DefaultSize.Height);
 
 				for(auto i=titlebuttons.begin();i!=titlebuttons.end();++i)
 					if(dynamic_cast<Button*>(&*i))
