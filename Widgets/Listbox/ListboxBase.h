@@ -26,12 +26,14 @@ namespace gge { namespace widgets {
 		class Base : public WidgetBase {
 		public:
 
-			Base() : bp(NULL),  controls(*this), autoheight(false)
+			Base() : bp(NULL),  controls(*this), autoheight(false), blueprintmodified(false)
 			{
 				controls.AddWidget(panel);
 				panel.Move(0,0);
 				panel.SetOrganizer(organizer);
 				panel.AllowTabSwitch=false;
+
+				WR.LoadedEvent.Register(this, &Base::wr_loaded);
 			}
 
 
@@ -61,7 +63,10 @@ namespace gge { namespace widgets {
 				return WidgetBase::Focus();
 			}
 
-			virtual void SetBlueprint(const widgets::Blueprint &bp);
+			virtual void SetBlueprint(const widgets::Blueprint &bp) {
+				blueprintmodified=true;
+				setblueprint(bp);
+			}
 
 			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
 				return false;
@@ -73,11 +78,29 @@ namespace gge { namespace widgets {
 
 			virtual void Resize(utils::Size Size) {
 				WidgetBase::Resize(Size);
-				if(autoheight)
+				if(Size.Width==0 && bp)
+					Size.Width=bp->DefaultSize.Width;
+				if(Size.Height==0 && bp)
+					Size.Height=bp->DefaultSize.Height;
+
+				if(autoheight) {
 					panel.SetWidth(Size.Width);
-				else
+					controls.BaseLayer.BoundingBox.SetWidth(Size.Width);
+				}
+				else {
 					panel.Resize(Size);
-				controls.Resize(Size);
+					controls.BaseLayer.Resize(Size);
+				}
+
+				if(BaseLayer)
+					BaseLayer->Resize(controls.BaseLayer.BoundingBox.GetSize());
+			}
+
+			virtual utils::Size GetSize() {
+				if(!bp)
+					return size;
+
+				return utils::Size(size.Width ? size.Width : bp->DefaultSize.Width, size.Height ? size.Height : bp->DefaultSize.Height);
 			}
 			
 			
@@ -96,7 +119,9 @@ namespace gge { namespace widgets {
 					adjustheight();
 			}
 
-			virtual void draw() {}
+			virtual void draw() {
+			}
+
 
 			virtual bool loosefocus(bool force) {
 				if(force) {
@@ -121,6 +146,9 @@ namespace gge { namespace widgets {
 				WidgetBase::located(container, w, Order);
 
 				BaseLayer->Add(controls);
+
+				if(BaseLayer)
+					BaseLayer->Resize(controls.BaseLayer.BoundingBox.GetSize());
 			}
 
 			void setautoheight(const bool &value) {
@@ -134,6 +162,11 @@ namespace gge { namespace widgets {
 			}
 
 			void adjustheight() {
+				int sh=size.Height;
+
+				if(sh==0 && bp)
+					sh=bp->DefaultSize.Height;
+
 				if(autoheight) {
 					panel.SetHeight(200);
 					int h=0;
@@ -142,12 +175,18 @@ namespace gge { namespace widgets {
 							h+=it->GetHeight();
 					}
 					h+=panel.GetHeight()-panel.GetUsableHeight();
-					panel.SetHeight(std::min(h+1,size.Height));
+					panel.SetHeight(std::min(h+1,sh));
+					controls.BaseLayer.BoundingBox.SetHeight(std::min(h+1,sh));
 				}
 				else {
-					panel.SetHeight(size.Height);
+					panel.SetHeight(sh);
+					controls.BaseLayer.BoundingBox.SetHeight(sh);
 				}
+
+				if(BaseLayer)
+					BaseLayer->Resize(controls.BaseLayer.BoundingBox.GetSize());
 			}
+
 
 
 			const Blueprint *bp;
@@ -155,7 +194,14 @@ namespace gge { namespace widgets {
 			PetContainer<Base> controls;
 
 			ControlledPanel panel;
-			
+
+			bool blueprintmodified;
+
+			virtual void wr_loaded() {
+			}
+
+			virtual void setblueprint(const widgets::Blueprint &bp);
+		
 
 			ListOrganizer organizer;
 		private:
@@ -163,7 +209,7 @@ namespace gge { namespace widgets {
 		};
 
 		template<class T_, void(*CF_)(const T_ &, std::string &)>
-		void Base<T_, CF_>::SetBlueprint(const widgets::Blueprint &bp) {
+		void Base<T_, CF_>::setblueprint(const widgets::Blueprint &bp) {
 			if(this->bp==&bp)
 				return;
 
@@ -172,10 +218,10 @@ namespace gge { namespace widgets {
 			if(this->bp->Panel)
 				panel.SetBlueprint(*this->bp->Panel);
 
-			if(WidgetBase::size.Width==0)
-				SetWidth(this->bp->DefaultSize.Width);
-			if(WidgetBase::size.Height==0)
-				SetHeight(this->bp->DefaultSize.Height);
+			if(size.Width==0) {
+				panel.SetWidth(bp.DefaultSize.Width);
+				controls.BaseLayer.BoundingBox.SetWidth(bp.DefaultSize.Width);
+			}
 
 			adjustheight();
 		}

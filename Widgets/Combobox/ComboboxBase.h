@@ -25,7 +25,8 @@ namespace gge { namespace widgets {
 		class Base : public WidgetBase {
 		public:
 
-			Base(const T_ &value=T_()) : bp(NULL),  controls(*this), isextended(false)
+			Base(const T_ &value=T_()) : bp(NULL),  controls(*this), isextended(false),
+				blueprintmodified(false)
 			{
 				controls.AddWidget(dropbutton);
 				controls.AddWidget(textbox);
@@ -52,6 +53,7 @@ namespace gge { namespace widgets {
 						shrink();
 				});
 				dropbutton.GotFocus.Register(this, &Base::dropbutton_focus);
+				WR.LoadedEvent.Register(this, &Base::wr_loaded);
 			}
 
 
@@ -75,10 +77,23 @@ namespace gge { namespace widgets {
 			}
 
 			using WidgetBase::SetBlueprint;
-			virtual void SetBlueprint(const widgets::Blueprint &bp);
+			virtual void SetBlueprint(const widgets::Blueprint &bp) {
+				blueprintmodified=true;
+				setblueprint(bp);
+			}
 
 			virtual void Resize(utils::Size Size) {
 				WidgetBase::Resize(Size);
+
+				if(Size.Width==0 && bp)
+					Size.Width=bp->DefaultSize.Width;
+				if(Size.Height==0 && bp)
+					Size.Height=bp->DefaultSize.Height;
+
+				if(BaseLayer)
+					BaseLayer->Resize(Size);
+
+ 				controls.Resize(Size);
 
 				textbox.Resize(Size);
 				Bounds b=textbox.GetBounds();
@@ -93,6 +108,13 @@ namespace gge { namespace widgets {
 					else
 						listbox.SetWidth(GetWidth());
 				}
+			}
+
+			virtual utils::Size GetSize() {
+				if(!bp)
+					return size;
+
+				return utils::Size(size.Width ? size.Width : bp->DefaultSize.Width, size.Height ? size.Height : bp->DefaultSize.Height);
 			}
 
 			//!check
@@ -121,6 +143,13 @@ namespace gge { namespace widgets {
 
 
 		protected:
+			virtual void setblueprint(const widgets::Blueprint &bp);
+
+			bool blueprintmodified;
+
+			virtual void wr_loaded() {
+
+			}
 
 			virtual void add(ListItem<T_, CS_> &item) {
 				listbox.Add(item);
@@ -167,6 +196,9 @@ namespace gge { namespace widgets {
 
 			virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
 				WidgetBase::located(container, w, Order);
+
+				if(BaseLayer)
+					BaseLayer->Resize(controls.GetSize());
 
 				if(container)
 					controls.AttachTo(BaseLayer, &container->CreateExtenderLayer());
@@ -241,7 +273,7 @@ namespace gge { namespace widgets {
 		};
 
 		template<class T_, void(*CS_)(const T_ &, std::string &)>
-		void Base<T_, CS_>::SetBlueprint(const widgets::Blueprint &bp) {
+		void Base<T_, CS_>::setblueprint(const widgets::Blueprint &bp) {
 			if(this->bp==&bp)
 				return;
 
@@ -258,12 +290,6 @@ namespace gge { namespace widgets {
 			if(this->bp->Dropbutton)
 				dropbutton.SetBlueprint(*this->bp->Dropbutton);
 
-			if(WidgetBase::size.Width==0)
-				SetWidth(this->bp->DefaultSize.Width);
-
-			if(WidgetBase::size.Height==0)
-				SetHeight(this->bp->DefaultSize.Height);
-
 			listbox.Move(this->bp->ListMargins.Left,this->GetBounds().Bottom+this->bp->ListMargins.Top);
 			if(this->bp->Listbox) {
 				listbox.Resize(this->bp->Listbox->DefaultSize);
@@ -272,6 +298,8 @@ namespace gge { namespace widgets {
 			}
 			
 			textbox.SetPointer(Pointer::None);
+
+			Resize(size);
 		}
 
 

@@ -21,6 +21,9 @@ namespace gge { namespace widgets {
 			Text=text;
 			changeevent.DoubleLink(IOption::changeevent);
 			Autosize=AutosizeModes::Autosize;
+
+			if(WR.RadioButton)
+				setblueprint(*WR.RadioButton);
 		}
 
 		void RemoveAccesskey() {
@@ -173,6 +176,11 @@ namespace gge { namespace widgets {
 
 		virtual void setText(const std::string &text)  {
 			Base::settext(text);
+		}
+
+		virtual void wr_loaded() {
+			if(!blueprintmodified && WR.RadioButton)
+				setblueprint(*WR.RadioButton);
 		}
 	};
 

@@ -326,6 +326,10 @@ namespace gge { namespace widgets {
 			if(!bp)
 				return;
 
+			BaseLayer->Resize(WidgetBase::size.Width ? WidgetBase::size.Width : bp->DefaultSize.Width, 
+				WidgetBase::size.Height ? WidgetBase::size.Height : bp->DefaultSize.Height);
+			controls.Resize(BaseLayer->GetSize());
+
 			BorderDataResource		*bprovider;
 			bool transition;
 
@@ -727,47 +731,6 @@ namespace gge { namespace widgets {
 			return false;
 		}
 
-		void Base::SetBlueprint(const widgets::Blueprint &bp) {
-			if(this->bp==&bp)
-				return;
-
-			if(caret)
-				caret->DeleteAnimation();
-
-			this->bp=static_cast<const Blueprint*>(&bp);
-			if(WidgetBase::size.Width==0)
-				SetWidth(this->bp->DefaultSize.Width);
-			if(WidgetBase::size.Height==0)
-				SetHeight(this->bp->DefaultSize.Height);
-
-			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
-				if(i->second)
-					i->second->DeleteAnimation();
-
-			BorderCache.clear();
-
-			for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
-				if(i->second)
-					i->second->DeleteAnimation();
-
-			ImageCache.clear();
-
-			if(this->bp) {
-				this->pointer=bp.Pointer;
-
-				if(this->bp->Scroller)
-					vscroll.bar.SetBlueprint(*this->bp->Scroller);
-
-				if(this->bp->Caret)
-					caret=&this->bp->Caret->CreateAnimation(true);
-
-				if(this->bp->Selection)
-					selection=&this->bp->Selection->CreateAnimation(true);
-			}
-
-			Draw();
-		}
-
 		void Base::playsound(Blueprint::StyleType stylefrom, Blueprint::StyleType styleto) {
 			if(bp) {
 				if(bp->Mapping[stylefrom][styleto] && bp->Mapping[stylefrom][styleto]->Sound) {
@@ -819,6 +782,43 @@ namespace gge { namespace widgets {
 			WidgetBase::loosefocus(force);
 
 			return true;
+		}
+
+		void Base::setblueprint(const widgets::Blueprint &bp) {
+			if(this->bp==&bp)
+				return;
+
+			if(caret)
+				caret->DeleteAnimation();
+
+			this->bp=static_cast<const Blueprint*>(&bp);
+
+			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			BorderCache.clear();
+
+			for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			ImageCache.clear();
+
+			if(this->bp) {
+				this->pointer=bp.Pointer;
+
+				if(this->bp->Scroller)
+					vscroll.bar.SetBlueprint(*this->bp->Scroller);
+
+				if(this->bp->Caret)
+					caret=&this->bp->Caret->CreateAnimation(true);
+
+				if(this->bp->Selection)
+					selection=&this->bp->Selection->CreateAnimation(true);
+			}
+
+			Draw();
 		}
 
 

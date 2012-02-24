@@ -7,6 +7,7 @@
 #include <map>
 #include <queue>
 #include "..\Main.h"
+#include "..\WidgetRegistry.h"
 
 #ifndef CHECKBOX_CLICK_DOWNDURATION
 #	define	CHECKBOX_CLICK_DOWNDURATION	75
@@ -19,7 +20,8 @@ namespace gge { namespace widgets {
 			Base(bool cangetfocus, AutosizeModes::Type autosize,bool textwrap, bool drawsymbol,bool drawicon) : text(""),
 				cangetfocus(cangetfocus), autosize(autosize), textwrap(textwrap), underline(), currentsize(0,0),
 				drawsymbol(drawsymbol), drawicon(drawicon), icon(NULL), currentstate(1), unprepared(true), bp(NULL),
-				mouseover(false), mousedown(false), next_focus(Blueprint::Focus_None), next_state(0), next_style(Blueprint::Style_None)
+				mouseover(false), mousedown(false), next_focus(Blueprint::Focus_None), next_state(0), next_style(Blueprint::Style_None),
+				blueprintmodified(false)
 			{
 				focus_anim.Pause();
 				focus_anim.Finished.Register(this, &Base::focus_anim_finished);
@@ -36,6 +38,8 @@ namespace gge { namespace widgets {
 				wait_timeout.Pause();
 				wait_timeout.Paused.Register(this, &Base::up);
 
+				WR.LoadedEvent.Register(this, &Base::wr_loaded);
+				
 				innerlayer.EnableClipping=true;
 
 				draw();
@@ -44,33 +48,8 @@ namespace gge { namespace widgets {
 			using WidgetBase::SetBlueprint;
 
 			virtual void SetBlueprint(const widgets::Blueprint &bp)  {
-				this->bp=static_cast<const Blueprint*>(&bp);
-
-				if(this->bp) {
-					this->pointer=bp.Pointer;
-				}
-
-				if(WidgetBase::size.Width==0)
-					SetWidth(this->bp->DefaultSize.Width);
-				if(WidgetBase::size.Height==0)
-					SetHeight(this->bp->DefaultSize.Height);
-
-				if(autosize!=AutosizeModes::None && Container)
-					Container->WidgetBoundsChanged();
-
-				for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
-					if(i->second)
-						i->second->DeleteAnimation();
-
-				BorderCache.clear();
-
-				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
-					if(i->second)
-						i->second->DeleteAnimation();
-
-				ImageCache.clear();
-
-				Draw();
+				setblueprint(bp);
+				blueprintmodified=true;
 			}
 
 			virtual bool Focus();
@@ -91,11 +70,16 @@ namespace gge { namespace widgets {
 		protected:
 			virtual void prepare();
 
+			virtual void wr_loaded() {}
+
 			virtual void draw();
 
 			int lineheight(Blueprint::Line *line, int w=0);
 
 			void drawline(int id, Blueprint::TransitionType transition, int y, int reqh, int h);
+
+			bool blueprintmodified;
+			virtual void setblueprint(const widgets::Blueprint &bp);
 
 
 			//SERVICES TO CLIENT

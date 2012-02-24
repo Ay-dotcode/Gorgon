@@ -20,6 +20,9 @@ namespace gge { namespace widgets {
 			changeevent.DoubleLink(ITextbox::changeevent);
 
 			setupvscroll(false, false, false);
+
+			if(WR.Textbox)
+				setblueprint(*WR.Textbox);
 		}
 
 		Textbox &operator =(const std::string &s) {
@@ -87,6 +90,11 @@ namespace gge { namespace widgets {
 		}
 		bool getReadonly() const {
 			return getreadonly();
+		}
+
+		virtual void wr_loaded() {
+			if(WR.Textbox && !blueprintmodified)
+				setblueprint(*WR.Textbox);
 		}
 
 	};

@@ -11,6 +11,9 @@ namespace gge { namespace widgets {
 		{
 			setallowmove(false);
 			setupvscroll(true, true, true);
+
+			if(WR.Panel)
+				setblueprint(*WR.Panel);
 		}
 
 		utils::Property<Panel, utils::Margins> Padding;
@@ -21,6 +24,10 @@ namespace gge { namespace widgets {
 		}
 		utils::Margins getPadding() const {
 			return Base::getpadding();
+		}
+		void wr_loaded() {
+			if(!blueprintmodified && WR.Panel)
+				setblueprint(*WR.Panel);
 		}
 	};
 

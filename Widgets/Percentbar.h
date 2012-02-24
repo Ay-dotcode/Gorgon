@@ -28,6 +28,9 @@ namespace gge { namespace widgets {
 			Base::setmarkers(true, false, false);
 			setvalueformat(numberformat(0,"%"));
 			setpassive();
+
+			if(WR.Progressbars.Percent)
+				setblueprint(*WR.Progressbars.Percent);
 		}
 
 		virtual WidgetBase *GetWidget() {
@@ -149,6 +152,11 @@ namespace gge { namespace widgets {
 		}
 		floattype getTickDistance() const {
 			return floattype((Base::gettickdistance()/100)*(mymax-mymin)+mymin);
+		}
+
+		virtual void wr_loaded() {
+			if(WR.Progressbars.Percent && !blueprintmodified)
+				setblueprint(*WR.Progressbars.Percent);
 		}
 
 	};

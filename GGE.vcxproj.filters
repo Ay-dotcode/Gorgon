@@ -918,6 +918,9 @@
     <ClInclude Include="Widgets\LayerWidget.h">
       <Filter>Widgets</Filter>
     </ClInclude>
+    <ClInclude Include="Widgets\TabpanelBlueprint.h">
+      <Filter>Widgets\Code\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -982,9 +985,6 @@
     </ClCompile>
     <ClCompile Include="Widgets\Textbox\TextboxBlueprint.cpp">
       <Filter>Widgets\Textbox</Filter>
-    </ClCompile>
-    <ClCompile Include="Widgets\Listbox\ListboxBase.cpp">
-      <Filter>Widgets\Listbox\Soruces</Filter>
     </ClCompile>
     <ClCompile Include="Widgets\Listbox\ListboxBlueprint.cpp">
       <Filter>Widgets\Listbox\Soruces</Filter>

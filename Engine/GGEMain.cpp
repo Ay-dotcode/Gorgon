@@ -15,7 +15,6 @@ namespace gge {
 
 	GGEMain::GGEMain() :
 		SystemName(""),
-		Instance(NULL),
 		Width(800)  ,
 		Height(600),
 		BitDepth(32),
@@ -32,7 +31,7 @@ namespace gge {
 		FPS=50;
 	}
 
-	void GGEMain::Setup(string SystemName, os::InstanceHandle Instance,int Width, int Height, int BitDepth, bool FullScreen) {
+	void GGEMain::Setup(string SystemName, int Width, int Height, int BitDepth, bool FullScreen) {
 #ifdef _DEBUG
 		if(Window!=NULL)
 			throw std::runtime_error("System already initialized.");
@@ -41,7 +40,6 @@ namespace gge {
 			return;
 #endif
 		this->SystemName=SystemName;
-		this->Instance=Instance;
 		this->Width=Width;
 		this->Height=Height;
 		this->BitDepth=BitDepth;
@@ -91,7 +89,8 @@ namespace gge {
 	void GGEMain::AfterRender() {
 		AfterRenderEvent();
 
-		os::Sleep(1);
+		if(os::GetTime()-CurrentTime<16)
+			os::Sleep(16-(os::GetTime()-CurrentTime));
 	}
 
 	void GGEMain::Render() {
@@ -171,7 +170,7 @@ namespace gge {
 	}
 
 	os::WindowHandle GGEMain::CreateWindow( string Title, os::IconHandle Icon, int X/*=0*/, int Y/*=0*/ ) {
-		Window=os::window::CreateWindow(SystemName,Title,Icon,Instance,X,Y,Width,Height,BitDepth,FullScreen);
+		Window=os::window::CreateWindow(SystemName,Title,Icon,X,Y,Width,Height,BitDepth,FullScreen);
 		return Window;
 	}
 

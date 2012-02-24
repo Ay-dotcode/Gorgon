@@ -20,7 +20,8 @@ namespace gge { namespace widgets {
 				bp(NULL), next_style(widgets::Blueprint::Style_None),
 				scroll(0,0), vscroll(true), mhover(false), caretlocation(0), selectionstart(0),
 				caret(NULL), selection(NULL), textlocation(0,0), mdown(false), passive(false),
-				readonly(false), noselection(false), outerborder(NULL), innerborder(NULL)
+				readonly(false), noselection(false), outerborder(NULL), innerborder(NULL),
+				blueprintmodified(false)
 			{
 				innerlayer.EnableClipping=true;
 
@@ -32,6 +33,8 @@ namespace gge { namespace widgets {
 				vscroll.bar.SetContainer(controls);
 				vscroll.bar.AllowFocus=false;
 				vscroll.bar.ChangeEvent().Register(this, &Base::vscroll_change);
+
+				WR.LoadedEvent.Register(this, &Base::wr_loaded);
 			}
 
 			virtual bool IsVisible() {
@@ -56,7 +59,18 @@ namespace gge { namespace widgets {
 
 			using WidgetBase::SetBlueprint;
 
-			virtual void SetBlueprint(const widgets::Blueprint &bp);
+			virtual void SetBlueprint(const widgets::Blueprint &bp) {
+				blueprintmodified=true;
+				setblueprint(bp);
+			}
+
+			virtual utils::Size GetSize() {
+				if(!bp)
+					return size;
+
+				return utils::Size(size.Width ? size.Width : bp->DefaultSize.Width, size.Height ? size.Height : bp->DefaultSize.Height);
+			}
+
 
 			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);
 
@@ -70,6 +84,8 @@ namespace gge { namespace widgets {
 			virtual void draw();
 
 			virtual bool loosefocus(bool force);
+
+			virtual void setblueprint(const widgets::Blueprint &bp);
 
 			virtual bool detach(ContainerBase *container) {
 				innerlayer.parent=NULL;
@@ -98,6 +114,8 @@ namespace gge { namespace widgets {
 				BaseLayer->Add(innerlayer,1);
 				BaseLayer->Add(controls, 0);
 				BaseLayer->Add(overlayer, -1);
+
+				BaseLayer->Resize(controls.GetSize());
 
 				//adjustscrolls();
 			}
@@ -307,6 +325,12 @@ namespace gge { namespace widgets {
 
 			void playsound(Blueprint::StyleType stylefrom, Blueprint::StyleType styleto);
 
+			bool blueprintmodified;
+
+			virtual void wr_loaded() {
+
+			}
+
 		private:
 			class cscroll {
 			public:
@@ -354,6 +378,8 @@ namespace gge { namespace widgets {
 			Font *font;
 
 			std::string text, prefix, suffix;
+
+
 
 
 			//?

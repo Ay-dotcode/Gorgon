@@ -22,6 +22,9 @@ namespace gge { namespace widgets {
 			Base::setactive();
 
 			ISlider::changeevent.DoubleLink(changeevent);
+
+			if(WR.Sliders.NumberSpinner)
+				setblueprint(*WR.Sliders.NumberSpinner);
 		}
 
 		virtual WidgetBase *GetWidget() {
@@ -150,6 +153,11 @@ namespace gge { namespace widgets {
 		}
 		T_ getStepsize() const {
 			return Base::getsteps();
+		}
+
+		virtual void wr_loaded() {
+			if(WR.Sliders.NumberSpinner && !blueprintmodified)
+				setblueprint(*WR.Sliders.NumberSpinner);
 		}
 
 

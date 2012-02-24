@@ -25,6 +25,9 @@ namespace gge { namespace widgets {
 		{
 			Text=text;
 			Autosize=AutosizeModes::Autosize;
+
+			if(WR.Labels.Link)
+				setblueprint(*WR.Labels.Link);
 		}
 
 		StatefulLabel &operator =(const std::string &s) {
@@ -109,6 +112,11 @@ namespace gge { namespace widgets {
 		}
 		States getState() const {
 			return (States)Base::getstate();
+		}
+
+		virtual void wr_loaded() {
+			if(!blueprintmodified && WR.Labels.Link)
+				setblueprint(*WR.Labels.Link);
 		}
 	};
 

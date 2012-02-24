@@ -30,6 +30,7 @@ namespace gge { namespace widgets { namespace dialog {
 
 	void Query::resize() {
 		if(GetUsableWidth()>0 && autosize) {
+			SetHeight(Main.BoundingBox.Height());
 			SetHeight(query.GetHeight()+GetHeight()-GetUsableHeight()+(*Padding).Bottom);
 
 			autosize=true;

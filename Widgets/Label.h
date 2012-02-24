@@ -18,6 +18,9 @@ namespace gge { namespace widgets {
 		{
 			Text=text;
 			Autosize=AutosizeModes::Autosize;
+
+			if(WR.Label)
+				setblueprint(*WR.Label);
 		}
 
 		Label &operator =(const std::string &s) {
@@ -104,6 +107,12 @@ namespace gge { namespace widgets {
 		virtual void setText(const std::string &text)  {
 			Base::settext(text);
 		}
+
+		virtual void wr_loaded() {
+			if(!blueprintmodified && WR.Label)
+				setblueprint(*WR.Label);
+		}
+
 	};
 
 

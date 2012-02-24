@@ -20,6 +20,9 @@ namespace gge { namespace widgets {
 			Text=text;
 			changeevent.DoubleLink(ICheckbox::changeevent);
 			Autosize=AutosizeModes::Autosize;
+
+			if(WR.Checkbox)
+				setblueprint(*WR.Checkbox);
 		}
 
 		template<class T_>
@@ -35,6 +38,9 @@ namespace gge { namespace widgets {
 
 			changeevent.Register(fn);
 			Autosize=AutosizeModes::Autosize;
+
+			if(WR.Checkbox)
+				setblueprint(*WR.Checkbox);
 		}
 		
 
@@ -215,6 +221,11 @@ namespace gge { namespace widgets {
 
 		virtual void setText(const std::string &text)  {
 			Base::settext(text);
+		}
+
+		virtual void wr_loaded() {
+			if(!blueprintmodified && WR.Checkbox)
+				setblueprint(*WR.Checkbox);
 		}
 	};
 

@@ -34,6 +34,8 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Listbox, AutoHeight),
 			ItemClickedEvent("ItemClicked", this)
 		{
+			if(WR.Listbox)
+				setblueprint(*WR.Listbox);
 		}
 
 		ListItem &Add(const T_ &value=T_()) {
@@ -345,6 +347,11 @@ namespace gge { namespace widgets {
 		}
 		bool getAutoHeight() const {
 			return getautoheight();
+		}
+
+		virtual void wr_loaded() {
+			if(WR.Listbox && !blueprintmodified)
+				setblueprint(*WR.Listbox);
 		}
 	};
 

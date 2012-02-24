@@ -426,6 +426,8 @@ namespace gge { namespace widgets {
 			if(!bp)
 				return;
 
+			BaseLayer->Resize(currentsize);
+
 			prepare();
 
 			//setup lines and heights
@@ -1025,10 +1027,16 @@ namespace gge { namespace widgets {
 
 			if(autosize==AutosizeModes::None) {
 				currentsize=WidgetBase::size;
+				if(currentsize.Width==0 && bp)
+					currentsize.Width=bp->DefaultSize.Width;
+				if(currentsize.Height==0 && bp)
+					currentsize.Height=bp->DefaultSize.Height;
 			}
 			else {
 				if(textwrap) {
 					currentsize.Width=WidgetBase::size.Width;
+					if(currentsize.Width==0 && bp)
+						currentsize.Width=bp->DefaultSize.Width;
 
 #pragma region "Text Width calculate"
 					if(font && text!="")
@@ -1044,6 +1052,15 @@ namespace gge { namespace widgets {
 							int totalmargin=0;
 							int pmargin=0;
 
+							int w=currentsize.Width;
+							if(border) {
+								w-=border->BorderWidth.TotalX()+border->Padding.TotalX();
+							}
+
+							if(line->Border) {
+								w-=line->Border->BorderWidth.TotalX()+line->Border->Padding.TotalX();
+							}
+
 							//calculate current height, required for w=h stuff
 							int ch=0;
 							for(int i=0;i<3;i++) {
@@ -1055,7 +1072,7 @@ namespace gge { namespace widgets {
 									break;
 								case Blueprint::Text:
 									if(font && text!="") {
-										ch=max(ch, font->FontHeight());
+										ch=max(ch, font->TextHeight(text,w));
 									}
 									break;
 								case Blueprint::Symbol:
@@ -1264,9 +1281,13 @@ namespace gge { namespace widgets {
 			}
 
 			if(autosize==AutosizeModes::GrowOnly) {
-				if(currentsize.Width<WidgetBase::size.Width)
+				if(WidgetBase::size.Width==0 && bp && currentsize.Width<bp->DefaultSize.Width)
+					currentsize.Width=bp->DefaultSize.Width;
+				else if(currentsize.Width<WidgetBase::size.Width)
 					currentsize.Width=WidgetBase::size.Width;
-				if(currentsize.Height<WidgetBase::size.Height)
+				if(WidgetBase::size.Height==0 && bp && currentsize.Height<bp->DefaultSize.Height) 
+					currentsize.Height=bp->DefaultSize.Height;
+				else if(currentsize.Height<WidgetBase::size.Height)
 					currentsize.Height=WidgetBase::size.Height;
 			}
 
@@ -1334,6 +1355,39 @@ namespace gge { namespace widgets {
 
 			if(!mousedown)
 				setstyle(Blueprint::Normal);
+		}
+
+		void Base::setblueprint(const widgets::Blueprint &bp) {
+			unprepared=true;
+			this->bp=static_cast<const Blueprint*>(&bp);
+
+			if(this->bp) {
+				this->pointer=bp.Pointer;
+			}
+
+			//if(WidgetBase::size.Width==0)
+			//	SetWidth(this->bp->DefaultSize.Width);
+			//if(WidgetBase::size.Height==0)
+			//	SetHeight(this->bp->DefaultSize.Height);
+
+			if(Container)
+				Container->WidgetBoundsChanged();
+
+			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			BorderCache.clear();
+
+			for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			ImageCache.clear();
+
+			prepare();
+			calculatesize();
+			Draw();
 		}
 
 	}

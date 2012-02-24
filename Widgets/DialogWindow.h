@@ -8,6 +8,9 @@ namespace gge { namespace widgets {
 	public:
 		DialogWindow() : Window() {
 
+			if(WR.Panels.DialogWindow)
+				setblueprint(*WR.Panels.DialogWindow);
+
 		}
 
 		void AddDialogButton(WidgetBase &item) {
@@ -52,6 +55,10 @@ namespace gge { namespace widgets {
 		virtual void ForcedRollUp() {
 			Window::ForcedRollUp();
 			dialogcontrols.BaseLayer.isVisible=false;
+		}
+		void wr_loaded() {
+			if(!blueprintmodified && WR.Panels.DialogWindow)
+				setblueprint(*WR.Panels.DialogWindow);
 		}
 
 	};

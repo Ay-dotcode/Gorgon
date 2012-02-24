@@ -70,10 +70,8 @@ namespace gge {
 		inline string getSystemName() { return SystemName; }
 		////Handle of the window
 		inline os::WindowHandle getWindow() { return Window; }
-		////Handle of the application instance
-		inline os::InstanceHandle getInstance() { return Instance; }
 
-		void Setup(string SystemName, os::InstanceHandle Instance, int Width=800, int Height=600, int BitDepth=32, bool FullScreen=false);
+		void Setup(string SystemName, int Width=800, int Height=600, int BitDepth=32, bool FullScreen=false);
 
 		////Current system time. This time does not change in a given game loop
 		unsigned int CurrentTime;
@@ -168,8 +166,6 @@ namespace gge {
 		string SystemName;
 		////Handle of the window
 		os::WindowHandle Window;
-		////Handle of the application instance
-		os::InstanceHandle Instance;
 
 		utils::Collection<IntervalObject> IntervalObjects;
 	};

@@ -34,6 +34,9 @@ namespace gge { namespace widgets {
 			Base::setactive();
 
 			ISlider::changeevent.DoubleLink(changeevent);
+
+			if(WR.Slider)
+				setblueprint(*WR.Slider);
 		}
 
 		virtual WidgetBase *GetWidget() {
@@ -145,6 +148,11 @@ namespace gge { namespace widgets {
 		}
 		NumberFormatType getNumberFormat() const {
 			return Base::getnumberformat();
+		}
+
+		virtual void wr_loaded() {
+			if(WR.Slider && !blueprintmodified)
+				setblueprint(*WR.Slider);
 		}
 
 

@@ -298,6 +298,8 @@ namespace gge { namespace widgets {
 			}
 			catch(...) { }//don't insert if it is not an animation
 		}
+
+		LoadedEvent();
 	}
 
 

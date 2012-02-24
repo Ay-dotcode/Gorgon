@@ -10,10 +10,12 @@
 #include "Checkbox/CheckboxBlueprint.h"
 #include "Textbox/TextboxBlueprint.h"
 #include "Combobox/ComboboxBlueprint.h"
-#include "Listbox/ListboxBase.h"
+#include "Listbox/ListboxBlueprint.h"
 #include "Slider/SliderBlueprint.h"
+#include "Panel/PanelBlueprint.h"
 #include "../Resource/NullImage.h"
-#include "TabPanel.h"
+#include "TabpanelBlueprint.h"
+#include "../Utils/EventChain.h"
 
 
 
@@ -27,7 +29,7 @@ namespace gge { namespace widgets {
 		WidgetRegistry() : Icons(icons), Pictures(pictures), Sounds(sounds),
 			Button(), Label(), Textbox(),
 			Checkbox(), RadioButton(), Listbox(), Slider(), Scrollbar(),
-			Progressbar(), Panel(), Window(), Combobox()
+			Progressbar(), Panel(), Window(), Combobox(), LoadedEvent("Loaded", this)
 		{}
 
 		void SetWRR(WidgetRegistryResource &wrr);
@@ -363,6 +365,9 @@ namespace gge { namespace widgets {
 		protected:
 			SoundCollection(std::map<std::string, resource::SoundResource&> &parent) : Collection(parent) { }
 		} Sounds;
+
+
+		utils::EventChain<WidgetRegistry> LoadedEvent;
 
 
 	protected:

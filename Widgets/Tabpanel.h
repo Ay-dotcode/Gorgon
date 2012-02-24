@@ -2,38 +2,15 @@
 
 #include "Base/Widget.h"
 #include "Basic/Placeholder.h"
-#include "Checkbox/CheckboxBlueprint.h"
-#include "Panel/PanelBlueprint.h"
-#include "../Resource/ResourceBase.h"
 #include "Panel.h"
 #include "RadioButton.h"
 #include "../Utils/OrderedCollection.h"
 #include "TabPanelPanel.h"
+#include "TabPanelBlueprint.h"
+#include "WidgetRegistry.h"
 
 namespace gge { namespace widgets {
 	
-	namespace tabpanel {
-		class Blueprint;
-
-		Blueprint *Load(resource::File& File, std::istream &Data, int Size);
-
-		class Blueprint : public widgets::Blueprint, public resource::ResourceBase {
-			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
-		public:
-
-			widgets::Placeholder Placeholder;
-			checkbox::Blueprint *Radio;
-			widgets::panel::Blueprint *Panel;
-
-			void Prepare(GGEMain &main, resource::File &file);
-
-			resource::GID::Type getGID() const { return GID::Tabpanel; }
-
-		protected:
-			utils::SGuid panel, radio, placeholder;
-		};
-	}
-
 	class Tabpanel : public WidgetBase, utils::OrderedCollection<tabpanel::Panel> {
 	public:
 
@@ -43,15 +20,19 @@ namespace gge { namespace widgets {
 		typedef OrderedCollection<tabpanel::Panel>::SearchIterator SearchIterator;
 		typedef OrderedCollection<tabpanel::Panel>::ConstSearchIterator ConstSearchIterator;
 
-		Tabpanel() : bp(NULL), controls(*this), active(NULL) {
-
+		Tabpanel() : bp(NULL), controls(*this), active(NULL), blueprintmodified(false) {
+			if(WR.Panels.Tabpanel)
+				setblueprint(*WR.Panels.Tabpanel);
 		}
 
 
 
 		
 		using WidgetBase::SetBlueprint;
-		virtual void SetBlueprint(const Blueprint &bp);
+		virtual void SetBlueprint(const Blueprint &bp) {
+			blueprintmodified=true;
+			setblueprint(bp);
+		}
 
 		virtual void Draw() {
 			for(auto it=First();it.isValid();it.Next()) {
@@ -66,6 +47,13 @@ namespace gge { namespace widgets {
 		virtual void Enable();
 
 		virtual void Resize(utils::Size Size);
+
+		virtual utils::Size GetSize() const {
+			if(!bp)
+				return size;
+
+			return utils::Size(size.Width ? size.Width : bp->DefaultSize.Width, size.Height ? size.Height : bp->DefaultSize.Height);
+		}
 
 		virtual void draw() { }
 
@@ -214,6 +202,14 @@ namespace gge { namespace widgets {
 		const tabpanel::Blueprint *bp;
 
 		tabpanel::Panel *active;
+		bool blueprintmodified;
+
+		void setblueprint(const widgets::Blueprint & bp);
+
+		virtual void wr_change() {
+			if(WR.Panels.Tabpanel && !blueprintmodified)
+				setblueprint(*WR.Panels.Tabpanel);
+		}
 
 		virtual bool detach(ContainerBase *container) {
 			controls.BaseLayer.parent=NULL;
@@ -225,6 +221,9 @@ namespace gge { namespace widgets {
 
 		virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
 			WidgetBase::located(container, w, Order);
+
+			if(BaseLayer)
+				BaseLayer->Resize(controls.GetSize());
 
 			if(container)
 				controls.AttachTo(BaseLayer, &container->CreateExtenderLayer());

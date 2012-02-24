@@ -25,7 +25,8 @@ namespace gge { namespace widgets {
 				move_mdown(false), move_ongoing(false), padding(5),
 				move_pointer(PointerCollection::NullToken), scroll(0,0),
 				vscroll(true), scrollmargins(0), controlmargins(0),
-				scrollingborder(NULL), innerborder(NULL)
+				scrollingborder(NULL), innerborder(NULL), showtitle(false),
+				blueprintmodified(false)
 			{
 				innerlayer.Add(scrollinglayer);
 				scrollinglayer.Add(background, 1);
@@ -47,6 +48,8 @@ namespace gge { namespace widgets {
 				title.SetContainer(controls);
 				title.Autosize=AutosizeModes::None;
 				title.TextWrap=false;
+
+				WR.LoadedEvent.Register(this, &Base::wr_loaded);
 			}
 
 			virtual bool IsVisible() const {
@@ -141,6 +144,8 @@ namespace gge { namespace widgets {
 				controls.Resize(utils::Size(W,H));
 				dialogcontrols.Resize(utils::Size(W,H));
 				WidgetBase::Resize(utils::Size(W,H));
+
+				adjustcontrols();
 			}
 
 			virtual void Draw() {
@@ -148,9 +153,6 @@ namespace gge { namespace widgets {
 				WidgetBase::Draw();
 			}
 
-			virtual utils::Size GetSize() {
-				return WidgetBase::GetSize();
-			}
 
 			virtual utils::Size GetUsableSize() {
 				return innerlayer.BoundingBox.GetSize();
@@ -198,43 +200,8 @@ namespace gge { namespace widgets {
 			using WidgetBase::SetBlueprint;
 
 			virtual void SetBlueprint(const widgets::Blueprint &bp) {
-				this->bp=static_cast<const Blueprint*>(&bp);
-				for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
-					if(i->second)
-						i->second->DeleteAnimation();
-
-				BorderCache.clear();
-
-				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
-					if(i->second)
-						i->second->DeleteAnimation();
-
-				ImageCache.clear();
-
-				if(WidgetBase::size.Width==0)
-					SetWidth(this->bp->DefaultSize.Width);
-				if(WidgetBase::size.Height==0)
-					SetHeight(this->bp->DefaultSize.Height);
-
-				for(auto i=titlebuttons.begin();i!=titlebuttons.end();++i)
-					if(dynamic_cast<Button*>(&*i))
-						i->SetBlueprint(this->bp->TitleButton);
-
-				for(auto i=dialogbuttons.begin();i!=dialogbuttons.end();++i)
-					if(dynamic_cast<Button*>(&*i))
-						i->SetBlueprint(this->bp->DialogButton);
-
-				if(this->bp)
-					if(this->bp->Scroller)
-						vscroll.bar.SetBlueprint(*this->bp->Scroller);
-
-				if(this->bp) {
-					this->pointer=bp.Pointer;
-					title.SetBlueprint(this->bp->TitleLabel);
-				}
-
-				adjustcontrols();
-				Draw();
+				blueprintmodified=true;
+				setblueprint(bp);
 			}
 
 			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);
@@ -268,7 +235,16 @@ namespace gge { namespace widgets {
 
 			virtual utils::Point AbsoluteLocation();
 
+			virtual utils::Size GetSize() {
+				if(!bp)
+					return WidgetBase::size;
+
+				return utils::Size(WidgetBase::size.Width ? WidgetBase::size.Width : bp->DefaultSize.Width, WidgetBase::size.Height ? WidgetBase::size.Height : bp->DefaultSize.Height);
+			}
+
 		protected:
+			virtual void setblueprint(const widgets::Blueprint &bp);
+
 			void adjustlayers();
 
 			void adjustscrolls();
@@ -308,7 +284,6 @@ namespace gge { namespace widgets {
 				innerlayer.parent=NULL;
 				controls.BaseLayer.parent=NULL;
 				dialogcontrols.BaseLayer.parent=NULL;
-				overlayer.parent=NULL;
 				overlayer.parent=NULL;
 
 				return true;
@@ -552,6 +527,9 @@ namespace gge { namespace widgets {
 			utils::OrderedCollection<WidgetBase> dialogbuttons;
 
 			StatefulLabel title;
+
+			virtual void wr_loaded() {}
+			bool blueprintmodified;
 
 		private:
 			bool allowmove;

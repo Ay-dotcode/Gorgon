@@ -18,6 +18,9 @@ namespace gge { namespace widgets {
 		{ }
 
 		virtual void Resize(utils::Size Size) {
+			ContainerBase::Resize(Size);
+			
+			
 			BaseLayer.Resize(Size);
 		}
 

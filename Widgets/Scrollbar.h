@@ -31,6 +31,9 @@ namespace gge { namespace widgets {
 			Base::setactive();
 
 			IScroller::changeevent.DoubleLink(changeevent);
+
+			if(WR.Scrollbar)
+				setblueprint(*WR.Scrollbar);
 		}
 
 		virtual WidgetBase *GetWidget() {
@@ -114,6 +117,11 @@ namespace gge { namespace widgets {
 			return Base::getcangetfocus();
 		}
 
+
+		virtual void wr_loaded() {
+			if(WR.Scrollbar && !blueprintmodified)
+				setblueprint(*WR.Scrollbar);
+		}
 
 
 		virtual void value_changed() {

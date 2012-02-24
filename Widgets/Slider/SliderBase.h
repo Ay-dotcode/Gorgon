@@ -71,7 +71,8 @@ namespace gge { namespace widgets {
 				rule_region(0,0,0,0), ticks_region(0,0,0,0), numbers_region(0,0,0,0), bp(NULL), rule_over(false),
 				smoothvalue(floattype(value)), symbol_mdown(false), symbol_mover(false), value_over(false), golarge(false),
 				upbutton(NULL), downbutton(NULL), key_repeat_timeout(200), goingup(false), goingdown(false), 
-				indst_value(minimum),indst_smoothvalue(floattype(minimum)), cangetfocus(true)
+				indst_value(minimum),indst_smoothvalue(floattype(minimum)), cangetfocus(true),
+				blueprintmodified(false)
 			{
 				if(this->steps==0)
 					this->steps=1;
@@ -94,11 +95,18 @@ namespace gge { namespace widgets {
 				innerlayer.EnableClipping=true;
 
 				smooth.targetvalue=value;
+
+				WR.LoadedEvent.Register(this, &Base::wr_loaded);
 			}
 
 			using WidgetBase::SetBlueprint;
 
 			virtual void SetBlueprint(const widgets::Blueprint &bp)  {
+				blueprintmodified=true;
+				setblueprint(bp);
+			}
+
+			virtual void setblueprint(const widgets::Blueprint &bp)  {
 				this->bp=static_cast<const Blueprint*>(&bp);
 				if(WidgetBase::size.Width==0)
 					Resize(this->bp->DefaultSize);
@@ -329,6 +337,14 @@ namespace gge { namespace widgets {
 					}
 				}
 			}
+
+
+			bool blueprintmodified;
+
+			virtual void wr_loaded() {
+
+			}
+
 
 			class numberformat {
 			public:
@@ -1571,6 +1587,12 @@ namespace gge { namespace widgets {
 			prepare();
 
 			utils::Size size=WidgetBase::size;
+
+			if(size.Width==0)
+				size.Width=bp->DefaultSize.Width;
+			if(size.Height==0)
+				size.Height=bp->DefaultSize.Height;
+
 			if(autosize!=AutosizeModes::None) {
 				if(ishorizontal()) {
 					if(rule && display.rule) {
@@ -1904,7 +1926,7 @@ namespace gge { namespace widgets {
 				return;
 
 
-			prepare();
+			//prepare();
 
 			BaseLayer->BoundingBox.SetSize(GetSize());
 			Bounds outer=Bounds(Point(0,0),BaseLayer->BoundingBox.GetSize());

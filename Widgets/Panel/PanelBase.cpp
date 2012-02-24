@@ -21,6 +21,7 @@ namespace gge { namespace widgets {
 
 
 			BaseLayer->Clear();
+			innerlayer.Clear();
 			overlayer.Clear();
 
 
@@ -194,11 +195,18 @@ namespace gge { namespace widgets {
 		}
 
 		void Base::adjustlayers() {
+			if(!BaseLayer)
+				return;
+
+			if(!bp)
+				return;
+
+			BaseLayer->Resize(WidgetBase::size.Width ? WidgetBase::size.Width : bp->DefaultSize.Width, 
+				WidgetBase::size.Height ? WidgetBase::size.Height : bp->DefaultSize.Height);
+			controls.Resize(BaseLayer->GetSize());
 
 			prepare();
 
-			if(!BaseLayer)
-				return;
 
 			Bounds outer=BaseLayer->BoundingBox;
 			Bounds inner=Bounds(0,0,outer.Width(), outer.Height());
@@ -446,6 +454,13 @@ namespace gge { namespace widgets {
 			controlmargins.Bottom=0;
 			int tbuttonw=0, tbuttonx=0;
 
+			utils::Size size;
+			if(!bp)
+				size=WidgetBase::size;
+			else
+				size=utils::Size(WidgetBase::size.Width ? WidgetBase::size.Width : bp->DefaultSize.Width,
+					WidgetBase::size.Height ? WidgetBase::size.Height : bp->DefaultSize.Height)	;
+
 			prepare();
 
 			Margins bordermargins(0);
@@ -483,7 +498,7 @@ namespace gge { namespace widgets {
 					tbuttonw=x;
 				}
 				else {
-					int x=WidgetBase::size.Width-margins.Right;
+					int x=size.Width-margins.Right;
 					for(auto i=titlebuttons.Last();i.isValid();i.Previous()) {
 						if(i->IsVisible()) {
 							int y=Alignment::CalculateLocation(align, Bounds(0,margins.Top, 0,height+margins.TotalY()), Size(0,i->GetHeight())).y;
@@ -493,7 +508,7 @@ namespace gge { namespace widgets {
 						}
 					}
 
-					tbuttonw=WidgetBase::size.Width-x;
+					tbuttonw=size.Width-x;
 				}
 
 				controlmargins.Top=max(height+margins.TotalY()-bordermargins.Top,0);
@@ -532,7 +547,7 @@ namespace gge { namespace widgets {
 					}
 				}
 				else {
-					int x=WidgetBase::size.Width-margins.Right;
+					int x=size.Width-margins.Right;
 					int cw=0;
 					for(auto i=dialogbuttons.Last();i.isValid();i.Previous()) {
 						if(i->IsVisible()) {
@@ -541,7 +556,7 @@ namespace gge { namespace widgets {
 							if(cw+i->GetWidth()>controls	.BaseLayer.BoundingBox.Width()-margins.TotalX() && cw>0) {
 								ymod+=height;
 								cw=0;
-								x=WidgetBase::size.Width-margins.Right;
+								x=size.Width-margins.Right;
 							}
 
 							x-=i->GetWidth();
@@ -556,12 +571,48 @@ namespace gge { namespace widgets {
 
 			if(showtitle) {
 				controlmargins.Top=max(controlmargins.Top,title.GetHeight()-bordermargins.Top);
-				title.SetWidth(WidgetBase::size.Width-tbuttonw);
+				title.SetWidth(size.Width-tbuttonw);
 				title.SetX(tbuttonx);
 			}
 
 
 			adjustscrolls();
+		}
+
+		void Base::setblueprint(const widgets::Blueprint &bp) {
+			this->bp=static_cast<const Blueprint*>(&bp);
+			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			BorderCache.clear();
+
+			for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			ImageCache.clear();
+
+			for(auto i=titlebuttons.begin();i!=titlebuttons.end();++i)
+				if(dynamic_cast<Button*>(&*i))
+					i->SetBlueprint(this->bp->TitleButton);
+
+			for(auto i=dialogbuttons.begin();i!=dialogbuttons.end();++i)
+				if(dynamic_cast<Button*>(&*i))
+					i->SetBlueprint(this->bp->DialogButton);
+
+			if(this->bp)
+				if(this->bp->Scroller)
+					vscroll.bar.SetBlueprint(*this->bp->Scroller);
+
+			if(this->bp) {
+				this->pointer=bp.Pointer;
+				title.SetBlueprint(this->bp->TitleLabel);
+			}
+
+			unprepared=true;
+			adjustcontrols();
+			Draw();
 		}
 
 	}

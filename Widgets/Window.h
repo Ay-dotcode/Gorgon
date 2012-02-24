@@ -1,9 +1,9 @@
 #pragma once
 
+#include "WidgetRegistry.h"
 #include "Panel/PanelBase.h"
 #include "Button.h"
 #include "Main.h"
-#include "WidgetRegistry.h"
 
 namespace gge { namespace widgets {
 
@@ -38,18 +38,13 @@ namespace gge { namespace widgets {
 
 			Title=" ";
 			SetContainer(TopLevel);
+
+			if(WR.Window)
+				setblueprint(*WR.Window);
 		}
 
 		~Window() {
 			dynamic_cast<animation::AnimationBase*>(closebtn.Icon.GetPtr())->DeleteAnimation();
-		}
-
-		using WidgetBase::SetBlueprint;
-
-		virtual void SetBlueprint(const widgets::Blueprint &bp) {
-			Base::SetBlueprint(bp);
-			closebtn.Icon=WR.Icons("window-close");
-			rollbtn.Icon=WR.Icons("window-roll");
 		}
 
 		void Close() {
@@ -132,6 +127,12 @@ namespace gge { namespace widgets {
 		bool rolled;
 		int prevh;
 
+		virtual void setblueprint(const widgets::Blueprint &bp) {
+			Base::setblueprint(bp);
+			closebtn.Icon=WR.Icons("window-close");
+			rollbtn.Icon=WR.Icons("window-roll");
+		}
+
 		void gotfocus() {
 			WidgetBase::ToTop();
 			FocusOrderToTop();
@@ -176,6 +177,10 @@ namespace gge { namespace widgets {
 		}
 		bool getRollButton() const {
 			return rollbtn.IsVisible();
+		}
+		void wr_loaded() {
+			if(!blueprintmodified && WR.Window)
+				setblueprint(*WR.Window);
 		}
 
 

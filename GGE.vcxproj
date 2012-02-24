@@ -334,6 +334,7 @@
     <ClInclude Include="Widgets\Spinner.h" />
     <ClInclude Include="Widgets\StatefulLabel.h" />
     <ClInclude Include="Widgets\Tabpanel.h" />
+    <ClInclude Include="Widgets\TabpanelBlueprint.h" />
     <ClInclude Include="Widgets\TabPanelPanel.h" />
     <ClInclude Include="Widgets\Textbox.h" />
     <ClInclude Include="Widgets\Textbox\TextboxBase.h" />
@@ -705,7 +706,6 @@
     <ClCompile Include="Widgets\Dialogs\Message.cpp" />
     <ClCompile Include="Widgets\Dialogs\Query.cpp" />
     <ClCompile Include="Widgets\Dialogs\TextInput.cpp" />
-    <ClCompile Include="Widgets\Listbox\ListboxBase.cpp" />
     <ClCompile Include="Widgets\Listbox\ListboxBlueprint.cpp" />
     <ClCompile Include="Widgets\Main.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)\WidgetMain.obj</ObjectFileName>

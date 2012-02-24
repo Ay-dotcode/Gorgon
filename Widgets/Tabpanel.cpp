@@ -60,22 +60,6 @@ namespace gge { namespace widgets {
 
 
 
-	void Tabpanel::SetBlueprint(const widgets::Blueprint &bp) {
-		this->bp=static_cast<const tabpanel::Blueprint*>(&bp);
-		if(this->bp) {
-			for(auto it=First();it.isValid();it.Next()) {
-				it->SetBlueprint(this->bp->Panel);
-			}
-
-			for(auto it=controls.Widgets.First();it.isValid();it.Next()) {
-				if(dynamic_cast<RadioButton<tabpanel::Panel*> *>(it.CurrentPtr()))
-					dynamic_cast<RadioButton<tabpanel::Panel*> &>(*it).SetBlueprint(this->bp->Radio);
-			}
-		}
-
-		reorganize();
-	}
-
 	bool Tabpanel::Focus() {
 		WidgetBase::Focus();
 
@@ -101,7 +85,13 @@ namespace gge { namespace widgets {
 
 	void Tabpanel::Resize(utils::Size Size) {
 		WidgetBase::Resize(Size);
+		if(Size.Width==0 && bp)
+			Size.Width=bp->DefaultSize.Width;
+		if(Size.Height==0 && bp)
+			Size.Height=bp->DefaultSize.Height;
 
+		if(BaseLayer)
+			BaseLayer->Resize(Size);
 		controls.Resize(Size);
 		reorganize();
 	}
@@ -241,6 +231,22 @@ namespace gge { namespace widgets {
 		controls.RemoveWidget(item);
 		reorganize();
 		OrderedCollection::Remove(item);
+	}
+
+	void Tabpanel::setblueprint(const widgets::Blueprint & bp) {
+		this->bp=static_cast<const tabpanel::Blueprint*>(&bp);
+		if(this->bp) {
+			for(auto it=First();it.isValid();it.Next()) {
+				it->SetBlueprint(this->bp->Panel);
+			}
+
+			for(auto it=controls.Widgets.First();it.isValid();it.Next()) {
+				if(dynamic_cast<RadioButton<tabpanel::Panel*> *>(it.CurrentPtr()))
+					dynamic_cast<RadioButton<tabpanel::Panel*> &>(*it).SetBlueprint(this->bp->Radio);
+			}
+		}
+
+		Resize(size);
 	}
 
 

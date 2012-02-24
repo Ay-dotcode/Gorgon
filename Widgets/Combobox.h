@@ -18,6 +18,8 @@ namespace gge { namespace widgets {
 
 
 		Combobox() {
+			if(WR.Combobox)
+				setblueprint(*WR.Combobox);
 		}
 
 		ListItem &Add(const T_ &value=T_()) {
@@ -237,6 +239,11 @@ namespace gge { namespace widgets {
 		void togglenotify(IListItem<T_, CS_> *li, bool raise) {
 			ListItem* item=dynamic_cast<ListItem*>(li);
 			if(!item) return;
+		}
+
+		virtual void wr_loaded() {
+			if(WR.Combobox && !blueprintmodified)
+				setblueprint(*WR.Combobox);
 		}
 	};
 

@@ -32,6 +32,7 @@ namespace gge { namespace widgets { namespace dialog {
 
 	void TextInput::resize() {
 		if(GetUsableWidth()>0 && autosize) {
+			SetHeight(Main.BoundingBox.Height());
 			SetHeight(message.GetHeight()+(*Padding).Bottom+input.GetHeight()+GetHeight()-GetUsableHeight()+(*Padding).Bottom);
 			input.SetY(message.GetHeight()+(*Padding).Bottom);
 

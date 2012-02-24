@@ -14,6 +14,9 @@ namespace gge { namespace widgets {
 			Base::setsmoothingmode(false, true, false, true, 100);
 			Base::setmarkers(false, false, false);
 			setpassive();
+
+			if(WR.Progressbar)
+				setblueprint(*WR.Progressbar);
 		}
 
 		virtual WidgetBase *GetWidget() {
@@ -56,6 +59,11 @@ namespace gge { namespace widgets {
 		}
 		void setAnimationDuration(const int &value) {
 			Base::setsmoothingspeed(100000.f/value);
+		}
+
+		virtual void wr_loaded() {
+			if(WR.Progressbar && !blueprintmodified)
+				setblueprint(*WR.Progressbar);
 		}
 
 	};

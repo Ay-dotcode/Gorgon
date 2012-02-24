@@ -14,10 +14,14 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Button, Autosize),
 			INIT_PROPERTY(Button, TextWrap),
 			INIT_PROPERTY(Button, Accesskey),
+			INIT_PROPERTY(Button, AllowFocus),
 			clickevent("ClickEvent", this)
 		{
 			Text=text;
 			clickevent.DoubleLink(IButton::clickevent);
+
+			if(WR.Button)
+				setblueprint(*WR.Button);
 		}
 
 		template<class T_>
@@ -25,12 +29,16 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Button, Autosize),
 			INIT_PROPERTY(Button, TextWrap),
 			INIT_PROPERTY(Button, Accesskey),
+			INIT_PROPERTY(Button, AllowFocus),
 			clickevent("ClickEvent", this)
 		{
 			Text=text;
 			clickevent.DoubleLink(IButton::clickevent);
 
 			clickevent.Register(fn);
+
+			if(WR.Button)
+				setblueprint(*WR.Button);
 		}
 
 		Button &operator =(const std::string &s) {
@@ -39,6 +47,12 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
+		virtual bool Focus() {
+			if(!allowfocus)
+				return false;
+
+			return Base::Focus();
+		}
 
 		void RemoveAccesskey() {
 			Accesskey=0;
@@ -138,6 +152,7 @@ namespace gge { namespace widgets {
 		utils::Property<Button, AutosizeModes::Type> Autosize;
 		utils::NumericProperty<Button, input::keyboard::Key> Accesskey;
 		utils::BooleanProperty<Button> TextWrap;
+		utils::BooleanProperty<Button> AllowFocus;
 
 		utils::EventChain<Button> &ClickEvent() {
 			return clickevent;
@@ -211,6 +226,23 @@ namespace gge { namespace widgets {
 		virtual void setText(const std::string &text)  {
 			Base::settext(text);
 		}
+
+		void setAllowFocus(const bool &value) {
+			allowfocus=value;
+
+			if(IsFocused() && !value)
+				RemoveFocus();
+		}
+		bool getAllowFocus() const {
+			return allowfocus;
+		}
+
+		virtual void wr_loaded() {
+			if(!blueprintmodified && WR.Button)
+				setblueprint(*WR.Button);
+		}
+
+		bool allowfocus;
 	};
 
 

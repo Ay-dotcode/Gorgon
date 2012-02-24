@@ -34,6 +34,25 @@ using namespace gge::input::system;
 #		define WM_MOUSEHWHEEL					0x020E
 #	endif
 
+extern "C" {
+	__declspec(dllimport) unsigned long __stdcall timeGetTime(void);
+}
+
+	HINSTANCE Instance;
+
+	extern int Application(std::vector<std::string> &arguments);
+
+	int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+		Instance=hInstance;
+
+		std::vector<std::string> arguments;
+
+		for(int i=0;i<__argc;i++)
+			arguments.push_back(__argv[i]);
+
+		return Application(arguments);
+	}
+
 	namespace gge { namespace os {
 		bool quiting=false;
 
@@ -49,10 +68,10 @@ using namespace gge::input::system;
 		void Initialize() {
 			system::pointerdisplayed=true;
 		}
-		void gge::os::Sleep(int ms) {
+		void Sleep(int ms) {
 			::Sleep(ms);
 		}
-
+		unsigned int GetTime() { return timeGetTime(); }
 
 		namespace system {
 			CursorHandle defaultcursor;
@@ -337,7 +356,7 @@ using namespace gge::input::system;
 				return 0;
 			}
 
-			WindowHandle CreateWindow(string Name, string Title, os::IconHandle Icon, os::InstanceHandle Instance, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
+			WindowHandle CreateWindow(string Name, string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
 				WNDCLASSEX windclass;
 
 				HWND ret;
@@ -348,7 +367,7 @@ using namespace gge::input::system;
 				windclass.cbWndExtra=0;
 				windclass.hbrBackground=(HBRUSH)16;
 				windclass.hCursor=LoadCursor(NULL, NULL);
-				windclass.hInstance=(HINSTANCE)Instance;
+				windclass.hInstance=Instance;
 				windclass.lpfnWndProc=WndProc;
 				windclass.lpszClassName=Name.c_str();
 				windclass.lpszMenuName=NULL;

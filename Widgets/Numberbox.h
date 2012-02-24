@@ -101,6 +101,9 @@ namespace gge { namespace widgets {
 			setupvscroll(false, false, false);
 			
 			changeevent.DoubleLink(INumberbox<T_>::changeevent);
+
+			if(WR.Textboxes.Numberbox)
+				setblueprint(*WR.Textboxes.Numberbox);
 		}
 
 		Numberbox &operator =(const T_ &s) {
@@ -214,6 +217,11 @@ namespace gge { namespace widgets {
 		}
 		std::string getSuffix() const {
 			return getsuffix();
+		}
+
+		virtual void wr_loaded() {
+			if(WR.Textboxes.Numberbox && !blueprintmodified)
+				setblueprint(*WR.Textboxes.Numberbox);
 		}
 
 		T_ value;
