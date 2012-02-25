@@ -288,8 +288,8 @@ namespace gge { namespace graphics {
 				glPixelStorei(GL_PACK_ALIGNMENT, 4);
 			}
 
-			glTexImage2D(GL_TEXTURE_2D,0,getBPP(mode),cx,cy,0,colormode,GL_UNSIGNED_BYTE,NULL);
-			glTexSubImage2D(GL_TEXTURE_2D,0,0,0,cx,cy,colormode,GL_UNSIGNED_BYTE,data);
+			glTexImage2D(GL_TEXTURE_2D,0,getBPP(mode),cx,cy,0,colormode,GL_UNSIGNED_BYTE,data);
+			//glTexSubImage2D(GL_TEXTURE_2D,0,0,0,cx,cy,colormode,GL_UNSIGNED_BYTE,data);
 		}
 		GLTexture GenerateTexture(Byte *data,int cx,int cy,ColorMode::Type mode) {
 
@@ -303,6 +303,11 @@ namespace gge { namespace graphics {
 			SetTexture(data,cx,cy,mode);
 
 			return ret;
+		}
+		void UpdateTexture(GLTexture texture, Byte *data,ColorMode::Type mode) {
+			glBindTexture(GL_TEXTURE_2D,texture.ID);
+
+			SetTexture(data,texture.W,texture.H,mode);
 		}
 
 		void DestroyTexture(GLTexture *texture) {

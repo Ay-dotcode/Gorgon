@@ -41,8 +41,7 @@ namespace gge { namespace graphics {
 		if(frame) {
 			unsigned char* Data = frame->getBuffer();
 			if(!mAudioOnly) {
-				//!Fix me
-				//graphics::system::UpdateTexture(Data, ColorMode::RGB, Texture);
+				graphics::system::UpdateTexture(Texture, Data, ColorMode::RGB);
 			}
 
 			mVideoClip->popFrame();

@@ -11,6 +11,7 @@ class OpenAL_AudioInterfaceFactory;
 namespace gge { namespace graphics {
 	class VideoTexture;
 
+	//!Is this a real class? or c# habit?
 	class VideoFactory {
 	public:
 		VideoFactory();
@@ -19,7 +20,7 @@ namespace gge { namespace graphics {
 
 		//void drawto(ImageTarget2D& Target, const SizeController2D &controller, int X, int Y, int W, int H);
 
-		virtual VideoTexture* OpenFile(std::string filename, bool audioOnly = false, ColorMode::Type colorMode = ColorMode::RGB, bool autoRestart = false, bool cacheInMemory = true);
+		virtual VideoTexture &OpenFile(std::string filename, bool audioOnly = false, ColorMode::Type colorMode = ColorMode::RGB, bool autoRestart = false, bool cacheInMemory = true);
 
 		TheoraVideoManager &VideoManager;
 		OpenAL_AudioInterfaceFactory &OpenALInterfaceFactory;

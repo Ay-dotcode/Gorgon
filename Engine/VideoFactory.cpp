@@ -6,6 +6,7 @@
 #include "..\External\TheoraPlayback\TheoraDataSource.h"
 #include "..\External\TheoraPlayback\OpenAL_AudioInterface.h"
 #include "..\External\TheoraPlayback\TheoraVideoManager.h"
+#include <stdexcept>
 
 // Eser: autoRestart param should be somewhere else
 // maybe we should consider making it a class property.
@@ -25,7 +26,7 @@ namespace gge { namespace graphics {
 		}
 	}
 
-	VideoTexture* VideoFactory::OpenFile(std::string filename, bool audioOnly, ColorMode::Type colorMode, bool autoRestart, bool cacheInMemory) {
+	VideoTexture &VideoFactory::OpenFile(std::string filename, bool audioOnly, ColorMode::Type colorMode, bool autoRestart, bool cacheInMemory) {
 		// Eser: RGB mode is hardcoded. needs to be defined as a property instead.
 		TheoraVideoClip *videoClip;
 
@@ -38,14 +39,14 @@ namespace gge { namespace graphics {
 		}
 
 		if(!videoClip) {
-			return NULL;
+			throw std::runtime_error("Cannot open video");
 		}
 
 		if(autoRestart) {
 			// videoClip->setAutoRestart(1);
 		}
 
-		return new VideoTexture(*this, videoClip);
+		return *new VideoTexture(*this, videoClip);
 	}
 
 	VideoFactory::VideoFactory() : VideoManager(*(new TheoraVideoManager(3))), OpenALInterfaceFactory(*(new OpenAL_AudioInterfaceFactory()))
