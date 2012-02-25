@@ -103,33 +103,6 @@
     <Filter Include="Engine\Sources">
       <UniqueIdentifier>{a79d9978-75c7-44b6-9b86-00af6bb356aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Externals">
-      <UniqueIdentifier>{e80ab4a5-fbc4-4876-9057-85c226a22a31}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Externals\JPEG">
-      <UniqueIdentifier>{02871436-a81a-4af2-80a1-f9dac4abc1aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Externals\JPEG\Source">
-      <UniqueIdentifier>{4b1dcff6-d66f-48d8-b984-1aa9ac3e4c53}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Externals\PNG">
-      <UniqueIdentifier>{43152b33-3fd1-41fc-94f5-ae9bae4d1dbd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Externals\DirEnt">
-      <UniqueIdentifier>{1ecd49c7-f587-4270-92d1-466fe4e1e282}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Externals\pThread">
-      <UniqueIdentifier>{616b0c4c-2126-416b-a2d3-90aa8b9da7be}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Externals\XML">
-      <UniqueIdentifier>{535f65bd-81f0-4c7a-85ae-fbb3c3ef5231}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Externals\LZMA">
-      <UniqueIdentifier>{7512c583-8b00-4b14-bede-54676047bff1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Externals\OpenAL">
-      <UniqueIdentifier>{f783e39a-e2c0-4e56-bc6f-0d90f1374686}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource">
       <UniqueIdentifier>{b85f20ae-fb97-4cbf-985b-f832a81c357b}</UniqueIdentifier>
     </Filter>
@@ -142,20 +115,50 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{8c654264-4743-46ce-89f2-6935f9e74276}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Externals\PNG\Sources">
+    <Filter Include="External">
+      <UniqueIdentifier>{e80ab4a5-fbc4-4876-9057-85c226a22a31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\JPEG">
+      <UniqueIdentifier>{02871436-a81a-4af2-80a1-f9dac4abc1aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\JPEG\Source">
+      <UniqueIdentifier>{4b1dcff6-d66f-48d8-b984-1aa9ac3e4c53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\PNG">
+      <UniqueIdentifier>{43152b33-3fd1-41fc-94f5-ae9bae4d1dbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\PNG\Sources">
       <UniqueIdentifier>{57b021ed-c475-4d09-987e-f335526eee62}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Externals\OGG">
+    <Filter Include="External\DirEnt">
+      <UniqueIdentifier>{1ecd49c7-f587-4270-92d1-466fe4e1e282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\pThread">
+      <UniqueIdentifier>{616b0c4c-2126-416b-a2d3-90aa8b9da7be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\XML">
+      <UniqueIdentifier>{535f65bd-81f0-4c7a-85ae-fbb3c3ef5231}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\LZMA">
+      <UniqueIdentifier>{7512c583-8b00-4b14-bede-54676047bff1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\OpenAL">
+      <UniqueIdentifier>{f783e39a-e2c0-4e56-bc6f-0d90f1374686}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\OGG">
       <UniqueIdentifier>{a573ddff-9197-4895-8eea-8602bcfb98f5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Externals\Theora">
+    <Filter Include="External\Theora">
       <UniqueIdentifier>{4fe7051e-dc4d-466a-b8f1-44a2d6db9441}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Externals\Vorbis">
+    <Filter Include="External\Vorbis">
       <UniqueIdentifier>{5c458160-c201-49c4-9b2a-4be8ed692079}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Externals\TheoraPlayback">
+    <Filter Include="External\TheoraPlayback">
       <UniqueIdentifier>{78d2a14b-2fd6-4661-a80e-6a2ac69268d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\zlib">
+      <UniqueIdentifier>{3a98aeb9-d7b4-43ad-8534-aa818094d1c2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -418,97 +421,91 @@
       <Filter>Engine\Win32</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\jconfig.h">
-      <Filter>Externals\JPEG</Filter>
+      <Filter>External\JPEG</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\jerror.h">
-      <Filter>Externals\JPEG</Filter>
+      <Filter>External\JPEG</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\jmorecfg.h">
-      <Filter>Externals\JPEG</Filter>
+      <Filter>External\JPEG</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\jpeglib.h">
-      <Filter>Externals\JPEG</Filter>
+      <Filter>External\JPEG</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\cderror.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\cdjpeg.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jchuff.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jconfig.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jdct.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jdhuff.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jerror.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jinclude.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jmemsys.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jmorecfg.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jpegint.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jpeglib.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\jversion.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\JPEG\src\transupp.h">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClInclude>
     <ClInclude Include="External\png\png.h">
-      <Filter>Externals\PNG</Filter>
+      <Filter>External\PNG</Filter>
     </ClInclude>
     <ClInclude Include="External\png\pngconf.h">
-      <Filter>Externals\PNG</Filter>
-    </ClInclude>
-    <ClInclude Include="External\png\zconf.h">
-      <Filter>Externals\PNG</Filter>
-    </ClInclude>
-    <ClInclude Include="External\png\zlib.h">
-      <Filter>Externals\PNG</Filter>
+      <Filter>External\PNG</Filter>
     </ClInclude>
     <ClInclude Include="External\dirent.h">
-      <Filter>Externals\DirEnt</Filter>
+      <Filter>External\DirEnt</Filter>
     </ClInclude>
     <ClInclude Include="External\pThread\pthread.h">
-      <Filter>Externals\pThread</Filter>
+      <Filter>External\pThread</Filter>
     </ClInclude>
     <ClInclude Include="External\pThread\sched.h">
-      <Filter>Externals\pThread</Filter>
+      <Filter>External\pThread</Filter>
     </ClInclude>
     <ClInclude Include="External\pThread\semaphore.h">
-      <Filter>Externals\pThread</Filter>
+      <Filter>External\pThread</Filter>
     </ClInclude>
     <ClInclude Include="External\XmlParser\xmlParser.h">
-      <Filter>Externals\XML</Filter>
+      <Filter>External\XML</Filter>
     </ClInclude>
     <ClInclude Include="External\LZMA\LzmaDecode.h">
-      <Filter>Externals\LZMA</Filter>
+      <Filter>External\LZMA</Filter>
     </ClInclude>
     <ClInclude Include="External\LZMA\LzmaTypes.h">
-      <Filter>Externals\LZMA</Filter>
+      <Filter>External\LZMA</Filter>
     </ClInclude>
     <ClInclude Include="External\OpenAL\al.h">
-      <Filter>Externals\OpenAL</Filter>
+      <Filter>External\OpenAL</Filter>
     </ClInclude>
     <ClInclude Include="External\OpenAL\alc.h">
-      <Filter>Externals\OpenAL</Filter>
+      <Filter>External\OpenAL</Filter>
     </ClInclude>
     <ClInclude Include="Resource\AnimationResource.h">
       <Filter>Resource</Filter>
@@ -646,256 +643,256 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="External\png\pnginfo.h">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClInclude>
     <ClInclude Include="External\png\pngpriv.h">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClInclude>
     <ClInclude Include="External\png\pngstruct.h">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClInclude>
     <ClInclude Include="External\png\pngdebug.h">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClInclude>
     <ClInclude Include="External\png\pnglibconf.h">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClInclude>
     <ClInclude Include="External\ogg\os_types.h">
-      <Filter>Externals\OGG</Filter>
+      <Filter>External\OGG</Filter>
     </ClInclude>
     <ClInclude Include="External\ogg\ogg.h">
-      <Filter>Externals\OGG</Filter>
+      <Filter>External\OGG</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\apiwrapper.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\bitpack.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\codec.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\cpu.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\dct.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\decint.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\dequant.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\encint.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\enquant.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\huffdec.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\huffenc.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\huffman.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\internal.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\mathops.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\modedec.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\ocintrin.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\quant.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\theora.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\theoradec.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\theoraenc.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\window.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\backends.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\bitrate.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\codebook.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\codec.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\codec_internal.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\envelope.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\floor_all.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\books\floor\floor_books.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\highlevel.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\lookup.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\lookup_data.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\lpc.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\lsp.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\masking.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\mdct.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\misc.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\os.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\psy.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\psych_11.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\psych_16.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\psych_44.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\psych_8.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\registry.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\books\coupled\res_books_stereo.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\books\uncoupled\res_books_uncoupled.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\residue_16.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\residue_44.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\residue_44u.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\residue_8.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\scales.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\setup_11.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\setup_16.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\setup_22.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\setup_32.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\setup_44.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\setup_44u.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\setup_8.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\modes\setup_X.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\src\smallft.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\vorbisenc.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\vorbis\vorbisfile.h">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\src\Endianess.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraDataSource.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraPlayer.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\OpenAL_AudioInterface.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraAsync.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraUtil.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraException.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraVideoClip.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraFrameQueue.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraTimer.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraExport.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraVideoFrame.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraVideoManager.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraWorkerThread.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraAudioInterface.h">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="Engine\VideoFactory.h">
       <Filter>Engine\Headers</Filter>
@@ -904,22 +901,55 @@
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\x86_vc\mmxfrag.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\x86_vc\mmxloop.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\x86_vc\x86enc.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="External\Theora\src\x86_vc\x86int.h">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClInclude>
     <ClInclude Include="Widgets\LayerWidget.h">
       <Filter>Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Widgets\TabpanelBlueprint.h">
       <Filter>Widgets\Code\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\crc32.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\deflate.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\gzguts.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\inffast.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\inffixed.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\inflate.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\inftrees.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\trees.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\zconf.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\zlib.h">
+      <Filter>External\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="External\zlib\zutil.h">
+      <Filter>External\zlib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1047,148 +1077,148 @@
       <Filter>Engine\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcapimin.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcapistd.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jccoefct.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jccolor.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcdctmgr.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jchuff.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcinit.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcmainct.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcmarker.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcmaster.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcomapi.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcparam.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcphuff.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcprepct.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcsample.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jctrans.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdapimin.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdapistd.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdatadst.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdatasrc.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdcoefct.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdcolor.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jddctmgr.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdhuff.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdinput.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdmainct.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdmarker.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdmaster.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdmerge.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdphuff.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdpostct.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdsample.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jdtrans.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jerror.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jfdctflt.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jfdctfst.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jfdctint.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jidctflt.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jidctfst.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jidctint.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jidctred.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jmemansi.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jmemmgr.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jquant1.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jquant2.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jutils.c">
-      <Filter>Externals\JPEG\Source</Filter>
+      <Filter>External\JPEG\Source</Filter>
     </ClCompile>
     <ClCompile Include="External\XmlParser\xmlParser.cpp">
-      <Filter>Externals\XML</Filter>
+      <Filter>External\XML</Filter>
     </ClCompile>
     <ClCompile Include="External\LZMA\LzmaDecode.cpp">
-      <Filter>Externals\LZMA</Filter>
+      <Filter>External\LZMA</Filter>
     </ClCompile>
     <ClCompile Include="Resource\AnimationResource.cpp">
       <Filter>Resource\Sources</Filter>
@@ -1236,244 +1266,244 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngmem.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngpread.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngread.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngrio.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngrtran.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngrutil.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngset.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngtest.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngtrans.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngwio.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngwrite.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngwtran.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngwutil.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\png.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngerror.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngget.c">
-      <Filter>Externals\PNG\Sources</Filter>
+      <Filter>External\PNG\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\ogg\src\bitwise.c">
-      <Filter>Externals\OGG</Filter>
+      <Filter>External\OGG</Filter>
     </ClCompile>
     <ClCompile Include="External\ogg\src\framing.c">
-      <Filter>Externals\OGG</Filter>
+      <Filter>External\OGG</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\analyze.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\apiwrapper.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\bitpack.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\cpu.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\decapiwrapper.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\decinfo.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\decode.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\dequant.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\encapiwrapper.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\encfrag.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\encinfo.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\encode.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\enquant.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\fdct.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\fragment.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\huffdec.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\huffenc.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\idct.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\info.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\internal.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\mathops.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\mcenc.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\x86_vc\mmxencfrag.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\quant.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\rate.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\x86\sse2fdct.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\state.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\tokenize.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\analysis.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\bitrate.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\block.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\codebook.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\envelope.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\floor0.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\floor1.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\info.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\lookup.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\lpc.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\lsp.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\mapping0.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\mdct.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\psy.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\registry.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\res0.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\sharedbook.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\smallft.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\synthesis.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\vorbisenc.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\vorbisfile.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\vorbis\src\window.c">
-      <Filter>Externals\Vorbis</Filter>
+      <Filter>External\Vorbis</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\OpenAL_AudioInterface.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraAsync.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraUtil.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraException.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraVideoClip.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraFrameQueue.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraTimer.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraVideoFrame.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraVideoManager.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraWorkerThread.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraAudioInterface.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp">
-      <Filter>Externals\TheoraPlayback</Filter>
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="Engine\VideoFactory.cpp">
       <Filter>Engine\Sources</Filter>
@@ -1482,22 +1512,67 @@
       <Filter>Engine\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\x86_vc\mmxfdct.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\x86_vc\mmxfrag.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\x86_vc\mmxidct.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\x86_vc\mmxstate.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\x86_vc\x86enc.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\Theora\src\x86_vc\x86state.c">
-      <Filter>Externals\Theora</Filter>
+      <Filter>External\Theora</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\adler32.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\compress.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\crc32.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\deflate.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\gzclose.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\gzlib.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\gzread.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\gzwrite.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\infback.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\inffast.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\inflate.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\inftrees.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\trees.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\uncompr.c">
+      <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="External\zlib\zutil.c">
+      <Filter>External\zlib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

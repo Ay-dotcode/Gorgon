@@ -33,7 +33,7 @@
 
 #define _POSIX_SOURCE 1
 
-#include "zlib.h"
+#include "../zlib/zlib.h"
 #include "png.h"
 /* Copied from pngpriv.h but only used in error messages below. */
 #ifndef PNG_ZBUF_SIZE
