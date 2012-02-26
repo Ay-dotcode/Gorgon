@@ -330,6 +330,7 @@
     <ClInclude Include="Widgets\Listbox\ListItem.h" />
     <ClInclude Include="Widgets\Main.h" />
     <ClInclude Include="Widgets\Numberbox.h" />
+    <ClInclude Include="Widgets\Organizers\LinearOrganizer.h" />
     <ClInclude Include="Widgets\Organizers\ListOrganizer.h" />
     <ClInclude Include="Widgets\Panel.h" />
     <ClInclude Include="Widgets\Panel\ControlledPanel.h" />
@@ -829,6 +830,7 @@
     <ClCompile Include="Widgets\Main.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)\WidgetMain.obj</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="Widgets\Organizers\LinearOrganizer.cpp" />
     <ClCompile Include="Widgets\Panel\PanelBase.cpp" />
     <ClCompile Include="Widgets\Panel\PanelBlueprint.cpp" />
     <ClCompile Include="Widgets\Slider\SliderBlueprint.cpp" />

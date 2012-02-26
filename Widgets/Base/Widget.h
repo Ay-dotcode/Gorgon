@@ -16,6 +16,8 @@ namespace gge { namespace widgets {
 
 	extern utils::Collection<WidgetBase> DrawQueue;
 
+	//Base class for all widgets. ALL widgets are required to have empty constructor.
+	//There is no rule about copy constructor and assignment
 	class WidgetBase {
 		friend class ContainerBase;
 		friend void Draw_Signal(IntervalObject &interval, void *data);
@@ -34,7 +36,8 @@ namespace gge { namespace widgets {
 			LostFocus("LostFocus", this),
 			waitingforredraw(false),
 			mousetoken(0),
-			targetextender(false)
+			targetextender(false),
+			BoundToContainer(false)
 		{ }
 
 
@@ -259,6 +262,10 @@ namespace gge { namespace widgets {
 		utils::EventChain<WidgetBase> GotFocus;
 		utils::EventChain<WidgetBase> LostFocus;
 		utils::EventChain<WidgetBase> BoundsChanged;
+
+		//If this variable is true, then this widget is bound to 
+		//its container and should be destroyed by it
+		bool BoundToContainer;
 
 		virtual ~WidgetBase() {
 			DrawQueue.Remove(this);

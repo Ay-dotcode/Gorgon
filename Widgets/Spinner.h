@@ -48,6 +48,10 @@ namespace gge { namespace widgets {
 		void Reposition() {
 			if(!attachedto) return;
 
+			if(attachedto->GetWidget()->GetContainer() != GetContainer())
+				SetContainer(attachedto->GetWidget()->GetContainer());
+				
+
 			Bounds target=attachedto->GetWidget()->GetBounds();
 
 			WidgetBase::Move(utils::Point(target.Right+margin,target.Top));
@@ -86,10 +90,12 @@ namespace gge { namespace widgets {
 		}
 
 		virtual bool Focus() {
-			if(attachedto)
-				return attachedto->GetWidget()->Focus();
+			if(buttonlayer.IsActive() && attachedto) {
+				attachedto->GetWidget()->Focus();
+				return true;
+			}
 
-			return Base::Focus();
+			return false;
 		}
 		
 		using WidgetBase::Move;

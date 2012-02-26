@@ -383,8 +383,11 @@ namespace gge { namespace widgets {
 		//utils::EventChain<ContainerBase, input::keyboard::Event> KeyboardEvent;
 
 
-		~ContainerBase() {
-			delete Organizer; //?
+		virtual ~ContainerBase() {
+			for(auto it=Widgets.First();it.isValid();it.Next()) {
+				if(it->BoundToContainer)
+					it.Delete();
+			}
 		}
 
 		utils::SortedCollection<WidgetBase> Widgets;

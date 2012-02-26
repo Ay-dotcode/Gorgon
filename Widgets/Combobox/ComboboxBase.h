@@ -8,6 +8,10 @@
 
 
 namespace gge { namespace widgets {
+	class ComboboxType {
+
+	};
+
 	namespace combobox {
 
 
@@ -22,7 +26,7 @@ namespace gge { namespace widgets {
 		}
 
 		template<class T_, void(*CS_)(const T_ &, std::string &)=CastFromString<T_> >
-		class Base : public WidgetBase {
+		class Base : public WidgetBase, public ComboboxType {
 		public:
 
 			Base(const T_ &value=T_()) : bp(NULL),  controls(*this), isextended(false),
@@ -102,12 +106,20 @@ namespace gge { namespace widgets {
 					listbox.SetY(b.Bottom+this->bp->ListMargins.Top);
 				else
 					listbox.SetY(b.Bottom);
+				listbox.SetWidth(0);
 				if(GetWidth()>listbox.GetWidth()) {
 					if(this->bp)
 						listbox.SetWidth(GetWidth()-this->bp	->ListMargins.TotalX());
 					else
 						listbox.SetWidth(GetWidth());
 				}
+			}
+
+			virtual void Move(utils::Point Location) {
+				WidgetBase::Move(Location);
+
+				if(controls.extenderbase)
+					controls.extenderbase->Move(Location);
 			}
 
 			virtual utils::Size GetSize() {
@@ -139,6 +151,10 @@ namespace gge { namespace widgets {
 				}
 
 				return textbox.KeyboardEvent(event, Key);
+			}
+
+			virtual bool IsExtended() {
+				return isextended;
 			}
 
 
@@ -200,8 +216,10 @@ namespace gge { namespace widgets {
 				if(BaseLayer)
 					BaseLayer->Resize(controls.GetSize());
 
-				if(container)
+				if(container) {
 					controls.AttachTo(BaseLayer, &container->CreateExtenderLayer());
+					controls.extenderbase->Move(location);
+				}
 				else
 					controls.AttachTo(NULL, NULL);
 			}
@@ -218,10 +236,6 @@ namespace gge { namespace widgets {
 					if(!dropbutton)
 						dropbutton=true;
 				}
-			}
-
-			virtual bool IsExtended() {
-				return isextended;
 			}
 
 			virtual void shrink() {
@@ -290,7 +304,7 @@ namespace gge { namespace widgets {
 			if(this->bp->Dropbutton)
 				dropbutton.SetBlueprint(*this->bp->Dropbutton);
 
-			listbox.Move(this->bp->ListMargins.Left,this->GetBounds().Bottom+this->bp->ListMargins.Top);
+			listbox.Move(location+utils::Point(this->bp->ListMargins.Left,this->GetBounds().Bottom+this->bp->ListMargins.Top));
 			if(this->bp->Listbox) {
 				listbox.Resize(this->bp->Listbox->DefaultSize);
 				if(GetWidth()>listbox.GetWidth())

@@ -110,6 +110,10 @@ namespace gge { namespace utils {
 		bool isValid() const {
 			return iterator().isvalid();
 		}
+		
+		operator bool() const {
+			return isValid();
+		}
 
 		////Compares two iterators if they point to the same item
 		bool Compare(const I_ &iterator) const {
@@ -221,10 +225,6 @@ namespace gge { namespace utils {
 
 		operator T_&() const {
 			return iterator().current();
-		}
-
-		operator T_*() const {
-			return &iterator().current();
 		}
 
 		T_ &operator *() const {

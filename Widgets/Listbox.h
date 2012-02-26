@@ -273,7 +273,7 @@ namespace gge { namespace widgets {
 
 		void clearall(ListItem *item=NULL) {
 			for(auto it=First();it.isValid();it.Next())
-				if(it!=item) callclear(*it);
+				if(it.CurrentPtr()!=item) callclear(*it);
 		}
 
 		void togglenotify(IListItem<T_, CF_> *li, bool raise) {

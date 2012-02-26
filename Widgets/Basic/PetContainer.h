@@ -155,7 +155,6 @@ namespace gge { namespace widgets {
 			return *layer;
 		}
 
-	protected:
 		LayerBase *extenderbase;
 
 	};

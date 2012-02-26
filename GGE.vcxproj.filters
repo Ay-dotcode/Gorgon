@@ -951,6 +951,9 @@
     <ClInclude Include="External\zlib\zutil.h">
       <Filter>External\zlib</Filter>
     </ClInclude>
+    <ClInclude Include="Widgets\Organizers\LinearOrganizer.h">
+      <Filter>Widgets\Organizers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -1573,6 +1576,9 @@
     </ClCompile>
     <ClCompile Include="External\zlib\zutil.c">
       <Filter>External\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Organizers\LinearOrganizer.cpp">
+      <Filter>Widgets\Code\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

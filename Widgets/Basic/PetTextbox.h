@@ -3,7 +3,7 @@
 
 #include "..\Interfaces\ITextbox.h"
 #include "..\Textbox\TextboxBase.h"
-#include "..\Utils\Property.h"
+#include "..\..\Utils\Property.h"
 
 
 namespace gge { namespace widgets {

@@ -15,6 +15,10 @@
 #include "Organizers/ListOrganizer.h"
 
 namespace gge { namespace widgets {
+	class ListboxType {
+
+	};
+
 	namespace listbox {
 
 		template<class T_>
@@ -23,7 +27,7 @@ namespace gge { namespace widgets {
 		}
 
 		template<class T_, void(*CF_)(const T_ &, std::string &)=CastToString<T_> >
-		class Base : public WidgetBase {
+		class Base : public WidgetBase, public ListboxType {
 		public:
 
 			Base() : bp(NULL),  controls(*this), autoheight(false), blueprintmodified(false)

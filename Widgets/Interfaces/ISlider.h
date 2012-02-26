@@ -11,6 +11,11 @@
 
 namespace gge { namespace widgets {
 
+	class ISliderType {
+	public:
+		virtual bool IsVertical() const = 0;
+	};
+
 	template<class T_>
 	class ISlider : public utils::NumericProperty<ISlider<T_>, T_> {
 	public:

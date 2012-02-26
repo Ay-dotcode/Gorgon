@@ -7,6 +7,7 @@
 #include "..\Basic\PetContainer.h"
 #include "..\Button.h"
 #include "..\..\Engine\Graphics.h"
+#include "..\Interfaces\ISlider.h"
 
 #ifndef LARGE_KEY_TIMEOUT_MULT
 #	define LARGE_KEY_TIMEOUT_MULT	2
@@ -60,7 +61,7 @@ namespace gge { namespace widgets {
 		//Template parameter must allow +, -, / and (float) operators, for enums T_=int should be used
 		// and enum should be mapped manually to ints
 		template<class T_, class floattype=typename floattype<T_>::Type>
-		class Base : public WidgetBase, private animation::AnimationBase {
+		class Base : public WidgetBase, public ISliderType, private animation::AnimationBase {
 		public:
 
 
@@ -319,6 +320,7 @@ namespace gge { namespace widgets {
 
 			virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key);
 
+			virtual bool IsVertical() const { return isvertical(); }
 
 
 		protected:
@@ -597,10 +599,10 @@ namespace gge { namespace widgets {
 			Blueprint::OrientationType getorientation() const {
 				return orientation;
 			}
-			bool ishorizontal() {
+			bool ishorizontal() const {
 				return (orientation==Blueprint::Top || orientation==Blueprint::Bottom || orientation==Blueprint::Horizontal);
 			}
-			bool isvertical() {
+			bool isvertical() const {
 				return (orientation==Blueprint::Left || orientation==Blueprint::Right || orientation==Blueprint::Vertical);
 			}
 
@@ -1102,6 +1104,7 @@ namespace gge { namespace widgets {
 			T_ getrulevalue(int x);
 
 			bool golarge;
+			PetContainer<Base> buttonlayer;
 
 		private:
 			std::map<T_, std::string> namedlocations;
@@ -1277,7 +1280,6 @@ namespace gge { namespace widgets {
 			graphics::Colorizable2DLayer innerlayer;
 			graphics::Colorizable2DLayer overlayer;
 			WidgetLayer symbollayer;
-			PetContainer<Base> buttonlayer;
 
 			std::map<animation::RectangularGraphic2DSequenceProvider*, animation::RectangularGraphic2DAnimation*> ImageCache;
 			std::map<BorderDataResource*, BorderData*> BorderCache;

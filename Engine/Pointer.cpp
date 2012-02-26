@@ -113,7 +113,7 @@ namespace gge {
 			return Set(BasePointer);
 		for(Collection<Pointer,10>::Iterator pointer=this->First();pointer.isValid();pointer.Next()) {
 			if(pointer->Type==Type)
-				return Set(pointer);
+				return Set(pointer.CurrentPtr());
 		}
 
 		return Set(BasePointer);

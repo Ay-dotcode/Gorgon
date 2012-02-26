@@ -27,7 +27,7 @@ namespace gge { namespace resource {
 			resource.isValid(); resource.Next()) {
 
 			if(resource->isEqual(guid))
-				return resource;
+				return resource.CurrentPtr();
 
 			ResourceBase *temp=resource->FindObject(guid);
 			if(temp)

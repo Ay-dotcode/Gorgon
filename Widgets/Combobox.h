@@ -6,7 +6,6 @@
 
 namespace gge { namespace widgets {
 
-
 	template<class T_, void(*CS_)(const T_ &, std::string &)=combobox::CastToString<T_> >
 	class Combobox : public combobox::Base<T_, CS_>, ListItemModifier<T_, CS_>, utils::OrderedCollection<ListItem<T_, CS_> > {
 	public:
