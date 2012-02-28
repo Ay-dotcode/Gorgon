@@ -1,11 +1,11 @@
 #include "FontTheme.h"
-#include "ResourceFile.h"
+#include "File.h"
 
 using namespace gge::utils;
 using namespace std;
 
 namespace gge { namespace resource {
-	ResourceBase *LoadFontTheme(File &File, std::istream &Data, int Size) {
+	Base *LoadFontTheme(File &File, std::istream &Data, int Size) {
 		FontTheme *ft=new FontTheme;
 		
 		int target=Data.tellg()+Size;
@@ -52,7 +52,7 @@ namespace gge { namespace resource {
 	}
 
 	void FontTheme::Prepare(gge::GGEMain &main, File &file) {
-		ResourceBase::Prepare(main,file);
+		Base::Prepare(main,file);
 
 		NormalFont	= dynamic_cast<FontRenderer*>(file.FindObject(guid_normal));
 		BoldFont	= dynamic_cast<FontRenderer*>(file.FindObject(guid_bold));

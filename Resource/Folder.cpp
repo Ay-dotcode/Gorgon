@@ -1,28 +1,28 @@
-#include "FolderResource.h"
-#include "ResourceFile.h"
+#include "Folder.h"
+#include "File.h"
 #include "../Utils/BufferList.h"
 
 
-#include "ResourceBase.h"
-#include "TextResource.h"
-#include "ImageResource.h"
-#include "DataResource.h"
-#include "SoundResource.h"
-#include "AnimationResource.h"
-#include "BitmapFontResource.h"
+#include "Base.h"
+#include "Text.h"
+#include "Image.h"
+#include "DataArray.h"
+#include "Sound.h"
+#include "Animation.h"
+#include "BitmapFont.h"
 
 using namespace std;
 using namespace gge::utils;
 
 namespace gge { namespace resource {
 
-	FolderResource *LoadFolderResource(File &File, istream &Data, int Size, bool LoadNames) {
+	Folder *LoadFolderResource(File &File, istream &Data, int Size, bool LoadNames) {
 		int targetpos=Data.tellg()+Size;
 		char Namebuffer[256];
 		vector<string> names;
 		vector<string>::iterator namec=names.begin();
 
-		FolderResource *fold=new FolderResource();
+		Folder *fold=new Folder();
 		fold->EntryPoint=(int)Data.tellg(); //forced to int because the system uses only 32 bits for size
 
 		while(Data.tellg()<targetpos) {
@@ -73,7 +73,7 @@ namespace gge { namespace resource {
 				EatChunk(Data, size-4);
 			}
 			else if(gid==GID::Folder) {
-				FolderResource *obj=LoadFolderResource(File, Data, size, LoadNames);
+				Folder *obj=LoadFolderResource(File, Data, size, LoadNames);
 
 				fold->Subitems.Add(obj, fold->Subitems.HighestOrder()+1);
 				if(LoadNames && namec!=names.end()) {
@@ -84,7 +84,7 @@ namespace gge { namespace resource {
 			}
 			else {
 				///*Load sub resource
-				ResourceBase *obj=File.LoadObject(Data,gid,size);
+				Base *obj=File.LoadObject(Data,gid,size);
 
 				if(obj!=NULL) {
 					fold->Subitems.Add(obj, fold->Subitems.HighestOrder()+1);
@@ -107,76 +107,76 @@ namespace gge { namespace resource {
 
 	
 		////Returns the given subitem with folder resource type. Used to avoid type casting
-	FolderResource	*FolderResource::asFolder	(int Index) { 
+	Folder	*Folder::asFolder	(int Index) { 
 #ifdef _DEBUG
 			if(Subitems[Index].getGID()!=GID::Folder) {
 				os::DisplayMessage("Folder Resource","Non folder item requested as folder!");
 				assert(0);
 			}
 #endif
-			return dynamic_cast<FolderResource*>(&Subitems[Index]); 
+			return dynamic_cast<Folder*>(&Subitems[Index]); 
 		}
-	TextResource	*FolderResource::asText		(int Index) { 
+	Text	*Folder::asText		(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index].getGID()!=GID::Text) {
 			os::DisplayMessage("Folder Resource","Non text item requested as text!");
 			assert(0);
 		}
 #endif
-		return dynamic_cast<TextResource*>(&Subitems[Index]); 
+		return dynamic_cast<Text*>(&Subitems[Index]); 
 	}
-	ImageResource	*FolderResource::asImage	(int Index) { 
+	Image	*Folder::asImage	(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index].getGID()!=GID::Image) {
 			os::DisplayMessage("Folder Resource","Non image item requested as image!");
 			assert(0);
 		}
 #endif
-		return dynamic_cast<ImageResource*>(&Subitems[Index]); 
+		return dynamic_cast<Image*>(&Subitems[Index]); 
 	}
-	DataResource	*FolderResource::asData		(int Index) { 
+	DataArray	*Folder::asData		(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index].getGID()!=GID::Data) {
 			os::DisplayMessage("Folder Resource","Non data item requested as data!");
 			assert(0);
 		}
 #endif
-		return dynamic_cast<DataResource*>(&Subitems[Index]); 
+		return dynamic_cast<DataArray*>(&Subitems[Index]); 
 	}
-	SoundResource	*FolderResource::asSound	(int Index) { 
+	Sound	*Folder::asSound	(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index].getGID()!=GID::Sound) {
 			os::DisplayMessage("Folder Resource","Non sound item requested as sound!");
 			assert(0);
 		}
 #endif
-		return dynamic_cast<SoundResource*>(&Subitems[Index]); 
+		return dynamic_cast<Sound*>(&Subitems[Index]); 
 	}
-	AnimationResource	*FolderResource::asAnimation	(int Index) { 
+	Animation	*Folder::asAnimation	(int Index) { 
 #ifdef _DEBUG
 		if(Subitems[Index].getGID()!=GID::Animation) {
 			os::DisplayMessage("Folder Resource","Non animation item requested as animation!");
 			assert(0);
 		}
 #endif
-		return dynamic_cast<AnimationResource*>(&Subitems[Index]); 
+		return dynamic_cast<Animation*>(&Subitems[Index]); 
 	}
-	BitmapFontResource	*FolderResource::asBitmapFont	(int Index) { 
+	BitmapFont	*Folder::asBitmapFont	(int Index) { 
 #ifdef _DEBUG
 			if(Subitems[Index].getGID()!=GID::Font) {
 				os::DisplayMessage("Folder Resource","Non bitmap font item requested as bitmap font!");
 				assert(0);
 			}
 #endif
-			return dynamic_cast<BitmapFontResource*>(&Subitems[Index]); 
+			return dynamic_cast<BitmapFont*>(&Subitems[Index]); 
 		}
 
-	void FolderResource::Prepare(GGEMain &main, File &file) {
-		ResourceBase::Prepare(main, file);
+	void Folder::Prepare(GGEMain &main, File &file) {
+		Base::Prepare(main, file);
 		
-		for(auto it=Subitems.First();it.isValid();it.Next()) {
+		for(auto it=Subitems.First();it.IsValid();it.Next()) {
 			if(it->name!="")
-				namedlist.insert(std::pair<std::string, ResourceBase*>(it->name,it.CurrentPtr()));
+				namedlist.insert(std::pair<std::string, Base*>(it->name,it.CurrentPtr()));
 		}
 	}
 

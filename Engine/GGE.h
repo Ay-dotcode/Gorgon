@@ -138,7 +138,7 @@ namespace gge {
 			return (t&Mask_Vertical) == Middle;
 		}
 
-		inline bool isValid(Type t) {
+		inline bool IsValid(Type t) {
 			if(t&Mask_Invalid)
 				return false;
 

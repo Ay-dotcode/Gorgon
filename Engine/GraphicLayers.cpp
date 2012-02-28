@@ -536,7 +536,7 @@ namespace gge { namespace graphics {
 		glTranslatef(BoundingBox.Left, BoundingBox.Top, 0);
 		translate+=BoundingBox.TopLeft();
 
-		if(EnableClipping) {
+		if(ClippingEnabled) {
 			psc=scissors;
 
 			glEnable(GL_SCISSOR_TEST);
@@ -625,7 +625,7 @@ namespace gge { namespace graphics {
 		}
 
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.IsValid(); i.Previous()) {
 			i->Render();
 		}
 
@@ -633,7 +633,7 @@ end:
 		glPopMatrix();
 		translate-=BoundingBox.TopLeft();
 
-		if(EnableClipping) {
+		if(ClippingEnabled) {
 			scissors=psc;
 			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height(), scissors.Width(), scissors.Height());
 		}
@@ -1287,7 +1287,7 @@ end:
 
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glColor4fv(CurrentLayerColor.vect);
-		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.IsValid(); i.Previous()) {
 			i->Render();
 		}
 

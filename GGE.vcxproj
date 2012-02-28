@@ -57,7 +57,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>
@@ -85,7 +85,7 @@
     <Lib>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenGL32.lib;Externals/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -242,23 +242,23 @@
     <ClInclude Include="External\zlib\zconf.h" />
     <ClInclude Include="External\zlib\zlib.h" />
     <ClInclude Include="External\zlib\zutil.h" />
-    <ClInclude Include="Resource\AnimationResource.h" />
-    <ClInclude Include="Resource\BitmapFontResource.h" />
-    <ClInclude Include="Resource\DataResource.h" />
+    <ClInclude Include="Resource\Animation.h" />
+    <ClInclude Include="Resource\BitmapFont.h" />
+    <ClInclude Include="Resource\DataArray.h" />
     <ClInclude Include="Resource\Definitions.h" />
-    <ClInclude Include="Resource\FolderResource.h" />
+    <ClInclude Include="Resource\Folder.h" />
     <ClInclude Include="Resource\FontTheme.h" />
     <ClInclude Include="Resource\GRE.h" />
-    <ClInclude Include="Resource\ImageResource.h" />
+    <ClInclude Include="Resource\Image.h" />
     <ClInclude Include="Resource\LinkNode.h" />
     <ClInclude Include="Resource\Main.h" />
     <ClInclude Include="Resource\NullImage.h" />
-    <ClInclude Include="Resource\PointerResource.h" />
+    <ClInclude Include="Resource\Pointer.h" />
     <ClInclude Include="Resource\ResizableObject.h" />
-    <ClInclude Include="Resource\ResourceBase.h" />
-    <ClInclude Include="Resource\ResourceFile.h" />
-    <ClInclude Include="Resource\SoundResource.h" />
-    <ClInclude Include="Resource\TextResource.h" />
+    <ClInclude Include="Resource\Base.h" />
+    <ClInclude Include="Resource\File.h" />
+    <ClInclude Include="Resource\Sound.h" />
+    <ClInclude Include="Resource\Text.h" />
     <ClInclude Include="Utils\Any.h" />
     <ClInclude Include="Utils\BasicGraphics.h" />
     <ClInclude Include="Utils\BasicMath.h" />
@@ -796,21 +796,46 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
-    <ClCompile Include="Resource\AnimationResource.cpp" />
-    <ClCompile Include="Resource\BitmapFontResource.cpp" />
-    <ClCompile Include="Resource\DataResource.cpp" />
-    <ClCompile Include="Resource\FolderResource.cpp" />
+    <ClCompile Include="Resource\Animation.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/AnimationResource.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/AnimationResource.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Resource\BitmapFont.cpp" />
+    <ClCompile Include="Resource\DataArray.cpp" />
+    <ClCompile Include="Resource\Folder.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/FolderResource.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/FolderResource.obj</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="Resource\FontTheme.cpp" />
-    <ClCompile Include="Resource\ImageResource.cpp" />
+    <ClCompile Include="Resource\Image.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/ImageResource.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/ImageResource.obj</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="Resource\LinkNode.cpp" />
     <ClCompile Include="Resource\Main.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)\ResourceMain.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)\ResourceMain.obj</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="Resource\PointerResource.cpp" />
-    <ClCompile Include="Resource\ResourceBase.cpp" />
-    <ClCompile Include="Resource\ResourceFile.cpp" />
-    <ClCompile Include="Resource\SoundResource.cpp" />
-    <ClCompile Include="Resource\TextResource.cpp" />
+    <ClCompile Include="Resource\Pointer.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/PointerResource.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/PointerResource.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Resource\Base.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/ResourceBase.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/ResourceBase.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Resource\File.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/ResourceFile.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/ResourceFile.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Resource\Sound.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/SoundResource.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/SoundResource.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Resource\Text.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/TextResouce.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/TextResouce.obj</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="Utils\Random.cpp" />
     <ClCompile Include="Utils\SGuid.cpp" />
     <ClCompile Include="Widgets\Base\Organizer.cpp" />

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\..\Resource\ResourceBase.h"
+#include "..\..\Resource\Base.h"
 #include "..\Definitions.h"
 #include "..\..\Utils\Margins.h"
 #include "..\..\Utils\Size2D.h"
@@ -56,7 +56,7 @@ namespace gge { namespace widgets {
 
 	};
 
-	class PlaceholderResource : public Placeholder, public resource::ResourceBase {
+	class PlaceholderResource : public Placeholder, public resource::Base {
 	public:
 
 		virtual GID::Type getGID() const { return GID::Placeholder; }

@@ -7,11 +7,11 @@
 
 #include "..\Base\BluePrint.h"
 #include "..\Definitions.h"
-#include "..\..\Resource\SoundResource.h"
+#include "..\..\Resource\Sound.h"
 
 #include <map>
 #include "..\Panel\PanelBlueprint.h"
-#include "..\..\Resource\ResourceBase.h"
+#include "..\..\Resource\Base.h"
 #include "..\Checkbox\CheckboxBlueprint.h"
 
 
@@ -20,7 +20,7 @@ namespace gge { namespace widgets {
 
 	namespace listbox {
 
-		class Blueprint : public widgets::Blueprint, public resource::ResourceBase {
+		class Blueprint : public widgets::Blueprint, public resource::Base {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:
 

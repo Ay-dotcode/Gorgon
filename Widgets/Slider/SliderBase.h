@@ -61,7 +61,7 @@ namespace gge { namespace widgets {
 		//Template parameter must allow +, -, / and (float) operators, for enums T_=int should be used
 		// and enum should be mapped manually to ints
 		template<class T_, class floattype=typename floattype<T_>::Type>
-		class Base : public WidgetBase, public ISliderType, private animation::AnimationBase {
+		class Base : public WidgetBase, public ISliderType, private animation::Base {
 		public:
 
 
@@ -1109,7 +1109,7 @@ namespace gge { namespace widgets {
 		private:
 			std::map<T_, std::string> namedlocations;
 
-			animation::AnimationController &getanimation(Blueprint::TransitionType transition) {
+			animation::Controller &getanimation(Blueprint::TransitionType transition) {
 				if(transition==Blueprint::FocusTransition)
 					return focus_anim;
 				else
@@ -1162,12 +1162,12 @@ namespace gge { namespace widgets {
 			Blueprint::FocusType next_focus;
 			Blueprint::StyleType next_style;
 
-			animation::AnimationController focus_anim;
-			animation::AnimationController style_anim;
-			animation::AnimationTimer	   idle_anim;
+			animation::Controller focus_anim;
+			animation::Controller style_anim;
+			animation::Timer	   idle_anim;
 
 
-			animation::AnimationController key_repeat;
+			animation::Controller key_repeat;
 			int key_repeat_timeout;
 			bool goingup, goingdown;
 
@@ -1248,12 +1248,12 @@ namespace gge { namespace widgets {
 				bool value;
 				bool valuedisplay;
 				float speed; //percent/sec
-				animation::AnimationController controller;
+				animation::Controller controller;
 				floattype stepvalue;
 				floattype sourcevalue;
 				T_ targetvalue;
 
-				animation::AnimationController indst_controller;
+				animation::Controller indst_controller;
 				floattype indst_stepvalue;
 				floattype indst_sourcevalue;
 				T_ indst_targetvalue;

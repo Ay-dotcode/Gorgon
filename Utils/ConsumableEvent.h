@@ -807,7 +807,7 @@ namespace gge { namespace utils {
 		////Unregisters the given event handler using handler function
 		template<class F_>
 		Token Find(F_ handler) {
-			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.IsValid(); it.Next()) {
 				if(Compare(&(*it), handler)) {
 
 					return reinterpret_cast<Token> (object);
@@ -818,7 +818,7 @@ namespace gge { namespace utils {
 		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		Token Find(R_ *obj, F_ handler) {
-			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.IsValid(); it.Next()) {
 				if(Compare(&(*it), obj, handler)) {
 
 					return reinterpret_cast<Token> (object);
@@ -829,7 +829,7 @@ namespace gge { namespace utils {
 		////Unregisters the given event handler using handler function
 		template<class F_>
 		void Unregister(F_ handler) {
-			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.IsValid(); it.Next()) {
 				if(Compare(&(*it), handler)) {
 					Unregister(reinterpret_cast<Token>(&it.GetWrapper()));
 					return;
@@ -840,7 +840,7 @@ namespace gge { namespace utils {
 		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		void Unregister(R_ *obj, F_ handler) {
-			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.IsValid(); it.Next()) {
 				if(Compare(&(*it),obj, handler)) {
 					Unregister(reinterpret_cast<Token>(&it.GetWrapper()));
 					return;
@@ -856,7 +856,7 @@ namespace gge { namespace utils {
 		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		void UnregisterClass(R_ *obj, F_ handler) {
-			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.isValid(); it.Next()) {
+			for(SortedCollection<HANDLER_,int>::Iterator it=events.First(); it.IsValid(); it.Next()) {
 				if(Compare(&(*it), obj, handler)) {
 					Unregister(reinterpret_cast<Token>(&it.GetWrapper()));
 					return;
@@ -960,7 +960,7 @@ namespace gge { namespace utils {
 		////This function triggers the event causing all 
 		/// handlers to be called
 		Token Fire(P_ params) {
-			for(SortedCollection<HANDLER_, int>::Iterator it=events.First();it.isValid();it.Next()) {
+			for(SortedCollection<HANDLER_, int>::Iterator it=events.First();it.IsValid();it.Next()) {
 				if(it->enabled)
 					if(it->Fire(params, *this->object, eventname))
 						return reinterpret_cast<Token>(&it.GetWrapper());

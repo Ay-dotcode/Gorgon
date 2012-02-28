@@ -1,6 +1,6 @@
 #include "ListboxBlueprint.h"
 #include "..\..\Engine\Pointer.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 
 using namespace gge::resource;
 using namespace std;
@@ -43,7 +43,7 @@ namespace gge { namespace widgets {
 					EatChunk(Data, size-(1 * 8 + 5 * 8));
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -56,7 +56,7 @@ namespace gge { namespace widgets {
 
 
 		void Blueprint::Prepare(GGEMain &main, resource::File &file) {
-			ResourceBase::Prepare(main, file);
+			Base::Prepare(main, file);
 
 			file.FindObject(item, Item);
 			file.FindObject(header, Header);

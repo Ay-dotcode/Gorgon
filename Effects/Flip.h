@@ -8,7 +8,7 @@
 
 namespace gge { namespace effects {
 
-	class FlipEffect : public animation::AnimationBase, public graphics::Graphic2D {
+	class FlipEffect : public animation::Base, public graphics::Graphic2D {
 	public:
 		enum FlipSide {
 			Top=1,
@@ -17,11 +17,11 @@ namespace gge { namespace effects {
 			Right,
 		};
 
-		FlipEffect(animation::AnimationTimer &controller, bool owner=false) : AnimationBase(controller,owner) { 
+		FlipEffect(animation::Timer &controller, bool owner=false) : Base(controller,owner) { 
 			Initialize(); 
 		}
 
-		explicit FlipEffect(bool create=false) : AnimationBase(create) { 
+		explicit FlipEffect(bool create=false) : Base(create) { 
 			Initialize(); 
 		}
 

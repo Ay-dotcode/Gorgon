@@ -24,7 +24,7 @@ namespace gge { namespace input {
 
 		bool EventProvider::PropagateMouseEvent(Event::Type event, utils::Point location, int amount) {
 			if(Event::isClick(event)) {
-				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.IsValid();i.Next()) {
 					if((!PressedObject || &(*i)==PressedObject) && i->Bounds.isInside(location)) {
 						if(i->Fire(event, location-i->Bounds.TopLeft(), amount))
 							return true;
@@ -34,7 +34,7 @@ namespace gge { namespace input {
 				return false;
 			}
 			else if(Event::isDown(event)) {
-				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.IsValid();i.Next()) {
 					if(i->Bounds.isInside(location)) {
 						if(i->Fire(event, location-i->Bounds.TopLeft(), amount)) {
 							mouse::PressedObject=&(*i);
@@ -46,7 +46,7 @@ namespace gge { namespace input {
 				return false;
 			}
 			else if(event==Event::Over) {
-				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.Last();i.isValid();i.Previous()) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.Last();i.IsValid();i.Previous()) {
 					bool isover=false;
 					if(i->Bounds.isInside(location)) {
 						if(i->EventMask & Event::OverCheck) {
@@ -72,7 +72,7 @@ namespace gge { namespace input {
 			else if(event==Event::Out) {
 				bool ret=false;
 
-				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.IsValid();i.Next()) {
 					bool isover=false;
 					if(i->Bounds.isInside(location)) {
 						if(i->EventMask & Event::OverCheck) {
@@ -98,7 +98,7 @@ namespace gge { namespace input {
 				return false;
 			}
 			else if(event==Event::Move && PressedObject) {
-				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.IsValid();i.Next()) {
 					if(PressedObject==&(*i)) {
 						if(i->Fire(event, location-i->Bounds.TopLeft(), amount))
 							return true;
@@ -108,7 +108,7 @@ namespace gge { namespace input {
 				return false;
 			}
 			else { //Scrolls, double click
-				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.isValid();i.Next()) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.IsValid();i.Next()) {
 					if(i->Bounds.isInside(location)) {
 						if(i->Fire(event, location-i->Bounds.TopLeft(), amount))
 							return true;
@@ -120,7 +120,7 @@ namespace gge { namespace input {
 		}
 
 		EventProvider::~EventProvider() {
-			for(utils::SortedCollection<EventChain::Object>::Iterator it=MouseEvents.Events.First();it.isValid();it.Next())
+			for(utils::SortedCollection<EventChain::Object>::Iterator it=MouseEvents.Events.First();it.IsValid();it.Next())
 				if(&(*it)==PressedObject)
 					PressedObject=NULL;
 

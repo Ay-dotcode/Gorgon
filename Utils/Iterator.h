@@ -107,12 +107,12 @@ namespace gge { namespace utils {
 		}
 
 		////Checks if the iterator is pointing to a valid item
-		bool isValid() const {
+		bool IsValid() const {
 			return iterator().isvalid();
 		}
 		
 		operator bool() const {
-			return isValid();
+			return IsValid();
 		}
 
 		////Compares two iterators if they point to the same item

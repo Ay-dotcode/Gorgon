@@ -24,7 +24,7 @@ namespace gge { namespace widgets {
 
 
 	void Draw_Signal(IntervalObject &interval, void *data) {
-		for(utils::Collection<WidgetBase>::Iterator i=DrawQueue.First();i.isValid();i.Next()) {
+		for(utils::Collection<WidgetBase>::Iterator i=DrawQueue.First();i.IsValid();i.Next()) {
 			i->waitingforredraw=false;
 			i->draw();
 		}
@@ -35,21 +35,21 @@ namespace gge { namespace widgets {
 
 	void RegisterLoaders(resource::File &File) {
 		File.AddGameLoaders();
-		File.Loaders.Add(new resource::ResourceLoader(GID::Line, LoadLineResource)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::Rectangle, LoadRectangleResource)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::ResizableObj, LoadResizableObjectResource)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::BorderData, LoadBorderDataResource)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::Placeholder, LoadPlaceholderResource)); 
+		File.Loaders.Add(new resource::Loader(GID::Line, LoadLineResource)); 
+		File.Loaders.Add(new resource::Loader(GID::Rectangle, LoadRectangleResource)); 
+		File.Loaders.Add(new resource::Loader(GID::ResizableObj, LoadResizableObjectResource)); 
+		File.Loaders.Add(new resource::Loader(GID::BorderData, LoadBorderDataResource)); 
+		File.Loaders.Add(new resource::Loader(GID::Placeholder, LoadPlaceholderResource)); 
 
-		File.Loaders.Add(new resource::ResourceLoader(GID::Checkbox, checkbox::Load)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::Slider, slider::Load)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::Panel, panel::Load)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::Textbox, textbox::Load)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::Listbox, listbox::Load)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::Combobox, combobox::Load)); 
-		File.Loaders.Add(new resource::ResourceLoader(GID::Tabpanel, tabpanel::Load)); 
+		File.Loaders.Add(new resource::Loader(GID::Checkbox, checkbox::Load)); 
+		File.Loaders.Add(new resource::Loader(GID::Slider, slider::Load)); 
+		File.Loaders.Add(new resource::Loader(GID::Panel, panel::Load)); 
+		File.Loaders.Add(new resource::Loader(GID::Textbox, textbox::Load)); 
+		File.Loaders.Add(new resource::Loader(GID::Listbox, listbox::Load)); 
+		File.Loaders.Add(new resource::Loader(GID::Combobox, combobox::Load)); 
+		File.Loaders.Add(new resource::Loader(GID::Tabpanel, tabpanel::Load)); 
 
-		File.Loaders.Add(new resource::ResourceLoader(GID::WR, LoadWR)); 
+		File.Loaders.Add(new resource::Loader(GID::WR, LoadWR)); 
 	}
 
 	void Init(GGEMain &Main) {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GRE.h"
-#include "ResourceBase.h"
+#include "Base.h"
 #include "../Utils/Margins.h"
 #include "../Utils/Size2D.h"
 #include "../Engine/Font.h"
@@ -10,9 +10,11 @@
 
 namespace gge { namespace resource {
 	class File;
+
+	class DataArray;
 	
 	////This function loads a text resource from the given file
-	ResourceBase *LoadDataResource(File &File, std::istream &Data, int Size);
+	DataArray *LoadDataResource(File &File, std::istream &Data, int Size);
 
 	////This is the data types that a data resource can contain
 	enum DataTypes {
@@ -31,7 +33,7 @@ namespace gge { namespace resource {
 	};
 
 	////Data resource interface
-	class IData : public ResourceBase {
+	class IData : public Base {
 	public:
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		string name;
@@ -105,13 +107,13 @@ namespace gge { namespace resource {
 		////02030C02h (Basic, Data resource, Data types, integer)
 		virtual int getGID() const { return GID::Data_Link; }
 		int getObjectGID() { if(value) return value->getGID(); return 0; }
-		ResourceBase *value;
+		Base *value;
 		utils::SGuid guid;
 
 		LinkData(utils::SGuid guid) : value(NULL) { this->guid=guid; }
-		operator ResourceBase *() { return value; }
-		operator ResourceBase &() { if(!value) throw std::runtime_error("Target is not set"); return *value; }
-		ResourceBase &Get() { if(!value) throw std::runtime_error("Target is not set"); return *value; }
+		operator Base *() { return value; }
+		operator Base &() { if(!value) throw std::runtime_error("Target is not set"); return *value; }
+		Base &Get() { if(!value) throw std::runtime_error("Target is not set"); return *value; }
 
 		virtual void Prepare(File &File);
 	};
@@ -134,8 +136,8 @@ namespace gge { namespace resource {
 
 	////This is data resource which holds an array of basic data types. These types are
 	/// integer, float, string, utils::Point and rectangle.
-	class DataResource : public ResourceBase {
-		friend ResourceBase *LoadDataResource(File &File, std::istream &Data, int Size);
+	class DataArray : public Base {
+		friend DataArray *LoadDataResource(File &File, std::istream &Data, int Size);
 	public:
 		////Data collection
 		utils::Collection<IData> Data;
@@ -178,7 +180,7 @@ namespace gge { namespace resource {
 		////Returns utils::Bounds at index
 		utils::Bounds getBounds(int Index) { return dynamic_cast<RectangleData&>(Data[Index]).value; }
 		////Returns resource object from a link
-		ResourceBase &getLink(int Index) { return dynamic_cast<LinkData&>(Data[Index]).Get(); }
+		Base &getLink(int Index) { return dynamic_cast<LinkData&>(Data[Index]).Get(); }
 		////Returns font object
 		Font getFont(int Index) { return dynamic_cast<FontData&>(Data[Index]).value; }
 		////Returns number of items in the array
@@ -189,7 +191,7 @@ namespace gge { namespace resource {
 		////Currently does nothing
 		virtual bool Save(File &File,std::ostream &Data) { return false; }
 
-		virtual ~DataResource() { Data.Destroy(); ResourceBase::~ResourceBase(); }
+		virtual ~DataArray() { Data.Destroy(); Base::~Base(); }
 
 		virtual void Prepare(GGEMain &main, File &file);
 

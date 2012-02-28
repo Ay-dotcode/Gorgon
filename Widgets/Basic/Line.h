@@ -5,10 +5,10 @@
 // and center part can either be tiled or scaled.
 // 
 
-#include "..\..\Resource\ResourceBase.h"
+#include "..\..\Resource\Base.h"
 #include "..\Definitions.h"
 #include "..\..\Resource\ResizableObject.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 #include "..\..\Resource\NullImage.h"
 #include "..\..\Engine\Animation.h"
 #include "..\..\Utils\Margins.h"
@@ -23,7 +23,7 @@ namespace gge { namespace widgets {
 
 	class Line : public resource::ResizableObject {
 	public:
-		Line(LineResource &parent, animation::AnimationTimer &controller, bool owner=false);
+		Line(LineResource &parent, animation::Timer &controller, bool owner=false);
 		Line(LineResource &parent, bool create=false);
 
 		LineResource &parent;
@@ -36,8 +36,8 @@ namespace gge { namespace widgets {
 			end->DeleteAnimation();
 		}
 
-		virtual void SetController( animation::AnimationTimer &controller, bool owner=false ) {
-			AnimationBase::SetController(controller, owner);
+		virtual void SetController( animation::Timer &controller, bool owner=false ) {
+			Base::SetController(controller, owner);
 			start->SetController(controller);
 			loop->SetController(controller);
 			end->SetController(controller);
@@ -62,7 +62,7 @@ namespace gge { namespace widgets {
 
 	class MaskedLine : public Line {
 	public:
-		MaskedLine(LineResource &parent, animation::AnimationTimer &controller, LineResource *mask, bool owner=false);
+		MaskedLine(LineResource &parent, animation::Timer &controller, LineResource *mask, bool owner=false);
 		MaskedLine(LineResource &parent, LineResource *mask, bool create=false);
 
 		virtual ~MaskedLine() {
@@ -78,8 +78,8 @@ namespace gge { namespace widgets {
 	};
 
 
-	class LineResource : public resource::ResourceBase, virtual public resource::ResizableObjectProvider, 
-		virtual public animation::DiscreteAnimationProvider 
+	class LineResource : public resource::Base, virtual public resource::ResizableObjectProvider, 
+		virtual public animation::DiscreteProvider 
 	{
 		friend LineResource *LoadLineResource(resource::File& File, std::istream &Data, int Size);
 	public:
@@ -97,10 +97,10 @@ namespace gge { namespace widgets {
 
 		virtual GID::Type getGID() const { return GID::Line; }
 
-		virtual Line &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return CreateResizableObject(controller,owner); }
+		virtual Line &CreateAnimation(animation::Timer &controller, bool owner=false) { return CreateResizableObject(controller,owner); }
 		virtual Line &CreateAnimation(bool create=false) { return CreateResizableObject(create); }
 
-		virtual Line &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) {
+		virtual Line &CreateResizableObject(animation::Timer &controller, bool owner=false) {
 			if(Mask==NULL)
 				return *new Line(*this, controller,owner); 
 			else
@@ -148,7 +148,7 @@ namespace gge { namespace widgets {
 		virtual	int		 EndOf(unsigned Frame) const { return loop->EndOf(Frame); }
 
 		virtual void Prepare(GGEMain &main, resource::File &file) {
-			ResourceBase::Prepare(main, file);
+			Base::Prepare(main, file);
 			Mask=dynamic_cast<LineResource*>(file.Root().FindObject(mask));
 		}
 
@@ -189,13 +189,13 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	inline Line::Line(LineResource &parent, animation::AnimationTimer &controller, bool owner/*=false*/) : parent(parent), AnimationBase(controller, owner) {
+	inline Line::Line(LineResource &parent, animation::Timer &controller, bool owner/*=false*/) : parent(parent), Base(controller, owner) {
 		start=&parent.GetStart().CreateAnimation(controller);
 		loop=&parent.GetLoop().CreateAnimation(controller);
 		end=&parent.GetEnd().CreateAnimation(controller);
 	}
 
-	inline Line::Line(LineResource &parent, bool create/*=false*/) : parent(parent), AnimationBase(create) {
+	inline Line::Line(LineResource &parent, bool create/*=false*/) : parent(parent), Base(create) {
 		if(Controller) {
 			start=&parent.GetStart().CreateAnimation(*Controller);
 			loop=&parent.GetLoop().CreateAnimation(*Controller);
@@ -217,7 +217,7 @@ namespace gge { namespace widgets {
 	}
 	
 
-	inline MaskedLine::MaskedLine(LineResource &parent, animation::AnimationTimer &controller, LineResource *mask, bool owner/*=false*/) : 
+	inline MaskedLine::MaskedLine(LineResource &parent, animation::Timer &controller, LineResource *mask, bool owner/*=false*/) : 
 	Line(parent, controller, owner) {
 		Mask=&mask->CreateResizableObject(controller);
 	}

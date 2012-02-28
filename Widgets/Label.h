@@ -36,7 +36,7 @@ namespace gge { namespace widgets {
 		virtual bool Accessed() {
 			auto it=Container->Widgets.Find(this);
 			it.Next();
-			if(it.isValid())
+			if(it.IsValid())
 				it->Focus();
 
 			return true;

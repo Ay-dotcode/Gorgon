@@ -5,7 +5,7 @@
 // widget files
 // 
 
-#include "..\Resource\ResourceFile.h"
+#include "..\Resource\File.h"
 #include "..\Engine\GGEMain.h"
 #include "Base\VirtualPanel.h"
 

@@ -2,8 +2,8 @@
 
 
 #include "GRE.h"
-#include "ResourceBase.h"
-#include "ImageResource.h"
+#include "Base.h"
+#include "Image.h"
 #include "../Engine/FontRenderer.h"
 #include "../Engine/GGEMain.h"
 #include "../Engine/Font.h"
@@ -14,10 +14,10 @@
 namespace gge { namespace resource {
 	class File;
 
-	ResourceBase *LoadFontTheme(File &File, std::istream &Data, int Size);
+	Base *LoadFontTheme(File &File, std::istream &Data, int Size);
 
-	class FontTheme : public ResourceBase {
-		friend ResourceBase *LoadFontTheme(File &File, std::istream &Data, int Size);
+	class FontTheme : public Base {
+		friend Base *LoadFontTheme(File &File, std::istream &Data, int Size);
 
 	public:
 
@@ -26,7 +26,7 @@ namespace gge { namespace resource {
 		////Currently does nothing
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
-		FontTheme() : ResourceBase(),
+		FontTheme() : Base(),
 			NormalFont(nullptr),
 			BoldFont(nullptr),
 			ItalicFont(nullptr),
@@ -46,7 +46,7 @@ namespace gge { namespace resource {
 		FontTheme(FontRenderer *Normal,FontRenderer *Bold=NULL,FontRenderer *Italic=NULL,
 				  FontRenderer *Small=NULL,
 				  FontRenderer *H1=NULL,FontRenderer *H2=NULL,FontRenderer *H3=NULL) : 
-		    ResourceBase(),
+		    Base(),
 			NormalFont(Normal),
 			BoldFont(Bold),
 			ItalicFont(Italic),

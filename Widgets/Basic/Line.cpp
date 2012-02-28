@@ -1,8 +1,8 @@
 
 #include "Line.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 #include "..\..\Engine\Animation.h"
-#include "..\..\Resource\AnimationResource.h"
+#include "..\..\Resource\Animation.h"
 #include "..\..\Resource\NullImage.h"
 #include <vector>
 #include "..\..\Utils\SGuid.h"
@@ -16,7 +16,7 @@ using namespace std;
 namespace gge { namespace widgets {
 
 	namespace lineresource_prvt {
-		void setlineprovider(vector<AnimationResource *> &anims, RectangularGraphic2DSequenceProvider *&obj, int id) {
+		void setlineprovider(vector<Animation *> &anims, RectangularGraphic2DSequenceProvider *&obj, int id) {
 			if((int)anims.size()<=id) {
 				obj=&NullImage::Get();
 			}
@@ -38,7 +38,7 @@ namespace gge { namespace widgets {
 	LineResource *LoadLineResource(resource::File& File, std::istream &Data, int Size) {
 		LineResource *line;
 		SGuid g;
-		vector<AnimationResource *> anims;
+		vector<Animation *> anims;
 		RectangularGraphic2DSequenceProvider *start=NULL, *loop=NULL, *end=NULL;
 		bool istiled=true;
 		LineResource::OrientationType orientation=LineResource::Horizontal;

@@ -1,10 +1,10 @@
 #pragma once
 
 
-#include "..\..\Resource\ResourceBase.h"
+#include "..\..\Resource\Base.h"
 #include "..\Definitions.h"
 #include "..\..\Resource\ResizableObject.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 #include "..\..\Resource\NullImage.h"
 #include "..\..\Engine\Animation.h"
 
@@ -31,8 +31,8 @@ namespace gge { namespace widgets {
 			object->DeleteAnimation();
 		}
 
-		virtual void SetController( animation::AnimationTimer &controller, bool owner=false ) {
-			AnimationBase::SetController(controller, owner);
+		virtual void SetController( animation::Timer &controller, bool owner=false ) {
+			Base::SetController(controller, owner);
 			object->SetController(controller);
 		}
 
@@ -65,7 +65,7 @@ namespace gge { namespace widgets {
 
 	};
 
-	class ResizableObjectResource : public resource::ResourceBase, virtual public resource::ResizableObjectProvider {
+	class ResizableObjectResource : public resource::Base, virtual public resource::ResizableObjectProvider {
 		friend ResizableObjectResource *LoadResizableObjectResource(resource::File& File, std::istream &Data, int Size);
 	public:
 
@@ -75,14 +75,14 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual ResizableObject &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false)
+		virtual ResizableObject &CreateResizableObject(animation::Timer &controller, bool owner=false)
 		{ return *new ResizableObject(object->CreateResizableObject(controller, owner),SizeController); }
 
 		virtual ResizableObject &CreateResizableObject(bool create=false)
 		{ return *new ResizableObject(object->CreateResizableObject(create),SizeController); }
 
 
-		virtual ResizableObject &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) 
+		virtual ResizableObject &CreateAnimation(animation::Timer &controller, bool owner=false) 
 		{ return CreateResizableObject(controller, owner); }
 
 		virtual ResizableObject &CreateAnimation(bool create=false)

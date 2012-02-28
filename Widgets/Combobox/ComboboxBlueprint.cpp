@@ -1,5 +1,5 @@
 #include "ComboboxBlueprint.h"
-#include "../../Resource/ResourceFile.h"
+#include "../../Resource/File.h"
 
 using namespace gge::resource;
 using namespace gge::utils;
@@ -36,7 +36,7 @@ namespace gge { namespace widgets {
 					EatChunk(Data, size-(1 * 8 + 3 * 8 + 1*16));
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -49,7 +49,7 @@ namespace gge { namespace widgets {
 
 
 		void Blueprint::Prepare(GGEMain &main, resource::File &file) {
-			ResourceBase::Prepare(main, file);
+			Base::Prepare(main, file);
 
 			file.FindObject(textbox, Textbox);
 			file.FindObject(listbox, Listbox);

@@ -507,34 +507,7 @@
     <ClInclude Include="External\OpenAL\alc.h">
       <Filter>External\OpenAL</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\AnimationResource.h">
-      <Filter>Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\BitmapFontResource.h">
-      <Filter>Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\DataResource.h">
-      <Filter>Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\FolderResource.h">
-      <Filter>Resource</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\FontTheme.h">
-      <Filter>Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\ImageResource.h">
-      <Filter>Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\PointerResource.h">
-      <Filter>Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\ResourceFile.h">
-      <Filter>Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\SoundResource.h">
-      <Filter>Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\TextResource.h">
       <Filter>Resource</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Main.h">
@@ -553,9 +526,6 @@
       <Filter>Resource\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Resource\LinkNode.h">
-      <Filter>Resource\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\ResourceBase.h">
       <Filter>Resource\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Any.h">
@@ -954,6 +924,36 @@
     <ClInclude Include="Widgets\Organizers\LinearOrganizer.h">
       <Filter>Widgets\Organizers</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Animation.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\BitmapFont.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\DataArray.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Folder.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Image.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Pointer.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\File.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Sound.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Text.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Base.h">
+      <Filter>Resource\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -1223,43 +1223,13 @@
     <ClCompile Include="External\LZMA\LzmaDecode.cpp">
       <Filter>External\LZMA</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\AnimationResource.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\BitmapFontResource.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\DataResource.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\FolderResource.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="Resource\FontTheme.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\ImageResource.cpp">
       <Filter>Resource\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Resource\LinkNode.cpp">
       <Filter>Resource\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Main.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\PointerResource.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\ResourceBase.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\ResourceFile.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\SoundResource.cpp">
-      <Filter>Resource\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\TextResource.cpp">
       <Filter>Resource\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Utils\Random.cpp">
@@ -1579,6 +1549,36 @@
     </ClCompile>
     <ClCompile Include="Widgets\Organizers\LinearOrganizer.cpp">
       <Filter>Widgets\Code\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Animation.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\BitmapFont.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\DataArray.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Folder.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Image.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Pointer.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Base.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\File.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Sound.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Text.cpp">
+      <Filter>Resource\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

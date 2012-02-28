@@ -1,12 +1,12 @@
 #pragma once
 
 
-#include "ResourceBase.h"
+#include "Base.h"
 
 
 namespace gge { namespace resource {
-	class LinkNodeResource : public ResourceBase {
-		friend ResourceBase *LoadLinkNodeResource(File &File, std::istream &Data, int Size);
+	class LinkNodeResource : public Base {
+		friend Base *LoadLinkNodeResource(File &File, std::istream &Data, int Size);
 	public:
 
 		LinkNodeResource() : target(nullptr) {  }
@@ -18,7 +18,7 @@ namespace gge { namespace resource {
 
 		virtual void Resolve(File &file);
 
-		ResourceBase *GetTarget(resource::File &file);
+		Base *GetTarget(resource::File &file);
 
 	protected:
 		utils::SGuid target;

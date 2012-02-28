@@ -1,10 +1,10 @@
 #pragma once
-#include "..\..\Resource\ResourceBase.h"
+#include "..\..\Resource\Base.h"
 #include "..\..\Engine\Animation.h"
 #include "..\..\Resource\ResizableObject.h"
 #include "..\Definitions.h"
 #include "..\..\Utils\Margins.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 
 namespace gge { namespace widgets {
 
@@ -15,7 +15,7 @@ namespace gge { namespace widgets {
 
 	class Rectangle : public resource::ResizableObject {
 	public:
-		Rectangle(RectangleResource &parent, animation::AnimationTimer &controller, bool owner=false);
+		Rectangle(RectangleResource &parent, animation::Timer &controller, bool owner=false);
 		Rectangle(RectangleResource &parent, bool create=false);
 
 		RectangleResource &parent;
@@ -36,8 +36,8 @@ namespace gge { namespace widgets {
 			br->DeleteAnimation();
 		}
 
-		virtual void SetController( animation::AnimationTimer &controller, bool owner=false ) {
-			AnimationBase::SetController(controller, owner);
+		virtual void SetController( animation::Timer &controller, bool owner=false ) {
+			Base::SetController(controller, owner);
 			tl->SetController(controller);
 			t ->SetController(controller);
 			tr->SetController(controller);
@@ -71,7 +71,7 @@ namespace gge { namespace widgets {
 
 	class MaskedRectangle : public Rectangle {
 	public:
-		MaskedRectangle(RectangleResource &parent, animation::AnimationTimer &controller, RectangleResource *mask, bool owner=false);
+		MaskedRectangle(RectangleResource &parent, animation::Timer &controller, RectangleResource *mask, bool owner=false);
 		MaskedRectangle(RectangleResource &parent, RectangleResource *mask, bool create=false);
 
 		Rectangle *Mask;
@@ -86,8 +86,8 @@ namespace gge { namespace widgets {
 		virtual void drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const;
 	};
 
-	class RectangleResource : public resource::ResourceBase, virtual public resource::ResizableObjectProvider, 
-		virtual public animation::DiscreteAnimationProvider 
+	class RectangleResource : public resource::Base, virtual public resource::ResizableObjectProvider, 
+		virtual public animation::DiscreteProvider 
 	{
 		friend RectangleResource *LoadRectangleResource(resource::File& File, std::istream &Data, int Size);
 	public:
@@ -116,14 +116,14 @@ namespace gge { namespace widgets {
 
 		virtual GID::Type getGID() const { return GID::Rectangle; }
 
-		virtual Rectangle &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) {
+		virtual Rectangle &CreateAnimation(animation::Timer &controller, bool owner=false) {
 			return CreateResizableObject(controller, owner);
 		}
 		virtual Rectangle &CreateAnimation(bool create=false) {
 			return CreateResizableObject(create);
 		}
 
-		virtual Rectangle &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { 
+		virtual Rectangle &CreateResizableObject(animation::Timer &controller, bool owner=false) { 
 			if(Mask==NULL)
 				return *new Rectangle(*this, controller,owner); 
 			else
@@ -197,7 +197,7 @@ namespace gge { namespace widgets {
 		virtual	int		 EndOf(unsigned Frame) const { return c->EndOf(Frame); }
 
 		virtual void Prepare(GGEMain &main, resource::File &file) {
-			ResourceBase::Prepare(main, file);
+			Base::Prepare(main, file);
 			Mask=dynamic_cast<RectangleResource*>(file.Root().FindObject(mask));
 		}
 
@@ -225,7 +225,7 @@ namespace gge { namespace widgets {
 		return controller.CalculateHeight(h, c->GetHeight(), t->GetHeight()+b->GetHeight());
 	}
 
-	inline Rectangle::Rectangle(RectangleResource &parent, animation::AnimationTimer &controller, bool owner/*=false*/) : parent(parent), AnimationBase(controller, owner) {
+	inline Rectangle::Rectangle(RectangleResource &parent, animation::Timer &controller, bool owner/*=false*/) : parent(parent), Base(controller, owner) {
 		tl=&parent.GetTL().CreateAnimation(controller);
 		t=&parent.GetT().CreateAnimation(controller);
 		tr=&parent.GetTR().CreateAnimation(controller);
@@ -237,7 +237,7 @@ namespace gge { namespace widgets {
 		br=&parent.GetBR().CreateAnimation(controller);
 	}
 
-	inline Rectangle::Rectangle(RectangleResource &parent, bool create/*=false*/) : parent(parent), AnimationBase(create) {
+	inline Rectangle::Rectangle(RectangleResource &parent, bool create/*=false*/) : parent(parent), Base(create) {
 		if(Controller) {
 			tl=&parent.GetTL().CreateAnimation(*Controller);
 			t=&parent.GetT().CreateAnimation(*Controller);
@@ -263,7 +263,7 @@ namespace gge { namespace widgets {
 	}
 
 
-	inline MaskedRectangle::MaskedRectangle(RectangleResource &parent, animation::AnimationTimer &controller, RectangleResource *mask, bool owner/*=false*/) : 
+	inline MaskedRectangle::MaskedRectangle(RectangleResource &parent, animation::Timer &controller, RectangleResource *mask, bool owner/*=false*/) : 
 	Rectangle(parent, controller, owner) {
 		Mask=&mask->CreateResizableObject(controller);
 	}

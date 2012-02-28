@@ -39,7 +39,7 @@
     <Position X="5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAKACgACBQAQAAAAAAAAEAEAEAAAAAAAAgAgAAAA=</HashCode>
-      <FileName>D:\programs\games\GGE-Test\Sources\GGE\Resource\ResourceBase.h</FileName>
+      <FileName>D:\programs\games\GGE-Test\Sources\GGE\Resource\Base.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="gge::resource::ResizableObjectProvider" Collapsed="true">

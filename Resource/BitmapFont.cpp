@@ -1,5 +1,5 @@
-#include "BitmapFontResource.h"
-#include "ResourceFile.h"
+#include "BitmapFont.h"
+#include "File.h"
 #include "..\Engine\Graphics.h"
 
 #ifndef MAX_CHAR_DETECTS
@@ -11,8 +11,8 @@ using namespace gge::utils;
 using namespace std;
 
 namespace gge { namespace resource {
-	ResourceBase *LoadBitmapFontResource(File &File, std::istream &Data, int Size) {
-		BitmapFontResource *font=new BitmapFontResource;
+	BitmapFont *LoadBitmapFontResource(File &File, std::istream &Data, int Size) {
+		BitmapFont *font=new BitmapFont;
 		int chmap[256];
 		int cpos=0,i;
 
@@ -34,7 +34,7 @@ namespace gge { namespace resource {
 				font->guid.Load(Data);
 			}
 			else if(gid==GID::Font_Image) {
-				ImageResource *img=LoadImageResource(File,Data,size);
+				Image *img=LoadImageResource(File,Data,size);
 
 				for(i=0;i<256;i++)
 					if(chmap[i]==cpos)
@@ -55,7 +55,7 @@ namespace gge { namespace resource {
 
 		return font;
 	}
-	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int X, int Y, const std::string &text, graphics::RGBint color, ShadowParams Shadow) {
+	void BitmapFont::Print(graphics::ColorizableImageTarget2D *target, int X, int Y, const std::string &text, graphics::RGBint color, ShadowParams Shadow) {
 		if(text=="") return;
 
 		RGBint cc=target->GetCurrentColor();
@@ -65,20 +65,20 @@ namespace gge { namespace resource {
 			int x=X;
 			target->SetCurrentColor(Shadow.Color);
 			for(i=0;i<text.length();i++) {
-				ImageResource *img=Characters[text[i]];
+				Image *img=Characters[text[i]];
 				img->Draw(target,x+Shadow.Offset.x,Y+Shadow.Offset.y);
 				x+=img->GetWidth() + Seperator;
 			}
 		}
 		else if(Shadow.Type==ShadowParams::DropShadow) {
-			BitmapFontResource &shadow=Blur(Shadow.Blur);
+			BitmapFont &shadow=Blur(Shadow.Blur);
 			int sizediff=(shadow.TextWidth(" ")-TextWidth(" "))/2;
 			shadow.Print(target, X+Shadow.Offset.x-sizediff, Y+Shadow.Offset.y-sizediff, text, Shadow.Color);
 		}
 
 		target->SetCurrentColor(color);
 		for(i=0;i<text.length();i++) {
-			ImageResource *img=Characters[text[i]];
+			Image *img=Characters[text[i]];
 			img->Draw(target,X,Y);
 			X+=img->GetWidth() + Seperator;
 		}
@@ -86,7 +86,7 @@ namespace gge { namespace resource {
 		target->SetCurrentColor(cc);
 	}
 
-	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, const std::string &text, graphics::RGBint color, TextAlignment::Type align, ShadowParams Shadow) {
+	void BitmapFont::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, const std::string &text, graphics::RGBint color, TextAlignment::Type align, ShadowParams Shadow) {
 		unsigned i;
 		int l=x;
 		int lstart=0,lword=0;
@@ -103,7 +103,7 @@ namespace gge { namespace resource {
 		if(Shadow.Type==ShadowParams::Flat)
 			Print(target,x+Shadow.Offset.x,y+Shadow.Offset.y,w,text,Shadow.Color,align);
 		else if(Shadow.Type==ShadowParams::DropShadow) {
-			BitmapFontResource &shadow=Blur(Shadow.Blur);
+			BitmapFont &shadow=Blur(Shadow.Blur);
 			int sizediff=(shadow.TextWidth(" ")-TextWidth(" "))/2;
 			shadow.Print(target, x+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff, w, text, Shadow.Color, align);
 		}
@@ -163,7 +163,7 @@ namespace gge { namespace resource {
 
 				for(j=lstart;j<lword+1;j++) {
 					if(text[j]=='\t') {
-						ImageResource *img=Characters[(unsigned char)' '];
+						Image *img=Characters[(unsigned char)' '];
 						int i;
 						for(i=0;i<Tabsize;i++) {
 							img->Draw(target, l, y);
@@ -171,7 +171,7 @@ namespace gge { namespace resource {
 						}
 					}
 					if(text[j]!='\r') {
-						ImageResource *img=Characters[(unsigned char)text[j]];
+						Image *img=Characters[(unsigned char)text[j]];
 						img->Draw(target, l, y);
 						l+=img->GetWidth()+Seperator;
 					}
@@ -192,13 +192,13 @@ namespace gge { namespace resource {
 
 		target->SetCurrentColor(cc);
 	}
-	void BitmapFontResource::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, const std::string &text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment::Type Align, ShadowParams Shadow) {
+	void BitmapFont::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, const std::string &text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment::Type Align, ShadowParams Shadow) {
 
 		RGBint cc=target->GetCurrentColor();
 		target->SetCurrentColor(color);
 		
 		int sizediff;
-		BitmapFontResource *shadow;
+		BitmapFont *shadow;
 
 		if(Shadow.Type==ShadowParams::DropShadow) {
 			shadow=&Blur(Shadow.Blur);
@@ -360,7 +360,7 @@ namespace gge { namespace resource {
 					}
 					int dist=0;
 					if(text[j]=='\t') {
-						ImageResource *img=Characters[(unsigned char)' '];
+						Image *img=Characters[(unsigned char)' '];
 						int i;
 						for(i=0;i<Tabsize;i++) {
 							if(Shadow.Type==ShadowParams::Flat) {
@@ -378,7 +378,7 @@ namespace gge { namespace resource {
 						}
 					}
 					else if(text[j]!='\r') {
-						ImageResource *img=Characters[(unsigned char)text[j]];
+						Image *img=Characters[(unsigned char)text[j]];
 						if(Shadow.Type==ShadowParams::Flat) {
 							target->SetCurrentColor(Shadow.Color);
 							img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
@@ -433,7 +433,7 @@ namespace gge { namespace resource {
 		target->SetCurrentColor(cc);
 
 	}
-	void BitmapFontResource::Print_Test(int x, int y, int w, const std::string &text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
+	void BitmapFont::Print_Test(int x, int y, int w, const std::string &text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
 		if(text=="") {
 			int d;
 			int xpos=0;
@@ -586,14 +586,14 @@ namespace gge { namespace resource {
 					}
 					int dist=0;
 					if(text[j]=='\t') {
-						ImageResource *img=Characters[(unsigned char)' '];
+						Image *img=Characters[(unsigned char)' '];
 						int i;
 						for(i=0;i<Tabsize;i++) {
 							dist+=img->GetWidth()+Seperator;
 						}
 					}
 					else if(text[j]!='\r') {
-						ImageResource *img=Characters[(unsigned char)text[j]];
+						Image *img=Characters[(unsigned char)text[j]];
 						dist=img->GetWidth()+Seperator;
 					}
 					for(d=0;d<cchardetectxs;d++) {
@@ -635,7 +635,7 @@ namespace gge { namespace resource {
 		}	
 	}
 
-	int BitmapFontResource::TextHeight(const std::string &text, int w) {
+	int BitmapFont::TextHeight(const std::string &text, int w) {
 		unsigned i;
 		int l=0;
 		int lstart=0,lword=0;
@@ -691,14 +691,14 @@ namespace gge { namespace resource {
 
 				for(j=lstart;j<lword+1;j++) {
 					if(text[j]=='\t') {
-						ImageResource *img=Characters[(unsigned char)' '];
+						Image *img=Characters[(unsigned char)' '];
 						int i;
 						for(i=0;i<Tabsize;i++) {
 							l+=img->GetWidth()+Seperator;
 						}
 					}
 					if(text[j]!='\r') {
-						ImageResource *img=Characters[(unsigned char)text[j]];
+						Image *img=Characters[(unsigned char)text[j]];
 						l+=img->GetWidth()+Seperator;
 					}
 				}
@@ -719,11 +719,11 @@ namespace gge { namespace resource {
 		return y;
 	}
 
-	BitmapFontResource & BitmapFontResource::Blur(float amount, int windowsize/*=-1*/) {
+	BitmapFont & BitmapFont::Blur(float amount, int windowsize/*=-1*/) {
 		if(Shadows[amount])
 			return *Shadows[amount];
 
-		BitmapFontResource *font=new BitmapFontResource;
+		BitmapFont *font=new BitmapFont;
 
 		if(windowsize==-1)
 			windowsize=max(1,int(amount*1.5));
@@ -732,8 +732,8 @@ namespace gge { namespace resource {
 		font->VerticalSpacing=VerticalSpacing;
 		font->Baseline=Baseline+windowsize;
 
-		for(SortedCollection<ResourceBase>::Iterator it=Subitems.First();it.isValid();it.Next()) {
-			ImageResource *img=dynamic_cast<ImageResource*>(it.CurrentPtr());
+		for(SortedCollection<Base>::Iterator it=Subitems.First();it.IsValid();it.Next()) {
+			Image *img=dynamic_cast<Image*>(it.CurrentPtr());
 
 			if(img) {
 				font->Subitems.Add(img->Blur(amount, windowsize), font->Subitems.HighestOrder()+1);
@@ -746,7 +746,7 @@ namespace gge { namespace resource {
 		for(int i=0;i<256;i++) {
 			int loc=Subitems.FindLocation(Characters[i]);
 			if(loc>=0)
-				font->Characters[i]=dynamic_cast<ImageResource*>(font->Subitems(loc));
+				font->Characters[i]=dynamic_cast<Image*>(font->Subitems(loc));
 		}
 
 		Shadows[amount]=font;
@@ -755,8 +755,8 @@ namespace gge { namespace resource {
 		return *font;
 	}
 
-	void BitmapFontResource::Prepare(GGEMain &main, File &file) {
-		ResourceBase::Prepare(main, file);
+	void BitmapFont::Prepare(GGEMain &main, File &file) {
+		Base::Prepare(main, file);
 		this->file=&file;
 		
 		if(!noshadows) {
@@ -765,7 +765,7 @@ namespace gge { namespace resource {
 		}
 	}
 
-	BitmapFontResource::~BitmapFontResource() {
+	BitmapFont::~BitmapFont() {
 		for(auto it=Shadows.begin();it!=Shadows.end();++it) {
 			delete it->second;
 			it->second=NULL;

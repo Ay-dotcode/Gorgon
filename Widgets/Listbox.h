@@ -102,7 +102,7 @@ namespace gge { namespace widgets {
 		}
 
 		void DeleteAll(const T_ &value) {
-			for(auto it=First();it.isValid();it.Next()) {
+			for(auto it=First();it.IsValid();it.Next()) {
 				if(it->Value==value) {
 					remove(*it);
 					it.Delete();
@@ -111,7 +111,7 @@ namespace gge { namespace widgets {
 		}
 
 		ListItem *Find(const T_ &value) {
-			for(auto it=First();it.isValid();it.Next()) {
+			for(auto it=First();it.IsValid();it.Next()) {
 				if(it->Value==value)
 					return it.CurrentPtr();
 			}
@@ -231,7 +231,7 @@ namespace gge { namespace widgets {
 		virtual void SetBlueprint(const widgets::Blueprint &bp) {
 			Base::SetBlueprint(bp);
 
-			for(auto it=First();it.isValid();it.Next())
+			for(auto it=First();it.IsValid();it.Next())
 				it->SetBlueprint(*Base::bp->Item);
 
 			if(GetCount())
@@ -272,7 +272,7 @@ namespace gge { namespace widgets {
 		ListItem *active;
 
 		void clearall(ListItem *item=NULL) {
-			for(auto it=First();it.isValid();it.Next())
+			for(auto it=First();it.IsValid();it.Next())
 				if(it.CurrentPtr()!=item) callclear(*it);
 		}
 
@@ -333,11 +333,11 @@ namespace gge { namespace widgets {
 		void reorganize() {
 			//panel.Widgets.Clear();
 
-			for(auto it=First();it.isValid();it.Next()) {
+			for(auto it=First();it.IsValid();it.Next()) {
 				panel.RemoveWidget(*it);
 			}
 
-			for(auto it=First();it.isValid();it.Next()) {
+			for(auto it=First();it.IsValid();it.Next()) {
 				add(*it);
 			}
 		}

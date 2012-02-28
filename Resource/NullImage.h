@@ -2,7 +2,7 @@
 
 
 #include "GRE.h"
-#include "ResourceBase.h"
+#include "Base.h"
 #include "../Engine/Graphics.h"
 #include "ResizableObject.h"
 #include "../Engine/Animation.h"
@@ -15,7 +15,7 @@
 namespace gge { namespace resource {
 
 	class NullImage : 
-		public ResourceBase, virtual public ResizableObject, public virtual graphics::ImageTexture, public ResizableObjectProvider, 
+		public Base, virtual public ResizableObject, public virtual graphics::ImageTexture, public ResizableObjectProvider, 
 		public animation::RectangularGraphic2DSequenceProvider, virtual public animation::RectangularGraphic2DAnimation
 	{
 		friend void Init(GGEMain &Main);
@@ -23,10 +23,10 @@ namespace gge { namespace resource {
 
 		virtual GID::Type getGID() const { return GID::Image_NULL; }
 		virtual void DeleteAnimation() { } //if used as animation, it will not be deleted
-		virtual NullImage &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return *this; }
+		virtual NullImage &CreateAnimation(animation::Timer &controller, bool owner=false) { return *this; }
 		virtual NullImage &CreateAnimation(bool create=false) { return *this; }
 
-		virtual NullImage &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { return *this; }
+		virtual NullImage &CreateResizableObject(animation::Timer &controller, bool owner=false) { return *this; }
 		virtual NullImage &CreateResizableObject(bool create=false) { return *this; }
 
 		virtual graphics::RectangularGraphic2D &GraphicAt(unsigned time) { return *this; }
@@ -48,7 +48,7 @@ namespace gge { namespace resource {
 		}
 
 	protected:
-		NullImage() : animation::AnimationBase() {  }
+		NullImage() : animation::Base() {  }
 
 		static NullImage *ni;
 

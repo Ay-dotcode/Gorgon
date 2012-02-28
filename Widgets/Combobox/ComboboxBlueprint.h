@@ -13,7 +13,7 @@ namespace gge { namespace widgets {
 
 		Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 
-		class Blueprint : public resource::ResourceBase, public widgets::Blueprint {
+		class Blueprint : public resource::Base, public widgets::Blueprint {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:
 

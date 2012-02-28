@@ -1,6 +1,6 @@
 #include "SliderBlueprint.h"
 #include "..\..\Engine\Pointer.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 
 using namespace gge::resource;
 using namespace std;
@@ -59,7 +59,7 @@ namespace gge { namespace widgets {
 					Data.seekg(ptarget+size);
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -115,7 +115,7 @@ namespace gge { namespace widgets {
 					bp->Subitems.Add(elm, bp->Subitems.HighestOrder()+1);
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -155,13 +155,13 @@ namespace gge { namespace widgets {
 					bp->Subitems.Add(grp, bp->Subitems.HighestOrder()+1);
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
 			}
 
-			for(auto it=bp->Subitems.First();it.isValid();it.Next()) {
+			for(auto it=bp->Subitems.First();it.IsValid();it.Next()) {
 				Blueprint::Group &g=dynamic_cast<Blueprint::Group &>(*it);
 
 				bp->Mapping[g] = &g;
@@ -174,7 +174,7 @@ namespace gge { namespace widgets {
 
 
 		void Blueprint::Element::Prepare(GGEMain &main, resource::File &file) {
-			resource::ResourceBase::Prepare(main,file);
+			resource::Base::Prepare(main,file);
 
 			Border				=dynamic_cast<BorderDataResource*>(file.FindObject(border));
 			Symbol				=dynamic_cast<animation::RectangularGraphic2DSequenceProvider*>(file.FindObject(symbol));
@@ -187,7 +187,7 @@ namespace gge { namespace widgets {
 			SymbolPlace			=dynamic_cast<Placeholder*>(file.FindObject(symbolplace));
 			TextPlace			=dynamic_cast<Placeholder*>(file.FindObject(textplace));
 			ValuePlace			=dynamic_cast<Placeholder*>(file.FindObject(valueplace));
-			Sound				=dynamic_cast<resource::SoundResource*>(file.FindObject(sound));
+			Sound				=dynamic_cast<resource::Sound*>(file.FindObject(sound));
 			Overlay				=dynamic_cast<BorderDataResource*>(file.FindObject(overlay));
 
 			Ruler				=dynamic_cast<BorderDataResource*>(file.FindObject(ruler));
@@ -200,7 +200,7 @@ namespace gge { namespace widgets {
 		}
 
 		void Blueprint::Group::Prepare(GGEMain &main, resource::File &file) {
-			resource::ResourceBase::Prepare(main,file);
+			resource::Base::Prepare(main,file);
 
 			UpButton		=dynamic_cast<checkbox::Blueprint*>(file.FindObject(upbutton));
 			DownButton		=dynamic_cast<checkbox::Blueprint*>(file.FindObject(downbutton));
@@ -253,9 +253,9 @@ namespace gge { namespace widgets {
 
 
 		void Blueprint::Prepare(GGEMain &main, resource::File &file) {
-			ResourceBase::Prepare(main, file);
+			Base::Prepare(main, file);
 
-			TickSound			=dynamic_cast<resource::SoundResource*>(file.FindObject(ticksound));
+			TickSound			=dynamic_cast<resource::Sound*>(file.FindObject(ticksound));
 		}
 
 		Blueprint::AnimationInfo Blueprint::HasStyleAnimation(OrientationType o, FocusMode focus, StyleMode style) const {

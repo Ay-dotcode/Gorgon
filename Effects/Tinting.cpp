@@ -97,7 +97,7 @@ namespace gge { namespace effects {
 	}
 
 	Tinting::Tinting( graphics::Colorizable2DLayer &Target, bool create/*=false*/ ) : 
-		AnimationBase(create),
+		Base(create),
 		from(0), to(0), current(0), 
 		speed(0, 0,0,0),
 		Target(&Target)
@@ -106,7 +106,7 @@ namespace gge { namespace effects {
 
 
 	Tinting::Tinting( graphics::Colorizable2DLayer *Target, bool create/*=false*/ ) : 
-		AnimationBase(create),
+		Base(create),
 		from(0), to(0), current(0), 
 		speed(0, 0,0,0),
 		Target(Target)

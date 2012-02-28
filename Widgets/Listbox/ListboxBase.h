@@ -174,7 +174,7 @@ namespace gge { namespace widgets {
 				if(autoheight) {
 					panel.SetHeight(200);
 					int h=0;
-					for(auto it=panel.Widgets.First();it.isValid();it.Next()) {
+					for(auto it=panel.Widgets.First();it.IsValid();it.Next()) {
 						if(it->IsVisible())
 							h+=it->GetHeight();
 					}

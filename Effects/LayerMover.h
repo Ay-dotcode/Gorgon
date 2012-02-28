@@ -9,16 +9,16 @@ namespace gge { namespace effects {
 
 	////This effect moves a given layer. Moving operation is animated from a given
 	/// value to another one
-	class LayerMover : public animation::AnimationBase {
+	class LayerMover : public animation::Base {
 	public:
 
 		////Target of this effect
 		LayerBase *Target;
 
 		////Initializes the effect
-		LayerMover(LayerBase *Target, animation::AnimationTimer &controller, bool owner=false);
+		LayerMover(LayerBase *Target, animation::Timer &controller, bool owner=false);
 		////Initializes the effect
-		LayerMover(LayerBase &Target, animation::AnimationTimer &controller, bool owner=false);
+		LayerMover(LayerBase &Target, animation::Timer &controller, bool owner=false);
 
 		////Initializes the effect
 		LayerMover(LayerBase *Target, bool create=false);

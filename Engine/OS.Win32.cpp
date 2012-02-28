@@ -1,17 +1,19 @@
-#include "OS.h"
-#include "input.h"
-#include "Multimedia.h"
-#include "..\Utils\Point2D.h"
-
-using namespace gge::utils;
-using namespace gge::input;
-using namespace gge::input::system;
-
 #ifdef WIN32
+
+#	include "OS.h"
+#	include "input.h"
+#	include "Multimedia.h"
+#	include "..\Utils\Point2D.h"
+
+
+	using namespace gge::utils;
+	using namespace gge::input;
+	using namespace gge::input::system;
 
 //#	define WINVER 0x0500
 //#	define _WIN32_WINNT 0x0500
 #	include <windows.h>
+#	include <shlobj.h>
 #	undef CreateWindow
 #	undef Rectangle
 
@@ -34,9 +36,11 @@ using namespace gge::input::system;
 #		define WM_MOUSEHWHEEL					0x020E
 #	endif
 
-extern "C" {
-	__declspec(dllimport) unsigned long __stdcall timeGetTime(void);
-}
+#	undef CreateDirectory
+
+	//extern "C" {
+	//	__declspec(dllimport) unsigned long __stdcall timeGetTime(void);
+	//}
 
 	HINSTANCE Instance;
 
@@ -505,7 +509,41 @@ extern "C" {
 			}
 		}
 
+		namespace user {
+			std::string GetDocumentsPath() {
+				CHAR my_documents[MAX_PATH];
+				my_documents[0]=0;
 
+				HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+
+				return my_documents;
+			}
+
+			std::string GetUsername() {
+				CHAR username[256];
+				username[0]=0;
+
+				DWORD s=256;
+				GetUserName(username, &s);
+
+				return username;
+			}
+		}
+
+		namespace filesystem {
+			bool CreateDirectory(const std::string &name) {
+				return CreateDirectoryA(name.c_str(), NULL)!=0;
+			}
+		}
+
+		std::string GetAppDataPath() {
+			CHAR my_documents[MAX_PATH];
+			my_documents[0]=0;
+
+			HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+
+			return my_documents;
+		}
 	} 
 
 	namespace input {

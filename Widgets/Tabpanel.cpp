@@ -1,5 +1,5 @@
 #include "TabPanel.h"
-#include "../Resource/ResourceFile.h"
+#include "../Resource/File.h"
 
 using namespace gge::resource;
 using namespace gge::utils;
@@ -36,7 +36,7 @@ namespace gge { namespace widgets {
 					EatChunk(Data, size-(1 * 8 + 3 * 8));
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -47,7 +47,7 @@ namespace gge { namespace widgets {
 		}
 
 		void Blueprint::Prepare(GGEMain &main, resource::File &file) {
-			ResourceBase::Prepare(main, file);
+			Base::Prepare(main, file);
 
 			file.FindObject(panel, Panel);
 			file.FindObject(radio, Radio);
@@ -63,7 +63,7 @@ namespace gge { namespace widgets {
 	bool Tabpanel::Focus() {
 		WidgetBase::Focus();
 
-		for(auto it=First();it.isValid();it.Next()) {
+		for(auto it=First();it.IsValid();it.Next()) {
 			if(it->IsVisible())
 				return it->Focus();
 		}
@@ -119,7 +119,7 @@ namespace gge { namespace widgets {
 			return;
 
 		if(bp->Placeholder.SizingMode==bp->Placeholder.Contents || bp->Placeholder.SizingMode==bp->Placeholder.Free || bp->Placeholder.Minimum.Height==0) {
-			if(btn.isValid()) {
+			if(btn.IsValid()) {
 				y=btn->GetHeight();
 			}
 		}
@@ -130,11 +130,11 @@ namespace gge { namespace widgets {
 		y+=bp->Placeholder.Margins.TotalY();
 
 
-		for(auto it=First();it.isValid();it.Next()) {
+		for(auto it=First();it.IsValid();it.Next()) {
 			it->SetY(y);
 			it->SetHeight(size.Height-y);
 
-			if(btn.isValid()) {
+			if(btn.IsValid()) {
 				RadioButton<tabpanel::Panel*> &rad=*btn;
 
 				rad.Text=it->Title;
@@ -175,11 +175,11 @@ namespace gge { namespace widgets {
 			}
 		}
 
-		for(;btn.isValid();btn.Next())
+		for(;btn.IsValid();btn.Next())
 			btn->Hide();
 
 		x=Alignment::CalculateLocation(bp->Placeholder.Align, Bounds(0,0,size.Width,size.Height),Size(x, y), bp->Placeholder.Margins).x;
-		for(btn=buttons.First();btn.isValid();btn.Next()) {
+		for(btn=buttons.First();btn.IsValid();btn.Next()) {
 			btn->SetX(x);
 			x+=btn->GetWidth();
 		}
@@ -193,7 +193,7 @@ namespace gge { namespace widgets {
 	}
 
 	void Tabpanel::Activate(tabpanel::Panel *panel, bool setfocus) {
-		for(auto it=First();it.isValid();it.Next()) {
+		for(auto it=First();it.IsValid();it.Next()) {
 			it->Hide();
 		}
 
@@ -202,7 +202,7 @@ namespace gge { namespace widgets {
 
 		active=panel;
 
-		for(auto it=buttons.First();it.isValid();it.Next()) {
+		for(auto it=buttons.First();it.IsValid();it.Next()) {
 			if(it->Value==panel)
 				it->Check();
 			else
@@ -216,10 +216,10 @@ namespace gge { namespace widgets {
 				Activate(NULL);
 			}
 			else {
-				for(auto it=First();it.isValid();it.Next()) {
+				for(auto it=First();it.IsValid();it.Next()) {
 					if(it.CurrentPtr()==&item) {
 						it.Next();
-						if(it.isValid())
+						if(it.IsValid())
 							Activate(*it);
 						else
 							Activate(*First());
@@ -236,11 +236,11 @@ namespace gge { namespace widgets {
 	void Tabpanel::setblueprint(const widgets::Blueprint & bp) {
 		this->bp=static_cast<const tabpanel::Blueprint*>(&bp);
 		if(this->bp) {
-			for(auto it=First();it.isValid();it.Next()) {
+			for(auto it=First();it.IsValid();it.Next()) {
 				it->SetBlueprint(this->bp->Panel);
 			}
 
-			for(auto it=controls.Widgets.First();it.isValid();it.Next()) {
+			for(auto it=controls.Widgets.First();it.IsValid();it.Next()) {
 				if(dynamic_cast<RadioButton<tabpanel::Panel*> *>(it.CurrentPtr()))
 					dynamic_cast<RadioButton<tabpanel::Panel*> &>(*it).SetBlueprint(this->bp->Radio);
 			}

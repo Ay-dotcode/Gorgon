@@ -14,6 +14,6 @@ namespace gge {
 	////This namespace contains Gorgon Resource System.
 	namespace resource {
 		class File;
-		class ResourceBase;
+		class Base;
 	}
 }

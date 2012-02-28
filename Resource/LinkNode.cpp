@@ -1,5 +1,5 @@
 #include "LinkNode.h"
-#include "ResourceFile.h"
+#include "File.h"
 
 using namespace gge;
 using namespace gge::utils;
@@ -7,15 +7,15 @@ using namespace std;
 
 namespace gge { namespace resource {
 	void LinkNodeResource::Resolve(resource::File &file) {
-		ResourceBase *parent=File->Root().FindParent(guid);
+		Base *parent=File->Root().FindParent(guid);
 		File->Redirects.Add(new Redirect(this->guid, target));
 
 		if(parent) {
 
-			for(SortedCollection<ResourceBase>::Iterator item=parent->Subitems.First();
-				item.isValid(); item.Next()) {
+			for(SortedCollection<Base>::Iterator item=parent->Subitems.First();
+				item.IsValid(); item.Next()) {
 				if(item->isEqual(guid)) {
-					ResourceBase *t=file.Root().FindObject(target);
+					Base *t=file.Root().FindObject(target);
 					if(t) {
 						item.GetWrapper().SetItem(t);
 						break;
@@ -31,11 +31,11 @@ namespace gge { namespace resource {
 		}
 	}
 
-	ResourceBase * LinkNodeResource::GetTarget(resource::File &file) {
+	Base * LinkNodeResource::GetTarget(resource::File &file) {
 		return file.Root().FindObject(target);
 	}
 
-	ResourceBase *LoadLinkNodeResource(File &File, istream &Data, int Size) {
+	Base *LoadLinkNodeResource(File &File, istream &Data, int Size) {
 		LinkNodeResource *link=new LinkNodeResource;
 
 		int target=Data.tellg()+Size;

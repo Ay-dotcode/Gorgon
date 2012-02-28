@@ -1,5 +1,5 @@
-#include "SoundResource.h"
-#include "ResourceFile.h"
+#include "Sound.h"
+#include "File.h"
 #include "../External/LZMA/LzmaDecode.h"
 #include "../Engine/Sound.h"
 
@@ -8,8 +8,8 @@ using namespace gge::sound;
 using namespace gge::sound::system;
 
 namespace gge { namespace resource {
-	ResourceBase *LoadSoundResource(File &File, istream &Data, int Size) {
-		SoundResource *snd=new SoundResource;
+	Sound *LoadSoundResource(File &File, istream &Data, int Size) {
+		Sound *snd=new Sound;
 
 		int target=Data.tellg()+Size;
 		int buffersize;
@@ -77,7 +77,7 @@ namespace gge { namespace resource {
 		return snd;
 	}
 
-	void SoundResource::Prepare( GGEMain &main, File &file ) {
+	void Sound::Prepare( GGEMain &main, File &file ) {
 		Buffer=sound::system::CreateSoundBuffer(Format, Data, Size);
 	}
 

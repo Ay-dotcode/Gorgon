@@ -193,7 +193,7 @@ namespace gge { namespace widgets {
 
 	template<class T_>
 	static ContainerBase &operator <<(ContainerBase &container, RadioGroup<T_> &rg) {
-		for(auto i=rg.First();i.isValid();i.Next()) {
+		for(auto i=rg.First();i.IsValid();i.Next()) {
 			container<<*i;
 		}
 

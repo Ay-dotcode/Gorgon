@@ -1,6 +1,6 @@
 #include "TextboxBase.h"
 #include "..\..\Utils\Size2D.h"
-#include "..\..\Resource\BitmapFontResource.h"
+#include "..\..\Resource\BitmapFont.h"
 
 using namespace gge::utils;
 using namespace gge::resource;

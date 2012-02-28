@@ -71,7 +71,7 @@ namespace gge {
 		BeforeRenderEvent();
 
 		///*Processing interval objects
-		for(utils::Collection<IntervalObject>::Iterator interval=IntervalObjects.First();interval.isValid();interval.Next()) {
+		for(utils::Collection<IntervalObject>::Iterator interval=IntervalObjects.First();interval.IsValid();interval.Next()) {
 			if(interval->Enabled)
 				if(CurrentTime-interval->LastSignal>interval->Timeout) {
 					interval->Signal(*interval, interval->Data);

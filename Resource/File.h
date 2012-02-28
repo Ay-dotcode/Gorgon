@@ -8,24 +8,24 @@
 #include "GRE.h"
 #include "../Utils/Collection.h"
 #include "Definitions.h"
-#include "FolderResource.h"
+#include "Folder.h"
 
 namespace gge { namespace resource {
 
 	////This class defines a resource loader
-	class ResourceLoader {
+	class Loader {
 	public:
 		////This is Resource loader function prototype
-		typedef std::function<ResourceBase* (File&, std::istream&, int)> LoaderFunction;
+		typedef std::function<Base* (File&, std::istream&, int)> LoaderFunction;
 
 		////Gorgon ID of the resource
 		GID::Type GId;
 
 		////Load handler function
-		LoaderFunction Loader;
+		LoaderFunction Handler;
 
 		////Filling constructor
-		ResourceLoader(GID::Type gid, LoaderFunction loader) : GId(gid), Loader(loader) 
+		Loader(GID::Type gid, LoaderFunction handler) : GId(gid), Handler(handler) 
 		{ }
 	};
 
@@ -70,12 +70,12 @@ namespace gge { namespace resource {
 
 	class File {
 	public:
-		File() : root(new FolderResource), LoadNames(false) {
+		File() : root(new Folder), LoadNames(false) {
 
 		}
 
 		////Resource Loaders
-		utils::Collection<ResourceLoader> Loaders;
+		utils::Collection<Loader> Loaders;
 		utils::Collection<Redirect>		  Redirects;
 
 		////File type
@@ -83,7 +83,7 @@ namespace gge { namespace resource {
 		////File version
 		int FileVersion;
 		bool LoadNames;
-		FolderResource &Root() { return *root; }
+		Folder &Root() { return *root; }
 		////Returns the filename used for the last load or save operation
 		string getFilename() const { return Filename; }
 
@@ -95,10 +95,10 @@ namespace gge { namespace resource {
 		bool isLoaded() const { return isloaded; }
 
 		////Loads a resource object from the given file, GID and size
-		ResourceBase *LoadObject(std::istream &Data, int GID, int Size);
+		Base *LoadObject(std::istream &Data, int GID, int Size);
 
 		////Searches the given resource object within this file
-		ResourceBase *FindObject(utils::SGuid guid);
+		Base *FindObject(utils::SGuid guid);
 
 		template<class T_>
 		void FindObject(utils::SGuid guid, T_ *&object) {
@@ -120,7 +120,7 @@ namespace gge { namespace resource {
 
 	protected:
 		////The root folder, root changes while loading a file
-		FolderResource *root;
+		Folder *root;
 
 	private:
 		bool isloaded;

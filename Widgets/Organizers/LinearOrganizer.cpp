@@ -116,14 +116,14 @@ namespace gge { namespace widgets {
 	void LinearOrganizer::sync() {
 		if(!attachedto) return;
 
-		for(auto w=organizedwidgets.First();w.isValid();w.Next()) {
-			if(!attachedto->Widgets.Find(*w).isValid()) {
+		for(auto w=organizedwidgets.First();w.IsValid();w.Next()) {
+			if(!attachedto->Widgets.Find(*w).IsValid()) {
 				w.Remove();
 			}
 		}
 
-		for(auto w=attachedto->Widgets.First();w.isValid();w.Next()) {
-			if(!organizedwidgets.Find(*w).isValid()) {
+		for(auto w=attachedto->Widgets.First();w.IsValid();w.Next()) {
+			if(!organizedwidgets.Find(*w).IsValid()) {
 				organizedwidgets.Add(w);
 				rows[currentrow].columns.push_back(w.CurrentPtr());
 			}

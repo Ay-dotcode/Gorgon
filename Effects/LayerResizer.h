@@ -10,15 +10,15 @@ namespace gge { namespace effects {
 
 	////This effect resizes a given layer. Resize operation is animated from a given
 	/// value to another one
-	class LayerResizer : public animation::AnimationBase {
+	class LayerResizer : public animation::Base {
 	public:
 
 		////Target of this effect
 		LayerBase *Target;
 
 		////Initializes the effect
-		LayerResizer(LayerBase *Target, animation::AnimationTimer &controller, bool owner=false) :
-			AnimationBase(controller,owner),
+		LayerResizer(LayerBase *Target, animation::Timer &controller, bool owner=false) :
+			Base(controller,owner),
 			speed(0,0 , 0,0),
 			current((utils::Bounds2D)Target->BoundingBox),
 			Target(Target)
@@ -26,8 +26,8 @@ namespace gge { namespace effects {
 		}
 
 		////Initializes the effect
-		LayerResizer(LayerBase &Target, animation::AnimationTimer &controller, bool owner=false) :
-			AnimationBase(controller,owner),
+		LayerResizer(LayerBase &Target, animation::Timer &controller, bool owner=false) :
+			Base(controller,owner),
 			speed(0,0 , 0,0),
 			current((utils::Bounds2D)Target.BoundingBox),
 			Target(&Target)
@@ -36,7 +36,7 @@ namespace gge { namespace effects {
 
 			////Initializes the effect
 		LayerResizer(LayerBase *Target, bool create=false) :
-			AnimationBase(create),
+			Base(create),
 			speed(0,0 , 0,0),
 			current((utils::Bounds2D)Target->BoundingBox),
 			Target(Target)
@@ -45,7 +45,7 @@ namespace gge { namespace effects {
 
 		////Initializes the effect
 		LayerResizer(LayerBase &Target, bool create=false) :
-			AnimationBase(create),
+			Base(create),
 			speed(0,0 , 0,0),
 			current((utils::Bounds2D)Target.BoundingBox),
 			Target(&Target)

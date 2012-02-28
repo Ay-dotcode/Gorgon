@@ -1,6 +1,6 @@
 #include "CheckboxBlueprint.h"
 #include "..\..\Engine\Pointer.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 
 using namespace gge::resource;
 using namespace std;
@@ -38,7 +38,7 @@ namespace gge { namespace widgets {
 					EatChunk(Data, size-(1 * 8 + 5 * 4));
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -88,7 +88,7 @@ namespace gge { namespace widgets {
 					bp->Subitems.Add(l, bp->Subitems.HighestOrder()+1);
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -139,7 +139,7 @@ namespace gge { namespace widgets {
 					bp->Subitems.Add(elm, bp->Subitems.HighestOrder()+1);
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -179,7 +179,7 @@ namespace gge { namespace widgets {
 					bp->Subitems.Add(grp, bp->Subitems.HighestOrder()+1);
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -319,9 +319,9 @@ namespace gge { namespace widgets {
 		}
 
 		void Blueprint::Prepare(GGEMain &main, resource::File &file) {
-			ResourceBase::Prepare(main, file);
+			Base::Prepare(main, file);
 			
-			for(auto it=Subitems.First();it.isValid();it.Next()) {
+			for(auto it=Subitems.First();it.IsValid();it.Next()) {
 				Blueprint::Group &g=dynamic_cast<Blueprint::Group &>(*it);
 
 				Mapping[g] = &g;
@@ -335,7 +335,7 @@ namespace gge { namespace widgets {
 		}
 
 		void Blueprint::Group::Prepare(GGEMain &main, resource::File &file) {
-			resource::ResourceBase::Prepare(main,file);
+			resource::Base::Prepare(main,file);
 
 			Normal			=dynamic_cast<Blueprint::Element*>(file.FindObject(normal));
 			Mapping[Blueprint::Normal][Blueprint::Style_None]=Normal;
@@ -378,7 +378,7 @@ namespace gge { namespace widgets {
 
 
 		void Blueprint::Element::Prepare(GGEMain &main, resource::File &file) {
-			resource::ResourceBase::Prepare(main,file);
+			resource::Base::Prepare(main,file);
 
 			Border				=dynamic_cast<BorderDataResource*>(file.FindObject(border));
 			Symbol				=dynamic_cast<resource::ResizableObjectProvider*>(file.FindObject(symbol));
@@ -388,7 +388,7 @@ namespace gge { namespace widgets {
 			SymbolPlace	=dynamic_cast<Placeholder*>(file.FindObject(symbolplace));
 			TextPlace		=dynamic_cast<Placeholder*>(file.FindObject(textplace));
 			IconPlace		=dynamic_cast<Placeholder*>(file.FindObject(iconplace));
-			Sound				=dynamic_cast<resource::SoundResource*>(file.FindObject(sound));
+			Sound				=dynamic_cast<resource::Sound*>(file.FindObject(sound));
 			Overlay				=dynamic_cast<BorderDataResource*>(file.FindObject(overlay));
 
 			for(int i=0;i<3;i++) {
@@ -398,7 +398,7 @@ namespace gge { namespace widgets {
 
 
 		void Blueprint::Line::Prepare(GGEMain &main, resource::File &file) {
-			resource::ResourceBase::Prepare(main,file);
+			resource::Base::Prepare(main,file);
 
 			Border				=dynamic_cast<BorderDataResource*>(file.FindObject(border));
 		}

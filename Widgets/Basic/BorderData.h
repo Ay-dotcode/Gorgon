@@ -1,10 +1,10 @@
 #pragma once
 
 
-#include "..\..\Resource\ResourceBase.h"
+#include "..\..\Resource\Base.h"
 #include "..\Definitions.h"
 #include "..\..\Resource\ResizableObject.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 #include "..\..\Resource\NullImage.h"
 #include "..\..\Engine\Animation.h"
 #include "..\..\Utils\Margins.h"
@@ -68,8 +68,8 @@ namespace gge { namespace widgets {
 			object->DeleteAnimation();
 		}
 
-		virtual void SetController( animation::AnimationTimer &controller, bool owner=false ) {
-			AnimationBase::SetController(controller, owner);
+		virtual void SetController( animation::Timer &controller, bool owner=false ) {
+			Base::SetController(controller, owner);
 			object->SetController(controller);
 		}
 
@@ -97,14 +97,14 @@ namespace gge { namespace widgets {
 		{ return object->CalculateHeight(controller, h); }
 	};
 
-	class BorderDataResource : public resource::ResourceBase, virtual public resource::ResizableObjectProvider {
+	class BorderDataResource : public resource::Base, virtual public resource::ResizableObjectProvider {
 		friend BorderDataResource *LoadBorderDataResource(resource::File& File, std::istream &Data, int Size);
 	public:
 
 		BorderDataResource(ResizableObjectResource &object) : object(&object), Margins(0), Padding(0), BorderWidth(0), AutoBorderWidth(true) 
 		{ }
 
-		virtual BorderData &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { 
+		virtual BorderData &CreateResizableObject(animation::Timer &controller, bool owner=false) { 
 			BorderData *bd=new BorderData(object->CreateResizableObject(controller, owner), AutoBorderWidth);
 			if(!AutoBorderWidth)
 				bd->BorderWidth=BorderWidth;
@@ -125,7 +125,7 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual BorderData &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) 
+		virtual BorderData &CreateAnimation(animation::Timer &controller, bool owner=false) 
 		{ return CreateResizableObject(controller, owner); }
 
 		virtual BorderData &CreateAnimation(bool create=false)

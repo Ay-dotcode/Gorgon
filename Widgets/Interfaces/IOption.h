@@ -153,10 +153,10 @@ namespace gge { namespace widgets {
 			}
 			else {
 				auto it=Options.Find(currentoption);
-				if(it.isValid())
+				if(it.IsValid())
 					it.Next();
 
-				if(it.isValid())
+				if(it.IsValid())
 					Set(*it);
 				else
 					Set(*Options.First());
@@ -172,10 +172,10 @@ namespace gge { namespace widgets {
 			}
 			else {
 				auto it=Options.Find(currentoption);
-				if(it.isValid())
+				if(it.IsValid())
 					it.Previous();
 
-				if(it.isValid())
+				if(it.IsValid())
 					Set(*it);
 				else
 					Set(*Options.Last());
@@ -213,7 +213,7 @@ namespace gge { namespace widgets {
 		}
 
 		virtual O_ *FindOption(const T_ &value) {
-			for(auto i=Options.First();i.isValid();i.Next()) {
+			for(auto i=Options.First();i.IsValid();i.Next()) {
 				if(i->Value==value)
 					return i.CurrentPtr();
 			}
@@ -221,7 +221,7 @@ namespace gge { namespace widgets {
 			return NULL;
 		}
 		virtual const O_ *FindOption(const T_ &value) const {
-			for(auto i=Options.First();i.isValid();i.Next()) {
+			for(auto i=Options.First();i.IsValid();i.Next()) {
 				if(i->Value==value)
 					return i.CurrentPtr();
 			}
@@ -269,7 +269,7 @@ namespace gge { namespace widgets {
 		utils::EventChain<OptionGroup> changeevent;
 
 		void clearall() {
-			for(auto i=Options.First();i.isValid();i.Next()) {
+			for(auto i=Options.First();i.IsValid();i.Next()) {
 				i->Uncheck();
 			}
 		}

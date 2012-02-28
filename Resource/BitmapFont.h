@@ -1,8 +1,8 @@
 #pragma once
 
 #include "GRE.h"
-#include "ResourceBase.h"
-#include "ImageResource.h"
+#include "Base.h"
+#include "Image.h"
 #include "../Engine/FontRenderer.h"
 #include <map>
 
@@ -12,14 +12,14 @@ namespace gge { namespace resource {
 
 
 	////This function loads a bitmap font from the given file
-	ResourceBase *LoadBitmapFontResource(File &File, std::istream &Data, int Size);
+	BitmapFont *LoadBitmapFontResource(File &File, std::istream &Data, int Size);
 
 	////This is bitmap font. Bitmap fonts contains every character as images. It has its
 	/// pros and cons. Being bitmap, these fonts do not require extra rendering. They are
 	/// independent of OS and does not require any additional libraries. However, they have
 	/// no scaling, rotation capabilities without losing detail.
-	class BitmapFontResource : public ResourceBase, public FontRenderer {
-		friend ResourceBase *LoadBitmapFontResource(File &File, std::istream &Data, int Size);
+	class BitmapFont : public Base, public FontRenderer {
+ 		friend BitmapFont *LoadBitmapFontResource(File &File, std::istream &Data, int Size);
 		friend class Font;
 	public:
 		////Size of the tabs in spaces, default is 4
@@ -30,9 +30,9 @@ namespace gge { namespace resource {
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////Default constructor
-		BitmapFontResource() : ResourceBase(), noshadows(false) { 
+		BitmapFont() : Base(), noshadows(false) { 
 			Tabsize=4; 
-			memset(Characters, 0, 256*sizeof(ImageResource*)); 
+			memset(Characters, 0, 256*sizeof(Image*)); 
 			VerticalSpacing=22;
 
 			Shadows[0]=this;
@@ -40,7 +40,7 @@ namespace gge { namespace resource {
 
 		////Images that represents characters. 8bit ASCII encoding is used. 
 		/// An image might be used in more than one character.
-		ImageResource *Characters[256];
+		Image *Characters[256];
 
 		////Horizontal separation distance between two characters
 		int Seperator;
@@ -49,7 +49,7 @@ namespace gge { namespace resource {
 		////Baseline from the top
 		int Baseline;
 
-		BitmapFontResource &Blur(float amount, int windowsize=-1);
+		BitmapFont &Blur(float amount, int windowsize=-1);
 
 
 	//protected:
@@ -91,9 +91,9 @@ namespace gge { namespace resource {
 
 		virtual void Prepare(GGEMain &main, File &file);
 
-		virtual ~BitmapFontResource();
+		virtual ~BitmapFont();
 
-		std::map<float, BitmapFontResource*> Shadows;
+		std::map<float, BitmapFont*> Shadows;
 
 	protected:
 		bool noshadows;

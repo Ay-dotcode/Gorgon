@@ -1,7 +1,7 @@
 #include "Rectangle.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 #include "..\..\Engine\Animation.h"
-#include "..\..\Resource\AnimationResource.h"
+#include "..\..\Resource\Animation.h"
 #include "..\..\Resource\NullImage.h"
 #include <vector>
 #include "..\..\Utils\SGuid.h"
@@ -16,7 +16,7 @@ namespace gge { namespace widgets {
 
 
 	namespace rectangleresource_prvt {
-		void setrectangleprovider(vector<AnimationResource *> &anims, RectangularGraphic2DSequenceProvider *&obj, int id) {
+		void setrectangleprovider(vector<Animation *> &anims, RectangularGraphic2DSequenceProvider *&obj, int id) {
 			if((int)anims.size()<=id) {
 				obj=&NullImage::Get();
 			}
@@ -38,7 +38,7 @@ namespace gge { namespace widgets {
 	RectangleResource *LoadRectangleResource(resource::File& File, std::istream &Data, int Size) {
 		RectangleResource *rectangle;
 		SGuid g;
-		vector<AnimationResource *> anims;
+		vector<Animation *> anims;
 		RectangularGraphic2DSequenceProvider *tl=NULL, *t=NULL, *tr=NULL;
 		RectangularGraphic2DSequenceProvider * l=NULL, *c=NULL, * r=NULL;
 		RectangularGraphic2DSequenceProvider *bl=NULL, *b=NULL, *br=NULL;

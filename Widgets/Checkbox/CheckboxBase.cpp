@@ -1,6 +1,6 @@
 #include "CheckboxBase.h"
 #include "..\..\Utils\Size2D.h"
-#include "..\..\Resource\BitmapFontResource.h"
+#include "..\..\Resource\BitmapFont.h"
 
 using namespace gge::utils;
 using namespace gge::resource;
@@ -352,8 +352,8 @@ namespace gge { namespace widgets {
 										text,eprint,3,TextAlignment::Left);
 								}
 
-								if(dynamic_cast<BitmapFontResource*>(font->getRenderer())) {
-									ImageResource *im=dynamic_cast<BitmapFontResource*>(font->getRenderer())->Characters['_'];
+								if(dynamic_cast<BitmapFont*>(font->getRenderer())) {
+									Image *im=dynamic_cast<BitmapFont*>(font->getRenderer())->Characters['_'];
 									innerlayer.SetCurrentColor(font->Color);
 									im->DrawStretched(innerlayer, 
 										eprint[1].Out.position.x-1,eprint[1].Out.position.y,

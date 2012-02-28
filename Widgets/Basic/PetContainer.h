@@ -93,7 +93,7 @@ namespace gge { namespace widgets {
 		}
 
 		void InformEnabledChange(bool state) {
-			for(auto it=Widgets.First();it.isValid();it.Next()) {
+			for(auto it=Widgets.First();it.IsValid();it.Next()) {
 				call_widget_containerenabledchanged(*it, false);
 			}
 		}

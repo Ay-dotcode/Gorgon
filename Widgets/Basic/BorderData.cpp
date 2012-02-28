@@ -2,10 +2,10 @@
 
 #include "Line.h"
 #include "Rectangle.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 #include "..\..\Engine\Animation.h"
-#include "..\..\Resource\AnimationResource.h"
-#include "..\..\Resource\ImageResource.h"
+#include "..\..\Resource\Animation.h"
+#include "..\..\Resource\Image.h"
 #include "..\..\Resource\NullImage.h"
 #include "..\..\Utils\SGuid.h"
 #include "ResizableObjectResource.h"
@@ -42,7 +42,7 @@ namespace gge { namespace widgets {
 				bdr->AutoBorderWidth = ReadFrom<int>(Data)!=0;
 			}
 			else {
-				ResourceBase *rb=LoadResizableObjectResource(File, Data, size);
+				resource::Base *rb=LoadResizableObjectResource(File, Data, size);
 
 				if(rb)
 					bdr->Subitems.Add(rb);
@@ -53,7 +53,7 @@ namespace gge { namespace widgets {
 	}
 
 	void BorderDataResource::Prepare(GGEMain &main, resource::File &file) {
-		ResourceBase::Prepare(main, file);
+		Base::Prepare(main, file);
 
 		ResizableObjectResource *ror= dynamic_cast<ResizableObjectResource *>(file.Root().FindObject(target));
 

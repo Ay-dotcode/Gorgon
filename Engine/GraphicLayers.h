@@ -26,7 +26,7 @@ namespace gge { namespace graphics {
 		////This list contains surfaces to be drawn
 		PAClassList<BasicSurface> Surfaces;
 		////Whether or not enable clipping
-		bool EnableClipping;
+		bool ClippingEnabled;
 		BasicSurface::DrawMode DrawMode;
 
 
@@ -42,7 +42,7 @@ namespace gge { namespace graphics {
 
 		void init() {
 			isVisible=true;
-			EnableClipping=false;
+			ClippingEnabled=false;
 			DrawMode=BasicSurface::Normal;
 		}
 

@@ -36,7 +36,7 @@ namespace gge { namespace widgets {
 		}
 
 		void ClearDialogButtons() {
-			for(auto i=dialogbuttons.First();i.isValid();i.Next())
+			for(auto i=dialogbuttons.First();i.IsValid();i.Next())
 				i->Detach();
 
 			dialogbuttons.Clear();

@@ -115,7 +115,7 @@ namespace gge { namespace widgets {
 		BoundsChanged();
 	}
 
-	void WidgetBase::playsound(resource::SoundResource *snd) {
+	void WidgetBase::playsound(resource::Sound *snd) {
 		int x=location.x+size.Width/2;
 		int y=location.y+size.Height/2;
 		if(Container) {

@@ -1,9 +1,9 @@
 #pragma once
 
 
-#include "../Resource/ResourceBase.h"
+#include "../Resource/Base.h"
 #include "Definitions.h"
-#include "../Resource/ResourceFile.h"
+#include "../Resource/File.h"
 #include "../Engine/Font.h"
 #include <map>
 #include "../Engine/Animation.h"
@@ -339,7 +339,7 @@ namespace gge { namespace widgets {
 
 			//this creates a new animation and you are responsible to delete it, 
 			//use .DeleteAnimation to delete the object safely
-			animation::RectangularGraphic2DAnimation &operator () (const std::string &key, animation::AnimationTimer &controller, bool owner=false) {
+			animation::RectangularGraphic2DAnimation &operator () (const std::string &key, animation::Timer &controller, bool owner=false) {
 				return this->operator [](key).CreateAnimation(controller, owner);
 			}
 
@@ -347,7 +347,7 @@ namespace gge { namespace widgets {
 			ImageCollection(std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> &parent) : Collection(parent) { }
 		} Icons, Pictures;
 
-		class SoundCollection : public Collection<resource::SoundResource> {
+		class SoundCollection : public Collection<resource::Sound> {
 			friend class WidgetRegistry;
 		public:
 			//this creates a new animation and you are responsible to delete it, 
@@ -363,7 +363,7 @@ namespace gge { namespace widgets {
 			}
 
 		protected:
-			SoundCollection(std::map<std::string, resource::SoundResource&> &parent) : Collection(parent) { }
+			SoundCollection(std::map<std::string, resource::Sound&> &parent) : Collection(parent) { }
 		} Sounds;
 
 
@@ -373,12 +373,12 @@ namespace gge { namespace widgets {
 	protected:
 		std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> icons;
 		std::map<std::string, animation::RectangularGraphic2DSequenceProvider&> pictures;
-		std::map<std::string, resource::SoundResource&> sounds;
+		std::map<std::string, resource::Sound&> sounds;
 	};
 
 	WidgetRegistryResource *LoadWR(resource::File& File, std::istream &Data, int Size);
 
-	class WidgetRegistryResource : public resource::ResourceBase {
+	class WidgetRegistryResource : public resource::Base {
 		friend WidgetRegistryResource *LoadWR(resource::File& File, std::istream &Data, int Size);
 	public:
 

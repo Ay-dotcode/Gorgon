@@ -379,7 +379,7 @@ namespace gge { namespace input {
 			};
 
 			bool Fire(Event::Type event, utils::Point location, int amount) {
-				for(utils::SortedCollection<Object>::Iterator i=Events.Last();i.isValid();i.Previous()) {
+				for(utils::SortedCollection<Object>::Iterator i=Events.Last();i.IsValid();i.Previous()) {
 					i->Fire(event, location, amount);
 				}
 			}

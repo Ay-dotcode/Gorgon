@@ -1,9 +1,9 @@
 #pragma once
 
 #include "GRE.h"
-#include "ResourceBase.h"
+#include "Base.h"
 #include "../Engine/Animation.h"
-#include "ImageResource.h"
+#include "Image.h"
 #include "../Resource/ResizableObject.h"
 #include "../Utils/Point2D.h"
 
@@ -13,10 +13,10 @@
 namespace gge { namespace resource {
 	class File;
 
-	class AnimationResource;
+	class Animation;
 	
 	////This function loads a text resource from the given file
-	AnimationResource *LoadAnimationResource(File &File, std::istream &Data, int Size);
+	Animation *LoadAnimationResource(File &File, std::istream &Data, int Size);
 
 	////This class draws an animated image
 	class ImageAnimation : 
@@ -24,12 +24,12 @@ namespace gge { namespace resource {
 	{
 	public:
 
-		ImageAnimation(AnimationResource &parent, animation::AnimationTimer &controller, bool owner=false);
-		ImageAnimation(AnimationResource &parent, bool create=false);
+		ImageAnimation(Animation &parent, animation::Timer &controller, bool owner=false);
+		ImageAnimation(Animation &parent, bool create=false);
 
 		virtual graphics::GLTexture &GetTexture() { return ImageTexture::GetTexture(); }
 
-		AnimationResource &parent;
+		Animation &parent;
 
 	protected:
 		virtual animation::ProgressResult::Type Progress();
@@ -38,22 +38,22 @@ namespace gge { namespace resource {
 
 	class AnimationResourceFrame {
 	public:
-		AnimationResourceFrame(unsigned d=0, unsigned s=0, ImageResource *im=NULL) : Duration(d), Start(s), Image(im) { }
+		AnimationResourceFrame(unsigned d=0, unsigned s=0, Image *im=NULL) : Duration(d), Start(s), Image(im) { }
 
 		unsigned Duration;
 		unsigned Start;
-		ImageResource *Image;
+		Image *Image;
 	};
 
 
 	////
-	class AnimationResource : 
-		public ResourceBase, virtual public ResizableObjectProvider, 
+	class Animation : 
+		public Base, virtual public ResizableObjectProvider, 
 		virtual public animation::RectangularGraphic2DSequenceProvider 
 	{
 
-		friend AnimationResource *LoadAnimationResource(File &File, std::istream &Data, int Size);
-		friend void LoadAnimationResourceEx(AnimationResource *anim, File &File, std::istream &Data, int Size);
+		friend Animation *LoadAnimationResource(File &File, std::istream &Data, int Size);
+		friend void LoadAnimationResourceEx(Animation *anim, File &File, std::istream &Data, int Size);
 		friend class ImageAnimation;
 		friend class DiscreteImageAnimation;
 	public:
@@ -63,7 +63,7 @@ namespace gge { namespace resource {
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		
 		////Default constructor
-		AnimationResource() : ResourceBase() { FrameCount=TotalLength=0; }
+		Animation() : Base() { FrameCount=TotalLength=0; }
 
 		////Returns the width of the first image
 		int GetWidth() const { if(Subitems.getCount()>0) return Frames[0].Image->GetWidth(); return 0; }
@@ -72,7 +72,7 @@ namespace gge { namespace resource {
 		////Returns number of frames
 		int GetFrameCount() const { return FrameCount; }
 
-		virtual ImageAnimation &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) {
+		virtual ImageAnimation &CreateAnimation(animation::Timer &controller, bool owner=false) {
 			return *new ImageAnimation(*this, controller, owner);
 		}
 
@@ -80,7 +80,7 @@ namespace gge { namespace resource {
 			return *new ImageAnimation(*this, create);
 		}
 
-		virtual ImageAnimation &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) {
+		virtual ImageAnimation &CreateResizableObject(animation::Timer &controller, bool owner=false) {
 			return *new ImageAnimation(*this, controller, owner);
 		}
 
@@ -88,7 +88,7 @@ namespace gge { namespace resource {
 			return *new ImageAnimation(*this, create);
 		}
 
-		virtual ImageResource &ImageAt(int t) { 
+		virtual Image &ImageAt(int t) { 
 			t=utils::PositiveMod(t, GetDuration());
 
 			return *Frames[FrameAt(t)].Image; 
@@ -98,7 +98,7 @@ namespace gge { namespace resource {
 
 		unsigned GetTotalLength() const { return TotalLength; }
 
-		ImageResource &operator [](int Frame) {
+		Image &operator [](int Frame) {
 			return *Frames[Frame].Image;
 		}
 

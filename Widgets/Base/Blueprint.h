@@ -2,7 +2,7 @@
 
 
 #include "..\..\Engine\Pointer.h"
-#include "..\..\Resource\ResourceBase.h"
+#include "..\..\Resource\Base.h"
 
 
 namespace gge { namespace widgets {

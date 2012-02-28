@@ -7,11 +7,11 @@
 
 #include "..\Base\BluePrint.h"
 #include "..\Definitions.h"
-#include "..\..\Resource\SoundResource.h"
+#include "..\..\Resource\Sound.h"
 
 #include <map>
 #include "..\Slider\SliderBlueprint.h"
-#include "..\..\Resource\ResourceBase.h"
+#include "..\..\Resource\Base.h"
 #include "..\Checkbox\CheckboxBlueprint.h"
 
 
@@ -20,12 +20,12 @@ namespace gge { namespace widgets {
 
 	namespace textbox {
 
-		class Blueprint : public widgets::Blueprint, public resource::ResourceBase {
+		class Blueprint : public widgets::Blueprint, public resource::Base {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:
 
 
-			class Element : public resource::ResourceBase {
+			class Element : public resource::Base {
 				friend Blueprint::Element *LoadElement(resource::File& File, std::istream &Data, int Size);
 				friend class Blueprint;
 			public:
@@ -41,7 +41,7 @@ namespace gge { namespace widgets {
 				BorderDataResource			*InnerBorder;
 				gge::Font					*Font;
 				gge::Font					*SelectedFont;
-				resource::SoundResource		*Sound;
+				resource::Sound		*Sound;
 				BorderDataResource			*Overlay;
 
 
@@ -66,7 +66,7 @@ namespace gge { namespace widgets {
 					return SelectedFont;
 				}
 				template<>
-				resource::SoundResource *Get<resource::SoundResource, 7>() const {
+				resource::Sound *Get<resource::Sound, 7>() const {
 					return Sound;
 				}
 				template<>
@@ -119,7 +119,7 @@ namespace gge { namespace widgets {
 			slider::Blueprint	*Scroller;
 			Placeholder			CaretPlace;
 			Alignment::Type		Align;
-			resource::SoundResource *TypeSound;
+			resource::Sound *TypeSound;
 
 
 			Element *Normal;
@@ -186,8 +186,8 @@ namespace gge { namespace widgets {
 			Font *GetSelectedFont(StyleMode style, bool &transition) const {
 				return Get<Font, 4>(style, transition);
 			}
-			resource::SoundResource *GetSound(StyleMode style, bool &type) const {
-				return Get<resource::SoundResource, 7>(style, type);
+			resource::Sound *GetSound(StyleMode style, bool &type) const {
+				return Get<resource::Sound, 7>(style, type);
 			}
 			BorderDataResource *GetOverlay(StyleMode style, bool &transition) const {
 				return Get<BorderDataResource, 8>(style, transition);

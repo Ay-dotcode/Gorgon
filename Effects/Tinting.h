@@ -9,20 +9,20 @@ namespace gge { namespace effects {
 
 	////This effect tints a given colorizable target. Tinting is animated from a given
 	/// value to another one
-	class Tinting : public animation::AnimationBase {
+	class Tinting : public animation::Base {
 	public:
 
 		////Initializes the effect
-		Tinting(graphics::Colorizable2DLayer *Target, animation::AnimationTimer &Controller, bool owner=false) : 
-			AnimationBase(Controller, owner),
+		Tinting(graphics::Colorizable2DLayer *Target, animation::Timer &Controller, bool owner=false) : 
+			Base(Controller, owner),
 			from(0), to(0), current(0), 
 			speed(0, 0,0,0),
 			Target(Target)
 		{ } 
 
 		////Initializes the effect
-		Tinting(graphics::Colorizable2DLayer &Target, animation::AnimationTimer &Controller, bool owner=false) : 
-			AnimationBase(Controller, owner),
+		Tinting(graphics::Colorizable2DLayer &Target, animation::Timer &Controller, bool owner=false) : 
+			Base(Controller, owner),
 			from(0), to(0), current(0), 
 			speed(0, 0,0,0),
 			Target(&Target)

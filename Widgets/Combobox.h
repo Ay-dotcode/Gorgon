@@ -78,7 +78,7 @@ namespace gge { namespace widgets {
 		}
 
 		void DeleteAll(const T_ &value) {
-			for(auto it=First();it.isValid();it.Next()) {
+			for(auto it=First();it.IsValid();it.Next()) {
 				if(it->Value==value) {
 					listbox.Remove(*it);
 					it.Delete();
@@ -87,7 +87,7 @@ namespace gge { namespace widgets {
 		}
 
 		ListItem *Find(const T_ &value) {
-			for(auto it=First();it.isValid();it.Next()) {
+			for(auto it=First();it.IsValid();it.Next()) {
 				if(it->Value==value)
 					return it.CurrentPtr();
 			}
@@ -200,13 +200,13 @@ namespace gge { namespace widgets {
 						if(Key==input::keyboard::KeyCodes::Down) {
 							auto it=OrderedCollection::Find(GetSelectedItem());
 
-							if(!it.isValid()) {
+							if(!it.IsValid()) {
 								if(GetCount())
 									setvalue(OrderedCollection::get_(0)->Value);
 							}
 							else {
 								it.Next();
-								if(it.isValid()) {
+								if(it.IsValid()) {
 									setvalue(it->Value);
 								}
 							}
@@ -216,7 +216,7 @@ namespace gge { namespace widgets {
 						else if(Key==input::keyboard::KeyCodes::Up) {
 							auto it=OrderedCollection::Find(GetSelectedItem());
 							it.Previous();
-							if(it.isValid()) {
+							if(it.IsValid()) {
 								setvalue(it->Value);
 							}
 

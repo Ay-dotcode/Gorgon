@@ -1,5 +1,5 @@
 #include "Placeholder.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 
 
 using namespace gge::resource;

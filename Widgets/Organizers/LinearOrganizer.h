@@ -74,7 +74,7 @@ namespace gge { namespace widgets {
 		LinearOrganizer &operator <<(RadioGroup<T_> &rg) {
 			if(!attachedto) return *this;
 
-			for(auto i=rg.First();i.isValid();i.Next()) {
+			for(auto i=rg.First();i.IsValid();i.Next()) {
 				*attachedto<<*i;
 				NextLine();
 			}
@@ -92,11 +92,14 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
-		template <class T_>
 		LinearOrganizer &operator <<(const std::string &text) {
 			Label *l=new Label(text);
+			l->TextWrap=false;
+			l->Autosize=AutosizeModes::Autosize;
 
-			*this<<l;
+			*this<<*l;
+
+			return *this;
 		}
 
 		LinearOrganizer &operator <<(Modifier m) {

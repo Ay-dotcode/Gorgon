@@ -1,6 +1,6 @@
 #include "PanelBase.h"
 #include "..\..\Utils\Size2D.h"
-#include "..\..\Resource\BitmapFontResource.h"
+#include "..\..\Resource\BitmapFont.h"
 
 using namespace gge::utils;
 using namespace gge::resource;
@@ -226,7 +226,7 @@ namespace gge { namespace widgets {
 			innerlayer.BoundingBox=inner;
 
 			Size size=Size(inner.Width(), 0);
-			for(auto i=Widgets.First();i.isValid();i.Next()) {
+			for(auto i=Widgets.First();i.IsValid();i.Next()) {
 				int y=i->GetBounds().BottomRight().y;
 				if(size.Height<y)
 					size.Height=y;
@@ -485,7 +485,7 @@ namespace gge { namespace widgets {
 
 				if(TextAlignment::GetHorizontal(align)==TextAlignment::Left) {
 					int x=margins.Left;
-					for(auto i=titlebuttons.Last();i.isValid();i.Previous()) {
+					for(auto i=titlebuttons.Last();i.IsValid();i.Previous()) {
 						if(i->IsVisible()) {
 							int y=Alignment::CalculateLocation(align, Bounds(0,margins.Top, 0,height+margins.TotalY()), Size(0,i->GetHeight())).y;
 
@@ -499,7 +499,7 @@ namespace gge { namespace widgets {
 				}
 				else {
 					int x=size.Width-margins.Right;
-					for(auto i=titlebuttons.Last();i.isValid();i.Previous()) {
+					for(auto i=titlebuttons.Last();i.IsValid();i.Previous()) {
 						if(i->IsVisible()) {
 							int y=Alignment::CalculateLocation(align, Bounds(0,margins.Top, 0,height+margins.TotalY()), Size(0,i->GetHeight())).y;
 
@@ -530,7 +530,7 @@ namespace gge { namespace widgets {
 				if(TextAlignment::GetHorizontal(align)==TextAlignment::Left) {
 					int x=margins.Left;
 					int cw=0;
-					for(auto i=dialogbuttons.Last();i.isValid();i.Previous()) {
+					for(auto i=dialogbuttons.Last();i.IsValid();i.Previous()) {
 						if(i->IsVisible()) {
 							int y=Alignment::CalculateLocation(align, Bounds(0,controls.BaseLayer.BoundingBox.Bottom-height-margins.TotalY(), 0,controls.BaseLayer.BoundingBox.Bottom-margins.Bottom), Size(0,i->GetHeight())).y;
 
@@ -549,7 +549,7 @@ namespace gge { namespace widgets {
 				else {
 					int x=size.Width-margins.Right;
 					int cw=0;
-					for(auto i=dialogbuttons.Last();i.isValid();i.Previous()) {
+					for(auto i=dialogbuttons.Last();i.IsValid();i.Previous()) {
 						if(i->IsVisible()) {
 							int y=Alignment::CalculateLocation(align, Bounds(0,controls.BaseLayer.BoundingBox.Bottom-(height+margins.TotalY()), 0,controls.BaseLayer.BoundingBox.Bottom-margins.Bottom), Size(0,i->GetHeight())).y;
 

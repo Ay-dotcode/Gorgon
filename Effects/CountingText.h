@@ -3,13 +3,13 @@
 #include "../Resource/GRE.h"
 #include "../Engine/Animation.h"
 #include "../Engine/Graphics.h"
-#include "../Resource/BitmapFontResource.h"
+#include "../Resource/BitmapFont.h"
 
 
 namespace gge { namespace effects {
 
 	////This effect displays a counting number going from a given value to another one.
-	class CountingText : public animation::AnimationBase {
+	class CountingText : public animation::Base {
 	public:
 		////Color of the text, default is black
 		graphics::RGBint Color;
@@ -24,16 +24,16 @@ namespace gge { namespace effects {
 		////Customized printing format, printf style that can feature a %f as the current value
 		string Format;
 		////The font to be used
-		resource::BitmapFontResource *Font;
+		resource::BitmapFont *Font;
 
 
 		////Initializes the effect
-		CountingText(animation::AnimationTimer &controller, bool owner=false);
+		CountingText(animation::Timer &controller, bool owner=false);
 
 		////Initializes the effect
 		explicit CountingText(bool create=false);
 
-		void Adjust(resource::BitmapFontResource *Font=NULL, 
+		void Adjust(resource::BitmapFont *Font=NULL, 
 			graphics::RGBint color=graphics::RGBint(0xff000000), 
 			int Width=0, TextAlignment::Type Align=TextAlignment::Left, 
 			ShadowParams Shadow=ShadowParams(), int Decimals=0) {

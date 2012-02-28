@@ -37,6 +37,60 @@ namespace gge { namespace os {
 		extern bool pointerdisplayed;
 	}
 
+	namespace user {
+		std::string GetUsername();
+		std::string GetDocumentsPath();
+	}
+
+	std::string GetAppDataPath();
+
+	namespace filesystem {
+		bool CreateDirectory(const std::string &name);
+
+		class osdirenum;
+
+		class EndOfDirectory {};
+
+
+		//!to be completed
+		class DirectoryIterator {
+		public:
+			typedef std::forward_iterator_tag iterator_category;
+			typedef std::string value_type;
+			typedef std::string *pointer_type;
+			typedef std::string &reference_type;
+
+			typedef std::string Type;
+
+			DirectoryIterator(const std::string &dir);
+			DirectoryIterator(const DirectoryIterator &dir);
+
+			std::string Get() const {
+				return current;
+			}
+
+			operator std::string() const {
+				return Get();
+			}
+
+			std::string operator *() const {
+				return Get();
+			}
+
+			DirectoryIterator &operator ++();
+
+			bool operator ==(const EndOfDirectory &);
+
+			bool operator ==(const DirectoryIterator &it) {
+				return it.current==current;
+			}
+
+		protected:
+			std::string current;
+			osdirenum *dirinfo;
+		};
+	}
+
 	namespace input {
 		////Gets the position of the cursor
 		utils::Point getMousePosition(os::WindowHandle Window);

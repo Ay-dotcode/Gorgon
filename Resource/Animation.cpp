@@ -1,6 +1,6 @@
-#include "AnimationResource.h"
-#include "ResourceFile.h"
-#include "ImageResource.h"
+#include "Animation.h"
+#include "File.h"
+#include "Image.h"
 #include "..\Utils\BasicMath.h"
 
 using namespace gge::utils;
@@ -9,7 +9,7 @@ using namespace std;
 
 namespace gge { namespace resource {
 
-	void LoadAnimationResourceEx(AnimationResource *anim, File &File, std::istream &Data, int Size) {
+	void LoadAnimationResourceEx(Animation *anim, File &File, std::istream &Data, int Size) {
 		int target=Data.tellg()+Size;
 		while(Data.tellg()<target) {
 			int gid,size;
@@ -43,15 +43,15 @@ namespace gge { namespace resource {
 		}
 
 		int i=0;
-		for(SortedCollection<ResourceBase>::Iterator it=anim->Subitems.First();it.isValid();it.Next(), i++)
-			anim->Frames[i].Image=&dynamic_cast<ImageResource&>(*it);
+		for(SortedCollection<Base>::Iterator it=anim->Subitems.First();it.IsValid();it.Next(), i++)
+			anim->Frames[i].Image=&dynamic_cast<Image&>(*it);
 
 		anim->FrameCount=anim->Subitems.getCount();
 	}
 
 
-	AnimationResource *LoadAnimationResource(File &File, std::istream &Data, int Size) {
-		AnimationResource *anim=new AnimationResource;
+	Animation *LoadAnimationResource(File &File, std::istream &Data, int Size) {
+		Animation *anim=new Animation;
 		LoadAnimationResourceEx(anim, File, Data, Size);
 
 		return anim;
@@ -59,7 +59,7 @@ namespace gge { namespace resource {
 
 	animation::ProgressResult::Type ImageAnimation::Progress() {
 		if(Controller && parent.Frames.size()) { 
-			if(Controller->GetType()==animation::AnimationTimer::Discrete) {
+			if(Controller->GetType()==animation::Timer::Discrete) {
 				animation::DiscreteController *dc = dynamic_cast<animation::DiscreteController *>(Controller);
 
 				int cf=dc->CurrentFrame();
@@ -107,21 +107,21 @@ namespace gge { namespace resource {
 		}
 	}
 
-	ImageAnimation::ImageAnimation( AnimationResource &parent, animation::AnimationTimer &controller, bool owner ) : 
-	animation::AnimationBase(controller, owner), parent(parent)
+	ImageAnimation::ImageAnimation( Animation &parent, animation::Timer &controller, bool owner ) : 
+	animation::Base(controller, owner), parent(parent)
 	{
 		Texture=parent.ImageAt(0).GetTexture();
 	}
 
-	ImageAnimation::ImageAnimation( AnimationResource &parent, bool create ) : 
-	animation::AnimationBase(create), parent(parent)
+	ImageAnimation::ImageAnimation( Animation &parent, bool create ) : 
+	animation::Base(create), parent(parent)
 	{
 		Texture=parent.ImageAt(0).GetTexture();
 	}
 
 
 
-	int AnimationResource::FrameAt( unsigned t ) const {
+	int Animation::FrameAt( unsigned t ) const {
 		if(Subitems.getCount()==0) return -1;
 
 		if(t>=(Frames.end()-1)->Start)
@@ -145,7 +145,7 @@ namespace gge { namespace resource {
 			return Guessed;
 	}
 
-	void AnimationResource::LoadExtra(File &File, std::istream &Data, GID::Type gid, int size) {
+	void Animation::LoadExtra(File &File, std::istream &Data, GID::Type gid, int size) {
 		EatChunk(Data, size);
 	}
 

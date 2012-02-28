@@ -3,11 +3,11 @@
 #include "../Utils/SortedCollection.h"
 #include "GraphicLayers.h"
 #include "GGEMain.h"
-#include "../Resource/FolderResource.h"
-#include "../Resource/AnimationResource.h"
-#include "../Resource/DataResource.h"
+#include "../Resource/Folder.h"
+#include "../Resource/Animation.h"
+#include "../Resource/DataArray.h"
 #include "../Resource/GRE.h"
-#include "../Resource/PointerResource.h"
+#include "../Resource/Pointer.h"
 #include "OS.h"
 #include "Animation.h"
 
@@ -67,14 +67,14 @@ namespace gge {
 		PointerLayer->isVisible=false;
 	}
 
-	void PointerCollection::Fetch(FolderResource *Folder) {
+	void PointerCollection::Fetch(Folder *Folder) {
 		if(Folder->getCount()==0) return;
 
 		if(Folder->getItem(0)->getGID()==GID::Data) {
-			DataResource *data=Folder->asData(0);
+			DataArray *data=Folder->asData(0);
 
 			int i=0;
-			for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First()+1;resource.isValid();resource.Next()) {
+			for(SortedCollection<resource::Base>::Iterator resource=Folder->Subitems.First()+1;resource.IsValid();resource.Next()) {
 				RectangularGraphic2DSequenceProvider *anim=dynamic_cast<RectangularGraphic2DSequenceProvider *>(resource.CurrentPtr());
 				utils::Collection<Pointer, 10>::Add( new Pointer(&anim->CreateAnimation(), data->getPoint(i+1).x, data->getPoint(i+1).y, (Pointer::PointerType)data->getInt(i)) );
 
@@ -85,8 +85,8 @@ namespace gge {
 				BasePointer=&(*this)[0];
 		}
 		else {
-			for(SortedCollection<ResourceBase>::Iterator resource=Folder->Subitems.First();resource.isValid();resource.Next()) {
-				resource::PointerResource *ptr=dynamic_cast<resource::PointerResource *>(resource.CurrentPtr());
+			for(SortedCollection<resource::Base>::Iterator resource=Folder->Subitems.First();resource.IsValid();resource.Next()) {
+				resource::Pointer *ptr=dynamic_cast<resource::Pointer *>(resource.CurrentPtr());
 				utils::Collection<Pointer, 10>::Add( new Pointer(ptr->CreateAnimation(true), ptr->Hotspot, ptr->Type) );
 			}
 
@@ -111,7 +111,7 @@ namespace gge {
 	PointerCollection::Token PointerCollection::Set(Pointer::PointerType Type) {
 		if(Type==Pointer::None)
 			return Set(BasePointer);
-		for(Collection<Pointer,10>::Iterator pointer=this->First();pointer.isValid();pointer.Next()) {
+		for(Collection<Pointer,10>::Iterator pointer=this->First();pointer.IsValid();pointer.Next()) {
 			if(pointer->Type==Type)
 				return Set(pointer.CurrentPtr());
 		}

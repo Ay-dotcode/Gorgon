@@ -21,21 +21,21 @@ namespace gge { namespace animation {
 		};
 	};
 
-	class AnimationBase;
+	class Base;
 
-	class AnimationTimer {
+	class Timer {
 	public:
 		enum Type {
 			Continous,
 			Discrete
 		};
 
-		AnimationTimer();
+		Timer();
 
-		virtual ~AnimationTimer();
+		virtual ~Timer();
 
 		virtual void Progress(unsigned timepassed);
-		virtual void Obtained(ProgressResult::Type r, AnimationBase &source) 
+		virtual void Obtained(ProgressResult::Type r, Base &source) 
 		{}
 
 		virtual void ResetProgress() { progress=0; }
@@ -51,19 +51,19 @@ namespace gge { namespace animation {
 	class source_param {
 	public:
 
-		source_param(AnimationBase *source) : source(source)
+		source_param(Base *source) : source(source)
 		{ }
 
-		AnimationBase *source;
+		Base *source;
 	};
 
-	class AnimationController : public AnimationTimer {
+	class Controller : public Timer {
 	public:
 
-		AnimationController();
+		Controller();
 
 		virtual void Progress(unsigned timepassed);
-		virtual void Obtained(ProgressResult::Type r, AnimationBase &source);
+		virtual void Obtained(ProgressResult::Type r, Base &source);
 
 		virtual void Pause();
 		virtual void Resume() { ispaused=false; }
@@ -92,8 +92,8 @@ namespace gge { namespace animation {
 		}
 		virtual void SetProgress(int progress) { mprogress=this->progress=progress; }
 
-		utils::EventChain<AnimationController, source_param> Finished;
-		utils::EventChain<AnimationController, source_param> Paused;
+		utils::EventChain<Controller, source_param> Finished;
+		utils::EventChain<Controller, source_param> Paused;
 
 	protected:
 		bool ispaused;
@@ -103,13 +103,13 @@ namespace gge { namespace animation {
 		double mprogress;
 	};
 
-	class AnimationProvider {
+	class Provider {
 	public:
-		virtual AnimationBase &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
-		virtual AnimationBase &CreateAnimation(bool create=false) = 0;
+		virtual Base &CreateAnimation(Timer &controller, bool owner=false) = 0;
+		virtual Base &CreateAnimation(bool create=false) = 0;
 	};
 
-	class DiscreteAnimationProvider : virtual public AnimationProvider {
+	class DiscreteProvider : virtual public Provider {
 	public:
 		//if there is a single frame, duration should be 0
 		virtual int GetDuration() const					= 0;
@@ -123,9 +123,9 @@ namespace gge { namespace animation {
 		virtual	int		 EndOf(unsigned Frame) const { return StartOf(Frame)+GetDuration(Frame); }
 	};
 
-	class DiscreteController : public AnimationController {
+	class DiscreteController : public Controller {
 	public:
-		DiscreteController(DiscreteAnimationProvider &info) : AnimationController(), 
+		DiscreteController(DiscreteProvider &info) : Controller(), 
 			islooping(true), info(info), pauseatframe(-1), currentframe(-1)
 		{ }
 
@@ -162,32 +162,32 @@ namespace gge { namespace animation {
 		virtual int GetDuration() const { return info.GetDuration(); }
 		virtual int GetNumberofFrames() const { return info.GetNumberofFrames(); }
 
-		virtual Type GetType() const { return AnimationTimer::Discrete; }
+		virtual Type GetType() const { return Timer::Discrete; }
 		virtual void Progress(unsigned timepassed);
 
 		virtual void Play();
 		virtual void ResetProgress();
 
 		//finished and paused events are created using info
-		virtual void Obtained(ProgressResult::Type r, AnimationBase &source) { }
+		virtual void Obtained(ProgressResult::Type r, Base &source) { }
 
 	protected:
 		bool islooping;
 		int pauseatframe;
 		int currentframe;
-		DiscreteAnimationProvider &info;
+		DiscreteProvider &info;
 	};
 
-	class AnimationBase {
+	class Base {
 	public:
-		AnimationBase(AnimationTimer &Controller, bool owner=false);
-		explicit AnimationBase(bool create=false);
+		Base(Timer &Controller, bool owner=false);
+		explicit Base(bool create=false);
 		
-		virtual ~AnimationBase();
+		virtual ~Base();
 
-		virtual void SetController(AnimationTimer &controller, bool owner=false);
+		virtual void SetController(Timer &controller, bool owner=false);
 		bool HasController() { return Controller!=NULL; }
-		AnimationTimer &GetController() { return *Controller; }
+		Timer &GetController() { return *Controller; }
 		void RemoveController() { Controller=NULL; }
 
 
@@ -198,12 +198,12 @@ namespace gge { namespace animation {
 
 
 	protected:
-		AnimationTimer *Controller;
+		Timer *Controller;
 		bool owner;
 	};
 #pragma warning(push)
 #pragma warning(disable:4250)
-	class Basic2DAnimation : virtual public graphics::Graphic2D, virtual public AnimationBase {
+	class Basic2DAnimation : virtual public graphics::Graphic2D, virtual public Base {
 
 	};
 
@@ -226,24 +226,24 @@ namespace gge { namespace animation {
 	//	virtual Graphic2DAnimation &CreateAnimation(bool create=false) = 0;
 	//};
 
-	class Basic2DAnimationProvider : virtual public AnimationProvider {
+	class Basic2DAnimationProvider : virtual public Provider {
 	public:
-		virtual Basic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
+		virtual Basic2DAnimation &CreateAnimation(Timer &controller, bool owner=false) = 0;
 		virtual Basic2DAnimation &CreateAnimation(bool create=false) = 0;
 	};
 
 	class RectangularGraphic2DAnimationProvider : virtual public Basic2DAnimationProvider {
 	public:
-		virtual RectangularGraphic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
+		virtual RectangularGraphic2DAnimation &CreateAnimation(Timer &controller, bool owner=false) = 0;
 		virtual RectangularGraphic2DAnimation &CreateAnimation(bool create=false) = 0;
 	};
 
- 	class RectangularGraphic2DSequenceProvider : virtual public RectangularGraphic2DAnimationProvider, virtual public DiscreteAnimationProvider {
+ 	class RectangularGraphic2DSequenceProvider : virtual public RectangularGraphic2DAnimationProvider, virtual public DiscreteProvider {
 	public:
-		virtual RectangularGraphic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
+		virtual RectangularGraphic2DAnimation &CreateAnimation(Timer &controller, bool owner=false) = 0;
 		virtual RectangularGraphic2DAnimation &CreateAnimation(bool create=false) = 0;
 		virtual graphics::RectangularGraphic2D &ImageAt(int time)=0;
 	};
 
-	extern utils::Collection<AnimationBase> Animations;
+	extern utils::Collection<Base> Animations;
 } }

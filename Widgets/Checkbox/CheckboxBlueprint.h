@@ -9,7 +9,7 @@
 #include "..\Basic\BorderData.h"
 #include "..\..\Engine\Font.h"
 #include "..\Basic\Placeholder.h"
-#include "..\..\Resource\SoundResource.h"
+#include "..\..\Resource\Sound.h"
 #include "..\..\Utils\Size2D.h"
 #include "..\..\Resource\NullImage.h"
 #include "..\..\Engine\Wave.h"
@@ -26,7 +26,7 @@ namespace gge { namespace widgets {
 
 		Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 
-		class Blueprint : public widgets::Blueprint, public resource::ResourceBase {
+		class Blueprint : public widgets::Blueprint, public resource::Base {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:
 
@@ -129,7 +129,7 @@ namespace gge { namespace widgets {
 
 			class Element;
 
-			class Line : public resource::ResourceBase {
+			class Line : public resource::Base {
 				friend Line *LoadLine(resource::File& File, std::istream &Data, int Size);
 				friend class Blueprint;
 			public:
@@ -165,7 +165,7 @@ namespace gge { namespace widgets {
 				utils::SGuid border;
 			};
 
-			class Element : public resource::ResourceBase {
+			class Element : public resource::Base {
 				friend Blueprint::Element *LoadElement(resource::File& File, std::istream &Data, int Size);
 				friend class Blueprint;
 			public:
@@ -185,7 +185,7 @@ namespace gge { namespace widgets {
 				Placeholder					*SymbolPlace;
 				Placeholder					*TextPlace;
 				Placeholder					*IconPlace;
-				resource::SoundResource		*Sound;
+				resource::Sound		*Sound;
 				BorderDataResource			*Overlay;
 
 				Line *Lines[3];
@@ -220,7 +220,7 @@ namespace gge { namespace widgets {
 					return IconPlace;
 				}
 				template<>
-				resource::SoundResource *Get<resource::SoundResource, 7>() const {
+				resource::Sound *Get<resource::Sound, 7>() const {
 					return Sound;
 				}
 				template<>
@@ -260,7 +260,7 @@ namespace gge { namespace widgets {
 
 			};
 
-			class Group : public resource::ResourceBase {
+			class Group : public resource::Base {
 				friend Group *LoadGroup(resource::File& File, std::istream &Data, int Size);
 				friend class Blueprint;
 			public:
@@ -442,8 +442,8 @@ namespace gge { namespace widgets {
 			Placeholder *GetIconPlace(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<Placeholder, 6>(groups, style, type);
 			}
-			resource::SoundResource *GetSound(Group **groups, StyleMode style, TransitionType &type) const {
-				return GetNoInverse<resource::SoundResource, 7>(groups, style, type);
+			resource::Sound *GetSound(Group **groups, StyleMode style, TransitionType &type) const {
+				return GetNoInverse<resource::Sound, 7>(groups, style, type);
 			}
 			BorderDataResource *GetOverlay(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<BorderDataResource, 8>(groups, style, type);

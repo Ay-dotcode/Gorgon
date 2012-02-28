@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FontRenderer.h"
-#include "../Resource/ResourceFile.h"
+#include "../Resource/File.h"
 
 namespace gge { namespace resource {
 	class FontTheme; 

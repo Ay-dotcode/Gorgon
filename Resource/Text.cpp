@@ -1,16 +1,16 @@
-#include "TextResource.h"
-#include "ResourceFile.h"
+#include "Text.h"
+#include "File.h"
 
 using namespace std;
 
 namespace gge { namespace resource {
-	ResourceBase *LoadTextResource(File &File, istream &Data, int Size) {
+	Text *LoadTextResource(File &File, istream &Data, int Size) {
 		char *tmpstr=new char[Size+1];
 
 		Data.read(tmpstr,Size);
-		TextResource* txt=new TextResource();
+		Text* txt=new Text();
 		tmpstr[Size]=0;
-		txt->Text=tmpstr;
+		txt->Value=tmpstr;
 
 		delete tmpstr;
 

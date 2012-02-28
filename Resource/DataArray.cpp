@@ -1,12 +1,12 @@
-#include "DataResource.h"
-#include "ResourceFile.h"
+#include "DataArray.h"
+#include "File.h"
 
 using namespace std;
 using namespace gge::utils;
 
 namespace gge { namespace resource {
-	ResourceBase *LoadDataResource(File &File, std::istream &Data, int Size) {
-		DataResource *dat=new DataResource;
+	DataArray *LoadDataResource(File &File, std::istream &Data, int Size) {
+		DataArray *dat=new DataArray;
 		dat->file=&File;
 
 		int target=Data.tellg()+Size;
@@ -73,64 +73,64 @@ namespace gge { namespace resource {
 	}
 
 
-	IntegerData		& DataResource::Add( int value ) {
+	IntegerData		& DataArray::Add( int value ) {
 		IntegerData &o=*new IntegerData(value);
 		Data.Add(o);
 
 		return o;
 	}
 
-	FloatData		& DataResource::Add( float value ) {
+	FloatData		& DataArray::Add( float value ) {
 		FloatData &o=*new FloatData(value);
 		Data.Add(o);
 
 		return o;
 	}
 
-	StringData		& DataResource::Add( string value ) {
+	StringData		& DataArray::Add( string value ) {
 		StringData &o=*new StringData(value);
 		Data.Add(o);
 
 		return o;
 	}
 
-	PointData		& DataResource::Add( utils::Point value ) {
+	PointData		& DataArray::Add( utils::Point value ) {
 		PointData &o=*new PointData(value);
 		Data.Add(o);
 
 		return o;
 	}
 
-	RectangleData	& DataResource::Add( utils::Rectangle value ) {
+	RectangleData	& DataArray::Add( utils::Rectangle value ) {
 		RectangleData &o=*new RectangleData(value);
 		Data.Add(o);
 
 		return o;
 	}
 
-	FontData		& DataResource::Add( Font value ) {
+	FontData		& DataArray::Add( Font value ) {
 		FontData &o=*new FontData(value);
 		Data.Add(o);
 
 		return o;
 	}
 
-	FontData		& DataResource::Add( FontInitiator value ) {
+	FontData		& DataArray::Add( FontInitiator value ) {
 		FontData &o=*new FontData(value);
 		Data.Add(o);
 
 		return o;
 	}
 
-	LinkData		& DataResource::Add( utils::SGuid value ) {
+	LinkData		& DataArray::Add( utils::SGuid value ) {
 		LinkData &o=*new LinkData(value);
 		Data.Add(o);
 
 		return o;
 	}
 
-	void DataResource::Prepare( GGEMain &main, File &file ) {
-		for(utils::Collection<IData>::Iterator i=Data.First();i.isValid();i.Next()) 
+	void DataArray::Prepare( GGEMain &main, File &file ) {
+		for(utils::Collection<IData>::Iterator i=Data.First();i.IsValid();i.Next()) 
 			i->Prepare(file);
 	}
 

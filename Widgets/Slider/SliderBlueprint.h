@@ -7,11 +7,11 @@
 
 #include "..\Base\BluePrint.h"
 #include "..\Definitions.h"
-#include "..\..\Resource\SoundResource.h"
+#include "..\..\Resource\Sound.h"
 
 #include <map>
 #include "..\Checkbox\CheckboxBlueprint.h"
-#include "..\..\Resource\ResourceBase.h"
+#include "..\..\Resource\Base.h"
 
 
 
@@ -19,7 +19,7 @@ namespace gge { namespace widgets {
 
 	namespace slider {
 
-		class Blueprint : public widgets::Blueprint, public resource::ResourceBase {
+		class Blueprint : public widgets::Blueprint, public resource::Base {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:
 
@@ -64,7 +64,7 @@ namespace gge { namespace widgets {
 				}
 			};
 
-			class Element : public resource::ResourceBase {
+			class Element : public resource::Base {
 				friend Blueprint::Element *LoadElement(resource::File& File, std::istream &Data, int Size);
 				friend class Blueprint;
 			public:
@@ -83,7 +83,7 @@ namespace gge { namespace widgets {
 				Placeholder					*SymbolPlace;
 				Placeholder					*TextPlace;
 				Placeholder					*ValuePlace;
-				resource::SoundResource		*Sound;
+				resource::Sound		*Sound;
 				BorderDataResource			*Overlay;
 
 				BorderDataResource			*Ruler;
@@ -121,7 +121,7 @@ namespace gge { namespace widgets {
 					return TextPlace;
 				}
 				template<>
-				resource::SoundResource *Get<resource::SoundResource, 7>() const {
+				resource::Sound *Get<resource::Sound, 7>() const {
 					return Sound;
 				}
 				template<>
@@ -188,7 +188,7 @@ namespace gge { namespace widgets {
 				utils::SGuid tickmarkborder;
 			};
 
-			class Group : public resource::ResourceBase {
+			class Group : public resource::Base {
 				friend Group *LoadGroup(resource::File& File, std::istream &Data, int Size);
 				friend class Blueprint;
 			public:
@@ -346,8 +346,8 @@ namespace gge { namespace widgets {
 			Placeholder *GetTextPlace(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<Placeholder, 5>(groups, style, type);
 			}
-			resource::SoundResource *GetSound(Group **groups, StyleMode style, TransitionType &type) const {
-				return Get<resource::SoundResource, 7>(groups, style, type);
+			resource::Sound *GetSound(Group **groups, StyleMode style, TransitionType &type) const {
+				return Get<resource::Sound, 7>(groups, style, type);
 			}
 			BorderDataResource *GetOverlay(Group **groups, StyleMode style, TransitionType &type) const {
 				return Get<BorderDataResource, 8>(groups, style, type);
@@ -382,7 +382,7 @@ namespace gge { namespace widgets {
 				return Mapping[GroupMode(o, NotFocused)];
 			}
 
-			resource::SoundResource *TickSound;
+			resource::Sound *TickSound;
 
 
 			virtual GID::Type getGID() const { return GID::Slider; }

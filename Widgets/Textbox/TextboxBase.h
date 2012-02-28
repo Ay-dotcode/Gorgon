@@ -299,7 +299,7 @@ namespace gge { namespace widgets {
 			PetContainer<Base> controls;
 
 
-			animation::AnimationTimer &getanimation(bool transition) {
+			animation::Timer &getanimation(bool transition) {
 				if(transition)
 					return style_anim;
 				else
@@ -351,8 +351,8 @@ namespace gge { namespace widgets {
 			Blueprint::StyleType next_style;
 
 		//TODO Animations, idle, transition, animation finish function
-			animation::AnimationController style_anim;
-			animation::AnimationTimer	   idle_anim;
+			animation::Controller style_anim;
+			animation::Timer	   idle_anim;
 			bool style_anim_loop;
 
 			animation::RectangularGraphic2DAnimation *caret;

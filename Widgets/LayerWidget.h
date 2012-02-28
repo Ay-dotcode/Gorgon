@@ -14,7 +14,7 @@ namespace gge { namespace widgets {
 		}
 
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount)  {
-			return true;
+			return !input::mouse::Event::isScroll(event);
 		}
 
 

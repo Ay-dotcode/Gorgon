@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Engine/Graphics.h"
-#include "../Resource/ResourceFile.h"
+#include "../Resource/File.h"
 #include "GraphicTargets2D.h"
 
 namespace gge { namespace resource {

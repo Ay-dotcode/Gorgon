@@ -2,7 +2,7 @@
 
 #include "Checkbox/CheckboxBlueprint.h"
 #include "Panel/PanelBlueprint.h"
-#include "../Resource/ResourceBase.h"
+#include "../Resource/Base.h"
 
 namespace gge { namespace widgets {
 	namespace tabpanel {
@@ -10,7 +10,7 @@ namespace gge { namespace widgets {
 
 		Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 
-		class Blueprint : public widgets::Blueprint, public resource::ResourceBase {
+		class Blueprint : public widgets::Blueprint, public resource::Base {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:
 

@@ -35,7 +35,7 @@ namespace gge { namespace widgets {
 		}
 
 		virtual void Draw() {
-			for(auto it=First();it.isValid();it.Next()) {
+			for(auto it=First();it.IsValid();it.Next()) {
 				it->Draw();
 			}
 		}
@@ -136,7 +136,7 @@ namespace gge { namespace widgets {
 		}
 
 		tabpanel::Panel &Find(const std::string &value) {
-			for(auto it=First();it.isValid();it.Next()) {
+			for(auto it=First();it.IsValid();it.Next()) {
 				if(it->Title==value)
 					return *it;
 			}

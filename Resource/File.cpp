@@ -1,14 +1,14 @@
-#include "ResourceFile.h"
-#include "TextResource.h"
-#include "ImageResource.h"
-#include "DataResource.h"
-#include "AnimationResource.h"
-#include "BitmapFontResource.h"
-#include "SoundResource.h"
+#include "File.h"
+#include "Text.h"
+#include "Image.h"
+#include "DataArray.h"
+#include "Animation.h"
+#include "BitmapFont.h"
+#include "Sound.h"
 #include "FontTheme.h"
 #include "LinkNode.h"
 #include "FontTheme.h"
-#include "PointerResource.h"
+#include "Pointer.h"
 
 using namespace std;
 using namespace gge::utils;
@@ -64,12 +64,12 @@ namespace gge { namespace resource {
 		data.close();
 	}
 
-	ResourceBase *File::LoadObject(istream &Data, int GID, int Size) {
-		for(utils::Collection<ResourceLoader>::Iterator loader=Loaders.First();
-			loader.isValid(); loader.Next()) {
+	Base *File::LoadObject(istream &Data, int GID, int Size) {
+		for(utils::Collection<Loader>::Iterator loader=Loaders.First();
+			loader.IsValid(); loader.Next()) {
 
 			if(loader->GId==GID) {
-				return loader->Loader(*this, Data, Size);
+				return loader->Handler(*this, Data, Size);
 			}
 		}
 
@@ -78,32 +78,32 @@ namespace gge { namespace resource {
 	}
 
 	void File::AddBasicLoaders() {
-		Loaders.Add(new ResourceLoader(GID::Folder, std::bind(LoadFolderResource, placeholders::_1, placeholders::_2, placeholders::_3, false)));
-		Loaders.Add(new ResourceLoader(GID::LinkNode, LoadLinkNodeResource)); 
-		Loaders.Add(new ResourceLoader(GID::Text, LoadTextResource)); 
-		Loaders.Add(new ResourceLoader(GID::Image, LoadImageResource)); 
-		Loaders.Add(new ResourceLoader(GID::Data, LoadDataResource)); 
+		Loaders.Add(new Loader(GID::Folder, std::bind(LoadFolderResource, placeholders::_1, placeholders::_2, placeholders::_3, false)));
+		Loaders.Add(new Loader(GID::LinkNode, LoadLinkNodeResource)); 
+		Loaders.Add(new Loader(GID::Text, LoadTextResource)); 
+		Loaders.Add(new Loader(GID::Image, LoadImageResource)); 
+		Loaders.Add(new Loader(GID::Data, LoadDataResource)); 
 	}
 
 	void File::AddExtendedLoaders() {
 		AddBasicLoaders();
-		Loaders.Add(new ResourceLoader(GID::Sound, LoadSoundResource)); 
+		Loaders.Add(new Loader(GID::Sound, LoadSoundResource)); 
 	}
 
 	void File::AddGameLoaders() {
 		AddExtendedLoaders();
-		Loaders.Add(new ResourceLoader(GID::Animation, LoadAnimationResource)); 
-		Loaders.Add(new ResourceLoader(GID::Pointer, LoadPointerResource)); 
-		Loaders.Add(new ResourceLoader(GID::Font, LoadBitmapFontResource)); 
-		Loaders.Add(new ResourceLoader(GID::FontTheme, LoadFontTheme)); 
-		Loaders.Add(new ResourceLoader(GID::FontTheme, LoadFontTheme)); 
+		Loaders.Add(new Loader(GID::Animation, LoadAnimationResource)); 
+		Loaders.Add(new Loader(GID::Pointer, LoadPointerResource)); 
+		Loaders.Add(new Loader(GID::Font, LoadBitmapFontResource)); 
+		Loaders.Add(new Loader(GID::FontTheme, LoadFontTheme)); 
+		Loaders.Add(new Loader(GID::FontTheme, LoadFontTheme)); 
 	}
 
-	ResourceBase * File::FindObject( utils::SGuid guid ) {
+	Base * File::FindObject( utils::SGuid guid ) {
 		if(guid.isEmpty()) 
 			return NULL;
 
-		for(utils::Collection<Redirect>::Iterator i=Redirects.First();i.isValid();i.Next()) {
+		for(utils::Collection<Redirect>::Iterator i=Redirects.First();i.IsValid();i.Next()) {
 			if(i->source==guid)
 				guid=i->target;
 		}

@@ -77,16 +77,16 @@ namespace gge { namespace effects {
 			return animation::ProgressResult::None;
 	}
 
-	LayerMover::LayerMover( LayerBase *Target, animation::AnimationTimer &controller, bool owner ) :
-		AnimationBase(controller, owner),
+	LayerMover::LayerMover( LayerBase *Target, animation::Timer &controller, bool owner ) :
+		Base(controller, owner),
 		speed(0,0),
 		current(Target->BoundingBox.TopLeft()),
 		Target(Target)
 	{
 	}
 
-	LayerMover::LayerMover( LayerBase &Target, animation::AnimationTimer &controller, bool owner ) :
-		AnimationBase(controller, owner),
+	LayerMover::LayerMover( LayerBase &Target, animation::Timer &controller, bool owner ) :
+		Base(controller, owner),
 		speed(0,0),
 		current(Target.BoundingBox.TopLeft()),
 		Target(&Target) 

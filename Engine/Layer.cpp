@@ -61,7 +61,7 @@ namespace gge {
 			if(!(isVisible && BoundingBox.isInside(location)))
 				return false;
 			
-			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.IsValid(); i.Next()) {
 				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
 					return true;
 			}
@@ -71,7 +71,7 @@ namespace gge {
 			bool ret=false;
 			int isin=(isVisible && BoundingBox.isInside(location)) ? 1 : 0;
 
-			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.IsValid(); i.Next()) {
 				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), isin & amount)) {
 					ret=true;
 					isin=false;
@@ -85,7 +85,7 @@ namespace gge {
 				(isVisible && BoundingBox.isInside(location)) || 
 				(input::mouse::PressedObject && (event&input::mouse::Event::Move))  )
 			{
-				for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.isValid(); i.Next()) {
+				for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.IsValid(); i.Next()) {
 					if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
 						return true;
 				}
@@ -101,7 +101,7 @@ namespace gge {
 		glTranslatef((float)BoundingBox.Left, (float)BoundingBox.Top, 0);
 
 		if(isVisible) {
-			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.isValid(); i.Previous()) {
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.IsValid(); i.Previous()) {
 				i->Render();
 			}
 		}

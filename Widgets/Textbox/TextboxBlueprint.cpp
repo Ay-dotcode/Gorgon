@@ -1,6 +1,6 @@
 #include "TextboxBlueprint.h"
 #include "..\..\Engine\Pointer.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 
 using namespace gge::resource;
 using namespace std;
@@ -51,7 +51,7 @@ namespace gge { namespace widgets {
 					Data.seekg(ptarget+size);
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -114,7 +114,7 @@ namespace gge { namespace widgets {
 					bp->Subitems.Add(elm, bp->Subitems.HighestOrder()+1);
 				}
 				else {
-					ResourceBase *res=File.LoadObject(Data, gid,size);
+					resource::Base *res=File.LoadObject(Data, gid,size);
 					if(res)
 						bp->Subitems.Add(res, bp->Subitems.HighestOrder()+1);
 				}
@@ -127,7 +127,7 @@ namespace gge { namespace widgets {
 
 
 		void Blueprint::Element::Prepare(GGEMain &main, resource::File &file) {
-			resource::ResourceBase::Prepare(main,file);
+			resource::Base::Prepare(main,file);
 
 			file.FindObject(innerborder, InnerBorder);
 			file.FindObject(outerborder, OuterBorder);
@@ -145,7 +145,7 @@ namespace gge { namespace widgets {
 
 
 		void Blueprint::Prepare(GGEMain &main, resource::File &file) {
-			ResourceBase::Prepare(main, file);
+			Base::Prepare(main, file);
 
 			file.FindObject(scroller, Scroller);
 			file.FindObject(selection, Selection);

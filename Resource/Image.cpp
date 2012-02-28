@@ -1,7 +1,7 @@
 #include "../External/PNG/png.h"
 #include "../External/PNG/pngstruct.h"
-#include "ImageResource.h"
-#include "ResourceFile.h"
+#include "Image.h"
+#include "File.h"
 #include "NullImage.h"
 #include "../External/LZMA/LzmaDecode.h"
 #include "../External/JPEG/jpeglib.h"
@@ -25,9 +25,9 @@ namespace gge { namespace resource {
 
 	} 
 
-	ImageResource *LoadImageResource(File& File, istream &Data, int Size) {
+	Image *LoadImageResource(File& File, istream &Data, int Size) {
 		int i;
-		ImageResource *img=new ImageResource;
+		Image *img=new Image;
 		img->File=&File;
 
 		bool lateloading=false;
@@ -277,7 +277,7 @@ errorout:
 		return img;
 	}
 
-	bool ImageResource::Load(bool force) {
+	bool Image::Load(bool force) {
 		if(isLoaded && !force)
 			return false;
 
@@ -366,7 +366,7 @@ errorout:
 		return true;
 	}
 
-	void ImageResource::Prepare(GGEMain &main, resource::File &file) {
+	void Image::Prepare(GGEMain &main, resource::File &file) {
 #ifdef _DEBUG
 			if(Data==NULL) {
 				os::DisplayMessage("Image Resource","Data is not loaded yet.");
@@ -380,7 +380,7 @@ errorout:
 		Texture = graphics::system::GenerateTexture(Data, GetWidth(), GetHeight(), GetMode());
 	}
 
-	bool ImageResource::PNGExport(string filename) {
+	bool Image::PNGExport(string filename) {
 		int i;
 		errno_t err;
 		FILE*file;
@@ -425,7 +425,7 @@ errorout:
 
 		return true;
 	}
-	ImageResource::PNGReadError ImageResource::ImportPNG(string filename) {
+	Image::PNGReadError Image::ImportPNG(string filename) {
 
 		png_structp png_ptr;
 		png_infop info_ptr;
@@ -436,27 +436,27 @@ errorout:
 		FILE *infile;
 		errno_t err;
 		err=fopen_s(&infile, filename.c_str(), "rb");
-		if(err != 0) return ImageResource::FileNotFound;
+		if(err != 0) return Image::FileNotFound;
 
 	    unsigned char sig[8];
 
 		fread(sig, 1, 8, infile);
 		if (!png_check_sig(sig, 8))
-			return ImageResource::Signature;
+			return Image::Signature;
 
 		png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL,NULL);
 		if (!png_ptr)
-			return ImageResource::OutofMemory;   /* out of memory */
+			return Image::OutofMemory;   /* out of memory */
 
 		info_ptr = png_create_info_struct(png_ptr);
 		if (!info_ptr) {
 			png_destroy_read_struct(&png_ptr, NULL, NULL);
-			return ImageResource::OutofMemory;   /* out of memory */
+			return Image::OutofMemory;   /* out of memory */
 		}
 
 		if (setjmp(png_ptr->longjmp_buffer)) {
 			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-			return ImageResource::ErrorHandlerProblem;
+			return Image::ErrorHandlerProblem;
 		}
 
 		png_init_io(png_ptr, infile);
@@ -499,7 +499,7 @@ errorout:
 
 		if (image_data == NULL) {
 			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-			return ImageResource::OutofMemory;
+			return Image::OutofMemory;
 		}
 
 		for (i = 0;  i < height;  ++i)
@@ -516,7 +516,7 @@ errorout:
 
 		//currently only RGB is supported
 		if(pChannels!=3)
-			return ImageResource::UnimplementedType;
+			return Image::UnimplementedType;
 
 		for(unsigned y=0;y<height;y++) {
 			for(unsigned x=0;x<width;x++) {
@@ -542,11 +542,11 @@ errorout:
 		return exp(-(float)dist*(float)dist/(2*amount*amount))/sqrt(2*Pi*amount*amount);
 	}
 
-	ImageResource &ImageResource::Blur(float amount, int windowsize/*=-1*/) {
+	Image &Image::Blur(float amount, int windowsize/*=-1*/) {
 		if(windowsize==-1)
 			windowsize=max(1,int(amount*1.5));
 
-		ImageResource *img=new ImageResource(Width+windowsize*2,Height+windowsize*2,Mode);
+		Image *img=new Image(Width+windowsize*2,Height+windowsize*2,Mode);
 
 		if(Mode==ColorMode::ARGB || Mode==ColorMode::ABGR) {
 			blurargb(amount, windowsize, img);
@@ -558,7 +558,7 @@ errorout:
 		return *img;
 	}
 
-	void ImageResource::blurargb(float amount, int windowsize, ImageResource *img) {
+	void Image::blurargb(float amount, int windowsize, Image *img) {
 		float *kernel=new float[windowsize+1];
 		for(int i=0;i<=windowsize;i++)
 			kernel[i]=gaussian(amount, i);
@@ -589,7 +589,7 @@ errorout:
 		delete[] kernel;
 	}
 
-	void ImageResource::bluralpha(float amount, int windowsize, ImageResource *img) {
+	void Image::bluralpha(float amount, int windowsize, Image *img) {
 		float *kernel=new float[windowsize+1];
 		for(int i=0;i<=windowsize;i++)
 			kernel[i]=gaussian(amount, i);
@@ -618,11 +618,11 @@ errorout:
 		delete[] kernel;
 	}
 
-	ImageResource &ImageResource::Shadow(float amount, int windowsize/*=-1*/) {
+	Image &Image::Shadow(float amount, int windowsize/*=-1*/) {
 		if(windowsize==-1)
 			windowsize=max(1,int(amount*1.5));
 
-		ImageResource *img=new ImageResource(Width+windowsize*2,Height+windowsize*2,ColorMode::Alpha);
+		Image *img=new Image(Width+windowsize*2,Height+windowsize*2,ColorMode::Alpha);
 
 		if(Mode==ColorMode::ARGB || Mode==ColorMode::ABGR) {
 			shadowargb(amount, windowsize, img);
@@ -634,7 +634,7 @@ errorout:
 		return *img;
 	}
 
-	void ImageResource::shadowargb(float amount, int windowsize, ImageResource *img) {
+	void Image::shadowargb(float amount, int windowsize, Image *img) {
 		float *kernel=new float[windowsize+1];
 		for(int i=0;i<=windowsize;i++)
 			kernel[i]=gaussian(amount, i);
@@ -663,7 +663,7 @@ errorout:
 		delete[] kernel;
 	}
 
-	void ImageResource::shadowalpha(float amount, int windowsize, ImageResource *img) {
+	void Image::shadowalpha(float amount, int windowsize, Image *img) {
 		float *kernel=new float[windowsize+1];
 		for(int i=0;i<=windowsize;i++)
 			kernel[i]=gaussian(amount, i);

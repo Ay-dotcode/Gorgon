@@ -7,15 +7,15 @@ namespace gge { namespace resource {
 
 	class File;
 
-	class ResizableObject : public virtual graphics::SizelessGraphic2D, public virtual animation::AnimationBase  {
+	class ResizableObject : public virtual graphics::SizelessGraphic2D, public virtual animation::Base  {
 	public:
 
 		
 	};
 
-	class ResizableObjectProvider : virtual public animation::AnimationProvider {
+	class ResizableObjectProvider : virtual public animation::Provider {
 	public:
-		virtual ResizableObject &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) = 0;
+		virtual ResizableObject &CreateResizableObject(animation::Timer &controller, bool owner=false) = 0;
 		virtual ResizableObject &CreateResizableObject(bool create=false) = 0;
 	};
 

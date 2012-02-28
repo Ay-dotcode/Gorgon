@@ -1,10 +1,10 @@
 
 #include "Line.h"
 #include "Rectangle.h"
-#include "..\..\Resource\ResourceFile.h"
+#include "..\..\Resource\File.h"
 #include "..\..\Engine\Animation.h"
-#include "..\..\Resource\AnimationResource.h"
-#include "..\..\Resource\ImageResource.h"
+#include "..\..\Resource\Animation.h"
+#include "..\..\Resource\Image.h"
 #include "..\..\Resource\NullImage.h"
 #include "..\..\Utils\SGuid.h"
 #include "ResizableObjectResource.h"
@@ -39,7 +39,7 @@ namespace gge { namespace widgets {
 				rol->SizeController.VerticalTiling=(SizeController2D::TilingType)ReadFrom<int>(Data);
 			}
 			else {
-				ResourceBase *rb=File.LoadObject(Data, gid, size);
+				resource::Base *rb=File.LoadObject(Data, gid, size);
 				if(rb)
 					rol->Subitems.Add(rb);
 			}
@@ -50,7 +50,7 @@ namespace gge { namespace widgets {
 
 
 	void ResizableObjectResource::Prepare(GGEMain &main, resource::File &file) {
-		ResourceBase::Prepare(main, file);
+		Base::Prepare(main, file);
 
 		resource::ResizableObjectProvider *provider= dynamic_cast<resource::ResizableObjectProvider *>(file.Root().FindObject(target));
 

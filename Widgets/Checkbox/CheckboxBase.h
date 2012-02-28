@@ -173,10 +173,10 @@ namespace gge { namespace widgets {
 
 
 
-			animation::AnimationController focus_anim;
-			animation::AnimationController state_anim;
-			animation::AnimationController style_anim;
-			animation::AnimationController wait_timeout;
+			animation::Controller focus_anim;
+			animation::Controller state_anim;
+			animation::Controller style_anim;
+			animation::Controller wait_timeout;
 
 			bool focus_anim_loop;
 			bool state_anim_loop;
@@ -197,7 +197,7 @@ namespace gge { namespace widgets {
 			void playsound(Blueprint::FocusType focusfrom, Blueprint::FocusType focusto, int statefrom, int stateto, Blueprint::StyleType stylefrom, Blueprint::StyleType styleto);
 
 		private:
-			animation::AnimationController &getanimation(Blueprint::TransitionType transition) {
+			animation::Controller &getanimation(Blueprint::TransitionType transition) {
 				if(transition==Blueprint::FocusTransition)
 					return focus_anim;
 				else if(transition==Blueprint::StateTransition)

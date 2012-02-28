@@ -8,7 +8,7 @@
 namespace gge {
 	class GGEMain;
 	namespace graphics { class Basic2DLayer; }
-	namespace resource { class FolderResource; }
+	namespace resource { class Folder; }
 
 
 	class Pointer {
@@ -84,8 +84,8 @@ namespace gge {
 		/// a data file as the first item containing two entries per pointer. First entry must be
 		/// the Type(integer) ranging 0-6, second is Hotspot(point). Every pointer should be either
 		/// animation or image resource
-		void Fetch(resource::FolderResource *Folder);
-		void Fetch(resource::FolderResource &Folder) { Fetch(&Folder); }
+		void Fetch(resource::Folder *Folder);
+		void Fetch(resource::Folder &Folder) { Fetch(&Folder); }
 		////Adds a pointer to the list of pointers
 		Pointer *Add(graphics::RectangularGraphic2D *Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerType Type=Pointer::None);
 		////Adds a pointer to the list of pointers

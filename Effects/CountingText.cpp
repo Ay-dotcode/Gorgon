@@ -7,8 +7,8 @@ using namespace gge::animation;
 
 namespace gge { namespace effects {
 
-	CountingText::CountingText( animation::AnimationTimer &controller, bool owner/*=false*/ ) : 
-		AnimationBase(controller, owner),
+	CountingText::CountingText( animation::Timer &controller, bool owner/*=false*/ ) : 
+		Base(controller, owner),
 		Color(0xff000000),
 		Font(NULL),
 		Shadow(),
@@ -21,7 +21,7 @@ namespace gge { namespace effects {
 	}
 
 	CountingText::CountingText( bool create/*=false*/ ) : 
-		AnimationBase(create),
+		Base(create),
 		Color(0xff000000),
 		Font(NULL),
 		Shadow(),

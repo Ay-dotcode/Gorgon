@@ -68,7 +68,7 @@ namespace gge { namespace widgets {
 		virtual void Enable() { 
 			if(!IsEnabled()) {
 				isenabled=true;
-				for(auto it=Widgets.First();it.isValid();it.Next()) {
+				for(auto it=Widgets.First();it.IsValid();it.Next()) {
 					call_widget_containerenabledchanged(*it, true);
 				}
 			} 
@@ -76,7 +76,7 @@ namespace gge { namespace widgets {
 		virtual void Disable() { 
 			if(IsEnabled()) {
 				isenabled=false;
-				for(auto it=Widgets.First();it.isValid();it.Next()) {
+				for(auto it=Widgets.First();it.IsValid();it.Next()) {
 					call_widget_containerenabledchanged(*it, false);
 				}
 			} 
@@ -125,7 +125,7 @@ namespace gge { namespace widgets {
 			if(!isvisible || !isenabled)
 				return false;
 
-			for(auto it=Widgets.First();it.isValid();it.Next()) {
+			for(auto it=Widgets.First();it.IsValid();it.Next()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -138,7 +138,7 @@ namespace gge { namespace widgets {
 			if(!isvisible || !isenabled)
 				return false;
 
-			for(auto it=Widgets.Find(Focused)+1;it.isValid();it.Next()) {
+			for(auto it=Widgets.Find(Focused)+1;it.IsValid();it.Next()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -146,7 +146,7 @@ namespace gge { namespace widgets {
 			}
 
 			//roll again from bottom
-			for(auto it=Widgets.First();it.isValid() && it.CurrentPtr()!=Focused;it.Next()) {
+			for(auto it=Widgets.First();it.IsValid() && it.CurrentPtr()!=Focused;it.Next()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -159,7 +159,7 @@ namespace gge { namespace widgets {
 			if(!isvisible || !isenabled)
 				return false;
 
-			for(auto it=Widgets.Find(Focused)-1;it.isValid();it.Previous()) {
+			for(auto it=Widgets.Find(Focused)-1;it.IsValid();it.Previous()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -167,7 +167,7 @@ namespace gge { namespace widgets {
 			}
 
 			//roll again from bottom
-			for(auto it=Widgets.Last();it.isValid() && &(*it)!=Focused;it.Previous()) {
+			for(auto it=Widgets.Last();it.IsValid() && &(*it)!=Focused;it.Previous()) {
 				if(it->isvisible && it->isenabled) {
 					if(it->Focus())
 						return true;
@@ -245,7 +245,7 @@ namespace gge { namespace widgets {
 		//given widget simply does not exists
 		virtual bool RemoveWidget(WidgetBase &widget) {
 			auto it=Widgets.Find(widget);
-			if(!it.isValid())
+			if(!it.IsValid())
 				return false;
 
 			if(!call_widget_detach(widget))
@@ -289,7 +289,7 @@ namespace gge { namespace widgets {
 			if(!IsVisible())
 				return;
 
-			for(auto it=Widgets.Last();it.isValid();it.Previous()) {
+			for(auto it=Widgets.Last();it.IsValid();it.Previous()) {
 				if(it->IsVisible())
 					it->Draw();
 			}
@@ -384,7 +384,7 @@ namespace gge { namespace widgets {
 
 
 		virtual ~ContainerBase() {
-			for(auto it=Widgets.First();it.isValid();it.Next()) {
+			for(auto it=Widgets.First();it.IsValid();it.Next()) {
 				if(it->BoundToContainer)
 					it.Delete();
 			}
@@ -466,7 +466,7 @@ namespace gge { namespace widgets {
 				return false;
 
 			auto it=Widgets.Find(widget);
-			if(!it.isValid())
+			if(!it.IsValid())
 				return false;
 		
 			if(!focus_changing(widget))

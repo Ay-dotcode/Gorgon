@@ -12,7 +12,7 @@ namespace gge { namespace widgets {
 			if(!attachedto) return;
 
 			int y=0;
-			for(auto it=attachedto->Widgets.First();it.isValid();it.Next()) {
+			for(auto it=attachedto->Widgets.First();it.IsValid();it.Next()) {
 				if(it->IsVisible()) {
 					it->SetWidth(attachedto->GetUsableWidth());
 					it->Move(0, y);

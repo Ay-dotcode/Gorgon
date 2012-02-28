@@ -1,27 +1,27 @@
 #pragma once
 
 #include "GRE.h"
-#include "ResourceBase.h"
+#include "Base.h"
 #include <map>
 
 namespace gge { namespace resource {
 	class File;
-	class FolderResource;
-	class TextResource;
-	class ImageResource;
-	class DataResource;
-	class SoundResource;
-	class AnimationResource;
-	class BitmapFontResource;
+	class Folder;
+	class Text;
+	class Image;
+	class DataArray;
+	class Sound;
+	class Animation;
+	class BitmapFont;
 	
 	////This function loads a folder resource from the given file
-	FolderResource *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames=false);
+	Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames=false);
 
 	////This is basic folder resource, it holds other resources.
-	class FolderResource : public ResourceBase {
-		friend FolderResource *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames);
+	class Folder : public Base {
+		friend Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames);
 	public:
-		FolderResource() : ResourceBase(), reallyloadnames(false), EntryPoint(-1) 
+		Folder() : Base(), reallyloadnames(false), EntryPoint(-1) 
 		{ }
 
 		////Entry point of this resource within the physical file. If
@@ -36,22 +36,22 @@ namespace gge { namespace resource {
 		////Returns the number of items contained
 		int			 getCount() const { return Subitems.getCount(); }
 		////Returns an item with the given index
-		ResourceBase	*getItem (int Index) { return &Subitems[Index]; }
+		Base	*getItem (int Index) { return &Subitems[Index]; }
 		////Returns an item with the given index
-		ResourceBase	&operator [] (int Index) { return (Subitems[Index]); }
+		Base	&operator [] (int Index) { return (Subitems[Index]); }
 		////Adds a new resource to this folder
-		void	Add(ResourceBase *resource) { Subitems.Add(resource, Subitems.HighestOrder()+1); }
+		void	Add(Base *resource) { Subitems.Add(resource, Subitems.HighestOrder()+1); }
 		////Adds a new resource to this folder
-		FolderResource	&operator << (ResourceBase &resource) { Subitems.Add(resource); return *this; }
+		Folder	&operator << (Base &resource) { Subitems.Add(resource); return *this; }
 
 		////Returns the given subitem with folder resource type. Used to avoid type casting
-		FolderResource	*asFolder	(int Index);
-		TextResource	*asText		(int Index);
-		ImageResource	*asImage	(int Index);
-		DataResource	*asData		(int Index);
-		SoundResource	*asSound	(int Index);
-		AnimationResource	*asAnimation(int Index);
-		BitmapFontResource	*asBitmapFont		(int Index);
+		Folder	*asFolder	(int Index);
+		Text	*asText		(int Index);
+		Image	*asImage	(int Index);
+		DataArray	*asData		(int Index);
+		Sound	*asSound	(int Index);
+		Animation	*asAnimation(int Index);
+		BitmapFont	*asBitmapFont		(int Index);
 
 		//if you run into problems with dynamic_cast use CGet instead
 		template <typename T_>
@@ -121,6 +121,6 @@ namespace gge { namespace resource {
 
 	protected:
 		bool reallyloadnames;
-		std::map<std::string, ResourceBase*> namedlist;
+		std::map<std::string, Base*> namedlist;
 	};
 } }

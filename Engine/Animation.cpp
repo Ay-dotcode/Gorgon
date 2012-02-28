@@ -8,8 +8,8 @@ using namespace gge::graphics;
 
 namespace gge { namespace animation {
 
-	Collection<AnimationTimer> Timers;
-	Collection<AnimationBase> Animations;
+	Collection<Timer> Timers;
+	Collection<Base> Animations;
 
 	unsigned LastTick;
 
@@ -17,10 +17,10 @@ namespace gge { namespace animation {
 		unsigned progressed=Main.CurrentTime-LastTick;
 		if(progressed==0) return;
 
-		for(Collection<AnimationTimer>::Iterator i=Timers.First();i.isValid();i.Next())
+		for(Collection<Timer>::Iterator i=Timers.First();i.IsValid();i.Next())
 			i->Progress(progressed);
 
-		for(Collection<AnimationBase>::Iterator i=Animations.First();i.isValid();i.Next()) {
+		for(Collection<Base>::Iterator i=Animations.First();i.IsValid();i.Next()) {
 			if(i->HasController()) {
 				ProgressResult::Type r=i->Progress();
 
@@ -38,20 +38,20 @@ namespace gge { namespace animation {
 	}
 
 
-	AnimationTimer::AnimationTimer() : progress(0) {
+	Timer::Timer() : progress(0) {
 		Timers.Add(this);
 	}
 
-	AnimationTimer::~AnimationTimer() {
+	Timer::~Timer() {
 		Timers.Remove(this);
 	}
 
-	void AnimationTimer::Progress( unsigned timepassed ) {
+	void Timer::Progress( unsigned timepassed ) {
 		progress += timepassed;
 	}
 
 
-	AnimationController::AnimationController() : AnimationTimer(), 
+	Controller::Controller() : Timer(), 
 		ispaused(false), isfinished(false), speed(1.f),
 		Finished("Finished", this),
 		Paused("Paused", this), pauseat(-1)
@@ -59,7 +59,7 @@ namespace gge { namespace animation {
 
 	}
 
-	void AnimationController::Progress( unsigned timepassed ) {
+	void Controller::Progress( unsigned timepassed ) {
 		if(!ispaused && !isfinished) {
 			if(Round(mprogress)!=progress)
 				mprogress=progress;
@@ -80,14 +80,14 @@ namespace gge { namespace animation {
 		}
 	}
 
-	void AnimationController::Play() {
+	void Controller::Play() {
 		ispaused=false; 
 		isfinished=false;
 		mprogress=0;
 		progress=0;
 	}
 
-	void AnimationController::Obtained( ProgressResult::Type r, AnimationBase &source ) {
+	void Controller::Obtained( ProgressResult::Type r, Base &source ) {
 		if(r==ProgressResult::Finished) {
 			if(!isfinished) {
 				isfinished=true;
@@ -104,11 +104,11 @@ namespace gge { namespace animation {
 			mprogress=progress;
 	}
 
-	void AnimationController::Pause() {
+	void Controller::Pause() {
 		ispaused=true;
 	}
 
-	void AnimationController::ResetProgress() {
+	void Controller::ResetProgress() {
 		isfinished=false;
 		if(speed<0) {
 			mprogress=-1;
@@ -121,20 +121,20 @@ namespace gge { namespace animation {
 	}
 
 
-	AnimationBase::AnimationBase(AnimationTimer &Controller, bool owner) : Controller(&Controller), owner(owner) {
+	Base::Base(Timer &Controller, bool owner) : Controller(&Controller), owner(owner) {
 		Animations.Add(this);
 	}
 
-	AnimationBase::AnimationBase(bool create) : Controller(NULL) {
+	Base::Base(bool create) : Controller(NULL) {
 		Animations.Add(this);
 
 		if(create) {
-			Controller=new AnimationTimer();
+			Controller=new Timer();
 			owner=true;
 		}
 	}
 
-	void AnimationBase::SetController( AnimationTimer &controller, bool owner ) {
+	void Base::SetController( Timer &controller, bool owner ) {
 		if(this->owner && Controller)
 			delete Controller;
 
@@ -147,7 +147,7 @@ namespace gge { namespace animation {
 			controller.Obtained(r, *this);
 	}
 
-	AnimationBase::~AnimationBase() {
+	Base::~Base() {
 		Animations.Remove(this);
 		if(owner && Controller)
 			delete Controller;
@@ -156,7 +156,7 @@ namespace gge { namespace animation {
 
 
 	void DiscreteController::Progress(unsigned timepassed) {
-		AnimationController::Progress(timepassed);
+		Controller::Progress(timepassed);
 
 		int t=GetProgress();
 		int tl=info.GetDuration();

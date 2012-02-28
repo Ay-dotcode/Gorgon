@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GRE.h"
-#include "ResourceBase.h"
+#include "Base.h"
 #include "../Engine/Graphics.h"
 #include "ResizableObject.h"
 #include "../Engine/Animation.h"
@@ -12,19 +12,19 @@
 
 namespace gge { namespace resource {
 	class File;
-	class ImageResource;
+	class Image;
 
 	////This function loads a text resource from the given file
-	ImageResource *LoadImageResource(File& File, std::istream &Data, int Size);
+	Image *LoadImageResource(File& File, std::istream &Data, int Size);
 
 	////This is image resource that holds information about a single image. It supports
 	/// two color modes (ARGB and AL); lzma and jpg compressions
-	class ImageResource : 
-		public ResourceBase, virtual public ResizableObject, virtual public ResizableObjectProvider, 
+	class Image : 
+		public Base, virtual public ResizableObject, virtual public ResizableObjectProvider, 
 		virtual public animation::RectangularGraphic2DSequenceProvider, virtual public graphics::ImageTexture,
 		public graphics::ImageData, virtual public animation::RectangularGraphic2DAnimation
 	{
-		friend ImageResource *LoadImageResource(File &File, std::istream &Data, int Size);
+		friend Image *LoadImageResource(File &File, std::istream &Data, int Size);
 	public:
 		enum PNGReadError {
 			NoError=0,
@@ -45,12 +45,12 @@ namespace gge { namespace resource {
 		/// an image object. This flag is used by other systems.
 		bool LeaveData;
 
-		ImageResource() : animation::AnimationBase(), ImageTexture(), ImageData() {
+		Image() : animation::Base(), ImageTexture(), ImageData() {
 			isLoaded=LeaveData=false; Palette=NULL; 
 			animation::Animations.Remove(this);
 		}
 
-		ImageResource(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::AnimationBase(), ImageTexture(), ImageData() {
+		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), ImageTexture(), ImageData() {
 			this->Resize(Width, Height, Mode);
 			animation::Animations.Remove(this);
 		}
@@ -78,16 +78,16 @@ namespace gge { namespace resource {
 		void destroy() { Data.RemoveReference(); if(Palette) delete Palette; }
 
 		////Destroys used data
-		virtual ~ImageResource() { if(Palette) delete Palette; }
+		virtual ~Image() { if(Palette) delete Palette; }
 
 		/* FOR ANIMATION INTERFACES */
 		virtual void DeleteAnimation() { } //if used as animation, it will not be deleted
 	//TODO ownership has issues in here
-		virtual ImageResource &CreateAnimation(animation::AnimationTimer &controller, bool owner=false) { return *this; }
-		virtual ImageResource &CreateAnimation(bool create=false) { return *this; }
+		virtual Image &CreateAnimation(animation::Timer &controller, bool owner=false) { return *this; }
+		virtual Image &CreateAnimation(bool create=false) { return *this; }
 
-		virtual ImageResource &CreateResizableObject(animation::AnimationTimer &controller, bool owner=false) { return *this; }
-		virtual ImageResource &CreateResizableObject(bool create=false) { return *this; }
+		virtual Image &CreateResizableObject(animation::Timer &controller, bool owner=false) { return *this; }
+		virtual Image &CreateResizableObject(bool create=false) { return *this; }
 
 		virtual graphics::RectangularGraphic2D &GraphicAt(unsigned time) { return *this; }
 
@@ -104,8 +104,8 @@ namespace gge { namespace resource {
 		virtual	int		 EndOf(unsigned Frame) const { return 1; }
 		/* ... */
 
-		ImageResource &Blur(float amount, int windowsize=-1);
-		ImageResource &Shadow(float amount, int windowsize=-1);
+		Image &Blur(float amount, int windowsize=-1);
+		Image &Shadow(float amount, int windowsize=-1);
 
 		virtual int GetWidth() const {
 			if(Texture.ID) {
@@ -141,11 +141,11 @@ namespace gge { namespace resource {
 		////Location of image data within the file, used for late loading
 		int DataLocation;
 
-		void blurargb(float amount, int windowsize, ImageResource *img);
-		void bluralpha(float amount, int windowsize, ImageResource *img);
+		void blurargb(float amount, int windowsize, Image *img);
+		void bluralpha(float amount, int windowsize, Image *img);
 
-		void shadowargb(float amount, int windowsize, ImageResource *img);
-		void shadowalpha(float amount, int windowsize, ImageResource *img);
+		void shadowargb(float amount, int windowsize, Image *img);
+		void shadowalpha(float amount, int windowsize, Image *img);
 	};
 } }
 

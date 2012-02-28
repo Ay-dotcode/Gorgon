@@ -31,7 +31,7 @@ namespace gge { namespace widgets {
 				innerlayer.Add(scrollinglayer);
 				scrollinglayer.Add(background, 1);
 				scrollinglayer.Add(widgetlayer, 0);
-				innerlayer.EnableClipping=true;
+				innerlayer.ClippingEnabled=true;
 
 				style_anim.Pause();
 				style_anim.Finished.Register(this, &Base::style_anim_finished);
@@ -77,7 +77,7 @@ namespace gge { namespace widgets {
 					setstyle(widgets::Blueprint::Normal);
 					WidgetBase::Enable();
 
-					for(auto it=Widgets.First();it.isValid();it.Next()) {
+					for(auto it=Widgets.First();it.IsValid();it.Next()) {
 						call_widget_containerenabledchanged(*it, true);
 					}
 				}
@@ -498,7 +498,7 @@ namespace gge { namespace widgets {
 			//for dialog buttons
 			PetContainer<Base> dialogcontrols;
 
-			animation::AnimationTimer &getanimation(bool transition) {
+			animation::Timer &getanimation(bool transition) {
 				if(transition)
 					return style_anim;
 				else
@@ -562,8 +562,8 @@ namespace gge { namespace widgets {
 			Blueprint::StyleType next_style;
 
 		//TODO Animations, idle, transition, animation finish function
-			animation::AnimationController style_anim;
-			animation::AnimationTimer	   idle_anim;
+			animation::Controller style_anim;
+			animation::Timer	   idle_anim;
 			bool style_anim_loop;
 
 

@@ -12,7 +12,7 @@ namespace gge { namespace sound {
 		}
 
 		void CollectWaveGarbage() {
-			for(Collection<Wave>::Iterator wave=Waves.First();wave.isValid();wave.Next()) {
+			for(Collection<Wave>::Iterator wave=Waves.First();wave.IsValid();wave.Next()) {
 				if(!wave->isPlaying()) {
 					if(wave->AutoDestruct) {
 						wave.Delete();

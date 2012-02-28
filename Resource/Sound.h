@@ -1,20 +1,21 @@
 #pragma once
 
 #include "GRE.h"
-#include "ResourceBase.h"
+#include "Base.h"
 #include "../Engine/Sound.h"
 #include "../Engine/Wave.h"
 
 namespace gge { namespace resource {
 	class File;
+	class Sound;
 	
 	////This function loads a sound resource from the given file
-	ResourceBase *LoadSoundResource(File &File, std::istream &Data, int Size);
+	Sound *LoadSoundResource(File &File, std::istream &Data, int Size);
 
 	////This is sound resource. It may contain 22kHz or 44kHz mono or stereo wave files.
 	/// Also supports LZMA compression. No native sound compression is supported.
-	class SoundResource : public ResourceBase {
-		friend ResourceBase *LoadSoundResource(File &File, std::istream &Data, int Size);
+	class Sound : public Base {
+		friend Sound *LoadSoundResource(File &File, std::istream &Data, int Size);
 	public:
 		////04010000h (Extended, Sound)
 		virtual GID::Type getGID() const { return GID::Sound; }
@@ -28,7 +29,7 @@ namespace gge { namespace resource {
 		////Size of the data
 		int Size;
 
-		SoundResource() { Buffer=NULL; Data=NULL; Size=0; Format.BitsPerSample=Format.Channels=0; }
+		Sound() { Buffer=NULL; Data=NULL; Size=0; Format.BitsPerSample=Format.Channels=0; }
 
 		operator gge::sound::system::SoundBufferHandle() {
 			return Buffer;
@@ -37,7 +38,7 @@ namespace gge { namespace resource {
 		////Destroys used data
 		void destroy() { if(Data) delete Data; }
 		////Destroys used data
-		virtual ~SoundResource() { destroy(); ResourceBase::~ResourceBase(); }
+		virtual ~Sound() { destroy(); Base::~Base(); }
 
 		////When this file is prepared to be used, this value will be used to store sound buffer
 		gge::sound::system::SoundBufferHandle Buffer;
