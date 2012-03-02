@@ -7,7 +7,9 @@
 
 #	define WM_USER                         0x0400
 
-
+extern "C" {
+	struct _WIN32_FIND_DATAA;
+}
 
 
 	namespace gge { namespace os {
@@ -20,6 +22,21 @@
 		typedef unsigned long	CursorHandle;
 		////Handle for Device Context
 		typedef unsigned long	DeviceHandle;
+
+		namespace filesystem {
+			class osdirenum {
+			public:
+				osdirenum();
+
+				~osdirenum();
+
+				void *search_handle;
+
+				bool valid;
+
+				_WIN32_FIND_DATAA *data;
+			};
+		}
 
 	} }
 

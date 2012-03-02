@@ -267,4 +267,11 @@ namespace gge { namespace utils {
 		return I_();
 	}
 
+	template<class C_, class I_>
+	void AddCopy(C_ &target, const I_ &it) {
+		for(I_ i=it;i.IsValid();i.Next()) {
+			target.Add(*i);
+		}
+	}
+
 } }

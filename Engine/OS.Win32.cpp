@@ -14,6 +14,9 @@
 //#	define _WIN32_WINNT 0x0500
 #	include <windows.h>
 #	include <shlobj.h>
+#	include <sys\stat.h>
+#	include <io.h>
+
 #	undef CreateWindow
 #	undef Rectangle
 
@@ -532,9 +535,99 @@
 
 		namespace filesystem {
 			bool CreateDirectory(const std::string &name) {
-				return CreateDirectoryA(name.c_str(), NULL)!=0;
+				auto pos=name.length();
+
+				pos=name.find_last_of("\\/",std::string::npos);
+
+				if(!IsDirectoryExists(name.substr(0,pos)))
+					CreateDirectory(name.substr(0,pos));
+
+				CreateDirectoryA(name.c_str(), NULL);
+
+				return IsDirectoryExists(name);
 			}
-		}
+
+			osdirenum::osdirenum() : search_handle(NULL), valid(false) {
+				data=new WIN32_FIND_DATAA();
+			}
+
+			osdirenum::~osdirenum() {
+				delete data;
+			}
+
+			DirectoryIterator::DirectoryIterator(const std::string &dir, const std::string &pattern/* ="*" */) {
+				std::string src=dir;
+				if(src[src.length()-1]!='\\') src+="\\";
+				src+=pattern;
+
+				dirinfo.search_handle=FindFirstFileA(src.c_str(), dirinfo.data);
+
+				if(dirinfo.search_handle != INVALID_HANDLE_VALUE) {
+					dirinfo.valid=true;
+					current=dirinfo.data->cFileName;
+				}
+			}
+
+			DirectoryIterator::DirectoryIterator(const DirectoryIterator &it ) {
+				dirinfo.search_handle=it.dirinfo.search_handle;
+				memcpy(dirinfo.data, it.dirinfo.data, sizeof WIN32_FIND_DATAA);
+				dirinfo.valid=true;
+				current=it.current;
+			}
+
+			DirectoryIterator::DirectoryIterator() {
+				dirinfo.search_handle=NULL;
+				dirinfo.valid=false;
+				current="";
+			}
+
+			void DirectoryIterator::Next() {
+				if(!dirinfo.valid) return;
+
+				if (FindNextFileA (dirinfo.search_handle, dirinfo.data) == FALSE) {
+					dirinfo.valid=false;
+					FindClose (dirinfo.search_handle);
+					dirinfo.search_handle = INVALID_HANDLE_VALUE;
+
+					current="";
+				}
+				else {
+					current=dirinfo.data->cFileName;
+				}
+			}
+
+			bool DirectoryIterator::IsValid() const {
+				return dirinfo.valid;
+			}
+
+			bool IsDirectoryExists(const std::string Filename) {
+				if ( _access(Filename.c_str(), 0) )
+					return false;
+
+				struct stat status;
+
+				stat( Filename.c_str(), &status );
+
+				if(status.st_mode & S_IFDIR)
+					return true;
+				else
+					return false;
+			}
+
+			bool IsFileExists(const std::string Filename) {
+				if ( _access(Filename.c_str(), 0) )
+					return false;
+
+				struct stat status;
+
+				stat( Filename.c_str(), &status );
+
+				if(status.st_mode & S_IFREG)
+					return true;
+				else
+					return false;
+			}
+	}
 
 		std::string GetAppDataPath() {
 			CHAR my_documents[MAX_PATH];

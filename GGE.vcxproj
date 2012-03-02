@@ -114,7 +114,6 @@
     <ClInclude Include="Engine\VideoFactory.h" />
     <ClInclude Include="Engine\VideoTexture.h" />
     <ClInclude Include="Engine\Wave.h" />
-    <ClInclude Include="External\dirent.h" />
     <ClInclude Include="External\JPEG\jconfig.h" />
     <ClInclude Include="External\JPEG\jerror.h" />
     <ClInclude Include="External\JPEG\jmorecfg.h" />
@@ -270,7 +269,6 @@
     <ClInclude Include="Utils\ConsumableEvent.h" />
     <ClInclude Include="Utils\Dynamic.h" />
     <ClInclude Include="Utils\EventChain.h" />
-    <ClInclude Include="Utils\FileSystemHelper.h" />
     <ClInclude Include="Utils\Guid.h" />
     <ClInclude Include="Utils\Iterator.h" />
     <ClInclude Include="Utils\ManagedBuffer.h" />

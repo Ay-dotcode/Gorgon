@@ -130,9 +130,6 @@
     <Filter Include="External\PNG\Sources">
       <UniqueIdentifier>{57b021ed-c475-4d09-987e-f335526eee62}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External\DirEnt">
-      <UniqueIdentifier>{1ecd49c7-f587-4270-92d1-466fe4e1e282}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External\pThread">
       <UniqueIdentifier>{616b0c4c-2126-416b-a2d3-90aa8b9da7be}</UniqueIdentifier>
     </Filter>
@@ -411,9 +408,6 @@
     <ClInclude Include="Engine\Layer.h">
       <Filter>Engine\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\OS.h">
-      <Filter>Engine\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Wave.h">
       <Filter>Engine\Headers</Filter>
     </ClInclude>
@@ -479,9 +473,6 @@
     </ClInclude>
     <ClInclude Include="External\png\pngconf.h">
       <Filter>External\PNG</Filter>
-    </ClInclude>
-    <ClInclude Include="External\dirent.h">
-      <Filter>External\DirEnt</Filter>
     </ClInclude>
     <ClInclude Include="External\pThread\pthread.h">
       <Filter>External\pThread</Filter>
@@ -559,9 +550,6 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\EventChain.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\FileSystemHelper.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Guid.h">
@@ -953,6 +941,9 @@
     </ClInclude>
     <ClInclude Include="Resource\Base.h">
       <Filter>Resource\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OS.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

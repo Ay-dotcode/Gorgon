@@ -47,12 +47,10 @@ namespace gge { namespace os {
 	namespace filesystem {
 		bool CreateDirectory(const std::string &name);
 
-		class osdirenum;
+		bool IsDirectoryExists(const std::string Path);
 
-		class EndOfDirectory {};
+		bool IsFileExists(const std::string Filename);
 
-
-		//!to be completed
 		class DirectoryIterator {
 		public:
 			typedef std::forward_iterator_tag iterator_category;
@@ -62,8 +60,9 @@ namespace gge { namespace os {
 
 			typedef std::string Type;
 
-			DirectoryIterator(const std::string &dir);
+			DirectoryIterator(const std::string &dir, const std::string &pattern="*");
 			DirectoryIterator(const DirectoryIterator &dir);
+			DirectoryIterator();
 
 			std::string Get() const {
 				return current;
@@ -77,18 +76,39 @@ namespace gge { namespace os {
 				return Get();
 			}
 
-			DirectoryIterator &operator ++();
+			DirectoryIterator &operator ++() {
+				Next();
 
-			bool operator ==(const EndOfDirectory &);
+				return *this;
+			}
 
-			bool operator ==(const DirectoryIterator &it) {
+			void Next();
+
+			DirectoryIterator &operator +=(int i) {
+				for(int j=0;j<i;j++)
+					++(*this);
+			}
+
+			bool IsValid() const;
+
+			std::string Current() {
+				return Get();
+			}
+
+			bool operator ==(const class EndOfDirectory &) const {
+				return !IsValid();
+			}
+
+			bool operator ==(const DirectoryIterator &it) const {
 				return it.current==current;
 			}
 
 		protected:
 			std::string current;
-			osdirenum *dirinfo;
+			osdirenum dirinfo;
 		};
+
+		static DirectoryIterator EndOfDirectory;
 	}
 
 	namespace input {
