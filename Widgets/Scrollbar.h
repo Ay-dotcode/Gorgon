@@ -67,7 +67,10 @@ namespace gge { namespace widgets {
 			return Base::getvalue();
 		}
 		void setValue(const T_ &value) {
-			Base::setvalue(value);
+			if(value!=Base::gettargetvalue()) {
+				Base::setvalue(value);
+				changeevent();
+			}
 		}
 		T_ getMin() const {
 			return Base::getmin();

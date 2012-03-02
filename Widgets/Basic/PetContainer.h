@@ -94,7 +94,7 @@ namespace gge { namespace widgets {
 
 		void InformEnabledChange(bool state) {
 			for(auto it=Widgets.First();it.IsValid();it.Next()) {
-				call_widget_containerenabledchanged(*it, false);
+				call_widget_containerenabledchanged(*it, state);
 			}
 		}
 

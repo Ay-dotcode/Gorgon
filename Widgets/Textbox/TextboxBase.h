@@ -111,11 +111,15 @@ namespace gge { namespace widgets {
 			virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
 				WidgetBase::located(container, w, Order);
 
-				BaseLayer->Add(innerlayer,1);
-				BaseLayer->Add(controls, 0);
-				BaseLayer->Add(overlayer, -1);
+				if(BaseLayer) {
+					BaseLayer->Add(innerlayer,1);
+					BaseLayer->Add(controls, 0);
+					BaseLayer->Add(overlayer, -1);
 
-				BaseLayer->Resize(controls.GetSize());
+					BaseLayer->Resize(controls.GetSize());
+
+					containerenabledchanged(container->IsEnabled());
+				}
 
 				//adjustscrolls();
 			}

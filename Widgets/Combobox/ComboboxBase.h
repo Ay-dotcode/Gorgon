@@ -189,6 +189,7 @@ namespace gge { namespace widgets {
 			}
 
 			virtual bool detach(ContainerBase *container) {
+				container->ScrollingEvent.Unregister(this, &Base::container_scrolling);
 				controls.AttachTo(NULL, NULL);
 				listbox.Detach();
 
@@ -219,6 +220,8 @@ namespace gge { namespace widgets {
 				if(container) {
 					controls.AttachTo(BaseLayer, &container->CreateExtenderLayer());
 					controls.extenderbase->Move(location);
+					container->ScrollingEvent.Register(this, &Base::container_scrolling);
+					containerenabledchanged(container->IsEnabled());
 				}
 				else
 					controls.AttachTo(NULL, NULL);
@@ -273,6 +276,11 @@ namespace gge { namespace widgets {
 				return value;
 			}
 
+			void container_scrolling(bool &allow) {
+				if(isextended)
+					allow=false;
+			}
+
 			const Blueprint *bp;
 
 			ExtendedPetContiner<Base> controls;
@@ -310,7 +318,7 @@ namespace gge { namespace widgets {
 				if(GetWidth()>listbox.GetWidth())
 					listbox.SetWidth(GetWidth()-this->bp->ListMargins.TotalX());
 			}
-			
+
 			textbox.SetPointer(Pointer::None);
 
 			Resize(size);

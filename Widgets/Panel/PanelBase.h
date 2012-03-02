@@ -76,19 +76,30 @@ namespace gge { namespace widgets {
 				if(!IsEnabled()) {
 					setstyle(widgets::Blueprint::Normal);
 					WidgetBase::Enable();
+					if(vscroll.bar.GetWidget())
+						vscroll.bar.GetWidget()->Enable();
 
 					for(auto it=Widgets.First();it.IsValid();it.Next()) {
 						call_widget_containerenabledchanged(*it, true);
 					}
+
+					ContainerBase::isenabled=true;
 				}
 			}
 
 			virtual void Disable() {
 				if(IsEnabled()) {
 					setstyle(widgets::Blueprint::Disabled);
+					if(vscroll.bar.GetWidget())
+						vscroll.bar.GetWidget()->Disable();
 
 					WidgetBase::Disable();
-					ContainerBase::Disable();
+
+					for(auto it=Widgets.First();it.IsValid();it.Next()) {
+						call_widget_containerenabledchanged(*it, false);
+					}
+
+					ContainerBase::isenabled=false;
 				}
 
 			}
@@ -314,6 +325,11 @@ namespace gge { namespace widgets {
 						setstyle(widgets::Blueprint::Disabled);
 					}
 				}
+
+				if(vscroll.bar.GetWidget())
+					vscroll.bar.GetWidget()->SetEnabled(state);
+				for(auto it=Widgets.First();it.IsValid();it.Next())
+					call_widget_containerenabledchanged(*it, state);
 			}
 
 			void setupvscroll(bool allow, bool show, bool autohide, bool dragscroll=false) {
@@ -515,10 +531,17 @@ namespace gge { namespace widgets {
 			}
 
 			virtual void vscroll_change() {
-				if(vscroll.bar.Value!=-scroll.y) {
+				//if(vscroll.bar.Value!=-scroll.y) {
+					bool allow=true;
+					ScrollingEvent(allow);
+					if(!allow) {
+						vscroll.bar.Value=-scroll.y;
+						
+						return;
+					}
 					scroll.y=-vscroll.bar.Value;
 					adjustlayers();
-				}
+				//}
 			}
 
 			//After any modification to this collection call adjust controls

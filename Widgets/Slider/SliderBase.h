@@ -503,7 +503,7 @@ namespace gge { namespace widgets {
 
 				value=T_(utils::Round(float(value)/steps)*steps);
 
-				if(this->value!=value) {
+				if(this->value!=value || smooth.targetvalue!=value) {
 					this->value=value;
 					if(smooth.issmooth()) {
 						smooth.controller.ResetProgress();
@@ -517,6 +517,13 @@ namespace gge { namespace widgets {
 							smooth.targetvalue=value;
 
 							smooth.controller.Play();
+						}
+						else {
+							smooth.stepvalue=(value-smoothvalue)/duration;
+							smooth.sourcevalue=smoothvalue;
+							smooth.targetvalue=value;
+
+							smooth.controller.Pause();
 						}
 					}
 					else {
@@ -611,6 +618,10 @@ namespace gge { namespace widgets {
 			}
 			float getsmoothingspeed() const {
 				return smooth.speed;
+			}
+
+			T_ gettargetvalue() const {
+				return smooth.targetvalue;
 			}
 
 			void setshowticks(bool ticks) {
@@ -820,6 +831,9 @@ namespace gge { namespace widgets {
 					setvalue_smooth(value-smallchange);
 				else
 					setvalue_smooth(value+smallchange);
+
+				value_changed();
+
 				Draw();
 			}
 
@@ -828,6 +842,9 @@ namespace gge { namespace widgets {
 					setvalue_smooth(value+smallchange);
 				else
 					setvalue_smooth(value-smallchange);
+
+				value_changed();
+
 				Draw();
 			}
 
@@ -836,6 +853,9 @@ namespace gge { namespace widgets {
 					setvalue_smooth(value-largechange);
 				else
 					setvalue_smooth(value+largechange);
+
+				value_changed();
+
 				Draw();
 			}
 
@@ -844,6 +864,9 @@ namespace gge { namespace widgets {
 					setvalue_smooth(value+largechange);
 				else
 					setvalue_smooth(value-largechange);
+
+				value_changed();
+
 				Draw();
 			}
 

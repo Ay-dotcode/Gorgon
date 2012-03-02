@@ -57,7 +57,8 @@ namespace gge { namespace graphics {
 		gge::utils::CheckAndDelete(mVideoClip);
 	}
 
-	VideoTexture::VideoTexture( VideoFactory &videoFactory, TheoraVideoClip *videoClip, bool audioOnly /*= false*/, ColorMode::Type colorMode /*= ColorMode::RGB*/, bool autoRestart /*= false*/, bool cacheInMemory /*= true*/ ) : ImageTexture(), VideoFactoryRef(videoFactory)
+	VideoTexture::VideoTexture( VideoFactory &videoFactory, TheoraVideoClip *videoClip, bool audioOnly /*= false*/, ColorMode::Type colorMode /*= ColorMode::RGB*/, bool autoRestart /*= false*/, bool cacheInMemory /*= true*/ ) : 
+		ImageTexture(), VideoFactoryRef(videoFactory), FinishedEvent("Finished", this)
 	{
 		mVideoClip = videoClip;
 

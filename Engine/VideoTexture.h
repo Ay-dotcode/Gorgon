@@ -26,6 +26,7 @@ namespace gge { namespace graphics {
 	protected:
 		TheoraVideoClip *mVideoClip;
 		utils::ConsumableEvent<>::Token mRenderToken;
+		utils::EventChain<VideoTexture> FinishedEvent;
 		bool mAudioOnly;
 		ColorMode::Type mColorMode;
 		bool mAutoRestart;

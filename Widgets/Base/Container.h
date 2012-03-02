@@ -29,7 +29,8 @@ namespace gge { namespace widgets {
 			accesskeysenabled(true),
 			Organizer(NULL),
 			UpHandler(NULL),
-			organizing(false)
+			organizing(false),
+			ScrollingEvent("Scrolling", this)
 		{ }
 
 
@@ -79,7 +80,7 @@ namespace gge { namespace widgets {
 				for(auto it=Widgets.First();it.IsValid();it.Next()) {
 					call_widget_containerenabledchanged(*it, false);
 				}
-			} 
+			}
 		}
 	//TODO !Virtual status of the following two functions might change
 		void ToggleEnabled() { 
@@ -201,8 +202,6 @@ namespace gge { namespace widgets {
 		}
 
 		
-	//TODO !Might need to be changed to IButton or something similar
-		//not a good idea to put ordinary widget here.
 		virtual WidgetBase *GetDefault() { return Default; }
 		virtual bool HasDefault() { return Default!=NULL; }
 		virtual void SetDefault(WidgetBase &widget) { Default=&widget; }
@@ -391,6 +390,8 @@ namespace gge { namespace widgets {
 		}
 
 		utils::SortedCollection<WidgetBase> Widgets;
+
+		utils::EventChain<ContainerBase, bool&> ScrollingEvent;
 
 	protected:
 
