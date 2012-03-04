@@ -110,11 +110,11 @@ namespace gge { namespace widgets {
 
 
 
-		virtual utils::Point GetLocation() { return location; }
-		int GetX()    { return GetLocation().x; }
-		int GetY()    { return GetLocation().y; }
-		int GetLeft() { return GetLocation().x; }
-		int GetTop()  { return GetLocation().y; }
+		virtual utils::Point GetLocation() const { return location; }
+		int GetX()    const { return GetLocation().x; }
+		int GetY()    const { return GetLocation().y; }
+		int GetLeft() const { return GetLocation().x; }
+		int GetTop()  const { return GetLocation().y; }
 		virtual void Move(utils::Point Location);
 		void Move(int X, int Y) { Move(utils::Point(X,Y)); }
 		void SetX(int X) { Move(utils::Point(X,location.y)); }
@@ -129,7 +129,7 @@ namespace gge { namespace widgets {
 		virtual void SetRectangle(utils::Rectangle r) { Move(r.TopLeft()); Resize(r.GetSize()); }
 
 
-		virtual bool IsFocused();
+		virtual bool IsFocused() const;
 		virtual bool Focus() {
 			call_container_setfocus();
 

@@ -30,6 +30,8 @@ namespace gge { namespace widgets {
 		void init() {
 			KeyboardToken=input::keyboard::Events.Register(this, &VirtualPanel::KeyboardEvent);
 			input::keyboard::Events.Disable(KeyboardToken);
+
+			Main.BeforeTerminate.Register(this, &VirtualPanel::terminate);
 		}
 
 
@@ -68,7 +70,7 @@ namespace gge { namespace widgets {
 			}
 		}
 
-		virtual bool IsActive()  {
+		virtual bool IsActive() const  {
 			return isactive;
 		}
 
@@ -77,7 +79,7 @@ namespace gge { namespace widgets {
 			isactive=false;
 		}
 
-		virtual bool IsVisible()  {
+		virtual bool IsVisible() const  {
 			if(!BaseLayer)
 				return false;
 
@@ -133,7 +135,8 @@ namespace gge { namespace widgets {
 		bool KeyboardEvent(input::keyboard::Event event) { return ContainerBase::DistributeKeyboardEvent(event.event, event.keycode); }
 
 		virtual ~VirtualPanel() {
-			input::keyboard::Events.Unregister(KeyboardToken);
+			if(KeyboardToken!=input::keyboard::Events.NullToken)
+				input::keyboard::Events.Unregister(KeyboardToken);
 		}
 
 		virtual utils::Point AbsoluteLocation()  {
@@ -156,6 +159,11 @@ namespace gge { namespace widgets {
 		bool isactive;
 
 		utils::ConsumableEvent<>::Token KeyboardToken;
+
+		void terminate() {
+			input::keyboard::Events.Unregister(KeyboardToken);
+			KeyboardToken=input::keyboard::Events.NullToken;
+		}
 
 
 	};

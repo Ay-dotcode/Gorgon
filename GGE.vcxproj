@@ -77,6 +77,10 @@
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
       <PreprocessorDefinitions>WIN32;_WINDOWS</PreprocessorDefinitions>
       <DisableSpecificWarnings>4355</DisableSpecificWarnings>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -230,7 +234,7 @@
     <ClInclude Include="External\vorbis\src\window.h" />
     <ClInclude Include="External\vorbis\vorbisenc.h" />
     <ClInclude Include="External\vorbis\vorbisfile.h" />
-    <ClInclude Include="External\XmlParser\xmlParser.h" />
+    <ClInclude Include="External\XmlParser\tinyxml.h" />
     <ClInclude Include="External\zlib\crc32.h" />
     <ClInclude Include="External\zlib\deflate.h" />
     <ClInclude Include="External\zlib\gzguts.h" />
@@ -734,7 +738,9 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
-    <ClCompile Include="External\XmlParser\xmlParser.cpp" />
+    <ClCompile Include="External\XmlParser\tinyxml.cpp" />
+    <ClCompile Include="External\XmlParser\tinyxmlerror.cpp" />
+    <ClCompile Include="External\XmlParser\tinyxmlparser.cpp" />
     <ClCompile Include="External\zlib\adler32.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>

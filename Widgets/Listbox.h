@@ -224,6 +224,19 @@ namespace gge { namespace widgets {
 				Add(*it);
 		}
 
+		template<class P_>
+		void Sort(P_ predicate=std::less<T_>) {
+			OrderedCollection::Sort(predicate);
+
+			reorganize();
+		}
+
+		void Sort() {
+			OrderedCollection::Sort();
+
+			reorganize();
+		}
+
 		utils::Property<Listbox, SelectionTypes> SelectionType;
 
 		using WidgetBase::SetBlueprint;

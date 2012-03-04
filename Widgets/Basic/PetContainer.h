@@ -14,7 +14,7 @@ namespace gge { namespace widgets {
 		typedef bool (T_::*ControlFn)();
 
 		PetContainer(T_ &parent) : parent(parent),
-			ContainerBase(), BaseLayer(), isactive(false)
+			ContainerBase(), BaseLayer(), isactive(false), alwaysenabled(false)
 		{ }
 
 		virtual void Resize(utils::Size Size) {
@@ -28,7 +28,7 @@ namespace gge { namespace widgets {
 			/*Do nothing*/
 		}
 
-		virtual bool IsActive()  {
+		virtual bool IsActive() const  {
 			return isactive;
 		}
 
@@ -36,14 +36,17 @@ namespace gge { namespace widgets {
 			isactive=false;
 		}
 
-		virtual bool IsEnabled() {
+		virtual bool IsEnabled() const {
+			if(alwaysenabled)
+				return true;
+
 			if(!parent.IsEnabled())
 				return false;
 
 			return ContainerBase::IsEnabled();
 		}
 
-		virtual bool IsVisible()  {
+		virtual bool IsVisible() const  {
 			if(parent.IsVisible())
 				return false;
 
@@ -114,11 +117,12 @@ namespace gge { namespace widgets {
 
 		LayerBase BaseLayer;
 
+		bool alwaysenabled;
+
 	protected:
 
 		bool isactive;
 		T_ &parent;
-
 
 	};
 

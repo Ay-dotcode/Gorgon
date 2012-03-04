@@ -15,7 +15,8 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Button, TextWrap),
 			INIT_PROPERTY(Button, Accesskey),
 			INIT_PROPERTY(Button, AllowFocus),
-			clickevent("ClickEvent", this)
+			clickevent("ClickEvent", this),
+			allowfocus(true)
 		{
 			Text=text;
 			clickevent.DoubleLink(IButton::clickevent);
@@ -30,7 +31,8 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Button, TextWrap),
 			INIT_PROPERTY(Button, Accesskey),
 			INIT_PROPERTY(Button, AllowFocus),
-			clickevent("ClickEvent", this)
+			clickevent("ClickEvent", this),
+			allowfocus(true)
 		{
 			Text=text;
 			clickevent.DoubleLink(IButton::clickevent);
@@ -64,6 +66,10 @@ namespace gge { namespace widgets {
 
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			//handle mouse events
+
+			if(!IsEnabled())
+				return !input::mouse::Event::isScroll(event);
+
 			
 			bool ret=false;
 

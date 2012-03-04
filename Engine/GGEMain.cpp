@@ -179,6 +179,8 @@ namespace gge {
 	}
 
 	void GGEMain::Exit(int code) {
+		BeforeTerminate();
+
 		os::Quit(code);
 	}
 

@@ -277,6 +277,7 @@ namespace gge { namespace widgets {
 								sizes[i]+=extra;
 							}
 							itembounds=utils::Rectangle(x,y,sizes[i],h);
+							align=Alignment::Middle_Left;
 						}
 
 						targetlocation=Alignment::CalculateLocation(align, itembounds, icon->GetSize());
@@ -308,15 +309,17 @@ namespace gge { namespace widgets {
 								sizes[i]+=extra;
 							}
 							itembounds=utils::Rectangle(x,y,sizes[i],h);
+							align=Alignment::Middle_Left;
 						}
 
-						int th;
+						int th=0;
 						if(textwrap) 
 							th=font->TextHeight(text, itembounds.Width())-(font->FontHeight()-font->FontBaseline())/2;
 						else
 							th=(font->FontHeight()+font->FontBaseline())/2;
 
-						targetlocation=Alignment::CalculateLocation(align, itembounds, Size(font->TextWidth(text),th));
+						Size s(font->TextWidth(text),th);
+						targetlocation=Alignment::CalculateLocation(align, itembounds, s);
 
 						if(textwrap) {
 							font->Print(innerlayer, Point(itembounds.Left,targetlocation.y),itembounds.Width(),text,TextAlignment::GetHorizontal(align));
@@ -389,6 +392,7 @@ namespace gge { namespace widgets {
 								sizes[i]+=extra;
 							}
 							itembounds=utils::Rectangle(x,y,sizes[i],h);
+							align=Alignment::Middle_Left;
 						}
 
 						int sh=symbol->CalculateHeight(0);

@@ -45,6 +45,20 @@
 #include "UtilsBase.h"
 
 namespace gge { namespace utils {
+	
+	template<class T_, class P_>
+	struct elementsorterfrompointer {
+		elementsorterfrompointer(const P_ &predicate) : predicate(predicate) {}
+
+		bool operator ()(T_ *&left, T_*&right) const {
+			if(left==NULL || right==NULL)
+				return false;
+
+			return predicate(*left,*right);
+		}
+
+		const P_ &predicate;
+	};
 
 	template <class T_, int growth=50>
 	class OrderedCollection {
@@ -116,13 +130,13 @@ namespace gge { namespace utils {
 			}
 
 		public:
-		//TODO ! Template compatibility for collections
+		//Template compatibility for collections
 			//should not work for const iterators
 			void Remove() {
 				Col->removeat(Offset);
 			}
 
-		//TODO ! Template compatibility for collections
+		//Template compatibility for collections
 			//should not work for const iterators
 			void Delete() {
 				Col->deleteat(Offset);
@@ -245,12 +259,12 @@ namespace gge { namespace utils {
 			}
 
 		public:
-		//TODO ! Template compatibility for collections
+		//Template compatibility for collections
 			void Remove() {
 				Col->removeat(Offset);
 			}
 
-		//TODO ! Template compatibility for collections
+		//Template compatibility for collections
 			void Delete() {
 				Col->deleteat(Offset);
 			}
@@ -317,7 +331,7 @@ namespace gge { namespace utils {
 		list(col.list), count(col.count)
 		{ 	}
 
-	//TODO ! Template compatibility for collections
+	//Template compatibility for collections
 		////Returns number of elements
 		int getCount() const {
 			return *count;
@@ -333,7 +347,7 @@ namespace gge { namespace utils {
 			(*count)++;
 		}
 
-	//TODO ! Template compatibility for collections
+	//Template compatibility for collections
 		////Adds a new item to the end of the list
 		void Add(T_& data) {
 			Add(&data);
@@ -637,7 +651,14 @@ namespace gge { namespace utils {
 			return ConstSearchIterator(*this, Item, -1);
 		}
 
+		template<class P_>
+		void Sort(P_ predicate=std::less<T_>) {
+			std::sort(list.begin(), list.begin()+*count, elementsorterfrompointer<T_, P_>(predicate));
+		}
 
+		void Sort() {
+			std::sort(list.begin(), list.begin()+*count, elementsorterfrompointer<T_, std::less<T_>>(std::less<T_>()));
+		}
 
 		T_ &Get(int Index) {
 			T_ *r=get_(Index);
@@ -689,12 +710,12 @@ namespace gge { namespace utils {
 			return SearchIterator();
 		}
 
-	//TODO ! Template compatibility for collections, lists
+	//Template compatibility for collections, lists
 		Iterator First() {
 			return Iterator(*this, 0);
 		}
 
-	//TODO ! Template compatibility for collections, lists
+	//Template compatibility for collections, lists
 		Iterator Last() {
 			return Iterator(*this, *count-1);
 		}
@@ -711,17 +732,17 @@ namespace gge { namespace utils {
 			return ConstSearchIterator(*this,T_());
 		}
 
-	//TODO ! Template compatibility for collections, lists
+	//Template compatibility for collections, lists
 		ConstIterator First() const {
 			return ConstIterator(*this, 0);
 		}
 
-	//TODO ! Template compatibility for collections, lists
+	//Template compatibility for collections, lists
 		ConstIterator Last() const {
 			return ConstIterator(*this, *count-1);
 		}
 
-	//TODO ! Template compatibility for collections
+	//Template compatibility for collections
 		////Removes all items from the list, allocated memory for the
 		/// list stays
 		void Clear() {
@@ -737,7 +758,7 @@ namespace gge { namespace utils {
 			list.Resize(0);
 		}
 
-	//TODO ! Template compatibility for collections
+	//Template compatibility for collections
 		////Destroys the entire collection, effectively deleting the contents
 		/// and the list {
 		void Destroy() {
@@ -750,7 +771,7 @@ namespace gge { namespace utils {
 			*count=0;
 		}
 
-	//TODO ! Template compatibility for lists
+	//Template compatibility for lists
 		////Allocates memory for the given amount of items
 		void AllocateFor(int amount) {
 			grow(amount);

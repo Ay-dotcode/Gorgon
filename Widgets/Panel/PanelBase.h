@@ -28,6 +28,8 @@ namespace gge { namespace widgets {
 				scrollingborder(NULL), innerborder(NULL), showtitle(false),
 				blueprintmodified(false)
 			{
+				controls.alwaysenabled=true;
+
 				innerlayer.Add(scrollinglayer);
 				scrollinglayer.Add(background, 1);
 				scrollinglayer.Add(widgetlayer, 0);
@@ -105,7 +107,7 @@ namespace gge { namespace widgets {
 			}
 
 
-			virtual bool IsActive() {
+			virtual bool IsActive() const {
 				return WidgetBase::IsFocused();
 			}
 

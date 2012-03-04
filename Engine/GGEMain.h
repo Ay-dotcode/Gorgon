@@ -148,6 +148,8 @@ namespace gge {
 		/// game loop
 		utils::EventChain<GGEMain, utils::empty_event_params> AfterRenderEvent;
 
+		utils::EventChain<GGEMain, utils::empty_event_params> BeforeTerminate;
+
 		////Destructor, cleans up resources
 		~GGEMain();
 

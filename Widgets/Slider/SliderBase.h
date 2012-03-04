@@ -274,6 +274,7 @@ namespace gge { namespace widgets {
 				}
 
 				WidgetBase::Disable();
+				buttonlayer.InformEnabledChange(false);
 
 				setstyle(Blueprint::Disabled);
 			}
@@ -283,6 +284,9 @@ namespace gge { namespace widgets {
 					playsound(Blueprint::NotFocused, Blueprint::Focus_None, Blueprint::Disabled, Blueprint::Normal);
 				}
 				WidgetBase::Enable();
+
+				buttonlayer.InformEnabledChange(true);
+
 
 				if(symbol_mover)
 					setstyle(Blueprint::Hover);
@@ -393,6 +397,8 @@ namespace gge { namespace widgets {
 						setstyle(Blueprint::Disabled);
 					}
 				}
+
+				buttonlayer.InformEnabledChange(state);
 			}
 
 			virtual bool detach(ContainerBase *container)  {
@@ -1846,7 +1852,7 @@ namespace gge { namespace widgets {
 				overlay->SetController(idle_anim);
 			}
 
-			bprovider=bp->GetRuler(groups, (rule_over ? Blueprint::Hover : Blueprint::Normal), transition);
+			bprovider=bp->GetRuler(groups,( IsEnabled() ? (rule_over ? Blueprint::Hover : Blueprint::Normal) : Blueprint::Disabled ), transition);
 			if(bprovider) {
 				if(BorderCache[bprovider])
 					rule=BorderCache[bprovider];
@@ -1870,7 +1876,7 @@ namespace gge { namespace widgets {
 				indicator->SetController(idle_anim);
 			}
 
-			bprovider=bp->GetRulerOverlay(groups, (rule_over ? Blueprint::Hover : Blueprint::Normal), transition);
+			bprovider=bp->GetRulerOverlay(groups, ( IsEnabled() ? (rule_over ? Blueprint::Hover : Blueprint::Normal) : Blueprint::Disabled ), transition);
 			if(bprovider) {
 				if(BorderCache[bprovider])
 					ruleoverlay=BorderCache[bprovider];

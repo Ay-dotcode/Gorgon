@@ -181,6 +181,17 @@ namespace gge { namespace widgets {
 			return Find(getvalue());
 		}
 
+		template<class P_>
+		void Sort(P_ predicate=std::less<T_>) {
+			OrderedCollection::Sort(predicate);
+			listbox.Sort(predicate);
+		}
+
+		void Sort() {
+			OrderedCollection::Sort();
+			listbox.Sort();
+		}
+
 		template<class C_>
 		void operator +=(const C_ &values) {
 			for(auto it=values.begin();it!=values.end();++it)

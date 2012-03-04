@@ -37,7 +37,7 @@ namespace gge { namespace widgets {
 		Draw();
 	}
 
-	bool WidgetBase::IsFocused() {
+	bool WidgetBase::IsFocused() const {
 		if(Container)
 			return Container->GetFocused()==this;
 		else

@@ -363,6 +363,7 @@ namespace gge { namespace widgets {
 		}
 
 		bool Base::MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
+
 			if(event==input::mouse::Event::Left_Down) {
 				Focus();
 			}
@@ -401,7 +402,7 @@ namespace gge { namespace widgets {
 				}
 			}
 
-			if(vscroll.allow && event==input::mouse::Event::VScroll) {
+			if(IsEnabled() && vscroll.allow && event==input::mouse::Event::VScroll) {
 				vscrollby(-amount);
 
 				return true;

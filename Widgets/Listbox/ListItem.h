@@ -45,8 +45,16 @@ namespace gge { namespace widgets {
 			Value=value.value;
 		}
 
-		bool operator <(const ListItem &value) {
+		bool operator <(const ListItem &value) const {
 			return this->value<value.value;
+		}
+
+		bool operator >(const ListItem &value) const {
+			return this->value>value.value;
+		}
+
+		bool operator ==(const ListItem &value) const {
+			return this->value==value.value;
 		}
 
 

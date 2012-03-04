@@ -112,9 +112,6 @@
     <Filter Include="Resource\Sources">
       <UniqueIdentifier>{967f367d-cef5-4170-a984-44e005d22c53}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utils">
-      <UniqueIdentifier>{8c654264-4743-46ce-89f2-6935f9e74276}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External">
       <UniqueIdentifier>{e80ab4a5-fbc4-4876-9057-85c226a22a31}</UniqueIdentifier>
     </Filter>
@@ -156,6 +153,9 @@
     </Filter>
     <Filter Include="External\zlib">
       <UniqueIdentifier>{3a98aeb9-d7b4-43ad-8534-aa818094d1c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets\Utils">
+      <UniqueIdentifier>{8c654264-4743-46ce-89f2-6935f9e74276}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -241,9 +241,6 @@
       <Filter>Widgets\Basic\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Widgets\Basic\Line.h">
-      <Filter>Widgets\Basic\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Widgets\Basic\PetContainer.h">
       <Filter>Widgets\Basic\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Widgets\Basic\Placeholder.h">
@@ -483,9 +480,6 @@
     <ClInclude Include="External\pThread\semaphore.h">
       <Filter>External\pThread</Filter>
     </ClInclude>
-    <ClInclude Include="External\XmlParser\xmlParser.h">
-      <Filter>External\XML</Filter>
-    </ClInclude>
     <ClInclude Include="External\LZMA\LzmaDecode.h">
       <Filter>External\LZMA</Filter>
     </ClInclude>
@@ -520,85 +514,85 @@
       <Filter>Resource\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Any.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\BasicGraphics.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\BasicMath.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Binary.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Bounds2D.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\BufferList.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\CastableManagedBuffer.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Collection.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ConsumableEvent.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Dynamic.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\EventChain.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Guid.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Iterator.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ManagedBuffer.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Map2D.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Margins.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\OrderedCollection.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\PAClassList.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Point2D.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Property.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Random.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Rectangle2D.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\SGuid.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Size2D.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\SortedCollection.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\UtilsBase.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ValueList.h">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClInclude>
     <ClInclude Include="External\png\pnginfo.h">
       <Filter>External\PNG\Sources</Filter>
@@ -945,6 +939,12 @@
     <ClInclude Include="Engine\OS.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="External\XmlParser\tinyxml.h">
+      <Filter>External\XML</Filter>
+    </ClInclude>
+    <ClInclude Include="Widgets\Basic\PetContainer.h">
+      <Filter>Widgets\Code\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -1208,9 +1208,6 @@
     <ClCompile Include="External\JPEG\src\jutils.c">
       <Filter>External\JPEG\Source</Filter>
     </ClCompile>
-    <ClCompile Include="External\XmlParser\xmlParser.cpp">
-      <Filter>External\XML</Filter>
-    </ClCompile>
     <ClCompile Include="External\LZMA\LzmaDecode.cpp">
       <Filter>External\LZMA</Filter>
     </ClCompile>
@@ -1224,10 +1221,10 @@
       <Filter>Resource\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Utils\Random.cpp">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Utils\SGuid.cpp">
-      <Filter>Utils</Filter>
+      <Filter>Widgets\Utils</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngmem.c">
       <Filter>External\PNG\Sources</Filter>
@@ -1570,6 +1567,15 @@
     </ClCompile>
     <ClCompile Include="Resource\Text.cpp">
       <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\XmlParser\tinyxmlerror.cpp">
+      <Filter>External\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="External\XmlParser\tinyxmlparser.cpp">
+      <Filter>External\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="External\XmlParser\tinyxml.cpp">
+      <Filter>External\XML</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

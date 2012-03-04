@@ -34,8 +34,8 @@ namespace gge { namespace widgets {
 		{ }
 
 
-		virtual bool IsVisible() { return isvisible; }
-		inline  bool IsHidden()  { return !IsVisible(); }
+		virtual bool IsVisible() const { return isvisible; }
+		inline  bool IsHidden()  const { return !IsVisible(); }
 		virtual void Show(bool setfocus=false) { 
 			isvisible=true;
 			
@@ -64,8 +64,8 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual bool IsEnabled()  { return isenabled; }
-		inline  bool IsDisabled() { return !IsEnabled(); }
+		virtual bool IsEnabled()  const { return isenabled; }
+		inline  bool IsDisabled() const { return !IsEnabled(); }
 		virtual void Enable() { 
 			if(!IsEnabled()) {
 				isenabled=true;
@@ -94,8 +94,8 @@ namespace gge { namespace widgets {
 
 
 		virtual utils::Size GetSize() { return size; }
-		int GetWidth() { return GetSize().Width; }
-		int GetHeight() { return GetSize().Height; }
+		int GetWidth()   { return GetSize().Width; }
+		int GetHeight()  { return GetSize().Height; }
 		virtual void Resize(utils::Size Size) { 
 			size=Size;
 			Reorganize();
@@ -108,19 +108,19 @@ namespace gge { namespace widgets {
 		int GetUsableWidth() { return GetUsableSize().Width; }
 		int GetUsableHeight() { return GetUsableSize().Height; }
 
-		virtual utils::Point AbsoluteLocation() {
+		virtual utils::Point AbsoluteLocation() const {
 			return utils::Point(0,0);
 		}
-		int AbsoluteLeft() {
+		int AbsoluteLeft() const {
 			return AbsoluteLocation().x;
 		}
-		int AbsoluteTop() {
+		int AbsoluteTop() const {
 			return AbsoluteLocation().y;
 		}
 
 
-		virtual WidgetBase *GetFocused() { return Focused; }
-		virtual bool HasFocused() { return Focused!=NULL; }
+		virtual WidgetBase *GetFocused() const { return Focused; }
+		virtual bool HasFocused() const { return Focused!=NULL; }
 		//focuses to the first item that can take it, if no items can get focus returns false.
 		virtual bool FocusFirst() {
 			if(!isvisible || !isenabled)
@@ -202,17 +202,17 @@ namespace gge { namespace widgets {
 		}
 
 		
-		virtual WidgetBase *GetDefault() { return Default; }
-		virtual bool HasDefault() { return Default!=NULL; }
+		virtual WidgetBase *GetDefault() const { return Default; }
+		virtual bool HasDefault() const { return Default!=NULL; }
 		virtual void SetDefault(WidgetBase &widget) { Default=&widget; }
 		virtual void RemoveDefault() { Default=NULL; }
-		virtual WidgetBase *GetCancel() { return Cancel; }
-		virtual bool HasCancel() { return Cancel!=NULL; }
+		virtual WidgetBase *GetCancel() const { return Cancel; }
+		virtual bool HasCancel() const { return Cancel!=NULL; }
 		virtual void SetCancel(WidgetBase &widget) { Cancel=&widget; }
 		virtual void RemoveCancel() { Cancel=NULL; }
 
 
-		bool IsTabSwitchEnabled() { return tabswitch; }
+		bool IsTabSwitchEnabled() const { return tabswitch; }
 		void EnableTabSwitch() { tabswitch=true; }
 		void DisableTabSwitch() { tabswitch=false; }
 		void ToggleTabSwitchEnabledState() { tabswitch=!tabswitch; }
@@ -280,7 +280,7 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual bool IsActive() = 0;
+		virtual bool IsActive() const = 0;
 		virtual void Deactivate() = 0;
 
 
@@ -328,8 +328,8 @@ namespace gge { namespace widgets {
 
 			return 0;
 		}
-		virtual WidgetBase *GetAccessTarget(int Key) { return AccessKeys[Key]; }
-		bool IsAccessKeysEnabled() { return accesskeysenabled; }
+		virtual WidgetBase *GetAccessTarget(int Key) const { if(AccessKeys.count(Key)) return AccessKeys.find(Key)->second; else return NULL; }
+		bool IsAccessKeysEnabled() const { return accesskeysenabled; }
 		void EnableAccessKeys() { 
 			if(!accesskeysenabled) {
 				accesskeysenabled=true;
@@ -364,8 +364,8 @@ namespace gge { namespace widgets {
 		}
 
 
-		Organizer *GetOrganizer() { return Organizer; }
-		bool HasOrganizer() { return Organizer!=NULL; }
+		Organizer *GetOrganizer() const { return Organizer; }
+		bool HasOrganizer() const { return Organizer!=NULL; }
 		virtual void SetOrganizer(Organizer &organizer) {
 			if(Organizer) 
 				Organizer->SetAttached(NULL);
