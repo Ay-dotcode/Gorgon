@@ -310,9 +310,9 @@ namespace gge { namespace graphics {
 			SetTexture(data,texture.W,texture.H,mode);
 		}
 
-		void DestroyTexture(GLTexture *texture) {
-			glDeleteTextures(1, &texture->ID);
-			texture->ID=0;
+		void DestroyTexture(GLTexture &texture) {
+			glDeleteTextures(1, &texture.ID);
+			texture.ID=0;
 		}
 
 		void PreRender() {

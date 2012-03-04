@@ -7,8 +7,8 @@ using namespace std;
 
 namespace gge { namespace resource {
 	void LinkNodeResource::Resolve(resource::File &file) {
-		Base *parent=File->Root().FindParent(guid);
-		File->Redirects.Add(new Redirect(this->guid, target));
+		Base *parent=file.Root().FindParent(guid);
+		file.Redirects.Add(new Redirect(this->guid, target));
 
 		if(parent) {
 
@@ -17,6 +17,7 @@ namespace gge { namespace resource {
 				if(item->isEqual(guid)) {
 					Base *t=file.Root().FindObject(target);
 					if(t) {
+						file.Multiples[t]++;
 						item.GetWrapper().SetItem(t);
 						break;
 					}
@@ -60,8 +61,6 @@ namespace gge { namespace resource {
 			else
 				EatChunk(Data,size);
 		}
-
-		link->File=&File;
 
 		return link;
 	}

@@ -58,6 +58,11 @@ namespace gge { namespace graphics {
 
 		virtual GLTexture &GetTexture() { return Texture; }
 
+		~ImageTexture() {
+			if(Texture.ID)
+				graphics::system::DestroyTexture(Texture);
+		}
+
 	protected:
 		virtual void drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const
 		{ Target.Draw(&Texture,graphics::Tiling2D::Both, X,Y,W,H); } 

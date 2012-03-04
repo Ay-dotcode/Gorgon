@@ -31,14 +31,20 @@ namespace gge { namespace resource {
 
 		Animation &parent;
 
+		virtual void DeleteAnimation() { 
+			ImageTexture::Texture.ID=0;
+
+			delete this; 
+		}
+
 	protected:
 		virtual animation::ProgressResult::Type Progress();
 	};
 
 
-	class AnimationResourceFrame {
+	class AnimationFrame {
 	public:
-		AnimationResourceFrame(unsigned d=0, unsigned s=0, Image *im=NULL) : Duration(d), Start(s), Image(im) { }
+		AnimationFrame(unsigned d=0, unsigned s=0, Image *im=NULL) : Duration(d), Start(s), Image(im) { }
 
 		unsigned Duration;
 		unsigned Start;
@@ -124,7 +130,7 @@ namespace gge { namespace resource {
 		////Total number of frames that this animation have
 		int FrameCount;
 		////Frame durations
-		std::vector<AnimationResourceFrame> Frames;
+		std::vector<AnimationFrame> Frames;
 		unsigned TotalLength;
 
 		virtual void LoadExtra(File &File, std::istream &Data, GID::Type gid, int size);

@@ -1247,9 +1247,6 @@
     <ClCompile Include="External\png\pngset.c">
       <Filter>External\PNG\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="External\png\pngtest.c">
-      <Filter>External\PNG\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="External\png\pngtrans.c">
       <Filter>External\PNG\Sources</Filter>
     </ClCompile>

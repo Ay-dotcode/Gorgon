@@ -45,12 +45,12 @@ namespace gge { namespace resource {
 		/// an image object. This flag is used by other systems.
 		bool LeaveData;
 
-		Image() : animation::Base(), ImageTexture(), ImageData() {
+		Image() : animation::Base(), ImageTexture(), ImageData(), CompressionProps() {
 			isLoaded=LeaveData=false; Palette=NULL; 
 			animation::Animations.Remove(this);
 		}
 
-		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), ImageTexture(), ImageData() {
+		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), ImageTexture(), ImageData(), CompressionProps() {
 			this->Resize(Width, Height, Mode);
 			animation::Animations.Remove(this);
 		}
@@ -78,7 +78,10 @@ namespace gge { namespace resource {
 		void destroy() { Data.RemoveReference(); if(Palette) delete Palette; }
 
 		////Destroys used data
-		virtual ~Image() { if(Palette) delete Palette; }
+		virtual ~Image() { 
+			utils::CheckAndDelete(Palette);
+			utils::CheckAndDelete(CompressionProps);
+		}
 
 		/* FOR ANIMATION INTERFACES */
 		virtual void DeleteAnimation() { } //if used as animation, it will not be deleted
@@ -130,8 +133,6 @@ namespace gge { namespace resource {
 	protected:
 		virtual animation::ProgressResult::Type Progress() { return animation::ProgressResult::None; };
 
-		////The file that this image resource is related, used for late loading
-		File *File;
 		////Compression properties read from file, used for late loading
 		Byte *CompressionProps;
 		////Compression mode, not suitable for saving, used for late loading

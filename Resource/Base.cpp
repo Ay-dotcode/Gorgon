@@ -1,9 +1,11 @@
 #include "Base.h"
+#include "File.h"
 
 using namespace gge::utils;
 
 namespace gge { namespace resource {
 	void Base::Prepare(GGEMain &main, File &file) {
+		this->file=&file;
 		for(SortedCollection<Base>::Iterator resource=Subitems.First();
 			resource.IsValid(); resource.Next()) {
 
@@ -12,6 +14,7 @@ namespace gge { namespace resource {
 	}
 
 	void Base::Resolve(File &file) {
+		this->file=&file;
 		for(SortedCollection<Base>::Iterator resource=Subitems.First();
 			resource.IsValid();) {
 
@@ -52,10 +55,17 @@ namespace gge { namespace resource {
 		return NULL;
 	}
 
-	Base::Base() : guid(nullptr), name(""), caption("") { }
+	Base::Base() : guid(nullptr), name(""), caption(""), file() { }
 
 	Base::~Base() {
-		Subitems.Destroy();
+		for(auto it=Subitems.First();it.IsValid();it.Next()) {
+			if(file && file->Multiples[it.CurrentPtr()]) {
+				file->Multiples[it.CurrentPtr()]--;
+			}
+			else {
+				it.Delete();
+			}
+		}
 	}
 
 } }

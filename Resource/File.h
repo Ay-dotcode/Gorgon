@@ -75,8 +75,9 @@ namespace gge { namespace resource {
 		}
 
 		////Resource Loaders
-		utils::Collection<Loader> Loaders;
-		utils::Collection<Redirect>		  Redirects;
+		utils::Collection<Loader>	Loaders;
+		utils::Collection<Redirect>	Redirects;
+		std::map<Base*, int>		Multiples;
 
 		////File type
 		GID::Type FileType;
@@ -117,6 +118,8 @@ namespace gge { namespace resource {
 		void Prepare(GGEMain &main) { root->Prepare(main, *this); }
 		void Prepare(GGEMain *main) { root->Prepare(*main, *this); }
 		void Prepare() { root->Prepare(Main, *this); }
+
+		~File();
 
 	protected:
 		////The root folder, root changes while loading a file

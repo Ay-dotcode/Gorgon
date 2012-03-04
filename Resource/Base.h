@@ -10,8 +10,6 @@
 #include <fstream>
 #include <iosfwd>
 
-using namespace gge;
-
 namespace gge { namespace resource {
 
 
@@ -35,6 +33,8 @@ namespace gge { namespace resource {
 
 		////This function tests whether this object has the given utils::SGuid
 		bool isEqual(const utils::SGuid &guid) const { return guid==this->guid; }
+
+		File *file;
 
 		////utils::SGuid to identify this resource object
 		utils::SGuid guid;

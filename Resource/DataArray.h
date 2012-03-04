@@ -191,7 +191,7 @@ namespace gge { namespace resource {
 		////Currently does nothing
 		virtual bool Save(File &File,std::ostream &Data) { return false; }
 
-		virtual ~DataArray() { Data.Destroy(); Base::~Base(); }
+		virtual ~DataArray() { Data.Destroy(); }
 
 		virtual void Prepare(GGEMain &main, File &file);
 

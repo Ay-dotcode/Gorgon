@@ -22,7 +22,6 @@ namespace gge { namespace resource {
 
 	protected:
 		utils::SGuid target;
-		File* File;
 	};
 
 } }

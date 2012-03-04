@@ -28,7 +28,7 @@ namespace gge { namespace resource {
 	Image *LoadImageResource(File& File, istream &Data, int Size) {
 		int i;
 		Image *img=new Image;
-		img->File=&File;
+		img->file=&File;
 
 		bool lateloading=false;
 		//BYTE *compressionprops;
@@ -107,7 +107,7 @@ namespace gge { namespace resource {
 
 						free(state.Probs);
 						delete tmpdata;
-						delete img->CompressionProps;
+						utils::CheckAndDelete(img->CompressionProps);
 					} 
 					else if(img->Compression==GID::JPEG) {
 						int cpos=(int)Data.tellg();
@@ -285,7 +285,7 @@ errorout:
 		FILE *gfile;
 		errno_t err;
 		//To be compatible with JPEG read
-		err=fopen_s(&gfile, File->getFilename().data(), "rb");
+		err=fopen_s(&gfile, file->getFilename().data(), "rb");
 		if(err != 0) return false;
 
 		fseek(gfile,DataLocation,SEEK_SET);
@@ -303,8 +303,8 @@ errorout:
 			LzmaDecode(&state,tmpdata,DataSize,&processed,this->Data,this->GetWidth()*this->GetHeight()*this->GetBPP(),&processed2);
 
 			free(state.Probs);
-			delete tmpdata;
-			delete this->CompressionProps;
+			delete[] tmpdata;
+			utils::CheckAndDelete(CompressionProps);
 		} else if(Compression==GID::JPEG) {
 			jpeg_decompress_struct cinf;
 			jpeg_decompress_struct* cinfo=&cinf;
@@ -375,7 +375,7 @@ errorout:
 #endif
 		
 		if(Texture.ID>0)
-			system::DestroyTexture(&Texture);
+			system::DestroyTexture(Texture);
 
 		Texture = graphics::system::GenerateTexture(Data, GetWidth(), GetHeight(), GetMode());
 	}

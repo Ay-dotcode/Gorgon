@@ -10,7 +10,7 @@ namespace gge { namespace resource {
 	class ResizableObject : public virtual graphics::SizelessGraphic2D, public virtual animation::Base  {
 	public:
 
-		
+		virtual ~ResizableObject() {}
 	};
 
 	class ResizableObjectProvider : virtual public animation::Provider {

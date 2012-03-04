@@ -21,7 +21,7 @@ namespace gge { namespace resource {
 
 				for(int i=0;i<size/4;i++) {
 					unsigned d=ReadFrom<int>(Data);
-					anim->Frames.push_back(AnimationResourceFrame(d,t));
+					anim->Frames.push_back(AnimationFrame(d,t));
 
 					t+=d;
 				}

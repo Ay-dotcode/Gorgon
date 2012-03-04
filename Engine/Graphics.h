@@ -613,7 +613,7 @@ namespace gge { namespace graphics {
 		///@Mode		: Color mode
 		GLTexture GenerateTexture(Byte *Image,int Width,int Height,ColorMode::Type Mode);
 		void UpdateTexture(GLTexture TextureID, Byte *Image,ColorMode::Type Mode);
-		void DestroyTexture(GLTexture *texture);
+		void DestroyTexture(GLTexture &texture);
 		////Returns equivalent OpenGL color mode constant
 		///@Mode		: GGE color mode constant
 		GLenum getGLColorMode(ColorMode::Type Mode);

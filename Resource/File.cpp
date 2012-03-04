@@ -111,6 +111,10 @@ namespace gge { namespace resource {
 		return root->FindObject(guid);
 	}
 
+	File::~File() {
+		delete root;
+	}
+
 	const string load_error::strings::FileNotFound		= "Cannot find the file specified";
 	const string load_error::strings::Signature			= "Signature mismatch";
 	const string load_error::strings::VersionMismatch	= "Version mismatch";

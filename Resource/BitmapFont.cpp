@@ -241,7 +241,7 @@ namespace gge { namespace resource {
 		if(w<0) { w=-w; nowrap=true; }
 		bool done;
 		int fh=FontHeight();
-		int *data=(int*)Data;
+		int *data=(int*)Data;//!???
 		bool nextline=false;
 		struct {int x;EPrintData*data;} chardetectxs[MAX_CHAR_DETECTS];
 		int cchardetectxs=0;
@@ -470,7 +470,7 @@ namespace gge { namespace resource {
 		if(w<0) { w=-w; nowrap=true; }
 		bool done;
 		int fh=FontHeight();
-		int *data=(int*)Data;
+		int *data=(int*)Data; //!???
 		bool nextline=false;
 		struct {int x;EPrintData*data;} chardetectxs[MAX_CHAR_DETECTS];
 		int cchardetectxs=0;
