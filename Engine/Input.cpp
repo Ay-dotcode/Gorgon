@@ -388,13 +388,7 @@ namespace gge { namespace input {
 
 		void ProcessMouseClick(mouse::Event::Type button,int x,int y) {
 			if(mouse::PressedPoint.Distance(utils::Point(x,y))<mouse::DragDistance) {
-				if(mouse::PressedObject) {
-					mouse::PressedObject->Fire(mouse::Event::Click | button, utils::Point(x,y), 0);
-				}
-				else {
-					Main.PropagateMouseEvent(mouse::Event::Click | button, utils::Point(x,y), 0);
-				}
-
+				Main.PropagateMouseEvent(mouse::Event::Click | button, utils::Point(x,y), 0);
 			}
 		}
 

@@ -154,7 +154,7 @@
     <Filter Include="External\zlib">
       <UniqueIdentifier>{3a98aeb9-d7b4-43ad-8534-aa818094d1c2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Widgets\Utils">
+    <Filter Include="Utils">
       <UniqueIdentifier>{8c654264-4743-46ce-89f2-6935f9e74276}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -514,85 +514,85 @@
       <Filter>Resource\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Any.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\BasicGraphics.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\BasicMath.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Binary.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Bounds2D.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\BufferList.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\CastableManagedBuffer.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Collection.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ConsumableEvent.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Dynamic.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\EventChain.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Guid.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Iterator.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ManagedBuffer.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Map2D.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Margins.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\OrderedCollection.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\PAClassList.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Point2D.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Property.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Random.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Rectangle2D.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\SGuid.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\Size2D.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\SortedCollection.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\UtilsBase.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ValueList.h">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="External\png\pnginfo.h">
       <Filter>External\PNG\Sources</Filter>
@@ -1221,10 +1221,10 @@
       <Filter>Resource\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Utils\Random.cpp">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Utils\SGuid.cpp">
-      <Filter>Widgets\Utils</Filter>
+      <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="External\png\pngmem.c">
       <Filter>External\PNG\Sources</Filter>

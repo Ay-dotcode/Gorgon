@@ -29,6 +29,8 @@ namespace gge {
 		CurrentTime=os::GetTime();
 
 		FPS=50;
+
+		srand((unsigned)time(NULL));
 	}
 
 	void GGEMain::Setup(string SystemName, int Width, int Height, int BitDepth, bool FullScreen) {

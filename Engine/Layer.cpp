@@ -80,6 +80,12 @@ namespace gge {
 
 			return ret;
 		}
+		else if(event==input::mouse::Event::Click) {
+			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.IsValid(); i.Next()) {
+				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))
+					return true;
+			}
+		}
 		else {
 			if(
 				(isVisible && BoundingBox.isInside(location)) || 
