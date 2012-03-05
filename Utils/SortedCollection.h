@@ -73,19 +73,12 @@ namespace gge { namespace utils {
 				return *item;
 			}
 
-			operator T_ *() {
-				return *item;
-			}
 
 			T_ *operator ->() {
 				return item;
 			}
 
 			operator const T_ &() const {
-				return *item;
-			}
-
-			operator const T_ *() const {
 				return *item;
 			}
 
@@ -619,7 +612,7 @@ namespace gge { namespace utils {
 			Wrapper &w=*item.Current;
 			item.Current=item.Current->next;
 
-			Remove(w);
+			Delete(w);
 
 			return;
 		}
@@ -902,6 +895,10 @@ namespace gge { namespace utils {
 				throw std::out_of_range("No items");
 
 			return *(*tail);
+		}
+
+		~SortedCollection() {
+			destructref();
 		}
 	protected:
 		int *count;

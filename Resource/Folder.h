@@ -117,7 +117,9 @@ namespace gge { namespace resource {
 
 		virtual void Prepare(GGEMain &main, File &file);
 
+		virtual ~Folder() {
 
+		}
 
 	protected:
 		bool reallyloadnames;

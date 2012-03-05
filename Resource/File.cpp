@@ -113,6 +113,8 @@ namespace gge { namespace resource {
 
 	File::~File() {
 		delete root;
+		Loaders.Destroy();
+		Redirects.Destroy();
 	}
 
 	const string load_error::strings::FileNotFound		= "Cannot find the file specified";
