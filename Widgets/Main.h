@@ -15,7 +15,7 @@ namespace gge { namespace widgets {
 	void RegisterLoaders(resource::File &File);
 	inline void RegisterLoaders(resource::File *File) { RegisterLoaders(*File); }
 
-	void Init(GGEMain &Main);
+	void Initialize(GGEMain &Main);
 
 	extern VirtualPanel TopLevel;
 	extern utils::Collection<WidgetBase> DrawQueue;

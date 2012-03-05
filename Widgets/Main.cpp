@@ -52,14 +52,14 @@ namespace gge { namespace widgets {
 		File.Loaders.Add(new resource::Loader(GID::WR, LoadWR)); 
 	}
 
-	void Init(GGEMain &Main) {
+	void Initialize(GGEMain &Main) {
 		LayerBase *layer;
 		layer=new LayerBase();
 
 		Main.Add(layer, 1);
 		TopLevel.init();
 		TopLevel.LandOn(*layer);
-
+		 
 		Main.RegisterInterval(1, &Draw_Signal);
 
 		input::keyboard::Events.SetOrder(TopLevel.KeyboardToken,-1);
