@@ -181,6 +181,9 @@ namespace gge {
 	void GGEMain::Exit(int code) {
 		BeforeTerminate();
 
+		for(auto it=SubLayers.First();it.IsValid();it.Next())
+			it->parent=NULL;
+
 		os::Quit(code);
 	}
 
