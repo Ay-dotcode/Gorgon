@@ -169,6 +169,10 @@ namespace gge { namespace utils {
 			return (*this)(location.x, location.y);
 		}
 
+		T_ &operator()(int location) {
+			return me().buffer[location];
+		}
+
 		//Returns the specified member. Fires an exception in debug, no checks are
 		// performed in release
 		const T_ &operator ()(int x, int y) const {
@@ -184,6 +188,10 @@ namespace gge { namespace utils {
 			return (*this)(location.x, location.y);
 		}
 
+		const T_ &operator()(int location) const {
+			return me().buffer[location];
+		}
+
 		//Changes the value of the specified element. If the element is not found
 		// nothing will be done.
 		void Set(int x, int y, const T_ &value) {
@@ -192,6 +200,10 @@ namespace gge { namespace utils {
 		}
 		void Set(utils::Point location, const T_ &value) {
 			Set(location.x, location.y,value)
+		}
+		void Set(int location, const T_ &value) {
+			if(location>=0 && location<me().buffer.GetSize())
+				me().buffer[location]=value;
 		}
 
 		//Returns the value at the given cell. If the element is not found
@@ -207,6 +219,10 @@ namespace gge { namespace utils {
 		// a new object will be returned. This function returns by value.
 		T_ Get(utils::Point location) const {
 			return Get(location.x, location.y);
+		}
+		T_ Get(int location) const {
+			if(location>=0 && location<me().buffer.GetSize())
+				return me().buffer[location];
 		}
 
 		//Returns the size of the map
