@@ -9,7 +9,8 @@
 // Eser: autoRestart param should be somewhere else
 // maybe we should consider making it a class property.
 namespace gge { namespace graphics {
-	TheoraVideoManager * VideoClip::sVideoManager();
+	TheoraVideoManager *VideoClip::sVideoManager = NULL;
+	OpenAL_AudioInterfaceFactory *VideoClip::sOpenALInterfaceFactory = NULL;
 
 	TheoraOutputMode getTheoraColorMode(ColorMode::Type color_mode) {
 		switch(color_mode) {
@@ -26,47 +27,9 @@ namespace gge { namespace graphics {
 		}
 	}
 
-	//VideoTexture &VideoFactory::OpenFile(std::string filename, bool audioOnly, ColorMode::Type colorMode, bool autoRestart, bool cacheInMemory) {
-	//	// Eser: RGB mode is hardcoded. needs to be defined as a property instead.
-	//	TheoraVideoClip *videoClip;
-
-	//	if(cacheInMemory) {
-	//		TheoraMemoryFileDataSource *DataSource = new TheoraMemoryFileDataSource(filename);
-	//		videoClip = VideoManager.createVideoClip(DataSource, getTheoraColorMode(colorMode));
-	//	}
-	//	else {
-	//		videoClip = VideoManager.createVideoClip(filename, getTheoraColorMode(colorMode));
-	//	}
-
-	//	if(!videoClip) {
-	//		throw std::runtime_error("Cannot open video");
-	//	}
-
-	//	if(autoRestart) {
-	//		// videoClip->setAutoRestart(1);
-	//	}
-
-	//	return *new VideoTexture(*this, videoClip);
-	//}
-
-	//VideoFactory::VideoFactory() : VideoManager(*(new TheoraVideoManager(3))), OpenALInterfaceFactory(*(new OpenAL_AudioInterfaceFactory()))
-	//{
-	//	VideoManager.setDefaultNumPrecachedFrames(32);
-	//	VideoManager.setAudioInterfaceFactory(&OpenALInterfaceFactory);
-	//}
-
-	//VideoFactory::~VideoFactory()
-	//{
-	//	delete &OpenALInterfaceFactory;
-	//	delete &VideoManager;
-	//}
-
-
-	VideoClip::VideoClip( TheoraVideoClip *videoClip, bool audioOnly /*= false*/, ColorMode::Type colorMode /*= ColorMode::RGB*/, bool autoRestart /*= false*/, bool cacheInMemory /*= true*/ ) : 
+	VideoClip::VideoClip( std::string filename, bool audioOnly /*= false*/, ColorMode::Type colorMode /*= ColorMode::RGB*/, bool autoRestart /*= false*/, bool cacheInMemory /*= true*/ ) : 
 		ImageTexture(), FinishedEvent("Finished", this)
 	{
-		mVideoClip = videoClip;
-
 		mAudioOnly = audioOnly;
 		mColorMode = colorMode;
 		mAutoRestart = autoRestart;
@@ -76,8 +39,24 @@ namespace gge { namespace graphics {
 			sVideoManager = new TheoraVideoManager(3);
 			sVideoManager->setDefaultNumPrecachedFrames(32);
 
-			OpenAL_AudioInterfaceFactory *openal = new OpenAL_AudioInterfaceFactory();
-			sVideoManager->setAudioInterfaceFactory(openal);
+			sOpenALInterfaceFactory = new OpenAL_AudioInterfaceFactory();
+			sVideoManager->setAudioInterfaceFactory(sOpenALInterfaceFactory);
+		}
+
+		if(cacheInMemory) {
+			TheoraMemoryFileDataSource *DataSource = new TheoraMemoryFileDataSource(filename);
+			mVideoClip = sVideoManager->createVideoClip(DataSource, getTheoraColorMode(mColorMode));
+		}
+		else {
+			mVideoClip = sVideoManager->createVideoClip(filename, getTheoraColorMode(mColorMode));
+		}
+
+		if(!mVideoClip) {
+			throw std::runtime_error("Cannot open video");
+		}
+
+		if(autoRestart) {
+			// videoClip->setAutoRestart(1);
 		}
 
 		// Eser: fixme if graphics::system::GenerateTexture resets/will reset the existing W/H values of GLTexture struct.
@@ -131,7 +110,8 @@ namespace gge { namespace graphics {
 			}
 
 			mVideoClip->popFrame();
-	//				delete frame;
+			// delete frame;
+			// delete Data;
 		}
 	}
 }}
