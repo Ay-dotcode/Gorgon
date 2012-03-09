@@ -849,9 +849,6 @@
     <ClInclude Include="Engine\VideoFactory.h">
       <Filter>Engine\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\VideoTexture.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
     <ClInclude Include="External\Theora\src\x86_vc\mmxfrag.h">
       <Filter>External\Theora</Filter>
     </ClInclude>
@@ -944,6 +941,9 @@
     </ClInclude>
     <ClInclude Include="Widgets\Basic\PetContainer.h">
       <Filter>Widgets\Code\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\VideoClip.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1463,12 +1463,6 @@
     <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp">
       <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\VideoFactory.cpp">
-      <Filter>Engine\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\VideoTexture.cpp">
-      <Filter>Engine\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="External\Theora\src\x86_vc\mmxfdct.c">
       <Filter>External\Theora</Filter>
     </ClCompile>
@@ -1573,6 +1567,9 @@
     </ClCompile>
     <ClCompile Include="External\XmlParser\tinyxml.cpp">
       <Filter>External\XML</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\VideoClip.cpp">
+      <Filter>Engine\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

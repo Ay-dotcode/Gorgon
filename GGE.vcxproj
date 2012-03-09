@@ -117,7 +117,7 @@
     <ClInclude Include="Engine\Pointer.h" />
     <ClInclude Include="Engine\Sound.h" />
     <ClInclude Include="Engine\VideoFactory.h" />
-    <ClInclude Include="Engine\VideoTexture.h" />
+    <ClInclude Include="Engine\VideoClip.h" />
     <ClInclude Include="Engine\Wave.h" />
     <ClInclude Include="External\JPEG\jconfig.h" />
     <ClInclude Include="External\JPEG\jerror.h" />
@@ -376,8 +376,7 @@
     <ClCompile Include="Engine\OS.Win32.cpp" />
     <ClCompile Include="Engine\Pointer.cpp" />
     <ClCompile Include="Engine\Sound.cpp" />
-    <ClCompile Include="Engine\VideoFactory.cpp" />
-    <ClCompile Include="Engine\VideoTexture.cpp" />
+    <ClCompile Include="Engine\VideoClip.cpp" />
     <ClCompile Include="Engine\Wave.cpp" />
     <ClCompile Include="External\JPEG\src\jcapimin.c" />
     <ClCompile Include="External\JPEG\src\jcapistd.c" />
