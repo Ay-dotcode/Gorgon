@@ -3,11 +3,9 @@
 #include "..\External\TheoraPlayback\TheoraVideoClip.h"
 #include "..\External\TheoraPlayback\TheoraPlayer.h"
 #include "..\External\TheoraPlayback\TheoraDataSource.h"
-#include "..\External\TheoraPlayback\OpenAL_AudioInterface.h"
+#include "..\External\TheoraPlaybackOpenAL\OpenAL_AudioInterface.h"
 #include "..\External\TheoraPlayback\TheoraVideoManager.h"
 
-// Eser: autoRestart param should be somewhere else
-// maybe we should consider making it a class property.
 namespace gge { namespace graphics {
 	TheoraVideoManager *VideoClip::sVideoManager = NULL;
 	OpenAL_AudioInterfaceFactory *VideoClip::sOpenALInterfaceFactory = NULL;
@@ -27,13 +25,13 @@ namespace gge { namespace graphics {
 		}
 	}
 
-	VideoClip::VideoClip( std::string filename, bool audioOnly /*= false*/, ColorMode::Type colorMode /*= ColorMode::RGB*/, bool autoRestart /*= false*/, bool cacheInMemory /*= true*/ ) : 
-		ImageTexture(), FinishedEvent("Finished", this)
+	VideoClip::VideoClip( std::string filename, bool audioOnly /*= false*/, ColorMode::Type colorMode /*= ColorMode::RGB*/, bool cacheInMemory /*= true*/ ) : 
+		ImageTexture(), OnFinished("Finished", this), mIsStarted(true), mIsLoaded(false)
 	{
+		mFilename = filename;
+		mCacheInMemory = cacheInMemory;
 		mAudioOnly = audioOnly;
 		mColorMode = colorMode;
-		mAutoRestart = autoRestart;
-		mCacheInMemory = cacheInMemory;
 
 		if(!sVideoManager) {
 			sVideoManager = new TheoraVideoManager(3);
@@ -43,36 +41,49 @@ namespace gge { namespace graphics {
 			sVideoManager->setAudioInterfaceFactory(sOpenALInterfaceFactory);
 		}
 
-		if(cacheInMemory) {
-			TheoraMemoryFileDataSource *DataSource = new TheoraMemoryFileDataSource(filename);
+		load();
+	}
+
+	VideoClip::~VideoClip()
+	{
+		Destroy();
+	}
+
+	void VideoClip::load() {
+		if(mCacheInMemory) {
+			TheoraMemoryFileDataSource *DataSource = new TheoraMemoryFileDataSource(mFilename);
 			mVideoClip = sVideoManager->createVideoClip(DataSource, getTheoraColorMode(mColorMode));
 		}
 		else {
-			mVideoClip = sVideoManager->createVideoClip(filename, getTheoraColorMode(mColorMode));
+			mVideoClip = sVideoManager->createVideoClip(mFilename, getTheoraColorMode(mColorMode));
 		}
 
 		if(!mVideoClip) {
 			throw std::runtime_error("Cannot open video");
 		}
 
-		if(autoRestart) {
-			// videoClip->setAutoRestart(1);
-		}
+		mDuration = mVideoClip->getDuration();
+		mWidth = mVideoClip->getWidth();
+		mHeight = mVideoClip->getHeight();
+		mIsLoaded = true;
 
 		// Eser: fixme if graphics::system::GenerateTexture resets/will reset the existing W/H values of GLTexture struct.
 		if(!mAudioOnly) {
-			Texture = graphics::system::GenerateTexture(NULL, mVideoClip->getWidth(), mVideoClip->getHeight(), ColorMode::RGB);
+			Texture = graphics::system::GenerateTexture(NULL, mWidth, mHeight, ColorMode::RGB);
 		}
 
 		mRenderToken = gge::Main.BeforeRenderEvent.Register(this, &VideoClip::GetNextFrame);
 	}
 
-	VideoClip::~VideoClip()
-	{
-		Main.BeforeRenderEvent.Unregister(mRenderToken);
+	void VideoClip::Destroy() {
+		gge::Main.BeforeRenderEvent.Unregister(mRenderToken);
 
 		VideoClip::sVideoManager->destroyVideoClip(mVideoClip);
-		gge::utils::CheckAndDelete(mVideoClip);
+
+		mIsLoaded = false;
+
+		// Eser: fixme
+		// gge::utils::CheckAndDelete(mVideoClip);
 	}
 
 	void VideoClip::GetNextFrame() {
@@ -90,6 +101,14 @@ namespace gge { namespace graphics {
 			return;
 		}
 
+		if(mIsStarted) {
+			if(mVideoClip->getNumReadyFrames() < mVideoClip->getNumPrecachedFrames() * 0.5f ) {
+				return;
+			}
+
+			mIsStarted = false;
+		}
+
 		if(!mAudioOnly) {
 			mVideoClip->update(diff);
 		}
@@ -97,9 +116,11 @@ namespace gge { namespace graphics {
 
 		time = t;
 
-		//if(mVideoClip->getNumReadyFrames() < mVideoClip->getNumPrecachedFrames() * 0.5f ) {
-		//	return;
-		//}
+		if(IsFinished()) {
+			Destroy();
+			OnFinished();
+			return;
+		}
 
 		TheoraVideoFrame *frame = mVideoClip->getNextFrame();
 
@@ -113,5 +134,57 @@ namespace gge { namespace graphics {
 			// delete frame;
 			// delete Data;
 		}
+	}
+
+	bool VideoClip::IsPaused() {
+		return mVideoClip->isPaused();
+	}
+
+	bool VideoClip::IsFinished() {
+		return mVideoClip->isDone();
+	}
+
+	void VideoClip::Play() {
+		if(!mIsLoaded) {
+			load();
+		}
+
+		mVideoClip->play();
+	}
+
+	void VideoClip::Pause(){
+		mVideoClip->pause();
+	}
+
+	void VideoClip::Stop() {
+		mVideoClip->stop();
+	}
+
+	void VideoClip::Restart() {
+		if(!mIsLoaded) {
+			load();
+		}
+
+		mVideoClip->restart();
+	}
+
+	void VideoClip::Seek(float time) {
+		mVideoClip->seek(time, false);
+	}
+
+	float VideoClip::GetPosition() {
+		return mVideoClip->getTimePosition();
+	}
+
+	float VideoClip::GetLength() {
+		return mDuration;
+	}
+
+	int VideoClip::GetWidth() {
+		return mWidth;
+	}
+
+	int VideoClip::GetHeight() {
+		return mHeight;
 	}
 }}

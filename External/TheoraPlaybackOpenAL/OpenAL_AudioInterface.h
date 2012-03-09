@@ -9,9 +9,9 @@ the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 #ifndef _OpenAL_AudioInterface_h
 #define _OpenAL_AudioInterface_h
 
-#include "TheoraAudioInterface.h"
-#include "TheoraVideoClip.h"
-#include "TheoraTimer.h"
+#include "../TheoraPlayback/TheoraAudioInterface.h"
+#include "../TheoraPlayback/TheoraVideoClip.h"
+#include "../TheoraPlayback/TheoraTimer.h"
 
 #ifndef __APPLE__
 #include "../OpenAL/al.h"
@@ -41,7 +41,7 @@ class OpenAL_AudioInterface : public TheoraAudioInterface, TheoraTimer
 public:
 	OpenAL_AudioInterface(TheoraVideoClip* owner,int nChannels,int freq);
 	~OpenAL_AudioInterface();
-	void insertData(float** data,int nSamples);
+	void insertData(float* data,int nSamples);
 	void destroy();
 
 	void update(float time_increase);

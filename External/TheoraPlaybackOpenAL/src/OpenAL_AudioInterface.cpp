@@ -45,7 +45,7 @@ OpenAL_AudioInterface::~OpenAL_AudioInterface()
 	if (mTempBuffer) delete mTempBuffer;
 }
 
-void OpenAL_AudioInterface::insertData(float** data,int nSamples)
+void OpenAL_AudioInterface::insertData(float* data,int nSamples)
 {
 	printf("got %d bytes, %d buffers queued\n",nSamples,(int)mBufferQueue.size());
 	for (int i=0;i<nSamples;i++)
@@ -53,9 +53,10 @@ void OpenAL_AudioInterface::insertData(float** data,int nSamples)
 		if (mBuffSize < mMaxBuffSize)
 		{
 			//mTempBuffer[mBuffSize++]=rand(); debug
-			mTempBuffer[mBuffSize++]=float2short(data[0][i]);
-			if (mNumChannels == 2)
-				mTempBuffer[mBuffSize++]=float2short(data[1][i]);
+//			mTempBuffer[mBuffSize++]=float2short(data[0][i]);
+//			if (mNumChannels == 2)
+//				mTempBuffer[mBuffSize++]=float2short(data[1][i]);
+			mTempBuffer[mBuffSize++]=float2short(data[i]);
 		}
 		if (mBuffSize == mFreq*mNumChannels/4)
 		{

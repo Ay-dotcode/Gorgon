@@ -153,7 +153,7 @@
     <ClInclude Include="External\pThread\pthread.h" />
     <ClInclude Include="External\pThread\sched.h" />
     <ClInclude Include="External\pThread\semaphore.h" />
-    <ClInclude Include="External\TheoraPlayback\OpenAL_AudioInterface.h" />
+    <ClInclude Include="External\TheoraPlaybackOpenAL\OpenAL_AudioInterface.h" />
     <ClInclude Include="External\TheoraPlayback\src\Endianess.h" />
     <ClInclude Include="External\TheoraPlayback\TheoraAsync.h" />
     <ClInclude Include="External\TheoraPlayback\TheoraAudioInterface.h" />
@@ -493,7 +493,7 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\OpenAL_AudioInterface.cpp" />
+    <ClCompile Include="External\TheoraPlaybackOpenAL\src\OpenAL_AudioInterface.cpp" />
     <ClCompile Include="External\TheoraPlayback\src\TheoraAsync.cpp" />
     <ClCompile Include="External\TheoraPlayback\src\TheoraAudioInterface.cpp" />
     <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp" />

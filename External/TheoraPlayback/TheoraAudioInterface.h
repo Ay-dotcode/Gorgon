@@ -2,7 +2,7 @@
 This source file is part of the Theora Video Playback Library
 For latest info, see http://libtheoraplayer.sourceforge.net/
 *************************************************************************************
-Copyright (c) 2008-2010 Kresimir Spes (kreso@cateia.com)
+Copyright (c) 2008-2012 Kresimir Spes (kspes@cateia.com)
 This program is free software; you can redistribute it and/or modify it under
 the terms of the BSD license: http://www.opensource.org/licenses/bsd-license.php
 *************************************************************************************/
@@ -37,7 +37,7 @@ public:
       \param data contains one or two channels of float PCM data in the range [-1,1]
       \param nSamples contains the number of samples that the data parameter contains in each channel
     */
-	virtual void insertData(float** data,int nSamples)=0;
+	virtual void insertData(float* data, int nSamples)=0;
 
 	virtual void destroy() = 0;
 

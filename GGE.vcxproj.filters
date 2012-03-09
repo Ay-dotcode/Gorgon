@@ -157,6 +157,9 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{8c654264-4743-46ce-89f2-6935f9e74276}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External\TheoraPlaybackOpenAL">
+      <UniqueIdentifier>{a733fb2c-e227-44d8-a684-ae82ec2f3ec7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Effects\CountingText.h">
@@ -810,9 +813,6 @@
     <ClInclude Include="External\TheoraPlayback\TheoraPlayer.h">
       <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\OpenAL_AudioInterface.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
     <ClInclude Include="External\TheoraPlayback\TheoraAsync.h">
       <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
@@ -944,6 +944,9 @@
     </ClInclude>
     <ClInclude Include="Engine\VideoClip.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlaybackOpenAL\OpenAL_AudioInterface.h">
+      <Filter>External\TheoraPlaybackOpenAL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1427,9 +1430,6 @@
     <ClCompile Include="External\vorbis\src\window.c">
       <Filter>External\Vorbis</Filter>
     </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\OpenAL_AudioInterface.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraAsync.cpp">
       <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
@@ -1570,6 +1570,9 @@
     </ClCompile>
     <ClCompile Include="Engine\VideoClip.cpp">
       <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlaybackOpenAL\src\OpenAL_AudioInterface.cpp">
+      <Filter>External\TheoraPlaybackOpenAL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
