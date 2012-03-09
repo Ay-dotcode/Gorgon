@@ -33,8 +33,9 @@ namespace gge { namespace widgets {
 
 		typedef void(*Modifier)(LinearOrganizer &organizer);
 
-		LinearOrganizer() : currentrow(), currentcol(), spacing(5), 
-			INIT_PROPERTY(LinearOrganizer, Spacing) 
+		LinearOrganizer() : currentrow(), currentcol(), spacing(5), autosizewindows(true),
+			INIT_PROPERTY(LinearOrganizer, Spacing),
+			INIT_PROPERTY(LinearOrganizer, AutosizeWindows)
 		{
 			rows.push_back(row());
 		}
@@ -109,6 +110,7 @@ namespace gge { namespace widgets {
 		}
 
 		utils::NumericProperty<LinearOrganizer, int> Spacing;
+		utils::BooleanProperty<LinearOrganizer> AutosizeWindows;
 
 
 
@@ -120,17 +122,29 @@ namespace gge { namespace widgets {
 		std::vector<row> rows;
 		int currentrow,currentcol;
 		int spacing;
+		bool autosizewindows;
 
 		static void nextline_(LinearOrganizer &organizer) {organizer.NextLine();}
 
 		void setSpacing(const int &value) {
-			if(Spacing!=value) {
+			if(spacing!=value) {
 				spacing = value;
 				Reorganize();
 			}
 		}
 		int getSpacing() const {
 			return spacing;
+		}
+
+		void setAutosizeWindows(const bool &value) {
+			if(autosizewindows!=value) {
+				autosizewindows = value;
+				
+				Reorganize();
+			}
+		}
+		bool getAutosizeWindows() const {
+			return autosizewindows;
 		}
 
 		void sync();

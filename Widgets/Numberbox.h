@@ -85,7 +85,7 @@ namespace gge { namespace widgets {
 	}
 
 	template <class T_, void (*Val_)(std::string&, int, int&,int)=FixNumberString<T_>, 
-		T_ (*Conv_)(const std::string&,int)=StrToNumber<T_> >
+		T_ (*Conv_)(const std::string&,int)=utils::StrToNumber<T_> >
 	class Numberbox : public INumberbox<T_>, public textbox::Base {
 	public:
 		Numberbox(const T_ &value=T_()) : Base(),
@@ -177,6 +177,8 @@ namespace gge { namespace widgets {
 			ss<<value;
 
 			settext(ss.str());
+
+			changeevent();
 		}
 		virtual T_ getValue() const {
 			return value;

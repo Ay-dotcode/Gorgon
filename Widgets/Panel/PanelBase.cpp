@@ -428,11 +428,17 @@ namespace gge { namespace widgets {
 				scrollmargins.Right=vscroll.bar.GetWidth()+padding.Right;
 				//if(innerborder)
 				vscroll.bar.SetHeight(innerlayer.GetHeight());
-				vscroll.bar.Show();
+				if(!vscroll.bar.IsVisible()) {
+					vscroll.bar.Show();
+					Reorganize();
+				}
 			}
 			else {
 				scrollmargins=Margins(0);
-				vscroll.bar.Hide();
+				if(vscroll.bar.IsVisible()) {
+					vscroll.bar.Hide();
+					Reorganize();
+				}
 			}
 
 

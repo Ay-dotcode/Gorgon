@@ -137,7 +137,7 @@ namespace gge { namespace widgets {
 
 		void setStepsize(const T_ &value) {
 			Base::setsteps(value);
-			Base::setsmallchange(max(value,1));
+			Base::setsmallchange(std::max(value,T_(1)));
 		}
 		T_ getStepsize() const {
 			return Base::getsteps();

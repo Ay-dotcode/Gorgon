@@ -78,7 +78,7 @@ namespace gge { namespace widgets {
 	class OptionGroup : public IOptionGroup<T_> {
 	public:
 
-		OptionGroup() : changeevent("ChangedEvent", this) {
+		OptionGroup() : changeevent("ChangedEvent", this), currentoption(NULL) {
 
 		}
 
@@ -134,7 +134,12 @@ namespace gge { namespace widgets {
 		//allows * to be overloaded to make sure you are allowed to set it NULL
 		virtual void Set(O_ *option) {
 			currentoption=option;
-			clearall();
+
+			for(auto i=Options.First();i.IsValid();i.Next()) {
+				if(i.CurrentPtr()!=currentoption)
+					i->Uncheck();
+			}
+
 			if(currentoption)
 				currentoption->Check();
 

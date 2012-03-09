@@ -5,6 +5,7 @@
 #include "../Panel.h"
 #include "../Textbox/TextboxBase.h"
 #include "../Listbox/ListboxBase.h"
+#include "../Window.h"
 
 
 namespace gge { namespace widgets {
@@ -110,6 +111,11 @@ namespace gge { namespace widgets {
 			else {
 				y+=row->height;
 			}
+		}
+
+		if(dynamic_cast<Window*>(attachedto) && autosizewindows) {
+			Window *w=dynamic_cast<Window*>(attachedto);
+			w->SetHeight(y+w->GetHeight()-w->GetUsableHeight()+1);
 		}
 	}
 

@@ -46,6 +46,7 @@ namespace gge { namespace widgets {
 
 		virtual void Enable();
 
+		using WidgetBase::Resize;
 		virtual void Resize(utils::Size Size);
 
 		virtual utils::Size GetSize() const {

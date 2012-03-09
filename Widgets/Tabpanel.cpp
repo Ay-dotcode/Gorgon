@@ -132,6 +132,7 @@ namespace gge { namespace widgets {
 
 		for(auto it=First();it.IsValid();it.Next()) {
 			it->SetY(y);
+			it->SetWidth(size.Width);
 			it->SetHeight(size.Height-y);
 
 			if(btn.IsValid()) {

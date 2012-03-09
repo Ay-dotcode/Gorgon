@@ -356,6 +356,8 @@ namespace gge { namespace widgets {
 					title.SetVisibility(value);
 					adjustcontrols();
 
+					Reorganize();
+
 					Draw();
 				}
 			}
@@ -396,6 +398,8 @@ namespace gge { namespace widgets {
 			void setpadding(const utils::Margins &value) {
 				padding=value;
 
+				Reorganize();
+
 				Draw();			
 			}
 			utils::Margins getpadding() const {
@@ -423,6 +427,8 @@ namespace gge { namespace widgets {
 				if(vscroll.show!=value) {
 					vscroll.show=value;
 					adjustscrolls();
+
+					Reorganize();
 				}
 			}
 			bool getshowvscroll() const {
@@ -482,6 +488,8 @@ namespace gge { namespace widgets {
 					btn.SetBlueprint(bp->TitleButton);
 
 				adjustcontrols();
+
+				Reorganize();
 			}
 
 			void placedialogbutton(WidgetBase &btn) {
@@ -490,6 +498,8 @@ namespace gge { namespace widgets {
 					btn.SetBlueprint(bp->DialogButton);
 
 				adjustcontrols();
+
+				Reorganize();
 			}
 
 			void style_anim_finished();

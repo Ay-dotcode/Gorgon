@@ -52,7 +52,7 @@ namespace gge { namespace widgets {
 				SetContainer(attachedto->GetWidget()->GetContainer());
 				
 
-			Bounds target=attachedto->GetWidget()->GetBounds();
+			utils::Bounds target=attachedto->GetWidget()->GetBounds();
 
 			WidgetBase::Move(utils::Point(target.Right+margin,target.Top));
 			SetHeight(target.Height());
@@ -155,7 +155,7 @@ namespace gge { namespace widgets {
 
 		void setStepsize(const T_ &value) {
 			Base::setsteps(value);
-			Base::setsmallchange(max(value,1));
+			Base::setsmallchange(std::max(value,1));
 		}
 		T_ getStepsize() const {
 			return Base::getsteps();

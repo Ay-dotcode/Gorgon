@@ -54,7 +54,6 @@ namespace gge { namespace widgets {
 			case input::mouse::Event::Left_Click:
 				if(IsEnabled()) {
 					change();
-					changeevent();
 				}
 
 				break;
@@ -98,7 +97,7 @@ namespace gge { namespace widgets {
 				return false;
 
 			Base::click();
-			change();
+			//change();
 			changeevent();
 
 			return true;
@@ -128,11 +127,13 @@ namespace gge { namespace widgets {
 		utils::EventChain<RadioButton> changeevent;
 
 		virtual void setState(const bool &state) {
-			if(state) {
+			if(state && Base::getstate()!=2) {
 				Base::setstate(2);
+				changeevent();
 			}
-			else {
+			else if(!state && Base::getstate()!=1) {
 				Base::setstate(1);
+				changeevent();
 			}
 		}
 		virtual bool getState() const {
