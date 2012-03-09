@@ -58,6 +58,8 @@ namespace gge { namespace sound {
 		///@Size	: The size of the wave data
 		SoundBufferHandle CreateSoundBuffer(WaveFormat Format, void *Data, int Size);
 
+		void DestroySoundBuffer(SoundBufferHandle &handle);
+
 		////Creates a new sound controller to play a given buffer
 		SoundControlHandle CreateSoundController(SoundBufferHandle Buffer);
 

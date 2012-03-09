@@ -73,6 +73,8 @@ namespace gge { namespace utils {
 		}
 	
 		Any &operator =(const Any &any) {
+			if(content)
+				delete content;
 			size=any.size;
 			content=malloc(size);
 			memcpy(content, any.content, size);

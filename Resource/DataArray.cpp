@@ -25,6 +25,7 @@ namespace gge { namespace resource {
 				Data.read(tmpstr,size);
 
 				dat->Add(string(tmpstr,size));
+                delete[] tmpstr;
 			}
 			else if(gid==GID::SGuid) {
 				dat->guid.Load(Data);
@@ -134,4 +135,9 @@ namespace gge { namespace resource {
 			i->Prepare(file);
 	}
 
+	DataArray::~DataArray() {
+		Data.Destroy();
+	}
+
 } }
+

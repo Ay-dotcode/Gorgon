@@ -45,12 +45,12 @@ namespace gge { namespace resource {
 		/// an image object. This flag is used by other systems.
 		bool LeaveData;
 
-		Image() : animation::Base(), ImageTexture(), ImageData(), CompressionProps() {
-			isLoaded=LeaveData=false; Palette=NULL; 
+		Image() : animation::Base(), ImageTexture(), ImageData(), CompressionProps(), Palette() {
+			isLoaded=LeaveData=false;
 			animation::Animations.Remove(this);
 		}
 
-		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), ImageTexture(), ImageData(), CompressionProps() {
+		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), ImageTexture(), ImageData(), CompressionProps(), Palette() {
 			this->Resize(Width, Height, Mode);
 			animation::Animations.Remove(this);
 		}

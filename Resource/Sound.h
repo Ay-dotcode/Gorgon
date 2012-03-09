@@ -36,7 +36,7 @@ namespace gge { namespace resource {
 		}
 
 		////Destroys used data
-		void destroy() { if(Data) delete Data; }
+		void destroy();
 		////Destroys used data
 		virtual ~Sound() { destroy(); Base::~Base(); }
 

@@ -644,6 +644,10 @@ end:
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	}
 
+	Basic2DLayer::~Basic2DLayer() {
+
+	}
+
 
 	void Colorizable2DLayer::Draw(const GLTexture *Image, int X1, int Y1, int X2, int Y2, int X3, int Y3, int X4, int Y4) {
 		ColorizableSurface *surface=Surfaces.Add();

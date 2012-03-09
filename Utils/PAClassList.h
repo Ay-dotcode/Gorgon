@@ -50,19 +50,19 @@ public:
 		if(count==alloc)
 			grow();
 		
-		return list[count++];
+		return &(list[count++]);
 	}
 	
 	////Indexes an item, does not do bound check
 	T_* operator [] (int Index) {
-		return list[Index];
+		return &(list[Index]);
 	}
 	
 	////Destroys the list with every allocated element
 	void Destroy() {
-		int i;
-		for(i=0;i<count;i++)
-			delete list[i];
+		//int i;
+		//for(i=0;i<count;i++)
+		//	delete list[i];
 		
 		free(list);
 	}
@@ -78,30 +78,27 @@ public:
 	/// amount of items. It also initializes the newly
 	/// created objects
 	void AllocateFor(int amount) {
-		list=(T_**)realloc(list,sizeof(T_*)*(alloc+amount));
-		for(int i=alloc;i<alloc+growth;i++)
-			list[i]=new T_;
+		list=(T_*)realloc(list,sizeof(T_)*(alloc+amount));
+		memset(list+alloc,0,sizeof(T_)*amount);
 
 		alloc+=amount;
 	}
 
 private:
-	T_ **list;
+	T_ *list;
 	int alloc,count;
 	
 	void init() {
-		list=(T_**)malloc(sizeof(T_*)*growth);
+		list=(T_*)malloc(sizeof(T_)*growth);
 		alloc=growth;
-		for(int i=0;i<alloc;i++)
-			list[i]=new T_;
+		memset(list,0,sizeof(T_)*growth);
 
 		count=0;
 	}
 	
 	void grow() {
-		list=(T_**)realloc(list,sizeof(T_*)*(alloc+growth));
-		for(int i=alloc;i<alloc+growth;i++)
-			list[i]=new T_;
+		list=(T_*)realloc(list,sizeof(T_)*(alloc+growth));
+		memset(list+alloc,0,sizeof(T_)*growth);
 
 		alloc+=growth;
 	}

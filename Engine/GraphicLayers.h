@@ -40,6 +40,8 @@ namespace gge { namespace graphics {
 
 		Basic2DLayer(const utils::Point &p) : LayerBase(p) { init(); }
 
+		~Basic2DLayer();
+
 		void init() {
 			isVisible=true;
 			ClippingEnabled=false;

@@ -43,6 +43,14 @@ namespace gge {
 			}
 		}
 
+		template<class T_>
+		void CheckAndDeleteArray(T_ *&elm) {
+			if(elm) {
+				delete[] elm;
+				elm=NULL;
+			}
+		}
+
 		template <class T_>
 		class Range {
 		public:

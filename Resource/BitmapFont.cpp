@@ -767,8 +767,10 @@ namespace gge { namespace resource {
 
 	BitmapFont::~BitmapFont() {
 		for(auto it=Shadows.begin();it!=Shadows.end();++it) {
-			delete it->second;
-			it->second=NULL;
+			if(it->first!=0) {
+				delete it->second;
+				it->second=NULL;
+			}
 		}
 	}
 

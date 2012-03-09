@@ -81,4 +81,11 @@ namespace gge { namespace resource {
 		Buffer=sound::system::CreateSoundBuffer(Format, Data, Size);
 	}
 
+	void Sound::destroy() {
+		if(Data) 
+			delete Data; 
+		if(Buffer)
+			sound::system::DestroySoundBuffer(Buffer);
+	}
+
 } }

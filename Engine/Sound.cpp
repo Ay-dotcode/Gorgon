@@ -88,6 +88,11 @@ namespace gge { namespace sound {
 
 			return source;
 		}	
+
+		void DestroySoundBuffer(SoundBufferHandle &handle) {
+			alDeleteBuffers(1, &handle);
+		}
+
 	}
 
 	namespace environment {

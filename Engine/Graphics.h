@@ -363,6 +363,7 @@ namespace gge { namespace graphics {
 		BasicSurface() : Mode(Normal) {
 			Texture=NULL;
 			hasOwnTextureCoords=false;
+			TextureCoords=NULL;
 			VertexCoords[0].z=0;
 			VertexCoords[1].z=0;
 			VertexCoords[2].z=0;
@@ -394,7 +395,7 @@ namespace gge { namespace graphics {
 		__forceinline void DeleteTextureCoords() {
 			if(hasOwnTextureCoords) {
 				hasOwnTextureCoords=false;
-				delete TextureCoords;
+				delete[] TextureCoords;
 			}
 		}
 
@@ -410,8 +411,8 @@ namespace gge { namespace graphics {
 
 		////Clears any unneeded data
 		~BasicSurface() {
-			if(hasOwnTextureCoords)
-				delete TextureCoords;
+			if(hasOwnTextureCoords && TextureCoords)
+				delete[] TextureCoords;
 		}
 	protected:
 		////The texture to be used

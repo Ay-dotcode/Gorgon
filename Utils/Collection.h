@@ -1472,6 +1472,11 @@ namespace gge { namespace utils {
 			return --(ConstIterator(*this, -1));
 		}
 
+		~ConstCollection() {
+			if(list.getReferenceCount()<=1)
+				delete count;
+		}
+
 	protected:
 		ManagedBuffer<T_*> list;
 		int *count;

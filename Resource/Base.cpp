@@ -63,9 +63,12 @@ namespace gge { namespace resource {
 				file->Multiples[it.CurrentPtr()]--;
 			}
 			else {
-				it.Delete();
+				if(it.CurrentPtr())
+					delete it.CurrentPtr();
 			}
 		}
+
+		Subitems.Clear();
 	}
 
 } }
