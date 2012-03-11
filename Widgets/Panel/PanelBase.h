@@ -18,41 +18,7 @@ namespace gge { namespace widgets {
 		class Base : public WidgetBase, public ContainerBase {
 		public:
 
-			Base() : innermargins(0),
-				allownofocus(false), allowmove(false), allowresize(false),
-				controls(*this),dialogcontrols(*this),
-				bp(NULL), next_style(widgets::Blueprint::Style_None),
-				move_mdown(false), move_ongoing(false), padding(5),
-				move_pointer(PointerCollection::NullToken), scroll(0,0),
-				vscroll(true), scrollmargins(0), controlmargins(0),
-				scrollingborder(NULL), innerborder(NULL), showtitle(false),
-				blueprintmodified(false)
-			{
-				controls.alwaysenabled=true;
-
-				innerlayer.Add(scrollinglayer);
-				scrollinglayer.Add(background, 1);
-				scrollinglayer.Add(widgetlayer, 0);
-				innerlayer.ClippingEnabled=true;
-
-				style_anim.Pause();
-				style_anim.Finished.Register(this, &Base::style_anim_finished);
-				style_anim.Paused.Register(this, &Base::style_anim_finished);
-
-				vscroll.bar.Hide();
-				vscroll.bar.SetContainer(controls);
-				vscroll.bar.AllowFocus=false;
-				vscroll.bar.SmallChange=60;
-				vscroll.bar.LargeChange=120;
-				vscroll.bar.ChangeEvent().Register(this, &Base::vscroll_change);
-
-				title.Hide();
-				title.SetContainer(controls);
-				title.Autosize=AutosizeModes::None;
-				title.TextWrap=false;
-
-				WR.LoadedEvent.Register(this, &Base::wr_loaded);
-			}
+			Base();
 
 			virtual bool IsVisible() const {
 				return WidgetBase::IsVisible();
@@ -169,6 +135,15 @@ namespace gge { namespace widgets {
 
 			virtual utils::Size GetUsableSize() {
 				return innerlayer.BoundingBox.GetSize();
+			}
+
+			virtual utils::Margins GetOverheadMargins() {
+				return utils::Margins(
+					innerlayer.BoundingBox.Left,
+					innerlayer.BoundingBox.Top,
+					GetWidth()-innerlayer.BoundingBox.Right,
+					GetHeight()-innerlayer.BoundingBox.Bottom
+				);
 			}
 
 			virtual bool RemoveFocus() {

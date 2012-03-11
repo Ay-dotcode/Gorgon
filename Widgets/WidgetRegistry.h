@@ -27,7 +27,7 @@ namespace gge { namespace widgets {
 	public:
 
 		WidgetRegistry() : Icons(icons), Pictures(pictures), Sounds(sounds),
-			Button(), Label(), Textbox(),
+			Button(), Label(), Textbox(), WidgetSpacing(5, 5),
 			Checkbox(), RadioButton(), Listbox(), Slider(), Scrollbar(),
 			Progressbar(), Panel(), Window(), Combobox(), LoadedEvent("Loaded", this)
 		{}
@@ -275,22 +275,23 @@ namespace gge { namespace widgets {
 				*SettingsWindow
 			;
 			tabpanel::Blueprint *Tabpanel;
+			tabpanel::Blueprint *Tooltab;
+			tabpanel::Blueprint *Settingstab;
 		} Panels;
 
 		combobox::Blueprint *Combobox;
 
 		class COthers {
 		public:
-			COthers() : Combobox(), Autocomplete(), JumpList(), Tabpanel(), Tooltab(), Settingstab()
+			COthers() : Combobox(), Autocomplete(), JumpList()
 			{ }
 
-			tabpanel::Blueprint *Tabpanel;
-			tabpanel::Blueprint *Tooltab;
-			tabpanel::Blueprint *Settingstab;
 			combobox::Blueprint *Combobox;
 			combobox::Blueprint *Autocomplete;
 			combobox::Blueprint *JumpList;
 		} Others;
+
+		utils::Point WidgetSpacing;
 
 
 

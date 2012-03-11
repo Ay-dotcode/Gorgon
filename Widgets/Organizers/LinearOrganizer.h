@@ -37,6 +37,7 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(LinearOrganizer, Spacing),
 			INIT_PROPERTY(LinearOrganizer, AutosizeWindows)
 		{
+			spacing=WR.WidgetSpacing.x;
 			rows.push_back(row());
 		}
 		

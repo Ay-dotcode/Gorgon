@@ -16,6 +16,13 @@ namespace gge { namespace widgets {
 				setblueprint(*WR.Panel);
 		}
 
+		void FillContainer() {
+			if(Container) {
+				Move(0,0);
+				Resize(Container->GetUsableWidth()-1, Container->GetUsableHeight()-1);
+			}
+		}
+
 		utils::Property<Panel, utils::Margins> Padding;
 
 	protected:

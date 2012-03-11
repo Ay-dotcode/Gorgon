@@ -108,6 +108,12 @@ namespace gge { namespace widgets {
 		int GetUsableWidth() { return GetUsableSize().Width; }
 		int GetUsableHeight() { return GetUsableSize().Height; }
 
+		virtual utils::Margins GetOverheadMargins() { 
+			int w=(GetWidth()-GetUsableWidth())/2;
+			int h=(GetHeight()-GetUsableHeight())/2;
+			return utils::Margins(w,h,w,h); 
+		}
+
 		virtual utils::Point AbsoluteLocation() const {
 			return utils::Point(0,0);
 		}

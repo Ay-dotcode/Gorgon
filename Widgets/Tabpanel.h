@@ -196,6 +196,13 @@ namespace gge { namespace widgets {
 			return OrderedCollection::getCount();
 		}
 		void reorganize();
+		void FillContainer() {
+			if(Container) {
+				Move(0,0);
+				Resize(Container->GetUsableWidth()-1, Container->GetUsableHeight()-1);
+			}
+		}
+
 
 	protected:
 		RadioGroup<tabpanel::Panel*> buttons;

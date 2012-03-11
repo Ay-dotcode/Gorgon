@@ -134,6 +134,7 @@ namespace gge { namespace widgets {
 			it->SetY(y);
 			it->SetWidth(size.Width);
 			it->SetHeight(size.Height-y);
+			it->SetZOrder(2);
 
 			if(btn.IsValid()) {
 				RadioButton<tabpanel::Panel*> &rad=*btn;
@@ -141,6 +142,7 @@ namespace gge { namespace widgets {
 				rad.Text=it->Title;
 				rad.Move(x,bp->Placeholder.Margins.Top);
 				rad.Value=it.CurrentPtr();
+				rad.SetZOrder(1);
 				x+=rad.GetWidth();
 				rad.Show();
 

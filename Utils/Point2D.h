@@ -215,11 +215,11 @@ namespace gge { namespace utils {
 		}
 
 		//only supported for scalar values
-		void fromXML(const XMLNode &node) {
-			if(node.getAttribute("x", 0))
-				x=atof(node.getAttribute("x", 0));
-			if(node.getAttribute("y", 0))
-				y=atof(node.getAttribute("y", 0));
+		void fromXML(const xml::Element &node) {
+			if(node.Attribute("x"))
+				x=atof(*node.Attribute("x"));
+			if(node.Attribute("y"))
+				y=atof(*node.Attribute("y"));
 		}
 #endif
 
