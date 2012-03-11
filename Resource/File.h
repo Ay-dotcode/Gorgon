@@ -90,7 +90,9 @@ namespace gge { namespace resource {
 
 		////Loads a given file throws load_error
 		///@Filename	: File to be loaded
-		void LoadFile(const string &Filename);
+		void LoadFile(const string &Filename) { load(Filename, false); }
+
+		void LoadFirst(const string &Filename) { load(Filename, true);}
 
 		////Returns if a file is loaded
 		bool isLoaded() const { return isloaded; }
@@ -122,6 +124,8 @@ namespace gge { namespace resource {
 		~File();
 
 	protected:
+		void load(const std::string &filename, bool first);
+
 		////The root folder, root changes while loading a file
 		Folder *root;
 

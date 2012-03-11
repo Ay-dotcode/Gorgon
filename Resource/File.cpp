@@ -15,7 +15,7 @@ using namespace gge::utils;
 
 namespace gge { namespace resource {
 
-	void File::LoadFile(const string &Filename) {
+	void File::load(const string &Filename, bool first) {
 		CheckAndDelete(root);
 
 		char sgn[7];
@@ -52,7 +52,7 @@ namespace gge { namespace resource {
 		ReadFrom(data, size);
 
 		///*Load first element
-		root=LoadFolderResource(*this, data, size,LoadNames);
+		root=LoadFolderResource(*this, data, size,LoadNames,first);
 		if(!root)
 			throw load_error(load_error::Containment, load_error::strings::Containment);
 
@@ -78,7 +78,7 @@ namespace gge { namespace resource {
 	}
 
 	void File::AddBasicLoaders() {
-		Loaders.Add(new Loader(GID::Folder, std::bind(LoadFolderResource, placeholders::_1, placeholders::_2, placeholders::_3, false)));
+		Loaders.Add(new Loader(GID::Folder, std::bind(LoadFolderResource, placeholders::_1, placeholders::_2, placeholders::_3, false, false)));
 		Loaders.Add(new Loader(GID::LinkNode, LoadLinkNodeResource)); 
 		Loaders.Add(new Loader(GID::Text, LoadTextResource)); 
 		Loaders.Add(new Loader(GID::Image, LoadImageResource)); 

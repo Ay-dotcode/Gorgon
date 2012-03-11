@@ -16,7 +16,7 @@ using namespace gge::utils;
 
 namespace gge { namespace resource {
 
-	Folder *LoadFolderResource(File &File, istream &Data, int Size, bool LoadNames) {
+	Folder *LoadFolderResource(File &File, istream &Data, int Size, bool LoadNames, bool OnlyFirst) {
 		int targetpos=Data.tellg()+Size;
 		char Namebuffer[256];
 		vector<string> names;
@@ -92,6 +92,9 @@ namespace gge { namespace resource {
 						obj->name=*namec;
 						++namec;
 					}
+
+					if(OnlyFirst)
+						break;
 
 				} else {
 #ifdef _DEBUG

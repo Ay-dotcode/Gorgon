@@ -15,11 +15,11 @@ namespace gge { namespace resource {
 	class BitmapFont;
 	
 	////This function loads a folder resource from the given file
-	Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames=false);
+	Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames=false, bool OnlyFirst=false);
 
 	////This is basic folder resource, it holds other resources.
 	class Folder : public Base {
-		friend Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames);
+		friend Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames, bool OnlyFirst);
 	public:
 		Folder() : Base(), reallyloadnames(false), EntryPoint(-1) 
 		{ }
