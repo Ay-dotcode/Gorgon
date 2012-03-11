@@ -97,8 +97,8 @@ namespace gge { namespace widgets {
 				return false;
 
 			Base::click();
-			//change();
-			changeevent();
+			change();
+			//changeevent();
 
 			return true;
 		}

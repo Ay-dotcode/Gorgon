@@ -59,7 +59,7 @@ namespace gge { namespace resource {
 
 	Base::~Base() {
 		for(auto it=Subitems.First();it.IsValid();it.Next()) {
-			if(file && file->Multiples[it.CurrentPtr()]) {
+			if(file && file->Multiples.count(it.CurrentPtr())) {
 				file->Multiples[it.CurrentPtr()]--;
 			}
 			else {
