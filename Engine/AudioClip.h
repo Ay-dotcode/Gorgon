@@ -2,7 +2,6 @@
 
 #include "OS.Win32.h"
 #include "GGEMain.h"
-#include "Image.h"
 
 #include "..\External\TheoraPlayback\TheoraVideoClip.h"
 #include "..\External\TheoraPlayback\TheoraPlayer.h"
@@ -11,18 +10,15 @@
 #include "..\External\TheoraPlayback\TheoraVideoManager.h"
 
 namespace gge { namespace multimedia {
-
-	void Initialize();
-
-	class VideoClip : public virtual graphics::ImageTexture {
-		friend class AudioClip;
+	//!Needs update
+	class AudioClip {
 	public:
-		VideoClip(const std::string &filename="", bool cacheInMemory = false);
-		virtual ~VideoClip();
+		AudioClip(const std::string &filename="", bool cacheInMemory = false);
+		~AudioClip();
 
 		virtual void GetNextFrame();
 		virtual void Destroy();
-		utils::EventChain<VideoClip> FinishedEvent;
+		utils::EventChain<AudioClip> FinishedEvent;
 
 		virtual void LoadFile(const std::string &filename);
 
@@ -33,7 +29,7 @@ namespace gge { namespace multimedia {
 		virtual bool IsFinished() {
 			return mVideoClip->isDone();
 		}
-		
+
 		virtual void Play();
 		virtual void Pause();
 		virtual void Stop();
@@ -41,7 +37,7 @@ namespace gge { namespace multimedia {
 		virtual void Seek(unsigned time);
 
 
-		virtual unsigned GetPosition() const {
+		virtual unsigned GetPosition() {
 			if(mIsLoaded)
 				return int(mVideoClip->getTimePosition()*1000);
 			else
@@ -67,8 +63,6 @@ namespace gge { namespace multimedia {
 		bool mCacheInMemory;
 		bool mIsStarted;
 		bool mIsLoaded;
-
-		TheoraMemoryFileDataSource *DataSource;
 
 		unsigned int lastping;
 		unsigned int mDuration;

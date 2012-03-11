@@ -194,20 +194,22 @@ namespace gge { namespace widgets {
 	}
 
 	void Tabpanel::Activate(tabpanel::Panel *panel, bool setfocus) {
-		for(auto it=First();it.IsValid();it.Next()) {
-			it->Hide();
-		}
+		if(active!=panel) {
+			for(auto it=First();it.IsValid();it.Next()) {
+				it->Hide();
+			}
 
-		if(panel)
-			panel->Show(setfocus);
+			if(panel)
+				panel->Show(setfocus);
 
-		active=panel;
+			active=panel;
 
-		for(auto it=buttons.First();it.IsValid();it.Next()) {
-			if(it->Value==panel)
-				it->Check();
-			else
-				it->Uncheck();
+			for(auto it=buttons.First();it.IsValid();it.Next()) {
+				if(it->Value==panel)
+					it->Check();
+				else
+					it->Uncheck();
+			}
 		}
 	}
 

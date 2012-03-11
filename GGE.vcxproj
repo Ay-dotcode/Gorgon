@@ -100,6 +100,7 @@
     <ClInclude Include="Effects\LayerResizer.h" />
     <ClInclude Include="Effects\Tinting.h" />
     <ClInclude Include="Engine\Animation.h" />
+    <ClInclude Include="Engine\AudioClip.h" />
     <ClInclude Include="Engine\CustomLayer.h" />
     <ClInclude Include="Engine\Font.h" />
     <ClInclude Include="Engine\FontRenderer.h" />
@@ -116,7 +117,6 @@
     <ClInclude Include="Engine\OS.Win32.h" />
     <ClInclude Include="Engine\Pointer.h" />
     <ClInclude Include="Engine\Sound.h" />
-    <ClInclude Include="Engine\VideoFactory.h" />
     <ClInclude Include="Engine\VideoClip.h" />
     <ClInclude Include="Engine\Wave.h" />
     <ClInclude Include="External\JPEG\jconfig.h" />
@@ -364,6 +364,7 @@
     <ClCompile Include="Effects\LayerResizer.cpp" />
     <ClCompile Include="Effects\Tinting.cpp" />
     <ClCompile Include="Engine\Animation.cpp" />
+    <ClCompile Include="Engine\AudioClip.cpp" />
     <ClCompile Include="Engine\CustomLayer.cpp" />
     <ClCompile Include="Engine\Font.cpp" />
     <ClCompile Include="Engine\GGEMain.cpp" />

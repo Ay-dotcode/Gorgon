@@ -32,7 +32,8 @@ namespace gge { namespace widgets {
 		utils::BooleanProperty<IOption> State;
 
 		void Check() {
-			State=true;
+			if(!State)
+				State=true;
 		}
 		operator bool() const {
 			return State;
@@ -41,7 +42,8 @@ namespace gge { namespace widgets {
 			return Value;
 		}
 		virtual void Uncheck() {
-			State=false;
+			if(State)
+				State=false;
 		}
 
 		utils::EventChain<IOption> &ChangeEvent() { return changeevent; }
@@ -143,7 +145,10 @@ namespace gge { namespace widgets {
 			if(currentoption)
 				currentoption->Check();
 
-			changeevent();
+			if(option)
+				changeevent(option->Value);
+			else
+				changeevent(T_());
 		}
 		void Set(O_ &option) {
 			Set(&option);
@@ -266,12 +271,12 @@ namespace gge { namespace widgets {
 			return Options.end();
 		}
 
-		utils::EventChain<OptionGroup> &ChangeEvent() { return changeevent; }
+		utils::EventChain<OptionGroup, T_> &ChangeEvent() { return changeevent; }
 
 	protected:
 		utils::Collection<O_> Options;
 
-		utils::EventChain<OptionGroup> changeevent;
+		utils::EventChain<OptionGroup, T_> changeevent;
 
 		void clearall() {
 			for(auto i=Options.First();i.IsValid();i.Next()) {

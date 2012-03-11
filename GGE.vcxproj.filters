@@ -804,51 +804,6 @@
     <ClInclude Include="External\vorbis\vorbisfile.h">
       <Filter>External\Vorbis</Filter>
     </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\src\Endianess.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraDataSource.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraPlayer.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraAsync.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraUtil.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraException.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraVideoClip.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraFrameQueue.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraTimer.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraExport.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraVideoFrame.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraVideoManager.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraWorkerThread.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraAudioInterface.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\VideoFactory.h">
-      <Filter>Engine\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="External\Theora\src\x86_vc\mmxfrag.h">
       <Filter>External\Theora</Filter>
     </ClInclude>
@@ -947,6 +902,51 @@
     </ClInclude>
     <ClInclude Include="External\TheoraPlaybackOpenAL\OpenAL_AudioInterface.h">
       <Filter>External\TheoraPlaybackOpenAL</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\AudioClip.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\src\Endianess.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraAsync.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraAudioInterface.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraDataSource.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraException.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraExport.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraFrameQueue.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraPlayer.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraTimer.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraUtil.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraVideoClip.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraVideoFrame.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraVideoManager.h">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClInclude>
+    <ClInclude Include="External\TheoraPlayback\TheoraWorkerThread.h">
+      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1430,39 +1430,6 @@
     <ClCompile Include="External\vorbis\src\window.c">
       <Filter>External\Vorbis</Filter>
     </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraAsync.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraUtil.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraException.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoClip.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraFrameQueue.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraTimer.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoFrame.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoManager.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraWorkerThread.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraAudioInterface.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
     <ClCompile Include="External\Theora\src\x86_vc\mmxfdct.c">
       <Filter>External\Theora</Filter>
     </ClCompile>
@@ -1573,6 +1540,42 @@
     </ClCompile>
     <ClCompile Include="External\TheoraPlaybackOpenAL\src\OpenAL_AudioInterface.cpp">
       <Filter>External\TheoraPlaybackOpenAL</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\AudioClip.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraAsync.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraUtil.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraException.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoClip.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraFrameQueue.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraTimer.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoFrame.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoManager.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraWorkerThread.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraAudioInterface.cpp">
+      <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp">
+      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

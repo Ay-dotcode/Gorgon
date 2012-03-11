@@ -120,7 +120,7 @@ namespace gge {
 		void		 InitializePointer();
 		////Initializes Pointer subsystem. Before calling this function, pointers cannot be used
 		void		 InitializeResource();
-		//void		 InitializeWidgets();
+		void		 InitializeMultimedia();
 
 		////Registers a signal handler to be called in every given time. Exact time passed from the
 		/// last signal can be checked using LastSignal variable of the IntervalObject

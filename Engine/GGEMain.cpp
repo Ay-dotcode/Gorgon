@@ -7,6 +7,7 @@
 //#include "../Widgets/WidgetMain.h"
 #include "..\Utils\Rectangle2D.h"
 #include "..\Resource\Main.h"
+#include "VideoClip.h"
 
 using namespace gge::utils;
 
@@ -129,22 +130,16 @@ namespace gge {
 		InitializeAnimation();
 		InitializeResource();
 		InitializePointer();
+		InitializeMultimedia();
 	}
 
 	void GGEMain::InitializeAll(string Title, os::IconHandle Icon) {
-		InitializeOS();
+		InitializeAll(Title, Icon, 0,0);
+
 		Rectangle r=os::window::UsableScreenMetrics();
 		r.Width-=Width;
 		r.Height-=Height;
-		CreateWindow(Title, Icon, r.Left+r.Width/2, r.Top+r.Height/4);
-		InitializeGraphics();
-		InitializeSound();
-		InitializeInput();
-
-		InitializeAnimation();
-		InitializeResource();
-		InitializePointer();
-		//InitializeWidgets();
+		MoveWindow(r.Left+r.Width/2, r.Top+r.Height/4);
 	}
 
 	os::DeviceHandle GGEMain::InitializeGraphics() {
@@ -187,6 +182,10 @@ namespace gge {
 			it->parent=NULL;
 
 		os::Quit(code);
+	}
+
+	void GGEMain::InitializeMultimedia() {
+		multimedia::Initialize();
 	}
 
 	//void GGEMain::InitializeWidgets() {

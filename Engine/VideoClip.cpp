@@ -1,47 +1,35 @@
 #include "Graphics.h"
 #include "VideoClip.h"
-#include "..\External\TheoraPlayback\TheoraVideoClip.h"
-#include "..\External\TheoraPlayback\TheoraPlayer.h"
-#include "..\External\TheoraPlayback\TheoraDataSource.h"
-#include "..\External\TheoraPlaybackOpenAL\OpenAL_AudioInterface.h"
-#include "..\External\TheoraPlayback\TheoraVideoManager.h"
 
-namespace gge { namespace graphics {
-	TheoraVideoManager *VideoClip::sVideoManager = NULL;
-	OpenAL_AudioInterfaceFactory *VideoClip::sOpenALInterfaceFactory = NULL;
 
-	TheoraOutputMode getTheoraColorMode(ColorMode::Type color_mode) {
+namespace gge { namespace multimedia {
+	TheoraVideoManager *sVideoManager = NULL;
+	OpenAL_AudioInterfaceFactory *sOpenALInterfaceFactory = NULL;
+
+	TheoraOutputMode getTheoraColorMode(graphics::ColorMode::Type color_mode) {
 		switch(color_mode) {
-		case ColorMode::BGR:
+		case graphics::ColorMode::BGR:
 			return TH_BGR;
-		case ColorMode::RGB:
+		case graphics::ColorMode::RGB:
 			return TH_RGB;
-		case ColorMode::ABGR:
+		case graphics::ColorMode::ABGR:
 			return TH_ABGR;
-		case ColorMode::ARGB:
+		case graphics::ColorMode::ARGB:
 			return TH_ARGB;
 		default:
 			return TH_RGB;
 		}
 	}
 
-	VideoClip::VideoClip( std::string filename, bool audioOnly /*= false*/, ColorMode::Type colorMode /*= ColorMode::RGB*/, bool cacheInMemory /*= true*/ ) : 
-		ImageTexture(), OnFinished("Finished", this), mIsStarted(true), mIsLoaded(false)
+	VideoClip::VideoClip( const std::string &filename, bool cacheInMemory /*= true*/ ) : 
+		ImageTexture(), FinishedEvent("Finished", this), mIsStarted(true), mIsLoaded(false), Loop(false), DataSource(NULL), mVideoClip(NULL)
 	{
 		mFilename = filename;
 		mCacheInMemory = cacheInMemory;
-		mAudioOnly = audioOnly;
-		mColorMode = colorMode;
 
-		if(!sVideoManager) {
-			sVideoManager = new TheoraVideoManager(3);
-			sVideoManager->setDefaultNumPrecachedFrames(32);
-
-			sOpenALInterfaceFactory = new OpenAL_AudioInterfaceFactory();
-			sVideoManager->setAudioInterfaceFactory(sOpenALInterfaceFactory);
+		if(mFilename!="") {
+			load();
 		}
-
-		load();
 	}
 
 	VideoClip::~VideoClip()
@@ -49,50 +37,61 @@ namespace gge { namespace graphics {
 		Destroy();
 	}
 
+	void VideoClip::LoadFile(const std::string &filename) {
+		mFilename=filename;
+		load();
+	}
+
 	void VideoClip::load() {
+		if(mFilename=="") {
+			throw std::runtime_error("No video file specified");
+		}
+
+		Destroy();
+
 		if(mCacheInMemory) {
-			TheoraMemoryFileDataSource *DataSource = new TheoraMemoryFileDataSource(mFilename);
-			mVideoClip = sVideoManager->createVideoClip(DataSource, getTheoraColorMode(mColorMode));
+			DataSource = new TheoraMemoryFileDataSource(mFilename);
+			mVideoClip = sVideoManager->createVideoClip(DataSource, getTheoraColorMode(graphics::ColorMode::RGB));
 		}
 		else {
-			mVideoClip = sVideoManager->createVideoClip(mFilename, getTheoraColorMode(mColorMode));
+			mVideoClip = sVideoManager->createVideoClip(mFilename, getTheoraColorMode(graphics::ColorMode::RGB));
 		}
 
 		if(!mVideoClip) {
 			throw std::runtime_error("Cannot open video");
 		}
 
-		mDuration = mVideoClip->getDuration();
-		mWidth = mVideoClip->getWidth();
-		mHeight = mVideoClip->getHeight();
+		int width = mVideoClip->getWidth();
+		int height = mVideoClip->getHeight();
+		mDuration=int(mVideoClip->getDuration()*1000);
 		mIsLoaded = true;
 
-		// Eser: fixme if graphics::system::GenerateTexture resets/will reset the existing W/H values of GLTexture struct.
-		if(!mAudioOnly) {
-			Texture = graphics::system::GenerateTexture(NULL, mWidth, mHeight, ColorMode::RGB);
+		if(Texture.ID==0) {
+			Texture = graphics::system::GenerateTexture(NULL, width, height, graphics::ColorMode::RGB);
 		}
 
 		mRenderToken = gge::Main.BeforeRenderEvent.Register(this, &VideoClip::GetNextFrame);
 	}
 
 	void VideoClip::Destroy() {
-		gge::Main.BeforeRenderEvent.Unregister(mRenderToken);
+		utils::CheckAndDelete(DataSource);
 
-		VideoClip::sVideoManager->destroyVideoClip(mVideoClip);
+		if(mIsLoaded) {
+			gge::Main.BeforeRenderEvent.Unregister(mRenderToken);
+			mRenderToken=NULL;
 
-		mIsLoaded = false;
+			sVideoManager->destroyVideoClip(mVideoClip);
 
-		// Eser: fixme
-		// gge::utils::CheckAndDelete(mVideoClip);
+			mVideoClip=NULL;
+
+			mIsLoaded = false;
+		}
 	}
 
 	void VideoClip::GetNextFrame() {
-		// Eser: not sure using statics to measure the past time the right decision here
-		// i'd rather having a different timer which calculates the time diff between last & current frames.
-		static unsigned int time = gge::Main.CurrentTime;
-		unsigned int t = Main.CurrentTime;
+		unsigned int time = Main.CurrentTime;
 
-		float diff = (t-time) / 1000.0f;
+		float diff = (time-lastping) / 1000.0f;
 		if (diff > 0.25f) {
 			diff = 0.05f; // prevent spikes (usually happen on app load)
 		}
@@ -109,16 +108,19 @@ namespace gge { namespace graphics {
 			mIsStarted = false;
 		}
 
-		if(!mAudioOnly) {
-			mVideoClip->update(diff);
-		}
+		mVideoClip->update(diff);
 		mVideoClip->decodedAudioCheck();
 
-		time = t;
+		lastping = time;
 
 		if(IsFinished()) {
-			Destroy();
-			OnFinished();
+			if(Loop)
+				Restart();
+			else
+				Destroy();
+
+			FinishedEvent();
+			
 			return;
 		}
 
@@ -126,22 +128,10 @@ namespace gge { namespace graphics {
 
 		if(frame) {
 			unsigned char* Data = frame->getBuffer();
-			if(!mAudioOnly) {
-				graphics::system::UpdateTexture(Texture, Data, ColorMode::RGB);
-			}
+			graphics::system::UpdateTexture(Texture, Data, graphics::ColorMode::RGB);
 
 			mVideoClip->popFrame();
-			// delete frame;
-			// delete Data;
 		}
-	}
-
-	bool VideoClip::IsPaused() {
-		return mVideoClip->isPaused();
-	}
-
-	bool VideoClip::IsFinished() {
-		return mVideoClip->isDone();
 	}
 
 	void VideoClip::Play() {
@@ -149,14 +139,21 @@ namespace gge { namespace graphics {
 			load();
 		}
 
+		lastping=Main.CurrentTime;
 		mVideoClip->play();
 	}
 
 	void VideoClip::Pause(){
+		if(!mVideoClip)
+			return;
+
 		mVideoClip->pause();
 	}
 
 	void VideoClip::Stop() {
+		if(!mVideoClip)
+			return;
+
 		mVideoClip->stop();
 	}
 
@@ -165,26 +162,33 @@ namespace gge { namespace graphics {
 			load();
 		}
 
+		lastping=Main.CurrentTime;
 		mVideoClip->restart();
 	}
 
-	void VideoClip::Seek(float time) {
-		mVideoClip->seek(time, false);
+	void VideoClip::Seek(unsigned time) {
+		if(!mVideoClip)
+			return;
+
+		if(time<GetPosition())
+			mVideoClip->restart();
+
+		mVideoClip->seek(time/1000.f, false);
 	}
 
-	float VideoClip::GetPosition() {
-		return mVideoClip->getTimePosition();
+	void ReleaseSources() {
+		utils::CheckAndDelete(sOpenALInterfaceFactory);
+		utils::CheckAndDelete(sVideoManager);
 	}
 
-	float VideoClip::GetLength() {
-		return mDuration;
+	void Initialize() {
+		sVideoManager = new TheoraVideoManager(3);
+		sVideoManager->setDefaultNumPrecachedFrames(32);
+
+		sOpenALInterfaceFactory = new OpenAL_AudioInterfaceFactory();
+		sVideoManager->setAudioInterfaceFactory(sOpenALInterfaceFactory);
+
+		Main.BeforeTerminate.Register(&ReleaseSources);
 	}
 
-	int VideoClip::GetWidth() {
-		return mWidth;
-	}
-
-	int VideoClip::GetHeight() {
-		return mHeight;
-	}
 }}
