@@ -627,7 +627,7 @@ namespace gge { namespace utils {
 				}
 			}
 
-			(count)--;
+			(*count)--;
 		}
 
 		////Deletes an item from the collection using its reference.

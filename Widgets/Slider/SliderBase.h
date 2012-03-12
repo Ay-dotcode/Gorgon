@@ -2673,18 +2673,22 @@ namespace gge { namespace widgets {
 		template<class T_, class floattype>
 		void Base<T_, floattype>::setupbuttons() {
 			if(display.buttons) {
-				utils::CheckAndDelete(upbutton);
-				utils::CheckAndDelete(downbutton);
+				//utils::CheckAndDelete(upbutton);
+				//utils::CheckAndDelete(downbutton);
 
 				if(bp) {
-					upbutton=new Button;
+					if(!upbutton)
+						upbutton=new Button;
+
 					if(bp->GetOrientationBaseGroup(orientation) && bp->GetOrientationBaseGroup(orientation)->UpButton)
 						upbutton->SetBlueprint(*bp->GetOrientationBaseGroup(orientation)->UpButton);
 					upbutton->SetContainer(buttonlayer);
 					//upbutton->ClickEvent().Register(this,&Base::smalldecrease);
 					upbutton->MouseEvent().Register(this,&Base::upbutton_mouse);
 
-					downbutton=new Button;
+					if(!downbutton)
+						downbutton=new Button;
+
 					if(bp->GetOrientationBaseGroup(orientation) && bp->GetOrientationBaseGroup(orientation)->DownButton)
 						downbutton->SetBlueprint(*bp->GetOrientationBaseGroup(orientation)->DownButton);
 					downbutton->SetContainer(buttonlayer);
