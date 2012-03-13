@@ -112,7 +112,7 @@ namespace gge {
 		////Initializes all systems creating the main window
 		void		 InitializeAll(string Title, os::IconHandle Icon, int X, int Y);
 		////Initializes all systems creating the main window and centering
-		void		 InitializeAll(string Title, os::IconHandle Icon);
+		void		 InitializeAll(string Title, os::IconHandle Icon=NULL);
 		////Initializes Animation subsystem. Before calling this function, animations does not progress
 		/// automatically.
 		void		 InitializeAnimation();
