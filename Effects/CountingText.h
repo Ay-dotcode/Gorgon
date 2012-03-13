@@ -24,7 +24,7 @@ namespace gge { namespace effects {
 		////Customized printing format, printf style that can feature a %f as the current value
 		string Format;
 		////The font to be used
-		resource::BitmapFont *Font;
+		FontRenderer *Font;
 
 
 		////Initializes the effect
@@ -49,6 +49,10 @@ namespace gge { namespace effects {
 		
 		////Prints the current text to a layer
 		void Print(graphics::ColorizableImageTarget2D *target, int X, int Y);
+		////Prints the current text to a layer
+		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y) {
+			Print(&target, X, Y);
+		}
 
 	protected:
 		float from;

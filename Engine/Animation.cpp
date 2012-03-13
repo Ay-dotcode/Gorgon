@@ -91,7 +91,6 @@ namespace gge { namespace animation {
 		if(r==ProgressResult::Finished) {
 			if(!isfinished) {
 				isfinished=true;
-				ispaused=true;
 				Finished(source_param(&source));
 			}
 		}

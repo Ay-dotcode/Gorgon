@@ -32,6 +32,7 @@ namespace gge { namespace effects {
 		FlipSide Side;
 		bool Backside;
 		bool Flipping;
+		//Default: 0.0125
 		float Perspective;
 		int ETA;
 
@@ -43,14 +44,14 @@ namespace gge { namespace effects {
 
 		virtual animation::ProgressResult::Type Progress();
 
-		virtual void draw(graphics::ImageTarget2D& Target, int X, int Y);
+		virtual void draw(graphics::ImageTarget2D& Target, int X, int Y) const;
 
 		void SetProgress(int progress) {
 			if(Controller)
 				Controller->SetProgress(progress);
 		}
 
-		int GetProgress() {
+		int GetProgress() const {
 			if(Controller)
 				return Controller->GetProgress();
 			else
@@ -58,8 +59,9 @@ namespace gge { namespace effects {
 		}
 
 		void Reset() {
-			if(Controller)
+			if(Controller) {
 				Controller->ResetProgress();
+			}
 		}
 	};
 } }

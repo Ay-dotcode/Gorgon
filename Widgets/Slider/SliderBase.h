@@ -93,7 +93,7 @@ namespace gge { namespace widgets {
 
 				symbollayer.MouseCallback.Set(*this, &Base::symbol_mouse);
 
-				innerlayer.EnableClipping=true;
+				innerlayer.ClippingEnabled=true;
 
 				smooth.targetvalue=value;
 

@@ -116,7 +116,7 @@ namespace gge { namespace graphics {
 	class Colorizable2DLayer : public ColorizableImageTarget2D, public LayerBase {
 	public:
 		////Whether or not enable clipping
-		bool EnableClipping;
+		bool ClippingEnabled;
 		BasicSurface::DrawMode DrawMode;
 		////Default constructor to initialize variables
 
@@ -134,7 +134,7 @@ namespace gge { namespace graphics {
 			Ambient=RGBint(0xffffffff);
 			CurrentColor=RGBint(0xffffffff);
 			isVisible=true;
-			EnableClipping=false;
+			ClippingEnabled=false;
 			DrawMode=BasicSurface::Normal;
 		}
 

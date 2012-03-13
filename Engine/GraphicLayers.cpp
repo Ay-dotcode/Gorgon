@@ -1200,7 +1200,7 @@ end:
 		CurrentLayerColor.b*=(float)Ambient.b/255;
 
 
-		if(EnableClipping) {
+		if(ClippingEnabled) {
 			psc=scissors;
 
 			glEnable(GL_SCISSOR_TEST);
@@ -1303,7 +1303,7 @@ end:
 		glPopMatrix();
 		translate-=BoundingBox.TopLeft();
 
-		if(EnableClipping) {
+		if(ClippingEnabled) {
 			scissors=psc;
 			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height(), scissors.Width(), scissors.Height());
 		}

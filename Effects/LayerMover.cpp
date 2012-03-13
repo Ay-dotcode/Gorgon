@@ -34,7 +34,7 @@ namespace gge { namespace effects {
 	}
 
 	animation::ProgressResult::Type LayerMover::Progress() {
-		if(from==to)
+		if(current==to)
 			return animation::ProgressResult::Finished;
 
 		if(!Controller)
@@ -73,8 +73,8 @@ namespace gge { namespace effects {
 
 		if(from==to)
 			return animation::ProgressResult::Finished;
-		else
-			return animation::ProgressResult::None;
+
+		return animation::ProgressResult::None;
 	}
 
 	LayerMover::LayerMover( LayerBase *Target, animation::Timer &controller, bool owner ) :
@@ -93,7 +93,14 @@ namespace gge { namespace effects {
 	{
 	}
 
-	LayerMover::LayerMover( LayerBase *Target, bool create/*=false*/ )
+	LayerMover::LayerMover( LayerBase *Target, bool create/*=false*/ ) : 
+	Target(Target), Base(create)
+	{
+
+	}
+
+	LayerMover::LayerMover( LayerBase &Target, bool create/*=false*/ ) : 
+	Target(&Target), Base(create)
 	{
 
 	}

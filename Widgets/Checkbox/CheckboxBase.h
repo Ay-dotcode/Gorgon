@@ -40,7 +40,7 @@ namespace gge { namespace widgets {
 
 				WR.LoadedEvent.Register(this, &Base::wr_loaded);
 				
-				innerlayer.EnableClipping=true;
+				innerlayer.ClippingEnabled=true;
 
 				draw();
 			}

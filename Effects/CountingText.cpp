@@ -62,7 +62,7 @@ namespace gge { namespace effects {
 	}
 
 	animation::ProgressResult::Type CountingText::Progress() {
-		if(from==to)
+		if(current==to)
 			return animation::ProgressResult::Finished;
 
 		if(!Controller)

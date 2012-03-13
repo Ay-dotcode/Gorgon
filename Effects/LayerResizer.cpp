@@ -35,7 +35,7 @@ namespace gge { namespace effects {
 	}
 
 	animation::ProgressResult::Type LayerResizer::Progress() {
-		if(from==to)
+		if(current==to)
 			return animation::ProgressResult::Finished;
 
 		if(!Controller)

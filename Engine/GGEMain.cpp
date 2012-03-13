@@ -134,12 +134,8 @@ namespace gge {
 	}
 
 	void GGEMain::InitializeAll(string Title, os::IconHandle Icon) {
-		InitializeAll(Title, Icon, 0,0);
-
 		Rectangle r=os::window::UsableScreenMetrics();
-		r.Width-=Width;
-		r.Height-=Height;
-		MoveWindow(r.Left+r.Width/2, r.Top+r.Height/4);
+		InitializeAll(Title, Icon, r.Left+(r.Width-Width)/2, r.Top+(r.Height-Height)/4);
 	}
 
 	os::DeviceHandle GGEMain::InitializeGraphics() {

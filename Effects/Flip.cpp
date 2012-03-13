@@ -7,7 +7,7 @@ using namespace gge::graphics;
 using namespace gge::utils;
 
 namespace gge { namespace effects {
-	void FlipEffect::draw(ImageTarget2D &Layer,int X,int Y) {
+	void FlipEffect::draw(ImageTarget2D &Layer,int X,int Y) const {
 		if(!Flipping) {
 			if(Backside) {
 				Back->Draw(Layer, X, Y);
@@ -138,15 +138,20 @@ namespace gge { namespace effects {
 	}
 
 	void FlipEffect::Flip(int ETA) {
-		Reset();
 
 		if(this->ETA!=0) {
 			Backside=!Backside;
-			SetProgress(this->ETA-GetProgress());
+			SetProgress(ETA-GetProgress());
 		}
+		else
+			Reset();
 
 		this->ETA=ETA;
-		Flipping=true;
+		if(ETA==0) {
+			Backside=!Backside;
+		}
+		else
+			Flipping=true;
 	}
 
 	void FlipEffect::Initialize() {
@@ -177,7 +182,7 @@ namespace gge { namespace effects {
 	}
 
 	animation::ProgressResult::Type FlipEffect::Progress() {
-		if(GetProgress()>=ETA) {
+		if(GetProgress()>=ETA && ETA>0) {
 			ETA=0;
 			Flipping=false;
 			Backside=!Backside;

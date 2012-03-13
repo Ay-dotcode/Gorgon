@@ -15,7 +15,7 @@ namespace gge { namespace effects {
 		////Initializes the effect
 		Tinting(graphics::Colorizable2DLayer *Target, animation::Timer &Controller, bool owner=false) : 
 			Base(Controller, owner),
-			from(0), to(0), current(0), 
+			from(0), to(0), current(Target->Ambient), 
 			speed(0, 0,0,0),
 			Target(Target)
 		{ } 
@@ -23,7 +23,7 @@ namespace gge { namespace effects {
 		////Initializes the effect
 		Tinting(graphics::Colorizable2DLayer &Target, animation::Timer &Controller, bool owner=false) : 
 			Base(Controller, owner),
-			from(0), to(0), current(0), 
+			from(0), to(0), current(Target.Ambient), 
 			speed(0, 0,0,0),
 			Target(&Target)
 		{ }

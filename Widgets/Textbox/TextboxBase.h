@@ -23,7 +23,7 @@ namespace gge { namespace widgets {
 				readonly(false), noselection(false), outerborder(NULL), innerborder(NULL),
 				blueprintmodified(false)
 			{
-				innerlayer.EnableClipping=true;
+				innerlayer.ClippingEnabled=true;
 
 				style_anim.Pause();
 				style_anim.Finished.Register(this, &Base::style_anim_finished);

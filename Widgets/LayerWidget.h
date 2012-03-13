@@ -10,7 +10,7 @@ namespace gge { namespace widgets {
 
 		LayerWidget() {
 			Resize(100,100);
-			layer.EnableClipping=true;
+			layer.ClippingEnabled=true;
 		}
 
 		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount)  {
