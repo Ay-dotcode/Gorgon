@@ -12,7 +12,7 @@ namespace gge { namespace widgets {
 			Top		= slider::Blueprint::Top,
 			Left	= slider::Blueprint::Left,
 			Right	= slider::Blueprint::Right,
-		};
+		}; 
 
 		typedef Base::numberformat NumberFormatType;
 
