@@ -24,7 +24,8 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Slider, ShowNumbers),
 			INIT_PROPERTY(Slider, NumberDistance),
 			INIT_PROPERTY(Slider, Stepsize),
-			INIT_PROPERTY(Slider, NumberFormat)
+			INIT_PROPERTY(Slider, NumberFormat),
+			INIT_PROPERTY(Slider, ValueAnimation)
 		{
 			Base::setorientation(slider::Blueprint::Bottom);
 			Base::setupdisplay(true, true, false, false, false);
@@ -59,6 +60,7 @@ namespace gge { namespace widgets {
 		utils::NumericProperty<Slider, int> NumberDistance;
 		utils::NumericProperty<Slider, T_> Stepsize;
 		utils::Property<Slider, NumberFormatType> NumberFormat;
+		utils::BooleanProperty<Slider> ValueAnimation;
 		
 		utils::EventChain<Slider> &ChangeEvent() {
 			return changeevent;
@@ -91,10 +93,16 @@ namespace gge { namespace widgets {
 
 
 		int getAnimationDuration() const {
+			if(Base::getsmoothingspeed()==0)
+				return 0;
+
 			return int(100000/Base::getsmoothingspeed());
 		}
 		void setAnimationDuration(const int &value) {
-			Base::setsmoothingspeed(100000.f/value);
+			if(value==0)
+				Base::setsmoothingspeed(0);
+			else
+				Base::setsmoothingspeed(100000.f/value);
 		}
 
 		OrientationType getOrientation() const {
@@ -133,6 +141,13 @@ namespace gge { namespace widgets {
 		}
 		int getNumberDistance() const {
 			return Base::getnumberdistance();
+		}
+
+		void setValueAnimation(const bool &value) {
+			Base::setsmoothingmode(true, false, value, true, 100);
+		}
+		bool getValueAnimation() const {
+			return Base::getsmoothinginfo().value;
 		}
 
 		void setStepsize(const T_ &value) {

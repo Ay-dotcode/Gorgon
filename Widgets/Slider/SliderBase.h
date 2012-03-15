@@ -541,7 +541,7 @@ namespace gge { namespace widgets {
 			//will not call value_changed, caller is responsible for it
 			//all internal value changes should use this
 			void setvalue_smooth(T_ value) {
-				if(!smooth.value) {
+				if(!smooth.value || smooth.issmooth()) {
 					setvalue((value));
 
 					value_changed();
@@ -1135,6 +1135,33 @@ namespace gge { namespace widgets {
 			bool golarge;
 			PetContainer<Base> buttonlayer;
 
+			class csmooth {
+			public:
+				csmooth() : indicator(true), symbol(true), value(false), speed(100), stepvalue(0), valuedisplay(false), indst_stepvalue(0)
+				{ }
+
+				bool symbol;
+				bool indicator;
+				bool value;
+				bool valuedisplay;
+				float speed; //percent/sec
+				animation::Controller controller;
+				floattype stepvalue;
+				floattype sourcevalue;
+				T_ targetvalue;
+
+				animation::Controller indst_controller;
+				floattype indst_stepvalue;
+				floattype indst_sourcevalue;
+				T_ indst_targetvalue;
+
+				bool issmooth() { return speed>0 && (symbol || indicator || value || valuedisplay); }
+			};
+
+			const csmooth &getsmoothinginfo() const {
+				return smooth;
+			}
+
 		private:
 			std::map<T_, std::string> namedlocations;
 
@@ -1267,28 +1294,7 @@ namespace gge { namespace widgets {
 
 			} markers;
 
-			class csmooth {
-			public:
-				csmooth() : indicator(true), symbol(true), value(false), speed(100), stepvalue(0), valuedisplay(false), indst_stepvalue(0)
-				{ }
-
-				bool symbol;
-				bool indicator;
-				bool value;
-				bool valuedisplay;
-				float speed; //percent/sec
-				animation::Controller controller;
-				floattype stepvalue;
-				floattype sourcevalue;
-				T_ targetvalue;
-
-				animation::Controller indst_controller;
-				floattype indst_stepvalue;
-				floattype indst_sourcevalue;
-				T_ indst_targetvalue;
-
-				bool issmooth() { return symbol || indicator || value || valuedisplay; }
-			} smooth;
+			csmooth smooth;
 
 			class cactions {
 			public:
