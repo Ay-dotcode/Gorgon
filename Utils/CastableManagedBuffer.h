@@ -74,9 +74,9 @@ namespace gge { namespace utils {
 			//at least one of the sides should contain integral number of 
 			//other type
 			if( sizeof(T_)%sizeof(O_) && sizeof(O_)%sizeof(T_) ) 
-				throw runtime_error("Cannot cast, size mismatch");
+				throw std::runtime_error("Cannot cast, size mismatch");
 
-			return CastableManagedBuffer<O_>((factor*(float)sizeof(T_))/sizeof(O_), this);
+			return CastableManagedBuffer<O_>((sizefactor*(float)sizeof(T_))/sizeof(O_), this);
 		}
 
 		//works in O(1), no copying or conversion is done, 
@@ -85,7 +85,7 @@ namespace gge { namespace utils {
 			//at least one of the sides should contain integral number of 
 			//other type
 			if( sizeof(T_)%sizeof(O_) && sizeof(O_)%sizeof(T_) ) 
-				throw runtime_error("Cannot cast, size mismatch");
+				throw std::runtime_error("Cannot cast, size mismatch");
 
 			return const CastableManagedBuffer<O_>((factor*(float)sizeof(T_))/sizeof(O_), this);
 		}
@@ -275,11 +275,11 @@ namespace gge { namespace utils {
 
 		template<class O_>
 		CastableManagedBuffer(float factor, CastableManagedBuffer<O_> *buf) :
-			RefCounter<CastableManagedBuffer>(buf), sizefactor(factor) {
+			RefCounter<CastableManagedBuffer>(*buf), sizefactor(factor) {
 
 			noresizer = sizeof(O_) != sizeof(T_);
 			data=(T_**)buf->data;
-			size_=buf->size;
+			size_=buf->size_;
 		}
 
 		T_ **data;

@@ -130,6 +130,9 @@ namespace gge { namespace resource {
 
 		using graphics::ImageTexture::drawin;
 
+		//DO NOT MODIFY THE SIZE OF THE BUFFER MANUALLY
+		gge::utils::CastableManagedBuffer<Byte> &getdata() { return ImageData::Data; }
+
 	protected:
 		virtual animation::ProgressResult::Type Progress() { return animation::ProgressResult::None; };
 

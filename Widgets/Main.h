@@ -15,10 +15,13 @@ namespace gge { namespace widgets {
 	void RegisterLoaders(resource::File &File);
 	inline void RegisterLoaders(resource::File *File) { RegisterLoaders(*File); }
 
-	void Initialize(GGEMain &Main);
+	gge::resource::File &LoadWidgets(const std::string &filename);
+
+	void Initialize(GGEMain &Main, int TopLevelOrder=1);
 
 	extern VirtualPanel TopLevel;
 	extern utils::Collection<WidgetBase> DrawQueue;
+	extern gge::resource::File *WidgetFile;
 
 
 	namespace AutosizeModes {

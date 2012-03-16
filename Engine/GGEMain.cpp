@@ -184,6 +184,15 @@ namespace gge {
 		multimedia::Initialize();
 	}
 
+	void GGEMain::Run() {
+		while(true) {
+			BeforeGameLoop();
+			BeforeRender();
+			Render();
+			AfterRender();
+		}
+	}
+
 	//void GGEMain::InitializeWidgets() {
 	//	gge::widgets::InitializeWidgets(this);
 	//}

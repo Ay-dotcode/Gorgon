@@ -43,8 +43,13 @@
 //count to object's refcount, destructor should decrement it.
 template <class C_>
 class RefCounter {
+	friend class RefCounter;
 protected:
 	RefCounter() : refcnt(new int(1)) {	
+	}
+
+	template <class C2_>
+	RefCounter(RefCounter<C2_> &ref) : refcnt(ref.refcnt) {
 	}
 
 	RefCounter(RefCounter &ref) : refcnt(ref.refcnt) {

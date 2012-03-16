@@ -122,6 +122,8 @@ namespace gge {
 		void		 InitializeResource();
 		void		 InitializeMultimedia();
 
+		void		 Run();
+
 		////Registers a signal handler to be called in every given time. Exact time passed from the
 		/// last signal can be checked using LastSignal variable of the IntervalObject
 		IntervalObject *RegisterInterval(unsigned int Timeout, IntervalSignalEvent Signal, utils::Any Data=utils::Any(NULL));

@@ -21,6 +21,8 @@ namespace gge { namespace widgets {
 
 	VirtualPanel TopLevel(0);
 	utils::Collection<WidgetBase> DrawQueue;
+	gge::resource::File *WidgetFile=NULL;
+	graphics::Basic2DLayer *bglayer=NULL;
 
 
 	void Draw_Signal(IntervalObject &interval, void *data) {
@@ -52,17 +54,33 @@ namespace gge { namespace widgets {
 		File.Loaders.Add(new resource::Loader(GID::WR, LoadWR)); 
 	}
 
-	void Initialize(GGEMain &Main) {
+	void Initialize(GGEMain &Main, int TopLevelOrder) {
 		LayerBase *layer;
 		layer=new LayerBase();
 
-		Main.Add(layer, 1);
+		Main.Add(layer, TopLevelOrder);
 		TopLevel.init();
 		TopLevel.LandOn(*layer);
 		 
 		Main.RegisterInterval(1, &Draw_Signal);
 
+		bglayer=new graphics::Basic2DLayer;
+		Main.Add(bglayer, 10);
+
 		input::keyboard::Events.SetOrder(TopLevel.KeyboardToken,-1);
+	}
+
+	gge::resource::File & LoadWidgets(const std::string &filename) {
+		utils::CheckAndDelete(WidgetFile);
+		WidgetFile=new gge::resource::File;
+		RegisterLoaders(WidgetFile);
+		WidgetFile->LoadFile(filename);
+		WidgetFile->Prepare();
+
+		WR.Pictures("background").DrawIn(bglayer);
+
+
+		return *WidgetFile;
 	}
 
 }}
