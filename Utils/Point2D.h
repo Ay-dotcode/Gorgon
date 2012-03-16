@@ -32,16 +32,12 @@
 #include <limits>
 #include <cmath>
 
-#ifdef GGE_GRAPHICS
-	#include "../../Graphics/Graphics.h"
-#else
-	#include "BasicGraphics.h"
-	#define Point2D_DecimalPoints	2
-#endif
+#include "BasicGraphics.h"
+#define Point2D_DecimalPoints	2
 
 
 #ifdef GGE_XMLSERVICES
-#include "../External/XmlParser/xmlParser.h"
+#include "../External/XML/tinyxml.h"
 #endif
 #include "BasicMath.h"
 
