@@ -185,6 +185,8 @@ namespace gge {
 	}
 
 	void GGEMain::Run() {
+		gge::os::window::Destroyed.RegisterLambda([&]{ Exit(0); });
+
 		while(true) {
 			BeforeGameLoop();
 			BeforeRender();
