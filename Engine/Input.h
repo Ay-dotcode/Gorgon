@@ -897,7 +897,7 @@ namespace gge { namespace input {
 		typename utils::count_arg<F_, 3, EventChain::Object &>::type EventChain::RegisterLambda( F_ fn, utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
 			return registr(
-				new FullLambdaHandler(fn,data),
+				new FullLambdaHandler(fn),
 				bounds,
 				eventmask
 				);

@@ -2,6 +2,7 @@
 
 #include "Interfaces\ISlider.h"
 #include "Slider\SliderBase.h"
+#include "Interfaces\INumberbox.h"
 
 namespace gge { namespace widgets {
 
