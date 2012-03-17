@@ -98,6 +98,7 @@
 			utils::EventChain<> Activated	("WindowActivated" );
 			utils::EventChain<> Deactivated ("WindowDectivated");
 			utils::EventChain<> Destroyed	("WindowDestroyed" );
+			utils::EventChain<Empty, bool&> Closing	("WindowClosing" );
 
 
 		//TODO Private
@@ -122,6 +123,14 @@
 					break;
 				case WM_ERASEBKGND:
 					return true;
+				case WM_CLOSE:
+					bool allow;
+					allow=true;
+					Closing(allow);
+					if(allow)
+						return DefWindowProc(hWnd, message, wParam, lParam);
+
+					break;
 				case WM_LBUTTONDOWN:
 					{
 						int x=lParam%0x10000;

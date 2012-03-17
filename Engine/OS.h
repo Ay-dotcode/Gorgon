@@ -121,6 +121,7 @@ namespace gge { namespace os {
 		extern utils::EventChain<> Activated;
 		extern utils::EventChain<> Deactivated;
 		extern utils::EventChain<> Destroyed;
+		extern utils::EventChain<utils::Empty, bool&> Closing;
 
 		//Monitor parameter is ignored for now
 		utils::Rectangle UsableScreenMetrics(int Monitor=0);
