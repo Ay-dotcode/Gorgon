@@ -291,7 +291,21 @@ namespace gge { namespace utils {
 			Top   = y;
 		}
 
-		//!More operator are needed
+		
+		bool isColliding(const basic_Bounds2D<T_> &p) {
+			// check collision on x-coordinate
+			if(this->Left > p.Right) return false;
+			if(this->Right < p.Left) return false;
+
+			// check collision on y-coordinate
+			if(this->Top > p.Bottom) return false;
+			if(this->Bottom < p.Top) return false;
+
+			// no collision
+			return true;
+		}
+
+		//!More operators are needed
 		basic_Bounds2D &operator +=(const basic_Point2D<T_> &p) {
 			Left   += p.x;
 			Top    += p.y;
