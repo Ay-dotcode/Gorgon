@@ -142,4 +142,12 @@ namespace gge {
 
 	}
 
+	LayerBase::~LayerBase() {
+		if(parent)
+			parent->Remove(this);
+
+		for(auto it=SubLayers.First();it.IsValid();it.Next())
+			it->parent=NULL;
+	}
+
 }

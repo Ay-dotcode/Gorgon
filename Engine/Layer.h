@@ -126,10 +126,7 @@ namespace gge {
 			BoundingBox=utils::Bounds(Left, Top, Right, Bottom);
 		}
 
-		virtual ~LayerBase() {
-			if(parent)
-				parent->Remove(this);
-		}
+		virtual ~LayerBase();
 
 		////Processes the mouse event for the current layer, default
 		/// handling is to pass the request to the sub-layers
