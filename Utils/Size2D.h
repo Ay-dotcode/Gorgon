@@ -77,14 +77,6 @@ namespace gge { namespace utils {
 		basic_Size2D operator -(const basic_Size2D  &size) const { 
 			return basic_Size2D(Width-size.Width, Height-size.Height);
 		}
-		template<class _U>
-		basic_Size2D operator *(_U size) { 
-			return basic_Size2D(this->Width*size, this->Height*size); 
-		}
-		template<class _U>
-		basic_Size2D operator /(_U size) { 
-			return basic_Size2D(this->Width/size, this->Height/size); 
-		}
 		basic_Size2D operator +=(const basic_Size2D  &size) { 
 			Width=size.Width  +Width;
 			Height=size.Height+Height;
@@ -126,6 +118,32 @@ namespace gge { namespace utils {
 		out<<size.Width<<"x"<<size.Height;
 
 		return out;
+	}
+
+	template<class T_>
+	inline basic_Point2D<T_> operator *(const basic_Point2D<T_> &l, const basic_Size2D<T_> &r) {
+		return basic_Point2D<T_>(l.x*r.Width,l.y*r.Height);
+	}
+
+	template<class T_>
+	inline basic_Point2D<T_> operator /(const basic_Point2D<T_> &l, const basic_Size2D<T_> &r) {
+		return basic_Point2D<T_>(l.x/r.Width,l.y/r.Height);
+	}
+	template<class T_, class _U>
+	basic_Size2D<T_> operator *(const basic_Size2D<T_> &l, const _U &r) { 
+		return basic_Size2D<T_>(T_(l.Width*r), T_(l.Height*r)); 
+	}
+	template<class T_, class _U>
+	basic_Size2D<T_> operator /(const basic_Size2D<T_> &l, const _U &r) { 
+		return basic_Size2D<T_>(T_(l.Width/r), T_(l.Height/r)); 
+	}
+	template<class T_>
+	inline basic_Size2D<T_> operator *(const basic_Size2D<T_> &l, const basic_Size2D<T_> &r) { 
+		return basic_Size2D<T_>(l.Width*r.Width, l.Height*r.Height); 
+	}
+	template<class T_>
+	inline basic_Size2D<T_> operator /(const basic_Size2D<T_> &l, const basic_Size2D<T_> &r) { 
+		return basic_Size2D<T_>(l.Width/r.Width, l.Height/r.Height); 
 	}
 
 	typedef basic_Size2D<int> Size;

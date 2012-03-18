@@ -68,6 +68,8 @@ namespace gge {
 
 		os::system::ProcessMessage();
 		input::system::ProcessMousePosition(Window);
+
+		BeforeGameLoopEvent();
 	}
 
 	void GGEMain::BeforeRender() {

@@ -52,6 +52,8 @@
 #include "ManagedBuffer.h"
 #include <iosfwd>
 #include <ostream>
+#include "Random.h"
+#include <vector>
 
 
 //Remaining: Find all sequential, use alternative to add to a vector instead of creating new
@@ -275,6 +277,63 @@ namespace gge { namespace utils {
 		//Clears the given column of the map with the default value
 		void ClearColumn(int column) {
 			ClearColumn(column, T_());
+		}
+
+		// shuffle the tiles
+		// it's achieved by randomly swapping each cell with another
+		void Shuffle() {
+			int w=me().getwidth();
+			int h=me().getheight();
+			for(int y=0;y<h;y++) {
+				for(int x=0;x<w;x++) {
+					int nx=gge::utils::Random(0,w);
+					int ny=gge::utils::Random(0,h);
+
+					// swap
+					T_ t=Get(x,y);
+					Set(x,y,Get(nx,ny));
+					Set(nx,ny,t);
+				}
+			}
+
+		}
+
+		//Check neighbors of the given cell for a given value, returns the count of the encountered value
+		int CheckNeighborsFor(int x, int y, const T_ &v, int rangex=1, int rangey=1) const {
+			int w=me().getwidth();
+			int h=me().getheight();
+			int count=0;
+			for(int yy=-rangey;yy<=rangey;yy++) {
+				for(int xx=-rangex;xx<=rangex;xx++) {
+					if(x+xx>=0 && x+xx<w && y+yy>=0 && y+yy<h && Get(x+xx,y+yy)==v) {
+						count++;
+					}
+				}
+			}
+
+			return count;
+		}
+
+		//Check neighbors of the given cell for a given value, returns the count of the encountered value
+		template <class F_>
+		int CheckNeighborsUsing(int x, int y, F_ f, int rangex=1, int rangey=1) const {
+			int w=me().getwidth();
+			int h=me().getheight();
+			int count=0;
+			for(int yy=-rangey;yy<=rangey;yy++) {
+				for(int xx=-rangex;xx<=rangex;xx++) {
+					if(x+xx>=0 && x+xx<w && y+yy>=0 && y+yy<h && f(Get(x+xx,y+yy))) {
+						count++;
+					}
+				}
+			}
+
+			return count;
+		}
+
+		void SetFirstN(int n, const T_ &v) {
+			for(int i=0;i<n;i++)
+				Set(i, v);
 		}
 
 		SequenceCheckResult<T_> CheckRowsForSequence(int atleast) const {
