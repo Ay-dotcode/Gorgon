@@ -292,7 +292,7 @@ namespace gge { namespace utils {
 		}
 
 		
-		bool isColliding(const basic_Bounds2D<T_> &p) {
+		bool isColliding(const basic_Bounds2D<T_> &p) const {
 			// check collision on x-coordinate
 			if(this->Left > p.Right) return false;
 			if(this->Right < p.Left) return false;
