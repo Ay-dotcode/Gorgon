@@ -19,6 +19,10 @@ namespace gge { namespace widgets {
 
 	void InitializeApplication(const std::string &systemname, const std::string &windowtitle, const std::string &uifile="ui.wgt", int width=700, int height=550, os::IconHandle icon=NULL);
 
+	inline void InitializeApplication(const std::string &systemname, const std::string &windowtitle, int width, int height, os::IconHandle icon=NULL) {
+		InitializeApplication(systemname, windowtitle, "ui.wgt", width, height, icon);
+	}
+
 	void Initialize(GGEMain &Main, int TopLevelOrder=1);
 
 	extern VirtualPanel TopLevel;

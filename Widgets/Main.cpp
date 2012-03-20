@@ -25,7 +25,7 @@ namespace gge { namespace widgets {
 	graphics::Basic2DLayer *bglayer=NULL;
 
 
-	void Draw_Signal(IntervalObject &interval, void *data) {
+	void Draw_Signal(IntervalObject &interval) {
 		for(utils::Collection<WidgetBase>::Iterator i=DrawQueue.First();i.IsValid();i.Next()) {
 			i->waitingforredraw=false;
 			i->draw();

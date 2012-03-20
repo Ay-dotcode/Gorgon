@@ -11,6 +11,10 @@
 
 using namespace gge::utils;
 
+namespace gge { namespace animation {
+	void Animator_Signal();
+} }
+
 namespace gge {
 	GGEMain Main;
 
@@ -79,11 +83,12 @@ namespace gge {
 		for(utils::Collection<IntervalObject>::Iterator interval=IntervalObjects.First();interval.IsValid();interval.Next()) {
 			if(interval->Enabled)
 				if(CurrentTime-interval->LastSignal>interval->Timeout) {
-					interval->Signal(*interval, interval->Data);
+					interval->Signal(*interval);
 					interval->LastSignal=CurrentTime;
 				}
 		}
 
+		gge::animation::Animator_Signal();
 	}
 
 	void IntervalObject::Reset() {
@@ -104,10 +109,9 @@ namespace gge {
 		graphics::system::PostRender(Device);
 	}
 
-	IntervalObject *GGEMain::RegisterInterval(unsigned int Timeout, IntervalSignalEvent Signal, utils::Any Data) {
+	IntervalObject *GGEMain::RegisterInterval(unsigned int Timeout, IntervalSignalEvent Signal) {
 		IntervalObject *interval=new IntervalObject;
 
-		interval->Data=Data;
 		interval->Enabled=true;
 		interval->LastSignal=CurrentTime;
 		interval->Timeout=Timeout;

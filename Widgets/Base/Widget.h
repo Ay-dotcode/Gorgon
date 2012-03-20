@@ -20,7 +20,7 @@ namespace gge { namespace widgets {
 	//There is no rule about copy constructor and assignment
 	class WidgetBase {
 		friend class ContainerBase;
-		friend void Draw_Signal(IntervalObject &interval, void *data);
+		friend void Draw_Signal(IntervalObject &interval);
 	public:
 
 

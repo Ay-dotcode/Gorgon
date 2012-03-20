@@ -90,49 +90,48 @@ namespace gge { namespace input {
 			return Modifier::Type( m1&m2 );
 		}
 
-		class KeyCodes {
-		public:
-			static const Key Shift;
-			static const Key Control;
-			static const Key Alt;
-			static const Key Super;
+		namespace KeyCodes {
+			extern const Key Shift;
+			extern const Key Control;
+			extern const Key Alt;
+			extern const Key Super;
 
-			static const Key Home;
-			static const Key End;
-			static const Key Insert;
-			static const Key Delete;
-			static const Key PageUp;
-			static const Key PageDown;
+			extern const Key Home;
+			extern const Key End;
+			extern const Key Insert;
+			extern const Key Delete;
+			extern const Key PageUp;
+			extern const Key PageDown;
 
-			static const Key Left;
-			static const Key Up;
-			static const Key Right;
-			static const Key Down;
+			extern const Key Left;
+			extern const Key Up;
+			extern const Key Right;
+			extern const Key Down;
 
-			static const Key PrintScreen;
-			static const Key Pause;
+			extern const Key PrintScreen;
+			extern const Key Pause;
 
-			static const Key CapsLock;
-			static const Key NumLock;
+			extern const Key CapsLock;
+			extern const Key NumLock;
 
-			static const Key Enter;
-			static const Key Tab;
-			static const Key Backspace;
-			static const Key Space;
-			static const Key Escape;
+			extern const Key Enter;
+			extern const Key Tab;
+			extern const Key Backspace;
+			extern const Key Space;
+			extern const Key Escape;
 
-			static const Key F1;
-			static const Key F2;
-			static const Key F3;
-			static const Key F4;
-			static const Key F5;
-			static const Key F6;
-			static const Key F7;
-			static const Key F8;
-			static const Key F9;
-			static const Key F10;
-			static const Key F11;
-			static const Key F12;
+			extern const Key F1;
+			extern const Key F2;
+			extern const Key F3;
+			extern const Key F4;
+			extern const Key F5;
+			extern const Key F6;
+			extern const Key F7;
+			extern const Key F8;
+			extern const Key F9;
+			extern const Key F10;
+			extern const Key F11;
+			extern const Key F12;
 		};
 
 
