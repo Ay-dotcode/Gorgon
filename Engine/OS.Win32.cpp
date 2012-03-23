@@ -480,6 +480,9 @@
 				ShowCursor(false);
 			}
 		}
+		IconHandle IconFromResource(int ID) {
+			return (gge::os::IconHandle)LoadIcon(Instance, (LPCTSTR)ID);
+		}
 		namespace input {
 			utils::Point getMousePosition(WindowHandle Window) {
 				POINT pnt;

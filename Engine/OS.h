@@ -25,6 +25,8 @@ namespace gge { namespace os {
 	////Shows the pointer displayed by OS
 	void ShowPointer();
 
+	IconHandle IconFromResource(int ID);
+
 	unsigned int GetTime();
 
 	std::string GetClipbardText();
