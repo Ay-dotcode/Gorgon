@@ -150,7 +150,7 @@ namespace gge { namespace widgets {
 		}
 
 		int GetCount() const {
-			return OrderedCollection::getCount();
+			return OrderedCollection::GetCount();
 		}
 
 		T_ GetValue(int Index) {

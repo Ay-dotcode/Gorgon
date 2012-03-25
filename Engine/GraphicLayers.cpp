@@ -559,7 +559,7 @@ namespace gge { namespace graphics {
 		int i;
 		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
 
-		for(i=0;i<Surfaces.getCount();i++) {
+		for(i=0;i<Surfaces.GetCount();i++) {
 			BasicSurface *surface=Surfaces[i];
 			if(surface->Mode!=currentdrawmode) {
 				currentdrawmode=surface->Mode;
@@ -1223,7 +1223,7 @@ end:
 		int i;
 		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
 
-		for(i=0;i<Surfaces.getCount();i++) {
+		for(i=0;i<Surfaces.GetCount();i++) {
 			ColorizableSurface *surface=Surfaces[i];
 
 			if(surface->Mode!=currentdrawmode) {

@@ -386,7 +386,7 @@ namespace gge { namespace widgets {
 		resource::File *file;
 		
 
-		virtual GID::Type getGID() const {
+		virtual GID::Type GetGID() const {
 			return GID::WR;
 		}
 

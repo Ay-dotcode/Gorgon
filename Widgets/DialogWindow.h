@@ -44,7 +44,7 @@ namespace gge { namespace widgets {
 		}
 
 		int GetDialogButtonCount() const {
-			return dialogbuttons.getCount();
+			return dialogbuttons.GetCount();
 		}
 
 		virtual void ForcedRollDown() {

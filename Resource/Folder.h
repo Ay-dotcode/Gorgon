@@ -29,14 +29,14 @@ namespace gge { namespace resource {
 		int EntryPoint;
 
 		////01010000h, (System, Folder)
-		virtual GID::Type getGID() const { return GID::Folder; }
+		virtual GID::Type GetGID() const { return GID::Folder; }
 		////Currently does nothing
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////Returns the number of items contained
-		int			 getCount() const { return Subitems.getCount(); }
+		int			 GetCount() const { return Subitems.GetCount(); }
 		////Returns an item with the given index
-		Base	*getItem (int Index) { return &Subitems[Index]; }
+		Base	*GetItem (int Index) { return &Subitems[Index]; }
 		////Returns an item with the given index
 		Base	&operator [] (int Index) { return (Subitems[Index]); }
 		////Adds a new resource to this folder
@@ -78,7 +78,7 @@ namespace gge { namespace resource {
 		}
 
 		bool Exists(int Index) const {
-			return Index>=0 && Index<Subitems.getCount();
+			return Index>=0 && Index<Subitems.GetCount();
 		}
 
 		bool Exists(const std::string &Index) const {

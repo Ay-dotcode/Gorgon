@@ -45,7 +45,7 @@ namespace gge {
 
 		Pointer *pointer;
 		
-		if(ActivePointers.getCount()==0)
+		if(ActivePointers.GetCount()==0)
 			pointer=BasePointer;
 		else
 			pointer=ActivePointers.LastItem().GetPtr();
@@ -68,9 +68,9 @@ namespace gge {
 	}
 
 	void PointerCollection::Fetch(Folder *Folder) {
-		if(Folder->getCount()==0) return;
+		if(Folder->GetCount()==0) return;
 
-		if(Folder->getItem(0)->getGID()==GID::Data) {
+		if(Folder->GetItem(0)->GetGID()==GID::Data) {
 			DataArray *data=Folder->asData(0);
 
 			int i=0;

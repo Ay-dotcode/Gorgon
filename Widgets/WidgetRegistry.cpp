@@ -56,7 +56,7 @@ namespace gge { namespace widgets {
 	template<class T_>
 	T_ *GetWithDefault(Folder *folder, File &file, int ind, T_ *def) {
 		T_ *temp=NULL;
-		if(folder->Subitems.getCount()>ind) {
+		if(folder->Subitems.GetCount()>ind) {
 			try {
 				LinkNodeResource &lnk=folder->Get<LinkNodeResource>(ind);
 				temp=dynamic_cast<T_*>(lnk.GetTarget(file));

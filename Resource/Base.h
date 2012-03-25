@@ -17,7 +17,7 @@ namespace gge { namespace resource {
 	class Base {
 	public:
 		////This function shall return Gorgon ID of this resource
-		virtual GID::Type getGID() const = 0;
+		virtual GID::Type GetGID() const = 0;
 		////This function shall prepare this resource to be used
 		/// after file is loaded, default behavior is to pass
 		/// the request to children

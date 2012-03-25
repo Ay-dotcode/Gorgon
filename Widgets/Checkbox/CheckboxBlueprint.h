@@ -137,7 +137,7 @@ namespace gge { namespace widgets {
 				Line() : Border(NULL)
 				{ }
 
-				GID::Type getGID() const { return GID::Checkbox_Line; }
+				GID::Type GetGID() const { return GID::Checkbox_Line; }
 
 				BorderDataResource *Border;
 				LineContents		Contents;
@@ -174,7 +174,7 @@ namespace gge { namespace widgets {
 					Duration(-1), Lines()
 				{ }
 
-				GID::Type getGID() const { return GID::Checkbox_Element; }
+				GID::Type GetGID() const { return GID::Checkbox_Element; }
 
 				int Duration;
 
@@ -271,7 +271,7 @@ namespace gge { namespace widgets {
 					HoverToNormal(NULL), DownToNormal(NULL), DisabledToNormal(NULL), DownToHover(NULL)
 				{ }
 
-				GID::Type getGID() const { return GID::Checkbox_Group; }
+				GID::Type GetGID() const { return GID::Checkbox_Group; }
 
 
 				FocusMode Focus;
@@ -471,7 +471,7 @@ namespace gge { namespace widgets {
 			StateNumbers States;
 
 
-			virtual GID::Type getGID() const { return GID::Checkbox; }
+			virtual GID::Type GetGID() const { return GID::Checkbox; }
 
 			//not really but being unable to use [] makes life miserable
 			mutable std::map<GroupMode, Group*> Mapping;

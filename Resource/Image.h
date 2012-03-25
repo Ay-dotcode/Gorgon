@@ -58,7 +58,7 @@ namespace gge { namespace resource {
 		bool PNGExport(string filename);
 		
 		////02020000h (Basic, Image)
-		virtual GID::Type getGID() const { return GID::Image; }
+		virtual GID::Type GetGID() const { return GID::Image; }
 		////Currently does nothing
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		////Loads image data from the file. This function is required for late

@@ -139,7 +139,7 @@ namespace gge { namespace widgets {
 		{ return *this->object; }
 
 
-		GID::Type getGID() const { return GID::BorderData; }
+		GID::Type GetGID() const { return GID::BorderData; }
 
 
 		utils::Margins Margins;

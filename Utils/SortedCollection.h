@@ -783,7 +783,7 @@ namespace gge { namespace utils {
 			return -1;
 		}
 
-		int getCount() const {
+		int GetCount() const {
 			return *count;
 		}
 

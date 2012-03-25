@@ -69,7 +69,7 @@ namespace gge { namespace widgets {
 		friend ResizableObjectResource *LoadResizableObjectResource(resource::File& File, std::istream &Data, int Size);
 	public:
 
-		virtual GID::Type getGID() const { return GID::ResizableObj; }
+		virtual GID::Type GetGID() const { return GID::ResizableObj; }
 
 		ResizableObjectResource(resource::ResizableObjectProvider &object, graphics::SizeController2D controller) : object(&object), SizeController(controller) {
 		}

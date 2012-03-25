@@ -333,7 +333,7 @@ namespace gge { namespace utils {
 
 	//Template compatibility for collections
 		////Returns number of elements
-		int getCount() const {
+		int GetCount() const {
 			return *count;
 		}
 

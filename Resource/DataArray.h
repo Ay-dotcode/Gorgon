@@ -45,7 +45,7 @@ namespace gge { namespace resource {
 	class IntegerData : public IData {
 	public:
 		////02030C02h (Basic, Data resource, Data types, integer)
-		virtual int getGID() const { return GID::Data_Int; }
+		virtual int GetGID() const { return GID::Data_Int; }
 		int value;
 
 		IntegerData(int value) { this->value=value; }
@@ -56,7 +56,7 @@ namespace gge { namespace resource {
 	class FloatData : public IData {
 	public:
 		////02030C03h (Basic, Data resource, Data types, float)
-		virtual int getGID() const { return GID::Data_Float; }
+		virtual int GetGID() const { return GID::Data_Float; }
 		float value;
 
 		FloatData(float value) { this->value=value; }
@@ -67,7 +67,7 @@ namespace gge { namespace resource {
 	class StringData : public IData {
 	public:
 		////02030C01h (Basic, Data resource, Data types, text)
-		virtual int getGID() const { return GID::Data_Text; }
+		virtual int GetGID() const { return GID::Data_Text; }
 		string value;
 
 		StringData(string value) { this->value=value; }
@@ -79,7 +79,7 @@ namespace gge { namespace resource {
 	class PointData : public IData {
 	public:
 		////02030C04h (Basic, Data resource, Data types, utils::Point)
-		virtual int getGID() const { return GID::Data_Point; }
+		virtual int GetGID() const { return GID::Data_Point; }
 		utils::Point value;
 
 		PointData(utils::Point value) { this->value=value; }
@@ -92,7 +92,7 @@ namespace gge { namespace resource {
 	class RectangleData : public IData {
 	public:
 		////02030C05h (Basic, Data resource, Data types, rectangle)
-		virtual int getGID() const { return GID::Data_Rect; }
+		virtual int GetGID() const { return GID::Data_Rect; }
 		utils::Rectangle value;
 
 		RectangleData(utils::Rectangle value)	{ this->value=value; }
@@ -105,8 +105,8 @@ namespace gge { namespace resource {
 	class LinkData : public IData {
 	public:
 		////02030C02h (Basic, Data resource, Data types, integer)
-		virtual int getGID() const { return GID::Data_Link; }
-		int getObjectGID() { if(value) return value->getGID(); return 0; }
+		virtual int GetGID() const { return GID::Data_Link; }
+		int getObjectGID() { if(value) return value->GetGID(); return 0; }
 		Base *value;
 		utils::SGuid guid;
 
@@ -122,7 +122,7 @@ namespace gge { namespace resource {
 	class FontData : public IData {
 	public:
 		////03300C01h (Gaming, FontTheme, Data types, font)
-		virtual int getGID() const { return 0x03300C01; }
+		virtual int GetGID() const { return 0x03300C01; }
 		Font value;
 		FontInitiator initiator;
 
@@ -184,10 +184,10 @@ namespace gge { namespace resource {
 		////Returns font object
 		Font getFont(int Index) { return dynamic_cast<FontData&>(Data[Index]).value; }
 		////Returns number of items in the array
-		int getCount() { return Data.getCount(); }
+		int GetCount() { return Data.GetCount(); }
 		
 		////02030000h (Basic, Data resource)
-		virtual GID::Type getGID() const { return GID::Data; }
+		virtual GID::Type GetGID() const { return GID::Data; }
 		////Currently does nothing
 		virtual bool Save(File &File,std::ostream &Data) { return false; }
 

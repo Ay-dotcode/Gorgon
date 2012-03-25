@@ -59,7 +59,7 @@ namespace gge { namespace widgets {
 	class PlaceholderResource : public Placeholder, public resource::Base {
 	public:
 
-		virtual GID::Type getGID() const { return GID::Placeholder; }
+		virtual GID::Type GetGID() const { return GID::Placeholder; }
 	};
 
 }}

@@ -31,7 +31,7 @@ public:
 			delete count;
 	}
 	
-	int getCount()
+	int GetCount()
 	{
 		return *count;
 	}

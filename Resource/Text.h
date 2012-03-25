@@ -20,7 +20,7 @@ namespace gge { namespace resource {
 		string Value;
 		
 		////02010000h (Basic, Text)
-		virtual GID::Type getGID() const { return GID::Text; }
+		virtual GID::Type GetGID() const { return GID::Text; }
 		////Currently does nothing
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 	};

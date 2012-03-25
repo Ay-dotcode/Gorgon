@@ -28,7 +28,7 @@ namespace gge { namespace widgets {
 			utils::Margins ListMargins;
 
 
-			virtual GID::Type getGID() const { return GID::Combobox; }
+			virtual GID::Type GetGID() const { return GID::Combobox; }
 
 
 			virtual void Prepare(GGEMain &main, resource::File &file);

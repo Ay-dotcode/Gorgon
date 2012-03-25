@@ -20,7 +20,7 @@ namespace gge { namespace widgets {
 
 			void Prepare(GGEMain &main, resource::File &file);
 
-			resource::GID::Type getGID() const { return GID::Tabpanel; }
+			resource::GID::Type GetGID() const { return GID::Tabpanel; }
 
 		protected:
 			utils::SGuid panel, radio, placeholder;

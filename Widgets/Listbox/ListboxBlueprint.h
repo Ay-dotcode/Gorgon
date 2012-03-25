@@ -32,7 +32,7 @@ namespace gge { namespace widgets {
 
 
 
-			virtual GID::Type getGID() const { return GID::Listbox; }
+			virtual GID::Type GetGID() const { return GID::Listbox; }
 
 
 			virtual void Prepare(GGEMain &main, resource::File &file);

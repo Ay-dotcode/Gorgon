@@ -25,7 +25,7 @@ namespace gge { namespace resource {
 		////Size of the tabs in spaces, default is 4
 		int Tabsize;
 		////03020000h (Game, Bitmap font)
-		virtual GID::Type getGID() const { return GID::Font; }
+		virtual GID::Type GetGID() const { return GID::Font; }
 		////Currently does nothing
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 

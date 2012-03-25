@@ -46,7 +46,7 @@ namespace gge { namespace resource {
 		for(SortedCollection<Base>::Iterator it=anim->Subitems.First();it.IsValid();it.Next(), i++)
 			anim->Frames[i].Image=&dynamic_cast<Image&>(*it);
 
-		anim->FrameCount=anim->Subitems.getCount();
+		anim->FrameCount=anim->Subitems.GetCount();
 	}
 
 
@@ -122,7 +122,7 @@ namespace gge { namespace resource {
 
 
 	int Animation::FrameAt( unsigned t ) const {
-		if(Subitems.getCount()==0) return -1;
+		if(Subitems.GetCount()==0) return -1;
 
 		if(t>=(Frames.end()-1)->Start)
 			return FrameCount-1;

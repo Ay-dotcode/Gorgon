@@ -114,7 +114,7 @@ namespace gge { namespace widgets {
 			Mask(NULL)
 		{ }
 
-		virtual GID::Type getGID() const { return GID::Rectangle; }
+		virtual GID::Type GetGID() const { return GID::Rectangle; }
 
 		virtual Rectangle &CreateAnimation(animation::Timer &controller, bool owner=false) {
 			return CreateResizableObject(controller, owner);

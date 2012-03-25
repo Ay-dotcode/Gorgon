@@ -64,7 +64,7 @@ namespace gge { namespace resource {
 		friend class DiscreteImageAnimation;
 	public:
 		////03010000h (Gaming, Animation)
-		virtual GID::Type getGID() const { return GID::Animation; }
+		virtual GID::Type GetGID() const { return GID::Animation; }
 		////Currently does nothing
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		
@@ -72,9 +72,9 @@ namespace gge { namespace resource {
 		Animation() : Base() { FrameCount=TotalLength=0; }
 
 		////Returns the width of the first image
-		int GetWidth() const { if(Subitems.getCount()>0) return Frames[0].Image->GetWidth(); return 0; }
+		int GetWidth() const { if(Subitems.GetCount()>0) return Frames[0].Image->GetWidth(); return 0; }
 		////Returns the height of the first image
-		int GetHeight() const { if(Subitems.getCount()>0) return Frames[0].Image->GetHeight(); return 0; }
+		int GetHeight() const { if(Subitems.GetCount()>0) return Frames[0].Image->GetHeight(); return 0; }
 		////Returns number of frames
 		int GetFrameCount() const { return FrameCount; }
 

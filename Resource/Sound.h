@@ -18,7 +18,7 @@ namespace gge { namespace resource {
 		friend Sound *LoadSoundResource(File &File, std::istream &Data, int Size);
 	public:
 		////04010000h (Extended, Sound)
-		virtual GID::Type getGID() const { return GID::Sound; }
+		virtual GID::Type GetGID() const { return GID::Sound; }
 		////Currently does nothing
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 

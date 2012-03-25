@@ -224,7 +224,7 @@ namespace gge { namespace utils {
 			}
 
 			int Location() {
-				int l=Col->getCount();
+				int l=Col->GetCount();
 				int location;
 
 				if(Offset > l/2) {
@@ -310,14 +310,14 @@ namespace gge { namespace utils {
 
 
 				if(amount>0) {
-					int l=Col->list.getCount();
+					int l=Col->list.GetCount();
 					while(amount && ++new_off < l) {
 						if(Col->list[new_off]) 
 							if(*Col->list[new_off]==*Search)
 								amount--;
 					}
 
-					if(new_off == Col->list.getCount()) {
+					if(new_off == Col->list.GetCount()) {
 						Offset=-1;
 						return false;
 					} else {
@@ -357,7 +357,7 @@ namespace gge { namespace utils {
 					return false;
 
 				int new_off=Offset;
-				int l=Col->list.getCount();
+				int l=Col->list.GetCount();
 				while(new_off < it.Offset && new_off < l) {
 					if(Col->list[new_off])
 						return true;
@@ -369,7 +369,7 @@ namespace gge { namespace utils {
 			int distance(const SearchIterator_ &it) const {
 				int new_off=Offset;
 				int dist=0;
-				int l=Col->list.getCount();
+				int l=Col->list.GetCount();
 
 				if(it.Offset==Offset)
 					return 0;
@@ -480,7 +480,7 @@ namespace gge { namespace utils {
 
 	//TODO ! Template compatibility for collections
 		////Returns number of elements
-		int getCount() const {
+		int GetCount() const {
 			return *count;
 		}
 
@@ -1039,7 +1039,7 @@ namespace gge { namespace utils {
 					return false;
 
 				int new_off=Offset;
-				int l=Col->list.getCount();
+				int l=Col->list.GetCount();
 				while(new_off < it.Offset && new_off < l) {
 					if(Col->list[new_off])
 						return true;
@@ -1056,7 +1056,7 @@ namespace gge { namespace utils {
 			}
 
 			int Location() {
-				int l=Col->getCount();
+				int l=Col->GetCount();
 				int location;
 
 				if(Offset > l/2) {
@@ -1142,14 +1142,14 @@ namespace gge { namespace utils {
 
 
 				if(amount>0) {
-					int l=Col->list.getCount();
+					int l=Col->list.GetCount();
 					while(amount && ++new_off < l) {
 						if(Col->list[new_off]) 
 							if(*Col->list[new_off]==*Search)
 								amount--;
 					}
 
-					if(new_off == Col->list.getCount()) {
+					if(new_off == Col->list.GetCount()) {
 						Offset=-1;
 						return false;
 					} else {
@@ -1189,7 +1189,7 @@ namespace gge { namespace utils {
 					return false;
 
 				int new_off=Offset;
-				int l=Col->list.getCount();
+				int l=Col->list.GetCount();
 				while(new_off < it.Offset && new_off < l) {
 					if(Col->list[new_off])
 						return true;
@@ -1201,7 +1201,7 @@ namespace gge { namespace utils {
 			int distance(const SearchIterator_ &it) const {
 				int new_off=Offset;
 				int dist=0;
-				int l=Col->list.getCount();
+				int l=Col->list.GetCount();
 
 				if(it.Offset==Offset)
 					return 0;
@@ -1297,7 +1297,7 @@ namespace gge { namespace utils {
 
 	//TODO ! Template compatibility for collections
 		////Returns number of elements
-		int getCount() const {
+		int GetCount() const {
 			return *count;
 		}
 

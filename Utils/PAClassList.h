@@ -38,7 +38,7 @@ public:
 	}
 	
 	////Returns current number of objects
-	int getCount() {
+	int GetCount() {
 		return count;
 	}
 	

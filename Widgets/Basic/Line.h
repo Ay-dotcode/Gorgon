@@ -95,7 +95,7 @@ namespace gge { namespace widgets {
 			start(&start), loop(&loop), end(&end), Mask(NULL)
 		{ }
 
-		virtual GID::Type getGID() const { return GID::Line; }
+		virtual GID::Type GetGID() const { return GID::Line; }
 
 		virtual Line &CreateAnimation(animation::Timer &controller, bool owner=false) { return CreateResizableObject(controller,owner); }
 		virtual Line &CreateAnimation(bool create=false) { return CreateResizableObject(create); }

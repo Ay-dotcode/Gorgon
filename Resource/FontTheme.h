@@ -21,7 +21,7 @@ namespace gge { namespace resource {
 
 	public:
 
-		virtual GID::Type getGID() const { return GID::FontTheme; }
+		virtual GID::Type GetGID() const { return GID::FontTheme; }
 
 		////Currently does nothing
 		virtual bool Save(File &File, std::ostream &Data) { return false; }

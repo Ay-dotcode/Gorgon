@@ -21,7 +21,7 @@ namespace gge { namespace resource {
 		friend void Init(GGEMain &Main);
 	public:
 
-		virtual GID::Type getGID() const { return GID::Image_NULL; }
+		virtual GID::Type GetGID() const { return GID::Image_NULL; }
 		virtual void DeleteAnimation() { } //if used as animation, it will not be deleted
 		virtual NullImage &CreateAnimation(animation::Timer &controller, bool owner=false) { return *this; }
 		virtual NullImage &CreateAnimation(bool create=false) { return *this; }

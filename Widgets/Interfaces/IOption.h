@@ -158,7 +158,7 @@ namespace gge { namespace widgets {
 		}
 		virtual void SetToNext() {
 			if(currentoption==NULL) {
-				if(Options.getCount())
+				if(Options.GetCount())
 					Set(*Options.First());
 			}
 			else {
@@ -177,7 +177,7 @@ namespace gge { namespace widgets {
 		}
 		virtual void SetToPrev() {
 			if(currentoption==NULL) {
-				if(Options.getCount())
+				if(Options.GetCount())
 					Set(*Options.Last());
 			}
 			else {

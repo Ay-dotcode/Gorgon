@@ -72,7 +72,7 @@ namespace gge { namespace widgets {
 					SymbolPlace(NULL), Duration(-1)
 				{ }
 
-				GID::Type getGID() const { return GID::Slider_Element; }
+				GID::Type GetGID() const { return GID::Slider_Element; }
 
 				int Duration;
 
@@ -200,7 +200,7 @@ namespace gge { namespace widgets {
 					UpButton(NULL), DownButton(NULL), UpPlace(NULL), DownPlace(NULL)
 				{ }
 
-				GID::Type getGID() const { return GID::Slider_Group; }
+				GID::Type GetGID() const { return GID::Slider_Group; }
 
 
 				FocusMode Focus;
@@ -385,7 +385,7 @@ namespace gge { namespace widgets {
 			resource::Sound *TickSound;
 
 
-			virtual GID::Type getGID() const { return GID::Slider; }
+			virtual GID::Type GetGID() const { return GID::Slider; }
 
 			//not really but being unable to use [] makes life miserable
 			mutable std::map<GroupMode, Group*> Mapping;

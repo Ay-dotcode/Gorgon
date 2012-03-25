@@ -34,7 +34,7 @@ namespace gge { namespace widgets {
 					Sound(NULL), Overlay(NULL), Duration(-1), Opacity(255), BGOpacity(255)
 				{ }
 
-				GID::Type getGID() const { return GID::Panel_Element; }
+				GID::Type GetGID() const { return GID::Panel_Element; }
 
 				int Duration;
 
@@ -131,7 +131,7 @@ namespace gge { namespace widgets {
 			}
 
 
-			virtual GID::Type getGID() const { return GID::Slider; }
+			virtual GID::Type GetGID() const { return GID::Slider; }
 
 
 			virtual void Prepare(GGEMain &main, resource::File &file);

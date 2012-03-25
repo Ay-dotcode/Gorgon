@@ -33,7 +33,7 @@ namespace gge { namespace widgets {
 					Sound(NULL), Overlay(NULL), Duration(-1), Font(NULL), SelectedFont(NULL)
 				{ }
 
-				GID::Type getGID() const { return GID::Textbox_Element; }
+				GID::Type GetGID() const { return GID::Textbox_Element; }
 
 				int Duration;
 
@@ -109,7 +109,7 @@ namespace gge { namespace widgets {
 			}
 
 
-			virtual GID::Type getGID() const { return GID::Textbox; }
+			virtual GID::Type GetGID() const { return GID::Textbox; }
 
 
 			virtual void Prepare(GGEMain &main, resource::File &file);

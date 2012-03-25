@@ -112,7 +112,7 @@ namespace gge { namespace resource {
 		////Returns the given subitem with folder resource type. Used to avoid type casting
 	Folder	*Folder::asFolder	(int Index) { 
 #ifdef _DEBUG
-			if(Subitems[Index].getGID()!=GID::Folder) {
+			if(Subitems[Index].GetGID()!=GID::Folder) {
 				os::DisplayMessage("Folder Resource","Non folder item requested as folder!");
 				assert(0);
 			}
@@ -121,7 +121,7 @@ namespace gge { namespace resource {
 		}
 	Text	*Folder::asText		(int Index) { 
 #ifdef _DEBUG
-		if(Subitems[Index].getGID()!=GID::Text) {
+		if(Subitems[Index].GetGID()!=GID::Text) {
 			os::DisplayMessage("Folder Resource","Non text item requested as text!");
 			assert(0);
 		}
@@ -130,7 +130,7 @@ namespace gge { namespace resource {
 	}
 	Image	*Folder::asImage	(int Index) { 
 #ifdef _DEBUG
-		if(Subitems[Index].getGID()!=GID::Image) {
+		if(Subitems[Index].GetGID()!=GID::Image) {
 			os::DisplayMessage("Folder Resource","Non image item requested as image!");
 			assert(0);
 		}
@@ -139,7 +139,7 @@ namespace gge { namespace resource {
 	}
 	DataArray	*Folder::asData		(int Index) { 
 #ifdef _DEBUG
-		if(Subitems[Index].getGID()!=GID::Data) {
+		if(Subitems[Index].GetGID()!=GID::Data) {
 			os::DisplayMessage("Folder Resource","Non data item requested as data!");
 			assert(0);
 		}
@@ -148,7 +148,7 @@ namespace gge { namespace resource {
 	}
 	Sound	*Folder::asSound	(int Index) { 
 #ifdef _DEBUG
-		if(Subitems[Index].getGID()!=GID::Sound) {
+		if(Subitems[Index].GetGID()!=GID::Sound) {
 			os::DisplayMessage("Folder Resource","Non sound item requested as sound!");
 			assert(0);
 		}
@@ -157,7 +157,7 @@ namespace gge { namespace resource {
 	}
 	Animation	*Folder::asAnimation	(int Index) { 
 #ifdef _DEBUG
-		if(Subitems[Index].getGID()!=GID::Animation) {
+		if(Subitems[Index].GetGID()!=GID::Animation) {
 			os::DisplayMessage("Folder Resource","Non animation item requested as animation!");
 			assert(0);
 		}
@@ -166,7 +166,7 @@ namespace gge { namespace resource {
 	}
 	BitmapFont	*Folder::asBitmapFont	(int Index) { 
 #ifdef _DEBUG
-			if(Subitems[Index].getGID()!=GID::Font) {
+			if(Subitems[Index].GetGID()!=GID::Font) {
 				os::DisplayMessage("Folder Resource","Non bitmap font item requested as bitmap font!");
 				assert(0);
 			}

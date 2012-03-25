@@ -43,7 +43,7 @@ namespace gge { namespace widgets {
 				bool done=false;
 				if(PrevFocus)
 					done=PrevFocus->Focus();
-				if(!done && Widgets.getCount())
+				if(!done && Widgets.GetCount())
 					FocusFirst();
 			}
 		}

@@ -478,7 +478,7 @@ namespace gge { namespace widgets {
 				bordermargins+=innerborder->Margins;
 			}
 
-			if(titlebuttons.getCount()>0/* && showtitlebtn*/) {
+			if(titlebuttons.GetCount()>0/* && showtitlebtn*/) {
 				int height=titlebuttons[0].GetHeight();
 
 				Alignment::Type align(Alignment::Middle_Right);
@@ -521,7 +521,7 @@ namespace gge { namespace widgets {
 				controlmargins.Top=max(height+margins.TotalY()-bordermargins.Top,0);
 			}
 
-			if(dialogbuttons.getCount()>0/* && showdialogbtn*/) {
+			if(dialogbuttons.GetCount()>0/* && showdialogbtn*/) {
 				int height=dialogbuttons[0].GetHeight();
 
 				Alignment::Type align(Alignment::Middle_Right);

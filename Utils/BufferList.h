@@ -30,7 +30,7 @@ public:
 	}
 	
 	////Returns elements in this list
-	int getCount() {
+	int GetCount() {
 		return count;
 	}
 

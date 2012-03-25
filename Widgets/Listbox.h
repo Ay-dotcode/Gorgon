@@ -176,7 +176,7 @@ namespace gge { namespace widgets {
 		}
 
 		int GetCount() const {
-			return OrderedCollection::getCount();
+			return OrderedCollection::GetCount();
 		}
 
 		T_ GetValue(int Index) {
@@ -327,7 +327,7 @@ namespace gge { namespace widgets {
 						selected.Remove(item);
 						callclear(*item);
 
-						active=selected(selected.getCount()-1);
+						active=selected(selected.GetCount()-1);
 					}
 				}
 				else {
