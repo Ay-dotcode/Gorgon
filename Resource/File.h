@@ -86,7 +86,7 @@ namespace gge { namespace resource {
 		bool LoadNames;
 		Folder &Root() { return *root; }
 		////Returns the filename used for the last load or save operation
-		string getFilename() const { return Filename; }
+		string GetFilename() const { return Filename; }
 
 		////Loads a given file throws load_error
 		///@Filename	: File to be loaded

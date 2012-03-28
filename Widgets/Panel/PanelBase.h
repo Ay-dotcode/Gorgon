@@ -428,6 +428,16 @@ namespace gge { namespace widgets {
 				return tabswitch;
 			}
 
+			void setdisplay(const bool &value) {
+				if(display!=value) {
+					display = value;
+					Draw();
+				}
+			}
+			bool getdisplay() const {
+				return display;
+			}
+
 			/*void setshowtitlebtn(const bool &value) {
 				if(showtitlebtn!=value) {
 					showtitlebtn = value;
@@ -545,6 +555,7 @@ namespace gge { namespace widgets {
 			bool allowmove;
 			bool allowresize;
 			bool allownofocus;
+			bool display;
 
 			bool showtitle;
 			//bool showtitlebtn;

@@ -28,7 +28,7 @@ namespace gge { namespace widgets {
 				WidgetBase *widget=*w;
 
 				if(colmaxw[col]<widget->GetWidth() && 
-					(dynamic_cast<Label*>(widget)) 
+					(dynamic_cast<Label*>(widget)) && row->columns.size()>1
 					) {
 
 					colmaxw[col]=widget->GetWidth();
@@ -55,12 +55,13 @@ namespace gge { namespace widgets {
 					(dynamic_cast<textbox::Base*>(widget)) ||
 					(dynamic_cast<ComboboxType*>(widget)) ||
 					(dynamic_cast<Panel*>(widget)) ||
-					(dynamic_cast<ListboxType*>(widget))
+					(dynamic_cast<ListboxType*>(widget)) || 
+					(dynamic_cast<Label*>(widget) && col==row->columns.size()-1 && maxsizedwidgets==0)
 				) {
 					maxsizedwidgets++;
 				}
 				else {
-					if(colmaxw[col]>0 && dynamic_cast<Label*>(widget))
+					if(colmaxw[col]>0 && dynamic_cast<Label*>(widget) && row->columns.size()>1)
 						fixedwidth+=colmaxw[col]+spacing;
 					else
 						fixedwidth+=widget->GetWidth()+spacing;
@@ -86,13 +87,15 @@ namespace gge { namespace widgets {
 						(dynamic_cast<textbox::Base*>(widget)) ||
 						(dynamic_cast<ComboboxType*>(widget)) ||
 						(dynamic_cast<Panel*>(widget)) ||
-						(dynamic_cast<ListboxType*>(widget))
+						(dynamic_cast<ListboxType*>(widget)) || 
+						(dynamic_cast<Label*>(widget) && col==row->columns.size()-1 && maxsizedwidgets>0)
 						) {
 
 						widget->SetWidth(variablesize+carry);
 						carry=0;
 
 						x+=widget->GetWidth()+spacing;
+						maxsizedwidgets--;
 					}
 					else if(colmaxw[col]>0 && dynamic_cast<Label*>(widget))
 						x+=colmaxw[col]+spacing;

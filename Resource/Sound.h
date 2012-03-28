@@ -38,7 +38,7 @@ namespace gge { namespace resource {
 		////Destroys used data
 		void destroy();
 		////Destroys used data
-		virtual ~Sound() { destroy(); Base::~Base(); }
+		virtual ~Sound() { destroy(); }
 
 		////When this file is prepared to be used, this value will be used to store sound buffer
 		gge::sound::system::SoundBufferHandle Buffer;

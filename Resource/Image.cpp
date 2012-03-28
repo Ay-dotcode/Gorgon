@@ -125,7 +125,7 @@ namespace gge { namespace resource {
 						jpeg_create_decompress(cinfo);
 
 						FILE *data2;
-						fopen_s(&data2, File.getFilename().c_str(), "rb");
+						fopen_s(&data2, File.GetFilename().c_str(), "rb");
 						fseek(data2,cpos,SEEK_SET);
 						//Specify the data source
 						jpeg_stdio_src(cinfo, data2);
@@ -285,7 +285,7 @@ errorout:
 		FILE *gfile;
 		errno_t err;
 		//To be compatible with JPEG read
-		err=fopen_s(&gfile, file->getFilename().data(), "rb");
+		err=fopen_s(&gfile, file->GetFilename().data(), "rb");
 		if(err != 0) return false;
 
 		fseek(gfile,DataLocation,SEEK_SET);

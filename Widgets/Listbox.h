@@ -192,6 +192,15 @@ namespace gge { namespace widgets {
 			return active->Value;
 		}
 
+		void SetSelected(ListItem &list) {
+			togglenotify(&list, false);
+		}
+
+		void SetSelected(ListItem *list) {
+			if(list==NULL) return;
+			SetSelected(*list);
+		}
+
 		ListItem *GetItem(int Index) {
 			return OrderedCollection::Get(Index);
 		}

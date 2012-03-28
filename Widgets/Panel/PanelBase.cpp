@@ -24,6 +24,9 @@ namespace gge { namespace widgets {
 			innerlayer.Clear();
 			overlayer.Clear();
 
+			if(!display)
+				return;
+
 
 			prepare();
 
@@ -629,7 +632,7 @@ namespace gge { namespace widgets {
 			move_mdown(false), move_ongoing(false), padding(5),
 			move_pointer(PointerCollection::NullToken), scroll(0,0),
 			vscroll(true), scrollmargins(0), controlmargins(0),
-			scrollingborder(NULL), innerborder(NULL), showtitle(false),
+			scrollingborder(NULL), innerborder(NULL), showtitle(false), display(true),
 			blueprintmodified(false) {
 				padding=utils::Margins(WR.WidgetSpacing.x,WR.WidgetSpacing.y);
 

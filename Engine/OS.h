@@ -59,6 +59,10 @@ namespace gge { namespace os {
 			typedef std::string value_type;
 			typedef std::string *pointer_type;
 			typedef std::string &reference_type;
+			typedef std::string *pointer;
+			typedef std::string &reference;
+			typedef int difference_type;
+			typedef int distance_type;
 
 			typedef std::string Type;
 
@@ -76,6 +80,10 @@ namespace gge { namespace os {
 
 			std::string operator *() const {
 				return Get();
+			}
+			
+			std::string *operator ->() {
+				return &current;
 			}
 
 			DirectoryIterator &operator ++() {
@@ -97,12 +105,12 @@ namespace gge { namespace os {
 				return Get();
 			}
 
-			bool operator ==(const class EndOfDirectory &) const {
-				return !IsValid();
-			}
-
 			bool operator ==(const DirectoryIterator &it) const {
 				return it.current==current;
+			}
+
+			bool operator !=(const DirectoryIterator &it) const {
+				return it.current!=current;
 			}
 
 		protected:

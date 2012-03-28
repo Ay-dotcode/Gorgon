@@ -948,6 +948,9 @@
     <ClInclude Include="External\TheoraPlayback\TheoraWorkerThread.h">
       <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
+    <ClInclude Include="Widgets\InlinePanel.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">

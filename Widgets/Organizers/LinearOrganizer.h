@@ -85,17 +85,22 @@ namespace gge { namespace widgets {
 		}
 
 		LinearOrganizer &operator <<(const char *text) {
-			Label *l=new Label(text);
-			l->TextWrap=false;
-			l->Autosize=AutosizeModes::Autosize;
-
-			*this<<*l;
-
-			return *this;
+			return operator <<(std::string(text));
 		}
 
 		LinearOrganizer &operator <<(const std::string &text) {
-			Label *l=new Label(text);
+			std::string txt=text;
+
+			if(txt=="") return *this;
+
+			Label *l=new Label;
+
+			if(txt[0]=='*' && txt[txt.length()-1]=='*') {
+				txt=txt.substr(1, txt.length()-2);
+				l->SetBlueprint(WR.Labels.Bold);
+			}
+
+			l->Text=txt;
 			l->TextWrap=false;
 			l->Autosize=AutosizeModes::Autosize;
 
