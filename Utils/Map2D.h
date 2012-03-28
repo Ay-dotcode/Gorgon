@@ -305,7 +305,7 @@ namespace gge { namespace utils {
 			int count=0;
 			for(int yy=-rangey;yy<=rangey;yy++) {
 				for(int xx=-rangex;xx<=rangex;xx++) {
-					if(x+xx>=0 && x+xx<w && y+yy>=0 && y+yy<h && Get(x+xx,y+yy)==v) {
+					if(x+xx>=0 && x+xx<w && y+yy>=0 && y+yy<h && !(xx==0 && yy==0) && Get(x+xx,y+yy)==v) {
 						count++;
 					}
 				}
@@ -322,7 +322,7 @@ namespace gge { namespace utils {
 			int count=0;
 			for(int yy=-rangey;yy<=rangey;yy++) {
 				for(int xx=-rangex;xx<=rangex;xx++) {
-					if(x+xx>=0 && x+xx<w && y+yy>=0 && y+yy<h && f(Get(x+xx,y+yy))) {
+					if(x+xx>=0 && x+xx<w && y+yy>=0 && y+yy<h && !(xx==0 && yy==0) && f(Get(x+xx,y+yy))) {
 						count++;
 					}
 				}
