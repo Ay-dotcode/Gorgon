@@ -34,8 +34,11 @@ namespace gge { namespace widgets {
 		typedef void(*Modifier)(LinearOrganizer &organizer);
 
 		LinearOrganizer() : currentrow(), currentcol(), spacing(5), autosizewindows(true),
+			buttonalign(TextAlignment::Right),verticalcentering(false),
 			INIT_PROPERTY(LinearOrganizer, Spacing),
-			INIT_PROPERTY(LinearOrganizer, AutosizeWindows)
+			INIT_PROPERTY(LinearOrganizer, AutosizeWindows),
+			INIT_PROPERTY(LinearOrganizer, ButtonAlign),
+			INIT_PROPERTY(LinearOrganizer, VerticalCentering)
 		{
 			spacing=WR.WidgetSpacing.x;
 			rows.push_back(row());
@@ -117,6 +120,8 @@ namespace gge { namespace widgets {
 
 		utils::NumericProperty<LinearOrganizer, int> Spacing;
 		utils::BooleanProperty<LinearOrganizer> AutosizeWindows;
+		utils::Property<LinearOrganizer, gge::TextAlignment::Type> ButtonAlign;
+		utils::BooleanProperty<LinearOrganizer> VerticalCentering;
 
 
 
@@ -129,6 +134,8 @@ namespace gge { namespace widgets {
 		int currentrow,currentcol;
 		int spacing;
 		bool autosizewindows;
+		TextAlignment::Type buttonalign;
+		bool verticalcentering;
 
 		static void nextline_(LinearOrganizer &organizer) {organizer.NextLine();}
 
@@ -140,6 +147,26 @@ namespace gge { namespace widgets {
 		}
 		int getSpacing() const {
 			return spacing;
+		}
+
+		void setVerticalCentering(const bool &value) {
+			if(verticalcentering!=value) {
+				verticalcentering = value;
+				Reorganize();
+			}
+		}
+		bool getVerticalCentering() const {
+			return verticalcentering;
+		}
+
+		void setButtonAlign(const TextAlignment::Type &value) {
+			if(buttonalign!=value) {
+				buttonalign = value;
+				Reorganize();
+			}
+		}
+		TextAlignment::Type getButtonAlign() const {
+			return ButtonAlign;
 		}
 
 		void setAutosizeWindows(const bool &value) {

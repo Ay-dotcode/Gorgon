@@ -75,12 +75,23 @@ namespace gge { namespace widgets {
 				carry=(attachedto->GetUsableWidth()-fixedwidth-maxsizedwidgets*spacing)-variablesize*maxsizedwidgets;
 			}
 
+			for(auto w=row->columns.begin();w!=row->columns.end();++w) {
+				WidgetBase *widget=*w;
+				maxh=std::max(maxh, widget->GetHeight());
+			}
+
 			int x=0;
 			col=0;
+			bool allbuttons=true;
 			for(auto w=row->columns.begin();w!=row->columns.end();++w) {
 				WidgetBase *widget=*w;
 				if(widget->IsVisible()) {
-					widget->Move(x,y);
+					if(verticalcentering) {
+						widget->Move(x,y+(maxh-widget->GetHeight())/2);
+					}
+					else {
+						widget->Move(x,y);
+					}
 
 					if(
 						(dynamic_cast<ISliderType*>(widget) && !dynamic_cast<ISliderType*>(widget)->IsVertical()) ||
@@ -102,10 +113,27 @@ namespace gge { namespace widgets {
 					else
 						x+=widget->GetWidth()+spacing;
 
-					maxh=std::max(maxh, widget->GetHeight());
+					if(dynamic_cast<IButton*>(widget)==NULL)
+						allbuttons=false;
 				}
 
 				col++;
+			}
+
+			if(allbuttons && row->columns.size()) {
+				x-=spacing;
+				if(buttonalign==TextAlignment::Center)
+					x=(attachedto->GetUsableWidth()-x)/2;
+				else if(buttonalign==TextAlignment::Right)
+					x=(attachedto->GetUsableWidth()-x);
+
+				for(auto w=row->columns.begin();w!=row->columns.end();++w) {
+					WidgetBase *widget=*w;
+					if(widget->IsVisible()) {
+						widget->SetX(x);
+						x+=widget->GetWidth()+spacing;
+					}
+				}
 			}
 
 			if(row->height==-1) {

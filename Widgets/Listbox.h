@@ -189,7 +189,10 @@ namespace gge { namespace widgets {
 		//returns selected item value
 		//returns last selected if listbox is in multi select
 		T_ GetValue() {
-			return active->Value;
+			if(active)
+				return active->Value;
+			else
+				return T_();
 		}
 
 		void SetSelected(ListItem &list) {
