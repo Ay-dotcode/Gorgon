@@ -121,6 +121,8 @@ namespace gge { namespace resource {
 		void Prepare(GGEMain *main) { root->Prepare(*main, *this); }
 		void Prepare() { root->Prepare(Main, *this); }
 
+		void Destroy() { utils::CheckAndDelete(root); }
+
 		~File();
 
 	protected:

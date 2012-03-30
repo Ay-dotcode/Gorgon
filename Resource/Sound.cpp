@@ -10,7 +10,7 @@ using namespace gge::sound::system;
 namespace gge { namespace resource {
 	Sound *LoadSoundResource(File &File, istream &Data, int Size) {
 		Sound *snd=new Sound;
-
+		
 		int target=Data.tellg()+Size;
 		int buffersize;
 		Byte *compressionprops=NULL;
@@ -82,8 +82,8 @@ namespace gge { namespace resource {
 	}
 
 	void Sound::destroy() {
-		if(Data) 
-			delete Data; 
+		if(Data)
+			delete[] Data;
 		if(Buffer)
 			sound::system::DestroySoundBuffer(Buffer);
 	}

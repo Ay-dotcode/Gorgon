@@ -112,7 +112,7 @@ namespace gge { namespace resource {
 	}
 
 	File::~File() {
-		delete root;
+		utils::CheckAndDelete(root);
 		Loaders.Destroy();
 		Redirects.Destroy();
 	}
