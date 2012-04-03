@@ -282,4 +282,18 @@ namespace gge { namespace utils {
 		}
 	}
 
+	template<typename T>
+	struct is_iterator
+	{
+	private:
+		typedef char                      yes;
+		typedef struct { char array[2]; } no;
+
+		template<typename C> static yes test(typename C::iterator_category*);
+		template<typename C> static no  test(...);
+	public:
+		static const bool value = sizeof(test<T>(0)) == sizeof(yes);
+	};
+
+
 } }
