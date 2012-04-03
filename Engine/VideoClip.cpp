@@ -188,7 +188,7 @@ namespace gge { namespace multimedia {
 		sOpenALInterfaceFactory = new OpenAL_AudioInterfaceFactory();
 		sVideoManager->setAudioInterfaceFactory(sOpenALInterfaceFactory);
 
-		Main.BeforeTerminate.Register(&ReleaseSources);
+		//Main.BeforeTerminate.Register(&ReleaseSources);
 	}
 
 }}

@@ -115,11 +115,13 @@ namespace gge { namespace multimedia {
 	}
 
 	void AudioClip::Pause(){
-		mVideoClip->pause();
+		if(mVideoClip)
+			mVideoClip->pause();
 	}
 
 	void AudioClip::Stop() {
-		mVideoClip->stop();
+		if(mVideoClip)
+			mVideoClip->stop();
 	}
 
 	void AudioClip::Restart() {
