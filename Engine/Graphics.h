@@ -625,6 +625,8 @@ namespace gge { namespace graphics {
 		/// initialize graphics function
 		void PostRender(os::DeviceHandle Device);
 
+		void ResizeGL(int Width, int Height);
+
 		void SetRenderTarget(GLuint Target);
 		void DumpOffscreen();
 

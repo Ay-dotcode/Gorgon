@@ -4,6 +4,7 @@
 
 #include "../Utils/Any.h"
 #include "../Utils/EventChain.h"
+#include "../Utils/Size2D.h"
 #include "OS.h"
 
 
@@ -133,14 +134,19 @@ namespace gge {
 
 
 		void MoveWindow(int X, int Y) {
-			if(!FullScreen)
-				os::window::MoveWindow(Window, X, Y);
+			MoveWindow(utils::Point(X, Y));
 		}
 
 		void MoveWindow(utils::Point p) {
 			if(!FullScreen)
 				os::window::MoveWindow(Window, p);
 		}
+
+		void ResizeWindow(int W, int H) {
+			ResizeWindow(utils::Size(W,H));
+		}
+
+		void ResizeWindow(utils::Size size);
 
 		////This event is triggered before rendering, after intervals
 		utils::EventChain<GGEMain, utils::empty_event_params> BeforeRenderEvent;
@@ -150,9 +156,11 @@ namespace gge {
 
 		////This event is triggered after rendering before the next
 		/// game loop
-		utils::EventChain<GGEMain, utils::empty_event_params> AfterRenderEvent;
+		utils::EventChain<GGEMain> AfterRenderEvent;
 
-		utils::EventChain<GGEMain, utils::empty_event_params> BeforeTerminate;
+		utils::EventChain<GGEMain> BeforeTerminateEvent;
+
+		utils::EventChain<GGEMain> ResizeEvent;
 
 		////Destructor, cleans up resources
 		~GGEMain();
@@ -172,6 +180,9 @@ namespace gge {
 		string SystemName;
 		////Handle of the window
 		os::WindowHandle Window;
+
+		static void adjustlayers_recurse(LayerBase &layer, utils::Size from, utils::Size to);
+		void adjustlayers(utils::Size size);
 
 		utils::Collection<IntervalObject> IntervalObjects;
 	};

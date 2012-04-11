@@ -450,6 +450,16 @@
 				SetWindowPos((HWND)h, 0, p.x,p.y, 0,0, SWP_NOSIZE | SWP_NOZORDER);
 			}
 
+			void ResizeWindow(WindowHandle h,utils::Size size) {
+				RECT cr,wr;
+				GetClientRect((HWND)h,&cr);
+				GetWindowRect((HWND)h,&wr);
+
+				SetWindowPos((HWND)h, 0, 0,0,
+					size.Width + ( (wr.right-wr.left) - (cr.right-cr.left) ),
+					size.Height + ( (wr.bottom-wr.top) - (cr.bottom-cr.top) ), SWP_NOMOVE | SWP_NOZORDER);
+			}
+
 			utils::Rectangle UsableScreenMetrics(int Monitor) {
 				utils::Rectangle r;
 

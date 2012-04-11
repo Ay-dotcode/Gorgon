@@ -8,6 +8,8 @@
 #include "..\Utils\Rectangle2D.h"
 #include "..\Resource\Main.h"
 #include "VideoClip.h"
+#include <algorithm>
+#include <functional>
 
 using namespace gge::utils;
 
@@ -46,6 +48,8 @@ namespace gge {
 		if(Window!=NULL)
 			return;
 #endif
+		adjustlayers(utils::Size(Width, Height));
+
 		this->SystemName=SystemName;
 		this->Width=Width;
 		this->Height=Height;
@@ -178,7 +182,7 @@ namespace gge {
 	}
 
 	void GGEMain::Exit(int code) {
-		BeforeTerminate();
+		BeforeTerminateEvent();
 
 		for(auto it=SubLayers.First();it.IsValid();it.Next())
 			it->parent=NULL;
@@ -199,6 +203,27 @@ namespace gge {
 			Render();
 			AfterRender();
 		}
+	}
+
+	void GGEMain::ResizeWindow(utils::Size size) {
+		os::window::ResizeWindow(Window, size);
+
+		graphics::system::ResizeGL(size.Width, size.Height);
+
+		adjustlayers(size);
+		ResizeEvent();
+	}
+
+	void GGEMain::adjustlayers(utils::Size size) {
+		adjustlayers_recurse(*this, this->BoundingBox.GetSize(), size);
+	}
+
+	void GGEMain::adjustlayers_recurse(LayerBase &layer, utils::Size from, utils::Size to) {
+		std::for_each(layer.SubLayers.begin(), layer.SubLayers.end(), 
+			std::bind(&GGEMain::adjustlayers_recurse, std::placeholders::_1, from, to)
+		);
+		if(layer.BoundingBox.GetSize()==from)
+			layer.BoundingBox.SetSize(to);
 	}
 
 	//void GGEMain::InitializeWidgets() {

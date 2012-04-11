@@ -66,6 +66,10 @@ namespace gge { namespace widgets {
 
 		bglayer=new graphics::Basic2DLayer;
 		Main.Add(bglayer, 10);
+		Main.ResizeEvent.RegisterLambda([&] {
+			if(WR.Pictures.Exists("background"))
+				WR.Pictures("background").DrawIn(bglayer);
+		});
 
 		input::keyboard::Events.SetOrder(TopLevel.KeyboardToken,-1);
 	}
@@ -77,7 +81,8 @@ namespace gge { namespace widgets {
 		WidgetFile->LoadFile(filename);
 		WidgetFile->Prepare();
 
-		WR.Pictures("background").DrawIn(bglayer);
+		if(WR.Pictures.Exists("background"))
+			WR.Pictures("background").DrawIn(bglayer);
 
 
 		return *WidgetFile;

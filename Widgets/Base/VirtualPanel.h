@@ -31,7 +31,7 @@ namespace gge { namespace widgets {
 			KeyboardToken=input::keyboard::Events.Register(this, &VirtualPanel::KeyboardEvent);
 			input::keyboard::Events.Disable(KeyboardToken);
 
-			Main.BeforeTerminate.Register(this, &VirtualPanel::terminate);
+			Main.BeforeTerminateEvent.Register(this, &VirtualPanel::terminate);
 		}
 
 

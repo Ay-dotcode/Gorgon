@@ -6,6 +6,7 @@
 
 #include "OS.Win32.h"
 #include "../Utils/Rectangle2D.h"
+#include "../Utils/Size2D.h"
 
 using std::string;
 
@@ -149,7 +150,7 @@ namespace gge { namespace os {
 		WindowHandle CreateWindow(std::string Name, string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
 
 		void MoveWindow(WindowHandle,utils::Point);
-		inline void MoveWindow(WindowHandle h,int X,int Y) { MoveWindow(h,utils::Point(X,Y)); }
+		void ResizeWindow(WindowHandle,utils::Size);
 	}
 
 } }

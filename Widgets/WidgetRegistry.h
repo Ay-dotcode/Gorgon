@@ -310,6 +310,8 @@ namespace gge { namespace widgets {
 					throw std::runtime_error("Cannot find item and no fallback is supplied");
 				}
 			}
+
+			bool Exists(const std::string &key) const { return parent.count(key)>0; }
 		protected:
 			Collection(std::map<std::string, T_&> &parent) : parent(parent) { }
 
