@@ -6,6 +6,7 @@
 #include "ResizableObject.h"
 #include "../Engine/Animation.h"
 #include "../Engine/Image.h"
+#include "../Encoding/LZMA.h"
 
 #pragma warning(push)
 #pragma warning(disable:4250)
@@ -132,6 +133,8 @@ namespace gge { namespace resource {
 
 		//DO NOT MODIFY THE SIZE OF THE BUFFER MANUALLY
 		gge::utils::CastableManagedBuffer<Byte> &getdata() { return ImageData::Data; }
+
+		static encoding::LZMA Lzma;
 
 	protected:
 		virtual animation::ProgressResult::Type Progress() { return animation::ProgressResult::None; };

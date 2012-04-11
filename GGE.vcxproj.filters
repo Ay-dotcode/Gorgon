@@ -160,6 +160,9 @@
     <Filter Include="External\TheoraPlaybackOpenAL">
       <UniqueIdentifier>{a733fb2c-e227-44d8-a684-ae82ec2f3ec7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Encoding">
+      <UniqueIdentifier>{d72d2f9f-ca8a-43a1-a9c6-a99b6806a27a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Effects\CountingText.h">
@@ -482,12 +485,6 @@
     </ClInclude>
     <ClInclude Include="External\pThread\semaphore.h">
       <Filter>External\pThread</Filter>
-    </ClInclude>
-    <ClInclude Include="External\LZMA\LzmaDecode.h">
-      <Filter>External\LZMA</Filter>
-    </ClInclude>
-    <ClInclude Include="External\LZMA\LzmaTypes.h">
-      <Filter>External\LZMA</Filter>
     </ClInclude>
     <ClInclude Include="External\OpenAL\al.h">
       <Filter>External\OpenAL</Filter>
@@ -951,6 +948,30 @@
     <ClInclude Include="Widgets\InlinePanel.h">
       <Filter>Widgets</Filter>
     </ClInclude>
+    <ClInclude Include="External\LZMA\LzFindMt.h">
+      <Filter>External\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="External\LZMA\LzHash.h">
+      <Filter>External\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="External\LZMA\LzmaDec.h">
+      <Filter>External\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="External\LZMA\LzmaEnc.h">
+      <Filter>External\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="External\LZMA\Threads.h">
+      <Filter>External\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="External\LZMA\Types.h">
+      <Filter>External\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="External\LZMA\LzFind.h">
+      <Filter>External\LZMA</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoding\LZMA.h">
+      <Filter>Encoding</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -1213,9 +1234,6 @@
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jutils.c">
       <Filter>External\JPEG\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="External\LZMA\LzmaDecode.cpp">
-      <Filter>External\LZMA</Filter>
     </ClCompile>
     <ClCompile Include="Resource\FontTheme.cpp">
       <Filter>Resource\Sources</Filter>
@@ -1579,6 +1597,24 @@
     </ClCompile>
     <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp">
       <Filter>External\TheoraPlayback</Filter>
+    </ClCompile>
+    <ClCompile Include="External\LZMA\LzFindMt.c">
+      <Filter>External\LZMA</Filter>
+    </ClCompile>
+    <ClCompile Include="External\LZMA\LzmaDec.c">
+      <Filter>External\LZMA</Filter>
+    </ClCompile>
+    <ClCompile Include="External\LZMA\LzmaEnc.c">
+      <Filter>External\LZMA</Filter>
+    </ClCompile>
+    <ClCompile Include="External\LZMA\Threads.c">
+      <Filter>External\LZMA</Filter>
+    </ClCompile>
+    <ClCompile Include="External\LZMA\LzFind.c">
+      <Filter>External\LZMA</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoding\LZMA.cpp">
+      <Filter>Encoding</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -3,7 +3,7 @@
 #include "Image.h"
 #include "File.h"
 #include "NullImage.h"
-#include "../External/LZMA/LzmaDecode.h"
+#include "../Encoding/LZMA.h"
 #include "../External/JPEG/jpeglib.h"
 #include "../Engine/GGEMain.h"
 #include <cmath>
@@ -22,7 +22,6 @@ namespace gge { namespace resource {
 
 		istream& inputStream = *(istream*)(png_ptr->io_ptr);
 		inputStream.read((char*)outBytes,byteCountToRead);
-
 	} 
 
 	Image *LoadImageResource(File& File, istream &Data, int Size) {
@@ -68,8 +67,8 @@ namespace gge { namespace resource {
 				ReadFrom(Data, img->Compression);
 
 				if(img->Compression==GID::LZMA) {
-					img->CompressionProps=new Byte[LZMA_PROPERTIES_SIZE];
-					Data.read((char*)img->CompressionProps, LZMA_PROPERTIES_SIZE);
+					img->CompressionProps=new Byte[Image::Lzma.PropertySize()];
+					Data.read((char*)img->CompressionProps, Image::Lzma.PropertySize());
 				}
 			} else if(gid==GID::Image_Data) {
 				if(lateloading) {
@@ -94,20 +93,10 @@ namespace gge { namespace resource {
 				} 
 				else {
 					if(img->Compression==GID::LZMA) {
-						Byte *tmpdata=new Byte[size];
-						Data.read((char*)tmpdata, size);
+						Byte *buffer=img->Data.GetBuffer();
+						Image::Lzma.Decode(Data, buffer, img->CompressionProps, img->Data.GetSize());
 
-						size_t processed,processed2;
-						CLzmaDecoderState state;
-
-						LzmaDecodeProperties(&state.Properties,img->CompressionProps,LZMA_PROPERTIES_SIZE);
-						state.Probs = (CProb *)malloc(LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
-
-						LzmaDecode(&state,tmpdata,size,&processed,img->Data,img->getwidth()*img->getheight()*img->GetBPP	(),&processed2);
-
-						free(state.Probs);
-						delete tmpdata;
-						utils::CheckAndDelete(img->CompressionProps);
+						utils::CheckAndDeleteArray(img->CompressionProps);
 					} 
 					else if(img->Compression==GID::JPEG) {
 						int cpos=(int)Data.tellg();
@@ -292,19 +281,11 @@ errorout:
 		
 		if(this->Compression==GID::LZMA) {
 			this->Data.Resize(this->GetWidth()*this->GetHeight()*this->GetBPP());
-			Byte *tmpdata=new Byte[DataSize];
-			fread(tmpdata,1,this->DataSize,gfile);
-			size_t processed,processed2;
-			CLzmaDecoderState state;
 
-			LzmaDecodeProperties(&state.Properties,this->CompressionProps,LZMA_PROPERTIES_SIZE);
-			state.Probs = (CProb *)malloc(LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
+			Byte *buffer=Data.GetBuffer();
+			Image::Lzma.Decode(Data, buffer, CompressionProps, Data.GetSize());
 
-			LzmaDecode(&state,tmpdata,DataSize,&processed,this->Data,this->GetWidth()*this->GetHeight()*this->GetBPP(),&processed2);
-
-			free(state.Probs);
-			delete[] tmpdata;
-			utils::CheckAndDelete(CompressionProps);
+			utils::CheckAndDeleteArray(CompressionProps);
 		} else if(Compression==GID::JPEG) {
 			jpeg_decompress_struct cinf;
 			jpeg_decompress_struct* cinfo=&cinf;
@@ -691,6 +672,8 @@ errorout:
 
 		delete[] kernel;
 	}
+
+	encoding::LZMA Image::Lzma(false);
 
 
 	NullImage *NullImage::ni;

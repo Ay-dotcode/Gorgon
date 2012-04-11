@@ -23,13 +23,13 @@ namespace gge { namespace resource {
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////Wave data
-		Byte *Data;
+		std::vector<Byte> Data;
 		////Format
 		gge::sound::system::WaveFormat Format;
 		////Size of the data
 		int Size;
 
-		Sound() { Buffer=NULL; Data=NULL; Size=0; Format.BitsPerSample=Format.Channels=0; }
+		Sound() { Buffer=NULL; Size=0; Format.BitsPerSample=Format.Channels=0; }
 
 		operator gge::sound::system::SoundBufferHandle() {
 			return Buffer;

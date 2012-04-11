@@ -99,6 +99,7 @@
     <ClInclude Include="Effects\LayerMover.h" />
     <ClInclude Include="Effects\LayerResizer.h" />
     <ClInclude Include="Effects\Tinting.h" />
+    <ClInclude Include="Encoding\LZMA.h" />
     <ClInclude Include="Engine\Animation.h" />
     <ClInclude Include="Engine\AudioClip.h" />
     <ClInclude Include="Engine\CustomLayer.h" />
@@ -137,8 +138,13 @@
     <ClInclude Include="External\JPEG\src\jpeglib.h" />
     <ClInclude Include="External\JPEG\src\jversion.h" />
     <ClInclude Include="External\JPEG\src\transupp.h" />
-    <ClInclude Include="External\LZMA\LzmaDecode.h" />
-    <ClInclude Include="External\LZMA\LzmaTypes.h" />
+    <ClInclude Include="External\LZMA\LzFind.h" />
+    <ClInclude Include="External\LZMA\LzFindMt.h" />
+    <ClInclude Include="External\LZMA\LzHash.h" />
+    <ClInclude Include="External\LZMA\LzmaDec.h" />
+    <ClInclude Include="External\LZMA\LzmaEnc.h" />
+    <ClInclude Include="External\LZMA\Threads.h" />
+    <ClInclude Include="External\LZMA\Types.h" />
     <ClInclude Include="External\ogg\ogg.h" />
     <ClInclude Include="External\ogg\os_types.h" />
     <ClInclude Include="External\OpenAL\al.h" />
@@ -364,6 +370,7 @@
     <ClCompile Include="Effects\LayerMover.cpp" />
     <ClCompile Include="Effects\LayerResizer.cpp" />
     <ClCompile Include="Effects\Tinting.cpp" />
+    <ClCompile Include="Encoding\LZMA.cpp" />
     <ClCompile Include="Engine\Animation.cpp" />
     <ClCompile Include="Engine\AudioClip.cpp" />
     <ClCompile Include="Engine\CustomLayer.cpp" />
@@ -426,7 +433,11 @@
     <ClCompile Include="External\JPEG\src\jquant1.c" />
     <ClCompile Include="External\JPEG\src\jquant2.c" />
     <ClCompile Include="External\JPEG\src\jutils.c" />
-    <ClCompile Include="External\LZMA\LzmaDecode.cpp" />
+    <ClCompile Include="External\LZMA\LzFind.c" />
+    <ClCompile Include="External\LZMA\LzFindMt.c" />
+    <ClCompile Include="External\LZMA\LzmaDec.c" />
+    <ClCompile Include="External\LZMA\LzmaEnc.c" />
+    <ClCompile Include="External\LZMA\Threads.c" />
     <ClCompile Include="External\ogg\src\bitwise.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>

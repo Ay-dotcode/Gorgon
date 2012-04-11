@@ -1,6 +1,6 @@
 #include "Sound.h"
 #include "File.h"
-#include "../External/LZMA/LzmaDecode.h"
+#include "../Encoding/LZMA.h"
 #include "../Engine/Sound.h"
 
 using namespace std;
@@ -10,6 +10,7 @@ using namespace gge::sound::system;
 namespace gge { namespace resource {
 	Sound *LoadSoundResource(File &File, istream &Data, int Size) {
 		Sound *snd=new Sound;
+		encoding::LZMA Lzma(false);
 		
 		int target=Data.tellg()+Size;
 		int buffersize;
@@ -42,35 +43,23 @@ namespace gge { namespace resource {
 			}
 			else if(gid==GID::Sound_Wave) {
 				snd->Size=size;
-				snd->Data=new Byte[size];
+				snd->Data.resize(size);
 
-				Data.read((char*)snd->Data, size);
+				Data.read((char*)&snd->Data[0], size);
 			} else if(gid==GID::Sound_Cmp_Props) {
 				ReadFrom(Data, compression);
 
 				if(compression==GID::LZMA) {
-					compressionprops=new Byte[LZMA_PROPERTIES_SIZE];
-					Data.read((char*)compressionprops,LZMA_PROPERTIES_SIZE);
+					compressionprops=new Byte[Lzma.PropertySize()];
+					Data.read((char*)compressionprops,Lzma.PropertySize());
 				}
 			} else if(gid==GID::Sound_Cmp_Wave) {
-				snd->Data=new Byte[buffersize];
+				//snd->Data.resize(buffersize);
 				snd->Size=buffersize;
-				Byte *tmpdata=new Byte[size];
 
-				Data.read((char*)tmpdata, size);
-				
-				size_t processed,processed2;
-				CLzmaDecoderState state;
-				LzmaDecodeProperties(&state.Properties,compressionprops,LZMA_PROPERTIES_SIZE);
-				state.Probs = (CProb *)malloc(LzmaGetNumProbs(&state.Properties) * sizeof(CProb));
+				Lzma.Decode(Data, snd->Data, compressionprops, buffersize);
 
-				LzmaDecode(&state,tmpdata,size,&processed,snd->Data,buffersize,&processed2);
-
-				delete[] tmpdata;
-				free(state.Probs);
-
-				if(compressionprops)
-					delete[] compressionprops;
+				utils::CheckAndDeleteArray(compressionprops);
 			}
 		}
 
@@ -78,12 +67,13 @@ namespace gge { namespace resource {
 	}
 
 	void Sound::Prepare( GGEMain &main, File &file ) {
-		Buffer=sound::system::CreateSoundBuffer(Format, Data, Size);
+		Buffer=sound::system::CreateSoundBuffer(Format, &Data[0], Size);
 	}
 
 	void Sound::destroy() {
-		if(Data)
-			delete[] Data;
+		std::vector<Byte> empty;
+		Data.swap(empty);
+
 		if(Buffer)
 			sound::system::DestroySoundBuffer(Buffer);
 	}
