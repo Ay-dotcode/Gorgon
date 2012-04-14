@@ -18,11 +18,11 @@ using namespace gge::animation;
 namespace gge {
 
 	void PointerCollection::Window_Activate() {
-		this->Show();
+		//this->Show();
 	}
 
 	void PointerCollection::Window_Deactivate() {
-		this->Hide();
+		//this->Hide();
 	}
 
 	void PointerCollection::Draw(GGEMain &caller) {

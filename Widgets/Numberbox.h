@@ -94,7 +94,7 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Numberbox, UseHex),
 			INIT_PROPERTY(Numberbox, Prefix),
 			INIT_PROPERTY(Numberbox, Suffix),
-			AutoSelectAll(false)
+			AutoSelectAll(false), usehex(false)
 		{
 			Value=value;
 

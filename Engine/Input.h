@@ -9,7 +9,10 @@
 #include "../Utils/Bounds2D.h"
 #include <functional>
 
-namespace gge { namespace input {
+namespace gge { 
+	class LayerBase;
+
+	namespace input {
 	class BasicPointerTarget;
 
 
@@ -183,9 +186,12 @@ namespace gge { namespace input {
 		class HandlerBase;
 		class Event;
 
-		class MouseTarget {
+		class IDragObject {
+		public:
 
+			virtual int TypeID() = 0;
 		};
+
 
 		class Event {
 		public:
@@ -200,7 +206,7 @@ namespace gge { namespace input {
 
 				Click		= 1<<5,
 				Down		= 1<<6,
-				Up			= 1<<7,
+				Up			= 1<<7, //Always supplies absolute position
 				DoubleClick	= 1<<8,
 
 				Over		= 1<<9,
@@ -210,6 +216,19 @@ namespace gge { namespace input {
 				HScroll		= 1<<13,
 
 				OverCheck	= 1<<14,
+
+				Cancel		= 1<<15,
+				Accept		= 1<<16,
+				Drop		= 1<<17,
+
+				Drag		= 1<<18,
+
+				DragOver	= Drag | Over,
+				DragMove	= Drag | Move,
+				DragDrop	= Drag | Drop,
+				DragOut		= Drag | Out,
+				DragAccepted= Drag | Accept, //Always supplies absolute position
+				DragCanceled= Drag | Cancel, //Always supplies absolute position
 
 
 				Left_Click	= Left	| Click,
@@ -237,7 +256,8 @@ namespace gge { namespace input {
 				X2_DoubleClick		= X2	| DoubleClick,
 
 				ButtonMask			= B8 (00001111),
-				AllButOverCheck		= B16(00011111,11111111),
+				NoDragNoOverCheck	= B32(00000000,00000011,10111111,11111111),
+				AllButOverCheck		= B32(00000000,00000111,10111111,11111111),
 			};
 
 			static bool isClick(Type t) {
@@ -284,10 +304,14 @@ namespace gge { namespace input {
 				return (t&X2)!=0;
 			}
 
+			static bool isDrag(Type t) {
+				return (t&Drag)!=0;
+			}
+
 			class Target {
 			public:
 
-				Target(HandlerBase *handler, Event::Type eventmask=AllButOverCheck) : EventMask(eventmask) ,handler(handler), IsOver(false)  {
+				Target(HandlerBase *handler, Event::Type eventmask=NoDragNoOverCheck) : EventMask(eventmask) ,handler(handler), IsOver(false)  {
 
 				}
 
@@ -322,6 +346,29 @@ namespace gge { namespace input {
 		inline Event::Type operator ~ (Event::Type l) {
 			return (Event::Type)(~(int)l);
 		}
+		////Begins dragging operation. Does not alter mouse cursor or does not show any preview.
+		/// While drag continues, source event will keep receiving dragmove event. Targeted mouse event
+		/// will receive dragover event. If it accepts dragover event, target layer will receive
+		/// dragmove and dragdrop events. If mouse exits the current target area, dragout event will
+		/// fire. If target event handler accepts drop event, source will receive dragaccept event.
+		/// If it is not accepted or there is no target, source will receive dragcancel event.
+		/// Any object is allowed to cancel drag operation.
+		///@object: Data for the dragged object
+		///@sourcelayer: Source layer of the event
+		///@sourceevent: Source mouse event object. This value is returned from the event register or set 
+		///              functions
+		void BeginDrag(IDragObject &object, gge::LayerBase &sourcelayer, mouse::Event::Target &sourceevent);
+
+		void CancelDrag();
+
+		bool IsDragging();
+
+		bool HasDragTarget();
+
+		extern utils::EventChain<> DragStateChanged;
+
+		//throws runtime error on no object is being dragged
+		IDragObject &GetDraggedObject();
 
 		class EventChain {
 			friend class EventProvider;
@@ -331,7 +378,7 @@ namespace gge { namespace input {
 			class Object : public Event::Target {
 				friend class EventChain;
 			public:
-				Object(HandlerBase *handler, utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck) : Event::Target(handler, eventmask), Bounds(bounds), enabled(true) {
+				Object(HandlerBase *handler, utils::Bounds bounds, Event::Type eventmask=Event::NoDragNoOverCheck) : Event::Target(handler, eventmask), Bounds(bounds), enabled(true) {
 
 				}
 				virtual ~Object();
@@ -401,30 +448,30 @@ namespace gge { namespace input {
 			}
 
 		public:
-			Object &Register(bool (*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Bounds bounds, utils::Any data, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Register(bool (*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Bounds bounds, utils::Any data, Event::Type eventmask=Event::NoDragNoOverCheck);
 
-			Object &Register(bool (*fn)(Event::Type event, utils::Point location, int amount), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Register(bool (*fn)(Event::Type event, utils::Point location, int amount), utils::Bounds bounds, Event::Type eventmask=Event::NoDragNoOverCheck);
 
-			Object &Register(bool (*fn)(Event::Type event, utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Register(bool (*fn)(Event::Type event, utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::NoDragNoOverCheck);
 
-			Object &Register(bool (*fn)(utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Register(bool (*fn)(utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::NoDragNoOverCheck);
 
-			Object &Register(bool (*fn)(), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
-
-			template <class R_>
-			Object &Register(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Bounds bounds, utils::Any data, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Register(bool (*fn)(), utils::Bounds bounds, Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template <class R_>
-			Object &Register(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Register(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Bounds bounds, utils::Any data, Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template <class R_>
-			Object &Register(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Register(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), utils::Bounds bounds, Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template <class R_>
-			Object &Register(R_ &object, bool (R_::*fn)(utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Register(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template <class R_>
-			Object &Register(R_ &object, bool (R_::*fn)(), utils::Bounds bounds, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Register(R_ &object, bool (R_::*fn)(utils::Point location), utils::Bounds bounds, Event::Type eventmask=Event::NoDragNoOverCheck);
+
+			template <class R_>
+			Object &Register(R_ &object, bool (R_::*fn)(), utils::Bounds bounds, Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template<class F_>
 			typename utils::count_arg<F_, 0, Object &>::type 
@@ -473,7 +520,7 @@ namespace gge { namespace input {
 			class Object : public Event::Target {
 				friend class EventCallback;
 			public:
-				Object(HandlerBase *handler, Event::Type eventmask=Event::AllButOverCheck) : Event::Target(handler, eventmask), enabled(true) {
+				Object(HandlerBase *handler, Event::Type eventmask=Event::NoDragNoOverCheck) : Event::Target(handler, eventmask), enabled(true) {
 
 				}
 				virtual ~Object();
@@ -540,42 +587,42 @@ namespace gge { namespace input {
 			}
 
 		public:
-			Object &Set(bool (*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Any data, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Set(bool (*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Any data, Event::Type eventmask=Event::NoDragNoOverCheck);
 
-			Object &Set(bool (*fn)(Event::Type event, utils::Point location, int amount), Event::Type eventmask=Event::AllButOverCheck);
+			Object &Set(bool (*fn)(Event::Type event, utils::Point location, int amount), Event::Type eventmask=Event::NoDragNoOverCheck);
 
-			Object &Set(bool (*fn)(Event::Type event, utils::Point location), Event::Type eventmask=Event::AllButOverCheck);
+			Object &Set(bool (*fn)(Event::Type event, utils::Point location), Event::Type eventmask=Event::NoDragNoOverCheck);
 
-			Object &Set(bool (*fn)(utils::Point location), Event::Type eventmask=Event::AllButOverCheck);
+			Object &Set(bool (*fn)(utils::Point location), Event::Type eventmask=Event::NoDragNoOverCheck);
 
-			Object &Set(bool (*fn)(), Event::Type eventmask=Event::AllButOverCheck);
-
-			template <class R_>
-			Object &Set(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Any data, Event::Type eventmask=Event::AllButOverCheck);
+			Object &Set(bool (*fn)(), Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template <class R_>
-			Object &Set(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), Event::Type eventmask=Event::AllButOverCheck);
+			Object &Set(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount, utils::Any data), utils::Any data, Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template <class R_>
-			Object &Set(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), Event::Type eventmask=Event::AllButOverCheck);
+			Object &Set(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location, int amount), Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template <class R_>
-			Object &Set(R_ &object, bool (R_::*fn)(utils::Point location), Event::Type eventmask=Event::AllButOverCheck);
+			Object &Set(R_ &object, bool (R_::*fn)(Event::Type event, utils::Point location), Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template <class R_>
-			Object &Set(R_ &object, bool (R_::*fn)(), Event::Type eventmask=Event::AllButOverCheck);
+			Object &Set(R_ &object, bool (R_::*fn)(utils::Point location), Event::Type eventmask=Event::NoDragNoOverCheck);
+
+			template <class R_>
+			Object &Set(R_ &object, bool (R_::*fn)(), Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template<class F_>
-			typename utils::count_arg<F_, 0, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::AllButOverCheck);
+			typename utils::count_arg<F_, 0, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template<class F_>
-			typename utils::count_arg<F_, 1, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::AllButOverCheck);
+			typename utils::count_arg<F_, 1, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template<class F_>
-			typename utils::count_arg<F_, 2, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::AllButOverCheck);
+			typename utils::count_arg<F_, 2, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::NoDragNoOverCheck);
 
 			template<class F_>
-			typename utils::count_arg<F_, 3, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::AllButOverCheck);
+			typename utils::count_arg<F_, 3, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::NoDragNoOverCheck);
 			
 			void Reset() {
 				if(object)
@@ -811,7 +858,6 @@ namespace gge { namespace input {
 
 
 
-
 		template <class R_>
 		EventChain::Object & EventChain::Register( R_ &object, bool (R_::*fn)(), utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
@@ -1026,6 +1072,13 @@ namespace gge { namespace input {
 		void ProcessHScroll(int amount,int x,int y);
 
 		extern bool hoverfound;
+		extern mouse::Event::Target *dragsource;
+		extern LayerBase *dragsourcelayer;
+
+		extern mouse::Event::Target *dragtarget;
+		extern mouse::IDragObject *draggedobject;
+		extern bool isdragging;
+
 	}
 
 

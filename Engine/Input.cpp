@@ -22,6 +22,7 @@ namespace gge { namespace input {
 
 		const int DragDistance			= 5;//px
 
+
 		bool EventProvider::PropagateMouseEvent(Event::Type event, utils::Point location, int amount) {
 			if(Event::isClick(event)) {
 				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.IsValid();i.Next()) {
@@ -45,7 +46,7 @@ namespace gge { namespace input {
 
 				return false;
 			}
-			else if(event==Event::Over) {
+			else if(event==Event::Over || event==Event::DragOver) {
 				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.Last();i.IsValid();i.Previous()) {
 					bool isover=false;
 					if(i->Bounds.isInside(location)) {
@@ -58,18 +59,22 @@ namespace gge { namespace input {
 					}
 
 					if(!i->IsOver && isover) {
-						bool ret=i->Fire(Event::Over, location-i->Bounds.TopLeft(), amount);
+						bool ret=i->Fire(event, location-i->Bounds.TopLeft(), amount);
 
 						i->IsOver=ret;
 
-						if(ret)
+						if(ret) {
+							if(event==Event::DragOver) 
+								system::dragtarget=&(*i);
+
 							return true;
+						}
 					}
 				}
 
 				return false;
 			}
-			else if(event==Event::Out) {
+			else if(event==Event::Out || event==Event::DragOut) {
 				bool ret=false;
 
 				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.IsValid();i.Next()) {
@@ -90,8 +95,10 @@ namespace gge { namespace input {
 						return true;
 
 					if(i->IsOver && !isover) {
-						i->Fire(Event::Out, location-i->Bounds.TopLeft(), amount);
+						i->Fire(event, location-i->Bounds.TopLeft(), amount);
 						i->IsOver=false;
+
+						system::dragtarget=NULL;
 					}
 				}
 
@@ -102,6 +109,17 @@ namespace gge { namespace input {
 					if(PressedObject==&(*i)) {
 						if(i->Fire(event, location-i->Bounds.TopLeft(), amount))
 							return true;
+					}
+				}
+
+				return false;
+			}
+			else if(event==Event::DragMove) {
+				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.IsValid();i.Next()) {
+					if(system::dragtarget==&(*i) || system::dragsource==&(*i)) {
+						if(i->Fire(event, location-i->Bounds.TopLeft(), amount)) {
+							system::dragtarget=NULL;
+						}
 					}
 				}
 
@@ -146,7 +164,7 @@ namespace gge { namespace input {
 
 				return false;
 			}
-			else if(event==Event::Over) {
+			else if(event==Event::Over || event==Event::DragOver) {
 				bool isover=true;
 				if(MouseCallback.object->EventMask & Event::OverCheck) {
 					if(!MouseCallback.object->Fire(Event::OverCheck, location, 0))
@@ -157,17 +175,21 @@ namespace gge { namespace input {
 					return true;
 
 				if(isover) {
-					bool ret=MouseCallback.object->Fire(Event::Over, location, amount);
+					bool ret=MouseCallback.object->Fire(event, location, amount);
 
 					MouseCallback.object->IsOver=ret;
 
-					if(ret)
+					if(ret) {
+						if(event==Event::DragOver)
+							system::dragtarget=MouseCallback.object;
+
 						return true;
+					}
 				}
 
 				return false;
 			}
-			else if(event==Event::Out) {
+			else if(event==Event::Out || event==Event::DragOut) {
 				bool isover=true;
 				if(MouseCallback.object->EventMask & Event::OverCheck) {
 					if(!MouseCallback.object->Fire(Event::OverCheck, location, 0))
@@ -181,8 +203,9 @@ namespace gge { namespace input {
 					return true;
 
 				if(MouseCallback.object->IsOver && !isover) {
-					MouseCallback.object->Fire(Event::Out, location, amount);
+					MouseCallback.object->Fire(event, location, amount);
 					MouseCallback.object->IsOver=false;
+					system::dragtarget=NULL;
 				}
 
 				return false;
@@ -191,6 +214,15 @@ namespace gge { namespace input {
 				if(PressedObject==MouseCallback.object) {
 					if(MouseCallback.object->Fire(event, location, amount))
 						return true;
+				}
+
+				return false;
+			}
+			else if(event==Event::DragMove) {
+				if(system::dragtarget==MouseCallback.object || system::dragsource==MouseCallback.object) {
+					if(!MouseCallback.object->Fire(event, location, amount)) {
+						system::dragtarget=NULL;
+					}
 				}
 
 				return false;
@@ -330,6 +362,47 @@ namespace gge { namespace input {
 		EventCallback::Object::~Object() {
 		}
 
+
+
+		void BeginDrag(IDragObject &object, LayerBase &sourcelayer, mouse::Event::Target &source) {
+			system::draggedobject=&object;
+			system::dragsource=&source;
+			system::dragsourcelayer=&sourcelayer;
+			system::isdragging=true;
+
+			DragStateChanged();
+		}
+
+		void CancelDrag() {
+			if(system::dragsource)
+				system::dragsource->Fire(mouse::Event::DragCanceled, utils::Point(0,0), 0);
+
+			if(system::dragtarget)
+				system::dragtarget->Fire(mouse::Event::DragOut, utils::Point(0,0), 0);
+
+			system::dragsource=NULL;
+			system::dragsourcelayer=NULL;
+			system::isdragging=false;
+			system::dragtarget=NULL;
+
+			DragStateChanged();
+		}
+
+		bool HasDragTarget() { return system::dragtarget!=NULL; }
+
+		utils::EventChain<> DragStateChanged;
+
+		IDragObject &GetDraggedObject() {
+			if(!system::draggedobject)
+				throw std::runtime_error("No object is being dragged.");
+
+			return *system::draggedobject;
+		}
+
+		bool IsDragging() {
+			return system::dragsource!=NULL;
+		}
+
 	}
 
 
@@ -371,14 +444,28 @@ namespace gge { namespace input {
 
 
 		bool hoverfound=false;
+		bool isdragging=false;
+		mouse::IDragObject *draggedobject=NULL;
+		
+		mouse::Event::Target *dragsource=NULL;
+		LayerBase *dragsourcelayer=NULL;
+
+		mouse::Event::Target *dragtarget=NULL;
 
 		void ProcessMousePosition(os::WindowHandle Window) {
 			mouse::CurrentPoint=os::input::getMousePosition(Window);
 
-			hoverfound=false;
-			Main.PropagateMouseEvent(mouse::Event::Over, mouse::CurrentPoint, 0);
-			Main.PropagateMouseEvent(mouse::Event::Move, mouse::CurrentPoint, 0);
-			Main.PropagateMouseEvent(mouse::Event::Out , mouse::CurrentPoint, 1);
+			if(isdragging) {
+				Main.PropagateMouseEvent(mouse::Event::DragOver, mouse::CurrentPoint, 0);
+				Main.PropagateMouseEvent(mouse::Event::DragMove, mouse::CurrentPoint, 0);
+				Main.PropagateMouseEvent(mouse::Event::DragOut , mouse::CurrentPoint, 1);
+			}
+			else {
+				hoverfound=false;
+				Main.PropagateMouseEvent(mouse::Event::Over, mouse::CurrentPoint, 0);
+				Main.PropagateMouseEvent(mouse::Event::Move, mouse::CurrentPoint, 0);
+				Main.PropagateMouseEvent(mouse::Event::Out , mouse::CurrentPoint, 1);
+			}
 
 			//if(!hoverfound && mouse::HoveredObject && !mouse::PressedObject) {
 			//	mouse::HoveredObject->Fire(mouse::Event::Out, mouse::CurrentPoint, 0);
@@ -403,6 +490,21 @@ namespace gge { namespace input {
 		}
 
 		void ProcessMouseUp(mouse::Event::Type button,int x,int y){
+			if(isdragging) {
+				bool handled=Main.PropagateMouseEvent(mouse::Event::DragDrop, utils::Point(x,y), 0);
+				if(handled)
+					dragsource->Fire(mouse::Event::DragAccepted, utils::Point(x,y), 0);
+				else
+					dragsource->Fire(mouse::Event::DragCanceled, utils::Point(x,y), 0);
+
+				mouse::DragStateChanged();
+
+				dragsource=NULL;
+				dragsourcelayer=NULL;
+				isdragging=false;
+				dragtarget=NULL;
+			}
+
 			mouse::PressedButtons = mouse::PressedButtons & ~button;
 			if(mouse::PressedObject) {
 				mouse::PressedObject->Fire(mouse::Event::Up | button, utils::Point(x,y), 0);
@@ -424,5 +526,6 @@ namespace gge { namespace input {
 			Main.PropagateMouseEvent(mouse::Event::HScroll, utils::Point(x,y), amount);
 		}
 	}
+
 
 } }
