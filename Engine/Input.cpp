@@ -364,10 +364,9 @@ namespace gge { namespace input {
 
 
 
-		void BeginDrag(IDragObject &object, LayerBase &sourcelayer, mouse::Event::Target &source) {
+		void BeginDrag(IDragData &object, mouse::Event::Target &source) {
 			system::draggedobject=&object;
 			system::dragsource=&source;
-			system::dragsourcelayer=&sourcelayer;
 			system::isdragging=true;
 
 			DragStateChanged();
@@ -381,7 +380,6 @@ namespace gge { namespace input {
 				system::dragtarget->Fire(mouse::Event::DragOut, utils::Point(0,0), 0);
 
 			system::dragsource=NULL;
-			system::dragsourcelayer=NULL;
 			system::isdragging=false;
 			system::dragtarget=NULL;
 
@@ -392,7 +390,7 @@ namespace gge { namespace input {
 
 		utils::EventChain<> DragStateChanged;
 
-		IDragObject &GetDraggedObject() {
+		IDragData &GetDraggedObject() {
 			if(!system::draggedobject)
 				throw std::runtime_error("No object is being dragged.");
 
@@ -401,6 +399,22 @@ namespace gge { namespace input {
 
 		bool IsDragging() {
 			return system::dragsource!=NULL;
+		}
+
+		void DropDrag() {
+			if(system::isdragging) {
+				bool handled=system::dragtarget->Fire(mouse::Event::DragDrop, utils::Point(0,0), 0);
+				if(handled)
+					system::dragsource->Fire(mouse::Event::DragAccepted, utils::Point(0,0), 0);
+				else
+					system::dragsource->Fire(mouse::Event::DragCanceled, utils::Point(0,0), 0);
+
+				mouse::DragStateChanged();
+
+				system::dragsource=NULL;
+				system::isdragging=false;
+				system::dragtarget=NULL;
+			}
 		}
 
 	}
@@ -445,10 +459,9 @@ namespace gge { namespace input {
 
 		bool hoverfound=false;
 		bool isdragging=false;
-		mouse::IDragObject *draggedobject=NULL;
+		mouse::IDragData *draggedobject=NULL;
 		
 		mouse::Event::Target *dragsource=NULL;
-		LayerBase *dragsourcelayer=NULL;
 
 		mouse::Event::Target *dragtarget=NULL;
 
@@ -500,7 +513,6 @@ namespace gge { namespace input {
 				mouse::DragStateChanged();
 
 				dragsource=NULL;
-				dragsourcelayer=NULL;
 				isdragging=false;
 				dragtarget=NULL;
 			}

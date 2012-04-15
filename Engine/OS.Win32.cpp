@@ -1,5 +1,5 @@
 #ifdef WIN32
-
+#	pragma warning(disable: 4996)
 #	include "OS.h"
 #	include "input.h"
 #	include "Multimedia.h"
@@ -14,8 +14,11 @@
 //#	define _WIN32_WINNT 0x0500
 #	include <windows.h>
 #	include <shlobj.h>
+#	include <OleIdl.h>
 #	include <sys\stat.h>
 #	include <io.h>
+#	include "Pointer.h"
+#	include "Input.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -49,7 +52,7 @@
 
 	extern int Application(std::vector<std::string> &arguments);
 
-	int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+	int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 		Instance=hInstance;
 
 		std::vector<std::string> arguments;
@@ -93,6 +96,133 @@
 					DispatchMessage( &msg );
 				}
 			}
+
+			class GGEDropTarget : public IDropTarget
+			{
+			public:
+				GGEDropTarget() : m_lRefCount(0) {
+					object=&inlayer.MouseEvents.RegisterLambda([&]() -> bool {
+						this->dragfinished();
+						return true;
+					}, utils::Bounds2D(0,0,10000,10000), gge::input::mouse::Event::DragCanceled | gge::input::mouse::Event::DragAccepted);
+				}
+
+				// IUnknown implementation
+				HRESULT __stdcall QueryInterface (REFIID iid, void ** ppvObject) { return S_OK; }
+				ULONG   __stdcall AddRef (void) {return ++m_lRefCount;}
+				ULONG   __stdcall Release (void) {return --m_lRefCount;}
+
+				// IDropTarget implementation
+				HRESULT __stdcall DragEnter(IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
+					// does the dataobject contain data we want?
+					FORMATETC fileformat = { CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+					FORMATETC textformat = { CF_TEXT, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+
+					if(pDataObject->QueryGetData(&fileformat)==S_OK) {
+						gge::Pointers.Hide();
+						auto data=new gge::input::mouse::FileListDragData();
+
+						STGMEDIUM stgmed;
+						std::string name;
+						pDataObject->GetData(&fileformat, &stgmed);
+						DROPFILES *fdata=(DROPFILES*)GlobalLock(stgmed.hGlobal);
+
+
+						wchar_t *widetext=(wchar_t*)((char*)(fdata)+fdata->pFiles);
+
+						while(widetext[0]) {
+							name.resize(wcslen(widetext));
+
+							wcstombs(&name[0], widetext, wcslen(widetext)+1);
+
+							data->data.push_back(name);
+
+							widetext+=wcslen(widetext)+1;
+						}
+
+						GlobalUnlock(stgmed.hGlobal);
+						ReleaseStgMedium(&stgmed);
+
+
+						gge::input::mouse::BeginDrag(*data, *object);
+						*pdwEffect = DROPEFFECT_MOVE;
+					}
+					else if(pDataObject->QueryGetData(&textformat) == S_OK) {
+						gge::Pointers.Hide();
+						auto data=new gge::input::mouse::TextDragData();
+
+						STGMEDIUM stgmed;
+						std::string name;
+						pDataObject->GetData(&textformat, &stgmed);
+						char *text=(char*)GlobalLock(stgmed.hGlobal);
+
+						name=text;
+
+						data->data=name;
+
+
+						GlobalUnlock(stgmed.hGlobal);
+						ReleaseStgMedium(&stgmed);
+
+
+						gge::input::mouse::BeginDrag(*data, *object);
+						*pdwEffect = DROPEFFECT_COPY;
+					}
+					else {
+						*pdwEffect = DROPEFFECT_NONE;
+					}
+
+					return S_OK;
+				}
+				HRESULT __stdcall DragOver(DWORD grfKeyState, POINTL pt, DWORD * pdwEffect){
+					if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
+						auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
+
+						if(data.GetAction()==data.Move)
+							*pdwEffect=DROPEFFECT_MOVE;
+						else
+							*pdwEffect=DROPEFFECT_COPY;
+					}
+					else if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::TextDragData*>(&gge::input::mouse::GetDraggedObject())) {
+						*pdwEffect=DROPEFFECT_COPY;
+					}
+					else {
+						*pdwEffect=DROPEFFECT_NONE;
+					}
+
+					return S_OK;
+				}
+				HRESULT __stdcall DragLeave(void) {
+					gge::input::mouse::CancelDrag();
+					gge::Pointers.Show();
+					return S_OK;
+				}
+				HRESULT __stdcall Drop(IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect){
+					gge::input::mouse::DropDrag();
+					gge::Pointers.Show();
+
+					return S_OK;
+				}
+
+				// Constructor
+				~GGEDropTarget() {}
+
+			private:
+				void dragfinished() {
+					if(dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
+						auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
+
+						delete &data;
+					}
+				}
+
+				// Private member variables
+				long   m_lRefCount;
+				gge::input::mouse::Event::Target *object;
+				InputLayer inlayer;
+
+
+			};
 		}
 		namespace window {
 			utils::EventChain<> Activated	("WindowActivated" );
@@ -106,7 +236,7 @@
 			HWND curwin;
 			Point cursorlocation=Point(0,0);
 
-			LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+			LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if(quiting)
 					return NULL;
@@ -442,6 +572,8 @@
 				if(!FullScreen)
 					SetWindowPos(ret, 0, Left, Top, 0, 0,SWP_NOSIZE | SWP_NOZORDER);
 
+				OleInitialize(NULL);
+				RegisterDragDrop(ret, new system::GGEDropTarget());
 
 				return (WindowHandle)ret;
 			}
@@ -474,6 +606,7 @@
 
 				return r;
 			}
+
 		}
 	
 		void ShowPointer() {
@@ -703,6 +836,7 @@
 		const int keyboard::KeyCodes::F10		= VK_F10;
 		const int keyboard::KeyCodes::F11		= VK_F11;
 		const int keyboard::KeyCodes::F12		= VK_F12;
+
 	}
 
 }

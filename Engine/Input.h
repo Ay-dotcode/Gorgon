@@ -186,10 +186,45 @@ namespace gge { namespace input {
 		class HandlerBase;
 		class Event;
 
-		class IDragObject {
+		class IDragData {
 		public:
+			//Negative typeids are reserved for system, use positive
+			virtual int TypeID() const = 0;
+		};
 
-			virtual int TypeID() = 0;
+		template<class T_, int TID>
+		class SimpleDragData : public IDragData {
+		public:
+			SimpleDragData(const T_ &data=T_()) : data(data) { }
+
+			virtual int TypeID() const { return type; }
+
+			static const int type=TID;
+
+			T_ data;
+		};
+
+		typedef SimpleDragData<std::string, -1> TextDragData;
+		typedef SimpleDragData<std::string, -2> IndexDragData;
+
+
+		class FileListDragData : public gge::input::mouse::SimpleDragData<std::vector<std::string>, -3> {
+		public:
+			enum FileDragAction {
+				Move,
+				Copy
+			};
+
+			virtual void SetAction(FileDragAction action) {
+				this->action=action;
+			}
+
+			FileDragAction GetAction() const {
+				return action;
+			}
+
+		protected:
+			FileDragAction action;
 		};
 
 
@@ -354,12 +389,13 @@ namespace gge { namespace input {
 		/// If it is not accepted or there is no target, source will receive dragcancel event.
 		/// Any object is allowed to cancel drag operation.
 		///@object: Data for the dragged object
-		///@sourcelayer: Source layer of the event
 		///@sourceevent: Source mouse event object. This value is returned from the event register or set 
 		///              functions
-		void BeginDrag(IDragObject &object, gge::LayerBase &sourcelayer, mouse::Event::Target &sourceevent);
+		void BeginDrag(IDragData &object, mouse::Event::Target &sourceevent);
 
 		void CancelDrag();
+
+		void DropDrag();
 
 		bool IsDragging();
 
@@ -368,7 +404,7 @@ namespace gge { namespace input {
 		extern utils::EventChain<> DragStateChanged;
 
 		//throws runtime error on no object is being dragged
-		IDragObject &GetDraggedObject();
+		IDragData &GetDraggedObject();
 
 		class EventChain {
 			friend class EventProvider;
@@ -912,7 +948,7 @@ namespace gge { namespace input {
 		typename utils::count_arg<F_, 0, EventChain::Object &>::type EventChain::RegisterLambda( F_ fn, utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
 			return registr(
-				new EmptyLambdaHandler(fn,data),
+				new EmptyLambdaHandler(fn),
 				bounds,
 				eventmask
 				);
@@ -1073,10 +1109,9 @@ namespace gge { namespace input {
 
 		extern bool hoverfound;
 		extern mouse::Event::Target *dragsource;
-		extern LayerBase *dragsourcelayer;
 
 		extern mouse::Event::Target *dragtarget;
-		extern mouse::IDragObject *draggedobject;
+		extern mouse::IDragData *draggedobject;
 		extern bool isdragging;
 
 	}
