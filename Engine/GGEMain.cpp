@@ -208,6 +208,9 @@ namespace gge {
 	void GGEMain::ResizeWindow(utils::Size size) {
 		os::window::ResizeWindow(Window, size);
 
+		Width=size.Width;
+		Height=size.Height;
+
 		graphics::system::ResizeGL(size.Width, size.Height);
 
 		adjustlayers(size);
@@ -224,6 +227,11 @@ namespace gge {
 		);
 		if(layer.BoundingBox.GetSize()==from)
 			layer.BoundingBox.SetSize(to);
+	}
+
+	void GGEMain::CenterWindow() {
+		Rectangle r=os::window::UsableScreenMetrics();
+		MoveWindow(r.Left+(r.Width-Width)/2, r.Top+(r.Height-Height)/4);
 	}
 
 	//void GGEMain::InitializeWidgets() {

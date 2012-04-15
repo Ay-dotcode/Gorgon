@@ -272,7 +272,8 @@ namespace gge { namespace widgets {
 				*Toolbar,
 				*Menubar,
 				*ToolWindow,
-				*SettingsWindow
+				*SettingsWindow,
+				*Fullscreen
 			;
 			tabpanel::Blueprint *Tabpanel;
 			tabpanel::Blueprint *Tooltab;
@@ -292,6 +293,7 @@ namespace gge { namespace widgets {
 		} Others;
 
 		utils::Point WidgetSpacing;
+		utils::Margins ShadowMargins;
 
 
 

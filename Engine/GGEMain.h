@@ -142,6 +142,8 @@ namespace gge {
 				os::window::MoveWindow(Window, p);
 		}
 
+		void CenterWindow();
+
 		void ResizeWindow(int W, int H) {
 			ResizeWindow(utils::Size(W,H));
 		}

@@ -75,6 +75,8 @@ namespace gge { namespace widgets {
 
 		DataArray &infodata=wrr.Get<DataArray>(item);
 		WidgetSpacing=infodata.getPoint(0);
+		if(infodata.GetCount()>1)
+			ShadowMargins=infodata.getMargins(1);
 
 
 		DataArray &fontdata=wrr.Get<DataArray>(++item);
@@ -213,7 +215,7 @@ namespace gge { namespace widgets {
 		Panels.SettingsWindow	= GetWithDefault(folder, *wrr.file, 7, Panels.Window);
 		Panels.Tabpanel=dynamic_cast<tabpanel::Blueprint*>(folder->Get<LinkNodeResource>(8).GetTarget(*wrr.file));
 		Panels.Tooltab			= GetWithDefault(folder, *wrr.file, 9, Panels.Tabpanel);
-		Panels.Settingstab		= GetWithDefault(folder, *wrr.file, 10, Panels.Tabpanel);
+		Panels.Fullscreen		= GetWithDefault(folder, *wrr.file, 11, Panels.Panel);
 
 
 		folder=&wrr.Get<Folder>(++item);

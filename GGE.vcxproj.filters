@@ -972,6 +972,9 @@
     <ClInclude Include="Encoding\LZMA.h">
       <Filter>Encoding</Filter>
     </ClInclude>
+    <ClInclude Include="Widgets\FullscreenPanel.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">

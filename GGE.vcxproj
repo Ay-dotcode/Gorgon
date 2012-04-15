@@ -321,6 +321,7 @@
     <ClInclude Include="Widgets\Dialogs\Query.h" />
     <ClInclude Include="Widgets\Dialogs\TextInput.h" />
     <ClInclude Include="Widgets\DialogWindow.h" />
+    <ClInclude Include="Widgets\FullscreenPanel.h" />
     <ClInclude Include="Widgets\InlinePanel.h" />
     <ClInclude Include="Widgets\Interfaces\IButton.h" />
     <ClInclude Include="Widgets\Interfaces\ICheckbox.h" />

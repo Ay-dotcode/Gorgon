@@ -69,6 +69,7 @@ namespace gge { namespace widgets {
 		Main.ResizeEvent.RegisterLambda([&] {
 			if(WR.Pictures.Exists("background"))
 				WR.Pictures("background").DrawIn(bglayer);
+			TopLevel.Resize(gge::Main.BoundingBox.GetSize());
 		});
 
 		input::keyboard::Events.SetOrder(TopLevel.KeyboardToken,-1);

@@ -370,6 +370,7 @@ namespace gge { namespace input {
 			system::isdragging=true;
 
 			DragStateChanged();
+			system::ProcessMousePosition(gge::Main.getWindow());
 		}
 
 		void CancelDrag() {
