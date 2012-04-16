@@ -9,6 +9,7 @@
 #include "LinkNode.h"
 #include "FontTheme.h"
 #include "Pointer.h"
+#include "../Engine/OS.h"
 
 using namespace std;
 using namespace gge::utils;
@@ -17,6 +18,11 @@ namespace gge { namespace resource {
 
 	void File::load(const string &Filename, bool first) {
 		CheckAndDelete(root);
+
+		if(!os::filesystem::IsFileExists(Filename) && os::filesystem::IsFileExists(Filename+".lzma")) {
+			encoding::Lzma.Decode(ifstream(Filename+".lzma",ios::binary), ofstream(Filename,ios::binary));
+			os::filesystem::DeleteFile(Filename+".lzma");
+		}
 
 		char sgn[7];
 

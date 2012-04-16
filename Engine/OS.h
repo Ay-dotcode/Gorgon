@@ -52,9 +52,11 @@ namespace gge { namespace os {
 	namespace filesystem {
 		bool CreateDirectory(const std::string &name);
 
-		bool IsDirectoryExists(const std::string Path);
+		bool IsDirectoryExists(const std::string &Path);
 
-		bool IsFileExists(const std::string Filename);
+		bool IsFileExists(const std::string &Filename);
+
+		void DeleteFile(const std::string &Filename);
 
 		class DirectoryIterator {
 		public:

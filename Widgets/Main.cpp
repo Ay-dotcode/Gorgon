@@ -75,25 +75,88 @@ namespace gge { namespace widgets {
 		input::keyboard::Events.SetOrder(TopLevel.KeyboardToken,-1);
 	}
 
-	gge::resource::File & LoadWidgets(const std::string &filename) {
+	gge::resource::File & loadwidgets(const std::string &filename, bool prepare=true) {
 		utils::CheckAndDelete(WidgetFile);
 		WidgetFile=new gge::resource::File;
 		RegisterLoaders(WidgetFile);
 		WidgetFile->LoadFile(filename);
-		WidgetFile->Prepare();
 
-		if(WR.Pictures.Exists("background"))
-			WR.Pictures("background").DrawIn(bglayer);
+		if(prepare)
+			WidgetFile->Prepare();
 
 
 		return *WidgetFile;
 	}
 
+	gge::resource::File & LoadWidgets(const std::string &filename) {
+		return loadwidgets(filename, true);
+	}
+
+
+	gge::resource::File & loadwidgets(bool prepare=true) {
+		std::string filename;
+		utils::CheckAndDelete(WidgetFile);
+		WidgetFile=new gge::resource::File;
+		RegisterLoaders(WidgetFile);
+
+		std::string theme="";
+		if(os::filesystem::IsFileExists(os::user::GetDocumentsPath()+"/theme.setting")) {
+			std::ifstream themefile(os::user::GetDocumentsPath()+"theme.setting");
+			std::getline(themefile, theme);
+		}
+
+		std::vector<std::string> filenamelist;
+		filenamelist.push_back(theme+".ui.wgt");
+		filenamelist.push_back("ui.wgt");
+		filenamelist.push_back(os::user::GetDocumentsPath()+"/Gorgon/"+theme+".ui.wgt");
+		filenamelist.push_back(os::GetAppDataPath()+"/Gorgon/"+theme+".ui.wgt");
+		filenamelist.push_back("default.ui.wgt");
+		filenamelist.push_back(os::user::GetDocumentsPath()+"/Gorgon/default.ui.wgt");
+		filenamelist.push_back(os::GetAppDataPath()+"/Gorgon/default.ui.wgt");
+
+		for(auto it=filenamelist.begin();it!=filenamelist.end();++it) {
+			if(os::filesystem::IsFileExists(*it) || os::filesystem::IsFileExists(*it+".lzma")) {
+				filename=*it;
+				break;
+			}
+		}
+
+		if(filename=="") {
+			throw std::runtime_error("Cannot find UI file");
+		}
+
+		WidgetFile->LoadFile(filename);
+		if(prepare)
+			WidgetFile->Prepare();
+
+		return *WidgetFile;
+	}
+
+	gge::resource::File & LoadWidgets() {
+		return loadwidgets(true);
+	}
+
 	void InitializeApplication(const std::string &systemname, const std::string &windowtitle, const std::string &uifile, int width, int height, os::IconHandle icon) {
+		loadwidgets(uifile, false);
 		Main.Setup(systemname, width, height);
 		Main.InitializeAll(windowtitle, icon);
 		Initialize(Main);
-		LoadWidgets(uifile);
+
+		WidgetFile->Prepare();
+
+		if(WR.Pictures.Exists("background"))
+			WR.Pictures("background").DrawIn(bglayer);
+	}
+
+	void InitializeApplication(const std::string &systemname, const std::string &windowtitle, int width, int height, os::IconHandle icon) {
+		loadwidgets(false);
+		Main.Setup(systemname, width, height);
+		Main.InitializeAll(windowtitle, icon);
+		Initialize(Main);
+		WidgetFile->Prepare();
+
+		if(WR.Pictures.Exists("background"))
+			WR.Pictures("background").DrawIn(bglayer);
 	}
 
 

@@ -4,6 +4,7 @@
 #	include "input.h"
 #	include "Multimedia.h"
 #	include "..\Utils\Point2D.h"
+#	include <stdio.h>
 
 
 	using namespace gge::utils;
@@ -43,6 +44,7 @@
 #	endif
 
 #	undef CreateDirectory
+#	undef DeleteFile
 
 	//extern "C" {
 	//	__declspec(dllimport) unsigned long __stdcall timeGetTime(void);
@@ -632,7 +634,8 @@
 			return (gge::os::IconHandle)LoadIcon(Instance, (LPCTSTR)ID);
 		}
 		namespace input {
-			utils::Point getMousePosition(WindowHandle Window) {
+			utils::Point getMousePosition(WindowHandle Window)
+			{
 				POINT pnt;
 				RECT winrect;
 				utils::Point ret;
@@ -760,7 +763,7 @@
 				return dirinfo.valid;
 			}
 
-			bool IsDirectoryExists(const std::string Filename) {
+			bool IsDirectoryExists(const std::string &Filename) {
 				if ( _access(Filename.c_str(), 0) )
 					return false;
 
@@ -774,7 +777,7 @@
 					return false;
 			}
 
-			bool IsFileExists(const std::string Filename) {
+			bool IsFileExists(const std::string &Filename) {
 				if ( _access(Filename.c_str(), 0) )
 					return false;
 
@@ -787,7 +790,11 @@
 				else
 					return false;
 			}
-	}
+
+			void DeleteFile(const std::string &Filename) {
+				remove(Filename.c_str());
+			}
+		}
 
 		std::string GetAppDataPath() {
 			CHAR my_documents[MAX_PATH];
