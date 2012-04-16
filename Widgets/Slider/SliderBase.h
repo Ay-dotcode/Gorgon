@@ -501,6 +501,14 @@ namespace gge { namespace widgets {
 				return passivemode;
 			}
 
+			void instantsetvalue(T_ value) {
+				if(value<minimum) value=minimum;
+				if(value>maximum) value=maximum;
+
+				value=T_(utils::Round(float(value)/steps)*steps);
+				smoothvalue=floattype(value);
+				Draw();
+			}
 			//will not call value_changed
 			//external use only, use setvalue_smooth for internal use
 			void setvalue(T_ value) {

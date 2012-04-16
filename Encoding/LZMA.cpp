@@ -162,7 +162,7 @@ namespace gge { namespace encoding {
 
 			if (status == LZMA_STATUS_FINISHED_WITH_MARK)
 				break;
-			if(status==LZMA_STATUS_NEEDS_MORE_INPUT) {
+			if(status==LZMA_STATUS_NEEDS_MORE_INPUT && destLen==0) {
 				throw std::runtime_error("Extraction failed, out of data.");
 			}
 		}

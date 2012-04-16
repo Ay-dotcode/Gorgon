@@ -83,6 +83,11 @@
 		}
 		unsigned int GetTime() { return timeGetTime(); }
 
+		void RunInNewThread(int(__stdcall *fn)(void *), void *data) {
+			DWORD threadid;
+			CreateThread(NULL, 0, (unsigned long (__stdcall *)(void *))fn, data, 0, &threadid);
+		}
+
 		namespace system {
 			CursorHandle defaultcursor;
 			bool pointerdisplayed;

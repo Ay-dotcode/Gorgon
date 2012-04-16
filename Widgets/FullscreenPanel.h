@@ -29,6 +29,7 @@ namespace gge { namespace widgets {
 		using WidgetBase::Resize;
 
 		virtual void Resize(utils::Size Size) {
+			if(Size==WidgetBase::size) return;
 			utils::Rectangle r=os::window::UsableScreenMetrics();
 
 			if(Size.Width>r.Width)
@@ -37,6 +38,8 @@ namespace gge { namespace widgets {
 				Size.Height=r.Height;
 
 			Main.ResizeWindow(Size);
+			WidgetBase::size=Size;
+			ContainerBase::size=Size;
 
 			Move(r.Left+(r.Width-Size.Width)/2, r.Top+(r.Height-Size.Height)/4);
 			Draw();
@@ -53,6 +56,10 @@ namespace gge { namespace widgets {
 		virtual void Move(utils::Point Location) {
 			gge::Main.MoveWindow(Location);
 			location=Location;
+		}
+
+		virtual utils::Size GetUsableSize() {
+			return WidgetBase::size-utils::Size(Base::getpadding().TotalX(), Base::getpadding().TotalY());
 		}
 
 		utils::Property<FullscreenPanel, utils::Margins> Padding;

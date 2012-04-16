@@ -6,6 +6,7 @@
 #include "../Textbox/TextboxBase.h"
 #include "../Listbox/ListboxBase.h"
 #include "../Window.h"
+#include "../FullscreenPanel.h"
 
 
 namespace gge { namespace widgets {
@@ -144,8 +145,12 @@ namespace gge { namespace widgets {
 			}
 		}
 
-		if(dynamic_cast<Window*>(attachedto) && autosizewindows) {
+		if(dynamic_cast<Window*>(attachedto) && autosizewindows && y>0) {
 			Window *w=dynamic_cast<Window*>(attachedto);
+			w->SetHeight(y+w->GetHeight()-w->GetUsableHeight()+1);
+		}
+		if(dynamic_cast<FullscreenPanel*>(attachedto) && autosizewindows && y>0) {
+			FullscreenPanel *w=dynamic_cast<FullscreenPanel*>(attachedto);
 			w->SetHeight(y+w->GetHeight()-w->GetUsableHeight()+1);
 		}
 	}

@@ -1,6 +1,8 @@
 #include "BitmapFont.h"
 #include "File.h"
 #include "..\Engine\Graphics.h"
+#include <algorithm>
+#include <ppl.h>
 
 #ifndef MAX_CHAR_DETECTS
 #define MAX_CHAR_DETECTS	10
@@ -732,16 +734,16 @@ namespace gge { namespace resource {
 		font->VerticalSpacing=VerticalSpacing;
 		font->Baseline=Baseline+windowsize;
 
-		for(SortedCollection<Base>::Iterator it=Subitems.First();it.IsValid();it.Next()) {
-			Image *img=dynamic_cast<Image*>(it.CurrentPtr());
+		for_each(Subitems.begin(), Subitems.end(),[&](Base &it) {
+			Image *img=dynamic_cast<Image*>(&it);
 
 			if(img) {
 				font->Subitems.Add(img->Blur(amount, windowsize), font->Subitems.HighestOrder()+1);
 			}
 			else {
-				font->Subitems.Add(*it, it.GetKey());
+				font->Subitems.Add(it);
 			}
-		}
+		});
 
 		for(int i=0;i<256;i++) {
 			int loc=Subitems.FindLocation(Characters[i]);
@@ -760,8 +762,13 @@ namespace gge { namespace resource {
 		this->file=&file;
 		
 		if(!noshadows) {
-			Blur(1);
-			Blur(1.6f);
+			auto task1= Concurrency::make_task([&]{Blur(1.f);});
+			auto task2= Concurrency::make_task([&]{Blur(1.6f);});
+
+			Concurrency::structured_task_group tasks;
+
+			tasks.run(task1);
+			tasks.run_and_wait(task2);
 		}
 	}
 

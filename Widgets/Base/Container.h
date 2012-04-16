@@ -381,7 +381,12 @@ namespace gge { namespace widgets {
 			Reorganize();
 		}
 		void SetOrganizer(Organizer *organizer) { if(organizer) SetOrganizer(*organizer); else RemoveOrganizer(); }
-		virtual void RemoveOrganizer() { if(Organizer) Organizer->SetAttached(NULL); Organizer=NULL; }
+		virtual void RemoveOrganizer() { 
+			auto org=Organizer;
+			Organizer=NULL;
+			if(org) 
+				org->SetAttached(NULL);  
+		}
 
 
 		//*Might* be useful

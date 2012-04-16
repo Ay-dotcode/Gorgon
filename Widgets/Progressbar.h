@@ -30,6 +30,10 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
+		void SetValue(const T_ &value) {
+			Base::instantsetvalue(value);
+		}
+
 		utils::NumericProperty<Progressbar, int> AnimationDuration;
 
 	protected:

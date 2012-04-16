@@ -116,6 +116,10 @@ namespace gge { namespace utils {
 			return IsValid();
 		}
 
+		T_ &operator [](distance_type ind) const {
+			return *this+ind;
+		}
+
 		////Compares two iterators if they point to the same item
 		bool Compare(const I_ &iterator) const {
 			return this->iterator().compare(iterator);

@@ -33,6 +33,8 @@ namespace gge { namespace os {
 	std::string GetClipbardText();
 	void SetClipboardText(const std::string &text);
 
+	void RunInNewThread(int(__stdcall *fn)(void *), void *data);
+
 	namespace system {
 		////This function processes OS messages
 		void ProcessMessage();
