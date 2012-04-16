@@ -108,6 +108,12 @@ namespace gge { namespace widgets {
 		std::vector<std::string> filenamelist;
 		filenamelist.push_back(theme+".ui.wgt");
 		filenamelist.push_back("ui.wgt");
+		filenamelist.push_back(os::user::GetDocumentsPath()+"/Gorgon/"+theme+".ui-"+UIFileRevision+".wgt");
+		filenamelist.push_back(os::GetAppDataPath()+"/Gorgon/"+theme+".ui-"+UIFileRevision+".wgt");
+		filenamelist.push_back("default.ui-"+UIFileRevision+".wgt");
+		filenamelist.push_back(os::user::GetDocumentsPath()+"/Gorgon/default.ui-"+UIFileRevision+".wgt");
+		filenamelist.push_back(os::GetAppDataPath()+"/Gorgon/default.ui-"+UIFileRevision+".wgt");
+
 		filenamelist.push_back(os::user::GetDocumentsPath()+"/Gorgon/"+theme+".ui.wgt");
 		filenamelist.push_back(os::GetAppDataPath()+"/Gorgon/"+theme+".ui.wgt");
 		filenamelist.push_back("default.ui.wgt");

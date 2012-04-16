@@ -734,16 +734,24 @@ namespace gge { namespace resource {
 		font->VerticalSpacing=VerticalSpacing;
 		font->Baseline=Baseline+windowsize;
 
-		for_each(Subitems.begin(), Subitems.end(),[&](Base &it) {
-			Image *img=dynamic_cast<Image*>(&it);
+		vector<Base*> newitems;
+		newitems.resize(Subitems.GetCount());
+
+		Concurrency::parallel_for(0,Subitems.GetCount(), [&](int ind) {
+
+			Image *img=dynamic_cast<Image*>(&Subitems[ind]);
 
 			if(img) {
-				font->Subitems.Add(img->Blur(amount, windowsize), font->Subitems.HighestOrder()+1);
+				newitems[ind]=&img->Blur(amount, windowsize);
 			}
 			else {
-				font->Subitems.Add(it);
+				newitems[ind]=&Subitems[ind];
 			}
 		});
+
+		for(int i=0;i<Subitems.GetCount();i++) {
+			font->Subitems.Add(newitems[i], font->Subitems.HighestOrder()+1);
+		}
 
 		for(int i=0;i<256;i++) {
 			int loc=Subitems.FindLocation(Characters[i]);
@@ -760,15 +768,10 @@ namespace gge { namespace resource {
 	void BitmapFont::Prepare(GGEMain &main, File &file) {
 		Base::Prepare(main, file);
 		this->file=&file;
-		
+
 		if(!noshadows) {
-			auto task1= Concurrency::make_task([&]{Blur(1.f);});
-			auto task2= Concurrency::make_task([&]{Blur(1.6f);});
-
-			Concurrency::structured_task_group tasks;
-
-			tasks.run(task1);
-			tasks.run_and_wait(task2);
+			Blur(1.f);
+			Blur(1.6f);
 		}
 	}
 

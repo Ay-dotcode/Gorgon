@@ -12,6 +12,8 @@
 
 namespace gge { namespace widgets {
 
+	static const std::string UIFileRevision="323";
+
 	void RegisterLoaders(resource::File &File);
 	inline void RegisterLoaders(resource::File *File) { RegisterLoaders(*File); }
 
