@@ -46,6 +46,8 @@ namespace gge { namespace effects {
 
 		virtual void draw(graphics::ImageTarget2D& Target, int X, int Y) const;
 
+		void drawrotation(float ang, graphics::ImageTarget2D & Layer, int X, int Y) const;
+
 		void SetProgress(int progress) {
 			if(Controller)
 				Controller->SetProgress(progress);

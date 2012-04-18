@@ -20,6 +20,8 @@ namespace gge { namespace input {
 		utils::Point	PressedPoint	= utils::Point(0,0);
 		utils::Point	CurrentPoint	= utils::Point(0,0);
 
+		bool HasDragTarget() { return system::dragtarget!=NULL;  }
+		
 		const int DragDistance			= 5;//px
 
 
@@ -386,8 +388,6 @@ namespace gge { namespace input {
 
 			DragStateChanged();
 		}
-
-		bool HasDragTarget() { return system::dragtarget!=NULL; }
 
 		utils::EventChain<> DragStateChanged;
 

@@ -143,6 +143,7 @@ namespace gge { namespace widgets {
 	}
 
 	void InitializeApplication(const std::string &systemname, const std::string &windowtitle, const std::string &uifile, int width, int height, os::IconHandle icon) {
+		Main.InitializeResource();
 		loadwidgets(uifile, false);
 		Main.Setup(systemname, width, height);
 		Main.InitializeAll(windowtitle, icon);
@@ -155,6 +156,7 @@ namespace gge { namespace widgets {
 	}
 
 	void InitializeApplication(const std::string &systemname, const std::string &windowtitle, int width, int height, os::IconHandle icon) {
+		Main.InitializeResource();
 		loadwidgets(false);
 		Main.Setup(systemname, width, height);
 		Main.InitializeAll(windowtitle, icon);

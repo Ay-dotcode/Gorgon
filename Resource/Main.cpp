@@ -4,7 +4,8 @@
 namespace gge { namespace resource {
 
 	void Init(GGEMain &Main) {
-		NullImage::ni=new NullImage();
+		if(!NullImage::ni)
+			NullImage::ni=new NullImage();
 	}
 
 }}

@@ -41,6 +41,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>./</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>./</OutDir>
@@ -53,12 +54,13 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS</PreprocessorDefinitions>
       <DisableSpecificWarnings>4355</DisableSpecificWarnings>
       <BufferSecurityCheck>true</BufferSecurityCheck>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;External\OpenSSL\libeay32.lib;External\OpenSSL\ssleay32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>
@@ -90,10 +92,85 @@
     <Lib>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;External\OpenSSL\libeay32.lib;External\OpenSSL\ssleay32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\aes.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\asn1.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\asn1t.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\asn1_mac.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\bio.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\blowfish.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\bn.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\buffer.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\camellia.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\cast.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\cmac.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\cms.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\comp.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\conf.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\conf_api.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\crypto.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\des.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\des_old.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\dh.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\dsa.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\dso.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\dtls1.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ebcdic.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ec.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ecdh.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ecdsa.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\engine.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\err.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\evp.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\e_os2.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\hmac.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\idea.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\krb5_asn.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\kssl.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\lhash.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\md4.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\md5.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\mdc2.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\modes.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\objects.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\obj_mac.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ocsp.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\opensslconf.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\opensslv.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ossl_typ.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\pem.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\pem2.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\pkcs12.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\pkcs7.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\pqueue.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\rand.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\rc2.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\rc4.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ripemd.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\rsa.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\safestack.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\seed.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\sha.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\srp.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\srtp.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ssl.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ssl2.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ssl23.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ssl3.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\stack.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\symhacks.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\tls1.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ts.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\txt_db.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ui.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\ui_compat.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\whrlpool.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\x509.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\x509v3.h" />
+    <ClInclude Include="C:\tmp_open_ssl\include\openssl\x509_vfy.h" />
     <ClInclude Include="Effects\CountingText.h" />
     <ClInclude Include="Effects\Flip.h" />
     <ClInclude Include="Effects\LayerMover.h" />
@@ -120,6 +197,15 @@
     <ClInclude Include="Engine\Sound.h" />
     <ClInclude Include="Engine\VideoClip.h" />
     <ClInclude Include="Engine\Wave.h" />
+    <ClInclude Include="External\cURL\curl.h" />
+    <ClInclude Include="External\cURL\curlbuild.h" />
+    <ClInclude Include="External\cURL\curlrules.h" />
+    <ClInclude Include="External\cURL\curlver.h" />
+    <ClInclude Include="External\cURL\easy.h" />
+    <ClInclude Include="External\cURL\mprintf.h" />
+    <ClInclude Include="External\cURL\multi.h" />
+    <ClInclude Include="External\cURL\stdcheaders.h" />
+    <ClInclude Include="External\cURL\typecheck-gcc.h" />
     <ClInclude Include="External\JPEG\jconfig.h" />
     <ClInclude Include="External\JPEG\jerror.h" />
     <ClInclude Include="External\JPEG\jmorecfg.h" />
@@ -252,6 +338,7 @@
     <ClInclude Include="External\zlib\zconf.h" />
     <ClInclude Include="External\zlib\zlib.h" />
     <ClInclude Include="External\zlib\zutil.h" />
+    <ClInclude Include="Network\HTTP.h" />
     <ClInclude Include="Resource\Animation.h" />
     <ClInclude Include="Resource\BitmapFont.h" />
     <ClInclude Include="Resource\DataArray.h" />
@@ -810,6 +897,7 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
+    <ClCompile Include="Network\HTTP.cpp" />
     <ClCompile Include="Resource\Animation.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/AnimationResource.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/AnimationResource.obj</ObjectFileName>
