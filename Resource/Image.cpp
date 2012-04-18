@@ -496,15 +496,24 @@ errorout:
 		Resize(width,height,graphics::ColorMode::ARGB);
 
 		//currently only RGB is supported
-		if(pChannels!=3)
-			return Image::UnimplementedType;
-
-		for(unsigned y=0;y<height;y++) {
-			for(unsigned x=0;x<width;x++) {
-				Data[(x+y*width)*4+2]=row_pointers[y][x*3];
-				Data[(x+y*width)*4+1]=row_pointers[y][x*3+1];
-				Data[(x+y*width)*4+0]=row_pointers[y][x*3+2];
-				Data[(x+y*width)*4+3]=0xff;
+		if(pChannels==4) {
+			for(unsigned y=0;y<height;y++) {
+				for(unsigned x=0;x<width;x++) {
+					Data[(x+y*width)*4+2]=row_pointers[y][x*4];
+					Data[(x+y*width)*4+1]=row_pointers[y][x*4+1];
+					Data[(x+y*width)*4+0]=row_pointers[y][x*4+2];
+					Data[(x+y*width)*4+3]=row_pointers[y][x*4+3];
+				}
+			}
+		}
+		else {
+			for(unsigned y=0;y<height;y++) {
+				for(unsigned x=0;x<width;x++) {
+					Data[(x+y*width)*4+2]=row_pointers[y][x*3];
+					Data[(x+y*width)*4+1]=row_pointers[y][x*3+1];
+					Data[(x+y*width)*4+0]=row_pointers[y][x*3+2];
+					Data[(x+y*width)*4+3]=0xff;
+				}
 			}
 		}
 		
