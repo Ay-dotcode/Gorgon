@@ -23,7 +23,7 @@ extern "C" {
 		////Handle for Device Context
 		typedef unsigned long	DeviceHandle;
 
-#define	threadfncall __stdcall
+#		define	threadfncall __stdcall
 
 		namespace filesystem {
 			class osdirenum {

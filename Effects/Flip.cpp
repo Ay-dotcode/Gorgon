@@ -15,28 +15,125 @@ namespace gge { namespace effects {
 				Front->Draw(Layer, X, Y);
 			}
 		} else {
-			float progress=(float)GetProgress();
-			float ang;
-
-			ang=(progress/ETA)*PI;
-			drawrotation(ang, Layer, X, Y);
-
-			//!Fix me
-			if(dynamic_cast<ColorizableImageTarget2D*>(&Layer)) {
-				ColorizableImageTarget2D &l=dynamic_cast<ColorizableImageTarget2D&>(Layer);
-				auto c=l.GetCurrentColor();
-
-				for(int a=100;a>0;a-=20) {
-					l.SetCurrentColor(RGBint(a,0xff,0xff,0xff));
-					progress-=10;
-					if(progress>0) {
-						ang=(progress/ETA)*PI;
-						drawrotation(ang, Layer, X, Y);
-					}
-				}
-
-				l.SetCurrentColor(c);
+			float ang=((float)GetProgress()/ETA)*PI;
+			bool rev=false;
+			if(ang>PI/2) {
+				ang=PI-ang;
+				rev=true;
 			}
+
+			RectangularGraphic2D *img=NULL;
+			int cx,cy;
+			if(Backside ^ rev) {
+				img=Back;
+			} else {
+				img=Front;
+			}
+			if(img==NULL)
+				return;
+
+			cx=img->GetWidth();
+			cy=img->GetHeight();
+
+			FlipSide cside=Side;
+			if(Backside ^ rev) {
+				switch(Side) {
+					case Top:
+						cside=Bottom;
+						break;
+					case Left:
+						cside=Right;
+						break;
+					case Bottom:
+						cside=Top;
+						break;
+					case Right:
+						cside=Left;
+						break;
+				}
+			}
+
+			Point pivot;
+			if(Backside)
+				pivot=PivotBack;
+			else
+				pivot=PivotFront;
+
+			int x1=0,x2=cx,x3=cx,x4=0,y1=0,y2=0,y3=cy,y4=cy;
+			float tmp;
+
+			switch(cside) {
+				case Top:
+					tmp=(sin(ang)*cx)*Perspective;
+
+					y1-=pivot.y;
+					y3-=pivot.y;
+	
+					y1*=cosf(ang);
+					y3*=cosf(ang);
+
+					y1+=pivot.y;
+					y3+=pivot.y;
+					y2=y1;
+					y4=y3;
+
+					x3+=tmp;
+					x4-=tmp;
+					break;
+				case Left:
+					tmp=(sin(ang)*cy)*Perspective;
+
+					x1-=pivot.x;
+					x2-=pivot.x;
+
+					x1*=cosf(ang);
+					x2*=cosf(ang);
+
+					x1+=pivot.x;
+					x2+=pivot.x;
+					x4=x1;
+					x3=x2;
+
+					y2-=tmp;
+					y3+=tmp;
+					break;
+				case Bottom:
+					tmp=(sin(ang)*cx)*Perspective;
+
+					y1-=pivot.y;
+					y3-=pivot.y;
+	
+					y1*=cosf(ang);
+					y3*=cosf(ang);
+
+					y1+=pivot.y;
+					y3+=pivot.y;
+					y2=y1;
+					y4=y3;
+
+					x1-=tmp;
+					x2+=tmp;
+					break;
+				case Right:
+					tmp=(sin(ang)*cy)*Perspective;
+
+					x1-=pivot.x;
+					x2-=pivot.x;
+
+					x1*=cosf(ang);
+					x2*=cosf(ang);
+
+					x1+=pivot.x;
+					x2+=pivot.x;
+					x4=x1;
+					x3=x2;
+
+					y1-=tmp;
+					y4+=tmp;
+					break;
+			}
+			
+			img->Draw(Layer,x1+X,y1+Y,x2+X,y2+Y,x3+X,y3+Y,x4+X,y4+Y);
 		}
 	}
 
@@ -94,127 +191,6 @@ namespace gge { namespace effects {
 		}
 
 		return animation::ProgressResult::None;
-	}
-
-	void FlipEffect::drawrotation(float ang, ImageTarget2D & Layer, int X, int Y) const {
-		bool rev=false;
-		if(ang>PI/2) {
-			ang=PI-ang;
-			rev=true;
-		}
-
-		RectangularGraphic2D *img=NULL;
-		int cx,cy;
-		if(Backside ^ rev) {
-			img=Back;
-		} else {
-			img=Front;
-		}
-		if(img==NULL)
-			return;
-
-		cx=img->GetWidth();
-		cy=img->GetHeight();
-
-		FlipSide cside=Side;
-		if(Backside ^ rev) {
-			switch(Side) {
-			case Top:
-				cside=Bottom;
-				break;
-			case Left:
-				cside=Right;
-				break;
-			case Bottom:
-				cside=Top;
-				break;
-			case Right:
-				cside=Left;
-				break;
-			}
-		}
-
-		Point pivot;
-		if(Backside)
-			pivot=PivotBack;
-		else
-			pivot=PivotFront;
-
-		int x1=0,x2=cx,x3=cx,x4=0,y1=0,y2=0,y3=cy,y4=cy;
-		float tmp;
-
-		switch(cside) {
-		case Top:
-			tmp=(sin(ang)*cx)*Perspective;
-
-			y1-=pivot.y;
-			y3-=pivot.y;
-
-			y1*=cosf(ang);
-			y3*=cosf(ang);
-
-			y1+=pivot.y;
-			y3+=pivot.y;
-			y2=y1;
-			y4=y3;
-
-			x3+=tmp;
-			x4-=tmp;
-			break;
-		case Left:
-			tmp=(sin(ang)*cy)*Perspective;
-
-			x1-=pivot.x;
-			x2-=pivot.x;
-
-			x1*=cosf(ang);
-			x2*=cosf(ang);
-
-			x1+=pivot.x;
-			x2+=pivot.x;
-			x4=x1;
-			x3=x2;
-
-			y2-=tmp;
-			y3+=tmp;
-			break;
-		case Bottom:
-			tmp=(sin(ang)*cx)*Perspective;
-
-			y1-=pivot.y;
-			y3-=pivot.y;
-
-			y1*=cosf(ang);
-			y3*=cosf(ang);
-
-			y1+=pivot.y;
-			y3+=pivot.y;
-			y2=y1;
-			y4=y3;
-
-			x1-=tmp;
-			x2+=tmp;
-			break;
-		case Right:
-			tmp=(sin(ang)*cy)*Perspective;
-
-			x1-=pivot.x;
-			x2-=pivot.x;
-
-			x1*=cosf(ang);
-			x2*=cosf(ang);
-
-			x1+=pivot.x;
-			x2+=pivot.x;
-			x4=x1;
-			x3=x2;
-
-			y1-=tmp;
-			y4+=tmp;
-			break;
-		}
-
-		img->Draw(Layer,x1+X,y1+Y,x2+X,y2+Y,x3+X,y3+Y,x4+X,y4+Y);
 	}
 
 
