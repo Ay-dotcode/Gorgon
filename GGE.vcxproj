@@ -60,7 +60,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;External\OpenSSL\libeay32.lib;External\OpenSSL\ssleay32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>
@@ -92,7 +92,7 @@
     <Lib>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;External\OpenSSL\libeay32.lib;External\OpenSSL\ssleay32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
