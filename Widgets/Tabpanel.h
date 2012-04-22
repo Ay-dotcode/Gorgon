@@ -58,7 +58,7 @@ namespace gge { namespace widgets {
 
 		virtual void draw() { }
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key);
+		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key);
 
 
 		tabpanel::Panel &Add(const std::string &title) {

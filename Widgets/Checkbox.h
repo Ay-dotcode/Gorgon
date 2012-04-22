@@ -14,11 +14,11 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Checkbox, Autosize),
 			INIT_PROPERTY(Checkbox, TextWrap),
 			INIT_PROPERTY(Checkbox, Accesskey),
-			changeevent("ChangeEvent", this),
+			ChangeEvent("ChangeEvent", this),
 			BiasToChecked(true)
 		{
 			Text=text;
-			changeevent.DoubleLink(ICheckbox::changeevent);
+			ChangeEvent.DoubleLink(ICheckbox::ChangeEvent);
 			Autosize=AutosizeModes::Autosize;
 
 			if(WR.Checkbox)
@@ -30,13 +30,13 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Checkbox, Autosize),
 			INIT_PROPERTY(Checkbox, TextWrap),
 			INIT_PROPERTY(Checkbox, Accesskey),
-			changeevent("ClickEvent", this),
+			ChangeEvent("ClickEvent", this),
 			BiasToChecked(true)
 		{
 			Text=text;
-			changeevent.DoubleLink(ICheckbox::clickevent);
+			ChangeEvent.DoubleLink(ICheckbox::ChangeEvent);
 
-			changeevent.Register(fn);
+			ChangeEvent.Register(fn);
 			Autosize=AutosizeModes::Autosize;
 
 			if(WR.Checkbox)
@@ -57,7 +57,7 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
-		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
+		virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			//handle mouse events
 
 			if(input::mouse::Event::isDown(event)) {
@@ -80,16 +80,16 @@ namespace gge { namespace widgets {
 			case input::mouse::Event::Left_Click:
 				if(IsEnabled()) {
 					change();
-					changeevent();
+					ChangeEvent();
 				}
 
 				break;
 			}
 
-			return WidgetBase::MouseEvent(event, location, amount);
+			return WidgetBase::MouseHandler(event, location, amount);
 		}
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			if(!IsEnabled())
 				return false;
 
@@ -100,7 +100,7 @@ namespace gge { namespace widgets {
 			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Up && !input::keyboard::Modifier::Check()) {
 				Base::up();
 				change();
-				changeevent();
+				ChangeEvent();
 
 				return true;
 			}
@@ -115,10 +115,13 @@ namespace gge { namespace widgets {
 
 			Base::click();
 			change();
-			changeevent();
+			ChangeEvent();
 
 			return true;
 		}
+
+		utils::EventChain<Checkbox> ChangeEvent;
+
 
 		utils::Property<Checkbox, AutosizeModes::Type> Autosize;
 		utils::NumericProperty<Checkbox, input::keyboard::Key> Accesskey;
@@ -156,7 +159,6 @@ namespace gge { namespace widgets {
 			}
 		}
 
-		utils::EventChain<Checkbox> changeevent;
 
 		virtual void setState(const CheckboxState::Type &state) {
 			switch(state) {

@@ -23,7 +23,7 @@ namespace gge { namespace widgets {
 	class ICheckbox {
 	public:
 
-		ICheckbox() : changeevent("ChangeEvent", this),
+		ICheckbox() : ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(ICheckbox,Text),
 			INIT_PROPERTY(ICheckbox,State)
 		  { }
@@ -41,7 +41,7 @@ namespace gge { namespace widgets {
 			  return State!=CheckboxState::Unchecked;
 		  }
 
-		  utils::EventChain<ICheckbox> &ChangeEvent() { return changeevent; }
+		  utils::EventChain<ICheckbox> ChangeEvent;
 
 	protected:
 		//REQUIRED
@@ -50,7 +50,6 @@ namespace gge { namespace widgets {
 		virtual void setText(const std::string &text) = 0;
 		virtual std::string getText() const = 0;
 
-		utils::EventChain<ICheckbox> changeevent;
 	};
 
 

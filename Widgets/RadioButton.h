@@ -16,10 +16,10 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(RadioButton, Autosize),
 			INIT_PROPERTY(RadioButton, TextWrap),
 			INIT_PROPERTY(RadioButton, Accesskey),
-			changeevent("ChangeEvent", this)
+			ChangeEvent("ChangeEvent", this)
 		{
 			Text=text;
-			changeevent.DoubleLink(IOption::changeevent);
+			ChangeEvent.DoubleLink(IOption::ChangeEvent);
 			Autosize=AutosizeModes::Autosize;
 
 			if(WR.RadioButton)
@@ -31,7 +31,7 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
+		virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			//handle mouse events
 
 			if(input::mouse::Event::isDown(event)) {
@@ -59,10 +59,10 @@ namespace gge { namespace widgets {
 				break;
 			}
 
-			return WidgetBase::MouseEvent(event, location, amount);
+			return WidgetBase::MouseHandler(event, location, amount);
 		}
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			if(!IsEnabled())
 				return false;
 
@@ -73,7 +73,7 @@ namespace gge { namespace widgets {
 			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Up && !input::keyboard::Modifier::Check()) {
 				Base::up();
 				change();
-				changeevent();
+				ChangeEvent();
 
 				return true;
 			}
@@ -103,9 +103,7 @@ namespace gge { namespace widgets {
 			return true;
 		}
 
-		utils::EventChain<RadioButton> &ChangeEvent() {
-			return changeevent;
-		}
+		utils::EventChain<RadioButton> ChangeEvent;
 
 		utils::Property<RadioButton, AutosizeModes::Type> Autosize;
 		utils::NumericProperty<RadioButton, input::keyboard::Key> Accesskey;
@@ -124,16 +122,15 @@ namespace gge { namespace widgets {
 			setState(CheckboxState::Checked);
 		}
 
-		utils::EventChain<RadioButton> changeevent;
 
 		virtual void setState(const bool &state) {
 			if(state && Base::getstate()!=2) {
 				Base::setstate(2);
-				changeevent();
+				ChangeEvent();
 			}
 			else if(!state && Base::getstate()!=1) {
 				Base::setstate(1);
-				changeevent();
+				ChangeEvent();
 			}
 		}
 		virtual bool getState() const {

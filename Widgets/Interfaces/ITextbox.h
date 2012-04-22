@@ -17,7 +17,7 @@ namespace gge { namespace widgets {
 
 		ITextbox() : 
 		  INIT_PROPERTY(ITextbox,Text),
-			  changeevent("ChangeEvent", this)
+			  ChangeEvent("ChangeEvent", this)
 		  { }
 
 		  utils::TextualProperty<ITextbox> Text;
@@ -37,14 +37,13 @@ namespace gge { namespace widgets {
 			  return NULL;
 		  }
 
-		  utils::EventChain<ITextbox> &ChangeEvent() { return changeevent; }
+		  utils::EventChain<ITextbox> ChangeEvent;
 
 	protected:
 		//REQUIRED
 		virtual void setText(const std::string &text) = 0;
 		virtual std::string getText() const = 0;
 
-		utils::EventChain<ITextbox> changeevent;
 	};
 
 

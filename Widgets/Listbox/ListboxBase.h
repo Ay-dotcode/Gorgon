@@ -72,12 +72,12 @@ namespace gge { namespace widgets {
 				setblueprint(bp);
 			}
 
-			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
+			virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) {
 				return false;
 			}
 
-			virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
-				return panel.KeyboardEvent(event, Key);
+			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+				return panel.KeyboardHandler(event, Key);
 			}
 
 			virtual void Resize(utils::Size Size) {

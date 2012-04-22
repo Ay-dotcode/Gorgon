@@ -377,11 +377,11 @@ namespace gge { namespace widgets {
 			unprepared=false;
 		}
 
-		bool Base::MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
+		bool Base::MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) {
 			using namespace input::mouse;
 
 			if(!IsEnabled())
-				return WidgetBase::MouseEvent(event, location, amount);
+				return WidgetBase::MouseHandler(event, location, amount);
 
 			static Point lastlocation(0,0);
 
@@ -443,7 +443,7 @@ namespace gge { namespace widgets {
 				vscrollby(-amount);
 			}
 
-			return WidgetBase::MouseEvent(event, location, amount);
+			return WidgetBase::MouseHandler(event, location, amount);
 		}
 
 		void Base::adjustscrolls() {
@@ -474,7 +474,7 @@ namespace gge { namespace widgets {
 			//vscroll.bar.Move(innerlayer.BoundingBox.Right+padding.Right, innerlayer.BoundingBox.Top);
 		}
 
-		bool Base::KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		bool Base::KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			using namespace gge::input::keyboard;
 
 			if(passive) {

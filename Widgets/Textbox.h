@@ -11,13 +11,13 @@ namespace gge { namespace widgets {
 	class Textbox : public ITextbox, public textbox::Base {
 	public:
 		Textbox(std::string text="") : Base(),
-			changeevent("ChangeEvent", this),
+			ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(Textbox, CaretLocation),
 			INIT_PROPERTY(Textbox, Readonly),
 			AutoSelectAll(false)
 		{
 			Text=text;
-			changeevent.DoubleLink(ITextbox::changeevent);
+			ChangeEvent.DoubleLink(ITextbox::ChangeEvent);
 
 			setupvscroll(false, false, false);
 
@@ -31,9 +31,7 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
-		utils::EventChain<Textbox> &ChangeEvent() {
-			return changeevent;
-		}
+		utils::EventChain<Textbox> ChangeEvent;
 
 		void SelectAll() {
 			Base::setselection(0, gettext().length());
@@ -65,10 +63,9 @@ namespace gge { namespace widgets {
 
 	protected:
 
-		utils::EventChain<Textbox> changeevent;
 
 		virtual void textchanged() {
-			changeevent();
+			ChangeEvent();
 		}
 
 		virtual std::string getText() const {

@@ -365,7 +365,7 @@ namespace gge { namespace widgets {
 			}
 		}
 
-		bool Base::MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
+		bool Base::MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) {
 
 			if(event==input::mouse::Event::Left_Down) {
 				Focus();
@@ -411,7 +411,7 @@ namespace gge { namespace widgets {
 				return true;
 			}
 
-			return WidgetBase::MouseEvent(event, location, amount);
+			return WidgetBase::MouseHandler(event, location, amount);
 		}
 
 		void Base::adjustscrolls() {
@@ -652,7 +652,7 @@ namespace gge { namespace widgets {
 				vscroll.bar.AllowFocus=false;
 				vscroll.bar.SmallChange=60;
 				vscroll.bar.LargeChange=120;
-				vscroll.bar.ChangeEvent().Register(this, &Base::vscroll_change);
+				vscroll.bar.ChangeEvent.Register(this, &Base::vscroll_change);
 
 				title.Hide();
 				title.SetContainer(controls);

@@ -132,10 +132,10 @@ namespace gge { namespace widgets {
 
 				Draw();
 			}
-			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount)  {
+			virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount)  {
 				if(passivemode) return true;
 
-				WidgetBase::MouseEvent(event, location, amount);
+				WidgetBase::MouseHandler(event, location, amount);
 
 				if(event==input::mouse::Event::Left_Click) {
 					playsound(Blueprint::NotFocused, Blueprint::Focus_None, Blueprint::Down, Blueprint::Style_None);
@@ -265,7 +265,7 @@ namespace gge { namespace widgets {
 				}
 
 
-				return WidgetBase::MouseEvent(event, location, amount);
+				return WidgetBase::MouseHandler(event, location, amount);
 			}
 
 			virtual void Disable()  {
@@ -322,7 +322,7 @@ namespace gge { namespace widgets {
 
 			virtual utils::Size GetSize();
 
-			virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key);
+			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key);
 
 			virtual bool IsVertical() const { return isvertical(); }
 
@@ -506,6 +506,7 @@ namespace gge { namespace widgets {
 				if(value>maximum) value=maximum;
 
 				value=T_(utils::Round(float(value)/steps)*steps);
+				this->value=value;
 				smoothvalue=floattype(value);
 				Draw();
 			}
@@ -2698,7 +2699,7 @@ namespace gge { namespace widgets {
 						upbutton->SetBlueprint(*bp->GetOrientationBaseGroup(orientation)->UpButton);
 					upbutton->SetContainer(buttonlayer);
 					//upbutton->ClickEvent().Register(this,&Base::smalldecrease);
-					upbutton->MouseEvent().Register(this,&Base::upbutton_mouse);
+					upbutton->MouseEvent.Register(this,&Base::upbutton_mouse);
 
 					if(!downbutton)
 						downbutton=new Button;
@@ -2707,14 +2708,14 @@ namespace gge { namespace widgets {
 						downbutton->SetBlueprint(*bp->GetOrientationBaseGroup(orientation)->DownButton);
 					downbutton->SetContainer(buttonlayer);
 					//downbutton->ClickEvent().Register(this,&Base::smallincrease);
-					downbutton->MouseEvent().Register(this,&Base::downbutton_mouse);
+					downbutton->MouseEvent.Register(this,&Base::downbutton_mouse);
 				}
 			}
 		}
 
 
 		template<class T_, class floattype>
-		bool Base<T_, floattype>::KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		bool Base<T_, floattype>::KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			using namespace input::keyboard;
 
 			if(!IsEnabled() || ispassive() || !actions.keyboard)

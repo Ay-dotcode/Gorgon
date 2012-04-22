@@ -17,7 +17,7 @@ namespace gge { namespace widgets {
 
 		IScroller() : NumericProperty(this, &IScroller::getValue, &IScroller::setValue),
 			Value(*this),
-			changeevent("ChangeEvent", this),			
+			ChangeEvent("ChangeEvent", this),			
 			INIT_PROPERTY(IScroller, Min),
 			INIT_PROPERTY(IScroller, Max)
 		{ }
@@ -37,9 +37,7 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
-		utils::EventChain<IScroller> &ChangeEvent() {
-			return changeevent;
-		}
+		utils::EventChain<IScroller> ChangeEvent;
 
 		utils::NumericProperty<IScroller, T_> &Value;
 
@@ -52,7 +50,6 @@ namespace gge { namespace widgets {
 		virtual T_ getMax() const = 0;
 		virtual void setMax(const T_ &value) = 0;
 
-		utils::EventChain<IScroller> changeevent;
 
 		//SUPPLIED
 		template<class T_>

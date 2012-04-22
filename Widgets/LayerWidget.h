@@ -13,7 +13,7 @@ namespace gge { namespace widgets {
 			layer.ClippingEnabled=true;
 		}
 
-		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount)  {
+		virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount)  {
 			return !input::mouse::Event::isScroll(event);
 		}
 

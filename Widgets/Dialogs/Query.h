@@ -119,7 +119,7 @@ namespace gge { namespace widgets { namespace dialog {
 			placedialogbutton(cancel);
 			cancel.Text="Cancel";
 			cancel.Accesskey='c';
-			cancel.ClickEvent().RegisterLambda([&]{ Close();});
+			cancel.ClickEvent.RegisterLambda([&]{ Close();});
 			cancel.Hide();
 
 			dialogbuttons.Add(no);
@@ -127,14 +127,14 @@ namespace gge { namespace widgets { namespace dialog {
 			no.Text="No";
 			no.Accesskey='n';
 			this->SetCancel(no);
-			no.ClickEvent().RegisterLambda([&]{ RepliedEvent(false); Close();});
+			no.ClickEvent.RegisterLambda([&]{ RepliedEvent(false); Close();});
 
 			dialogbuttons.Add(yes);
 			placedialogbutton(yes);
 			yes.Text="Yes";
 			yes.Accesskey='y';
 			this->SetDefault(yes);
-			yes.ClickEvent().RegisterLambda([&]{ RepliedEvent(true); Close();});
+			yes.ClickEvent.RegisterLambda([&]{ RepliedEvent(true); Close();});
 
 			yes.Autosize=AutosizeModes::GrowOnly;
 			no.Autosize=AutosizeModes::GrowOnly;

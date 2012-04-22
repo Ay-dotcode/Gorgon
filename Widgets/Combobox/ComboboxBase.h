@@ -130,7 +130,7 @@ namespace gge { namespace widgets {
 			}
 
 			//!check
-			virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 				if(event==input::keyboard::Event::Char) {
 					if(isextended) {
 						if(!input::keyboard::Modifier::IsModified()) {
@@ -150,7 +150,7 @@ namespace gge { namespace widgets {
 					}
 				}
 
-				return textbox.KeyboardEvent(event, Key);
+				return textbox.KeyboardHandler(event, Key);
 			}
 
 			virtual bool IsExtended() {
@@ -197,7 +197,7 @@ namespace gge { namespace widgets {
 			}
 
 			bool textbox_mouse(input::mouse::Event event) {
-				return dropbutton.MouseEvent(event.event, event.location, event.amount);
+				return dropbutton.MouseHandler(event.event, event.location, event.amount);
 			}
 
 			void dropbutton_focus() {

@@ -22,7 +22,7 @@ namespace gge { namespace widgets {
 		friend class OptionGroup;
 	public:
 
-		IOption() : changeevent("ChangeEvent", this),
+		IOption() : ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(IOption,Text),
 			INIT_PROPERTY(IOption,State),
 			owned(NULL), parent(NULL)
@@ -46,7 +46,7 @@ namespace gge { namespace widgets {
 				State=false;
 		}
 
-		utils::EventChain<IOption> &ChangeEvent() { return changeevent; }
+		utils::EventChain<IOption> ChangeEvent;
 
 		T_ Value;
 
@@ -64,7 +64,6 @@ namespace gge { namespace widgets {
 		IOptionGroup<T_> *parent;
 
 
-		utils::EventChain<IOption> changeevent;
 	};
 
 	template<class T_>
@@ -80,13 +79,13 @@ namespace gge { namespace widgets {
 	class OptionGroup : public IOptionGroup<T_> {
 	public:
 
-		OptionGroup() : changeevent("ChangedEvent", this), currentoption(NULL) {
+		OptionGroup() : ChangeEvent("ChangedEvent", this), currentoption(NULL) {
 
 		}
 
 		virtual void Add(O_ &option) {
 			Options.Add(option);
-			option.ChangeEvent().Register(*this, &OptionGroup::option_changed);
+			option.ChangeEvent.Register(*this, &OptionGroup::option_changed);
 			option.setgroup(this);
 		}
 		void Add(O_ *option) {
@@ -106,7 +105,7 @@ namespace gge { namespace widgets {
 			if(&option==currentoption)
 				currentoption=NULL;
 
-			option.ChangeEvent().Unregister<OptionGroup, void(OptionGroup::*)(O_&)>(this, &OptionGroup::option_changed);
+			option.ChangeEvent.Unregister<OptionGroup, void(OptionGroup::*)(O_&)>(this, &OptionGroup::option_changed);
 
 			if(option.parent==this && option.owned)
 				Options.Delete(option);
@@ -146,9 +145,9 @@ namespace gge { namespace widgets {
 				currentoption->Check();
 
 			if(option)
-				changeevent(option->Value);
+				ChangeEvent(option->Value);
 			else
-				changeevent(T_());
+				ChangeEvent(T_());
 		}
 		void Set(O_ &option) {
 			Set(&option);
@@ -271,12 +270,11 @@ namespace gge { namespace widgets {
 			return Options.end();
 		}
 
-		utils::EventChain<OptionGroup, T_> &ChangeEvent() { return changeevent; }
+		utils::EventChain<OptionGroup, T_> ChangeEvent;
 
 	protected:
 		utils::Collection<O_> Options;
 
-		utils::EventChain<OptionGroup, T_> changeevent;
 
 		void clearall() {
 			for(auto i=Options.First();i.IsValid();i.Next()) {

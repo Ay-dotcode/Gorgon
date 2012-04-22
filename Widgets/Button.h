@@ -15,11 +15,12 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Button, TextWrap),
 			INIT_PROPERTY(Button, Accesskey),
 			INIT_PROPERTY(Button, AllowFocus),
-			clickevent("ClickEvent", this),
+			ClickEvent("ClickEvent", this),
+			MouseEvent("MouseEvent", this),
 			allowfocus(true)
 		{
 			Text=text;
-			clickevent.DoubleLink(IButton::clickevent);
+			ClickEvent.DoubleLink(IButton::ClickEvent);
 
 			if(WR.Button)
 				setblueprint(*WR.Button);
@@ -31,13 +32,14 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Button, TextWrap),
 			INIT_PROPERTY(Button, Accesskey),
 			INIT_PROPERTY(Button, AllowFocus),
-			clickevent("ClickEvent", this),
+			ClickEvent("ClickEvent", this),
+			MouseEvent("MouseEvent", this),
 			allowfocus(true)
 		{
 			Text=text;
-			clickevent.DoubleLink(IButton::clickevent);
+			clickevent.DoubleLink(IButton::ClickEvent);
 
-			clickevent.Register(fn);
+			ClickEvent.Register(fn);
 
 			if(WR.Button)
 				setblueprint(*WR.Button);
@@ -64,7 +66,7 @@ namespace gge { namespace widgets {
 			Base::seticon(NULL);
 		}
 
-		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
+		virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			//handle mouse events
 
 			if(!IsEnabled())
@@ -98,22 +100,22 @@ namespace gge { namespace widgets {
 			case input::mouse::Event::Left_Click:
 				if(IsEnabled()) {
 					playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Down, Blueprint::Style_None);
-					clickevent();
+					ClickEvent();
 				}
 
 				ret = true;
 				break;
 			}
 
-			mouseevent(input::mouse::Event(event, location, amount));
+			MouseEvent(input::mouse::Event(event, location, amount));
 
 			if(ret) 
 				return true;
 				
-			return WidgetBase::MouseEvent(event, location, amount);
+			return WidgetBase::MouseHandler(event, location, amount);
 		}
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			if(!IsEnabled())
 				return false;
 
@@ -128,7 +130,7 @@ namespace gge { namespace widgets {
 			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Up && !input::keyboard::Modifier::Check()) {
 				Base::up();
 				playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Down, Blueprint::Style_None);
-				clickevent();
+				ClickEvent();
 
 				return true;
 			}
@@ -143,7 +145,7 @@ namespace gge { namespace widgets {
 
 			Base::click();
 			playsound(Blueprint::NotFocused, Blueprint::Focus_None, 1,0,Blueprint::Down, Blueprint::Style_None);
-			clickevent();
+			ClickEvent();
 		}
 
 		virtual bool Accessed() {
@@ -160,13 +162,9 @@ namespace gge { namespace widgets {
 		utils::BooleanProperty<Button> TextWrap;
 		utils::BooleanProperty<Button> AllowFocus;
 
-		utils::EventChain<Button> &ClickEvent() {
-			return clickevent;
-		}
+		utils::EventChain<Button> ClickEvent;
 
-		utils::EventChain<Button, input::mouse::Event> &MouseEvent() {
-			return mouseevent;
-		}
+		utils::EventChain<Button, input::mouse::Event> MouseEvent;
 
 
 		virtual WidgetBase *GetWidget() {
@@ -174,10 +172,6 @@ namespace gge { namespace widgets {
 		}
 
 	protected:
-
-		utils::EventChain<Button> clickevent;
-
-		utils::EventChain<Button, input::mouse::Event> mouseevent;
 
 		virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
 			Base::located(container, w, Order);

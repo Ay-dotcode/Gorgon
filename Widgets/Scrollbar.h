@@ -14,7 +14,7 @@ namespace gge { namespace widgets {
 
 		typedef Base::numberformat NumberFormatType;
 
-		Scrollbar() : changeevent("ChangeEvent", this),
+		Scrollbar() : ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(Scrollbar, AnimationDuration),
 			INIT_PROPERTY(Scrollbar, Orientation),
 			INIT_PROPERTY(Scrollbar, LargeChange),
@@ -30,7 +30,7 @@ namespace gge { namespace widgets {
 			Base::setlargechange(120);
 			Base::setactive();
 
-			IScroller::changeevent.DoubleLink(changeevent);
+			IScroller::ChangeEvent.DoubleLink(ChangeEvent);
 
 			if(WR.Scrollbar)
 				setblueprint(*WR.Scrollbar);
@@ -53,13 +53,10 @@ namespace gge { namespace widgets {
 		utils::NumericProperty<Scrollbar, T_> SmallChange;
 		utils::BooleanProperty<Scrollbar> AllowFocus;
 
-		utils::EventChain<Scrollbar> &ChangeEvent() {
-			return changeevent;
-		}
+		utils::EventChain<Scrollbar> ChangeEvent;
 
 	protected:
 
-		utils::EventChain<Scrollbar> changeevent;
 
 
 		//REQUIRED
@@ -69,7 +66,7 @@ namespace gge { namespace widgets {
 		void setValue(const T_ &value) {
 			if(value!=Base::gettargetvalue()) {
 				Base::setvalue(value);
-				changeevent();
+				ChangeEvent();
 			}
 		}
 		T_ getMin() const {
@@ -128,7 +125,7 @@ namespace gge { namespace widgets {
 
 
 		virtual void value_changed() {
-			changeevent();
+			ChangeEvent();
 		}
 
 	};

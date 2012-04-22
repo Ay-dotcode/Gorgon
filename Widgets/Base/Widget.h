@@ -212,11 +212,11 @@ namespace gge { namespace widgets {
 		virtual void ResetPointer() { pointer=Pointer::None; }
 
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			return false;
 		}
 
-		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
+		virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			if(input::mouse::Event::isClick(event) && !IsFocused())
 				Focus();
 

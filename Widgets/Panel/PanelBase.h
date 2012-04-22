@@ -192,9 +192,9 @@ namespace gge { namespace widgets {
 				setblueprint(bp);
 			}
 
-			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);
+			virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount);
 
-			virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 				bool ret=ContainerBase::DistributeKeyboardEvent(event, Key);
 				
 				if(ret) return true;

@@ -18,7 +18,7 @@ namespace gge { namespace widgets {
 		IButton() : 
 		  INIT_PROPERTY(IButton,Text),
 		  INIT_PROPERTY(IButton,Icon),
-		  clickevent("ClickEvent", this)
+		  ClickEvent("ClickEvent", this)
 		{ }
 
 		utils::TextualProperty<IButton> Text;
@@ -37,7 +37,7 @@ namespace gge { namespace widgets {
 
 		virtual void Fire() = 0;
 
-		utils::EventChain<IButton> &ClickEvent() { return clickevent; }
+		utils::EventChain<IButton> ClickEvent;
 
 		virtual WidgetBase *GetWidget() {
 			return NULL;
@@ -50,7 +50,6 @@ namespace gge { namespace widgets {
 		virtual void setIcon(graphics::RectangularGraphic2D* text) = 0;
 		virtual graphics::RectangularGraphic2D *getIcon() const = 0;
 
-		utils::EventChain<IButton> clickevent;
 	};
 
 

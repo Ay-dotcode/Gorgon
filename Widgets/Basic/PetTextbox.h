@@ -11,7 +11,7 @@ namespace gge { namespace widgets {
 	class PetTextbox : public ITextbox, public textbox::Base {
 	public:
 		PetTextbox(std::string text="") : Base(),
-			changeevent("ChangeEvent", this),
+			ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(PetTextbox, CaretLocation),
 			INIT_PROPERTY(PetTextbox, Passive),
 			INIT_PROPERTY(PetTextbox, Readonly),
@@ -21,7 +21,7 @@ namespace gge { namespace widgets {
 			AutoSelectAll(false)
 		{
 			Text=text;
-			changeevent.DoubleLink(ITextbox::changeevent);
+			ChangeEvent.DoubleLink(ITextbox::ChangeEvent);
 
 			setupvscroll(false, false, false);
 		}
@@ -32,9 +32,7 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
-		utils::EventChain<PetTextbox> &ChangeEvent() {
-			return changeevent;
-		}
+		utils::EventChain<PetTextbox> ChangeEvent;
 
 		void SelectAll() {
 			Base::setselection(0, gettext().length());
@@ -59,11 +57,11 @@ namespace gge { namespace widgets {
 			return this;
 		}
 
-		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
+		virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) {
 			if(MouseEventOccured(input::mouse::Event(event, location, amount)))
 				return true;
 			else
-				return Base::MouseEvent(event, location, amount);
+				return Base::MouseHandler(event, location, amount);
 		}
 
 
@@ -80,10 +78,9 @@ namespace gge { namespace widgets {
 
 	protected:
 
-		utils::EventChain<PetTextbox> changeevent;
 
 		virtual void textchanged() {
-			changeevent();
+			ChangeEvent();
 		}
 
 		virtual std::string getText() const {

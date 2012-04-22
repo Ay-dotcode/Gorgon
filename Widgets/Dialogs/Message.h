@@ -120,7 +120,7 @@ namespace gge { namespace widgets { namespace dialog {
 			this->SetCancel(ok);
 			ok.Autosize=AutosizeModes::GrowOnly;
 
-			ok.ClickEvent().RegisterLambda([&]{Close();});
+			ok.ClickEvent.RegisterLambda([&]{Close();});
 
 			MoveToCenter();
 		}

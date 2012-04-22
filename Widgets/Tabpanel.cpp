@@ -96,7 +96,7 @@ namespace gge { namespace widgets {
 		reorganize();
 	}
 
-	bool Tabpanel::KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+	bool Tabpanel::KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 		return controls.KeyboardEvent(input::keyboard::Event(event, Key));
 	}
 
@@ -167,7 +167,7 @@ namespace gge { namespace widgets {
 				rad.Text=it->Title;
 				rad.Move(x,bp->Placeholder.Margins.Top);
 				rad.Value=it.CurrentPtr();
-				rad.ChangeEvent().Register(this,&Tabpanel::tab_click);
+				rad.ChangeEvent.Register(this,&Tabpanel::tab_click);
 
 				if(it->IsVisible())
 					rad.Check();

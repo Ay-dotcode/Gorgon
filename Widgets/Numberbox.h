@@ -89,7 +89,7 @@ namespace gge { namespace widgets {
 	class Numberbox : public INumberbox<T_>, public textbox::Base {
 	public:
 		Numberbox(const T_ &value=T_()) : Base(),
-			changeevent("ChangeEvent", this),
+			ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(Numberbox, CaretLocation),
 			INIT_PROPERTY(Numberbox, UseHex),
 			INIT_PROPERTY(Numberbox, Prefix),
@@ -100,7 +100,7 @@ namespace gge { namespace widgets {
 
 			setupvscroll(false, false, false);
 			
-			changeevent.DoubleLink(INumberbox<T_>::changeevent);
+			ChangeEvent.DoubleLink(INumberbox<T_>::ChangeEvent);
 
 			if(WR.Textboxes.Numberbox)
 				setblueprint(*WR.Textboxes.Numberbox);
@@ -112,9 +112,7 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
-		utils::EventChain<Numberbox> &ChangeEvent() {
-			return changeevent;
-		}
+		utils::EventChain<Numberbox> ChangeEvent;
 
 		void SelectAll() {
 			Base::setselection(0, gettext().length());
@@ -138,11 +136,11 @@ namespace gge { namespace widgets {
 			return this;
 		}
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			if(KeyEvent(input::keyboard::Event(event, Key)))
 				return true;
 			
-			return Base::KeyboardEvent(event,Key);
+			return Base::KeyboardHandler(event,Key);
 		}
 
 
@@ -156,7 +154,6 @@ namespace gge { namespace widgets {
 
 	protected:
 
-		utils::EventChain<Numberbox> changeevent;
 
 		virtual void textchanged() {
 			std::string s=gettext();
@@ -168,7 +165,7 @@ namespace gge { namespace widgets {
 
 			value=Conv_(s, usehex ? 16 : 10);
 
-			changeevent();
+			ChangeEvent();
 		}
 
 		virtual void setValue(const T_ &value) {
@@ -178,7 +175,7 @@ namespace gge { namespace widgets {
 
 			settext(ss.str());
 
-			changeevent();
+			ChangeEvent();
 		}
 		virtual T_ getValue() const {
 			return value;

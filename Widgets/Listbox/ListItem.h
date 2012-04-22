@@ -58,7 +58,7 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
+		virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			//handle mouse events
 
 			if(input::mouse::Event::isDown(event)) {
@@ -98,7 +98,7 @@ namespace gge { namespace widgets {
 			return !input::mouse::Event::isScroll(event);
 		}
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			if(!IsEnabled())
 				return false;
 

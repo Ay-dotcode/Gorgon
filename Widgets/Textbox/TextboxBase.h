@@ -32,7 +32,7 @@ namespace gge { namespace widgets {
 				vscroll.bar.Hide();
 				vscroll.bar.SetContainer(controls);
 				vscroll.bar.AllowFocus=false;
-				vscroll.bar.ChangeEvent().Register(this, &Base::vscroll_change);
+				vscroll.bar.ChangeEvent.Register(this, &Base::vscroll_change);
 
 				WR.LoadedEvent.Register(this, &Base::wr_loaded);
 			}
@@ -72,9 +72,9 @@ namespace gge { namespace widgets {
 			}
 
 
-			virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);
+			virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount);
 
-			virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key);
+			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key);
 
 		protected:
 			void adjustscrolls();

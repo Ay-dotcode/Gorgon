@@ -26,12 +26,12 @@ namespace gge { namespace widgets {
 			setupvscroll(true, true, true);
 			GotFocus.Register(this, &Window::gotfocus);
 
-			rollbtn.ClickEvent().Register(this, &Window::ToggleRoll);
+			rollbtn.ClickEvent.Register(this, &Window::ToggleRoll);
 			titlebuttons.Add(rollbtn);
 			placetitlebutton(rollbtn);
 			rollbtn.Hide();
 
-			closebtn.ClickEvent().Register(this, &Window::Close);
+			closebtn.ClickEvent.Register(this, &Window::Close);
 			closebtn.Text="x";
 			titlebuttons.Add(closebtn);
 			placetitlebutton(closebtn);

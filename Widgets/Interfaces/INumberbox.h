@@ -18,7 +18,7 @@ namespace gge { namespace widgets {
 
 		INumberbox() : 
 		  INIT_PROPERTY(INumberbox,Value),
-			  changeevent("ChangeEvent", this),
+			  ChangeEvent("ChangeEvent", this),
 			  KeyEvent("KeyEvent", this)
 		  { }
 
@@ -39,7 +39,7 @@ namespace gge { namespace widgets {
 			  return NULL;
 		  }
 
-		  utils::EventChain<INumberbox> &ChangeEvent() { return changeevent; }
+		  utils::EventChain<INumberbox> ChangeEvent;
 		  utils::ConsumableEvent<INumberbox, input::keyboard::Event> KeyEvent;
 
 	protected:
@@ -47,7 +47,6 @@ namespace gge { namespace widgets {
 		virtual void setValue(const T_ &value) = 0;
 		virtual T_ getValue() const = 0;
 
-		utils::EventChain<INumberbox> changeevent;
 	};
 
 

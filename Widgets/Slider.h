@@ -16,7 +16,7 @@ namespace gge { namespace widgets {
 
 		typedef Base::numberformat NumberFormatType;
 
-		Slider() : changeevent("ChangeEvent", this),
+		Slider() : ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(Slider, AnimationDuration),
 			INIT_PROPERTY(Slider, Orientation),
 			INIT_PROPERTY(Slider, ShowTicks),
@@ -34,7 +34,7 @@ namespace gge { namespace widgets {
 			Base::setactions(true, Base::Goto, true, true, true);
 			Base::setactive();
 
-			ISlider::changeevent.DoubleLink(changeevent);
+			ISlider::ChangeEvent.DoubleLink(ChangeEvent);
 
 			if(WR.Slider)
 				setblueprint(*WR.Slider);
@@ -62,13 +62,10 @@ namespace gge { namespace widgets {
 		utils::Property<Slider, NumberFormatType> NumberFormat;
 		utils::BooleanProperty<Slider> ValueAnimation;
 		
-		utils::EventChain<Slider> &ChangeEvent() {
-			return changeevent;
-		}
+		utils::EventChain<Slider> ChangeEvent;
 
 	protected:
 
-		utils::EventChain<Slider> changeevent;
 
 
 		//REQUIRED
@@ -172,7 +169,7 @@ namespace gge { namespace widgets {
 
 
 		virtual void value_changed() {
-			changeevent();
+			ChangeEvent();
 		}
 
 	};

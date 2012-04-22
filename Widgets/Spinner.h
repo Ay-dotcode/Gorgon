@@ -10,7 +10,7 @@ namespace gge { namespace widgets {
 	class Spinner : public ISlider<T_>, public slider::Base<T_> {
 	public:
 
-		Spinner(T_ value=T_()) : changeevent("ChangeEvent", this),
+		Spinner(T_ value=T_()) : ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(Spinner, AnimationDuration),
 			INIT_PROPERTY(Spinner, Stepsize),
 			attachedto(NULL), margin(0), Base(value)
@@ -22,7 +22,7 @@ namespace gge { namespace widgets {
 			Base::setactions(false, Base::Goto, true);
 			Base::setactive();
 
-			ISlider::changeevent.DoubleLink(changeevent);
+			ISlider::ChangeEvent.DoubleLink(ChangeEvent);
 
 			if(WR.Sliders.NumberSpinner)
 				setblueprint(*WR.Sliders.NumberSpinner);
@@ -42,9 +42,7 @@ namespace gge { namespace widgets {
 		utils::NumericProperty<Spinner, int> AnimationDuration;
 		utils::NumericProperty<Spinner, T_> Stepsize;
 
-		utils::EventChain<Spinner> &ChangeEvent() {
-			return changeevent;
-		}
+		utils::EventChain<Spinner> ChangeEvent;
 
 		void Reposition() {
 			if(!attachedto) return;
@@ -62,14 +60,28 @@ namespace gge { namespace widgets {
 		void AttachTo(INumberbox<T_> &numberbox) {
 			if(!numberbox.GetWidget()) return;
 
+			DetachFrom();
+
 			attachedto=&numberbox;
 
 			numberbox.Value=getvalue();
 			numberbox.GetWidget()->BoundsChanged.Register(this, &Spinner::Reposition);
-			numberbox.ChangeEvent().Register(this, &Spinner::updatevalue);
+			numberbox.ChangeEvent.Register(this, &Spinner::updatevalue);
+			numberbox.GetWidget()->LostFocus.Register(this, &Spinner::validate);
 			numberbox.KeyEvent.Register(this, &Spinner::attached_keyboard);
 
 			Reposition();
+		}
+
+		void DetachFrom() {
+			if(!attachedto) return;
+
+			attachedto->GetWidget()->BoundsChanged.Unregister(this, &Spinner::Reposition);
+			attachedto->ChangeEvent.Unregister(this, &Spinner::updatevalue);
+			attachedto->GetWidget()->LostFocus.Unregister(this, &Spinner::validate);
+			attachedto->KeyEvent.Unregister(this, &Spinner::attached_keyboard);
+
+			attachedto=NULL;
 		}
 
 		bool IsAttached() const {
@@ -91,11 +103,6 @@ namespace gge { namespace widgets {
 		}
 
 		virtual bool Focus() {
-			if(buttonlayer.IsActive() && attachedto) {
-				attachedto->GetWidget()->Focus();
-				return true;
-			}
-
 			return false;
 		}
 		
@@ -107,22 +114,28 @@ namespace gge { namespace widgets {
 
 	protected:
 
-		utils::EventChain<Spinner> changeevent;
 		INumberbox<T_> *attachedto;
 		int margin;
 
 		void updatevalue() {
 			if(!attachedto) return;
 
-			if(Value!=attachedto->Value)
-				setvalue(attachedto->Value);
+			if(Value!=attachedto->Value) {
+				Base::instantsetvalue(attachedto->Value);
+			}
+		}
+
+		void validate() {
+			if(!attachedto) return;
+			if(Base::getvalue()!=attachedto->Value)
+				attachedto->Value=Base::getvalue();
 		}
 
 		bool attached_keyboard(input::keyboard::Event event) {
 			if(event.keycode==input::keyboard::KeyCodes::Left || event.keycode==input::keyboard::KeyCodes::Right)
 				return false;
 
-			return Base::KeyboardEvent(event.event, event.keycode);
+			return Base::KeyboardHandler(event.event, event.keycode);
 		}
 
 
@@ -172,7 +185,10 @@ namespace gge { namespace widgets {
 			if(attachedto && Value!=attachedto->Value)
 				attachedto->Value=getvalue();
 
-			changeevent();
+			if(attachedto)
+				attachedto->GetWidget()->Focus();
+
+			ChangeEvent();
 		}
 
 	};

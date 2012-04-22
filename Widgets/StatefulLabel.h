@@ -41,7 +41,7 @@ namespace gge { namespace widgets {
 		}
 
 
-		virtual bool MouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) { 
+		virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) { 
 			return ILabel::default_mousehandler(event, location, amount);
 		}
 

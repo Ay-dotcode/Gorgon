@@ -451,10 +451,10 @@ namespace gge { namespace widgets {
 		bool DistributeKeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			if(Focused) {
 				if(event==input::keyboard::Event::Up && UpHandler) {
-					UpHandler->KeyboardEvent(event, Key);
+					UpHandler->KeyboardHandler(event, Key);
 					UpHandler=NULL;
 				}
-				else if(Focused->IsVisible() && Focused->IsEnabled() && Focused->KeyboardEvent(event, Key)) {
+				else if(Focused->IsVisible() && Focused->IsEnabled() && Focused->KeyboardHandler(event, Key)) {
 					if(event==input::keyboard::Event::Down)
 						UpHandler=Focused;
 

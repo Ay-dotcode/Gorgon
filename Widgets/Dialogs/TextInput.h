@@ -135,8 +135,8 @@ namespace gge { namespace widgets { namespace dialog {
 			this->SetDefault(ok);
 			ok.Autosize=AutosizeModes::GrowOnly;
 
-			cancel.ClickEvent().RegisterLambda([&]{ Close(); });
-			ok.ClickEvent().RegisterLambda([&]{ RepliedEvent(this->input.Text); Close(); });
+			cancel.ClickEvent.RegisterLambda([&]{ Close(); });
+			ok.ClickEvent.RegisterLambda([&]{ RepliedEvent(this->input.Text); Close(); });
 
 			MoveToCenter();
 		}

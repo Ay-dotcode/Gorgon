@@ -204,7 +204,7 @@ namespace gge { namespace widgets {
 				Add(*it);
 		}
 
-		virtual bool KeyboardEvent(input::keyboard::Event::Type event, input::keyboard::Key Key) {
+		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 			if(event==input::keyboard::Event::Up) {
 				//if(!isextended) {
 					if(!input::keyboard::Modifier::IsModified()) {
@@ -237,7 +237,7 @@ namespace gge { namespace widgets {
 				//}
 			}
 
-			return Base::KeyboardEvent(event, Key);
+			return Base::KeyboardHandler(event, Key);
 		}
 			
 		utils::EventChain<Combobox> ValueChanged;

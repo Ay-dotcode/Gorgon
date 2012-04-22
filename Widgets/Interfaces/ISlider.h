@@ -22,7 +22,7 @@ namespace gge { namespace widgets {
 
 		ISlider() : NumericProperty(this, &ISlider::getValue, &ISlider::setValue),
 			Value(*this),
-			changeevent("ChangeEvent", this),			
+			ChangeEvent("ChangeEvent", this),			
 			INIT_PROPERTY(ISlider, Min),
 			INIT_PROPERTY(ISlider, Max)
 		{ }
@@ -42,9 +42,7 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
-		utils::EventChain<ISlider> &ChangeEvent() {
-			return changeevent;
-		}
+		utils::EventChain<ISlider> ChangeEvent;
 
 		NumericProperty<ISlider, T_> &Value;
 
@@ -57,7 +55,6 @@ namespace gge { namespace widgets {
 		virtual T_ getMax() const = 0;
 		virtual void setMax(const T_ &value) = 0;
 
-		utils::EventChain<ISlider> changeevent;
 
 		//SUPPLIED
 
