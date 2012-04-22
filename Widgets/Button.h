@@ -37,7 +37,7 @@ namespace gge { namespace widgets {
 			allowfocus(true)
 		{
 			Text=text;
-			clickevent.DoubleLink(IButton::ClickEvent);
+			ClickEvent.DoubleLink(IButton::ClickEvent);
 
 			ClickEvent.Register(fn);
 

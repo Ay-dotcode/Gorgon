@@ -50,7 +50,7 @@ namespace gge { namespace widgets {
 				//textbox.ChangeEvent().RegisterLambda([&](){setvalue(this->textbox.Text);});
 
 				dropbutton.Autosize=AutosizeModes::None;
-				dropbutton.ChangeEvent().RegisterLambda([&](){
+				dropbutton.ChangeEvent.RegisterLambda([&](){
 					if(dropbutton)
 						extend();
 					else
