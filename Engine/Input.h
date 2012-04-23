@@ -8,6 +8,7 @@
 #include "../Utils/ConsumableEvent.h"
 #include "../Utils/Bounds2D.h"
 #include <functional>
+#include <map>
 
 namespace gge { 
 	class LayerBase;
@@ -18,6 +19,7 @@ namespace gge {
 
 	namespace keyboard { 
 		typedef int Key;
+		extern std::map<Key, bool> PressedKeys;
 
 		class Modifier {
 		public:
@@ -1106,6 +1108,7 @@ namespace gge { namespace input {
 		void ProcessVScroll(int amount,int x,int y);
 		////Processes horizontal scroll
 		void ProcessHScroll(int amount,int x,int y);
+		void ReleaseAll();
 
 		extern bool hoverfound;
 		extern mouse::Event::Target *dragsource;

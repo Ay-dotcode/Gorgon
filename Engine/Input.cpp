@@ -10,6 +10,7 @@ namespace gge { namespace input {
 		bool Modifier::isAlternate=false;
 		Modifier::Type Modifier::Current=Modifier::None;
 		utils::ConsumableEvent<utils::Empty, Event> Events;
+		std::map<Key, bool> PressedKeys;
 	}
 
 
@@ -440,13 +441,14 @@ namespace gge { namespace input {
 			params.event=keyboard::Event::Down;
 
 			keyboard::Events.TokenList[params]=keyboard::Events(params);
-			
+			keyboard::PressedKeys[Key]=true;
 		}
 
 		void ProcessKeyUp(int Key) {
 			keyboard::Event params;
 			params.keycode=Key;
 			params.event=keyboard::Event::Down;
+			keyboard::PressedKeys[Key]=false;
 
 			if(keyboard::Events.TokenList[params]!=keyboard::Events.NullToken)
 				keyboard::Events.Fire(keyboard::Events.TokenList[params], keyboard::Event(keyboard::Event::Up, Key));
@@ -467,7 +469,7 @@ namespace gge { namespace input {
 		mouse::Event::Target *dragtarget=NULL;
 
 		void ProcessMousePosition(os::WindowHandle Window) {
-			mouse::CurrentPoint=os::input::getMousePosition(Window);
+			mouse::CurrentPoint=os::input::GetMousePosition(Window);
 
 			if(isdragging) {
 				Main.PropagateMouseEvent(mouse::Event::DragOver, mouse::CurrentPoint, 0);
@@ -537,6 +539,30 @@ namespace gge { namespace input {
 
 		void ProcessHScroll(int amount,int x,int y){
 			Main.PropagateMouseEvent(mouse::Event::HScroll, utils::Point(x,y), amount);
+		}
+
+		void ReleaseAll() {
+			gge::utils::Point pnt=mouse::CurrentPoint;
+			//for every key and for every mouse button
+			if(mouse::PressedButtons & mouse::Event::Left)
+				ProcessMouseUp(mouse::Event::Left, pnt.x,pnt.y);
+			if(mouse::PressedButtons & mouse::Event::Right)
+				ProcessMouseUp(mouse::Event::Right, pnt.x,pnt.y);
+			if(mouse::PressedButtons & mouse::Event::Middle)
+				ProcessMouseUp(mouse::Event::Middle, pnt.x,pnt.y);
+			if(mouse::PressedButtons & mouse::Event::X1)
+				ProcessMouseUp(mouse::Event::X1, pnt.x,pnt.y);
+			if(mouse::PressedButtons & mouse::Event::X2)
+				ProcessMouseUp(mouse::Event::X2, pnt.x,pnt.y);
+
+			mouse::CancelDrag();
+
+			for(auto it=keyboard::PressedKeys.begin();it!=keyboard::PressedKeys.end();++it) {
+				if(it->second)
+					ProcessKeyUp(it->first);
+			}
+
+			keyboard::Modifier::Current=keyboard::Modifier::None;
 		}
 	}
 

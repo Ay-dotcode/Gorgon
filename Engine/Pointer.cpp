@@ -30,7 +30,7 @@ namespace gge {
 			return;
 
 		Point pnt;
-		pnt=os::input::getMousePosition(caller.getWindow());
+		pnt=input::mouse::CurrentPoint;
 
 		PointerLayer->Clear();
 

@@ -255,6 +255,7 @@
 						Activated();
 					}
 					else {
+						ReleaseAll();
 						Deactivated();
 					}
 					break;
@@ -501,6 +502,7 @@
 					keyboard::Modifier::Remove(keyboard::Modifier::Alt);
 					break;
 				case WM_DESTROY:
+					ReleaseAll();
 					Destroyed();
 					break;
 				default:
@@ -634,7 +636,7 @@
 			return (gge::os::IconHandle)LoadIcon(Instance, (LPCTSTR)ID);
 		}
 		namespace input {
-			utils::Point getMousePosition(WindowHandle Window)
+			utils::Point GetMousePosition(WindowHandle Window)
 			{
 				POINT pnt;
 				RECT winrect;

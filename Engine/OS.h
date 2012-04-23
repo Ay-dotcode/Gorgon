@@ -128,8 +128,8 @@ namespace gge { namespace os {
 
 	namespace input {
 		////Gets the position of the cursor
-		utils::Point getMousePosition(os::WindowHandle Window);
-		inline bool isPointerDisplayed() { return system::pointerdisplayed; }
+		utils::Point GetMousePosition(os::WindowHandle Window);
+		inline bool IsPointerDisplayed() { return system::pointerdisplayed; }
 	}
 
 	namespace window {
