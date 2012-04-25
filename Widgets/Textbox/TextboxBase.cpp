@@ -788,22 +788,9 @@ namespace gge { namespace widgets {
 			if(this->bp==&bp)
 				return;
 
-			if(caret)
-				caret->DeleteAnimation();
-
 			this->bp=static_cast<const Blueprint*>(&bp);
 
-			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
-				if(i->second)
-					i->second->DeleteAnimation();
-
-			BorderCache.clear();
-
-			for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
-				if(i->second)
-					i->second->DeleteAnimation();
-
-			ImageCache.clear();
+			clearcaches();
 
 			if(this->bp) {
 				this->pointer=bp.Pointer;
@@ -819,6 +806,23 @@ namespace gge { namespace widgets {
 			}
 
 			Draw();
+		}
+
+		void Base::clearcaches() {
+			if(caret)
+				caret->DeleteAnimation();
+
+			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			BorderCache.clear();
+
+			for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			ImageCache.clear();
 		}
 
 

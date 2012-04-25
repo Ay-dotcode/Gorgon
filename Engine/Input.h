@@ -663,11 +663,10 @@ namespace gge { namespace input {
 			typename utils::count_arg<F_, 3, Object &>::type SetLambda(F_ f, Event::Type eventmask=Event::NoDragNoOverCheck);
 			
 			void Reset() {
-				if(object)
-					delete object;
-
-				object=NULL;
+				utils::CheckAndDelete(object);
 			}
+
+			~EventCallback() { Reset(); }
 		};
 
 		////This is a code base to help with mouse events

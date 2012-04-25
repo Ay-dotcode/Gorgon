@@ -982,6 +982,8 @@ namespace gge { namespace utils {
 		}
 
 		~ConsumableEvent() {
+			events.Destroy();
+
 		}
 
 	protected:

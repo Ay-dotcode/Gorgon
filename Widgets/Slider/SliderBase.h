@@ -109,20 +109,12 @@ namespace gge { namespace widgets {
 
 			virtual void setblueprint(const widgets::Blueprint &bp)  {
 				this->bp=static_cast<const Blueprint*>(&bp);
+
+				//!TODO shouldnt this be removed?
 				if(WidgetBase::size.Width==0)
 					Resize(this->bp->DefaultSize);
 
-				for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
-					if(i->second)
-						i->second->DeleteAnimation();
-
-				BorderCache.clear();
-
-				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
-					if(i->second)
-						i->second->DeleteAnimation();
-
-				ImageCache.clear();
+				clearcaches();
 
 				if(this->bp) {
 					this->pointer=bp.Pointer;
@@ -132,6 +124,7 @@ namespace gge { namespace widgets {
 
 				Draw();
 			}
+
 			virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount)  {
 				if(passivemode) return true;
 
@@ -326,6 +319,12 @@ namespace gge { namespace widgets {
 
 			virtual bool IsVertical() const { return isvertical(); }
 
+			virtual ~Base() {
+				utils::CheckAndDelete(upbutton);
+				utils::CheckAndDelete(downbutton);
+
+				clearcaches();
+			}
 
 		protected:
 			enum RuleAction {
@@ -349,6 +348,20 @@ namespace gge { namespace widgets {
 
 			virtual void wr_loaded() {
 
+			}
+
+			void clearcaches()  {
+				for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
+					if(i->second)
+						i->second->DeleteAnimation();
+
+				BorderCache.clear();
+
+				for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
+					if(i->second)
+						i->second->DeleteAnimation();
+
+				ImageCache.clear();
 			}
 
 

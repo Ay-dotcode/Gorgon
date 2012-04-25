@@ -20,6 +20,10 @@ namespace gge { namespace widgets {
 
 			Base();
 
+			virtual ~Base() {
+				clearcaches();
+			}
+
 			virtual bool IsVisible() const {
 				return WidgetBase::IsVisible();
 			}
@@ -232,6 +236,8 @@ namespace gge { namespace widgets {
 
 		protected:
 			virtual void setblueprint(const widgets::Blueprint &bp);
+
+			void clearcaches();
 
 			void adjustlayers();
 

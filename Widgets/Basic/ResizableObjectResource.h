@@ -28,7 +28,8 @@ namespace gge { namespace widgets {
 		graphics::SizeController2D SizeController;
 
 		virtual	~ResizableObject() {
-			object->DeleteAnimation();
+			if(object)
+				object->DeleteAnimation();
 		}
 
 		virtual void SetController( animation::Timer &controller, bool owner=false ) {
@@ -38,6 +39,8 @@ namespace gge { namespace widgets {
 
 		virtual void DeleteAnimation() {
 			object->DeleteAnimation();
+			object=NULL;
+			delete this;
 		}
 
 	protected:

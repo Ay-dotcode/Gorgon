@@ -816,6 +816,7 @@ namespace gge { namespace utils {
 		const std::string &GetName() const { return eventname; }
 
 		~EventChain() {
+			events.Destroy();
 		}
 
 	protected:

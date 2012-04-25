@@ -44,7 +44,8 @@ namespace gge { namespace widgets {
 		}
 
 		~Window() {
-			dynamic_cast<animation::Base*>(closebtn.Icon.GetPtr())->DeleteAnimation();
+			if(closebtn.Icon.GetPtr())
+				dynamic_cast<animation::Base*>(closebtn.Icon.GetPtr())->DeleteAnimation();
 		}
 
 		void Close() {

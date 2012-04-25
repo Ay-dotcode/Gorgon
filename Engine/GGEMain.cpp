@@ -181,11 +181,17 @@ namespace gge {
 		gge::resource::Init(*this);
 	}
 
-	void GGEMain::Exit(int code) {
+	void GGEMain::Cleanup() {
 		BeforeTerminateEvent();
 
 		for(auto it=SubLayers.First();it.IsValid();it.Next())
 			it->parent=NULL;
+
+		isrunning=false;
+	}
+
+	void GGEMain::Exit(int code) {
+		Cleanup();
 
 		os::Quit(code);
 	}
@@ -195,10 +201,16 @@ namespace gge {
 	}
 
 	void GGEMain::Run() {
-		gge::os::window::Destroyed.RegisterLambda([&]{ Exit(0); });
+		gge::os::window::Destroyed.RegisterLambda([&]{ 
+			Cleanup();
+		});
 
 		while(true) {
 			BeforeGameLoop();
+
+			if(!isrunning)
+				break;
+
 			BeforeRender();
 			Render();
 			AfterRender();

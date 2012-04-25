@@ -19,6 +19,7 @@ namespace gge { namespace os {
 	////Quits the application while returning the given code, if no errors exists
 	/// return value should be 0, other return codes should be arranged by application
 	void Quit(int ret);
+	void Cleanup();
 	////Sleep function, should be in ms
 	void Sleep(int);
 	////Hides the pointer displayed by OS
@@ -123,7 +124,7 @@ namespace gge { namespace os {
 			osdirenum dirinfo;
 		};
 
-		static DirectoryIterator EndOfDirectory;
+		extern DirectoryIterator EndOfDirectory;
 	}
 
 	namespace input {

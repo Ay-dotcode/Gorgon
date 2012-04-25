@@ -132,6 +132,8 @@ namespace gge {
 
 		void Exit(int code);
 
+		void Cleanup();
+
 
 		void MoveWindow(int X, int Y) {
 			MoveWindow(utils::Point(X, Y));
@@ -182,6 +184,8 @@ namespace gge {
 		string SystemName;
 		////Handle of the window
 		os::WindowHandle Window;
+
+		bool isrunning;
 
 		static void adjustlayers_recurse(LayerBase &layer, utils::Size from, utils::Size to);
 		void adjustlayers(utils::Size size);

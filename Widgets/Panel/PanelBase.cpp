@@ -591,17 +591,8 @@ namespace gge { namespace widgets {
 
 		void Base::setblueprint(const widgets::Blueprint &bp) {
 			this->bp=static_cast<const Blueprint*>(&bp);
-			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
-				if(i->second)
-					i->second->DeleteAnimation();
 
-			BorderCache.clear();
-
-			for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
-				if(i->second)
-					i->second->DeleteAnimation();
-
-			ImageCache.clear();
+			clearcaches();
 
 			for(auto i=titlebuttons.begin();i!=titlebuttons.end();++i)
 				if(dynamic_cast<Button*>(&*i))
@@ -660,6 +651,20 @@ namespace gge { namespace widgets {
 				title.TextWrap=false;
 
 				WR.LoadedEvent.Register(this, &Base::wr_loaded);
+		}
+
+		void Base::clearcaches() {
+			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			BorderCache.clear();
+
+			for(auto i=ImageCache.begin();i!=ImageCache.end();++i)
+				if(i->second)
+					i->second->DeleteAnimation();
+
+			ImageCache.clear();
 		}
 
 	}

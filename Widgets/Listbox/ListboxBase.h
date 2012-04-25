@@ -30,7 +30,7 @@ namespace gge { namespace widgets {
 		class Base : public WidgetBase, public ListboxType {
 		public:
 
-			Base() : bp(NULL),  controls(*this), autoheight(false), blueprintmodified(false)
+			Base() : bp(NULL),  controls(*this), autoheight(false), blueprintmodified(false), KeepItems(false)
 			{
 				controls.AddWidget(panel);
 				panel.Move(0,0);
@@ -74,7 +74,7 @@ namespace gge { namespace widgets {
 
 			virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) {
 				return false;
-			}
+			}	
 
 			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 				return panel.KeyboardHandler(event, Key);
@@ -106,8 +106,13 @@ namespace gge { namespace widgets {
 
 				return utils::Size(size.Width ? size.Width : bp->DefaultSize.Width, size.Height ? size.Height : bp->DefaultSize.Height);
 			}
+
+			~Base() {
+				if(!KeepItems)
+					panel.Widgets.Destroy();
+			}
 			
-			
+			bool KeepItems;
 
 		protected:
 

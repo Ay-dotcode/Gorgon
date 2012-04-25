@@ -38,6 +38,10 @@ namespace gge { namespace widgets {
 				setblueprint(*WR.Listbox);
 		}
 
+		virtual ~Listbox() {
+			
+		}
+
 		ListItem &Add(const T_ &value=T_()) {
 			ListItem *li=new ListItem(this, &Listbox::togglenotify);
 			li->Value=value;

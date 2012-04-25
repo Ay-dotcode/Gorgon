@@ -87,6 +87,8 @@ namespace gge { namespace widgets {
 
 			virtual void setblueprint(const widgets::Blueprint &bp);
 
+			void clearcaches();
+
 			virtual bool detach(ContainerBase *container) {
 				innerlayer.parent=NULL;
 				overlayer.parent=NULL;

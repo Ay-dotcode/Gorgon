@@ -61,11 +61,14 @@ namespace gge { namespace widgets {
 		utils::Margins BorderWidth;
 		
 		virtual ~BorderData() {
-			object->DeleteAnimation();
+			if(object)
+				object->DeleteAnimation();
 		}
 
 		virtual void DeleteAnimation() {
 			object->DeleteAnimation();
+			object=NULL;
+			delete this;
 		}
 
 		virtual void SetController( animation::Timer &controller, bool owner=false ) {

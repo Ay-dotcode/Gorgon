@@ -30,7 +30,7 @@ namespace gge { namespace widgets {
 		public:
 
 			Base(const T_ &value=T_()) : bp(NULL),  controls(*this), isextended(false),
-				blueprintmodified(false)
+				blueprintmodified(false), KeepItems(false)
 			{
 				controls.AddWidget(dropbutton);
 				controls.AddWidget(textbox);
@@ -156,6 +156,12 @@ namespace gge { namespace widgets {
 			virtual bool IsExtended() {
 				return isextended;
 			}
+
+			virtual ~Base() {
+				listbox.KeepItems=KeepItems;
+			}
+
+			bool KeepItems;
 
 
 		protected:

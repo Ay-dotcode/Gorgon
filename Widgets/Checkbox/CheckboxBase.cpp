@@ -1374,9 +1374,17 @@ namespace gge { namespace widgets {
 			//if(WidgetBase::size.Height==0)
 			//	SetHeight(this->bp->DefaultSize.Height);
 
+			clearcaches();
+
+			prepare();
+			calculatesize();
+			Draw();
+
 			if(Container)
 				Container->WidgetBoundsChanged();
+		}
 
+		void Base::clearcaches() {
 			for(auto i=BorderCache.begin();i!=BorderCache.end();++i)
 				if(i->second)
 					i->second->DeleteAnimation();
@@ -1388,10 +1396,6 @@ namespace gge { namespace widgets {
 					i->second->DeleteAnimation();
 
 			ImageCache.clear();
-
-			prepare();
-			calculatesize();
-			Draw();
 		}
 
 	}

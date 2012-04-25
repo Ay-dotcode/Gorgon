@@ -77,6 +77,10 @@
 			quiting=true;
 			exit(ret);
 		}
+		void Cleanup() {
+			CloseWindow((HWND)Main.getWindow());
+			quiting=true;
+		}
 		void Initialize() {
 			system::pointerdisplayed=true;
 		}
@@ -796,6 +800,8 @@
 			void DeleteFile(const std::string &Filename) {
 				remove(Filename.c_str());
 			}
+			
+			DirectoryIterator EndOfDirectory;
 		}
 
 		std::string GetAppDataPath() {

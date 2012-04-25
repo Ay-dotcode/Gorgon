@@ -67,6 +67,10 @@ namespace gge { namespace widgets {
 			//to make sure everything object is ready
 			virtual utils::Size GetSize();
 
+			virtual ~Base() {
+				clearcaches();
+			}
+
 		protected:
 			virtual void prepare();
 
@@ -80,6 +84,8 @@ namespace gge { namespace widgets {
 
 			bool blueprintmodified;
 			virtual void setblueprint(const widgets::Blueprint &bp);
+
+			void clearcaches();
 
 
 			//SERVICES TO CLIENT
