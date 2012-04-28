@@ -205,6 +205,8 @@ namespace gge {
 			Cleanup();
 		});
 
+		isrunning=true;
+
 		while(true) {
 			BeforeGameLoop();
 
