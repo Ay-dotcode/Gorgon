@@ -257,8 +257,8 @@ namespace gge { namespace utils {
 
 			basic_Point2D temp=*this-origin;
 
-			x	= (int)Round(temp.x*cosa - temp.y*sina);
-			y   = (int)Round(temp.x*sina + temp.y*cosa);
+			x	= (T_)Round(temp.x*cosa - temp.y*sina);
+			y   = (T_)Round(temp.x*sina + temp.y*cosa);
 
 			*this += origin;
 		}

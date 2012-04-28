@@ -99,12 +99,13 @@ namespace gge { namespace graphics {
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);	// Blending Function For Translucency Based On Source Alpha Value ( NEW )
 
 		//textures
+		glEnable(GL_TEXTURE_2D);
 		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glEnable(GL_TEXTURE_2D);
-
+		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 		///*Adjusting Matrices
 		glViewport(0, 0, Width, Height);					// Reset The Current Viewport
@@ -208,6 +209,8 @@ namespace gge { namespace graphics {
 			glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BORDER_COLOR, 0x0);
+			glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+			glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 			int bytes=getBPP(mode);
 

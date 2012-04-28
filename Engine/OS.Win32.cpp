@@ -94,6 +94,55 @@
 			CreateThread(NULL, 0, (unsigned long (__stdcall *)(void *))fn, data, 0, &threadid);
 		}
 
+		int CurrentHour() {
+			SYSTEMTIME tm;
+			GetLocalTime(&tm);
+
+			return (int)tm.wHour;
+		}
+		int CurrentMinute() {
+			SYSTEMTIME tm;
+			GetLocalTime(&tm);
+
+			return (int)tm.wMinute;
+		}
+		int CurrentSecond() {
+			SYSTEMTIME tm;
+			GetLocalTime(&tm);
+
+			return (int)tm.wSecond;
+		}
+		int CurrentMillisecond() {
+			SYSTEMTIME tm;
+			GetLocalTime(&tm);
+
+			return (int)tm.wMilliseconds;
+		}
+		int CurrentWeekday() {
+			SYSTEMTIME tm;
+			GetLocalTime(&tm);
+
+			return (int)((tm.wDayOfWeek+6)%7);
+		}
+		int CurrentDay() {
+			SYSTEMTIME tm;
+			GetLocalTime(&tm);
+
+			return (int)tm.wDay;
+		}
+		int CurrentMonth() {
+			SYSTEMTIME tm;
+			GetLocalTime(&tm);
+
+			return (int)tm.wMonth;
+		}
+		int CurrentYear() {
+			SYSTEMTIME tm;
+			GetLocalTime(&tm);
+
+			return (int)tm.wYear;
+		}
+
 		namespace system {
 			CursorHandle defaultcursor;
 			bool pointerdisplayed;

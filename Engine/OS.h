@@ -27,6 +27,15 @@ namespace gge { namespace os {
 	////Shows the pointer displayed by OS
 	void ShowPointer();
 
+	int CurrentHour();
+	int CurrentMinute();
+	int CurrentSecond();
+	int CurrentMillisecond();
+	int CurrentWeekday(); //monday->0
+	int CurrentDay();
+	int CurrentMonth();
+	int CurrentYear();
+
 	IconHandle IconFromResource(int ID);
 
 	unsigned int GetTime();
