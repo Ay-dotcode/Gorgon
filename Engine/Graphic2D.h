@@ -231,33 +231,33 @@ namespace gge { namespace graphics {
 
 
 		//Draw using 4 coords
-		void Draw(ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) const {
+		void Draw(ImageTarget2D& Target, float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4) const {
 			draw(Target, X1,Y1, X2,Y2, X3,Y3, X4,Y4);
 		}
-		void Draw(ImageTarget2D* Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) const {
+		void Draw(ImageTarget2D* Target, float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4) const {
 			draw(*Target, X1,Y1, X2,Y2, X3,Y3, X4,Y4);
 		}
 
-		void Draw(ImageTarget2D& Target, utils::Point p1, utils::Point p2, utils::Point p3, utils::Point p4) const {
+		void Draw(ImageTarget2D& Target, utils::Point2D p1, utils::Point2D p2, utils::Point2D p3, utils::Point2D p4) const {
 			draw(Target, p1.x,p1.y, p2.x,p2.y, p3.x,p3.y, p4.x,p4.y);
 		}
-		void Draw(ImageTarget2D* Target, utils::Point p1, utils::Point p2, utils::Point p3, utils::Point p4) const {
+		void Draw(ImageTarget2D* Target, utils::Point2D p1, utils::Point2D p2, utils::Point2D p3, utils::Point2D p4) const {
 			draw(*Target, p1.x,p1.y, p2.x,p2.y, p3.x,p3.y, p4.x,p4.y);
 		}
 
 
 
 		//Draw rotated
-		void DrawRotated(ImageTarget2D& Target, utils::Point p, float angle, utils::Point origin=utils::Point(0,0)) const;
-		void DrawRotated(ImageTarget2D* Target, utils::Point p, float angle, utils::Point origin=utils::Point(0,0)) const {
+		void DrawRotated(ImageTarget2D& Target, utils::Point p, float angle, utils::Point2D origin=utils::Point(0,0)) const;
+		void DrawRotated(ImageTarget2D* Target, utils::Point p, float angle, utils::Point2D origin=utils::Point2D(0,0)) const {
 			DrawRotated(*Target, p, angle, origin);
 		}
 
-		void DrawRotated(ImageTarget2D& Target, int X,int Y, float angle, int oX=0,int oY=0) const {
-			DrawRotated(Target, utils::Point(X,Y), angle, utils::Point(oX,oY));
+		void DrawRotated(ImageTarget2D& Target, int X,int Y, float angle, float oX=0,float oY=0) const {
+			DrawRotated(Target, utils::Point(X,Y), angle, utils::Point2D(oX,oY));
 		}
-		void DrawRotated(ImageTarget2D* Target, int X,int Y, float angle, int oX=0,int oY=0) const {
-			DrawRotated(*Target, utils::Point(X,Y), angle, utils::Point(oX,oY));
+		void DrawRotated(ImageTarget2D* Target, int X,int Y, float angle, float oX=0,float oY=0) const {
+			DrawRotated(*Target, utils::Point(X,Y), angle, utils::Point2D(oX,oY));
 		}
 
 
@@ -304,87 +304,87 @@ namespace gge { namespace graphics {
 
 
 		//Draw partial
-		void Draw(ImageTarget2D& target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D& target, float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(target, X1,Y1, X2,Y2, X3,Y3, X4,Y4, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
-		void Draw(ImageTarget2D* target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D* target, float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(*target, X1,Y1, X2,Y2, X3,Y3, X4,Y4, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
 
-		void Draw(ImageTarget2D& target, utils::Point p1, utils::Point p2, utils::Point p3, utils::Point p4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D& target, utils::Point2D p1, utils::Point2D p2, utils::Point2D p3, utils::Point2D p4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(target, p1.x,p1.y, p2.x,p2.y, p3.x,p3.y, p4.x,p4.y, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
-		void Draw(ImageTarget2D* target, utils::Point p1, utils::Point p2, utils::Point p3, utils::Point p4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D* target, utils::Point2D p1, utils::Point2D p2, utils::Point2D p3, utils::Point2D p4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(*target, p1.x,p1.y, p2.x,p2.y, p3.x,p3.y, p4.x,p4.y, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
 
-		void Draw(ImageTarget2D& target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D& target, float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(target, X1,Y1, X2,Y2, X3,Y3, X4,Y4, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
-		void Draw(ImageTarget2D* target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D* target, float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(*target, X1,Y1, X2,Y2, X3,Y3, X4,Y4, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
 
-		void Draw(ImageTarget2D& target, utils::Point p1, utils::Point p2, utils::Point p3, utils::Point p4, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D& target, utils::Point2D p1, utils::Point2D p2, utils::Point2D p3, utils::Point2D p4, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(target, p1.x,p1.y, p2.x,p2.y, p3.x,p3.y, p4.x,p4.y, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
-		void Draw(ImageTarget2D* target, utils::Point p1, utils::Point p2, utils::Point p3, utils::Point p4, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D* target, utils::Point2D p1, utils::Point2D p2, utils::Point2D p3, utils::Point2D p4, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(*target, p1.x,p1.y, p2.x,p2.y, p3.x,p3.y, p4.x,p4.y, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
 
-		void Draw(ImageTarget2D& target, int X,int Y,int W,int H, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D& target, float X,float Y,float W,float H, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(target, X,Y, X+W,Y, X+W,Y+H, X,Y+H, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
-		void Draw(ImageTarget2D* target, int X,int Y,int W,int H, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D* target, float X,float Y,float W,float H, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(*target, X,Y, X+W,Y, X+W,Y+H, X,Y+H, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
 
-		void Draw(ImageTarget2D& target, int X,int Y,int W,int H, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D& target, float X,float Y,float W,float H, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(target, X,Y, X+W,Y, X+W,Y+H, X,Y+H, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
-		void Draw(ImageTarget2D* target, int X,int Y,int W,int H, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D* target, float X,float Y,float W,float H, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(*target, X,Y, X+W,Y, X+W,Y+H, X,Y+H, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
 
-		void Draw(ImageTarget2D& target, utils::Point p,int W,int H, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D& target, utils::Point2D p,float W,float H, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(target, p.x,p.y, p.x+W,p.y, p.x+W,p.y+H, p.x,p.y+H, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
-		void Draw(ImageTarget2D* target, utils::Point p,int W,int H, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D* target, utils::Point2D p,float W,float H, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(*target, p.x,p.y, p.x+W,p.y, p.x+W,p.y+H, p.x,p.y+H, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
 
-		void Draw(ImageTarget2D& target, utils::Point p,int W,int H, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D& target, utils::Point2D p,float W,float H, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(target, p.x,p.y, p.x+W,p.y, p.x+W,p.y+H, p.x,p.y+H, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
-		void Draw(ImageTarget2D* target, utils::Point p,int W,int H, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D* target, utils::Point2D p,float W,float H, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(*target, p.x,p.y, p.x+W,p.y, p.x+W,p.y+H, p.x,p.y+H, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
 
-		void Draw(ImageTarget2D& target, int X,int Y,utils::Size s, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D& target, float X,float Y,utils::Size2D s, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(target, X,Y, X+s.Width,Y, X+s.Width,Y+s.Height, X,Y+s.Height, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
-		void Draw(ImageTarget2D* target, int X,int Y,utils::Size s, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D* target, float X,float Y,utils::Size2D s, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(*target, X,Y, X+s.Width,Y, X+s.Width,Y+s.Height, X,Y+s.Height, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
 
-		void Draw(ImageTarget2D& target, int X,int Y,utils::Size s, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D& target, float X,float Y,utils::Size2D s, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(target, X,Y, X+s.Width,Y, X+s.Width,Y+s.Height, X,Y+s.Height, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
-		void Draw(ImageTarget2D* target, int X,int Y,utils::Size s, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D* target, float X,float Y,utils::Size2D s, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(*target, X,Y, X+s.Width,Y, X+s.Width,Y+s.Height, X,Y+s.Height, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
 
-		void Draw(ImageTarget2D& target, utils::Point p,utils::Size s, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D& target, utils::Point2D p,utils::Size2D s, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(target, p.x,p.y, p.x+s.Width,p.y, p.x+s.Width,p.y+s.Height, p.x,p.y+s.Height, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
-		void Draw(ImageTarget2D* target, utils::Point p,utils::Size s, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
+		void Draw(ImageTarget2D* target, utils::Point2D p,utils::Size2D s, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const {
 			draw(*target, p.x,p.y, p.x+s.Width,p.y, p.x+s.Width,p.y+s.Height, p.x,p.y+s.Height, S1,U1, S2,U2, S3,U3, S4,U4);
 		}
 
-		void Draw(ImageTarget2D& target, utils::Point p,utils::Size s, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D& target, utils::Point2D p,utils::Size2D s, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(target, p.x,p.y, p.x+s.Width,p.y, p.x+s.Width,p.y+s.Height, p.x,p.y+s.Height, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
-		void Draw(ImageTarget2D* target, utils::Point p,utils::Size s, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
+		void Draw(ImageTarget2D* target, utils::Point2D p,utils::Size2D s, utils::Point2D t1, utils::Point2D t2, utils::Point2D t3, utils::Point2D t4) const {
 			draw(*target, p.x,p.y, p.x+s.Width,p.y, p.x+s.Width,p.y+s.Height, p.x,p.y+s.Height, t1.x,t1.y, t2.x,t2.y, t3.x,t3.y, t4.x,t4.y);
 		}
 
@@ -405,8 +405,8 @@ namespace gge { namespace graphics {
 
 
 	protected:
-		virtual void draw(ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const = 0;
-		virtual void draw(ImageTarget2D& Target, int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) const = 0;
+		virtual void draw(ImageTarget2D& Target, float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) const = 0;
+		virtual void draw(ImageTarget2D& Target, float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4) const = 0;
 		virtual void drawstretched(ImageTarget2D& Target, int X, int Y, int W, int H) const = 0;
 		virtual void draw(ImageTarget2D& Target, Tiling2D::Type Tiling, int X, int Y, int W, int H) const = 0;
 		virtual void draw(ImageTarget2D& Target, int X, int Y) const {

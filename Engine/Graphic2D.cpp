@@ -4,7 +4,7 @@
 
 namespace gge { namespace graphics {
 
-	void RectangularGraphic2D::DrawRotated( ImageTarget2D& Target, utils::Point p, float angle, utils::Point origin/*=utils::Point(0,0)*/ ) const
+	void RectangularGraphic2D::DrawRotated( ImageTarget2D& Target, utils::Point p, float angle, utils::Point2D origin/*=utils::Point(0,0)*/ ) const
 	{
 
 		using namespace gge::utils;
@@ -30,7 +30,7 @@ namespace gge { namespace graphics {
 		p3.Rotate(angle, origin);
 		p4.Rotate(angle, origin);
 
-		Draw(Target, (int)Round(p1.x),(int)Round(p1.y),(int)Round(p2.x),(int)Round(p2.y),(int)Round(p3.x),(int)Round(p3.y),(int)Round(p4.x),(int)Round(p4.y));
+		Draw(Target, p1, p2, p3, p4);
 	}
 
 } }

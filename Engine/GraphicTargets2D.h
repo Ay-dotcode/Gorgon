@@ -21,9 +21,9 @@ namespace gge { namespace graphics {
 		///@Y3		: bottom-right corner
 		///@X4		: bottom-left corner
 		///@Y4		: bottom-left corner
-		virtual void Draw(const GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4) = 0;
+		virtual void Draw(const GLTexture *Image,float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4) = 0;
 
-		virtual void Draw(const GLTexture *Image,int X1,int Y1,int X2,int Y2,int X3,int Y3,int X4,int Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) = 0;
+		virtual void Draw(const GLTexture *Image,float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) = 0;
 
 		////Draws a simple image to the screen.
 		/// This function does not support any transformations

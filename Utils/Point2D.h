@@ -247,18 +247,18 @@ namespace gge { namespace utils {
 		void Rotate(FloatingPoint angle) {
 			T_ new_x;
 			FloatingPoint cosa=cosfn(angle), sina=sinfn(angle);
-			new_x = (int)Round(x*cosa - y*sina);
-			y     = (int)Round(x*sina + y*cosa);
+			new_x = (T_)(x*cosa - y*sina);
+			y     = (T_)(x*sina + y*cosa);
 
-			x     = (int)Round(new_x);
+			x     = (T_)(new_x);
 		}
 		void Rotate(FloatingPoint angle, const basic_Point2D &origin) {
 			FloatingPoint cosa=std::cos(angle), sina=std::sin(angle);
 
 			basic_Point2D temp=*this-origin;
 
-			x	= (T_)Round(temp.x*cosa - temp.y*sina);
-			y   = (T_)Round(temp.x*sina + temp.y*cosa);
+			x	= (T_)(temp.x*cosa - temp.y*sina);
+			y   = (T_)(temp.x*sina + temp.y*cosa);
 
 			*this += origin;
 		}
