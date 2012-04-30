@@ -1054,7 +1054,6 @@ namespace gge { namespace widgets {
 
 							int knownw=0;
 							int totalmargin=0;
-							int pmargin=0;
 
 							int w=currentsize.Width;
 							if(border) {
@@ -1094,8 +1093,7 @@ namespace gge { namespace widgets {
 										if(iconp) {
 											knownw+=iconp->GetSize(icon->GetSize(), icon->GetSize()).Width;
 
-											totalmargin+=(iconp->Margins.Left>pmargin ? iconp->Margins.TotalX()-pmargin : iconp->Margins.Right);
-											pmargin=iconp->Margins.Right;
+											totalmargin+=iconp->Margins.TotalX();
 										}
 										else {
 											knownw+=icon->GetWidth();
@@ -1104,8 +1102,7 @@ namespace gge { namespace widgets {
 									break;
 								case Blueprint::Text:
 									if(font && text!="" && textp) {
-										totalmargin+=(textp->Margins.Left>pmargin ? textp->Margins.TotalX()-pmargin : textp->Margins.Right);
-										pmargin=textp->Margins.Right;
+										totalmargin+=textp->Margins.TotalX();
 									}
 									break;
 								case Blueprint::Symbol:
@@ -1117,8 +1114,7 @@ namespace gge { namespace widgets {
 
 											knownw+=symbolp->GetSize(Size(w,0), Size(w,0)).Width;
 
-											totalmargin=(symbolp->Margins.Left>pmargin ? symbolp->Margins.TotalX()-pmargin : symbolp->Margins.Right);
-											pmargin=symbolp->Margins.Right;
+											totalmargin=symbolp->Margins.TotalX();
 										}
 										else {
 											if(w==0)
@@ -1149,6 +1145,8 @@ namespace gge { namespace widgets {
 							}
 
 							textw=currentsize.Width-knownw;
+							if(font && font->TextWidth(text)<textw)
+								currentsize.Width=font->TextWidth(text)+knownw;
 
 							break;
 						}
@@ -1164,7 +1162,6 @@ namespace gge { namespace widgets {
 
 						int knownw=0;
 						int totalmargin=0;
-						int pmargin=0;
 
 						//calculate current height, required for w=h stuff
 						int ch=0;
@@ -1195,8 +1192,7 @@ namespace gge { namespace widgets {
 									if(iconp) {
 										knownw+=iconp->GetSize(icon->GetSize(), icon->GetSize()).Width;
 
-										totalmargin+=(iconp->Margins.Left>pmargin ? iconp->Margins.TotalX()-pmargin : iconp->Margins.Right);
-										pmargin=iconp->Margins.Right;
+										totalmargin+=iconp->Margins.TotalX();
 									}
 									else {
 										knownw+=icon->GetWidth();
@@ -1209,8 +1205,7 @@ namespace gge { namespace widgets {
 									if(textp) {
 										knownw+=w;
 
-										totalmargin+=(textp->Margins.Left>pmargin ? textp->Margins.TotalX()-pmargin : textp->Margins.Right);
-										pmargin=textp->Margins.Right;
+										totalmargin+=textp->Margins.TotalX();
 									}
 									else
 										knownw+=w;
@@ -1225,8 +1220,7 @@ namespace gge { namespace widgets {
 
 										knownw+=symbolp->GetSize(Size(w,0), Size(w,0)).Width;
 
-										totalmargin=(symbolp->Margins.Left>pmargin ? symbolp->Margins.TotalX()-pmargin : symbolp->Margins.Right);
-										pmargin=symbolp->Margins.Right;
+										totalmargin=symbolp->Margins.TotalX();
 									}
 									else {
 										if(w==0)
