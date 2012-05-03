@@ -53,14 +53,33 @@ namespace gge { namespace utils {
 	}
 
 	template <class T_, class U_>
-	T_ Max(const T_ &num1, const U_ &num2) { return num1>num2 ? num1 : num2; }
+	typename std::enable_if<!is_iterator<T_>::value, T_>::type 
+	Max(const T_ &num1, const U_ &num2) { return num1>num2 ? num1 : num2; }
 
 	template <class T_, class U_>
-	T_ Min(const T_ &num1, const U_ &num2) { return num1<num2 ? num1 : num2; }
+	typename std::enable_if<!is_iterator<T_>::value, T_>::type 
+	Min(const T_ &num1, const U_ &num2) { return num1<num2 ? num1 : num2; }
 
 	template <class T_, class P_>
 	typename std::enable_if<is_iterator<T_>::value, typename T_::value_type>::type 
-		Max(const T_ &num1, const T_ &num2, P_ pred=std::greater<T_>()) { 
+	Max(const T_ &num1, const T_ &num2, P_ pred) { 
+		if(num1==num2)
+			return typename T_::value_type();
+
+		typename T_::value_type m=*num1;
+		T_ it=num1;
+		it++;
+		for(;it!=num2;++it) {
+			if(pred(*it,m))
+				m=*it;
+		}
+
+		return m;
+	}
+	
+	template <class T_, class P_>
+	typename std::enable_if<is_iterator<T_>::value, typename T_::value_type>::type 
+	Min(const T_ &num1, const T_ &num2, P_ pred) { 
 		if(num1==num2)
 			return typename T_::value_type();
 
@@ -75,22 +94,16 @@ namespace gge { namespace utils {
 		return m;
 	}
 
-
-	template <class T_, class P_>
+	template <class T_>
 	typename std::enable_if<is_iterator<T_>::value, typename T_::value_type>::type 
-		Min(const T_ &num1, const T_ &num2, P_ pred=std::less<T_>()) { 
-		if(num1==num2)
-			return typename T_::value_type();
+	Min(const T_ &num1, const T_ &num2) { 
+	  return Min(num1, num2, std::less<typename T_::value_type>());
+	}
 
-		typename T_::value_type m=*num1;
-		T_ it=num1;
-		it++;
-		for(;it!=num2;++it) {
-			if(pred(*it,m))
-				m=*it;
-		}
-
-		return m;
+	template <class T_>
+	typename std::enable_if<is_iterator<T_>::value, typename T_::value_type>::type 
+	Max(const T_ &num1, const T_ &num2) { 
+	  return Max(num1, num2, std::greater<typename T_::value_type>());
 	}
 
 

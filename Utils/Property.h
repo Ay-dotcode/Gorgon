@@ -33,6 +33,7 @@
 #include "UtilsBase.h"
 #include <string>
 #include <iostream>
+#include <stdexcept>
 
 namespace gge { namespace utils {
 
@@ -109,102 +110,102 @@ namespace gge { namespace utils {
 	template<class C_, class T_>
 	class NumericProperty : public Property<C_, T_> {
 	public:
-		NumericProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+		NumericProperty(C_ *Object, typename Property<C_,T_>::Getter getter, typename Property<C_,T_>::Setter setter) : Property<C_, T_>(Object, getter, setter) 
 		{ }
 
 		NumericProperty &operator =(const T_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
 
 		template <class AC_, class O_>
 		NumericProperty &operator =(const Property<AC_, O_> &prop) {
-			(Object.*setter)((T_)prop);
+			(this->Object.*this->setter)((T_)prop);
 
 			return *this;
 		}
 
 		T_ operator ++(int) {
-			T_ v=(Object.*getter)();
+			T_ v=(this->Object.*this->getter)();
 			T_ k=v;
 			k++;
-			(Object.*setter)(k);
+			(this->Object.*this->setter)(k);
 			return v;
 		}
 
 		T_ operator --(int) {
-			T_ v=(Object.*getter)();
+			T_ v=(this->Object.*this->getter)();
 			T_ k=v;
 			k--;
-			(Object.*setter)(k);
+			(this->Object.*this->setter)(k);
 			return v;
 		}
 
 		T_ operator ++() {
-			T_ v=(Object.*getter)();
+			T_ v=(this->Object.*this->getter)();
 			v++;
-			(Object.*setter)(v);
+			(this->Object.*this->setter)(v);
 			return v;
 		}
 
 		T_ operator --() {
-			T_ v=(Object.*getter)();
+			T_ v=(this->Object.*this->getter)();
 			v--;
-			(Object.*setter)(v);
+			(this->Object.*this->setter)(v);
 			return v;
 		}
 
 		T_ operator +(const T_ &v) const {
-			return (Object.*getter)() + v;
+			return (this->Object.*this->getter)() + v;
 		}
 
 		T_ operator -(const T_ &v) const {
-			return (Object.*getter)() - v;
+			return (this->Object.*this->getter)() - v;
 		}
 
 		T_ operator *(const T_ &v) const {
-			return (Object.*getter)() * v;
+			return (this->Object.*this->getter)() * v;
 		}
 
 		T_ operator /(const T_ &v) const {
-			return (Object.*getter)() / v;
+			return (this->Object.*this->getter)() / v;
 		}
 
 		T_ operator +=(const T_ &v) {
-			(Object.*setter)((Object.*getter)()+v);
-			return (Object.*getter)();
+			(this->Object.*this->setter)((this->Object.*this->getter)()+v);
+			return (this->Object.*this->getter)();
 		}
 
 		T_ operator -=(const T_ &v) {
-			(Object.*setter)((Object.*getter)()-v);
-			return (Object.*getter)();
+			(this->Object.*this->setter)((this->Object.*this->getter)()-v);
+			return (this->Object.*this->getter)();
 		}
 
 		T_ operator *=(const T_ &v) {
-			(Object.*setter)((Object.*getter)()*v);
-			return (Object.*getter)();
+			(this->Object.*this->setter)((this->Object.*this->getter)()*v);
+			return (this->Object.*this->getter)();
 		}
 
 		T_ operator /=(const T_ &v) {
-			(Object.*setter)((Object.*getter)()/v);
-			return (Object.*getter)();
+			(this->Object.*this->setter)((this->Object.*this->getter)()/v);
+			return (this->Object.*this->getter)();
 		}
 
 		bool operator >(const T_ &v) const {
-			return (Object.*getter)()>v;
+			return (this->Object.*this->getter)()>v;
 		}
 
 		bool operator <(const T_ &v) const {
-			return (Object.*getter)()<v;
+			return (this->Object.*this->getter)()<v;
 		}
 
 		bool operator >=(const T_ &v) const {
-			return (Object.*getter)()>=v;
+			return (this->Object.*this->getter)()>=v;
 		}
 
 		bool operator <=(const T_ &v) const {
-			return (Object.*getter)()<=v;
+			return (this->Object.*this->getter)()<=v;
 		}
 	};
 
@@ -214,33 +215,33 @@ namespace gge { namespace utils {
 	template<class C_, class T_=bool>
 	class BooleanProperty : public Property<C_, T_> {
 	public:
-		BooleanProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+		BooleanProperty(C_ *Object, typename Property<C_, T_>::Getter getter, typename Property<C_, T_>::Setter setter) : Property<C_, T_>(Object, getter, setter) 
 		{ }
 
 		template <class O_>
 		BooleanProperty &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
 
 		template <class AC_>
 		BooleanProperty &operator =(const Property<AC_, T_> &prop) {
-			(Object.*setter)((T_)prop);
+			(this->Object.*this->setter)((T_)prop);
 
 			return *this;
 		}
 
 		bool operator &&(const T_ &v) const {
-			return (Object.*getter)() && v;
+			return (this->Object.*this->getter)() && v;
 		}
 
 		bool operator ||(const T_ &v) const {
-			return (Object.*getter)() || v;
+			return (this->Object.*this->getter)() || v;
 		}
 
 		bool operator !() const {
-			return !(Object.*getter)();
+			return !(this->Object.*this->getter)();
 		}
 	};
 
@@ -250,19 +251,19 @@ namespace gge { namespace utils {
 	template<class C_, class T_=Byte>
 	class BinaryProperty : public NumericProperty<C_,T_> {
 	public:
-		BinaryProperty(C_ *Object, Getter getter, Setter setter) : NumericProperty(Object, getter, setter) 
+		BinaryProperty(C_ *Object, typename Property<C_, T_>::Getter getter, typename Property<C_, T_>::Setter setter) : NumericProperty<C_,T_>(Object, getter, setter) 
 		{ }
 
 		template <class O_>
 		BinaryProperty &operator =(const O_ &value) { 
-			(Object.*setter)(T_(value));
+			(this->Object.*this->setter)(T_(value));
 
 			return *this;
 		}
 
 		template <class AC_>
 		BinaryProperty &operator =(const Property<AC_, T_> &prop) {
-			(Object.*setter)((T_)prop);
+			(this->Object.*this->setter)((T_)prop);
 
 			return *this;
 		}
@@ -277,18 +278,18 @@ namespace gge { namespace utils {
 		//}
 
 		T_ operator |= (const T_ &v) {
-			(Object.*setter)((Object.*getter)() | v);
-			return (Object.*getter)();
+			(this->Object.*this->setter)((this->Object.*this->getter)() | v);
+			return (this->Object.*this->getter)();
 		}
 
 		T_ operator &= (const T_ &v) {
-			(Object.*setter)((Object.*getter)() & v);
-			return (Object.*getter)();
+			(this->Object.*this->setter)((this->Object.*this->getter)() & v);
+			return (this->Object.*this->getter)();
 		}
 
 		T_ operator ^= (const T_ &v) {
-			(Object.*setter)((Object.*getter)() ^ v);
-			return (Object.*getter)();
+			(this->Object.*this->setter)((this->Object.*this->getter)() ^ v);
+			return (this->Object.*this->getter)();
 		}
 	};
 
@@ -298,29 +299,29 @@ namespace gge { namespace utils {
 	// Should allow non-const versions, should have a version allows null
 	template<class C_, class T_>
 	class ObjectProperty : public Property<C_, T_> {
-		ObjectProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+		ObjectProperty(C_ *Object, typename Property<C_, T_>::Getter getter, typename Property<C_, T_>::Setter setter) : Property<C_, T_>(Object, getter, setter) 
 		{ }
 
 		template <class O_>
 		ObjectProperty &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
 
 		template <class AC_>
 		ObjectProperty &operator =(const Property<AC_, T_> &prop) {
-			(Object.*setter)((T_)prop);
+			(this->Object.*this->setter)((T_)prop);
 
 			return *this;
 		}
 
 		const T_ &operator *() const {
-			return (Object.*getter)();
+			return (this->Object.*this->getter)();
 		}
 
 		const T_ *operator ->() const {
-			return &(Object.*getter)();
+			return &(this->Object.*this->getter)();
 		}
 	};
 
@@ -331,37 +332,37 @@ namespace gge { namespace utils {
 	// modifications are not propagated to the object itself
 	template<class C_, class T_>
 	class MutableObjectProperty : public Property<C_, T_> {
-		MutableObjectProperty(C_ *Object, Getter getter, Setter setter) : Property(Object, getter, setter) 
+		MutableObjectProperty(C_ *Object, typename Property<C_, T_>::Getter getter, typename Property<C_, T_>::Setter setter) : Property<C_, T_>(Object, getter, setter) 
 		{ }
 
 		template <class O_>
 		MutableObjectProperty &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
 
 		template <class AC_>
-		ObjectProperty &operator =(const Property<AC_, T_> &prop) {
-			(Object.*setter)((T_)prop);
+		MutableObjectProperty &operator =(const Property<AC_, T_> &prop) {
+			(this->Object.*this->setter)((T_)prop);
 
 			return *this;
 		}
 
 		T_ &operator *() {
-			return (Object.*getter)();
+			return (this->Object.*this->getter)();
 		}
 
 		T_ *operator ->() {
-			return &(Object.*getter)();
+			return &(this->Object.*this->getter)();
 		}
 
 		const T_ &operator *() const {
-			return (Object.*getter)();
+			return (this->Object.*this->getter)();
 		}
 
 		const T_ *operator ->() const {
-			return &(Object.*getter)();
+			return &(this->Object.*this->getter)();
 		}
 	};
 
@@ -381,43 +382,43 @@ namespace gge { namespace utils {
 		{ }
 
 		operator T_ *() {
-			return (Object.*getter)();
+			return (this->Object.*this->getter)();
 		}
 
 		operator T_ *() const {
-			return (Object.*getter)();
+			return (this->Object.*this->getter)();
 		}
 
 		ReferenceProperty &operator =(T_ *value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
 
 		ReferenceProperty &operator =(T_ &value) { 
-			(Object.*setter)(&value);
+			(this->Object.*this->setter)(&value);
 
 			return *this;
 		}
 
 		bool operator ==(const T_ &v) const {
-			return (Object.*getter)()==v;
+			return (this->Object.*this->getter)()==v;
 		}
 
 		bool operator !=(const T_ &v) const {
-			return (Object.*getter)()!=v;
+			return (this->Object.*this->getter)()!=v;
 		}
 
 		T_ *operator ->() {
-			return (Object.*getter)();
+			return (this->Object.*this->getter)();
 		}
 
 		T_ *GetPtr() {
-			return (Object.*getter)();
+			return (this->Object.*this->getter)();
 		}
 
 		T_ &Get() {
-			T_ *o=(Object.*getter)();
+			T_ *o=(this->Object.*this->getter)();
 			if(o)
 				return *o;
 			else
@@ -431,119 +432,119 @@ namespace gge { namespace utils {
 	template<class C_, class T_=std::string>
 	class TextualProperty : public Property<C_, T_> {
 	public:
-		TextualProperty(C_ *Object, Getter getter, Setter setter) : Property<C_,T_>(Object, getter, setter) 
+		TextualProperty(C_ *Object, typename Property<C_, T_>::Getter getter, typename Property<C_, T_>::Setter setter) : Property<C_,T_>(Object, getter, setter) 
 		{ }
 
 		template <class O_>
 		TextualProperty &operator =(const O_ &value) { 
-			(Object.*setter)(T_(value));
+			(this->Object.*this->setter)(T_(value));
 
 			return *this;
 		}
 
 		template <class AC_>
 		TextualProperty &operator =(const Property<AC_, T_> &prop) {
-			(Object.*setter)((T_)prop);
+			(this->Object.*this->setter)((T_)prop);
 
 			return *this;
 		}
 
 		T_ operator +(const T_ &v) {
-			return (Object.*getter)()+v;
+			return (this->Object.*this->getter)()+v;
 		}
 
 		void operator +=(const T_ &v) {
-			return (Object.*setter)((Object.*getter)()+v);
+			return (this->Object.*this->setter)((this->Object.*this->getter)()+v);
 		}
 
 		int length() const {
-			return (Object.*getter)().length();
+			return (this->Object.*this->getter)().length();
 		}
 
 		const char *c_str() const {
-			return (Object.*getter)().c_str();
+			return (this->Object.*this->getter)().c_str();
 		}
 
 		T_ substr(typename T_::size_type off=0U, typename T_::size_type len=T_::npos) const {
-			return (Object.*getter)().substr(off,len);
+			return (this->Object.*this->getter)().substr(off,len);
 		}
 
 		typename T_::size_type find ( const T_& str, typename T_::size_type pos = 0 ) const {
-			return (Object.*getter)().find(str, pos);
+			return (this->Object.*this->getter)().find(str, pos);
 		}
 		typename T_::size_type find ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
-			return (Object.*getter)().find(s, pos, n);
+			return (this->Object.*this->getter)().find(s, pos, n);
 		}
 		typename T_::size_type find ( const char* s, typename T_::size_type pos = 0 ) const {
-			return (Object.*getter)().find(s, pos);
+			return (this->Object.*this->getter)().find(s, pos);
 		}
 		typename T_::size_type find ( char c, typename T_::size_type pos = 0 ) const {
-			return (Object.*getter)().find(c, pos);
+			return (this->Object.*this->getter)().find(c, pos);
 		}
 
 		typename T_::size_type rfind ( const T_& str, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().rfind(str, pos);
+			return (this->Object.*this->getter)().rfind(str, pos);
 		}
 		typename T_::size_type rfind ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
-			return (Object.*getter)().rfind(s, pos, n);
+			return (this->Object.*this->getter)().rfind(s, pos, n);
 		}
 		typename T_::size_type rfind ( const char* s, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().rfind(s, pos);
+			return (this->Object.*this->getter)().rfind(s, pos);
 		}
 		typename T_::size_type rfind ( char c, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().rfind(c, pos);
+			return (this->Object.*this->getter)().rfind(c, pos);
 		}
 
 		typename T_::size_type find_first_of ( const T_& str, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_first_of(str, pos);
+			return (this->Object.*this->getter)().find_first_of(str, pos);
 		}
 		typename T_::size_type find_first_of ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
-			return (Object.*getter)().find_first_of(s, pos, n);
+			return (this->Object.*this->getter)().find_first_of(s, pos, n);
 		}
 		typename T_::size_type find_first_of ( const char* s, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_first_of(s, pos);
+			return (this->Object.*this->getter)().find_first_of(s, pos);
 		}
 		typename T_::size_type find_first_of ( char c, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_first_of(c, pos);
+			return (this->Object.*this->getter)().find_first_of(c, pos);
 		}
 
 		typename T_::size_type find_last_of ( const T_& str, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_last_of(str, pos);
+			return (this->Object.*this->getter)().find_last_of(str, pos);
 		}
 		typename T_::size_type find_last_of ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
-			return (Object.*getter)().find_last_of(s, pos, n);
+			return (this->Object.*this->getter)().find_last_of(s, pos, n);
 		}
 		typename T_::size_type find_last_of ( const char* s, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_last_of(s, pos);
+			return (this->Object.*this->getter)().find_last_of(s, pos);
 		}
 		typename T_::size_type find_last_of ( char c, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_last_of(c, pos);
+			return (this->Object.*this->getter)().find_last_of(c, pos);
 		}
 
 		typename T_::size_type find_first_not_of ( const T_& str, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_first_not_of(str, pos);
+			return (this->Object.*this->getter)().find_first_not_of(str, pos);
 		}
 		typename T_::size_type find_first_not_of ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
-			return (Object.*getter)().find_first_not_of(s, pos, n);
+			return (this->Object.*this->getter)().find_first_not_of(s, pos, n);
 		}
 		typename T_::size_type find_first_not_of ( const char* s, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_first_not_of(s, pos);
+			return (this->Object.*this->getter)().find_first_not_of(s, pos);
 		}
 		typename T_::size_type find_first_not_of ( char c, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_first_not_of(c, pos);
+			return (this->Object.*this->getter)().find_first_not_of(c, pos);
 		}
 
 		typename T_::size_type find_last_not_of ( const T_& str, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_last_not_of(str, pos);
+			return (this->Object.*this->getter)().find_last_not_of(str, pos);
 		}
 		typename T_::size_type find_last_not_of ( const char* s, typename T_::size_type pos, typename T_::size_type n ) const {
-			return (Object.*getter)().find_last_not_of(s, pos, n);
+			return (this->Object.*this->getter)().find_last_not_of(s, pos, n);
 		}
 		typename T_::size_type find_last_not_of ( const char* s, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_last_not_of(s, pos);
+			return (this->Object.*this->getter)().find_last_not_of(s, pos);
 		}
 		typename T_::size_type find_last_not_of ( char c, typename T_::size_type pos = T_::npos ) const {
-			return (Object.*getter)().find_last_not_of(c, pos);
+			return (this->Object.*this->getter)().find_last_not_of(c, pos);
 		}
 
 		/*
@@ -553,108 +554,108 @@ namespace gge { namespace utils {
 		*/
 
 		const char &operator[] (typename T_::size_type pos) const {
-			return (Object.*getter)()[pos];
+			return (this->Object.*this->getter)()[pos];
 		}
 		
 		void clear() {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.clear();
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 		}
 
 		TextualProperty &append(const T_ &str) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.append(str);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty & append(const T_ &str, typename T_::size_type pos, typename T_::size_type n) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.append(str, pos, n);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty &append(const char *str, typename T_::size_type n) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.append(str, n);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty &append(const char *str) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.append(str);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty &append(typename T_::size_type n, char c) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.append(n, c);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		template <class InputIterator>
 		TextualProperty& append ( InputIterator first, InputIterator last ) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.append<InputIterator>(first, last);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty &erase(typename T_::size_type pos = 0, typename T_::size_type n = T_::npos) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.erase(pos, n);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty &insert(typename T_::size_type pos, const T_ str) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.insert(pos, str);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty &insert(typename T_::size_type pos1, const T_ str, typename T_::size_type pos2, typename T_::size_type n = T_::npos) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.erase(pos1, str, pos2, n);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty &insert(typename T_::size_type pos, const char *str, typename T_::size_type n) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.insert(pos, str, n);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty &insert(typename T_::size_type pos, const char *str) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.insert(pos, str);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
 
 		TextualProperty &insert(typename T_::size_type pos, typename T_::size_type n, char c) {
-			T_ s=(Object.*getter)();
+			T_ s=(this->Object.*this->getter)();
 			s.insert(pos, n, c);
-			(Object.*setter)(s);
+			(this->Object.*this->setter)(s);
 
 			return *this;
 		}
@@ -666,6 +667,13 @@ namespace gge { namespace utils {
 
 	template <class C_,class T_>
 	inline std::ostream &operator <<(std::ostream &out, const TextualProperty<C_,T_> &p) {
+		out<<(T_)p;
+
+		return out;
+	}
+
+	template <class C_,class T_>
+	inline std::ostream &operator <<(std::ostream &out, const NumericProperty<C_,T_> &p) {
 		out<<(T_)p;
 
 		return out;

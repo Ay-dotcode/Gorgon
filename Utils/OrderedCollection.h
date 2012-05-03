@@ -72,8 +72,9 @@ namespace gge { namespace utils {
 			friend class OrderedCollection;
 
 		public:
-			Iterator_() : Col(NULL), Offset(-1)
-				Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
+			Iterator_() : Col(NULL), Offset(-1) {
+			}
+			Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
 			}
 
 		protected:
@@ -247,7 +248,7 @@ namespace gge { namespace utils {
 			}
 
 			Iterator_<O_,C_,g_> cast() {
-				return Iterator<O_,C_,g_>(Col, Offset);
+				return Iterator_<O_,C_,g_>(Col, Offset);
 			}
 
 			bool isbefore(const SearchIterator_<O_,C_,g_> &it) const {
@@ -270,7 +271,7 @@ namespace gge { namespace utils {
 			}
 
 			operator Iterator_<O_,C_,g_>() const {
-				return Iterator<O_,C_,g_>(Col, Offset);
+				return Iterator_<O_,C_,g_>(Col, Offset);
 			}
 
 			~SearchIterator_() {
@@ -291,12 +292,12 @@ namespace gge { namespace utils {
 			friend class OrderedCollection;
 		public:
 			ConstIterator(const Iterator &it) {
-				Col=it.Col;
-				Offset=it.Offset;
+				this->Col=it.Col;
+				this->Offset=it.Offset;
 			}
 
 		protected:
-			ConstIterator(const OrderedCollection &c, int offset=0) : Iterator_(c, offset) {
+			ConstIterator(const OrderedCollection &c, int offset=0) : Iterator_<const T_,const OrderedCollection, growth>(c, offset) {
 			}
 		};
 		typedef SearchIterator_<      T_,      OrderedCollection, growth>	    SearchIterator;
@@ -304,12 +305,12 @@ namespace gge { namespace utils {
 			friend class OrderedCollection;
 		public:
 			ConstSearchIterator(const SearchIterator &it) {
-				Col=it.Col;
-				Offset=it.Offset;
+				this->Col=it.Col;
+				this->Offset=it.Offset;
 			}
 
 		protected:
-			ConstSearchIterator(const OrderedCollection &c, const T_ &search, int offset=0) : SearchIterator_(c, search, offset) {
+			ConstSearchIterator(const OrderedCollection &c, const T_ &search, int offset=0) : SearchIterator_<const T_,const OrderedCollection, growth>(c, search, offset) {
 			}
 		};
 
@@ -652,7 +653,7 @@ namespace gge { namespace utils {
 		}
 
 		template<class P_>
-		void Sort(P_ predicate=std::less<T_>) {
+		void Sort(P_ predicate=std::less<T_>()) {
 			std::sort(list.begin(), list.begin()+*count, elementsorterfrompointer<T_, P_>(predicate));
 		}
 

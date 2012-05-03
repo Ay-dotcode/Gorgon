@@ -140,14 +140,14 @@ namespace gge { namespace utils {
 		basic_Rectangle2D& operator =(const basic_Bounds2D<T_> &bounds);
 
 		operator std::string() const {
-			stringstream ss;
+			std::stringstream ss;
 			ss<<"< "<<Left<<", "<<Top<<", "<<Width<<"x"<<Height<<" >";
 			return ss.str();
 		}
 
 		//Without any unnecessary markers
 		std::string CompactString() const {
-			stringstream ss;
+			std::stringstream ss;
 			ss<<Left<<","<<Top<<","<<Width<<"x"<<Height;
 			return ss.str();
 		}
@@ -224,8 +224,8 @@ namespace gge { namespace utils {
 			return basic_Rectangle2D(
 				(Left-pivot.x)*scale.Width+pivot.x, 
 				(Left-pivot.y)*scale.Height+pivot.y, 
-				Width *x, 
-				Height*y
+				Width *scale.Width, 
+				Height*scale.Height
 			);
 		}
 
@@ -321,7 +321,7 @@ namespace gge { namespace utils {
 
 			basic_Rectangle2D ret;
 
-			istringstream is(s);
+			std::istringstream is(s);
 			is>>ret.Left;
 			is>>ret.Top;
 			is>>ret.Width;
@@ -351,8 +351,8 @@ namespace gge { namespace utils {
 
 	////Adds the textual form of the point to another string.
 	template <class T_>
-	std::string &operator + (const std::string &out, const basic_Rectangle2D<T_> &Rectangle) {
-		return string+(string)Rectangle;
+	std::string operator + (const std::string &out, const basic_Rectangle2D<T_> &Rectangle) {
+		return out+(std::string)Rectangle;
 	}
 
 

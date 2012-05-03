@@ -114,7 +114,7 @@ namespace gge { namespace utils {
 
 		template <class F_,class P_, class O_>
 		bool Compare(EventHandler<P_, O_> *obj, F_ function) {
-			return falase;
+			return false;
 		}
 		template <class F_, class R_, class P_, class O_>
 		bool Compare(EventHandler<P_,O_> *obj, R_ *object, F_ function) {
@@ -722,6 +722,7 @@ namespace gge { namespace utils {
 		Token DoubleLink(EventChain<R_, P_> &target) {
 			typedef void(EventChain<O_,P_>::*MyFire		)(P_) ;
 			typedef void(EventChain<R_,P_>::*TargetFire )(P_);
+			typedef EventChain<R_, P_> targettype;
 
 			target.RegisterClass< EventChain<O_, P_>, MyFire >(
 				this, 
@@ -732,8 +733,8 @@ namespace gge { namespace utils {
 			return AddHandler(
 				prvt::eventchain::CreateEventHandler<EventChain<R_, P_>, P_, O_>(
 					&target, 
-					(TargetFire) &EventChain<R_, P_>::linkedfire<O_>,
-					Any()							  
+					(TargetFire)&targettype::template linkedfire<O_>,
+					Any()
 				)
 			);
 		}
@@ -741,7 +742,7 @@ namespace gge { namespace utils {
 		////Unregisters the given event handler using handler function
 		template<class F_>
 		void Unregister(F_ handler) {
-			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
+			for(auto it = events.First();
 				it.IsValid();it.Next()) {
 				if(prvt::eventchain::Compare(&(*it), handler)) {
 					it.Delete();
@@ -752,7 +753,7 @@ namespace gge { namespace utils {
 		////Unregisters the given handler referenced by the object and function
 		template<class R_, class F_>
 		void Unregister(R_ *obj, F_ handler) {
-			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
+			for(auto it = events.First();
 				it.IsValid();it.Next()) {
 					if(prvt::eventchain::Compare<R_, P_, O_>(&(*it), obj, handler)) {
 						it.Delete();
@@ -797,7 +798,7 @@ namespace gge { namespace utils {
 		////This function triggers the event causing all 
 		/// handlers to be called
 		void Fire(P_ params) {
-			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
+			for(auto it = events.First();
 				it.IsValid();it.Next()) {
 				it->Fire(params, *this->object, eventname);
 			}
@@ -849,7 +850,7 @@ namespace gge { namespace utils {
 			if(obj!=NULL) {
 				EventChain *ec;
 				ec=(EventChain<O_>*)(obj->object);
-				if(typeid(obj->object)==typeid(EventChain<R_>*) && obj->handler == &EventChain<R_>::linkedfire<O_>)
+				if(typeid(obj->object)==typeid(EventChain<R_>*) && obj->handler == &EventChain<R_>::template linkedfire<O_>)
 					return true;
 			}
 
@@ -858,7 +859,7 @@ namespace gge { namespace utils {
 
 		template<class R_>
 		void linkedfire(P_ params) {
-			for(Collection<prvt::eventchain::EventHandler<P_, O_>, 5>::Iterator it = events.First();
+			for(auto it = events.First();
 				it.IsValid();it.Next()) {
 				if(!checklinkedfire<R_>(it.CurrentPtr()))
 					it->Fire(params, *this->object, eventname);

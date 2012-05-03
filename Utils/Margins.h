@@ -185,12 +185,6 @@ namespace gge { namespace utils {
 	}
 
 
-	////Adds the textual form of the point to another string.
-	template <class T_>
-	std::string &operator + (std::string &out, basic_Margins2D<T_> &margins) {
-		return string+(string)margins;
-	}
-
 	template<class T_>
 	basic_Margins2D<T_> &operator +=(basic_Margins2D<T_> &l, const basic_Margins2D<T_> &r) {
 		l.Left+=r.Left;

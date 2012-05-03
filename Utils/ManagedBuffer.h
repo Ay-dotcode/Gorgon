@@ -26,18 +26,24 @@
 //	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 #pragma once
 
+#pragma warning(push)
+#pragma warning(disable:4396)
+
 #include <cstring>
 #include <stdexcept>
 #include <cstdlib>
 
 #include "RefCounter.h"
 
+
+
 namespace gge { namespace utils {
+	
 	template <class T_>
 	class ManagedBuffer : RefCounter<ManagedBuffer<T_> > {
 		template<class O_>
 		friend class ManagedBuffer;
-		friend void std::swap<T_>(ManagedBuffer<T_> &left, ManagedBuffer<T_> &right);
+		friend void std::swap<>(ManagedBuffer<T_> &left, ManagedBuffer<T_> &right);
 		friend class RefCounter<ManagedBuffer>;
 	public:
 		ManagedBuffer() : data(new T_*(nullptr)), size_(new int(0)) 
@@ -48,8 +54,8 @@ namespace gge { namespace utils {
 			Resize(size);
 		}
 
-		ManagedBuffer(ManagedBuffer &buf) : data(buf.data), RefCounter(buf), size_(buf.size_) {
-			addref();
+		ManagedBuffer(ManagedBuffer &buf) : data(buf.data), RefCounter<ManagedBuffer<T_> >(buf), size_(buf.size_) {
+			this->addref();
 		}
 
 		ManagedBuffer &operator =(const ManagedBuffer &buf) {
@@ -59,7 +65,7 @@ namespace gge { namespace utils {
 			refassign(buf);
 
 			data=buf.data;
-			refcnt=buf.refcnt;
+			this->refcnt=buf.refcnt;
 			size_=buf.size_;
 
 			return *this;
@@ -173,23 +179,23 @@ namespace gge { namespace utils {
 		const T_* operator +(int offset) const { return (*this)(offset); }
 
 		void AddReference() const {
-			addref();
+			this->addref();
 		}
 
 		void RemoveReference() const {
-			removeref();
+			this->removeref();
 		}
 
 		void RemoveReference() {
-			removeref();
+			this->removeref();
 		}
 
 		int getReferenceCount() const {
-			return getrefcount();
+			return this->getrefcount();
 		}
 
 		~ManagedBuffer() {
-			destructref();
+			this->destructref();
 		}
 
 		T_ *First() {
@@ -280,3 +286,4 @@ namespace std {
 	}
 }
 
+#pragma warning(pop)

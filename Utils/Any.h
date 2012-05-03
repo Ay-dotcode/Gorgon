@@ -41,7 +41,7 @@ namespace gge { namespace utils {
 	public:
 		Any() : content(NULL),size(0) { }
 
-		Any(Any& any) {
+		Any(const Any& any) {
 			if(any.content) {
 				size=any.size;
 				content=malloc(size);
@@ -63,7 +63,7 @@ namespace gge { namespace utils {
 		template <class T_>
 		operator T_ &() {
 			if(sizeof(T_)!=size) {
-				throw std::bad_cast("Cannot cast, sizes are different");
+				throw std::runtime_error("Cannot cast, sizes are different");
 			}
 			return *reinterpret_cast<T_*>(content);
 		}
@@ -74,7 +74,7 @@ namespace gge { namespace utils {
 	
 		Any &operator =(const Any &any) {
 			if(content)
-				delete content;
+				free(content);
 			size=any.size;
 			content=malloc(size);
 			memcpy(content, any.content, size);
@@ -84,7 +84,7 @@ namespace gge { namespace utils {
 
 		template <class T_>
 		bool operator ==(const T_ &content) const  {
-			return *reinterpret_cast<T_*>this->content==content;
+			return *reinterpret_cast<T_*>(this->content)==content;
 		}
 
 		template <class T_>
@@ -105,7 +105,7 @@ namespace gge { namespace utils {
 
 		template <class T_>
 		T_ *operator ->() {
-			return reinterpret_cast<T_*>(data);
+			return reinterpret_cast<T_*>(content);
 		}
 
 		void Clear() {
@@ -115,7 +115,7 @@ namespace gge { namespace utils {
 
 		~Any() {
 			if(content)
-				delete content;
+				free(content);
 		}
 
 	protected:

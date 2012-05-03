@@ -57,7 +57,7 @@ namespace gge { namespace utils {
 			friend class Collection;
 
 		public:
-			Iterator_() : Col(NULL), Offset(-1)
+			Iterator_() : Col(NULL), Offset(-1) {}
 			Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
 			}
 
@@ -346,7 +346,7 @@ namespace gge { namespace utils {
 			}
 
 			Iterator_<O_,C_,g_> cast() {
-				return Iterator<O_,C_,g_>(Col, Offset);
+				return Iterator_<O_,C_,g_>(Col, Offset);
 			}
 
 			bool isbefore(const SearchIterator_<O_,C_,g_> &it) const {
@@ -417,7 +417,7 @@ namespace gge { namespace utils {
 			}
 
 			operator Iterator_<O_,C_,g_>() const {
-				return Iterator<O_,C_,g_>(Col, Offset);
+				return Iterator_<O_,C_,g_>(Col, Offset);
 			}
 
 			~SearchIterator_() {
@@ -438,12 +438,12 @@ namespace gge { namespace utils {
 			friend class Collection;
 		public:
 			ConstIterator(const Iterator &it) {
-				Col=it.Col;
-				Offset=it.Offset;
+				this->Col=it.Col;
+				this->Offset=it.Offset;
 			}
 
 		protected:
-			ConstIterator(const Collection &c, int offset=0) : Iterator_(c, offset) {
+			ConstIterator(const Collection &c, int offset=0) : Iterator_<const T_,const Collection, growth>(c, offset) {
 			}
 		};
 		typedef SearchIterator_<      T_,      Collection, growth>	    SearchIterator;
@@ -451,12 +451,12 @@ namespace gge { namespace utils {
 			friend class Collection;
 		public:
 			ConstSearchIterator(const SearchIterator &it) {
-				Col=it.Col;
-				Offset=it.Offset;
+				this->Col=it.Col;
+				this->Offset=it.Offset;
 			}
 
 		protected:
-			ConstSearchIterator(const Collection &c, const T_ &search, int offset=0) : SearchIterator_(c, search, offset) {
+			ConstSearchIterator(const Collection &c, const T_ &search, int offset=0) : SearchIterator_<const T_,const Collection, growth>(c, search, offset) {
 			}
 		};
 
@@ -901,8 +901,8 @@ namespace gge { namespace utils {
 			friend class ConstCollection;
 
 		public:
-			Iterator_() : Col(NULL), Offset(-1)
-				Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
+			Iterator_() : Col(NULL), Offset(-1) { }
+			Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
 			}
 
 		protected:
@@ -1178,7 +1178,7 @@ namespace gge { namespace utils {
 			}
 
 			Iterator_<O_,C_,g_> cast() {
-				return Iterator<O_,C_,g_>(Col, Offset);
+				return Iterator_<O_,C_,g_>(Col, Offset);
 			}
 
 			bool isbefore(const SearchIterator_<O_,C_,g_> &it) const {
@@ -1239,7 +1239,7 @@ namespace gge { namespace utils {
 
 		public:
 			operator Iterator_<O_,C_,g_>() const {
-				return Iterator<O_,C_,g_>(Col, Offset);
+				return Iterator_<O_,C_,g_>(Col, Offset);
 			}
 
 			~SearchIterator_() {
@@ -1260,12 +1260,12 @@ namespace gge { namespace utils {
 			friend class ConstCollection;
 		public:
 			ConstIterator(const Iterator &it) {
-				Col=it.Col;
-				Offset=it.Offset;
+				this->Col=it.Col;
+				this->Offset=it.Offset;
 			}
 
 		protected:
-			ConstIterator(const Collection &c, int offset=0) : Iterator_(c, offset) {
+			ConstIterator(const ConstCollection &c, int offset=0) : Iterator_<const T_,const ConstCollection, growth>(c, offset) {
 			}
 		};
 		typedef SearchIterator_<      T_,      ConstCollection, growth>	    SearchIterator;
@@ -1273,12 +1273,12 @@ namespace gge { namespace utils {
 			friend class ConstCollection;
 		public:
 			ConstSearchIterator(const SearchIterator &it) {
-				Col=it.Col;
-				Offset=it.Offset;
+				this->Col=it.Col;
+				this->Offset=it.Offset;
 			}
 
 		protected:
-			ConstSearchIterator(const ConstCollection &c, const T_ &search, int offset=0) : SearchIterator_(c, search, offset) {
+			ConstSearchIterator(const ConstCollection &c, const T_ &search, int offset=0) : SearchIterator_<const T_,const ConstCollection, growth>(c, search, offset) {
 			}
 		};
 
@@ -1302,12 +1302,14 @@ namespace gge { namespace utils {
 		}
 
 		template <int g_>
-		Collection &operator =(const Collection<T_, g_> &col) {
+		ConstCollection &operator =(const Collection<T_, g_> &col) {
 			if(list.getReferenceCount()<=1)
 				delete count;
 
 			list=col.list;
 			count=col.count;
+			
+			return *this;
 		}
 
 		////Searches the position of a given item, if not found invalid iterator returned

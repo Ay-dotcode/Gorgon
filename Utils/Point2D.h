@@ -246,7 +246,7 @@ namespace gge { namespace utils {
 		////no template on this since cos and cosf cannot be used as such
 		void Rotate(FloatingPoint angle) {
 			T_ new_x;
-			FloatingPoint cosa=cosfn(angle), sina=sinfn(angle);
+			FloatingPoint cosa=std::cos(angle), sina=std::sin(angle);
 			new_x = (T_)(x*cosa - y*sina);
 			y     = (T_)(x*sina + y*cosa);
 
@@ -327,13 +327,6 @@ namespace gge { namespace utils {
 		out<<"("<<point.x<<", "<<point.y<<")";
 
 		return out;
-	}
-
-
-	////Adds the textual form of the point to another string.
-	template <class T_>
-	std::string &operator + (std::string &out, const basic_Point2D<T_> &point) {
-		return string+(string)point;
 	}
 
 

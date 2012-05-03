@@ -240,9 +240,9 @@ namespace gge { namespace utils {
 				s[pos]=' ';
 			}
 
-			basic_Rectangle2D ret;
+			basic_Bounds2D ret;
 
-			istringstream is(s);
+			std::istringstream is(s);
 			is>>ret.Left;
 			is>>ret.Right;
 			is>>ret.Top;
@@ -323,13 +323,6 @@ namespace gge { namespace utils {
 		out<<"< "<<bounds.Left<<"-"<<bounds.Right<<" , "<<bounds.Top<<"-"<<bounds.Bottom<<" >";
 
 		return out;
-	}
-
-
-	////Adds the textual form of the point to another string.
-	template <class T_>
-	std::string &operator + (std::string &out, const basic_Bounds2D<T_> &bounds) {
-		return string+(string)bounds;
 	}
 
 

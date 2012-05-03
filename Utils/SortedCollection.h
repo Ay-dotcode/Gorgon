@@ -341,11 +341,10 @@ namespace gge { namespace utils {
 	public:
 		typedef Iterator_<T_> Iterator;
 		class ConstIterator : public Iterator_<const T_> {
-			friend class ConstIterator;
 			friend class SortedCollection;
 		public:
 			ConstIterator(const Iterator &it) {
-				Current=it.Current;
+				this->Current=it.Current;
 			}
 		};
 
@@ -898,7 +897,7 @@ namespace gge { namespace utils {
 		}
 
 		~SortedCollection() {
-			destructref();
+			this->destructref();
 		}
 	protected:
 		int *count;

@@ -29,7 +29,7 @@
 
 namespace gge { namespace utils {
 
-	static char* randomstrings[] = {
+	static const char* randomstrings[] = {
 		"lorem", "ipsum", "sit", "amet", "consectetur", "adipisicing", "elit", "sed", "do", "eiusmod", 
 		"tempor", "incididunt", "ut", "labore", "et", "dolore", "magna", "aliqua", "ut", 
 		"enim", "adum", "minim", "veniam", "quis", "nostrud", "exercitation", "ullamco", "laboris",

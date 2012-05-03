@@ -32,6 +32,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <string>
+#include <cstring>
 #include <iomanip>
 
 #include "UtilsBase.h"
@@ -45,7 +46,7 @@ namespace gge { namespace utils {
 		union {
 			Byte				bytes[8];
 			unsigned int		ints [2];
-			unsigned __int64	int64;
+			unsigned long long	int64;
 		};
 
 		SGuid() { }
@@ -55,12 +56,16 @@ namespace gge { namespace utils {
 				int64=0;
 			} 
 			else {
+#ifdef MSVC
 				memcpy_s(bytes, 8, data, 8);
+#else
+				std::memcpy(bytes, data, 8);
+#endif
 				checknewserial();
 			}
 		}
 
-		SGuid(unsigned __int64 data) {
+		SGuid(unsigned long long data) {
 			int64=data;
 			checknewserial();
 		}
