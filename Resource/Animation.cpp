@@ -84,8 +84,9 @@ namespace gge { namespace resource {
 
 				//this will cause the animation to loop if its simple timer
 				//and stop if it is controlled.
-				if( t>=parent.StartOf(parent.GetNumberofFrames()-1) ) {
+				if( t>=parent.GetDuration() && dynamic_cast<animation::Controller *>(Controller) ) {
 					ret=animation::ProgressResult::Finished;
+					t=parent.GetDuration()-1;
 				}
 				if(t<0) {
 					t=0;
