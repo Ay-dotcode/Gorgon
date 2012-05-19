@@ -48,14 +48,20 @@ namespace gge { namespace effects {
 	}
 
 	void CountingText::Print(ColorizableImageTarget2D *target, int X, int Y) {
-		char text[50];
+		std::string text;
 
 		if(Format.length()) {
-			sprintf_s<50>(text, Format.data(), current);
+			char t[50];
+#ifdef MSVC
+			sprintf_s(t, Format.data(), current);
+#else
+			sprintf(&text[0], Format.data(), current);
+#endif
+			text=t;
 		} else {
-			char tmp[10];
-			sprintf_s<10>(tmp, "%%.%if", Decimals);
-			sprintf_s<50>(text, tmp, current);
+			std::stringstream ss;
+			ss<<std::setprecision(Decimals)<<current;
+			text=ss.str();
 		}
 
 		Font->Print(target, X, Y, Width, text, Color, Align, Shadow);

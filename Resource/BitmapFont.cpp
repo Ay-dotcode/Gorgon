@@ -1,12 +1,17 @@
 #include "BitmapFont.h"
 #include "File.h"
-#include "..\Engine\Graphics.h"
+#include "../Engine/Graphics.h"
 #include <algorithm>
-#include <ppl.h>
+#ifdef MSVC
+#	include <ppl.h>
+#endif
 
 #ifndef MAX_CHAR_DETECTS
 #define MAX_CHAR_DETECTS	10
 #endif
+
+#pragma GCC diagnostic ignored "-Wuninitialized"
+
 
 using namespace gge::graphics;
 using namespace gge::utils;
@@ -67,7 +72,7 @@ namespace gge { namespace resource {
 			int x=X;
 			target->SetCurrentColor(Shadow.Color);
 			for(i=0;i<text.length();i++) {
-				Image *img=Characters[text[i]];
+				Image *img=Characters[(int)text[i]];
 				img->Draw(target,x+Shadow.Offset.x,Y+Shadow.Offset.y);
 				x+=img->GetWidth() + Seperator;
 			}
@@ -80,7 +85,7 @@ namespace gge { namespace resource {
 
 		target->SetCurrentColor(color);
 		for(i=0;i<text.length();i++) {
-			Image *img=Characters[text[i]];
+			Image *img=Characters[(int)text[i]];
 			img->Draw(target,X,Y);
 			X+=img->GetWidth() + Seperator;
 		}
@@ -94,7 +99,7 @@ namespace gge { namespace resource {
 		int lstart=0,lword=0;
 		int llen=0;
 		int lww=0;
-		int fh=FontHeight();
+		//int fh=FontHeight();
 		int j;
 		bool nextline=false;
 		bool wrap=true;
@@ -179,7 +184,7 @@ namespace gge { namespace resource {
 					}
 				}
 
-				if(text.length()-1==lword)
+				if((int)text.length()-1==lword)
 					;
 				else if(text[lword+1]=='\n')
 					lword++;
@@ -231,9 +236,9 @@ namespace gge { namespace resource {
 		}
 
 		int i,j,d;
-		int sx=x;
-		int sy=y;
-		int datc=0;
+		//int sx=x;
+		//int sy=y;
+		//int datc=0;
 		int l=x;
 		int lstart=0,lword=0;
 		int llen=0;//line length
@@ -241,9 +246,9 @@ namespace gge { namespace resource {
 		bool nowrap=false;
 
 		if(w<0) { w=-w; nowrap=true; }
-		bool done;
-		int fh=FontHeight();
-		int *data=(int*)Data;//!???
+		//bool done;
+		//int fh=FontHeight();
+		//int *data=(int*)Data;//!???
 		bool nextline=false;
 		struct {int x;EPrintData*data;} chardetectxs[MAX_CHAR_DETECTS];
 		int cchardetectxs=0;
@@ -333,7 +338,6 @@ namespace gge { namespace resource {
 				}
 
 				for(j=lstart;j<lword+1;j++) {
-					done=0;
 
 					for(d=0;d<DataLen;d++) {
 						if(Data[d].CharPosition==j) {
@@ -460,9 +464,6 @@ namespace gge { namespace resource {
 		}
 
 		int i,j,d;
-		int sx=x;
-		int sy=y;
-		int datc=0;
 		int l=x;
 		int lstart=0,lword=0;
 		int llen=0;//line length
@@ -470,9 +471,9 @@ namespace gge { namespace resource {
 		bool nowrap=false;
 
 		if(w<0) { w=-w; nowrap=true; }
-		bool done;
-		int fh=FontHeight();
-		int *data=(int*)Data; //!???
+		//bool done;
+		//int fh=FontHeight();
+		//int *data=(int*)Data; //!???
 		bool nextline=false;
 		struct {int x;EPrintData*data;} chardetectxs[MAX_CHAR_DETECTS];
 		int cchardetectxs=0;
@@ -561,8 +562,6 @@ namespace gge { namespace resource {
 				}
 
 				for(j=lstart;j<lword+1;j++) {
-					done=0;
-
 					for(d=0;d<DataLen;d++) {
 						if(Data[d].CharPosition==j) {
 							switch(Data[d].Type) {
@@ -642,8 +641,8 @@ namespace gge { namespace resource {
 		int l=0;
 		int lstart=0,lword=0;
 		int llen=0;
-		int lww=0;
-		int fh=FontHeight();
+		//int lww=0;
+		//int fh=FontHeight();
 		int j;
 		int y=0;
 		bool nextline=false;
@@ -661,7 +660,6 @@ namespace gge { namespace resource {
 		for(i=0;i<text.length();i++) {
 			if(text[i]=='\n') {
 				lword=i-1;
-				lww=llen;
 				nextline=true;
 			}
 			else {
@@ -669,20 +667,17 @@ namespace gge { namespace resource {
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
-					lww=llen;
 				}
 
 				if(llen>w && wrap) {
 					if(lword<=lstart) {
 						lword=i;
-						lww=llen;
 					}
 
 					nextline=true;
 				}
 				if(i==text.length()-1) {
 					lword=i;
-					lww=llen;
 
 					nextline=true;
 				}
@@ -705,7 +700,7 @@ namespace gge { namespace resource {
 					}
 				}
 
-				if(text.length()-1==lword)
+				if((int)text.length()-1==lword)
 					;
 				else if(text[lword+1]=='\n')
 					lword++;
@@ -737,6 +732,7 @@ namespace gge { namespace resource {
 		vector<Base*> newitems;
 		newitems.resize(Subitems.GetCount());
 
+#ifdef MSVC
 		Concurrency::parallel_for(0,Subitems.GetCount(), [&](int ind) {
 
 			Image *img=dynamic_cast<Image*>(&Subitems[ind]);
@@ -748,6 +744,19 @@ namespace gge { namespace resource {
 				newitems[ind]=&Subitems[ind];
 			}
 		});
+#else
+		for(int ind=0;ind<Subitems.GetCount();ind++) {
+
+			Image *img=dynamic_cast<Image*>(&Subitems[ind]);
+
+			if(img) {
+				newitems[ind]=&img->Blur(amount, windowsize);
+			}
+			else {
+				newitems[ind]=&Subitems[ind];
+			}
+		}
+#endif
 
 		for(int i=0;i<Subitems.GetCount();i++) {
 			font->Subitems.Add(newitems[i], font->Subitems.HighestOrder()+1);

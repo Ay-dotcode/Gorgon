@@ -4,7 +4,7 @@ using std::string;
 
 namespace gge { namespace widgets { namespace dialog {
 
-	char *dialogicons[] = {"","success","error","warning","canceled"};
+	const char *dialogicons[] = {"","success","error","warning","canceled"};
 	std::vector<Message*> Messages;
 
 

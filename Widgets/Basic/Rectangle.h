@@ -1,10 +1,10 @@
 #pragma once
-#include "..\..\Resource\Base.h"
-#include "..\..\Engine\Animation.h"
-#include "..\..\Resource\ResizableObject.h"
-#include "..\Definitions.h"
-#include "..\..\Utils\Margins.h"
-#include "..\..\Resource\File.h"
+#include "../../Resource/Base.h"
+#include "../../Engine/Animation.h"
+#include "../../Resource/ResizableObject.h"
+#include "../Definitions.h"
+#include "../../Utils/Margins.h"
+#include "../../Resource/File.h"
 
 namespace gge { namespace widgets {
 

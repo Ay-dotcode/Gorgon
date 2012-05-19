@@ -38,29 +38,29 @@ namespace gge {
 
 	//Info functions
 	int Font::FontHeight() {
-		FontRenderer *r;
-		if(r=getRenderer())
+		FontRenderer *r=getRenderer();
+		if(r)
 			return r->FontHeight();
 		else
 			return 0;
 	}
 	int Font::FontBaseline() {
-		FontRenderer *r;
-		if(r=getRenderer())
+		FontRenderer *r=getRenderer();
+		if(r)
 			return r->FontBaseline();
 		else
 			return 0;
 	}
 	int Font::TextWidth(const string &Text) {
-		FontRenderer *r;
-		if(r=getRenderer())
+		FontRenderer *r=getRenderer();
+		if(r)
 			return r->TextWidth(Text);
 		else
 			return 0;
 	}
 	int Font::TextHeight(const string &Text, int W) {
-		FontRenderer *r;
-		if(r=getRenderer())
+		FontRenderer *r=getRenderer();
+		if(r)
 			return r->TextHeight(Text, W);
 		else
 			return 0;
@@ -69,23 +69,23 @@ namespace gge {
 
 	//Print Functions
 	void Font::Print(ColorizableImageTarget2D *target, int X, int Y, const string &Text) {
-		FontRenderer *r;
-		if(r=getRenderer())
+		FontRenderer *r=getRenderer();
+		if(r)
 			r->Print(target, X, Y, Text, Color, Shadow);
 	}
 	void Font::Print(ColorizableImageTarget2D *target, int X, int Y, int W, const string &Text, TextAlignment::Type Align) {
-		FontRenderer *r;
-		if(r=getRenderer())
+		FontRenderer *r=getRenderer();
+		if(r)
 			r->Print(target, X, Y, W, Text, Color, Align, Shadow);
 	}
 	void Font::Print(ColorizableImageTarget2D *target, int X, int Y, int W, const string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
-		FontRenderer *r;
-		if(r=getRenderer())
+		FontRenderer *r=getRenderer();
+		if(r)
 			r->Print(target, X, Y, W, Text, Color, Data, DataLen, Align, Shadow);
 	}
 	void Font::Print_Test(int X, int Y, int W, const string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
-		FontRenderer *r;
-		if(r=getRenderer())
+		FontRenderer *r=getRenderer();
+		if(r)
 			r->Print_Test(X, Y, W, Text, Data, DataLen, Align);
 	}
 

@@ -100,7 +100,7 @@ namespace gge { namespace widgets {
  				controls.Resize(Size);
 
 				textbox.Resize(Size);
-				Bounds b=textbox.GetBounds();
+				utils::Bounds b=textbox.GetBounds();
 				dropbutton.SetX(b.Right-dropbutton.GetWidth());
 				if(this->bp)
 					listbox.SetY(b.Bottom+this->bp->ListMargins.Top);

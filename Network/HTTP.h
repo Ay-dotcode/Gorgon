@@ -32,10 +32,14 @@ namespace gge { namespace network {
 			virtual const char* what() const throw() {
 				return message.c_str();
 			}
+			
+			virtual ~Error() throw() {}
 
 			std::string message;
 			Code   error;
 		};
+		
+		int threadfncall nonblockingop(void *);
 
 		class Nonblocking {
 			friend int threadfncall nonblockingop(void *);

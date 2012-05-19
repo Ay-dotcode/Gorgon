@@ -99,7 +99,6 @@ namespace gge { namespace multimedia {
 		TheoraVideoFrame *frame = mVideoClip->getNextFrame();
 
 		if(frame) {
-			unsigned char* Data = frame->getBuffer();
 
 			mVideoClip->popFrame();
 		}

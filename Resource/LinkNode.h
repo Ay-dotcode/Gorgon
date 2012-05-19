@@ -5,8 +5,12 @@
 
 
 namespace gge { namespace resource {
+	class LinkNodeResource;
+	
+	LinkNodeResource *LoadLinkNodeResource(File &File, std::istream &Data, int Size);
+	
 	class LinkNodeResource : public Base {
-		friend Base *LoadLinkNodeResource(File &File, std::istream &Data, int Size);
+		friend LinkNodeResource *LoadLinkNodeResource(File &File, std::istream &Data, int Size);
 	public:
 
 		LinkNodeResource() : target(nullptr) {  }

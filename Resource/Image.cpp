@@ -114,7 +114,11 @@ namespace gge { namespace resource {
 						jpeg_create_decompress(cinfo);
 
 						FILE *data2;
+#ifdef MSVC
 						fopen_s(&data2, File.GetFilename().c_str(), "rb");
+#else
+						data2=fopen(File.GetFilename().c_str(), "rb");
+#endif
 						fseek(data2,cpos,SEEK_SET);
 						//Specify the data source
 						jpeg_stdio_src(cinfo, data2);
@@ -133,7 +137,7 @@ namespace gge { namespace resource {
 							m=graphics::ColorMode::BGR;
 						else if(channels==4)
 							m=graphics::ColorMode::ABGR;
-						else if(channels=1)
+						else if(channels==1)
 							m=graphics::ColorMode::Alpha;
 
 						if(img->GetMode()!=ColorMode::ARGB)
@@ -209,7 +213,7 @@ namespace gge { namespace resource {
 
 						png_read_update_info(png_ptr, info_ptr);
 
-						int pRowbytes = rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+						rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 						int pChannels = (int)png_get_channels(png_ptr, info_ptr);
 
 						unsigned char *image_data;
@@ -272,10 +276,15 @@ errorout:
 
 		int i;
 		FILE *gfile;
+#ifdef MSVC
 		errno_t err;
 		//To be compatible with JPEG read
-		err=fopen_s(&gfile, file->GetFilename().data(), "rb");
+		err=fopen_s(&gfile, file->GetFilename().c_str(), "rb");
 		if(err != 0) return false;
+#else
+		gfile=fopen(file->GetFilename().c_str(), "rb");
+		if(!gfile) return false;
+#endif
 
 		fseek(gfile,DataLocation,SEEK_SET);
 		
@@ -317,7 +326,7 @@ errorout:
 				Mode=graphics::ColorMode::BGR;
 			else if(channels==4)
 				Mode=graphics::ColorMode::ABGR;
-			else if(channels=1)
+			else if(channels==1)
 				Mode=graphics::ColorMode::Alpha;
 
 			Data.Resize(GetWidth()*GetHeight()*channels);
@@ -363,10 +372,15 @@ errorout:
 
 	bool Image::PNGExport(string filename) {
 		int i;
-		errno_t err;
 		FILE*file;
+#ifdef MSVC
+		errno_t err;
 		err=fopen_s(&file,filename.data(),"wb");
 		if(err != 0) return false;
+#else
+		file=fopen(filename.data(),"wb");
+		if(!file) return false;
+#endif
 		
 
 		png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -415,10 +429,14 @@ errorout:
 		int bit_depth,color_type;
 
 		FILE *infile;
+#ifdef MSVC
 		errno_t err;
 		err=fopen_s(&infile, filename.c_str(), "rb");
 		if(err != 0) return Image::FileNotFound;
-
+#else
+		infile=fopen(filename.c_str(), "rb");
+		if(!infile) return Image::FileNotFound;
+#endif
 	    unsigned char sig[8];
 
 		fread(sig, 1, 8, infile);
@@ -471,7 +489,7 @@ errorout:
 
 		png_read_update_info(png_ptr, info_ptr);
 
-		int pRowbytes = rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+		rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 		int pChannels = (int)png_get_channels(png_ptr, info_ptr);
 
 		unsigned char *image_data;
@@ -585,7 +603,7 @@ errorout:
 			kernel[i]=gaussian(amount, i);
 
 		int newimw=img->Width, newimh=img->Height;
-		int bpp=GetBPP();
+		//int bpp=GetBPP();
 
 		for(int y=0;y<newimh;y++) {
 			for(int x=0;x<newimw;x++) {
@@ -659,7 +677,7 @@ errorout:
 			kernel[i]=gaussian(amount, i);
 
 		int newimw=img->Width, newimh=img->Height;
-		int bpp=GetBPP();
+		//int bpp=GetBPP();
 
 		for(int y=0;y<newimh;y++) {
 			for(int x=0;x<newimw;x++) {

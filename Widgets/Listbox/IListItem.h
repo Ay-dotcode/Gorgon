@@ -2,10 +2,10 @@
 
 
 #include <string>
-#include "..\Base\Widget.h"
-#include "..\..\Utils\Property.h"
-#include "..\..\Utils\EventChain.h"
-#include "..\Base\Container.h"
+#include "../Base/Widget.h"
+#include "../../Utils/Property.h"
+#include "../../Utils/EventChain.h"
+#include "../Base/Container.h"
 
 
 
@@ -45,7 +45,7 @@ namespace gge { namespace widgets {
 		{ }
 
 		IListItem &operator =(const T_ &s) {
-			Text=s;
+			this->Text=s;
 
 			return *this;
 		}

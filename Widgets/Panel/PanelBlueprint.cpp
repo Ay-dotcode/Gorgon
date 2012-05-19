@@ -1,6 +1,6 @@
 #include "PanelBlueprint.h"
-#include "..\..\Engine\Pointer.h"
-#include "..\..\Resource\File.h"
+#include "../../Engine/Pointer.h"
+#include "../../Resource/File.h"
 
 using namespace gge::resource;
 using namespace std;

@@ -179,7 +179,7 @@ namespace xml {
 	  public:
 		void Stamp( const char* now, Encoding encoding );
 
-		const Cursor& Cursor() const	{ return cursor; }
+		const xml::Cursor& Cursor() const	{ return cursor; }
 
 	  private:
 		// Only used by the document!

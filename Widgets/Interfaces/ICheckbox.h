@@ -2,11 +2,11 @@
 
 
 #include <string>
-#include "..\Base\Widget.h"
-#include "..\..\Utils\Property.h"
-#include "..\..\Utils\EventChain.h"
-#include "..\Base\Container.h"
-#include "..\..\Engine\Graphic2D.h"
+#include "../Base/Widget.h"
+#include "../../Utils/Property.h"
+#include "../../Utils/EventChain.h"
+#include "../Base/Container.h"
+#include "../../Engine/Graphic2D.h"
 
 
 

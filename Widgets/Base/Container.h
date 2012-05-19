@@ -2,11 +2,11 @@
 
 
 #include "Widget.h"
-#include "..\..\Utils\SortedCollection.h"
+#include "../../Utils/SortedCollection.h"
 #include <map>
-#include "..\..\Utils\EventChain.h"
+#include "../../Utils/EventChain.h"
 #include "Organizer.h"
-#include "..\Basic\WidgetLayer.h"
+#include "../Basic/WidgetLayer.h"
 #include <limits>
 
 
@@ -27,7 +27,7 @@ namespace gge { namespace widgets {
 			isenabled(true),
 			tabswitch(true),
 			accesskeysenabled(true),
-			Organizer(NULL),
+			organizer(NULL),
 			UpHandler(NULL),
 			organizing(false),
 			ScrollingEvent("Scrolling", this)
@@ -302,8 +302,8 @@ namespace gge { namespace widgets {
 		virtual void Reorganize() {
 			if(!organizing) {
 				organizing=true;
-				if(Organizer) {
-					Organizer->Reorganize();
+				if(organizer) {
+					organizer->Reorganize();
 				}
 
 				organizing=false;
@@ -370,20 +370,20 @@ namespace gge { namespace widgets {
 		}
 
 
-		Organizer *GetOrganizer() const { return Organizer; }
-		bool HasOrganizer() const { return Organizer!=NULL; }
+		Organizer *GetOrganizer() const { return organizer; }
+		bool HasOrganizer() const { return organizer!=NULL; }
 		virtual void SetOrganizer(Organizer &organizer) {
-			if(Organizer) 
-				Organizer->SetAttached(NULL);
+			if(this->organizer) 
+				this->organizer->SetAttached(NULL);
 
-			Organizer=&organizer;
-			Organizer->SetAttached(this);
+			this->organizer=&organizer;
+			this->organizer->SetAttached(this);
 			Reorganize();
 		}
 		void SetOrganizer(Organizer *organizer) { if(organizer) SetOrganizer(*organizer); else RemoveOrganizer(); }
 		virtual void RemoveOrganizer() { 
-			auto org=Organizer;
-			Organizer=NULL;
+			auto org=this->organizer;
+			this->organizer=NULL;
 			if(org) 
 				org->SetAttached(NULL);  
 		}
@@ -546,7 +546,7 @@ namespace gge { namespace widgets {
 		WidgetBase *PrevFocus;
 		WidgetBase *UpHandler;
 
-		widgets::Organizer *Organizer;
+		gge::widgets::Organizer *organizer;
 
 
 		std::map<input::keyboard::Key, WidgetBase*> AccessKeys;

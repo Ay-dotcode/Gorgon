@@ -356,7 +356,7 @@ namespace gge { namespace utils {
 		}
 
 		Wrapper &Add(T_ *item, const K_ &key = K_()) {
-			Wrapper *w;
+			Wrapper *w=NULL;
 
 			if(*head==NULL) {
 				*head=new Wrapper();

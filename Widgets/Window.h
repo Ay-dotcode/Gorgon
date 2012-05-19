@@ -60,7 +60,7 @@ namespace gge { namespace widgets {
 		}
 
 		void RollUp() {
-			bool allow=true,
+			bool allow=true;
 			RollUpEvent(allow);
 
 			if(allow)
@@ -80,7 +80,7 @@ namespace gge { namespace widgets {
 			rolled=true;
 		}
 		void RollDown() {
-			bool allow=true,
+			bool allow=true;
 				RollDownEvent(allow);
 
 			if(allow)

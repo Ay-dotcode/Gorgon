@@ -1,7 +1,7 @@
 #include "CustomLayer.h"
 #include "Graphics.h"
 #include "GGEMain.h"
-#include <gl/gl.h>
+#include <GL/gl.h>
 
 namespace gge {
 	namespace graphics {

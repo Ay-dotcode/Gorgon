@@ -17,15 +17,15 @@ namespace gge { namespace widgets {
 	public:
 
 		template <class R_>
-		ListItem(R_ *receiver, void(R_::*handler)(IListItem*,bool), const T_ &value) : 
-			IListItem(value), Base(true, AutosizeModes::None, false, false, true)
+		ListItem(R_ *receiver, void(R_::*handler)(IListItem<T_, CF_>*,bool), const T_ &value) : 
+			IListItem<T_, CF_>(value), checkbox::Base(true, AutosizeModes::None, false, false, true)
 		{
 			settoggle(receiver, handler);
 		}
 
 		template <class R_>
-		ListItem(R_ *receiver, void(R_::*handler)(IListItem*,bool)) : 
-			IListItem(T_()), Base(true, AutosizeModes::None, false, false, true)
+		ListItem(R_ *receiver, void(R_::*handler)(IListItem<T_, CF_>*,bool)) : 
+			IListItem<T_, CF_>(T_()), checkbox::Base(true, AutosizeModes::None, false, false, true)
 		{
 			settoggle(receiver, handler);
 		}
@@ -38,11 +38,11 @@ namespace gge { namespace widgets {
 		}
 
 		void operator =(const T_ &value) {
-			Value=value;
+			this->Value=value;
 		}
 
 		void operator =(const ListItem &value) {
-			Value=value.value;
+			this->Value=value.value;
 		}
 
 		bool operator <(const ListItem &value) const {
@@ -80,8 +80,8 @@ namespace gge { namespace widgets {
 				break;
 			case input::mouse::Event::Left_Click:
 				if(IsEnabled()) {
-					if(notifier)
-						notifier->Fire(this,true);
+					if(this->notifier)
+						this->notifier->Fire(this,true);
 				}
 
 				break;
@@ -109,16 +109,16 @@ namespace gge { namespace widgets {
 			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Up && !input::keyboard::Modifier::Check()) {
 				Base::up();
 
-				if(notifier)
-					notifier->Fire(this,true);
+				if(this->notifier)
+					this->notifier->Fire(this,true);
 
 				return true;
 			}
 			else if(Key==input::keyboard::KeyCodes::Space && event==input::keyboard::Event::Up && !input::keyboard::Modifier::Check()) {
 				Base::up();
 
-				if(notifier)
-					notifier->Fire(this,true);
+				if(this->notifier)
+					this->notifier->Fire(this,true);
 
 				return true;
 			}
@@ -136,16 +136,16 @@ namespace gge { namespace widgets {
 				return false;
 
 			Base::click();
-			if(notifier)
-				notifier->Fire(this,true);
+			if(this->notifier)
+				this->notifier->Fire(this,true);
 
 			return true;
 		}
 
 		virtual void Signal() {
 			Base::click();
-			if(notifier)
-				notifier->Fire(this,false);
+			if(this->notifier)
+				this->notifier->Fire(this,false);
 		}
 
 		WidgetBase &GetWidget() {
@@ -156,9 +156,9 @@ namespace gge { namespace widgets {
 
 	protected:
 		template<class R_>
-		void settoggle(R_ *receiver, void(R_::*handler)(IListItem*,bool)) {
-			utils::CheckAndDelete(notifier);
-			notifier=new prvt::listnotifyholder<T_,CF_,R_>(receiver, handler);
+		void settoggle(R_ *receiver, void(R_::*handler)(IListItem<T_, CF_>*,bool)) {
+			utils::CheckAndDelete(this->notifier);
+			this->notifier=new prvt::listnotifyholder<T_,CF_,R_>(receiver, handler);
 		}
 
 		ListItem(const ListItem &li);

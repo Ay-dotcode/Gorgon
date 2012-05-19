@@ -5,6 +5,7 @@
 #include "../Utils/EventChain.h"
 
 #include "OS.Win32.h"
+#include "OS.Linux.h"
 #include "../Utils/Rectangle2D.h"
 #include "../Utils/Size2D.h"
 
@@ -40,7 +41,7 @@ namespace gge { namespace os {
 
 	unsigned int GetTime();
 
-	std::string GetClipbardText();
+	std::string GetClipboardText();
 	void SetClipboardText(const std::string &text);
 
 	void RunInNewThread(int(threadfncall *fn)(void *), void *data);
@@ -112,6 +113,8 @@ namespace gge { namespace os {
 			DirectoryIterator &operator +=(int i) {
 				for(int j=0;j<i;j++)
 					++(*this);
+				
+				return *this;
 			}
 
 			bool IsValid() const;

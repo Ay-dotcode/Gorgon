@@ -59,8 +59,6 @@ namespace gge {
 
 	bool LayerBase::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
 		if(event==input::mouse::Event::Over || event==input::mouse::Event::DragOver) {
-			bool ret=false;
-
 			if(!(isVisible && BoundingBox.isInside(location)))
 				return false;
 			

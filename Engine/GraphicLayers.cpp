@@ -1,5 +1,6 @@
 #include "GraphicLayers.h"
 #pragma warning(disable:4244)
+#pragma GCC diagnostic ignored "-Wuninitialized"
 
 using namespace gge::utils;
 using namespace gge::input;
@@ -152,6 +153,8 @@ namespace gge { namespace graphics {
 
 	void Basic2DLayer::Render() {
 		Rectangle psc;
+		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
+
 		if(!isVisible) return;
 		glPushAttrib(GL_SCISSOR_BIT);
 
@@ -181,7 +184,6 @@ namespace gge { namespace graphics {
 		}
 
 		int i;
-		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
 
 		for(i=0;i<Surfaces.GetCount();i++) {
 			BasicSurface *surface=Surfaces[i];
@@ -418,6 +420,8 @@ end:
 
 	void Colorizable2DLayer::Render() {
 		Rectangle psc;
+		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
+
 		if(!isVisible) return;
 		if(Ambient.a==0) return;
 		glPushAttrib(GL_SCISSOR_BIT);
@@ -455,7 +459,6 @@ end:
 		}
 
 		int i;
-		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
 
 		for(i=0;i<Surfaces.GetCount();i++) {
 			ColorizableSurface *surface=Surfaces[i];

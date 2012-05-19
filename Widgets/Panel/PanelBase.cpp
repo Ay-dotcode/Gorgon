@@ -1,6 +1,6 @@
 #include "PanelBase.h"
-#include "..\..\Utils\Size2D.h"
-#include "..\..\Resource\BitmapFont.h"
+#include "../../Utils/Size2D.h"
+#include "../../Resource/BitmapFont.h"
 
 using namespace gge::utils;
 using namespace gge::resource;
@@ -121,11 +121,11 @@ namespace gge { namespace widgets {
 					next_style=type;
 					return;
 				}
-				if(style.from==widgets::Blueprint::Disabled && type!=widgets::Blueprint::Normal || style.from!=widgets::Blueprint::Normal && type==widgets::Blueprint::Disabled) {
+				if( (style.from==widgets::Blueprint::Disabled && type!=widgets::Blueprint::Normal) || (style.from!=widgets::Blueprint::Normal && type==widgets::Blueprint::Disabled) ) {
 					next_style=type;
 					type=widgets::Blueprint::Normal;
 				}
-				if(style.from!=widgets::Blueprint::Active && type==widgets::Blueprint::Moving || style.from==widgets::Blueprint::Moving && type!=widgets::Blueprint::Active) {
+				if( (style.from!=widgets::Blueprint::Active && type==widgets::Blueprint::Moving) || (style.from==widgets::Blueprint::Moving && type!=widgets::Blueprint::Active) ) {
 					next_style=type;
 					type=widgets::Blueprint::Active;
 				}
@@ -423,7 +423,6 @@ namespace gge { namespace widgets {
 			else
 				yscrollrange+=innerlayer.BoundingBox.Height()/5;
 
-			int pmax=vscroll.bar.Max;
 			vscroll.bar.Max=yscrollrange;
 
 

@@ -3,7 +3,7 @@
 
 #include "Graphics.h"
 #include "GraphicTargets2D.h"
-#include "..\Utils\Size2D.h"
+#include "../Utils/Size2D.h"
 
 
 namespace gge { namespace graphics {

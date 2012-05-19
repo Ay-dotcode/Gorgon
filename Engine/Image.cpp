@@ -1,7 +1,7 @@
 
 #include "Image.h"
 #include <cmath>
-#include "..\Utils\BasicMath.h"
+#include "../Utils/BasicMath.h"
 
 using namespace std;
 using namespace gge::utils;

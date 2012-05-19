@@ -189,6 +189,8 @@ namespace gge {
 
 		static void adjustlayers_recurse(LayerBase &layer, utils::Size from, utils::Size to);
 		void adjustlayers(utils::Size size);
+		
+		void initializerest(string Title, os::IconHandle Icon, int X, int Y);
 
 		utils::Collection<IntervalObject> IntervalObjects;
 	};

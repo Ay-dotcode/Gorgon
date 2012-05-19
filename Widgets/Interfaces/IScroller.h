@@ -2,10 +2,10 @@
 
 
 #include <string>
-#include "..\Base\Widget.h"
-#include "..\..\Utils\Property.h"
-#include "..\..\Utils\EventChain.h"
-#include "..\Base\Container.h"
+#include "../Base/Widget.h"
+#include "../../Utils/Property.h"
+#include "../../Utils/EventChain.h"
+#include "../Base/Container.h"
 
 
 
@@ -15,7 +15,7 @@ namespace gge { namespace widgets {
 	class IScroller : public utils::NumericProperty<IScroller<T_>, T_> {
 	public:
 
-		IScroller() : NumericProperty(this, &IScroller::getValue, &IScroller::setValue),
+		IScroller() : utils::NumericProperty<IScroller<T_>, T_>(this, &IScroller::getValue, &IScroller::setValue),
 			Value(*this),
 			ChangeEvent("ChangeEvent", this),			
 			INIT_PROPERTY(IScroller, Min),
@@ -32,7 +32,7 @@ namespace gge { namespace widgets {
 
 		template <class O_>
 		IScroller &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
@@ -52,8 +52,8 @@ namespace gge { namespace widgets {
 
 
 		//SUPPLIED
-		template<class T_>
-		bool default_focusreceived(T_ *Container) {
+		template<class C_>
+		bool default_focusreceived(C_ *Container) {
 			return false;
 		}
 

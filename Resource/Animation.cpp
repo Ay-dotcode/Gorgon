@@ -1,7 +1,7 @@
 #include "Animation.h"
 #include "File.h"
 #include "Image.h"
-#include "..\Utils\BasicMath.h"
+#include "../Utils/BasicMath.h"
 
 using namespace gge::utils;
 using namespace gge::graphics;

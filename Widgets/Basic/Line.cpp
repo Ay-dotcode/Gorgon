@@ -1,11 +1,11 @@
 
 #include "Line.h"
-#include "..\..\Resource\File.h"
-#include "..\..\Engine\Animation.h"
-#include "..\..\Resource\Animation.h"
-#include "..\..\Resource\NullImage.h"
+#include "../../Resource/File.h"
+#include "../../Engine/Animation.h"
+#include "../../Resource/Animation.h"
+#include "../../Resource/NullImage.h"
 #include <vector>
-#include "..\..\Utils\SGuid.h"
+#include "../../Utils/SGuid.h"
 
 using namespace gge::utils;
 using namespace gge::resource;
@@ -153,6 +153,8 @@ namespace gge { namespace widgets {
 			h=controller.CalculateHeight(H, loop.GetHeight(), start.GetHeight()+end.GetHeight());
 
 			Point p=Alignment::CalculateLocation(controller.Align, Rectangle(X,Y,w,h), Size(W,H));
+			X=p.x;
+			Y=p.y;
 
 			start.DrawIn(Target, controller, X, Y, w, start.GetHeight());
 
@@ -259,6 +261,8 @@ namespace gge { namespace widgets {
 			h=controller.CalculateHeight(H, loop.GetHeight(), start.GetHeight()+end.GetHeight());
 
 			Point p=Alignment::CalculateLocation(controller.Align, Rectangle(X,Y,w,h), Size(W,H));
+			X=p.x;
+			Y=p.y;
 
 
 			graphics::SizeController2D c=controller;

@@ -29,7 +29,7 @@ namespace gge { namespace resource {
 		////Size of the data
 		int Size;
 
-		Sound() { Buffer=NULL; Size=0; Format.BitsPerSample=Format.Channels=0; }
+		Sound() { Buffer=0; Size=0; Format.BitsPerSample=Format.Channels=0; }
 
 		operator gge::sound::system::SoundBufferHandle() {
 			return Buffer;

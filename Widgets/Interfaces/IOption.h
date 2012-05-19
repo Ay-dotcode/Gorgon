@@ -2,11 +2,11 @@
 
 
 #include <string>
-#include "..\Base\Widget.h"
-#include "..\..\Utils\Property.h"
-#include "..\..\Utils\EventChain.h"
-#include "..\Base\Container.h"
-#include "..\..\Engine\Graphic2D.h"
+#include "../Base/Widget.h"
+#include "../../Utils/Property.h"
+#include "../../Utils/EventChain.h"
+#include "../Base/Container.h"
+#include "../../Engine/Graphic2D.h"
 
 
 
@@ -105,7 +105,7 @@ namespace gge { namespace widgets {
 			if(&option==currentoption)
 				currentoption=NULL;
 
-			option.ChangeEvent.Unregister<OptionGroup, void(OptionGroup::*)(O_&)>(this, &OptionGroup::option_changed);
+			option.ChangeEvent.Unregister(*this, &OptionGroup::option_changed);
 
 			if(option.parent==this && option.owned)
 				Options.Delete(option);

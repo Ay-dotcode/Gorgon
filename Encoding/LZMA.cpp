@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include "../Utils/Dynamic.h"
 #include "../External/LZMA/LzmaDec.h"
+#undef min
 
 
 namespace gge { namespace encoding {
@@ -122,7 +123,7 @@ namespace gge { namespace encoding {
 
 		LzmaDec_Init(&dec);
 
-		const unsigned BUF_SIZE = 10240;
+		const unsigned long long BUF_SIZE = 10240;
 
 		outBuf.resize(BUF_SIZE);
 		inBuf.resize(BUF_SIZE);
@@ -132,12 +133,12 @@ namespace gge { namespace encoding {
 		if(UseUncompressedSize) inPos+=8;
 		while (outPos < fullsize)
 		{
-			size_t destLen = (size_t)min(BUF_SIZE, fullsize - outPos);
+			size_t destLen = (size_t)std::min(BUF_SIZE, fullsize - outPos);
 			size_t srcLen=BUF_SIZE;
 
 			reader->Read(reader, &inBuf[0], &srcLen);
 
-			size_t srcLenOld = srcLen, destLenOld = destLen;
+			size_t srcLenOld = srcLen;
 
 
 			res = LzmaDec_DecodeToBuf(&dec,

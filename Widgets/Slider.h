@@ -1,6 +1,6 @@
 #pragma once
-#include "Interfaces\ISlider.h"
-#include "Slider\SliderBase.h"
+#include "Interfaces/ISlider.h"
+#include "Slider/SliderBase.h"
 
 namespace gge { namespace widgets {
 
@@ -14,7 +14,7 @@ namespace gge { namespace widgets {
 			Right	= slider::Blueprint::Right,
 		}; 
 
-		typedef Base::numberformat NumberFormatType;
+		typedef typename slider::Base<T_>::numberformat NumberFormatType;
 
 		Slider() : ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(Slider, AnimationDuration),
@@ -27,17 +27,17 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Slider, NumberFormat),
 			INIT_PROPERTY(Slider, ValueAnimation)
 		{
-			Base::setorientation(slider::Blueprint::Bottom);
-			Base::setupdisplay(true, true, false, false, false);
-			Base::setsmoothingmode(true, false, false, true, 100);
-			Base::setmarkers(true, true, false, 10, 5);
-			Base::setactions(true, Base::Goto, true, true, true);
-			Base::setactive();
+			slider::Base<T_>::setorientation(slider::Blueprint::Bottom);
+			slider::Base<T_>::setupdisplay(true, true, false, false, false);
+			slider::Base<T_>::setsmoothingmode(true, false, false, true, 100);
+			slider::Base<T_>::setmarkers(true, true, false, 10, 5);
+			slider::Base<T_>::setactions(true, slider::Base<T_>::Goto, true, true, true);
+			slider::Base<T_>::setactive();
 
-			ISlider::ChangeEvent.DoubleLink(ChangeEvent);
+			ISlider<T_>::ChangeEvent.DoubleLink(ChangeEvent);
 
 			if(WR.Slider)
-				setblueprint(*WR.Slider);
+				this->setblueprint(*WR.Slider);
 		}
 
 		virtual WidgetBase *GetWidget() {
@@ -46,7 +46,7 @@ namespace gge { namespace widgets {
 
 		template <class O_>
 		Slider &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
@@ -70,101 +70,101 @@ namespace gge { namespace widgets {
 
 		//REQUIRED
 		virtual T_ getValue() const {
-			return Base::getvalue();
+			return slider::Base<T_>::getvalue();
 		}
 		void setValue(const T_ &value) {
-			Base::setvalue(value);
+			slider::Base<T_>::setvalue(value);
 		}
 		T_ getMin() const {
-			return Base::getmin();
+			return slider::Base<T_>::getmin();
 		}
 		void setMin(const T_ &value) {
-			Base::setmin(value);
+			slider::Base<T_>::setmin(value);
 		}
 		T_ getMax() const {
-			return Base::getmax();
+			return slider::Base<T_>::getmax();
 		}
 		void setMax(const T_ &value) {
-			Base::setmax(value);
+			slider::Base<T_>::setmax(value);
 		}
 
 
 		int getAnimationDuration() const {
-			if(Base::getsmoothingspeed()==0)
+			if(slider::Base<T_>::getsmoothingspeed()==0)
 				return 0;
 
-			return int(100000/Base::getsmoothingspeed());
+			return int(100000/slider::Base<T_>::getsmoothingspeed());
 		}
 		void setAnimationDuration(const int &value) {
 			if(value==0)
-				Base::setsmoothingspeed(0);
+				slider::Base<T_>::setsmoothingspeed(0);
 			else
-				Base::setsmoothingspeed(100000.f/value);
+				slider::Base<T_>::setsmoothingspeed(100000.f/value);
 		}
 
 		OrientationType getOrientation() const {
-			return OrientationType(Base::getorientation());
+			return OrientationType(slider::Base<T_>::getorientation());
 		}
 		void setOrientation(const OrientationType &orientation) {
-			Base::setaxisinverse(orientation==Left || orientation==Right);
+			slider::Base<T_>::setaxisinverse(orientation==Left || orientation==Right);
 
-			Base::setorientation(slider::Blueprint::OrientationType(orientation));
+			slider::Base<T_>::setorientation(slider::Blueprint::OrientationType(orientation));
 		}
 
 		void setShowTicks(const bool &value) {
-			Base::setshowticks(value);
+			slider::Base<T_>::setshowticks(value);
 		}
 		bool getShowTicks() const {
-			return Base::getshowticks();
+			return slider::Base<T_>::getshowticks();
 		}
 
 		void setTickDistance(const floattype &value) {
-			Base::settickdistance(value);
-			Base::setlargechange(T_(value));
+			slider::Base<T_>::settickdistance(value);
+			slider::Base<T_>::setlargechange(T_(value));
 		}
 		floattype getTickDistance() const {
-			return Base::gettickdistance();
+			return slider::Base<T_>::gettickdistance();
 		}
 
 		void setShowNumbers(const bool &value) {
-			Base::setshownumbers(value);
+			slider::Base<T_>::setshownumbers(value);
 		}
 		bool getShowNumbers() const {
-			return Base::getshownumbers();
+			return slider::Base<T_>::getshownumbers();
 		}
 
 		void setNumberDistance(const int &value) {
-			Base::setnumberdistance(value);
+			slider::Base<T_>::setnumberdistance(value);
 		}
 		int getNumberDistance() const {
-			return Base::getnumberdistance();
+			return slider::Base<T_>::getnumberdistance();
 		}
 
 		void setValueAnimation(const bool &value) {
-			Base::setsmoothingmode(true, false, value, true, 100);
+			slider::Base<T_>::setsmoothingmode(true, false, value, true, 100);
 		}
 		bool getValueAnimation() const {
-			return Base::getsmoothinginfo().value;
+			return slider::Base<T_>::getsmoothinginfo().value;
 		}
 
 		void setStepsize(const T_ &value) {
-			Base::setsteps(value);
-			Base::setsmallchange(std::max(value,T_(1)));
+			slider::Base<T_>::setsteps(value);
+			slider::Base<T_>::setsmallchange(std::max(value,T_(1)));
 		}
 		T_ getStepsize() const {
-			return Base::getsteps();
+			return slider::Base<T_>::getsteps();
 		}
 
 		void setNumberFormat(const NumberFormatType &value) {
-			Base::setnumberformat(value);
+			slider::Base<T_>::setnumberformat(value);
 		}
 		NumberFormatType getNumberFormat() const {
-			return Base::getnumberformat();
+			return slider::Base<T_>::getnumberformat();
 		}
 
 		virtual void wr_loaded() {
-			if(WR.Slider && !blueprintmodified)
-				setblueprint(*WR.Slider);
+			if(WR.Slider && !this->blueprintmodified)
+				this->setblueprint(*WR.Slider);
 		}
 
 

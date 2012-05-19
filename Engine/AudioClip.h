@@ -3,11 +3,11 @@
 #include "OS.Win32.h"
 #include "GGEMain.h"
 
-#include "..\External\TheoraPlayback\TheoraVideoClip.h"
-#include "..\External\TheoraPlayback\TheoraPlayer.h"
-#include "..\External\TheoraPlayback\TheoraDataSource.h"
-#include "..\External\TheoraPlaybackOpenAL\OpenAL_AudioInterface.h"
-#include "..\External\TheoraPlayback\TheoraVideoManager.h"
+#include "../External/TheoraPlayback/TheoraVideoClip.h"
+#include "../External/TheoraPlayback/TheoraPlayer.h"
+#include "../External/TheoraPlayback/TheoraDataSource.h"
+#include "../External/TheoraPlaybackOpenAL/OpenAL_AudioInterface.h"
+#include "../External/TheoraPlayback/TheoraVideoManager.h"
 
 namespace gge { namespace multimedia {
 	//!Needs update

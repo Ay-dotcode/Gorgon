@@ -45,7 +45,70 @@ namespace gge {
 		static const int Mask_Horizontal	= B8(00111000);
 		static const int Mask_Used			= B8(00111111);
 		static const int Mask_Invalid		= ~Mask_Used;
+		
+		inline bool isLeft(Type t) {
+			return (t&Mask_Horizontal) == Left;
+		}
 
+		inline bool isRight(Type t) {
+			return (t&Mask_Horizontal) == Right;
+		}
+
+		inline bool isCenter(Type t) {
+			return (t&Mask_Horizontal) == Center;
+		}
+
+		inline bool isTop(Type t) {
+			return (t&Mask_Vertical) == Top;
+		}
+
+		inline bool isBottom(Type t) {
+			return (t&Mask_Vertical) == Bottom;
+		}
+
+		inline bool isMiddle(Type t) {
+			return (t&Mask_Vertical) == Middle;
+		}
+
+		inline bool IsValid(Type t) {
+			if(t&Mask_Invalid)
+				return false;
+
+			int h=t&Mask_Horizontal;
+			if( !(h==Left || h==Right || h==Center) )
+				return false;
+
+			int v=t&Mask_Vertical;
+			if( !(v==Top || v==Bottom || v==Middle) )
+				return false;
+
+			return true;
+		}
+
+		inline Type setLeft(Type t) {
+			return (Type)( (t&Mask_Vertical) | Left);
+		}
+
+		inline Type setRight(Type t) {
+			return (Type)( (t&Mask_Vertical) | Right);
+		}
+
+		inline Type setCenter(Type t) {
+			return (Type)( (t&Mask_Vertical) | Center);
+		}
+
+		inline Type setTop(Type t) {
+			return (Type)( (t&Mask_Horizontal) | Top);
+		}
+
+		inline Type setBottom(Type t) {
+			return (Type)( (t&Mask_Horizontal) | Bottom);
+		}
+
+		inline Type setMiddle(Type t) {
+			return (Type)( (t&Mask_Horizontal) | Middle);
+		}
+		
 		template<class T_>
 		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, const utils::basic_Rectangle2D<T_> &target, const utils::basic_Size2D<T_> &object) {
 			utils::basic_Point2D<T_> p=target.TopLeft();
@@ -112,69 +175,6 @@ namespace gge {
 				p.y+=target.Height()-object.Height-margins.TotalY();
 
 			return p;
-		}
-
-		inline bool isLeft(Type t) {
-			return (t&Mask_Horizontal) == Left;
-		}
-
-		inline bool isRight(Type t) {
-			return (t&Mask_Horizontal) == Right;
-		}
-
-		inline bool isCenter(Type t) {
-			return (t&Mask_Horizontal) == Center;
-		}
-
-		inline bool isTop(Type t) {
-			return (t&Mask_Vertical) == Top;
-		}
-
-		inline bool isBottom(Type t) {
-			return (t&Mask_Vertical) == Bottom;
-		}
-
-		inline bool isMiddle(Type t) {
-			return (t&Mask_Vertical) == Middle;
-		}
-
-		inline bool IsValid(Type t) {
-			if(t&Mask_Invalid)
-				return false;
-
-			int h=t&Mask_Horizontal;
-			if( !(h==Left || h==Right || h==Center) )
-				return false;
-
-			int v=t&Mask_Vertical;
-			if( !(v==Top || v==Bottom || v==Middle) )
-				return false;
-
-			return true;
-		}
-
-		inline Type setLeft(Type t) {
-			return (Type)( (t&Mask_Vertical) | Left);
-		}
-
-		inline Type setRight(Type t) {
-			return (Type)( (t&Mask_Vertical) | Right);
-		}
-
-		inline Type setCenter(Type t) {
-			return (Type)( (t&Mask_Vertical) | Center);
-		}
-
-		inline Type setTop(Type t) {
-			return (Type)( (t&Mask_Horizontal) | Top);
-		}
-
-		inline Type setBottom(Type t) {
-			return (Type)( (t&Mask_Horizontal) | Bottom);
-		}
-
-		inline Type setMiddle(Type t) {
-			return (Type)( (t&Mask_Horizontal) | Middle);
 		}
 	}; 
 

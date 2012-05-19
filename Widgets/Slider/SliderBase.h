@@ -1,13 +1,13 @@
 #pragma once
 
-#include "SliderBluePrint.h"
-#include "..\Base\Widget.h"
+#include "SliderBlueprint.h"
+#include "../Base/Widget.h"
 #include <map>
-#include "..\Main.h"
-#include "..\Basic\PetContainer.h"
-#include "..\Button.h"
-#include "..\..\Engine\Graphics.h"
-#include "..\Interfaces\ISlider.h"
+#include "../Main.h"
+#include "../Basic/PetContainer.h"
+#include "../Button.h"
+#include "../../Engine/Graphics.h"
+#include "../Interfaces/ISlider.h"
 
 #ifndef LARGE_KEY_TIMEOUT_MULT
 #	define LARGE_KEY_TIMEOUT_MULT	2
@@ -1564,7 +1564,7 @@ namespace gge { namespace widgets {
 					next_style=type;
 					return;
 				}
-				if(style.from==Blueprint::Disabled && type!=Blueprint::Normal || style.from!=Blueprint::Normal && type==Blueprint::Disabled) {
+				if( (style.from==Blueprint::Disabled && type!=Blueprint::Normal) || (style.from!=Blueprint::Normal && type==Blueprint::Disabled) ) {
 					next_style=type;
 					type=Blueprint::Normal;
 				}
@@ -2112,7 +2112,7 @@ namespace gge { namespace widgets {
 
 
 			
-			int ruledistance=distance;
+			//int ruledistance=distance;
 			utils::Bounds rulebounds=inner;
 			//DRAWING RULE
 			if(display.rule && rule) {

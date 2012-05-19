@@ -1,9 +1,9 @@
 #pragma once
 
-#include "..\..\Resource\Base.h"
-#include "..\Definitions.h"
-#include "..\..\Utils\Margins.h"
-#include "..\..\Utils\Size2D.h"
+#include "../../Resource/Base.h"
+#include "../Definitions.h"
+#include "../../Utils/Margins.h"
+#include "../../Utils/Size2D.h"
 
 
 namespace gge { namespace widgets {

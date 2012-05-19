@@ -848,8 +848,6 @@ namespace gge { namespace utils {
 			prvt::eventchain::EventHandlerClassParamOnly<EventChain<R_, P_>, P_, O_> *obj=dynamic_cast<prvt::eventchain::EventHandlerClassParamOnly<EventChain<R_, P_>, P_, O_> *>(object);
 
 			if(obj!=NULL) {
-				EventChain *ec;
-				ec=(EventChain<O_>*)(obj->object);
 				if(typeid(obj->object)==typeid(EventChain<R_>*) && obj->handler == &EventChain<R_>::template linkedfire<O_>)
 					return true;
 			}

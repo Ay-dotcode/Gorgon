@@ -1,11 +1,10 @@
 #pragma once
 
 
-//#include "Interfaces\ILabel.h"
-#include "Listbox\ListboxBase.h"
-#include "..\Utils\Property.h"
-#include "Listbox\ListItem.h"
-#include "..\Utils\OrderedCollection.h"
+#include "Listbox/ListboxBase.h"
+#include "../Utils/Property.h"
+#include "Listbox/ListItem.h"
+#include "../Utils/OrderedCollection.h"
 
 
 namespace gge { namespace widgets {
@@ -23,11 +22,12 @@ namespace gge { namespace widgets {
 			MultiSelect, //control click adds to selected, support for shift multi select and drag multi select
 		};
 
-		typedef ListItem<T_, CF_> ListItem;
-		typedef OrderedCollection<ListItem>::Iterator Iterator;
-		typedef OrderedCollection<ListItem>::ConstIterator ConstIterator;
-		typedef OrderedCollection<ListItem>::SearchIterator SearchIterator;
-		typedef OrderedCollection<ListItem>::ConstSearchIterator ConstSearchIterator;
+		typedef ListItem<T_, CF_> ItemType;
+		typedef utils::OrderedCollection<ItemType> CollectionType;
+		typedef typename CollectionType::Iterator Iterator;
+		typedef typename CollectionType::ConstIterator ConstIterator;
+		typedef typename CollectionType::SearchIterator SearchIterator;
+		typedef typename CollectionType::ConstSearchIterator ConstSearchIterator;
 
 		Listbox() : selectiontype(SingleSelect), active(NULL),
 			INIT_PROPERTY(Listbox, SelectionType),
@@ -35,15 +35,15 @@ namespace gge { namespace widgets {
 			ItemClickedEvent("ItemClicked", this)
 		{
 			if(WR.Listbox)
-				setblueprint(*WR.Listbox);
+				this->setblueprint(*WR.Listbox);
 		}
 
 		virtual ~Listbox() {
 			
 		}
 
-		ListItem &Add(const T_ &value=T_()) {
-			ListItem *li=new ListItem(this, &Listbox::togglenotify);
+		ItemType &Add(const T_ &value=T_()) {
+			ItemType *li=new ItemType(this, &Listbox::togglenotify);
 			li->Value=value;
 
 			Add(*li);
@@ -51,25 +51,25 @@ namespace gge { namespace widgets {
 			return *li;
 		}
 
-		void Add(ListItem &item) {
-			if(bp && bp->Item)
-				item.SetBlueprint(*bp->Item);
+		void Add(ItemType &item) {
+			if(this->bp && this->bp->Item)
+				item.SetBlueprint(*this->bp->Item);
 
 			callsettoggle(item, this, &Listbox::togglenotify);
-			OrderedCollection::Add(item);
-			add(item);
+			CollectionType::Add(item);
+			this->add(item);
 		}
 
-		ListItem &Insert(const T_ &value, const ListItem &before) {
+		ItemType &Insert(const T_ &value, const ItemType &before) {
 			return Insert(value, &before);
 		}
 
-		void Insert(ListItem &item, const ListItem &before) {
+		void Insert(ItemType &item, const ItemType &before) {
 			Insert(item, &before);
 		}
 
-		ListItem &Insert(const T_ &value, const ListItem *before) {
-			ListItem *li=new ListItem(this, &Listbox::togglenotify);
+		ItemType &Insert(const T_ &value, const ItemType *before) {
+			ItemType *li=new ItemType(this, &Listbox::togglenotify);
 			li->Value=value;
 
 			Insert(*li, before);
@@ -77,36 +77,36 @@ namespace gge { namespace widgets {
 			return *li;
 		}
 
-		void Insert(ListItem &item, const ListItem *before) {
-			if(bp && bp->Item)
-				item.SetBlueprint(*bp->Item);
+		void Insert(ItemType &item, const ItemType *before) {
+			if(this->bp && this->bp->Item)
+				item.SetBlueprint(*this->bp->Item);
 
 			callsettoggle(item, this, &Listbox::togglenotify);
-			OrderedCollection::Insert(item, before);
-			add(item);
-			reorganize();
+			CollectionType::Insert(item, before);
+			this->add(item);
+			this->reorganize();
 		}
 
-		ListItem &Insert(const T_ &value, const  T_ &before) {
+		ItemType &Insert(const T_ &value, const  T_ &before) {
 			return Insert(value, Find(before));
 		}
 
-		void Insert(ListItem &item, const T_ &before) {
+		void Insert(ItemType &item, const T_ &before) {
 			Insert(item, Find(before));
 		}
 
-		void Remove(ListItem &item) {
+		void Remove(ItemType &item) {
 			remove(item);
-			OrderedCollection::Remove(item);
+			CollectionType::Remove(item);
 		}
 
-		void Delete(ListItem &item) {
+		void Delete(ItemType &item) {
 			remove(item);
-			OrderedCollection::Delete(item);
+			CollectionType::Delete(item);
 		}
 
 		void DeleteAll(const T_ &value) {
-			for(auto it=First();it.IsValid();it.Next()) {
+			for(auto it=this->First();it.IsValid();it.Next()) {
 				if(it->Value==value) {
 					remove(*it);
 					it.Delete();
@@ -114,8 +114,8 @@ namespace gge { namespace widgets {
 			}
 		}
 
-		ListItem *Find(const T_ &value) {
-			for(auto it=First();it.IsValid();it.Next()) {
+		ItemType *Find(const T_ &value) {
+			for(auto it=this->First();it.IsValid();it.Next()) {
 				if(it->Value==value)
 					return it.CurrentPtr();
 			}
@@ -124,43 +124,43 @@ namespace gge { namespace widgets {
 		}
 
 		Iterator First() {
-			return OrderedCollection::First();
+			return CollectionType::First();
 		}
 
 		ConstIterator First() const {
-			return OrderedCollection::First();
+			return CollectionType::First();
 		}
 
 		Iterator Last() {
-			return OrderedCollection::Last();
+			return CollectionType::Last();
 		}
 
 		ConstIterator Last() const {
-			return OrderedCollection::Last();
+			return CollectionType::Last();
 		}
 
 		Iterator begin() {
-			return OrderedCollection::begin();
+			return CollectionType::begin();
 		}
 
 		ConstIterator begin() const {
-			return OrderedCollection::begin();
+			return CollectionType::begin();
 		}
 
 		Iterator end() {
-			return OrderedCollection::end();
+			return CollectionType::end();
 		}
 
 		ConstIterator end() const {
-			return OrderedCollection::end();
+			return CollectionType::end();
 		}
 
 		SearchIterator send() {
-			return OrderedCollection::send();
+			return CollectionType::send();
 		}
 
 		ConstSearchIterator send() const {
-			return OrderedCollection::send();
+			return CollectionType::send();
 		}
 
 		void DeleteAll() {
@@ -168,24 +168,24 @@ namespace gge { namespace widgets {
 		}
 
 		void Destroy() {
-			panel.Widgets.Clear();
-			adjustheight();
-			OrderedCollection::Destroy();
+			this->panel.Widgets.Clear();
+			this->adjustheight();
+			CollectionType::Destroy();
 		}
 
 		void Clear() {
-			panel.Widgets.Clear();
-			adjustheight();
-			OrderedCollection::Clear();
+			this->panel.Widgets.Clear();
+			this->adjustheight();
+			CollectionType::Clear();
 		}
 
 		int GetCount() const {
-			return OrderedCollection::GetCount();
+			return CollectionType::GetCount();
 		}
 
 		T_ GetValue(int Index) {
-			if(OrderedCollection::Get(Index))
-				return OrderedCollection::Get(Index).Value;
+			if(CollectionType::Get(Index))
+				return CollectionType::Get(Index).Value;
 
 			return T_();
 		}
@@ -199,32 +199,32 @@ namespace gge { namespace widgets {
 				return T_();
 		}
 
-		void SetSelected(ListItem &list) {
+		void SetSelected(ItemType &list) {
 			togglenotify(&list, false);
 		}
 
-		void SetSelected(ListItem *list) {
+		void SetSelected(ItemType *list) {
 			if(list==NULL) return;
 			SetSelected(*list);
 		}
 
-		ListItem *GetItem(int Index) {
-			return OrderedCollection::Get(Index);
+		ItemType *GetItem(int Index) {
+			return CollectionType::Get(Index);
 		}
 
 		//returns selected item
 		//returns last selected if listbox is in multi select
-		ListItem *GetItem() {
+		ItemType *GetItem() {
 			return active;
 		}
 
 		//returns last selected if listbox is in multi select
-		ListItem *GetSelectedItem() {
+		ItemType *GetSelectedItem() {
 			return active;
 		}
 		
 		//works only for multi select
-		utils::ConstCollection<ListItem> GetSelectedItems() {
+		utils::ConstCollection<ItemType> GetSelectedItems() {
 			return selected;
 		}
 
@@ -241,14 +241,14 @@ namespace gge { namespace widgets {
 		}
 
 		template<class P_>
-		void Sort(P_ predicate=std::less<T_>) {
-			OrderedCollection::Sort(predicate);
+		void Sort(P_ predicate=std::less<T_>()) {
+			CollectionType::Sort(predicate);
 
 			reorganize();
 		}
 
 		void Sort() {
-			OrderedCollection::Sort();
+			CollectionType::Sort();
 
 			reorganize();
 		}
@@ -258,21 +258,21 @@ namespace gge { namespace widgets {
 		using WidgetBase::SetBlueprint;
 
 		virtual void SetBlueprint(const widgets::Blueprint &bp) {
-			Base::SetBlueprint(bp);
+			listbox::Base<T_, CF_>::SetBlueprint(bp);
 
 			for(auto it=First();it.IsValid();it.Next())
-				it->SetBlueprint(*Base::bp->Item);
+				it->SetBlueprint(*listbox::Base<T_, CF_>::bp->Item);
 
 			if(GetCount())
-				panel.SmallScroll=2*First()->GetHeight();
+				this->panel.SmallScroll=2*this->First()->GetHeight();
 			else
-				panel.SmallScroll=2*Base::bp->Item->DefaultSize.Height;
+				this->panel.SmallScroll=2*listbox::Base<T_, CF_>::bp->Item->DefaultSize.Height;
 
-			panel.LargeScroll=panel.GetUsableSize().Height-panel.SmallScroll;
-			if(panel.LargeScroll<panel.GetUsableSize().Height/2)
-				panel.LargeScroll=panel.GetUsableSize().Height/2;
+			this->panel.LargeScroll=this->panel.GetUsableSize().Height-this->panel.SmallScroll;
+			if(this->panel.LargeScroll<this->panel.GetUsableSize().Height/2)
+				this->panel.LargeScroll=this->panel.GetUsableSize().Height/2;
 
-			adjustheight();
+			this->adjustheight();
 		}
 
 		void ClearSelection() {
@@ -281,7 +281,7 @@ namespace gge { namespace widgets {
 
 		//!Keyboard handling
 
-		utils::EventChain<Listbox, ListItem&> ItemClickedEvent;
+		utils::EventChain<Listbox, ItemType&> ItemClickedEvent;
 		utils::BooleanProperty<Listbox> AutoHeight;
 
 	protected:
@@ -297,16 +297,16 @@ namespace gge { namespace widgets {
 
 		SelectionTypes selectiontype;
 
-		utils::Collection<ListItem> selected;
-		ListItem *active;
+		utils::Collection<ItemType> selected;
+		ItemType *active;
 
-		void clearall(ListItem *item=NULL) {
-			for(auto it=First();it.IsValid();it.Next())
+		void clearall(ItemType *item=NULL) {
+			for(auto it=this->First();it.IsValid();it.Next())
 				if(it.CurrentPtr()!=item) callclear(*it);
 		}
 
 		void togglenotify(IListItem<T_, CF_> *li, bool raise) {
-			ListItem* item=dynamic_cast<ListItem*>(li);
+			ItemType* item=dynamic_cast<ItemType*>(li);
 			if(!item) return;
 
 			if(selectiontype==SingleSelect) {
@@ -362,25 +362,25 @@ namespace gge { namespace widgets {
 		void reorganize() {
 			//panel.Widgets.Clear();
 
-			for(auto it=First();it.IsValid();it.Next()) {
-				panel.RemoveWidget(*it);
+			for(auto it=this->First();it.IsValid();it.Next()) {
+				this->panel.RemoveWidget(*it);
 			}
 
-			for(auto it=First();it.IsValid();it.Next()) {
+			for(auto it=this->First();it.IsValid();it.Next()) {
 				add(*it);
 			}
 		}
 
 		void setAutoHeight(const bool &value) {
-			setautoheight(value);
+			this->setautoheight(value);
 		}
 		bool getAutoHeight() const {
-			return getautoheight();
+			return this->getautoheight();
 		}
 
 		virtual void wr_loaded() {
-			if(WR.Listbox && !blueprintmodified)
-				setblueprint(*WR.Listbox);
+			if(WR.Listbox && !this->blueprintmodified)
+				this->setblueprint(*WR.Listbox);
 		}
 	};
 

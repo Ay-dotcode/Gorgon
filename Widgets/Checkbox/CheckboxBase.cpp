@@ -1,6 +1,6 @@
 #include "CheckboxBase.h"
-#include "..\..\Utils\Size2D.h"
-#include "..\..\Resource\BitmapFont.h"
+#include "../../Utils/Size2D.h"
+#include "../../Resource/BitmapFont.h"
 
 using namespace gge::utils;
 using namespace gge::resource;
@@ -138,7 +138,6 @@ namespace gge { namespace widgets {
 			int maximumsized=0;
 			int total=0;
 			int totalmargin=0;
-			int pmargin=0;
 			int sizes[3]={};
 			for(int i=0;i<3;i++) {
 				switch(line->GetContent(i)) {
@@ -161,7 +160,6 @@ namespace gge { namespace widgets {
 					break;
 				case Blueprint::Text:
 					if(font && text!="") {
-						int w=font->TextWidth(text);
 						if(textp) {
 							sizes[i]=0; //text size is not fixed and might be larger than the given area
 
@@ -247,7 +245,6 @@ namespace gge { namespace widgets {
 			y=bounds.Top;
 			h=bounds.Height();
 
-			pmargin=0;
 			Bounds itembounds;
 			Point  targetlocation;
 			Alignment::Type align;
@@ -676,7 +673,7 @@ namespace gge { namespace widgets {
 					return;
 				}
 				//Disabled can only be access from normal
-				if(style.from==Blueprint::Disabled && type!=Blueprint::Normal || style.from!=Blueprint::Normal && type==Blueprint::Disabled) {
+				if( (style.from==Blueprint::Disabled && type!=Blueprint::Normal) || (style.from!=Blueprint::Normal && type==Blueprint::Disabled) ) {
 					next_style=type;
 					type=Blueprint::Normal;
 				}

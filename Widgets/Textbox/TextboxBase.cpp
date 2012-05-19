@@ -1,6 +1,6 @@
 #include "TextboxBase.h"
-#include "..\..\Utils\Size2D.h"
-#include "..\..\Resource\BitmapFont.h"
+#include "../../Utils/Size2D.h"
+#include "../../Resource/BitmapFont.h"
 
 using namespace gge::utils;
 using namespace gge::resource;
@@ -99,7 +99,7 @@ namespace gge { namespace widgets {
 					font->Print_Test(location, 0, prefix+text+suffix, eprint, 1);
 					caretposition=Alignment::CalculateLocation(bp->CaretPlace.Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace.Margins);
 
-					if(caretlocation==text.length() && tw+caretimagew>inner.Width()) {
+					if(caretlocation==(int)text.length() && tw+caretimagew>inner.Width()) {
 						scroll.x=inner.Width()-(tw+caretimagew);
 					}
 					else if(caretlocation==0 && tw+caretimagew>inner.Width()) {
@@ -241,7 +241,7 @@ namespace gge { namespace widgets {
 					next_style=type;
 					return;
 				}
-				if(style.from==widgets::Blueprint::Disabled && type!=widgets::Blueprint::Normal || style.from!=widgets::Blueprint::Normal && type==widgets::Blueprint::Disabled) {
+				if( (style.from==widgets::Blueprint::Disabled && type!=widgets::Blueprint::Normal) || (style.from!=widgets::Blueprint::Normal && type==widgets::Blueprint::Disabled) ) {
 					next_style=type;
 					type=widgets::Blueprint::Normal;
 				}
@@ -669,7 +669,7 @@ namespace gge { namespace widgets {
 					return true;
 				}
 				else if(!readonly && (Key=='v' || Key=='V')) {
-					string s=os::GetClipbardText();
+					string s=os::GetClipboardText();
 					validatetext(s);
 
 					if(s!="") {

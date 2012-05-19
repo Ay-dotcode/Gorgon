@@ -78,7 +78,7 @@ namespace gge { namespace multimedia {
 
 		if(mIsLoaded) {
 			gge::Main.BeforeRenderEvent.Unregister(mRenderToken);
-			mRenderToken=NULL;
+			mRenderToken=0;
 
 			sVideoManager->destroyVideoClip(mVideoClip);
 

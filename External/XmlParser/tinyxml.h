@@ -1028,7 +1028,7 @@ namespace xml {
 		*/
 		template< typename T > int QueryValueAttribute( const std::string& name, T* outValue ) const
 		{
-			const Attribute* node = attributeSet.Find( name );
+			const xml::Attribute* node = attributeSet.Find( name );
 			if ( !node )
 				return TIXML_NO_ATTRIBUTE;
 
@@ -1698,22 +1698,22 @@ namespace xml {
 		*/
 		Unknown* ToUnknown() const		{ return ( ( node && node->ToUnknown() ) ? node->ToUnknown() : 0 ); }
 
-		/** @deprecated use ToNode. 
-			Return the handle as a Node. This may return null.
-		*/
-		Node* Node() const			{ return ToNode(); } 
-		/** @deprecated use ToElement. 
-			Return the handle as a Element. This may return null.
-		*/
-		Element* Element() const	{ return ToElement(); }
-		/**	@deprecated use ToText()
-			Return the handle as a Text. This may return null.
-		*/
-		Text* Text() const			{ return ToText(); }
-		/** @deprecated use ToUnknown()
-			Return the handle as a Unknown. This may return null.
-		*/
-		Unknown* Unknown() const	{ return ToUnknown(); }
+// 		/** @deprecated use ToNode. 
+// 			Return the handle as a Node. This may return null.
+// 		*/
+// 		xml::Node* Node() const			{ return ToNode(); } 
+// 		/** @deprecated use ToElement. 
+// 			Return the handle as a Element. This may return null.
+// 		*/
+// 		xml::Element* Element() const	{ return ToElement(); }
+// 		/**	@deprecated use ToText()
+// 			Return the handle as a Text. This may return null.
+// 		*/
+// 		Text* Text() const			{ return ToText(); }
+// 		/** @deprecated use ToUnknown()
+// 			Return the handle as a Unknown. This may return null.
+// 		*/
+// 		Unknown* Unknown() const	{ return ToUnknown(); }
 
 	private:
 		xml::Node* node;

@@ -1,10 +1,10 @@
 #include "Rectangle.h"
-#include "..\..\Resource\File.h"
-#include "..\..\Engine\Animation.h"
-#include "..\..\Resource\Animation.h"
-#include "..\..\Resource\NullImage.h"
+#include "../../Resource/File.h"
+#include "../../Engine/Animation.h"
+#include "../../Resource/Animation.h"
+#include "../../Resource/NullImage.h"
 #include <vector>
-#include "..\..\Utils\SGuid.h"
+#include "../../Utils/SGuid.h"
 
 using namespace gge::utils;
 using namespace gge::resource;
@@ -42,7 +42,6 @@ namespace gge { namespace widgets {
 		RectangularGraphic2DSequenceProvider *tl=NULL, *t=NULL, *tr=NULL;
 		RectangularGraphic2DSequenceProvider * l=NULL, *c=NULL, * r=NULL;
 		RectangularGraphic2DSequenceProvider *bl=NULL, *b=NULL, *br=NULL;
-		bool istiled=true;
 		SGuid mask;
 		RectangleResource::TilingInfo tile;
 		tile.Top=true;

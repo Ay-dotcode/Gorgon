@@ -1,17 +1,17 @@
 #pragma once
 
 
-#include "..\Base\Widget.h"
-#include "..\Interfaces\IScroller.h"
+#include "../Base/Widget.h"
+#include "../Interfaces/IScroller.h"
 #include "PanelBlueprint.h"
 #include <map>
 #include <queue>
-#include "..\Main.h"
-#include "..\Basic\PetContainer.h"
-#include "..\Interfaces\IScroller.h"
-#include "..\Scrollbar.h"
-#include "..\StatefulLabel.h"
-#include "..\..\Utils\OrderedCollection.h"
+#include "../Main.h"
+#include "../Basic/PetContainer.h"
+#include "../Interfaces/IScroller.h"
+#include "../Scrollbar.h"
+#include "../StatefulLabel.h"
+#include "../../Utils/OrderedCollection.h"
 
 namespace gge { namespace widgets {
 	namespace panel {

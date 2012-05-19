@@ -5,9 +5,9 @@
 // widget files
 // 
 
-#include "..\Resource\File.h"
-#include "..\Engine\GGEMain.h"
-#include "Base\VirtualPanel.h"
+#include "../Resource/File.h"
+#include "../Engine/GGEMain.h"
+#include "Base/VirtualPanel.h"
 
 
 namespace gge { namespace widgets {

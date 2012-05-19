@@ -1,4 +1,4 @@
-#include "TabPanel.h"
+#include "Tabpanel.h"
 #include "../Resource/File.h"
 
 using namespace gge::resource;

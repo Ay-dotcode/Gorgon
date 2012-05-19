@@ -36,7 +36,7 @@ namespace gge { namespace resource {
 		return file.Root().FindObject(target);
 	}
 
-	Base *LoadLinkNodeResource(File &File, istream &Data, int Size) {
+	LinkNodeResource *LoadLinkNodeResource(File &File, istream &Data, int Size) {
 		LinkNodeResource *link=new LinkNodeResource;
 
 		int target=Data.tellg()+Size;

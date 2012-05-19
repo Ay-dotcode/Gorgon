@@ -1,9 +1,9 @@
 #pragma once
 
 #include "GGE.h"
+#include "OS.h"
 #include "../External/OpenAL/alc.h"
 #include "../External/OpenAL/al.h"
-#include "OS.h"
 
 #define ERRNO_ERR			0
 #define ERRAL_DEVICE_ERR	1

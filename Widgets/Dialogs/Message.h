@@ -28,20 +28,20 @@ namespace gge { namespace widgets { namespace dialog {
 		template<class T_>
 		Message(const T_ &msg) : INIT_PROPERTY(Message, MessageText), INIT_PROPERTY(Message, ButtonText) {
 			init();
-			Message=msg;
+			MessageText=msg;
 		}
 
 		template<class T_>
 		Message(const T_ &msg, const std::string &icon) : INIT_PROPERTY(Message, MessageText), INIT_PROPERTY(Message, ButtonText) {
 			init();
-			Message=msg;
+			MessageText=msg;
 			SetIcon(icon);
 		}
 
 		template<class T_>
 		Message(const T_ &msg, DialogIcon icon) : INIT_PROPERTY(Message, MessageText), INIT_PROPERTY(Message, ButtonText) {
 			init();
-			Message=msg;
+			MessageText=msg;
 			SetIcon(icon);
 		}
 

@@ -5,13 +5,13 @@
 // and center part can either be tiled or scaled.
 // 
 
-#include "..\..\Resource\Base.h"
-#include "..\Definitions.h"
-#include "..\..\Resource\ResizableObject.h"
-#include "..\..\Resource\File.h"
-#include "..\..\Resource\NullImage.h"
-#include "..\..\Engine\Animation.h"
-#include "..\..\Utils\Margins.h"
+#include "../../Resource/Base.h"
+#include "../Definitions.h"
+#include "../../Resource/ResizableObject.h"
+#include "../../Resource/File.h"
+#include "../../Resource/NullImage.h"
+#include "../../Engine/Animation.h"
+#include "../../Utils/Margins.h"
 
 
 

@@ -1,5 +1,5 @@
 #include "LayerResizer.h"
-#include "..\Utils\BasicMath.h"
+#include "../Utils/BasicMath.h"
 
 using namespace gge::utils;
 

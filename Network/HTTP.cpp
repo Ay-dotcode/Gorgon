@@ -1,4 +1,11 @@
 #include "../Engine/OS.h"
+
+#ifdef WIN32
+#	undef APIENTRY
+#	undef WINGDIAPI
+#endif
+
+
 #include "../External/cURL/curl.h"
 #include <stdexcept>
 #include <cstring>
@@ -94,7 +101,7 @@ namespace gge { namespace network {
 			return s;
 		}
 
-		static int threadfncall nonblockingop(void *data) {
+		int threadfncall nonblockingop(void *data) {
 			Nonblocking *me=(Nonblocking*)data;
 			CURLcode res=curl_easy_perform(me->curl);
 

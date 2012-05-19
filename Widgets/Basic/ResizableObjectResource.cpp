@@ -1,12 +1,12 @@
 
 #include "Line.h"
 #include "Rectangle.h"
-#include "..\..\Resource\File.h"
-#include "..\..\Engine\Animation.h"
-#include "..\..\Resource\Animation.h"
-#include "..\..\Resource\Image.h"
-#include "..\..\Resource\NullImage.h"
-#include "..\..\Utils\SGuid.h"
+#include "../../Resource/File.h"
+#include "../../Engine/Animation.h"
+#include "../../Resource/Animation.h"
+#include "../../Resource/Image.h"
+#include "../../Resource/NullImage.h"
+#include "../../Utils/SGuid.h"
 #include "ResizableObjectResource.h"
 
 using namespace gge::utils;

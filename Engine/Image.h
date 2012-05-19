@@ -1,6 +1,6 @@
 #pragma once
-#include "..\Utils\UtilsBase.h"
-#include "..\Utils\CastableManagedBuffer.h"
+#include "../Utils/UtilsBase.h"
+#include "../Utils/CastableManagedBuffer.h"
 #include "Graphics.h"
 #include "GraphicTargets2D.h"
 #include "Graphic2D.h"

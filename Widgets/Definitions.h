@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\Resource\Definitions.h"
+#include "../Resource/Definitions.h"
 
 
 namespace gge { namespace widgets {

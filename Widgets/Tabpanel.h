@@ -6,7 +6,7 @@
 #include "RadioButton.h"
 #include "../Utils/OrderedCollection.h"
 #include "TabPanelPanel.h"
-#include "TabPanelBlueprint.h"
+#include "TabpanelBlueprint.h"
 #include "WidgetRegistry.h"
 
 namespace gge { namespace widgets {

@@ -109,7 +109,7 @@ namespace gge { namespace utils {
 
 	template <class T_>
 	inline T_ PositiveMod(const T_ &num, const T_ &mod) {
-		return num<0 ? mod + (num%mod) : num%mod;
+		return num<0 ? (mod + (num%mod))%mod : num%mod;
 	}
 
 	template <class T_>

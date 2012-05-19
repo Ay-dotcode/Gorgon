@@ -5,20 +5,23 @@
 #pragma warning(disable:4351)
 
 
-#include "..\Base\BluePrint.h"
-#include "..\Definitions.h"
-#include "..\..\Resource\Sound.h"
+#include "../Base/Blueprint.h"
+#include "../Definitions.h"
+#include "../../Resource/Sound.h"
 
 #include <map>
-#include "..\Slider\SliderBlueprint.h"
-#include "..\..\Resource\Base.h"
-#include "..\Checkbox\CheckboxBlueprint.h"
+#include "../Slider/SliderBlueprint.h"
+#include "../../Resource/Base.h"
+#include "../Checkbox/CheckboxBlueprint.h"
 
 
 
 namespace gge { namespace widgets {
 
 	namespace textbox {
+		
+		class Blueprint;
+		Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 
 		class Blueprint : public widgets::Blueprint, public resource::Base {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
@@ -48,30 +51,6 @@ namespace gge { namespace widgets {
 				template<class T_, int id>
 				T_ *Get() const {
 					throw std::runtime_error("No such variable");
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 1>() const {
-					return OuterBorder;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 2>() const {
-					return InnerBorder;
-				}
-				template<>
-				gge::Font *Get<gge::Font, 3>() const {
-					return Font;
-				}
-				template<>
-				gge::Font *Get<gge::Font, 4>() const {
-					return SelectedFont;
-				}
-				template<>
-				resource::Sound *Get<resource::Sound, 7>() const {
-					return Sound;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 8>() const {
-					return Overlay;
 				}
 
 
@@ -220,6 +199,31 @@ namespace gge { namespace widgets {
 
 
 		};
+
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 1>() const {
+			return OuterBorder;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 2>() const {
+			return InnerBorder;
+		}
+		template<>
+		inline gge::Font *Blueprint::Element::Get<gge::Font, 3>() const {
+			return Font;
+		}
+		template<>
+		inline gge::Font *Blueprint::Element::Get<gge::Font, 4>() const {
+			return SelectedFont;
+		}
+		template<>
+		inline resource::Sound *Blueprint::Element::Get<resource::Sound, 7>() const {
+			return Sound;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 8>() const {
+			return Overlay;
+		}
 
 	}
 } }

@@ -27,7 +27,7 @@ namespace gge { namespace widgets { namespace dialog {
 			INIT_PROPERTY(TextInput, InputText)
 		{
 			init();
-			TextInput=msg;
+			InputText=msg;
 		}
 
 		template<class T_>
@@ -36,7 +36,7 @@ namespace gge { namespace widgets { namespace dialog {
 			INIT_PROPERTY(TextInput, InputText)
 		{
 			init();
-			TextInput=msg;
+			InputText=msg;
 			SetIcon(icon);
 		}
 

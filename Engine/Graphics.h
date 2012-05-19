@@ -3,33 +3,22 @@
 #include "GGE.h"
 #include "OS.h"
 
-#ifndef WINGDIAPI
-#	define WINGDIAPI	__declspec(dllimport)
-#endif
-
-#ifndef APIENTRY
-#	define APIENTRY	__stdcall
-#endif
-
-#ifndef CALLBACK
-#	define CALLBACK	__stdcall
-#endif
-
-#include <gl/gl.h>
-#include <gl/glu.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <assert.h>
 #include <stdexcept>
 #include <string>
+
+#ifdef WIN32
+#	undef APIENTRY
+#	undef WINGDIAPI
+#endif
 
 #include "../Utils/ManagedBuffer.h"
 #include "../Utils/Point2D.h"
 #include "../Utils/Bounds2D.h"
 #include "../Utils/Rectangle2D.h"
 #include "../Utils/Size2D.h"
-
-#undef WINGDIAPI
-#undef APIENTRY
-#undef CALLBACK
 
 #ifndef GL_BGR
 #	define GL_BGR	0x80E0
@@ -378,6 +367,14 @@ namespace gge { namespace graphics {
 			hasOwnTextureCoords=false;
 		}
 
+		////Deletes texture coordinate information
+		void DeleteTextureCoords() {
+			if(hasOwnTextureCoords) {
+				hasOwnTextureCoords=false;
+				delete[] TextureCoords;
+			}
+		}
+
 		////Changes current texture to the given one
 		void setTexture(const GLTexture *texture) {
 			DeleteTextureCoords();
@@ -391,18 +388,10 @@ namespace gge { namespace graphics {
 			return Texture;
 		}
 
-		////Deletes texture coordinate information
-		__forceinline void DeleteTextureCoords() {
-			if(hasOwnTextureCoords) {
-				hasOwnTextureCoords=false;
-				delete[] TextureCoords;
-			}
-		}
-
 		////Creates texture coordinate information,
 		/// should be called before modifying texture
 		/// coordinates
-		__forceinline void CreateTextureCoords() {
+		void CreateTextureCoords() {
 			if(!hasOwnTextureCoords) {
 				hasOwnTextureCoords=true;
 				TextureCoords=new TexturePosition[4];
@@ -623,7 +612,7 @@ namespace gge { namespace graphics {
 		////Performs post render tasks
 		///@hDC			: Device context that is created by
 		/// initialize graphics function
-		void PostRender(os::DeviceHandle Device);
+		void PostRender(os::DeviceHandle Device, os::WindowHandle win);
 
 		void ResizeGL(int Width, int Height);
 

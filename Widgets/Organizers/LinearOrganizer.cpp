@@ -57,7 +57,7 @@ namespace gge { namespace widgets {
 					(dynamic_cast<ComboboxType*>(widget)) ||
 					(dynamic_cast<Panel*>(widget)) ||
 					(dynamic_cast<ListboxType*>(widget)) || 
-					(dynamic_cast<Label*>(widget) && col==row->columns.size()-1 && maxsizedwidgets==0)
+					(dynamic_cast<Label*>(widget) && col==(int)row->columns.size()-1 && maxsizedwidgets==0)
 				) {
 					maxsizedwidgets++;
 				}
@@ -100,7 +100,7 @@ namespace gge { namespace widgets {
 						(dynamic_cast<ComboboxType*>(widget)) ||
 						(dynamic_cast<Panel*>(widget)) ||
 						(dynamic_cast<ListboxType*>(widget)) || 
-						(dynamic_cast<Label*>(widget) && col==row->columns.size()-1 && maxsizedwidgets>0)
+						(dynamic_cast<Label*>(widget) && col==(int)row->columns.size()-1 && maxsizedwidgets>0)
 						) {
 
 						widget->SetWidth(variablesize+carry);

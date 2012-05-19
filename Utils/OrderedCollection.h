@@ -39,6 +39,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
+#include <algorithm>
 
 #include "Iterator.h"
 #include "ManagedBuffer.h"

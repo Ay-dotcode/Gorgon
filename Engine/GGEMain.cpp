@@ -4,9 +4,8 @@
 #include "Graphics.h"
 #include "Input.h"
 #include "Animation.h"
-//#include "../Widgets/WidgetMain.h"
-#include "..\Utils\Rectangle2D.h"
-#include "..\Resource\Main.h"
+#include "../Utils/Rectangle2D.h"
+#include "../Resource/Main.h"
 #include "VideoClip.h"
 #include <algorithm>
 #include <functional>
@@ -28,7 +27,7 @@ namespace gge {
 		FullScreen(false),
 		BeforeRenderEvent("BeforeRender", this),
 		AfterRenderEvent("AfterRender", this),
-		Window(NULL)
+		Window((os::WindowHandle)NULL)
 	{
 		BoundingBox=utils::Bounds(0,0, Width,Height);
 		isVisible=true;
@@ -37,15 +36,15 @@ namespace gge {
 
 		FPS=50;
 
-		srand((unsigned)time(NULL));
+		srand((unsigned)(time(NULL))+CurrentTime);
 	}
 
 	void GGEMain::Setup(string SystemName, int Width, int Height, int BitDepth, bool FullScreen) {
 #ifdef _DEBUG
-		if(Window!=NULL)
+		if(Window!=(os::WindowHandle)NULL)
 			throw std::runtime_error("System already initialized.");
 #else
-		if(Window!=NULL)
+		if(Window!=(os::WindowHandle)NULL)
 			return;
 #endif
 		adjustlayers(utils::Size(Width, Height));
@@ -110,7 +109,7 @@ namespace gge {
 	void GGEMain::Render() {
 		graphics::system::PreRender();
 		LayerBase::Render();
-		graphics::system::PostRender(Device);
+		graphics::system::PostRender(Device, Window);
 	}
 
 	IntervalObject *GGEMain::RegisterInterval(unsigned int Timeout, IntervalSignalEvent Signal) {
@@ -129,9 +128,8 @@ namespace gge {
 	void GGEMain::UnregisterInterval(IntervalObject *Interval) {
 		IntervalObjects.Delete(Interval);
 	}
-
-	void GGEMain::InitializeAll(string Title, os::IconHandle Icon, int X, int Y) {
-		InitializeOS();
+	
+	void GGEMain::initializerest(string Title, os::IconHandle Icon, int X, int Y) {
 		CreateWindow(Title, Icon, X, Y);
 		InitializeGraphics();
 		InitializeSound();
@@ -143,9 +141,15 @@ namespace gge {
 		InitializeMultimedia();
 	}
 
+	void GGEMain::InitializeAll(string Title, os::IconHandle Icon, int X, int Y) {
+		InitializeOS();
+		initializerest(Title, Icon, X, Y);
+	}
+
 	void GGEMain::InitializeAll(string Title, os::IconHandle Icon) {
+		InitializeOS();
 		Rectangle r=os::window::UsableScreenMetrics();
-		InitializeAll(Title, Icon, r.Left+(r.Width-Width)/2, r.Top+(r.Height-Height)/4);
+		initializerest(Title, Icon, r.Left+(r.Width-Width)/2, r.Top+(r.Height-Height)/4);
 	}
 
 	os::DeviceHandle GGEMain::InitializeGraphics() {
@@ -204,7 +208,7 @@ namespace gge {
 		gge::os::window::Destroyed.RegisterLambda([&]{ 
 			Cleanup();
 		});
-
+		
 		isrunning=true;
 
 		while(true) {

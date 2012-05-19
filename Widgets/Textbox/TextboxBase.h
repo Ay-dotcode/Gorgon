@@ -1,15 +1,15 @@
 #pragma once
 
 
-#include "..\Base\Widget.h"
-#include "..\Interfaces\IScroller.h"
+#include "../Base/Widget.h"
+#include "../Interfaces/IScroller.h"
 #include "TextboxBlueprint.h"
 #include <map>
 #include <queue>
-#include "..\Main.h"
-#include "..\Basic\PetContainer.h"
-#include "..\Interfaces\IScroller.h"
-#include "..\Scrollbar.h"
+#include "../Main.h"
+#include "../Basic/PetContainer.h"
+#include "../Interfaces/IScroller.h"
+#include "../Scrollbar.h"
 
 namespace gge { namespace widgets {
 	namespace textbox {

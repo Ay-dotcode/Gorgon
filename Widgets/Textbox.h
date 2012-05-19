@@ -1,9 +1,9 @@
 #pragma once
 
 
-#include "Interfaces\ITextbox.h"
-#include "Textbox\TextboxBase.h"
-#include "..\Utils\Property.h"
+#include "Interfaces/ITextbox.h"
+#include "Textbox/TextboxBase.h"
+#include "../Utils/Property.h"
 
 
 namespace gge { namespace widgets {

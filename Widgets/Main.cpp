@@ -1,21 +1,21 @@
 
 #include "Main.h"
 #include "Definitions.h"
-#include "Basic\Line.h"
-#include "Basic\Rectangle.h"
-#include "Basic\ResizableObjectResource.h"
-#include "Basic\BorderData.h"
-#include "Basic\Placeholder.h"
+#include "Basic/Line.h"
+#include "Basic/Rectangle.h"
+#include "Basic/ResizableObjectResource.h"
+#include "Basic/BorderData.h"
+#include "Basic/Placeholder.h"
 
-#include "Checkbox\CheckboxBlueprint.h"
-#include "Slider\SliderBlueprint.h"
-#include "Panel\PanelBlueprint.h"
-#include "Textbox\TextboxBlueprint.h"
-#include "Listbox\ListboxBlueprint.h"
+#include "Checkbox/CheckboxBlueprint.h"
+#include "Slider/SliderBlueprint.h"
+#include "Panel/PanelBlueprint.h"
+#include "Textbox/TextboxBlueprint.h"
+#include "Listbox/ListboxBlueprint.h"
 #include "WidgetRegistry.h"
-#include "..\Engine\Input.h"
-#include "Combobox\ComboboxBlueprint.h"
-#include "TabPanel.h"
+#include "../Engine/Input.h"
+#include "Combobox/ComboboxBlueprint.h"
+#include "Tabpanel.h"
 
 namespace gge { namespace widgets {
 
@@ -100,25 +100,25 @@ namespace gge { namespace widgets {
 		RegisterLoaders(WidgetFile);
 
 		std::string theme="";
-		if(os::filesystem::IsFileExists(os::user::GetDocumentsPath()+"/theme.setting")) {
-			std::ifstream themefile(os::user::GetDocumentsPath()+"theme.setting");
+		if(os::filesystem::IsFileExists(os::user::GetDocumentsPath()+"/.Gorgon/theme.setting")) {
+			std::ifstream themefile(os::user::GetDocumentsPath()+"/.Gorgon/theme.setting");
 			std::getline(themefile, theme);
 		}
 
 		std::vector<std::string> filenamelist;
 		filenamelist.push_back(theme+".ui.wgt");
 		filenamelist.push_back("ui.wgt");
-		filenamelist.push_back(os::user::GetDocumentsPath()+"/Gorgon/"+theme+".ui-"+UIFileRevision+".wgt");
-		filenamelist.push_back(os::GetAppDataPath()+"/Gorgon/"+theme+".ui-"+UIFileRevision+".wgt");
+		filenamelist.push_back(os::user::GetDocumentsPath()+"/.Gorgon/"+theme+".ui-"+UIFileRevision+".wgt");
+		filenamelist.push_back(os::GetAppDataPath()+"/.Gorgon/"+theme+".ui-"+UIFileRevision+".wgt");
 		filenamelist.push_back("default.ui-"+UIFileRevision+".wgt");
-		filenamelist.push_back(os::user::GetDocumentsPath()+"/Gorgon/default.ui-"+UIFileRevision+".wgt");
-		filenamelist.push_back(os::GetAppDataPath()+"/Gorgon/default.ui-"+UIFileRevision+".wgt");
+		filenamelist.push_back(os::user::GetDocumentsPath()+"/.Gorgon/default.ui-"+UIFileRevision+".wgt");
+		filenamelist.push_back(os::GetAppDataPath()+"/.Gorgon/default.ui-"+UIFileRevision+".wgt");
 
-		filenamelist.push_back(os::user::GetDocumentsPath()+"/Gorgon/"+theme+".ui.wgt");
-		filenamelist.push_back(os::GetAppDataPath()+"/Gorgon/"+theme+".ui.wgt");
+		filenamelist.push_back(os::user::GetDocumentsPath()+"/.Gorgon/"+theme+".ui.wgt");
+		filenamelist.push_back(os::GetAppDataPath()+"/.Gorgon/"+theme+".ui.wgt");
 		filenamelist.push_back("default.ui.wgt");
-		filenamelist.push_back(os::user::GetDocumentsPath()+"/Gorgon/default.ui.wgt");
-		filenamelist.push_back(os::GetAppDataPath()+"/Gorgon/default.ui.wgt");
+		filenamelist.push_back(os::user::GetDocumentsPath()+"/.Gorgon/default.ui.wgt");
+		filenamelist.push_back(os::GetAppDataPath()+"/.Gorgon/default.ui.wgt");
 
 		for(auto it=filenamelist.begin();it!=filenamelist.end();++it) {
 			if(os::filesystem::IsFileExists(*it) || os::filesystem::IsFileExists(*it+".lzma")) {

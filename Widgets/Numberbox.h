@@ -1,11 +1,11 @@
 #pragma once
 
 
-#include "Interfaces\ITextbox.h"
-#include "Textbox\TextboxBase.h"
-#include "..\Utils\Property.h"
+#include "Interfaces/ITextbox.h"
+#include "Textbox/TextboxBase.h"
+#include "../Utils/Property.h"
 #include <sstream>
-#include "Interfaces\INumberbox.h"
+#include "Interfaces/INumberbox.h"
 
 
 namespace gge { namespace widgets {

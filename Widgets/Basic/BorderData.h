@@ -1,13 +1,13 @@
 #pragma once
 
 
-#include "..\..\Resource\Base.h"
-#include "..\Definitions.h"
-#include "..\..\Resource\ResizableObject.h"
-#include "..\..\Resource\File.h"
-#include "..\..\Resource\NullImage.h"
-#include "..\..\Engine\Animation.h"
-#include "..\..\Utils\Margins.h"
+#include "../../Resource/Base.h"
+#include "../Definitions.h"
+#include "../../Resource/ResizableObject.h"
+#include "../../Resource/File.h"
+#include "../../Resource/NullImage.h"
+#include "../../Engine/Animation.h"
+#include "../../Utils/Margins.h"
 #include "ResizableObjectResource.h"
 #include "Rectangle.h"
 #include "Line.h"

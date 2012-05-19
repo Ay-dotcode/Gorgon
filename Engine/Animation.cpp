@@ -1,7 +1,7 @@
 
 #include "Animation.h"
-#include "..\Utils\Collection.h"
-#include "..\Utils\BasicMath.h"
+#include "../Utils/Collection.h"
+#include "../Utils/BasicMath.h"
 
 using namespace gge::utils;
 using namespace gge::graphics;

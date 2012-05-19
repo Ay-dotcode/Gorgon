@@ -4,6 +4,7 @@
 #include <functional>
 #include <iosfwd>
 #include <istream>
+#include <cstring>
 #include "../Utils/UtilsBase.h"
 
 

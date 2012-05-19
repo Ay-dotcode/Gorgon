@@ -244,7 +244,6 @@ namespace gge { namespace input {
 				Click		= 1<<5,
 				Down		= 1<<6,
 				Up			= 1<<7, //Always supplies absolute position
-				DoubleClick	= 1<<8,
 
 				Over		= 1<<9,
 				Out			= 1<<10,
@@ -286,12 +285,6 @@ namespace gge { namespace input {
 				X1_Up		= X1	| Up,
 				X2_Up		= X2	| Up,
 
-				Left_DoubleClick	= Left	| DoubleClick,
-				Right_DoubleClick	= Right	| DoubleClick,
-				Middle_DoubleClick	= Middle| DoubleClick,
-				X1_DoubleClick		= X1	| DoubleClick,
-				X2_DoubleClick		= X2	| DoubleClick,
-
 				ButtonMask			= B8 (00001111),
 				NoDragNoOverCheck	= B32(00000000,00000011,10111111,11111111),
 				AllButOverCheck		= B32(00000000,00000111,10111111,11111111),
@@ -313,9 +306,9 @@ namespace gge { namespace input {
 				return (t&ButtonMask) && (t&Up);
 			}
 
-			static bool isDoubleClick(Type t) {
-				return (t&ButtonMask) && (t&DoubleClick);
-			}
+			//static bool isDoubleClick(Type t) {
+			//	return (t&ButtonMask) && (t&DoubleClick);
+			//}
 
 			static bool isLeft(Type t) {
 				return (t&Left);
@@ -464,8 +457,11 @@ namespace gge { namespace input {
 
 			bool Fire(Event::Type event, utils::Point location, int amount) {
 				for(utils::SortedCollection<Object>::Iterator i=Events.Last();i.IsValid();i.Previous()) {
-					i->Fire(event, location, amount);
+					if(i->Fire(event, location, amount))
+						return true;
 				}
+				
+				return false;
 			}
 
 		protected:
@@ -959,7 +955,7 @@ namespace gge { namespace input {
 		typename utils::count_arg<F_, 1, EventChain::Object &>::type EventChain::RegisterLambda( F_ fn, utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
 			return registr(
-				new LocationOnlyLambdaHandler(fn,data),
+				new LocationOnlyLambdaHandler(fn),
 				bounds,
 				eventmask
 				);
@@ -969,7 +965,7 @@ namespace gge { namespace input {
 		typename utils::count_arg<F_, 2, EventChain::Object &>::type EventChain::RegisterLambda( F_ fn, utils::Bounds bounds, Event::Type eventmask/*=AllUsed*/ )
 		{
 			return registr(
-				new NoAmountLambdaHandler(fn,data),
+				new NoAmountLambdaHandler(fn),
 				bounds,
 				eventmask
 				);
@@ -1100,9 +1096,6 @@ namespace gge { namespace input {
 		////Processes given mouse button as released
 		///@button	: button number 1 for left, 2 for right and 4 for middle
 		void ProcessMouseUp(mouse::Event::Type button,int x,int y);
-		////Processes double click action
-		///@button	: button number 1 for left, 2 for right and 4 for middle
-		void ProcessMouseDblClick(mouse::Event::Type button,int x,int y);
 		////Processes vertical scroll
 		void ProcessVScroll(int amount,int x,int y);
 		////Processes horizontal scroll

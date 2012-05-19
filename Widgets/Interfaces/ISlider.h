@@ -2,10 +2,10 @@
 
 
 #include <string>
-#include "..\Base\Widget.h"
-#include "..\..\Utils\Property.h"
-#include "..\..\Utils\EventChain.h"
-#include "..\Base\Container.h"
+#include "../Base/Widget.h"
+#include "../../Utils/Property.h"
+#include "../../Utils/EventChain.h"
+#include "../Base/Container.h"
 
 
 
@@ -20,7 +20,7 @@ namespace gge { namespace widgets {
 	class ISlider : public utils::NumericProperty<ISlider<T_>, T_> {
 	public:
 
-		ISlider() : NumericProperty(this, &ISlider::getValue, &ISlider::setValue),
+		ISlider() : utils::NumericProperty<ISlider<T_>, T_>(this, &ISlider::getValue, &ISlider::setValue),
 			Value(*this),
 			ChangeEvent("ChangeEvent", this),			
 			INIT_PROPERTY(ISlider, Min),
@@ -37,14 +37,14 @@ namespace gge { namespace widgets {
 
 		template <class O_>
 		ISlider &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
 
 		utils::EventChain<ISlider> ChangeEvent;
 
-		NumericProperty<ISlider, T_> &Value;
+		utils::NumericProperty<ISlider, T_> &Value;
 
 	protected:
 		//REQUIRED

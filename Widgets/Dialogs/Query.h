@@ -27,7 +27,7 @@ namespace gge { namespace widgets { namespace dialog {
 			INIT_PROPERTY(Query, CancelButtonText), INIT_PROPERTY(Query, ShowCancel)
 		{
 			init();
-			Query=msg;
+			QueryText=msg;
 		}
 
 		template<class T_>
@@ -36,7 +36,7 @@ namespace gge { namespace widgets { namespace dialog {
 			INIT_PROPERTY(Query, CancelButtonText), INIT_PROPERTY(Query, ShowCancel) 
 		{
 			init();
-			Query=msg;
+			QueryText=msg;
 			SetIcon(icon);
 		}
 

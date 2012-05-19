@@ -3,16 +3,16 @@
 #pragma warning(push)
 #pragma warning(disable:4351)
 
-#include "..\..\Utils\Collection.h"
-#include "..\..\Utils\SGuid.h"
-#include "..\Base\BluePrint.h"
-#include "..\Basic\BorderData.h"
-#include "..\..\Engine\Font.h"
-#include "..\Basic\Placeholder.h"
-#include "..\..\Resource\Sound.h"
-#include "..\..\Utils\Size2D.h"
-#include "..\..\Resource\NullImage.h"
-#include "..\..\Engine\Wave.h"
+#include "../../Utils/Collection.h"
+#include "../../Utils/SGuid.h"
+#include "../Base/Blueprint.h"
+#include "../Basic/BorderData.h"
+#include "../../Engine/Font.h"
+#include "../Basic/Placeholder.h"
+#include "../../Resource/Sound.h"
+#include "../../Utils/Size2D.h"
+#include "../../Resource/NullImage.h"
+#include "../../Engine/Wave.h"
 #include <map>
 
 
@@ -106,12 +106,17 @@ namespace gge { namespace widgets {
 				{ }
 
 				LineContents(int v) {
-					*this=*(reinterpret_cast<LineContents*>(&v));
+					this->t=v;
 				}
 
-				LineContentType First  : 4;
-				LineContentType Second : 4;
-				LineContentType Third  : 4;
+				union {
+					struct {
+						LineContentType First  : 4;
+						LineContentType Second : 4;
+						LineContentType Third  : 4;
+					};
+					int t;
+				};
 			};
 
 			enum TransitionType {
@@ -181,7 +186,7 @@ namespace gge { namespace widgets {
 				BorderDataResource			*Border;
 				resource::
 					ResizableObjectProvider	*Symbol;
-				Font						*Font;
+				gge::Font						*Font;
 				Placeholder					*SymbolPlace;
 				Placeholder					*TextPlace;
 				Placeholder					*IconPlace;
@@ -195,50 +200,6 @@ namespace gge { namespace widgets {
 					throw std::runtime_error("No such variable");
 				}
 
-				template<>
-				BorderDataResource *Get<BorderDataResource, 1>() const {
-					return Border;
-				}
-				template<>
-				resource::ResizableObjectProvider *Get<resource::ResizableObjectProvider, 2>() const {
-					return Symbol;
-				}
-				template<>
-				gge::Font *Get<gge::Font, 3>() const {
-					return Font;
-				}
-				template<>
-				Placeholder *Get<Placeholder, 4>() const {
-					return SymbolPlace;
-				}
-				template<>
-				Placeholder *Get<Placeholder, 5>() const {
-					return TextPlace;
-				}
-				template<>
-				Placeholder *Get<Placeholder, 6>() const {
-					return IconPlace;
-				}
-				template<>
-				resource::Sound *Get<resource::Sound, 7>() const {
-					return Sound;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 8>() const {
-					return Overlay;
-				}
-				template<>
-				Line *Get<Line, 11>() const {
-					return Lines[0];
-				}
-				template<>
-				Line *Get<Line, 12>() const {
-					return Lines[1];
-				}
-				template<>
-				Line *Get<Line, 13>() const {
-					return Lines[2];
-				}
 
 				virtual void Prepare(GGEMain &main, resource::File &file);
 
@@ -480,6 +441,51 @@ namespace gge { namespace widgets {
 
 
 		};
+
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 1>() const {
+			return Border;
+		}
+		template<>
+		inline resource::ResizableObjectProvider *Blueprint::Element::Get<resource::ResizableObjectProvider, 2>() const {
+			return Symbol;
+		}
+		template<>
+		inline gge::Font *Blueprint::Element::Get<gge::Font, 3>() const {
+			return Font;
+		}
+		template<>
+		inline Placeholder *Blueprint::Element::Get<Placeholder, 4>() const {
+			return SymbolPlace;
+		}
+		template<>
+		inline Placeholder *Blueprint::Element::Get<Placeholder, 5>() const {
+			return TextPlace;
+		}
+		template<>
+		inline Placeholder *Blueprint::Element::Get<Placeholder, 6>() const {
+			return IconPlace;
+		}
+		template<>
+		inline resource::Sound *Blueprint::Element::Get<resource::Sound, 7>() const {
+			return Sound;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 8>() const {
+			return Overlay;
+		}
+		template<>
+		inline Blueprint::Line *Blueprint::Element::Get<Blueprint::Line, 11>() const {
+			return Lines[0];
+		}
+		template<>
+		inline Blueprint::Line *Blueprint::Element::Get<Blueprint::Line, 12>() const {
+			return Lines[1];
+		}
+		template<>
+		inline Blueprint::Line *Blueprint::Element::Get<Blueprint::Line, 13>() const {
+			return Lines[2];
+		}
 
 	}
 

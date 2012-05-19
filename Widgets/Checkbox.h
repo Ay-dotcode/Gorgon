@@ -1,9 +1,9 @@
 #pragma once
 
 
-#include "Interfaces\ICheckbox.h"
-#include "Checkbox\CheckboxBase.h"
-#include "..\Utils\Property.h"
+#include "Interfaces/ICheckbox.h"
+#include "Checkbox/CheckboxBase.h"
+#include "../Utils/Property.h"
 
 
 namespace gge { namespace widgets {

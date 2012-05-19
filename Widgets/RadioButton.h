@@ -1,10 +1,10 @@
 #pragma once
 
 
-#include "Interfaces\IOption.h"
-#include "Checkbox\CheckboxBase.h"
-#include "..\Utils\Property.h"
-#include "Interfaces\ICheckbox.h"
+#include "Interfaces/IOption.h"
+#include "Checkbox/CheckboxBase.h"
+#include "../Utils/Property.h"
+#include "Interfaces/ICheckbox.h"
 
 
 namespace gge { namespace widgets {
@@ -18,8 +18,8 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(RadioButton, Accesskey),
 			ChangeEvent("ChangeEvent", this)
 		{
-			Text=text;
-			ChangeEvent.DoubleLink(IOption::ChangeEvent);
+			this->Text=text;
+			ChangeEvent.DoubleLink(IOption<T_>::ChangeEvent);
 			Autosize=AutosizeModes::Autosize;
 
 			if(WR.RadioButton)
@@ -79,13 +79,13 @@ namespace gge { namespace widgets {
 			}
 
 			if((Key==input::keyboard::KeyCodes::Up || Key==input::keyboard::KeyCodes::Left)  && event==input::keyboard::Event::Down && !input::keyboard::Modifier::Check()) {
-				if(parent)
-					parent->SetToPrev();
+				if(this->parent)
+					this->parent->SetToPrev();
 			}
 
 			if((Key==input::keyboard::KeyCodes::Down || Key==input::keyboard::KeyCodes::Right)  && event==input::keyboard::Event::Down && !input::keyboard::Modifier::Check()) {
-				if(parent)
-					parent->SetToNext();
+				if(this->parent)
+					this->parent->SetToNext();
 			}
 
 

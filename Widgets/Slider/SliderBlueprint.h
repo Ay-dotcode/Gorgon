@@ -5,13 +5,13 @@
 #pragma warning(disable:4351)
 
 
-#include "..\Base\BluePrint.h"
-#include "..\Definitions.h"
-#include "..\..\Resource\Sound.h"
+#include "../Base/Blueprint.h"
+#include "../Definitions.h"
+#include "../../Resource/Sound.h"
 
 #include <map>
-#include "..\Checkbox\CheckboxBlueprint.h"
-#include "..\..\Resource\Base.h"
+#include "../Checkbox/CheckboxBlueprint.h"
+#include "../../Resource/Base.h"
 
 
 
@@ -19,6 +19,9 @@ namespace gge { namespace widgets {
 
 	namespace slider {
 
+		class Blueprint;
+		Blueprint *Load(resource::File& File, std::istream &Data, int Size);
+		
 		class Blueprint : public widgets::Blueprint, public resource::Base {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:
@@ -98,67 +101,6 @@ namespace gge { namespace widgets {
 				template<class T_, int id>
 				T_ *Get() const {
 					throw std::runtime_error("No such variable");
-				}
-
-				template<>
-				BorderDataResource *Get<BorderDataResource, 1>() const {
-					return Border;
-				}
-				template<>
-				animation::RectangularGraphic2DSequenceProvider *Get<animation::RectangularGraphic2DSequenceProvider, 2>() const {
-					return Symbol;
-				}
-				template<>
-				gge::Font *Get<gge::Font, 3>() const {
-					return Font;
-				}
-				template<>
-				Placeholder *Get<Placeholder, 4>() const {
-					return SymbolPlace;
-				}
-				template<>
-				Placeholder *Get<Placeholder, 5>() const {
-					return TextPlace;
-				}
-				template<>
-				resource::Sound *Get<resource::Sound, 7>() const {
-					return Sound;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 8>() const {
-					return Overlay;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 14>() const {
-					return Ruler;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 15>() const {
-					return Indicator;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 16>() const {
-					return RulerOverlay;
-				}
-				template<>
-				animation::RectangularGraphic2DSequenceProvider *Get<animation::RectangularGraphic2DSequenceProvider, 17>() const {
-					return Tickmark;
-				}
-				template<>
-				Placeholder *Get<Placeholder, 18>() const {
-					return TickmarkPlace;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 19>() const {
-					return TickmarkBorder;
-				}
-				template<>
-				Placeholder *Get<Placeholder, 20>() const {
-					return ValuePlace;
-				}
-				template<>
-				gge::Font *Get<gge::Font, 21>() const {
-					return ValueFont;
 				}
 
 				virtual void Prepare(GGEMain &main, resource::File &file);
@@ -397,6 +339,67 @@ namespace gge { namespace widgets {
 
 
 		};
+
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 1>() const {
+			return Border;
+		}
+		template<>
+		inline animation::RectangularGraphic2DSequenceProvider *Blueprint::Element::Get<animation::RectangularGraphic2DSequenceProvider, 2>() const {
+			return Symbol;
+		}
+		template<>
+		inline gge::Font *Blueprint::Element::Get<gge::Font, 3>() const {
+			return Font;
+		}
+		template<>
+		inline Placeholder *Blueprint::Element::Get<Placeholder, 4>() const {
+			return SymbolPlace;
+		}
+		template<>
+		inline Placeholder *Blueprint::Element::Get<Placeholder, 5>() const {
+			return TextPlace;
+		}
+		template<>
+		inline resource::Sound *Blueprint::Element::Get<resource::Sound, 7>() const {
+			return Sound;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 8>() const {
+			return Overlay;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 14>() const {
+			return Ruler;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 15>() const {
+			return Indicator;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 16>() const {
+			return RulerOverlay;
+		}
+		template<>
+		inline animation::RectangularGraphic2DSequenceProvider *Blueprint::Element::Get<animation::RectangularGraphic2DSequenceProvider, 17>() const {
+			return Tickmark;
+		}
+		template<>
+		inline Placeholder *Blueprint::Element::Get<Placeholder, 18>() const {
+			return TickmarkPlace;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 19>() const {
+			return TickmarkBorder;
+		}
+		template<>
+		inline Placeholder *Blueprint::Element::Get<Placeholder, 20>() const {
+			return ValuePlace;
+		}
+		template<>
+		inline gge::Font *Blueprint::Element::Get<gge::Font, 21>() const {
+			return ValueFont;
+		}
 
 	}
 } }

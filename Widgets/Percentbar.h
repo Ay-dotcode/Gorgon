@@ -1,6 +1,6 @@
 #pragma once
-#include "Interfaces\IProgressor.h"
-#include "Slider\SliderBase.h"
+#include "Interfaces/IProgressor.h"
+#include "Slider/SliderBase.h"
 
 namespace gge { namespace widgets {
 

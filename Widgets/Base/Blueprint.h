@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "..\..\Engine\Pointer.h"
-#include "..\..\Resource\Base.h"
+#include "../../Engine/Pointer.h"
+#include "../../Resource/Base.h"
 
 
 namespace gge { namespace widgets {
@@ -13,11 +13,11 @@ namespace gge { namespace widgets {
 	public:
 
 		//format: 0xtf, f: from, t: to
-		enum FocusType : unsigned {
+		enum FocusType {
 			//Not valid unless determining transitions
 			Focus_None			= 0x00,
 			NotFocused			= 0x01,
-			Focused				= 0x02,
+			Focused				= 0x02
 		};
 
 		struct FocusMode {
@@ -101,7 +101,7 @@ namespace gge { namespace widgets {
 
 		utils::Size  DefaultSize;
 
-		Pointer::PointerType Pointer;
+		gge::Pointer::PointerType Pointer;
 	};
 
 }}

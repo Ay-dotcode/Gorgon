@@ -5,20 +5,23 @@
 #pragma warning(disable:4351)
 
 
-#include "..\Base\BluePrint.h"
-#include "..\Definitions.h"
-#include "..\..\Resource\Sound.h"
+#include "../Base/Blueprint.h"
+#include "../Definitions.h"
+#include "../../Resource/Sound.h"
 
 #include <map>
-#include "..\Slider\SliderBlueprint.h"
-#include "..\..\Resource\Base.h"
-#include "..\Checkbox\CheckboxBlueprint.h"
+#include "../Slider/SliderBlueprint.h"
+#include "../../Resource/Base.h"
+#include "../Checkbox/CheckboxBlueprint.h"
 
 
 
 namespace gge { namespace widgets {
 
 	namespace panel {
+		
+		class Blueprint;
+		Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 
 		class Blueprint : public widgets::Blueprint, public resource::Base {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
@@ -54,42 +57,6 @@ namespace gge { namespace widgets {
 				template<class T_, int id>
 				T_ *Get() const {
 					throw std::runtime_error("No such variable");
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 1>() const {
-					return OuterBorder;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 2>() const {
-					return InnerBorder;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 3>() const {
-					return ScrollingBorder;
-				}
-				template<>
-				animation::RectangularGraphic2DSequenceProvider *Get<animation::RectangularGraphic2DSequenceProvider, 4>() const {
-					return Resizer;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 5>() const {
-					return TitleBorder;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 6>() const {
-					return DialogButtonBorder;
-				}
-				template<>
-				resource::Sound *Get<resource::Sound, 7>() const {
-					return Sound;
-				}
-				template<>
-				BorderDataResource *Get<BorderDataResource, 8>() const {
-					return Overlay;
-				}
-				template<>
-				Placeholder *Get<Placeholder, 9>() const {
-					return ResizerPlace;
 				}
 
 
@@ -300,6 +267,43 @@ namespace gge { namespace widgets {
 
 
 		};
+		
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 1>() const {
+			return OuterBorder;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 2>() const {
+			return InnerBorder;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 3>() const {
+			return ScrollingBorder;
+		}
+		template<>
+		inline animation::RectangularGraphic2DSequenceProvider *Blueprint::Element::Get<animation::RectangularGraphic2DSequenceProvider, 4>() const {
+			return Resizer;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 5>() const {
+			return TitleBorder;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 6>() const {
+			return DialogButtonBorder;
+		}
+		template<>
+		inline resource::Sound *Blueprint::Element::Get<resource::Sound, 7>() const {
+			return Sound;
+		}
+		template<>
+		inline BorderDataResource *Blueprint::Element::Get<BorderDataResource, 8>() const {
+			return Overlay;
+		}
+		template<>
+		inline Placeholder *Blueprint::Element::Get<Placeholder, 9>() const {
+			return ResizerPlace;
+		}
 
 	}
 } }

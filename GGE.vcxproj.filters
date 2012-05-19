@@ -169,6 +169,9 @@
     <Filter Include="Network">
       <UniqueIdentifier>{3c3d5993-b3b5-4d5a-b842-c3b4135cc93a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Linux">
+      <UniqueIdentifier>{30d44370-5370-4cab-a7ce-eb7502cf8e85}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Effects\CountingText.h">
@@ -1011,6 +1014,9 @@
     <ClInclude Include="Network\HTTP.h">
       <Filter>Network</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\OS.Linux.h">
+      <Filter>Engine\Linux</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -1093,9 +1099,6 @@
     </ClCompile>
     <ClCompile Include="Widgets\Combobox\ComboboxBlueprint.cpp">
       <Filter>Widgets\Combobox\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics.cpp">
-      <Filter>Engine\Win32</Filter>
     </ClCompile>
     <ClCompile Include="Engine\OS.Win32.cpp">
       <Filter>Engine\Win32</Filter>
@@ -1657,6 +1660,12 @@
     </ClCompile>
     <ClCompile Include="Network\HTTP.cpp">
       <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OS.Linux.cpp">
+      <Filter>Engine\Linux</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

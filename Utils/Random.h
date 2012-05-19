@@ -3,8 +3,8 @@
 //	is automatically initialized using time.
 
 //REQUIRES:
-//	---
-
+//	BasicMath
+// 
 //LICENSE
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the Lesser GNU General Public License as published by
@@ -25,6 +25,7 @@
 #pragma once
 
 #include "UtilsBase.h"
+#include "BasicMath.h"
 #include <cstdlib>
 
 namespace gge { namespace utils {
@@ -55,9 +56,9 @@ namespace gge { namespace utils {
 	template<>
 	inline Byte Random(Byte min, Byte max) { return (Random<Byte>()%(max-min)) + min; }
 	template<>
-	inline char Random(char min, char max) { return (Random<char>()%(max-min)) + min; }
+	inline char Random(char min, char max) { return PositiveMod((int)Random<char>(),(max-min)) + min; }
 	template<>
-	inline int Random(int min, int max)    { return (Random<int>()%(max-min)) + min; }
+	inline int Random(int min, int max)    { return PositiveMod(Random<int>(),(max-min)) + min; }
 
 	template<class T_>
 	T_ Random(Range<T_> range)              { return Random<T_>()*(range.Difference()) + range.start; }
@@ -66,7 +67,7 @@ namespace gge { namespace utils {
 	template<>
 	inline char Random(Range<char> range) { return (Random<char>()%(range.Difference())) + range.start; }
 	template<>
-	inline int Random(Range<int> range)    { return (Random<int>()%(range.Difference())) + range.start; }
+	inline int Random(Range<int> range)    { return (PositiveMod(Random<int>(),range.Difference())) + range.start; }
 
 	template <>
 	inline std::string Random<std::string>()             { return randomstrings[Random(0,50)]; }

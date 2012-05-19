@@ -48,7 +48,7 @@ namespace gge { namespace resource {
 
 		unsigned Duration;
 		unsigned Start;
-		Image *Image;
+		resource::Image *Image;
 	};
 
 

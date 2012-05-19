@@ -1,13 +1,13 @@
 #pragma once
 
 
-#include "..\Base\Widget.h"
-#include "..\Base\Container.h"
+#include "../Base/Widget.h"
+#include "../Base/Container.h"
 #include "CheckboxBlueprint.h"
 #include <map>
 #include <queue>
-#include "..\Main.h"
-#include "..\WidgetRegistry.h"
+#include "../Main.h"
+#include "../WidgetRegistry.h"
 
 #ifndef CHECKBOX_CLICK_DOWNDURATION
 #	define	CHECKBOX_CLICK_DOWNDURATION	75

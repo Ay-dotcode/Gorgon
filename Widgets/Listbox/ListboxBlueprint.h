@@ -5,14 +5,14 @@
 #pragma warning(disable:4351)
 
 
-#include "..\Base\BluePrint.h"
-#include "..\Definitions.h"
-#include "..\..\Resource\Sound.h"
+#include "../Base/Blueprint.h"
+#include "../Definitions.h"
+#include "../../Resource/Sound.h"
 
 #include <map>
-#include "..\Panel\PanelBlueprint.h"
-#include "..\..\Resource\Base.h"
-#include "..\Checkbox\CheckboxBlueprint.h"
+#include "../Panel/PanelBlueprint.h"
+#include "../../Resource/Base.h"
+#include "../Checkbox/CheckboxBlueprint.h"
 
 
 
@@ -20,6 +20,9 @@ namespace gge { namespace widgets {
 
 	namespace listbox {
 
+		class Blueprint;
+		Blueprint *Load(resource::File& File, std::istream &Data, int Size);
+		
 		class Blueprint : public widgets::Blueprint, public resource::Base {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:

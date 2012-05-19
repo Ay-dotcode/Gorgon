@@ -1,12 +1,18 @@
 #include "Graphics.h"
 
 #ifdef WIN32
-#include <windows.h>
+#	undef APIENTRY
+#	undef WINGDIAPI
+#endif
 
+#ifdef WIN32
+#	include <windows.h>
+#elif defined(LINUX)
+#	include <GL/glx.h>
+#	include <unistd.h>
+#endif
 
 using namespace gge::utils;
-
-#endif
 
 namespace gge { namespace graphics {
 	Size ScreenSize;
@@ -23,16 +29,23 @@ namespace gge { namespace graphics {
 		void SetupFrameBuffer();
 	}
 
+#ifndef GL_FRAMEBUFFER
 	const GLenum GL_FRAMEBUFFER=0x8D40;
 	const GLenum GL_COLOR_ATTACHMENT0=0x8CE0;
 	const GLenum GL_GENERATE_MIPMAP=0x8191;
+#endif
 
-	typedef void(__stdcall *glGenFramebuffers_t)(int, GLuint*);
-	typedef void(__stdcall *glBindFramebuffer_t)(GLenum, GLuint);
-	typedef void(__stdcall *glFramebufferTexture2D_t)(GLenum, GLenum, GLenum, GLuint, GLint);
-	typedef void (__stdcall *glDeleteFramebuffers_t) (GLsizei, const GLuint *);
-	typedef GLenum(__stdcall *glCheckFramebufferStatus_t)(GLenum);
-	typedef void(__stdcall *glGenerateMipmap_t)(GLenum);
+#if !defined(APIENTRYP) && defined(WIN32)
+#	define APIENTRYP	APIENTRY *
+#endif
+
+
+	typedef void(APIENTRYP glGenFramebuffers_t)(int, GLuint*);
+	typedef void(APIENTRYP glBindFramebuffer_t)(GLenum, GLuint);
+	typedef void(APIENTRYP glFramebufferTexture2D_t)(GLenum, GLenum, GLenum, GLuint, GLint);
+	typedef void (APIENTRYP glDeleteFramebuffers_t) (GLsizei, const GLuint *);
+	typedef GLenum(APIENTRYP glCheckFramebufferStatus_t)(GLenum);
+	typedef void(APIENTRYP glGenerateMipmap_t)(GLenum);
 
 	glGenFramebuffers_t glGenFramebuffers;
 	glDeleteFramebuffers_t glDeleteFramebuffers;
@@ -43,6 +56,9 @@ namespace gge { namespace graphics {
 
 	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {
 		using namespace gge::graphics::system;
+		
+		os::DeviceHandle handle=0;
+		
 		///!Platform specific
 #ifdef WIN32
 		///*Preparing device context, platform specific
@@ -77,6 +93,25 @@ namespace gge { namespace graphics {
 		HGLRC hRC;
 		hRC = wglCreateContext( hDC );
 		wglMakeCurrent(hDC,hRC);
+		
+		handle=(os::DeviceHandle)hDC;
+#elif defined(LINUX)
+		//TODO: OpenGL Context creation
+		static int attributeListDbl[] = { 
+			GLX_RGBA, 
+			GLX_DOUBLEBUFFER,
+			GLX_RED_SIZE,   1, 
+			GLX_GREEN_SIZE, 1, 
+			GLX_BLUE_SIZE,  1, 
+			None 
+		};
+		Display *display = XOpenDisplay(NULL);
+		
+		XVisualInfo *vi = glXChooseVisual(display, DefaultScreen(display), attributeListDbl);
+		GLXContext cx = glXCreateContext(display, vi, 0, GL_TRUE);
+		glXMakeCurrent(display, hWnd, cx);
+		
+		handle=(os::DeviceHandle)display;
 #endif
 
 
@@ -125,58 +160,18 @@ namespace gge { namespace graphics {
 		SetupFrameBuffer();
 
 
-		return (os::DeviceHandle)hDC;
+		return handle;
 	}
 
 
 	namespace system {
 		void A8ToA8L8(int cx,int cy,Byte *data,Byte *dest)
 		{
-			int icx=cx,icy=cy;
-
-			__asm {
-				; A8 (actually saved as a) data to 
-					; A8L8
-
-					; push everything so we can use them at will
-					push edi		; destination array
-					push esi		; source array
-					push ecx		; x
-					push edx		; y
-					push ebx		; temp
-
-					mov  edi,dest	; destination data
-					mov  esi,data	; source data
-
-
-					mov edx,0		; y=0
-	loopystart:
-				cmp edx,[icy]	; if y=cy
-					je loopyend		; break y loop
-
-					mov ecx,0		; x=0
-	loopxstart:
-				cmp ecx,[icx]	; if x=cx
-					je loopxend		; break x loop
-
-					mov byte ptr[edi],0xff
-					inc edi
-
-					movsb
-
-					inc ecx			; x++
-					jmp loopxstart	; next
-	loopxend:
-				inc edx			; y++
-					jmp loopystart	; next
-	loopyend:
-
-				; restore everything
-					pop ebx
-					pop ecx
-					pop edx
-					pop esi
-					pop edi
+			int sz=cx*cy;
+			
+			for(int i=0;i<sz;i++) {
+				dest[i*2]=0xff;
+				dest[i*2+1]=data[i];
 			}
 		}
 		GLenum getGLColorMode(ColorMode::Type color_mode) {
@@ -212,8 +207,6 @@ namespace gge { namespace graphics {
 			glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 			glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-			int bytes=getBPP(mode);
-
 			if(mode==ColorMode::Alpha) {
 				///*If alpha only, converted to grayscale alpha
 				glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
@@ -225,6 +218,9 @@ namespace gge { namespace graphics {
 				data=target;
 
 				mode=ColorMode::Grayscale_Alpha;
+				colormode=GL_LUMINANCE_ALPHA;
+			}
+			else if(mode==ColorMode::Grayscale_Alpha) {
 				colormode=GL_LUMINANCE_ALPHA;
 			} else {
 				glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -300,10 +296,14 @@ namespace gge { namespace graphics {
 			scissors=utils::Rectangle(0, 0, ScreenSize);
 		}
 
-		void PostRender(os::DeviceHandle hDC) {
+		void PostRender(os::DeviceHandle hDC, os::WindowHandle win) {
 			glFlush();
 			///*Swapping back and front buffers
+#ifdef WIN32
 			SwapBuffers( (HDC)hDC );
+#elif defined(LINUX)
+			glXSwapBuffers((Display*)hDC, win);
+#endif
 		}
 
 		void SetRenderTarget(GLuint Target) {
@@ -330,8 +330,8 @@ namespace gge { namespace graphics {
 		}
 		void SetupFrameBuffer() {
 			const char *gl_extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-			const char *gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-			const char *gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+			//const char *gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+			//const char *gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 			const char *gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 
 			bool support_framebuffer_object=false, support_framebuffer_via_ext=false;
@@ -365,12 +365,21 @@ namespace gge { namespace graphics {
 				// or ARB without the EXT suffix, so just get the functions on their own.
 				std::string suffix = (support_framebuffer_via_ext ? "EXT" : "");
 
+#ifdef WIN32
 				glGenFramebuffers = (glGenFramebuffers_t)wglGetProcAddress((std::string("glGenFramebuffers") + suffix).c_str());
 				glDeleteFramebuffers = (glDeleteFramebuffers_t)wglGetProcAddress((std::string("glDeleteFramebuffers") + suffix).c_str());
 				glBindFramebuffer = (glBindFramebuffer_t)wglGetProcAddress((std::string("glBindFramebuffer") + suffix).c_str());
 				glFramebufferTexture2D = (glFramebufferTexture2D_t)wglGetProcAddress((std::string("glFramebufferTexture2D") + suffix).c_str());
 				glCheckFramebufferStatus = (glCheckFramebufferStatus_t)wglGetProcAddress((std::string("glCheckFramebufferStatus") + suffix).c_str());
 				glGenerateMipmap = (glGenerateMipmap_t)wglGetProcAddress((std::string("glGenerateMipmap") + suffix).c_str());
+#elif defined(LINUX)
+				glGenFramebuffers = (glGenFramebuffers_t)glXGetProcAddress((const GLubyte*)(std::string("glGenFramebuffers") + suffix).c_str());
+				glDeleteFramebuffers = (glDeleteFramebuffers_t)glXGetProcAddress((const GLubyte*)(std::string("glDeleteFramebuffers") + suffix).c_str());
+				glBindFramebuffer = (glBindFramebuffer_t)glXGetProcAddress((const GLubyte*)(std::string("glBindFramebuffer") + suffix).c_str());
+				glFramebufferTexture2D = (glFramebufferTexture2D_t)glXGetProcAddress((const GLubyte*)(std::string("glFramebufferTexture2D") + suffix).c_str());
+				glCheckFramebufferStatus = (glCheckFramebufferStatus_t)glXGetProcAddress((const GLubyte*)(std::string("glCheckFramebufferStatus") + suffix).c_str());
+				glGenerateMipmap = (glGenerateMipmap_t)glXGetProcAddress((const GLubyte*)(std::string("glGenerateMipmap") + suffix).c_str());
+#endif
 
 				if(FBTexture)
 					glDeleteTextures(1, &FBTexture);
@@ -391,7 +400,7 @@ namespace gge { namespace graphics {
 
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBTexture, 0);
 
-				GLenum status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
+				//GLenum status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 				system::SetRenderTarget(0);
 			} else {

@@ -20,7 +20,9 @@ namespace gge { namespace resource {
 		CheckAndDelete(root);
 
 		if(!os::filesystem::IsFileExists(Filename) && os::filesystem::IsFileExists(Filename+".lzma")) {
-			encoding::Lzma.Decode(ifstream(Filename+".lzma",ios::binary), ofstream(Filename,ios::binary));
+			ifstream ifile(Filename+".lzma",ios::binary);
+			ofstream ofile(Filename,ios::binary);
+			encoding::Lzma.Decode(ifile, ofile);
 			os::filesystem::DeleteFile(Filename+".lzma");
 		}
 
@@ -85,7 +87,7 @@ namespace gge { namespace resource {
 
 	void File::AddBasicLoaders() {
 		Loaders.Add(new Loader(GID::Folder, std::bind(LoadFolderResource, placeholders::_1, placeholders::_2, placeholders::_3, false, false)));
-		Loaders.Add(new Loader(GID::LinkNode, LoadLinkNodeResource)); 
+		Loaders.Add(new Loader(GID::LinkNode, resource::LoadLinkNodeResource)); 
 		Loaders.Add(new Loader(GID::Text, LoadTextResource)); 
 		Loaders.Add(new Loader(GID::Image, LoadImageResource)); 
 		Loaders.Add(new Loader(GID::Data, LoadDataResource)); 

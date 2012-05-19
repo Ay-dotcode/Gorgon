@@ -78,8 +78,6 @@ namespace gge { namespace input {
 				return false;
 			}
 			else if(event==Event::Out || event==Event::DragOut) {
-				bool ret=false;
-
 				for(utils::SortedCollection<EventChain::Object>::Iterator i = this->MouseEvents.Events.First();i.IsValid();i.Next()) {
 					bool isover=false;
 					if(i->Bounds.isInside(location)) {
@@ -529,9 +527,9 @@ namespace gge { namespace input {
 			//Main.PropagateMouseEvent(mouse::Event::Up | button, utils::Point(x,y), 0);
 		}
 
-		void ProcessMouseDblClick(mouse::Event::Type button,int x,int y){
-			Main.PropagateMouseEvent(mouse::Event::DoubleClick | button, utils::Point(x,y), 0);
-		}
+// 		void ProcessMouseDblClick(mouse::Event::Type button,int x,int y){
+// 			Main.PropagateMouseEvent(mouse::Event::DoubleClick | button, utils::Point(x,y), 0);
+// 		}
 
 		void ProcessVScroll(int amount,int x,int y){
 			Main.PropagateMouseEvent(mouse::Event::VScroll, utils::Point(x,y), amount);

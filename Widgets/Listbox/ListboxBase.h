@@ -1,18 +1,18 @@
 #pragma once
 
 
-#include "..\Base\Widget.h"
-#include "..\Interfaces\IScroller.h"
+#include "../Base/Widget.h"
+#include "../Interfaces/IScroller.h"
 #include "ListboxBlueprint.h"
 #include <map>
 #include <queue>
-#include "..\Main.h"
-#include "..\Basic\PetContainer.h"
-#include "..\Interfaces\IScroller.h"
-#include "..\Scrollbar.h"
-#include "..\Panel\ControlledPanel.h"
+#include "../Main.h"
+#include "../Basic/PetContainer.h"
+#include "../Interfaces/IScroller.h"
+#include "../Scrollbar.h"
+#include "../Panel/ControlledPanel.h"
 #include "IListItem.h"
-#include "Organizers/ListOrganizer.h"
+#include "../Organizers/ListOrganizer.h"
 
 namespace gge { namespace widgets {
 	class ListboxType {

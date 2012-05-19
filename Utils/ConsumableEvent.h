@@ -942,7 +942,7 @@ namespace gge { namespace utils {
 		}
 
 		bool Fire(Token token) {
-			Fire(token, P_());
+			return Fire(token, P_());
 		}
 
 		////This function triggers the event causing all 

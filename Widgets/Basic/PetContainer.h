@@ -2,7 +2,7 @@
 
 
 #include "../Base/Container.h"
-#include "..\..\Engine\Input.h"
+#include "../../Engine/Input.h"
 
 
 namespace gge { namespace widgets {
@@ -131,7 +131,7 @@ namespace gge { namespace widgets {
 	public:
 		LayerBase ExtenderLayer;
 
-		ExtendedPetContiner(T_ &parent) : PetContainer(parent), extenderbase(NULL) {
+		ExtendedPetContiner(T_ &parent) : PetContainer<T_>(parent), extenderbase(NULL) {
 
 		}
 
@@ -139,11 +139,11 @@ namespace gge { namespace widgets {
 			if(layer && extender) {
 				utils::CheckAndDelete(extenderbase);
 				extenderbase=extender;
-				layer->Add(BaseLayer, order);
-				extender->Add(ExtenderLayer, order);
+				layer->Add(this->BaseLayer, order);
+				extender->Add(this->ExtenderLayer, order);
 			}
 			else {
-				BaseLayer.parent=NULL;
+				this->BaseLayer.parent=NULL;
 				ExtenderLayer.parent=NULL;
 				utils::CheckAndDelete(extenderbase);
 			}
@@ -154,7 +154,7 @@ namespace gge { namespace widgets {
 
 		virtual widgets::WidgetLayer &CreateExtenderLayer()  {
 			widgets::WidgetLayer *layer=new widgets::WidgetLayer;
-			ExtenderLayer.Add(layer, BaseLayer.SubLayers.LowestOrder()-1);
+			ExtenderLayer.Add(layer, this->BaseLayer.SubLayers.LowestOrder()-1);
 
 			return *layer;
 		}

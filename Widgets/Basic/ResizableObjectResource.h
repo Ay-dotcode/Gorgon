@@ -1,12 +1,12 @@
 #pragma once
 
 
-#include "..\..\Resource\Base.h"
-#include "..\Definitions.h"
-#include "..\..\Resource\ResizableObject.h"
-#include "..\..\Resource\File.h"
-#include "..\..\Resource\NullImage.h"
-#include "..\..\Engine\Animation.h"
+#include "../../Resource/Base.h"
+#include "../Definitions.h"
+#include "../../Resource/ResizableObject.h"
+#include "../../Resource/File.h"
+#include "../../Resource/NullImage.h"
+#include "../../Engine/Animation.h"
 
 
 
@@ -109,6 +109,8 @@ namespace gge { namespace widgets {
 
 			controller.HorizontalTiling=(graphics::SizeController2D::TilingType)((controller.HorizontalTiling & B8(11000111))|h);
 			controller.VerticalTiling  =(graphics::SizeController2D::TilingType)((controller.VerticalTiling   & B8(11000111))|v);
+			
+			return controller;
 		}
 
 

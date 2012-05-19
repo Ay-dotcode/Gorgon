@@ -4,11 +4,11 @@
 #include "GGEMain.h"
 #include "Image.h"
 
-#include "..\External\TheoraPlayback\TheoraVideoClip.h"
-#include "..\External\TheoraPlayback\TheoraPlayer.h"
-#include "..\External\TheoraPlayback\TheoraDataSource.h"
-#include "..\External\TheoraPlaybackOpenAL\OpenAL_AudioInterface.h"
-#include "..\External\TheoraPlayback\TheoraVideoManager.h"
+#include "../External/TheoraPlayback/TheoraVideoClip.h"
+#include "../External/TheoraPlayback/TheoraPlayer.h"
+#include "../External/TheoraPlayback/TheoraDataSource.h"
+#include "../External/TheoraPlaybackOpenAL/OpenAL_AudioInterface.h"
+#include "../External/TheoraPlayback/TheoraVideoManager.h"
 
 namespace gge { namespace multimedia {
 

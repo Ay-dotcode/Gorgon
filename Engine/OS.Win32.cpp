@@ -2,7 +2,6 @@
 #	pragma warning(disable: 4996)
 #	include "OS.h"
 #	include "input.h"
-#	include "Multimedia.h"
 #	include "..\Utils\Point2D.h"
 #	include <stdio.h>
 
@@ -13,6 +12,12 @@
 
 //#	define WINVER 0x0500
 //#	define _WIN32_WINNT 0x0500
+
+#ifdef WIN32
+#	undef APIENTRY
+#	undef WINGDIAPI
+#endif
+
 #	include <windows.h>
 #	include <shlobj.h>
 #	include <OleIdl.h>
@@ -20,6 +25,8 @@
 #	include <io.h>
 #	include "Pointer.h"
 #	include "Input.h"
+#	include "GGEMain.h"
+#	include "Layer.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -67,6 +74,16 @@
 
 	namespace gge { namespace os {
 		bool quiting=false;
+
+		void winslashtonormal(std::string &s) {
+			for(unsigned i=0;i<s.length();i++)
+				if(s[i]=='\\') s[i]='/';
+		}
+
+		void normalslashtowin(std::string &s) {
+			for(unsigned i=0;i<s.length();i++)
+				if(s[i]=='/') s[i]='\\';
+		}
 
 		void DisplayMessage(const char *Title, const char *Text) {
 			MessageBox(NULL,Text,Title,0);
@@ -339,14 +356,6 @@
 						ProcessMouseUp(mouse::Event::Left,x,y);
 					}
 					break;
-				case WM_LBUTTONDBLCLK:
-					{
-						int x=lParam%0x10000;
-						int y=lParam>>16;
-						
-						ProcessMouseDblClick(mouse::Event::Left,x,y);
-					}
-					break;
 
 				case WM_RBUTTONDOWN:
 					{
@@ -365,14 +374,6 @@
 						ProcessMouseUp(mouse::Event::Right,x,y);
 					}
 					break;
-				case WM_RBUTTONDBLCLK:
-					{
-						int x=(int)lParam%0x10000;
-						int y=(int)lParam>>16;
-						
-						ProcessMouseDblClick(mouse::Event::Right,x,y);
-					}
-					break;
 
 				case WM_MBUTTONDOWN:
 					{
@@ -389,14 +390,6 @@
 						
 						ProcessMouseClick(mouse::Event::Middle,x,y);
 						ProcessMouseUp(mouse::Event::Middle,x,y);
-					}
-					break;
-				case WM_MBUTTONDBLCLK:
-					{
-						int x=lParam%0x10000;
-						int y=lParam>>16;
-						
-						ProcessMouseDblClick(mouse::Event::Middle,x,y);
 					}
 					break;
 
@@ -429,21 +422,6 @@
 						case 2:
 							ProcessMouseClick(mouse::Event::X2,x,y);
 							ProcessMouseUp(mouse::Event::X2,x,y);
-							break;
-						}
-					}
-					break;
-				case WM_XBUTTONDBLCLK:
-					{
-						int x=lParam%0x10000;
-						int y=lParam>>16;
-						
-						switch(GET_XBUTTON_WPARAM(wParam)) {
-						case 1:
-							ProcessMouseDblClick(mouse::Event::X1,x,y);
-							break;
-						case 2:
-							ProcessMouseDblClick(mouse::Event::X2,x,y);
 							break;
 						}
 					}
@@ -707,7 +685,7 @@
 
 		}
 
-		std::string GetClipbardText() {
+		std::string GetClipboardText() {
 			HANDLE clip;
 			if (OpenClipboard(NULL)) 
 				clip = GetClipboardData(CF_TEXT);
@@ -736,8 +714,11 @@
 				my_documents[0]=0;
 
 				HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+				
+				std::string s=my_documents;
+				winslashtonormal(s);
 
-				return my_documents;
+				return s;
 			}
 
 			std::string GetUsername() {
@@ -811,6 +792,7 @@
 				}
 				else {
 					current=dirinfo.data->cFileName;
+					winslashtonormal(current);
 				}
 			}
 
