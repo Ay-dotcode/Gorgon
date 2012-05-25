@@ -64,7 +64,7 @@ namespace gge { namespace utils {
 	//Fills maps using << operator.
 	template <class Map_, class T_>
 	class mapfiller {
-		friend static mapfiller<Map_, T_> operator << <Map_, T_>(mapoperations<Map_, T_> &map, const T_ &value);
+		friend mapfiller<Map_, T_> operator << <Map_, T_>(mapoperations<Map_, T_> &map, const T_ &value);
 	public:
 		mapfiller &operator <<(const T_ &value) {
 			if(offset>=parent.buffersize())
@@ -201,7 +201,7 @@ namespace gge { namespace utils {
 				me().buffer[x+y*me().getwidth()]=value;
 		}
 		void Set(utils::Point location, const T_ &value) {
-			Set(location.x, location.y,value)
+			Set(location.x, location.y,value);
 		}
 		void Set(int location, const T_ &value) {
 			if(location>=0 && location<me().buffer.GetSize())
@@ -692,13 +692,13 @@ namespace gge { namespace utils {
 
 		SequenceCheckResult<T_> CheckAllForSequenceNotOf(const T_ &value, int atleast) const {
 			SequenceCheckResult<T_> ret=CheckRowsForSequenceNotOf(value, atleast);
-			if(ret.direction!=SequenceCheckResult<T_>None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>::None) return ret;
 
 			ret=CheckColumnsForSequenceNotOf(value, atleast);
-			if(ret.direction!=SequenceCheckResult<T_>None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>::None) return ret;
 
 			ret=CheckDiagonalsForSequenceNotOf(value, atleast);
-			if(ret.direction!=SequenceCheckResult<T_>None) return ret;
+			if(ret.direction!=SequenceCheckResult<T_>::None) return ret;
 		}
 
 		SequenceCheckResult<T_> CheckAllForSequence() const {

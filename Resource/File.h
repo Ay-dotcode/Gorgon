@@ -50,14 +50,14 @@ namespace gge { namespace resource {
 
 		class strings {
 		public:
-			static const string FileNotFound	;
-			static const string Signature		;
-			static const string VersionMismatch	;
-			static const string Containment		;
+			static const std::string FileNotFound	;
+			static const std::string Signature		;
+			static const std::string VersionMismatch	;
+			static const std::string Containment		;
 		};
 
 
-		load_error(ErrorType number, const string &text) : runtime_error(text), number(number) {
+		load_error(ErrorType number, const std::string &text) : runtime_error(text), number(number) {
 
 		}
 
@@ -86,13 +86,13 @@ namespace gge { namespace resource {
 		bool LoadNames;
 		Folder &Root() { return *root; }
 		////Returns the filename used for the last load or save operation
-		string GetFilename() const { return Filename; }
+		std::string GetFilename() const { return Filename; }
 
 		////Loads a given file throws load_error
 		///@Filename	: File to be loaded
-		void LoadFile(const string &Filename) { load(Filename, false); }
+		void LoadFile(const std::string &Filename) { load(Filename, false); }
 
-		void LoadFirst(const string &Filename) { load(Filename, true);}
+		void LoadFirst(const std::string &Filename) { load(Filename, true);}
 
 		////Returns if a file is loaded
 		bool isLoaded() const { return isloaded; }
@@ -133,7 +133,7 @@ namespace gge { namespace resource {
 
 	private:
 		bool isloaded;
-		string Filename;
+		std::string Filename;
 	};
 
 	inline void EatChunk(std::istream &file, std::streamoff Size) { file.seekg(Size, std::ios::cur); }

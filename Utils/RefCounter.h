@@ -49,10 +49,10 @@ protected:
 	}
 
 	template <class C2_>
-	RefCounter(RefCounter<C2_> &ref) : refcnt(ref.refcnt) {
+	RefCounter(const RefCounter<C2_> &ref) : refcnt(ref.refcnt) {
 	}
 
-	RefCounter(RefCounter &ref) : refcnt(ref.refcnt) {
+	RefCounter(const RefCounter &ref) : refcnt(ref.refcnt) {
 	}
 
 	void refassign(const RefCounter &ref) {

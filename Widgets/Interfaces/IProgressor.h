@@ -15,7 +15,7 @@ namespace gge { namespace widgets {
 	class IProgressor : public utils::NumericProperty<IProgressor<T_>, T_> {
 	public:
 
-		IProgressor() : NumericProperty(this, &IProgressor::getValue, &IProgressor::setValue),
+		IProgressor() : utils::NumericProperty<IProgressor<T_>, T_>(this, &IProgressor::getValue, &IProgressor::setValue),
 			INIT_PROPERTY(IProgressor, Min),
 			Value(*this),
 			INIT_PROPERTY(IProgressor, Max)
@@ -32,7 +32,7 @@ namespace gge { namespace widgets {
 
 		template <class O_>
 		IProgressor &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
@@ -48,8 +48,8 @@ namespace gge { namespace widgets {
 		virtual void setMax(const T_ &value) = 0;
 
 		//SUPPLIED
-		template<class T_>
-		bool default_focusreceived(T_ *Container) {
+		template<class C_>
+		bool default_focusreceived(C_ *Container) {
 			return false;
 		}
 

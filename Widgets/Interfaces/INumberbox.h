@@ -30,7 +30,7 @@ namespace gge { namespace widgets {
 		  }
 
 		  INumberbox &operator =(const T_ &s) {
-			  Text=s;
+			  this->Text=s;
 
 			  return *this;
 		  }

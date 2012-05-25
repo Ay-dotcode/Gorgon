@@ -11,7 +11,7 @@ namespace gge { namespace widgets { namespace dialog {
 	TextInput &AskText(const std::string &Message, const std::string Default="", const std::string &Title="");
 
 	class TextInput : public DialogWindow {
-		friend TextInput &AskText(const string &msg, const std::string Default, const string &Title);
+		friend TextInput &AskText(const std::string &msg, const std::string Default, const std::string &Title);
 	public:
 
 		TextInput() : INIT_PROPERTY(TextInput, MessageText), 

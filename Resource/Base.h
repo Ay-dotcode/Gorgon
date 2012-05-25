@@ -39,9 +39,9 @@ namespace gge { namespace resource {
 		////utils::SGuid to identify this resource object
 		utils::SGuid guid;
 		////Name of this resource object, may not be loaded.
-		string name;
+		std::string name;
 		////Caption of this resource object, may not be loaded.
-		string caption;
+		std::string caption;
 
 		////Subitems that this resource object have. Some of the sub items
 		/// can be hidden therefore, this is not guaranteed to be complete

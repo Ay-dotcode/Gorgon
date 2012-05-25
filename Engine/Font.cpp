@@ -1,6 +1,7 @@
 #include "Font.h"
 #include "../Resource/FontTheme.h"
 
+using namespace std;
 using namespace gge::resource;
 using namespace gge::graphics;
 

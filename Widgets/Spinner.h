@@ -13,19 +13,19 @@ namespace gge { namespace widgets {
 		Spinner(T_ value=T_()) : ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(Spinner, AnimationDuration),
 			INIT_PROPERTY(Spinner, Stepsize),
-			attachedto(NULL), margin(0), Base(value)
+			attachedto(NULL), margin(0), slider::Base<T_>(value)
 		{
-			Base::setorientation(slider::Blueprint::Vertical);
-			Base::setupdisplay(false, false, false, true, false, true);
-			Base::setsmoothingmode(false, false, true, false, 100);
-			Base::setmarkers(false, false, false, 10, 5);
-			Base::setactions(false, Base::Goto, true);
-			Base::setactive();
+			slider::Base<T_>::setorientation(slider::Blueprint::Vertical);
+			slider::Base<T_>::setupdisplay(false, false, false, true, false, true);
+			slider::Base<T_>::setsmoothingmode(false, false, true, false, 100);
+			slider::Base<T_>::setmarkers(false, false, false, 10, 5);
+			slider::Base<T_>::setactions(false, slider::Base<T_>::Goto, true);
+			slider::Base<T_>::setactive();
 
-			ISlider::ChangeEvent.DoubleLink(ChangeEvent);
+			ISlider<T_>::ChangeEvent.DoubleLink(ChangeEvent);
 
 			if(WR.Sliders.NumberSpinner)
-				setblueprint(*WR.Sliders.NumberSpinner);
+				this->setblueprint(*WR.Sliders.NumberSpinner);
 		}
 
 		virtual WidgetBase *GetWidget() {
@@ -34,7 +34,7 @@ namespace gge { namespace widgets {
 
 		template <class O_>
 		Spinner &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
@@ -47,30 +47,30 @@ namespace gge { namespace widgets {
 		void Reposition() {
 			if(!attachedto) return;
 
-			if(attachedto->GetWidget()->GetContainer() != GetContainer())
-				SetContainer(attachedto->GetWidget()->GetContainer());
+			if(attachedto->GetWidget()->GetContainer() != this->GetContainer())
+				this->SetContainer(attachedto->GetWidget()->GetContainer());
 				
 
 			utils::Bounds target=attachedto->GetWidget()->GetBounds();
 
 			WidgetBase::Move(utils::Point(target.Right+margin,target.Top));
-			SetHeight(target.Height());
+			this->SetHeight(target.Height());
 		}
 
 		void AttachTo(INumberbox<T_> &numberbox) {
 			if(!numberbox.GetWidget()) return;
 
-			DetachFrom();
+			this->DetachFrom();
 
 			attachedto=&numberbox;
 
-			numberbox.Value=getvalue();
+			numberbox.Value=this->getvalue();
 			numberbox.GetWidget()->BoundsChanged.Register(this, &Spinner::Reposition);
 			numberbox.ChangeEvent.Register(this, &Spinner::updatevalue);
 			numberbox.GetWidget()->LostFocus.Register(this, &Spinner::validate);
 			numberbox.KeyEvent.Register(this, &Spinner::attached_keyboard);
 
-			Reposition();
+			this->Reposition();
 		}
 
 		void DetachFrom() {
@@ -95,7 +95,7 @@ namespace gge { namespace widgets {
 
 		void SetMargin(int margin) {
 			this->margin=margin;
-			Reposition();
+			this->Reposition();
 		}
 
 		int GetMargin() const {
@@ -120,70 +120,70 @@ namespace gge { namespace widgets {
 		void updatevalue() {
 			if(!attachedto) return;
 
-			if(Value!=attachedto->Value) {
-				Base::instantsetvalue(attachedto->Value);
+			if(this->Value!=attachedto->Value) {
+				slider::Base<T_>::instantsetvalue(attachedto->Value);
 			}
 		}
 
 		void validate() {
 			if(!attachedto) return;
-			if(Base::getvalue()!=attachedto->Value)
-				attachedto->Value=Base::getvalue();
+			if(slider::Base<T_>::getvalue()!=attachedto->Value)
+				attachedto->Value=slider::Base<T_>::getvalue();
 		}
 
 		bool attached_keyboard(input::keyboard::Event event) {
 			if(event.keycode==input::keyboard::KeyCodes::Left || event.keycode==input::keyboard::KeyCodes::Right)
 				return false;
 
-			return Base::KeyboardHandler(event.event, event.keycode);
+			return slider::Base<T_>::KeyboardHandler(event.event, event.keycode);
 		}
 
 
 		//REQUIRED
 		virtual T_ getValue() const {
-			return Base::getvalue();
+			return slider::Base<T_>::getvalue();
 		}
 		void setValue(const T_ &value) {
-			Base::setvalue(value);
+			slider::Base<T_>::setvalue(value);
 		}
 		T_ getMin() const {
-			return Base::getmin();
+			return slider::Base<T_>::getmin();
 		}
 		void setMin(const T_ &value) {
-			Base::setmin(value);
+			slider::Base<T_>::setmin(value);
 		}
 		T_ getMax() const {
-			return Base::getmax();
+			return slider::Base<T_>::getmax();
 		}
 		void setMax(const T_ &value) {
-			Base::setmax(value);
+			slider::Base<T_>::setmax(value);
 		}
 
 
 		int getAnimationDuration() const {
-			return int(100000/Base::getsmoothingspeed());
+			return int(100000/slider::Base<T_>::getsmoothingspeed());
 		}
 		void setAnimationDuration(const int &value) {
-			Base::setsmoothingspeed(100000.f/value);
+			slider::Base<T_>::setsmoothingspeed(100000.f/value);
 		}
 
 		void setStepsize(const T_ &value) {
-			Base::setsteps(value);
-			Base::setsmallchange(std::max(value,1));
+			slider::Base<T_>::setsteps(value);
+			slider::Base<T_>::setsmallchange(std::max(value,1));
 		}
 		T_ getStepsize() const {
-			return Base::getsteps();
+			return slider::Base<T_>::getsteps();
 		}
 
 		virtual void wr_loaded() {
-			if(WR.Sliders.NumberSpinner && !blueprintmodified)
-				setblueprint(*WR.Sliders.NumberSpinner);
+			if(WR.Sliders.NumberSpinner && !this->blueprintmodified)
+				this->setblueprint(*WR.Sliders.NumberSpinner);
 		}
 
 
 		virtual void value_changed() {
-			if(attachedto && Value!=attachedto->Value)
-				attachedto->Value=getvalue();
+			if(attachedto && this->Value!=attachedto->Value)
+				attachedto->Value=this->getvalue();
 
 			if(attachedto)
 				attachedto->GetWidget()->Focus();

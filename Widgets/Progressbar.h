@@ -9,14 +9,14 @@ namespace gge { namespace widgets {
 	public:
 		Progressbar() : INIT_PROPERTY(Progressbar, AnimationDuration)
 		{
-			Base::setorientation(slider::Blueprint::Horizontal);
-			Base::setupdisplay(false, true, true, false, false);
-			Base::setsmoothingmode(false, true, false, true, 100);
-			Base::setmarkers(false, false, false);
-			setpassive();
+			slider::Base<T_>::setorientation(slider::Blueprint::Horizontal);
+			slider::Base<T_>::setupdisplay(false, true, true, false, false);
+			slider::Base<T_>::setsmoothingmode(false, true, false, true, 100);
+			slider::Base<T_>::setmarkers(false, false, false);
+			this->setpassive();
 
 			if(WR.Progressbar)
-				setblueprint(*WR.Progressbar);
+				this->setblueprint(*WR.Progressbar);
 		}
 
 		virtual WidgetBase *GetWidget() {
@@ -25,13 +25,13 @@ namespace gge { namespace widgets {
 
 		template <class O_>
 		Progressbar &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
 
 		void SetValue(const T_ &value) {
-			Base::instantsetvalue(value);
+			slider::Base<T_>::instantsetvalue(value);
 		}
 
 		utils::NumericProperty<Progressbar, int> AnimationDuration;
@@ -39,35 +39,35 @@ namespace gge { namespace widgets {
 	protected:
 		//REQUIRED
 		virtual T_ getValue() const {
-			return Base::getvalue();
+			return slider::Base<T_>::getvalue();
 		}
 		void setValue(const T_ &value) {
-			Base::setvalue(value);
+			slider::Base<T_>::setvalue(value);
 		}
 		T_ getMin() const {
-			return Base::getmin();
+			return slider::Base<T_>::getmin();
 		}
 		void setMin(const T_ &value) {
-			Base::setmin(value);
+			slider::Base<T_>::setmin(value);
 		}
 		T_ getMax() const {
-			return Base::getmax();
+			return slider::Base<T_>::getmax();
 		}
 		void setMax(const T_ &value) {
-			Base::setmax(value);
+			slider::Base<T_>::setmax(value);
 		}
 
 
 		int getAnimationDuration() const {
-			return int(100000/Base::getsmoothingspeed());
+			return int(100000/slider::Base<T_>::getsmoothingspeed());
 		}
 		void setAnimationDuration(const int &value) {
-			Base::setsmoothingspeed(100000.f/value);
+			slider::Base<T_>::setsmoothingspeed(100000.f/value);
 		}
 
 		virtual void wr_loaded() {
-			if(WR.Progressbar && !blueprintmodified)
-				setblueprint(*WR.Progressbar);
+			if(WR.Progressbar && !this->blueprintmodified)
+				this->setblueprint(*WR.Progressbar);
 		}
 
 	};

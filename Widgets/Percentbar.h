@@ -4,7 +4,7 @@
 
 namespace gge { namespace widgets {
 
-	template<class T_=int, class floattype=slider::floattype<T_>::Type>
+	template<class T_=int, class floattype=typename slider::floattype<T_>::Type>
 	class Percentbar : public IProgressor<T_>, public slider::Base<float> {
 	public:
 
@@ -39,15 +39,15 @@ namespace gge { namespace widgets {
 
 		template <class O_>
 		Percentbar &operator =(const O_ &value) { 
-			(Object.*setter)(value);
+			(this->Object.*this->setter)(value);
 
 			return *this;
 		}
 
 		utils::NumericProperty<Percentbar, int> AnimationDuration;
 		utils::NumericProperty<Percentbar, int> Decimals;
-		utils::Property<Percentbar, typename Alignment> IndicatorAlignment;
-		utils::Property<Percentbar, typename Alignment> ValueAlignment;
+		utils::Property<Percentbar, Alignment> IndicatorAlignment;
+		utils::Property<Percentbar, Alignment> ValueAlignment;
 		utils::BooleanProperty<Percentbar> ShowTicks;
 		utils::NumericProperty<Percentbar, floattype> TickDistance;
 

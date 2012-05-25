@@ -1752,7 +1752,7 @@ namespace gge { namespace widgets {
 							ss<<std::hex;
 						if(format.decimals>-1)
 							ss<<std::setprecision(format.decimals);
-						ss.str(string());
+						ss.str(std::string());
 						ss<<format.prefix;
 						ss<<maximum;
 						ss<<format.units;
@@ -2552,7 +2552,7 @@ namespace gge { namespace widgets {
 					floattype mn=ceil(minimum/(markers.tickdistance*markers.numberdistance))*markers.tickdistance*markers.numberdistance;
 
 					for(floattype v=(floattype)mn;v<=maximum;v+=markers.tickdistance*markers.numberdistance) {
-						ss.str(string());
+						ss.str(std::string());
 						ss<<format.prefix;
 						ss<<v;
 						ss<<format.units;

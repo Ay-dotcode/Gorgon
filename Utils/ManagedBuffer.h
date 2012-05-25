@@ -43,7 +43,6 @@ namespace gge { namespace utils {
 	class ManagedBuffer : RefCounter<ManagedBuffer<T_> > {
 		template<class O_>
 		friend class ManagedBuffer;
-		friend void std::swap<>(ManagedBuffer<T_> &left, ManagedBuffer<T_> &right);
 		friend class RefCounter<ManagedBuffer>;
 	public:
 		ManagedBuffer() : data(new T_*(nullptr)), size_(new int(0)) 
@@ -65,7 +64,6 @@ namespace gge { namespace utils {
 			refassign(buf);
 
 			data=buf.data;
-			this->refcnt=buf.refcnt;
 			size_=buf.size_;
 
 			return *this;
@@ -255,35 +253,5 @@ namespace gge { namespace utils {
 		int *size_;
 	};
 } }
-
-namespace std {
-	//untested for std compatibility, swaps to buffers in O(1)
-	template<class T_>
-	void swap(gge::utils::ManagedBuffer<T_> &left,gge::utils::ManagedBuffer<T_> &right) {
-		T_** d;
-		int *s;
-		int *rc;
-		bool nr;
-		float sf;
-
-		d=left.data;
-		s=left.size;
-		rc=left.refcnt;
-		nr=left.noresizer;
-		sf=left.sizefactor;
-
-		left.data=right.data;
-		left.size=right.size;
-		left.refcnt=right.refcnt;
-		left.noresizer=right.noresizer;
-		left.sizefactor=right.sizefactor;
-
-		right.data=d;
-		right.size=s;
-		right.refcnt=rc;
-		right.noresizer=nr;
-		right.sizefactor=sf;
-	}
-}
 
 #pragma warning(pop)

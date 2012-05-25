@@ -75,7 +75,8 @@ namespace gge { namespace widgets {
 		}
 
 		virtual void Deactivate()  {
-			input::keyboard::Events.Disable(KeyboardToken);
+			if(KeyboardToken!=input::keyboard::Events.NullToken)
+				input::keyboard::Events.Disable(KeyboardToken);
 			isactive=false;
 		}
 
@@ -122,6 +123,9 @@ namespace gge { namespace widgets {
 		}
 
 		virtual void focus_changed(WidgetBase *newwidget)  {
+			if(KeyboardToken==input::keyboard::Events.NullToken)
+				return;
+
 			if(newwidget) {
 				input::keyboard::Events.Enable(KeyboardToken);
 				isactive=true;
@@ -163,6 +167,13 @@ namespace gge { namespace widgets {
 		void terminate() {
 			input::keyboard::Events.Unregister(KeyboardToken);
 			KeyboardToken=input::keyboard::Events.NullToken;
+			isactive=false;
+			while(auto it=Widgets.First()) {
+				if(it->BoundToContainer)
+					it.Delete();
+				else
+					it->Detach();
+			}
 		}
 
 

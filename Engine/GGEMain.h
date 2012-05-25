@@ -66,11 +66,11 @@ namespace gge {
 		////Whether running in windowed mode
 		inline bool getFullScreen() { return FullScreen; }
 		////The name of the system (code name of the game)
-		inline string getSystemName() { return SystemName; }
+		inline std::string getSystemName() { return SystemName; }
 		////Handle of the window
 		inline os::WindowHandle getWindow() { return Window; }
 
-		void Setup(string SystemName, int Width=800, int Height=600, int BitDepth=32, bool FullScreen=false);
+		void Setup(std::string SystemName, int Width=800, int Height=600, int BitDepth=32, bool FullScreen=false);
 
 		////Current system time. This time does not change in a given game loop
 		unsigned int CurrentTime;
@@ -94,7 +94,7 @@ namespace gge {
 		////This function creates the game window. You may specify title, icon and position
 		/// of the window. However, position is ignored if this is a full screen application.
 		/// OS should be initialized before calling this function
-		os::WindowHandle CreateWindow(string Title, os::IconHandle Icon, int X=0, int Y=0);
+		os::WindowHandle CreateWindow(std::string Title, os::IconHandle Icon, int X=0, int Y=0);
 
 		////Initializes graphic subsystem. All graphic related functions will fail if
 		/// called before this method. 
@@ -109,9 +109,9 @@ namespace gge {
 		////Initializes OS subsystem allowing it to setup events. Should be called before creating a window
 		void		 InitializeOS();
 		////Initializes all systems creating the main window
-		void		 InitializeAll(string Title, os::IconHandle Icon, int X, int Y);
+		void		 InitializeAll(std::string Title, os::IconHandle Icon, int X, int Y);
 		////Initializes all systems creating the main window and centering
-		void		 InitializeAll(string Title, os::IconHandle Icon=NULL);
+		void		 InitializeAll(std::string Title, os::IconHandle Icon=0);
 		////Initializes Animation subsystem. Before calling this function, animations does not progress
 		/// automatically.
 		void		 InitializeAnimation();
@@ -181,7 +181,7 @@ namespace gge {
 		////The name of the system (code name of the game)
 		/// should contain alpha numeric characters obeying
 		/// variable naming rules
-		string SystemName;
+		std::string SystemName;
 		////Handle of the window
 		os::WindowHandle Window;
 
@@ -190,7 +190,7 @@ namespace gge {
 		static void adjustlayers_recurse(LayerBase &layer, utils::Size from, utils::Size to);
 		void adjustlayers(utils::Size size);
 		
-		void initializerest(string Title, os::IconHandle Icon, int X, int Y);
+		void initializerest(std::string Title, os::IconHandle Icon, int X, int Y);
 
 		utils::Collection<IntervalObject> IntervalObjects;
 	};

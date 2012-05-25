@@ -9,20 +9,21 @@ namespace gge { namespace widgets {
 	template<class T_, void(*CS_)(const T_ &, std::string &)=combobox::CastToString<T_> >
 	class Combobox : public combobox::Base<T_, CS_>, ListItemModifier<T_, CS_>, utils::OrderedCollection<ListItem<T_, CS_> > {
 	public:
-		typedef ListItem<T_, CS_> ListItem;
-		typedef utils::OrderedCollection<ListItem>::Iterator Iterator;
-		typedef utils::OrderedCollection<ListItem>::ConstIterator ConstIterator;
-		typedef utils::OrderedCollection<ListItem>::SearchIterator SearchIterator;
-		typedef utils::OrderedCollection<ListItem>::ConstSearchIterator ConstSearchIterator;
+		typedef ListItem<T_, CS_> LI;
+		typedef typename utils::OrderedCollection<LI>::Iterator Iterator;
+		typedef typename utils::OrderedCollection<LI>::ConstIterator ConstIterator;
+		typedef typename utils::OrderedCollection<LI>::SearchIterator SearchIterator;
+		typedef typename utils::OrderedCollection<LI>::ConstSearchIterator ConstSearchIterator;
+		typedef utils::OrderedCollection<LI> OC;
 
 
 		Combobox() {
 			if(WR.Combobox)
-				setblueprint(*WR.Combobox);
+				this->setblueprint(*WR.Combobox);
 		}
 
-		ListItem &Add(const T_ &value=T_()) {
-			ListItem *li=new ListItem(this, &Combobox::togglenotify);
+		LI &Add(const T_ &value=T_()) {
+			LI *li=new LI(this, &Combobox::togglenotify);
 			li->Value=value;
 
 			Add(*li);
@@ -30,22 +31,22 @@ namespace gge { namespace widgets {
 			return *li;
 		}
 
-		void Add(ListItem &item) {
+		void Add(LI &item) {
 			callsettoggle(item, this, &Combobox::togglenotify);
-			OrderedCollection::Add(item);
+			OC::Add(item);
 			add(item);
 		}
 
-		ListItem &Insert(const T_ &value, const ListItem &before) {
+		LI &Insert(const T_ &value, const LI &before) {
 			return Insert(value, &before);
 		}
 
-		void Insert(ListItem &item, const ListItem &before) {
+		void Insert(LI &item, const LI &before) {
 			Insert(item, &before);
 		}
 
-		ListItem &Insert(const T_ &value, const ListItem *before) {
-			ListItem *li=new ListItem(this, &Combobox::togglenotify);
+		LI &Insert(const T_ &value, const LI *before) {
+			LI *li=new LI(this, &Combobox::togglenotify);
 			li->Value=value;
 
 			Insert(*li, before);
@@ -53,40 +54,40 @@ namespace gge { namespace widgets {
 			return *li;
 		}
 
-		void Insert(ListItem &item, const ListItem *before) {
+		void Insert(LI &item, const LI *before) {
 			callsettoggle(item, this, &Combobox::togglenotify);
-			OrderedCollection::Insert(item, before);
+			OC::Insert(item, before);
 			insert(item,before);
 		}
 
-		ListItem &Insert(const T_ &value, const  T_ &before) {
+		LI &Insert(const T_ &value, const  T_ &before) {
 			return Insert(value, Find(before));
 		}
 
-		void Insert(ListItem &item, const T_ &before) {
+		void Insert(LI &item, const T_ &before) {
 			Insert(item, Find(before));
 		}
 
-		void Remove(ListItem &item) {
-			listbox.Remove(item);
-			OrderedCollection::Remove(item);
+		void Remove(LI &item) {
+			this->listbox.Remove(item);
+			OC::Remove(item);
 		}
 
-		void Delete(ListItem &item) {
-			listbox.Remove(item);
-			OrderedCollection::Delete(item);
+		void Delete(LI &item) {
+			this->listbox.Remove(item);
+			OC::Delete(item);
 		}
 
 		void DeleteAll(const T_ &value) {
 			for(auto it=First();it.IsValid();it.Next()) {
 				if(it->Value==value) {
-					listbox.Remove(*it);
+					this->listbox.Remove(*it);
 					it.Delete();
 				}
 			}
 		}
 
-		ListItem *Find(const T_ &value) {
+		LI *Find(const T_ &value) {
 			for(auto it=First();it.IsValid();it.Next()) {
 				if(it->Value==value)
 					return it.CurrentPtr();
@@ -96,43 +97,43 @@ namespace gge { namespace widgets {
 		}
 
 		Iterator First() {
-			return OrderedCollection::First();
+			return OC::First();
 		}
 
 		ConstIterator First() const {
-			return OrderedCollection::First();
+			return OC::First();
 		}
 
 		Iterator Last() {
-			return OrderedCollection::Last();
+			return OC::Last();
 		}
 
 		ConstIterator Last() const {
-			return OrderedCollection::Last();
+			return OC::Last();
 		}
 
 		Iterator begin() {
-			return OrderedCollection::begin();
+			return OC::begin();
 		}
 
 		ConstIterator begin() const {
-			return OrderedCollection::begin();
+			return OC::begin();
 		}
 
 		Iterator end() {
-			return OrderedCollection::end();
+			return OC::end();
 		}
 
 		ConstIterator end() const {
-			return OrderedCollection::end();
+			return OC::end();
 		}
 
 		SearchIterator send() {
-			return OrderedCollection::send();
+			return OC::send();
 		}
 
 		ConstSearchIterator send() const {
-			return OrderedCollection::send();
+			return OC::send();
 		}
 
 		void DeleteAll() {
@@ -140,22 +141,22 @@ namespace gge { namespace widgets {
 		}
 
 		void Destroy() {
-			listbox.Clear();
-			OrderedCollection::Destroy();
+			this->listbox.Clear();
+			OC::Destroy();
 		}
 
 		void Clear() {
-			panel.Widgets.Clear();
-			OrderedCollection::Clear();
+			this->panel.Widgets.Clear();
+			OC::Clear();
 		}
 
 		int GetCount() const {
-			return OrderedCollection::GetCount();
+			return OC::GetCount();
 		}
 
 		T_ GetValue(int Index) {
-			if(OrderedCollection::Get(Index))
-				return OrderedCollection::Get(Index).Value;
+			if(OC::Get(Index))
+				return OC::Get(Index).Value;
 
 			return T_();
 		}
@@ -163,33 +164,33 @@ namespace gge { namespace widgets {
 		//returns selected item value
 		//returns last selected if listbox is in multi select
 		T_ GetValue() {
-			return active->Value;
+			return this->active->Value;
 		}
 
-		ListItem *GetItem(int Index) {
-			return OrderedCollection::Get(Index);
+		LI *GetItem(int Index) {
+			return OC::Get(Index);
 		}
 
 		//returns selected item
 		//returns last selected if listbox is in multi select
-		ListItem *GetItem() {
-			return Find(getvalue());
+		LI *GetItem() {
+			return Find(this->getvalue());
 		}
 
 		//returns last selected if listbox is in multi select
-		ListItem *GetSelectedItem() {
-			return Find(getvalue());
+		LI *GetSelectedItem() {
+			return Find(this->getvalue());
 		}
 
 		template<class P_>
-		void Sort(P_ predicate=std::less<T_>) {
-			OrderedCollection::Sort(predicate);
-			listbox.Sort(predicate);
+		void Sort(P_ predicate=std::less<T_>()) {
+			OC::Sort(predicate);
+			this->listbox.Sort(predicate);
 		}
 
 		void Sort() {
-			OrderedCollection::Sort();
-			listbox.Sort();
+			OC::Sort();
+			this->listbox.Sort();
 		}
 
 		template<class C_>
@@ -209,11 +210,11 @@ namespace gge { namespace widgets {
 				//if(!isextended) {
 					if(!input::keyboard::Modifier::IsModified()) {
 						if(Key==input::keyboard::KeyCodes::Down) {
-							auto it=OrderedCollection::Find(GetSelectedItem());
+							auto it=OC::Find(GetSelectedItem());
 
 							if(!it.IsValid()) {
 								if(GetCount())
-									setvalue(OrderedCollection::get_(0)->Value);
+									setvalue(OC::get_(0)->Value);
 							}
 							else {
 								it.Next();
@@ -225,7 +226,7 @@ namespace gge { namespace widgets {
 							return true;
 						}
 						else if(Key==input::keyboard::KeyCodes::Up) {
-							auto it=OrderedCollection::Find(GetSelectedItem());
+							auto it=OC::Find(GetSelectedItem());
 							it.Previous();
 							if(it.IsValid()) {
 								setvalue(it->Value);
@@ -237,7 +238,7 @@ namespace gge { namespace widgets {
 				//}
 			}
 
-			return Base::KeyboardHandler(event, Key);
+			return combobox::Base<T_, CS_>::KeyboardHandler(event, Key);
 		}
 			
 		utils::EventChain<Combobox> ValueChanged;
@@ -247,13 +248,13 @@ namespace gge { namespace widgets {
 			ValueChanged();
 		}
 		void togglenotify(IListItem<T_, CS_> *li, bool raise) {
-			ListItem* item=dynamic_cast<ListItem*>(li);
+			LI* item=dynamic_cast<LI*>(li);
 			if(!item) return;
 		}
 
 		virtual void wr_loaded() {
-			if(WR.Combobox && !blueprintmodified)
-				setblueprint(*WR.Combobox);
+			if(WR.Combobox && !this->blueprintmodified)
+				this->setblueprint(*WR.Combobox);
 		}
 	};
 

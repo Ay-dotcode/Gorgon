@@ -5,7 +5,6 @@
 #include "../Engine/Graphics.h"
 #include "../Resource/BitmapFont.h"
 
-
 namespace gge { namespace effects {
 
 	////This effect displays a counting number going from a given value to another one.
@@ -22,7 +21,7 @@ namespace gge { namespace effects {
 		////Number of decimal places, default is 0
 		int Decimals;
 		////Customized printing format, printf style that can feature a %f as the current value
-		string Format;
+		std::string Format;
 		////The font to be used
 		FontRenderer *Font;
 

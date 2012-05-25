@@ -56,7 +56,7 @@ namespace gge { namespace resource {
 			animation::Animations.Remove(this);
 		}
 
-		bool PNGExport(string filename);
+		bool PNGExport(std::string filename);
 		
 		////02020000h (Basic, Image)
 		virtual GID::Type GetGID() const { return GID::Image; }
@@ -68,7 +68,7 @@ namespace gge { namespace resource {
 
 		virtual void Prepare(GGEMain &main, File &file);
 
-		PNGReadError ImportPNG(string filename);
+		PNGReadError ImportPNG(std::string filename);
 
 		////Returns Bytes/Pixel information
 		int GetBPP() { return graphics::getBPP(Mode); }

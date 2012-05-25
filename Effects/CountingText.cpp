@@ -1,5 +1,6 @@
 #include "CountingText.h"
 
+using namespace std;
 using namespace gge;
 using namespace gge::graphics;
 using namespace gge::resource;

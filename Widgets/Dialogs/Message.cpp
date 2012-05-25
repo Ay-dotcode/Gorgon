@@ -53,7 +53,7 @@ namespace gge { namespace widgets { namespace dialog {
 		}
 	}
 
-	Message &ShowMessage(const string &msg, const string &Title) {
+	Message &ShowMessage(const std::string &msg, const std::string &Title) {
 		Message *m=NULL;
 		for(auto it=Messages.begin();it!=Messages.end();++it) {
 			if(!(*it)->IsVisible()) {

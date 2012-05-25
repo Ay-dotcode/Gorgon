@@ -96,7 +96,7 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Numberbox, Suffix),
 			AutoSelectAll(false), usehex(false)
 		{
-			Value=value;
+			this->Value=value;
 
 			setupvscroll(false, false, false);
 			
@@ -107,7 +107,7 @@ namespace gge { namespace widgets {
 		}
 
 		Numberbox &operator =(const T_ &s) {
-			Value=s;
+			this->Value=s;
 
 			return *this;
 		}
@@ -137,7 +137,7 @@ namespace gge { namespace widgets {
 		}
 
 		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
-			if(KeyEvent(input::keyboard::Event(event, Key)))
+			if(this->KeyEvent(input::keyboard::Event(event, Key)))
 				return true;
 			
 			return Base::KeyboardHandler(event,Key);

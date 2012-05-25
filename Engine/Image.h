@@ -38,6 +38,8 @@ namespace gge { namespace graphics {
 			return Mode;
 		}
 
+		Byte *RawData() { return Data.GetBuffer(); }
+
 	protected:
 		utils::CastableManagedBuffer<Byte> Data;
 		int Width,Height;

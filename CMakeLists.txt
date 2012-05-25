@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 PROJECT(GGE)
 
-ADD_DEFINITIONS(-DLINUX -fPIC -ggdb)
+ADD_DEFINITIONS(-DLINUX -fPIC -O3)
+SET(StandardFlags "-std=c++0x -Wall -Wno-reorder -Wno-unknown-pragmas -Wno-switch -Wno-unused-function")
+SET(ExternalCxxFlags "-fpermissive")
 
 SET(Utils 
 	Utils/Random.cpp
@@ -286,9 +288,6 @@ SET(Externals
 	${EXT_TheoraPlayback}
 )
 
-SET(StandardFlags "-std=c++0x -Wall -Wno-reorder -Wno-unknown-pragmas -Wno-switch -Wno-unused-function")
-SET(ExternalCxxFlags "-fpermissive")
-
 FOREACH(_file ${Utils} ${Engine} ${Resource} ${Widgets} ${Effects} ${Encoding} ${Network})
 	SET_SOURCE_FILES_PROPERTIES(${_file} PROPERTIES COMPILE_FLAGS ${StandardFlags})
 ENDFOREACH()
@@ -318,8 +317,6 @@ SET(libraries
 	X11
 	pthread
 	rt
-	ldap
-	lber
 )
 ADD_LIBRARY(GGE STATIC ${sources} ${Externals})
 

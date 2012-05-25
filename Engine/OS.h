@@ -9,7 +9,14 @@
 #include "../Utils/Rectangle2D.h"
 #include "../Utils/Size2D.h"
 
-using std::string;
+
+namespace gge {
+	namespace graphics {
+		class ImageData;
+	}
+}
+
+
 
 namespace gge { namespace os {
 	////Initializes OS subsystem by setting up events
@@ -35,9 +42,32 @@ namespace gge { namespace os {
 	int CurrentWeekday(); //monday->0
 	int CurrentDay();
 	int CurrentMonth();
-	int CurrentYear();
+	
+	class Date {
+	public:
+		int 
+			Year,
+			Month,//-> january: 1
+			Day,
+			Hour,
+			Minute,
+			Second,
+			Millisecond;
+			
+		enum DayOfWeek {
+			Sunday=0,
+			Monday,
+			Tuesday,
+			Wednesday,
+			Thursday,
+			Friday,
+			Saturday
+		} Weekday; //-> sunday: 0
+	};
+	
+	Date CurrentDate();
 
-	IconHandle IconFromResource(int ID);
+	IconHandle IconFromImage(graphics::ImageData &image);
 
 	unsigned int GetTime();
 
@@ -164,7 +194,7 @@ namespace gge { namespace os {
 		///@Width		: The width of the window
 		///@Height		: The height of the window
 		///@FullScreen	: Whether to create a full screen window
-		WindowHandle CreateWindow(std::string Name, string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
+		WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
 
 		void MoveWindow(WindowHandle,utils::Point);
 		void ResizeWindow(WindowHandle,utils::Size);

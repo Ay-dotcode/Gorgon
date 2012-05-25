@@ -19,13 +19,13 @@ namespace gge { namespace widgets {
 
 	gge::resource::File &LoadWidgets(const std::string &filename);
 
-	void InitializeApplication(const std::string &systemname, const std::string &windowtitle, const std::string &uifile, int width=700, int height=550, os::IconHandle icon=NULL);
+	void InitializeApplication(const std::string &systemname, const std::string &windowtitle, const std::string &uifile, int width=700, int height=550, os::IconHandle icon=0);
 
-	inline void InitializeApplication(const std::string &systemname, const std::string &windowtitle, int width, int height, const std::string &uifile, os::IconHandle icon=NULL) {
+	inline void InitializeApplication(const std::string &systemname, const std::string &windowtitle, int width, int height, const std::string &uifile, os::IconHandle icon=0) {
 		InitializeApplication(systemname, windowtitle, uifile, width, height, icon);
 	}
 
-	void InitializeApplication(const std::string &systemname, const std::string &windowtitle, int width=700, int height=550, os::IconHandle icon=NULL);
+	void InitializeApplication(const std::string &systemname, const std::string &windowtitle, int width=700, int height=550, os::IconHandle icon=0);
 
 	void Initialize(GGEMain &Main, int TopLevelOrder=1);
 

@@ -177,7 +177,7 @@ namespace gge { namespace widgets {
 
 		virtual void setValue(const T_ &value) {
 			this->value=value;
-			string s;
+			std::string s;
 
 			CF_(value,s);
 

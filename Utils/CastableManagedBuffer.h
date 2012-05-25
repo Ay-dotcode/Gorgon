@@ -44,7 +44,6 @@ namespace gge { namespace utils {
 		template<class O_>
 		friend class CastableManagedBuffer;
 		friend class RefCounter<CastableManagedBuffer<T_> >;
-		friend void std::swap<>(CastableManagedBuffer<T_> &left, CastableManagedBuffer<T_> &right);
 	public:
 		CastableManagedBuffer() : sizefactor(1) {
 			data=new T_*();
@@ -287,30 +286,3 @@ namespace gge { namespace utils {
 	};
 
 } }
-
-namespace std {
-	//untested for std compatibility, swaps to buffers in O(1)
-	template<class T_>
-	void swap(gge::utils::CastableManagedBuffer<T_> &left,gge::utils::CastableManagedBuffer<T_> &right) {
-		T_** d;
-		int *s;
-		int *rc;
-		bool nr;
-		float sf;
-
-		d=left.data;
-		s=left.size;
-		rc=left.refcnt;
-		sf=left.sizefactor;
-
-		left.data=right.data;
-		left.size=right.size;
-		left.refcnt=right.refcnt;
-		left.sizefactor=right.sizefactor;
-
-		right.data=d;
-		right.size=s;
-		right.refcnt=rc;
-		right.sizefactor=sf;
-	}
-}

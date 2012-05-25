@@ -27,6 +27,8 @@
 #	include <unistd.h>
 #	include <pwd.h>
 #	include <regex>
+#	include "Image.h"
+#	include "Layer.h"
 #	undef None
 static const int None=0;
 	
@@ -47,10 +49,13 @@ static const int None=0;
 	namespace gge { namespace os {
 		Display * display=NULL;
 		Window  windowhandle=0;
+		Visual *visual;
 		Cursor emptycursor;
 		Atom XA_CLIPBOARD;
 		Atom XA_TIMESTAMP;
 		Atom XA_TARGETS;
+		Atom XA_PROTOCOLS;
+		Atom WM_DELETE_WINDOW; 
 		std::string copiedtext;
 		
 		void DisplayMessage(const char *Title, const char *Text) {
@@ -65,6 +70,7 @@ static const int None=0;
 			windowhandle=0;
 		}
 		void Initialize() {
+			if(display) return;
 			system::pointerdisplayed=true;
 			pthread_attr_init(&common_thread_attr);
 			pthread_attr_setdetachstate(&common_thread_attr, PTHREAD_CREATE_DETACHED);
@@ -72,7 +78,12 @@ static const int None=0;
 			emptycursor=None;
 			XA_CLIPBOARD=XInternAtom(display, "CLIPBOARD", 1);
 			XA_TIMESTAMP=XInternAtom(display, "TIMESTAMP", 1);
-			XA_TARGETS = XInternAtom (display, "TARGETS", 0);
+			XA_TARGETS  =XInternAtom (display, "TARGETS", 0);
+			XA_PROTOCOLS=XInternAtom(display, "WM_PROTOCOLS", 0);
+			WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", 0);
+			//XVisualInfo vis_info;
+			//XMatchVisualInfo(display, DefaultScreen(display), 32, TrueColor, &vis_info);
+			visual = XDefaultVisualOfScreen(DefaultScreenOfDisplay(display));//vis_info.visual;
 		}
 		void Sleep(int ms) {
 			usleep(ms*1000);
@@ -91,6 +102,75 @@ static const int None=0;
 		namespace system {
 			CursorHandle defaultcursor;
 			bool pointerdisplayed;
+			InputLayer *inlayer;
+			gge::input::mouse::Event::Target *dragobject;
+			
+
+			//BEGIN XDND
+		
+			Atom XdndAware;
+			Atom XdndSelection;
+			Atom XdndEnter;
+			Atom XdndFinished;
+			Atom XdndStatus;
+			Atom XdndPosition;
+			Atom XdndLeave;
+			Atom XdndDrop;
+			Atom XdndActionCopy;
+			Atom XdndActionMove;
+			Atom XdndTypeList;
+			Atom XA_Filelist;
+			
+			void finishdrag() {
+				if(dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
+					auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
+
+					delete &data;
+				}
+			}
+
+			void XdndInit()
+			{
+				if (XdndAware)
+					return;
+
+				XdndAware         = XInternAtom(display, "XdndAware",         0);
+				XdndSelection     = XInternAtom(display, "XdndSelection",     0);
+				XdndStatus			= XInternAtom(display, "XdndStatus",     	  0);
+				XdndTypeList		= XInternAtom(display, "XdndTypeList",      0);
+				XdndEnter         = XInternAtom(display, "XdndEnter",         0);
+				XdndFinished      = XInternAtom(display, "XdndFinished",      0);
+				XdndPosition      = XInternAtom(display, "XdndPosition",      0);
+				XdndLeave         = XInternAtom(display, "XdndLeave",         0);
+				XdndDrop          = XInternAtom(display, "XdndDrop",          0);
+				XdndActionCopy    = XInternAtom(display, "XdndActionCopy",    0);
+				XdndActionMove    = XInternAtom(display, "XdndActionMove",    0);
+				XA_Filelist			= XInternAtom(display, "text/uri-list",	  0);
+				
+				inlayer=new InputLayer();
+				dragobject=&inlayer->MouseEvents.RegisterLambda([&]() -> bool {
+					finishdrag();
+					return true;
+				}, utils::Bounds2D(0,0,10000,10000), gge::input::mouse::Event::DragCanceled | gge::input::mouse::Event::DragAccepted);
+				
+				int version=4;
+				
+				XChangeProperty(display, windowhandle, XdndAware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&version, 1);
+			}
+
+
+		
+			//END
+
+			
+			static int WaitForMapNotify(Display *d, XEvent *e, char *arg) {
+				return (e->type == MapNotify) && (e->xmap.window == (Window)arg);
+			}
+			
+			static int WaitForSelectionNotify(Display *d, XEvent *e, char *arg) {
+				return (e->type == SelectionNotify);
+			}
+			
 			gge::input::mouse::Event::Type X11ButtonCodeToGGE(unsigned btn) {
 				using namespace gge::input::mouse;
 				switch(btn) {
@@ -108,37 +188,413 @@ static const int None=0;
 					return Event::None;
 				}
 			}
+			std::string GetAtomName(Atom a)
+			{
+				if(a == (int)None)
+					return "None";
+				else
+					return XGetAtomName(display, a);
+			}
+
 			void ProcessMessage() {
-				//TODO: modifier keys, window events
-				
 				XEvent event;
 				
 				while(XEventsQueued(display, QueuedAfterReading)) {
 					XNextEvent(display, &event);
 					unsigned key;
 					switch(event.type) {
+					case ClientMessage:
+						 if (event.xclient.message_type == XA_PROTOCOLS 
+							&& event.xclient.format == 32 
+							&& event.xclient.data.l[0] == (long)WM_DELETE_WINDOW) 
+						{ 
+							bool allow;
+							allow=true;
+							window::Closing(allow);
+							if(allow) {
+								ReleaseAll();
+								window::Destroyed();
+								break;
+							}
+						}
+						else if(event.xclient.message_type==XdndEnter) {
+							unsigned long len, bytes, dummy;
+							unsigned char *data=NULL;
+							Atom type;
+							int format;
+								
+							XGetWindowProperty(display, event.xclient.data.l[0], XdndTypeList, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+							XGetWindowProperty (display, event.xclient.data.l[0], 
+												XdndTypeList, 0,bytes,0,
+												AnyPropertyType, &type, &format,
+												&len, &dummy, &data);
+							Atom*atoms=(Atom*)data;
+							for(int i=0;i<(int)bytes/4;i++) {
+								if(atoms[i]==XA_Filelist) {
+									gge::Pointers.Hide();
+									auto dragdata=new gge::input::mouse::FileListDragData();
+									gge::input::mouse::BeginDrag(*dragdata, *dragobject);
+									return;
+								}
+								else if(atoms[i]==XA_STRING) {
+									gge::Pointers.Hide();
+									auto dragdata=new gge::input::mouse::TextDragData();
+									gge::input::mouse::BeginDrag(*dragdata, *dragobject);
+									return;
+								}
+							}
+						}
+						else if(event.xclient.message_type==XdndPosition) {
+							XClientMessageEvent m;
+							memset(&m, sizeof(m), 0);
+							m.type = ClientMessage;
+							m.display = event.xclient.display;
+							m.window = event.xclient.data.l[0];
+							m.message_type = XdndStatus;
+							m.format=32;
+							m.data.l[0] = windowhandle;
+							m.data.l[1] = 1;//gge::input::mouse::HasDragTarget() && gge::input::mouse::IsDragging();
+							m.data.l[2] = 0;
+							m.data.l[3] = 0;
+							
+							if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
+								auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
+								if(data.GetAction()==data.Move)
+									m.data.l[4] = XdndActionMove;
+								else
+									m.data.l[4] = XdndActionCopy;
+							}
+							else if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::TextDragData*>(&gge::input::mouse::GetDraggedObject())) {
+								m.data.l[4] = XdndActionCopy;
+							}
+							else {
+								m.data.l[4] = None;
+							}
+
+							XSendEvent(display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+							XFlush(display);
+							gge::Pointers.Hide();
+						}
+						else if(event.xclient.message_type == XdndLeave) {
+							gge::input::mouse::CancelDrag();
+							gge::Pointers.Show();
+						}
+						else if(event.xclient.message_type == XdndDrop) {
+							if(0 && !gge::input::mouse::HasDragTarget()) {
+								XClientMessageEvent m;
+								memset(&m, sizeof(m), 0);
+								m.type = ClientMessage;
+								m.display = event.xclient.display;
+								m.window = event.xclient.data.l[0];
+								m.message_type = XdndFinished;
+								m.format=32;
+								m.data.l[0] = windowhandle;
+								m.data.l[1] = 0;
+								m.data.l[2] = None; //Failed.
+								XSendEvent(display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+								
+								return;
+							}
+							
+							
+							XEvent ev;
+
+							
+							XConvertSelection(display, XdndSelection, XA_Filelist, XA_PRIMARY, windowhandle, event.xclient.data.l[0]);
+							XFlush(display);
+							
+							XIfEvent(display, &ev, system::WaitForSelectionNotify, (char*)windowhandle);
+							if (ev.xselection.property != (unsigned)None && dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
+								Atom type;
+								unsigned long len, bytes, dummy;
+								unsigned char *data;
+								int format;
+								
+								auto &dragdata=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
+
+
+								XGetWindowProperty(display, windowhandle, ev.xselection.property, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+
+								if(bytes) {
+
+									XGetWindowProperty (display, windowhandle, 
+											ev.xselection.property, 0,bytes,0,
+											AnyPropertyType, &type, &format,
+											&len, &dummy, &data);
+									
+									
+									int p=0;
+									for(int i=0;i<(int)len+1;i++) {
+										if(i==(int)len || (char)data[i]=='\n') {
+											if(i-p>1) {
+												std::string s((char*)(data+p), (int)(i-p));
+												if(s.length()>6 && s.substr(0, 7)=="file://") 
+													s=s.substr(7);
+												
+												dragdata.data.push_back(s);
+												p=i+1;
+											}
+										}
+									}
+									
+									XFree(data);
+								}
+								
+								XClientMessageEvent m;
+								memset(&m, sizeof(m), 0);
+								m.type = ClientMessage;
+								m.display = display;
+								m.window = event.xclient.data.l[0];
+								m.message_type = XdndFinished;
+								m.format=32;
+								m.data.l[0] = windowhandle;
+								m.data.l[1] = 1;
+								m.data.l[2] = XdndActionCopy; //We only ever copy.
+
+								//Reply that all is well.
+								XSendEvent(display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+							}
+							else if(dynamic_cast<gge::input::mouse::TextDragData*>(&gge::input::mouse::GetDraggedObject())) {
+								XConvertSelection(display, XdndSelection, XA_STRING, XA_PRIMARY, windowhandle, event.xclient.data.l[0]);
+								XFlush(display);
+								
+								
+								XIfEvent(display, &ev, system::WaitForSelectionNotify, (char*)windowhandle);
+								if (ev.xselection.property != (unsigned)None) {
+									Atom type;
+									unsigned long len, bytes, dummy;
+									unsigned char *data;
+									int format;
+									
+									auto &dragdata=dynamic_cast<gge::input::mouse::TextDragData&>(gge::input::mouse::GetDraggedObject());
+
+
+									XGetWindowProperty(display, windowhandle, ev.xselection.property, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+
+									if(bytes) {
+
+										XGetWindowProperty (display, windowhandle, 
+												ev.xselection.property, 0,bytes,0,
+												AnyPropertyType, &type, &format,
+												&len, &dummy, &data);
+										
+										std::string tmp((char*)data, bytes);
+										XFree(data);
+										
+										dragdata.data=tmp;
+									}
+									
+									XClientMessageEvent m;
+									memset(&m, sizeof(m), 0);
+									m.type = ClientMessage;
+									m.display = display;
+									m.window = event.xclient.data.l[0];
+									m.message_type = XdndFinished;
+									m.format=32;
+									m.data.l[0] = windowhandle;
+									m.data.l[1] = 1;
+									m.data.l[2] = XdndActionCopy; //We only ever copy.
+
+									//Reply that all is well.
+									XSendEvent(display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+								}
+							}
+
+							gge::input::mouse::DropDrag();
+							gge::Pointers.Show();
+						}
+						else {
+							std::cout<<"E"<<event.xclient.message_type<<std::endl;
+						}
+					
+						break;
+					
+					case FocusIn:
+						window::Activated();
+						break;
+						
+					case FocusOut:
+						ReleaseAll();
+						window::Deactivated();
+						break;
+						
 					case KeyPress:
 						key=XLookupKeysym(&event.xkey,0);
-						ProcessKeyDown(key);
-						ProcessChar(key);
+						
+						switch(key) {
+							case XK_Shift_L:
+								keyboard::Modifier::isAlternate=false;
+								ProcessKeyDown(key);
+								keyboard::Modifier::Add(keyboard::Modifier::Shift);
+								break;
+								
+							case XK_Shift_R:
+								keyboard::Modifier::isAlternate=true;
+								ProcessKeyDown(XK_Shift_L);
+								keyboard::Modifier::Add(keyboard::Modifier::Shift);
+								break;
+								
+							case XK_Control_L:
+								keyboard::Modifier::isAlternate=false;
+								ProcessKeyDown(key);
+								keyboard::Modifier::Add(keyboard::Modifier::Ctrl);
+								break;
+								
+							case XK_Control_R:
+								keyboard::Modifier::isAlternate=true;
+								ProcessKeyDown(XK_Control_L);
+								keyboard::Modifier::Add(keyboard::Modifier::Ctrl);
+								break;
+								
+							case XK_Alt_L:
+								keyboard::Modifier::isAlternate=false;
+								ProcessKeyDown(key);
+								keyboard::Modifier::Add(keyboard::Modifier::Alt);
+								break;
+								
+							case XK_Alt_R:
+								keyboard::Modifier::isAlternate=true;
+								ProcessKeyDown(XK_Alt_L);
+								keyboard::Modifier::Add(keyboard::Modifier::Alt);
+								break;
+								
+							case XK_Super_L:
+								keyboard::Modifier::isAlternate=false;
+								ProcessKeyDown(key);
+								keyboard::Modifier::Add(keyboard::Modifier::Super);
+								break;
+								
+							case XK_Super_R:
+								keyboard::Modifier::isAlternate=true;
+								ProcessKeyDown(XK_Super_L);
+								keyboard::Modifier::Add(keyboard::Modifier::Super);
+								break;
+								
+							default:
+								char buffer[2];
+								int nchars;
+								
+								ProcessKeyDown(key);
+
+								nchars = XLookupString(
+									&(event.xkey),
+									buffer,
+									2,  /* buffer size */
+									(KeySym*)&key,
+									NULL 
+								);
+								
+								if ((nchars == 1 || 
+									(int)key==keyboard::KeyCodes::Enter) && 
+									(int)key!=keyboard::KeyCodes::Delete)
+									ProcessChar(key);
+								break;
+						}
 						break;
 					case KeyRelease:
 						key=XLookupKeysym(&event.xkey,0);
+						bool pkey;
+						pkey=false;
 						
 						if(XEventsQueued(display, QueuedAfterReading)) {
 							XEvent nextevent;
 							XPeekEvent(display, &nextevent);
 							if(nextevent.type == KeyPress && nextevent.xkey.time == event.xkey.time && 
 								nextevent.xkey.keycode == event.xkey.keycode) {
-								ProcessChar(key);
+								
+								if((int)key==keyboard::KeyCodes::Delete || 
+									(int)key==keyboard::KeyCodes::Escape ||
+									(int)key==keyboard::KeyCodes::Up ||
+									(int)key==keyboard::KeyCodes::Down ||
+									(int)key==keyboard::KeyCodes::Left ||
+									(int)key==keyboard::KeyCodes::PageUp ||
+									(int)key==keyboard::KeyCodes::PageDown ||
+									(int)key==keyboard::KeyCodes::Right) {
+									
+									ProcessKeyDown(key);
+									
+								}
+								else {
+									char buffer[2];
+									int nchars;
+									
+									nchars = XLookupString(
+										&(event.xkey),
+										buffer,
+										2,  /* buffer size */
+										(KeySym*)&key,
+										NULL 
+									);
+									
+									if (nchars == 1 || (int)key==keyboard::KeyCodes::Enter)
+										ProcessChar(key);
+								}
 								XNextEvent(display, &nextevent);
+							
+								break;
 							}
 							else {
-								ProcessKeyUp(key);
+								pkey=true;
 							}
 						}
 						else {
-							ProcessKeyUp(key);
+							pkey=true;
+						}
+						
+						if(pkey) {
+							switch(key) {
+								case XK_Shift_L:
+									keyboard::Modifier::isAlternate=false;
+									ProcessKeyUp(key);
+									keyboard::Modifier::Remove(keyboard::Modifier::Shift);
+									break;
+									
+								case XK_Shift_R:
+									keyboard::Modifier::isAlternate=true;
+									ProcessKeyUp(XK_Shift_L);
+									keyboard::Modifier::Remove(keyboard::Modifier::Shift);
+									break;
+									
+								case XK_Control_L:
+									keyboard::Modifier::isAlternate=false;
+									ProcessKeyUp(key);
+									keyboard::Modifier::Remove(keyboard::Modifier::Ctrl);
+									break;
+									
+								case XK_Control_R:
+									keyboard::Modifier::isAlternate=true;
+									ProcessKeyUp(XK_Control_L);
+									keyboard::Modifier::Remove(keyboard::Modifier::Ctrl);
+									break;
+									
+								case XK_Alt_L:
+									keyboard::Modifier::isAlternate=false;
+									ProcessKeyUp(key);
+									keyboard::Modifier::Remove(keyboard::Modifier::Alt);
+									break;
+									
+								case XK_Alt_R:
+									keyboard::Modifier::isAlternate=true;
+									ProcessKeyUp(XK_Alt_L);
+									keyboard::Modifier::Remove(keyboard::Modifier::Alt);
+									break;
+									
+								case XK_Super_L:
+									keyboard::Modifier::isAlternate=false;
+									ProcessKeyUp(key);
+									keyboard::Modifier::Remove(keyboard::Modifier::Super);
+									break;
+									
+								case XK_Super_R:
+									keyboard::Modifier::isAlternate=true;
+									ProcessKeyUp(XK_Super_L);
+									keyboard::Modifier::Remove(keyboard::Modifier::Super);
+									break;
+									
+								default:
+									ProcessKeyUp(key);
+									break;
+							}
 						}
 						
 						break;
@@ -213,43 +669,32 @@ static const int None=0;
 			utils::EventChain<> Destroyed	("WindowDestroyed" );
 			utils::EventChain<Empty, bool&> Closing	("WindowClosing" );
 
-
 		//TODO Private
 			Point cursorlocation=Point(0,0);
 			
-			static int WaitForMapNotify(Display *d, XEvent *e, char *arg) {
-				return (e->type == MapNotify) && (e->xmap.window == (Window)arg);
-			}
-			
-			static int WaitForSelectionNotify(Display *d, XEvent *e, char *arg) {
-				return (e->type == SelectionNotify);
-			}
-
-			WindowHandle CreateWindow(string Name, string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
+			WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
 				//TODO: handle icon
 				XSetWindowAttributes attributes; 
-				Visual *visual; 
 				int screen;
 				int depth; 
 				XEvent event;
 				
 				screen = DefaultScreen(display);
-				visual = DefaultVisual(display,screen); 
 				depth  = DefaultDepth(display,screen); 
-				attributes.background_pixel      = XWhitePixel(display,screen); 
-				attributes.border_pixel          = XBlackPixel(display,screen); 
 				attributes.event_mask = 
 					StructureNotifyMask | 
 					KeyPressMask |
 					KeyReleaseMask |
 					ButtonPressMask |
-					ButtonReleaseMask
+					ButtonReleaseMask|
+					FocusChangeMask|
+					SubstructureRedirectMask
 				;
 				Colormap cmap = XCreateColormap(display, RootWindow(display, screen), visual, AllocNone);
 				attributes.colormap = cmap;
 				windowhandle= XCreateWindow(display, XRootWindow(display,screen),
                    Left,Top, Width,Height,0, depth, InputOutput, visual,
-                   CWBorderPixel | CWEventMask | CWColormap,&attributes);	
+                   CWEventMask,&attributes);	
 				
 				char data[1]={0};
 				XColor dummy;
@@ -275,11 +720,23 @@ static const int None=0;
 				sizehints->flags=PMinSize | PMaxSize;
 				XSetWMNormalHints(display, windowhandle, sizehints);		
 				XFree(sizehints);
+				
+				XSetWMProtocols(display, windowhandle, &WM_DELETE_WINDOW, 1);
+
+				if(Icon) {
+					Atom net_wm_icon = XInternAtom(display, "_NET_WM_ICON", False);
+					Atom cardinal = XInternAtom(display, "CARDINAL", False);
+					XChangeProperty(display, windowhandle, net_wm_icon, cardinal , 32, PropModeReplace, (const unsigned char*)Icon, 2+((unsigned*)Icon)[0]*((unsigned*)Icon)[1]);
+					XSync(display, 1);
+				}
 
 				
 				XMapWindow(display,windowhandle);
-				XIfEvent(display, &event, WaitForMapNotify, (char*)windowhandle);
+				XIfEvent(display, &event, system::WaitForMapNotify, (char*)windowhandle);
+				
+				system::XdndInit();
 		
+				
 				return (WindowHandle)windowhandle;
 			}
 
@@ -326,9 +783,18 @@ static const int None=0;
 				XDefineCursor(display, windowhandle, emptycursor);
 			}
 		}
-		IconHandle IconFromResource(int ID) {
-			//TODO: will be replaced
-			return (gge::os::IconHandle)0;
+		IconHandle IconFromImage(graphics::ImageData &image) {
+			unsigned *img=new unsigned[2+image.GetWidth()*image.GetHeight()];
+			
+			img[0]=image.GetWidth();
+			img[1]=image.GetHeight();
+			
+			int is=image.GetWidth()*image.GetHeight();
+			int *id=(int*)image.RawData();
+			for(int i=0;i<is;i++)
+				img[i+2]=id[i];
+			
+			return (IconHandle)img;
 		}
 		namespace input {
 			utils::Point GetMousePosition(WindowHandle Window)
@@ -348,75 +814,29 @@ static const int None=0;
 
 		}
 
-		int CurrentHour() {
+		Date CurrentDate() {
 			time_t rawtime;
 			struct tm * timeinfo;
 
 			time ( &rawtime );
 			timeinfo = localtime ( &rawtime );	
 			
-			return timeinfo->tm_hour;
-		}
-		int CurrentMinute() {
-			time_t rawtime;
-			struct tm * timeinfo;
-
-			time ( &rawtime );
-			timeinfo = localtime ( &rawtime );	
-			
-			return timeinfo->tm_min;
-		}
-		int CurrentSecond() {
-			time_t rawtime;
-			struct tm * timeinfo;
-
-			time ( &rawtime );
-			timeinfo = localtime ( &rawtime );	
-			
-			return timeinfo->tm_sec;
-		}
-		int CurrentMillisecond() {
 			struct timeval  tv;
 			gettimeofday(&tv, NULL);
 			
-			return tv.tv_usec / 1000;
-		}
-		int CurrentWeekday() {
-			time_t rawtime;
-			struct tm * timeinfo;
-
-			time ( &rawtime );
-			timeinfo = localtime ( &rawtime );	
+			Date ret;
+			ret.Year 	   =(int)timeinfo->tm_year;
+			ret.Month	   =(int)timeinfo->tm_mon;
+			ret.Day		   =(int)timeinfo->tm_mday;
+			ret.Hour 	   =(int)timeinfo->tm_hour;
+			ret.Minute	   =(int)timeinfo->tm_min;
+			ret.Second	   =(int)timeinfo->tm_sec;
+			ret.Millisecond=(int)tv.tv_usec/1000;
+			ret.Weekday		=(Date::DayOfWeek)timeinfo->tm_wday;
 			
-			return (timeinfo->tm_wday+1)%7;
+			return ret;
 		}
-		int CurrentDay() {
-			time_t rawtime;
-			struct tm * timeinfo;
-
-			time ( &rawtime );
-			timeinfo = localtime ( &rawtime );	
-			
-			return timeinfo->tm_mday;
-		}
-		int CurrentMonth() {
-			time_t rawtime;
-			struct tm * timeinfo;
-
-			time ( &rawtime );
-			timeinfo = localtime ( &rawtime );	
-			
-			return timeinfo->tm_mon;
-		}
-		int CurrentYear() {
-			time_t rawtime;
-			struct tm * timeinfo;
-
-			time ( &rawtime );
-			timeinfo = localtime ( &rawtime );	
-			
-			return timeinfo->tm_year+1900;
-		}
+		
 
 
 		std::string GetClipboardText() {
@@ -429,7 +849,7 @@ static const int None=0;
 			XConvertSelection (display, XA_CLIPBOARD, XA_STRING, None, windowhandle, CurrentTime);
 			XFlush(display);
 			
-			XIfEvent(display, &event, window::WaitForSelectionNotify, (char*)windowhandle);
+			XIfEvent(display, &event, system::WaitForSelectionNotify, (char*)windowhandle);
 			if (event.xselection.property == XA_STRING) {
 				Atom type;
 				unsigned long len, bytes, dummy;
@@ -494,9 +914,28 @@ static const int None=0;
 			osdirenum::osdirenum() : dp() {
 			}
 			
-			osdirenum::~osdirenum() {
-				if(dp)
+			osdirenum::osdirenum(const osdirenum &osd) : dp(osd.dp), pattern(osd.pattern), RefCounter<osdirenum>(osd) {
+				this->addref();
+			}
+			
+			osdirenum &osdirenum::operator =(const osdirenum &osd) {
+				refassign(osd);
+				
+				dp=osd.dp;
+				pattern=osd.pattern;
+				
+				return *this;
+			}
+			
+			void osdirenum::destroy() {
+				if(dp) {
 					closedir((DIR*)dp);
+					dp=NULL;
+				}
+			}
+			
+			osdirenum::~osdirenum() {
+				this->destructref();
 			}
 			
 			std::string escape_regexp(const std::string &str) {
@@ -529,8 +968,7 @@ static const int None=0;
 			}
 
 			DirectoryIterator::DirectoryIterator(const DirectoryIterator &it ) {
-				dirinfo.dp=it.dirinfo.dp;
-				dirinfo.pattern=it.dirinfo.pattern;
+				dirinfo=it.dirinfo;
 				current=it.current;
 			}
 
@@ -600,47 +1038,47 @@ static const int None=0;
 	} 
 
 	namespace input {
-		const int keyboard::KeyCodes::Shift	= XK_Shift_L;
-		const int keyboard::KeyCodes::Control	= XK_Control_L;
-		const int keyboard::KeyCodes::Alt	= XK_Alt_L;
-		const int keyboard::KeyCodes::Super	= XK_Super_L;
+		const keyboard::Key keyboard::KeyCodes::Shift	= XK_Shift_L;
+		const keyboard::Key keyboard::KeyCodes::Control	= XK_Control_L;
+		const keyboard::Key keyboard::KeyCodes::Alt	= XK_Alt_L;
+		const keyboard::Key keyboard::KeyCodes::Super	= XK_Super_L;
 
-		const int keyboard::KeyCodes::Home	= XK_Home;
-		const int keyboard::KeyCodes::End	= XK_End;
-		const int keyboard::KeyCodes::Insert	= XK_Insert;
-		const int keyboard::KeyCodes::Delete	= XK_Delete;
-		const int keyboard::KeyCodes::PageUp	= XK_Page_Up;
-		const int keyboard::KeyCodes::PageDown	= XK_Page_Down;
+		const keyboard::Key keyboard::KeyCodes::Home	= XK_Home;
+		const keyboard::Key keyboard::KeyCodes::End	= XK_End;
+		const keyboard::Key keyboard::KeyCodes::Insert	= XK_Insert;
+		const keyboard::Key keyboard::KeyCodes::Delete	= XK_Delete;
+		const keyboard::Key keyboard::KeyCodes::PageUp	= XK_Page_Up;
+		const keyboard::Key keyboard::KeyCodes::PageDown	= XK_Page_Down;
 
-		const int keyboard::KeyCodes::Left	= XK_Left;
-		const int keyboard::KeyCodes::Up	= XK_Up;
-		const int keyboard::KeyCodes::Right	= XK_Right;
-		const int keyboard::KeyCodes::Down	= XK_Down;
+		const keyboard::Key keyboard::KeyCodes::Left	= XK_Left;
+		const keyboard::Key keyboard::KeyCodes::Up	= XK_Up;
+		const keyboard::Key keyboard::KeyCodes::Right	= XK_Right;
+		const keyboard::Key keyboard::KeyCodes::Down	= XK_Down;
 
-		const int keyboard::KeyCodes::PrintScreen=XK_Print;
-		const int keyboard::KeyCodes::Pause	= XK_Pause;
+		const keyboard::Key keyboard::KeyCodes::PrintScreen=XK_Print;
+		const keyboard::Key keyboard::KeyCodes::Pause	= XK_Pause;
 
-		const int keyboard::KeyCodes::CapsLock	= XK_Caps_Lock;
-		const int keyboard::KeyCodes::NumLock	= XK_Num_Lock;
+		const keyboard::Key keyboard::KeyCodes::CapsLock	= XK_Caps_Lock;
+		const keyboard::Key keyboard::KeyCodes::NumLock	= XK_Num_Lock;
 
-		const int keyboard::KeyCodes::Enter	= XK_Return;
-		const int keyboard::KeyCodes::Backspace	= XK_BackSpace;
-		const int keyboard::KeyCodes::Escape	= XK_Escape;
-		const int keyboard::KeyCodes::Tab	= XK_Tab;
-		const int keyboard::KeyCodes::Space	= 0x20;
+		const keyboard::Key keyboard::KeyCodes::Enter	= XK_Return;
+		const keyboard::Key keyboard::KeyCodes::Backspace	= XK_BackSpace;
+		const keyboard::Key keyboard::KeyCodes::Escape	= XK_Escape;
+		const keyboard::Key keyboard::KeyCodes::Tab	= XK_Tab;
+		const keyboard::Key keyboard::KeyCodes::Space	= 0x20;
 
-		const int keyboard::KeyCodes::F1	= XK_F1;
-		const int keyboard::KeyCodes::F2	= XK_F2;
-		const int keyboard::KeyCodes::F3	= XK_F3;
-		const int keyboard::KeyCodes::F4	= XK_F4;
-		const int keyboard::KeyCodes::F5	= XK_F5;
-		const int keyboard::KeyCodes::F6	= XK_F6;
-		const int keyboard::KeyCodes::F7	= XK_F7;
-		const int keyboard::KeyCodes::F8	= XK_F8;
-		const int keyboard::KeyCodes::F9	= XK_F9;
-		const int keyboard::KeyCodes::F10	= XK_F10;
-		const int keyboard::KeyCodes::F11	= XK_F11;
-		const int keyboard::KeyCodes::F12	= XK_F12;
+		const keyboard::Key keyboard::KeyCodes::F1	= XK_F1;
+		const keyboard::Key keyboard::KeyCodes::F2	= XK_F2;
+		const keyboard::Key keyboard::KeyCodes::F3	= XK_F3;
+		const keyboard::Key keyboard::KeyCodes::F4	= XK_F4;
+		const keyboard::Key keyboard::KeyCodes::F5	= XK_F5;
+		const keyboard::Key keyboard::KeyCodes::F6	= XK_F6;
+		const keyboard::Key keyboard::KeyCodes::F7	= XK_F7;
+		const keyboard::Key keyboard::KeyCodes::F8	= XK_F8;
+		const keyboard::Key keyboard::KeyCodes::F9	= XK_F9;
+		const keyboard::Key keyboard::KeyCodes::F10	= XK_F10;
+		const keyboard::Key keyboard::KeyCodes::F11	= XK_F11;
+		const keyboard::Key keyboard::KeyCodes::F12	= XK_F12;
 
 	}
 

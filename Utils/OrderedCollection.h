@@ -51,7 +51,7 @@ namespace gge { namespace utils {
 	struct elementsorterfrompointer {
 		elementsorterfrompointer(const P_ &predicate) : predicate(predicate) {}
 
-		bool operator ()(T_ *&left, T_*&right) const {
+		bool operator ()(const T_ *left, const T_*right) const {
 			if(left==NULL || right==NULL)
 				return false;
 

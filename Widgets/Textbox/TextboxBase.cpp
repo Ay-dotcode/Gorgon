@@ -632,8 +632,15 @@ namespace gge { namespace widgets {
 					return true;
 				}
 				else if(!readonly) {
+					bool allow=false;
+					
+					//depending on multiline
+					if(Key!=input::keyboard::KeyCodes::Tab && Key!=input::keyboard::KeyCodes::Enter)
+						allow=true;
+					if(Key==input::keyboard::KeyCodes::Escape)
+						allow=false;
 
-					if(Key >= 32) {
+					if(Key >= 32 && allow) {
 						if(caretlocation!=selectionstart) {
 							if(selectionstart<caretlocation) {
 								text.erase(selectionstart, caretlocation-selectionstart);

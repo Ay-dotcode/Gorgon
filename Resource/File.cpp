@@ -35,7 +35,7 @@ namespace gge { namespace resource {
 		ifstream data;
 		data.open(Filename, ios::in | ios::binary);
 		if(data.fail())
-			throw load_error(load_error::FileNotFound, load_error::strings::FileNotFound);
+			throw load_error(load_error::FileNotFound, load_error::strings::FileNotFound+"\n"+Filename);
 
 
 		///*Check file signature

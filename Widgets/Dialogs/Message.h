@@ -10,7 +10,7 @@ namespace gge { namespace widgets { namespace dialog {
 	Message &ShowMessage(const std::string &Message, const std::string &Title="");
 
 	class Message : public DialogWindow {
-		friend Message &ShowMessage(const string &msg, const string &Title);
+		friend Message &ShowMessage(const std::string &msg, const std::string &Title);
 	public:
 		enum DialogIcon {
 			None	= 0,

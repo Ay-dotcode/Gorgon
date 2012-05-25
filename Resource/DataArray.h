@@ -36,7 +36,7 @@ namespace gge { namespace resource {
 	class IData : public Base {
 	public:
 		virtual bool Save(File &File, std::ostream &Data) { return false; }
-		string name;
+		std::string name;
 
 		virtual void Prepare(File &File) { }
 	};
@@ -68,10 +68,10 @@ namespace gge { namespace resource {
 	public:
 		////02030C01h (Basic, Data resource, Data types, text)
 		virtual int GetGID() const { return GID::Data_Text; }
-		string value;
+		std::string value;
 
-		StringData(string value) { this->value=value; }
-		operator string() { return value; }
+		StringData(std::string value) { this->value=value; }
+		operator std::string() { return value; }
 		operator const char *() { return value.c_str(); }
 	};
 
@@ -147,7 +147,7 @@ namespace gge { namespace resource {
 		////Adds a new float value to this resource
 		FloatData		&Add(float value);
 		////Adds a new string value to this resource
-		StringData		&Add(string value);
+		StringData		&Add(std::string value);
 		////Adds a new utils::Point value to this resource
 		PointData		&Add(utils::Point value);
 		////Adds a new rectangle to this resource
@@ -166,7 +166,7 @@ namespace gge { namespace resource {
 		////Returns float at index
 		float getFloat(int Index) { return dynamic_cast<FloatData&>(Data[Index]).value; }
 		////Returns string at index
-		string getString(int Index) { return dynamic_cast<StringData&>(Data[Index]).value; }
+		std::string getString(int Index) { return dynamic_cast<StringData&>(Data[Index]).value; }
 		////Returns char array at index
 		const char *getText(int Index) { return dynamic_cast<StringData&>(Data[Index]).value.data(); }
 		////Returns utils::Point at index

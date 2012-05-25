@@ -11,6 +11,7 @@
 #include <functional>
 
 using namespace gge::utils;
+using namespace std;
 
 namespace gge { namespace animation {
 	void Animator_Signal();

@@ -259,7 +259,7 @@ namespace gge { namespace graphics {
 
 		operator float() { return AccurateLuminance()/255.0f; }
 
-		string HTMLColor() {
+		std::string HTMLColor() {
 			std::stringstream str2;
 			std::stringstream str;
 			str2<<std::hex<<((int)(*this)&0x00ffffff);
@@ -293,7 +293,7 @@ namespace gge { namespace graphics {
 			}
 		}
 
-		operator string() {
+		operator std::string() {
 			return HTMLColor();
 		}
 		////Returns BGRA integer
@@ -301,7 +301,7 @@ namespace gge { namespace graphics {
 	};
 
 	inline std::ostream &operator <<(std::ostream &stream, RGBint color) {
-		stream<<(string)color;
+		stream<<(std::string)color;
 
 		return stream;
 	}

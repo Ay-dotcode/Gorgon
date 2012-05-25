@@ -1,7 +1,8 @@
 #pragma once
 
-
 #ifdef LINUX
+
+#include "../Utils/RefCounter.h"
 
 
 
@@ -24,14 +25,20 @@
 
 		namespace filesystem {
 			//TODO: directory enumerator struct
-			class osdirenum {
+			class osdirenum : public RefCounter<osdirenum> {
+				friend class RefCounter<osdirenum>;
 			public:
 				osdirenum();
+				osdirenum(const osdirenum &);
 				~osdirenum();
+				osdirenum &operator =(const osdirenum &);
 				
-				void *dp;
+				void* dp;
 				std::string pattern;
 
+			protected:
+				void dealloc() {}
+				void destroy();
 			};
 		}
 

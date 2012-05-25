@@ -27,6 +27,7 @@
 #	include "Input.h"
 #	include "GGEMain.h"
 #	include "Layer.h"
+#	include "Image.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -111,53 +112,21 @@
 			CreateThread(NULL, 0, (unsigned long (__stdcall *)(void *))fn, data, 0, &threadid);
 		}
 
-		int CurrentHour() {
+		Date CurrentDate() {
 			SYSTEMTIME tm;
 			GetLocalTime(&tm);
+			
+			Date ret;
+			ret.Year 	   =(int)tm.wYear;
+			ret.Month	   =(int)tm.wMonth;
+			ret.Day		   =(int)tm.wDay;
+			ret.Hour 	   =(int)tm.wHour;
+			ret.Minute	   =(int)tm.wMinute;
+			ret.Second	   =(int)tm.wSecond;
+			ret.Millisecond=(int)tm.wMilliseconds;
+			ret.Weekday		=(Date::DayOfWeek)tm.wDayOfWeek;
 
-			return (int)tm.wHour;
-		}
-		int CurrentMinute() {
-			SYSTEMTIME tm;
-			GetLocalTime(&tm);
-
-			return (int)tm.wMinute;
-		}
-		int CurrentSecond() {
-			SYSTEMTIME tm;
-			GetLocalTime(&tm);
-
-			return (int)tm.wSecond;
-		}
-		int CurrentMillisecond() {
-			SYSTEMTIME tm;
-			GetLocalTime(&tm);
-
-			return (int)tm.wMilliseconds;
-		}
-		int CurrentWeekday() {
-			SYSTEMTIME tm;
-			GetLocalTime(&tm);
-
-			return (int)((tm.wDayOfWeek+6)%7);
-		}
-		int CurrentDay() {
-			SYSTEMTIME tm;
-			GetLocalTime(&tm);
-
-			return (int)tm.wDay;
-		}
-		int CurrentMonth() {
-			SYSTEMTIME tm;
-			GetLocalTime(&tm);
-
-			return (int)tm.wMonth;
-		}
-		int CurrentYear() {
-			SYSTEMTIME tm;
-			GetLocalTime(&tm);
-
-			return (int)tm.wYear;
+			return ret;
 		}
 
 		namespace system {
@@ -542,7 +511,7 @@
 				return 0;
 			}
 
-			WindowHandle CreateWindow(string Name, string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
+			WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
 				WNDCLASSEX windclass;
 
 				HWND ret;
@@ -663,8 +632,73 @@
 				ShowCursor(false);
 			}
 		}
-		IconHandle IconFromResource(int ID) {
-			return (gge::os::IconHandle)LoadIcon(Instance, (LPCTSTR)ID);
+		IconHandle IconFromImage(graphics::ImageData &image) {
+			DWORD dwWidth, dwHeight;
+			BITMAPV5HEADER bi;
+			HBITMAP hBitmap;
+			void *lpBits;
+			DWORD x,y;
+			HICON hAlphaIcon = NULL;
+
+			dwWidth  = image.GetWidth();  // width of cursor
+			dwHeight = image.GetHeight();  // height of cursor
+
+			ZeroMemory(&bi,sizeof(BITMAPV5HEADER));
+			bi.bV5Size           = sizeof(BITMAPV5HEADER);
+			bi.bV5Width           = dwWidth;
+			bi.bV5Height          = dwHeight;
+			bi.bV5Planes = 1;
+			bi.bV5BitCount = 32;
+			bi.bV5Compression = BI_BITFIELDS;
+			// The following mask specification specifies a supported 32 BPP
+			// alpha format for Windows XP.
+			bi.bV5RedMask   =  0x00FF0000;
+			bi.bV5GreenMask =  0x0000FF00;
+			bi.bV5BlueMask  =  0x000000FF;
+			bi.bV5AlphaMask =  0xFF000000; 
+
+			HDC hdc;
+			hdc = GetDC(NULL);
+
+			// Create the DIB section with an alpha channel.
+			hBitmap = CreateDIBSection(hdc, (BITMAPINFO *)&bi, DIB_RGB_COLORS, 
+				(void **)&lpBits, NULL, (DWORD)0);
+
+			
+
+			// Create an empty mask bitmap.
+			HBITMAP hMonoBitmap = CreateBitmap(dwWidth,dwHeight,1,1,NULL);
+
+			// Set the alpha values for each pixel in the cursor so that
+			// the complete cursor is semi-transparent.
+			DWORD *lpdwPixel;
+			lpdwPixel = (DWORD *)lpBits;
+			DWORD *source=(DWORD *)image.RawData();
+			for (x=0;x<dwWidth;x++) {
+				for (y=0;y<dwHeight;y++)
+				{
+					// Clear the alpha bits
+					*lpdwPixel = *source;
+
+					lpdwPixel++;
+					source++;
+				}
+			}
+
+			ICONINFO ii;
+			ii.fIcon = TRUE;  // Change fIcon to TRUE to create an alpha icon
+			ii.xHotspot = 0;
+			ii.yHotspot = 0;
+			ii.hbmMask = hMonoBitmap;
+			ii.hbmColor = hBitmap;
+
+			// Create the alpha cursor with the alpha DIB section.
+			hAlphaIcon = CreateIconIndirect(&ii);
+
+			DeleteObject(hBitmap);          
+			DeleteObject(hMonoBitmap); 
+
+			return (IconHandle)hAlphaIcon;
 		}
 		namespace input {
 			utils::Point GetMousePosition(WindowHandle Window)
@@ -846,47 +880,47 @@
 	} 
 
 	namespace input {
-		const int keyboard::KeyCodes::Shift		= VK_SHIFT;
-		const int keyboard::KeyCodes::Control	= VK_CONTROL;
-		const int keyboard::KeyCodes::Alt		= VK_MENU;
-		const int keyboard::KeyCodes::Super		= VK_LWIN;
+		const keyboard::Key keyboard::KeyCodes::Shift		= VK_SHIFT;
+		const keyboard::Key keyboard::KeyCodes::Control	= VK_CONTROL;
+		const keyboard::Key keyboard::KeyCodes::Alt		= VK_MENU;
+		const keyboard::Key keyboard::KeyCodes::Super		= VK_LWIN;
 
-		const int keyboard::KeyCodes::Home		= VK_HOME;
-		const int keyboard::KeyCodes::End		= VK_END;
-		const int keyboard::KeyCodes::Insert	= VK_INSERT;
-		const int keyboard::KeyCodes::Delete	= VK_DELETE;
-		const int keyboard::KeyCodes::PageUp	= VK_PRIOR;
-		const int keyboard::KeyCodes::PageDown	= VK_NEXT;
+		const keyboard::Key keyboard::KeyCodes::Home		= VK_HOME;
+		const keyboard::Key keyboard::KeyCodes::End		= VK_END;
+		const keyboard::Key keyboard::KeyCodes::Insert	= VK_INSERT;
+		const keyboard::Key keyboard::KeyCodes::Delete	= VK_DELETE;
+		const keyboard::Key keyboard::KeyCodes::PageUp	= VK_PRIOR;
+		const keyboard::Key keyboard::KeyCodes::PageDown	= VK_NEXT;
 
-		const int keyboard::KeyCodes::Left		= VK_LEFT;
-		const int keyboard::KeyCodes::Up		= VK_UP;
-		const int keyboard::KeyCodes::Right		= VK_RIGHT;
-		const int keyboard::KeyCodes::Down		= VK_DOWN;
+		const keyboard::Key keyboard::KeyCodes::Left		= VK_LEFT;
+		const keyboard::Key keyboard::KeyCodes::Up		= VK_UP;
+		const keyboard::Key keyboard::KeyCodes::Right		= VK_RIGHT;
+		const keyboard::Key keyboard::KeyCodes::Down		= VK_DOWN;
 
-		const int keyboard::KeyCodes::PrintScreen=VK_SNAPSHOT;
-		const int keyboard::KeyCodes::Pause		= VK_PAUSE;
+		const keyboard::Key keyboard::KeyCodes::PrintScreen=VK_SNAPSHOT;
+		const keyboard::Key keyboard::KeyCodes::Pause		= VK_PAUSE;
 
-		const int keyboard::KeyCodes::CapsLock	= VK_CAPITAL;
-		const int keyboard::KeyCodes::NumLock	= VK_NUMLOCK;
+		const keyboard::Key keyboard::KeyCodes::CapsLock	= VK_CAPITAL;
+		const keyboard::Key keyboard::KeyCodes::NumLock	= VK_NUMLOCK;
 
-		const int keyboard::KeyCodes::Enter		= VK_RETURN;
-		const int keyboard::KeyCodes::Backspace	= VK_BACK;
-		const int keyboard::KeyCodes::Escape	= VK_ESCAPE;
-		const int keyboard::KeyCodes::Tab		= VK_TAB;
-		const int keyboard::KeyCodes::Space		= VK_SPACE;
+		const keyboard::Key keyboard::KeyCodes::Enter		= VK_RETURN;
+		const keyboard::Key keyboard::KeyCodes::Backspace	= VK_BACK;
+		const keyboard::Key keyboard::KeyCodes::Escape	= VK_ESCAPE;
+		const keyboard::Key keyboard::KeyCodes::Tab		= VK_TAB;
+		const keyboard::Key keyboard::KeyCodes::Space		= VK_SPACE;
 
-		const int keyboard::KeyCodes::F1		= VK_F1;
-		const int keyboard::KeyCodes::F2		= VK_F2;
-		const int keyboard::KeyCodes::F3		= VK_F3;
-		const int keyboard::KeyCodes::F4		= VK_F4;
-		const int keyboard::KeyCodes::F5		= VK_F5;
-		const int keyboard::KeyCodes::F6		= VK_F6;
-		const int keyboard::KeyCodes::F7		= VK_F7;
-		const int keyboard::KeyCodes::F8		= VK_F8;
-		const int keyboard::KeyCodes::F9		= VK_F9;
-		const int keyboard::KeyCodes::F10		= VK_F10;
-		const int keyboard::KeyCodes::F11		= VK_F11;
-		const int keyboard::KeyCodes::F12		= VK_F12;
+		const keyboard::Key keyboard::KeyCodes::F1		= VK_F1;
+		const keyboard::Key keyboard::KeyCodes::F2		= VK_F2;
+		const keyboard::Key keyboard::KeyCodes::F3		= VK_F3;
+		const keyboard::Key keyboard::KeyCodes::F4		= VK_F4;
+		const keyboard::Key keyboard::KeyCodes::F5		= VK_F5;
+		const keyboard::Key keyboard::KeyCodes::F6		= VK_F6;
+		const keyboard::Key keyboard::KeyCodes::F7		= VK_F7;
+		const keyboard::Key keyboard::KeyCodes::F8		= VK_F8;
+		const keyboard::Key keyboard::KeyCodes::F9		= VK_F9;
+		const keyboard::Key keyboard::KeyCodes::F10		= VK_F10;
+		const keyboard::Key keyboard::KeyCodes::F11		= VK_F11;
+		const keyboard::Key keyboard::KeyCodes::F12		= VK_F12;
 
 	}
 

@@ -38,8 +38,8 @@ namespace gge { namespace widgets {
 
 				listbox.SetIsExtender(true);
 				listbox.ItemClickedEvent.RegisterLambda([&](){
-					setvalue(this->listbox.GetValue());
-					shrink();
+					this->setvalue(this->listbox.GetValue());
+					this->shrink();
 				});
 				listbox.AutoHeight=true;
 				listbox.Hide();
@@ -52,9 +52,9 @@ namespace gge { namespace widgets {
 				dropbutton.Autosize=AutosizeModes::None;
 				dropbutton.ChangeEvent.RegisterLambda([&](){
 					if(dropbutton)
-						extend();
+						this->extend();
 					else
-						shrink();
+						this->shrink();
 				});
 				dropbutton.GotFocus.Register(this, &Base::dropbutton_focus);
 				WR.LoadedEvent.Register(this, &Base::wr_loaded);

@@ -8,10 +8,10 @@ namespace gge { namespace widgets { namespace dialog {
 
 	class Query;
 
-	Query &AskConfirm(const std::string &Confirm, const string &Title="");
+	Query &AskConfirm(const std::string &Confirm, const std::string &Title="");
 
 	class Query : public DialogWindow {
-		friend Query &AskConfirm(const std::string &Confirm, const string &Title);
+		friend Query &AskConfirm(const std::string &Confirm, const std::string &Title);
 	public:
 
 		Query() : INIT_PROPERTY(Query, QueryText), 

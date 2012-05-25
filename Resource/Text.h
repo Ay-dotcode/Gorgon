@@ -17,7 +17,7 @@ namespace gge { namespace resource {
 		friend Text *LoadTextResource(File &File, std::istream &Data, int Size);
 	public:
 		////The text contained within this resource
-		string Value;
+		std::string Value;
 		
 		////02010000h (Basic, Text)
 		virtual GID::Type GetGID() const { return GID::Text; }

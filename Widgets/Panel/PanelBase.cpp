@@ -621,7 +621,7 @@ namespace gge { namespace widgets {
 			bp(NULL), next_style(widgets::Blueprint::Style_None),
 			move_mdown(false), move_ongoing(false), padding(5),
 			move_pointer(PointerCollection::NullToken), scroll(0,0),
-			vscroll(true), scrollmargins(0), controlmargins(0),
+			vscroll(true), scrollmargins(0), controlmargins(0), outerborder(NULL),
 			scrollingborder(NULL), innerborder(NULL), showtitle(false), display(true),
 			blueprintmodified(false) {
 				padding=utils::Margins(WR.WidgetSpacing.x,WR.WidgetSpacing.y);
