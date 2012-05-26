@@ -29,6 +29,7 @@
 #	include <regex>
 #	include "Image.h"
 #	include "Layer.h"
+#	include "../Encoding/URI.h"
 #	undef None
 static const int None=0;
 	
@@ -330,8 +331,10 @@ static const int None=0;
 												std::string s((char*)(data+p), (int)(i-p));
 												if(s.length()>6 && s.substr(0, 7)=="file://") 
 													s=s.substr(7);
+												if(s[s.length()-1]=='\r')
+													s.resize(s.length()-1);
 												
-												dragdata.data.push_back(s);
+												dragdata.data.push_back(encoding::UriDecode(s));
 												p=i+1;
 											}
 										}
@@ -404,7 +407,7 @@ static const int None=0;
 							gge::Pointers.Show();
 						}
 						else {
-							std::cout<<"E"<<event.xclient.message_type<<std::endl;
+							//std::cout<<"E"<<event.xclient.message_type<<std::endl;
 						}
 					
 						break;
@@ -657,7 +660,8 @@ static const int None=0;
 						break;
 
 					default:
-						std::cout<<event.type<<std::endl;
+						break;
+						//std::cout<<event.type<<std::endl;
 					}
 				}
 				

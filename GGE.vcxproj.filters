@@ -1017,6 +1017,9 @@
     <ClInclude Include="Engine\OS.Linux.h">
       <Filter>Engine\Linux</Filter>
     </ClInclude>
+    <ClInclude Include="Encoding\URI.h">
+      <Filter>Encoding</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -1666,6 +1669,9 @@
     </ClCompile>
     <ClCompile Include="Engine\OS.Linux.cpp">
       <Filter>Engine\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoding\URI.cpp">
+      <Filter>Encoding</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

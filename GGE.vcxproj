@@ -103,6 +103,7 @@
     <ClInclude Include="Effects\LayerResizer.h" />
     <ClInclude Include="Effects\Tinting.h" />
     <ClInclude Include="Encoding\LZMA.h" />
+    <ClInclude Include="Encoding\URI.h" />
     <ClInclude Include="Engine\Animation.h" />
     <ClInclude Include="Engine\AudioClip.h" />
     <ClInclude Include="Engine\CustomLayer.h" />
@@ -386,6 +387,7 @@
     <ClCompile Include="Effects\LayerResizer.cpp" />
     <ClCompile Include="Effects\Tinting.cpp" />
     <ClCompile Include="Encoding\LZMA.cpp" />
+    <ClCompile Include="Encoding\URI.cpp" />
     <ClCompile Include="Engine\Animation.cpp" />
     <ClCompile Include="Engine\AudioClip.cpp" />
     <ClCompile Include="Engine\CustomLayer.cpp" />

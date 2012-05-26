@@ -83,6 +83,7 @@ SET(Effects
 
 SET(Encoding
 	Encoding/LZMA.cpp
+	Encoding/URI.cpp
 )
 
 SET(Network
