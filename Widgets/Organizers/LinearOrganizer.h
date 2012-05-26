@@ -181,6 +181,7 @@ namespace gge { namespace widgets {
 		}
 
 		void sync();
+		void removefromrows(WidgetBase *w);
 	};
 
 

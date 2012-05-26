@@ -81,6 +81,18 @@ namespace gge { namespace os {
 		void ProcessMessage();
 		extern CursorHandle defaultcursor;
 		extern bool pointerdisplayed;
+		static int threadfncall fnrunner(void *f) {
+			auto &fn=(*(std::function<int()>*)f);
+			int ret=fn();
+			delete &fn;
+			return ret;
+		}
+	}
+
+	static void RunInNewThread(std::function<int()> fn) {
+		auto *f=new std::function<int()>;
+		*f=fn;
+		RunInNewThread(system::fnrunner, (void*)f);
 	}
 
 	namespace user {

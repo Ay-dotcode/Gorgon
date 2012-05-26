@@ -123,7 +123,7 @@ namespace gge { namespace widgets {
 		Buttons.Button=Button=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
 		Buttons.Dialog		= GetWithDefault(folder, *wrr.file, 1, Buttons.Button);
 		Buttons.Menu		= GetWithDefault(folder, *wrr.file, 2, Buttons.Button);
-		Buttons.Tool		= GetWithDefault(folder, *wrr.file, 3, Buttons.Button);
+		Buttons.Tool		= GetWithDefault(folder, *wrr.file, 3, Buttons.Dialog);
 		Buttons.Navigation	= GetWithDefault(folder, *wrr.file, 4, Buttons.Dialog);
 		Buttons.Large		= GetWithDefault(folder, *wrr.file, 5, Buttons.Button);
 		Buttons.Small		= GetWithDefault(folder, *wrr.file, 6, Buttons.Button);

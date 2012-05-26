@@ -45,6 +45,25 @@ namespace gge { namespace widgets {
 				setblueprint(*WR.Button);
 		}
 
+		template<>
+		Button(std::function<void()> fn, std::string text) : Base(true, AutosizeModes::None, true, false, true),
+			INIT_PROPERTY(Button, Autosize),
+			INIT_PROPERTY(Button, TextWrap),
+			INIT_PROPERTY(Button, Accesskey),
+			INIT_PROPERTY(Button, AllowFocus),
+			ClickEvent("ClickEvent", this),
+			MouseEvent("MouseEvent", this),
+			allowfocus(true)
+		{
+			Text=text;
+			ClickEvent.DoubleLink(IButton::ClickEvent);
+
+			ClickEvent.RegisterLambda(fn);
+
+			if(WR.Button)
+				setblueprint(*WR.Button);
+		}
+
 		Button &operator =(const std::string &s) {
 			Text=s;
 

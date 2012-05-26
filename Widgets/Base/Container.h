@@ -394,6 +394,7 @@ namespace gge { namespace widgets {
 
 
 		virtual ~ContainerBase() {
+			RemoveOrganizer();
 			while(auto it=Widgets.First()) {
 				if(it->BoundToContainer)
 					it.Delete();

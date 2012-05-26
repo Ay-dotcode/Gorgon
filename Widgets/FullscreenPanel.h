@@ -29,7 +29,7 @@ namespace gge { namespace widgets {
 		using WidgetBase::Resize;
 
 		virtual void Resize(utils::Size Size) {
-			if(Size==WidgetBase::size) return;
+			if(Size==WidgetBase::size || !Container) return;
 			utils::Rectangle r=os::window::UsableScreenMetrics();
 
 			if(Size.Width>r.Width)
@@ -54,6 +54,7 @@ namespace gge { namespace widgets {
 		using WidgetBase::Move;
 
 		virtual void Move(utils::Point Location) {
+			if(!Container) return;
 			gge::Main.MoveWindow(Location);
 			location=Location;
 		}

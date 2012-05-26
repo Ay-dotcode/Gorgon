@@ -180,7 +180,7 @@
 							name.resize(wcslen(widetext));
 
 							wcstombs(&name[0], widetext, wcslen(widetext)+1);
-
+							winslashtonormal(name);
 							data->data.push_back(name);
 
 							widetext+=wcslen(widetext)+1;

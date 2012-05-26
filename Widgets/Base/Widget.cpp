@@ -72,7 +72,9 @@ namespace gge { namespace widgets {
 		if(!Container)
 			return;
 
-		Container->RemoveWidget(this);
+		ContainerBase *c=Container;
+		Container=NULL;
+		c->RemoveWidget(this);
 		utils::CheckAndDelete(BaseLayer);
 	}
 

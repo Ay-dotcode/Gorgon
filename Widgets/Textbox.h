@@ -14,6 +14,8 @@ namespace gge { namespace widgets {
 			ChangeEvent("ChangeEvent", this),
 			INIT_PROPERTY(Textbox, CaretLocation),
 			INIT_PROPERTY(Textbox, Readonly),
+			INIT_PROPERTY(Textbox, Prefix),
+			INIT_PROPERTY(Textbox, Suffix),
 			AutoSelectAll(false)
 		{
 			Text=text;
@@ -59,6 +61,7 @@ namespace gge { namespace widgets {
 		utils::NumericProperty<Textbox, int> CaretLocation;
 		utils::BooleanProperty<Textbox> Readonly;
 		bool AutoSelectAll;
+		utils::TextualProperty<Textbox> Prefix, Suffix;
 
 
 	protected:
@@ -87,6 +90,20 @@ namespace gge { namespace widgets {
 		}
 		bool getReadonly() const {
 			return getreadonly();
+		}
+
+		void setPrefix(const std::string &value) {
+			setprefix(value);
+		}
+		std::string getPrefix() const {
+			return getprefix();
+		}
+
+		void setSuffix(const std::string &value) {
+			setsuffix(value);
+		}
+		std::string getSuffix() const {
+			return getsuffix();
 		}
 
 		virtual void wr_loaded() {

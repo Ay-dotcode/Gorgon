@@ -679,6 +679,24 @@ namespace gge { namespace utils {
 		return out;
 	}
 
+	template <class C_,class T_>
+	inline std::istream &operator >>(std::istream &in, TextualProperty<C_,T_> &p) {
+		T_ t;
+		in>>t;
+		p=t;
+
+		return in;
+	}
+
+	template <class C_,class T_>
+	inline std::istream &operator >>(std::istream &in, NumericProperty<C_,T_> &p) {
+		T_ t;
+		in>>t;
+		p=t;
+
+		return in;
+	}
+
 #define	INIT_PROPERTY(classtype, name) name(this, &classtype::get##name, &classtype::set##name)
 
 //Good for testing nothing else, you probably should use normal variables if you need something like this.

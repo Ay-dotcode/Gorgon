@@ -957,9 +957,12 @@ namespace gge { namespace utils {
 		void destroy() {
 			dealloc();
 
-			delete head;
-			delete tail;
-			delete count;
+			if(head) {
+				head=NULL;
+				delete head;
+				delete tail;
+				delete count;
+			}
 		}
 
 	};

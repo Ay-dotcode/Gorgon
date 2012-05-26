@@ -252,12 +252,17 @@ namespace gge { namespace utils {
 		}
 
 		void destroy() {
-			delete size_;
+			if(size_) {
+				delete size_;
+				size_=NULL;
+			}
 
-			if(data)
+			if(data) {
 				delete *data;
 
-			delete data;
+				delete data;
+				data=NULL;
+			}
 		}
 
 
@@ -266,6 +271,8 @@ namespace gge { namespace utils {
 		CastableManagedBuffer(float factor, CastableManagedBuffer<O_> &buf) : 
 			RefCounter<CastableManagedBuffer>(buf), sizefactor(factor) {
 
+			this->addref();
+
 			data=(T_**)buf.data;
 			size_=buf.size;
 		}
@@ -273,6 +280,8 @@ namespace gge { namespace utils {
 		template<class O_>
 		CastableManagedBuffer(float factor, CastableManagedBuffer<O_> *buf) :
 			RefCounter<CastableManagedBuffer>(*buf), sizefactor(factor) {
+
+			this->addref();
 
 			data=(T_**)buf->data;
 			size_=buf->size_;

@@ -155,12 +155,25 @@ namespace gge { namespace widgets {
 		}
 	}
 
+	void LinearOrganizer::removefromrows(WidgetBase *w) {
+		for(auto row=rows.begin();row!=rows.end();++row)
+			for(auto col=row->columns.begin();col!=row->columns.end();++col)
+				if((*col)==w) {
+					for(;col!=row->columns.end()-1;++col)
+						(*col)=*(col+1);
+					row->columns.resize(row->columns.size()-1);
+					return;
+				}
+	}
+
 	void LinearOrganizer::sync() {
 		if(!attachedto) return;
 
 		for(auto w=organizedwidgets.First();w.IsValid();w.Next()) {
-			if(!attachedto->Widgets.Find(*w).IsValid()) {
-				w.Remove();
+			if(w->GetContainer()!=attachedto) {
+				removefromrows(w.CurrentPtr());
+				organizedwidgets.Remove(*w);
+				break;
 			}
 		}
 
