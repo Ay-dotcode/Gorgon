@@ -674,14 +674,13 @@
 			DWORD *lpdwPixel;
 			lpdwPixel = (DWORD *)lpBits;
 			DWORD *source=(DWORD *)image.RawData();
-			for (x=0;x<dwWidth;x++) {
-				for (y=0;y<dwHeight;y++)
-				{
+			for (y=0;y<dwHeight;y++)
+			{
+				for (x=0;x<dwWidth;x++) {
 					// Clear the alpha bits
-					*lpdwPixel = *source;
+					*lpdwPixel = source[x+(dwHeight-y-1)*dwWidth];
 
 					lpdwPixel++;
-					source++;
 				}
 			}
 
