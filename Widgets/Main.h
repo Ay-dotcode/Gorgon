@@ -14,6 +14,8 @@ namespace gge { namespace widgets {
 
 	static const std::string UIFileRevision="323";
 
+	extern VirtualPanel *activevp;
+
 	void RegisterLoaders(resource::File &File);
 	inline void RegisterLoaders(resource::File *File) { RegisterLoaders(*File); }
 

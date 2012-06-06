@@ -8,6 +8,10 @@ namespace gge { namespace widgets {
 	class ListOrganizer : public Organizer {
 	public:
 
+		ListOrganizer() : distance(0) {
+
+		}
+
 		virtual void Reorganize() {
 			if(!attachedto) return;
 
@@ -16,12 +20,19 @@ namespace gge { namespace widgets {
 				if(it->IsVisible()) {
 					it->SetWidth(attachedto->GetUsableWidth());
 					it->Move(0, y);
-					y+=it->GetHeight();
+					y+=it->GetHeight()+distance;
 				}
 			}
 
 		}
 
+		void SetDistance(int value) {
+			distance=value;
+			Reorganize();
+		}
+
+	protected:
+		int distance;
 	};
 
 

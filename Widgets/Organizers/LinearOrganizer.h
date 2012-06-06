@@ -38,7 +38,8 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(LinearOrganizer, Spacing),
 			INIT_PROPERTY(LinearOrganizer, AutosizeWindows),
 			INIT_PROPERTY(LinearOrganizer, ButtonAlign),
-			INIT_PROPERTY(LinearOrganizer, VerticalCentering)
+			INIT_PROPERTY(LinearOrganizer, VerticalCentering),
+			ReorganizeCompleted("ReorganizeCompleted", this)
 		{
 			spacing=WR.WidgetSpacing.x;
 			rows.push_back(row());
@@ -117,6 +118,8 @@ namespace gge { namespace widgets {
 
 			return *this;
 		}
+
+		utils::EventChain<LinearOrganizer> ReorganizeCompleted;
 
 		utils::NumericProperty<LinearOrganizer, int> Spacing;
 		utils::BooleanProperty<LinearOrganizer> AutosizeWindows;

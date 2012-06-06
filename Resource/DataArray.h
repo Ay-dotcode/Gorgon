@@ -181,6 +181,10 @@ namespace gge { namespace resource {
 		utils::Bounds getBounds(int Index) { return dynamic_cast<RectangleData&>(Data[Index]).value; }
 		////Returns resource object from a link
 		Base &getLink(int Index) { return dynamic_cast<LinkData&>(Data[Index]).Get(); }
+		////Returns resource object from a link
+		Base *getLinkPtr(int Index) { return dynamic_cast<LinkData&>(Data[Index]).value; }
+		////Returns if the link is set and safe to read
+		bool checkLink(int Index) { return dynamic_cast<LinkData&>(Data[Index]).value!=NULL; }
 		////Returns font object
 		Font getFont(int Index) { return dynamic_cast<FontData&>(Data[Index]).value; }
 		////Returns number of items in the array

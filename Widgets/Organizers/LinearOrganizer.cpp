@@ -153,6 +153,8 @@ namespace gge { namespace widgets {
 			FullscreenPanel *w=dynamic_cast<FullscreenPanel*>(attachedto);
 			w->SetHeight(y+w->GetHeight()-w->GetUsableHeight()+1);
 		}
+
+		ReorganizeCompleted();
 	}
 
 	void LinearOrganizer::removefromrows(WidgetBase *w) {

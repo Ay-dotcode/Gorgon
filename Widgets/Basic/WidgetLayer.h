@@ -29,7 +29,7 @@ namespace gge { namespace widgets {
 
 		virtual bool PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
 			if(event==input::mouse::Event::Over || event==input::mouse::Event::DragOver) {
-				if(!(isVisible && BoundingBox.isInside(location)))
+				if(!(IsVisible && BoundingBox.isInside(location)))
 					return false;
 
 				bool ret=false;
@@ -45,7 +45,7 @@ namespace gge { namespace widgets {
 			else if(event==input::mouse::Event::Out || event==input::mouse::Event::DragOut) {
 				bool ret=false;
 
-				int isin=(isVisible && BoundingBox.isInside(location)) ? 1 : 0;
+				int isin=(IsVisible && BoundingBox.isInside(location)) ? 1 : 0;
 
 				if(LayerBase::PropagateMouseEvent(event, location, amount & isin))
 					ret=true;
@@ -60,7 +60,7 @@ namespace gge { namespace widgets {
 			} 
 			else {
 				if(
-					!(isVisible && BoundingBox.isInside(location)) && 
+					!(IsVisible && BoundingBox.isInside(location)) && 
 					!(event==input::mouse::Event::Move && input::mouse::PressedObject) &&
 					!(event==input::mouse::Event::DragMove)
 					)

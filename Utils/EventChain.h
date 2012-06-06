@@ -713,7 +713,7 @@ namespace gge { namespace utils {
 				prvt::eventchain::CreateEventHandler<EventChain<R_, P_>, P_, O_>(
 				&target, 
 				(void(EventChain<R_,P_>::*)(P_))&EventChain<R_, P_>::Fire,
-				NULL
+				Any()
 				)
 				);
 		}

@@ -50,17 +50,17 @@ namespace gge { namespace widgets {
 			if(parent.IsVisible())
 				return false;
 
-			return BaseLayer.isVisible;
+			return BaseLayer.IsVisible;
 		}
 
 		virtual void Show(bool setfocus=false)  {
 			ContainerBase::Show(setfocus);
 
-			BaseLayer.isVisible=true;
+			BaseLayer.IsVisible=true;
 		}
 
 		virtual void Hide()  {
-			BaseLayer.isVisible=false;
+			BaseLayer.IsVisible=false;
 		}
 
 		virtual LayerBase &CreateBackgroundLayer()  {

@@ -284,6 +284,19 @@ namespace gge { namespace widgets {
 
 			return RemoveWidget(*widget); 
 		}
+		void RemoveAllWidgets() {
+			ForceRemoveFocus();
+			RemoveDefault();
+			RemoveCancel();
+			UpHandler=NULL;
+
+			for(auto it=Widgets.First();it.IsValid();it.Next()) {
+				call_widget_detach(it);
+				it.Remove();
+			}
+
+			WidgetBoundsChanged();
+		}
 
 
 		virtual bool IsActive() const = 0;
@@ -430,12 +443,12 @@ namespace gge { namespace widgets {
 			if(accesskeysenabled) {
 				//Enter/Esc -> Type of access keys
 			//TODO !Might need to change to IButton
-				if(Default && Default->IsVisible() && Default->IsEnabled() && event==input::keyboard::Event::Down && (!input::keyboard::Modifier::Check() || input::keyboard::Modifier::Current==input::keyboard::Modifier::Ctrl) && Key==input::keyboard::KeyCodes::Enter) {
+				if(Default && Default->IsVisible() && Default->IsEnabled() && event==input::keyboard::Event::Char && (!input::keyboard::Modifier::Check() || input::keyboard::Modifier::Current==input::keyboard::Modifier::Ctrl) && Key==input::keyboard::KeyCodes::Enter) {
 					if(Default->Accessed())
 						return true;
 				}
 
-				if(Cancel && Cancel->IsVisible() && Cancel->IsEnabled() && event==input::keyboard::Event::Down && !input::keyboard::Modifier::Check() && Key==input::keyboard::KeyCodes::Escape) {
+				if(Cancel && Cancel->IsVisible() && Cancel->IsEnabled() && event==input::keyboard::Event::Char && !input::keyboard::Modifier::Check() && Key==input::keyboard::KeyCodes::Escape) {
 					if(Cancel->Accessed())
 						return true;
 				}

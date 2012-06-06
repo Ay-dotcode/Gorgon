@@ -49,12 +49,12 @@ namespace gge { namespace widgets {
 
 		virtual void ForcedRollDown() {
 			Window::ForcedRollDown();
-			dialogcontrols.BaseLayer.isVisible=true;
+			dialogcontrols.BaseLayer.IsVisible=true;
 		}
 
 		virtual void ForcedRollUp() {
 			Window::ForcedRollUp();
-			dialogcontrols.BaseLayer.isVisible=false;
+			dialogcontrols.BaseLayer.IsVisible=false;
 		}
 		void wr_loaded() {
 			if(!blueprintmodified && WR.Panels.DialogWindow)

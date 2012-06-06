@@ -54,7 +54,7 @@ namespace gge { namespace widgets {
 		wrapper=w;
 		BaseLayer->MouseCallback.Set(*this, &WidgetBase::MouseHandler);
 		if(BaseLayer)
-			BaseLayer->isVisible=isvisible;
+			BaseLayer->IsVisible=isvisible;
 		BaseLayer->Move(location);
 		BaseLayer->Resize(size);
 	}

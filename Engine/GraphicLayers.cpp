@@ -155,7 +155,7 @@ namespace gge { namespace graphics {
 		Rectangle psc;
 		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
 
-		if(!isVisible) return;
+		if(!IsVisible) return;
 		glPushAttrib(GL_SCISSOR_BIT);
 
 		glMatrixMode(GL_MODELVIEW);
@@ -422,7 +422,7 @@ end:
 		Rectangle psc;
 		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
 
-		if(!isVisible) return;
+		if(!IsVisible) return;
 		if(Ambient.a==0) return;
 		glPushAttrib(GL_SCISSOR_BIT);
 
@@ -457,6 +457,9 @@ end:
 
 			glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height(), scissors.Width(), scissors.Height());
 		}
+
+		if(CurrentLayerColor.a==0)
+			goto end;
 
 		int i;
 

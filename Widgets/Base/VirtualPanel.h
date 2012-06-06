@@ -7,6 +7,12 @@
 
 namespace gge { namespace widgets {
 
+	class VirtualPanel;
+
+	void deactivatetoplevels(VirtualPanel *except);
+	extern utils::Collection<VirtualPanel> toplevels;
+	extern VirtualPanel *activevp;
+
 	class VirtualPanel : public ContainerBase {
 		friend void Initialize(GGEMain &Main,int);
 	public:
@@ -18,6 +24,7 @@ namespace gge { namespace widgets {
 		{
 			KeyboardToken=input::keyboard::Events.Register(this, &VirtualPanel::KeyboardEvent);
 			input::keyboard::Events.Disable(KeyboardToken);
+			toplevels.Add(this);
 		}
 
 		VirtualPanel(int) : 
@@ -32,6 +39,7 @@ namespace gge { namespace widgets {
 			input::keyboard::Events.Disable(KeyboardToken);
 
 			Main.BeforeTerminateEvent.Register(this, &VirtualPanel::terminate);
+			toplevels.Add(this);
 		}
 
 
@@ -75,9 +83,14 @@ namespace gge { namespace widgets {
 		}
 
 		virtual void Deactivate()  {
+			if(!isactive) return;
+			if(Focused)
+				RemoveFocus();
+
 			if(KeyboardToken!=input::keyboard::Events.NullToken)
 				input::keyboard::Events.Disable(KeyboardToken);
 			isactive=false;
+			activevp=NULL;
 		}
 
 		virtual bool IsVisible() const  {
@@ -89,14 +102,16 @@ namespace gge { namespace widgets {
 
 		virtual void Show(bool setfocus=false)  {
 			if(BaseLayer)
-				BaseLayer->isVisible=true;
+				BaseLayer->IsVisible=true;
 
 			ContainerBase::Show(setfocus);
 		}
 
 		virtual void Hide()  {
+			Deactivate();
+
 			if(BaseLayer)
-				BaseLayer->isVisible=false;
+				BaseLayer->IsVisible=false;
 
 			ContainerBase::Hide();
 		}
@@ -127,8 +142,10 @@ namespace gge { namespace widgets {
 				return;
 
 			if(newwidget) {
+				deactivatetoplevels(this);
 				input::keyboard::Events.Enable(KeyboardToken);
 				isactive=true;
+				activevp=this;
 			}
 			else {
 				Deactivate();
@@ -139,8 +156,11 @@ namespace gge { namespace widgets {
 		bool KeyboardEvent(input::keyboard::Event event) { return ContainerBase::DistributeKeyboardEvent(event.event, event.keycode); }
 
 		virtual ~VirtualPanel() {
-			if(KeyboardToken!=input::keyboard::Events.NullToken)
+			if(KeyboardToken!=input::keyboard::Events.NullToken) {
+				Deactivate();
 				input::keyboard::Events.Unregister(KeyboardToken);
+				toplevels.Remove(this);
+			}
 		}
 
 		virtual utils::Point AbsoluteLocation()  {
@@ -165,9 +185,10 @@ namespace gge { namespace widgets {
 		utils::ConsumableEvent<>::Token KeyboardToken;
 
 		void terminate() {
+			Deactivate();
 			input::keyboard::Events.Unregister(KeyboardToken);
 			KeyboardToken=input::keyboard::Events.NullToken;
-			isactive=false;
+			toplevels.Remove(this);
 			while(auto it=Widgets.First()) {
 				if(it->BoundToContainer)
 					it.Delete();

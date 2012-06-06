@@ -14,7 +14,7 @@ namespace gge {
 
 	bool InputLayer::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
 		if(event==input::mouse::Event::Over || event==input::mouse::Event::DragOver) {
-			if(!(isVisible && BoundingBox.isInside(location)))
+			if(!(IsVisible && BoundingBox.isInside(location)))
 				return false;
 
 			bool ret=false;
@@ -30,7 +30,7 @@ namespace gge {
 		else if(event==input::mouse::Event::Out || event==input::mouse::Event::DragOut) {
 			bool ret=false;
 
-			int isin=(isVisible && BoundingBox.isInside(location)) ? 1 : 0;
+			int isin=(IsVisible && BoundingBox.isInside(location)) ? 1 : 0;
 
 			if(LayerBase::PropagateMouseEvent(event, location, amount & isin))
 				ret=true;
@@ -44,7 +44,7 @@ namespace gge {
 			return ret;
 		} 
 		else {
-			if(!(isVisible && BoundingBox.isInside(location)) && 
+			if(!(IsVisible && BoundingBox.isInside(location)) && 
 				!(event==input::mouse::Event::Move && input::mouse::PressedObject) &&
 				!(event==input::mouse::Event::DragMove)
 				)
@@ -59,7 +59,7 @@ namespace gge {
 
 	bool LayerBase::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {
 		if(event==input::mouse::Event::Over || event==input::mouse::Event::DragOver) {
-			if(!(isVisible && BoundingBox.isInside(location)))
+			if(!(IsVisible && BoundingBox.isInside(location)))
 				return false;
 			
 			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.IsValid(); i.Next()) {
@@ -70,7 +70,7 @@ namespace gge {
 		}
 		else if(event==input::mouse::Event::Out || event==input::mouse::Event::DragOut) {
 			bool ret=false;
-			int isin=(isVisible && BoundingBox.isInside(location)) ? 1 : 0;
+			int isin=(IsVisible && BoundingBox.isInside(location)) ? 1 : 0;
 
 			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.First(); i.IsValid(); i.Next()) {
 				if(i->PropagateMouseEvent(event, location-BoundingBox.TopLeft(), isin & amount)) {
@@ -89,7 +89,7 @@ namespace gge {
 		}
 		else {
 			if(
-				(isVisible && BoundingBox.isInside(location)) || 
+				(IsVisible && BoundingBox.isInside(location)) || 
 				(input::mouse::PressedObject && (event&input::mouse::Event::Move)) ||
 				(event==input::mouse::Event::DragMove)  
 				)
@@ -109,7 +109,7 @@ namespace gge {
 		glPushMatrix();
 		glTranslatef((float)BoundingBox.Left, (float)BoundingBox.Top, 0);
 
-		if(isVisible) {
+		if(IsVisible) {
 			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.IsValid(); i.Previous()) {
 				i->Render();
 			}
@@ -123,7 +123,7 @@ namespace gge {
 		parent(NULL), 
 		wrapper(NULL), 
 		BoundingBox(X, Y, X+Main.getWidth(), Y+Main.getHeight()),
-		isVisible(true) {
+		IsVisible(true) {
 
 	}
 
@@ -131,7 +131,7 @@ namespace gge {
 		parent(NULL), 
 		wrapper(NULL), 
 		BoundingBox(p.x, p.y, p.x+Main.getWidth(), p.y+Main.getHeight()),
-		isVisible(true)
+		IsVisible(true)
 	{
 
 	}
@@ -139,7 +139,7 @@ namespace gge {
 	LayerBase::LayerBase() : 
 		parent(NULL), 
 		wrapper(NULL),
-		isVisible(true),
+		IsVisible(true),
 		BoundingBox(Main.BoundingBox)
 	{
 

@@ -64,7 +64,7 @@ namespace gge {
 		Main.BeforeRenderEvent.Register(this, &PointerCollection::Draw);
 
 		os::HidePointer();
-		PointerLayer->isVisible=false;
+		PointerLayer->IsVisible=false;
 	}
 
 	void PointerCollection::Fetch(Folder *Folder) {
@@ -135,13 +135,13 @@ namespace gge {
 		os::HidePointer();
 		os::HidePointer();
 
-		PointerLayer->isVisible=true;
+		PointerLayer->IsVisible=true;
 	}
 
 	void PointerCollection::Hide() {
 		PointerVisible=false;
 
-		PointerLayer->isVisible=false;
+		PointerLayer->IsVisible=false;
 	}
 
 	PointerCollection Pointers;

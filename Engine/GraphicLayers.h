@@ -43,7 +43,7 @@ namespace gge { namespace graphics {
 		~Basic2DLayer();
 
 		void init() {
-			isVisible=true;
+			IsVisible=true;
 			ClippingEnabled=false;
 			DrawMode=BasicSurface::Normal;
 		}
@@ -133,7 +133,7 @@ namespace gge { namespace graphics {
 		void init() {
 			Ambient=RGBint(0xffffffff);
 			CurrentColor=RGBint(0xffffffff);
-			isVisible=true;
+			IsVisible=true;
 			ClippingEnabled=false;
 			DrawMode=BasicSurface::Normal;
 		}

@@ -76,7 +76,7 @@ namespace gge { namespace widgets {
 			}
 			SetHeight(h);
 			setupvscroll(false, false, false);
-			innerlayer.isVisible=false;
+			innerlayer.IsVisible=false;
 			rolled=true;
 		}
 		void RollDown() {
@@ -89,7 +89,7 @@ namespace gge { namespace widgets {
 		virtual void ForcedRollDown() {
 			SetHeight(prevh);
 			setupvscroll(true, true, true);
-			innerlayer.isVisible=true;
+			innerlayer.IsVisible=true;
 			rolled=false;
 		}
 		void ToggleRoll() {

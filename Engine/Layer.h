@@ -19,7 +19,7 @@ namespace gge {
 	public:
 		////Whether this layer is visible, invisible layers will not
 		/// be drawn or receive any events
-		bool isVisible;
+		bool IsVisible;
 		////Sub-layers that this layer holds, all the sub-layers are
 		/// considered to be above current layer
 		utils::SortedCollection<LayerBase> SubLayers;
@@ -35,14 +35,14 @@ namespace gge {
 			parent(NULL), 
 			wrapper(NULL), 
 			BoundingBox(b),
-			isVisible(true)
+			IsVisible(true)
 		{ }
 
 		LayerBase(int L, int T, int R, int B) : 
 			parent(NULL), 
 			wrapper(NULL), 
 			BoundingBox(L,T,R,B),
-			isVisible(true)
+			IsVisible(true)
 		{ }
 
 		LayerBase(int X,int Y);

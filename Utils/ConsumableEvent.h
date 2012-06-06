@@ -745,7 +745,7 @@ namespace gge { namespace utils {
 				prvt::consumableevent::CreateEventHandler<ConsumableEvent<R_, P_>, P_, O_>(
 					&target, 
 					(bool(ConsumableEvent<R_,P_>::*)(P_))&ConsumableEvent<R_, P_>::Fire,
-					NULL
+					Any()
 				)
 			);
 		}
@@ -756,7 +756,7 @@ namespace gge { namespace utils {
 				prvt::consumableevent::CreateEventHandler<ConsumableEvent<R_, P_>, P_, O_>(
 					&target, 
 					(bool(ConsumableEvent<R_,P_>::*)(P_))&ConsumableEvent<R_, P_>::Fire,
-					NULL
+					Any()
 				),
 				order
 			);

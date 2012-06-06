@@ -20,6 +20,8 @@
 namespace gge { namespace widgets {
 
 	VirtualPanel TopLevel(0);
+	utils::Collection<VirtualPanel> toplevels;
+	VirtualPanel *activevp=NULL;
 	utils::Collection<WidgetBase> DrawQueue;
 	gge::resource::File *WidgetFile=NULL;
 	graphics::Basic2DLayer *bglayer=NULL;
@@ -32,6 +34,13 @@ namespace gge { namespace widgets {
 		}
 
 		DrawQueue.Clear();
+	}
+
+	void deactivatetoplevels(VirtualPanel *except) {
+		for(auto it=toplevels.First();it.IsValid();it.Next()) {
+			if(it.CurrentPtr()!=except)
+				it->Deactivate();
+		}
 	}
 
 

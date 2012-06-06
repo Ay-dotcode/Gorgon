@@ -58,7 +58,7 @@ namespace gge { namespace widgets {
 			if(!isvisible) {
 				isvisible=true;
 				if(BaseLayer)
-					BaseLayer->isVisible=isvisible;
+					BaseLayer->IsVisible=isvisible;
 				call_container_widget_visibility_change(true);
 			}
 
@@ -69,7 +69,7 @@ namespace gge { namespace widgets {
 			if(isvisible) {
 				isvisible=false; 
 				if(BaseLayer)
-					BaseLayer->isVisible=isvisible;
+					BaseLayer->IsVisible=isvisible;
 				call_container_widget_visibility_change(false);
 			}
 		}

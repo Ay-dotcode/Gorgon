@@ -104,6 +104,10 @@ namespace gge { namespace widgets { namespace dialog {
 		bool autocenter;
 
 		void init()  {
+			if(activevp)
+				SetContainer(activevp);
+			else
+				SetContainer(TopLevel);
 			SetBlueprint(WR.Panels.DialogWindow);
 			iconowner=false;
 			autosize=true;
@@ -128,6 +132,11 @@ namespace gge { namespace widgets { namespace dialog {
 		void resize();
 
 		void reset() {
+			if(activevp)
+				SetContainer(activevp);
+			else
+				SetContainer(TopLevel);
+
 			MessageText="";
 			Title="";
 

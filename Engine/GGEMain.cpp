@@ -31,7 +31,7 @@ namespace gge {
 		Window((os::WindowHandle)NULL)
 	{
 		BoundingBox=utils::Bounds(0,0, Width,Height);
-		isVisible=true;
+		IsVisible=true;
 
 		CurrentTime=os::GetTime();
 

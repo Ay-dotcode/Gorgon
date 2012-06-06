@@ -129,6 +129,7 @@ namespace gge { namespace widgets {
 		Buttons.Small		= GetWithDefault(folder, *wrr.file, 6, Buttons.Button);
 		Buttons.Symbol		= GetWithDefault(folder, *wrr.file, 7, Buttons.Tool);
 		Buttons.Browse		= GetWithDefault(folder, *wrr.file, 8, Buttons.Symbol);
+		Buttons.Decorative	= GetWithDefault(folder, *wrr.file, 9, Buttons.Large);
 
 
 		folder=&wrr.Get<Folder>(++item);

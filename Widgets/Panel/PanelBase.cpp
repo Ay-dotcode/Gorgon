@@ -213,13 +213,18 @@ namespace gge { namespace widgets {
 
 			Bounds outer=BaseLayer->BoundingBox;
 			Bounds inner=Bounds(0,0,outer.Width(), outer.Height());
-			inner=inner-innermargins-padding-scrollmargins-controlmargins;
+			if(display) {
+				inner=inner-innermargins-padding-scrollmargins-controlmargins;
 
-			if(outerborder)
-				inner=inner-(outerborder->BorderWidth+outerborder->Padding);
+				if(outerborder)
+					inner=inner-(outerborder->BorderWidth+outerborder->Padding);
 
-			if(innerborder) {
-				inner=inner-innerborder->Margins;
+				if(innerborder) {
+					inner=inner-innerborder->Margins;
+				}
+			}
+			else {
+				inner=inner-padding-scrollmargins-controlmargins;
 			}
 
 			overlayer.BoundingBox=Bounds(0,0,outer.Width(), outer.Height());

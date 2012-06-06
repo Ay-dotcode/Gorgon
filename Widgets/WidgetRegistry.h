@@ -83,7 +83,8 @@ namespace gge { namespace widgets {
 				Large(NULL),
 				Small(NULL),
 				Browse(NULL),
-				Symbol(NULL)
+				Symbol(NULL),
+				Decorative(NULL)
 			{
 			}
 
@@ -96,7 +97,8 @@ namespace gge { namespace widgets {
 				*Large,
 				*Small,
 				*Browse,
-				*Symbol
+				*Symbol,
+				*Decorative
 			;
 		} Buttons;
 
