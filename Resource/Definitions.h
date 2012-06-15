@@ -52,6 +52,9 @@ namespace gge { namespace resource {
 		static const Type Data_Name				= 0x02030102;
 		static const Type Data_Font				= 0x03300C01;
 		static const Type Data_Color			= 0x02030D02;
+		static const Type Data_Size				= 0x02030D03;
+		static const Type Data_Bounds			= 0x02030D04;
+		static const Type Data_Margins			= 0x02030D05;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Gaming resources
@@ -70,6 +73,8 @@ namespace gge { namespace resource {
 		static const Type Font_Props			= 0x03200804;
 
 		static const Type FontTheme				= 0x03300000;
+		static const Type FontTheme_Font		= 0x03301001;
+		static const Type FontTheme_Shadow		= 0x03301002;
 		static const Type FontTheme_Props		= 0x03300804;
 
 		//////////////////////////////////////////////////////////////////////////

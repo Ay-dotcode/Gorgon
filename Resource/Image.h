@@ -29,11 +29,14 @@ namespace gge { namespace resource {
 	public:
 		enum PNGReadError {
 			NoError=0,
-			Signature=1,
-			ErrorHandlerProblem=2,
-			OutofMemory=4, 
-			UnimplementedType,
+			ReadError=1, 
 			FileNotFound
+		};
+
+		enum Compressor {
+			Uncompressed=0,
+			LZMA=GID::LZMA,
+			PNG=GID::PNG,
 		};
 
 		////Not used, if paletted image is found, this holds its palette
@@ -46,12 +49,16 @@ namespace gge { namespace resource {
 		/// an image object. This flag is used by other systems.
 		bool LeaveData;
 
-		Image() : animation::Base(), ImageTexture(), ImageData(), CompressionProps(), Palette() {
+		Image() : animation::Base(), ImageTexture(), ImageData(), 
+		CompressionProps(), Palette(), Compression(Uncompressed), LateLoading(false) 
+		{
 			isLoaded=LeaveData=false;
 			animation::Animations.Remove(this);
 		}
 
-		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), ImageTexture(), ImageData(), CompressionProps(), Palette() {
+		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), 
+		ImageTexture(), ImageData(), CompressionProps(), Palette(), Compression(Uncompressed), LateLoading(false) 
+		{
 			this->Resize(Width, Height, Mode);
 			animation::Animations.Remove(this);
 		}
@@ -60,11 +67,11 @@ namespace gge { namespace resource {
 		
 		////02020000h (Basic, Image)
 		virtual GID::Type GetGID() const { return GID::Image; }
-		////Currently does nothing
-		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		////Loads image data from the file. This function is required for late
 		/// loading.
 		bool Load(bool force=false);
+		bool LoadData(std::istream &in, int size);
+		void LoadProperties(std::istream &in, int size);
 
 		virtual void Prepare(GGEMain &main, File &file);
 
@@ -141,12 +148,13 @@ namespace gge { namespace resource {
 
 		////Compression properties read from file, used for late loading
 		Byte *CompressionProps;
-		////Compression mode, not suitable for saving, used for late loading
-		int Compression;
+		////Compression mode
+		Compressor Compression;
 		////Size of the image data within the file, used for late loading
 		int DataSize;
 		////Location of image data within the file, used for late loading
 		int DataLocation;
+		bool LateLoading;
 
 		void blurargb(float amount, int windowsize, Image *img);
 		void bluralpha(float amount, int windowsize, Image *img);

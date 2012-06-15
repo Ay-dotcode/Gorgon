@@ -1020,6 +1020,9 @@
     <ClInclude Include="Encoding\URI.h">
       <Filter>Encoding</Filter>
     </ClInclude>
+    <ClInclude Include="Encoding\PNG.h">
+      <Filter>Encoding</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -1671,6 +1674,9 @@
       <Filter>Engine\Linux</Filter>
     </ClCompile>
     <ClCompile Include="Encoding\URI.cpp">
+      <Filter>Encoding</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoding\PNG.cpp">
       <Filter>Encoding</Filter>
     </ClCompile>
   </ItemGroup>

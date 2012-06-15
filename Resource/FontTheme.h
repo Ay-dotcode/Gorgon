@@ -23,9 +23,6 @@ namespace gge { namespace resource {
 
 		virtual GID::Type GetGID() const { return GID::FontTheme; }
 
-		////Currently does nothing
-		virtual bool Save(File &File, std::ostream &Data) { return false; }
-
 		FontTheme() : Base(),
 			NormalFont(nullptr),
 			BoldFont(nullptr),

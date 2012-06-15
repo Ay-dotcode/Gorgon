@@ -30,8 +30,6 @@ namespace gge { namespace resource {
 
 		////01010000h, (System, Folder)
 		virtual GID::Type GetGID() const { return GID::Folder; }
-		////Currently does nothing
-		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////Returns the number of items contained
 		int			 GetCount() const { return Subitems.GetCount(); }

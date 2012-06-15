@@ -45,15 +45,17 @@ namespace gge { namespace resource {
 			FileNotFound	= 1,
 			Signature		= 2,
 			VersionMismatch	= 3,
-			Containment		= 4
+			Containment		= 4,
+			UnknownNode		= 5 //never fired by gge loader
 		};
 
 		class strings {
 		public:
 			static const std::string FileNotFound	;
 			static const std::string Signature		;
-			static const std::string VersionMismatch	;
-			static const std::string Containment		;
+			static const std::string VersionMismatch;
+			static const std::string Containment	;
+			static const std::string UnknownNode	;
 		};
 
 

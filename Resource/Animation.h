@@ -65,8 +65,6 @@ namespace gge { namespace resource {
 	public:
 		////03010000h (Gaming, Animation)
 		virtual GID::Type GetGID() const { return GID::Animation; }
-		////Currently does nothing
-		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		
 		////Default constructor
 		Animation() : Base() { FrameCount=TotalLength=0; }

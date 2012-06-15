@@ -55,7 +55,7 @@ namespace gge { namespace resource {
 		return NULL;
 	}
 
-	Base::Base() : guid(nullptr), name(""), caption(""), file() { }
+	Base::Base() : guid(nullptr), name(""), file() { }
 
 	Base::~Base() {
 		for(auto it=Subitems.First();it.IsValid();it.Next()) {

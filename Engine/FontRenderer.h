@@ -64,7 +64,7 @@ namespace gge {
 		Type(Type), Color(color), Offset(Offset), Blur(blur)
 		{ }
 
-		static ShadowParams Load(resource::File &File, std::istream &Data, int Size) {
+		static ShadowParams Load(std::istream &Data, int Size) {
 			ShadowParams s;
 
 			s.Type=(ShadowTypes)resource::ReadFrom<int>(Data);
@@ -80,6 +80,10 @@ namespace gge {
 			}
 
 			return s;
+		}
+
+		static ShadowParams Load(resource::File &File, std::istream &Data, int Size) {
+			return Load(Data, Size);
 		}
 	};
 

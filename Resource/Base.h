@@ -27,9 +27,6 @@ namespace gge { namespace resource {
 
 		Base();
 		virtual ~Base();
-		
-		////This function shall save this resource to the given file
-		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////This function tests whether this object has the given utils::SGuid
 		bool isEqual(const utils::SGuid &guid) const { return guid==this->guid; }
@@ -40,8 +37,6 @@ namespace gge { namespace resource {
 		utils::SGuid guid;
 		////Name of this resource object, may not be loaded.
 		std::string name;
-		////Caption of this resource object, may not be loaded.
-		std::string caption;
 
 		////Subitems that this resource object have. Some of the sub items
 		/// can be hidden therefore, this is not guaranteed to be complete

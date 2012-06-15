@@ -42,8 +42,17 @@ namespace gge { namespace resource {
 			else if(gid==GID::Data_Point) {
 				dat->Add(ReadFrom<Point>(Data));
 			}
+			else if(gid==GID::Data_Size) {
+				dat->Add(ReadFrom<utils::Size>(Data));
+			}
 			else if(gid==GID::Data_Rect) {
 				dat->Add(ReadFrom<Rectangle>(Data));
+			}
+			else if(gid==GID::Data_Bounds) {
+				dat->Add(ReadFrom<Bounds>(Data));
+			}
+			else if(gid==GID::Data_Margins) {
+				dat->Add(ReadFrom<Margins>(Data));
 			}
 			else if(gid==GID::Data_Link) {
 				tmpguid.Load(Data);
@@ -51,7 +60,7 @@ namespace gge { namespace resource {
 				dat->Add(tmpguid);
 			}
 			else if(gid==GID::Data_Color) {
-				dat->Add(ReadFrom<int>(Data));
+				dat->Add(ReadFrom<graphics::RGBint>(Data));
 			}
 			else if(gid==GID::Data_Font) {
 				FontInitiator f;
@@ -73,61 +82,59 @@ namespace gge { namespace resource {
 		value=File.Root().FindObject(guid);
 	}
 
+	template<class D_, class T_>
+	D_ &AddTo(DataArray &d, const T_ &v) {
+		D_ &o=*new D_(v);
+		d.Data.Add(o);
+		return o;
+	}
 
 	IntegerData		& DataArray::Add( int value ) {
-		IntegerData &o=*new IntegerData(value);
-		Data.Add(o);
+		return AddTo<IntegerData>(*this, value);
+	}
 
-		return o;
+	ColorData		& DataArray::Add( graphics::RGBint value ) {
+		return AddTo<ColorData>(*this, value);
 	}
 
 	FloatData		& DataArray::Add( float value ) {
-		FloatData &o=*new FloatData(value);
-		Data.Add(o);
-
-		return o;
+		return AddTo<FloatData>(*this, value);
 	}
 
-	StringData		& DataArray::Add( string value ) {
-		StringData &o=*new StringData(value);
-		Data.Add(o);
-
-		return o;
+	StringData		& DataArray::Add( const string &value ) {
+		return AddTo<StringData>(*this, value);
 	}
 
 	PointData		& DataArray::Add( utils::Point value ) {
-		PointData &o=*new PointData(value);
-		Data.Add(o);
+		return AddTo<PointData>(*this, value);
+	}
 
-		return o;
+	SizeData		& DataArray::Add( utils::Size value ) {
+		return AddTo<SizeData>(*this, value);
 	}
 
 	RectangleData	& DataArray::Add( utils::Rectangle value ) {
-		RectangleData &o=*new RectangleData(value);
-		Data.Add(o);
+		return AddTo<RectangleData>(*this, value);
+	}
 
-		return o;
+	BoundsData	& DataArray::Add( utils::Bounds value ) {
+		return AddTo<BoundsData>(*this, value);
+	}
+
+	MarginsData	& DataArray::Add( utils::Margins value ) {
+		return AddTo<MarginsData>(*this, value);
 	}
 
 	FontData		& DataArray::Add( Font value ) {
-		FontData &o=*new FontData(value);
-		Data.Add(o);
-
-		return o;
+		return AddTo<FontData>(*this, value);
 	}
 
 	FontData		& DataArray::Add( FontInitiator value ) {
-		FontData &o=*new FontData(value);
-		Data.Add(o);
-
-		return o;
+		return AddTo<FontData>(*this, value);
 	}
 
 	LinkData		& DataArray::Add( utils::SGuid value ) {
-		LinkData &o=*new LinkData(value);
-		Data.Add(o);
-
-		return o;
+		return AddTo<LinkData>(*this, value);
 	}
 
 	void DataArray::Prepare( GGEMain &main, File &file ) {

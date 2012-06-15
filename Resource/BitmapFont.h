@@ -26,8 +26,6 @@ namespace gge { namespace resource {
 		int Tabsize;
 		////03020000h (Game, Bitmap font)
 		virtual GID::Type GetGID() const { return GID::Font; }
-		////Currently does nothing
-		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////Default constructor
 		BitmapFont() : Base(), noshadows(false) { 

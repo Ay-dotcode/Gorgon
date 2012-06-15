@@ -19,8 +19,6 @@ namespace gge { namespace resource {
 	public:
 		////04010000h (Extended, Sound)
 		virtual GID::Type GetGID() const { return GID::Sound; }
-		////Currently does nothing
-		virtual bool Save(File &File, std::ostream &Data) { return false; }
 
 		////Wave data
 		std::vector<Byte> Data;

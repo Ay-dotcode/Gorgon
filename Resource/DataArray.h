@@ -35,7 +35,6 @@ namespace gge { namespace resource {
 	////Data resource interface
 	class IData : public Base {
 	public:
-		virtual bool Save(File &File, std::ostream &Data) { return false; }
 		std::string name;
 
 		virtual void Prepare(File &File) { }
@@ -50,6 +49,15 @@ namespace gge { namespace resource {
 
 		IntegerData(int value) { this->value=value; }
 		operator int() { return value; }
+	};
+
+	class ColorData : public IntegerData {
+	public:
+		////02030D02h (Basic, Data resource, Data types, color)
+		virtual int GetGID() const { return GID::Data_Color; }
+
+		ColorData(graphics::RGBint value) : IntegerData(value) {  }
+		operator graphics::RGBint() { return value; }
 	};
 
 	////Float data
@@ -88,6 +96,18 @@ namespace gge { namespace resource {
 		operator utils::Size() { return value; }
 	};
 
+	////utils::Size data
+	class SizeData : public IData {
+	public:
+		////02030D03h (Basic, Data resource, Data types, utils::Point)
+		virtual int GetGID() const { return GID::Data_Size; }
+		utils::Size value;
+
+		SizeData(utils::Size value) { this->value=value; }
+
+		operator utils::Size() { return value; }
+	};
+
 	////Rectangle data
 	class RectangleData : public IData {
 	public:
@@ -99,6 +119,30 @@ namespace gge { namespace resource {
 
 		operator utils::Rectangle() { return value; }
 		operator utils::Margins() { return utils::Margins(value.Left,value.Top,value.Width,value.Height); }
+	};
+
+	////Bounds data
+	class BoundsData : public IData {
+	public:
+		////02030D04h (Basic, Data resource, Data types, rectangle)
+		virtual int GetGID() const { return GID::Data_Bounds; }
+		utils::Bounds value;
+
+		BoundsData(utils::Bounds value)	{ this->value=value; }
+
+		operator utils::Bounds() { return value; }
+	};
+
+	////Rectangle data
+	class MarginsData : public IData {
+	public:
+		////02030C05h (Basic, Data resource, Data types, rectangle)
+		virtual int GetGID() const { return GID::Data_Margins; }
+		utils::Margins value;
+
+		MarginsData(utils::Margins value)	{ this->value=value; }
+
+		operator utils::Margins() { return value; }
 	};
 
 	////Link data
@@ -126,8 +170,8 @@ namespace gge { namespace resource {
 		Font value;
 		FontInitiator initiator;
 
-		FontData(Font &font) { value=font; }
-		FontData(FontInitiator &font) { initiator=font; }
+		FontData(const Font &font) { value=font; }
+		FontData(const FontInitiator &font) { initiator=font; }
 		operator Font() { return value; }
 		virtual void Prepare(File &File) {
 			value=(Font)initiator;
@@ -144,14 +188,22 @@ namespace gge { namespace resource {
 
 		////Adds a new integer value to this resource
 		IntegerData		&Add(int value);
+		////Adds a new integer value to this resource
+		ColorData		&Add(graphics::RGBint value);
 		////Adds a new float value to this resource
 		FloatData		&Add(float value);
 		////Adds a new string value to this resource
-		StringData		&Add(std::string value);
+		StringData		&Add(const std::string &value);
 		////Adds a new utils::Point value to this resource
 		PointData		&Add(utils::Point value);
+		////Adds a new utils::Size value to this resource
+		SizeData		&Add(utils::Size value);
 		////Adds a new rectangle to this resource
 		RectangleData	&Add(utils::Rectangle value);
+		////Adds a new bounds to this resource
+		BoundsData		&Add(utils::Bounds value);
+		////Adds a new margins to this resource
+		MarginsData		&Add(utils::Margins value);
 		////Adds a new rectangle to this resource
 		FontData		&Add(Font value);
 		////Adds a new rectangle to this resource
@@ -168,17 +220,38 @@ namespace gge { namespace resource {
 		////Returns string at index
 		std::string getString(int Index) { return dynamic_cast<StringData&>(Data[Index]).value; }
 		////Returns char array at index
-		const char *getText(int Index) { return dynamic_cast<StringData&>(Data[Index]).value.data(); }
+		const char *getText(int Index) { return dynamic_cast<StringData&>(Data[Index]).value.c_str(); }
 		////Returns utils::Point at index
 		utils::Point getPoint(int Index) { return dynamic_cast<PointData&>(Data[Index]).value; }
 		////Returns size at index
-		utils::Size getSize(int Index) { return dynamic_cast<PointData&>(Data[Index]).value; }
+		utils::Size getSize(int Index) {
+			if(Data[Index].GetGID()==gge::resource::GID::Data_Point) {
+				return dynamic_cast<PointData&>(Data[Index]).value;
+			}
+			else {
+				return dynamic_cast<SizeData&>(Data[Index]).value;
+			}
+		}
 		////Returns rectangle at index
 		utils::Rectangle getRectangle(int Index) { return dynamic_cast<RectangleData&>(Data[Index]).value; }
 		////Returns utils::Margins at index
-		utils::Margins getMargins(int Index) { return dynamic_cast<RectangleData&>(Data[Index]); }
+		utils::Margins getMargins(int Index) { 
+			if(Data[Index].GetGID()==gge::resource::GID::Data_Rect) {
+				return dynamic_cast<RectangleData&>(Data[Index]);
+			} 
+			else {
+				return dynamic_cast<MarginsData&>(Data[Index]);
+			}
+		}
 		////Returns utils::Bounds at index
-		utils::Bounds getBounds(int Index) { return dynamic_cast<RectangleData&>(Data[Index]).value; }
+		utils::Bounds getBounds(int Index) { 
+			if(Data[Index].GetGID()==gge::resource::GID::Data_Rect) {
+				return dynamic_cast<RectangleData&>(Data[Index]).value;
+			} 
+			else {
+				return dynamic_cast<BoundsData&>(Data[Index]).value;
+			}
+		}
 		////Returns resource object from a link
 		Base &getLink(int Index) { return dynamic_cast<LinkData&>(Data[Index]).Get(); }
 		////Returns resource object from a link
@@ -192,8 +265,6 @@ namespace gge { namespace resource {
 		
 		////02030000h (Basic, Data resource)
 		virtual GID::Type GetGID() const { return GID::Data; }
-		////Currently does nothing
-		virtual bool Save(File &File,std::ostream &Data) { return false; }
 
 		virtual ~DataArray();
 

@@ -129,5 +129,6 @@ namespace gge { namespace resource {
 	const string load_error::strings::Signature			= "Signature mismatch";
 	const string load_error::strings::VersionMismatch	= "Version mismatch";
 	const string load_error::strings::Containment		= "The supplied file is does not contain any data or its representation is invalid.";
+	const string load_error::strings::UnknownNode		= "An unknown node is encountered in the file.";
 
 } }

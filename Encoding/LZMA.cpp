@@ -77,6 +77,9 @@ namespace gge { namespace encoding {
 		}
 
 		LzmaEnc_Destroy(enc, &SzAllocForLzma, &SzAllocForLzma);	
+
+		delete reader;
+		delete writer;
 	}
 
 	void LZMA::decode(lzma::Reader *reader,lzma::Writer *writer,unsigned long long insize,std::function<void(lzma::Reader*,long long)> seekfn, Byte *cprops, unsigned long long fsize, LZMAProgressNotification *notifier) {
@@ -169,6 +172,9 @@ namespace gge { namespace encoding {
 		}
 
 		LzmaDec_Free(&dec, &SzAllocForLzma);
+
+		delete reader;
+		delete writer;
 	}
 
 	int LZMA::PropertySize() {

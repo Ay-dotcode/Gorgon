@@ -157,7 +157,7 @@ namespace gge { namespace utils {
 		}
 
 		inline
-		void Save(std::ofstream &file) const {
+		void Save(std::ostream &file) const {
 			file.write((char*)bytes, 8);
 		}
 
