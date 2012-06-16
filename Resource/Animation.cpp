@@ -123,7 +123,7 @@ namespace gge { namespace resource {
 
 
 	int Animation::FrameAt( unsigned t ) const {
-		if(Subitems.GetCount()==0) return -1;
+		if(Frames.size()==0) return -1;
 
 		if(t>=(Frames.end()-1)->Start)
 			return FrameCount-1;
