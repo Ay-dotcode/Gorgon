@@ -1,8 +1,9 @@
 #include "PNG.h"
 
-#include "../External/png/png.h"
-#include "../External/png/pngstruct.h"
-
+#include "../External/PNG/png.h"
+#include "../External/PNG/pngstruct.h"
+#include <stdexcept>
+#include <cstring>
 
 namespace gge { namespace encoding {
 	namespace png {

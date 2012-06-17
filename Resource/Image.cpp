@@ -36,7 +36,7 @@ namespace gge { namespace resource {
 			int gid,size;
 			ReadFrom(Data, gid);
 			ReadFrom(Data, size);
-			auto currenttarget=Data.tellg()+size;
+			//auto currenttarget=Data.tellg()+size;
 
 			if(gid==GID::Image_Props) {
 				img->LoadProperties(Data, size);
