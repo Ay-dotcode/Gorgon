@@ -111,13 +111,19 @@ namespace gge { namespace resource {
 	ImageAnimation::ImageAnimation( Animation &parent, animation::Timer &controller, bool owner ) : 
 	animation::Base(controller, owner), parent(parent)
 	{
-		Texture=parent.ImageAt(0).GetTexture();
+		if(parent.GetFrameCount()>0)
+			Texture=parent.ImageAt(0).GetTexture();
+		else
+			Texture.ID=0;
 	}
 
 	ImageAnimation::ImageAnimation( Animation &parent, bool create ) : 
 	animation::Base(create), parent(parent)
 	{
-		Texture=parent.ImageAt(0).GetTexture();
+		if(parent.GetFrameCount()>0)
+			Texture=parent.ImageAt(0).GetTexture();
+		else
+			Texture.ID=0;
 	}
 
 
