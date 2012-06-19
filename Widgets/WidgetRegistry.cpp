@@ -225,7 +225,10 @@ namespace gge { namespace widgets {
 		Others.JumpList	= GetWithDefault(folder, *wrr.file, 2, Others.Combobox);
 
 		++item; //separators
-		++item; //borders
+
+		folder=&wrr.Get<Folder>(++item);
+		Borders.Selection=dynamic_cast<BorderDataResource*>(folder->Get<LinkNodeResource>(4).GetTarget(*wrr.file));
+		Borders.Focus=dynamic_cast<BorderDataResource*>(folder->Get<LinkNodeResource>(5).GetTarget(*wrr.file));
 
 
 

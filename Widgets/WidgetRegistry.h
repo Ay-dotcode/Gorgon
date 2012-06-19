@@ -102,6 +102,17 @@ namespace gge { namespace widgets {
 			;
 		} Buttons;
 
+		class CBorders {
+		public:
+
+			CBorders() : Selection(), Focus() { }
+
+			BorderDataResource 
+				*Selection,
+				*Focus
+			;
+		} Borders;
+
 		textbox::Blueprint *Textbox;
 		class CTextboxes {
 		public:

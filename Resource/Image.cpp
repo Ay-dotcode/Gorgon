@@ -155,7 +155,7 @@ namespace gge { namespace resource {
 			return ReadError;
 		}
 
-		Data.Resize(inf.Width*inf.Height*4);
+		Resize(inf.Width, inf.Height, graphics::ColorMode::ARGB);
 
 		if(inf.Alpha) {
 			for(int y=0;y<inf.Height;y++) {

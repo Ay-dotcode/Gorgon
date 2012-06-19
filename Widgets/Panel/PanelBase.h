@@ -116,6 +116,7 @@ namespace gge { namespace widgets {
 
 
 			virtual void Resize(utils::Size Size) {
+				unprepared=true;
 				controls.Resize(Size);
 				dialogcontrols.Resize(Size);
 				WidgetBase::Resize(Size);
@@ -124,6 +125,7 @@ namespace gge { namespace widgets {
 			}
 
 			void Resize(int W, int H) {
+				unprepared=true;
 				controls.Resize(utils::Size(W,H));
 				dialogcontrols.Resize(utils::Size(W,H));
 				WidgetBase::Resize(utils::Size(W,H));
@@ -138,10 +140,12 @@ namespace gge { namespace widgets {
 
 
 			virtual utils::Size GetUsableSize() {
+				prepare();
 				return innerlayer.BoundingBox.GetSize();
 			}
 
 			virtual utils::Margins GetOverheadMargins() {
+				prepare();
 				return utils::Margins(
 					innerlayer.BoundingBox.Left,
 					innerlayer.BoundingBox.Top,

@@ -76,15 +76,14 @@ namespace gge { namespace widgets {
 
 			controls.AddWidget(item);
 
+			item.setinactive(true);
+
 			OrderedCollection::Add(item);
-
-			if(GetCount())
-				item.Hide();
-
-			reorganize();
 
 			if(!active)
 				Activate(item);
+
+			reorganize();
 		}
 
 		tabpanel::Panel &Insert(const std::string &title, const tabpanel::Panel &before) {
@@ -110,16 +109,14 @@ namespace gge { namespace widgets {
 
 			OrderedCollection::Insert(item, before);
 
-			if(GetCount())
-				item.Hide();
-
-
 			reorganize();
 			if(!active)
 				Activate(item);
 		}
 
 		void Remove(tabpanel::Panel &item);
+
+		void ActivateAnother(tabpanel::Panel & item);
 
 		void Delete(tabpanel::Panel &item) {
 			Remove(item);
@@ -135,7 +132,7 @@ namespace gge { namespace widgets {
 		tabpanel::Panel *GetActive() {
 			return active;
 		}
-
+				
 		tabpanel::Panel &Find(const std::string &value) {
 			for(auto it=First();it.IsValid();it.Next()) {
 				if(it->Title==value)
@@ -143,6 +140,9 @@ namespace gge { namespace widgets {
 			}
 
 			throw std::runtime_error("Cannot find the tab specified");
+		}
+		tabpanel::Panel &operator()(const std::string &value) {
+			return Find(value);
 		}
 
 		Iterator First() {
@@ -203,7 +203,32 @@ namespace gge { namespace widgets {
 			}
 		}
 
+		int GetTabHeight() {
+			if(!bp)
+				return 0;
 
+			int y=0;
+			auto btn=buttons.First();
+
+			if(bp->Placeholder.SizingMode==bp->Placeholder.Contents || bp->Placeholder.SizingMode==bp->Placeholder.Free || bp->Placeholder.Minimum.Height==0) {
+				if(btn.IsValid()) {
+					y=btn->GetHeight();
+				}
+			}
+			else {
+				y=bp->Placeholder.Minimum.Height;
+			}
+
+			y+=bp->Placeholder.Margins.TotalY();
+			if(bp->Panel->Normal->OuterBorder)
+				y+=bp->Panel->Normal->OuterBorder->BorderWidth.Top+bp->Panel->Normal->OuterBorder->Margins.Top+bp->Panel->Normal->OuterBorder->Padding.Top+WR.WidgetSpacing.y;
+			if(bp->Panel->Normal->InnerBorder)
+				y+=bp->Panel->Normal->InnerBorder->BorderWidth.Top+bp->Panel->Normal->InnerBorder->Margins.Top+bp->Panel->Normal->InnerBorder->Padding.Top+WR.WidgetSpacing.y;
+
+			return y;
+		}
+
+		virtual void WidgetBoundsChanged() { reorganize(); }
 	protected:
 		RadioGroup<tabpanel::Panel*> buttons;
 		ExtendedPetContiner<Tabpanel> controls;

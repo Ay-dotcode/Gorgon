@@ -830,7 +830,7 @@
 			}
 
 			bool DirectoryIterator::IsValid() const {
-				return dirinfo.valid;
+				return dirinfo.valid && current!="";
 			}
 
 			bool IsDirectoryExists(const std::string &Filename) {

@@ -34,14 +34,6 @@ namespace gge { namespace os {
 	void HidePointer();
 	////Shows the pointer displayed by OS
 	void ShowPointer();
-
-	int CurrentHour();
-	int CurrentMinute();
-	int CurrentSecond();
-	int CurrentMillisecond();
-	int CurrentWeekday(); //monday->0
-	int CurrentDay();
-	int CurrentMonth();
 	
 	class Date {
 	public:

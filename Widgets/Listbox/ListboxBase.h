@@ -79,7 +79,7 @@ namespace gge { namespace widgets {
 			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 				return panel.KeyboardHandler(event, Key);
 			}
-
+			using WidgetBase::Resize;
 			virtual void Resize(utils::Size Size) {
 				WidgetBase::Resize(Size);
 				if(Size.Width==0 && bp)

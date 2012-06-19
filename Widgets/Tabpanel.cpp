@@ -131,50 +131,59 @@ namespace gge { namespace widgets {
 
 
 		for(auto it=First();it.IsValid();it.Next()) {
-			it->SetY(y);
-			it->SetWidth(size.Width);
-			it->SetHeight(size.Height-y);
-			it->SetZOrder(2);
-
-			if(btn.IsValid()) {
-				RadioButton<tabpanel::Panel*> &rad=*btn;
-
-				rad.Text=it->Title;
-				rad.Move(x,bp->Placeholder.Margins.Top);
-				rad.Value=it.CurrentPtr();
-				rad.SetZOrder(1);
-				x+=rad.GetWidth();
-				rad.Show();
-
-				if(it->IsVisible())
-					rad.Check();
-				else
-					rad.Uncheck();
-
-				btn.Next();
+			if(!it->IsEnabled() && it.CurrentPtr()==active) {
+				ActivateAnother(*it);
+				reorganize();
+				return;
 			}
-			else {
-				RadioButton<tabpanel::Panel*> &rad=*new RadioButton<tabpanel::Panel*>;
+			if(it->IsVisible()) {
+				it->SetY(y);
+				it->SetWidth(size.Width);
+				it->SetHeight(size.Height-y);
+				it->SetZOrder(2);
 
-				newbutton=true;
+				if(btn.IsValid()) {
+					RadioButton<tabpanel::Panel*> &rad=*btn;
+
+					rad.Text=it->Title;
+					rad.Move(x,bp->Placeholder.Margins.Top);
+					rad.Value=it.CurrentPtr();
+					rad.SetEnabled(it->IsEnabled());
+					rad.SetZOrder(1);
+					x+=rad.GetWidth();
+					rad.Show();
+
+					if(it.CurrentPtr()==active)
+						rad.Check();
+					else
+						rad.Uncheck();
+
+					btn.Next();
+				}
+				else {
+					RadioButton<tabpanel::Panel*> &rad=*new RadioButton<tabpanel::Panel*>;
+
+					newbutton=true;
 				
-				rad.SetContainer(controls);
-				if(bp)
-					rad.SetBlueprint(bp->Radio);
+					rad.SetContainer(controls);
+					if(bp)
+						rad.SetBlueprint(bp->Radio);
 
-				buttons.Add(rad);
-				rad.Autosize=AutosizeModes::GrowOnly;
-				rad.Text=it->Title;
-				rad.Move(x,bp->Placeholder.Margins.Top);
-				rad.Value=it.CurrentPtr();
-				rad.ChangeEvent.Register(this,&Tabpanel::tab_click);
+					buttons.Add(rad);
+					rad.Autosize=AutosizeModes::GrowOnly;
+					rad.SetEnabled(it->IsEnabled());
+					rad.Text=it->Title;
+					rad.Move(x,bp->Placeholder.Margins.Top);
+					rad.Value=it.CurrentPtr();
+					rad.ChangeEvent.Register(this,&Tabpanel::tab_click);
 
-				if(it->IsVisible())
-					rad.Check();
-				else
-					rad.Uncheck();
+					if(it.CurrentPtr()==active)
+						rad.Check();
+					else
+						rad.Uncheck();
 
-				x+=rad.GetWidth();
+					x+=rad.GetWidth();
+				}
 			}
 		}
 
@@ -198,11 +207,11 @@ namespace gge { namespace widgets {
 	void Tabpanel::Activate(tabpanel::Panel *panel, bool setfocus) {
 		if(active!=panel) {
 			for(auto it=First();it.IsValid();it.Next()) {
-				it->Hide();
+				it->setinactive(true);
 			}
 
 			if(panel)
-				panel->Show(setfocus);
+				panel->setinactive(false);
 
 			active=panel;
 
@@ -217,20 +226,7 @@ namespace gge { namespace widgets {
 
 	void Tabpanel::Remove(tabpanel::Panel &item) {
 		if(&item==active) {
-			if(GetCount()==1) {
-				Activate(NULL);
-			}
-			else {
-				for(auto it=First();it.IsValid();it.Next()) {
-					if(it.CurrentPtr()==&item) {
-						it.Next();
-						if(it.IsValid())
-							Activate(*it);
-						else
-							Activate(*First());
-					}
-				}
-			}
+			ActivateAnother(item);
 		}
 
 		controls.RemoveWidget(item);
@@ -252,6 +248,23 @@ namespace gge { namespace widgets {
 		}
 
 		Resize(size);
+	}
+
+	void Tabpanel::ActivateAnother(tabpanel::Panel & item) {
+		if(GetCount()==1) {
+			Activate(NULL);
+		}
+		else {
+			for(auto it=First();it.IsValid();it.Next()) {
+				if(it.CurrentPtr()==&item) {
+					it.Next();
+					if(it.IsValid())
+						Activate(*it);
+					else
+						Activate(*First());
+				}
+			}
+		}
 	}
 
 

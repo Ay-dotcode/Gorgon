@@ -117,7 +117,7 @@ namespace gge { namespace widgets {
 		virtual void MoveToCenter()  {
 			if(Container) {
 				utils::Size sz=Container->GetUsableSize();
-				sz=(sz-WidgetBase::size)/2;
+				sz=(sz-panel::Base::GetSize())/2;
 				Move(sz.Width, sz.Height);
 			}
 		}
