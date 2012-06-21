@@ -290,6 +290,7 @@ namespace gge { namespace widgets {
 
 		virtual bool detach(ContainerBase *container) {
 			Container=NULL;
+			BaseLayer->MouseCallback.Reset();
 			utils::CheckAndDelete(BaseLayer);
 			wrapper=NULL;
 

@@ -30,7 +30,8 @@ namespace gge { namespace widgets {
 		class Base : public WidgetBase, public ListboxType {
 		public:
 
-			Base() : bp(NULL),  controls(*this), autoheight(false), blueprintmodified(false), KeepItems(false)
+			Base() : bp(NULL),  controls(*this), autoheight(false), blueprintmodified(false), KeepItems(false),
+				columns(1), allowreorder(false)
 			{
 				controls.AddWidget(panel);
 				panel.Move(0,0);
@@ -73,8 +74,40 @@ namespace gge { namespace widgets {
 			}
 
 			virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) {
-				return false;
-			}	
+				using namespace input::mouse;
+				if(event==Event::DragOver) {
+					if(
+						IsDragging() && 
+						GetDraggedObject().TypeID()==IListItem<T_, CF_>::DragID && 
+						panel.Widgets.FindLocation(dynamic_cast<IListItem<T_, CF_>&>(GetDraggedObject()).GetWidget())!=-1
+					) {
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
+				else if(event==Event::DragMove) {
+					//location+=DragLocation;
+					if(IsDragging()) {
+						IListItem<T_, CF_> &l=dynamic_cast<IListItem<T_, CF_>&>(GetDraggedObject());
+						
+						//location.y-=l.GetWidget().GetHeight()/2;
+						//location.x-=l.GetWidget().GetWidth()/2;
+
+						IListItem<T_, CF_> *before=NULL;
+						for(auto w=panel.Widgets.First();w.IsValid();w.Next()) {
+							if(w->GetY()+w->GetHeight()>location.y && w->GetX()+w->GetWidth()>location.x) {
+								before=dynamic_cast<IListItem<T_, CF_>*>(w.CurrentPtr());
+								break;
+							}
+						}
+						movebefore(l, before);
+					}
+				}
+				
+				return !Event::isScroll(event);
+			}
 
 			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
 				return panel.KeyboardHandler(event, Key);
@@ -118,6 +151,7 @@ namespace gge { namespace widgets {
 
 			virtual void add(IListItem<T_, CF_> &item) {
 				panel.AddWidget(item.GetWidget());
+				item.setallowdrag(allowreorder);
 				if(autoheight)
 					adjustheight();
 			}
@@ -131,6 +165,8 @@ namespace gge { namespace widgets {
 			virtual void draw() {
 			}
 
+			//If the listbox supports reordering, it should supply this
+			virtual void movebefore(IListItem<T_, CF_> &item, IListItem<T_, CF_> *before) {}
 
 			virtual bool loosefocus(bool force) {
 				if(force) {
@@ -158,6 +194,8 @@ namespace gge { namespace widgets {
 
 				if(BaseLayer)
 					BaseLayer->Resize(controls.BaseLayer.BoundingBox.GetSize());
+
+				BaseLayer->MouseCallback.Set(dynamic_cast<WidgetBase&>(*this), &WidgetBase::MouseHandler, input::mouse::Event::AllButOverCheck);
 			}
 
 			void setautoheight(const bool &value) {
@@ -168,6 +206,28 @@ namespace gge { namespace widgets {
 			}
 			bool getautoheight() const {
 				return autoheight;
+			}
+			void setcolumns(const int &value) {
+				if(columns!=value) {
+					columns = value;
+					organizer.SetColumns(columns);
+					if(autoheight)
+						adjustheight();
+				}
+			}
+			int getcolumns() const {
+				return columns;
+			}
+			void setallowreorder(const bool &value) {
+				if(allowreorder!=value) {
+					allowreorder = value;
+					for(auto it=panel.Widgets.First();it.IsValid();it.Next()) {
+						dynamic_cast<IListItem<T_, CF_>*>(it.CurrentPtr())->setallowdrag(value);
+					}
+				}
+			}
+			bool getallowreorder() const {
+				return allowreorder;
 			}
 
 			void adjustheight() {
@@ -197,7 +257,6 @@ namespace gge { namespace widgets {
 			}
 
 
-
 			const Blueprint *bp;
 
 			PetContainer<Base> controls;
@@ -215,6 +274,8 @@ namespace gge { namespace widgets {
 			ListOrganizer organizer;
 		private:
 			bool autoheight;
+			int columns;
+			bool allowreorder;
 		};
 
 		template<class T_, void(*CF_)(const T_ &, std::string &)>

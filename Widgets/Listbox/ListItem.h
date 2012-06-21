@@ -32,7 +32,6 @@ namespace gge { namespace widgets {
 
 
 		//Drag
-
 		operator T_() {
 			return value;
 		}
@@ -59,43 +58,50 @@ namespace gge { namespace widgets {
 
 
 		virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount) { 
-			//handle mouse events
+			using namespace input::mouse;
 
-			if(input::mouse::Event::isDown(event)) {
+			if(Event::isDown(event)) {
 				Focus();
 			}
 
 			switch (event) {
-			case input::mouse::Event::Left_Down:
+			case Event::Left_Down:
 				Base::down();
-				break;
-			case input::mouse::Event::Left_Up:
-				Base::up();
-				break;
-			case input::mouse::Event::Over:
-				Base::over();
-				break;
-			case input::mouse::Event::Out:
-				Base::out();
-				break;
-			case input::mouse::Event::Left_Click:
 				if(IsEnabled()) {
 					if(this->notifier)
 						this->notifier->Fire(this,true);
 				}
+				mdownlocation=location;
+				break;
+			case Event::Left_Up:
+				Base::up();
+				break;
+			case Event::Over:
+				Base::over();
+				break;
+			case Event::Move:
+				if(this->allowdrag && PressedButtons==Event::Left && !IsDragging() && location.Distance(mdownlocation)>DragDistance) { 
+					BeginDrag(*this);
+					DragLocation=location;
+				}
+				break;
+			case Event::Out:
+				Base::out();
+				break;
+			case Event::Left_Click:
 
 				break;
 			}
 
 
-			if(event==input::mouse::Event::Over && pointer!=Pointer::None)
+			if(event==Event::Over && pointer!=Pointer::None)
 				mousetoken=Pointers.Set(pointer);
-			else if(event==input::mouse::Event::Out) {
+			else if(event==Event::Out) {
 				Pointers.Reset(mousetoken);
 				mousetoken=0;
 			}
 
-			return !input::mouse::Event::isScroll(event);
+			return !Event::isScroll(event);
 		}
 
 		virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
@@ -174,6 +180,13 @@ namespace gge { namespace widgets {
 		void clear() {
 			Base::setstate(1);
 		}
+		
+		void set() {
+			if(IsEnabled()) {
+				if(this->notifier)
+					this->notifier->Fire(this,true);
+			}
+		}
 
 		virtual void setValue(const T_ &value) {
 			this->value=value;
@@ -186,6 +199,7 @@ namespace gge { namespace widgets {
 
 		T_ value;
 
+		utils::Point mdownlocation;
 	};
 
 	template<class T_, void(*CF_)(const T_ &, std::string &)>

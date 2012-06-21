@@ -187,6 +187,8 @@ namespace gge { namespace input {
 
 		class HandlerBase;
 		class Event;
+		
+		const int DragDistance			= 5;//px
 
 		class IDragData {
 		public:
@@ -387,6 +389,7 @@ namespace gge { namespace input {
 		///@sourceevent: Source mouse event object. This value is returned from the event register or set 
 		///              functions
 		void BeginDrag(IDragData &object, mouse::Event::Target &sourceevent);
+		void BeginDrag(IDragData &object);
 
 		void CancelDrag();
 
@@ -395,8 +398,11 @@ namespace gge { namespace input {
 		bool IsDragging();
 
 		bool HasDragTarget();
+		
+		extern utils::Point DragLocation;
 
 		extern utils::EventChain<> DragStateChanged;
+		extern utils::Point DragLocation;
 
 		//throws runtime error on no object is being dragged
 		IDragData &GetDraggedObject();

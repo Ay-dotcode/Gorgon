@@ -707,9 +707,9 @@ static const int None=0;
 				XFreePixmap (display, blank);
 				
 				XClassHint *classhint=XAllocClassHint();
-				classhint->res_name=(char*)malloc(Name.length());
+				classhint->res_name=(char*)malloc(Name.length()+1);
 				strcpy(classhint->res_name, Name.c_str());
-				classhint->res_class=(char*)malloc(Name.length());
+				classhint->res_class=(char*)malloc(Name.length()+1);
 				strcpy(classhint->res_class, Name.c_str());
 				XSetClassHint(display, windowhandle, classhint);
 				XFree(classhint);

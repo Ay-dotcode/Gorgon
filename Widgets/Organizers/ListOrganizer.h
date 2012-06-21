@@ -8,7 +8,7 @@ namespace gge { namespace widgets {
 	class ListOrganizer : public Organizer {
 	public:
 
-		ListOrganizer() : distance(0) {
+		ListOrganizer() : distance(0), columns(1) {
 
 		}
 
@@ -16,11 +16,15 @@ namespace gge { namespace widgets {
 			if(!attachedto) return;
 
 			int y=0;
+			int w=attachedto->GetUsableWidth()/columns;
+			int ind=0;
 			for(auto it=attachedto->Widgets.First();it.IsValid();it.Next()) {
 				if(it->IsVisible()) {
-					it->SetWidth(attachedto->GetUsableWidth());
-					it->Move(0, y);
-					y+=it->GetHeight()+distance;
+					it->SetWidth(w -  ( (ind%columns)==columns-1  ? 0 : distance ));
+					it->Move((ind%columns)*w, y);
+					if((ind%columns)==columns-1)
+						y+=it->GetHeight()+distance;
+					ind++;
 				}
 			}
 
@@ -31,8 +35,14 @@ namespace gge { namespace widgets {
 			Reorganize();
 		}
 
+		void SetColumns(int value) {
+			columns=value;
+			Reorganize();
+		}
+
 	protected:
 		int distance;
+		int columns;
 	};
 
 

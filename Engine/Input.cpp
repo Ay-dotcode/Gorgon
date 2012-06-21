@@ -20,10 +20,9 @@ namespace gge { namespace input {
 
 		utils::Point	PressedPoint	= utils::Point(0,0);
 		utils::Point	CurrentPoint	= utils::Point(0,0);
+		utils::Point 	DragLocation	= utils::Point(0,0);
 
 		bool HasDragTarget() { return system::dragtarget!=NULL;  }
-		
-		const int DragDistance			= 5;//px
 
 
 		bool EventProvider::PropagateMouseEvent(Event::Type event, utils::Point location, int amount) {
@@ -220,7 +219,7 @@ namespace gge { namespace input {
 				return false;
 			}
 			else if(event==Event::DragMove) {
-				if(system::dragtarget==MouseCallback.object || system::dragsource==MouseCallback.object) {
+				if(system::dragtarget==MouseCallback.object) {
 					if(!MouseCallback.object->Fire(event, location, amount)) {
 						system::dragtarget=NULL;
 					}
@@ -358,9 +357,17 @@ namespace gge { namespace input {
 		}
 
 		EventChain::Object::~Object() {
+		  if(system::dragsource==this)
+		    system::dragsource=NULL;
+		  if(PressedObject==this)
+		    PressedObject=NULL;
 		}
 
 		EventCallback::Object::~Object() {
+		  if(system::dragsource==this)
+		    system::dragsource=NULL;
+		  if(PressedObject==this)
+		    PressedObject=NULL;
 		}
 
 
@@ -369,12 +376,24 @@ namespace gge { namespace input {
 			system::draggedobject=&object;
 			system::dragsource=&source;
 			system::isdragging=true;
+			mouse::DragLocation=utils::Point(0,0);
+
+			DragStateChanged();
+			system::ProcessMousePosition(gge::Main.getWindow());
+		}
+
+		void BeginDrag(IDragData &object) {
+			system::draggedobject=&object;
+			system::dragsource=NULL;
+			system::isdragging=true;
+			mouse::DragLocation=utils::Point(0,0);
 
 			DragStateChanged();
 			system::ProcessMousePosition(gge::Main.getWindow());
 		}
 
 		void CancelDrag() {
+			return;
 			if(system::dragsource)
 				system::dragsource->Fire(mouse::Event::DragCanceled, utils::Point(0,0), 0);
 
@@ -398,16 +417,18 @@ namespace gge { namespace input {
 		}
 
 		bool IsDragging() {
-			return system::dragsource!=NULL;
+			return system::isdragging;
 		}
 
 		void DropDrag() {
 			if(system::isdragging) {
 				bool handled=system::dragtarget->Fire(mouse::Event::DragDrop, utils::Point(0,0), 0);
-				if(handled)
-					system::dragsource->Fire(mouse::Event::DragAccepted, utils::Point(0,0), 0);
-				else
-					system::dragsource->Fire(mouse::Event::DragCanceled, utils::Point(0,0), 0);
+				if(system::dragsource) {
+					if(handled)
+						system::dragsource->Fire(mouse::Event::DragAccepted, utils::Point(0,0), 0);
+					else
+						system::dragsource->Fire(mouse::Event::DragCanceled, utils::Point(0,0), 0);
+				}
 
 				mouse::DragStateChanged();
 
@@ -421,7 +442,6 @@ namespace gge { namespace input {
 
 
 	void Initialize() {
-
 	}
 	
 	namespace system {
@@ -506,10 +526,12 @@ namespace gge { namespace input {
 		void ProcessMouseUp(mouse::Event::Type button,int x,int y){
 			if(isdragging) {
 				bool handled=Main.PropagateMouseEvent(mouse::Event::DragDrop, utils::Point(x,y), 0);
-				if(handled)
-					dragsource->Fire(mouse::Event::DragAccepted, utils::Point(x,y), 0);
-				else
-					dragsource->Fire(mouse::Event::DragCanceled, utils::Point(x,y), 0);
+				if(dragsource) {
+					if(handled)
+						dragsource->Fire(mouse::Event::DragAccepted, utils::Point(x,y), 0);
+					else
+						dragsource->Fire(mouse::Event::DragCanceled, utils::Point(x,y), 0);
+				}
 
 				mouse::DragStateChanged();
 

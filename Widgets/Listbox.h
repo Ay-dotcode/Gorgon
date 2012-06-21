@@ -22,6 +22,7 @@ namespace gge { namespace widgets {
 			MultiSelect, //control click adds to selected, support for shift multi select and drag multi select
 		};
 
+
 		typedef ListItem<T_, CF_> ItemType;
 		typedef utils::OrderedCollection<ItemType> CollectionType;
 		typedef typename CollectionType::Iterator Iterator;
@@ -32,6 +33,8 @@ namespace gge { namespace widgets {
 		Listbox() : selectiontype(SingleSelect), active(NULL),
 			INIT_PROPERTY(Listbox, SelectionType),
 			INIT_PROPERTY(Listbox, AutoHeight),
+			INIT_PROPERTY(Listbox, Columns),
+			INIT_PROPERTY(Listbox, AllowReorder),
 			ItemClickedEvent("ItemClicked", this)
 		{
 			if(WR.Listbox)
@@ -93,6 +96,26 @@ namespace gge { namespace widgets {
 
 		void Insert(ItemType &item, const T_ &before) {
 			Insert(item, Find(before));
+		}
+
+		void MoveBefore(ItemType &item, const ItemType *before) {
+			CollectionType::MoveBefore(item, before);
+			this->reorganize();
+		}
+
+		void MoveBefore(const T_ &value, const ItemType *before) {
+			CollectionType::MoveBefore(Find(value), before);
+			this->reorganize();
+		}
+
+		void MoveBefore(ItemType &value, const T_ &before) {
+			CollectionType::MoveBefore(value, Find(before));
+			this->reorganize();
+		}
+
+		void MoveBefore(const T_ &value, const T_ &before) {
+			CollectionType::MoveBefore(Find(value), Find(before));
+			this->reorganize();
 		}
 
 		void Remove(ItemType &item) {
@@ -283,6 +306,8 @@ namespace gge { namespace widgets {
 
 		utils::EventChain<Listbox, ItemType&> ItemClickedEvent;
 		utils::BooleanProperty<Listbox> AutoHeight;
+		utils::NumericProperty<Listbox, int> Columns;
+		utils::BooleanProperty<Listbox> AllowReorder;
 
 	protected:
 		void setSelectionType(const SelectionTypes &value) {
@@ -360,8 +385,6 @@ namespace gge { namespace widgets {
 		}
 
 		void reorganize() {
-			//panel.Widgets.Clear();
-
 			for(auto it=this->First();it.IsValid();it.Next()) {
 				this->panel.RemoveWidget(*it);
 			}
@@ -371,11 +394,27 @@ namespace gge { namespace widgets {
 			}
 		}
 
+		virtual void movebefore(IListItem<T_, CF_> &item, IListItem<T_, CF_> *before) {
+			MoveBefore(dynamic_cast<ItemType&>(item), dynamic_cast<ItemType*>(before));
+		}
+
 		void setAutoHeight(const bool &value) {
 			this->setautoheight(value);
 		}
 		bool getAutoHeight() const {
 			return this->getautoheight();
+		}
+		void setColumns(const int &value) {
+			this->setcolumns(value);
+		}
+		int getColumns() const {
+			return this->getcolumns();
+		}
+		void setAllowReorder(const bool &value) {
+			this->setallowreorder(value);
+		}
+		bool getAllowReorder() const {
+			return this->getallowreorder();
 		}
 
 		virtual void wr_loaded() {

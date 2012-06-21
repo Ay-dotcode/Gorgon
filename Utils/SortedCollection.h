@@ -765,7 +765,7 @@ namespace gge { namespace utils {
 		}
 
 		int FindLocation(const T_ &item) const {
-			return FindLocation(item);
+			return FindLocation(&item);
 		}
 
 		int FindLocation(const Wrapper &item) const {

@@ -564,9 +564,6 @@
     <ClInclude Include="Utils\ManagedBuffer.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\Map2D.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\Margins.h">
       <Filter>Utils</Filter>
     </ClInclude>

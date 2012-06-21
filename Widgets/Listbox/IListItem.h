@@ -37,12 +37,25 @@ namespace gge { namespace widgets {
 		};
 	}
 
+	template<class T_>
+	void EmptyStringConverter(const T_ &v, std::string &s) { s=""; }
+
+	namespace listbox { 
+		template<class T_, void(*CF_)(const T_ &, std::string &)> 
+		class Base; 
+	}
+
 	template<class T_, void(*CF_)(const T_ &, std::string &)>
-	class IListItem {
+	class IListItem : public input::mouse::IDragData {
+		friend class listbox::Base<T_, CF_>;
 	public:
 
 		IListItem(T_ value) : INIT_PROPERTY(IListItem, Value), notifier(NULL)
 		{ }
+
+		virtual int TypeID() const {
+			return DragID;
+		}
 
 		IListItem &operator =(const T_ &s) {
 			this->Text=s;
@@ -60,13 +73,17 @@ namespace gge { namespace widgets {
 
 		virtual ~IListItem() { utils::CheckAndDelete(notifier); }
 
+		static const int DragID=-17;
 
 	protected:
 
 		virtual void setValue(const T_ &value) = 0;
 		virtual T_ getValue() const = 0;
 
+		virtual void setallowdrag(bool value) { allowdrag=value; }
+
 		prvt::ilistnotifier<T_,CF_> *notifier;
+		bool allowdrag;
 	};
 
 }}
