@@ -31,7 +31,7 @@ namespace gge { namespace widgets {
 		public:
 
 			Base() : bp(NULL),  controls(*this), autoheight(false), blueprintmodified(false), KeepItems(false),
-				columns(1), allowreorder(false)
+				columns(1), allowreorder(false), dragtoken(0)
 			{
 				controls.AddWidget(panel);
 				panel.Move(0,0);
@@ -81,6 +81,8 @@ namespace gge { namespace widgets {
 						GetDraggedObject().TypeID()==IListItem<T_, CF_>::DragID && 
 						panel.Widgets.FindLocation(dynamic_cast<IListItem<T_, CF_>&>(GetDraggedObject()).GetWidget())!=-1
 					) {
+						if(!dragtoken)
+							dragtoken=Pointers.Set(Pointer::Drag);
 						return true;
 					}
 					else {
@@ -105,6 +107,11 @@ namespace gge { namespace widgets {
 						movebefore(l, before);
 					}
 				}
+				else if(event==Event::DragDrop) {
+					Pointers.Reset(dragtoken);
+					dragtoken=0;
+				}
+					
 				
 				return !Event::isScroll(event);
 			}
@@ -143,6 +150,9 @@ namespace gge { namespace widgets {
 			~Base() {
 				if(!KeepItems)
 					panel.Widgets.Destroy();
+				
+				if(dragtoken)
+					Pointers.Reset(dragtoken);
 			}
 			
 			bool KeepItems;
@@ -276,6 +286,7 @@ namespace gge { namespace widgets {
 			bool autoheight;
 			int columns;
 			bool allowreorder;
+			PointerCollection::Token dragtoken;
 		};
 
 		template<class T_, void(*CF_)(const T_ &, std::string &)>

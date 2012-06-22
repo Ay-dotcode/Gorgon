@@ -200,6 +200,7 @@ namespace gge { namespace widgets {
 		T_ value;
 
 		utils::Point mdownlocation;
+		PointerCollection::Token dragtoken;
 	};
 
 	template<class T_, void(*CF_)(const T_ &, std::string &)>

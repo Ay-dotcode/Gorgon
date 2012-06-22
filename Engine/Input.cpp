@@ -60,7 +60,10 @@ namespace gge { namespace input {
 							isover=true;
 					}
 
-					if(!i->IsOver && isover) {
+					if(
+						(!i->IsOver && isover && event==Event::Over) || 
+						(i.CurrentPtr()!=system::dragtarget && isover && event==Event::DragOver)
+					) {
 						bool ret=i->Fire(event, location-i->Bounds.TopLeft(), amount);
 
 						i->IsOver=ret;
@@ -94,10 +97,12 @@ namespace gge { namespace input {
 					if(isover)
 						return true;
 
-					if(i->IsOver && !isover) {
+					if(i->IsOver && !isover && event==Event::Out) {
 						i->Fire(event, location-i->Bounds.TopLeft(), amount);
 						i->IsOver=false;
-
+					}
+					if(system::dragtarget==i.CurrentPtr() && !isover && event==Event::DragOut) {
+						i->Fire(event, location-i->Bounds.TopLeft(), amount);
 						system::dragtarget=NULL;
 					}
 				}
@@ -147,6 +152,7 @@ namespace gge { namespace input {
 
 		bool CallbackProvider::PropagateMouseEvent(Event::Type event, utils::Point location, int amount) {
 			if(!MouseCallback) return false;
+			if((MouseCallback.object->EventMask&event)!=event) return false;
 
 			if(Event::isClick(event)) {
 				if(MouseCallback.object==PressedObject || !PressedObject) {
@@ -171,7 +177,10 @@ namespace gge { namespace input {
 						isover=false;
 				}
 
-				if(MouseCallback.object->IsOver)
+				if(event==Event::Over && MouseCallback.object->IsOver)
+					return true;
+
+				if(event==Event::DragOver && MouseCallback.object==system::dragtarget)
 					return true;
 
 				if(isover) {
@@ -202,9 +211,12 @@ namespace gge { namespace input {
 				if(isover)
 					return true;
 
-				if(MouseCallback.object->IsOver && !isover) {
+				if(MouseCallback.object->IsOver && !isover && event==Event::Out) {
 					MouseCallback.object->Fire(event, location, amount);
 					MouseCallback.object->IsOver=false;
+				}
+				if(MouseCallback.object==system::dragtarget && !isover && event==Event::DragOut) {
+					MouseCallback.object->Fire(event, location, amount);
 					system::dragtarget=NULL;
 				}
 
