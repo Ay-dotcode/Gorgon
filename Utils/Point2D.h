@@ -328,6 +328,40 @@ namespace gge { namespace utils {
 
 		return out;
 	}
+	template <class T_>
+	std::istream &operator >> (std::istream &in, basic_Point2D<T_> &point) {
+		while(in.peek()==' ' || in.peek()=='(')
+			in.ignore(1);
+
+		std::string s;
+		std::stringstream ss;
+
+		while(in.peek()!=',' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>point.x;
+			
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!=')' && in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
+			s.append(1, in.get());
+
+
+		ss.str(s);
+		ss.clear();
+		ss>>point.y;
+		
+		if(in.peek()==')')
+			in.ignore(1);
+
+		return in;
+	}
 
 
 	typedef basic_Point2D<FloatingPoint> Point2D;

@@ -833,9 +833,10 @@ namespace gge { namespace utils {
 			grow(amount);
 		}
 
-	protected:
 		ManagedBuffer<T_*> list;
 		int *count;
+
+	protected:
 
 		void init() {
 			list.Resize(growth);
@@ -1480,7 +1481,7 @@ namespace gge { namespace utils {
 		}
 
 	protected:
-		ManagedBuffer<T_*> list;
+		const ManagedBuffer<T_*> list;
 		int *count;
 
 		T_ *get_(int Index) {

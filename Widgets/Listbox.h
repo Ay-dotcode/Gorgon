@@ -11,9 +11,12 @@ namespace gge { namespace widgets {
 
 	//multi select, direction keys
 
-	//This listbox is not for 100s of items
 	template<class T_=std::string, void(*CF_)(const T_ &, std::string &)=listbox::CastToString<T_> >
-	class Listbox : public listbox::Base<T_, CF_>, ListItemModifier<T_, CF_>, utils::OrderedCollection<ListItem<T_, CF_> > {
+	class Listbox;
+	
+	//This listbox is not for 100s of items
+	template<class T_, void(*CF_)(const T_ &, std::string &) >
+	class Listbox : public listbox::Base<T_, CF_>, protected ListItemModifier<T_, CF_>, protected utils::OrderedCollection<ListItem<T_, CF_> > {
 	public:
 
 		enum SelectionTypes {
@@ -35,7 +38,9 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Listbox, AutoHeight),
 			INIT_PROPERTY(Listbox, Columns),
 			INIT_PROPERTY(Listbox, AllowReorder),
-			ItemClickedEvent("ItemClicked", this)
+			INIT_PROPERTY(Listbox, ItemHeight),
+			ItemClickedEvent("ItemClicked", this),
+			itemheight(0)
 		{
 			if(WR.Listbox)
 				this->setblueprint(*WR.Listbox);
@@ -58,9 +63,11 @@ namespace gge { namespace widgets {
 			if(this->bp && this->bp->Item)
 				item.SetBlueprint(*this->bp->Item);
 
-			callsettoggle(item, this, &Listbox::togglenotify);
+			this->callsettoggle(item, this, &Listbox::togglenotify);
 			CollectionType::Add(item);
+			item.SetHeight(itemheight);
 			this->add(item);
+			itemadded(item);
 		}
 
 		ItemType &Insert(const T_ &value, const ItemType &before) {
@@ -84,10 +91,11 @@ namespace gge { namespace widgets {
 			if(this->bp && this->bp->Item)
 				item.SetBlueprint(*this->bp->Item);
 
-			callsettoggle(item, this, &Listbox::togglenotify);
+			this->callsettoggle(item, this, &Listbox::togglenotify);
 			CollectionType::Insert(item, before);
 			this->add(item);
 			this->reorganize();
+			itemadded(item);
 		}
 
 		ItemType &Insert(const T_ &value, const  T_ &before) {
@@ -119,19 +127,25 @@ namespace gge { namespace widgets {
 		}
 
 		void Remove(ItemType &item) {
-			remove(item);
+			itemremoving(item);
+			if(active==&item) {
+				active=NULL;
+			}
+			selected.Remove(item);
+
+			this->remove(item);
 			CollectionType::Remove(item);
 		}
 
 		void Delete(ItemType &item) {
-			remove(item);
-			CollectionType::Delete(item);
+			this->Remove(item);
+			delete &item;
 		}
 
 		void DeleteAll(const T_ &value) {
 			for(auto it=this->First();it.IsValid();it.Next()) {
 				if(it->Value==value) {
-					remove(*it);
+					this->remove(*it);
 					it.Delete();
 				}
 			}
@@ -144,6 +158,10 @@ namespace gge { namespace widgets {
 			}
 
 			return NULL;
+		}
+
+		int IndexOf(ItemType &item) {
+			return this->FindLocation(item);
 		}
 
 		Iterator First() {
@@ -191,15 +209,21 @@ namespace gge { namespace widgets {
 		}
 
 		void Destroy() {
-			this->panel.Widgets.Clear();
+			for(auto it=this->First();it.IsValid();it.Next()) {
+				ItemType *item=&(*it);
+				delete item;
+			}
+			this->Clear();
+
 			this->adjustheight();
-			CollectionType::Destroy();
 		}
 
 		void Clear() {
 			this->panel.Widgets.Clear();
 			this->adjustheight();
 			CollectionType::Clear();
+			this->active=NULL;
+			this->selected.Clear();
 		}
 
 		int GetCount() const {
@@ -246,8 +270,8 @@ namespace gge { namespace widgets {
 			return active;
 		}
 		
-		//works only for multi select
-		utils::ConstCollection<ItemType> GetSelectedItems() {
+		//works only for multi select, do not modify returned collection
+		utils::Collection<ItemType> GetSelectedItems() {
 			return selected;
 		}
 
@@ -277,6 +301,7 @@ namespace gge { namespace widgets {
 		}
 
 		utils::Property<Listbox, SelectionTypes> SelectionType;
+		utils::NumericProperty<Listbox, int> ItemHeight;
 
 		using WidgetBase::SetBlueprint;
 
@@ -302,6 +327,10 @@ namespace gge { namespace widgets {
 			clearall();
 		}
 
+		using CollectionType::GetCount;
+		using CollectionType::FindLocation;
+		using CollectionType::operator[];
+
 		//!Keyboard handling
 
 		utils::EventChain<Listbox, ItemType&> ItemClickedEvent;
@@ -319,39 +348,50 @@ namespace gge { namespace widgets {
 		SelectionTypes getSelectionType() const {
 			return selectiontype;
 		}
+		
+		void setItemHeight(const int &value) {
+			if(itemheight!=value) {
+				itemheight=value;
+				reorganize();
+			}
+		}
+		int getItemHeight() const {
+			return itemheight;
+		}
 
 		SelectionTypes selectiontype;
 
 		utils::Collection<ItemType> selected;
 		ItemType *active;
+		int itemheight;
 
 		void clearall(ItemType *item=NULL) {
 			for(auto it=this->First();it.IsValid();it.Next())
-				if(it.CurrentPtr()!=item) callclear(*it);
+				if(it.CurrentPtr()!=item) this->callclear(*it);
 		}
 
 		void togglenotify(IListItem<T_, CF_> *li, bool raise) {
 			ItemType* item=dynamic_cast<ItemType*>(li);
 			if(!item) return;
-
+			
 			if(selectiontype==SingleSelect) {
 				if(active)
-					callclear(*active);
+					this->callclear(*active);
 
 				active=item;
-				callcheck(*active);
+				this->callcheck(*active);
 			}
 			else if(selectiontype==ToggleSelect) {
 				if(item->IsSelected()) {
 					active=NULL;
-					callclear(*item);
+					this->callclear(*item);
 				}
 				else {
 					if(active)
-						callclear(*active);
+						this->callclear(*active);
 
 					active=item;
-					callcheck(*active);
+					this->callcheck(*active);
 				}
 			}
 			else if(selectiontype==MultiSelect) {
@@ -360,13 +400,13 @@ namespace gge { namespace widgets {
 				if(Modifier::Current==Modifier::Ctrl) {
 					if(selected.FindLocation(item)==-1) {
 						selected.Add(item);
-						callcheck(*item);
+						this->callcheck(*item);
 
 						active=item;
 					}
 					else {
 						selected.Remove(item);
-						callclear(*item);
+						this->callclear(*item);
 
 						active=selected(selected.GetCount()-1);
 					}
@@ -375,7 +415,7 @@ namespace gge { namespace widgets {
 					clearall();
 					selected.Clear();
 					selected.Add(item);
-					callcheck(*item);
+					this->callcheck(*item);
 					active=item;
 				}
 			}
@@ -390,7 +430,8 @@ namespace gge { namespace widgets {
 			}
 
 			for(auto it=this->First();it.IsValid();it.Next()) {
-				add(*it);
+				it->SetHeight(itemheight);
+				this->add(*it);
 			}
 		}
 
@@ -421,6 +462,8 @@ namespace gge { namespace widgets {
 			if(WR.Listbox && !this->blueprintmodified)
 				this->setblueprint(*WR.Listbox);
 		}
+		virtual void itemadded(ItemType &item) {}
+		virtual void itemremoving(ItemType &item) {}
 	};
 
 

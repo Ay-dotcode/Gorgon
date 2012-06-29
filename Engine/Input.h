@@ -206,6 +206,8 @@ namespace gge { namespace input {
 			static const int type=TID;
 
 			T_ data;
+
+			~SimpleDragData() {}
 		};
 
 		typedef SimpleDragData<std::string, -1> TextDragData;

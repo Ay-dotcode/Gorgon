@@ -403,7 +403,7 @@ namespace gge { namespace utils {
 			if(index<0 && index>=*count)
 				return;
 			if(before<0)
-				return;
+				before=*count;
 			if(before>*count)
 				before=*count;
 			if(index==before)

@@ -18,14 +18,17 @@ namespace gge { namespace widgets {
 
 		template <class R_>
 		ListItem(R_ *receiver, void(R_::*handler)(IListItem<T_, CF_>*,bool), const T_ &value) : 
-			IListItem<T_, CF_>(value), checkbox::Base(true, AutosizeModes::None, false, false, true)
+			IListItem<T_, CF_>(value), checkbox::Base(true, AutosizeModes::None, false, false, true),
+		    INIT_PROPERTY(ListItem,Icon)
+
 		{
 			settoggle(receiver, handler);
 		}
 
 		template <class R_>
 		ListItem(R_ *receiver, void(R_::*handler)(IListItem<T_, CF_>*,bool)) : 
-			IListItem<T_, CF_>(T_()), checkbox::Base(true, AutosizeModes::None, false, false, true)
+			IListItem<T_, CF_>(T_()), checkbox::Base(true, AutosizeModes::None, false, false, true),
+		    INIT_PROPERTY(ListItem,Icon)
 		{
 			settoggle(receiver, handler);
 		}
@@ -158,7 +161,13 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
+		void RemoveIcon() {
+			Base::seticon(NULL);
+		}
+
 		virtual ~ListItem() {  }
+		
+		utils::ReferenceProperty<ListItem, graphics::RectangularGraphic2D> Icon;
 
 	protected:
 		template<class R_>
@@ -186,6 +195,14 @@ namespace gge { namespace widgets {
 				if(this->notifier)
 					this->notifier->Fire(this,true);
 			}
+		}
+		
+		graphics::RectangularGraphic2D *getIcon() const {
+			return Base::geticon();
+		}
+
+		void setIcon(graphics::RectangularGraphic2D *icon) {
+			Base::seticon(icon);
 		}
 
 		virtual void setValue(const T_ &value) {

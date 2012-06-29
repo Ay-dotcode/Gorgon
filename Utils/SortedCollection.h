@@ -805,11 +805,21 @@ namespace gge { namespace utils {
 		}
 
 		Wrapper &GetItem(int Index) {
-			
+			Wrapper *r=get_(Index);
+
+			if(r==NULL)
+				throw std::out_of_range("Index out of range");
+
+			return *r;
 		}
 
 		const Wrapper &GetItem(int Index) const {
+			const Wrapper *r=get_(Index);
 
+			if(r==NULL)
+				throw std::out_of_range("Index out of range");
+
+			return *r;
 		}
 
 		////Returns the item at a given index

@@ -125,6 +125,7 @@ namespace gge { namespace widgets { namespace dialog {
 			input.SetContainer(this);
 			input.SetWidth(this->GetUsableWidth());
 			input.SetBlueprint(WR.Textbox);
+			input.AutoSelectAll=true;
 			input.Focus();
 
 			dialogbuttons.Add(cancel);

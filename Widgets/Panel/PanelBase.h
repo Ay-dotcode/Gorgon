@@ -224,6 +224,7 @@ namespace gge { namespace widgets {
 			}
 
 			virtual void WidgetBoundsChanged() { 
+				if(frozen) return;
 				ContainerBase::WidgetBoundsChanged();
 
 				adjustscrolls();
@@ -252,6 +253,16 @@ namespace gge { namespace widgets {
 			void prepare();
 
 			virtual void draw();
+
+			void freeze() {
+				frozen=true;
+			}
+			void unfreeze() {
+				frozen=false;
+				ContainerBase::WidgetBoundsChanged();
+
+				adjustscrolls();
+			}
 
 			virtual void focus_changed(WidgetBase *newwidget);
 			virtual bool loosefocus(bool force) {
@@ -537,6 +548,8 @@ namespace gge { namespace widgets {
 				vscroll.bar.Value+=amount*vscroll.bar.SmallChange;
 			}
 
+			int getvscroll() const { return vscroll.bar.Value; }
+
 			virtual void vscroll_change() {
 				//if(vscroll.bar.Value!=-scroll.y) {
 					bool allow=true;
@@ -566,6 +579,7 @@ namespace gge { namespace widgets {
 			bool allowresize;
 			bool allownofocus;
 			bool display;
+			bool frozen;
 
 			bool showtitle;
 			//bool showtitlebtn;

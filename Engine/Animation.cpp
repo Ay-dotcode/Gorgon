@@ -130,6 +130,9 @@ namespace gge { namespace animation {
 			Controller=new Timer();
 			owner=true;
 		}
+		else {
+			owner=false;
+		}
 	}
 
 	void Base::SetController( Timer &controller, bool owner ) {

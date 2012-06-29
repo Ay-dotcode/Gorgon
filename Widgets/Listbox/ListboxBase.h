@@ -27,6 +27,9 @@ namespace gge { namespace widgets {
 		}
 
 		template<class T_, void(*CF_)(const T_ &, std::string &)=CastToString<T_> >
+		class Base;
+		
+		template<class T_, void(*CF_)(const T_ &, std::string &) >
 		class Base : public WidgetBase, public ListboxType {
 		public:
 
@@ -83,6 +86,7 @@ namespace gge { namespace widgets {
 					) {
 						if(!dragtoken)
 							dragtoken=Pointers.Set(Pointer::Drag);
+						panelscroll=panel.GetVScroll();
 						return true;
 					}
 					else {
@@ -96,15 +100,24 @@ namespace gge { namespace widgets {
 						
 						//location.y-=l.GetWidget().GetHeight()/2;
 						//location.x-=l.GetWidget().GetWidth()/2;
+						
+						location.y+=panel.GetVScroll();
 
-						IListItem<T_, CF_> *before=NULL;
+						IListItem<T_, CF_> *before=NULL, *b=NULL;
 						for(auto w=panel.Widgets.First();w.IsValid();w.Next()) {
 							if(w->GetY()+w->GetHeight()>location.y && w->GetX()+w->GetWidth()>location.x) {
 								before=dynamic_cast<IListItem<T_, CF_>*>(w.CurrentPtr());
 								break;
 							}
+							b=before;
 						}
-						movebefore(l, before);
+						if(b!=&l && &l!=before) {
+							panel.Freeze();
+							movebefore(l, before);
+							panel.Unfreeze();
+
+							panel.SetVScroll(panelscroll);
+						}
 					}
 				}
 				else if(event==Event::DragDrop) {
@@ -148,8 +161,9 @@ namespace gge { namespace widgets {
 			}
 
 			~Base() {
-				if(!KeepItems)
-					panel.Widgets.Destroy();
+				//todo: fixme
+				//if(!KeepItems)
+					//;//panel.Widgets.Destroy();
 				
 				if(dragtoken)
 					Pointers.Reset(dragtoken);
@@ -286,6 +300,7 @@ namespace gge { namespace widgets {
 			bool autoheight;
 			int columns;
 			bool allowreorder;
+			int panelscroll;
 			PointerCollection::Token dragtoken;
 		};
 
@@ -297,14 +312,14 @@ namespace gge { namespace widgets {
 			this->bp=static_cast<const Blueprint*>(&bp);
 
 			if(this->bp->Panel)
-				panel.SetBlueprint(*this->bp->Panel);
+				this->panel.SetBlueprint(*this->bp->Panel);
 
 			if(size.Width==0) {
-				panel.SetWidth(bp.DefaultSize.Width);
-				controls.BaseLayer.BoundingBox.SetWidth(bp.DefaultSize.Width);
+				this->panel.SetWidth(bp.DefaultSize.Width);
+				this->controls.BaseLayer.BoundingBox.SetWidth(bp.DefaultSize.Width);
 			}
 
-			adjustheight();
+			this->adjustheight();
 		}
 
 	}

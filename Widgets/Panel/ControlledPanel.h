@@ -21,6 +21,21 @@ namespace gge { namespace widgets {
 		utils::NumericProperty<ControlledPanel, int> LargeScroll;
 		utils::BooleanProperty<ControlledPanel> AllowTabSwitch;
 
+		int GetVScroll() const {
+			return panel::Base::getvscroll();
+		}
+
+		void SetVScroll(int scroll) {
+			return panel::Base::vscrollto(scroll);
+		}
+
+		void Freeze() {
+			freeze();
+		}
+		void Unfreeze() {
+			unfreeze();
+		}
+
 	protected:
 		void setPadding(const utils::Margins &value) {
 			Base::setpadding(value);

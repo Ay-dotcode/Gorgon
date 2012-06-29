@@ -10,11 +10,13 @@
 
 namespace gge { namespace widgets {
 
+	template<bool> struct bool2type { };
+
 	//this function will clear the characters that should not be in the given string
 	//if the removed chars are before the location, this function should increment
 	//removed before. This will ensure that the caret position remains  consistent
 	template <class T_>
-	void FixNumberString(std::string &number, int location, int &removedbefore, int base) {
+	void FixStdNumberString(std::string &number, int location, int &removedbefore, int base, bool2type<false> floattype) {
 		bool passedfirst=false;
 		for(std::string::size_type i=0;i<number.length();i++) {
 			char c=number[i];
@@ -35,32 +37,8 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	template <>
-	inline void FixNumberString<float>(std::string &number, int location, int &removedbefore, int base) {
-		bool passedfirst=false, passeddot=false;
-		for(std::string::size_type i=0;i<number.length();i++) {
-			char c=number[i];
-			if(!( ( (c>='0' && c<='9') ) ||
-				((c==' ' || c=='-' || c=='+')&&!passedfirst) || (c=='.'&&!passeddot) )) {
-					number.erase(i, 1);
-
-					if((unsigned)location>i) {
-						location--;
-						removedbefore++;
-					}
-
-					i--;
-			}
-			else if(c=='.') {
-				passeddot=true;
-			}
-			else if(c!=' ' && c!='-' && c!='+') {
-				passedfirst=true;
-			}
-		}
-	}
-	template <>
-	inline void FixNumberString<double>(std::string &number, int location, int &removedbefore, int base) {
+	template <class T_>
+	inline void FixStdNumberString(std::string &number, int location, int &removedbefore, int base, bool2type<true> floattype) {
 		bool passedfirst=false, passeddot=false;
 		for(std::string::size_type i=0;i<number.length();i++) {
 			char c=number[i];
@@ -84,8 +62,60 @@ namespace gge { namespace widgets {
 		}
 	}
 
-	template <class T_, void (*Val_)(std::string&, int, int&,int)=FixNumberString<T_>, 
-		T_ (*Conv_)(const std::string&,int)=utils::StrToNumber<T_> >
+	template <class T_>
+	inline void FixNumberString(std::string &number, int location, int &removedbefore, int base) {
+		FixStdNumberString<T_>(number, location, removedbefore, base, bool2type<!std::numeric_limits<T_>::is_integer>());
+	}
+
+	template <>
+	inline void FixNumberString<utils::Point>(std::string &number, int location, int &removedbefore, int base) {
+		bool passedfirst=false, passeddot=true, passedcomma=false, passedspace=false,passedpar=false;
+		for(std::string::size_type i=0;i<number.length();i++) {
+			char c=number[i];
+			if(!( ( (c>='0' && c<='9' && !passedspace) ) ||
+				((c==' ' || c=='-' || c=='+') && !passedfirst && !passedspace) || 
+				(c==' ' && !passedcomma) || 
+				(c=='.' && !passeddot && !passedspace) || 
+				(c==',' && !passedcomma) ||
+				(c=='(' && !passedpar && !passedfirst && !passedcomma) ||
+				(c==')' && !passedpar && passedcomma)
+				)) {
+					number.erase(i, 1);
+
+					if((unsigned)location>i) {
+						location--;
+						removedbefore++;
+					}
+
+					i--;
+			}
+			else if(c==',') {
+				passedcomma=true;
+				passedfirst=false;
+				passedspace=false;
+				passedpar=false;
+				//passeddot=false;
+			}
+			else if(c=='.') {
+				passeddot=true;
+			}
+			else if(passedfirst && c==' ' && !passedcomma) {
+				passedspace=true;
+			}
+			else if(c=='(') {
+				passedpar=true;
+			}
+			else if(c==')') {
+				passedpar=true;
+				passedspace=true;
+			}
+			else if(c!=' ' && c!='-' && c!='+') {
+				passedfirst=true;
+			}
+		}
+	}
+
+	template <class T_, void (*Val_)(std::string&, int, int&,int)=FixNumberString<T_> >
 	class Numberbox : public INumberbox<T_>, public textbox::Base {
 	public:
 		Numberbox(const T_ &value=T_()) : Base(),
@@ -158,12 +188,20 @@ namespace gge { namespace widgets {
 		virtual void textchanged() {
 			std::string s=gettext();
 			int movecaretby=0;
+
 			Val_(s, getcaretlocation(), movecaretby, usehex ? 16 : 10);
+
 			setcaretlocation(getcaretlocation()-movecaretby);
 			if(s!=gettext())
 				settext(s);
 
-			value=Conv_(s, usehex ? 16 : 10);
+			std::stringstream ss;
+			ss.str(s);
+
+			if(usehex)
+				ss>>std::hex>>value;
+			else
+				ss>>value;
 
 			ChangeEvent();
 		}
