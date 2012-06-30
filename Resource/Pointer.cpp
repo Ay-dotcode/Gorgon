@@ -3,20 +3,21 @@
 
 namespace gge { namespace resource {
 
-	void Pointer::LoadExtra(File &File, std::istream &Data, GID::Type gid, int size) {
-		if(gid==GID::Pointer_Props) {
-			ReadFrom(Data, Hotspot);
-			Type=(gge::Pointer::PointerType)ReadFrom<int>(Data);
-		}
-		else {
-			EatChunk(Data,size);
-		}
-	}
-
-	Pointer *LoadPointerResource(File &File, std::istream &Data, int Size) {
+	Pointer *LoadPointerResource(File &file, std::istream &Data, int Size) {
 		Pointer *pointer=new Pointer;
 
-		LoadAnimationResourceEx(pointer, File, Data, Size);
+		pointer->animation->loadextra=[&](File &f, std::istream &in, GID::Type gid, int size) {
+			if(gid==GID::Pointer_Props) {
+				ReadFrom(in, pointer->Hotspot);
+				pointer->Type=(gge::Pointer::PointerType)ReadFrom<int>(in);
+			}
+			else {
+				EatChunk(in,size);
+			}
+		};
+
+
+		LoadAnimationResourceEx(pointer->animation, file, Data, Size);
 
 		return pointer;
 	}

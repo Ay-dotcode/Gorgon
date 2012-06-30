@@ -8,8 +8,7 @@
 namespace gge {
 	class GGEMain;
 	namespace graphics { class Basic2DLayer; }
-	namespace resource { class Folder; }
-
+	namespace resource { class Folder; class Pointer; }
 
 	class Pointer {
 	public:
@@ -68,6 +67,10 @@ namespace gge {
 			this->Hotspot=Hotspot;
 			this->Type=Type;
 		}
+
+		Pointer(resource::Pointer &pointer);
+
+		~Pointer();
 	};
 
 

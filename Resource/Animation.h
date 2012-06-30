@@ -97,7 +97,7 @@ namespace gge { namespace resource {
 
 			return *Frames[FrameAt(t)].Image; 
 		} //Null Image
-
+		
 		//graphics::RectangularGraphic2D &GraphicAt(unsigned t) { return *Frames[FrameAt(t)].Image; } //Null Image
 
 		unsigned GetTotalLength() const { return TotalLength; }
@@ -123,6 +123,7 @@ namespace gge { namespace resource {
 			return Frames.size();
 		}
 
+		std::function<void(File&,std::istream&,GID::Type,int)> loadextra;
 
 	protected:
 		////Total number of frames that this animation have
@@ -131,7 +132,6 @@ namespace gge { namespace resource {
 		std::vector<AnimationFrame> Frames;
 		unsigned TotalLength;
 
-		virtual void LoadExtra(File &File, std::istream &Data, GID::Type gid, int size);
 	};
 } }
 

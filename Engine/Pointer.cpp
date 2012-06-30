@@ -146,4 +146,16 @@ namespace gge {
 
 	PointerCollection Pointers;
 
+
+	Pointer::Pointer(resource::Pointer &pointer) {
+		Image=&pointer.CreateAnimation(true);
+		Hotspot=pointer.Hotspot;
+		Type=pointer.Type;
+	}
+
+	Pointer::~Pointer() {
+		if(dynamic_cast<animation::Base*>(Image))
+			dynamic_cast<animation::Base*>(Image)->DeleteAnimation();
+	}
+
 }

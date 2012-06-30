@@ -34,11 +34,14 @@ namespace gge { namespace resource {
 			else if(gid==GID::SGuid) {
 				anim->guid.Load(Data);
 			} 
-			else if(gid==GID::Animation_Image) {
+			else if(gid==GID::Animation_Image || gid==GID::Image) {
 				anim->Subitems.Add(LoadImageResource(File,Data,size), anim->Subitems.HighestOrder()+1);
 			} 
 			else {
-				anim->LoadExtra(File, Data, gid, size);
+				if(anim->loadextra)
+					anim->loadextra(File, Data, gid, size);
+				else
+					EatChunk(Data, size);
 			}
 		}
 
@@ -151,10 +154,5 @@ namespace gge { namespace resource {
 		else
 			return Guessed;
 	}
-
-	void Animation::LoadExtra(File &File, std::istream &Data, GID::Type gid, int size) {
-		EatChunk(Data, size);
-	}
-
 
 } }
