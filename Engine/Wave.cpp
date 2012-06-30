@@ -1,5 +1,8 @@
 #include "Wave.h"
 
+#include "../External/OpenAL/alc.h"
+#include "../External/OpenAL/al.h"
+
 using namespace gge::utils;
 
 namespace gge { namespace sound {

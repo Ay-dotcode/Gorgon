@@ -2,40 +2,35 @@
 
 #include "GGE.h"
 #include "OS.h"
-#include "../External/OpenAL/alc.h"
-#include "../External/OpenAL/al.h"
 
-#define ERRNO_ERR			0
-#define ERRAL_DEVICE_ERR	1
-#define ERRAL_CONTEXT_ERR	2
 
 namespace gge { namespace sound {
 	namespace system {
+		static const int ERRNO_ERR = 0;
+		static const int ERRAL_DEVICE_ERR=1;
+		static const int ERRAL_CONTEXT_ERR=2;
 		////Handle type for sound buffers
-		typedef ALuint	SoundBufferHandle;
+		typedef unsigned int SoundBufferHandle;
 		////Handle type for sound controllers
-		typedef ALuint	SoundControlHandle;
+		typedef unsigned int SoundControlHandle;
 
 		////Wave format definition, compatible with
 		/// Win32 MMSystem's WaveFormatEx structure
 		struct WaveFormat {
 			////Format type
-			WORD        FormatTag;
-			////Number of channels, mono and sterio are fully 
+			unsigned short     FormatTag;
+			////Number of channels, mono and stereo are fully 
 			/// supported, rest is untested
-			WORD        Channels;
+			unsigned short        Channels;
 			////Samples/second (like 22000 for 22kHz)
-			DWORD       SamplesPerSec;
-			////Avarage bytes/second can be used as statistics
-			DWORD       AvgBytesPerSec;
+			unsigned int       SamplesPerSec;
+			////Average bytes/second can be used as statistics
+			unsigned int       AvgBytesPerSec;
 			///*???
-			WORD        BlockAlign;
+			unsigned short        BlockAlign;
 			////Bits/Sample, represents the quality when combined with Samples/second
 			/// this data is for single channel
-			WORD        BitsPerSample;
-			////Lame and useless, the size of the structure,
-			/// retained for compatibility
-			WORD        Size;
+			unsigned short        BitsPerSample;
 		};
 
 
@@ -52,7 +47,7 @@ namespace gge { namespace sound {
 		////Creates a new wave from a given buffer.
 		/// Returns sound handle that can be used to run
 		/// the created buffer
-		///@Format	: Format of given buffer, only mono, streo and 8bit, 16bit
+		///@Format	: Format of given buffer, only mono, stereo and 8bit, 16bit
 		/// types work
 		///@Data	: Pointer to the wave data
 		///@Size	: The size of the wave data

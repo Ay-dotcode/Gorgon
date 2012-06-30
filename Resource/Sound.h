@@ -12,10 +12,13 @@ namespace gge { namespace resource {
 	////This function loads a sound resource from the given file
 	Sound *LoadSoundResource(File &File, std::istream &Data, int Size);
 
+	////This function loads a sound resource from the given file
+	void LoadSound(Sound *snd, std::istream &Data, int Size);
+
 	////This is sound resource. It may contain 22kHz or 44kHz mono or stereo wave files.
 	/// Also supports LZMA compression. No native sound compression is supported.
 	class Sound : public Base {
-		friend Sound *LoadSoundResource(File &File, std::istream &Data, int Size);
+		friend void LoadSound(Sound *snd, std::istream &Data, int Size);
 	public:
 		////04010000h (Extended, Sound)
 		virtual GID::Type GetGID() const { return GID::Sound; }
@@ -33,10 +36,15 @@ namespace gge { namespace resource {
 			return Buffer;
 		}
 
+		
 		////Destroys used data
 		void destroy();
 		////Destroys used data
 		virtual ~Sound() { destroy(); }
+
+		void ImportWave(const std::string &filename);
+
+		void StereoToMono();
 
 		////When this file is prepared to be used, this value will be used to store sound buffer
 		gge::sound::system::SoundBufferHandle Buffer;
@@ -45,6 +53,8 @@ namespace gge { namespace resource {
 
 		gge::sound::Wave *Create3DWave(float maxWaveDistance) { return new gge::sound::Wave(Buffer,	maxWaveDistance); }
 
-		virtual void Prepare(GGEMain &main, File &file);
+		virtual void Prepare(GGEMain &main, File &file) { Prepare(); }
+
+		void Prepare();
 	};
 } }

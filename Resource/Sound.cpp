@@ -8,9 +8,15 @@ using namespace gge::sound;
 using namespace gge::sound::system;
 
 namespace gge { namespace resource {
-	Sound *LoadSoundResource(File &File, istream &Data, int Size) {
+
+	Sound *LoadSoundResource(File &File, std::istream &Data, int Size) {
 		Sound *snd=new Sound;
-		encoding::LZMA Lzma(false);
+		LoadSound(snd, Data, Size);
+		return snd;
+	}
+
+	void LoadSound(Sound *snd, istream &Data, int Size) {
+		encoding::LZMA lzma(false);
 		
 		int target=Data.tellg()+Size;
 		int buffersize;
@@ -30,8 +36,6 @@ namespace gge { namespace resource {
 				ReadFrom(Data, snd->Format.AvgBytesPerSec);
 				ReadFrom(Data, snd->Format.FormatTag);
 
-				snd->Format.Size=sizeof(snd->Format);
-
 				if(size>20)
 					Data.seekg(size-20,ios::cur);
 			} 
@@ -50,23 +54,64 @@ namespace gge { namespace resource {
 				ReadFrom(Data, compression);
 
 				if(compression==GID::LZMA) {
-					compressionprops=new Byte[Lzma.PropertySize()];
-					Data.read((char*)compressionprops,Lzma.PropertySize());
+					if(size>4) {
+						compressionprops=new Byte[lzma.PropertySize()];
+						Data.read((char*)compressionprops,lzma.PropertySize());
+					}
 				}
 			} else if(gid==GID::Sound_Cmp_Wave) {
 				//snd->Data.resize(buffersize);
 				snd->Size=buffersize;
-
-				Lzma.Decode(Data, snd->Data, compressionprops, buffersize);
+				
+				if(compressionprops!=NULL)
+					lzma.Decode(Data, snd->Data, compressionprops, buffersize);
+				else
+					encoding::Lzma.Decode(Data, snd->Data);
 
 				utils::CheckAndDeleteArray(compressionprops);
 			}
 		}
-
-		return snd;
 	}
 
-	void Sound::Prepare( GGEMain &main, File &file ) {
+	void Sound::ImportWave(const std::string &filename) {
+		Data.clear();
+		Size=0;
+
+		std::ifstream file(filename, std::ios::binary);
+
+		if(!file.is_open())
+			throw std::runtime_error("Cannot open file");
+
+		char sig[7]={};
+
+		file.read(sig, 4);
+		if(sig!=std::string("RIFF")) {
+			throw std::runtime_error("Not a RIFF container");
+		}
+
+		ReadFrom<int>(file);
+
+		file.read(sig, 4);
+		if(sig!=std::string("WAVE")) {
+			throw std::runtime_error("Not a Wave file");
+		}
+
+		ReadFrom<int>(file); //fmt 
+		int formatsize=ReadFrom<int>(file);
+		if(formatsize!=16) {
+			throw std::runtime_error("Unknown format");
+		}
+
+		ReadFrom(file, Format);
+
+		ReadFrom<int>(file); //data
+		ReadFrom(file, Size);
+		Data.resize(Size);
+		file.read((char*)(&Data[0]), Size);
+	}
+
+
+	void Sound::Prepare( ) {
 		Buffer=sound::system::CreateSoundBuffer(Format, &Data[0], Size);
 	}
 
@@ -76,6 +121,53 @@ namespace gge { namespace resource {
 
 		if(Buffer)
 			sound::system::DestroySoundBuffer(Buffer);
+	}
+
+	void unpack(int &data, int nbits) {
+		if(nbits==32) return;
+		nbits--;
+
+		if(data & 1<<nbits) {
+			data=-(1<<nbits) + (data&~(1<<nbits));
+		}
+	}
+	
+	void pack(int &data, int nbits) {
+		if(data<0) {
+			nbits--;
+			data=(1<<nbits) + data;
+			data=data|(1<<nbits);
+		}
+
+	}
+
+	void Sound::StereoToMono() {
+		if(Format.Channels!=2 || Size==0) return;
+
+		int bps=Format.BitsPerSample/8;		
+		int samples=Size/bps;
+		samples/=2;
+
+		std::vector<gge::Byte> odata;
+		Data.swap(odata);
+		Data.resize(bps*samples);
+
+		for(int i=0;i<samples;i++) {
+			int l=0,r=0,v=0;
+			memcpy(&l, &odata[i*2*bps], bps);
+			memcpy(&r, &odata[i*2*bps+bps], bps);
+
+			unpack(l, Format.BitsPerSample);
+			unpack(r, Format.BitsPerSample);
+			v=(l+r)/2;
+			pack(v, Format.BitsPerSample);
+			memcpy(&Data[i*bps], &v, bps);
+		}
+
+		Format.Channels=1;
+		Format.BlockAlign/=2;
+		Format.AvgBytesPerSec/=2;
+		Size/=2;
 	}
 
 } }

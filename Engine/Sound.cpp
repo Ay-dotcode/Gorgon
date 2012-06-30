@@ -1,6 +1,10 @@
 #include "Sound.h"
 #include "GGEMain.h"
 
+#include "../External/OpenAL/alc.h"
+#include "../External/OpenAL/al.h"
+
+
 namespace gge { namespace sound {
 
 	namespace system {
@@ -101,3 +105,4 @@ namespace gge { namespace sound {
 		}
 	}
 } }
+
