@@ -607,7 +607,7 @@ namespace gge { namespace input {
 
 			bool Fire(Event::Type event, utils::Point location, int amount) {
 				if(object)
-					object->Fire(event, location, amount);
+					return object->Fire(event, location, amount);
 				else
 					return false;
 			}
