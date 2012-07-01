@@ -42,6 +42,9 @@ namespace gge { namespace resource {
 			else if(gid==GID::Data_Point) {
 				dat->Add(ReadFrom<Point>(Data));
 			}
+			else if(gid==GID::Data_Point2D) {
+				dat->Add(ReadFrom<Point2D>(Data));
+			}
 			else if(gid==GID::Data_Size) {
 				dat->Add(ReadFrom<utils::Size>(Data));
 			}
@@ -107,6 +110,10 @@ namespace gge { namespace resource {
 
 	PointData		& DataArray::Add( utils::Point value ) {
 		return AddTo<PointData>(*this, value);
+	}
+
+	Point2DData		& DataArray::Add( utils::Point2D value ) {
+		return AddTo<Point2DData>(*this, value);
 	}
 
 	SizeData		& DataArray::Add( utils::Size value ) {

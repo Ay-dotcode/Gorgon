@@ -26,6 +26,8 @@ namespace gge { namespace resource {
 		DT_String,
 		////4 byte integer utils::Point data
 		DT_Point,
+		////4 byte integer utils::Point data
+		DT_Point2D,
 		////4 byte integer rectangle data
 		DT_Rectangle,
 		////Resource Link
@@ -81,6 +83,18 @@ namespace gge { namespace resource {
 		StringData(std::string value) { this->value=value; }
 		operator std::string() { return value; }
 		operator const char *() { return value.c_str(); }
+	};
+
+	///utils::Point2D data
+	class Point2DData: public IData {
+	public:
+		virtual int GetGID() const { return GID::Data_Point2D; }
+		utils::Point2D value;
+
+		Point2DData(utils::Point2D value) { this->value=value; }
+
+		operator utils::Point2D() { return value; }
+		operator utils::Size2D() { return value; }
 	};
 
 	////utils::Point data
@@ -196,6 +210,8 @@ namespace gge { namespace resource {
 		StringData		&Add(const std::string &value);
 		////Adds a new utils::Point value to this resource
 		PointData		&Add(utils::Point value);
+		////Adds a new utils::Point2D value to this resource
+		Point2DData		&Add(utils::Point2D value);
 		////Adds a new utils::Size value to this resource
 		SizeData		&Add(utils::Size value);
 		////Adds a new rectangle to this resource
@@ -223,6 +239,8 @@ namespace gge { namespace resource {
 		const char *getText(int Index) { return dynamic_cast<StringData&>(Data[Index]).value.c_str(); }
 		////Returns utils::Point at index
 		utils::Point getPoint(int Index) { return dynamic_cast<PointData&>(Data[Index]).value; }
+		////Returns utils::Point2D at index
+		utils::Point getPoint2D(int Index) { return dynamic_cast<Point2DData&>(Data[Index]).value; }
 		////Returns size at index
 		utils::Size getSize(int Index) {
 			if(Data[Index].GetGID()==gge::resource::GID::Data_Point) {
