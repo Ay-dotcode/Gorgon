@@ -497,7 +497,7 @@ namespace gge { namespace utils {
 		void Remove(T_ *Item) {
 			int i;
 
-			for(i=0;i<list.GetSize();i++) {
+			for(i=0;i<*count;i++) {
 				if(list[i]==Item)
 					break;
 			}

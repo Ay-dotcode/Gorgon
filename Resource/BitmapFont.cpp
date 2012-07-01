@@ -40,7 +40,7 @@ namespace gge { namespace resource {
 			else if(gid==GID::SGuid) {
 				font->guid.Load(Data);
 			}
-			else if(gid==GID::Font_Image) {
+			else if(gid==GID::Font_Image || gid==GID::Image) {
 				Image *img=LoadImageResource(File,Data,size);
 
 				for(i=0;i<256;i++)
@@ -72,7 +72,7 @@ namespace gge { namespace resource {
 			int x=X;
 			target->SetCurrentColor(Shadow.Color);
 			for(i=0;i<text.length();i++) {
-				Image *img=Characters[(int)text[i]];
+				Image *img=Characters[(unsigned char)text[i]];
 				img->Draw(target,x+Shadow.Offset.x,Y+Shadow.Offset.y);
 				x+=img->GetWidth() + Seperator;
 			}
@@ -85,9 +85,11 @@ namespace gge { namespace resource {
 
 		target->SetCurrentColor(color);
 		for(i=0;i<text.length();i++) {
-			Image *img=Characters[(int)text[i]];
-			img->Draw(target,X,Y);
-			X+=img->GetWidth() + Seperator;
+			Image *img=Characters[(unsigned char)text[i]];
+			if(img) {
+				img->Draw(target,X,Y);
+				X+=img->GetWidth() + Seperator;
+			}
 		}
 
 		target->SetCurrentColor(cc);
@@ -179,8 +181,10 @@ namespace gge { namespace resource {
 					}
 					if(text[j]!='\r') {
 						Image *img=Characters[(unsigned char)text[j]];
-						img->Draw(target, l, y);
-						l+=img->GetWidth()+Seperator;
+						if(img) {
+							img->Draw(target, l, y);
+							l+=img->GetWidth()+Seperator;
+						}
 					}
 				}
 
@@ -301,7 +305,9 @@ namespace gge { namespace resource {
 				nextline=true;
 			}
 			else {
-				llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
+				if(Characters[(unsigned char)text[i]]) {
+					llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
+				}
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
@@ -367,36 +373,40 @@ namespace gge { namespace resource {
 					int dist=0;
 					if(text[j]=='\t') {
 						Image *img=Characters[(unsigned char)' '];
-						int i;
-						for(i=0;i<Tabsize;i++) {
+						if(img) {
+							int i;
+							for(i=0;i<Tabsize;i++) {
+								if(Shadow.Type==ShadowParams::Flat) {
+									target->SetCurrentColor(Shadow.Color);
+									img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
+								}
+								else if(Shadow.Type==ShadowParams::DropShadow) {
+									target->SetCurrentColor(Shadow.Color);
+									shadow->Characters[(unsigned char)' ']->Draw(target, l+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff);
+								}
+
+								target->SetCurrentColor(color);
+								img->Draw(target,l,y);
+								dist+=img->GetWidth()+Seperator;
+							}
+						}
+					}
+					else if(text[j]!='\r') {
+						Image *img=Characters[(unsigned char)text[j]];
+						if(img) {
 							if(Shadow.Type==ShadowParams::Flat) {
 								target->SetCurrentColor(Shadow.Color);
 								img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
 							}
 							else if(Shadow.Type==ShadowParams::DropShadow) {
 								target->SetCurrentColor(Shadow.Color);
-								shadow->Characters[(unsigned char)' ']->Draw(target, l+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff);
+								shadow->Characters[(unsigned char)text[j]]->Draw(target, l+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff);
 							}
 
 							target->SetCurrentColor(color);
 							img->Draw(target,l,y);
-							dist+=img->GetWidth()+Seperator;
+							dist=img->GetWidth()+Seperator;
 						}
-					}
-					else if(text[j]!='\r') {
-						Image *img=Characters[(unsigned char)text[j]];
-						if(Shadow.Type==ShadowParams::Flat) {
-							target->SetCurrentColor(Shadow.Color);
-							img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
-						}
-						else if(Shadow.Type==ShadowParams::DropShadow) {
-							target->SetCurrentColor(Shadow.Color);
-							shadow->Characters[(unsigned char)text[j]]->Draw(target, l+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff);
-						}
-
-						target->SetCurrentColor(color);
-						img->Draw(target,l,y);
-						dist=img->GetWidth()+Seperator;
 					}
 					for(d=0;d<cchardetectxs;d++) {
 						if(chardetectxs[d].x<l+dist/2) {//TODO y
@@ -525,7 +535,9 @@ namespace gge { namespace resource {
 				nextline=true;
 			}
 			else {
-				llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
+				if(Characters[(unsigned char)text[i]]) {
+					llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
+				}
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
@@ -588,14 +600,18 @@ namespace gge { namespace resource {
 					int dist=0;
 					if(text[j]=='\t') {
 						Image *img=Characters[(unsigned char)' '];
-						int i;
-						for(i=0;i<Tabsize;i++) {
-							dist+=img->GetWidth()+Seperator;
+						if(img) {
+							int i;
+							for(i=0;i<Tabsize;i++) {
+								dist+=img->GetWidth()+Seperator;
+							}
 						}
 					}
 					else if(text[j]!='\r') {
 						Image *img=Characters[(unsigned char)text[j]];
-						dist=img->GetWidth()+Seperator;
+						if(img) {
+							dist=img->GetWidth()+Seperator;
+						}
 					}
 					for(d=0;d<cchardetectxs;d++) {
 						if(chardetectxs[d].x<l+dist/2 && j<chardetectxs[d].data->Out.value) {//!y??
@@ -663,7 +679,9 @@ namespace gge { namespace resource {
 				nextline=true;
 			}
 			else {
-				llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
+				if(Characters[(unsigned char)text[i]]) {
+					llen+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator;
+				}
 
 				if(text[i]==' ' || text[i]==',' || text[i]==')') {
 					lword=i;
@@ -689,14 +707,18 @@ namespace gge { namespace resource {
 				for(j=lstart;j<lword+1;j++) {
 					if(text[j]=='\t') {
 						Image *img=Characters[(unsigned char)' '];
-						int i;
-						for(i=0;i<Tabsize;i++) {
-							l+=img->GetWidth()+Seperator;
+						if(img) {
+							int i;
+							for(i=0;i<Tabsize;i++) {
+								l+=img->GetWidth()+Seperator;
+							}
 						}
 					}
 					if(text[j]!='\r') {
 						Image *img=Characters[(unsigned char)text[j]];
-						l+=img->GetWidth()+Seperator;
+						if(img) {
+							l+=img->GetWidth()+Seperator;
+						}
 					}
 				}
 

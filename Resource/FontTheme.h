@@ -113,7 +113,7 @@ namespace gge { namespace resource {
 			return NULL;
 		}
 
-		void setRenderer(Font::FontStyle style, FontRenderer *renderer) {
+		virtual void SetRenderer(Font::FontStyle style, FontRenderer *renderer) {
 			switch(style) {
 				case Font::Normal:
 					NormalFont=renderer;
@@ -139,8 +139,8 @@ namespace gge { namespace resource {
 			}
 		}
 
-		void setRenderer(Font::FontStyle style, FontRenderer &renderer) {
-			setRenderer(style, &renderer);
+		void SetRenderer(Font::FontStyle style, FontRenderer &renderer) {
+			SetRenderer(style, &renderer);
 		}
 
 

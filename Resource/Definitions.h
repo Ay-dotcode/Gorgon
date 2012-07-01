@@ -70,6 +70,8 @@ namespace gge { namespace resource {
 
 		static const Type Font					= 0x03200000;
 		static const Type Font_Charmap			= 0x03200101;
+		static const Type Font_Names			= 0x03200102;
+		static const Type Font_Name				= 0x03200103;
 		static const Type Font_Image			= 0x03210000;
 		static const Type Font_Props			= 0x03200804;
 
