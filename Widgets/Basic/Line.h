@@ -89,6 +89,7 @@ namespace gge { namespace widgets {
 			Vertical
 		};
 
+
 		LineResource(animation::RectangularGraphic2DSequenceProvider &start ,animation::RectangularGraphic2DSequenceProvider &loop, 
 			animation::RectangularGraphic2DSequenceProvider &end, OrientationType Orientation=Horizontal, bool IsLoopTiled=true) : 
 			Orientation(Orientation), IsLoopTiled(IsLoopTiled),
@@ -131,10 +132,14 @@ namespace gge { namespace widgets {
 		animation::RectangularGraphic2DSequenceProvider &GetEnd() { return *end; }
 		void SetEnd(animation::RectangularGraphic2DSequenceProvider &val) { end = &val; }
 
-		void SetSources(animation::RectangularGraphic2DSequenceProvider &Start ,animation::RectangularGraphic2DSequenceProvider &Loop, animation::RectangularGraphic2DSequenceProvider &End) {
+		virtual void SetSources(animation::RectangularGraphic2DSequenceProvider &Start ,animation::RectangularGraphic2DSequenceProvider &Loop, animation::RectangularGraphic2DSequenceProvider &End) {
 			start=&Start;
 			loop=&Loop;
 			end=&End;
+		}
+
+		virtual void SetMask(LineResource *mask) {
+			Mask=mask;
 		}
 
 		bool IsLoopTiled;
@@ -157,6 +162,10 @@ namespace gge { namespace widgets {
 		animation::RectangularGraphic2DSequenceProvider *start, *loop, *end;
 		LineResource *Mask;
 		utils::SGuid mask;
+
+		LineResource() : Orientation(Horizontal), IsLoopTiled(true),
+			start(NULL), loop(NULL), end(NULL), Mask(NULL)
+		{ }
 	};
 
 

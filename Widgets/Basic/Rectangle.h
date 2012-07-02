@@ -93,6 +93,8 @@ namespace gge { namespace widgets {
 	public:
 
 		struct TilingInfo {
+			TilingInfo() : Top(true), Left(true), Right(true), Bottom(true), Center_Horizontal(true), Center_Vertical(true) 
+			{ }
 			bool Top				: 1;
 			bool Left				: 1;
 			bool Right				: 1;
@@ -138,41 +140,32 @@ namespace gge { namespace widgets {
 
 		const animation::RectangularGraphic2DSequenceProvider &GetTL() const { return *tl; }
 		animation::RectangularGraphic2DSequenceProvider &GetTL() { return *tl; }
-		void SetTL(animation::RectangularGraphic2DSequenceProvider &val) { tl = &val; }
 
 		const animation::RectangularGraphic2DSequenceProvider &GetT() const { return *t; }
 		animation::RectangularGraphic2DSequenceProvider &GetT() { return *t; }
-		void SetT(animation::RectangularGraphic2DSequenceProvider &val) { t = &val; }
 
 		const animation::RectangularGraphic2DSequenceProvider &GetTR() const { return *tr; }
 		animation::RectangularGraphic2DSequenceProvider &GetTR() { return *tr; }
-		void SetTR(animation::RectangularGraphic2DSequenceProvider &val) { tr = &val; }
 
 		const animation::RectangularGraphic2DSequenceProvider &GetL() const { return *l; }
 		animation::RectangularGraphic2DSequenceProvider &GetL() { return *l; }
-		void SetL(animation::RectangularGraphic2DSequenceProvider &val) { l = &val; }
 
 		const animation::RectangularGraphic2DSequenceProvider &GetC() const { return *c; }
 		animation::RectangularGraphic2DSequenceProvider &GetC() { return *c; }
-		void SetC(animation::RectangularGraphic2DSequenceProvider &val) { c = &val; }
 
 		const animation::RectangularGraphic2DSequenceProvider &GetR() const { return *r; }
 		animation::RectangularGraphic2DSequenceProvider &GetR() { return *r; }
-		void SetR(animation::RectangularGraphic2DSequenceProvider &val) { r = &val; }
 
 		const animation::RectangularGraphic2DSequenceProvider &GetBL() const { return *bl; }
 		animation::RectangularGraphic2DSequenceProvider &GetBL() { return *bl; }
-		void SetBL(animation::RectangularGraphic2DSequenceProvider &val) { bl = &val; }
 
 		const animation::RectangularGraphic2DSequenceProvider &GetB() const { return *b; }
 		animation::RectangularGraphic2DSequenceProvider &GetB() { return *b; }
-		void SetB(animation::RectangularGraphic2DSequenceProvider &val) { b = &val; }
 
 		const animation::RectangularGraphic2DSequenceProvider &GetBR() const { return *br; }
 		animation::RectangularGraphic2DSequenceProvider &GetBR() { return *br; }
-		void SetBR(animation::RectangularGraphic2DSequenceProvider &val) { br = &val; }
 
-		void SetSources(
+		virtual void SetSources(
 			animation::RectangularGraphic2DSequenceProvider &tl, animation::RectangularGraphic2DSequenceProvider &t, animation::RectangularGraphic2DSequenceProvider &tr, 
 			animation::RectangularGraphic2DSequenceProvider &l , animation::RectangularGraphic2DSequenceProvider &c, animation::RectangularGraphic2DSequenceProvider &r , 
 			animation::RectangularGraphic2DSequenceProvider &bl, animation::RectangularGraphic2DSequenceProvider &b, animation::RectangularGraphic2DSequenceProvider &br
@@ -203,6 +196,14 @@ namespace gge { namespace widgets {
 
 		RectangleResource *Mask;
 	protected:
+		RectangleResource() : 
+		Tiling(),
+			tl(NULL), t (NULL), tr(NULL),
+			l (NULL), c (NULL), r (NULL),
+			bl(NULL), b (NULL), br(NULL),
+			Mask(NULL)
+		{ }
+
 		animation::RectangularGraphic2DSequenceProvider 
 			*tl, *t , *tr,
 			*l , *c , *r ,
