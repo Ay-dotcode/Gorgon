@@ -20,9 +20,13 @@ namespace gge { namespace widgets {
 
 		static const Type ResizableObj		= 0x05130000;
 		static const Type ResizableObj_Props= 0x05130101;
+		static const Type ResizableObj_Names= 0x05130102;
+		static const Type ResizableObj_Name	= 0x05130103;
 
 		static const Type BorderData		= 0x05140000;
 		static const Type BorderData_Props	= 0x05140101;
+		static const Type BorderData_Names	= 0x05140102;
+		static const Type BorderData_Name	= 0x05140103;
 
 		static const Type Placeholder		= 0x05150000;
 		static const Type Placeholder_Props	= 0x05150101;

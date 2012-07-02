@@ -135,7 +135,7 @@ namespace gge { namespace widgets {
 		{ return CreateResizableObject(create); }
 
 
-		void SetProvider(ResizableObjectResource &object) 
+		virtual void SetProvider(ResizableObjectResource &object) 
 		{ this->object=&object; }
 
 		ResizableObjectProvider &GetProvider() 
