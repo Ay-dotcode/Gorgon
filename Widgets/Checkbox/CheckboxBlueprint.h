@@ -48,6 +48,10 @@ namespace gge { namespace widgets {
 						return from<s.from;
 				}
 
+				operator int() const {
+					return from+(to<<4);
+				}
+
 				bool operator ==(const StateMode &s) const {
 					return from==s.from && to==s.to;
 				}
@@ -265,6 +269,8 @@ namespace gge { namespace widgets {
 				Element *Mapping[6][6];
 
 			protected:
+				void updatemapping();
+
 				utils::SGuid normal;
 				utils::SGuid hover;
 				utils::SGuid down;

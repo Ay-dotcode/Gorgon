@@ -42,6 +42,10 @@ namespace gge { namespace widgets {
 					return from<f.from;
 			}
 
+			operator int() const {
+				return from+(to<<4);
+			}
+
 			bool operator ==(const FocusMode &f) const {
 				return from==f.from && to==f.to;
 			}

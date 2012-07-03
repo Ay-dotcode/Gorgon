@@ -338,41 +338,46 @@ namespace gge { namespace widgets {
 			resource::Base::Prepare(main,file);
 
 			Normal			=dynamic_cast<Blueprint::Element*>(file.FindObject(normal));
-			Mapping[Blueprint::Normal][Blueprint::Style_None]=Normal;
 			
 			Hover			=dynamic_cast<Blueprint::Element*>(file.FindObject(hover));
-			Mapping[Blueprint::Hover][Blueprint::Style_None]=Hover;
 
 			Down			=dynamic_cast<Blueprint::Element*>(file.FindObject(down));
-			Mapping[Blueprint::Down][Blueprint::Style_None]=Down;
 
 			Disabled		=dynamic_cast<Blueprint::Element*>(file.FindObject(disabled));
-			Mapping[Blueprint::Disabled][Blueprint::Style_None]=Disabled;
 
 
 			NormalToHover	=dynamic_cast<Blueprint::Element*>(file.FindObject(normaltohover));
-			Mapping[Blueprint::Normal][Blueprint::Hover]=NormalToHover;
 
 			NormalToDown	=dynamic_cast<Blueprint::Element*>(file.FindObject(normaltodown));
-			Mapping[Blueprint::Normal][Blueprint::Down]=NormalToDown;
 
 			NormalToDisabled=dynamic_cast<Blueprint::Element*>(file.FindObject(normaltodisabled));
-			Mapping[Blueprint::Normal][Blueprint::Disabled]=NormalToDisabled;
 
 			HoverToDown		=dynamic_cast<Blueprint::Element*>(file.FindObject(hovertodown));
-			Mapping[Blueprint::Hover][Blueprint::Down]=HoverToDown;
 
 
 			HoverToNormal	=dynamic_cast<Blueprint::Element*>(file.FindObject(hovertonormal));
-			Mapping[Blueprint::Hover][Blueprint::Normal]=HoverToNormal;
 
 			DownToNormal	=dynamic_cast<Blueprint::Element*>(file.FindObject(downtonormal));
-			Mapping[Blueprint::Down][Blueprint::Normal]=DownToNormal;
 
 			DisabledToNormal=dynamic_cast<Blueprint::Element*>(file.FindObject(disabledtonormal));
-			Mapping[Blueprint::Disabled][Blueprint::Normal]=DisabledToNormal;
 
 			DownToHover		=dynamic_cast<Blueprint::Element*>(file.FindObject(downtohover));
+
+			updatemapping();
+		}
+
+		void Blueprint::Group::updatemapping() {
+			Mapping[Blueprint::Normal][Blueprint::Style_None]=Normal;
+			Mapping[Blueprint::Hover][Blueprint::Style_None]=Hover;
+			Mapping[Blueprint::Down][Blueprint::Style_None]=Down;
+			Mapping[Blueprint::Disabled][Blueprint::Style_None]=Disabled;
+			Mapping[Blueprint::Normal][Blueprint::Hover]=NormalToHover;
+			Mapping[Blueprint::Normal][Blueprint::Down]=NormalToDown;
+			Mapping[Blueprint::Normal][Blueprint::Disabled]=NormalToDisabled;
+			Mapping[Blueprint::Hover][Blueprint::Down]=HoverToDown;
+			Mapping[Blueprint::Hover][Blueprint::Normal]=HoverToNormal;
+			Mapping[Blueprint::Down][Blueprint::Normal]=DownToNormal;
+			Mapping[Blueprint::Disabled][Blueprint::Normal]=DisabledToNormal;
 			Mapping[Blueprint::Down][Blueprint::Hover]=DownToHover;
 		}
 
