@@ -72,7 +72,8 @@ namespace gge { namespace widgets {
 			Blueprint() : 	Normal(NULL), Hover(NULL), Focused(NULL), Disabled(NULL),
 				NormalToHover(NULL), NormalToFocused(NULL), NormalToDisabled(NULL), HoverToFocused(NULL),
 				HoverToNormal(NULL), FocusedToNormal(NULL), DisabledToNormal(NULL), FocusedToHover(NULL),
-				Selection(NULL), Caret(NULL), Scroller(NULL), Align(Alignment::Middle_Left), Mapping()
+				Selection(NULL), Caret(NULL), Scroller(NULL), Align(Alignment::Middle_Left), Mapping(),
+				CaretPlace(new Placeholder), TypeSound(NULL)
 			{
 				DefaultSize=utils::Size(180,40);
 			}
@@ -96,7 +97,7 @@ namespace gge { namespace widgets {
 			BorderDataResource  *Selection;
 			animation::RectangularGraphic2DSequenceProvider *Caret;
 			slider::Blueprint	*Scroller;
-			Placeholder			CaretPlace;
+			Placeholder			*CaretPlace;
 			Alignment::Type		Align;
 			resource::Sound *TypeSound;
 
@@ -176,6 +177,9 @@ namespace gge { namespace widgets {
 
 
 		protected:
+
+			void updatemapping();
+
 			utils::SGuid selection;
 			utils::SGuid caret;
 			utils::SGuid caretplace;

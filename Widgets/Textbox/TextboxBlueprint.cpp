@@ -152,49 +152,58 @@ namespace gge { namespace widgets {
 			file.FindObject(typesound, TypeSound);
 			Placeholder *cp;
 			file.FindObject(caretplace, cp);
-			if(cp)
-				CaretPlace=*cp;
+			if(cp) {
+				utils::CheckAndDelete(CaretPlace);
+				CaretPlace=cp;
+			}
 			file.FindObject(caret, Caret);
 
 
 			file.FindObject(normal, Normal);
-			Mapping[widgets::Blueprint::Normal][Blueprint::Style_None]=Normal;
 
 			file.FindObject(hover, Hover);
-			Mapping[widgets::Blueprint::Hover][Blueprint::Style_None]=Hover;
 
 			file.FindObject(focused, Focused);
-			Mapping[widgets::Blueprint::Focused_Style][Blueprint::Style_None]=Focused;
 
 			file.FindObject(disabled, Disabled);
-			Mapping[widgets::Blueprint::Disabled][Blueprint::Style_None]=Disabled;
 
 
 			file.FindObject(normaltohover, NormalToHover);
-			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Hover]=NormalToHover;
 
 			file.FindObject(normaltofocused, NormalToFocused);
-			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Focused_Style]=NormalToFocused;
 
 			file.FindObject(normaltodisabled, NormalToDisabled);
-			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Disabled]=NormalToDisabled;
 
 			file.FindObject(hovertofocused, HoverToFocused);
-			Mapping[widgets::Blueprint::Hover][widgets::Blueprint::Focused_Style]=HoverToFocused;
 
 
 			file.FindObject(hovertonormal, HoverToNormal);
-			Mapping[widgets::Blueprint::Hover][widgets::Blueprint::Normal]=HoverToNormal;
 
 			file.FindObject(focusedtonormal, FocusedToNormal);
-			Mapping[widgets::Blueprint::Focused_Style][widgets::Blueprint::Normal]=FocusedToNormal;
 
 			file.FindObject(disabledtonormal, DisabledToNormal);
-			Mapping[widgets::Blueprint::Disabled][widgets::Blueprint::Normal]=DisabledToNormal;
 
 			file.FindObject(focusedtohover, FocusedToHover);
-			Mapping[widgets::Blueprint::Focused_Style][widgets::Blueprint::Hover]=FocusedToHover;
 
+			updatemapping();
+
+		}
+
+		void Blueprint::updatemapping() {
+			Mapping[widgets::Blueprint::Normal][Blueprint::Style_None]=Normal;
+			Mapping[widgets::Blueprint::Hover][Blueprint::Style_None]=Hover;
+			Mapping[widgets::Blueprint::Focused_Style][Blueprint::Style_None]=Focused;
+			Mapping[widgets::Blueprint::Disabled][Blueprint::Style_None]=Disabled;
+
+			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Hover]=NormalToHover;
+			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Focused_Style]=NormalToFocused;
+			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Disabled]=NormalToDisabled;
+			Mapping[widgets::Blueprint::Hover][widgets::Blueprint::Focused_Style]=HoverToFocused;
+
+			Mapping[widgets::Blueprint::Hover][widgets::Blueprint::Normal]=HoverToNormal;
+			Mapping[widgets::Blueprint::Focused_Style][widgets::Blueprint::Normal]=FocusedToNormal;
+			Mapping[widgets::Blueprint::Disabled][widgets::Blueprint::Normal]=DisabledToNormal;
+			Mapping[widgets::Blueprint::Focused_Style][widgets::Blueprint::Hover]=FocusedToHover;
 		}
 
 

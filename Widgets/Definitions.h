@@ -67,9 +67,13 @@ namespace gge { namespace widgets {
 
 		static const Type Textbox				= 0x05830000;
 		static const Type Textbox_Props			= 0x05830101;
+		static const Type Textbox_Names			= 0x05830002;
+		static const Type Textbox_Name			= 0x05830003;
 
 		static const Type Textbox_Element		= 0x05835000;
 		static const Type Textbox_Element_Props	= 0x05835001;
+		static const Type Textbox_Element_Names	= 0x05835002;
+		static const Type Textbox_Element_Name	= 0x05835003;
 
 
 		static const Type Listbox				= 0x05870000;

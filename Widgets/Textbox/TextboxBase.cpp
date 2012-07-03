@@ -81,7 +81,7 @@ namespace gge { namespace widgets {
 						caretsize=caret->GetSize();
 					}
 
-					caretsize=bp->CaretPlace.GetSize(caretsize,caretsize)+bp->CaretPlace.Margins;
+					caretsize=bp->CaretPlace->GetSize(caretsize,caretsize)+bp->CaretPlace->Margins;
 
 					//initial location
 					if(tw<inner.Width()) {
@@ -97,7 +97,10 @@ namespace gge { namespace widgets {
 					eprint[0].CharPosition=caretlocation+(int)prefix.length();
 
 					font->Print_Test(location, 0, prefix+text+suffix, eprint, 1);
-					caretposition=Alignment::CalculateLocation(bp->CaretPlace.Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace.Margins);
+					if(caret)
+						caretposition=Alignment::CalculateLocation(bp->CaretPlace->Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace->Margins);
+					else
+						caretposition=Alignment::CalculateLocation(bp->CaretPlace->Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), utils::Size(0,0), bp->CaretPlace->Margins);
 
 					if(caretlocation==(int)text.length() && tw+caretimagew>inner.Width()) {
 						scroll.x=inner.Width()-(tw+caretimagew);
@@ -126,7 +129,10 @@ namespace gge { namespace widgets {
 					//after possible scrolling
 					font->Print_Test(location, 0, prefix+text+suffix, eprint, 1);
 					caretposition=eprint[0].Out.position;
-					caretposition=Alignment::CalculateLocation(bp->CaretPlace.Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace.Margins);
+					if(caret)
+						caretposition=Alignment::CalculateLocation(bp->CaretPlace->Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace->Margins);
+					else
+						caretposition=Alignment::CalculateLocation(bp->CaretPlace->Align, utils::Rectangle(caretposition, caretsize.Width, font->FontBaseline()), utils::Size(0,0), bp->CaretPlace->Margins);
 
 
 					if(!IsFocused() || !caret || passive || noselection) {
@@ -175,8 +181,10 @@ namespace gge { namespace widgets {
 					}
 
 					location=Alignment::CalculateLocation(bp->Align, Bounds(0,0,inner.Width(), inner.Height()), Size(0,th));
-					caretposition=Alignment::CalculateLocation(bp->CaretPlace.Align, utils::Rectangle(location, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace.Margins);
-					caret->Draw(innerlayer, caretposition);
+					if(caret) {
+						caretposition=Alignment::CalculateLocation(bp->CaretPlace->Align, utils::Rectangle(location, caretsize.Width, font->FontBaseline()), caret->GetSize(), bp->CaretPlace->Margins);
+						caret->Draw(innerlayer, caretposition);
+					}
 					textlocation=location;
 				}
 			}
@@ -807,9 +815,13 @@ namespace gge { namespace widgets {
 
 				if(this->bp->Caret)
 					caret=&this->bp->Caret->CreateAnimation(true);
+				else
+					caret=NULL;
 
 				if(this->bp->Selection)
 					selection=&this->bp->Selection->CreateAnimation(true);
+				else
+					selection=NULL;
 			}
 
 			Draw();
