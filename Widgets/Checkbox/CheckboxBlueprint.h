@@ -208,7 +208,7 @@ namespace gge { namespace widgets {
 				virtual void Prepare(GGEMain &main, resource::File &file);
 
 
-				~Element() {
+				virtual ~Element() {
 					utils::CheckAndDelete(Font);
 				}
 

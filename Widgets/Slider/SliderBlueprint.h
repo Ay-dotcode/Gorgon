@@ -106,8 +106,9 @@ namespace gge { namespace widgets {
 				virtual void Prepare(GGEMain &main, resource::File &file);
 
 
-				~Element() {
+				virtual ~Element() {
 					utils::CheckAndDelete(Font);
+					utils::CheckAndDelete(ValueFont);
 				}
 
 			protected:
@@ -180,6 +181,8 @@ namespace gge { namespace widgets {
 
 
 			protected:
+				void updatemapping();
+
 				utils::SGuid normal;
 				utils::SGuid hover;
 				utils::SGuid down;

@@ -210,16 +210,16 @@ namespace gge { namespace widgets {
 			int y=0;
 			auto btn=buttons.First();
 
-			if(bp->Placeholder.SizingMode==bp->Placeholder.Contents || bp->Placeholder.SizingMode==bp->Placeholder.Free || bp->Placeholder.Minimum.Height==0) {
+			if(bp->Placeholder->SizingMode==bp->Placeholder->Contents || bp->Placeholder->SizingMode==bp->Placeholder->Free || bp->Placeholder->Minimum.Height==0) {
 				if(btn.IsValid()) {
 					y=btn->GetHeight();
 				}
 			}
 			else {
-				y=bp->Placeholder.Minimum.Height;
+				y=bp->Placeholder->Minimum.Height;
 			}
 
-			y+=bp->Placeholder.Margins.TotalY();
+			y+=bp->Placeholder->Margins.TotalY();
 			if(bp->Panel->Normal->OuterBorder)
 				y+=bp->Panel->Normal->OuterBorder->BorderWidth.Top+bp->Panel->Normal->OuterBorder->Margins.Top+bp->Panel->Normal->OuterBorder->Padding.Top+WR.WidgetSpacing.y;
 			if(bp->Panel->Normal->InnerBorder)

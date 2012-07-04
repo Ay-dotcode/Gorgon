@@ -57,20 +57,30 @@ namespace gge { namespace widgets {
 
 		static const Type Slider				= 0x05860000;
 		static const Type Slider_Props			= 0x05860101;
+		static const Type Slider_Names			= 0x05860102;
+		static const Type Slider_Name			= 0x05860103;
 
 		static const Type Slider_Group			= 0x05864000;
 		static const Type Slider_Group_Props	= 0x05864001;
+		static const Type Slider_Group_Names	= 0x05864002;
+		static const Type Slider_Group_Name		= 0x05864003;
 
 		static const Type Slider_Element		= 0x05865000;
 		static const Type Slider_Element_Props	= 0x05865001;
+		static const Type Slider_Element_Names	= 0x05865002;
+		static const Type Slider_Element_Name	= 0x05865003;
 
 
 
 		static const Type Panel					= 0x05880000;
 		static const Type Panel_Props			= 0x05880101;
+		static const Type Panel_Names			= 0x05880102;
+		static const Type Panel_Name			= 0x05880103;
 
 		static const Type Panel_Element			= 0x05885000;
 		static const Type Panel_Element_Props	= 0x05885001;
+		static const Type Panel_Element_Names	= 0x05885002;
+		static const Type Panel_Element_Name	= 0x05885003;
 
 
 		static const Type Textbox				= 0x05830000;
@@ -86,14 +96,20 @@ namespace gge { namespace widgets {
 
 		static const Type Listbox				= 0x05870000;
 		static const Type Listbox_Props			= 0x05870101;
+		static const Type Listbox_Names			= 0x05870102;
+		static const Type Listbox_Name			= 0x05870103;
 		
 
 		static const Type Combobox				= 0x05890000;
 		static const Type Combobox_Props		= 0x05890101;
+		static const Type Combobox_Names		= 0x05890102;
+		static const Type Combobox_Name			= 0x05890103;
 
 
 		static const Type Tabpanel				= 0x058a0000;
 		static const Type Tabpanel_Props		= 0x058a0101;
+		static const Type Tabpanel_Names		= 0x058a0102;
+		static const Type Tabpanel_Name			= 0x058a0103;
 
 
 		static const Type WR					= 0x05100000;

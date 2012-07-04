@@ -144,37 +144,43 @@ namespace gge { namespace widgets {
 
 
 			file.FindObject(normal, Normal);
-			Mapping[widgets::Blueprint::Normal][Blueprint::Style_None]=Normal;
 
 			file.FindObject(active, Active);
-			Mapping[widgets::Blueprint::Hover][Blueprint::Style_None]=Active;
 
 			file.FindObject(moving, Moving);
-			Mapping[widgets::Blueprint::Down][Blueprint::Style_None]=Moving;
 
 			file.FindObject(disabled, Disabled);
-			Mapping[widgets::Blueprint::Disabled][Blueprint::Style_None]=Disabled;
 
 
 			file.FindObject(normaltoactive, NormalToActive);
-			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Hover]=NormalToActive;
 
 			file.FindObject(normaltodisabled, NormalToDisabled);
-			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Disabled]=NormalToDisabled;
 
 			file.FindObject(activetomoving, ActiveToMoving);
-			Mapping[widgets::Blueprint::Hover][widgets::Blueprint::Down]=ActiveToMoving;
 
 
 			file.FindObject(activetonormal, ActiveToNormal);
-			Mapping[widgets::Blueprint::Hover][widgets::Blueprint::Normal]=ActiveToNormal;
 
 			file.FindObject(disabledtonormal, DisabledToNormal);
-			Mapping[widgets::Blueprint::Disabled][widgets::Blueprint::Normal]=DisabledToNormal;
 
 			file.FindObject(movingtoactive, MovingToActive);
-			Mapping[widgets::Blueprint::Down][widgets::Blueprint::Hover]=MovingToActive;
 
+
+			updatemapping();
+
+		}
+
+		void Blueprint::updatemapping() {
+			Mapping[widgets::Blueprint::Normal][Blueprint::Style_None]=Normal;
+			Mapping[widgets::Blueprint::Hover][Blueprint::Style_None]=Active;
+			Mapping[widgets::Blueprint::Down][Blueprint::Style_None]=Moving;
+			Mapping[widgets::Blueprint::Disabled][Blueprint::Style_None]=Disabled;
+			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Hover]=NormalToActive;
+			Mapping[widgets::Blueprint::Normal][widgets::Blueprint::Disabled]=NormalToDisabled;
+			Mapping[widgets::Blueprint::Hover][widgets::Blueprint::Down]=ActiveToMoving;
+			Mapping[widgets::Blueprint::Hover][widgets::Blueprint::Normal]=ActiveToNormal;
+			Mapping[widgets::Blueprint::Disabled][widgets::Blueprint::Normal]=DisabledToNormal;
+			Mapping[widgets::Blueprint::Down][widgets::Blueprint::Hover]=MovingToActive;
 		}
 
 	}

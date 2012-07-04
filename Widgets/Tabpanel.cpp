@@ -53,8 +53,10 @@ namespace gge { namespace widgets {
 			file.FindObject(radio, Radio);
 			widgets::Placeholder *p;
 			file.FindObject(placeholder, p);
-			if(p)
-				Placeholder=*p;
+			if(p) {
+				utils::CheckAndDelete(Placeholder);
+				Placeholder=p;
+			}
 		}
 	}
 
@@ -118,16 +120,16 @@ namespace gge { namespace widgets {
 		if(!bp)
 			return;
 
-		if(bp->Placeholder.SizingMode==bp->Placeholder.Contents || bp->Placeholder.SizingMode==bp->Placeholder.Free || bp->Placeholder.Minimum.Height==0) {
+		if(bp->Placeholder->SizingMode==bp->Placeholder->Contents || bp->Placeholder->SizingMode==bp->Placeholder->Free || bp->Placeholder->Minimum.Height==0) {
 			if(btn.IsValid()) {
 				y=btn->GetHeight();
 			}
 		}
 		else {
-			y=bp->Placeholder.Minimum.Height;
+			y=bp->Placeholder->Minimum.Height;
 		}
 
-		y+=bp->Placeholder.Margins.TotalY();
+		y+=bp->Placeholder->Margins.TotalY();
 
 
 		for(auto it=First();it.IsValid();it.Next()) {
@@ -146,7 +148,7 @@ namespace gge { namespace widgets {
 					RadioButton<tabpanel::Panel*> &rad=*btn;
 
 					rad.Text=it->Title;
-					rad.Move(x,bp->Placeholder.Margins.Top);
+					rad.Move(x,bp->Placeholder->Margins.Top);
 					rad.Value=it.CurrentPtr();
 					rad.SetEnabled(it->IsEnabled());
 					rad.SetZOrder(1);
@@ -173,7 +175,7 @@ namespace gge { namespace widgets {
 					rad.Autosize=AutosizeModes::GrowOnly;
 					rad.SetEnabled(it->IsEnabled());
 					rad.Text=it->Title;
-					rad.Move(x,bp->Placeholder.Margins.Top);
+					rad.Move(x,bp->Placeholder->Margins.Top);
 					rad.Value=it.CurrentPtr();
 					rad.ChangeEvent.Register(this,&Tabpanel::tab_click);
 
@@ -190,13 +192,13 @@ namespace gge { namespace widgets {
 		for(;btn.IsValid();btn.Next())
 			btn->Hide();
 
-		x=Alignment::CalculateLocation(bp->Placeholder.Align, Bounds(0,0,size.Width,size.Height),Size(x, y), bp->Placeholder.Margins).x;
+		x=Alignment::CalculateLocation(bp->Placeholder->Align, Bounds(0,0,size.Width,size.Height),Size(x, y), bp->Placeholder->Margins).x;
 		for(btn=buttons.First();btn.IsValid();btn.Next()) {
 			btn->SetX(x);
 			x+=btn->GetWidth();
 		}
 
-		if(y==bp->Placeholder.Margins.TotalY() && newbutton)
+		if(y==bp->Placeholder->Margins.TotalY() && newbutton)
 			reorganize();
 	}
 

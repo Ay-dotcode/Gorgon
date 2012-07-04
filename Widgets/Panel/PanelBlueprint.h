@@ -50,7 +50,7 @@ namespace gge { namespace widgets {
 				Byte						 BGOpacity;
 				BorderDataResource			*TitleBorder;
 				BorderDataResource			*DialogButtonBorder;
-				resource::Sound		*Sound;
+				resource::Sound				*Sound;
 				BorderDataResource			*Overlay;
 
 
@@ -102,6 +102,8 @@ namespace gge { namespace widgets {
 
 
 			virtual void Prepare(GGEMain &main, resource::File &file);
+
+			void updatemapping();
 
 			slider::Blueprint	*Scroller;
 			checkbox::Blueprint *TitleLabel;
