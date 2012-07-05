@@ -106,8 +106,6 @@ namespace gge {
 
 	void PointerCollection::Add(Pointer &pointer) {
 		utils::Collection<Pointer, 10>::Add( pointer );
-
-		return ret;
 	}
 
 	PointerCollection::Token PointerCollection::Set(Pointer *Pointer) {
