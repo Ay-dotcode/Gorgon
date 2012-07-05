@@ -97,9 +97,15 @@ namespace gge {
 	Pointer *PointerCollection::Add(graphics::RectangularGraphic2D *pointer, Point Hotspot, Pointer::PointerType Type) {
 		Pointer *ret=new Pointer(pointer, Hotspot.x, Hotspot.y, Type);
 		utils::Collection<Pointer, 10>::Add( ret );
-		
+
 		if(!BasePointer)
 			BasePointer=ret;
+
+		return ret;
+	}
+
+	void PointerCollection::Add(Pointer &pointer) {
+		utils::Collection<Pointer, 10>::Add( pointer );
 
 		return ret;
 	}

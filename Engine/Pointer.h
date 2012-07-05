@@ -90,6 +90,10 @@ namespace gge {
 		void Fetch(resource::Folder *Folder);
 		void Fetch(resource::Folder &Folder) { Fetch(&Folder); }
 		////Adds a pointer to the list of pointers
+		void Add(Pointer &pointer);
+		////Adds a pointer to the list of pointers
+		void Add(Pointer *pointer) { if(pointer) Add(*pointer); }
+		////Adds a pointer to the list of pointers
 		Pointer *Add(graphics::RectangularGraphic2D *Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerType Type=Pointer::None);
 		////Adds a pointer to the list of pointers
 		Pointer &Add(graphics::RectangularGraphic2D &Pointer, utils::Point Hotspot=utils::Point(2,2), Pointer::PointerType Type=Pointer::None) {

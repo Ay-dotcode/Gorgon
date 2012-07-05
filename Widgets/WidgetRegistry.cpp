@@ -143,7 +143,7 @@ namespace gge { namespace widgets {
 
 		folder=&wrr.Get<Folder>(++item);
 		Checkboxes.Checkbox=Checkbox=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(0).GetTarget(*wrr.file));
-		Checkboxes.Radio=RadioButton=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(1).GetTarget(*wrr.file));
+		Checkboxes.Radio	=RadioButton=dynamic_cast<checkbox::Blueprint*>(folder->Get<LinkNodeResource>(1).GetTarget(*wrr.file));
 		Checkboxes.Toggle	= GetWithDefault(folder, *wrr.file, 2, Checkboxes.Checkbox);
 		Checkboxes.More		= GetWithDefault(folder, *wrr.file, 3, Checkboxes.Checkbox);
 		Checkboxes.MenuCheck= GetWithDefault(folder, *wrr.file, 4, Checkboxes.Checkbox);
