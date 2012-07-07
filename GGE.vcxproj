@@ -309,6 +309,7 @@
     <ClInclude Include="Utils\SGuid.h" />
     <ClInclude Include="Utils\Size2D.h" />
     <ClInclude Include="Utils\SortedCollection.h" />
+    <ClInclude Include="Utils\StringEnum.h" />
     <ClInclude Include="Utils\UtilsBase.h" />
     <ClInclude Include="Utils\ValueList.h" />
     <ClInclude Include="Widgets\Base\Blueprint.h" />

@@ -164,7 +164,11 @@ namespace gge { namespace widgets {
 		//returns selected item value
 		//returns last selected if listbox is in multi select
 		T_ GetValue() {
-			return this->active->Value;
+			return getvalue();
+		}
+
+		void SetValue(const T_ &value) {
+			setvalue(value);
 		}
 
 		LI *GetItem(int Index) {
@@ -241,11 +245,11 @@ namespace gge { namespace widgets {
 			return combobox::Base<T_, CS_>::KeyboardHandler(event, Key);
 		}
 			
-		utils::EventChain<Combobox> ValueChanged;
+		utils::EventChain<Combobox> ChangeEvent;
 
 	protected:
 		virtual void valuechanged() {
-			ValueChanged();
+			ChangeEvent();
 		}
 		void togglenotify(IListItem<T_, CS_> *li, bool raise) {
 			LI* item=dynamic_cast<LI*>(li);

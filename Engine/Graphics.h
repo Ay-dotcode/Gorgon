@@ -149,12 +149,17 @@ namespace gge { namespace graphics {
 		RGBint(Byte a, Byte r, Byte g, Byte b) : a(a), r(r), g(g), b(b) { }
 		RGBint(RGBfloat f) { a=(Byte)(f.a*255); r=(Byte)(f.r*255); g=(Byte)(f.g*255); b=(Byte)(f.b*255); }
 		RGBint(float lum) { a=255; r=(Byte)lum*255; g=(Byte)lum*255; b=(Byte)lum*255; }
+		RGBint(const std::string &s);
 		RGBint() { }
 		
+		////Converts RGBint structure to ARGB integer
+		operator int () const { return *(int*)this; }
 		////Converts RGBint structure to ARGB integer
 		operator int () { return *(int*)this; }
 		////Converts RGBint structure to ARGB (unsigned) integer
 		operator unsigned int () { return *(unsigned int*)this; }
+		////Converts RGBint structure to ARGB (unsigned) integer
+		operator unsigned int () const { return *(unsigned int*)this; }
 		RGBint &operator =(unsigned int i) { 
 			memcpy(this,&i,4);
 			return *this;
@@ -259,12 +264,19 @@ namespace gge { namespace graphics {
 
 		operator float() { return AccurateLuminance()/255.0f; }
 
-		std::string HTMLColor() {
+		std::string HTMLColor() const {
 			std::stringstream str2;
 			std::stringstream str;
-			str2<<std::hex<<((int)(*this)&0x00ffffff);
+			str2<<std::hex<<((const int)(*this)&0x00ffffff);
 
 			str<<"#"<<std::fixed<<std::setw(6)<<std::setfill('0')<<str2.str();
+
+			return str.str();
+		}
+
+		std::string ColorString() const {
+			std::stringstream str;
+			str<<std::fixed<<std::setw(8)<<std::setfill('0')<<std::hex<<((const int)(*this));
 
 			return str.str();
 		}
@@ -293,8 +305,8 @@ namespace gge { namespace graphics {
 			}
 		}
 
-		operator std::string() {
-			return HTMLColor();
+		operator std::string() const {
+			return ColorString();
 		}
 		////Returns BGRA integer
 		int operator !() { return (r<<16)+(g<<8)+b+(a<<24); }
@@ -304,6 +316,36 @@ namespace gge { namespace graphics {
 		stream<<(std::string)color;
 
 		return stream;
+	}
+
+	inline std::istream &operator>>(std::istream &in, RGBint &color) {
+		while(in.peek()==' ' || in.peek()=='\t') in.ignore();
+
+		if(in.peek()=='#') {
+			color.a=255;
+			in.ignore(1);
+			in>>std::hex>>color.r>>color.g>>color.b;
+		}
+		else {
+			if(in.peek()=='0') {
+				in.ignore();
+				if(in.peek()=='x') {
+					in.ignore();
+				}
+				else {
+					in.clear();
+					in.putback('0');
+				}
+			}
+
+			in>>std::hex>>(*(unsigned int*)&color);
+		}
+		return in;
+	}
+	inline RGBint::RGBint(const std::string &s) {
+		std::stringstream ss;
+		ss.str(s);
+		ss>>*this;
 	}
 
 	inline RGBfloat::RGBfloat(const RGBint &c) {

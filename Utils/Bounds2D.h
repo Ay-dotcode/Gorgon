@@ -130,12 +130,20 @@ namespace gge { namespace utils {
 			return basic_Point2D<T_>(Left, Top);
 		}
 
+		basic_Point2D<T_> TopRight() const {
+			return basic_Point2D<T_>(Right, Top);
+		}
+
 		basic_Point2D<T_> Center() const {
 			return basic_Point2D<T_>(Left+Width()/2, Top+Height()/2);
 		}
 
 		basic_Point2D<T_> BottomRight() const {
 			return basic_Point2D<T_>(Right, Bottom);
+		}
+
+		basic_Point2D<T_> BottomLeft() const {
+			return basic_Point2D<T_>(Left, Bottom);
 		}
 
 		basic_Size2D<T_> GetSize() const {

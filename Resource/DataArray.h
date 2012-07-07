@@ -60,6 +60,11 @@ namespace gge { namespace resource {
 
 		ColorData(graphics::RGBint value) : IntegerData(value) {  }
 		operator graphics::RGBint() { return value; }
+		ColorData &operator =(graphics::RGBint value) {
+			IntegerData::value=value;
+
+			return *this;
+		}
 	};
 
 	////Float data
