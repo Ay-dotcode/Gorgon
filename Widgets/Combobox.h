@@ -164,7 +164,7 @@ namespace gge { namespace widgets {
 		//returns selected item value
 		//returns last selected if listbox is in multi select
 		T_ GetValue() {
-			return getvalue();
+			return this->getvalue();
 		}
 
 		void SetValue(const T_ &value) {
