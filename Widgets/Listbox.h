@@ -256,7 +256,7 @@ namespace gge { namespace widgets {
 		}
 
 		ItemType *GetItem(int Index) {
-			return CollectionType::Get(Index);
+			return CollectionType::operator()(Index);
 		}
 
 		//returns selected item

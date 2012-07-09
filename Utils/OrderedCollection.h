@@ -563,7 +563,7 @@ namespace gge { namespace utils {
 			if(i==*count)
 				return;
 
-			delete list[i];
+			delete Item;
 
 			for(;i<*count-1;i++)
 				list[i]=list[i+1];
