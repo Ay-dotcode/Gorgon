@@ -62,7 +62,7 @@ namespace gge { namespace utils {
 		T_ Height;
 
 		template <class O_>
-		basic_Size2D &operator =(const basic_Point2D<O_> &size) { Width=size.x; Height=size.y; }
+		basic_Size2D &operator =(const basic_Point2D<O_> &size) { Width=size.x; Height=size.y; return *this; }
 
 		bool operator ==(const basic_Size2D  &size) const { 
 			return Width==size.Width && Height==size.Height;
