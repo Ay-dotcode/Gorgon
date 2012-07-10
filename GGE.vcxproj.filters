@@ -1023,6 +1023,9 @@
     <ClInclude Include="Utils\StringEnum.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\StringTokenizer.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
