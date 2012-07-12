@@ -172,7 +172,7 @@ namespace gge { namespace widgets {
 		}
 
 		LI *GetItem(int Index) {
-			return OC::Get(Index);
+			return &OC::Get(Index);
 		}
 
 		//returns selected item
