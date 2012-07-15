@@ -128,6 +128,12 @@ namespace gge { namespace utils {
 		return std::atof(value.c_str());
 	}
 
+	template<class T_>
+	T_ Limit(const T_ &value, const T_ &min, const T_ &max) {
+		if(value<min) return min;
+		if(value>max) return max;
+		return value;
+	}
 
 }}
 
