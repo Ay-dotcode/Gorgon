@@ -272,8 +272,8 @@ namespace gge { namespace widgets {
 		class CPanels {
 		public:
 
-			CPanels() : Panel(), OverlayControls(), Window(), DialogWindow(),
-				Toolbar(), Menubar(), ToolWindow(), SettingsWindow(), Tabpanel()
+			CPanels() : Panel(), OverlayControls(), Window(), DialogWindow(), Fullscreen(),
+				Toolbar(), Menubar(), ToolWindow(), SettingsWindow(), Tabpanel(), Tooltab(), Settingstab()
 			{ }
 
 

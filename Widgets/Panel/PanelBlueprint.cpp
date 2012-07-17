@@ -98,7 +98,7 @@ namespace gge { namespace widgets {
 					bp->disabledtonormal.Load(Data);
 
 
-					EatChunk(Data, size-(4 * 2 + 8 * 1 + 16 * 16));
+					EatChunk(Data, size-(4 * 2 + 8 * 1 + 8 * 16));
 				}
 				else if(gid==GID::Panel_Element) {
 					Blueprint::Element *elm=LoadElement(File, Data, size);

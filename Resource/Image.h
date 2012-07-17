@@ -50,14 +50,14 @@ namespace gge { namespace resource {
 		bool LeaveData;
 
 		Image() : animation::Base(), ImageTexture(), ImageData(), 
-		CompressionProps(), Palette(), Compression(Uncompressed), LateLoading(false) 
+		CompressionProps(), Palette(), Compression(PNG), LateLoading(false) 
 		{
 			isLoaded=LeaveData=false;
 			animation::Animations.Remove(this);
 		}
 
 		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), 
-		ImageTexture(), ImageData(), CompressionProps(), Palette(), Compression(Uncompressed), LateLoading(false) 
+		ImageTexture(), ImageData(), CompressionProps(), Palette(), Compression(PNG), LateLoading(false) 
 		{
 			this->Resize(Width, Height, Mode);
 			animation::Animations.Remove(this);

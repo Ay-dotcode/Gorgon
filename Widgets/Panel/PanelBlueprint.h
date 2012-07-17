@@ -98,7 +98,7 @@ namespace gge { namespace widgets {
 			}
 
 
-			virtual GID::Type GetGID() const { return GID::Slider; }
+			virtual GID::Type GetGID() const { return GID::Panel; }
 
 
 			virtual void Prepare(GGEMain &main, resource::File &file);
