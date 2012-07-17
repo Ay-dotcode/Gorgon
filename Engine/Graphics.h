@@ -319,7 +319,9 @@ namespace gge { namespace graphics {
 	}
 
 	inline std::istream &operator>>(std::istream &in, RGBint &color) {
-		while(in.peek()==' ' || in.peek()=='\t') in.ignore();
+		std::locale loc;
+
+		while(std::isspace(in.peek(), loc)) in.ignore();
 
 		if(in.peek()=='#') {
 			color.a=255;
@@ -338,7 +340,7 @@ namespace gge { namespace graphics {
 				}
 			}
 
-			in>>std::hex>>(*(unsigned int*)&color);
+			in>>std::hex>>(*(unsigned int*)&color)>>std::dec;
 		}
 		return in;
 	}
