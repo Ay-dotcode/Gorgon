@@ -80,7 +80,7 @@ namespace gge { namespace resource {
 			int i, w=0; 
 			const char *text=Text.c_str(); 
 			for(i=0;text[i];i++) 
-				w+=Characters[(unsigned char)text[i]]->GetWidth(); 
+				w+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator; 
 		
 			return w; 
 		}
