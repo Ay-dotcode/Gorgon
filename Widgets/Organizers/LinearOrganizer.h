@@ -34,7 +34,7 @@ namespace gge { namespace widgets {
 		typedef void(*Modifier)(LinearOrganizer &organizer);
 
 		LinearOrganizer() : currentrow(), currentcol(), spacing(5), autosizewindows(true),
-			buttonalign(TextAlignment::Right),verticalcentering(false),
+			buttonalign(TextAlignment::Right),verticalcentering(true),
 			INIT_PROPERTY(LinearOrganizer, Spacing),
 			INIT_PROPERTY(LinearOrganizer, AutosizeWindows),
 			INIT_PROPERTY(LinearOrganizer, ButtonAlign),

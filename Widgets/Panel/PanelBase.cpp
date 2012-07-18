@@ -422,6 +422,8 @@ namespace gge { namespace widgets {
 		void Base::adjustscrolls() {
 			adjustlayers();
 
+			bool reorganize=false;
+
 			int yscrollrange=scrollinglayer.BoundingBox.Height()-innerlayer.BoundingBox.Height();
 			if(yscrollrange<0)
 				yscrollrange=0;
@@ -437,20 +439,22 @@ namespace gge { namespace widgets {
 				vscroll.bar.SetHeight(innerlayer.GetHeight());
 				if(!vscroll.bar.IsVisible()) {
 					vscroll.bar.Show();
-					Reorganize();
+					reorganize=true;
 				}
 			}
 			else {
 				scrollmargins=Margins(0);
 				if(vscroll.bar.IsVisible()) {
 					vscroll.bar.Hide();
-					Reorganize();
+					reorganize=true;
 				}
 			}
 
 
 			adjustlayers();
 			Draw();
+
+			if(reorganize) Reorganize();
 
 			vscroll.bar.Move(innerlayer.BoundingBox.Right+padding.Right, innerlayer.BoundingBox.Top);
 		}
