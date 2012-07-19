@@ -172,6 +172,11 @@ namespace gge { namespace widgets {
 			}
 		}
 
+		void SetOrder(int order) {
+			if(BaseLayer)
+				BaseLayer->SetOrder(order);
+		}
+
 
 	protected:
 		LayerBase *BaseLayer;
