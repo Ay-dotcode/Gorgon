@@ -1143,7 +1143,7 @@ namespace gge { namespace widgets {
 
 							textw=currentsize.Width-knownw;
 							if(font && font->TextWidth(text)<textw)
-								currentsize.Width=font->TextWidth(text)+knownw;
+								currentsize.Width=font->TextWidth(text)+knownw+1;
 
 							break;
 						}
@@ -1253,7 +1253,7 @@ namespace gge { namespace widgets {
 					}
 #pragma endregion
 
-					currentsize.Width=mlw;
+					currentsize.Width=mlw+1;
 					if(border) {
 						currentsize.Width+=border->BorderWidth.TotalX()+border->Padding.TotalX();
 					}
