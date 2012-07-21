@@ -27,6 +27,8 @@
 #include "UtilsBase.h"
 #include "BasicMath.h"
 #include <cstdlib>
+#include "Point2D.h"
+#include "Bounds2D.h"
 
 namespace gge { namespace utils {
 
@@ -68,6 +70,10 @@ namespace gge { namespace utils {
 	inline char Random(Range<char> range) { return (Random<char>()%(range.Difference())) + range.start; }
 	template<>
 	inline int Random(Range<int> range)    { return (PositiveMod(Random<int>(),range.Difference())) + range.start; }
+
+	inline gge::utils::Point Random(const gge::utils::Bounds &bounds) {
+		return gge::utils::Point(Random(bounds.Left,bounds.Right), Random(bounds.Top,bounds.Bottom));
+	}
 
 	template <>
 	inline std::string Random<std::string>()             { return randomstrings[Random(0,50)]; }
