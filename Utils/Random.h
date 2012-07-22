@@ -71,6 +71,9 @@ namespace gge { namespace utils {
 	template<>
 	inline int Random(Range<int> range)    { return (PositiveMod(Random<int>(),range.Difference())) + range.start; }
 
+	template<class T_>
+	inline T_ Random(std::vector<T_> &vec) { return vec[Random(0,(int)vec.size())]; }
+
 	inline gge::utils::Point Random(const gge::utils::Bounds &bounds) {
 		return gge::utils::Point(Random(bounds.Left,bounds.Right), Random(bounds.Top,bounds.Bottom));
 	}
