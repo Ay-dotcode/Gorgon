@@ -135,5 +135,13 @@ namespace gge { namespace utils {
 		return value;
 	}
 
+	template<class T_>
+	T_ Sign(const T_ &value) {
+		if(value==0)
+			return 0;
+		else
+			return value > 0 ? 1 : -1;
+	}
+
 }}
 
