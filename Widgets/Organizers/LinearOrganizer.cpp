@@ -179,6 +179,20 @@ namespace gge { namespace widgets {
 			}
 		}
 
+		while(rows.size()>1) {
+			if(rows.back().columns.size()==0 && rows[rows.size()-2].columns.size()==0) {
+				rows.pop_back();
+			}
+			else
+				break;
+		}
+
+		if(currentrow>=rows.size())
+			currentrow=rows.size()-1;
+
+		if(currentcol>=rows[currentrow].columns.size())
+			currentcol=rows[currentrow].columns.size()-1;
+
 		for(auto w=attachedto->Widgets.First();w.IsValid();w.Next()) {
 			if(!organizedwidgets.Find(*w).IsValid()) {
 				organizedwidgets.Add(w);
