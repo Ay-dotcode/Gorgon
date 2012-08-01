@@ -231,7 +231,7 @@ namespace gge { namespace widgets {
 		}
 
 		T_ GetValue(int Index) {
-			if(CollectionType::Get(Index))
+			if(Index>=0 && Index<GetCount())
 				return CollectionType::Get(Index).Value;
 
 			return T_();
