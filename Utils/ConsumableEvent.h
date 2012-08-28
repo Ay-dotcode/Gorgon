@@ -564,7 +564,7 @@ namespace gge { namespace utils {
 		static const Token NullToken = 0;
 
 		//To be used by owner
-		std::unordered_map<P_, Token> TokenList;
+		std::vector<std::pair<P_, Token>> TokenList;
 
 		////Constructor
 		///@Name	: Name of the event
@@ -593,6 +593,36 @@ namespace gge { namespace utils {
 		ConsumableEvent(O_ &Object) : 
 		eventname(""), object(&Object)
 		{ }
+		
+		void SetToken(P_ params, Token t) {
+			for(auto it=TokenList.begin(); it!=TokenList.end(); ++it) {
+				if(it->first==params) {
+					it->second=t;
+					return;
+				}
+			}
+			
+			TokenList.push_back(std::pair<P_, Token>(params, t));
+		}
+		
+		Token FindToken(P_ params) const {
+			for(auto it=TokenList.begin(); it!=TokenList.end(); ++it) {
+				if(it->first==params) {
+					return it->second;
+				}
+			}
+			
+			return NullToken;
+		}
+		
+		void RemoveToken(P_ params) {
+			for(auto it=TokenList.begin(); it!=TokenList.end(); ++it) {
+				if(it->first==params) {
+					TokenList.erase(it);
+					return;
+				}
+			}
+		}
 
 		////Registers an event handler. Every event handler
 		/// can specify EventHandler<P_, O_>::data to be passed to handler

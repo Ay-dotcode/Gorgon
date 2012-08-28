@@ -470,7 +470,7 @@ namespace gge { namespace input {
 			params.keycode=Key;
 			params.event=keyboard::Event::Down;
 
-			keyboard::Events.TokenList[params]=keyboard::Events(params);
+			keyboard::Events.SetToken(params, keyboard::Events(params));
 			keyboard::PressedKeys[Key]=true;
 		}
 
@@ -480,11 +480,11 @@ namespace gge { namespace input {
 			params.event=keyboard::Event::Down;
 			keyboard::PressedKeys[Key]=false;
 
-			if(keyboard::Events.TokenList[params]!=keyboard::Events.NullToken)
-				keyboard::Events.Fire(keyboard::Events.TokenList[params], keyboard::Event(keyboard::Event::Up, Key));
+			if(keyboard::Events.FindToken(params)!=keyboard::Events.NullToken)
+				keyboard::Events.Fire(keyboard::Events.FindToken(params), keyboard::Event(keyboard::Event::Up, Key));
 			else
 				keyboard::Events.Fire(keyboard::Event(keyboard::Event::Up, Key));
-			keyboard::Events.TokenList[params]=keyboard::Events.NullToken;
+			keyboard::Events.RemoveToken(params);
 		}
 
 
