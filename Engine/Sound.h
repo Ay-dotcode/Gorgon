@@ -35,13 +35,13 @@ namespace gge { namespace sound {
 
 
 		////Initializes the sound sub system, if no sound
-	/// can be used this function fails gracefully disabling
-	/// any audio attempt without causing any trouble.
-	/// soundavailable variable can be checked whether 
-	/// sound system is up and running.
-	///@Window	: Handle of the main window 
-	///@Device	: The device identifier to be created, NULL will
-	/// use default device.
+		/// can be used this function fails gracefully disabling
+		/// any audio attempt without causing any trouble.
+		/// soundavailable variable can be checked whether 
+		/// sound system is up and running.
+		///@Window	: Handle of the main window 
+		///@Device	: The device identifier to be created, NULL will
+		/// use default device.
 		int InitializeSound(os::WindowHandle Window, char *Device=NULL);
 
 		////Creates a new wave from a given buffer.

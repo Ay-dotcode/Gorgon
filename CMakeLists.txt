@@ -20,13 +20,13 @@ SET(Engine
 	Engine/GGEMain.cpp
 	Engine/Graphics.cpp
 	Engine/Input.cpp
-	Engine/VideoClip.cpp
+#	Engine/VideoClip.cpp
 	Engine/Animation.cpp
 	Engine/CustomLayer.cpp
 	Engine/Wave.cpp
 	Engine/Layer.cpp
 	Engine/Font.cpp
-	Engine/AudioClip.cpp
+#	Engine/AudioClip.cpp
 	Engine/GraphicLayers.cpp
 	Engine/OS.Win32.cpp
 )
@@ -286,8 +286,8 @@ SET(Externals
 	${EXT_Xml}
 	${EXT_OGG}
 	${EXT_Vorbis}
-	${EXT_Theora}
-	${EXT_TheoraPlayback}
+#	${EXT_Theora}
+#	${EXT_TheoraPlayback}
 )
 
 FOREACH(_file ${Utils} ${Engine} ${Resource} ${Widgets} ${Effects} ${Encoding} ${Network})

@@ -119,7 +119,7 @@ namespace gge {
 		void		 InitializePointer();
 		////Initializes Pointer subsystem. Before calling this function, pointers cannot be used
 		void		 InitializeResource();
-		void		 InitializeMultimedia();
+		//void		 InitializeMultimedia();
 
 		void		 Run();
 

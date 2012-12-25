@@ -10,8 +10,8 @@ namespace gge { namespace sound {
 	namespace system {
 		////For garbage collection
 		static utils::Collection<Wave> Waves;
-		void InitWaveGarbageCollect(GGEMain *main) {
-			main->AfterRenderEvent.Register(CollectWaveGarbage);
+		void InitWaveGarbageCollect(GGEMain &main) {
+			main.AfterRenderEvent.Register(CollectWaveGarbage);
 		}
 
 		void CollectWaveGarbage() {

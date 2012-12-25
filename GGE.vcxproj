@@ -106,7 +106,6 @@
     <ClInclude Include="Encoding\PNG.h" />
     <ClInclude Include="Encoding\URI.h" />
     <ClInclude Include="Engine\Animation.h" />
-    <ClInclude Include="Engine\AudioClip.h" />
     <ClInclude Include="Engine\CustomLayer.h" />
     <ClInclude Include="Engine\Font.h" />
     <ClInclude Include="Engine\FontRenderer.h" />
@@ -124,7 +123,6 @@
     <ClInclude Include="Engine\OS.Win32.h" />
     <ClInclude Include="Engine\Pointer.h" />
     <ClInclude Include="Engine\Sound.h" />
-    <ClInclude Include="Engine\VideoClip.h" />
     <ClInclude Include="Engine\Wave.h" />
     <ClInclude Include="External\cURL\curl.h" />
     <ClInclude Include="External\cURL\curlbuild.h" />
@@ -174,45 +172,6 @@
     <ClInclude Include="External\pThread\pthread.h" />
     <ClInclude Include="External\pThread\sched.h" />
     <ClInclude Include="External\pThread\semaphore.h" />
-    <ClInclude Include="External\TheoraPlaybackOpenAL\OpenAL_AudioInterface.h" />
-    <ClInclude Include="External\TheoraPlayback\src\Endianess.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraAsync.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraAudioInterface.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraDataSource.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraException.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraExport.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraFrameQueue.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraPlayer.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraTimer.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraUtil.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraVideoClip.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraVideoFrame.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraVideoManager.h" />
-    <ClInclude Include="External\TheoraPlayback\TheoraWorkerThread.h" />
-    <ClInclude Include="External\Theora\codec.h" />
-    <ClInclude Include="External\Theora\src\apiwrapper.h" />
-    <ClInclude Include="External\Theora\src\bitpack.h" />
-    <ClInclude Include="External\Theora\src\cpu.h" />
-    <ClInclude Include="External\Theora\src\dct.h" />
-    <ClInclude Include="External\Theora\src\decint.h" />
-    <ClInclude Include="External\Theora\src\dequant.h" />
-    <ClInclude Include="External\Theora\src\encint.h" />
-    <ClInclude Include="External\Theora\src\enquant.h" />
-    <ClInclude Include="External\Theora\src\huffdec.h" />
-    <ClInclude Include="External\Theora\src\huffenc.h" />
-    <ClInclude Include="External\Theora\src\huffman.h" />
-    <ClInclude Include="External\Theora\src\internal.h" />
-    <ClInclude Include="External\Theora\src\mathops.h" />
-    <ClInclude Include="External\Theora\src\modedec.h" />
-    <ClInclude Include="External\Theora\src\ocintrin.h" />
-    <ClInclude Include="External\Theora\src\quant.h" />
-    <ClInclude Include="External\Theora\src\x86_vc\mmxfrag.h" />
-    <ClInclude Include="External\Theora\src\x86_vc\mmxloop.h" />
-    <ClInclude Include="External\Theora\src\x86_vc\x86enc.h" />
-    <ClInclude Include="External\Theora\src\x86_vc\x86int.h" />
-    <ClInclude Include="External\Theora\theora.h" />
-    <ClInclude Include="External\Theora\theoradec.h" />
-    <ClInclude Include="External\Theora\theoraenc.h" />
     <ClInclude Include="External\vorbis\codec.h" />
     <ClInclude Include="External\vorbis\src\backends.h" />
     <ClInclude Include="External\vorbis\src\bitrate.h" />
@@ -395,7 +354,6 @@
     </ClCompile>
     <ClCompile Include="Encoding\URI.cpp" />
     <ClCompile Include="Engine\Animation.cpp" />
-    <ClCompile Include="Engine\AudioClip.cpp" />
     <ClCompile Include="Engine\CustomLayer.cpp" />
     <ClCompile Include="Engine\Font.cpp" />
     <ClCompile Include="Engine\GGEMain.cpp" />
@@ -409,7 +367,6 @@
     <ClCompile Include="Engine\OS.Win32.cpp" />
     <ClCompile Include="Engine\Pointer.cpp" />
     <ClCompile Include="Engine\Sound.cpp" />
-    <ClCompile Include="Engine\VideoClip.cpp" />
     <ClCompile Include="Engine\Wave.cpp" />
     <ClCompile Include="External\JPEG\src\jcapimin.c" />
     <ClCompile Include="External\JPEG\src\jcapistd.c" />
@@ -527,156 +484,6 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
     <ClCompile Include="External\png\pngwutil.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlaybackOpenAL\src\OpenAL_AudioInterface.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraAsync.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraAudioInterface.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraException.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraFrameQueue.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraTimer.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraUtil.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoClip.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoFrame.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoManager.cpp" />
-    <ClCompile Include="External\TheoraPlayback\src\TheoraWorkerThread.cpp" />
-    <ClCompile Include="External\Theora\src\analyze.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\apiwrapper.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\bitpack.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\cpu.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\decapiwrapper.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\decinfo.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\decode.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\dequant.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\encapiwrapper.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\encfrag.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\encinfo.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\encode.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\enquant.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\fdct.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\fragment.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\huffdec.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\huffenc.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\idct.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\info.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/Theorainfo.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/Theorainfo.obj</ObjectFileName>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\internal.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\mathops.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\mcenc.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\quant.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\rate.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\state.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\tokenize.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86\sse2fdct.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxencfrag.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxfdct.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxfrag.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxidct.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxstate.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\x86enc.c">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\x86state.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>

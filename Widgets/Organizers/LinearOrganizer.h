@@ -134,7 +134,7 @@ namespace gge { namespace widgets {
 	protected:
 		utils::Collection<WidgetBase> organizedwidgets;
 		std::vector<row> rows;
-		int currentrow,currentcol;
+		unsigned currentrow,currentcol;
 		int spacing;
 		bool autosizewindows;
 		TextAlignment::Type buttonalign;

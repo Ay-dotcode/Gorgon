@@ -10,6 +10,8 @@ namespace gge { namespace sound {
 	namespace system {
 		bool isAvailable=false;
 
+		void InitWaveGarbageCollect(GGEMain &main);
+
 		int InitializeSound(os::WindowHandle Window, char *device) {
 			isAvailable=false;
 
@@ -28,6 +30,9 @@ namespace gge { namespace sound {
 			isAvailable=true;
 
 			environment::SetListener3DPosition(Main.getWidth()/2.f,Main.getHeight()/2.f,0);
+
+			
+			InitWaveGarbageCollect(Main);
 
 			return ERRNO_ERR;
 		}

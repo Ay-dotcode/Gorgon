@@ -6,7 +6,7 @@
 #include "Animation.h"
 #include "../Utils/Rectangle2D.h"
 #include "../Resource/Main.h"
-#include "VideoClip.h"
+//#include "VideoClip.h"
 #include <algorithm>
 #include <functional>
 
@@ -139,7 +139,7 @@ namespace gge {
 		InitializeAnimation();
 		InitializeResource();
 		InitializePointer();
-		InitializeMultimedia();
+		//InitializeMultimedia();
 	}
 
 	void GGEMain::InitializeAll(string Title, os::IconHandle Icon, int X, int Y) {
@@ -201,9 +201,9 @@ namespace gge {
 		os::Quit(code);
 	}
 
-	void GGEMain::InitializeMultimedia() {
-		multimedia::Initialize();
-	}
+	//void GGEMain::InitializeMultimedia() {
+	//	multimedia::Initialize();
+	//}
 
 	void GGEMain::Run() {
 		gge::os::window::Destroyed.RegisterLambda([&]{ 

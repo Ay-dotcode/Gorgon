@@ -142,23 +142,14 @@
     <Filter Include="External\OGG">
       <UniqueIdentifier>{a573ddff-9197-4895-8eea-8602bcfb98f5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External\Theora">
-      <UniqueIdentifier>{4fe7051e-dc4d-466a-b8f1-44a2d6db9441}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External\Vorbis">
       <UniqueIdentifier>{5c458160-c201-49c4-9b2a-4be8ed692079}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\TheoraPlayback">
-      <UniqueIdentifier>{78d2a14b-2fd6-4661-a80e-6a2ac69268d7}</UniqueIdentifier>
     </Filter>
     <Filter Include="External\zlib">
       <UniqueIdentifier>{3a98aeb9-d7b4-43ad-8534-aa818094d1c2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Utils">
       <UniqueIdentifier>{8c654264-4743-46ce-89f2-6935f9e74276}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\TheoraPlaybackOpenAL">
-      <UniqueIdentifier>{a733fb2c-e227-44d8-a684-ae82ec2f3ec7}</UniqueIdentifier>
     </Filter>
     <Filter Include="Encoding">
       <UniqueIdentifier>{d72d2f9f-ca8a-43a1-a9c6-a99b6806a27a}</UniqueIdentifier>
@@ -621,66 +612,6 @@
     <ClInclude Include="External\ogg\ogg.h">
       <Filter>External\OGG</Filter>
     </ClInclude>
-    <ClInclude Include="External\Theora\src\apiwrapper.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\bitpack.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\codec.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\cpu.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\dct.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\decint.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\dequant.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\encint.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\enquant.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\huffdec.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\huffenc.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\huffman.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\internal.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\mathops.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\modedec.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\ocintrin.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\quant.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\theora.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\theoradec.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\theoraenc.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
     <ClInclude Include="External\vorbis\src\window.h">
       <Filter>External\Vorbis</Filter>
     </ClInclude>
@@ -807,18 +738,6 @@
     <ClInclude Include="External\vorbis\vorbisfile.h">
       <Filter>External\Vorbis</Filter>
     </ClInclude>
-    <ClInclude Include="External\Theora\src\x86_vc\mmxfrag.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\x86_vc\mmxloop.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\x86_vc\x86enc.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
-    <ClInclude Include="External\Theora\src\x86_vc\x86int.h">
-      <Filter>External\Theora</Filter>
-    </ClInclude>
     <ClInclude Include="Widgets\LayerWidget.h">
       <Filter>Widgets</Filter>
     </ClInclude>
@@ -899,57 +818,6 @@
     </ClInclude>
     <ClInclude Include="Widgets\Basic\PetContainer.h">
       <Filter>Widgets\Code\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\VideoClip.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlaybackOpenAL\OpenAL_AudioInterface.h">
-      <Filter>External\TheoraPlaybackOpenAL</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\AudioClip.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\src\Endianess.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraAsync.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraAudioInterface.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraDataSource.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraException.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraExport.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraFrameQueue.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraPlayer.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraTimer.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraUtil.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraVideoClip.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraVideoFrame.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraVideoManager.h">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClInclude>
-    <ClInclude Include="External\TheoraPlayback\TheoraWorkerThread.h">
-      <Filter>External\TheoraPlayback</Filter>
     </ClInclude>
     <ClInclude Include="Widgets\InlinePanel.h">
       <Filter>Widgets</Filter>
@@ -1352,90 +1220,6 @@
     <ClCompile Include="External\ogg\src\framing.c">
       <Filter>External\OGG</Filter>
     </ClCompile>
-    <ClCompile Include="External\Theora\src\analyze.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\apiwrapper.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\bitpack.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\cpu.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\decapiwrapper.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\decinfo.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\decode.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\dequant.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\encapiwrapper.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\encfrag.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\encinfo.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\encode.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\enquant.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\fdct.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\fragment.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\huffdec.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\huffenc.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\idct.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\info.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\internal.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\mathops.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\mcenc.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxencfrag.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\quant.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\rate.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86\sse2fdct.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\state.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\tokenize.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
     <ClCompile Include="External\vorbis\src\analysis.c">
       <Filter>External\Vorbis</Filter>
     </ClCompile>
@@ -1501,24 +1285,6 @@
     </ClCompile>
     <ClCompile Include="External\vorbis\src\window.c">
       <Filter>External\Vorbis</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxfdct.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxfrag.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxidct.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\mmxstate.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\x86enc.c">
-      <Filter>External\Theora</Filter>
-    </ClCompile>
-    <ClCompile Include="External\Theora\src\x86_vc\x86state.c">
-      <Filter>External\Theora</Filter>
     </ClCompile>
     <ClCompile Include="External\zlib\adler32.c">
       <Filter>External\zlib</Filter>
@@ -1606,48 +1372,6 @@
     </ClCompile>
     <ClCompile Include="External\XmlParser\tinyxml.cpp">
       <Filter>External\XML</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\VideoClip.cpp">
-      <Filter>Engine\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlaybackOpenAL\src\OpenAL_AudioInterface.cpp">
-      <Filter>External\TheoraPlaybackOpenAL</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\AudioClip.cpp">
-      <Filter>Engine\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraAsync.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraUtil.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraException.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoClip.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraFrameQueue.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraTimer.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoFrame.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraVideoManager.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraWorkerThread.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraAudioInterface.cpp">
-      <Filter>External\TheoraPlayback</Filter>
-    </ClCompile>
-    <ClCompile Include="External\TheoraPlayback\src\TheoraDataSource.cpp">
-      <Filter>External\TheoraPlayback</Filter>
     </ClCompile>
     <ClCompile Include="External\LZMA\LzFindMt.c">
       <Filter>External\LZMA</Filter>
