@@ -8,7 +8,6 @@ namespace gge { namespace multimedia {
 
 	class Music {
 	public:
-		Music();
 		bool Seek(unsigned time);
 		bool IsFinished() const;
 		bool Play();
@@ -19,6 +18,11 @@ namespace gge { namespace multimedia {
 		bool Acquire();
 		void SetVolume();
 		float GetVolume() const;
+
+	protected:
+		Music();
+		
+		system::SoundControlHandle controller; 
 	};
 
 	class StreamingMusic : public Music {
@@ -31,6 +35,9 @@ namespace gge { namespace multimedia {
 		static int DefaultNumberOfBuffers;
 
 	protected:
+
+		StreamingMusic();
+
 		virtual int decode(std::vector<Byte> &buffer)=0;
 		void buffercheck();
 
