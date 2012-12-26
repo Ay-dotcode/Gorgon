@@ -226,6 +226,7 @@
     <ClInclude Include="External\zlib\zconf.h" />
     <ClInclude Include="External\zlib\zlib.h" />
     <ClInclude Include="External\zlib\zutil.h" />
+    <ClInclude Include="Multimedia\Music.h" />
     <ClInclude Include="Network\HTTP.h" />
     <ClInclude Include="Resource\Animation.h" />
     <ClInclude Include="Resource\BitmapFont.h" />
@@ -640,6 +641,7 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
+    <ClCompile Include="Multimedia\Music.cpp" />
     <ClCompile Include="Network\HTTP.cpp" />
     <ClCompile Include="Resource\Animation.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/AnimationResource.obj</ObjectFileName>

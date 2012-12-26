@@ -163,6 +163,15 @@
     <Filter Include="Engine\Linux">
       <UniqueIdentifier>{30d44370-5370-4cab-a7ce-eb7502cf8e85}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Multimedia">
+      <UniqueIdentifier>{a16a0351-9cbb-4687-b0ca-a5f3694259d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Encoding\Headers">
+      <UniqueIdentifier>{4258c3fa-85cc-4f6a-9ac0-69067e7e5728}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Encoding\Sources">
+      <UniqueIdentifier>{04ccdc9e-d37c-460b-8e4a-ec9163532a8e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Effects\CountingText.h">
@@ -843,9 +852,6 @@
     <ClInclude Include="External\LZMA\LzFind.h">
       <Filter>External\LZMA</Filter>
     </ClInclude>
-    <ClInclude Include="Encoding\LZMA.h">
-      <Filter>Encoding</Filter>
-    </ClInclude>
     <ClInclude Include="Widgets\FullscreenPanel.h">
       <Filter>Widgets</Filter>
     </ClInclude>
@@ -882,17 +888,23 @@
     <ClInclude Include="Engine\OS.Linux.h">
       <Filter>Engine\Linux</Filter>
     </ClInclude>
-    <ClInclude Include="Encoding\URI.h">
-      <Filter>Encoding</Filter>
-    </ClInclude>
-    <ClInclude Include="Encoding\PNG.h">
-      <Filter>Encoding</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\StringEnum.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\StringTokenizer.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Multimedia\Music.h">
+      <Filter>Multimedia</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoding\LZMA.h">
+      <Filter>Encoding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoding\PNG.h">
+      <Filter>Encoding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoding\URI.h">
+      <Filter>Encoding\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1388,9 +1400,6 @@
     <ClCompile Include="External\LZMA\LzFind.c">
       <Filter>External\LZMA</Filter>
     </ClCompile>
-    <ClCompile Include="Encoding\LZMA.cpp">
-      <Filter>Encoding</Filter>
-    </ClCompile>
     <ClCompile Include="Network\HTTP.cpp">
       <Filter>Network</Filter>
     </ClCompile>
@@ -1400,11 +1409,17 @@
     <ClCompile Include="Engine\OS.Linux.cpp">
       <Filter>Engine\Linux</Filter>
     </ClCompile>
+    <ClCompile Include="Encoding\LZMA.cpp">
+      <Filter>Encoding\Sources</Filter>
+    </ClCompile>
     <ClCompile Include="Encoding\URI.cpp">
-      <Filter>Encoding</Filter>
+      <Filter>Encoding\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Encoding\PNG.cpp">
-      <Filter>Encoding</Filter>
+      <Filter>Encoding\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Multimedia\Music.cpp">
+      <Filter>Multimedia</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
