@@ -61,7 +61,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib;External\pThread\pthread-VS2010.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>
@@ -123,7 +123,6 @@
     <ClInclude Include="Engine\OS.Win32.h" />
     <ClInclude Include="Engine\Pointer.h" />
     <ClInclude Include="Engine\Sound.h" />
-    <ClInclude Include="Engine\Wave.h" />
     <ClInclude Include="External\cURL\curl.h" />
     <ClInclude Include="External\cURL\curlbuild.h" />
     <ClInclude Include="External\cURL\curlrules.h" />
@@ -226,7 +225,9 @@
     <ClInclude Include="External\zlib\zconf.h" />
     <ClInclude Include="External\zlib\zlib.h" />
     <ClInclude Include="External\zlib\zutil.h" />
+    <ClInclude Include="Multimedia\Multimedia.h" />
     <ClInclude Include="Multimedia\Music.h" />
+    <ClInclude Include="Multimedia\Wave.h" />
     <ClInclude Include="Network\HTTP.h" />
     <ClInclude Include="Resource\Animation.h" />
     <ClInclude Include="Resource\BitmapFont.h" />
@@ -368,7 +369,6 @@
     <ClCompile Include="Engine\OS.Win32.cpp" />
     <ClCompile Include="Engine\Pointer.cpp" />
     <ClCompile Include="Engine\Sound.cpp" />
-    <ClCompile Include="Engine\Wave.cpp" />
     <ClCompile Include="External\JPEG\src\jcapimin.c" />
     <ClCompile Include="External\JPEG\src\jcapistd.c" />
     <ClCompile Include="External\JPEG\src\jccoefct.c" />
@@ -641,7 +641,9 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
     </ClCompile>
+    <ClCompile Include="Multimedia\Multimedia.cpp" />
     <ClCompile Include="Multimedia\Music.cpp" />
+    <ClCompile Include="Multimedia\Wave.cpp" />
     <ClCompile Include="Network\HTTP.cpp" />
     <ClCompile Include="Resource\Animation.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/AnimationResource.obj</ObjectFileName>

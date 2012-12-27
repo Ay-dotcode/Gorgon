@@ -73,6 +73,7 @@ namespace gge { namespace os {
 		void ProcessMessage();
 		extern CursorHandle defaultcursor;
 		extern bool pointerdisplayed;
+		class mutex_data;
 		static int threadfncall fnrunner(void *f) {
 			auto &fn=(*(std::function<int()>*)f);
 			int ret=fn();
@@ -86,6 +87,17 @@ namespace gge { namespace os {
 		*f=fn;
 		RunInNewThread(system::fnrunner, (void*)f);
 	}
+
+	class Mutex {
+	public:
+		Mutex();
+		~Mutex();
+		void Lock();
+		void Unlock();
+
+	protected:
+		system::mutex_data *data;
+	};
 
 	namespace user {
 		std::string GetUsername();

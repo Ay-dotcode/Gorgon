@@ -172,6 +172,12 @@
     <Filter Include="Encoding\Sources">
       <UniqueIdentifier>{04ccdc9e-d37c-460b-8e4a-ec9163532a8e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Multimedia\Headers">
+      <UniqueIdentifier>{a4384c4e-37e6-40a5-8d6d-b493c1273456}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Multimedia\Sources">
+      <UniqueIdentifier>{00793a9e-55c6-4ac3-81d9-814556e66547}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Effects\CountingText.h">
@@ -418,9 +424,6 @@
       <Filter>Engine\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Layer.h">
-      <Filter>Engine\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Wave.h">
       <Filter>Engine\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Engine\OS.Win32.h">
@@ -894,9 +897,6 @@
     <ClInclude Include="Utils\StringTokenizer.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Multimedia\Music.h">
-      <Filter>Multimedia</Filter>
-    </ClInclude>
     <ClInclude Include="Encoding\LZMA.h">
       <Filter>Encoding\Headers</Filter>
     </ClInclude>
@@ -905,6 +905,15 @@
     </ClInclude>
     <ClInclude Include="Encoding\URI.h">
       <Filter>Encoding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Multimedia\Multimedia.h">
+      <Filter>Multimedia\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Multimedia\Music.h">
+      <Filter>Multimedia\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Multimedia\Wave.h">
+      <Filter>Multimedia\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1023,9 +1032,6 @@
       <Filter>Engine\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Sound.cpp">
-      <Filter>Engine\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Wave.cpp">
       <Filter>Engine\Sources</Filter>
     </ClCompile>
     <ClCompile Include="External\JPEG\src\jcapimin.c">
@@ -1419,7 +1425,13 @@
       <Filter>Encoding\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Multimedia\Music.cpp">
-      <Filter>Multimedia</Filter>
+      <Filter>Multimedia\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Multimedia\Multimedia.cpp">
+      <Filter>Multimedia\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Multimedia\Wave.cpp">
+      <Filter>Multimedia\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

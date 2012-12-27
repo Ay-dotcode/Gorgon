@@ -215,6 +215,7 @@ namespace gge { namespace encoding {
 	};
 
 	//currently only works for RGBA
+	//see LZMA for template class decisions
 	class PNG {
 	public:
 

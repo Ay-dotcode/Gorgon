@@ -1,7 +1,7 @@
 #pragma once
 
-#include "GGEMain.h"
-#include "Sound.h"
+#include "../Engine/GGEMain.h"
+#include "../Engine/Sound.h"
 #include "../Utils/Collection.h"
 
 namespace gge { namespace sound {

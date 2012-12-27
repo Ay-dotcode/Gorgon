@@ -100,6 +100,14 @@ static const int None=0;
 			pthread_create(&threadid, &common_thread_attr, (void*(*)(void *))fn, data);
 		}
 
+
+		namespace system { class mutex_data { public: pthread_mutex_t mutex; }; }
+
+		Mutex::Mutex() { data=new system::mutex_data; pthread_mutex_init(&data->mutex, NULL); }
+		Mutex::~Mutex() {delete data;}
+		void Mutex::Lock() { pthread_mutex_lock(&data->mutex); }
+		void Mutex::Unlock() { pthread_mutex_unlock(&data->mutex); }
+
 		namespace system {
 			CursorHandle defaultcursor;
 			bool pointerdisplayed;

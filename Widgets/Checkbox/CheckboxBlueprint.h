@@ -12,7 +12,7 @@
 #include "../../Resource/Sound.h"
 #include "../../Utils/Size2D.h"
 #include "../../Resource/NullImage.h"
-#include "../../Engine/Wave.h"
+#include "../../Multimedia/Wave.h"
 #include <map>
 
 

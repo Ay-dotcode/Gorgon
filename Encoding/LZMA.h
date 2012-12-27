@@ -265,6 +265,12 @@ namespace gge { namespace encoding {
 
 	typedef std::function<void(float)> LZMAProgressNotification;
 
+	//The main idea of this system is to reduce the amount of the code.
+	//There are reader structures that can read data from various sources.
+	//These sources are automatically created by encode/decode template
+	//functions. After creating these structures, internal encode/decode
+	//function is called. Creating an new read/write structure is enough 
+	//to support that type of container
 	class LZMA {
 	public:
 

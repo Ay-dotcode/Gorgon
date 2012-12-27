@@ -9,6 +9,7 @@
 //#include "VideoClip.h"
 #include <algorithm>
 #include <functional>
+#include "../Multimedia/Multimedia.h"
 
 using namespace gge::utils;
 using namespace std;
@@ -139,7 +140,7 @@ namespace gge {
 		InitializeAnimation();
 		InitializeResource();
 		InitializePointer();
-		//InitializeMultimedia();
+		InitializeMultimedia();
 	}
 
 	void GGEMain::InitializeAll(string Title, os::IconHandle Icon, int X, int Y) {
@@ -201,9 +202,9 @@ namespace gge {
 		os::Quit(code);
 	}
 
-	//void GGEMain::InitializeMultimedia() {
-	//	multimedia::Initialize();
-	//}
+	void GGEMain::InitializeMultimedia() {
+		multimedia::Initialize(*this);
+	}
 
 	void GGEMain::Run() {
 		gge::os::window::Destroyed.RegisterLambda([&]{ 

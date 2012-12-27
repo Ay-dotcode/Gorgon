@@ -31,6 +31,9 @@
 #	define	NULL	0
 #endif
 
+#include <stdexcept>
+
+
 namespace gge {
 	typedef unsigned char Byte;
 
@@ -41,6 +44,12 @@ namespace gge {
 				delete elm;
 				elm=NULL;
 			}
+		}
+
+		inline void NotImplemented() {
+#ifdef _DEBUG
+			throw std::runtime_error("Not implemented");
+#endif
 		}
 
 		template<class T_>

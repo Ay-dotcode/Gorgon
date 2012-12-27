@@ -3,7 +3,7 @@
 #include "GRE.h"
 #include "Base.h"
 #include "../Engine/Sound.h"
-#include "../Engine/Wave.h"
+#include "../Multimedia/Wave.h"
 
 namespace gge { namespace resource {
 	class File;
