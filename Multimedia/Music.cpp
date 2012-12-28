@@ -107,10 +107,12 @@ namespace gge { namespace multimedia {
 	}
 
 	VorbisStream::~VorbisStream() {
+		protect.Lock();
 		if(cleanstream) utils::CheckAndDelete(stream);
 
 		ov_clear(ogg);
 		delete ogg;
+		protect.Unlock();
 	}
 
 	void VorbisStream::setupread() {
@@ -191,6 +193,8 @@ namespace gge { namespace multimedia {
 					data.resize(buffersize);
 			
 				int size=decode(data);
+				if(size==0) break;
+
 				alBufferData(buffer, format, &data[0], size, freq);
 
 				alSourceQueueBuffers(controller, 1, &buffer);
@@ -202,6 +206,8 @@ namespace gge { namespace multimedia {
 					data.resize(buffersize);
 
 				int size=decode(data);
+				if(size==0) break;
+
 				alBufferData(buffers[i], format, &data[0], size, freq);
 				int error=alGetError();
 
@@ -224,11 +230,20 @@ namespace gge { namespace multimedia {
 			else
 				if(result < 0)
 					break;
-				else
-					break;
+				else {
+					if(looping)
+						ov_time_seek(ogg, 0.0);
+					else
+						break;
+				}
 		}
 
 		return size;
+	}
+
+	bool VorbisStream::totime(int time) {
+		auto result=ov_time_seek(ogg, time/1000.0);
+		return result==0;
 	}
 
 
@@ -239,10 +254,9 @@ namespace gge { namespace multimedia {
 		return status!=0;
 	}
 
-
 	bool Music::Play() {
 		looping=false;
-		alSourcei(controller, AL_LOOPING, 0);
+
 		alSourcePlay(controller);
 
 		return alGetError()==AL_NO_ERROR;
@@ -251,16 +265,33 @@ namespace gge { namespace multimedia {
 	bool Music::Loop() {
 		looping=true;
 
-		alSourcei(controller, AL_LOOPING, 1);
 		alSourcePlay(controller);
 
 		return alGetError()==AL_NO_ERROR;
 	}
 
 	bool Music::Seek(unsigned time) {
-		utils::NotImplemented();
-
 		return false;
+	}
+
+	bool StreamingMusic::Seek(unsigned time) {
+		protect.Lock();
+
+		bool result=totime(time);
+		if(result) {
+			int playing=0;
+			alGetSourcei(controller, AL_SOURCE_STATE, &playing);
+			alSourceStop(controller);
+			alSourcei(controller, AL_BUFFER, 0);
+			buffersattached=false;
+			dobuffercheck();
+			if(playing)
+				alSourcePlay(controller);
+		}
+
+		protect.Unlock();
+
+		return result;
 	}
 
 	bool Music::IsLooping() const {

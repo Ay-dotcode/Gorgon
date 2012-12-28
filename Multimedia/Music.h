@@ -12,7 +12,7 @@ namespace gge { namespace multimedia {
 	class Music {
 		friend void Initialize(GGEMain&);
 	public:
-		bool Seek(unsigned time);
+		virtual bool Seek(unsigned time);
 		bool IsFinished() const;
 		bool Play();
 		bool Loop();
@@ -42,6 +42,8 @@ namespace gge { namespace multimedia {
 		static int DefaultBufferSize;
 		static int DefaultNumberOfBuffers;
 
+		virtual bool Seek(unsigned time);
+
 
 	protected:
 
@@ -50,6 +52,8 @@ namespace gge { namespace multimedia {
 
 
 		virtual int decode(std::vector<Byte> &buffer)=0;
+		virtual bool totime(int time)=0;
+
 		void buffercheck() {
 			protect.Lock();
 			dobuffercheck();
@@ -96,6 +100,7 @@ namespace gge { namespace multimedia {
 		bool cleanstream;
 
 		virtual int decode(std::vector<Byte> &buffer);
+		virtual bool totime(int time);
 
 		void init();
 		void setupread();
