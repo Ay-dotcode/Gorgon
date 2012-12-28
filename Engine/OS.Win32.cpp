@@ -28,7 +28,6 @@
 #	include "GGEMain.h"
 #	include "Layer.h"
 #	include "Image.h"
-#	include "../External/pThread/pthread.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -113,12 +112,23 @@
 			CreateThread(NULL, 0, (unsigned long (__stdcall *)(void *))fn, data, 0, &threadid);
 		}
 
-		namespace system { class mutex_data { public: pthread_mutex_t mutex; }; }
+		namespace system { 
+			class mutex_data { 
+			public: 
+				HANDLE mutex; 
+				mutex_data() {
+					mutex=CreateMutex(NULL,0,NULL);
+				}
+				~mutex_data() {
+					CloseHandle(mutex);
+				}
+			}; 
+		}
 
-		Mutex::Mutex() { data=new system::mutex_data; pthread_mutex_init(&data->mutex, NULL); }
+		Mutex::Mutex() { data=new system::mutex_data; }
 		Mutex::~Mutex() {delete data;}
-		void Mutex::Lock() { pthread_mutex_lock(&data->mutex); }
-		void Mutex::Unlock() { pthread_mutex_unlock(&data->mutex); }
+		void Mutex::Lock() { WaitForSingleObject(data->mutex, INFINITE); }
+		void Mutex::Unlock() { ReleaseMutex(data->mutex); }
 
 		Date CurrentDate() {
 			SYSTEMTIME tm;
