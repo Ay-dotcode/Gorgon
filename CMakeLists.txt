@@ -216,69 +216,10 @@ SET(EXT_Vorbis
 	External/vorbis/src/smallft.c
 )
 
-SET(EXT_Theora
-	External/theora/src/dequant.c
-	External/theora/src/huffenc.c
-	External/theora/src/x86/mmxfrag.c
-	External/theora/src/x86/mmxidct.c
-	External/theora/src/x86/sse2fdct.c
-	External/theora/src/x86/x86enc.c
-	External/theora/src/x86/mmxstate.c
-	External/theora/src/x86/mmxfdct.c
-	External/theora/src/x86/x86state.c
-	External/theora/src/x86/mmxencfrag.c
-	External/theora/src/decinfo.c
-	External/theora/src/decode.c
-	External/theora/src/fdct.c
-	External/theora/src/mathops.c
-	External/theora/src/encfrag.c
-	External/theora/src/encinfo.c
-	External/theora/src/state.c
-	External/theora/src/analyze.c
-	External/theora/src/idct.c
-	External/theora/src/apiwrapper.c
-	External/theora/src/quant.c
-	External/theora/src/cpu.c
-	External/theora/src/enquant.c
-	External/theora/src/rate.c
-	External/theora/src/encode.c
-	External/theora/src/mcenc.c
-	External/theora/src/encapiwrapper.c
-	External/theora/src/tokenize.c
-	External/theora/src/info.c
-	External/theora/src/fragment.c
-	External/theora/src/bitpack.c
-	External/theora/src/x86_vc/mmxfrag.c
-	External/theora/src/x86_vc/mmxidct.c
-	External/theora/src/x86_vc/x86enc.c
-	External/theora/src/x86_vc/mmxstate.c
-	External/theora/src/x86_vc/mmxfdct.c
-	External/theora/src/x86_vc/x86state.c
-	External/theora/src/x86_vc/mmxencfrag.c
-	External/theora/src/decapiwrapper.c
-	External/theora/src/internal.c
-	External/theora/src/huffdec.c
-)
-
 SET(EXT_Xml
 	External/XmlParser/tinyxml.cpp
 	External/XmlParser/tinyxmlerror.cpp
 	External/XmlParser/tinyxmlparser.cpp
-)
-
-SET(EXT_TheoraPlayback
-	External/TheoraPlayback/src/TheoraVideoManager.cpp
-	External/TheoraPlayback/src/TheoraWorkerThread.cpp
-	External/TheoraPlayback/src/TheoraUtil.cpp
-	External/TheoraPlayback/src/TheoraDataSource.cpp
-	External/TheoraPlayback/src/TheoraAudioInterface.cpp
-	External/TheoraPlayback/src/TheoraVideoClip.cpp
-	External/TheoraPlayback/src/TheoraVideoFrame.cpp
-	External/TheoraPlayback/src/TheoraTimer.cpp
-	External/TheoraPlayback/src/TheoraAsync.cpp
-	External/TheoraPlayback/src/TheoraException.cpp
-	External/TheoraPlayback/src/TheoraFrameQueue.cpp
-	External/TheoraPlaybackOpenAL/src/OpenAL_AudioInterface.cpp
 )
 
 SET(Externals
@@ -289,15 +230,13 @@ SET(Externals
 	${EXT_Xml}
 	${EXT_OGG}
 	${EXT_Vorbis}
-	${EXT_Theora}
-	${EXT_TheoraPlayback}
 )
 
 FOREACH(_file ${Utils} ${Engine} ${Resource} ${Widgets} ${Effects} ${Encoding} ${Network} ${Multimedia})
 	SET_SOURCE_FILES_PROPERTIES(${_file} PROPERTIES COMPILE_FLAGS ${StandardFlags})
 ENDFOREACH()
 
-FOREACH(_file ${EXT_Xml} ${EXT_TheoraPlayback})
+FOREACH(_file ${EXT_Xml})
 	SET_SOURCE_FILES_PROPERTIES(${_file} PROPERTIES COMPILE_FLAGS ${ExternalCxxFlags})
 ENDFOREACH()
 

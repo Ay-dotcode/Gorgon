@@ -93,7 +93,7 @@
     <Lib>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib;External\pThread\pthread-VS2010.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
