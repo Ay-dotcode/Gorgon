@@ -127,9 +127,6 @@
     <Filter Include="External\PNG\Sources">
       <UniqueIdentifier>{57b021ed-c475-4d09-987e-f335526eee62}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External\pThread">
-      <UniqueIdentifier>{616b0c4c-2126-416b-a2d3-90aa8b9da7be}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External\XML">
       <UniqueIdentifier>{535f65bd-81f0-4c7a-85ae-fbb3c3ef5231}</UniqueIdentifier>
     </Filter>
@@ -488,15 +485,6 @@
     </ClInclude>
     <ClInclude Include="External\png\pngconf.h">
       <Filter>External\PNG</Filter>
-    </ClInclude>
-    <ClInclude Include="External\pThread\pthread.h">
-      <Filter>External\pThread</Filter>
-    </ClInclude>
-    <ClInclude Include="External\pThread\sched.h">
-      <Filter>External\pThread</Filter>
-    </ClInclude>
-    <ClInclude Include="External\pThread\semaphore.h">
-      <Filter>External\pThread</Filter>
     </ClInclude>
     <ClInclude Include="External\OpenAL\al.h">
       <Filter>External\OpenAL</Filter>

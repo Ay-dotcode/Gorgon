@@ -168,9 +168,6 @@
     <ClInclude Include="External\png\pnglibconf.h" />
     <ClInclude Include="External\png\pngpriv.h" />
     <ClInclude Include="External\png\pngstruct.h" />
-    <ClInclude Include="External\pThread\pthread.h" />
-    <ClInclude Include="External\pThread\sched.h" />
-    <ClInclude Include="External\pThread\semaphore.h" />
     <ClInclude Include="External\vorbis\codec.h" />
     <ClInclude Include="External\vorbis\src\backends.h" />
     <ClInclude Include="External\vorbis\src\bitrate.h" />
