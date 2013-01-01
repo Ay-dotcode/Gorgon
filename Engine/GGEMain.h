@@ -153,6 +153,8 @@ namespace gge {
 
 		void ResizeWindow(utils::Size size);
 
+		void RegisterOnce(std::function<void()> fn);
+
 		////This event is triggered before rendering, after intervals
 		utils::EventChain<GGEMain, utils::empty_event_params> BeforeRenderEvent;
 
@@ -185,6 +187,8 @@ namespace gge {
 		std::string SystemName;
 		////Handle of the window
 		os::WindowHandle Window;
+
+		std::vector<std::function<void()> > oncelist;
 
 		bool isrunning;
 

@@ -903,6 +903,12 @@
     <ClInclude Include="Multimedia\Wave.h">
       <Filter>Multimedia\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Widgets\Dialogs\FileDialog.h">
+      <Filter>Widgets\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\CaptionValue.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">

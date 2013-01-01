@@ -61,7 +61,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib;Shlwapi.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>
@@ -93,7 +93,7 @@
     <Lib>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib;Shlwapi.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -249,6 +249,7 @@
     <ClInclude Include="Utils\Binary.h" />
     <ClInclude Include="Utils\Bounds2D.h" />
     <ClInclude Include="Utils\BufferList.h" />
+    <ClInclude Include="Utils\CaptionValue.h" />
     <ClInclude Include="Utils\CastableManagedBuffer.h" />
     <ClInclude Include="Utils\Collection.h" />
     <ClInclude Include="Utils\ConsumableEvent.h" />
@@ -292,6 +293,7 @@
     <ClInclude Include="Widgets\Combobox\ComboboxBase.h" />
     <ClInclude Include="Widgets\Combobox\ComboboxBlueprint.h" />
     <ClInclude Include="Widgets\Definitions.h" />
+    <ClInclude Include="Widgets\Dialogs\FileDialog.h" />
     <ClInclude Include="Widgets\Dialogs\Message.h" />
     <ClInclude Include="Widgets\Dialogs\Query.h" />
     <ClInclude Include="Widgets\Dialogs\TextInput.h" />

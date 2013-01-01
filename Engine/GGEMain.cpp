@@ -82,6 +82,12 @@ namespace gge {
 	}
 
 	void GGEMain::BeforeRender() {
+
+		while(oncelist.size()) {
+			oncelist.back()();
+			oncelist.pop_back();
+		}
+
 		BeforeRenderEvent();
 
 		///*Processing interval objects
@@ -252,6 +258,10 @@ namespace gge {
 	void GGEMain::CenterWindow() {
 		Rectangle r=os::window::UsableScreenMetrics();
 		MoveWindow(r.Left+(r.Width-Width)/2, r.Top+(r.Height-Height)/4);
+	}
+
+	void GGEMain::RegisterOnce(std::function<void()> fn) {
+		oncelist.push_back(fn);
 	}
 
 	//void GGEMain::InitializeWidgets() {

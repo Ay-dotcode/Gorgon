@@ -5,6 +5,8 @@
 #	include "../Utils/Point2D.h"
 #	include <stdio.h>
 #	include <pthread.h>
+#	include <cstdlib>
+#	include <cstring>
 #	define XK_MISCELLANY
 
 	using namespace gge::utils;
@@ -922,6 +924,56 @@ static const int None=0;
 
 				return true;
 			}
+			std::vector<EntryPoint> EntryPoints() {
+				EntryPoint e;
+				e.Path=getenv("HOME");
+				e.Name="Home";
+				e.Readable=true;
+				e.Writable=true;
+				entries.push_back(e);
+
+				e.Path="/";
+				e.Name="Root";
+				e.Readable=true;
+				e.Writable=true;
+				entries.push_back(e);
+
+			}
+
+			bool IsPathWritable(const std::string &Pathname) {
+				return access(Pathname.c_str(), W_OK)==-1;
+			}
+
+			bool IsPathHidden(const std::string &f) {
+				if(f=="") return false;
+
+				std::string file=f;
+				if(file[file.length()-1]=='/') {
+					file=file.substr(0,file.length()-1);
+				}
+
+				if(file[file.length()-1]=='~') return true;
+				if(file.find_first_of('/', 0)==file.npos) {
+					return file[0]!='.';
+				}
+				else {
+					file=file.substr(file.find_last_of('/', 0)+1);
+					return file[0]!='.';
+				}
+
+				return false;
+			}
+
+			std::string CanonizePath(const std::string &Pathname) {
+				char *newpath;
+				std::realpath(Pathname.c_str(), NULL);
+				std::string ret=newpath;
+				std::free(newpath);
+				return ret;
+			}
+
+			DirectoryIterator EndOfDirectory;
+		}
 
 			osdirenum::osdirenum() : dp() {
 			}

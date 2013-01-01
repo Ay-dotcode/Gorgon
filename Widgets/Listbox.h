@@ -40,7 +40,7 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Listbox, AllowReorder),
 			INIT_PROPERTY(Listbox, ItemHeight),
 			ItemClickedEvent("ItemClicked", this),
-			itemheight(0)
+			itemheight(0), isinqueue(false)
 		{
 			if(WR.Listbox)
 				this->setblueprint(*WR.Listbox);
@@ -127,26 +127,17 @@ namespace gge { namespace widgets {
 		}
 
 		void Remove(ItemType &item) {
-			itemremoving(item);
-			if(active==&item) {
-				active=NULL;
-			}
-			selected.Remove(item);
-
-			this->remove(item);
-			CollectionType::Remove(item);
+			queueforremoval(&item);
 		}
 
 		void Delete(ItemType &item) {
-			this->Remove(item);
-			delete &item;
+			queuefordelete(&active)
 		}
 
 		void DeleteAll(const T_ &value) {
 			for(auto it=this->First();it.IsValid();it.Next()) {
 				if(it->Value==value) {
-					this->remove(*it);
-					it.Delete();
+					queuefordelete(it->CurrentPtr());
 				}
 			}
 		}
@@ -211,17 +202,20 @@ namespace gge { namespace widgets {
 		void Destroy() {
 			for(auto it=this->First();it.IsValid();it.Next()) {
 				ItemType *item=&(*it);
-				delete item;
+				queuefordelete(item);
 			}
-			this->Clear();
 
 			this->adjustheight();
+			this->active=NULL;
+			this->selected.Clear();
 		}
 
 		void Clear() {
-			this->panel.Widgets.Clear();
+			for(auto it=this->First();it.IsValid();it.Next()) {
+				ItemType *item=&(*it);
+				queueforremoval(item);
+			}
 			this->adjustheight();
-			CollectionType::Clear();
 			this->active=NULL;
 			this->selected.Clear();
 		}
@@ -251,7 +245,10 @@ namespace gge { namespace widgets {
 		}
 
 		void SetSelected(ItemType *list) {
-			if(list==NULL) return;
+			if(list==NULL) {
+				ClearSelection();
+				return;
+			}
 			SetSelected(*list);
 		}
 
@@ -324,7 +321,15 @@ namespace gge { namespace widgets {
 		}
 
 		void ClearSelection() {
-			clearall();
+			//for(auto it=this->First();it.IsValid();it.Next())
+			//	this->callclear(*it);
+			if(active) {
+				this->callclear(*active);
+				active->Draw();
+				active->RemoveFocus();
+			}
+			active=NULL;
+			selected.Clear();
 		}
 
 		using CollectionType::GetCount;
@@ -357,6 +362,65 @@ namespace gge { namespace widgets {
 		}
 		int getItemHeight() const {
 			return itemheight;
+		}
+
+		utils::Collection<ItemType> deletelist;
+		utils::Collection<ItemType> removelist;
+		bool isinqueue;
+
+		void Remove_(ItemType &item) {
+			itemremoving(item);
+			if(active==&item) {
+				active=NULL;
+			}
+			selected.Remove(item);
+
+			this->remove(item);
+			CollectionType::Remove(item);
+		}
+
+		void queuefordelete(ItemType *item) {
+			if(!deletelist.Find(item).IsValid()) {
+				deletelist.Add(item);
+			}
+			if(!isinqueue) {
+				Main.RegisterOnce([&]{
+					for(auto it=removelist.First();it.IsValid();it.Next()) {
+						Remove_(*it);
+						it.Remove();
+					}
+					for(auto it=deletelist.First();it.IsValid();it.Next()) {
+						Remove_(*it);
+						it.Delete();
+					}
+					isinqueue=false;
+				});
+				isinqueue=true;
+			}
+		}
+
+		void queueforremoval(ItemType *item) {
+			if(!removelist.Find(item).IsValid()) {
+				removelist.Add(item);
+			}
+			if(!isinqueue) {
+				Main.RegisterOnce([&]{
+					for(auto it=removelist.First();it.IsValid();it.Next()) {
+						Remove_(*it);
+						it.Remove();
+					}
+					for(auto it=deletelist.First();it.IsValid();it.Next()) {
+						Remove_(*it);
+						it.Delete();
+					}
+					isinqueue=false;
+				});
+				isinqueue=true;
+			}
+		}
+		
+		void checkdelete() {
+
 		}
 
 		SelectionTypes selectiontype;

@@ -113,7 +113,23 @@ namespace gge { namespace os {
 
 		bool IsFileExists(const std::string &Filename);
 
+		bool IsPathWritable(const std::string &Pathname);
+
+		bool IsPathHidden(const std::string &Filename);
+
+		std::string CanonizePath(const std::string &Pathname);
+
 		void DeleteFile(const std::string &Filename);
+
+		class EntryPoint {
+		public:
+			std::string Path;
+			bool Readable;
+			bool Writable;
+			unsigned Serial;
+			std::string Name;
+		};
+		std::vector<EntryPoint> EntryPoints();
 
 		class DirectoryIterator {
 		public:

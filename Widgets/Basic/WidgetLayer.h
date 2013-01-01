@@ -17,6 +17,8 @@ namespace gge { namespace widgets {
 
 		WidgetLayer() : Colorizable2DLayer() { }
 
+		virtual ~WidgetLayer() { }
+
 		WidgetLayer(const utils::Bounds &b) : Colorizable2DLayer(b) { }
 
 		WidgetLayer(int L, int T, int R, int B) : Colorizable2DLayer(L,T,R,B) { }

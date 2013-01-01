@@ -4,6 +4,7 @@
 #	include "input.h"
 #	include "..\Utils\Point2D.h"
 #	include <stdio.h>
+#	include <stdlib.h>
 
 
 	using namespace gge::utils;
@@ -28,6 +29,7 @@
 #	include "GGEMain.h"
 #	include "Layer.h"
 #	include "Image.h"
+#	include "Shlwapi.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -798,6 +800,24 @@
 
 				return IsDirectoryExists(name);
 			}
+			
+			bool IsPathWritable(const std::string &Pathname) {
+				return _access(Pathname.c_str(), 2)!=-1;
+			}
+
+			std::string CanonizePath(const std::string &Pathname) {
+				char newpath[1024];
+				GetFullPathName(Pathname.c_str(), 1024, newpath, NULL);
+				std::string ret=newpath;
+
+				return ret;
+			}
+
+			bool IsPathHidden(const std::string &f) {
+				unsigned long attr=GetFileAttributes(f.c_str());
+
+				return (attr&FILE_ATTRIBUTE_HIDDEN)!=0 || (attr&FILE_ATTRIBUTE_SYSTEM)!=0;
+			}
 
 			osdirenum::osdirenum() : search_handle(NULL), valid(false) {
 				data=new WIN32_FIND_DATAA();
@@ -883,6 +903,37 @@
 
 			void DeleteFile(const std::string &Filename) {
 				remove(Filename.c_str());
+			}
+			
+			std::vector<EntryPoint> EntryPoints() {
+				char drvs[512], name[128];
+				char *drives=drvs;
+				unsigned long serial, flags;
+
+				unsigned result=GetLogicalDriveStrings(512, drives);
+
+				if(result==0) return std::vector<EntryPoint>();
+
+				std::vector<EntryPoint> entries;
+
+				while(*drives) {
+					EntryPoint e;
+					e.Path=drives;
+					if(GetVolumeInformation(drives, name, 128, &serial, NULL, &flags, NULL, 0)) {
+						e.Serial=serial;
+						e.Name=name;
+						e.Writable=!(flags&FILE_READ_ONLY_VOLUME);
+						e.Readable=true;
+					}
+					else {
+						e.Readable=false;
+						e.Writable=false;
+					}
+					entries.push_back(e);
+					drives+=std::strlen(drives)+1;
+				}
+
+				return entries;
 			}
 			
 			DirectoryIterator EndOfDirectory;

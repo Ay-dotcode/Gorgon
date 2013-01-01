@@ -72,6 +72,12 @@ namespace gge { namespace widgets {
 		if(!Container)
 			return;
 
+		if(BaseLayer) {
+			if(input::mouse::PressedObject==BaseLayer->MouseCallback.object) {
+				input::mouse::PressedObject=NULL;
+			}
+		}
+
 		ContainerBase *c=Container;
 		Container=NULL;
 		c->RemoveWidget(this);
