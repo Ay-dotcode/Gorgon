@@ -8,7 +8,7 @@
 
 namespace gge { namespace multimedia {
 
-	int StreamingMusic::DefaultBufferSize = 1024*128;
+	unsigned StreamingMusic::DefaultBufferSize = 1024*128;
 	int StreamingMusic::DefaultNumberOfBuffers = 3;
 	std::vector<StreamingMusic*> StreamingMusic::members;
 
@@ -17,7 +17,17 @@ namespace gge { namespace multimedia {
 
 		if(v->stream) {
 			v->stream->clear();
-			v->stream->seekg(to, type);
+			switch(type) {
+			case SEEK_SET:
+				v->stream->seekg(to, std::ios::beg);
+				break;
+			case SEEK_CUR:
+				v->stream->seekg(to, std::ios::cur);
+				break;
+			case SEEK_END:
+				v->stream->seekg(to, std::ios::end);
+				break;
+			}
 		}
 
 		return 0;
@@ -132,7 +142,7 @@ namespace gge { namespace multimedia {
 		callbacks.seek_func=&ogg_seek;
 		callbacks.tell_func=&ogg_tell;
 		callbacks.close_func=NULL;
-		int error = ov_open_callbacks((void*)this, ogg, NULL, -1, callbacks);
+		ov_open_callbacks((void*)this, ogg, NULL, -1, callbacks);
 		
 		info = ov_info(ogg, -1);
 		if(!info) {
@@ -209,7 +219,6 @@ namespace gge { namespace multimedia {
 				if(size==0) break;
 
 				alBufferData(buffers[i], format, &data[0], size, freq);
-				int error=alGetError();
 
 				alSourceQueueBuffers(controller, 1, &buffers[i]);
 				buffersattached=true;

@@ -131,7 +131,7 @@ namespace gge { namespace widgets {
 		}
 
 		void Delete(ItemType &item) {
-			queuefordelete(&active)
+			queuefordelete(&active);
 		}
 
 		void DeleteAll(const T_ &value) {

@@ -39,7 +39,7 @@ namespace gge { namespace multimedia {
 		void SetBufferSize(int size) { buffersize=size; }
 		int GetBufferSize() const { return buffersize; }
 
-		static int DefaultBufferSize;
+		static unsigned DefaultBufferSize;
 		static int DefaultNumberOfBuffers;
 
 		virtual bool Seek(unsigned time);
@@ -65,7 +65,7 @@ namespace gge { namespace multimedia {
 		static void CheckAll();
 
 		std::vector<Byte> data;
-		int buffersize;
+		unsigned buffersize;
 		std::vector<sound::system::SoundBufferHandle> buffers;
 
 		int format, freq;

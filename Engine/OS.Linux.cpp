@@ -49,7 +49,8 @@ static const int None=0;
 		return Application(arguments);
 	}
 
-	namespace gge { namespace os {
+	namespace gge { 
+		namespace os {
 		Display * display=NULL;
 		Window  windowhandle=0;
 		Visual *visual;
@@ -925,6 +926,8 @@ static const int None=0;
 				return true;
 			}
 			std::vector<EntryPoint> EntryPoints() {
+				std::vector<EntryPoint> entries;
+				
 				EntryPoint e;
 				e.Path=getenv("HOME");
 				e.Name="Home";
@@ -938,6 +941,7 @@ static const int None=0;
 				e.Writable=true;
 				entries.push_back(e);
 
+				return entries;
 			}
 
 			bool IsPathWritable(const std::string &Pathname) {
@@ -966,14 +970,11 @@ static const int None=0;
 
 			std::string CanonizePath(const std::string &Pathname) {
 				char *newpath;
-				std::realpath(Pathname.c_str(), NULL);
+				newpath=realpath(Pathname.c_str(), NULL);
 				std::string ret=newpath;
 				std::free(newpath);
 				return ret;
 			}
-
-			DirectoryIterator EndOfDirectory;
-		}
 
 			osdirenum::osdirenum() : dp() {
 			}
@@ -1101,50 +1102,50 @@ static const int None=0;
 		}
 	} 
 
-	namespace input {
-		const keyboard::Key keyboard::KeyCodes::Shift	= XK_Shift_L;
-		const keyboard::Key keyboard::KeyCodes::Control	= XK_Control_L;
-		const keyboard::Key keyboard::KeyCodes::Alt	= XK_Alt_L;
-		const keyboard::Key keyboard::KeyCodes::Super	= XK_Super_L;
+	namespace input { namespace keyboard {
+		const Key KeyCodes::Shift	= XK_Shift_L;
+		const Key KeyCodes::Control	= XK_Control_L;
+		const Key KeyCodes::Alt	= XK_Alt_L;
+		const Key KeyCodes::Super	= XK_Super_L;
 
-		const keyboard::Key keyboard::KeyCodes::Home	= XK_Home;
-		const keyboard::Key keyboard::KeyCodes::End	= XK_End;
-		const keyboard::Key keyboard::KeyCodes::Insert	= XK_Insert;
-		const keyboard::Key keyboard::KeyCodes::Delete	= XK_Delete;
-		const keyboard::Key keyboard::KeyCodes::PageUp	= XK_Page_Up;
-		const keyboard::Key keyboard::KeyCodes::PageDown	= XK_Page_Down;
+		const Key KeyCodes::Home	= XK_Home;
+		const Key KeyCodes::End	= XK_End;
+		const Key KeyCodes::Insert	= XK_Insert;
+		const Key KeyCodes::Delete	= XK_Delete;
+		const Key KeyCodes::PageUp	= XK_Page_Up;
+		const Key KeyCodes::PageDown	= XK_Page_Down;
 
-		const keyboard::Key keyboard::KeyCodes::Left	= XK_Left;
-		const keyboard::Key keyboard::KeyCodes::Up	= XK_Up;
-		const keyboard::Key keyboard::KeyCodes::Right	= XK_Right;
-		const keyboard::Key keyboard::KeyCodes::Down	= XK_Down;
+		const Key KeyCodes::Left	= XK_Left;
+		const Key KeyCodes::Up	= XK_Up;
+		const Key KeyCodes::Right	= XK_Right;
+		const Key KeyCodes::Down	= XK_Down;
 
-		const keyboard::Key keyboard::KeyCodes::PrintScreen=XK_Print;
-		const keyboard::Key keyboard::KeyCodes::Pause	= XK_Pause;
+		const Key KeyCodes::PrintScreen=XK_Print;
+		const Key KeyCodes::Pause	= XK_Pause;
 
-		const keyboard::Key keyboard::KeyCodes::CapsLock	= XK_Caps_Lock;
-		const keyboard::Key keyboard::KeyCodes::NumLock	= XK_Num_Lock;
+		const Key KeyCodes::CapsLock	= XK_Caps_Lock;
+		const Key KeyCodes::NumLock	= XK_Num_Lock;
 
-		const keyboard::Key keyboard::KeyCodes::Enter	= XK_Return;
-		const keyboard::Key keyboard::KeyCodes::Backspace	= XK_BackSpace;
-		const keyboard::Key keyboard::KeyCodes::Escape	= XK_Escape;
-		const keyboard::Key keyboard::KeyCodes::Tab	= XK_Tab;
-		const keyboard::Key keyboard::KeyCodes::Space	= 0x20;
+		const Key KeyCodes::Enter	= XK_Return;
+		const Key KeyCodes::Backspace	= XK_BackSpace;
+		const Key KeyCodes::Escape	= XK_Escape;
+		const Key KeyCodes::Tab	= XK_Tab;
+		const Key KeyCodes::Space	= 0x20;
 
-		const keyboard::Key keyboard::KeyCodes::F1	= XK_F1;
-		const keyboard::Key keyboard::KeyCodes::F2	= XK_F2;
-		const keyboard::Key keyboard::KeyCodes::F3	= XK_F3;
-		const keyboard::Key keyboard::KeyCodes::F4	= XK_F4;
-		const keyboard::Key keyboard::KeyCodes::F5	= XK_F5;
-		const keyboard::Key keyboard::KeyCodes::F6	= XK_F6;
-		const keyboard::Key keyboard::KeyCodes::F7	= XK_F7;
-		const keyboard::Key keyboard::KeyCodes::F8	= XK_F8;
-		const keyboard::Key keyboard::KeyCodes::F9	= XK_F9;
-		const keyboard::Key keyboard::KeyCodes::F10	= XK_F10;
-		const keyboard::Key keyboard::KeyCodes::F11	= XK_F11;
-		const keyboard::Key keyboard::KeyCodes::F12	= XK_F12;
+		const Key KeyCodes::F1	= XK_F1;
+		const Key KeyCodes::F2	= XK_F2;
+		const Key KeyCodes::F3	= XK_F3;
+		const Key KeyCodes::F4	= XK_F4;
+		const Key KeyCodes::F5	= XK_F5;
+		const Key KeyCodes::F6	= XK_F6;
+		const Key KeyCodes::F7	= XK_F7;
+		const Key KeyCodes::F8	= XK_F8;
+		const Key KeyCodes::F9	= XK_F9;
+		const Key KeyCodes::F10	= XK_F10;
+		const Key KeyCodes::F11	= XK_F11;
+		const Key KeyCodes::F12	= XK_F12;
 
-	}
+	} }
 
 }
 
