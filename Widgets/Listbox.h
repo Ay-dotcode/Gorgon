@@ -215,7 +215,6 @@ namespace gge { namespace widgets {
 				ItemType *item=&(*it);
 				queueforremoval(item);
 			}
-			this->adjustheight();
 			this->active=NULL;
 			this->selected.Clear();
 		}
@@ -377,6 +376,7 @@ namespace gge { namespace widgets {
 
 			this->remove(item);
 			CollectionType::Remove(item);
+			item.Detach();
 		}
 
 		void queuefordelete(ItemType *item) {
@@ -385,15 +385,19 @@ namespace gge { namespace widgets {
 			}
 			if(!isinqueue) {
 				Main.RegisterOnce([&]{
-					for(auto it=removelist.First();it.IsValid();it.Next()) {
-						Remove_(*it);
-						it.Remove();
-					}
-					for(auto it=deletelist.First();it.IsValid();it.Next()) {
-						Remove_(*it);
-						it.Delete();
-					}
+ 					for(auto it=removelist.First();it.IsValid();it.Next()) {
+ 						this->Remove_(*it);
+ 						it.Remove();
+ 					}
+ 					while(deletelist.GetCount()) {
+						auto &it=*deletelist.First();
+ 						this->Remove_(it);
+						deletelist.Remove(0);
+ 						delete &it;
+						//it.Remove();
+ 					}
 					isinqueue=false;
+					this->adjustheight();
 				});
 				isinqueue=true;
 			}
@@ -405,15 +409,16 @@ namespace gge { namespace widgets {
 			}
 			if(!isinqueue) {
 				Main.RegisterOnce([&]{
-					for(auto it=removelist.First();it.IsValid();it.Next()) {
-						Remove_(*it);
-						it.Remove();
-					}
-					for(auto it=deletelist.First();it.IsValid();it.Next()) {
-						Remove_(*it);
-						it.Delete();
-					}
+ 					for(auto it=removelist.First();it.IsValid();it.Next()) {
+ 						this->Remove_(*it);
+ 						it.Remove();
+ 					}
+ 					for(auto it=deletelist.First();it.IsValid();it.Next()) {
+ 						this->Remove_(*it);
+ 						it.Delete();
+ 					}
 					isinqueue=false;
+					this->adjustheight();
 				});
 				isinqueue=true;
 			}

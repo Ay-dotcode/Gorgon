@@ -958,11 +958,11 @@ static const int None=0;
 
 				if(file[file.length()-1]=='~') return true;
 				if(file.find_first_of('/', 0)==file.npos) {
-					return file[0]!='.';
+					return file[0]=='.';
 				}
 				else {
-					file=file.substr(file.find_last_of('/', 0)+1);
-					return file[0]!='.';
+					file=file.substr(file.find_last_of('/', -1)+1);
+					return file[0]=='.';
 				}
 
 				return false;
@@ -1042,6 +1042,10 @@ static const int None=0;
 
 			void DirectoryIterator::Next() {
 				struct dirent *ent;
+				if(dirinfo.dp==NULL) {
+					current="";
+					return;
+				}
 				ent = readdir((DIR*)dirinfo.dp);
 				if(ent==NULL)
 					current="";
@@ -1059,7 +1063,7 @@ static const int None=0;
 			}
 
 			bool DirectoryIterator::IsValid() const {
-				return current!="";
+				return current!="" && dirinfo.dp;
 			}
 
 			bool IsDirectoryExists(const std::string &Filename) {

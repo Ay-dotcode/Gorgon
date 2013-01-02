@@ -63,6 +63,7 @@ namespace gge { namespace utils {
 
 		protected:
 			Iterator_(C_ &c, int offset=0) : Col(&c), Offset(offset) {
+				if(offset==0 && !isvalid()) moveby(1);
 			}
 
 		protected:
