@@ -449,10 +449,6 @@ namespace gge { namespace utils {
 			return *this;
 		}
 
-		T_ operator +(const T_ &v) {
-			return (this->Object.*this->getter)()+v;
-		}
-
 		void operator +=(const T_ &v) {
 			return (this->Object.*this->setter)((this->Object.*this->getter)()+v);
 		}
@@ -660,10 +656,38 @@ namespace gge { namespace utils {
 			return *this;
 		}
 
-		
+		operator T_() {
+			return (this->Object.*this->getter)();
+		}
 
+		operator const T_() const {
+			return (this->Object.*this->getter)();
+		}
 
 	};
+
+
+	template<class C_, class T_>
+	T_ operator +(TextualProperty<C_, T_> &t, const T_ &v) {
+		return T_(t)+v;
+	}
+
+	template<class C_, class T_>
+	T_ operator +(const T_ &v, TextualProperty<C_, T_> &t) {
+		return v+T_(t);
+	}
+
+	template<class C_, class T_>
+	T_ operator +(TextualProperty<C_, T_> &t, const char *v) {
+		return T_(t)+v;
+	}
+
+	template<class C_, class T_>
+	T_ operator +(const char *v, TextualProperty<C_, T_> &t) {
+		return v+T_(t);
+	}
+
+
 
 	template <class C_,class T_>
 	inline std::ostream &operator <<(std::ostream &out, const TextualProperty<C_,T_> &p) {
