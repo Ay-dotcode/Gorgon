@@ -100,6 +100,8 @@ namespace gge { namespace utils {
 		void SetData(const T_ &data) {
 			size=sizeof(T_);
 			content=std::malloc(size);
+			T_ n;
+			memcpy(reinterpret_cast<T_*>(content), &n, size);
 			*reinterpret_cast<T_*>(content)=data;
 		}
 
