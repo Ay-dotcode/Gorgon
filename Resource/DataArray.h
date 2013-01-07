@@ -275,6 +275,7 @@ namespace gge { namespace resource {
 				return dynamic_cast<BoundsData&>(Data[Index]).value;
 			}
 		}
+		LinkData &getLinkItem(int Index) { return dynamic_cast<LinkData&>(Data[Index]); }
 		////Returns resource object from a link
 		Base &getLink(int Index) { return dynamic_cast<LinkData&>(Data[Index]).Get(); }
 		////Returns resource object from a link
