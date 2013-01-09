@@ -40,7 +40,7 @@ namespace gge { namespace utils {
 	public:
 		virtual void *New() const=0;
 		virtual void  Delete(void* obj) const=0;
-		virtual void *Clone(void* obj) const=0;
+		virtual void *Clone(const void* const obj) const=0;
 		virtual bool  IsSameType(const type_info &) const=0;
 	};
 
@@ -52,9 +52,9 @@ namespace gge { namespace utils {
 		virtual void Delete(void *obj) const { 
 			delete static_cast<T_*>(obj);
 		}
-		virtual void *Clone(void* obj) const {
+		virtual void *Clone(const void* const obj) const {
 			T_ *n = new T_;
-			*n = *static_cast<T_*>(obj);
+			*n = *static_cast<const T_* const>(obj);
 			return n;
 		}
 		virtual bool IsSameType(const type_info &info) const {
@@ -79,7 +79,7 @@ namespace gge { namespace utils {
 		}
 
 		template <class T_>
-		explicit Any(T_ data) {
+		explicit Any(const T_ &data) {
 			type=new Type<T_>;
 			content=type->Clone(&data);
 		}
@@ -159,7 +159,7 @@ namespace gge { namespace utils {
 				delete type;
 			}
 			type=new Type<T_>;
-			content=type->Clone(data);
+			content=type->Clone(&data);
 		}
 
 		void Clear() {
