@@ -29,7 +29,6 @@
 #include <cstdlib>
 #include <stdexcept>
 
-#include "UtilsBase.h"
 
 
 #define ANY_EXIST
@@ -37,91 +36,150 @@
 
 
 namespace gge { namespace utils {
+	class TypeInterface {
+	public:
+		virtual void *New() const=0;
+		virtual void  Delete(void* obj) const=0;
+		virtual void *Clone(void* obj) const=0;
+		virtual bool  IsSameType(const type_info &) const=0;
+	};
+
+	template<class T_> class Type : public TypeInterface {
+	public:
+		virtual void* New() const { 
+			return new T_;
+		}
+		virtual void Delete(void *obj) const { 
+			delete static_cast<T_*>(obj);
+		}
+		virtual void *Clone(void* obj) const {
+			T_ *n = new T_;
+			*n = *static_cast<T_*>(obj);
+			return n;
+		}
+		virtual bool IsSameType(const type_info &info) const {
+			return info==typeid(T_);
+		}
+	};
+
 	class Any {
 	public:
-		Any() : content(NULL),size(0) { }
+		Any() : content(NULL),type(NULL) { }
 
 		Any(const Any& any) {
 			if(any.content) {
-				size=any.size;
-				content=malloc(size);
-				std::memcpy(content, any.content, size);
+				type=(TypeInterface*)malloc(sizeof(TypeInterface));
+				std::memcpy(type, any.type, sizeof(TypeInterface));
+				content=type->Clone(any.content);
 			} else {
 				content=NULL;
-				size=0;
+				type=NULL;
 			}
 
 		}
 
 		template <class T_>
 		explicit Any(T_ data) {
-			size=sizeof(T_);
-			content=std::malloc(size);
-			*reinterpret_cast<T_*>(content)=data;
+			type=new Type<T_>;
+			content=type->Clone(&data);
 		}
 
 		template <class T_>
-		operator T_ &() {
-			if(sizeof(T_)!=size) {
-				throw std::runtime_error("Cannot cast, sizes are different");
+		operator T_() {
+#ifdef _DEBUG
+			if(!type || !content) {
+				throw std::runtime_error("Any storage is empty");
 			}
-			return *reinterpret_cast<T_*>(content);
+#endif
+			if(!type->IsSameType(typeid(T_))) {
+				throw std::runtime_error("Cannot cast: not the same type");
+			}
+			return *static_cast<T_*>(content);
 		}
 
-		operator Any &() {
+		operator Any() {
 			return *this;
 		}
-	
+
 		Any &operator =(const Any &any) {
-			if(content)
-				free(content);
-			size=any.size;
-			content=malloc(size);
-			memcpy(content, any.content, size);
+			if(content) {
+				type->Delete(content);
+				delete type;
+			}
+			type=(TypeInterface*)malloc(sizeof(TypeInterface));
+			std::memcpy(type, any.type, sizeof(TypeInterface));
+			content=type->Clone(any.content);
 
 			return *this;
 		}
 
 		template <class T_>
 		bool operator ==(const T_ &content) const  {
-			return *reinterpret_cast<T_*>(this->content)==content;
+#ifdef _DEBUG
+			if(!type || !content) {
+				throw std::runtime_error("Any storage is empty");
+			}
+#endif
+
+			return *static_cast<T_*>(this->content)==content;
+		}
+
+		template<class T_>
+		bool IsEqual(const Any &any) const  {
+			if(any.content==NULL && content==NULL) return true;
+
+#ifdef _DEBUG
+			if(!type || !content) {
+				throw std::runtime_error("Any storage is empty");
+			}
+#endif
+
+			return any==*static_cast<T_*>(content);
 		}
 
 		template <class T_>
 		bool operator !=(const T_ &content) const  {
-			return *content!=content;
+#ifdef _DEBUG
+			if(!type || !content) {
+				throw std::runtime_error("Any storage is empty");
+			}
+#endif
+
+			return *static_cast<T_*>(this->content)==content;
 		}
 
 		bool isSet() const  {
 			return content!=NULL;
 		}
-		
-		template <class T_>
-		void SetData(const T_ &data) {
-			size=sizeof(T_);
-			content=std::malloc(size);
-			T_ n;
-			memcpy(reinterpret_cast<T_*>(content), &n, size);
-			*reinterpret_cast<T_*>(content)=data;
-		}
 
 		template <class T_>
-		T_ *operator ->() {
-			return reinterpret_cast<T_*>(content);
+		void SetData(const T_ &data) {
+			if(content) {
+				type->Delete(content);
+				delete type;
+			}
+			type=new Type<T_>;
+			content=type->Clone(data);
 		}
 
 		void Clear() {
-			size=0;
-			content=NULL;
+			if(content) {
+				type->Delete(content);
+				delete type;
+				type=NULL;
+				content=NULL;
+			}
 		}
 
 		~Any() {
-			if(content)
-				free(content);
+			if(content) {
+				type->Delete(content);
+				delete type;
+			}
 		}
 
 	protected:
 		void *content;
-		int size;
+		TypeInterface *type;
 	};
 } }
