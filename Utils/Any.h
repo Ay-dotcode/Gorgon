@@ -85,7 +85,7 @@ namespace gge { namespace utils {
 		}
 
 		template <class T_>
-		operator T_() {
+		operator T_() const {
 #ifdef _DEBUG
 			if(!type || !content) {
 				throw std::runtime_error("Any storage is empty");
