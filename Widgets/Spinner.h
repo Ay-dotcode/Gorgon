@@ -169,7 +169,7 @@ namespace gge { namespace widgets {
 
 		void setStepsize(const T_ &value) {
 			slider::Base<T_>::setsteps(value);
-			slider::Base<T_>::setsmallchange(std::max(value,1));
+			slider::Base<T_>::setsmallchange(std::max(value,T_(1)));
 		}
 		T_ getStepsize() const {
 			return slider::Base<T_>::getsteps();
