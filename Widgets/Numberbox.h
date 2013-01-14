@@ -115,6 +115,203 @@ namespace gge { namespace widgets {
 		}
 	}
 
+	template <>
+	inline void FixNumberString<utils::Size>(std::string &number, int location, int &removedbefore, int base) {
+		bool passedfirst=false, passeddot=true, passedcomma=false, passedspace=false,passedpar=false;
+		for(std::string::size_type i=0;i<number.length();i++) {
+			char c=number[i];
+			if(!( ( (c>='0' && c<='9' && !passedspace) ) ||
+				((c==' ' || c=='-' || c=='+') && !passedfirst && !passedspace) || 
+				(c==' ' && !passedcomma) || 
+				(c=='.' && !passeddot && !passedspace) || 
+				(c=='x' && !passedcomma) ||
+				(c=='(' && !passedpar && !passedfirst && !passedcomma) ||
+				(c==')' && !passedpar && passedcomma)
+				)) {
+					number.erase(i, 1);
+
+					if((unsigned)location>i) {
+						location--;
+						removedbefore++;
+					}
+
+					i--;
+			}
+			else if(c=='x') {
+				passedcomma=true;
+				passedfirst=false;
+				passedspace=false;
+				passedpar=false;
+				//passeddot=false;
+			}
+			else if(c=='.') {
+				passeddot=true;
+			}
+			else if(passedfirst && c==' ' && !passedcomma) {
+				passedspace=true;
+			}
+			else if(c=='(') {
+				passedpar=true;
+			}
+			else if(c==')') {
+				passedpar=true;
+				passedspace=true;
+			}
+			else if(c!=' ' && c!='-' && c!='+') {
+				passedfirst=true;
+			}
+		}
+	}
+
+	template <>
+	inline void FixNumberString<utils::Rectangle>(std::string &number, int location, int &removedbefore, int base) {
+		bool passedfirst=false, passeddot=true, passedspace=false,passedpar=false;
+		int passedcomma=0;
+		for(std::string::size_type i=0;i<number.length();i++) {
+			char c=number[i];
+			if(!( ( (c>='0' && c<='9' && !passedspace) ) ||
+				((c==' ' || c=='-' || c=='+') && !passedfirst && !passedspace) || 
+				(c==' ' && passedcomma<3) || 
+				(c=='.' && !passeddot && !passedspace) || 
+				(c==',' && passedcomma<3) ||
+				(c=='x' && passedcomma==2) ||
+				(c=='<' && !passedpar && !passedfirst && !passedcomma) ||
+				(c=='>' && !passedpar && passedcomma==3)
+				)) {
+					number.erase(i, 1);
+
+					if((unsigned)location>i) {
+						location--;
+						removedbefore++;
+					}
+
+					i--;
+			}
+			else if(c==',' || (c=='x' && passedcomma==2) ) {
+				passedcomma++;
+				passedfirst=false;
+				passedspace=false;
+				passedpar=false;
+				//passeddot=false;
+			}
+			else if(c=='.') {
+				passeddot=true;
+			}
+			else if(passedfirst && c==' ' && passedcomma<3) {
+				passedspace=true;
+			}
+			else if(c=='<') {
+				passedpar=true;
+			}
+			else if(c=='>') {
+				passedpar=true;
+				passedspace=true;
+			}
+			else if(c!=' ' && c!='-' && c!='+') {
+				passedfirst=true;
+			}
+		}
+	}
+
+	template <>
+	inline void FixNumberString<utils::Bounds>(std::string &number, int location, int &removedbefore, int base) {
+		bool passedfirst=false, passeddot=true, passedspace=false,passedpar=false;
+		int passedcomma=0;
+		for(std::string::size_type i=0;i<number.length();i++) {
+			char c=number[i];
+			if(!( ( (c>='0' && c<='9' && !passedspace) ) ||
+				((c==' ' || c=='-' || c=='+') && !passedfirst && !passedspace) || 
+				(c==' ' && passedcomma<3) || 
+				(c=='.' && !passeddot && !passedspace) || 
+				(c==',' && passedcomma<3) ||
+				(c=='-' && passedcomma==1) ||
+				(c=='<' && !passedpar && !passedfirst && !passedcomma) ||
+				(c=='>' && !passedpar && passedcomma==3)
+				)) {
+					number.erase(i, 1);
+
+					if((unsigned)location>i) {
+						location--;
+						removedbefore++;
+					}
+
+					i--;
+			}
+			else if(c==',' || (c=='-' && passedcomma==1) ) {
+				passedcomma++;
+				passedfirst=false;
+				passedspace=false;
+				passedpar=false;
+				//passeddot=false;
+			}
+			else if(c=='.') {
+				passeddot=true;
+			}
+			else if(passedfirst && c==' ' && passedcomma<3) {
+				passedspace=true;
+			}
+			else if(c=='<') {
+				passedpar=true;
+			}
+			else if(c=='>') {
+				passedpar=true;
+				passedspace=true;
+			}
+			else if(c!=' ' && c!='-' && c!='+') {
+				passedfirst=true;
+			}
+		}
+	}
+
+	template <>
+	inline void FixNumberString<utils::Margins>(std::string &number, int location, int &removedbefore, int base) {
+		bool passedfirst=false, passeddot=true, passedspace=false,passedpar=false;
+		int passedcomma=0;
+		for(std::string::size_type i=0;i<number.length();i++) {
+			char c=number[i];
+			if(!( ( (c>='0' && c<='9' && !passedspace) ) ||
+				((c==' ' || c=='-' || c=='+') && !passedfirst && !passedspace) || 
+				(c==' ' && passedcomma<3) || 
+				(c=='.' && !passeddot && !passedspace) || 
+				(c==',' && passedcomma<3) ||
+				(c=='(' && !passedpar && !passedfirst && !passedcomma) ||
+				(c==')' && !passedpar && passedcomma==3)
+				)) {
+					number.erase(i, 1);
+
+					if((unsigned)location>i) {
+						location--;
+						removedbefore++;
+					}
+
+					i--;
+			}
+			else if(c==',') {
+				passedcomma++;
+				passedfirst=false;
+				passedspace=false;
+				passedpar=false;
+				//passeddot=false;
+			}
+			else if(c=='.') {
+				passeddot=true;
+			}
+			else if(passedfirst && c==' ' && passedcomma<3) {
+				passedspace=true;
+			}
+			else if(c=='(') {
+				passedpar=true;
+			}
+			else if(c==')') {
+				passedpar=true;
+				passedspace=true;
+			}
+			else if(c!=' ' && c!='-' && c!='+') {
+				passedfirst=true;
+			}
+		}
+	}
+
 	template <class T_, void (*Val_)(std::string&, int, int&,int)=FixNumberString<T_> >
 	class Numberbox : public INumberbox<T_>, public textbox::Base {
 	public:

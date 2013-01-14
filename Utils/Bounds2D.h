@@ -328,10 +328,71 @@ namespace gge { namespace utils {
 	//// < x_s - x_e , y_s - y_e >
 	template <class T_>
 	std::ostream &operator << (std::ostream &out, const basic_Bounds2D<T_> &bounds) {
-		out<<"< "<<bounds.Left<<"-"<<bounds.Right<<" , "<<bounds.Top<<"-"<<bounds.Bottom<<" >";
+		out<<"<"<<bounds.Left<<"-"<<bounds.Right<<" , "<<bounds.Top<<"-"<<bounds.Bottom<<">";
 
 		return out;
 	}
+	template <class T_>
+	std::istream &operator >> (std::istream &in, basic_Bounds2D<T_> &rect) {
+		while(in.peek()==' ' || in.peek()=='<')
+			in.ignore(1);
+
+		std::string s;
+		std::stringstream ss;
+
+		while(in.peek()!=',' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>rect.Left;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!=',' && in.peek()!='-' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>rect.Top;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!=',' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>rect.Right;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!='>' && in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
+			s.append(1, in.get());
+
+
+		ss.str(s);
+		ss.clear();
+		ss>>rect.Bottom;
+
+		if(in.peek()=='>')
+			in.ignore(1);
+
+		return in;
+	}
+
 
 
 	typedef basic_Bounds2D<FloatingPoint> Bounds2D;

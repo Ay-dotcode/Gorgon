@@ -120,6 +120,42 @@ namespace gge { namespace utils {
 		return out;
 	}
 
+	template <class T_>
+	std::istream &operator >> (std::istream &in, basic_Size2D<T_> &size) {
+		while(in.peek()==' ' || in.peek()=='(')
+			in.ignore(1);
+
+		std::string s;
+		std::stringstream ss;
+
+		while(in.peek()!='x' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>size.Width;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!=')' && in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
+			s.append(1, in.get());
+
+
+		ss.str(s);
+		ss.clear();
+		ss>>size.Height;
+
+		if(in.peek()==')')
+			in.ignore(1);
+
+		return in;
+	}
+
+
 	template<class T_>
 	inline basic_Point2D<T_> operator *(const basic_Point2D<T_> &l, const basic_Size2D<T_> &r) {
 		return basic_Point2D<T_>(l.x*r.Width,l.y*r.Height);

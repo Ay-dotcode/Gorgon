@@ -343,9 +343,69 @@ namespace gge { namespace utils {
 	////Allows streaming of Rectangle
 	template <class T_>
 	std::ostream &operator << (std::ostream &out, const basic_Rectangle2D<T_> &Rectangle) {
-		out<<"< "<<Rectangle.Left<<", "<<Rectangle.Top<<", "<<Rectangle.Width<<"x"<<Rectangle.Height<<" >";
+		out<<"<"<<Rectangle.Left<<", "<<Rectangle.Top<<", "<<Rectangle.Width<<"x"<<Rectangle.Height<<">";
 
 		return out;
+	}
+	template <class T_>
+	std::istream &operator >> (std::istream &in, basic_Rectangle2D<T_> &rect) {
+		while(in.peek()==' ' || in.peek()=='<')
+			in.ignore(1);
+
+		std::string s;
+		std::stringstream ss;
+
+		while(in.peek()!=',' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>rect.Left;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!=',' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>rect.Top;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!=',' && in.peek()!='x' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>rect.Width;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!='>' && in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
+			s.append(1, in.get());
+
+
+		ss.str(s);
+		ss.clear();
+		ss>>rect.Height;
+
+		if(in.peek()=='>')
+			in.ignore(1);
+
+		return in;
 	}
 
 

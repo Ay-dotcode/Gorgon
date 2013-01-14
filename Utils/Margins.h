@@ -178,11 +178,72 @@ namespace gge { namespace utils {
 
 	////Allows streaming of margins.
 	template <class T_>
-	std::ostream &operator << (std::ostream &out, basic_Margins2D<T_> &bounds) {
-		out<<"("<<bounds.Left<<", "<<bounds.Right<<", "<<bounds.Top<<", "<<bounds.Bottom<<")";
+	std::ostream &operator << (std::ostream &out, const basic_Margins2D<T_> &margins) {
+		out<<"("<<margins.Left<<", "<<margins.Right<<", "<<margins.Top<<", "<<margins.Bottom<<")";
 
 		return out;
 	}
+	template <class T_>
+	std::istream &operator >> (std::istream &in, basic_Margins2D<T_> &margins) {
+		while(in.peek()==' ' || in.peek()=='(')
+			in.ignore(1);
+
+		std::string s;
+		std::stringstream ss;
+
+		while(in.peek()!=',' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>margins.Left;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!=',' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>margins.Top;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!=',' && !in.eof())
+			s.append(1, (char)in.get());
+
+		in.ignore(1);
+
+		ss.str(s);
+		ss>>margins.Right;
+
+		s="";
+
+		while(in.peek()==' ' || in.peek()=='\t')
+			in.ignore(1);
+
+		while(in.peek()!='>' && in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
+			s.append(1, in.get());
+
+
+		ss.str(s);
+		ss.clear();
+		ss>>margins.Bottom;
+
+		if(in.peek()==')')
+			in.ignore(1);
+
+		return in;
+	}
+
 
 
 	template<class T_>
