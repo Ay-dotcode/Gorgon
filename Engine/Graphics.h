@@ -529,7 +529,7 @@ namespace gge { namespace graphics {
 		} HorizontalTiling, VerticalTiling;
 
 
-		SizeController2D(TilingType HorizontalTiling=Single, TilingType VerticalTiling=Single, Alignment::Type Align=Alignment::Middle_Center) : 
+		explicit SizeController2D(TilingType HorizontalTiling=Single, TilingType VerticalTiling=Single, Alignment::Type Align=Alignment::Middle_Center) : 
 			HorizontalTiling(HorizontalTiling), VerticalTiling(VerticalTiling), Align(Align)
 		{ }
 		Alignment::Type Align;

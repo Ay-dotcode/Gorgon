@@ -20,9 +20,11 @@ namespace gge { namespace widgets { namespace dialog {
 		  INIT_PROPERTY(File, DirectoriesOnly),
 		  INIT_PROPERTY(File, CurrentDirectory),
 		  INIT_PROPERTY(File, Mask),
+		  INIT_PROPERTY(File, Columns),
 		  askoverwrite(false),
 		  onlyexisting(true),
 		  directoriesonly(false),
+		  columns(2),
 		  curdir("."),
 		  mask("*.*")
 		{
@@ -83,6 +85,7 @@ namespace gge { namespace widgets { namespace dialog {
 		utils::BooleanProperty<File> DirectoriesOnly;
 		utils::TextualProperty<File> CurrentDirectory;
 		utils::TextualProperty<File> Mask;
+		utils::NumericProperty<File, int> Columns;
 
 
 	protected:
@@ -105,31 +108,19 @@ namespace gge { namespace widgets { namespace dialog {
 				RefreshFiles();
 			});
 
-			Paths.SetY(Up.GetHeight()+WR.WidgetSpacing.y);
-			Paths.SetHeight(Paths.GetHeight()-Paths.GetY());
 			Paths.ItemClickedEvent.Register(this,&File::path_click);
 			Paths.SetContainer(this);
 
-			Up.SetX(Paths.GetWidth()-Up.GetWidth());
 
 
-			Files.SetWidth(Files.GetWidth()*2);
-			Files.Columns=2;
-			Files.Move(Paths.GetWidth()+WR.WidgetSpacing.x, 0);
 			//Files.SetHeight(Files.GetHeight()-Files.GetY());
 			Files.ItemClickedEvent.Register(this,&File::file_click);
 			Files.SetContainer(this);
 
-			Filename.SetWidth(Files.GetBounds().Right);
-			Filename.SetY(Files.GetBounds().Bottom+WR.WidgetSpacing.y);
 			Filename.SetContainer(this);
 			Filename.ChangeEvent.RegisterLambda([&]{
 				Ok.SetEnabled(directoriesonly || Filename.Text!="");
 			});
-
-
-			this->SetWidth(Files.GetBounds().Right+this->GetOverheadMargins().TotalX());
-			this->SetHeight(Filename.GetBounds().Bottom+this->GetOverheadMargins().TotalY());
 
 
 			dialogbuttons.Add(Cancel);
@@ -147,13 +138,32 @@ namespace gge { namespace widgets { namespace dialog {
 			Ok.Autosize=AutosizeModes::GrowOnly;
 			Ok.ClickEvent.Register(this, &File::Accept);
 
+			RefreshPaths();
+			RefreshFiles();
+
+			relocate();
+		}
+
+		void relocate() {
+			Paths.SetY(Up.GetHeight()+WR.WidgetSpacing.y);
+			Paths.SetHeight(WR.Listbox->DefaultSize.Height-Paths.GetY());
+
+			Up.SetX(Paths.GetWidth()-Up.GetWidth());
+
+			Files.SetWidth(WR.Listbox->DefaultSize.Width*columns);
+			Files.Columns=columns;
+			Files.Move(Paths.GetWidth()+WR.WidgetSpacing.x, 0);
+
+			Filename.SetWidth(Files.GetBounds().Right);
+			Filename.SetY(Files.GetBounds().Bottom+WR.WidgetSpacing.y);
+
+			this->SetWidth(Files.GetBounds().Right+this->GetOverheadMargins().TotalX());
+			this->SetHeight(Filename.GetBounds().Bottom+this->GetOverheadMargins().TotalY());
+
+
 			MoveToCenter();
 			this->SetHeight(Filename.GetBounds().Bottom+this->GetOverheadMargins().TotalY()+1);
 
-
-
-			RefreshPaths();
-			RefreshFiles();
 		}
 
 		void Accept() { 
@@ -301,7 +311,15 @@ namespace gge { namespace widgets { namespace dialog {
 			return mask;
 		}
 
-
+		void setColumns(const int &value) {
+			if(columns!=value) {
+				columns = value;
+				relocate();
+			}
+		}
+		int getColumns() const {
+			return columns;
+		}
 
 		std::string curdir;
 		std::string mask;
@@ -309,6 +327,8 @@ namespace gge { namespace widgets { namespace dialog {
 		bool askoverwrite;
 		bool onlyexisting;
 		bool directoriesonly;
+
+		int columns;
 
 
 		std::string selectedfile;
