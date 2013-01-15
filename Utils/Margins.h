@@ -210,6 +210,7 @@ namespace gge { namespace utils {
 		in.ignore(1);
 
 		ss.str(s);
+		ss.clear();
 		ss>>margins.Top;
 
 		s="";
@@ -223,6 +224,7 @@ namespace gge { namespace utils {
 		in.ignore(1);
 
 		ss.str(s);
+		ss.clear();
 		ss>>margins.Right;
 
 		s="";

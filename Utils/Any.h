@@ -106,9 +106,15 @@ namespace gge { namespace utils {
 				type->Delete(content);
 				delete type;
 			}
-			type=(TypeInterface*)malloc(sizeof(TypeInterface));
-			std::memcpy(type, any.type, sizeof(TypeInterface));
-			content=type->Clone(any.content);
+			if(any.type) {
+				type=(TypeInterface*)malloc(sizeof(TypeInterface));
+				std::memcpy(type, any.type, sizeof(TypeInterface));
+				content=type->Clone(any.content);
+			}
+			else {
+				type=NULL;
+				content=NULL;
+			}
 
 			return *this;
 		}

@@ -64,6 +64,14 @@ namespace gge { namespace utils {
 			return (Object.*getter)(); 
 		}
 
+		T_ Get() const {
+			return (Object.*getter)();
+		}
+
+		void Set(const T_ &value) {
+			(Object.*setter)(value);
+		}
+
 		Property &operator =(const T_ &value) { 
 			(Object.*setter)(value);
 

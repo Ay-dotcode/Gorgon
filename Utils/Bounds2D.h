@@ -359,6 +359,7 @@ namespace gge { namespace utils {
 		in.ignore(1);
 
 		ss.str(s);
+		ss.clear();
 		ss>>rect.Top;
 
 		s="";
@@ -372,6 +373,7 @@ namespace gge { namespace utils {
 		in.ignore(1);
 
 		ss.str(s);
+		ss.clear();
 		ss>>rect.Right;
 
 		s="";
