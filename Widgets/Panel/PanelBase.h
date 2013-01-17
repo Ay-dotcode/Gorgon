@@ -125,12 +125,7 @@ namespace gge { namespace widgets {
 			}
 
 			void Resize(int W, int H) {
-				unprepared=true;
-				controls.Resize(utils::Size(W,H));
-				dialogcontrols.Resize(utils::Size(W,H));
-				WidgetBase::Resize(utils::Size(W,H));
-
-				adjustcontrols();
+				Resize(utils::Size(W,H));
 			}
 
 			virtual void Draw() {

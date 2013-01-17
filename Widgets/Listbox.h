@@ -40,6 +40,7 @@ namespace gge { namespace widgets {
 			INIT_PROPERTY(Listbox, AllowReorder),
 			INIT_PROPERTY(Listbox, ItemHeight),
 			ItemClickedEvent("ItemClicked", this),
+			ReorderedEvent("Reordered", this),
 			itemheight(0), isinqueue(false)
 		{
 			if(WR.Listbox)
@@ -338,6 +339,7 @@ namespace gge { namespace widgets {
 		//!Keyboard handling
 
 		utils::EventChain<Listbox, ItemType&> ItemClickedEvent;
+		utils::EventChain<Listbox> ReorderedEvent;
 		utils::BooleanProperty<Listbox> AutoHeight;
 		utils::NumericProperty<Listbox, int> Columns;
 		utils::BooleanProperty<Listbox> AllowReorder;
@@ -506,6 +508,7 @@ namespace gge { namespace widgets {
 
 		virtual void movebefore(IListItem<T_, CF_> &item, IListItem<T_, CF_> *before) {
 			MoveBefore(dynamic_cast<ItemType&>(item), dynamic_cast<ItemType*>(before));
+			ReorderedEvent();
 		}
 
 		void setAutoHeight(const bool &value) {

@@ -178,6 +178,7 @@ namespace gge { namespace widgets {
 					rad.Move(x,bp->Placeholder->Margins.Top);
 					rad.Value=it.CurrentPtr();
 					rad.ChangeEvent.Register(this,&Tabpanel::tab_click);
+					rad.SetZOrder(1);
 
 					if(it.CurrentPtr()==active)
 						rad.Check();

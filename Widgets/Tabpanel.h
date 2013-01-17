@@ -144,6 +144,9 @@ namespace gge { namespace widgets {
 		tabpanel::Panel &operator()(const std::string &value) {
 			return Find(value);
 		}
+		tabpanel::Panel &operator[](const std::string &value) {
+			return Find(value);
+		}
 
 		Iterator First() {
 			return OrderedCollection::First();

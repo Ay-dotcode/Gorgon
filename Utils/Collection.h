@@ -475,7 +475,7 @@ namespace gge { namespace utils {
 		}
 
 		template <int g_>
-		Collection(const Collection<T_, g_> &col) : 
+		Collection(Collection<T_, g_> &col) : 
 		list(col.list), count(col.count)
 		{ 	}
 

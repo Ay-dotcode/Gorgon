@@ -77,6 +77,10 @@ namespace gge { namespace widgets { namespace dialog {
 			}
 		}
 
+		void Show(bool focus=true) {
+			DialogWindow::Show(focus);
+			Filename.Focus();
+		}
 
 		utils::EventChain<File, std::string> RepliedEvent;
 

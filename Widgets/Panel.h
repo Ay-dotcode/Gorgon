@@ -30,6 +30,9 @@ namespace gge { namespace widgets {
 			}
 		}
 
+		void HideScroll() { setupvscroll(true, false, true); }
+		void ShowScroll() { setupvscroll(true, true, true); }
+
 		void Dock(DockDirection direction) {
 			if(!Container) return;
 			prepare();

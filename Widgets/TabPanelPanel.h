@@ -27,6 +27,9 @@ namespace gge { namespace widgets { namespace tabpanel {
 			adjustvisibility();
 		}
 
+		void HideScroll() { setupvscroll(true, false, true); }
+		void ShowScroll() { setupvscroll(true, true, true); }
+
 		virtual bool Focus() {
 			if(inactive)
 				return false;
