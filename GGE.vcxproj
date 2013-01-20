@@ -270,6 +270,7 @@
     <ClInclude Include="Utils\SortedCollection.h" />
     <ClInclude Include="Utils\StringEnum.h" />
     <ClInclude Include="Utils\StringTokenizer.h" />
+    <ClInclude Include="Utils\StringUtils.h" />
     <ClInclude Include="Utils\UtilsBase.h" />
     <ClInclude Include="Utils\ValueList.h" />
     <ClInclude Include="Widgets\Base\Blueprint.h" />
