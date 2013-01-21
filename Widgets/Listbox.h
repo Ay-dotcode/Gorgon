@@ -332,6 +332,15 @@ namespace gge { namespace widgets {
 			selected.Clear();
 		}
 
+		void SelectAll() {
+			for(auto it=this->First();it.IsValid();it.Next()) {
+				selected.Add(*it);
+				this->callcheck(*it);
+
+				active=it.CurrentPtr();
+			}
+		}
+
 		using CollectionType::GetCount;
 		using CollectionType::FindLocation;
 		using CollectionType::operator[];

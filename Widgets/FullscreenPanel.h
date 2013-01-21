@@ -29,6 +29,9 @@ namespace gge { namespace widgets {
 		void HideScroll() { setupvscroll(true, false, true); }
 		void ShowScroll() { setupvscroll(true, true, true); }
 
+		void DisableScroll() { setupvscroll(false, false, true); }
+		void EnableScroll() { setupvscroll(false, true, true); }
+
 		using WidgetBase::Resize;
 
 		virtual void Resize(utils::Size Size) {

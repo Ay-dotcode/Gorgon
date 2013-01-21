@@ -22,6 +22,12 @@ namespace gge { namespace widgets {
 				this->setblueprint(*WR.Combobox);
 		}
 
+		Combobox &operator=(const T_ &value) {
+			SetValue(value);
+
+			return *this;
+		}
+
 		LI &Add(const T_ &value=T_()) {
 			LI *li=new LI(this, &Combobox::togglenotify);
 			li->Value=value;
