@@ -25,7 +25,7 @@
 
 namespace gge { namespace utils {
 
-	std::string Replace(const std::string str, const std::string find, const std::string replace) {
+	inline std::string Replace(const std::string str, const std::string find, const std::string replace) {
 		std::string::size_type l=0;
 		std::string ret=str;
 		while( (l=str.find(find, l+1)) != str.npos ) {
