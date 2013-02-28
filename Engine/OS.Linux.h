@@ -21,18 +21,18 @@
 		////Handle for Device Context
 		typedef void*				DeviceHandle;
 
-#		define	threadfncall 
+#		define	threadfncall
 
 		namespace filesystem {
 			//TODO: directory enumerator struct
-			class osdirenum : public RefCounter<osdirenum> {
+			class osdirenum : public utils::RefCounter<osdirenum> {
 				friend class RefCounter<osdirenum>;
 			public:
 				osdirenum();
 				osdirenum(const osdirenum &);
 				~osdirenum();
 				osdirenum &operator =(const osdirenum &);
-				
+
 				void* dp;
 				std::string pattern;
 

@@ -16,7 +16,7 @@ namespace gge { namespace resource {
 
 	class NullImage : 
 		public Base, virtual public ResizableObject, public virtual graphics::ImageTexture, public ResizableObjectProvider, 
-		public animation::RectangularGraphic2DSequenceProvider, virtual public animation::RectangularGraphic2DAnimation
+		virtual public animation::RectangularGraphic2DSequenceProvider, virtual public animation::RectangularGraphic2DAnimation
 	{
 		friend void Init(GGEMain &Main);
 	public:

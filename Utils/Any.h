@@ -28,6 +28,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <stdexcept>
+#include <typeinfo>
 
 
 
@@ -41,15 +42,15 @@ namespace gge { namespace utils {
 		virtual void *New() const=0;
 		virtual void  Delete(void* obj) const=0;
 		virtual void *Clone(const void* const obj) const=0;
-		virtual bool  IsSameType(const type_info &) const=0;
+		virtual bool  IsSameType(const std::type_info &) const=0;
 	};
 
 	template<class T_> class Type : public TypeInterface {
 	public:
-		virtual void* New() const { 
+		virtual void* New() const {
 			return new T_;
 		}
-		virtual void Delete(void *obj) const { 
+		virtual void Delete(void *obj) const {
 			delete static_cast<T_*>(obj);
 		}
 		virtual void *Clone(const void* const obj) const {
@@ -57,7 +58,7 @@ namespace gge { namespace utils {
 			*n = *static_cast<const T_* const>(obj);
 			return n;
 		}
-		virtual bool IsSameType(const type_info &info) const {
+		virtual bool IsSameType(const std::type_info &info) const {
 			return info==typeid(T_);
 		}
 	};
