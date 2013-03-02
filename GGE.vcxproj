@@ -258,6 +258,7 @@
     <ClInclude Include="Utils\Guid.h" />
     <ClInclude Include="Utils\Iterator.h" />
     <ClInclude Include="Utils\ManagedBuffer.h" />
+    <ClInclude Include="Utils\ManagedVector.h" />
     <ClInclude Include="Utils\Margins.h" />
     <ClInclude Include="Utils\OrderedCollection.h" />
     <ClInclude Include="Utils\PAClassList.h" />
