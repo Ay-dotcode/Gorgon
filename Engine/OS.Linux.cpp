@@ -103,6 +103,33 @@ static const int None=0;
 			pthread_create(&threadid, &common_thread_attr, (void*(*)(void *))fn, data);
 		}
 
+		void OpenTerminal(std::string Title="", int maxlines) {
+			/*
+			
+			int fd1[2], fd2[2];
+			pipe(fd);
+			if(!fork()) {
+				dup2(fd1[0], 1);
+				dup2(fd2[1], 0);
+				close(fd1[0]);
+				close(fd1[1]);
+				close(fd2[0]);
+				close(fd2[1]);
+
+				execl("xterm","-T",Title.c_str(),(char *)NULL);
+			}
+			else {
+				dup2(fd1[1], 0);
+				dup2(fd2[0], 1);
+				close(fd1[0]);
+				close(fd1[1]);
+				close(fd2[0]);
+				close(fd2[1]);
+			}
+			
+			*/
+		}
+
 
 		namespace system { class mutex_data { public: pthread_mutex_t mutex; }; }
 

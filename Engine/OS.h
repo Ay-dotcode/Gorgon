@@ -68,6 +68,8 @@ namespace gge { namespace os {
 
 	void RunInNewThread(int(threadfncall *fn)(void *), void *data);
 
+	void OpenTerminal(std::string Title="", int maxlines=1024);
+
 	namespace system {
 		////This function processes OS messages
 		void ProcessMessage();
