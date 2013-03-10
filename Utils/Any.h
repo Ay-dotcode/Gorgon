@@ -98,6 +98,11 @@ namespace gge { namespace utils {
 			return *static_cast<T_*>(content);
 		}
 
+		template <class T_>
+		bool TypeCheck() const {
+			return type->IsSameType(typeid(T_));
+		}
+
 		operator Any() {
 			return *this;
 		}

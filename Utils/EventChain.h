@@ -98,7 +98,7 @@ namespace gge { namespace utils {
 
 			EventHandler(Any data) : data(data) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname)=0;
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const=0;
 		};
 
 		//These template functions provide pseudo inheritance for these functions
@@ -135,7 +135,7 @@ namespace gge { namespace utils {
 
 			EventHandlerFunction(void(*handler)(P_, O_ &, Any Data, std::string), Any data) : EventHandler<P_, O_>(data), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(*handler)(params, caller, EventHandler<P_, O_>::data, eventname);
 			}
 
@@ -160,7 +160,7 @@ namespace gge { namespace utils {
 
 			EventHandlerFunctionPlain(void(*handler)(P_, O_ &)) : EventHandler<P_, O_>(NULL), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(*handler)(params, caller);
 			}
 
@@ -191,7 +191,7 @@ namespace gge { namespace utils {
 
 			EventHandlerFunctionEmpty(void(*handler)()) : EventHandler<P_, O_>(Any()), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(*handler)();
 			}
 
@@ -221,7 +221,7 @@ namespace gge { namespace utils {
 
 			EventHandlerFunctionObjectOnly(void(*handler)(O_ &)) : EventHandler<P_, O_>(Any()), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(*handler)(caller);
 			}
 
@@ -251,7 +251,7 @@ namespace gge { namespace utils {
 
 			EventHandlerFunctionParamOnly(void(*handler)(P_)) : EventHandler<P_, O_>(Any()), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(*handler)(params);
 			}
 
@@ -280,7 +280,7 @@ namespace gge { namespace utils {
 
 			EventHandlerFunctionDataOnly(void(*handler)(Any), Any data) : EventHandler<P_, O_>(data), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(*handler)(EventHandler<P_, O_>::data);
 			}
 
@@ -306,7 +306,7 @@ namespace gge { namespace utils {
 
 			EventHandlerFunctionObjectAndData(void(*handler)(O_ &, Any), Any data) : EventHandler<P_, O_>(data), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(*handler)(caller,EventHandler<P_, O_>::data);
 			}
 
@@ -338,7 +338,7 @@ namespace gge { namespace utils {
 
 			EventHandlerClass(R_ *object, void(R_::*handler)(P_, O_ &, Any, std::string), Any data) : EventHandler<P_, O_>(data), object(object), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(object->*handler)(params, caller, EventHandler<P_,O_>::data, eventname);
 			}
 
@@ -365,7 +365,7 @@ namespace gge { namespace utils {
 
 			EventHandlerClassPlain(R_ *object, void(R_::*handler)(P_, O_ &)) : EventHandler<P_, O_>(Any()), object(object), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(object->*handler)(params, caller);
 			}
 
@@ -398,7 +398,7 @@ namespace gge { namespace utils {
 
 			EventHandlerClassEmpty(R_ *object, void(R_::*handler)()) : EventHandler<P_, O_>(Any()), object(object), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(object->*handler)();
 			}
 
@@ -429,7 +429,7 @@ namespace gge { namespace utils {
 
 			EventHandlerClassObjectOnly(R_ *object, void(R_::*handler)(O_ &)) : EventHandler<P_, O_>(Any()), object(object), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(object->*handler)(caller);
 			}
 
@@ -461,7 +461,7 @@ namespace gge { namespace utils {
 
 			EventHandlerClassParamOnly(R_ *object, void(R_::*handler)(P_ )) : EventHandler<P_, O_>(Any()), object(object), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(object->*handler)(params);
 			}
 
@@ -493,7 +493,7 @@ namespace gge { namespace utils {
 
 			EventHandlerClassDataOnly(R_ *object, void(R_::*handler)(Any), Any data) : EventHandler<P_, O_>(data), object(object), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(object->*handler)(EventHandler<P_, O_>::data);
 			}
 
@@ -526,7 +526,7 @@ namespace gge { namespace utils {
 
 			EventHandlerLambdaEmpty(std::function<void()> handler) : EventHandler<P_, O_>(Any()), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(handler)();
 			}
 
@@ -554,7 +554,7 @@ namespace gge { namespace utils {
 
 			EventHandlerLambdaParamOnly(std::function<void(P_)> handler) : EventHandler<P_, O_>(Any()), handler(handler) {}
 
-			virtual void Fire(P_ params, O_ &caller, std::string eventname) {
+			virtual void Fire(P_ params, O_ &caller, std::string eventname) const {
 				(handler)(params);
 			}
 
@@ -785,19 +785,19 @@ namespace gge { namespace utils {
 
 		////This function triggers the event causing all 
 		/// handlers to be called
-		void operator()(P_ params) {
+		void operator()(P_ params) const {
 			Fire(params);
 		}
 
 		////This function triggers the event causing all 
 		/// handlers to be called
-		void operator()() {
+		void operator()() const {
 			Fire();
 		}
 
 		////This function triggers the event causing all 
 		/// handlers to be called
-		void Fire(P_ params) {
+		void Fire(P_ params) const {
 			for(auto it = events.First();
 				it.IsValid();it.Next()) {
 				it->Fire(params, *this->object, eventname);
@@ -806,7 +806,7 @@ namespace gge { namespace utils {
 
 		////This function triggers the event causing all 
 		/// handlers to be called
-		void Fire() {
+		void Fire() const {
 			Fire(P_());
 		}
 

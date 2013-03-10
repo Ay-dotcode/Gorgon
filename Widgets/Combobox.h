@@ -152,7 +152,7 @@ namespace gge { namespace widgets {
 		}
 
 		void Clear() {
-			this->panel.Widgets.Clear();
+			this->listbox.Clear();
 			OC::Clear();
 		}
 
