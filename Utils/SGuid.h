@@ -85,6 +85,10 @@ namespace gge { namespace utils {
 			Load(in);
 		}
 
+		bool operator <(const SGuid &g) const {
+			return int64<g.int64;
+		}
+
 		void Set(unsigned serial, unsigned random, unsigned time) {
 			//time component - 2
 			ints[0] = (time & 0xffff);
