@@ -366,6 +366,11 @@ namespace gge { namespace utils {
 
 	typedef basic_Point2D<FloatingPoint> Point2D;
 
+  template <>
+  inline Point2D Round(Point2D num) {
+    return Point2D(std::floor(num.x+0.5f),std::floor(num.y+0.5f)); 
+  }
+  
 	typedef basic_Point2D<int> Point;
 
 } }
