@@ -157,10 +157,13 @@ namespace gge {
 
 		////This event is triggered before rendering, after intervals
 		utils::EventChain<GGEMain, utils::empty_event_params> BeforeRenderEvent;
+                
 
 		////This event is triggered before game loop, before intervals and after processing window messages
 		utils::EventChain<GGEMain, utils::empty_event_params> BeforeGameLoopEvent;
 
+                utils::EventChain<GGEMain, utils::empty_event_params> GameLoopEvent;
+                
 		////This event is triggered after rendering before the next
 		/// game loop
 		utils::EventChain<GGEMain> AfterRenderEvent;

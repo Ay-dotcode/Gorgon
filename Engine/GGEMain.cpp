@@ -29,6 +29,7 @@ namespace gge {
 		FullScreen(false),
 		BeforeRenderEvent("BeforeRender", this),
 		AfterRenderEvent("AfterRender", this),
+		GameLoopEvent("GameLoop", this),
 		Window((os::WindowHandle)NULL)
 	{
 		BoundingBox=utils::Bounds(0,0, Width,Height);
@@ -225,7 +226,9 @@ namespace gge {
 			if(!isrunning)
 				break;
 
-			BeforeRender();
+			GameLoopEvent();
+                        
+                        BeforeRender();
 			Render();
 			AfterRender();
 		}
