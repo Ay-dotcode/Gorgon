@@ -18,12 +18,14 @@ namespace gge { namespace widgets { namespace dialog {
 		  INIT_PROPERTY(File, AskOverwrite),
 		  INIT_PROPERTY(File, OnlyExisting),
 		  INIT_PROPERTY(File, DirectoriesOnly),
+		  INIT_PROPERTY(File, MultiSelect),
 		  INIT_PROPERTY(File, CurrentDirectory),
 		  INIT_PROPERTY(File, Mask),
 		  INIT_PROPERTY(File, Columns),
 		  askoverwrite(false),
 		  onlyexisting(true),
 		  directoriesonly(false),
+		  multiselect(false),
 		  columns(2),
 		  curdir("."),
 		  mask("*.*")
@@ -83,10 +85,12 @@ namespace gge { namespace widgets { namespace dialog {
 		}
 
 		utils::EventChain<File, std::string> RepliedEvent;
+		utils::EventChain<File, const std::vector<std::string>& > MultiSelectRepliedEvent;
 
 		utils::BooleanProperty<File> AskOverwrite;
 		utils::BooleanProperty<File> OnlyExisting;
 		utils::BooleanProperty<File> DirectoriesOnly;
+		utils::BooleanProperty<File> MultiSelect;
 		utils::TextualProperty<File> CurrentDirectory;
 		utils::TextualProperty<File> Mask;
 		utils::NumericProperty<File, int> Columns;
@@ -124,6 +128,7 @@ namespace gge { namespace widgets { namespace dialog {
 			Filename.SetContainer(this);
 			Filename.ChangeEvent.RegisterLambda([&]{
 				Ok.SetEnabled(directoriesonly || Filename.Text!="");
+				Files.ClearSelection();
 			});
 
 
@@ -170,55 +175,70 @@ namespace gge { namespace widgets { namespace dialog {
 
 		}
 
-		void Accept() { 
-			std::string f=curdir+"/"+std::string(Filename.Text);
-			if(directoriesonly && os::filesystem::IsFileExists(f)) {
-				ShowMessage("Please select a directory.", Title);
-				return;
+		void Accept() {
+			if(multiselect) {
+				std::vector<std::string> files;
+				for(auto it=Files.GetSelectedItems().First();it.IsValid();++it) {
+					files.push_back(it->Value.Get().value);
+				}
+				MultiSelectRepliedEvent(files);
 			}
-			if(!directoriesonly && os::filesystem::IsDirectoryExists(f)) {
-				ShowMessage("Please select a file.", Title);
-				return;
-			}
-			if(onlyexisting) {
-				if(directoriesonly) {
-					if(!os::filesystem::IsDirectoryExists(f)) {
-						ShowMessage("Directory not found: "+Filename.Text, Title);
+			else {
+				std::string f=curdir+"/"+std::string(Filename.Text);
+				if(Filename.Text.Get()[0]=='[' && Filename.Text.length()>2 && directoriesonly) {
+					f=std::string(Filename.Text);
+					f=f.substr(1, f.length()-2);
+					f=curdir+"/"+f;
+				}
+
+				if(directoriesonly && os::filesystem::IsFileExists(f)) {
+					ShowMessage("Please select a directory.", Title);
+					return;
+				}
+				if(!directoriesonly && os::filesystem::IsDirectoryExists(f)) {
+					ShowMessage("Please select a file.", Title);
+					return;
+				}
+				if(onlyexisting) {
+					if(directoriesonly) {
+						if(!os::filesystem::IsDirectoryExists(f)) {
+							ShowMessage("Directory not found: "+Filename.Text, Title);
+							return;
+						}
+					}
+					else {
+						if(!os::filesystem::IsFileExists(f)) {
+							ShowMessage("File not found: "+Filename.Text, Title);
+							return;
+						}
+					}
+				}
+				if(askoverwrite) {
+					if(os::filesystem::IsDirectoryExists(f)) {
+						AskConfirm("The directory exists, do you still wish to continue?",Title).RepliedEvent
+							.RegisterLambda([&](bool reply){
+								if(reply) {
+									std::string f=curdir+"/"+Filename.Text;
+									this->RepliedEvent(f);
+									Close();
+								}
+						});
+						return;
+					}
+					else if(os::filesystem::IsFileExists(f)) {
+						AskConfirm("The file exists, do you still wish to continue?",Title).RepliedEvent
+							.RegisterLambda([&](bool reply){
+								if(reply) {
+									std::string f=curdir+"/"+Filename.Text;
+									this->RepliedEvent(f);
+									Close();
+								}
+						});
 						return;
 					}
 				}
-				else {
-					if(!os::filesystem::IsFileExists(f)) {
-						ShowMessage("File not found: "+Filename.Text, Title);
-						return;
-					}
-				}
+				RepliedEvent(f);
 			}
-			if(askoverwrite) {
-				if(os::filesystem::IsDirectoryExists(f)) {
-					AskConfirm("The directory exists, do you still wish to continue?",Title).RepliedEvent
-					.RegisterLambda([&](bool reply){
-						if(reply) {
-							std::string f=curdir+"/"+Filename.Text;
-							this->RepliedEvent(f);
-							Close();
-						}
-					});
-					return;
-				}
-				else if(os::filesystem::IsFileExists(f)) {
-					AskConfirm("The file exists, do you still wish to continue?",Title).RepliedEvent
-					.RegisterLambda([&](bool reply){
-						if(reply) {
-							std::string f=curdir+"/"+Filename.Text;
-							this->RepliedEvent(f);
-							Close();
-						}
-					});
-					return;
-				}
-			}
-			RepliedEvent(f);
 			Close();
 		}
 
@@ -294,6 +314,16 @@ namespace gge { namespace widgets { namespace dialog {
 			return directoriesonly;
 		}
 
+		void setMultiSelect(const bool &value) {
+			if(multiselect!=value) {
+				multiselect = value;
+				Files.SelectionType=multiselect ? Files.MultiSelect : Files.SingleSelect;
+			}
+		}
+		bool getMultiSelect() const {
+			return multiselect;
+		}
+
 		void setCurrentDirectory(const std::string &value) {
 			std::string d=os::filesystem::CanonizePath(value);
 			if(curdir!=d) {
@@ -331,6 +361,7 @@ namespace gge { namespace widgets { namespace dialog {
 		bool askoverwrite;
 		bool onlyexisting;
 		bool directoriesonly;
+		bool multiselect;
 
 		int columns;
 

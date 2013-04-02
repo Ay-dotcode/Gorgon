@@ -915,6 +915,9 @@
     <ClInclude Include="Utils\ManagedVector.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Widgets\Dialogs\NumberInput.h">
+      <Filter>Widgets\Dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">

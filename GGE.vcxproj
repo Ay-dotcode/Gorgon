@@ -297,6 +297,7 @@
     <ClInclude Include="Widgets\Definitions.h" />
     <ClInclude Include="Widgets\Dialogs\FileDialog.h" />
     <ClInclude Include="Widgets\Dialogs\Message.h" />
+    <ClInclude Include="Widgets\Dialogs\NumberInput.h" />
     <ClInclude Include="Widgets\Dialogs\Query.h" />
     <ClInclude Include="Widgets\Dialogs\TextInput.h" />
     <ClInclude Include="Widgets\DialogWindow.h" />

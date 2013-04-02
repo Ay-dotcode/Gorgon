@@ -491,6 +491,24 @@ namespace gge { namespace widgets {
 						active=selected(selected.GetCount()-1);
 					}
 				}
+				else if(Modifier::Current==Modifier::Shift) {
+					int from=FindLocation(active);
+					int to=FindLocation(item);
+
+					if(!active) from=-1;
+
+					if(from>to) std::swap(from, to);
+
+					for(int i=from+1;i<=to;i++) {
+						try {
+							if(selected.FindLocation(CollectionType::Get(i))==-1) {
+								selected.Add(CollectionType::Get(i));
+								this->callcheck(CollectionType::Get(i));
+								active=item;
+							}
+						} catch(...) {}
+					}
+				}
 				else {
 					clearall();
 					selected.Clear();
