@@ -131,7 +131,19 @@ namespace gge { namespace graphics {
 			return a==c.a && r==c.r && g==c.g && b==c.b;
 		}
 
+		RGBfloat operator +(RGBfloat v) const {
+			return RGBfloat(a+v.a>1.f ? 1.f : a+v.a, r+v.r, g+v.g, b+v.b);
+		}
+
+		RGBfloat operator *(float v) const {
+			return RGBfloat(a, r*v, g*v, b*v);
+		}
+
 		RGBfloat &operator =(const RGBint &c);
+
+		float Luminance() { 
+			return  0.2126f*r + 0.7151f*g + 0.0722f*b; 
+		}
 
 		float vect[4];
 	};
