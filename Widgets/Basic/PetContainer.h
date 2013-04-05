@@ -91,6 +91,18 @@ namespace gge { namespace widgets {
 			}
 		}
 
+		void AttachTo(LayerBase *layer, int order=0) {
+			if(layer) {
+				layer->Add(this->BaseLayer, order);
+			}
+			else {
+				this->BaseLayer.parent=NULL;
+			}
+		}
+		void AttachTo(LayerBase &layer, int order=0) {
+			AttachTo(&layer, order);
+		}
+
 		operator LayerBase &() {
 			return BaseLayer;
 		}
