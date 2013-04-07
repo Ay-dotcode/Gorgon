@@ -51,7 +51,12 @@ namespace gge { namespace resource {
 
 		gge::sound::Wave *CreateWave() { return new gge::sound::Wave(Buffer); }
 
-		gge::sound::Wave *Create3DWave(float maxWaveDistance) { return new gge::sound::Wave(Buffer,	maxWaveDistance); }
+		gge::sound::Wave *Create3DWave(float maxWaveDistance=-1) { 
+			if(maxWaveDistance==-1) 
+				maxWaveDistance=float(Main.BoundingBox.Width()+Main.BoundingBox.Height());
+
+			return new gge::sound::Wave(Buffer,	maxWaveDistance); 
+		}
 
 		virtual void Prepare(GGEMain &main, File &file) { Prepare(); }
 
