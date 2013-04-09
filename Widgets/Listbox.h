@@ -380,13 +380,8 @@ namespace gge { namespace widgets {
 
 		void Remove_(ItemType &item) {
 			itemremoving(item);
-			if(active==&item) {
-				active=NULL;
-			}
-			selected.Remove(item);
 
 			this->remove(item);
-			CollectionType::Remove(item);
 			item.Detach();
 		}
 
@@ -394,6 +389,11 @@ namespace gge { namespace widgets {
 			if(!deletelist.Find(item).IsValid()) {
 				deletelist.Add(item);
 			}
+			selected.Remove(item);
+			if(active==item) {
+				active=NULL;
+			}
+			CollectionType::Remove(item);
 			if(!isinqueue) {
 				Main.RegisterOnce([&]{
  					for(auto it=removelist.First();it.IsValid();it.Next()) {
@@ -418,6 +418,11 @@ namespace gge { namespace widgets {
 			if(!removelist.Find(item).IsValid()) {
 				removelist.Add(item);
 			}
+			selected.Remove(item);
+			if(active==item) {
+				active=NULL;
+			}
+			CollectionType::Remove(item);
 			if(!isinqueue) {
 				Main.RegisterOnce([&]{
  					for(auto it=removelist.First();it.IsValid();it.Next()) {
