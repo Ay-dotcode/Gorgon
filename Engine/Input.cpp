@@ -470,8 +470,8 @@ namespace gge { namespace input {
 			params.keycode=Key;
 			params.event=keyboard::Event::Down;
 
-			keyboard::Events.SetToken(params, keyboard::Events(params));
-			keyboard::PressedKeys[Key]=true;
+      keyboard::PressedKeys[Key]=true;
+      keyboard::Events.SetToken(params, keyboard::Events(params));
 		}
 
 		void ProcessKeyUp(int Key) {
