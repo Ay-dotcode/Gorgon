@@ -201,8 +201,8 @@ namespace gge { namespace widgets {
 		}
 
 		void Destroy() {
-			for(auto it=this->First();it.IsValid();it.Next()) {
-				ItemType *item=&(*it);
+			while(CollectionType::GetCount()) {
+				ItemType *item=&(*CollectionType::First());
 				queuefordelete(item);
 			}
 
@@ -212,8 +212,8 @@ namespace gge { namespace widgets {
 		}
 
 		void Clear() {
-			for(auto it=this->First();it.IsValid();it.Next()) {
-				ItemType *item=&(*it);
+			while(CollectionType::GetCount()) {
+				ItemType *item=&(*CollectionType::First());
 				queueforremoval(item);
 			}
 			this->active=NULL;
@@ -379,8 +379,6 @@ namespace gge { namespace widgets {
 		bool isinqueue;
 
 		void Remove_(ItemType &item) {
-			itemremoving(item);
-
 			this->remove(item);
 			item.Detach();
 		}
@@ -389,24 +387,32 @@ namespace gge { namespace widgets {
 			if(!deletelist.Find(item).IsValid()) {
 				deletelist.Add(item);
 			}
+
 			selected.Remove(item);
+			itemremoving(*item);
+
 			if(active==item) {
 				active=NULL;
 			}
 			CollectionType::Remove(item);
+
 			if(!isinqueue) {
 				Main.RegisterOnce([&]{
  					for(auto it=removelist.First();it.IsValid();it.Next()) {
  						this->Remove_(*it);
  						it.Remove();
  					}
- 					while(deletelist.GetCount()) {
-						auto &it=*deletelist.First();
- 						this->Remove_(it);
-						deletelist.Remove(0);
- 						delete &it;
-						//it.Remove();
- 					}
+ 					//while(deletelist.GetCount()) {
+						//auto &it=*deletelist.First();
+ 					//	this->Remove_(it);
+						//deletelist.Remove(0);
+ 					//	delete &it;
+						////it.Remove();
+ 					//}
+					for(auto it=deletelist.First();it.IsValid();it.Next()) {
+						this->Remove_(*it);
+						it.Delete();
+					}
 					isinqueue=false;
 					this->adjustheight();
 				});
@@ -418,11 +424,15 @@ namespace gge { namespace widgets {
 			if(!removelist.Find(item).IsValid()) {
 				removelist.Add(item);
 			}
+
 			selected.Remove(item);
+			itemremoving(*item);
+
 			if(active==item) {
 				active=NULL;
 			}
 			CollectionType::Remove(item);
+
 			if(!isinqueue) {
 				Main.RegisterOnce([&]{
  					for(auto it=removelist.First();it.IsValid();it.Next()) {
