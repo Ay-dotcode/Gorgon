@@ -918,6 +918,9 @@
     <ClInclude Include="Widgets\Dialogs\NumberInput.h">
       <Filter>Widgets\Dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="Widgets\ColorPicker.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">

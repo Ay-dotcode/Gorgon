@@ -291,6 +291,7 @@
     <ClInclude Include="Widgets\Checkbox.h" />
     <ClInclude Include="Widgets\Checkbox\CheckboxBase.h" />
     <ClInclude Include="Widgets\Checkbox\CheckboxBlueprint.h" />
+    <ClInclude Include="Widgets\ColorPicker.h" />
     <ClInclude Include="Widgets\Combobox.h" />
     <ClInclude Include="Widgets\Combobox\ComboboxBase.h" />
     <ClInclude Include="Widgets\Combobox\ComboboxBlueprint.h" />
