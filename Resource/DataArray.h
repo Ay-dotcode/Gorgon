@@ -236,6 +236,15 @@ namespace gge { namespace resource {
 		IData *operator [] (int Index) { return &Data[Index]; }
 		////Returns integer at index
 		int getInt(int Index) { return dynamic_cast<IntegerData&>(Data[Index]).value; }
+		////Returns integer at index
+		int getColor(int Index) { 
+			if(Data[Index].GetGID()==gge::resource::GID::Data_Color) {
+				return dynamic_cast<ColorData&>(Data[Index]).value;
+			}
+			else {
+				return dynamic_cast<IntegerData&>(Data[Index]).value;
+			}
+		}
 		////Returns float at index
 		float getFloat(int Index) { return dynamic_cast<FloatData&>(Data[Index]).value; }
 		////Returns string at index
