@@ -35,23 +35,23 @@ namespace gge { namespace widgets {
 
 		static const Type Checkbox				= 0x05850000;
 		static const Type Checkbox_Props		= 0x05850101;
-		static const Type Checkbox_Name			= 0x05850102;
-		static const Type Checkbox_Names		= 0x05850103;
+		static const Type Checkbox_Names		= 0x05850102;
+		static const Type Checkbox_Name			= 0x05850103;
 
 		static const Type Checkbox_Group		= 0x05854000;
 		static const Type Checkbox_Group_Props	= 0x05854001;
-		static const Type Checkbox_Group_Name	= 0x05854002;
-		static const Type Checkbox_Group_Names	= 0x05854003;
+		static const Type Checkbox_Group_Names	= 0x05854002;
+		static const Type Checkbox_Group_Name 	= 0x05854003;
 
 		static const Type Checkbox_Element		= 0x05855000;
 		static const Type Checkbox_Element_Props= 0x05855001;
-		static const Type Checkbox_Element_Name	= 0x05855002;
-		static const Type Checkbox_Element_Names= 0x05855003;
+		static const Type Checkbox_Element_Names= 0x05855002;
+		static const Type Checkbox_Element_Name = 0x05855003;
 
 		static const Type Checkbox_Line			= 0x05856000;
 		static const Type Checkbox_Line_Props	= 0x05856001;
-		static const Type Checkbox_Line_Name	= 0x05856002;
-		static const Type Checkbox_Line_Names	= 0x05856003;
+		static const Type Checkbox_Line_Names	= 0x05856002;
+		static const Type Checkbox_Line_Name 	= 0x05856003;
 
 
 
@@ -85,8 +85,8 @@ namespace gge { namespace widgets {
 
 		static const Type Textbox				= 0x05830000;
 		static const Type Textbox_Props			= 0x05830101;
-		static const Type Textbox_Names			= 0x05830002;
-		static const Type Textbox_Name			= 0x05830003;
+		static const Type Textbox_Names			= 0x05830102;
+		static const Type Textbox_Name			= 0x05830103;
 
 		static const Type Textbox_Element		= 0x05835000;
 		static const Type Textbox_Element_Props	= 0x05835001;
@@ -113,6 +113,8 @@ namespace gge { namespace widgets {
 
 
 		static const Type WR					= 0x05100000;
+		static const Type WR_Names				= 0x05100102;
+		static const Type WR_Name				= 0x05100103;
 	}
 
 }}

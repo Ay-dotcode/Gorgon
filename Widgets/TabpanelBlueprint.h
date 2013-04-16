@@ -14,7 +14,7 @@ namespace gge { namespace widgets {
 			friend Blueprint *Load(resource::File& File, std::istream &Data, int Size);
 		public:
 
-			Blueprint() : Placeholder(new widgets::Placeholder) { }
+			Blueprint() : Placeholder(new widgets::Placeholder), Panel(NULL), Radio(NULL) { }
 
 			widgets::Placeholder *Placeholder;
 			checkbox::Blueprint *Radio;
