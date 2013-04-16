@@ -160,8 +160,8 @@ namespace gge { namespace widgets {
 			return OC::GetCount();
 		}
 
-		T_ GetValue(int Index) {
-			if(OC::Get(Index))
+		T_ GetValue(int Index) const {
+			if(OC::operator ()(Index))
 				return OC::Get(Index).Value;
 
 			return T_();
@@ -169,7 +169,7 @@ namespace gge { namespace widgets {
 
 		//returns selected item value
 		//returns last selected if listbox is in multi select
-		T_ GetValue() {
+		T_ GetValue() const {
 			return this->getvalue();
 		}
 
@@ -179,6 +179,10 @@ namespace gge { namespace widgets {
 
 		LI *GetItem(int Index) {
 			return &OC::Get(Index);
+		}
+
+		T_ operator[](int Index) const {
+			return GetValue(Index);
 		}
 
 		//returns selected item

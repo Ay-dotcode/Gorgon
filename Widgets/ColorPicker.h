@@ -147,7 +147,7 @@ namespace gge { namespace widgets {
 				drawpixel(i, 18, tempcolor);
 			}
 
-			image.Prepare(Main, dummy);
+			image.Prepare();
 			image.DrawIn(l);
 		}
 
@@ -231,7 +231,6 @@ namespace gge { namespace widgets {
 		LayerWidget visual;
 		Numberbox<unsigned> display;
 
-		gge::resource::File dummy;
 		graphics::RGBint *colorbuffer;
 		gge::resource::Image image;
 

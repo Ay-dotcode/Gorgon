@@ -74,6 +74,7 @@ namespace gge { namespace resource {
 		void LoadProperties(std::istream &in, int size);
 
 		virtual void Prepare(GGEMain &main, File &file);
+		void Prepare();
 
 		PNGReadError ImportPNG(std::string filename);
 

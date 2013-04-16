@@ -100,13 +100,17 @@ namespace gge { namespace resource {
 	}
 
 	void Image::Prepare(GGEMain &main, resource::File &file) {
+		Prepare();
+	}
+
+	void Image::Prepare() {
 #ifdef _DEBUG
-			if(Data==NULL) {
-				os::DisplayMessage("Image Resource","Data is not loaded yet.");
-				assert(0);
-			}
+		if(Data==NULL) {
+			os::DisplayMessage("Image Resource","Data is not loaded yet.");
+			assert(0);
+		}
 #endif
-		
+
 		if(Texture.ID>0) {
 			if(GetWidth()==Texture.W && GetHeight()==Texture.H)
 				graphics::system::UpdateTexture(Texture, Data, GetMode());

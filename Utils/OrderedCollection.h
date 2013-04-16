@@ -810,6 +810,13 @@ namespace gge { namespace utils {
 
 			return list[Index];
 		}
+
+		const T_ *get_(int Index) const {
+			if(Index<0 || Index>*count)
+				return NULL;
+
+			return list[Index];
+		}
 	};
 
 } }
