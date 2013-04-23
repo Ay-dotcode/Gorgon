@@ -22,13 +22,11 @@ namespace gge { namespace resource {
  		friend BitmapFont *LoadBitmapFontResource(File &File, std::istream &Data, int Size);
 		friend class Font;
 	public:
-		////Size of the tabs in spaces, default is 4
-		int Tabsize;
 		////03020000h (Game, Bitmap font)
 		virtual GID::Type GetGID() const { return GID::Font; }
 
 		////Default constructor
-		BitmapFont() : Base(), noshadows(false) { 
+		BitmapFont() : Base(), noshadows(false), Seperator(0), Baseline(11) { 
 			Tabsize=4; 
 			memset(Characters, 0, 256*sizeof(Image*)); 
 			VerticalSpacing=22;
@@ -39,7 +37,8 @@ namespace gge { namespace resource {
 		////Images that represents characters. 8bit ASCII encoding is used. 
 		/// An image might be used in more than one character.
 		Image *Characters[256];
-
+		////Size of the tabs in spaces, default is 4
+		int Tabsize;
 		////Horizontal separation distance between two characters
 		int Seperator;
 		////Vertical spacing of this font (px)
@@ -95,6 +94,5 @@ namespace gge { namespace resource {
 
 	protected:
 		bool noshadows;
-		File *file;
 	};
 } }

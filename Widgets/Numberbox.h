@@ -331,6 +331,7 @@ namespace gge { namespace widgets {
 
 			if(WR.Textboxes.Numberbox)
 				setblueprint(*WR.Textboxes.Numberbox);
+
 		}
 
 		Numberbox &operator =(const T_ &s) {
@@ -339,7 +340,6 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
-		utils::EventChain<Numberbox> ChangeEvent;
 
 		void SelectAll() {
 			Base::setselection(0, gettext().length());
@@ -375,12 +375,13 @@ namespace gge { namespace widgets {
 		utils::BooleanProperty<Numberbox> UseHex;
 		utils::TextualProperty<Numberbox> Prefix, Suffix;
 
+		utils::EventChain<Numberbox> ChangeEvent;
+
 		bool AutoSelectAll;
 
 
 
 	protected:
-
 
 		virtual void textchanged() {
 			std::string s=gettext();

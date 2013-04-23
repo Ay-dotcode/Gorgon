@@ -64,6 +64,7 @@ namespace gge { namespace resource {
 	}
 	void BitmapFont::Print(graphics::ColorizableImageTarget2D *target, int X, int Y, const std::string &text, graphics::RGBint color, ShadowParams Shadow) {
 		if(text=="") return;
+		if(!Characters[0]) return;
 
 		RGBint cc=target->GetCurrentColor();
 
@@ -107,6 +108,7 @@ namespace gge { namespace resource {
 		bool wrap=true;
 
 		if(text=="") return;
+		if(!Characters[0]) return;
 
 
 		if(Shadow.Type==ShadowParams::Flat)
@@ -204,6 +206,7 @@ namespace gge { namespace resource {
 		target->SetCurrentColor(cc);
 	}
 	void BitmapFont::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, const std::string &text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment::Type Align, ShadowParams Shadow) {
+		if(!Characters[0]) return;
 
 		RGBint cc=target->GetCurrentColor();
 		target->SetCurrentColor(color);
@@ -450,6 +453,8 @@ namespace gge { namespace resource {
 
 	}
 	void BitmapFont::Print_Test(int x, int y, int w, const std::string &text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {
+		if(!Characters[0]) return;
+
 		if(text=="") {
 			int d;
 			int xpos=0;
@@ -653,6 +658,8 @@ namespace gge { namespace resource {
 	}
 
 	int BitmapFont::TextHeight(const std::string &text, int w) {
+		if(!Characters[0]) return 0;
+
 		unsigned i;
 		int l=0;
 		int lstart=0,lword=0;
@@ -798,7 +805,6 @@ namespace gge { namespace resource {
 
 	void BitmapFont::Prepare(GGEMain &main, File &file) {
 		Base::Prepare(main, file);
-		this->file=&file;
 
 		if(!noshadows) {
 			Blur(1.f);

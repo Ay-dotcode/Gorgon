@@ -185,7 +185,7 @@ namespace gge { namespace widgets { namespace dialog {
 			}
 			else {
 				std::string f=curdir+"/"+std::string(Filename.Text);
-				if(Filename.Text.Get()[0]=='[' && Filename.Text.length()>2 && directoriesonly) {
+				if(Filename.Text.length()>2 && Filename.Text.Get()[0]=='[' && directoriesonly) {
 					f=std::string(Filename.Text);
 					f=f.substr(1, f.length()-2);
 					f=curdir+"/"+f;

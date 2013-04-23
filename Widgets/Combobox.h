@@ -160,8 +160,8 @@ namespace gge { namespace widgets {
 			return OC::GetCount();
 		}
 
-		T_ GetValue(int Index) const {
-			if(OC::operator ()(Index))
+		T_ GetValue(int Index) {
+			if(OC::get_(Index))
 				return OC::Get(Index).Value;
 
 			return T_();

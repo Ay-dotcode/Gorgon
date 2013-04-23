@@ -21,7 +21,7 @@ namespace gge { namespace widgets {
 				scroll(0,0), vscroll(true), mhover(false), caretlocation(0), selectionstart(0),
 				caret(NULL), selection(NULL), textlocation(0,0), mdown(false), passive(false),
 				readonly(false), noselection(false), outerborder(NULL), innerborder(NULL),
-				blueprintmodified(false)
+				blueprintmodified(false), AcceptEvent(this)
 			{
 				innerlayer.ClippingEnabled=true;
 
@@ -75,6 +75,9 @@ namespace gge { namespace widgets {
 			virtual bool MouseHandler(input::mouse::Event::Type event, utils::Point location, int amount);
 
 			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key);
+
+			//Called when user presses enter or looses focus
+			gge::utils::EventChain<Base> AcceptEvent;
 
 		protected:
 			void adjustscrolls();

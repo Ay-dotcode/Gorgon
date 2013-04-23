@@ -490,6 +490,9 @@ namespace gge { namespace widgets {
 			}
 			
 			if(event==Event::Down && Modifier::Current==Modifier::None) {
+				if(Key==input::keyboard::KeyCodes::Enter) {
+					AcceptEvent();
+				}
 				if(Key==KeyCodes::Left) {
 					setcaretlocation(caretlocation-1);
 
@@ -795,6 +798,8 @@ namespace gge { namespace widgets {
 				setstyle(widgets::Blueprint::Normal);
 
 			WidgetBase::loosefocus(force);
+
+			AcceptEvent();
 
 			return true;
 		}
