@@ -111,8 +111,12 @@ namespace gge { namespace widgets {
 					}
 					else if(colmaxw[col]>0 && dynamic_cast<Label*>(widget))
 						x+=colmaxw[col]+spacing;
-					else
+					else {
+						if(widget->GetWidth()+x>attachedto->GetUsableWidth()-1 && attachedto->GetUsableWidth()-1-x>10)
+							widget->SetWidth(attachedto->GetUsableWidth()-1-x);
+
 						x+=widget->GetWidth()+spacing;
+					}
 
 					if(dynamic_cast<IButton*>(widget)==NULL)
 						allbuttons=false;

@@ -19,9 +19,8 @@ namespace gge { namespace widgets {
 		{
 			display.UseHex=true;
 			display.Value=0xff000000;
-			display.Prefix="0x";
 			display.SetContainer(controls);
-			display.SetWidth(78);
+			display.SetWidth(70);
 			display.Move(90, (40-display.GetHeight())/2);
 			display.ChangeEvent.RegisterLambda([&]{
 				color=display.Value;
@@ -72,7 +71,7 @@ namespace gge { namespace widgets {
 			memset(image.getdata().GetBuffer(), 0, imsize*36*4);
 			colorbuffer=(graphics::RGBint*)image.getdata().GetBuffer();
 
-			Resize(168, 40);
+			Resize(160, 40);
 		}
 
 		virtual void SetBlueprint(const gge::widgets::Blueprint &bp) {}
@@ -100,7 +99,10 @@ namespace gge { namespace widgets {
 		virtual void Resize(gge::utils::Size Size) {
 			WidgetBase::Resize(Size);
 
-
+			if(GetWidth()<70+90)
+				display.SetWidth(GetWidth()-90);
+			else
+				display.SetWidth(70);
 			if(BaseLayer)
 				BaseLayer->Resize(Size);
 
