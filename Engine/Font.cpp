@@ -114,6 +114,10 @@ namespace gge {
 
 			f.Shadow=ShadowParams::Load(File,Data,size);
 		}
+		else {
+			f.Style=Font::Normal;
+			f.Color=0xff000000;
+		}
 		return f;
 	}
 

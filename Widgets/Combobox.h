@@ -147,8 +147,8 @@ namespace gge { namespace widgets {
 		}
 
 		void Destroy() {
-			this->listbox.Clear();
-			OC::Destroy();
+			this->listbox.Destroy();
+			OC::Clear();
 		}
 
 		void Clear() {
