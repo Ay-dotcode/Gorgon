@@ -62,7 +62,7 @@ namespace gge { namespace utils {
 			Left(Left), Right(Right), Top(Top), Bottom(Bottom) { }
 
 
-		operator std::string() {
+		operator std::string() const {
 			std::ostringstream str;
 			str<<"("<<Left<<", "<<Top<<", "<<Right<<", "<<Bottom<<")";
 
@@ -95,6 +95,14 @@ namespace gge { namespace utils {
 			return *this;
 		}
 
+		bool operator ==(const basic_Margins2D &margin) {
+			return Left==margin.Left && Right==margin.Right && Top==margin.Top && Bottom==margin.Bottom;
+		}
+
+		bool operator !=(const basic_Margins2D &margin) {
+			return Left!=margin.Left || Right!=margin.Right || Top!=margin.Top || Bottom!=margin.Bottom;
+		}
+		
 		basic_Margins2D AddToTop(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
 			return basic_Margins2D(Left, Top+margin.TotalY()+val, Right, Bottom);
 		}

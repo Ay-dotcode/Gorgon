@@ -237,7 +237,7 @@ namespace gge { namespace resource {
 		////Returns integer at index
 		int getInt(int Index) { return dynamic_cast<IntegerData&>(Data[Index]).value; }
 		////Returns integer at index
-		int getColor(int Index) { 
+		gge::graphics::RGBint getColor(int Index) { 
 			if(Data[Index].GetGID()==gge::resource::GID::Data_Color) {
 				return dynamic_cast<ColorData&>(Data[Index]).value;
 			}

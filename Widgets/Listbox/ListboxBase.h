@@ -21,31 +21,32 @@ namespace gge { namespace widgets {
 
 	namespace listbox {
 
+		
+
+		template <typename T>
+		class has_stringoperator
+		{
+			typedef char one;
+			struct two {
+				char a[2];
+			};
+
+			template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {;}
+			template <typename C> static two test(...){;}
+
+		public:
+			enum { value = sizeof(test<T>(""))==sizeof(char) };
+		};
+
 		template<class T_>
-		void CastToString(const T_ &v, std::string &str) {
+		typename std::enable_if<has_stringoperator<T_>::value>::type CastToString(const T_ &v, std::string &str) {
 			str=(std::string)v;
 		}
-		template<>
-		inline void CastToString(const int &v, std::string &str) {
+		template<class T_>
+		typename std::enable_if<!has_stringoperator<T_>::value>::type CastToString(const T_ &v, std::string &str) {
 			std::stringstream ss;
 			ss<<v;
 			str=ss.str();
-		}
-		template<>
-		inline void CastToString(const float &v, std::string &str) {
-			std::stringstream ss;
-			ss<<v;
-			str=ss.str();
-		}
-		template<>
-		inline void CastToString(const double &v, std::string &str) {
-			std::stringstream ss;
-			ss<<v;
-			str=ss.str();
-		}
-		template<>
-		inline void CastToString(const bool &v, std::string &str) {
-			str=v ? "true" : "false";
 		}
 
 		template<class T_, void(*CF_)(const T_ &, std::string &)=CastToString<T_> >
