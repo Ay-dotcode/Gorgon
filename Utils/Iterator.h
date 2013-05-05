@@ -279,9 +279,23 @@ namespace gge { namespace utils {
 		}
 	}
 
+	template<class C_, class I_>
+	void AddCopy(C_ &target, const I_ &begin, const I_ &end) {
+		for(I_ i=begin;i!=end;i++) {
+			target.Add(*i);
+		}
+	}
+
 	template<class T_, class I_>
 	void AddCopy(std::vector<T_> &target, const I_ &it) {
 		for(I_ i=it;i.IsValid();i.Next()) {
+			target.push_back(*i);
+		}
+	}
+
+	template<class T_, class I_>
+	void AddCopy(std::vector<T_> &target, const I_ &begin, const I_ &end) {
+		for(I_ i=begin;i!=end;i++) {
 			target.push_back(*i);
 		}
 	}

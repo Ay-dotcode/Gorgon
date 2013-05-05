@@ -9,12 +9,14 @@
 
 namespace gge { namespace widgets {
 
-
 	//If you are using linear organizer, you should add widgets to
 	//Linear organizer, not to container. If you add widget to container
 	//it will be placed at the end. (???) However, you can remove widgets from 
 	//container
 	class LinearOrganizer : public Organizer {
+	public:
+		class FullWidth {};
+
 	protected:
 
 

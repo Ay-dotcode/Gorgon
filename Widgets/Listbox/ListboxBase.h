@@ -25,6 +25,28 @@ namespace gge { namespace widgets {
 		void CastToString(const T_ &v, std::string &str) {
 			str=(std::string)v;
 		}
+		template<>
+		inline void CastToString(const int &v, std::string &str) {
+			std::stringstream ss;
+			ss<<v;
+			str=ss.str();
+		}
+		template<>
+		inline void CastToString(const float &v, std::string &str) {
+			std::stringstream ss;
+			ss<<v;
+			str=ss.str();
+		}
+		template<>
+		inline void CastToString(const double &v, std::string &str) {
+			std::stringstream ss;
+			ss<<v;
+			str=ss.str();
+		}
+		template<>
+		inline void CastToString(const bool &v, std::string &str) {
+			str=v ? "true" : "false";
+		}
 
 		template<class T_, void(*CF_)(const T_ &, std::string &)=CastToString<T_> >
 		class Base;

@@ -57,6 +57,7 @@ namespace gge { namespace widgets {
 					(dynamic_cast<ComboboxType*>(widget)) ||
 					(dynamic_cast<Panel*>(widget)) ||
 					(dynamic_cast<ListboxType*>(widget)) || 
+					(dynamic_cast<FullWidth*>(widget)) || 
 					(dynamic_cast<Label*>(widget) && col==(int)row->columns.size()-1 && maxsizedwidgets==0)
 				) {
 					maxsizedwidgets++;
@@ -100,6 +101,7 @@ namespace gge { namespace widgets {
 						(dynamic_cast<ComboboxType*>(widget)) ||
 						(dynamic_cast<Panel*>(widget)) ||
 						(dynamic_cast<ListboxType*>(widget)) || 
+						(dynamic_cast<FullWidth*>(widget)) || 
 						(dynamic_cast<Label*>(widget) && col==(int)row->columns.size()-1 && maxsizedwidgets>0)
 						) {
 
@@ -127,7 +129,9 @@ namespace gge { namespace widgets {
 
 			if(allbuttons && row->columns.size()) {
 				x-=spacing;
-				if(buttonalign==TextAlignment::Center)
+				if(buttonalign==TextAlignment::Left)
+					x=0;
+				else if(buttonalign==TextAlignment::Center)
 					x=(attachedto->GetUsableWidth()-x)/2;
 				else if(buttonalign==TextAlignment::Right)
 					x=(attachedto->GetUsableWidth()-x);
