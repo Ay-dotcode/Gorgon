@@ -99,6 +99,19 @@ namespace gge { namespace utils {
 		}
 
 		template <class T_>
+		T_ CastTo() const {
+#ifdef _DEBUG
+			if(!type || !content) {
+				throw std::runtime_error("Any storage is empty");
+			}
+#endif
+			if(!type->IsSameType(typeid(T_))) {
+				throw std::runtime_error("Cannot cast: not the same type");
+			}
+			return *static_cast<T_*>(content);
+		}
+
+		template <class T_>
 		bool TypeCheck() const {
 			return type->IsSameType(typeid(T_));
 		}

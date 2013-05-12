@@ -215,7 +215,7 @@ namespace gge { namespace utils {
 		////Moves the iterator to forwards
 		I_ operator ++(int) {
 			I_ it=iterator();
-			it.moveby(1);
+			moveby(1);
 
 			return it;
 		}
@@ -223,7 +223,7 @@ namespace gge { namespace utils {
 		////Moves the iterator to backwards
 		I_ operator --(int) {
 			I_ it=iterator();
-			it.moveby(-1);
+			moveby(-1);
 
 			return it;
 		}
@@ -281,7 +281,7 @@ namespace gge { namespace utils {
 
 	template<class C_, class I_>
 	void AddCopy(C_ &target, const I_ &begin, const I_ &end) {
-		for(I_ i=begin;i!=end;i++) {
+		for(I_ i=begin;i!=end;++i) {
 			target.Add(*i);
 		}
 	}

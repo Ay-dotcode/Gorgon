@@ -329,7 +329,7 @@ namespace gge { namespace utils {
 		}
 
 		template <int g_>
-		OrderedCollection(const OrderedCollection<T_, g_> &col) : 
+		OrderedCollection(OrderedCollection<T_, g_> &col) : 
 		list(col.list), count(col.count)
 		{ 	}
 

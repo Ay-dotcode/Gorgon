@@ -29,6 +29,7 @@
 #include <cstdlib>
 #include "Point2D.h"
 #include "Bounds2D.h"
+#include "OrderedCollection.h"
 
 namespace gge { namespace utils {
 
@@ -73,6 +74,9 @@ namespace gge { namespace utils {
 
 	template<class T_>
 	inline T_ Random(std::vector<T_> &vec) { return vec[Random(0,(int)vec.size())]; }
+
+	template<class T_>
+	inline T_ &Random(gge::utils::OrderedCollection<T_> &vec) { return vec[Random(0,(int)vec.GetCount())]; }
 
 	inline gge::utils::Point Random(const gge::utils::Bounds &bounds) {
 		return gge::utils::Point(Random(bounds.Left,bounds.Right), Random(bounds.Top,bounds.Bottom));
