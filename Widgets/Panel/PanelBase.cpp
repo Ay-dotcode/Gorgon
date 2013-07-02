@@ -57,7 +57,7 @@ namespace gge { namespace widgets {
 					outer.Height()-outerborder->Margins.TotalY()
 				);
 
-				BaseLayer->SetCurrentColor(0xffffffff);
+				BaseLayer->SetCurrentColor((gge::graphics::RGBfloat)0xffffffff);
 			}
 
 			if(overlay) {

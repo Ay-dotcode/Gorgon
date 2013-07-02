@@ -359,7 +359,7 @@ namespace gge { namespace widgets {
 										eprint[1].Out.position.x-1,eprint[1].Out.position.y,
 										2+eprint[2].Out.position.x-eprint[1].Out.position.x, im->GetHeight()
 										);
-									innerlayer.SetCurrentColor(0xffffffff);
+									innerlayer.SetCurrentColor((gge::graphics::RGBfloat)0xffffffff);
 								}
 							}
 						}

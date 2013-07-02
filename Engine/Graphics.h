@@ -108,6 +108,7 @@ namespace gge { namespace graphics {
 		RGBfloat(const RGBint &);
 		RGBfloat() { }
 		RGBfloat(float a, float r, float g, float b) : a(a), r(r), g(g), b(b) { }
+    RGBfloat(float val): a(1.f), r(val), g(val), b(val) {}
 
 		void Blend(RGBfloat color) {
 			float alpha=color.a;
@@ -140,6 +141,14 @@ namespace gge { namespace graphics {
 		}
 
 		RGBfloat &operator =(const RGBint &c);
+
+    //! how to sum up alpha??
+    RGBfloat &operator +=(const RGBfloat &c) {
+      this->r += c.r;
+      this->g += c.g;
+      this->b += c.b;
+      return *this;
+    }
 
 		float Luminance() { 
 			return  0.2126f*r + 0.7151f*g + 0.0722f*b; 

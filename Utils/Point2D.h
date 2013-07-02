@@ -65,7 +65,7 @@ namespace gge { namespace utils {
 		template <class U_>
 		basic_Point2D& operator =(const basic_Point2D<U_> &point) { x=T_(point.x); y=T_(point.y); return *this; }
 
-		FloatingPoint Distance(const basic_Point2D &point) {
+		FloatingPoint Distance(const basic_Point2D &point) const {
 			return std::sqrt( (FloatingPoint)(x-point.x)*(x-point.x) + (y-point.y)*(y-point.y) );
 		}
 
