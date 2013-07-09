@@ -1511,6 +1511,33 @@ namespace gge { namespace utils {
 
 			return NULL;
 		}
+
+		const T_ *get_(int Index) const {
+			if(Index<0 || Index>list.GetSize())
+				return NULL;
+
+			int i,j;
+			j=0;
+
+			if(Index>list.GetSize()) {
+				for(i=list.GetSize()-1;i>=0;i--) {
+					if(list[i]) j++;
+					if((j-1)==Index) {
+						return list[i];
+					}
+				}
+			} 
+			else {
+				for(i=0;i<list.GetSize();i++) {
+					if(list[i]) j++;
+					if((j-1)==Index) {
+						return list[i];
+					}
+				}
+			}
+
+			return NULL;
+		}
 	};
 } }
 

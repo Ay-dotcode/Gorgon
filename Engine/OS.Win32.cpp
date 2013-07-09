@@ -863,9 +863,10 @@
 				auto pos=name.length();
 
 				pos=name.find_last_of("\\/",std::string::npos);
-
-				if(!IsDirectoryExists(name.substr(0,pos)))
-					CreateDirectory(name.substr(0,pos));
+				if(pos!=std::string::npos) {
+					if(!IsDirectoryExists(name.substr(0,pos)))
+						CreateDirectory(name.substr(0,pos));
+				}
 
 				CreateDirectoryA(name.c_str(), NULL);
 
