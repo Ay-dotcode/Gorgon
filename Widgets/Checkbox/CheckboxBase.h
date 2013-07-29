@@ -155,6 +155,7 @@ namespace gge { namespace widgets {
 			}
 
 			void seticon(graphics::RectangularGraphic2D *icon) {
+				if(this->icon==icon) return;
 				this->icon=icon;
 
 				Draw();

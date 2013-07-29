@@ -23,6 +23,9 @@
 
 #pragma once
 
+#include <string>
+#include <sstream>
+
 namespace gge { namespace utils {
 
 	inline std::string Replace(const std::string str, const std::string find, const std::string replace) {
@@ -44,6 +47,34 @@ namespace gge { namespace utils {
 		}
 
 		return str;
+	}
+
+	template <typename T>
+	class has_stringoperator
+	{
+		typedef char one;
+		struct two {
+			char a[2];
+		};
+
+		template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {;}
+		template <typename C> static two test(...){;}
+
+	public:
+		enum { value = sizeof(test<T>(""))==sizeof(char) };
+	};
+
+	template<class T_> 
+	typename std::enable_if<has_stringoperator<T_>::value, std::string>::type ToString(const T_ &item) {
+		return (std::string)item;
+	}
+
+	template<class T_> 
+	typename std::enable_if<!has_stringoperator<T_>::value, std::string>::type ToString(const T_ &item) {
+		std::stringstream ss;
+		ss<<item;
+
+		return ss.str();
 	}
 
 } }

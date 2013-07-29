@@ -11,189 +11,1158 @@ namespace gge { namespace widgets {
 
 	//multi select, direction keys
 
-	template<class T_=std::string, void(*CF_)(const T_ &, std::string &)=listbox::CastToString<T_> >
-	class Listbox;
-	
-	//This listbox is not for 100s of items
-	template<class T_, void(*CF_)(const T_ &, std::string &) >
-	class Listbox : public listbox::Base<T_, CF_>, protected ListItemModifier<T_, CF_>, protected utils::OrderedCollection<ListItem<T_, CF_> > {
-	public:
+	namespace listbox {
+#pragma warning(disable:4068)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
+		template<class T_>
+		graphics::RectangularGraphic2D *NullIcon(const T_ &) {
+			return nullptr;
+		}
+		template <typename T>
+		class has_GetIcon
+		{
+			typedef char one;
+			struct two {
+				char a[2];
+			};
 
-		enum SelectionTypes {
-			SingleSelect,
-			ToggleSelect, //click toggles
-			MultiSelect, //control click adds to selected, support for shift multi select and drag multi select
+			template <typename C> static one test( decltype(((C*)(nullptr))->GetIcon()) aa ) {;}
+			template <typename C> static two test(...){;}
+
+		public:
+			enum { value = sizeof(test<T>(""))==sizeof(char) };
 		};
 
+		template <typename T>
+		class has_HasIcon
+		{
+			typedef char one;
+			struct two {
+				char a[2];
+			};
 
-		typedef ListItem<T_, CF_> ItemType;
-		typedef utils::OrderedCollection<ItemType> CollectionType;
-		typedef typename CollectionType::Iterator Iterator;
-		typedef typename CollectionType::ConstIterator ConstIterator;
-		typedef typename CollectionType::SearchIterator SearchIterator;
-		typedef typename CollectionType::ConstSearchIterator ConstSearchIterator;
+			template <typename C> static one test( decltype(((C*)(nullptr))->HasIcon()) aa ) {;}
+			template <typename C> static two test(...){;}
 
-		Listbox() : selectiontype(SingleSelect), active(NULL),
-			INIT_PROPERTY(Listbox, SelectionType),
-			INIT_PROPERTY(Listbox, AutoHeight),
-			INIT_PROPERTY(Listbox, Columns),
-			INIT_PROPERTY(Listbox, AllowReorder),
-			INIT_PROPERTY(Listbox, ItemHeight),
-			ItemClickedEvent("ItemClicked", this),
-			ReorderedEvent("Reordered", this),
-			itemheight(0), isinqueue(false)
+		public:
+			enum { value = sizeof(test<T>(""))==sizeof(char) };
+		};
+
+		template<class T_>
+		typename std::enable_if<has_GetIcon<T_>::value && has_HasIcon<T_>::value, graphics::RectangularGraphic2D *>::type GetIcon(const T_ &item) {
+			if(item.HasIcon())
+				return &item.GetIcon();
+			else
+				return nullptr;
+		}
+
+		template<class T_>
+		typename std::enable_if<has_GetIcon<T_>::value && !has_HasIcon<T_>::value, graphics::RectangularGraphic2D *>::type GetIcon(const T_ &item) {
+			return item.GetIcon();
+		}
+
+		
+		template<class T_>
+		typename std::enable_if<!has_GetIcon<T_>::value, graphics::RectangularGraphic2D *>::type GetIcon(const T_ &item) {
+			return nullptr;
+		}
+#pragma GCC diagnostic pop
+	}
+
+	template<class T_=std::string, void(*CF_)(const T_ &, std::string &)=listbox::CastToString<T_>,  graphics::RectangularGraphic2D*(*GetIcon)(const T_&)=listbox::GetIcon<T_> >
+	class Collectionbox;
+	
+	namespace listbox {
+		template<class T_>
+		class ItemData {
+		public:
+			T_ item;
+			bool selected;
+
+			ItemData(T_ item=T_(), bool selected=false) : item(item), selected(selected) { }
+
+			bool operator ==(const ItemData &l) const {
+				return item==l.item;
+			}
+
+			bool operator !=(const ItemData &l) const {
+				return item==l.item;
+			}
+
+			bool operator <(const ItemData &l) const {
+				return item<l.item;
+			}
+
+			bool operator >(const ItemData &l) const {
+				return item>l.item;
+			}
+
+			T_ Get() const {
+				return item;
+			}
+		};
+
+		template<class T_, class P_>
+		struct collectionboxelementcompare {
+			collectionboxelementcompare(const P_ &predicate) : predicate(predicate) {}
+
+			bool operator()(const ItemData<T_*> &l, const ItemData<T_*> &r) {
+				return predicate(*l.item,*r.item);
+			}
+
+			const P_ &predicate;
+		};
+
+		template<class T_, class P_>
+		struct listboxelementcompare {
+			listboxelementcompare(const P_ &predicate) : predicate(predicate) {}
+
+			bool operator()(const ItemData<T_> &l, const ItemData<T_> &r) {
+				return predicate(l.item,r.item);
+			}
+
+			const P_ &predicate;
+		};
+
+		template<class T_>
+		struct valueaccessor {
+			typedef T_ storagetype;
+			typedef T_ returntype;
+			typedef ItemData<T_> datatype;
+			typedef const T_ paramtype;
+
+			static T_ Get(const ItemData<T_> data) {
+				return data.item;
+			}
+
+			static T_ StorageToReturnType(T_ storage) {
+				return storage;
+			}
+
+			static T_ &StorageToModifyable(T_ &storage) {
+				return storage;
+			}
+
+			static const T_ &StorageToModifyable(const T_ &storage) {
+				return storage;
+			}
+
+			static T_ ParamToStorageType(T_ storage) {
+				return storage;
+			}
+
+			static void Set(ItemData<T_> &data, const T_ &v) {
+				data.item=v;
+			}
+
+			static ItemData<T_> New(const T_ &v) {
+				return ItemData<T_>(v);
+			}
+		};
+
+		template<class T_>
+		struct ptraccessor {
+			typedef T_ *storagetype;
+			typedef T_  returntype;
+			typedef ItemData<T_*> datatype;
+			typedef T_ paramtype;
+
+			static T_ &Get(const ItemData<T_> data) {
+				return *data.item;
+			}
+
+			static T_&StorageToReturnType(T_ *storage) {
+				return *storage;
+			}
+
+			static T_&StorageToModifyable(T_ *storage) {
+				return *storage;
+			}
+
+			static const T_&StorageToModifyable(const T_ *storage) {
+				return *storage;
+			}
+
+			static T_ *ParamToStorageType(T_ &storage) {
+				return &storage;
+			}
+
+			static void Set(ItemData<T_*> &data, T_ &v) {
+				data.item=&v;
+			}
+
+			static ItemData<T_*> New(T_ &v) {
+				return ItemData<T_*>(&v);
+			}
+		};
+
+		template<class T_, class A_, void(*CF_)(const T_ &, std::string &), graphics::RectangularGraphic2D*(*GetIcon)(const T_&)>
+		class Basic : public listbox::Base<ListItem> {
+		public:
+
+			enum SelectionTypes {
+				SingleSelect,
+				ToggleSelect, //click toggles
+				MultiSelect, //control click adds to selected, support for shift multi select and drag multi select
+			};
+
+			template<class Ty_, class Ac_>
+			class SelectionIterator;
+
+			template<class Ty_, class Ac_>
+			class Iterator : public gge::utils::IteratorBase<Iterator<Ty_, Ac_>, Ty_> {
+				friend class Basic;
+				friend class gge::utils::IteratorBase<Iterator<Ty_, Ac_>, Ty_>;
+			public:
+				Iterator(const Iterator &it) : listbox(it->listbox), index(it->index) {
+				}
+
+				Iterator() : listbox(NULL), index(0) {
+				}
+
+				Iterator(const SelectionIterator<Ty_, Ac_> &it) : listbox(it.listbox), index(it.index) {
+				}
+
+				operator int() const {
+					return index;
+				}
+
+			private:
+				Iterator(Basic *listbox, int index) : listbox(listbox), index(index) {
+
+				}
+
+				Basic *listbox;
+				int index;
+
+			protected:
+				typename Ac_::returntype& current() const {
+#ifdef _DEBUG
+					if(!listbox || index<0 || index>=listbox->GetCount())
+						throw std::runtime_error("Iterator is invalid state and cannot be read from.");
+#endif
+
+					return (*listbox)[index];
+				}
+				bool moveby(int amount) {
+#ifdef _DEBUG
+					if(!listbox)
+						throw std::runtime_error("Iterator is not initialized.");
+#endif
+					index+=amount;
+					if(index<0) {
+						index=-1;
+						return false;
+					}
+					else if(index>listbox->GetCount()) {
+						index=listbox->GetCount();
+						return false;
+					}
+					else
+						return true;
+				}
+				bool isvalid() const {
+					return listbox && index<listbox->GetCount() && index>=0;
+				}
+				bool compare(const Iterator &it) const {
+					return it.listbox==listbox && it.index==index;
+				}
+				void set(const Iterator &it) {
+					listbox=it.listbox;
+					index=it.index;
+				}
+				int distance(const Iterator &it) const {
+#ifdef _DEBUG
+					if(!listbox)
+						throw std::runtime_error("Iterator is not initialized.");
+
+					if(listbox!=it.listbox)
+						throw std::runtime_error("Iterators are not from the same container.");
+#endif
+					return index-it.index;
+				}
+				bool isbefore(const Iterator &it) const {
+					return distance(it)<0;
+				}
+			};
+
+
+			template<class Ty_, class Ac_>
+			class SelectionIterator : public gge::utils::IteratorBase<SelectionIterator<Ty_, Ac_>, Ty_> {
+				friend class Basic;
+				friend class gge::utils::IteratorBase<SelectionIterator<Ty_, Ac_>, Ty_>;
+			public:
+				SelectionIterator(const SelectionIterator &it) : listbox(it.listbox), index(it.index) {
+				}
+
+				SelectionIterator() : listbox(NULL), index(0) {
+				}
+
+				operator Iterator<Ty_, Ac_>() const {
+					return Iterator<Ty_, Ac_>(*this);
+				}
+
+				operator int() const {
+					return index;
+				}
+
+			private:
+				SelectionIterator(Basic *listbox, int index) : listbox(listbox), index(index) {
+					if(!listbox->IsSelected(index))
+						moveby(1);
+				}
+
+				Basic *listbox;
+				int index;
+
+			protected:
+				typename Ac_::returntype& current() const {
+#ifdef _DEBUG
+					if(!listbox || index<0 || index>=listbox->GetCount())
+						throw std::runtime_error("Iterator is invalid state and cannot be read from.");
+#endif
+
+					return (*listbox)[index];
+				}
+				bool moveby(int amount) {
+#ifdef _DEBUG
+					if(!listbox)
+						throw std::runtime_error("Iterator is not initialized.");
+#endif
+
+					if(amount>0) {
+						while(index<listbox->GetCount()-1 && amount) {
+							index++;
+							if(listbox->IsSelected(index))
+								amount--;
+						}
+						if(amount>0)
+							index=listbox->GetCount();
+					}
+					else if(amount<0) {
+						while(index>0 && amount) {
+							index--;
+							if(listbox->IsSelected(index))
+								amount++;
+						}
+						if(amount<0)
+							index=-1;
+					}
+
+					if(index<0) {
+						index=-1;
+						return false;
+					}
+					else if(index>=listbox->GetCount()) {
+						index=listbox->GetCount();
+						return false;
+					}
+					else {
+						return true;
+					}
+				}
+				bool isvalid() const {
+					return listbox && index<listbox->GetCount() && index>=0;
+				}
+				bool compare(const SelectionIterator &it) const {
+					return it.listbox==listbox && it.index==index;
+				}
+				void set(const SelectionIterator &it) {
+					listbox=it.listbox;
+					index=it.index;
+				}
+				int distance(const SelectionIterator &it) const {
+#ifdef _DEBUG
+					if(!listbox)
+						throw std::runtime_error("Iterator is not initialized.");
+
+					if(listbox!=it.listbox)
+						throw std::runtime_error("Iterators are not from the same container.");
+#endif
+					int ind=index, c=0;
+
+					if(ind>it.index) {
+						while(ind>it.index) {
+							ind++;
+							if(listbox->IsSelected(ind))
+								c++;
+						}
+					}
+					else if(ind<it.index) {
+						while(ind<it.index) {
+							ind--;
+							if(listbox->IsSelected(ind))
+								c++;
+						}
+					}
+					return c;
+				}
+				bool isbefore(const SelectionIterator &it) const {
+					return distance(it)<0;
+				}
+			};
+
+			Basic() : selectiontype(SingleSelect),
+				INIT_PROPERTY(Basic, SelectionType),
+				INIT_PROPERTY(Basic, AutoHeight),
+				INIT_PROPERTY(Basic, Columns),
+				INIT_PROPERTY(Basic, AllowReorder),
+				INIT_PROPERTY(Basic, ItemHeight),
+				INIT_PROPERTY(Basic, AutoUpdate),
+				itemheight(0), 
+				autoupdate(false),
+				initemcountqueue(false),
+				activeindex(-1),
+				selectedcount(0)
+			{
+				Main.BeforeRenderEvent.RegisterLambda([&]{ this->doadjust(); });
+			}
+
+			void Clear() {
+				this->activeindex=-1;
+				selectedcount=0;
+
+				items.clear();
+				setitemcount(items.size());
+			}
+
+			int GetCount() const {
+				return items.size();
+			}
+
+			template<class I_>
+			void AddRange(const I_ &begin, const I_ &end) {
+				for(auto it=begin;it!=end;++it)
+					add(*it);
+			}
+
+			template<class C_>
+			void AddAll(const C_ &container) {
+				for(auto it=container.begin();it!=container.end();++it)
+					add(*it);
+			}
+
+			//Call this function if not in auto update mode and you have changed
+			//the items externally
+			void Refresh() {
+				adjustitems();
+			}
+
+			const T_ &operator[](unsigned index) const {
+				return A_::StorageToModifyable(items[index].item);
+			}
+
+			//returns active item, may not be selected if multiselect is on
+			const T_ &Get() const {
+				if(activeindex==-1)
+					throw std::runtime_error("Nothing active");
+
+				return A_::StorageToModifyable(items[activeindex].item);
+			}
+
+			const T_ &Get(unsigned index) const {
+				return A_::StorageToReturnType(items[index].item);
+			}
+
+			T_ &operator[](unsigned index)  {
+				return A_::StorageToModifyable(items[index].item);
+			}
+
+			//returns active item, may not be selected if multiselect is on
+			T_ &Get()  {
+				if(activeindex==-1)
+					throw std::runtime_error("Nothing active");
+
+				return A_::StorageToModifyable(items[activeindex].item);
+			}
+
+			T_ &Get(unsigned index)  {
+				return A_::StorageToReturnType(items[index].item);
+			}
+
+			bool HasSelection() const {
+				if(selectiontype==SingleSelect) {
+					return activeindex!=-1;
+				}
+				else {
+					return selectedcount>0;
+				}
+			}
+
+			//returns active index, may not be selected if multiselect is on
+			int ActiveIndex() const {
+				return activeindex;
+			}
+
+			void SetIndex(unsigned index) {
+				if(selectiontype==SingleSelect) {
+					if(index!=activeindex) {
+						activeindex=index;
+						items[activeindex].selected=true;
+
+						selectedcount=1;
+
+						adjustitems();
+					}
+				}
+				else {
+					ClearSelection();
+
+					activeindex=index;
+					items[activeindex].selected=true;
+
+					selectedcount=1;
+
+					adjustitems();
+				}
+			}
+
+			void Select(unsigned index) {
+				if(selectiontype==SingleSelect) {
+					if(activeindex!=index) {
+						if(activeindex!=-1) {
+							items[activeindex].selected=false;
+						}
+
+						activeindex=index;
+						items[activeindex].selected=true;
+						adjustitems();
+					}
+				}
+				else {
+					if(!items[index].selected) {
+						items[index].selected=true;
+						selectedcount++;
+						adjustitems();
+					}
+				}
+			}
+
+			void SelectAll() {
+				for(auto it=items.begin();it!=items.end();++it) {
+					it->selected=true;
+				}
+				selectedcount=items.size();
+			}
+
+			void Deselect() {
+				ClearSelection();
+			}
+
+			void Deselect(unsigned index) {
+				if(selectiontype==SingleSelect) {
+					if(items[index].selected) {
+						activeindex=-1;
+						items[index].selected=false;
+						selectedcount--;
+						adjustitems();
+					}
+				}
+				else {
+					if(items[index].selected) {
+						items[index].selected=false;
+						selectedcount--;
+						adjustitems();
+					}
+				}
+			}
+
+			void ClearSelection() {
+				for(auto it=items.begin();it!=items.end();++it) {
+					it->selected=false;
+				}
+				selectedcount=0;
+			}
+
+			bool IsSelected(unsigned index) const {
+				return items[index].selected;
+			}
+
+			Iterator<T_, A_> begin() {
+				return Iterator<T_, A_>(this, 0);
+			}
+
+			Iterator<T_, A_> end() {
+				return Iterator<T_, A_>(this, GetCount());
+			}
+
+			Iterator<T_, A_> First() {
+				return begin();
+			}
+
+			Iterator<T_, A_> Last() {
+				return Iterator<T_, A_>(this, GetCount()-1);
+			}
+
+			SelectionIterator<T_, A_> selbegin() {
+				return SelectionIterator<T_, A_>(this, 0);
+			}
+
+			SelectionIterator<T_, A_> selend() {
+				return SelectionIterator<T_, A_>(this, GetCount());
+			}
+
+			SelectionIterator<T_, A_> FirstSelected() {
+				return selbegin();
+			}
+
+			SelectionIterator<T_, A_> LastSelected() {
+				return SelectionIterator<T_, A_>(this, GetCount()-1);
+			}
+
+
+			using WidgetBase::SetBlueprint;
+
+			virtual void SetBlueprint(const widgets::Blueprint &bp) {
+				if(&bp==static_cast<const widgets::Blueprint*>(this->bp))
+					return;
+
+				listbox::Base<ListItem>::SetBlueprint(bp);
+			}
+
+			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key key) {
+				using namespace input::keyboard;
+
+				if(!Modifier::Check() && event==Event::Down) {
+					if(key==KeyCodes::Down && activeindex<(int)items.size()-1) {
+						if(selectiontype==SingleSelect) {
+							Select(activeindex+1);
+						}
+						else {
+							activeindex++;
+						}
+						EnsureVisible();
+						adjustitems();
+
+						return true;
+					}
+					if(key==KeyCodes::Up && activeindex>0) {
+						if(selectiontype==SingleSelect) {
+							Select(activeindex-1);
+						}
+						else {
+							activeindex--;
+						}
+						EnsureVisible();
+						adjustitems();
+
+						return true;
+					}
+					if(key==KeyCodes::PageDown) {
+						int target=activeindex+panel.Widgets.GetCount()-1;
+						if(target>=(int)items.size()) {
+							target=items.size()-1;
+						}
+						if(selectiontype==SingleSelect) {
+							Select(target);
+						}
+						else {
+							activeindex=target;
+						}
+						EnsureVisible();
+						adjustitems();
+
+						return true;
+					}
+					if(key==KeyCodes::PageUp) {
+						int target=activeindex-panel.Widgets.GetCount()+1;
+						if(target<0) {
+							target=0;
+						}
+						if(selectiontype==SingleSelect) {
+							Select(target);
+						}
+						else {
+							activeindex=target;
+						}
+						EnsureVisible(target);
+						adjustitems();
+
+						return true;
+					}
+				}
+				if(!Modifier::Check() && event==Event::Up) {
+					if(key==KeyCodes::Home && items.size()) {
+						if(selectiontype==SingleSelect) {
+							Select(0);
+						}
+						else {
+							activeindex=0;
+						}
+						EnsureVisible();
+						adjustitems();
+
+						return true;
+					}
+					if(key==KeyCodes::End) {
+						if(selectiontype==SingleSelect) {
+							Select(items.size()-1);
+						}
+						else {
+							activeindex=items.size()-1;
+						}
+						EnsureVisible();
+						adjustitems();
+
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			void EnsureVisible() {
+				if(activeindex>-1)
+					EnsureVisible(activeindex);
+			}
+			void EnsureVisible(int index) {
+				flushitemcount();
+				if(index>organizer.GetTop()+panel.Widgets.GetCount()-2) {
+					panel.SetVScroll(organizer.GetLogicalLocation(index+1).y-panel.GetUsableHeight());
+				}
+				else if(index<organizer.GetTop()) {
+					panel.SetVScroll(organizer.GetLogicalLocation(index).y);
+				}
+			}
+			void CenterItem() {
+				if(activeindex>-1)
+					CenterItem(activeindex);
+			}
+
+			void CenterItem(int index) {
+				flushitemcount();
+				if(panel.Widgets.GetCount())
+					panel.SetVScroll(organizer.GetLogicalLocation(index).y-panel.GetUsableHeight()/2+panel.Widgets.First()->GetHeight()/2);
+			}
+
+			utils::Property<Basic, SelectionTypes> SelectionType;
+			utils::NumericProperty<Basic, int> ItemHeight;
+			utils::BooleanProperty<Basic> AutoHeight;
+			utils::NumericProperty<Basic, int> Columns;
+			utils::BooleanProperty<Basic> AllowReorder;
+			utils::BooleanProperty<Basic> AutoUpdate;
+
+
+
+		protected:
+			void setSelectionType(const SelectionTypes &value) {
+				if(selectiontype==MultiSelect && value!=MultiSelect) {
+					//selected.Clear();
+				}
+				selectiontype=value;
+			}
+			SelectionTypes getSelectionType() const {
+				return selectiontype;
+			}
+
+			void setItemHeight(const int &value) {
+				if(itemheight!=value) {
+					itemheight=value;
+					for(auto widget=this->representations.begin();widget.IsValid();widget.Next()) {
+						widget->SetHeight(value);
+					}
+					itemheightchanged();
+				}
+			}
+			int getItemHeight() const {
+				return itemheight;
+			}
+
+			void setAutoUpdate(const bool &value) {
+				autoupdate = value;
+			}
+			bool getAutoUpdate() const {
+				return autoupdate;
+			}
+
+			virtual void checkdelete() {
+
+			}
+
+			virtual int elementheight() {
+				if(itemheight!=0)
+					return itemheight;
+				else if(bp)
+					return bp->Item->DefaultSize.Height;
+				else
+					return 25;
+			}
+
+			virtual void adjustitems() {
+				updaterequired=true;
+			}
+
+			void flushitemcount() {
+				if(initemcountqueue) {
+					setitemcount(delayedcount);
+					initemcountqueue=false;
+				}
+			}
+
+			void doadjust() {
+				if(!autoupdate && !updaterequired) return;
+
+				updaterequired=false;
+
+				if(initemcountqueue) {
+					this->setitemcount(delayedcount);
+					initemcountqueue=false;
+				}
+
+				unsigned target=organizer.GetTop()+panel.Widgets.GetCount();
+				if(target>items.size())
+					target=items.size();
+
+				int j=0;
+				for(unsigned i=organizer.GetTop();i<target;i++) {
+					std::string str;
+					CF_(A_::StorageToReturnType(items[i].item), str);
+					representations[j].SetText(str);
+
+					graphics::RectangularGraphic2D *icon;
+					icon=GetIcon(A_::StorageToReturnType(items[i].item));
+					representations[j].SetIcon(icon);
+
+					if(items[i].selected) 
+						representations[j].Select();
+					else
+						representations[j].Deselect();
+
+					j++;
+				}
+			}
+
+			virtual void trigger(ListItem &element, int index) {
+				bool notifyselection=false;
+				using namespace input::keyboard;
+
+				auto &item=items[index];
+
+				if(selectiontype==SingleSelect) {
+					if(activeindex!=-1) {
+						items[activeindex].selected=false;
+						item.selected=true;
+					}
+					if(index!=activeindex) {
+						notifyselection=true;
+					}
+					selectedcount=1;
+				}
+				else if(selectiontype==ToggleSelect) {
+					item.selected=!item.selected;
+
+					if(item.selected)
+						selectedcount++;
+					else
+						selectedcount--;
+
+					notifyselection=true;
+				}
+				else if(selectiontype==MultiSelect) {
+					if(Modifier::Current==Modifier::Ctrl) {
+						item.selected=!item.selected;
+
+						if(item.selected)
+							selectedcount++;
+						else
+							selectedcount--;
+
+						notifyselection=true;
+					}
+					else if(Modifier::Current==Modifier::Shift) {
+						int from=activeindex;
+						int to=index;
+
+						if(from>to) std::swap(from, to);
+
+						for(int i=from;i<=to;i++) {
+							if(!items[i].selected) {
+								items[i].selected=true;
+								notifyselection=true;
+								selectedcount++;
+							}
+						}
+					}
+					else {
+						if(selectedcount!=1 || !items[index].selected) {
+							notifyselection=true;
+							ClearSelection();
+							items[index].selected=true;
+							selectedcount=1;
+						}
+					}
+				}
+
+				activeindex=index;
+
+				if(notifyselection) {
+					selectionchanged();
+				}
+
+				clicked();
+				adjustitems();
+			}
+
+			void setAutoHeight(const bool &value) {
+				this->setautoheight(value);
+			}
+			bool getAutoHeight() const {
+				return this->getautoheight();
+			}
+			void setColumns(const int &value) {
+				this->setcolumns(value);
+			}
+			int getColumns() const {
+				return this->getcolumns();
+			}
+			void setAllowReorder(const bool &value) {
+				this->setallowreorder(value);
+			}
+			bool getAllowReorder() const {
+				return this->getallowreorder();
+			}
+
+			virtual void wr_loaded() {
+				if(WR.Listbox && !this->blueprintmodified)
+					this->setblueprint(*WR.Listbox);
+			}
+			virtual void itemadded(typename A_::paramtype &, int index) {}
+			virtual void itemremoving(int index) { }
+
+			std::vector<typename A_::datatype> items;
+
+			SelectionTypes selectiontype;
+
+			int activeindex;
+			int itemheight;
+			int selectedcount;
+			bool updaterequired;
+			bool autoupdate;
+
+		private:
+			void delaysetitemcount(int count) {
+				delayedcount=count;
+				initemcountqueue=true;
+			}
+
+			int delayedcount;
+			bool initemcountqueue;
+
+
+		protected:
+			virtual void add(typename A_::paramtype &v) {
+				items.push_back(A_::New(v));
+				delaysetitemcount(items.size());
+				itemadded(v,items.size()-1);
+			}
+			virtual void insert(typename A_::paramtype &v, unsigned before) {
+				items.insert(items.begin()+before, A_::ParamToStorageType(v));
+				if(activeindex>=(int)before && activeindex!=-1)
+					activeindex++;
+
+				setitemcount(items.size());
+				itemadded(v,std::min(before,items.size()-1));
+			}
+			virtual void movebefore(unsigned index, unsigned before) {
+				if(before>=items.size()) {
+					auto temp=items[index];
+					items.erase(items.begin()+index);
+					items.push_back(temp);
+
+					if(activeindex!=-1) {
+						if(activeindex==index) {
+							activeindex=items.size()-1;
+						}
+						else if(activeindex<(int)index) {
+							activeindex--;
+						}
+					}
+				}
+				else if(before==index || before==index+1) {
+					return;
+				}
+				else if(before<index) {
+					auto temp=items[index];
+					for(unsigned i=index;i>before;i--) {
+						items[i]=items[i-1];
+					}
+					items[before]=temp;
+
+					if(activeindex!=-1) {
+						if(activeindex==index) {
+							activeindex=before;
+						}
+						else if(activeindex<(int)index && activeindex>=(int)before) {
+							activeindex++;
+						}
+					}
+				}
+				else {
+					auto temp=items[index];
+					for(unsigned i=index;i<before-1;i++) {
+						items[i]=items[i+1];
+					}
+					items[before-1]=temp;
+
+					if(activeindex!=-1) {
+						if(activeindex==index) {
+							activeindex=before-1;
+						}
+						else if(activeindex>(int)index && activeindex<(int)before) {
+							activeindex--;
+						}
+					}
+				}
+
+				this->adjustitems();
+
+				reordered();
+			}
+			virtual bool remove(unsigned index) {
+				typename A_::storagetype item=items[index].item;
+
+				itemremoving(index);
+
+				if(activeindex==index) {
+					activeindex=-1;
+				}
+				else if(activeindex>(int)index) {
+					activeindex--;
+				}
+				if(items[index].selected) {
+					selectedcount--;
+				}
+				items.erase(items.begin()+index);
+
+				delaysetitemcount(items.size());
+
+				return true;
+			}
+
+			virtual void selectionchanged() = 0;
+			virtual void reordered() = 0;
+			virtual void clicked()=0;
+
+		};
+	}
+
+	//This type of listbox is for reference typed objects, unless specified otherwise
+	//these objects will not be duplicated or destroyed
+	//Index based operations are in O(1) complexity.
+	template<class T_, void(*CF_)(const T_ &, std::string &), graphics::RectangularGraphic2D*(*GetIcon)(const T_&) >
+	class Collectionbox : public listbox::Basic<T_, listbox::ptraccessor<T_>, CF_, GetIcon> {
+	public:
+
+
+		typedef ListItem RepresentationType;
+		typedef listbox::ItemData<T_*> DataType;
+		
+		typedef typename listbox::Basic<T_, listbox::ptraccessor<T_>, CF_, GetIcon>::template Iterator<T_, listbox::ptraccessor<T_> > Iterator;
+		typedef typename listbox::Basic<T_, listbox::ptraccessor<T_>, CF_, GetIcon>::template Iterator<T_, listbox::ptraccessor<T_> > SelectedIterator;
+
+		Collectionbox() : 
+			ChangeEvent(this),
+			ReorderEvent(this),
+			ItemClickEvent(this),
+			INIT_PROPERTY(Collectionbox, Value)
 		{
 			if(WR.Listbox)
 				this->setblueprint(*WR.Listbox);
 		}
 
-		virtual ~Listbox() {
-			
+		virtual ~Collectionbox() {
+
 		}
 
-		ItemType &Add(const T_ &value=T_()) {
-			ItemType *li=new ItemType(this, &Listbox::togglenotify);
-			li->Value=value;
-
-			Add(*li);
-
-			return *li;
+		void Add(T_ &value) {
+			add(value);
 		}
 
-		void Add(ItemType &item) {
-			if(this->bp && this->bp->Item)
-				item.SetBlueprint(*this->bp->Item);
-
-			this->callsettoggle(item, this, &Listbox::togglenotify);
-			CollectionType::Add(item);
-			item.SetHeight(itemheight);
-			this->add(item);
-			itemadded(item);
+		//nullptrs are ignored
+		void Add(T_ *value) {
+			if(value)
+				Add(*value);
 		}
 
-		ItemType &Insert(const T_ &value, const ItemType &before) {
-			return Insert(value, &before);
+		T_ &AddNew() {
+			T_ &t=*new T_;
+			add(t);
+
+			return t;
 		}
 
-		void Insert(ItemType &item, const ItemType &before) {
-			Insert(item, &before);
+		void Insert(T_ &value, const  T_ *before) {
+			insert(value, Find(before));
 		}
 
-		ItemType &Insert(const T_ &value, const ItemType *before) {
-			ItemType *li=new ItemType(this, &Listbox::togglenotify);
-			li->Value=value;
-
-			Insert(*li, before);
-
-			return *li;
+		void Insert(T_ &value, const  T_ &before) {
+			Insert(value, Find(before));
 		}
 
-		void Insert(ItemType &item, const ItemType *before) {
-			if(this->bp && this->bp->Item)
-				item.SetBlueprint(*this->bp->Item);
-
-			this->callsettoggle(item, this, &Listbox::togglenotify);
-			CollectionType::Insert(item, before);
-			this->add(item);
-			this->reorganize();
-			itemadded(item);
+		void Insert(T_ &value, unsigned before) {
+			insert(value,before);
 		}
 
-		ItemType &Insert(const T_ &value, const  T_ &before) {
-			return Insert(value, Find(before));
+		void Insert(T_ *value, const  T_ *before) {
+			if(value)
+				Insert(*value, before);
 		}
 
-		void Insert(ItemType &item, const T_ &before) {
-			Insert(item, Find(before));
+		void Insert(T_ *value, const  T_ &before) {
+			if(value)
+				Insert(*value, &before);
 		}
 
-		void MoveBefore(ItemType &item, const ItemType *before) {
-			CollectionType::MoveBefore(item, before);
-			this->reorganize();
+		void Insert(T_ *value, unsigned before) {
+			if(value)
+				Insert(*value, before);
 		}
 
-		void MoveBefore(const T_ &value, const ItemType *before) {
-			CollectionType::MoveBefore(Find(value), before);
-			this->reorganize();
+		void MoveBefore(T_ &value, const T_ &before) {
+			this->movebefore(Find(value), Find(before));
 		}
 
-		void MoveBefore(ItemType &value, const T_ &before) {
-			CollectionType::MoveBefore(value, Find(before));
-			this->reorganize();
+		void MoveBefore(T_ &value, unsigned before) {
+			this->movebefore(Find(value), before);
 		}
 
-		void MoveBefore(const T_ &value, const T_ &before) {
-			CollectionType::MoveBefore(Find(value), Find(before));
-			this->reorganize();
+		void MoveBefore(unsigned index, const T_ &before) {
+			this->movebefore(index, Find(before));
 		}
 
-		void Remove(ItemType &item) {
-			queueforremoval(&item);
+		void MoveBefore(unsigned index, unsigned before) {
+			this->movebefore(index,before);
 		}
 
-		void Delete(ItemType &item) {
-			queuefordelete(&item);
+		void Remove(T_ &item) {
+			this->Remove(&item);
 		}
 
-		void DeleteAll(const T_ &value) {
-			for(auto it=this->First();it.IsValid();it.Next()) {
-				if(it->Value==value) {
-					queuefordelete(it->CurrentPtr());
-				}
-			}
+		void Remove(T_ *item) {
+			this->remove(Find(item));
 		}
 
-		ItemType *Find(const T_ &value) {
-			for(auto it=this->First();it.IsValid();it.Next()) {
-				if(it->Value==value)
-					return it.CurrentPtr();
-			}
-
-			return NULL;
+		void Remove(unsigned index) {
+			this->remove(index);
 		}
 
-		int IndexOf(ItemType &item) {
-			return this->FindLocation(item);
+		void Delete(T_ &item) {
+			Delete(Find(item));
 		}
 
-		Iterator First() {
-			return CollectionType::First();
+		void Delete(T_ *item) {
+			if(!item) return;
+
+			Delete(Find(item));
 		}
 
-		ConstIterator First() const {
-			return CollectionType::First();
-		}
+		void Delete(unsigned index) {
+			T_ *item=&this->Get(index);
 
-		Iterator Last() {
-			return CollectionType::Last();
-		}
+			this->remove(index);
 
-		ConstIterator Last() const {
-			return CollectionType::Last();
-		}
-
-		Iterator begin() {
-			return CollectionType::begin();
-		}
-
-		ConstIterator begin() const {
-			return CollectionType::begin();
-		}
-
-		Iterator end() {
-			return CollectionType::end();
-		}
-
-		ConstIterator end() const {
-			return CollectionType::end();
-		}
-
-		SearchIterator send() {
-			return CollectionType::send();
-		}
-
-		ConstSearchIterator send() const {
-			return CollectionType::send();
+			delete item;
 		}
 
 		void DeleteAll() {
@@ -201,383 +1170,209 @@ namespace gge { namespace widgets {
 		}
 
 		void Destroy() {
-			while(CollectionType::GetCount()) {
-				ItemType *item=&(*CollectionType::First());
-				queuefordelete(item);
+			for(auto it=this->items.begin();it!=this->items.end();++it) {
+				delete it->item;
 			}
 
-			this->adjustheight();
-			this->active=NULL;
-			this->selected.Clear();
+			this->Clear();
 		}
 
-		void Clear() {
-			while(CollectionType::GetCount()) {
-				ItemType *item=&(*CollectionType::First());
-				queueforremoval(item);
+		void operator +=(T_ &value) {
+			this->add(value);
+		}
+
+		void operator +=(T_ *value) {
+			this->add(*value);
+		}
+
+		void SetSelected(T_ &item) {
+			this->SetIndex(Find(item));
+		}
+
+		unsigned Find(const T_& item) {
+			int index=0;
+			for(auto it=this->items.begin(); it!=this->items.end(); ++it) {
+				if(it->item==&item) return index;
+				index++;
 			}
-			this->active=NULL;
-			this->selected.Clear();
+
+			return -1;
 		}
 
-		int GetCount() const {
-			return CollectionType::GetCount();
-		}
+		unsigned Find(const T_ *item) {
+			if(item) return Find(*item);
 
-		T_ GetValue(int Index) {
-			if(Index>=0 && Index<GetCount())
-				return CollectionType::Get(Index).Value;
-
-			return T_();
-		}
-
-		//returns selected item value
-		//returns last selected if listbox is in multi select
-		T_ GetValue() {
-			if(active)
-				return active->Value;
-			else
-				return T_();
-		}
-
-		void SetSelected(ItemType &list) {
-			togglenotify(&list, false);
-		}
-
-		void SetSelected(ItemType *list) {
-			if(list==NULL) {
-				ClearSelection();
-				return;
-			}
-			SetSelected(*list);
-		}
-
-		ItemType *GetItem(int Index) {
-			return CollectionType::operator()(Index);
-		}
-
-		//returns selected item
-		//returns last selected if listbox is in multi select
-		ItemType *GetItem() {
-			return active;
-		}
-
-		//returns last selected if listbox is in multi select
-		ItemType *GetSelectedItem() {
-			return active;
-		}
-		
-		//works only for multi select, do not modify returned collection
-		utils::Collection<ItemType> GetSelectedItems() {
-			return selected;
-		}
-
-		template<class C_>
-		void operator +=(const C_ &values) {
-			for(auto it=values.begin();it!=values.end();++it)
-				Add(*it);
-		}
-
-		template<class I_>
-		void AddRange(const I_ &begin, const I_ &end) {
-			for(auto it=begin;it!=end;++it)
-				Add(*it);
+			return -1;
 		}
 
 		template<class P_>
 		void Sort(P_ predicate=std::less<T_>()) {
-			CollectionType::Sort(predicate);
+			std::sort(this->items.begin(), this->items.end(), listbox::collectionboxelementcompare<T_, P_>(predicate));
 
-			reorganize();
+			this->adjustitems();
 		}
 
 		void Sort() {
-			CollectionType::Sort();
+			std::sort(this->items.begin(), this->items.end(), listbox::collectionboxelementcompare<T_, std::less<T_> >(std::less<T_>()));
 
-			reorganize();
+			this->adjustitems();
 		}
 
-		utils::Property<Listbox, SelectionTypes> SelectionType;
-		utils::NumericProperty<Listbox, int> ItemHeight;
+		utils::EventChain<Collectionbox> ChangeEvent;
+		utils::EventChain<Collectionbox> ReorderEvent;
+		utils::EventChain<Collectionbox> ItemClickEvent;
 
-		using WidgetBase::SetBlueprint;
+		utils::ReferenceProperty<Collectionbox, T_> Value;
 
-		virtual void SetBlueprint(const widgets::Blueprint &bp) {
-			listbox::Base<T_, CF_>::SetBlueprint(bp);
-
-			for(auto it=First();it.IsValid();it.Next())
-				it->SetBlueprint(*listbox::Base<T_, CF_>::bp->Item);
-
-			if(GetCount())
-				this->panel.SmallScroll=2*this->First()->GetHeight();
-			else
-				this->panel.SmallScroll=2*listbox::Base<T_, CF_>::bp->Item->DefaultSize.Height;
-
-			this->panel.LargeScroll=this->panel.GetUsableSize().Height-this->panel.SmallScroll;
-			if(this->panel.LargeScroll<this->panel.GetUsableSize().Height/2)
-				this->panel.LargeScroll=this->panel.GetUsableSize().Height/2;
-
-			this->adjustheight();
-		}
-
-		void ClearSelection() {
-			//for(auto it=this->First();it.IsValid();it.Next())
-			//	this->callclear(*it);
-			if(active) {
-				this->callclear(*active);
-				active->Draw();
-				active->RemoveFocus();
-			}
-			active=NULL;
-			selected.Clear();
-		}
-
-		void SelectAll() {
-			for(auto it=this->First();it.IsValid();it.Next()) {
-				selected.Add(*it);
-				this->callcheck(*it);
-
-				active=it.CurrentPtr();
-			}
-		}
-
-		using CollectionType::GetCount;
-		using CollectionType::FindLocation;
-		using CollectionType::operator[];
-
-		//!Keyboard handling
-
-		utils::EventChain<Listbox, ItemType&> ItemClickedEvent;
-		utils::EventChain<Listbox> ReorderedEvent;
-		utils::BooleanProperty<Listbox> AutoHeight;
-		utils::NumericProperty<Listbox, int> Columns;
-		utils::BooleanProperty<Listbox> AllowReorder;
 
 	protected:
-		void setSelectionType(const SelectionTypes &value) {
-			if(selectiontype==MultiSelect && value!=MultiSelect) {
-				selected.Clear();
-			}
-			selectiontype=value;
+
+		void setValue(T_ *value) {
+			if(value)
+				SetSelected(*value);
 		}
-		SelectionTypes getSelectionType() const {
-			return selectiontype;
+		T_ *getValue() const {
+			if(this->HasSelection())
+				return this->items[this->ActiveIndex()].item;
+			else
+				return nullptr;
 		}
+
+		virtual void selectionchanged() {
+			ChangeEvent();
+		}
+
+		virtual void reordered() {
+			ReorderEvent();
+		}
+
+		virtual void clicked() {
+			ItemClickEvent();
+		}
+	};
+
+
+	//This type of listbox is for value typed objects, these items should be copyable, assignable and comparable
+	template<class T_, void(*CF_)(const T_ &, std::string &), graphics::RectangularGraphic2D*(*GetIcon)(const T_&) >
+	class Listbox : public listbox::Basic<T_, listbox::valueaccessor<T_>, CF_, GetIcon> {
+	public:
+
+
+		typedef ListItem RepresentationType;
+		typedef listbox::ItemData<T_> DataType;
 		
-		void setItemHeight(const int &value) {
-			if(itemheight!=value) {
-				itemheight=value;
-				reorganize();
-			}
-		}
-		int getItemHeight() const {
-			return itemheight;
-		}
+		typedef typename listbox::Basic<T_, listbox::valueaccessor<T_>, CF_, GetIcon>::template Iterator<T_, listbox::valueaccessor<T_> > Iterator;
+		typedef typename listbox::Basic<T_, listbox::valueaccessor<T_>, CF_, GetIcon>::template SelectionIterator<T_, listbox::valueaccessor<T_> > SelectionIterator;
 
-		utils::Collection<ItemType> deletelist;
-		utils::Collection<ItemType> removelist;
-		bool isinqueue;
-
-		void Remove_(ItemType &item) {
-			this->remove(item);
-			item.Detach();
-		}
-
-		void queuefordelete(ItemType *item) {
-			if(!deletelist.Find(item).IsValid()) {
-				deletelist.Add(item);
-			}
-
-			selected.Remove(item);
-			itemremoving(*item);
-
-			if(active==item) {
-				active=NULL;
-			}
-			CollectionType::Remove(item);
-
-			if(!isinqueue) {
-				Main.RegisterOnce([&]{
- 					for(auto it=removelist.First();it.IsValid();it.Next()) {
- 						this->Remove_(*it);
- 						it.Remove();
- 					}
- 					//while(deletelist.GetCount()) {
-						//auto &it=*deletelist.First();
- 					//	this->Remove_(it);
-						//deletelist.Remove(0);
- 					//	delete &it;
-						////it.Remove();
- 					//}
-					for(auto it=deletelist.First();it.IsValid();it.Next()) {
-						this->Remove_(*it);
-						it.Delete();
-					}
-					isinqueue=false;
-					this->adjustheight();
-				});
-				isinqueue=true;
-			}
-		}
-
-		void queueforremoval(ItemType *item) {
-			if(!removelist.Find(item).IsValid()) {
-				removelist.Add(item);
-			}
-
-			selected.Remove(item);
-			itemremoving(*item);
-
-			if(active==item) {
-				active=NULL;
-			}
-			CollectionType::Remove(item);
-
-			if(!isinqueue) {
-				Main.RegisterOnce([&]{
- 					for(auto it=removelist.First();it.IsValid();it.Next()) {
- 						this->Remove_(*it);
- 						it.Remove();
- 					}
- 					for(auto it=deletelist.First();it.IsValid();it.Next()) {
- 						this->Remove_(*it);
- 						it.Delete();
- 					}
-					isinqueue=false;
-					this->adjustheight();
-				});
-				isinqueue=true;
-			}
-		}
-		
-		void checkdelete() {
-
-		}
-
-		SelectionTypes selectiontype;
-
-		utils::Collection<ItemType> selected;
-		ItemType *active;
-		int itemheight;
-
-		void clearall(ItemType *item=NULL) {
-			for(auto it=this->First();it.IsValid();it.Next())
-				if(it.CurrentPtr()!=item) this->callclear(*it);
-		}
-
-		void togglenotify(IListItem<T_, CF_> *li, bool raise) {
-			ItemType* item=dynamic_cast<ItemType*>(li);
-			if(!item) return;
-			
-			if(selectiontype==SingleSelect) {
-				if(active)
-					this->callclear(*active);
-
-				active=item;
-				this->callcheck(*active);
-			}
-			else if(selectiontype==ToggleSelect) {
-				if(item->IsSelected()) {
-					active=NULL;
-					this->callclear(*item);
-				}
-				else {
-					if(active)
-						this->callclear(*active);
-
-					active=item;
-					this->callcheck(*active);
-				}
-			}
-			else if(selectiontype==MultiSelect) {
-				using namespace input::keyboard;
-				
-				if(Modifier::Current==Modifier::Ctrl) {
-					if(selected.FindLocation(item)==-1) {
-						selected.Add(item);
-						this->callcheck(*item);
-
-						active=item;
-					}
-					else {
-						selected.Remove(item);
-						this->callclear(*item);
-
-						active=selected(selected.GetCount()-1);
-					}
-				}
-				else if(Modifier::Current==Modifier::Shift) {
-					int from=FindLocation(active);
-					int to=FindLocation(item);
-
-					if(!active) from=-1;
-
-					if(from>to) std::swap(from, to);
-
-					for(int i=from+1;i<=to;i++) {
-						try {
-							if(selected.FindLocation(CollectionType::Get(i))==-1) {
-								selected.Add(CollectionType::Get(i));
-								this->callcheck(CollectionType::Get(i));
-								active=item;
-							}
-						} catch(...) {}
-					}
-				}
-				else {
-					clearall();
-					selected.Clear();
-					selected.Add(item);
-					this->callcheck(*item);
-					active=item;
-				}
-			}
-
-			if(raise)
-				ItemClickedEvent(*item);
-		}
-
-		void reorganize() {
-			for(auto it=this->First();it.IsValid();it.Next()) {
-				this->panel.RemoveWidget(*it);
-			}
-
-			for(auto it=this->First();it.IsValid();it.Next()) {
-				it->SetHeight(itemheight);
-				this->add(*it);
-			}
-		}
-
-		virtual void movebefore(IListItem<T_, CF_> &item, IListItem<T_, CF_> *before) {
-			MoveBefore(dynamic_cast<ItemType&>(item), dynamic_cast<ItemType*>(before));
-			ReorderedEvent();
-		}
-
-		void setAutoHeight(const bool &value) {
-			this->setautoheight(value);
-		}
-		bool getAutoHeight() const {
-			return this->getautoheight();
-		}
-		void setColumns(const int &value) {
-			this->setcolumns(value);
-		}
-		int getColumns() const {
-			return this->getcolumns();
-		}
-		void setAllowReorder(const bool &value) {
-			this->setallowreorder(value);
-		}
-		bool getAllowReorder() const {
-			return this->getallowreorder();
-		}
-
-		virtual void wr_loaded() {
-			if(WR.Listbox && !this->blueprintmodified)
+		Listbox() : 
+			ChangeEvent(this),
+			ReorderEvent(this),
+			ItemClickEvent(this),
+			INIT_PROPERTY(Listbox, Value)
+		{
+			if(WR.Listbox)
 				this->setblueprint(*WR.Listbox);
 		}
-		virtual void itemadded(ItemType &item) {}
-		virtual void itemremoving(ItemType &item) {}
+
+		virtual ~Listbox() {
+
+		}
+
+		void Add(const T_ &value) {
+			this->add(value);
+		}
+
+		void Add() {
+			this->add(T_());
+		}
+
+		void Insert(const T_ &value, unsigned before) {
+			this->insert(value,before);
+		}
+
+		void MoveBefore(unsigned index, unsigned before) {
+			this->movebefore(index,before);
+		}
+
+		void RemoveAll(const T_ &item) {
+			for(int i=0;i<this->items.size();i++) {
+				if(this->items[i].item==item)
+					this->remove(i);
+			}
+		}
+
+		void Remove(unsigned index) {
+			this->remove(index);
+		}
+
+		void operator +=(const T_ &value) {
+			this->add(value);
+		}
+
+		template<class P_>
+		void Sort(P_ predicate=std::less<T_>()) {
+			std::sort(this->items.begin(), this->items.end(), listbox::listboxelementcompare<T_, P_>(predicate));
+
+			this->adjustitems();
+		}
+
+		void Sort() {
+			std::sort(this->items.begin(), this->items.end(), listbox::listboxelementcompare<T_, std::less<T_> >(std::less<T_>()));
+
+			this->adjustitems();
+		}
+
+		utils::EventChain<Listbox> ChangeEvent;
+		utils::EventChain<Listbox> ReorderEvent;
+		utils::EventChain<Listbox> ItemClickEvent;
+
+		//If there are more than one items having this value
+		//if listbox is in single select, it will select first one
+		//if multiselect is possible, it will select all
+		utils::Property<Listbox, T_> Value;
+
+
+	protected:
+
+		void setValue(const T_ &value) {
+			if(this->selectiontype==listbox::Basic<T_, listbox::valueaccessor<T_>, CF_, GetIcon>::SingleSelect) {
+				for(unsigned i=0;i<this->items.size();i++) {
+					if(this->items[i].item==value) {
+						this->Select(i);
+						return;
+					}
+				}
+			}
+			else {
+				for(unsigned i=0;i<this->items.size();i++) {
+					if(this->items[i].item==value) {
+						this->Select(i);
+						return;
+					}
+					else {
+						this->Deselect(i);
+					}
+				}
+			}
+		}
+		T_ getValue() const {
+			if(this->HasSelection())
+				return this->Get();
+			else
+				return T_();
+		}
+
+		virtual void selectionchanged() {
+			ChangeEvent();
+		}
+
+		virtual void reordered() {
+			ReorderEvent();
+		}
+
+		virtual void clicked() {
+			ItemClickEvent();
+		}
 	};
 
 

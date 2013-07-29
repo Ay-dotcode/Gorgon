@@ -712,7 +712,7 @@ namespace gge { namespace utils {
 			return AddHandler(
 				prvt::eventchain::CreateEventHandler<EventChain<R_, P_>, P_, O_>(
 				&target, 
-				(void(EventChain<R_,P_>::*)(P_))&EventChain<R_, P_>::Fire,
+				(void(EventChain<R_,P_>::*)(P_))&EventChain<R_, P_>::firethis,
 				Any()
 				)
 				);
@@ -793,6 +793,15 @@ namespace gge { namespace utils {
 		/// handlers to be called
 		void operator()() const {
 			Fire();
+		}
+
+		////This function triggers the event causing all 
+		/// handlers to be called
+		void firethis(P_ params) const {
+			for(auto it = events.First();
+				it.IsValid();it.Next()) {
+				it->Fire(params, *this->object, eventname);
+			}
 		}
 
 		////This function triggers the event causing all 

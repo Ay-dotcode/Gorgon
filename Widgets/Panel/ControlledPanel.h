@@ -10,16 +10,23 @@ namespace gge { namespace widgets {
 		ControlledPanel() : INIT_PROPERTY(ControlledPanel, Padding),
 			INIT_PROPERTY(ControlledPanel, SmallScroll),
 			INIT_PROPERTY(ControlledPanel, LargeScroll),
-			INIT_PROPERTY(ControlledPanel, AllowTabSwitch)
+			INIT_PROPERTY(ControlledPanel, LogicalHeight),
+			INIT_PROPERTY(ControlledPanel, AllowTabSwitch),
+			Scrolled(this),
+			logicalheight(0)
 		{
 			setallowmove(false);
 			setupvscroll(true, true, true);
+			panel::Base::getvscroller().ChangeEvent.LinkTo(Scrolled);
 		}
 
 		utils::Property<ControlledPanel, utils::Margins> Padding;
 		utils::NumericProperty<ControlledPanel, int> SmallScroll;
 		utils::NumericProperty<ControlledPanel, int> LargeScroll;
+		utils::NumericProperty<ControlledPanel, int> LogicalHeight;
 		utils::BooleanProperty<ControlledPanel> AllowTabSwitch;
+
+		gge::utils::EventChain<ControlledPanel> Scrolled;
 
 		int GetVScroll() const {
 			return panel::Base::getvscroll();
@@ -29,6 +36,8 @@ namespace gge { namespace widgets {
 			return panel::Base::vscrollto(scroll);
 		}
 
+		Scrollbar<> &GetVScroller() { return getvscroller(); }
+
 		void Freeze() {
 			freeze();
 		}
@@ -37,6 +46,17 @@ namespace gge { namespace widgets {
 		}
 
 	protected:
+		int logicalheight;
+
+		virtual int calculatevscrollback(int min) {
+			if(logicalheight==0) {
+				return panel::Base::calculatevscrollback(min);
+			}
+			else {
+				return logicalheight;
+			}
+		}
+
 		void setPadding(const utils::Margins &value) {
 			Base::setpadding(value);
 		}
@@ -56,6 +76,14 @@ namespace gge { namespace widgets {
 		}
 		int getLargeScroll() const {
 			return getvscroller().LargeChange;
+		}
+
+		void setLogicalHeight(const int &value) {
+			logicalheight=value;
+			adjustscrolls();
+		}
+		int getLogicalHeight() const {
+			return logicalheight;
 		}
 
 		void setAllowTabSwitch(const bool &value) {

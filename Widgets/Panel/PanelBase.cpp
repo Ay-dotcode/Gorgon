@@ -19,7 +19,6 @@ namespace gge { namespace widgets {
 			if(!BaseLayer)
 				return;
 
-
 			BaseLayer->Clear();
 			innerlayer.Clear();
 			overlayer.Clear();
@@ -31,8 +30,8 @@ namespace gge { namespace widgets {
 			prepare();
 
 
-			RGBint c=0xffffffff;
-			c.a=Alpha;
+			RGBfloat c=1.f;
+			c.a=Alpha/255.f;
 			BaseLayer->Ambient=c;
 
 			adjustlayers();
@@ -47,8 +46,8 @@ namespace gge { namespace widgets {
 
 
 			if(outerborder) {
-				RGBint c=0xffffffff;
-				c.a=BGAlpha;
+				RGBfloat c=1.f;
+				c.a=BGAlpha/255.f;
 				BaseLayer->SetCurrentColor(c);
 
 				outerborder->DrawIn(BaseLayer, 
@@ -57,7 +56,7 @@ namespace gge { namespace widgets {
 					outer.Height()-outerborder->Margins.TotalY()
 				);
 
-				BaseLayer->SetCurrentColor((gge::graphics::RGBfloat)0xffffffff);
+				BaseLayer->SetCurrentColor(1.f);
 			}
 
 			if(overlay) {
@@ -234,11 +233,7 @@ namespace gge { namespace widgets {
 			innerlayer.BoundingBox=inner;
 
 			Size size=Size(inner.Width(), 0);
-			for(auto i=Widgets.First();i.IsValid();i.Next()) {
-				int y=i->GetBounds().BottomRight().y;
-				if(size.Height<y)
-					size.Height=y;
-			}
+			size.Height=calculatevscrollback(inner.Height());
 
 			//if(scrollinglayer.BoundingBox!=Bounds(Point(0,0), size))
 			//	Draw();
@@ -425,7 +420,7 @@ namespace gge { namespace widgets {
 			bool reorganize=false;
 
 			int yscrollrange=scrollinglayer.BoundingBox.Height()-innerlayer.BoundingBox.Height();
-			if(yscrollrange<0)
+			if(yscrollrange<=0)
 				yscrollrange=0;
 			else
 				yscrollrange+=innerlayer.BoundingBox.Height()/5;
@@ -438,6 +433,7 @@ namespace gge { namespace widgets {
 				//if(innerborder)
 				vscroll.bar.SetHeight(innerlayer.GetHeight());
 				if(!vscroll.bar.IsVisible()) {
+					adjustlayers();
 					vscroll.bar.Show();
 					reorganize=true;
 				}
@@ -445,18 +441,18 @@ namespace gge { namespace widgets {
 			else {
 				scrollmargins=Margins(0);
 				if(vscroll.bar.IsVisible()) {
+					adjustlayers();
 					vscroll.bar.Hide();
 					reorganize=true;
 				}
 			}
 
 
-			adjustlayers();
 			Draw();
 
-			if(reorganize) Reorganize();
-
 			vscroll.bar.Move(innerlayer.BoundingBox.Right+padding.Right, innerlayer.BoundingBox.Top);
+
+			if(reorganize) Reorganize();
 		}
 
 		utils::Point Base::AbsoluteLocation() {
@@ -633,7 +629,7 @@ namespace gge { namespace widgets {
 			vscroll(true), scrollmargins(0), controlmargins(0), outerborder(NULL),
 			scrollingborder(NULL), innerborder(NULL), showtitle(false), display(true),
 			frozen(false), unprepared(true),
-			blueprintmodified(false) {
+			blueprintmodified(false), extenderlayercontainer(NULL) {
 				padding=utils::Margins(WR.WidgetSpacing.x,WR.WidgetSpacing.y);
 
 				controls.alwaysenabled=true;
@@ -641,6 +637,7 @@ namespace gge { namespace widgets {
 				innerlayer.Add(scrollinglayer);
 				scrollinglayer.Add(background, 1);
 				scrollinglayer.Add(widgetlayer, 0);
+				widgetlayer.ClippingEnabled=true;
 				innerlayer.ClippingEnabled=true;
 
 				style_anim.Pause();

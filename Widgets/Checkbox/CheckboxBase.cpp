@@ -354,12 +354,12 @@ namespace gge { namespace widgets {
 
 								if(dynamic_cast<BitmapFont*>(font->getRenderer())) {
 									Image *im=dynamic_cast<BitmapFont*>(font->getRenderer())->Characters['_'];
-									innerlayer.SetCurrentColor(font->Color);
+									innerlayer.SetCurrentColor(gge::graphics::RGBfloat(font->Color));
 									im->DrawStretched(innerlayer, 
 										eprint[1].Out.position.x-1,eprint[1].Out.position.y,
 										2+eprint[2].Out.position.x-eprint[1].Out.position.x, im->GetHeight()
 										);
-									innerlayer.SetCurrentColor((gge::graphics::RGBfloat)0xffffffff);
+									innerlayer.SetCurrentColor(1.f);
 								}
 							}
 						}
@@ -655,9 +655,8 @@ namespace gge { namespace widgets {
 						setstate(v);
 					}
 				}
+				Draw();
 			}
-
-			Draw();
 		}
 
 		void Base::setstyle(Blueprint::StyleType type) {

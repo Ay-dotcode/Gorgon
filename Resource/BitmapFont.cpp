@@ -71,7 +71,7 @@ namespace gge { namespace resource {
 		unsigned int i;
 		if(Shadow.Type==ShadowParams::Flat) {
 			int x=X;
-			target->SetCurrentColor(Shadow.Color);
+			target->SetCurrentColor(gge::graphics::RGBfloat(Shadow.Color));
 			for(i=0;i<text.length();i++) {
 				Image *img=Characters[(unsigned char)text[i]];
 				img->Draw(target,x+Shadow.Offset.x,Y+Shadow.Offset.y);
@@ -84,7 +84,7 @@ namespace gge { namespace resource {
 			shadow.Print(target, X+Shadow.Offset.x-sizediff, Y+Shadow.Offset.y-sizediff, text, Shadow.Color);
 		}
 
-		target->SetCurrentColor(color);
+		target->SetCurrentColor(gge::graphics::RGBfloat(color));
 		for(i=0;i<text.length();i++) {
 			Image *img=Characters[(unsigned char)text[i]];
 			if(img) {
@@ -93,7 +93,7 @@ namespace gge { namespace resource {
 			}
 		}
 
-		target->SetCurrentColor(cc);
+		target->SetCurrentColor(gge::graphics::RGBfloat(cc));
 	}
 
 	void BitmapFont::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, const std::string &text, graphics::RGBint color, TextAlignment::Type align, ShadowParams Shadow) {
@@ -120,7 +120,7 @@ namespace gge { namespace resource {
 		}
 
 		RGBint cc=target->GetCurrentColor();
-		target->SetCurrentColor(color);
+		target->SetCurrentColor(gge::graphics::RGBfloat(color));
 
 		if(w==0) {
 			/*align=TextAlignment::Left;
@@ -203,13 +203,13 @@ namespace gge { namespace resource {
 			}
 		}
 
-		target->SetCurrentColor(cc);
+		target->SetCurrentColor(gge::graphics::RGBfloat(cc));
 	}
 	void BitmapFont::Print(graphics::ColorizableImageTarget2D *target, int x, int y, int w, const std::string &text, graphics::RGBint color, EPrintData *Data, int DataLen, TextAlignment::Type Align, ShadowParams Shadow) {
 		if(!Characters[0]) return;
 
 		RGBint cc=target->GetCurrentColor();
-		target->SetCurrentColor(color);
+		target->SetCurrentColor(graphics::RGBfloat(color));
 		
 		int sizediff;
 		BitmapFont *shadow;
@@ -380,15 +380,15 @@ namespace gge { namespace resource {
 							int i;
 							for(i=0;i<Tabsize;i++) {
 								if(Shadow.Type==ShadowParams::Flat) {
-									target->SetCurrentColor(Shadow.Color);
+									target->SetCurrentColor(graphics::RGBfloat(Shadow.Color));
 									img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
 								}
 								else if(Shadow.Type==ShadowParams::DropShadow) {
-									target->SetCurrentColor(Shadow.Color);
+									target->SetCurrentColor(graphics::RGBfloat(Shadow.Color));
 									shadow->Characters[(unsigned char)' ']->Draw(target, l+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff);
 								}
 
-								target->SetCurrentColor(color);
+								target->SetCurrentColor(graphics::RGBfloat(color));
 								img->Draw(target,l,y);
 								dist+=img->GetWidth()+Seperator;
 							}
@@ -398,15 +398,15 @@ namespace gge { namespace resource {
 						Image *img=Characters[(unsigned char)text[j]];
 						if(img) {
 							if(Shadow.Type==ShadowParams::Flat) {
-								target->SetCurrentColor(Shadow.Color);
+								target->SetCurrentColor(graphics::RGBfloat(Shadow.Color));
 								img->Draw(target,l+Shadow.Offset.x,y+Shadow.Offset.y);
 							}
 							else if(Shadow.Type==ShadowParams::DropShadow) {
-								target->SetCurrentColor(Shadow.Color);
+								target->SetCurrentColor(graphics::RGBfloat(Shadow.Color));
 								shadow->Characters[(unsigned char)text[j]]->Draw(target, l+Shadow.Offset.x-sizediff, y+Shadow.Offset.y-sizediff);
 							}
 
-							target->SetCurrentColor(color);
+							target->SetCurrentColor(graphics::RGBfloat(color));
 							img->Draw(target,l,y);
 							dist=img->GetWidth()+Seperator;
 						}
@@ -449,7 +449,7 @@ namespace gge { namespace resource {
 			}
 		}	
 
-		target->SetCurrentColor(cc);
+		target->SetCurrentColor(graphics::RGBfloat(cc));
 
 	}
 	void BitmapFont::Print_Test(int x, int y, int w, const std::string &text, EPrintData *Data, int DataLen, TextAlignment::Type Align) {

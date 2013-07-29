@@ -111,7 +111,7 @@ namespace gge { namespace utils {
 		bool IsValid() const {
 			return iterator().isvalid();
 		}
-		
+
 		operator bool() const {
 			return IsValid();
 		}
@@ -215,7 +215,7 @@ namespace gge { namespace utils {
 		////Moves the iterator to forwards
 		I_ operator ++(int) {
 			I_ it=iterator();
-			moveby(1);
+			iterator().moveby(1);
 
 			return it;
 		}
@@ -223,7 +223,7 @@ namespace gge { namespace utils {
 		////Moves the iterator to backwards
 		I_ operator --(int) {
 			I_ it=iterator();
-			moveby(-1);
+			iterator().moveby(-1);
 
 			return it;
 		}

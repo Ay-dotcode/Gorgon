@@ -12,7 +12,8 @@
 #include "../Scrollbar.h"
 #include "../Panel/ControlledPanel.h"
 #include "IListItem.h"
-#include "../Organizers/ListOrganizer.h"
+#include "../Organizers/MovingListOrganizer.h"
+#include "../../Utils/StringUtils.h"
 
 namespace gge { namespace widgets {
 	class ListboxType {
@@ -21,50 +22,65 @@ namespace gge { namespace widgets {
 
 	namespace listbox {
 
-		
-
-		template <typename T>
-		class has_stringoperator
-		{
-			typedef char one;
-			struct two {
-				char a[2];
-			};
-
-			template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {;}
-			template <typename C> static two test(...){;}
-
-		public:
-			enum { value = sizeof(test<T>(""))==sizeof(char) };
-		};
-
 		template<class T_>
-		typename std::enable_if<has_stringoperator<T_>::value>::type CastToString(const T_ &v, std::string &str) {
+		typename std::enable_if<utils::has_stringoperator<T_>::value>::type CastToString(const T_ &v, std::string &str) {
 			str=(std::string)v;
 		}
 		template<class T_>
-		typename std::enable_if<!has_stringoperator<T_>::value>::type CastToString(const T_ &v, std::string &str) {
+		typename std::enable_if<!utils::has_stringoperator<T_>::value>::type CastToString(const T_ &v, std::string &str) {
 			std::stringstream ss;
 			ss<<v;
 			str=ss.str();
 		}
 
-		template<class T_, void(*CF_)(const T_ &, std::string &)=CastToString<T_> >
-		class Base;
-		
-		template<class T_, void(*CF_)(const T_ &, std::string &) >
+		template<class T_>
+		void EmptyStringConverter(const T_ &v, std::string &s) { s=""; }
+
+		struct ListboxDragHandle : public gge::input::mouse::IDragData {
+		public:
+			ListboxDragHandle(int listboxid=0, int index=0) : listboxid(listboxid), index(index)
+			{ }
+
+			virtual int TypeID() const {
+				return DragID;
+			}
+
+			int listboxid;
+
+			int index;
+
+			static const int DragID=13;
+		};
+
+		extern int nextindex;
+
+		//forces subclasses to use item caching
+		template<class R_>
 		class Base : public WidgetBase, public ListboxType {
 		public:
 
-			Base() : bp(NULL),  controls(*this), autoheight(false), blueprintmodified(false), KeepItems(false),
-				columns(1), allowreorder(false), dragtoken(0)
+			Base() : bp(NULL),  controls(*this), autoheight(false), blueprintmodified(false),
+				columns(1), allowreorder(false), dragtoken(0), prevheight(0), prevelmheight(0),
+				elementcount(0), prevcols(1), id(nextindex), lastdragtime(0)
 			{
 				controls.AddWidget(panel);
 				panel.Move(0,0);
 				panel.SetOrganizer(organizer);
 				panel.AllowTabSwitch=false;
+				panel.GetVScroller().DisableAnimation();
+				panel.ScrollingEvent.RegisterLambda([&]{
+					if(organizer.SetVScroll(panel.GetVScroll())) {
+						this->adjustitems();
+					}
+				});
 
 				WR.LoadedEvent.Register(this, &Base::wr_loaded);
+				triggerfn=[&](IListItem &item, int index) {
+					this->trigger(dynamic_cast<R_&>(item), index+organizer.GetTop());
+				};
+				dragnotify=[&](IListItem &item, int index, gge::utils::Point location) {
+					this->begindrag(item, index, location);
+				};
 			}
 
 
@@ -103,13 +119,14 @@ namespace gge { namespace widgets {
 				using namespace input::mouse;
 				if(event==Event::DragOver) {
 					if(
-						IsDragging() && 
-						GetDraggedObject().TypeID()==IListItem<T_, CF_>::DragID && 
-						panel.Widgets.FindLocation(dynamic_cast<IListItem<T_, CF_>&>(GetDraggedObject()).GetWidget())!=-1
+						IsDragging() &&
+						GetDraggedObject().TypeID()==ListboxDragHandle::DragID &&
+						dynamic_cast<ListboxDragHandle&>(GetDraggedObject()).listboxid==id
 					) {
 						if(!dragtoken)
 							dragtoken=Pointers.Set(Pointer::Drag);
-						panelscroll=panel.GetVScroll();
+						panelscroll=float(panel.GetVScroll());
+						lastdragtime=0;
 						return true;
 					}
 					else {
@@ -117,44 +134,79 @@ namespace gge { namespace widgets {
 					}
 				}
 				else if(event==Event::DragMove) {
-					//location+=DragLocation;
 					if(IsDragging()) {
-						IListItem<T_, CF_> &l=dynamic_cast<IListItem<T_, CF_>&>(GetDraggedObject());
-						
-						//location.y-=l.GetWidget().GetHeight()/2;
-						//location.x-=l.GetWidget().GetWidth()/2;
-						
+						int vloc=location.y-panel.GetOverheadMargins().Top;
+						if(vloc>panel.GetUsableHeight())
+							vloc=panel.GetUsableHeight();
+
+						if(vloc<panel.Widgets.First()->GetHeight()) {
+							if(lastdragtime!=0) {
+								unsigned t=Main.CurrentTime-lastdragtime;
+
+								float v=1-(float)vloc/panel.Widgets.First()->GetHeight();
+								float speed=std::pow(v, 0.4f)*8*panel.Widgets.First()->GetHeight();
+
+								panelscroll-=speed*t/1000;
+							}
+							lastdragtime=Main.CurrentTime;
+						}
+						if(vloc>panel.GetUsableHeight()-panel.Widgets.First()->GetHeight()) {
+							if(lastdragtime!=0) {
+								unsigned t=Main.CurrentTime-lastdragtime;
+
+								float v=1-(float)(panel.GetUsableHeight()-vloc)/panel.Widgets.First()->GetHeight();
+								float speed=std::pow(v, 0.4f)*8*panel.Widgets.First()->GetHeight();
+
+								panelscroll+=speed*t/1000;
+							}
+							lastdragtime=Main.CurrentTime;
+						}
+
+						ListboxDragHandle &h=dynamic_cast<ListboxDragHandle&>(GetDraggedObject());
+
+						int l=h.index;
+
+						location.x+=panel.Widgets.First()->GetWidth()/4;
+
 						location.y+=panel.GetVScroll();
 
-						IListItem<T_, CF_> *before=NULL, *b=NULL;
-						for(auto w=panel.Widgets.First();w.IsValid();w.Next()) {
-							if(w->GetY()+w->GetHeight()>location.y && w->GetX()+w->GetWidth()>location.x) {
-								before=dynamic_cast<IListItem<T_, CF_>*>(w.CurrentPtr());
-								break;
-							}
-							b=before;
-						}
-						if(b!=&l && &l!=before) {
-							panel.Freeze();
-							movebefore(l, before);
-							panel.Unfreeze();
+						int before=organizer.LogicalItemAt(location, true);
+						if(before==-1) before=0;
 
-							panel.SetVScroll(panelscroll);
+						if(l!=before && l+1!=before && l>=0 && l<elementcount) {
+							movebefore(l, before);
+
+							if(before>l) {
+								h.index=before-1;
+							}
+							else if(h.index>=elementcount){
+								h.index=elementcount-1;
+							}
+							else {
+								h.index=before;
+							}
+						}
+
+						panel.SetVScroll(int(panelscroll));
+
+						if(organizer.SetVScroll(panel.GetVScroll())) {
+							adjustitems();
 						}
 					}
+				}
+				else if(event==Event::DragOut) {
+					Pointers.Reset(dragtoken);
+					dragtoken=0;
 				}
 				else if(event==Event::DragDrop) {
 					Pointers.Reset(dragtoken);
 					dragtoken=0;
 				}
-					
-				
+
+
 				return !Event::isScroll(event);
 			}
 
-			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
-				return panel.KeyboardHandler(event, Key);
-			}
 			using WidgetBase::Resize;
 			virtual void Resize(utils::Size Size) {
 				WidgetBase::Resize(Size);
@@ -166,6 +218,9 @@ namespace gge { namespace widgets {
 				if(autoheight) {
 					panel.SetWidth(Size.Width);
 					controls.BaseLayer.BoundingBox.SetWidth(Size.Width);
+
+					adjustheight();
+					Size.Height=panel.GetHeight();
 				}
 				else {
 					panel.Resize(Size);
@@ -174,6 +229,10 @@ namespace gge { namespace widgets {
 
 				if(BaseLayer)
 					BaseLayer->Resize(controls.BaseLayer.BoundingBox.GetSize());
+
+				this->panel.LargeScroll=this->panel.GetUsableSize().Height-this->panel.SmallScroll;
+
+				checkelementlist();
 			}
 
 			virtual utils::Size GetSize() {
@@ -184,36 +243,19 @@ namespace gge { namespace widgets {
 			}
 
 			~Base() {
-				//todo: fixme
-				//if(!KeepItems)
-					//;//panel.Widgets.Destroy();
-				
 				if(dragtoken)
 					Pointers.Reset(dragtoken);
+
+				representations.Destroy();
 			}
-			
-			bool KeepItems;
 
 		protected:
-
-			virtual void add(IListItem<T_, CF_> &item) {
-				panel.AddWidget(item.GetWidget());
-				item.setallowdrag(allowreorder);
-				if(autoheight)
-					adjustheight();
-			}
-
-			virtual void remove(IListItem<T_, CF_> &item) {
-				item.GetWidget().Detach();
-				if(autoheight)
-					adjustheight();
-			}
 
 			virtual void draw() {
 			}
 
 			//If the listbox supports reordering, it should supply this
-			virtual void movebefore(IListItem<T_, CF_> &item, IListItem<T_, CF_> *before) {}
+			virtual void movebefore(unsigned item, unsigned before) {}
 
 			virtual bool loosefocus(bool force) {
 				if(force) {
@@ -249,6 +291,8 @@ namespace gge { namespace widgets {
 				if(autoheight!=value) {
 					autoheight = value;
 					adjustheight();
+
+					checkelementlist();
 				}
 			}
 			bool getautoheight() const {
@@ -260,17 +304,19 @@ namespace gge { namespace widgets {
 					organizer.SetColumns(columns);
 					if(autoheight)
 						adjustheight();
+
+					checkelementlist();
 				}
 			}
-			int getcolumns() const {
+			int  getcolumns() const {
 				return columns;
 			}
 			void setallowreorder(const bool &value) {
 				if(allowreorder!=value) {
 					allowreorder = value;
-					for(auto it=panel.Widgets.First();it.IsValid();it.Next()) {
-						dynamic_cast<IListItem<T_, CF_>*>(it.CurrentPtr())->setallowdrag(value);
-					}
+					//for(auto it=panel.Widgets.First();it.IsValid();it.Next()) {
+					//	dynamic_cast<IListItem*>(it.CurrentPtr())->SetDragAllowed(value);
+					//}
 				}
 			}
 			bool getallowreorder() const {
@@ -284,15 +330,14 @@ namespace gge { namespace widgets {
 					sh=bp->DefaultSize.Height;
 
 				if(autoheight) {
+					int elmheight=elementheight();
+					int h=elmheight*elementcount;
+
 					panel.SetHeight(200);
-					int h=0;
-					for(auto it=panel.Widgets.First();it.IsValid();it.Next()) {
-						if(it->IsVisible())
-							h+=it->GetHeight();
-					}
 					h+=panel.GetHeight()-panel.GetUsableHeight();
-					panel.SetHeight(std::min(h+1,sh));
-					controls.BaseLayer.BoundingBox.SetHeight(std::min(h+1,sh));
+
+					panel.SetHeight(std::min(h,sh));
+					controls.BaseLayer.BoundingBox.SetHeight(std::min(h,sh));
 				}
 				else {
 					panel.SetHeight(sh);
@@ -301,6 +346,80 @@ namespace gge { namespace widgets {
 
 				if(BaseLayer)
 					BaseLayer->Resize(controls.BaseLayer.BoundingBox.GetSize());
+
+				checkelementlist();
+			}
+
+			void checkelementlist() {
+				int elmheight=elementheight();
+				if(prevheight==panel.GetHeight() && prevelmheight==elmheight && columns==prevcols) return;
+
+				prevheight=panel.GetHeight();
+
+				int required=organizer.RequiredItems(elmheight);
+
+				while(representations.GetCount()<required) {
+					R_ *element=newelement(representations.GetCount(), triggerfn);
+					element->SetBlueprint(bp->Item);
+					element->DragNotify=dragnotify;
+					representations.Add(element);
+					panel.AddWidget(element->GetWidget());
+					elementadded(*element);
+				}
+
+				organizer.Reorganize();
+				adjustitems();
+			}
+
+			//*****
+			//should be called
+			void itemheightchanged() {
+				if(autoheight) adjustheight();
+				if(!autoupdate) adjustitems();
+
+				if(representations.GetCount()==0) {
+					this->panel.SmallScroll=listbox::Base<R_>::bp->Item->DefaultSize.Height;
+				}
+				else {
+					this->panel.SmallScroll=representations.First()->GetHeight();
+				}
+				this->panel.LargeScroll=this->panel.GetUsableSize().Height-this->panel.SmallScroll;
+				this->panel.SmallScroll*=3;
+			}
+			void setitemcount(int count) {
+				if(elementcount==count) return;
+
+				int elmheight=elementheight();
+
+				elementcount=count;
+				organizer.SetLogicalCount(count);
+				panel.LogicalHeight=organizer.GetLogicalHeight();
+
+				if(autoheight) this->adjustheight();
+				/*if(!autoupdate)*/ adjustitems();
+			}
+
+			//******
+			//could be implemented
+			virtual R_ *newelement(int index, std::function<void(IListItem&, int)> trigger) { return new R_(index,trigger); }
+			//should return element height
+			//element heights should be the same for everything to work smoothly
+			virtual void elementadded(R_ &element) {}
+
+			//*****
+			//must be implemented
+			virtual int elementheight() = 0;
+			virtual void trigger(R_ &element, int index) = 0;
+			//should set listitem values starting from the given start value
+			virtual void adjustitems()=0;
+
+			void begindrag(IListItem &item, int index, gge::utils::Point location) {
+				if(!allowreorder) return;
+
+				using namespace gge::input::mouse;
+
+				BeginDrag(*new ListboxDragHandle(id, index+organizer.GetTop()));
+				DragLocation=location;
 			}
 
 
@@ -316,19 +435,31 @@ namespace gge { namespace widgets {
 			}
 
 			virtual void setblueprint(const widgets::Blueprint &bp);
-		
 
-			ListOrganizer organizer;
+			MovingListOrganizer organizer;
+
+			gge::utils::OrderedCollection<R_> representations;
+
+			bool autoupdate;
+
 		private:
 			bool autoheight;
 			int columns;
+			int prevheight;
+			int prevelmheight;
 			bool allowreorder;
-			int panelscroll;
+			float panelscroll;
 			PointerCollection::Token dragtoken;
+			std::function<void(IListItem&, int)> triggerfn;
+			std::function<void(IListItem&, int, gge::utils::Point)> dragnotify;
+			int elementcount;
+			int prevcols;
+			int id;
+			unsigned lastdragtime;
 		};
 
-		template<class T_, void(*CF_)(const T_ &, std::string &)>
-		void Base<T_, CF_>::setblueprint(const widgets::Blueprint &bp) {
+		template<class R_>
+		void Base<R_>::setblueprint(const widgets::Blueprint &bp) {
 			if(this->bp==&bp)
 				return;
 
@@ -342,6 +473,11 @@ namespace gge { namespace widgets {
 				this->controls.BaseLayer.BoundingBox.SetWidth(bp.DefaultSize.Width);
 			}
 
+			for(auto it=representations.First();it.IsValid();it.Next()) {
+				it->SetBlueprint(*listbox::Base<R_>::bp->Item);
+			}
+
+			itemheightchanged();
 			this->adjustheight();
 		}
 

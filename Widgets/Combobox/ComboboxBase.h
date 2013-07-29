@@ -25,20 +25,21 @@ namespace gge { namespace widgets {
 			v=(T_)str;
 		}
 
-		template<class T_, void(*CS_)(const T_ &, std::string &)=CastFromString<T_> >
+		template<class T_, class A_, class L_, void(*CS_)(const T_ &, std::string &)=CastFromString<T_> >
 		class Base : public WidgetBase, public ComboboxType {
 		public:
 
-			Base(const T_ &value=T_()) : bp(NULL),  controls(*this), isextended(false),
-				blueprintmodified(false), KeepItems(false)
+			Base() : bp(NULL),  controls(*this), isextended(false),
+				blueprintmodified(false),
+				INIT_PROPERTY(Base, AutoUpdate)
 			{
 				controls.AddWidget(dropbutton);
 				controls.AddWidget(textbox);
 				controls.AddWidget(listbox);
 
 				listbox.SetIsExtender(true);
-				listbox.ItemClickedEvent.RegisterLambda([&](){
-					this->setvalue(this->listbox.GetValue());
+				listbox.ItemClickEvent.RegisterLambda([&](){
+					this->setvalue(this->listbox.Get());
 					this->shrink();
 				});
 				listbox.AutoHeight=true;
@@ -130,27 +131,84 @@ namespace gge { namespace widgets {
 			}
 
 			//!check
-			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key Key) {
-				if(event==input::keyboard::Event::Char) {
-					if(isextended) {
-						if(!input::keyboard::Modifier::IsModified()) {
-							if(Key==input::keyboard::KeyCodes::Enter || Key==input::keyboard::KeyCodes::Escape) {
-								shrink();
-								return true;
-							}
-						}
+			virtual bool KeyboardHandler(input::keyboard::Event::Type event, input::keyboard::Key key) {
+				using namespace input::keyboard;
+
+				if(!Modifier::Check() && event==Event::Down) {
+					if(isextended && (key==KeyCodes::Enter || key==KeyCodes::Escape)) {
+						shrink();
+						return true;
 					}
-					else {
-						if(!input::keyboard::Modifier::IsModified()) {
-							if(Key==input::keyboard::KeyCodes::Enter) {
-								extend();
-								return true;
-							}
+					if(!isextended && key==KeyCodes::Enter) {
+						extend();
+						return true;
+					}
+					if(key==KeyCodes::Down) {
+						if(listbox.ActiveIndex()<listbox.GetCount()-1 && listbox.GetCount()) {
+							listbox.Select(listbox.ActiveIndex()+1);
+							listbox.EnsureVisible();
+							this->setvalue(this->listbox.Get());
 						}
+
+						return true;
+					}
+					if(key==KeyCodes::Up) {
+						if(listbox.ActiveIndex()>0) {
+							listbox.Select(listbox.ActiveIndex()-1);
+							listbox.EnsureVisible();
+							this->setvalue(this->listbox.Get());
+						}
+
+						return true;
+					}
+					if(key==KeyCodes::PageDown) {
+						if(listbox.GetCount()==0) return true;
+
+						int target=listbox.ActiveIndex()+5;
+						if(target>=listbox.GetCount()) {
+							target=listbox.GetCount()-1;
+						}
+						listbox.Select(target);
+						listbox.EnsureVisible();
+						this->setvalue(this->listbox.Get());
+
+						return true;
+					}
+					if(key==KeyCodes::PageUp) {
+						if(listbox.GetCount()==0) return true;
+
+						int target=listbox.ActiveIndex()-5;
+						if(target<0) {
+							target=0;
+						}
+						listbox.Select(target);
+						listbox.EnsureVisible();
+						this->setvalue(this->listbox.Get());
+
+						return true;
+					}
+					if(key==KeyCodes::Home) {
+						if(listbox.GetCount()) {
+							listbox.Select(0);
+							listbox.EnsureVisible();
+							this->setvalue(this->listbox.Get());
+						}
+						return true;
+					}
+					if(key==KeyCodes::End) {
+						if(listbox.GetCount()) {
+							listbox.Select(listbox.GetCount()-1);
+							listbox.EnsureVisible();
+							this->setvalue(this->listbox.Get());
+						}
+						return true;
 					}
 				}
 
-				return textbox.KeyboardHandler(event, Key);
+				return false;
+
+
+				return textbox.KeyboardHandler(event, key);
 			}
 
 			virtual bool IsExtended() {
@@ -158,11 +216,9 @@ namespace gge { namespace widgets {
 			}
 
 			virtual ~Base() {
-				listbox.KeepItems=KeepItems;
 			}
 
-			bool KeepItems;
-
+			utils::BooleanProperty<Base> AutoUpdate;
 
 		protected:
 			virtual void setblueprint(const widgets::Blueprint &bp);
@@ -173,12 +229,16 @@ namespace gge { namespace widgets {
 
 			}
 
-			virtual void add(ListItem<T_, CS_> &item) {
+			virtual void add(typename A_::paramtype item) {
 				listbox.Add(item);
 			}
 
-			virtual void insert(ListItem<T_, CS_> &item, ListItem<T_, CS_> *before) {
+			virtual void insert(typename A_::paramtype item, unsigned before) {
 				listbox.Insert(item,before);
+			}
+
+			virtual void remove(unsigned before) {
+				listbox.Remove(before);
 			}
 
 			virtual void draw() {}
@@ -236,10 +296,9 @@ namespace gge { namespace widgets {
 			virtual void extend() {
 				if(!isextended) {
 					isextended=true;
-					if(auto li=listbox.Find(value))
-						li->Signal();
-					else
-						listbox.ClearSelection();
+
+					listbox.Value=value;
+					listbox.CenterItem();
 
 					listbox.Show(true);
 					if(!dropbutton)
@@ -261,15 +320,13 @@ namespace gge { namespace widgets {
 
 			virtual void valuechanged() {}
 
-			void setvalue(const T_ &value) {
+			void setvalue(typename A_::paramtype &value) {
 				if(this->value!=value) {
-					this->value = value;
+					this->value = A_::ParamToStorageType(value);
 
 					if(isextended) {
-						if(auto li=listbox.Find(value))
-							li->Signal();
-						else
-							listbox.ClearSelection();
+						listbox.Value=value;
+						listbox.EnsureVisible();
 					}
 					
 					std::string str;
@@ -287,6 +344,13 @@ namespace gge { namespace widgets {
 					allow=false;
 			}
 
+			void setAutoUpdate(const bool &value) {
+				listbox.AutoUpdate=value;
+			}
+			bool getAutoUpdate() const {
+				return listbox.AutoUpdate;
+			}
+
 			const Blueprint *bp;
 
 			ExtendedPetContiner<Base> controls;
@@ -294,14 +358,14 @@ namespace gge { namespace widgets {
 			bool isextended;
 			
 			PetTextbox textbox;
-			Listbox<T_, CS_> listbox;
+			L_ listbox;
 			Checkbox dropbutton;
 
-			T_ value;
+			typename A_::storagetype value;
 		};
 
-		template<class T_, void(*CS_)(const T_ &, std::string &)>
-		void Base<T_, CS_>::setblueprint(const widgets::Blueprint &bp) {
+		template<class T_, class A_, class L_, void(*CS_)(const T_ &, std::string &)>
+		void Base<T_, A_, L_, CS_>::setblueprint(const widgets::Blueprint &bp) {
 			if(this->bp==&bp)
 				return;
 

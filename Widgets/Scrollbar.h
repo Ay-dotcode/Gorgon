@@ -47,6 +47,10 @@ namespace gge { namespace widgets {
 			return *this;
 		}
 
+		void DisableAnimation() {
+			slider::Base<T_>::setsmoothingspeed(0);
+		}
+
 		utils::NumericProperty<Scrollbar, int> AnimationDuration;
 		utils::Property<Scrollbar, OrientationType> Orientation;
 		utils::NumericProperty<Scrollbar, T_> LargeChange;
@@ -64,7 +68,7 @@ namespace gge { namespace widgets {
 			return slider::Base<T_>::getvalue();
 		}
 		void setValue(const T_ &value) {
-			if(value!=slider::Base<T_>::gettargetvalue()) {
+			if((slider::Base<T_>::getsmoothingspeed()>0 && value!=slider::Base<T_>::gettargetvalue()) || (value!=slider::Base<T_>::getvalue())) {
 				slider::Base<T_>::setvalue(value);
 				ChangeEvent();
 			}

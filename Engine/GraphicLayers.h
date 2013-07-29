@@ -205,7 +205,6 @@ namespace gge { namespace graphics {
 
 		RGBint Ambient;
 
-		virtual void SetCurrentColor(RGBint color) { CurrentColor=color; }
 		virtual void SetCurrentColor(RGBfloat color) { CurrentColor=color; }
 		virtual RGBint GetCurrentColor() { return CurrentColor; }
 

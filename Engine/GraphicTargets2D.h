@@ -55,7 +55,6 @@ namespace gge { namespace graphics {
 
 	class ColorizableTarget {
 	public:
-		virtual void SetCurrentColor(RGBint color) = 0;
 		virtual void SetCurrentColor(RGBfloat color) = 0;
 
 		virtual RGBint GetCurrentColor() = 0;

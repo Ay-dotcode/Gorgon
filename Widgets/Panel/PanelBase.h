@@ -12,6 +12,7 @@
 #include "../Scrollbar.h"
 #include "../StatefulLabel.h"
 #include "../../Utils/OrderedCollection.h"
+#include "../ExtenderLayer.h"
 
 namespace gge { namespace widgets {
 	namespace panel {
@@ -128,6 +129,14 @@ namespace gge { namespace widgets {
 				Resize(utils::Size(W,H));
 			}
 
+			virtual void SetContentSize(utils::Size Size) {
+				Resize(Size+GetOverheadMargins());
+			}
+
+			void SetContentSize(int W, int H) {
+				SetContentSize(utils::Size(W,H));
+			}
+
 			virtual void Draw() {
 				unprepared=true;
 				WidgetBase::Draw();
@@ -160,6 +169,16 @@ namespace gge { namespace widgets {
 			void MoveBy(utils::Point amount) {
 				Move(GetLocation()+amount);
 			}
+
+			using WidgetBase::Move;
+
+			virtual void Move(utils::Point Location) {
+				if(extenderlayercontainer)
+					extenderlayercontainer->Move(Location);
+
+				WidgetBase::Move(Location);
+			}
+
 
 			virtual bool Focus() {
 				if(!Focused) {
@@ -245,6 +264,18 @@ namespace gge { namespace widgets {
 
 			void adjustcontrols();
 
+			virtual int calculatevscrollback(int usableheight) {
+				int height=usableheight;
+
+				for(auto i=Widgets.First();i.IsValid();i.Next()) {
+					int y=i->GetBounds().BottomRight().y;
+					if(height<y)
+						height=y;
+				}
+
+				return height;
+			}
+
 			void prepare();
 
 			virtual void draw();
@@ -285,10 +316,14 @@ namespace gge { namespace widgets {
 			}
 
 			virtual bool detach(ContainerBase *container) {
+				WidgetBase::detach(container);
+				
+				utils::CheckAndDelete(extenderlayercontainer);
 				innerlayer.parent=NULL;
 				controls.BaseLayer.parent=NULL;
 				dialogcontrols.BaseLayer.parent=NULL;
 				overlayer.parent=NULL;
+				extenderlayer.parent=NULL;
 
 				return true;
 			}
@@ -299,7 +334,10 @@ namespace gge { namespace widgets {
 				BaseLayer->Add(innerlayer,1);
 				BaseLayer->Add(dialogcontrols,0);
 				BaseLayer->Add(controls,0);
-				BaseLayer->Add(extenderlayer, -1);
+				utils::CheckAndDelete(extenderlayercontainer);
+				extenderlayercontainer=&container->CreateExtenderLayer();
+				extenderlayercontainer->Add(extenderlayer, -1);
+				extenderlayercontainer->Move(BaseLayer->BoundingBox.TopLeft());
 				BaseLayer->Add(overlayer, -2);
 
 				containerenabledchanged(container->IsEnabled());
@@ -520,7 +558,9 @@ namespace gge { namespace widgets {
 
 
 			graphics::Basic2DLayer overlayer, innerlayer;
-			LayerBase scrollinglayer, background, widgetlayer, extenderlayer;
+			LayerBase scrollinglayer, background;
+			ExtenderLayer extenderlayer;
+			graphics::Basic2DLayer widgetlayer;
 
 			//for scrollbar, title buttons, etc
 			PetContainer<Base> controls;
@@ -634,6 +674,7 @@ namespace gge { namespace widgets {
 			utils::Margins scrollmargins;
 			utils::Margins controlmargins;
 			utils::Point   scroll;
+			widgets::WidgetLayer *extenderlayercontainer;
 		};
 	}
 }}

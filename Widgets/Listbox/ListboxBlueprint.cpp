@@ -66,6 +66,8 @@ namespace gge { namespace widgets {
 		}
 
 
+		int nextindex=0;
+
 	}
 
 }}
