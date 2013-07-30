@@ -123,7 +123,7 @@ namespace gge { namespace resource {
 			Texture = graphics::system::GenerateTexture(Data, GetWidth(), GetHeight(), GetMode());
 	}
 
-	bool Image::PNGExport(string filename) {
+	bool Image::ExportPNG(string filename) {
 		Byte *newdata=new Byte[GetWidth()*GetHeight()*4];
 		for(int i=0;i<GetWidth()*GetHeight();i++) {
 			newdata[i*4+2]=Data[i*4+0];
@@ -142,7 +142,7 @@ namespace gge { namespace resource {
 		
 		return true;
 	}
-	Image::PNGReadError Image::ImportPNG(string filename) {
+	Image::ImageReadError Image::ImportPNG(string filename) {
 
 		std::ifstream file(filename, ios::binary);
 
@@ -413,6 +413,16 @@ namespace gge { namespace resource {
 		if(size!=17)
 			in.seekg(size-17,ios::cur);
 	}
+
+	Image::ImageReadError Image::Import(std::string filename) {
+		if(filename.substr(filename.length()-4)==".png" || filename.substr(filename.length()-4)==".PNG" ) {
+			return ImportPNG(filename);
+		}
+
+		return Image::FileNotFound;
+	}
+
+
 
 	encoding::LZMA Image::Lzma(false);
 

@@ -27,7 +27,7 @@ namespace gge { namespace resource {
 	{
 		friend Image *LoadImageResource(File &File, std::istream &Data, int Size);
 	public:
-		enum PNGReadError {
+		enum ImageReadError {
 			NoError=0,
 			ReadError=1, 
 			FileNotFound
@@ -63,7 +63,8 @@ namespace gge { namespace resource {
 			animation::Animations.Remove(this);
 		}
 
-		bool PNGExport(std::string filename);
+		bool PNGExport(std::string filename) { return ExportPNG(filename); }
+		bool ExportPNG(std::string filename);
 		
 		////02020000h (Basic, Image)
 		virtual GID::Type GetGID() const { return GID::Image; }
@@ -76,7 +77,8 @@ namespace gge { namespace resource {
 		virtual void Prepare(GGEMain &main, File &file);
 		void Prepare();
 
-		PNGReadError ImportPNG(std::string filename);
+		ImageReadError ImportPNG(std::string filename);
+		ImageReadError Import(std::string filename);
 
 		////Returns Bytes/Pixel information
 		int GetBPP() { return graphics::getBPP(Mode); }

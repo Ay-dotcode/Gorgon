@@ -348,7 +348,10 @@ namespace gge { namespace utils {
 			}
 		};
 
-		SortedCollection() : count(new int(0)), head(new Wrapper*(NULL)), tail(new Wrapper*(NULL)) {
+		SortedCollection() : 
+			count(new int(0)), 
+			head(new Wrapper*(NULL)), 
+			tail(new Wrapper*(NULL)) {
 		}
 
 		SortedCollection(const SortedCollection &c) : head(c.head), tail(c.tail), count(c.count) {
@@ -968,10 +971,11 @@ namespace gge { namespace utils {
 			dealloc();
 
 			if(head) {
-				head=NULL;
 				delete head;
 				delete tail;
 				delete count;
+
+				head=NULL;
 			}
 		}
 
