@@ -748,7 +748,7 @@ namespace gge { namespace widgets {
 		protected:
 			void setSelectionType(const SelectionTypes &value) {
 				if(selectiontype==MultiSelect && value!=MultiSelect) {
-					//selected.Clear();
+					this->ClearSelection();
 				}
 				selectiontype=value;
 			}
