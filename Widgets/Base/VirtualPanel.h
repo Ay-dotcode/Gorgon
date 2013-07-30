@@ -130,7 +130,14 @@ namespace gge { namespace widgets {
 			return *layer;
 		}
 
-		virtual widgets::WidgetLayer &CreateExtenderLayer()  {
+		virtual widgets::ExtenderLayer &CreateExtenderLayer()  {
+			widgets::ExtenderLayer *layer=new widgets::ExtenderLayer;
+			ExtenderLayer.Add(layer, ExtenderLayer.SubLayers.LowestOrder()-1);
+
+			return *layer;
+		}
+
+		virtual widgets::WidgetLayer &CreateExtenderWidgetLayer()  {
 			widgets::WidgetLayer *layer=new widgets::WidgetLayer;
 			ExtenderLayer.Add(layer, ExtenderLayer.SubLayers.LowestOrder()-1);
 

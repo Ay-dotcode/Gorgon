@@ -72,7 +72,10 @@ namespace gge { namespace widgets {
 
 	template<class T_=std::string, void(*CF_)(const T_ &, std::string &)=listbox::CastToString<T_>,  graphics::RectangularGraphic2D*(*GetIcon)(const T_&)=listbox::GetIcon<T_> >
 	class Collectionbox;
-	
+
+	template<class T_=std::string, void(*CF_)(const T_ &, std::string &)=listbox::CastToString<T_>,  graphics::RectangularGraphic2D*(*GetIcon)(const T_&)=listbox::GetIcon<T_> >
+	class Listbox;
+
 	namespace listbox {
 		template<class T_>
 		class ItemData {
@@ -224,7 +227,7 @@ namespace gge { namespace widgets {
 				Iterator(const SelectionIterator<Ty_, Ac_> &it) : listbox(it.listbox), index(it.index) {
 				}
 
-				operator int() const {
+				operator unsigned int() const {
 					return index;
 				}
 
@@ -303,7 +306,7 @@ namespace gge { namespace widgets {
 					return Iterator<Ty_, Ac_>(*this);
 				}
 
-				operator int() const {
+				operator unsigned int() const {
 					return index;
 				}
 
@@ -424,7 +427,7 @@ namespace gge { namespace widgets {
 				selectedcount=0;
 
 				items.clear();
-				setitemcount(items.size());
+				delaysetitemcount(items.size());
 			}
 
 			int GetCount() const {

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../Engine/Layer.h"
 #include "../Engine/Input.h"
 

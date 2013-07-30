@@ -3,6 +3,7 @@
 
 #include "../Base/Container.h"
 #include "../../Engine/Input.h"
+#include "../ExtenderLayer.h"
 
 
 namespace gge { namespace widgets {
@@ -77,7 +78,14 @@ namespace gge { namespace widgets {
 			return *layer;
 		}
 
-		virtual widgets::WidgetLayer &CreateExtenderLayer()  {
+		virtual widgets::ExtenderLayer &CreateExtenderLayer()  {
+			widgets::ExtenderLayer *layer=new widgets::ExtenderLayer;
+			BaseLayer.Add(layer, BaseLayer.SubLayers.LowestOrder()-1);
+
+			return *layer;
+		}
+
+		virtual widgets::WidgetLayer &CreateExtenderWidgetLayer()  {
 			widgets::WidgetLayer *layer=new widgets::WidgetLayer;
 			BaseLayer.Add(layer, BaseLayer.SubLayers.LowestOrder()-1);
 
@@ -141,22 +149,22 @@ namespace gge { namespace widgets {
 	template<class T_>
 	class ExtendedPetContiner : public PetContainer<T_> {
 	public:
-		LayerBase ExtenderLayer;
+		LayerBase Extender;
 
 		ExtendedPetContiner(T_ &parent) : PetContainer<T_>(parent), extenderbase(NULL) {
 
 		}
 
-		void AttachTo(LayerBase *layer, LayerBase *extender, int order=0) {
+		void AttachTo(LayerBase *layer, ExtenderLayer *extender, int order=0) {
 			if(layer && extender) {
 				utils::CheckAndDelete(extenderbase);
 				extenderbase=extender;
 				layer->Add(this->BaseLayer, order);
-				extender->Add(this->ExtenderLayer, order);
+				extender->Add(this->Extender, order);
 			}
 			else {
 				this->BaseLayer.parent=NULL;
-				ExtenderLayer.parent=NULL;
+				Extender.parent=NULL;
 				utils::CheckAndDelete(extenderbase);
 			}
 		}
@@ -164,14 +172,21 @@ namespace gge { namespace widgets {
 			AttachTo(&layer, &extender, order);
 		}
 
-		virtual widgets::WidgetLayer &CreateExtenderLayer()  {
-			widgets::WidgetLayer *layer=new widgets::WidgetLayer;
-			ExtenderLayer.Add(layer, this->BaseLayer.SubLayers.LowestOrder()-1);
+		virtual widgets::ExtenderLayer &CreateExtenderLayer()  {
+			widgets::ExtenderLayer *layer=new widgets::ExtenderLayer;
+			Extender.Add(layer, Extender.SubLayers.LowestOrder()-1);
 
 			return *layer;
 		}
 
-		LayerBase *extenderbase;
+		virtual widgets::WidgetLayer &CreateExtenderWidgetLayer()  {
+			widgets::WidgetLayer *layer=new widgets::WidgetLayer;
+			Extender.Add(layer, Extender.SubLayers.LowestOrder()-1);
+
+			return *layer;
+		}
+
+		ExtenderLayer *extenderbase;
 
 	};
 

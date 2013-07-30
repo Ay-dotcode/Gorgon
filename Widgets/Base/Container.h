@@ -8,6 +8,7 @@
 #include "Organizer.h"
 #include "../Basic/WidgetLayer.h"
 #include <limits>
+#include "../ExtenderLayer.h"
 
 
 namespace gge { namespace widgets {
@@ -225,9 +226,10 @@ namespace gge { namespace widgets {
 		void SetTabSwitchEnabledState(bool state) { tabswitch = state; }
 
 		//The ownership lies with the caller
-		virtual WidgetLayer &CreateWidgetLayer(int Order=0) = 0;
-		virtual LayerBase   &CreateBackgroundLayer() = 0;
-		virtual WidgetLayer &CreateExtenderLayer() = 0;
+		virtual WidgetLayer   &CreateWidgetLayer(int Order=0) = 0;
+		virtual LayerBase     &CreateBackgroundLayer() = 0;
+		virtual WidgetLayer   &CreateExtenderWidgetLayer() = 0;
+		virtual ExtenderLayer &CreateExtenderLayer() = 0;
 
 
 		//A container or the target widget has right to reject add requests

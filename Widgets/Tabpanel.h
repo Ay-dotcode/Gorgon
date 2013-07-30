@@ -231,6 +231,14 @@ namespace gge { namespace widgets {
 			return y;
 		}
 
+
+		using WidgetBase::Move;
+		virtual void Move(utils::Point Location) {
+			WidgetBase::Move(Location);
+			if(controls.extenderbase) controls.extenderbase->Move(Location);
+		}
+
+
 		virtual void WidgetBoundsChanged() { reorganize(); }
 	protected:
 		RadioGroup<tabpanel::Panel*> buttons;
@@ -261,8 +269,10 @@ namespace gge { namespace widgets {
 			if(BaseLayer)
 				BaseLayer->Resize(controls.GetSize());
 
-			if(container)
+			if(container) {
 				controls.AttachTo(BaseLayer, &container->CreateExtenderLayer());
+				if(controls.extenderbase) controls.extenderbase->Move(GetLocation());
+			}
 			else
 				controls.AttachTo(NULL,NULL);
 		}

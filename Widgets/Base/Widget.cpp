@@ -48,7 +48,7 @@ namespace gge { namespace widgets {
 		Container=container;
 		utils::CheckAndDelete(BaseLayer);
 		if(targetextender)
-			BaseLayer=&container->CreateExtenderLayer();
+			BaseLayer=&container->CreateExtenderWidgetLayer();
 		else
 			BaseLayer=&container->CreateWidgetLayer(Order);
 		wrapper=w;

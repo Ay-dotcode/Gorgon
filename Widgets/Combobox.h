@@ -78,6 +78,14 @@ namespace gge { namespace widgets {
 			return this->listbox.ActiveIndex();
 		}
 
+		void SetSelection(int index) {
+			this->setValue(this->listbox[index]);
+		}
+
+		void SelectFirst() {
+			SetSelection(0);
+		}
+
 		T_ operator[](int Index) const {
 			return Get(Index);
 		}
