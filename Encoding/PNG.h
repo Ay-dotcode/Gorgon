@@ -207,17 +207,17 @@ namespace gge { namespace encoding {
 		}
 	}
 	
-	class Info {
-	public:
-		int Width, Height;
-		bool Alpha;
-		int RowBytes;
-	};
-
 	//currently only works for RGBA
 	//see LZMA for template class decisions
 	class PNG {
 	public:
+
+		class Info {
+		public:
+			int Width, Height;
+			bool Alpha;
+			int RowBytes;
+		};
 
 		PNG() { }
 

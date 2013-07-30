@@ -82,6 +82,7 @@ SET(Encoding
 	Encoding/LZMA.cpp
 	Encoding/URI.cpp
 	Encoding/PNG.cpp
+	Encoding/JPEG.cpp
 )
 
 SET(Network

@@ -78,6 +78,7 @@ namespace gge { namespace resource {
 		void Prepare();
 
 		ImageReadError ImportPNG(std::string filename);
+		ImageReadError ImportJPEG(std::string filename);
 		ImageReadError Import(std::string filename);
 
 		////Returns Bytes/Pixel information

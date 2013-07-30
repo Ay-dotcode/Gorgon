@@ -50,7 +50,7 @@ namespace gge { namespace encoding {
 		}
 	}
 
-	Info PNG::decode(png::Reader *reader,png::Buffer *buffer) {
+	PNG::Info PNG::decode(png::Reader *reader,png::Buffer *buffer) {
 		Info inf;
 
 		png_structp png_ptr;

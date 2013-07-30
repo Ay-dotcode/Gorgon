@@ -105,6 +105,7 @@
     <ClInclude Include="Effects\LayerMover.h" />
     <ClInclude Include="Effects\LayerResizer.h" />
     <ClInclude Include="Effects\Tinting.h" />
+    <ClInclude Include="Encoding\JPEG.h" />
     <ClInclude Include="Encoding\LZMA.h" />
     <ClInclude Include="Encoding\PNG.h" />
     <ClInclude Include="Encoding\URI.h" />
@@ -358,6 +359,7 @@
     <ClCompile Include="Effects\LayerMover.cpp" />
     <ClCompile Include="Effects\LayerResizer.cpp" />
     <ClCompile Include="Effects\Tinting.cpp" />
+    <ClCompile Include="Encoding\JPEG.cpp" />
     <ClCompile Include="Encoding\LZMA.cpp" />
     <ClCompile Include="Encoding\PNG.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/EncodingPNG.obj</ObjectFileName>

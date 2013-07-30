@@ -9,6 +9,7 @@
 #include <cmath>
 #include "../Utils/BasicMath.h"
 #include "../Encoding/PNG.h"
+#include "../Encoding/JPEG.h"
 
 using namespace gge::resource;
 using namespace gge::graphics;
@@ -151,7 +152,7 @@ namespace gge { namespace resource {
 
 		std::vector<Byte> imagedata;
 
-		encoding::Info inf;
+		encoding::PNG::Info inf;
 		try {
 			inf=encoding::Png.Decode(file, imagedata);
 		}
@@ -356,7 +357,7 @@ namespace gge { namespace resource {
 			this->Data.Resize(this->GetWidth()*this->GetHeight()*4);
 
 			std::vector<Byte> imagedata;
-			encoding::Info inf;
+			encoding::PNG::Info inf;
 			try {
 				inf=encoding::Png.Decode(gfile, imagedata);
 			}
@@ -418,8 +419,68 @@ namespace gge { namespace resource {
 		if(filename.substr(filename.length()-4)==".png" || filename.substr(filename.length()-4)==".PNG" ) {
 			return ImportPNG(filename);
 		}
+		else if(filename.substr(filename.length()-5)==".JPEG" || filename.substr(filename.length()-5)==".jpeg" || filename.substr(filename.length()-4)==".jpg" || filename.substr(filename.length()-4)==".JPG" ) {
+			return ImportJPEG(filename);
+		}
 
 		return Image::FileNotFound;
+	}
+
+	Image::ImageReadError Image::ImportJPEG(std::string filename) {
+
+		std::ifstream file(filename, ios::binary);
+
+		if(!file.is_open())
+			return FileNotFound;
+
+		std::vector<Byte> imagedata;
+
+		encoding::JPEG::Info inf;
+		try {
+			inf=encoding::Jpg.Decode(file, imagedata);
+		}
+		catch(...) {
+			return ReadError;
+		}
+
+		Resize(inf.Width, inf.Height, graphics::ColorMode::ARGB);
+
+		if(inf.Alpha) {
+			for(int y=0;y<inf.Height;y++) {
+				for(int x=0;x<inf.Width;x++) {
+					Data[(x+y*inf.Width)*4+2]=imagedata[(y*inf.RowBytes)+x*4+0];
+					Data[(x+y*inf.Width)*4+1]=imagedata[(y*inf.RowBytes)+x*4+1];
+					Data[(x+y*inf.Width)*4+0]=imagedata[(y*inf.RowBytes)+x*4+2];
+					Data[(x+y*inf.Width)*4+3]=imagedata[(y*inf.RowBytes)+x*4+3];
+				}
+			}
+		}
+		else {
+			if(inf.Color) {
+				for(int y=0;y<inf.Height;y++) {
+					for(int x=0;x<inf.Width;x++) {
+						Data[(x+y*inf.Width)*4+2]=imagedata[(y*inf.RowBytes)+x*3+0];
+						Data[(x+y*inf.Width)*4+1]=imagedata[(y*inf.RowBytes)+x*3+1];
+						Data[(x+y*inf.Width)*4+0]=imagedata[(y*inf.RowBytes)+x*3+2];
+						Data[(x+y*inf.Width)*4+3]=255;
+					}
+				}
+			}
+			else {
+				for(int y=0;y<inf.Height;y++) {
+					for(int x=0;x<inf.Width;x++) {
+						Data[(x+y*inf.Width)*4+2]=imagedata[(y*inf.RowBytes)+x];
+						Data[(x+y*inf.Width)*4+1]=imagedata[(y*inf.RowBytes)+x];
+						Data[(x+y*inf.Width)*4+0]=imagedata[(y*inf.RowBytes)+x];
+						Data[(x+y*inf.Width)*4+3]=255;
+					}
+				}
+			}
+		}
+
+		isLoaded=true;
+
+		return NoError;
 	}
 
 

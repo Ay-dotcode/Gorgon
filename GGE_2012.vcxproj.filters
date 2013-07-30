@@ -157,15 +157,6 @@
     <Filter Include="Multimedia\Sources">
       <UniqueIdentifier>{00793a9e-55c6-4ac3-81d9-814556e66547}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Encoding">
-      <UniqueIdentifier>{d72d2f9f-ca8a-43a1-a9c6-a99b6806a27a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\Encoding\Headers">
-      <UniqueIdentifier>{4258c3fa-85cc-4f6a-9ac0-69067e7e5728}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\Encoding\Sources">
-      <UniqueIdentifier>{04ccdc9e-d37c-460b-8e4a-ec9163532a8e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Widgets\Checkbox">
       <UniqueIdentifier>{9db2bf45-fa5e-486f-96f8-b3bb7968d2cf}</UniqueIdentifier>
     </Filter>
@@ -174,6 +165,15 @@
     </Filter>
     <Filter Include="Widgets\Checkbox\Sources">
       <UniqueIdentifier>{5ba474d5-a7e3-44df-aca0-4bc3e3b6c734}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Encoding">
+      <UniqueIdentifier>{d72d2f9f-ca8a-43a1-a9c6-a99b6806a27a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Encoding\Headers">
+      <UniqueIdentifier>{4258c3fa-85cc-4f6a-9ac0-69067e7e5728}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Encoding\Sources">
+      <UniqueIdentifier>{04ccdc9e-d37c-460b-8e4a-ec9163532a8e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -886,13 +886,13 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Encoding\LZMA.h">
-      <Filter>Engine\Encoding\Headers</Filter>
+      <Filter>Encoding\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Encoding\PNG.h">
-      <Filter>Engine\Encoding\Headers</Filter>
+      <Filter>Encoding\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Encoding\URI.h">
-      <Filter>Engine\Encoding\Headers</Filter>
+      <Filter>Encoding\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Multimedia\Multimedia.h">
       <Filter>Multimedia\Headers</Filter>
@@ -929,6 +929,9 @@
     </ClInclude>
     <ClInclude Include="Widgets\ExtenderLayer.h">
       <Filter>Widgets\Code\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Encoding\JPEG.h">
+      <Filter>Encoding\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1431,13 +1434,13 @@
       <Filter>Engine\Linux</Filter>
     </ClCompile>
     <ClCompile Include="Encoding\LZMA.cpp">
-      <Filter>Engine\Encoding\Sources</Filter>
+      <Filter>Encoding\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Encoding\URI.cpp">
-      <Filter>Engine\Encoding\Sources</Filter>
+      <Filter>Encoding\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Encoding\PNG.cpp">
-      <Filter>Engine\Encoding\Sources</Filter>
+      <Filter>Encoding\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Multimedia\Music.cpp">
       <Filter>Multimedia\Sources</Filter>
@@ -1447,6 +1450,9 @@
     </ClCompile>
     <ClCompile Include="Multimedia\Wave.cpp">
       <Filter>Multimedia\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoding\JPEG.cpp">
+      <Filter>Encoding\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
