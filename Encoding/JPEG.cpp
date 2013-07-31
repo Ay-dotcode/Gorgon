@@ -5,41 +5,65 @@
 
 namespace gge { namespace encoding {
 
+	struct myerror {
+		jpeg_error_mgr pub;
+		std::string message;
+	};
+
+	void my_error_exit (j_common_ptr cinfo) {
+		throw std::runtime_error(((myerror*)cinfo->err)->message);
+	}
+
+	void my_output_message(j_common_ptr cinfo) {
+		char buffer[JMSG_LENGTH_MAX];
+
+		(*cinfo->err->format_message) (cinfo, buffer);
+
+		((myerror*)cinfo->err)->message=buffer;
+	}
+
 	JPEG::Info JPEG::decode(jpg::Reader *reader,jpg::Buffer *buffer) {
 		struct jpeg_decompress_struct cinfo;
-		struct jpeg_error_mgr jerr;
+		myerror jerr;
 
 		JPEG::Info info;
 
-		//FILE * infile;    	/* source file */
-		//if ((infile = fopen("test.jpg", "rb")) == NULL) 
-		//{
-		//	fprintf(stderr, "can't open \n");
-		//}
-
-		cinfo.err = jpeg_std_error(&jerr);
+		cinfo.err = jpeg_std_error(&jerr.pub);
+		cinfo.err->error_exit=&my_error_exit;
+		cinfo.err->output_message=&my_error_exit;
 		jpeg_create_decompress(&cinfo);
 
 		reader->Attach(cinfo);
-		//jpeg_stdio_src(&cinfo, infile);
 
-		jpeg_read_header(&cinfo, TRUE);
-		jpeg_start_decompress(&cinfo);
+		try {
+			jpeg_read_header(&cinfo, TRUE);
+			jpeg_start_decompress(&cinfo);
 
-		info.Width = cinfo.output_width;
-		info.Height = cinfo.output_height;
-		info.RowBytes = cinfo.output_width * cinfo.output_components ;
-		info.Color = cinfo.output_components>1;
-		info.Alpha=cinfo.output_components>3;
+			info.Width = cinfo.output_width;
+			info.Height = cinfo.output_height;
+			info.RowBytes = cinfo.output_width * cinfo.output_components ;
+			info.Color = cinfo.output_components>1;
+			info.Alpha=cinfo.output_components>3;
 
-		buffer->Resize(info.RowBytes*info.Height);
+			buffer->Resize(info.RowBytes*info.Height);
 
-		int offset=0;
-		while (cinfo.output_scanline < cinfo.output_height) {
-			Byte *line=buffer->Offset(offset);
-			jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&line, 1);
-			offset+=info.RowBytes;
+			int offset=0;
+			while (cinfo.output_scanline < cinfo.output_height) {
+				Byte *line=buffer->Offset(offset);
+				jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&line, 1);
+				offset+=info.RowBytes;
+			}
 		}
+		catch(...) {
+			jpeg_finish_decompress(&cinfo);
+			jpeg_destroy_decompress(&cinfo);
+
+			delete reader;
+			delete buffer;
+
+			throw;
+		}
+
 		jpeg_finish_decompress(&cinfo);
 		jpeg_destroy_decompress(&cinfo);
 
