@@ -82,6 +82,14 @@ namespace gge { namespace utils {
 		return gge::utils::Point(Random(bounds.Left,bounds.Right), Random(bounds.Top,bounds.Bottom));
 	}
 
+	template<class I_>
+	inline void Shuffle(const I_ &beg, const I_ &end) {
+		auto diff=end-beg;
+		for(int i=0;i<diff;i++) {
+			std::swap(*(beg+Random(0, diff)), *(beg+Random(0,diff)));
+		}
+	}
+
 	template <>
 	inline std::string Random<std::string>()             { return randomstrings[Random(0,50)]; }
 
