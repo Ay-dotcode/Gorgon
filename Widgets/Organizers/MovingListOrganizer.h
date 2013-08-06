@@ -20,7 +20,8 @@ namespace gge { namespace widgets {
 			working=true;
 
 			int integralheight=attachedto->Widgets.First()->GetHeight();
-			topitem=int(std::floor((currentscroll+distance)/(integralheight+distance)))*columns;
+      topitem=int(std::floor((float)(currentscroll+distance)/(integralheight+distance)))*columns;
+			//topitem=int(std::floor((currentscroll+distance)/(integralheight+distance)))*columns;
 			int itemnum=topitem;
 			int y=int(std::ceil(float(topitem)/columns))*integralheight+(topitem-1)/columns*distance;
 			int lasty=currentscroll+attachedto->GetUsableHeight();
@@ -77,8 +78,8 @@ namespace gge { namespace widgets {
 			if(attachedto->Widgets.GetCount()<1) return 0;
 
 			int height=attachedto->Widgets.First()->GetHeight();
-
-			return int(std::ceil(logicalcount/columns))*(height+distance)-distance;
+      return int(std::ceil((float)logicalcount/columns))*(height+distance)-distance;
+			//return int(std::ceil(logicalcount/columns))*(height+distance)-distance;
 		}
 
 		gge::utils::Point GetLogicalLocation(int index) {
