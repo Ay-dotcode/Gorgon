@@ -49,6 +49,22 @@ namespace gge { namespace utils {
 		return str;
 	}
 
+	inline std::string TrimLeft(std::string str, const std::string chars=" \t\n\r") {
+		while(str.length() && chars.find_first_of(str[0])!=-1) {
+			str=str.substr(1);
+		}
+
+		return str;
+	}
+
+	inline std::string TrimRight(std::string str, const std::string chars=" \t\n\r") {
+		while(str.length() && chars.find_first_of(str[str.length()-1])!=-1) {
+			str.resize(str.length()-1);
+		}
+
+		return str;
+	}
+
 	template <typename T>
 	class has_stringoperator
 	{
