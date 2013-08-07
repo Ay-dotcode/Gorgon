@@ -57,7 +57,7 @@ namespace gge { namespace encoding {
 		};
 
 		template <class T_>
-		inline Reader *ReadyReadStruct(T_ &data) { 
+		inline Reader *ReadyReadStruct(T_ &data) {
 			throw NULL;
 		}
 
@@ -124,7 +124,7 @@ namespace gge { namespace encoding {
 		}
 
 
-	}	
+	}
 
 
 
@@ -140,7 +140,7 @@ namespace gge { namespace encoding {
 			bool Color;
 			int RowBytes;
 		};
-		
+
 		JPEG() { }
 
 		////throws runtime error
