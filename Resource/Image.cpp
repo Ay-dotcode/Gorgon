@@ -423,7 +423,7 @@ namespace gge { namespace resource {
 			return ImportJPEG(filename);
 		}
 
-		return Image::FileNotFound;
+		return Image::UnknownImageType;
 	}
 
 	Image::ImageReadError Image::ImportJPEG(std::string filename) {

@@ -30,7 +30,8 @@ namespace gge { namespace resource {
 		enum ImageReadError {
 			NoError=0,
 			ReadError=1, 
-			FileNotFound
+			FileNotFound,
+			UnknownImageType
 		};
 
 		enum Compressor {
