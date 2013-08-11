@@ -20,6 +20,11 @@ namespace gge { namespace resource {
 	class Sound : public Base {
 		friend void LoadSound(Sound *snd, std::istream &Data, int Size);
 	public:
+    enum SoundReadError {
+      NoError=0,
+      ReadError=1, 
+      FileNotFound
+    };
 		////04010000h (Extended, Sound)
 		virtual GID::Type GetGID() const { return GID::Sound; }
 
@@ -42,7 +47,7 @@ namespace gge { namespace resource {
 		////Destroys used data
 		virtual ~Sound() { destroy(); }
 
-		void ImportWave(const std::string &filename);
+		SoundReadError ImportWave(const std::string &filename);
 
 		void StereoToMono();
 

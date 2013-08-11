@@ -73,33 +73,33 @@ namespace gge { namespace resource {
 		}
 	}
 
-	void Sound::ImportWave(const std::string &filename) {
+	Sound::SoundReadError Sound::ImportWave(const std::string &filename) {
 		Data.clear();
 		Size=0;
 
 		std::ifstream file(filename, std::ios::binary);
 
 		if(!file.is_open())
-			throw std::runtime_error("Cannot open file");
+			return FileNotFound;
 
 		char sig[7]={};
 
 		file.read(sig, 4);
 		if(sig!=std::string("RIFF")) {
-			throw std::runtime_error("Not a RIFF container");
+			return ReadError;
 		}
 
 		ReadFrom<int>(file);
 
 		file.read(sig, 4);
 		if(sig!=std::string("WAVE")) {
-			throw std::runtime_error("Not a Wave file");
+			return ReadError;
 		}
 
 		ReadFrom<int>(file); //fmt 
 		int formatsize=ReadFrom<int>(file);
 		if(formatsize!=16) {
-			throw std::runtime_error("Unknown format");
+			return ReadError;
 		}
 
 		ReadFrom(file, Format);
@@ -108,6 +108,8 @@ namespace gge { namespace resource {
 		ReadFrom(file, Size);
 		Data.resize(Size);
 		file.read((char*)(&Data[0]), Size);
+
+    return NoError;
 	}
 
 
