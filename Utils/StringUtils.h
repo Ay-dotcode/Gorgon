@@ -65,6 +65,22 @@ namespace gge { namespace utils {
 		return str;
 	}
 
+	inline std::string ToLower(std::string str) {
+		for(auto it=str.begin();it!=str.end();++it) {
+			*it=tolower(*it);
+		}
+
+		return str;
+	}
+
+	inline std::string ToUpper(std::string str) {
+		for(auto it=str.begin();it!=str.end();++it) {
+			*it=toupper(*it);
+		}
+
+		return str;
+	}
+
 	template <typename T>
 	class has_stringoperator
 	{
