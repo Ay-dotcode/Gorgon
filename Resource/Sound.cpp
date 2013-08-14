@@ -114,6 +114,7 @@ namespace gge { namespace resource {
 
 
 	void Sound::Prepare( ) {
+    if(!Size) return;
 		Buffer=sound::system::CreateSoundBuffer(Format, &Data[0], Size);
 	}
 

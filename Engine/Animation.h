@@ -115,6 +115,11 @@ namespace gge { namespace animation {
 		virtual int GetDuration() const					= 0;
 		virtual int GetDuration(unsigned Frame) const	= 0;
 		virtual int GetNumberofFrames() const			= 0;
+    virtual int GetFPS() const {
+      return GetNumberofFrames() / (GetDuration() / 1000.f);
+    }
+    
+    
 
 		//Caller is responsible to supply a time between 0 and GetDuration()-1, if no frame exists it should return -1
 		virtual int		 FrameAt(unsigned Time) const	= 0; 
