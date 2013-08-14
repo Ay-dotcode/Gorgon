@@ -115,7 +115,7 @@ namespace gge { namespace animation {
 		virtual int GetDuration() const					= 0;
 		virtual int GetDuration(unsigned Frame) const	= 0;
 		virtual int GetNumberofFrames() const			= 0;
-    virtual int GetFPS() const {
+    virtual float GetFPS() const {
       return GetNumberofFrames() / (GetDuration() / 1000.f);
     }
     
