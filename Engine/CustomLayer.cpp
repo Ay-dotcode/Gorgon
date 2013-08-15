@@ -44,25 +44,29 @@ namespace gge {
 		glScissor(scissors.Left, (ScreenSize.Height-scissors.Top)-scissors.Height(), scissors.Width(), scissors.Height());
 
 
-		glColor4f(1,1,1,1);
+		glColor4f(1,1,1,1); //What for?
 		glViewport(BoundingBox.Left, (Main.getHeight()-BoundingBox.Top)-BoundingBox.Height(), BoundingBox.Width(), BoundingBox.Height());
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-
+		glPushMatrix();		
 		glLoadIdentity();
 		glOrtho(Xs, Xe, Ys, Ye, Zs, Ze);
+		/*glutil::PushStack _(ProjectionMatrixStack);
+		ProjectionMatrixStack.SetIdentity();
+		ProjectionMatrixStack.Orthographic(Xs, Xe, Ys, Ye, Zs, Ze);*/
 
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glLoadIdentity();
+		/*glutil::PushStack __(ModelViewMatrixStack);
+		ModelViewMatrixStack.SetIdentity();*/
 
 		glBindTexture(GL_TEXTURE_2D, -1);
-		glDepthFunc(GL_LESS);
-
+		//glDepthFunc(GL_LESS);
+		//glDepthFunc(GL_LEQUAL);
 		Renderer();
 
-		glDepthFunc(GL_LEQUAL);
+		//glDepthFunc(GL_LEQUAL);
 
 		glPopMatrix();
 
@@ -70,7 +74,8 @@ namespace gge {
 		glPopMatrix();
 
 		glMatrixMode(GL_MODELVIEW);
-		glColor4fv(CurrentLayerColor.vect);
+
+		glColor4fv(CurrentLayerColor.vect); //What for again?
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, Main.getWidth(), Main.getHeight());
 		

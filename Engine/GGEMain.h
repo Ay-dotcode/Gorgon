@@ -66,7 +66,9 @@ namespace gge {
 		////Whether running in windowed mode
 		inline bool getFullScreen() { return FullScreen; }
 		////The name of the system (code name of the game)
-		inline std::string getSystemName() { return SystemName; }
+		inline std::string GetSystemName() { return SystemName; }
+		////The name of the system (code name of the game)
+		inline void SetSystemName(std::string name) { SystemName=name; }
 		////Handle of the window
 		inline os::WindowHandle getWindow() { return Window; }
 

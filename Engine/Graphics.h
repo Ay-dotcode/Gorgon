@@ -4,10 +4,10 @@
 #include "OS.h"
 
 #include <GL/gl.h>
-#include <GL/glu.h>
 #include <assert.h>
 #include <stdexcept>
 #include <string>
+#include <array>
 
 #ifdef WIN32
 #	undef APIENTRY
@@ -19,6 +19,8 @@
 #include "../Utils/Bounds2D.h"
 #include "../Utils/Rectangle2D.h"
 #include "../Utils/Size2D.h"
+#include "../Utils/Logging.h"
+#include "../External/glutil/MatrixStack.h"
 
 #ifndef GL_BGR
 #	define GL_BGR	0x80E0
@@ -32,6 +34,41 @@
 
 ////Namespace for Gorgon Game Engine
 namespace gge { namespace graphics {
+
+	extern gge::utils::Logger				log;
+
+	extern glutil::MatrixStack				ModelViewMatrixStack;
+	extern glutil::MatrixStack				ProjectionMatrixStack;
+
+	class UnitQuad
+	{
+	public:								
+		virtual								~UnitQuad();
+		static UnitQuad&					Get() { static UnitQuad me; return me; }
+		static void							Draw() { Get().GLDraw(); }		
+	protected:
+											UnitQuad();
+		void								GLDraw();		
+		static int							unit_quad[6];
+		GLuint								vbo;
+		GLuint								vao;
+
+	private:
+											UnitQuad(const UnitQuad &);
+		UnitQuad&							operator=(const UnitQuad &);
+	};
+
+	class Quad : public UnitQuad
+	{
+	public:	
+		static Quad&						Get() { static Quad me; return me; }
+		static void							Draw() { Quad::Get().GLDraw(); }
+		static void							UpdateVertexData(const std::array<float,24>& data) { Quad::Get().UpdateInstanceVertexData(data); }
+	protected:
+		void								GLDraw();
+		void								UpdateInstanceVertexData(const std::array<float,24>& data);
+	};	
+
 	union TexturePosition { struct{float s,t;}; float vect[2];};
 	union VertexPosition { struct{float x,y,z;};float vect[3];};
 
@@ -449,7 +486,7 @@ namespace gge { namespace graphics {
 		}
 
 		////Returns current texture
-		const GLTexture *getTexture() {
+		const GLTexture *getTexture() const {
 			return Texture;
 		}
 
@@ -472,6 +509,8 @@ namespace gge { namespace graphics {
 		////The texture to be used
 		const GLTexture *Texture;
 	};
+
+	std::array<float,24>					GetVertexData(const BasicSurface& surface);
 
 	////this structure is used to ease conversions
 	/// between RGB integer and float values used

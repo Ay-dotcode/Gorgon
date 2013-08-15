@@ -123,6 +123,10 @@ namespace gge { namespace os {
 
 		void DeleteFile(const std::string &Filename);
 
+
+		//Slow!
+		std::string LocateResource(std::string filename, std::string path="", bool localonly=true);
+
 		class EntryPoint {
 		public:
 			std::string Path;

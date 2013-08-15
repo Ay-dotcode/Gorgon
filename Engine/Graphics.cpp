@@ -1,4 +1,6 @@
 #include "Graphics.h"
+#include "OpenGL.h"
+#include "GGEMain.h"
 
 #ifdef WIN32
 #	undef APIENTRY
@@ -6,15 +8,117 @@
 #endif
 
 #ifdef WIN32
-#	include <windows.h>
+#	include <windows.h> 
 #elif defined(LINUX)
 #	include <GL/glx.h>
 #	include <unistd.h>
 #endif
 
+#include "../ShaderCode/ShaderCode.h"
+
 using namespace gge::utils;
 
 namespace gge { namespace graphics {
+
+	gge::utils::Logger						log;
+
+	glutil::MatrixStack						ModelViewMatrixStack;
+	glutil::MatrixStack						ProjectionMatrixStack;
+
+	static int								offset = 0;
+	static const int						buffer_size = 24 * 4 * 8192;
+
+	// 2 triangles (3 vertices each)
+	// Each vertex:
+	// 2 floats for XY positions, 2 floats for UV texture coordinates
+	int UnitQuad::unit_quad[6] =
+	{/*
+		0.0f, 0.0f, 0.0f, 1.0f,	
+		0.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 1.0f, 1.0f,
+
+		1.0f, 0.0f, 1.0f, 1.0f,	
+		0.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 0.0f*/
+		0, 3, 1, 1, 3, 2
+	};
+
+	UnitQuad::UnitQuad()
+	{
+		glGenBuffers(1, &vbo);
+	
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(int), unit_quad, GL_STATIC_DRAW); // GL_STATIC_DRAW
+		/*glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_DYNAMIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, k_unit_quad_floats * sizeof(float), unit_quad);*/
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+		
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glEnableVertexAttribArray(0);
+		//glEnableVertexAttribArray(1);
+		//glVertexAttribPointer(0, 1, GL_INT, GL_FALSE, 0, (GLvoid*) 0);
+		//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (GLvoid*) 8);
+		glVertexAttribIPointer(0, 1, GL_INT, 0, (GLvoid*) 0);
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+	UnitQuad::~UnitQuad()
+	{
+		glDeleteBuffers(1, &vbo);
+		glDeleteVertexArrays(1, &vao);
+	}	
+	void UnitQuad::GLDraw()
+	{
+		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+	}
+	void Quad::GLDraw()
+	{
+		assert(false);
+		glBindVertexArray(vao);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawArrays(GL_TRIANGLES, offset / 16, 6);
+		glBindVertexArray(0);
+	}
+	void Quad::UpdateInstanceVertexData(const std::array<float,24>& data)
+	{		
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+		// Move offset and orphan once in a while // Don't forget to comment out and uncomment glBufferData code in the UnitQuad constructor
+		
+		offset += sizeof(data);
+		if (offset >= buffer_size) {
+			offset = 0;
+			glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_DYNAMIC_DRAW);
+		}
+		float* map = (float*)glMapBufferRange(GL_ARRAY_BUFFER, offset, sizeof(data), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		std::memcpy(map, data.data(), sizeof(data));
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+
+		// BufferData NULL, then MapBuffer
+		/*glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_DYNAMIC_DRAW);
+		float* map = (float*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(data), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+		std::memcpy(map, data.data(), sizeof(data));
+		glUnmapBuffer(GL_ARRAY_BUFFER);*/
+
+		// BufferData NULL, then BufferSubData
+		/*glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_DYNAMIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(data), data.data());*/
+
+		// Invalidate map
+		/*float* map = (float*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(data), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+		std::memcpy(map, data.data(), sizeof(data));
+		glUnmapBuffer(GL_ARRAY_BUFFER);*/
+
+		// Blocking BufferSubdata
+		/*glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(data), data.data());*/
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
 	Size ScreenSize;
 	extern RGBfloat CurrentLayerColor;
 	extern utils::Bounds scissors;
@@ -27,32 +131,9 @@ namespace gge { namespace graphics {
 		bool OffscreenRendering=false;
 
 		void SetupFrameBuffer();
+
+		
 	}
-
-#ifndef GL_FRAMEBUFFER
-	const GLenum GL_FRAMEBUFFER=0x8D40;
-	const GLenum GL_COLOR_ATTACHMENT0=0x8CE0;
-	const GLenum GL_GENERATE_MIPMAP=0x8191;
-#endif
-
-#if !defined(APIENTRYP) && defined(WIN32)
-#	define APIENTRYP	APIENTRY *
-#endif
-
-
-	typedef void(APIENTRYP glGenFramebuffers_t)(int, GLuint*);
-	typedef void(APIENTRYP glBindFramebuffer_t)(GLenum, GLuint);
-	typedef void(APIENTRYP glFramebufferTexture2D_t)(GLenum, GLenum, GLenum, GLuint, GLint);
-	typedef void (APIENTRYP glDeleteFramebuffers_t) (GLsizei, const GLuint *);
-	typedef GLenum(APIENTRYP glCheckFramebufferStatus_t)(GLenum);
-	typedef void(APIENTRYP glGenerateMipmap_t)(GLenum);
-
-	glGenFramebuffers_t glGenFramebuffers;
-	glDeleteFramebuffers_t glDeleteFramebuffers;
-	glBindFramebuffer_t glBindFramebuffer;
-	glFramebufferTexture2D_t glFramebufferTexture2D;
-	glCheckFramebufferStatus_t glCheckFramebufferStatus;
-	glGenerateMipmap_t glGenerateMipmap;
 
 	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {
 		using namespace gge::graphics::system;
@@ -95,6 +176,12 @@ namespace gge { namespace graphics {
 		wglMakeCurrent(hDC,hRC);
 		
 		handle=(os::DeviceHandle)hDC;
+
+		if(hRC==NULL) {
+			os::DisplayMessage("OpenGL", "Context creation failed");
+			exit(0);
+		}
+
 #elif defined(LINUX)
 		//TODO: OpenGL Context creation
 		static int attributeListDbl[] = { 
@@ -112,9 +199,18 @@ namespace gge { namespace graphics {
 		glXMakeCurrent(display, hWnd, cx);
 		
 		handle=(os::DeviceHandle)display;
+
+		if(cx==NULL) {
+			os::DisplayMessage("OpenGL", "Context creation failed");
+			exit(0);
+		}
 #endif
 
-
+		std::string gl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+		if(utils::StrToNumber<float>(gl_version)<3.0) {
+			os::DisplayMessage("OpenGL", "OpenGL version 3.0 and above is required.");
+			exit(0);
+		}
 
 		ScreenSize.Width=Width;
 		ScreenSize.Height=Height;
@@ -127,7 +223,8 @@ namespace gge { namespace graphics {
 
 		glClearDepth(1.0f);									// Depth Buffer Setup
 		glEnable(GL_DEPTH_TEST);							// Enables Depth Testing
-		glDepthFunc(GL_LEQUAL);
+		//glDepthFunc(GL_LEQUAL);
+		glDepthFunc(GL_ALWAYS);
 
 		//Alpha
 		glEnable(GL_BLEND);
@@ -145,26 +242,35 @@ namespace gge { namespace graphics {
 		///*Adjusting Matrices
 		glViewport(0, 0, Width, Height);					// Reset The Current Viewport
 
-
+		
 		//These can be overridden by layers
-		glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
+		/*glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
 		glLoadIdentity();									// Reset The Projection Matrix
 		glOrtho(0,Width,Height,0,-100,100);					// Calculate The Aspect Ratio Of The Window
-		glFrontFace(GL_CW);
+		*/
+		glCullFace(GL_BACK);
+		//glFrontFace(GL_CW); 
+		glFrontFace(GL_CCW); 
 
+		ProjectionMatrixStack.SetIdentity();
+		ProjectionMatrixStack.Orthographic(0.0f, float(Width), float(Height), 0.0f, -100.0f, 100.0f);
 		//position
+		/*
 		glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 		glLoadIdentity();									// Reset The Modelview Matrix
+		*/
+		ModelViewMatrixStack.SetIdentity();
 
+		gge::system::LoadGLFunctions();
 
 		SetupFrameBuffer();
-
 
 		return handle;
 	}
 
 
-	namespace system {
+	namespace system {		
+
 		void A8ToA8L8(int cx,int cy,Byte *data,Byte *dest)
 		{
 			int sz=cx*cy;
@@ -257,17 +363,23 @@ namespace gge { namespace graphics {
 			///*Adjusting Matrices
 			glViewport(0, 0, Width, Height);					// Reset The Current Viewport
 
-
+			
 			//These can be overridden by layers
-			glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
+			/*glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
 			glLoadIdentity();									// Reset The Projection Matrix
 			glOrtho(0,Width,Height,0,-100,100);					// Calculate The Aspect Ratio Of The Window
-			glFrontFace(GL_CW);
-
+			*/
+			ProjectionMatrixStack.SetIdentity();
+			ProjectionMatrixStack.Orthographic(0.0f, float(Width), float(Height), 0.0f, -100.0f, 100.0f);
+			glFrontFace(GL_CCW);
+			//glFrontFace(GL_CW);
+			
 			//position
+			/*
 			glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 			glLoadIdentity();									// Reset The Modelview Matrix
-
+			*/
+			ModelViewMatrixStack.SetIdentity();
 
 			SetupFrameBuffer();
 
@@ -281,11 +393,12 @@ namespace gge { namespace graphics {
 		void PreRender() {
 			///*Resetting OpenGL parameters
 			glDisable(GL_SCISSOR_TEST);
-			glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();
+			/*glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();*/
+			ModelViewMatrixStack.SetIdentity();
 
 			///*Clearing buffers
-			glClearColor(0.0,0.0,0.0,1);
+			glClearColor(1.0,0.0,0.0,1);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			CurrentLayerColor.a=1;
 			CurrentLayerColor.r=1;
@@ -297,7 +410,8 @@ namespace gge { namespace graphics {
 		}
 
 		void PostRender(os::DeviceHandle hDC, os::WindowHandle win) {
-			glFlush();
+			//glFlush();
+			//glFinish();
 			///*Swapping back and front buffers
 #ifdef WIN32
 			SwapBuffers( (HDC)hDC );
@@ -311,102 +425,47 @@ namespace gge { namespace graphics {
 		}
 
 		void DumpOffscreen() {
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadIdentity();
+			
+			static const glm::mat4x3 vertex_coords = glm::mat4x3(  -1.0f, 1.0f, 0.0f,
+																	1.0f, 1.0f, 0.0f,
+																	1.0f,-1.0f, 0.0f,
+																   -1.0f,-1.0f, 0.0f	);
+
+			static const glm::mat4x2 tex_coords = glm::mat4x2(		0.0f, 1.0f,	
+																	1.0f, 1.0f,		
+																	1.0f, 0.0f,		
+																	0.0f, 0.0f		);
+			gge::shadercode::SimpleShader::Use();
+			gge::shadercode::SimpleShader::Get().UpdateUniform("vertex_coords", vertex_coords);	
+			gge::shadercode::SimpleShader::Get().UpdateUniform("tex_coords", tex_coords);
 			glBindTexture(GL_TEXTURE_2D, system::FBTexture);
-			glGenerateMipmap(GL_TEXTURE_2D);
-			glBegin(GL_QUADS);
-				glTexCoord2f(0,1);
-				glVertex3f(0,0,0);
-				glTexCoord2f(1,1);
-				glVertex3f((float)ScreenSize.Width,0,0);
-				glTexCoord2f(1,0);
-				glVertex3f((float)ScreenSize.Width, (float)ScreenSize.Height,0);
-				glTexCoord2f(0,0);
-				glVertex3f(0, (float)ScreenSize.Height,0);
-			glEnd();
-			glPopMatrix();
+			gge::graphics::UnitQuad::Draw();
 		}
+
 		void SetupFrameBuffer() {
-			const char *gl_extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-			//const char *gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-			//const char *gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
-			const char *gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+			if(FBTexture)
+				glDeleteTextures(1, &FBTexture);
 
-			bool support_framebuffer_object=false, support_framebuffer_via_ext=false;
+			glGenTextures(1, &FBTexture);
+			glBindTexture(GL_TEXTURE_2D, FBTexture);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ScreenSize.Width, ScreenSize.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glBindTexture(GL_TEXTURE_2D, 0);
 
-			// If OpenGL version >= 3, framebuffer objects are core - enable regardless of extension
-			// (the flags are initialised to false)
-			if (atof(gl_version) >= 3.0)
-			{
-				support_framebuffer_object = true;
-				support_framebuffer_via_ext = false;
-			}
-			else
-			{
-				// Detect framebuffer object support via ARB (for OpenGL version < 3) - also uses non-EXT names
-				if (strstr(gl_extensions, "ARB_framebuffer_object") != 0)
-				{
-					support_framebuffer_object = true;
-					support_framebuffer_via_ext = false;
-				}
-				// Detect framebuffer object support via EXT (for OpenGL version < 3) - uses the EXT names
-				else if (strstr(gl_extensions, "EXT_framebuffer_object") != 0)
-				{
-					support_framebuffer_object = true;
-					support_framebuffer_via_ext = true;
-				}
-			}
+			// Create a FBO in anticipation of render-to-texture
+			if(FrameBuffer)
+				glDeleteFramebuffers(1, &system::FrameBuffer);
+			glGenFramebuffers(1, &system::FrameBuffer);
+			system::SetRenderTarget(system::FrameBuffer);
 
-			if (support_framebuffer_object)
-			{
-				// If support is via EXT (OpenGL version < 3), add the EXT suffix; otherwise functions are core (OpenGL version >= 3)
-				// or ARB without the EXT suffix, so just get the functions on their own.
-				std::string suffix = (support_framebuffer_via_ext ? "EXT" : "");
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBTexture, 0);
 
-#ifdef WIN32
-				glGenFramebuffers = (glGenFramebuffers_t)wglGetProcAddress((std::string("glGenFramebuffers") + suffix).c_str());
-				glDeleteFramebuffers = (glDeleteFramebuffers_t)wglGetProcAddress((std::string("glDeleteFramebuffers") + suffix).c_str());
-				glBindFramebuffer = (glBindFramebuffer_t)wglGetProcAddress((std::string("glBindFramebuffer") + suffix).c_str());
-				glFramebufferTexture2D = (glFramebufferTexture2D_t)wglGetProcAddress((std::string("glFramebufferTexture2D") + suffix).c_str());
-				glCheckFramebufferStatus = (glCheckFramebufferStatus_t)wglGetProcAddress((std::string("glCheckFramebufferStatus") + suffix).c_str());
-				glGenerateMipmap = (glGenerateMipmap_t)wglGetProcAddress((std::string("glGenerateMipmap") + suffix).c_str());
-#elif defined(LINUX)
-				glGenFramebuffers = (glGenFramebuffers_t)glXGetProcAddress((const GLubyte*)(std::string("glGenFramebuffers") + suffix).c_str());
-				glDeleteFramebuffers = (glDeleteFramebuffers_t)glXGetProcAddress((const GLubyte*)(std::string("glDeleteFramebuffers") + suffix).c_str());
-				glBindFramebuffer = (glBindFramebuffer_t)glXGetProcAddress((const GLubyte*)(std::string("glBindFramebuffer") + suffix).c_str());
-				glFramebufferTexture2D = (glFramebufferTexture2D_t)glXGetProcAddress((const GLubyte*)(std::string("glFramebufferTexture2D") + suffix).c_str());
-				glCheckFramebufferStatus = (glCheckFramebufferStatus_t)glXGetProcAddress((const GLubyte*)(std::string("glCheckFramebufferStatus") + suffix).c_str());
-				glGenerateMipmap = (glGenerateMipmap_t)glXGetProcAddress((const GLubyte*)(std::string("glGenerateMipmap") + suffix).c_str());
-#endif
+			//GLenum status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-				if(FBTexture)
-					glDeleteTextures(1, &FBTexture);
-				glGenTextures(1, &FBTexture);
-				glBindTexture(GL_TEXTURE_2D, FBTexture);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ScreenSize.Width, ScreenSize.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-				glBindTexture(GL_TEXTURE_2D, 0);
-
-				// Create a FBO in anticipation of render-to-texture
-				if(FrameBuffer)
-					glDeleteFramebuffers(1, &system::FrameBuffer);
-				glGenFramebuffers(1, &system::FrameBuffer);
-				system::SetRenderTarget(system::FrameBuffer);
-
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBTexture, 0);
-
-				//GLenum status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-				system::SetRenderTarget(0);
-			} else {
-				system::FrameBuffer=0;
-				os::DisplayMessage("Device compatibility", "No frame buffer is supported, there might be problems with rendering.");
-			}
+			system::SetRenderTarget(0);
 		}
 	}
 
@@ -417,5 +476,42 @@ namespace gge { namespace graphics {
 	const SizeController2D SizeController2D::SingleBottomRight(Single, Single, Alignment::Bottom_Right);
 	const SizeController2D SizeController2D::SingleMiddleCenter(Single, Single, Alignment::Middle_Center);
 
+	std::array<float,24> GetVertexData(const BasicSurface& surface)
+	{
+		std::array<float,24> data;
 
+		// First triangle vertices
+		data[0] = surface.VertexCoords[0].x;
+		data[1] = surface.VertexCoords[0].y;
+		data[2] = surface.TextureCoords[0].s;
+		data[3] = surface.TextureCoords[0].t;
+
+		data[4] = surface.VertexCoords[1].x;
+		data[5] = surface.VertexCoords[1].y;
+		data[6] = surface.TextureCoords[1].s;
+		data[7] = surface.TextureCoords[1].t;
+
+		data[8] = surface.VertexCoords[3].x;
+		data[9] = surface.VertexCoords[3].y;
+		data[10] = surface.TextureCoords[3].s;
+		data[11] = surface.TextureCoords[3].t;
+
+		// Second triangle vertices
+		data[12] = data[8];
+		data[13] = data[9];
+		data[14] = data[10];
+		data[15] = data[11];
+
+		data[16] = data[4];
+		data[17] = data[5];
+		data[18] = data[6];
+		data[19] = data[7];
+
+		data[20] = surface.VertexCoords[2].x;
+		data[21] = surface.VertexCoords[2].y;
+		data[22] = surface.TextureCoords[2].s;
+		data[23] = surface.TextureCoords[2].t;
+
+		return data;
+	}
 } }

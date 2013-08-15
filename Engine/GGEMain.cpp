@@ -93,13 +93,11 @@ namespace gge {
 
 		///*Processing interval objects
 		for(utils::Collection<IntervalObject>::Iterator interval=IntervalObjects.First();interval.IsValid();interval.Next()) {
-			if(interval->Enabled)
-				if(CurrentTime-interval->LastSignal>interval->Timeout) {
-					interval->Signal(*interval);
-					interval->LastSignal=CurrentTime;
-				}
+			if(interval->Enabled && CurrentTime-interval->LastSignal>interval->Timeout) {
+				interval->Signal(*interval);
+				interval->LastSignal=CurrentTime;
+			}
 		}
-
 		gge::animation::Animator_Signal();
 	}
 
@@ -110,9 +108,9 @@ namespace gge {
 
 	void GGEMain::AfterRender() {
 		AfterRenderEvent();
-
+		/*
 		if(os::GetTime()-CurrentTime<16)
-			os::Sleep(16-(os::GetTime()-CurrentTime));
+			os::Sleep(16-(os::GetTime()-CurrentTime));*/
 	}
 
 	void GGEMain::Render() {

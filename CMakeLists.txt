@@ -26,6 +26,7 @@ SET(Engine
 	Engine/Font.cpp
 	Engine/GraphicLayers.cpp
 	Engine/OS.Win32.cpp
+	Engine/OS.cpp
 )
 
 SET(Resource

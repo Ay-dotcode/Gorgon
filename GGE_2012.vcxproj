@@ -122,10 +122,12 @@
     <ClInclude Include="Engine\Image.h" />
     <ClInclude Include="Engine\Input.h" />
     <ClInclude Include="Engine\Layer.h" />
+    <ClInclude Include="Engine\OpenGL.h" />
     <ClInclude Include="Engine\OS.h" />
     <ClInclude Include="Engine\OS.Linux.h" />
     <ClInclude Include="Engine\OS.Win32.h" />
     <ClInclude Include="Engine\Pointer.h" />
+    <ClInclude Include="Engine\ShaderBase.h" />
     <ClInclude Include="Engine\Sound.h" />
     <ClInclude Include="External\cURL\curl.h" />
     <ClInclude Include="External\cURL\curlbuild.h" />
@@ -136,6 +138,7 @@
     <ClInclude Include="External\cURL\multi.h" />
     <ClInclude Include="External\cURL\stdcheaders.h" />
     <ClInclude Include="External\cURL\typecheck-gcc.h" />
+    <ClInclude Include="External\glutil\MatrixStack.h" />
     <ClInclude Include="External\JPEG\jconfig.h" />
     <ClInclude Include="External\JPEG\jerror.h" />
     <ClInclude Include="External\JPEG\jmorecfg.h" />
@@ -247,6 +250,7 @@
     <ClInclude Include="Resource\File.h" />
     <ClInclude Include="Resource\Sound.h" />
     <ClInclude Include="Resource\Text.h" />
+    <ClInclude Include="ShaderCode\ShaderCode.h" />
     <ClInclude Include="Utils\Any.h" />
     <ClInclude Include="Utils\BasicGraphics.h" />
     <ClInclude Include="Utils\BasicMath.h" />
@@ -261,6 +265,7 @@
     <ClInclude Include="Utils\EventChain.h" />
     <ClInclude Include="Utils\Guid.h" />
     <ClInclude Include="Utils\Iterator.h" />
+    <ClInclude Include="Utils\Logging.h" />
     <ClInclude Include="Utils\ManagedBuffer.h" />
     <ClInclude Include="Utils\ManagedVector.h" />
     <ClInclude Include="Utils\Margins.h" />
@@ -376,10 +381,14 @@
     <ClCompile Include="Engine\Image.cpp" />
     <ClCompile Include="Engine\Input.cpp" />
     <ClCompile Include="Engine\Layer.cpp" />
+    <ClCompile Include="Engine\OpenGL.cpp" />
+    <ClCompile Include="Engine\OS.cpp" />
     <ClCompile Include="Engine\OS.Linux.cpp" />
     <ClCompile Include="Engine\OS.Win32.cpp" />
     <ClCompile Include="Engine\Pointer.cpp" />
+    <ClCompile Include="Engine\ShaderBase.cpp" />
     <ClCompile Include="Engine\Sound.cpp" />
+    <ClCompile Include="External\glutil\MatrixStack.cpp" />
     <ClCompile Include="External\JPEG\src\jcapimin.c" />
     <ClCompile Include="External\JPEG\src\jcapistd.c" />
     <ClCompile Include="External\JPEG\src\jccoefct.c" />
@@ -696,6 +705,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/TextResouce.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/TextResouce.obj</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="ShaderCode\ShaderCode.cpp" />
     <ClCompile Include="Utils\Random.cpp" />
     <ClCompile Include="Utils\SGuid.cpp" />
     <ClCompile Include="Widgets\Base\Organizer.cpp" />

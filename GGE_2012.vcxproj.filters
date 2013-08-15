@@ -175,6 +175,12 @@
     <Filter Include="Encoding\Sources">
       <UniqueIdentifier>{04ccdc9e-d37c-460b-8e4a-ec9163532a8e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ShaderCode">
+      <UniqueIdentifier>{563e91b5-bc57-4901-88b4-83f11ffe4f08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\glutil">
+      <UniqueIdentifier>{25b2473f-3405-48fb-a190-47daa57dc203}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Effects\CountingText.h">
@@ -933,6 +939,21 @@
     <ClInclude Include="Encoding\JPEG.h">
       <Filter>Encoding\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\OpenGL.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ShaderBase.h">
+      <Filter>Engine\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderCode\ShaderCode.h">
+      <Filter>ShaderCode</Filter>
+    </ClInclude>
+    <ClInclude Include="External\glutil\MatrixStack.h">
+      <Filter>External\glutil</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Logging.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -1453,6 +1474,21 @@
     </ClCompile>
     <ClCompile Include="Encoding\JPEG.cpp">
       <Filter>Encoding\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OpenGL.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\ShaderBase.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderCode\ShaderCode.cpp">
+      <Filter>ShaderCode</Filter>
+    </ClCompile>
+    <ClCompile Include="External\glutil\MatrixStack.cpp">
+      <Filter>External\glutil</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OS.cpp">
+      <Filter>Engine\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

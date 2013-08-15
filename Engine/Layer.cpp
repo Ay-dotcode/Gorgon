@@ -106,8 +106,10 @@ namespace gge {
 
 	void LayerBase::Render() {
 		translate+=BoundingBox.TopLeft();
-		glPushMatrix();
-		glTranslatef((float)BoundingBox.Left, (float)BoundingBox.Top, 0);
+		//glPushMatrix();
+		glutil::PushStack _(ModelViewMatrixStack);
+		ModelViewMatrixStack.Translate((float)BoundingBox.Left, (float)BoundingBox.Top, 0);
+		//glTranslatef((float)BoundingBox.Left, (float)BoundingBox.Top, 0);
 
 		if(IsVisible) {
 			for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.IsValid(); i.Previous()) {
@@ -115,7 +117,7 @@ namespace gge {
 			}
 		}
 
-		glPopMatrix();
+		//glPopMatrix();
 		translate-=BoundingBox.TopLeft();
 	}
 
