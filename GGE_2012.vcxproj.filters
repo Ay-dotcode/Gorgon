@@ -954,6 +954,9 @@
     <ClInclude Include="Utils\Logging.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Widgets\Basic\Region.h">
+      <Filter>Widgets\Basic\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Effects\CountingText.cpp">
@@ -1489,6 +1492,9 @@
     </ClCompile>
     <ClCompile Include="Engine\OS.cpp">
       <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Widgets\Basic\Region.cpp">
+      <Filter>Widgets\Basic\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

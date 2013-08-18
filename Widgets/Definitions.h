@@ -18,6 +18,9 @@ namespace gge { namespace widgets {
 		static const Type Rectangle			= 0x05120000;
 		static const Type Rectangle_Props	= 0x05120101;
 
+		static const Type Region			= 0x05160000;
+		static const Type Region_Props		= 0x05160101;
+
 		static const Type ResizableObj		= 0x05130000;
 		static const Type ResizableObj_Props= 0x05130101;
 		static const Type ResizableObj_Names= 0x05130102;

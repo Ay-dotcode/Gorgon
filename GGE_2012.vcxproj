@@ -295,6 +295,7 @@
     <ClInclude Include="Widgets\Basic\PetTextbox.h" />
     <ClInclude Include="Widgets\Basic\Placeholder.h" />
     <ClInclude Include="Widgets\Basic\Rectangle.h" />
+    <ClInclude Include="Widgets\Basic\Region.h" />
     <ClInclude Include="Widgets\Basic\ResizableObjectResource.h" />
     <ClInclude Include="Widgets\Basic\WidgetLayer.h" />
     <ClInclude Include="Widgets\Button.h" />
@@ -714,6 +715,10 @@
     <ClCompile Include="Widgets\Basic\Line.cpp" />
     <ClCompile Include="Widgets\Basic\Placeholder.cpp" />
     <ClCompile Include="Widgets\Basic\Rectangle.cpp" />
+    <ClCompile Include="Widgets\Basic\Region.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Widgets\Basic\ResizableObjectResource.cpp" />
     <ClCompile Include="Widgets\Checkbox\CheckboxBase.cpp" />
     <ClCompile Include="Widgets\Checkbox\CheckboxBlueprint.cpp" />

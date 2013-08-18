@@ -16,6 +16,7 @@
 #include "../Engine/Input.h"
 #include "Combobox/ComboboxBlueprint.h"
 #include "Tabpanel.h"
+#include "Basic/Region.h"
 
 namespace gge { namespace widgets {
 
@@ -48,6 +49,7 @@ namespace gge { namespace widgets {
 		File.AddGameLoaders();
 		File.Loaders.Add(new resource::Loader(GID::Line, LoadLineResource)); 
 		File.Loaders.Add(new resource::Loader(GID::Rectangle, LoadRectangleResource)); 
+		File.Loaders.Add(new resource::Loader(GID::Region, LoadRegionResource)); 
 		File.Loaders.Add(new resource::Loader(GID::ResizableObj, LoadResizableObjectResource)); 
 		File.Loaders.Add(new resource::Loader(GID::BorderData, LoadBorderDataResource)); 
 		File.Loaders.Add(new resource::Loader(GID::Placeholder, LoadPlaceholderResource)); 
