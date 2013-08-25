@@ -65,6 +65,8 @@ namespace gge { namespace utils {
 			data=buf.data;
 			size_=buf.size_;
 			sizefactor=buf.sizefactor;
+
+			this->addref();
 		}
 
 
