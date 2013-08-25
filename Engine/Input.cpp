@@ -391,7 +391,7 @@ namespace gge { namespace input {
 			mouse::DragLocation=utils::Point(0,0);
 
 			DragStateChanged();
-			system::ProcessMousePosition(gge::Main.getWindow());
+			system::ProcessMousePosition(gge::Main.GetWindow());
 		}
 
 		void BeginDrag(IDragData &object) {
@@ -401,7 +401,7 @@ namespace gge { namespace input {
 			mouse::DragLocation=utils::Point(0,0);
 
 			DragStateChanged();
-			system::ProcessMousePosition(gge::Main.getWindow());
+			system::ProcessMousePosition(gge::Main.GetWindow());
 		}
 
 		void CancelDrag() {

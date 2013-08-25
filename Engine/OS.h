@@ -232,10 +232,13 @@ namespace gge { namespace os {
 		///@Width		: The width of the window
 		///@Height		: The height of the window
 		///@FullScreen	: Whether to create a full screen window
-		WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen);
+		WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool Show, bool &FullScreen);
 
 		void MoveWindow(WindowHandle,utils::Point);
 		void ResizeWindow(WindowHandle,utils::Size);
+
+		void Hide(WindowHandle);
+		void Show(WindowHandle);
 	}
 
 } }

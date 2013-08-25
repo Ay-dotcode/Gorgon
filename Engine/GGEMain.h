@@ -70,7 +70,7 @@ namespace gge {
 		////The name of the system (code name of the game)
 		inline void SetSystemName(std::string name) { SystemName=name; }
 		////Handle of the window
-		inline os::WindowHandle getWindow() { return Window; }
+		inline os::WindowHandle GetWindow() { return Window; }
 
 		void Setup(std::string SystemName, int Width=800, int Height=600, int BitDepth=32, bool FullScreen=false);
 
@@ -96,7 +96,7 @@ namespace gge {
 		////This function creates the game window. You may specify title, icon and position
 		/// of the window. However, position is ignored if this is a full screen application.
 		/// OS should be initialized before calling this function
-		os::WindowHandle CreateWindow(std::string Title, os::IconHandle Icon, int X=0, int Y=0);
+		os::WindowHandle CreateWindow(std::string Title, os::IconHandle Icon, int X=0, int Y=0, bool Show=true);
 
 		////Initializes graphic subsystem. All graphic related functions will fail if
 		/// called before this method. 
@@ -111,9 +111,9 @@ namespace gge {
 		////Initializes OS subsystem allowing it to setup events. Should be called before creating a window
 		void		 InitializeOS();
 		////Initializes all systems creating the main window
-		void		 InitializeAll(std::string Title, os::IconHandle Icon, int X, int Y);
+		void		 InitializeAll(std::string Title, os::IconHandle Icon, int X, int Y, bool Show=true);
 		////Initializes all systems creating the main window and centering
-		void		 InitializeAll(std::string Title, os::IconHandle Icon=0);
+		void		 InitializeAll(std::string Title, os::IconHandle Icon=0, bool Show=true);
 		////Initializes Animation subsystem. Before calling this function, animations does not progress
 		/// automatically.
 		void		 InitializeAnimation();
@@ -200,7 +200,7 @@ namespace gge {
 		static void adjustlayers_recurse(LayerBase &layer, utils::Size from, utils::Size to);
 		void adjustlayers(utils::Size size);
 		
-		void initializerest(std::string Title, os::IconHandle Icon, int X, int Y);
+		void initializerest(std::string Title, os::IconHandle Icon, int X, int Y, bool Show);
 
 		utils::Collection<IntervalObject> IntervalObjects;
 	};

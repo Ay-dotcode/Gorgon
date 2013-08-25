@@ -95,12 +95,12 @@
 		}
 		void Quit(int ret) {
 			PostQuitMessage(ret);
-			CloseWindow((HWND)Main.getWindow());
+			CloseWindow((HWND)Main.GetWindow());
 			quiting=true;
 			exit(ret);
 		}
 		void Cleanup() {
-			CloseWindow((HWND)Main.getWindow());
+			CloseWindow((HWND)Main.GetWindow());
 			quiting=true;
 		}
 		void Initialize() {
@@ -604,7 +604,7 @@
 				return 0;
 			}
 
-			WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
+			WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool Show, bool &FullScreen) {
 				WNDCLASSEX windclass;
 
 				HWND ret;
@@ -646,7 +646,9 @@
 					ret=CreateWindowA(Name.c_str(), Title.c_str(), WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, (HINSTANCE)Instance, NULL);
 
 				///*Adjusting window size and position
-				ShowWindow(ret,1);
+				if(Show)
+					::ShowWindow(ret,1);
+
 				if(!FullScreen) {
 					RECT cr,wr;
 					GetClientRect(ret,&cr);
@@ -692,6 +694,15 @@
 				SetWindowPos((HWND)h, 0, 0,0,
 					size.Width + ( (wr.right-wr.left) - (cr.right-cr.left) ),
 					size.Height + ( (wr.bottom-wr.top) - (cr.bottom-cr.top) ), SWP_NOMOVE | SWP_NOZORDER);
+			}
+#undef ShowWindow
+			void Hide(WindowHandle w) {
+				::ShowWindow((HWND)w, SW_HIDE);
+			}
+			void Show(WindowHandle w) {
+				::ShowWindow((HWND)w, SW_SHOW);
+				SetActiveWindow((HWND)w);
+				::ShowWindow((HWND)w, SW_SHOW);
 			}
 
 			utils::Rectangle UsableScreenMetrics(int Monitor) {

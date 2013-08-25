@@ -136,8 +136,8 @@ namespace gge {
 		IntervalObjects.Delete(Interval);
 	}
 	
-	void GGEMain::initializerest(string Title, os::IconHandle Icon, int X, int Y) {
-		CreateWindow(Title, Icon, X, Y);
+	void GGEMain::initializerest(string Title, os::IconHandle Icon, int X, int Y, bool Show) {
+		CreateWindow(Title, Icon, X, Y, Show);
 		InitializeGraphics();
 		InitializeSound();
 		InitializeInput();
@@ -148,15 +148,18 @@ namespace gge {
 		InitializeMultimedia();
 	}
 
-	void GGEMain::InitializeAll(string Title, os::IconHandle Icon, int X, int Y) {
-		InitializeOS();
-		initializerest(Title, Icon, X, Y);
-	}
-
-	void GGEMain::InitializeAll(string Title, os::IconHandle Icon) {
+	void GGEMain::InitializeAll(string Title, os::IconHandle Icon, int X, int Y, bool Show) {
 		InitializeOS();
 		Rectangle r=os::window::UsableScreenMetrics();
-		initializerest(Title, Icon, r.Left+(r.Width-Width)/2, r.Top+(r.Height-Height)/4);
+		if(SystemName=="") SetSystemName(Title);
+		initializerest(Title, Icon, X, Y, Show);
+	}
+
+	void GGEMain::InitializeAll(string Title, os::IconHandle Icon, bool Show) {
+		InitializeOS();
+		Rectangle r=os::window::UsableScreenMetrics();
+		if(SystemName=="") SetSystemName(Title);
+		initializerest(Title, Icon, r.Left+(r.Width-Width)/2, r.Top+(r.Height-Height)/4, Show);
 	}
 
 	os::DeviceHandle GGEMain::InitializeGraphics() {
@@ -183,8 +186,8 @@ namespace gge {
 		Pointers.Initialize(*this);
 	}
 
-	os::WindowHandle GGEMain::CreateWindow( string Title, os::IconHandle Icon, int X/*=0*/, int Y/*=0*/ ) {
-		Window=os::window::CreateWindow(SystemName,Title,Icon,X,Y,Width,Height,BitDepth,FullScreen);
+	os::WindowHandle GGEMain::CreateWindow( string Title, os::IconHandle Icon, int X/*=0*/, int Y/*=0*/, bool Show ) {
+		Window=os::window::CreateWindow(SystemName,Title,Icon,X,Y,Width,Height,BitDepth,Show,FullScreen);
 		return Window;
 	}
 

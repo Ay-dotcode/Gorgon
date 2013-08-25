@@ -709,7 +709,8 @@ static const int None=0;
 		//TODO Private
 			Point cursorlocation=Point(0,0);
 			
-			WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool &FullScreen) {
+			//!Show
+			WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool Show, bool &FullScreen) {
 				//TODO: handle icon
 				XSetWindowAttributes attributes; 
 				int screen;
@@ -776,6 +777,9 @@ static const int None=0;
 				
 				return (WindowHandle)windowhandle;
 			}
+
+			void Hide(WindowHandle) {}
+			void Show(WindowHandle) {}
 
 			void MoveWindow(WindowHandle h, utils::Point p) {
 				XMoveWindow(display, h, p.x, p.y);
