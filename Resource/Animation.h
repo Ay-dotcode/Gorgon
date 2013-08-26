@@ -70,9 +70,9 @@ namespace gge { namespace resource {
 		Animation() : Base() { FrameCount=TotalLength=0; }
 
 		////Returns the width of the first image
-		int GetWidth() const { if(Subitems.GetCount()>0) return Frames[0].Image->GetWidth(); return 0; }
+		int GetWidth() const { if(Frames.size()>0) return Frames[0].Image->GetWidth(); return 0; }
 		////Returns the height of the first image
-		int GetHeight() const { if(Subitems.GetCount()>0) return Frames[0].Image->GetHeight(); return 0; }
+		int GetHeight() const { if(Frames.size()>0) return Frames[0].Image->GetHeight(); return 0; }
 		////Returns number of frames
 		int GetFrameCount() const { return FrameCount; }
 
