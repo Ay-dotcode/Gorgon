@@ -6,7 +6,7 @@ ADD_DEFINITIONS(-DLINUX -fPIC -O3)
 SET(StandardFlags "-std=c++0x -Wall -Wno-reorder -Wno-unknown-pragmas -Wno-switch -Wno-unused-function")
 SET(ExternalCxxFlags "-fpermissive")
 
-SET(Utils 
+SET(Utils
 	Utils/Random.cpp
 	Utils/SGuid.cpp
 )
@@ -27,6 +27,9 @@ SET(Engine
 	Engine/GraphicLayers.cpp
 	Engine/OS.Win32.cpp
 	Engine/OS.cpp
+	Engine/OpenGL.cpp
+	ShaderCode/ShaderCode.cpp
+	Engine/ShaderBase.cpp
 )
 
 SET(Resource
@@ -55,6 +58,7 @@ SET(Widgets
 	Widgets/Basic/BorderData.cpp
 	Widgets/Basic/Rectangle.cpp
 	Widgets/Basic/Line.cpp
+	Widgets/Basic/Region.cpp
 	Widgets/Basic/ResizableObjectResource.cpp
 	Widgets/Basic/Placeholder.cpp
 	Widgets/Panel/PanelBase.cpp
@@ -232,6 +236,7 @@ SET(Externals
 	${EXT_Xml}
 	${EXT_OGG}
 	${EXT_Vorbis}
+	External/glutil/MatrixStack.cpp
 )
 
 FOREACH(_file ${Utils} ${Engine} ${Resource} ${Widgets} ${Effects} ${Encoding} ${Network} ${Multimedia})

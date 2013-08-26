@@ -43,7 +43,7 @@
 #define GL_TEXTURE28					0x84DC
 #define GL_TEXTURE29					0x84DD
 #define GL_TEXTURE30					0x84DE
-#define GL_TEXTURE31					0x84DF					
+#define GL_TEXTURE31					0x84DF
 #define GL_ARRAY_BUFFER					0x8892
 #define GL_STREAM_DRAW					0x88E0
 #define GL_STREAM_READ					0x88E1
@@ -85,6 +85,7 @@ typedef ptrdiff_t						GLintptr;
 #  define APIENTRYP	__stdcall *
 #endif
 
+#ifndef LINUX
 typedef void		(APIENTRYP PFNGLACTIVETEXTUREPROC)				(GLenum texture);
 typedef void		(APIENTRYP PFNGLATTACHSHADERPROC)				(GLuint program, GLuint shader);
 typedef void		(APIENTRYP PFNGLBINDBUFFERPROC)					(GLenum target, GLuint buffer);
@@ -135,6 +136,8 @@ typedef void		(APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC)		(GLuint index, GLint siz
 typedef void		(APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC)		(GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 
 extern PFNGLACTIVETEXTUREPROC					glActiveTexture;
+#endif
+
 extern PFNGLATTACHSHADERPROC					glAttachShader;
 extern PFNGLBINDBUFFERPROC						glBindBuffer;
 extern PFNGLBINDBUFFERBASEPROC					glBindBufferBase;

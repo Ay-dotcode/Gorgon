@@ -9,7 +9,7 @@
 //	however, it has a very small memory overhead. Total size of the object
 //	is 16 bytes. It can be passed by value, contents will not be duplicated
 //	instead it will ref count the object list.
-//	
+//
 //	IMPORTANT: Stored objects are not duplicated nor destroyed at the end
 //	of the collection's life time. To destruct objects that are contained
 //	within use .Destroy() method. This applies for removed objects, use
@@ -216,7 +216,7 @@ namespace gge { namespace utils {
 						Current=*parent->tail;
 						amount++;
 					}
-				}				
+				}
 
 				while(amount>0) {
 					Current=Current->next;
@@ -348,14 +348,14 @@ namespace gge { namespace utils {
 			}
 		};
 
-		SortedCollection() : 
-			count(new int(0)), 
-			head(new Wrapper*(NULL)), 
+		SortedCollection() :
+			count(new int(0)),
+			head(new Wrapper*(NULL)),
 			tail(new Wrapper*(NULL)) {
 		}
 
 		SortedCollection(const SortedCollection &c) : head(c.head), tail(c.tail), count(c.count), RefCounter<SortedCollection<T_, K_> >(c) {
-			addref();
+			this->addref();
 		}
 
 		Wrapper &Add(T_ *item, const K_ &key = K_()) {
@@ -430,10 +430,10 @@ namespace gge { namespace utils {
 		void Reorder(Wrapper &item, const K_ &key) {
 			Wrapper *w=&item;
 			w->key=key;
-			
+
 			if(w==*head && w==*tail) {
 				return; //no need to do anything
-			} 
+			}
 			else if(w==*head) {
 				if(w->next->key >= key) {
 					return; //next item is larger than key, no need to do sorting
@@ -507,7 +507,7 @@ namespace gge { namespace utils {
 						*head=w;
 					}
 				}
-			} 
+			}
 			else {
 				if(w->next->key >= key) {
 					if(w->previous->key < key) {
@@ -703,7 +703,7 @@ namespace gge { namespace utils {
 
 			while(c) {
 				Wrapper *t=c->next;
-				
+
 				if(c->item)
 					delete c->item;
 
@@ -763,7 +763,7 @@ namespace gge { namespace utils {
 				loc++;
 				c=c->next;
 			}
-			
+
 			return -1;
 		}
 
@@ -797,7 +797,7 @@ namespace gge { namespace utils {
 
 			return *r;
 		}
-		
+
 		const T_ &Get(int Index) const {
 			const Wrapper *r=get_(Index);
 

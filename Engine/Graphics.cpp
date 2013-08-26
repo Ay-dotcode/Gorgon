@@ -8,7 +8,7 @@
 #endif
 
 #ifdef WIN32
-#	include <windows.h> 
+#	include <windows.h>
 #elif defined(LINUX)
 #	include <GL/glx.h>
 #	include <unistd.h>
@@ -33,11 +33,11 @@ namespace gge { namespace graphics {
 	// 2 floats for XY positions, 2 floats for UV texture coordinates
 	int UnitQuad::unit_quad[6] =
 	{/*
-		0.0f, 0.0f, 0.0f, 1.0f,	
+		0.0f, 0.0f, 0.0f, 1.0f,
 		0.0f, 1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f, 1.0f, 1.0f,
 
-		1.0f, 0.0f, 1.0f, 1.0f,	
+		1.0f, 0.0f, 1.0f, 1.0f,
 		0.0f, 1.0f, 0.0f, 0.0f,
 		1.0f, 1.0f, 1.0f, 0.0f*/
 		0, 3, 1, 1, 3, 2
@@ -46,7 +46,7 @@ namespace gge { namespace graphics {
 	UnitQuad::UnitQuad()
 	{
 		glGenBuffers(1, &vbo);
-	
+
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(int), unit_quad, GL_STATIC_DRAW); // GL_STATIC_DRAW
 		/*glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_DYNAMIC_DRAW);
@@ -55,7 +55,7 @@ namespace gge { namespace graphics {
 
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
-		
+
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glEnableVertexAttribArray(0);
 		//glEnableVertexAttribArray(1);
@@ -69,7 +69,7 @@ namespace gge { namespace graphics {
 	{
 		glDeleteBuffers(1, &vbo);
 		glDeleteVertexArrays(1, &vao);
-	}	
+	}
 	void UnitQuad::GLDraw()
 	{
 		glBindVertexArray(vao);
@@ -85,11 +85,11 @@ namespace gge { namespace graphics {
 		glBindVertexArray(0);
 	}
 	void Quad::UpdateInstanceVertexData(const std::array<float,24>& data)
-	{		
+	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 		// Move offset and orphan once in a while // Don't forget to comment out and uncomment glBufferData code in the UnitQuad constructor
-		
+
 		offset += sizeof(data);
 		if (offset >= buffer_size) {
 			offset = 0;
@@ -124,22 +124,22 @@ namespace gge { namespace graphics {
 	extern utils::Bounds scissors;
 	extern Point translate;
 
-	namespace system { 	
+	namespace system {
 		GLuint FBTexture=0;
-		GLuint FrameBuffer=0; 
+		GLuint FrameBuffer=0;
 
 		bool OffscreenRendering=false;
 
 		void SetupFrameBuffer();
 
-		
+
 	}
 
 	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {
 		using namespace gge::graphics::system;
-		
+
 		os::DeviceHandle handle=0;
-		
+
 		///!Platform specific
 #ifdef WIN32
 		///*Preparing device context, platform specific
@@ -174,7 +174,7 @@ namespace gge { namespace graphics {
 		HGLRC hRC;
 		hRC = wglCreateContext( hDC );
 		wglMakeCurrent(hDC,hRC);
-		
+
 		handle=(os::DeviceHandle)hDC;
 
 		if(hRC==NULL) {
@@ -184,20 +184,20 @@ namespace gge { namespace graphics {
 
 #elif defined(LINUX)
 		//TODO: OpenGL Context creation
-		static int attributeListDbl[] = { 
-			GLX_RGBA, 
+		static int attributeListDbl[] = {
+			GLX_RGBA,
 			GLX_DOUBLEBUFFER,
-			GLX_RED_SIZE,   1, 
-			GLX_GREEN_SIZE, 1, 
-			GLX_BLUE_SIZE,  1, 
-			None 
+			GLX_RED_SIZE,   1,
+			GLX_GREEN_SIZE, 1,
+			GLX_BLUE_SIZE,  1,
+			None
 		};
 		Display *display = XOpenDisplay(NULL);
-		
+
 		XVisualInfo *vi = glXChooseVisual(display, DefaultScreen(display), attributeListDbl);
 		GLXContext cx = glXCreateContext(display, vi, 0, GL_TRUE);
 		glXMakeCurrent(display, hWnd, cx);
-		
+
 		handle=(os::DeviceHandle)display;
 
 		if(cx==NULL) {
@@ -208,7 +208,7 @@ namespace gge { namespace graphics {
 
 		std::string gl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 		if(utils::StrToNumber<float>(gl_version)<3.0) {
-			os::DisplayMessage("OpenGL", "OpenGL version 3.0 and above is required.");
+			os::DisplayMessage("OpenGL", ("OpenGL version 3.0 and above is required. Yours is "+gl_version).c_str());
 			exit(0);
 		}
 
@@ -242,15 +242,15 @@ namespace gge { namespace graphics {
 		///*Adjusting Matrices
 		glViewport(0, 0, Width, Height);					// Reset The Current Viewport
 
-		
+
 		//These can be overridden by layers
 		/*glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
 		glLoadIdentity();									// Reset The Projection Matrix
 		glOrtho(0,Width,Height,0,-100,100);					// Calculate The Aspect Ratio Of The Window
 		*/
 		glCullFace(GL_BACK);
-		//glFrontFace(GL_CW); 
-		glFrontFace(GL_CCW); 
+		//glFrontFace(GL_CW);
+		glFrontFace(GL_CCW);
 
 		ProjectionMatrixStack.SetIdentity();
 		ProjectionMatrixStack.Orthographic(0.0f, float(Width), float(Height), 0.0f, -100.0f, 100.0f);
@@ -269,12 +269,12 @@ namespace gge { namespace graphics {
 	}
 
 
-	namespace system {		
+	namespace system {
 
 		void A8ToA8L8(int cx,int cy,Byte *data,Byte *dest)
 		{
 			int sz=cx*cy;
-			
+
 			for(int i=0;i<sz;i++) {
 				dest[i*2]=0xff;
 				dest[i*2+1]=data[i];
@@ -318,7 +318,7 @@ namespace gge { namespace graphics {
 				glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
 				glPixelStorei(GL_PACK_ALIGNMENT, 2);
 
-				target=new Byte[cx*cy*2];	
+				target=new Byte[cx*cy*2];
 				A8ToA8L8(cx,cy,data,target);
 				//delete data;
 				data=target;
@@ -363,7 +363,7 @@ namespace gge { namespace graphics {
 			///*Adjusting Matrices
 			glViewport(0, 0, Width, Height);					// Reset The Current Viewport
 
-			
+
 			//These can be overridden by layers
 			/*glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
 			glLoadIdentity();									// Reset The Projection Matrix
@@ -373,7 +373,7 @@ namespace gge { namespace graphics {
 			ProjectionMatrixStack.Orthographic(0.0f, float(Width), float(Height), 0.0f, -100.0f, 100.0f);
 			glFrontFace(GL_CCW);
 			//glFrontFace(GL_CW);
-			
+
 			//position
 			/*
 			glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
@@ -425,18 +425,18 @@ namespace gge { namespace graphics {
 		}
 
 		void DumpOffscreen() {
-			
+
 			static const glm::mat4x3 vertex_coords = glm::mat4x3(  -1.0f, 1.0f, 0.0f,
 																	1.0f, 1.0f, 0.0f,
 																	1.0f,-1.0f, 0.0f,
 																   -1.0f,-1.0f, 0.0f	);
 
-			static const glm::mat4x2 tex_coords = glm::mat4x2(		0.0f, 1.0f,	
-																	1.0f, 1.0f,		
-																	1.0f, 0.0f,		
+			static const glm::mat4x2 tex_coords = glm::mat4x2(		0.0f, 1.0f,
+																	1.0f, 1.0f,
+																	1.0f, 0.0f,
 																	0.0f, 0.0f		);
 			gge::shadercode::SimpleShader::Use();
-			gge::shadercode::SimpleShader::Get().UpdateUniform("vertex_coords", vertex_coords);	
+			gge::shadercode::SimpleShader::Get().UpdateUniform("vertex_coords", vertex_coords);
 			gge::shadercode::SimpleShader::Get().UpdateUniform("tex_coords", tex_coords);
 			glBindTexture(GL_TEXTURE_2D, system::FBTexture);
 			gge::graphics::UnitQuad::Draw();
