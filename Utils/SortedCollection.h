@@ -354,8 +354,8 @@ namespace gge { namespace utils {
 			tail(new Wrapper*(NULL)) {
 		}
 
-		SortedCollection(const SortedCollection &c) : head(c.head), tail(c.tail), count(c.count) {
-
+		SortedCollection(const SortedCollection &c) : head(c.head), tail(c.tail), count(c.count), RefCounter<SortedCollection<T_, K_> >(c) {
+			addref();
 		}
 
 		Wrapper &Add(T_ *item, const K_ &key = K_()) {

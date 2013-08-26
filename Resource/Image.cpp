@@ -125,6 +125,9 @@ namespace gge { namespace resource {
 	}
 
 	bool Image::ExportPNG(string filename) {
+		if(GetMode()!=graphics::ColorMode::ARGB) {
+			throw std::runtime_error("Unsupported color mode");
+		}
 		Byte *newdata=new Byte[GetWidth()*GetHeight()*4];
 		for(int i=0;i<GetWidth()*GetHeight();i++) {
 			newdata[i*4+2]=Data[i*4+0];
@@ -355,6 +358,7 @@ namespace gge { namespace resource {
 			Mode=graphics::ColorMode::ARGB;
 
 			this->Data.Resize(this->GetWidth()*this->GetHeight()*4);
+			if(this->Data.GetSize()==0) return false;
 
 			std::vector<Byte> imagedata;
 			encoding::PNG::Info inf;

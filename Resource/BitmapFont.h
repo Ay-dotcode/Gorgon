@@ -78,8 +78,9 @@ namespace gge { namespace resource {
 		virtual int TextWidth(const std::string &Text) { 
 			int i, w=0; 
 			const char *text=Text.c_str(); 
-			for(i=0;text[i];i++) 
+			for(i=0;text[i];i++) {
 				w+=Characters[(unsigned char)text[i]]->GetWidth()+Seperator; 
+			}
 		
 			return w; 
 		}

@@ -63,10 +63,12 @@ namespace gge { namespace resource {
 				//snd->Data.resize(buffersize);
 				snd->Size=buffersize;
 				
-				if(compressionprops!=NULL)
-					lzma.Decode(Data, snd->Data, compressionprops, buffersize);
-				else
-					encoding::Lzma.Decode(Data, snd->Data);
+				if(buffersize>0) {
+					if(compressionprops!=NULL)
+						lzma.Decode(Data, snd->Data, compressionprops, buffersize);
+					else
+						encoding::Lzma.Decode(Data, snd->Data);
+				}
 
 				utils::CheckAndDeleteArray(compressionprops);
 			}

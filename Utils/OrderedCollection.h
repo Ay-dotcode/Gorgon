@@ -805,7 +805,7 @@ namespace gge { namespace utils {
 		}
 
 		T_ *get_(int Index) {
-			if(Index<0 || Index>*count)
+			if(Index<0 || Index>=*count)
 				return NULL;
 
 			return list[Index];
