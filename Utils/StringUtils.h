@@ -29,10 +29,11 @@
 namespace gge { namespace utils {
 
 	inline std::string Replace(const std::string str, const std::string find, const std::string replace) {
-		std::string::size_type l=-1;
+		std::string::size_type l;
 		std::string ret=str;
-		while( (l=str.find(find, l+1)) != str.npos ) {
-			ret=ret.replace(l, find.length(), replace);
+		while( (l=ret.find(find)) != ret.npos ) {
+			ret.erase(l, find.length());
+			ret.insert(l, replace);
 		}
 
 		return ret;
