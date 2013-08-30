@@ -69,14 +69,14 @@ namespace gge { namespace widgets {
 				panel.AllowTabSwitch=false;
 				panel.GetVScroller().DisableAnimation();
 				panel.ScrollingEvent.RegisterLambda([&]{
-					if(organizer.SetVScroll(panel.GetVScroll())) {
+					if(this->organizer.SetVScroll(panel.GetVScroll())) {
 						this->adjustitems();
 					}
 				});
 
 				WR.LoadedEvent.Register(this, &Base::wr_loaded);
 				triggerfn=[&](IListItem &item, int index) {
-					this->trigger(dynamic_cast<R_&>(item), index+organizer.GetTop());
+					this->trigger(dynamic_cast<R_&>(item), index+this->organizer.GetTop());
 				};
 				dragnotify=[&](IListItem &item, int index, gge::utils::Point location) {
 					this->begindrag(item, index, location);

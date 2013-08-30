@@ -113,7 +113,7 @@ namespace gge { namespace utils {
 		CastableManagedBuffer &operator =(const CastableManagedBuffer &buf) {
 			if(this==&buf) return *this;
 
-			refassign(buf);
+			this->refassign(buf);
 
 			data=buf.data;
 			size_=buf.size_;

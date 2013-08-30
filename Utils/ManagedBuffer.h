@@ -61,7 +61,7 @@ namespace gge { namespace utils {
 			if(this==&buf) return *this;
 			if(this->data==buf.data) return *this;
 
-			refassign(buf);
+			this->refassign(buf);
 
 			data=buf.data;
 			size_=buf.size_;
