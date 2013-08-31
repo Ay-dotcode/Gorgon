@@ -13,7 +13,7 @@ using namespace gge::graphics::system;
 namespace gge { namespace graphics {
 	RGBfloat CurrentLayerColor;
 	Point translate;
-	Bounds scissors;
+	Bounds scissors(0,0, 100000,100000);
 
 	// ShaderType has to inherit from ShaderBase
 	template<class ShaderType>
@@ -174,7 +174,7 @@ namespace gge { namespace graphics {
 	}
 	
 	void Basic2DLayer::Render() {
-		Rectangle psc;
+		Rectangle psc=scissors;
 		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
 
 		if(!IsVisible) return;
@@ -188,7 +188,6 @@ namespace gge { namespace graphics {
 		translate+=BoundingBox.TopLeft();
 
 		if(ClippingEnabled) {
-			psc=scissors;
 			glEnable(GL_SCISSOR_TEST);
 			if(translate.x>scissors.Left)
 				scissors.Left=translate.x;
@@ -441,7 +440,7 @@ end:
 	}
 
 	void Colorizable2DLayer::Render() {
-		Rectangle psc;
+		Rectangle psc=scissors;
 		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
 
 		if(!IsVisible) return;
@@ -464,8 +463,6 @@ end:
 		gge::shadercode::SimpleTintShader::Use();
 
 		if(ClippingEnabled) {
-			psc=scissors;
-
 			glEnable(GL_SCISSOR_TEST);
 			if(translate.x>scissors.Left)
 				scissors.Left=translate.x;

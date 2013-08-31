@@ -192,6 +192,8 @@ namespace gge { namespace input {
 
 		class IDragData {
 		public:
+			virtual ~IDragData() {}
+			
 			//Negative typeids are reserved for system, use positive
 			virtual int TypeID() const = 0;
 		};
@@ -685,13 +687,14 @@ namespace gge { namespace input {
 
 		};
 
-		class HandlerBase{
+		class HandlerBase {
 		public:
 			utils::Any data;
 
 			HandlerBase(utils::Any data) : data(data) {
 
 			}
+			virtual ~HandlerBase() {}
 
 			virtual bool Fire(Event::Type event, utils::Point location, int amount) = 0;
 		};

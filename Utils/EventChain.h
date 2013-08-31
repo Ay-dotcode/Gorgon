@@ -99,6 +99,8 @@ namespace gge { namespace utils {
 			EventHandler(Any data) : data(data) {}
 
 			virtual void Fire(P_ params, O_ &caller, std::string eventname) const=0;
+			
+			virtual ~EventHandler() {}
 		};
 
 		//These template functions provide pseudo inheritance for these functions

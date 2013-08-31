@@ -5,6 +5,9 @@
 #include "../External/OpenAL/al.h"
 #include "../External/vorbis/vorbisfile.h"
 
+//Warning: this file is under the effect of -Wno-unused-variable due to vorbisfile.h
+//take care while modifying.
+
 
 namespace gge { namespace multimedia {
 

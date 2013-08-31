@@ -962,7 +962,7 @@ namespace gge { namespace widgets {
 			bp->GetAlternatives(groups, focus, state);
 
 			//prepare resources
-			Blueprint::TransitionType transition;
+			Blueprint::TransitionType transition=Blueprint::NoTransition;
 
 			symbolp=bp->GetSymbolPlace(groups, style, transition);
 			textp=bp->GetTextPlace(groups, style, transition);

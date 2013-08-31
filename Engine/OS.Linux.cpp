@@ -1032,7 +1032,7 @@ static const int None=0;
 			std::string escape_regexp(const std::string &str) {
 				static const char shouldbeescaped[]="\\/().[],?*+-|";
 				std::string ret=str;
-				int pos=0;
+				unsigned pos=0;
 				while( (pos=ret.find_first_of(shouldbeescaped,pos)) != std::string::npos) {
 					ret=ret.insert(pos, "\\");
 					pos+=2;
@@ -1045,7 +1045,7 @@ static const int None=0;
 				dirinfo.dp  	 = opendir(dir.c_str());
 				if(pattern!="*") {
 					dirinfo.pattern = escape_regexp(pattern);
-					int pos=0;
+					unsigned pos=0;
 					while( (pos=dirinfo.pattern.find_first_of("*?", pos)) != std::string::npos) {
 						dirinfo.pattern[pos-1]='.';
 						if(dirinfo.pattern[pos]=='?') {

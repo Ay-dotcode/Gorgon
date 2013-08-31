@@ -4,7 +4,8 @@ PROJECT(GGE)
 
 ADD_DEFINITIONS(-DLINUX -fPIC -O3)
 SET(StandardFlags "-std=c++0x -Wall -Wno-reorder -Wno-unknown-pragmas -Wno-switch -Wno-unused-function")
-SET(ExternalCxxFlags "-fpermissive")
+SET(ExternalCxxFlags "-fpermissive -Wno-unused-variable")
+SET(ExternalCFlags "-fpermissive -Wno-unused-variable")
 
 SET(Utils
 	Utils/Random.cpp
@@ -239,9 +240,12 @@ SET(Externals
 	External/glutil/MatrixStack.cpp
 )
 
+
 FOREACH(_file ${Utils} ${Engine} ${Resource} ${Widgets} ${Effects} ${Encoding} ${Network} ${Multimedia})
 	SET_SOURCE_FILES_PROPERTIES(${_file} PROPERTIES COMPILE_FLAGS ${StandardFlags})
 ENDFOREACH()
+
+SET_SOURCE_FILES_PROPERTIES(Multimedia/Music.cpp PROPERTIES COMPILE_FLAGS "${StandardFlags} -Wno-unused-variable")
 
 FOREACH(_file ${EXT_Xml})
 	SET_SOURCE_FILES_PROPERTIES(${_file} PROPERTIES COMPILE_FLAGS ${ExternalCxxFlags})

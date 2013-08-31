@@ -91,7 +91,7 @@ namespace gge { namespace utils {
 
 		void Set(unsigned serial, unsigned random, unsigned time) {
 			//time component - 2
-			ints[0] = (time & 0xffff);
+			/*ints[0] = (time & 0xffff);
 
 			//random component - 3
 			*(int*)(bytes+2) = random & 0xffffff; //this part is 3 bytes, not 4
@@ -99,7 +99,11 @@ namespace gge { namespace utils {
 			//serial component - 3
 			bytes[5] = Byte( serial      & 0xff);
 			bytes[6] = Byte((serial>>8 ) & 0xff);
-			bytes[7] = Byte((serial>>16) & 0xff);
+			bytes[7] = Byte((serial>>16) & 0xff);*/
+			
+			memcpy(bytes+0, &time  , 2);
+			memcpy(bytes+2, &random, 3);
+			memcpy(bytes+5, &serial, 3);
 
 			checknewserial();
 		}

@@ -72,6 +72,8 @@ namespace gge { namespace encoding {
 
 		class Buffer {
 		public:
+			virtual ~Buffer() {}
+			
 			virtual unsigned char *Offset(int offset)=0;
 			virtual void Resize(int size)=0;
 		};

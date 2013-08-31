@@ -37,16 +37,20 @@ namespace gge { namespace utils {
 
 
 	SGuid::operator std::string() const {
-		std::stringstream ss;
+		static char hexlist[]="0123456789abcdef";
+		std::string str;
+		
+		str.resize(18);
+		int j=0;
+		for(int i=7;i>=0;i--) { 
+			str[j++]=hexlist[bytes[i]/16];
+			str[j++]=hexlist[bytes[i]%16];
+			if(i==5 || i==2) {
+				str[j++]='-';
+			}
+		}
 
-		ss
-			<<std::setfill('0')<<std::hex
-			<<std::setw(6)<<((ints[1]>>8) & 0xffffff)<<"-"
-			<<std::setw(6)<<(*(int*)(bytes+2) & 0xffffff)<<"-"
-			<<std::setw(4)<<(ints[0] & 0xffff)
-			;
-
-		return ss.str();
+		return str;
 	}
 
 } }

@@ -40,10 +40,10 @@ namespace gge { namespace utils {
 	}
 
 	inline std::string Trim(std::string str, const std::string chars=" \t\n\r") {
-		while(str.length() && chars.find_first_of(str[0])!=-1) {
+		while(str.length() && chars.find_first_of(str[0])!=chars.npos) {
 			str=str.substr(1);
 		}
-		while(str.length() && chars.find_first_of(str[str.length()-1])!=-1) {
+		while(str.length() && chars.find_first_of(str[str.length()-1])!=chars.npos) {
 			str.resize(str.length()-1);
 		}
 
@@ -51,7 +51,7 @@ namespace gge { namespace utils {
 	}
 
 	inline std::string TrimLeft(std::string str, const std::string chars=" \t\n\r") {
-		while(str.length() && chars.find_first_of(str[0])!=-1) {
+		while(str.length() && chars.find_first_of(str[0])!=chars.npos) {
 			str=str.substr(1);
 		}
 
@@ -59,7 +59,7 @@ namespace gge { namespace utils {
 	}
 
 	inline std::string TrimRight(std::string str, const std::string chars=" \t\n\r") {
-		while(str.length() && chars.find_first_of(str[str.length()-1])!=-1) {
+		while(str.length() && chars.find_first_of(str[str.length()-1])!=chars.npos) {
 			str.resize(str.length()-1);
 		}
 
@@ -90,8 +90,8 @@ namespace gge { namespace utils {
 			char a[2];
 		};
 
-		template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {;}
-		template <typename C> static two test(...){;}
+		template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {return one();}
+		template <typename C> static two test(...){return two();}
 
 	public:
 		enum { value = sizeof(test<T>(""))==sizeof(char) };

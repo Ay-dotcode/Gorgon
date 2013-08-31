@@ -43,6 +43,8 @@ namespace gge { namespace utils {
 		virtual void  Delete(void* obj) const=0;
 		virtual void *Clone(const void* const obj) const=0;
 		virtual bool  IsSameType(const std::type_info &) const=0;
+		
+		virtual ~TypeInterface() { }
 	};
 
 	template<class T_> class Type : public TypeInterface {

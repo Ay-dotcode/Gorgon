@@ -211,8 +211,8 @@ namespace gge { namespace resource {
 		RGBint cc=target->GetCurrentColor();
 		target->SetCurrentColor(graphics::RGBfloat(color));
 		
-		int sizediff;
-		BitmapFont *shadow;
+		int sizediff=0;
+		BitmapFont *shadow=nullptr;
 
 		if(Shadow.Type==ShadowParams::DropShadow) {
 			shadow=&Blur(Shadow.Blur);

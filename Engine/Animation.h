@@ -61,6 +61,7 @@ namespace gge { namespace animation {
 	public:
 
 		Controller();
+		virtual ~Controller() {}
 
 		virtual void Progress(unsigned timepassed);
 		virtual void Obtained(ProgressResult::Type r, Base &source);
@@ -105,6 +106,8 @@ namespace gge { namespace animation {
 
 	class Provider {
 	public:
+		virtual ~Provider() { }
+		
 		virtual Base &CreateAnimation(Timer &controller, bool owner=false) = 0;
 		virtual Base &CreateAnimation(bool create=false) = 0;
 	};

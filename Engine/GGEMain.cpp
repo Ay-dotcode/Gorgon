@@ -150,7 +150,6 @@ namespace gge {
 
 	void GGEMain::InitializeAll(string Title, os::IconHandle Icon, int X, int Y, bool Show) {
 		InitializeOS();
-		Rectangle r=os::window::UsableScreenMetrics();
 		if(SystemName=="") SetSystemName(Title);
 		initializerest(Title, Icon, X, Y, Show);
 	}

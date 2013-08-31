@@ -69,6 +69,8 @@ namespace gge { namespace utils {
 			bool enabled;
 
 			EventHandler(Any data) : data(data), enabled(true) {}
+			
+			virtual ~EventHandler() {}
 
 			virtual bool Fire(P_ params, O_ &caller, std::string eventname)=0;
 		};

@@ -12,7 +12,11 @@ namespace gge { namespace widgets {
 
 	PlaceholderResource *LoadPlaceholderResource(resource::File& File, std::istream &Data, int Size);
 
-	struct Placeholder {
+	class Placeholder {
+	public:
+		
+		virtual ~Placeholder() {}
+		
 		enum PlaceholderSizingMode {
 			//Obtainer is free to use any size
 			Free=0,
