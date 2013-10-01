@@ -13,11 +13,11 @@ namespace gge { namespace graphics {
 	class ImageData {
 	public:
 		ImageData() : Width(0), Height(0), Mode(ColorMode::ARGB) {
-
+      bits=getBPP(Mode);
 		}
 
 		virtual void Resize(int Width, int Height, ColorMode::Type Mode) {
-			int bits=getBPP(Mode);
+			bits=getBPP(Mode);
 
 			Data.Resize(Width*Height*bits);
 
@@ -25,6 +25,10 @@ namespace gge { namespace graphics {
 			this->Height=Height;
 			this->Mode=Mode;
 		}
+    
+    Byte &operator()(int x, int y, int component=0) {
+      return Data[bits*(Width*y+x)+component];
+    }
 
 		int GetWidth() const {
 			return Width;
@@ -44,6 +48,7 @@ namespace gge { namespace graphics {
 		utils::CastableManagedBuffer<Byte> Data;
 		int Width,Height;
 		ColorMode::Type Mode;
+    int bits;
 	};
 
 

@@ -40,6 +40,122 @@ namespace gge { namespace resource {
 			PNG=GID::PNG,
 		};
 
+    gge::utils::Margins Trim(bool left, bool right, bool top, bool bottom) {
+      gge::utils::Margins margins(0, 0, 0, 0);
+      int xx = 0, yy = 0;
+      if(Mode != graphics::ColorMode::ABGR && Mode != graphics::ColorMode::ARGB)
+        return margins;
+
+      if(left) {
+        auto x = Data.begin() + 3;
+        auto y = x;
+        for(; y != Data.end(); y += (Width * 4)) {
+          if(*y != 0)
+            break;
+          
+          yy++;
+          if(yy == Height) {
+            x += 4;
+            y = x;
+            margins.Left++;
+            yy = 0;
+          }
+          if(margins.Left == Width - 1)
+            break;
+          
+        }
+      }
+
+      if(right) {
+        yy = Height - 1;
+        auto x = Data.end() - 1;
+        auto y = x;
+        for(; y != Data.begin(); y -= (Width * 4)) {
+          if(*y != 0)
+            break;
+          
+          yy--;
+          if(yy == 0) {
+            x -= 4;
+            y = x;
+            margins.Right++;
+            yy = Height - 1;
+          }
+
+          if(margins.Right == Width - 1)
+            break;
+        }
+      }
+
+      if(top) {
+        xx = 0;
+        auto x = Data.begin() + 3;
+        for(; x != Data.end(); x += 4) {
+          if(*x != 0)
+            break;
+          
+          xx++;
+          if(xx == Width - 1) {
+            margins.Top++;
+            xx = 0;
+          }
+
+          if(margins.Top == Height - 1)
+            break;
+        }
+      }
+
+      if(bottom) {
+        xx = Width - 1;
+        auto x = Data.end() - 1;
+        for(; x != Data.begin(); x -= 4) {
+          if(*x != 0) 
+            break;
+
+          xx--;
+          if(xx == 0) {
+            margins.Bottom++;
+            xx = Width - 1;
+          }
+
+          if(margins.Bottom == Height - 1)
+            break;
+        }
+      }
+
+      gge::utils::CastableManagedBuffer<Byte> buffer;
+      int h = Height - (margins.Top + margins.Bottom);
+      int w = Width - (margins.Left + margins.Right);
+      buffer.Resize(w * h * GetBPP());
+      auto x = (Data.begin() + (GetBPP() * (margins.Top*Width+margins.Left)));
+      auto start = x;
+      auto rightinc = margins.Right * GetBPP();
+      auto leftinc =  margins.Left * GetBPP();
+      auto end = x + ((Width * h * GetBPP()) - (leftinc + rightinc));
+      xx = 0;
+
+      
+      int index = 0;
+      int jumppoint=w*GetBPP();
+      int leap=leftinc + rightinc;
+      for(; x < end; ++x) {
+        buffer[index++] = *x;
+        xx++;
+        if(xx == jumppoint) {
+          x += leap;
+          xx = 0;
+        }
+      }
+
+      Data=buffer;
+      ImageData::Width=w;
+      ImageData::Height=h;
+
+      std::cout << index << " " << buffer.size() << std::endl;
+
+      return margins;
+    }
+
 		////Not used, if paletted image is found, this holds its palette
 		Byte *Palette;
 		////Whether image is loaded or not. Image that are marked as late loading
