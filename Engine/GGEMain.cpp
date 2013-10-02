@@ -14,6 +14,17 @@
 using namespace gge::utils;
 using namespace std;
 
+#ifdef LINUX
+#	define DEFINE_GDB_SCRIPT(script_name) \
+       asm("\
+     .pushsection \".debug_gdb_scripts\", \"MS\",@progbits,1\n\
+     .byte 1\n\
+     .asciz \"" script_name "\"\n\
+     .popsection \n\
+     ");
+	DEFINE_GDB_SCRIPT ("GGE.py")
+#endif
+
 namespace gge { namespace animation {
 	void Animator_Signal();
 } }

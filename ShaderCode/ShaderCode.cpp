@@ -50,24 +50,24 @@ namespace gge { namespace shadercode {
 
 
 	const std::string TransformVertSrcCode = "											\n\
-#version 330																			\n\
-layout(location = 0) in int vertex_index;												\n\
+#version 130																			\n\
+attribute int vertex_index;												\n\
 																						\n\
 uniform mat4x3 vertex_coords;															\n\
 uniform mat4x2 tex_coords;																\n\
 																						\n\
-smooth out vec2 texcoord;																\n\
+out vec2 texcoord;																\n\
 																						\n\
 void main()																				\n\
 {																						\n\
 	gl_Position = vec4(vertex_coords[vertex_index], 1.0f);								\n\
     texcoord = tex_coords[vertex_index];												\n\
-}";
+}\n";
 
 	const std::string SimpleFragSrcCode = "												\n\
-#version 330																			\n\
+#version 130																			\n\
 																						\n\
-smooth in vec2 texcoord;																\n\
+in vec2 texcoord;																\n\
 																						\n\
 uniform sampler2D diffuse;																\n\
 																						\n\
@@ -76,11 +76,11 @@ out vec4 output_color;																	\n\
 void main()																				\n\
 {																						\n\
     output_color = texture(diffuse, texcoord);											\n\
-}";
+}\n";
 	const std::string SimpleTintFragSrcCode = " 										\n\
-#version 330 																			\n\
+#version 130 																			\n\
  																						\n\
-smooth in vec2 texcoord; 																\n\
+in vec2 texcoord; 																\n\
  																						\n\
 uniform sampler2D diffuse; 																\n\
 uniform vec4 tint; 																		\n\
@@ -90,6 +90,6 @@ out vec4 output_color; 																	\n\
 void main() 																			\n\
 { 																						\n\
     output_color = texture(diffuse, texcoord) * tint; 									\n\
-}";
+}\n";
 
 } }

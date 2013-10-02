@@ -183,7 +183,6 @@ namespace gge { namespace graphics {
 		}
 
 #elif defined(LINUX)
-		//TODO: OpenGL Context creation
 		static int attributeListDbl[] = {
 			GLX_RGBA,
 			GLX_DOUBLEBUFFER,
@@ -410,8 +409,8 @@ namespace gge { namespace graphics {
 		}
 
 		void PostRender(os::DeviceHandle hDC, os::WindowHandle win) {
-			//glFlush();
-			//glFinish();
+			glFlush();
+			glFinish();
 			///*Swapping back and front buffers
 #ifdef WIN32
 			SwapBuffers( (HDC)hDC );

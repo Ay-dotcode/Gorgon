@@ -51,7 +51,7 @@ namespace gge { namespace graphics {
 	
 	ShaderBase::~ShaderBase()
 	{
-		glUseProgram(0);
+		glUseProgram(0);//!??
 		if ( mGeometryShader ) {
 			glDetachShader( mProgram, mGeometryShader );
 			glDeleteShader( mGeometryShader );
@@ -118,8 +118,9 @@ namespace gge { namespace graphics {
 	GLuint CreateProgram( const std::vector<GLuint>& shader_list )
 	{
 		GLuint program = glCreateProgram();
-		for (size_t i = 0; i < shader_list.size(); ++i) 
+		for (size_t i = 0; i < shader_list.size(); ++i) {
 			glAttachShader( program, shader_list[i] );
+		}
 		glLinkProgram( program );
 
 		GLint status;

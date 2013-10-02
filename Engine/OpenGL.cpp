@@ -11,6 +11,8 @@
 #ifndef LINUX
 PFNGLACTIVETEXTUREPROC					glActiveTexture;
 #endif
+PFNGLGETATTRIBLOCATIONPROC				glGetAttribLocation;
+PFNGLBINDATTRIBLOCATIONPROC				glBindAttribLocation;
 PFNGLATTACHSHADERPROC					glAttachShader;
 PFNGLBINDBUFFERPROC						glBindBuffer;
 PFNGLBINDBUFFERBASEPROC					glBindBufferBase;
@@ -63,6 +65,8 @@ namespace gge { namespace system {
 
 void LoadGLFunctions() {
 #ifdef WIN32
+			glGetAttribLocation				= (PFNGLGETATTRIBLOCATIONPROC)wglGetProcAddress("glGetAttribLocation");
+			glBindAttribLocation			= (PFNGLBINDATTRIBLOCATIONPROC)wglGetProcAddress("glBindAttribLocation");
 			glActiveTexture					= (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
 			glAttachShader					= (PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader");
 			glBindBuffer					= (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
@@ -114,6 +118,8 @@ void LoadGLFunctions() {
 #elif defined(LINUX)
 			//= ()wglGetProcAddress("gl");
 			//glActiveTexture					= (PFNGLACTIVETEXTUREPROC)glXGetProcAddress((const GLubyte*)"glActiveTexture");
+			glGetAttribLocation				= (PFNGLGETATTRIBLOCATIONPROC)glXGetProcAddress((const GLubyte*)"glGetAttribLocation");
+			glBindAttribLocation			= (PFNGLBINDATTRIBLOCATIONPROC)glXGetProcAddress((const GLubyte*)"glBindAttribLocation");
 			glAttachShader					= (PFNGLATTACHSHADERPROC)glXGetProcAddress((const GLubyte*)"glAttachShader");
 			glBindBuffer					= (PFNGLBINDBUFFERPROC)glXGetProcAddress((const GLubyte*)"glBindBuffer");
 			glBindBufferBase				= (PFNGLBINDBUFFERBASEPROC)glXGetProcAddress((const GLubyte*)"glBindBufferBase");
