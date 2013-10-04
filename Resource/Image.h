@@ -151,8 +151,6 @@ namespace gge { namespace resource {
       ImageData::Width=w;
       ImageData::Height=h;
 
-      std::cout << index << " " << buffer.size() << std::endl;
-
       return margins;
     }
 
