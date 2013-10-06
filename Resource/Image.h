@@ -128,7 +128,6 @@ namespace gge { namespace resource {
       int w = Width - (margins.Left + margins.Right);
       buffer.Resize(w * h * GetBPP());
       auto x = (Data.begin() + (GetBPP() * (margins.Top*Width+margins.Left)));
-      auto start = x;
       auto rightinc = margins.Right * GetBPP();
       auto leftinc =  margins.Left * GetBPP();
       auto end = x + ((Width * h * GetBPP()) - (leftinc + rightinc));
