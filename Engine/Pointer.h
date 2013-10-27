@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "GGE.h"
 #include "../Utils/SortedCollection.h"
 #include "Graphics.h"
@@ -77,7 +79,7 @@ namespace gge {
 	class PointerCollection : public utils::Collection<Pointer, 10> {
 	public:
 
-		typedef int Token;
+		typedef std::intptr_t Token;
 		static const Token NullToken = 0;
 
 

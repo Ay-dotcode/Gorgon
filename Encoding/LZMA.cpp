@@ -49,7 +49,7 @@ namespace gge { namespace encoding {
 			throw std::runtime_error("Cannot create LZMA properties");
 		}
 
-		unsigned propsSize = LZMA_PROPS_SIZE;
+		SizeT propsSize = LZMA_PROPS_SIZE;
 		std::vector<Byte> outBuf;
 		if(UseUncompressedSize) {
 			outBuf.resize(propsSize+8);
@@ -76,7 +76,7 @@ namespace gge { namespace encoding {
 			throw std::runtime_error("Cannot encode in LZMA");
 		}
 
-		LzmaEnc_Destroy(enc, &SzAllocForLzma, &SzAllocForLzma);	
+		LzmaEnc_Destroy(enc, &SzAllocForLzma, &SzAllocForLzma);
 	}
 
 	void LZMA::decode(lzma::Reader *reader,lzma::Writer *writer,unsigned long long insize,std::function<void(lzma::Reader*,long long)> seekfn, Byte *cprops, unsigned long long fsize, LZMAProgressNotification *notifier) {

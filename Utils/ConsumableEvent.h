@@ -5,7 +5,7 @@
 //	handlers can stop chaining of the event. This system is suitable
 //	for events like mouse and keyboard events
 //	If C++0x feature lambda functionality is causing problems, define
-//	NOLAMBDA 
+//	NOLAMBDA
 
 //REQUIRES:
 //	gge::utils::SortedCollection
@@ -69,7 +69,7 @@ namespace gge { namespace utils {
 			bool enabled;
 
 			EventHandler(Any data) : data(data), enabled(true) {}
-			
+
 			virtual ~EventHandler() {}
 
 			virtual bool Fire(P_ params, O_ &caller, std::string eventname)=0;
@@ -562,7 +562,7 @@ namespace gge { namespace utils {
 		template<class O2_, class P2_> friend class ConsumableEvent;
 	public:
 
-		typedef int Token;
+		typedef std::intptr_t Token;
 		static const Token NullToken = 0;
 
 		//To be used by owner
@@ -571,31 +571,31 @@ namespace gge { namespace utils {
 		////Constructor
 		///@Name	: Name of the event
 		///@Object	: Source of the event
-		ConsumableEvent(std::string Name,O_ *Object=NULL) : 
+		ConsumableEvent(std::string Name,O_ *Object=NULL) :
 		eventname(Name), object(Object)
 		{ }
 
 		////Constructor
 		///@Name	: Name of the event
 		///@Object	: Source of the event
-		ConsumableEvent(O_ *Object=NULL) : 
+		ConsumableEvent(O_ *Object=NULL) :
 		eventname(""), object(Object)
 		{ }
 
 		////Constructor
 		///@Name	: Name of the event
 		///@Object	: Source of the event
-		ConsumableEvent(std::string Name,O_ &Object) : 
+		ConsumableEvent(std::string Name,O_ &Object) :
 		eventname(Name), object(&Object)
 		{ }
 
 		////Constructor
 		///@Name	: Name of the event
 		///@Object	: Source of the event
-		ConsumableEvent(O_ &Object) : 
+		ConsumableEvent(O_ &Object) :
 		eventname(""), object(&Object)
 		{ }
-		
+
 		void SetToken(P_ params, Token t) {
 			for(auto it=TokenList.begin(); it!=TokenList.end(); ++it) {
 				if(it->first==params) {
@@ -603,20 +603,20 @@ namespace gge { namespace utils {
 					return;
 				}
 			}
-			
+
 			TokenList.push_back(std::pair<P_, Token>(params, t));
 		}
-		
+
 		Token FindToken(P_ params) const {
 			for(auto it=TokenList.begin(); it!=TokenList.end(); ++it) {
 				if(it->first==params) {
 					return it->second;
 				}
 			}
-			
+
 			return NullToken;
 		}
-		
+
 		void RemoveToken(P_ params) {
 			for(auto it=TokenList.begin(); it!=TokenList.end(); ++it) {
 				if(it->first==params) {
@@ -633,7 +633,7 @@ namespace gge { namespace utils {
 		/// that can be used to remove this handler. The
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
-		/// handlers. Handler function template is 
+		/// handlers. Handler function template is
 		/// void Handler(Parameters params, CallerObject* object, any EventHandler<P_, O_>::data, std::string eventname)
 		///@handler	: handler function
 		///@data	: data to be passed to handler
@@ -651,7 +651,7 @@ namespace gge { namespace utils {
 		/// that can be used to remove this handler. The
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
-		/// handlers. Handler function template is 
+		/// handlers. Handler function template is
 		/// void Handler(Parameters params, CallerObject* object, any EventHandler<P_, O_>::data, std::string eventname)
 		///@handler	: handler function
 		///@data	: data to be passed to handler
@@ -673,7 +673,7 @@ namespace gge { namespace utils {
 		/// that can be used to remove this handler. The
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
-		/// handlers. Handler function full template is 
+		/// handlers. Handler function full template is
 		/// void Handler(Parameters params, CallerObject* object, any EventHandler<P_, O_>::data, std::string eventname)
 		/// EventParams parameters)
 		///@receiver: handler object
@@ -702,7 +702,7 @@ namespace gge { namespace utils {
 		/// that can be used to remove this handler. The
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
-		/// handlers. Handler function full template is 
+		/// handlers. Handler function full template is
 		/// void Handler(Parameters params, CallerObject* object, any data, std::string eventname)
 		/// EventParams parameters)
 		///@receiver: handler object
@@ -775,7 +775,7 @@ namespace gge { namespace utils {
 		Token LinkTo(ConsumableEvent<R_, P_> &target) {
 			return AddHandler(
 				prvt::consumableevent::CreateEventHandler<ConsumableEvent<R_, P_>, P_, O_>(
-					&target, 
+					&target,
 					(bool(ConsumableEvent<R_,P_>::*)(P_))&ConsumableEvent<R_, P_>::Fire,
 					Any()
 				)
@@ -786,7 +786,7 @@ namespace gge { namespace utils {
 		Token LinkTo(ConsumableEvent<R_, P_> &target, int order) {
 			return AddHandler(
 				prvt::consumableevent::CreateEventHandler<ConsumableEvent<R_, P_>, P_, O_>(
-					&target, 
+					&target,
 					(bool(ConsumableEvent<R_,P_>::*)(P_))&ConsumableEvent<R_, P_>::Fire,
 					Any()
 				),
@@ -800,28 +800,28 @@ namespace gge { namespace utils {
 			typedef bool(ConsumableEvent<R_,P_>::*TargetFire)(P_);
 
 			target.RegisterClass< ConsumableEvent<O_, P_>, MyFire >(
-				this, 
+				this,
 				(MyFire) &ConsumableEvent<R_, P_>::linkedfire,
 				NULL
 			);
 
 			return AddHandler(
 				prvt::consumableevent::CreateEventHandler<ConsumableEvent<R_, P_>, P_, O_>(
-					&target, 
+					&target,
 					(TargetFire) &ConsumableEvent<R_, P_>::linkedfire,
-					NULL							  
+					NULL
 				)
 			);
 		}
 
 		template<class R_>
-		
+
 		Token DoubleLink(ConsumableEvent<R_, P_> &target, int order) {
 			typedef bool(ConsumableEvent<O_,P_>::*MyFire	)(P_) ;
 			typedef bool(ConsumableEvent<R_,P_>::*TargetFire)(P_);
 
 			target.RegisterClass< ConsumableEvent<O_, P_>, MyFire >(
-				this, 
+				this,
 				(MyFire) &ConsumableEvent<R_, P_>::linkedfire,
 				order,
 				Any()
@@ -829,7 +829,7 @@ namespace gge { namespace utils {
 
 			return AddHandler(
 				prvt::consumableevent::CreateEventHandler<ConsumableEvent<R_, P_>, P_, O_>(
-					&target, 
+					&target,
 					(TargetFire) &ConsumableEvent<R_, P_>::linkedfire,
 					Any()
 				), order
@@ -926,7 +926,7 @@ namespace gge { namespace utils {
 
 		int GetOrder(Token token) {
 			ITEMTYPE_ *item=reinterpret_cast<ITEMTYPE_*>(token);
-			
+
 			return item->getOrder();
 		}
 
@@ -977,19 +977,19 @@ namespace gge { namespace utils {
 			return Fire(token, P_());
 		}
 
-		////This function triggers the event causing all 
+		////This function triggers the event causing all
 		/// handlers to be called
 		Token operator()(P_ params) {
 			return Fire(params);
 		}
 
-		////This function triggers the event causing all 
+		////This function triggers the event causing all
 		/// handlers to be called
 		Token operator()() {
 			return Fire();
 		}
 
-		////This function triggers the event causing all 
+		////This function triggers the event causing all
 		/// handlers to be called
 		Token Fire(P_ params) {
 			for(auto it=events.First();it.IsValid();it.Next()) {
@@ -1001,7 +1001,7 @@ namespace gge { namespace utils {
 			return 0;
 		}
 
-		////This function triggers the event causing all 
+		////This function triggers the event causing all
 		/// handlers to be called
 		Token Fire() {
 			return Fire(P_());

@@ -2,7 +2,7 @@
 //	This file allows exposing event objects. Supports multiple events
 //	to be registered, unregister and different function signatures
 //	If C++0x feature lambda functionality is causing problems, define
-//	NOLAMBDA 
+//	NOLAMBDA
 
 //REQUIRES:
 //	gge::utils::Collection
@@ -99,7 +99,7 @@ namespace gge { namespace utils {
 			EventHandler(Any data) : data(data) {}
 
 			virtual void Fire(P_ params, O_ &caller, std::string eventname) const=0;
-			
+
 			virtual ~EventHandler() {}
 		};
 
@@ -596,28 +596,28 @@ namespace gge { namespace utils {
 		////Constructor
 		///@Name	: Name of the event
 		///@Object	: Source of the event
-		EventChain(std::string Name,O_ *Object=NULL) : 
+		EventChain(std::string Name,O_ *Object=NULL) :
 		eventname(Name), object(Object)
 		{ }
 
 		////Constructor
 		///@Name	: Name of the event
 		///@Object	: Source of the event
-		EventChain(O_ *Object=NULL) : 
+		EventChain(O_ *Object=NULL) :
 		eventname(""), object(Object)
 		{ }
 
 		////Constructor
 		///@Name	: Name of the event
 		///@Object	: Source of the event
-		EventChain(std::string Name,O_ &Object) : 
+		EventChain(std::string Name,O_ &Object) :
 		eventname(Name), object(&Object)
 		{ }
 
 		////Constructor
 		///@Name	: Name of the event
 		///@Object	: Source of the event
-		EventChain(O_ &Object) : 
+		EventChain(O_ &Object) :
 		eventname(""), object(&Object)
 		{ }
 
@@ -628,7 +628,7 @@ namespace gge { namespace utils {
 		/// that can be used to remove this handler. The
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
-		/// handlers. Handler function template is 
+		/// handlers. Handler function template is
 		/// void Handler(Parameters params, CallerObject* object, any EventHandler<P_, O_>::data, std::string eventname)
 		///@handler	: handler function
 		///@data	: data to be passed to handler
@@ -649,7 +649,7 @@ namespace gge { namespace utils {
 		/// that can be used to remove this handler. The
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
-		/// handlers. Handler function full template is 
+		/// handlers. Handler function full template is
 		/// void Handler(Parameters params, CallerObject* object, any EventHandler<P_, O_>::data, std::string eventname)
 		/// EventParams parameters)
 		///@receiver: handler object
@@ -671,7 +671,7 @@ namespace gge { namespace utils {
 		/// that can be used to remove this handler. The
 		/// token is not an id or sequential number
 		/// therefore, it should not be altered to find other
-		/// handlers. Handler function full template is 
+		/// handlers. Handler function full template is
 		/// void Handler(Parameters params, CallerObject* object, any data, std::string eventname)
 		/// EventParams parameters)
 		///@receiver: handler object
@@ -713,7 +713,7 @@ namespace gge { namespace utils {
 		Token LinkTo(EventChain<R_, P_> &target) {
 			return AddHandler(
 				prvt::eventchain::CreateEventHandler<EventChain<R_, P_>, P_, O_>(
-				&target, 
+				&target,
 				(void(EventChain<R_,P_>::*)(P_))&EventChain<R_, P_>::firethis,
 				Any()
 				)
@@ -727,14 +727,14 @@ namespace gge { namespace utils {
 			typedef EventChain<R_, P_> targettype;
 
 			target.RegisterClass< EventChain<O_, P_>, MyFire >(
-				this, 
+				this,
 				(MyFire) &EventChain<O_, P_>::linkedfire<R_>,
 				Any()
 			);
 
 			return AddHandler(
 				prvt::eventchain::CreateEventHandler<EventChain<R_, P_>, P_, O_>(
-					&target, 
+					&target,
 					(TargetFire)&targettype::template linkedfire<O_>,
 					Any()
 				)
@@ -785,19 +785,19 @@ namespace gge { namespace utils {
 			events.Delete(reinterpret_cast< prvt::eventchain::EventHandler<P_,O_>* >(token));
 		}
 
-		////This function triggers the event causing all 
+		////This function triggers the event causing all
 		/// handlers to be called
 		void operator()(P_ params) const {
 			Fire(params);
 		}
 
-		////This function triggers the event causing all 
+		////This function triggers the event causing all
 		/// handlers to be called
 		void operator()() const {
 			Fire();
 		}
 
-		////This function triggers the event causing all 
+		////This function triggers the event causing all
 		/// handlers to be called
 		void firethis(P_ params) const {
 			for(auto it = events.First();
@@ -806,7 +806,7 @@ namespace gge { namespace utils {
 			}
 		}
 
-		////This function triggers the event causing all 
+		////This function triggers the event causing all
 		/// handlers to be called
 		void Fire(P_ params) const {
 			for(auto it = events.First();
@@ -815,7 +815,7 @@ namespace gge { namespace utils {
 			}
 		}
 
-		////This function triggers the event causing all 
+		////This function triggers the event causing all
 		/// handlers to be called
 		void Fire() const {
 			Fire(P_());
@@ -842,7 +842,7 @@ namespace gge { namespace utils {
 		Token AddHandler(prvt::eventchain::EventHandler<P_, O_> *object) {
 			events.Add(object);
 
-			return reinterpret_cast<int>(object);
+			return reinterpret_cast<std::intptr_t>(object);
 
 		}
 
