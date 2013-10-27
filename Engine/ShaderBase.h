@@ -12,10 +12,10 @@
 namespace gge { namespace graphics {
 
 	namespace UBOBindingPoint			{ enum Type { Resolution, }; }
-	namespace TextureUnit				{ enum Type { Diffuse, Normal, Specular, Depth }; }
+	namespace TextureUnit				{ enum Type { Diffuse, Normal, Specular, Depth, AlphaMask }; }
 
 	unsigned int						SetupUBO(int size, int binding_point);
-	void								UpdateUBO(unsigned int ubo, int size, void const * const data);	
+	void								UpdateUBO(unsigned int ubo, int size, void const * const data);
 
 	class ShaderBase
 	{
@@ -40,18 +40,18 @@ namespace gge { namespace graphics {
 		unsigned int					mFragmentShader;
 		unsigned int					mProgram;
 		explicit						ShaderBase() : mProgram(0), mVertexShader(0), mGeometryShader(0), mFragmentShader(0) { }
-		void							InitializeWithSource(const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc = "", 
+		void							InitializeWithSource(const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc = "",
 											   const std::string& geometryShaderSrc = "", const std::string& shaderDefines = "");
-		void							InitializeFromFiles(const std::string& vertexShaderName, const std::string& fragmentShaderName = "", 
+		void							InitializeFromFiles(const std::string& vertexShaderName, const std::string& fragmentShaderName = "",
 											   const std::string& geometryShaderName = "", const std::string& shaderDefines = "");
-		
+
 	private:
 		std::map<std::string, int>		mHandles;
 										ShaderBase(const ShaderBase&);
 		ShaderBase&						operator=(const ShaderBase&);
 		typedef GLuint (*InitializeShaderFunc) (GLenum, const std::string&, const std::string&);
-		void							Initialize(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader, 
+		void							Initialize(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader,
 											   const std::string& shaderDefines, InitializeShaderFunc initializeShaderFunc);
 	};
-	
+
 } }

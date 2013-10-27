@@ -35,7 +35,31 @@ namespace gge { namespace graphics {
 
 		glActiveTexture(GL_TEXTURE0 + graphics::TextureUnit::Diffuse);
 		glBindTexture(GL_TEXTURE_2D, surface.getTexture()->ID);
-		UnitQuad::Draw();	
+		UnitQuad::Draw();
+	}
+
+    template<class ShaderType>
+	void RenderSurface(const BasicSurface& surface, const std::array<TexturePosition,4>& maskTexCoords, GLuint maskTextureID)
+	{
+		ShaderType::Use();
+
+		glm::mat4 vertex_coords;
+		for (int i = 0; i < 4; ++i) vertex_coords[i] = glm::vec4(surface.VertexCoords[i].x, surface.VertexCoords[i].y, surface.VertexCoords[i].z, 1.0f);
+		vertex_coords = ProjectionMatrixStack.Top() * ModelViewMatrixStack.Top() * vertex_coords;
+		for (int i = 0; i < 4; ++i) vertex_coords[i] /= vertex_coords[i].w;
+		glm::mat4x3 vertex_coords_3d = glm::mat4x3(glm::vec3(vertex_coords[0]), glm::vec3(vertex_coords[1]), glm::vec3(vertex_coords[2]), glm::vec3(vertex_coords[3]));
+
+		glm::mat4x4 tex_coords;
+		for (int i = 0; i < 4; ++i) tex_coords[i] = glm::vec4(surface.TextureCoords[i].s, surface.TextureCoords[i].t, maskTexCoords[i].s, maskTexCoords[i].t);
+
+		ShaderType::Get().UpdateUniform("vertex_coords", vertex_coords_3d);
+		ShaderType::Get().UpdateUniform("tex_coords", tex_coords);
+
+		glActiveTexture(GL_TEXTURE0 + graphics::TextureUnit::Diffuse);
+		glBindTexture(GL_TEXTURE_2D, surface.getTexture()->ID);
+		glActiveTexture(GL_TEXTURE0 + graphics::TextureUnit::AlphaMask);
+		glBindTexture(GL_TEXTURE_2D, maskTextureID);
+		UnitQuad::Draw();
 	}
 
 	void Basic2DLayer::Draw(const GLTexture *Image, float X1, float Y1, float X2, float Y2, float X3, float Y3, float X4, float Y4) {
@@ -53,7 +77,7 @@ namespace gge { namespace graphics {
 
 		surface->VertexCoords[3].x=X4;
 		surface->VertexCoords[3].y=Y4;
-		surface->Mode=DrawMode;		
+		surface->Mode=DrawMode;
 	}
 
 	void Basic2DLayer::Draw(const GLTexture *Image, float X1, float Y1, float X2, float Y2, float X3, float Y3, float X4, float Y4,  float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) {
@@ -114,7 +138,7 @@ namespace gge { namespace graphics {
 		surface->TextureCoords[3].t=(float)H/Image->H;
 		surface->VertexCoords[3].x=X;
 		surface->VertexCoords[3].y=Y+H;
-		surface->Mode=DrawMode;		
+		surface->Mode=DrawMode;
 	}
 
 	void Basic2DLayer::DrawHTiled(const GLTexture *Image,int X,int Y,int W,int H) {
@@ -142,7 +166,7 @@ namespace gge { namespace graphics {
 		surface->TextureCoords[3].t=Image->ImageCoord[2].t;
 		surface->VertexCoords[3].x=X;
 		surface->VertexCoords[3].y=Y+H;
-		surface->Mode=DrawMode;		
+		surface->Mode=DrawMode;
 	}
 
 	void Basic2DLayer::DrawVTiled(const GLTexture *Image,int X,int Y,int W,int H) {
@@ -170,9 +194,9 @@ namespace gge { namespace graphics {
 		surface->TextureCoords[3].t=(float)H/Image->H;
 		surface->VertexCoords[3].x=X;
 		surface->VertexCoords[3].y=Y+H;
-		surface->Mode=DrawMode;		
+		surface->Mode=DrawMode;
 	}
-	
+
 	void Basic2DLayer::Render() {
 		Rectangle psc=scissors;
 		BasicSurface::DrawMode currentdrawmode=BasicSurface::Normal;
@@ -184,7 +208,7 @@ namespace gge { namespace graphics {
 		glPushMatrix();*/
 		glutil::PushStack _(ModelViewMatrixStack);
 		//glTranslatef(BoundingBox.Left, BoundingBox.Top, 0);
-		ModelViewMatrixStack.Translate(BoundingBox.Left, BoundingBox.Top, 0.0f);		
+		ModelViewMatrixStack.Translate(BoundingBox.Left, BoundingBox.Top, 0.0f);
 		translate+=BoundingBox.TopLeft();
 
 		if(ClippingEnabled) {
@@ -262,7 +286,7 @@ namespace gge { namespace graphics {
 			glVertex3fv(surface->VertexCoords[3].vect);
 			glEnd();*/
 		}
-		
+
 		if(system::OffscreenRendering) {
 			system::OffscreenRendering=false;
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -410,7 +434,7 @@ end:
 	}
 
 	void Colorizable2DLayer::DrawVTiled(const GLTexture *Image,int X,int Y,int W,int H) {
-		
+
 		ColorizableSurface *surface=Surfaces.Add();
 		surface->Color=ToRGBfloat(CurrentColor);
 
@@ -451,7 +475,7 @@ end:
 		glPushMatrix();*/
 		glutil::PushStack _(ModelViewMatrixStack);
 		//glTranslatef(BoundingBox.Left, BoundingBox.Top, 0);
-		ModelViewMatrixStack.Translate(BoundingBox.Left, BoundingBox.Top, 0.0f);		
+		ModelViewMatrixStack.Translate(BoundingBox.Left, BoundingBox.Top, 0.0f);
 		translate+=BoundingBox.TopLeft();
 
 		RGBfloat prevcolor=CurrentLayerColor;
@@ -559,7 +583,7 @@ end:
 			DumpOffscreen();
 		}
 
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);		
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		gge::shadercode::SimpleTintShader::Use();
 		gge::shadercode::SimpleTintShader::Get().UpdateUniform("tint", glm::vec4(CurrentLayerColor.r, CurrentLayerColor.g, CurrentLayerColor.b, CurrentLayerColor.a));
 		//glColor4fv(CurrentLayerColor.vect);
@@ -587,5 +611,5 @@ end:
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	}
 
-	
+
 } }

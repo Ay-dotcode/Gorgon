@@ -14,6 +14,8 @@ namespace gge { namespace shadercode {
 	extern const std::string				TransformVertSrcCode;
 	extern const std::string				SimpleFragSrcCode;
 	extern const std::string				SimpleTintFragSrcCode;
+	extern const std::string 				WidgetVertexSrcCode;
+	extern const std::string 				WidgetFragmentSrcCode;
 
 	class SimpleShader : public gge::graphics::ShaderBase
 	{
@@ -23,7 +25,7 @@ namespace gge { namespace shadercode {
 	private:
 											SimpleShader();
 	};
-		
+
 	class SimpleTintShader : public gge::graphics::ShaderBase
 	{
 	public:
@@ -31,14 +33,23 @@ namespace gge { namespace shadercode {
 		static void							Use() { Get().ShaderBase::Use(); }
 	private:
 											SimpleTintShader();
-	};	
+	};
 
 	class Shade3DShader : public gge::graphics::ShaderBase
 	{
 	public:
-		static Shade3DShader&				Get() { static Shade3DShader me; return me; }
+        static Shade3DShader&				Get() { static Shade3DShader me; return me; }
 		static void							Use() { Get().ShaderBase::Use(); }
 	private:
 											Shade3DShader();
-	};	
+	};
+
+	class WidgetShader : public gge::graphics::ShaderBase
+	{
+	public:
+	    static WidgetShader&				Get() { static WidgetShader me; return me; }
+        static void							Use() { Get().ShaderBase::Use(); }
+	private:
+											WidgetShader();
+	};
 } }

@@ -2,10 +2,10 @@
 
 #include "ShaderCode.h"
 
-namespace gge { namespace shadercode {	
+namespace gge { namespace shadercode {
 
 	SimpleShader::SimpleShader()
-	{ 
+	{
 		InitializeWithSource(TransformVertSrcCode, SimpleFragSrcCode);
 
 		LocateUniform("vertex_coords");
@@ -13,9 +13,9 @@ namespace gge { namespace shadercode {
 		LocateUniform("diffuse");
 		UpdateUniform("diffuse", graphics::TextureUnit::Diffuse);
 	}
-	
+
 	SimpleTintShader::SimpleTintShader()
-	{ 
+	{
 		InitializeWithSource(TransformVertSrcCode, SimpleTintFragSrcCode);
 
 		LocateUniform("vertex_coords");
@@ -26,7 +26,7 @@ namespace gge { namespace shadercode {
 	}
 
 	Shade3DShader::Shade3DShader()
-	{ 
+	{
 		InitializeFromFiles("transform3D.vert", "shade3D.frag");
 
 		LocateUniform("vertex_coords");
@@ -35,7 +35,7 @@ namespace gge { namespace shadercode {
 
 		LocateUniform("diffuse_tex");
 		LocateUniform("normal_tex");
-		LocateUniform("depth_tex");	
+		LocateUniform("depth_tex");
 
 		LocateUniform("point_light.intensity");
 		LocateUniform("point_light.position");
@@ -48,10 +48,22 @@ namespace gge { namespace shadercode {
 		UpdateUniform("depth_tex",		graphics::TextureUnit::Depth);
 	}
 
+	WidgetShader::WidgetShader()
+	{
+	    InitializeWithSource(WidgetVertexSrcCode, WidgetFragmentSrcCode);
+
+	    LocateUniform("vertex_coords");
+		LocateUniform("tex_coords");
+		LocateUniform("diffuse");
+		LocateUniform("mask");
+		UpdateUniform("diffuse", graphics::TextureUnit::Diffuse);
+		UpdateUniform("mask", graphics::TextureUnit::AlphaMask);
+	}
+
 
 	const std::string TransformVertSrcCode = "											\n\
 #version 130																			\n\
-attribute int vertex_index;												\n\
+in int vertex_index;																	\n\
 																						\n\
 uniform mat4x3 vertex_coords;															\n\
 uniform mat4x2 tex_coords;																\n\
@@ -90,6 +102,40 @@ out vec4 output_color; 																	\n\
 void main() 																			\n\
 { 																						\n\
     output_color = texture(diffuse, texcoord) * tint; 									\n\
-}\n";
+}";
+
+    const std::string WidgetVertexSrcCode = "                                           \n\
+#version 130																		    \n\
+in int vertex_index;																	\n\
+																						\n\
+uniform mat4x3 vertex_coords;                                                           \n\
+uniform mat4x4 tex_coords;															    \n\
+                                                                                        \n\
+out vec2 diffuse_texcoord;														        \n\
+out vec2 mask_texcoord;                                                                 \n\
+                                                                                        \n\
+void main()																			    \n\
+{							                                                            \n\
+	gl_Position = vec4(vertex_coords[vertex_index], 1.0f);							    \n\
+    vec4 coords = tex_coords[vertex_index];                                             \n\
+    diffuse_texcoord = coords.xy;                                                       \n\
+    mask_texcoord    = coords.zw;                                                       \n\
+}";
+
+    const std::string WidgetFragmentSrcCode = "                                         \n\
+#version 130 													                        \n\
+ 																						\n\
+in vec2 diffuse_texcoord;                                                               \n\
+in vec2 mask_texcoord;                                                                  \n\
+                                                                                        \n\
+uniform sampler2D diffuse; 															    \n\
+uniform sampler2D mask; 																\n\
+                                                                                        \n\
+out vec4 output_color; 																    \n\
+                                                                                        \n\
+void main() 																	        \n\
+{ 																		                \n\
+    output_color = vec4(texture(diffuse, diffuse_texcoord).rgb, texture(mask, mask_texcoord).a); \n\
+}";
 
 } }

@@ -462,8 +462,8 @@ namespace gge { namespace graphics {
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBTexture, 0);
 
-			//GLenum status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
+			GLenum status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			log << "Framebuffer status: " << status << '\n';
 			system::SetRenderTarget(0);
 		}
 	}
