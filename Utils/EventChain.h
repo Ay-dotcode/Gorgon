@@ -842,7 +842,7 @@ namespace gge { namespace utils {
 		Token AddHandler(prvt::eventchain::EventHandler<P_, O_> *object) {
 			events.Add(object);
 
-			return reinterpret_cast<std::intptr_t>(object);
+			return reinterpret_cast<Token>(object);
 
 		}
 

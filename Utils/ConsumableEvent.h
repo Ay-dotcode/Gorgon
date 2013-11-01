@@ -562,7 +562,11 @@ namespace gge { namespace utils {
 		template<class O2_, class P2_> friend class ConsumableEvent;
 	public:
 
+#ifdef LINUX
 		typedef std::intptr_t Token;
+#else
+		typedef int Token;
+#endif
 		static const Token NullToken = 0;
 
 		//To be used by owner
