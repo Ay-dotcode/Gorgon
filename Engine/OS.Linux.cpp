@@ -711,7 +711,6 @@ static const int None=0;
 			
 			//!Show
 			WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool Show, bool &FullScreen) {
-				//TODO: handle icon
 				XSetWindowAttributes attributes; 
 				int screen;
 				int depth; 
@@ -769,8 +768,10 @@ static const int None=0;
 				}
 
 				
-				XMapWindow(display,windowhandle);
-				XIfEvent(display, &event, system::WaitForMapNotify, (char*)windowhandle);
+				if(Show) {
+					XMapWindow(display,windowhandle);
+					XIfEvent(display, &event, system::WaitForMapNotify, (char*)windowhandle);
+				}
 				
 				system::XdndInit();
 		
@@ -778,8 +779,18 @@ static const int None=0;
 				return (WindowHandle)windowhandle;
 			}
 
-			void Hide(WindowHandle) {}
-			void Show(WindowHandle) {}
+			void Hide(WindowHandle h) {
+				XUnmapWindow(display, h);
+			}
+			void Show(WindowHandle h) {
+				XEvent event;
+
+				XMapWindow(display, h);
+				XFlush(display);
+				XIfEvent(display, &event, system::WaitForMapNotify, (char*)h);
+				XRaiseWindow(display, h);
+				XFlush(display);
+			}
 
 			void MoveWindow(WindowHandle h, utils::Point p) {
 				XMoveWindow(display, h, p.x, p.y);

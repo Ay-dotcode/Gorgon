@@ -89,7 +89,7 @@ namespace gge {
 		FontRenderer *getRenderer();
 	protected:
 	};
-
+	
 	class FontInitiator {
 	public:
 		FontInitiator() : file(NULL) { }

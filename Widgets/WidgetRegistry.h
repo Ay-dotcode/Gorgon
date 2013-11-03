@@ -325,6 +325,19 @@ namespace gge { namespace widgets {
 					throw std::runtime_error("Cannot find item and no fallback is supplied");
 				}
 			}
+			
+			typename std::map<std::string, T_&>::iterator begin() {
+				return parent.begin();
+			}
+			
+			typename std::map<std::string, T_&>::iterator end() {
+				return parent.end();
+			}
+			
+			
+			int GetCount() const {
+				return parent.size();
+			}
 
 			bool Exists(const std::string &key) const { return parent.count(key)>0; }
 		protected:
