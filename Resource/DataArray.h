@@ -7,6 +7,7 @@
 #include "../Engine/Font.h"
 
 #include <stdexcept>
+#include "../Utils/OrderedCollection.h"
 
 namespace gge { namespace resource {
 	class File;
@@ -203,7 +204,7 @@ namespace gge { namespace resource {
 		friend DataArray *LoadDataResource(File &File, std::istream &Data, int Size);
 	public:
 		////Data collection
-		utils::Collection<IData> Data;
+		utils::OrderedCollection<IData> Data;
 
 		////Adds a new integer value to this resource
 		IntegerData		&Add(int value);

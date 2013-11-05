@@ -145,7 +145,7 @@ namespace gge { namespace resource {
 	}
 
 	void DataArray::Prepare( GGEMain &main, File &file ) {
-		for(utils::Collection<IData>::Iterator i=Data.First();i.IsValid();i.Next()) 
+		for(utils::OrderedCollection<IData>::Iterator i=Data.First();i.IsValid();i.Next()) 
 			i->Prepare(file);
 	}
 
