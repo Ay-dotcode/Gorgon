@@ -218,7 +218,7 @@ namespace gge { namespace widgets {
 				friend class Basic;
 				friend class gge::utils::IteratorBase<Iterator<Ty_, Ac_>, Ty_>;
 			public:
-				Iterator(const Iterator &it) : listbox(it->listbox), index(it->index) {
+				Iterator(const Iterator &it) : listbox(it.listbox), index(it.index) {
 				}
 
 				Iterator() : listbox(NULL), index(0) {
