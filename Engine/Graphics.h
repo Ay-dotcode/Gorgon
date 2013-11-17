@@ -432,6 +432,52 @@ namespace gge { namespace graphics {
 		////Ending value
 		RGBint to;
 	};
+	
+	class TextureAttachment {
+	public:
+		////Coordinates of texture rectangle
+		TexturePosition *TextureCoords;
+		////Whether this surface has its own texture coordinates
+		bool HasOwnTextureCoords;
+		const GLTexture *Texture;
+		
+		TextureAttachment() : HasOwnTextureCoords(false), TextureCoords(NULL), Texture(NULL) {}
+
+		////Deletes texture coordinate information
+		void DeleteTextureCoords() {
+			if(HasOwnTextureCoords) {
+				HasOwnTextureCoords=false;
+				delete[] TextureCoords;
+			}
+		}
+
+		////Changes current texture to the given one
+		void SetTexture(const GLTexture *texture) {
+			DeleteTextureCoords();
+
+			this->Texture=texture;
+			TextureCoords=const_cast<TexturePosition*>((const TexturePosition*)texture->ImageCoord);
+		}
+
+		////Returns current texture
+		const GLTexture *GetTexture() const {
+			return Texture;
+		}
+
+		////Creates texture coordinate information,
+		/// should be called before modifying texture
+		/// coordinates
+		void CreateTextureCoords() {
+			if(!HasOwnTextureCoords) {
+				HasOwnTextureCoords=true;
+				TextureCoords=new TexturePosition[4];
+			}
+		}
+		
+		~TextureAttachment() {
+			DeleteTextureCoords();
+		}
+	};
 
 	////This class can be used to store basic surface information.
 	/// It has also support for modifiable texture coordinates.
@@ -442,18 +488,20 @@ namespace gge { namespace graphics {
 		////Coordinates of texture rectangle
 		TexturePosition *TextureCoords;
 		////Whether this surface has its own texture coordinates
-		bool hasOwnTextureCoords;
+		bool HasOwnTextureCoords;
 
 		enum DrawMode {
 			Normal,
 			OffscreenAlphaOnly,
-			Offscreen
+			Offscreen,
+			SetAlpha
 		} Mode;
 
 		////Empty constructor
 		BasicSurface() : Mode(Normal) {
 			Texture=NULL;
-			hasOwnTextureCoords=false;
+			Alpha=NULL;
+			HasOwnTextureCoords=false;
 			TextureCoords=NULL;
 			VertexCoords[0].z=0;
 			VertexCoords[1].z=0;
@@ -466,27 +514,32 @@ namespace gge { namespace graphics {
 			this->Texture=texture;
 			TextureCoords=texture->ImageCoord;
 
-			hasOwnTextureCoords=false;
+			HasOwnTextureCoords=false;
 		}
 
 		////Deletes texture coordinate information
 		void DeleteTextureCoords() {
-			if(hasOwnTextureCoords) {
-				hasOwnTextureCoords=false;
+			if(HasOwnTextureCoords) {
+				HasOwnTextureCoords=false;
 				delete[] TextureCoords;
 			}
 		}
 
 		////Changes current texture to the given one
-		void setTexture(const GLTexture *texture) {
+		void SetTexture(const GLTexture *texture) {
 			DeleteTextureCoords();
 
 			this->Texture=texture;
 			TextureCoords=const_cast<TexturePosition*>((const TexturePosition*)texture->ImageCoord);
+			
+			if(Alpha) {
+				delete Alpha;
+				Alpha=NULL;
+			}
 		}
 
 		////Returns current texture
-		const GLTexture *getTexture() const {
+		const GLTexture *GetTexture() const {
 			return Texture;
 		}
 
@@ -494,17 +547,20 @@ namespace gge { namespace graphics {
 		/// should be called before modifying texture
 		/// coordinates
 		void CreateTextureCoords() {
-			if(!hasOwnTextureCoords) {
-				hasOwnTextureCoords=true;
+			if(!HasOwnTextureCoords) {
+				HasOwnTextureCoords=true;
 				TextureCoords=new TexturePosition[4];
 			}
 		}
 
 		////Clears any unneeded data
 		~BasicSurface() {
-			if(hasOwnTextureCoords && TextureCoords)
+			if(HasOwnTextureCoords && TextureCoords)
 				delete[] TextureCoords;
 		}
+		
+		TextureAttachment *Alpha;
+		
 	protected:
 		////The texture to be used
 		const GLTexture *Texture;

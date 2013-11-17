@@ -86,6 +86,7 @@ typedef ptrdiff_t						GLintptr;
 #endif
 
 #ifndef LINUX
+typedef void 		(APIENTRYP PFNGLDRAWBUFFERSPROC) 				(GLsizei n, GLenum *bufs);
 typedef GLint		(APIENTRYP PFNGLGETATTRIBLOCATIONPROC)			(GLuint program, const GLchar *name);
 typedef void		(APIENTRYP PFNGLBINDATTRIBLOCATIONPROC)			(GLuint program, GLuint index, const GLchar * name); 
 typedef void		(APIENTRYP PFNGLACTIVETEXTUREPROC)				(GLenum texture);
@@ -140,6 +141,7 @@ typedef void		(APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC)		(GLuint index, GLint si
 extern PFNGLACTIVETEXTUREPROC					glActiveTexture;
 #endif
 
+extern PFNGLDRAWBUFFERSPROC 					glDrawBuffers;
 extern PFNGLGETATTRIBLOCATIONPROC				glGetAttribLocation;
 extern PFNGLBINDATTRIBLOCATIONPROC				glBindAttribLocation;
 extern PFNGLATTACHSHADERPROC					glAttachShader;

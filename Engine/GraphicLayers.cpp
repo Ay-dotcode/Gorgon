@@ -34,12 +34,12 @@ namespace gge { namespace graphics {
 		ShaderType::Get().UpdateUniform("tex_coords", tex_coords);
 
 		glActiveTexture(GL_TEXTURE0 + graphics::TextureUnit::Diffuse);
-		glBindTexture(GL_TEXTURE_2D, surface.getTexture()->ID);
+		glBindTexture(GL_TEXTURE_2D, surface.GetTexture()->ID);
 		UnitQuad::Draw();
 	}
 
     template<class ShaderType>
-	void RenderSurface(const BasicSurface& surface, const std::array<TexturePosition,4>& maskTexCoords, GLuint maskTextureID)
+	void RenderSurface(const BasicSurface& surface, TexturePosition *maskTexCoords, GLuint maskTextureID)
 	{
 		ShaderType::Use();
 
@@ -56,145 +56,116 @@ namespace gge { namespace graphics {
 		ShaderType::Get().UpdateUniform("tex_coords", tex_coords);
 
 		glActiveTexture(GL_TEXTURE0 + graphics::TextureUnit::Diffuse);
-		glBindTexture(GL_TEXTURE_2D, surface.getTexture()->ID);
-		glActiveTexture(GL_TEXTURE0 + graphics::TextureUnit::AlphaMask);
+		glBindTexture(GL_TEXTURE_2D, surface.GetTexture()->ID);
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, maskTextureID);
 		UnitQuad::Draw();
 	}
 
 	void Basic2DLayer::Draw(const GLTexture *Image, float X1, float Y1, float X2, float Y2, float X3, float Y3, float X4, float Y4) {
-		BasicSurface *surface=Surfaces.Add();
+		if(DrawMode==BasicSurface::SetAlpha && Surfaces.GetCount()) {
+			BasicSurface *surface=Surfaces[Surfaces.GetCount()-1];
+			
+			surface->Alpha=new TextureAttachment;
+			surface->Alpha->SetTexture(Image);
+			if(surface->GetTexture()->W!=Image->W || surface->GetTexture()->H!=Image->H) {
+				surface->Alpha->CreateTextureCoords();
+				
+				surface->Alpha->TextureCoords[0].s=0;
+				surface->Alpha->TextureCoords[0].t=0;
+				surface->Alpha->TextureCoords[1].s=(float)surface->GetTexture()->W/Image->W;
+				surface->Alpha->TextureCoords[1].t=0;
+				surface->Alpha->TextureCoords[2].s=0;
+				surface->Alpha->TextureCoords[2].t=(float)surface->GetTexture()->H/Image->H;
+				surface->Alpha->TextureCoords[3].s=(float)surface->GetTexture()->W/Image->W;
+				surface->Alpha->TextureCoords[3].t=(float)surface->GetTexture()->H/Image->H;
+			}
+		}
+		else {
+			BasicSurface *surface=Surfaces.Add();
 
-		surface->setTexture(Image);
-		surface->VertexCoords[0].x=X1;
-		surface->VertexCoords[0].y=Y1;
+			surface->SetTexture(Image);
+			surface->VertexCoords[0].x=X1;
+			surface->VertexCoords[0].y=Y1;
 
-		surface->VertexCoords[1].x=X2;
-		surface->VertexCoords[1].y=Y2;
+			surface->VertexCoords[1].x=X2;
+			surface->VertexCoords[1].y=Y2;
 
-		surface->VertexCoords[2].x=X3;
-		surface->VertexCoords[2].y=Y3;
+			surface->VertexCoords[2].x=X3;
+			surface->VertexCoords[2].y=Y3;
 
-		surface->VertexCoords[3].x=X4;
-		surface->VertexCoords[3].y=Y4;
-		surface->Mode=DrawMode;
+			surface->VertexCoords[3].x=X4;
+			surface->VertexCoords[3].y=Y4;
+			surface->Mode=DrawMode;
+		}
 	}
 
 	void Basic2DLayer::Draw(const GLTexture *Image, float X1, float Y1, float X2, float Y2, float X3, float Y3, float X4, float Y4,  float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) {
-		BasicSurface *surface=Surfaces.Add();
+		if(DrawMode==BasicSurface::SetAlpha && Surfaces.GetCount()) {
+			BasicSurface *surface=Surfaces[Surfaces.GetCount()-1];
+			
+			surface->Alpha=new TextureAttachment;
+			surface->Alpha->SetTexture(Image);
+			
+			surface->Alpha->CreateTextureCoords();
 
-		surface->setTexture(Image);
-		surface->VertexCoords[0].x=X1;
-		surface->VertexCoords[0].y=Y1;
+			float w=Image->W, h=Image->H;
+			surface->Alpha->TextureCoords[0].s=S1/w;
+			surface->Alpha->TextureCoords[0].t=U1/h;
 
-		surface->VertexCoords[1].x=X2;
-		surface->VertexCoords[1].y=Y2;
+			surface->Alpha->TextureCoords[1].s=S2/w;
+			surface->Alpha->TextureCoords[1].t=U2/h;
 
-		surface->VertexCoords[2].x=X3;
-		surface->VertexCoords[2].y=Y3;
+			surface->Alpha->TextureCoords[2].s=S3/w;
+			surface->Alpha->TextureCoords[2].t=U3/h;
 
-		surface->VertexCoords[3].x=X4;
-		surface->VertexCoords[3].y=Y4;
+			surface->Alpha->TextureCoords[3].s=S4/w;
+			surface->Alpha->TextureCoords[3].t=U4/h;
+			}
+		else {
+			BasicSurface *surface=Surfaces.Add();
 
-		surface->CreateTextureCoords();
+			surface->SetTexture(Image);
+			surface->VertexCoords[0].x=X1;
+			surface->VertexCoords[0].y=Y1;
 
-		float w=Image->W, h=Image->H;
-		surface->TextureCoords[0].s=S1/w;
-		surface->TextureCoords[0].t=U1/h;
+			surface->VertexCoords[1].x=X2;
+			surface->VertexCoords[1].y=Y2;
 
-		surface->TextureCoords[1].s=S2/w;
-		surface->TextureCoords[1].t=U2/h;
+			surface->VertexCoords[2].x=X3;
+			surface->VertexCoords[2].y=Y3;
 
-		surface->TextureCoords[2].s=S3/w;
-		surface->TextureCoords[2].t=U3/h;
+			surface->VertexCoords[3].x=X4;
+			surface->VertexCoords[3].y=Y4;
 
-		surface->TextureCoords[3].s=S4/w;
-		surface->TextureCoords[3].t=U4/h;
-		surface->Mode=DrawMode;
+			surface->CreateTextureCoords();
+
+			float w=Image->W, h=Image->H;
+			surface->TextureCoords[0].s=S1/w;
+			surface->TextureCoords[0].t=U1/h;
+
+			surface->TextureCoords[1].s=S2/w;
+			surface->TextureCoords[1].t=U2/h;
+
+			surface->TextureCoords[2].s=S3/w;
+			surface->TextureCoords[2].t=U3/h;
+
+			surface->TextureCoords[3].s=S4/w;
+			surface->TextureCoords[3].t=U4/h;
+			surface->Mode=DrawMode;
+		}
 	}
 
 	void Basic2DLayer::DrawTiled(const GLTexture *Image,int X,int Y,int W,int H) {
-		BasicSurface *surface=Surfaces.Add();
-
-		surface->setTexture(Image);
-		surface->CreateTextureCoords();
-
-		surface->TextureCoords[0].s=0;
-		surface->TextureCoords[0].t=0;
-		surface->VertexCoords[0].x=X;
-		surface->VertexCoords[0].y=Y;
-
-		surface->TextureCoords[1].s=(float)W/Image->W;
-		surface->TextureCoords[1].t=0;
-		surface->VertexCoords[1].x=X+W;
-		surface->VertexCoords[1].y=Y;
-
-		surface->TextureCoords[2].s=(float)W/Image->W;
-		surface->TextureCoords[2].t=(float)H/Image->H;
-		surface->VertexCoords[2].x=X+W;
-		surface->VertexCoords[2].y=Y+H;
-
-		surface->TextureCoords[3].s=0;
-		surface->TextureCoords[3].t=(float)H/Image->H;
-		surface->VertexCoords[3].x=X;
-		surface->VertexCoords[3].y=Y+H;
-		surface->Mode=DrawMode;
+		Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H, 0,0, W,0, W,H, 0,H);
 	}
 
 	void Basic2DLayer::DrawHTiled(const GLTexture *Image,int X,int Y,int W,int H) {
-		BasicSurface *surface=Surfaces.Add();
-
-		surface->setTexture(Image);
-		surface->CreateTextureCoords();
-
-		surface->TextureCoords[0].s=0;
-		surface->TextureCoords[0].t=0;
-		surface->VertexCoords[0].x=X;
-		surface->VertexCoords[0].y=Y;
-
-		surface->TextureCoords[1].s=(float)W/Image->W;
-		surface->TextureCoords[1].t=0;
-		surface->VertexCoords[1].x=X+W;
-		surface->VertexCoords[1].y=Y;
-
-		surface->TextureCoords[2].s=(float)W/Image->W;
-		surface->TextureCoords[2].t=Image->ImageCoord[2].t;
-		surface->VertexCoords[2].x=X+W;
-		surface->VertexCoords[2].y=Y+H;
-
-		surface->TextureCoords[3].s=0;
-		surface->TextureCoords[3].t=Image->ImageCoord[2].t;
-		surface->VertexCoords[3].x=X;
-		surface->VertexCoords[3].y=Y+H;
-		surface->Mode=DrawMode;
+		Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H, 0,0, W,0, W,Image->H, 0,Image->H);
 	}
 
 	void Basic2DLayer::DrawVTiled(const GLTexture *Image,int X,int Y,int W,int H) {
-		BasicSurface *surface=Surfaces.Add();
-
-		surface->setTexture(Image);
-		surface->CreateTextureCoords();
-
-		surface->TextureCoords[0].s=0;
-		surface->TextureCoords[0].t=0;
-		surface->VertexCoords[0].x=X;
-		surface->VertexCoords[0].y=Y;
-
-		surface->TextureCoords[1].s=Image->ImageCoord[1].s;
-		surface->TextureCoords[1].t=0;
-		surface->VertexCoords[1].x=X+W;
-		surface->VertexCoords[1].y=Y;
-
-		surface->TextureCoords[2].s=Image->ImageCoord[2].s;
-		surface->TextureCoords[2].t=(float)H/Image->H;
-		surface->VertexCoords[2].x=X+W;
-		surface->VertexCoords[2].y=Y+H;
-
-		surface->TextureCoords[3].s=0;
-		surface->TextureCoords[3].t=(float)H/Image->H;
-		surface->VertexCoords[3].x=X;
-		surface->VertexCoords[3].y=Y+H;
-		surface->Mode=DrawMode;
+		Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H, 0,0, Image->W,0, Image->W,H, 0,H);
 	}
 
 	void Basic2DLayer::Render() {
@@ -251,7 +222,6 @@ namespace gge { namespace graphics {
 					if(!system::OffscreenRendering) {
 						system::SetRenderTarget(FrameBuffer);
 						glClearColor(0,0,0,0);
-						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 						glClear(GL_COLOR_BUFFER_BIT);
 						glClearColor(0,0,0,1);
 
@@ -273,18 +243,12 @@ namespace gge { namespace graphics {
 				}
 
 			}
-			RenderSurface<gge::shadercode::SimpleShader>(*surface);
-			/*glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
-			glBegin(GL_QUADS);
-			glTexCoord2fv(surface->TextureCoords[0].vect);
-			glVertex3fv(surface->VertexCoords[0].vect);
-			glTexCoord2fv(surface->TextureCoords[1].vect);
-			glVertex3fv(surface->VertexCoords[1].vect);
-			glTexCoord2fv(surface->TextureCoords[2].vect);
-			glVertex3fv(surface->VertexCoords[2].vect);
-			glTexCoord2fv(surface->TextureCoords[3].vect);
-			glVertex3fv(surface->VertexCoords[3].vect);
-			glEnd();*/
+			if(surface->Alpha) {
+				RenderSurface<gge::shaders::MaskedShader>(*surface, surface->Alpha->TextureCoords, surface->Alpha->GetTexture()->ID);
+			}
+			else {
+				RenderSurface<gge::shaders::SimpleShader>(*surface);
+			}
 		}
 
 		if(system::OffscreenRendering) {
@@ -321,146 +285,113 @@ end:
 
 
 	void Colorizable2DLayer::Draw(const GLTexture *Image, float X1, float Y1, float X2, float Y2, float X3, float Y3, float X4, float Y4) {
-		ColorizableSurface *surface=Surfaces.Add();
+		if(DrawMode==BasicSurface::SetAlpha && Surfaces.GetCount()) {
+			ColorizableSurface *surface=Surfaces[Surfaces.GetCount()-1];
+			
+			surface->Alpha=new TextureAttachment;
+			surface->Alpha->SetTexture(Image);
+			if(surface->GetTexture()->W!=Image->W || surface->GetTexture()->H!=Image->H) {
+				surface->Alpha->CreateTextureCoords();
+				
+				surface->Alpha->TextureCoords[0].s=0;
+				surface->Alpha->TextureCoords[0].t=0;
+				surface->Alpha->TextureCoords[1].s=(float)surface->GetTexture()->W/Image->W;
+				surface->Alpha->TextureCoords[1].t=0;
+				surface->Alpha->TextureCoords[2].s=0;
+				surface->Alpha->TextureCoords[2].t=(float)surface->GetTexture()->H/Image->H;
+				surface->Alpha->TextureCoords[3].s=(float)surface->GetTexture()->W/Image->W;
+				surface->Alpha->TextureCoords[3].t=(float)surface->GetTexture()->H/Image->H;
+			}
+		}
+		else {
+			ColorizableSurface *surface=Surfaces.Add();
 
-		surface->setTexture(Image);
-		surface->VertexCoords[0].x=X1;
-		surface->VertexCoords[0].y=Y1;
+			surface->SetTexture(Image);
+			surface->VertexCoords[0].x=X1;
+			surface->VertexCoords[0].y=Y1;
 
-		surface->VertexCoords[1].x=X2;
-		surface->VertexCoords[1].y=Y2;
+			surface->VertexCoords[1].x=X2;
+			surface->VertexCoords[1].y=Y2;
 
-		surface->VertexCoords[2].x=X3;
-		surface->VertexCoords[2].y=Y3;
+			surface->VertexCoords[2].x=X3;
+			surface->VertexCoords[2].y=Y3;
 
-		surface->VertexCoords[3].x=X4;
-		surface->VertexCoords[3].y=Y4;
-
-		surface->Color=ToRGBfloat(CurrentColor);
-		surface->Mode=DrawMode;
+			surface->VertexCoords[3].x=X4;
+			surface->VertexCoords[3].y=Y4;
+			
+			surface->Color=ToRGBfloat(CurrentColor);
+			surface->Mode=DrawMode;
+		}
 	}
 
 	void Colorizable2DLayer::Draw(const GLTexture *Image, float X1, float Y1, float X2, float Y2, float X3, float Y3, float X4, float Y4,  float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4) {
-		ColorizableSurface *surface=Surfaces.Add();
+		if(DrawMode==BasicSurface::SetAlpha && Surfaces.GetCount()) {
+			ColorizableSurface *surface=Surfaces[Surfaces.GetCount()-1];
+			
+			surface->Alpha=new TextureAttachment;
+			surface->Alpha->SetTexture(Image);
+			
+			surface->Alpha->CreateTextureCoords();
 
-		surface->setTexture(Image);
-		surface->VertexCoords[0].x=X1;
-		surface->VertexCoords[0].y=Y1;
+			float w=Image->W, h=Image->H;
+			surface->Alpha->TextureCoords[0].s=S1/w;
+			surface->Alpha->TextureCoords[0].t=U1/h;
 
-		surface->VertexCoords[1].x=X2;
-		surface->VertexCoords[1].y=Y2;
+			surface->Alpha->TextureCoords[1].s=S2/w;
+			surface->Alpha->TextureCoords[1].t=U2/h;
 
-		surface->VertexCoords[2].x=X3;
-		surface->VertexCoords[2].y=Y3;
+			surface->Alpha->TextureCoords[2].s=S3/w;
+			surface->Alpha->TextureCoords[2].t=U3/h;
 
-		surface->VertexCoords[3].x=X4;
-		surface->VertexCoords[3].y=Y4;
+			surface->Alpha->TextureCoords[3].s=S4/w;
+			surface->Alpha->TextureCoords[3].t=U4/h;
+			}
+		else {
+			ColorizableSurface *surface=Surfaces.Add();
 
-		surface->CreateTextureCoords();
+			surface->SetTexture(Image);
+			surface->VertexCoords[0].x=X1;
+			surface->VertexCoords[0].y=Y1;
 
-		float w=Image->W, h=Image->H;
-		surface->TextureCoords[0].s=S1/w;
-		surface->TextureCoords[0].t=U1/h;
+			surface->VertexCoords[1].x=X2;
+			surface->VertexCoords[1].y=Y2;
 
-		surface->TextureCoords[1].s=S2/w;
-		surface->TextureCoords[1].t=U2/h;
+			surface->VertexCoords[2].x=X3;
+			surface->VertexCoords[2].y=Y3;
 
-		surface->TextureCoords[2].s=S3/w;
-		surface->TextureCoords[2].t=U3/h;
+			surface->VertexCoords[3].x=X4;
+			surface->VertexCoords[3].y=Y4;
 
-		surface->TextureCoords[3].s=S4/w;
-		surface->TextureCoords[3].t=U4/h;
+			surface->CreateTextureCoords();
 
-		surface->Color=ToRGBfloat(CurrentColor);
-		surface->Mode=DrawMode;
+			float w=Image->W, h=Image->H;
+			surface->TextureCoords[0].s=S1/w;
+			surface->TextureCoords[0].t=U1/h;
+
+			surface->TextureCoords[1].s=S2/w;
+			surface->TextureCoords[1].t=U2/h;
+
+			surface->TextureCoords[2].s=S3/w;
+			surface->TextureCoords[2].t=U3/h;
+
+			surface->TextureCoords[3].s=S4/w;
+			surface->TextureCoords[3].t=U4/h;
+
+			surface->Color=ToRGBfloat(CurrentColor);
+			surface->Mode=DrawMode;
+		}
 	}
 
 	void Colorizable2DLayer::DrawTiled(const GLTexture *Image,int X,int Y,int W,int H) {
-		ColorizableSurface *surface=Surfaces.Add();
-		surface->Color=ToRGBfloat(CurrentColor);
-
-		surface->setTexture(Image);
-		surface->CreateTextureCoords();
-
-		surface->TextureCoords[0].s=0;
-		surface->TextureCoords[0].t=0;
-		surface->VertexCoords[0].x=X;
-		surface->VertexCoords[0].y=Y;
-
-		surface->TextureCoords[1].s=(float)W/Image->W;
-		surface->TextureCoords[1].t=0;
-		surface->VertexCoords[1].x=X+W;
-		surface->VertexCoords[1].y=Y;
-
-		surface->TextureCoords[2].s=(float)W/Image->W;
-		surface->TextureCoords[2].t=(float)H/Image->H;
-		surface->VertexCoords[2].x=X+W;
-		surface->VertexCoords[2].y=Y+H;
-
-		surface->TextureCoords[3].s=0;
-		surface->TextureCoords[3].t=(float)H/Image->H;
-		surface->VertexCoords[3].x=X;
-		surface->VertexCoords[3].y=Y+H;
-		surface->Mode=DrawMode;
+		Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H, 0,0, W,0, W,H, 0,H);
 	}
 
 	void Colorizable2DLayer::DrawHTiled(const GLTexture *Image,int X,int Y,int W,int H) {
-			ColorizableSurface *surface=Surfaces.Add();
-		surface->Color=ToRGBfloat(CurrentColor);
-
-		surface->setTexture(Image);
-		surface->CreateTextureCoords();
-
-		surface->TextureCoords[0].s=0;
-		surface->TextureCoords[0].t=0;
-		surface->VertexCoords[0].x=X;
-		surface->VertexCoords[0].y=Y;
-
-		surface->TextureCoords[1].s=(float)W/Image->W;
-		surface->TextureCoords[1].t=0;
-		surface->VertexCoords[1].x=X+W;
-		surface->VertexCoords[1].y=Y;
-
-		surface->TextureCoords[2].s=(float)W/Image->W;
-		surface->TextureCoords[2].t=1;
-		surface->VertexCoords[2].x=X+W;
-		surface->VertexCoords[2].y=Y+H;
-
-		surface->TextureCoords[3].s=0;
-		surface->TextureCoords[3].t=1;
-		surface->VertexCoords[3].x=X;
-		surface->VertexCoords[3].y=Y+H;
-		surface->Mode=DrawMode;
+		Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H, 0,0, W,0, W,Image->H, 0,Image->H);
 	}
 
 	void Colorizable2DLayer::DrawVTiled(const GLTexture *Image,int X,int Y,int W,int H) {
-
-		ColorizableSurface *surface=Surfaces.Add();
-		surface->Color=ToRGBfloat(CurrentColor);
-
-		surface->setTexture(Image);
-		surface->CreateTextureCoords();
-
-		surface->TextureCoords[0].s=0;
-		surface->TextureCoords[0].t=0;
-		surface->VertexCoords[0].x=X;
-		surface->VertexCoords[0].y=Y;
-
-		surface->TextureCoords[1].s=1;
-		surface->TextureCoords[1].t=0;
-		surface->VertexCoords[1].x=X+W;
-		surface->VertexCoords[1].y=Y;
-
-		surface->TextureCoords[2].s=1;
-		surface->TextureCoords[2].t=(float)H/Image->H;
-		surface->VertexCoords[2].x=X+W;
-		surface->VertexCoords[2].y=Y+H;
-
-		surface->TextureCoords[3].s=0;
-		surface->TextureCoords[3].t=(float)H/Image->H;
-		surface->VertexCoords[3].x=X;
-		surface->VertexCoords[3].y=Y+H;
-		surface->Mode=DrawMode;
+		Draw(Image, X,Y, X+W,Y, X+W,Y+H, X,Y+H, 0,0, Image->W,0, Image->W,H, 0,H);
 	}
 
 	void Colorizable2DLayer::Render() {
@@ -484,7 +415,7 @@ end:
 		CurrentLayerColor.g*=(float)Ambient.g/255;
 		CurrentLayerColor.b*=(float)Ambient.b/255;
 
-		gge::shadercode::SimpleTintShader::Use();
+		gge::shaders::SimpleTintShader::Use();
 
 		if(ClippingEnabled) {
 			glEnable(GL_SCISSOR_TEST);
@@ -556,23 +487,15 @@ end:
 			tint.g = surface->Color.g * CurrentLayerColor.g;
 			tint.b = surface->Color.b * CurrentLayerColor.b;
 			tint.a = surface->Color.a * CurrentLayerColor.a;
-			gge::shadercode::SimpleTintShader::Get().UpdateUniform("tint", tint);
-			//glColor4f(surface->Color.r * CurrentLayerColor.r,surface->Color.g * CurrentLayerColor.g,surface->Color.b * CurrentLayerColor.b,surface->Color.a * CurrentLayerColor.a);
-			// What's the purpose of that? Does the color get added or multiplied by the texture color?
-
-			RenderSurface<gge::shadercode::SimpleTintShader>(*surface);
-			/*
-			glBindTexture(GL_TEXTURE_2D, surface->getTexture()->ID);
-			glBegin(GL_QUADS);
-			glTexCoord2fv(surface->TextureCoords[0].vect);
-			glVertex3fv(surface->VertexCoords[0].vect);
-			glTexCoord2fv(surface->TextureCoords[1].vect);
-			glVertex3fv(surface->VertexCoords[1].vect);
-			glTexCoord2fv(surface->TextureCoords[2].vect);
-			glVertex3fv(surface->VertexCoords[2].vect);
-			glTexCoord2fv(surface->TextureCoords[3].vect);
-			glVertex3fv(surface->VertexCoords[3].vect);
-			glEnd();*/
+			
+			if(surface->Alpha) {
+				gge::shaders::TintedMaskedShader::Get().UpdateUniform("tint", tint);
+				RenderSurface<gge::shaders::TintedMaskedShader>(*surface, surface->Alpha->TextureCoords, surface->Alpha->GetTexture()->ID);
+			}
+			else {
+				gge::shaders::SimpleTintShader::Get().UpdateUniform("tint", tint);
+				RenderSurface<gge::shaders::SimpleTintShader>(*surface);
+			}
 		}
 
 		if(system::OffscreenRendering) {
@@ -584,8 +507,8 @@ end:
 		}
 
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		gge::shadercode::SimpleTintShader::Use();
-		gge::shadercode::SimpleTintShader::Get().UpdateUniform("tint", glm::vec4(CurrentLayerColor.r, CurrentLayerColor.g, CurrentLayerColor.b, CurrentLayerColor.a));
+		gge::shaders::SimpleTintShader::Use();
+		gge::shaders::SimpleTintShader::Get().UpdateUniform("tint", glm::vec4(CurrentLayerColor.r, CurrentLayerColor.g, CurrentLayerColor.b, CurrentLayerColor.a));
 		//glColor4fv(CurrentLayerColor.vect);
 		// What are we doing here with this color4fv?
 		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.IsValid(); i.Previous()) {
@@ -596,8 +519,8 @@ end:
 		CurrentLayerColor=prevcolor;
 		//glColor4fv(prevcolor.vect);
 		// Same question.
-		gge::shadercode::SimpleTintShader::Use();
-		gge::shadercode::SimpleTintShader::Get().UpdateUniform("tint", glm::vec4(prevcolor.r, prevcolor.g, prevcolor.b, prevcolor.a));
+		gge::shaders::SimpleTintShader::Use();
+		gge::shaders::SimpleTintShader::Get().UpdateUniform("tint", glm::vec4(prevcolor.r, prevcolor.g, prevcolor.b, prevcolor.a));
 		//glPopMatrix();
 		translate-=BoundingBox.TopLeft();
 

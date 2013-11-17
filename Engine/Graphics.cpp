@@ -434,9 +434,9 @@ namespace gge { namespace graphics {
 																	1.0f, 1.0f,
 																	1.0f, 0.0f,
 																	0.0f, 0.0f		);
-			gge::shadercode::SimpleShader::Use();
-			gge::shadercode::SimpleShader::Get().UpdateUniform("vertex_coords", vertex_coords);
-			gge::shadercode::SimpleShader::Get().UpdateUniform("tex_coords", tex_coords);
+			gge::shaders::SimpleShader::Use();
+			gge::shaders::SimpleShader::Get().UpdateUniform("vertex_coords", vertex_coords);
+			gge::shaders::SimpleShader::Get().UpdateUniform("tex_coords", tex_coords);
 			glBindTexture(GL_TEXTURE_2D, system::FBTexture);
 			gge::graphics::UnitQuad::Draw();
 		}
@@ -461,7 +461,7 @@ namespace gge { namespace graphics {
 			system::SetRenderTarget(system::FrameBuffer);
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBTexture, 0);
-
+			
 			GLenum status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			log << "Framebuffer status: " << status << '\n';
 			system::SetRenderTarget(0);

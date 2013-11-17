@@ -2,7 +2,7 @@
 
 #include "ShaderCode.h"
 
-namespace gge { namespace shadercode {
+namespace gge { namespace shaders {
 
 	SimpleShader::SimpleShader()
 	{
@@ -48,7 +48,7 @@ namespace gge { namespace shadercode {
 		UpdateUniform("depth_tex",		graphics::TextureUnit::Depth);
 	}
 
-	WidgetShader::WidgetShader()
+	MaskedShader::MaskedShader()
 	{
 	    InitializeWithSource(WidgetVertexSrcCode, WidgetFragmentSrcCode);
 
@@ -57,7 +57,20 @@ namespace gge { namespace shadercode {
 		LocateUniform("diffuse");
 		LocateUniform("mask");
 		UpdateUniform("diffuse", graphics::TextureUnit::Diffuse);
-		UpdateUniform("mask", graphics::TextureUnit::AlphaMask);
+		UpdateUniform("mask", 1);
+	}
+
+	TintedMaskedShader::TintedMaskedShader()
+	{
+	    InitializeWithSource(WidgetVertexSrcCode, TintedWidgetFragmentSrcCode);
+
+	    LocateUniform("vertex_coords");
+		LocateUniform("tex_coords");
+		LocateUniform("diffuse");
+		LocateUniform("mask");
+		LocateUniform("tint");
+		UpdateUniform("diffuse", graphics::TextureUnit::Diffuse);
+		UpdateUniform("mask", 1);
 	}
 
 
@@ -128,14 +141,31 @@ void main()																			    \n\
 in vec2 diffuse_texcoord;                                                               \n\
 in vec2 mask_texcoord;                                                                  \n\
                                                                                         \n\
-uniform sampler2D diffuse; 															    \n\
-uniform sampler2D mask; 																\n\
+uniform sampler2D diffuse; 																\n\
+uniform sampler2D mask;																	\n\
                                                                                         \n\
 out vec4 output_color; 																    \n\
                                                                                         \n\
 void main() 																	        \n\
 { 																		                \n\
-    output_color = vec4(texture(diffuse, diffuse_texcoord).rgb, texture(mask, mask_texcoord).a); \n\
+    output_color = vec4(texture(diffuse, diffuse_texcoord).rgb, texture(diffuse, diffuse_texcoord).a*texture(mask, mask_texcoord).a);                 \n\
+}";
+
+    const std::string TintedWidgetFragmentSrcCode = "                                   \n\
+#version 130 													                        \n\
+ 																						\n\
+in vec2 diffuse_texcoord;                                                               \n\
+in vec2 mask_texcoord;                                                                  \n\
+                                                                                        \n\
+uniform sampler2D diffuse; 																\n\
+uniform sampler2D mask;																	\n\
+uniform vec4 tint;                                                                      \n\
+                                                                                        \n\
+out vec4 output_color; 																    \n\
+                                                                                        \n\
+void main() 																	        \n\
+{ 																		                \n\
+    output_color = tint * vec4(texture(diffuse, diffuse_texcoord).rgb, texture(diffuse, diffuse_texcoord).a*texture(mask, mask_texcoord).a);                 \n\
 }";
 
 } }

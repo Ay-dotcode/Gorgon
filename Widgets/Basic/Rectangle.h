@@ -12,8 +12,10 @@ namespace gge { namespace widgets {
 
 	RectangleResource *LoadRectangleResource(resource::File& File, std::istream &Data, int Size);
 
+	class MaskedRectangle;
 
 	class Rectangle : public resource::ResizableObject {
+		friend class MaskedRectangle;
 	public:
 		Rectangle(RectangleResource &parent, animation::Timer &controller, bool owner=false);
 		Rectangle(RectangleResource &parent, bool create=false);
