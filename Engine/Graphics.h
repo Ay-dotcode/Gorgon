@@ -231,6 +231,10 @@ namespace gge { namespace graphics {
 			return *this;
 		}
 
+		bool operator ==(const RGBint &r) const {
+			return *(int*)this==*(int*)&r;
+		}
+
 		RGBint &operator +=(RGBint color) {
 			r+=color.r;
 			g+=color.g;

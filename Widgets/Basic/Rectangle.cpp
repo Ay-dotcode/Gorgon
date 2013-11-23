@@ -223,6 +223,8 @@ namespace gge { namespace widgets {
 		auto sb=Mask->b->GetSize();
 		auto sbr=Mask->br->GetSize();
 
+#pragma warning(push)
+#pragma warning(disable:4244)
 		
 		int x=X,y=Y;
 		
@@ -382,6 +384,7 @@ namespace gge { namespace widgets {
 		);
 
 		br->Draw(Target, X+(W-br->GetWidth()), Y+(H-br->GetHeight()));
+#pragma warning(pop)
 	}
 
 	void MaskedRectangle::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const {
