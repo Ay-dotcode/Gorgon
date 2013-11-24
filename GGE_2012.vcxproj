@@ -121,6 +121,7 @@
     <ClInclude Include="Engine\GraphicTargets2D.h" />
     <ClInclude Include="Engine\Image.h" />
     <ClInclude Include="Engine\Input.h" />
+    <ClInclude Include="Engine\InternalShaders.h" />
     <ClInclude Include="Engine\Layer.h" />
     <ClInclude Include="Engine\OpenGL.h" />
     <ClInclude Include="Engine\OS.h" />
@@ -250,7 +251,6 @@
     <ClInclude Include="Resource\File.h" />
     <ClInclude Include="Resource\Sound.h" />
     <ClInclude Include="Resource\Text.h" />
-    <ClInclude Include="ShaderCode\ShaderCode.h" />
     <ClInclude Include="Utils\Any.h" />
     <ClInclude Include="Utils\BasicGraphics.h" />
     <ClInclude Include="Utils\BasicMath.h" />
@@ -381,6 +381,7 @@
     <ClCompile Include="Engine\Graphics.cpp" />
     <ClCompile Include="Engine\Image.cpp" />
     <ClCompile Include="Engine\Input.cpp" />
+    <ClCompile Include="Engine\InternalShaders.cpp" />
     <ClCompile Include="Engine\Layer.cpp" />
     <ClCompile Include="Engine\OpenGL.cpp" />
     <ClCompile Include="Engine\OS.cpp" />
@@ -706,7 +707,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/TextResouce.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/TextResouce.obj</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="ShaderCode\ShaderCode.cpp" />
     <ClCompile Include="Utils\Random.cpp" />
     <ClCompile Include="Utils\SGuid.cpp" />
     <ClCompile Include="Widgets\Base\Organizer.cpp" />
