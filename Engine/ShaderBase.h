@@ -23,16 +23,16 @@ namespace gge { namespace graphics {
 										~ShaderBase();
 		void							Use();
 		bool							IsInitialized();
-		void							LocateUniform(const std::string& name);
-		void							UpdateUniform(const std::string& name, float value);
-		void							UpdateUniform(const std::string& name, int value);
-		void							UpdateUniform(const std::string& name, const glm::vec3& value);
-		void							UpdateUniform(const std::string& name, const glm::vec4& value);
-		void							UpdateUniform(const std::string& name, const glm::mat3& value);
-		void							UpdateUniform(const std::string& name, const glm::mat3x2& value);
-		void							UpdateUniform(const std::string& name, const glm::mat4& value);
-		void							UpdateUniform(const std::string& name, const glm::mat4x2& value);
-		void							UpdateUniform(const std::string& name, const glm::mat4x3& value);
+		int 							LocateUniform(const std::string& name);
+		void							UpdateUniform(int name, float value);
+		void							UpdateUniform(int name, int value);
+		void							UpdateUniform(int name, const glm::vec3& value);
+		void							UpdateUniform(int name, const glm::vec4& value);
+		void							UpdateUniform(int name, const glm::mat3& value);
+		void							UpdateUniform(int name, const glm::mat3x2& value);
+		void							UpdateUniform(int name, const glm::mat4& value);
+		void							UpdateUniform(int name, const glm::mat4x2& value);
+		void							UpdateUniform(int name, const glm::mat4x3& value);
 		void							BindUBO(const std::string& name, UBOBindingPoint::Type bindingPoint );
 	protected:
 		unsigned int					mVertexShader;

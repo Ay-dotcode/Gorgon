@@ -152,7 +152,7 @@ namespace gge { namespace graphics {
 		const std::string insert_me = shader_defines + "#line " + std::to_string( static_cast<long long>( line_count ) ) + "\n";	// change this mess when moved to msvc2012
 		shader_code.insert( char_count, insert_me );
 	}
-		
+	
 	unsigned int SetupUBO(int size, int binding_point)
 	{		
 		GLuint ubo;
@@ -169,69 +169,58 @@ namespace gge { namespace graphics {
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data );
 	}
 
-	void ShaderBase::LocateUniform(const std::string& name)
+	int ShaderBase::LocateUniform(const std::string& name)
 	{
-		if (mHandles.find(name) != end(mHandles)) std::runtime_error("Trying to create uniforms with same names.");	
-		mHandles[name] = glGetUniformLocation(mProgram, name.data());
+		return glGetUniformLocation(mProgram, name.data());
 	}
 
-	void ShaderBase::UpdateUniform(const std::string& name, float value)
+	void ShaderBase::UpdateUniform(int name, float value)
 	{
-		glUseProgram(mProgram);
-		glUniform1f(mHandles[name], value);
+		glUniform1f(name, value);
 	}
 
-	void ShaderBase::UpdateUniform(const std::string& name, int value)
+	void ShaderBase::UpdateUniform(int name, int value)
 	{
-		glUseProgram(mProgram);
-		glUniform1i(mHandles[name], value);
+		glUniform1i(name, value);
 	}
 
-	void ShaderBase::UpdateUniform(const std::string& name, const glm::vec3& value)
+	void ShaderBase::UpdateUniform(int name, const glm::vec3& value)
 	{
-		glUseProgram(mProgram);
-		glUniform3fv(mHandles[name], 1, (GLfloat*)glm::value_ptr(value));
+		glUniform3fv(name, 1, (GLfloat*)glm::value_ptr(value));
 	}
 
-	void ShaderBase::UpdateUniform(const std::string& name, const glm::vec4& value)
+	void ShaderBase::UpdateUniform(int name, const glm::vec4& value)
 	{
-		glUseProgram(mProgram);
-		glUniform4fv(mHandles[name], 1, (GLfloat*)glm::value_ptr(value));
+		glUniform4fv(name, 1, (GLfloat*)glm::value_ptr(value));
 	}
 
-	void ShaderBase::UpdateUniform(const std::string& name, const glm::mat3& value)
+	void ShaderBase::UpdateUniform(int name, const glm::mat3& value)
 	{
-		glUseProgram(mProgram);
-		glUniformMatrix3fv(mHandles[name], 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
+		glUniformMatrix3fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
 	}
 
-	void ShaderBase::UpdateUniform(const std::string& name, const glm::mat3x2& value)
+	void ShaderBase::UpdateUniform(int name, const glm::mat3x2& value)
 	{
-		glUseProgram(mProgram);
-		glUniformMatrix3x2fv(mHandles[name], 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
+		glUniformMatrix3x2fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
 	}
 
-	void ShaderBase::UpdateUniform(const std::string& name, const glm::mat4& value)
+	void ShaderBase::UpdateUniform(int name, const glm::mat4& value)
 	{
-		glUseProgram(mProgram);
-		glUniformMatrix4fv(mHandles[name], 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
+		glUniformMatrix4fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
 	}
 	
-	void ShaderBase::UpdateUniform(const std::string& name, const glm::mat4x2& value)
+	void ShaderBase::UpdateUniform(int name, const glm::mat4x2& value)
 	{
-		glUseProgram(mProgram);
-		glUniformMatrix4x2fv(mHandles[name], 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
+		glUniformMatrix4x2fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
 	}
 
-	void ShaderBase::UpdateUniform(const std::string& name, const glm::mat4x3& value)
+	void ShaderBase::UpdateUniform(int name, const glm::mat4x3& value)
 	{
-		glUseProgram(mProgram);
-		glUniformMatrix4x3fv(mHandles[name], 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
+		glUniformMatrix4x3fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
 	}
 
-	void ShaderBase::BindUBO(const std::string& name, UBOBindingPoint::Type binding_point)
+	void ShaderBase::BindUBO(const std::string &name, UBOBindingPoint::Type binding_point)
 	{		
-		glUseProgram(mProgram);
 		auto index = glGetUniformBlockIndex(mProgram, name.data());
 		glUniformBlockBinding(mProgram, index, binding_point);
 	}

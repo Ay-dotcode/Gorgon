@@ -1,79 +1,11 @@
 // ShaderCode.cpp
 
-#include "ShaderCode.h"
+#include "InternalShaders.h"
+#include <string>
 
 namespace gge { namespace shaders {
 
-	SimpleShader::SimpleShader()
-	{
-		InitializeWithSource(TransformVertSrcCode, SimpleFragSrcCode);
-
-		LocateUniform("vertex_coords");
-		LocateUniform("tex_coords");
-		LocateUniform("diffuse");
-		UpdateUniform("diffuse", graphics::TextureUnit::Diffuse);
-	}
-
-	SimpleTintShader::SimpleTintShader()
-	{
-		InitializeWithSource(TransformVertSrcCode, SimpleTintFragSrcCode);
-
-		LocateUniform("vertex_coords");
-		LocateUniform("tex_coords");
-		LocateUniform("diffuse");
-		LocateUniform("tint");
-		UpdateUniform("diffuse", graphics::TextureUnit::Diffuse);
-	}
-
-	Shade3DShader::Shade3DShader()
-	{
-		InitializeFromFiles("transform3D.vert", "shade3D.frag");
-
-		LocateUniform("vertex_coords");
-		LocateUniform("vertex_coords_view_space");
-		LocateUniform("tex_coords");
-
-		LocateUniform("diffuse_tex");
-		LocateUniform("normal_tex");
-		LocateUniform("depth_tex");
-
-		LocateUniform("point_light.intensity");
-		LocateUniform("point_light.position");
-		LocateUniform("ambient");
-
-		LocateUniform("world_to_view");
-
-		UpdateUniform("diffuse_tex",	graphics::TextureUnit::Diffuse);
-		UpdateUniform("normal_tex",		graphics::TextureUnit::Normal);
-		UpdateUniform("depth_tex",		graphics::TextureUnit::Depth);
-	}
-
-	MaskedShader::MaskedShader()
-	{
-	    InitializeWithSource(WidgetVertexSrcCode, WidgetFragmentSrcCode);
-
-	    LocateUniform("vertex_coords");
-		LocateUniform("tex_coords");
-		LocateUniform("diffuse");
-		LocateUniform("mask");
-		UpdateUniform("diffuse", graphics::TextureUnit::Diffuse);
-		UpdateUniform("mask", 1);
-	}
-
-	TintedMaskedShader::TintedMaskedShader()
-	{
-	    InitializeWithSource(WidgetVertexSrcCode, TintedWidgetFragmentSrcCode);
-
-	    LocateUniform("vertex_coords");
-		LocateUniform("tex_coords");
-		LocateUniform("diffuse");
-		LocateUniform("mask");
-		LocateUniform("tint");
-		UpdateUniform("diffuse", graphics::TextureUnit::Diffuse);
-		UpdateUniform("mask", 1);
-	}
-
-
+	
 	const std::string TransformVertSrcCode = "											\n\
 #version 130																			\n\
 in int vertex_index;																	\n\
@@ -117,7 +49,7 @@ void main() 																			\n\
     output_color = texture(diffuse, texcoord) * tint; 									\n\
 }";
 
-    const std::string WidgetVertexSrcCode = "                                           \n\
+    const std::string MaskedVertexSrcCode = "                                           \n\
 #version 130																		    \n\
 in int vertex_index;																	\n\
 																						\n\
@@ -135,7 +67,7 @@ void main()																			    \n\
     mask_texcoord    = coords.zw;                                                       \n\
 }";
 
-    const std::string WidgetFragmentSrcCode = "                                         \n\
+    const std::string MaskedFragmentSrcCode = "                                         \n\
 #version 130 													                        \n\
  																						\n\
 in vec2 diffuse_texcoord;                                                               \n\
@@ -151,7 +83,7 @@ void main() 																	        \n\
     output_color = vec4(texture(diffuse, diffuse_texcoord).rgb, texture(diffuse, diffuse_texcoord).a*texture(mask, mask_texcoord).a);                 \n\
 }";
 
-    const std::string TintedWidgetFragmentSrcCode = "                                   \n\
+    const std::string TintedMaskedFragmentSrcCode = "                                   \n\
 #version 130 													                        \n\
  																						\n\
 in vec2 diffuse_texcoord;                                                               \n\
@@ -167,5 +99,27 @@ void main() 																	        \n\
 { 																		                \n\
     output_color = tint * vec4(texture(diffuse, diffuse_texcoord).rgb, texture(diffuse, diffuse_texcoord).a*texture(mask, mask_texcoord).a);                 \n\
 }";
+
+
+	SimpleShader::SimpleShader()
+	{
+		InitializeWithSource(TransformVertSrcCode, SimpleFragSrcCode);
+	}
+
+	SimpleTintShader::SimpleTintShader()
+	{
+		InitializeWithSource(TransformVertSrcCode, SimpleTintFragSrcCode);
+	}
+
+	MaskedShader::MaskedShader()
+	{
+	    InitializeWithSource(MaskedVertexSrcCode, MaskedFragmentSrcCode);
+	}
+
+	TintedMaskedShader::TintedMaskedShader()
+	{
+	    InitializeWithSource(MaskedVertexSrcCode, TintedMaskedFragmentSrcCode);
+	}
+
 
 } }

@@ -143,7 +143,7 @@ namespace gge { namespace widgets {
 			);
 
 		r->Draw(Target, Tiling2D::Tile(false, tiling.Right), 
-			X+(H-r->GetWidth()), Y+tr->GetHeight(),
+			X+(W-r->GetWidth()), Y+tr->GetHeight(),
 			r->GetWidth(), H-(tr->GetHeight()+br->GetHeight())
 			);
 
@@ -162,7 +162,6 @@ namespace gge { namespace widgets {
 
 	void Region::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const {
 
-		RegionResource::TilingInfo tiling=parent.Tiling;
 		int w=W, h=H;
 
 		W=controller.CalculateWidth(W, c->GetWidth(), l->GetWidth()+r->GetWidth());
@@ -172,45 +171,7 @@ namespace gge { namespace widgets {
 		X=p.x;
 		Y=p.y;
 
-		//TOP
-		tl->Draw(Target, X, Y);
-
-		t->Draw(Target, Tiling2D::Tile(tiling.Top, false), 
-			X+tl->GetWidth(), Y,
-			W - (tl->GetWidth() + tr->GetWidth()), tr->GetHeight()
-			);
-
-		tr->Draw(Target, X+(W-tr->GetWidth()), Y);
-
-
-
-		//CENTER
-		l->Draw(Target, Tiling2D::Tile(false, tiling.Left), 
-			X, Y+tl->GetHeight(),
-			l->GetWidth(), H-(tl->GetHeight()+bl->GetHeight())
-			);
-
-		c->Draw(Target, Tiling2D::Tile(tiling.Center_Horizontal, tiling.Center_Vertical), 
-			X+l->GetWidth(), Y+t->GetHeight(),
-			W-(l->GetWidth()+r->GetWidth()), H-(t->GetHeight()+b->GetHeight())
-			);
-
-		r->Draw(Target, Tiling2D::Tile(false, tiling.Right), 
-			X+(W-r->GetWidth()), Y+tr->GetHeight(),
-			r->GetWidth(), H-(tr->GetHeight()+br->GetHeight())
-			);
-
-
-
-		//BOTTOM
-		bl->Draw(Target, X, Y+(H-bl->GetHeight()));
-
-		b->Draw(Target, Tiling2D::Tile(tiling.Bottom, false), 
-			X+tl->GetWidth(), Y+(H-b->GetHeight()),
-			W - (bl->GetWidth() + br->GetWidth()), br->GetHeight()
-			);
-
-		br->Draw(Target, X+(W-br->GetWidth()), Y+(H-br->GetHeight()));
+		drawin(Target, X,Y, W,H);
 	}
 
 	void MaskedRegion::drawin(graphics::ImageTarget2D& Target, int X, int Y, int W, int H) const {
@@ -271,7 +232,6 @@ namespace gge { namespace widgets {
 	void MaskedRegion::drawin(graphics::ImageTarget2D& Target, const graphics::SizeController2D &controller, int X, int Y, int W, int H) const {
 		Target.SetDrawMode(graphics::BasicSurface::Offscreen);
 
-		RegionResource::TilingInfo tiling=parent.Tiling;
 		int w=W, h=H;
 
 		W=controller.CalculateWidth(W, c->GetWidth(), l->GetWidth()+r->GetWidth());
@@ -281,53 +241,7 @@ namespace gge { namespace widgets {
 		X=p.x;
 		Y=p.y;
 
-		//CENTER
-		c->Draw(Target, Tiling2D::Tile(tiling.Center_Horizontal, tiling.Center_Vertical), 
-			X, Y,
-			W, H
-			);
-
-		Target.SetDrawMode(graphics::BasicSurface::OffscreenAlphaOnly);
-		Mask->DrawIn(Target, controller, X,Y, W,H);
-
-		Target.SetDrawMode(graphics::BasicSurface::Normal);
-		//return;
-
-		//TOP
-		tl->Draw(Target, X, Y);
-
-		t->Draw(Target, Tiling2D::Tile(tiling.Top, false), 
-			X+tl->GetWidth(), Y,
-			W - (tl->GetWidth() + tr->GetWidth()), tr->GetHeight()
-			);
-
-		tr->Draw(Target, X+(W-tr->GetWidth()), Y);
-
-
-
-		//CENTER
-		l->Draw(Target, Tiling2D::Tile(false, tiling.Left), 
-			X, Y+tl->GetHeight(),
-			l->GetWidth(), H-(tl->GetHeight()+bl->GetHeight())
-			);
-
-		r->Draw(Target, Tiling2D::Tile(false, tiling.Right), 
-			X+(W-r->GetWidth()), Y+tr->GetHeight(),
-			r->GetWidth(), H-(tr->GetHeight()+br->GetHeight())
-			);
-
-
-
-		//BOTTOM
-		bl->Draw(Target, X, Y+(H-bl->GetHeight()));
-
-		b->Draw(Target, Tiling2D::Tile(tiling.Bottom, false), 
-			X+tl->GetWidth(), Y+(H-b->GetHeight()),
-			W - (bl->GetWidth() + br->GetWidth()), br->GetHeight()
-			);
-
-		br->Draw(Target, X+(W-br->GetWidth()), Y+(H-br->GetHeight()));
-
+		drawin(Target, X,Y, W,H);
 	}
 
 	animation::ProgressResult::Type Region::Progress() {

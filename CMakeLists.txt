@@ -29,7 +29,7 @@ SET(Engine
 	Engine/OS.Win32.cpp
 	Engine/OS.cpp
 	Engine/OpenGL.cpp
-	ShaderCode/ShaderCode.cpp
+	Engine/InternalShaders.cpp
 	Engine/ShaderBase.cpp
 )
 

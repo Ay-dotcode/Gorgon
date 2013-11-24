@@ -14,7 +14,7 @@
 #	include <unistd.h>
 #endif
 
-#include "../ShaderCode/ShaderCode.h"
+#include "InternalShaders.h"
 
 using namespace gge::utils;
 
@@ -434,10 +434,11 @@ namespace gge { namespace graphics {
 																	1.0f, 1.0f,
 																	1.0f, 0.0f,
 																	0.0f, 0.0f		);
-			gge::shaders::SimpleShader::Use();
-			gge::shaders::SimpleShader::Get().UpdateUniform("vertex_coords", vertex_coords);
-			gge::shaders::SimpleShader::Get().UpdateUniform("tex_coords", tex_coords);
-			glBindTexture(GL_TEXTURE_2D, system::FBTexture);
+			gge::shaders::SimpleShader::Use()
+				.SetVertexCoords(vertex_coords)
+				.SetTextureCoords(tex_coords)
+				.SetDiffuse(system::FBTexture);
+
 			gge::graphics::UnitQuad::Draw();
 		}
 

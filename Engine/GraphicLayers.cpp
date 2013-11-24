@@ -1,6 +1,6 @@
 #include "GraphicLayers.h"
 #include "OpenGL.h"
-#include "../ShaderCode/ShaderCode.h"
+#include "InternalShaders.h"
 #include "GGEMain.h"
 
 #pragma warning(disable:4244)
@@ -19,8 +19,6 @@ namespace gge { namespace graphics {
 	template<class ShaderType>
 	void RenderSurface(const BasicSurface& surface)
 	{
-		ShaderType::Use();
-
 		glm::mat4 vertex_coords;
 		for (int i = 0; i < 4; ++i) vertex_coords[i] = glm::vec4(surface.VertexCoords[i].x, surface.VertexCoords[i].y, surface.VertexCoords[i].z, 1.0f);
 		vertex_coords = ProjectionMatrixStack.Top() * ModelViewMatrixStack.Top() * vertex_coords;
@@ -30,18 +28,17 @@ namespace gge { namespace graphics {
 		glm::mat4x2 tex_coords;
 		for (int i = 0; i < 4; ++i) tex_coords[i] = glm::vec2(surface.TextureCoords[i].s, surface.TextureCoords[i].t);
 
-		ShaderType::Get().UpdateUniform("vertex_coords", vertex_coords_3d);
-		ShaderType::Get().UpdateUniform("tex_coords", tex_coords);
-
-		glActiveTexture(GL_TEXTURE0 + graphics::TextureUnit::Diffuse);
-		glBindTexture(GL_TEXTURE_2D, surface.GetTexture()->ID);
+		ShaderType::Use()
+			.SetVertexCoords(vertex_coords_3d)
+			.SetTextureCoords(tex_coords)
+			.SetDiffuse(surface.GetTexture()->ID);
+			
 		UnitQuad::Draw();
 	}
 
     template<class ShaderType>
 	void RenderSurface(const BasicSurface& surface, TexturePosition *maskTexCoords, GLuint maskTextureID)
 	{
-		ShaderType::Use();
 
 		glm::mat4 vertex_coords;
 		for (int i = 0; i < 4; ++i) vertex_coords[i] = glm::vec4(surface.VertexCoords[i].x, surface.VertexCoords[i].y, surface.VertexCoords[i].z, 1.0f);
@@ -52,11 +49,12 @@ namespace gge { namespace graphics {
 		glm::mat4x4 tex_coords;
 		for (int i = 0; i < 4; ++i) tex_coords[i] = glm::vec4(surface.TextureCoords[i].s, surface.TextureCoords[i].t, maskTexCoords[i].s, maskTexCoords[i].t);
 
-		ShaderType::Get().UpdateUniform("vertex_coords", vertex_coords_3d);
-		ShaderType::Get().UpdateUniform("tex_coords", tex_coords);
-
-		glActiveTexture(GL_TEXTURE0 + graphics::TextureUnit::Diffuse);
-		glBindTexture(GL_TEXTURE_2D, surface.GetTexture()->ID);
+		ShaderType::Use()
+			.SetVertexCoords(vertex_coords_3d)
+			.SetTextureCoords(tex_coords)
+			.SetDiffuse(surface.GetTexture()->ID)
+			.SetMask(maskTextureID);
+			
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, maskTextureID);
 		UnitQuad::Draw();
@@ -482,18 +480,18 @@ end:
 
 			}
 
-			glm::vec4 tint;
+			RGBfloat tint;
 			tint.r = surface->Color.r * CurrentLayerColor.r;
 			tint.g = surface->Color.g * CurrentLayerColor.g;
 			tint.b = surface->Color.b * CurrentLayerColor.b;
 			tint.a = surface->Color.a * CurrentLayerColor.a;
 			
 			if(surface->Alpha) {
-				gge::shaders::TintedMaskedShader::Get().UpdateUniform("tint", tint);
+				gge::shaders::TintedMaskedShader::Use().SetTint(tint);
 				RenderSurface<gge::shaders::TintedMaskedShader>(*surface, surface->Alpha->TextureCoords, surface->Alpha->GetTexture()->ID);
 			}
 			else {
-				gge::shaders::SimpleTintShader::Get().UpdateUniform("tint", tint);
+				gge::shaders::SimpleTintShader::Use().SetTint(tint);
 				RenderSurface<gge::shaders::SimpleTintShader>(*surface);
 			}
 		}
@@ -507,8 +505,7 @@ end:
 		}
 
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		gge::shaders::SimpleTintShader::Use();
-		gge::shaders::SimpleTintShader::Get().UpdateUniform("tint", glm::vec4(CurrentLayerColor.r, CurrentLayerColor.g, CurrentLayerColor.b, CurrentLayerColor.a));
+		shaders::SimpleTintShader::Use().SetTint(CurrentLayerColor);
 		//glColor4fv(CurrentLayerColor.vect);
 		// What are we doing here with this color4fv?
 		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.IsValid(); i.Previous()) {
@@ -519,8 +516,7 @@ end:
 		CurrentLayerColor=prevcolor;
 		//glColor4fv(prevcolor.vect);
 		// Same question.
-		gge::shaders::SimpleTintShader::Use();
-		gge::shaders::SimpleTintShader::Get().UpdateUniform("tint", glm::vec4(prevcolor.r, prevcolor.g, prevcolor.b, prevcolor.a));
+		gge::shaders::SimpleTintShader::Use().SetTint(prevcolor);
 		//glPopMatrix();
 		translate-=BoundingBox.TopLeft();
 
