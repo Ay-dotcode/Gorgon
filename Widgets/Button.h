@@ -123,6 +123,8 @@ namespace gge { namespace widgets {
 
 				ret = true;
 				break;
+			default:
+				break;
 			}
 
 			MouseEvent(input::mouse::Event(event, location, amount));

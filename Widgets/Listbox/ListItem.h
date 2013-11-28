@@ -47,6 +47,8 @@ namespace gge { namespace widgets {
 			case Event::Left_Click:
 
 				break;
+			default:
+				break;
 			}
 
 

@@ -84,6 +84,8 @@ namespace gge { namespace widgets {
 				}
 
 				break;
+			default:
+				break;
 			}
 
 			return WidgetBase::MouseHandler(event, location, amount);
