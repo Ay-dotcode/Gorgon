@@ -113,7 +113,7 @@ namespace gge { namespace resource {
 #endif
 
 		if(Texture.ID>0) {
-			if(GetWidth()==Texture.W && GetHeight()==Texture.H)
+			if(ImageData::GetWidth()==Texture.W && ImageData::GetHeight()==Texture.H)
 				graphics::system::UpdateTexture(Texture, Data, GetMode());
 			else {
 				graphics::system::DestroyTexture(Texture);

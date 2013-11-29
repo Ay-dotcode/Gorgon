@@ -3,6 +3,7 @@
 #include "Base/Widget.h"
 #include "Basic/PetContainer.h"
 #include "LayerWidget.h"
+#include "Numberbox.h"
 #include "../Resource/File.h"
 #include "../Resource/Image.h"
 #include <string.h>
