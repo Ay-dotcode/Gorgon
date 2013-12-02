@@ -9,6 +9,7 @@
 #include "../Utils/Bounds2D.h"
 #include <functional>
 #include <map>
+#include <algorithm>
 
 namespace gge { 
 	class LayerBase;
@@ -181,6 +182,66 @@ namespace std { //for consumable event's token list
 namespace gge { namespace input {
 	namespace keyboard {
 		extern utils::ConsumableEvent<utils::Empty, Event> Events;
+
+		//You have to use start to receive events
+		class EventRepeater {
+		public:
+			EventRepeater(unsigned timeout, std::function<void(Key key)> handler, std::string keys="") : 
+				timeout(timeout), timeleft(0), keytoken(0), repeattoken(0), handler(handler)
+			{
+				for(auto &c : keys) {
+					this->keys.push_back(c);
+				}
+			}
+
+			void AddKey(Key key) {
+				if(std::find(keys.begin(), keys.end(), key)==keys.end()) {
+					keys.push_back(key);
+				}
+			}
+
+			void RemoveKey(Key key) {
+				auto it=std::find(keys.begin(), keys.end(), key);
+
+				if(it!=keys.end())
+					keys.erase(it);
+			}
+
+			void Reset();
+
+			void Set() {
+				timeleft=timeout;
+			}
+
+			void SetTimeout(unsigned timeout) {
+				if(timeleft>0) {
+					timeleft+=timeout-this->timeout;
+					if(timeleft<0) timeleft=0;
+				}
+				this->timeout=timeout;
+			}
+
+			unsigned GetTimeout() const {
+				return timeout;
+			}
+
+			void Start();
+
+			void Stop();
+
+			bool ProcessKey(Event event);
+
+			void Tick();
+
+		private:
+			std::vector<Key> keys;
+			int timeleft;
+			int lasttick;
+			int timeout;
+			std::function<void(Key key)> handler;
+			utils::ConsumableEvent<utils::Empty, Event>::Token keytoken;
+			utils::EventChain<>::Token repeattoken;
+		};
 	}
 
 	namespace mouse {

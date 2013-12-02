@@ -11,6 +11,56 @@ namespace gge { namespace input {
 		Modifier::Type Modifier::Current=Modifier::None;
 		utils::ConsumableEvent<utils::Empty, Event> Events;
 		std::map<Key, bool> PressedKeys;
+
+		void EventRepeater::Reset() {
+			timeleft=0;
+			lasttick=Main.CurrentTime;
+		}
+
+		void EventRepeater::Start() {
+			keytoken=Events.Register(this, &EventRepeater::ProcessKey);
+			repeattoken=Main.BeforeGameLoopEvent.Register(this, &EventRepeater::Tick);
+		}
+
+		void EventRepeater::Stop() {
+			if(keytoken) {
+				Events.Unregister(keytoken);
+				Main.BeforeGameLoopEvent.Unregister(repeattoken);
+				keytoken=0;
+				repeattoken=0;
+			}
+		}
+
+		void EventRepeater::Tick() {
+			int timepassed=Main.CurrentTime-lasttick;
+			lasttick=Main.CurrentTime;
+
+			if(timeleft>0) {
+				timeleft-=timepassed;
+				if(timeleft<0) timeleft=0;
+			}
+			else {
+				bool found=false;
+				for(auto &k : keys) {
+					if(PressedKeys[k]) {
+						handler(k);
+						found=true;
+					}
+				}
+				if(found) timeleft=timeout;
+			}
+		}
+
+		bool EventRepeater::ProcessKey(Event event) {
+			if(std::find(keys.begin(), keys.end(), event.keycode)==keys.end()) return false;
+
+			if(event.event==event.Down) {
+				//Reset();
+			}
+
+			return true;
+		}
+
 	}
 
 
