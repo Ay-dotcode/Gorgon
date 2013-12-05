@@ -250,6 +250,7 @@
     <ClInclude Include="Resource\Base.h" />
     <ClInclude Include="Resource\File.h" />
     <ClInclude Include="Resource\Sound.h" />
+    <ClInclude Include="Resource\Blob.h" />
     <ClInclude Include="Resource\Text.h" />
     <ClInclude Include="Utils\Any.h" />
     <ClInclude Include="Utils\BasicGraphics.h" />
@@ -389,7 +390,7 @@
     <ClCompile Include="Engine\OS.Win32.cpp" />
     <ClCompile Include="Engine\Pointer.cpp" />
     <ClCompile Include="Engine\ShaderBase.cpp" />
-    <ClCompile Include="Engine\Sound.cpp" />
+    <ClCompile Include="Engine\Blob.cpp" />
     <ClCompile Include="External\glutil\MatrixStack.cpp" />
     <ClCompile Include="External\JPEG\src\jcapimin.c" />
     <ClCompile Include="External\JPEG\src\jcapistd.c" />
@@ -702,6 +703,10 @@
     <ClCompile Include="Resource\Sound.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/SoundResource.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/SoundResource.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Resource\Blob.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/BlobResource.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/BlobResource.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="Resource\Text.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/TextResouce.obj</ObjectFileName>

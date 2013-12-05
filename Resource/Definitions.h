@@ -87,5 +87,10 @@ namespace gge { namespace resource {
 		static const Type Sound_Wave			= 0x04010801;
 		static const Type Sound_Cmp_Wave		= 0x04010802;
 		static const Type Sound_Cmp_Props		= 0x04010803;
+		
+		static const Type Blob					= 0x04020000;
+		static const Type Blob_Props			= 0x04020101;
+		static const Type Blob_Data				= 0x04020801;
+		static const Type Blob_Cmp_Data			= 0x04020802;
 	};
 } }

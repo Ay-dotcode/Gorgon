@@ -9,6 +9,7 @@
 #include "LinkNode.h"
 #include "FontTheme.h"
 #include "Pointer.h"
+#include "Blob.h"
 #include "../Engine/OS.h"
 
 using namespace std;
@@ -96,6 +97,7 @@ namespace gge { namespace resource {
 	void File::AddExtendedLoaders() {
 		AddBasicLoaders();
 		Loaders.Add(new Loader(GID::Sound, LoadSoundResource)); 
+		Loaders.Add(new Loader(GID::Blob, LoadBlobResource)); 
 	}
 
 	void File::AddGameLoaders() {

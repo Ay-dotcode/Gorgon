@@ -47,6 +47,7 @@ SET(Resource
 	Resource/DataArray.cpp
 	Resource/FontTheme.cpp
 	Resource/Folder.cpp
+	Resource/Blob.cpp
 )
 
 SET(Widgets

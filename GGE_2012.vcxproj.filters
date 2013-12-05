@@ -807,6 +807,9 @@
     <ClInclude Include="Resource\Sound.h">
       <Filter>Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Blob.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
     <ClInclude Include="Resource\Text.h">
       <Filter>Resource</Filter>
     </ClInclude>
@@ -1416,6 +1419,9 @@
       <Filter>Resource\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Sound.cpp">
+      <Filter>Resource\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Blob.cpp">
       <Filter>Resource\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Text.cpp">
