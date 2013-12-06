@@ -1073,9 +1073,6 @@
     <ClCompile Include="Engine\Pointer.cpp">
       <Filter>Engine\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Sound.cpp">
-      <Filter>Engine\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="External\JPEG\src\jcapimin.c">
       <Filter>External\JPEG\Source</Filter>
     </ClCompile>
@@ -1497,6 +1494,9 @@
       <Filter>Widgets\Basic\Sources</Filter>
     </ClCompile>
     <ClCompile Include="Engine\InternalShaders.cpp">
+      <Filter>Engine\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Sound.cpp">
       <Filter>Engine\Sources</Filter>
     </ClCompile>
   </ItemGroup>

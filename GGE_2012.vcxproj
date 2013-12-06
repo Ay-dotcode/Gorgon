@@ -390,7 +390,7 @@
     <ClCompile Include="Engine\OS.Win32.cpp" />
     <ClCompile Include="Engine\Pointer.cpp" />
     <ClCompile Include="Engine\ShaderBase.cpp" />
-    <ClCompile Include="Engine\Blob.cpp" />
+    <ClCompile Include="Engine\Sound.cpp" />
     <ClCompile Include="External\glutil\MatrixStack.cpp" />
     <ClCompile Include="External\JPEG\src\jcapimin.c" />
     <ClCompile Include="External\JPEG\src\jcapistd.c" />
