@@ -59,7 +59,7 @@ namespace gge { namespace resource {
 		Byte buff[1024];
 		while(true) {
 			file.read((char*)buff, 1024);
-			unsigned size=file.gcount();
+			unsigned size=(unsigned)file.gcount();
 			if(!size) break;
 			data.resize(data.size()+size);
 			memcpy(&data[data.size()-size],buff,size);
@@ -77,7 +77,7 @@ namespace gge { namespace resource {
 		Byte buff[1024];
 		while(true) {
 			file.read((char*)buff, 1024);
-			unsigned size=file.gcount();
+			unsigned size=(unsigned)file.gcount();
 			if(!size) break;
 			data.resize(data.size()+size);
 			memcpy(&data[data.size()-size],buff,size);
