@@ -176,7 +176,7 @@ namespace gge { namespace encoding {
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 
 
-		delete rows;
+		delete[] rows;
 		delete writer;
 		delete buffer;
 	}

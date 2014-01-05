@@ -12,7 +12,7 @@ namespace gge { namespace resource {
 		tmpstr[Size]=0;
 		txt->Value=tmpstr;
 
-		delete tmpstr;
+		delete[] tmpstr;
 
 		return txt;
 	}

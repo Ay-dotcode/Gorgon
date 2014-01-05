@@ -824,10 +824,13 @@
 
 		std::string GetClipboardText() {
 			HANDLE clip;
-			if (OpenClipboard(NULL)) 
+			if (OpenClipboard(NULL)) {
 				clip = GetClipboardData(CF_TEXT);
-
-			return std::string((char*) clip);
+				return std::string((char*) clip);
+			}
+			else {
+				return "";
+			}
 		}
 
 		void SetClipboardText(const std::string &text) {

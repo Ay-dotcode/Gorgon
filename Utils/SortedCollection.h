@@ -45,6 +45,7 @@
 #include "Iterator.h"
 #include "ManagedBuffer.h"
 #include "UtilsBase.h"
+#include <stdexcept>
 
 #define SORTEDCOLLECTION_EXISTS
 
@@ -409,6 +410,10 @@ namespace gge { namespace utils {
 					c=c->next;
 				}
 			}
+
+#ifdef DEBUG
+			if(!w) std::throw std::runtime_error("Wrapper cannot be landed!");
+#endif
 
 			(*count)++;
 

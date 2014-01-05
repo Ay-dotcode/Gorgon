@@ -16,7 +16,7 @@ namespace gge { namespace resource {
 		encoding::LZMA lzma(false);
 		
 		int target=Data.tellg()+Size;
-		int buffersize;
+		int buffersize=0;
 
 		while(Data.tellg()<target) {
 			int gid,size,compression=0;

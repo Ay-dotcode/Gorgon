@@ -40,119 +40,6 @@ namespace gge { namespace resource {
 			PNG=GID::PNG,
 		};
 
-    gge::utils::Margins Trim(bool left, bool right, bool top, bool bottom) {
-      gge::utils::Margins margins(0, 0, 0, 0);
-      int xx = 0, yy = 0;
-      if(Mode != graphics::ColorMode::ABGR && Mode != graphics::ColorMode::ARGB)
-        return margins;
-
-      if(left) {
-        auto x = Data.begin() + 3;
-        auto y = x;
-        for(; y != Data.end(); y += (Width * 4)) {
-          if(*y != 0)
-            break;
-          
-          yy++;
-          if(yy == Height) {
-            x += 4;
-            y = x;
-            margins.Left++;
-            yy = 0;
-          }
-          if(margins.Left == Width - 1)
-            break;
-          
-        }
-      }
-
-      if(right) {
-        yy = Height - 1;
-        auto x = Data.end() - 1;
-        auto y = x;
-        for(; y != Data.begin(); y -= (Width * 4)) {
-          if(*y != 0)
-            break;
-          
-          yy--;
-          if(yy == 0) {
-            x -= 4;
-            y = x;
-            margins.Right++;
-            yy = Height - 1;
-          }
-
-          if(margins.Right == Width - 1)
-            break;
-        }
-      }
-
-      if(top) {
-        xx = 0;
-        auto x = Data.begin() + 3;
-        for(; x != Data.end(); x += 4) {
-          if(*x != 0)
-            break;
-          
-          xx++;
-          if(xx == Width - 1) {
-            margins.Top++;
-            xx = 0;
-          }
-
-          if(margins.Top == Height - 1)
-            break;
-        }
-      }
-
-      if(bottom) {
-        xx = Width - 1;
-        auto x = Data.end() - 1;
-        for(; x != Data.begin(); x -= 4) {
-          if(*x != 0) 
-            break;
-
-          xx--;
-          if(xx == 0) {
-            margins.Bottom++;
-            xx = Width - 1;
-          }
-
-          if(margins.Bottom == Height - 1)
-            break;
-        }
-      }
-
-      gge::utils::CastableManagedBuffer<Byte> buffer;
-      int h = Height - (margins.Top + margins.Bottom);
-      int w = Width - (margins.Left + margins.Right);
-      buffer.Resize(w * h * GetBPP());
-      auto x = (Data.begin() + (GetBPP() * (margins.Top*Width+margins.Left)));
-      auto rightinc = margins.Right * GetBPP();
-      auto leftinc =  margins.Left * GetBPP();
-      auto end = x + ((Width * h * GetBPP()) - (leftinc + rightinc));
-      xx = 0;
-
-      
-      int index = 0;
-      int jumppoint=w*GetBPP();
-      int leap=leftinc + rightinc;
-      for(; x < end; ++x) {
-        buffer[index++] = *x;
-        xx++;
-        if(xx == jumppoint) {
-          x += leap;
-          xx = 0;
-        }
-      }
-
-      Data=buffer;
-      ImageData::Width=w;
-      ImageData::Height=h;
-
-      return margins;
-    }
-
 		////Not used, if paletted image is found, this holds its palette
 		Byte *Palette;
 		////Whether image is loaded or not. Image that are marked as late loading
@@ -164,14 +51,14 @@ namespace gge { namespace resource {
 		bool LeaveData;
 
 		Image() : animation::Base(), ImageTexture(), ImageData(), 
-		CompressionProps(), Palette(), Compression(PNG), LateLoading(false) 
+			CompressionProps(), Palette(), Compression(PNG), LateLoading(false) 
 		{
 			isLoaded=LeaveData=false;
 			animation::Animations.Remove(this);
 		}
 
 		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), 
-		ImageTexture(), ImageData(), CompressionProps(), Palette(), Compression(PNG), LateLoading(false) 
+			ImageTexture(), ImageData(), CompressionProps(), Palette(), Compression(PNG), LateLoading(false) 
 		{
 			this->Resize(Width, Height, Mode);
 			animation::Animations.Remove(this);
@@ -179,7 +66,7 @@ namespace gge { namespace resource {
 
 		bool PNGExport(std::string filename) { return ExportPNG(filename); }
 		bool ExportPNG(std::string filename);
-		
+
 		////02020000h (Basic, Image)
 		virtual GID::Type GetGID() const { return GID::Image; }
 		////Loads image data from the file. This function is required for late
@@ -198,7 +85,7 @@ namespace gge { namespace resource {
 		////Returns Bytes/Pixel information
 		int GetBPP() { return graphics::getBPP(Mode); }
 		graphics::ColorMode::Type GetMode() { return Mode; }
- 
+
 
 		////Destroys used data
 		void destroy() { Data.RemoveReference(); if(Palette) delete Palette; }
@@ -211,7 +98,7 @@ namespace gge { namespace resource {
 
 		/* FOR ANIMATION INTERFACES */
 		virtual void DeleteAnimation() { } //if used as animation, it will not be deleted
-	//TODO ownership has issues in here
+		//TODO ownership has issues in here
 		virtual Image &CreateAnimation(animation::Timer &controller, bool owner=false) { return *this; }
 		virtual Image &CreateAnimation(bool create=false) { return *this; }
 
@@ -236,6 +123,9 @@ namespace gge { namespace resource {
 		Image &Blur(float amount, int windowsize=-1);
 		Image &Shadow(float amount, int windowsize=-1);
 
+		//Assumes all image heights are similar and all images have same color mode
+		std::vector<utils::Bounds> CreateLinearAtlas(utils::OrderedCollection<Image> list);
+
 		virtual int GetWidth() const {
 			if(Texture.ID) {
 				return ImageTexture::GetWidth();
@@ -253,6 +143,8 @@ namespace gge { namespace resource {
 				return ImageData::GetHeight();
 			}
 		}
+
+		gge::utils::Margins Trim(bool left=true, bool right=true, bool top=true, bool bottom=true);
 
 		using graphics::ImageTexture::drawin;
 

@@ -279,12 +279,13 @@ namespace gge { namespace widgets {
 			virtual void located(ContainerBase* container, utils::SortedCollection<WidgetBase>::Wrapper *w, int Order) {
 				WidgetBase::located(container, w, Order);
 
-				BaseLayer->Add(controls);
+				if(BaseLayer) {
+					BaseLayer->Add(controls);
 
-				if(BaseLayer)
 					BaseLayer->Resize(controls.BaseLayer.BoundingBox.GetSize());
 
-				BaseLayer->MouseCallback.Set(dynamic_cast<WidgetBase&>(*this), &WidgetBase::MouseHandler, input::mouse::Event::AllButOverCheck);
+					BaseLayer->MouseCallback.Set(dynamic_cast<WidgetBase&>(*this), &WidgetBase::MouseHandler, input::mouse::Event::AllButOverCheck);
+				}
 			}
 
 			void setautoheight(const bool &value) {

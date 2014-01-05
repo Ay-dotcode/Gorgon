@@ -11,6 +11,8 @@
 #include "../Encoding/PNG.h"
 #include "../Encoding/JPEG.h"
 
+#undef max
+
 using namespace gge::resource;
 using namespace gge::graphics;
 using namespace gge::utils;
@@ -485,6 +487,215 @@ namespace gge { namespace resource {
 		isLoaded=true;
 
 		return NoError;
+	}
+
+	gge::utils::Margins Image::Trim(bool left, bool right, bool top, bool bottom) {
+		gge::utils::Margins margins(0, 0, 0, 0);
+		int xx = 0, yy = 0;
+		if(Mode != graphics::ColorMode::ABGR && Mode != graphics::ColorMode::ARGB)
+			return margins;
+
+		if(left) {
+			auto x = Data.begin() + 3;
+			auto y = x;
+			for(; y != Data.end(); y += (Width * 4)) {
+				if(*y != 0)
+					break;
+
+				yy++;
+				if(yy == Height) {
+					x += 4;
+					y = x;
+					margins.Left++;
+					yy = 0;
+				}
+				if(margins.Left == Width - 1)
+					break;
+
+			}
+		}
+
+		if(right) {
+			yy = Height - 1;
+			auto x = Data.end() - 1;
+			auto y = x;
+			for(; y != Data.begin(); y -= (Width * 4)) {
+				if(*y != 0)
+					break;
+
+				yy--;
+				if(yy == 0) {
+					x -= 4;
+					y = x;
+					margins.Right++;
+					yy = Height - 1;
+				}
+
+				if(margins.Right == Width - 1)
+					break;
+			}
+		}
+
+		if(top) {
+			xx = 0;
+			auto x = Data.begin() + 3;
+			for(; x != Data.end(); x += 4) {
+				if(*x != 0)
+					break;
+
+				xx++;
+				if(xx == Width - 1) {
+					margins.Top++;
+					xx = 0;
+				}
+
+				if(margins.Top == Height - 1)
+					break;
+			}
+		}
+
+		if(bottom) {
+			xx = Width - 1;
+			auto x = Data.end() - 1;
+			for(; x != Data.begin(); x -= 4) {
+				if(*x != 0) 
+					break;
+
+				xx--;
+				if(xx == 0) {
+					margins.Bottom++;
+					xx = Width - 1;
+				}
+
+				if(margins.Bottom == Height - 1)
+					break;
+			}
+		}
+
+		gge::utils::CastableManagedBuffer<Byte> buffer;
+		int h = Height - (margins.Top + margins.Bottom);
+		int w = Width - (margins.Left + margins.Right);
+
+		if(h<=0) {
+			h=1;
+			margins.Top=0;
+			margins.Bottom=Height-1;
+		}
+		if(w<=0) {
+			w=1;
+			margins.Left=0;
+			margins.Right=Width-1;
+		}
+
+		buffer.Resize(w * h * GetBPP());
+		auto x = (Data.begin() + (GetBPP() * (margins.Top*Width+margins.Left)));
+		auto rightinc = margins.Right * GetBPP();
+		auto leftinc =  margins.Left * GetBPP();
+		auto end = x + ((Width * h * GetBPP()) - (leftinc + rightinc));
+		xx = 0;
+
+
+		int index = 0;
+		int jumppoint=w*GetBPP();
+		int leap=leftinc + rightinc;
+		for(; x < end; ++x) {
+			buffer[index++] = *x;
+			xx++;
+			if(xx == jumppoint) {
+				x += leap;
+				xx = 0;
+			}
+		}
+
+		ImageData::Data=buffer;
+		ImageData::Width=w;
+		ImageData::Height=h;
+
+		return margins;
+	}
+
+	std::vector<utils::Bounds> Image::CreateLinearAtlas(utils::OrderedCollection<Image> list) {
+		std::vector<utils::Bounds> ret;
+
+		if(list.GetCount()==0)
+			return ret;
+
+		int maxh=0, totalw=0;
+		for(auto &im : list) {
+			int w=im.GetWidth();
+			int h=im.GetHeight();
+
+			if(h>maxh) maxh=h;
+
+			totalw+=w;
+		}
+
+		//determine number of lines
+		int lines=int(utils::Round(std::sqrt(float(totalw*maxh))/maxh));
+		if(lines==0) lines=1;
+
+		std::vector<int> linepos(lines);
+
+		//determine image width
+		for(auto &im : list) {
+			int min=std::numeric_limits<int>::max();
+			int minindex=0;
+			for(int i=0;i<lines;i++) {
+				if(linepos[i]<min) {
+					min=linepos[i];
+					minindex=i;
+				}
+			}
+
+			linepos[minindex]+=im.GetWidth();
+		}
+
+		int width=utils::Max(linepos.begin(), linepos.end());
+		int height=lines*maxh;
+
+		std::fill(linepos.begin(), linepos.end(), 0);
+
+		Resize(width, height, list[0].GetMode());
+
+		//place images
+		for(auto &im : list) {
+			int min=std::numeric_limits<int>::max();
+			int minindex=0;
+			for(int i=0;i<lines;i++) {
+				if(linepos[i]<min) {
+					min=linepos[i];
+					minindex=i;
+				}
+			}
+
+			//copy
+			int w=im.GetWidth();
+			int h=im.GetHeight();
+			int xx=linepos[minindex];
+			int yy=minindex*maxh;
+			int tx=xx+w;
+			int ty=yy+h;
+			int B=GetBPP();
+			int sind=0; //source index
+			int tind; //target index
+			int stride=w*B;
+			auto tdata=Data.GetBuffer(); //target data
+			auto sdata=im.getdata().GetBuffer(); //source data
+
+			ret.emplace_back(xx, yy, tx, ty);
+
+			for(int y=yy;y<ty;y++) {
+				tind=y*width*B+xx*B;
+				for(int i=0;i<stride;i++) {
+					tdata[tind++]=sdata[sind++];
+				}
+			}
+
+			linepos[minindex]+=w;
+		}
+		
+
+		return ret;
 	}
 
 

@@ -20,7 +20,7 @@ using namespace std;
 namespace gge { namespace resource {
 	BitmapFont *LoadBitmapFontResource(File &File, std::istream &Data, int Size) {
 		BitmapFont *font=new BitmapFont;
-		int chmap[256];
+		int chmap[256]={};
 		int cpos=0,i;
 
 		font->Seperator=1;
