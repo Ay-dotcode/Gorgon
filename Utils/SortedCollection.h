@@ -412,7 +412,7 @@ namespace gge { namespace utils {
 			}
 
 #ifdef DEBUG
-			if(!w) std::throw std::runtime_error("Wrapper cannot be landed!");
+			if(!w) throw std::runtime_error("Wrapper cannot be landed!");
 #endif
 
 			(*count)++;
