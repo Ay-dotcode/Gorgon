@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace gge { namespace resource {
 	static const int CurrentVersion			=	0x00010000;
@@ -93,4 +94,21 @@ namespace gge { namespace resource {
 		static const Type Blob_Data				= 0x04020801;
 		static const Type Blob_Cmp_Data			= 0x04020802;
 	};
-} }
+} 
+namespace utils {		
+	inline std::string ToString(const gge::resource::GID::Type &value) {		
+		static char hextable[]={"0123456789ABCDEF"};
+		
+		std::string ret;
+		ret.resize(8);
+		
+		gge::resource::GID::Type v=value;
+		for(int i=1;i<=8;i++) {
+			ret[8-i]=hextable[v%16];
+			v=v>>4;
+		}
+		
+		return ret;
+	}
+}
+}

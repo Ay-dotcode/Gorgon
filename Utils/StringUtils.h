@@ -96,6 +96,46 @@ namespace gge { namespace utils {
 	public:
 		enum { value = sizeof(test<T>(""))==sizeof(char) };
 	};
+	
+	inline std::string ToString(int value) {
+		return std::to_string(value);
+	}
+	
+	inline std::string ToString(long value) {
+		return std::to_string(value);
+	}
+	
+	inline std::string ToString(long long value) {
+		return std::to_string(value);
+	}
+	
+	inline std::string ToString(unsigned value) {
+		return std::to_string(value);
+	}
+	
+	inline std::string ToString(unsigned long value) {
+		return std::to_string(value);
+	}
+	
+	inline std::string ToString(unsigned long long value) {
+		return std::to_string(value);
+	}
+	
+	inline std::string ToString(float value) {
+		return std::to_string(value);
+	}
+	
+	inline std::string ToString(double value) {
+		return std::to_string(value);
+	}
+	
+	inline std::string ToString(long double value) {
+		return std::to_string(value);
+	}
+	
+	inline std::string ToString(std::string value) {
+		return value;
+	}
 
 	template<class T_> 
 	typename std::enable_if<has_stringoperator<T_>::value, std::string>::type ToString(const T_ &item) {
@@ -108,6 +148,79 @@ namespace gge { namespace utils {
 		ss<<item;
 
 		return ss.str();
+	}
+	
+	//Modifies the original string, removes the marker too, if the marker not found
+	//it extracts the entire string
+	inline std::string Extract(std::string &original, const std::string marker) {
+		auto pos=original.find(marker);
+		
+		if(pos==original.npos) {
+			std::string ret;
+			std::swap(ret, original);
+			
+			return ret;
+		}
+		
+		std::string ret=original.substr(0, pos);
+		original=original.substr(pos+marker.length());
+		
+		return ret;
+	}
+
+	inline std::string Extract(std::string &original, char marker) {
+		auto pos=original.find_first_of(marker);
+		
+		if(pos==original.npos) {
+			std::string ret;
+			std::swap(ret, original);
+			
+			return ret;
+		}
+		
+		std::string ret=original.substr(0, pos);
+		original=original.substr(pos+1);
+		
+		return ret;
+	}
+	
+	//extracts string but doesnot split inside quotes, supports both single and double 
+	//quotes. Marker could be a quote
+	inline std::string ExtractOutsideQuotes(std::string &original, char marker) {
+		int inquotes=0;
+		int pos=0;
+		
+		for(auto &c : original) {
+			if(inquotes==1) {
+				if(c=='\'') {
+					inquotes=0;
+				}
+			}
+			else if(inquotes==2) {
+				if(c=='"') {
+					inquotes=0;
+				}
+			}
+			else if(c==marker) {
+				std::string temp=original.substr(0, pos);
+				original=original.substr(pos+1);
+				
+				return temp;
+			}
+			else if(c=='\'') {
+				inquotes=1;
+			}
+			else if(c=='"') {
+				inquotes=2;
+			}
+			
+			pos++;
+		}
+		
+		std::string temp;
+		std::swap(temp, original);
+		
+		return temp;
 	}
 
 } }
