@@ -226,16 +226,16 @@ namespace gge { namespace graphics {
 		for(i=0;i<Surfaces.GetCount();i++) {
 			BasicSurface *surface=Surfaces[i];
 
-			if(surface->VertexCoords[0].y-translate.y<scissors.Top && surface->VertexCoords[1].y-translate.y<scissors.Top && 
-				surface->VertexCoords[2].y-translate.y<scissors.Top && surface->VertexCoords[3].y-translate.y<scissors.Top)
+			if(surface->VertexCoords[0].y+translate.y<scissors.Top && surface->VertexCoords[1].y+translate.y<scissors.Top && 
+				surface->VertexCoords[2].y+translate.y<scissors.Top && surface->VertexCoords[3].y+translate.y<scissors.Top)
 				continue;
 
 			if(surface->VertexCoords[0].y+translate.y>scissors.Bottom && surface->VertexCoords[1].y+translate.y>scissors.Bottom &&
 				surface->VertexCoords[2].y+translate.y>scissors.Bottom && surface->VertexCoords[3].y+translate.y>scissors.Bottom)
 				continue;
 
-			if(surface->VertexCoords[0].x-translate.x<scissors.Left && surface->VertexCoords[1].x-translate.x<scissors.Left && 
-				surface->VertexCoords[2].x-translate.x<scissors.Left && surface->VertexCoords[3].x-translate.x<scissors.Left)
+			if(surface->VertexCoords[0].x+translate.x<scissors.Left && surface->VertexCoords[1].x+translate.x<scissors.Left && 
+				surface->VertexCoords[2].x+translate.x<scissors.Left && surface->VertexCoords[3].x+translate.x<scissors.Left)
 				continue;
 
 			if(surface->VertexCoords[0].x+translate.x>scissors.Right && surface->VertexCoords[1].x+translate.x>scissors.Right &&
@@ -430,16 +430,16 @@ end:
 			RGBfloat tint;
 			tint = surface->Color * CurrentLayerColor;
 
-			if(surface->VertexCoords[0].y-translate.y<scissors.Top && surface->VertexCoords[1].y-translate.y<scissors.Top && 
-				surface->VertexCoords[2].y-translate.y<scissors.Top && surface->VertexCoords[3].y-translate.y<scissors.Top)
+			if(surface->VertexCoords[0].y+translate.y<scissors.Top && surface->VertexCoords[1].y+translate.y<scissors.Top && 
+				surface->VertexCoords[2].y+translate.y<scissors.Top && surface->VertexCoords[3].y+translate.y<scissors.Top)
 				continue;
 
 			if(surface->VertexCoords[0].y+translate.y>scissors.Bottom && surface->VertexCoords[1].y+translate.y>scissors.Bottom &&
 				surface->VertexCoords[2].y+translate.y>scissors.Bottom && surface->VertexCoords[3].y+translate.y>scissors.Bottom)
 				continue;
 
-			if(surface->VertexCoords[0].x-translate.x<scissors.Left && surface->VertexCoords[1].x-translate.x<scissors.Left && 
-				surface->VertexCoords[2].x-translate.x<scissors.Left && surface->VertexCoords[3].x-translate.x<scissors.Left)
+			if(surface->VertexCoords[0].x+translate.x<scissors.Left && surface->VertexCoords[1].x+translate.x<scissors.Left && 
+				surface->VertexCoords[2].x+translate.x<scissors.Left && surface->VertexCoords[3].x+translate.x<scissors.Left)
 				continue;
 
 			if(surface->VertexCoords[0].x+translate.x>scissors.Right && surface->VertexCoords[1].x+translate.x>scissors.Right &&
