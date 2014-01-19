@@ -804,6 +804,11 @@ namespace gge { namespace resource {
 	}
 
 	void BitmapFont::Prepare(GGEMain &main, File &file) {
+		if(!noshadows) {
+			Blur(1.f);
+			Blur(1.6f);
+		}
+
 		if(noatlas) {
 			Base::Prepare(main, file);
 		}
@@ -832,11 +837,6 @@ namespace gge { namespace resource {
 				destructionlist.Add(images[ind]);
 				ind++;
 			}
-		}
-
-		if(!noshadows) {
-			Blur(1.f);
-			Blur(1.6f);
 		}
 	}
 
