@@ -77,6 +77,8 @@ namespace gge {
 		////Current system time. This time does not change in a given game loop
 		unsigned int CurrentTime;
 
+		unsigned int DeltaTime;
+
 		////Constructor
 		GGEMain();
 

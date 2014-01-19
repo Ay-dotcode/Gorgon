@@ -26,7 +26,7 @@ namespace gge { namespace resource {
 		virtual GID::Type GetGID() const { return GID::Font; }
 
 		////Default constructor
-		BitmapFont() : Base(), noshadows(false), Seperator(0), Baseline(11) { 
+		BitmapFont() : Base(), noshadows(false), Seperator(0), Baseline(11), noatlas(false) { 
 			Tabsize=4; 
 			memset(Characters, 0, 256*sizeof(Image*)); 
 			VerticalSpacing=22;
@@ -48,8 +48,10 @@ namespace gge { namespace resource {
 
 		BitmapFont &Blur(float amount, int windowsize=-1);
 
+		void NoAtlas() {
+			noatlas=true;
+		}
 
-	//protected:
 		////Prints the given text to the target using given color.
 		virtual void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, const std::string &Text, graphics::RGBint Color, ShadowParams Shadow=ShadowParams());
 		////Prints the given text to the target using given color. Text is wrapped and aligned as necessary
@@ -93,7 +95,11 @@ namespace gge { namespace resource {
 
 		std::map<float, BitmapFont*> Shadows;
 
+
 	protected:
 		bool noshadows;
+		bool noatlas;
+
+		utils::OrderedCollection<Image> destructionlist;
 	};
 } }

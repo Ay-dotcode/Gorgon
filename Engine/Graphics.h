@@ -106,28 +106,7 @@ namespace gge { namespace graphics {
 	/// drawn without requiring its actual size.
 	/// Also contains data to increase performance
 	struct GLTexture {
-		////OpenGL texture id
-		GLuint ID;
-		////Width of the image (not texture's)
-		int W;
-		////Height of the image (not texture's)
-		int H;
-
-		////S (texture x) position for the width of the image
-		float S;
-		////T position (texture y) position for the height of
-		/// the image
-		float T;
-
-		////Readily calculated texture coordinates of the image
-		TexturePosition ImageCoord[4];
-
-		////Calculates the necessary coordinates from
-		/// the give image size
-		void CalcuateCoordinates(int W,int H) {
-			this->W=W;
-			this->H=H;
-
+		GLTexture() {
 			ImageCoord[0].s=0;
 			ImageCoord[0].t=0;
 			ImageCoord[1].s=1;
@@ -136,6 +115,24 @@ namespace gge { namespace graphics {
 			ImageCoord[2].t=1;
 			ImageCoord[3].s=0;
 			ImageCoord[3].t=1;
+		}
+
+		////OpenGL texture id
+		GLuint ID;
+		////Width of the image
+		int W;
+		////Height of the image
+		int H;
+
+
+		////Readily calculated texture coordinates of the image
+		TexturePosition ImageCoord[4];
+
+		////Calculates the necessary coordinates from
+		/// the give image size
+		void SetSize(int W,int H) {
+			this->W=W;
+			this->H=H;
 		}
 	};
 
@@ -175,6 +172,10 @@ namespace gge { namespace graphics {
 
 		RGBfloat operator *(float v) const {
 			return RGBfloat(a, r*v, g*v, b*v);
+		}
+
+		RGBfloat operator *(const RGBfloat f) const {
+			return RGBfloat(a*f.a, r*f.r, g*f.g, b*f.b);
 		}
 
 		RGBfloat &operator =(const RGBint &c);
@@ -489,7 +490,7 @@ namespace gge { namespace graphics {
 	public:
 		////Coordinates of vertices
 		VertexPosition VertexCoords[4];
-		////Coordinates of texture rectangle
+		////Coordinates of texture rectangle, prefer not to modify manually
 		TexturePosition *TextureCoords;
 		////Whether this surface has its own texture coordinates
 		bool HasOwnTextureCoords;
@@ -779,13 +780,6 @@ namespace gge { namespace graphics {
 		void PostRender(os::DeviceHandle Device, os::WindowHandle win);
 
 		void ResizeGL(int Width, int Height);
-
-		void SetRenderTarget(GLuint Target);
-		void DumpOffscreen();
-
-		extern GLuint FrameBuffer;
-		extern GLuint FBTexture;
-		extern bool   OffscreenRendering;
 	}
 
 	extern utils::Size ScreenSize;

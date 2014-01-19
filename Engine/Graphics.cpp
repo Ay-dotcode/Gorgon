@@ -30,16 +30,9 @@ namespace gge { namespace graphics {
 
 	// 2 triangles (3 vertices each)
 	// Each vertex:
-	// 2 floats for XY positions, 2 floats for UV texture coordinates
+	// 1 int for index
 	int UnitQuad::unit_quad[6] =
-	{/*
-		0.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 1.0f, 1.0f,
-
-		1.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 0.0f*/
+	{
 		0, 3, 1, 1, 3, 2
 	};
 
@@ -49,8 +42,6 @@ namespace gge { namespace graphics {
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(int), unit_quad, GL_STATIC_DRAW); // GL_STATIC_DRAW
-		/*glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_DYNAMIC_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, k_unit_quad_floats * sizeof(float), unit_quad);*/
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glGenVertexArrays(1, &vao);
@@ -58,9 +49,6 @@ namespace gge { namespace graphics {
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glEnableVertexAttribArray(0);
-		//glEnableVertexAttribArray(1);
-		//glVertexAttribPointer(0, 1, GL_INT, GL_FALSE, 0, (GLvoid*) 0);
-		//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (GLvoid*) 8);
 		glVertexAttribIPointer(0, 1, GL_INT, 0, (GLvoid*) 0);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -80,8 +68,7 @@ namespace gge { namespace graphics {
 	{
 		assert(false);
 		glBindVertexArray(vao);
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDrawArrays(GL_TRIANGLES, offset / 16, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 	}
 	void Quad::UpdateInstanceVertexData(const std::array<float,24>& data)
@@ -125,14 +112,6 @@ namespace gge { namespace graphics {
 	extern Point translate;
 
 	namespace system {
-		GLuint FBTexture=0;
-		GLuint FrameBuffer=0;
-
-		bool OffscreenRendering=false;
-
-		void SetupFrameBuffer();
-
-
 	}
 
 	os::DeviceHandle Initialize(os::WindowHandle hWnd, int BitDepth, int Width, int Height) {
@@ -262,8 +241,6 @@ namespace gge { namespace graphics {
 
 		gge::system::LoadGLFunctions();
 
-		SetupFrameBuffer();
-
 		return handle;
 	}
 
@@ -338,7 +315,7 @@ namespace gge { namespace graphics {
 		GLTexture GenerateTexture(Byte *data,int cx,int cy,ColorMode::Type mode) {
 
 			GLTexture ret;
-			ret.CalcuateCoordinates(cx,cy);
+			ret.SetSize(cx,cy);
 
 			///*Create the texture object
 			glGenTextures(1,&ret.ID);
@@ -364,24 +341,12 @@ namespace gge { namespace graphics {
 
 
 			//These can be overridden by layers
-			/*glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
-			glLoadIdentity();									// Reset The Projection Matrix
-			glOrtho(0,Width,Height,0,-100,100);					// Calculate The Aspect Ratio Of The Window
-			*/
 			ProjectionMatrixStack.SetIdentity();
 			ProjectionMatrixStack.Orthographic(0.0f, float(Width), float(Height), 0.0f, -100.0f, 100.0f);
 			glFrontFace(GL_CCW);
-			//glFrontFace(GL_CW);
 
 			//position
-			/*
-			glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
-			glLoadIdentity();									// Reset The Modelview Matrix
-			*/
 			ModelViewMatrixStack.SetIdentity();
-
-			SetupFrameBuffer();
-
 		}
 
 		void DestroyTexture(GLTexture &texture) {
@@ -392,8 +357,6 @@ namespace gge { namespace graphics {
 		void PreRender() {
 			///*Resetting OpenGL parameters
 			glDisable(GL_SCISSOR_TEST);
-			/*glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();*/
 			ModelViewMatrixStack.SetIdentity();
 
 			///*Clearing buffers
@@ -417,55 +380,6 @@ namespace gge { namespace graphics {
 #elif defined(LINUX)
 			glXSwapBuffers((Display*)hDC, win);
 #endif
-		}
-
-		void SetRenderTarget(GLuint Target) {
-			glBindFramebuffer(GL_FRAMEBUFFER, Target);
-		}
-
-		void DumpOffscreen() {
-
-			static const glm::mat4x3 vertex_coords = glm::mat4x3(  -1.0f, 1.0f, 0.0f,
-																	1.0f, 1.0f, 0.0f,
-																	1.0f,-1.0f, 0.0f,
-																   -1.0f,-1.0f, 0.0f	);
-
-			static const glm::mat4x2 tex_coords = glm::mat4x2(		0.0f, 1.0f,
-																	1.0f, 1.0f,
-																	1.0f, 0.0f,
-																	0.0f, 0.0f		);
-			gge::shaders::SimpleShader::Use()
-				.SetVertexCoords(vertex_coords)
-				.SetTextureCoords(tex_coords)
-				.SetDiffuse(system::FBTexture);
-
-			gge::graphics::UnitQuad::Draw();
-		}
-
-		void SetupFrameBuffer() {
-			if(FBTexture)
-				glDeleteTextures(1, &FBTexture);
-
-			glGenTextures(1, &FBTexture);
-			glBindTexture(GL_TEXTURE_2D, FBTexture);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ScreenSize.Width, ScreenSize.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-			glBindTexture(GL_TEXTURE_2D, 0);
-
-			// Create a FBO in anticipation of render-to-texture
-			if(FrameBuffer)
-				glDeleteFramebuffers(1, &system::FrameBuffer);
-			glGenFramebuffers(1, &system::FrameBuffer);
-			system::SetRenderTarget(system::FrameBuffer);
-
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBTexture, 0);
-			
-			GLenum status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
-			log << "Framebuffer status: " << status << '\n';
-			system::SetRenderTarget(0);
 		}
 	}
 

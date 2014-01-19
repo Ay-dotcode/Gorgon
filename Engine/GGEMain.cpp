@@ -79,7 +79,9 @@ namespace gge {
 		static unsigned int lastFPSUpdate=CurrentTime;
 		static int fpscounter=0;
 		///*Setting game time
-		CurrentTime=os::GetTime();
+		auto now=os::GetTime();
+		DeltaTime=now-CurrentTime;
+		CurrentTime=now;
 		if(CurrentTime-lastFPSUpdate>=1000) {
 			FPS=fpscounter;
 			fpscounter=1;

@@ -15,8 +15,10 @@ namespace gge { namespace graphics {
 	Point translate;
 	Bounds scissors(0,0, 100000,100000);
 
-	// ShaderType has to inherit from ShaderBase
+	namespace system { GLuint lasttexture=0; }
 	template<class ShaderType>
+	// ShaderType has to inherit from ShaderBase, uses lasttexture, if there is another function to modify
+	// texture parameters apart from rendersurface, lasttexture should be set 0 prior to calling this function
 	void RenderSurface(const BasicSurface& surface)
 	{
 		glm::mat4 vertex_coords;
@@ -28,14 +30,25 @@ namespace gge { namespace graphics {
 		glm::mat4x2 tex_coords;
 		for (int i = 0; i < 4; ++i) tex_coords[i] = glm::vec2(surface.TextureCoords[i].s, surface.TextureCoords[i].t);
 
-		ShaderType::Use()
-			.SetVertexCoords(vertex_coords_3d)
-			.SetTextureCoords(tex_coords)
-			.SetDiffuse(surface.GetTexture()->ID);
+		if(system::lasttexture==surface.GetTexture()->ID) {
+			ShaderType::Use()
+				.SetVertexCoords(vertex_coords_3d)
+				.SetTextureCoords(tex_coords);
+		}
+		else {
+			ShaderType::Use()
+				.SetVertexCoords(vertex_coords_3d)
+				.SetTextureCoords(tex_coords)
+				.SetDiffuse(surface.GetTexture()->ID);
+			system::lasttexture=surface.GetTexture()->ID;
+		}
+
 			
 		UnitQuad::Draw();
 	}
 
+	// ShaderType has to inherit from ShaderBase, uses lasttexture, if there is another function to modify
+	// texture parameters apart from rendersurface, lasttexture should be set 0 prior to calling this function
     template<class ShaderType>
 	void RenderSurface(const BasicSurface& surface, TexturePosition *maskTexCoords, GLuint maskTextureID)
 	{
@@ -49,16 +62,26 @@ namespace gge { namespace graphics {
 		glm::mat4x4 tex_coords;
 		for (int i = 0; i < 4; ++i) tex_coords[i] = glm::vec4(surface.TextureCoords[i].s, surface.TextureCoords[i].t, maskTexCoords[i].s, maskTexCoords[i].t);
 
-		ShaderType::Use()
-			.SetVertexCoords(vertex_coords_3d)
-			.SetTextureCoords(tex_coords)
-			.SetDiffuse(surface.GetTexture()->ID)
-			.SetMask(maskTextureID);
+		if(system::lasttexture==surface.GetTexture()->ID) {
+			ShaderType::Use()
+				.SetVertexCoords(vertex_coords_3d)
+				.SetTextureCoords(tex_coords)
+				.SetMask(maskTextureID);
+		}
+		else {
+			ShaderType::Use()
+				.SetVertexCoords(vertex_coords_3d)
+				.SetTextureCoords(tex_coords)
+				.SetDiffuse(surface.GetTexture()->ID)
+				.SetMask(maskTextureID);
+			system::lasttexture=surface.GetTexture()->ID;
+		}
 			
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, maskTextureID);
 		UnitQuad::Draw();
 	}
+
 
 	void Basic2DLayer::Draw(const GLTexture *Image, float X1, float Y1, float X2, float Y2, float X3, float Y3, float X4, float Y4) {
 		if(DrawMode==BasicSurface::SetAlpha && Surfaces.GetCount()) {
@@ -176,7 +199,6 @@ namespace gge { namespace graphics {
 		/*glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();*/
 		glutil::PushStack _(ModelViewMatrixStack);
-		//glTranslatef(BoundingBox.Left, BoundingBox.Top, 0);
 		ModelViewMatrixStack.Translate(BoundingBox.Left, BoundingBox.Top, 0.0f);
 		translate+=BoundingBox.TopLeft();
 
@@ -200,47 +222,26 @@ namespace gge { namespace graphics {
 
 		int i;
 
+		system::lasttexture=0;
 		for(i=0;i<Surfaces.GetCount();i++) {
 			BasicSurface *surface=Surfaces[i];
-			if(surface->Mode!=currentdrawmode) {
-				currentdrawmode=surface->Mode;
 
-				if(currentdrawmode==BasicSurface::Normal) {
-					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-					if(system::OffscreenRendering) {
-						system::SetRenderTarget(0);
-						system::OffscreenRendering=false;
-						DumpOffscreen();
-					}
-				}
-				else if(currentdrawmode==BasicSurface::Offscreen) {
-					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-					if(!system::OffscreenRendering) {
-						system::SetRenderTarget(FrameBuffer);
-						glClearColor(0,0,0,0);
-						glClear(GL_COLOR_BUFFER_BIT);
-						glClearColor(0,0,0,1);
+			if(surface->VertexCoords[0].y-translate.y<scissors.Top && surface->VertexCoords[1].y-translate.y<scissors.Top && 
+				surface->VertexCoords[2].y-translate.y<scissors.Top && surface->VertexCoords[3].y-translate.y<scissors.Top)
+				continue;
 
-						system::OffscreenRendering=true;
-					}
-				}
-				else if(currentdrawmode==BasicSurface::OffscreenAlphaOnly) {
-					if(!system::OffscreenRendering) {
-						system::SetRenderTarget(FrameBuffer);
-						glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-						glClearColor(0,0,0,0);
-						glClear(GL_COLOR_BUFFER_BIT);
-						glClearColor(0,0,0,1);
+			if(surface->VertexCoords[0].y+translate.y>scissors.Bottom && surface->VertexCoords[1].y+translate.y>scissors.Bottom &&
+				surface->VertexCoords[2].y+translate.y>scissors.Bottom && surface->VertexCoords[3].y+translate.y>scissors.Bottom)
+				continue;
 
-						system::OffscreenRendering=true;
-					}
-					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-					glBlendFunc(GL_DST_COLOR, GL_ZERO);
-				}
+			if(surface->VertexCoords[0].x-translate.x<scissors.Left && surface->VertexCoords[1].x-translate.x<scissors.Left && 
+				surface->VertexCoords[2].x-translate.x<scissors.Left && surface->VertexCoords[3].x-translate.x<scissors.Left)
+				continue;
 
-			}
+			if(surface->VertexCoords[0].x+translate.x>scissors.Right && surface->VertexCoords[1].x+translate.x>scissors.Right &&
+				surface->VertexCoords[2].x+translate.x>scissors.Right && surface->VertexCoords[3].x+translate.x>scissors.Right)
+				continue;
+
 			if(surface->Alpha) {
 				RenderSurface<gge::shaders::MaskedShader>(*surface, surface->Alpha->TextureCoords, surface->Alpha->GetTexture()->ID);
 			}
@@ -249,21 +250,12 @@ namespace gge { namespace graphics {
 			}
 		}
 
-		if(system::OffscreenRendering) {
-			system::OffscreenRendering=false;
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			system::SetRenderTarget(0);
-			DumpOffscreen();
-		}
 
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.IsValid(); i.Previous()) {
+		for(auto i=SubLayers.Last(); i.IsValid(); i.Previous()) {
 			i->Render();
 		}
 
 end:
-		//glPopMatrix();
 		translate-=BoundingBox.TopLeft();
 
 		if(ClippingEnabled) {
@@ -273,8 +265,6 @@ end:
 
 		//make sure everything is back in its place
 		glPopAttrib();
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	}
 
 	Basic2DLayer::~Basic2DLayer() {
@@ -408,13 +398,8 @@ end:
 		translate+=BoundingBox.TopLeft();
 
 		RGBfloat prevcolor=CurrentLayerColor;
-		CurrentLayerColor.a*=(float)Ambient.a/255;
-		CurrentLayerColor.r*=(float)Ambient.r/255;
-		CurrentLayerColor.g*=(float)Ambient.g/255;
-		CurrentLayerColor.b*=(float)Ambient.b/255;
-
-		gge::shaders::SimpleTintShader::Use();
-
+		CurrentLayerColor=CurrentLayerColor*RGBfloat(Ambient);
+		
 		if(ClippingEnabled) {
 			glEnable(GL_SCISSOR_TEST);
 			if(translate.x>scissors.Left)
@@ -438,54 +423,29 @@ end:
 
 		int i;
 
+		system::lasttexture=0;
 		for(i=0;i<Surfaces.GetCount();i++) {
 			ColorizableSurface *surface=Surfaces[i];
 
-			if(surface->Mode!=currentdrawmode) {
-				currentdrawmode=surface->Mode;
-
-				if(currentdrawmode==BasicSurface::Normal && system::OffscreenRendering) {
-					system::OffscreenRendering=false;
-					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-					system::SetRenderTarget(0);
-					DumpOffscreen();
-				}
-				else if(currentdrawmode==BasicSurface::Offscreen) {
-					glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-					if(!system::OffscreenRendering) {
-						system::SetRenderTarget(FrameBuffer);
-						glClearColor(0,0,0,0);
-						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-						glClear(GL_COLOR_BUFFER_BIT);
-						glClearColor(0,0,0,1);
-
-						system::OffscreenRendering=true;
-					}
-				}
-				else if(currentdrawmode==BasicSurface::OffscreenAlphaOnly) {
-					if(!system::OffscreenRendering) {
-						system::SetRenderTarget(FrameBuffer);
-						glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-						glClearColor(0,0,0,0);
-						glClear(GL_COLOR_BUFFER_BIT);
-						glClearColor(0,0,0,1);
-
-						system::OffscreenRendering=true;
-					}
-					glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-					glBlendFunc(GL_DST_COLOR, GL_ZERO);
-				}
-
-			}
-
 			RGBfloat tint;
-			tint.r = surface->Color.r * CurrentLayerColor.r;
-			tint.g = surface->Color.g * CurrentLayerColor.g;
-			tint.b = surface->Color.b * CurrentLayerColor.b;
-			tint.a = surface->Color.a * CurrentLayerColor.a;
-			
+			tint = surface->Color * CurrentLayerColor;
+
+			if(surface->VertexCoords[0].y-translate.y<scissors.Top && surface->VertexCoords[1].y-translate.y<scissors.Top && 
+				surface->VertexCoords[2].y-translate.y<scissors.Top && surface->VertexCoords[3].y-translate.y<scissors.Top)
+				continue;
+
+			if(surface->VertexCoords[0].y+translate.y>scissors.Bottom && surface->VertexCoords[1].y+translate.y>scissors.Bottom &&
+				surface->VertexCoords[2].y+translate.y>scissors.Bottom && surface->VertexCoords[3].y+translate.y>scissors.Bottom)
+				continue;
+
+			if(surface->VertexCoords[0].x-translate.x<scissors.Left && surface->VertexCoords[1].x-translate.x<scissors.Left && 
+				surface->VertexCoords[2].x-translate.x<scissors.Left && surface->VertexCoords[3].x-translate.x<scissors.Left)
+				continue;
+
+			if(surface->VertexCoords[0].x+translate.x>scissors.Right && surface->VertexCoords[1].x+translate.x>scissors.Right &&
+				surface->VertexCoords[2].x+translate.x>scissors.Right && surface->VertexCoords[3].x+translate.x>scissors.Right)
+				continue;
+
 			if(surface->Alpha) {
 				gge::shaders::TintedMaskedShader::Use().SetTint(tint);
 				RenderSurface<gge::shaders::TintedMaskedShader>(*surface, surface->Alpha->TextureCoords, surface->Alpha->GetTexture()->ID);
@@ -495,20 +455,10 @@ end:
 				RenderSurface<gge::shaders::SimpleTintShader>(*surface);
 			}
 		}
-
-		if(system::OffscreenRendering) {
-			system::OffscreenRendering=false;
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			system::SetRenderTarget(0);
-			DumpOffscreen();
-		}
-
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		shaders::SimpleTintShader::Use().SetTint(CurrentLayerColor);
-		//glColor4fv(CurrentLayerColor.vect);
+		
 		// What are we doing here with this color4fv?
-		for(utils::SortedCollection<LayerBase>::Iterator i=SubLayers.Last(); i.IsValid(); i.Previous()) {
+		//! Sublayers are no longer force-colorized
+		for(auto i=SubLayers.Last(); i.IsValid(); i.Previous()) {
 			i->Render();
 		}
 
@@ -526,8 +476,6 @@ end:
 		}
 
 		glPopAttrib();
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
 	}
 
 

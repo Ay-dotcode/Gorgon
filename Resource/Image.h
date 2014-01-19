@@ -50,15 +50,16 @@ namespace gge { namespace resource {
 		/// an image object. This flag is used by other systems.
 		bool LeaveData;
 
-		Image() : animation::Base(), ImageTexture(), ImageData(), 
-			CompressionProps(), Palette(), Compression(PNG), LateLoading(false) 
+		Image() : animation::Base(), ImageTexture(), ImageData(), parent(nullptr),
+			CompressionProps(), Palette(), Compression(PNG), LateLoading(false),
+			isLoaded(false), LeaveData(false)
 		{
-			isLoaded=LeaveData=false;
 			animation::Animations.Remove(this);
 		}
 
 		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), 
-			ImageTexture(), ImageData(), CompressionProps(), Palette(), Compression(PNG), LateLoading(false) 
+			ImageTexture(), ImageData(), CompressionProps(), Palette(), Compression(PNG), LateLoading(false), parent(nullptr),
+			isLoaded(true), LeaveData(true)
 		{
 			this->Resize(Width, Height, Mode);
 			animation::Animations.Remove(this);
@@ -126,6 +127,9 @@ namespace gge { namespace resource {
 		//Assumes all image heights are similar and all images have same color mode
 		std::vector<utils::Bounds> CreateLinearAtlas(utils::OrderedCollection<Image> list);
 
+		//Creates images from the given atlas image and map. Prepares every image as well. This requires img to be prepared
+		utils::OrderedCollection<Image> CreateAtlasImages(const std::vector<utils::Bounds> &boundaries) const;
+
 		virtual int GetWidth() const {
 			if(Texture.ID) {
 				return ImageTexture::GetWidth();
@@ -165,6 +169,9 @@ namespace gge { namespace resource {
 		////Location of image data within the file, used for late loading
 		int DataLocation;
 		bool LateLoading;
+
+		//Parent image when acting as an atlas node
+		const Image *parent;
 
 		void blurargb(float amount, int windowsize, Image *img);
 		void bluralpha(float amount, int windowsize, Image *img);

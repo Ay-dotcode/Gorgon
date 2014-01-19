@@ -804,7 +804,35 @@ namespace gge { namespace resource {
 	}
 
 	void BitmapFont::Prepare(GGEMain &main, File &file) {
-		Base::Prepare(main, file);
+		if(noatlas) {
+			Base::Prepare(main, file);
+		}
+		else {
+			Image *baseatlas=new Image;
+			destructionlist.Add(baseatlas);
+			utils::OrderedCollection<Image> imagelist;
+
+			for(auto &item : Subitems) {
+				if(item.GetGID()==GID::Image) {
+					imagelist.Add(dynamic_cast<Image&>(item));
+				}
+			}
+
+			auto ret=baseatlas->CreateLinearAtlas(imagelist);
+			baseatlas->Prepare(main, file);
+			auto images=baseatlas->CreateAtlasImages(ret);
+
+			int ind=0;
+			for(auto &im : imagelist) {
+				for(int i=0;i<256;i++) {
+					if(Characters[i]==&im) {
+						Characters[i]=&images[ind];
+					}
+				}
+				destructionlist.Add(images[ind]);
+				ind++;
+			}
+		}
 
 		if(!noshadows) {
 			Blur(1.f);
@@ -819,6 +847,8 @@ namespace gge { namespace resource {
 				it->second=NULL;
 			}
 		}
+
+		destructionlist.Destroy();
 	}
 
 } }

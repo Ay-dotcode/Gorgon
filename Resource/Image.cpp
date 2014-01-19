@@ -108,7 +108,7 @@ namespace gge { namespace resource {
 
 	void Image::Prepare() {
 #ifdef _DEBUG
-		if(Data==NULL) {
+		if(!Data.GetSize()) {
 			os::DisplayMessage("Image Resource","Data is not loaded yet.");
 			assert(0);
 		}
@@ -694,6 +694,45 @@ namespace gge { namespace resource {
 			linepos[minindex]+=w;
 		}
 		
+
+		return ret;
+	}
+
+	utils::OrderedCollection<Image> Image::CreateAtlasImages(const std::vector<utils::Bounds> &boundaries) const {
+		if(Texture.ID<=0) throw std::runtime_error("Cannot map atlas from an unprepared image");
+
+		utils::OrderedCollection<Image> ret;
+
+		float fullwidth =(float)GetWidth();
+		float fullheight=(float)GetHeight();
+		auto  textureid =Texture.ID;
+		for(auto boundary : boundaries) {
+			Image *img=new Image;
+
+			img->parent=this;
+			img->Texture.ID=textureid;
+
+			img->Texture.ImageCoord[0].s=
+			img->Texture.ImageCoord[3].s= boundary.Left/fullwidth;
+
+			img->Texture.ImageCoord[1].s=
+			img->Texture.ImageCoord[2].s= boundary.Right/fullwidth;
+
+			img->Texture.ImageCoord[0].t=
+			img->Texture.ImageCoord[1].t= boundary.Top/fullheight;
+
+			img->Texture.ImageCoord[2].t=
+			img->Texture.ImageCoord[3].t= boundary.Bottom/fullheight;
+
+			img->Texture.W=boundary.Width();
+			img->Texture.H=boundary.Height();
+
+			img->isLoaded=true;
+			img->file=file;
+			img->LeaveData=false;
+
+			ret.Add(img);
+		}
 
 		return ret;
 	}
