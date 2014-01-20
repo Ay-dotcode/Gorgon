@@ -825,7 +825,8 @@ namespace gge { namespace resource {
 
 			auto ret=baseatlas->CreateLinearAtlas(imagelist);
 			baseatlas->Prepare(main, file);
-			auto images=baseatlas->CreateAtlasImages(ret);
+			utils::OrderedCollection<Image> images;
+			images=baseatlas->CreateAtlasImages(ret);
 
 			int ind=0;
 			for(auto &im : imagelist) {
