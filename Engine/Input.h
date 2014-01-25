@@ -78,22 +78,22 @@ namespace gge {
 
 		////Bitwise OR operation on KeyboardModifier enumeration
 		inline Modifier::Type operator | (Modifier::Type m1, Modifier::Type m2) {
-			return Modifier::Type( m1|m2 );
+			return Modifier::Type( int(m1)|m2 );
 		}
 
 		////Bitwise AND operation on KeyboardModifier enumeration
 		inline Modifier::Type operator & (Modifier::Type m1, Modifier::Type m2) {
-			return Modifier::Type( m1&m2 );
+			return Modifier::Type( int(m1)&m2 );
 		}
 
 		////Bitwise EQUAL OR operation on KeyboardModifier enumeration
 		inline Modifier::Type operator |= (Modifier::Type m1, Modifier::Type m2) {
-			return Modifier::Type( m1|m2 );
+			return Modifier::Type( int(m1)|m2 );
 		}
 
 		////Bitwise EQUAL AND operation on KeyboardModifier enumeration
 		inline Modifier::Type operator &= (Modifier::Type m1, Modifier::Type m2) {
-			return Modifier::Type( m1&m2 );
+			return Modifier::Type( int(m1)&m2 );
 		}
 
 		namespace KeyCodes {
