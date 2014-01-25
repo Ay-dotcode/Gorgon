@@ -184,7 +184,7 @@ namespace gge { namespace widgets { namespace dialog {
 			else
 				SetContainer(TopLevel);
 			MessageText="";
-			InputNumber=0;
+			InputNumber=T_();
 			Title="";
 
 			SetIcon("question");
