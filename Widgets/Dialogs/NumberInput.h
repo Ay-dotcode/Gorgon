@@ -24,8 +24,8 @@ namespace gge { namespace widgets { namespace dialog {
 			init();
 		}
 
-		template<class T_>
-		NumberInput(const T_ &msg) : INIT_PROPERTY(NumberInput, MessageText), 
+		template<class K_>
+		NumberInput(const K_ &msg) : INIT_PROPERTY(NumberInput, MessageText), 
 			INIT_PROPERTY(NumberInput, OkButtonText), INIT_PROPERTY(NumberInput, CancelButtonText),
 			INIT_PROPERTY(NumberInput, InputNumber)
 		{
@@ -33,8 +33,8 @@ namespace gge { namespace widgets { namespace dialog {
 			InputNumber=msg;
 		}
 
-		template<class T_>
-		NumberInput(const T_ &msg, const std::string &icon) : INIT_PROPERTY(NumberInput, MessageText), 
+		template<class K_>
+		NumberInput(const K_ &msg, const std::string &icon) : INIT_PROPERTY(NumberInput, MessageText), 
 			INIT_PROPERTY(NumberInput, OkButtonText), INIT_PROPERTY(NumberInput, CancelButtonText),
 			INIT_PROPERTY(NumberInput, InputNumber)
 		{
@@ -236,11 +236,11 @@ namespace gge { namespace widgets { namespace dialog {
 		}
 	};
 
-	template<class T_>
-	NumberInput<T_> &AskNumber(const std::string &msg, T_ Default, const std::string &Title) {
-		static std::vector<NumberInput<T_>*> NumberInputs;
+	template<class K_>
+	NumberInput<K_> &AskNumber(const std::string &msg, K_ Default, const std::string &Title) {
+		static std::vector<NumberInput<K_>*> NumberInputs;
 
-		NumberInput<T_> *m=NULL;
+		NumberInput<K_> *m=NULL;
 		for(auto it=NumberInputs.begin();it!=NumberInputs.end();++it) {
 			if(!(*it)->IsVisible()) {
 				m=*it;
@@ -249,7 +249,7 @@ namespace gge { namespace widgets { namespace dialog {
 		}
 
 		if(!m) {
-			m=new NumberInput<T_>;
+			m=new NumberInput<K_>;
 			NumberInputs.push_back(m);
 		}
 

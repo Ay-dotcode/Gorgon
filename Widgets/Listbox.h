@@ -1079,7 +1079,7 @@ namespace gge { namespace widgets {
 		}
 
 		void Add(T_ &value) {
-			add(value);
+			this->add(value);
 		}
 
 		//nullptrs are ignored
@@ -1090,7 +1090,7 @@ namespace gge { namespace widgets {
 
 		T_ &AddNew() {
 			T_ &t=*new T_;
-			add(t);
+			this->add(t);
 
 			return t;
 		}
