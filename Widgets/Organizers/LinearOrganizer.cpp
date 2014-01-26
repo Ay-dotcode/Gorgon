@@ -56,6 +56,7 @@ namespace gge { namespace widgets {
 					(dynamic_cast<textbox::Base*>(widget)) ||
 					(dynamic_cast<ComboboxType*>(widget)) ||
 					(dynamic_cast<Panel*>(widget)) ||
+					(dynamic_cast<Checkbox*>(widget)) ||
 					(dynamic_cast<ListboxType*>(widget)) || 
 					(dynamic_cast<FullWidth*>(widget)) || 
 					(dynamic_cast<Label*>(widget) && col==(int)row->columns.size()-1 && maxsizedwidgets==0)
@@ -100,6 +101,7 @@ namespace gge { namespace widgets {
 						(dynamic_cast<textbox::Base*>(widget)) ||
 						(dynamic_cast<ComboboxType*>(widget)) ||
 						(dynamic_cast<Panel*>(widget)) ||
+						(dynamic_cast<Checkbox*>(widget)) || 
 						(dynamic_cast<ListboxType*>(widget)) || 
 						(dynamic_cast<FullWidth*>(widget)) || 
 						(dynamic_cast<Label*>(widget) && col==(int)row->columns.size()-1 && maxsizedwidgets>0)
