@@ -8,6 +8,7 @@
 #	include <cstdlib>
 #	include <cstring>
 #	define XK_MISCELLANY
+#include <pthread.h>
 
 	using namespace gge::utils;
 	using namespace gge::input;
@@ -100,7 +101,37 @@ static const int None=0;
 
 		void RunInNewThread(int(threadfncall *fn)(void *), void *data) {
 			pthread_t threadid;
-			pthread_create(&threadid, &common_thread_attr, (void*(*)(void *))fn, data);
+			pthread_create(&threadid, nullptr, (void*(*)(void *))fn, data);
+		}
+		
+		struct parallelrunnerinfo {
+			std::function<void(int)> fn;
+			int ind;
+		};
+		void *parallelrunner(void *inf) {
+			parallelrunnerinfo *info=(parallelrunnerinfo *)inf;
+			
+			info->fn(info->ind);
+			
+			return 0;
+		}
+		
+		void RunInParallel(std::function<void(int)> fn, int n) {
+			pthread_t threads[n];
+			parallelrunnerinfo info[n];
+			for(int i=0;i<n;i++) {
+				info[i].ind=i+50;
+			}
+			
+			for(int i=0;i<n;i++) {
+				info[i].fn=fn;
+				info[i].ind=i;
+				
+				pthread_create(&threads[i], nullptr, parallelrunner, (void*)(info+i));
+			}
+			for(int i=0;i<n;i++) {
+				pthread_join(threads[i], nullptr);
+			}
 		}
 
 		void OpenTerminal(std::string Title, int maxlines) {

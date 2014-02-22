@@ -89,6 +89,10 @@ namespace gge { namespace os {
 		*f=fn;
 		RunInNewThread(system::fnrunner, (void*)f);
 	}
+	
+	
+	void RunInParallel(std::function<void(int)> fn, int threads);
+	
 
 	class Mutex {
 	public:

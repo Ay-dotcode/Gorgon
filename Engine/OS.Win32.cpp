@@ -115,6 +115,8 @@
 			DWORD threadid;
 			CreateThread(NULL, 0, (unsigned long (__stdcall *)(void *))fn, data, 0, &threadid);
 		}
+		
+		void RunInParallel(std::function<void(int)> fn, int threads) {}
 
 		void OpenTerminal(std::string Title, int maxlines) {
 			int hConHandle;

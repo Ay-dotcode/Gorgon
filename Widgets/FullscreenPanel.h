@@ -32,7 +32,7 @@ namespace gge { namespace widgets {
 		void DisableScroll() { setupvscroll(false, false, true); }
 		void EnableScroll() { setupvscroll(false, true, true); }
 
-		using WidgetBase::Resize;
+		using panel::Base::Resize;
 
 		virtual void Resize(utils::Size Size) {
 			if(Size==WidgetBase::size || !Container) return;
@@ -49,6 +49,7 @@ namespace gge { namespace widgets {
 
 			Move(r.Left+(r.Width-Size.Width)/2, r.Top+(r.Height-Size.Height)/4);
 			Draw();
+			panel::Base::Resize(Size);
 		}
 
 		using WidgetBase::GetSize;
@@ -62,7 +63,6 @@ namespace gge { namespace widgets {
 		virtual void Move(utils::Point Location) {
 			if(!Container) return;
 			gge::Main.MoveWindow(Location);
-			location=Location;
 		}
 
 		virtual utils::Size GetUsableSize() {
