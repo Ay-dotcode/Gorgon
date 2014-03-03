@@ -9,10 +9,9 @@
 namespace gge { namespace resource {
 	class File;
 
-
-
-	////This function loads a bitmap font from the given file
+  ////This function loads a bitmap font from the given file
 	BitmapFont *LoadBitmapFontResource(File &File, std::istream &Data, int Size);
+  
 
 	////This is bitmap font. Bitmap fonts contains every character as images. It has its
 	/// pros and cons. Being bitmap, these fonts do not require extra rendering. They are
@@ -45,6 +44,8 @@ namespace gge { namespace resource {
 		int VerticalSpacing;
 		////Baseline from the top
 		int Baseline;
+
+    bool Import(std::string fontname, int size, char start=0x20, char end=0x79);
 
 		BitmapFont &Blur(float amount, int windowsize=-1);
 

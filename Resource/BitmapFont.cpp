@@ -2,6 +2,10 @@
 #include "File.h"
 #include "../Engine/Graphics.h"
 #include <algorithm>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #ifdef MSVC
 #	include <ppl.h>
 #endif
@@ -18,6 +22,7 @@ using namespace gge::utils;
 using namespace std;
 
 namespace gge { namespace resource {
+  
 	BitmapFont *LoadBitmapFontResource(File &File, std::istream &Data, int Size) {
 		BitmapFont *font=new BitmapFont;
 		int chmap[256]={};
@@ -744,6 +749,67 @@ namespace gge { namespace resource {
 
 		return y;
 	}
+
+  bool BitmapFont::Import(std::string fontname, int size, char start, char end) {
+    if(start > end) {
+      return false;
+    }
+
+    FT_Library instance;
+    FT_Face face;
+    int error;
+
+    error = FT_Init_FreeType(&instance);
+    if(error) {
+      return false;
+    }
+
+    FT_New_Face(instance, fontname.c_str(), 0, &face);
+    if (error) {
+      return false;
+    }
+
+
+    error = FT_Set_Pixel_Sizes(face, 0, size);
+    if(error) {
+      return false;
+    }
+
+    
+
+    for(int i = 0; i <= 255; i++) {
+      char ch = i;
+      if(i < start || i > end) {
+        ch = start;
+      }
+      unsigned int index = FT_Get_Char_Index(face, ch);
+      error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT);
+      if(error) {
+        return false;
+      }
+      if(face->glyph->format != FT_GLYPH_FORMAT_BITMAP) {
+        error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+        if(error) {
+          return false;
+        }
+      }
+      auto &bitmap = face->glyph->bitmap;
+      this->Characters[i] = new Image;
+      auto &img = *this->Characters[i];
+      img.Resize(bitmap.width, bitmap.rows, gge::graphics::ColorMode::ABGR);
+      for(int y = 0; y < img.GetHeight(); y++) {
+        for(int x = 0; x < img.GetWidth(); x++) {
+          img(x, y, 0) = 255;
+          img(x, y, 1) = 255;
+          img(x, y, 2) = 255;
+          img(x, y, 3) = bitmap.buffer[y * bitmap.pitch + x];
+        }
+      }
+      img.Prepare();
+    }
+    this->Baseline = face->glyph->metrics.horiBearingY;
+    return true;
+  }
 
 	BitmapFont & BitmapFont::Blur(float amount, int windowsize/*=-1*/) {
 		if(Shadows[amount])

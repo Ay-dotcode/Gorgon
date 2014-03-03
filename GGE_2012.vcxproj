@@ -43,7 +43,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>./</OutDir>
     <TargetName>GGE_d</TargetName>
-    <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>External/FreeType/include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>./</OutDir>
@@ -64,7 +64,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib;Shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;External/OpenAL/OpenAL32.lib;winmm.lib;gdi32.lib;shell32.lib;advapi32.lib;user32.lib;ole32.lib;External\cURL\libcurld.lib;Shlwapi.lib;External\FreeType\ft_d.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>
