@@ -777,11 +777,7 @@ namespace gge { namespace resource {
 
     
 
-    for(int i = 0; i <= 255; i++) {
-      char ch = i;
-      if(i < start || i > end) {
-        ch = start;
-      }
+    for(int ch = start; ch <= end; ch++) {
       unsigned int index = FT_Get_Char_Index(face, ch);
       error = FT_Load_Glyph(face, index, FT_LOAD_DEFAULT);
       if(error) {
@@ -794,9 +790,13 @@ namespace gge { namespace resource {
         }
       }
       auto &bitmap = face->glyph->bitmap;
-      this->Characters[i] = new Image;
-      auto &img = *this->Characters[i];
+      this->Characters[ch] = new Image;
+      auto &img = *Characters[ch];
+      Subitems.Add(Characters[ch]);
       img.Resize(bitmap.width, bitmap.rows, gge::graphics::ColorMode::ABGR);
+      if(!bitmap.width || !bitmap.rows) {
+        //return false;
+      }
       for(int y = 0; y < img.GetHeight(); y++) {
         for(int x = 0; x < img.GetWidth(); x++) {
           img(x, y, 0) = 255;
@@ -805,9 +805,13 @@ namespace gge { namespace resource {
           img(x, y, 3) = bitmap.buffer[y * bitmap.pitch + x];
         }
       }
-      img.Prepare();
+      //FT_Done_Glyph(face->glyph);
     }
-    this->Baseline = face->glyph->metrics.horiBearingY;
+    for(int i=0;i<255;i++) {
+      if(i<start || i>end)
+        Characters[i]=Characters[start];
+    }
+    Baseline = face->glyph->metrics.horiBearingY;
     return true;
   }
 

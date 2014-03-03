@@ -91,6 +91,11 @@ namespace gge { namespace resource {
 		virtual int FontBaseline() { return Baseline; }
 
 		virtual void Prepare(GGEMain &main, File &file);
+    void Prepare() {
+      gge::resource::File dummy;
+
+      Prepare(Main, dummy);
+    }
 
 		virtual ~BitmapFont();
 
