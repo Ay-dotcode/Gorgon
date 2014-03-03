@@ -2,6 +2,11 @@
 #include "File.h"
 #include "../Engine/Graphics.h"
 #include <algorithm>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_GLYPH_H
+
 #ifdef MSVC
 #	include <ppl.h>
 #endif
@@ -18,6 +23,7 @@ using namespace gge::utils;
 using namespace std;
 
 namespace gge { namespace resource {
+  
 	BitmapFont *LoadBitmapFontResource(File &File, std::istream &Data, int Size) {
 		BitmapFont *font=new BitmapFont;
 		int chmap[256]={};
@@ -743,6 +749,104 @@ namespace gge { namespace resource {
 		}
 
 		return y;
+	}
+
+	bool BitmapFont::Import(std::string fontname, int size, char start, char end) {
+		if(start > end) {
+			return false;
+		}
+
+		FT_Library instance;
+		FT_Face face;
+		int error;
+
+		error = FT_Init_FreeType(&instance);
+		if(error) {
+			return false;
+		}
+
+		FT_New_Face(instance, fontname.c_str(), 0, &face);
+		if (error) {
+			return false;
+		}
+
+
+		error = FT_Set_Pixel_Sizes(face, 0, size);
+		if(error) {
+			return false;
+		}
+
+
+		std::vector<FT_Glyph> all(end-start+1);
+		std::vector<utils::Size> sizes(end-start+1);
+		std::vector<utils::Point> starts(end-start+1);
+
+		Baseline=0;
+		int vsize=0;
+		int xdist=0;
+		VerticalSpacing=size*face->height/face->units_per_EM;
+		for(int ch = start; ch <= end; ch++) {
+			unsigned int index = FT_Get_Char_Index(face, ch);
+
+			error = FT_Load_Glyph(face, index, FT_LOAD_RENDER);
+			if(error) {
+				return false;
+			}
+
+			error = FT_Get_Glyph(face->glyph, &all[ch-start]);
+			if(error) {
+				return false;
+			}
+
+			if(Baseline<face->glyph->bitmap_top)
+				Baseline = face->glyph->bitmap_top;
+
+			sizes[ch-start].Width=std::max<int>(face->glyph->metrics.horiAdvance/64,face->glyph->bitmap.width);
+			sizes[ch-start].Height=face->glyph->bitmap.rows;
+			starts[ch-start]=utils::Point(face->glyph->bitmap_left, face->glyph->bitmap_top);
+		}
+
+		for(int i=0;i<end-start+1;i++) {
+			int totalsize=(Baseline-starts[i].y)+sizes[i].Height;
+			if(totalsize>vsize)
+				vsize=totalsize;
+		}
+
+		for(int ch = start; ch <= end; ch++) {
+			int size=sizes[ch-start].Width;
+			if(size==0)
+				size=5;
+
+			auto &img = *new Image;
+			this->Characters[ch] = &img;
+			Subitems.Add(img);
+			img.Resize(size, vsize, gge::graphics::ColorMode::ABGR);
+			memset(img.getdata().GetBuffer(), 0, img.getdata().GetSize());
+
+			if(sizes[ch-start].Width==0 || all[ch-start]->format!=FT_GLYPH_FORMAT_BITMAP || !((FT_BitmapGlyph)all[ch-start])->bitmap.width || !((FT_BitmapGlyph)all[ch-start])->bitmap.rows) {
+				continue;
+			}
+			
+			auto &bitmap = ((FT_BitmapGlyph)all[ch-start])->bitmap;
+
+			int ystart=Baseline-starts[ch-start].y;
+			int xstart=starts[ch-start].x;
+			for(int y = 0; y < bitmap.rows; y++) {
+				for(int x = 0; x < bitmap.width; x++) {
+					img(x, y+ystart, 0) = 255;
+					img(x, y+ystart, 1) = 255;
+					img(x, y+ystart, 2) = 255;
+					img(x, y+ystart, 3) = bitmap.buffer[y * bitmap.pitch + x];
+				}
+			}
+			FT_Done_Glyph(all[ch-start]);
+		}
+		for(int i=0;i<255;i++) {
+			if(i<start || i>end)
+				Characters[i]=Characters[start];
+		}
+
+		return true;
 	}
 
 	BitmapFont & BitmapFont::Blur(float amount, int windowsize/*=-1*/) {
