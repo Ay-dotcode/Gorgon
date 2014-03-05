@@ -769,7 +769,7 @@ namespace gge { namespace resource {
 			return false;
 		}
 
-		FT_New_Face(instance, fontname.c_str(), 0, &face);
+		error = FT_New_Face(instance, fontname.c_str(), 0, &face);
 		if (error) {
 			return false;
 		}
