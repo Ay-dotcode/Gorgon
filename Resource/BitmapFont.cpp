@@ -751,7 +751,11 @@ namespace gge { namespace resource {
 		return y;
 	}
 
-	bool BitmapFont::Import(std::string fontname, int size, char start, char end) {
+  bool BitmapFont::Import(std::string fontname,  int size, char start, char end) {
+    return import(fontname, size, start, end, [] () -> Image* { return new Image; });
+  }
+
+	bool BitmapFont::import(std::string fontname,  int size, char start, char end, std::function<Image*()> allocator) {
 		if(start > end) {
 			return false;
 		}
@@ -817,11 +821,11 @@ namespace gge { namespace resource {
 			if(size==0)
 				size=5;
 
-			auto &img = *new Image;
-			this->Characters[ch] = &img;
+			auto img = allocator();
+			this->Characters[ch] = img;
 			Subitems.Add(img);
-			img.Resize(size, vsize, gge::graphics::ColorMode::ABGR);
-			memset(img.getdata().GetBuffer(), 0, img.getdata().GetSize());
+			img->Resize(size, vsize, gge::graphics::ColorMode::ARGB);
+			memset(img->getdata().GetBuffer(), 0, img->getdata().GetSize());
 
 			if(sizes[ch-start].Width==0 || all[ch-start]->format!=FT_GLYPH_FORMAT_BITMAP || !((FT_BitmapGlyph)all[ch-start])->bitmap.width || !((FT_BitmapGlyph)all[ch-start])->bitmap.rows) {
 				continue;
@@ -833,10 +837,10 @@ namespace gge { namespace resource {
 			int xstart=starts[ch-start].x;
 			for(int y = 0; y < bitmap.rows; y++) {
 				for(int x = 0; x < bitmap.width; x++) {
-					img(x, y+ystart, 0) = 255;
-					img(x, y+ystart, 1) = 255;
-					img(x, y+ystart, 2) = 255;
-					img(x, y+ystart, 3) = bitmap.buffer[y * bitmap.pitch + x];
+          (*img)(x, y+ystart, 0) = 255;
+          (*img)(x, y+ystart, 1) = 255;
+          (*img)(x, y+ystart, 2) = 255;
+          (*img)(x, y+ystart, 3) = bitmap.buffer[y * bitmap.pitch + x];
 				}
 			}
 			FT_Done_Glyph(all[ch-start]);

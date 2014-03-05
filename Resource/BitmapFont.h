@@ -103,6 +103,7 @@ namespace gge { namespace resource {
 
 
 	protected:
+    bool import(std::string fontname, int size, char start, char end, std::function<Image*()> allocator);
 		bool noshadows;
 		bool noatlas;
 
