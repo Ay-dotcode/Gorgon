@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 PROJECT(GGE)
 
 ADD_DEFINITIONS(-DLINUX -fPIC -O3)
-SET(StandardFlags "-std=c++0x -Wall -Wno-reorder -Wno-unknown-pragmas -Wno-switch -Wno-unused-function")
+SET(StandardFlags "-std=c++0x -Wall -Wno-reorder -Wno-unknown-pragmas -Wno-switch -Wno-unused-function -m32")
 SET(ExternalCxxFlags "-fpermissive -Wno-unused-variable")
 SET(ExternalCFlags "-fpermissive -Wno-unused-variable")
 
