@@ -113,102 +113,10 @@ namespace gge { namespace os {
 	std::string GetAppDataPath();
 
 	namespace filesystem {
-		bool CreateDirectory(const std::string &name);
 
-		bool IsDirectoryExists(const std::string &Path);
-
-		bool IsFileExists(const std::string &Filename);
-
-		bool IsPathWritable(const std::string &Pathname);
-
-		bool IsPathHidden(const std::string &Filename);
-
-		std::string CanonizePath(const std::string &Pathname);
-
-		void DeleteFile(const std::string &Filename);
 
 
 		//Slow!
-		std::string LocateResource(std::string filename, std::string path="", bool localonly=true);
-
-		class EntryPoint {
-		public:
-			std::string Path;
-			bool Readable;
-			bool Writable;
-			unsigned Serial;
-			std::string Name;
-		};
-		std::vector<EntryPoint> EntryPoints();
-
-		class DirectoryIterator {
-		public:
-			typedef std::forward_iterator_tag iterator_category;
-			typedef std::string value_type;
-			typedef std::string *pointer_type;
-			typedef std::string &reference_type;
-			typedef std::string *pointer;
-			typedef std::string &reference;
-			typedef int difference_type;
-			typedef int distance_type;
-
-			typedef std::string Type;
-
-			DirectoryIterator(const std::string &dir, const std::string &pattern="*");
-			DirectoryIterator(const DirectoryIterator &dir);
-			DirectoryIterator();
-
-			std::string Get() const {
-				return current;
-			}
-
-			operator std::string() const {
-				return Get();
-			}
-
-			std::string operator *() const {
-				return Get();
-			}
-			
-			std::string *operator ->() {
-				return &current;
-			}
-
-			DirectoryIterator &operator ++() {
-				Next();
-
-				return *this;
-			}
-
-			void Next();
-
-			DirectoryIterator &operator +=(int i) {
-				for(int j=0;j<i;j++)
-					++(*this);
-				
-				return *this;
-			}
-
-			bool IsValid() const;
-
-			std::string Current() {
-				return Get();
-			}
-
-			bool operator ==(const DirectoryIterator &it) const {
-				return it.current==current;
-			}
-
-			bool operator !=(const DirectoryIterator &it) const {
-				return it.current!=current;
-			}
-
-		protected:
-			std::string current;
-			osdirenum dirinfo;
-		};
-
-		extern DirectoryIterator EndOfDirectory;
 	}
 
 	namespace input {

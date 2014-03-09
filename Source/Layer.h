@@ -135,18 +135,4 @@ namespace gge {
 	protected:
 	};
 
-	class InputLayer : public LayerBase, public input::mouse::EventProvider {
-	public:
- 		InputLayer() : LayerBase() { }
-
-		InputLayer(const utils::Bounds &b) : LayerBase(b) { }
-
-		InputLayer(int L, int T, int R, int B) : LayerBase(L,T,R,B) { }
-
-		InputLayer(int X,int Y) : LayerBase(X,Y) { }
-
-		InputLayer(const utils::Point &p) : LayerBase(p) { }
-
-		virtual bool PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount);
-	};
 }
