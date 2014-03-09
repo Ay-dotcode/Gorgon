@@ -1,0 +1,10 @@
+Build
+Debug
+
+syntax: glob
+
+*.obj
+ipch
+*.suo
+*.sdf
+*.opensdf
