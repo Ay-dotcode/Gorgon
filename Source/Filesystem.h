@@ -6,6 +6,19 @@ namespace Gorgon {
 	/// uses forward slash as directory separator. If necessary, the functions
 	/// will convert them.
 	namespace Filesystem {
+		
+		/// This object is thrown from functions that return
+		/// information rather than status.
+		class FileNotFoundError : public std::runtime_error {
+		public:
+			///
+			/// Default constructor
+			FileNotFoundError() : std::runtime_error("File not found") { }
+			
+			///
+			/// Constructor that sets error text
+			FileNotFoundError(const std::string &what) : std::runtime_error(what) { }
+		};
 	
 		/// Creates a new directory. This function works recursively to
 		/// create any missing parent directories as well. If directory
@@ -66,27 +79,104 @@ namespace Gorgon {
 		///         used as directory separator
 		std::string CurrentDirectory();
 		
+		/// Copies a file or directory from the given source to destination.
+		/// @param source file or directory. Should either be a single file, or single directory
+		/// @param target is the new filename or directory name
+		/// @return true on success
 		bool Copy(const std::string &source, const std::string &target);
 		
+		/// Copies a file or directory from the given source to destination.
+		/// @param source list of source file or directories
+		/// @param target is directory to copy files or directories into
+		/// @return true on success
+		bool Copy(const std::vector<std::string> &source, const std::string &target);
+		
+		/// Returns the size of the given file. If the file is not found 0 is returned.
+		/// @param filename is the name of the file
+		/// @return size of the given file
 		unsigned long long Size(const std::string &filename);
 		
+		/// Moves a given file or directory. Target is the new path rather than
+		/// the target directory. This function can also be used to rename a file or
+		/// directory.
+		/// @param source file or directory to be moved or renamed
+		/// @param target path
+		/// @return true on success
 		bool Move(const std::string &source, const std::string &target);
 		
-		bool Save(const std::string &filename, const std::string &data);
+		/// Saves a given data into the filename. If the file exists, it will be appended
+		/// if append parameter is set to true. This function can handle binary data.
+		bool Save(const std::string &filename, const std::string &data, bool append=false);
 		
-		//throws
+		/// Loads the given file and returns it in a string form. Notice that there is no
+		/// size restriction over the file. This function can handle binary data. Throws
+		/// FileNotFoundError if the file cannot be found. Before deciding on file is not 
+		/// found, this function checks if there is a lzma compressed file as filename.lzma
+		/// @param filename is the file to be loaded
+		/// @return the data loaded from the file
+		/// @throw FileNotFoundError if the file cannot be read or does not exits
 		std::string Load(const std::string &filename);
 		
-		std::string LocateResource(std::string filename, std::string path="", bool localonly=true);
+		/// Locates the given file or directory. If localonly is true, this function only
+		/// searches locations that are in the working directory. If it is set to false
+		/// standard system locations like user home directory or application data directory
+		/// is also searched. While looking for the resource, if the directory parameter is 
+		/// not empty, the resource is expected to be in the given directory under the local
+		/// or system wide directory. Additionally, if the file is found as a lzma compressed 
+		/// file, it will be extracted. For instance, if directory parameter is "images", 
+		/// localonly is false, systemname is system and we are looking for icon.png, this 
+		/// function checks whether file exists in the following forms. 
+		/// The first one found is returned, if none exists, FileNotFoundError exception is thrown.
+		/// The following list assume user path to be ~ application data path to be ~/apps
+		/// images/icon.png, ../images/icon.png, icon.png, ../icon.png,
+		/// images/icon.png.lzma, ../images/icon.png.lzma, icon.png.lzma, ../icon.png.lzma,
+		/// ~/.system/images/icon.png, ~/.system/images/icon.png.lzma, ~/apps/.system/images/icon.png,
+		/// ~/apps/.system/images/icon.png.lzma, ~/system/images/icon.png, ~/system/images/icon.png.lzma, 
+		/// ~/apps/system/images/icon.png, ~/apps/system/images/icon.png.lzma, ~/images/icon.png,
+		/// ~/images/icon.png.lzma, ~/apps/images/icon.png, ~/apps/images/icon.png.lzma, 
+		/// ~/system/icon.png, ~/system/icon.png.lzma, ~/apps/system/icon.png, 
+		/// ~/apps/system/icon.png.lzma
+		/// If compressed file is found, it fill be extracted in place, and the extracted filename
+		/// will be returned. Therefore, its not necessary to check if the file is compressed or not.
+		/// @param path is the filename or directory to be searched. Only compressed files are handled.
+		/// @param directory is the directory the resource expected to be in. Should be relative.
+		/// @param localonly if set, no system or user directories will be searched
+		/// @return the full path of the resource
+		/// @throw FileNotFoundError if the file cannot be found
+		std::string LocateResource(const std::string &path, const std::string &directory="", bool localonly=true);
 
+		/// This class represents filesystem entry points (roots, drives). On Linux like systems, the
+		/// only entry point is '/', however, user home directory is also listed. On Windows all drives as listed.
 		class EntryPoint {
 		public:
+		
+			///
+			/// Default constructor
+			EntryPoint() : Readable(), Writable(), Serial() { }
+		
+			/// The path of the entry point
 			std::string Path;
+			
+			/// Whether the entry point is readable. Currently all entry points are readable
 			bool Readable;
+			
+			/// Whether the entry point is writable. Notice that even an entry point is writable
+			/// it doesn't mean that the immediate path of the entry point is writable. It is 
+			/// possible that the user has no write access to the root of the entry point. If false
+			/// this denotes the entry point is fully read-only (like a CDROM)
 			bool Writable;
+			
+			/// Serial number of the entry point. Currently works on Windows drives
 			unsigned Serial;
+			
+			/// Name or label of the entry point.
 			std::string Name;
 		};
+		
+		/// This function returns all entry points in the current system. This function does not
+		/// perform caching and should be used sparingly. It may cause Windows systems to read 
+		/// external devices.
+		/// @return The list of entry points
 		std::vector<EntryPoint> EntryPoints();
 
 	}
