@@ -1,22 +1,13 @@
 #pragma once
 
-#include "../Utils/UtilsBase.h"
-#include "../Utils/Binary.h"
-#include "../Utils/Size2D.h"
-#include "../Utils/Rectangle2D.h"
-#include "../Utils/Bounds2D.h"
-#include "../Utils/Margins.h"
+#include "UtilsBase.h"
+#include "Binary.h"
+#include "Size2D.h"
+#include "Rectangle2D.h"
+#include "Bounds2D.h"
+#include "Margins.h"
 
-
-typedef unsigned long       DWORD;
-typedef int                 BOOL;
-typedef unsigned short      WORD;
-
-#pragma warning(disable:4355)
-
-
-////Gorgon Game Engine
-namespace gge {
+namespace Gorgon {
 
 	namespace Alignment {
 		enum Type {
@@ -46,27 +37,27 @@ namespace gge {
 		static const int Mask_Used			= B8(00111111);
 		static const int Mask_Invalid		= ~Mask_Used;
 		
-		inline bool isLeft(Type t) {
+		inline bool IsLeft(Type t) {
 			return (t&Mask_Horizontal) == Left;
 		}
 
-		inline bool isRight(Type t) {
+		inline bool IsRight(Type t) {
 			return (t&Mask_Horizontal) == Right;
 		}
 
-		inline bool isCenter(Type t) {
+		inline bool IsCenter(Type t) {
 			return (t&Mask_Horizontal) == Center;
 		}
 
-		inline bool isTop(Type t) {
+		inline bool IsTop(Type t) {
 			return (t&Mask_Vertical) == Top;
 		}
 
-		inline bool isBottom(Type t) {
+		inline bool IsBottom(Type t) {
 			return (t&Mask_Vertical) == Bottom;
 		}
 
-		inline bool isMiddle(Type t) {
+		inline bool IsMiddle(Type t) {
 			return (t&Mask_Vertical) == Middle;
 		}
 
@@ -85,93 +76,93 @@ namespace gge {
 			return true;
 		}
 
-		inline Type setLeft(Type t) {
+		inline Type SetLeft(Type t) {
 			return (Type)( (t&Mask_Vertical) | Left);
 		}
 
-		inline Type setRight(Type t) {
+		inline Type SetRight(Type t) {
 			return (Type)( (t&Mask_Vertical) | Right);
 		}
 
-		inline Type setCenter(Type t) {
+		inline Type SetCenter(Type t) {
 			return (Type)( (t&Mask_Vertical) | Center);
 		}
 
-		inline Type setTop(Type t) {
+		inline Type SetTop(Type t) {
 			return (Type)( (t&Mask_Horizontal) | Top);
 		}
 
-		inline Type setBottom(Type t) {
+		inline Type SetBottom(Type t) {
 			return (Type)( (t&Mask_Horizontal) | Bottom);
 		}
 
-		inline Type setMiddle(Type t) {
+		inline Type SetMiddle(Type t) {
 			return (Type)( (t&Mask_Horizontal) | Middle);
 		}
 		
 		template<class T_>
-		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, const utils::basic_Rectangle2D<T_> &target, const utils::basic_Size2D<T_> &object) {
-			utils::basic_Point2D<T_> p=target.TopLeft();
+		inline basic_Point2D<T_> CalculateLocation(Type Align, const basic_Rectangle2D<T_> &target, const basic_Size2D<T_> &object) {
+			basic_Point2D<T_> p=target.TopLeft();
 
-			if(isCenter(Align))
+			if(IsCenter(Align))
 				p.x+=(target.Width-object.Width)/2;
-			else if(isRight(Align))
+			else if(IsRight(Align))
 				p.x+=target.Width-object.Width;
 
-			if(isMiddle(Align))
+			if(IsMiddle(Align))
 				p.y+=(target.Height-object.Height)/2;
-			else if(isRight(Align))
+			else if(IsRight(Align))
 				p.y+=target.Height-object.Height;
 
 			return p;
 		}
 
 		template<class T_>
-		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, const utils::basic_Bounds2D<T_> &target, const utils::basic_Size2D<T_> &object) {
-			utils::basic_Point2D<T_> p=target.TopLeft();
+		inline basic_Point2D<T_> CalculateLocation(Type Align, const basic_Bounds2D<T_> &target, const basic_Size2D<T_> &object) {
+			basic_Point2D<T_> p=target.TopLeft();
 
-			if(isCenter(Align))
+			if(IsCenter(Align))
 				p.x+=(target.Width()-object.Width)/2;
-			else if(isRight(Align))
+			else if(IsRight(Align))
 				p.x+=target.Width()-object.Width;
 
-			if(isMiddle(Align))
+			if(IsMiddle(Align))
 				p.y+=(target.Height()-object.Height)/2;
-			else if(isRight(Align))
+			else if(IsRight(Align))
 				p.y+=target.Height()-object.Height;
 
 			return p;
 		}
 
 		template<class T_>
-		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, const utils::basic_Rectangle2D<T_> &target, const utils::basic_Size2D<T_> &object, const utils::Margins &margins) {
-			utils::basic_Point2D<T_> p=target.TopLeft()+margins.TopLeft();
+		inline basic_Point2D<T_> CalculateLocation(Type Align, const basic_Rectangle2D<T_> &target, const basic_Size2D<T_> &object, const Margins &margins) {
+			basic_Point2D<T_> p=target.TopLeft()+margins.TopLeft();
 
-			if(isCenter(Align))
+			if(IsCenter(Align))
 				p.x+=(target.Width-object.Width-margins.TotalX())/2;
-			else if(isRight(Align))
+			else if(IsRight(Align))
 				p.x+=target.Width-object.Width-margins.TotalX();
 
-			if(isMiddle(Align))
+			if(IsMiddle(Align))
 				p.y+=(target.Height-object.Height-margins.TotalY())/2;
-			else if(isRight(Align))
+			else if(IsRight(Align))
 				p.y+=target.Height-object.Height-margins.TotalY();
 
 			return p;
 		}
 
 		template<class T_>
-		inline utils::basic_Point2D<T_> CalculateLocation(Type Align, const utils::basic_Bounds2D<T_> &target, const utils::basic_Size2D<T_> &object, const utils::Margins &margins) {
-			utils::basic_Point2D<T_> p=target.TopLeft()+margins.TopLeft();
+		inline basic_Point2D<T_> CalculateLocation(Type Align, const basic_Bounds2D<T_> &target, const basic_Size2D<T_> &object, const Margins &margins) {
+			basic_Point2D<T_> p=target.TopLeft()+margins.TopLeft();
 
-			if(isCenter(Align))
+			if(IsCenter(Align))
 				p.x+=(target.Width()-object.Width-margins.TotalX())/2;
-			else if(isRight(Align))
+			else if(IsRight(Align))
 				p.x+=target.Width()-object.Width-margins.TotalX();
 
-			if(isMiddle(Align))
+			if(IsMiddle(Align))
 				p.y+=(target.Height()-object.Height-margins.TotalY())/2;
-			else if(isRight(Align))
+			else if(IsRight(Align))
 				p.y+=target.Height()-object.Height-margins.TotalY();
 
 			return p;

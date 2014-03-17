@@ -1,6 +1,8 @@
 #pragma once
 
 #include <functional>
+#include <thread>
+#include <vector>
 
 namespace Gorgon {
 
@@ -38,12 +40,12 @@ namespace Gorgon {
 
 			if(threads==0) threads=std::thread::hardware_concurrency();
 			
-			for(int id=0;id<thread;id++) {
+			for(int id=0;id<threads;id++) {
 				thrds.emplace_back(fn, id, threads);
 			}
 			
-			for(int id=0;id<thread;id++) {
-				thrds.join();
+			for(int id=0;id<threads;id++) {
+				thrds[id].join();
 			}
 		}
 	}
