@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+#include <stdexcept>
+#include <vector>
+
 namespace Gorgon {
 
 	/// Contains filesystem functions. All file related functions in Gorgon
@@ -42,35 +46,37 @@ namespace Gorgon {
 		bool IsFile(const std::string &path);
 
 		/// Checks whether the given path is writable
-		/// @param path is the directory or file to be checked. Should contain
-		///        forward slash as directory separator.
+		/// @param  path is the directory or file to be checked. Should contain
+		///         forward slash as directory separator.
 		/// @return true if the given file/path exists and is writable. 
 		bool IsWritable(const std::string &path);
 
 		/// Checks whether the given path is hidden
-		/// @param path is the directory to be checked. Should contain
-		///        forward slash as directory separator.
+		/// @param  path is the directory to be checked. Should contain
+		///         forward slash as directory separator.
 		/// @return true if the path should be hidden. 
 		bool IsHidden(const std::string &path);
 
 		/// Canonizes a given relative path
-		/// @param path is the file/directory to be canonized. Should contain
-		///        forward slash as directory separator.
+		/// @param  path is the file/directory to be canonized. Should contain
+		///         forward slash as directory separator.
 		/// @return the full path of the given relative path. Forward slashes are 
 		///         used as directory separator
+		/// @throw  std::runtime_error if canonize fails. This may or may not be
+		///         be related to path being inexisting or inaccessible.
 		std::string Canonize(const std::string &path);
 
 		/// Deletes the given file or directory. If the directory is not empty,
 		/// this function will delete all its contents.
-		/// @param path is the file/directory to be deleted. Should contain
-		///        forward slash as directory separator.
+		/// @param  path is the file/directory to be deleted. Should contain
+		///         forward slash as directory separator.
 		/// @return true if the given path is deleted. If the given path does
 		///         not exists, this function will still return true.
 		bool Delete(const std::string &path);
 		
 		/// Changes current working directory.
-		/// @param path is the directory to become current directory. Should contain
-		///        forward slash as directory separator.
+		/// @param  path is the directory to become current directory. Should contain
+		///         forward slash as directory separator.
 		/// @return false if directory does not exist
 		bool ChangeDirectory(const std::string &path);
 		
@@ -85,22 +91,22 @@ namespace Gorgon {
 		/// @return true on success
 		bool Copy(const std::string &source, const std::string &target);
 		
-		/// Copies a file or directory from the given source to destination.
-		/// @param source list of source file or directories
-		/// @param target is directory to copy files or directories into
+		/// Copies list of files and/or directories from the given source to destination.
+		/// @param  source list of source file or directories
+		/// @param  target is directory to copy files or directories into
 		/// @return true on success
 		bool Copy(const std::vector<std::string> &source, const std::string &target);
 		
 		/// Returns the size of the given file. If the file is not found 0 is returned.
-		/// @param filename is the name of the file
+		/// @param  filename is the name of the file
 		/// @return size of the given file
 		unsigned long long Size(const std::string &filename);
 		
 		/// Moves a given file or directory. Target is the new path rather than
 		/// the target directory. This function can also be used to rename a file or
 		/// directory.
-		/// @param source file or directory to be moved or renamed
-		/// @param target path
+		/// @param  source file or directory to be moved or renamed
+		/// @param  target path
 		/// @return true on success
 		bool Move(const std::string &source, const std::string &target);
 		
@@ -112,9 +118,9 @@ namespace Gorgon {
 		/// size restriction over the file. This function can handle binary data. Throws
 		/// FileNotFoundError if the file cannot be found. Before deciding on file is not 
 		/// found, this function checks if there is a lzma compressed file as filename.lzma
-		/// @param filename is the file to be loaded
+		/// @param  filename is the file to be loaded
 		/// @return the data loaded from the file
-		/// @throw FileNotFoundError if the file cannot be read or does not exits
+		/// @throw  FileNotFoundError if the file cannot be read or does not exits
 		std::string Load(const std::string &filename);
 		
 		/// Locates the given file or directory. If localonly is true, this function only
@@ -144,6 +150,10 @@ namespace Gorgon {
 		/// @return the full path of the resource
 		/// @throw FileNotFoundError if the file cannot be found
 		std::string LocateResource(const std::string &path, const std::string &directory="", bool localonly=true);
+		
+		/// Returns the directory where the program is started from. This will always return the same value 
+		/// through out the execution.
+		std::string StartupDirectory();
 
 		/// This class represents filesystem entry points (roots, drives). On Linux like systems, the
 		/// only entry point is '/', however, user home directory is also listed. On Windows all drives as listed.
