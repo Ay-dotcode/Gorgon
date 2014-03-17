@@ -107,7 +107,8 @@ namespace Gorgon {
 		/// directory.
 		/// @param  source file or directory to be moved or renamed
 		/// @param  target path
-		/// @return true on success
+		/// @return true on success. On Windows this function may not work across
+		///         different drives. If this case is possible, use Copy then Delete.
 		bool Move(const std::string &source, const std::string &target);
 		
 		/// Saves a given data into the filename. If the file exists, it will be appended
