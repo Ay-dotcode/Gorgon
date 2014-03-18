@@ -13,15 +13,15 @@ namespace Gorgon {
 		
 		/// This object is thrown from functions that return
 		/// information rather than status.
-		class FileNotFoundError : public std::runtime_error {
+		class PathNotFoundError : public std::runtime_error {
 		public:
 			///
 			/// Default constructor
-			FileNotFoundError() : std::runtime_error("File not found") { }
+			PathNotFoundError() : std::runtime_error("File not found") { }
 			
 			///
 			/// Constructor that sets error text
-			FileNotFoundError(const std::string &what) : std::runtime_error(what) { }
+			PathNotFoundError(const std::string &what) : std::runtime_error(what) { }
 		};
 	
 		/// Creates a new directory. This function works recursively to
@@ -44,6 +44,12 @@ namespace Gorgon {
 		///        forward slash as directory separator.
 		/// @return true if the given path is present and a file
 		bool IsFile(const std::string &path);
+		
+		/// Checks whether the given path exists
+		/// @param path is the file to be checked. Should contain
+		///        forward slash as directory separator.
+		/// @return true if the given path is present
+		bool IsExists(const std::string &path);
 
 		/// Checks whether the given path is writable
 		/// @param  path is the directory or file to be checked. Should contain
@@ -117,11 +123,11 @@ namespace Gorgon {
 		
 		/// Loads the given file and returns it in a string form. Notice that there is no
 		/// size restriction over the file. This function can handle binary data. Throws
-		/// FileNotFoundError if the file cannot be found. Before deciding on file is not 
+		/// PathNotFoundError if the file cannot be found. Before deciding on file is not 
 		/// found, this function checks if there is a lzma compressed file as filename.lzma
 		/// @param  filename is the file to be loaded
 		/// @return the data loaded from the file
-		/// @throw  FileNotFoundError if the file cannot be read or does not exits
+		/// @throw  PathNotFoundError if the file cannot be read or does not exits
 		std::string Load(const std::string &filename);
 		
 		/// Locates the given file or directory. If localonly is true, this function only
@@ -133,7 +139,7 @@ namespace Gorgon {
 		/// file, it will be extracted. For instance, if directory parameter is "images", 
 		/// localonly is false, systemname is system and we are looking for icon.png, this 
 		/// function checks whether file exists in the following forms. 
-		/// The first one found is returned, if none exists, FileNotFoundError exception is thrown.
+		/// The first one found is returned, if none exists, PathNotFoundError exception is thrown.
 		/// The following list assume user path to be ~ application data path to be ~/apps
 		/// images/icon.png, ../images/icon.png, icon.png, ../icon.png,
 		/// images/icon.png.lzma, ../images/icon.png.lzma, icon.png.lzma, ../icon.png.lzma,
@@ -145,11 +151,12 @@ namespace Gorgon {
 		/// ~/apps/system/icon.png.lzma
 		/// If compressed file is found, it fill be extracted in place, and the extracted filename
 		/// will be returned. Therefore, its not necessary to check if the file is compressed or not.
-		/// @param path is the filename or directory to be searched. Only compressed files are handled.
-		/// @param directory is the directory the resource expected to be in. Should be relative.
-		/// @param localonly if set, no system or user directories will be searched
+		/// @param  path is the filename or directory to be searched. Only compressed files are handled.
+		/// @param  directory is the directory the resource expected to be in. Should be relative.
+		/// @param  localonly if set, no system or user directories will be searched
 		/// @return the full path of the resource
-		/// @throw FileNotFoundError if the file cannot be found
+		/// @throw  PathNotFoundError if the file cannot be found
+		/// @throw  std::runtime_error if the file cannot be read
 		std::string LocateResource(const std::string &path, const std::string &directory="", bool localonly=true);
 		
 		/// Returns the directory where the program is started from. This will always return the same value 
@@ -163,7 +170,7 @@ namespace Gorgon {
 		
 			///
 			/// Default constructor
-			EntryPoint() : Readable(), Writable(), Serial() { }
+			EntryPoint() : Readable(), Writable() { }
 		
 			/// The path of the entry point
 			std::string Path;
@@ -176,10 +183,7 @@ namespace Gorgon {
 			/// possible that the user has no write access to the root of the entry point. If false
 			/// this denotes the entry point is fully read-only (like a CDROM)
 			bool Writable;
-			
-			/// Serial number of the entry point. Currently works on Windows drives
-			unsigned Serial;
-			
+						
 			/// Name or label of the entry point.
 			std::string Name;
 		};

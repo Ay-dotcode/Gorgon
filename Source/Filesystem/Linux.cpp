@@ -1,8 +1,15 @@
 #include "../Filesystem.h"
+#include "Iterator.h"
+
+#include <string>
+#include <cstdio>
+#include <map>
 
 #include <unistd.h>
-#include <stdio.h>
+#include <dirent.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
+#include <mntent.h>
 
 namespace Gorgon { namespace Filesystem {
 	
@@ -47,6 +54,10 @@ namespace Gorgon { namespace Filesystem {
 			return false;
 	}
 	
+	bool IsExists(const std::string &path) {
+		return access(path.c_str(), 0);
+	}
+	
 	bool IsWritable(const std::string &path) {
 		return access(path.c_str(), W_OK)==-1;
 	}
@@ -78,54 +89,15 @@ namespace Gorgon { namespace Filesystem {
 		if(newpath==nullptr) {
 			throw std::runtime_error("Cannot canonize the give path: "+path);
 		}
-		std::string ret=newpath;
+		std::string ret(std::move(newpath));
 		std::free(newpath);
+		
 		return ret;
 	}
 	
 	bool ChangeDirectory(const std::string &path) {
 		return chdir(path.c_str())==0;
 	}
-	
-	bool Delete(const std::string &path) {
-		if(IsDirectory(path)) {
-			std::vector<std::string> open, dir;
-			open.push_back(path);
-			
-			// while we still have more to delete
-			while(open.size()) {
-				// get the path to delete
-				std::string path=open.back();
-				
-				// if the path is a directory and its
-				// contents are not considered
-				if(IsDirectory(path) && dir.back()!=path) {
-					dir.push_back(path);
-
-					// list its contents into open list
-					DirectoryIterator it(path);
-					for(;it.IsValid(); it.Next()) {
-						if(*it!="." && *it!="..") {
-							open.push(path + "/" + *it);
-						}
-					}
-				}
-				else {
-					// if this is the directory to be erased
-					if(dir.back()==path) dir.pop_back();
-					open.pop();
-					
-					if(remove(path)!=0) return false;
-				}
-			}
-			
-			return true;
-		}
-		else {
-			return remove(path.c_str())==0;
-		}
-	}
-
 	
 	std::string CurrentDirectory() {
 		char path[1024];
@@ -135,5 +107,191 @@ namespace Gorgon { namespace Filesystem {
 		return path;
 	}
 	
+	bool Move(const std::string &source, const std::string &target) {
+		return rename(source.c_str(), target.c_str())==0;
+	}
+	
+	std::vector<EntryPoint> EntryPoints() {
+		std::vector<EntryPoint> entries;
+		
+		EntryPoint e;
+		e.Path=getenv("HOME");
+		e.Name="Home";
+		e.Readable=true;
+		e.Writable=true;
+		entries.push_back(e);
+
+		e.Path="/";
+		e.Name="Root";
+		e.Readable=true;
+		e.Writable=true;
+		entries.push_back(e);
+		
+		
+		// Device labels
+		std::map<std::string, std::string> mapping;
+		
+		if(IsDirectory("/dev/disk/by-label/")) {
+			Iterator it("/dev/disk/by-label/");
+			for(;it.IsValid(); it.Next()) {
+				mapping.emplace(Canonize("/dev/disk/by-label/"+*it), *it);
+			}
+		}
+		
+		std::FILE *fp;
+		struct mntent *fs;
+
+		//enlist devices, list only removable
+		fp = setmntent("/etc/mtab", "r");	/* read only */
+
+		while ((fs = getmntent(fp)) != NULL) {
+			struct statvfs vfs;
+
+			if (fs->mnt_fsname[0] != '/')	/* skip nonreal filesystems */
+				continue;
+
+			if (statvfs(fs->mnt_dir, & vfs) != 0) {
+				continue;
+			}
+			
+			bool ok=false;
+			try {
+				std::string device=fs->mnt_fsname;
+				auto pos=device.find_last_of('/');
+				device=device.substr(pos+1);
+				std::string ddir="/sys/block/"+device;
+				
+				if(IsDirectory(ddir)) {
+					if(Load(ddir+"/removable")=="1") ok=true;
+				}
+				else {
+					ddir=ddir.substr(0, ddir.length()-1)+"/"+device;
+					if(IsDirectory(ddir)) {
+						if(Load(ddir+"/removable")=="1") ok=true;
+					}
+				}
+			}
+			catch(...) { }
+			
+			if(!ok) continue;
+	
+			e.Path=std::string(fs->mnt_dir);
+			
+			if(mapping.count(e.Path))
+				e.Name=mapping[e.Path];
+			else {
+				e.Name=e.Path;
+			}
+			
+			e.Readable=true;
+			e.Writable=((vfs.f_flag & ST_RDONLY) == 0);
+			
+			entries.push_back(e);
+		}
+		endmntent(fp);
+	
+	
+		return entries;
+	}
+	
+	int WildMatch(char *pat, char *str) {
+		int i, star;
+
+new_segment:
+		star = 0;
+		if (*pat == '*') {
+			star = 1;
+			do { pat++; } while (*pat == '*');
+		}
+		
+
+test_match:
+		for (i = 0; pat[i] && (pat[i] != '*'); i++) {
+			if (str[i] != pat[i]) {
+				if (!str[i]) return 0;
+				if ((pat[i] == '?') && (str[i] != '.')) continue;
+				if (!star) return 0;
+				str++;
+				goto test_match;
+			}
+		}
+		if (pat[i] == '*') {
+			str += i;
+			pat += i;
+			goto new_segment;
+		}
+		if (!str[i]) return 1;
+		if (i && pat[i - 1] == '*') return 1;
+		if (!star) return 0;
+		str++;
+		goto test_match;
+	}
+	
+	namespace internal {
+		class iterator_data {
+		public:
+			iterator_data() : dir(nullptr) { }
+			
+			DIR *dir;
+			std::string pattern;
+			std::string path;
+		};
+	}
+	
+	bool Copy(std::string const&, std::string const&) { return true; }
+	
+	Iterator::Iterator(const std::string &directory, const std::string &pattern) {
+		data=new internal::iterator_data;
+		
+		data->path=Canonize(directory);
+		data->dir=opendir(data->path.c_str());
+		data->pattern=pattern;
+		
+		if(!data->dir) {
+			Destroy();
+			throw PathNotFoundError("Cannot open diretory for reading");
+		}
+		
+		Next();
+	}
+	
+	Iterator::Iterator(const Iterator &other) {
+		if(!other.data) {
+			data=nullptr;
+			return;
+		}
+		
+		data=new internal::iterator_data;
+		
+		data->path=other.data->path;
+		data->dir=opendir(data->path.c_str());
+		data->pattern=other.data->pattern;
+		
+		seekdir(data->dir, telldir(other.data->dir));
+	}
+	
+	void Iterator::Destroy() {
+		if(data && data->dir) closedir(data->dir);
+		delete data;
+		data=nullptr;
+		current="";
+	}
+	
+	bool Iterator::Next() {
+#ifdef DEBUG
+		if(!data || !data->dir) {
+			throw std::runtime_error("Invalid iterator");
+		}
+#endif
+
+		auto ret=readdir(data->dir);
+		if(!ret) {
+			Destroy();
+			return false;
+		}
+		
+		current=ret->d_name;
+	}
 	
 } }
+
