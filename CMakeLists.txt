@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 PROJECT(Gorgon)
 
-ADD_SUBDIRECTORY(Source)
+INCLUDE(Scripts/Macros.cmake)
 
-ADD_LIBRARY(GGE STATIC ${Source})
+StartSource(Source)
+
+ADD_LIBRARY(Gorgon STATIC ${All})

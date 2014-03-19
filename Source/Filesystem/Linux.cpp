@@ -1,10 +1,8 @@
 #include "../Filesystem.h"
 #include "Iterator.h"
 
-#include <string>
 #include <cstdio>
 #include <map>
-#include <iterator>
 #include <iostream>
 #include <sstream>
 
@@ -326,19 +324,17 @@ test_match:
 			
 			DIR *dir;
 			std::string pattern;
-			std::string path;
 		};
 	}
 	
 	Iterator::Iterator(const std::string &directory, const std::string &pattern) : 
-	data(new internal::iterator_data), basedir(directory) {
-		data->path=Canonize(directory);
-		data->dir=opendir(data->path.c_str());
+	data(new internal::iterator_data), basedir(Canonize(directory)) {
+		data->dir=opendir(basedir.c_str());
 		data->pattern=pattern;
 		
 		if(!data->dir) {
 			Destroy();
-			throw PathNotFoundError("Cannot open diretory for reading");
+			throw PathNotFoundError("Cannot open directory for reading");
 		}
 		
 		Next();
@@ -352,8 +348,13 @@ test_match:
 		
 		data=new internal::iterator_data;
 		
-		data->path=other.data->path;
-		data->dir=opendir(data->path.c_str());
+		data->dir=opendir(other.basedir.c_str());
+		
+		if(!data->dir) {
+			Destroy();
+			throw PathNotFoundError("Cannot open directory for reading");
+		}
+
 		data->pattern=other.data->pattern;
 		
 		seekdir(data->dir, telldir(other.data->dir));

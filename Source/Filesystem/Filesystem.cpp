@@ -95,7 +95,7 @@ namespace Gorgon { namespace Filesystem {
 		if(!file) throw std::runtime_error("Cannot read the file: "+filename);
 		
 		std::string ret;
-		ret.reserve(size);
+		ret.reserve((std::string::size_type)size);
 		
 		ret.assign( (std::istreambuf_iterator<char>(file) ),
 					(std::istreambuf_iterator<char>()    ) );
