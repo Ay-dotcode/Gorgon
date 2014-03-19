@@ -4,12 +4,17 @@
 #include <string>
 #include <cstdio>
 #include <map>
+#include <iterator>
+#include <iostream>
+#include <sstream>
 
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <mntent.h>
+#include <fcntl.h>
+#include <sys/sendfile.h>
 
 namespace Gorgon { namespace Filesystem {
 	
@@ -107,6 +112,65 @@ namespace Gorgon { namespace Filesystem {
 		return path;
 	}
 	
+	bool copyfile(const std::string &source, const std::string &destination) {
+		struct stat stat_source;
+		
+		int src = open(source.c_str(), O_RDONLY, 0);
+		if(src==0) return false;
+		if(fstat(src, &stat_source)) {
+			close(src);
+			return false;
+		}
+		
+		int dest = open(destination.c_str(), O_WRONLY | O_CREAT, stat_source.st_mode & 0777);
+		if(dest==0) {
+			close(src);
+			return false;
+		}
+		
+		auto ret=sendfile(dest, src, 0, stat_source.st_size);
+		close(src);
+		close(dest);
+
+		return ret!=-1;		
+	}
+		
+	bool Copy(const std::string &source, const std::string &target) { 
+		if(IsFile(source)) {
+			if(IsDirectory(target)) 
+				return copyfile(source, target+"/"+source);
+			else
+				return copyfile(source, target);
+		}
+		else if(IsDirectory(source)) {
+			std::vector<std::string> list;
+			list.push_back(".");
+			
+			while(list.size()) {
+				std::string f=list.back();
+				std::string s=source+"/"+f;
+				std::string t=target+"/"+f;
+				list.pop_back();
+				if(IsDirectory(s)) {
+					if(!CreateDirectory(t)) return false;
+					
+					Iterator dir(s);
+					for(;dir.IsValid();dir.Next()) {
+						list.push_back(f+"/"+*dir);
+					}
+				}
+				else {
+					if(!copyfile(s, t)) return false;
+				}
+			}
+			
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
 	bool Move(const std::string &source, const std::string &target) {
 		return rename(source.c_str(), target.c_str())==0;
 	}
@@ -146,14 +210,14 @@ namespace Gorgon { namespace Filesystem {
 
 		while ((fs = getmntent(fp)) != NULL) {
 			struct statvfs vfs;
-
+			
 			if (fs->mnt_fsname[0] != '/')	/* skip nonreal filesystems */
 				continue;
 
 			if (statvfs(fs->mnt_dir, & vfs) != 0) {
 				continue;
 			}
-			
+
 			bool ok=false;
 			try {
 				std::string device=fs->mnt_fsname;
@@ -162,12 +226,12 @@ namespace Gorgon { namespace Filesystem {
 				std::string ddir="/sys/block/"+device;
 				
 				if(IsDirectory(ddir)) {
-					if(Load(ddir+"/removable")=="1") ok=true;
+					if(Load(ddir+"/removable")[0]=='1') ok=true;
 				}
 				else {
-					ddir=ddir.substr(0, ddir.length()-1)+"/"+device;
+					ddir=ddir.substr(0, ddir.length()-1);
 					if(IsDirectory(ddir)) {
-						if(Load(ddir+"/removable")=="1") ok=true;
+						if(Load(ddir+"/removable")[0]=='1') ok=true;
 					}
 				}
 			}
@@ -177,11 +241,39 @@ namespace Gorgon { namespace Filesystem {
 	
 			e.Path=std::string(fs->mnt_dir);
 			
-			if(mapping.count(e.Path))
-				e.Name=mapping[e.Path];
+			if(mapping.count(fs->mnt_fsname))
+				e.Name=mapping[fs->mnt_fsname];
 			else {
-				e.Name=e.Path;
+				e.Name=e.Path.substr(e.Path.find_last_of('/')+1);
 			}
+			
+			try { //not so important to do properly
+				bool escape=false;
+				for(unsigned i=0;i<e.Name.length();i++) {
+					if(escape) {
+						switch(e.Name[i]) {
+						case '\\':
+							e.Name.erase(e.Name.begin()+i);
+							break;
+						case 'x': {
+							int n;
+							std::stringstream ss(e.Name.substr(i+1));
+							ss>>std::hex>>n;
+							e.Name.erase(i, (int)ss.tellg()+1);
+							e.Name[i-1]=n;
+							break;
+						}
+						default:
+							break;
+						}
+						escape=false;
+						i--;
+					}
+					else if(e.Name[i]=='\\') {
+						escape=true;
+					}
+				}
+			} catch(...) { }
 			
 			e.Readable=true;
 			e.Writable=((vfs.f_flag & ST_RDONLY) == 0);
@@ -238,11 +330,8 @@ test_match:
 		};
 	}
 	
-	bool Copy(std::string const&, std::string const&) { return true; }
-	
-	Iterator::Iterator(const std::string &directory, const std::string &pattern) {
-		data=new internal::iterator_data;
-		
+	Iterator::Iterator(const std::string &directory, const std::string &pattern) : 
+	data(new internal::iterator_data), basedir(directory) {
 		data->path=Canonize(directory);
 		data->dir=opendir(data->path.c_str());
 		data->pattern=pattern;
@@ -268,6 +357,9 @@ test_match:
 		data->pattern=other.data->pattern;
 		
 		seekdir(data->dir, telldir(other.data->dir));
+		
+		basedir=other.basedir;
+		current=other.current;
 	}
 	
 	void Iterator::Destroy() {
@@ -291,6 +383,10 @@ test_match:
 		}
 		
 		current=ret->d_name;
+		
+		if(current=="." || current=="..") return Next();
+		
+		return true;
 	}
 	
 } }

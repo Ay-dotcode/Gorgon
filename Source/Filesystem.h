@@ -7,9 +7,19 @@
 namespace Gorgon {
 
 	/// Contains filesystem functions. All file related functions in Gorgon
-	/// uses forward slash as directory separator. If necessary, the functions
-	/// will convert them.
+	/// uses forward slash as directory separator. This includes return values
+	/// from these functions as well. 
+	/// @warning This is a rudimentary filesystem module. Its not meant
+	/// to be used in serious filesystem tasks. Most functions will not provide
+	/// any choices related to hard/symbolic links. Additionally, Copy, Delete
+	/// functions are fully blocking without any reporting facilities.
 	namespace Filesystem {
+		
+		/// Initializes the filesystem module. Gorgon system requires every module
+		/// to have initialization function even if they are not used. Currently
+		/// used for following tasks:
+		/// * Set startup directory
+		void Initialize();
 		
 		/// This object is thrown from functions that return
 		/// information rather than status.
@@ -92,12 +102,14 @@ namespace Gorgon {
 		std::string CurrentDirectory();
 		
 		/// Copies a file or directory from the given source to destination.
+		/// Hard link sources will be copied instead of links themselves.
 		/// @param source file or directory. Should either be a single file, or single directory
 		/// @param target is the new filename or directory name
 		/// @return true on success
 		bool Copy(const std::string &source, const std::string &target);
 		
 		/// Copies list of files and/or directories from the given source to destination.
+		/// Hard link sources will be copied instead of links themselves.
 		/// @param  source list of source file or directories
 		/// @param  target is directory to copy files or directories into
 		/// @return true on success
@@ -149,7 +161,7 @@ namespace Gorgon {
 		/// ~/images/icon.png.lzma, ~/apps/images/icon.png, ~/apps/images/icon.png.lzma, 
 		/// ~/system/icon.png, ~/system/icon.png.lzma, ~/apps/system/icon.png, 
 		/// ~/apps/system/icon.png.lzma
-		/// If compressed file is found, it fill be extracted in place, and the extracted filename
+		/// If compressed file is found, it will be extracted in place, and the extracted filename
 		/// will be returned. Therefore, its not necessary to check if the file is compressed or not.
 		/// @param  path is the filename or directory to be searched. Only compressed files are handled.
 		/// @param  directory is the directory the resource expected to be in. Should be relative.
@@ -162,6 +174,28 @@ namespace Gorgon {
 		/// Returns the directory where the program is started from. This will always return the same value 
 		/// through out the execution.
 		std::string StartupDirectory();
+		
+		/// Returns the directory where the program resides. Can be used to locate resources. May not be
+		/// same as StartupDirectory
+		std::string ApplicationDirectory();
+		
+		/// Returns the directory portion of a file path. If the file path does not contain any directory
+		/// related information, this method returns "." to denote current directory. Consider canonizing
+		/// the returned value. This function expects the input to have / as directory separator.
+		/// @param  filepath path that contains the filename
+		inline std::string GetDirectory(std::string filepath) {
+			auto pos=filepath.find_last_of('/');
+			
+			if(pos!=filepath.npos) {
+				filepath=filepath.substr(0,pos);
+			}
+			else {
+				filepath=CurrentDirectory();
+			}
+
+			return filepath;
+		}
+		
 
 		/// This class represents filesystem entry points (roots, drives). On Linux like systems, the
 		/// only entry point is '/', however, user home directory is also listed. On Windows all drives as listed.
@@ -190,7 +224,7 @@ namespace Gorgon {
 		
 		/// This function returns all entry points in the current system. This function does not
 		/// perform caching and should be used sparingly. It may cause Windows systems to read 
-		/// external devices.
+		/// external devices. On Linux systems, home, root and removable devices are listed.
 		/// @return The list of entry points
 		std::vector<EntryPoint> EntryPoints();
 

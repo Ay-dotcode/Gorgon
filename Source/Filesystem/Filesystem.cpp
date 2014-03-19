@@ -5,6 +5,22 @@
 
 namespace Gorgon { namespace Filesystem {
 	
+	std::string startupdir;
+	
+	void Initialize() {
+		startupdir=CurrentDirectory();
+	}
+	
+	std::string StartupDirectory() {
+		return startupdir;
+	}
+	
+	std::string ApplicationDirectory() {
+		std::string path=Canonize("/proc/self/exe");
+		
+		return GetDirectory(path);
+	}
+	
 	bool Delete(const std::string &path) {
 		if(IsDirectory(path)) {
 			std::vector<std::string> open, dir;
@@ -83,7 +99,7 @@ namespace Gorgon { namespace Filesystem {
 		ret.assign( (std::istreambuf_iterator<char>(file) ),
 					(std::istreambuf_iterator<char>()    ) );
 		
-		if(file.fail() || !file.eof()) throw std::runtime_error("Cannot read the file: "+filename);
+		if(file.fail()) throw std::runtime_error("Cannot read the file: "+filename);
 		
 		return ret;
 	}
