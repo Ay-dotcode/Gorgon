@@ -73,14 +73,29 @@ namespace Gorgon {
 		/// @return true if the path should be hidden. 
 		bool IsHidden(const std::string &path);
 
-		/// Canonizes a given relative path
+		/// Canonizes a given relative path. This method always return with a path
+		/// that contains at least one slash. However, a slash should be appended
+		/// to string as it never leaves a slash at the end unless, the path is a
+		/// root path therefore, it is save to append an extra slash.
 		/// @param  path is the file/directory to be canonized. Should contain
-		///         forward slash as directory separator.
+		///         forward slash as directory separator. 
 		/// @return the full path of the given relative path. Forward slashes are 
-		///         used as directory separator
+		///         used as directory separator. If the directory is a root directory
+		///         this method will return a path ending with slash, otherwise it will
+		///         never return a path ending with slash.
 		/// @throw  std::runtime_error if canonize fails. This may or may not be
 		///         be related to path being inexisting or inaccessible.
 		std::string Canonize(const std::string &path);
+		
+		/// Determine shortest relative path from the given path. Using "." in
+		/// second parameter will return the path relative to current directory.
+		/// This function never returns a path ending with a slash unless its safe
+		/// to append another slash (i.e. a root path)
+		/// @param  path is the path to be relativized.
+		/// @param  base is the base path that will be used to find relative path
+		/// @return relative path. Note that in Windows it is may be impossible
+		///         to find relative path.
+		std::string Relative(std::string path, std::string base=".");
 
 		/// Deletes the given file or directory. If the directory is not empty,
 		/// this function will delete all its contents.

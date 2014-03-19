@@ -2,6 +2,7 @@
 #include "Iterator.h"
 
 #include <fstream>
+#include <iostream>
 
 namespace Gorgon { namespace Filesystem {
 	
@@ -104,6 +105,77 @@ namespace Gorgon { namespace Filesystem {
 		return ret;
 	}
 	
-	
+	std::string Relative(std::string path, std::string base) {
+		path=Canonize(path);
+		base=Canonize(base);
+		
+		auto p=path.begin();
+		auto b=base.begin();
+		
+		int mark=-1;
+		int pos=0;
+		while(*p==*b) {
+			if(*p=='/') mark=pos;
+
+			p++;
+			b++;
+			
+			if(b==base.end()) {
+				mark=pos+1;
+				break;
+			}
+			if(p==path.end()) {
+				mark=pos+1;
+				break;
+			}
+			
+			pos++;
+		}
+		
+		std::string relative;
+		
+		if(mark==-1) return path;
+		
+		if(p==path.end())
+			path="";
+		else
+			path=path.substr(mark+1);
+		if(b==base.end())
+			base="";
+		else
+			base=base.substr(mark+1);
+		
+		//exact same path
+		if(path.empty() && base.empty()) return ".";
+		
+		//go upwards
+		mark=0;
+		for(unsigned i=0;i<base.size();i++) {
+			if(base[i]=='/') {
+				mark=i;
+			}
+			else {
+				if(mark==(int)i-1) {
+					relative+="../";
+				}
+			}
+		}
+		
+		//go downwards
+		if(relative.back()=='/') {
+			if(path.empty())
+				relative.pop_back();
+			else
+				relative=relative + path;
+		}
+		else {
+			if(relative.empty())
+				relative=path;
+			else if(!path.empty())
+				relative=relative + "/" + path;
+		}
+		
+		return relative;
+	}
 	
 } }
