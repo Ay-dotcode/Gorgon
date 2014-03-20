@@ -6,7 +6,7 @@
 
 namespace Gorgon { namespace Filesystem {
 	
-	std::string startupdir;
+	static std::string startupdir;
 	
 	void Initialize() {
 		startupdir=CurrentDirectory();

@@ -167,7 +167,7 @@ namespace Gorgon {
 				return other.basedir!=basedir || other.current!=current;
 			}
 
-		protected:
+		private:
 			internal::iterator_data *data;
 			std::string basedir;
 			std::string current;

@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 #compiler check
 IF(CMAKE_COMPILER_IS_GNUCXX)
+	EXECUTE_PROCESS(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+	
 	IF(GCC_VERSION VERSION_LESS 4.8)
 		IF(IGNORE_COMPILER_VERSION)
 			MESSAGE(STATUS "Gorgon Library requires GCC 4.8+")
@@ -29,8 +31,16 @@ ELSE()
 	ENDIF()
 ENDIF()
 
-#enable C++11
+#enable C++11 and 32-bit compilation
 INCLUDE(CheckCXXCompilerFlag)
 IF(CMAKE_COMPILER_IS_GNUCXX)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -m32")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+ENDIF()
+
+#make sure 64bits cannot be activated
+IF(MSVC)
+	IF(${CMAKE_CL_64})
+		MESSAGE(FATAL_ERROR "Gorgon Library works only 32bits")
+	ENDIF()
 ENDIF()

@@ -213,7 +213,8 @@ namespace Gorgon {
 		
 
 		/// This class represents filesystem entry points (roots, drives). On Linux like systems, the
-		/// only entry point is '/', however, user home directory is also listed. On Windows all drives as listed.
+		/// only entry point is '/', however, user home, root and removable devices are also listed.
+		/// On Windows all drives as listed. @see EntryPoints
 		class EntryPoint {
 		public:
 		

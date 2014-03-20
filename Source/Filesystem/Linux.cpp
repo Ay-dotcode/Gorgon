@@ -110,7 +110,7 @@ namespace Gorgon { namespace Filesystem {
 		return path;
 	}
 	
-	bool copyfile(const std::string &source, const std::string &destination) {
+	static bool copyfile(const std::string &source, const std::string &destination) {
 		struct stat stat_source;
 		
 		int src = open(source.c_str(), O_RDONLY, 0);
@@ -283,8 +283,8 @@ namespace Gorgon { namespace Filesystem {
 	
 		return entries;
 	}
-	
-	int WildMatch(char *pat, char *str) {
+
+	static int WildMatch(char *pat, char *str) {
 		int i, star;
 
 new_segment:

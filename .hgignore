@@ -1,5 +1,8 @@
 Build
 Debug
+Lib
+Bin
+Docs/Latex
 
 syntax: glob
 
