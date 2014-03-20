@@ -24,7 +24,7 @@ TEST_CASE( "Save - Saving file", "[Save]") {
 	file.seekg(0, std::ios::end);
 	
 	REQUIRE( s == "This is a test" );
-	REQUIRE( file.tellg() == 15 );
+	REQUIRE( (int)file.tellg() == 15 );
 	
 	remove("test.txt");
 	
@@ -41,7 +41,7 @@ TEST_CASE( "Save - Saving binary file", "[Save]") {
 	
 	file.seekg(0, std::ios::end);
 	
-	REQUIRE( file.tellg() == teststring.length() );
+	REQUIRE( (int)file.tellg() == teststring.length() );
 	
 	remove("test.bin");
 	
@@ -58,7 +58,7 @@ TEST_CASE( "Save - Overwrite", "[Save]") {
 	
 	std::ifstream file("test.txt", std::ios::binary);
 	file.seekg(0, std::ios::end);
-	REQUIRE( file.tellg() == 1 );
+	REQUIRE( (int)file.tellg() == 1 );
 	
 	remove("test.txt");
 }
