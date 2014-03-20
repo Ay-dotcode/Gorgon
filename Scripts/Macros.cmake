@@ -11,8 +11,17 @@ MACRO(DoSource)
 	STRING(REGEX REPLACE "Source" "" srcgrp "${srcgrp}")
 	STRING(REGEX REPLACE "^\\\\" "" srcgrp "${srcgrp}")
 	SOURCE_GROUP("${srcgrp}" FILES ${Local})
+	
+	IF(${wd} MATCHES ".+")
+		SET(LocalFixed)
+		FOREACH(L ${Local}) 
+			LIST(APPEND LocalFixed "${wd}/${L}")
+		ENDFOREACH()
+	ELSE()
+		SET(LocalFixed ${Local})
+	ENDIF()
 
-	LIST(APPEND All ${Local})
+	LIST(APPEND All ${LocalFixed})
 
 	FOREACH(S ${Sub})
 		IF("${wd}" MATCHES "^[^\\/]+")
