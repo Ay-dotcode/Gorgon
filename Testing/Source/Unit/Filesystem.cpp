@@ -9,9 +9,6 @@
 #include <stdlib.h>
 
 
-
-
-
 TEST_CASE( "Save - Saving file", "[Save]") {
 	Gorgon::Filesystem::Save("test.txt", "This is a test\n");
 	std::ifstream file("test.txt", std::ios::binary);
