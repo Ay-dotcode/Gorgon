@@ -3,6 +3,8 @@ Debug
 Lib
 Bin
 Docs/Latex
+Testing/Tests
+Testing/Runtime
 
 syntax: glob
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 MACRO(DoSource)
 	IF(${wd} MATCHES ".+")
@@ -10,7 +10,6 @@ MACRO(DoSource)
 	STRING(REGEX REPLACE "/" "\\\\" srcgrp "${wd}")
 	STRING(REGEX REPLACE "Source" "" srcgrp "${srcgrp}")
 	STRING(REGEX REPLACE "^\\\\" "" srcgrp "${srcgrp}")
-	SOURCE_GROUP("${srcgrp}" FILES ${Local})
 	
 	IF(${wd} MATCHES ".+")
 		SET(LocalFixed)
@@ -31,6 +30,7 @@ MACRO(DoSource)
 	ENDIF()
 
 	LIST(APPEND All ${LocalFixed})
+	SOURCE_GROUP("${srcgrp}" FILES ${LocalFixed})
 	
 	FOREACH(S ${Local})
 		IF(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}/${S}")

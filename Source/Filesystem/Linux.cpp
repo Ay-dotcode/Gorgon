@@ -98,6 +98,45 @@ namespace Gorgon { namespace Filesystem {
 		return ret;
 	}
 	
+	bool Delete(const std::string &path) {
+		if(IsDirectory(path)) {
+			std::vector<std::string> open, dir;
+			open.push_back(path);
+			
+			// while we still have more to delete
+			while(open.size()) {
+				// get the path to delete
+				std::string path=open.back();
+				
+				// if the path is a directory and its
+				// contents are not considered
+				if(IsDirectory(path) && (!dir.size() || dir.back()!=path)) {
+					dir.push_back(path);
+
+					// list its contents into open list
+					Iterator it(path);
+					for(;it.IsValid(); it.Next()) {
+						if(*it!="." && *it!="..") {
+							open.push_back(path + "/" + *it);
+						}
+					}
+				}
+				else {
+					// if this is the directory to be erased
+					if(dir.back()==path) dir.pop_back();
+					open.pop_back();
+					
+					if(remove(path.c_str())!=0) return false;
+				}
+			}
+			
+			return true;
+		}
+		else {
+			return remove(path.c_str())==0;
+		}
+	}
+	
 	bool ChangeDirectory(const std::string &path) {
 		return chdir(path.c_str())==0;
 	}
@@ -171,6 +210,12 @@ namespace Gorgon { namespace Filesystem {
 	
 	bool Move(const std::string &source, const std::string &target) {
 		return rename(source.c_str(), target.c_str())==0;
+	}
+	
+	std::string ApplicationDirectory() {
+		std::string path=Canonize("/proc/self/exe");
+		
+		return GetDirectory(path);
 	}
 	
 	std::vector<EntryPoint> EntryPoints() {

@@ -1,4 +1,4 @@
-///	This file contains class Any which is a container for any type and
+/// @file This file contains class Any which is a container for any type and
 ///	supports boxing, unboxing and copying; uses RTTI. Best be used with
 ///  built in types or POD structures
 /// @license
@@ -122,7 +122,7 @@ namespace Gorgon { namespace Utils {
 
 		/// Creates a new Any from the given data. This constructor
 		/// moves the given data.
-		/// Requires type in the copied Any to be move constructible.
+		/// Requires type in the moved Any to be move constructible.
 		template <class T_>
 		explicit Any(T_ &&data) {
 			type=new Type<T_>;
@@ -217,7 +217,7 @@ namespace Gorgon { namespace Utils {
 		/// Any. It can also be used to modify the value contained within
 		/// this Any.
 		/// @throw std::runtime_error if Any is empty
-		/// @throw std::bad_cast if types do not match
+		/// @throw std::bad_cast (debug only) if types do not match
 		template <class T_>
 		T_ &Get() {
 #ifndef GORGON_FAST_ANY
@@ -239,7 +239,7 @@ namespace Gorgon { namespace Utils {
 		/// Any. It can also be used to modify the value contained within
 		/// this Any.
 		/// @throw std::runtime_error if Any is empty
-		/// @throw std::bad_cast if types do not match
+		/// @throw std::bad_cast (debug only) if types do not match
 		template <class T_>
 		const T_ &Get() const {
 #ifndef GORGON_FAST_ANY
@@ -259,6 +259,7 @@ namespace Gorgon { namespace Utils {
 
 		/// Unsafe version of Get. Should be used as last resort. Only
 		/// const version is available.
+		/// @warning Does not perform type check even in debug mode
 		/// @throw std::runtime_error if Any is empty
 		template <class T_>
 		T_ UnsafeGet() const {
@@ -282,7 +283,7 @@ namespace Gorgon { namespace Utils {
 		/// no cross type comparison will be performed. You may use 
 		/// `any.Get<originaltype>() == othertype_variable`
 		/// @throw std::runtime_error if Any is empty
-		/// @throw std::bad_cast if types do not match
+		/// @throw std::bad_cast (debug only) if types do not match
 		template <class T_>
 		bool operator ==(const T_ &content) const  {
 #ifndef GORGON_FAST_ANY
@@ -301,12 +302,12 @@ namespace Gorgon { namespace Utils {
 
 		/// Compares two Any variables. 
 		/// @return true if both are empty or have their contents equal. 
-		/// @throw std::bad_cast if types do not match
+		/// @throw std::bad_cast (debug only) if types do not match
 		bool operator ==(const Any &content) const  {
-			if(!content && !this->content) {
+			if(!content.content && !this->content) {
 				return true;
 			}
-			else if(!content || !this->content) {
+			else if(!content.content || !this->content) {
 				return false;
 			}
 #ifdef _DEBUG
@@ -323,7 +324,7 @@ namespace Gorgon { namespace Utils {
 		/// no cross type comparison will be performed. You may use 
 		/// `any.Get<originaltype>() == othertype_variable`
 		/// @throw std::runtime_error if Any is empty
-		/// @throw std::bad_cast if types do not match
+		/// @throw std::bad_cast (debug only) if types do not match
 		template <class T_>
 		bool operator !=(const T_ &content) const  {
 			return !operator==(content);

@@ -43,6 +43,7 @@ ENDIF()
 
 #make sure 64bits cannot be activated
 IF(MSVC)
+	ADD_DEFINITIONS(-D_SBCS)
 	IF(${CMAKE_CL_64})
 		MESSAGE(FATAL_ERROR "Gorgon Library works only 32bits")
 	ENDIF()

@@ -84,6 +84,49 @@ namespace Gorgon { namespace Filesystem {
 		return ret;
 	}
 
+	bool Delete(const std::string &path) {
+		if(IsDirectory(path)) {
+			std::vector<std::string> open, dir;
+			open.push_back(path);
+
+			// while we still have more to delete
+			while(open.size()) {
+				// get the path to delete
+				std::string path=open.back();
+
+				// if the path is a directory and its
+				// contents are not considered
+				if(IsDirectory(path) && (!dir.size() || dir.back()!=path)) {
+					dir.push_back(path);
+
+					// list its contents into open list
+					Iterator it(path);
+					for(;it.IsValid(); it.Next()) {
+						if(*it!="." && *it!="..") {
+							open.push_back(path + "/" + *it);
+						}
+					}
+				}
+				else {
+					// if this is the directory to be erased
+					if(dir.back()==path) {
+						dir.pop_back();
+						if(RemoveDirectory(path.c_str())==0) return false;
+					}
+					else {
+						if(remove(path.c_str())!=0) return false;
+					}
+					open.pop_back();
+				}
+			}
+
+			return true;
+		}
+		else {
+			return remove(path.c_str())==0;
+		}
+	}
+
 	bool ChangeDirectory(const std::string &path) {
 		return _chdir(path.c_str())==0;
 	}
@@ -118,6 +161,14 @@ namespace Gorgon { namespace Filesystem {
 	bool Move(const std::string &source, const std::string &target) {
 		return MoveFile(source.c_str(), target.c_str())!=0;
 	}
+
+	std::string ApplicationDirectory() {
+		HMODULE hModule = GetModuleHandle(NULL);
+		char path[MAX_PATH];
+		GetModuleFileName(hModule, path, MAX_PATH);
+
+		return GetDirectory(path);
+	}
 	
 	std::vector<EntryPoint> EntryPoints() {
 		char drvs[512], name[128];
@@ -135,7 +186,7 @@ namespace Gorgon { namespace Filesystem {
 		CHAR my_documents[MAX_PATH];
 		my_documents[0]=0;
 
-		SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+		SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, SHGFP_TYPE_CURRENT, my_documents);
 		
 		e.Path=my_documents;
 		e.Name="Home";
@@ -149,16 +200,15 @@ namespace Gorgon { namespace Filesystem {
 			e.Path=drives;
 			if(e.Path.back()!='\\') e.Path.push_back('/');
 			fixwinslashes(e.Path);
+			name[0]=0;
 			if(GetVolumeInformation(drives, name, 128, &serial, NULL, &flags, NULL, 0)) {
 				e.Name=name;
+				if(e.Name.empty())
+					e.Name=e.Path;
 				e.Writable=!(flags&FILE_READ_ONLY_VOLUME);
 				e.Readable=true;
+				entries.push_back(e);
 			}
-			else {
-				e.Readable=false;
-				e.Writable=false;
-			}
-			entries.push_back(e);
 			drives+=std::strlen(drives)+1;
 		}
 
@@ -168,7 +218,7 @@ namespace Gorgon { namespace Filesystem {
 	namespace internal {
 		class iterator_data {
 		public:
-			iterator_data() : data(nullptr) { }
+			iterator_data() : data(new WIN32_FIND_DATAA) { }
 			~iterator_data() {
 				FindClose(search_handle);
 				delete data;
@@ -195,6 +245,7 @@ namespace Gorgon { namespace Filesystem {
 		}
 		
 		current=data->data->cFileName;
+		if(current=="." || current=="..") Next();
 	}
 	
 	Iterator::Iterator(const Iterator &other) {
