@@ -67,6 +67,8 @@ namespace Gorgon { namespace Filesystem {
 
 	bool IsHidden(const std::string &path) {
 		unsigned long attr=GetFileAttributes(path.c_str());
+		
+		if(attr==INVALID_FILE_ATTRIBUTES) return false;
 
 		return (attr&FILE_ATTRIBUTE_HIDDEN)!=0 || (attr&FILE_ATTRIBUTE_SYSTEM)!=0;
 	}
@@ -75,9 +77,16 @@ namespace Gorgon { namespace Filesystem {
 		for(auto &c : s) if(c=='\\') c='/';
 	}
 
-	std::string Canonize(const std::string &path) {
+	std::string Canonical(const std::string &path) {
+		if(!IsExists(path)) {
+			throw PathNotFoundError("Cannot canonicalize the given path: "+path);
+		}
+
 		char newpath[1024];
-		GetFullPathName(path.c_str(), 1024, newpath, NULL);
+		if(GetFullPathName(path.c_str(), 1024, newpath, NULL) == 0) {
+			throw PathNotFoundError("Cannot canonicalize the given path: "+path);
+		}
+
 		std::string ret(newpath);
 		fixwinslashes(ret);
 		

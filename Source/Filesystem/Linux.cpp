@@ -86,11 +86,11 @@ namespace Gorgon { namespace Filesystem {
 		return false;
 	}
 	
-	std::string Canonize(const std::string &path) {
+	std::string Canonical(const std::string &path) {
 		char *newpath;
 		newpath=realpath(path.c_str(), nullptr);
 		if(newpath==nullptr) {
-			throw std::runtime_error("Cannot canonize the give path: "+path);
+			throw PathNotFoundError("Cannot canonicalize the given path: "+path);
 		}
 		std::string ret(std::move(newpath));
 		std::free(newpath);

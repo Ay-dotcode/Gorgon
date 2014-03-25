@@ -61,8 +61,8 @@ namespace Gorgon { namespace Filesystem {
 	}
 	
 	std::string Relative(std::string path, std::string base) {
-		path=Canonize(path);
-		base=Canonize(base);
+		path=Canonical(path);
+		base=Canonical(base);
 		
 		auto p=path.begin();
 		auto b=base.begin();
@@ -117,7 +117,7 @@ namespace Gorgon { namespace Filesystem {
 		}
 		
 		//go downwards
-		if(relative.back()=='/') {
+		if(!relative.empty() && relative.back()=='/') {
 			if(path.empty())
 				relative.pop_back();
 			else

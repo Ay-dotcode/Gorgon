@@ -74,13 +74,15 @@ TEST_CASE( "Check file is not a directory", "[IsDirectory][Delete]") {
 }
 
 
-TEST_CASE( "Check if a file is a file", "[IsFile]") {
+TEST_CASE( "Check if a file is a file", "[IsFile][Delete]") {
 	std::ofstream testfile("testfile.txt");
 	testfile.close();
 
 	REQUIRE( fs::IsFile("testfile.txt") );
 
-	fs::Delete("testfile.txt");
+	REQUIRE( fs::Delete("testfile.txt") );
+
+	REQUIRE_FALSE( fs::IsFile("testfile.txt") );
 }
 
 
@@ -105,6 +107,127 @@ TEST_CASE( "Check directory exists", "[IsExists]") {
 	REQUIRE_FALSE( fs::IsExists("test") );
 }
 
+
+TEST_CASE( "Check if the current directory is writable", "[IsWritable]") {
+	REQUIRE( fs::IsWritable(".") );
+}
+
+TEST_CASE( "Check if a file is writable", "[IsWritable]" ) {
+	std::ofstream testfile("testfile.txt");
+	testfile.close();
+
+	REQUIRE( fs::IsWritable("testfile.txt") );
+
+#ifdef LINUX
+	system("chmod 000 testfile.txt");
+#else
+	SetFileAttributes("testfile.txt", 
+		GetFileAttributes("testfile.txt") | FILE_ATTRIBUTE_READONLY);
+#endif	
+
+	REQUIRE_FALSE( fs::IsWritable("testfile.txt") );
+
+#ifdef LINUX
+	system("chmod 755 testfile.txt");
+#else
+	SetFileAttributes("testfile.txt", 
+		GetFileAttributes("testfile.txt") & ~FILE_ATTRIBUTE_READONLY);
+#endif
+	
+	fs::Delete("testfile.txt");
+
+	REQUIRE_FALSE( fs::IsWritable("testfile.txt") );
+}
+
+
+TEST_CASE( "Check if a file is hidden", "[IsHidden]") {
+
+	REQUIRE_FALSE( fs::IsHidden("testfile.txt") );
+
+	std::ofstream testfile("testfile.txt");
+	testfile.close();
+
+	REQUIRE_FALSE( fs::IsHidden("testfile.txt") );
+
+	fs::Delete("testfile.txt");
+
+	testfile.open(".testfile");
+	testfile.close();
+
+#ifdef WIN32
+	SetFileAttributes(".testfile", 
+		GetFileAttributes("testfile.txt") | FILE_ATTRIBUTE_HIDDEN);
+#endif	
+
+	REQUIRE( fs::IsHidden(".testfile") );
+
+#ifdef WIN32
+	SetFileAttributes(".testfile", 
+		GetFileAttributes("testfile.txt") & ~FILE_ATTRIBUTE_HIDDEN);
+#endif	
+
+	fs::Delete(".testfile");
+} 
+
+
+TEST_CASE( "Check if canonize throws", "[Canonize]" ) {
+	REQUIRE_THROWS_AS( fs::Canonical("this/path/does/not/exists"), 
+		fs::PathNotFoundError
+	);
+
+	try {
+		fs::Canonical("this/path/does/not/exists");
+	}
+	catch(const fs::PathNotFoundError &err) {
+		std::string s=err.what();
+		REQUIRE( s.find("this/path/does/not/exists") != s.npos );
+	}
+}
+
+TEST_CASE( "Check if canonize works", "[Canonize]" ) {
+	std::ofstream testfile("testfile.txt");
+	testfile<<"this is a test text"<<std::endl;
+	testfile.close();
+
+	auto filename=fs::Canonical("testfile.txt");
+
+	std::cout<<"Make sure test path does not contain \\"<<std::endl;
+
+	REQUIRE( filename.find_first_of('\\') == filename.npos );
+
+	//canonize should always return a string that has at least
+	//one /
+	REQUIRE( filename.find_first_of('/') != filename.npos );
+
+	//canonize should not leave / unless its a top level directory
+	REQUIRE( fs::Canonical(".").back() != '/' );
+
+	REQUIRE( fs::IsFile(filename) );
+
+	std::ifstream testread(filename);
+	std::string line;
+	std::getline(testread, line);
+
+	REQUIRE( line == "this is a test text" );
+
+	fs::Delete("testfile.txt");
+}
+
+TEST_CASE( "Test if relative works", "[Relative]") {
+	std::ofstream testfile("testfile.txt");
+	testfile.close();
+
+	fs::CreateDirectory("testdir");
+
+	REQUIRE( fs::Relative("testfile.txt")=="testfile.txt" );
+
+	REQUIRE( fs::Relative("testfile.txt", fs::Canonical("testdir")) == "../testfile.txt" );
+
+	REQUIRE( fs::Relative(fs::Canonical("testfile.txt")) == "testfile.txt" );
+
+	fs::Delete("testfile.txt");
+	fs::Delete("testdir");
+}
 
 TEST_CASE( "Save - Saving file", "[Save]") {
 	fs::Save("test.txt", "This is a test\n");

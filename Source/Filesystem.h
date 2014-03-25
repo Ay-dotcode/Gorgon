@@ -17,12 +17,6 @@ namespace Gorgon {
 	/// functions are fully blocking without any reporting facilities.
 	namespace Filesystem {
 		
-		/// Initializes the filesystem module. Gorgon system requires every module
-		/// to have initialization function even if they are not used. Currently
-		/// used for following tasks:
-		/// * Set startup directory
-		void Initialize();
-		
 		/// This object is thrown from functions that return
 		/// information rather than status.
 		class PathNotFoundError : public std::runtime_error {
@@ -35,6 +29,40 @@ namespace Gorgon {
 			/// Constructor that sets error text
 			PathNotFoundError(const std::string &what) : std::runtime_error(what) { }
 		};
+
+		/// This class represents filesystem entry points (roots, drives). On Linux like systems, the
+		/// only entry point is '/', however, user home, root and removable devices are also listed.
+		/// On Windows all drives as listed. @see EntryPoints
+		class EntryPoint {
+		public:
+
+			///
+			/// Default constructor
+			EntryPoint() : Readable(), Writable() { }
+
+			/// The path of the entry point
+			std::string Path;
+
+			/// Whether the entry point is readable. Currently all entry points are readable
+			bool Readable;
+
+			/// Whether the entry point is writable. Notice that even an entry point is writable
+			/// it doesn't mean that the immediate path of the entry point is writable. It is 
+			/// possible that the user has no write access to the root of the entry point. If false
+			/// this denotes the entry point is fully read-only (like a CDROM)
+			bool Writable;
+
+			/// Name or label of the entry point.
+			std::string Name;
+		};
+
+
+		/// Initializes the filesystem module. Gorgon system requires every module
+		/// to have initialization function even if they are not used. Currently
+		/// used for following tasks:
+		/// * Set startup directory
+		void Initialize();
+
 	
 		/// Creates a new directory. This function works recursively to
 		/// create any missing parent directories as well. If directory
@@ -63,7 +91,9 @@ namespace Gorgon {
 		/// @return true if the given path is present
 		bool IsExists(const std::string &path);
 
-		/// Checks whether the given path is writable
+		/// Checks whether the given path is writable. This does not check if
+		/// the file is locked or not. Also, even if the file is not marked
+		/// as writable, a write operation might succeed.
 		/// @param  path is the directory or file to be checked. Should contain
 		///         forward slash as directory separator.
 		/// @return true if the given file/path exists and is writable. 
@@ -75,7 +105,7 @@ namespace Gorgon {
 		/// @return true if the path should be hidden. 
 		bool IsHidden(const std::string &path);
 
-		/// Canonizes a given relative path. This method always return with a path
+		/// Canonicalizes a given relative path. This method always return with a path
 		/// that contains at least one slash. However, a slash should be appended
 		/// to string as it never leaves a slash at the end unless, the path is a
 		/// root path therefore, it is save to append an extra slash.
@@ -85,9 +115,8 @@ namespace Gorgon {
 		///         used as directory separator. If the directory is a root directory
 		///         this method will return a path ending with slash, otherwise it will
 		///         never return a path ending with slash.
-		/// @throw  std::runtime_error if canonize fails. This may or may not be
-		///         be related to path being inexisting or inaccessible.
-		std::string Canonize(const std::string &path);
+		/// @throw  PathNotFoundError if canonize fails.
+		std::string Canonical(const std::string &path);
 		
 		/// Determine shortest relative path from the given path. Using "." in
 		/// second parameter will return the path relative to current directory.
@@ -159,6 +188,37 @@ namespace Gorgon {
 		/// @throw  PathNotFoundError if the file cannot be read or does not exits
 		std::string Load(const std::string &filename);
 		
+		/// Returns the directory where the program is started from. This will always return the same value 
+		/// through out the execution.
+		std::string StartupDirectory();
+		
+		/// Returns the directory where the program resides. Can be used to locate resources. May not be
+		/// same as StartupDirectory
+		std::string ApplicationDirectory();
+		
+		/// Returns the directory portion of a file path. If the file path does not contain any directory
+		/// related information, this method returns "." to denote current directory. Consider canonizing
+		/// the returned value. This function expects the input to have / as directory separator.
+		/// @param  filepath path that contains the filename
+		inline std::string GetDirectory(std::string filepath) {
+			auto pos=filepath.find_last_of('/');
+			
+			if(pos!=filepath.npos) {
+				filepath=filepath.substr(0,pos);
+			}
+			else {
+				filepath=CurrentDirectory();
+			}
+
+			return filepath;
+		}
+		
+		/// This function returns all entry points in the current system. This function does not
+		/// perform caching and should be used sparingly. It may cause Windows systems to read 
+		/// external devices. On Linux systems, home, root and removable devices are listed.
+		/// @return The list of entry points
+		std::vector<EntryPoint> EntryPoints();
+
 		/// Locates the given file or directory. If localonly is true, this function only
 		/// searches locations that are in the working directory. If it is set to false
 		/// standard system locations like user home directory or application data directory
@@ -187,64 +247,6 @@ namespace Gorgon {
 		/// @throw  PathNotFoundError if the file cannot be found
 		/// @throw  std::runtime_error if the file cannot be read
 		std::string LocateResource(const std::string &path, const std::string &directory="", bool localonly=true);
-		
-		/// Returns the directory where the program is started from. This will always return the same value 
-		/// through out the execution.
-		std::string StartupDirectory();
-		
-		/// Returns the directory where the program resides. Can be used to locate resources. May not be
-		/// same as StartupDirectory
-		std::string ApplicationDirectory();
-		
-		/// Returns the directory portion of a file path. If the file path does not contain any directory
-		/// related information, this method returns "." to denote current directory. Consider canonizing
-		/// the returned value. This function expects the input to have / as directory separator.
-		/// @param  filepath path that contains the filename
-		inline std::string GetDirectory(std::string filepath) {
-			auto pos=filepath.find_last_of('/');
-			
-			if(pos!=filepath.npos) {
-				filepath=filepath.substr(0,pos);
-			}
-			else {
-				filepath=CurrentDirectory();
-			}
-
-			return filepath;
-		}
-		
-
-		/// This class represents filesystem entry points (roots, drives). On Linux like systems, the
-		/// only entry point is '/', however, user home, root and removable devices are also listed.
-		/// On Windows all drives as listed. @see EntryPoints
-		class EntryPoint {
-		public:
-		
-			///
-			/// Default constructor
-			EntryPoint() : Readable(), Writable() { }
-		
-			/// The path of the entry point
-			std::string Path;
-			
-			/// Whether the entry point is readable. Currently all entry points are readable
-			bool Readable;
-			
-			/// Whether the entry point is writable. Notice that even an entry point is writable
-			/// it doesn't mean that the immediate path of the entry point is writable. It is 
-			/// possible that the user has no write access to the root of the entry point. If false
-			/// this denotes the entry point is fully read-only (like a CDROM)
-			bool Writable;
-						
-			/// Name or label of the entry point.
-			std::string Name;
-		};
-		
-		/// This function returns all entry points in the current system. This function does not
-		/// perform caching and should be used sparingly. It may cause Windows systems to read 
-		/// external devices. On Linux systems, home, root and removable devices are listed.
-		/// @return The list of entry points
-		std::vector<EntryPoint> EntryPoints();
 
 	}
 
