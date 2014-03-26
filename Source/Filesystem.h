@@ -1,3 +1,5 @@
+///@file Filesystem.h contains filesystem functions.
+
 #pragma once
 
 #include <string>

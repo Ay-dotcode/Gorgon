@@ -1,30 +1,7 @@
-/// @file This file contains class Any which is a container for any type and
+/// @file Any.h contains class Any. Any is a container for any type and
 ///	supports boxing, unboxing and copying; uses RTTI. Best be used with
-///  built in types or POD structures
-/// @license
-///
-///	Copyright (c) 2013 Cem Kalyoncu, DarkGaze.Org
-///
-///
-///	Permission is hereby granted, free of charge, to any person obtaining a copy
-///	of this software and associated documentation files (the "Software"), to deal
-///	in the Software without restriction, including without limitation the rights
-///	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-///	copies of the Software, and to permit persons to whom the Software is
-///	furnished to do so, subject to the following conditions:
-///
-///
-///The above copyright notice and this permission notice shall be included in
-///	all copies or substantial portions of the Software.
-///
-///
-///	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-///	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-///	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-///	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-///	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-///	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-///	THE SOFTWARE.
+/// built in types or POD structures
+
 
 #pragma once
 
@@ -36,7 +13,7 @@
 
 
 
-namespace Gorgon { namespace Utils {
+namespace Gorgon {
 
 	/// This class can hold any other information providing type erasure. 
 	/// It requires the type to be either copy constructible or
@@ -225,7 +202,7 @@ namespace Gorgon { namespace Utils {
 				throw std::runtime_error("Any storage is empty");
 			}
 #endif
-#ifdef _DEBUG
+#ifndef NDEBUG
 			if(!type->IsSameType(typeid(T_))) {
 				throw std::bad_cast("Cannot cast: not the same type");
 			}
@@ -247,7 +224,7 @@ namespace Gorgon { namespace Utils {
 				throw std::runtime_error("Any storage is empty");
 			}
 #endif
-#ifdef _DEBUG
+#ifndef NDEBUG
 			if(!type->IsSameType(typeid(T_))) {
 				throw std::bad_cast("Cannot cast: not the same type");
 			}
@@ -291,7 +268,7 @@ namespace Gorgon { namespace Utils {
 				throw std::runtime_error("Any storage is empty");
 			}
 #endif
-#ifdef _DEBUG
+#ifndef NDEBUG
 			if(!type->IsSameType(typeid(T_))) {
 				throw std::bad_cast("Cannot cast: not the same type");
 			}
@@ -310,7 +287,7 @@ namespace Gorgon { namespace Utils {
 			else if(!content.content || !this->content) {
 				return false;
 			}
-#ifdef _DEBUG
+#ifndef NDEBUG
 			if(type->Type() != content.type->Type()) {
 				throw std::bad_cast("Cannot cast: not the same type");
 			}
@@ -350,7 +327,11 @@ namespace Gorgon { namespace Utils {
 		}
 
 	protected:
+		///
+		/// Data stored in this any
 		void *content;
+		///
+		/// Type of the data stored.
 		TypeInterface *type;
 	};
-} }
+}

@@ -1,3 +1,5 @@
+///@file Threading.h contains threading functions.
+
 #pragma once
 
 #include <functional>
@@ -6,8 +8,8 @@
 
 namespace Gorgon {
 
-	/// Contains multi-threading functions and objects
-	/// For thread and mutex see std::thread, std::mutex
+	/// Contains multi-threading functions and objects.
+	/// For thread and mutex @see std::thread and std::mutex
 	namespace Threading {
 		
 

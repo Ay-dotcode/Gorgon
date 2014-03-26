@@ -1,3 +1,5 @@
+///@file Iterator.h contains filesystem Iterator. Lists file and directories.
+
 #pragma once
 
 #include <iterator>

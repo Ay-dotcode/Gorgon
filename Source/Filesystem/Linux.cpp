@@ -416,7 +416,7 @@ test_match:
 	}
 	
 	bool Iterator::Next() {
-#ifdef DEBUG
+#ifndef NDEBUG
 		if(!data || !data->dir) {
 			throw std::runtime_error("Invalid iterator");
 		}

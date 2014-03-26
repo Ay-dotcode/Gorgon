@@ -288,7 +288,7 @@ namespace Gorgon { namespace Filesystem {
 	
 	
 	bool Iterator::Next() {
-#ifdef DEBUG
+#ifndef NDEBUG
 		if(!data || !data->dir || data->search_handle==INVALID_HANDLE_VALUE) {
 			throw std::runtime_error("Invalid iterator");
 		}
