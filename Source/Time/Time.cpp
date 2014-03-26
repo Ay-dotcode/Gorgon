@@ -45,7 +45,6 @@ namespace Gorgon { namespace Time {
 	}
 	
 	bool Date::Load(std::istream &source) {
-		Byte byte;
 		uint16_t ushorttemp;		
 		int16_t shorttemp;
 		
@@ -263,13 +262,16 @@ namespace Gorgon { namespace Time {
 	}
 	
 	int Date::LocalTimezone() {
-		time_t rawtime;
-		struct tm timeinfo;
+		time_t time_local, time_gm;
 
-		time(&rawtime);
-		timeinfo = *localtime(&rawtime);
+		time(&time_local);
+		time_gm    = mktime(gmtime(&time_local));
+
+		double res=difftime(time_local, time_gm);
+
 		
-		return timeinfo.tm_gmtoff/60;
+		
+		return int(res/60);
 	}
 	
 	bool Date::DetermineWeekday() {

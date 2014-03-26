@@ -10,7 +10,6 @@
 #include <shlobj.h>
 #include "Iterator.h"
 
-
 #undef CreateDirectory
 
 namespace Gorgon { namespace Filesystem {
@@ -298,7 +297,7 @@ namespace Gorgon { namespace Filesystem {
 	
 	bool Iterator::Next() {
 #ifndef NDEBUG
-		if(!data || !data->dir || data->search_handle==INVALID_HANDLE_VALUE) {
+		if(!data || !data->data || data->search_handle==INVALID_HANDLE_VALUE) {
 			throw std::runtime_error("Invalid iterator");
 		}
 #endif
@@ -317,4 +316,3 @@ namespace Gorgon { namespace Filesystem {
 	}
 	
 } }
-

@@ -4,4 +4,5 @@ SET(Local
 	Any.h
 	String.h
 	Threading.h
+	Types.h
 )
