@@ -20,6 +20,7 @@ namespace Gorgon {
 			return (T_)std::strtol(value.c_str(), &n, 10);
 		}
 
+		/// @cond INTERNAL
 		template <>
 		inline float To<float>(const std::string &value) {
 			return (float)std::atof(value.c_str());
@@ -29,6 +30,7 @@ namespace Gorgon {
 		inline double To<double>(const std::string &value) {
 			return std::atof(value.c_str());
 		}
+		/// @endcond
 
 		/// String replace that does not use regex. Works faster than regex variant.
 		/// @param  str is the string to process
@@ -45,8 +47,10 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// @todo ...
-		inline std::string Trim(std::string str, const std::string chars=" \t\n\r") {
+		/// Strips whitespace around the given string both from start and end.
+		/// @param  str is the string to process
+		/// @param  chars is the characters to be considered as whitespace
+		inline std::string Trim(std::string str, const std::string &chars=" \t\n\r") {
 			while(str.length() && chars.find_first_of(str[0])!=chars.npos) {
 				str=str.substr(1);
 			}
@@ -57,8 +61,10 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// @todo ...
-		inline std::string TrimLeft(std::string str, const std::string chars=" \t\n\r") {
+		/// Strips the whitespace from the start of a string.
+		/// @param  str is the string to process
+		/// @param  chars is the characters to be considered as whitespace
+		inline std::string TrimStart(std::string str, const std::string &chars=" \t\n\r") {
 			while(str.length() && chars.find_first_of(str[0])!=chars.npos) {
 				str=str.substr(1);
 			}
@@ -66,8 +72,10 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// @todo ...
-		inline std::string TrimRight(std::string str, const std::string chars=" \t\n\r") {
+		/// Strips the whitespace at the end of a string.
+		/// @param  str is the string to process
+		/// @param  chars is the characters to be considered as whitespace
+		inline std::string TrimEnd(std::string str, const std::string &chars=" \t\n\r") {
 			while(str.length() && chars.find_first_of(str[str.length()-1])!=chars.npos) {
 				str.resize(str.length()-1);
 			}
@@ -75,7 +83,7 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// @todo ...
+		/// Converts the given string to lowercase.
 		inline std::string ToLower(std::string str) {
 			for(auto it=str.begin();it!=str.end();++it) {
 				*it=tolower(*it);
@@ -84,7 +92,7 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// @todo ...
+		/// Converts the given string to uppercase
 		inline std::string ToUpper(std::string str) {
 			for(auto it=str.begin();it!=str.end();++it) {
 				*it=toupper(*it);
@@ -93,76 +101,100 @@ namespace Gorgon {
 			return str;
 		}
 
-		template <typename T>
-		class has_stringoperator
-		{
-			typedef char one;
-			struct two {
-				char a[2];
+		/// @cond INTERNAL
+		namespace internal {
+			/// SFINAE trick to detect if class has string operator
+			template <typename T>
+			class has_stringoperator
+			{
+				typedef char one;
+				struct two {
+					char a[2];
+				};
+
+				template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {return one();}
+				template <typename C> static two test(...){return two();}
+
+			public:
+				enum { value = sizeof(test<T>(""))==sizeof(char) };
 			};
-
-			template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {return one();}
-			template <typename C> static two test(...){return two();}
-
-		public:
-			enum { value = sizeof(test<T>(""))==sizeof(char) };
-		};
+		}
+		/// @endcond
 		
-		inline std::string ToString(int value) {
+		
+		/// @cond
+		inline std::string From(int value) {
 			return std::to_string(value);
 		}
 		
-		inline std::string ToString(long value) {
+		inline std::string From(long value) {
 			return std::to_string(value);
 		}
 		
-		inline std::string ToString(long long value) {
+		inline std::string From(long long value) {
 			return std::to_string(value);
 		}
 		
-		inline std::string ToString(unsigned value) {
+		inline std::string From(unsigned value) {
 			return std::to_string(value);
 		}
 		
-		inline std::string ToString(unsigned long value) {
+		inline std::string From(unsigned long value) {
 			return std::to_string(value);
 		}
 		
-		inline std::string ToString(unsigned long long value) {
+		inline std::string From(unsigned long long value) {
 			return std::to_string(value);
 		}
 		
-		inline std::string ToString(float value) {
+		inline std::string From(float value) {
 			return std::to_string(value);
 		}
 		
-		inline std::string ToString(double value) {
+		inline std::string From(double value) {
 			return std::to_string(value);
 		}
 		
-		inline std::string ToString(long double value) {
+		inline std::string From(long double value) {
 			return std::to_string(value);
 		}
 		
-		inline std::string ToString(std::string value) {
+		inline std::string From(std::string value) {
 			return value;
 		}
 
 		template<class T_> 
-		typename std::enable_if<has_stringoperator<T_>::value, std::string>::type ToString(const T_ &item) {
+		typename std::enable_if<internal::has_stringoperator<T_>::value, std::string>::type From(const T_ &item) {
 			return (std::string)item;
 		}
 
 		template<class T_> 
-		typename std::enable_if<!has_stringoperator<T_>::value, std::string>::type ToString(const T_ &item) {
+		typename std::enable_if<!internal::has_stringoperator<T_>::value, std::string>::type From(const T_ &item) {
 			std::stringstream ss;
 			ss<<item;
 
 			return ss.str();
 		}
+		/// @endcond
 		
-		//Modifies the original string, removes the marker too, if the marker not found
-		//it extracts the entire string
+		//for pretty documentation
+#ifdef DOXYGEN
+		/// Creates a string from the given data. Similar to to_string but allows 
+		/// conversion of a type if it can be casted or streamed to output. Also uses
+		/// std::to_string where possible.
+		template<class T_>
+		std::string From(const T_ &item) { return ""; }
+#endif
+		
+		/// Extracts the part of the string up to the given marker. Extracted string and
+		/// the marker is removed from the original string. If the given string does not
+		/// contain marker, entire string will be extracted. It is possible to tokenize
+		/// the given string using repeated calls to this function. However, its more
+		/// convenient to use Tokenizer.
+		/// @param  original string that will be processed. This string will be modified
+		///         by the program
+		/// @param  marker string that will be searched.
+		/// @return Extracted string. Does not contain the marker.
 		inline std::string Extract(std::string &original, const std::string marker) {
 			auto pos=original.find(marker);
 			
@@ -179,6 +211,16 @@ namespace Gorgon {
 			return ret;
 		}
 
+		
+		/// Extracts the part of the string up to the given marker. Extracted string and
+		/// the marker is removed from the original string. If the given string does not
+		/// contain marker, entire string will be extracted. It is possible to tokenize
+		/// the given string using repeated calls to this function. However, its more
+		/// convenient to use Tokenizer.
+		/// @param  original string that will be processed. This string will be modified
+		///         by the program
+		/// @param  marker character that will be searched.
+		/// @return Extracted string. Does not contain the marker.
 		inline std::string Extract(std::string &original, char marker) {
 			auto pos=original.find_first_of(marker);
 			
@@ -195,8 +237,19 @@ namespace Gorgon {
 			return ret;
 		}
 		
-		//extracts string but doesnot split inside quotes, supports both single and double 
-		//quotes. Marker could be a quote
+		/// Extracts the part of the string up to the given marker. This function will
+		/// skipped quoted sections of the string. Both single and double quotes are
+		/// considered, however, double quotes should match with double quotes and single
+		/// quotes should match with single quotes. A different quote type inside quote
+		/// region is ignored. Extracted string and the marker is removed from the original 
+		/// string. If the given string does not contain marker outside the quotes, 
+		/// entire string will be extracted. It is possible to tokenize
+		/// the given string using repeated calls to this function.
+		/// @param  original string that will be processed. This string will be modified
+		///         by the program
+		/// @param  marker string that will be searched. It is possible to specify quote as
+		///         a marker.
+		/// @return Extracted string. Does not contain the marker.
 		inline std::string ExtractOutsideQuotes(std::string &original, char marker) {
 			int inquotes=0;
 			int pos=0;

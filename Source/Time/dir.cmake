@@ -1,7 +1,7 @@
 SET(Local
 	../Time.h
 	Time.cpp
-	Performance.h
+	Timer.h
 )
 
 IF(${WIN32})

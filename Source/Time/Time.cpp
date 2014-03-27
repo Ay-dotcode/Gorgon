@@ -1,9 +1,13 @@
 #include "../Time.h"
+#include "Timer.h"
 
 #include "../Types.h"
 #include "../String.h"
 #include <stdint.h>
 #include <stdexcept>
+
+//TODO uncomment
+//#include "../Widgets/Dialogs/Message.h"
 
 namespace Gorgon { namespace Time {
 	
@@ -293,5 +297,12 @@ namespace Gorgon { namespace Time {
 		unsigned long deltatime=0;
 	}
 	
+	void Timer::ShowDialog(const std::string &name, const std::string &title) const { 
+		std::stringstream ss;
+		ss<<name<<": "<<passed;
+
+//TODO uncomment
+		//gge::widgets::dialog::ShowMessage(ss.str(), title).SetIcon("Time");
+	}	
 } }
 
