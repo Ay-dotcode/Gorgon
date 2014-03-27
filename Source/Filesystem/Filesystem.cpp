@@ -15,15 +15,7 @@ namespace Gorgon { namespace Filesystem {
 	std::string StartupDirectory() {
 		return startupdir;
 	}
-	
-	bool Copy(const std::vector<std::string> &source, const std::string &target) {
-		for(auto &s : source) {
-			if(!Copy(s, target)) return false;
-		}
 		
-		return true;
-	}
-	
 	bool Save(const std::string &filename, const std::string &data, bool append) {
 		std::ofstream file(filename, (append ? std::ios::binary | std::ios::app : std::ios::binary));
 		

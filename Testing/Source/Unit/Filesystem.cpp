@@ -5,6 +5,7 @@
 #undef CreateDirectory
 
 #include <Source/Filesystem.h>
+#include <Source/Filesystem/Iterator.h>
 
 #include <iostream>
 #include <string>
@@ -86,6 +87,7 @@ TEST_CASE( "Check if a file is a file", "[IsFile][Delete]") {
 }
 
 
+
 TEST_CASE( "Check file exists", "[IsExists]") {
 	std::ofstream testfile("testfile.txt");
 	testfile.close();
@@ -108,6 +110,7 @@ TEST_CASE( "Check directory exists", "[IsExists]") {
 }
 
 
+
 TEST_CASE( "Check if the current directory is writable", "[IsWritable]") {
 	REQUIRE( fs::IsWritable(".") );
 }
@@ -121,8 +124,7 @@ TEST_CASE( "Check if a file is writable", "[IsWritable]" ) {
 #ifdef LINUX
 	system("chmod 000 testfile.txt");
 #else
-	SetFileAttributes("testfile.txt", 
-		GetFileAttributes("testfile.txt") | FILE_ATTRIBUTE_READONLY);
+	SetFileAttributes("testfile.txt", FILE_ATTRIBUTE_READONLY);
 #endif	
 
 	REQUIRE_FALSE( fs::IsWritable("testfile.txt") );
@@ -130,14 +132,14 @@ TEST_CASE( "Check if a file is writable", "[IsWritable]" ) {
 #ifdef LINUX
 	system("chmod 755 testfile.txt");
 #else
-	SetFileAttributes("testfile.txt", 
-		GetFileAttributes("testfile.txt") & ~FILE_ATTRIBUTE_READONLY);
+	SetFileAttributes("testfile.txt", FILE_ATTRIBUTE_NORMAL);
 #endif
 	
 	fs::Delete("testfile.txt");
 
 	REQUIRE_FALSE( fs::IsWritable("testfile.txt") );
 }
+
 
 
 TEST_CASE( "Check if a file is hidden", "[IsHidden]") {
@@ -155,19 +157,18 @@ TEST_CASE( "Check if a file is hidden", "[IsHidden]") {
 	testfile.close();
 
 #ifdef WIN32
-	SetFileAttributes(".testfile", 
-		GetFileAttributes("testfile.txt") | FILE_ATTRIBUTE_HIDDEN);
+	SetFileAttributes(".testfile", FILE_ATTRIBUTE_HIDDEN);
 #endif	
 
 	REQUIRE( fs::IsHidden(".testfile") );
 
 #ifdef WIN32
-	SetFileAttributes(".testfile", 
-		GetFileAttributes("testfile.txt") & ~FILE_ATTRIBUTE_HIDDEN);
+	SetFileAttributes(".testfile", FILE_ATTRIBUTE_NORMAL);
 #endif	
 
 	fs::Delete(".testfile");
 } 
+
 
 
 TEST_CASE( "Check if canonize throws", "[Canonize]" ) {
@@ -231,6 +232,111 @@ TEST_CASE( "Test if relative works", "[Relative]") {
 
 
 
+TEST_CASE( "Current directory, depends on cmake", "[CurrentDirectory][ChangeDirectory]") {
+	REQUIRE( fs::CurrentDirectory() == TESTDIR );
+
+	REQUIRE( fs::CurrentDirectory().find_first_of('\\') == std::string::npos );
+
+	fs::CreateDirectory("testdir");
+	REQUIRE( fs::ChangeDirectory("testdir") );
+
+	REQUIRE( fs::CurrentDirectory() == TESTDIR"/testdir" );
+
+	REQUIRE( fs::ChangeDirectory("..") );
+	REQUIRE( fs::CurrentDirectory() == TESTDIR );
+
+	fs::Delete("testdir");
+
+	REQUIRE_FALSE( fs::ChangeDirectory("testdir") );
+}
+
+
+
+TEST_CASE( "Copy file", "[Copy]") {
+	fs::Save("test.txt", "This is a test\n");
+
+	REQUIRE( fs::Copy("test.txt", "test2.txt") );
+
+	REQUIRE( fs::Load("test2.txt")=="This is a test\n" );
+
+	fs::Delete("test.txt");
+	fs::Delete("test2.txt");
+}
+
+TEST_CASE( "Copy binary file", "[Copy]") {
+	std::string str="This is a test\n";
+	str.push_back(0);
+
+	fs::Save("test.bin", str);
+
+	REQUIRE( fs::Copy("test.bin", "test2.bin") );
+
+	REQUIRE( fs::Load("test2.bin")==str );
+
+	fs::Delete("test.bin");
+	fs::Delete("test2.bin");
+
+	REQUIRE_FALSE( fs::Copy("test.bin", "test2.bin") );
+}
+
+TEST_CASE( "Copy directory", "[Copy]") {
+	fs::CreateDirectory("testdir/another");
+
+	std::string str="This is a test\n";
+	str.push_back(0);
+
+	fs::Save("testdir/test.bin", str);
+
+	fs::Save("testdir/another/test.txt", "This is a test\n");
+
+	REQUIRE( fs::Copy("testdir", "test2dir") );
+
+	REQUIRE( fs::IsDirectory("test2dir") );
+	REQUIRE( fs::IsDirectory("test2dir/another") );
+
+	REQUIRE( fs::Load("test2dir/test.bin")==str );
+	REQUIRE( fs::Load("test2dir/another/test.txt")=="This is a test\n" );
+
+	fs::Delete("test2dir");
+
+	fs::Iterator begin("testdir"), end;
+
+	fs::CreateDirectory("test2dir");
+	REQUIRE( fs::Copy("testdir", begin, end, "test2dir") );
+
+	REQUIRE( fs::IsDirectory("test2dir") );
+	REQUIRE( fs::IsDirectory("test2dir/another") );
+
+	REQUIRE( fs::Load("test2dir/test.bin")==str );
+	REQUIRE( fs::Load("test2dir/another/test.txt")=="This is a test\n" );
+
+	fs::Delete("test2dir");
+
+	std::vector<std::string> list;
+
+	REQUIRE( fs::Copy(list, "test2dir") );
+
+	fs::CreateDirectory("test2dir");
+
+	list.push_back("testdir/another");
+	list.push_back("testdir/test.bin");
+
+	REQUIRE( fs::Copy(list, "test2dir") );
+
+	REQUIRE( fs::IsDirectory("test2dir") );
+	REQUIRE( fs::IsDirectory("test2dir/another") );
+
+	REQUIRE( fs::Load("test2dir/test.bin")==str );
+	REQUIRE( fs::Load("test2dir/another/test.txt")=="This is a test\n" );
+
+	fs::Delete("testdir");
+	fs::Delete("test2dir");
+
+	REQUIRE_FALSE( fs::Copy(list, "test2dir") );
+}
+
+
+
 TEST_CASE( "Save - Saving file", "[Save]") {
 	fs::Save("test.txt", "This is a test\n");
 	std::ifstream file("test.txt", std::ios::binary);
@@ -250,7 +356,6 @@ TEST_CASE( "Save - Saving file", "[Save]") {
 	file.close();	
 }
 
-
 TEST_CASE( "Save - Saving binary file", "[Save]") {
 	std::string teststring="This is a test\n";
 	teststring.push_back(0); //testing binary
@@ -266,7 +371,6 @@ TEST_CASE( "Save - Saving binary file", "[Save]") {
 	
 	file.close();	
 }
-
 
 TEST_CASE( "Save - Overwrite", "[Save]") {
 	std::string teststring="This is a test\n";
@@ -284,7 +388,6 @@ TEST_CASE( "Save - Overwrite", "[Save]") {
 
 
 
-
 TEST_CASE( "Load - Loading file", "[Save][Load]") {	
 	std::string teststring="This is a test\n";
 	fs::Save("test.txt", teststring);	
@@ -293,7 +396,6 @@ TEST_CASE( "Load - Loading file", "[Save][Load]") {
 	
 	remove("test.txt");
 }
-
 
 TEST_CASE( "Load - Loading binary file", "[Save][Load]") {	
 	std::string teststring="This is a test\n";
@@ -304,7 +406,6 @@ TEST_CASE( "Load - Loading binary file", "[Save][Load]") {
 	
 	remove("test.bin");
 }
-
 
 TEST_CASE( "Load - PathNotFoundError", "[Load][PathNotFoundError") {	
 	REQUIRE_THROWS_AS( 

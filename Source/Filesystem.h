@@ -146,21 +146,123 @@ namespace Gorgon {
 		/// @return the current working directory Forward slashes are 
 		///         used as directory separator
 		std::string CurrentDirectory();
-		
+
+		/// Returns the directory portion of a file path. If the file path does not contain any directory
+		/// related information, this method returns current directory. This function expects the input
+		/// to have / as directory separator.
+		/// @param  filepath path that contains the filename
+		inline std::string GetDirectory(std::string filepath) {
+			auto pos=filepath.find_last_of('/');
+
+			if(pos!=filepath.npos) {
+				filepath=filepath.substr(0,pos);
+			}
+			else {
+				filepath=CurrentDirectory();
+			}
+
+			return filepath;
+		}
+
+		/// Returns the filename portion of a file path. This function expects the input to 
+		/// have / as directory separator.
+		/// @param  filepath path that contains the filename
+		inline std::string GetFile(std::string path) {
+			auto pos=path.find_last_of('/');
+
+			if(pos!=path.npos) {
+				path=path.substr(pos+1);
+			}
+
+			return path;
+		}
+
 		/// Copies a file or directory from the given source to destination.
 		/// Hard link sources will be copied instead of links themselves.
 		/// @param source file or directory. Should either be a single file, or single directory
 		/// @param target is the new filename or directory name
 		/// @return true on success
 		bool Copy(const std::string &source, const std::string &target);
-		
+
 		/// Copies list of files and/or directories from the given source to destination.
 		/// Hard link sources will be copied instead of links themselves.
-		/// @param  source list of source file or directories
-		/// @param  target is directory to copy files or directories into
+		/// @param  source list of source files or directories
+		/// @param  target is directory to copy files or directories into. This directory
+		///         should exist before calling this function
 		/// @return true on success
-		bool Copy(const std::vector<std::string> &source, const std::string &target);
-		
+		template<template<class> class C_>
+		bool Copy(const C_<std::string> &source, const std::string &target) {
+			for(const auto &s : source) {
+				if(!Copy(s, target+"/"+GetFile(s))) return false;
+			}
+
+			return true;
+		}
+
+		/// Copies list of files and/or directories from the given source to destination.
+		/// Hard link sources will be copied instead of links themselves.
+		/// @param  source list of source files or directories
+		/// @param  target is directory to copy files or directories into. This directory
+		///         should exist before calling this function
+		/// @return true on success
+		template<template<class, class> class C_, class A_>
+		bool Copy(const C_<std::string, A_> &source, const std::string &target) {
+			for(const auto &s : source) {
+				if(!Copy(s, target+"/"+GetFile(s))) return false;
+			}
+
+			return true;
+		}
+
+		/// Copies list of files and/or directories from the given source to destination.
+		/// Hard link sources will be copied instead of links themselves.
+		/// @param  begin starting iterator
+		/// @param  end ending iterator, will not be dereferenced
+		/// @param  target is directory to copy files or directories into. This directory
+		///         should exist before calling this function
+		/// @return true on success
+		template<class I_>
+		bool Copy(const I_ &begin, const I_ &end, const std::string &target) {
+			for(I_ it=begin;it!=end;++it) {
+				if(!Copy(*it, target+"/"+GetFile(*it))) return false;
+			}
+
+			return true;
+		}
+
+		/// Copies list of files and/or directories from the given source to destination.
+		/// Hard link sources will be copied instead of links themselves.
+		/// @param  sourcedir the directory contains source files
+		/// @param  source list of source files or directories
+		/// @param  target is directory to copy files or directories into. This directory
+		///         should exist before calling this function
+		/// @return true on success
+		template<template<class> class C_>
+		bool Copy(const std::string &sourcedir, const C_<std::string> &source, const std::string &target) {
+			for(const auto &s : source) {
+				if(!Copy(sourcedir+"/"+s, target+"/"+s)) return false;
+			}
+
+			return true;
+		}
+
+		/// Copies list of files and/or directories from the given source to destination.
+		/// Hard link sources will be copied instead of links themselves.
+		/// @param  sourcedir the directory contains source files
+		/// @param  begin starting iterator
+		/// @param  end ending iterator, will not be dereferenced
+		/// @param  target is directory to copy files or directories into. This directory
+		///         should exist before calling this function
+		/// @return true on success
+		template<class I_>
+		bool Copy(const std::string &sourcedir, const I_ &begin, const I_ &end, const std::string &target) {
+			for(I_ it=begin;it!=end;++it) {
+				if(!Copy(sourcedir+"/"+*it, target+"/"+*it)) return false;
+			}
+
+			return true;
+		}
+	
 		/// Returns the size of the given file. If the file is not found 0 is returned.
 		/// @param  filename is the name of the file
 		/// @return size of the given file
@@ -195,23 +297,6 @@ namespace Gorgon {
 		/// Returns the directory where the program resides. Can be used to locate resources. May not be
 		/// same as StartupDirectory
 		std::string ApplicationDirectory();
-		
-		/// Returns the directory portion of a file path. If the file path does not contain any directory
-		/// related information, this method returns "." to denote current directory. Consider canonizing
-		/// the returned value. This function expects the input to have / as directory separator.
-		/// @param  filepath path that contains the filename
-		inline std::string GetDirectory(std::string filepath) {
-			auto pos=filepath.find_last_of('/');
-			
-			if(pos!=filepath.npos) {
-				filepath=filepath.substr(0,pos);
-			}
-			else {
-				filepath=CurrentDirectory();
-			}
-
-			return filepath;
-		}
 		
 		/// This function returns all entry points in the current system. This function does not
 		/// perform caching and should be used sparingly. It may cause Windows systems to read 
