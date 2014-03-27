@@ -1,8 +1,8 @@
 SET(Local
 	Filesystem
 	Time
+	String
 	Any.h
-	String.h
 	Threading.h
 	Types.h
 )
