@@ -1,104 +1,98 @@
-//DESCRIPTION
-//	This file contains string tokenizer
-
-//REQUIRES:
-//	Utils/Iterator
-
-//LICENSE
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the Lesser GNU General Public License as published by
-//	the Free Software Foundation, either version 3 of the License, or
-//	(at your option) any later version.
-//
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-//	Lesser GNU General Public License for more details.
-//
-//	You should have received a copy of the Lesser GNU General Public License
-//	along with this program. If not, see < http://www.gnu.org/licenses/ >.
-
-//COPYRIGHT
-//	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
+/// @file Tokenizer.h contains string tokenizer.
 
 #pragma once
 
 #include <string>
-#include "Iterator.h"
+#include <iterator>
 
 
-namespace gge { namespace utils {
+namespace Gorgon { namespace String {
 
-	class StringTokenizer {
+	/// Tokenizer is a forward iterator that tokenizes a given string. This class only
+	/// supports single character delimeters, however, its possible to specify more than
+	/// one delimeter. @see Extract function to tokenize a string using multicharacter
+	/// delimeters. Its also possible to change delimeters in the middle of tokenization.
+	class Tokenizer : public std::iterator<std::forward_iterator_tag, std::string> {
 	public:
-		StringTokenizer() : position(Text.npos) {}
+		
+		/// Creates an empty tokenizer. Effectively creates an end iterator.
+		Tokenizer() : position(text.npos) {}
 
-		StringTokenizer(const std::string &Text, const std::string &Delimeters) : Text(Text), Delimeters(Delimeters) {
+		/// Creates a new tokenizer.
+		/// @param  str string to be tokenized
+		/// @param  delimeters is the delimeters to use while tokenizing
+		Tokenizer(const std::string &str, const std::string &delimeters) : 
+		      text(str), Delimeters(delimeters) {
 			position=0;
 
-			auto ind=Text.find_first_of(Delimeters);
-			if(ind==Text.npos) {
-				Token=Text;
-				position=Text.length();
-			}
-			else {
-				Token=Text.substr(position, ind);
-				position=ind+1;
-			}
+			Next();
 		}
 
+		/// Move to the next token
 		void operator ++() {
 			Next();
 		}
 
+		/// Move to the next token
 		void Next() {
-			if(position==Text.length())
-				position=Text.npos;
+			if(position==text.length())
+				position=text.npos;
 
-			if(position==Text.npos)
+			if(position==text.npos)
 				return;
 
-			auto ind=Text.find_first_of(Delimeters, position);
-			if(ind==Text.npos) {
-				Token=Text.substr(position);
-				position=Text.length();
+			auto ind=text.find_first_of(Delimeters, position);
+			if(ind==text.npos) {
+				token=text.substr(position);
+				position=text.length();
 			}
 			else {
-				Token=Text.substr(position, ind-position);
+				token=text.substr(position, ind-position);
 				position=ind+1;
 			}
 		}
 
+		/// Return the current token
 		std::string Current() const {
-			return Token;
+			return token;
 		}
 
+		/// Return the current token
 		std::string operator *() const {
-			return Token;
+			return token;
 		}
 
+		/// Return the current token
 		operator std::string() const {
-			return Token;
+			return token;
 		}
 
+		/// Return the current token
 		const std::string *operator ->() const {
-			return &Token;
+			return &token;
 		}
 
+		/// Whether the iterator is valid (i.e. dereferencable)
 		bool IsValid() const {
-			return position!=Text.npos;
+			return position!=text.npos;
 		}
 
-		bool operator ==(const StringTokenizer &st) const {
-			return st.position==position;
+		/// Compare two iterators, does not check if two iterators are identical. Compares
+		/// only current positions and tokens
+		bool operator ==(const Tokenizer &st) const {
+			return st.position==position && st.token == token;
 		}
 
+		/// Delimeters to be used in tokenization. Can be changed while tokenizing.
 		std::string Delimeters;
-		std::string Text;
-		std::string Token;
 
 	protected:
-		unsigned int position;
+		/// Current text
+		std::string text;
+		/// Current token
+		std::string token;
+		/// Position of the next token. std::string::npos denotes the iterator reached the end.
+		std::string::size_t position;
 	};
 
 }}

@@ -5,6 +5,7 @@ Bin
 Docs/Latex
 Testing/Tests
 Testing/Runtime
+Docs/HTML
 
 syntax: glob
 

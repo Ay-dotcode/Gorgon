@@ -82,8 +82,11 @@ namespace Gorgon { namespace String {
 
 		/// Parses the given string to determine the enumeration value. Returns end
 		/// if not the same. Comparison is case sensitive
-		static typename T_::Type Parse(const std::string &e) {
-			//TODO
+		static typename T_::Type Parse(const std::string &s) {
+			for(typename T_::Type e=(typename T_::Type)0;e<T_::end;e++)
+				if(s==T_::Names[e])
+					return e;
+			
 			return T_::end;
 		}
 
@@ -94,6 +97,8 @@ namespace Gorgon { namespace String {
 			for(e=(typename T_::Type)0;e<T_::end;e++)
 				if(s==T_::Names[e])
 					return;
+				
+			e=T_::end;
 		}
 
 		/// Adds all elements of this Enum to a given collection.

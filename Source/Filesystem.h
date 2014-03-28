@@ -166,7 +166,7 @@ namespace Gorgon {
 
 		/// Returns the filename portion of a file path. This function expects the input to 
 		/// have / as directory separator.
-		/// @param  filepath path that contains the filename
+		/// @param  path path that contains the filename
 		inline std::string GetFile(std::string path) {
 			auto pos=path.find_last_of('/');
 

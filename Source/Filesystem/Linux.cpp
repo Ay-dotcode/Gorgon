@@ -58,11 +58,16 @@ namespace Gorgon { namespace Filesystem {
 	}
 	
 	bool IsExists(const std::string &path) {
-		return access(path.c_str(), 0);
+		return access(path.c_str(), 0)!= -1;
 	}
 	
 	bool IsWritable(const std::string &path) {
-		return access(path.c_str(), W_OK)==-1;
+		struct stat st;
+		if(stat(path.c_str(), &st)!=0) return false;
+		
+		return (st.st_uid == getuid() && st.st_mode & 0200) || 
+				(st.st_gid == getgid() && st.st_mode & 0020) || 
+				(st.st_mode & 0002);
 	}
 	
 	bool IsHidden(const std::string &f) {
@@ -213,7 +218,7 @@ namespace Gorgon { namespace Filesystem {
 	}
 	
 	std::string ApplicationDirectory() {
-		std::string path=Canonize("/proc/self/exe");
+		std::string path=Canonical("/proc/self/exe");
 		
 		return GetDirectory(path);
 	}
@@ -241,7 +246,7 @@ namespace Gorgon { namespace Filesystem {
 		if(IsDirectory("/dev/disk/by-label/")) {
 			Iterator it("/dev/disk/by-label/");
 			for(;it.IsValid(); it.Next()) {
-				mapping.emplace(Canonize("/dev/disk/by-label/"+*it), *it);
+				mapping.emplace(Canonical("/dev/disk/by-label/"+*it), *it);
 			}
 		}
 		
@@ -373,7 +378,7 @@ test_match:
 	}
 	
 	Iterator::Iterator(const std::string &directory, const std::string &pattern) : 
-	data(new internal::iterator_data), basedir(Canonize(directory)) {
+	data(new internal::iterator_data), basedir(Canonical(directory)) {
 		data->dir=opendir(basedir.c_str());
 		data->pattern=pattern;
 		

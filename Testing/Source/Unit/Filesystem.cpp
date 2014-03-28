@@ -122,7 +122,7 @@ TEST_CASE( "Check if a file is writable", "[IsWritable]" ) {
 	REQUIRE( fs::IsWritable("testfile.txt") );
 
 #ifdef LINUX
-	system("chmod 000 testfile.txt");
+	system("chmod 444 testfile.txt");
 #else
 	SetFileAttributes("testfile.txt", FILE_ATTRIBUTE_READONLY);
 #endif	
@@ -130,7 +130,7 @@ TEST_CASE( "Check if a file is writable", "[IsWritable]" ) {
 	REQUIRE_FALSE( fs::IsWritable("testfile.txt") );
 
 #ifdef LINUX
-	system("chmod 755 testfile.txt");
+	system("chmod 644 testfile.txt");
 #else
 	SetFileAttributes("testfile.txt", FILE_ATTRIBUTE_NORMAL);
 #endif
@@ -233,17 +233,17 @@ TEST_CASE( "Test if relative works", "[Relative]") {
 
 
 TEST_CASE( "Current directory, depends on cmake", "[CurrentDirectory][ChangeDirectory]") {
-	REQUIRE( fs::CurrentDirectory() == TESTDIR );
+	REQUIRE( fs::Canonical(fs::CurrentDirectory()) == fs::Canonical(TESTDIR) );
 
 	REQUIRE( fs::CurrentDirectory().find_first_of('\\') == std::string::npos );
 
 	fs::CreateDirectory("testdir");
 	REQUIRE( fs::ChangeDirectory("testdir") );
 
-	REQUIRE( fs::CurrentDirectory() == TESTDIR"/testdir" );
+	REQUIRE( fs::Canonical(fs::CurrentDirectory()) == fs::Canonical(TESTDIR"/testdir") );
 
 	REQUIRE( fs::ChangeDirectory("..") );
-	REQUIRE( fs::CurrentDirectory() == TESTDIR );
+	REQUIRE( fs::Canonical(fs::CurrentDirectory()) == fs::Canonical(TESTDIR) );
 
 	fs::Delete("testdir");
 
