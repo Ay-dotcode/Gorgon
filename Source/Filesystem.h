@@ -262,11 +262,6 @@ namespace Gorgon {
 
 			return true;
 		}
-	
-		/// Returns the size of the given file. If the file is not found 0 is returned.
-		/// @param  filename is the name of the file
-		/// @return size of the given file
-		unsigned long long Size(const std::string &filename);
 		
 		/// Moves a given file or directory. Target is the new path rather than
 		/// the target directory. This function can also be used to rename a file or
@@ -276,6 +271,11 @@ namespace Gorgon {
 		/// @return true on success. On Windows this function may not work across
 		///         different drives. If this case is possible, use Copy then Delete.
 		bool Move(const std::string &source, const std::string &target);
+	
+		/// Returns the size of the given file. If the file is not found 0 is returned.
+		/// @param  filename is the name of the file
+		/// @return size of the given file
+		unsigned long long Size(const std::string &filename);
 		
 		/// Saves a given data into the filename. If the file exists, it will be appended
 		/// if append parameter is set to true. This function can handle binary data.

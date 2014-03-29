@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <sys/stat.h>
+
 namespace Gorgon { namespace Filesystem {
 	
 	static std::string startupdir;
@@ -14,6 +16,15 @@ namespace Gorgon { namespace Filesystem {
 	
 	std::string StartupDirectory() {
 		return startupdir;
+	}
+
+	unsigned long long Size(const std::string &filename) {
+		struct stat status;
+		if(stat( filename.c_str(), &status )!=0) {
+			return 0;
+		}
+
+		return (unsigned long long)status.st_size;
 	}
 		
 	bool Save(const std::string &filename, const std::string &data, bool append) {

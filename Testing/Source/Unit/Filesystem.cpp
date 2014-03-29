@@ -1,4 +1,5 @@
-#define CATCH_CONFIG_MAIN
+//#define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_RUNNER
 
 #include <catch.h>
 
@@ -13,7 +14,14 @@
 #include <cstring>
 
 namespace fs=Gorgon::Filesystem;
+std::string exename;
 
+int main (int argc, char * const argv[]) {
+	fs::Initialize();
+	exename=fs::GetFile(fs::Canonical(argv[0]));
+
+	return Catch::Session().run( argc, argv );
+}
 
 TEST_CASE( "PathNotFoundError", "[PathNotFoundError]" ) {
 	try {
@@ -333,6 +341,104 @@ TEST_CASE( "Copy directory", "[Copy]") {
 	fs::Delete("test2dir");
 
 	REQUIRE_FALSE( fs::Copy(list, "test2dir") );
+
+	fs::Delete("test2dir");
+}
+
+
+
+TEST_CASE( "Move file", "[Move]") {
+	REQUIRE_FALSE( fs::Move("test.txt", "test2.txt") );
+
+	fs::Save("test.txt", "This is a test\n");
+
+	REQUIRE( fs::Move("test.txt", "test2.txt") );
+
+	REQUIRE_FALSE( fs::IsExists("test.txt") );
+
+	REQUIRE( fs::Load("test2.txt") == "This is a test\n" );
+	REQUIRE_THROWS( fs::Load("test.txt") );
+
+	fs::CreateDirectory("testdir");
+
+	REQUIRE( fs::Move("test2.txt", "testdir/test.txt") );
+	REQUIRE( fs::Load("testdir/test.txt") == "This is a test\n" );
+
+	fs::Delete("testdir");
+}
+
+TEST_CASE( "Move directory", "[Move]") {
+	fs::CreateDirectory("testdir/another");
+
+	std::string str="This is a test\n";
+	str.push_back(0);
+
+	fs::Save("testdir/test.bin", str);
+
+	fs::Save("testdir/another/test.txt", "This is a test\n");
+
+
+	REQUIRE( fs::Move("testdir", "test2dir") );
+
+	REQUIRE_FALSE( fs::IsExists("testdir") );
+
+	REQUIRE( fs::IsDirectory("test2dir") );
+	REQUIRE( fs::IsDirectory("test2dir/another") );
+
+	REQUIRE( fs::Load("test2dir/test.bin")==str );
+	REQUIRE( fs::Load("test2dir/another/test.txt")=="This is a test\n" );
+
+	fs::Delete("test2dir");
+}
+
+
+TEST_CASE( "File size", "[Size]") {
+	REQUIRE( fs::Size("test.bin") == 0);
+	std::string str="This is a test\n";
+	str.push_back(0);
+
+	fs::Save("test.bin", str);
+
+	REQUIRE( fs::Size("test.bin") == str.length() );
+
+	fs::Delete("test.bin");
+}
+
+
+TEST_CASE( "Startup directory", "[StartupDirectory]") {
+	fs::CreateDirectory("testdir");
+	fs::ChangeDirectory("testdir");
+
+	REQUIRE( fs::Canonical(TESTDIR) == fs::Canonical(fs::StartupDirectory()) );
+
+	fs::ChangeDirectory("..");
+	fs::Delete("testdir");
+}
+
+
+
+TEST_CASE( "Application directory", "[ApplicationDirectory]") {
+	std::string appdir=fs::ApplicationDirectory();
+
+	REQUIRE( appdir.find_first_of('\\') == appdir.npos );
+
+	REQUIRE( fs::IsExists(appdir+"/"+exename) );
+}
+
+
+
+TEST_CASE( "Entry points", "[EntryPoints]") {
+	auto entries=fs::EntryPoints();
+
+	REQUIRE( entries.size()>=2 );
+
+	for(auto e : entries) {
+		REQUIRE( e.Name.length() != 0 );
+		REQUIRE( fs::IsDirectory(e.Path) );
+#ifdef WIN32
+		REQUIRE( e.Path.find_first_of('\\') == e.Path.npos );
+#endif
+	}
 }
 
 

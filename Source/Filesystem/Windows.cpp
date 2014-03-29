@@ -175,7 +175,10 @@ namespace Gorgon { namespace Filesystem {
 		char path[MAX_PATH];
 		GetModuleFileName(hModule, path, MAX_PATH);
 
-		return GetDirectory(path);
+		std::string dir=path;
+		fixwinslashes(dir);
+
+		return GetDirectory(dir);
 	}
 	
 	std::vector<EntryPoint> EntryPoints() {
