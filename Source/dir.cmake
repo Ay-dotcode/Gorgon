@@ -1,8 +1,11 @@
 SET(Local
 	Filesystem
+	Geometry
 	Time
 	String
 	Any.h
+	OS.h
 	Threading.h
 	Types.h
+	WindowManager.h
 )

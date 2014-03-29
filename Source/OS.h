@@ -1,26 +1,28 @@
+/// @file OS.h contains operating system functionality. This
+///       file does not refer to any operating system headers       
+
 #pragma once
 
-#include "../Utils/Point2D.h"
-#include "../Utils/Any.h"
-#include "../Utils/EventChain.h"
 
-#include "OS.Win32.h"
-#include "OS.Linux.h"
-#include "../Utils/Rectangle2D.h"
-#include "../Utils/Size2D.h"
+namespace Gorgon {
+	/// This namespace contains operating system related functionality.
+	/// All functions here behaves same way in all supported operating
+	/// systems.
+	namespace OS {
+		/// Initializes operating system module.
+		void Initialize();
+
+		std::string GetUsername();
+
+		void OpenTerminal(const std::string &Title="", int maxlines=1024);
 
 
-namespace gge {
-	namespace graphics {
-		class ImageData;
 	}
 }
 
 
-
 namespace gge { namespace os {
 	////Initializes OS subsystem by setting up events
-	void Initialize();
 	////This function shows a OS message box to display errors, for other messages
 	/// its better to use in-game dialogs
 	void DisplayMessage(const char *Title, const char *Text);
