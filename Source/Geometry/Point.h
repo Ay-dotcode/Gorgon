@@ -263,7 +263,7 @@ namespace Gorgon {
 		}
 
 		/// Scales the given point by the given factor, considering given point
-		/// as origin. This method variant is mostly there to allow scaling by Size.
+		/// as origin.
 		template <class T_, class O_>
 		void Scale(basic_Point<T_> &point, const O_ &sizex, const O_ &sizey, const basic_Point<T_> &origin) {
 			point.X = T_((point.X-origin.X)*sizex+origin.X);

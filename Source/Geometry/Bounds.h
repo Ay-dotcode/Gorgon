@@ -16,9 +16,13 @@
 
 namespace Gorgon { namespace Geometry {
 
-	/// This class represents boundaries of 2D objects. A bounds object contains both the starting boundary
-	/// and ending boundary. Therefore, a bounds that has a Width() of 100 and Left of 0, has Right value
-	/// as 99, not 100.
+	/// This class represents boundaries of 2D objects. A bounds object contains the starting boundary
+	/// but not the ending boundary. Therefore, a bounds that has a Width() of 100 and Left of 0, has Right value
+	/// as 100, not 99. 
+	/// 
+	/// A Bounds object that has Left<Right and Top<Bottom is called normalized. Bounds should be normalized
+	/// for its methods to work properly. Constructors normalizes input values, most methods leave bounds in 
+	/// normal state.
 	template <class T_>
 	class basic_Bounds {
 	public:
@@ -41,19 +45,19 @@ namespace Gorgon { namespace Geometry {
 
 		/// Constructs bounds from the given coordinates and size
 		basic_Bounds(const basic_Point<T_> &topleft, const basic_Size<T_> &size) : Left(topleft.x), Top(topleft.y), 
-		Right(topleft.x+size.Width-1), Bottom(topleft.y+size.Height-1) {
+		Right(topleft.x+size.Width), Bottom(topleft.y+size.Height) {
 			Normalize();
 		}
 
 		/// Constructs bounds from the given coordinates and size
 		basic_Bounds(const T_ &left, const T_ &top, const basic_Size<T_> &size) : Left(left), Top(top),
-		Right(TopLeft.x+size.Width-1), Bottom(TopLeft.y+size.Height-1) {
+		Right(TopLeft.x+size.Width), Bottom(TopLeft.y+size.Height) {
 			Normalize();
 		}
 
 		/// Constructs bounds from the given coordinates and size
 		basic_Bounds(const basic_Point<T_> &topleft, const T_ &width, const T_ &height) :
-		Left(topleft.x), Top(topleft.y), Right(topleft.x+width-1), Bottom(topleft.y+height-1) {
+		Left(topleft.x), Top(topleft.y), Right(topleft.x+width), Bottom(topleft.y+height) {
 			Normalize();
 		}
 
@@ -114,8 +118,16 @@ namespace Gorgon { namespace Geometry {
 			return basic_Point<T_>(Right, Bottom);
 		}
 
+		T_ Width() const { 
+			return Right-Left;
+		}
+
+		T_ Height() const { 
+			return Bottom-Top;
+		}
+
 		/// Returns the size of the bounds object
-		basic_Size<T_> GetSize() const {
+		basic_Size<T_> Size() const {
 			return basic_Size<T_>(Width(), Height());
 		}
 
@@ -177,24 +189,24 @@ namespace Gorgon { namespace Geometry {
 
 		/// Changes the size of the bounds
 		void SetSize(const basic_Size2D<T_> &s) {
-			Right = Left + s.Width-1;
-			Bottom= Top  + s.Height-1;
+			Right = Left + s.Width;
+			Bottom= Top  + s.Height;
 		}
 
 		/// Changes the size of the bounds
 		void SetSize(const T_ &width, const T_ &height) {
-			Right = Left + width-1;
-			Bottom= Top  + height-1;
+			Right = Left + width;
+			Bottom= Top  + height;
 		}
 
 		/// Changes the width of the bounds
 		void SetWidth(const T_ &width) {
-			Right = Left + width-1;
+			Right = Left + width;
 		}
 
 		/// Changes the height of the bounds
 		void SetHeight(const T_ &height) {
-			Bottom= Top  + height-1;
+			Bottom= Top  + height;
 		}
 
 		/// Changes the position of the bounds
@@ -491,6 +503,196 @@ namespace Gorgon { namespace Geometry {
 		return true;
 	}
 
+	/// Translation moves the given bounds *by* the given amount
+	template<class T_>
+	void Translate(basic_Bounds<T_> &bounds, T_ x, T_ y) {
+		bounds.Left  += x;
+		bounds.Right += x;
+		bounds.Top   += y;
+		bounds.Bottom+= y;
+	}
+
+	/// Translation moves the given bounds *by* the given amount
+	template<class T_>
+	void Translate(basic_Bounds<T_> &bounds, const basic_Point<T_> &other) {
+		bounds.Left  += other.X;
+		bounds.Right += other.X;
+		bounds.Top   += other.Y;
+		bounds.Bottom+= other.Y;
+	}
+
+	/// Scales the given bounds by the given factor. Center of the bounds is used as origin
+	template <class T_, class O_>
+	void Scale(basic_Bounds<T_> &bounds, const O_ &size) {
+		Float xc = ( bounds.Left + bounds.Right ) / Float(2);
+		Float yc = ( bounds.Top  + bounds.Bottom) / Float(2);
+
+		bounds.Left  = T_( (bounds.Left  - xc)*size + xc );
+		bounds.Right = T_( (bounds.Right - xc)*size + xc );
+		bounds.Top   = T_( (bounds.Top   - yc)*size + yc );
+		bounds.Left  = T_( (bounds.Left  - yc)*size + yc );
+	}
+
+	/// Scales the given bounds by the given factors for x and y coordinates. Center of the bounds is used as origin
+	template <class T_, class O_>
+	void Scale(basic_Bounds<T_> &bounds, const O_ &sizex, const O_ &sizey) {
+		Float xc = ( bounds.Left + bounds.Right ) / Float(2);
+		Float yc = ( bounds.Top  + bounds.Bottom) / Float(2);
+
+		bounds.Left  = T_( (bounds.Left  - xc)*sizex + xc );
+		bounds.Right = T_( (bounds.Right - xc)*sizex + xc );
+		bounds.Top   = T_( (bounds.Top   - yc)*sizey + yc );
+		bounds.Left  = T_( (bounds.Left  - yc)*sizey + yc );
+	}
+
+	/// Scales the given bounds by the given factors for x and y coordinates. Center of the bounds is used as origin
+	template <class T_, class O_>
+	void Scale(basic_Bounds<T_> &bounds, const basic_Size<O_> &size) {
+		Float xc = ( bounds.Left + bounds.Right ) / Float(2);
+		Float yc = ( bounds.Top  + bounds.Bottom) / Float(2);
+
+		bounds.Left  = T_( (bounds.Left  - xc)*size.Width  + xc );
+		bounds.Right = T_( (bounds.Right - xc)*size.Width  + xc );
+		bounds.Top   = T_( (bounds.Top   - yc)*size.Height + yc );
+		bounds.Left  = T_( (bounds.Left  - yc)*size.Height + yc );
+	}
+
+	/// Scales the given bounds by the given factor, considering specified point
+	/// as origin
+	template <class T_, class O_>
+	void Scale(basic_Bounds<T_> &bounds, const O_ &size, const basic_Point<T_> &origin) {
+		bounds.Left  = T_( (bounds.Left  - origin.X)*size + origin.X );
+		bounds.Right = T_( (bounds.Right - origin.X)*size + origin.X );
+		bounds.Top   = T_( (bounds.Top   - origin.Y)*size + origin.Y );
+		bounds.Left  = T_( (bounds.Left  - origin.Y)*size + origin.Y );
+	}
+
+	/// Scales the given bounds by the given factor, considering specified point
+	/// as origin. This method variant is mostly there to allow scaling by Size.
+	template <class T_, class O_>
+	void Scale(basic_Bounds<T_> &bounds, const O_ &sizex, const O_ &sizey, const basic_Point<T_> &origin) {
+		bounds.Left  = T_( (bounds.Left  - origin.X)*sizex + origin.X );
+		bounds.Right = T_( (bounds.Right - origin.X)*sizex + origin.X );
+		bounds.Top   = T_( (bounds.Top   - origin.Y)*sizey + origin.Y );
+		bounds.Left  = T_( (bounds.Left  - origin.Y)*sizey + origin.Y );
+	}
+
+	/// Scales the given bounds by the given factor, considering specified point
+	/// as origin.
+	template <class T_, class O_>
+	void Scale(basic_Bounds<T_> &bounds, const basic_Size<O_> &size, const basic_Point<T_> &origin) {
+		bounds.Left  = T_( (bounds.Left  - origin.X)*size.Width  + origin.X );
+		bounds.Right = T_( (bounds.Right - origin.X)*size.Width  + origin.X );
+		bounds.Top   = T_( (bounds.Top   - origin.Y)*size.Height + origin.Y );
+		bounds.Left  = T_( (bounds.Left  - origin.Y)*size.Height + origin.Y );
+	}
+
+
+	/// Rotates the given bounds by the given angle. Rotation is performed as if given bounds is a rectangle and
+	/// the result is the bounds of this rotated rectangle. Center of the bounds is used as origin. 
+	/// @param  angle is the Euler rotation angle in radians
+	template<class T_>
+	void Rotate(basic_Bounds<T_> &bounds, Float angle) {
+		basic_Point<T_> cn = bounds.Center();
+		basic_Point<T_> tl = bounds.TopLeft();
+		basic_Point<T_> tr = bounds.TopRight();
+		basic_Point<T_> bl = bounds.BottomLeft();
+		basic_Point<T_> br = bounds.BottomRight();
+
+		Rotate(tl, angle, cn);
+		Rotate(tr, angle, cn);
+		Rotate(bl, angle, cn);
+		Rotate(br, angle, cn);
+
+		bounds.Left  = std::min( std::min(tl.X, tr.X) , std::min(bl.X, br.X) );
+		bounds.Right = std::max( std::max(tl.X, tr.X) , std::max(bl.X, br.X) );
+		bounds.Top   = std::min( std::min(tl.Y, tr.Y) , std::min(bl.Y, br.Y) );
+		bounds.Bottom= std::max( std::max(tl.Y, tr.Y) , std::max(bl.Y, br.Y) );
+	}
+
+	/// Rotates the given bounds by the given angle around the given origin.
+	/// @param  angle is the Euler rotation angle in radians
+	template<class T_>
+	void Rotate(basic_Bounds<T_> &bounds, Float angle, const basic_Point<T_> &origin) {
+		basic_Point<T_> tl = bounds.TopLeft();
+		basic_Point<T_> tr = bounds.TopRight();
+		basic_Point<T_> bl = bounds.BottomLeft();
+		basic_Point<T_> br = bounds.BottomRight();
+
+		Rotate(tl, angle, origin);
+		Rotate(tr, angle, origin);
+		Rotate(bl, angle, origin);
+		Rotate(br, angle, origin);
+
+		bounds.Left  = std::min( std::min(tl.X, tr.X) , std::min(bl.X, br.X) );
+		bounds.Right = std::max( std::max(tl.X, tr.X) , std::max(bl.X, br.X) );
+		bounds.Top   = std::min( std::min(tl.Y, tr.Y) , std::min(bl.Y, br.Y) );
+		bounds.Bottom= std::max( std::max(tl.Y, tr.Y) , std::max(bl.Y, br.Y) );
+	}
+
+	/// Skews the given bounds with the given rate along X axis. Skew
+	/// operation transforms objects in a way that it converts
+	/// a rectangle to a parallelogram. Require normalized bounds.
+	template <class T_, class O_>
+	void SkewX(basic_Bounds<T_> &bounds, const O_ &rate) {
+		Float yc = ( bounds.Top  + bounds.Bottom) / Float(2);
+
+		if(rate>0) {
+			bounds.Left  = T_( bounds.Left  + (bounds.Top   -yc)*rate );
+			bounds.Right = T_( bounds.Right + (bounds.Bottom-yc)*rate );
+		}
+		else {
+			bounds.Left  = T_( bounds.Left  + (bounds.Bottom-yc)*rate );
+			bounds.Right = T_( bounds.Right + (bounds.Top   -yc)*rate );
+		}
+	}
+
+	/// Skews the given bounds with the given rate along Y axis. Skew
+	/// operation transforms objects in a way that it converts
+	/// a rectangle to a parallelogram.
+	template <class T_, class O_>
+	void SkewY(basic_Bounds<T_> &bounds, const O_ &rate) {
+		Float xc = ( bounds.Left + bounds.Right ) / Float(2);
+
+		if(rate>0) {
+			bounds.Top   = T_( bounds.Top   + (bounds.Left  -xc)*rate );
+			bounds.Bottom= T_( bounds.Bottom+ (bounds.Right -xc)*rate );
+		}													 
+		else {												 
+			bounds.Top   = T_( bounds.Top   + (bounds.Right -xc)*rate );
+			bounds.Bottom= T_( bounds.Bottom+ (bounds.Left  -xc)*rate );
+		}
+	}
+
+	/// Skews the given bounds with the given rate along X axis considering
+	/// given bounds as the origin. Skew operation transforms objects in 
+	/// a way that it converts a rectangle to a parallelogram.
+	template <class T_, class O_>
+	void SkewX(basic_Bounds<T_> &bounds, const O_ &rate, const basic_Point<T_> &origin) {
+		if(rate>0) {
+			bounds.Left  = T_( bounds.Left  + (bounds.Top   -origin.Y)*rate );
+			bounds.Right = T_( bounds.Right + (bounds.Bottom-origin.Y)*rate );
+		}
+		else {
+			bounds.Left  = T_( bounds.Left  + (bounds.Bottom-origin.Y)*rate );
+			bounds.Right = T_( bounds.Right + (bounds.Top   -origin.Y)*rate );
+		}
+	}
+
+	/// Skews the given bounds with the given rate along Y axis considering
+	/// given bounds as the origin. Skew operation transforms objects in 
+	/// a way that it converts a rectangle to a parallelogram.
+	template <class T_, class O_>
+	void SkewY(basic_Bounds<T_> &bounds, const O_ &rate, const basic_Point<T_> &origin) {
+		if(rate>0) {
+			bounds.Top   = T_( bounds.Top   + (bounds.Left  -origin.X)*rate );
+			bounds.Bottom= T_( bounds.Bottom+ (bounds.Right -origin.X)*rate );
+		}													 
+		else {												 
+			bounds.Top   = T_( bounds.Top   + (bounds.Right -origin.X)*rate );
+			bounds.Bottom= T_( bounds.Bottom+ (bounds.Left  -origin.X)*rate );
+		}
+	}
 	
 	/// @see basic_Bounds
 	typedef basic_Bounds<Float> Boundsf;
