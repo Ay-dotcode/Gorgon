@@ -37,13 +37,13 @@ namespace Gorgon {
 			}
 
 			/// Calculates Euclidean distance from this point to the given target
-			FloatingPoint Distance(const basic_Point &target) const {
-				return std::sqrt( (FloatingPoint)(X-target.X)*(X-target.X) + (Y-target.Y)*(Y-target.Y) );
+			Float Distance(const basic_Point &target) const {
+				return std::sqrt( (Float)(X-target.X)*(X-target.X) + (Y-target.Y)*(Y-target.Y) );
 			}
 
 			/// Calculates Euclidean distance from this point to origin
-			FloatingPoint Distance() const {
-				return std::sqrt( (FloatingPoint)(X*X) + (Y*Y) );
+			Float Distance() const {
+				return std::sqrt( (Float)(X*X) + (Y*Y) );
 			}
 
 			/// Subtracts another point from this one
@@ -185,17 +185,23 @@ namespace Gorgon {
 			T_ Y;
 		};
 
-		////Allows streaming of point. It converts point to string,
-		/// every row is printed on a line enclosed in braces.
+		/// Allows streaming of point. A point will be printed inside parenthesis with
+		/// a comma separating X and Y values.
 		template <class T_>
 		std::ostream &operator << (std::ostream &out, const basic_Point<T_> &point) {
 			out<<"("<<point.X<<", "<<point.Y<<")";
 
 			return out;
 		}
+
+
+		/// Reads a point from a stream. Requires comma in between x and y. parentheses 
+		/// are optional. They wont even be matched to each other. A point entry should
+		/// not contain space before closing parenthesis otherwise, paranthesis will not
+		/// be extracted.
 		template <class T_>
 		std::istream &operator >> (std::istream &in, basic_Point<T_> &point) {
-			while(in.peek()==' ' || in.peek()=='(')
+			while(in.peek()==' ' || in.peek()=='\t' || in.peek()=='(')
 				in.ignore(1);
 
 			std::string s;
@@ -320,7 +326,7 @@ namespace Gorgon {
 		/// given point as the origin. Skew operation transforms objects in 
 		/// a way that it converts a rectangle to a parallelogram.
 		template <class T_, class U_>
-		void SkewX(basic_Point<T_> &point, const U_ &rate, const basic_Point &origin) {
+		void SkewX(basic_Point<T_> &point, const U_ &rate, const basic_Point<T_> &origin) {
 			point.X += (point.Y-origin.Y)*rate;
 		}
 
@@ -328,7 +334,7 @@ namespace Gorgon {
 		/// given point as the origin. Skew operation transforms objects in 
 		/// a way that it converts a rectangle to a parallelogram.
 		template <class T_, class U_>
-		void SkewY(basic_Point<T_> &point, const U_ &rate, const basic_Point &origin) {
+		void SkewY(basic_Point<T_> &point, const U_ &rate, const basic_Point<T_> &origin) {
 			point.Y += (point.X-origin.X)*rate;
 		}
 
@@ -358,25 +364,25 @@ namespace Gorgon {
 
 		/// Reflects the given point along the X axis considering given origin
 		template<class T_>
-		void ReflectX(basic_Point<T_> &point, const basic_Point &origin) {
+		void ReflectX(basic_Point<T_> &point, const basic_Point<T_> &origin) {
 			point.X = -point.X+origin.X*2;
 		}
 
 		/// Reflects the given point along the Y axis considering given origin
 		template<class T_>
-		void ReflectY(basic_Point<T_> &point, const basic_Point &origin) {
+		void ReflectY(basic_Point<T_> &point, const basic_Point<T_> &origin) {
 			point.Y = -point.Y+origin.Y*2;
 		}
 
 		/// Reflects the given point horizontally considering given origin
 		template<class T_>
-		void HorizontalMirror(basic_Point<T_> &point, const basic_Point &origin) {
+		void HorizontalMirror(basic_Point<T_> &point, const basic_Point<T_> &origin) {
 			ReflectY(point, origin);
 		}
 
 		/// Reflects the given point vertically considering given origin
 		template<class T_>
-		void VerticalMirror(basic_Point<T_> &point, const basic_Point &origin) {
+		void VerticalMirror(basic_Point<T_> &point, const basic_Point<T_> &origin) {
 			ReflectX(point, origin);
 		}
 

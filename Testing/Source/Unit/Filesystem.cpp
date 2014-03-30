@@ -1,4 +1,3 @@
-//#define CATCH_CONFIG_MAIN
 #define CATCH_CONFIG_RUNNER
 
 #include <catch.h>
@@ -12,6 +11,7 @@
 #include <string>
 #include <stdlib.h>
 #include <cstring>
+
 
 namespace fs=Gorgon::Filesystem;
 std::string exename;

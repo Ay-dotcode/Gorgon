@@ -6,4 +6,5 @@ SET(ManualTests
 
 SET(UnitTests
 	Filesystem
+	Geometry
 )
