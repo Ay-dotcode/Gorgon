@@ -38,16 +38,6 @@ namespace Gorgon {
 				return *this; 
 			}
 
-			/// Calculates Euclidean distance from this point to the given target
-			Float Distance(const basic_Point &target) const {
-				return std::sqrt( (Float)(X-target.X)*(X-target.X) + (Y-target.Y)*(Y-target.Y) );
-			}
-
-			/// Calculates Euclidean distance from this point to origin
-			Float Distance() const {
-				return std::sqrt( (Float)(X*X) + (Y*Y) );
-			}
-
 			/// Subtracts another point from this one
 			basic_Point operator - (const basic_Point &point) const {
 				return basic_Point(X-point.X, Y-point.Y);
@@ -118,32 +108,42 @@ namespace Gorgon {
 				return *this;
 			}
 
+			/// Calculates Euclidean distance from this point to the given target
+			Float Distance(const basic_Point &target) const {
+				return std::sqrt( (Float)(X-target.X)*(X-target.X) + (Y-target.Y)*(Y-target.Y) );
+			}
+
+			/// Calculates Euclidean distance from this point to origin
+			Float Distance() const {
+				return std::sqrt( (Float)(X*X) + (Y*Y) );
+			}
+
 			/// Calculates the angle of the line formed from the given point
 			/// to this point.
 			/// @param  origin is the starting point of the line
 			/// @return angle in radians
 			Float Angle(const basic_Point &origin) const {
-				return atan2(Y-origin.Y, X-origin.X);
+				return (Float)atan2(Y-origin.Y, X-origin.X);
 			}
 
 			/// Calculates the angle of the line formed from the origin
 			/// to this point.
 			/// @return angle in radians
 			Float Angle() const {
-				return atan2(Y, X);
+				return (Float)atan2(Y, X);
 			}
 
 			/// Calculates the slope of the line formed from the given point
 			/// to this point.
 			/// @param  origin is the starting point of the line
 			Float Slope(const basic_Point &point) const {
-				return (FloatingPoint)(Y-point.Y)/(X-point.X);
+				return (Float)(Y-point.Y)/(X-point.X);
 			}
 
 			/// Calculates the slope of the line formed from the origin
 			/// to this point.
 			Float Slope() const {
-				return (FloatingPoint)Y/X;
+				return (Float)Y/X;
 			}
 
 			/// Compares two points
@@ -167,9 +167,9 @@ namespace Gorgon {
 				Y=y;
 			}
 
-			template <class O_>
-			static basic_Point CreateFrom(const basic_Point &point, const O_ &magnitute, Float angle) {
-				return point+basic_Point(magnitute*std::cos(angle), magnitute*std::sin(angle));
+			template <class O1_>
+			static basic_Point CreateFrom(const basic_Point<O1_> &point, Float magnitute, Float angle) {
+				return basic_Point(T_(point.X+magnitute*std::cos(angle)), T_(point.Y+magnitute*std::sin(angle)));
 			}
 
 			T_ X;
