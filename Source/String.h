@@ -13,14 +13,79 @@ namespace Gorgon {
 
 		/// Converts a string to another type. Works for integral types and
 		/// Gorgon classes including Point, Size, etc... There is no error
-		/// handling.
+		/// handling. If conversion does not work, you may end up with
+		/// uninitialized object. This system will be fixed at a later point.
 		template <class T_>
 		T_ To(const std::string &value) {
-			char *n;
-			return (T_)std::strtol(value.c_str(), &n, 10);
+			std::stringstream ss;
+
+			T_ ret;
+			ss>>ret;
+
+			return ret;
 		}
 
-		/// @cond INTERNAL
+		/// @cond
+		template <>
+		char To(const std::string &value) {
+			char *n;
+			return (char)std::strtol(value.c_str(), &n, 10);
+		}
+
+		template <>
+		unsigned char To(const std::string &value) {
+			char *n;
+			return (unsigned char)std::strtol(value.c_str(), &n, 10);
+		}
+
+		template <>
+		short To(const std::string &value) {
+			char *n;
+			return (short)std::strtol(value.c_str(), &n, 10);
+		}
+
+		template <>
+		unsigned short To(const std::string &value) {
+			char *n;
+			return (unsigned short)std::strtol(value.c_str(), &n, 10);
+		}
+
+		template <>
+		int To(const std::string &value) {
+			char *n;
+			return (int)std::strtol(value.c_str(), &n, 10);
+		}
+
+		template <>
+		unsigned To(const std::string &value) {
+			char *n;
+			return (unsigned)std::strtol(value.c_str(), &n, 10);
+		}
+
+		template <>
+		long To(const std::string &value) {
+			char *n;
+			return (long)std::strtol(value.c_str(), &n, 10);
+		}
+
+		template <>
+		unsigned long To(const std::string &value) {
+			char *n;
+			return (unsigned long)std::strtol(value.c_str(), &n, 10);
+		}
+
+		template <>
+		long long To(const std::string &value) {
+			char *n;
+			return (long long)std::strtol(value.c_str(), &n, 10);
+		}
+
+		template <>
+		unsigned long long To(const std::string &value) {
+			char *n;
+			return (unsigned long long)std::strtol(value.c_str(), &n, 10);
+		}
+
 		template <>
 		inline float To<float>(const std::string &value) {
 			return (float)std::atof(value.c_str());
@@ -28,6 +93,11 @@ namespace Gorgon {
 
 		template <>
 		inline double To<double>(const std::string &value) {
+			return std::atof(value.c_str());
+		}
+
+		template <>
+		inline long double To<long double>(const std::string &value) {
 			return std::atof(value.c_str());
 		}
 		/// @endcond
@@ -123,23 +193,31 @@ namespace Gorgon {
 		
 		
 		/// @cond
+		inline std::string From(char value) {
+			return std::to_string(value);
+		}
+
+		inline std::string From(unsigned char value) {
+			return std::to_string(value);
+		}
+
 		inline std::string From(int value) {
-			return std::to_string(value);
-		}
-		
-		inline std::string From(long value) {
-			return std::to_string(value);
-		}
-		
-		inline std::string From(long long value) {
 			return std::to_string(value);
 		}
 		
 		inline std::string From(unsigned value) {
 			return std::to_string(value);
 		}
+
+		inline std::string From(long value) {
+			return std::to_string(value);
+		}
 		
 		inline std::string From(unsigned long value) {
+			return std::to_string(value);
+		}
+		
+		inline std::string From(long long value) {
 			return std::to_string(value);
 		}
 		

@@ -1,27 +1,4 @@
-//DESCRIPTION
-//	This file contains the class Rectangle2D which defines a rectangular
-//	region using top, left corner and width and height information.
-//	Missing some operators.
-
-//REQUIRES:
-//	GGE/Utils/Point2D, GGE/Utils/Size2D
-
-//LICENSE
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the Lesser GNU General Public License as published by
-//	the Free Software Foundation, either version 3 of the License, or
-//	(at your option) any later version.
-//
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-//	Lesser GNU General Public License for more details.
-//
-//	You should have received a copy of the Lesser GNU General Public License
-//	along with this program. If not, see < http://www.gnu.org/licenses/ >.
-
-//COPYRIGHT
-//	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
+/// @file Rectangle.h contains the Rectangle class
 
 #pragma once
 
@@ -53,7 +30,7 @@
 
 namespace gge { namespace utils {
 #ifndef BOUNDS2D_EXISTS
-	template <class T_> class basic_Bounds2D;
+	template <class T_> class basic_Bounds;
 #endif
 
 	template <class T_>
@@ -133,11 +110,11 @@ namespace gge { namespace utils {
 			Left(T_(rect.Left)), Top(T_(rect.Top)), Width(T_(rect.Width)), Height(T_(rect.Height))
 		{ }
 
-		basic_Rectangle2D(const basic_Bounds2D<T_> &bounds);
+		basic_Rectangle2D(const basic_Bounds<T_> &bounds);
 
-		operator basic_Bounds2D<T_>() const;
+		operator basic_Bounds<T_>() const;
 
-		basic_Rectangle2D& operator =(const basic_Bounds2D<T_> &bounds);
+		basic_Rectangle2D& operator =(const basic_Bounds<T_> &bounds);
 
 		operator std::string() const {
 			std::stringstream ss;
@@ -427,17 +404,17 @@ namespace gge { namespace utils {
 #   define GGE_RECT_BOUNDS_SYNERGY
 
 	template <class T_>
-	inline basic_Rectangle2D<T_>::basic_Rectangle2D(const basic_Bounds2D<T_> &bounds) :
+	inline basic_Rectangle2D<T_>::basic_Rectangle2D(const basic_Bounds<T_> &bounds) :
 	Left(bounds.Left), Top(bounds.Top), Width(bounds.Width()), Height(bounds.Height())
 	{ }
 
 	template <class T_>
-	inline basic_Rectangle2D<T_>::operator basic_Bounds2D<T_>() const {
-		return basic_Bounds2D<T_>(*this);
+	inline basic_Rectangle2D<T_>::operator basic_Bounds<T_>() const {
+		return basic_Bounds<T_>(*this);
 	}
 
 	template <class T_>
-	inline basic_Rectangle2D<T_>& basic_Rectangle2D<T_>::operator =(const basic_Bounds2D<T_> &bounds) {
+	inline basic_Rectangle2D<T_>& basic_Rectangle2D<T_>::operator =(const basic_Bounds<T_> &bounds) {
 		Left=bounds.Left;
 		Top=bounds.Top;
 		Width=bounds.Width();
@@ -447,17 +424,17 @@ namespace gge { namespace utils {
 	}
 
 	template <class T_>
-	inline basic_Bounds2D<T_>::basic_Bounds2D(const basic_Rectangle2D<T_> &rectangle) :
+	inline basic_Bounds<T_>::basic_Bounds(const basic_Rectangle2D<T_> &rectangle) :
 	Left(rectangle.Left), Top(rectangle.Top), Right(rectangle.Right()), Bottom(rectangle.Bottom())
 	{ }
 
 	template <class T_>
-	inline basic_Bounds2D<T_>::operator basic_Rectangle2D<T_>() const {
+	inline basic_Bounds<T_>::operator basic_Rectangle2D<T_>() const {
 		return basic_Rectangle2D<T_>(*this);
 	}
 
 	template <class T_>
-	inline basic_Bounds2D<T_>& basic_Bounds2D<T_>::operator =(const basic_Rectangle2D<T_> &rect) {
+	inline basic_Bounds<T_>& basic_Bounds<T_>::operator =(const basic_Rectangle2D<T_> &rect) {
 		Left=rect.Left;
 		Top=rect.Top;
 		Right=rect.Right();

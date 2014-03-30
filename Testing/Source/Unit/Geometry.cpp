@@ -4,8 +4,12 @@
 
 #include <catch.h>
 #include <Source/Geometry/Point.h>
+#include <Source/Geometry/Size.h>
 
 #undef Rectangle
+
+#pragma warning(disable:4305)
+#pragma warning(disable:4244)
 
 using namespace Gorgon::Geometry;
 
