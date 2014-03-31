@@ -17,7 +17,7 @@ namespace Gorgon {
 		/// uninitialized object. This system will be fixed at a later point.
 		template <class T_>
 		T_ To(const std::string &value) {
-			std::stringstream ss;
+			std::stringstream ss(value);
 
 			T_ ret;
 			ss>>ret;

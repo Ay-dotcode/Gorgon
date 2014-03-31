@@ -209,7 +209,7 @@ namespace Gorgon { namespace Geometry {
 		while(in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
 			s.append(1, in.get());
 
-		size.Height=String::To<T_>(s)
+		size.Height=String::To<T_>(s);
 
 		return in;
 	}

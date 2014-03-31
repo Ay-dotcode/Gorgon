@@ -199,7 +199,7 @@ namespace Gorgon {
 			std::stringstream ss;
 
 			while(in.peek()!=',' && !in.eof())
-				s.append(1, (char)in.get());
+				s.push_back((char)in.get());
 
 			if(in.eof()) {
 				in.setstate(in.failbit);
@@ -215,7 +215,7 @@ namespace Gorgon {
 				in.ignore(1);
 
 			while(in.peek()!=')' && in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
-				s.append(1, in.get());
+				s.push_back(in.get());
 
 			point.Y = String::To<T_>(s);
 

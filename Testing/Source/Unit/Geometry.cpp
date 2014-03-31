@@ -5,6 +5,7 @@
 #include <catch.h>
 #include <Source/Geometry/Point.h>
 #include <Source/Geometry/Size.h>
+#include <Source/String.h>
 
 #undef Rectangle
 
@@ -240,4 +241,121 @@ TEST_CASE( "Point geometric info", "[Point]") {
 	REQUIRE( p2.Slope(p4) == Approx(1.069767f) );
 }
 
+TEST_CASE( "Point <-> string", "[Point]") {
+	
+	Point  p1(1, 2);
+	Pointf p2(1.2f, 2.2f);
+	Point  p3;
+	Pointf p4;
 
+	std::stringstream ss;
+	auto makestream=[&](std::string s) -> std::stringstream & {
+		p3 = {0,0};
+		p4 = {0,0};
+		
+		ss.str(s);
+		ss.clear();
+		
+		return ss;
+	};
+	
+	auto resetstream=[&] {
+		p3 = {0,0};
+		p4 = {0,0};
+		
+		ss.str("");
+		ss.clear();
+	};
+	
+	
+	makestream("1,2")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("1.2,2.2")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("-1.2,-2.2")>>p3;
+	REQUIRE( p1 == -p3 );
+	
+	makestream("(1,2)")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("(1.2,2.2)")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("(-1.2,-2.2)")>>p3;
+	REQUIRE( p1 == -p3 );
+	
+	
+	makestream("1, 2")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("1.2, 2.2")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("-1.2, -2.2")>>p3;
+	REQUIRE( p1 == -p3 );
+	
+	makestream("(1, 2)")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("(1.2, 2.2)")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("(-1.2, -2.2)")>>p3;
+	REQUIRE( p1 == -p3 );
+	
+	
+	makestream("1,2")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("1.2,2.2")>>p3;
+	REQUIRE( p1 == p3 );
+	
+	makestream("-1.2,-2.2")>>p3;
+	REQUIRE( p1 == -p3 );
+	
+	
+	makestream("(1,2) (1.2,2.2)")>>p3>>p4;
+	REQUIRE( p1 == p3 );
+	REQUIRE( p2 == p4 );
+	
+	makestream("(1.2,2.2) (1.2,2.2)")>>p3>>p4;
+	REQUIRE( p1 == p3 );
+	REQUIRE( p2 == p4 );
+	
+	makestream("(-1.2,-2.2) (-1.2,-2.2)")>>p3>>p4;
+	REQUIRE( p1 == -p3 );
+	REQUIRE( p2 == -p4 );
+
+	
+	resetstream();
+	ss<<p1;
+	REQUIRE( Gorgon::String::Replace(ss.str(), " ","") == "(1,2)" );
+
+	resetstream();
+	ss<<p2;
+	REQUIRE( Gorgon::String::Replace(ss.str(), " ","") == "(1.2,2.2)" );
+	
+	resetstream();
+	ss<<p1;
+	makestream(ss.str())>>p3;
+	REQUIRE( p1 == p3 );
+	
+	resetstream();
+	ss<<p2;
+	makestream(ss.str())>>p4;
+	REQUIRE( p2 == p4 );
+	
+	REQUIRE( Gorgon::String::To<Point>("1,2") == p1 );
+	REQUIRE( Gorgon::String::To<Point>("1.2,2.2") == p1 );
+	REQUIRE( Gorgon::String::To<Pointf>("1.2,2.2") == p2 );
+	
+	REQUIRE( Gorgon::String::To<Point>("(1,2)") == p1 );
+	REQUIRE( Gorgon::String::To<Point>("(1.2,2.2)") == p1 );
+	REQUIRE( Gorgon::String::To<Pointf>("(1.2,2.2)") == p2 );
+	
+	REQUIRE( Gorgon::String::To<Point>("(1, 2)") == p1 );
+	REQUIRE( Gorgon::String::To<Point>("(1.2, 2.2)") == p1 );
+	REQUIRE( Gorgon::String::To<Pointf>("(1.2, 2.2)") == p2 );
+}
