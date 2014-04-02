@@ -40,6 +40,78 @@ namespace Gorgon { namespace Geometry {
 		/// rectangle that starts from origin to the given point.
 		template <class O_>
 		basic_Size(const basic_Point<O_> &point) : Width((T_)point.X), Height((T_)point.Y) { }
+		
+		/// Conversion from string
+		explicit basic_Size(const std::string &str) {
+			auto s=str.begin();
+			
+			while(*s==' ' || *s=='\t') s++;
+			
+			if(*s=='(') s++;
+			
+			Width=String::To<T_>(&str[s-str.begin()]);
+			
+			while(*s!='x' && s!=str.end()) s++;
+			
+			if(*s=='x') s++;
+			
+			Height=String::To<T_>(&str[s-str.begin()]);
+		}
+			
+		/// Converts this object to string.
+		operator std::string() const {
+			std::string ret;
+			ret += String::From(Width);
+			ret.push_back('x');
+			ret += String::From(Height);
+			
+			return ret;
+		}
+		
+			
+		/// Properly parses given string into a size. Throws errors if the
+		/// size is not well formed. Works only on types that can be parsed using
+		/// strtod. Following error codes are reported by this parse function:
+		///
+		/// * *IllegalTokenError* **121001**: Illegal token while reading Width
+		/// * *IllegalTokenError* **121002**: Illegal token while looking for width/height separator
+		/// * *IllegalTokenError* **121003**: Illegal token while reading Height
+		/// * *IllegalTokenError* **121004**: Illegal token(s) at the end
+		static basic_Size Parse(const std::string &str) {
+			basic_Size sz;
+			
+			auto s=str.begin();
+			
+			while(*s==' ' || *s=='\t') s++;
+						
+			char *endptr;
+			sz.Width = T_(strtod(&*s, &endptr));
+			if(endptr==&*s) {
+				throw String::IllegalTokenError(0, 120001);
+			}
+			s+=endptr-&*s;
+			
+			while(*s==' ' || *s=='\t') s++;				
+			if(*s!='x') {
+				throw String::IllegalTokenError(s-str.begin(), 121002, std::string("Illegal token: ")+*s);
+			}
+			s++;
+			
+			sz.Height=T_(strtod(&*s, &endptr));			
+			if(endptr==&*s) {
+				throw String::IllegalTokenError(s-str.begin(), 121003);
+			}
+			s+=endptr-&*s;
+			
+			//eat white space + a single )
+			while(*s==' ' || *s=='\t') s++;
+			
+			if(*s!=0) {
+				throw String::IllegalTokenError(s-str.begin(), 121004, std::string("Illegal token: ")+*s);
+			}
+			
+			return sz;
+		}
 
 		/// Converting assignment operator.
 		template <class O_>

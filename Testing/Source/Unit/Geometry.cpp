@@ -243,8 +243,8 @@ TEST_CASE( "Point geometric info", "[Point]") {
 
 TEST_CASE( "Point <-> string", "[Point]") {
 	
-	Point  p1(1, 2);
-	Pointf p2(1.2f, 2.2f);
+	Point  p1("1, 2");
+	Pointf p2("(1.2f, 2.2f)");
 	Point  p3;
 	Pointf p4;
 
@@ -329,6 +329,14 @@ TEST_CASE( "Point <-> string", "[Point]") {
 	REQUIRE( p2 == -p4 );
 
 	
+	REQUIRE( std::string(p1) == "(1, 2)" );
+	
+	//Its ok to have extra zeroes at the end
+	REQUIRE( Gorgon::String::Replace(std::string(p2),"0","") == "(1.2, 2.2)" );
+	
+	REQUIRE( std::string(-p1) == "(-1, -2)" );
+	
+	
 	resetstream();
 	ss<<p1;
 	REQUIRE( Gorgon::String::Replace(ss.str(), " ","") == "(1,2)" );
@@ -358,4 +366,16 @@ TEST_CASE( "Point <-> string", "[Point]") {
 	REQUIRE( Gorgon::String::To<Point>("(1, 2)") == p1 );
 	REQUIRE( Gorgon::String::To<Point>("(1.2, 2.2)") == p1 );
 	REQUIRE( Gorgon::String::To<Pointf>("(1.2, 2.2)") == p2 );
+	
+	REQUIRE( Point::Parse("3,5") == Point(3,5) );
+	REQUIRE( Point::Parse("(3,5)") == Point(3,5) );
+	REQUIRE( Point::Parse("(3, 5)") == Point(3,5) );
+	REQUIRE( Point::Parse("3.2,5.8") == Point(3,5) );
+	REQUIRE( Point::Parse(" 3, 5 ") == Point(3,5) );
+	
+	REQUIRE_THROWS( Point::Parse("3,") );
+	REQUIRE_THROWS( Point::Parse("3,a") );
+	REQUIRE_THROWS( Point::Parse("7a,5e") );
+	REQUIRE_THROWS( Point::Parse("(3,4") );
+	REQUIRE_THROWS( Point::Parse("3,4)") );
 }

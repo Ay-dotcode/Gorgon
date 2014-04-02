@@ -5,83 +5,175 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
+#include <stdexcept>
 
 namespace Gorgon { 
 	
 	/// Contains string related functions and classes.
 	namespace String {
+		
+		
+		/// @page "Error codes"
+		/// Error codes
+		/// ===========
+		/// Error codes should be between 0 and 999...
+		
+		
+		/// This error will be thrown if a parsing function encounters
+		/// with a general error
+		class ParseError : public std::runtime_error {
+		public:
+			/// Constructs a new parse error. Parse error codes should be between 0 and 999
+			/// with object id infront. For instance an object id of 11 should throw
+			/// parse error 5 with code 110005
+			ParseError(int code=0, const std::string &what="Parse error") : 			
+			std::runtime_error(what), Code(code) { 
+			}
+			
+			/// Error code @see Errorcode
+			int Code;
+		};
+		
+		/// This error will be thrown if a parsing function encounters
+		/// with an illegal
+		class IllegalTokenError : public ParseError {
+		public:
+			IllegalTokenError(int location=0, int code=1000, const std::string &what="Illegal token") : 			
+			ParseError(code, what), Location(location) { 
+			}
+			
+			int Location;
+		};
+		
+		/// @cond INTERNAL
+		namespace internal {
+			/// SFINAE trick to detect if class has string operator
+			template <typename T>
+			class has_stringoperator
+			{
+				typedef char one;
+				struct two {
+					char a[2];
+				};
 
+				template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {return one();}
+				template <typename C> static two test(...){return two();}
+
+			public:
+				enum { value = sizeof(test<T>(""))==sizeof(char) };
+			};
+		}
+		/// @endcond
+		
+
+#ifdef DOXYGEN
 		/// Converts a string to another type. Works for integral types and
 		/// Gorgon classes including Point, Size, etc... There is no error
 		/// handling. If conversion does not work, you may end up with
 		/// uninitialized object. This system will be fixed at a later point.
 		template <class T_>
 		T_ To(const std::string &value) {
+			return T_();
+		}
+#endif		
+		
+		/// @cond
+		template <class T_>
+		typename std::enable_if<std::is_constructible<T_, std::string>::value, T_>::type
+		To(const std::string &value) {
+			return T_(value);
+		}
+		template <class T_>
+		typename std::enable_if<!std::is_constructible<T_, std::string>::value, T_>::type
+		To(const std::string &value) {
 			std::stringstream ss(value);
 
 			T_ ret;
-			ss>>ret;
+			ret(ss);
+			//ss>>ret;
+
+			return ret;
+		}
+		
+		template <class T_>
+		typename std::enable_if<std::is_constructible<T_, const char*>::value, T_>::type
+		To(const char *value) {
+			return T_(value);
+		}
+		template <class T_>
+		typename std::enable_if<!std::is_constructible<T_, const char*>::value && std::is_constructible<T_, std::string>::value, T_>::type
+		To(const char *value) {
+			return T_(value);
+		}
+		template <class T_>
+		typename std::enable_if<!std::is_constructible<T_, const char*>::value && !std::is_constructible<T_, std::string>::value, T_>::type
+		To(const char *value) {
+			std::stringstream ss(value);
+
+			T_ ret;
+			ret(ss);
+			//ss>>ret;
 
 			return ret;
 		}
 
-		/// @cond
 		template <>
-		char To(const std::string &value) {
+		char To<char>(const std::string &value) {
 			char *n;
 			return (char)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned char To(const std::string &value) {
+		unsigned char To<unsigned char>(const std::string &value) {
 			char *n;
 			return (unsigned char)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		short To(const std::string &value) {
+		short To<short>(const std::string &value) {
 			char *n;
 			return (short)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned short To(const std::string &value) {
+		unsigned short To<unsigned short>(const std::string &value) {
 			char *n;
 			return (unsigned short)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		int To(const std::string &value) {
+		int To<int>(const std::string &value) {
 			char *n;
 			return (int)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned To(const std::string &value) {
+		unsigned To<unsigned>(const std::string &value) {
 			char *n;
 			return (unsigned)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		long To(const std::string &value) {
+		long To<long>(const std::string &value) {
 			char *n;
 			return (long)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned long To(const std::string &value) {
+		unsigned long To<unsigned long>(const std::string &value) {
 			char *n;
 			return (unsigned long)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		long long To(const std::string &value) {
+		long long To<long long>(const std::string &value) {
 			char *n;
 			return (long long)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned long long To(const std::string &value) {
+		unsigned long long To<unsigned long long>(const std::string &value) {
 			char *n;
 			return (unsigned long long)std::strtol(value.c_str(), &n, 10);
 		}
@@ -99,6 +191,81 @@ namespace Gorgon {
 		template <>
 		inline long double To<long double>(const std::string &value) {
 			return std::atof(value.c_str());
+		}
+		
+		template <>
+		char To<char>(const char *value) {
+			char *n;
+			return (char)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		unsigned char To<unsigned char>(const char *value) {
+			char *n;
+			return (unsigned char)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		short To<short>(const char *value) {
+			char *n;
+			return (short)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		unsigned short To<unsigned short>(const char *value) {
+			char *n;
+			return (unsigned short)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		int To<int>(const char *value) {
+			char *n;
+			return (int)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		unsigned To<unsigned>(const char *value) {
+			char *n;
+			return (unsigned)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		long To<long>(const char *value) {
+			char *n;
+			return (long)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		unsigned long To<unsigned long>(const char *value) {
+			char *n;
+			return (unsigned long)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		long long To<long long>(const char *value) {
+			char *n;
+			return (long long)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		unsigned long long To<unsigned long long>(const char *value) {
+			char *n;
+			return (unsigned long long)std::strtol(value, &n, 10);
+		}
+
+		template <>
+		inline float To<float>(const char *value) {
+			return (float)std::atof(value);
+		}
+
+		template <>
+		inline double To<double>(const char *value) {
+			return std::atof(value);
+		}
+
+		template <>
+		inline long double To<long double>(const char *value) {
+			return std::atof(value);
 		}
 		/// @endcond
 
@@ -171,26 +338,6 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// @cond INTERNAL
-		namespace internal {
-			/// SFINAE trick to detect if class has string operator
-			template <typename T>
-			class has_stringoperator
-			{
-				typedef char one;
-				struct two {
-					char a[2];
-				};
-
-				template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {return one();}
-				template <typename C> static two test(...){return two();}
-
-			public:
-				enum { value = sizeof(test<T>(""))==sizeof(char) };
-			};
-		}
-		/// @endcond
-		
 		
 		/// @cond
 		inline std::string From(char value) {
@@ -242,12 +389,14 @@ namespace Gorgon {
 		}
 
 		template<class T_> 
-		typename std::enable_if<internal::has_stringoperator<T_>::value, std::string>::type From(const T_ &item) {
+		typename std::enable_if<internal::has_stringoperator<T_>::value, std::string>::type 
+		From(const T_ &item) {
 			return (std::string)item;
 		}
 
 		template<class T_> 
-		typename std::enable_if<!internal::has_stringoperator<T_>::value, std::string>::type From(const T_ &item) {
+		typename std::enable_if<!internal::has_stringoperator<T_>::value, std::string>::type 
+		From(const T_ &item) {
 			std::stringstream ss;
 			ss<<item;
 

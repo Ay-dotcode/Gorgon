@@ -1,4 +1,4 @@
-/// @file contains point class.
+/// @file Point.h contains point class.
 
 #pragma once
 
@@ -29,6 +29,23 @@ namespace Gorgon {
 			/// Conversion from a different point type
 			template <class O_>
 			basic_Point(const basic_Point<O_> &point) : X((T_)point.X), Y((T_)point.Y) { }
+			
+			/// Conversion from string
+			explicit basic_Point(const std::string &str) {
+				auto s=str.begin();
+				
+				while(*s==' ' || *s=='\t') s++;
+				
+				if(*s=='(') s++;
+				
+				X=String::To<T_>(&str[s-str.begin()]);
+				
+				while(*s!=',' && s!=str.end()) s++;
+				
+				if(*s==',') s++;
+				
+				Y=String::To<T_>(&str[s-str.begin()]);
+			}
 
 			/// Assignment from a different point type
 			template <class O_>
@@ -36,6 +53,91 @@ namespace Gorgon {
 				X=T_(point.X); 
 				Y=T_(point.Y); 
 				return *this; 
+			}
+			
+			/// Converts this object to string.
+			operator std::string() const {
+				std::string ret;
+				ret.push_back('(');
+				ret += String::From(X);
+				ret.push_back(',');
+				ret.push_back(' ');
+				ret += String::From(Y);
+				ret.push_back(')');
+				
+				return ret;
+			}
+			
+			/// Properly parses given string into a point. Throws errors if the
+			/// point is not well formed. Works only on types that can be parsed using
+			/// strtod. Following error codes are reported by this parse function:
+			///
+			/// * *IllegalTokenError* **111001**: Illegal token while reading X coordinate
+			/// * *IllegalTokenError* **111002**: Illegal token while looking for coordinate separator
+			/// * *IllegalTokenError* **111003**: Illegal token while reading Y coordinate
+			/// * *IllegalTokenError* **111004**: Illegal token(s) at the end
+			/// * *IllegalTokenError* **111005**: Unmatched parenthesis
+			/// * *ParseError* **110006**: Missing parenthesis, only if require_parenthesis
+			///   is set to true
+			static basic_Point Parse(const std::string &str, bool require_parenthesis=false) {
+				basic_Point p;
+				
+				auto s=str.begin();
+				
+				int par=0;
+				
+				while(*s==' ' || *s=='\t') s++;
+				
+				if(*s=='(') {
+					par=s-str.begin();
+					s++;
+				}
+				
+				if(!par && require_parenthesis) {
+					throw String::ParseError(110006, "Missing parenthesis");
+				}
+				
+				char *endptr;
+				p.X = T_(strtod(&*s, &endptr));
+				if(endptr==&*s) {
+					throw String::IllegalTokenError(0, 110001);
+				}
+				s+=endptr-&*s;
+				
+				while(*s==' ' || *s=='\t') s++;				
+				if(*s!=',') {
+					throw String::IllegalTokenError(s-str.begin(), 111002, std::string("Illegal token: ")+*s);
+				}
+				s++;
+				
+				p.Y=T_(strtod(&*s, &endptr));			
+				if(endptr==&*s) {
+					throw String::IllegalTokenError(s-str.begin(), 111003);
+				}
+				s+=endptr-&*s;
+				
+				//eat white space + a single )
+				while(*s==' ' || *s=='\t') s++;
+				if(*s==')') {
+					if(par) {
+						s++;
+						par=false;
+					}
+					else {
+						throw String::IllegalTokenError(s-str.begin(), 111005, "Unmatched parenthesis");
+					}
+				}
+				while(*s==' ' || *s=='\t') s++;
+				
+				if(*s!=0) {
+					throw String::IllegalTokenError(s-str.begin(), 111004, std::string("Illegal token: ")+*s);
+				}
+				
+				if(par) {
+					throw String::IllegalTokenError(par, 111005, "Unmatched parenthesis");
+				}
+				
+				return p;
 			}
 
 			/// Subtracts another point from this one
