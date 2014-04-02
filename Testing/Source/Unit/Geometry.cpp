@@ -5,6 +5,8 @@
 #include <catch.h>
 #include <Source/Geometry/Point.h>
 #include <Source/Geometry/Size.h>
+#include <Source/Geometry/Bounds.h>
+#include <Source/Geometry/Rectangle.h>
 #include <Source/String.h>
 
 #undef Rectangle
@@ -211,7 +213,6 @@ TEST_CASE( "Point arithmetic", "[Point]" ) {
 	REQUIRE( p6.Y == Approx(-2.2f) );
 }
 
-
 TEST_CASE( "Point geometric info", "[Point]") {
 
 	Point  p1(1, 2);
@@ -331,7 +332,7 @@ TEST_CASE( "Point <-> string", "[Point]") {
 	
 	REQUIRE( std::string(p1) == "(1, 2)" );
 	
-	//Its ok to have extra zeroes at the end
+	//Its ok to have extra zeros at the end
 	REQUIRE( Gorgon::String::Replace(std::string(p2),"0","") == "(1.2, 2.2)" );
 	
 	REQUIRE( std::string(-p1) == "(-1, -2)" );
@@ -373,9 +374,47 @@ TEST_CASE( "Point <-> string", "[Point]") {
 	REQUIRE( Point::Parse("3.2,5.8") == Point(3,5) );
 	REQUIRE( Point::Parse(" 3, 5 ") == Point(3,5) );
 	
+	REQUIRE_THROWS( Point::Parse("") );
 	REQUIRE_THROWS( Point::Parse("3,") );
 	REQUIRE_THROWS( Point::Parse("3,a") );
 	REQUIRE_THROWS( Point::Parse("7a,5e") );
 	REQUIRE_THROWS( Point::Parse("(3,4") );
 	REQUIRE_THROWS( Point::Parse("3,4)") );
+}
+
+TEST_CASE("Point geometry functions", "[Point]") {
+	Point  p1(1, 2);
+	Pointf p2(1.2f, 2.2f);
+	Point  p3;
+	Pointf p4;
+	Point  p5{4, 2};
+	Pointf p6{4.3f, 5.5f};
+
+	p3=p1;
+	Translate(p3, 1, 2);
+	REQUIRE(p3 == Point(2, 4));
+
+	Translate(p3, p5);
+	REQUIRE(p3 == Point(6, 6));
+
+	Translate(p3, -p5);
+	Translate(p3, -1, -2);
+	REQUIRE(p3 == p1);
+
+	p4=p2;
+	Translate(p4, 1.2f, 2.4f);
+	REQUIRE(p4.X == Approx(2.4));
+	REQUIRE(p4.Y == Approx(4.6));
+
+	Translate(p4, p6);
+	REQUIRE(p4.X == Approx(6.7));
+	REQUIRE(p4.Y == Approx(10.1));
+
+
+	Translate(p4, -p6);
+	Translate(p4, -1.2, -2.4);
+	REQUIRE(p4.X == Approx(p2.X));
+	REQUIRE(p4.Y == Approx(p2.Y));
+
+
 }

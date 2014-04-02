@@ -79,22 +79,27 @@ namespace Gorgon {
 			/// * *IllegalTokenError* **111005**: Unmatched parenthesis
 			/// * *ParseError* **110006**: Missing parenthesis, only if require_parenthesis
 			///   is set to true
+			/// * *ParseError* **110007**: Missing operand
 			static basic_Point Parse(const std::string &str, bool require_parenthesis=false) {
 				basic_Point p;
 				
 				auto s=str.begin();
 				
-				int par=0;
+				int par=-1;
 				
-				while(*s==' ' || *s=='\t') s++;
+				while(s!=str.end() && (*s==' ' || *s=='\t')) s++;
 				
-				if(*s=='(') {
+				if(s!=str.end() && *s=='(') {
 					par=s-str.begin();
 					s++;
 				}
 				
-				if(!par && require_parenthesis) {
+				if(par==-1 && require_parenthesis) {
 					throw String::ParseError(110006, "Missing parenthesis");
+				}
+
+				if(s==str.end()) {
+					throw String::ParseError(110007, std::string("Missing operand"));
 				}
 				
 				char *endptr;
@@ -104,36 +109,40 @@ namespace Gorgon {
 				}
 				s+=endptr-&*s;
 				
-				while(*s==' ' || *s=='\t') s++;				
-				if(*s!=',') {
+				while(s!=str.end() && (*s==' ' || *s=='\t')) s++;
+				if(s==str.end() || *s!=',') {
 					throw String::IllegalTokenError(s-str.begin(), 111002, std::string("Illegal token: ")+*s);
 				}
 				s++;
 				
+
+				if(s==str.end()) {
+					throw String::ParseError(110007, std::string("Missing operand"));
+				}
 				p.Y=T_(strtod(&*s, &endptr));			
 				if(endptr==&*s) {
 					throw String::IllegalTokenError(s-str.begin(), 111003);
 				}
 				s+=endptr-&*s;
-				
+
 				//eat white space + a single )
-				while(*s==' ' || *s=='\t') s++;
-				if(*s==')') {
-					if(par) {
+				while(s!=str.end() && (*s==' ' || *s=='\t')) s++;
+				if(s!=str.end() && *s==')') {
+					if(par!=-1) {
 						s++;
-						par=false;
+						par=-1;
 					}
 					else {
 						throw String::IllegalTokenError(s-str.begin(), 111005, "Unmatched parenthesis");
 					}
 				}
-				while(*s==' ' || *s=='\t') s++;
-				
-				if(*s!=0) {
+				while(s!=str.end() && (*s==' ' || *s=='\t')) s++;
+
+				if(s!=str.end()) {
 					throw String::IllegalTokenError(s-str.begin(), 111004, std::string("Illegal token: ")+*s);
 				}
 				
-				if(par) {
+				if(par>=0) {
 					throw String::IllegalTokenError(par, 111005, "Unmatched parenthesis");
 				}
 				
@@ -147,19 +156,19 @@ namespace Gorgon {
 
 			/// Negates this point
 			basic_Point operator -() const {
-				return basic_Point(-X, -Y);
+				return{-X, -Y};
 			}
 
 			/// Adds another point to this one and returns the result
 			basic_Point operator + (const basic_Point &point) const {
-				return basic_Point(X+point.X, Y+point.Y);
+				return{X+point.X, Y+point.Y};
 			}
 
 			/// Multiply this point with a scalar value. This is effectively
 			/// scales the point
 			template <class O_>
 			basic_Point operator * (O_ value) const {
-				return basic_Point(T_(X*value), T_(Y*value));
+				return{T_(X*value), T_(Y*value)};
 			}
 
 			/// Multiplies two points. This is essentially a dot product
@@ -171,7 +180,7 @@ namespace Gorgon {
 			/// scales the point
 			template <class O_>
 			basic_Point operator / (O_ value) const {
-				return basic_Point(T_(X/value), T_(Y/value));
+				return{T_(X/value), T_(Y/value)};
 			}
 
 			/// Subtracts another point from this point. Result is assigned
@@ -271,7 +280,7 @@ namespace Gorgon {
 
 			template <class O1_>
 			static basic_Point CreateFrom(const basic_Point<O1_> &point, Float magnitute, Float angle) {
-				return basic_Point(T_(point.X+magnitute*std::cos(angle)), T_(point.Y+magnitute*std::sin(angle)));
+				return{T_(point.X+magnitute*std::cos(angle)), T_(point.Y+magnitute*std::sin(angle))};
 			}
 
 			T_ X;
@@ -329,10 +338,10 @@ namespace Gorgon {
 
 
 		/// Translation moves the given point *by* the given amount
-		template<class T_>
-		void Translate(basic_Point<T_> &point, T_ x, T_ y) {
-			point.X+=x;
-			point.Y+=y;
+		template<class T_, class O_>
+		void Translate(basic_Point<T_> &point, O_ x, O_ y) {
+			point.X=T_(point.X+x);
+			point.Y=T_(point.Y+y);
 		}
 
 		/// Translation moves the given point *by* the given amount
@@ -486,7 +495,10 @@ namespace Gorgon {
 		typedef basic_Point<Float> Pointf;
 
 		inline Pointf Round(Pointf num) {
-			return Pointf(std::floor(num.X+Float(0.5)),std::floor(num.Y+Float(0.5))); 
+			return{
+				std::floor(num.X+Float(0.5)), 
+				std::floor(num.Y+Float(0.5))
+			};
 		}
 
 	} 

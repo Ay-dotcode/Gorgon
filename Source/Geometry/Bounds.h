@@ -95,27 +95,27 @@ namespace Gorgon { namespace Geometry {
 
 		/// Returns top left corner
 		basic_Point<T_> TopLeft() const {
-			return basic_Point<T_>(Left, Top);
+			return{Left, Top};
 		}
 
 		/// Returns top right corner
 		basic_Point<T_> TopRight() const {
-			return basic_Point<T_>(Right, Top);
+			return{Right, Top};
 		}
 
 		/// Returns center of bounds
 		basic_Point<T_> Center() const {
-			return basic_Point<T_>(Left+Width()/2, Top+Height()/2);
+			return{Left+Width()/2, Top+Height()/2};
 		}
 
 		/// Returns bottom left corner
 		basic_Point<T_> BottomLeft() const {
-			return basic_Point<T_>(Left, Bottom);
+			return{Left, Bottom};
 		}
 
 		/// Returns bottom right corner
 		basic_Point<T_> BottomRight() const {
-			return basic_Point<T_>(Right, Bottom);
+			return{Right, Bottom};
 		}
 
 		T_ Width() const { 
@@ -128,18 +128,18 @@ namespace Gorgon { namespace Geometry {
 
 		/// Returns the size of the bounds object
 		basic_Size<T_> Size() const {
-			return basic_Size<T_>(Width(), Height());
+			return{Width(), Height()};
 		}
 
 		/// Performs union operation. Returns a bounds that contains this bounds object
 		/// as well as the given bounds
 		basic_Bounds operator |(const basic_Bounds &b) const {
-			return basic_Bounds(
-				l.Left  < r.Left  ? l.Left  : r.Left  , 
-				l.Top   < r.Top   ? l.Top   : r.Top   , 
-				l.Right > r.Right ? l.Right : r.Right , 
+			return{
+				l.Left  < r.Left  ? l.Left  : r.Left,
+				l.Top   < r.Top   ? l.Top   : r.Top,
+				l.Right > r.Right ? l.Right : r.Right,
 				l.Bottom> r.Bottom? l.Bottom: r.Bottom
-			);						
+			};
 		}
 
 		/// Performs intersect operation. Returns a bounds that contains the region that
@@ -153,7 +153,7 @@ namespace Gorgon { namespace Geometry {
 			b.Bottom= l.Bottom< l.Bottom? l.Bottom: r.Bottom;
 
 			if(b.Left>b.Right || b.Top>b.Bottom) {
-				return basic_Bounds<T_>(0,0,0,0);
+				return{0, 0, 0, 0};
 			}
 
 			return b;
@@ -182,13 +182,8 @@ namespace Gorgon { namespace Geometry {
 			return *this;
 		}
 
-		/// Checks whether the given point is inside this bounds.
-		bool isInside(const basic_Point<T_> &p) const {
-			return p.X>=Left && p.Y>=Top && p.X<=Right && p.Y<=Bottom;
-		}
-
 		/// Changes the size of the bounds
-		void SetSize(const basic_Size2D<T_> &s) {
+		void SetSize(const basic_Size<T_> &s) {
 			Right = Left + s.Width;
 			Bottom= Top  + s.Height;
 		}
@@ -228,71 +223,71 @@ namespace Gorgon { namespace Geometry {
 		/// Creates a new bounds object that is the offset of this bounds by 
 		/// the given point
 		basic_Bounds operator +(const basic_Point<T_> &p) const {
-			return basic_Bounds(
+			return{
 				Left   + p.X,
 				Top    + p.Y,
 				Right  + p.X,
 				Bottom + p.Y
-			);
+			};
 		}
 
 		/// Creates a new bounds object that is the offset of this bounds by 
 		/// the given point
 		basic_Bounds operator -(const basic_Point<T_> &p) const {
-			return basic_Bounds(
+			return{
 				Left   - p.X,
 				Top    - p.Y,
 				Right  - p.X,
 				Bottom - p.Y
-			);
+			};
 		}
 
 		/// Creates a new bounds object that is the scale version of this bounds
 		/// by the given size
 		template<class O_>
 		basic_Bounds operator *(const basic_Size<O_> &s) {
-			return basic_Bounds(
+			return{
 				T_(Left   * s.Width),
 				T_(Top    * s.Height),
 				T_(Right  * s.Width),
 				T_(Bottom * s.Height)
-			);
+			};
 		}
 
 		/// Creates a new bounds object that is the scale version of this bounds
 		/// by the given size
 		template<class O_>
 		basic_Bounds operator /(const basic_Size<O_> &s) {
-			return basic_Bounds(
+			return{
 				T_(Left   / s.Width),
 				T_(Top    / s.Height),
 				T_(Right  / s.Width),
 				T_(Bottom / s.Height)
-			);
+			};
 		}
 
 		/// Creates a new bounds object that is the scale version of this bounds
 		/// by the given size
 		template<class O_>
 		basic_Bounds operator *(const O_ &s) {
-			return basic_Bounds(
+			return{
 				T_(Left   * s),
 				T_(Top    * s),
 				T_(Right  * s),
 				T_(Bottom * s)
-			);
+			};
 		}
 
 		/// Creates a new bounds object that is the scale version of this bounds
 		/// by the given size
 		template<class O_>
 		basic_Bounds operator /(const O_ &s) {
-			return basic_Bounds(
+			return{
 				T_(Left   / s),
 				T_(Top    / s),
 				T_(Right  / s),
 				T_(Bottom / s)
-			);
+			};
 		}
 
 		/// Offsets this bounds objects by the given coordinates
@@ -491,7 +486,7 @@ namespace Gorgon { namespace Geometry {
 	/// Checks whether two bounds are colliding. It is possible to use this function
 	/// without referring to Geometry namespace.
 	template <class T_>
-	bool IsColliding(const basic_Bounds<T_> &l, const basic_Bounds<T_> &r) const {
+	bool IsColliding(const basic_Bounds<T_> &l, const basic_Bounds<T_> &r) {
 		// check disjunction x-coordinates
 		if(l.Left  > r.Right) return false;
 		if(l.Right < r.Left) return false;
@@ -503,9 +498,15 @@ namespace Gorgon { namespace Geometry {
 		return true;
 	}
 
-	/// Translation moves the given bounds *by* the given amount
+	/// Checks whether the given point is inside this bounds.
 	template<class T_>
-	void Translate(basic_Bounds<T_> &bounds, T_ x, T_ y) {
+	bool IsInside(const basic_Bounds<T_> &b, const basic_Point<T_> &p) {
+		return p.X>=b.Left && p.Y>=b.Top && p.X<=b.Right && p.Y<=b.Bottom;
+	}
+
+	/// Translation moves the given bounds *by* the given amount
+	template<class T_, class O_>
+	void Translate(basic_Bounds<T_> &bounds, O_ x, O_ y) {
 		bounds.Left  += x;
 		bounds.Right += x;
 		bounds.Top   += y;

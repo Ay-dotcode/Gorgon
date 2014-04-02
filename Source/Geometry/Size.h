@@ -145,18 +145,18 @@ namespace Gorgon { namespace Geometry {
 		/// Adds two size objects
 		template<class O_>
 		basic_Size operator +(const basic_Size<O_>  &size) const { 
-			return basic_Size(size.Width+Width, size.Height+Height);
+			return{size.Width+Width, size.Height+Height};
 		}
 
 		/// Subtracts two size objects
 		template<class O_>
 		basic_Size operator -(const basic_Size<O_>  &size) const { 
-			return basic_Size(Width-size.Width, Height-size.Height);
+			return{Width-size.Width, Height-size.Height};
 		}
 
 		/// Negation operator
 		basic_Size operator -() const {
-			return basic_Size(-Width, -Height);
+			return{-Width, -Height};
 		}
 
 		/// Adds the given size object to this size
@@ -199,7 +199,7 @@ namespace Gorgon { namespace Geometry {
 		/// in a manner that the resultant point is the far corner of a
 		/// rectangle that is placed at origin and the size of this object.
 		operator basic_Point<T_>() const {
-			return basic_Point<T_>(Width, Height);
+			return{Width, Height};
 		}
 
 		/// Returns the number of fully encompassed cells. For instance,
@@ -223,7 +223,7 @@ namespace Gorgon { namespace Geometry {
 	/// Multiplies a size with a scalar, effectively resizing it.
 	template<class T_, class O_>
 	basic_Size<T_> operator *(const basic_Size<T_> &size, const O_ &factor) {
-		return basic_Size<T_>(size.Width*factor, size.Height*factor);
+		return{size.Width*factor, size.Height*factor};
 	}
 
 	/// Multiplies a size with a scalar, effectively resizing it.
@@ -235,7 +235,7 @@ namespace Gorgon { namespace Geometry {
 	/// Divides a size with a scalar, effectively resizing it.
 	template<class T_, class O_>
 	basic_Size<T_> operator /(const basic_Size<T_> &size, const O_ &factor) {
-		return basic_Size<T_>(size.Width/factor, size.Height/factor);
+		return{size.Width/factor, size.Height/factor};
 	}
 
 	/// Divides a size with a scalar, effectively resizing it.
@@ -289,13 +289,13 @@ namespace Gorgon { namespace Geometry {
 	/// Allows multiplication of point with a size object
 	template<class T_, class O_>
 	auto operator *(const basic_Point<T_> &l, const basic_Size<O_> &r) -> basic_Point<decltype(l.X*r.Width)> {
-		return basic_Point<T_>(l.X*r.Width, l.Y*r.Height);
+		return{l.X*r.Width, l.Y*r.Height};
 	}
 
 	/// Allows division of point with a size object
 	template<class T_, class O_>
 	auto operator /(const basic_Point<T_> &l, const basic_Size<O_> &r) -> basic_Point<decltype(l.X*r.Width)> {
-		return basic_Point<T_>(l.X/r.Width, l.Y/r.Height);
+		return{l.X/r.Width, l.Y/r.Height};
 	}
 
 	/// Scales the given point by the given factor
