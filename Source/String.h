@@ -39,10 +39,12 @@ namespace Gorgon {
 		/// with an illegal
 		class IllegalTokenError : public ParseError {
 		public:
+			/// Constructor
 			IllegalTokenError(int location=0, int code=1000, const std::string &what="Illegal token") : 			
 			ParseError(code, what), Location(location) { 
 			}
 			
+			/// Location of the illegal token in the string
 			int Location;
 		};
 		

@@ -24,7 +24,7 @@ namespace Gorgon {
 			basic_Point() { }
 
 			/// Filling constructor
-			basic_Point(T_ X, T_ Y) : X(X), Y(Y) { }
+			basic_Point(const T_ &X, const T_ &Y) : X(X), Y(Y) { }
 
 			/// Conversion from a different point type
 			template <class O_>
@@ -66,6 +66,15 @@ namespace Gorgon {
 				ret.push_back(')');
 				
 				return ret;
+			}
+
+			/// Creates a new point from the given vector data
+			/// @param  magnitute is the magnitute of the vector
+			/// @param  angle is the direction of the vector in radians
+			/// @param  origin is the source origin to calculate new point
+			template <class O_>
+			static basic_Point FromVector(Float magnitute, Float angle, const basic_Point<O_> &origin={0,0}) {
+				return{T_(origin.X+magnitute*std::cos(angle)), T_(origin.Y+magnitute*std::sin(angle))};
 			}
 			
 			/// Properly parses given string into a point. Throws errors if the
@@ -273,17 +282,15 @@ namespace Gorgon {
 			}
 
 			/// Moves this point to the given coordinates
-			void Move(T_ x, T_ y) {
+			void Move(const T_ &x, const T_ &y) {
 				X=x;
 				Y=y;
 			}
 
-			template <class O1_>
-			static basic_Point CreateFrom(const basic_Point<O1_> &point, Float magnitute, Float angle) {
-				return{T_(point.X+magnitute*std::cos(angle)), T_(point.Y+magnitute*std::sin(angle))};
-			}
-
+			/// X coordinate
 			T_ X;
+			
+			/// Y coordinate
 			T_ Y;
 		};
 
@@ -494,6 +501,7 @@ namespace Gorgon {
 		/// @see basic_Point
 		typedef basic_Point<Float> Pointf;
 
+		/// Performs a rounding operation over a floating point point
 		inline Pointf Round(Pointf num) {
 			return{
 				std::floor(num.X+Float(0.5)), 

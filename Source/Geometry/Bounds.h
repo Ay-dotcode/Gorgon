@@ -118,10 +118,12 @@ namespace Gorgon { namespace Geometry {
 			return{Right, Bottom};
 		}
 
+		/// Calculates and returns the width of the bounds
 		T_ Width() const { 
 			return Right-Left;
 		}
 
+		/// Calculates and returns the height of the bounds
 		T_ Height() const { 
 			return Bottom-Top;
 		}
@@ -133,26 +135,26 @@ namespace Gorgon { namespace Geometry {
 
 		/// Performs union operation. Returns a bounds that contains this bounds object
 		/// as well as the given bounds
-		basic_Bounds operator |(const basic_Bounds &b) const {
+		basic_Bounds operator |(const basic_Bounds &r) const {
 			return{
-				l.Left  < r.Left  ? l.Left  : r.Left,
-				l.Top   < r.Top   ? l.Top   : r.Top,
-				l.Right > r.Right ? l.Right : r.Right,
-				l.Bottom> r.Bottom? l.Bottom: r.Bottom
+				Left  < r.Left  ? Left  : r.Left,
+				Top   < r.Top   ? Top   : r.Top,
+				Right > r.Right ? Right : r.Right,
+				Bottom> r.Bottom? Bottom: r.Bottom
 			};
 		}
 
 		/// Performs intersect operation. Returns a bounds that contains the region that
 		/// this bounds and the given bounds covers. If they do not interact, an empty bounds
 		/// <0-0, 0-0> is returned.
-		basic_Bounds operator &(const basic_Bounds &b) const {
+		basic_Bounds operator &(const basic_Bounds &r) const {
 			basic_Bounds<T_> b;
-			b.Left  = l.Left  > l.Left  ? l.Left  : r.Left;
-			b.Top   = l.Top   > l.Top   ? l.Top   : r.Top;
-			b.Right = l.Right < l.Right ? l.Right : r.Right;
-			b.Bottom= l.Bottom< l.Bottom? l.Bottom: r.Bottom;
+			Left  = Left  > Left  ? Left  : r.Left;
+			Top   = Top   > Top   ? Top   : r.Top;
+			Right = Right < Right ? Right : r.Right;
+			Bottom= Bottom< Bottom? Bottom: r.Bottom;
 
-			if(b.Left>b.Right || b.Top>b.Bottom) {
+			if(Left>Right || Top>Bottom) {
 				return{0, 0, 0, 0};
 			}
 
@@ -183,13 +185,13 @@ namespace Gorgon { namespace Geometry {
 		}
 
 		/// Changes the size of the bounds
-		void SetSize(const basic_Size<T_> &s) {
+		void Resize(const basic_Size<T_> &s) {
 			Right = Left + s.Width;
 			Bottom= Top  + s.Height;
 		}
 
 		/// Changes the size of the bounds
-		void SetSize(const T_ &width, const T_ &height) {
+		void Resize(const T_ &width, const T_ &height) {
 			Right = Left + width;
 			Bottom= Top  + height;
 		}
@@ -213,7 +215,7 @@ namespace Gorgon { namespace Geometry {
 		}
 		
 		/// Changes the position of the bounds
-		void Move(T_ x, T_ y) {
+		void Move(const T_ &x, const T_ &y) {
 			Right = (Right-Left)+x	;
 			Bottom= (Bottom-Top)+y	;
 			Left  = x;
@@ -475,12 +477,12 @@ namespace Gorgon { namespace Geometry {
 	/// without referring to Geometry namespace.
 	template <class T_>
 	basic_Bounds<T_> Union(const basic_Bounds<T_> &l, const basic_Bounds<T_> &r) {
-		return basic_Bounds(
+		return{
 			l.Left  < r.Left  ? l.Left  : r.Left  , 
 			l.Top   < r.Top   ? l.Top   : r.Top   , 
 			l.Right > r.Right ? l.Right : r.Right , 
 			l.Bottom> r.Bottom? l.Bottom: r.Bottom
-		);						
+		};
 	}
 
 	/// Checks whether two bounds are colliding. It is possible to use this function
