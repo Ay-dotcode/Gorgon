@@ -83,7 +83,7 @@ namespace Gorgon {
 			}
 
 			/// Index notation
-			T_ &operator [](distance_type ind) const {
+			T_ &operator [](D_ ind) const {
 				return *this+ind;
 			}
 
@@ -93,7 +93,7 @@ namespace Gorgon {
 			}
 
 			/// Returns the distance to the given iterator
-			distance_type Distance(const I_ &iterator) const {
+			D_ Distance(const I_ &iterator) const {
 				return this->iterator().distance(iterator);
 			}
 
@@ -135,12 +135,12 @@ namespace Gorgon {
 			}
 
 			/// Returns the distance to the given iterator
-			distance_type operator -(const I_ &iterator) const {
+			D_ operator -(const I_ &iterator) const {
 				return iterator.distance(this->iterator());
 			}
 
 			/// Creates a new iterator adding the given offset
-			I_ operator +(distance_type offset) const {
+			I_ operator +(D_ offset) const {
 				I_ i(iterator());
 				i.MoveBy(offset);
 
@@ -148,22 +148,22 @@ namespace Gorgon {
 			}
 
 			/// Creates a new iterator subtracting the given offset
-			I_ operator -(distance_type offset) const {
+			I_ operator -(D_ offset) const {
 				I_ i(iterator());
 				i.MoveBy(-offset);
 
 				return i;
 			}
 
-			/// Moves the iterator by the given offset to forwards
-			I_ &operator +=(distance_type offset) {
+			/// Moves the D_ by the given offset to forwards
+			I_ &operator +=(D_ offset) {
 				iterator().moveby(offset);
 
 				return iterator();
 			}
 
 			/// Moves the iterator by the given offset to backwards
-			I_ &operator -=(distance_type offset) {
+			I_ &operator -=(D_ offset) {
 				iterator().moveby(-offset);
 
 				return iterator();

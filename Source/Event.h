@@ -132,6 +132,18 @@ namespace Gorgon {
 		struct make_indexes_impl<I, int_tuple<Indexes...> > {
 			typedef int_tuple<Indexes...> type;
 		};
+		
+		template<int n> struct arg {};
+		template<> struct arg<1>{ static decltype(std::placeholders::_1) value() {return std::placeholders::_1;} };
+		template<> struct arg<2>{ static decltype(std::placeholders::_2) value() {return std::placeholders::_2;} };
+		template<> struct arg<3>{ static decltype(std::placeholders::_3) value() {return std::placeholders::_3;} };
+		template<> struct arg<4>{ static decltype(std::placeholders::_4) value() {return std::placeholders::_4;} };
+		template<> struct arg<5>{ static decltype(std::placeholders::_5) value() {return std::placeholders::_5;} };
+		template<> struct arg<6>{ static decltype(std::placeholders::_6) value() {return std::placeholders::_6;} };
+		template<> struct arg<7>{ static decltype(std::placeholders::_7) value() {return std::placeholders::_7;} };
+		template<> struct arg<8>{ static decltype(std::placeholders::_8) value() {return std::placeholders::_8;} };
+		template<> struct arg<9>{ static decltype(std::placeholders::_9) value() {return std::placeholders::_9;} };
+		
 
 		template<typename... Types>
 		struct make_indexes : make_indexes_impl<0, int_tuple<>, Types...> { };
@@ -139,7 +151,7 @@ namespace Gorgon {
 		template< class T, class... Args, int... Indexes >
 		std::function< void(Args...) > make_func_helper(void (T::* pm) (Args...),
 			T * that, int_tuple< Indexes... >) {
-			return std::bind(pm, that, std::_Ph<Indexes+1>()...);
+			return std::bind(pm, that, arg<Indexes+1>::value()...);
 		}
 
 		template< class T, class... Args >

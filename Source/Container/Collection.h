@@ -20,7 +20,7 @@ namespace Gorgon {
 		template <class T_>
 		class Collection {
 	
-			template<class T_, class P_>
+			template<class P_>
 			struct sorter {
 				sorter(const P_ &predicate) : predicate(predicate) {}
 
@@ -260,7 +260,7 @@ namespace Gorgon {
 
 			//this method adds the given object in front of the reference
 			void Insert(T_* data, int before) {
-				if(std::find(list.begin(), list.end(), Data)!=list.end()) return;
+				if(std::find(list.begin(), list.end(), data)!=list.end()) return;
 
 				if(before<0 || before>list.size())
 					throw std::out_of_range("Invalid location");
@@ -497,13 +497,13 @@ namespace Gorgon {
 			/// assignment will copy objects
 			template<class P_>
 			void Sort(P_ predicate=P_()) {
-				std::sort(list.begin(), list.end(), sorter<T_, P_>(predicate));
+				std::sort(list.begin(), list.end(), sorter<P_>(predicate));
 			}
 
 			/// Sorts items in the collection. Regular std::sort cannot work on collections as
 			/// assignment will copy objects
 			void Sort() {
-				std::sort(list.begin(), list.end(), sorter<T_, std::less<T_>>(std::less<T_>()));
+				std::sort(list.begin(), list.end(), sorter<std::less<T_>>(std::less<T_>()));
 			}
 
 			/// Returns the element at the given index. Checks and throws if out of range
@@ -532,7 +532,7 @@ namespace Gorgon {
 			}
 
 			/// Returns the item at a given index
-			const T_& operator [] (int Index) const  {
+			const T_& operator [] (int index) const  {
 				return *list[index];
 			}
 
