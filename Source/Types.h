@@ -1,5 +1,7 @@
 ///@file Types.h contains type definitions for Gorgon system
 
+#pragma once
+
 namespace Gorgon {
 		
 	/// Represents smallest cell in memory.

@@ -2,26 +2,21 @@
 
 #pragma once
 
-#include <cstdlib>
-#include <cstring>
+#pragma warning(error: 4239)
+
+#include <vector>
 #include <stdexcept>
 #include <algorithm>
+
+#include "Iterator.h"
 
 namespace Gorgon { 
 	namespace Container {
 
-		///	Collection class is an unsorted add/remove list with consistent IDs
-		///	for its members. Allows iteration using std methods. 
-		///	Also hosts search iteration. This Collection is preferable for small
-		///	number of objects, it does not host any optimizations for access speed;
-		///	however, it has a very small memory overhead. Total size of the object
-		///	is 16 bytes. It can be passed by value, contents will not be duplicated
-		///	instead it will ref count the object list. 
-		///	
-		///	@warning Stored objects are not duplicated nor destroyed at the end
-		///	of the collection's life time. To destruct objects that are contained
-		///	within use .Destroy() method. This applies for removed objects, use
-		///	delete to destruct and remove them	
+		///	Collection is a container for reference typed objects. A container never copies its elements
+		/// nor destroys unless requested specifically. Internally, a collection stores its objects in a
+		/// vector as pointers. This class supports move semantics. Also copying of a collection is disabled
+		/// for performance reasons. Use Duplicate method to create a duplicate of a collection.
 		template <class T_>
 		class Collection {
 	
@@ -39,15 +34,18 @@ namespace Gorgon {
 				const P_ &predicate;
 			};
 
-			//		Iterators
-			template<class O_, class C_, int g_>
-			class Iterator_ : public IteratorBase<Iterator_<O_, C_>, O_> {
-				friend class IteratorBase<Iterator_, O_>;
+			/// Iterators are derived from this class
+			/// @copydoc Gorgon::Container::Iterator
+			template<class O_, class C_>
+			class Iterator_ : public Container::Iterator<Iterator_<O_, C_>, O_> {
+				friend class Container::Iterator<Iterator_, O_>;
 				friend class Collection;
 
 			public:
+				/// Default constructor, creates an iterator pointing to end
 				Iterator_() : Col(NULL), Offset(-1) {
 				}
+				/// Copies another iterator
 				Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
 				}
 
@@ -56,6 +54,8 @@ namespace Gorgon {
 				}
 
 			protected:
+				///@cond INTERAL
+				/// Satisfies the needs of Iterator
 				O_ &current() const {
 					if(!isvalid())
 						throw std::out_of_range("Iterator is not valid.");
@@ -71,11 +71,11 @@ namespace Gorgon {
 				}
 
 				bool isvalid() const {
-					return Offset>=0 && Offset<(*Col->count);
+					return Offset>=0 && Offset<(Col->GetCount());
 				}
 
 				bool isinrange() const {
-					return Offset>=0 || Offset<(*Col->count);
+					return Offset>=0 || Offset<(Col->GetCount());
 				}
 
 				bool moveby(int amount) {
@@ -103,73 +103,169 @@ namespace Gorgon {
 				bool isbefore(const Iterator_ &it) const {
 					return Offset<it.Offset;
 				}
+				///@endcond
 
 			public:
-				//Template compatibility for collections
-				//should not work for const iterators
-				void Remove() {
-					Col->removeat(Offset);
-				}
 
-				//Template compatibility for collections
-				//should not work for const iterators
-				void Delete() {
-					Col->deleteat(Offset);
-				}
-
+				/// Assignment operator
 				Iterator_ &operator =(const Iterator_ &iterator) {
 					set(iterator);
 
 					return *this;
 				}
 
-			protected:
+			private:
 				C_ *Col;
 				int Offset;
 			};
 
 		public:
-			typedef Iterator_<      T_,      Collection>	  Iterator;
+			/// Regular iterator. @see Container::Iterator
+			typedef Iterator_<T_, Collection> Iterator;
+
+			/// Const iterator allows iteration of const collections
 			class ConstIterator : public Iterator_<const T_,const Collection> {
 				friend class Collection;
 			public:
+				///Regular iterators can be converted to const iterators
 				ConstIterator(const Iterator &it) {
 					this->Col=it.Col;
 					this->Offset=it.Offset;
 				}
 
-			protected:
+			private:
 				ConstIterator(const Collection &c, int offset=0) : Iterator_<const T_,const Collection>(c, offset) {
 				}
 			};
 
+			///@cond INTERNAL
+			class Adder {
+				friend class Collection;
+				Adder(Collection &col) : col(col) { }
+				Collection &col;
+			public:
+
+				Adder &operator ,(T_ &item) {
+					col.Add(item);
+					return *this;
+				}
+
+				Adder &operator ,(T_ *item) {
+					col.Add(item);
+					return *this;
+				}
+
+				Adder &operator =(Adder &) =delete;
+			};
+			///@endcond
+
 		public:
-			Collection() { }
+			/// Default constructor
+			Collection() = default;
 
-			~Collection() { }
+			/// Initializing constructor. 
+			/// @warning Visual studio erroneously allows rvalues (function return values or temporaries)
+			/// to be bound to normal references. This means, its possible to pass those without getting 
+			/// an error. This problem is fixed by setting warning 4239 to cause an error. If working with
+			/// older libraries that require this behavior, use `#pragma warning(disable: 4329)` before,
+			/// including necessary header.
+			template<typename... Args_>
+			Collection(T_ &t, Args_ &... args) {
+				list.reserve(sizeof...(Args_)+1);
+				Add(t, args...);
+			}
 
-			//Template compatibility for collections
-			////Returns number of elements
+			/// Initializing constructor. 
+			/// @warning Visual studio erroneously allows rvalues (function return values or temporaries)
+			/// to be bound to normal references. This means, its possible to pass those without getting 
+			/// an error. This problem is fixed by setting warning 4239 to cause an error. If working with
+			/// older libraries that require this behavior, use `#pragma warning(disable: 4329)` before,
+			/// including necessary header.
+			template<typename... Args_>
+			Collection(T_ *t, Args_ *... args) {
+				list.reserve(sizeof...(Args_)+1);
+				Add(t, args...);
+			}
+
+			/// Disabled
+			Collection(const Collection &) = delete;
+
+			/// Disabled
+			Collection &operator =(const Collection &) = delete;
+
+			/// Move constructor
+			Collection(Collection &&col) : list(std::move(col.list)) { }
+
+			/// Move assignment
+			Collection &operator=(Collection &&col) {
+				Collapse();
+				list.swap(col.list);
+
+				return *this;
+			}
+
+			/// Swaps the given collection with this one
+			void Swap(Collection &col) {
+				list.swap(col.list);
+			}
+
+			/// Duplicates this collection. Copy constructor is disabled for performance reasons. Therefore,
+			/// this function is necessary to duplicate a collection
+			Collection Duplicate() {
+				Collection c;
+				c.list=list;
+
+				return c;
+			}
+
+			/// Returns number of elements
 			int GetCount() const {
 				return list.size();
 			}
 
-			////Adds a new item to the end of the list
+
+			/// Adds the given item to the end of the list
 			void Add(T_* Data) {
-				list.push_back(Data);
+				if(std::find(list.begin(), list.end(), Data)==list.end())
+					list.push_back(Data);
 			}
 
-			//Template compatibility for collections
-			////Adds a new item to the end of the list
+			/// Adds a the given item to the end of the list
 			void Add(T_& data) {
 				Add(&data);
 			}
 
-			//this method adds the given object infront of the reference
+			/// Adds the given item to the end of the list
+			template<typename... Args_>
+			void Add(T_* Data, Args_ *... args) {
+				Add(Data);
+				Add(args...);
+			}
+
+			/// Adds a the given item to the end of the list
+			template<typename... Args_>
+			void Add(T_& data, Args_ &... args) {
+				Add(&data);
+				Add(args...);
+			}
+
+			/// Creates a new item and adds to the end of the collection
+			template<typename... Args_>
+			T_ &AddNew(Args_... args) {
+				auto t=new T_(args...);
+				Add(t);
+
+				return *t;
+			}
+
+			//this method adds the given object in front of the reference
 			void Insert(T_* data, int before) {
-				if(before<0)
-					return;
-				if(before>=list.size())
+				if(std::find(list.begin(), list.end(), Data)!=list.end()) return;
+
+				if(before<0 || before>list.size())
+					throw std::out_of_range("Invalid location");
+
+				if(before==list.size())
 					Add(data);
 
 				for(int i=list.size()-1;i>before;i--)
@@ -179,7 +275,7 @@ namespace Gorgon {
 			}
 
 			//this method adds the given object in front of the reference
-			void Insert(T_& data, int before) {
+			void Insert(T_& data, unsigned before) {
 				Insert(&data, before);
 			}
 
@@ -203,20 +299,48 @@ namespace Gorgon {
 				Insert(&data, FindLocation(before));
 			}
 
-			//this method moves the given object in the collection in front of the reference
-			void MoveBefore(int index, int before) {
+			/// Creates a new item and inserts it before the given reference
+			template<typename... Args_>
+			T_ &InsertNew(const T_ &before, Args_... args) {
+				auto t=new T_(args...);
+				Insert(t, before);
+
+				return *t;
+			}
+
+			/// Creates a new item and inserts it before the given reference
+			template<typename... Args_>
+			T_ &InsertNew(const T_ *before, Args_... args) {
+				auto t=new T_(args...);
+				Insert(t, before);
+
+				return *t;
+			}
+
+			/// Creates a new item and inserts it before the given reference
+			template<typename... Args_>
+			T_ &InsertNew(unsigned before, Args_... args) {
+				auto t=new T_(args...);
+				Insert(t, before);
+
+				return *t;
+			}
+
+			/// this method moves the given object in the collection in front of the reference
+			void MoveBefore(unsigned index, unsigned before) {
 				if(index<0 && index>=list.size())
-					return;
+					throw std::out_of_range("Invalid location");
 				if(before<0)
-					before=list.size();
+					throw std::out_of_range("Invalid location");
 				if(before>list.size())
-					before=list.size();
+					throw std::out_of_range("Invalid location");
+
 				if(index==before)
 					return;
 
 				if(index>before) {
 					T_ *t=list[index];
-					for(int i=index;i>before;i--)
+					for(unsigned i=index; i>before; i--)
 						list[i]=list[i-1];
 
 					list[before]=t;
@@ -224,107 +348,90 @@ namespace Gorgon {
 				else if(before==list.size()) {
 					T_ *t=list[index];
 
-					for(int i=index;i<list.size()-1;i++)
+					for(unsigned i=index; i<list.size()-1; i++)
 						list[i]=list[i+1];
 
 					list[list.size()-1]=t;
 				}
 				else {
 					T_ *t=list[index];
-					for(int i=index;i<before;i++)
+					for(unsigned i=index; i<before; i++)
 						list[i]=list[i+1];
 
 					list[before]=t;
 				}
 			}
 
-			void MoveBefore(int index, const T_ *before) {
+			/// this method moves the given object in the collection in front of the reference
+			void MoveBefore(unsigned index, const T_ *before) {
 				MoveBefore(index, FindLocation(before));
 			}
 
-			void MoveBefore(int index, const T_ &before) {
+			/// this method moves the given object in the collection in front of the reference
+			void MoveBefore(unsigned index, const T_ &before) {
 				MoveBefore(index, FindLocation(before));
 			}
 
-			void MoveBefore(const T_ *index, int before) {
+			/// this method moves the given object in the collection in front of the reference
+			void MoveBefore(const T_ *index, unsigned before) {
 				MoveBefore(FindLocation(index), before);
 			}
 
+			/// this method moves the given object in the collection in front of the reference
 			void MoveBefore(const T_ *index, const T_ *before) {
 				MoveBefore(FindLocation(index), FindLocation(before));
 			}
 
+			/// this method moves the given object in the collection in front of the reference
 			void MoveBefore(const T_ *index, const T_ &before) {
 				MoveBefore(FindLocation(index), FindLocation(before));
 			}
 
-			void MoveBefore(const T_ &index, int before) {
+			/// this method moves the given object in the collection in front of the reference
+			void MoveBefore(const T_ &index, unsigned before) {
 				MoveBefore(FindLocation(index), before);
 			}
 
+			/// this method moves the given object in the collection in front of the reference
 			void MoveBefore(const T_ &index, const T_ *before) {
 				MoveBefore(FindLocation(index), FindLocation(before));
 			}
 
+			/// this method moves the given object in the collection in front of the reference
 			void MoveBefore(const T_ &index, const T_ &before) {
 				MoveBefore(FindLocation(index), FindLocation(before));
 			}
 
-			/// TODO Return an adder interface
-			////Adds a new item to the end of the list
-			void operator +=(T_* Data) {
+			/// Adds items to the end of the list. Use comma to add more than one item
+			Adder operator +=(T_* Data) {
 				Add(Data);
-			}
-			////Adds a new item to the end of the list
-			void operator +=(T_& data) {
-				Add(&data);
+
+				return Adder(*this);
 			}
 
-			////Removes an item from the collection using its index
+			/// Adds items to the end of the list. Use comma to add more than one item
+			Adder operator +=(T_& data) {
+				Add(&data);
+
+				return Adder(*this);
+			}
+
+			/// Removes an item from the collection using its index
 			void Remove(int index) {
 				list.erase(index);
 			}
 
-			////Removes an item from the collection using its pointer
-			void Remove(const T_ *Item) {
-				int i;
-
-				//TODO use stl find
-				for(i=0;i<list.size();i++) {
-					if(list[i]==Item)
-						break;
-				}
-
-				Remove(i);
+			/// Removes an item from the collection using its pointer
+			void Remove(const T_ *item) {
+				Remove(FindLocation(item));
 			}
 
-			////Removes an item from the collection using its reference
+			/// Removes an item from the collection using its reference
 			void Remove(const T_ &data) {
 				Remove(&data);
 			}
 
-			////Removes an item from the collection using its index
-			Collection &operator -=(const int Index) {
-				Remove(Index);
-
-				return *this;
-			}
-
-			////Removes an item from the collection using its pointer
-			Collection &operator -=(const T_ *Item) {
-				Remove(Item);
-
-				return *this;
-			}
-
-			////Removes an item from the collection using its reference
-			Collection &operator -=(const T_& data) {
-				Remove(&data);
-
-				return *this;
-			}
-
-			////Deletes an item from the collection using its index.
+			/// Deletes an item from the collection using its index.
 			/// Deleting both removes the item from the list and free the item itself.
 			void Delete(int index) {
 				delete list[index];
@@ -332,88 +439,76 @@ namespace Gorgon {
 				list.erase(list.begin()+index);
 			}
 
-			////Deletes an item from the collection using its pointer.
+			/// Deletes an item from the collection using its pointer.
 			/// Deleting both removes the item from the list and free the item itself.
 			/// If given item does not exists, it is not modified.
-			void Delete(const T_ *Item) {
-				int i;
-
-				for(i=0;i<list.size();i++) {
-					if(list[i]==Item)
-						break;
-				}
-
-				if(i==list.size())
-					return;
-
-				Delete(i);
+			void Delete(const T_ *item) {
+				Delete(FindLocation(item));
 			}
 
-			////Deletes an item from the collection using its reference.
+			/// Deletes an item from the collection using its reference.
 			/// Deleting both removes the item from the list and free the item itself.
 			void Delete(T_& data) {
 				Delete(&data);
 			}
 
-			////Searches the position of a given item, if not found end iterator returned
-			Iterator Find(const T_ *Item) {
+			/// Searches the position of a given item, if not found end iterator returned
+			Iterator Find(const T_ *item) {
 				int i;
 				for(i=0;i<list.GetSize();i++) {
-					if(Item==list[i])
+					if(item==list[i])
 						return Iterator(*this, i);
 				}
 
 				return Iterator(*this, -1);
 			}
 
-			////Searches the position of a given item, if not found end iterator returned
-			Iterator Find(const T_ &Item) {
-				return Find(&Item);
+			/// Searches the position of a given item, if not found end iterator returned
+			Iterator Find(const T_ &item) {
+				return ConstIterator(*this, FindLocation(item));
 			}
 
-			////Searches the position of a given item, if not found end iterator returned
-			ConstIterator Find(const T_ *Item) const {
-				int i;
-				for(i=0;i<list.GetSize();i++) {
-					if(Item==list[i])
-						return ConstIterator(*this, i);
-				}
-
-				return ConstIterator(*this, -1);
+			/// Searches the position of a given item, if not found end iterator returned
+			ConstIterator Find(const T_ *item) const {
+				return ConstIterator(*this, FindLocation(item));
 			}
 
-			////Searches the position of a given item, if not found end iterator returned
-			ConstIterator Find(const T_ &Item) const {
-				return Find(&Item);
+			/// Searches the position of a given item, if not found end iterator returned
+			ConstIterator Find(const T_ &item) const {
+				return Find(&item);
 			}
 
-			////Searches the position of a given item, if not found -1 is returned
-			int FindLocation(const T_ *Item) const {
-				int i;
-				for(i=0;i<list.GetSize();i++) {
-					if(Item==list[i])
-						return i;
-				}
+			/// Searches the position of a given item, if not found -1 is returned
+			int FindLocation(const T_ *item) const {
+				auto it=find(list.begin(), list.end(), item);
 
-				return -1;
+				if(it==list.end())
+					return -1;
+				else
+					return it-list.begin();
 			}
 
-			////Searches the position of a given item, if not found -1 is returned
-			int FindLocation(const T_ &Item) const {
-				return FindLocation(&Item);
+			/// Searches the position of a given item, if not found -1 is returned
+			int FindLocation(const T_ &item) const {
+				return FindLocation(&item);
 			}
 
+			/// Sorts items in the collection. Regular std::sort cannot work on collections as
+			/// assignment will copy objects
 			template<class P_>
 			void Sort(P_ predicate=P_()) {
-				std::sort(list.begin(), list.end(), elementsorterfrompointer<T_, P_>(predicate));
+				std::sort(list.begin(), list.end(), sorter<T_, P_>(predicate));
 			}
 
+			/// Sorts items in the collection. Regular std::sort cannot work on collections as
+			/// assignment will copy objects
 			void Sort() {
-				std::sort(list.begin(), list.end(), elementsorterfrompointer<T_, std::less<T_>>(std::less<T_>()));
+				std::sort(list.begin(), list.end(), sorter<T_, std::less<T_>>(std::less<T_>()));
 			}
 
-			T_ &Get(int Index) {
-				T_ *r=get_(Index);
+			/// Returns the element at the given index. Checks and throws if out of range
+			T_ &Get(int index) {
+				T_ *r=get_(index);
 
 				if(r==NULL)
 					throw std::out_of_range("Index out of range");
@@ -421,8 +516,9 @@ namespace Gorgon {
 				return *r;
 			}
 
-			const T_ &Get(int Index) const {
-				const T_ *r=get_(Index);
+			/// Returns the element at the given index. Checks and throws if out of range
+			const T_ &Get(int index) const {
+				const T_ *r=get_(index);
 
 				if(r==NULL)
 					throw std::out_of_range("Index out of range");
@@ -430,70 +526,62 @@ namespace Gorgon {
 				return *r;
 			}
 
-			////Returns the item at a given index
-			T_& operator [] (int Index) {
-				return Get(Index);
+			/// Returns the item at a given index
+			T_& operator [] (int index) {
+				return *list[index];
 			}
 
-			//Returns the item at a given index
+			/// Returns the item at a given index
 			const T_& operator [] (int Index) const  {
-				return Get(Index);
+				return *list[index];
 			}
 
-			////Returns the item at a given index
-			T_* operator () (int Index) {
-				return get_(Index);
-			}
-
-			//Returns the item at a given index
-			const T_* operator () (int Index) const {
-				return get_(Index);
-			}
-
+			/// begin iterator
 			Iterator begin() {
 				return Iterator(*this, 0);
 			}
 
+			/// end iterator
 			Iterator end() {
 				return Iterator(*this, list.size());
 			}
 
-			//Template compatibility for collections, lists
+			/// returns the iterator to the first item
 			Iterator First() {
 				return Iterator(*this, 0);
 			}
 
-			//Template compatibility for collections, lists
+			/// returns the iterator to the last item
 			Iterator Last() {
 				return Iterator(*this, list.size()-1);
 			}
 
+			/// begin iterator
 			ConstIterator begin() const {
 				return ConstIterator(*this, 0);
 			}
 
+			/// end iterator
 			ConstIterator end() const {
 				return ConstIterator(*this, list.size());
 			}
 
-			//Template compatibility for collections, lists
+			/// returns the iterator to the first item
 			ConstIterator First() const {
 				return ConstIterator(*this, 0);
 			}
 
-			//Template compatibility for collections, lists
+			/// returns the iterator to the last item
 			ConstIterator Last() const {
 				return ConstIterator(*this, list.size()-1);
 			}
 
-			//Template compatibility for collections
-			////Removes all items from the list, allocated memory for the
-			/// list stays
+			/// Removes all items from the list, allocated memory for the list stays
 			void Clear() {
 				list.clear();
 			}
 
-			////Clears the contents of the collection and releases the memory
+			/// Clears the contents of the collection and releases the memory
 			/// used for the list. Items are not freed.
 			void Collapse() {
 				std::vector<T_*> newlist;
@@ -502,27 +590,34 @@ namespace Gorgon {
 				swap(newlist, list);	
 			}
 
-			//Template compatibility for collections
-			////Destroys the entire collection, effectively deleting the contents
-			/// and the list {
-			void Destroy() {
+			/// Deletes and removes all elements in the collection
+			void DeleteAll() {
 				int i;
+				for(auto e : list)
+					delete e;
+
+				list.clear();
+			}
+
+			/// Destroys the entire collection, effectively deleting the contents
+			/// and the list
+			void Destroy() {
 				for(auto e : list)
 					delete e;
 
 				std::vector<T_*> newlist;
 				using std::swap;
-				
+
 				swap(newlist, list);
 			}
 
-			//Template compatibility for lists
-			////Allocates memory for the given amount of items
+			/// Allocates memory for the given amount of items
 			void Reserve(int amount) {
 				list.reserve(amount);
 			}
 
 		protected:
+			///@cond INTERNAL
 			std::vector<T_ *> list;
 
 			void removeat(int absolutepos) {
@@ -546,8 +641,13 @@ namespace Gorgon {
 
 				return list[Index];
 			}
+			///@endcond
 		};
 
+		template<class T_>
+		inline void swap(Collection<T_> &l, Collection<T_> &r) {
+			l.Swap(r);
+		}
 	} 
 }
 

@@ -25,8 +25,8 @@ TEST_CASE( "Point constructors", "[Point]" ) {
 	Point  p5;
 	Pointf p6;
 	Pointf p7;
-	Point  p8=Point::CreateFrom(p1, 4, 0.785398f);   //45 degrees
-	Pointf p9=Pointf::CreateFrom(p2, 4.1, 0.785398f); //45 degrees
+	Point  p8=Point::FromVector(4, 0.785398f, p1);   //45 degrees
+	Pointf p9=Pointf::FromVector(4.1, 0.785398f, p2); //45 degrees
 
 	p5=p2;
 	p6=p2;

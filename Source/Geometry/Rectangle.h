@@ -56,7 +56,7 @@ namespace Gorgon { namespace Geometry {
 
 		/// Converting constructor from bounds
 		template <class O_>
- 		basic_Rectangle(const basic_Bounds<O__> &bounds) : X(T_(bounds.Left)), Y(T_(bounds.Top)), 
+ 		basic_Rectangle(const basic_Bounds<O_> &bounds) : X(T_(bounds.Left)), Y(T_(bounds.Top)), 
 			Width(T_(bounds.Right-bounds.Left)), Height(T_(bounds.Bottom-bounds.Top))
 		{ }		
 			
