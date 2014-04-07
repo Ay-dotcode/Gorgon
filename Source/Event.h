@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <vector>
 #include <functional>
+#include <mutex>
 
 #include "Types.h"
 #include "Container/Collection.h"
@@ -178,7 +179,9 @@ namespace Gorgon {
 	/// RegisterNamespace, RegisterMember and RegisterLambda methods can be used.
 	template<class Source_=Empty, typename... Params_>
 	class Event {		
-	public:		
+	public:	
+
+		typedef intptr_t Token;
 		
 		Event() : source(nullptr) {
 			static_assert( std::is_same<Source_, Empty>::value , "Empty constructor cannot be used." );
@@ -195,28 +198,47 @@ namespace Gorgon {
 		Event &operator =(const Event &) = delete;
 
 		template<class F_>
-		void Register(F_ fn) {
-			handlers.Add(internal::create_handler<F_, Source_, Params_...>(fn));
+		intptr_t Register(F_ fn) {
+			auto &handler=internal::create_handler<F_, Source_, Params_...>(fn);
+
+			handlers.Add(handler);
+
+			return reinterpret_cast<intptr_t>(&handler);
 		}
 
 		template<class C_, typename... A_>
-		void Register(C_ &c, void(C_::*fn)(A_...)) {
+		Token Register(C_ &c, void(C_::*fn)(A_...)) {
 			std::function<void(A_...)> f=internal::make_func(fn, &c);
 
-			handlers.Add(internal::create_handler<decltype(f), Source_, Params_...>(f));
+			return Register(f);
 		}
 
+		void Unregister(Token token) {
+			handlers.Delete(reinterpret_cast<internal::HandlerBase<Source_, Params_...>*>(token));
+		}
 
 		void operator()(Params_... args) {
+			//prevent recursion
+			locker.lock();
+			if(infire) {
+				locker.unlock();
+				return;
+			}
+			infire=true;
+			locker.unlock();
+
 			for(auto &h : handlers) {
 				h.Fire(source, args...);
 			}
+
+			infire=false;
 		}
 		
 	private:
+		std::mutex locker;
+		bool infire=false;
 		Source_ *source;
 		Container::Collection<internal::HandlerBase<Source_, Params_...>> handlers;
 	};
-	
 	
 }

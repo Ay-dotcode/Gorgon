@@ -11,24 +11,27 @@ public:
 
 	void print() { std::cout<<a<<std::endl; }
 
-	void p(int i, int j) { std::cout<<a<<" "<<i<<" "<<j<<std::endl; }
+	void p(A &other,int i, int j) { std::cout<<other.a<<":::"<<a<<" "<<i<<" "<<j<<std::endl; }
 
 	int a;
 };
 
-void fn(A &a, int i,int j) {
-	//std::cout<<a.a<<" event: "<<i<<" "<<j<<std::endl;
-	std::cout<<"working..."<<std::endl;
+void fn(int i,int j) {
+	std::cout<<" event: "<<i<<" "<<j<<std::endl;
+	
 }
 
 int main() {
 	A a(2), b(5);
 	Gorgon::Event<A, int, int> event(a);
 
-	a.a=5;
+	a.a=15;
 
-	std::function<void(A&,int,int)> f=fn;
-	event.Register(b, &A::p);
+	auto token=event.Register(b, &A::p);
+	event.Register(fn);
+	event.Register([]{ std::cout<<"working..."<<std::endl; });
+
+	event.Unregister(token);
 
 	event(3, 4);
 }
