@@ -6,6 +6,8 @@
 #include <functional>
 #include <mutex>
 
+#include <assert.h>
+
 #include "Types.h"
 #include "Container/Collection.h"
 
@@ -16,15 +18,17 @@ namespace Gorgon {
 	namespace internal  {
 		template<class Source_, typename... Params_>
 		struct HandlerBase {
-			virtual void Fire(Source_ *, Params_...) = 0;
+			virtual void Fire(std::mutex &locker, Source_ *, Params_...) = 0;
 		};
 
 		template<class Source_, typename... Params_>
 		struct EmptyHandlerFn : public HandlerBase<Source_, Params_...> {
 			EmptyHandlerFn(std::function<void()> fn) : fn(fn) { }
 
-			virtual void Fire(Source_ *, Params_...) {
-				fn();
+			virtual void Fire(std::mutex &locker, Source_ *, Params_...) {
+				auto f=fn;
+				locker.unlock();
+				f();
 			}
 
 			std::function<void()> fn;
@@ -34,8 +38,10 @@ namespace Gorgon {
 		struct ArgsHandlerFn : public HandlerBase<Source_, Params_...> {
 			ArgsHandlerFn(std::function<void(Params_...)> fn) : fn(fn) { }
 
-			virtual void Fire(Source_ *, Params_... args) {
-				fn(args...);
+			virtual void Fire(std::mutex &locker, Source_ *, Params_... args) {
+				auto f=fn;
+				locker.unlock();
+				f(args...);
 			}
 
 			std::function<void(Params_...)> fn;
@@ -43,10 +49,14 @@ namespace Gorgon {
 
 		template<class Source_, typename... Params_>
 		struct FullHandlerFn : public HandlerBase<Source_, Params_...> {
+			static_assert(!std::is_same<Source_, Empty>::value, "No source class exists for this event (Empty should not be passed around)");
+			
 			FullHandlerFn(std::function<void(Source_&, Params_...)> fn) : fn(fn) { }
 
-			virtual void Fire(Source_ *source, Params_... args) {
-				fn(*source, args...);
+			virtual void Fire(std::mutex &locker, Source_ *source, Params_... args) {
+				auto f=fn;
+				locker.unlock();
+				f(*source, args...);
 			}
 
 			std::function<void(Source_&, Params_...)> fn;
@@ -169,43 +179,107 @@ namespace Gorgon {
 	/// as event handlers. These are:
 	///
 	/// * <b>`void fn()`</b> neither event source nor event parameters are supplied. 
-	/// * <b>`void fn(Source_ &source)`</b> event source will be passed
 	/// * <b>`void fn(Params_... params)`</b> parameters will be passed
-	/// * <b>`void fn(Source_ &source, Params_... params)`</b> both the source and parameters
+	/// * <b>`void fn(Source_ &source, Params_... params)`</b> the source and parameters
 	///   will be passed
 	/// 
 	/// Class members or lambda functions can also be used as event handlers. An
-	/// event handler can be registered using Register function. If necessary, 
-	/// RegisterNamespace, RegisterMember and RegisterLambda methods can be used.
+	/// event handler can be registered using Register function.
 	template<class Source_=Empty, typename... Params_>
 	class Event {		
 	public:	
 
+		/// Data type for tokens
 		typedef intptr_t Token;
 		
+		/// Constructor for empty source
 		Event() : source(nullptr) {
 			static_assert( std::is_same<Source_, Empty>::value , "Empty constructor cannot be used." );
 		}
 		
+		/// Constructor for Class specific source
 		Event(Source_ &source) : source(&source) {
 			static_assert( !std::is_same<Source_, Empty>::value, "Filling constructor is not required, use the default." );
 		}
-
-		~Event() { handlers.Destroy(); }
 		
+		/// Move constructor
+		Event(Event &&event) : source(nullptr) {
+			Swap(event);
+		}
+		
+
+		/// Destructor
+		~Event() {
+			assert( ("An event cannot be destroyed while its being fired.", fire.try_lock()) );
+			std::lock_guard<std::mutex> g(access);
+			
+			handlers.Destroy();
+			
+			fire.unlock();
+		}
+		
+		/// Copy constructor is disabled
 		Event(const Event &) = delete;
 		
+		/// Copy assignment is disabled
 		Event &operator =(const Event &) = delete;
 
+		/// Move assignment
+		Event &operator =(const Event &&other) {
+			if(&other==this) return *this;
+
+			std::lock_guard<std::mutex> g(access);
+
+			if(!fire.try_lock()) 
+				throw std::runtime_error("An event cannot be moved into while its being fired.");
+
+			handlers.Destroy();
+			
+			source=nullptr;
+			Swap(other);
+			
+			fire.unlock();
+		}
+		
+		/// Swaps two Events, used for move semantics
+		void Swap(Event &other) {
+			if(&other==this) return;
+			
+			using std::swap;
+			
+			if(std::try_lock(fire, other.fire)!=-1) {
+				throw std::runtime_error("Events cannot be swap while its being fired.");
+			}
+			
+			swap(source, other.source);
+			swap(handlers, other.handlers);
+
+			fire.unlock();
+			other.fire.unlock();
+		}
+
+		/// Registers a new function to be called when this event is triggered. This function can
+		/// be called from event handler of the same event. The registered event handler will be
+		/// called immediately in this case.
 		template<class F_>
-		intptr_t Register(F_ fn) {
+		Token Register(F_ fn) {
 			auto &handler=internal::create_handler<F_, Source_, Params_...>(fn);
 
+			std::lock_guard<std::mutex> g(access);
 			handlers.Add(handler);
 
 			return reinterpret_cast<intptr_t>(&handler);
 		}
 
+		/// Registers a new function to be called when this event is triggered. This variant is 
+		/// designed to be used with member functions. **Example:**
+		/// @code
+		/// A a;
+		/// b.ClickEvent.Register(a, A::f);
+		/// @endcode
+		///
+		/// This function can be called from event handler of the same event. The registered 
+		/// event handler will be called immediately in this case.
 		template<class C_, typename... A_>
 		Token Register(C_ &c, void(C_::*fn)(A_...)) {
 			std::function<void(A_...)> f=internal::make_func(fn, &c);
@@ -213,32 +287,71 @@ namespace Gorgon {
 			return Register(f);
 		}
 
+		/// Unregisters the given marked with the given token. This function performs no
+		/// operation if the token is not contained within this event. A handler can be
+		/// unregistered safely while the event is being fired. In this case, if the event that
+		/// is being deleted is different from the current event handler, the deleted event
+		/// handler might have already been fired. If not, it will not be fired.
 		void Unregister(Token token) {
-			handlers.Delete(reinterpret_cast<internal::HandlerBase<Source_, Params_...>*>(token));
+			std::lock_guard<std::mutex> g(access);
+
+			auto item=reinterpret_cast<internal::HandlerBase<Source_, Params_...>*>(token);
+			
+			auto l=handlers.FindLocation(item);
+			if(l==-1) return;
+			
+			if(iterator.CurrentPtr()==item) {
+				handlers.Delete(l);
+				
+				//Collection iterator can point element -1
+				iterator.Previous(); 
+			}
+			else {
+				handlers.Delete(l);
+			}
 		}
 
+		/// Fire this event. This function will never allow recursive firing, i.e. an event handler
+		/// cannot cause this event to be fired again.
 		void operator()(Params_... args) {
 			//prevent recursion
-			locker.lock();
-			if(infire) {
-				locker.unlock();
-				return;
-			}
-			infire=true;
-			locker.unlock();
+			if(!fire.try_lock()) return;
 
-			for(auto &h : handlers) {
-				h.Fire(source, args...);
+			try {
+				for(iterator=handlers.begin(); iterator.IsValid(); iterator.Next()) {
+					access.lock();
+					// fire method will unlock access after it creates a local copy of the function
+					// this allows the fired object to be safely deleted.
+					iterator->Fire(access, source, args...);
+				}
 			}
-
-			infire=false;
+			catch(...) {
+				//unlock everything if something goes bad
+				
+				//just incase
+				access.unlock();
+				
+				fire.unlock();
+				
+				throw;
+			}
+			
+			fire.unlock();
 		}
 		
+		/// value for an empty token
+		static const Token EmptyToken = 0;
+		
 	private:
-		std::mutex locker;
-		bool infire=false;
+		std::mutex fire, access;
 		Source_ *source;
 		Container::Collection<internal::HandlerBase<Source_, Params_...>> handlers;
+		typename Container::Collection<internal::HandlerBase<Source_, Params_...>>::Iterator iterator;
 	};
 	
+	/// Swaps two events
+	template<class Source_, class... Args_>
+	void swap(Event<Source_, Args_...> &l, Event<Source_, Args_...> &r) {
+		l.Swap(r);
+	}
 }

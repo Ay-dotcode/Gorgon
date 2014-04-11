@@ -593,6 +593,7 @@ namespace Gorgon { namespace Geometry {
 
 	/// Rotates the given bounds by the given angle. Rotation is performed as if given bounds is a rectangle and
 	/// the result is the bounds of this rotated rectangle. Center of the bounds is used as origin. 
+	/// @param  bounds object to be rotated
 	/// @param  angle is the Euler rotation angle in radians
 	template<class T_>
 	void Rotate(basic_Bounds<T_> &bounds, Float angle) {
@@ -614,7 +615,9 @@ namespace Gorgon { namespace Geometry {
 	}
 
 	/// Rotates the given bounds by the given angle around the given origin.
+	/// @param  bounds object to be rotated
 	/// @param  angle is the Euler rotation angle in radians
+	/// @param  origin of the rotation
 	template<class T_>
 	void Rotate(basic_Bounds<T_> &bounds, Float angle, const basic_Point<T_> &origin) {
 		basic_Point<T_> tl = bounds.TopLeft();

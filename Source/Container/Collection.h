@@ -42,7 +42,7 @@ namespace Gorgon {
 				friend class Collection;
 
 			public:
-				/// Default constructor, creates an iterator pointing to end
+				/// Default constructor, creates an iterator pointing to invalid location
 				Iterator_() : Col(NULL), Offset(-1) {
 				}
 				/// Copies another iterator
@@ -167,7 +167,7 @@ namespace Gorgon {
 			/// @warning Visual studio erroneously allows rvalues (function return values or temporaries)
 			/// to be bound to normal references. This means, its possible to pass those without getting 
 			/// an error. This problem is fixed by setting warning 4239 to cause an error. If working with
-			/// older libraries that require this behavior, use `#pragma warning(disable: 4329)` before,
+			/// older libraries that require this behavior, @code use #pragma warning(disable: 4329) @endcode before,
 			/// including necessary header.
 			template<typename... Args_>
 			Collection(T_ &t, Args_ &... args) {
@@ -179,7 +179,7 @@ namespace Gorgon {
 			/// @warning Visual studio erroneously allows rvalues (function return values or temporaries)
 			/// to be bound to normal references. This means, its possible to pass those without getting 
 			/// an error. This problem is fixed by setting warning 4239 to cause an error. If working with
-			/// older libraries that require this behavior, use `#pragma warning(disable: 4329)` before,
+			/// older libraries that require this behavior, use @code #pragma warning(disable: 4329) @endcode before,
 			/// including necessary header.
 			template<typename... Args_>
 			Collection(T_ *t, Args_ *... args) {
@@ -258,7 +258,7 @@ namespace Gorgon {
 				return *t;
 			}
 
-			//this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference
 			void Insert(T_* data, int before) {
 				if(std::find(list.begin(), list.end(), data)!=list.end()) return;
 
@@ -274,27 +274,27 @@ namespace Gorgon {
 				list[before]=data;
 			}
 
-			//this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference
 			void Insert(T_& data, unsigned before) {
 				Insert(&data, before);
 			}
 
-			//this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference
 			void Insert(T_* data, const T_ *before) {
 				Insert(data, FindLocation(before));
 			}
 
-			//this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference
 			void Insert(T_& data, const T_ *before) {
 				Insert(&data, FindLocation(before));
 			}
 
-			//this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference
 			void Insert(T_* data, const T_ &before) {
 				Insert(data, FindLocation(before));
 			}
 
-			//this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference
 			void Insert(T_& data, const T_ &before) {
 				Insert(&data, FindLocation(before));
 			}
@@ -421,12 +421,17 @@ namespace Gorgon {
 				list.erase(index);
 			}
 
-			/// Removes an item from the collection using its pointer
+			/// Removes an item from the collection using its pointer. If the item does
+			/// not exists, nothing is done.
 			void Remove(const T_ *item) {
-				Remove(FindLocation(item));
+				auto l=FindLocation(item);
+				if(l==-1) return;
+				
+				Remove(l);
 			}
 
-			/// Removes an item from the collection using its reference
+			/// Removes an item from the collection using its reference. If the item does
+			/// not exists, nothing is done.
 			void Remove(const T_ &data) {
 				Remove(&data);
 			}
@@ -441,13 +446,19 @@ namespace Gorgon {
 
 			/// Deletes an item from the collection using its pointer.
 			/// Deleting both removes the item from the list and free the item itself.
-			/// If given item does not exists, it is not modified.
+			/// If given item does not exists, this function deletes the item and does nothing else
 			void Delete(const T_ *item) {
-				Delete(FindLocation(item));
+				auto l=FindLocation(item);
+				if(l==-1) {
+					delete item;
+					return;
+				}
+				Delete(l);
 			}
 
 			/// Deletes an item from the collection using its reference.
 			/// Deleting both removes the item from the list and free the item itself.
+			/// If given item does not exists, this function deletes the item and does nothing else
 			void Delete(T_& data) {
 				Delete(&data);
 			}
@@ -644,6 +655,7 @@ namespace Gorgon {
 			///@endcond
 		};
 
+		/// Swaps two collections
 		template<class T_>
 		inline void swap(Collection<T_> &l, Collection<T_> &r) {
 			l.Swap(r);

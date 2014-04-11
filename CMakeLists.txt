@@ -30,3 +30,5 @@ INCLUDE(Scripts/Testing.cmake)
 INCLUDE(Scripts/Doxygen.cmake)
 
 ADD_LIBRARY(Gorgon STATIC ${All})
+
+TARGET_LINK_LIBRARIES(Gorgon ${Libs})

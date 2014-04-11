@@ -255,7 +255,7 @@ namespace Gorgon {
 
 			/// Calculates the slope of the line formed from the given point
 			/// to this point.
-			/// @param  origin is the starting point of the line
+			/// @param  point is the starting point of the line
 			Float Slope(const basic_Point &point) const {
 				return (Float)(Y-point.Y)/(X-point.X);
 			}
@@ -390,6 +390,7 @@ namespace Gorgon {
 
 
 		/// Rotates the given point by the given angle.
+		/// @param  point the point to rotate
 		/// @param  angle is the Euler rotation angle in radians
 		template<class T_>
 		void Rotate(basic_Point<T_> &point, Float angle) {
@@ -402,7 +403,9 @@ namespace Gorgon {
 		}
 
 		/// Rotates the given point by the given angle around the given origin.
+		/// @param  point the point to rotate
 		/// @param  angle is the Euler rotation angle in radians
+		/// @param  origin is the origin of rotation
 		template<class T_>
 		void Rotate(basic_Point<T_> &point, Float angle, const basic_Point<T_> &origin) {
 			Float cosa=std::cos(angle), sina=std::sin(angle);

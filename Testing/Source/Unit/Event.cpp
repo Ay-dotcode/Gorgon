@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <Source/Event.h>
+#include <Source/WindowManager.h>
 
 class A {
 public:
@@ -27,11 +28,22 @@ int main() {
 
 	a.a=15;
 
-	auto token=event.Register(b, &A::p);
+	event.Register(b, &A::p);
 	event.Register(fn);
-	event.Register([]{ std::cout<<"working..."<<std::endl; });
-
-	event.Unregister(token);
+	auto token=event.EmptyToken;
+	token=event.Register([&]{ 
+		std::cout<<"working..."<<std::endl;
+		event.Unregister(token);
+		token=event.EmptyToken;
+	});
 
 	event(3, 4);
+	
+	event(2, 2);
+	
+	Gorgon::WindowManager::Initialize();
+	
+	Gorgon::WindowManager::Window win({200,150}, "My wind");
+	
+	std::cin>>a.a;
 }

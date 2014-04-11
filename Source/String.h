@@ -121,61 +121,61 @@ namespace Gorgon {
 		}
 
 		template <>
-		char To<char>(const std::string &value) {
+		inline char To<char>(const std::string &value) {
 			char *n;
 			return (char)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned char To<unsigned char>(const std::string &value) {
+		inline unsigned char To<unsigned char>(const std::string &value) {
 			char *n;
 			return (unsigned char)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		short To<short>(const std::string &value) {
+		inline short To<short>(const std::string &value) {
 			char *n;
 			return (short)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned short To<unsigned short>(const std::string &value) {
+		inline unsigned short To<unsigned short>(const std::string &value) {
 			char *n;
 			return (unsigned short)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		int To<int>(const std::string &value) {
+		inline int To<int>(const std::string &value) {
 			char *n;
 			return (int)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned To<unsigned>(const std::string &value) {
+		inline unsigned To<unsigned>(const std::string &value) {
 			char *n;
 			return (unsigned)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		long To<long>(const std::string &value) {
+		inline long To<long>(const std::string &value) {
 			char *n;
 			return (long)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned long To<unsigned long>(const std::string &value) {
+		inline unsigned long To<unsigned long>(const std::string &value) {
 			char *n;
 			return (unsigned long)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		long long To<long long>(const std::string &value) {
+		inline long long To<long long>(const std::string &value) {
 			char *n;
 			return (long long)std::strtol(value.c_str(), &n, 10);
 		}
 
 		template <>
-		unsigned long long To<unsigned long long>(const std::string &value) {
+		inline unsigned long long To<unsigned long long>(const std::string &value) {
 			char *n;
 			return (unsigned long long)std::strtol(value.c_str(), &n, 10);
 		}
@@ -196,61 +196,61 @@ namespace Gorgon {
 		}
 		
 		template <>
-		char To<char>(const char *value) {
+		inline char To<char>(const char *value) {
 			char *n;
 			return (char)std::strtol(value, &n, 10);
 		}
 
 		template <>
-		unsigned char To<unsigned char>(const char *value) {
+		inline unsigned char To<unsigned char>(const char *value) {
 			char *n;
 			return (unsigned char)std::strtol(value, &n, 10);
 		}
 
 		template <>
-		short To<short>(const char *value) {
+		inline short To<short>(const char *value) {
 			char *n;
 			return (short)std::strtol(value, &n, 10);
 		}
 
 		template <>
-		unsigned short To<unsigned short>(const char *value) {
+		inline unsigned short To<unsigned short>(const char *value) {
 			char *n;
 			return (unsigned short)std::strtol(value, &n, 10);
 		}
 
 		template <>
-		int To<int>(const char *value) {
+		inline int To<int>(const char *value) {
 			char *n;
 			return (int)std::strtol(value, &n, 10);
 		}
 
 		template <>
-		unsigned To<unsigned>(const char *value) {
+		inline unsigned To<unsigned>(const char *value) {
 			char *n;
 			return (unsigned)std::strtol(value, &n, 10);
 		}
 
 		template <>
-		long To<long>(const char *value) {
+		inline long To<long>(const char *value) {
 			char *n;
 			return (long)std::strtol(value, &n, 10);
 		}
 
 		template <>
-		unsigned long To<unsigned long>(const char *value) {
+		inline unsigned long To<unsigned long>(const char *value) {
 			char *n;
 			return (unsigned long)std::strtol(value, &n, 10);
 		}
 
 		template <>
-		long long To<long long>(const char *value) {
+		inline long long To<long long>(const char *value) {
 			char *n;
 			return (long long)std::strtol(value, &n, 10);
 		}
 
 		template <>
-		unsigned long long To<unsigned long long>(const char *value) {
+		inline unsigned long long To<unsigned long long>(const char *value) {
 			char *n;
 			return (unsigned long long)std::strtol(value, &n, 10);
 		}

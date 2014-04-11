@@ -4,9 +4,9 @@ SET(Local
 	Geometry
 	Time
 	String
+	WindowManager
 	Any.h
 	Event.h
 	Threading.h
 	Types.h
-	WindowManager.h
 )
