@@ -1,68 +1,200 @@
-#ifdef WIN32
-#	pragma warning(disable: 4996)
-#	include "OS.h"
-#	include "input.h"
-#	include "..\Utils\Point2D.h"
-#	include <stdio.h>
-#	include <stdlib.h>
 
-
-	using namespace gge::utils;
-	using namespace gge::input;
-	using namespace gge::input::system;
-
-//#	define WINVER 0x0500
-//#	define _WIN32_WINNT 0x0500
-
-#ifdef WIN32
-#	undef APIENTRY
-#	undef WINGDIAPI
-#endif
-
-#	include <windows.h>
-#	include <shlobj.h>
-#	include <OleIdl.h>
-#	include <sys\stat.h>
-#	include <io.h>
-#	include "Pointer.h"
-#	include "Input.h"
-#	include "GGEMain.h"
-#	include "Layer.h"
-#	include "Image.h"
-#	include "Shlwapi.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <io.h>
 #include <fcntl.h>
-#include <xiosbase>
 
-#	undef CreateWindow
-#	undef Rectangle
+#include "../OS.h"
+#include "../Main.h"
 
-#	ifndef WM_MOUSEWHEEL
-#		define WM_MOUSEWHEEL					0x020A
-#		define GET_WHEEL_DELTA_WPARAM(wParam)  ((short)HIWORD(wParam))
-#	endif
+#include "../Filesystem.h"
 
 
-#	ifndef WM_XBUTTONDOWN
-#		define WM_XBUTTONDOWN                  0x020B
-#		define WM_XBUTTONUP                    0x020C
-#		define WM_XBUTTONDBLCLK                0x020D
+#define WINDOWS_LEAN_AND_MEAN
+#define SECURITY_WIN32
 
-#		define GET_XBUTTON_WPARAM(wParam)      (HIWORD(wParam))
+#include <windows.h>
+#include <Shlobj.h>
+#include <Security.h>
+#include <Secext.h>
+
+#ifndef WM_MOUSEWHEEL
+#	define WM_MOUSEWHEEL					0x020A
+#	define GET_WHEEL_DELTA_WPARAM(wParam)  ((short)HIWORD(wParam))
 #endif
 
 
-#	ifndef WM_MOUSEHWHEEL
-#		define WM_MOUSEHWHEEL					0x020E
-#	endif
+#ifndef WM_XBUTTONDOWN
+#	define WM_XBUTTONDOWN                  0x020B
+#	define WM_XBUTTONUP                    0x020C
+#	define WM_XBUTTONDBLCLK                0x020D
 
-#	undef CreateDirectory
-#	undef DeleteFile
+#	define GET_XBUTTON_WPARAM(wParam)      (HIWORD(wParam))
+#endif
 
-	//extern "C" {
-	//	__declspec(dllimport) unsigned long __stdcall timeGetTime(void);
-	//}
 
-	HINSTANCE Instance;
+#ifndef WM_MOUSEHWHEEL
+#	define WM_MOUSEHWHEEL					0x020E
+#endif
+
+namespace Gorgon { namespace OS {
+
+	namespace User {
+		std::string GetUsername() {
+			CHAR username[256];
+			username[0]=0;
+
+			DWORD s=256;
+			GetUserName(username, &s);
+
+			return username;
+		}
+
+		std::string GetName() {
+			CHAR name[256];
+			name[0]=0;
+
+			DWORD s=256;
+			GetUserNameEx(NameDisplay, name, &s);
+
+			return name;
+		}
+
+		std::string GetDocumentsPath() {
+			CHAR my_documents[MAX_PATH];
+			my_documents[0]=0;
+
+			SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+
+			std::string s=my_documents;
+
+			return Filesystem::Canonical(my_documents);
+		}
+
+		std::string GetHomePath() {
+			CHAR profile[MAX_PATH];
+			profile[0]=0;
+
+			SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, SHGFP_TYPE_CURRENT, profile);
+
+			std::string s=profile;
+
+			return Filesystem::Canonical(profile);
+		}
+
+		std::string GetDataPath() {
+			CHAR path[MAX_PATH];
+			path[0]=0;
+
+			SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, path);
+
+			std::string s=path;
+
+			return Filesystem::Canonical(path);
+		}
+	}
+
+	void OpenTerminal() {
+		int hConHandle;
+
+		long lStdHandle;
+
+		CONSOLE_SCREEN_BUFFER_INFO coninfo;
+
+		FILE *fp;
+
+		// allocate a console for this app
+
+		AllocConsole();
+
+		// set the screen buffer to be big enough to let us scroll text
+
+		GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),
+
+			&coninfo);
+
+		coninfo.dwSize.Y = 1024;
+
+		SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),
+
+			coninfo.dwSize);
+
+		// redirect unbuffered STDOUT to the console
+
+		lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+
+		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+
+		fp = _fdopen(hConHandle, "w");
+
+		*stdout = *fp;
+
+		setvbuf(stdout, NULL, _IONBF, 0);
+
+		// redirect unbuffered STDIN to the console
+
+		lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+
+		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+
+		fp = _fdopen(hConHandle, "r");
+
+		*stdin = *fp;
+
+		setvbuf(stdin, NULL, _IONBF, 0);
+
+		// redirect unbuffered STDERR to the console
+
+		lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+
+		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+
+		fp = _fdopen(hConHandle, "w");
+
+		*stderr = *fp;
+
+		setvbuf(stderr, NULL, _IONBF, 0);
+
+
+		// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog 
+
+		// point to console as well
+
+		std::ios::sync_with_stdio();
+	}
+
+	void DisplayMessage(const std::string &message) {
+		MessageBox(NULL, message.c_str(), GetSystemName().c_str(), 0);
+	}
+
+	std::string GetAppDataPath() {
+		CHAR path[MAX_PATH];
+		path[0]=0;
+
+		SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, path);
+
+		std::string s=path;
+
+		return Filesystem::Canonical(path);
+	}
+
+	std::string GetAppSettingPath() {
+		return GetAppDataPath();
+	}
+
+	void processmessages() {
+		MSG msg;
+		if(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+			GetMessage(&msg, NULL, 0, 0);
+
+			// Translate and dispatch the message
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
+} }
+/*	HINSTANCE Instance;
 
 	extern int Application(std::vector<std::string> &arguments);
 
@@ -80,19 +212,7 @@
 	namespace gge { namespace os {
 		bool quiting=false;
 
-		void winslashtonormal(std::string &s) {
-			for(unsigned i=0;i<s.length();i++)
-				if(s[i]=='\\') s[i]='/';
-		}
 
-		void normalslashtowin(std::string &s) {
-			for(unsigned i=0;i<s.length();i++)
-				if(s[i]=='/') s[i]='\\';
-		}
-
-		void DisplayMessage(const char *Title, const char *Text) {
-			MessageBox(NULL,Text,Title,0);
-		}
 		void Quit(int ret) {
 			PostQuitMessage(ret);
 			CloseWindow((HWND)Main.GetWindow());
@@ -105,86 +225,6 @@
 		}
 		void Initialize() {
 			system::pointerdisplayed=true;
-		}
-		void Sleep(int ms) {
-			::Sleep(ms);
-		}
-		unsigned int GetTime() { return timeGetTime(); }
-
-		void RunInNewThread(int(threadfncall *fn)(void *), void *data) {
-			DWORD threadid;
-			CreateThread(NULL, 0, (unsigned long (__stdcall *)(void *))fn, data, 0, &threadid);
-		}
-		
-		void RunInParallel(std::function<void(int)> fn, int threads) {}
-
-		void OpenTerminal(std::string Title, int maxlines) {
-			int hConHandle;
-
-			long lStdHandle;
-
-			CONSOLE_SCREEN_BUFFER_INFO coninfo;
-
-			FILE *fp;
-
-			// allocate a console for this app
-
-			AllocConsole();
-
-			// set the screen buffer to be big enough to let us scroll text
-
-			GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), 
-
-				&coninfo);
-
-			coninfo.dwSize.Y = 1024;
-
-			SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), 
-
-				coninfo.dwSize);
-
-			// redirect unbuffered STDOUT to the console
-
-			lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
-
-			hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-			fp = _fdopen( hConHandle, "w" );
-
-			*stdout = *fp;
-
-			setvbuf( stdout, NULL, _IONBF, 0 );
-
-			// redirect unbuffered STDIN to the console
-
-			lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
-
-			hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-			fp = _fdopen( hConHandle, "r" );
-
-			*stdin = *fp;
-
-			setvbuf( stdin, NULL, _IONBF, 0 );
-
-			// redirect unbuffered STDERR to the console
-
-			lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
-
-			hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-			fp = _fdopen( hConHandle, "w" );
-
-			*stderr = *fp;
-
-			setvbuf( stderr, NULL, _IONBF, 0 );
-
-
-			// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog 
-
-			// point to console as well
-
-			std::ios::sync_with_stdio();		
 		}
 
 		namespace system { 
@@ -200,41 +240,10 @@
 			}; 
 		}
 
-		Mutex::Mutex() { data=new system::mutex_data; }
-		Mutex::~Mutex() {delete data;}
-		void Mutex::Lock() { WaitForSingleObject(data->mutex, INFINITE); }
-		void Mutex::Unlock() { ReleaseMutex(data->mutex); }
-
-		Date CurrentDate() {
-			SYSTEMTIME tm;
-			GetLocalTime(&tm);
-			
-			Date ret;
-			ret.Year 	   =(int)tm.wYear;
-			ret.Month	   =(int)tm.wMonth;
-			ret.Day		   =(int)tm.wDay;
-			ret.Hour 	   =(int)tm.wHour;
-			ret.Minute	   =(int)tm.wMinute;
-			ret.Second	   =(int)tm.wSecond;
-			ret.Millisecond=(int)tm.wMilliseconds;
-			ret.Weekday		=(Date::DayOfWeek)tm.wDayOfWeek;
-
-			return ret;
-		}
 
 		namespace system {
 			CursorHandle defaultcursor;
 			bool pointerdisplayed;
-			void ProcessMessage() {
-				MSG msg;
-				if( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) ) {
-					GetMessage(&msg, NULL, 0, 0 );
-
-					// Translate and dispatch the message
-					TranslateMessage( &msg ); 
-					DispatchMessage( &msg );
-				}
-			}
 			
 			class GGEDropTarget : public IDropTarget
 			{
@@ -366,15 +375,6 @@
 			
 
 		namespace window {
-			utils::EventChain<> Activated	("WindowActivated" );
-			utils::EventChain<> Deactivated ("WindowDectivated");
-			utils::EventChain<> Destroyed	("WindowDestroyed" );
-			utils::EventChain<Empty, bool&> Closing	("WindowClosing" );
-
-
-		//TODO Private
-			POINT overhead;
-			HWND curwin;
 			Point cursorlocation=Point(0,0);
 
 			LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -578,10 +578,10 @@
 					
 					break; 
 				case WM_CHAR:
-					/*if(lParam&1<<24)
+					if(lParam&1<<24)
 						AddModifier(&KeyboardModifier,KEYB_MOD_ALTERNATIVE);
 					else
-						RemoveModifier(&KeyboardModifier,KEYB_MOD_ALTERNATIVE);*/
+						RemoveModifier(&KeyboardModifier,KEYB_MOD_ALTERNATIVE);
 
 					ProcessChar(wParam);
 					break; 
@@ -684,60 +684,7 @@
 				return (WindowHandle)ret;
 			}
 
-			void MoveWindow(WindowHandle h, utils::Point p) {
-				SetWindowPos((HWND)h, 0, p.x,p.y, 0,0, SWP_NOSIZE | SWP_NOZORDER);
-			}
 
-			void ResizeWindow(WindowHandle h,utils::Size size) {
-				RECT cr,wr;
-				GetClientRect((HWND)h,&cr);
-				GetWindowRect((HWND)h,&wr);
-
-				SetWindowPos((HWND)h, 0, 0,0,
-					size.Width + ( (wr.right-wr.left) - (cr.right-cr.left) ),
-					size.Height + ( (wr.bottom-wr.top) - (cr.bottom-cr.top) ), SWP_NOMOVE | SWP_NOZORDER);
-			}
-#undef ShowWindow
-			void Hide(WindowHandle w) {
-				::ShowWindow((HWND)w, SW_HIDE);
-			}
-			void Show(WindowHandle w) {
-				::ShowWindow((HWND)w, SW_SHOW);
-				SetActiveWindow((HWND)w);
-				::ShowWindow((HWND)w, SW_SHOW);
-			}
-
-			utils::Rectangle UsableScreenMetrics(int Monitor) {
-				utils::Rectangle r;
-
-				RECT rect;
-
-				SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
-
-				r.Left=rect.left;
-				r.Top=rect.left;
-				r.SetRight(rect.right);
-				r.SetBottom(rect.bottom);
-
-				return r;
-			}
-
-		}
-	
-		void ShowPointer() {
-			if(!system::pointerdisplayed) {
-				system::pointerdisplayed=true;
-				ShowCursor(true);
-				SetCursor((HCURSOR)system::defaultcursor);
-			}
-		}
-		void HidePointer() {
-			if(system::pointerdisplayed) {
-				system::pointerdisplayed=false;
-				SetCursor(NULL);
-				ShowCursor(false);
-			}
-		}
 		IconHandle IconFromImage(graphics::ImageData &image) {
 			DWORD dwWidth, dwHeight;
 			BITMAPV5HEADER bi;
@@ -824,217 +771,11 @@
 
 		}
 
-		std::string GetClipboardText() {
-			HANDLE clip;
-			if (OpenClipboard(NULL)) {
-				clip = GetClipboardData(CF_TEXT);
-				return std::string((char*) clip);
-			}
-			else {
-				return "";
-			}
-		}
-
-		void SetClipboardText(const std::string &text) {
-			if(OpenClipboard(NULL))
-			{
-				HGLOBAL clipbuffer;
-				char * buffer;
-				EmptyClipboard();
-				clipbuffer = GlobalAlloc(GMEM_DDESHARE, text.length()+1);
-				buffer = (char*)GlobalLock(clipbuffer);
-				strcpy_s(buffer, text.length()+1, text.c_str());
-				GlobalUnlock(clipbuffer);
-				SetClipboardData(CF_TEXT,clipbuffer);
-				CloseClipboard();
-			}
-		}
 
 		namespace user {
-			std::string GetDocumentsPath() {
-				CHAR my_documents[MAX_PATH];
-				my_documents[0]=0;
-
-				HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
-				
-				std::string s=my_documents;
-				winslashtonormal(s);
-
-				return s;
-			}
-
-			std::string GetUsername() {
-				CHAR username[256];
-				username[0]=0;
-
-				DWORD s=256;
-				GetUserName(username, &s);
-
-				return username;
-			}
 		}
 
-		namespace filesystem {
-			bool CreateDirectory(const std::string &name) {
-				auto pos=name.length();
 
-				pos=name.find_last_of("\\/",std::string::npos);
-				if(pos!=std::string::npos) {
-					if(!IsDirectoryExists(name.substr(0,pos)))
-						CreateDirectory(name.substr(0,pos));
-				}
-
-				CreateDirectoryA(name.c_str(), NULL);
-
-				return IsDirectoryExists(name);
-			}
-			
-			bool IsPathWritable(const std::string &Pathname) {
-				return _access(Pathname.c_str(), 2)!=-1;
-			}
-
-			std::string CanonizePath(const std::string &Pathname) {
-				char newpath[1024];
-				GetFullPathName(Pathname.c_str(), 1024, newpath, NULL);
-				std::string ret=newpath;
-
-				return ret;
-			}
-
-			bool IsPathHidden(const std::string &f) {
-				unsigned long attr=GetFileAttributes(f.c_str());
-
-				return (attr&FILE_ATTRIBUTE_HIDDEN)!=0 || (attr&FILE_ATTRIBUTE_SYSTEM)!=0;
-			}
-
-			osdirenum::osdirenum() : search_handle(NULL), valid(false) {
-				data=new WIN32_FIND_DATAA();
-			}
-
-			osdirenum::~osdirenum() {
-				delete data;
-			}
-
-			DirectoryIterator::DirectoryIterator(const std::string &dir, const std::string &pattern/* ="*" */) {
-				std::string src=dir;
-				if(src[src.length()-1]!='\\') src+="\\";
-				src+=pattern;
-
-				dirinfo.search_handle=FindFirstFileA(src.c_str(), dirinfo.data);
-
-				if(dirinfo.search_handle != INVALID_HANDLE_VALUE) {
-					dirinfo.valid=true;
-					current=dirinfo.data->cFileName;
-				}
-			}
-
-			DirectoryIterator::DirectoryIterator(const DirectoryIterator &it ) {
-				dirinfo.search_handle=it.dirinfo.search_handle;
-				memcpy(dirinfo.data, it.dirinfo.data, sizeof WIN32_FIND_DATAA);
-				dirinfo.valid=true;
-				current=it.current;
-			}
-
-			DirectoryIterator::DirectoryIterator() {
-				dirinfo.search_handle=NULL;
-				dirinfo.valid=false;
-				current="";
-			}
-
-			void DirectoryIterator::Next() {
-				if(!dirinfo.valid) return;
-
-				if (FindNextFileA (dirinfo.search_handle, dirinfo.data) == FALSE) {
-					dirinfo.valid=false;
-					FindClose (dirinfo.search_handle);
-					dirinfo.search_handle = INVALID_HANDLE_VALUE;
-
-					current="";
-				}
-				else {
-					current=dirinfo.data->cFileName;
-					winslashtonormal(current);
-				}
-			}
-
-			bool DirectoryIterator::IsValid() const {
-				return dirinfo.valid && current!="";
-			}
-
-			bool IsDirectoryExists(const std::string &Filename) {
-				if ( _access(Filename.c_str(), 0) )
-					return false;
-
-				struct stat status;
-
-				stat( Filename.c_str(), &status );
-
-				if(status.st_mode & S_IFDIR)
-					return true;
-				else
-					return false;
-			}
-
-			bool IsFileExists(const std::string &Filename) {
-				if ( _access(Filename.c_str(), 0) )
-					return false;
-
-				struct stat status;
-
-				stat( Filename.c_str(), &status );
-
-				if(status.st_mode & S_IFREG)
-					return true;
-				else
-					return false;
-			}
-
-			void DeleteFile(const std::string &Filename) {
-				remove(Filename.c_str());
-			}
-			
-			std::vector<EntryPoint> EntryPoints() {
-				char drvs[512], name[128];
-				char *drives=drvs;
-				unsigned long serial, flags;
-
-				unsigned result=GetLogicalDriveStrings(512, drives);
-
-				if(result==0) return std::vector<EntryPoint>();
-
-				std::vector<EntryPoint> entries;
-
-				while(*drives) {
-					EntryPoint e;
-					e.Path=drives;
-					if(GetVolumeInformation(drives, name, 128, &serial, NULL, &flags, NULL, 0)) {
-						e.Serial=serial;
-						e.Name=name;
-						e.Writable=!(flags&FILE_READ_ONLY_VOLUME);
-						e.Readable=true;
-					}
-					else {
-						e.Readable=false;
-						e.Writable=false;
-					}
-					entries.push_back(e);
-					drives+=std::strlen(drives)+1;
-				}
-
-				return entries;
-			}
-			
-			DirectoryIterator EndOfDirectory;
-		}
-
-		std::string GetAppDataPath() {
-			CHAR my_documents[MAX_PATH];
-			my_documents[0]=0;
-
-			HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
-
-			return my_documents;
-		}
 	} 
 
 	namespace input {
@@ -1086,3 +827,4 @@
 
 
 #endif
+*/

@@ -9,7 +9,7 @@
 #include <assert.h>
 
 #include "Types.h"
-#include "Container/Collection.h"
+#include "Containers/Collection.h"
 
 
 namespace Gorgon {
@@ -328,7 +328,7 @@ namespace Gorgon {
 			catch(...) {
 				//unlock everything if something goes bad
 				
-				//just incase
+				//just in case
 				access.unlock();
 				
 				fire.unlock();
@@ -345,8 +345,8 @@ namespace Gorgon {
 	private:
 		std::mutex fire, access;
 		Source_ *source;
-		Container::Collection<internal::HandlerBase<Source_, Params_...>> handlers;
-		typename Container::Collection<internal::HandlerBase<Source_, Params_...>>::Iterator iterator;
+		Containers::Collection<internal::HandlerBase<Source_, Params_...>> handlers;
+		typename Containers::Collection<internal::HandlerBase<Source_, Params_...>>::Iterator iterator;
 	};
 	
 	/// Swaps two events

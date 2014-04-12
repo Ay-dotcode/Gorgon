@@ -11,7 +11,7 @@
 #include "Iterator.h"
 
 namespace Gorgon { 
-	namespace Container {
+	namespace Containers {
 
 		///	Collection is a container for reference typed objects. A container never copies its elements
 		/// nor destroys unless requested specifically. Internally, a collection stores its objects in a
@@ -37,8 +37,8 @@ namespace Gorgon {
 			/// Iterators are derived from this class
 			/// @copydoc Gorgon::Container::Iterator
 			template<class O_, class C_>
-			class Iterator_ : public Container::Iterator<Iterator_<O_, C_>, O_> {
-				friend class Container::Iterator<Iterator_, O_>;
+			class Iterator_ : public Containers::Iterator<Iterator_<O_, C_>, O_> {
+				friend class Containers::Iterator<Iterator_, O_>;
 				friend class Collection;
 
 			public:
@@ -418,7 +418,7 @@ namespace Gorgon {
 
 			/// Removes an item from the collection using its index
 			void Remove(int index) {
-				list.erase(index);
+				list.erase(list.begin()+index);
 			}
 
 			/// Removes an item from the collection using its pointer. If the item does

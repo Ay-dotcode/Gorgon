@@ -11,7 +11,7 @@
 namespace Gorgon {
 	/// This namespace contains containers that are missing from STL or specifically crafted
 	/// for game or GUI development.
-	namespace Container {
+	namespace Containers {
 
 		/// Generic iterator interface. Derive from this class supplying self, type, and distance type
 		/// Following functions should be implemented for Iterators. They are publicly shaped by this class.

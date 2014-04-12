@@ -1,12 +1,15 @@
 SET(Local
-	Container
+	Containers
 	Filesystem
 	Geometry
+	OS
 	Time
 	String
 	WindowManager
 	Any.h
 	Event.h
+	Main.h
+	Main.cpp
 	Threading.h
 	Types.h
 )

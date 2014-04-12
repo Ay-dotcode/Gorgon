@@ -29,7 +29,7 @@ namespace Gorgon { namespace Geometry {
 
 		/// Filling constructor using values for top left corner and size
 		basic_Rectangle(const basic_Point<T_> &position, const basic_Size<T_> &size) : 
-			X(position.x), Y(position.y), Width(size.Width), Height(size.Height)
+			X(position.X), Y(position.Y), Width(size.Width), Height(size.Height)
 		{ }
 
 		/// Filling constructor using values for top left corner and size
@@ -39,12 +39,12 @@ namespace Gorgon { namespace Geometry {
 			
 		/// Filling constructor using values for top left corner and size
 		basic_Rectangle(const basic_Point<T_> &position, int width, int height) : 
-			X(position.x), Y(position.y), Width(width), Height(height)
+			X(position.X), Y(position.Y), Width(width), Height(height)
 		{ }
 		
 		/// Filling constructor using values for top left and bottom right corners
 		basic_Rectangle(const basic_Point<T_> &topleft, const basic_Point<T_> &bottomright) :
-			X(topleft.x), Y(topleft.y),
+			X(topleft.X), Y(topleft.Y),
 			Width(bottomright.x-topleft.x), Height(bottomright.y-topleft.y)
 		{ }
 
