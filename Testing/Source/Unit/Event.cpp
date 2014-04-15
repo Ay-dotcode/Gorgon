@@ -2,6 +2,7 @@
 
 #include <Source/Event.h>
 #include <Source/WindowManager.h>
+#include <Source/Window.h>
 
 class A {
 public:
@@ -43,7 +44,9 @@ int main() {
 	
 	Gorgon::WindowManager::Initialize();
 	
-	Gorgon::WindowManager::Window win({200,150}, "My wind");
+	Gorgon::Window win({40,40, 200, 300}, "My wind");
+	//win.HidePointer();
+	//win.Resize({400,500});
 	
 	std::cin>>a.a;
 }

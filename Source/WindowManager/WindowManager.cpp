@@ -8,6 +8,8 @@ namespace Gorgon {
 
 	const Geometry::Point Window::automaticplacement={std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
 
+	const Window::FullscreenTag Window::Fullscreen;
+	
 	namespace WindowManager {
 	}
 }

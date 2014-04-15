@@ -1,4 +1,8 @@
-#ifdef LINUX
+
+
+
+
+#ifdef LaINUX
 #	pragma warning(disable: 4996)
 #	include "OS.h"
 #	include "Input.h"
@@ -74,66 +78,6 @@ static const int None=0;
 			XDestroyWindow(display, windowhandle);
 			windowhandle=0;
 		}
-		void Initialize() {
-			if(display) return;
-			system::pointerdisplayed=true;
-			pthread_attr_init(&common_thread_attr);
-			pthread_attr_setdetachstate(&common_thread_attr, PTHREAD_CREATE_DETACHED);
-			display = XOpenDisplay(NULL); 
-			emptycursor=None;
-			XA_CLIPBOARD=XInternAtom(display, "CLIPBOARD", 1);
-			XA_TIMESTAMP=XInternAtom(display, "TIMESTAMP", 1);
-			XA_TARGETS  =XInternAtom (display, "TARGETS", 0);
-			XA_PROTOCOLS=XInternAtom(display, "WM_PROTOCOLS", 0);
-			WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", 0);
-			//XVisualInfo vis_info;
-			//XMatchVisualInfo(display, DefaultScreen(display), 32, TrueColor, &vis_info);
-			visual = XDefaultVisualOfScreen(DefaultScreenOfDisplay(display));//vis_info.visual;
-		}
-		void Sleep(int ms) {
-			usleep(ms*1000);
-		}
-		unsigned int GetTime() { 
-			timeval tv;
-			gettimeofday(&tv, 0 );
-			return tv.tv_usec/1000+tv.tv_sec*1000;
-		}
-
-		void RunInNewThread(int(threadfncall *fn)(void *), void *data) {
-			pthread_t threadid;
-			pthread_create(&threadid, nullptr, (void*(*)(void *))fn, data);
-		}
-		
-		struct parallelrunnerinfo {
-			std::function<void(int)> fn;
-			int ind;
-		};
-		void *parallelrunner(void *inf) {
-			parallelrunnerinfo *info=(parallelrunnerinfo *)inf;
-			
-			info->fn(info->ind);
-			
-			return 0;
-		}
-		
-		void RunInParallel(std::function<void(int)> fn, int n) {
-			pthread_t threads[n];
-			parallelrunnerinfo info[n];
-			for(int i=0;i<n;i++) {
-				info[i].ind=i+50;
-			}
-			
-			for(int i=0;i<n;i++) {
-				info[i].fn=fn;
-				info[i].ind=i;
-				
-				pthread_create(&threads[i], nullptr, parallelrunner, (void*)(info+i));
-			}
-			for(int i=0;i<n;i++) {
-				pthread_join(threads[i], nullptr);
-			}
-		}
-
 		void OpenTerminal(std::string Title, int maxlines) {
 			
 			
@@ -156,13 +100,6 @@ static const int None=0;
 			
 		}
 
-
-		namespace system { class mutex_data { public: pthread_mutex_t mutex; }; }
-
-		Mutex::Mutex() { data=new system::mutex_data; pthread_mutex_init(&data->mutex, NULL); }
-		Mutex::~Mutex() {delete data;}
-		void Mutex::Lock() { pthread_mutex_lock(&data->mutex); }
-		void Mutex::Unlock() { pthread_mutex_unlock(&data->mutex); }
 
 		namespace system {
 			CursorHandle defaultcursor;
@@ -810,18 +747,6 @@ static const int None=0;
 				return (WindowHandle)windowhandle;
 			}
 
-			void Hide(WindowHandle h) {
-				XUnmapWindow(display, h);
-			}
-			void Show(WindowHandle h) {
-				XEvent event;
-
-				XMapWindow(display, h);
-				XFlush(display);
-				XIfEvent(display, &event, system::WaitForMapNotify, (char*)h);
-				XRaiseWindow(display, h);
-				XFlush(display);
-			}
 
 			void MoveWindow(WindowHandle h, utils::Point p) {
 				XMoveWindow(display, h, p.x, p.y);
@@ -853,19 +778,6 @@ static const int None=0;
 			}
 
 		}
-	
-		void ShowPointer() {
-			if(!system::pointerdisplayed) {
-				system::pointerdisplayed=true;
-				XDefineCursor(display,windowhandle,None);
-			}
-		}
-		void HidePointer() {
-			if(system::pointerdisplayed) {
-				system::pointerdisplayed=false;
-				XDefineCursor(display, windowhandle, emptycursor);
-			}
-		}
 		IconHandle IconFromImage(graphics::ImageData &image) {
 			unsigned *img=new unsigned[2+image.GetWidth()*image.GetHeight()];
 			
@@ -896,30 +808,6 @@ static const int None=0;
 			}
 
 		}
-
-		Date CurrentDate() {
-			time_t rawtime;
-			struct tm * timeinfo;
-
-			time ( &rawtime );
-			timeinfo = localtime ( &rawtime );	
-			
-			struct timeval  tv;
-			gettimeofday(&tv, NULL);
-			
-			Date ret;
-			ret.Year 	   =(int)timeinfo->tm_year;
-			ret.Month	   =(int)timeinfo->tm_mon;
-			ret.Day		   =(int)timeinfo->tm_mday;
-			ret.Hour 	   =(int)timeinfo->tm_hour;
-			ret.Minute	   =(int)timeinfo->tm_min;
-			ret.Second	   =(int)timeinfo->tm_sec;
-			ret.Millisecond=(int)tv.tv_usec/1000;
-			ret.Weekday		=(Date::DayOfWeek)timeinfo->tm_wday;
-			
-			return ret;
-		}
-		
 
 
 		std::string GetClipboardText() {
@@ -976,197 +864,6 @@ static const int None=0;
 
 				return std::string(p->pw_gecos, n);
 			}
-		}
-
-		namespace filesystem {
-			bool CreateDirectory(const std::string &name) {
-				auto pos=name.length();
-
-				pos=name.find_last_of("\\/",std::string::npos);
-
-				if(!IsDirectoryExists(name.substr(0,pos)))
-					CreateDirectory(name.substr(0,pos));
-
-				mkdir(name.c_str(), 0755);
-
-				return IsDirectoryExists(name);
-
-				return true;
-			}
-			std::vector<EntryPoint> EntryPoints() {
-				std::vector<EntryPoint> entries;
-				
-				EntryPoint e;
-				e.Path=getenv("HOME");
-				e.Name="Home";
-				e.Readable=true;
-				e.Writable=true;
-				entries.push_back(e);
-
-				e.Path="/";
-				e.Name="Root";
-				e.Readable=true;
-				e.Writable=true;
-				entries.push_back(e);
-
-				return entries;
-			}
-
-			bool IsPathWritable(const std::string &Pathname) {
-				return access(Pathname.c_str(), W_OK)==-1;
-			}
-
-			bool IsPathHidden(const std::string &f) {
-				if(f=="") return false;
-
-				std::string file=f;
-				if(file[file.length()-1]=='/') {
-					file=file.substr(0,file.length()-1);
-				}
-
-				if(file[file.length()-1]=='~') return true;
-				if(file.find_first_of('/', 0)==file.npos) {
-					return file[0]=='.';
-				}
-				else {
-					file=file.substr(file.find_last_of('/', -1)+1);
-					return file[0]=='.';
-				}
-
-				return false;
-			}
-
-			std::string CanonizePath(const std::string &Pathname) {
-				char *newpath;
-				newpath=realpath(Pathname.c_str(), NULL);
-				std::string ret=newpath;
-				std::free(newpath);
-				return ret;
-			}
-
-			osdirenum::osdirenum() : dp() {
-			}
-			
-			osdirenum::osdirenum(const osdirenum &osd) : dp(osd.dp), pattern(osd.pattern), RefCounter<osdirenum>(osd) {
-				this->addref();
-			}
-			
-			osdirenum &osdirenum::operator =(const osdirenum &osd) {
-				refassign(osd);
-				
-				dp=osd.dp;
-				pattern=osd.pattern;
-				
-				return *this;
-			}
-			
-			void osdirenum::destroy() {
-				if(dp) {
-					closedir((DIR*)dp);
-					dp=NULL;
-				}
-			}
-			
-			osdirenum::~osdirenum() {
-				this->destructref();
-			}
-			
-			std::string escape_regexp(const std::string &str) {
-				static const char shouldbeescaped[]="\\/().[],?*+-|";
-				std::string ret=str;
-				unsigned pos=0;
-				while( (pos=ret.find_first_of(shouldbeescaped,pos)) != std::string::npos) {
-					ret=ret.insert(pos, "\\");
-					pos+=2;
-				}
-				
-				return ret;
-			}
-
-			DirectoryIterator::DirectoryIterator(const std::string &dir, const std::string &pattern/* ="*" */) {
-				dirinfo.dp  	 = opendir(dir.c_str());
-				if(pattern!="*") {
-					dirinfo.pattern = escape_regexp(pattern);
-					unsigned pos=0;
-					while( (pos=dirinfo.pattern.find_first_of("*?", pos)) != std::string::npos) {
-						dirinfo.pattern[pos-1]='.';
-						if(dirinfo.pattern[pos]=='?') {
-							dirinfo.pattern.erase(pos, pos+1);
-							pos--;
-						}
-						pos++;
-					}
-				}
-				Next();
-			}
-
-			DirectoryIterator::DirectoryIterator(const DirectoryIterator &it ) {
-				dirinfo=it.dirinfo;
-				current=it.current;
-			}
-
-			DirectoryIterator::DirectoryIterator() {
-			}
-
-			void DirectoryIterator::Next() {
-				struct dirent *ent;
-				if(dirinfo.dp==NULL) {
-					current="";
-					return;
-				}
-				ent = readdir((DIR*)dirinfo.dp);
-				if(ent==NULL)
-					current="";
-				else
-					current=ent->d_name;
-				
-				if(current=="." || current=="..")
-					Next();
-				
-				if(dirinfo.pattern!="" && current!="") {
-					std::regex r(dirinfo.pattern);
-					if(!std::regex_match(current.begin(), current.end(), r))
-						Next();
-				}
-			}
-
-			bool DirectoryIterator::IsValid() const {
-				return current!="" && dirinfo.dp;
-			}
-
-			bool IsDirectoryExists(const std::string &Filename) {
-				if ( access(Filename.c_str(), 0) )
-					return false;
-
-				struct stat status;
-
-				stat( Filename.c_str(), &status );
-
-				if(status.st_mode & S_IFDIR)
-					return true;
-				else
-					return false;
-			}
-
-			bool IsFileExists(const std::string &Filename) {
-				if ( access(Filename.c_str(), 0) )
-					return false;
-
-				struct stat status;
-
-				stat( Filename.c_str(), &status );
-
-				if(status.st_mode & S_IFREG)
-					return true;
-				else
-					return false;
-			}
-
-			void DeleteFile(const std::string &Filename) {
-				remove(Filename.c_str());
-			}
-			
-			DirectoryIterator EndOfDirectory;
 		}
 
 		std::string GetAppDataPath() {

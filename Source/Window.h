@@ -5,6 +5,7 @@
 #include "Geometry/Point.h"
 #include "Geometry/Rectangle.h"
 #include "Containers/Collection.h"
+#include "WindowManager.h"
 #include "Event.h"
 
 namespace Gorgon {
@@ -17,7 +18,12 @@ namespace Gorgon {
 	/// This class represents a window. 
 	/// @nosubgrouping
 	class Window {
+		friend internal::windowdata *WindowManager::internal::getdata(const Window&);
 	public:
+		static const 
+		class FullscreenTag {
+		} Fullscreen;
+		
 		/// Creates a new window
 		/// @param  rect the position and the **interior** size of the window unless
 		///         use outer metrics is set to true
@@ -92,7 +98,7 @@ namespace Gorgon {
 
 		/// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
 		/// entire screen, including any panels it contains.
-		Window(const std::string &name, const std::string &title="");
+		Window(const FullscreenTag &, const std::string &name, const std::string &title="");
 
 		/// Destroys this window
 		~Window();
@@ -142,8 +148,14 @@ namespace Gorgon {
 		/// Hides this window, may generate Deactivated event
 		void Hide();
 
-		/// Closes the window. After this function, any use of this object might fail
+		/// Closes the window. After this function, any use of this object might fail.
 		void Close();
+
+		////Hides the pointer displayed by window manager
+		void HidePointer();
+
+		////Shows the pointer displayed by window manager
+		void ShowPointer();
 
 		/// @name Events 
 		/// @{

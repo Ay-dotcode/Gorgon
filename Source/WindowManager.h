@@ -6,11 +6,53 @@
 #include "Geometry/Rectangle.h"
 
 namespace Gorgon {
+	
+	/// @cond INTERNAL
+	namespace internal {
+		struct windowdata;
+	}
+	/// @endcond
+	
+	class Window;
 
 	/// This namespace contains window manager specific functionality. 
 	/// This including creating windows, obtaining input, creating
 	/// graphics context.
 	namespace WindowManager {
+		
+		/// @cond INTERNAL
+		namespace internal {
+			Gorgon::internal::windowdata *getdata(const Window&);
+			
+			struct icondata;
+			struct pointerdata;
+		}
+		/// @endcond
+		
+		/// Represents an icon object that can be used as window icon.
+		class Icon {
+		public:
+			Icon();
+			
+			~Icon();
+			
+		private:
+			internal::icondata *data;
+		};
+		
+		/// Represents a hardware/OS pointer graphic. Hardware pointers do not have
+		/// the power of Gorgon internal pointers, however, they are mostly delay free
+		/// and works even when the system is busy.
+		class Pointer {
+		public:
+			Pointer();
+			
+			~Pointer();
+			
+		private:
+			internal::pointerdata *data;
+		};
+		
 		/// Initializes window manager system
 		void Initialize();
 
@@ -26,16 +68,10 @@ namespace Gorgon {
 		Geometry::Rectangle GetScreenRegion(int monitor=0);
 
 		/// Returns the clipboard text. If there is no data or its incompatible with text, empty
-		/// string is returned
+		/// string is returned. May require an existing window.
 		std::string GetClipboardText();
 
-		/// Sets the clipboard text to given string.
+		/// Sets the clipboard text to given string. May require an existing window.
 		void SetClipboardText(const std::string &text);
-
-		////Hides the pointer displayed by window manager
-		void HidePointer();
-
-		////Shows the pointer displayed by window manager
-		void ShowPointer();
 	}
 }

@@ -1,4 +1,4 @@
-/// @file Container/Iterator.h contains base iterator which performs most common iterator
+/// @file Containers/Iterator.h contains base iterator which performs most common iterator
 ///	related functions for a random access iterator.
 
 #pragma once

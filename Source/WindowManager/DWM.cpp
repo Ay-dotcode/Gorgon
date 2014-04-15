@@ -57,22 +57,6 @@ namespace Gorgon {
 			defaultcursor=LoadCursor(NULL, IDC_ARROW);
 		}
 
-		void HidePointer() {
-			if(pointerdisplayed) {
-				pointerdisplayed=false;
-				SetCursor(NULL);
-				ShowCursor(false);
-			}
-		}
-
-		void ShowPointer() {
-			if(!pointerdisplayed) {
-				pointerdisplayed=true;
-				ShowCursor(true);
-				SetCursor((HCURSOR)defaultcursor);
-			}
-		}
-
 		void SetClipboardText(const std::string &text) {
 			if(OpenClipboard(NULL)) {
 				HGLOBAL clipbuffer;
@@ -183,6 +167,22 @@ namespace Gorgon {
 
 	void Window::ResizeOuter(const Geometry::Size &size) {
 		SetWindowPos(data->handle, 0, 0, 0, size.Width, size.Height, SWP_NOMOVE | SWP_NOZORDER);
+	}
+
+	void Window::HidePointer() {
+		if(WindowManager::pointerdisplayed) {
+			WindowManager::pointerdisplayed=false;
+			SetCursor(NULL);
+			ShowCursor(false);
+		}
+	}
+
+	void Window::ShowPointer() {
+		if(!WindowManager::pointerdisplayed) {
+			WindowManager::pointerdisplayed=true;
+			ShowCursor(true);
+			SetCursor((HCURSOR)WindowManager::defaultcursor);
+		}
 	}
 
 	void Window::Resize(const Geometry::Size &size) {
