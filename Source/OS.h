@@ -27,7 +27,9 @@ namespace Gorgon {
 			/// Returns the home directory of the user
 			std::string GetHomePath();
 
-			/// Returns the path where applications can save data related to this user
+			/// Returns the path where applications can save data related to this user. This path
+			/// could simply be user's home directory. Best practice would be creating a directory
+			/// that starts with a "." such as .gorgon
 			std::string GetDataPath();
 		}
 

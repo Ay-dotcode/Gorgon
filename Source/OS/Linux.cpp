@@ -1,4 +1,70 @@
+#include "../OS.h"
+#include "../Filesystem.h"
+#include "../Window.h"
 
+#include <unistd.h>
+#include <string.h>
+#include <pwd.h>
+
+namespace Gorgon { namespace OS {
+
+	namespace User {
+		std::string GetUsername() {
+			struct passwd *p=getpwnam(getlogin());
+			
+			return p->pw_name;
+		}
+
+		std::string GetName() {
+			struct passwd *p=getpwnam(getlogin());
+			
+			int n = strcspn(p->pw_gecos, ",");
+
+			return std::string(p->pw_gecos, n);
+		}
+
+		std::string GetDocumentsPath() {
+			std::string s=getenv("HOME");
+			if(Filesystem::IsDirectory(s+"/Documents"))
+				return s+"/Documents";
+			else
+				return s;
+		}
+
+		std::string GetHomePath() {
+			return getenv("HOME");
+		}
+
+		std::string GetDataPath() {
+			return getenv("HOME");
+		}
+	}
+	
+	void Initialize() {
+	}
+
+	void OpenTerminal() {		
+	}
+
+	void DisplayMessage(const std::string &message) {
+		std::system( std::string("xmessage -center \""+message+"\"").c_str() );	
+	}
+
+	std::string GetAppDataPath() {
+		return "/usr/share";
+	}
+
+	std::string GetAppSettingPath() {
+		return "/etc";
+	}
+
+	void processmessages() {
+		for(auto &w : Window::Windows) {
+			w.processmessages();
+		}
+	}
+
+} }
 
 
 
@@ -67,9 +133,6 @@ static const int None=0;
 		Atom WM_DELETE_WINDOW; 
 		std::string copiedtext;
 		
-		void DisplayMessage(const char *Title, const char *Text) {
-			std::system( (std::string("xmessage -center \"")+Title+"\n"+Text+"\"").c_str() );
-		}
 		void Quit(int ret) {
 			Cleanup();
 			exit(0);
@@ -77,27 +140,6 @@ static const int None=0;
 		void Cleanup() {
 			XDestroyWindow(display, windowhandle);
 			windowhandle=0;
-		}
-		void OpenTerminal(std::string Title, int maxlines) {
-			
-			
-			int fd1[2];
-			pipe(fd1);
-			if(!fork()) {
-				dup2(fd1[0], 1);
-				close(fd1[0]);
-				close(fd1[1]);
-
-				execlp("xconsole","xconsole","-file","/dev/stdout",(char *)NULL);
-				exit(0);
-			}
-			else {
-				dup2(fd1[1], 1);
-				close(fd1[0]);
-				close(fd1[1]);
-			}
-			
-			
 		}
 
 
@@ -165,13 +207,6 @@ static const int None=0;
 			//END
 
 			
-			static int WaitForMapNotify(Display *d, XEvent *e, char *arg) {
-				return (e->type == MapNotify) && (e->xmap.window == (Window)arg);
-			}
-			
-			static int WaitForSelectionNotify(Display *d, XEvent *e, char *arg) {
-				return (e->type == SelectionNotify);
-			}
 			
 			gge::input::mouse::Event::Type X11ButtonCodeToGGE(unsigned btn) {
 				using namespace gge::input::mouse;
@@ -669,114 +704,10 @@ static const int None=0;
 			}
 		}
 		namespace window {
-			utils::EventChain<> Activated	("WindowActivated" );
-			utils::EventChain<> Deactivated ("WindowDectivated");
-			utils::EventChain<> Destroyed	("WindowDestroyed" );
-			utils::EventChain<Empty, bool&> Closing	("WindowClosing" );
 
 		//TODO Private
 			Point cursorlocation=Point(0,0);
 			
-			//!Show
-			WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool Show, bool &FullScreen) {
-				XSetWindowAttributes attributes; 
-				int screen;
-				int depth; 
-				XEvent event;
-				
-				screen = DefaultScreen(display);
-				depth  = DefaultDepth(display,screen); 
-				attributes.event_mask = 
-					StructureNotifyMask | 
-					KeyPressMask |
-					KeyReleaseMask |
-					ButtonPressMask |
-					ButtonReleaseMask|
-					FocusChangeMask|
-					SubstructureRedirectMask
-				;
-				Colormap cmap = XCreateColormap(display, RootWindow(display, screen), visual, AllocNone);
-				attributes.colormap = cmap;
-				windowhandle= XCreateWindow(display, XRootWindow(display,screen),
-                   Left,Top, Width,Height,0, depth, InputOutput, visual,
-                   CWEventMask,&attributes);	
-				
-				char data[1]={0};
-				XColor dummy;
-				Pixmap blank = XCreateBitmapFromData (display, windowhandle, data, 1, 1);
-				emptycursor = XCreatePixmapCursor(display, blank, blank, &dummy, &dummy, 0, 0);
-				XFreePixmap (display, blank);
-				
-				XClassHint *classhint=XAllocClassHint();
-				classhint->res_name=(char*)malloc(Name.length()+1);
-				strcpy(classhint->res_name, Name.c_str());
-				classhint->res_class=(char*)malloc(Name.length()+1);
-				strcpy(classhint->res_class, Name.c_str());
-				XSetClassHint(display, windowhandle, classhint);
-				XFree(classhint);
-				
-				XStoreName(display, windowhandle, (char*)Title.c_str());
-				
-				XSizeHints *sizehints=XAllocSizeHints();
-				sizehints->min_width=Width;
-				sizehints->max_width=Width;
-				sizehints->min_height=Height;
-				sizehints->max_height=Height;
-				sizehints->flags=PMinSize | PMaxSize;
-				XSetWMNormalHints(display, windowhandle, sizehints);		
-				XFree(sizehints);
-				
-				XSetWMProtocols(display, windowhandle, &WM_DELETE_WINDOW, 1);
-
-				if(Icon) {
-					Atom net_wm_icon = XInternAtom(display, "_NET_WM_ICON", False);
-					Atom cardinal = XInternAtom(display, "CARDINAL", False);
-					XChangeProperty(display, windowhandle, net_wm_icon, cardinal , 32, PropModeReplace, (const unsigned char*)Icon, 2+((unsigned*)Icon)[0]*((unsigned*)Icon)[1]);
-					XSync(display, 1);
-				}
-
-				
-				if(Show) {
-					XMapWindow(display,windowhandle);
-					XIfEvent(display, &event, system::WaitForMapNotify, (char*)windowhandle);
-				}
-				
-				system::XdndInit();
-		
-				
-				return (WindowHandle)windowhandle;
-			}
-
-
-			void MoveWindow(WindowHandle h, utils::Point p) {
-				XMoveWindow(display, h, p.x, p.y);
-				XFlush(display);
-			}
-
-			void ResizeWindow(WindowHandle h,utils::Size size) {
-				XSizeHints *sizehints=XAllocSizeHints();
-				sizehints->min_width=size.Width;
-				sizehints->max_width=size.Width;
-				sizehints->min_height=size.Height;
-				sizehints->max_height=size.Height;
-				sizehints->flags=PMinSize | PMaxSize;
-				XSetWMNormalHints(display, windowhandle, sizehints);		
-				XFree(sizehints);
-
-				XResizeWindow(display, h, size.Width, size.Height);
-				XFlush(display);
-			}
-
-			utils::Rectangle UsableScreenMetrics(int Monitor) {
-				utils::Rectangle r(0,0,1000,1000);
-
-				Screen  *screen  = XScreenOfDisplay(display, Monitor);
-				r.Width =XWidthOfScreen(screen);
-				r.Height=XHeightOfScreen(screen);
-
-				return r;
-			}
-
 		}
 		IconHandle IconFromImage(graphics::ImageData &image) {
 			unsigned *img=new unsigned[2+image.GetWidth()*image.GetHeight()];
@@ -809,67 +740,6 @@ static const int None=0;
 
 		}
 
-
-		std::string GetClipboardText() {
-			Window owner=XGetSelectionOwner(display, XA_CLIPBOARD);
-			if(!owner)
-				return "";
-			
-			XEvent event;
-			
-			XConvertSelection (display, XA_CLIPBOARD, XA_STRING, None, windowhandle, CurrentTime);
-			XFlush(display);
-			
-			XIfEvent(display, &event, system::WaitForSelectionNotify, (char*)windowhandle);
-			if (event.xselection.property == XA_STRING) {
-				Atom type;
-				unsigned long len, bytes, dummy;
-				unsigned char *data;
-				int format;
-
-				XGetWindowProperty(display, windowhandle, XA_STRING, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
-				
-				if(bytes) {
-					XGetWindowProperty (display, windowhandle, 
-							XA_STRING, 0,bytes,0,
-							AnyPropertyType, &type, &format,
-							&len, &dummy, &data);
-					
-					std::string tmp((char*)data, bytes);
-					XFree(data);
-
-					return tmp;
-				}
-				
-			}
-			
-			return "";
-		}
-
-		void SetClipboardText(const std::string &text) {
-			XSetSelectionOwner (display, XA_CLIPBOARD, windowhandle, CurrentTime);
-			copiedtext=text;
-			XFlush(display);
-		}
-
-		namespace user {
-			std::string GetDocumentsPath() {
-				return getenv("HOME");
-			}
-
-			std::string GetUsername() {
-				struct passwd *p=getpwnam(getlogin());
-				
-				int n = strcspn(p->pw_gecos, ",");
-
-				return std::string(p->pw_gecos, n);
-			}
-		}
-
-		std::string GetAppDataPath() {
-			return getenv("HOME");
-		}
-	} 
 
 	namespace input { namespace keyboard {
 		const Key KeyCodes::Shift	= XK_Shift_L;

@@ -3,6 +3,7 @@
 #include <Source/Event.h>
 #include <Source/WindowManager.h>
 #include <Source/Window.h>
+#include <Source/OS.h>
 
 class A {
 public:
@@ -41,6 +42,11 @@ int main() {
 	event(3, 4);
 	
 	event(2, 2);
+	
+	//Gorgon::OS::Initialize();
+	
+	
+	std::cout<<Gorgon::OS::User::GetUsername()<<std::endl;
 	
 	Gorgon::WindowManager::Initialize();
 	
