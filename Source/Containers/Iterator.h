@@ -37,19 +37,10 @@ namespace Gorgon {
 			Iterator() { }
 
 		public:
-			/// Returns current item
-			T_ &Current() {
-				return iterator().current();
-			}
 
 			/// Returns current item
 			T_ &Current() const {
 				return iterator().current();
-			}
-
-			/// Returns current item
-			T_ *CurrentPtr() {
-				return &iterator().current();
 			}
 
 			/// Returns current item

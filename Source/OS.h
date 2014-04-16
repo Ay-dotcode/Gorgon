@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace Gorgon {
 	/// This namespace contains operating system related functionality.
@@ -48,6 +49,24 @@ namespace Gorgon {
 		/// Returns the directory where the system wide application settings is stored. Most probably
 		/// it will be read only
 		std::string GetAppSettingPath();
+		
+		/// Returns the value of an environment variable.
+		std::string GetEnvVar(const std::string &var);
+		
+		/// Starts the given application. This application is searched from the installed applications
+		/// unless it includes a path. You may use `./appname` to start the appname from the current
+		/// directory. The application is started in a separate process and the current process does not
+		/// stop to wait its execution.
+		/// @warning Depending on the operating system, executables in the current directory might take
+		///          precedence even if no path is given.
+		/// @return  true if the program is found and started. Does not check if the program continues
+		///          working properly
+		bool Start(const std::string &name, const std::vector<std::string> &args=std::vector<std::string>());
+		
+		/// Opens the given file with the related application. This can also be a URI.
+		/// @return true if the given file is somehow opened. This includes open with dialog if it can
+		///         be displayed
+		bool Open(const std::string &file);
 
 		/// Internally used. Should only be used when necessary.
 		void processmessages();

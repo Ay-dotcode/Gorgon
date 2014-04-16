@@ -63,13 +63,6 @@ namespace Gorgon {
 					return *Col->list[Offset];
 				}
 
-				O_ &current() {
-					if(!isvalid())
-						throw std::out_of_range("Iterator is not valid.");
-
-					return *Col->list[Offset];
-				}
-
 				bool isvalid() const {
 					return Offset>=0 && Offset<(Col->GetCount());
 				}
@@ -124,7 +117,7 @@ namespace Gorgon {
 			typedef Iterator_<T_, Collection> Iterator;
 
 			/// Const iterator allows iteration of const collections
-			class ConstIterator : public Iterator_<const T_,const Collection> {
+			class ConstIterator : public Iterator_<T_,const Collection> {
 				friend class Collection;
 			public:
 				///Regular iterators can be converted to const iterators
@@ -134,7 +127,7 @@ namespace Gorgon {
 				}
 
 			private:
-				ConstIterator(const Collection &c, int offset=0) : Iterator_<const T_,const Collection>(c, offset) {
+				ConstIterator(const Collection &c, int offset=0) : Iterator_<T_,const Collection>(c, offset) {
 				}
 			};
 
@@ -528,7 +521,7 @@ namespace Gorgon {
 			}
 
 			/// Returns the element at the given index. Checks and throws if out of range
-			const T_ &Get(int index) const {
+			T_ &Get(int index) const {
 				const T_ *r=get_(index);
 
 				if(r==NULL)
@@ -543,7 +536,7 @@ namespace Gorgon {
 			}
 
 			/// Returns the item at a given index
-			const T_& operator [] (int index) const  {
+			T_& operator [] (int index) const  {
 				return *list[index];
 			}
 

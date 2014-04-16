@@ -38,6 +38,9 @@
 #endif
 
 namespace Gorgon { namespace OS {
+	
+	void Initialize() {
+	}
 
 	namespace User {
 		std::string GetUsername() {

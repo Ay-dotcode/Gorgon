@@ -304,4 +304,7 @@ namespace Gorgon {
 		XFlush(WindowManager::display);
 	}
 	
+	void Window::processmessages() {
+	}
+	
 }

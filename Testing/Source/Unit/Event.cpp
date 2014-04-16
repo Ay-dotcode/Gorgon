@@ -49,10 +49,13 @@ int main() {
 	std::cout<<Gorgon::OS::User::GetUsername()<<std::endl;
 	
 	Gorgon::WindowManager::Initialize();
+	std::cout<<std::boolalpha;
+	std::cout<<"Run: "<<Gorgon::OS::Open("http://darkgaze.org")<<std::endl;
 	
-	Gorgon::Window win({40,40, 200, 300}, "My wind");
+	Gorgon::Window win({20, 20, 200, 300}, "My wind");
 	//win.HidePointer();
 	//win.Resize({400,500});
 	
+	std::cin.sync();
 	std::cin>>a.a;
 }
