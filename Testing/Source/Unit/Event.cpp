@@ -50,10 +50,11 @@ int main() {
 	
 	Gorgon::WindowManager::Initialize();
 	std::cout<<std::boolalpha;
-	std::cout<<"Run: "<<Gorgon::OS::Open("http://darkgaze.org")<<std::endl;
+	//std::cout<<"Run: "<<Gorgon::OS::Open("http://darkgaze.org")<<std::endl;
 	
-	Gorgon::Window win({20, 20, 200, 300}, "My wind");
-	//win.HidePointer();
+	Gorgon::Window win({50,20,200, 300}, "mywind", "My window", false);
+	win.Move({300,200});
+	win.Show();
 	//win.Resize({400,500});
 	
 	std::cin.sync();

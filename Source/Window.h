@@ -31,10 +31,7 @@ namespace Gorgon {
 		/// @param  title of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		/// @param  useoutermetrics by default, window is resized and positioned depending
-		///         on its interior region. Setting this parameter to true will switch to
-		///         include the window chrome
-		Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible=true, bool useoutermetrics=false);
+		Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible=true);
 
 		/// Creates a new window
 		/// @param  rect the position and the **interior** size of the window unless
@@ -43,11 +40,8 @@ namespace Gorgon {
 		/// @param  title of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		/// @param  useoutermetrics by default, window is resized and positioned depending
-		///         on its interior region. Setting this parameter to true will switch to
-		///         include the window chrome
-		Window(Geometry::Rectangle rect, const std::string &name, const char *title, bool visible=true, bool useoutermetrics=false) :
-			Window(rect, name, std::string(title), visible, useoutermetrics) { }
+		Window(Geometry::Rectangle rect, const std::string &name, const char *title, bool visible=true) :
+			Window(rect, name, std::string(title), visible) { }
 
 		/// Creates a new window
 		/// @param  rect the position and the **interior** size of the window unless
@@ -55,11 +49,8 @@ namespace Gorgon {
 		/// @param  name of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		/// @param  useoutermetrics by default, window is resized and positioned depending
-		///         on its interior region. Setting this parameter to true will switch to
-		///         include the window chrome
-		Window(Geometry::Rectangle rect, const std::string &name, bool visible=true, bool useoutermetrics=false) :
-			Window(rect, name, "", visible, useoutermetrics) { }
+		Window(Geometry::Rectangle rect, const std::string &name, bool visible=true) :
+			Window(rect, name, "", visible) { }
 
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
@@ -67,11 +58,8 @@ namespace Gorgon {
 		/// @param  title of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		/// @param  useoutermetrics by default, window is resized and positioned depending
-		///         on its interior region. Setting this parameter to true will switch to
-		///         include the window chrome
-		Window(const Geometry::Size &size, const std::string &name, const std::string &title, bool visible=true, bool useoutermetrics=false) :
-			Window({automaticplacement, size}, name, title, visible, useoutermetrics) { }
+		Window(const Geometry::Size &size, const std::string &name, const std::string &title, bool visible=true) :
+			Window({automaticplacement, size}, name, title, visible) { }
 
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
@@ -79,22 +67,16 @@ namespace Gorgon {
 		/// @param  title of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		/// @param  useoutermetrics by default, window is resized and positioned depending
-		///         on its interior region. Setting this parameter to true will switch to
-		///         include the window chrome
-		Window(const Geometry::Size &size, const std::string &name, const char *title, bool visible=true, bool useoutermetrics=false) :
-			Window({automaticplacement, size}, name, std::string(title), visible, useoutermetrics) { }
+		Window(const Geometry::Size &size, const std::string &name, const char *title, bool visible=true) :
+			Window({automaticplacement, size}, name, std::string(title), visible) { }
 
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
 		/// @param  name of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		/// @param  useoutermetrics by default, window is resized and positioned depending
-		///         on its interior region. Setting this parameter to true will switch to
-		///         include the window chrome
-		Window(const Geometry::Size &size, const std::string &name, bool visible=true, bool useoutermetrics=false) :
-			Window({automaticplacement, size}, name, "", visible, useoutermetrics) { }
+		Window(const Geometry::Size &size, const std::string &name, bool visible=true) :
+			Window({automaticplacement, size}, name, "", visible) { }
 
 		/// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
 		/// entire screen, including any panels it contains.
@@ -118,29 +100,7 @@ namespace Gorgon {
 		/// sized layers.
 		void Resize(const Geometry::Size &size);
 
-		/// Resizes the window to the given size. The given size is considered as the
-		/// interior region of the window. The restrictions for the smallest
-		/// sized window might change depending on the window manager or theme.
-		/// Largest window size can be obtained using UsableScreenRegion however,
-		/// this size does not exclude window chrome. This function resizes all window
-		/// sized layers.
-		void Resize(int width, int height) { Resize({width, height}); }
-
-		/// Resizes the window to the given size. The given size is considered as the
-		/// whole window including its chrome. The restrictions for the smallest
-		/// sized window might change depending on the window manager or theme.
-		/// Largest window size can be obtained using UsableScreenRegion however,
-		/// this size does not exclude window chrome. This function resizes all window
-		/// sized layers.
-		void ResizeOuter(const Geometry::Size &size);
-
-		/// Resizes the window to the given size. The given size is considered as the
-		/// whole window including its chrome. The restrictions for the smallest
-		/// sized window might change depending on the window manager or theme.
-		/// Largest window size can be obtained using UsableScreenRegion however,
-		/// this size does not exclude window chrome. This function resizes all window
-		/// sized layers.
-		void ResizeOuter(int width, int height) { ResizeOuter({width, height}); }
+		// +GetChrome
 
 		/// Displays this window, may generate Activated event
 		void Show();
@@ -159,7 +119,7 @@ namespace Gorgon {
 
 		/// @name Events 
 		/// @{
-
+		
 		/// Called when this window is activated
 		Event<Window> ActivateEvent=Event<Window>(*this);
 
@@ -196,6 +156,7 @@ namespace Gorgon {
 
 	private:
 		internal::windowdata *data;
+		//graphics::internal::gldata *data;
 
 		static Containers::Collection<Window> windows;
 

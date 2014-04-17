@@ -6,6 +6,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <string.h>
+#include <unistd.h>
 
 
 namespace Gorgon { 
@@ -15,6 +16,9 @@ namespace Gorgon {
 		struct windowdata {
 			::Window handle = 0;
 			bool pointerdisplayed=true;
+			bool move=false;
+			Geometry::Point moveto;
+			bool ismapped=false;
 		};
 		
 	}
@@ -41,11 +45,18 @@ namespace Gorgon {
 		Atom XA_PROTOCOLS;
 		Atom WM_DELETE_WINDOW;
 		Atom XA_STRING;
+		Atom XA_NET_FRAME_EXTENTS;
+		Atom XA_NET_WORKAREA;
+		Atom XA_NET_REQUEST_FRAME_EXTENTS;
 		///@}
 			
 		///@{ waits for specific events
 		static int waitfor_mapnotify(Display *d, XEvent *e, char *arg) {
 			return (e->type == MapNotify) && (e->xmap.window == (::Window)arg);
+		}
+		
+		static int waitfor_propertynotify(Display *d, XEvent *e, char *arg) {
+			return (e->type == PropertyNotify) && (e->xproperty.window == (::Window)arg);
 		}
 		
 		static int waitfor_selectionnotify(Display *d, XEvent *e, char *arg) {
@@ -60,16 +71,50 @@ namespace Gorgon {
 
 		/// @endcond
 		
+		template<class T_>
+		T_ GetX4Prop(Atom atom, ::Window w, const T_ &def) {
+			Atom actual_type;
+			int actual_format;
+			unsigned long item_count;
+			unsigned long bytes_left;
+			
+			Byte *data;
+
+			int status = XGetWindowProperty(
+				display,
+				w,
+				atom,
+				0, 4, 0, AnyPropertyType,
+				&actual_type, &actual_format,
+				&item_count, &bytes_left,
+				&data
+			);
+			
+			if(status!=Success) return def;
+			
+			if(item_count<4 || actual_format!=32) return def;
+			
+			int32_t *cardinals=reinterpret_cast<int32_t*>(data);
+			
+			T_ ret={
+				cardinals[0],
+				cardinals[1],
+				cardinals[2],
+				cardinals[3]
+			};
+			
+			XFree(data);
+			
+			return ret;
+		}
+		
 		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
-			Geometry::Rectangle rect;
-			rect.X=0;
-			rect.Y=0;
+			Screen  *screen_data  = XScreenOfDisplay(display, monitor);
+			int screen = DefaultScreen(WindowManager::display);
 			
-			Screen  *screen  = XScreenOfDisplay(display, monitor);
-			rect.Width =XWidthOfScreen(screen);
-			rect.Height=XHeightOfScreen(screen);
+			Geometry::Rectangle rect{0, 0, XWidthOfScreen(screen_data), XHeightOfScreen(screen_data)};
 			
-			return rect;
+			return GetX4Prop(XA_NET_WORKAREA, XRootWindow(display, screen), rect);
 		}
 		
 		Geometry::Rectangle GetScreenRegion(int monitor) {
@@ -96,6 +141,9 @@ namespace Gorgon {
 			XA_PROTOCOLS=XInternAtom(display, "WM_PROTOCOLS", 0);
 			XA_STRING   =XInternAtom(display, "STRING", 0);
 			WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", 0);
+			XA_NET_FRAME_EXTENTS = XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
+			XA_NET_WORKAREA = XInternAtom(display, "_NET_WORKAREA", 0);
+			XA_NET_REQUEST_FRAME_EXTENTS = XInternAtom(display, "_NET_REQUEST_FRAME_EXTENTS", 0);
 			
 
 			char data[1]={0};
@@ -179,12 +227,12 @@ namespace Gorgon {
 			XFlush(display);
 		}
 	}
-
-
 	
-	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible, bool useoutermetrics) : 
+	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) : 
 	data(new internal::windowdata) {
 		windows.Add(this);
+		
+
 		//using defaults
 		int screen = DefaultScreen(WindowManager::display);
 		int depth  = DefaultDepth(WindowManager::display,screen); 
@@ -202,12 +250,16 @@ namespace Gorgon {
 					SubstructureRedirectMask //??
 		;
 		
+		bool autoplaced=false;
 		if(rect.TopLeft()==automaticplacement) {
 			rect.Move( (WindowManager::GetUsableScreenRegion()-rect.GetSize()).Center() );
+			autoplaced=true;
 		}
 		
+		auto rootwin=XRootWindow(WindowManager::display,screen);
+		
 		data->handle = XCreateWindow(WindowManager::display, 
-			XRootWindow(WindowManager::display,screen),
+			rootwin,
 			rect.X,rect.Y, rect.Width,rect.Height,
 			0, depth, InputOutput, 
 			WindowManager::visual, CWEventMask, &attributes
@@ -233,17 +285,28 @@ namespace Gorgon {
 		XFree(sizehints);
 		
 		XSetWMProtocols(WindowManager::display, data->handle, &WindowManager::WM_DELETE_WINDOW, 1);
-		XFlush(WindowManager::display);
+
+		//!Replace with margins
+		//auto extents=WindowManager::GetX4Prop<Geometry::Bounds>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
 		
-		XEvent event;
 		
 		if(visible) {
+			XEvent event;
+			
+			XFlush(WindowManager::display);
+			
 			XMapWindow(WindowManager::display,data->handle);
 			XIfEvent(WindowManager::display, &event, &WindowManager::waitfor_mapnotify, (char*)data->handle);
-		
+	
 			XMoveWindow(WindowManager::display, data->handle, rect.X, rect.Y);
-			XFlush(WindowManager::display);
+			XFlush(WindowManager::display);			
 		}
+		else {
+			data->move=true;
+			data->moveto=rect.TopLeft();
+		}
+		
+		data->ismapped=visible;
 	}
 	
 	Window::Window(const FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata) {
@@ -257,16 +320,21 @@ namespace Gorgon {
 	
 	void Window::Hide() {
 		XUnmapWindow(WindowManager::display, data->handle);
+		data->ismapped=false;
 	}
 	
 	void Window::Show() {
 		XEvent event;
 
 		XMapWindow(WindowManager::display, data->handle);
-		XFlush(WindowManager::display);
 		XIfEvent(WindowManager::display, &event, WindowManager::waitfor_mapnotify, (char*)data->handle);
 		XRaiseWindow(WindowManager::display, data->handle);
+		if(data->move) {
+			XMoveWindow(WindowManager::display, data->handle, data->moveto.X, data->moveto.Y);
+			data->move=false;
+		}		
 		XFlush(WindowManager::display);
+		data->ismapped=true;
 	}
 		
 	void Window::HidePointer() {
@@ -286,8 +354,14 @@ namespace Gorgon {
 	}
 	
 	void Window::Move(const Geometry::Point &location) {
-		XMoveWindow(WindowManager::display, data->handle, location.X, location.Y);
-		XFlush(WindowManager::display);
+		if(data->ismapped) {
+			XMoveWindow(WindowManager::display, data->handle, location.X, location.Y);
+			XFlush(WindowManager::display);
+		}
+		else {
+			data->move=true;
+			data->moveto=location;
+		}
 	}
 	
 	void Window::Resize(const Geometry::Size &size) {
