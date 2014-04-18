@@ -318,12 +318,9 @@ namespace Gorgon {
 		windows.Remove(this);
 	}
 	
-	void Window::Hide() {
-		XUnmapWindow(WindowManager::display, data->handle);
-		data->ismapped=false;
-	}
-	
 	void Window::Show() {
+		Layer::Show();
+		
 		XEvent event;
 
 		XMapWindow(WindowManager::display, data->handle);
@@ -335,6 +332,13 @@ namespace Gorgon {
 		}		
 		XFlush(WindowManager::display);
 		data->ismapped=true;
+	}
+	
+	void Window::Hide() {
+		Layer::Hide();
+		
+		XUnmapWindow(WindowManager::display, data->handle);
+		data->ismapped=false;
 	}
 		
 	void Window::HidePointer() {
@@ -354,6 +358,8 @@ namespace Gorgon {
 	}
 	
 	void Window::Move(const Geometry::Point &location) {
+		Layer::Move(location);
+		
 		if(data->ismapped) {
 			XMoveWindow(WindowManager::display, data->handle, location.X, location.Y);
 			XFlush(WindowManager::display);
@@ -365,6 +371,8 @@ namespace Gorgon {
 	}
 	
 	void Window::Resize(const Geometry::Size &size) {
+		Layer::Resize(size);
+		
 		XSizeHints *sizehints=XAllocSizeHints();
 		sizehints->min_width=size.Width;
 		sizehints->max_width=size.Width;

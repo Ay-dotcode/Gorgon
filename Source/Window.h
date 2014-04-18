@@ -7,6 +7,7 @@
 #include "Containers/Collection.h"
 #include "WindowManager.h"
 #include "Event.h"
+#include "Layer.h"
 
 namespace Gorgon {
 	/// @cond INTERNAL
@@ -17,7 +18,7 @@ namespace Gorgon {
 
 	/// This class represents a window. 
 	/// @nosubgrouping
-	class Window {
+	class Window : public Layer {
 		friend internal::windowdata *WindowManager::internal::getdata(const Window&);
 	public:
 		static const 
@@ -90,7 +91,7 @@ namespace Gorgon {
 		void processmessages();
 
 		/// Moves the window to the given position
-		void Move(const Geometry::Point &position);
+		virtual void Move(const Geometry::Point &position);
 
 		/// Resizes the window to the given size. The given size is considered as the
 		/// interior region of the window. The restrictions for the smallest
@@ -98,24 +99,24 @@ namespace Gorgon {
 		/// Largest window size can be obtained using UsableScreenRegion however,
 		/// this size does not exclude window chrome. This function resizes all window
 		/// sized layers.
-		void Resize(const Geometry::Size &size);
+		virtual void Resize(const Geometry::Size &size);
 
 		// +GetChrome
 
 		/// Displays this window, may generate Activated event
-		void Show();
+		virtual void Show();
 
 		/// Hides this window, may generate Deactivated event
-		void Hide();
+		virtual void Hide();
 
 		/// Closes the window. After this function, any use of this object might fail.
 		void Close();
 
-		////Hides the pointer displayed by window manager
-		void HidePointer();
-
 		////Shows the pointer displayed by window manager
 		void ShowPointer();
+
+		////Hides the pointer displayed by window manager
+		void HidePointer();
 
 		/// @name Events 
 		/// @{
@@ -152,6 +153,10 @@ namespace Gorgon {
 
 		/// List of currently created windows
 		static const Containers::Collection<Window> &Windows;
+		
+	protected:
+		/// A window cannot be placed in another layer. This function always fails.
+		virtual void located() { assert( false && "A window cannot be placed in another layer"); }
 
 
 	private:

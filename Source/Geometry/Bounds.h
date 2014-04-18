@@ -44,20 +44,20 @@ namespace Gorgon { namespace Geometry {
 		}
 
 		/// Constructs bounds from the given coordinates and size
-		basic_Bounds(const basic_Point<T_> &topleft, const basic_Size<T_> &size) : Left(topleft.x), Top(topleft.y), 
-		Right(topleft.x+size.Width), Bottom(topleft.y+size.Height) {
+		basic_Bounds(const basic_Point<T_> &topleft, const basic_Size<T_> &size) : Left(topleft.X), Top(topleft.Y), 
+		Right(topleft.X+size.Width), Bottom(topleft.Y+size.Height) {
 			Normalize();
 		}
 
 		/// Constructs bounds from the given coordinates and size
 		basic_Bounds(const T_ &left, const T_ &top, const basic_Size<T_> &size) : Left(left), Top(top),
-		Right(TopLeft.x+size.Width), Bottom(TopLeft.y+size.Height) {
+		Right(TopLeft.X+size.Width), Bottom(TopLeft.Y+size.Height) {
 			Normalize();
 		}
 
 		/// Constructs bounds from the given coordinates and size
 		basic_Bounds(const basic_Point<T_> &topleft, const T_ &width, const T_ &height) :
-		Left(topleft.x), Top(topleft.y), Right(topleft.x+width), Bottom(topleft.y+height) {
+		Left(topleft.X), Top(topleft.Y), Right(topleft.X+width), Bottom(topleft.Y+height) {
 			Normalize();
 		}
 
@@ -128,8 +128,9 @@ namespace Gorgon { namespace Geometry {
 			return Bottom-Top;
 		}
 
+
 		/// Returns the size of the bounds object
-		basic_Size<T_> Size() const {
+		basic_Size<T_> GetSize() const {
 			return{Width(), Height()};
 		}
 

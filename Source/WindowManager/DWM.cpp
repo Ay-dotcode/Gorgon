@@ -155,7 +155,7 @@ namespace Gorgon {
 		delete data;
 	}
 
-	void Window::Show() {
+	virtvoid Window::Show() {
 		ShowWindow(data->handle, SW_SHOW);
 		SetActiveWindow(data->handle);
 		ShowWindow(data->handle, SW_SHOW);

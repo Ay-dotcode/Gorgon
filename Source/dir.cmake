@@ -8,6 +8,8 @@ SET(Local
 	WindowManager
 	Any.h
 	Event.h
+	Layer.h
+	Layer.cpp
 	Main.h
 	Main.cpp
 	Threading.h

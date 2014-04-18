@@ -540,6 +540,8 @@ namespace Gorgon {
 				return *list[index];
 			}
 
+			/// @name Iterator related
+			/// @{
 			/// begin iterator
 			Iterator begin() {
 				return Iterator(*this, 0);
@@ -579,6 +581,7 @@ namespace Gorgon {
 			ConstIterator Last() const {
 				return ConstIterator(*this, list.size()-1);
 			}
+			/// @}
 
 			/// Removes all items from the list, allocated memory for the list stays
 			void Clear() {
@@ -604,7 +607,7 @@ namespace Gorgon {
 			}
 
 			/// Destroys the entire collection, effectively deleting the contents
-			/// and the list
+			/// and the list including all the memory used by it.
 			void Destroy() {
 				for(auto e : list)
 					delete e;

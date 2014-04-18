@@ -212,6 +212,14 @@ namespace Gorgon { namespace Geometry {
 		T_ Area() const { 
 			return Width*Height; 
 		}
+		
+		/// Returns the maximum representable size. This function requires T_ to be
+		/// standard arithmetic type
+		static basic_Size Max() {
+			static_assert(std::numeric_limits<T_>::is_specialized, "Max function can only be used with "
+				"arithmetic types that have numeric_limits specialized");
+			return {std::numeric_limits<T_>::max(), std::numeric_limits<T_>::max()};
+		}
 
 		/// Width of this size object
 		T_ Width;
