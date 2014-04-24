@@ -8,6 +8,8 @@
 #include "WindowManager.h"
 #include "Event.h"
 #include "Layer.h"
+#include "Input.h"
+#include "Keyboard.h"
 
 namespace Gorgon {
 	/// @cond INTERNAL
@@ -122,33 +124,45 @@ namespace Gorgon {
 		/// @{
 		
 		/// Called when this window is activated
-		Event<Window> ActivateEvent=Event<Window>(*this);
+		Event<Window> ActivatedEvent{*this};
 
 		/// Called when this window is deactivated
-		Event<Window> DeactivateEvent=Event<Window>(*this);
+		Event<Window> DeactivatedEvent{*this};
 
 		/// Called when this window is destroyed. Note that at this point, any reference
 		/// to this object may fail.
-		Event<Window> DestroyEvent=Event<Window>(*this);
+		Event<Window> DestroyedEvent{*this};
 
 		/// Called when user tries to close the window. Will not be called if window is closed
 		/// using Destructor or Close function
 		/// ### Parameters: ###
 		/// **allow** `(bool &)`: setting this value to false will stop window being closed.
-		Event<Window, bool&> ClosingEvent=Event<Window, bool&>(*this);
+		Event<Window, bool&> ClosingEvent{*this};
 
 		/// Called after the window is moved, either by the user or programmatically
-		Event<Window> MoveEvent=Event<Window>(*this);
+		Event<Window> MovedEvent{*this};
 
 		/// Called after the window is resized, either by the user or programmatically
-		Event<Window> ResizeEvent=Event<Window>(*this);
+		Event<Window> ResizedEvent{*this};
 
 		/// Called after the window is minimized, either by the user or programmatically
-		Event<Window> MinimizedEvent=Event<Window>(*this);
+		Event<Window> MinimizedEvent{*this};
 
 		/// Called after the window is restored, either by the user or programmatically
-		Event<Window> RestoredEvent=Event<Window>(*this);
+		Event<Window> RestoredEvent{*this};
+		
+		/// Called when a key is pressed or released. This key could be a keyboard key
+		/// or any other controller key including mouse. In case of mouse, this method
+		/// will be triggered if mouse call is not handled by layers
+		/// ### Parameters: ###
+		/// **Key** `(Input::Key)`: The key that is pressed or released
+		/// **Pressed** `(bool)`: Whether key is pressed or released
+		Input::Event<Window> KeyEvent{*this};
 
+		/// Called when a character is received. This event is raised for regular characters
+		/// that can be printed. If a key is handled in keypress event, this event will not be
+		/// fired. This event will be called multiple times when the key repeats. 
+		Event<Window, Keyboard::Char> CharacterEvent{*this};
 		///@}
 
 		/// List of currently created windows
@@ -160,8 +174,9 @@ namespace Gorgon {
 
 
 	private:
+		void createglcontext();
+		
 		internal::windowdata *data;
-		//graphics::internal::gldata *data;
 
 		static Containers::Collection<Window> windows;
 

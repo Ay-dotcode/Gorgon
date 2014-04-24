@@ -1,6 +1,7 @@
 #include "../WindowManager.h"
 #include "../Window.h"
 #include "../Time.h"
+#include "../OS.h"
 
 
 #include <X11/Xlib.h>
@@ -8,6 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <GL/glx.h>
 
 namespace Gorgon { 
 
@@ -19,6 +21,7 @@ namespace Gorgon {
 			bool move=false;
 			Geometry::Point moveto;
 			bool ismapped=false;
+			GLXContext context=0;
 		};
 		
 	}
@@ -307,6 +310,8 @@ namespace Gorgon {
 		}
 		
 		data->ismapped=visible;
+		
+		createglcontext();
 	}
 	
 	Window::Window(const FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata) {
@@ -372,21 +377,233 @@ namespace Gorgon {
 	
 	void Window::Resize(const Geometry::Size &size) {
 		Layer::Resize(size);
-		
+
 		XSizeHints *sizehints=XAllocSizeHints();
 		sizehints->min_width=size.Width;
 		sizehints->max_width=size.Width;
 		sizehints->min_height=size.Height;
 		sizehints->max_height=size.Height;
 		sizehints->flags=PMinSize | PMaxSize;
-		XSetWMNormalHints(WindowManager::display, data->handle, sizehints);		
+		XSetWMNormalHints(WindowManager::display, data->handle, sizehints);
 		XFree(sizehints);
 
 		XResizeWindow(WindowManager::display, data->handle, size.Width, size.Height);
 		XFlush(WindowManager::display);
 	}
-	
+
 	void Window::processmessages() {
+		XEvent event;
+
+		while(XEventsQueued(WindowManager::display, QueuedAfterReading)) {
+			XNextEvent(WindowManager::display, &event);
+			unsigned key;
+			switch(event.type) {
+				case ClientMessage: {
+					if (event.xclient.message_type == WindowManager::XA_PROTOCOLS
+							&& event.xclient.format == 32
+							&& event.xclient.data.l[0] == (long)WindowManager::WM_DELETE_WINDOW)
+					{
+						bool allow;
+						allow=true;
+						ClosingEvent(allow);
+						
+						if(allow) {
+							Close();
+							break;
+						}
+					}
+				} // Client Message
+				break;
+				
+					
+				case FocusIn:
+					ActivatedEvent();
+					break;
+					
+				case FocusOut:
+					//ReleaseAll();
+					DeactivatedEvent();
+					break;
+					
+				case KeyPress: {
+					key=XLookupKeysym(&event.xkey,0);
+					
+					//modifiers
+					switch(key) {
+						case XK_Shift_L:
+						case XK_Shift_R:
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Shift);
+							break;
+							
+						case XK_Control_L:
+						case XK_Control_R:
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Ctrl);
+							break;
+							
+						case XK_Alt_L:
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Alt);
+							break;
+							
+						case XK_Alt_R:
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::AltGr);
+							break;
+							
+						case XK_Super_L:
+						case XK_Super_R:
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Meta);
+							break;
+					}
+					
+					if(KeyEvent(key, +1.f)) break;
+					
+					Byte buffer[2];
+					
+					int nchars = XLookupString(
+						&(event.xkey),
+						(char*)&buffer, 2, 
+						(KeySym*)&key, nullptr 
+					);
+					
+					if(nchars==1) {
+						if((buffer[0]>=0x20 && buffer[0]<0x7f) || buffer[0] == '\t') {
+							CharacterEvent(buffer[0]);
+						}
+					}
+				} //Keypress
+				break;
+					
+					
+				case KeyRelease: {
+					if(XEventsQueued(WindowManager::display, QueuedAfterReading)) {
+						XEvent nextevent;
+						XPeekEvent(WindowManager::display, &nextevent);
+						if(nextevent.type == KeyPress && nextevent.xkey.time == event.xkey.time && 
+							nextevent.xkey.keycode == event.xkey.keycode) {
+							
+							Byte buffer[2];
+					
+							int nchars = XLookupString(
+								&(event.xkey),
+								(char*)&buffer, 2, 
+								(KeySym*)&key, nullptr 
+							);
+							
+							if(nchars==1) {
+								if((buffer[0]>=0x20 && buffer[0]<0x7f) || buffer[0] == '\t') {
+									CharacterEvent(buffer[0]);
+								}
+							}
+					
+							XNextEvent(WindowManager::display, &nextevent);
+							break;
+						}
+					}
+					
+					key=XLookupKeysym(&event.xkey,0);
+					
+					//modifiers
+					switch(key) {
+						case XK_Shift_L:
+						case XK_Shift_R:
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Shift);
+							break;
+							
+						case XK_Control_L:
+						case XK_Control_R:
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Ctrl);
+							break;
+							
+						case XK_Alt_L:
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Alt);
+							break;
+							
+						case XK_Alt_R:
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::AltGr);
+							break;
+							
+						case XK_Super_L:
+						case XK_Super_R:
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Meta);
+							break;
+					}
+					
+					
+					if(KeyEvent(key, 0.f)) break;
+					
+				} //Keypress
+				break;
+					
+
+			}
+		}
 	}
 	
+	void Window::Close() {
+		DestroyedEvent();
+	}
+	
+	void Window::createglcontext() {
+		static int attributeListDbl[] = {
+			GLX_RGBA,
+			GLX_DOUBLEBUFFER,
+			GLX_RED_SIZE,   1,
+			GLX_GREEN_SIZE, 1,
+			GLX_BLUE_SIZE,  1,
+			None
+		};
+		
+		XVisualInfo *vi = glXChooseVisual(WindowManager::display, DefaultScreen(WindowManager::display), attributeListDbl);
+		
+		GLXContext prev=0;
+		for(auto &w : windows) {
+			if(w.data->context!=0) {
+				prev=w.data->context;
+			}
+		}
+		
+		data->context = glXCreateContext(WindowManager::display, vi, prev, GL_TRUE);
+		
+		glXMakeCurrent(WindowManager::display, data->handle, data->context);
+
+		if(data->context==0) {
+			OS::DisplayMessage("OpenGL context creation failed");
+			exit(1);
+		}
+		
+		std::string gl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+		if(String::To<float>(gl_version)<3.0) {
+			OS::DisplayMessage("OpenGL version 3.0 and above is required. Your OpenGL version is "+gl_version);
+			exit(2);
+		}
+		
+		glShadeModel(GL_SMOOTH);
+		glClearColor(0.4f, 0.2f, 0.0f, 1.0f);
+		glColor4f(1.0f,1.0f,1.0f,1.0f);
+		
+		glClearDepth(1.0f);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		
+		glEnable(GL_TEXTURE_2D);
+		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+		
+		glViewport(0, 0, bounds.Width(), bounds.Height());
+		
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
+		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glFinish();
+		glXSwapBuffers(WindowManager::display, data->handle);
+		
+		XFlush(WindowManager::display);
+	}
 }

@@ -1,8 +1,11 @@
 SET(Local
 	../WindowManager.h
 	WindowManager.cpp
-	../Window.h
 )
+
+FIND_PACKAGE(OpenGL REQUIRED)
+
+LIST(APPEND Libs ${OPENGL_LIBRARIES})
 
 IF(${WIN32})
 	LIST(APPEND Local

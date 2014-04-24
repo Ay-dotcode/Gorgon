@@ -1,3 +1,9 @@
+
+
+
+
+#ifdef nonnnne
+
 #include "Graphics.h"
 #include "OpenGL.h"
 #include "GGEMain.h"
@@ -227,7 +233,6 @@ namespace gge { namespace graphics {
 		glOrtho(0,Width,Height,0,-100,100);					// Calculate The Aspect Ratio Of The Window
 		*/
 		glCullFace(GL_BACK);
-		//glFrontFace(GL_CW);
 		glFrontFace(GL_CCW);
 
 		ProjectionMatrixStack.SetIdentity();
@@ -429,3 +434,5 @@ namespace gge { namespace graphics {
 		return data;
 	}
 } }
+
+#endif

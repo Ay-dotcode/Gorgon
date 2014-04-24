@@ -16,114 +16,6 @@ namespace Gorgon {
 
 	/// @cond INTERNAL
 	namespace internal  {
-		template<class Source_, typename... Params_>
-		struct HandlerBase {
-			virtual void Fire(std::mutex &locker, Source_ *, Params_...) = 0;
-		};
-
-		template<class Source_, typename... Params_>
-		struct EmptyHandlerFn : public HandlerBase<Source_, Params_...> {
-			EmptyHandlerFn(std::function<void()> fn) : fn(fn) { }
-
-			virtual void Fire(std::mutex &locker, Source_ *, Params_...) {
-				auto f=fn;
-				locker.unlock();
-				f();
-			}
-
-			std::function<void()> fn;
-		};
-
-		template<class Source_, typename... Params_>
-		struct ArgsHandlerFn : public HandlerBase<Source_, Params_...> {
-			ArgsHandlerFn(std::function<void(Params_...)> fn) : fn(fn) { }
-
-			virtual void Fire(std::mutex &locker, Source_ *, Params_... args) {
-				auto f=fn;
-				locker.unlock();
-				f(args...);
-			}
-
-			std::function<void(Params_...)> fn;
-		};
-
-		template<class Source_, typename... Params_>
-		struct FullHandlerFn : public HandlerBase<Source_, Params_...> {
-			static_assert(!std::is_same<Source_, Empty>::value, "No source class exists for this event (Empty should not be passed around)");
-			
-			FullHandlerFn(std::function<void(Source_&, Params_...)> fn) : fn(fn) { }
-
-			virtual void Fire(std::mutex &locker, Source_ *source, Params_... args) {
-				auto f=fn;
-				locker.unlock();
-				f(*source, args...);
-			}
-
-			std::function<void(Source_&, Params_...)> fn;
-		};
-
-		template <typename U>
-		struct has_parop {
-			typedef char yes;
-			struct no { char _[2]; };
-			template<typename T, typename L=decltype(&T::operator())>
-			static yes impl(T*) { return yes(); }
-			static no  impl(...) { return no(); }
-
-			enum { value = sizeof(impl(static_cast<U*>(0))) == sizeof(yes) };
-		};
-
-		template<class Source_, class... Params_>
-		static HandlerBase<Source_, Params_...>& createhandlerfn(void(*fn)()) {
-			return *new EmptyHandlerFn<Source_, Params_...>(fn);
-		}
-
-		template<class Source_, class... Params_>
-		static HandlerBase<Source_, Params_...>& createhandlerfn(void(*fn)(Params_...)) {
-			return *new ArgsHandlerFn<Source_, Params_...>(fn);
-		}
-
-		template<class Source_, class... Params_>
-		static HandlerBase<Source_, Params_...>& createhandlerfn(void(*fn)(Source_ &, Params_...)) {
-			return *new FullHandlerFn<Source_, Params_...>(fn);
-		}
-
-		template <typename T>
-		struct argscount : public argscount<decltype(&T::operator())> { };
-
-		template <typename ClassType, typename ReturnType, typename... Args>
-		struct argscount<ReturnType(ClassType::*)(Args...) const> {
-			enum { value = sizeof...(Args) };
-		};
-
-		template<class F_, class Source_, int N, class... Params_>
-		static typename std::enable_if<argscount<F_>::value==0, HandlerBase<Source_, Params_...>&>::type createhandler(F_ fn) {
-			return *new EmptyHandlerFn<Source_, Params_...>(fn);
-		}
-
-		template<class F_, class Source_, int N, typename... Params_>
-		static typename std::enable_if<argscount<F_>::value!=0 && argscount<F_>::value==N, HandlerBase<Source_, Params_...>&>::type 
-		createhandler(F_ fn) {
-			return *new ArgsHandlerFn<Source_, Params_...>(fn);
-		}
-
-		template<class F_, class Source_, int N, class... Params_>
-		static typename std::enable_if<argscount<F_>::value==N+1, HandlerBase<Source_, Params_...>&>::type createhandler(F_ fn) {
-			return *new FullHandlerFn<Source_, Params_...>(fn);
-		}
-
-		template<class F_, class Source_, class... Params_>
-		typename std::enable_if<has_parop<F_>::value, HandlerBase<Source_, Params_...>&>::type 
-		create_handler(F_ fn) {
-			return createhandler<F_, Source_, sizeof...(Params_), Params_...>(fn);
-		}
-
-		template<class F_, class Source_, class... Params_, typename N=void>
-		typename std::enable_if<!has_parop<F_>::value, HandlerBase<Source_, Params_...>&>::type 
-		create_handler(F_ fn) {
-			return createhandlerfn<Source_, Params_...>(fn);
-		}
-
 
 		/// Solution by Peter Dimov-5: http://std.2283326.n4.nabble.com/bind-Possible-to-use-variadic-templates-with-bind-td2557818.html
 		template<int...> struct int_tuple { };
@@ -171,6 +63,119 @@ namespace Gorgon {
 			return make_func_helper(pm, that, typename
 				make_indexes<Args...>::type());
 		}
+
+		template <typename U>
+		struct has_parop {
+			typedef char yes;
+			struct no { char _[2]; };
+			template<typename T, typename L=decltype(&T::operator())>
+			static yes impl(T*) { return yes(); }
+			static no  impl(...) { return no(); }
+
+			enum { value = sizeof(impl(static_cast<U*>(0))) == sizeof(yes) };
+		};
+
+		template <typename T>
+		struct argscount : public argscount<decltype(&T::operator())> { };
+
+		template <typename ClassType, typename ReturnType, typename... Args>
+		struct argscount<ReturnType(ClassType::*)(Args...) const> {
+			enum { value = sizeof...(Args) };
+		};
+
+		namespace event {
+			template<class Source_, typename... Params_>
+			struct HandlerBase {
+				virtual void Fire(std::mutex &locker, Source_ *, Params_...) = 0;
+			};
+
+			template<class Source_, typename... Params_>
+			struct EmptyHandlerFn : public HandlerBase<Source_, Params_...> {
+				EmptyHandlerFn(std::function<void()> fn) : fn(fn) { }
+
+				virtual void Fire(std::mutex &locker, Source_ *, Params_...) {
+					auto f=fn;
+					locker.unlock();
+					f();
+				}
+
+				std::function<void()> fn;
+			};
+
+			template<class Source_, typename... Params_>
+			struct ArgsHandlerFn : public HandlerBase<Source_, Params_...> {
+				ArgsHandlerFn(std::function<void(Params_...)> fn) : fn(fn) { }
+
+				virtual void Fire(std::mutex &locker, Source_ *, Params_... args) {
+					auto f=fn;
+					locker.unlock();
+					f(args...);
+				}
+
+				std::function<void(Params_...)> fn;
+			};
+
+			template<class Source_, typename... Params_>
+			struct FullHandlerFn : public HandlerBase<Source_, Params_...> {
+				static_assert(!std::is_same<Source_, Empty>::value, "No source class exists for this event (Empty should not be passed around)");
+				
+				FullHandlerFn(std::function<void(Source_&, Params_...)> fn) : fn(fn) { }
+
+				virtual void Fire(std::mutex &locker, Source_ *source, Params_... args) {
+					auto f=fn;
+					locker.unlock();
+					f(*source, args...);
+				}
+
+				std::function<void(Source_&, Params_...)> fn;
+			};
+
+			template<class Source_, class... Params_>
+			static HandlerBase<Source_, Params_...>& createhandlerfn(void(*fn)()) {
+				return *new EmptyHandlerFn<Source_, Params_...>(fn);
+			}
+
+			template<class Source_, class... Params_>
+			static HandlerBase<Source_, Params_...>& createhandlerfn(void(*fn)(Params_...)) {
+				return *new ArgsHandlerFn<Source_, Params_...>(fn);
+			}
+
+			template<class Source_, class... Params_>
+			static HandlerBase<Source_, Params_...>& createhandlerfn(void(*fn)(Source_ &, Params_...)) {
+				return *new FullHandlerFn<Source_, Params_...>(fn);
+			}
+
+			template<class F_, class Source_, int N, class... Params_>
+			static typename std::enable_if<argscount<F_>::value==0, HandlerBase<Source_, Params_...>&>::type 
+			createhandler(F_ fn) {
+				return *new EmptyHandlerFn<Source_, Params_...>(fn);
+			}
+
+			template<class F_, class Source_, int N, typename... Params_>
+			static typename std::enable_if<argscount<F_>::value!=0 && argscount<F_>::value==N, HandlerBase<Source_, Params_...>&>::type 
+			createhandler(F_ fn) {
+				return *new ArgsHandlerFn<Source_, Params_...>(fn);
+			}
+
+			template<class F_, class Source_, int N, class... Params_>
+			static typename std::enable_if<argscount<F_>::value==N+1, HandlerBase<Source_, Params_...>&>::type 
+			createhandler(F_ fn) {
+				return *new FullHandlerFn<Source_, Params_...>(fn);
+			}
+
+			template<class F_, class Source_, class... Params_>
+			typename std::enable_if<has_parop<F_>::value, HandlerBase<Source_, Params_...>&>::type 
+			create_handler(F_ fn) {
+				return createhandler<F_, Source_, sizeof...(Params_), Params_...>(fn);
+			}
+
+			template<class F_, class Source_, class... Params_, typename N=void>
+			typename std::enable_if<!has_parop<F_>::value, HandlerBase<Source_, Params_...>&>::type 
+			create_handler(F_ fn) {
+				return createhandlerfn<Source_, Params_...>(fn);
+			}
+		}
+
 	}
 
 	/// @endcond
@@ -186,7 +191,7 @@ namespace Gorgon {
 	/// Class members or lambda functions can also be used as event handlers. An
 	/// event handler can be registered using Register function.
 	template<class Source_=Empty, typename... Params_>
-	class Event {		
+	class Event {
 	public:	
 
 		/// Data type for tokens
@@ -197,8 +202,8 @@ namespace Gorgon {
 			static_assert( std::is_same<Source_, Empty>::value , "Empty constructor cannot be used." );
 		}
 		
-		/// Constructor for Class specific source
-		Event(Source_ &source) : source(&source) {
+		/// Constructor for class specific source
+		explicit Event(Source_ &source) : source(&source) {
 			static_assert( !std::is_same<Source_, Empty>::value, "Filling constructor is not required, use the default." );
 		}
 		
@@ -263,7 +268,7 @@ namespace Gorgon {
 		/// called immediately in this case.
 		template<class F_>
 		Token Register(F_ fn) {
-			auto &handler=internal::create_handler<F_, Source_, Params_...>(fn);
+			auto &handler=internal::event::create_handler<F_, Source_, Params_...>(fn);
 
 			std::lock_guard<std::mutex> g(access);
 			handlers.Add(handler);
@@ -295,7 +300,7 @@ namespace Gorgon {
 		void Unregister(Token token) {
 			std::lock_guard<std::mutex> g(access);
 
-			auto item=reinterpret_cast<internal::HandlerBase<Source_, Params_...>*>(token);
+			auto item=reinterpret_cast<internal::event::HandlerBase<Source_, Params_...>*>(token);
 			
 			auto l=handlers.FindLocation(item);
 			if(l==-1) return;
@@ -345,8 +350,8 @@ namespace Gorgon {
 	private:
 		std::mutex fire, access;
 		Source_ *source;
-		Containers::Collection<internal::HandlerBase<Source_, Params_...>> handlers;
-		typename Containers::Collection<internal::HandlerBase<Source_, Params_...>>::Iterator iterator;
+		Containers::Collection<internal::event::HandlerBase<Source_, Params_...>> handlers;
+		typename Containers::Collection<internal::event::HandlerBase<Source_, Params_...>>::Iterator iterator;
 	};
 	
 	/// Swaps two events

@@ -40,7 +40,6 @@ int main() {
 	});
 
 	event(3, 4);
-	
 	event(2, 2);
 	
 	//Gorgon::OS::Initialize();
@@ -52,11 +51,18 @@ int main() {
 	std::cout<<std::boolalpha;
 	//std::cout<<"Run: "<<Gorgon::OS::Open("http://darkgaze.org")<<std::endl;
 	
-	Gorgon::Window win({50,20,200, 300}, "mywind", "My window", false);
+	Gorgon::Window win({50,20,200, 300}, "mywind", "My window");
 	win.Move({300,200});
-	win.Show();
+	win.ActivatedEvent.Register([]{std::cout<<"activated"<<std::endl;});
+	win.DestroyedEvent.Register([]{std::cout<<"destroyed"<<std::endl;exit(0);});
+	win.CharacterEvent.Register([](Gorgon::Keyboard::Char c) { std::cout<<c<<std::endl; });
+	win.KeyEvent.Register([](Gorgon::Input::Key k, float amount) -> bool { 
+		std::cout<<k<<": "<<amount<<std::endl; 
+		return false;
+	});
 	//win.Resize({400,500});
 	
-	std::cin.sync();
-	std::cin>>a.a;
+	while(true) {
+		Gorgon::OS::processmessages();
+	}
 }

@@ -1,6 +1,15 @@
-#include "Input.h"
-#include "GGEMain.h"
+#include "../Input.h"
+#include "../Keyboard.h"
 
+namespace Gorgon {
+	
+	namespace Keyboard {
+		Modifier CurrentModifier=Modifier::None;
+	}
+}
+
+
+#ifdef asdfas
 using namespace gge;
 using namespace utils;
 
@@ -650,3 +659,4 @@ namespace gge { namespace input {
 
 
 } }
+#endif

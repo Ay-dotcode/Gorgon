@@ -1,144 +1,339 @@
 #pragma once
 
-#include "../Utils/SortedCollection.h"
-#include "../Utils/Collection.h"
-#include "GGE.h"
+#include "Event.h"
+#include "Containers/Collection.h"
 
-#include "OS.h"
-#include "../Utils/ConsumableEvent.h"
-#include "../Utils/Bounds2D.h"
-#include <functional>
-#include <map>
-#include <algorithm>
-
-namespace gge { 
-	class LayerBase;
-
-	namespace input {
-	class BasicPointerTarget;
-
-
-	namespace keyboard { 
+namespace Gorgon { 
+	
+	/// This namespace contains general input related functionality.
+	/// Also check Gorgon::Keyboard and Gorgon::Mouse.
+	namespace Input {
+		/// A type to represent an input key
 		typedef int Key;
-		extern std::map<Key, bool> PressedKeys;
+		
+		/// @cond INTERNAL
+		namespace internal {
+			
+			template<class Source_>
+			struct HandlerBase {
+				virtual bool Fire(std::mutex &locker, Source_ *object, Key key, float amount) = 0;
+				
+				bool active=true;
+			};
+			
 
-		class Modifier {
-		public:
+			template<class Source_>
+			struct EmptyHandlerFn : public HandlerBase<Source_> {
+				EmptyHandlerFn(std::function<bool()> fn) : fn(fn) { }
 
-			enum Type {
-				None		= 0,
-				Shift		= 1,
-				Ctrl		= 2,
-				Alt			= 4,
-				Super		= 8,
+				virtual bool Fire(std::mutex &locker, Source_ *, Key key, float amount) {
+					auto f=fn;
+					locker.unlock();
+					return f();
+				}
 
-				ShiftCtrl	= Shift | Ctrl ,
-				ShiftAlt	= Shift | Alt  ,
-				CtrlAlt		= Ctrl  | Alt  ,
-				ShiftCtrlAlt= Shift | Ctrl | Alt ,
+				std::function<bool()> fn;
 			};
 
-			static bool isAlternate;
-			static Type Current;
+			template<class Source_>
+			struct ArgsHandlerFn : public HandlerBase<Source_> {
+				ArgsHandlerFn(std::function<bool(Key, float)> fn) : fn(fn) { }
 
-			////Checks the the current state of the keyboard if there are any real modifiers
-			/// in effect (Namely control, alt, and windows keys)
-			static bool Check(Type m1) {
-				return m1&Ctrl || m1&Alt || m1&Super;
+				virtual bool Fire(std::mutex &locker, Source_ *, Key key, float amount) {
+					auto f=fn;
+					locker.unlock();
+					return f(key, amount);
+				}
+
+				std::function<bool(Key, float)> fn;
+			};
+
+			template<class Source_>
+			struct FullHandlerFn : public HandlerBase<Source_> {
+				static_assert(!std::is_same<Source_, Empty>::value, "No source class exists for this event (Empty should not be passed around)");
+				
+				FullHandlerFn(std::function<bool(Source_&, Key, float)> fn) : fn(fn) { }
+
+				virtual bool Fire(std::mutex &locker, Source_ *source, Key key, float amount) {
+					auto f=fn;
+					locker.unlock();
+					return f(*source, key, amount);
+				}
+
+				std::function<bool(Source_&, Key, float)> fn;
+			};
+			
+
+			template<class Source_>
+			static HandlerBase<Source_>& createhandlerfn(void(*fn)()) {
+				return *new EmptyHandlerFn<Source_>(fn);
 			}
 
-			static bool Check() {
-				return Current&Ctrl || Current&Alt || Current&Super;
+			template<class Source_>
+			static HandlerBase<Source_>& createhandlerfn(void(*fn)(Key, float)) {
+				return *new ArgsHandlerFn<Source_>(fn);
 			}
 
-			static Type Remove(Type m1, Type m2) {
-				return Type(m1 & ~m2);
+			template<class Source_>
+			static HandlerBase<Source_>& createhandlerfn(void(*fn)(Source_ &, Key, float)) {
+				return *new FullHandlerFn<Source_>(fn);
 			}
 
-			static Type Add(Type m1, Type m2) {
-				return Type(m1 | m2);
+			template<class F_, class Source_>
+			static typename std::enable_if<Gorgon::internal::argscount<F_>::value==0, HandlerBase<Source_>&>::type 
+			createhandler(F_ fn) {
+				return *new EmptyHandlerFn<Source_>(fn);
 			}
 
-			static void Remove(Type m2) {
-				Current=Type(Current & ~m2);
+			template<class F_, class Source_>
+			static typename std::enable_if<Gorgon::internal::argscount<F_>::value==2, HandlerBase<Source_>&>::type 
+			createhandler(F_ fn) {
+				return *new ArgsHandlerFn<Source_>(fn);
 			}
 
-			static void Add(Type m2) {
-				Current=Type(Current | m2);
+			template<class F_, class Source_>
+			static typename std::enable_if<Gorgon::internal::argscount<F_>::value==3, HandlerBase<Source_>&>::type 
+			createhandler(F_ fn) {
+				return *new FullHandlerFn<Source_>(fn);
+			}
+		}
+		/// @endcond
+			
+		/// Represents an input event. First parameter is the key that is related
+		/// with the event. Second parameter represents the amount of event occurring.
+		/// In case of keyboard events, this value could either 1 or 0 representing
+		/// whether the key is pressed or released. In case of mouse scroll, this value
+		/// represents the amount of scroll. In analog controllers this value is between
+		/// 0 and 1, representing how much further controller is pushed. 
+		
+		/// @warning Analog controllers  only when changing from 0 to a positive value and vice versa.
+		template <class Source_=Empty>
+		class Event {
+		public:
+			typedef intptr_t Token;
+			
+			/// Constructor for empty source
+			Event() : source(nullptr) {
+				static_assert( std::is_same<Source_, Empty>::value , "Empty constructor cannot be used." );
+			}
+			
+			/// Constructor for class specific source
+			explicit Event(Source_ &source) : source(&source) {
+				static_assert( !std::is_same<Source_, Empty>::value, "Filling constructor is not required, use the default." );
+			}
+			
+			/// Move constructor
+			Event(Event &&event) : source(nullptr) {
+				Swap(event);
+			}
+			
+
+			/// Destructor
+			~Event() {
+				assert( ("An event cannot be destroyed while its being fired.", fire.try_lock()) );
+				std::lock_guard<std::mutex> g(access);
+				
+				handlers.Destroy();
+				
+				fire.unlock();
+			}
+			
+			/// Copy constructor is disabled
+			Event(const Event &) = delete;
+			
+			/// Copy assignment is disabled
+			Event &operator =(const Event &) = delete;
+
+			/// Move assignment
+			Event &operator =(const Event &&other) {
+				if(&other==this) return *this;
+
+				std::lock_guard<std::mutex> g(access);
+
+				if(!fire.try_lock()) 
+					throw std::runtime_error("An event cannot be moved into while its being fired.");
+
+				handlers.Destroy();
+				
+				source=nullptr;
+				Swap(other);
+				
+				fire.unlock();
+			}
+			
+			/// Swaps two Events, used for move semantics
+			void Swap(Event &other) {
+				if(&other==this) return;
+				
+				using std::swap;
+				
+				if(std::try_lock(fire, other.fire)!=-1) {
+					throw std::runtime_error("Events cannot be swap while its being fired.");
+				}
+				
+				swap(source, other.source);
+				swap(handlers, other.handlers);
+
+				fire.unlock();
+				other.fire.unlock();
+			}
+			
+			/// Deactivates the given handler token
+			void Deactivate(Token token) {
+				std::lock_guard<std::mutex> g(access);
+
+				auto item=reinterpret_cast<internal::HandlerBase<Source_>*>(token);
+				
+				auto l=handlers.FindLocation(item);
+				if(l==-1) return;
+				
+				item->active=false;
+			}
+			
+			/// Activates the given handler token and moves it to the top of the list
+			/// so that it will be called first
+			void Activate(Token token) {
+				std::lock_guard<std::mutex> g(access);
+
+				auto item=reinterpret_cast<internal::HandlerBase<Source_>*>(token);
+				
+				auto l=handlers.FindLocation(item);
+				if(l==-1) return;
+				
+				item->active=true;
+				handlers.MoveBefore(item, 0);
+			}
+			
+			/// Sends the given handler token to the bottom of the list so that it will
+			/// be fired last
+			void FireLast(Token token) {
+				std::lock_guard<std::mutex> g(access);
+
+				auto item=reinterpret_cast<internal::HandlerBase<Source_>*>(token);
+				
+				auto l=handlers.FindLocation(item);
+				if(l==-1) return;
+				
+				item->active=true;
+				handlers.MoveBefore(item, handlers.GetCount());
+			}
+			
+
+			/// Registers a new function to be called when this event is triggered. This function can
+			/// be called from event handler of the same event. The registered event handler will be
+			/// called immediately in this case.
+			template<class F_>
+			Token Register(F_ fn) {
+				auto &handler=internal::createhandler<F_, Source_>(fn);
+
+				std::lock_guard<std::mutex> g(access);
+				handlers.Add(handler);
+
+				return reinterpret_cast<intptr_t>(&handler);
 			}
 
-			static bool IsModified() {
-				return Check();
+			/// Registers a new function to be called when this event is triggered. This variant is 
+			/// designed to be used with member functions. **Example:**
+			/// @code
+			/// A a;
+			/// b.ClickEvent.Register(a, A::f);
+			/// @endcode
+			///
+			/// This function can be called from event handler of the same event. The registered 
+			/// event handler will be called immediately in this case.
+			template<class C_, typename... A_>
+			Token Register(C_ &c, void(C_::*fn)(A_...)) {
+				std::function<void(A_...)> f=Gorgon::internal::make_func(fn, &c);
+
+				return Register(f);
+			}			
+
+			/// Unregisters the given marked with the given token. This function performs no
+			/// operation if the token is not contained within this event. A handler can be
+			/// unregistered safely while the event is being fired. In this case, if the event that
+			/// is being deleted is different from the current event handler, the deleted event
+			/// handler might have already been fired. If not, it will not be fired.
+			void Unregister(Token token) {
+				std::lock_guard<std::mutex> g(access);
+
+				auto item=reinterpret_cast<internal::HandlerBase<Source_>*>(token);
+				
+				auto l=handlers.FindLocation(item);
+				if(l==-1) return;
+				
+				if(iterator.CurrentPtr()==item) {
+					handlers.Delete(l);
+					
+					//Collection iterator can point element -1
+					iterator.Previous(); 
+				}
+				else {
+					handlers.Delete(l);
+				}
 			}
 
+			/// Fire this event. This function will never allow recursive firing, i.e. an event handler
+			/// cannot cause this event to be fired again.
+			/// @return Whether this event is handled by a handler.
+			bool operator()(Key key, float amount) {
+				//prevent recursion
+				if(!fire.try_lock()) return false;
+
+				stop=false;
+
+				try {
+					for(iterator=handlers.begin(); iterator.IsValid(); iterator.Next()) {
+						if(!iterator->active) continue;
+						
+						access.lock();
+						// fire method will unlock access after it creates a local copy of the function
+						// this allows the fired object to be safely deleted.
+						bool ret=iterator->Fire(access, source, key, amount);
+						
+						if(ret) return true;
+						
+						if(stop) return true;
+					}
+				}
+				catch(...) {
+					//unlock everything if something goes bad
+					
+					//just in case
+					access.unlock();
+					
+					fire.unlock();
+					
+					throw;
+				}
+				
+				fire.unlock();
+			}
+
+			/// Stops event from continuing. Should be called inside an eventhandler to be effective.
+			/// Use this instead of returning true to keep unhandled status while canceling rest of
+			/// the handlers.
+			void Stop() {
+				stop=true;
+			}
+			
+			/// value for an empty token
+			static const Token EmptyToken = 0;
+			
 
 		private:
-			Modifier();
+			std::mutex fire, access;
+			Source_ *source;
+			Containers::Collection<internal::HandlerBase<Source_>> handlers;
+			typename Containers::Collection<internal::HandlerBase<Source_>>::Iterator iterator;
+			bool stop;
 		};
+	}
+}
 
-		////Bitwise OR operation on KeyboardModifier enumeration
-		inline Modifier::Type operator | (Modifier::Type m1, Modifier::Type m2) {
-			return Modifier::Type( int(m1)|m2 );
-		}
+#ifdef nononee	
 
-		////Bitwise AND operation on KeyboardModifier enumeration
-		inline Modifier::Type operator & (Modifier::Type m1, Modifier::Type m2) {
-			return Modifier::Type( int(m1)&m2 );
-		}
-
-		////Bitwise EQUAL OR operation on KeyboardModifier enumeration
-		inline Modifier::Type operator |= (Modifier::Type m1, Modifier::Type m2) {
-			return Modifier::Type( int(m1)|m2 );
-		}
-
-		////Bitwise EQUAL AND operation on KeyboardModifier enumeration
-		inline Modifier::Type operator &= (Modifier::Type m1, Modifier::Type m2) {
-			return Modifier::Type( int(m1)&m2 );
-		}
-
-		namespace KeyCodes {
-			extern const Key Shift;
-			extern const Key Control;
-			extern const Key Alt;
-			extern const Key Super;
-
-			extern const Key Home;
-			extern const Key End;
-			extern const Key Insert;
-			extern const Key Delete;
-			extern const Key PageUp;
-			extern const Key PageDown;
-
-			extern const Key Left;
-			extern const Key Up;
-			extern const Key Right;
-			extern const Key Down;
-
-			extern const Key PrintScreen;
-			extern const Key Pause;
-
-			extern const Key CapsLock;
-			extern const Key NumLock;
-
-			extern const Key Enter;
-			extern const Key Tab;
-			extern const Key Backspace;
-			extern const Key Space;
-			extern const Key Escape;
-
-			extern const Key F1;
-			extern const Key F2;
-			extern const Key F3;
-			extern const Key F4;
-			extern const Key F5;
-			extern const Key F6;
-			extern const Key F7;
-			extern const Key F8;
-			extern const Key F9;
-			extern const Key F10;
-			extern const Key F11;
-			extern const Key F12;
-		};
+	namespace keyboard { 
+		extern std::map<Key, bool> PressedKeys;
 
 
 		////Types of keyboard events
@@ -1189,3 +1384,4 @@ namespace gge { namespace input {
 	////Initializes Input system
 	void Initialize();
 } }
+#endif

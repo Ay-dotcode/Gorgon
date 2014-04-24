@@ -139,45 +139,9 @@ namespace Gorgon { namespace OS {
 
 
 #ifdef LaINUX
-#	pragma warning(disable: 4996)
-#	include "OS.h"
-#	include "Input.h"
-#	include "../Utils/Point2D.h"
-#	include <stdio.h>
-#	include <pthread.h>
-#	include <cstdlib>
-#	include <cstring>
-#	define XK_MISCELLANY
-#include <pthread.h>
 
-	using namespace gge::utils;
-	using namespace gge::input;
-	using namespace gge::input::system;
-
-#	include <sys/stat.h>
-#	include <sys/types.h>
-#	include <dirent.h>
-#	include "Pointer.h"
-#	include "Input.h"
-#	include <X11/keysymdef.h>
-#	include <X11/X.h>
-#	include <X11/Xlib.h>
-#	include <X11/Xutil.h>
-#	include <X11/Xatom.h>
-#	include <sys/time.h>
-#	include <time.h>
-#	include <stdlib.h>
-#	include <unistd.h>
-#	include <pwd.h>
-#	include <regex>
-#	include "Image.h"
-#	include "Layer.h"
-#	include "../Encoding/URI.h"
-#	undef None
 static const int None=0;
 	
-	pthread_attr_t common_thread_attr;
-
 
 	extern int Application(std::vector<std::string> &arguments);
 
@@ -311,19 +275,7 @@ static const int None=0;
 					unsigned key;
 					switch(event.type) {
 					case ClientMessage:
-						 if (event.xclient.message_type == XA_PROTOCOLS 
-							&& event.xclient.format == 32 
-							&& event.xclient.data.l[0] == (long)WM_DELETE_WINDOW) 
-						{ 
-							bool allow;
-							allow=true;
-							window::Closing(allow);
-							if(allow) {
-								ReleaseAll();
-								window::Destroyed();
-								break;
-							}
-						}
+						
 						else if(event.xclient.message_type==XdndEnter) {
 							unsigned long len, bytes, dummy;
 							unsigned char *data=NULL;
@@ -517,196 +469,8 @@ static const int None=0;
 						}
 					
 						break;
-					
-					case FocusIn:
-						window::Activated();
-						break;
-						
-					case FocusOut:
-						ReleaseAll();
-						window::Deactivated();
-						break;
-						
-					case KeyPress:
-						key=XLookupKeysym(&event.xkey,0);
-						
-						switch(key) {
-							case XK_Shift_L:
-								keyboard::Modifier::isAlternate=false;
-								ProcessKeyDown(key);
-								keyboard::Modifier::Add(keyboard::Modifier::Shift);
-								break;
-								
-							case XK_Shift_R:
-								keyboard::Modifier::isAlternate=true;
-								ProcessKeyDown(XK_Shift_L);
-								keyboard::Modifier::Add(keyboard::Modifier::Shift);
-								break;
-								
-							case XK_Control_L:
-								keyboard::Modifier::isAlternate=false;
-								ProcessKeyDown(key);
-								keyboard::Modifier::Add(keyboard::Modifier::Ctrl);
-								break;
-								
-							case XK_Control_R:
-								keyboard::Modifier::isAlternate=true;
-								ProcessKeyDown(XK_Control_L);
-								keyboard::Modifier::Add(keyboard::Modifier::Ctrl);
-								break;
-								
-							case XK_Alt_L:
-								keyboard::Modifier::isAlternate=false;
-								ProcessKeyDown(key);
-								keyboard::Modifier::Add(keyboard::Modifier::Alt);
-								break;
-								
-							case XK_Alt_R:
-								keyboard::Modifier::isAlternate=true;
-								ProcessKeyDown(XK_Alt_L);
-								keyboard::Modifier::Add(keyboard::Modifier::Alt);
-								break;
-								
-							case XK_Super_L:
-								keyboard::Modifier::isAlternate=false;
-								ProcessKeyDown(key);
-								keyboard::Modifier::Add(keyboard::Modifier::Super);
-								break;
-								
-							case XK_Super_R:
-								keyboard::Modifier::isAlternate=true;
-								ProcessKeyDown(XK_Super_L);
-								keyboard::Modifier::Add(keyboard::Modifier::Super);
-								break;
-								
-							default:
-								char buffer[2];
-								int nchars;
-								
-								ProcessKeyDown(key);
 
-								nchars = XLookupString(
-									&(event.xkey),
-									buffer,
-									2,  /* buffer size */
-									(KeySym*)&key,
-									NULL 
-								);
-								
-								if ((nchars == 1 || 
-									(int)key==keyboard::KeyCodes::Enter) && 
-									(int)key!=keyboard::KeyCodes::Delete)
-									ProcessChar(key);
-								break;
-						}
-						break;
-					case KeyRelease:
-						key=XLookupKeysym(&event.xkey,0);
-						bool pkey;
-						pkey=false;
-						
-						if(XEventsQueued(display, QueuedAfterReading)) {
-							XEvent nextevent;
-							XPeekEvent(display, &nextevent);
-							if(nextevent.type == KeyPress && nextevent.xkey.time == event.xkey.time && 
-								nextevent.xkey.keycode == event.xkey.keycode) {
-								
-								if((int)key==keyboard::KeyCodes::Delete || 
-									(int)key==keyboard::KeyCodes::Escape ||
-									(int)key==keyboard::KeyCodes::Up ||
-									(int)key==keyboard::KeyCodes::Down ||
-									(int)key==keyboard::KeyCodes::Left ||
-									(int)key==keyboard::KeyCodes::PageUp ||
-									(int)key==keyboard::KeyCodes::PageDown ||
-									(int)key==keyboard::KeyCodes::Right) {
-									
-									ProcessKeyDown(key);
-									
-								}
-								else {
-									char buffer[2];
-									int nchars;
-									
-									nchars = XLookupString(
-										&(event.xkey),
-										buffer,
-										2,  /* buffer size */
-										(KeySym*)&key,
-										NULL 
-									);
-									
-									if (nchars == 1 || (int)key==keyboard::KeyCodes::Enter)
-										ProcessChar(key);
-								}
-								XNextEvent(display, &nextevent);
-							
-								break;
-							}
-							else {
-								pkey=true;
-							}
-						}
-						else {
-							pkey=true;
-						}
-						
-						if(pkey) {
-							switch(key) {
-								case XK_Shift_L:
-									keyboard::Modifier::isAlternate=false;
-									ProcessKeyUp(key);
-									keyboard::Modifier::Remove(keyboard::Modifier::Shift);
-									break;
-									
-								case XK_Shift_R:
-									keyboard::Modifier::isAlternate=true;
-									ProcessKeyUp(XK_Shift_L);
-									keyboard::Modifier::Remove(keyboard::Modifier::Shift);
-									break;
-									
-								case XK_Control_L:
-									keyboard::Modifier::isAlternate=false;
-									ProcessKeyUp(key);
-									keyboard::Modifier::Remove(keyboard::Modifier::Ctrl);
-									break;
-									
-								case XK_Control_R:
-									keyboard::Modifier::isAlternate=true;
-									ProcessKeyUp(XK_Control_L);
-									keyboard::Modifier::Remove(keyboard::Modifier::Ctrl);
-									break;
-									
-								case XK_Alt_L:
-									keyboard::Modifier::isAlternate=false;
-									ProcessKeyUp(key);
-									keyboard::Modifier::Remove(keyboard::Modifier::Alt);
-									break;
-									
-								case XK_Alt_R:
-									keyboard::Modifier::isAlternate=true;
-									ProcessKeyUp(XK_Alt_L);
-									keyboard::Modifier::Remove(keyboard::Modifier::Alt);
-									break;
-									
-								case XK_Super_L:
-									keyboard::Modifier::isAlternate=false;
-									ProcessKeyUp(key);
-									keyboard::Modifier::Remove(keyboard::Modifier::Super);
-									break;
-									
-								case XK_Super_R:
-									keyboard::Modifier::isAlternate=true;
-									ProcessKeyUp(XK_Super_L);
-									keyboard::Modifier::Remove(keyboard::Modifier::Super);
-									break;
-									
-								default:
-									ProcessKeyUp(key);
-									break;
-							}
-						}
-						
-						break;
+
 					case ButtonPress:
 						if(event.xbutton.button==4) {
 							ProcessVScroll(1, event.xbutton.x, event.xbutton.y);

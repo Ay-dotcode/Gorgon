@@ -130,6 +130,7 @@ namespace Gorgon {
 			children.Remove(layer);
 			
 			removed(layer);
+			layer.located(nullptr);
 		}
 		
 		/// Removes the given layer
@@ -137,7 +138,6 @@ namespace Gorgon {
 			if(!layer) return;
 			
 			Remove(*layer);
-			layer.located(nullptr);
 		}
 		
 		/// Returns whether this layer has a parent
