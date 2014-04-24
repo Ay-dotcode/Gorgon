@@ -14,6 +14,8 @@ SET(Local
 	Layer.cpp
 	Main.h
 	Main.cpp
+	SGuid.h
+	SGuid.cpp
 	Threading.h
 	Types.h
 	Window.h
