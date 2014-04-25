@@ -50,7 +50,7 @@ namespace Gorgon {
 				}
 
 			protected:
-				Iterator_(C_ &c, int offset=0) : Col(&c), Offset(offset) {
+				Iterator_(C_ &c, long offset=0) : Col(&c), Offset(offset) {
 				}
 
 			protected:
@@ -71,7 +71,7 @@ namespace Gorgon {
 					return Offset>=0 || Offset<(Col->GetCount());
 				}
 
-				bool moveby(int amount) {
+				bool moveby(long amount) {
 					//sanity check
 					if(amount==0)  return isvalid();
 
@@ -89,7 +89,7 @@ namespace Gorgon {
 					Offset=it.Offset;
 				}
 
-				int distance(const Iterator_ &it) const {
+				long distance(const Iterator_ &it) const {
 					return it.Offset-Offset;
 				}
 
@@ -109,7 +109,7 @@ namespace Gorgon {
 
 			private:
 				C_ *Col;
-				int Offset;
+				long Offset;
 			};
 
 		public:
@@ -127,7 +127,7 @@ namespace Gorgon {
 				}
 
 			private:
-				ConstIterator(const Collection &c, int offset=0) : Iterator_<T_,const Collection>(c, offset) {
+				ConstIterator(const Collection &c, long offset=0) : Iterator_<T_,const Collection>(c, offset) {
 				}
 			};
 
@@ -212,7 +212,7 @@ namespace Gorgon {
 			}
 
 			/// Returns number of elements
-			int GetCount() const {
+			long GetCount() const {
 				return list.size();
 			}
 
@@ -252,7 +252,7 @@ namespace Gorgon {
 			}
 
 			/// this method adds the given object in front of the reference
-			void Insert(T_* data, int before) {
+			void Insert(T_* data, long before) {
 				if(std::find(list.begin(), list.end(), data)!=list.end()) return;
 
 				if(before<0 || before>list.size())
@@ -261,7 +261,7 @@ namespace Gorgon {
 				if(before==list.size())
 					Add(data);
 
-				for(int i=list.size()-1;i>before;i--)
+				for(long i=list.size()-1;i>before;i--)
 					list[i]=list[i-1];
 
 				list[before]=data;
@@ -410,7 +410,7 @@ namespace Gorgon {
 			}
 
 			/// Removes an item from the collection using its index
-			void Remove(int index) {
+			void Remove(long index) {
 				list.erase(list.begin()+index);
 			}
 
@@ -431,7 +431,7 @@ namespace Gorgon {
 
 			/// Deletes an item from the collection using its index.
 			/// Deleting both removes the item from the list and free the item itself.
-			void Delete(int index) {
+			void Delete(long index) {
 				delete list[index];
 
 				list.erase(list.begin()+index);
@@ -458,7 +458,7 @@ namespace Gorgon {
 
 			/// Searches the position of a given item, if not found end iterator returned
 			Iterator Find(const T_ *item) {
-				int i;
+				long i;
 				for(i=0;i<list.GetSize();i++) {
 					if(item==list[i])
 						return Iterator(*this, i);
@@ -483,7 +483,7 @@ namespace Gorgon {
 			}
 
 			/// Searches the position of a given item, if not found -1 is returned
-			int FindLocation(const T_ *item) const {
+			long FindLocation(const T_ *item) const {
 				auto it=find(list.begin(), list.end(), item);
 
 				if(it==list.end())
@@ -493,7 +493,7 @@ namespace Gorgon {
 			}
 
 			/// Searches the position of a given item, if not found -1 is returned
-			int FindLocation(const T_ &item) const {
+			long FindLocation(const T_ &item) const {
 				return FindLocation(&item);
 			}
 
@@ -511,7 +511,7 @@ namespace Gorgon {
 			}
 
 			/// Returns the element at the given index. Checks and throws if out of range
-			T_ &Get(int index) {
+			T_ &Get(long index) {
 				T_ *r=get_(index);
 
 				if(r==NULL)
@@ -521,7 +521,7 @@ namespace Gorgon {
 			}
 
 			/// Returns the element at the given index. Checks and throws if out of range
-			T_ &Get(int index) const {
+			T_ &Get(long index) const {
 				const T_ *r=get_(index);
 
 				if(r==NULL)
@@ -531,12 +531,12 @@ namespace Gorgon {
 			}
 
 			/// Returns the item at a given index
-			T_& operator [] (int index) {
+			T_& operator [] (long index) {
 				return *list[index];
 			}
 
 			/// Returns the item at a given index
-			T_& operator [] (int index) const  {
+			T_& operator [] (long index) const  {
 				return *list[index];
 			}
 
@@ -599,7 +599,7 @@ namespace Gorgon {
 
 			/// Deletes and removes all elements in the collection
 			void DeleteAll() {
-				int i;
+				long i;
 				for(auto e : list)
 					delete e;
 
@@ -619,7 +619,7 @@ namespace Gorgon {
 			}
 
 			/// Allocates memory for the given amount of items
-			void Reserve(int amount) {
+			void Reserve(long amount) {
 				list.reserve(amount);
 			}
 
@@ -627,22 +627,22 @@ namespace Gorgon {
 			///@cond INTERNAL
 			std::vector<T_ *> list;
 
-			void removeat(int absolutepos) {
+			void removeat(long absolutepos) {
 				Remove(absolutepos);
 			}
 
-			void deleteat(int absolutepos) {
+			void deleteat(long absolutepos) {
 				Delete(absolutepos);
 			}
 
-			T_ *get_(int Index) {
+			T_ *get_(long Index) {
 				if(Index<0 || Index>=list.size())
 					return NULL;
 
 				return list[Index];
 			}
 
-			const T_ *get_(int Index) const {
+			const T_ *get_(long Index) const {
 				if(Index<0 || Index>list.size())
 					return NULL;
 

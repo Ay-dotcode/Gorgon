@@ -26,7 +26,7 @@ namespace Gorgon {
 		///    D_  distance(const I_ &) const   ...
 		///    bool isbefore(const I_ &) const  ...
 		/// @endcode
-		template <class I_, class T_, class D_=int>
+		template <class I_, class T_, class D_=long>
 		class Iterator : std::iterator<std::random_access_iterator_tag, T_, D_> {
 		private:
 			I_ &iterator() { return *static_cast<I_*>(this); }

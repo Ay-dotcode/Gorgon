@@ -10,9 +10,11 @@ namespace Gorgon {
 		
 		/// A key on the keyboard
 		typedef Input::Key  Key;
-		typedef char 		Char; //future compatibility for unicode
 		
-		//MOVETO -> Window?
+		/// A character, future compatibility for unicode
+		typedef char 		Char; 
+		
+		/// MOVETO -> Window?
 		extern std::map<Key, bool> PressedKeys;
 
 		/// @name Keycodes
@@ -123,42 +125,57 @@ namespace Gorgon {
 		/// This class represents a modifier key. These keys can be 
 		class Modifier {
 		public:
+			/// A type to represent modifier keys
 			enum Type {
+				/// No modifier is pressed
 				None		= 0,
+				/// Only shift modifier is pressed
 				Shift		= 1,
+				/// Only altgr/right alt modifier is pressed
 				AltGr		= 2,
+				/// Only control modifier is pressed
 				Ctrl		= 4,
+				/// Only alt modifier is pressed
 				Alt			= 8,
+				/// Only meta/super/window modifier is pressed
 				Meta		=16,
 
-				ShiftCtrl	= Shift | Ctrl ,
-				ShiftAlt	= Shift | Alt  ,
+				/// Shift and control
+				ShiftCtrl	= Shift | Ctrl ,				
+				/// Shift and alt
+				ShiftAlt	= Shift | Alt  ,				
+				/// Control and alt
 				CtrlAlt		= Ctrl  | Alt  ,
+				
+				/// Shift control alt together
 				ShiftCtrlAlt= Shift | Ctrl | Alt ,
 			};
 			
+			/// Constructs a new modifier from the given modifier key
 			Modifier(Type key=None) : 
 			Key(key)
-			{ }
-			
-			explicit Modifier(int key) : 
-			Key(Type(key))
-			{ }
-			
+			{ }			
+
+			/// Assignment operator
 			Modifier &operator =(const Modifier &) = default;
 			
+			/// Checks if this modifier really modifies the key state so
+			/// that no printable characters can be formed
 			bool IsModified() const {
 				return Key>3;
 			}
 			
+			/// Removes the modifier key
 			void Remove(Type key) {
 				Key = (Type)(Key & ~key);
 			}
 			
+			/// Adds the given modifier key
 			void Add(Type key) {
 				Key = (Type)(Key | key);
 			}
 			
+			/// Adds the given keyboard key to modifiers
 			void Add(Key key) {
 				if(key == Keyboard::Shift) {
 					Key = Type(Key | Shift);
@@ -177,6 +194,7 @@ namespace Gorgon {
 				}
 			}
 			
+			/// Removes the given keyboard key from modifiers
 			void Remove(Key key) {
 				if(key == Keyboard::Shift) {
 					Key = Type(Key & ~Shift);
@@ -195,25 +213,31 @@ namespace Gorgon {
 				}
 			}
 		
+			/// Or assignment
 			Modifier &operator |=(const Modifier &r) {
 				Key = (Type)(Key | r.Key);
 			}
 			
+			/// And assignment
 			Modifier &operator &=(const Modifier &r) {
 				Key = (Type)(Key & r.Key);
 			}
 		
+			/// Or operator
 			Modifier operator |(const Modifier &r) const {
 				return {Type(Key | r.Key)};
 			}
 			
+			/// And operator
 			Modifier operator &(const Modifier &r) const {
 				return {Type(Key & r.Key)};
 			}
 			
+			/// The modifier key
 			Type Key;
 		};
 		
+		/// Current keyboard modifier, this is a global value.
 		extern Modifier CurrentModifier;
 	}
 }

@@ -260,7 +260,8 @@ namespace Gorgon {
 		/// Hides this window, may generate Deactivated event
 		virtual void Hide() { isvisible=false; }
 		
-		bool IsVisible() { 
+		/// Returns whether this layer is effectively visible
+		virtual bool IsVisible() { 
 			if(parent && !parent->isvisible) return false;
 			
 			return isvisible;

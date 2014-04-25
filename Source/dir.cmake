@@ -4,8 +4,9 @@ SET(Local
 	Geometry
 	Input
 	OS
-	Time
+	Resource
 	String
+	Time
 	WindowManager
 	Any.h
 	Event.h

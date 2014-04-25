@@ -1,23 +1,16 @@
 #pragma once
 
-#include "GRE.h"
 #include "Base.h"
 #include <map>
 
-namespace gge { namespace resource {
+namespace Gorgon { namespace Resource {
 	class File;
 	class Folder;
-	class Text;
-	class Image;
-	class DataArray;
-	class Sound;
-	class Animation;
-	class BitmapFont;
 	
 	////This function loads a folder resource from the given file
 	Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames=false, bool OnlyFirst=false);
 
-	////This is basic folder resource, it holds other resources.
+ 	/// This is basic folder resource, it contains other resources. 
 	class Folder : public Base {
 		friend Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames, bool OnlyFirst);
 	public:
@@ -32,7 +25,7 @@ namespace gge { namespace resource {
 		virtual GID::Type GetGID() const { return GID::Folder; }
 
 		////Returns the number of items contained
-		int			 GetCount() const { return Subitems.GetCount(); }
+		int	 GetCount() const { return Subitems.GetCount(); }
 		////Returns an item with the given index
 		Base	*GetItem (int Index) { return &Subitems[Index]; }
 		////Returns an item with the given index
@@ -41,15 +34,6 @@ namespace gge { namespace resource {
 		void	Add(Base *resource) { Subitems.Add(resource, Subitems.HighestOrder()+1); }
 		////Adds a new resource to this folder
 		Folder	&operator << (Base &resource) { Subitems.Add(resource); return *this; }
-
-		////Returns the given subitem with folder resource type. Used to avoid type casting
-		Folder	*asFolder	(int Index);
-		Text	*asText		(int Index);
-		Image	*asImage	(int Index);
-		DataArray	*asData		(int Index);
-		Sound	*asSound	(int Index);
-		Animation	*asAnimation(int Index);
-		BitmapFont	*asBitmapFont		(int Index);
 
 		//if you run into problems with dynamic_cast use CGet instead
 		template <typename T_>

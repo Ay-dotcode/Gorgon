@@ -4,6 +4,8 @@
 #include <Source/WindowManager.h>
 #include <Source/Window.h>
 #include <Source/OS.h>
+#include <Source/Resource/GID.h>
+#include <Source/SGuid.h>
 
 class A {
 public:
@@ -43,6 +45,11 @@ int main() {
 	event(2, 2);
 	
 	//Gorgon::OS::Initialize();
+	
+	Gorgon::SGuid guid{Gorgon::SGuid::CreateNew};
+	std::cout<<guid<<std::endl;
+	exit(0);
+
 
 	
 	std::cout<<Gorgon::OS::User::GetUsername()<<std::endl;

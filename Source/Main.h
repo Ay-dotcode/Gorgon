@@ -14,5 +14,6 @@ namespace Gorgon {
 	/// Initializes the entire system
 	void Initialize(const std::string &systemname);
 
+	/// Returns the name of the current system
 	inline std::string GetSystemName() { return internal::systemname; }
 }

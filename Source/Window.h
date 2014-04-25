@@ -23,6 +23,7 @@ namespace Gorgon {
 	class Window : public Layer {
 		friend internal::windowdata *WindowManager::internal::getdata(const Window&);
 	public:
+		/// Fullscreen tag
 		static const 
 		class FullscreenTag {
 		} Fullscreen;
@@ -110,6 +111,9 @@ namespace Gorgon {
 
 		/// Hides this window, may generate Deactivated event
 		virtual void Hide();
+		
+		/// Returns whether this layer is effectively visible
+		virtual bool IsVisible() const { return isvisible; }
 
 		/// Closes the window. After this function, any use of this object might fail.
 		void Close();

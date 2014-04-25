@@ -1,38 +1,31 @@
 #include "Base.h"
-#include "File.h"
 
-using namespace gge::utils;
 
-namespace gge { namespace resource {
-	void Base::Prepare(GGEMain &main, File &file) {
-		this->file=&file;
-		for(SortedCollection<Base>::Iterator resource=Subitems.First();
-			resource.IsValid(); resource.Next()) {
-
-			resource->Prepare(main, file);
+namespace Gorgon { namespace Resource {
+	void Base::Prepare() {
+		for(auto &child : *this) {
+			child.Prepare();
 		}
 	}
 
-	void Base::Resolve(File &file) {
-		this->file=&file;
-		for(SortedCollection<Base>::Iterator resource=Subitems.First();
-			resource.IsValid();) {
+	void Base::Resolve() {
+		for(auto it=children.First(); it.IsValid(); ) {
 
-			Base &r=resource;
-			resource.Next();
+			Base &r=*it;
+			it.Next();
 
-			r.Resolve(file);
+			r.Resolve();
 		}
 	}
 
-	Base *Base::FindObject(utils::SGuid guid) {
-		for(SortedCollection<Base>::Iterator resource=Subitems.First();
-			resource.IsValid(); resource.Next()) {
+	Base *Base::FindObject(const SGuid &guid) const {
+		for(auto &child : *this) {
 
-			if(resource->isEqual(guid))
-				return resource.CurrentPtr();
+			if(child.IsEqual(guid))
+				return &child;
 
-			Base *temp=resource->FindObject(guid);
+			Base *temp=child.FindObject(guid);
+			
 			if(temp)
 				return temp;
 		}
@@ -40,35 +33,24 @@ namespace gge { namespace resource {
 		return NULL;
 	}
 
-	Base *Base::FindParent(utils::SGuid guid) {
-		for(SortedCollection<Base>::Iterator resource=Subitems.First();
-			resource.IsValid(); resource.Next()) {
-
-			if(resource->isEqual(guid))
-				return this;
-
-			Base *temp=resource->FindParent(guid);
-			if(temp)
-				return temp;
-		}
-
-		return NULL;
-	}
-
-	Base::Base() : guid(nullptr), name(""), file() { }
+	Base::Base() { }
 
 	Base::~Base() {
-		for(auto it=Subitems.First();it.IsValid();it.Next()) {
-			if(file && file->Multiples.count(it.CurrentPtr())) {
-				file->Multiples[it.CurrentPtr()]--;
+		for(auto it=children.First(); it.IsValid(); ) {
+			if( --it->refcount == 0 ) {
+				children.Delete(*it);
 			}
 			else {
-				if(it.CurrentPtr())
-					delete it.CurrentPtr();
+				// making sure that we dont leave any objects in
+				// undetermined state
+				if(it->parent==this) {
+					it->parent=nullptr;
+					it->root=nullptr;
+				}
+				
+				it.Next();
 			}
 		}
-
-		Subitems.Clear();
 	}
 
 } }

@@ -71,8 +71,6 @@ namespace Gorgon {
 			}
 		}
 		///@}
-
-		/// @endcond
 		
 		template<class T_>
 		T_ GetX4Prop(Atom atom, ::Window w, const T_ &def) {
@@ -110,6 +108,8 @@ namespace Gorgon {
 			
 			return ret;
 		}
+
+		/// @endcond
 		
 		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
 			Screen  *screen_data  = XScreenOfDisplay(display, monitor);
@@ -314,7 +314,7 @@ namespace Gorgon {
 		createglcontext();
 	}
 	
-	Window::Window(const FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata) {
+	Window::Window(const Gorgon::Window::FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata) {
 		
 	}
 	

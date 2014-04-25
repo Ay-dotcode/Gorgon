@@ -5,12 +5,10 @@
 #include <fstream>
 #include <functional>
 
-#include "GRE.h"
-#include "../Utils/Collection.h"
-#include "Definitions.h"
-#include "Folder.h"
+#include "Base.h"
 
-namespace gge { namespace resource {
+
+namespace Gorgon { namespace Resource {
 
 	////This class defines a resource loader
 	class Loader {
@@ -19,23 +17,23 @@ namespace gge { namespace resource {
 		typedef std::function<Base* (File&, std::istream&, int)> LoaderFunction;
 
 		////Gorgon ID of the resource
-		GID::Type GId;
+		GID::Type GID;
 
 		////Load handler function
 		LoaderFunction Handler;
 
 		////Filling constructor
-		Loader(GID::Type gid, LoaderFunction handler) : GId(gid), Handler(handler) 
+		Loader(GID::Type gid, LoaderFunction handler) : GID(gid), Handler(handler) 
 		{ }
 	};
 
 	class Redirect {
 	public:
-		Redirect(utils::SGuid &source, utils::SGuid &target) : 
+		Redirect(SGuid &source, utils::SGuid &target) : 
 		  source(source), target(target) { }
 
-		utils::SGuid source;
-		utils::SGuid target;
+		SGuid source;
+		SGuid target;
 	};
 
 	class load_error : public std::runtime_error {
@@ -77,16 +75,20 @@ namespace gge { namespace resource {
 		}
 
 		////Resource Loaders
-		utils::Collection<Loader>	Loaders;
-		utils::Collection<Redirect>	Redirects;
-		std::map<Base*, int>		Multiples;
+		Containers::Collection<Loader>	 Loaders;
+		
+		Containers::Collection<Redirect> Redirects;
 
 		////File type
 		GID::Type FileType;
+		
 		////File version
 		int FileVersion;
+		
 		bool LoadNames;
+		
 		Folder &Root() { return *root; }
+		
 		////Returns the filename used for the last load or save operation
 		std::string GetFilename() const { return Filename; }
 
@@ -123,7 +125,7 @@ namespace gge { namespace resource {
 		void Prepare(GGEMain *main) { root->Prepare(*main, *this); }
 		void Prepare() { root->Prepare(Main, *this); }
 
-		void Destroy() { utils::CheckAndDelete(root); }
+		void Destroy() { delete root; root=nullptr; }
 
 		~File();
 
