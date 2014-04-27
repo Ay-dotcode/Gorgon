@@ -63,7 +63,7 @@ int main() {
 	win.CharacterEvent.Register([](Gorgon::Keyboard::Char c) { std::cout<<c<<std::endl; });
 	win.KeyEvent.Register([](Gorgon::Input::Key k, float amount) -> bool {
 		std::cout<<k<<": "<<amount<<std::endl;
-		return k=='C';
+		return k=='c';
 	});
 	//auto t=win.KeyEvent.Register([](Gorgon::Input::Key k, float amount) -> bool {
 	//	std::cout<<"> "<<k<<": "<<amount<<std::endl;

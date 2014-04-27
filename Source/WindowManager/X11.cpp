@@ -22,6 +22,8 @@ namespace Gorgon {
 			Geometry::Point moveto;
 			bool ismapped=false;
 			GLXContext context=0;
+			
+			std::map<Input::Key, Input::Event<Window>::Token> handlers;
 		};
 		
 	}
@@ -445,7 +447,7 @@ namespace Gorgon {
 							break;
 							
 						case XK_Alt_R:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::AltGr);
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Alt);
 							break;
 							
 						case XK_Super_L:
@@ -453,8 +455,12 @@ namespace Gorgon {
 							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Meta);
 							break;
 					}
-					
-					if(KeyEvent(key, +1.f)) break;
+					auto token=KeyEvent(key, +1.f);
+					if(token != Input::Event<Window>::EmptyToken) {
+						data->handlers[key]=token;
+						
+						break;
+					}
 					
 					Byte buffer[2];
 					
@@ -474,23 +480,32 @@ namespace Gorgon {
 					
 					
 				case KeyRelease: {
+					key=XLookupKeysym(&event.xkey,0);
+						
 					if(XEventsQueued(WindowManager::display, QueuedAfterReading)) {
 						XEvent nextevent;
 						XPeekEvent(WindowManager::display, &nextevent);
-						if(nextevent.type == KeyPress && nextevent.xkey.time == event.xkey.time && 
-							nextevent.xkey.keycode == event.xkey.keycode) {
-							
-							Byte buffer[2];
 					
-							int nchars = XLookupString(
-								&(event.xkey),
-								(char*)&buffer, 2, 
-								(KeySym*)&key, nullptr 
-							);
+						if(nextevent.type == KeyPress && nextevent.xkey.time == event.xkey.time && 
+							nextevent.xkey.keycode == event.xkey.keycode
+						) {
 							
-							if(nchars==1) {
-								if((buffer[0]>=0x20 && buffer[0]<0x7f) || buffer[0] == '\t') {
-									CharacterEvent(buffer[0]);
+							if(data->handlers.count(key)>0 && data->handlers[key]!=Input::Event<Window>::EmptyToken) {
+								KeyEvent(data->handlers[key], key, +1.f);
+							}
+							else {							
+								Byte buffer[2];
+						
+								int nchars = XLookupString(
+									&(event.xkey),
+									(char*)&buffer, 2, 
+									(KeySym*)&key, nullptr 
+								);
+								
+								if(nchars==1) {
+									if((buffer[0]>=0x20 && buffer[0]<0x7f) || buffer[0] == '\t') {
+										CharacterEvent(buffer[0]);
+									}
 								}
 							}
 					
@@ -498,8 +513,6 @@ namespace Gorgon {
 							break;
 						}
 					}
-					
-					key=XLookupKeysym(&event.xkey,0);
 					
 					//modifiers
 					switch(key) {
@@ -518,7 +531,7 @@ namespace Gorgon {
 							break;
 							
 						case XK_Alt_R:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::AltGr);
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Alt);
 							break;
 							
 						case XK_Super_L:
@@ -528,7 +541,13 @@ namespace Gorgon {
 					}
 					
 					
-					if(KeyEvent(key, 0.f)) break;
+					if(data->handlers.count(key)>0 && data->handlers[key]!=Input::Event<Window>::EmptyToken) {
+						KeyEvent(data->handlers[key], key, 0.f);
+						data->handlers[key]==Input::Event<Window>::EmptyToken;
+					}
+					else {
+						KeyEvent(key, 0.f);
+					}
 					
 				} //Keypress
 				break;
