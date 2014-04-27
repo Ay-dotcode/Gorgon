@@ -26,7 +26,6 @@ namespace Gorgon {
 		extern const Key Shift;
 		extern const Key Control;
 		extern const Key Alt;
-		extern const Key AltGr;
 		extern const Key Meta;
 
 		extern const Key Home;
@@ -131,8 +130,8 @@ namespace Gorgon {
 				None		= 0,
 				/// Only shift modifier is pressed
 				Shift		= 1,
-				/// Only altgr/right alt modifier is pressed
-				AltGr		= 2,
+				// Only altgr/right alt modifier is pressed
+				// AltGr		= 2,
 				/// Only control modifier is pressed
 				Ctrl		= 4,
 				/// Only alt modifier is pressed
@@ -189,9 +188,9 @@ namespace Gorgon {
 				else if(key == Keyboard::Meta) {
 					Key = Type(Key | Meta);
 				}
-				else if(key == Keyboard::AltGr) {
-					Key = Type(Key | AltGr);
-				}
+				//else if(key == Keyboard::AltGr) {
+				//	Key = Type(Key | AltGr);
+				//}
 			}
 			
 			/// Removes the given keyboard key from modifiers
@@ -208,9 +207,9 @@ namespace Gorgon {
 				else if(key == Keyboard::Meta) {
 					Key = Type(Key & ~Meta);
 				}
-				else if(key == Keyboard::AltGr) {
-					Key = Type(Key & ~AltGr);
-				}
+				//else if(key == Keyboard::AltGr) {
+				//	Key = Type(Key & ~AltGr);
+				//}
 			}
 		
 			/// Or assignment

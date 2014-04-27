@@ -20,4 +20,5 @@ SET(Local
 	Threading.h
 	Types.h
 	Window.h
+	Window.cpp
 )

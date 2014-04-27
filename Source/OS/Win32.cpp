@@ -6,6 +6,8 @@
 
 #include "../OS.h"
 #include "../Main.h"
+#include "../Window.h"
+#include "../Input.h"
 
 #include "../Filesystem.h"
 
@@ -37,7 +39,11 @@
 #	define WM_MOUSEHWHEEL					0x020E
 #endif
 
-namespace Gorgon { namespace OS {
+#undef GetName
+
+namespace Gorgon { 
+	namespace internal { bool ishandled(HWND hwnd, Input::Key key); }
+	namespace OS {
 	
 	void Initialize() {
 	}
@@ -187,12 +193,14 @@ namespace Gorgon { namespace OS {
 
 	void processmessages() {
 		MSG msg;
-		if(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+		while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 			GetMessage(&msg, NULL, 0, 0);
 
-			// Translate and dispatch the message
-			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+
+			if(msg.message!=WM_KEYDOWN || !internal::ishandled(msg.hwnd, msg.wParam)) {
+				TranslateMessage(&msg);
+			}
 		}
 	}
 

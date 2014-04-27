@@ -22,6 +22,7 @@ namespace Gorgon {
 	/// @nosubgrouping
 	class Window : public Layer {
 		friend internal::windowdata *WindowManager::internal::getdata(const Window&);
+		friend struct internal::windowdata;
 	public:
 		/// Fullscreen tag
 		static const 
@@ -157,10 +158,17 @@ namespace Gorgon {
 		
 		/// Called when a key is pressed or released. This key could be a keyboard key
 		/// or any other controller key including mouse. In case of mouse, this method
-		/// will be triggered if mouse call is not handled by layers
+		/// will be triggered if mouse call is not handled by layers. 
+		///
+		/// If the input device is keyboard, key down event (amount=1) is repeated if the 
+		/// first event is handled. The repeats will only be sent to the handler of the event.
+		/// Additionally, Key up event (amount=0) is sent only to handler, if key down is handled
+		/// otherwise it will be sent to all listeners.
+		///
 		/// ### Parameters: ###
 		/// **Key** `(Input::Key)`: The key that is pressed or released
-		/// **Pressed** `(bool)`: Whether key is pressed or released
+		/// **Amount** `(float)`: Depending on the device this can be a boolean 0 and 1, number
+		///     of successive key strokes or amount of pressure (0 to 1) in analog controllers
 		Input::Event<Window> KeyEvent{*this};
 
 		/// Called when a character is received. This event is raised for regular characters
@@ -179,6 +187,8 @@ namespace Gorgon {
 
 	private:
 		void createglcontext();
+
+		void setupglcontext();
 		
 		internal::windowdata *data;
 
