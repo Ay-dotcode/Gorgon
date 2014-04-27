@@ -3,10 +3,11 @@
 #pragma once
 
 #include <string>
+#include <stdint.h>
 
 ///@cond INTERNAL
 #ifndef CONSTEXPR
-#	ifdef MSCV 
+#	ifdef WIN32 
 #		define CONSTEXPR	
 #	else
 #		define CONSTEXPR	constexpr

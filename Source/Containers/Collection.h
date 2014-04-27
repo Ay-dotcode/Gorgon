@@ -255,7 +255,7 @@ namespace Gorgon {
 			void Insert(T_* data, long before) {
 				if(std::find(list.begin(), list.end(), data)!=list.end()) return;
 
-				if(before<0 || before>list.size())
+				if(before<0 || before>(long)list.size())
 					throw std::out_of_range("Invalid location");
 
 				if(before==list.size())
@@ -273,16 +273,6 @@ namespace Gorgon {
 			}
 
 			/// this method adds the given object in front of the reference
-			void Insert(T_* data, const T_ *before) {
-				Insert(data, FindLocation(before));
-			}
-
-			/// this method adds the given object in front of the reference
-			void Insert(T_& data, const T_ *before) {
-				Insert(&data, FindLocation(before));
-			}
-
-			/// this method adds the given object in front of the reference
 			void Insert(T_* data, const T_ &before) {
 				Insert(data, FindLocation(before));
 			}
@@ -295,15 +285,6 @@ namespace Gorgon {
 			/// Creates a new item and inserts it before the given reference
 			template<typename... Args_>
 			T_ &InsertNew(const T_ &before, Args_... args) {
-				auto t=new T_(args...);
-				Insert(t, before);
-
-				return *t;
-			}
-
-			/// Creates a new item and inserts it before the given reference
-			template<typename... Args_>
-			T_ &InsertNew(const T_ *before, Args_... args) {
 				auto t=new T_(args...);
 				Insert(t, before);
 
@@ -356,38 +337,13 @@ namespace Gorgon {
 			}
 
 			/// this method moves the given object in the collection in front of the reference
-			void MoveBefore(unsigned index, const T_ *before) {
-				MoveBefore(index, FindLocation(before));
-			}
-
-			/// this method moves the given object in the collection in front of the reference
 			void MoveBefore(unsigned index, const T_ &before) {
 				MoveBefore(index, FindLocation(before));
 			}
 
 			/// this method moves the given object in the collection in front of the reference
-			void MoveBefore(const T_ *index, unsigned before) {
-				MoveBefore(FindLocation(index), before);
-			}
-
-			/// this method moves the given object in the collection in front of the reference
-			void MoveBefore(const T_ *index, const T_ *before) {
-				MoveBefore(FindLocation(index), FindLocation(before));
-			}
-
-			/// this method moves the given object in the collection in front of the reference
-			void MoveBefore(const T_ *index, const T_ &before) {
-				MoveBefore(FindLocation(index), FindLocation(before));
-			}
-
-			/// this method moves the given object in the collection in front of the reference
 			void MoveBefore(const T_ &index, unsigned before) {
 				MoveBefore(FindLocation(index), before);
-			}
-
-			/// this method moves the given object in the collection in front of the reference
-			void MoveBefore(const T_ &index, const T_ *before) {
-				MoveBefore(FindLocation(index), FindLocation(before));
 			}
 
 			/// this method moves the given object in the collection in front of the reference

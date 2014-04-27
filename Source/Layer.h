@@ -191,7 +191,7 @@ namespace Gorgon {
 			if(parent) {
 				if(before==parent->children.GetCount()) before --;
 				
-				parent->children.MoveBefore(this, before++);
+				parent->children.MoveBefore(*this, before++);
 			}
 		}
 
@@ -200,13 +200,13 @@ namespace Gorgon {
 		/// children
 		void PlaceToTop() {
 			if(parent)
-				parent->children.MoveBefore(this, parent->children.GetCount());
+				parent->children.MoveBefore(*this, parent->children.GetCount());
 		}
 
 		/// Places this layer to the bottom of the layer stack.
 		void PlaceToBottom() {
 			if(parent)
-				parent->children.MoveBefore(this, (unsigned)0);
+				parent->children.MoveBefore(*this, 0);
 		}
 
 		/// Gets the current order of the stack. 0 means the layer is the bottommost

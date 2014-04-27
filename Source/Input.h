@@ -130,12 +130,11 @@ namespace Gorgon {
 
 			/// Destructor
 			~Event() {
-				assert( ("An event cannot be destroyed while its being fired.", fire.try_lock()) );
+				assert( ("An event cannot be destroyed while its being fired.", !checksetfire()) );
+
 				std::lock_guard<std::mutex> g(access);
 				
 				handlers.Destroy();
-				
-				fire.unlock();
 			}
 			
 			/// Copy constructor is disabled
@@ -144,21 +143,20 @@ namespace Gorgon {
 			/// Copy assignment is disabled
 			Event &operator =(const Event &) = delete;
 
-			/// Move assignment
+			/// Move assignment, should be called synchronized
 			Event &operator =(const Event &&other) {
 				if(&other==this) return *this;
 
 				std::lock_guard<std::mutex> g(access);
 
-				if(!fire.try_lock()) 
-					throw std::runtime_error("An event cannot be moved into while its being fired.");
+				assert(("An event cannot be moved into while its being fired.", !checksetfire()));
 
 				handlers.Destroy();
 				
 				source=nullptr;
 				Swap(other);
 				
-				fire.unlock();
+				unsetfire();
 			}
 			
 			/// Swaps two Events, used for move semantics
@@ -167,15 +165,13 @@ namespace Gorgon {
 				
 				using std::swap;
 				
-				if(std::try_lock(fire, other.fire)!=-1) {
-					throw std::runtime_error("Events cannot be swap while its being fired.");
-				}
+				assert(("An event cannot be swapped while its being fired.", !checksetfire() && !other.checksetfire()));
 				
 				swap(source, other.source);
 				swap(handlers, other.handlers);
 
-				fire.unlock();
-				other.fire.unlock();
+				unsetfire();
+				other.unsetfire();
 			}
 			
 			/// Deactivates the given handler token
@@ -201,7 +197,7 @@ namespace Gorgon {
 				if(l==-1) return;
 				
 				item->active=true;
-				handlers.MoveBefore(item, 0);
+				handlers.MoveBefore(*item, 0);
 			}
 			
 			/// Sends the given handler token to the bottom of the list so that it will
@@ -275,38 +271,80 @@ namespace Gorgon {
 			/// Fire this event. This function will never allow recursive firing, i.e. an event handler
 			/// cannot cause this event to be fired again.
 			/// @return Whether this event is handled by a handler.
-			bool operator()(Key key, float amount) {
+			Token operator()(Key key, float amount) {
 				//prevent recursion
-				if(!fire.try_lock()) return false;
+				if(checksetfire()) return EmptyToken; /// add to queue??
 
 				stop=false;
 
 				try {
 					for(iterator=handlers.begin(); iterator.IsValid(); iterator.Next()) {
 						if(!iterator->active) continue;
-						
+
 						access.lock();
 						// fire method will unlock access after it creates a local copy of the function
 						// this allows the fired object to be safely deleted.
 						bool ret=iterator->Fire(access, source, key, amount);
-						
-						if(ret) return true;
-						
-						if(stop) return true;
+
+						if(ret) {
+							unsetfire();
+							return reinterpret_cast<Token>(iterator.CurrentPtr());
+						}
+
+						if(stop) {
+							unsetfire();
+							return EmptyToken;
+						}
 					}
 				}
 				catch(...) {
 					//unlock everything if something goes bad
-					
+
 					//just in case
 					access.unlock();
-					
-					fire.unlock();
-					
+
+					unsetfire();
+
 					throw;
 				}
-				
-				fire.unlock();
+
+				unsetfire();
+
+				return EmptyToken;
+			}
+
+			/// Fire this event only for the given handler provided that it still exists in this event. If it doesn't exists
+			/// this method will return false otherwise, it will always return true.
+			bool operator()(Token token, Key key, float amount) {
+				//prevent recursion
+				if(checksetfire()) return false; /// add to queue??
+
+				stop=false;
+
+				try {
+					auto item=reinterpret_cast<internal::HandlerBase<Source_>*>(token);
+					if(handlers.FindLocation(item)==-1) {
+						unsetfire();
+						return false;
+					}
+
+					access.lock();
+
+					item->Fire(access, source, key, amount);
+				}
+				catch(...) {
+					//unlock everything if something goes bad
+
+					//just in case
+					access.unlock();
+
+					unsetfire();
+
+					throw;
+				}
+
+				unsetfire();
+				return true;
 			}
 
 			/// Stops event from continuing. Should be called inside an eventhandler to be effective.
@@ -321,7 +359,25 @@ namespace Gorgon {
 			
 
 		private:
-			std::mutex fire, access;
+			bool checksetfire() { 
+				bool ret;
+				mutexfire.lock();
+				ret=fire;
+				fire=true;
+				mutexfire.unlock();
+
+				return ret;
+			}
+
+			void unsetfire() {
+				mutexfire.lock();
+				fire=false;
+				mutexfire.unlock();
+			}
+
+
+			std::mutex mutexfire, access;
+			bool fire=false;
 			Source_ *source;
 			Containers::Collection<internal::HandlerBase<Source_>> handlers;
 			typename Containers::Collection<internal::HandlerBase<Source_>>::Iterator iterator;

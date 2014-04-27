@@ -2,10 +2,13 @@
 
 #include "../WindowManager.h"
 #include "../Window.h"
+#include "../Input.h"
+#include "../OS.h"
 
 #define WINDOWS_LEAN_AND_MEAN
 
 #include <windows.h>
+#include <gl/GL.h>
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -16,9 +19,127 @@ namespace Gorgon {
 	namespace internal {
 
 		struct windowdata {
+			windowdata(Window &parent) : parent(parent) { }
+
 			HWND handle = 0;
+			Window &parent;
+			HGLRC context=0;
+
+			std::map<Input::Key, Input::Event<Window>::Token> handlers;
 
 			LRESULT Proc(UINT message, WPARAM wParam, LPARAM lParam) {
+				switch(message) {
+
+					case WM_ACTIVATE: {
+						if(LOWORD(wParam)) {
+							parent.ActivatedEvent();
+						}
+						else {
+							//ReleaseAll();
+							parent.DeactivatedEvent();
+						}
+					} //Activate
+					break;
+
+
+					case WM_ERASEBKGND:
+						return true;
+
+
+					case WM_CLOSE: {
+						bool allow;
+						allow=true;
+						parent.ClosingEvent(allow);
+						if(allow)
+							return DefWindowProc(handle, message, wParam, lParam);
+					}
+					break;
+
+
+					case WM_DESTROY:
+						//ReleaseAll();
+						parent.DestroyedEvent();
+						break;
+
+
+					case WM_SYSKEYDOWN:
+					case WM_KEYDOWN: {
+						if(lParam&1<<30) {
+							if(handlers.count(wParam)>0 && handlers[wParam]!=Input::Event<Window>::EmptyToken) {
+								parent.KeyEvent(handlers[wParam], wParam, 1.f);
+							}
+
+							return 0;
+						}
+						
+						switch(wParam) {
+						case VK_CONTROL:
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Ctrl);
+							break;
+						case VK_SHIFT:
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Shift);
+							break;
+						case VK_LWIN:
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Meta);
+							break;
+						case VK_RWIN:
+							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Meta);
+							break;
+						}
+
+						auto token=parent.KeyEvent(wParam, +1.f);
+						if(token!=Input::Event<Window>::EmptyToken) {
+							handlers[wParam]=token;
+							return 0;
+						}
+					} //Keydown
+					return 0;
+
+
+					case WM_SYSKEYUP:
+					case WM_KEYUP: {
+
+						switch(wParam) {
+						case VK_CONTROL:
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Ctrl);
+							break;
+						case VK_SHIFT:
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Shift);
+							break;
+						case VK_LWIN:
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Meta);
+							break;
+						case VK_RWIN:
+							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Meta);
+							break;
+						}
+
+						if(handlers.count(wParam)>0 && handlers[wParam]!=Input::Event<Window>::EmptyToken) {
+							parent.KeyEvent(handlers[wParam], wParam, 0.f);
+							handlers[wParam]=Input::Event<Window>::EmptyToken;
+						}
+						else {
+							parent.KeyEvent(wParam, 0.f);
+						}
+						
+					} //Keyup
+					return 0;
+
+
+					case WM_CHAR:
+						if(handlers.count(wParam)==0 || handlers[wParam]==Input::Event<Window>::EmptyToken) {
+							if(wParam==8 || wParam==127 || wParam==27) return 0;
+
+							parent.CharacterEvent(wParam);
+						}
+						return 0;
+
+					default:
+						//std::cout<<std::hex<<message<<": "<<wParam<<", "<<lParam<<std::endl;
+						break;
+
+				}
+
 				return DefWindowProc(handle, message, wParam, lParam);
 			}
 
@@ -26,6 +147,12 @@ namespace Gorgon {
 		};
 
 		std::map<HWND, windowdata*> windowdata::mapping;
+
+		bool ishandled(HWND hwnd, Input::Key key) { 
+			if(!windowdata::mapping[hwnd])  return false;
+
+			return windowdata::mapping[hwnd]->handlers.count(key) && windowdata::mapping[hwnd]->handlers[key]!=Input::Event<Window>::EmptyToken;
+		}
 	}
 
 	LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -83,8 +210,8 @@ namespace Gorgon {
 		}
 	}
 
-	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible, bool useoutermetrics) :
-		data(new internal::windowdata) { 
+	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) :
+		data(new internal::windowdata(*this)) { 
 		windows.Add(this);
 
 		WNDCLASSEX windclass;
@@ -127,10 +254,8 @@ namespace Gorgon {
 
 		GetWindowInfo(hwnd, &wi);
 
-		if(!useoutermetrics) {
-			rect.Width += (wi.rcWindow.right-wi.rcWindow.left) - (wi.rcClient.right-wi.rcClient.left);
-			rect.Height+= (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top);
-		}
+		rect.Width += (wi.rcWindow.right-wi.rcWindow.left) - (wi.rcClient.right-wi.rcClient.left);
+		rect.Height+= (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top);
 
 		if(rect.TopLeft()==automaticplacement) {
 			rect.Move( (WindowManager::GetUsableScreenRegion()-rect.GetSize()).Center() );
@@ -144,18 +269,25 @@ namespace Gorgon {
 		UpdateWindow(hwnd);
 
 		data->handle=hwnd;
+		internal::windowdata::mapping[hwnd]=data;
+
+		PostMessage(hwnd, WM_ACTIVATE, -1, -1);
+
+		createglcontext();
 	}
 	
-	Window::Window(const std::string &name, const std::string &title) : data(new internal::windowdata) {
+	Window::Window(const FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
 		
 	}
 	
 	Window::~Window() {
+		internal::windowdata::mapping[data->handle]=nullptr;
+		DestroyWindow(data->handle);
 		windows.Remove(this);
 		delete data;
 	}
 
-	virtvoid Window::Show() {
+	void Window::Show() {
 		ShowWindow(data->handle, SW_SHOW);
 		SetActiveWindow(data->handle);
 		ShowWindow(data->handle, SW_SHOW);
@@ -164,11 +296,7 @@ namespace Gorgon {
 	void Window::Hide() {
 		ShowWindow(data->handle, SW_HIDE);
 	}
-
-	void Window::ResizeOuter(const Geometry::Size &size) {
-		SetWindowPos(data->handle, 0, 0, 0, size.Width, size.Height, SWP_NOMOVE | SWP_NOZORDER);
-	}
-
+	
 	void Window::HidePointer() {
 		if(WindowManager::pointerdisplayed) {
 			WindowManager::pointerdisplayed=false;
@@ -191,10 +319,11 @@ namespace Gorgon {
 
 		GetWindowInfo(data->handle, &wi);
 
-		ResizeOuter({
-			size.Width + (wi.rcWindow.right-wi.rcWindow.left) - (wi.rcClient.right-wi.rcClient.left),
-			size.Height+ (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top)
-		});
+		SetWindowPos(data->handle, 0, 0, 0, 
+			size.Width + (wi.rcWindow.right-wi.rcWindow.left) - (wi.rcClient.right-wi.rcClient.left), 
+			size.Height+ (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top), 
+			SWP_NOMOVE | SWP_NOZORDER
+		);
 	}
 
 	void Window::Move(const Geometry::Point &location) {
@@ -205,5 +334,48 @@ namespace Gorgon {
 		// handled by operating system
 	}
 
+	void Window::createglcontext() {
+		HDC hDC = GetDC(data->handle);
 
+		static	PIXELFORMATDESCRIPTOR pfd=	// pfd Tells Windows How We Want Things To Be
+		{
+			sizeof(PIXELFORMATDESCRIPTOR),	// Size Of This Pixel Format Descriptor
+			1,								// Version Number
+			PFD_DRAW_TO_WINDOW |			// Format Must Support Window
+			PFD_SUPPORT_OPENGL |			// Format Must Support OpenGL
+			PFD_DOUBLEBUFFER,				// Must Support Double Buffering
+			PFD_TYPE_RGBA,					// Request An RGBA Format
+			32,								// Select Our Color Depth
+			0, 0, 0, 0, 0, 0,				// Color Bits Ignored
+			0,								// No Alpha Buffer
+			0,								// Shift Bit Ignored
+			0,								// No Accumulation Buffer
+			0, 0, 0, 0,						// Accumulation Bits Ignored
+			16,								// 16Bit Z-Buffer (Depth Buffer)
+			0,								// No Stencil Buffer
+			0,								// No Auxiliary Buffer
+			PFD_MAIN_PLANE,					// Main Drawing Layer
+			0,								// Reserved
+			0, 0, 0							// Layer Masks Ignored
+		};
+
+		int PixelFormat=ChoosePixelFormat(hDC, &pfd);
+		SetPixelFormat(hDC, PixelFormat, &pfd);
+
+		data->context = wglCreateContext(hDC);
+		wglMakeCurrent(hDC, data->context);
+
+		if(data->context==NULL) {
+			OS::DisplayMessage("Context creation failed");
+			exit(0);
+		}
+
+		setupglcontext();
+
+		// test code
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glFlush();
+		glFinish();
+		SwapBuffers(hDC);
+	}
 } 

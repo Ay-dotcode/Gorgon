@@ -46,9 +46,6 @@ int main() {
 	
 	//Gorgon::OS::Initialize();
 	
-	Gorgon::SGuid guid{Gorgon::SGuid::CreateNew};
-	std::cout<<guid<<std::endl;
-	exit(0);
 
 
 	
@@ -59,14 +56,20 @@ int main() {
 	//std::cout<<"Run: "<<Gorgon::OS::Open("http://darkgaze.org")<<std::endl;
 	
 	Gorgon::Window win({50,20,200, 300}, "mywind", "My window");
-	win.Move({300,200});
-	win.ActivatedEvent.Register([]{std::cout<<"activated"<<std::endl;});
+	win.Move({300, 200});
+	win.ActivatedEvent.Register([] {std::cout<<"activated"<<std::endl; });
+	win.DeactivatedEvent.Register([] {std::cout<<"deactivated"<<std::endl; });
 	win.DestroyedEvent.Register([]{std::cout<<"destroyed"<<std::endl;exit(0);});
 	win.CharacterEvent.Register([](Gorgon::Keyboard::Char c) { std::cout<<c<<std::endl; });
-	win.KeyEvent.Register([](Gorgon::Input::Key k, float amount) -> bool { 
-		std::cout<<k<<": "<<amount<<std::endl; 
-		return false;
+	win.KeyEvent.Register([](Gorgon::Input::Key k, float amount) -> bool {
+		std::cout<<k<<": "<<amount<<std::endl;
+		return k=='C';
 	});
+	//auto t=win.KeyEvent.Register([](Gorgon::Input::Key k, float amount) -> bool {
+	//	std::cout<<"> "<<k<<": "<<amount<<std::endl;
+	//	return false;
+	//});
+	//win.KeyEvent.Activate(t);
 	//win.Resize({400,500});
 	
 	while(true) {
