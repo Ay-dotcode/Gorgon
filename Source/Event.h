@@ -215,12 +215,12 @@ namespace Gorgon {
 
 		/// Destructor
 		~Event() {
-			assert( ("An event cannot be destroyed while its being fired.", fire.try_lock()) );
+			assert( ("An event cannot be destroyed while its being fired.", mutexfire.try_lock()) );
 			std::lock_guard<std::mutex> g(access);
 			
 			handlers.Destroy();
 			
-			fire.unlock();
+			mutexfire.unlock();
 		}
 		
 		/// Copy constructor is disabled
@@ -229,38 +229,35 @@ namespace Gorgon {
 		/// Copy assignment is disabled
 		Event &operator =(const Event &) = delete;
 
-		/// Move assignment
+		/// Move assignment, should be called synchronized
 		Event &operator =(const Event &&other) {
 			if(&other==this) return *this;
 
 			std::lock_guard<std::mutex> g(access);
 
-			if(!fire.try_lock()) 
-				throw std::runtime_error("An event cannot be moved into while its being fired.");
+			assert(("An event cannot be moved into while its being fired.", !checksetfire()));
 
 			handlers.Destroy();
-			
+
 			source=nullptr;
 			Swap(other);
-			
-			fire.unlock();
+
+			unsetfire();
 		}
-		
+
 		/// Swaps two Events, used for move semantics
 		void Swap(Event &other) {
 			if(&other==this) return;
-			
+
 			using std::swap;
-			
-			if(std::try_lock(fire, other.fire)!=-1) {
-				throw std::runtime_error("Events cannot be swap while its being fired.");
-			}
-			
+
+			assert(("An event cannot be swapped while its being fired.", !checksetfire() && !other.checksetfire()));
+
 			swap(source, other.source);
 			swap(handlers, other.handlers);
 
-			fire.unlock();
-			other.fire.unlock();
+			unsetfire();
+			other.unsetfire();
 		}
 
 		/// Registers a new function to be called when this event is triggered. This function can
@@ -320,7 +317,7 @@ namespace Gorgon {
 		/// cannot cause this event to be fired again.
 		void operator()(Params_... args) {
 			//prevent recursion
-			if(!fire.try_lock()) return;
+			if(checksetfire()) return;
 
 			try {
 				for(iterator=handlers.begin(); iterator.IsValid(); iterator.Next()) {
@@ -336,19 +333,37 @@ namespace Gorgon {
 				//just in case
 				access.unlock();
 				
-				fire.unlock();
+				unsetfire();
 				
 				throw;
 			}
 			
-			fire.unlock();
+			unsetfire();
 		}
 		
 		/// value for an empty token
 		static const Token EmptyToken = 0;
 		
 	private:
-		std::mutex fire, access;
+		bool checksetfire() {
+			bool ret;
+			mutexfire.lock();
+			ret=fire;
+			fire=true;
+			mutexfire.unlock();
+
+			return ret;
+		}
+
+		void unsetfire() {
+			mutexfire.lock();
+			fire=false;
+			mutexfire.unlock();
+		}
+
+
+		std::mutex mutexfire, access;
+		bool fire=false;
 		Source_ *source;
 		Containers::Collection<internal::event::HandlerBase<Source_, Params_...>> handlers;
 		typename Containers::Collection<internal::event::HandlerBase<Source_, Params_...>>::Iterator iterator;
