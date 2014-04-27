@@ -106,7 +106,7 @@ namespace Gorgon {
 		
 		/// Inserts the given layer before the given index. The newly inserted
 		/// layer will be drawn *under* the layer in the given index
-		void Insert(Layer &layer, int before) {
+		void Insert(Layer &layer, long before) {
 			if(layer.parent) 
 				layer.parent->Remove(layer);
 
@@ -119,7 +119,7 @@ namespace Gorgon {
 		
 		/// Inserts the given layer before the given index. The newly inserted
 		/// layer will be drawn *under* the layer in the given index
-		void Insert(Layer *layer, int before) {
+		void Insert(Layer *layer, long before) {
 			if(!layer) return;
 			
 			Insert(*layer, before);

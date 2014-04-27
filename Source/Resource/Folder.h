@@ -8,103 +8,150 @@ namespace Gorgon { namespace Resource {
 	class Folder;
 	
 	////This function loads a folder resource from the given file
-	Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames=false, bool OnlyFirst=false);
+	Folder *LoadFolderResource(File &file, std::istream &data, int size, bool loadnames=false, bool onlyfirst=false);
 
  	/// This is basic folder resource, it contains other resources. 
 	class Folder : public Base {
 		friend Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames, bool OnlyFirst);
 	public:
-		Folder() : Base(), reallyloadnames(false), EntryPoint(-1) 
-		{ }
+		Folder() { }
 
-		////Entry point of this resource within the physical file. If
-		/// no file is associated with this resource this value is -1.
-		int EntryPoint;
+		virtual ~Folder() { }
 
-		////01010000h, (System, Folder)
+		
+		/// 01010000h, (System, Folder)
 		virtual GID::Type GetGID() const { return GID::Folder; }
+		
+		/// @name Collection related
+		/// @{
+		/// These functions allows modification of folder's children
+		
+		/// Adds a the given resource to this folder
+		void Add(Base &resource) { children.Add(resource); }
+		
+		/// Inserts a the given resource to this folder before the given index
+		void Insert(Base &resource, long before) {
+			children.Insert(resource, before); 
+		}
+		
+		/// Moves the given item to the given position. It is possible to specify
+		/// GetCount() as before to move the item to the end.
+		void MoveBefore(long index, long before) {
+			children.MoveBefore(index, before);
+		}
+		
+		/// Moves the given item to the given position. It is possible to specify
+		/// GetCount() as before to move the item to the end.
+		void MoveBefore(Base &item, long before) {
+			children.MoveBefore(item, before);
+		}
+		
+		/// Removes the given item
+		void Remove(Base &resource) { children.Remove(resource); }
+		
+		/// Deletes the given item properly, minding any links
+		void Delete(Base &resource) { 
+			if(children.FindLocation(resource)==-1) 
+				return; 
+			
+			children.Remove(resource);
+			
+			if( --resource.refcount == 0) {
+				delete &resource;
+			}
+		}
 
-		////Returns the number of items contained
-		int	 GetCount() const { return Subitems.GetCount(); }
-		////Returns an item with the given index
-		Base	*GetItem (int Index) { return &Subitems[Index]; }
-		////Returns an item with the given index
-		Base	&operator [] (int Index) { return (Subitems[Index]); }
-		////Adds a new resource to this folder
-		void	Add(Base *resource) { Subitems.Add(resource, Subitems.HighestOrder()+1); }
-		////Adds a new resource to this folder
-		Folder	&operator << (Base &resource) { Subitems.Add(resource); return *this; }
+		/// Returns the number of items contained
+		int GetCount() const { return children.GetCount(); }
+		
+		/// Returns an item with the given index
+		Base &GetItem(int Index) const { return children[Index]; }
+		
+		/// Returns an item with the given index
+		Base &GetItemPtr(int Index) const { return children[Index]; }
+		
+		/// Returns an item with the given index
+		Base &operator [](int Index) const { return (children[Index]); }
+		
+		/// Checks whether an item in the given index is present
+		bool Exists(int index) const {
+			return index>=0 && index<children.GetCount();
+		}
 
-		//if you run into problems with dynamic_cast use CGet instead
+		/// Checks whether an item with the given name is present
+		bool Exists(const std::string &name) const {
+			return namedlist.count(name)>0;
+		}
+		
+		/// @}
+		
+		
+		/// @name Typecasting access
+		/// @{
+		/// These functions allow access to children by casting them to the requested type
+
+		/// Returns the item at the given index performing dynamic_cast to the given type.
+		/// This function propagates bad_cast exception from dynamic_cast, does not perform
+		/// range check
 		template <typename T_>
-		T_ &Get(int Index) {
-			return dynamic_cast<T_&>(Subitems[Index]);
+		T_ &Get(int index) const {
+			return dynamic_cast<T_&>(children[index]);
 		}
-
-		//if you run into problems with dynamic_cast use CGetPtr instead
+		
+		/// Returns the item at the given index performing dynamic_cast to the given type.
+		/// This function propagates bad_cast exception from dynamic_cast, does not perform
+		/// range check
+		/// @throw std::runtime_error if the given name is not found
 		template <typename T_>
-		T_ *GetPtr(int Index) {
-			return dynamic_cast<T_*>(&Subitems[Index]);
-		}
-
-		//try to use Get instead of this
-		template <typename T_>
-		T_ &CGet(int Index) {
-			return (T_&)(Subitems[Index]);
-		}
-
-		//try to use GetPtr instead of this
-		template <typename T_>
-		T_ *CGetPtr(int Index) {
-			return (T_*)(&Subitems[Index]);
-		}
-
-		bool Exists(int Index) const {
-			return Index>=0 && Index<Subitems.GetCount();
-		}
-
-		bool Exists(const std::string &Index) const {
-			return namedlist.count(Index)>0;
-		}
-
-		//if you run into problems with dynamic_cast use CGet instead
-		template <typename T_>
-		T_ &Get(const std::string &Index) {
-			if(namedlist.count(Index)>0 && dynamic_cast<T_*>(namedlist[Index]))
-				return *dynamic_cast<T_*>(namedlist[Index]);
+		T_ &Get(const std::string &name) const {
+			if(namedlist.count(name)>0 && dynamic_cast<T_*>(namedlist[name]))
+				return *dynamic_cast<T_*>(namedlist[name]);
 			else
 				throw std::runtime_error("Requested item cannot be found");
 		}
 
-		//if you run into problems with dynamic_cast use CGetPtr instead
+		/// Returns the item at the given index performing dynamic_cast to the given type.
+		/// This function returns nullptr if object cannot be casted to the given type.
 		template <typename T_>
-		T_ *GetPtr(const std::string & Index) {
-			return dynamic_cast<T_*>(namedlist[Index]);
+		T_ *GetPtr(int index) {
+			return dynamic_cast<T_*>(&children[index]);
 		}
 
-		//try to use Get instead of this
+		/// Returns the item at the given index performing dynamic_cast to the given type.
+		/// This function returns nullptr if object cannot be casted to the given type.
+		/// @throw std::runtime_error if the given name is not found
 		template <typename T_>
-		T_ &CGet(const std::string & Index) {
-			if(namedlist.count(Index)>0)
-				return *(T_*)(namedlist[Index]);
+		T_ *GetPtr(const std::string &name) const {
+			if(namedlist.count(name)==0)
+				return nullptr;
 			else
-				throw std::runtime_error("Requested item cannot be found");
+				return dynamic_cast<T_*>(namedlist[name]);
 		}
+		
+		/// @}
 
-		//try to use GetPtr instead of this
-		template <typename T_>
-		T_ *CGetPtr(const std::string & Index) {
-			return (T_*)(namedlist[Index]);
-		}
+		
+		/// Loads this resource if it is not loaded yet
+		/// @param  shallow only loads immediate children of this resource
+		bool Load(bool shallow=false);
+		
+		/// Returns whether this resource is loaded
+		bool IsLoaded() const;
 
-		virtual void Prepare(GGEMain &main, File &file);
-
-		virtual ~Folder() {
-
-		}
+		/// Prepares children to be used
+		virtual void Prepare();
 
 	protected:
-		bool reallyloadnames;
+
+		/// Entry point of this resource within the physical file. If no file is associated with 
+		/// this resource this value is -1. This value is stored for late loading purposes
+		int entrypoint=-1;
+
+		/// Names will only be loaded if the variable is set
+		bool reallyloadnames=false;
+		
+		/// A map to bind items to their names
 		std::map<std::string, Base*> namedlist;
 	};
+
 } }
