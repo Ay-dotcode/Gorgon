@@ -1,136 +1,97 @@
 #include "File.h"
-#include "Text.h"
-#include "Image.h"
-#include "DataArray.h"
-#include "Animation.h"
-#include "BitmapFont.h"
-#include "Sound.h"
-#include "FontTheme.h"
-#include "LinkNode.h"
-#include "FontTheme.h"
-#include "Pointer.h"
-#include "Blob.h"
-#include "../Engine/OS.h"
+#include "../Filesystem.h"
 
-using namespace std;
-using namespace gge::utils;
 
-namespace gge { namespace resource {
+namespace Gorgon { namespace Resource {
 
-	void File::load(const string &Filename, bool first) {
-		CheckAndDelete(root);
+	Base *File::LoadObject(std::istream &data, GID::Type gid, unsigned long size) {
+		for(auto &loader : Loaders) {
 
-		if(!os::filesystem::IsFileExists(Filename) && os::filesystem::IsFileExists(Filename+".lzma")) {
-			ifstream ifile(Filename+".lzma",ios::binary);
-			ofstream ofile(Filename,ios::binary);
-			encoding::Lzma.Decode(ifile, ofile);
-			os::filesystem::DeleteFile(Filename+".lzma");
+			if(loader.second.GID==gid) {
+				auto obj=loader.second.Handler(data, size, this);
+#ifndef NDEBUG
+				if(!obj) throw std::runtime_error("Cannot load the object with GID"+String::From(gid));
+#endif
+				return obj;
+			}
 		}
 
-		char sgn[7];
+#ifndef NDEBUG
+		throw std::runtime_error("No handler for GID"+String::From(gid));
+#endif
 
-		this->Filename=Filename;
+		EatChunk(data, size);
 
-		///*Check file existence
+		return nullptr;
+	}
 
-		ifstream data;
-		data.open(Filename, ios::in | ios::binary);
-		if(data.fail())
-			throw load_error(load_error::FileNotFound, load_error::strings::FileNotFound+"\n"+Filename);
+	void File::load(const std::string &filename, bool first, bool shallow) {
+		delete root;
+		std::ifstream data;
+
+		try {
+			if(!Filesystem::IsFile(filename) && Filesystem::IsFile(filename+".lzma")) {
+				std::ifstream ifile(filename+".lzma", std::ios::binary);
+				std::ofstream ofile(filename, std::ios::binary);
+				//Encoding::Lzma.Decode(ifile, ofile);
+				Filesystem::Delete(filename+".lzma");
+			}
+
+			char sgn[7];
+
+			this->filename=filename;
+
+			//Check file existence
+			data.open(filename, std::ios::in | std::ios::binary);
+			if(data.fail())
+				throw LoadError(LoadError::FileNotFound, LoadError::ErrorStrings[LoadError::FileNotFound]+"\n"+filename);
 
 
-		///*Check file signature
-		data.read(sgn, 6);
-		sgn[6]=0;
-		if(string("GORGON")!=sgn)
-			throw load_error(load_error::Signature, load_error::strings::Signature);
+			//Check file signature
+			data.read(sgn, 6);
+			sgn[6]=0;
+			if(std::string("GORGON")!=sgn)
+				throw LoadError(LoadError::Signature);
 
-		///*Check file version
-		ReadFrom(data, FileVersion);
-		if(FileVersion>CurrentVersion)
-			throw load_error(load_error::VersionMismatch, load_error::strings::VersionMismatch);
+			//Check file version
+			fileversion=ReadInt32(data);
+			if(fileversion>CurrentVersion)
+				throw LoadError(LoadError::VersionMismatch);
 
-		///*Load file type
-		ReadFrom(data, FileType);
+			//Load file type
+			filetype=ReadGID(data);
 
-		///*Check first element
-		if(ReadFrom<int>(data)!=GID::Folder)
-			throw load_error(load_error::Containment, load_error::strings::Containment);
+			//Check first element
+			if(ReadGID(data)!=GID::Folder)
+				throw LoadError(LoadError::Containment);
 
-		int size;
-		ReadFrom(data, size);
+			unsigned long size=ReadUInt32(data);
 
-		///*Load first element
-		root=LoadFolderResource(*this, data, size,LoadNames,first);
-		if(!root)
-			throw load_error(load_error::Containment, load_error::strings::Containment);
+			//Load first element
+			root=LoadFolderResource(*this, data, size, LoadNames, first);
+			if(!root)
+				throw LoadError(LoadError::Containment);
+		}
+		catch(...) {
+			root=new Folder;
+			throw;
+		}
 
 		root->Resolve(*this);
 
 		isloaded=true;
 
-		///*Close file
+		//Close file
 		data.close();
 	}
 
-	Base *File::LoadObject(istream &Data, int GID, int Size) {
-		for(utils::Collection<Loader>::Iterator loader=Loaders.First();
-			loader.IsValid(); loader.Next()) {
-
-			if(loader->GId==GID) {
-				return loader->Handler(*this, Data, Size);
-			}
-		}
-
-		EatChunk(Data,Size);
-		return NULL;
-	}
-
-	void File::AddBasicLoaders() {
-		Loaders.Add(new Loader(GID::Folder, std::bind(LoadFolderResource, placeholders::_1, placeholders::_2, placeholders::_3, false, false)));
-		Loaders.Add(new Loader(GID::LinkNode, resource::LoadLinkNodeResource)); 
-		Loaders.Add(new Loader(GID::Text, LoadTextResource)); 
-		Loaders.Add(new Loader(GID::Image, LoadImageResource)); 
-		Loaders.Add(new Loader(GID::Data, LoadDataResource)); 
-	}
-
-	void File::AddExtendedLoaders() {
-		AddBasicLoaders();
-		Loaders.Add(new Loader(GID::Sound, LoadSoundResource)); 
-		Loaders.Add(new Loader(GID::Blob, LoadBlobResource)); 
-	}
-
-	void File::AddGameLoaders() {
-		AddExtendedLoaders();
-		Loaders.Add(new Loader(GID::Animation, LoadAnimationResource)); 
-		Loaders.Add(new Loader(GID::Pointer, LoadPointerResource)); 
-		Loaders.Add(new Loader(GID::Font, LoadBitmapFontResource)); 
-		Loaders.Add(new Loader(GID::FontTheme, LoadFontTheme)); 
-		Loaders.Add(new Loader(GID::FontTheme, LoadFontTheme)); 
-	}
-
-	Base * File::FindObject( utils::SGuid guid ) {
-		if(guid.isEmpty()) 
-			return NULL;
-
-		for(utils::Collection<Redirect>::Iterator i=Redirects.First();i.IsValid();i.Next()) {
-			if(i->source==guid)
-				guid=i->target;
-		}
-
-		return root->FindObject(guid);
-	}
-
-	File::~File() {
-		utils::CheckAndDelete(root);
-		Loaders.Destroy();
-		Redirects.Destroy();
-	}
-
-	const string load_error::strings::FileNotFound		= "Cannot find the file specified";
-	const string load_error::strings::Signature			= "Signature mismatch";
-	const string load_error::strings::VersionMismatch	= "Version mismatch";
-	const string load_error::strings::Containment		= "The supplied file is does not contain any data or its representation is invalid.";
-	const string load_error::strings::UnknownNode		= "An unknown node is encountered in the file.";
+	const std::string LoadError::ErrorStrings[6] ={
+		"Unknown error", 
+		"Cannot find the file specified", 
+		"Signature mismatch",
+		"Version mismatch", 
+		"The supplied file is does not contain any data or its representation is invalid.",
+		"An unknown node is encountered in the file."
+	};
 
 } }

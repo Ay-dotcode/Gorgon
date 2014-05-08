@@ -15,7 +15,7 @@ namespace Gorgon {
 
 		/// This class is the base for all Gorgon Resources. 
 		/// @warning This class is rather heavy and should not be used for small objects that are
-		/// planned to be created alot of.
+		/// planned to be created a lot of.
 		class Base {
 		public:
 
@@ -25,20 +25,26 @@ namespace Gorgon {
 			/// Destructor, Always children gets destroyed first
 			virtual ~Base();
 
+
 			/// This function shall return Gorgon ID of this resource
 			virtual GID::Type GetGID() const = 0;
-			
+
+
+			/// This function shall resolve links or similar constructs. This function is intended to be called
+			/// after a file is loaded. It has no meaning for in memory constructed resource trees. Default
+			/// behavior is to pass the request to children.
+			virtual void Resolve(File &file);
+
 			/// This function shall prepare this resource to be used
-			/// after file is loaded, default behavior is to pass
+			/// after resource is loaded. Default behavior is to pass
 			/// the request to children
 			virtual void Prepare();
-			
-			/// This function shall resolve links or similar constructs
-			virtual void Resolve();
 
-			
-			/// Searches the public children of this resource object
-			virtual Base *FindObject(const SGuid &guid) const;
+			/// This function shall discard any transitional data which is not vital
+			/// after Prepare function is issued. This data can be image pixel buffer
+			/// sound data buffer. Default behavior is to pass the request to children
+			virtual void Discard();
+
 
 			
 			/// This function tests whether this object has the given SGuid
@@ -47,22 +53,10 @@ namespace Gorgon {
 			/// Returns the guid of the object
 			virtual SGuid GetGuid() const { return guid; }
 			
-			/// Creates a new guid for this object
-			virtual void NewGuid() { guid.New(); }
-			
-			/// Sets the guid of this object to the given value
-			virtual void SetGuid(const SGuid &guid) { this->guid=guid; }
-			
 			
 			/// Returns the name of this object.
 			/// @warning The object names are loaded only upon request
 			const std::string &GetName() const { return name; }
-			
-			/// Sets the name of the object
-			void SetName(const std::string &name) { 
-				this->name=name;
-				//TODO update parent?
-			}
 			
 			
 			/// Returns whether this object has a parent
@@ -80,11 +74,10 @@ namespace Gorgon {
 			Base *GetParentPtr() const {
 				return parent;
 			}
-			
-			
+						
 			/// Returns the root of this resource. Root of a resource is always exists, in case
-			/// of no parent, the root is the object itself. Note that this value is cached and maintained
-			/// in rare cases, it will be recalculated.
+			/// of no parent, the root is the object itself. Note that this value is cached and maintained.
+			/// In rare cases, it will be recalculated.
 			const Base &GetRoot() const {
 				if(!root) {
 					if(!parent) {
@@ -97,6 +90,7 @@ namespace Gorgon {
 				
 				return *root;
 			}
+
 			
 			/// Allows easy iteration through range based fors
 			const Containers::Collection<Base>::ConstIterator begin() const {
@@ -107,13 +101,20 @@ namespace Gorgon {
 			const Containers::Collection<Base>::ConstIterator end() const {
 				return Children.end();
 			}
+
 			
 			/// The children this object have. The elements in const collections are modifiable,
 			/// therefore, its possible to modify properties of the children. However, children
 			/// should be added to the object using member methods as some objects do not allow
 			/// children, or allow children that are of specific type.
-			const Containers::Collection<Base> Children;
-			
+			const Containers::Collection<Base> &Children;
+
+			/// **INTERNAL**, Reference count, used in linking mechanism.
+			/// @warning Never change or rely on this value unless you know the internal mechanics
+			///          of linking system. Any uninformed changes may cause leaks or worse, double
+			///          deletion and crash of the program.
+			unsigned long refcount=1;
+
 		protected:
 			/// SGuid to identify this resource object
 			SGuid guid;
@@ -130,9 +131,6 @@ namespace Gorgon {
 			
 			/// Root of this resource
 			mutable const Base *root=nullptr;
-			
-			/// Reference count, used in linking mechanism
-			unsigned long refcount=1;
 		};
 	
 	} 

@@ -1,4 +1,8 @@
 SET(Local
+	File.h
+	File.cpp
+	Folder.h
+	Folder.cpp
 	GID.h
 	Base.h
 	Base.cpp
