@@ -7,6 +7,7 @@
 #include <mutex>
 
 #include <assert.h>
+#include <atomic>
 
 #include "Types.h"
 #include "Containers/Collection.h"
@@ -199,12 +200,14 @@ namespace Gorgon {
 		
 		/// Constructor for empty source
 		Event() : source(nullptr) {
+			fire.clear();
 			static_assert( std::is_same<Source_, Empty>::value , "Empty constructor cannot be used." );
 		}
 		
 		/// Constructor for class specific source
 		explicit Event(Source_ &source) : source(&source) {
-			static_assert( !std::is_same<Source_, Empty>::value, "Filling constructor is not required, use the default." );
+			fire.clear();
+			static_assert(!std::is_same<Source_, Empty>::value, "Filling constructor is not required, use the default.");
 		}
 		
 		/// Move constructor
@@ -215,12 +218,10 @@ namespace Gorgon {
 
 		/// Destructor
 		~Event() {
-			assert( ("An event cannot be destroyed while its being fired.", mutexfire.try_lock()) );
+			assert(("An event cannot be destroyed while its being fired.", fire.test_and_set()));
 			std::lock_guard<std::mutex> g(access);
 			
 			handlers.Destroy();
-			
-			mutexfire.unlock();
 		}
 		
 		/// Copy constructor is disabled
@@ -235,14 +236,14 @@ namespace Gorgon {
 
 			std::lock_guard<std::mutex> g(access);
 
-			assert(("An event cannot be moved into while its being fired.", !checksetfire()));
+			assert(("An event cannot be moved into while its being fired.", !fire.test_and_set()));
 
 			handlers.Destroy();
 
 			source=nullptr;
 			Swap(other);
 
-			unsetfire();
+			fire.clear();
 		}
 
 		/// Swaps two Events, used for move semantics
@@ -251,13 +252,13 @@ namespace Gorgon {
 
 			using std::swap;
 
-			assert(("An event cannot be swapped while its being fired.", !checksetfire() && !other.checksetfire()));
+			assert(("An event cannot be swapped while its being fired.", !fire.test_and_set() && !other.fire.test_and_set()));
 
 			swap(source, other.source);
 			swap(handlers, other.handlers);
 
-			unsetfire();
-			other.unsetfire();
+			fire.clear();
+			other.fire.clear();
 		}
 
 		/// Registers a new function to be called when this event is triggered. This function can
@@ -317,7 +318,7 @@ namespace Gorgon {
 		/// cannot cause this event to be fired again.
 		void operator()(Params_... args) {
 			//prevent recursion
-			if(checksetfire()) return;
+			if(fire.test_and_set()) return;
 
 			try {
 				for(iterator=handlers.begin(); iterator.IsValid(); iterator.Next()) {
@@ -333,37 +334,21 @@ namespace Gorgon {
 				//just in case
 				access.unlock();
 				
-				unsetfire();
+				fire.clear();
 				
 				throw;
 			}
 			
-			unsetfire();
+			fire.clear();
 		}
 		
 		/// value for an empty token
 		static const Token EmptyToken = 0;
 		
 	private:
-		bool checksetfire() {
-			bool ret;
-			mutexfire.lock();
-			ret=fire;
-			fire=true;
-			mutexfire.unlock();
 
-			return ret;
-		}
-
-		void unsetfire() {
-			mutexfire.lock();
-			fire=false;
-			mutexfire.unlock();
-		}
-
-
-		std::mutex mutexfire, access;
-		bool fire=false;
+		std::mutex access;
+		std::atomic_flag fire;
 		Source_ *source;
 		Containers::Collection<internal::event::HandlerBase<Source_, Params_...>> handlers;
 		typename Containers::Collection<internal::event::HandlerBase<Source_, Params_...>>::Iterator iterator;

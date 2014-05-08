@@ -115,11 +115,13 @@ namespace Gorgon {
 			/// Constructor for empty source
 			Event() : source(nullptr) {
 				static_assert( std::is_same<Source_, Empty>::value , "Empty constructor cannot be used." );
+				fire.clear();
 			}
 			
 			/// Constructor for class specific source
 			explicit Event(Source_ &source) : source(&source) {
 				static_assert( !std::is_same<Source_, Empty>::value, "Filling constructor is not required, use the default." );
+				fire.clear();
 			}
 			
 			/// Move constructor
@@ -130,7 +132,7 @@ namespace Gorgon {
 
 			/// Destructor
 			~Event() {
-				assert( ("An event cannot be destroyed while its being fired.", !checksetfire()) );
+				assert( ("An event cannot be destroyed while its being fired.", !fire.test_and_set()) );
 
 				std::lock_guard<std::mutex> g(access);
 				
@@ -149,14 +151,14 @@ namespace Gorgon {
 
 				std::lock_guard<std::mutex> g(access);
 
-				assert(("An event cannot be moved into while its being fired.", !checksetfire()));
+				assert(("An event cannot be moved into while its being fired.", !fire.test_and_set()));
 
 				handlers.Destroy();
 				
 				source=nullptr;
 				Swap(other);
 				
-				unsetfire();
+				fire.clear();
 			}
 			
 			/// Swaps two Events, used for move semantics
@@ -164,14 +166,14 @@ namespace Gorgon {
 				if(&other==this) return;
 				
 				using std::swap;
-				
-				assert(("An event cannot be swapped while its being fired.", !checksetfire() && !other.checksetfire()));
-				
+
+				assert(("An event cannot be swapped while its being fired.", !fire.test_and_set() && !other.fire.test_and_set()));
+
 				swap(source, other.source);
 				swap(handlers, other.handlers);
 
-				unsetfire();
-				other.unsetfire();
+				fire.clear();
+				other.fire.clear();
 			}
 			
 			/// Deactivates the given handler token
@@ -273,7 +275,7 @@ namespace Gorgon {
 			/// @return Whether this event is handled by a handler.
 			Token operator()(Key key, float amount) {
 				//prevent recursion
-				if(checksetfire()) return EmptyToken; /// add to queue??
+				if(fire.test_and_set()) return EmptyToken; /// add to queue??
 
 				stop=false;
 
@@ -287,12 +289,12 @@ namespace Gorgon {
 						bool ret=iterator->Fire(access, source, key, amount);
 
 						if(ret) {
-							unsetfire();
+							fire.clear();
 							return reinterpret_cast<Token>(iterator.CurrentPtr());
 						}
 
 						if(stop) {
-							unsetfire();
+							fire.clear();
 							return EmptyToken;
 						}
 					}
@@ -303,12 +305,12 @@ namespace Gorgon {
 					//just in case
 					access.unlock();
 
-					unsetfire();
+					fire.clear();
 
 					throw;
 				}
 
-				unsetfire();
+				fire.clear();
 
 				return EmptyToken;
 			}
@@ -317,14 +319,14 @@ namespace Gorgon {
 			/// this method will return false otherwise, it will always return true.
 			bool operator()(Token token, Key key, float amount) {
 				//prevent recursion
-				if(checksetfire()) return false; /// add to queue??
+				if(fire.test_and_set()) return false; /// add to queue??
 
 				stop=false;
 
 				try {
 					auto item=reinterpret_cast<internal::HandlerBase<Source_>*>(token);
 					if(handlers.FindLocation(item)==-1) {
-						unsetfire();
+						fire.clear();
 						return false;
 					}
 
@@ -338,12 +340,12 @@ namespace Gorgon {
 					//just in case
 					access.unlock();
 
-					unsetfire();
+					fire.clear();
 
 					throw;
 				}
 
-				unsetfire();
+				fire.clear();
 				return true;
 			}
 
@@ -359,25 +361,8 @@ namespace Gorgon {
 			
 
 		private:
-			bool checksetfire() { 
-				bool ret;
-				mutexfire.lock();
-				ret=fire;
-				fire=true;
-				mutexfire.unlock();
-
-				return ret;
-			}
-
-			void unsetfire() {
-				mutexfire.lock();
-				fire=false;
-				mutexfire.unlock();
-			}
-
-
-			std::mutex mutexfire, access;
-			bool fire=false;
+			std::mutex access;
+			std::atomic_flag fire;
 			Source_ *source;
 			Containers::Collection<internal::HandlerBase<Source_>> handlers;
 			typename Containers::Collection<internal::HandlerBase<Source_>>::Iterator iterator;

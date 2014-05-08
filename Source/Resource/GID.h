@@ -8,9 +8,11 @@
 ///@cond INTERNAL
 #ifndef CONSTEXPR
 #	ifdef WIN32 
-#		define CONSTEXPR	
+#		define CONSTEXPR	static
+#		define CONSTEXPRFN
 #	else
 #		define CONSTEXPR	constexpr
+#		define CONSTREXPRFN constexpr
 #	endif
 #endif
 ///@endcond
@@ -21,7 +23,7 @@ namespace Gorgon {
 		/// capabilities. Note that this is different from versions of
 		/// each resource. This version tag will not easily change in the
 		/// future.
-		static const int CurrentVersion				=	0x00010000;
+		static const unsigned long CurrentVersion				=	0x00010000;
 		
 
 		//Gorgon IDs for known resource types
@@ -32,24 +34,28 @@ namespace Gorgon {
 			class Type {
 			public:
 				/// Default constructor creates an empty type
-				CONSTEXPR Type() : value() { }
+				CONSTEXPRFN Type() : value() { }
 				
 				/// Constructor to create a new GID from the given value
-				explicit CONSTEXPR Type(uint32_t value) : value(value) { }
+				explicit CONSTEXPRFN Type(uint32_t value) : value(value) { }
 				
 				/// Returns the value of the GID as an integer
-				CONSTEXPR uint32_t AsInteger() const {
+				CONSTEXPRFN uint32_t AsInteger() const {
 					return value;
 				}
 				
 				/// Returns the value of the GID as a character array
-				CONSTEXPR const char *AsChars() const {
+				CONSTEXPRFN const char *AsChars() const {
 					return (const char*)&value;
 				}
 				
 				/// Checks if this type information is empty
-				CONSTEXPR bool IsEmpty() const { return value==0; }
-			
+				CONSTEXPRFN bool IsEmpty() const { return value==0; }
+
+				CONSTEXPRFN bool operator == (const Type &type) const { return type.value==value; }
+
+				CONSTEXPRFN bool operator != (const Type &type) const { return type.value!=value; }
+
 			private:
 				uint32_t value;
 			};
@@ -57,7 +63,9 @@ namespace Gorgon {
 			/// @name System 
 			/// @{
 			/// System module GIDs
-			
+
+			CONSTEXPR Type None{0x00000000};
+
 			/// Folder resource
 			//, \ref Gorgon::Resource::Folder
 			CONSTEXPR Type Folder				{0x01010000};

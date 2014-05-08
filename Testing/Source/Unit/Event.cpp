@@ -6,6 +6,7 @@
 #include <Source/OS.h>
 #include <Source/Resource/GID.h>
 #include <Source/SGuid.h>
+#include <Source/Resource/Folder.h>
 
 class A {
 public:
@@ -63,7 +64,7 @@ int main() {
 	win.CharacterEvent.Register([](Gorgon::Keyboard::Char c) { std::cout<<c<<std::endl; });
 	win.KeyEvent.Register([](Gorgon::Input::Key k, float amount) -> bool {
 		std::cout<<k<<": "<<amount<<std::endl;
-		return k=='c';
+		return k=='c' || k=='C';
 	});
 	//auto t=win.KeyEvent.Register([](Gorgon::Input::Key k, float amount) -> bool {
 	//	std::cout<<"> "<<k<<": "<<amount<<std::endl;
@@ -71,6 +72,10 @@ int main() {
 	//});
 	//win.KeyEvent.Activate(t);
 	//win.Resize({400,500});
+
+	Gorgon::Resource::Folder fold;
+	fold.Delete(fold);
+
 	
 	while(true) {
 		Gorgon::OS::processmessages();
