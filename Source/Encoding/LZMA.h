@@ -1,16 +1,18 @@
 #pragma once
+
 #include <string.h>
 #include <vector>
 #include <functional>
-#include <iosfwd>
+#include <algorithm>
 #include <istream>
 #include <cstring>
-#include "../Utils/UtilsBase.h"
+
+#include "../Types.h"
 
 
-namespace gge { namespace encoding { 
+namespace Gorgon { namespace Encoding { 
 
-
+	/// @cond INTERNAL
 	namespace lzma {
 
 		//Streamer bases
@@ -262,55 +264,84 @@ namespace gge { namespace encoding {
 			return size;		
 		}
 	}
+	/// @endcond
 
-	typedef std::function<void(float)> LZMAProgressNotification;
-
-	//The main idea of this system is to reduce the amount of the code.
-	//There are reader structures that can read data from various sources.
-	//These sources are automatically created by encode/decode template
-	//functions. After creating these structures, internal encode/decode
-	//function is called. Creating an new read/write structure is enough 
-	//to support that type of container
+	/// The main idea of this system is to reduce the amount of the code.
+	/// There are reader structures that can read data from various sources.
+	/// These sources are automatically created by encode/decode template
+	/// functions. After creating these structures, internal encode/decode
+	/// function is called. Creating an new read/write structure is enough 
+	/// to support that type of container
 	class LZMA {
 	public:
 
-		LZMA(bool UseUncompressedSize=true) : UseUncompressedSize(UseUncompressedSize) { }
+		/// Callback to notify progress. The value is reported between 0 and 1
+		typedef std::function<void(float)> ProgressNotification;
 
-		//throws runtime error
-		//Using this system with arrays is extremely dangerous make sure your arrays are big enough
+		/// Default constructor
+		LZMA(bool useuncompressedsize=true) : UseUncompressedSize(useuncompressedsize) { }
+
+		/// Encodes the given data to LZMA compressed data. Supports vectors, arrays, strings and streams as data
+		/// source and targets.
+		/// @warning Using this system with arrays is extremely dangerous make sure your arrays are big enough
+		/// @throws runtime_error
 		template <class I_, class O_>
 		void Encode(I_ &input, O_ &output) {
-			encode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), NULL);
+			encode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), nullptr);
 		}
-		//throws runtime error
-		//Using this system with arrays is extremely dangerous make sure your arrays are big enough
+
+		/// Encodes the given data to LZMA compressed data. Supports vectors, arrays, strings and streams as data
+		/// source and targets. This variant allows a notification function which is called during compression.
+		/// @warning Using this system with arrays is extremely dangerous make sure your arrays are big enough
+		/// @throws runtime_error
 		template <class I_, class O_>
-		void Encode(I_ &input, O_ &output, LZMAProgressNotification notifier) {
+		void Encode(I_ &input, O_ &output, ProgressNotification notifier) {
 			encode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), &notifier);
 		}
 
-
-
-		//throws runtime error
-		//Using this system with arrays is extremely dangerous make sure your arrays are big enough
+		/// Decodes LZMA compressed data. Supports vectors, arrays, strings and streams as data
+		/// source and targets.
+		/// @param   input Input data
+		/// @param   output Output data
+		/// @param   compressionproperties is the compression property data. Leaving this parameter with default nullptr,
+		///          causes this function to read the actual compression properties from the main data source.
+		/// @param   fsize size of the extracted data. This value is only used if UseUncompressedSize is false. Default value of -1
+		///          relies on LZMA to terminate extraction.
+		/// @warning Using this system with arrays is extremely dangerous make sure your arrays are big enough
+		/// @throws  runtime_error
 		template <class I_, class O_>
-		void Decode(I_ &input, O_ &output, Byte *CompressionProperties=NULL, unsigned long long fsize=(unsigned long long)(long long)-1) {
-			decode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), lzma::SeekFn(input), CompressionProperties, fsize, NULL);
-		}
-		//throws runtime error
-		//Using this system with arrays is extremely dangerous make sure your arrays are big enough
-		template <class I_, class O_>
-		void Decode(I_ &input, O_ &output, LZMAProgressNotification notifier, Byte *CompressionProperties=NULL, unsigned long long fsize=(unsigned long long)(long long)-1) {
-			decode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), lzma::SeekFn(input), CompressionProperties, fsize, &notifier);
+		void Decode(I_ &input, O_ &output, Byte *compressionproperties=nullptr, unsigned long long fsize=(unsigned long long)(long long)-1) {
+			decode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), lzma::SeekFn(input), compressionproperties, fsize, nullptr);
 		}
 
+		/// Decodes LZMA compressed data. Supports vectors, arrays, strings and streams as data
+		/// source and targets. This variant allows a notification function which is called during decompression.
+		/// @param   input Input data
+		/// @param   output Output data
+		/// @param   notifier is the callback to send notifications to
+		/// @param   compressionproperties is the compression property data. Leaving this parameter with default nullptr,
+		///          causes this function to read the actual compression properties from the main data source.
+		/// @param   fsize size of the extracted data. This value is only used if UseUncompressedSize is false. Default value of -1
+		///          relies on LZMA to terminate extraction. Additionally, -1 will cause progress notification to report 0.
+		/// @warning Using this system with arrays is extremely dangerous make sure your arrays are big enough
+		/// @throws  runtime_error
+		template <class I_, class O_>
+		void Decode(I_ &input, O_ &output, LZMA::ProgressNotification notifier, Byte *compressionproperties=nullptr, unsigned long long fsize=(unsigned long long)(long long)-1) {
+			decode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), lzma::SeekFn(input), compressionproperties, fsize, &notifier);
+		}
+
+		/// The size of the compression property data appended in front of the compressed data
 		int PropertySize();
 
+		/// Whether to encode uncompressed size with the compression properties. Default value for this variable is true.
 		bool UseUncompressedSize;
 
 	protected:
-		void encode(lzma::Reader *reader,lzma::Writer *writer, unsigned long long size, LZMAProgressNotification *notifier);
-		void decode(lzma::Reader *reader,lzma::Writer *writer, unsigned long long size,std::function<void(lzma::Reader*,long long)> seekfn, Byte *cprops, unsigned long long fsize, LZMAProgressNotification *notifier);
+		/// Performs actual compression, notifier can be nullptr
+		void encode(lzma::Reader *reader, lzma::Writer *writer, unsigned long long size, ProgressNotification *notifier);
+
+		/// Performs actual decompression, notifier and cprops can be nullptr
+		void decode(lzma::Reader *reader, lzma::Writer *writer, unsigned long long size, std::function<void(lzma::Reader*, long long)> seekfn, Byte *cprops, unsigned long long fsize, ProgressNotification *notifier);
 
 	};
 

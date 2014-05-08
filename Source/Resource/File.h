@@ -9,6 +9,7 @@
 
 #include "Base.h"
 #include "Folder.h"
+#include "../Filesystem.h"
 
 
 namespace Gorgon { namespace Resource {
@@ -21,11 +22,11 @@ namespace Gorgon { namespace Resource {
 		/// type derived from Base for the return type. First parameter is the stream object to read data
 		/// from. The stream object would be opened in binary mode. Second parameter is the size of the 
 		/// data chunk. After reading the object, file pointer should be moved exactly the amount of data
-		/// chunk. Last parameter is the file object that manages the current load operation. This parameter
-		/// could be nullptr. This function should return nullptr in case of an error, otherwise it should
-		/// return the newly loaded object. The ownership of this object will be transferred to the parent
-		/// of the object and it will be deleted with its parent unless detached from the tree.
-		typedef std::function<Base* (std::istream &, unsigned long, File *)> LoaderFunction;
+		/// chunk. Last parameter is the file object that manages the current load operation. This function 
+		/// should return nullptr in case of an error, otherwise it should return the newly loaded object. 
+		/// The ownership of this object will be transferred to the parent of the object and it will be 
+		/// deleted with its parent unless detached from the tree.
+		typedef std::function<Base* (std::istream &, unsigned long, File &)> LoaderFunction;
 
 		/// Filling constructor
 		Loader(GID::Type gid, LoaderFunction handler) : GID(gid), Handler(handler) { }
@@ -63,7 +64,10 @@ namespace Gorgon { namespace Resource {
 			Containment		= 4,
 
 			/// There is an unknown node in the file. This is never thrown in release mode.
-			UnknownNode		= 5
+			UnknownNode		= 5,
+
+			/// Cannot open the given file
+			FileCannotBeOpened = 6,
 		};
 
 		/// Regular constructor, creates error text from error number
@@ -80,7 +84,7 @@ namespace Gorgon { namespace Resource {
 		ErrorType number;
 
 		/// Strings for error codes
-		static const std::string ErrorStrings[6];
+		static const std::string ErrorStrings[7];
 	};
 
 
@@ -95,7 +99,10 @@ namespace Gorgon { namespace Resource {
 		File() : root(new Folder), LoadNames(false) { }
 
 		/// Destroys file object. If the root is not detached, it will destroy resource tree as well.
-		~File() { delete root; }
+		~File() { 
+			delete root;
+			delete file; // deleting nullptr is safe
+		}
 
 
 		/// Returns the root folder of the file
@@ -124,6 +131,8 @@ namespace Gorgon { namespace Resource {
 
 			decltype(mapping) temp;
 			mapping.swap(temp);
+			delete file;
+			file=nullptr;
 		}
 
 		/// Destroys the Gorgon resource tree that this file holds. This file object can still be used after
@@ -135,20 +144,38 @@ namespace Gorgon { namespace Resource {
 			fileversion=0;
 			filetype=GID::None;
 			isloaded=false;
+			delete file;
+			file=nullptr;
 		}
 
 
 		/// Returns the filename used for the last load operation
 		std::string GetFilename() const { return filename; }
 
-		/// Loads the given file. A prepare function call is necessary to be able to use some resources
+		/// Loads the given file. A prepare function call is necessary to be able to use some resources.
+		/// The file could be left open if there are objects marked to be loaded when requested.
+		/// If the filename not found and there is a filename.lzma file, this function extracts the compressed
+		/// file and tries to load uncompressed version.
 		/// @throws LoadError
+		/// @throws std::runtime_error
 		void LoadFile(const std::string &Filename) { load(Filename, false, false); }
 
-		/// Loads only the first object
+		/// Loads only the first object of the given file. Useful to retrieve header information.
+		/// If the filename not found and there is a filename.lzma file, this function extracts the compressed
+		/// file and tries to load uncompressed version.
+		/// @throws LoadError
+		/// @throws std::runtime_error
 		void LoadFirst(const std::string &Filename) { load(Filename, true, false); }
 
-		/// Loads only the first tier of objects
+		/// Loads only the first tier of objects. Only folders refrain from loading its children. Therefore,
+		/// any other object will be loaded fully. This function should be use carefully in presence of links
+		/// Any links that are reaching out to unloaded parts of the file will not be resolved. This may cause
+		/// cast errors. Useful to selectively load a large file. Use Folder::Load function to load the contents
+		/// of a specific folder. This function leaves the file open for further load attempts.
+		/// If the filename not found and there is a filename.lzma file, this function extracts the compressed
+		/// file and tries to load uncompressed version.
+		/// @throws LoadError
+		/// @throws runtime_error
 		void LoadShallow(const std::string &Filename) { load(Filename, false, true); }
 
 		/// Returns if a file is loaded
@@ -162,6 +189,30 @@ namespace Gorgon { namespace Resource {
 		/// @warning This function is intended to be used while loading a resource. It can be used for
 		///          any purpose, however, would not be very useful outside its prime use
 		Base *LoadObject(std::istream &data, GID::Type gid, unsigned long size);
+
+		/// Keeps the file open even after loading is completed. This guarantees that the file is readable at a later
+		/// point to read more data. Discard function closes the file.
+		void KeepOpen() {
+			keepopen=true;
+		}
+
+		/// **For resource loaders**, opens the datafile for reading. A file should at least partially loaded to be able to
+		/// perform this operation. Even if the file is discarded, it will be tried to open and returned.
+		/// @throw Filesystem::PathNotFoundError if the file no longer exists
+		/// @throw std::logic_error if file is never opened in the first place
+		std::ifstream &open() {
+			if(!isloaded) throw std::logic_error("File is not opened");
+
+			if(!file) {
+				file=new std::ifstream(filename);
+				if(!file->is_open()) {
+					file=nullptr;
+					throw Filesystem::PathNotFoundError("Cannot find: "+filename);
+				}
+			}
+
+			return *file;
+		}
 
 		/// Resource Loaders. You may add or remove any loaders that is necessary. Initially a file loads all
 		/// internal resources. 
@@ -194,6 +245,13 @@ namespace Gorgon { namespace Resource {
 
 		/// Type of the loaded file
 		GID::Type filetype;
+
+		/// Keeps the file open even after loading is completed. This guarantees that the file is readable at a later
+		/// point to read more data.
+		bool keepopen=false;
+
+		/// The input file, can be left open. It should be deleted and set to nullptr after closing.
+		std::ifstream *file=nullptr;
 
 		/// Version of the loaded file. Currently there is only a single version. This version does not relate to
 		/// the versions of the resources in the resource file.

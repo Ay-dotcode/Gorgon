@@ -13,30 +13,23 @@ namespace Gorgon {
 	/// Contains string related functions and classes.
 	namespace String {
 		
-		
-		/// @page "Error codes"
-		/// Error codes
-		/// ===========
-		/// Error codes should be between 0 and 999...
-		
-		
 		/// This error will be thrown if a parsing function encounters
 		/// with a general error
 		class ParseError : public std::runtime_error {
 		public:
 			/// Constructs a new parse error. Parse error codes should be between 0 and 999
-			/// with object id infront. For instance an object id of 11 should throw
+			/// with object id in front. For instance an object id of 11 should throw
 			/// parse error 5 with code 110005
 			ParseError(int code=0, const std::string &what="Parse error") : 			
 			std::runtime_error(what), Code(code) { 
 			}
 			
-			/// Error code @see Errorcode
+			/// Error code
 			int Code;
 		};
 		
 		/// This error will be thrown if a parsing function encounters
-		/// with an illegal
+		/// with an illegal token
 		class IllegalTokenError : public ParseError {
 		public:
 			/// Constructor

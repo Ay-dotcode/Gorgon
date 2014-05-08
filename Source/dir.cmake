@@ -1,5 +1,7 @@
 SET(Local
 	Containers
+	Encoding
+	External
 	Filesystem
 	Geometry
 	Input

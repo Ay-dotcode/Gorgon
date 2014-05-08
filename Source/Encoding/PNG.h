@@ -1,17 +1,19 @@
 #pragma once
 
 #include <vector>
-#include "../Utils/UtilsBase.h"
 #include <fstream>
 #include <functional>
+
+#include "../Types.h"
+#include "../Geometry/Size.h"
 
 extern "C" {
 	struct png_struct_def;
 }
 
-namespace gge { namespace encoding {
+namespace Gorgon { namespace Encoding {
 
-
+	/// @cond INTERNAL
 	namespace png {
 
 		//Streamer bases
@@ -208,43 +210,57 @@ namespace gge { namespace encoding {
 			return new FileWriter(f);
 		}
 	}
+	/// @endcond
 	
-	//currently only works for RGBA
-	//see LZMA for template class decisions
+	/// Encodes or decodes PNG compression. This class only returns and creates RGB and RGBA images. This property might be
+	/// fixed along with Task #13
+	/// @see Gorgon::Encoding::LZMA for template class decisions.
 	class PNG {
 	public:
 
-		class Info {
-		public:
-			int Width, Height;
+		/// A structure to contain decoded image information.
+		struct Info {
+			/// The size of the image
+			Geometry::Size Size;
+
+			/// Whether the alpha channel is available
 			bool Alpha;
-			int RowBytes;
 		};
 
-		PNG() { }
 
-		//throws runtime error
-		//Using this system with arrays is extremely dangerous make sure your arrays are big enough
+		/// Encodes a given input with the specified size to the output. Currently this system supports vector, array and stream
+		/// reader and writers. Both vectors and arrays are resized automatically.
+		/// @warning Array write buffer should either be a nullptr of type Byte or an array allocated with malloc. This system uses
+		/// realloc or malloc to resize raw arrays.
+		/// @throws runtime_error in case of an encoding error
 		template <class I_, class O_>
-		void Encode(I_ &input, O_ &output, int width, int height) {
-			encode(png::CreateBuffer(input), png::ReadyWriteStruct(output), width, height);
+		void Encode(I_ &input, O_ &output, const Geometry::Size &size) {
+			encode(png::CreateBuffer(input), png::ReadyWriteStruct(output), size.Width, size.Height);
 		}
 
-		//throws runtime error
-		//Using this system with arrays is extremely dangerous make sure your arrays are big enough
+		/// Decodes the given PNG data. This function returns necessary information that is extracted from the 
+		/// data. Currently this system supports vector, array and stream reader and writers. Both vectors and 
+		/// arrays are resized automatically. Use Gorgon::Resource::Image::Import function to create an image from
+		/// the given PNG data.
+		/// @warning Array write buffer should either be a nullptr of type Byte or an array allocated with malloc. This system uses
+		/// realloc or malloc to resize raw arrays.
+		/// @throws runtime_error in case of a read error
 		template <class I_, class O_>
 		Info Decode(I_ &input, O_ &output) {
 			return decode(png::ReadyReadStruct(input), png::CreateBuffer(output));
 		}
 
-		int PropertySize();
 
 	protected:
+		/// Performs actual encoding
 		void encode(png::Buffer *buffer,png::Writer *write, int width, int height);
+
+		/// Performs actual decoding
 		Info decode(png::Reader *reader,png::Buffer *buffer);
 
 	};
 
+	/// A ready to use PNG class
 	extern PNG Png;
 
 } }

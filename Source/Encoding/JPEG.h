@@ -130,7 +130,7 @@ namespace gge { namespace encoding {
 
 
 
-	//currently only works for RGBA
+	//currently only works for RGB
 	//see LZMA for template class decisions
 	class JPEG {
 	public:

@@ -8,11 +8,11 @@ namespace Gorgon { namespace Resource {
 	class Folder;
 	
 	////This function loads a folder resource from the given file
-	Folder *LoadFolderResource(File &file, std::istream &data, int size, bool loadnames=false, bool onlyfirst=false);
+	Folder *LoadFolderResource(std::istream &data, int size, File &file, bool onlyfirst=false, bool shallow=false);
 
  	/// This is basic folder resource, it contains other resources. 
 	class Folder : public Base {
-		friend Folder *LoadFolderResource(File &File, std::istream &Data, int Size, bool LoadNames, bool OnlyFirst);
+		friend Folder *LoadFolderResource(std::istream &data, int size, File &file, bool onlyfirst, bool shallow);
 	public:
 		Folder() { }
 

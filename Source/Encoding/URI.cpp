@@ -32,8 +32,7 @@ namespace gge { namespace encoding {
 		/* F */ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1
 	};
 		
-	std::string UriDecode(const std::string & sSrc)
-	{
+	std::string UriDecode(const std::string &sSrc)	{
 		// Note from RFC1630:  "Sequences which start with a percent sign
 		// but are not followed by two hexadecimal characters (0-9, A-F) are reserved
 		// for future extension"
@@ -73,8 +72,7 @@ namespace gge { namespace encoding {
 	}
 
 	// Only alphanum is safe.
-	const char SAFE[256] =
-	{
+	const char SAFE[256] =	{
 		/*      0 1 2 3  4 5 6 7  8 9 A B  C D E F */
 		/* 0 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
 		/* 1 */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
@@ -97,8 +95,7 @@ namespace gge { namespace encoding {
 		/* F */ 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0
 	};
 
-	std::string UriEncode(const std::string & sSrc)
-	{
+	std::string UriEncode(const std::string &sSrc)	{
 		const char DEC2HEX[16 + 1] = "0123456789ABCDEF";
 		const unsigned char * pSrc = (const unsigned char *)sSrc.c_str();
 		const int SRC_LEN = sSrc.length();
@@ -123,4 +120,5 @@ namespace gge { namespace encoding {
 		delete [] pStart;
 		return sResult;
 	}
+
 } }

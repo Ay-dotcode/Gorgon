@@ -14,6 +14,10 @@ namespace Gorgon { namespace Resource {
 		}
 	}
 
+	Folder *LoadFolderResource(std::istream &data, int size, File &file, bool onlyfirst, bool shallow) {
+		return nullptr;
+	}
+
 
 } }
 

@@ -1,12 +1,15 @@
 #include "LZMA.h"
+
 #include "../External/LZMA/LzmaEnc.h"
-#include <stdexcept>
-#include "../Utils/Dynamic.h"
 #include "../External/LZMA/LzmaDec.h"
+
+#include <stdexcept>
+#include <memory>
+
+
 #undef min
 
-
-namespace gge { namespace encoding {
+namespace Gorgon { namespace Encoding {
 
 	static void * AllocForLzma(void *p, size_t size) { return malloc(size); }
 	static void FreeForLzma(void *p, void *address) { free(address); }
@@ -14,7 +17,7 @@ namespace gge { namespace encoding {
 
 	struct MyProgress : ICompressProgress {
 
-		MyProgress(LZMAProgressNotification notifier, unsigned long long size) : notifier(notifier), size(size) {
+		MyProgress(LZMA::ProgressNotification notifier, unsigned long long size) : notifier(notifier), size(size) {
 			Progress=&MyProgress::progress;
 		}
 
@@ -27,13 +30,13 @@ namespace gge { namespace encoding {
 		}
 
 
-		LZMAProgressNotification notifier;
+		LZMA::ProgressNotification notifier;
 		unsigned long long size;
 	};
 
-	void LZMA::encode(lzma::Reader *reader,lzma::Writer *writer,unsigned long long size, LZMAProgressNotification *notifier) {
-		utils::Dynamic<lzma::Reader> reader_d(reader);
-		utils::Dynamic<lzma::Writer> writer_d(writer);
+	void LZMA::encode(lzma::Reader *reader, lzma::Writer *writer, unsigned long long size, LZMA::ProgressNotification *notifier) {
+		std::unique_ptr<lzma::Reader> reader_d(reader);
+		std::unique_ptr<lzma::Writer> writer_d(writer);
 
 		CLzmaEncHandle enc = LzmaEnc_Create(&SzAllocForLzma);
 		if(!enc) {
@@ -79,96 +82,105 @@ namespace gge { namespace encoding {
 		LzmaEnc_Destroy(enc, &SzAllocForLzma, &SzAllocForLzma);
 	}
 
-	void LZMA::decode(lzma::Reader *reader,lzma::Writer *writer,unsigned long long insize,std::function<void(lzma::Reader*,long long)> seekfn, Byte *cprops, unsigned long long fsize, LZMAProgressNotification *notifier) {
-		std::vector<Byte> inBuf, outBuf;
+	void LZMA::decode(lzma::Reader *reader,lzma::Writer *writer,unsigned long long insize,std::function<void(lzma::Reader*,long long)> seekfn, Byte *cprops, unsigned long long fsize, LZMA::ProgressNotification *notifier) {
+		try {
+			std::vector<Byte> inBuf, outBuf;
 
-		CLzmaDec dec;
-		LzmaDec_Construct(&dec);
+			CLzmaDec dec;
+			LzmaDec_Construct(&dec);
 
-		size_t size;
-		SRes res;
-		unsigned long long fullsize=(unsigned long long)(long long)-1;
+			size_t size;
+			SRes res;
+			uint64_t fullsize=(unsigned long long)(long long)-1;
 
-		if(cprops==NULL) {
-			size=LZMA_PROPS_SIZE;
+			if(cprops==NULL) {
+				size=LZMA_PROPS_SIZE;
 
-			if(UseUncompressedSize) {
-				inBuf.resize(LZMA_PROPS_SIZE+8);
-				size+=8;
+				if(UseUncompressedSize) {
+					inBuf.resize(LZMA_PROPS_SIZE+8);
+					size+=8;
+				}
+				else {
+					inBuf.resize(LZMA_PROPS_SIZE);
+				}
+				reader->Read(reader, &inBuf[0], &size);
+
+				res = LzmaDec_Allocate(&dec, &inBuf[0], LZMA_PROPS_SIZE, &SzAllocForLzma);
+				if(res != SZ_OK) {
+					throw std::runtime_error("Cannot decode LZMA properties");
+				}
+
+				if(UseUncompressedSize)
+					std::memcpy(&fullsize, &inBuf[LZMA_PROPS_SIZE], 8);
+				else
+					fullsize=fsize;
 			}
 			else {
-				inBuf.resize(LZMA_PROPS_SIZE);
-			}
-			reader->Read(reader, &inBuf[0], &size);
+				SRes res = LzmaDec_Allocate(&dec, cprops, LZMA_PROPS_SIZE, &SzAllocForLzma);
+				if(res != SZ_OK) {
+					throw std::runtime_error("Cannot decode LZMA properties");
+				}
 
-			res = LzmaDec_Allocate(&dec, &inBuf[0], LZMA_PROPS_SIZE, &SzAllocForLzma);
-			if(res != SZ_OK) {
-				throw std::runtime_error("Cannot decode LZMA properties");
+				if(UseUncompressedSize)
+					std::memcpy(&fullsize, cprops+LZMA_PROPS_SIZE, 8);
+				else
+					fullsize=fsize;
 			}
 
-			if(UseUncompressedSize)
-				std::memcpy(&fullsize, &inBuf[LZMA_PROPS_SIZE], 8);
+			LzmaDec_Init(&dec);
+
+			const unsigned long long BUF_SIZE = 10240;
+
+			outBuf.resize(BUF_SIZE);
+			inBuf.resize(BUF_SIZE);
+
+			ELzmaStatus status;
+			unsigned outPos = 0, inPos=LZMA_PROPS_SIZE;
+			if(UseUncompressedSize) inPos+=8;
+			while(outPos < fullsize) {
+				size_t destLen = (size_t)std::min(BUF_SIZE, fullsize - outPos);
+				size_t srcLen=BUF_SIZE;
+
+				reader->Read(reader, &inBuf[0], &srcLen);
+
+				size_t srcLenOld = srcLen;
+
+
+				res = LzmaDec_DecodeToBuf(&dec,
+					&outBuf[0], &destLen,
+					&inBuf[0], &srcLen,
+					(outPos + destLen == fullsize)
+					? LZMA_FINISH_END : LZMA_FINISH_ANY, &status
+					);
+				if(res != SZ_OK) {
+					throw std::runtime_error("Extraction error");
+				}
+
+				writer->Write(writer, &outBuf[0], destLen);
+				seekfn(reader, (long long)srcLen-srcLenOld);
+
+
+				outPos += destLen;
+				inPos  += srcLen;
+
+				if(notifier)
+					(*notifier)(float(double(inPos)/insize));
+
+				if(status == LZMA_STATUS_FINISHED_WITH_MARK)
+					break;
+				if(status==LZMA_STATUS_NEEDS_MORE_INPUT && destLen==0) {
+					throw std::runtime_error("Extraction failed, out of data.");
+				}
+			}
+
+			LzmaDec_Free(&dec, &SzAllocForLzma);
 		}
-		else {
-			SRes res = LzmaDec_Allocate(&dec, cprops, LZMA_PROPS_SIZE, &SzAllocForLzma);
-			if(res != SZ_OK) {
-				throw std::runtime_error("Cannot decode LZMA properties");
-			}
+		catch(...) {
+			delete reader;
+			delete writer;
 
-			if(UseUncompressedSize)
-				std::memcpy(&fullsize, cprops+LZMA_PROPS_SIZE, 8);
-			else
-				fullsize=fsize;
+			throw;
 		}
-
-		LzmaDec_Init(&dec);
-
-		const unsigned long long BUF_SIZE = 10240;
-
-		outBuf.resize(BUF_SIZE);
-		inBuf.resize(BUF_SIZE);
-
-		ELzmaStatus status;
-		unsigned outPos = 0, inPos=LZMA_PROPS_SIZE;
-		if(UseUncompressedSize) inPos+=8;
-		while (outPos < fullsize)
-		{
-			size_t destLen = (size_t)std::min(BUF_SIZE, fullsize - outPos);
-			size_t srcLen=BUF_SIZE;
-
-			reader->Read(reader, &inBuf[0], &srcLen);
-
-			size_t srcLenOld = srcLen;
-
-
-			res = LzmaDec_DecodeToBuf(&dec,
-				&outBuf[0], &destLen,
-				&inBuf[0], &srcLen,
-				(outPos + destLen == fullsize)
-				? LZMA_FINISH_END : LZMA_FINISH_ANY, &status
-				);
-			if(res != SZ_OK) {
-				throw std::runtime_error("Extraction error");
-			}
-
-			writer->Write(writer, &outBuf[0], destLen);
-			seekfn(reader, (long long)srcLen-srcLenOld);
-
-
-			outPos += destLen;
-			inPos  += srcLen;
-
-			if(notifier)
-				(*notifier)(float(double(inPos)/insize));
-
-			if (status == LZMA_STATUS_FINISHED_WITH_MARK)
-				break;
-			if(status==LZMA_STATUS_NEEDS_MORE_INPUT && destLen==0) {
-				throw std::runtime_error("Extraction failed, out of data.");
-			}
-		}
-
-		LzmaDec_Free(&dec, &SzAllocForLzma);
 
 		delete reader;
 		delete writer;

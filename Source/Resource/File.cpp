@@ -1,5 +1,6 @@
 #include "File.h"
 #include "../Filesystem.h"
+#include "../Encoding/LZMA.h"
 
 
 namespace Gorgon { namespace Resource {
@@ -8,7 +9,7 @@ namespace Gorgon { namespace Resource {
 		for(auto &loader : Loaders) {
 
 			if(loader.second.GID==gid) {
-				auto obj=loader.second.Handler(data, size, this);
+				auto obj=loader.second.Handler(data, size, *this);
 #ifndef NDEBUG
 				if(!obj) throw std::runtime_error("Cannot load the object with GID"+String::From(gid));
 #endif
@@ -27,24 +28,29 @@ namespace Gorgon { namespace Resource {
 
 	void File::load(const std::string &filename, bool first, bool shallow) {
 		delete root;
-		std::ifstream data;
+		file=new std::ifstream;
+		std::ifstream &data=*file;
 
 		try {
 			if(!Filesystem::IsFile(filename) && Filesystem::IsFile(filename+".lzma")) {
 				std::ifstream ifile(filename+".lzma", std::ios::binary);
 				std::ofstream ofile(filename, std::ios::binary);
-				//Encoding::Lzma.Decode(ifile, ofile);
+				Encoding::Lzma.Decode(ifile, ofile);
 				Filesystem::Delete(filename+".lzma");
+			}
+
+			if(!Filesystem::IsFile(filename)) {
+				throw LoadError(LoadError::FileNotFound, LoadError::ErrorStrings[LoadError::FileNotFound]+"\n"+filename);
 			}
 
 			char sgn[7];
 
-			this->filename=filename;
+			this->filename=Filesystem::Canonical(filename);
 
 			//Check file existence
 			data.open(filename, std::ios::in | std::ios::binary);
 			if(data.fail())
-				throw LoadError(LoadError::FileNotFound, LoadError::ErrorStrings[LoadError::FileNotFound]+"\n"+filename);
+				throw LoadError(LoadError::FileCannotBeOpened, LoadError::ErrorStrings[LoadError::FileCannotBeOpened]+"\n"+filename);
 
 
 			//Check file signature
@@ -68,12 +74,15 @@ namespace Gorgon { namespace Resource {
 			unsigned long size=ReadUInt32(data);
 
 			//Load first element
-			root=LoadFolderResource(*this, data, size, LoadNames, first);
+			root=LoadFolderResource(data, size, *this, first, shallow);
 			if(!root)
 				throw LoadError(LoadError::Containment);
 		}
 		catch(...) {
 			root=new Folder;
+			delete file;
+			file=nullptr;
+
 			throw;
 		}
 
@@ -82,16 +91,21 @@ namespace Gorgon { namespace Resource {
 		isloaded=true;
 
 		//Close file
-		data.close();
+		if(!keepopen) {
+			data.close();
+			delete file;
+			file=nullptr;
+		}
 	}
 
-	const std::string LoadError::ErrorStrings[6] ={
+	const std::string LoadError::ErrorStrings[7] ={
 		"Unknown error", 
 		"Cannot find the file specified", 
 		"Signature mismatch",
 		"Version mismatch", 
 		"The supplied file is does not contain any data or its representation is invalid.",
-		"An unknown node is encountered in the file."
+		"An unknown node is encountered in the file.",
+		"Cannot open the file specified."
 	};
 
 } }
