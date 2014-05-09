@@ -1,27 +1,37 @@
 #pragma once
 
-#include "Base.h"
 #include <map>
+#include <memory>
+
+#include "Base.h"
 
 namespace Gorgon { namespace Resource {
 	class File;
 	class Folder;
 	
 	////This function loads a folder resource from the given file
-	Folder *LoadFolderResource(std::istream &data, int size, File &file, bool onlyfirst=false, bool shallow=false);
+	Folder *LoadFolderResource(std::istream &data, unsigned long size, File &file, bool onlyfirst=false, bool shallow=false);
 
  	/// This is basic folder resource, it contains other resources. 
 	class Folder : public Base {
-		friend Folder *LoadFolderResource(std::istream &data, int size, File &file, bool onlyfirst, bool shallow);
+		friend Folder *LoadFolderResource(std::istream &data, unsigned long size, File &file, bool onlyfirst, bool shallow);
 	public:
+
+		/// Default constructor
 		Folder() { }
 
+		/// Constructs a folder over a specific file, it does not add the folder to
+		/// the tree of the file though
+		Folder(File &file);
+
+		/// Destructor
 		virtual ~Folder() { }
 
 		
 		/// 01010000h, (System, Folder)
 		virtual GID::Type GetGID() const { return GID::Folder; }
 		
+
 		/// @name Collection related
 		/// @{
 		/// These functions allows modification of folder's children
@@ -136,22 +146,38 @@ namespace Gorgon { namespace Resource {
 		bool Load(bool shallow=false);
 		
 		/// Returns whether this resource is loaded
-		bool IsLoaded() const;
+		bool IsLoaded() const {
+			return fullyloaded;
+		}
 
 		/// Prepares children to be used
 		virtual void Prepare();
 
 	protected:
 
-		/// Entry point of this resource within the physical file. If no file is associated with 
-		/// this resource this value is -1. This value is stored for late loading purposes
-		int entrypoint=-1;
+		/// This is the actual load function. This function requires already opened and precisely 
+		/// positioned input stream
+		bool load(std::istream &data, unsigned long size, bool first, bool shallow, bool load);
+
+
+		/// Entry point of this resource within the physical file. This value is stored for 
+		/// late loading purposes
+		std::streampos entrypoint = 0;
 
 		/// Names will only be loaded if the variable is set
-		bool reallyloadnames=false;
+		bool reallyloadnames = false;
 		
 		/// A map to bind items to their names
 		std::map<std::string, Base*> namedlist;
+
+		/// Whether the contents of this folder is fully loaded
+		bool fullyloaded = false;
+
+		/// The file object that is used to load this folder. If this folder is partially loaded
+		/// this file would be used to load its contents
+		std::weak_ptr<File> file;
+
+
 	};
 
 } }

@@ -96,14 +96,13 @@ namespace Gorgon { namespace Resource {
 	public:
 
 		/// Default constructor
-		File() : root(new Folder), LoadNames(false) { }
+		File() : root(new Folder), LoadNames(false), self(this, [](File*) { }) { }
 
 		/// Destroys file object. If the root is not detached, it will destroy resource tree as well.
-		~File() { 
+		~File() {
 			delete root;
 			delete file; // deleting nullptr is safe
 		}
-
 
 		/// Returns the root folder of the file
 		Folder &Root() { return *root; }
@@ -190,6 +189,123 @@ namespace Gorgon { namespace Resource {
 		///          any purpose, however, would not be very useful outside its prime use
 		Base *LoadObject(std::istream &data, GID::Type gid, unsigned long size);
 
+
+
+		/// @name Platform independent data readers
+		/// @{
+		/// These functions allow platform independent data reading capability. In worst case, where the platform
+		/// cannot be supported, they stop compilation instead of generating incorrectly working system. These functions
+		/// might differ in encoding depending on the file version. Make sure a file is open before invoking these functions
+		/// no runtime checks will be performed.
+
+		/// Reads a 32-bit integer from the stream. A long is at least 32 bits, could be more
+		/// however, only 4 bytes will be read from the stream
+		long ReadInt32() {
+			int32_t r;
+			file->read(reinterpret_cast<char*>(&r), 4);
+
+			return r;
+		}
+
+		/// Reads a 32-bit unsigned integer from the stream. An unsigned long is at least 32 bits, could be more
+		/// however, only 4 bytes will be read from the stream
+		long ReadUInt32() {
+			uint32_t r;
+			file->read(reinterpret_cast<char*>(&r), 4);
+
+			return r;
+		}
+
+		/// Reads a 16-bit integer from the stream. An int is at least 16 bits, could be more
+		/// however, only 2 bytes will be read from the stream
+		long ReadInt16() {
+			int16_t r;
+			file->read(reinterpret_cast<char*>(&r), 2);
+
+			return r;
+		}
+
+		/// Reads a 32-bit unsigned integer from the stream. An unsigned int is at least 32 bits, could be more
+		/// however, only 2 bytes will be read from the stream
+		long ReadUInt16() {
+			uint16_t r;
+			file->read(reinterpret_cast<char*>(&r), 2);
+
+			return r;
+		}
+
+		/// Reads a 32 bit IEEE floating point number from the file. This function only works on systems that
+		/// that have native 32 bit floats.
+		float ReadFloat() {
+			static_assert(sizeof(float) == 4, "Current implementation only supports 32bit floats");
+
+			float r;
+			file->read(reinterpret_cast<char*>(&r), 4);
+
+			return r;
+		}
+
+		/// Reads a 64 bit IEEE double precision floating point number from the file. This function only works 
+		/// on systems that have native 64 bit doubles.
+		float ReadDouble() {
+			static_assert(sizeof(double) == 8, "Current implementation only supports 64bit floats");
+
+			float r;
+			file->read(reinterpret_cast<char*>(&r), 4);
+
+			return r;
+		}
+
+		/// Reads a boolean value. In resource 1.0, booleans are stored as 32bit integers
+		bool ReadBool() {
+			return ReadInt32() != 0;
+		}
+
+		/// Reads a string from a given stream. Assumes the size of the string is appended before the string as
+		/// 32-bit unsigned value.
+		std::string ReadString() {
+			unsigned long size;
+			std::string ret;
+			size=ReadUInt32();
+			ret.resize(size);
+			file->read(&ret[0], size);
+
+			return ret;
+		}
+
+		/// Reads a string with the given size.
+		std::string ReadString(unsigned long size) {
+			std::string ret;
+			ret.resize(size);
+			file->read(&ret[0], size);
+
+			return ret;
+		}
+
+		/// Reads a GID from the given stream.
+		GID::Type ReadGID() {
+			return GID::Type(ReadUInt32());
+		}
+
+		/// Reads a GUID from the given stream.
+		SGuid ReadGuid() {
+			return SGuid(*file);
+		}
+
+		/// Removes a chunk of data with the given size from the stream
+		void EatChunk(unsigned long size) {
+			file->seekg(size, std::ios::cur);
+		}
+
+		/// Removes a chunk of data from the stream, the size will be read from the stream
+		void EatChunk() {
+			long size=ReadUInt32();
+			file->seekg(size, std::ios::cur);
+		}
+
+		/// @}
+
+
 		/// Keeps the file open even after loading is completed. This guarantees that the file is readable at a later
 		/// point to read more data. Discard function closes the file.
 		void KeepOpen() {
@@ -214,6 +330,13 @@ namespace Gorgon { namespace Resource {
 			return *file;
 		}
 
+		/// A weak_ptr tied to this file instance. A weak pointer can be queried to determine whether the object really
+		/// exists. If this object is destroyed, weak_ptr::lock will return an empty std::shared_ptr, otherwise, it will
+		/// return a std::shared_ptr to this object.
+		std::weak_ptr<File> Self() const {
+			return self;
+		}
+
 		/// Resource Loaders. You may add or remove any loaders that is necessary. Initially a file loads all
 		/// internal resources. 
 		std::map<GID::Type, Loader>	 Loaders;
@@ -231,6 +354,7 @@ namespace Gorgon { namespace Resource {
 		mutable std::map<SGuid, Base*> mapping;
 
 	protected:
+		/// This is the actual load function
 		void load(const std::string &filename, bool first, bool shallow);
 
 		/// The root folder, root changes while loading a file
@@ -258,106 +382,8 @@ namespace Gorgon { namespace Resource {
 		unsigned long fileversion;
 
 	private:
+		std::shared_ptr<File> self;
 	};
-
-	/// @name Platform independent data readers
-	/// @{
-	/// These functions allow platform independent data reading capability. In worst case, where the platform
-	/// cannot be supported, they stop compilation instead of generating incorrectly working system.
-
-	/// Reads a 32-bit integer from the stream. A long is at least 32 bits, could be more
-	/// however, only 4 bytes will be read from the stream
-	inline long ReadInt32(std::istream &file) {
-		int32_t r;
-		file.read(reinterpret_cast<char*>(&r), 4);
-
-		return r;
-	}
-
-	/// Reads a 32-bit unsigned integer from the stream. An unsigned long is at least 32 bits, could be more
-	/// however, only 4 bytes will be read from the stream
-	inline long ReadUInt32(std::istream &file) {
-		uint32_t r;
-		file.read(reinterpret_cast<char*>(&r), 4);
-
-		return r;
-	}
-
-	/// Reads a 16-bit integer from the stream. An int is at least 16 bits, could be more
-	/// however, only 2 bytes will be read from the stream
-	inline long ReadInt16(std::istream &file) {
-		int16_t r;
-		file.read(reinterpret_cast<char*>(&r), 2);
-
-		return r;
-	}
-
-	/// Reads a 32-bit unsigned integer from the stream. An unsigned int is at least 32 bits, could be more
-	/// however, only 2 bytes will be read from the stream
-	inline long ReadUInt16(std::istream &file) {
-		uint16_t r;
-		file.read(reinterpret_cast<char*>(&r), 2);
-
-		return r;
-	}
-
-	/// Reads a 32 bit IEEE floating point number from the file. This function only works on systems that
-	/// that have native 32 bit floats.
-	inline float ReadFloat(std::istream &file) {
-		static_assert(sizeof(float) == 4, "Current implementation only supports 32bit floats");
-
-		float r;
-		file.read(reinterpret_cast<char*>(&r), 4);
-
-		return r;
-	}
-
-	/// Reads a 64 bit IEEE double precision floating point number from the file. This function only works 
-	/// on systems that have native 64 bit doubles.
-	inline float ReadDouble(std::istream &file) {
-		static_assert(sizeof(double) == 8, "Current implementation only supports 64bit floats");
-
-		float r;
-		file.read(reinterpret_cast<char*>(&r), 4);
-
-		return r;
-	}
-
-	/// Reads a string from a given stream. Assumes the size of the string is appended before the string as
-	/// 32-bit unsigned value.
-	inline std::string ReadString(std::istream &file) {
-		int temp;
-		std::string ret;
-		temp=ReadUInt32(file);
-		ret.resize(temp);
-		file.read(&ret[0], temp);
-
-		return ret;
-	}
-
-	/// Reads a GID from the given stream.
-	inline GID::Type ReadGID(std::istream &file) {
-		return GID::Type(ReadUInt32(file));
-	}
-
-	/// Reads a GUID from the given stream.
-	inline SGuid ReadGuid(std::istream &file) {
-		return SGuid(file);
-	}
-
-	/// Removes a chunk of data with the given size from the stream
-	inline void EatChunk(std::istream &file, std::streamoff size) {
-		file.seekg(size, std::ios::cur);
-	}
-
-	/// Removes a chunk of data from the stream, the size will be read from the stream
-	inline void EatChunk(std::istream &file) {
-		long size=ReadUInt32(file);
-		file.seekg(size, std::ios::cur);
-	}
-
-	/// @}
-
 } }
 
 /// Adds an integer to streampos

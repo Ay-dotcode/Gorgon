@@ -91,6 +91,8 @@ namespace Gorgon {
 			CONSTEXPR Type Guid					{0x00000010};
 			/// Identifies resources
 			CONSTEXPR Type SGuid				{0x00000011};
+			/// Name of a resource, names are not required to be unique
+			CONSTEXPR Type Name					{0x00000012};
 
 			/// LZMA compression
 			CONSTEXPR Type LZMA					{0xF0030100};

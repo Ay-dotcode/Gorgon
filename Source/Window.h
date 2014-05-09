@@ -119,10 +119,10 @@ namespace Gorgon {
 		/// Closes the window. After this function, any use of this object might fail.
 		void Close();
 
-		////Shows the pointer displayed by window manager
+		/// Shows the pointer displayed by window manager
 		void ShowPointer();
 
-		////Hides the pointer displayed by window manager
+		/// Hides the pointer displayed by window manager
 		void HidePointer();
 
 		/// @name Events 

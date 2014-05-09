@@ -266,12 +266,16 @@ namespace Gorgon { namespace Encoding {
 	}
 	/// @endcond
 
+	/// This class allows encoding and decoding data using LZMA compression
+	/// algorithm. 
+	/// @cond INTERNAL
 	/// The main idea of this system is to reduce the amount of the code.
 	/// There are reader structures that can read data from various sources.
 	/// These sources are automatically created by encode/decode template
 	/// functions. After creating these structures, internal encode/decode
 	/// function is called. Creating an new read/write structure is enough 
 	/// to support that type of container
+	/// @endcond
 	class LZMA {
 	public:
 
@@ -281,7 +285,7 @@ namespace Gorgon { namespace Encoding {
 		/// Default constructor
 		LZMA(bool useuncompressedsize=true) : UseUncompressedSize(useuncompressedsize) { }
 
-		/// Encodes the given data to LZMA compressed data. Supports vectors, arrays, strings and streams as data
+		/// Encodes the given data to %LZMA compressed data. Supports vectors, arrays, strings and streams as data
 		/// source and targets.
 		/// @warning Using this system with arrays is extremely dangerous make sure your arrays are big enough
 		/// @throws runtime_error
@@ -290,7 +294,7 @@ namespace Gorgon { namespace Encoding {
 			encode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), nullptr);
 		}
 
-		/// Encodes the given data to LZMA compressed data. Supports vectors, arrays, strings and streams as data
+		/// Encodes the given data to %LZMA compressed data. Supports vectors, arrays, strings and streams as data
 		/// source and targets. This variant allows a notification function which is called during compression.
 		/// @warning Using this system with arrays is extremely dangerous make sure your arrays are big enough
 		/// @throws runtime_error
@@ -299,9 +303,9 @@ namespace Gorgon { namespace Encoding {
 			encode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), &notifier);
 		}
 
-		/// Decodes LZMA compressed data. Supports vectors, arrays, strings and streams as data
+		/// Decodes %LZMA compressed data. Supports vectors, arrays, strings and streams as data
 		/// source and targets.
-		/// @param   input Input data
+		/// @param   input %Input data
 		/// @param   output Output data
 		/// @param   compressionproperties is the compression property data. Leaving this parameter with default nullptr,
 		///          causes this function to read the actual compression properties from the main data source.
@@ -314,9 +318,9 @@ namespace Gorgon { namespace Encoding {
 			decode(lzma::ReadyReadStruct(input), lzma::ReadyWriteStruct(output), lzma::GetReadSize(input), lzma::SeekFn(input), compressionproperties, fsize, nullptr);
 		}
 
-		/// Decodes LZMA compressed data. Supports vectors, arrays, strings and streams as data
+		/// Decodes %LZMA compressed data. Supports vectors, arrays, strings and streams as data
 		/// source and targets. This variant allows a notification function which is called during decompression.
-		/// @param   input Input data
+		/// @param   input %Input data
 		/// @param   output Output data
 		/// @param   notifier is the callback to send notifications to
 		/// @param   compressionproperties is the compression property data. Leaving this parameter with default nullptr,
@@ -345,6 +349,7 @@ namespace Gorgon { namespace Encoding {
 
 	};
 
+	/// A default constructed LZMA object
 	extern LZMA Lzma;
 
 	}}

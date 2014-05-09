@@ -21,7 +21,7 @@ namespace Gorgon { namespace Resource {
 		throw std::runtime_error("No handler for GID"+String::From(gid));
 #endif
 
-		EatChunk(data, size);
+		EatChunk(size);
 
 		return nullptr;
 	}
@@ -60,18 +60,18 @@ namespace Gorgon { namespace Resource {
 				throw LoadError(LoadError::Signature);
 
 			//Check file version
-			fileversion=ReadInt32(data);
+			fileversion=ReadInt32();
 			if(fileversion>CurrentVersion)
 				throw LoadError(LoadError::VersionMismatch);
 
 			//Load file type
-			filetype=ReadGID(data);
+			filetype=ReadGID();
 
 			//Check first element
-			if(ReadGID(data)!=GID::Folder)
+			if(ReadGID()!=GID::Folder)
 				throw LoadError(LoadError::Containment);
 
-			unsigned long size=ReadUInt32(data);
+			unsigned long size=ReadUInt32();
 
 			//Load first element
 			root=LoadFolderResource(data, size, *this, first, shallow);
