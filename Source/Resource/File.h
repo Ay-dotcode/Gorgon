@@ -26,7 +26,7 @@ namespace Gorgon { namespace Resource {
 		/// should return nullptr in case of an error, otherwise it should return the newly loaded object. 
 		/// The ownership of this object will be transferred to the parent of the object and it will be 
 		/// deleted with its parent unless detached from the tree.
-		typedef std::function<Base* (std::istream &, unsigned long, File &)> LoaderFunction;
+		typedef std::function<Base* (File &, std::istream &, unsigned long)> LoaderFunction;
 
 		/// Filling constructor
 		Loader(GID::Type gid, LoaderFunction handler) : GID(gid), Handler(handler) { }
@@ -96,7 +96,7 @@ namespace Gorgon { namespace Resource {
 	public:
 
 		/// Default constructor
-		File() : root(new Folder), LoadNames(false), self(this, [](File*) { }) { }
+		File();
 
 		/// Destroys file object. If the root is not detached, it will destroy resource tree as well.
 		~File() {
@@ -184,10 +184,10 @@ namespace Gorgon { namespace Resource {
 		/// in cases that the object cannot be loaded or no loader exists for the given gid. Both cases
 		/// will throw in debug mode. This behavior is different from Editing library where it throws if
 		/// an object cannot be loaded and reports a warning and stores the data of unknown object in a
-		/// special container.
+		/// special container. Also handles SGuid and name
 		/// @warning This function is intended to be used while loading a resource. It can be used for
 		///          any purpose, however, would not be very useful outside its prime use
-		Base *LoadObject(std::istream &data, GID::Type gid, unsigned long size);
+		Base *LoadChunk(Base &self, std::istream &data, GID::Type gid, unsigned long size, bool skipobjects=false);
 
 
 
@@ -292,6 +292,11 @@ namespace Gorgon { namespace Resource {
 			return SGuid(*file);
 		}
 
+		/// Reads chunk size from a stream
+		unsigned long ReadChunkSize() {
+			return ReadUInt32();
+		}
+
 		/// Removes a chunk of data with the given size from the stream
 		void EatChunk(unsigned long size) {
 			file->seekg(size, std::ios::cur);
@@ -301,6 +306,10 @@ namespace Gorgon { namespace Resource {
 		void EatChunk() {
 			long size=ReadUInt32();
 			file->seekg(size, std::ios::cur);
+		}
+
+		void Seek(unsigned long pos) {
+			file->seekg(pos, std::ios::beg);
 		}
 
 		/// @}
@@ -393,5 +402,20 @@ inline long operator +(const std::streampos &l, long r) {
 
 /// Adds an unsigned integer to streampos
 inline unsigned long operator +(const std::streampos &l, unsigned long r) {
-	return (long)l + r;
+	return (unsigned long)l + r;
+}
+
+/// Adds an integer to streampos
+inline long operator -(const std::streampos &l, unsigned long r) {
+	return (long)l - r;
+}
+
+/// Adds an integer to streampos
+inline long operator -(const std::streampos &l, long r) {
+	return (long)l - r;
+}
+
+/// Adds an unsigned integer to streampos
+inline long operator -(const std::streampos &l, int r) {
+	return (unsigned long)l - r;
 }

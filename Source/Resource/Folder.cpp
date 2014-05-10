@@ -19,8 +19,8 @@ namespace Gorgon { namespace Resource {
 		}
 	}
 
-	bool Folder::load(std::istream &data, unsigned long totalsize, bool onlyfirst, bool shallow, bool load) {
-		unsigned long target = data.tellg()+totalsize;
+	bool Folder::Load(bool shallow) {
+		if(fullyloaded) return true;
 
 		auto f=this->file.lock();
 		if(!f) {
@@ -29,32 +29,53 @@ namespace Gorgon { namespace Resource {
 
 		auto &file=*f;
 
+		std::istream &data=file.open();
+
+		file.Seek(entrypoint-4);
+
+		auto size=file.ReadChunkSize();
+
+		auto ret=load(data, size, false, shallow, true);
+
+		if(ret) {
+			Resolve(file);
+		}
+
+		return ret;
+	}
+
+	bool Folder::load(std::istream &data, unsigned long totalsize, bool onlyfirst, bool shallow, bool load) {
+		unsigned long target = data.tellg()+totalsize;
+
+		entrypoint = (unsigned long)data.tellg();
+
+		auto f=this->file.lock();
+		if(!f) {
+			return false;
+		}
+
+		auto &file=*f;
+
+		if(!load) { 
+			file.KeepOpen();
+		}
+
 		while(data.tellg()<target) {
 			auto gid = file.ReadGID();
-			auto size= file.ReadUInt32();
+			auto size= file.ReadChunkSize();
 
 			if(gid==GID::Folder_Names) {
 				file.EatChunk(size);
-			}
-			else if(gid==GID::Name) {
-				if(file.LoadNames)
-					name=file.ReadString(size);
-			}
-			else if(gid==GID::SGuid) {
-				guid.Load(data);
 			}
 			else if(gid==GID::Folder_Props) {
 				reallyloadnames=file.ReadBool();
 
 				file.EatChunk(size-4);
 			}
-			else if(!load) { // order dependent!
-				file.EatChunk(size);
-			}
-			else if(gid==GID::Folder) {
+			else if(load && gid==GID::Folder) {
 				auto folder = new Folder(file);
 
-				if(!folder->load(data, size, false, false, shallow)) {
+				if(!folder->load(data, size, false, false, !shallow)) {
 					delete folder;
 
 					return false;
@@ -68,31 +89,27 @@ namespace Gorgon { namespace Resource {
 				}
 			}
 			else {
-				auto resource = file.LoadObject(data, gid, size);
+				auto resource = file.LoadChunk(*this, data, gid, size, !load);
 
 				if(resource) {
 					children.Add(resource);
-				}
-#ifndef NDEBUG
-				else {
-					throw std::runtime_error("Cannot load resource: "+String::From(gid));
-				}
-#endif
 
-				if(onlyfirst) {
-					data.seekg(target);
-					break;
+					if(onlyfirst) {
+						data.seekg(target);
+						break;
+					}
 				}
+
 			}
 		}
 
 		return true;
 	}
 
-	Folder *LoadFolderResource(std::istream &data, unsigned long size, File &file, bool onlyfirst, bool shallow) {
+	Folder *Folder::LoadResource(File &file, std::istream &data, unsigned long size) {
 		auto folder = new Folder(file);
 
-		if(!folder->load(data, size, onlyfirst, shallow, true)) {
+		if(!folder->load(data, size, false, false, true)) {
 			delete folder;
 			return nullptr;
 		}

@@ -52,9 +52,14 @@ namespace Gorgon {
 				/// Checks if this type information is empty
 				CONSTEXPRFN bool IsEmpty() const { return value==0; }
 
+				/// Compares two GIDs
 				CONSTEXPRFN bool operator == (const Type &type) const { return type.value==value; }
 
+				/// Compares two GIDs
 				CONSTEXPRFN bool operator != (const Type &type) const { return type.value!=value; }
+
+				/// For std::less
+				CONSTEXPRFN bool operator < (const Type &type) const { return type.value<value; }
 
 			private:
 				uint32_t value;

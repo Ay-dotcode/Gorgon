@@ -8,13 +8,10 @@
 namespace Gorgon { namespace Resource {
 	class File;
 	class Folder;
-	
-	////This function loads a folder resource from the given file
-	Folder *LoadFolderResource(std::istream &data, unsigned long size, File &file, bool onlyfirst=false, bool shallow=false);
 
  	/// This is basic folder resource, it contains other resources. 
 	class Folder : public Base {
-		friend Folder *LoadFolderResource(std::istream &data, unsigned long size, File &file, bool onlyfirst, bool shallow);
+		friend class File;
 	public:
 
 		/// Default constructor
@@ -65,6 +62,9 @@ namespace Gorgon { namespace Resource {
 				return; 
 			
 			children.Remove(resource);
+
+			if(resource.GetParentPtr()==this)
+				resource.parent=nullptr;
 			
 			if( --resource.refcount == 0) {
 				delete &resource;
@@ -153,6 +153,9 @@ namespace Gorgon { namespace Resource {
 		/// Prepares children to be used
 		virtual void Prepare();
 
+		////This function loads a folder resource from the given file
+		static Folder *LoadResource(File &file, std::istream &data, unsigned long size);
+
 	protected:
 
 		/// This is the actual load function. This function requires already opened and precisely 
@@ -162,7 +165,7 @@ namespace Gorgon { namespace Resource {
 
 		/// Entry point of this resource within the physical file. This value is stored for 
 		/// late loading purposes
-		std::streampos entrypoint = 0;
+		unsigned long entrypoint = -1;
 
 		/// Names will only be loaded if the variable is set
 		bool reallyloadnames = false;

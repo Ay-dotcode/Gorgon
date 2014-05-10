@@ -1,4 +1,6 @@
 SET(Local
+	Blob.h
+	Blob.cpp
 	File.h
 	File.cpp
 	Folder.h

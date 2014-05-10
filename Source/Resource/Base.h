@@ -17,6 +17,7 @@ namespace Gorgon {
 		/// @warning This class is rather heavy and should not be used for small objects that are
 		/// planned to be created a lot of.
 		class Base {
+			friend class File;
 		public:
 
 			/// Default constructor
@@ -116,6 +117,13 @@ namespace Gorgon {
 			unsigned long refcount=1;
 
 		protected:
+
+			/// Destroys the children of this resource
+			void destroychildren();
+
+			/// Sets the parent of an object to nullptr, provides access.
+			void setparenttonullptr(Base &base) { base.parent=nullptr; base.root=nullptr; }
+
 			/// SGuid to identify this resource object
 			SGuid guid;
 			

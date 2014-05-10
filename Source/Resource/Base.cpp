@@ -27,8 +27,12 @@ namespace Gorgon { namespace Resource {
 	Base::Base() : Children(children) { }
 
 	Base::~Base() {
-		for(auto it=children.First(); it.IsValid(); ) {
-			if( --it->refcount == 0 ) {
+		destroychildren();
+	}
+
+	void Base::destroychildren() {
+		for(auto it=children.First(); it.IsValid();) {
+			if(--it->refcount == 0) {
 				children.Delete(*it);
 			}
 			else {
@@ -38,7 +42,7 @@ namespace Gorgon { namespace Resource {
 					it->parent=nullptr;
 					it->root=nullptr;
 				}
-				
+
 				it.Next();
 			}
 		}

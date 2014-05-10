@@ -267,3 +267,18 @@ namespace Gorgon {
 
 	}
 }
+
+//forbidden juju
+namespace std {
+
+	/// Allows streaming of vectors
+	template<class T_>
+	std::ostream &operator <<(std::ostream &out, const std::vector<T_> &vec) {
+		for(auto &e : vec) {
+			out<<e<<std::endl;
+		}
+
+		return out;
+	}
+
+}

@@ -1,15 +1,36 @@
-#include "File.h"
 #include "../Filesystem.h"
 #include "../Encoding/LZMA.h"
+
+#include "File.h"
+#include "Blob.h"
+
 
 
 namespace Gorgon { namespace Resource {
 
-	Base *File::LoadObject(std::istream &data, GID::Type gid, unsigned long size) {
+	File::File() : root(new Folder), LoadNames(false), self(this, [](File*) { }) { 
+		Loaders[GID::Blob] ={GID::Blob, Blob::LoadResource};
+		Loaders[GID::Folder] ={GID::Folder, Folder::LoadResource};
+	}
+
+	Base *File::LoadChunk(Base &self, std::istream &data, GID::Type gid, unsigned long size, bool skipobjects) {
+		if(gid==GID::SGuid) {
+			self.guid.Load(data);
+			return nullptr;
+		}
+		else if(gid==GID::Name) {
+			self.name=ReadString(size);
+			return nullptr;
+		}
+		else if(skipobjects) {
+			EatChunk(size);
+			return nullptr;
+		}
+
 		for(auto &loader : Loaders) {
 
 			if(loader.second.GID==gid) {
-				auto obj=loader.second.Handler(data, size, *this);
+				auto obj=loader.second.Handler(*this, data, size);
 #ifndef NDEBUG
 				if(!obj) throw std::runtime_error("Cannot load the object with GID"+String::From(gid));
 #endif
@@ -74,7 +95,9 @@ namespace Gorgon { namespace Resource {
 			unsigned long size=ReadUInt32();
 
 			//Load first element
-			root=LoadFolderResource(data, size, *this, first, shallow);
+			root=new Folder(*this);
+			root->load(data, size, first, shallow, true);
+
 			if(!root)
 				throw LoadError(LoadError::Containment);
 		}
