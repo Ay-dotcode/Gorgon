@@ -38,6 +38,24 @@ namespace Gorgon { namespace Resource {
 		auto ret=load(data, size, false, shallow, true);
 
 		if(ret) {
+			//update mapping
+			std::vector<Containers::Collection<Base>::ConstIterator> openlist;
+			openlist.push_back(this->begin());
+
+			while(openlist.size()) {
+				if(!openlist.back().IsValid()) {
+					openlist.pop_back();
+					continue;
+				}
+
+				auto &obj=(*openlist.back());
+				openlist.back().Next();
+				if(obj.Children.GetCount()>0)
+					openlist.push_back(obj.begin());
+
+				file.mapping[obj.GetGuid()]=&obj;
+			}
+
 			Resolve(file);
 		}
 

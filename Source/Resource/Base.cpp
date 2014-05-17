@@ -30,22 +30,28 @@ namespace Gorgon { namespace Resource {
 		destroychildren();
 	}
 
+	bool Base::DeleteResource() {
+		--refcount;
+		if(refcount) return false;
+
+		delete this;
+
+		return true;
+	}
+
 	void Base::destroychildren() {
-		for(auto it=children.First(); it.IsValid();) {
-			if(--it->refcount == 0) {
-				children.Delete(*it);
-			}
-			else {
+		for(auto it=children.First(); it.IsValid(); it.Next()) {
+			if(!it->DeleteResource()) {
 				// making sure that we don't leave any objects in
-				// undetermined state
+				// undetermined state as we are no longer its parent
 				if(it->parent==this) {
 					it->parent=nullptr;
 					it->root=nullptr;
 				}
-
-				it.Next();
 			}
 		}
+
+		children.Clear();
 	}
 
 } }

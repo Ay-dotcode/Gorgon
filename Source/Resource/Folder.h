@@ -64,7 +64,7 @@ namespace Gorgon { namespace Resource {
 			children.Remove(resource);
 
 			if(resource.GetParentPtr()==this)
-				resource.parent=nullptr;
+				setparenttonullptr(resource);
 			
 			if( --resource.refcount == 0) {
 				delete &resource;

@@ -109,8 +109,6 @@ namespace Gorgon { namespace Resource {
 			throw;
 		}
 
-		root->Resolve(*this);
-
 		isloaded=true;
 
 		//Close file
@@ -119,6 +117,27 @@ namespace Gorgon { namespace Resource {
 			delete file;
 			file=nullptr;
 		}
+
+		//build mapping
+		std::vector<Containers::Collection<Base>::ConstIterator> openlist;
+		openlist.push_back(root->begin());
+		mapping[root->GetGuid()]=root;
+
+		while(openlist.size()) {
+			if(!openlist.back().IsValid()) {
+				openlist.pop_back();
+				continue;
+			}
+
+			auto &obj=(*openlist.back());
+			openlist.back().Next();
+			if(obj.Children.GetCount()>0)
+				openlist.push_back(obj.begin());
+
+			mapping[obj.GetGuid()]=&obj;
+		}
+
+		root->Resolve(*this);
 	}
 
 	const std::string LoadError::ErrorStrings[7] ={

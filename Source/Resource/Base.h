@@ -103,6 +103,10 @@ namespace Gorgon {
 				return Children.end();
 			}
 
+			/// Safely deletes the resource. If the resource is being used more a single place, this method will not
+			/// delete the resource, instead it will decrement the reference count and returns false.
+			bool DeleteResource();
+
 			
 			/// The children this object have. The elements in const collections are modifiable,
 			/// therefore, its possible to modify properties of the children. However, children

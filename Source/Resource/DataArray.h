@@ -1,12 +1,13 @@
 #pragma once
 
-#include "GRE.h"
+#include <stdexcept>
+
+#include "../Types.h"
 #include "Base.h"
-#include "../Utils/Margins.h"
-#include "../Utils/Size2D.h"
+#include "../Geometry/Margins.h"
+#include "../Geometry/Size.h"
 #include "../Engine/Font.h"
 
-#include <stdexcept>
 #include "../Utils/OrderedCollection.h"
 
 namespace gge { namespace resource {
