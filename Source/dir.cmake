@@ -4,6 +4,7 @@ SET(Local
 	External
 	Filesystem
 	Geometry
+	GL
 	Input
 	OS
 	Resource

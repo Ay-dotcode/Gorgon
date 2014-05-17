@@ -11,8 +11,14 @@ SET(CMAKE_DOCUMENT_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Docs)
 
 OPTION(GORGON_FAST_ANY "Make any to work fast by removing empty checks. This will only apply to release mode." OFF)
 
+OPTION(OPENGL "Use OpenGL as underlying GL. Should be ON for now." ON)
+
 IF(GORGON_FAST_ANY)
 	SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DGORGON_FAST_ANY")
+ENDIF()
+
+IF(OPENGL)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENGL")
 ENDIF()
 
 IF(UNIX) 
