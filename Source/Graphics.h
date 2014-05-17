@@ -1,5 +1,101 @@
 #pragma once
 
+#include <stdint.h>
+
+#include "GL.h"
+#include "Geometry/Point.h"
+#include "Geometry/Size.h"
+#include "Geometry/Bounds.h"
+
+namespace Gorgon {
+
+
+	/// Contains generic graphics related data structures and functions
+	namespace Graphics {
+
+		/// This class represents an image depends on a GL texture.
+		class TextureImage {
+		public:
+
+			/// Default constructor, creates an empty texture
+			TextureImage() {
+				Set(0, {0, 0});
+			}
+
+			/// Regular, full texture constructor
+			TextureImage(GL::Texture id, const Geometry::Size &size) {
+				Set(id, size);
+			}
+
+			/// Atlas constructor, specifies a region of the texture
+			TextureImage(GL::Texture id, const Geometry::Size &size, const Geometry::Bounds &location) {
+				Set(id, size, location);
+			}
+
+			/// Sets the texture to the given ID with the given size. Resets the coordinates to cover entire
+			/// GL texture
+			void Set(GL::Texture id, const Geometry::Size &size) {
+				ID  =id;
+				Size=size;
+
+				Coordinates[0] ={0.f, 0.f};
+				Coordinates[1] ={1.f, 0.f};
+				Coordinates[2] ={1.f, 1.f};
+				Coordinates[3] ={0.f, 1.f};
+			}
+
+			/// Sets the texture to the given ID with the given size. Calculates the texture coordinates
+			/// for the specified location in pixels
+			/// @param   id ID of the texture, reported by the underlying GL framework
+			/// @param   size of the GL texture in pixels
+			/// @param   location is the location of this texture over GL texture in pixels.
+			void Set(GL::Texture id, const Geometry::Size &size, const Geometry::Bounds &location) {
+				ID  =id;
+				Size=size;
+
+				Coordinates[0] ={float(location.Left )/size.Width, float(location.Top   )/size.Height};
+				Coordinates[1] ={float(location.Right)/size.Width, float(location.Top   )/size.Height};
+				Coordinates[2] ={float(location.Right)/size.Width, float(location.Bottom)/size.Height};
+				Coordinates[3] ={float(location.Left )/size.Width, float(location.Bottom)/size.Height};
+			}
+
+			/// GL texture id
+			GL::Texture ID;
+
+			/// Size of the texture
+			Geometry::Size Size;
+
+			/// Readily calculated texture coordinates of the image. Normally spans entire
+			/// GL texture, however, could be changed to create texture atlas. These coordinates
+			/// are kept in floating point u,v representation for quick consumption by the GL
+			Geometry::Pointf Coordinates[4];
+		};
+
+		/// Details which directions a texture should tile. If its not tiled for that direction, it will
+		/// be stretched. If the target size is smaller, tiling causes partial draw instead of shrinking.
+		enum class Tiling {
+			None		= 0,
+			Horizontal	= 1,
+			Vertical	= 2,
+			Both		= 3,
+		};
+
+		/// Creates a Tiling class from the given horizontal, vertical tiling info.
+		static Tiling Tile(bool hor, bool vert) {
+			return (hor ?
+				(vert ? Tiling::Both     : Tiling::Horizontal) :
+				(vert ? Tiling::Vertical : Tiling::None)
+			);
+		}
+
+	}
+}
+
+
+
+#ifdef fnonona
+#pragma once
+
 #include "GGE.h"
 #include "OS.h"
 
@@ -20,7 +116,7 @@
 #include "../Utils/Rectangle2D.h"
 #include "../Utils/Size2D.h"
 #include "../Utils/Logging.h"
-#include "../External/glutil/MatrixStack.h"
+#include "External/glutil/MatrixStack.h"
 
 #ifndef GL_BGR
 #	define GL_BGR	0x80E0
@@ -72,362 +168,12 @@ namespace gge { namespace graphics {
 	union TexturePosition { struct{float s,t;}; float vect[2];};
 	union VertexPosition { struct{float x,y,z;};float vect[3];};
 
-	////GGE Color mode constants
-	namespace ColorMode {
-		enum Type {
-			////RGB base color mode
-			RGB = 1,
-			////Palleted base color mode
-			Palleted = 2,
-			////Gray base color mode
-			Grayscale = 4,
-			////Alpha base color mode
-			Alpha = 8,
-			////BGR base color mode
-			BGR = 16,
-			////4-byte RGB color with alpha
-			ARGB = RGB | Alpha,
-			////4-byte revered RGB color with alpha
-			ABGR = BGR | Alpha,
-			////2-byte palleted color mode with alpha, is not available yet
-			Palleted_Alpha = Palleted | Alpha,
-			////2-byte gray (luminance) color mode with alpha
-			Grayscale_Alpha = Grayscale | Alpha
-		};
-	};
 
 	namespace system {
 		int sl2(int num);
 		int log2(int num);
 	}
 
-	////This structure contains all necessary information
-	/// of a texture. Using this information, image can be
-	/// drawn without requiring its actual size.
-	/// Also contains data to increase performance
-	struct GLTexture {
-		GLTexture() {
-			ImageCoord[0].s=0;
-			ImageCoord[0].t=0;
-			ImageCoord[1].s=1;
-			ImageCoord[1].t=0;
-			ImageCoord[2].s=1;
-			ImageCoord[2].t=1;
-			ImageCoord[3].s=0;
-			ImageCoord[3].t=1;
-		}
-
-		////OpenGL texture id
-		GLuint ID;
-		////Width of the image
-		int W;
-		////Height of the image
-		int H;
-
-
-		////Readily calculated texture coordinates of the image
-		TexturePosition ImageCoord[4];
-
-		////Calculates the necessary coordinates from
-		/// the give image size
-		void SetSize(int W,int H) {
-			this->W=W;
-			this->H=H;
-		}
-	};
-
-	struct RGBint;
-
-	union RGBfloat {
-		RGBfloat(const RGBint &);
-		RGBfloat() { }
-		RGBfloat(float a, float r, float g, float b) : a(a), r(r), g(g), b(b) { }
-		RGBfloat(float val): a(1.f), r(val), g(val), b(val) {}
-
-		void Blend(RGBfloat color) {
-			float alpha=color.a;
-			float alpham1=1-color.a;
-			
-			a+=color.a;
-			if(a>1) a=1;
-			r=r*alpham1+color.r*alpha;
-			g=g*alpham1+color.g*alpha;
-			b=b*alpham1+color.b*alpha;
-		}
-		
-		struct {
-			////Color element
-			float b,g,r;
-			////Alpha value
-			float a;
-		};
-
-		bool operator ==(const RGBfloat &c) const {
-			return a==c.a && r==c.r && g==c.g && b==c.b;
-		}
-
-		RGBfloat operator +(RGBfloat v) const {
-			return RGBfloat(a+v.a>1.f ? 1.f : a+v.a, r+v.r, g+v.g, b+v.b);
-		}
-
-		RGBfloat operator *(float v) const {
-			return RGBfloat(a, r*v, g*v, b*v);
-		}
-
-		RGBfloat operator *(const RGBfloat f) const {
-			return RGBfloat(a*f.a, r*f.r, g*f.g, b*f.b);
-		}
-
-		RGBfloat &operator =(const RGBint &c);
-
-		//! how to sum up alpha??
-		RGBfloat &operator +=(const RGBfloat &c) {
-      this->r += c.r;
-      this->g += c.g;
-      this->b += c.b;
-      return *this;
-    }
-
-		float Luminance() { 
-			return  0.2126f*r + 0.7151f*g + 0.0722f*b; 
-		}
-
-		float vect[4];
-	};
-
-	////A structure to extend standard argb integer
-	/// This structure helps with conversions
-	struct RGBint {
-		////Color element
-		unsigned char b,g,r;
-		////Alpha value
-		unsigned char a;
-
-		RGBint(unsigned int i) { memcpy(this,&i,4); }
-		RGBint(int i) { memcpy(this,&i,4); }
-		RGBint(Byte a, Byte r, Byte g, Byte b) : a(a), r(r), g(g), b(b) { }
-		RGBint(RGBfloat f) { a=(Byte)(f.a*255); r=(Byte)(f.r*255); g=(Byte)(f.g*255); b=(Byte)(f.b*255); }
-		RGBint(float lum) { a=255; r=(Byte)lum*255; g=(Byte)lum*255; b=(Byte)lum*255; }
-		RGBint(const std::string &s);
-		RGBint() { }
-		
-		////Converts RGBint structure to ARGB integer
-		operator int () const { return *(int*)this; }
-		////Converts RGBint structure to ARGB integer
-		operator int () { return *(int*)this; }
-		////Converts RGBint structure to ARGB (unsigned) integer
-		operator unsigned int () { return *(unsigned int*)this; }
-		////Converts RGBint structure to ARGB (unsigned) integer
-		operator unsigned int () const { return *(unsigned int*)this; }
-		RGBint &operator =(unsigned int i) { 
-			memcpy(this,&i,4);
-			return *this;
-		}
-		RGBint &operator =(int i) { 
-			memcpy(this,&i,4);
-			return *this;
-		}
-		RGBint &operator =(float lum) { 
-			a=255; r=(Byte)(lum*255); g=(Byte)(lum*255); b=(Byte)(lum*255);
-			return *this;
-		}
-
-		bool operator ==(const RGBint &r) const {
-			return *(int*)this==*(int*)&r;
-		}
-
-		RGBint &operator +=(RGBint color) {
-			r+=color.r;
-			g+=color.g;
-			b+=color.b;
-
-			return *this;
-		}
-
-		RGBint operator +(RGBint color) {
-			RGBint c;
-
-			c.r=r+color.r;
-			c.g=g+color.g;
-			c.b=b+color.b;
-
-			return c;
-		}
-
-		RGBint &operator -=(RGBint color) {
-			r=(r-color.r)/2 + 127;
-			g=(r-color.g)/2 + 127;
-			b=(r-color.b)/2 + 127;
-
-			return *this;
-		}
-
-		RGBint operator -(RGBint color) {
-			RGBint c;
-
-			c.r=(r-color.r)/2 + 127;
-			c.g=(r-color.g)/2 + 127;
-			c.b=(r-color.b)/2 + 127;
-
-			return c;
-		}
-		
-		RGBint &operator *=(float c) {
-			r=(Byte)(r*c);
-			g=(Byte)(g*c);
-			b=(Byte)(b*c);
-
-			return *this;
-		}
-		
-		RGBint operator *(float c) {
-			RGBint color;
-			
-			color.r=(Byte)(r*c);
-			color.g=(Byte)(g*c);
-			color.b=(Byte)(b*c);
-
-			return color;
-		}
-		
-		RGBint &operator /=(float c) {
-			r=(Byte)(r/c);
-			g=(Byte)(g/c);
-			b=(Byte)(b/c);
-
-			return *this;
-		}
-		
-		RGBint operator /(float c) {
-			RGBint color;
-			
-			color.r=(Byte)(r/c);
-			color.g=(Byte)(g/c);
-			color.b=(Byte)(b/c);
-
-			return color;
-		}
-
-
-		operator RGBfloat() {
-			RGBfloat f;
-			f.a=(float)a/255;
-			f.r=(float)r/255;
-			f.g=(float)g/255;
-			f.b=(float)b/255;
-
-			return f;
-		}
-		int Luminance() { 
-			return (r>>3) + (r>>4) + (r>>5) + (g>>1) + (g>>3) + (g>>4) + (g>>5) + (b>>4); 
-		}
-		float AccurateLuminance() { 
-			return  0.2126f*r + 0.7151f*g + 0.0722f*b; 
-		}
-
-		operator float() { return AccurateLuminance()/255.0f; }
-
-		std::string HTMLColor() const {
-			std::stringstream str2;
-			std::stringstream str;
-			str2<<std::hex<<((const int)(*this)&0x00ffffff);
-
-			str<<"#"<<std::fixed<<std::setw(6)<<std::setfill('0')<<str2.str();
-
-			return str.str();
-		}
-
-		std::string ColorString() const {
-			std::stringstream str;
-			str<<std::fixed<<std::setw(8)<<std::setfill('0')<<std::hex<<((const int)(*this));
-
-			return str.str();
-		}
-
-		void Blend(RGBint color) {
-			if(color.a==255) {
-				a=255;
-				r=color.r;
-				g=color.g;
-				b=color.b;
-			} else {
-				float alpha  =(float)color.a/255;
-				float alpham1=(float)(255-color.a)/255;
-
-				if(a<255) {
-					int aa=(int)a+color.a;
-					if(aa>255)
-						a=255;
-					else
-						a=aa;
-				}
-
-				r=(Byte)(r*alpham1+color.r*alpha);
-				g=(Byte)(g*alpham1+color.g*alpha);
-				b=(Byte)(b*alpham1+color.b*alpha);
-			}
-		}
-
-		operator std::string() const {
-			return ColorString();
-		}
-		////Returns BGRA integer
-		int operator !() { return (r<<16)+(g<<8)+b+(a<<24); }
-	};
-
-	inline std::ostream &operator <<(std::ostream &stream, RGBint color) {
-		stream<<(std::string)color;
-
-		return stream;
-	}
-
-	inline std::istream &operator>>(std::istream &in, RGBint &color) {
-		std::locale loc;
-
-		while(std::isspace(in.peek(), loc)) in.ignore();
-
-		if(in.peek()=='#') {
-			color.a=255;
-			in.ignore(1);
-			in>>std::hex>>color.r>>color.g>>color.b;
-		}
-		else {
-			if(in.peek()=='0') {
-				in.ignore();
-				if(in.peek()=='x') {
-					in.ignore();
-				}
-				else {
-					in.clear();
-					in.putback('0');
-				}
-			}
-
-			in>>std::hex>>(*(unsigned int*)&color)>>std::dec;
-		}
-		return in;
-	}
-	inline RGBint::RGBint(const std::string &s) {
-		std::stringstream ss;
-		ss.str(s);
-		ss>>*this;
-	}
-
-	inline RGBfloat::RGBfloat(const RGBint &c) {
-		a=(float)c.a/255;
-		r=(float)c.r/255;
-		g=(float)c.g/255;
-		b=(float)c.b/255;
-	}
-
-	inline RGBfloat &RGBfloat::operator =(const RGBint &c) {
-		a=(float)c.a/255;
-		r=(float)c.r/255;
-		g=(float)c.g/255;
-		b=(float)c.b/255;
-
-		return *this;
-	}
 
 	////Color range definition from one color
 	/// to another, this also includes alpha
@@ -573,51 +319,7 @@ namespace gge { namespace graphics {
 
 	std::array<float,24>					GetVertexData(const BasicSurface& surface);
 
-	////this structure is used to ease conversions
-	/// between RGB integer and float values used
-	/// in graphic adapters.
-	////Converts RGBint to RGBfloat
-	inline RGBfloat ToRGBfloat(RGBint color) { RGBfloat f; f.a=(float)color.a/255; f.r=(float)color.r/255; f.g=(float)color.g/255; f.b=(float)color.b/255; return f; }
 
-	////Converts an int color to RGBint structure
-	inline RGBint ToRGBint(unsigned int argb) { RGBint r(argb); return r; }
-	////Converts an int color to RGBint structure
-	inline RGBint ToRGBint(int argb) { RGBint r(argb); return r; }
-
-	////Returns the Bytes required for a given color mode
-	inline int getBPP(ColorMode::Type color_mode) {
-		switch(color_mode) {
-		case ColorMode::Grayscale:
-		case ColorMode::Alpha:
-		case ColorMode::Palleted:
-			return 1;
-		case ColorMode::Palleted_Alpha:
-		case ColorMode::Grayscale_Alpha:
-			return 2;
-		case ColorMode::RGB:
-		case ColorMode::BGR:
-			return 3;
-		default:
-			return 4;
-		}
-	}
-
-	class Tiling2D {
-	public:
-		enum Type {
-			None		= 0,
-			Horizontal	= 1, 
-			Vertical	= 2,
-			Both		= 3,
-		};
-
-		static Type Tile(bool H, bool V) {
-			return (H ?
-				(V ? Both     : Horizontal) :
-				(V ? Vertical : None)
-			);
-		}
-	};
 
 	class SizeController2D {
 	public:
@@ -728,28 +430,6 @@ namespace gge { namespace graphics {
 
 	namespace system {
 
-		////Logarithm Base 2
-		inline int log2(int num) {
-			int i=0;
-			int s=1;
-			while(num-s>0) {
-				i++;
-				s<<=1;
-			}
-
-			return i;
-		}
-
-		////Rounds the given number to the lowest 2^n (where n is integer) number 
-		/// that is higher than the given number
-		inline int sl2(int num) {
-			int s=1;
-			while(num-s>0) {
-				s<<=1;
-			}
-
-			return s;
-		}
 		////Creates rectangle structure based on give parameters
 		//RECT makerect(int x, int y, int w, int h);
 		////Converts Alpha only image to Alpha and Luminance (grayscale) image.
@@ -784,3 +464,5 @@ namespace gge { namespace graphics {
 
 	extern utils::Size ScreenSize;
 } }
+
+#endif

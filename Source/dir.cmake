@@ -5,6 +5,7 @@ SET(Local
 	Filesystem
 	Geometry
 	GL
+	Graphics
 	Input
 	OS
 	Resource

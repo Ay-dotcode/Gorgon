@@ -6,28 +6,23 @@
 #include "../Utils/Size2D.h"
 
 
-namespace gge { namespace graphics {
+namespace Gorgon { namespace Graphics {
 
 	class Graphic2D {
 	public:
-		//Only top left specified
 		void Draw(ImageTarget2D &target, int X, int Y) const {
 			draw(target, X,Y);
-		}
-		void Draw(ImageTarget2D *target, int X, int Y) const {
-			draw(*target, X,Y);
 		}
 
 		void Draw(ImageTarget2D &target, utils::Point p) const {
 			draw(target, p.x,p.y);
 		}
-		void Draw(ImageTarget2D *target, utils::Point p) const {
-			draw(*target, p.x,p.y);
-		}
 
 	protected:
 		virtual void draw(ImageTarget2D& Target, int X, int Y) const = 0;
 	};
+
+
 
 	class SizelessGraphic2D {
 	public:
@@ -36,30 +31,18 @@ namespace gge { namespace graphics {
 		void DrawIn(ImageTarget2D &target, int X, int Y, int W, int H) const {
 			drawin(target, X,Y, W,H);
 		}
-		void DrawIn(ImageTarget2D *target, int X, int Y, int W, int H) const {
-			drawin(*target, X,Y, W,H);
-		}
 
 		void DrawIn(ImageTarget2D &target, utils::Point p, int W, int H) const {
 			drawin(target, p.x,p.y, W,H);
-		}
-		void DrawIn(ImageTarget2D *target, utils::Point p, int W, int H) const {
-			drawin(*target, p.x,p.y, W,H);
 		}
 
 
 		void DrawIn(ImageTarget2D &target, int X, int Y, utils::Size s) const {
 			drawin(target, X,Y, s.Width,s.Height);
 		}
-		void DrawIn(ImageTarget2D *target, int X, int Y, utils::Size s) const {
-			drawin(*target, X,Y, s.Width,s.Height);
-		}
 
 		void DrawIn(ImageTarget2D &target, utils::Point p, utils::Size s) const {
 			drawin(target, p.x,p.y, s.Width,s.Height);
-		}
-		void DrawIn(ImageTarget2D *target, utils::Point p, utils::Size s) const {
-			drawin(*target, p.x,p.y, s.Width,s.Height);
 		}
 
 
@@ -68,30 +51,18 @@ namespace gge { namespace graphics {
 		void DrawIn(ImageTarget2D &target, utils::Rectangle r) const {
 			drawin(target, r.Left,r.Top, r.Width,r.Height);
 		}
-		void DrawIn(ImageTarget2D *target, utils::Rectangle r) const {
-			drawin(*target, r.Left,r.Top, r.Width,r.Height);
-		}
 
 		void DrawIn(ImageTarget2D &target, utils::Bounds b) const {
 			drawin(target, b.Left,b.Top, b.Width(), b.Height());
-		}
-		void DrawIn(ImageTarget2D *target, utils::Bounds b) const {
-			drawin(*target, b.Left,b.Top, b.Width(), b.Height());
 		}
 
 		void DrawIn(ImageTarget2D &target) const {
 			drawin(target, 0,0, target.GetSize().Width, target.GetSize().Height);
 		}
-		void DrawIn(ImageTarget2D *target) const {
-			drawin(*target, 0,0, target->GetSize().Width, target->GetSize().Height);
-		}
 
 		//Draw size controlled
 		void DrawIn(ImageTarget2D &target, const SizeController2D &controller) const {
 			drawin(target, controller, 0,0, target.GetSize().Width, target.GetSize().Height);
-		}
-		void DrawIn(ImageTarget2D *target, const SizeController2D &controller) const {
-			drawin(*target, controller, 0,0, target->GetSize().Width, target->GetSize().Height);
 		}
 
 
@@ -100,44 +71,26 @@ namespace gge { namespace graphics {
 		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, int X, int Y, int W, int H) const {
 			drawin(target, controller, X,Y, W,H);
 		}
-		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, int X, int Y, int W, int H) const {
-			drawin(*target, controller, X,Y, W,H);
-		}
 
 		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, utils::Point p, int W, int H) const {
 			drawin(target, controller, p.x,p.y, W,H);
-		}
-		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, utils::Point p, int W, int H) const {
-			drawin(*target, controller, p.x,p.y, W,H);
 		}
 
 		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, int X, int Y, utils::Size s) const {
 			drawin(target, controller, X,Y, s.Width, s.Height);
 		}
-		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, int X, int Y, utils::Size s) const {
-			drawin(*target, controller, X,Y, s.Width, s.Height);
-		}
 
 		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, utils::Point p, utils::Size s) const {
 			drawin(target, controller, p.x,p.y, s.Width, s.Height);
-		}
-		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, utils::Point p, utils::Size s) const {
-			drawin(*target, controller, p.x,p.y, s.Width, s.Height);
 		}
 
 
 		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, utils::Rectangle r) const {
 			drawin(target, controller, r.Left,r.Top, r.Width, r.Height);
 		}
-		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, utils::Rectangle r) const {
-			drawin(*target, controller, r.Left,r.Top, r.Width, r.Height);
-		}
 
 		void DrawIn(ImageTarget2D &target, const SizeController2D &controller, utils::Bounds b) const {
 			drawin(target, controller, b.Left,b.Top, b.Width(), b.Height());
-		}
-		void DrawIn(ImageTarget2D *target, const SizeController2D &controller, utils::Bounds b) const {
-			drawin(*target, controller, b.Left,b.Top, b.Width(), b.Height());
 		}
 
 
