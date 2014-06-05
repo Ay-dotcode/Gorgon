@@ -10,66 +10,9 @@
 namespace Gorgon {
 
 
-	/// Contains generic graphics related data structures and functions
+	/// Contains generic 2D graphics related data structures and functions. These functions are tied to
+	/// underlying GL system through textures.
 	namespace Graphics {
-
-		/// This class represents an image depends on a GL texture.
-		class TextureImage {
-		public:
-
-			/// Default constructor, creates an empty texture
-			TextureImage() {
-				Set(0, {0, 0});
-			}
-
-			/// Regular, full texture constructor
-			TextureImage(GL::Texture id, const Geometry::Size &size) {
-				Set(id, size);
-			}
-
-			/// Atlas constructor, specifies a region of the texture
-			TextureImage(GL::Texture id, const Geometry::Size &size, const Geometry::Bounds &location) {
-				Set(id, size, location);
-			}
-
-			/// Sets the texture to the given ID with the given size. Resets the coordinates to cover entire
-			/// GL texture
-			void Set(GL::Texture id, const Geometry::Size &size) {
-				ID  =id;
-				Size=size;
-
-				Coordinates[0] ={0.f, 0.f};
-				Coordinates[1] ={1.f, 0.f};
-				Coordinates[2] ={1.f, 1.f};
-				Coordinates[3] ={0.f, 1.f};
-			}
-
-			/// Sets the texture to the given ID with the given size. Calculates the texture coordinates
-			/// for the specified location in pixels
-			/// @param   id ID of the texture, reported by the underlying GL framework
-			/// @param   size of the GL texture in pixels
-			/// @param   location is the location of this texture over GL texture in pixels.
-			void Set(GL::Texture id, const Geometry::Size &size, const Geometry::Bounds &location) {
-				ID  =id;
-				Size=size;
-
-				Coordinates[0] ={float(location.Left )/size.Width, float(location.Top   )/size.Height};
-				Coordinates[1] ={float(location.Right)/size.Width, float(location.Top   )/size.Height};
-				Coordinates[2] ={float(location.Right)/size.Width, float(location.Bottom)/size.Height};
-				Coordinates[3] ={float(location.Left )/size.Width, float(location.Bottom)/size.Height};
-			}
-
-			/// GL texture id
-			GL::Texture ID;
-
-			/// Size of the texture
-			Geometry::Size Size;
-
-			/// Readily calculated texture coordinates of the image. Normally spans entire
-			/// GL texture, however, could be changed to create texture atlas. These coordinates
-			/// are kept in floating point u,v representation for quick consumption by the GL
-			Geometry::Pointf Coordinates[4];
-		};
 
 		/// Details which directions a texture should tile. If its not tiled for that direction, it will
 		/// be stretched. If the target size is smaller, tiling causes partial draw instead of shrinking.
@@ -87,6 +30,120 @@ namespace Gorgon {
 				(vert ? Tiling::Vertical : Tiling::None)
 			);
 		}
+
+		/// Defines how an object is aligned
+		enum class Alignment {
+			/// Placed at the start of the axis
+			Start		= 8,
+
+			/// Centered along the axis
+			Center		= 32,
+
+			/// Placed at the end of the axis
+			End			= 16,
+		};
+
+		/// Defines how an object is placed in a 2D axis system
+		enum class Placement {
+			/// Placed at top left
+			TopLeft			=  9,
+
+			/// Placed at top center
+			TopCenter		= 33,
+
+			/// Placed at top right
+			TopRight		= 17,
+
+
+			/// Placed at middle left
+			MiddleLeft		= 12,
+
+			/// Placed at the center
+			MiddleCenter	= 36,
+
+			/// Placed at middle right
+			MiddleRight		= 20,
+
+							  
+			/// Placed at bottom
+			BottomLeft		= 10,
+
+			/// Placed at bottom center
+			BottomCenter	= 34,
+
+			/// Placed at bottom right
+			BottomRight		= 18,
+		};
+
+		/// Returns horizontal alignment from a placement
+		inline Alignment GetHorizontal(Placement val) {
+			return Alignment((int)val & 56);
+		}
+
+		/// Returns vertical alignment from a placement
+		inline Alignment GetVertical(Placement val) {
+			return Alignment( ((int)val & 7) << 3);
+		}
+
+		/// This class allows control over a sizable object
+		class SizeController {
+		public:
+			/// Controls how a direction is tiled
+			enum Tiling {
+				/// The drawing is drawn only once with its original size. The placement of this single
+				/// drawing will be determined by the alignment.
+				Single				= 0,
+
+				/// The drawing is stretched along this axis to cover the given size. If the given drawing
+				/// object is truly scalable, this value acts same as Tile.
+				Stretch				= 2,
+
+				/// The drawing is tiled along this axis to cover the given size. If the area is smaller,
+				/// drawing will be cut from the given size. If the area is larger, drawing will be repeated
+				/// as necessary. While repeating, it is possible for drawing not to cover the area exactly,
+				/// In this case, alignment determines which side will be incomplete. If center alignment
+				/// is selected, both sides will have same amount of incomplete drawing.
+				Tile				= 1,
+
+				/// The drawing is tiled along this axis to cover the given size. In this mode, the drawing will 
+				/// never placed incomplete. Instead, it will be repeated to cover as much area as possible without
+				/// exceeding the given size. Any area that is left will be distributed to the edges according to 
+				/// the selected alignment.
+				Integral_Smaller	= 13,
+
+				/// The drawing is tiled along this axis to cover the given size. In this mode, the drawing will 
+				/// never placed incomplete. Instead, it will be repeated to cover entire area. Excess drawing
+				/// will be aligned depending on the selected alignment.
+				Integral_Fill		= 21,
+
+				/// The drawing is tiled along this axis to cover the given size. In this mode, the drawing will 
+				/// never placed incomplete. Instead, it will be repeated to cover entire area. If the last drawing
+				/// that will be partial is more than 50% of the size of the original drawing, it will be drawn. Excess
+				/// drawing or the area left empty is distributed according to the selected alignment.
+				Integral_Best		= 45,
+			};
+
+			SizeController() : Horizontal(Tile), Vertical(Tile), Placement(Placement::TopLeft) { }
+
+			SizeController(Placement p) : Horizontal(Single), Vertical(Single), Placement(p) { }
+
+			SizeController(Tiling h, Tiling v, Placement p=Placement::TopLeft) : Horizontal(h), Vertical(v), Placement(p) { }
+
+			SizeController(Graphics::Tiling tile, Placement p=Placement::TopLeft) :
+				Horizontal(tile==Graphics::Tiling::Horizontal ? Tile : Stretch),
+				Vertical  (tile==Graphics::Tiling::Vertical   ? Tile : Stretch),
+				Placement(p)
+			{ }
+
+			/// Horizontal tiling mode
+			Tiling				Horizontal;
+
+			/// Vertical tiling mode
+			Tiling				Vertical;
+
+			/// Placement method
+			Graphics::Placement	Placement;
+		};
 
 	}
 }
@@ -164,25 +221,6 @@ namespace gge { namespace graphics {
 		void								GLDraw();
 		void								UpdateInstanceVertexData(const std::array<float,24>& data);
 	};	
-
-	union TexturePosition { struct{float s,t;}; float vect[2];};
-	union VertexPosition { struct{float x,y,z;};float vect[3];};
-
-
-	namespace system {
-		int sl2(int num);
-		int log2(int num);
-	}
-
-
-	////Color range definition from one color
-	/// to another, this also includes alpha
-	struct RGBRangeint {
-		////Starting value
-		RGBint from;
-		////Ending value
-		RGBint to;
-	};
 	
 	class TextureAttachment {
 	public:

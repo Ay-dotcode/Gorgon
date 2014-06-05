@@ -19,6 +19,7 @@ namespace Gorgon {
 		typedef uint32_t Texture;
 #endif
 		
+		/// This function generates a texture from the given image data.
 		Texture GenerateTexture(Graphics::ImageData &data);
 	}
 }

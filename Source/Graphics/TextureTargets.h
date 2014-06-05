@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Graphics.h"
+#include "TextureImage.h"
 #include "Color.h"
 #include "../Geometry/Point.h"
 #include "../Geometry/Size.h"
@@ -17,11 +18,16 @@ namespace Gorgon { namespace Graphics {
 
 		/// Draws a simple texture to the screen. This variant allows every corner on the target to be specified. The texture target should
 		/// be cleared before the texture drawn on it is destroyed
-		virtual void Draw(const TextureImage &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, const Geometry::Pointf &p3, const Geometry::Pointf &p4) = 0;
+		virtual void Draw(const TextureImage &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4) = 0;
 
 		/// Draws a simple texture to the screen. This variant allows every corner on the target and on the texture be specified. The texture 
 		/// target should be cleared before the texture drawn on it is destroyed
-		virtual void Draw(const TextureImage &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, const Geometry::Pointf &p3, const Geometry::Pointf &p4, Geometry::Pointf tex1, Geometry::Pointf tex2, Geometry::Pointf tex3, Geometry::Pointf tex4) = 0;
+		virtual void Draw(const TextureImage &image, 
+			const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4, 
+			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
+			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4) = 0;
 
 		/// Draws a simple image to the screen to the given position
 		virtual void Draw(const TextureImage &image, const Geometry::Pointf &location) = 0;

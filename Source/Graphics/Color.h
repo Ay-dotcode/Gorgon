@@ -78,7 +78,7 @@ namespace Gorgon { namespace Graphics {
 		RGBA(Byte r, Byte g, Byte b, Byte a=255) : R(r), G(g), B(b), A(a) { }
 
 		/// Constructs a grayscale color from the given luminance
-		RGBA(Byte lum, Byte a=255) : RGBA(lum, lum, lum) { }
+		explicit RGBA(Byte lum, Byte a=255) : RGBA(lum, lum, lum) { }
 
 		/// Conversion from integer
 		RGBA(const int &color) {
@@ -93,7 +93,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Conversion from float. Assumes the given float value is a 0 to 1 luminance. Sets alpha to 255
-		RGBA(float lum) : A(255) {
+		explicit RGBA(float lum) : A(255) {
 			if(lum<0) lum=0;
 			if(lum>1) lum=1;
 
@@ -280,7 +280,7 @@ namespace Gorgon { namespace Graphics {
 		RGBAf(float r, float g, float b, float a=1.f) : R(r), G(g), B(b), A(a) { }
 
 		/// Constructor that sets all color channels to the given value to create a grayscale color. Alpha is set to 1.0f
-		RGBAf(float lum) : RGBAf(lum, lum, lum) { }
+		explicit RGBAf(float lum, float a=1.0f) : RGBAf(lum, lum, lum, a) { }
 
 		/// Converts a RGBA to RGBAf
 		RGBAf(const RGBA &color) : R(color.R/255.f), G(color.G/255.f), B(color.B/255.f), A(color.A/255.f) { }
