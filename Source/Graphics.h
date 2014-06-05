@@ -123,12 +123,17 @@ namespace Gorgon {
 				Integral_Best		= 45,
 			};
 
+			/// Creates a default size controller which tiles the object from top-left
 			SizeController() : Horizontal(Tile), Vertical(Tile), Placement(Placement::TopLeft) { }
 
+			/// Creates a size controller that places a single object to the given placement. This is an implicit conversion
+			/// constructor.
 			SizeController(Placement p) : Horizontal(Single), Vertical(Single), Placement(p) { }
 
+			/// Creates a new size controller with the given tiling options and placement
 			SizeController(Tiling h, Tiling v, Placement p=Placement::TopLeft) : Horizontal(h), Vertical(v), Placement(p) { }
 
+			/// Creates a new size controller with the given tiling options and placement
 			SizeController(Graphics::Tiling tile, Placement p=Placement::TopLeft) :
 				Horizontal(tile==Graphics::Tiling::Horizontal ? Tile : Stretch),
 				Vertical  (tile==Graphics::Tiling::Vertical   ? Tile : Stretch),
