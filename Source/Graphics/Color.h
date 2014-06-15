@@ -8,6 +8,9 @@ namespace Gorgon { namespace Graphics {
 
 	/// Color modes for images
 	enum class ColorMode {
+		/// This is used to mark invalid color data
+		Invalid = 0,
+
 		/// 24bit red, green, blue color mode that has blue component in the lowest byte order
 		BGR = 1,
 
@@ -56,6 +59,9 @@ namespace Gorgon { namespace Graphics {
 		case ColorMode::BGRA:
 			return 4;
 		default:
+#ifndef NDEBUG
+			throw std::runtime_error("Unknown mode");
+#endif
 			return 0;
 		}
 	}
