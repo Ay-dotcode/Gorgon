@@ -37,27 +37,27 @@ namespace Gorgon { namespace Graphics {
 	class SizelessDrawable {
 	public:
 
-		/// Draw to the given coordinates with the given size
+		/// Draw to the given area
 		void DrawIn(TextureTarget &target, int x, int y, int w, int h) const {
 			drawin(target, {x, y, w, h});
 		}
 
-		/// Draw to the given coordinates with the given size
+		/// Draw to the given area
 		void DrawIn(TextureTarget &target, const Geometry::Point &p, int w, int h) const {
 			drawin(target, {p, w, h});
 		}
 
-		/// Draw to the given coordinates with the given size
-		void DrawIn(TextureTarget &target, int x, int y, const Geometry::Size &s) const {
-			drawin(target, {x, y, s});
+		/// Draw to the given area
+		void DrawIn(TextureTarget &target, int x, int y, const Geometry::Size &size) const {
+			drawin(target, {x, y, size});
 		}
 
-		/// Draw to the given coordinates with the given size
-		void DrawIn(TextureTarget &target, const Geometry::Point &p, const Geometry::Size &s) const {
-			drawin(target, {p, s});
+		/// Draw to the given area
+		void DrawIn(TextureTarget &target, const Geometry::Point &p, const Geometry::Size &size) const {
+			drawin(target, {p, size});
 		}
 
-		/// Draw in the given rectangle
+		/// Draw in the given area
 		void DrawIn(TextureTarget &target, const Geometry::Rectangle &r) const {
 			drawin(target, r);
 		}
@@ -72,23 +72,23 @@ namespace Gorgon { namespace Graphics {
 			drawin(target, controller, {x, y, w, h});
 		}
 
-		/// Draw to the given coordinates with the given size according to the given controller
+		/// Draw to the given area according to the given controller
 		void DrawIn(TextureTarget &target, const SizeController &controller, const Geometry::Point &p, int w, int h) const {
 			drawin(target, controller, {p, w, h});
 		}
 
-		/// Draw to the given coordinates with the given size according to the given controller
-		void DrawIn(TextureTarget &target, const SizeController &controller, int x, int y, const Geometry::Size &s) const {
-			drawin(target, controller, {x, y, s});
+		/// Draw to the given area the given size according to the given controller
+		void DrawIn(TextureTarget &target, const SizeController &controller, int x, int y, const Geometry::Size &size) const {
+			drawin(target, controller, {x, y, size});
 		}
 
-		/// Draw to the given coordinates with the given size according to the given controller
-		void DrawIn(TextureTarget &target, const SizeController &controller, const Geometry::Point &p, const Geometry::Size &s) const {
-			drawin(target, controller, {p, s});
+		/// Draw to the given area with the given size according to the given controller
+		void DrawIn(TextureTarget &target, const SizeController &controller, const Geometry::Point &p, const Geometry::Size &size) const {
+			drawin(target, controller, {p, size});
 		}
 
 
-		/// Draw in the given rectangle according to the given controller
+		/// Draw in the given area according to the given controller
 		void DrawIn(TextureTarget &target, const SizeController &controller, const Geometry::Rectangle &r) const {
 			drawin(target, controller, r);
 		}
@@ -98,68 +98,37 @@ namespace Gorgon { namespace Graphics {
 			drawin(target, controller, {0, 0, target.GetSize()});
 		}
 
-		/// Calculates the adjusted width of this drawable depending on the given area. This function calculates
-		/// actual the size of the drawable when it is drawn in an area that has the given size. When a size parameter
-		/// is set to -1, the object returns its native size. Native size might not be available for some objects
-		/// however, they will try to return a logical value.
-		int CalculateWidth(int w=-1) const {
-			return calculatewidth(w);
-		}
 
-		/// Calculates the adjusted height of this drawable depending on the given area. This function calculates
+		/// Calculates the adjusted size of this drawable depending on the given area. This function calculates
 		/// actual the size of the drawable when it is drawn in an area that has the given size. When a size parameter
 		/// is set to -1, the object returns its native size. Native size might not be available for some objects
 		/// however, they will try to return a logical value.
-		int CalculateHeight(int h=-1) const {
-			return calculateheight(h);
+		const Geometry::Size CalculateSize(const Geometry::Size &area) const {
+			return calculatesize(area);
 		}
 
 		/// Calculates the adjusted size of this drawable depending on the given area. This function calculates
 		/// actual the size of the drawable when it is drawn in an area that has the given size. When a size parameter
 		/// is set to -1, the object returns its native size. Native size might not be available for some objects
 		/// however, they will try to return a logical value.
-		const Geometry::Size &CalculateSize(int w=-1, int h=-1) const {
-			return Geometry::Size(calculatewidth(w), calculateheight(h));
-		}
-
-		/// Calculates the adjusted size of this drawable depending on the given area. This function calculates
-		/// actual the size of the drawable when it is drawn in an area that has the given size. When a size parameter
-		/// is set to -1, the object returns its native size. Native size might not be available for some objects
-		/// however, they will try to return a logical value.
-		const Geometry::Size &CalculateSize(const Geometry::Size &s) const {
-			return Geometry::Size(calculatewidth(s.Width), calculateheight(s.Height));
-		}
-
-		/// Calculates the adjusted width of this drawable depending on the given area and controller. This function calculates
-		/// actual the size of the drawable when it is drawn in an area that has the given size. When a size parameter
-		/// is set to -1, the object returns its native size. Native size might not be available for some objects
-		/// however, they will try to return a logical value.
-		int CalculateWidth(const SizeController &controller, int w=-1) const {
-			return calculatewidth(controller, w);
-		}
-
-		/// Calculates the adjusted height of this drawable depending on the given area and controller. This function calculates
-		/// actual the size of the drawable when it is drawn in an area that has the given size. When a size parameter
-		/// is set to -1, the object returns its native size. Native size might not be available for some objects
-		/// however, they will try to return a logical value.
-		int CalculateHeight(const SizeController &controller, int h=-1) const {
-			return calculateheight(controller, h);
+		const Geometry::Size CalculateSize(int w=-1, int h=-1) const {
+			return calculatesize({w, h});
 		}
 
 		/// Calculates the adjusted size of this drawable depending on the given area and controller. This function calculates
 		/// actual the size of the drawable when it is drawn in an area that has the given size. When a size parameter
 		/// is set to -1, the object returns its native size. Native size might not be available for some objects
 		/// however, they will try to return a logical value.
-		const Geometry::Size &CalculateSize(const SizeController &controller, int w=-1, int h=-1) const {
-			return Geometry::Size(calculatewidth(controller, w), calculateheight(controller, h));
+		const Geometry::Size CalculateSize(const SizeController &controller, const Geometry::Size &area) const {
+			return calculatesize(controller, area);
 		}
 
 		/// Calculates the adjusted size of this drawable depending on the given area and controller. This function calculates
 		/// actual the size of the drawable when it is drawn in an area that has the given size. When a size parameter
 		/// is set to -1, the object returns its native size. Native size might not be available for some objects
 		/// however, they will try to return a logical value.
-		const Geometry::Size &CalculateSize(const SizeController &controller, const Geometry::Size &s) const {
-			return Geometry::Size(calculatewidth(controller, s.Width), calculateheight(controller, s.Height));
+		const Geometry::Size CalculateSize(const SizeController &controller, int w=-1, int h=-1) const {
+			return calculatesize(controller, {w, h});
 		}
 
 	protected:
@@ -170,27 +139,16 @@ namespace Gorgon { namespace Graphics {
 		/// If this object already have a size controller, this given controller should be given priority.
 		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectangle &r) const = 0;
 
-		/// This function should return the width of the object when it is requested to be drawn in a w width area. If w parameter
+		/// This function should return the size of the object when it is requested to be drawn in the given area. If size contains
 		/// is a negative value, this function should try to return native size of the object. If no such size exists, a logical size
 		/// should be returned.
-		virtual int calculatewidth(int w=-1) const = 0;
+		virtual Geometry::Size calculatesize(const Geometry::Size &area) const = 0;
 
-		/// This function should return the height of the object when it is requested to be drawn in a h height area. If h parameter
-		/// is a negative value, this function should try to return native size of the object. If no such size exists, a logical size
-		/// should be returned.
-		virtual int calculateheight(int h=-1) const = 0;
-
-		/// This function should return the width of the object when it is requested to be drawn in a w width area. This variant should
-		/// use the given size controller. If the object already has a controller, given controller should be given priority. If w parameter
-		/// is a negative value, this function should try to return native size of the object. If no such size exists, a logical size
-		/// should be returned.
-		virtual int calculatewidth(const SizeController &controller, int w=-1) const = 0;
-
-		/// This function should return the height of the object when it is requested to be drawn in a h height area. This variant should
+		/// This function should return the size of the object when it is requested to be drawn in the given area. This variant should
 		/// use the given size controller. If the object already has a controller, given controller should be given priority. If h parameter
 		/// is a negative value, this function should try to return native size of the object. If no such size exists, a logical size
 		/// should be returned.
-		virtual int calculateheight(const SizeController &controller, int h=-1) const = 0;
+		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const = 0;
 	};
 
 
@@ -202,27 +160,27 @@ namespace Gorgon { namespace Graphics {
 
 		using SizelessDrawable::DrawIn;
 
-		/// Draw to the given coordinates stretched to the given size
+		/// Draw to the given area by stretching object to fit
 		void DrawStretched(TextureTarget &target, int x, int y, int w, int h) const {
 			drawstretched(target, {x, y, w, h});
 		}
 
-		/// Draw to the given coordinates stretched to the given size
+		/// Draw to the given area by stretching object to fit
 		void DrawStretched(TextureTarget &target, const Geometry::Point &p, int w, int h) const {
 			drawstretched(target, {p, w, h});
 		}
 
-		/// Draw to the given coordinates stretched to the given size
-		void DrawStretched(TextureTarget &target, int x, int y, const Geometry::Size &s) const {
-			drawstretched(target, {x, y, s});
+		/// Draw to the given area by stretching object to fit
+		void DrawStretched(TextureTarget &target, int x, int y, const Geometry::Size &size) const {
+			drawstretched(target, {x, y, size});
 		}
 
-		/// Draw to the given coordinates stretched to the given size
-		void DrawStretched(TextureTarget &target, const Geometry::Point &p, const Geometry::Size &s) const {
-			drawstretched(target, {p, s});
+		/// Draw to the given area by stretching object to fit
+		void DrawStretched(TextureTarget &target, const Geometry::Point &p, const Geometry::Size &size) const {
+			drawstretched(target, {p, size});
 		}
 
-		/// Draw to the given coordinates stretched to the given size
+		/// Draw to the given area by stretching object to fit
 		void DrawStretched(TextureTarget &target, const Geometry::Rectangle &r) const {
 			drawstretched(target, r);
 		}
@@ -261,13 +219,13 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Draws the object to the target using the given tiling information
-		void DrawIn(TextureTarget &target, Tiling tiling, int x, int y, const Geometry::Size &s) const {
-			drawin(target, tiling, {x, y, s});
+		void DrawIn(TextureTarget &target, Tiling tiling, int x, int y, const Geometry::Size &size) const {
+			drawin(target, tiling, {x, y, size});
 		}
 
 		/// Draws the object to the target using the given tiling information
-		void DrawIn(TextureTarget &target, Tiling tiling, const Geometry::Point &p, const Geometry::Size &s) const {
-			drawin(target, tiling, {p, s});
+		void DrawIn(TextureTarget &target, Tiling tiling, const Geometry::Point &p, const Geometry::Size &size) const {
+			drawin(target, tiling, {p, size});
 		}
 
 
@@ -330,41 +288,31 @@ namespace Gorgon { namespace Graphics {
 
 		/// Draws the object with the given screen and texture coordinates. Texture coordinates are given between 0 and 1. If the 
 		/// coordinates are out of bounds the texture is repeated
-		void Draw(TextureTarget &target, float x, float y, const Geometry::Sizef &s, float u1, float v1, float u2, float v2, float u3, float v3, float u4, float v4) const {
-			Draw(target, x, y, s.Width, s.Height, {u1, v1}, {u2, v2}, {u3, v3}, {u4, v4});
+		void Draw(TextureTarget &target, float x, float y, const Geometry::Sizef &size, float u1, float v1, float u2, float v2, float u3, float v3, float u4, float v4) const {
+			Draw(target, x, y, size.Width, size.Height, {u1, v1}, {u2, v2}, {u3, v3}, {u4, v4});
 		}
 
 		/// Draws the object with the given screen and texture coordinates. Texture coordinates are given between 0 and 1. If the 
 		/// coordinates are out of bounds the texture is repeated
-		void Draw(TextureTarget &target, float x, float y, const Geometry::Sizef &s, const Geometry::Pointf &t1, const Geometry::Pointf &t2, const Geometry::Pointf &t3, const Geometry::Pointf &t4) const {
-			Draw(target, x, y, s.Width, s.Height, t1, t2, t3, t4);
+		void Draw(TextureTarget &target, float x, float y, const Geometry::Sizef &size, const Geometry::Pointf &t1, const Geometry::Pointf &t2, const Geometry::Pointf &t3, const Geometry::Pointf &t4) const {
+			Draw(target, x, y, size.Width, size.Height, t1, t2, t3, t4);
 		}
 
 		/// Draws the object with the given screen and texture coordinates. Texture coordinates are given between 0 and 1. If the 
 		/// coordinates are out of bounds the texture is repeated
-		void Draw(TextureTarget &target, const Geometry::Pointf &p, const Geometry::Sizef &s, float u1, float v1, float u2, float v2, float u3, float v3, float u4, float v4) const {
-			Draw(target, p.X, p.Y, s.Width, s.Height, {u1, v1}, {u2, v2}, {u3, v3}, {u4, v4});
+		void Draw(TextureTarget &target, const Geometry::Pointf &p, const Geometry::Sizef &size, float u1, float v1, float u2, float v2, float u3, float v3, float u4, float v4) const {
+			Draw(target, p.X, p.Y, size.Width, size.Height, {u1, v1}, {u2, v2}, {u3, v3}, {u4, v4});
 		}
 
 		/// Draws the object with the given screen and texture coordinates. Texture coordinates are given between 0 and 1. If the 
 		/// coordinates are out of bounds the texture is repeated
-		void Draw(TextureTarget &target, const Geometry::Pointf &p, const Geometry::Sizef &s, const Geometry::Pointf &t1, const Geometry::Pointf &t2, const Geometry::Pointf &t3, const Geometry::Pointf &t4) const {
-			Draw(target, p.X, p.Y, s.Width, s.Height, t1, t2, t3, t4);
-		}
-
-		/// Returns the width of this object
-		int GetWidth() const {
-			return getwidth();
-		}
-
-		/// Returns the height of this object
-		int GetHeight() const {
-			return getheight();
+		void Draw(TextureTarget &target, const Geometry::Pointf &p, const Geometry::Sizef &size, const Geometry::Pointf &t1, const Geometry::Pointf &t2, const Geometry::Pointf &t3, const Geometry::Pointf &t4) const {
+			Draw(target, p.X, p.Y, size.Width, size.Height, t1, t2, t3, t4);
 		}
 
 		/// Returns the size of this object
-		const Geometry::Size &GetSize() const {
-			return Geometry::Size(getwidth(), getheight());
+		const Geometry::Size GetSize() const {
+			return getsize();
 		}
 
 
@@ -377,7 +325,7 @@ namespace Gorgon { namespace Graphics {
 		/// It might be logical to override this as it is possible to avoid additional function calls and
 		/// if statements
 		virtual void draw(TextureTarget &target, const Geometry::Point &p) const {
-			drawin(target, Placement::MiddleCenter, {p, getwidth(), getheight()});
+			drawin(target, Placement::MiddleCenter, {p, getsize()});
 		}
 
 		/// This method should draw to object inside the given quad with the given texture coordinates.
@@ -410,17 +358,50 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Should return the exact size of this object
-		virtual int getwidth() const = 0;
-
-		/// Should return the exact size of this object
-		virtual int getheight() const = 0;
+		virtual Geometry::Size getsize() const = 0;
 	};
 
-	/// This class is the interface for regular graphics
-	class Image : public virtual RectangularDrawable {
+	/// This is a solid texture based image. It handles the drawing automatically. Does not supply implementation
+	/// for Texture.
+	class Image : public virtual RectangularDrawable, public virtual TextureSource {
 	public:
-		/// Should return the GL texture ID of this image
-		virtual GL::Texture &GetTexture() = 0;
+
+	protected:
+		virtual Geometry::Size getsize() const {
+			return TextureSource::GetSize();
+		}
+
+		virtual Geometry::Size calculatesize(const Geometry::Size &s) const {
+			return TextureSource::GetSize();
+		}
+
+		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const = 0 {
+			controller.CalculateSize(getsize(), s);
+		}
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4) const {
+			target.Draw(*this, p1, p2, p3, p4);
+		}
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4,
+			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2,
+			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4) const {
+			target.Draw(*this, p1, p2, p3, p4, tex1, tex2, tex3, tex4);
+		}
+
+		virtual void drawstretched(TextureTarget &target, const Geometry::Rectangle &r) const {
+			target.Draw(*this, Tiling::None, r);
+		}
+
+		virtual void drawin(TextureTarget &target, const Geometry::Rectangle &r) {
+			target.Draw(*this, Tiling::Both, r);
+		}
+
+		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectangle &r) const { 
+			target.Draw(*this, controller.GetTiling(), controller.CalculateArea(getsize(), r.GetSize())+r.TopLeft());
+		}
 	};
 
 } }

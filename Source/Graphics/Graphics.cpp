@@ -1,4 +1,10 @@
+#include "../Graphics.h"
 
+namespace Gorgon { namespace Graphics {
+
+	const Geometry::Pointf TextureSource::fullcoordinates[4]={{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+
+} }
 
 
 

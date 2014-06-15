@@ -1,7 +1,8 @@
 SET(Local
 	../Graphics.h
+	Graphics.cpp
 	Color.h
 	Drawables.h
-	TextureImage.h
+	Texture.h
 	TextureTargets.h
 )

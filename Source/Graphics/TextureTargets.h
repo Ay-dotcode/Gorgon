@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../Graphics.h"
-#include "TextureImage.h"
 #include "Color.h"
 #include "../Geometry/Point.h"
 #include "../Geometry/Size.h"
@@ -18,25 +17,25 @@ namespace Gorgon { namespace Graphics {
 
 		/// Draws a simple texture to the screen. This variant allows every corner on the target to be specified. The texture target should
 		/// be cleared before the texture drawn on it is destroyed
-		virtual void Draw(const TextureImage &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
+		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 			const Geometry::Pointf &p3, const Geometry::Pointf &p4) = 0;
 
 		/// Draws a simple texture to the screen. This variant allows every corner on the target and on the texture be specified. The texture 
 		/// target should be cleared before the texture drawn on it is destroyed
-		virtual void Draw(const TextureImage &image, 
+		virtual void Draw(const TextureSource &image,
 			const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 			const Geometry::Pointf &p3, const Geometry::Pointf &p4, 
 			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
 			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4) = 0;
 
 		/// Draws a simple image to the screen to the given position
-		virtual void Draw(const TextureImage &image, const Geometry::Pointf &location) = 0;
+		virtual void Draw(const TextureSource &image, const Geometry::Pointf &location) = 0;
 
 		/// Draws a simple image to the screen to the given position with the given size.
-		virtual void Draw(const TextureImage &image, const Geometry::Rectangle &location) = 0;
+		virtual void Draw(const TextureSource &image, const Geometry::Rectangle &location) = 0;
 
 		/// Draws a simple image to the screen using the given tiling method, coordinates and size
-		virtual void Draw(const TextureImage &image, Tiling tiling, const Geometry::Rectangle &location) = 0;
+		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectangle &location) = 0;
 
 		/// Clears drawing buffer, in layer architecture this request only affects
 		/// the layer itself, not its children
@@ -44,16 +43,6 @@ namespace Gorgon { namespace Graphics {
 
 		/// Get size of the target
 		virtual Geometry::Size GetSize() const = 0;
-
-		/// Get width of the target
-		int GetWidth() const { 
-			return GetSize().Width;
-		};
-
-		/// Get height of the target
-		int GetHeight() const {
-			return GetSize().Height;
-		}
 		
 		/// Returns current draw mode
 		virtual DrawMode GetDrawMode() const = 0;

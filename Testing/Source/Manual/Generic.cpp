@@ -6,6 +6,7 @@
 #include <Source/Resource/Blob.h>
 
 #include <Source/Containers/Iterator.h>
+#include <Source/Graphics.h>
 
 int main() {
 	Gorgon::Resource::File file;
