@@ -7,8 +7,10 @@
 
 #include <Source/Containers/Iterator.h>
 #include <Source/Graphics.h>
+#include <Source/Containers/Image.h>
 
 int main() {
+	Gorgon::Containers::Image img(100, 100);
 	Gorgon::Resource::File file;
 
 	std::cout<<Gorgon::Filesystem::CurrentDirectory()<<std::endl;

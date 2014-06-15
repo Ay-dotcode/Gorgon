@@ -8,7 +8,7 @@
 
 namespace Gorgon { namespace Graphics {
 
-	/// This class represents an image depends on a GL texture. Fulfills the requirements of Graphics::Texture
+	/// This class represents an image depends on a GL texture. Fulfills the requirements of Graphics::TextureSource
 	class Texture : public virtual TextureSource {
 	public:
 

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <iostream>
 #include <iomanip>
+#include <stdint.h>
 
 namespace Gorgon { namespace Graphics {
 
@@ -103,7 +104,7 @@ namespace Gorgon { namespace Graphics {
 			if(lum<0) lum=0;
 			if(lum>1) lum=1;
 
-			R=G=B=lum*255;
+			R=G=B=Byte(lum*255);
 		}
 
 		/// Conversion to integer
@@ -144,7 +145,7 @@ namespace Gorgon { namespace Graphics {
 			if(lum<0) lum=0;
 			if(lum>1) lum=1;
 
-			R=G=B=lum*255;
+			R=G=B=Byte(lum*255);
 			A=255;
 		}
 
@@ -250,7 +251,7 @@ namespace Gorgon { namespace Graphics {
 			color.A=255;
 			in.ignore(1);
 
-			auto flags=in.flags;
+			auto flags=in.flags();
 			in>>std::hex>>color.R>>color.G>>color.B;
 			in.flags(flags);
 		}
@@ -265,7 +266,7 @@ namespace Gorgon { namespace Graphics {
 				}
 			}
 
-			auto flags=in.flags;
+			auto flags=in.flags();
 			in>>std::hex>>(*(unsigned int*)&color);
 			in.flags(flags);
 		}
