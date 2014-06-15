@@ -1,0 +1,302 @@
+#pragma once
+
+#include <vector>
+
+#include "../Types.h"
+#include "../Geometry/Point.h"
+#include "../Geometry/Size.h"
+#include "../Graphics/Color.h"
+
+namespace Gorgon {
+	namespace Containers {
+
+		/// This class is a container for image data. It supports different color modes and access to the
+		/// underlying data through () operator. This object implements move semantics. Since copy constructor is
+		/// expensive, it is deleted against accidental use. If a copy of the object is required, use Duplicate function.
+		class Image {
+		public:
+
+			/// Constructs an empty image data
+			Image() : width(0), height(0), mode(Graphics::ColorMode::Invalid), bpp(0) {
+				
+			}
+
+			/// Constructs a new image data with the given width, height and color mode. This constructor 
+			/// does not initialize data inside the image
+			Image(unsigned width, unsigned height, Graphics::ColorMode mode=Graphics::ColorMode::RGBA) : width(width), height(height), mode(mode) {
+				bpp=Graphics::GetBytesPerPixel(mode);
+				data=(Byte*)malloc(width*height*bpp*sizeof(Byte));
+			}
+
+			/// Copy constructor is disabled
+			Image(const Image &) = delete;
+
+			/// Move constructor
+			Image(Image &&data) : Image() {
+				Swap(data);
+			}
+
+			/// Copy assignment is disabled
+			Image &operator=(const Image &) = delete;
+
+			/// Move assignment
+			Image &operator=(Image &&other) { 
+				Destroy();
+				Swap(other);
+			}
+
+			/// Destructor
+			~Image() {
+				Destroy();
+			}
+
+			/// Duplicates this image, essentially performing the work of copy constructor
+			Image Duplicate() const {
+				Image data;
+				data.Assign(this->data, width, height, mode);
+
+				return data;
+			}
+
+			/// Resizes the image to the given size and color mode. This function discards the contents
+			/// of the image and does not perform any initialization.
+			void Resize(unsigned width, unsigned height, Graphics::ColorMode mode) {
+				this->width  = width;
+				this->height = height;
+				this->mode   = mode;
+				this->bpp    = Graphics::GetBytesPerPixel(mode);
+
+				if(data) {
+					free(data);
+				}
+				data=(Byte*)malloc(width*height*bpp*sizeof(Byte));
+			}
+
+			/// Assigns the image to the copy of the given data. Ownership of the given data
+			/// is not transferred. If the given data is not required elsewhere, consider using
+			/// Assume function. This variant performs resize and copy at the same time. The given 
+			/// data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). 
+			/// This function does not perform any checks for the data size while copying it.
+			/// If width or height is 0, the newdata is not accessed and this method effectively
+			/// Destroys the current image. In this case, both width and height should be specified as 0.
+			void Assign(Byte *newdata, unsigned width, unsigned height, Graphics::ColorMode mode) {
+				this->width  = width;
+				this->height = height;
+				this->mode   = mode;
+				this->bpp    = Graphics::GetBytesPerPixel(mode);
+
+				if(data) {
+					free(data);
+				}
+				if(width*height*bpp>0) {
+					data=(Byte*)malloc(width*height*bpp*sizeof(Byte));
+					memcpy(data, newdata, width*height*bpp*sizeof(Byte));
+				}
+				else {
+					data=nullptr;
+				}
+			}
+
+			/// Assigns the image to the copy of the given data. Ownership of the given data
+			/// is not transferred. If the given data is not required elsewhere, consider using
+			/// Assume function. The size and color mode of the image stays the same. The given 
+			/// data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). 
+			/// This function does not perform any checks for the data size while copying it.
+			void Assign(Byte *newdata) {
+				memcpy(data, newdata, width*height*bpp*sizeof(Byte));
+			}
+
+			/// Assumes the ownership of the given data. This variant changes the size and
+			/// color mode of the image. The given data should have the size of 
+			/// width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). This function
+			/// does not perform any checks for the data size while assuming it.
+			/// newdata could be nullptr however, in this case
+			/// width, height should be 0. mode is not assumed to be ColorMode::Invalid while
+			/// the image is empty, therefore it could be specified as any value.
+			void Assume(Byte *newdata, unsigned width, unsigned height, Graphics::ColorMode mode) {
+				this->width  = width;
+				this->height = height;
+				this->mode   = mode;
+				this->bpp    = Graphics::GetBytesPerPixel(mode);
+
+				if(data) {
+					free(data);
+				}
+				data=newdata;
+			}
+
+			/// Assumes the ownership of the given data. The size and color mode of the image stays the same.
+			/// The given data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte).
+			/// This function does not perform any checks for the data size while assuming it.
+			void Assume(Byte *newdata) {
+				data=newdata;
+			}
+
+			/// Returns and disowns the current data buffer. If image is empty, this method will return a nullptr.
+			Byte *Release() {
+				auto temp=data;
+				data=nullptr;
+				Destroy();
+
+				return temp;
+			}
+
+			/// Cleans the contents of the buffer by setting every byte it contains to 0.
+			void Clean() {
+#ifndef NDEBUG
+				if(!data) {
+					throw std::runtime_error("Image data is empty");
+				}
+#endif
+
+				memset(data, 0, width*height*bpp*sizeof(Byte));
+			}
+
+			/// Destroys this image by setting width and height to 0 and free'ing the memory
+			/// used by its data. Also color mode is set to ColorMode::Invalid
+			void Destroy() {
+				if(data) {
+					free(data);
+					data=nullptr;
+				}
+				width  = 0;
+				height = 0;
+				bpp    = 0;
+				mode   = Graphics::ColorMode::Invalid;
+			}
+
+			/// Swaps this image with another. This function is used to implement move semantics.
+			void Swap(Image &other) {
+				using std::swap;
+
+				swap(width,  other.width);
+				swap(height, other.height);
+				swap(bpp,    other.bpp);
+				swap(data,   other.data);
+			}
+
+			/// Returns the raw data pointer
+			Byte *RawData() {
+				return data;
+			}
+
+			/// Returns the raw data pointer
+			const Byte *RawData() const {
+				return data;
+			}
+
+			/// Provides access to the given component in x and y coordinates. This
+			/// function performs bounds checking only on debug mode.
+			Byte &operator()(unsigned x, unsigned y, unsigned component=0) {
+#ifndef NDEBUG
+				if(x>=width || y>=height || component>=bpp) {
+					throw std::runtime_error("Index out of bounds");
+				}
+#endif
+				return data[bpp*(width*y+x)+component];
+			}
+
+			/// Provides access to the given component in x and y coordinates. This
+			/// function performs bounds checking only on debug mode.
+			Byte operator()(unsigned x, unsigned y, unsigned component=0) const {
+#ifndef NDEBUG
+				if(x>=width || y>=height || component>=bpp) {
+					throw std::runtime_error("Index out of bounds");
+				}
+#endif
+				return data[bpp*(width*y+x)+component];
+			}
+
+			/// Provides access to the given component in x and y coordinates. This
+			/// function performs bounds checking only on debug mode.
+			Byte &operator()(const Geometry::Point &p, unsigned component=0) {
+#ifndef NDEBUG
+				if(p.X<0 || p.Y<0 || p.X>=(int)width || p.Y>=(int)height || component>=bpp) {
+					throw std::runtime_error("Index out of bounds");
+				}
+#endif
+				return data[bpp*(width*p.Y+p.X)+component];
+			}
+
+			/// Provides access to the given component in x and y coordinates. This
+			/// function performs bounds checking only on debug mode.
+			Byte operator()(const Geometry::Point &p, unsigned component=0) const {
+#ifndef NDEBUG
+				if(p.X<0 || p.Y<0 || p.X>=(int)width || p.Y>=(int)height || component>=bpp) {
+					throw std::runtime_error("Index out of bounds");
+				}
+#endif
+				return data[bpp*(width*p.Y+p.X)+component];
+			}
+
+			/// Provides access to the given component in x and y coordinates. This
+			/// function returns 0 if the given coordinates are out of bounds. This
+			/// function works slower than the () operator.
+			Byte Get(unsigned x, unsigned y, unsigned component=0) const {
+				if(x>=width || y>=height || component>=bpp) {
+					return 0;
+				}
+
+				return data[bpp*(width*y+x)+component];
+			}
+
+			/// Provides access to the given component in x and y coordinates. This
+			/// function returns 0 if the given coordinates are out of bounds. This
+			/// function works slower than the () operator.
+			Byte Get(const Geometry::Point &p, unsigned component=0) const {
+				if(p.X<0 || p.Y<0 || p.X>=(int)width || p.Y>=(int)height || component>=bpp) {
+					return 0;
+				}
+
+				return data[bpp*(width*p.Y+p.X)+component];
+			}
+
+			/// Returns the width of the image
+			unsigned GetWidth() const {
+				return width;
+			}
+
+			/// Returns the height of the image
+			unsigned GetHeight() const {
+				return height;
+			}
+
+			Geometry::Size GetSize() const {
+				return{width, height};
+			}
+
+			/// Returns the color mode of the image
+			Graphics::ColorMode GetMode() const {
+				return mode;
+			}
+
+			/// Returns the bytes occupied by a single pixel of this image
+			unsigned GetBytesPerPixel() const {
+				return bpp;
+			}
+
+		protected:
+			/// Data that stores pixels of the image
+			Byte *data=nullptr;
+
+			/// Width of the image
+			unsigned width;
+
+			/// Height of the image
+			unsigned height;
+
+			/// Color mode of the image
+			Graphics::ColorMode mode;
+
+			/// Bytes per pixel information
+			unsigned bpp;
+		};
+
+		/// Swaps two images. Should be used unqualified for ADL.
+		void swap(Image &l, Image &r) {
+			l.Swap(r);
+		}
+
+
+	}
+}

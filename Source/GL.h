@@ -4,8 +4,8 @@
 
 namespace Gorgon {
 	
-	namespace Graphics {
-		class ImageData;
+	namespace Containers {
+		class Image;
 	}
 	
 	/// This namespace contains underlying graphics library functions. These functions are presented
@@ -20,6 +20,6 @@ namespace Gorgon {
 #endif
 		
 		/// This function generates a texture from the given image data.
-		Texture GenerateTexture(Graphics::ImageData &data);
+		Texture GenerateTexture(Containers::Image &data);
 	}
 }

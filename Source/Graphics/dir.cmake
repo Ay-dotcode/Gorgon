@@ -3,7 +3,6 @@ SET(Local
 	Graphics.cpp
 	Color.h
 	Drawables.h
-	ImageData.h
 	Texture.h
 	TextureTargets.h
 )
