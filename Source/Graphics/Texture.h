@@ -4,11 +4,14 @@
 #include "../Geometry/Bounds.h"
 #include "../GL.h"
 #include "../Graphics.h"
+#include "../Containers/Image.h"
 #include "Drawables.h"
 
 namespace Gorgon { namespace Graphics {
 
-	/// This class represents an image depends on a GL texture. Fulfills the requirements of Graphics::TextureSource
+	/// This class represents an image depends on a GL texture. Fulfills the requirements of Graphics::TextureSource.
+	/// Texture objects never destroys GL::Texture its bound to. This is because a GL::Texture could be shared between
+	/// multiple Graphics::Textures. 
 	class Texture : public virtual TextureSource {
 	public:
 
@@ -25,6 +28,10 @@ namespace Gorgon { namespace Graphics {
 		/// Atlas constructor, specifies a region of the texture
 		Texture(GL::Texture id, const Geometry::Size &size, const Geometry::Bounds &location) {
 			Set(id, size, location);
+		}
+
+		/// This constructor creates a new texture from the given Image
+		Texture(const Containers::Image &image) : Texture(GL::GenerateTexture(image), image.GetSize()) {
 		}
 
 		/// Sets the texture to the given id with the given size. Resets the coordinates to cover entire
@@ -64,6 +71,12 @@ namespace Gorgon { namespace Graphics {
 		/// Returns the coordinates of the texture to be used
 		virtual const Geometry::Pointf *GetCoordinates() const {
 			return coordinates;
+		}
+
+		/// Destroys the GL::Texture that this object points to
+		void Destroy() {
+			//GL::DestroyTexture(id);
+			id=0;
 		}
 
 	protected:

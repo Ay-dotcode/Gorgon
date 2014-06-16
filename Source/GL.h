@@ -20,6 +20,6 @@ namespace Gorgon {
 #endif
 		
 		/// This function generates a texture from the given image data.
-		Texture GenerateTexture(Containers::Image &data);
+		Texture GenerateTexture(const Containers::Image &data);
 	}
 }
