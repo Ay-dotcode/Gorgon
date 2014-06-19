@@ -13,6 +13,7 @@ SET(Local
 	Time
 	WindowManager
 	Any.h
+	Enum.h
 	Event.h
 	Keyboard.h
 	Layer.h
