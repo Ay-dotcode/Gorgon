@@ -9,4 +9,5 @@ SET(UnitTests
 	Filesystem
 	Geometry
 	Event
+	String
 )

@@ -269,11 +269,17 @@ namespace Gorgon {
 		/// @param  find is the substrings to be replaced
 		/// @param  replace is the string to place instead of find. Can be empty string.
 		inline std::string Replace(std::string str, const std::string &find, const std::string &replace) {
-			std::string::size_type l;
+			std::string::size_type l=0;
+			
+			auto flen=find.length();
+			auto rlen=replace.length();
+			
+			if(!find.length()) return str;
 
-			while( (l=str.find(find)) != str.npos ) {
-				str.erase(l, find.length());
+			while( (l=str.find(find, l)) != str.npos ) {
+				str.erase(l, flen);
 				str.insert(l, replace);
+				l+=rlen;
 			}
 
 			return str;
@@ -283,9 +289,14 @@ namespace Gorgon {
 		/// @param  str is the string to process
 		/// @param  chars is the characters to be considered as whitespace
 		inline std::string Trim(std::string str, const std::string &chars=" \t\n\r") {
-			while(str.length() && chars.find_first_of(str[0])!=chars.npos) {
-				str=str.substr(1);
+			if(!str.length()) return "";
+			
+			const char *ptr=str.c_str();
+			while(*ptr && chars.find_first_of(*ptr)!=chars.npos) {
+				ptr++;
 			}
+			str=str.substr(ptr-str.c_str());
+			
 			while(str.length() && chars.find_first_of(str[str.length()-1])!=chars.npos) {
 				str.resize(str.length()-1);
 			}
@@ -297,9 +308,13 @@ namespace Gorgon {
 		/// @param  str is the string to process
 		/// @param  chars is the characters to be considered as whitespace
 		inline std::string TrimStart(std::string str, const std::string &chars=" \t\n\r") {
-			while(str.length() && chars.find_first_of(str[0])!=chars.npos) {
-				str=str.substr(1);
+			if(!str.length()) return "";
+			
+			const char *ptr=str.c_str();
+			while(*ptr && chars.find_first_of(*ptr)!=chars.npos) {
+				ptr++;
 			}
+			str=str.substr(ptr-str.c_str());
 
 			return str;
 		}
@@ -459,20 +474,29 @@ namespace Gorgon {
 			return ret;
 		}
 		
+		enum class QuoteType {
+			None,
+			Single,
+			Double,
+			Both
+		};
+		
 		/// Extracts the part of the string up to the given marker. This function will
-		/// skipped quoted sections of the string. Both single and double quotes are
+		/// skipped quoted sections of the string. Both single and double quotes can be
 		/// considered, however, double quotes should match with double quotes and single
 		/// quotes should match with single quotes. A different quote type inside quote
 		/// region is ignored. Extracted string and the marker is removed from the original 
 		/// string. If the given string does not contain marker outside the quotes, 
 		/// entire string will be extracted. It is possible to tokenize
-		/// the given string using repeated calls to this function.
+		/// the given string using repeated calls to this function. Unbalanced quotes will
+		/// be treated ending at the end of the string.
 		/// @param  original string that will be processed. This string will be modified
 		///         by the program
 		/// @param  marker string that will be searched. It is possible to specify quote as
 		///         a marker.
-		/// @return Extracted string. Does not contain the marker.
-		inline std::string ExtractOutsideQuotes(std::string &original, char marker) {
+		/// @param  quotetype controls which type of quotes will be considered.
+		/// @return Extracted string. Does not contain the marker. Quotes will not be removed
+		inline std::string ExtractOutsideQuotes(std::string &original, char marker, QuoteType quotetype=QuoteType::Both) {
 			int inquotes=0;
 			int pos=0;
 			
@@ -493,10 +517,10 @@ namespace Gorgon {
 					
 					return temp;
 				}
-				else if(c=='\'') {
+				else if(c=='\'' && (quotetype==QuoteType::Single || quotetype==QuoteType::Both)) {
 					inquotes=1;
 				}
-				else if(c=='"') {
+				else if(c=='"' && (quotetype==QuoteType::Double || quotetype==QuoteType::Both)) {
 					inquotes=2;
 				}
 				
