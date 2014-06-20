@@ -114,8 +114,8 @@ namespace Gorgon { namespace Resource {
 		/// @throw std::runtime_error if the given name is not found
 		template <typename T_>
 		T_ &Get(const std::string &name) const {
-			if(namedlist.count(name)>0 && dynamic_cast<T_*>(namedlist[name]))
-				return *dynamic_cast<T_*>(namedlist[name]);
+			if(namedlist.count(name)>0 && dynamic_cast<T_*>(namedlist.at(name)))
+				return *dynamic_cast<T_*>(namedlist.at(name));
 			else
 				throw std::runtime_error("Requested item cannot be found");
 		}
@@ -135,7 +135,7 @@ namespace Gorgon { namespace Resource {
 			if(namedlist.count(name)==0)
 				return nullptr;
 			else
-				return dynamic_cast<T_*>(namedlist[name]);
+				return dynamic_cast<T_*>(namedlist.at(name));
 		}
 		
 		/// @}

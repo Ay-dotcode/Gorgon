@@ -12,7 +12,7 @@
 #		define CONSTEXPRFN
 #	else
 #		define CONSTEXPR	constexpr
-#		define CONSTREXPRFN constexpr
+#		define CONSTEXPRFN  constexpr
 #	endif
 #endif
 ///@endcond

@@ -11,7 +11,7 @@
 
 	
 	template<class T_>
-	gorgon_no_enum_trait gorgon__enum_trait_locator(T_);
+	gorgon__no_enum_trait gorgon__enum_trait_locator(T_);
 
 namespace Gorgon {
 
@@ -99,7 +99,7 @@ namespace Gorgon {
 	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
 	/// enumeration by assigning one or more strings to enum values. This version should be invoked
 	/// in the same namespace as the original enumeration. If this is not possible, you may use
-	/// DefineEnumStringsNS macro.
+	/// DefineEnumStringsNS macro. You may use DefineEnumStringsCN to modify readable typename
 	/// @see Enumerate 
 	/// @see Parse
 	#define DefineEnumStrings(type, ...) \
@@ -107,18 +107,56 @@ namespace Gorgon {
 	public:\
 		static const bool isupgradedenum=true;\
 		\
+		static const char *name() { return #type; }\
+		\
 		const std::multimap<type, std::string> mapping={__VA_ARGS__};\
 	};\
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
 
 	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
-	/// enumeration by assigning one or more strings to enum values. This variant allows namespace
+	/// enumeration by assigning one or more strings to enum values. This version should be invoked
+	/// in the same namespace as the original enumeration. If this is not possible, you may use
+	/// DefineEnumStringsNSCN macro. This variant allows modification of readable typename
+	/// @see Enumerate 
+	/// @see Parse
+	#define DefineEnumStringsCN(type, name, ...) \
+	class gorgon_enumtraits_##type {\
+	public:\
+		static const bool isupgradedenum=true;\
+		\
+		static const char *name() { return #name; }\
+		\
+		const std::multimap<type, std::string> mapping={__VA_ARGS__};\
+	};\
+	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
+
+	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
+	/// enumeration by assigning one or more strings to enum values. This variant allows namespace.
+	/// Use DefineEnumStringsNSCN to set custom typename
 	/// @see Enumerate 
 	/// @see Parse
 	#define DefineEnumStringsNS(ns, type, ...) \
 	class gorgon_enumtraits_##type {\
 	public:\
 		static const bool isupgradedenum=true;\
+		\
+		static const char *name() { return #type; }\
+		\
+		const std::multimap<ns::type, std::string> mapping={__VA_ARGS__};\
+	};\
+	gorgon_enumtraits_##type gorgon__enum_trait_locator(ns::type);
+
+	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
+	/// enumeration by assigning one or more strings to enum values. This variant allows namespace
+	/// and custom readable typename.
+	/// @see Enumerate 
+	/// @see Parse
+	#define DefineEnumStringsNSCN(ns, type, name, ...) \
+	class gorgon_enumtraits_##type {\
+	public:\
+		static const bool isupgradedenum=true;\
+		\
+		static const char *name() { return name; }\
 		\
 		const std::multimap<ns::type, std::string> mapping={__VA_ARGS__};\
 	};\
@@ -145,11 +183,29 @@ namespace Gorgon {
 		return staticenumtraits<T_>::end();
 	}
 
-	template<class T_>
-	typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type Parse(const std::string &text) {
-		T_ e;
-		if(!staticenumtraits<T_>::lookupvalue(text, e)) return T_();
-		return e;
+	namespace String {
+		template<class T_>
+		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type To(const std::string &text) {
+			T_ e;
+			if(!staticenumtraits<T_>::lookupvalue(text, e)) return T_();
+			return e;
+		}
+		
+		template<class T_>
+		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::string>::type From(const T_ &e) {
+			std::string s;
+			if(!staticenumtraits<T_>::lookupstring(e, s)) return "";
+			return s;
+		}
+		
+		template<class T_>
+		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type Parse(const std::string &text) {
+			T_ e;
+			if(!staticenumtraits<T_>::lookupvalue(text, e)) {
+				throw ParseError(20001, std::string("Given string is not a valid ")+decltype(gorgon__enum_trait_locator(T_()))::name());
+			}
+			return e;
+		}
 	}
 }
 

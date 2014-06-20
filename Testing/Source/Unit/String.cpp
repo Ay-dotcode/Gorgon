@@ -5,7 +5,6 @@
 #include <catch.h>
 
 #include <Source/String.h>
-#include <Source/String/Enum.h>
 #include <Source/String/Tokenizer.h>
 #include <Source/Types.h>
 

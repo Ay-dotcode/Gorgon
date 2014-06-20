@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <string.h>
 
 #include "GL.h"
 #include "Geometry/Point.h"
@@ -204,20 +205,20 @@ namespace Gorgon {
 			};
 
 			/// Creates a default size controller which tiles the object from top-left
-			SizeController() : Horizontal(Tile), Vertical(Tile), Placement(Placement::TopLeft) { }
+			SizeController() : Horizontal(Tile), Vertical(Tile), Place(Placement::TopLeft) { }
 
 			/// Creates a size controller that places a single object to the given placement. This is an implicit conversion
 			/// constructor.
-			SizeController(Placement p) : Horizontal(Single), Vertical(Single), Placement(p) { }
+			SizeController(Placement p) : Horizontal(Single), Vertical(Single), Place(p) { }
 
 			/// Creates a new size controller with the given tiling options and placement
-			SizeController(Tiling h, Tiling v, Placement p=Placement::TopLeft) : Horizontal(h), Vertical(v), Placement(p) { }
+			SizeController(Tiling h, Tiling v, Placement p=Placement::TopLeft) : Horizontal(h), Vertical(v), Place(p) { }
 
 			/// Creates a new size controller with the given tiling options and placement
 			SizeController(Graphics::Tiling tile, Placement p=Placement::TopLeft) :
 				Horizontal(tile==Graphics::Tiling::Horizontal ? Tile : Stretch),
 				Vertical  (tile==Graphics::Tiling::Vertical   ? Tile : Stretch),
-				Placement(p)
+				Place(p)
 			{ }
 
 			/// Calculates the size of the object according to the tiling rules
@@ -273,13 +274,13 @@ namespace Gorgon {
 
 			/// Calculates the size of the object according to the tiling and placement rules
 			Geometry::Point CalculateOffset(const Geometry::Size &objectsize, const Geometry::Size &area) const {
-				Graphics::CalculateOffset(Placement, area-CalculateSize(objectsize, area));
+				Graphics::CalculateOffset(Place, area-CalculateSize(objectsize, area));
 			}
 
 			/// Calculates the drawing area of the object according to the tiling and placement rules
 			Geometry::Rectangle CalculateArea(const Geometry::Size &objectsize, const Geometry::Size &area) const {
 				auto size=CalculateSize(objectsize, area);
-				return{Graphics::CalculateOffset(Placement, area-size), size};
+				return{Graphics::CalculateOffset(Place, area-size), size};
 			}
 
 			/// Calculates the size of the object according to the tiling rules
@@ -335,13 +336,13 @@ namespace Gorgon {
 
 			/// Calculates the size of the object according to the tiling and placement rules
 			Geometry::Point CalculateOffset(const Geometry::Size &repeatingsize, const Geometry::Size &fixedsize, const Geometry::Size &area) const {
-				Graphics::CalculateOffset(Placement, area-CalculateSize(repeatingsize, fixedsize, area));
+				Graphics::CalculateOffset(Place, area-CalculateSize(repeatingsize, fixedsize, area));
 			}
 
 			/// Calculates the drawing area of the object according to the tiling and placement rules
 			Geometry::Rectangle CalculateArea(const Geometry::Size &repeatingsize, const Geometry::Size &fixedsize, const Geometry::Size &area) const {
 				auto size=CalculateSize(repeatingsize, fixedsize, area);
-				return{Graphics::CalculateOffset(Placement, area-size), size};
+				return{Graphics::CalculateOffset(Place, area-size), size};
 			}
 
 			Graphics::Tiling GetTiling() const {
@@ -355,7 +356,7 @@ namespace Gorgon {
 			Tiling				Vertical;
 
 			/// Placement method
-			Graphics::Placement	Placement;
+			enum Graphics::Placement	Place;
 		};
 
 		/// This interface represents a GL texture source.
