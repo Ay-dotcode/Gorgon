@@ -1,43 +1,40 @@
 
-#include "Animation.h"
-#include "../Utils/Collection.h"
-#include "../Utils/BasicMath.h"
+#include "../Animation.h"
+#include "../Time.h"
 
-using namespace gge::utils;
-using namespace gge::graphics;
 
-namespace gge { namespace animation {
+namespace Gorgon { namespace Animation {
 
-	Collection<Timer> Timers;
-	Collection<Base> Animations;
+	Containers::Collection<Timer> Timers;
+	Containers::Collection<Base>  Animations;
 
 	unsigned LastTick;
 
-	void Animator_Signal() {
-		unsigned progressed=Main.CurrentTime-LastTick;
-		if(progressed==0) return;
+	void Animate() {
+		if(Time::DeltaTime()==0) return;
 
-		for(Collection<Timer>::Iterator i=Timers.First();i.IsValid();i.Next())
-			i->Progress(progressed);
+		auto progress=Time::DeltaTime();
 
-		for(Collection<Base>::Iterator i=Animations.First();i.IsValid();i.Next()) {
-			if(i->HasController()) {
-				ProgressResult::Type r=i->Progress();
+		for(auto &timer : Timers)
+			timer.Progress(progress);
 
-				if(r!=ProgressResult::None)
-					i->GetController().Obtained(r, i);
+		for(auto &base : Animations) {
+			if(base.HasController()) {
+				auto leftover=base.Progress();
+
+				if(leftover) {
+					base.GetController().Finished(leftover);
+				}
 			}
 		}
-
-		LastTick=Main.CurrentTime;
 	}
 
-	void Initialize(GGEMain &main) {
-		LastTick=main.CurrentTime;
+	void Initialize() {
+		/// Nothing to do right now
 	}
 
 
-	Timer::Timer() : progress(0) {
+	Timer::Timer() {
 		Timers.Add(this);
 	}
 
@@ -50,13 +47,9 @@ namespace gge { namespace animation {
 	}
 
 
-	Controller::Controller() : Timer(), 
-		ispaused(false), isfinished(false), speed(1.f),
-		Finished("Finished", this),
-		Paused("Paused", this), pauseat(-1)
-	{
-
-	}
+	Controller::Controller() : Timer(),
+		FinishedEvent(*this)
+	{ }
 
 	void Controller::Progress( unsigned timepassed ) {
 		if(!ispaused && !isfinished) {
@@ -80,9 +73,9 @@ namespace gge { namespace animation {
 	}
 
 	void Controller::Play() {
-		ispaused=false; 
+		ispaused=false;
 		isfinished=false;
-		mprogress=0;
+		floatprogress=0;
 		progress=0;
 	}
 

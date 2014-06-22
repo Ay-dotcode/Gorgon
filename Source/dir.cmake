@@ -1,4 +1,5 @@
 SET(Local
+	Animation
 	Containers
 	Encoding
 	External

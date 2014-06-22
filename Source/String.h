@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
+#include "Enum.h"
 
 namespace Gorgon { 
 	
@@ -405,7 +406,7 @@ namespace Gorgon {
 		}
 
 		template<class T_> 
-		typename std::enable_if<!internal::has_stringoperator<T_>::value && !decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::string>::type 
+		typename std::enable_if<!internal::has_stringoperator<T_>::value && !std::identity<decltype(gorgon__enum_trait_locator(T_()))>::type::isupgradedenum, std::string>::type 
 		From(const T_ &item) {
 			std::stringstream ss;
 			ss<<item;

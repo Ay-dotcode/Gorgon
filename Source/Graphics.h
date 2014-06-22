@@ -356,7 +356,7 @@ namespace Gorgon {
 			Tiling				Vertical;
 
 			/// Placement method
-			enum Graphics::Placement	Place;
+			Placement	Place;
 		};
 
 		/// This interface represents a GL texture source.

@@ -1,0 +1,3 @@
+SET(Local
+	../Animation.h
+)

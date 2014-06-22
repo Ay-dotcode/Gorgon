@@ -1,257 +1,262 @@
-//This file contains core of animation system
-// all animations exposes interfaces defined here
-// and 
+/// @file contains animation system
 
 #pragma once
 
-#include "Graphic2D.h"
-#include "GGEMain.h"
 #include <stdexcept>
 
-namespace gge { namespace animation {
+#include "Event.h"
+#include "Containers/Collection.h"
 
-	void Initialize(GGEMain &main);
+namespace Gorgon { 
+	/// This namespace contains animation related functionality. 
+	namespace Animation {
 
-	class ProgressResult {
-	public:
-		enum Type {
-			None,
-			Pause,
-			Finished,
+		class Base;
+
+		/// Timers are required to progress animations. This class is the most basic timer
+		/// and does not support any operations. It linearly progresses animation and never
+		/// stops. Most animations are expected loop under these circumstances. See Controller 
+		/// for additional functionality.
+		class Timer {
+		public:
+
+			/// Constructs a timer
+			Timer();
+
+			/// Timer destructor
+			virtual ~Timer();
+
+			/// Progresses this timer by moving the timer timepassed milliseconds forwards
+			virtual void Progress(unsigned timepassed);
+
+			/// This function notifies the timer about a finished animation. Base timer does
+			/// not perform any operation when an animation attached to it is finished.
+			/// @param  leftover is the amount of time that is left over after the animation
+			///         is progress to the end
+			virtual void Finished(unsigned leftover) { }
+
+			/// Resets the timer, basically starting the animation from the start.
+			virtual void Reset() { 
+				progress=0; 
+			}
+
+			/// Sets the progress of the timer to the given value.
+			virtual void SetProgress(unsigned progress) { 
+				this->progress=progress; 
+			}
+
+			/// Returns the current progress of the timer
+			virtual unsigned GetProgress() const { 
+				return progress; 
+			}
+
+			/// This method allows clients to determine if the progress is controlled. If the progress
+			/// is not controlled, there is no way to force the animation to stop. Therefore, animations
+			/// with looping capabilities should wrap around to start over. However, if the timer is a
+			/// controller then the best strategy will be to stop at the end, and return the leftover time.
+			/// This way, controller can decide what to do next.
+			virtual bool IsControlled() const {
+				return false;
+			}
+
+		protected:
+			/// Amount of time passed since the start of the animation
+			unsigned progress = 0;
 		};
-	};
 
-	class Base;
+		class Controller : public Timer {
+		public:
 
-	class Timer {
-	public:
-		enum Type {
-			Continous,
-			Discrete
+			Controller();
+
+			virtual ~Controller() {}
+
+			/// @name Progress modification functions
+			/// @{
+
+			/// Progresses this controller by the given time
+			virtual void Progress(unsigned timepassed);
+
+			/// Signals that an animation bound to this controller is finished.
+			/// @param  leftover is the time that is left after the animation is completely finished
+			virtual void Finished(unsigned leftover);
+
+			/// Sets the current progress of the controller
+			virtual void SetProgress(unsigned progress) { floatprogress=this->progress=progress; }
+
+			/// Sets the current progress of the controller. If the progress is a negative value, it will be
+			/// subtracted from the animation length. If the animation length is 0, then the controller will
+			/// immediately stop and sets the progress to 0.
+			void SetProgress(double progress) { this->progress=unsigned(progress); floatprogress=progress; }
+
+			/// Resets the controller to start from the beginning. Also resets finished and paused status and
+			/// modifies the speed to be 1.
+			virtual void Reset();
+			/// @}
+
+			/// @name Progress control functions
+			/// @{
+
+			/// Starts this controller to run once. If the controller is marked as finished, this method will 
+			/// set the progress to 0 or length depending on the direction of the controller. If length is 0 
+			/// and the speed is negative this method will not start playing finished controller. If the animation
+			/// is paused, this function works like Resume except that this function sets controller to run once mode.
+			virtual void Play();
+
+			/// Starts this controller in looping mode. Looping will not work when the length is 0 and the speed 
+			/// is set to a negative value (animation is running in reverse). If the animation is paused, this 
+			/// function works like Resume except that this function sets controller to looping mode
+			virtual void Loop();
+
+			/// Pauses the controller, until a Resume or Reset is issued.
+			virtual void Pause();
+
+			/// Resumes the controller. This method will not have any effect if the animation is finished.
+			virtual void Resume() { ispaused=false; }
+
+			/// Changes the speed of the controller. Speed can be negative to run animations backwards. Setting
+			/// speed 0 effectively pauses the controller, however, when the speed is 0 controller will **not** report
+			/// that its paused.
+			virtual void SetSpeed(float speed) { this->speed=speed; }
+
+			/// Reverses the animation direction by negating the speed.
+			virtual void Reverse() { speed=-speed; }
+
+			/// Informs controller about the length of the animations its controlling. This allows Controller to seek
+			/// to the end of the animation
+			virtual void SetLength(unsigned length) { this->length=length; }
+			/// @}
+
+			/// @name Information functions
+			/// @{
+
+			/// Returns the current speed of the controller
+			virtual float GetSpeed() { return speed; }
+
+			/// Returns whether the controller is paused. Does not check if the speed is 0 or not, setting speed to 0 
+			/// will effectively pause the animation without changing paused status.
+			bool IsPaused() const { return ispaused; }
+
+			/// Whether the controller is finished either by reaching to the end while the speed is positive or reaching to
+			/// 0 while the speed is negative
+			bool IsFinished() const { return isfinished; }
+
+			/// Returns whether the controller is playing its animations right now. This method does not take speed being
+			/// 0 into account.
+			bool IsPlaying() const { return !ispaused && !isfinished; }
+
+			/// Checks whether the controller is in loop mode. It also checks the length if the speed is negative and makes
+			/// sure that the controller can actually loop
+			bool IsLooping() const { return (speed>=0 ? islooping : islooping && length!=0); }
+
+			virtual bool IsControlled() const {
+				return true;
+			}
+			/// @}
+
+			/// @name Events
+			/// @{
+
+			/// Will be fired when the controller reaches the finished state. controller is finished either by reaching to 
+			/// the end while the speed is positive or reaching to 0 while the speed is negative
+			Event<Controller> FinishedEvent;
+			/// @}
+
+		protected:
+			/// Paused state
+			bool ispaused = false;
+
+			/// Looping state
+			bool islooping = false;
+
+			/// Current speed
+			float speed = 1.0f;
+
+			/// Whether the controller is finished
+			bool isfinished = false;
+
+			/// Floating point progress to avoid precision loss due to speed
+			double floatprogress = 0.0;
+
+			/// Length of the animations controlled by this controller
+			unsigned length=0;
 		};
 
-		Timer();
-
-		virtual ~Timer();
-
-		virtual void Progress(unsigned timepassed);
-		virtual void Obtained(ProgressResult::Type r, Base &source) 
-		{}
-
-		virtual void ResetProgress() { progress=0; }
-		virtual void SetProgress(int progress) { this->progress=progress; }
-		virtual int GetProgress() const { return progress; }
-
-		virtual Type GetType() const { return Continous; }
-
-	protected:
-		int progress;
-	};
-
-	class source_param {
-	public:
-
-		source_param(Base *source) : source(source)
-		{ }
-
-		Base *source;
-	};
-
-	class Controller : public Timer {
-	public:
-
-		Controller();
-		virtual ~Controller() {}
-
-		virtual void Progress(unsigned timepassed);
-		virtual void Obtained(ProgressResult::Type r, Base &source);
-
-		virtual void Pause();
-		virtual void Resume() { ispaused=false; }
-
-		virtual void Play();
-
-		virtual void SetSpeed(float speed) { this->speed=speed; }
-		virtual float GetSpeed() { return speed; }
-
-		virtual void Reverse() { speed=-speed; }
-
-		bool IsPaused() { return ispaused; }
-		bool IsFinished() { return isfinished; }
-		void ClearFinished() { isfinished=false; }
-
-		virtual void ResetProgress();
-
-		void SetPauseAt(int t) {
-			pauseat=t;
-		}
-		int GetPauseAt() const {
-			return pauseat;
-		}
-		void RemovePauseAt() {
-			pauseat=-1;
-		}
-		virtual void SetProgress(int progress) { mprogress=this->progress=progress; }
-
-		utils::EventChain<Controller, source_param> Finished;
-		utils::EventChain<Controller, source_param> Paused;
-
-	protected:
-		bool ispaused;
-		float speed;
-		int pauseat;
-		bool isfinished;
-		double mprogress;
-	};
-
-	class Provider {
-	public:
-		virtual ~Provider() { }
+		/// This interface marks a class as animation provider
+		class Provider {
+		public:
+			/// Virtual destructor
+			virtual ~Provider() { }
 		
-		virtual Base &CreateAnimation(Timer &controller, bool owner=false) = 0;
-		virtual Base &CreateAnimation(bool create=false) = 0;
-	};
+			/// This function should create a new animation with the given controller and
+			/// if owner parameter is set to true, it should assume ownership of the controller
+			virtual Base &CreateAnimation(Timer &timer, bool owner=false) = 0;
 
-	class DiscreteProvider : virtual public Provider {
-	public:
-		//if there is a single frame, duration should be 0
-		virtual int GetDuration() const					= 0;
-		virtual int GetDuration(unsigned Frame) const	= 0;
-		virtual int GetNumberofFrames() const			= 0;
-    virtual float GetFPS() const {
-      return GetNumberofFrames() / (GetDuration() / 1000.f);
-    }
-    
-    
+			/// This function should create and animation and depending on the create parameter,
+			/// it should create its own timer.
+			virtual Base &CreateAnimation(bool create=false) = 0;
+		};
 
-		//Caller is responsible to supply a time between 0 and GetDuration()-1, if no frame exists it should return -1
-		virtual int		 FrameAt(unsigned Time) const	= 0; 
-		//Should always return a time between 0 and GetDuration unless Frame does not exists it should return -1
-		virtual int		 StartOf(unsigned Frame) const	= 0; 
-		virtual	int		 EndOf(unsigned Frame) const { return StartOf(Frame)+GetDuration(Frame); }
-	};
+		/// This is the base class for all animations. It handles some common tasks and defines
+		/// the animation interface.
+		class Base {
+		public:
+			/// This constructor takes a controller and depending on the owner parameter assumes the ownership
+			/// of it. Be careful not to give the ownership of a stack allocated timer.
+			Base(Timer &timer, bool owner=false);
 
-	class DiscreteController : public Controller {
-	public:
-		DiscreteController(DiscreteProvider &info) : Controller(), 
-			islooping(true), info(info), pauseatframe(-1), currentframe(-1)
-		{ }
-
-
-		bool IsLooping() const { return islooping; }
-		void SetLoop(bool loop) { islooping=loop; }
-
-		void Goto(int Frame);
-		//-1 is invalid frame
-		int CurrentFrame() const { return currentframe; }
-
-		void SetPauseAtFrame(int Frame) { pauseatframe=Frame; }
-		int  GetPauseAtFrame() const { return pauseatframe; }
-		void CancelPauseAtFrame() { pauseatframe=-1; }
-
-		virtual int FrameAt(unsigned Time) const { 
-			return info.FrameAt(Time); 
-		}
-
-		virtual int StartOf(int Frame) const { 
-			if(!utils::InRange(Frame, 0, GetDuration())) 
-				return 0; 
-
-			return info.StartOf(Frame); 
-		}
-
-		virtual int EndOf(int Frame) const { 
-			if(!utils::InRange(Frame, 0, GetDuration())) 
-				return GetNumberofFrames(); 
-
-			return info.EndOf(Frame); 
-		}
-
-		virtual int GetDuration() const { return info.GetDuration(); }
-		virtual int GetNumberofFrames() const { return info.GetNumberofFrames(); }
-
-		virtual Type GetType() const { return Timer::Discrete; }
-		virtual void Progress(unsigned timepassed);
-
-		virtual void Play();
-		virtual void ResetProgress();
-
-		//finished and paused events are created using info
-		virtual void Obtained(ProgressResult::Type r, Base &source) { }
-
-	protected:
-		bool islooping;
-		int pauseatframe;
-		int currentframe;
-		DiscreteProvider &info;
-	};
-
-	class Base {
-	public:
-		Base(Timer &Controller, bool owner=false);
-		explicit Base(bool create=false);
+			/// This constructor creates a new controller depending on the create parameter. 
+			explicit Base(bool create=false);
 		
-		virtual ~Base();
+			/// Virtual destructor
+			virtual ~Base();
 
-		virtual void SetController(Timer &controller, bool owner=false);
-		bool HasController() { return Controller!=NULL; }
-		Timer &GetController() { return *Controller; }
-		void RemoveController() { Controller=NULL; }
+			/// Sets the controller to the given controller. If owner parameter is true, this object
+			/// will assume the ownership of that controller. Current controller of this animation will
+			/// be destroyed if this animation already has a controller and has the ownership over it.
+			/// You may use disown to remove ownership of the controller.
+			virtual void SetController(Timer &controller, bool owner=false);
 
+			/// Returns whether this animation has a controller
+			bool HasController() const { return controller!=nullptr; }
 
-		virtual ProgressResult::Type Progress() = 0;
-		virtual void DeleteAnimation() { 
-			delete this; 
-		}
+			/// Returns the controller of this animation
+			Timer &GetController() const { return *controller; }
 
+			/// Disowns the controller that this animation has
+			void DisownController() { owner = false; }
 
-	protected:
-		Timer *Controller;
-		bool owner;
-	};
-#pragma warning(push)
-#pragma warning(disable:4250)
-	class Basic2DAnimation : virtual public graphics::Graphic2D, virtual public Base {
+			/// Removes the controller of this animation. Current controller of this animation will
+			/// be destroyed if this animation already has a controller and has the ownership over it.
+			/// You may use disown to remove ownership of the controller.
+			void RemoveController() { 
+				if(owner && controller) {
+					delete controller;
+				}
+				controller=nullptr; 
+			}
 
-	};
+			/// This function should progress the animation. Notice that this function is called internally.
+			/// Unless a change to the controller has been made and instant update of the animation is required
+			/// there is no need to call this function. This function should return the time it could not progress.
+			/// Regardless 
+			virtual unsigned Progress() = 0;
 
-	class RectangularGraphic2DAnimation : virtual public Basic2DAnimation, virtual public graphics::RectangularGraphic2D {
+			/// Deletes this animation. Please note that some animations are also the animation provider. In these
+			/// cases trying to delete the animation will delete the provider as well. This function should be called
+			/// instead of delete operator to ensure no such problem occurs.
+			virtual void DeleteAnimation() { 
+				delete this; 
+			}
 
-	};
-#pragma warning(pop)
+		protected:
+			/// The controller of this animation
+			Timer *controller = nullptr;
 
-/*
-	class Graphic2DAnimation : public virtual AnimationBase, public graphics::RectangularGraphic2D {
-	protected:
+			/// Whether this animation owns its controller
+			bool owner = false;
+		};
 
-		Graphic2DAnimation() : AnimationBase() { }
-		Graphic2DAnimation(AnimationTimer &Controller) : AnimationBase(Controller) { }
-	};*/
-
-	//class Graphic2DAnimationProvider : public AnimationProvider {
-	//public:
-	//	virtual Graphic2DAnimation &CreateAnimation(AnimationTimer &controller, bool owner=false) = 0;
-	//	virtual Graphic2DAnimation &CreateAnimation(bool create=false) = 0;
-	//};
-
-	class Basic2DAnimationProvider : virtual public Provider {
-	public:
-		virtual Basic2DAnimation &CreateAnimation(Timer &controller, bool owner=false) = 0;
-		virtual Basic2DAnimation &CreateAnimation(bool create=false) = 0;
-	};
-
-	class RectangularGraphic2DAnimationProvider : virtual public Basic2DAnimationProvider {
-	public:
-		virtual RectangularGraphic2DAnimation &CreateAnimation(Timer &controller, bool owner=false) = 0;
-		virtual RectangularGraphic2DAnimation &CreateAnimation(bool create=false) = 0;
-	};
-
- 	class RectangularGraphic2DSequenceProvider : virtual public RectangularGraphic2DAnimationProvider, virtual public DiscreteProvider {
-	public:
-		virtual RectangularGraphic2DAnimation &CreateAnimation(Timer &controller, bool owner=false) = 0;
-		virtual RectangularGraphic2DAnimation &CreateAnimation(bool create=false) = 0;
-		virtual graphics::RectangularGraphic2D &ImageAt(int time)=0;
-	};
-
-	extern utils::Collection<Base> Animations;
-} }
+		extern Containers::Collection<Base> Animations;
+	} 
+}

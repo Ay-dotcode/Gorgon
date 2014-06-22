@@ -3,15 +3,24 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <map>
+#include <vector>
 
-	class gorgon__no_enum_trait {
-	public:
-		static const bool isupgradedenum=false;
-	};
+#ifdef _MSC_VER
+#	define decltype(...) std::identity<decltype(__VA_ARGS__)>::type
+#	define decltypetype(...) typename decltype(__VA_ARGS__)
+#else
+#	define decltypetype(...) decltype(__VA_ARGS__)
+#endif
+
+class gorgon__no_enum_trait {
+public:
+	static const bool isupgradedenum=false;
+};
 
 	
-	template<class T_>
-	gorgon__no_enum_trait gorgon__enum_trait_locator(T_);
+template<class T_>
+gorgon__no_enum_trait gorgon__enum_trait_locator(T_);
 
 namespace Gorgon {
 
@@ -58,7 +67,7 @@ namespace Gorgon {
 		}
 		
 	private:
-		const decltype(gorgon__enum_trait_locator(T_())) traits;
+		const decltypetype(gorgon__enum_trait_locator(T_())) traits;
 		std::map<std::string, T_> reversemapping;
 		std::vector<T_> listing;
 	};
@@ -229,3 +238,11 @@ typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradeden
 	
 	return in;
 }
+
+
+#ifdef _MSC_VER
+#	undef decltype
+#	undef decltypetype
+#else
+#	undef decltypetype
+#endif
