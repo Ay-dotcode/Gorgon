@@ -7,40 +7,20 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
+#include "String/Exceptions.h"
 #include "Enum.h"
+
+#ifdef _MSC_VER
+#	define decltype(...) std::identity<decltype(__VA_ARGS__)>::type
+#	define decltypetype(...) typename decltype(__VA_ARGS__)
+#else
+#	define decltypetype(...) decltype(__VA_ARGS__)
+#endif
 
 namespace Gorgon { 
 	
 	/// Contains string related functions and classes.
 	namespace String {
-		
-		/// This error will be thrown if a parsing function encounters
-		/// with a general error
-		class ParseError : public std::runtime_error {
-		public:
-			/// Constructs a new parse error. Parse error codes should be between 0 and 999
-			/// with object id in front. For instance an object id of 11 should throw
-			/// parse error 5 with code 110005
-			ParseError(int code=0, const std::string &what="Parse error") : 			
-			std::runtime_error(what), Code(code) { 
-			}
-			
-			/// Error code
-			int Code;
-		};
-		
-		/// This error will be thrown if a parsing function encounters
-		/// with an illegal token
-		class IllegalTokenError : public ParseError {
-		public:
-			/// Constructor
-			IllegalTokenError(int location=0, int code=1000, const std::string &what="Illegal token") : 			
-			ParseError(code, what), Location(location) { 
-			}
-			
-			/// Location of the illegal token in the string
-			int Location;
-		};
 		
 		/// @cond INTERNAL
 		namespace internal {
@@ -80,14 +60,14 @@ namespace Gorgon {
 		To(const std::string &value) {
 			return T_(value);
 		}
+		
 		template <class T_>
-		typename std::enable_if<!std::is_constructible<T_, std::string>::value, T_>::type
+		typename std::enable_if<!std::is_constructible<T_, std::string>::value && !decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type
 		To(const std::string &value) {
 			std::stringstream ss(value);
 
 			T_ ret;
-			ret(ss);
-			//ss>>ret;
+			ss>>ret;
 
 			return ret;
 		}
@@ -97,19 +77,23 @@ namespace Gorgon {
 		To(const char *value) {
 			return T_(value);
 		}
+		
 		template <class T_>
 		typename std::enable_if<!std::is_constructible<T_, const char*>::value && std::is_constructible<T_, std::string>::value, T_>::type
 		To(const char *value) {
 			return T_(value);
 		}
+		
 		template <class T_>
-		typename std::enable_if<!std::is_constructible<T_, const char*>::value && !std::is_constructible<T_, std::string>::value, T_>::type
+		typename std::enable_if<!std::is_constructible<T_, const char*>::value && 
+			!std::is_constructible<T_, std::string>::value && 
+			!decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, 
+			T_>::type
 		To(const char *value) {
 			std::stringstream ss(value);
 
 			T_ ret;
-			ret(ss);
-			//ss>>ret;
+			ss>>ret;
 
 			return ret;
 		}
@@ -406,7 +390,7 @@ namespace Gorgon {
 		}
 
 		template<class T_> 
-		typename std::enable_if<!internal::has_stringoperator<T_>::value && !std::identity<decltype(gorgon__enum_trait_locator(T_()))>::type::isupgradedenum, std::string>::type 
+		typename std::enable_if<!internal::has_stringoperator<T_>::value && !decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::string>::type 
 		From(const T_ &item) {
 			std::stringstream ss;
 			ss<<item;
@@ -537,4 +521,9 @@ namespace Gorgon {
 	}
 }
 
-
+#ifdef _MSC_VER
+#	undef decltype
+#	undef decltypetype
+#else
+#	undef decltypetype
+#endif

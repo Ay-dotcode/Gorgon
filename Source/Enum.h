@@ -1,10 +1,12 @@
 /// @file Enum.h contains Enum class that allows C++ enums to have string capabilities. 
 
 #pragma once
+
 #include <string>
 #include <iostream>
 #include <map>
 #include <vector>
+#include "String/Exceptions.h"
 
 #ifdef _MSC_VER
 #	define decltype(...) std::identity<decltype(__VA_ARGS__)>::type
@@ -13,11 +15,83 @@
 #	define decltypetype(...) decltype(__VA_ARGS__)
 #endif
 
+/// @cond INTERNAL
 class gorgon__no_enum_trait {
 public:
 	static const bool isupgradedenum=false;
 };
+/// @endcond
 
+/** @page Enum
+ * 
+ * Gorgon Library supports streamable, parsable and enumerable enumarations. A single macro call with
+ * enum type and enum value - name pairs is all that is required. There is no need to modify original 
+ * enum definition. Additionally, this system allows multiple names for a single enum value which will
+ * be used while parsing a string to the enum type. If there are multiple names, first one is used
+ * while converting enum to string.
+ * 
+ * There are some restrictions to the use of macros supplied with this system. First restrictions is 
+ * that the macro call should be done in the same namespace as the original enum. Both regular enum and 
+ * enum class is supported. For a simple namespace enum or enum class, DefineEnumStrings macro should be 
+ * used. This macro requires only the name of the enum along with the value - name pairs. Enum type 
+ * supplied to the DefineEnumStrings macro cannot contain scope resolution operator. This eliminates the 
+ * possiblity of using class member enums with this macro. However, for this specific purpose, 
+ * DefineEnumStringsCM macro is created. This macro allows class member enums to be used by suppling class
+ * name as the first parameter.
+ * 
+ * String::Parse method requires name of the type, which is automatically deduced from the typename. If 
+ * this is not desired DefineEnumStringsTN macro could be used. This macro has a parameter after the type
+ * which will be used as the type name. Additionally DefineEnumStringsCMTN is also defined to be used with
+ * class member enums.
+ * 
+ * **Example**
+ * @code
+ * 
+ * #include <iostream>
+ * #include <Gorgon/Enum.h>
+ * 
+ * //...
+ * 
+ * enum class Days {
+ *     Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+ * };
+ * 
+ * DefineEnumStrings( Days,
+ *     {Days::Monday, "Monday"},
+ *     {Days::Tuesday, "Tuesday"},
+ *     {Days::Wednesday, "Wednesday"},
+ *     {Days::Thursday, "Thursday"},
+ *     {Days::Friday, "Friday"},
+ *     {Days::Saturday, "Saturday"},
+ *     {Days::Sunday, "Sunday"}
+ *     {Days::Monday, "Mon"},
+ *     //...
+ * );
+ * 
+ * //...
+ * 
+ * Days day;
+ * std::cin>>day; //user enters "mon"
+ * std::cout<<"Today is "<<day<<std::endl; //output will be "Today is Monday"
+ * std::getline(cin, day); //this is also possible
+ * 
+ * try {
+ *     Gorgon::String::Parse<Days>("not valid");
+ * }
+ * catch(const Gorgon::String::ParseError &ex) {
+ *     std::cout<<ex.what();<<std::endl;
+ *     
+ *     std::cout<<"Days of week are: "<<std::endl;
+ *     for(auto e : Gorgon::Enumerate<Days>()) {
+ *         std::cout<<e<<std::endl;
+ *     }
+ * }
+ * 
+ * //...
+ * 
+ * @endcode
+ * 
+ */
 	
 template<class T_>
 gorgon__no_enum_trait gorgon__enum_trait_locator(T_);
@@ -35,7 +109,9 @@ namespace Gorgon {
 		expandedenumtraits() {
 			T_ prev=traits.mapping.begin()->first;
 			listing.push_back(prev);
-			for(auto &p : traits.mapping) {
+			for(auto p : traits.mapping) {
+				for(auto &c : p.second) c=std::tolower(c);
+				
 				reversemapping.insert(std::make_pair(p.second, p.first));
 				if(p.first!=prev) {
 					listing.push_back(p.first);
@@ -51,7 +127,9 @@ namespace Gorgon {
 			return true;
 		}
 		
-		bool lookupvalue(const std::string &s, T_ &e) const {
+		bool lookupvalue(std::string s, T_ &e) const {
+			for(auto &c : s) c=std::tolower(c);
+			
 			auto item=reversemapping.find(s);
 			if(item==reversemapping.end()) return false;
 			e=item->second;
@@ -106,9 +184,12 @@ namespace Gorgon {
 	/// @endcond
 
 	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
-	/// enumeration by assigning one or more strings to enum values. This version should be invoked
-	/// in the same namespace as the original enumeration. If this is not possible, you may use
-	/// DefineEnumStringsNS macro. You may use DefineEnumStringsCN to modify readable typename
+	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
+	/// in the same namespace as the original enumeration. Type cannot contain any scope
+	/// resolution operators. This means that class member enums cannot be used with this macro. 
+	/// DefineEnumStringsTN macro supports class member enums. First parameter is the enum type
+	/// which should be followed by enum value - name pairs.
+	/// @see Enum
 	/// @see Enumerate 
 	/// @see Parse
 	#define DefineEnumStrings(type, ...) \
@@ -123,53 +204,64 @@ namespace Gorgon {
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
 
 	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
-	/// enumeration by assigning one or more strings to enum values. This version should be invoked
-	/// in the same namespace as the original enumeration. If this is not possible, you may use
-	/// DefineEnumStringsNSCN macro. This variant allows modification of readable typename
+	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
+	/// in the same namespace as the original enumeration. Type cannot contain any scope
+	/// resolution operators. This means that class member enums cannot be used with this macro. 
+	/// DefineEnumStringsCMTN macro supports class member enums. This variant allows modification of 
+	/// readable typename. First parameter is the enum type, second is the name for the type and
+	/// the rest of the parameters are the enum value - name pairs
+	/// @see Enum
 	/// @see Enumerate 
 	/// @see Parse
-	#define DefineEnumStringsCN(type, name, ...) \
+	#define DefineEnumStringsTN(type, typname, ...) \
 	class gorgon_enumtraits_##type {\
 	public:\
 		static const bool isupgradedenum=true;\
 		\
-		static const char *name() { return #name; }\
+		static const char *name() { return typname; }\
 		\
 		const std::multimap<type, std::string> mapping={__VA_ARGS__};\
 	};\
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
 
 	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
-	/// enumeration by assigning one or more strings to enum values. This variant allows namespace.
-	/// Use DefineEnumStringsNSCN to set custom typename
+	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
+	/// in the same namespace as the original enumeration. This variant allows class member
+	/// enumerations. The first parameter should be class name, second parameter is the type, after
+	/// these parameters, value name pairs should be added.
+	/// Use DefineEnumStringsCMTN to set custom typename
+	/// @see Enum
 	/// @see Enumerate 
 	/// @see Parse
-	#define DefineEnumStringsNS(ns, type, ...) \
+	#define DefineEnumStringsCM(clsname, type, ...) \
 	class gorgon_enumtraits_##type {\
 	public:\
 		static const bool isupgradedenum=true;\
 		\
 		static const char *name() { return #type; }\
 		\
-		const std::multimap<ns::type, std::string> mapping={__VA_ARGS__};\
+		const std::multimap<clsname::type, std::string> mapping={__VA_ARGS__};\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_trait_locator(ns::type);
+	gorgon_enumtraits_##type gorgon__enum_trait_locator(clsname::type);
 
 	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
-	/// enumeration by assigning one or more strings to enum values. This variant allows namespace
-	/// and custom readable typename.
+	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
+	/// in the same namespace as the original enumeration. This variant allows class member
+	/// enumerations. This variant allows class member enumerations and custom readable typename.  
+	/// The first parameter should be class name, second is the type and third is the readable name
+	/// of the type, after these parameters, value name pairs should be added.
 	/// @see Enumerate 
 	/// @see Parse
-	#define DefineEnumStringsNSCN(ns, type, name, ...) \
+	#define DefineEnumStringsCMTN(clsname, type, typname, ...) \
 	class gorgon_enumtraits_##type {\
 	public:\
 		static const bool isupgradedenum=true;\
 		\
-		static const char *name() { return name; }\
+		static const char *name() { return typname; }\
 		\
-		const std::multimap<ns::type, std::string> mapping={__VA_ARGS__};\
+		const std::multimap<clsname::type, std::string> mapping={__VA_ARGS__};\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_trait_locator(ns::type);
+	gorgon_enumtraits_##type gorgon__enum_trait_locator(clsname::type);
 	
 	/// Allows enumeration of upgraded enums using range based for.
 	/// @code
@@ -211,7 +303,9 @@ namespace Gorgon {
 		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type Parse(const std::string &text) {
 			T_ e;
 			if(!staticenumtraits<T_>::lookupvalue(text, e)) {
-				throw ParseError(20001, std::string("Given string is not a valid ")+decltype(gorgon__enum_trait_locator(T_()))::name());
+				std::string s ="\""+text+"\" is not a valid ";
+				s+=decltype(gorgon__enum_trait_locator(T_()))::name();
+				throw ParseError(20001, s);
 			}
 			return e;
 		}
@@ -230,7 +324,7 @@ typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradeden
 
 /// Stream reader for upgraded enums
 template<class T_>
-typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::istream&>::type operator >>(std::istream &in, const T_ &e) {
+typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::istream&>::type operator >>(std::istream &in, T_ &e) {
 	std::string s;
 	e=T_();
 	in>>s;
@@ -239,6 +333,22 @@ typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradeden
 	return in;
 }
 
+namespace std {
+	/// Stream reader for upgraded enums
+	template<class T_>
+	typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::istream&>::type getline(std::istream &in, T_ &e) {
+		std::string s;
+		e=T_();
+		std::getline(in, s);
+		int i=0;
+		while(s.length()>i && std::isspace(s[i])) i++;
+		s=s.substr(i);
+
+		if(!Gorgon::staticenumtraits<T_>::lookupvalue(s, e)) in.setstate(in.badbit);
+		
+		return in;
+	}
+}
 
 #ifdef _MSC_VER
 #	undef decltype

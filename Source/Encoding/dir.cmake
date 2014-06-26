@@ -1,6 +1,4 @@
 SET(Local
-	JPEG.h
-	JPEG.cpp
 	LZMA.h
 	LZMA.cpp
 	PNG.h

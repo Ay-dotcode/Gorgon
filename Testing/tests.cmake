@@ -8,6 +8,7 @@ SET(ManualTests
 SET(UnitTests
 	Filesystem
 	Geometry
+	Enum
 	Event
 	String
 )
