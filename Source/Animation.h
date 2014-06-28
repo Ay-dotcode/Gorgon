@@ -87,7 +87,7 @@ namespace Gorgon {
 			/// Sets the current progress of the controller. If the progress is a negative value, it will be
 			/// subtracted from the animation length. If the animation length is 0, then the controller will
 			/// immediately stop and sets the progress to 0.
-			void SetProgress(double progress) { this->progress=unsigned(progress); floatprogress=progress; }
+			void SetProgress(double progress) { this->progress=(unsigned)std::round(progress); floatprogress=progress; }
 
 			/// Resets the controller to start from the beginning. Also resets finished and paused status and
 			/// modifies the speed to be 1.
@@ -106,7 +106,7 @@ namespace Gorgon {
 			/// Starts this controller in looping mode. Looping will not work when the length is 0 and the speed 
 			/// is set to a negative value (animation is running in reverse). If the animation is paused, this 
 			/// function works like Resume except that this function sets controller to looping mode
-			virtual void Loop();
+			virtual void Loop() { Play(); islooping=true; }
 
 			/// Pauses the controller, until a Resume or Reset is issued.
 			virtual void Pause();
@@ -149,9 +149,7 @@ namespace Gorgon {
 			/// sure that the controller can actually loop
 			bool IsLooping() const { return (speed>=0 ? islooping : islooping && length!=0); }
 
-			virtual bool IsControlled() const {
-				return true;
-			}
+			virtual bool IsControlled() const { return true; }
 			/// @}
 
 			/// @name Events
@@ -238,9 +236,10 @@ namespace Gorgon {
 
 			/// This function should progress the animation. Notice that this function is called internally.
 			/// Unless a change to the controller has been made and instant update of the animation is required
-			/// there is no need to call this function. This function should return the time it could not progress.
-			/// Regardless 
-			virtual unsigned Progress() = 0;
+			/// there is no need to call this function. Returning true from this function denotes that further
+			/// progress is possible. If progress should end, leftover parameter should be set to the amount of
+			/// time that cannot be progressed.
+			virtual bool Progress(unsigned &leftover) = 0;
 
 			/// Deletes this animation. Please note that some animations are also the animation provider. In these
 			/// cases trying to delete the animation will delete the provider as well. This function should be called

@@ -1,3 +1,4 @@
+#include <stdexcept>
 
 #include "../Animation.h"
 #include "../Time.h"
@@ -20,19 +21,14 @@ namespace Gorgon { namespace Animation {
 
 		for(auto &base : Animations) {
 			if(base.HasController()) {
-				auto leftover=base.Progress();
+				unsigned leftover=0;
 
-				if(leftover) {
+				if(!base.Progress(leftover)) {
 					base.GetController().Finished(leftover);
 				}
 			}
 		}
 	}
-
-	void Initialize() {
-		/// Nothing to do right now
-	}
-
 
 	Timer::Timer() {
 		Timers.Add(this);
@@ -46,81 +42,99 @@ namespace Gorgon { namespace Animation {
 		progress += timepassed;
 	}
 
-
 	Controller::Controller() : Timer(),
 		FinishedEvent(*this)
 	{ }
 
 	void Controller::Progress( unsigned timepassed ) {
 		if(!ispaused && !isfinished) {
-			if(Round(mprogress)!=progress)
-				mprogress=progress;
+			floatprogress+=(float)timepassed*speed;
 
-			mprogress+=(float)timepassed*speed;
-			progress=(int)Round<double>(mprogress);
+			if(floatprogress<0) {
+				if(islooping) {
+					if(length) {
+						floatprogress = length-floatprogress;
+					}
+					else {
+						floatprogress=0;
+						isfinished=true;
+#ifndef NDEBUG
+						throw std::runtime_error("! Gorgon::Animation: Loop is required with negative speed but length is not set.");
+#endif
+					}
+				}
+				else {
+					floatprogress=0;
+					isfinished=true;
+				}
+				FinishedEvent();
+			}
 
-			if(pauseat>0 && speed>0 && pauseat<=progress) {
-				ispaused=true;
-				pauseat=-1;
-				Paused(source_param(NULL));
-			}
-			else if(pauseat>=0 && speed<0 && pauseat>=progress) {
-				ispaused=true;
-				pauseat=-1;
-				Paused(source_param(NULL));
-			}
+			progress=(unsigned)std::round(floatprogress);
 		}
 	}
 
 	void Controller::Play() {
-		ispaused=false;
-		isfinished=false;
-		floatprogress=0;
-		progress=0;
-	}
-
-	void Controller::Obtained( ProgressResult::Type r, Base &source ) {
-		if(r==ProgressResult::Finished) {
-			if(!isfinished) {
-				isfinished=true;
-				Finished(source_param(&source));
+		if(isfinished) {
+			if(speed>=0) {
+				floatprogress=0;
+				progress=0;
+				ispaused=false;
+				isfinished=false;
+			}
+			else if(length) {
+				floatprogress=length;
+				progress=length;
+				ispaused=false;
+				isfinished=false;
+			}
+			else {
+#ifndef NDEBUG
+				throw std::runtime_error("! Gorgon::Animation: \"Play\" is requested with negative speed but length is not set.");
+#endif
 			}
 		}
-		if(r==ProgressResult::Pause) {
-			ispaused=true;
-			Paused(source_param(&source));
+		else {
+			ispaused=false;
+		}
+		islooping=false;
+	}
+
+	void Controller::Reset() {
+		speed=1.0;
+
+		floatprogress=0;
+		progress=0;
+		ispaused=false;
+		isfinished=false;
+	}
+
+	void Controller::Finished( unsigned leftover ) {
+		if(islooping) {
+			progress=leftover;
+			floatprogress=progress;
+		}
+		else {
+			progress-=leftover;
 		}
 
-		if(Round(mprogress)!=progress)
-			mprogress=progress;
+		FinishedEvent();
 	}
 
 	void Controller::Pause() {
 		ispaused=true;
 	}
 
-	void Controller::ResetProgress() {
-		isfinished=false;
-		if(speed<0) {
-			mprogress=-1;
-			progress=-1;
-		}
-		else {
-			mprogress=0;
-			progress=0;
-		}
-	}
 
-
-	Base::Base(Timer &Controller, bool owner) : Controller(&Controller), owner(owner) {
+	Base::Base(Timer &controller, bool owner) : controller(&controller), owner(owner) {
 		Animations.Add(this);
 	}
 
-	Base::Base(bool create) : Controller(NULL) {
+	Base::Base(bool create) {
 		Animations.Add(this);
 
 		if(create) {
-			Controller=new Timer();
+			controller=new Timer();
 			owner=true;
 		}
 		else {
@@ -129,90 +143,19 @@ namespace Gorgon { namespace Animation {
 	}
 
 	void Base::SetController( Timer &controller, bool owner ) {
-		if(this->owner && Controller)
-			delete Controller;
+		RemoveController();
 
-		Controller=&controller; 
+		this->controller=&controller; 
 		this->owner=owner;
-		
-		ProgressResult::Type r=Progress();
 
-		if(r!=ProgressResult::None)
-			controller.Obtained(r, *this);
+		unsigned leftover;
+		if(!this->Progress(leftover)) {
+			controller.Finished(leftover);
+		}
 	}
 
 	Base::~Base() {
-		Animations.Remove(this);
-		if(owner && Controller)
-			delete Controller;
+		RemoveController();
 	}
-
-
-
-	void DiscreteController::Progress(unsigned timepassed) {
-		Controller::Progress(timepassed);
-
-		int t=GetProgress();
-		int tl=info.GetDuration();
-
-		if(tl==0)
-			currentframe=-1;
-		else {
-			if(!islooping && ( (t>=tl && speed>=0) || (t<=0 && speed<0) )  ) {
-				isfinished=true;
-				Finished(source_param(NULL));
-
-				if(speed>0)
-					currentframe=info.GetNumberofFrames()-1;
-				else
-					currentframe=0;
-			}
-			else {
-				currentframe=FrameAt(PositiveMod(t,tl));
-			}
-		}
-
-		if(pauseatframe>0 && speed>0 && currentframe>=pauseatframe) {
-			ispaused=true;
-			pauseatframe=-1;
-			Paused(source_param(NULL));
-		}
-		else if(pauseatframe>0 && speed<0 && currentframe<=pauseatframe) {
-			ispaused=true;
-			pauseatframe=-1;
-			Paused(source_param(NULL));
-		}
-	}
-
-	void DiscreteController::Goto(int Frame) {
-		if( utils::InRange(Frame,0,GetNumberofFrames()-1) ) {
-			if(speed>0)
-				SetProgress(info.StartOf(Frame));
-			else
-				SetProgress(info.EndOf(Frame));
-
-			currentframe=Frame;
-		}
-		else {
-			SetProgress(0);
-			currentframe=-1;
-		}
-	}
-
-	void DiscreteController::Play() {
-		ispaused=false;
-		ResetProgress();
-	}
-
-	void DiscreteController::ResetProgress() {
-		isfinished=false;
-		if(speed>=0) {
-			SetProgress(0);
-		}
-		else {
-			SetProgress(info.GetDuration()-1);
-		}
-	}
-
 
 } }

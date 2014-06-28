@@ -30,7 +30,7 @@ namespace Gorgon {
 		Time::internal::deltatime=ctime-Time::internal::framestart;
 		Time::internal::framestart=ctime;
 
-		//Animation::Animate();
+		Animation::Animate();
 
 		OS::processmessages();
 	}
