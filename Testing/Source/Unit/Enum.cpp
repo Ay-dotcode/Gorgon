@@ -43,7 +43,7 @@ TEST_CASE( "Basic string related", "[Enum]" ) {
 	REQUIRE( String::Parse<E>("Zero") == n );
 	REQUIRE( String::Parse<E>("First one") == E::FirstOne );
 	REQUIRE( String::Parse<E>("Second one") == E::Second );
-	REQUIRE_THROWS_AS( String::Parse<E>("asdfgh") == n, String::ParseError );
+	REQUIRE_THROWS_AS( String::Parse<E>("asdfgh"), String::ParseError );
 	
 	try {
 		String::Parse<E>("asdfgh");
@@ -133,7 +133,7 @@ TEST_CASE( "Basic string related - ns", "[Enum]" ) {
 	REQUIRE( String::Parse<E>("Zero") == n );
 	REQUIRE( String::Parse<E>("First one") == E::FirstOne );
 	REQUIRE( String::Parse<E>("Second one") == E::Second );
-	REQUIRE_THROWS_AS( String::Parse<E>("asdfgh") == n, String::ParseError );
+	REQUIRE_THROWS_AS( String::Parse<E>("asdfgh"), String::ParseError );
 	
 	try {
 		String::Parse<E>("asdfgh");
@@ -225,7 +225,7 @@ TEST_CASE( "Basic string related - cm", "[Enum]" ) {
 	REQUIRE( String::Parse<E>("Zero") == n );
 	REQUIRE( String::Parse<E>("First one") == E::FirstOne );
 	REQUIRE( String::Parse<E>("Second one") == E::Second );
-	REQUIRE_THROWS_AS( String::Parse<E>("asdfgh") == n, String::ParseError );
+	REQUIRE_THROWS_AS( String::Parse<E>("asdfgh"), String::ParseError );
 	
 	try {
 		String::Parse<E>("asdfgh");

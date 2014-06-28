@@ -10,13 +10,6 @@
 #include "String/Exceptions.h"
 #include "Enum.h"
 
-#ifdef _MSC_VER
-#	define decltype(...) std::identity<decltype(__VA_ARGS__)>::type
-#	define decltypetype(...) typename decltype(__VA_ARGS__)
-#else
-#	define decltypetype(...) decltype(__VA_ARGS__)
-#endif
-
 namespace Gorgon { 
 	
 	/// Contains string related functions and classes.
@@ -55,6 +48,21 @@ namespace Gorgon {
 #endif		
 		
 		/// @cond
+
+#ifdef _MSC_VER
+#	define decltype(...) std::identity<decltype(__VA_ARGS__)>::type
+#	define decltypetype(...) typename decltype(__VA_ARGS__)
+#	define ISENUMUPGRADED enumupgradedhelper<T_>::value
+	template<class T_>
+	struct enumupgradedhelper {
+		enum {
+			value = decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum,
+		};
+	};
+#else
+#	define decltypetype(...) decltype(__VA_ARGS__)
+#	define ISENUMUPGRADED	decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum
+#endif
 		template <class T_>
 		typename std::enable_if<std::is_constructible<T_, std::string>::value, T_>::type
 		To(const std::string &value) {
@@ -62,7 +70,7 @@ namespace Gorgon {
 		}
 		
 		template <class T_>
-		typename std::enable_if<!std::is_constructible<T_, std::string>::value && !decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type
+		typename std::enable_if<!std::is_constructible<T_, std::string>::value && !ISENUMUPGRADED, T_>::type
 		To(const std::string &value) {
 			std::stringstream ss(value);
 
@@ -87,7 +95,7 @@ namespace Gorgon {
 		template <class T_>
 		typename std::enable_if<!std::is_constructible<T_, const char*>::value && 
 			!std::is_constructible<T_, std::string>::value && 
-			!decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, 
+			!ISENUMUPGRADED,
 			T_>::type
 		To(const char *value) {
 			std::stringstream ss(value);
@@ -524,6 +532,8 @@ namespace Gorgon {
 #ifdef _MSC_VER
 #	undef decltype
 #	undef decltypetype
+#	undef ISENUMUPGRADED
 #else
 #	undef decltypetype
+#	undef ISENUMUPGRADED
 #endif

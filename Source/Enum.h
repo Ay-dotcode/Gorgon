@@ -110,7 +110,7 @@ namespace Gorgon {
 			T_ prev=traits.mapping.begin()->first;
 			listing.push_back(prev);
 			for(auto p : traits.mapping) {
-				for(auto &c : p.second) c=std::tolower(c);
+				for(auto &c : p.second) c=tolower(c);
 				
 				reversemapping.insert(std::make_pair(p.second, p.first));
 				if(p.first!=prev) {
@@ -128,7 +128,7 @@ namespace Gorgon {
 		}
 		
 		bool lookupvalue(std::string s, T_ &e) const {
-			for(auto &c : s) c=std::tolower(c);
+			for(auto &c : s) c=tolower(c);
 			
 			auto item=reversemapping.find(s);
 			if(item==reversemapping.end()) return false;
@@ -195,11 +195,13 @@ namespace Gorgon {
 	#define DefineEnumStrings(type, ...) \
 	class gorgon_enumtraits_##type {\
 	public:\
+		gorgon_enumtraits_##type() : mapping({__VA_ARGS__}) { }\
+		\
 		static const bool isupgradedenum=true;\
 		\
 		static const char *name() { return #type; }\
 		\
-		const std::multimap<type, std::string> mapping={__VA_ARGS__};\
+		const std::multimap<type, std::string> mapping;\
 	};\
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
 
@@ -216,11 +218,13 @@ namespace Gorgon {
 	#define DefineEnumStringsTN(type, typname, ...) \
 	class gorgon_enumtraits_##type {\
 	public:\
+		gorgon_enumtraits_##type() : mapping({__VA_ARGS__}) { }\
+		\
 		static const bool isupgradedenum=true;\
 		\
 		static const char *name() { return typname; }\
 		\
-		const std::multimap<type, std::string> mapping={__VA_ARGS__};\
+		const std::multimap<type, std::string> mapping;\
 	};\
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
 
@@ -236,11 +240,13 @@ namespace Gorgon {
 	#define DefineEnumStringsCM(clsname, type, ...) \
 	class gorgon_enumtraits_##type {\
 	public:\
+		gorgon_enumtraits_##type() : mapping({__VA_ARGS__}) { }\
+		\
 		static const bool isupgradedenum=true;\
 		\
 		static const char *name() { return #type; }\
 		\
-		const std::multimap<clsname::type, std::string> mapping={__VA_ARGS__};\
+		const std::multimap<clsname::type, std::string> mapping;\
 	};\
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(clsname::type);
 
@@ -255,11 +261,13 @@ namespace Gorgon {
 	#define DefineEnumStringsCMTN(clsname, type, typname, ...) \
 	class gorgon_enumtraits_##type {\
 	public:\
+		gorgon_enumtraits_##type() : mapping({__VA_ARGS__}) { }\
+		\
 		static const bool isupgradedenum=true;\
 		\
 		static const char *name() { return typname; }\
 		\
-		const std::multimap<clsname::type, std::string> mapping={__VA_ARGS__};\
+		const std::multimap<clsname::type, std::string> mapping;\
 	};\
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(clsname::type);
 	
@@ -340,8 +348,8 @@ namespace std {
 		std::string s;
 		e=T_();
 		std::getline(in, s);
-		int i=0;
-		while(s.length()>i && std::isspace(s[i])) i++;
+		unsigned i=0;
+		while(s.length()>i && isspace(s[i])) i++;
 		s=s.substr(i);
 
 		if(!Gorgon::staticenumtraits<T_>::lookupvalue(s, e)) in.setstate(in.badbit);
