@@ -362,7 +362,7 @@ namespace Gorgon {
 		template <class T_, class O_>
 		void Scale(basic_Point<T_> &point, const O_ &size) {
 			point.X = T_(point.X*size);
-			point.Y = T_(point.X*size);
+			point.Y = T_(point.Y*size);
 		}
 
 		/// Scales the given point by the given factors for x and y coordinates.
@@ -465,7 +465,7 @@ namespace Gorgon {
 		/// Reflects the given point horizontally
 		template<class T_>
 		void HorizontalMirror(basic_Point<T_> &point) {
-			ReflectY(point);
+			ReflectX(point);
 		}
 
 		/// Reflects the given point vertically
@@ -477,25 +477,25 @@ namespace Gorgon {
 		/// Reflects the given point along the X axis considering given origin
 		template<class T_>
 		void ReflectX(basic_Point<T_> &point, const basic_Point<T_> &origin) {
-			point.X = -point.X+origin.X*2;
+			point.Y = -point.Y+origin.Y*2;
 		}
 
 		/// Reflects the given point along the Y axis considering given origin
 		template<class T_>
 		void ReflectY(basic_Point<T_> &point, const basic_Point<T_> &origin) {
-			point.Y = -point.Y+origin.Y*2;
+			point.X = -point.X+origin.X*2;
 		}
 
 		/// Reflects the given point horizontally considering given origin
 		template<class T_>
 		void HorizontalMirror(basic_Point<T_> &point, const basic_Point<T_> &origin) {
-			ReflectY(point, origin);
+			ReflectX(point, origin);
 		}
 
 		/// Reflects the given point vertically considering given origin
 		template<class T_>
 		void VerticalMirror(basic_Point<T_> &point, const basic_Point<T_> &origin) {
-			ReflectX(point, origin);
+			ReflectY(point, origin);
 		}
 
 		/// @see basic_Point
