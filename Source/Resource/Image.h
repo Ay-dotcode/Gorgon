@@ -1,184 +1,352 @@
 #pragma once
 
-#include "GRE.h"
+#include <stdexcept>
+#include <memory>
+
 #include "Base.h"
-#include "../Engine/Graphics.h"
-#include "ResizableObject.h"
-#include "../Engine/Animation.h"
-#include "../Engine/Image.h"
-#include "../Encoding/LZMA.h"
+#include "../Graphics/Animations.h"
+#include "../Graphics/Texture.h"
+#include "../Containers/Image.h"
 
-#pragma warning(push)
-#pragma warning(disable:4250)
-
-namespace gge { namespace resource {
+namespace Gorgon { namespace Resource {
 	class File;
 	class Image;
-
-	////This function loads a text resource from the given file
-	Image *LoadImageResource(File& File, std::istream &Data, int Size);
 
 	////This is image resource that holds information about a single image. It supports
 	/// two color modes (ARGB and AL); lzma and jpg compressions
 	class Image : 
-		public Base, virtual public ResizableObject, virtual public ResizableObjectProvider, 
-		virtual public animation::RectangularGraphic2DSequenceProvider, virtual public graphics::ImageTexture,
-		public graphics::ImageData, virtual public animation::RectangularGraphic2DAnimation
+		public Base, public virtual Graphics::RectangularAnimationProvider, public virtual Graphics::Image,
+		public virtual Graphics::RectangularAnimation, public virtual Graphics::Texture
 	{
-		friend Image *LoadImageResource(File &File, std::istream &Data, int Size);
 	public:
-		enum ImageReadError {
-			NoError=0,
-			ReadError=1, 
-			FileNotFound,
-			UnknownImageType
-		};
 
-		enum Compressor {
+		enum CompressionMode {
 			Uncompressed=0,
-			LZMA=GID::LZMA,
-			PNG=GID::PNG,
+			LZMA	= 0xF0030100,
+			JPEG	= 0xF0030300,
+			PNG		= 0xF0030400,
 		};
 
-		////Not used, if paletted image is found, this holds its palette
-		Byte *Palette;
-		////Whether image is loaded or not. Image that are marked as late loading
-		/// are not loaded in initial load request. Image data can be retrieved by
-		/// calling Load function.
-		bool isLoaded;
-		////Whether to leave the data after this image resource is transformed into
-		/// an image object. This flag is used by other systems.
-		bool LeaveData;
+		Image() {
 
-		Image() : animation::Base(), ImageTexture(), ImageData(), parent(nullptr),
-			CompressionProps(), Palette(), Compression(PNG), LateLoading(false),
-			isLoaded(false), LeaveData(false)
-		{
-			animation::Animations.Remove(this);
 		}
 
-		Image(int Width, int Height, graphics::ColorMode::Type Mode=graphics::ColorMode::ARGB) : animation::Base(), 
-			ImageTexture(), ImageData(), CompressionProps(), Palette(), Compression(PNG), LateLoading(false), parent(nullptr),
-			isLoaded(true), LeaveData(true)
-		{
-			this->Resize(Width, Height, Mode);
-			animation::Animations.Remove(this);
+		explicit Image(const Geometry::Size &size, Graphics::ColorMode mode=Graphics::ColorMode::RGBA) : 
+		data(new Containers::Image{size, mode}) {
+
+#ifndef NDEBUG
+			if(size.Width<0 || size.Height<0) {
+				throw std::runtime_error("Size of an image cannot be negative.");
+			}
+#endif
+
+			RemoveMe();
 		}
 
-		bool PNGExport(std::string filename) { return ExportPNG(filename); }
+		Image(const Image &) = delete;
+
+		Image(Image &&other) {
+			Swap(other);
+		}
+
+		void Swap(Image &other) {
+			using std::swap;
+
+			swap(data, other.data);
+
+			//...
+		}
+
+		virtual GID::Type GetGID() const { return GID::Image; }
+
+		/// Releases the image data. The image data returned by this function is moved out. Data is passed by value, thus
+		/// if it is not moved into a Containers::Image, it will be destroyed.
+		Containers::Image ReleaseData() {
+			if(data==nullptr) {
+#ifndef NDEBUG
+				throw std::runtime_error("No data to release");
+#endif
+
+				return{ };
+			}
+			else {
+				Containers::Image temp=std::move(*data);
+
+				delete data;
+				data=nullptr;
+
+				return temp;
+			}
+		}
+
+		/// Releases the texture held by this image. Texture is passed by value, thus
+		/// if it is not moved into a Graphics::TextureImage, it will be destroyed.
+		Graphics::TextureImage ReleaseTexture() {
+			auto sz = Graphics::Texture::size;
+			return{Graphics::Texture::Release(), sz};
+		}
+
+		bool HasData() const {
+			return data!=nullptr;
+		}
+
+		bool HasTexture() const {
+			return Graphics::Texture::id!=0;
+		}
+
+		/// Assigns the given image as the data of this image resource.
+		/// Notice that changing data does not prepare the data to be drawn, a separate call to Prepare 
+		/// function is necessary
+		void Assign(const Containers::Image &image) {
+			if(!data) {
+				data=new Containers::Image;
+			}
+
+			*data = image.Duplicate();
+		}
+
+		/// Assigns the image to the copy of the given data. Ownership of the given data
+		/// is not transferred. If the given data is not required elsewhere, consider using
+		/// Assume function. This variant performs resize and copy at the same time. The given 
+		/// data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). 
+		/// This function does not perform any checks for the data size while copying it.
+		/// If width or height is 0, the newdata is not accessed and this method effectively
+		/// Destroys the current image. In this case, both width and height should be specified as 0.
+		/// Notice that changing data does not prepare the data to be drawn, a separate call to Prepare 
+		/// function is necessary.
+		void Assign(Byte *newdata, const Geometry::Size &size, Graphics::ColorMode mode) {
+			if(!data) {
+				data=new Containers::Image;
+			}
+
+			data->Assign(newdata, size, mode);
+		}
+
+		/// Assigns the image to the copy of the given data. Ownership of the given data
+		/// is not transferred. If the given data is not required elsewhere, consider using
+		/// Assume function. The size and color mode of the image stays the same. The given 
+		/// data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). 
+		/// This function does not perform any checks for the data size while copying it. Notice that 
+		/// changing data does not prepare the data to be drawn, a separate call to Prepare function 
+		/// is necessary.
+		void Assign(Byte *newdata) {
+			if(!data) {
+				throw std::runtime_error("Data is not set");
+			}
+
+			data->Assign(newdata);
+		}
+
+		/// Assumes the contents of the given image as image data. The given parameter is moved from
+		/// and will become an empty image. Notice that assuming data does not prepare the data to be drawn, 
+		/// a separate call to Prepare function is necessary.
+		void Assume(Containers::Image &image) {
+			if(!data) {
+				data=new Containers::Image;
+			}
+
+			*data = std::move(image);
+		}
+
+		/// Assumes the ownership of the given data. This variant changes the size and
+		/// color mode of the image. The given data should have the size of 
+		/// width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). This function
+		/// does not perform any checks for the data size while assuming it.
+		/// newdata could be nullptr however, in this case
+		/// width, height should be 0. mode is not assumed to be ColorMode::Invalid while
+		/// the image is empty, therefore it could be specified as any value. Notice that assuming data
+		/// does not prepare the data to be drawn, a separate call to Prepare function is necessary.
+		void Assume(Byte *newdata, const Geometry::Size &size, Graphics::ColorMode mode) {
+			if(!data) {
+				data=new Containers::Image;
+			}
+
+			data->Assume(newdata, size, mode);
+		}
+
+		/// Assumes the ownership of the given data. The size and color mode of the image stays the same.
+		/// The given data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte).
+		/// This function does not perform any checks for the data size while assuming it. Notice that assuming data
+		/// does not prepare the data to be drawn, a separate call to Prepare function is necessary.
+		void Assume(Byte *newdata) {
+			if(!data) {
+				throw std::runtime_error("Data is not set");
+			}
+
+			data->Assume(newdata);
+		}
+
+		/// Resizes the image to the given size and color mode. This function discards the contents
+		/// of the image and does not perform any initialization.
+		void Resize(const Geometry::Size &size, Graphics::ColorMode mode=Graphics::ColorMode::RGBA) {
+			if(!data) {
+				data=new Containers::Image;
+			}
+
+			data->Resize(size, mode);
+		}
+
+		/// Provides access to the given component in x and y coordinates. This function performs bounds checking 
+		/// only on debug mode. Notice that changing a pixel does not prepare the new data to be drawn, a separate 
+		/// call to Prepare function is necessary.
+		Byte &operator()(const Geometry::Point &p, unsigned component=0) {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Data is not set");
+			}
+#endif
+
+			return (*data)(p, component);
+		}
+
+		/// Provides access to the given component in x and y coordinates. This
+		/// function performs bounds checking only on debug mode.
+		Byte operator()(const Geometry::Point &p, unsigned component=0) const {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Data is not set");
+			}
+#endif
+
+			return (*data)(p, component);
+		}
+
+		/// Provides access to the given component in x and y coordinates. This
+		/// function returns 0 if the given coordinates are out of bounds. This
+		/// function works slower than the () operator.
+		Byte Get(const Geometry::Point &p, unsigned component=0) const {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Data is not set");
+			}
+#endif
+
+			return (*data)(p, component);
+		}
+
+		/// Returns the bytes occupied by a single pixel of this image
+		unsigned GetBytesPerPixel() const {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Image data is not set");
+			}
+#endif
+			return data->GetBytesPerPixel();
+		}
+
+		/// Returns the color mode of the image
+		Graphics::ColorMode GetMode() const {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Image data is not set");
+			}
+#endif
+			return data->GetMode();
+		}
+
+		/// Returns the size of this image resource. It is possible for an image to become unsynchronized due to
+		/// a modification to the image data. Image texture size takes precedence if this happens.
+		Geometry::Size GetSize() const {
+			if(Graphics::Texture::id!=0) {
+				return Graphics::Texture::GetSize();
+			}
+			else if(data) {
+				return data->GetSize();
+			}
+			else {
+#ifndef NDEBUG
+				throw std::runtime_error("Image contains no data");
+#endif
+
+				return{0, 0};
+			}
+		}
+
+		/// This function prepares image for drawing
+		virtual void Prepare() override;
+
+		/// This function discards image data
+		virtual void Discard() override;
+
+		/// Imports a PNG file to become the new data of this image resource. Notice that importing does not
+		/// prepare the data to be drawn, a separate call to Prepare function is necessary
+		void ImportPNG(std::string filename);
+
+		/// Imports a JPEG file to become the new data of this image resource. Notice that importing does not
+		/// prepare the data to be drawn, a separate call to Prepare function is necessary
+		void ImportJPEG(std::string filename);
+
+		/// Imports an image file to become the new data of this image resource. Type of the image is determined
+		/// from the extension. If the extension is not available please use either ImportPNG or ImportJPEG functions.
+		/// Notice that importing does not prepare the data to be drawn, a separate call to Prepare function is necessary
+		void Import(std::string filename);
+
+		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
+		/// If image data is already discarded, there is no way to retrieve it.
 		bool ExportPNG(std::string filename);
 
-		////02020000h (Basic, Image)
-		virtual GID::Type GetGID() const { return GID::Image; }
-		////Loads image data from the file. This function is required for late
-		/// loading.
-		bool Load(bool force=false);
-		bool LoadData(std::istream &in, int size);
-		void LoadProperties(std::istream &in, int size);
 
-		virtual void Prepare(GGEMain &main, File &file);
-		void Prepare();
-
-		ImageReadError ImportPNG(std::string filename);
-		ImageReadError ImportJPEG(std::string filename);
-		ImageReadError Import(std::string filename);
-
-		////Returns Bytes/Pixel information
-		int GetBPP() { return graphics::getBPP(Mode); }
-		graphics::ColorMode::Type GetMode() { return Mode; }
-
-
-		////Destroys used data
-		void destroy() { Data.RemoveReference(); if(Palette) delete Palette; }
-
-		////Destroys used data
+		/// Destroys image data
 		virtual ~Image() { 
-			utils::CheckAndDelete(Palette);
-			utils::CheckAndDelete(CompressionProps);
+			if(data) delete data;
 		}
 
-		/* FOR ANIMATION INTERFACES */
-		virtual void DeleteAnimation() { } //if used as animation, it will not be deleted
-		//TODO ownership has issues in here
-		virtual Image &CreateAnimation(animation::Timer &controller, bool owner=false) { return *this; }
-		virtual Image &CreateAnimation(bool create=false) { return *this; }
+		/// if used as animation, this object will not be deleted
+		virtual void DeleteAnimation() override { } 
 
-		virtual Image &CreateResizableObject(animation::Timer &controller, bool owner=false) { return *this; }
-		virtual Image &CreateResizableObject(bool create=false) { return *this; }
-
-		virtual graphics::RectangularGraphic2D &GraphicAt(unsigned time) { return *this; }
-
-		virtual graphics::Image2D & ImageAt(int time) { return *this; }
-
-		virtual int GetDuration() const	{ return 1; }
-		virtual int GetDuration(unsigned Frame) const { return 1; }
-		virtual int GetNumberofFrames() const { return 1; }
-
-		//Caller is responsible to supply a time between 0 and GetDuration()-1, if no frame exists it should return -1
-		virtual int		 FrameAt(unsigned Time) const { return 0; }
-		//Should always return a time between 0 and GetDuration unless Frame does not exists it should return -1
-		virtual int		 StartOf(unsigned Frame) const { return 0; }
-		virtual	int		 EndOf(unsigned Frame) const { return 1; }
-		/* ... */
-
-		Image &Blur(float amount, int windowsize=-1);
-		Image &Shadow(float amount, int windowsize=-1);
-
-		//Assumes all image heights are similar and all images have same color mode
-		std::vector<utils::Bounds> CreateLinearAtlas(utils::OrderedCollection<Image> list);
-
-		//Creates images from the given atlas image and map. Prepares every image as well. This requires img to be prepared
-		utils::OrderedCollection<Image> CreateAtlasImages(const std::vector<utils::Bounds> &boundaries) const;
-
-		virtual int GetWidth() const {
-			if(Texture.ID) {
-				return ImageTexture::GetWidth();
+		virtual Image &CreateAnimation(Gorgon::Animation::Timer &controller, bool owner=false) override { 
+#ifndef NDEBUG
+			if(owner) {
+				throw std::runtime_error("Images cannot own timers or controllers.");
 			}
-			else {
-				return ImageData::GetWidth();
-			}
+#endif
+			return *this;
 		}
 
-		virtual int GetHeight() const {
-			if(Texture.ID) {
-				return ImageTexture::GetHeight();
-			}
-			else {
-				return ImageData::GetHeight();
-			}
-		}
+		virtual Image &CreateAnimation(bool create=false) override { return *this; }
 
-		gge::utils::Margins Trim(bool left=true, bool right=true, bool top=true, bool bottom=true);
+		/// Creates the blurred version of this image
+		/// @param  amount is variance of the blur. This value is measured in pixels however, image will have blurred
+		///         edges more than the given amount.
+		/// @param  windowsize is the size of the effect window. If the value is -1, the window size is automatically
+		///         determined. Reducing window size will speed up this function.
+		Image Blur(float amount, int windowsize=-1);
 
-		using graphics::ImageTexture::drawin;
+		/// Creates a smooth drop shadow by using alpha channel of this image. Resultant image has only one channel.
+		/// @param  amount is variance of the blur. This value is measured in pixels however, image will have blurred
+		///         edges more than the given amount.
+		/// @param  windowsize is the size of the effect window. If the value is -1, the window size is automatically
+		///         determined. Reducing window size will speed up this function.
+		Image Shadow(float amount, int windowsize=-1);
 
-		//DO NOT MODIFY THE SIZE OF THE BUFFER MANUALLY
-		gge::utils::CastableManagedBuffer<Byte> &getdata() { return ImageData::Data; }
+		/// Assumes all image heights are similar and all images have same color mode
+		std::vector<Geometry::Bounds> CreateLinearAtlas(const Containers::Collection<Image> &list);
 
-		static encoding::LZMA Lzma;
+		/// Creates images from the given atlas image and map. Prepares every image as well. This requires image to be prepared
+		Containers::Collection<Image> CreateAtlasImages(const std::vector<Geometry::Bounds> &boundaries) const;
+
+		/// Trims the exterior empty regions of this image, returning the trimming margins. Notice that trimming image does not
+		/// prepare the new data to be drawn, a separate call to Prepare function is necessary
+		//Geometry::Margins Trim(bool left=true, bool right=true, bool top=true, bool bottom=true);
 
 	protected:
-		virtual animation::ProgressResult::Type Progress() { return animation::ProgressResult::None; };
+		/// When used as animation, an image is always persistent and it never finishes.
+		virtual bool Progress(unsigned &leftover) override { return true; }
 
-		////Compression properties read from file, used for late loading
-		Byte *CompressionProps;
-		////Compression mode
-		Compressor Compression;
-		////Size of the image data within the file, used for late loading
-		int DataSize;
-		////Location of image data within the file, used for late loading
-		int DataLocation;
-		bool LateLoading;
+		/// Container for the image data, could be null indicating its discarded
+		Containers::Image *data = nullptr;
 
-		//Parent image when acting as an atlas node
-		const Image *parent;
+		/// Compression mode
+		CompressionMode compression;
 
-		void blurargb(float amount, int windowsize, Image *img);
-		void bluralpha(float amount, int windowsize, Image *img);
+		/// Entry point of this resource within the physical file. This value is stored for 
+		/// late loading purposes
+		unsigned long entrypoint = -1;
 
-		void shadowargb(float amount, int windowsize, Image *img);
-		void shadowalpha(float amount, int windowsize, Image *img);
+		/// Used to handle late loading
+		std::weak_ptr<File> file;
+
+		/// Whether this blob is loaded or not
+		bool isloaded = false;
 	};
 } }
-
-#pragma warning(pop)

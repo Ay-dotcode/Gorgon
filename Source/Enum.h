@@ -24,7 +24,7 @@ public:
 
 /** @page Enum
  * 
- * Gorgon Library supports streamable, parsable and enumerable enumarations. A single macro call with
+ * Gorgon Library supports stream-able, parsable and enumerable enumerations. A single macro call with
  * enum type and enum value - name pairs is all that is required. There is no need to modify original 
  * enum definition. Additionally, this system allows multiple names for a single enum value which will
  * be used while parsing a string to the enum type. If there are multiple names, first one is used
@@ -35,7 +35,7 @@ public:
  * enum class is supported. For a simple namespace enum or enum class, DefineEnumStrings macro should be 
  * used. This macro requires only the name of the enum along with the value - name pairs. Enum type 
  * supplied to the DefineEnumStrings macro cannot contain scope resolution operator. This eliminates the 
- * possiblity of using class member enums with this macro. However, for this specific purpose, 
+ * possibility of using class member enums with this macro. However, for this specific purpose, 
  * DefineEnumStringsCM macro is created. This macro allows class member enums to be used by suppling class
  * name as the first parameter.
  * 
@@ -183,7 +183,7 @@ namespace Gorgon {
 	
 	/// @endcond
 
-	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
+	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
 	/// in the same namespace as the original enumeration. Type cannot contain any scope
 	/// resolution operators. This means that class member enums cannot be used with this macro. 
@@ -205,7 +205,7 @@ namespace Gorgon {
 	};\
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
 
-	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
+	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
 	/// in the same namespace as the original enumeration. Type cannot contain any scope
 	/// resolution operators. This means that class member enums cannot be used with this macro. 
@@ -228,7 +228,7 @@ namespace Gorgon {
 	};\
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
 
-	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
+	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
 	/// in the same namespace as the original enumeration. This variant allows class member
 	/// enumerations. The first parameter should be class name, second parameter is the type, after
@@ -250,7 +250,7 @@ namespace Gorgon {
 	};\
 	gorgon_enumtraits_##type gorgon__enum_trait_locator(clsname::type);
 
-	/// This macro converts a regular C++ enumeration in to an enumarable, streamable, and parsable
+	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
 	/// in the same namespace as the original enumeration. This variant allows class member
 	/// enumerations. This variant allows class member enumerations and custom readable typename.  

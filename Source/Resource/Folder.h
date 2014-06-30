@@ -26,7 +26,7 @@ namespace Gorgon { namespace Resource {
 
 		
 		/// 01010000h, (System, Folder)
-		virtual GID::Type GetGID() const { return GID::Folder; }
+		virtual GID::Type GetGID() const override { return GID::Folder; }
 		
 
 		/// @name Collection related
@@ -151,7 +151,7 @@ namespace Gorgon { namespace Resource {
 		}
 
 		/// Prepares children to be used
-		virtual void Prepare();
+		virtual void Prepare() override;
 
 		////This function loads a folder resource from the given file
 		static Folder *LoadResource(File &file, std::istream &data, unsigned long size);

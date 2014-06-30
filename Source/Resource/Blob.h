@@ -25,7 +25,7 @@ namespace Gorgon { namespace Resource {
 		virtual ~Blob() { }
 
 		/// 04010000h (Extended, Blob)
-		virtual GID::Type GetGID() const { return GID::Blob; }
+		virtual GID::Type GetGID() const override { return GID::Blob; }
 
 		/// Size of the blob
 		unsigned long GetSize() const { return data.size(); }

@@ -1,4 +1,6 @@
 SET(Local
+	Base.h
+	Base.cpp
 	Blob.h
 	Blob.cpp
 	File.h
@@ -6,6 +8,5 @@ SET(Local
 	Folder.h
 	Folder.cpp
 	GID.h
-	Base.h
-	Base.cpp
+	Image.h
 )

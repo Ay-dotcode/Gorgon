@@ -95,7 +95,7 @@ namespace Gorgon {
 		void processmessages();
 
 		/// Moves the window to the given position
-		virtual void Move(const Geometry::Point &position);
+		virtual void Move(const Geometry::Point &position) override;
 
 		/// Resizes the window to the given size. The given size is considered as the
 		/// interior region of the window. The restrictions for the smallest
@@ -103,18 +103,18 @@ namespace Gorgon {
 		/// Largest window size can be obtained using UsableScreenRegion however,
 		/// this size does not exclude window chrome. This function resizes all window
 		/// sized layers.
-		virtual void Resize(const Geometry::Size &size);
+		virtual void Resize(const Geometry::Size &size) override;
 
 		// +GetChrome
 
 		/// Displays this window, may generate Activated event
-		virtual void Show();
+		virtual void Show() override;
 
 		/// Hides this window, may generate Deactivated event
-		virtual void Hide();
+		virtual void Hide() override;
 		
 		/// Returns whether this layer is effectively visible
-		virtual bool IsVisible() const { return isvisible; }
+		virtual bool IsVisible() const override { return isvisible; }
 
 		/// Closes the window. After this function, any use of this object might fail.
 		void Close();

@@ -201,9 +201,12 @@ namespace Gorgon {
 		public:
 			/// This constructor takes a controller and depending on the owner parameter assumes the ownership
 			/// of it. Be careful not to give the ownership of a stack allocated timer.
+			/// @warning Not every type of animation can own a timer. Best way is to handle ownership if you are
+			/// passing the timer by yourself.
 			Base(Timer &timer, bool owner=false);
 
-			/// This constructor creates a new controller depending on the create parameter. 
+			/// This constructor creates a new controller depending on the create parameter. Animation has the
+			/// right to decline to create a new timer for itself.
 			explicit Base(bool create=false);
 		
 			/// Virtual destructor
@@ -213,13 +216,22 @@ namespace Gorgon {
 			/// will assume the ownership of that controller. Current controller of this animation will
 			/// be destroyed if this animation already has a controller and has the ownership over it.
 			/// You may use disown to remove ownership of the controller.
+			/// @warning Not every type of animation can own a timer. Best way is to handle ownership if you are
+			/// passing the timer by yourself.
 			virtual void SetController(Timer &controller, bool owner=false);
 
 			/// Returns whether this animation has a controller
 			bool HasController() const { return controller!=nullptr; }
 
 			/// Returns the controller of this animation
-			Timer &GetController() const { return *controller; }
+			Timer &GetController() const { 
+#ifndef NDEBUG
+				if(!controller) {
+					throw std::runtime_error("Animation does not have a controller");
+				}
+#endif
+				return *controller; 
+			}
 
 			/// Disowns the controller that this animation has
 			void DisownController() { owner = false; }
@@ -249,6 +261,9 @@ namespace Gorgon {
 			}
 
 		protected:
+			/// Removes this animation from the animation queue
+			void RemoveMe();
+
 			/// The controller of this animation
 			Timer *controller = nullptr;
 

@@ -1,5 +1,6 @@
 SET(Local
 	../Graphics.h
+	Animations.h
 	Graphics.cpp
 	Color.h
 	Drawables.h

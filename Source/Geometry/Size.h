@@ -212,6 +212,11 @@ namespace Gorgon { namespace Geometry {
 		T_ Area() const { 
 			return Width*Height; 
 		}
+
+		/// Returns whether the size is valid, i.e. both dimensions are positive.
+		bool IsValid() const {
+			return Width>0 && Height>0;
+		}
 		
 		/// Returns the maximum representable size. This function requires T_ to be
 		/// standard arithmetic type

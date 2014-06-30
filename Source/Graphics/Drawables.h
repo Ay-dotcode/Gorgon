@@ -375,7 +375,7 @@ namespace Gorgon { namespace Graphics {
 			return TextureSource::GetSize();
 		}
 
-		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const = 0 {
+		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const {
 			controller.CalculateSize(getsize(), s);
 		}
 
@@ -395,7 +395,7 @@ namespace Gorgon { namespace Graphics {
 			target.Draw(*this, Tiling::None, r);
 		}
 
-		virtual void drawin(TextureTarget &target, const Geometry::Rectangle &r) {
+		virtual void drawin(TextureTarget &target, const Geometry::Rectangle &r) const {
 			target.Draw(*this, Tiling::Both, r);
 		}
 

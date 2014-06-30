@@ -142,6 +142,10 @@ namespace Gorgon { namespace Animation {
 		}
 	}
 
+	void Base::RemoveMe() {
+		Animations.Remove(this);
+	}
+
 	void Base::SetController( Timer &controller, bool owner ) {
 		RemoveController();
 

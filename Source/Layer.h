@@ -224,12 +224,12 @@ namespace Gorgon {
 		/// These functions modify or return the boundaries of this layer
 		
 		/// Moves this layer to the given location
-		void Move(const Geometry::Point &location) {
+		virtual void Move(const Geometry::Point &location) {
 			bounds.Move(location);
 		}
 
 		/// Resizes the layer to the given size
-		void Resize(const Geometry::Size &size) {
+		virtual void Resize(const Geometry::Size &size) {
 			bounds.Resize(size);
 		}
 
@@ -261,7 +261,7 @@ namespace Gorgon {
 		virtual void Hide() { isvisible=false; }
 		
 		/// Returns whether this layer is effectively visible
-		virtual bool IsVisible() { 
+		virtual bool IsVisible() const { 
 			if(parent && !parent->isvisible) return false;
 			
 			return isvisible;
