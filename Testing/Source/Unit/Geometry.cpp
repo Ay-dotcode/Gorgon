@@ -29,6 +29,8 @@ TEST_CASE( "Point constructors", "[Point]" ) {
 	Pointf p7;
 	Point  p8=Point::FromVector(4, 0.785398f, p1);   //45 degrees
 	Pointf p9=Pointf::FromVector(4.1, 0.785398f, p2); //45 degrees
+	Point  p10("1, 2");
+	Pointf p11("1.2, 2.2");
 
 	p5=p2;
 	p6=p2;
@@ -61,9 +63,14 @@ TEST_CASE( "Point constructors", "[Point]" ) {
 	REQUIRE( p9.X == Approx(4.099138f) );
 	REQUIRE( p9.Y == Approx(5.099138f) );
 
+	REQUIRE( p10.X == 1);
+	REQUIRE( p10.Y == 2);
+
+	REQUIRE( p11.X == Approx(1.2f) );
+	REQUIRE( p11.Y == Approx(2.2f) );
 }
 
-TEST_CASE( "Point comparison", "[Point]") {
+TEST_CASE( "Point comparison", "[Point]" ) {
 	Point  p1(1, 2);
 	Pointf p2(1.2f, 2.2f);
 	Point  p3(1, 2);
@@ -244,7 +251,7 @@ TEST_CASE( "Point geometric info", "[Point]") {
 	REQUIRE( p2.Slope(p4) == Approx(1.069767f) );
 }
 
-TEST_CASE( "Point <-> string", "[Point]") {
+TEST_CASE( "Point <-> string", "[Point]" ) {
 	
 	Point  p1("1, 2");
 	Pointf p2("(1.2f, 2.2f)");
@@ -384,7 +391,7 @@ TEST_CASE( "Point <-> string", "[Point]") {
 	REQUIRE_THROWS( Point::Parse("3,4)") );
 }
 
-TEST_CASE("Point geometry functions", "[Point]") {
+TEST_CASE( "Point geometry functions", "[Point]" ) {
 	Point  p1(1, 2);
 	Pointf p2(1.2f, 2.2f);
 	Point  p3;
@@ -537,5 +544,72 @@ TEST_CASE("Point geometry functions", "[Point]") {
 	HorizontalMirror(p4, {2, 2});
 	REQUIRE(p4.X == Approx(5.2));
 	REQUIRE(p4.Y == Approx(6.2));
+	
+}
+
+TEST_CASE( "Size constructors", "[Size]" ) {
+	Size  s1(2, 5);
+	Size  s2(4);
+	Size  s3(2.2, 5.2);
+	Sizef s4(4.4);
+	Sizef s5(2.2, 5.2);
+	Size  s6;
+	Sizef s7;
+	Size  s8(Point(2, 5));
+	Sizef s9(Pointf(2.2, 5.2));
+	Point p1(2, 5);
+	Pointf p2(2.2, 5.2);
+	Size  s10;
+	Sizef s11;
+	Size  s12("2x5");
+	Sizef s13("2.2x5.2");
+	
+	s6=s1;
+	s7=s5;
+	
+	s10=p1;
+	s11=p2;
+	
+	REQUIRE(s1.Width == 2);
+	REQUIRE(s1.Height == 5);
+	
+	REQUIRE(s2.Width == 4);
+	REQUIRE(s2.Height == 4);
+
+	REQUIRE(s3.Width == 2);
+	REQUIRE(s3.Height == 5);
+
+	REQUIRE(s4.Width == Approx(4.4));
+	REQUIRE(s4.Height == Approx(4.4));
+
+	REQUIRE(s5.Width == Approx(2.2));
+	REQUIRE(s5.Height == Approx(5.2));
+	
+	REQUIRE(s6.Width == 2);
+	REQUIRE(s6.Height == 5);
+
+	REQUIRE(s7.Width == Approx(2.2));
+	REQUIRE(s7.Height == Approx(5.2));
+	
+	REQUIRE(s8.Width == 2);
+	REQUIRE(s8.Height == 5);
+
+	REQUIRE(s9.Width == Approx(2.2));
+	REQUIRE(s9.Height == Approx(5.2));
+	
+	REQUIRE(s10.Width == 2);
+	REQUIRE(s10.Height == 5);
+
+	REQUIRE(s11.Width == Approx(2.2));
+	REQUIRE(s11.Height == Approx(5.2));
+
+	REQUIRE(s12.Width == 2);
+	REQUIRE(s12.Height == 5);
+
+	REQUIRE(s13.Width == Approx(2.2));
+	REQUIRE(s13.Height == Approx(5.2));
+}
+
+TEST_CASE( "Size comparison", "[Size]" ) {
 	
 }

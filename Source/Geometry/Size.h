@@ -26,10 +26,10 @@ namespace Gorgon { namespace Geometry {
 
 		/// Filling constructor. This variant assigns the given value to both dimensions,
 		/// effectively creating a square.
-		basic_Size(const T_ &s) : Width(s), Height(s) { }
+		explicit basic_Size(const T_ &s) : Width(s), Height(s) { }
 
 		/// Filling constructor
-		basic_Size(const T_ &W, const T_ &H) : Width(W), Height(H) { }
+		basic_Size(const T_ &w, const T_ &h) : Width(w), Height(h) { }
 
 		/// Converting constructor. Converts a different typed size object to this
 		/// type.
@@ -39,7 +39,7 @@ namespace Gorgon { namespace Geometry {
 		/// Converts a point to size object. The size a point represents is the size of the 
 		/// rectangle that starts from origin to the given point.
 		template <class O_>
-		basic_Size(const basic_Point<O_> &point) : Width((T_)point.X), Height((T_)point.Y) { }
+		explicit basic_Size(const basic_Point<O_> &point) : Width((T_)point.X), Height((T_)point.Y) { }
 		
 		/// Conversion from string
 		explicit basic_Size(const std::string &str) {
