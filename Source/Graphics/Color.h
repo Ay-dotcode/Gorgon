@@ -320,7 +320,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// Conversion to integer
 		operator int() const {
-			return int((RGBA)*this);
+			return int(this->operator RGBA());
 		}
 
 		/// Converts this color to RGBA by clipping the values

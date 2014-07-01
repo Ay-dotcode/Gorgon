@@ -310,8 +310,14 @@ namespace Gorgon {
 		/// be extracted.
 		template <class T_>
 		std::istream &operator >> (std::istream &in, basic_Point<T_> &point) {
-			while(in.peek()==' ' || in.peek()=='\t' || in.peek()=='(')
+			while(in.peek()==' ' || in.peek()=='\t')
 				in.ignore(1);
+			
+			bool par=false;
+			if(in.peek()=='(') {
+				par=true;
+				in.ignore(1);
+			}
 
 			std::string s;
 			std::stringstream ss;
@@ -337,6 +343,11 @@ namespace Gorgon {
 
 			point.Y = String::To<T_>(s);
 
+			if(par) {
+				while(in.peek()==' ' || in.peek()=='\t')
+				in.ignore(1);
+			}
+			
 			if(in.peek()==')')
 				in.ignore(1);
 
@@ -366,8 +377,8 @@ namespace Gorgon {
 		}
 
 		/// Scales the given point by the given factors for x and y coordinates.
-		template <class T_, class O_>
-		void Scale(basic_Point<T_> &point, const O_ &sizex, const O_ &sizey) {
+		template <class T_, class O1_, class O2_>
+		void Scale(basic_Point<T_> &point, const O1_ &sizex, const O2_ &sizey) {
 			point.X = T_(point.X*sizex);
 			point.Y = T_(point.Y*sizey);
 		}
@@ -382,8 +393,8 @@ namespace Gorgon {
 
 		/// Scales the given point by the given factor, considering given point
 		/// as origin.
-		template <class T_, class O_>
-		void Scale(basic_Point<T_> &point, const O_ &sizex, const O_ &sizey, const basic_Point<T_> &origin) {
+		template <class T_, class O1_, class O2_>
+		void Scale(basic_Point<T_> &point, const O1_ &sizex, const O2_ &sizey, const basic_Point<T_> &origin) {
 			point.X = T_((point.X-origin.X)*sizex+origin.X);
 			point.Y = T_((point.Y-origin.Y)*sizey+origin.Y);
 		}

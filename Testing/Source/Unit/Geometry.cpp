@@ -330,7 +330,15 @@ TEST_CASE( "Point <-> string", "[Point]" ) {
 	REQUIRE( p1 == p3 );
 	REQUIRE( p2 == p4 );
 	
+	makestream("( 1,2 ) 1.2,2.2")>>p3>>p4;
+	REQUIRE( p1 == p3 );
+	REQUIRE( p2 == p4 );
+	
 	makestream("(1.2,2.2) (1.2,2.2)")>>p3>>p4;
+	REQUIRE( p1 == p3 );
+	REQUIRE( p2 == p4 );
+	
+	makestream("1.2,2.2 1.2,2.2")>>p3>>p4;
 	REQUIRE( p1 == p3 );
 	REQUIRE( p2 == p4 );
 	
@@ -450,6 +458,21 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	Scale(p4, 2.5, {0.4, 1.4});
 	REQUIRE(p4.X == Approx(5.4));
 	REQUIRE(p4.Y == Approx(8.9));
+	
+	p3=p1;
+	Scale(p3, 2, 0.5);
+	REQUIRE(p3 == Point(2, 1));
+	Scale(p3, 2, 0.5, {2,3});
+	REQUIRE(p3 == Point(2, 2));
+	
+	p4=p2;
+	Scale(p4, 2, 0.5);
+	REQUIRE(p4.X == Approx(2.4));
+	REQUIRE(p4.Y == Approx(1.1));
+	
+	Scale(p4, 2, 0.5, {2.4,3.1});
+	REQUIRE(p4.X == Approx(2.4));
+	REQUIRE(p4.Y == Approx(2.1));
 
 	p4=p1;
 	Rotate(p4, 3.14159265359/2);
@@ -608,8 +631,336 @@ TEST_CASE( "Size constructors", "[Size]" ) {
 
 	REQUIRE(s13.Width == Approx(2.2));
 	REQUIRE(s13.Height == Approx(5.2));
+	
+	//REQUIRE( (Point)s1 == Point(2, 5) );
+	//REQUIRE( (Pointf)s2 == Pointf(4, 4) );
 }
 
 TEST_CASE( "Size comparison", "[Size]" ) {
-	
+	Size  s1(1, 2);
+	Sizef s2(1.2f, 2.2f);
+	Size  s3(1, 2);
+	Sizef s4(1.2f, 2.2f);
+	Size  s5(3, 4);
+	Sizef s6(3.3f, 7.1f);
+
+	REQUIRE( s1 == s3 );
+	REQUIRE( s2 == s4 );
+
+	REQUIRE_FALSE( s1 == s5 );
+	REQUIRE_FALSE( s2 == s6 );
+
+	REQUIRE_FALSE( s1 != s3 );
+	REQUIRE_FALSE( s2 != s4 );
+
+	REQUIRE( s1 != s5 );
+	REQUIRE( s2 != s6 );
+
+	REQUIRE( s1 == s1 );
+	REQUIRE_FALSE( s1 != s1 );
+
+	REQUIRE( s2 == s2 );
+	REQUIRE_FALSE( s2 != s2 );
 }
+
+TEST_CASE( "Size arithmetic", "[Size]" ) {
+
+	Size  s1(1, 2);
+	Sizef s2(1.2f, 2.2f);
+	Size  s3(5, 6);
+	Sizef s4(5.5f, 6.8f);
+
+	Size  s5;
+	Sizef s6;
+
+	s5=s1+s3;
+	REQUIRE( s5 == Size(6,8) );
+
+	s5=s1-s3;
+	REQUIRE( s5 == Size(-4,-4) );
+
+	s5=s1*2;
+	REQUIRE( s5 == Size(2,4) );
+
+	s5=s1/2;
+	REQUIRE( s5 == Size(0,1) );
+
+	s5=s1*1.5;
+	REQUIRE( s5 == Size(1,3) );
+
+	s5=s1/0.5;
+	REQUIRE( s5 == Size(2,4) );
+
+	s6=s2+s4;
+	REQUIRE( s6.Width == Approx(6.7f) );
+	REQUIRE( s6.Height == Approx(9.0f) );
+
+	s6=s2-s4;
+	REQUIRE( s6.Width == Approx(-4.3f) );
+	REQUIRE( s6.Height == Approx(-4.6f) );
+
+	s6=s2*2;
+	REQUIRE( s6.Width == Approx(2.4f) );
+	REQUIRE( s6.Height == Approx(4.4f) );
+
+	s6=s2/2;
+	REQUIRE( s6.Width == Approx(0.6f) );
+	REQUIRE( s6.Height == Approx(1.1f) );
+
+	s6=s2*1.5;
+	REQUIRE( s6.Width == Approx(1.8f) );
+	REQUIRE( s6.Height == Approx(3.3f) );
+
+	s6=s2/0.5;
+	REQUIRE( s6.Width == Approx(2.4f) );
+	REQUIRE( s6.Height == Approx(4.4f) );
+
+
+
+	s5=s1;
+	s5-=s3;
+	REQUIRE( s5 == Size(-4,-4) );
+	//REQUIRE_FALSE( s5.IsValid() );
+
+	s5=s1;
+	s5*=2;
+	REQUIRE( s5 == Size(2,4) );
+	//REQUIRE( s5.IsValid() );
+
+	s5=s1;
+	s5/=2;
+	REQUIRE( s5 == Size(0,1) );
+
+	s5=s1;
+	s5*=1.5;
+	REQUIRE( s5 == Size(1,3) );
+
+	s5=s1;
+	s5/=0.5;
+	REQUIRE( s5 == Size(2,4) );
+
+	
+	s6=s2;
+	s6-=s4;
+	REQUIRE( s6.Width == Approx(-4.3f) );
+	REQUIRE( s6.Height == Approx(-4.6f) );
+
+	s6=s2;
+	s6*=2;
+	REQUIRE( s6.Width == Approx(2.4f) );
+	REQUIRE( s6.Height == Approx(4.4f) );
+
+	s6=s2;
+	s6/=2;
+	REQUIRE( s6.Width == Approx(0.6f) );
+	REQUIRE( s6.Height == Approx(1.1f) );
+
+	s6=s2;
+	s6*=1.5;
+	REQUIRE( s6.Width == Approx(1.8f) );
+	REQUIRE( s6.Height == Approx(3.3f) );
+
+	s6=s2;
+	s6/=0.5;
+	REQUIRE( s6.Width == Approx(2.4f) );
+	REQUIRE( s6.Height == Approx(4.4f) );
+
+}
+
+TEST_CASE( "Size geometric info", "[Size]" ) {
+	Size  s1(1, 2);
+	Sizef s2(1.2f, 2.2f);
+	Size  s3(5, 6);
+	Sizef s4(5.5f, 6.8f);
+
+	REQUIRE( s1.Area() == 2 );
+	REQUIRE( s2.Area() == Approx(2.64) );
+	
+	REQUIRE( s3.Cells() == 30 );
+	REQUIRE( s4.Cells() == 30 );
+}
+
+TEST_CASE( "Size <-> string", "[Size]" ) {
+	
+	Size  s1("1x2");
+	Sizef s2("1.2fx2.2f");
+	Size  s3;
+	Sizef s4;
+
+	std::stringstream ss;
+	auto makestream=[&](std::string s) -> std::stringstream & {
+		s3 = {0,0};
+		s4 = {0,0};
+		
+		ss.str(s);
+		ss.clear();
+		
+		return ss;
+	};
+	
+	auto resetstream=[&] {
+		s3 = {0,0};
+		s4 = {0,0};
+		
+		ss.str("");
+		ss.clear();
+	};
+	
+	
+	makestream("1x2")>>s3;
+	REQUIRE( s1 == s3 );
+	
+	makestream("1.2x2.2")>>s3;
+	REQUIRE( s1 == s3 );
+	
+	makestream("-1.2x-2.2")>>s3;
+	REQUIRE( s1 == s3*-1 );
+	
+	
+	makestream("1x 2")>>s3;
+	REQUIRE( s1 == s3 );
+	
+	makestream("1.2 x2.2")>>s3;
+	REQUIRE( s1 == s3 );
+	
+	makestream("-1.2 x -2.2")>>s3;
+	REQUIRE( s1 == s3*-1 );
+	
+
+	makestream("1 x2")>>s3;
+	REQUIRE( s1 == s3 );
+	
+	makestream("1.2 x 2.2")>>s3;
+	REQUIRE( s1 == s3 );
+	
+	makestream("-1.2x-2.2")>>s3;
+	REQUIRE( s1 == s3*-1 );
+	
+	
+	makestream("1x2 1.2x2.2")>>s3>>s4;
+	REQUIRE( s1 == s3 );
+	REQUIRE( s2 == s4 );
+	
+	makestream("-1.2x-2.2 -1.2x-2.2")>>s3>>s4;
+	REQUIRE( s1 == s3*-1 );
+	REQUIRE( s2 == s4*-1 );
+
+	
+	REQUIRE( std::string(s1) == "1x2" );
+	
+	//Its ok to have extra zeros at the end
+	REQUIRE( Gorgon::String::Replace(std::string(s2),"0","") == "1.2x2.2" );
+	
+	REQUIRE( std::string(s1*-1) == "-1x-2" );
+	
+	
+	resetstream();
+	ss<<s1;
+	REQUIRE( Gorgon::String::Replace(ss.str(), " ","") == "1x2" );
+
+	resetstream();
+	ss<<s2;
+	REQUIRE( Gorgon::String::Replace(ss.str(), " ","") == "1.2x2.2" );
+	
+	resetstream();
+	ss<<s1;
+	makestream(ss.str())>>s3;
+	REQUIRE( s1 == s3 );
+	
+	resetstream();
+	ss<<s2;
+	makestream(ss.str())>>s4;
+	REQUIRE( s2 == s4 );
+	
+	REQUIRE( Gorgon::String::To<Size>("1x2") == s1 );
+	REQUIRE( Gorgon::String::To<Size>("1.2x2.2") == s1 );
+	REQUIRE( Gorgon::String::To<Sizef>("1.2x2.2") == s2 );
+	
+	REQUIRE( Gorgon::String::To<Size>("1 x2") == s1 );
+	REQUIRE( Gorgon::String::To<Size>("1.2x 2.2") == s1 );
+	REQUIRE( Gorgon::String::To<Sizef>("1.2 x 2.2") == s2 );
+	
+	REQUIRE( Size::Parse("3x5") == Size(3,5) );
+	REQUIRE( Size::Parse("3 x5") == Size(3,5) );
+	REQUIRE( Size::Parse("3x 5") == Size(3,5) );
+	REQUIRE( Size::Parse("3.2x5.8") == Size(3,5) );
+	REQUIRE( Size::Parse(" 3x  5 ") == Size(3,5) );
+	
+	REQUIRE_THROWS( Size::Parse("") );
+	REQUIRE_THROWS( Size::Parse("3x") );
+	REQUIRE_THROWS( Size::Parse("3xa") );
+	REQUIRE_THROWS( Size::Parse("7ax5e") );
+	REQUIRE_THROWS( Size::Parse("3,4") );
+	REQUIRE_THROWS( Size::Parse("3,4)") );
+	REQUIRE_THROWS( Size::Parse("(3,4)") );
+}
+
+TEST_CASE( "Size point interaction", "[Size][Point]" ) {
+	Point  p1(10,20);
+	Size   s1(2,5);
+	Pointf p2(1.2, 2.2);
+	Sizef  s2(2.2, 5.2);
+	Pointf p3;
+	Point  p4;
+	
+	REQUIRE( (p1*s1) == Point(20, 100) );
+	REQUIRE( (p1/s1) == Point(5, 4) );
+	REQUIRE( (p1*s2) == Pointf(22, 104) );
+	p3=(p1/s2);
+	REQUIRE( p3.X == Approx(4.5454) );
+	REQUIRE( p3.Y == Approx(3.8461) );
+	
+	p3=(p2*s1);
+	REQUIRE(  p3.X == Approx(2.4) );
+	REQUIRE(  p3.Y == Approx(11) );
+	
+	p3=(p2/s1);
+	REQUIRE(  p3.X == Approx(0.6) );
+	REQUIRE(  p3.Y == Approx(0.44) );
+
+	p3=(p2*s2);
+	REQUIRE( p3.X == Approx(2.64) );
+	REQUIRE( p3.Y == Approx(11.44) );
+
+	p3=(p2/s2);
+	REQUIRE( p3.X == Approx(0.54545) );
+	REQUIRE( p3.Y == Approx(0.42308) );
+	
+	p4=p1;
+	Scale(p4, s1);
+	REQUIRE( p4 == Point(20, 100) );
+	
+	p4=p1;
+	Scale(p4, s2);
+	REQUIRE( p4 == Point(22, 103) );
+	
+	p3=p2;
+	Scale(p3, s1);
+	REQUIRE(  p3.X == Approx(2.4) );
+	REQUIRE(  p3.Y == Approx(11) );
+	
+	p3=p2;
+	Scale(p3, s2);
+	REQUIRE( p3.X == Approx(2.64) );
+	REQUIRE( p3.Y == Approx(11.44) );
+}
+
+TEST_CASE( "Size geometric functions", "[Size]" ) {
+	Size  s1(1, 2);
+	Sizef s2(1.2f, 2.2f);
+	
+	Scale(s1, 2);
+	REQUIRE( s1 == Size(2, 4) );
+	
+	Scale(s1, 0.25);
+	REQUIRE( s1 == Size(0, 1) );
+	
+	Scale(s2, 2);
+	REQUIRE( s2.Width == Approx(2.4) );
+	REQUIRE( s2.Height == Approx(4.4) );
+	
+	Scale(s2, 0.25);
+	REQUIRE( s2.Width == Approx(0.6) );
+	REQUIRE( s2.Height == Approx(1.1) );
+}
+

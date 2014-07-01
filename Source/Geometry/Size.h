@@ -47,8 +47,6 @@ namespace Gorgon { namespace Geometry {
 			
 			while(*s==' ' || *s=='\t') s++;
 			
-			if(*s=='(') s++;
-			
 			Width=String::To<T_>(&str[s-str.begin()]);
 			
 			while(*s!='x' && s!=str.end()) s++;
@@ -180,8 +178,8 @@ namespace Gorgon { namespace Geometry {
 		/// Multiplies this size object with the given factor
 		template<class _S>
 		basic_Size operator *=(_S size) { 
-			Width=size.Width  *Width;
-			Height=size.Height*Height;
+			Width=size  *Width;
+			Height=size*Height;
 
 			return *this;
 		}
@@ -189,8 +187,8 @@ namespace Gorgon { namespace Geometry {
 		/// Divides this size object to the given factor
 		template<class _S>
 		basic_Size operator /=(_S size) { 
-			Width/=size.Width;
-			Height/=size.Height;
+			Width/=size;
+			Height/=size;
 
 			return *this;
 		}
@@ -236,7 +234,7 @@ namespace Gorgon { namespace Geometry {
 	/// Multiplies a size with a scalar, effectively resizing it.
 	template<class T_, class O_>
 	basic_Size<T_> operator *(const basic_Size<T_> &size, const O_ &factor) {
-		return{size.Width*factor, size.Height*factor};
+		return{T_(size.Width*factor), T_(size.Height*factor)};
 	}
 
 	/// Multiplies a size with a scalar, effectively resizing it.
@@ -248,7 +246,7 @@ namespace Gorgon { namespace Geometry {
 	/// Divides a size with a scalar, effectively resizing it.
 	template<class T_, class O_>
 	basic_Size<T_> operator /(const basic_Size<T_> &size, const O_ &factor) {
-		return{size.Width/factor, size.Height/factor};
+		return{T_(size.Width/factor), T_(size.Height/factor)};
 	}
 
 	/// Divides a size with a scalar, effectively resizing it.
@@ -274,7 +272,7 @@ namespace Gorgon { namespace Geometry {
 			in.ignore(1);
 
 		std::string s;
-
+		
 		while(in.peek()!='x' && !in.eof())
 			s.append(1, (char)in.get());
 
@@ -284,7 +282,7 @@ namespace Gorgon { namespace Geometry {
 		}
 		in.ignore(1);
 
-		size.Width=String::To<T_>(s);
+		auto w=String::To<T_>(s);
 
 		s="";
 
@@ -294,6 +292,7 @@ namespace Gorgon { namespace Geometry {
 		while(in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
 			s.append(1, in.get());
 
+		size.Width=w;
 		size.Height=String::To<T_>(s);
 
 		return in;
@@ -321,22 +320,22 @@ namespace Gorgon { namespace Geometry {
 	/// Scales the given size by the given factor
 	template <class T_, class O_>
 	void Scale(basic_Size<T_> &l, const O_ &size) {
-		l.X = T_(l.X*size);
-		l.Y = T_(l.X*size);
+		l.Width = T_(l.Width*size);
+		l.Height = T_(l.Height*size);
 	}
 
 	/// Scales the given size by the given factors for x and y coordinates.
-	template <class T_, class O_>
-	void Scale(basic_Size<T_> &l, const O_ &sizex, const O_ &sizey) {
-		l.X = T_(l.X*sizex);
-		l.Y = T_(l.Y*sizey);
+	template <class T_, class O1_, class O2_>
+	void Scale(basic_Size<T_> &l, const O1_ &sizex, const O2_ &sizey) {
+		l.Width = T_(l.Width*sizex);
+		l.Height = T_(l.Height*sizey);
 	}
 
 	/// Scales the given l by the given factor
 	template <class T_, class O_>
 	void Scale(basic_Size<T_> &l, const basic_Size<O_> &size) {
-		l.X = T_(l.X*size.Width);
-		l.Y = T_(l.Y*size.Height);
+		l.Width = T_(l.Width*size.Width);
+		l.Height = T_(l.Height*size.Height);
 	}
 
 

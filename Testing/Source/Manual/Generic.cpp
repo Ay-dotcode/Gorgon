@@ -11,10 +11,18 @@
 
 int main() {
 	Gorgon::Containers::Image img({100, 100}, Gorgon::Graphics::ColorMode::RGBA);
+	Gorgon::Geometry::Sizef s4;
+	
+	std::stringstream ss("1x2 1.2x2.2");
+	ss>>s3>>s4;
+	
+	std::cout<<s4<<std::endl;
+	
 	Gorgon::Resource::File file;
 
 	std::cout<<Gorgon::Filesystem::CurrentDirectory()<<std::endl;
 	Gorgon::Filesystem::ChangeDirectory("../Testing/Source/Manual");
+	
 
 	try {
 		file.LoadFile("test.gor");
