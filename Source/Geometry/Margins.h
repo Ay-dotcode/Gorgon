@@ -1,28 +1,5 @@
-//DESCRIPTION
-//	This file contains the class Margins2D which stores margins for a rectangular
-//	object. Include Utils/Bounds2D before this file for additional functionality
-//	allowing subtraction of two Bounds objects, adding or subtracting Margins
-//	object to/from Bounds objects.
+/// @file Margins.h contains Margins class
 
-//REQUIRES:
-//	GGE/Utils/Bounds2D (optional)
-
-//LICENSE
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the Lesser GNU General Public License as published by
-//	the Free Software Foundation, either version 3 of the License, or
-//	(at your option) any later version.
-//
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-//	Lesser GNU General Public License for more details.
-//
-//	You should have received a copy of the Lesser GNU General Public License
-//	along with this program. If not, see < http://www.gnu.org/licenses/ >.
-
-//COPYRIGHT
-//	Cem Kalyoncu, DarkGaze.Org (cemkalyoncu[at]gmail[dot]com)
 #pragma once
 
 #include <iostream>
@@ -32,36 +9,36 @@
 #include <iomanip>
 #include <limits>
 
-#ifdef GGE_GRAPHICS
-	#include "../Graphics/Graphics.h"
-#else
-	#include "BasicGraphics.h"
-#endif
+#include "Point.h"
+#include "Size.h"
+#include "Bounds.h"
 
-#include "Point2D.h"
-#include "Size2D.h"
-
-#ifdef GGE_XMLSERVICES
-#include "../External/XmlParser/xmlParser.h"
-#endif
-
-
-#define MARGINS2D_EXISTS
-
-
-namespace gge { namespace utils {
+namespace Gorgon { namespace Geometry {
+	
+	/// This class defines margins of an object or an area. This class is designed to be used
+	/// with Bounds object. Order of components are Left, Top, Right, Bottom. Negative margin
+	/// values are allowed.
 	template <class T_>
-	class basic_Margins2D {
+	class basic_Margins {
 	public:
-		T_ Left,Top , Right,Bottom;
 		
-		basic_Margins2D() {}
-		basic_Margins2D(T_ All) : Left(All), Right(All), Top(All), Bottom(All) { }
-		basic_Margins2D(T_ Horizontal, T_ Vertical) : Left(Horizontal), Right(Horizontal), Top(Vertical), Bottom(Vertical) { }
-		basic_Margins2D(T_ Left, T_ Top, T_ Right, T_ Bottom) : 
-			Left(Left), Right(Right), Top(Top), Bottom(Bottom) { }
+		/// Default constructor
+		basic_Margins() {}
+		
+		/// Sets all margins to the given value. Intentionally left implicit as margins can
+		/// be represented as a simple integer
+		basic_Margins(T_ all) : Left(all), Right(all), Top(all), Bottom(all) { }
+		
+		/// Sets horizontal and vertical margins separately
+		basic_Margins(T_ horizontal, T_ vertical) : Left(horizontal), Right(horizontal), 
+		Top(vertical), Bottom(vertical) { }
+		
+		/// Sets all margins separately
+		basic_Margins(T_ left, T_ top, T_ right, T_ bottom) : 
+			Left(left), Right(right), Top(top), Bottom(bottom) { }
 
-
+		/// Converts this object to a string.
+		/// TODO
 		operator std::string() const {
 			std::ostringstream str;
 			str<<"("<<Left<<", "<<Top<<", "<<Right<<", "<<Bottom<<")";
@@ -69,69 +46,40 @@ namespace gge { namespace utils {
 			return str.str();
 		}
 
-		////Calculates and returns the total margins in X axis
+		/// Calculates and returns the total margins in X axis
 		T_ TotalX() const  { return Right+Left; }
-		////Calculates and returns the total margins in Y axis
+		
+		/// Calculates and returns the total margins in Y axis
 		T_ TotalY() const { return Bottom+Top;  }
 
-		////Calculates and returns the total margins in X axis
+		/// Calculates and returns the total margins in X axis
 		T_ Horizontal() const  { return Right+Left; }
-		////Calculates and returns the total margins in Y axis
+		
+		/// Calculates and returns the total margins in Y axis
 		T_ Vertical() const { return Bottom+Top;  }
 
-		//scale, translate, rotate?, +, +=, -, -=, &&, ||
-		basic_Margins2D operator +(basic_Margins2D margin) {
-			return basic_Margins2D(Left+margin.Left, Top+margin.Top, Right+margin.Right, Bottom+margin.Bottom);
+		/// Adds two margins
+		basic_Margins operator +(const basic_Margins &right) const {
+			return basic_Margins(Left+right.Left, Top+right.Top, Right+right.Right, Bottom+right.Bottom);
 		}
-		basic_Margins2D operator +(T_ margin) {
-			return basic_Margins2D(Left+margin, Top+margin, Right+margin, Bottom+margin);
+
+		/// Subtracts two margins
+		basic_Margins operator -(const basic_Margins &right) const {
+			return basic_Margins(Left-right.Left, Top-right.Top, Right-right.Right, Bottom-right.Bottom);
 		}
-		basic_Margins2D &operator +=(T_ margin) {
-			Left+=margin;
-			Top+=margin;
-			Right+=margin;
-			Bottom+=margin;
+
+		/// Adds a margins to this one
+		basic_Margins &operator +=(const basic_Margins &right) {
+			Left+=right.Left;
+			Top+=right.Top;
+			Right+=right.Right;
+			Bottom+=right.Bottom;
 
 			return *this;
 		}
 
-		bool operator ==(const basic_Margins2D &margin) {
-			return Left==margin.Left && Right==margin.Right && Top==margin.Top && Bottom==margin.Bottom;
-		}
-
-		bool operator !=(const basic_Margins2D &margin) {
-			return Left!=margin.Left || Right!=margin.Right || Top!=margin.Top || Bottom!=margin.Bottom;
-		}
-		
-		basic_Margins2D AddToTop(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
-			return basic_Margins2D(Left, Top+margin.TotalY()+val, Right, Bottom);
-		}
-
-		basic_Margins2D AddToLeft(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
-			return basic_Margins2D(Left+margin.TotalX()+val, Top, Right, Bottom);
-		}
-
-		basic_Margins2D AddToBottom(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
-			return basic_Margins2D(Left, Top, Right, Bottom+margin.TotalY()+val);
-		}
-
-		basic_Margins2D AddToRight(T_ val,basic_Margins2D margin=basic_Margins2D(0)) {
-			return basic_Margins2D(Left, Top, Right+margin.TotalX()+val, Bottom);
-		}
-
-		basic_Point2D<T_> TopLeft() const {
-			return basic_Point2D<T_>(Left, Top);
-		}
-
-		basic_Margins2D operator -(const basic_Margins2D &right) const {
-			return basic_Margins2D(Left-right.Left, Top-right.Top, Right-right.Right, Bottom-right.Bottom);
-		}
-
-		basic_Margins2D operator +(const basic_Margins2D &right) const {
-			return basic_Margins2D(Left+right.Left, Top+right.Top, Right+right.Right, Bottom+right.Bottom);
-		}
-
-		basic_Margins2D &operator -=(const basic_Margins2D &right) {
+		/// Subtracts a margins from this one
+		basic_Margins &operator -=(const basic_Margins &right) {
 			Left-=right.Left;
 			Top-=right.Top;
 			Right-=right.Right;
@@ -140,59 +88,115 @@ namespace gge { namespace utils {
 			return *this;
 		}
 
-		basic_Margins2D &operator +=(const basic_Margins2D &right) {
-			Left+=right.Left;
-			Top+=right.Top;
-			Right+=right.Right;
-			Bottom+=right.Bottom;
-
-			return *this;
+		/// Compares two margins
+		bool operator ==(const basic_Margins &margin) const {
+			return Left==margin.Left && Right==margin.Right && Top==margin.Top && Bottom==margin.Bottom;
 		}
+
+		/// Compares two margins
+		bool operator !=(const basic_Margins &margin) const {
+			return Left!=margin.Left || Right!=margin.Right || Top!=margin.Top || Bottom!=margin.Bottom;
+		}
+
+		/// Adds an object to the left of this margins to create a new margins
+		/// marking the used area. 
+		/// @param  width of the object
+		/// @param  margins to be applied to the object
+		basic_Margins AddToLeft(T_ width,basic_Margins margins=0) {
+			return basic_Margins(Left+margins.TotalX()+width, Top, Right, Bottom);
+		}
+		
+		/// Adds an object to the top of this margins to create a new margins
+		/// marking the used area. 
+		/// @param  height of the object
+		/// @param  margins to be applied to the object
+		basic_Margins AddToTop(T_ height,const basic_Margins &margins=0) {
+			return basic_Margins(Left, Top+margins.TotalY()+height, Right, Bottom);
+		}
+
+		/// Adds an object to the right of this margins to create a new margins
+		/// marking the used area. 
+		/// @param  width of the object
+		/// @param  margins to be applied to the object
+		basic_Margins AddToRight(T_ width,basic_Margins margins=0) {
+			return basic_Margins(Left, Top, Right+margins.TotalX()+width, Bottom);
+		}
+
+		/// Adds an object to the bottom of this margins to create a new margins
+		/// marking the used area. 
+		/// @param  height of the object
+		/// @param  margins to be applied to the object
+		basic_Margins AddToBottom(T_ height,basic_Margins margins=0) {
+			return basic_Margins(Left, Top, Right, Bottom+margins.TotalY()+height);
+		}
+
+		/// Top left coordinate of the object that will be placed within a <0:inf, 0:inf> bounds
+		/// that has this margins.
+		basic_Point<T_> TopLeft() const {
+			return {Left, Top};
+		}
+
+		/// Left margin
+		T_ Left;
+		
+		/// Top margin
+		T_ Top;
+		
+		/// Right margin
+		T_ Right;
+		
+		/// Bottom margin
+		T_ Bottom;
 	};
 
+	/// Adds a margins object to a size structure, resultant size can contain previous size
+	/// with the given margins
 	template <typename T_, typename R_>
-	basic_Size2D<T_> operator +(const basic_Size2D<T_> &s, const basic_Margins2D<R_> &m) {
-		return basic_Size2D<T_>(s.Width+m.TotalX(), s.Height+m.TotalY());
+	basic_Size<T_> operator +(const basic_Size<T_> &s, const basic_Margins<R_> &m) {
+		return basic_Size<T_>(s.Width+m.TotalX(), s.Height+m.TotalY());
 	}
 
+	/// Subtracts a margins from a size
 	template <typename T_, typename R_>
-	basic_Size2D<T_> operator -(const basic_Size2D<T_> &s, const basic_Margins2D<R_> &m) {
-		return basic_Size2D<T_>(s.Width-m.TotalX(), s.Height-m.TotalY());
+	basic_Size<T_> operator -(const basic_Size<T_> &s, const basic_Margins<R_> &m) {
+		return basic_Size<T_>(s.Width-m.TotalX(), s.Height-m.TotalY());
 	}
 
-
-#ifdef BOUNDS2D_EXISTS
+	/// Subtracts two bounds to find marginal difference between them.
 	template <typename T_, typename R_>
-	basic_Margins2D<T_> operator -(const basic_Bounds2D<T_> &b1, const basic_Bounds2D<R_> &b2) {
-		return basic_Margins2D<T_>(
+	basic_Margins<T_> operator -(const basic_Bounds<T_> &b1, const basic_Bounds<R_> &b2) {
+		return basic_Margins<T_>(
 			b2.Left-b1.Left, b2.Top-b1.Top, b1.Right-b2.Right, b1.Bottom-b2.Bottom
-			);
+		);
 	}
 
+	/// Adds a margins object to a bounds
 	template <typename T_, typename R_>
-	basic_Bounds2D<T_> operator +(const basic_Bounds2D<T_> &b, const basic_Margins2D<R_> &m) {
-		return basic_Bounds2D<T_>(
+	basic_Bounds<T_> operator +(const basic_Bounds<T_> &b, const basic_Margins<R_> &m) {
+		return basic_Bounds<T_>(
 			b.Left-m.Left, b.Top-m.Top, b.Right+m.Right, b.Bottom+m.Bottom
 			);
 	}
 
+	/// Removes a margins object from a bounds object, 
 	template <typename T_, typename R_>
-	basic_Bounds2D<T_> operator -(const basic_Bounds2D<T_> &b, const basic_Margins2D<R_> &m) {
-		return basic_Bounds2D<T_>(
+	basic_Bounds<T_> operator -(const basic_Bounds<T_> &b, const basic_Margins<R_> &m) {
+		return basic_Bounds<T_>(
 			b.Left+m.Left, b.Top+m.Top, b.Right-m.Right, b.Bottom-m.Bottom
-			);
+		);
 	}
-#endif
 
 	////Allows streaming of margins.
 	template <class T_>
-	std::ostream &operator << (std::ostream &out, const basic_Margins2D<T_> &margins) {
+	std::ostream &operator << (std::ostream &out, const basic_Margins<T_> &margins) {
 		out<<"("<<margins.Left<<", "<<margins.Right<<", "<<margins.Top<<", "<<margins.Bottom<<")";
 
 		return out;
 	}
+	
+	/// Allows margins to be read from a stream
 	template <class T_>
-	std::istream &operator >> (std::istream &in, basic_Margins2D<T_> &margins) {
+	std::istream &operator >> (std::istream &in, basic_Margins<T_> &margins) {
 		while(in.peek()==' ' || in.peek()=='(')
 			in.ignore(1);
 
@@ -255,22 +259,5 @@ namespace gge { namespace utils {
 	}
 
 
-
-	template<class T_>
-	basic_Margins2D<T_> &operator +=(basic_Margins2D<T_> &l, const basic_Margins2D<T_> &r) {
-		l.Left+=r.Left;
-		l.Top+=r.Top;
-		l.Right+=r.Right;
-		l.Bottom+=r.Bottom;
-
-		return l;
-	}
-
-#ifdef GRAPH_USEDOUBLE
-	typedef basic_Margins2D<double> Margins2D;
-#else
-	typedef basic_Margins2D<float> Margins2D;
-#endif
-
-	typedef basic_Margins2D<int> Margins;
+	typedef basic_Margins<int> Margins;
 } }

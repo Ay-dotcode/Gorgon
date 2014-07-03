@@ -782,7 +782,7 @@ TEST_CASE( "Size geometric info", "[Size]" ) {
 
 TEST_CASE( "Size <-> string", "[Size]" ) {
 	
-	Size  s1("1x2");
+	Size  s1("1,2");
 	Sizef s2("1.2fx2.2f");
 	Size  s3;
 	Sizef s4;

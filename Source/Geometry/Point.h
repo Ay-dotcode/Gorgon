@@ -13,7 +13,16 @@
 #include "../String.h"
 
 namespace Gorgon {
-	/// This namespace contains geometric element classes
+	/** This namespace contains geometric element classes. Geometric objects are constructed without
+	 *  value initialization. Most objects can be converted to each other. Non member transformations
+	 * are defined for all objects. However, some transformations cannot be applied to some objects
+	 * and does not exists (e.g. Scale for Size). Necessary operators are defined between the objects
+	 * as well as within the objects. For instance a rectangle can be multiplied by a size. Additionally
+	 * Every geometric object has its unique string representation. They can be streamed as strings, read
+	 * from a stream or converted from/to string. Regardless of type, string constructors allow the use of
+	 * comma separated lists. Additionally, a static parse function exists in all objects that throws in case 
+	 * of a syntax error.
+	 */
 	namespace Geometry {
 
 		/// This class represents a 2D point.
@@ -331,7 +340,7 @@ namespace Gorgon {
 			}
 			in.ignore(1);
 
-			point.X = String::To<T_>(s);
+			auto x = String::To<T_>(s);
 
 			s="";
 
@@ -340,7 +349,10 @@ namespace Gorgon {
 
 			while(in.peek()!=')' && in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
 				s.push_back(in.get());
+			
+			if(in.bad()) return in;
 
+			point.X = x;
 			point.Y = String::To<T_>(s);
 
 			if(par) {

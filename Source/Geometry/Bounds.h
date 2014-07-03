@@ -371,7 +371,7 @@ namespace Gorgon { namespace Geometry {
 	};
 
 
-	/// Allows streaming of bounds. in string representation, bounds is show as
+	/// Allows streaming of bounds. in string representation, bounds is shown as
 	/// <x_s-x_e , y_s-y_e>
 	template <class T_>
 	std::ostream &operator << (std::ostream &out, const basic_Bounds<T_> &bounds) {
