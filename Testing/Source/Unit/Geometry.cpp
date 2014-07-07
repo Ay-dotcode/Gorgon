@@ -964,3 +964,4 @@ TEST_CASE( "Size geometric functions", "[Size]" ) {
 	REQUIRE( s2.Height == Approx(1.1) );
 }
 
+

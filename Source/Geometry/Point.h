@@ -25,7 +25,8 @@ namespace Gorgon {
 	 */
 	namespace Geometry {
 
-		/// This class represents a 2D point.
+		/// This class represents a 2D point. Points are serialized to string as (X, Y) form. However,
+		/// unserialization, by default, accepts X, Y as well.
 		template <class T_>
 		class basic_Point {
 		public:
@@ -37,7 +38,7 @@ namespace Gorgon {
 
 			/// Conversion from a different point type
 			template <class O_>
-			basic_Point(const basic_Point<O_> &point) : X((T_)point.X), Y((T_)point.Y) { }
+			explicit basic_Point(const basic_Point<O_> &point) : X((T_)point.X), Y((T_)point.Y) { }
 			
 			/// Conversion from string
 			explicit basic_Point(const std::string &str) {
