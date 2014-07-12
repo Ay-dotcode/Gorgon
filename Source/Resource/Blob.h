@@ -71,8 +71,8 @@ namespace Gorgon { namespace Resource {
 		/// Appends the given file to the end of the blob data
 		bool AppendFile(const std::string &filename);
 
-		////This function loads a sound resource from the given file
-		static Blob *LoadResource(File &File, std::istream &data, unsigned long size);
+		/// This function loads a blob resource from the given file
+		static Blob *LoadResource(File &file, std::istream &data, unsigned long size);
 
 	protected:
 

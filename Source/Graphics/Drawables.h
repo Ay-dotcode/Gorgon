@@ -363,45 +363,47 @@ namespace Gorgon { namespace Graphics {
 
 	/// This is a solid texture based image. It handles the drawing automatically. Does not supply implementation
 	/// for Texture.
-	class Image : public virtual RectangularDrawable, public virtual TextureSource {
+	class Image : public virtual RectangularDrawable, protected virtual TextureSource {
 	public:
 
 	protected:
-		virtual Geometry::Size getsize() const {
-			return TextureSource::GetSize();
+		virtual Geometry::Size getsize() const override {
+			return TextureSource::GetImageSize();
 		}
 
-		virtual Geometry::Size calculatesize(const Geometry::Size &s) const {
-			return TextureSource::GetSize();
+		virtual Geometry::Size calculatesize(const Geometry::Size &s) const override {
+			return TextureSource::GetImageSize();
 		}
 
-		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const {
-			controller.CalculateSize(getsize(), s);
+		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override {
+			return controller.CalculateSize(getsize(), s);
 		}
 
 		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
-			const Geometry::Pointf &p3, const Geometry::Pointf &p4) const {
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4) const override {
 			target.Draw(*this, p1, p2, p3, p4);
 		}
 
 		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 			const Geometry::Pointf &p3, const Geometry::Pointf &p4,
 			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2,
-			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4) const {
+			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4) const override {
 			target.Draw(*this, p1, p2, p3, p4, tex1, tex2, tex3, tex4);
 		}
 
-		virtual void drawstretched(TextureTarget &target, const Geometry::Rectangle &r) const {
+		virtual void drawstretched(TextureTarget &target, const Geometry::Rectangle &r) const override {
 			target.Draw(*this, Tiling::None, r);
 		}
 
-		virtual void drawin(TextureTarget &target, const Geometry::Rectangle &r) const {
+		virtual void drawin(TextureTarget &target, const Geometry::Rectangle &r) const override {
 			target.Draw(*this, Tiling::Both, r);
 		}
 
-		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectangle &r) const { 
+		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectangle &r) const override {
 			target.Draw(*this, controller.GetTiling(), controller.CalculateArea(getsize(), r.GetSize())+r.TopLeft());
 		}
+
+		virtual void overrideme() const =0;
 	};
 
 } }

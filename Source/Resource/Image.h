@@ -16,21 +16,17 @@ namespace Gorgon { namespace Resource {
 	/// two color modes (ARGB and AL); lzma and jpg compressions
 	class Image : 
 		public Base, public virtual Graphics::RectangularAnimationProvider, public virtual Graphics::Image,
-		public virtual Graphics::RectangularAnimation, public virtual Graphics::Texture
+		public virtual Graphics::RectangularAnimation, private virtual Graphics::Texture, public virtual Graphics::TextureSource
 	{
 	public:
 
-		enum CompressionMode {
-			Uncompressed=0,
-			LZMA	= 0xF0030100,
-			JPEG	= 0xF0030300,
-			PNG		= 0xF0030400,
-		};
-
+		/// Default constructor will create and empty image
 		Image() {
 
 		}
 
+		/// Creates an uninitialized image of the given size and color mode. Prepare function should be called
+		/// to be able to draw this image.
 		explicit Image(const Geometry::Size &size, Graphics::ColorMode mode=Graphics::ColorMode::RGBA) : 
 		data(new Containers::Image{size, mode}) {
 
@@ -43,19 +39,53 @@ namespace Gorgon { namespace Resource {
 			RemoveMe();
 		}
 
+		/// Copy constructor is disabled. 
 		Image(const Image &) = delete;
 
+		/// Move constructor
 		Image(Image &&other) {
 			Swap(other);
 		}
 
+		/// Swaps two images, mostly used for move constructor
 		void Swap(Image &other) {
 			using std::swap;
 
 			swap(data, other.data);
-
-			//...
+			swap(compression, other.compression);
+			swap(entrypoint, other.entrypoint);
+			swap(file, other.file);
+			swap(isloaded, other.isloaded);
+			
+			Graphics::Texture::Swap(other);
 		}
+
+		Image &operator =(Image &&other) {
+			Discard();
+			Graphics::Texture::Destroy();
+
+			Swap(other);
+		}
+
+		/// Duplicates this image. Only the data portion is duplicated. No other information is
+		/// transferred to the image. Omitted information includes resource related data and
+		/// texture related data. Therefore, before drawing the newly duplicated image, it should
+		/// be prepared for drawing to work.
+		Image Duplicate() const {
+			Image img;
+			if(data)
+				img.Assign(*data);
+
+			return img;
+		}
+
+		/// Destroys image data
+		virtual ~Image() {
+			if(data) delete data;
+		}
+
+		/// if used as animation, this object will not be deleted
+		virtual void DeleteAnimation() override { }
 
 		virtual GID::Type GetGID() const { return GID::Image; }
 
@@ -248,7 +278,7 @@ namespace Gorgon { namespace Resource {
 		/// a modification to the image data. Image texture size takes precedence if this happens.
 		Geometry::Size GetSize() const {
 			if(Graphics::Texture::id!=0) {
-				return Graphics::Texture::GetSize();
+				return Graphics::Texture::GetImageSize();
 			}
 			else if(data) {
 				return data->GetSize();
@@ -270,29 +300,21 @@ namespace Gorgon { namespace Resource {
 
 		/// Imports a PNG file to become the new data of this image resource. Notice that importing does not
 		/// prepare the data to be drawn, a separate call to Prepare function is necessary
-		void ImportPNG(std::string filename);
+		void ImportPNG(const std::string &std::string filename);
 
 		/// Imports a JPEG file to become the new data of this image resource. Notice that importing does not
 		/// prepare the data to be drawn, a separate call to Prepare function is necessary
-		void ImportJPEG(std::string filename);
+		void ImportJPEG(const std::string &std::string filename);
 
 		/// Imports an image file to become the new data of this image resource. Type of the image is determined
 		/// from the extension. If the extension is not available please use either ImportPNG or ImportJPEG functions.
 		/// Notice that importing does not prepare the data to be drawn, a separate call to Prepare function is necessary
-		void Import(std::string filename);
+		void Import(const std::string &std::string filename);
 
 		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it.
-		bool ExportPNG(std::string filename);
+		bool ExportPNG(const std::string &filename);
 
-
-		/// Destroys image data
-		virtual ~Image() { 
-			if(data) delete data;
-		}
-
-		/// if used as animation, this object will not be deleted
-		virtual void DeleteAnimation() override { } 
 
 		virtual Image &CreateAnimation(Gorgon::Animation::Timer &controller, bool owner=false) override { 
 #ifndef NDEBUG
@@ -305,19 +327,31 @@ namespace Gorgon { namespace Resource {
 
 		virtual Image &CreateAnimation(bool create=false) override { return *this; }
 
-		/// Creates the blurred version of this image
+		/// Creates the blurred version of this image as a new separate image. This function creates another image since
+		/// it is not possible to apply blur in place. You may use move assignment to modify the original `img = img.Blur(1.2);`
 		/// @param  amount is variance of the blur. This value is measured in pixels however, image will have blurred
 		///         edges more than the given amount.
 		/// @param  windowsize is the size of the effect window. If the value is -1, the window size is automatically
 		///         determined. Reducing window size will speed up this function.
-		Image Blur(float amount, int windowsize=-1);
+		Image Blur(float amount, int windowsize=-1) const;
 
-		/// Creates a smooth drop shadow by using alpha channel of this image. Resultant image has only one channel.
+		/// Creates a smooth drop shadow by using alpha channel of this image. Resultant image has Grayscale_Alpha color
+		/// mode. This function creates another image since it is not possible to apply blur in place. You may use move 
+		/// assignment to modify the original `img = img.Blur(1.2);`
 		/// @param  amount is variance of the blur. This value is measured in pixels however, image will have blurred
 		///         edges more than the given amount.
 		/// @param  windowsize is the size of the effect window. If the value is -1, the window size is automatically
 		///         determined. Reducing window size will speed up this function.
-		Image Shadow(float amount, int windowsize=-1);
+		Image Shadow(float amount, int windowsize=-1) const;
+
+		/// Transforms this image to a grayscale image. This function has no effect if the image is already grayscale
+		/// @param  ratio of the transformation. If ratio is 0, image is not modified. If the ratio is 1, image will be transformed
+		///         into fully grayscale image. Values between 0 and 1 will desaturate the image depending on the given ratio.
+		///         If the ratio is 1, color mode of the image will be modified to Grayscale or Grayscale_Alpha.
+		void Grayscale(float ratio=1.0f);
+
+		/// This function removes transparency information from the image
+		void StripTransparency();
 
 		/// Assumes all image heights are similar and all images have same color mode
 		std::vector<Geometry::Bounds> CreateLinearAtlas(const Containers::Collection<Image> &list);
@@ -329,15 +363,31 @@ namespace Gorgon { namespace Resource {
 		/// prepare the new data to be drawn, a separate call to Prepare function is necessary
 		//Geometry::Margins Trim(bool left=true, bool right=true, bool top=true, bool bottom=true);
 
+		/// Loads the image from the disk. This function requires image to be tied to a resource file.
+		bool Load();
+
+		/// Returns whether the image data is loaded. Data loading is a valid information in only resource context. If this image
+		/// is created manually, it is always considered loaded even if no data is set for it.
+		bool IsLoaded() const { return isloaded; }
+
+		/// This function loads a image resource from the given file
+		static Image *LoadResource(File &file, std::istream &data, unsigned long size);
+
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.
 		virtual bool Progress(unsigned &leftover) override { return true; }
+
+		using Texture::GetImageSize;
+		virtual void overrideme() const override { }
+
+		/// Loads the image from the data stream
+		bool load(std::istream &data, unsigned long size, bool forceload);
 
 		/// Container for the image data, could be null indicating its discarded
 		Containers::Image *data = nullptr;
 
 		/// Compression mode
-		CompressionMode compression;
+		GID::Type compression;
 
 		/// Entry point of this resource within the physical file. This value is stored for 
 		/// late loading purposes
@@ -346,7 +396,7 @@ namespace Gorgon { namespace Resource {
 		/// Used to handle late loading
 		std::weak_ptr<File> file;
 
-		/// Whether this blob is loaded or not
-		bool isloaded = false;
+		/// Whether this image resource is loaded or not
+		bool isloaded = true;
 	};
 } }

@@ -6,6 +6,7 @@
 
 #include "../Types.h"
 #include "../Geometry/Size.h"
+#include "../Containers/Image.h"
 
 extern "C" {
 	struct png_struct_def;
@@ -26,15 +27,6 @@ namespace Gorgon { namespace Encoding {
 		public:
 			void (*Write)(png_struct_def *p, unsigned char *buf, size_t size);
 		};
-
-		class Buffer {
-		public:
-			virtual ~Buffer() {}
-			
-			virtual unsigned char *Offset(int offset)=0;
-			virtual void Resize(int size)=0;
-		};
-
 
 		//Vector streamers
 		class VectorReader;
@@ -76,27 +68,6 @@ namespace Gorgon { namespace Encoding {
 		inline Writer *ReadyWriteStruct(std::vector<Byte> &vec) {
 			return new VectorWriter(vec);
 		}
-		
-		class VectorBuffer : public Buffer {
-		public:
-			VectorBuffer(std::vector<Byte> &vector) : vector(vector) {
-
-			}
-
-			virtual unsigned char *Offset(int offset) {
-				return &vector[offset];
-			}
-			virtual void Resize(int size) {
-				vector.resize(size);
-			}
-
-		protected:
-			std::vector<Byte> &vector;
-		};
-
-		inline Buffer *CreateBuffer(std::vector<Byte> &vector) {
-			return new VectorBuffer(vector);
-		}
 
 
 		//Array streamers
@@ -116,7 +87,7 @@ namespace Gorgon { namespace Encoding {
 			return new ArrayReader(vec);
 		}
 		inline unsigned long long GetReadSize(const Byte *vec) {
-			return (unsigned long long)(long long)-1;
+			return (unsigned long long)-1ll;
 		}
 		inline void ArraySeek(Reader *r, long long addr) {
 			ArrayReader *reader=(ArrayReader *)r;
@@ -139,30 +110,6 @@ namespace Gorgon { namespace Encoding {
 		};
 		inline Writer *ReadyWriteStruct(Byte *vec) {
 			return new ArrayWriter(vec);
-		}
-
-		class ArrayBuffer : public Buffer {
-		public:
-			ArrayBuffer(Byte *&array) : array(array) {
-
-			}
-
-			virtual unsigned char *Offset(int offset) {
-				return &array[offset];
-			}
-			virtual void Resize(int size) {
-				if(array)
-					array=(Byte*)std::realloc(array, size);
-				else
-					array=(Byte*)std::malloc(size);
-			}
-
-		protected:
-			Byte *&array;
-		};
-
-		inline Buffer *CreateBuffer(Byte *&array) {
-			return new ArrayBuffer(array);
 		}
 
 
@@ -218,45 +165,36 @@ namespace Gorgon { namespace Encoding {
 	class PNG {
 	public:
 
-		/// A structure to contain decoded image information.
-		struct Info {
-			/// The size of the image
-			Geometry::Size Size;
-
-			/// Whether the alpha channel is available
-			bool Alpha;
-		};
 
 
-		/// Encodes a given input with the specified size to the output. Currently this system supports vector, array and stream
+		/// Encodes a given input. Currently this system supports vector, array and stream
 		/// reader and writers. Both vectors and arrays are resized automatically.
 		/// @warning Array write buffer should either be a nullptr of type Byte or an array allocated with malloc. This system uses
 		/// realloc or malloc to resize raw arrays.
 		/// @throws runtime_error in case of an encoding error
-		template <class I_, class O_>
-		void Encode(I_ &input, O_ &output, const Geometry::Size &size) {
-			encode(png::CreateBuffer(input), png::ReadyWriteStruct(output), size.Width, size.Height);
+		template <class O_>
+		void Encode(const Containers::Image &input, O_ &output) {
+			encode(input, png::ReadyWriteStruct(output), size.Width, size.Height);
 		}
 
 		/// Decodes the given PNG data. This function returns necessary information that is extracted from the 
 		/// data. Currently this system supports vector, array and stream reader and writers. Both vectors and 
 		/// arrays are resized automatically. Use Gorgon::Resource::Image::Import function to create an image from
-		/// the given PNG data.
-		/// @warning Array write buffer should either be a nullptr of type Byte or an array allocated with malloc. This system uses
-		/// realloc or malloc to resize raw arrays.
+		/// the given PNG file. This function may produce an image with the following color modes: Grayscale, 
+		/// Grayscale_Alpha, RGB, RGBA
 		/// @throws runtime_error in case of a read error
-		template <class I_, class O_>
-		Info Decode(I_ &input, O_ &output) {
-			return decode(png::ReadyReadStruct(input), png::CreateBuffer(output));
+		template <class I_>
+		void Decode(I_ &input, Containers::Image &output) {
+			return decode(png::ReadyReadStruct(input), output);
 		}
 
 
 	protected:
 		/// Performs actual encoding
-		void encode(png::Buffer *buffer,png::Writer *write, int width, int height);
+		void encode(const Containers::Image &input, png::Writer *write);
 
 		/// Performs actual decoding
-		Info decode(png::Reader *reader,png::Buffer *buffer);
+		void decode(png::Reader *reader, Containers::Image &output);
 
 	};
 

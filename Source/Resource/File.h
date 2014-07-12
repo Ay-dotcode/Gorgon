@@ -198,38 +198,65 @@ namespace Gorgon { namespace Resource {
 		/// might differ in encoding depending on the file version. Make sure a file is open before invoking these functions
 		/// no runtime checks will be performed.
 
+		/// Reads an enumeration as 32-bit integer from the stream.
+		template<class E_>
+		E_ ReadEnum32() {
+			int32_t r;
+			file->read(reinterpret_cast<char*>(&r), sizeof(int32_t));
+
+			return E_(r);
+		}
+
 		/// Reads a 32-bit integer from the stream. A long is at least 32 bits, could be more
 		/// however, only 4 bytes will be read from the stream
 		long ReadInt32() {
 			int32_t r;
-			file->read(reinterpret_cast<char*>(&r), 4);
+			file->read(reinterpret_cast<char*>(&r), sizeof(int32_t));
 
 			return r;
 		}
 
 		/// Reads a 32-bit unsigned integer from the stream. An unsigned long is at least 32 bits, could be more
 		/// however, only 4 bytes will be read from the stream
-		long ReadUInt32() {
+		unsigned long ReadUInt32() {
 			uint32_t r;
-			file->read(reinterpret_cast<char*>(&r), 4);
+			file->read(reinterpret_cast<char*>(&r), sizeof(uint32_t));
 
 			return r;
 		}
 
 		/// Reads a 16-bit integer from the stream. An int is at least 16 bits, could be more
 		/// however, only 2 bytes will be read from the stream
-		long ReadInt16() {
+		int ReadInt16() {
 			int16_t r;
-			file->read(reinterpret_cast<char*>(&r), 2);
+			file->read(reinterpret_cast<char*>(&r), sizeof(int16_t));
 
 			return r;
 		}
 
-		/// Reads a 32-bit unsigned integer from the stream. An unsigned int is at least 32 bits, could be more
+		/// Reads a 16-bit unsigned integer from the stream. An unsigned int is at least 32 bits, could be more
 		/// however, only 2 bytes will be read from the stream
-		long ReadUInt16() {
+		unsigned ReadUInt16() {
 			uint16_t r;
-			file->read(reinterpret_cast<char*>(&r), 2);
+			file->read(reinterpret_cast<char*>(&r), sizeof(uint16_t));
+
+			return r;
+		}
+
+		/// Reads an 8-bit integer from the stream. A char is at least 8 bits, could be more
+		/// however, only 1 byte will be read from the stream
+		char ReadInt8() {
+			int8_t r;
+			file->read(reinterpret_cast<char*>(&r), sizeof(int8_t));
+
+			return r;
+		}
+
+		/// Reads an 8-bit unsigned integer from the stream. A char is at least 8 bits, could be more
+		/// however, only 1 byte will be read from the stream
+		Byte ReadUInt8() {
+			uint8_t r;
+			file->read(reinterpret_cast<char*>(&r), sizeof(uint8_t));
 
 			return r;
 		}
@@ -280,6 +307,11 @@ namespace Gorgon { namespace Resource {
 			file->read(&ret[0], size);
 
 			return ret;
+		}
+
+		template<class T_>
+		void ReadArray(T_ *data, unsigned long size) {
+			file->read((char*)data, size);
 		}
 
 		/// Reads a GID from the given stream.

@@ -438,10 +438,10 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	Scale(p3, 2);
 	REQUIRE(p3 == Point(2, 4));
 
-	Scale(p3, 2, {1,6});
+	Scale(p3, 2, Point{1,6});
 	REQUIRE(p3 == Point(3, 2));
 
-	Scale(p3, 0.5, {1,6});
+	Scale(p3, 0.5, Point{1, 6});
 	REQUIRE(p3 == Point(2, 4));
 
 	Scale(p3, 0.5);
@@ -455,7 +455,7 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	REQUIRE(p4.X == Approx(2.4));
 	REQUIRE(p4.Y == Approx(4.4));
 	
-	Scale(p4, 2.5, {0.4, 1.4});
+	Scale(p4, 2.5, Pointf{0.4f, 1.4f});
 	REQUIRE(p4.X == Approx(5.4));
 	REQUIRE(p4.Y == Approx(8.9));
 	
@@ -480,7 +480,7 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	REQUIRE(p4.Y == Approx(1));
 	
 	p4={3, 4};
-	Rotate(p4, 3.14159265359/2, {2,2});
+	Rotate(p4, 3.14159265359/2, Pointf{2,2});
 	REQUIRE(p4.X == Approx(0));
 	REQUIRE(p4.Y == Approx(3));
 	
@@ -495,12 +495,12 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	REQUIRE(p4.Y == Approx(p2.Y+1.2*0.2));
 	
 	p4=p2;
-	SkewX(p4, 0.2, {2,2});
+	SkewX(p4, 0.2, Pointf{2,2});
 	REQUIRE(p4.X == Approx(p2.X+0.2*0.2));
 	REQUIRE(p4.Y == p2.Y);
 	
 	p4=p2;
-	SkewY(p4, 0.2, {2,2});
+	SkewY(p4, 0.2, Pointf{2,2});
 	REQUIRE(p4.X == p2.X);
 	REQUIRE(p4.Y == Approx(p2.Y-0.8*0.2));
 
@@ -512,10 +512,10 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	ReflectX(p3);
 	REQUIRE(p3 == Point(-1, -2));
 	
-	ReflectY(p3, {2, 2});
+	ReflectY(p3, Point{2, 2});
 	REQUIRE(p3 == Point(5, -2));
 	
-	ReflectX(p3, {2, 2});
+	ReflectX(p3, Point{2, 2});
 	REQUIRE(p3 == Point(5, 6));
 	
 	
@@ -528,11 +528,11 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	REQUIRE(p4.X == Approx(-1.2));
 	REQUIRE(p4.Y == Approx(-2.2));
 	
-	ReflectY(p4, {2, 2});
+	ReflectY(p4, Pointf{2, 2});
 	REQUIRE(p4.X == Approx(5.2));
 	REQUIRE(p4.Y == Approx(-2.2));
 	
-	ReflectX(p4, {2, 2});
+	ReflectX(p4, Pointf{2, 2});
 	REQUIRE(p4.X == Approx(5.2));
 	REQUIRE(p4.Y == Approx(6.2));
 
@@ -544,10 +544,10 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	HorizontalMirror(p3);
 	REQUIRE(p3 == Point(-1, -2));
 	
-	VerticalMirror(p3, {2, 2});
+	VerticalMirror(p3, Point{2, 2});
 	REQUIRE(p3 == Point(5, -2));
 	
-	HorizontalMirror(p3, {2, 2});
+	HorizontalMirror(p3, Point{2, 2});
 	REQUIRE(p3 == Point(5, 6));
 	
 	
@@ -560,11 +560,11 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	REQUIRE(p4.X == Approx(-1.2));
 	REQUIRE(p4.Y == Approx(-2.2));
 	
-	VerticalMirror(p4, {2, 2});
+	VerticalMirror(p4, Pointf{2, 2});
 	REQUIRE(p4.X == Approx(5.2));
 	REQUIRE(p4.Y == Approx(-2.2));
 	
-	HorizontalMirror(p4, {2, 2});
+	HorizontalMirror(p4, Pointf{2, 2});
 	REQUIRE(p4.X == Approx(5.2));
 	REQUIRE(p4.Y == Approx(6.2));
 	

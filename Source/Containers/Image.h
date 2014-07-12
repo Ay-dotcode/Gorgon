@@ -66,6 +66,10 @@ namespace Gorgon {
 					throw std::runtime_error("Image size cannot be negative");
 #endif
 
+				// Check if resize is really necessary
+				if(this->size==size && this->bpp==Graphics::GetBytesPerPixel(mode))
+					return;
+
 				this->size   = size;
 				this->mode   = mode;
 				this->bpp    = Graphics::GetBytesPerPixel(mode);
@@ -231,6 +235,10 @@ namespace Gorgon {
 				return size;
 			}
 
+			unsigned long GetTotalSize() const {
+				return size.Area()*bpp;
+			}
+
 			/// Returns the color mode of the image
 			Graphics::ColorMode GetMode() const {
 				return mode;
@@ -256,7 +264,7 @@ namespace Gorgon {
 		};
 
 		/// Swaps two images. Should be used unqualified for ADL.
-		void swap(Image &l, Image &r) {
+		inline void swap(Image &l, Image &r) {
 			l.Swap(r);
 		}
 

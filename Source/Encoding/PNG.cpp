@@ -51,9 +51,11 @@ namespace Gorgon { namespace Encoding {
 		}
 	}
 
-	PNG::Info PNG::decode(png::Reader *reader,png::Buffer *buffer) {
+	void PNG::decode(png::Reader *reader,Containers::Image &buffer) {
 		unsigned char **  row_pointers;
-		Info inf;
+		Geometry::Size size;
+
+		Graphics::ColorMode mode;
 
 		try {
 			png_structp png_ptr;
@@ -74,6 +76,11 @@ namespace Gorgon { namespace Encoding {
 				throw std::runtime_error("Cannot create PNG info struct");
 			}
 
+			if(setjmp(png_ptr->longjmp_buffer)) {
+				png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+				throw std::runtime_error("Cannot read PNG file");
+			}
+
 			png_set_read_fn(png_ptr, (void*)reader, reader->Read);
 
 			reader->Read(png_ptr, sig, 8);
@@ -85,26 +92,40 @@ namespace Gorgon { namespace Encoding {
 
 			png_get_IHDR(png_ptr, info_ptr, (png_uint_32*)&width, (png_uint_32*)&height, &bit_depth,
 				&color_type, NULL, NULL, NULL);
-			inf.Size.Width=(int)width;
-			inf.Size.Height=(int)height;
+			size.Width=width;
+			size.Height=height;
+			int pChannels = (int)png_get_channels(png_ptr, info_ptr);
 
-			if(color_type == PNG_COLOR_TYPE_PALETTE)
-				png_set_expand(png_ptr);
-			if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-				png_set_expand(png_ptr);
-			if(png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-				png_set_expand(png_ptr);
 			if(color_type == PNG_COLOR_TYPE_PALETTE)
 				png_set_palette_to_rgb(png_ptr);
 			if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
 				png_set_expand_gray_1_2_4_to_8(png_ptr);
 			if(png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-				png_set_tRNS_to_alpha(png_ptr);
+				png_set_tRNS_to_alpha(png_ptr); 
+
+			if(color_type == PNG_COLOR_TYPE_GRAY) {
+				if(pChannels>1) {
+					mode=Graphics::ColorMode::Grayscale_Alpha;
+				}
+				else {
+					mode=Graphics::ColorMode::Grayscale;
+				}
+			}
+			else {
+				if(pChannels>3) {
+					mode=Graphics::ColorMode::RGBA;
+				}
+				else {
+					mode=Graphics::ColorMode::RGB;
+				}
+			}
+
 			if(bit_depth == 16)
 				png_set_strip_16(png_ptr);
-			if(color_type == PNG_COLOR_TYPE_GRAY ||
-				color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-				png_set_gray_to_rgb(png_ptr);
+
+			double gamma;
+			if(png_get_gAMA(png_ptr, info_ptr, &gamma))
+				png_set_gamma(png_ptr, 1.0, gamma);
 
 			unsigned int  i, rowbytes;
 			row_pointers=new unsigned char*[height];
@@ -112,35 +133,59 @@ namespace Gorgon { namespace Encoding {
 			png_read_update_info(png_ptr, info_ptr);
 
 			rowbytes = png_get_rowbytes(png_ptr, info_ptr);
-			int pChannels = (int)png_get_channels(png_ptr, info_ptr);
 
-			buffer->Resize(height*rowbytes);
-			for(i = 0; i < height; ++i)
-				row_pointers[i] = buffer->Offset(i*rowbytes);
+			buffer.Resize(size, mode);
+			if(rowbytes<=width*buffer.GetBytesPerPixel()) {
+				for(i = 0; i < height; ++i) {
+					row_pointers[i] = buffer.RawData()+i*rowbytes;
+				}
+				png_read_image(png_ptr, row_pointers);
+			}
+			else if(rowbytes<width*buffer.GetBytesPerPixel()*2) {
+				// if rowbytes is not equal to image stride, the last row will not
+				// fit into image buffer. instead of copying all pixels, we will only copy
+				// the last row. This method will work if only the last row will be effected.
 
+				int stride=width*buffer.GetBytesPerPixel();
 
+				for(i = 0; i < height-1; ++i) {
+					row_pointers[i] = buffer.RawData()+i*stride;
+				}
+				row_pointers[i] = new Byte[rowbytes];
 
-			png_read_image(png_ptr, row_pointers);
+				png_read_image(png_ptr, row_pointers);
+
+				memcpy(buffer.RawData()+i*stride, row_pointers[i], stride);
+
+				delete[] row_pointers[i];
+			}
+			else {
+				// failsafe
+
+				int stride=width*buffer.GetBytesPerPixel();
+
+				for(i = 0; i < height; ++i) {
+					row_pointers[i] = new Byte[rowbytes];
+				}
+
+				png_read_image(png_ptr, row_pointers);
+
+				for(i = 0; i < height; ++i) {
+					memcpy(buffer.RawData()+i*stride, row_pointers[i], stride);
+					delete[] row_pointers[i];
+				}
+			}
 
 			png_read_end(png_ptr, NULL);
 
 			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
 
-
-			//currently only RGB and RGBA is supported
-			if(pChannels==4) {
-				inf.Alpha=true;
-			}
-			else {
-				inf.Alpha=false;
-			}
 		}
 		catch(...) { //in case of an exception, re-throw safely
 			delete[] row_pointers;
 
 			delete reader;
-			delete buffer; //this does not delete underlying buffer
 
 			throw;
 		}
@@ -148,13 +193,10 @@ namespace Gorgon { namespace Encoding {
 		delete[] row_pointers;
 
 		delete reader;
-		delete buffer; //this does not delete underlying buffer
-
-		return inf;
 	}
 	
-	void PNG::encode(png::Buffer *buffer,png::Writer *writer, int width, int height) {
-		Byte **rows=nullptr;
+	void PNG::encode(const Containers::Image &buffer,png::Writer *writer) {
+		const Byte **rows=nullptr;
 		try {
 			png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 			if(!png_ptr)
@@ -171,17 +213,35 @@ namespace Gorgon { namespace Encoding {
 
 			png_set_write_fn(png_ptr, (void*)writer, writer->Write, NULL);
 
-			png_set_IHDR(png_ptr, info_ptr, width, height,
-				8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
+			int pngcolormode;
+
+			switch(buffer.GetMode()) {
+			case Graphics::ColorMode::RGBA:
+				pngcolormode=PNG_COLOR_TYPE_RGBA;
+				break;
+			case Graphics::ColorMode::RGB:
+				pngcolormode=PNG_COLOR_TYPE_RGB;
+				break;
+			case Graphics::ColorMode::Grayscale_Alpha:
+				pngcolormode=PNG_COLOR_TYPE_GRAY_ALPHA;
+				break;
+			case Graphics::ColorMode::Grayscale:
+				pngcolormode=PNG_COLOR_TYPE_GRAY;
+				break;
+			default:
+				throw std::runtime_error("Unsupported color mode for PNG");
+			}
+
+			png_set_IHDR(png_ptr, info_ptr, buffer.GetSize().Width, buffer.GetSize().Height,
+				8, pngcolormode, PNG_INTERLACE_NONE,
 				PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
 
 			png_write_info(png_ptr, info_ptr);
-			rows=new Byte*[height];
-			for(int i=0; i<height; i++) {
-				rows[i]=buffer->Offset(i*width*4);
+			int stride=buffer.GetSize().Width*buffer.GetBytesPerPixel();
+			for(int i=0; i<buffer.GetSize().Height; i++) {
+				png_write_row(png_ptr, buffer.RawData()+i*stride);
 			}
-			png_write_image(png_ptr, rows);
 			png_write_end(png_ptr, NULL);
 
 			png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -189,14 +249,12 @@ namespace Gorgon { namespace Encoding {
 		catch(...) { //in case of an exception, re-throw safely
 			delete[] rows;
 			delete writer;
-			delete buffer;
 
 			throw;
 		}
 
 		delete[] rows;
 		delete writer;
-		delete buffer;
 	}
 
 	PNG Png;

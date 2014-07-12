@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <stdint.h>
 
+#include "../Types.h"
+
 namespace Gorgon { namespace Graphics {
 
 	/// Color modes for images
@@ -12,11 +14,14 @@ namespace Gorgon { namespace Graphics {
 		/// This is used to mark invalid color data
 		Invalid = 0,
 
-		/// 24bit red, green, blue color mode that has blue component in the lowest byte order
-		BGR = 1,
+		/// This is used by some functions to mark color mode should be determined automatically
+		Automatic = 0,
 
 		/// 24bit red, green, blue color mode that has red component in the lowest byte order
-		RGB = 16,
+		RGB = 1,
+
+		/// 24bit red, green, blue color mode that has blue component in the lowest byte order
+		BGR = 16,
 
 		/// 8bit image with color palette. Color palette should have its own color mode. This mode
 		/// is not well supported in the system.
@@ -44,7 +49,7 @@ namespace Gorgon { namespace Graphics {
 	};
 
 	/// Returns bytes per pixel for the given color mode
-	unsigned long GetBytesPerPixel(ColorMode mode) {
+	inline unsigned long GetBytesPerPixel(ColorMode mode) {
 		switch(mode) {
 		case ColorMode::Paletted:
 		case ColorMode::Grayscale:

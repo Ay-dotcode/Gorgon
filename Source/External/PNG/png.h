@@ -1544,7 +1544,7 @@ PNG_EXPORT(59, void, png_write_rows, (png_structp png_ptr, png_bytepp row,
 
 /* Write the image data */
 PNG_EXPORT(60, void, png_write_image,
-    (png_structp png_ptr, png_bytepp image));
+    (png_structp png_ptr, const png_bytepp image));
 
 /* Write the end of the PNG file. */
 PNG_EXPORT(61, void, png_write_end,

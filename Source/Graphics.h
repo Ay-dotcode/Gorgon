@@ -34,31 +34,6 @@ namespace Gorgon {
 			);
 		}
 
-		/// Prints tile
-		std::ostream &operator <<(std::ostream &out, const Tiling &tile) { 
-			switch(tile) {
-			case Tiling::None:
-				out<<"None";
-				break;
-			case Tiling::Horizontal:
-				out<<"Horizontal";
-				break;
-			case Tiling::Vertical:
-				out<<"Vertical";
-				break;
-			case Tiling::Both:
-				out<<"Both";
-				break;
-#ifndef NDEBUG
-			default:
-				throw std::runtime_error("Unknown mode");
-				break;
-#endif
-			}
-
-			return out;
-		}
-
 		/// Defines how an object is aligned
 		enum class Alignment {
 			/// Placed at the start of the axis
@@ -365,8 +340,8 @@ namespace Gorgon {
 			/// Should return GL::Texture to be drawn. This could be 0 to denote no texture is to be used.
 			virtual GL::Texture GetID() const = 0;
 
-			/// Should returns the size of the texture in pixels
-			virtual Geometry::Size GetSize() const = 0;
+			/// Should returns the size of the image stored in texture. Not the whole texture size.
+			virtual Geometry::Size GetImageSize() const = 0;
 
 			/// Should returns the coordinates of the texture to be used
 			virtual const Geometry::Pointf *GetCoordinates() const = 0;

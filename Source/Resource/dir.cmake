@@ -9,4 +9,5 @@ SET(Local
 	Folder.cpp
 	GID.h
 	Image.h
+	Image.cpp
 )

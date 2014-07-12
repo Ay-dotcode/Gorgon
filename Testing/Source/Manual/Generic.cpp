@@ -4,12 +4,15 @@
 
 #include <Source/Resource/Folder.h>
 #include <Source/Resource/Blob.h>
+#include <Source/Resource/Image.h>
 
 #include <Source/Containers/Iterator.h>
 #include <Source/Graphics.h>
 #include <Source/Containers/Image.h>
 
 int main() {
+	Gorgon::Resource::Image image;
+
 	Gorgon::Containers::Image img({100, 100}, Gorgon::Graphics::ColorMode::RGBA);
 	
 	Gorgon::Resource::File file;

@@ -1,3 +1,140 @@
+#include "Image.h"
+#include "File.h"
+#include "../Encoding/PNG.h"
+
+namespace Gorgon { namespace Resource {
+
+	void Image::Prepare() {
+		if(data) {
+			Graphics::Texture::Set(*data);
+		}
+	}
+
+	void Image::Discard() {
+		if(data) {
+			delete data;
+			data=nullptr;
+		}
+	}
+
+	Image *Image::LoadResource(File &file, std::istream &data, unsigned long size) {
+		auto image=new Image;
+
+		image->isloaded=false;
+
+		image->file=file.Self();
+		if(!image->load(data, size, false)) {
+			delete image;
+			return nullptr;
+		}
+
+		return image;
+	}
+
+	bool Image::Load() {
+		auto f=this->file.lock();
+		if(!f) {
+			return false;
+		}
+
+		auto &file=*f;
+
+		std::ifstream &data=file.open();
+
+		file.Seek(entrypoint-4);
+
+		auto size=file.ReadChunkSize();
+
+		return load(data, size, true);
+	}
+
+	bool Image::load(std::istream &data, unsigned long totalsize, bool forceload) {
+		bool load=false;
+
+		auto target = data.tellg()+totalsize;
+
+		entrypoint = (unsigned long)data.tellg();
+
+		auto f=this->file.lock();
+		if(!f) {
+			return false;
+		}
+
+		auto &file=*f;
+
+		auto width=0;
+		auto height=0;
+		auto mode=Graphics::ColorMode::Invalid;
+
+		while(data.tellg()<target) {
+			auto gid = file.ReadGID();
+			auto size= file.ReadChunkSize();
+
+			GID::Type compression;
+
+			if(gid==GID::Image_Props) {
+				auto width=file.ReadInt32();
+				auto height=file.ReadInt32();
+				auto mode=file.ReadEnum32<Graphics::ColorMode>();
+
+				load=file.ReadUInt8()==0 || forceload;
+
+				if(!load) file.KeepOpen();
+			}
+			else if(load && gid==GID::Image_Data) {
+				Destroy();
+				this->data=new Containers::Image({width, height}, mode);
+
+				if(this->data->GetTotalSize() != size) {
+					throw std::runtime_error("Image size mismatch");
+				}
+
+				file.ReadArray(this->data->RawData(), size);
+			}
+			else if(load && gid==GID::Image_Cmp_Data) {
+				Destroy();
+				this->data=new Containers::Image();
+
+				Encoding::Png.Decode(data, *this->data);
+
+				if(this->data->GetMode()!=mode || this->data->GetSize()!=Geometry::Size{width, height}) {
+					throw std::runtime_error("Image size or mode mismatch");
+				}
+			}
+			else {
+				file.LoadChunk(*this, data, gid, size, true);
+			}
+		}
+
+		return true;
+	}
+
+	bool Image::ExportPNG(const std::string &filename) {
+#ifndef NDEBUG
+		if(!data) {
+			throw std::runtime_error("Image data does not exists");
+		}
+		if(GetMode()!=Graphics::ColorMode::RGBA) {
+			throw std::runtime_error("Unsupported color mode");
+		}
+#else
+		return false;
+#endif
+
+		std::ofstream file(filename, std::ios::binary);
+		if(!file.is_open())
+			return false;
+
+		Encoding::Png.Encode(*data, file);
+
+		return true;
+	}
+
+} }
+
+
+
+#ifdef asdfasdfasdf
 #include "../External/PNG/png.h"
 #include "../External/PNG/pngstruct.h"
 #include "Image.h"
@@ -20,87 +157,7 @@ using namespace std;
 
 namespace gge { namespace resource {
 
-	void ReadDataFromInputStream(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead) {
-		if(!png_ptr->io_ptr)
-			return;  
 
-		istream& inputStream = *(istream*)(png_ptr->io_ptr);
-		inputStream.read((char*)outBytes,byteCountToRead);
-	} 
-
-	Image *LoadImageResource(File& file, istream &Data, int Size) {
-		Image *img=new Image;
-		img->file=&file;
-
-		//BYTE *compressionprops;
-		 
-		int target=Data.tellg()+Size;
-		while(Data.tellg()<target) {
-			int gid,size;
-			ReadFrom(Data, gid);
-			ReadFrom(Data, size);
-			//auto currenttarget=Data.tellg()+size;
-
-			if(gid==GID::Image_Props) {
-				img->LoadProperties(Data, size);
-			} 
-			else if(gid==GID::Guid) {
-				img->guid.LoadLong(Data);
-			}
-			else if(gid==GID::SGuid) {
-				img->guid.Load(Data);
-			}
-			else if(gid==GID::Image_Cmp_Props) {
-				img->Compression=(Image::Compressor)ReadFrom<int>(Data);
-
-				if(img->Compression==GID::LZMA) {
-					img->CompressionProps=new Byte[Image::Lzma.PropertySize()];
-					Data.read((char*)img->CompressionProps, Image::Lzma.PropertySize());
-				}
-			} else if(gid==GID::Image_Data) {
-				if(img->LateLoading) {
-					img->DataLocation=(int)Data.tellg();
-					img->DataSize=size;
-
-					Data.seekg(size,ios::cur);
-				} else {
-					if(img->Data.GetSize()!=size)
-						throw std::runtime_error("Image data size mismatch!");
-
-					img->LoadData(Data, size);
-				}
-			} else if(gid==GID::Image_Cmp_Data) {
-				if(img->LateLoading) {
-					img->DataLocation=(int)Data.tellg();
-					img->DataSize=size;
-
-					Data.seekg(size,ios::cur);
-				} 
-				else {
-					img->LoadData(Data, size);
-				}
-			} 
-			else{
-				EatChunk(Data, size);
-			}
-		}
-
-		return img;
-	}
-
-	bool Image::Load(bool force) {
-		if(isLoaded && !force)
-			return true;
-
-		ifstream gfile(this->file->GetFilename(), ios::binary);
-		if(!gfile.is_open())
-			return false;
-
-		gfile.seekg(DataLocation,ios::beg);
-		LoadData(gfile,DataSize);
-
-		return true;
-	}
 
 	void Image::Prepare(GGEMain &main, resource::File &file) {
 		Prepare();
@@ -744,3 +801,4 @@ namespace gge { namespace resource {
 
 	NullImage *NullImage::ni;
 } }
+#endif

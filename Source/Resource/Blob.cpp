@@ -58,7 +58,7 @@ namespace Gorgon { namespace Resource {
 				compression=file.ReadGID();
 				type=file.ReadInt32();
 
-				load=file.ReadBool();
+				load=file.ReadBool() || forceload;
 				if(!load) file.KeepOpen();
 			}
 			else if(load && gid==GID::Blob_Data) {

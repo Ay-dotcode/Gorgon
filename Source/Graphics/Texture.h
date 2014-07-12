@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma warning(disable:4250)
+
 #include "../Geometry/Size.h"
 #include "../Geometry/Bounds.h"
 #include "../GL.h"
@@ -42,6 +44,14 @@ namespace Gorgon { namespace Graphics {
 		Texture(Texture &&other) : id(other.id), size(other.size), owner(other.owner) {
 			memcpy(coordinates, other.coordinates, sizeof(coordinates));
 			other.owner=false;
+		}
+
+		void Swap(Texture &other) {
+			using std::swap;
+
+			swap(id, other.id);
+			swap(size, other.size);
+			swap(coordinates, other.coordinates);
 		}
 
 		~Texture() {
@@ -89,17 +99,17 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Returns GL::Texture to be drawn.
-		virtual GL::Texture GetID() const {
+		virtual GL::Texture GetID() const override {
 			return id;
 		}
 
 		/// Returns the size of the texture in pixels
-		virtual Geometry::Size GetSize() const {
+		virtual Geometry::Size GetImageSize() const override {
 			return size;
 		}
 
 		/// Returns the coordinates of the texture to be used
-		virtual const Geometry::Pointf *GetCoordinates() const {
+		virtual const Geometry::Pointf *GetCoordinates() const override {
 			return coordinates;
 		}
 
@@ -141,7 +151,7 @@ namespace Gorgon { namespace Graphics {
 
 
 	/// This is a solid texture based image class. 
-	class TextureImage : public Texture, public virtual Image {
+	class TextureImage : public virtual Texture, public virtual Image {
 	public:
 		/// Default constructor, creates an empty texture
 		TextureImage() { }
@@ -173,14 +183,8 @@ namespace Gorgon { namespace Graphics {
 		TextureImage(const Containers::Image &image) : Texture(image) {
 		}
 
-		/// Regular, full texture constructor
-		TextureImage(GL::Texture id, const Geometry::Size &size) : Texture(id, size) { }
-
-		/// Atlas constructor, specifies a region of the texture
-		TextureImage(GL::Texture id, const Geometry::Size &size, const Geometry::Bounds &location) : Texture(id, size, location) { }
-
-		/// This constructor creates a new texture from the given Image
-		TextureImage(const Containers::Image &image) : Texture(image) { }
+	protected:
+		virtual void overrideme() const override { }
 	};
 
 } }

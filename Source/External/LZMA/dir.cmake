@@ -1,5 +1,11 @@
 
 SET(Local
+	LzFind.h
+	LzHash.h
+	LzmaDec.h
+	LzmaEnc.h
+	Threads.h
+	Types.h
 	LzFind.c
 	LzmaDec.c
 	LzmaEnc.c
@@ -7,6 +13,7 @@ SET(Local
 
 IF(${WIN32})
 	LIST(APPEND Local
+		LzFindMt.h
 		LzFindMt.c
 		Threads.c
 	)
