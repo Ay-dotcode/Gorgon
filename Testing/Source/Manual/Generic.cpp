@@ -9,16 +9,17 @@
 #include <Source/Containers/Iterator.h>
 #include <Source/Graphics.h>
 #include <Source/Containers/Image.h>
+#include "Source/Window.h"
 
 int main() {
-	Gorgon::Resource::Image image;
-
 	Gorgon::Containers::Image img({100, 100}, Gorgon::Graphics::ColorMode::RGBA);
 	
 	Gorgon::Resource::File file;
 
 	std::cout<<Gorgon::Filesystem::CurrentDirectory()<<std::endl;
 	Gorgon::Filesystem::ChangeDirectory("../Testing/Source/Manual");
+
+	Gorgon::Window win({400, 300}, "test");
 	
 
 	try {
@@ -26,7 +27,11 @@ int main() {
 		file.Prepare();
 
 		auto &data=file.Root().Get<Gorgon::Resource::Folder>(0).Get<Gorgon::Resource::Blob>(0).GetData();
-		
+		auto &image=file.Root().Get<Gorgon::Resource::Image>(1).CreateAnimation(true);
+
+		std::cout<<image.GetSize()<<std::endl;
+		std::cout<<image.ReleaseTexture().GetID()<<std::endl;
+
 		std::cout<<std::string((char*)&data[0], data.size());
 	}
 	catch(const std::exception &ex) {

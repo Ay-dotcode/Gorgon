@@ -575,7 +575,7 @@ png_write_rows(png_structp png_ptr, png_bytepp row,
  * if you are writing an interlaced image.
  */
 void PNGAPI
-png_write_image(png_structp png_ptr, png_bytepp image)
+png_write_image(png_structp png_ptr, const png_bytepp image)
 {
    png_uint_32 i; /* row index */
    int pass, num_pass; /* pass variables */

@@ -7,8 +7,6 @@
 #include <Source/Geometry/Size.h>
 #include <Source/Geometry/Bounds.h>
 #include <Source/Geometry/Rectangle.h>
-#include <Source/Geometry/Point.h>
-#include <Source/Geometry/Point.h>
 #include <Source/String.h>
 
 #undef Rectangle
@@ -462,7 +460,7 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	p3=p1;
 	Scale(p3, 2, 0.5);
 	REQUIRE(p3 == Point(2, 1));
-	Scale(p3, 2, 0.5, {2,3});
+	Scale(p3, 2, 0.5, Point{2,3});
 	REQUIRE(p3 == Point(2, 2));
 	
 	p4=p2;
@@ -470,7 +468,7 @@ TEST_CASE( "Point geometry functions", "[Point]" ) {
 	REQUIRE(p4.X == Approx(2.4));
 	REQUIRE(p4.Y == Approx(1.1));
 	
-	Scale(p4, 2, 0.5, {2.4,3.1});
+	Scale(p4, 2, 0.5, Pointf{2.4f,3.1f});
 	REQUIRE(p4.X == Approx(2.4));
 	REQUIRE(p4.Y == Approx(2.1));
 

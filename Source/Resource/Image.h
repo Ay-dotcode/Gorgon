@@ -116,10 +116,12 @@ namespace Gorgon { namespace Resource {
 			return{Graphics::Texture::Release(), sz};
 		}
 
+		/// Checks if this image resource has a data attached to it
 		bool HasData() const {
 			return data!=nullptr;
 		}
 
+		/// Checks if this image resource has a texture attached to it.
 		bool HasTexture() const {
 			return Graphics::Texture::id!=0;
 		}
@@ -378,7 +380,6 @@ namespace Gorgon { namespace Resource {
 		virtual bool Progress(unsigned &leftover) override { return true; }
 
 		using Texture::GetImageSize;
-		virtual void overrideme() const override { }
 
 		/// Loads the image from the data stream
 		bool load(std::istream &data, unsigned long size, bool forceload);

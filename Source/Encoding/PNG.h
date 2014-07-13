@@ -174,7 +174,7 @@ namespace Gorgon { namespace Encoding {
 		/// @throws runtime_error in case of an encoding error
 		template <class O_>
 		void Encode(const Containers::Image &input, O_ &output) {
-			encode(input, png::ReadyWriteStruct(output), size.Width, size.Height);
+			encode(input, png::ReadyWriteStruct(output));
 		}
 
 		/// Decodes the given PNG data. This function returns necessary information that is extracted from the 

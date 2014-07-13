@@ -218,7 +218,7 @@ namespace Gorgon {
 
 		/// Destructor
 		~Event() {
-			assert(("An event cannot be destroyed while its being fired.", fire.test_and_set()));
+			assert(("An event cannot be destroyed while its being fired.", !fire.test_and_set()));
 			std::lock_guard<std::mutex> g(access);
 			
 			handlers.Destroy();

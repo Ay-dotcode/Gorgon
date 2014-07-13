@@ -330,7 +330,7 @@ namespace Gorgon { namespace Resource {
 		}
 
 		/// Removes a chunk of data with the given size from the stream
-		void EatChunk(unsigned long size) {
+		void EatChunk(long size) {
 			file->seekg(size, std::ios::cur);
 		}
 

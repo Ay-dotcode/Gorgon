@@ -68,7 +68,8 @@ namespace Gorgon {
 		///         be displayed
 		bool Open(const std::string &file);
 
-		/// Internally used. Should only be used when necessary.
+		/// This method will notify the system should process any messages that coming from the operating
+		/// system. Internally used. Should only be used when necessary.
 		void processmessages();
 	}
 }

@@ -178,8 +178,8 @@ namespace Gorgon { namespace Geometry {
 		/// Multiplies this size object with the given factor
 		template<class _S>
 		basic_Size operator *=(_S size) { 
-			Width=size  *Width;
-			Height=size*Height;
+			Width =T_(size  *Width);
+			Height=T_(size*Height);
 
 			return *this;
 		}
@@ -187,8 +187,8 @@ namespace Gorgon { namespace Geometry {
 		/// Divides this size object to the given factor
 		template<class _S>
 		basic_Size operator /=(_S size) { 
-			Width/=size;
-			Height/=size;
+			Width =T_(Width/size);
+			Height=T_(Height/size);
 
 			return *this;
 		}
@@ -203,7 +203,7 @@ namespace Gorgon { namespace Geometry {
 		/// Returns the number of fully encompassed cells. For instance,
 		/// a 3.2x2.2 size object has 6 cells.
 		T_ Cells() const { 
-			return std::floor(Width)*std::floor(Height); 
+			return T_(std::floor(Width)*std::floor(Height)); 
 		}
 
 		/// Returns the exact area of the rectangle has the size of this object

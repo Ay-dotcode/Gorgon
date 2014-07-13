@@ -363,16 +363,16 @@ namespace Gorgon { namespace Graphics {
 
 	/// This is a solid texture based image. It handles the drawing automatically. Does not supply implementation
 	/// for Texture.
-	class Image : public virtual RectangularDrawable, protected virtual TextureSource {
+	class Image : public virtual RectangularDrawable, public virtual TextureSource {
 	public:
 
 	protected:
 		virtual Geometry::Size getsize() const override {
-			return TextureSource::GetImageSize();
+			return GetImageSize();
 		}
 
 		virtual Geometry::Size calculatesize(const Geometry::Size &s) const override {
-			return TextureSource::GetImageSize();
+			return GetImageSize();
 		}
 
 		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override {
@@ -402,8 +402,6 @@ namespace Gorgon { namespace Graphics {
 		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectangle &r) const override {
 			target.Draw(*this, controller.GetTiling(), controller.CalculateArea(getsize(), r.GetSize())+r.TopLeft());
 		}
-
-		virtual void overrideme() const =0;
 	};
 
 } }

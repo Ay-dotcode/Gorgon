@@ -65,6 +65,8 @@ namespace Gorgon { namespace Resource {
 		auto width=0;
 		auto height=0;
 		auto mode=Graphics::ColorMode::Invalid;
+		GID::Type compression;
+
 
 		while(data.tellg()<target) {
 			auto gid = file.ReadGID();
@@ -73,13 +75,16 @@ namespace Gorgon { namespace Resource {
 			GID::Type compression;
 
 			if(gid==GID::Image_Props) {
-				auto width=file.ReadInt32();
-				auto height=file.ReadInt32();
-				auto mode=file.ReadEnum32<Graphics::ColorMode>();
+				width=file.ReadInt32();
+				height=file.ReadInt32();
+				mode=file.ReadEnum32<Graphics::ColorMode>();
+				compression=file.ReadGID();
 
-				load=file.ReadUInt8()==0 || forceload;
+				load=!file.ReadBool() || forceload;
 
 				if(!load) file.KeepOpen();
+
+				file.EatChunk(size-20);
 			}
 			else if(load && gid==GID::Image_Data) {
 				Destroy();

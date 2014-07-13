@@ -138,62 +138,6 @@ namespace gge { namespace graphics {
 				dest[i*2+1]=data[i];
 			}
 		}
-		void SetTexture(Byte *data, int cx, int cy, ColorMode::Type mode) {
-			GLenum colormode=getGLColorMode(mode);
-
-			Byte *target=NULL;
-
-			///*Setting Texture Parameters to
-			/// Magnify filter: Linear,
-			/// Minify filter:  Linear,
-			/// Border color:   Transparent
-			glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BORDER_COLOR, 0x0);
-			glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-			glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-			if(mode==ColorMode::Alpha) {
-				///*If alpha only, converted to grayscale alpha
-				glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
-				glPixelStorei(GL_PACK_ALIGNMENT, 2);
-
-				target=new Byte[cx*cy*2];
-				A8ToA8L8(cx,cy,data,target);
-				//delete data;
-				data=target;
-
-				mode=ColorMode::Grayscale_Alpha;
-				colormode=GL_LUMINANCE_ALPHA;
-			}
-			else if(mode==ColorMode::Grayscale_Alpha) {
-				colormode=GL_LUMINANCE_ALPHA;
-			} else {
-				glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-				glPixelStorei(GL_PACK_ALIGNMENT, 4);
-			}
-
-			glTexImage2D(GL_TEXTURE_2D,0,getBPP(mode),cx,cy,0,colormode,GL_UNSIGNED_BYTE,data);
-			//glTexSubImage2D(GL_TEXTURE_2D,0,0,0,cx,cy,colormode,GL_UNSIGNED_BYTE,data);
-		}
-		GLTexture GenerateTexture(Byte *data,int cx,int cy,ColorMode::Type mode) {
-
-			GLTexture ret;
-			ret.SetSize(cx,cy);
-
-			///*Create the texture object
-			glGenTextures(1,&ret.ID);
-			glBindTexture(GL_TEXTURE_2D,ret.ID);
-
-			SetTexture(data,cx,cy,mode);
-
-			return ret;
-		}
-		void UpdateTexture(GLTexture texture, Byte *data,ColorMode::Type mode) {
-			glBindTexture(GL_TEXTURE_2D,texture.ID);
-
-			SetTexture(data,texture.W,texture.H,mode);
-		}
 
 		void ResizeGL(int Width, int Height) {
 			ScreenSize.Width=Width;
@@ -211,11 +155,6 @@ namespace gge { namespace graphics {
 
 			//position
 			ModelViewMatrixStack.SetIdentity();
-		}
-
-		void DestroyTexture(GLTexture &texture) {
-			glDeleteTextures(1, &texture.ID);
-			texture.ID=0;
 		}
 
 		void PreRender() {

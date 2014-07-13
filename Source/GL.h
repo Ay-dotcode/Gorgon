@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include "Geometry/Size.h"
+
 namespace Gorgon {
 	
 	namespace Containers {
@@ -18,8 +20,25 @@ namespace Gorgon {
 #ifdef OPENGL
 		typedef uint32_t Texture;
 #endif
+
+		class Context {
+		public:
+
+		};
 		
 		/// This function generates a texture from the given image data.
 		Texture GenerateTexture(const Containers::Image &data);
+
+		/// Updates the given texture to contain the given data
+		void UpdateTexture(Texture texure, const Containers::Image &data);
+
+		/// Destroys the given texture
+		void DestroyTexture(Texture texure);
+
+		/// Performs first time initialization on GL context
+		void SetupContext(const Geometry::Size &size);
+
+		/// Resizes the active context
+		void Resize(const Geometry::Size &size);
 	}
 }

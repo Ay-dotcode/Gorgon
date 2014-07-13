@@ -37,17 +37,7 @@ namespace Gorgon {
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible=true);
-
-		/// Creates a new window
-		/// @param  rect the position and the **interior** size of the window unless
-		///         use outer metrics is set to true
-		/// @param  name of the window
-		/// @param  title of the window
-		/// @param  visible after creation, window will be visible or invisible depending
-		///         on this value. 
-		Window(Geometry::Rectangle rect, const std::string &name, const char *title, bool visible=true) :
-			Window(rect, name, std::string(title), visible) { }
-
+		
 		/// Creates a new window
 		/// @param  rect the position and the **interior** size of the window unless
 		///         use outer metrics is set to true
@@ -55,7 +45,7 @@ namespace Gorgon {
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(Geometry::Rectangle rect, const std::string &name, bool visible=true) :
-			Window(rect, name, "", visible) { }
+			Window(rect, name, name, visible) { }
 
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
@@ -69,19 +59,10 @@ namespace Gorgon {
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
 		/// @param  name of the window
-		/// @param  title of the window
-		/// @param  visible after creation, window will be visible or invisible depending
-		///         on this value. 
-		Window(const Geometry::Size &size, const std::string &name, const char *title, bool visible=true) :
-			Window({automaticplacement, size}, name, std::string(title), visible) { }
-
-		/// Creates a new window at the center of the screen
-		/// @param  size of the window
-		/// @param  name of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(const Geometry::Size &size, const std::string &name, bool visible=true) :
-			Window({automaticplacement, size}, name, "", visible) { }
+			Window({automaticplacement, size}, name, name, visible) { }
 
 		/// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
 		/// entire screen, including any panels it contains.
@@ -90,9 +71,17 @@ namespace Gorgon {
 		/// Destroys this window
 		~Window();
 
-		/// This method is automatically called by the system. Unless its necessary, 
-		/// do not use it.
+		/// This method is automatically called by the system.Unless its necessary, do not use it.
+		/// 
+		/// @warning Notice that it is a
+		/// window manager defined behavior to handle tasks in Window classes differently
+		/// or for all of them at the same time. Therefore, OS::processmessage
+		/// should be used. 
 		void processmessages();
+
+		/// Activates the GL context of the window. This function is used internally and should
+		/// not be called unless necessary.
+		void activatecontext();
 
 		/// Moves the window to the given position
 		virtual void Move(const Geometry::Point &position) override;
@@ -105,7 +94,7 @@ namespace Gorgon {
 		/// sized layers.
 		virtual void Resize(const Geometry::Size &size) override;
 
-		// +GetChrome
+		//+GetChrome
 
 		/// Displays this window, may generate Activated event
 		virtual void Show() override;
@@ -187,8 +176,6 @@ namespace Gorgon {
 
 	private:
 		void createglcontext();
-
-		void setupglcontext();
 		
 		internal::windowdata *data;
 

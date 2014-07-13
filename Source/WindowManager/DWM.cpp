@@ -8,7 +8,7 @@
 #define WINDOWS_LEAN_AND_MEAN
 
 #include <windows.h>
-#include <gl/GL.h>
+#include "../GL.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -24,6 +24,7 @@ namespace Gorgon {
 			HWND handle = 0;
 			Window &parent;
 			HGLRC context=0;
+			HDC device_context=0;
 
 			std::map<Input::Key, Input::Event<Window>::Token> handlers;
 
@@ -269,6 +270,7 @@ namespace Gorgon {
 		UpdateWindow(hwnd);
 
 		data->handle=hwnd;
+		data->device_context = GetDC(data->handle);
 		internal::windowdata::mapping[hwnd]=data;
 
 		PostMessage(hwnd, WM_ACTIVATE, -1, -1);
@@ -281,8 +283,8 @@ namespace Gorgon {
 	}
 	
 	Window::~Window() {
-		internal::windowdata::mapping[data->handle]=nullptr;
 		DestroyWindow(data->handle);
+		internal::windowdata::mapping[data->handle]=nullptr;
 		windows.Remove(this);
 		delete data;
 	}
@@ -335,8 +337,6 @@ namespace Gorgon {
 	}
 
 	void Window::createglcontext() {
-		HDC hDC = GetDC(data->handle);
-
 		static	PIXELFORMATDESCRIPTOR pfd=	// pfd Tells Windows How We Want Things To Be
 		{
 			sizeof(PIXELFORMATDESCRIPTOR),	// Size Of This Pixel Format Descriptor
@@ -359,23 +359,20 @@ namespace Gorgon {
 			0, 0, 0							// Layer Masks Ignored
 		};
 
-		int PixelFormat=ChoosePixelFormat(hDC, &pfd);
-		SetPixelFormat(hDC, PixelFormat, &pfd);
+		int PixelFormat=ChoosePixelFormat(data->device_context, &pfd);
+		SetPixelFormat(data->device_context, PixelFormat, &pfd);
 
-		data->context = wglCreateContext(hDC);
-		wglMakeCurrent(hDC, data->context);
+		data->context = wglCreateContext(data->device_context);
+		wglMakeCurrent(data->device_context, data->context);
 
 		if(data->context==NULL) {
 			OS::DisplayMessage("Context creation failed");
 			exit(0);
 		}
 
-		setupglcontext();
+		GL::SetupContext(bounds.GetSize());
 
 		// test code
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glFlush();
-		glFinish();
-		SwapBuffers(hDC);
+		SwapBuffers(data->device_context);
 	}
 } 

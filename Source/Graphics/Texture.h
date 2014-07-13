@@ -183,8 +183,6 @@ namespace Gorgon { namespace Graphics {
 		TextureImage(const Containers::Image &image) : Texture(image) {
 		}
 
-	protected:
-		virtual void overrideme() const override { }
 	};
 
 } }
