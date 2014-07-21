@@ -10,7 +10,17 @@
 #	include <unistd.h>
 #endif
 
+#include "Graphics/Layer.h"
+
 
 namespace Gorgon {
 	
+
+	void Window::Render() {
+		WindowManager::internal::switchcontext(*data);
+		Graphics::internal::ResetTransform(GetSize());
+
+		Layer::Render();
+	}
+
 }

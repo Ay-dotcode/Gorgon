@@ -114,6 +114,9 @@ namespace Gorgon {
 		/// Hides the pointer displayed by window manager
 		void HidePointer();
 
+		/// Renders the contents of the window
+		virtual void Render() override;
+
 		/// @name Events 
 		/// @{
 		

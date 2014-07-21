@@ -9,6 +9,8 @@
 #include "Geometry/Bounds.h"
 #include "Geometry/Rectangle.h"
 
+#include "../External/glutil/MatrixStack.h"
+
 namespace Gorgon {
 
 
@@ -357,6 +359,19 @@ namespace Gorgon {
 			static const Geometry::Pointf fullcoordinates[4];
 		};
 
+		namespace internal {
+			
+			/// Transformation stack
+			extern glutil::MatrixStack Transform;
+
+			/// This should be called by the windows to reset transformation stack.
+			void ResetTransform(const Geometry::Size &size) {
+				Transform={};
+				Transform.SetIdentity();
+				Transform.PixelPerfectOrtho({size.Width, size.Height}, {-1, 1});
+			}
+
+		}
 	}
 }
 

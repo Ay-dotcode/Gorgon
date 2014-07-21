@@ -23,6 +23,8 @@ namespace Gorgon {
 		/// @cond INTERNAL
 		namespace internal {
 			Gorgon::internal::windowdata *getdata(const Window&);
+
+			void switchcontext(Gorgon::internal::windowdata &data);
 			
 			struct icondata;
 			struct pointerdata;

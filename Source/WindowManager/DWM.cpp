@@ -209,6 +209,10 @@ namespace Gorgon {
 				return "";
 			}
 		}
+
+		void switchcontext(Gorgon::internal::windowdata &data) {
+			wglMakeCurrent(data.device_context, data.context);
+		}
 	}
 
 	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) :

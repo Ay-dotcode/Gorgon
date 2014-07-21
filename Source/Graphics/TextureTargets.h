@@ -28,11 +28,15 @@ namespace Gorgon { namespace Graphics {
 			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
 			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4) = 0;
 
-		/// Draws a simple image to the screen to the given position
-		virtual void Draw(const TextureSource &image, const Geometry::Pointf &location) = 0;
+		///// Draws a simple image to the screen to the given position
+		//virtual void Draw(const TextureSource &image, const Geometry::Pointf &location) {
+		//	Draw(image, {location, image.GetImageSize()});
+		//}
 
-		/// Draws a simple image to the screen to the given position with the given size.
-		virtual void Draw(const TextureSource &image, const Geometry::Rectangle &location) = 0;
+		///// Draws a simple image to the screen to the given position with the given size.
+		//virtual void Draw(const TextureSource &image, const Geometry::Rectangle &location) {
+		//	Draw(image, location.TopLeft(), location.TopRight(), location.BottomLeft(), location.BottomRight());
+		//}
 
 		/// Draws a simple image to the screen using the given tiling method, coordinates and size
 		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectangle &location) = 0;

@@ -37,16 +37,20 @@ namespace Gorgon { namespace Graphics {
 			owner=true;
 		}
 
+		/// Copies a texture. This newly created texture will not assume ownership
 		Texture(Texture &other) : id(other.id), size(other.size), owner(false) {
 			memcpy(coordinates, other.coordinates, sizeof(coordinates));
 		}
 
+		/// Moves a texture. This newly created texture object will own the texture if the other object
+		/// owns it
 		Texture(Texture &&other) : id(other.id), size(other.size), owner(other.owner) {
 			memcpy(coordinates, other.coordinates, sizeof(coordinates));
 			other.owner=false;
 		}
 
-		void Swap(Texture &other) {
+		/// Swaps two textures
+		virtual void Swap(Texture &other) {
 			using std::swap;
 
 			swap(id, other.id);

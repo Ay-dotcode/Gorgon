@@ -4,6 +4,8 @@ SET(Local
 	Graphics.cpp
 	Color.h
 	Drawables.h
+	Layer.cpp
+	Layer.h
 	Texture.h
 	TextureTargets.h
 )

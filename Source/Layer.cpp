@@ -3,7 +3,6 @@
 namespace Gorgon {
 	
 	void Layer::Render() {
-		//TODO
 		for(auto &l : children) {
 			l.Render();
 		}

@@ -21,11 +21,6 @@ namespace Gorgon {
 		typedef uint32_t Texture;
 #endif
 
-		class Context {
-		public:
-
-		};
-		
 		/// This function generates a texture from the given image data.
 		Texture GenerateTexture(const Containers::Image &data);
 

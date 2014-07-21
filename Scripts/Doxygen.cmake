@@ -11,8 +11,14 @@ IF(BUILD_DOCUMENTATION)
 	
 	SET(DOXYGEN_HTML ${CMAKE_DOCUMENT_OUTPUT_DIRECTORY}/HTML/index.html)
 	
-	STRING(REPLACE ";" "\" \"../" AllStr "\"../${All}\"")
-
+	SET(AllStr "")
+	
+	FOREACH(s ${All})
+		IF(NOT ${s} MATCHES "^Source/External")
+			SET(AllStr "${AllStr} \"../${s}\"")
+		ENDIF()
+	ENDFOREACH()
+	
 	CONFIGURE_FILE(Scripts/Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY IMMEDIATE)
 	
 	ADD_CUSTOM_COMMAND(OUTPUT ${DOXYGEN_HTML}

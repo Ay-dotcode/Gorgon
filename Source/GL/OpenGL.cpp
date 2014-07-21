@@ -111,18 +111,7 @@ namespace Gorgon { namespace GL {
 
 
 	void Resize(const Geometry::Size &size) {
-
 		glViewport(0, 0, size.Width, size.Height);					// Reset The Current Viewport
-
-
-		//These can be overridden by layers
-		//ProjectionMatrixStack.SetIdentity();
-		//ProjectionMatrixStack.Orthographic(0.0f, float(size.Width), float(size.Height), 0.0f, -100.0f, 100.0f);
-		glFrontFace(GL_CCW);
-
-		//position
-		//ModelViewMatrixStack.SetIdentity();
-		
 	}
 
 

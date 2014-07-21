@@ -12,15 +12,17 @@ namespace Gorgon { namespace Resource {
 	class File;
 	class Image;
 
-	////This is image resource that holds information about a single image. It supports
-	/// two color modes (ARGB and AL); lzma and jpg compressions
+	/// This resource contains images. It allows draw, load, import, export functionality. An image resource may work
+	/// without its data buffer. In order to be drawn, an image object should be prepared. Both data and texture
+	/// might be released from the image resource. This allows safe destruction of the file tree without destroying
+	/// the necessary information.
 	class Image : 
 		public Base, public virtual Graphics::RectangularAnimationProvider, public virtual Graphics::Image,
 		public virtual Graphics::RectangularAnimation, private virtual Graphics::Texture, public virtual Graphics::TextureSource
 	{
 	public:
 
-		/// Default constructor will create and empty image
+		/// Default constructor will create an empty image
 		Image() {
 
 		}
@@ -56,10 +58,14 @@ namespace Gorgon { namespace Resource {
 			swap(entrypoint, other.entrypoint);
 			swap(file, other.file);
 			swap(isloaded, other.isloaded);
-			
+
 			Graphics::Texture::Swap(other);
 		}
 
+		/// Copy assignment is disabled
+		Image &operator=(Image &) = delete;
+
+		/// Move assignment
 		Image &operator =(Image &&other) {
 			Discard();
 			Graphics::Texture::Destroy();
