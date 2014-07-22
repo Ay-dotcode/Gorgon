@@ -62,9 +62,9 @@ PFNGLUSEPROGRAMPROC						glUseProgram;
 PFNGLVERTEXATTRIBPOINTERPROC			glVertexAttribPointer;
 PFNGLVERTEXATTRIBIPOINTERPROC			glVertexAttribIPointer;
 
-namespace gge { namespace system {
+namespace Gorgon { namespace GL {
 
-void LoadGLFunctions() {
+	void LoadGLFunctions() {
 #ifdef WIN32
 			glDrawBuffers					= (PFNGLDRAWBUFFERSPROC)wglGetProcAddress("glDrawBuffers");
 			glGetAttribLocation				= (PFNGLGETATTRIBLOCATIONPROC)wglGetProcAddress("glGetAttribLocation");
