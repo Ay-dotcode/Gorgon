@@ -4,26 +4,23 @@
 
 #pragma once
 
-#include "../Engine/ShaderBase.h"
-#include "../Engine/Graphics.h"
-
 #include <map>
 #include <string>
 
-namespace gge {
-namespace graphics {
-	union RGBfloat;
-	
-}
+#include "../GL/Shader.h"
 
-namespace shaders {
+#include "../GL/OpenGL.h"
+#include "Color.h"
 
-	class SimpleShader : public gge::graphics::ShaderBase
+
+namespace Gorgon { namespace Graphics {
+
+	class SimpleShader : public GL::Shader
 	{
 	public:
 		static SimpleShader &Use() {
 			static SimpleShader me;	
-			me.ShaderBase::Use(); 
+			me.Shader::Use(); 
 			return me;
 		}
 		
@@ -52,12 +49,12 @@ namespace shaders {
 		SimpleShader();
 	};
 
-	class SimpleTintShader : public gge::graphics::ShaderBase
+	class SimpleTintShader : public GL::Shader
 	{
 	public:
 		static SimpleTintShader& Use() { 
 			static SimpleTintShader me; 
-			me.ShaderBase::Use(); 
+			me.Shader::Use(); 
 			return me;
 		}
 		
@@ -76,9 +73,9 @@ namespace shaders {
 			return *this;
 		}
 		
-		SimpleTintShader &SetTint(const graphics::RGBfloat &value) {
+		SimpleTintShader &SetTint(const Graphics::RGBAf &value) {
 			static int id = LocateUniform("tint");
-			UpdateUniform(id, *(glm::vec4*)&value.vect);
+			UpdateUniform(id, *(glm::vec4*)&value);
 			
 			return *this;
 		}
@@ -94,12 +91,12 @@ namespace shaders {
 		SimpleTintShader();
 	};
 
-	class MaskedShader : public gge::graphics::ShaderBase
+	class MaskedShader : public GL::Shader
 	{
 	public:
         static MaskedShader& Use() { 
 			static MaskedShader me; 
-			me.ShaderBase::Use(); 
+			me.Shader::Use(); 
 			return me;
 		}
 		
@@ -138,12 +135,12 @@ namespace shaders {
 	};
 	
 
-	class TintedMaskedShader : public gge::graphics::ShaderBase
+	class TintedMaskedShader : public GL::Shader
 	{
 	public:
         static TintedMaskedShader& Use() {
 			static TintedMaskedShader me;
-			me.ShaderBase::Use();
+			me.Shader::Use();
 			return me;
 		}
 		
@@ -161,9 +158,9 @@ namespace shaders {
 			return *this;
 		}
 		
-		TintedMaskedShader &SetTint(const graphics::RGBfloat &value) {
+		TintedMaskedShader &SetTint(const Graphics::RGBAf &value) {
 			static int id = LocateUniform("tint");
-			UpdateUniform(id, *(glm::vec4*)&value.vect);
+			UpdateUniform(id, *(glm::vec4*)&value);
 			
 			return *this;
 		}

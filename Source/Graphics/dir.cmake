@@ -6,6 +6,8 @@ SET(Local
 	Drawables.h
 	Layer.cpp
 	Layer.h
+	Shaders.h
+	Shaders.cpp
 	Texture.h
 	TextureTargets.h
 )

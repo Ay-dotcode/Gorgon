@@ -6,6 +6,7 @@ namespace Gorgon { namespace Graphics {
 
 	namespace internal {
 		glutil::MatrixStack Transform;
+		GL::Texture LastTexture;
 	}
 
 } }

@@ -5,6 +5,8 @@ namespace Gorgon { namespace Graphics {
 	void Layer::Render() {
 		internal::Transform.Push();
 
+		internal::Transform.Translate({Bounds.Left, Bounds.Top, 0});
+
 		for(auto &surface : surfaces) {
 
 		}
