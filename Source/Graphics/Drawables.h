@@ -322,10 +322,9 @@ namespace Gorgon { namespace Graphics {
 		using SizelessDrawable::drawin;
 
 		/// This function should draw the object to the given point.
-		/// It might be logical to override this as it is possible to avoid additional function calls and
-		/// if statements
 		virtual void draw(TextureTarget &target, const Geometry::Point &p) const {
-			drawin(target, Placement::MiddleCenter, {p, getsize()});
+			auto size=getsize();
+			draw(target, p, {float(p.X+size.Width), float(p.Y)}, {float(p.X+size.Width), float(p.Y+size.Height)}, {float(p.X), float(p.Y+size.Height)});
 		}
 
 		/// This method should draw to object inside the given quad with the given texture coordinates.
