@@ -24,7 +24,11 @@ namespace Gorgon { namespace Animation {
 				unsigned leftover=0;
 
 				if(!base.Progress(leftover)) {
-					base.GetController().Finished(leftover);
+					if(base.GetController().Finished(leftover)) {
+						if(!base.Progress(leftover)) {
+							base.GetController().Finished(leftover);
+						}
+					}
 				}
 			}
 		}
@@ -38,8 +42,9 @@ namespace Gorgon { namespace Animation {
 		Timers.Remove(this);
 	}
 
-	void Timer::Progress( unsigned timepassed ) {
+	bool Timer::Progress( unsigned timepassed ) {
 		progress += timepassed;
+		return false;
 	}
 
 	Controller::Controller() : Timer(),
@@ -109,7 +114,7 @@ namespace Gorgon { namespace Animation {
 		isfinished=false;
 	}
 
-	void Controller::Finished( unsigned leftover ) {
+	bool Controller::Finished( unsigned leftover ) {
 		if(islooping) {
 			progress=leftover;
 			floatprogress=progress;

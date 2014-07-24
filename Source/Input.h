@@ -106,7 +106,7 @@ namespace Gorgon {
 		/// represents the amount of scroll. In analog controllers this value is between
 		/// 0 and 1, representing how much further controller is pushed. 
 		
-		/// @warning Analog controllers  only when changing from 0 to a positive value and vice versa.
+		/// @warning Analog controllers triggers event only when changing from 0 to a positive value and vice versa.
 		template <class Source_=Empty>
 		class Event {
 		public:

@@ -1,136 +1,176 @@
 #pragma once
 
-#include "GRE.h"
 #include "Base.h"
-#include "../Engine/Animation.h"
+#include "../Animation.h"
 #include "Image.h"
-#include "../Resource/ResizableObject.h"
-#include "../Utils/Point2D.h"
 
 #pragma warning(push)
 #pragma warning(disable:4250)
 
-namespace gge { namespace resource {
+namespace Gorgon { namespace Resource {
 	class File;
 
 	class Animation;
-	
-	////This function loads a text resource from the given file
-	Animation *LoadAnimationResource(File &File, std::istream &Data, int Size);
 
-	////This class draws an animated image
-	class ImageAnimation : 
-		virtual public ResizableObject, public graphics::ImageTexture, virtual public animation::RectangularGraphic2DAnimation
+	/// This class is a created image animation that can be controlled and drawn over screen.
+	class ImageAnimation :
+		public virtual Graphics::RectangularAnimation, public virtual Graphics::Image, public virtual Graphics::TextureSource
 	{
 	public:
+		/// Creates a new image animation from the given parent
+		ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller, bool owner=false);
 
-		ImageAnimation(Animation &parent, animation::Timer &controller, bool owner=false);
-		ImageAnimation(Animation &parent, bool create=false);
+		/// Creates a new image animation from the given parent
+		ImageAnimation(const Resource::Animation &parent, bool create=false);
+		
+		/// Deletes this animation object
+		virtual void DeleteAnimation() override {
+			delete this;
+		}
 
-		virtual graphics::GLTexture &GetTexture() { return ImageTexture::GetTexture(); }
+		virtual bool Progress(unsigned &leftover) override;
 
-		Animation &parent;
+		virtual GL::Texture GetID() const {
+			if(!current) return 0;
 
-		virtual void DeleteAnimation() { 
-			ImageTexture::Texture.ID=0;
+			return current->GetID();
+		}
 
-			delete this; 
+		virtual Geometry::Size GetImageSize() const {
+			if(!current) return{0, 0};
+
+			return current->GetImageSize();
+		}
+
+		virtual const Geometry::Pointf * GetCoordinates() const {
+			if(!current) return Graphics::TextureSource::fullcoordinates;
+
+			return current->GetCoordinates();
 		}
 
 	protected:
-		virtual animation::ProgressResult::Type Progress();
+
+		/// Parent of this animation
+		const Resource::Animation &parent;
+
+	private:
+		Image *current = nullptr;
 	};
 
 
 	class AnimationFrame {
 	public:
-		AnimationFrame(unsigned d=0, unsigned s=0, Image *im=NULL) : Duration(d), Start(s), Image(im) { }
+		AnimationFrame(Image &image, unsigned duration=42, unsigned start=0) : Duration(duration), Start(start), Image(image) {}
 
 		unsigned Duration;
 		unsigned Start;
-		resource::Image *Image;
+		class Resource::Image &Image;
 	};
 
 
-	////
-	class Animation : 
-		public Base, virtual public ResizableObjectProvider, 
-		virtual public animation::RectangularGraphic2DSequenceProvider 
-	{
-
-		friend Animation *LoadAnimationResource(File &File, std::istream &Data, int Size);
-		friend void LoadAnimationResourceEx(Animation *anim, File &File, std::istream &Data, int Size);
-		friend class ImageAnimation;
-		friend class DiscreteImageAnimation;
+	/// This class represents an animation resource. Image animations can be created using this object. An animation object can be moved.
+	/// Duplicate function should be used to copy an animation.
+	class Animation : public Base, public virtual Graphics::RectangularAnimationProvider {
 	public:
-		////03010000h (Gaming, Animation)
-		virtual GID::Type GetGID() const { return GID::Animation; }
+		/// Default constructor
+		Animation() : Base() { }
+
+		/// Move constructor
+		Animation(Animation &&other);
+
+		/// Copy constructor is disabled, use Duplicate
+		Animation(const Animation&) = delete;
+
+		/// Move assignment
+		Animation &operator =(Animation &&other);
+
+		/// Copy assignment is disabled, use Duplicate
+		Animation &operator =(const Animation &other) = delete;
+
+		/// Swaps two animation, used for move semantics
+		void Swap(Animation &other);
+
+		/// Duplicates this resource
+		void Duplicate() const;
+
+		/// Returns the Gorgon Identifier
+		virtual GID::Type GetGID() const override { 
+			return GID::Animation; 
+		}
 		
-		////Default constructor
-		Animation() : Base() { FrameCount=TotalLength=0; }
+		/// Returns the size of the first image
+		Geometry::Size GetSize() const { 
+			if(frames.size()>0) 
+				return frames[0].Image.GetSize(); 
+			return{0, 0};
+		}
 
-		////Returns the width of the first image
-		int GetWidth() const { if(Frames.size()>0) return Frames[0].Image->GetWidth(); return 0; }
-		////Returns the height of the first image
-		int GetHeight() const { if(Frames.size()>0) return Frames[0].Image->GetHeight(); return 0; }
-		////Returns number of frames
-		int GetFrameCount() const { return FrameCount; }
+		/// Returns number of frames
+		int GetCount() const { 
+			return frames.size(); 
+		}
 
-		virtual ImageAnimation &CreateAnimation(animation::Timer &controller, bool owner=false) {
+		/// Creates a new animation from this resource
+		virtual const ImageAnimation &CreateAnimation(Gorgon::Animation::Timer &controller, bool owner=false) const override {
 			return *new ImageAnimation(*this, controller, owner);
 		}
 
-		virtual ImageAnimation &CreateAnimation(bool create=false) {
+		/// Creates a new animation from this resource
+		virtual const ImageAnimation &CreateAnimation(bool create=false) const override {
 			return *new ImageAnimation(*this, create);
 		}
 
-		virtual ImageAnimation &CreateResizableObject(animation::Timer &controller, bool owner=false) {
-			return *new ImageAnimation(*this, controller, owner);
+		/// Returns the image that is to be shown at the given time. If the given time is larger
+		/// than the animation duration, animation is assumed to be looping.
+		Image &ImageAt(unsigned time) const { 
+#ifndef NDEBUG
+			if(GetDuration()==0) {
+				throw std::runtime_error("Animation is empty");
+			}
+#endif
+			time=time%GetDuration();
+
+			return frames[FrameAt(time)].Image; 
+		}		
+
+		/// Returns the image at the given frame
+		Image &operator [](int frame) const {
+			return frames[frame].Image;
 		}
 
-		virtual ImageAnimation &CreateResizableObject(bool create=false) {
-			return *new ImageAnimation(*this, create);
+		/// Returns which frame is at the given time. If the given time is larger than the animation
+		/// duration, last frame is returned.
+		unsigned FrameAt(unsigned time) const;
+
+		/// Returns the starting time of the given frame
+		unsigned StartOf(unsigned frame) const {
+			return frames[frame].Start;
 		}
 
-		virtual Image &ImageAt(int t) { 
-			t=utils::PositiveMod(t, GetDuration());
+		/// Returns the duration of the animation
+		unsigned GetDuration() const { 
+			return duration; 
+		}
 
-			return *Frames[FrameAt(t)].Image; 
-		} //Null Image
+		/// Returns the duration of the given frame
+		unsigned GetDuration(unsigned frame) const {
+			return frames[frame].Duration;
+		}
 		
-		//graphics::RectangularGraphic2D &GraphicAt(unsigned t) { return *Frames[FrameAt(t)].Image; } //Null Image
+		/// This function allows loading animation with a function to load unknown resources. The supplied function should
+		/// call LoadObject function of File class if the given GID is unknown.
+		static Animation *LoadResourceWith(File &file, std::istream &data, unsigned long size, 
+			std::function<Base*(File &, std::istream&, GID::Type, unsigned long)> loadfn);
 
-		unsigned GetTotalLength() const { return TotalLength; }
-
-		Image &operator [](int Frame) {
-			return *Frames[Frame].Image;
-		}
-
-		virtual int FrameAt(unsigned t) const;
-
-		virtual int StartOf(unsigned Frame) const {
-			return Frames[Frame].Start;
-		}
-
-		virtual int GetDuration(unsigned Frame) const {
-			return Frames[Frame].Duration;
-		}
-		virtual int GetDuration() const {
-			return TotalLength;
-		} 
-
-		virtual int GetNumberofFrames() const {
-			return Frames.size();
-		}
-
-		std::function<void(File&,std::istream&,GID::Type,int)> loadextra;
+		/// This function loads an animation resource from the given file
+		static Animation *LoadResource(File &file, std::istream &data, unsigned long size) { return LoadResourceWith(file, data, size, {}); }
 
 	protected:
-		////Total number of frames that this animation have
-		int FrameCount;
-		////Frame durations
-		std::vector<AnimationFrame> Frames;
-		unsigned TotalLength;
+		/// Frame durations
+		std::vector<AnimationFrame> frames;
+
+		/// Total duration
+		unsigned duration;
 
 	};
 } }

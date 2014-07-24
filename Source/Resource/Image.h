@@ -324,7 +324,7 @@ namespace Gorgon { namespace Resource {
 		bool ExportPNG(const std::string &filename);
 
 
-		virtual Image &CreateAnimation(Gorgon::Animation::Timer &controller, bool owner=false) override { 
+		virtual const Image &CreateAnimation(Gorgon::Animation::Timer &controller, bool owner=false) const override { 
 #ifndef NDEBUG
 			if(owner) {
 				throw std::runtime_error("Images cannot own timers or controllers.");
@@ -333,7 +333,7 @@ namespace Gorgon { namespace Resource {
 			return *this;
 		}
 
-		virtual Image &CreateAnimation(bool create=false) override { return *this; }
+		virtual const Image &CreateAnimation(bool create=false) const override { return *this; }
 
 		/// Creates the blurred version of this image as a new separate image. This function creates another image since
 		/// it is not possible to apply blur in place. You may use move assignment to modify the original `img = img.Blur(1.2);`

@@ -102,18 +102,18 @@ namespace Gorgon { namespace Graphics {
 			coordinates[3] ={float(location.Left)/size.Width, float(location.Bottom)/size.Height};
 		}
 
-		/// Returns GL::Texture to be drawn.
-		virtual GL::Texture GetID() const override {
+		/// Returns GL::Texture to be drawn. Declared final to allow inlining.
+		virtual GL::Texture GetID() const override final {
 			return id;
 		}
 
-		/// Returns the size of the texture in pixels
-		virtual Geometry::Size GetImageSize() const override {
+		/// Returns the size of the texture in pixels. Declared final to allow inlining.
+		virtual Geometry::Size GetImageSize() const override final {
 			return size;
 		}
 
-		/// Returns the coordinates of the texture to be used
-		virtual const Geometry::Pointf *GetCoordinates() const override {
+		/// Returns the coordinates of the texture to be used. Declared final to allow inlining.
+		virtual const Geometry::Pointf *GetCoordinates() const override final {
 			return coordinates;
 		}
 

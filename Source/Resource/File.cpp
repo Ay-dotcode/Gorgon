@@ -4,6 +4,7 @@
 #include "File.h"
 #include "Blob.h"
 #include "Image.h"
+#include "Animation.h"
 
 
 
@@ -13,6 +14,8 @@ namespace Gorgon { namespace Resource {
 		Loaders[GID::Blob] ={GID::Blob, Blob::LoadResource};
 		Loaders[GID::Folder] ={GID::Folder, Folder::LoadResource};
 		Loaders[GID::Image] ={GID::Image, Image::LoadResource};
+		Loaders[GID::Animation_Image] ={GID::Animation_Image, Image::LoadResource};
+		Loaders[GID::Animation] ={GID::Animation, Animation::LoadResource};
 	}
 
 	Base *File::LoadChunk(Base &self, std::istream &data, GID::Type gid, unsigned long size, bool skipobjects) {

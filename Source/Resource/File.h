@@ -99,7 +99,7 @@ namespace Gorgon { namespace Resource {
 		File();
 
 		/// Destroys file object. If the root is not detached, it will destroy resource tree as well.
-		~File() {
+		virtual ~File() {
 			delete root;
 			delete file; // deleting nullptr is safe
 		}
@@ -309,9 +309,13 @@ namespace Gorgon { namespace Resource {
 			return ret;
 		}
 
+		/// Reads an array from the file. Array type should be given a fixed size construct, otherwise
+		/// a mismatch between binary formats will cause trouble.
+		/// @param  data is the data to be read from the file
+		/// @param  size is the number of elements to be read
 		template<class T_>
 		void ReadArray(T_ *data, unsigned long size) {
-			file->read((char*)data, size);
+			file->read((char*)data, size*sizeof(T_));
 		}
 
 		/// Reads a GID from the given stream.

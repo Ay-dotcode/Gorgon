@@ -352,7 +352,7 @@ namespace Gorgon { namespace Graphics {
 		/// to fit the given area
 		/// It might be logical to override this as it is possible to avoid additional function calls and
 		/// if statements
-		virtual void drawin(TextureTarget &target, const Geometry::Rectangle &r) { 
+		virtual void drawin(TextureTarget &target, const Geometry::Rectangle &r) const override { 
 			drawin(target, Tiling::Both, r); 
 		}
 

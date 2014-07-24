@@ -72,8 +72,6 @@ namespace Gorgon { namespace Resource {
 			auto gid = file.ReadGID();
 			auto size= file.ReadChunkSize();
 
-			GID::Type compression;
-
 			if(gid==GID::Image_Props) {
 				width=file.ReadInt32();
 				height=file.ReadInt32();

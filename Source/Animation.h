@@ -27,13 +27,13 @@ namespace Gorgon {
 			virtual ~Timer();
 
 			/// Progresses this timer by moving the timer timepassed milliseconds forwards
-			virtual void Progress(unsigned timepassed);
+			virtual bool Progress(unsigned timepassed);
 
 			/// This function notifies the timer about a finished animation. Base timer does
 			/// not perform any operation when an animation attached to it is finished.
 			/// @param  leftover is the amount of time that is left over after the animation
 			///         is progress to the end
-			virtual void Finished(unsigned leftover) { }
+			virtual bool Finished(unsigned leftover) { }
 
 			/// Resets the timer, basically starting the animation from the start.
 			virtual void Reset() { 
@@ -75,14 +75,14 @@ namespace Gorgon {
 			/// @{
 
 			/// Progresses this controller by the given time
-			virtual void Progress(unsigned timepassed);
+			virtual void Progress(unsigned timepassed) override;
 
 			/// Signals that an animation bound to this controller is finished.
 			/// @param  leftover is the time that is left after the animation is completely finished
-			virtual void Finished(unsigned leftover);
+			virtual bool Finished(unsigned leftover) override;
 
 			/// Sets the current progress of the controller
-			virtual void SetProgress(unsigned progress) { floatprogress=this->progress=progress; }
+			virtual void SetProgress(unsigned progress) override { floatprogress=this->progress=progress; }
 
 			/// Sets the current progress of the controller. If the progress is a negative value, it will be
 			/// subtracted from the animation length. If the animation length is 0, then the controller will
@@ -188,11 +188,11 @@ namespace Gorgon {
 		
 			/// This function should create a new animation with the given controller and
 			/// if owner parameter is set to true, it should assume ownership of the controller
-			virtual Base &CreateAnimation(Timer &timer, bool owner=false) = 0;
+			virtual const Base &CreateAnimation(Timer &timer, bool owner=false) const = 0;
 
 			/// This function should create and animation and depending on the create parameter,
 			/// it should create its own timer.
-			virtual Base &CreateAnimation(bool create=false) = 0;
+			virtual const Base &CreateAnimation(bool create=false) const = 0;
 		};
 
 		/// This is the base class for all animations. It handles some common tasks and defines

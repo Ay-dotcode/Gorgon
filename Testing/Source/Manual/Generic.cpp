@@ -36,7 +36,6 @@ int main() {
 		image.Draw(layer, {0, 0});
 
 		std::cout<<image.GetSize()<<std::endl;
-		std::cout<<image.ReleaseTexture().GetID()<<std::endl;
 
 		std::cout<<std::string((char*)&data[0], data.size());
 	/*}

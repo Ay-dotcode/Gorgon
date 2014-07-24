@@ -1,158 +1,115 @@
 #include "Animation.h"
 #include "File.h"
-#include "Image.h"
-#include "../Utils/BasicMath.h"
 
-using namespace gge::utils;
-using namespace gge::graphics;
-using namespace std;
+namespace Gorgon { namespace Resource {
 
-namespace gge { namespace resource {
+	Animation *Animation::LoadResourceWith(File &file, std::istream &data, unsigned long totalsize, std::function<Base*(File &, std::istream&, GID::Type, unsigned long)> loadfn) {
+		auto target = data.tellg()+totalsize;
 
-	void LoadAnimationResourceEx(Animation *anim, File &File, std::istream &Data, int Size) {
-		int target=Data.tellg()+Size;
-		while(Data.tellg()<target) {
-			int gid,size;
-			ReadFrom(Data, gid);
-			ReadFrom(Data, size);
+		std::unique_ptr<Animation> anim{new Animation};
+		std::vector<uint32_t> durations;
+
+		while(data.tellg()<target) {
+			auto gid = file.ReadGID();
+			auto size= file.ReadChunkSize();
 
 			if(gid==GID::Animation_Durations) {
-				unsigned t=0;
-
-				for(int i=0;i<size/4;i++) {
-					unsigned d=ReadFrom<int>(Data);
-					anim->Frames.push_back(AnimationFrame(d,t));
-
-					t+=d;
+				durations.resize(size/4);
+				file.ReadArray(&durations[0], durations.size());
+			} else {
+				Base *obj=nullptr;
+				if(loadfn) {
+					obj=loadfn(file, data, gid, size);
+				} else {
+					obj=file.LoadChunk(*anim, data, gid, size, true);
 				}
 
-				anim->TotalLength=t;
-			} 
-			else if(gid==GID::Guid) {
-				anim->guid.LoadLong(Data);
-			} 
-			else if(gid==GID::SGuid) {
-				anim->guid.Load(Data);
-			} 
-			else if(gid==GID::Animation_Image || gid==GID::Image) {
-				anim->Subitems.Add(LoadImageResource(File,Data,size), anim->Subitems.HighestOrder()+1);
-			} 
-			else {
-				if(anim->loadextra)
-					anim->loadextra(File, Data, gid, size);
-				else
-					EatChunk(Data, size);
+				if(obj) {
+					anim->children.Add(obj);
+				}
 			}
 		}
 
-		int i=0;
-		for(SortedCollection<Base>::Iterator it=anim->Subitems.First();it.IsValid();it.Next(), i++)
-			anim->Frames[i].Image=&dynamic_cast<Image&>(*it);
-
-		anim->FrameCount=anim->Subitems.GetCount();
-	}
-
-
-	Animation *LoadAnimationResource(File &File, std::istream &Data, int Size) {
-		Animation *anim=new Animation;
-		LoadAnimationResourceEx(anim, File, Data, Size);
-
-		return anim;
-	}
-
-	animation::ProgressResult::Type ImageAnimation::Progress() {
-		if(Controller && parent.Frames.size()) { 
-			if(Controller->GetType()==animation::Timer::Discrete) {
-				animation::DiscreteController *dc = dynamic_cast<animation::DiscreteController *>(Controller);
-
-				int cf=dc->CurrentFrame();
-				int fc=parent.FrameCount;
-
-				cf=cf % fc;
-
-				if(cf<0) {
-					Texture.ID=0;
-					return animation::ProgressResult::None;
-				}
-
-				Texture=parent[cf].GetTexture();
-
-				return animation::ProgressResult::None;
-			}
-			else {
-				animation::ProgressResult::Type ret=animation::ProgressResult::None;
-
-				int t=Controller->GetProgress();
-				int tl=(int)parent.GetTotalLength();
-
-				//this will cause the animation to loop if its simple timer
-				//and stop if it is controlled.
-				if( t>=parent.GetDuration() && dynamic_cast<animation::Controller *>(Controller) ) {
-					ret=animation::ProgressResult::Finished;
-					t=parent.GetDuration()-1;
-				}
-				if(t<0) {
-					t=0;
-					ret=animation::ProgressResult::Finished;
-				}
-
-				t=PositiveMod(t,tl);
-				GLTexture &tx=parent.ImageAt(t).GetTexture();
-				if(tx.ID!=Texture.ID)
-					Texture=tx;
-
-				return ret;
-			}
+		unsigned time=0;
+		auto images = anim->begin();
+		
+		for(auto &dur : durations) {
+#ifndef NDEBUG
+			assert((images!=anim->end() && images->GetGID()==GID::Image) && "Animation is empty");
+#endif
+			anim->frames.emplace_back(dynamic_cast<Image&>(*images), dur, time);
+			++images;
+			time+=dur;
 		}
-		else {
-			Texture.ID=0;
+		anim->duration = time;
 
-			return animation::ProgressResult::None;
+		return anim.release();
+	}
+
+	unsigned Animation::FrameAt(unsigned t) const {
+		auto count=frames.size();
+
+#ifndef NDEBUG
+		assert(count!=0 && "Animation has no frames");
+#endif
+
+		if(t>=(frames.end()-1)->Start)
+			return count-1;
+
+		int guessed=(int)floor( ((float)t/duration)*count );
+
+		if(frames[guessed].Start>t) {
+			while(frames[guessed].Start>t)
+				guessed--;
+
+			return guessed;
 		}
-	}
+		else if(frames[guessed+1].Start<t) {
+			while(frames[guessed+1].Start<t)
+				guessed++;
 
-	ImageAnimation::ImageAnimation( Animation &parent, animation::Timer &controller, bool owner ) : 
-	animation::Base(controller, owner), parent(parent)
-	{
-		if(parent.GetFrameCount()>0)
-			Texture=parent.ImageAt(0).GetTexture();
-		else
-			Texture.ID=0;
-	}
-
-	ImageAnimation::ImageAnimation( Animation &parent, bool create ) : 
-	animation::Base(create), parent(parent)
-	{
-		if(parent.GetFrameCount()>0)
-			Texture=parent.ImageAt(0).GetTexture();
-		else
-			Texture.ID=0;
-	}
-
-
-
-	int Animation::FrameAt( unsigned t ) const {
-		if(Frames.size()==0) return -1;
-
-		if(t>=(Frames.end()-1)->Start)
-			return FrameCount-1;
-
-		int Guessed=(int)floor( ((float)t/TotalLength)*FrameCount );
-
-		if(Frames[Guessed].Start>t) {
-			while(Frames[Guessed].Start>t)
-				Guessed--;
-
-			return Guessed;
-		}
-		else if(Frames[Guessed+1].Start<t) {
-			while(Frames[Guessed+1].Start<t)
-				Guessed++;
-
-			return Guessed;
+			return guessed;
 		} 
 		else
-			return Guessed;
+			return guessed;
 	}
+
+	ImageAnimation::ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller, bool owner) :
+		Animation::Base(controller, owner), parent(parent)
+	{
+			if(parent.GetCount()>0)
+				current=&parent.ImageAt(0);
+			else
+				current=nullptr;
+	}
+
+	ImageAnimation::ImageAnimation( const Resource::Animation &parent, bool create ) : 
+		Animation::Base(create), parent(parent)
+	{
+			if(parent.GetCount()>0)
+				current=&parent.ImageAt(0);
+			else
+				current=nullptr;
+	}
+
+	bool ImageAnimation::Progress(unsigned &leftover) {
+		if(!controller) return false;
+
+		if(parent.GetCount()==0) return false;
+
+		unsigned progress=controller->GetProgress();
+
+		if(progress>parent.GetDuration()) {
+			current=&parent[parent.GetCount()-1];
+			leftover=progress-parent.GetDuration();
+			return false;
+		}
+		else {
+			current=&parent.ImageAt(progress);
+			return true;
+		}
+	}
+
+
 
 } }
