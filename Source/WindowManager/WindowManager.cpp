@@ -11,6 +11,13 @@ namespace Gorgon {
 	const Window::FullscreenTag Window::Fullscreen;
 	
 	namespace WindowManager {
+		/// @cond INTERNAL
+		intptr_t context = 0;
+		/// @endcond
+
+		intptr_t CurrentContext() {
+			return context;
+		}
 	}
 }
 

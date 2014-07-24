@@ -1,19 +1,40 @@
 #include "Layer.h"
+#include "../Graphics.h"
+#include "Shaders.h"
 
 namespace Gorgon { namespace Graphics {
 
 	void Layer::Render() {
-		internal::Transform.Push();
+		using namespace internal;
 
-		internal::Transform.Translate({Bounds.Left, Bounds.Top, 0});
+		if(!isvisible) return;
 
+		Transform.Push();
+
+		Transform.Translate({bounds.Left, bounds.Top, 0});
+
+		ActivateQuad();
+		auto &shader = SimpleShader::Use();
 		for(auto &surface : surfaces) {
+			shader.SetDiffuse(1);
+			shader.SetVertexCoords(surface.GetVertices(Transform.Top()));
+			shader.SetTextureCoords(surface.GetTextureCoords());
 
+			DrawQuad();
 		}
 
-		Layer::Render();
+		//shader.SetDiffuse(1);
+		//shader.SetVertexCoords({{0, 0, 0}, {0.8, 0, 0}, {0.8, 298/300.f, 0}, {0, 298/300.f, 0}});
+		//shader.SetTextureCoords({{0, 0}, {1, 0}, {1, 1}, {0, 1}});
+		//DrawQuad();
 
-		internal::Transform.Pop();
+		//shader.SetVertexCoords({{0, 0, 0}, {-0.4, 0, 0}, {-0.4, -0.4, 0}, {0, -0.4, 0}});
+		//shader.SetTextureCoords({{0, 0}, {1, 0}, {1, 1}, {0, 1}});
+		//DrawQuad();
+
+		Gorgon::Layer::Render();
+
+		Transform.Pop();
 	}
 
 } }

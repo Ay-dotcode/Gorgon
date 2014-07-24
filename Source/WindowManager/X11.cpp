@@ -2,6 +2,7 @@
 #include "../Window.h"
 #include "../Time.h"
 #include "../OS.h"
+#include "../Graphics.h"
 
 
 #include <X11/Xlib.h>
@@ -111,6 +112,19 @@ namespace Gorgon {
 			return ret;
 		}
 
+		extern intptr_t context;
+
+		void switchcontext(Gorgon::internal::windowdata &data) {
+			glXMakeCurrent(WindowManager::display, data->handle, data->context);
+			context=reinterpret_cast<intptr_t>(&data);
+		}
+
+		void finalizerender(Gorgon::internal::windowdata &data) {
+			glFinish();
+			glFlush();
+			glXSwapBuffers(WindowManager::display, data->handle);
+			XFlush(WindowManager::display);
+		}
 		/// @endcond
 		
 		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
@@ -313,6 +327,8 @@ namespace Gorgon {
 		
 		data->ismapped=visible;
 		
+		Layer::Resize(rect.GetSize());
+
 		createglcontext();
 	}
 	
@@ -580,9 +596,8 @@ namespace Gorgon {
 			}
 		}
 		
-		data->context = glXCreateContext(WindowManager::display, vi, prev, GL_TRUE);
-		
-		glXMakeCurrent(WindowManager::display, data->handle, data->context);
+		data->context = glXCreateContext(WindowManager::display, vi, prev, GL_TRUE);		
+		WindowManager::internal::switchcontext(*data);
 
 		if(data->context==0) {
 			OS::DisplayMessage("OpenGL context creation failed");
@@ -591,8 +606,10 @@ namespace Gorgon {
 
 		GL::SetupContext(bounds.GetSize());
 
-		glXSwapBuffers(WindowManager::display, data->handle);
-		
+		Graphics::Initialize();
+
+		// test code
+		glXSwapBuffers(WindowManager::display, data->handle);		
 		XFlush(WindowManager::display);
 	}
 }

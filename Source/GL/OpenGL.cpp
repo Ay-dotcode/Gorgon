@@ -148,20 +148,23 @@ namespace Gorgon { namespace GL {
 
 		glViewport(0, 0, size.Width, size.Height);
 
-		glCullFace(GL_BACK);
-		glFrontFace(GL_CCW);
+		glCullFace(GL_NONE);
+		//glFrontFace(GL_CCW);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glFlush();
 		glFinish();
 	}
 
-
 	void Resize(const Geometry::Size &size) {
 		glViewport(0, 0, size.Width, size.Height);					// Reset The Current Viewport
 	}
 
-	void LoadGLFunctions() {
+	void Clear() {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void LoadFunctions() {
 #ifdef WIN32
 		glDrawBuffers					= (PFNGLDRAWBUFFERSPROC)wglGetProcAddress("glDrawBuffers");
 		glGetAttribLocation				= (PFNGLGETATTRIBLOCATIONPROC)wglGetProcAddress("glGetAttribLocation");

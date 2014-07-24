@@ -7,8 +7,10 @@
 
 #define WINDOWS_LEAN_AND_MEAN
 
+#include "../GL/OpenGL.h"
+#include "../Graphics.h"
+
 #include <windows.h>
-#include "../GL.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -171,6 +173,20 @@ namespace Gorgon {
 		/// @cond INTERNAL
 		HCURSOR defaultcursor;
 		bool pointerdisplayed;
+		extern intptr_t context;
+
+		namespace internal {
+			void switchcontext(Gorgon::internal::windowdata &data) {
+				wglMakeCurrent(data.device_context, data.context);
+				context=reinterpret_cast<intptr_t>(&data);
+			}
+
+			void finalizerender(Gorgon::internal::windowdata &data) {
+				glFinish();
+				glFlush();
+				SwapBuffers(data.device_context);
+			}
+		}
 		/// @endcond
 
 		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
@@ -208,10 +224,6 @@ namespace Gorgon {
 			else {
 				return "";
 			}
-		}
-
-		void switchcontext(Gorgon::internal::windowdata &data) {
-			wglMakeCurrent(data.device_context, data.context);
 		}
 	}
 
@@ -259,6 +271,8 @@ namespace Gorgon {
 
 		GetWindowInfo(hwnd, &wi);
 
+		auto size=rect.GetSize();
+
 		rect.Width += (wi.rcWindow.right-wi.rcWindow.left) - (wi.rcClient.right-wi.rcClient.left);
 		rect.Height+= (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top);
 
@@ -278,6 +292,8 @@ namespace Gorgon {
 		internal::windowdata::mapping[hwnd]=data;
 
 		PostMessage(hwnd, WM_ACTIVATE, -1, -1);
+
+		Layer::Resize(size);
 
 		createglcontext();
 	}
@@ -320,6 +336,8 @@ namespace Gorgon {
 	}
 
 	void Window::Resize(const Geometry::Size &size) {
+		Layer::Resize(size);
+
 		WINDOWINFO wi;
 		wi.cbSize=sizeof(wi);
 
@@ -367,7 +385,7 @@ namespace Gorgon {
 		SetPixelFormat(data->device_context, PixelFormat, &pfd);
 
 		data->context = wglCreateContext(data->device_context);
-		wglMakeCurrent(data->device_context, data->context);
+		WindowManager::internal::switchcontext(*data);
 
 		if(data->context==NULL) {
 			OS::DisplayMessage("Context creation failed");
@@ -376,7 +394,6 @@ namespace Gorgon {
 
 		GL::SetupContext(bounds.GetSize());
 
-		// test code
-		SwapBuffers(data->device_context);
+		Graphics::Initialize();		
 	}
 } 

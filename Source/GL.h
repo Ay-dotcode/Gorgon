@@ -35,5 +35,8 @@ namespace Gorgon {
 
 		/// Resizes the active context
 		void Resize(const Geometry::Size &size);
+
+		/// Clears the window pointed by the active context
+		void Clear();
 	}
 }

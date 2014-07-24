@@ -25,7 +25,8 @@ namespace Gorgon {
 			Gorgon::internal::windowdata *getdata(const Window&);
 
 			void switchcontext(Gorgon::internal::windowdata &data);
-			
+			void finalizerender(Gorgon::internal::windowdata &data);
+
 			struct icondata;
 			struct pointerdata;
 		}
@@ -57,6 +58,9 @@ namespace Gorgon {
 		
 		/// Initializes window manager system
 		void Initialize();
+
+		/// Returns an identifier for the current context
+		intptr_t CurrentContext();
 
 		/// Returns the usable rectangle of the screen. Usable rectangle excludes the regions
 		/// that are occupied by taskbar or any other panel that is set not to be covered

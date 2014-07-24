@@ -202,7 +202,7 @@ extern PFNGLVERTEXATTRIBIPOINTERPROC			glVertexAttribIPointer;
 namespace Gorgon {
 	namespace GL {
 
-		void LoadGLFunctions();
+		void LoadFunctions();
 
 	}
 }

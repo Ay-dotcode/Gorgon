@@ -50,6 +50,25 @@ namespace Gorgon { namespace Graphics {
 				this->source = &source;
 			}
 
+			GL::Texture TextureID() const {
+				return source->GetID();
+			}
+
+			glm::mat4x3 GetVertices(const glm::mat4 &transform) {
+				glm::mat4 result =transform*vertices;
+				for(int i=0; i<4; i++) result[i]/=result[i].w;
+				return{result[0].xyz(), result[1].xyz(), result[2].xyz(), result[3].xyz()};
+			}
+
+			glm::mat4x2 GetTextureCoords() {
+				if(texture)
+					return{{texture[0].X, texture[0].Y}, {texture[1].X, texture[1].Y}, {texture[2].X, texture[2].Y}, {texture[3].X, texture[3].Y}};
+				else {
+					auto texture=source->GetCoordinates();
+					return{{texture[0].X, texture[0].Y}, {texture[1].X, texture[1].Y}, {texture[2].X, texture[2].Y}, {texture[3].X, texture[3].Y}};
+				}
+			}
+
 			~Surface() {
 				if(texture) delete[] texture;
 				texture      = nullptr;
@@ -82,7 +101,11 @@ namespace Gorgon { namespace Graphics {
 
 		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectangle &location) override {
 			if(tiling==Tiling::None) {
-				Draw(image, location.TopLeft(), location.TopRight(), location.BottomLeft(), location.BottomRight());
+				Draw(image, location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft());
+			}
+			else {
+				assert(false);
+				//!
 			}
 		}
 
@@ -95,6 +118,10 @@ namespace Gorgon { namespace Graphics {
 		virtual DrawMode GetDrawMode() const override { return mode; }
 
 		virtual void SetDrawMode(DrawMode mode) override { this->mode=mode; }
+
+		virtual Geometry::Size Graphics::TextureTarget::GetSize() const override { return Gorgon::Layer::GetSize(); }
+
+		using Gorgon::Layer::GetSize;
 
 	private:
 		std::vector<internal::Surface> surfaces;

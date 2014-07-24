@@ -18,6 +18,10 @@ namespace Gorgon {
 	/// underlying GL system through textures.
 	namespace Graphics {
 
+		/// Initializes Graphics module, should be performed after an OpenGL context is
+		/// created. There is a mechanism to ensure initialization is performed once.
+		void Initialize();
+
 		/// Details which directions a texture should tile. If its not tiled for that direction, it will
 		/// be stretched. If the target size is smaller, tiling causes partial draw instead of shrinking.
 		/// @todo Should be fitted to String::Enum
@@ -96,12 +100,12 @@ namespace Gorgon {
 
 		/// Returns horizontal alignment from a placement
 		inline Alignment GetHorizontal(Placement placement) {
-			return Alignment((int)placement & 56);
+			return Alignment(((int)placement & 56)>>3);
 		}
 
 		/// Returns vertical alignment from a placement
 		inline Alignment GetVertical(Placement placement) {
-			return Alignment(((int)placement & 7) << 3);
+			return Alignment((int)placement & 7);
 		}
 
 		/// Returns the offset of the object according to the given placement rule when there is the given 
@@ -364,12 +368,16 @@ namespace Gorgon {
 			/// Transformation stack
 			extern glutil::MatrixStack Transform;
 
+			extern GL::Texture LastTexture;
+
 			/// This should be called by the windows to reset transformation stack.
-			void ResetTransform(const Geometry::Size &size) {
+			inline void ResetTransform(const Geometry::Size &size) {
 				Transform={};
 				Transform.SetIdentity();
 				Transform.PixelPerfectOrtho({size.Width, size.Height}, {-1, 1});
 			}
+			void ActivateQuad();
+			void DrawQuad();
 
 		}
 	}

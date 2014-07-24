@@ -57,8 +57,6 @@ namespace Gorgon {
 			unsigned int					program;
 
 
-			std::map<std::string, int>		mHandles;
-
 			//void Initialize(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader,
 			//	const std::string& shaderDefines, InitializeShaderFunc initializeShaderFunc);
 		};
