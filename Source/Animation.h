@@ -27,13 +27,13 @@ namespace Gorgon {
 			virtual ~Timer();
 
 			/// Progresses this timer by moving the timer timepassed milliseconds forwards
-			virtual bool Progress(unsigned timepassed);
+			virtual void Progress(unsigned timepassed);
 
 			/// This function notifies the timer about a finished animation. Base timer does
 			/// not perform any operation when an animation attached to it is finished.
 			/// @param  leftover is the amount of time that is left over after the animation
 			///         is progress to the end
-			virtual bool Finished(unsigned leftover) { }
+			virtual void Finished(unsigned leftover) {}
 
 			/// Resets the timer, basically starting the animation from the start.
 			virtual void Reset() { 
@@ -79,7 +79,7 @@ namespace Gorgon {
 
 			/// Signals that an animation bound to this controller is finished.
 			/// @param  leftover is the time that is left after the animation is completely finished
-			virtual bool Finished(unsigned leftover) override;
+			virtual void Finished(unsigned leftover) override;
 
 			/// Sets the current progress of the controller
 			virtual void SetProgress(unsigned progress) override { floatprogress=this->progress=progress; }
