@@ -49,6 +49,16 @@ namespace Gorgon {
 				Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
 				}
 
+				void Remove() {
+					Col->Remove(Offset);
+					Offset--;
+				}
+
+				void Delete() {
+					Col->Delete(Offset);
+					Offset--;
+				}
+
 			protected:
 				Iterator_(C_ &c, long offset=0) : Col(&c), Offset(offset) {
 				}
@@ -129,6 +139,9 @@ namespace Gorgon {
 			private:
 				ConstIterator(const Collection &c, long offset=0) : Iterator_<T_,const Collection>(c, offset) {
 				}
+
+				void Remove() {}
+				void Delete() {}
 			};
 
 			///@cond INTERNAL

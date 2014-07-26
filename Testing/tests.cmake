@@ -7,6 +7,7 @@ SET(ManualTests
 
 SET(UnitTests
 	Filesystem
+	GarbageCollection
 	Geometry
 	Enum
 	Event
