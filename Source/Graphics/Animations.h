@@ -23,7 +23,7 @@ namespace Gorgon { namespace Graphics {
 	public:
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
-		virtual const Animation &CreateAnimation(Gorgon::Animation::Timer &timer, bool owner=false) const override = 0;
+		virtual const Animation &CreateAnimation(Gorgon::Animation::Timer &timer) const override = 0;
 
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
@@ -34,7 +34,7 @@ namespace Gorgon { namespace Graphics {
 	public:
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
-		virtual const SizelessAnimation &CreateAnimation(Gorgon::Animation::Timer &timer, bool owner=false) const override = 0;
+		virtual const SizelessAnimation &CreateAnimation(Gorgon::Animation::Timer &timer) const override = 0;
 
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
@@ -45,7 +45,7 @@ namespace Gorgon { namespace Graphics {
 	public:
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
-		virtual const RectangularAnimation &CreateAnimation(Gorgon::Animation::Timer &timer, bool owner=false) const override = 0;
+		virtual const RectangularAnimation &CreateAnimation(Gorgon::Animation::Timer &timer) const override = 0;
 
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.

@@ -6,57 +6,72 @@
 
 namespace Gorgon { namespace Animation {
 
-	Containers::Collection<Timer> Timers;
-	Containers::Collection<Base>  Animations;
-
-	unsigned LastTick;
+	Containers::Collection<ControllerBase> controllers;
 
 	void Animate() {
 		if(Time::DeltaTime()==0) return;
 
 		auto progress=Time::DeltaTime();
 
-		for(auto &timer : Timers)
-			timer.Progress(progress);
+		for(auto &c : controllers)
+			c.Progress(progress);
 
-		for(auto &base : Animations) {
-			if(base.HasController()) {
-				unsigned leftover=0;
+	}
 
-				if(!base.Progress(leftover)) {
-					base.GetController().Finished(leftover);
-				}
-			}
+	ControllerBase::ControllerBase() {
+		controllers.Add(this);
+	}
+
+	ControllerBase::~ControllerBase() {
+		controllers.Remove(this);
+	}
+
+	void ControllerBase::Add(Base &animation) {
+		animations.Add(animation);
+		animation.SetController(*this);
+	}
+
+	void ControllerBase::Remove(Base &animation) {
+		auto item=animations.Find(animation);
+		if(item.IsValid()) {
+			auto &anim=*item;
+			item.Remove();
+			anim.RemoveController();
 		}
 	}
 
-	Timer::Timer() {
-		Timers.Add(this);
-	}
-
-	Timer::~Timer() {
-		Timers.Remove(this);
+	void ControllerBase::Delete(Base &animation) {
+		auto item=animations.Find(animation);
+		if(item.IsValid()) {
+			item.Delete();
+		}
 	}
 
 	void Timer::Progress(unsigned timepassed) {
 		progress += timepassed;
+
+		unsigned leftover;
+		for(auto &anim : animations) {
+			anim.Progress(leftover);
+		}
 	}
 
-	Controller::Controller() : Timer(),
-		FinishedEvent(*this)
-	{ }
+	Controller::Controller(double progress) : FinishedEvent(*this) {
+		SetProgress(progress);
+	}
 
 	void Controller::Progress( unsigned timepassed ) {
+		bool callfinished=false;
 		if(!ispaused && !isfinished) {
-			floatprogress+=(float)timepassed*speed;
+			progress+=(double)timepassed*speed;
 
-			if(floatprogress<0) {
+			if(progress<0) {
 				if(islooping) {
 					if(length) {
-						floatprogress = length-floatprogress;
+						progress = length-progress;
 					}
 					else {
-						floatprogress=0;
+						progress=0;
 						isfinished=true;
 #ifndef NDEBUG
 						throw std::runtime_error("! Gorgon::Animation: Loop is required with negative speed but length is not set.");
@@ -64,26 +79,41 @@ namespace Gorgon { namespace Animation {
 					}
 				}
 				else {
-					floatprogress=0;
+					progress=0;
 					isfinished=true;
 				}
-				FinishedEvent();
+				callfinished=true;
 			}
 
-			progress=(unsigned)std::round(floatprogress);
+			progress=(unsigned)std::round(progress);
 		}
+
+		unsigned leftover;
+		for(auto &anim : animations) {
+			if(!anim.Progress(leftover)) {
+				if(islooping && timepassed>0) {
+					progress=leftover;
+					Progress(0);
+				}
+				else if(leftover) {
+					progress-=leftover;
+					Progress(0);
+				}
+				callfinished=true;
+			}
+		}
+		if(callfinished)
+			FinishedEvent();
 	}
 
 	void Controller::Play() {
 		if(isfinished) {
 			if(speed>=0) {
-				floatprogress=0;
 				progress=0;
 				ispaused=false;
 				isfinished=false;
 			}
 			else if(length) {
-				floatprogress=length;
 				progress=length;
 				ispaused=false;
 				isfinished=false;
@@ -103,63 +133,14 @@ namespace Gorgon { namespace Animation {
 	void Controller::Reset() {
 		speed=1.0;
 
-		floatprogress=0;
 		progress=0;
 		ispaused=false;
 		isfinished=false;
-	}
-
-	void Controller::Finished( unsigned leftover ) {
-		if(islooping) {
-			progress=leftover;
-			floatprogress=progress;
-		}
-		else {
-			progress-=leftover;
-		}
-
-		FinishedEvent();
 	}
 
 	void Controller::Pause() {
 		ispaused=true;
 	}
 
-
-	Base::Base(Timer &controller, bool owner) : controller(&controller), owner(owner) {
-		Animations.Add(this);
-	}
-
-	Base::Base(bool create) {
-		Animations.Add(this);
-
-		if(create) {
-			controller=new Timer();
-			owner=true;
-		}
-		else {
-			owner=false;
-		}
-	}
-
-	void Base::RemoveMe() {
-		Animations.Remove(this);
-	}
-
-	void Base::SetController( Timer &controller, bool owner ) {
-		RemoveController();
-
-		this->controller=&controller; 
-		this->owner=owner;
-
-		unsigned leftover;
-		if(!this->Progress(leftover)) {
-			controller.Finished(leftover);
-		}
-	}
-
-	Base::~Base() {
-		RemoveController();
-	}
 
 } }

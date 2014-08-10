@@ -19,10 +19,10 @@ class ImageAnimation :
 {
 public:
     /// Creates a new image animation from the given parent
-    ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller, bool owner=false);
+		ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller);
 
     /// Creates a new image animation from the given parent
-    ImageAnimation(const Resource::Animation &parent, bool create=false);
+		ImageAnimation(const Resource::Animation &parent, bool create);
 
     /// Deletes this animation object
     virtual void DeleteAnimation() override {
@@ -37,13 +37,13 @@ public:
         return current->GetID();
     }
 
-    virtual Geometry::Size GetImageSize() const {
+		virtual Geometry::Size GetImageSize() const override {
         if(!current) return {0, 0};
 
         return current->GetImageSize();
     }
 
-    virtual const Geometry::Pointf * GetCoordinates() const {
+		virtual const Geometry::Pointf *GetCoordinates() const override {
         if(!current) return Graphics::TextureSource::fullcoordinates;
 
         return current->GetCoordinates();
@@ -59,9 +59,10 @@ private:
 };
 
 
+	/// This class represents a single frame in a resource animation
 class AnimationFrame {
 public:
-    AnimationFrame(Image &image, unsigned duration=42, unsigned start=0) : Duration(duration), Start(start), Visual(image) {}
+		/// Default constructor requires image. Default duration is set to 42 denoting 24fps 
 
     unsigned Duration;
     unsigned Start;
@@ -112,8 +113,8 @@ public:
     }
 
     /// Creates a new animation from this resource
-    virtual const ImageAnimation &CreateAnimation(Gorgon::Animation::Timer &controller, bool owner=false) const override {
-        return *new ImageAnimation(*this, controller, owner);
+		virtual const ImageAnimation &CreateAnimation(Gorgon::Animation::Timer &controller) const override {
+			return *new ImageAnimation(*this, controller);
     }
 
     /// Creates a new animation from this resource

@@ -427,18 +427,12 @@ namespace Gorgon {
 
 			/// Searches the position of a given item, if not found end iterator returned
 			Iterator Find(const T_ *item) {
-				long i;
-				for(i=0;i<list.GetSize();i++) {
-					if(item==list[i])
-						return Iterator(*this, i);
-				}
-
-				return Iterator(*this, -1);
+				return Iterator(*this, FindLocation(item));
 			}
 
 			/// Searches the position of a given item, if not found end iterator returned
 			Iterator Find(const T_ &item) {
-				return ConstIterator(*this, FindLocation(item));
+				return Iterator(*this, FindLocation(item));;
 			}
 
 			/// Searches the position of a given item, if not found end iterator returned
@@ -448,7 +442,7 @@ namespace Gorgon {
 
 			/// Searches the position of a given item, if not found end iterator returned
 			ConstIterator Find(const T_ &item) const {
-				return Find(&item);
+				return ConstIterator(*this, FindLocation(item));
 			}
 
 			/// Searches the position of a given item, if not found -1 is returned

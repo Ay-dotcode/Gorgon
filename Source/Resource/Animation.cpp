@@ -74,8 +74,8 @@ namespace Gorgon { namespace Resource {
 			return guessed;
 	}
 
-	ImageAnimation::ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller, bool owner) :
-		Animation::Base(controller, owner), parent(parent)
+	ImageAnimation::ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller) :
+		Animation::Base(controller), parent(parent)
 	{
 			if(parent.GetCount()>0)
 				current=&parent.ImageAt(0);

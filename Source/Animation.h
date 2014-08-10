@@ -13,27 +13,61 @@ namespace Gorgon {
 
 		class Base;
 
-		/// Timers are required to progress animations. This class is the most basic timer
-		/// and does not support any operations. It linearly progresses animation and never
-		/// stops. Most animations are expected loop under these circumstances. See Controller 
-		/// for additional functionality.
-		class Timer {
+		/// Controllers are required to progress animations
+		class ControllerBase {
 		public:
+			/// Default constructor
+			ControllerBase();
 
-			/// Constructs a timer
-			Timer();
-
-			/// Timer destructor
-			virtual ~Timer();
+			/// Destructor
+			~ControllerBase();
 
 			/// Progresses this timer by moving the timer timepassed milliseconds forwards
-			virtual void Progress(unsigned timepassed);
+			virtual void Progress(unsigned timepassed)	= 0;
 
-			/// This function notifies the timer about a finished animation. Base timer does
-			/// not perform any operation when an animation attached to it is finished.
-			/// @param  leftover is the amount of time that is left over after the animation
-			///         is progress to the end
-			virtual void Finished(unsigned leftover) {}
+			/// This function attaches the given animation to this controller
+			virtual void Add(Base &animation);
+
+			/// Removes the given animation
+			virtual void Remove(Base &animation);
+
+			/// Deletes the given animation
+			virtual void Delete(Base &animation);
+
+			/// Returns the current progress of the timer
+			virtual unsigned GetProgress() const        = 0;
+
+			/// This method allows clients to determine if the progress is controlled. If the progress
+			/// is not controlled, there is no way to force the animation to stop. Therefore, animations
+			/// with looping capabilities should wrap around to start over. However, if the timer is a
+			/// controller then the best strategy will be to stop at the end, and return the leftover time.
+			/// This way, controller can decide what to do next.
+			virtual bool IsControlled() const           = 0;
+
+			/// Set a flag that will automatically destroy this controller whenever it has no animations left
+			/// to control
+			void AutoDestruct() { collectable=true; }
+
+			/// Resets the flag that will automatically destroy this controller whenever it has no animations left
+			/// to control
+			void Keep() { collectable=false; }
+
+		protected:
+			/// Whether this controller should be collected by the garbage collector when its task is finished
+			bool collectable = false;
+
+			/// List of animations this controller holds
+			Containers::Collection<Base> animations;
+		};
+
+		/// This class is the most basic controller and does not support any operations. It linearly progresses 
+		/// animation and never stops. Most animations are expected loop under these circumstances. See Controller 
+		/// for additional functionality.
+		class Timer : public ControllerBase {
+		public:
+
+			/// Progresses this timer by moving the timer timepassed milliseconds forwards
+			virtual void Progress(unsigned timepassed) override final;
 
 			/// Resets the timer, basically starting the animation from the start.
 			virtual void Reset() { 
@@ -46,7 +80,7 @@ namespace Gorgon {
 			}
 
 			/// Returns the current progress of the timer
-			virtual unsigned GetProgress() const { 
+			virtual unsigned GetProgress() const override final { 
 				return progress; 
 			}
 
@@ -55,7 +89,7 @@ namespace Gorgon {
 			/// with looping capabilities should wrap around to start over. However, if the timer is a
 			/// controller then the best strategy will be to stop at the end, and return the leftover time.
 			/// This way, controller can decide what to do next.
-			virtual bool IsControlled() const {
+			virtual bool IsControlled() const override final {
 				return false;
 			}
 
@@ -64,10 +98,11 @@ namespace Gorgon {
 			unsigned progress = 0;
 		};
 
-		class Controller : public Timer {
+		class Controller : public ControllerBase {
 		public:
 
-			Controller();
+			/// Default constructor
+			Controller(double progress = 0.0);
 
 			virtual ~Controller() {}
 
@@ -75,19 +110,15 @@ namespace Gorgon {
 			/// @{
 
 			/// Progresses this controller by the given time
-			virtual void Progress(unsigned timepassed) override;
-
-			/// Signals that an animation bound to this controller is finished.
-			/// @param  leftover is the time that is left after the animation is completely finished
-			virtual void Finished(unsigned leftover) override;
+			virtual void Progress(unsigned timepassed) override final;
 
 			/// Sets the current progress of the controller
-			virtual void SetProgress(unsigned progress) override { floatprogress=this->progress=progress; }
+			virtual void SetProgress(unsigned progress) { this->progress=progress; }
 
 			/// Sets the current progress of the controller. If the progress is a negative value, it will be
 			/// subtracted from the animation length. If the animation length is 0, then the controller will
 			/// immediately stop and sets the progress to 0.
-			void SetProgress(double progress) { this->progress=(unsigned)std::round(progress); floatprogress=progress; }
+			void SetProgress(double progress) { this->progress=progress; }
 
 			/// Resets the controller to start from the beginning. Also resets finished and paused status and
 			/// modifies the speed to be 1.
@@ -149,7 +180,7 @@ namespace Gorgon {
 			/// sure that the controller can actually loop
 			bool IsLooping() const { return (speed>=0 ? islooping : islooping && length!=0); }
 
-			virtual bool IsControlled() const { return true; }
+			virtual bool IsControlled() const override final { return true; }
 			/// @}
 
 			/// @name Events
@@ -174,7 +205,7 @@ namespace Gorgon {
 			bool isfinished = false;
 
 			/// Floating point progress to avoid precision loss due to speed
-			double floatprogress = 0.0;
+			double progress = 0.0;
 
 			/// Length of the animations controlled by this controller
 			unsigned length=0;
@@ -186,12 +217,12 @@ namespace Gorgon {
 			/// Virtual destructor
 			virtual ~Provider() { }
 		
-			/// This function should create a new animation with the given controller and
-			/// if owner parameter is set to true, it should assume ownership of the controller
-			virtual const Base &CreateAnimation(Timer &timer, bool owner=false) const = 0;
+			/// This function should create a new animation with the given controller
+			virtual const Base &CreateAnimation(Timer &timer) const = 0;
 
-			/// This function should create and animation and depending on the create parameter,
-			/// it should create its own timer.
+			/// This function should create an animation and depending on the create parameter,
+			/// it should create a timer for it. Timer creation is handled by Base class therefore
+			/// only passing this parameter to the constructor is enough.
 			virtual const Base &CreateAnimation(bool create=false) const = 0;
 		};
 
@@ -199,58 +230,65 @@ namespace Gorgon {
 		/// the animation interface.
 		class Base {
 		public:
-			/// This constructor takes a controller and depending on the owner parameter assumes the ownership
-			/// of it. Be careful not to give the ownership of a stack allocated timer.
-			/// @warning Not every type of animation can own a timer. Best way is to handle ownership if you are
-			/// passing the timer by yourself.
-			Base(Timer &timer, bool owner=false);
+			/// Sets the controller for this animation to the given controller.
+			Base(ControllerBase &controller) {
+				SetController(controller);
+			}
 
 			/// This constructor creates a new controller depending on the create parameter. Animation has the
-			/// right to decline to create a new timer for itself.
-			explicit Base(bool create=false);
+			/// right to decline to create a new timer. Animations that does not use timers should ignore create
+			/// request without any errors or side effects. If create parameter is true, the controller created
+			/// for this object will have dynamic life time. This means, if all animations it has is removed from
+			/// it, it will be destroyed.
+			explicit Base(bool create=false) {
+				if(create) {
+					auto timer = new Timer;
+					timer->AutoDestruct();
+					SetController(*timer);
+				}
+			}
 		
 			/// Virtual destructor
-			virtual ~Base();
+			virtual ~Base() {
+				if(controller) controller->Remove(*this);
+			}
 
-			/// Sets the controller to the given controller. If owner parameter is true, this object
-			/// will assume the ownership of that controller. Current controller of this animation will
-			/// be destroyed if this animation already has a controller and has the ownership over it.
-			/// You may use disown to remove ownership of the controller.
-			/// @warning Not every type of animation can own a timer. Best way is to handle ownership if you are
-			/// passing the timer by yourself.
-			virtual void SetController(Timer &controller, bool owner=false);
+			/// Sets the controller to the given controller.
+			virtual void SetController(ControllerBase &controller) {
+				if(&controller==this->controller) return;
+				if(this->controller) {
+					this->controller->Remove(*this);
+				}
+				controller.Add(*this);
+				this->controller=&controller;
+			}
 
 			/// Returns whether this animation has a controller
 			bool HasController() const { return controller!=nullptr; }
 
 			/// Returns the controller of this animation
-			Timer &GetController() const { 
+			ControllerBase &GetController() const {
 #ifndef NDEBUG
 				if(!controller) {
 					throw std::runtime_error("Animation does not have a controller");
 				}
 #endif
-				return *controller; 
+				return *controller;
 			}
-
-			/// Disowns the controller that this animation has
-			void DisownController() { owner = false; }
-
-			/// Removes the controller of this animation. Current controller of this animation will
-			/// be destroyed if this animation already has a controller and has the ownership over it.
-			/// You may use disown to remove ownership of the controller.
-			void RemoveController() { 
-				if(owner && controller) {
-					delete controller;
+			
+			/// Removes the controller of this animation.
+			void RemoveController() {
+				if(controller) {
+					controller->Remove(*this);
 				}
-				controller=nullptr; 
+				controller=nullptr;
 			}
 
 			/// This function should progress the animation. Notice that this function is called internally.
 			/// Unless a change to the controller has been made and instant update of the animation is required
-			/// there is no need to call this function. Returning true from this function denotes that further
+			/// there is no need to call this function. Returning true from this function denotes that the further
 			/// progress is possible. If progress should end, leftover parameter should be set to the amount of
-			/// time that cannot be progressed.
+			/// time that cannot be progressed. Progress function should also mind uncontrollable controllers.
 			virtual bool Progress(unsigned &leftover) = 0;
 
 			/// Deletes this animation. Please note that some animations are also the animation provider. In these
@@ -261,16 +299,9 @@ namespace Gorgon {
 			}
 
 		protected:
-			/// Removes this animation from the animation queue
-			void RemoveMe();
 
-			/// The controller of this animation
-			Timer *controller = nullptr;
-
-			/// Whether this animation owns its controller
-			bool owner = false;
+			/// Controller of this animation
+			ControllerBase *controller = nullptr;
 		};
-
-		extern Containers::Collection<Base> Animations;
-	} 
+	}
 }

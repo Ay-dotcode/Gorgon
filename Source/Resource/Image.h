@@ -37,8 +37,6 @@ namespace Gorgon { namespace Resource {
 				throw std::runtime_error("Size of an image cannot be negative.");
 			}
 #endif
-
-			RemoveMe();
 		}
 
 		/// Copy constructor is disabled. 
@@ -324,12 +322,7 @@ namespace Gorgon { namespace Resource {
 		bool ExportPNG(const std::string &filename);
 
 
-		virtual const Image &CreateAnimation(Gorgon::Animation::Timer &controller, bool owner=false) const override { 
-#ifndef NDEBUG
-			if(owner) {
-				throw std::runtime_error("Images cannot own timers or controllers.");
-			}
-#endif
+		virtual const Image &CreateAnimation(Gorgon::Animation::Timer &controller) const override { 
 			return *this;
 		}
 
