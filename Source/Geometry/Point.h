@@ -38,7 +38,7 @@ namespace Gorgon {
 
 			/// Conversion from a different point type
 			template <class O_>
-			explicit basic_Point(const basic_Point<O_> &point) : X((T_)point.X), Y((T_)point.Y) { }
+			basic_Point(const basic_Point<O_> &point) : X((T_)point.X), Y((T_)point.Y) { }
 			
 			/// Conversion from string
 			explicit basic_Point(const std::string &str) {

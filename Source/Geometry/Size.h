@@ -34,12 +34,11 @@ namespace Gorgon { namespace Geometry {
 		/// Converting constructor. Converts a different typed size object to this
 		/// type.
 		template <class O_>
-		explicit basic_Size(const basic_Size<O_> &size) : Width((T_)size.Width), Height((T_)size.Height) { }
+		basic_Size(const basic_Size<O_> &size) : Width((T_)size.Width), Height((T_)size.Height) { }
 
 		/// Converts a point to size object. The size a point represents is the size of the 
 		/// rectangle that starts from origin to the given point.
-		template <class O_>
-		explicit basic_Size(const basic_Point<O_> &point) : Width((T_)point.X), Height((T_)point.Y) { }
+		explicit basic_Size(const basic_Point<T_> &point) : Width((T_)point.X), Height((T_)point.Y) { }
 		
 		/// Conversion from string
 		explicit basic_Size(const std::string &str) {
