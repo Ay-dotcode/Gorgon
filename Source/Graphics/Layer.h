@@ -119,7 +119,7 @@ namespace Gorgon { namespace Graphics {
 
 		virtual void SetDrawMode(DrawMode mode) override { this->mode=mode; }
 
-		virtual Geometry::Size Graphics::TextureTarget::GetSize() const override { return Gorgon::Layer::GetSize(); }
+		virtual Geometry::Size GetTargetSize() const override { return Gorgon::Layer::GetSize(); }
 
 		using Gorgon::Layer::GetSize;
 
@@ -128,7 +128,7 @@ namespace Gorgon { namespace Graphics {
 
 		DrawMode mode;
 	};
-
+	 
 	class ColorizableLayer {
 
 	};

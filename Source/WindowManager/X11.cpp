@@ -72,6 +72,20 @@ namespace Gorgon {
 			Gorgon::internal::windowdata *getdata(const Window &w) {
 				return w.data;
 			}
+
+			intptr_t context;
+
+			void switchcontext(Gorgon::internal::windowdata &data) {
+				glXMakeCurrent(WindowManager::display, data.handle, data.context);
+				context=reinterpret_cast<intptr_t>(&data);
+			}
+
+			void finalizerender(Gorgon::internal::windowdata &data) {
+				glFinish();
+				glFlush();
+				glXSwapBuffers(WindowManager::display, data.handle);
+				XFlush(WindowManager::display);
+			}
 		}
 		///@}
 		
@@ -110,20 +124,6 @@ namespace Gorgon {
 			XFree(data);
 			
 			return ret;
-		}
-
-		extern intptr_t context;
-
-		void switchcontext(Gorgon::internal::windowdata &data) {
-			glXMakeCurrent(WindowManager::display, data->handle, data->context);
-			context=reinterpret_cast<intptr_t>(&data);
-		}
-
-		void finalizerender(Gorgon::internal::windowdata &data) {
-			glFinish();
-			glFlush();
-			glXSwapBuffers(WindowManager::display, data->handle);
-			XFlush(WindowManager::display);
 		}
 		/// @endcond
 		
@@ -249,9 +249,14 @@ namespace Gorgon {
 	
 	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) : 
 	data(new internal::windowdata) {
+		
+#ifndef NDEBUG
+		//assert(WindowManager::display || "Window manager system is not initialized.");
+		throw std::runtime_error("Window manager system is not initialized.");
+#endif
+		
 		windows.Add(this);
 		
-
 		//using defaults
 		int screen = DefaultScreen(WindowManager::display);
 		int depth  = DefaultDepth(WindowManager::display,screen); 
@@ -307,7 +312,6 @@ namespace Gorgon {
 
 		//!Replace with margins
 		//auto extents=WindowManager::GetX4Prop<Geometry::Bounds>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
-		
 		
 		if(visible) {
 			XEvent event;

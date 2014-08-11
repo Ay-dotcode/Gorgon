@@ -2,6 +2,10 @@
 
 #include "OpenGL.h"
 
+#ifdef LINUX
+#	include <GL/glx.h>
+#endif
+
 
 
 

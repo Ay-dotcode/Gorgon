@@ -9,7 +9,7 @@
 #include "Geometry/Bounds.h"
 #include "Geometry/Rectangle.h"
 
-#include "../External/glutil/MatrixStack.h"
+#include "External/glutil/MatrixStack.h"
 
 namespace Gorgon {
 

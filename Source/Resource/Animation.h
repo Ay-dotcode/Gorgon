@@ -7,172 +7,176 @@
 #pragma warning(push)
 #pragma warning(disable:4250)
 
-namespace Gorgon { namespace Resource {
-	class File;
+namespace Gorgon {
+namespace Resource {
+class File;
 
-	class Animation;
+class Animation;
 
-	/// This class is a created image animation that can be controlled and drawn over screen.
-	class ImageAnimation :
-		public virtual Graphics::RectangularAnimation, public virtual Graphics::Image, public virtual Graphics::TextureSource
-	{
-	public:
-		/// Creates a new image animation from the given parent
-		ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller, bool owner=false);
+/// This class is a created image animation that can be controlled and drawn over screen.
+class ImageAnimation :
+    public virtual Graphics::RectangularAnimation, public virtual Graphics::Image, public virtual Graphics::TextureSource
+{
+public:
+    /// Creates a new image animation from the given parent
+    ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller, bool owner=false);
 
-		/// Creates a new image animation from the given parent
-		ImageAnimation(const Resource::Animation &parent, bool create=false);
-		
-		/// Deletes this animation object
-		virtual void DeleteAnimation() override {
-			delete this;
-		}
+    /// Creates a new image animation from the given parent
+    ImageAnimation(const Resource::Animation &parent, bool create=false);
 
-		virtual bool Progress(unsigned &leftover) override;
+    /// Deletes this animation object
+    virtual void DeleteAnimation() override {
+        delete this;
+    }
 
-		virtual GL::Texture GetID() const {
-			if(!current) return 0;
+    virtual bool Progress(unsigned &leftover) override;
 
-			return current->GetID();
-		}
+    virtual GL::Texture GetID() const {
+        if(!current) return 0;
 
-		virtual Geometry::Size GetImageSize() const {
-			if(!current) return{0, 0};
+        return current->GetID();
+    }
 
-			return current->GetImageSize();
-		}
+    virtual Geometry::Size GetImageSize() const {
+        if(!current) return {0, 0};
 
-		virtual const Geometry::Pointf * GetCoordinates() const {
-			if(!current) return Graphics::TextureSource::fullcoordinates;
+        return current->GetImageSize();
+    }
 
-			return current->GetCoordinates();
-		}
+    virtual const Geometry::Pointf * GetCoordinates() const {
+        if(!current) return Graphics::TextureSource::fullcoordinates;
 
-	protected:
+        return current->GetCoordinates();
+    }
 
-		/// Parent of this animation
-		const Resource::Animation &parent;
+protected:
 
-	private:
-		Image *current = nullptr;
-	};
+    /// Parent of this animation
+    const Resource::Animation &parent;
 
-
-	class AnimationFrame {
-	public:
-		AnimationFrame(Image &image, unsigned duration=42, unsigned start=0) : Duration(duration), Start(start), Image(image) {}
-
-		unsigned Duration;
-		unsigned Start;
-		class Resource::Image &Image;
-	};
+private:
+    Image *current = nullptr;
+};
 
 
-	/// This class represents an animation resource. Image animations can be created using this object. An animation object can be moved.
-	/// Duplicate function should be used to copy an animation.
-	class Animation : public Base, public virtual Graphics::RectangularAnimationProvider {
-	public:
-		/// Default constructor
-		Animation() : Base() { }
+class AnimationFrame {
+public:
+    AnimationFrame(Image &image, unsigned duration=42, unsigned start=0) : Duration(duration), Start(start), Visual(image) {}
 
-		/// Move constructor
-		Animation(Animation &&other);
+    unsigned Duration;
+    unsigned Start;
+    Image &Visual;
+};
 
-		/// Copy constructor is disabled, use Duplicate
-		Animation(const Animation&) = delete;
 
-		/// Move assignment
-		Animation &operator =(Animation &&other);
+/// This class represents an animation resource. Image animations can be created using this object. An animation object can be moved.
+/// Duplicate function should be used to copy an animation.
+class Animation : public Base, public virtual Graphics::RectangularAnimationProvider {
+public:
+    /// Default constructor
+    Animation() : Base() { }
 
-		/// Copy assignment is disabled, use Duplicate
-		Animation &operator =(const Animation &other) = delete;
+    /// Move constructor
+    Animation(Animation &&other);
 
-		/// Swaps two animation, used for move semantics
-		void Swap(Animation &other);
+    /// Copy constructor is disabled, use Duplicate
+    Animation(const Animation&) = delete;
 
-		/// Duplicates this resource
-		void Duplicate() const;
+    /// Move assignment
+    Animation &operator =(Animation &&other);
 
-		/// Returns the Gorgon Identifier
-		virtual GID::Type GetGID() const override { 
-			return GID::Animation; 
-		}
-		
-		/// Returns the size of the first image
-		Geometry::Size GetSize() const { 
-			if(frames.size()>0) 
-				return frames[0].Image.GetSize(); 
-			return{0, 0};
-		}
+    /// Copy assignment is disabled, use Duplicate
+    Animation &operator =(const Animation &other) = delete;
 
-		/// Returns number of frames
-		int GetCount() const { 
-			return frames.size(); 
-		}
+    /// Swaps two animation, used for move semantics
+    void Swap(Animation &other);
 
-		/// Creates a new animation from this resource
-		virtual const ImageAnimation &CreateAnimation(Gorgon::Animation::Timer &controller, bool owner=false) const override {
-			return *new ImageAnimation(*this, controller, owner);
-		}
+    /// Duplicates this resource
+    void Duplicate() const;
 
-		/// Creates a new animation from this resource
-		virtual const ImageAnimation &CreateAnimation(bool create=false) const override {
-			return *new ImageAnimation(*this, create);
-		}
+    /// Returns the Gorgon Identifier
+    virtual GID::Type GetGID() const override {
+        return GID::Animation;
+    }
 
-		/// Returns the image that is to be shown at the given time. If the given time is larger
-		/// than the animation duration, animation is assumed to be looping.
-		Image &ImageAt(unsigned time) const { 
+    /// Returns the size of the first image
+    Geometry::Size GetSize() const {
+        if(frames.size()>0)
+            return frames[0].Visual.GetSize();
+        return {0, 0};
+    }
+
+    /// Returns number of frames
+    int GetCount() const {
+        return frames.size();
+    }
+
+    /// Creates a new animation from this resource
+    virtual const ImageAnimation &CreateAnimation(Gorgon::Animation::Timer &controller, bool owner=false) const override {
+        return *new ImageAnimation(*this, controller, owner);
+    }
+
+    /// Creates a new animation from this resource
+    virtual const ImageAnimation &CreateAnimation(bool create=false) const override {
+        return *new ImageAnimation(*this, create);
+    }
+
+    /// Returns the image that is to be shown at the given time. If the given time is larger
+    /// than the animation duration, animation is assumed to be looping.
+    Image &ImageAt(unsigned time) const {
 #ifndef NDEBUG
-			if(GetDuration()==0) {
-				throw std::runtime_error("Animation is empty");
-			}
+        if(GetDuration()==0) {
+            throw std::runtime_error("Animation is empty");
+        }
 #endif
-			time=time%GetDuration();
+        time=time%GetDuration();
 
-			return frames[FrameAt(time)].Image; 
-		}		
+        return frames[FrameAt(time)].Visual;
+    }
 
-		/// Returns the image at the given frame
-		Image &operator [](int frame) const {
-			return frames[frame].Image;
-		}
+    /// Returns the image at the given frame
+    Image &operator [](int frame) const {
+        return frames[frame].Visual;
+    }
 
-		/// Returns which frame is at the given time. If the given time is larger than the animation
-		/// duration, last frame is returned.
-		unsigned FrameAt(unsigned time) const;
+    /// Returns which frame is at the given time. If the given time is larger than the animation
+    /// duration, last frame is returned.
+    unsigned FrameAt(unsigned time) const;
 
-		/// Returns the starting time of the given frame
-		unsigned StartOf(unsigned frame) const {
-			return frames[frame].Start;
-		}
+    /// Returns the starting time of the given frame
+    unsigned StartOf(unsigned frame) const {
+        return frames[frame].Start;
+    }
 
-		/// Returns the duration of the animation
-		unsigned GetDuration() const { 
-			return duration; 
-		}
+    /// Returns the duration of the animation
+    unsigned GetDuration() const {
+        return duration;
+    }
 
-		/// Returns the duration of the given frame
-		unsigned GetDuration(unsigned frame) const {
-			return frames[frame].Duration;
-		}
-		
-		/// This function allows loading animation with a function to load unknown resources. The supplied function should
-		/// call LoadObject function of File class if the given GID is unknown.
-		static Animation *LoadResourceWith(File &file, std::istream &data, unsigned long size, 
-			std::function<Base*(File &, std::istream&, GID::Type, unsigned long)> loadfn);
+    /// Returns the duration of the given frame
+    unsigned GetDuration(unsigned frame) const {
+        return frames[frame].Duration;
+    }
 
-		/// This function loads an animation resource from the given file
-		static Animation *LoadResource(File &file, std::istream &data, unsigned long size) { return LoadResourceWith(file, data, size, {}); }
+    /// This function allows loading animation with a function to load unknown resources. The supplied function should
+    /// call LoadObject function of File class if the given GID is unknown.
+    static Animation *LoadResourceWith(File &file, std::istream &data, unsigned long size,
+                                       std::function<Base*(File &, std::istream&, GID::Type, unsigned long)> loadfn);
 
-	protected:
-		/// Frame durations
-		std::vector<AnimationFrame> frames;
+    /// This function loads an animation resource from the given file
+    static Animation *LoadResource(File &file, std::istream &data, unsigned long size) {
+        return LoadResourceWith(file, data, size, {});
+    }
 
-		/// Total duration
-		unsigned duration;
+protected:
+    /// Frame durations
+    std::vector<AnimationFrame> frames;
 
-	};
-} }
+    /// Total duration
+    unsigned duration;
+
+};
+}
+}
 
 #pragma warning(pop)

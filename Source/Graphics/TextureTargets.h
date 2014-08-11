@@ -46,7 +46,7 @@ namespace Gorgon { namespace Graphics {
 		virtual void Clear()=0;
 
 		/// Get size of the target
-		virtual Geometry::Size GetSize() const = 0;
+		virtual Geometry::Size GetTargetSize() const = 0;
 		
 		/// Returns current draw mode
 		virtual DrawMode GetDrawMode() const = 0;

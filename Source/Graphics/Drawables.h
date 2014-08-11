@@ -64,7 +64,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// Draw to fill the given target
 		void DrawIn(TextureTarget &target) const {
-			drawin(target, {0, 0, target.GetSize()});
+			drawin(target, {0, 0, target.GetTargetSize()});
 		}
 
 		/// Draw to the given coordinates with the given size according to the given controller
@@ -95,7 +95,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// Draw to fill the given target according to the given controller
 		void DrawIn(TextureTarget &target, const SizeController &controller) const {
-			drawin(target, controller, {0, 0, target.GetSize()});
+			drawin(target, controller, {0, 0, target.GetTargetSize()});
 		}
 
 
