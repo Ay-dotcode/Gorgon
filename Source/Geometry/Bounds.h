@@ -63,17 +63,22 @@ namespace Gorgon { namespace Geometry {
 
 		/// Conversion constructor that creates bounds from another type
 		template<class O_>
-		basic_Bounds(const basic_Bounds<O_> &r) : Left((T_)r.Left), Top((T_)r.Top), 
+		explicit basic_Bounds(const basic_Bounds<O_> &r) : Left((T_)r.Left), Top((T_)r.Top), 
 		Right((T_)r.Right), Bottom((T_)r.Bottom) {
 		}
-
-		/// Converting assignment from another type
-		template<class O_>
-		basic_Bounds operator =(const basic_Bounds<O_> &other) {
-			Left   = other.Left;
-			Top    = other.Top;
-			Right  = other.Right;
-			Bottom = other.Bottom;
+		
+		explicit basic_Bounds(const std::string &str) {
+			auto s=str.begin();
+			
+			while(s!=str.end() && *s==' ')
+				s++;
+			
+			bool par=false;
+			
+		}
+		
+		operator std::string() const {
+			
 		}
 
 		/// Compares two bounds objects
@@ -89,8 +94,10 @@ namespace Gorgon { namespace Geometry {
 		/// Normalizes bounds object so that Left and Right and Top and Bottom are ordered
 		/// properly.
 		void Normalize() {
-			if(Left>Right) std::swap(Left,Right);
-			if(Top>Bottom) std::swap(Top,Bottom);
+			using std::swap;
+			
+			if(Left>Right) swap(Left,Right);
+			if(Top>Bottom) swap(Top,Bottom);
 		}
 
 		/// Returns top left corner
@@ -132,6 +139,11 @@ namespace Gorgon { namespace Geometry {
 		/// Returns the size of the bounds object
 		basic_Size<T_> GetSize() const {
 			return{Width(), Height()};
+		}
+		
+		void Resize(const basic_Size<T_> &size) {
+			Right +=Left+size.Width;
+			Bottom+=Top +size.Height;
 		}
 
 		/// Performs union operation. Returns a bounds that contains this bounds object
@@ -185,24 +197,12 @@ namespace Gorgon { namespace Geometry {
 			return *this;
 		}
 
-		/// Changes the size of the bounds
-		void Resize(const basic_Size<T_> &s) {
-			Right = Left + s.Width;
-			Bottom= Top  + s.Height;
-		}
-
-		/// Changes the size of the bounds
-		void Resize(const T_ &width, const T_ &height) {
-			Right = Left + width;
-			Bottom= Top  + height;
-		}
-
-		/// Changes the width of the bounds
+		/// Changes the width of the bounds, anchor is the topleft
 		void SetWidth(const T_ &width) {
 			Right = Left + width;
 		}
 
-		/// Changes the height of the bounds
+		/// Changes the height of the bounds, anchor is the topleft
 		void SetHeight(const T_ &height) {
 			Bottom= Top  + height;
 		}
@@ -245,8 +245,8 @@ namespace Gorgon { namespace Geometry {
 			};
 		}
 
-		/// Creates a new bounds object that is the scale version of this bounds
-		/// by the given size
+		/// Creates a new bounds object that is the scaled version of this bounds
+		/// by the given size. Origin of the operation is {0, 0}
 		template<class O_>
 		basic_Bounds operator *(const basic_Size<O_> &s) {
 			return{
@@ -258,7 +258,7 @@ namespace Gorgon { namespace Geometry {
 		}
 
 		/// Creates a new bounds object that is the scale version of this bounds
-		/// by the given size
+		/// by the given size. Origin of the operation is {0, 0}
 		template<class O_>
 		basic_Bounds operator /(const basic_Size<O_> &s) {
 			return{
@@ -270,7 +270,7 @@ namespace Gorgon { namespace Geometry {
 		}
 
 		/// Creates a new bounds object that is the scale version of this bounds
-		/// by the given size
+		/// by the given size. Origin of the operation is {0, 0}
 		template<class O_>
 		basic_Bounds operator *(const O_ &s) {
 			return{
@@ -282,7 +282,7 @@ namespace Gorgon { namespace Geometry {
 		}
 
 		/// Creates a new bounds object that is the scale version of this bounds
-		/// by the given size
+		/// by the given size. Origin of the operation is {0, 0}
 		template<class O_>
 		basic_Bounds operator /(const O_ &s) {
 			return{
@@ -313,7 +313,7 @@ namespace Gorgon { namespace Geometry {
 			return *this;
 		}
 
-		/// Resizes this bounds objects by the given size
+		/// Resizes this bounds objects by the given size. Origin of the operation is {0, 0}
 		template<class O_>
 		basic_Bounds &operator *=(const basic_Size<O_> &s) {
 			Left   = Left  *s.Width;
@@ -324,7 +324,7 @@ namespace Gorgon { namespace Geometry {
 			return *this;
 		}
 
-		/// Resizes this bounds objects by the given size
+		/// Resizes this bounds objects by the given size. Origin of the operation is {0, 0}
 		template<class O_>
 		basic_Bounds &operator /=(const basic_Size<O_> &s) {
 			Left   = Left  /s.Width;
@@ -335,7 +335,7 @@ namespace Gorgon { namespace Geometry {
 			return *this;
 		}
 
-		/// Resizes this bounds objects by the given size
+		/// Resizes this bounds objects by the given size. Origin of the operation is {0, 0}
 		template<class O_>
 		basic_Bounds &operator *=(const O_ &s) {
 			Left   = Left  *s;
@@ -346,7 +346,7 @@ namespace Gorgon { namespace Geometry {
 			return *this;
 		}
 
-		/// Resizes this bounds objects by the given size
+		/// Resizes this bounds objects by the given size. Origin of the operation is {0, 0}
 		template<class O_>
 		basic_Bounds &operator /=(const O_ &s) {
 			Left   = Left  /s;
@@ -371,11 +371,11 @@ namespace Gorgon { namespace Geometry {
 	};
 
 
-	/// Allows streaming of bounds. in string representation, bounds is show as
-	/// <x_s-x_e , y_s-y_e>
+	/// Allows streaming of bounds. in string representation, bounds is shown as
+	/// [(l, t) - (r, b)]
 	template <class T_>
 	std::ostream &operator << (std::ostream &out, const basic_Bounds<T_> &bounds) {
-		out<<"<"<<bounds.Left<<"-"<<bounds.Right<<" , "<<bounds.Top<<"-"<<bounds.Bottom<<">";
+		out<<"[("<<bounds.Left<<", "<<bounds.Top<<") - ("<<bounds.Bottom<<", "<<bounds.Right<<")]";
 
 		return out;
 	}
@@ -383,81 +383,50 @@ namespace Gorgon { namespace Geometry {
 	/// Stream extractor for bounds
 	template <class T_>
 	std::istream &operator >> (std::istream &in, basic_Bounds<T_> &bounds) {
-		while(in.peek()==' ' || in.peek()=='<')
+		while(in.peek()==' ')
 			in.ignore(1);
-
-		std::string s;
-
-		bool first=true;
-		while(!in.eof() && (first||in.peek()!='-') ) {
-			first=false;
-			s.append(1, (char)in.get());
-		}
-
-		if(in.eof()) {
-			in.setstate(in.failbit);
-			return in;
-		}
-		in.ignore(1);
-
-		T_ l=String::To<T_>(s);
-
-		s="";
-
-		while(in.peek()==' ' || in.peek()=='\t')
+		
+		bool par=false;
+		
+		if(in.peek()=='[') {
 			in.ignore(1);
-
-		while(in.peek()!=',' && !in.eof())
-			s.append(1, (char)in.get());
-
-		if(in.eof()) {
-			in.setstate(in.failbit);
-			return in;
 		}
-		in.ignore(1);
-
-		T_ t=String::To<T_>(s);
-
-		s="";
-
-		while(in.peek()==' ' || in.peek()=='\t')
+		
+		decltype(bounds.TopLeft()) tl, br;
+		
+		in>>tl;
+		
+		while(in.peek()==' ')
 			in.ignore(1);
-
-		first=true;
-		while(!in.eof() && (first||in.peek()!='-') ) {
-			first=false;
-			s.append(1, (char)in.get());
-		}
-
-		if(in.eof()) {
-			in.setstate(in.failbit);
-			return in;
-		}
-		in.ignore(1);
-
-		T_ r=String::To<T_>(s);
-
-		s="";
-
-		while(in.peek()==' ' || in.peek()=='\t')
+		
+		if(in.peek()=='-') {
 			in.ignore(1);
+		}
+		
+		in>>br;
+		
+		if(in.bad()) return in;
+		
+		bounds.Top   =tl.Y;
+		bounds.Left  =tl.X;
+		bounds.Bottom=br.Y;
+		bounds.Right =br.X;
+		
+		
+		if(par) {
+			while(in.peek()==' ') {
+				in.ignore(1);
+			}
+		}
 
-		while(in.peek()!='>' && in.peek()!=' ' && in.peek()!='\t' && in.peek()!='\n' && in.peek()!='\r' && !in.eof())
-			s.append(1, in.get());
-
-		bounds.Left  = l;
-		bounds.Top   = t;
-		bounds.Right = r;
-		bounds.Bottom= String::To<T_>(s);
-
-		if(in.peek()=='>')
+		if(in.peek()==']')
 			in.ignore(1);
 
 		return in;
 	}
 
 	/// Creates a new bounds that contains only the intersection of two bounds. If they do not
-	/// intersect, a bounds of <0-0, 0-0> is returned. It is possible to use this function
+	/// intersect, a bounds of [0-0, 0-0] is returned. It is possible to use this function
 	/// without referring to Geometry namespace.
 	template <class T_>
 	basic_Bounds<T_> Intersect(const basic_Bounds<T_> &l, const basic_Bounds<T_> &r) {

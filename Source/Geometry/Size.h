@@ -34,7 +34,7 @@ namespace Gorgon { namespace Geometry {
 		/// Converting constructor. Converts a different typed size object to this
 		/// type.
 		template <class O_>
-		basic_Size(const basic_Size<O_> &size) : Width((T_)size.Width), Height((T_)size.Height) { }
+		explicit basic_Size(const basic_Size<O_> &size) : Width((T_)size.Width), Height((T_)size.Height) { }
 
 		/// Converts a point to size object. The size a point represents is the size of the 
 		/// rectangle that starts from origin to the given point.
@@ -49,15 +49,16 @@ namespace Gorgon { namespace Geometry {
 			
 			Width=String::To<T_>(&str[s-str.begin()]);
 			
-			while(*s!='x' && s!=str.end()) s++;
+			while(*s!='x' && *s!=',' && s!=str.end()) s++;
 			
-			if(*s=='x') s++;
+			if(*s=='x' || *s==',') s++;
 			
 			Height=String::To<T_>(&str[s-str.begin()]);
 		}
-			
+		
+		
 		/// Converts this object to string.
-		operator std::string() const {
+		explicit operator std::string() const {
 			std::string ret;
 			ret += String::From(Width);
 			ret.push_back('x');

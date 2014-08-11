@@ -630,7 +630,7 @@ TEST_CASE( "Size constructors", "[Size]" ) {
 	REQUIRE(s13.Width == Approx(2.2));
 	REQUIRE(s13.Height == Approx(5.2));
 	
-	//REQUIRE( (Point)s1 == Point(2, 5) );
+	REQUIRE( ((basic_Point<int>)s1) == Point(2, 5) );
 	//REQUIRE( (Pointf)s2 == Pointf(4, 4) );
 }
 
@@ -780,7 +780,7 @@ TEST_CASE( "Size geometric info", "[Size]" ) {
 
 TEST_CASE( "Size <-> string", "[Size]" ) {
 	
-	Size  s1("1x2");
+	Size  s1("1,2");
 	Sizef s2("1.2fx2.2f");
 	Size  s3;
 	Sizef s4;
@@ -961,4 +961,17 @@ TEST_CASE( "Size geometric functions", "[Size]" ) {
 	REQUIRE( s2.Width == Approx(0.6) );
 	REQUIRE( s2.Height == Approx(1.1) );
 }
-
+/*
+TEST_CASE( "Bounds constructors", "[Bounds]" ) {
+	Bounds  b1(1.2, 2.2);
+	Boundsf b2(1.2, 2.2);
+	Bounds  b3(b2);
+	Boundsf b4(b3);
+	Bounds  b5;
+	Boundsf b6;
+	Boundsf b7;
+	Bounds  b8("1, 2");
+	Boundsf b9("1.2, 2.2");
+	
+	
+}*/
