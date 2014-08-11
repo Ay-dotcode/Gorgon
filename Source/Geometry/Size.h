@@ -55,9 +55,10 @@ namespace Gorgon { namespace Geometry {
 			
 			Height=String::To<T_>(&str[s-str.begin()]);
 		}
-			
+		
+		
 		/// Converts this object to string.
-		operator std::string() const {
+		explicit operator std::string() const {
 			std::string ret;
 			ret += String::From(Width);
 			ret.push_back('x');

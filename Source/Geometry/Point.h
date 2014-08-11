@@ -66,7 +66,7 @@ namespace Gorgon {
 			}
 			
 			/// Converts this object to string.
-			operator std::string() const {
+			explicit operator std::string() const {
 				std::string ret;
 				ret.push_back('(');
 				ret += String::From(X);

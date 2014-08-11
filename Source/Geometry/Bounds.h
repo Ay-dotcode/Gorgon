@@ -75,9 +75,6 @@ namespace Gorgon { namespace Geometry {
 			
 			bool par=false;
 			
-			if(in.peek()=='[') {
-				in.ignore(1);
-			}
 		}
 		
 		operator std::string() const {
@@ -142,6 +139,11 @@ namespace Gorgon { namespace Geometry {
 		/// Returns the size of the bounds object
 		basic_Size<T_> GetSize() const {
 			return{Width(), Height()};
+		}
+		
+		void Resize(const basic_Size<T_> &size) {
+			Right +=Left+size.Width;
+			Bottom+=Top +size.Height;
 		}
 
 		/// Performs union operation. Returns a bounds that contains this bounds object
