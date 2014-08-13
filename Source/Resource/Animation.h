@@ -62,7 +62,8 @@ private:
 	/// This class represents a single frame in a resource animation
 class AnimationFrame {
 public:
-		/// Default constructor requires image. Default duration is set to 42 denoting 24fps 
+	/// Default constructor requires image. Default duration is set to 42 denoting 24fps 
+	AnimationFrame(Image &image, unsigned duration=42, unsigned start=0) : Duration(duration), Start(start), Visual(image) {}
 
     unsigned Duration;
     unsigned Start;
