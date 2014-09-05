@@ -21,6 +21,7 @@ SET(Local
 	Layer.cpp
 	Main.h
 	Main.cpp
+	Scripting
 	SGuid.h
 	SGuid.cpp
 	Threading.h
