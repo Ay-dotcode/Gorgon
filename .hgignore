@@ -15,5 +15,6 @@ ipch
 *.sdf
 *.opensdf
 .kdev_include_paths
+build
 syntax: regexp
 .*\.kdev4(_.*)?

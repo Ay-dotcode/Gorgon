@@ -1,25 +1,31 @@
+#pragma once
+
 #include <vector>
+#include <string>
 
 #include "Types.h"
 #include "Enum.h"
 #include "Containers/Collection.h"
 #include "Any.h"
 
+#include "Scripting/Reflection.h"
+
 namespace Gorgon {
 
-	/// This namespace contains Gorgon Script parser and reflection facilities.
-	/// Gorgon Script allows applications to have embedded scripting capabilities. This
-	/// scripting system has two dialects. First one is console dialect. This dialect
-	/// allows fast command entry much like Bash script. Strings does not need to be
-	/// quoted, function parameters are separeted by space. Nested functions should contain
-	/// surrounding paranthesis. Console dialect has some limitations. For instance 
-	/// functions cannot have typed parameters, it will be possible to create custom types, 
-	/// etc...
-	/// Second dialect is the programming dialect. 
-	/// In this dialect strings should be quoted, function parameters should be placed inside 
-	/// paranthesis, and they should be separated using comma. Additionally, scripting dialect
-	/// allows lines to be terminated using semicolumn. Much like in Javascript, semicolumn 
-	/// is not mandatory.
+	/** This namespace contains Gorgon Script parser and reflection facilities.
+	 * Gorgon Script allows applications to have embedded scripting capabilities. This
+	 * scripting system has two dialects. First one is console dialect. This dialect
+	 * allows fast command entry much like Bash script. Strings does not need to be
+	 * quoted, function parameters are separeted by space. Nested functions should contain
+	 * surrounding paranthesis. Console dialect has some limitations. For instance 
+	 * functions cannot have typed parameters, it will be possible to create custom types, 
+	 * etc...
+	 * Second dialect is the programming dialect. 
+	 * In this dialect strings should be quoted, function parameters should be placed inside 
+	 * paranthesis, and they should be separated using comma. Additionally, scripting dialect
+	 * allows lines to be terminated using semicolumn. Much like in Javascript, semicolumn 
+	 * is not mandatory.
+	 */
 	namespace Scripting {
 		
 		/// This class contains information about a parse error. It is not intended to be
@@ -53,31 +59,21 @@ namespace Gorgon {
 		/// Additonally, any refered files will also be parsed for errors.
 		std::vector<ParseError> Parse(const std::string &code);
 		
-		class Data {
+		
+		/// Stores information about a scope. Some scopes does not define regular variables to
+		/// themselves. For instance a variable that is set in an if scope will be visible from
+		/// outside unless specified as local. However, a variable defined in function will be
+		/// stored inside its own scope
+		class Scope {
 		};
 		
-		/// This class stores information about a function. Functions can be related to a type
-		/// or stand alone functions in libraries. EmbeddedFunction class should be used to 
-		/// functions that are pointing to C++ function stubs. These stubs should extract and
-		/// forward parameters to real functions.
-		class Function {
-		public:
-			
-			
-			virtual Data Execute(std::vector<Data> &data) = 0;
-			
-			/// The name of the function
-			std::string Name;
-			
-			
-		protected:
-		};
-		
-		/// This class is used to create 
+		/// This class is used to create linking to an embedded function. You may use MakeStub
+		/// to create stub function that handles parameter unboxing
 		class EmbeddedFunction : public Function {
 		public:
 			
-			std::function<Data(std::vector<Data>&)> implementation;
+			/// Implementation for this function
+			std::function<Data(std::vector<Data>&)> Implementation;
 		};
 		
 		
@@ -89,42 +85,95 @@ namespace Gorgon {
 		};
 		///@endcond
 		
-		/// Data members that can be accessed through an instance of the a type. 
-		class DataMember {
-		};
-		
-		/// Stores information about a scope. Some scopes does not define regular variables to
-		/// themselves. For instance a variable that is set in an if scope will be visible from
-		/// outside unless specified as local. However, a variable defined in function will be
-		/// stored inside its own scope
-		class Scope {
-		};
-		
-		/// This class stores information about types. Types can have their own functions, members,
-		/// events and operators. Additionally some types can be converted to others, this information
-		/// is also stored in this class.
-		class Type {
+		/** Data describes a piece of data. It contains boxed data and the type. Additionally,
+		 * a data can be an array, or reference to a variable. Data can have two tags: ArrayTag
+		 * and ReferenceTag. It is possible to use both tags together to create an array of
+		 * references. When a data is a reference, its type indicates which type it refers to.
+		 * However, the type it refers to could also be an array. This allows two dimentional
+		 * arrays to exist. However, reference to reference is not valid for now. Data is 
+		 * non-mutable after construction.
+		 */
+		class Data {
+		public:
 			
-		private:
-			bool valuetype;
-			Containers::Collection<Type> allowedconversions;
-			std::vector<Function> classfunctions;
-			std::vector<Function> instancefunctions;
-			std::vector<Function> operators;
-			std::vector<Event> events;
-			std::map<std::string, Any> options;
+			/// Any constructor. Allows both data and type to be specified
+			template <class ...P_>
+			Data(Type &type, Any data, P_ ...args);
+			
+			/// Default value constructor. Value of the data is determined from the type
+			Data(Type &type);
+			
+			/// Default value constructor. Value of the data is determined from the type
+			template <class ...P_>
+			Data(Type &type, Tag firsttag, P_ ...args);
+			
+			/// Returns the value of this data in the requested format
+			template <class T_>
+			T_ GetValue() const {
+				return data.Get<T_>();
+			}
+			
+			/// Returns the data contained in this data element
+			Any GetData() const {
+				return data;
+			}
+			
+			/// Returns the type of the data
+			Type &GetType() const {
+				return type;
+			}
+			
+		protected:
+			/// @cond INTERNAL
+			void UnpackTags() {}
+			
+			template<class ...P_>
+			void UnpackTags(Tag first, P_ ...rest) {
+				switch(first) {
+					case ArrayTag:
+						array=true;
+						break;
+					case ReferenceTag:
+						reference=true;
+						break;
+				}
+				
+				UnpackTags(rest...);
+			}
+			/// @endcond
+			
+			Any   data;
+			Type *type;
+			
+			bool array     = false;
+			bool reference = false;
 		};
 		
-		/// Base class for input sources. This system allows different input sources to supply 
-		/// code to virtual machine. Each input source has its own line numbering, a name and
-		/// an index to identify it. For instance if the same file is read twice, first one will
-		/// be named as file.gs#1 and the other will be file.gs#2
-		class InputSource {
-		};
-		
-		/// Events allow an easy mechanism to program logic into actions instead of checking actions
-		/// continously. This system is vital for UI programming
-		class Event {
+		/// This class represents a variable. It contains the data and the name of the variable.
+		class Varible : public Data {
+		public:
+			
+			/// Sets the data contained in this variable without changing its type
+			void Set(Any value) {
+				data=value;
+			}
+			
+			/// Sets the data contained in this variable by modifying its type. Also this function
+			/// resets the tags unless they are respecified
+			template<class ...P_>
+			void Set(Type &type, Any value, P_ ...tags) {
+				data=value;
+				this->type=&type;
+				
+				array=false;
+				reference=false;
+				
+				UnpackTags(tags...);
+			}
+			
+			
+		protected:
+			std::string name;
 		};
 		
 		/// Libraries are collection of types and functions. Every library has its own namespace.
@@ -132,6 +181,10 @@ namespace Gorgon {
 		/// It is useful when names clash when they can be used to disambiguate function and type names
 		class Library {
 		public:
+			std::string Name;
+			
+			Containers::Collection<Type> Types;
+			Containers::Collection<Function> Functions;
 		};
 		
 		/// This class defines a virtual environment for scripts to run. It determines
@@ -139,6 +192,9 @@ namespace Gorgon {
 		/// level.
 		class VirtualMachine {
 		public:
+			
+			/// Default constructor
+			VirtualMachine() : Libraries(libraries) { }
 			
 			/// Executes a single statement in this virtual machine
 			bool ExecuteStatement(const std::string &code);
@@ -148,6 +204,15 @@ namespace Gorgon {
 			
 			/// Includes a new library to be used in this virtual machine
 			void AddLibrary(const Library &library);
+			
+			/// Removes a library
+			void RemoveLibrary(const Library &library);
+			
+			/// Sets the input source to read code lines from
+			void SetSource(InputSource &source);
+			
+			/// Allows read-only access to libraries
+			const Containers::Collection<const Library> &Libraries;
 			
 		private:
 			Containers::Collection<const Library> libraries;
