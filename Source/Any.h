@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <algorithm>
+#include <typeinfo>
 
 
 
@@ -31,12 +32,12 @@ namespace Gorgon {
 		class TypeInterface {
 		public:
 			virtual void *New() const=0;
-			virtual void *New() const=0;
 			virtual void  Delete(void* obj) const=0;
 			virtual void *Clone(const void* const obj) const=0;
 			virtual bool  IsSameType(const std::type_info &) const=0;
+			virtual long  GetSize() const = 0;
 
-			virtual const type_info Type() const = 0;
+			virtual const std::type_info &TypeInfo() const = 0;
 			
 			virtual ~TypeInterface() { }
 		};
@@ -53,15 +54,17 @@ namespace Gorgon {
 				delete static_cast<T_*>(obj);
 			}
 			virtual void *Clone(const void* const obj) const {
-				T_ *n = new T_(obj);
+				T_ *n = new T_(*reinterpret_cast<const T_*>(obj));
 				return n;
 			}
 			virtual bool IsSameType(const std::type_info &info) const {
 				return info==typeid(T_);
 			}
-			virtual const type_info Type() const {
+			virtual const std::type_info &TypeInfo() const {
 				return typeid(T_);
 			}
+			virtual long GetSize() const { return sizeof(T_); }
+			
 		};
 
 	public:
@@ -92,7 +95,7 @@ namespace Gorgon {
 		/// duplicates the given data.
 		/// Requires type in the copied Any to be copy constructible.
 		template <class T_>
-		explicit Any(const T_ &data) {
+		Any(const T_ &data) {
 			type=new Type<T_>;
 			content=type->Clone(&data);
 		}
@@ -101,7 +104,7 @@ namespace Gorgon {
 		/// moves the given data.
 		/// Requires type in the moved Any to be move constructible.
 		template <class T_>
-		explicit Any(T_ &&data) {
+		Any(T_ &&data) {
 			type=new Type<T_>;
 			T_ *n=new T_(std::move(data));
 			content=n;
@@ -288,12 +291,12 @@ namespace Gorgon {
 				return false;
 			}
 #ifndef NDEBUG
-			if(type->Type() != content.type->Type()) {
-				throw std::bad_cast("Cannot cast: not the same type");
+			if(type->TypeInfo() != content.type->TypeInfo()) {
+				throw std::bad_cast{};
 			}
 #endif
 
-			return *static_cast<T_*>(this->content)==content;
+			return memcmp(this->content, content.content, type->GetSize());
 		}
 
 		/// Compares the contents of this Any to the given value. The value

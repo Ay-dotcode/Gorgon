@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 #include <assert.h>
 
 #include "../Types.h"
@@ -13,18 +14,51 @@ namespace Gorgon {
 	namespace Scripting {
 		class Type;
 		
+		/// Tags define behavior of reflection objects
 		enum Tag {
+			/// Marks the object as optional
 			OptionalTag,
+			
+			/// Marks the object as an array
 			ArrayTag,
+			
+			/// Marks the object as a reference. When this tag affects types, it marks the
+			/// type as a reference type, meaning it will always be moved around as a reference.
+			/// When this tag affects parameters or variables, object becomes a reference to the
+			/// parameter
 			ReferenceTag,
+			
+			/// Marks the object as input
 			InputTag,
+			
+			/// Marks the object as output. This may set ReferenceTag and unset InputTag.
 			OutputTag,
+			
+			/// Denotes that a function has a method variant
 			MethodTag,
+			
+			/// Marks an object as repeatable
 			RepeatTag,
+			
+			/// Used only in functions with console dialect. When set, this tag allows last
+			/// parameter to contain spaces
 			StretchTag,
+			
+			/// Marks object as a keyword
 			KeywordTag,
+			
+			/// Virtual machine may go into skipping mode due to various keywords. This tag
+			/// marks this object not to be skipped by the virtual machine
 			NeverSkipTag,
+			
+			/// Makes the object private, allowing only access from it parent
+			PrivateTag,
+			
+			/// Makes the object public, allowing it to be accessed from all
+			PublicTag,
 		};
+		
+		typedef std::vector<Any> OptionList;
 		
 		/**This class represents a function parameter description. It does not contain any data. 
 		 * Parameter is non-mutable after construction
@@ -52,22 +86,30 @@ namespace Gorgon {
 			/// are optional
 			template <class ...Params_>
 			Parameter(const std::string &name, const Type &type, const std::string &help, 
-					  std::vector<const Any> options, Params_ ...tags) : 
+					 OptionList options, Params_ ...tags) : 
 			name(name), type(&type), help(help), Options(options) {
-				UnpackTags(tags);
+				UnpackTags(tags...);
 				using std::swap;
 				swap(options, this->options);
 			}
 			
 			///@cond INTERNAL
 			Parameter(const std::string &name, const Type &type, const std::string &help) : 
-			Parameter(name, type, help, std::vector<Any>{}) { }
+			Parameter(name, type, help, OptionList{}) { }
 			
 			template <class ...Params_>
 			Parameter(const std::string &name, const Type &type, const std::string &help, Tag firsttag,
 					  Params_ ...tags) : 
-			Parameter(name, type, help, std::vector<Any>{}, firsttag, std::forward<Params_>(tags)...) {
-			 }
+			Parameter(name, type, help, OptionList{}, firsttag, std::forward<Params_>(tags)...) {
+			}
+			 
+			Parameter(const std::string &name, const Type &type, const std::string &help, 
+					  OptionList options, const std::vector<Tag> &tags) :
+			Parameter(name, type, help, options) {
+				for(auto tag : tags) {
+					UnpackTags(tag);
+				}
+			}
 			///@endcond
 			
 			/// Returns the name of the parameter
@@ -81,8 +123,8 @@ namespace Gorgon {
 			}
 			
 			/// Returns the type of the parameter
-			Type &GetType() const {
-				return type;
+			const Type &GetType() const {
+				return *type;
 			}
 			
 			/// Checks if the parameter is optional
@@ -119,7 +161,7 @@ namespace Gorgon {
 			}
 			
 			/// Allowed values for this parameter
-			const std::vector<const Any> &Options;
+			const OptionList &Options;
 			
 		private:
 			void UnpackTags() {}
@@ -153,7 +195,7 @@ namespace Gorgon {
 			std::string help;
 			const Type *type;
 			
-			std::vector<const Any> options;
+			OptionList options;
 			
 			bool optional  = false;
 			bool array     = false;
@@ -175,10 +217,79 @@ namespace Gorgon {
 		class Function {
 		public:
 			
+			/// Function constructor fully constructs a function object. Both return type and tags are
+			/// optional and its possible to skip return type and specify tags directly.
+			template<class ...P_>
+			Function(const std::string &name, const std::string &help, std::vector<Parameter> parameters,
+					 const Type &returntype, P_ ...tags) :
+			name(name), help(help), returntype(&returntype) 
+			{
+				using std::swap;
+				
+				swap(parameters, this->parameters);
+				UnpackTags(tags...);
+			}
+			
+			/// @cond INTERNAL
+			template<class ...P_>
+			Function(const std::string &name, const std::string &help, std::vector<Parameter> parameters,
+					 Tag firsttag, P_ ...tags) : 
+			name(name), help(help)
+			{
+				using std::swap;
+				
+				swap(parameters, this->parameters);
+				UnpackTags(firsttag);
+				UnpackTags(tags...);
+			}
+			
+			Function(const std::string &name, const std::string &help, std::vector<Parameter> parameters) : 
+			name(name), help(help)
+			{
+				using std::swap;
+				
+				swap(parameters, this->parameters);
+			}
+			/// @endcond
+			
+			/// Returns the name of this function.
+			std::string GetName() const {
+				return name;
+			}
+			
+			/// Checks if this function returns anything
+			bool HasReturnType() const {
+				return returntype!=nullptr;
+			}
+			
+			/// Returns the return type of this function. This value can be null, therefore, it should
+			/// be checked before it is retrieved
+			const Type &GetReturnType() const {
+				assert(returntype && "This function does not have a return type");
+				return *returntype;
+			}
 			
 		protected:
+			
+			/// @cond INTERNAL
+			void UnpackTags() {}
+			
+			template<class ...P_>
+			void UnpackTags(Tag tag, P_ ...rest) {
+				switch(tag) {
+					default:
+						assert(false && "Unknown tag");
+				}
+				
+				UnpackTags(rest...);
+			}
+			/// @endcond
+			
 			/// Return type of the function could be nullptr denoting it is void.
-			Tag *returntype = nullptr;
+			const Type *returntype = nullptr;
+			
+			/// List of parameters
+			std::vector<Parameter> parameters;
 			
 			/// The name of the function
 			std::string name;
@@ -210,11 +321,21 @@ namespace Gorgon {
 			/// to the stdout. For instance, a function that normally returns elements of an object could
 			/// list the elements to stdout when invoked as a method.
 			bool method = false;
-			
 		};
 		
 		/// Data members that can be accessed through an instance of the a type. 
 		class DataMember {
+		public:
+			
+		private:
+			std::string name;
+			std::string help;
+			
+			Type *type;
+			
+			bool array;
+			bool reference;
+			bool accessible;
 		};
 		
 		/// Events allow an easy mechanism to program logic into actions instead of checking actions
@@ -228,12 +349,19 @@ namespace Gorgon {
 		class Type {
 			
 		private:
-			bool valuetype;
-			Containers::Collection<Type> allowedconversions;
-			std::vector<Function> classfunctions;
-			std::vector<Function> instancefunctions;
-			std::vector<Function> operators;
-			std::vector<Event> events;
-		};		
+			std::string name;
+			std::string help;
+			
+			Any defaultvalue;
+			
+			Containers::Collection<Type> 		allowedconversions;
+			std::map<std::string, Function> 	classfunctions;
+			std::map<std::string, Function> 	instancefunctions;
+			std::map<std::string, Function> 	operators;
+			std::map<std::string, Event>		events;
+			std::map<std::string, DataMember>	members;
+
+			bool referencetype = false;
+		};
 	}
 }

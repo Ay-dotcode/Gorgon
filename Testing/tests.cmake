@@ -6,10 +6,11 @@ SET(ManualTests
 )
 
 SET(UnitTests
+	Enum
+	Event
 	Filesystem
 	GarbageCollection
 	Geometry
-	Enum
-	Event
+	Scripting
 	String
 )
