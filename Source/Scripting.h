@@ -17,9 +17,7 @@ namespace Gorgon {
 	 * scripting system has two dialects. First one is console dialect. This dialect
 	 * allows fast command entry much like Bash script. Strings does not need to be
 	 * quoted, function parameters are separeted by space. Nested functions should contain
-	 * surrounding paranthesis. Console dialect has some limitations. For instance 
-	 * functions cannot have typed parameters, it will be possible to create custom types, 
-	 * etc...
+	 * surrounding paranthesis.
 	 * Second dialect is the programming dialect. 
 	 * In this dialect strings should be quoted, function parameters should be placed inside 
 	 * paranthesis, and they should be separated using comma. Additionally, scripting dialect

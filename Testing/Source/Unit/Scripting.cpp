@@ -25,13 +25,11 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE_FALSE(param1.IsInput());
 	
 	
-	Parameter param2("name2", mytype, "heeelp", ArrayTag, OptionalTag);
+	Parameter param2("name2", mytype, "heeelp", OptionalTag);
 	
 	REQUIRE_FALSE(param2.IsReference());
 	
 	REQUIRE(param2.IsOptional());
-	
-	REQUIRE(param2.IsArray());	
 	
 	
 	Parameter param3("name2", mytype, "heeelp", {1, 2, 3}, OptionalTag);
@@ -41,13 +39,11 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE(param3.IsOptional());
 	
 	
-	Parameter param4("name2", mytype, "heeelp",{}, {ArrayTag, OptionalTag});
+	Parameter param4("name2", mytype, "heeelp",{}, {OptionalTag});
 	
 	REQUIRE_FALSE(param4.IsReference());
 	
 	REQUIRE(param4.IsOptional());
-	
-	REQUIRE(param4.IsArray());	
 	
 	
 }
