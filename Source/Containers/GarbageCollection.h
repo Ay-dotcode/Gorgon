@@ -18,7 +18,7 @@ namespace Gorgon {
 		/// its elements. This class requires T_ to have a non member function called ShouldBeCollected
 		/// which should return whether the item should be collected by garbage collector.
 		/// This function should be resolved through ADL
-		template<class T_, template <class U_> class C_=Collection>
+		template<class T_, template <class ...U_> class C_=Collection>
 		class GarbageCollection : public C_<T_> {
 		public:
 			
