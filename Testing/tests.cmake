@@ -12,5 +12,8 @@ SET(UnitTests
 	GarbageCollection
 	Geometry
 	Scripting
+	Hashmap
+	Enum
+	Event
 	String
 )

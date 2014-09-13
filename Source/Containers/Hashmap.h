@@ -1,0 +1,352 @@
+/// @file Hashmap.h contains Hashmap, a map of references
+
+#pragma once
+
+#pragma warning(error: 4239)
+
+#include <map>
+#include <stdexcept>
+#include <algorithm>
+
+#include "Iterator.h"
+
+namespace Gorgon { 
+	namespace Containers {
+
+		/**
+		 * This class is a reference based hashmap. It uses std::map as underlying mechanism
+		 * and provides necessary services to manage a reference based container. Like other
+		 * Gorgon containers, Hashmap also disallows copy construction to reduce expensive
+		 * mistakes. If a copy of the container is required, Duplicate function can be used
+		 * to create a copy. Hashmap uses move semantics and can be returned from functions
+		 * by value even though copy construction is disabled. Last template parameter can
+		 * be replaced by unsorted_map. Currently Hashmap does not allow the use of multi-maps.
+		 */
+		template<class K_, class T_, template <class ...> class M_=std::map>
+		class Hashmap {
+			
+			/// Iterators are derived from this class. Any operations on uninitialized iterators
+			/// is undefined behavior.
+			/// @copydoc Gorgon::Container::Iterator
+			template <class I_, class H_>
+			class Iterator_ : 
+			public Containers::ValueIterator<
+				Iterator_<I_, H_>, 
+				std::pair<const typename H_::KeyType, typename H_::ValueType &>
+			> {
+				typedef std::pair<const typename H_::KeyType, typename H_::ValueType &> Type;
+				friend class Containers::ValueIterator<Iterator_, Type>;
+				friend class Hashmap;
+				
+			public:
+				/// Default constructor, creates an iterator pointing to an invalid location
+				Iterator_() {
+				}
+				/// Copies another iterator
+				Iterator_(const Iterator_ &it) : currentit(it.currentit), container(it.container) {
+				}
+				
+				/// Removes the item pointed by this iterator from the container. 
+				/// @warning: This operation will move iterator one step forward. Meaning that a simple
+				/// for loop will not be sufficient to selectively remove items. If an item is removed
+				/// from the container, iterator should not be incremented.
+				void Remove() {
+					if(container==nullptr) {
+						throw std::runtime_error("Iterator is not valid.");
+					}
+					
+					currentit=container->mapping.erase(current);
+				}
+				
+				/// Deletes the item pointed by this iterator from the container. 
+				/// @warning: This operation will move iterator one step forward. Meaning that a simple
+				/// for loop will not be sufficient to selectively remove items. If an item is removed
+				/// from the container, iterator should not be incremented.
+				void Delete() {
+					if(container==nullptr) {
+						throw std::runtime_error("Iterator is not valid.");
+					}
+					
+					typename H_::Type *item=currentit->second;
+					
+					currentit=container->mapping.erase(current);
+					delete item;
+				}				
+				
+				/// Changes the current item. If deleteprev is set, the previous item will be deleted
+				void SetItem(typename H_::ValueType &newitem, bool deleteprev=false) {
+					if(deleteprev) {
+						delete currentit->second;
+					}
+					currentit->second=&newitem;
+				}
+				
+			protected:
+				Iterator_(H_ &container, I_ iterator) : container(&container), currentit(iterator) {
+				}
+				
+			protected:
+				///@cond INTERAL
+				/// Satisfies the needs of Iterator
+				Type current() const {
+					if(!isvalid())
+						throw std::out_of_range("Iterator is not valid.");
+					
+					return {currentit->first, *(currentit->second)};
+				}
+				
+				bool isvalid() const {
+					if(container==nullptr) return false;
+					
+					return currentit!=container->mapping.end();
+				}
+				
+				bool moveby(long amount) {
+					if(container==nullptr) return false;
+
+					//sanity check
+					if(amount==0)  return isvalid();
+					
+					if(amount>0) {
+						for(int i=0;i<amount;i++)
+							++currentit;
+					}
+					else {
+						for(int i=amount;i<0;i++)
+							--currentit;
+					}
+					
+					return isvalid();
+				}
+				
+				bool compare(const Iterator_ &it) const {
+					return it.currentit==currentit;
+				}
+				
+				void set(const Iterator_ &it) {
+					currentit=it.currentit;
+					container=it.container;
+				}
+				
+				long distance(const Iterator_ &it) const {
+					return it.currentit-currentit;
+				}
+				
+				bool isbefore(const Iterator_ &it) const {
+					return currentit<it.currentit;
+				}
+				///@endcond
+				
+			public:
+				
+				/// Assignment operator
+				Iterator_ &operator =(const Iterator_ &iterator) {
+					set(iterator);
+					
+					return *this;
+				}
+				
+			private:
+				I_ currentit;
+				H_ *container = nullptr;
+			};
+			
+			template<class I_, class H_>
+			friend class Iterator_;
+			
+		public:
+			typedef T_ ValueType;
+			typedef K_ KeyType;
+			
+			/// Regular iterator. @see Container::Iterator
+			typedef Iterator_<typename std::map<K_, T_*>::iterator, Hashmap> Iterator;
+			
+			/// Const iterator allows iteration of const collections
+			class ConstIterator : public Iterator_<typename std::map<K_, T_*>::iterator, const Hashmap> {
+				friend class Collection;
+			public:
+				///Regular iterators can be converted to const iterators
+				ConstIterator(const Iterator &it) {
+					this->Col=it.Col;
+					this->Offset=it.Offset;
+				}
+				
+			private:
+				ConstIterator(const Hashmap &h, typename std::map<K_, T_*>::iterator it) : 
+				Iterator_<typename std::map<K_, T_*>::iterator, const Hashmap>(h, it) {
+				}
+				
+				void Remove() {}
+				void Delete() {}
+				void SetKey(const K_ &newkey) {}
+			};
+			
+			/// Default constructor
+			Hashmap() { }
+			
+			/// Copy constructor is disabled
+			Hashmap(const Hashmap &) = delete;
+			
+			/// Move constructor
+			Hashmap(Hashmap &&other) {
+				Swap(other);
+			}
+			
+			/// Swaps two hashmaps
+			void Swap(Hashmap &other) {
+				using std::swap;
+				
+				swap(mapping, other.mapping);
+			}
+			
+			/// Copy constructor is disabled
+			Hashmap &operator= (const Hashmap &other) = delete;
+			
+			/// Move constructor, does not delete elements.
+			Hashmap &operator= (Hashmap &&other) {
+				RemoveAll();
+				Swap(other);
+			}
+			
+			/// Adds the given item with the related key. If the key already exists, the object it
+			/// points to is changed. If deleteprev is set, previous object at the key is deleted.
+			void Add(const K_ &key, T_ &obj, bool deleteprev = false) {
+				auto it = mapping.find(key);
+				if( it != mapping.end() ) {
+					if(deleteprev) {
+						delete it->second;
+						it->second = &obj;
+					}
+				}
+				else {
+					mapping.insert(std::make_pair(key, &obj));
+				}
+			}
+			
+			/// Removes the item with the given key from the mapping. If the item does not exists, 
+			/// this request is simply ignored. This function does not delete the item.
+			void Remove(const K_ &key) {
+				mapping.erase(key);
+			}
+			
+			/// Removes the item with the given key from the mapping and deletes it. If the item does not 
+			/// exists, this request is simply ignored
+			void Delete(const K_ &key) {
+				auto it = mapping.find(key);
+				if(it!=mapping.end()) {
+					delete it->second;
+					mapping.erase(it);
+				}
+			}
+			
+			/// Removes all elements from this mapping without deleting them. Additonally, any memory
+			/// that is being used by std::map is not freed.
+			void RemoveAll() {
+				mapping.clear();
+			}
+			
+			/// Clears the contents of the map and releases the memory
+			/// used for the list. Items are not freed.
+			void Collapse() {
+				decltype(mapping) newmap;
+				
+				using std::swap;
+				swap(mapping, newmap);
+			}
+				
+			
+			/// Deletes and removes all the elements of this map.
+			void DeleteAll() {
+				for(auto &p : mapping) {
+					delete p->second;
+				}
+				
+				mapping.clear();
+			}
+			
+			/// Deletes and remoInstead, Duplicateves all the elements of this map, in addition to destroying data used.
+			void Destroy() {
+				for(auto &p : mapping) {
+					delete p->second;
+				}
+				
+				Collapse();
+			}
+			
+			/// Returns the number of elements in the map
+			long GetCount() const {
+				return mapping.size();
+			}
+			
+			/// If not found throws.
+			T_ &operator [](const K_ &key) const {
+				auto it = mapping.find(key);
+				
+				if(it == mapping.end()) {
+					throw std::runtime_error("Item not found");
+				}
+				
+				return *(it->second);
+			}
+			
+			/// Checks if an element with the given key exists
+			bool Exists(const K_ &key) const {
+				return mapping.count(key)!=0;
+			}
+			
+			/// @name Iterator related
+			/// @{
+			/// begin iterator
+			Iterator begin() {
+				return Iterator(*this, mapping.begin());
+			}
+			
+			/// end iterator
+			Iterator end() {
+				return Iterator(*this, mapping.end());
+			}
+			
+			/// returns the iterator to the first item
+			Iterator First() {
+				return Iterator(*this, mapping.begin());
+			}
+			
+			/// returns the iterator to the last item
+			Iterator Last() {
+				return Iterator(*this, mapping.size()>0 ? mapping.end()-1 : mapping.end());
+			}
+			
+			/// begin iterator
+			ConstIterator begin() const {
+				return ConstIterator(*this, mapping.begin());
+			}
+			
+			/// end iterator
+			ConstIterator end() const {
+				return ConstIterator(*this, mapping.end());
+			}
+			
+			/// returns the iterator to the first item
+			ConstIterator First() const {
+				return ConstIterator(*this, mapping.begin());
+			}
+			
+			/// returns the iterator to the last item
+			ConstIterator Last() const {
+				return ConstIterator(*this, mapping.size()>0 ? mapping.end()-1 : mapping.end());
+			}
+			/// @}
+			
+			
+			
+		private:
+			M_<K_, T_*> mapping;
+		};
+		
+		template<class K_, class T_, template <class ...> class M_=std::map>
+		void swap(Hashmap<K_, T_, M_> &left, Hashmap<K_, T_, M_> &right) {
+			left.Swap(right);
+		}
+		
+	}
+}
