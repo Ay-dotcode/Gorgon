@@ -9,6 +9,7 @@ SET(UnitTests
 	Filesystem
 	GarbageCollection
 	Geometry
+	Hashmap
 	Enum
 	Event
 	String

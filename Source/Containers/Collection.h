@@ -49,11 +49,17 @@ namespace Gorgon {
 				Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
 				}
 
+				/// Removes the item pointed by this iterator. The iterator position will point
+				/// the previous item, so that the next item will not be missed when iterator is
+				/// incremented. This allows easy removal of elements using a simple for loop.
 				void Remove() {
 					Col->Remove(Offset);
 					Offset--;
 				}
 
+				/// Deletes the item pointed by this iterator. The iterator position will point
+				/// the previous item, so that the next item will not be missed when iterator is
+				/// incremented. This allows easy removal of elements using a simple for loop.
 				void Delete() {
 					Col->Delete(Offset);
 					Offset--;
