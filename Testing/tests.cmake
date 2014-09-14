@@ -11,9 +11,7 @@ SET(UnitTests
 	Filesystem
 	GarbageCollection
 	Geometry
-	Scripting
 	Hashmap
-	Enum
-	Event
+	Scripting
 	String
 )

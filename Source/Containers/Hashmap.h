@@ -7,6 +7,8 @@
 #include <map>
 #include <stdexcept>
 #include <algorithm>
+#include <assert.h>
+#include <tuple>
 
 #include "Iterator.h"
 
@@ -22,7 +24,7 @@ namespace Gorgon {
 		 * by value even though copy construction is disabled. Last template parameter can
 		 * be replaced by unsorted_map. Currently Hashmap does not allow the use of multi-maps.
 		 */
-		template<class K_, class T_, template <class ...> class M_=std::map>
+		template<class K_, class T_, K_ (T_::*KeyFn)() const = nullptr, template <class ...> class M_=std::map>
 		class Hashmap {
 			
 			/// Iterators are derived from this class. Any operations on uninitialized iterators
@@ -163,7 +165,7 @@ namespace Gorgon {
 			
 			/// Const iterator allows iteration of const collections
 			class ConstIterator : public Iterator_<typename std::map<K_, T_*>::iterator, const Hashmap> {
-				friend class Collection;
+				friend class Hashmap;
 			public:
 				///Regular iterators can be converted to const iterators
 				ConstIterator(const Iterator &it) {
@@ -181,8 +183,49 @@ namespace Gorgon {
 				void SetKey(const K_ &newkey) {}
 			};
 			
+			
 			/// Default constructor
 			Hashmap() { }
+			
+			/// Filling constructor. This constructor uses initializer list of std::pair<K_, T_*>.
+			/// This function works faster by forwarding the lsit to underlying storage. However,
+			/// it cannot deal with nullptr entries, thus can leave the container in undefined state.
+			/// A test agains this case is performed for debug builds.
+			Hashmap(std::initializer_list<std::pair<const K_, T_*>> list) : mapping(list) {
+#ifndef NDEBUG
+				for(auto &p : list) {
+					assert(p.second && "Element is nullptr");
+				}
+#endif
+			}
+			
+			/// Filling constructor. This constructor uses initializer list of std::pair<K_, T_&>
+			Hashmap(std::initializer_list<std::pair<const K_, T_&>> list) {
+				for(auto &p : list) {
+					mapping.insert(std::make_pair(p.first, &p.second));
+				}
+			}
+			
+			/// Filling constructor that takes the keys using KeyFn function.
+			Hashmap(std::initializer_list<T_&> list) {
+				assert(KeyFn && "Key retrieval function should be set.");
+				
+				for(auto &p : list) {
+					mapping.insert(std::make_pair((p.*KeyFn)(), &p));
+				}
+			}
+			
+			/// Filling constructor that takes the keys using KeyFn function. This constructor
+			/// handles nullptr entries by ignoring them.
+			Hashmap(std::initializer_list<T_*> list) {
+				assert(KeyFn && "Key retrieval function should be set.");
+				
+				for(auto &p : list) {
+					if(p) {
+						mapping.insert(std::make_pair((p->*KeyFn)(), p));
+					}
+				}
+			}
 			
 			/// Copy constructor is disabled
 			Hashmap(const Hashmap &) = delete;
@@ -223,6 +266,53 @@ namespace Gorgon {
 				}
 			}
 			
+			/// Adds the given item with the related key. If the key already exists, the object it
+			/// points to is changed. If deleteprev is set, previous object at the key is deleted.
+			/// If obj is nullptr and the key exists in the map, it is removed.
+			void Add(const K_ &key, T_ *obj, bool deleteprev = false) {
+				if(obj) {
+					auto it = mapping.find(key);
+					if( it != mapping.end() ) {
+						if(deleteprev) {
+							delete it->second;
+							it->second = obj;
+						}
+					}
+					else {
+						mapping.insert(std::make_pair(key, obj));
+					}
+				}
+				else {
+					auto it = mapping.find(key);
+					if( it != mapping.end() ) {
+						if(deleteprev) {
+							delete it->second;
+						}
+						mapping.erase(it);
+					}
+				}
+			}
+			
+			/// Adds the given item by retrieving the related key. If the key already exists, the object it
+			/// points to is changed. If deleteprev is set, previous object at the key is deleted.
+			void Add(T_ &obj, bool deleteprev=false) {
+				assert(KeyFn!=nullptr && "Key retrieval function should be set.");
+				
+				Add((obj.*KeyFn)(), obj, deleteprev);
+			}
+			
+			/// Adds the given item by retrieving the related key. If the key already exists, the object it
+			/// points to is changed. If deleteprev is set, previous object at the key is deleted.
+			/// If obj is nullptr and the key exists in the map, it is removed.
+			void Add(T_ *obj, bool deleteprev=false) {
+				assert(KeyFn!=nullptr && "Key retrieval function should be set.");
+				
+				if(obj)
+					Add((obj->*KeyFn)(), obj, deleteprev);
+				else
+					Add({}, obj, deleteprev);
+			}
+			
 			/// Removes the item with the given key from the mapping. If the item does not exists, 
 			/// this request is simply ignored. This function does not delete the item.
 			void Remove(const K_ &key) {
@@ -258,7 +348,7 @@ namespace Gorgon {
 			/// Deletes and removes all the elements of this map.
 			void DeleteAll() {
 				for(auto &p : mapping) {
-					delete p->second;
+					delete p.second;
 				}
 				
 				mapping.clear();
@@ -267,7 +357,7 @@ namespace Gorgon {
 			/// Deletes and remoInstead, Duplicateves all the elements of this map, in addition to destroying data used.
 			void Destroy() {
 				for(auto &p : mapping) {
-					delete p->second;
+					delete p.second;
 				}
 				
 				Collapse();
@@ -340,11 +430,12 @@ namespace Gorgon {
 			
 			
 		private:
+			
 			M_<K_, T_*> mapping;
 		};
 		
-		template<class K_, class T_, template <class ...> class M_=std::map>
-		void swap(Hashmap<K_, T_, M_> &left, Hashmap<K_, T_, M_> &right) {
+		template<class K_, class T_, K_ (T_::*KeyFn)(), template <class ...> class M_=std::map>
+		void swap(Hashmap<K_, T_, KeyFn, M_> &left, Hashmap<K_, T_, KeyFn, M_> &right) {
 			left.Swap(right);
 		}
 		

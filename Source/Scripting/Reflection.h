@@ -7,6 +7,7 @@
 
 #include "../Types.h"
 #include "../Containers/Collection.h"
+#include "../Containers/Hashmap.h"
 #include "../Any.h"
 
 namespace Gorgon {
@@ -85,7 +86,7 @@ namespace Gorgon {
 			/// in the constructor. After construction parameter is non-mutable. Both options and tags
 			/// are optional
 			template <class ...Params_>
-			Parameter(const std::string &name, const Type &type, const std::string &help, 
+			Parameter(const std::string &name, const std::string &help, const Type &type, 
 					 OptionList options, Params_ ...tags) : 
 			name(name), type(&type), help(help), Options(options) {
 				UnpackTags(tags...);
@@ -94,18 +95,18 @@ namespace Gorgon {
 			}
 			
 			///@cond INTERNAL
-			Parameter(const std::string &name, const Type &type, const std::string &help) : 
-			Parameter(name, type, help, OptionList{}) { }
+			Parameter(const std::string &name, const std::string &help, const Type &type) : 
+			Parameter(name, help, type, OptionList{}) { }
 			
 			template <class ...Params_>
-			Parameter(const std::string &name, const Type &type, const std::string &help, Tag firsttag,
+			Parameter(const std::string &name, const std::string &help, const Type &type, Tag firsttag,
 					  Params_ ...tags) : 
-			Parameter(name, type, help, OptionList{}, firsttag, std::forward<Params_>(tags)...) {
+			Parameter(name, help, type, OptionList{}, firsttag, std::forward<Params_>(tags)...) {
 			}
 			 
-			Parameter(const std::string &name, const Type &type, const std::string &help, 
+			Parameter(const std::string &name, const std::string &help, const Type &type, 
 					  OptionList options, const std::vector<Tag> &tags) :
-			Parameter(name, type, help, options) {
+			Parameter(name, help, type, options) {
 				for(auto tag : tags) {
 					UnpackTags(tag);
 				}
@@ -195,7 +196,7 @@ namespace Gorgon {
 			bool output    = false;
 		};
 		
-		using ParameterList = std::vector<Parameter>;
+		using ParameterList = Containers::Collection<const Parameter>;
 		
 		/** This class stores information about a function. Functions can be related to a type
 		 * or stand alone functions in libraries. EmbeddedFunction class should be used to 
@@ -385,7 +386,14 @@ namespace Gorgon {
 				return accessible;
 			}
 			
-			virtual Data Call(bool ismethod, VirtualMachine &machine, std::vector<Data> &parameters) = 0;
+			/** 
+			 * Class the stub for this function. If ismethod parameter is set and method variant exists
+			 * method variant is called. But if there is no method variant, it simply prints out the return
+			 * of the function. When ismethod is set, this function will never return a value. Parameters
+			 * are passed by non-const reference as they can be modified by this method. Only the parameters
+			 * are are set to be output is modified.
+			 */
+			//virtual Data Call(bool ismethod, VirtualMachine &machine, std::vector<Data> &parameters) = 0;
 			
 			
 			/// Parameters that this function have
@@ -479,6 +487,53 @@ namespace Gorgon {
 			const Type *parent;
 		};
 		
+		using FunctionList = Containers::Hashmap<std::string, const Function, &Function::GetName>;
+		
+		/**
+		 * Constants are values that are fixed and can be accessed without $ sign. They can be a part of a
+		 * type or a part of a library.
+		 */
+		class Constant {
+		public:
+			Constant(const std::string &name, const std::string &help, 
+					 const Type &type, const Any &value) : 
+			name(name), help(help), type(&type), value(value) { }
+			
+			/// Returns the name of the constant
+			std::string GetName() const {
+				return name;
+			}
+			
+			/// Returns the help related with this constant
+			std::string GetHelp() const {
+				return help;
+			}
+			
+			/// Returns the type of the constant
+			const Type &GetType() const {
+				return *type;
+			}
+			
+			/// Returns the value of the constant
+			Any GetValue() const {
+				return value;
+			}
+			
+		private:
+			
+			/// The name of the constant
+			std::string name;
+			
+			/// Help string of the constant
+			std::string help;
+			
+			const Type *type;
+			
+			Any value;
+		};
+		
+		using ConstantList = Containers::Hashmap<std::string, const Constant, &Constant::GetName>;
+		
 		/// Data members that can be accessed through an instance of the a type. 
 		class DataMember {
 		public:
@@ -486,6 +541,26 @@ namespace Gorgon {
 			DataMember(const std::string &name, const std::string &help, const Type &type, P_ ...tags) :
 			name(name), help(help), type(&type) {
 				UnpackTags(tags...);
+			}
+			
+			/// Returns the name of this function.
+			std::string GetName() const {
+				return name;
+			}
+			
+			/// Returns the help string. Help strings may contain markdown notation.
+			std::string GetHelp() const {
+				return help;
+			}
+			
+			/// Returns if this function is static. Only meaningful when the function is a member function.
+			bool IsStatic() const {
+				return staticmember;
+			}
+			
+			/// If this function is a member function, this function returns if it is publically accessible
+			bool IsAccessible() const {
+				return accessible;
 			}
 			
 		protected:
@@ -519,6 +594,8 @@ namespace Gorgon {
 			bool staticmember = false;
 		};
 		
+		using DataMemberList = Containers::Hashmap<std::string, const DataMember, &DataMember::GetName>;
+		
 		/// Events allow an easy mechanism to program logic into actions instead of checking actions
 		/// continously. This system is vital for UI programming. Events are basically function descriptors.
 		/// Event handlers can access the object that is the source for event using $_eventsource variable.
@@ -529,6 +606,16 @@ namespace Gorgon {
 				using std::swap;
 				
 				swap(parameters, this->parameters);
+			}
+			
+			/// Returns the name of this event.
+			std::string GetName() const {
+				return name;
+			}
+			
+			/// Returns the help event. Help strings may contain markdown notation.
+			std::string GetHelp() const {
+				return help;
 			}
 			
 			/// Read only list of parameters
@@ -544,27 +631,49 @@ namespace Gorgon {
 			ParameterList parameters;
 		};
 		
+		using EventList = Containers::Hashmap<std::string, const Event, &Event::GetName>;
+		
 		/** This class stores information about types. Types can have their own functions, members,
 		 *  events and operators. Additionally some types can be converted to others, this information
-		 *  is also stored in this class. 
+		 *  is also stored in this class.
 		 */
 		class Type {
+		public:
 			
+			/// Returns the name of this type.
+			std::string GetName() const {
+				return name;
+			}
+			
+			/// Returns the help type. Help strings may contain markdown notation.
+			std::string GetHelp() const {
+				return help;
+			}
+			
+			/// Returns the value of the type
+			Any GetDefaultValue() const {
+				return defaultvalue;
+			}
 			
 		private:
 			std::string name;
+			
 			std::string help;
 			
 			Any defaultvalue;
 			
-			Containers::Collection<Type> 		allowedconversions;
-			std::map<std::string, Function&> 	classfunctions;
-			std::map<std::string, Function&> 	instancefunctions;
-			std::map<std::string, Function&> 	operators;
-			std::map<std::string, Event>		events;
-			std::map<std::string, DataMember>	members;
+			std::vector<std::string>	allowedconversions;
+			
+			FunctionList 	classfunctions;
+			FunctionList 	instancefunctions;
+			FunctionList 	operators;
+			FunctionList    constants;
+			EventList		events;
+			DataMemberList	members;
 
 			bool referencetype = false;
 		};
+		
+		using TypeList = Containers::Hashmap<std::string, const Type, &Type::GetName>;
 	}
 }
