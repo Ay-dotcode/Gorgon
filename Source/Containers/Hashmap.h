@@ -431,7 +431,7 @@ namespace Gorgon {
 			
 		private:
 			
-			M_<K_, T_*> mapping;
+			M_<K_, T_*, std::less<K_>, std::allocator<std::pair<const K_, T_*>>> mapping;
 		};
 		
 		template<class K_, class T_, K_ (T_::*KeyFn)(), template <class ...> class M_=std::map>

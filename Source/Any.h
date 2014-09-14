@@ -135,6 +135,8 @@ namespace Gorgon {
 			Clear();
 			
 			Swap(any);
+
+			return *this;
 		}
 
 		/// Set the content of the Any to the given value. The value
