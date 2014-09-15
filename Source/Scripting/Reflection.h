@@ -48,6 +48,9 @@ namespace Gorgon {
 			/// Marks object as a keyword
 			KeywordTag,
 			
+			/// Marks this object as scoped. 
+			ScopedTag,
+			
 			/// Virtual machine may go into skipping mode due to various keywords. This tag
 			/// marks this object not to be skipped by the virtual machine
 			NeverSkipTag,
@@ -60,6 +63,12 @@ namespace Gorgon {
 			
 			/// Makes an object static
 			StaticTag,
+			
+			/// Makes a function operator
+			OperatorTag,
+			
+			/// Redirects all the code inside a scoped keyword to the keyword
+			RedirectTag
 		};
 		
 		typedef std::vector<Any> OptionList;
@@ -88,13 +97,11 @@ namespace Gorgon {
 			template <class ...Params_>
 			Parameter(const std::string &name, const std::string &help, const Type &type, 
 					 OptionList options, Params_ ...tags) : 
-			name(name), type(&type), help(help), Options(options) {
+			name(name), type(&type), help(help), Options(std::move(options)) {
 				UnpackTags(tags...);
-				using std::swap;
-				swap(options, this->options);
 			}
 			
-			///@cond INTERNAL
+			/// @cond INTERNAL
 			Parameter(const std::string &name, const std::string &help, const Type &type) : 
 			Parameter(name, help, type, OptionList{}) { }
 			
@@ -111,7 +118,7 @@ namespace Gorgon {
 					UnpackTags(tag);
 				}
 			}
-			///@endcond
+			/// @endcond
 			
 			/// Returns the name of the parameter
 			std::string GetName() const {
@@ -188,8 +195,6 @@ namespace Gorgon {
 			std::string help;
 			const Type *type;
 			
-			OptionList options;
-			
 			bool optional  = false;
 			bool reference = false;
 			bool input     = true;
@@ -209,10 +214,18 @@ namespace Gorgon {
 		 * Function object allows following tags:
 		 * 
 		 * **KeywordTag**: Makes this function a keyword. Keywords acts differently in programming
-		 * dialect. Instead of requiring paranthesis and commas between elements, it acts like in
+		 * dialect. Instead of requiring parenthesis and commas between elements, it acts like in
 		 * console dialect. This can be further exploited to have a single parameter with setting
 		 * StretchTag. This way, a keyword can parse its own parameters. This allows function keyword
 		 * to have `function name(type param, type param...)` returns type syntax
+		 * 
+		 * **ScopedTag**: Makes this function a scoped keyword. It also sets keyword and neverskip tags
+		 * as well. A neverskip function may or may not be a scoped keyword. For instance, case functions
+		 * inside a switch scope are not scoped, they use its parent scope.
+		 * 
+		 * **RedirectTag**: Redirects all the code inside a scope keyword. Sets keyword, scoped, and neverskip
+		 * tags as well. If there are neverskip functions inside a redirected scope keyword, they are first
+		 * processed, then redirected. While redirecting, VM will go into skipping mode.
 		 * 
 		 * **NeverSkipTag**: Due to control structures, some scopes are skipped by virtual machine.
 		 * When this tag is attached to this function, virtual machine will never skip it. This is
@@ -242,6 +255,8 @@ namespace Gorgon {
 		 * 
 		 * **StaticTag**: Only works when this function is a class member. Marks the function as static. Static
 		 * functions can be accessed from the type using scope resolution: [type]function
+		 * 
+		 * **OperatorTag**: Makes this function an operator. Operators could be symbols or regular identifiers.
 		 */
 		class Function {
 		public:
@@ -305,6 +320,11 @@ namespace Gorgon {
 			}
 			/// @endcond
 			
+			/// Destructor frees all parameters.
+			~Function() {
+				parameters.DeleteAll();
+			}
+			
 			/// Returns the name of this function.
 			std::string GetName() const {
 				return name;
@@ -330,6 +350,16 @@ namespace Gorgon {
 			/// Returns if this function is actually a keyword.
 			bool IsKeyword() const {
 				return keyword;
+			}
+			
+			/// If true, this function is a scoped keyword (like if ... end statement)
+			bool IsScoped() const {
+				return scoped;
+			}
+			
+			/// If true, this function is a redirecting scoped keyword (like class ... end)
+			bool IsRedirecting() const {
+				return redirect;
 			}
 			
 			/// Returns whether this function should never be skipped. This property can be true even if
@@ -381,9 +411,14 @@ namespace Gorgon {
 				return *parent;
 			}
 			
-			/// If this function is a member function, this function returns if it is publically accessible
+			/// If this function is a member function, this function returns if it is publicly accessible
 			bool IsAccessible() const {
 				return accessible;
+			}
+			
+			/// Returns if this function is an operator. All operators should be member functions
+			bool IsOperator() const {
+				return isoperator;
 			}
 			
 			/** 
@@ -393,7 +428,7 @@ namespace Gorgon {
 			 * are passed by non-const reference as they can be modified by this method. Only the parameters
 			 * are are set to be output is modified.
 			 */
-			//virtual Data Call(bool ismethod, VirtualMachine &machine, std::vector<Data> &parameters) = 0;
+			virtual Data Call(bool ismethod, VirtualMachine &machine, std::vector<Data> &parameters) = 0;
 			
 			
 			/// Parameters that this function have
@@ -410,6 +445,17 @@ namespace Gorgon {
 					case KeywordTag:
 						keyword=true;
 						break;
+					case ScopedTag:
+						keyword=true;
+						scoped=true;
+						neverskip=true;
+						break;
+					case RedirectTag:
+						keyword=true;
+						scoped=true;
+						neverskip=true;
+						redirect=true;
+						break;
 					case NeverSkipTag:
 						neverskip=true;
 						break;
@@ -424,12 +470,17 @@ namespace Gorgon {
 						break;
 					case StaticTag:
 						staticmember=true;
+						assert(!isoperator && "Cannot be static operator");
 						break;
 					case PrivateTag:
 						accessible=false;
 						break;
 					case PublicTag:
 						accessible=true;
+						break;
+					case OperatorTag:
+						isoperator=true;
+						assert(!staticmember && "Cannot be static operator");
 						break;
 					default:
 						assert(false && "Unknown tag");
@@ -461,6 +512,14 @@ namespace Gorgon {
 			/// tags.
 			bool neverskip = false;
 			
+			/// Marks this function as a scoped keyword
+			bool scoped = false;
+			
+			/// Marks this function as a scoped keyword that parses its own contents. Note that neverskip
+			/// functions are not skipped as they may modify current scoping. While redirecting, VM will
+			/// go into skipping mode.
+			bool redirect = false;
+			
 			/// If true, in console dialect, spaces in the last parameter are not treated as parameter
 			/// separator as if it is in quotes. Helpful for functions like echo
 			bool stretchlast = false;
@@ -483,6 +542,9 @@ namespace Gorgon {
 			/// the type itself
 			bool accessible = true;
 			
+			/// Makes this function an operator. All operators should be member functions
+			bool isoperator = false;
+			
 		private:
 			const Type *parent;
 		};
@@ -495,6 +557,7 @@ namespace Gorgon {
 		 */
 		class Constant {
 		public:
+			/// Constructor
 			Constant(const std::string &name, const std::string &help, 
 					 const Type &type, const Any &value) : 
 			name(name), help(help), type(&type), value(value) { }
@@ -537,10 +600,19 @@ namespace Gorgon {
 		/// Data members that can be accessed through an instance of the a type. 
 		class DataMember {
 		public:
+			/// Constructor
 			template<class ...P_>
 			DataMember(const std::string &name, const std::string &help, const Type &type, P_ ...tags) :
 			name(name), help(help), type(&type) {
 				UnpackTags(tags...);
+			}
+			
+			/// Constructor
+			DataMember(const std::string &name, const std::string &help, const Type &type, 
+					   const std::vector<Tag> &tags) :
+			DataMember(name, help, type) {
+				for(auto tag : tags)
+					UnpackTags(tag);
 			}
 			
 			/// Returns the name of this function.
@@ -558,7 +630,7 @@ namespace Gorgon {
 				return staticmember;
 			}
 			
-			/// If this function is a member function, this function returns if it is publically accessible
+			/// If this function is a member function, this function returns if it is publicly accessible
 			bool IsAccessible() const {
 				return accessible;
 			}
@@ -571,7 +643,7 @@ namespace Gorgon {
 			void UnpackTags(Tag tag, P_... rest) {
 				switch(tag) {
 					default:
-						;
+						assert(false && "Unknown tag");
 				}
 				
 				UnpackTags(rest...);
@@ -597,7 +669,7 @@ namespace Gorgon {
 		using DataMemberList = Containers::Hashmap<std::string, const DataMember, &DataMember::GetName>;
 		
 		/// Events allow an easy mechanism to program logic into actions instead of checking actions
-		/// continously. This system is vital for UI programming. Events are basically function descriptors.
+		/// continuously. This system is vital for UI programming. Events are basically function descriptors.
 		/// Event handlers can access the object that is the source for event using $_eventsource variable.
 		class Event {
 		public:
@@ -633,19 +705,33 @@ namespace Gorgon {
 		
 		using EventList = Containers::Hashmap<std::string, const Event, &Event::GetName>;
 		
-		/** This class stores information about types. Types can have their own functions, members,
-		 *  events and operators. Additionally some types can be converted to others, this information
-		 *  is also stored in this class.
+		/** 
+		 * This class stores information about types. Types can have their own functions, members,
+		 * events and operators. Additionally some types can be converted to others, this information
+		 * is also stored in this class. Inheritance is supported, however, as of now virtual functions
+		 * are not supported. Therefore, inheritance is mostly useful to avoid code duplication.
+		 * 
+		 * Allows ReferenceTag to mark this type as a reference type. Reference types are stored as
+		 * pointers within Data objects and therefore, will not copied around. Currently, user defined
+		 * types cannot be reference type.
 		 */
 		class Type {
 		public:
+			
+			/// Constructor, unlike other reflection objects, Type is not constructed fully.
+			template<class ...P_>
+			Type(const std::string &name, const std::string &help, P_ ...tags) :
+			name(name), help(help)
+			{
+				UnpackTags(tags...);
+			}			
 			
 			/// Returns the name of this type.
 			std::string GetName() const {
 				return name;
 			}
 			
-			/// Returns the help type. Help strings may contain markdown notation.
+			/// Returns the help string. Help strings may contain markdown notation.
 			std::string GetHelp() const {
 				return help;
 			}
@@ -655,25 +741,107 @@ namespace Gorgon {
 				return defaultvalue;
 			}
 			
+			/// Returns whether this type is a reference type.
+			bool IsReferenceType() const {
+				return referencetype;
+			}
+			
+			/// Data members of this type. Notice that not every type has data members.
+			DataMemberList						DataMembers;
+			
+			/// Contains the functions related with this type. These functions can be operators,
+			/// or type casting functions. Functions with the name of another type are called
+			/// type casting functions. These functions are stored with [Library]Typename format.
+			/// However, if the library is never specified they are listed as []Typename.
+			FunctionList 						Functions;
+			
+			/// Constructors of this type. They can also act like conversion from operators. Implicit
+			/// conversion constructors should have their operator flag set.
+			Containers::Collection<Function> 	Constructors;
+			
+			/// Constants related with this type. Constants can be of the same type as this one.
+			FunctionList    					Constants;
+			
+			/// Events of this type.
+			EventList							Events;
+			
+			/// Inheritance list. 
+			Containers::Hashmap<std::string, const Type, &Type::GetName> InheritsFrom;
+			
 		private:
+			/// @cond INTERNAL
+			void UnpackTags() { }
+			
+			template <class ...P_>
+			void UnpackTags(Tag tag, P_... rest) {
+				switch(tag) {
+					case ReferenceTag:
+						referencetype=true;
+						break;
+					default:
+						assert(false && "Unknown tag");
+				}
+				
+				UnpackTags(rest...);
+			}
+			/// @endcond
+			
 			std::string name;
 			
 			std::string help;
 			
 			Any defaultvalue;
 			
-			std::vector<std::string>	allowedconversions;
-			
-			FunctionList 	classfunctions;
-			FunctionList 	instancefunctions;
-			FunctionList 	operators;
-			FunctionList    constants;
-			EventList		events;
-			DataMemberList	members;
 
 			bool referencetype = false;
 		};
 		
 		using TypeList = Containers::Hashmap<std::string, const Type, &Type::GetName>;
+		
+		/**
+		 * This class represents a library. Libraries can be loaded into virtual machines to be used.
+		 * Libraries contains types, functions and constants. This class is constant after construction.
+		 * Name of a library is also its namespace.
+		 */
+		class Library {
+		public:
+			/// Constructor
+			Library(const std::string &name, const std::string &help,
+					TypeList types, FunctionList functions, ConstantList constants = {}) :
+			name(name), help(help), Types(this->types), Functions(this->functions), Constants(this->constants)
+			{
+				using std::swap;
+				
+				swap(types, this->types);
+				swap(functions, this->functions);
+				swap(constants, this->constants);
+			}
+			
+			/// Returns the name of this library. Library names are also used as namespace specifiers
+			std::string GetName() const {
+				return name;
+			}
+			
+			/// Returns the help string. Help strings may contain markdown notation.
+			std::string GetHelp() const {
+				return help;
+			}
+			
+			/// List of types that this library contains
+			const TypeList 		&Types;
+			
+			/// List of functions this library contains
+			const FunctionList 	&Functions;
+			
+			/// List of constants this library contains
+			const ConstantList 	&Constants;
+			
+		private:
+			std::string name;
+			std::string help;
+			TypeList 	 types;
+			FunctionList functions;
+			ConstantList constants;
+		};
 	}
 }

@@ -235,6 +235,13 @@ namespace Gorgon {
 				Swap(other);
 			}
 			
+			Hashmap Duplicate() const {
+				Hashmap ret;
+				ret.mapping=mapping;
+				
+				return ret;
+			}
+			
 			/// Swaps two hashmaps
 			void Swap(Hashmap &other) {
 				using std::swap;

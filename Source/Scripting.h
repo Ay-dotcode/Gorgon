@@ -16,12 +16,13 @@ namespace Gorgon {
 	 * Gorgon Script allows applications to have embedded scripting capabilities. This
 	 * scripting system has two dialects. First one is console dialect. This dialect
 	 * allows fast command entry much like Bash script. Strings does not need to be
-	 * quoted, function parameters are separeted by space. Nested functions should contain
-	 * surrounding paranthesis.
+	 * quoted, function parameters are separated by space. Nested functions should contain
+	 * surrounding parenthesis.
+	 * 
 	 * Second dialect is the programming dialect. 
 	 * In this dialect strings should be quoted, function parameters should be placed inside 
-	 * paranthesis, and they should be separated using comma. Additionally, scripting dialect
-	 * allows lines to be terminated using semicolumn. Much like in Javascript, semicolumn 
+	 * parenthesis, and they should be separated using comma. Additionally, scripting dialect
+	 * allows lines to be terminated using semicolon. Much like in Javascript, semicolon 
 	 * is not mandatory.
 	 */
 	namespace Scripting {
@@ -30,7 +31,7 @@ namespace Gorgon {
 		/// used as an exception.
 		class ParseError {
 		public:
-			/// This enumaration lists all parse error types.
+			/// This enumeration lists all parse error types.
 			enum ErrorCode {
 				MismatchedParanthesis,
 			}; 
@@ -54,7 +55,7 @@ namespace Gorgon {
 		/// cannot check parse errors that can be caused by type assignments. Additionally
 		/// whether a function exists or not cannot be determined as functions can be
 		/// dynamically defined at runtime. The given code will be tokenized into lines.
-		/// Additonally, any refered files will also be parsed for errors.
+		/// Additionally, any referred files will also be parsed for errors.
 		std::vector<ParseError> Parse(const std::string &code);
 		
 		
@@ -65,14 +66,6 @@ namespace Gorgon {
 		class Scope {
 		};
 		
-		/// This class is used to create linking to an embedded function. You may use MakeStub
-		/// to create stub function that handles parameter unboxing
-		class EmbeddedFunction : public Function {
-		public:
-			
-			/// Implementation for this function
-			std::function<Data(std::vector<Data>&)> Implementation;
-		};
 		
 		
 		///@cond INTERNAL
@@ -87,7 +80,7 @@ namespace Gorgon {
 		 * a data can be an array, or reference to a variable. Data can have two tags: ArrayTag
 		 * and ReferenceTag. It is possible to use both tags together to create an array of
 		 * references. When a data is a reference, its type indicates which type it refers to.
-		 * However, the type it refers to could also be an array. This allows two dimentional
+		 * However, the type it refers to could also be an array. This allows two dimensional
 		 * arrays to exist. However, reference to reference is not valid for now. Data is 
 		 * non-mutable after construction.
 		 */
@@ -157,7 +150,7 @@ namespace Gorgon {
 			}
 			
 			/// Sets the data contained in this variable by modifying its type. Also this function
-			/// resets the tags unless they are respecified
+			/// resets the tags unless they are re-specified
 			template<class ...P_>
 			void Set(Type &type, Any value, P_ ...tags) {
 				data=value;
@@ -174,16 +167,6 @@ namespace Gorgon {
 			std::string name;
 		};
 		
-		/// Libraries are collection of types and functions. Every library has its own namespace.
-		/// However, all functions in all libraries can be accessed without specifying the namespace.
-		/// It is useful when names clash when they can be used to disambiguate function and type names
-		class Library {
-		public:
-			std::string Name;
-			
-			Containers::Collection<Type> Types;
-			Containers::Collection<Function> Functions;
-		};
 		
 		/// This class defines a virtual environment for scripts to run. It determines
 		/// which additional functions the script can access, working directory, and safety
