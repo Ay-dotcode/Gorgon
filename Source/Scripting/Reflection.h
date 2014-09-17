@@ -424,11 +424,9 @@ namespace Gorgon {
 			/** 
 			 * Class the stub for this function. If ismethod parameter is set and method variant exists
 			 * method variant is called. But if there is no method variant, it simply prints out the return
-			 * of the function. When ismethod is set, this function will never return a value. Parameters
-			 * are passed by non-const reference as they can be modified by this method. Only the parameters
-			 * are are set to be output is modified.
+			 * of the function. When ismethod is set, this function will never return a value. 
 			 */
-			virtual Data Call(bool ismethod, VirtualMachine &machine, std::vector<Data> &parameters) = 0;
+			virtual Data Call(bool ismethod, const std::vector<Data> &parameters) const = 0;
 			
 			
 			/// Parameters that this function have

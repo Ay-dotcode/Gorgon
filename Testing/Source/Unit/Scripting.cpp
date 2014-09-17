@@ -4,12 +4,22 @@
 
 #include <catch.h>
 
-#include <Source/Scripting/Reflection.h>
+#include <Source/Scripting/Embedding.h>
+#include <Source/TMP.h>
 
 
 using namespace Gorgon::Scripting;
 using namespace Gorgon;
 
+int checktestfn=0;
+
+void TestFn(int a, int b=1) {
+	checktestfn+=a*b;
+}
+
+void TestFn_1(int a) {
+	TestFn(a);
+}
 
 TEST_CASE("Basic scripting", "[firsttest]") {
 	
@@ -36,7 +46,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE(param2.IsOptional());
 	
 	
-	const Parameter param3("name2", "heeelp", mytype,  {1, 2, 3}, OptionalTag);
+	const Parameter param3("name2", "heeelp", mytype,  {Any(1), Any(2), Any(3)}, OptionalTag);
 	
 	REQUIRE_FALSE(param3.IsReference());
 	
@@ -49,28 +59,39 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	REQUIRE(param4.IsOptional());
 	
-// 	const Function fn1 { "TestFn",
-// 		"This is a test function bla bla bla",
-// 		{
-// 			new Parameter{ "Name",
-// 				"This parameter is bla bla",
-// 				mytype, OutputTag
-// 			},
-// 			new Parameter{ "Second",
-// 				"This. ....",
-// 				mytype, OptionalTag
-// 			}
-// 		},
-// 		//returns nothing
-// 		MethodTag, StretchTag
-// 	};
-// 	
-// 	REQUIRE(fn1.GetName()=="TestFn");
-// 	REQUIRE(fn1.GetHelp()=="This is a test function bla bla bla");
-// 	REQUIRE(fn1.Parameters.GetCount()==2);
-// 	REQUIRE(fn1.Parameters[0].GetName()=="Name");
-// 	REQUIRE_FALSE(fn1.HasReturnType());
-// 	REQUIRE(fn1.HasMethod());
-// 	REQUIRE(fn1.StretchLast());
-// 	REQUIRE_FALSE(fn1.IsKeyword());
+	const MappedFunction fn1( "TestFn",
+		"This is a test function bla bla bla",
+		ParameterList{
+			new Parameter{ "Name",
+				"This parameter is bla bla",
+				mytype
+			},
+			new Parameter{ "Second",
+				"This is the multiplier",
+				mytype, OptionalTag
+			}
+		},
+		MappedFunctions(&TestFn, &TestFn_1), MappedMethods(),
+		StretchTag
+	);
+	
+	REQUIRE(fn1.GetName()=="TestFn");
+	REQUIRE(fn1.GetHelp()=="This is a test function bla bla bla");
+	REQUIRE(fn1.Parameters.GetCount()==2);
+	REQUIRE(fn1.Parameters[0].GetName()=="Name");
+	REQUIRE_FALSE(fn1.HasReturnType());
+	REQUIRE_FALSE(fn1.HasMethod());
+	REQUIRE(fn1.StretchLast());
+	REQUIRE_FALSE(fn1.IsKeyword());
+	
+	std::vector<Data> v={{mytype, 5}, {mytype, 2}};
+	fn1.Call(false, v);
+	
+	REQUIRE(checktestfn == 10);
+	
+	
+	std::vector<Data> v2={{mytype, 5}};
+	fn1.Call(false, v2);
+	
+	REQUIRE(checktestfn == 15);
 }

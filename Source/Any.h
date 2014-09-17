@@ -27,6 +27,7 @@ namespace Gorgon {
 	/// to remove these checks.
 	/// 
 	class Any {
+		class privatetype {};
 		/// Used internally by Any to unify different types.
 		/// It is implemented by type dependent Type class.
 		class TypeInterface {
@@ -72,6 +73,24 @@ namespace Gorgon {
 		/// Initializes and empty Any.
 		Any() : content(nullptr),type(nullptr) { }
 
+		/// Creates a new Any from the given data. This constructor
+		/// duplicates the given data.
+		/// Requires type in the copied Any to be copy constructible.
+		template <class T_>
+		Any(const T_ &data, typename std::enable_if<!std::is_same<typename std::decay<T_>::type, Any>::value, privatetype>::type *dummy=nullptr) {
+			type=new Type<T_>;
+			content=type->Clone(&data);
+		}
+
+		/// Creates a new Any from the given data. This constructor
+		/// moves the given data.
+		/// Requires type in the moved Any to be move constructible.
+		template <class T_>
+		explicit Any(T_ &&data, typename std::enable_if<!std::is_same<typename std::decay<T_>::type, Any>::value, privatetype>::type *dummy=nullptr) {
+			type=new Type<T_>;
+			T_ *n=new T_(std::move(data));
+			content=n;
+		}
 		/// Copy constructor.
 		/// Requires type in the copied Any to be copy constructible.
 		Any(const Any &any) {
@@ -90,26 +109,7 @@ namespace Gorgon {
 		Any(Any &&any) : content(nullptr), type(nullptr) {
 			Swap(any);
 		}
-
-		/// Creates a new Any from the given data. This constructor
-		/// duplicates the given data.
-		/// Requires type in the copied Any to be copy constructible.
-		template <class T_>
-		Any(const T_ &data) {
-			type=new Type<T_>;
-			content=type->Clone(&data);
-		}
-
-		/// Creates a new Any from the given data. This constructor
-		/// moves the given data.
-		/// Requires type in the moved Any to be move constructible.
-		template <class T_>
-		Any(T_ &&data) {
-			type=new Type<T_>;
-			T_ *n=new T_(std::move(data));
-			content=n;
-		}
-
+		
 		/// Copies the information in the given Any. It requires
 		/// type in the copied Any to be copy constructible.
 		Any &operator =(const Any &any) {
@@ -231,7 +231,7 @@ namespace Gorgon {
 #endif
 #ifndef NDEBUG
 			if(!type->IsSameType(typeid(T_))) {
-				throw std::bad_cast("Cannot cast: not the same type");
+				throw std::bad_cast();
 			}
 #endif
 
@@ -339,4 +339,5 @@ namespace Gorgon {
 		/// Type of the data stored.
 		TypeInterface *type;
 	};
+	
 }

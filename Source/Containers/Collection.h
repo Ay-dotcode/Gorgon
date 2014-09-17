@@ -206,7 +206,9 @@ namespace Gorgon {
 			Collection &operator =(const Collection &) = delete;
 
 			/// Move constructor
-			Collection(Collection &&col) : list(std::move(col.list)) { }
+			Collection(Collection &&col) : list(std::move(col.list)) { 
+				col;
+			}
 
 			/// Move assignment
 			Collection &operator=(Collection &&col) {

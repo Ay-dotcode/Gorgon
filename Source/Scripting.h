@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <thread>
 
 #include "Types.h"
 #include "Enum.h"
@@ -9,6 +10,7 @@
 #include "Any.h"
 
 #include "Scripting/Reflection.h"
+#include "Scripting/InputSource.h"
 
 namespace Gorgon {
 
@@ -33,7 +35,7 @@ namespace Gorgon {
 		public:
 			/// This enumeration lists all parse error types.
 			enum ErrorCode {
-				MismatchedParanthesis,
+				MismatchedParenthesis,
 			}; 
 			
 			/// The code of the error
@@ -47,8 +49,8 @@ namespace Gorgon {
 			int Char;
 		};
 		
-		DefineEnumStringsCM(Scripting, ErrorCode, 
-			{Scripting::MismatchedParanthesis, "Mismatched paranthesis"}
+		DefineEnumStringsCM(ParseError, ErrorCode, 
+			{ParseError::MismatchedParenthesis, "Mismatched paranthesis"}
 		);
 		
 		/// This function parses the code and returns any syntax errors. This function
@@ -87,9 +89,15 @@ namespace Gorgon {
 		class Data {
 		public:
 			
+			/// Constructs an invalid data object. Data object does not perform validity check
+			/// therefore, use of this function should be very limited.
+			static Data Invalid() { return {}; }
+			
 			/// Any constructor. Allows both data and type to be specified
 			template <class ...P_>
-			Data(Type &type, Any data, P_ ...args);
+			Data(Type &type, Any data, P_ ...args) : type(&type), data(data) {
+				UnpackTags(args...);
+			}
 			
 			/// Default value constructor. Value of the data is determined from the type
 			Data(Type &type);
@@ -111,7 +119,7 @@ namespace Gorgon {
 			
 			/// Returns the type of the data
 			Type &GetType() const {
-				return type;
+				return *type;
 			}
 			
 		protected:
@@ -121,9 +129,6 @@ namespace Gorgon {
 			template<class ...P_>
 			void UnpackTags(Tag first, P_ ...rest) {
 				switch(first) {
-					case ArrayTag:
-						array=true;
-						break;
 					case ReferenceTag:
 						reference=true;
 						break;
@@ -134,11 +139,21 @@ namespace Gorgon {
 			/// @endcond
 			
 			Any   data;
-			Type *type;
+			Type *type = nullptr;
 			
 			bool array     = false;
 			bool reference = false;
+			
+		private:
+			/// Constructs an invalid data. Performing any operation on this data might cause
+			/// crashes. Never use this constructor unless its absolutely necessary
+			Data() {}
 		};
+		
+		inline std::ostream &operator<<(std::ostream &out, const Data &data) {
+			
+			return out;
+		}
 		
 		/// This class represents a variable. It contains the data and the name of the variable.
 		class Varible : public Data {
@@ -175,7 +190,7 @@ namespace Gorgon {
 		public:
 			
 			/// Default constructor
-			VirtualMachine() : Libraries(libraries) { }
+			VirtualMachine() : Libraries(libraries), output(&std::cout), input(&std::cin) { }
 			
 			/// Executes a single statement in this virtual machine
 			bool ExecuteStatement(const std::string &code);
@@ -195,9 +210,42 @@ namespace Gorgon {
 			/// Allows read-only access to libraries
 			const Containers::Collection<const Library> &Libraries;
 			
+			static VirtualMachine &Get() {
+				if(!activevms.Exists(std::this_thread::get_id())) {
+					throw std::runtime_error("No active VMs for this thread.");
+				}
+				
+				return activevms[std::this_thread::get_id()];
+			}
+			
+			std::ostream &GetOutput() const {
+				return *output;
+			}
+			
+			std::istream &GetInput() const {
+				return *input;
+			}
+			
+			void Activate() {
+				for(auto p : activevms) {
+					if(&p.second == this) {
+						activevms.Remove(p.first);
+						break;
+					}
+				}
+				
+				activevms.Add(std::this_thread::get_id(), this);
+			}
+			
 		private:
 			Containers::Collection<const Library> libraries;
+			//scopes
+			//variables
 			
+			std::ostream *output;
+			std::istream *input;
+			
+			static Containers::Hashmap<std::thread::id, VirtualMachine> activevms;
 		};
 	}
 }
