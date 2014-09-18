@@ -259,6 +259,7 @@ namespace Gorgon {
 		 * **OperatorTag**: Makes this function an operator. Operators could be symbols or regular identifiers.
 		 */
 		class Function {
+			friend class Type;
 		public:
 			
 			/// Function constructor fully constructs a function object. Both return type and tags are
@@ -419,6 +420,21 @@ namespace Gorgon {
 			/// Returns if this function is an operator. All operators should be member functions
 			bool IsOperator() const {
 				return isoperator;
+			}
+			
+			/// Returns if this function has a parent type, meaning it is a member function
+			bool HasParent() const {
+				return parent!=nullptr;
+			}
+			
+			/// Returns the parent type. If this function is not a member function, this function will
+			/// cause a runtime error
+			const Type &GetParent() const {
+				if(parent==nullptr) {
+					throw std::runtime_error("This function is not a member function");
+				}
+				
+				return *parent;
 			}
 			
 			/** 
@@ -719,7 +735,8 @@ namespace Gorgon {
 			/// Constructor, unlike other reflection objects, Type is not constructed fully.
 			template<class ...P_>
 			Type(const std::string &name, const std::string &help, P_ ...tags) :
-			name(name), help(help)
+			name(name), help(help), DataMembers(datamembers), Functions(functions), Constructors(constructors),
+			Constants(constants), Events(events), InheritsFrom(inheritsfrom)
 			{
 				UnpackTags(tags...);
 			}			
@@ -744,27 +761,65 @@ namespace Gorgon {
 				return referencetype;
 			}
 			
+			/// Adds new datamembers to the type
+			void AddDataMembers(std::initializer_list<DataMember*> elements) {
+				for(auto element : elements) {
+					datamembers.Add(element);
+				}
+			}
+			
+			/// Adds new functions to the type
+			void AddFunctions(std::initializer_list<Function*> elements) {
+				for(auto element : elements) {
+					functions.Add(element);
+					element->parent=this;
+				}
+			}
+			
+			/// Adds new constructors to the type
+			void AddConstructors(std::initializer_list<Function*> elements) {
+				for(auto element : elements) {
+					constructors.Add(element);
+					element->parent=this;
+				}
+			}			
+			
+			/// Adds new constants to the type
+			void AddConstants(std::initializer_list<Constant*> elements) {
+				for(auto element : elements) {
+					constants.Add(element);
+				}
+			}
+			
+			/// Adds new events to the type
+			void AddFunctions(std::initializer_list<Event*> elements) {
+				for(auto element : elements) {
+					events.Add(element);
+				}
+			}
+			
+			
 			/// Data members of this type. Notice that not every type has data members.
-			DataMemberList						DataMembers;
+			const DataMemberList					&DataMembers;
 			
 			/// Contains the functions related with this type. These functions can be operators,
 			/// or type casting functions. Functions with the name of another type are called
 			/// type casting functions. These functions are stored with [Library]Typename format.
 			/// However, if the library is never specified they are listed as []Typename.
-			FunctionList 						Functions;
+			const FunctionList 						&Functions;
 			
 			/// Constructors of this type. They can also act like conversion from operators. Implicit
 			/// conversion constructors should have their operator flag set.
-			Containers::Collection<Function> 	Constructors;
+			const Containers::Collection<Function> 	&Constructors;
 			
 			/// Constants related with this type. Constants can be of the same type as this one.
-			FunctionList    					Constants;
+			const ConstantList    					&Constants;
 			
 			/// Events of this type.
-			EventList							Events;
+			const EventList							&Events;
 			
 			/// Inheritance list. 
-			Containers::Hashmap<std::string, const Type, &Type::GetName> InheritsFrom;
+			const Containers::Hashmap<std::string, const Type, &Type::GetName> &InheritsFrom;
 			
 		private:
 			/// @cond INTERNAL
@@ -790,7 +845,29 @@ namespace Gorgon {
 			
 			Any defaultvalue;
 			
-
+			
+			/// Data members of this type. Notice that not every type has data members.
+			DataMemberList						datamembers;
+			
+			/// Contains the functions related with this type. These functions can be operators,
+			/// or type casting functions. Functions with the name of another type are called
+			/// type casting functions. These functions are stored with [Library]Typename format.
+			/// However, if the library is never specified they are listed as []Typename.
+			FunctionList 						functions;
+			
+			/// Constructors of this type. They can also act like conversion from operators. Implicit
+			/// conversion constructors should have their operator flag set.
+			Containers::Collection<Function>	constructors;
+			
+			/// Constants related with this type. Constants can be of the same type as this one.
+			ConstantList    					constants;
+			
+			/// Events of this type.
+			EventList							events;
+			
+			/// Inheritance list. 
+			Containers::Hashmap<std::string, const Type, &Type::GetName> inheritsfrom;
+			
 			bool referencetype = false;
 		};
 		

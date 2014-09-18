@@ -95,7 +95,7 @@ namespace Gorgon {
 			
 			/// Any constructor. Allows both data and type to be specified
 			template <class ...P_>
-			Data(Type &type, Any data, P_ ...args) : type(&type), data(data) {
+			Data(const Type &type, Any data, P_ ...args) : type(&type), data(data) {
 				UnpackTags(args...);
 			}
 			
@@ -118,7 +118,7 @@ namespace Gorgon {
 			}
 			
 			/// Returns the type of the data
-			Type &GetType() const {
+			const Type &GetType() const {
 				return *type;
 			}
 			
@@ -139,7 +139,7 @@ namespace Gorgon {
 			/// @endcond
 			
 			Any   data;
-			Type *type = nullptr;
+			const Type *type = nullptr;
 			
 			bool array     = false;
 			bool reference = false;

@@ -21,9 +21,18 @@ void TestFn_1(int a) {
 	TestFn(a);
 }
 
+class A {
+public:
+	int a() {
+		return 42;
+	}
+};
+
+
 TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	Type mytype("mytype", "test type");
+	Type myreftype("myreftype", "test type", ReferenceTag);
 	
 	
 	const Parameter param1("name", "heeelp", mytype, OutputTag);
@@ -59,28 +68,28 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	REQUIRE(param4.IsOptional());
 	
-	const MappedFunction fn1( "TestFn",
+	const MappedFunction fn1{ "TestFn",
 		"This is a test function bla bla bla",
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
-				mytype
+				mytype, OptionalTag
 			},
 			new Parameter{ "Second",
 				"This is the multiplier",
 				mytype, OptionalTag
 			}
 		},
-		MappedFunctions(&TestFn, &TestFn_1), MappedMethods(),
-		StretchTag
-	);
+		MappedFunctions(&TestFn, &TestFn_1, []{TestFn(1);}), MappedMethods(TestFn, TestFn_1, []{TestFn(1);}),
+		StretchTag, MethodTag
+	};
 	
 	REQUIRE(fn1.GetName()=="TestFn");
 	REQUIRE(fn1.GetHelp()=="This is a test function bla bla bla");
 	REQUIRE(fn1.Parameters.GetCount()==2);
 	REQUIRE(fn1.Parameters[0].GetName()=="Name");
 	REQUIRE_FALSE(fn1.HasReturnType());
-	REQUIRE_FALSE(fn1.HasMethod());
+	//REQUIRE_FALSE(fn1.HasMethod());
 	REQUIRE(fn1.StretchLast());
 	REQUIRE_FALSE(fn1.IsKeyword());
 	
@@ -94,4 +103,69 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	fn1.Call(false, v2);
 	
 	REQUIRE(checktestfn == 15);
+
+	fn1.Call(true, {});
+	REQUIRE(checktestfn == 16);
+	
+	
+	MappedFunction fn2{ "TestFn2",
+		"This is a test function bla bla bla",
+		ParameterList{
+			new Parameter{ "Name",
+				"This parameter is bla bla",
+				myreftype
+			}
+		},
+		mytype,
+		MappedFunctions(&A::a), MappedMethods()
+	};
+	
+	//mytype.AddFunctions({&fn2});
+	
+	REQUIRE( fn2.Call(false, {{mytype, new A()}}).GetValue<int>() == 42 );
+	
+	MappedFunction fn3{ "TestFn3",
+		"This is a test function bla bla bla",
+		ParameterList{
+			new Parameter{ "Name",
+				"This parameter is bla bla",
+				mytype
+			}
+		},
+		mytype,
+		MappedFunctions(&A::a), MappedMethods()
+	};
+	
+	//mytype.AddFunctions({&fn2});
+	
+	REQUIRE( fn3.Call(false, {{mytype, A()}}).GetValue<int>() == 42 );
+	
+	
+	MappedFunction fn4{ "TestFn4",
+		"This is a test function bla bla bla",
+		ParameterList{
+		},
+		mytype,
+		MappedFunctions(&A::a), MappedMethods([](A a){}),
+		MethodTag
+	};
+	
+	mytype.AddFunctions({&fn4});
+	
+	REQUIRE( fn4.Call(false, {{mytype, A()}}).GetValue<int>() == 42 );
+	
+	
+	MappedFunction fn5{ "TestFn5",
+		"This is a test function bla bla bla",
+		ParameterList{
+		},
+		mytype,
+		MappedFunctions(&A::a), MappedMethods([](A *a){}),
+		MethodTag
+	};
+	
+	myreftype.AddFunctions({&fn5});
+	
+	REQUIRE( fn5.Call(false, {{mytype, new A()}}).GetValue<int>() == 42 );
+	REQUIRE_THROWS( fn5.Call(false, {{mytype, A()}}).GetValue<int>() == 42 );
 }
