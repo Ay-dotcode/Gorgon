@@ -95,23 +95,25 @@ namespace Gorgon {
 			/// in the constructor. After construction parameter is non-mutable. Both options and tags
 			/// are optional
 			template <class ...Params_>
-			Parameter(const std::string &name, const std::string &help, const Type &type, 
+			Parameter(const std::string &name, const std::string &help, const Type *type, 
 					 OptionList options, Params_ ...tags) : 
-			name(name), type(&type), help(help), Options(std::move(options)) {
+			name(name), type(type), help(help), Options(std::move(options)) {
+				assert(type!=nullptr && "Parameter type cannot be nullptr");
+				
 				UnpackTags(tags...);
 			}
 			
 			/// @cond INTERNAL
-			Parameter(const std::string &name, const std::string &help, const Type &type) : 
+			Parameter(const std::string &name, const std::string &help, const Type *type) : 
 			Parameter(name, help, type, OptionList{}) { }
 			
 			template <class ...Params_>
-			Parameter(const std::string &name, const std::string &help, const Type &type, Tag firsttag,
+			Parameter(const std::string &name, const std::string &help, const Type *type, Tag firsttag,
 					  Params_ ...tags) : 
 			Parameter(name, help, type, OptionList{}, firsttag, std::forward<Params_>(tags)...) {
 			}
 			 
-			Parameter(const std::string &name, const std::string &help, const Type &type, 
+			Parameter(const std::string &name, const std::string &help, const Type *type, 
 					  OptionList options, const std::vector<Tag> &tags) :
 			Parameter(name, help, type, options) {
 				for(auto tag : tags) {
@@ -265,9 +267,9 @@ namespace Gorgon {
 			/// Function constructor fully constructs a function object. Both return type and tags are
 			/// optional and its possible to skip return type and specify tags directly.
 			template<class ...P_>
-			Function(const std::string &name, const std::string &help, ParameterList parameters,
-					 const Type &returntype, P_ ...tags) :
-			name(name), help(help), returntype(&returntype), Parameters(this->parameters)
+			Function(const std::string &name, const std::string &help, const Type *returntype, 
+					 ParameterList parameters, const Type *parent, P_ ...tags) :
+			name(name), help(help), returntype(returntype), parent(parent), Parameters(this->parameters)
 			{
 				using std::swap;
 				
@@ -275,51 +277,6 @@ namespace Gorgon {
 				UnpackTags(tags...);
 			}
 			
-			/// @cond INTERNAL
-			template<class ...P_>
-			Function(const std::string &name, const std::string &help, ParameterList parameters,
-					 Tag firsttag, P_ ...tags) : 
-			name(name), help(help), Parameters(this->parameters)
-			{
-				using std::swap;
-				
-				swap(parameters, this->parameters);
-				UnpackTags(firsttag);
-				UnpackTags(tags...);
-			}
-			
-			Function(const std::string &name, const std::string &help, ParameterList parameters) : 
-			name(name), help(help), Parameters(this->parameters)
-			{
-				using std::swap;
-				
-				swap(parameters, this->parameters);
-			}
-
-			Function(const std::string &name, const std::string &help, ParameterList parameters,
-					 const Type &returntype, const std::vector<Tag> &tags) :
-			name(name), help(help), returntype(&returntype), Parameters(this->parameters)
-			{
-				using std::swap;
-				
-				swap(parameters, this->parameters);
-				for(auto tag : tags) {
-					UnpackTags(tag);
-				}
-			}
-
-			Function(const std::string &name, const std::string &help, ParameterList parameters,
-					 const std::vector<Tag> &tags) :
-			name(name), help(help), Parameters(this->parameters)
-			{
-				using std::swap;
-				
-				swap(parameters, this->parameters);
-				for(auto tag : tags) {
-					UnpackTags(tag);
-				}
-			}
-			/// @endcond
 			
 			/// Destructor frees all parameters.
 			~Function() {
@@ -443,6 +400,12 @@ namespace Gorgon {
 			 * of the function. When ismethod is set, this function will never return a value. 
 			 */
 			virtual Data Call(bool ismethod, const std::vector<Data> &parameters) const = 0;
+			
+			/// This function is only for scoped keywords
+			virtual bool CallEnd(Data) const;
+			
+			/// This function is only for redirecting scoped keywords
+			virtual void CallRedirect(Data,std::string &) const;
 			
 			
 			/// Parameters that this function have
@@ -734,9 +697,9 @@ namespace Gorgon {
 			
 			/// Constructor, unlike other reflection objects, Type is not constructed fully.
 			template<class ...P_>
-			Type(const std::string &name, const std::string &help, P_ ...tags) :
+			Type(const std::string &name, const std::string &help, Any defaultvalue, P_ ...tags) :
 			name(name), help(help), DataMembers(datamembers), Functions(functions), Constructors(constructors),
-			Constants(constants), Events(events), InheritsFrom(inheritsfrom)
+			Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue)
 			{
 				UnpackTags(tags...);
 			}			
@@ -772,7 +735,10 @@ namespace Gorgon {
 			void AddFunctions(std::initializer_list<Function*> elements) {
 				for(auto element : elements) {
 					functions.Add(element);
-					element->parent=this;
+
+					assert(element->parent==this && 
+						   "This type should be listed as the parent of this function"
+					);
 				}
 			}
 			
@@ -780,9 +746,12 @@ namespace Gorgon {
 			void AddConstructors(std::initializer_list<Function*> elements) {
 				for(auto element : elements) {
 					constructors.Add(element);
-					element->parent=this;
+
+					assert(element->parent==this && 
+						   "This type should be listed as the parent of this function"
+					);
 				}
-			}			
+			}
 			
 			/// Adds new constants to the type
 			void AddConstants(std::initializer_list<Constant*> elements) {
@@ -792,7 +761,7 @@ namespace Gorgon {
 			}
 			
 			/// Adds new events to the type
-			void AddFunctions(std::initializer_list<Event*> elements) {
+			void AddEvents(std::initializer_list<Event*> elements) {
 				for(auto element : elements) {
 					events.Add(element);
 				}

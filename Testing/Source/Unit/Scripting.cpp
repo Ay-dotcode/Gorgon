@@ -26,20 +26,26 @@ public:
 	int a() {
 		return 42;
 	}
+	
+	int b(float a) {
+		return 42*a;
+	}
 };
 
 
 TEST_CASE("Basic scripting", "[firsttest]") {
 	
-	Type mytype("mytype", "test type");
-	Type myreftype("myreftype", "test type", ReferenceTag);
+	auto mytype=new Type("mytype", "test type", Any(0));
+	auto myfloattype=new Type("myfloattype", "test type", Any(0.0f));
+	auto myvaluetype = new Type("myvaluetype", "test type", Any(A()));
+	auto myreftype=new Type("myreftype", "test type", Any((A*)nullptr), ReferenceTag);
 	
 	
 	const Parameter param1("name", "heeelp", mytype, OutputTag);
 	
 	REQUIRE(param1.GetName() == "name");
 	REQUIRE(param1.GetHelp() == "heeelp");
-	REQUIRE(&param1.GetType() == &mytype);
+	REQUIRE(&param1.GetType() == mytype);
 	
 	REQUIRE(param1.IsReference());
 	
@@ -70,6 +76,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	const MappedFunction fn1{ "TestFn",
 		"This is a test function bla bla bla",
+		nullptr, //return type
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
@@ -80,6 +87,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 				mytype, OptionalTag
 			}
 		},
+		nullptr, // not a member function
 		MappedFunctions(&TestFn, &TestFn_1, []{TestFn(1);}), MappedMethods(TestFn, TestFn_1, []{TestFn(1);}),
 		StretchTag, MethodTag
 	};
@@ -110,62 +118,69 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	MappedFunction fn2{ "TestFn2",
 		"This is a test function bla bla bla",
+		mytype, //return type
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
 				myreftype
 			}
 		},
-		mytype,
+		nullptr, // memberof
 		MappedFunctions(&A::a), MappedMethods()
 	};
 	
-	//mytype.AddFunctions({&fn2});
-	
-	REQUIRE( fn2.Call(false, {{mytype, new A()}}).GetValue<int>() == 42 );
+	REQUIRE( fn2.Call(false, { {myreftype, new A()} }).GetValue<int>() == 42 );
 	
 	MappedFunction fn3{ "TestFn3",
 		"This is a test function bla bla bla",
+		mytype, //return type
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
-				mytype
+				myvaluetype
 			}
 		},
-		mytype,
+		nullptr, // member of
 		MappedFunctions(&A::a), MappedMethods()
 	};
 	
-	//mytype.AddFunctions({&fn2});
-	
-	REQUIRE( fn3.Call(false, {{mytype, A()}}).GetValue<int>() == 42 );
+	REQUIRE( fn3.Call(false, {{myvaluetype, A()}}).GetValue<int>() == 42 );
 	
 	
 	MappedFunction fn4{ "TestFn4",
 		"This is a test function bla bla bla",
+		mytype, //return type
 		ParameterList{
+			new Parameter{ "Name",
+				"This parameter is bla bla",
+				myfloattype
+			}
 		},
-		mytype,
-		MappedFunctions(&A::a), MappedMethods([](A a){}),
-		MethodTag
+		myvaluetype, //member ofmytype
+		MappedFunctions(&A::b), MappedMethods()
 	};
 	
-	mytype.AddFunctions({&fn4});
+	myvaluetype->AddFunctions({&fn4});
 	
-	REQUIRE( fn4.Call(false, {{mytype, A()}}).GetValue<int>() == 42 );
+	REQUIRE( fn4.Call(false, { {mytype, A()}, {myfloattype, 2.0f} }).GetValue<int>() == 84 );
 	
 	
 	MappedFunction fn5{ "TestFn5",
 		"This is a test function bla bla bla",
+		mytype, //return type
 		ParameterList{
+			new Parameter{ "Name",
+				"This parameter is bla bla",
+				myfloattype
+			}
 		},
-		mytype,
-		MappedFunctions(&A::a), MappedMethods([](A *a){}),
-		MethodTag
+		myreftype, //member of
+		MappedFunctions(&A::b), MappedMethods()
 	};
 	
-	myreftype.AddFunctions({&fn5});
+	myreftype->AddFunctions({&fn5});
 	
-	REQUIRE( fn5.Call(false, {{mytype, new A()}}).GetValue<int>() == 42 );
-	REQUIRE_THROWS( fn5.Call(false, {{mytype, A()}}).GetValue<int>() == 42 );
+	REQUIRE( fn5.Call(false, { {mytype, new A()}, {myfloattype, 1.0f} }).GetValue<int>() == 42 );
+	REQUIRE_THROWS( fn5.Call(false, { {mytype, A()}, {myfloattype, 1.0f} }).GetValue<int>() == 42 );
+	REQUIRE_THROWS( fn5.Call(false, { {mytype, A()}, {mytype, 1} }).GetValue<int>() == 42 );
 }

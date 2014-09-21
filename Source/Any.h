@@ -32,7 +32,6 @@ namespace Gorgon {
 		/// It is implemented by type dependent Type class.
 		class TypeInterface {
 		public:
-			virtual void *New() const=0;
 			virtual void  Delete(void* obj) const=0;
 			virtual void *Clone(const void* const obj) const=0;
 			virtual bool  IsSameType(const std::type_info &) const=0;
@@ -48,9 +47,6 @@ namespace Gorgon {
 		/// functions.
 		template<class T_> class Type : public TypeInterface {
 		public:
-			virtual void* New() const {
-				return new T_;
-			}
 			virtual void Delete(void *obj) const {
 				delete static_cast<T_*>(obj);
 			}

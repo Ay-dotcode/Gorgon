@@ -1,6 +1,8 @@
 #pragma once
 
 #include <tuple>
+#include <assert.h>
+#include <type_traits>
 
 #include "Reflection.h"
 #include "../Scripting.h"
@@ -37,14 +39,42 @@ namespace Gorgon {
 				using functionat = typename std::tuple_element<level, tupletype>::type;
 				template<int level>
 				using traitsof = TMP::FunctionTraits<functionat<level>>;
+				template<int level, int param>
+				using paramof = typename traitsof<level>::template Arguments<param>::Type;
+
 				
 				template<int level, int param>
 				void checkfnparam() {
-					static_assert(std::is_same<
-						typename traitsof<level>::template Arguments<param>::Type,
-						typename traitsof<0>::template Arguments<param>::Type>::value,
+					static_assert(std::is_same<paramof<level, param>, paramof<0, param>>::value,
 						"Function types do not match!"
 					);
+					
+					if(parent.HasParent()) {
+						if(param==0) {
+							if(traitsof<0>::IsMember && !parent.GetParent().IsReferenceType()) {
+								assert( (parent.GetParent().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) &&
+									"Function parameter type and designated type does not match.");
+							}
+							else {
+								assert( (parent.GetParent().GetDefaultValue().TypeCheck<paramof<level, param>>()) &&
+									"Function parameter type and designated type does not match.");
+							}
+						}
+						else {
+							assert( (parent.Parameters[param-1].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) &&
+								"Function parameter type and designated type does not match.");
+						}
+					}
+					else {
+						if(param==0 && traitsof<0>::IsMember && !parent.Parameters[param].GetType().IsReferenceType()) {
+							assert( (parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) &&
+								"Function parameter type and designated type does not match.");
+						}
+						else {
+							assert( (parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) &&
+								"Function parameter type and designated type does not match.");
+						}
+					}
 				}
 				
 				template<int level, int ...S>
@@ -69,6 +99,10 @@ namespace Gorgon {
 					static_assert(sizeof...(Fns_)<=traitsof<0>::Arity+1,
 								  "Number of functions are more than possible");
 					
+					assert(traitsof<0>::Arity == parent.Parameters.GetCount() + parent.HasParent() && 
+						"Defined parameters does not match the number of function parameters");
+					
+					
 					
 					checkallfns(typename TMP::Generate<sizeof...(Fns_)>::Type());
 					
@@ -76,13 +110,14 @@ namespace Gorgon {
 					if(parent.Parameters.GetCount()>0 && parent.Parameters[0].IsOptional() && 
 						parent.Parameters.Last()->IsOptional()) {
 						shouldallbeoptional=true;
-						}
-						
-						int optionalcount=0;
+					}
+					
+					int optionalcount=0;
 					bool passedfirstnonoptional=false;
 					bool optionalatstart=false;
 					bool first=true;
 					for(const auto &param : parent.Parameters) {
+						//optional check
 						if(param.IsOptional()) {
 							optionalcount++;
 							if(first) optionalatstart=true;
@@ -114,6 +149,26 @@ namespace Gorgon {
 				template<int num>
 				typename traitsof<0>::template Arguments<num>::Type 
 				castparam(Data data) const {
+					//check for data.GetType() to Parameters[?].GetType()
+					
+					if(parent.HasParent()) {
+						if(num==0) {
+							if(&data.GetType() != &parent.GetReturnType()) {
+								throw std::runtime_error("Cannot convert $this to original parent type.");
+							}
+						}
+						else {
+							if(&data.GetType() != &parent.Parameters[num-1].GetType()) {
+								throw std::runtime_error("Parameter and data type does not match, and there is no possible conversion.");
+							}
+						}
+					}
+					else {					
+						if(&data.GetType() != &parent.Parameters[num].GetType()) {
+							throw std::runtime_error("Parameter and data type does not match, and there is no possible conversion.");
+						}
+					}
+					
 					return data.GetValue<typename traitsof<0>::template Arguments<num>::Type>();
 				}
 				
@@ -123,6 +178,25 @@ namespace Gorgon {
 				typename TMP::Choose<num==0, typename traitsof<0>::template Arguments<num>::Type, 
 				typename std::remove_pointer<typename traitsof<0>::template Arguments<num>::Type>::type>::Type
 				castparam_firstnonptr(Data data) const {
+					
+					if(parent.HasParent()) {
+						if(num==0) {
+							if(&data.GetType() != &parent.GetReturnType()) {
+								throw std::runtime_error("Cannot convert $this to original parent type.");
+							}
+						}
+						else {
+							if(&data.GetType() != &parent.Parameters[num-1].GetType()) {
+								throw std::runtime_error("Parameter and data type does not match, and there is no possible conversion.");
+							}
+						}
+					}
+					else {					
+						if(&data.GetType() != &parent.Parameters[num].GetType()) {
+							throw std::runtime_error("Parameter and data type does not match, and there is no possible conversion.");
+						}
+					}
+					
 					return data.GetValue<typename TMP::Choose<num==0, typename traitsof<0>::template Arguments<num>::Type, 
 					typename std::remove_pointer<typename traitsof<0>::template Arguments<num>::Type>::type>::Type>();
 				}
@@ -215,10 +289,7 @@ namespace Gorgon {
 					return (this->*list[variant])(data);
 				}
 				
-				virtual Data call(const std::vector<Data> &data) const override {
-					assert(traitsof<0>::Arity == parent.Parameters.GetCount() + parent.HasParent() && 
-						"Defined parameters does not match the number of function parameters");
-					
+				virtual Data call(const std::vector<Data> &data) const override {					
 					return expandvariants(typename TMP::Generate<sizeof...(Fns_)>::Type(), 
 										  traitsof<0>::Arity-data.size(), data);
 				}
@@ -245,39 +316,38 @@ namespace Gorgon {
 			
 		public:
 			
-			/// Constructor, returntype and tags are optional, 
+			/// Constructor, returntype and parent could be nullptr, tags are optional. 
 			template<class ...P_, class ...Fns1_, class ...Fns2_>
-			MappedFunction(const std::string &name, const std::string &help, ParameterList parameters,
-					 const Type &returntype, std::tuple<Fns1_...> functions, std::tuple<Fns2_...> methods, P_ ...tags) : 
-			Function(name, help, std::move(parameters), returntype, tags...)
+			MappedFunction(const std::string &name, const std::string &help, const Type *returntype, 
+						   ParameterList parameters, const Type *parent, 
+						   std::tuple<Fns1_...> functions, std::tuple<Fns2_...> methods, P_ ...tags) :  
+			Function(name, help, returntype, std::move(parameters), parent, tags...)
 			{ 
 				this->functions=new fnstorageimpl<Fns1_...>(*this, functions);
 				initmethods(methods);
 				
-				static_assert(!std::is_same<typename TMP::FunctionTraits<typename std::tuple_element<0, std::tuple<Fns1_...>>::type>::ReturnType, void>::value, 
-							  "The given function does not return a value, however, a type has been specified as return type.");
+				if(returntype) {
+					using fn = typename fnstorageimpl<Fns1_...>::template traitsof<0>;
+					assert(returntype->GetDefaultValue().TypeCheck<typename fn::ReturnType>() && 
+						"Function return type does not match with designated return type");
+				}
+				
+				assert(
+					(
+						std::is_same<typename fnstorageimpl<Fns1_...>::template traitsof<0>::ReturnType, void>::value == 
+						(returntype==nullptr)
+					) && 
+					"The given function does not return a value, however, a type has been specified as return type."
+				);
+				
+				assert( (!IsOperator() || parent ) && "All operators should be a member function" );
 				
 				assert(this->HasMethod()==(bool)method && "MethodTag and method parameter must match");
+				overrideablechecks();
 			}
-			
-			/// @cond INTERNAL
-			template<class ...P_, class ...Fns1_, class ...Fns2_>
-			MappedFunction(const std::string &name, const std::string &help, ParameterList parameters,
-						   std::tuple<Fns1_...> functions, std::tuple<Fns2_...> methods, P_ ...tags) : 
-			Function(name, help, std::move(parameters), tags...)
-			{ 
-				this->functions=new fnstorageimpl<Fns1_...>(*this, functions);
-				initmethods(methods);
-				
-				static_assert(std::is_same<typename TMP::FunctionTraits<typename std::tuple_element<0, std::tuple<Fns1_...>>::type>::ReturnType, void>::value, 
-							  "The given function returns a value, however, a type has not been specified as return type.");
-				
-				assert(this->HasMethod()==(bool)method && "MethodTag and method parameter must match");
-			}
-			/// @endcond
 			
 			/// Destructor
-			~MappedFunction() {
+			virtual ~MappedFunction() {
 				delete functions;
 				delete methods;
 			}
@@ -299,6 +369,11 @@ namespace Gorgon {
 				}
 			}
 			
+		protected:
+			virtual void overrideablechecks() const {
+				assert(!IsScoped() && "Regular embedded functions cannot be scoped keywords");
+			}
+			
 		private:
 			
 			
@@ -307,6 +382,93 @@ namespace Gorgon {
 			
 			/// Implementation for the method variant of this function
 			fnstorage *methods=nullptr;
+		};
+		
+		
+		Type Variant = {"Variant", 
+			"This type can contain any type to be casted to any requested type.",
+			Any(Data::Invalid())
+		};
+		
+		/**
+		 * Scoped keyword helps to build scoped keywords from embedded functions.
+		 * This class features an additional function, end to be added.
+		 * 
+		 * end function should return true if the scope really ends. In this case, the system will 
+		 * clean up current scope. Single time execution scopes should always return true. 
+		 * Additionally redirecting keywords should return true after direction is completed. Only 
+		 * time this function retuns false is when the scope should be repeated again, like in loops. 
+		 * 
+		 * Functions should all return Data which contains the data that will be passed to end function.
+		 */
+		class ScopedKeyword : public MappedFunction {
+		public:
+			/** 
+			 * Constructor, tags are optional.
+			 */
+			template<class ...P_, class ...Fns1_>
+			ScopedKeyword(const std::string &name, const std::string &help, ParameterList parameters, 
+						  std::tuple<Fns1_...> functions, std::function<bool(Data)> end, P_ ...tags) :  
+			MappedFunction(name, help, &Variant, std::move(parameters), nullptr, ScopedTag, tags...),
+			end(end)
+			{ }
+			
+			virtual bool CallEnd(Data data) const override {
+				return end(data);
+			}
+			
+		protected:
+			virtual void overrideablechecks() const override {
+				assert(!IsRedirecting() && "Regular scoped keyword functions cannot be redirecting");
+			}
+			
+			/// The function that will be called at the end of the scope
+			std::function<bool(Data)> end;
+		};
+		
+		/**
+		 * A redirecting keyword is given chance to read and modify the code inside its own scope.
+		 * This is useful for keywords like enum, class or library where either contents of the scope
+		 * requires additional parsing (enum) or the functions can be used inside the scope is limited.
+		 * Enum like keywords should return "" after performing its own processing. Redirecting keywords
+		 * should always allow end function to pass. Redirecting keywords are a type of scoped keywords,
+		 * thus they also contain end function.
+		 * 
+		 * end function should return true if the scope really ends. In this case, the system will 
+		 * clean up current scope. Single time execution scopes should always return true. 
+		 * Additionally redirecting keywords should return true after direction is completed. Only 
+		 * time this function retuns false is when the scope should be repeated again, like in loops. 
+		 * 
+		 * Functions should all return Data which contains the data that will be passed to end function.
+		 * 
+		 * While this scope is in effect, all the data that is read from the system will be passed to
+		 * redirect function right after the entire logical line is obtained. redirect function should
+		 * return a string that should be processed. This can empty the given string, leave it original
+		 * or perform a transformation. If there are multiple redirecting scopes exists, the inner 
+		 * scope is given priority. Comments are never redirected. 
+		 */
+		class RedirectingKeyword : public ScopedKeyword {
+		public:
+			/** 
+			 * Constructor, tags are optional.
+			 */
+			template<class ...P_, class ...Fns1_>
+			RedirectingKeyword(const std::string &name, const std::string &help, ParameterList parameters, 
+							   std::tuple<Fns1_...> functions, std::function<bool(Data)> end, 
+							   std::function<void(Data, std::string &)> redirect, P_ ...tags) :  
+			ScopedKeyword(name, help, std::move(parameters), ScopedTag, end, tags...),
+			redirect(redirect)
+			{ }
+			
+			virtual void CallRedirect(Data data, std::string &line) const override { 
+				redirect(data, line);
+			}
+			
+		protected:
+			virtual void overrideablechecks() const override { }
+			
+			/// The function that the code will be redirected to
+			std::function<void(Data, std::string &)> redirect;
 		};
 		
 	}

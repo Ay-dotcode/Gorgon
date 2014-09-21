@@ -14,7 +14,8 @@
 
 namespace Gorgon {
 
-	/** This namespace contains Gorgon Script parser and reflection facilities.
+	/** 
+	 * This namespace contains Gorgon Script parser and reflection facilities.
 	 * Gorgon Script allows applications to have embedded scripting capabilities. This
 	 * scripting system has two dialects. First one is console dialect. This dialect
 	 * allows fast command entry much like Bash script. Strings does not need to be
@@ -53,21 +54,23 @@ namespace Gorgon {
 			{ParseError::MismatchedParenthesis, "Mismatched paranthesis"}
 		);
 		
-		/// This function parses the code and returns any syntax errors. This function
-		/// cannot check parse errors that can be caused by type assignments. Additionally
-		/// whether a function exists or not cannot be determined as functions can be
-		/// dynamically defined at runtime. The given code will be tokenized into lines.
-		/// Additionally, any referred files will also be parsed for errors.
+		/** 
+		 * This function parses the code and returns any syntax errors. This function
+		 * cannot check parse errors that can be caused by type assignments. Additionally
+		 * whether a function exists or not cannot be determined as functions can be
+		 * dynamically defined at runtime. The given code will be tokenized into lines.
+		 * Additionally, any referred files will also be parsed for errors.
+		 */
 		std::vector<ParseError> Parse(const std::string &code);
 		
 		
-		/// Stores information about a scope. Some scopes does not define regular variables to
-		/// themselves. For instance a variable that is set in an if scope will be visible from
-		/// outside unless specified as local. However, a variable defined in function will be
-		/// stored inside its own scope
-		class Scope {
-		};
-		
+		/**
+		 * Stores information about a scope. Some scopes does not define regular variables to
+		 * themselves. For instance a variable that is set in an if scope will be visible from
+		 * outside unless specified as local. However, a variable defined in function will be
+		 * stored inside its own scope
+		 */
+		class Scope {		};
 		
 		
 		///@cond INTERNAL
@@ -78,7 +81,9 @@ namespace Gorgon {
 		};
 		///@endcond
 		
-		/** Data describes a piece of data. It contains boxed data and the type. Additionally,
+		
+		/** 
+		 * Data describes a piece of data. It contains boxed data and the type. Additionally,
 		 * a data can be an array, or reference to a variable. Data can have two tags: ArrayTag
 		 * and ReferenceTag. It is possible to use both tags together to create an array of
 		 * references. When a data is a reference, its type indicates which type it refers to.
@@ -94,17 +99,17 @@ namespace Gorgon {
 			static Data Invalid() { return {}; }
 			
 			/// Any constructor. Allows both data and type to be specified
-			template <class ...P_>
-			Data(const Type &type, Any data, P_ ...args) : type(&type), data(data) {
-				UnpackTags(args...);
+			Data(const Type &type, Any data) : type(&type), data(data) {
+			}
+			
+			/// Any constructor. Allows both data and type to be specified
+			Data(const Type *type, Any data) : type(type), data(data) {
+				assert(type!=nullptr && "Data type cannot be nullptr");
 			}
 			
 			/// Default value constructor. Value of the data is determined from the type
 			Data(Type &type);
 			
-			/// Default value constructor. Value of the data is determined from the type
-			template <class ...P_>
-			Data(Type &type, Tag firsttag, P_ ...args);
 			
 			/// Returns the value of this data in the requested format
 			template <class T_>
@@ -119,30 +124,15 @@ namespace Gorgon {
 			
 			/// Returns the type of the data
 			const Type &GetType() const {
+				assert(type && "Type is not set");
+				
 				return *type;
 			}
 			
 		protected:
-			/// @cond INTERNAL
-			void UnpackTags() {}
-			
-			template<class ...P_>
-			void UnpackTags(Tag first, P_ ...rest) {
-				switch(first) {
-					case ReferenceTag:
-						reference=true;
-						break;
-				}
-				
-				UnpackTags(rest...);
-			}
-			/// @endcond
-			
 			Any   data;
 			const Type *type = nullptr;
 			
-			bool array     = false;
-			bool reference = false;
 			
 		private:
 			/// Constructs an invalid data. Performing any operation on this data might cause
@@ -156,8 +146,14 @@ namespace Gorgon {
 		}
 		
 		/// This class represents a variable. It contains the data and the name of the variable.
-		class Varible : public Data {
+		class Variable : public Data {
 		public:
+			
+			Variable(const std::string &name, Type &type, Any value) : name(name), Data(type, value) {
+			}
+			
+			Variable(const std::string &name, Type &type) : name(name), Data(type) {
+			}
 			
 			/// Sets the data contained in this variable without changing its type
 			void Set(Any value) {
@@ -166,17 +162,10 @@ namespace Gorgon {
 			
 			/// Sets the data contained in this variable by modifying its type. Also this function
 			/// resets the tags unless they are re-specified
-			template<class ...P_>
-			void Set(Type &type, Any value, P_ ...tags) {
+			void Set(Type &type, Any value) {
 				data=value;
 				this->type=&type;
-				
-				array=false;
-				reference=false;
-				
-				UnpackTags(tags...);
 			}
-			
 			
 		protected:
 			std::string name;
@@ -199,10 +188,20 @@ namespace Gorgon {
 			void Start();
 			
 			/// Includes a new library to be used in this virtual machine
-			void AddLibrary(const Library &library);
+			void AddLibrary(const Library &library) { 
+				libraries.Add(library);
+			}
 			
 			/// Removes a library
-			void RemoveLibrary(const Library &library);
+			void RemoveLibrary(const Library &library) {
+				libraries.Remove(library);
+			}
+			
+			const Type &FindType(const std::string &name, const std::string &namespc="");
+			
+			const Function &FindFunction(const std::string &name, const std::string &namespc="");
+			
+			const Constant &FindConstant(const std::string &name, const std::string &namespc="");
 			
 			/// Sets the input source to read code lines from
 			void SetSource(InputSource &source);
@@ -226,14 +225,7 @@ namespace Gorgon {
 				return *input;
 			}
 			
-			void Activate() {
-				for(auto p : activevms) {
-					if(&p.second == this) {
-						activevms.Remove(p.first);
-						break;
-					}
-				}
-				
+			void Activate() {				
 				activevms.Add(std::this_thread::get_id(), this);
 			}
 			
