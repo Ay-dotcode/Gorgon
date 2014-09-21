@@ -619,6 +619,12 @@ namespace Gorgon {
 			template <class ...P_>
 			void UnpackTags(Tag tag, P_... rest) {
 				switch(tag) {
+					case PrivateTag:
+						accessible = false;
+						break;
+					case StaticTag:
+						staticmember = true;
+						break;
 					default:
 						assert(false && "Unknown tag");
 				}
@@ -851,7 +857,7 @@ namespace Gorgon {
 		public:
 			/// Constructor
 			Library(const std::string &name, const std::string &help,
-					TypeList types, FunctionList functions, ConstantList constants = {}) :
+					TypeList types, FunctionList functions, ConstantList constants=ConstantList()) :
 			name(name), help(help), Types(this->types), Functions(this->functions), Constants(this->constants)
 			{
 				using std::swap;

@@ -206,6 +206,8 @@ namespace Gorgon {
 				}
 			}
 			
+			/*
+			//TODO: Add collection like adding capabilities.
 			/// Filling constructor that takes the keys using KeyFn function.
 			Hashmap(std::initializer_list<T_&> list) {
 				assert(KeyFn && "Key retrieval function should be set.");
@@ -214,6 +216,7 @@ namespace Gorgon {
 					mapping.insert(std::make_pair((p.*KeyFn)(), &p));
 				}
 			}
+			*/
 			
 			/// Filling constructor that takes the keys using KeyFn function. This constructor
 			/// handles nullptr entries by ignoring them.

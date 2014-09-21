@@ -11,10 +11,12 @@ namespace Gorgon { namespace Scripting {
 	
 	bool Function::CallEnd(Data data) const { 
 		assert( false && "End call on a non-scoped function"); 
+
+		return false;
 	}
 	
 	void Function::CallRedirect(Data,std::string &) const { 
-		assert( false && "Redirect call on a non-redirecting function"); 
+		assert( false && "Redirect call on a non-redirecting function");
 	}
 	
 } }

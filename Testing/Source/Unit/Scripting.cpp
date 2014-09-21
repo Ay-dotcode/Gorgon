@@ -181,6 +181,6 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	myreftype->AddFunctions({&fn5});
 	
 	REQUIRE( fn5.Call(false, { {mytype, new A()}, {myfloattype, 1.0f} }).GetValue<int>() == 42 );
-	REQUIRE_THROWS( fn5.Call(false, { {mytype, A()}, {myfloattype, 1.0f} }).GetValue<int>() == 42 );
-	REQUIRE_THROWS( fn5.Call(false, { {mytype, A()}, {mytype, 1} }).GetValue<int>() == 42 );
+	REQUIRE_THROWS( fn5.Call(false, { {mytype, A()}, {myfloattype, 1.0f} }).GetValue<int>());
+	REQUIRE_THROWS( fn5.Call(false, { {mytype, A()}, {mytype, 1} }).GetValue<int>());
 }

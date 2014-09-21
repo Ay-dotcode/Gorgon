@@ -86,12 +86,12 @@ namespace Gorgon {
 								  typename traitsof<0>::ReturnType>::value,
 								  "Return type of parameters does not match");
 					
-					char dummy[] = {(checkfnparam<level, S>(),'\0')...};
+					char dummy[] = {0, (checkfnparam<level, S>(),'\0')...};
 				}
 				
 				template<int ...S>
 				void checkallfns(TMP::Sequence<S...>) {
-					char dummy[]={(checkfnlevel<S>(typename TMP::Generate<traitsof<S>::Arity>::Type()),'\0')...};
+					char dummy[]={0, (checkfnlevel<S>(typename TMP::Generate<traitsof<S>::Arity>::Type()),'\0')...};
 				}
 
 				fnstorageimpl(MappedFunction &parent, std::tuple<Fns_...> fns) : parent(parent), fns(fns) {

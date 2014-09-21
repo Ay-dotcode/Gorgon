@@ -570,7 +570,6 @@ namespace Gorgon {
 
 			/// Deletes and removes all elements in the collection
 			void DeleteAll() {
-				long i;
 				for(auto e : list)
 					delete e;
 

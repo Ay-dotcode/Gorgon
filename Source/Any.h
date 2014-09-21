@@ -294,7 +294,7 @@ namespace Gorgon {
 			}
 #endif
 
-			return memcmp(this->content, content.content, type->GetSize());
+			return memcmp(this->content, content.content, type->GetSize())==0;
 		}
 
 		/// Compares the contents of this Any to the given value. The value
