@@ -409,16 +409,18 @@ namespace Gorgon {
 		template<typename T>
 		class IsStreamable
 		{
-			template<typename TT>
-			static auto test(std::ostream& s, TT&& t) -> decltype(s << t);
+			using one = char;
+			struct two {
+				char dummy[2];
+			};
+
+			template<class TT>
+			static one test(typename decltype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one; }
 			
-			struct dummy_t {};
-			static dummy_t test(...);
-			
-			using return_type = decltype(test(*((std::ostream*)nullptr), std::declval<T>()));
-			
+			static two test(...)  { return two;  }
+						
 		public:
-			static const bool Value = !std::is_same<return_type, dummy_t>::value;
+			static const bool Value = sizeof( test(*(std::ostream*)nullptr) );
 		};
 		
 		inline void streamthis(std::stringstream &stream) {			
