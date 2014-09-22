@@ -80,7 +80,7 @@ namespace Gorgon {
 					Console::SetColor(Console::Yellow);
 					std::cout<<name<<" at ";
 					Console::SetColor(Console::Default);
-					std::cout<<"..."<<dir<<"/"<<filename;
+					std::cout<<" at "<<"..."<<dir<<"/"<<filename;
 					Console::SetBold();
 					std::cout<<":"<<linenum<<std::endl;
 					Console::Reset();
