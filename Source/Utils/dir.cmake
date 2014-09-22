@@ -5,7 +5,7 @@ SET(Local
 
 IF(${WIN32})
 	LIST(APPEND Local
-		#Assert_Win32.cpp
+		Assert_Win32.cpp
 	)
 ELSE()
 	LIST(APPEND Local
