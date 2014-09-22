@@ -340,10 +340,10 @@ namespace Gorgon {
 			
 			
 		private:
-			M_<K_, T_*> mapping;
+			M_<K_, T_*, std::less<K_>, std::allocator<std::pair<const K_, T_*>>> mapping;
 		};
 		
-		template<class K_, class T_, template <class ...> class M_=std::map>
+		template<class K_, class T_, template <class ...>class M_>
 		void swap(Hashmap<K_, T_, M_> &left, Hashmap<K_, T_, M_> &right) {
 			left.Swap(right);
 		}
