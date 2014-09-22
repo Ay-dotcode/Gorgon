@@ -423,6 +423,8 @@ TEST_CASE( "Application directory", "[ApplicationDirectory]") {
 	REQUIRE( appdir.find_first_of('\\') == appdir.npos );
 
 	REQUIRE( fs::IsExists(appdir+"/"+exename) );
+	
+	REQUIRE( fs::ApplicationPath() == appdir+"/"+exename );
 }
 
 

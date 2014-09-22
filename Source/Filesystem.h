@@ -294,6 +294,9 @@ namespace Gorgon {
 		/// through out the execution.
 		std::string StartupDirectory();
 		
+		/// Returns the the full path of the application
+		std::string ApplicationPath();
+		
 		/// Returns the directory where the program resides. Can be used to locate resources. May not be
 		/// same as StartupDirectory
 		std::string ApplicationDirectory();

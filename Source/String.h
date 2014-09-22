@@ -405,7 +405,51 @@ namespace Gorgon {
 
 			return ss.str();
 		}
+		
+		template<typename T>
+		class IsStreamable
+		{
+			template<typename TT>
+			static auto test(std::ostream& s, TT&& t) -> decltype(s << t);
+			
+			struct dummy_t {};
+			static dummy_t test(...);
+			
+			using return_type = decltype(test(*((std::ostream*)nullptr), std::declval<T>()));
+			
+		public:
+			static const bool Value = !std::is_same<return_type, dummy_t>::value;
+		};
+		
+		inline void streamthis(std::stringstream &stream) {			
+		}
+		
+		template<class T_, class ...P_>
+		void streamthis(std::stringstream &stream, const T_ &first, const P_&... rest) {
+			stream<<first;
+			
+			streamthis(stream, rest...);
+		}
 		/// @endcond
+		
+		template<class T_>
+		struct CanBeStringified {
+			static const bool Value = 
+				IsStreamable<T_>::Value || 
+				internal::has_stringoperator<T_>::value || 
+				decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum;
+		};
+		
+		/// Streams the given parameters into a stringstream and returns the result, effectively
+		/// concatinating all parameters.
+		template<class ...P_>
+		std::string Concat(const P_&... rest) {
+			std::stringstream ss;
+			streamthis(ss, rest...);
+			
+			
+			return ss.str();
+		}
 		
 		//for pretty documentation
 #ifdef DOXYGEN

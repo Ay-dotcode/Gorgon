@@ -1,0 +1,108 @@
+#include <execinfo.h>
+#include <cxxabi.h>
+#include <errno.h>
+
+#include <unistd.h>
+
+#include "Assert.h"
+#include "../Filesystem.h"
+
+namespace Gorgon {
+	namespace Utils {
+		
+		void CrashHandler::Backtrace() {
+			void **trace=(void**)malloc((depth+skip+2)*sizeof(void*));
+			int traced=backtrace(trace, depth+skip+2);
+			
+			char **messages = (char **)NULL;
+			messages = backtrace_symbols(trace, traced);
+			
+			for(int i=skip+2; i<traced; i++) {
+				std::string message=messages[i];
+				auto mangledbegin=message.find_first_of('(');
+				auto mangledend=message.find_first_of("+)", mangledbegin);
+				
+				std::string name=message.substr(mangledbegin+1, mangledend-mangledbegin-1);
+				
+				if(name=="") continue;
+				
+				int status;
+				char *demangled = abi::__cxa_demangle(name.c_str(), 0, 0, &status);
+				
+				if(status==0) {
+					name=demangled;
+				}
+				
+				free(demangled);
+				
+				int fd[2];
+				if(pipe(fd)) continue; //error
+				
+				if(int pid=fork()) {
+					if(pid<0) continue;
+					wait();
+					
+					close(fd[1]);
+					char line[1024];
+					
+					auto len = read(fd[0], line, 1024);
+					if(len<=0) continue;
+					line[len]=0;
+					
+					close(fd[0]);
+					
+					std::string data=line;
+					
+					auto pos=data.find_first_of(':');
+					auto end=data.find_first_of(' ', pos);
+					if(end==data.npos) end=data.length();
+					
+					std::string filename;
+					try {
+						filename=Filesystem::Canonical(data.substr(0, pos));
+					}
+					catch(...) {
+						filename=data.substr(0, pos);
+					}
+
+					int linenum = String::To<int>(data.substr(pos+1, end-pos-1));
+					if(String::Trim(filename)=="" || linenum==0) continue;
+					
+					//last directory before filename
+					std::string dir=Filesystem::GetDirectory(filename);
+					if(*dir.rbegin()=='/') {
+						dir.erase(dir.end()-1);
+					}
+					dir=Filesystem::GetFile(dir);
+					filename=Filesystem::GetFile(filename);
+					
+					std::cout<<"  In function ";
+					Console::SetColor(Console::Yellow);
+					std::cout<<name<<" at ";
+					Console::SetColor(Console::Default);
+					std::cout<<"..."<<dir<<"/"<<filename;
+					Console::SetBold();
+					std::cout<<":"<<linenum<<std::endl;
+					Console::Reset();
+				}
+				else {
+					errno=0;
+					char ptr[40];
+					sprintf(ptr, "%p", trace[i]);
+					
+					close(fd[0]);
+					dup2 (fd[1], STDOUT_FILENO);
+					dup2 (fd[1], STDERR_FILENO);
+					
+					//execlp("pwd", "pwd", nullptr);
+					execlp("addr2line", "addr2line", ptr, "-e", Filesystem::ApplicationPath().c_str(),nullptr);
+					
+					perror("wha?");
+					
+					exit(0);
+				}
+			}
+		}
+		
+	}
+}

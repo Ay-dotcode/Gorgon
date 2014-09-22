@@ -1,6 +1,7 @@
 SET(Local
 	Animation
 	Containers
+	Console.h
 	Encoding
 	External
 	Filesystem
@@ -27,6 +28,7 @@ SET(Local
 	Threading.h
 	TMP.h
 	Types.h
+	Utils
 	Window.h
 	Window.cpp
 )

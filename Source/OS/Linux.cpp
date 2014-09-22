@@ -9,7 +9,16 @@
 
 namespace Gorgon { namespace OS {
 
+	std::string GetEnvVar(const std::string &var) {
+		auto ret=getenv(var.c_str());
+		if(!ret)
+			return "";
+		else
+			return ret;
+	}
+		
 	namespace User {
+		
 		std::string GetUsername() {
 			struct passwd *p=getpwnam(getlogin());
 			
@@ -25,7 +34,7 @@ namespace Gorgon { namespace OS {
 		}
 
 		std::string GetDocumentsPath() {
-			std::string s=getenv("HOME");
+			std::string s=GetEnvVar("HOME");
 			if(Filesystem::IsDirectory(s+"/Documents"))
 				return s+"/Documents";
 			else
@@ -33,11 +42,11 @@ namespace Gorgon { namespace OS {
 		}
 
 		std::string GetHomePath() {
-			return getenv("HOME");
+			return GetEnvVar("HOME");
 		}
 
 		std::string GetDataPath() {
-			return getenv("HOME");
+			return GetEnvVar("HOME");
 		}
 	}
 	
@@ -57,10 +66,6 @@ namespace Gorgon { namespace OS {
 
 	std::string GetAppSettingPath() {
 		return "/etc";
-	}
-	
-	std::string GetEnvVar(const std::string &var) {
-		return getenv(var.c_str());
 	}
 	
 	bool Start(const std::string &name, const std::vector<std::string> &args) {
