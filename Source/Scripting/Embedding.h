@@ -1,12 +1,13 @@
 #pragma once
 
 #include <tuple>
-#include <assert.h>
 #include <type_traits>
 
 #include "Reflection.h"
 #include "../Scripting.h"
 #include "../TMP.h"
+
+#include "../Utils/Assert.h"
 
 
 namespace Gorgon {
@@ -52,27 +53,22 @@ namespace Gorgon {
 					if(parent.HasParent()) {
 						if(param==0) {
 							if(traitsof<0>::IsMember && !parent.GetParent().IsReferenceType()) {
-								assert( (parent.GetParent().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) &&
-									"Function parameter type and designated type does not match.");
+								ASSERT( (parent.GetParent().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , "Function parameter type and designated type does not match.", 5, 2);
 							}
 							else {
-								assert( (parent.GetParent().GetDefaultValue().TypeCheck<paramof<level, param>>()) &&
-									"Function parameter type and designated type does not match.");
+								ASSERT((parent.GetParent().GetDefaultValue().TypeCheck<paramof<level, param>>()) , "Function parameter type and designated type does not match.", 5, 2);
 							}
 						}
 						else {
-							assert( (parent.Parameters[param-1].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) &&
-								"Function parameter type and designated type does not match.");
+							ASSERT((parent.Parameters[param-1].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) , "Function parameter type and designated type does not match.", 5, 2);
 						}
 					}
 					else {
 						if(param==0 && traitsof<0>::IsMember && !parent.Parameters[param].GetType().IsReferenceType()) {
-							assert( (parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) &&
-								"Function parameter type and designated type does not match.");
+							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , "Function parameter type and designated type does not match.", 5, 2);
 						}
 						else {
-							assert( (parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) &&
-								"Function parameter type and designated type does not match.");
+							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) , "Function parameter type and designated type does not match.", 5, 2);
 						}
 					}
 				}
@@ -99,10 +95,10 @@ namespace Gorgon {
 					static_assert(sizeof...(Fns_)<=traitsof<0>::Arity+1,
 								  "Number of functions are more than possible");
 					
-					assert(traitsof<0>::Arity == parent.Parameters.GetCount() + parent.HasParent() && 
-						"Defined parameters does not match the number of function parameters");
-					
-					
+					ASSERT( (traitsof<0>::Arity == parent.Parameters.GetCount() + parent.HasParent()),  
+							String::Concat("Defined parameters (", parent.Parameters.GetCount(),
+										   ") does not match the number of function parameters (", 
+										   traitsof<0>::Arity - parent.HasParent(), ")") ,2,2);					
 					
 					checkallfns(typename TMP::Generate<sizeof...(Fns_)>::Type());
 					
@@ -122,24 +118,28 @@ namespace Gorgon {
 							optionalcount++;
 							if(first) optionalatstart=true;
 							if(passedfirstnonoptional) {
-								assert(!optionalatstart && 
-								"Optional parameters should be at the start or at the end");
+								ASSERT(!optionalatstart,
+									String::Concat("Optional parameters should be at the start ",
+									"or at the end, offender: ",param.GetName()),2,2);
 							}
 						}
 						else {
-							assert(!shouldallbeoptional && 
-							"All optional function parameters should be either at the beginning or at the end, never at both sides");
+							ASSERT(!shouldallbeoptional,
+								String::Concat("All optional function parameters should be either at ",
+								"the beginning or at the end, never at both sides, offender: ",
+								param.GetName()),2,2);
 							
 							passedfirstnonoptional=true;
 						}
 						first=false;
 					}
 					
-					assert(optionalcount+1 >= sizeof...(Fns_) && 
-						"Too many function definitions, might be caused by a missing OptionalTag");
+					ASSERT(optionalcount+1 >= sizeof...(Fns_), 
+						   "Too many function definitions, might "
+						   "be caused by a missing OptionalTag",2,2);
 					
-					assert(optionalcount+1 <= sizeof...(Fns_) && 
-						"Missing function definitions");
+					ASSERT(optionalcount+1 <= sizeof...(Fns_),
+						"Missing function definitions",2,2);
 				}
 				
 				static const int maxarity=traitsof<0>::Arity;
@@ -205,8 +205,9 @@ namespace Gorgon {
 				template<class R_, int variant, int ...S>
 				typename std::enable_if<std::is_same<R_, void>::value && traitsof<0>::IsMember, Data>::type 
 				callfn(TMP::Sequence<S...>, const std::vector<Data> &data) const {
-					assert(data.size()==sizeof...(S) && 
-					"Size of data does not match to the number of parameters!");
+					ASSERT(data.size()==sizeof...(S), String::Concat("Size of data (",
+						data.size() ,") does not match to the number of parameters (",
+						sizeof...(S),")!"), 5, 2);
 					
 					auto fn = std::get<variant>(fns);
 					
@@ -225,8 +226,9 @@ namespace Gorgon {
 				template<class R_, int variant, int ...S>
 				typename std::enable_if<!std::is_same<R_, void>::value && traitsof<0>::IsMember, Data>::type 
 				callfn(TMP::Sequence<S...>, const std::vector<Data> &data) const {
-					assert(data.size()==sizeof...(S) && 
-					"Size of data does not match to the number of parameters!");
+					ASSERT(data.size()==sizeof...(S), String::Concat("Size of data (",
+						data.size() ,") does not match to the number of parameters (",
+						sizeof...(S),")!"), 5, 2);
 					
 					auto fn = std::get<variant>(fns);
 					
@@ -244,8 +246,9 @@ namespace Gorgon {
 				template<class R_, int variant, int ...S>
 				typename std::enable_if<std::is_same<R_, void>::value && !traitsof<0>::IsMember, Data>::type 
 				callfn(TMP::Sequence<S...>, const std::vector<Data> &data) const {
-					assert(data.size()==sizeof...(S) && 
-					"Size of data does not match to the number of parameters!");
+					ASSERT(data.size()==sizeof...(S), String::Concat("Size of data (",
+						data.size() ,") does not match to the number of parameters (",
+						sizeof...(S),")!"), 5, 2);
 					
 					auto fn = std::get<variant>(fns);
 					
@@ -257,8 +260,9 @@ namespace Gorgon {
 				template<class R_, int variant, int ...S>
 				typename std::enable_if<!std::is_same<R_, void>::value && !traitsof<0>::IsMember, Data>::type 
 				callfn(TMP::Sequence<S...>, const std::vector<Data> &data) const {
-					assert(data.size()==sizeof...(S) && 
-					"Size of data does not match to the number of parameters!");
+					ASSERT(data.size()==sizeof...(S), String::Concat("Size of data (",
+						data.size() ,") does not match to the number of parameters (",
+						sizeof...(S),")!"), 5, 2);
 					
 					auto fn = std::get<variant>(fns);
 					
@@ -283,7 +287,7 @@ namespace Gorgon {
 				/// Expand all variants and chooses the correct one call
 				template<int ...variants>
 				Data expandvariants(TMP::Sequence<variants...>, int variant, const std::vector<Data> &data) const {
-					assert(variant<sizeof...(Fns_) && "Variant number is out of bounts");
+					ASSERT(variant<sizeof...(Fns_) , "Missing parameter", 3, 2);
 					typedef Data(fnstorageimpl::*calltype)(const std::vector<Data>&) const;
 					static calltype list[]={&fnstorageimpl::callvariant<variants>...};
 					return (this->*list[variant])(data);
@@ -303,12 +307,12 @@ namespace Gorgon {
 			};
 			
 			void initmethods(std::tuple<> methods) {
-				assert(!HasMethod() && "Method implementation is missing");
+				ASSERT(!HasMethod() , "Method implementation is missing", 2,2);
 			}
 			
 			template<class ...T_>
 			void initmethods(std::tuple<T_...> methods) {
-				assert(HasMethod() && "MethodTag is missing");
+				ASSERT(HasMethod() , "MethodTag is missing", 2,2);
 				
 				this->methods  =new fnstorageimpl<T_...>(*this, methods);
 			}
@@ -328,21 +332,22 @@ namespace Gorgon {
 				
 				if(returntype) {
 					using fn = typename fnstorageimpl<Fns1_...>::template traitsof<0>;
-					assert(returntype->GetDefaultValue().TypeCheck<typename fn::ReturnType>() && 
-						"Function return type does not match with designated return type");
+					ASSERT(returntype->GetDefaultValue().TypeCheck<typename fn::ReturnType>(), 
+						"Function return type does not match with designated return type", 1, 2);
 				}
 				
-				assert(
+				ASSERT(
 					(
 						std::is_same<typename fnstorageimpl<Fns1_...>::template traitsof<0>::ReturnType, void>::value == 
 						(returntype==nullptr)
-					) && 
-					"The given function does not return a value, however, a type has been specified as return type."
+					),
+					"The given function does not return a value, however, a type has been specified as return type.",
+					1, 2
 				);
 				
-				assert( (!IsOperator() || parent ) && "All operators should be a member function" );
+				ASSERT((!IsOperator() || parent ) , "All operators should be a member function" , 1, 2);
 				
-				assert(this->HasMethod()==(bool)method && "MethodTag and method parameter must match");
+				ASSERT(this->HasMethod()==(bool)method , "MethodTag and method parameter must match", 1, 2);
 				overrideablechecks();
 			}
 			
@@ -371,7 +376,7 @@ namespace Gorgon {
 			
 		protected:
 			virtual void overrideablechecks() const {
-				assert(!IsScoped() && "Regular embedded functions cannot be scoped keywords");
+				ASSERT(!IsScoped() , "Regular embedded functions cannot be scoped keywords", 2, 2);
 			}
 			
 		private:
@@ -419,7 +424,7 @@ namespace Gorgon {
 			
 		protected:
 			virtual void overrideablechecks() const override {
-				assert(!IsRedirecting() && "Regular scoped keyword functions cannot be redirecting");
+				ASSERT(!IsRedirecting() , "Regular scoped keyword functions cannot be redirecting", 2, 2);
 			}
 			
 			/// The function that will be called at the end of the scope

@@ -24,8 +24,6 @@ namespace Gorgon {
 				
 				std::string name=message.substr(mangledbegin+1, mangledend-mangledbegin-1);
 				
-				if(name=="") continue;
-				
 				int status;
 				char *demangled = abi::__cxa_demangle(name.c_str(), 0, 0, &status);
 				
@@ -66,7 +64,7 @@ namespace Gorgon {
 					}
 
 					int linenum = String::To<int>(data.substr(pos+1, end-pos-1));
-					if(String::Trim(filename)=="" || linenum==0) continue;
+					//if(String::Trim(filename)=="" || linenum==0) continue;
 					
 					//last directory before filename
 					std::string dir=Filesystem::GetDirectory(filename);
@@ -76,11 +74,24 @@ namespace Gorgon {
 					dir=Filesystem::GetFile(dir);
 					filename=Filesystem::GetFile(filename);
 					
-					std::cout<<"  In function ";
-					Console::SetColor(Console::Yellow);
-					std::cout<<name<<" at ";
+					Console::SetColor(Console::Magenta);
+					if((i-skip-1)==1) {
+						Console::SetBold();
+					}
+					std::cout<<"  ["<<(i-skip-1)<<"] ";
+					Console::SetBold(false);
 					Console::SetColor(Console::Default);
-					std::cout<<" at "<<"..."<<dir<<"/"<<filename;
+					if(name!="") {
+						std::cout<<"In function ";
+						Console::SetColor(Console::Yellow);
+						std::cout<<name<<" ";
+					}
+					Console::SetColor(Console::Default);
+					std::cout<<"at ";
+					if((i-skip-1)==1) {
+						Console::SetColor(Console::Red);
+					}
+					std::cout<<"..."<<dir<<"/"<<filename;
 					Console::SetBold();
 					std::cout<<":"<<linenum<<std::endl;
 					Console::Reset();
@@ -97,7 +108,7 @@ namespace Gorgon {
 					//execlp("pwd", "pwd", nullptr);
 					execlp("addr2line", "addr2line", ptr, "-e", Filesystem::ApplicationPath().c_str(),nullptr);
 					
-					perror("wha?");
+					perror("Addr2line is not installed.");
 					
 					exit(0);
 				}

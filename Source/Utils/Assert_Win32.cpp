@@ -1597,11 +1597,24 @@ namespace Gorgon {
 				dir = Filesystem::GetFile(dir);
 				filename = Filesystem::GetFile(filename);
 
-				std::cout << "  In function ";
-				Console::SetColor(Console::Yellow);
-				std::cout << walker.Stack[i].function;
+				Console::SetColor(Console::Magenta);
+				if((i-skip-1)==1) {
+					Console::SetBold();
+				}
+				std::cout<<"  ["<<(i-skip-1)<<"] ";
+				Console::SetBold(false);
 				Console::SetColor(Console::Default);
-				std::cout << " at " << "..." << dir << "/" << filename;
+				if(walker.Stack[i].function!="") {
+					std::cout << "  In function ";
+					Console::SetColor(Console::Yellow);
+					std::cout << walker.Stack[i].function<<" ";
+				}
+				Console::SetColor(Console::Default);
+				std::cout << "at ";
+				if((i-skip-1)==1) {
+					Console::SetColor(Console::Red);
+				}
+				std::cout << "..." << dir << "/" << filename;
 				Console::SetBold();
 				std::cout << ":" << walker.Stack[i].line << std::endl;
 				Console::Reset();

@@ -10,6 +10,8 @@
 #include "../Containers/Hashmap.h"
 #include "../Any.h"
 
+#include "../Utils/Assert.h"
+
 namespace Gorgon {
 	
 	namespace Scripting {
@@ -98,7 +100,7 @@ namespace Gorgon {
 			Parameter(const std::string &name, const std::string &help, const Type *type, 
 					 OptionList options, Params_ ...tags) : 
 			name(name), type(type), help(help), Options(std::move(options)) {
-				assert(type!=nullptr && "Parameter type cannot be nullptr");
+				ASSERT((type!=nullptr), "Parameter type cannot be nullptr", 1, 2);
 				
 				UnpackTags(tags...);
 			}
@@ -187,7 +189,7 @@ namespace Gorgon {
 						input=false;
 						break;
 					default:
-						assert(false && "Unknown tag");
+						ASSERT(false, "Unknown tag", 2, 16);
 				}
 				UnpackTags(tags...);
 			}
@@ -301,7 +303,7 @@ namespace Gorgon {
 			/// Returns the return type of this function. This value can be null, therefore, it should
 			/// be checked before it is retrieved
 			const Type &GetReturnType() const {
-				assert(returntype && "This function does not have a return type");
+				ASSERT(returntype, "This function does not have a return type", 1, 2);
 				return *returntype;
 			}
 			
@@ -364,7 +366,7 @@ namespace Gorgon {
 			/// If this function is a member function, returns the owner object. If this function is not a
 			/// member function, this function crashes.
 			const Type &GetOwner() const {
-				assert(parent && "This class does not gave an owner.");
+				ASSERT(parent, "This class does not gave an owner.", 1,2);
 				
 				return *parent;
 			}
@@ -460,7 +462,7 @@ namespace Gorgon {
 						assert(!staticmember && "Cannot be static operator");
 						break;
 					default:
-						assert(false && "Unknown tag");
+						ASSERT(false, "Unknown tag", 2, 16);
 				}
 				
 				UnpackTags(rest...);
@@ -626,7 +628,7 @@ namespace Gorgon {
 						staticmember = true;
 						break;
 					default:
-						assert(false && "Unknown tag");
+						ASSERT(false, "Unknown tag", 2, 16);
 				}
 				
 				UnpackTags(rest...);
@@ -742,8 +744,9 @@ namespace Gorgon {
 				for(auto element : elements) {
 					functions.Add(element);
 
-					assert(element->parent==this && 
-						   "This type should be listed as the parent of this function"
+					ASSERT(element->parent==this,
+						   "This type should be listed as the parent of this function", 
+							1, 2
 					);
 				}
 			}
@@ -753,8 +756,9 @@ namespace Gorgon {
 				for(auto element : elements) {
 					constructors.Add(element);
 
-					assert(element->parent==this && 
-						   "This type should be listed as the parent of this function"
+					ASSERT(element->parent==this,
+						   "This type should be listed as the parent of this function", 
+							1, 2
 					);
 				}
 			}
@@ -807,7 +811,7 @@ namespace Gorgon {
 						referencetype=true;
 						break;
 					default:
-						assert(false && "Unknown tag");
+						ASSERT(false, "Unknown tag", 1, 2);
 				}
 				
 				UnpackTags(rest...);

@@ -6,6 +6,12 @@
 
 namespace Gorgon {
 	namespace Utils {
+		
+		/// Only works when TEST is defined
+		class AssertationException : public std::runtime_error {
+		public:
+			using std::runtime_error::runtime_error;
+		};
 
 		/// @cond INTERNAL
 		class CrashHandler {
@@ -63,7 +69,11 @@ namespace Gorgon {
 				
 				Console::Reset();
 				
-				exit(0);
+#ifdef TEST
+				throw AssertationException(message);
+#else
+				exit(1);
+#endif
 			}
 			
 #define gorgon_makeoperator(op) \
@@ -111,6 +121,10 @@ namespace Gorgon {
 		};
 		/// @endcond
 		
+#ifdef NDEBUG
+	#define ASSERT(...)
+	#define ASSERT_ALL(...)
+#else
 		/** 
 		 * Replaces regular assert to allow messages and backtrace. Has four additional parameters:
 		 * skip, which controls how many entries should be skipped from the start in backtrace and
@@ -130,6 +144,6 @@ namespace Gorgon {
 		 */
 		#define ASSERT_ALL(expression, message, ...) do { if(!bool(expression)) { \
 			(Gorgon::Utils::CrashHandler(1, #expression, message, ##__VA_ARGS__) < expression); } } while(0)
-		
+#endif
 	}
 }

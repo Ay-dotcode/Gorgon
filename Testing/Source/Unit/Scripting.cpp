@@ -156,7 +156,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 				myfloattype
 			}
 		},
-		myvaluetype, //member ofmytype
+		myvaluetype, //member of
 		MappedFunctions(&A::b), MappedMethods()
 	};
 	

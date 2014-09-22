@@ -104,7 +104,7 @@ namespace Gorgon {
 			
 			/// Any constructor. Allows both data and type to be specified
 			Data(const Type *type, Any data) : type(type), data(data) {
-				assert(type!=nullptr && "Data type cannot be nullptr");
+				ASSERT( (type!=nullptr), "Data type cannot be nullptr", 1, 2);
 			}
 			
 			/// Default value constructor. Value of the data is determined from the type
@@ -124,7 +124,7 @@ namespace Gorgon {
 			
 			/// Returns the type of the data
 			const Type &GetType() const {
-				assert(type && "Type is not set");
+				ASSERT(type, "Type is not set", 1, 2);
 				
 				return *type;
 			}

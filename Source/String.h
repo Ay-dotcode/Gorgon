@@ -415,9 +415,9 @@ namespace Gorgon {
 			};
 
 			template<class TT>
-			static one test(typename decltype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one; }
+			static one test(decltype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one(); }
 			
-			static two test(...)  { return two;  }
+			static two test(...)  { return two();  }
 						
 		public:
 			static const bool Value = sizeof( test(*(std::ostream*)nullptr) );
@@ -439,7 +439,7 @@ namespace Gorgon {
 			static const bool Value = 
 				IsStreamable<T_>::Value || 
 				internal::has_stringoperator<T_>::value || 
-				decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum;
+				decltype(gorgon__enum_trait_locator(typename std::decay<T_>::type()))::isupgradedenum;
 		};
 		
 		/// Streams the given parameters into a stringstream and returns the result, effectively
