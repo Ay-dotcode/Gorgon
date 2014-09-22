@@ -223,6 +223,12 @@ namespace Gorgon { namespace Filesystem {
 		return GetDirectory(path);
 	}
 	
+	std::string ApplicationPath() {
+		std::string path=Canonical("/proc/self/exe");
+		
+		return path;
+	}
+	
 	std::vector<EntryPoint> EntryPoints() {
 		std::vector<EntryPoint> entries;
 		

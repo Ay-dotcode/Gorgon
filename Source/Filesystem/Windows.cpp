@@ -169,16 +169,27 @@ namespace Gorgon { namespace Filesystem {
 	bool Move(const std::string &source, const std::string &target) {
 		return MoveFile(source.c_str(), target.c_str())!=0;
 	}
-
+	
 	std::string ApplicationDirectory() {
 		HMODULE hModule = GetModuleHandle(NULL);
 		char path[MAX_PATH];
 		GetModuleFileName(hModule, path, MAX_PATH);
-
+		
 		std::string dir=path;
 		fixwinslashes(dir);
-
+		
 		return GetDirectory(dir);
+	}
+	
+	std::string ApplicationPath() {
+		HMODULE hModule = GetModuleHandle(NULL);
+		char path[MAX_PATH];
+		GetModuleFileName(hModule, path, MAX_PATH);
+		
+		std::string dir=path;
+		fixwinslashes(dir);
+		
+		return dir;
 	}
 	
 	std::vector<EntryPoint> EntryPoints() {
