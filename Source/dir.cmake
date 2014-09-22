@@ -30,4 +30,8 @@ SET(Local
 	Window.h
 	Window.cpp
 )
-
+IF(${WIN32})
+	LIST(APPEND Local
+		Console_Win32.cpp
+	)
+ENDIF()

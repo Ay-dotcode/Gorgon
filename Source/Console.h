@@ -39,17 +39,14 @@ namespace Gorgon {
 		
 		/// Sets terminal font to bold or normal
 		void SetBold(bool bold=true, std::ostream &stream=std::cout);
-		
-		/// Enable/disable blink (note: annoying)
-		void SetBlink(bool blink=true, std::ostream &stream=std::cout);
-		
-		/// Enable/disable underline
+				
+		/// Enable/disable underline. Not all consoles support underline
 		void SetUnderline(bool underline=true, std::ostream &stream=std::cout);
 		
-		/// Enable/disable italic
+		/// Enable/disable italic. Not all consoles support italic
 		void SetItalic(bool italic=true, std::ostream &stream=std::cout);
 		
-		/// Background/foreground is switched
+		/// Background/foreground is switched.
 		void SetNegative(bool negative=true, std::ostream &stream=std::cout);		
 		
 		
@@ -159,16 +156,7 @@ namespace Gorgon {
 			else
 				stream<<"\033[22m";
 		}
-		
-		inline void SetBlink(bool blink, std::ostream &stream) {
-			if(!IsStylesSupported()) return;
-			
-			if(blink)
-				stream<<"\033[5m";
-			else
-				stream<<"\033[25m";
-		}
-		
+				
 		inline void SetUnderline(bool underline, std::ostream &stream) {
 			if(!IsStylesSupported()) return;
 			
@@ -195,7 +183,7 @@ namespace Gorgon {
 			else
 				stream<<"\033[27m";
 		}
-#else
+#elif !WIN32
 		bool IsColorSupported() { return false; }
 		
 		bool IsStylesSupported() { return false; }
@@ -206,15 +194,13 @@ namespace Gorgon {
 
 		void Reset(std::ostream &stream) { }
 
-		void SetBold(bool bold=true, std::ostream &stream) { }
+		void SetBold(bool bold, std::ostream &stream) { }
+		
+		void SetUnderline(bool underline, std::ostream &stream) { }
 
-		void SetBlink(bool blink=true, std::ostream &stream) { }
+		void SetItalic(bool italic, std::ostream &stream) { }
 
-		void SetUnderline(bool underline=true, std::ostream &stream) { }
-
-		void SetItalic(bool italic=true, std::ostream &stream) { }
-
-		void SetNegative(bool negative=true, std::ostream &stream) { }
+		void SetNegative(bool negative, std::ostream &stream) { }
 #endif
 		
 	}
