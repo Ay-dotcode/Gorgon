@@ -1,9 +1,9 @@
 #include "../Scripting.h"
 #include "Reflection.h"
+#include "VirtualMachine.h"
+#include "Embedding.h"
 
 namespace Gorgon { namespace Scripting {
-	
-	Containers::Hashmap<std::thread::id, VirtualMachine> VirtualMachine::activevms;
 	
 	Data::Data(Type& type) : type(&type) {
 		data = type.GetDefaultValue();
@@ -18,5 +18,12 @@ namespace Gorgon { namespace Scripting {
 	void Function::CallRedirect(Data,std::string &) const { 
 		assert( false && "Redirect call on a non-redirecting function");
 	}
+	
+	Data GetVariableValue(const std::string &varname) { throw 0; }
+	
+	MappedValueType<Data, String::From<Data>, GetVariableValue> Variant = {"Variant", 
+		"This type can contain any type.",
+		Data::Invalid()
+	};
 	
 } }

@@ -21,8 +21,8 @@ namespace Gorgon {
 		class ConsoleInput : public InputProvider {
 		};
 		
-		/// Reads lines from the file
-		class FileInput : public InputProvider {
+		/// Reads lines from a stream
+		class StreamInput : public InputProvider {
 		};
 		
 		/// This class represents a logical line
@@ -41,7 +41,7 @@ namespace Gorgon {
 		public:
 			
 			/// Constructor requires a input provider
-			InputSource(InputProvider &provider);
+			InputSource(InputProvider &provider, const std::string &name);
 			
 			
 			

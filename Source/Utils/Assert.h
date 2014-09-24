@@ -28,13 +28,13 @@ namespace Gorgon {
 			}
 		public:
 			CrashHandler(const std::string &expression, const std::string &message, int skip=1, 
-						 int depth=1, bool se=false, bool so=false) :
+						 int depth=4, bool se=false, bool so=false) :
 				original(expression), message(message), skip(skip), depth(depth),
 				show_expanded(se), show_original(so)
 			{
 			}
 			CrashHandler(int, const std::string &expression, const std::string &message, int skip=1, 
-						 int depth=1, bool se=true, bool so=true) :
+						 int depth=4, bool se=true, bool so=true) :
 				original(expression), message(message), skip(skip), depth(depth),
 				show_expanded(se), show_original(so)
 			{
@@ -130,7 +130,7 @@ namespace Gorgon {
 		 * skip, which controls how many entries should be skipped from the start in backtrace and
 		 * depth to control how many entries should be shown in backtrace. Third parameter is to show
 		 * expanded expression. Fourth decides if the original expression should be displayed
-		 * skip defaults to 1, depth defaults to 1, expanded defaults to false, original defaults to false
+		 * skip defaults to 1, depth defaults to 4, expanded defaults to false, original defaults to false
 		 */
 		#define ASSERT(expression, message, ...) do { if(!bool(expression)) { \
 			(Gorgon::Utils::CrashHandler(#expression, message, ##__VA_ARGS__) < expression); } } while(0)
@@ -140,7 +140,7 @@ namespace Gorgon {
 		 * skip, which controls how many entries should be skipped from the start in backtrace and
 		 * depth to control how many entries should be shown in backtrace. Third parameter is to show
 		 * expanded expression. Fourth decides if the original expression should be displayed
-		 * skip defaults to 1, depth defaults to 1, expanded defaults to true, original defaults to true
+		 * skip defaults to 1, depth defaults to 4, expanded defaults to true, original defaults to true
 		 */
 		#define ASSERT_ALL(expression, message, ...) do { if(!bool(expression)) { \
 			(Gorgon::Utils::CrashHandler(1, #expression, message, ##__VA_ARGS__) < expression); } } while(0)

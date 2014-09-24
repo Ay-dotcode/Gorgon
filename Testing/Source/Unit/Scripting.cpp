@@ -23,6 +23,9 @@ void TestFn_1(int a) {
 
 class A {
 public:
+	A() { }
+	explicit A(const std::string &) {}
+	
 	int a() {
 		return 42;
 	}
@@ -30,15 +33,19 @@ public:
 	int b(float a) {
 		return 42*a;
 	}
+	
+	explicit operator std::string() const {
+		return "A";
+	}
 };
 
 
 TEST_CASE("Basic scripting", "[firsttest]") {
 	
-	auto mytype=new Type("mytype", "test type", Any(0));
-	auto myfloattype=new Type("myfloattype", "test type", Any(0.0f));
-	auto myvaluetype = new Type("myvaluetype", "test type", Any(A()));
-	auto myreftype=new Type("myreftype", "test type", Any((A*)nullptr), ReferenceTag);
+	auto mytype=new MappedValueType<int>("mytype", "test type");
+	auto myfloattype=new MappedValueType<float>("myfloattype", "test type");
+	auto myvaluetype = new MappedValueType<A>("myvaluetype", "test type");
+	auto myreftype=new MappedReferenceType<A>("myreftype", "test type");
 	
 	
 	const Parameter param1("name", "heeelp", mytype, OutputTag);

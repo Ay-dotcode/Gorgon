@@ -9,8 +9,9 @@
 #include "../Containers/Collection.h"
 #include "../Containers/Hashmap.h"
 #include "../Any.h"
-
 #include "../Utils/Assert.h"
+
+#include "Data.h"
 
 namespace Gorgon {
 	
@@ -538,8 +539,8 @@ namespace Gorgon {
 		public:
 			/// Constructor
 			Constant(const std::string &name, const std::string &help, 
-					 const Type &type, const Any &value) : 
-			name(name), help(help), type(&type), value(value) { }
+					 const Data &data) : 
+			name(name), help(help), data(data) { }
 			
 			/// Returns the name of the constant
 			std::string GetName() const {
@@ -553,12 +554,12 @@ namespace Gorgon {
 			
 			/// Returns the type of the constant
 			const Type &GetType() const {
-				return *type;
+				return data.GetType();
 			}
 			
 			/// Returns the value of the constant
-			Any GetValue() const {
-				return value;
+			Data GetData() const {
+				return data;
 			}
 			
 		private:
@@ -569,9 +570,8 @@ namespace Gorgon {
 			/// Help string of the constant
 			std::string help;
 			
-			const Type *type;
 			
-			Any value;
+			Data data;
 		};
 		
 		using ConstantList = Containers::Hashmap<std::string, const Constant, &Constant::GetName>;
@@ -704,13 +704,11 @@ namespace Gorgon {
 		public:
 			
 			/// Constructor, unlike other reflection objects, Type is not constructed fully.
-			template<class ...P_>
-			Type(const std::string &name, const std::string &help, Any defaultvalue, P_ ...tags) :
+			Type(const std::string &name, const std::string &help, Any defaultvalue, bool isref) :
 			name(name), help(help), DataMembers(datamembers), Functions(functions), Constructors(constructors),
-			Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue)
-			{
-				UnpackTags(tags...);
-			}			
+			Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue), 
+			referencetype(isref)
+			{ }			
 			
 			/// Returns the name of this type.
 			std::string GetName() const {
@@ -777,6 +775,13 @@ namespace Gorgon {
 				}
 			}
 			
+			/// Converts a data of this type to string. This function should never throw, if there is
+			/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
+			virtual std::string ToString(const Data &) const = 0;
+			
+			/// Parses a string into this data. This function is allowed to throw.
+			virtual Data Parse(const std::string &) const = 0;
+			
 			
 			/// Data members of this type. Notice that not every type has data members.
 			const DataMemberList					&DataMembers;
@@ -801,23 +806,6 @@ namespace Gorgon {
 			const Containers::Hashmap<std::string, const Type, &Type::GetName> &InheritsFrom;
 			
 		private:
-			/// @cond INTERNAL
-			void UnpackTags() { }
-			
-			template <class ...P_>
-			void UnpackTags(Tag tag, P_... rest) {
-				switch(tag) {
-					case ReferenceTag:
-						referencetype=true;
-						break;
-					default:
-						ASSERT(false, "Unknown tag", 1, 2);
-				}
-				
-				UnpackTags(rest...);
-			}
-			/// @endcond
-			
 			std::string name;
 			
 			std::string help;

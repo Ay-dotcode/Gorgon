@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include "Reflection.h"
+#include "VirtualMachine.h"
 #include "../Scripting.h"
 #include "../TMP.h"
 
@@ -14,11 +15,84 @@ namespace Gorgon {
 	
 	namespace Scripting {
 		
+		/**
+		 * This class allows embedded types to become scripting types that are passed around
+		 * as values. This class requires T_ to be copy constructable.
+		 */
+		template <
+			class T_, 
+			std::string(*ToString_)(const T_ &)=&String::From<T_>, 
+			T_(*Parse_)(const std::string &)=&String::To<T_>
+		>
+		class MappedValueType : public Type {
+		public:
+			MappedValueType(const std::string &name, const std::string &help, const T_ &def) :
+			Type(name, help, def, false)
+			{
+			}
+			
+			MappedValueType(const std::string &name, const std::string &help) : MappedValueType(name, help, T_()) {
+			}
+			
+			
+			/// Converts a data of this type to string. This function should never throw, if there is
+			/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
+			virtual std::string ToString(const Data &data) const override {
+				return ToString_(data.GetValue<T_>());
+			}
+			
+			/// Parses a string into this data. This function is allowed to throw.
+			virtual Data Parse(const std::string &str) const override {
+				return Data(this, Parse_(str));
+			}			
+		};
+		
+		template<class T_>
+		T_ ParseThrow(const std::string &) { throw std::runtime_error("This type cannot be parsed."); }
+		
+		/**
+		 * This class allows embedded types to become scripting types that are passed around
+		 * as references. Parsing requires a pointer, therefore, a regular parse function will not
+		 * be sufficient. Default parsing function throws.
+		 */
+		template <
+		class T_, 
+		std::string(*ToString_)(const T_ &)=&String::From<T_>, 
+		T_*(*Parse_)(const std::string &)=&ParseThrow<T_*>
+		>
+		class MappedReferenceType : public Type {
+		public:
+			MappedReferenceType(const std::string &name, const std::string &help, T_ *def) :
+			Type(name, help, def, true)
+			{
+			}
+			
+			MappedReferenceType(const std::string &name, const std::string &help) : MappedReferenceType(name, help, nullptr) {
+			}
+			
+			
+			/// Converts a data of this type to string. This function should never throw, if there is
+			/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
+			virtual std::string ToString(const Data &data) const override {
+				return ToString_(*data.GetValue<T_*>());
+			}
+			
+			/// Parses a string into this data. This function is allowed to throw.
+			virtual Data Parse(const std::string &str) const override {
+				return Data(this, Parse_(str));
+			}			
+		};
+		
+		Data GetVariableValue(const std::string &varname);
+		extern MappedValueType<Data, String::From<Data>, GetVariableValue> Variant;
+		
+		/// Can be used to combine mapped functions.
 		template <class ...T_>
 		std::tuple<T_...> MappedFunctions(T_...args) {
 			return std::make_tuple(args...);
 		}
 		
+		/// Can be used to combine mapped methods
 		template <class ...T_>
 		std::tuple<T_...> MappedMethods(T_...args) {
 			return std::make_tuple(args...);
@@ -59,6 +133,9 @@ namespace Gorgon {
 								ASSERT((parent.GetParent().GetDefaultValue().TypeCheck<paramof<level, param>>()) , "Function parameter type and designated type does not match.", 5, 2);
 							}
 						}
+						else if(parent.Parameters[param-1].IsReference()) {
+							ASSERT((std::is_same<paramof<level, param>, std::string>::value) , "Function parameter type and designated type does not match, reference parameters are accessed as std::string variables", 5, 2);
+						}
 						else {
 							ASSERT((parent.Parameters[param-1].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) , "Function parameter type and designated type does not match.", 5, 2);
 						}
@@ -66,6 +143,9 @@ namespace Gorgon {
 					else {
 						if(param==0 && traitsof<0>::IsMember && !parent.Parameters[param].GetType().IsReferenceType()) {
 							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , "Function parameter type and designated type does not match.", 5, 2);
+						}
+						else if(parent.Parameters[param].IsReference()) {
+							ASSERT((std::is_same<paramof<level, param>, std::string>::value) , "Function parameter type and designated type does not match, reference parameters are accessed as std::string variables", 5, 2);
 						}
 						else {
 							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) , "Function parameter type and designated type does not match.", 5, 2);
@@ -389,11 +469,6 @@ namespace Gorgon {
 			fnstorage *methods=nullptr;
 		};
 		
-		
-		Type Variant = {"Variant", 
-			"This type can contain any type to be casted to any requested type.",
-			Any(Data::Invalid())
-		};
 		
 		/**
 		 * Scoped keyword helps to build scoped keywords from embedded functions.
