@@ -23,9 +23,13 @@ namespace Gorgon {
 		 * to create a copy. Hashmap uses move semantics and can be returned from functions
 		 * by value even though copy construction is disabled. Last template parameter can
 		 * be replaced by unsorted_map. Currently Hashmap does not allow the use of multi-maps.
+		 * @warning This container uses value iterator which does not have -> operator
+		 * and might not be compatible with all library functions. * operator returns a copy
+		 * of the pair, not a reference to it.
 		 */
 		template<class K_, class T_, K_ (T_::*KeyFn)() const = nullptr, template <class ...> class M_=std::map>
 		class Hashmap {
+			using MapType=M_<K_, T_*, std::less<K_>, std::allocator<std::pair<const K_, T_*>>>;
 			
 			/// Iterators are derived from this class. Any operations on uninitialized iterators
 			/// is undefined behavior.
@@ -84,7 +88,7 @@ namespace Gorgon {
 				}
 				
 			protected:
-				Iterator_(H_ &container, I_ iterator) : container(&container), currentit(iterator) {
+				Iterator_(H_ &container, const I_ iterator) : container(&container), currentit(iterator) {
 				}
 				
 			protected:
@@ -148,7 +152,7 @@ namespace Gorgon {
 					return *this;
 				}
 				
-			private:
+			protected:
 				I_ currentit;
 				H_ *container = nullptr;
 			};
@@ -164,18 +168,18 @@ namespace Gorgon {
 			typedef Iterator_<typename std::map<K_, T_*>::iterator, Hashmap> Iterator;
 			
 			/// Const iterator allows iteration of const collections
-			class ConstIterator : public Iterator_<typename std::map<K_, T_*>::iterator, const Hashmap> {
+			class ConstIterator : public Iterator_<typename MapType::const_iterator, const Hashmap> {
 				friend class Hashmap;
 			public:
 				///Regular iterators can be converted to const iterators
 				ConstIterator(const Iterator &it) {
-					this->Col=it.Col;
-					this->Offset=it.Offset;
+					this->currentit=it.currentit;
+					this->container=it.container;
 				}
 				
 			private:
-				ConstIterator(const Hashmap &h, typename std::map<K_, T_*>::iterator it) : 
-				Iterator_<typename std::map<K_, T_*>::iterator, const Hashmap>(h, it) {
+				ConstIterator(const Hashmap &h, const typename MapType::const_iterator it) : 
+				Iterator_<typename MapType::const_iterator, const Hashmap>(h, it) {
 				}
 				
 				void Remove() {}
@@ -394,6 +398,18 @@ namespace Gorgon {
 				return mapping.count(key)!=0;
 			}
 			
+			/// Finds the given key in the hashmap and returns iterator for it. An !IsValid() iterator
+			/// is returned if item is not found
+			Iterator Find(const K_ &key) {
+				return Iterator(*this, mapping.find(key));
+			}
+			
+			/// Finds the given key in the hashmap and returns iterator for it. An !IsValid() iterator
+			/// is returned if item is not found
+			ConstIterator Find(const K_ &key) const {
+				return ConstIterator(*this, mapping.find(key));
+			}
+			
 			/// @name Iterator related
 			/// @{
 			/// begin iterator
@@ -441,7 +457,7 @@ namespace Gorgon {
 			
 		private:
 			
-			M_<K_, T_*, std::less<K_>, std::allocator<std::pair<const K_, T_*>>> mapping;
+			MapType mapping;
 		};
 		
 		template<class K_, class T_, K_ (T_::*KeyFn)(), template <class ...> class M_=std::map>
