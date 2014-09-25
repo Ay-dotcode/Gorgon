@@ -368,7 +368,7 @@ namespace Gorgon {
 				mapping.clear();
 			}
 			
-			/// Deletes and remoInstead, Duplicateves all the elements of this map, in addition to destroying data used.
+			/// Deletes and removes all the elements of this map, in addition to destroying data used.
 			void Destroy() {
 				for(auto &p : mapping) {
 					delete p.second;

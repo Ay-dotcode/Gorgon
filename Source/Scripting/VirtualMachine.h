@@ -31,7 +31,9 @@ namespace Gorgon {
 			VirtualMachine(bool automaticreset=true, std::ostream &out=std::cout, std::istream &in=std::cin) : 
 			Libraries(libraries), output(&out), input(&in), 
 			defoutput(&out), definput(&in), automaticreset(automaticreset)
-			{ }
+			{ 
+				variablescopes.AddNew("[main]", VariableScope::DefaultLocal);
+			}
 			
 			/// Executes a single statement in this virtual machine. This operation will create a new
 			/// input scope and will not affect current scope
@@ -70,7 +72,7 @@ namespace Gorgon {
 			const Constant &FindConstant(const std::string &name, const std::string &namespc="");
 			
 			/// Sets the input source to read code lines from
-			void SetSource(InputSource &source);
+			void AddInputSource(InputSource &source);
 			
 			/// Returns the current VM for this thread.
 			static VirtualMachine &Get() {
@@ -117,6 +119,13 @@ namespace Gorgon {
 				activevms.Add(std::this_thread::get_id(), this);
 			}
 			
+			/// Returns the name of the current variable scope. This could be a function name or
+			/// [main] if no function is yet called. Embedded functions do not have their own
+			/// variable scopes, therefore, this function will return the encompassing scope.
+			std::string GetVariableScopeName() const {
+				return variablescopes.Last()->GetName();
+			}
+			
 			/// Resets any runtime information that this VM has. This includes all scopes and global
 			/// variables
 			void Reset();
@@ -137,9 +146,14 @@ namespace Gorgon {
 			bool automaticreset;
 
 			
-			Containers::Collection<KeywordScope> keywordscopes;
-			Containers::Collection<InputScope> inputscopes;
-			Containers::Collection<VariableScope> variablescopes;
+			Containers::Collection<KeywordScope> 	keywordscopes;
+			Containers::Collection<ExecutionScope> 	executionscopes;
+			Containers::Collection<VariableScope> 	variablescopes;
+			
+			Containers::Collection<InputSource>		inputsources;
+			
+			std::map<std::string, Variable> 					 globalvariables;
+			std::map<Function*, std::map<std::string, Variable>> staticvariables;
 			
 			std::ostream *output;
 			std::istream *input;
@@ -148,7 +162,7 @@ namespace Gorgon {
 			std::istream *definput;
 			
 			/// List of active VMs. A VM can be active on more than one thread. But it cannot
-			/// execute two different contexes.
+			/// execute two different contexts.
 			static Containers::Hashmap<std::thread::id, VirtualMachine> activevms;
 		};
 		

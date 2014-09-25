@@ -1,7 +1,9 @@
 #pragma once
 
+#include <stdint.h>
 #include <string>
 #include <vector>
+#include "../String.h"
 
 namespace Gorgon {
 	
@@ -29,36 +31,75 @@ namespace Gorgon {
 		class Line {
 		public:
 			std::string Data;
-			unsigned long FromStart;
+			
+			unsigned long Physical;
+			unsigned long Logical;
 		};
-		
-		/// Base class for input sources. This system allows different input sources to supply 
-		/// code to virtual machine. Each input source has its own line numbering, a name and
-		/// an index to identify it. For instance if the same file is read twice, first one will
-		/// be named as file.gs#1 and the other will be file.gs#2. This module also handles
-		/// logical line/physical line separation.
+
+		/** 
+		 * Base class for input sources. This system allows different input sources to supply 
+		 * code to virtual machine. When source code is loaded into virtual machine, it stays
+		 * until that all execution scopes that are operating in that inputscope is finished.
+		 * This allows faster processing for loops. Additionally, function and similar keywords
+		 * can store their data in their own inputsources
+		 */
 		class InputSource {
 		public:
 			
-			/// Constructor requires a input provider
+			/// Constructor requires an input provider and a name to define this input source
 			InputSource(InputProvider &provider, const std::string &name);
 			
-			
+			bool GetLine(unsigned long line, std::string &data) {
+				bool eof=false;
+
+				while(lines.size()<=line && !eof) {
+					std::string newline;
+					
+					while(true) {
+						std::string s;
+						if(!provider.ReadLine(s)) {
+							eof=true;
+							break;
+						}
+						pline++;
+						
+						//TODO offset
+						s=String::TrimStart(s);
+						
+						// remove comment lines
+						if(s[0]=='#') continue;
+						
+						newline+=s;
+						
+						//TODO check if newline is a complete line
+						if(true)
+							break;
+					}					
+					
+					while(newline!="") {
+						//TODO parse newline if necessary split to multiple lines
+						lines.push_back({newline, pline, lines.size()});
+						newline="";
+					}
+				}
+				
+				if(lines.size()>line) {
+					data=lines[line].Data;
+					return true;
+				}
+				else {
+					data="";
+					return false;
+				}
+			}
 			
 		private:
 			InputProvider &provider;
 			
-			/// Logical line number
-			unsigned long line;
-			
-			/// Physical line starting characters
-			std::vector<unsigned long> plinestarts;
-			
-			/// Logical line starting characters
-			std::vector<unsigned long> llinestarts;
+			unsigned long pline = 0;
 			
 			/// Every logical line up until current execution point. They are kept so that
-			/// it is possible to jump back
+			/// it is possible to jump back. Logical lines do not contain comments 
 			std::vector<Line> lines;
 		};
 		
