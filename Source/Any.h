@@ -36,7 +36,6 @@ namespace Gorgon {
 			virtual void *Clone(const void* const obj) const=0;
 			virtual bool  IsSameType(const std::type_info &) const=0;
 			virtual long  GetSize() const = 0;
-
 			virtual const std::type_info &TypeInfo() const = 0;
 			
 			virtual ~TypeInterface() { }
@@ -47,20 +46,20 @@ namespace Gorgon {
 		/// functions.
 		template<class T_> class Type : public TypeInterface {
 		public:
-			virtual void Delete(void *obj) const {
+			virtual void Delete(void *obj) const override {
 				delete static_cast<T_*>(obj);
 			}
-			virtual void *Clone(const void* const obj) const {
+			virtual void *Clone(const void* const obj) const override {
 				T_ *n = new T_(*reinterpret_cast<const T_*>(obj));
 				return n;
 			}
-			virtual bool IsSameType(const std::type_info &info) const {
+			virtual bool IsSameType(const std::type_info &info) const override {
 				return info==typeid(T_);
 			}
-			virtual const std::type_info &TypeInfo() const {
+			virtual const std::type_info &TypeInfo() const override {
 				return typeid(T_);
 			}
-			virtual long GetSize() const { return sizeof(T_); }
+			virtual long GetSize() const override { return sizeof(T_); }
 			
 		};
 
@@ -255,7 +254,12 @@ namespace Gorgon {
 		bool TypeCheck() const {
 			return type->IsSameType(typeid(T_));
 		}
-
+		
+		/// Checks whether the Any is the same type with the given type.
+		bool IsSameType(const Any &other) const {
+			return type->IsSameType(other.type->TypeInfo());
+		}
+		
 		/// Compares the contents of this Any to the given value. The value
 		/// should be the same type as this Any. Even if it is possible, 
 		/// no cross type comparison will be performed. You may use 

@@ -578,6 +578,7 @@ namespace Gorgon {
 		
 		/// Data members that can be accessed through an instance of the a type. 
 		class DataMember {
+			friend class Type;
 		public:
 			/// Constructor
 			template<class ...P_>
@@ -645,6 +646,8 @@ namespace Gorgon {
 				UnpackTags(rest...);
 			}
 			/// @endcond
+			
+			virtual void typecheck(const Type *type) = 0;
 			
 			/// The name of the datamember
 			std::string name;
@@ -744,6 +747,17 @@ namespace Gorgon {
 			/// Adds new datamembers to the type
 			void AddDataMembers(std::initializer_list<DataMember*> elements) {
 				for(auto element : elements) {
+					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
+					ASSERT(!datamembers.Exists(element->GetName()), 
+						   "Data member " + element->GetName() + " is already added as a data member.", 1, 2);
+					ASSERT(!functions.Exists(element->GetName()), 
+						   "Data member " + element->GetName() + " is already added as a function.", 1, 2);
+					ASSERT(!constants.Exists(element->GetName()), 
+						   "Data member " + element->GetName() + " is already added as a constant.", 1, 2);
+					ASSERT(!events.Exists(element->GetName()), 
+						   "Data member " + element->GetName() + " is already added as an event.", 1, 2);
+					
+					element->typecheck(this);
 					datamembers.Add(element);
 				}
 			}
@@ -751,30 +765,47 @@ namespace Gorgon {
 			/// Adds new functions to the type
 			void AddFunctions(std::initializer_list<Function*> elements) {
 				for(auto element : elements) {
+					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
+					ASSERT(!datamembers.Exists(element->GetName()), 
+						   "Function " + element->GetName() + " is already added as a data member.", 1, 2);
+					ASSERT(!functions.Exists(element->GetName()), 
+						   "Function " + element->GetName() + " is already added as a function.", 1, 2);
+					ASSERT(!constants.Exists(element->GetName()), 
+						   "Function " + element->GetName() + " is already added as a constant.", 1, 2);
+					ASSERT(!events.Exists(element->GetName()), 
+						   "Function " + element->GetName() + " is already added as an event.", 1, 2);
+					ASSERT(element->parent==this,
+						   "This type should be listed as the parent of this function", 1, 2);
+					
 					functions.Add(element);
 
-					ASSERT(element->parent==this,
-						   "This type should be listed as the parent of this function", 
-							1, 2
-					);
 				}
 			}
 			
 			/// Adds new constructors to the type
 			void AddConstructors(std::initializer_list<Function*> elements) {
 				for(auto element : elements) {
-					constructors.Add(element);
-
+					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
 					ASSERT(element->parent==this,
-						   "This type should be listed as the parent of this function", 
-							1, 2
-					);
+						   "This type should be listed as the parent of this function", 1, 2);
+					//TODO check for duplicate constructors
+					constructors.Add(element);
 				}
 			}
 			
 			/// Adds new constants to the type
 			void AddConstants(std::initializer_list<Constant*> elements) {
 				for(auto element : elements) {
+					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
+					ASSERT(!datamembers.Exists(element->GetName()), 
+						"Constant " + element->GetName() + " is already added as a data member.", 1, 2);
+					ASSERT(!functions.Exists(element->GetName()), 
+						"Constant " + element->GetName() + " is already added as a function.", 1, 2);
+					ASSERT(!constants.Exists(element->GetName()), 
+						"Constant " + element->GetName() + " is already added as a constant.", 1, 2);
+					ASSERT(!events.Exists(element->GetName()), 
+						"Constant " + element->GetName() + " is already added as an event.", 1, 2);
+					
 					constants.Add(element);
 				}
 			}
@@ -782,6 +813,16 @@ namespace Gorgon {
 			/// Adds new events to the type
 			void AddEvents(std::initializer_list<Event*> elements) {
 				for(auto element : elements) {
+					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
+					ASSERT(!datamembers.Exists(element->GetName()), 
+						"Event " + element->GetName() + " is already added as a data member.", 1, 2);
+					ASSERT(!functions.Exists(element->GetName()), 
+						"Event " + element->GetName() + " is already added as a function.", 1, 2);
+					ASSERT(!constants.Exists(element->GetName()), 
+						"Event " + element->GetName() + " is already added as a constant.", 1, 2);
+					ASSERT(!events.Exists(element->GetName()), 
+						"Event " + element->GetName() + " is already added as an event.", 1, 2);
+					
 					events.Add(element);
 				}
 			}

@@ -27,10 +27,12 @@ namespace Gorgon {
 			
 			/// Any constructor. Allows both data and type to be specified
 			Data(const Type &type, Any data) : type(&type), data(data) {
+				check();
 			}
 			
 			/// Any constructor. Allows both data and type to be specified
 			Data(const Type *type, Any data) : type(type), data(data) {
+				check();
 				ASSERT( (type!=nullptr), "Data type cannot be nullptr", 1, 2);
 			}
 			
@@ -73,6 +75,8 @@ namespace Gorgon {
 			/// Constructs an invalid data. Performing any operation on this data might cause
 			/// crashes. Never use this constructor unless its absolutely necessary
 			Data() {}
+			
+			void check();
 		};
 		
 		

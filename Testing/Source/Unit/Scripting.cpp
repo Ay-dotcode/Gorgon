@@ -49,17 +49,42 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	auto myvaluetype = new MappedValueType<A>("myvaluetype", "test type");
 	auto myreftype=new MappedReferenceType<A>("myreftype", "test type");
 	
+	int testval=0;
 	myvaluetype->AddDataMembers({
-		new MappedData<A, int>(&A::bb, "bb", "bb is bla bla", mytype)
+		new MappedData  <A, int>(&A::bb, "bb", "bb is bla bla", mytype),
+		new DataAccessor<A, int>([](const A &a) { return 5; }, [&testval](A &a, int b) {testval=b;}, "cc", "dgfsf", mytype)
 	});
 	
 	Data datatest = { myvaluetype, Any(A()) };
 	myvaluetype->DataMembers["bb"].Set(datatest, Data(mytype, Any(4)));
 	
 	
-	REQUIRE(datatest.GetValue<A>().bb == 4);
-	
+	REQUIRE(datatest.GetValue<A>().bb == 4);	
 	REQUIRE(myvaluetype->DataMembers["bb"].Get(datatest).GetValue<int>() == 4);
+	
+	myvaluetype->DataMembers["cc"].Set(datatest, Data(mytype, Any(4)));
+	REQUIRE(testval == 4);
+	REQUIRE(myvaluetype->DataMembers["cc"].Get(datatest).GetValue<int>() == 5);
+	
+	
+	
+	myreftype->AddDataMembers({
+		new MappedData  <A*, int>(&A::bb, "bb", "bb is bla bla", mytype),
+		new DataAccessor<A*, int>([](const A &a) { return 6; }, [&testval](A &a, int b) {testval=b;}, "cc", "dgfsf", mytype)
+	});
+	
+	Data datareftest = { myreftype, Any(new A()) };
+	myreftype->DataMembers["bb"].Set(datareftest, Data(mytype, Any(4)));
+	
+	
+	REQUIRE(datareftest.GetValue<A*>()->bb == 4);	
+	REQUIRE(myreftype->DataMembers["bb"].Get(datareftest).GetValue<int>() == 4);
+	
+	myreftype->DataMembers["cc"].Set(datareftest, Data(mytype, Any(6)));
+	REQUIRE(testval == 6);
+	REQUIRE(myreftype->DataMembers["cc"].Get(datareftest).GetValue<int>() == 6);
+	
+	
 	
 	
 	const Parameter param1("name", "heeelp", mytype, OutputTag);
@@ -183,7 +208,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	myvaluetype->AddFunctions({&fn4});
 	
-	REQUIRE( fn4.Call(false, { {mytype, A()}, {myfloattype, 2.0f} }).GetValue<int>() == 84 );
+	REQUIRE( fn4.Call(false, { {myvaluetype, A()}, {myfloattype, 2.0f} }).GetValue<int>() == 84 );
 	
 	
 	MappedFunction fn5{ "TestFn5",
@@ -201,7 +226,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	myreftype->AddFunctions({&fn5});
 	
-	REQUIRE( fn5.Call(false, { {mytype, new A()}, {myfloattype, 1.0f} }).GetValue<int>() == 42 );
-	REQUIRE_THROWS( fn5.Call(false, { {mytype, A()}, {myfloattype, 1.0f} }).GetValue<int>());
-	REQUIRE_THROWS( fn5.Call(false, { {mytype, A()}, {mytype, 1} }).GetValue<int>());
+	REQUIRE( fn5.Call(false, { {myreftype, new A()}, {myfloattype, 1.0f} }).GetValue<int>() == 42 );
+	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {myfloattype, 1.0f} }).GetValue<int>());
+	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {mytype, 1} }).GetValue<int>());
 }

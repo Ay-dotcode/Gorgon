@@ -12,14 +12,16 @@ namespace Gorgon {
 			Parse,
 			OutofBounds,
 			AmbiguousSymbol,
-			SymbolNotFound,			
+			SymbolNotFound,
+			NullValue,
 		};
 		
 		DefineEnumStrings(ExceptionType,
 			{ExceptionType::Parse, "Parse error"},
 			{ExceptionType::OutofBounds, "Index out of bounds"},
 			{ExceptionType::AmbiguousSymbol, "Ambiguous symbol"},
-			{ExceptionType::SymbolNotFound, "Symbol not found"}
+			{ExceptionType::SymbolNotFound, "Symbol not found"},
+			{ExceptionType::NullValue, "Value is null"},
 		);
 		
 		enum class SymbolType {
@@ -82,6 +84,14 @@ namespace Gorgon {
 		public:
 			explicit SymbolNotFoundException(const std::string &symbolname, SymbolType type, const std::string &details="") : 
 			Exception(ExceptionType::SymbolNotFound, "Cannot find " + String::ToLower(String::From(type)) + " " + symbolname) { 
+				this->details = details;
+			}
+		};
+		
+		class NullValueException : public Exception {
+		public:
+			explicit NullValueException(const std::string &symbolname, const std::string &details="") : 
+			Exception(ExceptionType::NullValue, "The value of " + symbolname + " is NULL") { 
 				this->details = details;
 			}
 		};

@@ -9,6 +9,10 @@ namespace Gorgon { namespace Scripting {
 		data = type.GetDefaultValue();
 	}
 	
+	void Data::check() {
+		ASSERT(type->GetDefaultValue().IsSameType(data), "Given data type does not match with: "+type->GetName(), 2, 2);
+	}
+	
 	bool Function::CallEnd(Data data) const { 
 		assert( false && "End call on a non-scoped function"); 
 

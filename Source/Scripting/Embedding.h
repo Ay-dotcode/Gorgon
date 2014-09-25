@@ -5,6 +5,7 @@
 
 #include "Reflection.h"
 #include "VirtualMachine.h"
+#include "Exceptions.h"
 #include "../Scripting.h"
 #include "../TMP.h"
 
@@ -233,7 +234,7 @@ namespace Gorgon {
 					
 					if(parent.HasParent()) {
 						if(num==0) {
-							if(&data.GetType() != &parent.GetReturnType()) {
+							if(&data.GetType() != &parent.GetParent()) {
 								throw std::runtime_error("Cannot convert $this to original parent type.");
 							}
 						}
@@ -261,7 +262,7 @@ namespace Gorgon {
 					
 					if(parent.HasParent()) {
 						if(num==0) {
-							if(&data.GetType() != &parent.GetReturnType()) {
+							if(&data.GetType() != &parent.GetParent()) {
 								throw std::runtime_error("Cannot convert $this to original parent type.");
 							}
 						}
@@ -553,7 +554,8 @@ namespace Gorgon {
 		
 		
 		/**
-		 * This class allows a one to one mapping of a data member to a c++ data member
+		 * This class allows a one to one mapping of a data member to a c++ data member. First template
+		 * parameter is the type of the object and the second is the type of the data member
 		 */
 		template<class C_, class T_>
 		class MappedData : public DataMember {
@@ -573,7 +575,13 @@ namespace Gorgon {
 			virtual void Set(Data &source, const Data &value) const override {
 				C_ obj  = source.GetValue<C_>();
 				obj.*member = value.GetValue <T_>();
-				source={GetType(), obj};
+				source={source.GetType(), obj};
+			}
+			
+		protected:
+			void typecheck(const Type *type) {
+				ASSERT(type->GetDefaultValue().TypeCheck<C_>(), "The type of mapped data does not match with the type "
+					"it has placed in.", 2, 2);
 			}
 			
 		private:
@@ -594,16 +602,109 @@ namespace Gorgon {
 			}
 			
 			virtual Data Get(const Data &data) const override {
-				return {GetType(), data.GetValue<C_*>()->*member};
+				C_ *obj=data.GetValue<C_*>();
+				if(obj==nullptr) {
+					throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
+				}
+				return {GetType(), obj->*member};
 			}			
 			
 			/// Sets the data of the data member
 			virtual void Set(Data &source, const Data &value) const override {
-				C_ *obj = source.GetValue<C_*>();
+				C_ *obj=source.GetValue<C_*>();
+				if(obj==nullptr) {
+					throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
+				}
 				obj->*member = value.GetValue <T_>();
 			}			
+			
+		protected:
+			void typecheck(const Type *type) {
+				ASSERT(type->GetDefaultValue().TypeCheck<C_*>(), "The type of mapped data does not match with the type "
+				"it has placed in.", 2, 2);
+			}
+			
 		private:
 			T_ C_::*member;
+		};
+		
+		
+		/**
+		 * This class maps a data accessor functions to a data member
+		 */
+		template <class C_, class T_>
+		class DataAccessor : public DataMember {
+		public:
+			
+			/// Constructor
+			template<class ...P_>
+			DataAccessor(std::function<T_(const C_ &)> getter, std::function<void(C_ &, const T_ &)> setter, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
+			DataMember(name, help, *type, tags...), getter(getter), setter(setter) {
+				ASSERT(type, "Type cannot be nullptr", 1, 2);
+			}
+			
+			virtual Data Get(const Data &data) const override {
+				return {GetType(), getter(data.GetValue<C_>())};
+			}			
+			
+			/// Sets the data of the data member
+			virtual void Set(Data &source, const Data &value) const override {
+				C_ obj = source.GetValue<C_>();
+				setter(obj, value.GetValue<T_>());
+				source= {source.GetType(), obj};
+			}
+			
+		protected:
+			void typecheck(const Type *type) {
+				ASSERT(type->GetDefaultValue().TypeCheck<C_>(), "The type of mapped data does not match with the type "
+				"it has placed in.", 2, 2);
+			}
+			
+		private:
+			std::function<T_(const C_ &)> getter;
+			std::function<void(C_ &, const T_ &)> setter;
+		};
+		
+		/**
+		 * This class maps a data accessor functions to a data member
+		 */
+		template <class C_, class T_>
+		class DataAccessor<C_*, T_> : public DataMember {
+		public:
+			
+			/// Constructor
+			template<class ...P_>
+			DataAccessor(std::function<T_(const C_ &)> getter, std::function<void(C_ &, const T_ &)> setter, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
+			DataMember(name, help, *type, tags...), getter(getter), setter(setter) {
+				ASSERT(type, "Type cannot be nullptr", 1, 2);
+			}
+			
+			virtual Data Get(const Data &data) const override {
+				C_ *obj=data.GetValue<C_*>();
+				if(obj==nullptr) {
+					throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
+				}
+				return {GetType(), getter(*obj)};
+			}
+			
+			/// Sets the data of the data member
+			virtual void Set(Data &source, const Data &value) const override {
+				C_ *obj = source.GetValue<C_*>();
+				if(obj==nullptr) {
+					throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
+				}
+				setter(*obj, value.GetValue<T_>());
+			}
+			
+		protected:
+			void typecheck(const Type *type) {
+				ASSERT(type->GetDefaultValue().TypeCheck<C_*>(), "The type of mapped data does not match with the type "
+				"it has placed in.", 2, 2);
+			}
+			
+		private:
+			std::function<T_(const C_ &)> getter;
+			std::function<void(C_ &, const T_ &)> setter;
 		};
 		
 	}
