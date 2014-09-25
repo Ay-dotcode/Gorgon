@@ -37,6 +37,8 @@ public:
 	explicit operator std::string() const {
 		return "A";
 	}
+	
+	int bb;
 };
 
 
@@ -46,6 +48,18 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	auto myfloattype=new MappedValueType<float>("myfloattype", "test type");
 	auto myvaluetype = new MappedValueType<A>("myvaluetype", "test type");
 	auto myreftype=new MappedReferenceType<A>("myreftype", "test type");
+	
+	myvaluetype->AddDataMembers({
+		new MappedData<A, int>(&A::bb, "bb", "bb is bla bla", mytype)
+	});
+	
+	Data datatest = { myvaluetype, Any(A()) };
+	myvaluetype->DataMembers["bb"].Set(datatest, Data(mytype, Any(4)));
+	
+	
+	REQUIRE(datatest.GetValue<A>().bb == 4);
+	
+	REQUIRE(myvaluetype->DataMembers["bb"].Get(datatest).GetValue<int>() == 4);
 	
 	
 	const Parameter param1("name", "heeelp", mytype, OutputTag);

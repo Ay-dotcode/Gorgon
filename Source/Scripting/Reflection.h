@@ -614,6 +614,17 @@ namespace Gorgon {
 				return accessible;
 			}
 			
+			/// Returns the type of this data member
+			const Type &GetType() const {
+				return *type;
+			}
+			
+			/// Gets data from the datamember
+			virtual Data Get(const Data &source) const = 0;
+			
+			/// Sets the data of the data member
+			virtual void Set(Data &source, const Data &value) const = 0;
+			
 		protected:
 			/// @cond INTERNAL
 			void UnpackTags() { }

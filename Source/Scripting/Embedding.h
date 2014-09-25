@@ -551,5 +551,60 @@ namespace Gorgon {
 			std::function<void(Data, std::string &)> redirect;
 		};
 		
+		
+		/**
+		 * This class allows a one to one mapping of a data member to a c++ data member
+		 */
+		template<class C_, class T_>
+		class MappedData : public DataMember {
+		public:
+			/// Constructor
+			template<class ...P_>
+			MappedData(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
+			DataMember(name, help, *type, tags...), member(member) {
+				ASSERT(type, "Type cannot be nullptr", 1, 2);
+			}
+			
+			virtual Data Get(const Data &data) const override {
+				return {GetType(), data.GetValue<C_>().*member};
+			}			
+			
+			/// Sets the data of the data member
+			virtual void Set(Data &source, const Data &value) const override {
+				C_ obj  = source.GetValue<C_>();
+				obj.*member = value.GetValue <T_>();
+				source={GetType(), obj};
+			}
+			
+		private:
+			T_ C_::*member;
+		};
+		
+		/**
+		 * This class allows a one to one mapping of a data member to a c++ data member
+		 */
+		template<class C_, class T_>
+		class MappedData<C_*, T_> : public DataMember {
+		public:
+			/// Constructor
+			template<class ...P_>
+			MappedData(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
+			DataMember(name, help, *type, tags...), member(member) {
+				ASSERT(type, "Type cannot be nullptr", 1, 2);
+			}
+			
+			virtual Data Get(const Data &data) const override {
+				return {GetType(), data.GetValue<C_*>()->*member};
+			}			
+			
+			/// Sets the data of the data member
+			virtual void Set(Data &source, const Data &value) const override {
+				C_ *obj = source.GetValue<C_*>();
+				obj->*member = value.GetValue <T_>();
+			}			
+		private:
+			T_ C_::*member;
+		};
+		
 	}
 }
