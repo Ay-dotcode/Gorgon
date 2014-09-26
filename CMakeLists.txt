@@ -13,6 +13,15 @@ OPTION(GORGON_FAST_ANY "Make any to work fast by removing empty checks. This wil
 
 OPTION(OPENGL "Use OpenGL as underlying GL. Should be ON for now." ON)
 
+OPTION(SCRIPTING "Enable scripting module." ON)
+
+OPTION(TESTMODE "Enable test mode." OFF)
+
+IF(TESTMODE)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTEST")
+ENDIF()
+	
+
 IF(GORGON_FAST_ANY)
 	SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DGORGON_FAST_ANY")
 ENDIF()

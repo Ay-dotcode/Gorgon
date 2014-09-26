@@ -16,14 +16,27 @@ namespace Gorgon {
 	
 	namespace Scripting {
 		
+		template<class T_>
+		using StringFromFn = std::string(*)(const T_ &);
+		
+		template<class T_>
+		using ParseFn = T_(*)(const std::string &);
+		
+		template <
+		class T_, 
+		StringFromFn<T_> ToString_=String::From<T_>, 
+		ParseFn<T_> Parse_=String::To<T_>
+		>
+		class MappedValueType;
+		
 		/**
 		 * This class allows embedded types to become scripting types that are passed around
 		 * as values. This class requires T_ to be copy constructable.
 		 */
 		template <
 			class T_, 
-			std::string(*ToString_)(const T_ &)=&String::From<T_>, 
-			T_(*Parse_)(const std::string &)=&String::To<T_>
+			StringFromFn<T_> ToString_, 
+			ParseFn<T_> Parse_
 		>
 		class MappedValueType : public Type {
 		public:
@@ -100,7 +113,7 @@ namespace Gorgon {
 		}
 		
 		/// This class is used to create linking to a c++ function
-		class MappedFunction : public Function {
+		class MappedFunction : public Scripting::Function {
 			/// @cond INTERAL
 			struct fnstorage {
 				virtual ~fnstorage() {}
@@ -117,7 +130,16 @@ namespace Gorgon {
 				using traitsof = TMP::FunctionTraits<functionat<level>>;
 				template<int level, int param>
 				using paramof = typename traitsof<level>::template Arguments<param>::Type;
-
+				
+				template<class T_>
+				struct remove_vector {
+					using type=void;
+				};
+				
+				template<class T_, class A_>
+				struct remove_vector<std::vector<T_, A_>> {
+					using type=T_;
+				};
 				
 				template<int level, int param>
 				void checkfnparam() {
@@ -128,28 +150,56 @@ namespace Gorgon {
 					if(parent.HasParent()) {
 						if(param==0) {
 							if(traitsof<0>::IsMember && !parent.GetParent().IsReferenceType()) {
-								ASSERT( (parent.GetParent().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , "Function parameter type and designated type does not match.", 5, 2);
+								ASSERT( (parent.GetParent().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , 
+										"Function parameter type and object type does not match. In function: "+
+										parent.GetName()+" parameter", 5, 2);
 							}
 							else {
-								ASSERT((parent.GetParent().GetDefaultValue().TypeCheck<paramof<level, param>>()) , "Function parameter type and designated type does not match.", 5, 2);
+								ASSERT((parent.GetParent().GetDefaultValue().TypeCheck<paramof<level, param>>()) ,
+									   "Function parameter type and object type does not match. In function: "+
+									   parent.GetName()+" parameter", 5, 2);
 							}
 						}
 						else if(parent.Parameters[param-1].IsReference()) {
-							ASSERT((std::is_same<paramof<level, param>, std::string>::value) , "Function parameter type and designated type does not match, reference parameters are accessed as std::string variables", 5, 2);
+							ASSERT((std::is_same<paramof<level, param>, std::string>::value) , 
+								   "Function parameter type and designated type does not match,"
+								   "reference parameters are accessed as std::string variables. In function: "+
+								   parent.GetName()+", "+parent.Parameters[param-1].GetName()+" parameter", 5, 2);
+						}
+						else if(param==maxarity-1 && parent.RepeatLast()) {
+							ASSERT((parent.Parameters[param-1].GetType().GetDefaultValue().TypeCheck< remove_vector<paramof<level, param>> >()) , 
+								   "Functions with RepeatTag should have their last parameter as std::vector<type>. In function: "+
+								   parent.GetName()+", "+parent.Parameters[param-1].GetName()+" parameter", 5, 2);
 						}
 						else {
-							ASSERT((parent.Parameters[param-1].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) , "Function parameter type and designated type does not match.", 5, 2);
+							ASSERT((parent.Parameters[param-1].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) , 
+								   "Function parameter type and designated type does not match. In function: "+
+								   parent.GetName()+", "+parent.Parameters[param-1].GetName()+" parameter", 5, 2);
 						}
 					}
 					else {
 						if(param==0 && traitsof<0>::IsMember && !parent.Parameters[param].GetType().IsReferenceType()) {
-							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , "Function parameter type and designated type does not match.", 5, 2);
+							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , 
+								   "Function parameter type and designated type does not match. In function: "+
+								   parent.GetName()+", "+parent.Parameters[param].GetName()+" parameter", 5, 2);
 						}
 						else if(parent.Parameters[param].IsReference()) {
-							ASSERT((std::is_same<paramof<level, param>, std::string>::value) , "Function parameter type and designated type does not match, reference parameters are accessed as std::string variables", 5, 2);
+							ASSERT((std::is_same<paramof<level, param>, std::string>::value) , 
+								   "Function parameter type and designated type does not match,"
+								   "reference parameters are accessed as std::string variables. In function: "+
+								   parent.GetName()+", "+parent.Parameters[param].GetName()+" parameter", 5, 2);
+						}
+						else if(param==maxarity-1 && parent.RepeatLast()) {
+							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck< typename remove_vector<paramof<level, param>>::type >()) , 
+								   "Functions with RepeatTag should have their last parameter as std::vector<`"+
+								   parent.Parameters[param].GetType().GetName()+"`>. In function: "+
+								   parent.GetName()+", "+parent.Parameters[param].GetName()+" parameter. Type in c++ function "
+								   "is "+Utils::GetTypeName<paramof<level, param>>(), 5, 2);
 						}
 						else {
-							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) , "Function parameter type and designated type does not match.", 5, 2);
+							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck<paramof<level, param>>()) , 
+								   "Function parameter type and designated type does not match. In function: "+
+								   parent.GetName()+", "+parent.Parameters[param].GetName()+" parameter", 5, 2);
 						}
 					}
 				}
@@ -225,13 +275,34 @@ namespace Gorgon {
 				
 				static const int maxarity=traitsof<0>::Arity;
 				
+				
+				template<int num, class T_>
+				typename std::enable_if<std::is_same<typename remove_vector<T_>::type, void>::value, T_>::type
+				vectorcast(const std::vector<Data> &datav) const {
+					return datav[num].GetValue<T_>();
+				}
+				
+				template<int num, class T_>
+				typename std::enable_if<!std::is_same<typename remove_vector<T_>::type, void>::value, T_>::type
+				vectorcast(const std::vector<Data> &datav) const {
+					if(num==maxarity-1 && parent.RepeatLast()) {
+						using nonvector=typename remove_vector<T_>::type;
+						std::vector<nonvector> v;
+						for(int i=num;i<datav.size();i++) {
+							v.push_back(datav[i].GetValue< nonvector >());
+						}
+						return v;
+					}
+					else {
+						return datav[num].GetValue<T_>();
+					}
+				}
+				
 				/// Casts the given data to the type of the num^{th} parameter. Parameter list is always taken from 
 				/// first function
 				template<int num>
-				typename traitsof<0>::template Arguments<num>::Type 
-				castparam(Data data) const {
-					//check for data.GetType() to Parameters[?].GetType()
-					
+				paramof<0, num> castparam(const std::vector<Data> &datav) const {
+					const Data &data=datav[num];
 					if(parent.HasParent()) {
 						if(num==0) {
 							if(&data.GetType() != &parent.GetParent()) {
@@ -250,15 +321,17 @@ namespace Gorgon {
 						}
 					}
 					
-					return data.GetValue<typename traitsof<0>::template Arguments<num>::Type>();
+					return vectorcast<num, paramof<0, num>>(datav);
 				}
 				
 				/// Casts the given data to the type of the num^{th} parameter. Parameter list is always taken from 
 				/// first function. This one casts first parameter to non-pointer
 				template<int num>
-				typename TMP::Choose<num==0, typename traitsof<0>::template Arguments<num>::Type, 
-				typename std::remove_pointer<typename traitsof<0>::template Arguments<num>::Type>::type>::Type
-				castparam_firstnonptr(Data data) const {
+				typename TMP::Choose<num==0, paramof<0, num>, 
+									 typename std::remove_pointer<paramof<0, num>>::type
+									>::Type
+				castparam_firstnonptr(const std::vector<Data> &datav) const {
+					const Data &data=datav[num];
 					
 					if(parent.HasParent()) {
 						if(num==0) {
@@ -278,8 +351,12 @@ namespace Gorgon {
 						}
 					}
 					
-					return data.GetValue<typename TMP::Choose<num==0, typename traitsof<0>::template Arguments<num>::Type, 
-					typename std::remove_pointer<typename traitsof<0>::template Arguments<num>::Type>::type>::Type>();
+					using T_=typename TMP::Choose<num==0, 
+												  paramof<0, num>, 
+												  typename std::remove_pointer<paramof<0, num>>::type
+												 >::Type;
+
+					return vectorcast<num, T_>(datav);
 				}
 				
 				/// Calls the correct function variant. This function casts arguments while extracting them
@@ -295,10 +372,10 @@ namespace Gorgon {
 					if((parent.HasParent() && !parent.GetParent().IsReferenceType()) || 
 						(!parent.HasParent() && parent.Parameters.GetCount() && !parent.Parameters[0].GetType().IsReferenceType())
 					) {
-						std::bind(fn, castparam_firstnonptr<S>(data[S])...)();
+						std::bind(fn, castparam_firstnonptr<S>(data)...)();
 					}
 					else {
-						std::bind(fn, castparam<S>(data[S])...)();
+						std::bind(fn, castparam<S>(data)...)();
 					}
 					
 					return Data::Invalid();
@@ -316,10 +393,10 @@ namespace Gorgon {
 					if((parent.HasParent() && !parent.GetParent().IsReferenceType()) || 
 						(!parent.HasParent() && parent.Parameters.GetCount() && !parent.Parameters[0].GetType().IsReferenceType())
 					) {
-						return Data{parent.GetReturnType(), Any(std::bind(fn, castparam_firstnonptr<S>(data[S])...)())};
+						return Data{parent.GetReturnType(), Any(std::bind(fn, castparam_firstnonptr<S>(data)...)())};
 					}
 					else {
-						return Data{parent.GetReturnType(), Any(std::bind(fn, castparam<S>(data[S])...)())};
+						return Data{parent.GetReturnType(), Any(std::bind(fn, castparam<S>(data)...)())};
 					}
 				}
 				
@@ -333,7 +410,7 @@ namespace Gorgon {
 					
 					auto fn = std::get<variant>(fns);
 					
-					std::bind(fn, castparam<S>(data[S])...)();
+					std::bind(fn, castparam<S>(data)...)();
 					
 					return Data::Invalid();
 				}
@@ -347,7 +424,7 @@ namespace Gorgon {
 					
 					auto fn = std::get<variant>(fns);
 					
-					return Data{parent.GetReturnType(), Any(std::bind(fn, castparam<S>(data[S])...)())};
+					return Data{parent.GetReturnType(), Any(std::bind(fn, castparam<S>(data)...)())};
 				}
 				
 				/// Calls callfn for the requested variant
@@ -468,6 +545,31 @@ namespace Gorgon {
 			
 			/// Implementation for the method variant of this function
 			fnstorage *methods=nullptr;
+		};
+		
+		/**
+		 * This class makes working with operators easier.
+		 */
+		class MappedOperator : public MappedFunction {
+		public:
+			/// Constructor, returntype and parent could be nullptr, tags are optional. 
+			template<class F_>
+			MappedOperator(const std::string &name, const std::string &help, const Type *returntype, 
+						   const Type *parent, const Type *rhs, F_ fn) :
+			MappedFunction(
+				name, help, returntype, Scripting::ParameterList{
+				new Scripting::Parameter(
+					"rhs", 
+					"Right hand side of the operator", 
+					rhs)
+				}, 
+				parent, MappedFunctions(fn), MappedMethods(), 
+				Scripting::OperatorTag
+			)
+			{
+				ASSERT(returntype, "Operators should have a return type", 1, 1);
+				ASSERT(parent, "Operators should be a member function", 1, 1);
+			}
 		};
 		
 		

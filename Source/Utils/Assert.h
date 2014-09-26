@@ -1,5 +1,7 @@
 #pragma once
 
+#include <typeinfo>
+
 #include "../String.h"
 #include "../OS.h"
 #include "../Console.h"
@@ -119,7 +121,16 @@ namespace Gorgon {
 			bool show_original;
 			bool show_expanded;
 		};
+		std::string demangle(const std::string &);
 		/// @endcond
+		
+		/// Returns the human readable form of the typename. By the standard typeid::name is 
+		/// not required to be the same as declared type. This function uses compiler facilities
+		/// to obtain readable name.
+		template<class T_>
+		std::string GetTypeName() {
+			return demangle(typeid(T_).name());
+		}
 		
 #ifdef NDEBUG
 	#define ASSERT(...)

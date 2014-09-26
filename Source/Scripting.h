@@ -75,5 +75,13 @@ namespace Gorgon {
 			return out;
 		}
 		
+		/// Initializes the scripting system
+		inline void Initialize() {
+			void init_builtin();
+			init_builtin();
+		}
+		
+		/// This library requires Initialize to be called
+		extern Library Integrals;
 	}
 }

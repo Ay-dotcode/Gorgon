@@ -247,7 +247,9 @@ namespace Gorgon {
 		 * **RepeatTag**: This tag makes the last parameter repeatable. This way, the function can be 
 		 * called by as many parameters as user likes. In embedded functions, these parameters are also
 		 * placed in the data list. In custom functions, the parameter that is marked as repeatable can 
-		 * be accessed like an array.
+		 * be accessed like an array. If both RepeatTag and StretchTag is set, stretch will be effective
+		 * first. Therefore, for regular functions, in console dialect stretch will work, resulting a
+		 * single parameter, however, in programming dialect, repeat will be in effect.
 		 * 
 		 * **MethodTag**: This tag denotes that this function has a method variant. Method variant is called 
 		 * in console dialect when the return value is not queried. In programming dialect method version of a 
@@ -827,6 +829,20 @@ namespace Gorgon {
 				}
 			}
 			
+			/// Compares two types
+			bool operator ==(const Type &other) const {
+				return this==&other;
+			}
+			
+			bool operator ==(const Type *other) const {
+				return this==other;
+			}
+			
+			/// Converts this type to its pointer
+			operator const Type *() const {
+				return this;
+			}
+			
 			/// Converts a data of this type to string. This function should never throw, if there is
 			/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
 			virtual std::string ToString(const Data &) const = 0;
@@ -909,6 +925,36 @@ namespace Gorgon {
 				swap(types, this->types);
 				swap(functions, this->functions);
 				swap(constants, this->constants);
+			}
+			
+			/// For late initialization
+			Library() : Types(this->types), Functions(this->functions), Constants(this->constants) { }
+			
+			Library(Library &&lib) : Types(this->types), Functions(this->functions), Constants(this->constants) {
+				using std::swap;
+				
+				swap(types, lib.types);
+				swap(functions, lib.functions);
+				swap(constants, lib.constants);
+				swap(name, lib.name);
+				swap(help, lib.help);
+			}
+			
+			Library &operator =(Library &&lib) {
+				using std::swap;
+				name="";
+				help="";
+				types.Destroy();
+				functions.Destroy();
+				constants.Destroy();
+				
+				swap(types, lib.types);
+				swap(functions, lib.functions);
+				swap(constants, lib.constants);
+				swap(name, lib.name);
+				swap(help, lib.help);
+				
+				return *this;
 			}
 			
 			/// Returns the name of this library. Library names are also used as namespace specifiers

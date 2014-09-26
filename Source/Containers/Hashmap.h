@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <tuple>
+#include <sstream>
 
 #include "Iterator.h"
 
@@ -387,7 +388,7 @@ namespace Gorgon {
 				auto it = mapping.find(key);
 				
 				if(it == mapping.end()) {
-					throw std::runtime_error("Item not found");
+					properthrow(key);
 				}
 				
 				return *(it->second);
@@ -456,6 +457,37 @@ namespace Gorgon {
 			
 			
 		private:
+			
+			
+			template<typename T>
+			class IsStreamable
+			{
+				using one = char;
+				struct two {
+					char dummy[2];
+				};
+				
+				template<class TT>
+				static one test(decltype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one(); }
+				
+				static two test(...)  { return two();  }
+				
+			public:
+				static const bool Value = sizeof( test(*(std::ostream*)nullptr) );
+			};
+			
+			template<class K__>
+			typename std::enable_if<IsStreamable<K__>::Value, void>::type properthrow(const K__ &key) const {
+				std::stringstream ss;
+				ss<<"Item not found: ";
+				ss<<key;
+				throw std::runtime_error(ss.str());
+			}
+			
+			template<class K__>
+			typename std::enable_if<!IsStreamable<K__>::Value, void>::type properthrow(const K__ &key) const {
+				throw std::runtime_error("Item not found");
+			}
 			
 			MapType mapping;
 		};

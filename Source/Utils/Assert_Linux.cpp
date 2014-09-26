@@ -10,6 +10,22 @@
 namespace Gorgon {
 	namespace Utils {
 		
+		std::string demangle(const std::string &name) {
+			int status;
+			
+			auto demangled=abi::__cxa_demangle(name.c_str(), 0, 0, &status);
+			
+			if(status==0) {
+				std::string ret=demangled;
+				free(demangled);
+				
+				return ret;
+			}
+			else {
+				return name;
+			}			
+		}
+		
 		void CrashHandler::Backtrace() {
 			void **trace=(void**)malloc((depth+skip+2)*sizeof(void*));
 			int traced=backtrace(trace, depth+skip+2);
@@ -17,7 +33,7 @@ namespace Gorgon {
 			char **messages = (char **)NULL;
 			messages = backtrace_symbols(trace, traced);
 			
-			for(int i=skip+2; i<traced; i++) {
+			auto report=[&](int i) {
 				std::string message=messages[i];
 				auto mangledbegin=message.find_first_of('(');
 				auto mangledend=message.find_first_of("+)", mangledbegin);
@@ -34,17 +50,17 @@ namespace Gorgon {
 				free(demangled);
 				
 				int fd[2];
-				if(pipe(fd)) continue; //error
+				if(pipe(fd)) return; //error
 				
 				if(int pid=fork()) {
-					if(pid<0) continue;
+					if(pid<0) return;
 					wait();
 					
 					close(fd[1]);
 					char line[1024];
 					
 					auto len = read(fd[0], line, 1024);
-					if(len<=0) continue;
+					if(len<=0) return;
 					line[len]=0;
 					
 					close(fd[0]);
@@ -62,7 +78,7 @@ namespace Gorgon {
 					catch(...) {
 						filename=data.substr(0, pos);
 					}
-
+					
 					int linenum = String::To<int>(data.substr(pos+1, end-pos-1));
 					//if(String::Trim(filename)=="" || linenum==0) continue;
 					
@@ -112,6 +128,16 @@ namespace Gorgon {
 					
 					exit(0);
 				}
+			};
+			
+#ifdef TEST
+			for(int i=2;i<skip+2;i++) {
+				report(i);
+			}
+#endif			
+			
+			for(int i=skip+2; i<traced; i++) {
+				report(i);
 			}
 		}
 		

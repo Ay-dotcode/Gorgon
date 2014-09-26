@@ -44,54 +44,55 @@ public:
 
 TEST_CASE("Basic scripting", "[firsttest]") {
 	
-	auto mytype=new MappedValueType<int>("mytype", "test type");
+	Scripting::Initialize();
+	
 	auto myfloattype=new MappedValueType<float>("myfloattype", "test type");
 	auto myvaluetype = new MappedValueType<A>("myvaluetype", "test type");
 	auto myreftype=new MappedReferenceType<A>("myreftype", "test type");
 	
 	int testval=0;
 	myvaluetype->AddDataMembers({
-		new MappedData  <A, int>(&A::bb, "bb", "bb is bla bla", mytype),
-		new DataAccessor<A, int>([](const A &a) { return 5; }, [&testval](A &a, int b) {testval=b;}, "cc", "dgfsf", mytype)
+		new MappedData  <A, int>(&A::bb, "bb", "bb is bla bla", Integrals.Types["Int"]),
+		new DataAccessor<A, int>([](const A &a) { return 5; }, [&testval](A &a, int b) {testval=b;}, "cc", "dgfsf", Integrals.Types["Int"])
 	});
 	
 	Data datatest = { myvaluetype, Any(A()) };
-	myvaluetype->DataMembers["bb"].Set(datatest, Data(mytype, Any(4)));
+	myvaluetype->DataMembers["bb"].Set(datatest, Data(Integrals.Types["Int"], Any(4)));
 	
 	
 	REQUIRE(datatest.GetValue<A>().bb == 4);	
 	REQUIRE(myvaluetype->DataMembers["bb"].Get(datatest).GetValue<int>() == 4);
 	
-	myvaluetype->DataMembers["cc"].Set(datatest, Data(mytype, Any(4)));
+	myvaluetype->DataMembers["cc"].Set(datatest, Data(Integrals.Types["Int"], Any(4)));
 	REQUIRE(testval == 4);
 	REQUIRE(myvaluetype->DataMembers["cc"].Get(datatest).GetValue<int>() == 5);
 	
 	
 	
 	myreftype->AddDataMembers({
-		new MappedData  <A*, int>(&A::bb, "bb", "bb is bla bla", mytype),
-		new DataAccessor<A*, int>([](const A &a) { return 6; }, [&testval](A &a, int b) {testval=b;}, "cc", "dgfsf", mytype)
+		new MappedData  <A*, int>(&A::bb, "bb", "bb is bla bla", Integrals.Types["Int"]),
+		new DataAccessor<A*, int>([](const A &a) { return 6; }, [&testval](A &a, int b) {testval=b;}, "cc", "dgfsf", Integrals.Types["Int"])
 	});
 	
 	Data datareftest = { myreftype, Any(new A()) };
-	myreftype->DataMembers["bb"].Set(datareftest, Data(mytype, Any(4)));
+	myreftype->DataMembers["bb"].Set(datareftest, Data(Integrals.Types["Int"], Any(4)));
 	
 	
 	REQUIRE(datareftest.GetValue<A*>()->bb == 4);	
 	REQUIRE(myreftype->DataMembers["bb"].Get(datareftest).GetValue<int>() == 4);
 	
-	myreftype->DataMembers["cc"].Set(datareftest, Data(mytype, Any(6)));
+	myreftype->DataMembers["cc"].Set(datareftest, Data(Integrals.Types["Int"], Any(6)));
 	REQUIRE(testval == 6);
 	REQUIRE(myreftype->DataMembers["cc"].Get(datareftest).GetValue<int>() == 6);
 	
 	
 	
 	
-	const Parameter param1("name", "heeelp", mytype, OutputTag);
+	const Parameter param1("name", "heeelp", Integrals.Types["Int"], OutputTag);
 	
 	REQUIRE(param1.GetName() == "name");
 	REQUIRE(param1.GetHelp() == "heeelp");
-	REQUIRE(&param1.GetType() == mytype);
+	REQUIRE(&param1.GetType() == Integrals.Types["Int"]);
 	
 	REQUIRE(param1.IsReference());
 	
@@ -100,21 +101,21 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE_FALSE(param1.IsInput());
 	
 	
-	const Parameter param2("name2", "heeelp", mytype, OptionalTag);
+	const Parameter param2("name2", "heeelp", Integrals.Types["Int"], OptionalTag);
 	
 	REQUIRE_FALSE(param2.IsReference());
 	
 	REQUIRE(param2.IsOptional());
 	
 	
-	const Parameter param3("name2", "heeelp", mytype,  {Any(1), Any(2), Any(3)}, OptionalTag);
+	const Parameter param3("name2", "heeelp", Integrals.Types["Int"],  {Any(1), Any(2), Any(3)}, OptionalTag);
 	
 	REQUIRE_FALSE(param3.IsReference());
 	
 	REQUIRE(param3.IsOptional());
 	
 	
-	const Parameter param4("name2", "heeelp", mytype, {}, {OptionalTag});
+	const Parameter param4("name2", "heeelp", Integrals.Types["Int"], {}, {OptionalTag});
 	
 	REQUIRE_FALSE(param4.IsReference());
 	
@@ -126,11 +127,11 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
-				mytype, OptionalTag
+				Integrals.Types["Int"], OptionalTag
 			},
 			new Parameter{ "Second",
 				"This is the multiplier",
-				mytype, OptionalTag
+				Integrals.Types["Int"], OptionalTag
 			}
 		},
 		nullptr, // not a member function
@@ -147,13 +148,13 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE(fn1.StretchLast());
 	REQUIRE_FALSE(fn1.IsKeyword());
 	
-	std::vector<Data> v={{mytype, 5}, {mytype, 2}};
+	std::vector<Data> v={{Integrals.Types["Int"], 5}, {Integrals.Types["Int"], 2}};
 	fn1.Call(false, v);
 	
 	REQUIRE(checktestfn == 10);
 	
 	
-	std::vector<Data> v2={{mytype, 5}};
+	std::vector<Data> v2={{Integrals.Types["Int"], 5}};
 	fn1.Call(false, v2);
 	
 	REQUIRE(checktestfn == 15);
@@ -164,7 +165,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	MappedFunction fn2{ "TestFn2",
 		"This is a test function bla bla bla",
-		mytype, //return type
+		Integrals.Types["Int"], //return type
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
@@ -179,7 +180,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	MappedFunction fn3{ "TestFn3",
 		"This is a test function bla bla bla",
-		mytype, //return type
+		Integrals.Types["Int"], //return type
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
@@ -195,7 +196,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	MappedFunction fn4{ "TestFn4",
 		"This is a test function bla bla bla",
-		mytype, //return type
+		Integrals.Types["Int"], //return type
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
@@ -213,7 +214,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	MappedFunction fn5{ "TestFn5",
 		"This is a test function bla bla bla",
-		mytype, //return type
+		Integrals.Types["Int"], //return type
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
@@ -228,5 +229,5 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	REQUIRE( fn5.Call(false, { {myreftype, new A()}, {myfloattype, 1.0f} }).GetValue<int>() == 42 );
 	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {myfloattype, 1.0f} }).GetValue<int>());
-	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {mytype, 1} }).GetValue<int>());
+	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {Integrals.Types["Int"], 1} }).GetValue<int>());
 }

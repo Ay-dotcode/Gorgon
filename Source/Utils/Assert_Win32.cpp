@@ -1552,6 +1552,11 @@ void StackWalker::OnOutput(LPCSTR buffer)
 #undef min
 namespace Gorgon {
 	namespace Utils {
+		
+		template<class T_>
+		std::string demangle(const std::string &name) {
+			return name;
+		}
 
 		struct stackentry {
 			std::string file;
@@ -1585,9 +1590,8 @@ namespace Gorgon {
 		void CrashHandler::Backtrace() {
 			Walker walker;
 			walker.ShowCallstack();
-
-			for(int i=skip+2; i<std::min<int>(skip+depth+2,walker.Stack.size()); i++) {
-
+			
+			auto report=[&](int i) {
 				//last directory before filename
 				std::string filename = String::Replace(walker.Stack[i].file, "\\", "/");
 				std::string dir = Filesystem::GetDirectory(filename);
@@ -1596,7 +1600,7 @@ namespace Gorgon {
 				}
 				dir = Filesystem::GetFile(dir);
 				filename = Filesystem::GetFile(filename);
-
+				
 				Console::SetColor(Console::Magenta);
 				if((i-skip-1)==1) {
 					Console::SetBold();
@@ -1618,6 +1622,16 @@ namespace Gorgon {
 				Console::SetBold();
 				std::cout << ":" << walker.Stack[i].line << std::endl;
 				Console::Reset();
+			};
+			
+#ifdef TEST
+			for(int i=2;i<skip+2;i++) {
+				report(i);
+			}
+#endif			
+			
+			for(int i=skip+2; i<std::min<int>(skip+depth+2,walker.Stack.size()); i++) {
+				report(i);
 			}
 		}
 	}

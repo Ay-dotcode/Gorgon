@@ -22,7 +22,6 @@ SET(Local
 	Layer.cpp
 	Main.h
 	Main.cpp
-	Scripting
 	SGuid.h
 	SGuid.cpp
 	Threading.h
@@ -32,6 +31,11 @@ SET(Local
 	Window.h
 	Window.cpp
 )
+IF(${SCRIPTING})
+	LIST(APPEND Local
+		Scripting
+	)
+ENDIF()
 IF(${WIN32})
 	LIST(APPEND Local
 		Console_Win32.cpp

@@ -8,6 +8,10 @@
 #include "Time.h"
 #include "Animation.h"
 
+#ifdef SCRIPTING
+#	include "Scripting.h"
+#endif
+
 namespace Gorgon {
 
 	namespace internal {
@@ -20,9 +24,13 @@ namespace Gorgon {
 
 	void Initialize(const std::string &name) {
 		internal::systemname=name;
-
+		
 		Filesystem::Initialize();
 		WindowManager::Initialize();
+		
+#ifdef SCRIPTING
+		Scripting::Initialize();
+#endif
 	}
 
 	void Tick() {
