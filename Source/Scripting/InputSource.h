@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <iomanip>
 #include "../String.h"
 
 namespace Gorgon {
@@ -15,16 +16,46 @@ namespace Gorgon {
 			/// This method should read a single physical line from the source. Logical line separation
 			/// is handled by InputSource. Return of false means no input is fetched as it is finished.
 			/// If there is a read error, rather than returning false, this function should throw.
-			virtual bool ReadLine(std::string &) = 0;
+			/// newline parameter denotes that this line is a new line, not continuation of another.
+			virtual bool ReadLine(std::string &, bool newline) = 0;
 			
 		};
-
+		
 		/// Reads lines from the console
 		class ConsoleInput : public InputProvider {
+		public:
+			
+			/// Initializes console input. line number will be appended at the start of the prompt
+			ConsoleInput(const std::string &prompt="> ") : prompt(prompt) { }
+			
+			void SetPrompt(const std::string &prompt) {
+				this->prompt=prompt;
+			}
+			
+			virtual bool ReadLine(std::string &input, bool newline) override {
+				line++;
+				std::cout<<std::setw(3)<<line<<prompt;
+				
+				return (std::cin>>input);
+			}
+			
+		private:
+			std::string prompt;
+			int line=0;
 		};
 		
 		/// Reads lines from a stream
 		class StreamInput : public InputProvider {
+		public:
+			StreamInput(std::istream &stream) : stream(stream) {
+			}
+			
+			virtual bool ReadLine(std::string &input, bool) override {
+				return (stream>>input);
+			}
+			
+		private:
+			std::istream &stream;
 		};
 		
 		/// This class represents a logical line
@@ -57,7 +88,7 @@ namespace Gorgon {
 					
 					while(true) {
 						std::string s;
-						if(!provider.ReadLine(s)) {
+						if(!provider.ReadLine(s, newline=="")) {
 							eof=true;
 							break;
 						}
