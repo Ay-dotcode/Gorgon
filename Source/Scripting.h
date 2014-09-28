@@ -83,5 +83,6 @@ namespace Gorgon {
 		
 		/// This library requires Initialize to be called
 		extern Library Integrals;
+		extern Library Keywords;
 	}
 }

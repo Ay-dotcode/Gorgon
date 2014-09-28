@@ -30,4 +30,5 @@ namespace Gorgon { namespace Scripting {
 		Data::Invalid()
 	};
 	
+	int VariableScope::nextid=0;
 } }

@@ -1,5 +1,6 @@
 #include "VirtualMachine.h"
 #include "Exceptions.h"
+#include "../Scripting.h"
 
 
 
@@ -9,6 +10,37 @@ namespace Gorgon {
 		
 		Containers::Hashmap<std::thread::id, VirtualMachine> VirtualMachine::activevms;
 		
+		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
+		Libraries(libraries), output(&out), input(&in), 
+		defoutput(&out), definput(&in), automaticreset(automaticreset)
+		{ 
+			variablescopes.AddNew("[main]", VariableScope::DefaultLocal);
+			libraries.Add(Integrals);
+			libraries.Add(Keywords);
+		}
+		
+		void VirtualMachine::AddLibrary(const Library &library) { 
+			libraries.Add(library);
+			if(alllibnames!="") alllibnames+=", ";
+			alllibnames+=library.GetName();
+		}
+		
+		void VirtualMachine::RemoveLibrary(const Library &library) {
+			libraries.Remove(library.GetName());
+			alllibnames="";
+			for(const auto &lib : libraries) {
+				if(alllibnames!="") alllibnames+=", ";
+				alllibnames+=lib.first;
+			}
+		}
+		
+		void VirtualMachine::SetOutput(std::ostream &out) {
+			output=&out;
+		}
+		
+		void VirtualMachine::SetInput(std::istream &in) {
+			input=&in;
+		}
 		
 		const Type &VirtualMachine::FindType(const std::string &name, const std::string &namespc) {
 			if(namespc!="") {
@@ -168,8 +200,7 @@ namespace Gorgon {
 				
 				return *foundelement;
 			}
-		}
-		
+		}		
 		
 		
 	}

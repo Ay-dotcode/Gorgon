@@ -69,7 +69,7 @@ namespace Gorgon {
 		public:
 			/// Constructor requires the function that is creating this scope and data associated
 			/// with it. Data type checking will not be performed on embedded keywords.
-			KeywordScope(const Function &fn, Data data) : data(data), fn(fn) {
+			KeywordScope(const Function &fn, Data data) : data(data), fn(&fn) {
 			}
 			
 			/// Returns the data associated with this scope
@@ -87,11 +87,15 @@ namespace Gorgon {
 			/// yet ended. CallEnd function is responsible to move execution point back inside the keyword
 			/// scope.
 			bool CallEnd() const {
-				return fn.CallEnd(data);
+				return fn->CallEnd(data);
+			}
+			
+			const Function &GetFunction() const {
+				return *fn;
 			}
 			
 		private:
-			const Function &fn;
+			const Function *fn;
 			Data data;
 		};
 		
@@ -140,13 +144,18 @@ namespace Gorgon {
 		/// This class uniquely represents a source code line. uintptr_t is used for source
 		/// to reduce dependency
 		class SourceMarker {
+			friend class ExecutionScope;
 		public:
-			unsigned long Line;
-			uintptr_t 	  Source;
 			
 			bool operator <(const SourceMarker &other) {
-				return (Source == other.Source ? Line<other.Line : Source<other.Source);
+				return (source == other.source ? line<other.line : source<other.source);
 			}
+			
+		private:
+			SourceMarker(unsigned long line, uintptr_t source) : line(line), source(source) {}
+			
+			unsigned long line;
+			uintptr_t 	  source;
 		};
 		
 		class ExecutionScope { 

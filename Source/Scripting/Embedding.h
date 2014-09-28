@@ -481,9 +481,9 @@ namespace Gorgon {
 			/// Constructor, returntype and parent could be nullptr, tags are optional. 
 			template<class ...P_, class ...Fns1_, class ...Fns2_>
 			MappedFunction(const std::string &name, const std::string &help, const Type *returntype, 
-						   ParameterList parameters, const Type *parent, 
+						   const Type *parent, ParameterList parameters, 
 						   std::tuple<Fns1_...> functions, std::tuple<Fns2_...> methods, P_ ...tags) :  
-			Function(name, help, returntype, std::move(parameters), parent, tags...)
+			Function(name, help, returntype, parent, std::move(parameters), tags...)
 			{ 
 				this->functions=new fnstorageimpl<Fns1_...>(*this, functions);
 				initmethods(methods);
@@ -557,13 +557,13 @@ namespace Gorgon {
 			MappedOperator(const std::string &name, const std::string &help, const Type *returntype, 
 						   const Type *parent, const Type *rhs, F_ fn) :
 			MappedFunction(
-				name, help, returntype, Scripting::ParameterList{
+				name, help, returntype, parent, Scripting::ParameterList{
 				new Scripting::Parameter(
 					"rhs", 
 					"Right hand side of the operator", 
 					rhs)
 				}, 
-				parent, MappedFunctions(fn), MappedMethods(), 
+				MappedFunctions(fn), MappedMethods(), 
 				Scripting::OperatorTag
 			)
 			{
@@ -572,6 +572,14 @@ namespace Gorgon {
 			}
 		};
 		
+		/**
+		 * Creates a comparison function
+		 */
+		#define MAP_COMPARE(opname, op, mappedtype, cpptype) \
+			new MappedOperator( #opname, \
+				"Compares two "#mappedtype" types.", \
+				Bool, mappedtype, mappedtype, [](cpptype l, cpptype r) { return l op r; } \
+			)
 		
 		/**
 		 * Scoped keyword helps to build scoped keywords from embedded functions.
@@ -592,8 +600,8 @@ namespace Gorgon {
 			template<class ...P_, class ...Fns1_>
 			ScopedKeyword(const std::string &name, const std::string &help, ParameterList parameters, 
 						  std::tuple<Fns1_...> functions, std::function<bool(Data)> end, P_ ...tags) :  
-			MappedFunction(name, help, &Variant, std::move(parameters), nullptr, ScopedTag, tags...),
-			end(end)
+			MappedFunction(name, help, &Variant, nullptr, std::move(parameters), functions, MappedMethods(), 
+						   Scripting::ScopedTag, tags...), end(end)
 			{ }
 			
 			virtual bool CallEnd(Data data) const override {
@@ -639,7 +647,7 @@ namespace Gorgon {
 			RedirectingKeyword(const std::string &name, const std::string &help, ParameterList parameters, 
 							   std::tuple<Fns1_...> functions, std::function<bool(Data)> end, 
 							   std::function<void(Data, std::string &)> redirect, P_ ...tags) :  
-			ScopedKeyword(name, help, std::move(parameters), ScopedTag, end, tags...),
+			ScopedKeyword(name, help, std::move(parameters), functions, end, Scripting::RedirectTag, tags...),
 			redirect(redirect)
 			{ }
 			
@@ -701,6 +709,8 @@ namespace Gorgon {
 			MappedData(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
 			DataMember(name, help, *type, tags...), member(member) {
 				ASSERT(type, "Type cannot be nullptr", 1, 2);
+				ASSERT(type->GetDefaultValue().TypeCheck<T_>(), "Reported type "+type->GetName()+
+					   "does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
 			}
 			
 			virtual Data Get(const Data &data) const override {
@@ -743,6 +753,8 @@ namespace Gorgon {
 			DataAccessor(std::function<T_(const C_ &)> getter, std::function<void(C_ &, const T_ &)> setter, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
 			DataMember(name, help, *type, tags...), getter(getter), setter(setter) {
 				ASSERT(type, "Type cannot be nullptr", 1, 2);
+				ASSERT(type->GetDefaultValue().TypeCheck<T_>(), "Reported type "+type->GetName()+
+					   "does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
 			}
 			
 			virtual Data Get(const Data &data) const override {
@@ -779,6 +791,8 @@ namespace Gorgon {
 			DataAccessor(std::function<T_(const C_ &)> getter, std::function<void(C_ &, const T_ &)> setter, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
 			DataMember(name, help, *type, tags...), getter(getter), setter(setter) {
 				ASSERT(type, "Type cannot be nullptr", 1, 2);
+				ASSERT(type->GetDefaultValue().TypeCheck<T_>(), "Reported type "+type->GetName()+
+					   "does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
 			}
 			
 			virtual Data Get(const Data &data) const override {

@@ -124,6 +124,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	const MappedFunction fn1{ "TestFn",
 		"This is a test function bla bla bla",
 		nullptr, //return type
+		nullptr, // not a member function
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
@@ -134,7 +135,6 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 				Integrals.Types["Int"], OptionalTag
 			}
 		},
-		nullptr, // not a member function
 		MappedFunctions(&TestFn, &TestFn_1, []{TestFn(1);}), MappedMethods(TestFn, TestFn_1, []{TestFn(1);}),
 		StretchTag, MethodTag
 	};
@@ -166,13 +166,13 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	MappedFunction fn2{ "TestFn2",
 		"This is a test function bla bla bla",
 		Integrals.Types["Int"], //return type
+		nullptr, // memberof
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
 				myreftype
 			}
 		},
-		nullptr, // memberof
 		MappedFunctions(&A::a), MappedMethods()
 	};
 	
@@ -181,13 +181,13 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	MappedFunction fn3{ "TestFn3",
 		"This is a test function bla bla bla",
 		Integrals.Types["Int"], //return type
+		nullptr, // member of
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
 				myvaluetype
 			}
 		},
-		nullptr, // member of
 		MappedFunctions(&A::a), MappedMethods()
 	};
 	
@@ -197,13 +197,13 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	MappedFunction fn4{ "TestFn4",
 		"This is a test function bla bla bla",
 		Integrals.Types["Int"], //return type
+		myvaluetype, //member of
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
 				myfloattype
 			}
 		},
-		myvaluetype, //member of
 		MappedFunctions(&A::b), MappedMethods()
 	};
 	
@@ -215,13 +215,13 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	MappedFunction fn5{ "TestFn5",
 		"This is a test function bla bla bla",
 		Integrals.Types["Int"], //return type
+		myreftype, //member of
 		ParameterList{
 			new Parameter{ "Name",
 				"This parameter is bla bla",
 				myfloattype
 			}
 		},
-		myreftype, //member of
 		MappedFunctions(&A::b), MappedMethods()
 	};
 	

@@ -224,11 +224,12 @@ namespace Gorgon {
 		 * StretchTag. This way, a keyword can parse its own parameters. This allows function keyword
 		 * to have `function name(type param, type param...)` returns type syntax
 		 * 
-		 * **ScopedTag**: Makes this function a scoped keyword. It also sets keyword and neverskip tags
-		 * as well. A neverskip function may or may not be a scoped keyword. For instance, case functions
-		 * inside a switch scope are not scoped, they use its parent scope.
+		 * **ScopedTag**: Makes this function a scoped keyword. It also sets keyword tag. A neverskip 
+		 * function may or may not be a scoped keyword. For instance, case functions inside a switch
+		 * scope are not scoped, they use its parent scope. If a scoped keyword is not a never skip
+		 * function and is encountered while skipping, an empty scope will be created for it.
 		 * 
-		 * **RedirectTag**: Redirects all the code inside a scope keyword. Sets keyword, scoped, and neverskip
+		 * **RedirectTag**: Redirects all the code inside a scope keyword. Sets keyword and scoped
 		 * tags as well. If there are neverskip functions inside a redirected scope keyword, they are first
 		 * processed, then redirected. While redirecting, VM will go into skipping mode.
 		 * 
@@ -273,7 +274,7 @@ namespace Gorgon {
 			/// optional and its possible to skip return type and specify tags directly.
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *returntype, 
-					 ParameterList parameters, const Type *parent, P_ ...tags) :
+					 const Type *parent, ParameterList parameters, P_ ...tags) :
 			name(name), help(help), returntype(returntype), parent(parent), Parameters(this->parameters)
 			{
 				using std::swap;
@@ -413,6 +414,24 @@ namespace Gorgon {
 			virtual void CallRedirect(Data,std::string &) const;
 			
 			
+			/// Compares two functions
+			bool operator ==(const Function &other) const {
+				return this==&other;
+			}
+			
+			bool operator ==(const Function *other) const {
+				return this==other;
+			}
+			
+			/// Compares two functions
+			bool operator !=(const Function &other) const {
+				return this!=&other;
+			}
+			
+			bool operator !=(const Function *other) const {
+				return this!=other;
+			}
+			
 			/// Parameters that this function have
 			const ParameterList &Parameters;
 			
@@ -430,12 +449,10 @@ namespace Gorgon {
 					case ScopedTag:
 						keyword=true;
 						scoped=true;
-						neverskip=true;
 						break;
 					case RedirectTag:
 						keyword=true;
 						scoped=true;
-						neverskip=true;
 						redirect=true;
 						break;
 					case NeverSkipTag:
@@ -836,6 +853,15 @@ namespace Gorgon {
 			
 			bool operator ==(const Type *other) const {
 				return this==other;
+			}
+			
+			/// Compares two types
+			bool operator !=(const Type &other) const {
+				return this!=&other;
+			}
+			
+			bool operator !=(const Type *other) const {
+				return this!=other;
 			}
 			
 			/// Converts this type to its pointer

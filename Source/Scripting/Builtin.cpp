@@ -5,6 +5,7 @@ namespace Gorgon {
 	namespace Scripting {
 		
 		Library Integrals;
+		Library Keywords;
 		
 		static void Echo(std::vector<std::string> datav) {
 			auto &out=VirtualMachine::Get().GetOutput();
@@ -13,6 +14,9 @@ namespace Gorgon {
 			}
 			out<<std::endl;
 		}
+		
+		Function *If();
+		Function *Else();
 		
 		void init_builtin() {						
 			auto Int = new MappedValueType<int>( "Int", 
@@ -95,20 +99,32 @@ namespace Gorgon {
 					Int, Int, Int, [](int l, int r) { 
 						return l>=0 ? l%r : (l%r)+r;
 					}
-				)
+				),
+				
+				MAP_COMPARE( =, ==, Int, int),
+				MAP_COMPARE(>=, >=, Int, int),
+				MAP_COMPARE(<=, <=, Int, int),
+				MAP_COMPARE(<>, !=, Int, int),
+				MAP_COMPARE( >, >,  Int, int),
+				MAP_COMPARE( <, <,  Int, int),
 			});
 			
 			String->AddFunctions({
 				new MappedFunction("Length",
-					"Returns the length of the string", Unsigned, {}, String, 
+					"Returns the length of the string", Unsigned, String, {}, 
 					MappedFunctions(&std::string::length), MappedMethods()
 				),
 				
-				new MappedOperator( "==",
-					"Compares two strings",
-					Bool, String, String, [](std::string l, std::string r) { return l==r; }
-				)
+				MAP_COMPARE( =, ==, String, std::string)
 			});
+			
+			
+			Keywords={"Keywords", "Standard keywords like if and for.",
+				TypeList {},
+				FunctionList {
+					If(), Else()
+				},
+			};
 			
 			
 			Integrals={"Integral", "Integral types and functions", 
@@ -124,12 +140,12 @@ namespace Gorgon {
 				FunctionList {
 					new MappedFunction("Echo",
 						"This function prints the given parameters to the screen.",
-						nullptr, ParameterList {
+						nullptr, nullptr, ParameterList {
 							new Parameter( "string",
 								"The strings that will be printed.",
 								String
 							)
-						}, nullptr,
+						},
 						MappedFunctions(Echo), MappedMethods(),
 						StretchTag, RepeatTag
 					)
@@ -138,6 +154,9 @@ namespace Gorgon {
 					new Constant("Pi", "Contains the value of PI", {Double, 3.14159265358979}),
 				}
 			};
+			
+			
+			
 		}
 		
 	}

@@ -14,6 +14,8 @@ namespace Gorgon {
 			AmbiguousSymbol,
 			SymbolNotFound,
 			NullValue,
+			UnexpectedKeyword,
+			FlowError,
 		};
 		
 		DefineEnumStrings(ExceptionType,
@@ -22,6 +24,8 @@ namespace Gorgon {
 			{ExceptionType::AmbiguousSymbol, "Ambiguous symbol"},
 			{ExceptionType::SymbolNotFound, "Symbol not found"},
 			{ExceptionType::NullValue, "Value is null"},
+			{ExceptionType::UnexpectedKeyword, "Unexpected keyword"},
+			{ExceptionType::FlowError, "Flow error"}
 		);
 		
 		enum class SymbolType {
@@ -92,6 +96,22 @@ namespace Gorgon {
 		public:
 			explicit NullValueException(const std::string &symbolname, const std::string &details="") : 
 			Exception(ExceptionType::NullValue, "The value of " + symbolname + " is NULL") { 
+				this->details = details;
+			}
+		};
+		
+		class UnexpectedKeywordException : public Exception {
+		public:
+			explicit UnexpectedKeywordException(const std::string &keyword, const std::string &details="") : 
+			Exception(ExceptionType::UnexpectedKeyword, "The keyword " + keyword + " is not expected") { 
+				this->details = details;
+			}
+		};
+		
+		class FlowException : public Exception {
+		public:
+			explicit FlowException(const std::string &message, const std::string &details="") : 
+			Exception(ExceptionType::FlowError, message) { 
 				this->details = details;
 			}
 		};

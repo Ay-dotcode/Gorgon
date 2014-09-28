@@ -9,5 +9,7 @@ SET(Local
 	Runtime.h
 	VirtualMachine.h
 	VirtualMachine.cpp
+	
+	Keywords/If.cpp
 )
 
