@@ -42,13 +42,18 @@ namespace Gorgon {
 			input=&in;
 		}
 		
-		const Type &VirtualMachine::FindType(const std::string &name, const std::string &namespc) {
+		const Type &VirtualMachine::FindType(std::string name) {
+			using std::swap;
+			
+			std::string namespc=String::Extract(name, ':');
+			if(name=="") swap(namespc, name);
+			
 			if(namespc!="") {
 				auto lib=libraries.Find(namespc);
 				if(!lib.IsValid()) {
 					throw SymbolNotFoundException(
-						namespc, SymbolType::Namespace, 
-						"Cannot find "+namespc+" namespace while looking for type "+name
+						namespc, SymbolType::Library, 
+						"Cannot find "+namespc+" library while looking for type "+name
 					);
 				}
 				
@@ -95,28 +100,13 @@ namespace Gorgon {
 			}
 		}
 		
-		const Function &VirtualMachine::FindFunction(const std::string &name, const std::string &namespc) {
-			if(namespc!="") {
-				auto lib=libraries.Find(namespc);
-				if(!lib.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc, SymbolType::Namespace, 
-						"Cannot find "+namespc+" namespace while looking for function "+name
-					);
-				}
-				
-				auto element=lib.Current().second.Functions.Find(name);
-				
-				if(!element.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc+":"+name, SymbolType::Function, 
-						"Cannot find "+name+" function in library "+namespc
-					);
-				}
-				
-				return element.Current().second;
-			}
-			else { //search all
+		const Function &VirtualMachine::FindFunction(std::string name) {
+			using std::swap;
+			
+			std::string namespc=String::Extract(name, ':');
+			if(name=="") swap(namespc, name);
+			
+			if(namespc=="") { //search all
 				const Function *foundelement;
 				std::string foundlibnames;
 				int found=0;
@@ -146,31 +136,89 @@ namespace Gorgon {
 				
 				return *foundelement;
 			}
-		}
-		
-		
-		const Constant &VirtualMachine::FindConstant(const std::string &name, const std::string &namespc) {
-			if(namespc!="") {
+			else if(name.find_first_of(':')!=name.npos) { // both namespace and type is given
+				std::string typname = String::Extract(name, ':');
+				
 				auto lib=libraries.Find(namespc);
 				if(!lib.IsValid()) {
 					throw SymbolNotFoundException(
-						namespc, SymbolType::Namespace, 
-						"Cannot find "+namespc+" namespace while looking for cosntant "+name
+						namespc, SymbolType::Library, 
+						"Cannot find "+namespc+" library while looking for function "+name
 					);
 				}
 				
-				auto element=lib.Current().second.Constants.Find(name);
+				auto type=lib.Current().second.Types.Find(typname);
+				if(!type.IsValid()) {
+					throw SymbolNotFoundException(
+						namespc+":"+typname, SymbolType::Type, 
+						"Cannot find "+typname+" type while looking for "+name+" function in library "+namespc
+					);
+				}
+				
+				auto element=type.Current().second.Functions.Find(name);				
 				
 				if(!element.IsValid()) {
 					throw SymbolNotFoundException(
-						namespc+":"+name, SymbolType::Constant, 
-						"Cannot find "+name+" constant in library "+namespc
+						namespc+":"+name, SymbolType::Function, 
+						"Cannot find "+name+" function in type "+namespc+":"+typname
 					);
 				}
 				
 				return element.Current().second;
 			}
-			else { //search all
+			else { // namespc can either be type or library
+				auto lib=libraries.Find(namespc);
+				if(!lib.IsValid()) {
+					const Type *type=nullptr;
+					
+					try {
+						type=&FindType(namespc);
+					}
+					catch(const SymbolNotFoundException &) {
+					}
+					catch(...) { 
+						throw;
+					}
+					
+					throw SymbolNotFoundException(
+						namespc, SymbolType::Namespace, 
+						"Cannot find "+namespc+" namespace while looking for function "+name
+					);
+					
+					auto element=type->Functions.Find(name);
+					
+					if(!element.IsValid()) {
+						throw SymbolNotFoundException(
+							namespc+":"+name, SymbolType::Function, 
+							"Cannot find "+name+" function in library "+namespc
+						);
+					}
+					
+					return element.Current().second;
+				}
+				else {				
+					auto element=lib.Current().second.Functions.Find(name);
+					
+					if(!element.IsValid()) {
+						throw SymbolNotFoundException(
+							namespc+":"+name, SymbolType::Function, 
+							"Cannot find "+name+" function in library "+namespc
+						);
+					}
+					return element.Current().second;
+				}
+				
+			}
+		}
+		
+		
+		const Constant &VirtualMachine::FindConstant(std::string name) {
+			using std::swap;
+			
+			std::string namespc=String::Extract(name, ':');
+			if(name=="") swap(namespc, name);
+			
+			if(namespc=="") { //search all
 				const Constant *foundelement;
 				std::string foundlibnames;
 				int found=0;
@@ -194,11 +242,84 @@ namespace Gorgon {
 				else if(found>1) {
 					throw AmbiguousSymbolException(
 						name, SymbolType::Constant,
-						name+" constant found in following libraries: "+foundlibnames
+						name+" contstant found in following libraries: "+foundlibnames
 					);
 				}
 				
 				return *foundelement;
+			}
+			else if(name.find_first_of(':')!=name.npos) { // both namespace and type is given
+				std::string typname = String::Extract(name, ':');
+				
+				auto lib=libraries.Find(namespc);
+				if(!lib.IsValid()) {
+					throw SymbolNotFoundException(
+						namespc, SymbolType::Library, 
+						"Cannot find "+namespc+" library while looking for constant "+name
+					);
+				}
+				
+				auto type=lib.Current().second.Types.Find(typname);
+				if(!type.IsValid()) {
+					throw SymbolNotFoundException(
+						namespc+":"+typname, SymbolType::Type, 
+						"Cannot find "+typname+" type while looking for "+name+" constant in library "+namespc
+					);
+				}
+				
+				auto element=type.Current().second.Constants.Find(name);				
+				
+				if(!element.IsValid()) {
+					throw SymbolNotFoundException(
+						namespc+":"+name, SymbolType::Constant, 
+						"Cannot find "+name+" constant in type "+namespc+":"+typname
+					);
+				}
+				
+				return element.Current().second;
+			}
+			else { // namespc can either be type or library
+				auto lib=libraries.Find(namespc);
+				if(!lib.IsValid()) {
+					const Type *type=nullptr;
+					
+					try {
+						type=&FindType(namespc);
+					}
+					catch(const SymbolNotFoundException &) {
+					}
+					catch(...) { 
+						throw;
+					}
+					
+					throw SymbolNotFoundException(
+						namespc, SymbolType::Namespace, 
+						"Cannot find "+namespc+" namespace while looking for constant "+name
+					);
+					
+					auto element=type->Constants.Find(name);
+					
+					if(!element.IsValid()) {
+						throw SymbolNotFoundException(
+							namespc+":"+name, SymbolType::Constant, 
+							"Cannot find "+name+" constant in library "+namespc
+						);
+					}
+					
+					return element.Current().second;
+				}
+				else {				
+					auto element=lib.Current().second.Constants.Find(name);
+					
+					if(!element.IsValid()) {
+						throw SymbolNotFoundException(
+							namespc+":"+name, SymbolType::Constant, 
+							"Cannot find "+name+" constant in library "+namespc
+						);
+					}
+					return element.Current().second;
+				}
+				
 			}
 		}		
 		

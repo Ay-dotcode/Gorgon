@@ -230,4 +230,8 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE( fn5.Call(false, { {myreftype, new A()}, {myfloattype, 1.0f} }).GetValue<int>() == 42 );
 	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {myfloattype, 1.0f} }).GetValue<int>());
 	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {Integrals.Types["Int"], 1} }).GetValue<int>());
+	;
+	
+	VirtualMachine vm;
+	REQUIRE( vm.FindConstant("Pi").GetData().GetValue<double>() == Approx(3.1416f) );
 }

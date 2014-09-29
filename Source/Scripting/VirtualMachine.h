@@ -47,17 +47,17 @@ namespace Gorgon {
 			/// Removes a library
 			void RemoveLibrary(const Library &library);
 			
-			/// Finds the given type by name. Unless namespc is specified, it will be searched
-			/// from all libraries. This function may throw ambiguous symbol.
-			const Type &FindType(const std::string &name, const std::string &namespc="");
+			/// Finds the given type by name. Namespace information will be extracted if exists. 
+			/// This function may throw symbol not found / ambiguous symbol.
+			const Type &FindType(std::string name);
 			
-			/// Finds the given function by name. Unless namespc is specified, it will be searched
-			/// from all libraries. This function may throw ambiguous symbol.
-			const Function &FindFunction(const std::string &name, const std::string &namespc="");
+			/// Finds the given type by name. Namespace information will be extracted if exists. 
+			/// This function may throw symbol not found / ambiguous symbol.
+			const Function &FindFunction(std::string name);
 			
-			/// Finds the given constant by name. Unless namespc is specified, it will be searched
-			/// from all libraries. This function may throw ambiguous symbol.
-			const Constant &FindConstant(const std::string &name, const std::string &namespc="");
+			/// Finds the given type by name. Namespace information will be extracted if exists. 
+			/// This function may throw symbol not found / ambiguous symbol.
+			const Constant &FindConstant(std::string name);
 			
 			/// Sets the input source to read code lines from. Does not change active execution context.
 			/// only allows 
