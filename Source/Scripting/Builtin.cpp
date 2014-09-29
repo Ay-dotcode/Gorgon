@@ -16,6 +16,7 @@ namespace Gorgon {
 		}
 		
 		Function *If();
+		Function *ElseIf();
 		Function *Else();
 		
 		void init_builtin() {						
@@ -119,16 +120,9 @@ namespace Gorgon {
 			});
 			
 			
-			Keywords={"Keywords", "Standard keywords like if and for.",
-				TypeList {},
-				FunctionList {
-					If(), Else()
-				},
-			};
-			
-			
 			Integrals={"Integral", "Integral types and functions", 
 				TypeList {
+					Bool,
 					Int,
 					Float,
 					Double,
@@ -155,6 +149,14 @@ namespace Gorgon {
 				}
 			};
 			
+			
+			
+			Keywords={"Keywords", "Standard keywords like if and for.",
+				TypeList {},
+				FunctionList {
+					If(), ElseIf(), Else()
+				},
+			};
 			
 			
 		}

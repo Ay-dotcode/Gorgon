@@ -109,7 +109,8 @@ namespace Gorgon {
 			/// Scoping mode dictates what variable scoping mode should be used for auto allocated variables
 			enum ScopingMode {
 				DefaultGlobal,
-				DefaultLocal
+				DefaultLocal,
+				LimitGlobals
 			};
 			
 			/// Default constructor requires a name and working mode. Name is generally name of the

@@ -2,7 +2,7 @@
 
 namespace Gorgon { namespace Scripting {
 	Function *If();
-	Function *Else();
+	
 	// to avoid name clashes
 	namespace {
 		
@@ -60,7 +60,7 @@ namespace Gorgon { namespace Scripting {
 			auto &current = vm.GetKeywordScope();
 			
 			if(current.GetFunction()!=If()) {
-				throw UnexpectedKeywordException("else", "else keyword requires an if scope. "
+				throw UnexpectedKeywordException("elseif", "elseif keyword requires an if scope. "
 					"There might be a missing or extra 'end'");
 			}
 			
@@ -73,10 +73,42 @@ namespace Gorgon { namespace Scripting {
 				vm.StopSkipping();
 			}
 		}
+		
+		void ElseIfFn(bool condition) {
+			auto &vm = VirtualMachine::Get();
+			auto &current = vm.GetKeywordScope();
+			
+			if(current.GetFunction()!=If()) {
+				throw UnexpectedKeywordException("else", "else keyword requires an if scope. "
+					"There might be a missing or extra 'end'");
+			}
+			
+			IfScope scope=current.GetData();
+			
+			if(scope.passedcorrect) {
+				if(!scope.skipping) {
+					vm.StartSkipping();
+					scope.skipping=true;
+				}
+			}
+			else {
+				if(condition) {
+					vm.StopSkipping();
+					scope.passedcorrect=true;
+					scope.skipping=false;
+				}
+				else {
+					if(!scope.skipping) {
+						vm.StartSkipping();
+						scope.skipping=true;
+					}
+				}
+			}
+		}
 	}
 	
 	Function *If() {
-		static Function *fn=new ScopedKeyword{"if",
+		static Function *fn=new Scripting::ScopedKeyword{"if",
 			"If the given condition is false, this method skips until the matching end statement.",
 			ParameterList{
 				new Parameter("Condition", 
@@ -86,6 +118,23 @@ namespace Gorgon { namespace Scripting {
 			}, 
 			MappedFunctions(IfFn), IfEnd
 		};
+		return fn;
+	}
+	
+	Function *ElseIf() {
+		static Function *fn=new MappedFunction{"elseif",
+			"If previously given if and elseif conditions are not met and the condition is met "
+			"the contents of this block is executed, otherwise its skipped.",
+			nullptr, nullptr,
+			ParameterList{ 
+				new Parameter("Condition", 
+					"Condition for the if statement. If true the contents will be executed.",
+					Integrals.Types["Bool"]
+				)
+			},
+			MappedFunctions(ElseIfFn), MappedMethods(), KeywordTag, NeverSkipTag
+		};
+		
 		return fn;
 	}
 	

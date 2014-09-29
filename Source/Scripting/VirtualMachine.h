@@ -84,6 +84,8 @@ namespace Gorgon {
 				return activevms[std::this_thread::get_id()];
 			}
 			
+			Variable &GetVariable(const std::string &name);
+			
 			/// Redirects the output stream to the given stream
 			void SetOutput(std::ostream &out);
 			

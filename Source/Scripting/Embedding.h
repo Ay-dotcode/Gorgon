@@ -506,7 +506,6 @@ namespace Gorgon {
 				ASSERT((!IsOperator() || parent ) , "All operators should be a member function" , 1, 2);
 				
 				ASSERT(this->HasMethod()==(bool)method , "MethodTag and method parameter must match", 1, 2);
-				overrideablechecks();
 			}
 			
 			/// Destructor
@@ -516,6 +515,7 @@ namespace Gorgon {
 			}
 			
 			virtual Data Call(bool ismethod, const std::vector<Data> &parameters) const override {
+				overrideablechecks();
 				if(ismethod) {
 					if(methods) {
 						methods->call(parameters);
