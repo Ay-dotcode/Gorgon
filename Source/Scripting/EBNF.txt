@@ -1,0 +1,51 @@
+(* Terminals *)
+letter = "A" | "B" | ... | "Z" | "a" | ... | "z";
+
+non zero digit  = "1" | ... | "9";
+
+zero = "0";
+
+symbol = "+" | "-" | "*" | "/" | "<" | ">" | "=" | "|" | ...;
+
+white space = "\n" | "\t" | "\r" | " ";
+
+(* Literals *)
+natural number = non zero digit, { zero | non zero digit};
+int literal = zero | ["-"], natural number;
+
+float literal = int literal, ".", zero | non zero digit, {zero | non zero digit};
+
+string atom = letter | digit | symbol, {letter | digit | symbol};
+string literal = '"', string atom, '"' | "'", string atom, "'";
+
+boolean literal = "true" | "false";
+
+literal = int literal | float literal | string literal | boolean literal;
+
+
+(* Language Productions *)
+statement = keyword call | function call | expression | assignment, [";" | "\n"];
+
+assignment = variable, "=", expression;
+
+object constructor = [identifier], "{", {parameter}, "}";
+
+array constructor = [identifier], "[", {parameter}, "]";
+
+function call = [variable, "."], [[identifier, ":"], identifier, ":"], function identifier | variable, "(", {parameter}, ")";
+
+variable = "$", identifier;
+
+identifier = letter, {letter | digit | "_"};
+
+function identifier = letter | symbol, {letter | symbol | digit};
+
+parameter = expression, {"," | expression};
+
+postfix expression operator = expression, "[", {parameter}, "]";
+expression = term, {function identifier, term};
+term = "(", expression, ")" | postfix expression operator | function call | literal
+
+keyword parameter = expression, {" ", expression};
+keyword call = function identifier, ["(", {keyword parameter}, ")" | {keyword parameter}];
+
