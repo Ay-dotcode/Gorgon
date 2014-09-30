@@ -5,6 +5,7 @@
 #include <vector>
 #include <iomanip>
 #include "../String.h"
+#include "Parser.h"
 
 namespace Gorgon {
 	
@@ -61,10 +62,9 @@ namespace Gorgon {
 		/// This class represents a logical line
 		class Line {
 		public:
-			std::string Data;
+			Instruction instruction;
 			
 			unsigned long Physical;
-			unsigned long Logical;
 		};
 
 		/** 
@@ -109,7 +109,7 @@ namespace Gorgon {
 					
 					while(newline!="") {
 						//TODO parse newline if necessary split to multiple lines
-						lines.push_back({newline, pline, lines.size()});
+						lines.push_back({newline, pline});
 						newline="";
 					}
 				}
