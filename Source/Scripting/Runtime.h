@@ -183,21 +183,21 @@ namespace Gorgon {
 			}
 			
 			/// Returns the code at the current line and increments the current line
-			bool Get(std::string &data) {
-				bool ret=source->GetLine(current, data);
+			Instruction *Get() {
+				auto ret=source->ReadInstruction(current);
 				current++;
 				
 				return ret;
 			}
 			
 			/// Returns the code at the current line without incrementing it.
-			bool Peak(std::string &data) {
-				return source->GetLine(current, data);
+			Instruction *Peek() {
+				return source->ReadInstruction(current);
 			}
 			
 			/// Returns the code at the given line without incrementing current line.
-			bool Peak(unsigned long line, std::string &data) {
-				return source->GetLine(line, data);
+			Instruction *Peek(unsigned long line) {
+				return source->ReadInstruction(line);
 			}
 			
 		private:

@@ -86,6 +86,14 @@ namespace Gorgon {
 			
 			Variable &GetVariable(const std::string &name);
 			
+			/// Creates a new InputSource using a console input provider. Also creates an activates
+			/// a new execution scope using this input source.
+			void AttachCommandConsole();
+			
+			/// If there is an attached command console, this function detaches that console, 
+			/// stops execution and returns true. Otherwise, it returns false.
+			bool DetachCommandConsole();
+			
 			/// Redirects the output stream to the given stream
 			void SetOutput(std::ostream &out);
 			
