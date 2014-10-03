@@ -5,6 +5,8 @@ SET(Local
 	Data.h
 	Embedding.h
 	InputSource.h
+	Parser.h
+	Parser.cpp
 	Reflection.h
 	Runtime.h
 	VirtualMachine.h

@@ -37,6 +37,7 @@ namespace Gorgon {
 			/// This enumeration lists all parse error types.
 			enum ErrorCode {
 				MismatchedParenthesis,
+				UnexpectedToken,
 			}; 
 			
 			/// The code of the error
@@ -48,6 +49,9 @@ namespace Gorgon {
 			/// The exact character that contains parse error. If it cannot be determined
 			/// it will reported as -1.
 			int Char;
+			
+			
+			std::string What;
 		};
 		
 		DefineEnumStringsCM(ParseError, ErrorCode, 
