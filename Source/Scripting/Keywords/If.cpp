@@ -25,6 +25,8 @@ namespace Gorgon { namespace Scripting {
 		
 		std::ostream &operator<<(std::ostream &out, const IfScope &) {
 			out<<"[[IfScope]]";
+
+			return out;
 		}
 		
 		Data IfFn(bool expression) {

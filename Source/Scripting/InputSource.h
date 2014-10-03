@@ -64,8 +64,8 @@ namespace Gorgon {
 			virtual bool ReadLine(std::string &input, bool newline) override final {
 				line++;
 				std::cout<<std::setw(3)<<line<<prompt;
-				
-				return (std::cin>>input);
+
+				return bool(std::getline(std::cin, input));
 			}
 			
 			virtual void Reset() override {
@@ -92,7 +92,7 @@ namespace Gorgon {
 			}
 			
 			virtual bool ReadLine(std::string &input, bool) override final {
-				return (stream>>input);
+				return bool(std::getline(stream,input));
 			}
 			
 			virtual void Reset() override {

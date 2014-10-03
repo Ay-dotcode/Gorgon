@@ -62,6 +62,10 @@ namespace Gorgon {
 		 * Additionally, any referred files will also be parsed for errors.
 		 */
 		std::vector<ParseError> Parse(const std::string &code);
+
+		/// @cond INTERNAL
+		void init_builtin();
+		/// @endcond
 		
 		/// Prints out a data
 		inline std::ostream &operator<<(std::ostream &out, const Data &data) {
@@ -77,7 +81,6 @@ namespace Gorgon {
 		
 		/// Initializes the scripting system
 		inline void Initialize() {
-			void init_builtin();
 			init_builtin();
 		}
 		

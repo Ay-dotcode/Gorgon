@@ -88,38 +88,38 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	
 	
-	const Parameter param1("name", "heeelp", Integrals.Types["Int"], OutputTag);
-	
-	REQUIRE(param1.GetName() == "name");
-	REQUIRE(param1.GetHelp() == "heeelp");
-	REQUIRE(&param1.GetType() == Integrals.Types["Int"]);
-	
-	REQUIRE(param1.IsReference());
-	
-	REQUIRE(param1.IsOutput());
-	
-	REQUIRE_FALSE(param1.IsInput());
-	
-	
-	const Parameter param2("name2", "heeelp", Integrals.Types["Int"], OptionalTag);
-	
-	REQUIRE_FALSE(param2.IsReference());
-	
-	REQUIRE(param2.IsOptional());
-	
-	
-	const Parameter param3("name2", "heeelp", Integrals.Types["Int"],  {Any(1), Any(2), Any(3)}, OptionalTag);
-	
-	REQUIRE_FALSE(param3.IsReference());
-	
-	REQUIRE(param3.IsOptional());
-	
-	
-	const Parameter param4("name2", "heeelp", Integrals.Types["Int"], {}, {OptionalTag});
-	
-	REQUIRE_FALSE(param4.IsReference());
-	
-	REQUIRE(param4.IsOptional());
+	//const Parameter param1("name", "heeelp", Integrals.Types["Int"], OutputTag);
+	//
+	//REQUIRE(param1.GetName() == "name");
+	//REQUIRE(param1.GetHelp() == "heeelp");
+	//REQUIRE(&param1.GetType() == Integrals.Types["Int"]);
+	//
+	//REQUIRE(param1.IsReference());
+	//
+	//REQUIRE(param1.IsOutput());
+	//
+	//REQUIRE_FALSE(param1.IsInput());
+	//
+	//
+	//const Parameter param2("name2", "heeelp", Integrals.Types["Int"], OptionalTag);
+	//
+	//REQUIRE_FALSE(param2.IsReference());
+	//
+	//REQUIRE(param2.IsOptional());
+	//
+	//
+	//const Parameter param3("name2", "heeelp", Integrals.Types["Int"],  {Any(1), Any(2), Any(3)}, OptionalTag);
+	//
+	//REQUIRE_FALSE(param3.IsReference());
+	//
+	//REQUIRE(param3.IsOptional());
+	//
+	//
+	//const Parameter param4("name2", "heeelp", Integrals.Types["Int"], {}, {OptionalTag});
+	//
+	//REQUIRE_FALSE(param4.IsReference());
+	//
+	//REQUIRE(param4.IsOptional());
 	
 	const MappedFunction fn1{ "TestFn",
 		"This is a test function bla bla bla",

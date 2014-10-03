@@ -473,7 +473,7 @@ namespace Gorgon {
 				static two test(...)  { return two();  }
 				
 			public:
-				static const bool Value = sizeof( test(*(std::ostream*)nullptr) );
+				static const bool Value = sizeof( test(*(std::ostream*)nullptr) )==1;
 			};
 			
 			template<class K__>

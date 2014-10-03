@@ -1553,7 +1553,6 @@ void StackWalker::OnOutput(LPCSTR buffer)
 namespace Gorgon {
 	namespace Utils {
 		
-		template<class T_>
 		std::string demangle(const std::string &name) {
 			return name;
 		}
