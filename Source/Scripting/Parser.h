@@ -31,6 +31,9 @@ namespace Gorgon { namespace Scripting {
 		
 		/// Marks this value as a constant
 		Constant,
+		
+		/// For error checking purposes
+		None,
 	};
 	
 	/// This class contains a parsed value. A value can be a temporary, literal, variable of a contant
@@ -82,5 +85,132 @@ namespace Gorgon { namespace Scripting {
 			std::vector<Value> Parameters;
 		};
 	};
+
+	class ParserBase {
+	public:
+		virtual Instruction Parse(const std::string &input) = 0;
+	
+	};
+	
+	class IntermediateParser {
+	public:
+		virtual Instruction Parse(std::string input) override {
+			
+			Instruction instruction;
+			
+			char current, previous;
+			
+			bool first = true;
+			bool escaped = false;
+			bool inquote = false;
+			
+			unsigned int quote = 0;
+			unsigned int slash = 0;
+			unsigned int parameter;
+			
+			ValueType type = ValueType::None;
+			
+			std::string accumulator;
+			
+			for(std::size_t i = 0; i < input.size(); i++) {
+				first = i == 0 ? true : false;
+				current = input[i];
+				previous = !first ? input[i - 1];
+				
+				if(first && current == '#') break; // comment
+								
+				if(current == '"') {
+					quote++;
+					if(quote == 1) {
+						if(!first && previous == '\\') {
+							escaped = true;
+							quote--;
+						}
+						else {
+							inquote = true;
+						}
+					}
+					else if(quote == 2) {
+						if(slash) {
+							slash--;
+							escaped = true;
+							quote--;
+						}
+						else {
+							inquote = false;
+							quote = 0;
+							if(accumulator.empty()) {
+								;// error
+							}
+						}
+					}
+				}
+				
+				else if(current == '\\') {
+					slash++;
+					if(escaped) {
+						escaped = false;
+						continue;
+					}
+					else if(!first && previous == '\\') {
+						slash = 0;
+						escaped = true;
+					}
+				} 
+				
+				else if(current == '=' && !inquote) {
+					instruction.Type = InstructionType::Assignment;
+					if(accumulator.empty()) {
+						;// error
+					}
+					instruction.Name = accumulator;
+					accumulator.clear();
+				}
+				else if(current = '' && !inquote) {
+					if(!parameter) {
+						// first chunk is parsed as function name
+						instruction.Type = InstructionType::FunctionCall;
+						if(accumulator.empty()) {
+							;// error
+						}
+						instruction.Name = accumulator;
+						accumulator.clear();
+						paramstart = i + 1;
+					}
+					// not first chunk, meaning this is parameter 
+					// last parameter is parsed outside of loop
+					else {
+						if(accumulator.empty()) {
+							;// error
+						}
+						instruction.Parameters.push_back(extractvalue(accumulator, type));
+						accumulator.clear();
+					}
+					parameter++;
+					
+				}
+				
+				else if(current == '$' && !inquote) { type = ValueType::Variable; }
+				else if(current == '.' && !inquote) { type = ValueType::Temp; }
+				else if(current == 'c' && !inquote) { type = ValueType::Constant; }
+				else if((current == 's' || current == 'f' || current == 'i' || current == 'b') && !inquote) { type = ValueType::Literal; }
+				
+				
+				if((!isspecial(current) && !inquote) || escaped) {
+					accumulator += current;
+				}
+			}
+		} 
+	private:
+		Value extractvalue(const std::string &str, ValueType type) {
+			Value value;
+			value.type = type;
+			if(type == ValueType::Variable || type == VariableType::Constant) { value.Name = str; }
+			// else if(type ==  ValueType::Temp) { value.Result = ?? }
+			// else if(type == ValueType::Literal) { value.Data = ?? }
+			else ; // error
+		}
+		
+	}
 
 } }
