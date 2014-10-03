@@ -9,7 +9,7 @@ namespace Gorgon {
 			
 			Instruction instruction;
 			
-			int ch=1;
+			int ch=0;
 			eatwhite(input, ch);
 			
 			if(input.size()<=ch) return 0;
@@ -104,17 +104,28 @@ namespace Gorgon {
 			auto &inst=List.back();
 			inst.Type=InstructionType::Assignment;
 			
-			eatwhite(input, ch);
-			
 			inst.Name.Type=ValueType::Literal;
 			inst.Name.Literal={Integrals.Types["String"], extractquotes(input, ch)};
 			
+			eatwhite(input, ch);
+			
+			if(input.size()<=ch) {
+				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected =, end of string encountered."});
+			}
+			if(input[ch]!='=') {
+				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected =, found: "+input.substr(ch,1)});
+			}
+			ch++;
+			
+			eatwhite(input, ch);			
+			
+			
 			inst.RHS=parsevalue(input, ch);
-		}			
+		}
 		
 		void IntermediateParser::eatwhite(const std::string& input, int& ch) {
 			for(;ch<input.size();ch++) {
-				if(!std::isspace(input[ch])) return;
+				if(input[ch]!=' ' && input[ch]!='\t') return;
 			}
 		}
 		
@@ -122,9 +133,6 @@ namespace Gorgon {
 			eatwhite(input, ch);
 			if(input.size()<=ch) {
 				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected i, f, s, b, $, ., end of string encountered."});
-			}
-			if(input[ch]!='"') {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected i, f, s, b, $, ., found: "+input.substr(ch,1)});
 			}
 			
 			Value ret;
@@ -175,10 +183,13 @@ namespace Gorgon {
 					ret.Type    = ValueType::Literal;
 					ret.Literal = {Integrals.Types["String"], extractquotes(input, ch)};
 					return ret;
+
+				default:
+					throw ParseError({ ParseError::UnexpectedToken, 0, ch, "Expected i, f, s, b, $, ., found: " + input.substr(ch, 1) });
 			}
 		}
 		
-		std::string extractquotes(std::string input, int &ch) {
+		std::string IntermediateParser::extractquotes(const std::string &input, int &ch) {
 			if(input.size()<=ch) {
 				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected \", end of string encountered."});
 			}
@@ -188,7 +199,8 @@ namespace Gorgon {
 			
 			std::string ret="";
 			
-			int start=ch+1;
+			ch++;
+			int start=ch;
 			
 			bool escape=false;
 			for(; ch<input.size(); ch++) {
@@ -230,7 +242,7 @@ namespace Gorgon {
 			return ret;
 		}
 		
-		unsigned long parsetemporary(std::string input, int ch) {
+		unsigned long IntermediateParser::parsetemporary(const std::string &input, int &ch) {
 			//TODO: Exception on not an int
 			auto str=extractquotes(input, ch);
 			auto ret=String::To<unsigned long>(str);

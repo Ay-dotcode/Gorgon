@@ -55,7 +55,8 @@ namespace Gorgon {
 		};
 		
 		DefineEnumStringsCM(ParseError, ErrorCode, 
-			{ParseError::MismatchedParenthesis, "Mismatched paranthesis"}
+			{ParseError::MismatchedParenthesis, "Mismatched paranthesis"},
+			{ParseError::UnexpectedToken, "Unexpected token"}
 		);
 		
 		/** 
