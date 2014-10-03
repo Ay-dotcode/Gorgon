@@ -9,7 +9,7 @@
 namespace Gorgon { namespace Scripting {
 	
 	/// Describes the type of an instruction
-	enum InstructionType {
+	enum class InstructionType {
 		/// Marks instruction as a function call.
 		FunctionCall,
 		
@@ -18,7 +18,7 @@ namespace Gorgon { namespace Scripting {
 	};
 	
 	/// Possible value types
-	enum ValueType {
+	enum class ValueType {
 		/// This value is a temporary and refers to a value calculated as the result
 		/// of a function call
 		Temp,
@@ -43,16 +43,14 @@ namespace Gorgon { namespace Scripting {
 		/// Type of this value.
 		ValueType Type;
 		
-		union {
-			/// Used for variables and constants
-			std::string Name;
-			
-			/// Used for temporary results
-			intptr_t Result;
-			
-			/// Used for literal values
-			Data Value;
-		};
+		/// Used for variables and constants
+		std::string Name;
+		
+		/// Used for temporary results
+		intptr_t Result;
+		
+		/// Used for literal values
+		Data Literal;
 	};
 	
 	/**
@@ -77,13 +75,11 @@ namespace Gorgon { namespace Scripting {
 		/// Whether to store the result of the function
 		bool Store;
 		
-		union {
-			/// The value that will be assigned to the variable
-			Value RHS;
-			
-			/// Parameters of the function.
-			std::vector<Value> Parameters;
-		};
+		/// The value that will be assigned to the variable
+		Value RHS;
+		
+		/// Parameters of the function.
+		std::vector<Value> Parameters;
 	};
 
 	class ParserBase {
@@ -92,7 +88,7 @@ namespace Gorgon { namespace Scripting {
 	
 	};
 	
-	class IntermediateParser {
+	/*class IntermediateParser {
 	public:
 		virtual Instruction Parse(std::string input) override {
 			
@@ -211,6 +207,6 @@ namespace Gorgon { namespace Scripting {
 			else ; // error
 		}
 		
-	}
+	}*/
 
 } }

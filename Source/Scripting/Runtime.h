@@ -131,7 +131,7 @@ namespace Gorgon {
 			}
 			
 			/// Variables defined in this scope
-			Containers::Hashmap<std::string, Variable, &Variable::GetName> Variables;
+			Containers::Hashmap<std::string, class Variable, &Variable::GetName> Variables;
 			
 		private:
 			std::string name;
@@ -183,7 +183,7 @@ namespace Gorgon {
 			}
 			
 			/// Returns the code at the current line and increments the current line
-			Instruction *Get() {
+			const Instruction *Get() {
 				auto ret=source->ReadInstruction(current);
 				current++;
 				
@@ -191,12 +191,12 @@ namespace Gorgon {
 			}
 			
 			/// Returns the code at the current line without incrementing it.
-			Instruction *Peek() {
+			const Instruction *Peek() {
 				return source->ReadInstruction(current);
 			}
 			
 			/// Returns the code at the given line without incrementing current line.
-			Instruction *Peek(unsigned long line) {
+			const Instruction *Peek(unsigned long line) {
 				return source->ReadInstruction(line);
 			}
 			

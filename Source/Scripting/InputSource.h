@@ -23,7 +23,7 @@ namespace Gorgon {
 			
 			InputProvider(Dialect dialect) : dialect(dialect) {}
 			
-			Dialect &GetDialect() const {
+			Dialect GetDialect() const {
 				return dialect;
 			}
 			
@@ -106,9 +106,9 @@ namespace Gorgon {
 		/// Reads lines from a file
 		class FileInput : public StreamInput {
 		public:
-			FileInput(const std::string &filename) : StreamInput(file) {
+			FileInput(const std::string &filename) : StreamInput(file, InputProvider::Programming) {
 				auto loc=filename.find_last_of('.');
-				string ext="";
+				std::string ext="";
 				if(loc!=filename.npos)
 					ext=filename.substr(loc);
 				
@@ -135,11 +135,15 @@ namespace Gorgon {
 			std::ifstream file;
 		};
 		
+		/// @cond INTERNAL
 		/// This class represents a logical line
-		class Line : public Instruction{
+		class Line {
 		public:
-			unsigned long Physical;
+			Instruction instruction;
+			
+			unsigned long physical;
 		};
+		/// @endcond
 
 		/** 
 		 * Base class for input sources. This system allows different input sources to supply 
@@ -156,7 +160,7 @@ namespace Gorgon {
 			
 			const Instruction *ReadInstruction(unsigned long line) {
 				if(lines.size()<line) {
-					return &lines[line];
+					return &lines[line].instruction;
 				}
 				else {
 					if(provider.GetDialect()==InputProvider::Intermediate) {
@@ -170,7 +174,7 @@ namespace Gorgon {
 							//lines.push_back(ParseIntermediate(str));
 						}
 						
-						return &lines[line];
+						return &lines[line].instruction;
 					}
 				}
 			}
