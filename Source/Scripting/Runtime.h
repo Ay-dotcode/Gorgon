@@ -45,12 +45,17 @@ namespace Gorgon {
 				data.Swap(value);
 				this->type=&type;
 			}
-			
+
 			/// Returns the name of the variable
 			std::string GetName() const {
 				return name;
 			}
-			
+
+			/// Returns the name of the variable in lower case
+			std::string GetLowercaseName() const {
+				return String::ToLower(name);
+			}
+
 			/// Checks if this variable is defined in the given scope. Used in determining automatic global
 			/// marks
 			bool IsDefinedIn(const InputSource &source) {
@@ -131,7 +136,7 @@ namespace Gorgon {
 			}
 			
 			/// Variables defined in this scope
-			Containers::Hashmap<std::string, class Variable, &Variable::GetName> Variables;
+			Containers::Hashmap<std::string, class Variable, &Variable::GetLowercaseName> Variables;
 			
 		private:
 			std::string name;

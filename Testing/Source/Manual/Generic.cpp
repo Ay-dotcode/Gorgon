@@ -10,8 +10,9 @@ const std::string source = R"(
 	#+s"if"
 	."1" = -s"=" $"a" i"4"
 	#-s"if" ."1"
-	-s"Echo" s"Working..."
+	-s"echo" s"Working..."
 	-s"Echo" ."1"
+	-s"Echo" c"pi"
 	#+s"end"
 	#-s"end"
 )";

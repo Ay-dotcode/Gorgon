@@ -45,6 +45,8 @@ namespace Gorgon {
 		
 		const Type &VirtualMachine::FindType(std::string name) {
 			using std::swap;
+
+			name=String::ToLower(name);
 			
 			std::string namespc=String::Extract(name, ':');
 			if(name=="") swap(namespc, name);
@@ -103,7 +105,9 @@ namespace Gorgon {
 		
 		const Function &VirtualMachine::FindFunction(std::string name) {
 			using std::swap;
-			
+
+			name=String::ToLower(name);
+
 			std::string namespc=String::Extract(name, ':');
 			if(name=="") swap(namespc, name);
 			
@@ -215,7 +219,9 @@ namespace Gorgon {
 		
 		const Constant &VirtualMachine::FindConstant(std::string name) {
 			using std::swap;
-			
+
+			name=String::ToLower(name);
+
 			std::string namespc=String::Extract(name, ':');
 			if(name=="") swap(namespc, name);
 			
@@ -459,12 +465,12 @@ namespace Gorgon {
 		void VirtualMachine::SetVariable(const std::string &name, Data data) {
 			//check if it exists
 			auto &vars=variablescopes.Last()->Variables;
-			auto var=vars.Find(name);
+			auto var=vars.Find(String::ToLower(name));
 
 			//if not found in locals
 			if(!var.IsValid()) {
 				//search in globals
-				var=globalvariables.Find(name);
+				var=globalvariables.Find(String::ToLower(name));
 
 				//global should have defined in the same InputSource as dictated by the scope
 				if(variablescopes.Last()->GetScopingMode()==VariableScope::LimitGlobals) {
@@ -497,7 +503,7 @@ namespace Gorgon {
 		Variable &VirtualMachine::GetVariable(const std::string &name) {
 			//check variable scopes first
 			auto &vars=variablescopes.Last()->Variables;
-			auto var=vars.Find(name);
+			auto var=vars.Find(String::ToLower(name));
 
 			//TODO static variables? may be they can be handled by function function
 
@@ -509,7 +515,7 @@ namespace Gorgon {
 			//if not
 			else {
 				//search globals
-				auto var=globalvariables.Find(name);
+				auto var=globalvariables.Find(String::ToLower(name));
 
 				//if found
 				if(var.IsValid()) {
