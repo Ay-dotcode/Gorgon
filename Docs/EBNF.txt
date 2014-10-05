@@ -1,61 +1,61 @@
+(* Language Productions *)
+
+statement = keyword_call | function_call | expression | assignment, [";" | "\n"];
+
+variable = "$", variable_identifier;
+
+namespace = [identifier, ":"], identifier, ":"
+
+element_series = ".", identifier, {".", identifier}
+
+assignment = variable, [element_series], "=", expression;
+
+function_call = term, "(", function_parameters, ")";
+function_parameters = expression, {",", expression};
+
+keyword_call = variable_identifier, [keyword_parameters];
+keyword_parameters = expression, {" ", expression};
+
+(* identifier is for constant or in function call, for function name *)
+term = "(", expression, ")" | postfix_expression_operator | function_call | literal | [namespace], identifier | variable, [element_series]
+
+expression = term, {function_identifier, term};
+
+postfix_expression_operator = term, ("[", {parameter}, "]") | ("{", {parameter}, "}");
+
+(* Literals & Identifiers *)
+int_literal = ["-"], digit, {digit};
+
+float_literal = int_literal, ".", {digit}; (* numbers after . is not required, thus 1. is valid *)
+
+string_atom = letter | digit | symbol, {letter | digit | symbol};
+
+string_literal = '"', string_atom, '"' | "'", string_atom, "'";
+
+boolean_literal = "true" | "false";
+
+literal = int_literal | float_literal | string_literal | boolean_literal;
+
+function_identifier = "_" | symbol | letter, {"_" | digit | symbol | letter};
+
+variable_identifier = letter | digit | "_",  { letter | digit | "_" };
+
+identifier = letter | "_",  { letter | digit | "_" };
+
 (* Terminals *)
 letter = "A" | "B" | ... | "Z" | "a" | ... | "z";
 
-non zero digit  = "1" | ... | "9";
+non_zero_digit  = "1" | ... | "9";
 
 zero = "0";
 
-digit = non zero digit | zero;
+digit = non_zero_digit | zero;
 
 symbol = "+" | "-" | "*" | "/" | "<" | ">" | "=" | "|" | ...;
 
-white space = "\n" | "\t" | "\r" | " ";
+white_space = "\n" | "\t" | "\r" | " ";
 
-(* Literals *)
-int literal = ["-"], digit, { digit};
 
-float literal = int literal, ".", {digit}; (*numbers after . is not required, thus 1. is valid*)
-
-string atom = letter | digit | symbol, {letter | digit | symbol};
-
-string literal = '"', string atom, '"' | "'", string atom, "'";
-
-boolean literal = "true" | "false";
-
-literal = int literal | float literal | string literal | boolean literal;
-
-typeid = "_" | letter, {"_" | digit | letter};
-functionid = "_" | symbol | letter, {"_" | digit | symbol | letter};
-varid = letter | digit | "_",  { letter | digit | "_" };
-identifier = letter | "_",  { letter | digit | "_" };
-namespace = [identifier, ":"], identifier, ":"
-
-(* Language Productions *)
-
-variable = "$", varid;
-
-statement = keyword call | function call | expression | assignment, [";" | "\n"];
-
-parameters = expression, {",", expression};
-
-elementseries = ".", identifier, {".", identifier}
-
-assignment = variable, [elementseries], "=", expression;
-
-function call = term, "(", parameters, ")";
-
-(*identifier is for constant or in function call, for function name*)
-term = "(", expression, ")" | postfix expression operator | function call | literal | ([namespace], identifier) | (variable, [elementseries])
-
-expression = term, {function identifier, term};
-
-postfix expression operator = term, ("[", {parameter}, "]") | ("{", {parameter}, "}");
-
-keyword parameters = expression, {" ", expression};
-
-keyword call = varid, [keyword parameters];
-
-line = function call | keyword call | assignment, ";" | "\n"
 
 (* TEST CASES
 
@@ -63,6 +63,5 @@ fn(2, 3)
 fn(2, 3)()
 fn($a)[2]
 $a = fn(){2, "dsf"}
-
 
 *)
