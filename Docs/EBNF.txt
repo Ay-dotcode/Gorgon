@@ -5,47 +5,64 @@ non zero digit  = "1" | ... | "9";
 
 zero = "0";
 
+digit = non zero digit | zero;
+
 symbol = "+" | "-" | "*" | "/" | "<" | ">" | "=" | "|" | ...;
 
 white space = "\n" | "\t" | "\r" | " ";
 
 (* Literals *)
-natural number = non zero digit, { zero | non zero digit};
-int literal = zero | ["-"], natural number;
+int literal = ["-"], digit, { digit};
 
-float literal = int literal, ".", zero | non zero digit, {zero | non zero digit};
+float literal = int literal, ".", {digit}; (*numbers after . is not required, thus 1. is valid*)
 
 string atom = letter | digit | symbol, {letter | digit | symbol};
+
 string literal = '"', string atom, '"' | "'", string atom, "'";
 
 boolean literal = "true" | "false";
 
 literal = int literal | float literal | string literal | boolean literal;
 
+typeid = "_" | letter, {"_" | digit | letter};
+functionid = "_" | symbol | letter, {"_" | digit | symbol | letter};
+varid = letter | digit | "_",  { letter | digit | "_" };
+identifier = letter | "_",  { letter | digit | "_" };
+namespace = [identifier, ":"], identifier, ":"
 
 (* Language Productions *)
+
+variable = "$", varid;
+
 statement = keyword call | function call | expression | assignment, [";" | "\n"];
 
-assignment = variable, "=", expression;
+parameters = expression, {",", expression};
 
-object constructor = [identifier], "{", {parameter}, "}";
+elementseries = ".", identifier, {".", identifier}
 
-array constructor = [identifier], "[", {parameter}, "]";
+assignment = variable, [elementseries], "=", expression;
 
-function call = [variable, "."], [[identifier, ":"], identifier, ":"], function identifier | variable, "(", {parameter}, ")";
+function call = term, "(", parameters, ")";
 
-variable = "$", identifier;
+(*identifier is for constant or in function call, for function name*)
+term = "(", expression, ")" | postfix expression operator | function call | literal | ([namespace], identifier) | (variable, [elementseries])
 
-identifier = letter, {letter | digit | "_"};
-
-function identifier = letter | symbol, {letter | symbol | digit};
-
-parameter = expression, {"," | expression};
-
-postfix expression operator = expression, "[", {parameter}, "]";
 expression = term, {function identifier, term};
-term = "(", expression, ")" | postfix expression operator | function call | literal
 
-keyword parameter = expression, {" ", expression};
-keyword call = function identifier, ["(", {keyword parameter}, ")" | {keyword parameter}];
+postfix expression operator = term, ("[", {parameter}, "]") | ("{", {parameter}, "}");
 
+keyword parameters = expression, {" ", expression};
+
+keyword call = varid, [keyword parameters];
+
+line = function call | keyword call | assignment, ";" | "\n"
+
+(* TEST CASES
+
+fn(2, 3)
+fn(2, 3)()
+fn($a)[2]
+$a = fn(){2, "dsf"}
+
+
+*)
