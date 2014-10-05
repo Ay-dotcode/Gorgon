@@ -37,7 +37,7 @@ namespace Gorgon {
 			}
 			
 			/// Default value constructor. Value of the data is determined from the type
-			Data(Type &type);
+			Data(const Type &type);
 			
 			
 			/// Returns the value of this data in the requested format

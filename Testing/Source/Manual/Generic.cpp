@@ -1,37 +1,35 @@
 #include <Source/Scripting.h>
-#include <Source/Scripting/Parser.h>
+#include <Source/Scripting/VirtualMachine.h>
 #include <thread>
 #include <iostream>
 
 using namespace Gorgon::Scripting;
 
+const std::string source = R"(
+	$"a" = i"4"
+	#+s"if"
+	."1" = -s"=" $"a" i"4"
+	#-s"if" ."1"
+	-s"Echo" s"Working..."
+	-s"Echo" ."1"
+	#+s"end"
+	#-s"end"
+)";
+
 int main() {
 	
 	Initialize();
 	
-	IntermediateParser parser;
-	try {
-		parser.Parse(R"($"a"=i"4")");
-		parser.Parse(R"(."1"=-s"fn" i"4")");
-		parser.Parse(R"(."2"=-s"fn" ."1")");
-		parser.Parse(R"(-s"fn" ."1")");
-		parser.Parse(R"($"b"=."1")");
-	}
-	catch(const ParseError &err) {
-		std::cout<<err.Code<<": "<<err.What<<" at "<<err.Char<<std::endl;
-	}
-	
-	Instruction inst = parser.List.back();
+	std::stringstream ss(source);
+	StreamInput streaminput={ss, InputProvider::Intermediate};
+	InputSource input={streaminput, ""};
 
-	std::cout << (int)inst.Type << ": " << inst.Name.Literal << ": " << inst.RHS.Result << std::endl;
 
-	inst = parser.List[3];
+	VirtualMachine vm;
 
-	std::cout << (int)inst.Type << ": " << inst.Name.Literal << ": " << inst.Parameters[0].Result << std::endl;
+	vm.Start(input);
 
-	inst = parser.List[1];
-
-	std::cout << (int)inst.Type << ": " << inst.Name.Literal << ": " << inst.Store << ": " << inst.Parameters[0].Literal << std::endl;
+	//std::cout<<vm.GetVariable("a")<<std::endl;
 
 	return 0;
 }

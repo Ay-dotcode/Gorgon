@@ -7,14 +7,30 @@ namespace Gorgon {
 		Library Integrals;
 		Library Keywords;
 		
-		static void Echo(std::vector<std::string> datav) {
-			auto &out=VirtualMachine::Get().GetOutput();
-			for(auto &data : datav) {
-				out<<data;
+		namespace {
+			void Echo(std::vector<std::string> datav) {
+				auto &out=VirtualMachine::Get().GetOutput();
+				for(auto &data : datav) {
+					out<<data;
+				}
+				out<<std::endl;
 			}
-			out<<std::endl;
+
+			std::string BoolToString(const bool &val) {
+				return val ? "true" : "false";
+			}
+
+			bool StringToBool(const std::string &str) {
+				if(str=="true") {
+					return true;
+				}
+				if(str=="false") {
+					return true;
+				}
+				return String::To<bool>(str);
+			}
 		}
-		
+
 		Function *If();
 		Function *ElseIf();
 		Function *Else();
@@ -51,7 +67,7 @@ namespace Gorgon {
 				"Represents a string."
 			);
 			
-			auto Bool = new MappedValueType<bool> ( "Bool",
+			auto Bool = new MappedValueType<bool, &BoolToString, &StringToBool> ( "Bool",
 				"Represents a truth statement. Can either be true or false."
 			);
 			

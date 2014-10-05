@@ -21,7 +21,7 @@ namespace Gorgon {
 			
 			/// Constructor that sets the name, type and value of the variable. Unless this variable is
 			/// declared inside an executing code, definedin should be left nullptr.
-			Variable(const std::string &name, Type &type, Any value, const InputSource *definedin=nullptr) : 
+			Variable(const std::string &name, const Type &type, Any value, const InputSource *definedin=nullptr) : 
 			name(name), Data(type, value), definedin(definedin) {
 			}
 			
@@ -29,20 +29,20 @@ namespace Gorgon {
 			/// Constructor that sets the name, and type of the variable. Default value of the specified
 			/// type is used as value. Unless this variable is declared inside an executing code, definedin 
 			/// should be left nullptr.
-			Variable(const std::string &name, Type &type, const InputSource *definedin=nullptr) : 
+			Variable(const std::string &name, const Type &type, const InputSource *definedin=nullptr) :
 			name(name), Data(type), definedin(definedin) {
 			}
 			
 			
 			/// Sets the data contained in this variable without changing its type
 			void Set(Any value) {
-				data=value;
+				data.Swap(value);
 			}
 			
 			/// Sets the data contained in this variable by modifying its type. Also this function
 			/// resets the tags unless they are re-specified
-			void Set(Type &type, Any value) {
-				data=value;
+			void Set(const Type &type, Any value) {
+				data.Swap(value);
 				this->type=&type;
 			}
 			
@@ -147,7 +147,10 @@ namespace Gorgon {
 		class SourceMarker {
 			friend class ExecutionScope;
 		public:
+			SourceMarker(const SourceMarker &)=default;
 			
+			SourceMarker &operator=(const SourceMarker &)=default;
+
 			bool operator <(const SourceMarker &other) {
 				return (source == other.source ? line<other.line : source<other.source);
 			}
@@ -176,10 +179,10 @@ namespace Gorgon {
 				return current;
 			}
 			
-			/// Returns a unique identifier for the current source code line. This information can be
+			/// Returns a unique identifier for the next line in source code. This information can be
 			/// used to go back across execution scopes. Useful for Try Catch like structures.
-			SourceMarker GetMarker() const {
-				return {current, reinterpret_cast<uintptr_t>(this)};
+			SourceMarker GetMarkerForNext() const {
+				return {current+1, reinterpret_cast<uintptr_t>(this)};
 			}
 			
 			/// Returns the code at the current line and increments the current line
@@ -199,6 +202,8 @@ namespace Gorgon {
 			const Instruction *Peek(unsigned long line) {
 				return source->ReadInstruction(line);
 			}
+
+			InputSource &GetSource() const { return *source; }
 			
 		private:
 			/// Current logical line

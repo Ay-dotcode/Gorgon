@@ -16,6 +16,7 @@ namespace Gorgon {
 			NullValue,
 			UnexpectedKeyword,
 			FlowError,
+			MissingParameter,
 		};
 		
 		DefineEnumStrings(ExceptionType,
@@ -25,7 +26,8 @@ namespace Gorgon {
 			{ExceptionType::SymbolNotFound, "Symbol not found"},
 			{ExceptionType::NullValue, "Value is null"},
 			{ExceptionType::UnexpectedKeyword, "Unexpected keyword"},
-			{ExceptionType::FlowError, "Flow error"}
+			{ExceptionType::FlowError, "Flow error"},
+			{ExceptionType::MissingParameter, "Missing parameter"}
 		);
 		
 		enum class SymbolType {
@@ -53,7 +55,8 @@ namespace Gorgon {
 		class Exception : public std::runtime_error {
 		public:
 			
-		explicit Exception(ExceptionType type, const std::string &message) : std::runtime_error(message),
+		explicit Exception(ExceptionType type, const std::string &message, long linenumber=-1) : linenumber(linenumber), 
+			std::runtime_error(message),
 		type(type) { }
 		
 		ExceptionType GetType() const {
@@ -72,51 +75,70 @@ namespace Gorgon {
 				return details;
 			}
 		}
-			
+
+		long GetLine() const { return linenumber; }
+
+		void SetLine(long line) {
+			linenumber=line;
+		}
+
+
+
 		protected:
 			ExceptionType type;
 			std::string details;
+			long linenumber;
 		};
 		
 		class AmbiguousSymbolException : public Exception {
 		public:
-			explicit AmbiguousSymbolException(const std::string &symbolname, SymbolType type, const std::string &details="") : 
-			Exception(ExceptionType::AmbiguousSymbol, String::From(type) + " " + symbolname + " is ambiguous.") { 
+			explicit AmbiguousSymbolException(const std::string &symbolname, SymbolType type, const std::string &details="", long linenumber=-1) :
+			Exception(ExceptionType::AmbiguousSymbol, String::From(type) + " " + symbolname + " is ambiguous.", linenumber) { 
 				this->details = details;
 			}
 		};
 		
 		class SymbolNotFoundException : public Exception {
 		public:
-			explicit SymbolNotFoundException(const std::string &symbolname, SymbolType type, const std::string &details="") : 
-			Exception(ExceptionType::SymbolNotFound, "Cannot find " + String::ToLower(String::From(type)) + " " + symbolname) { 
+			explicit SymbolNotFoundException(const std::string &symbolname, SymbolType type, const std::string &details="", long linenumber=-1) :
+			Exception(ExceptionType::SymbolNotFound, "Cannot find " + String::ToLower(String::From(type)) + " " + symbolname, linenumber) { 
 				this->details = details;
 			}
 		};
 		
 		class NullValueException : public Exception {
 		public:
-			explicit NullValueException(const std::string &symbolname, const std::string &details="") : 
-			Exception(ExceptionType::NullValue, "The value of " + symbolname + " is NULL") { 
+			explicit NullValueException(const std::string &symbolname, const std::string &details="", long linenumber=-1) :
+			Exception(ExceptionType::NullValue, "The value of " + symbolname + " is NULL", linenumber) { 
 				this->details = details;
 			}
 		};
 		
 		class UnexpectedKeywordException : public Exception {
 		public:
-			explicit UnexpectedKeywordException(const std::string &keyword, const std::string &details="") : 
-			Exception(ExceptionType::UnexpectedKeyword, "The keyword " + keyword + " is not expected") { 
+			explicit UnexpectedKeywordException(const std::string &keyword, const std::string &details="", long linenumber=-1) :
+			Exception(ExceptionType::UnexpectedKeyword, "The keyword " + keyword + " is not expected", linenumber) { 
 				this->details = details;
 			}
 		};
-		
+
 		class FlowException : public Exception {
 		public:
-			explicit FlowException(const std::string &message, const std::string &details="") : 
-			Exception(ExceptionType::FlowError, message) { 
+			explicit FlowException(const std::string &message, const std::string &details="", long linenumber=-1) :
+			Exception(ExceptionType::FlowError, message, linenumber) {
 				this->details = details;
 			}
 		};
-		
+
+		class MissingParameterException : public Exception {
+		public:
+			explicit MissingParameterException(const std::string &parameter, int index, const std::string &type, const std::string &details="", long linenumber=-1) :
+			Exception(ExceptionType::MissingParameter, 
+					  "Missing parameter "+String::From(index+1)+", "+parameter+" ("+type+")", linenumber) {
+				
+				this->details = details;
+			}
+		};
+
 	}
 }

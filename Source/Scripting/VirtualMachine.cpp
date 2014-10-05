@@ -1,6 +1,7 @@
 #include "VirtualMachine.h"
 #include "Exceptions.h"
 #include "../Scripting.h"
+#include "Embedding.h"
 
 
 
@@ -12,7 +13,7 @@ namespace Gorgon {
 		
 		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
 		Libraries(libraries), output(&out), input(&in), 
-		defoutput(&out), definput(&in), automaticreset(automaticreset)
+		defoutput(&out), definput(&in), automaticreset(automaticreset), temporaries(256, Data::Invalid())
 		{ 
 			variablescopes.AddNew("[main]", VariableScope::DefaultLocal);
 			libraries.Add(Integrals);
@@ -142,7 +143,7 @@ namespace Gorgon {
 				auto lib=libraries.Find(namespc);
 				if(!lib.IsValid()) {
 					throw SymbolNotFoundException(
-						namespc, SymbolType::Library, 
+						namespc, SymbolType::Library,
 						"Cannot find "+namespc+" library while looking for function "+name
 					);
 				}
@@ -323,6 +324,269 @@ namespace Gorgon {
 			}
 		}		
 		
-		
+		void VirtualMachine::Start(InputSource &source) {
+			Activate();
+			inputsources.Add(source);
+
+			executionscopes.Add(new ExecutionScope(source));
+
+			Run();
+		}
+
+		void VirtualMachine::Run() {
+			int target=executionscopes.GetCount()-1;
+			if(target<0) {
+				throw std::runtime_error("No scope to execute.");
+			}
+			while(executionscopes.GetCount()) {
+				auto inst=executionscopes.Last()->Get();
+
+				try {
+					// execution scope is done, cull it
+					if(inst==nullptr) {
+						executionscopes.Last().Delete();
+					} else {
+						if(inst->Type==InstructionType::Mark) {
+
+						}
+						// assignment ...
+						else if(inst->Type==InstructionType::Assignment) {
+							ASSERT(inst->Name.Type==ValueType::Variable, "Variables can only be represented with variables.", 1);
+							SetVariable(inst->Name.Name, getvalue(inst->RHS));
+						}
+						//function call
+						else if(inst->Type==InstructionType::FunctionCall) {
+							functioncall(inst);
+						} else if(inst->Type==InstructionType::MemberFunctionCall) {
+							ASSERT(false, "Not implemented", 0, 8);
+						} else if(inst->Type==InstructionType::MethodCall) {
+							ASSERT(false, "Not implemented", 0, 8);
+						}
+					}
+				}
+				catch(Exception &ex) {
+					ex.SetLine(executionscopes.Last()->GetSource().GetPhysicalLine());
+
+					throw ex;
+				}
+			}
+		}
+
+		Data VirtualMachine::getvalue(const Value &val) {
+			switch(val.Type) {
+				case ValueType::Literal:
+					return val.Literal;
+				case ValueType::Constant:
+					return FindConstant(val.Name).GetData();
+				case ValueType::Temp: {
+					auto &data=temporaries[val.Result];
+					if(!data.IsValid()) {
+						throw std::runtime_error("Invalid temporary.");
+					}
+					return temporaries[val.Result];
+				}
+				case ValueType::Variable:
+					return GetVariable(val.Name);
+				default:
+					ASSERT(false, "Invalid value type.");
+			}
+
+		}
+
+		Data VirtualMachine::callfunction(const Function *fn, bool method, const std::vector<Value> &incomingparams) {
+			auto pin=incomingparams.begin();
+
+			std::vector<Data> params;
+
+			if(fn->HasParent()) {
+				if(pin!=incomingparams.end()) {
+					Data param=getvalue(*pin);
+
+					if(param.GetType()==fn->GetParent()) {
+						//no worries
+					}
+					else {
+						ASSERT(false, "Not implemented", 0, 8);
+					}
+
+					params.push_back(param);
+				}
+				else {
+					throw MissingParameterException("this", 0, fn->GetParent().GetName());
+				}
+				pin++;
+			}
+
+			for(const auto &pdef : fn->Parameters) {
+				if(pdef.IsReference()) {
+
+				}
+				else if(pin!=incomingparams.end()) {
+					Data param=getvalue(*pin);
+
+					if(param.GetType()==pdef.GetType()) {
+						//no worries
+					}
+					//tostring
+					else if(pdef.GetType()==Integrals.Types["String"]) {
+						param={Integrals.Types["String"], param.GetType().ToString(param)};
+					} 
+					else if(pdef.GetType()==Variant) {
+						param={Variant, param};
+					}
+					else {
+						ASSERT(false, "Not implemented", 0,8);
+					}
+
+					params.push_back(param);
+				}
+				else {
+					if(!pdef.IsOptional()) {
+						throw std::runtime_error("Parameter: "+pdef.GetName()+" is not optional.");
+					}
+
+					break;
+				}
+				++pin;
+			}
+			if(pin!=incomingparams.end()) {
+				ASSERT(false, "Not implemented", 0, 8);
+			}
+
+			return fn->Call(method, params);
+		}
+
+		void VirtualMachine::SetVariable(const std::string &name, Data data) {
+			//check if it exists
+			auto &vars=variablescopes.Last()->Variables;
+			auto var=vars.Find(name);
+
+			//if not found in locals
+			if(!var.IsValid()) {
+				//search in globals
+				var=globalvariables.Find(name);
+
+				//global should have defined in the same InputSource as dictated by the scope
+				if(variablescopes.Last()->GetScopingMode()==VariableScope::LimitGlobals) {
+					//if not
+					if(!var.Current().second.IsDefinedIn(executionscopes.Last()->GetSource())) {
+						//this scope cannot use this global and should define a new local variable
+						var=globalvariables.end();
+					}
+				}
+			}
+
+			//if found
+			if(var.IsValid()) {
+				//change existing variable
+				var.Current().second.Set(data.GetType(), data.GetData());
+			}
+			else {
+				//add a new one
+				if(variablescopes.Last()->GetScopingMode()==VariableScope::DefaultGlobal) {
+					//as global
+					globalvariables.Add(new Variable(name, data.GetType(), data.GetData()));
+				}
+				else {
+					//as local
+					vars.Add(new Variable(name, data.GetType(), data.GetData()));
+				}
+			}
+		}
+
+		Variable &VirtualMachine::GetVariable(const std::string &name) {
+			//check variable scopes first
+			auto &vars=variablescopes.Last()->Variables;
+			auto var=vars.Find(name);
+
+			//TODO static variables? may be they can be handled by function function
+
+			//if found
+			if(var.IsValid()) {
+				//return
+				return var.Current().second;
+			}
+			//if not
+			else {
+				//search globals
+				auto var=globalvariables.Find(name);
+
+				//if found
+				if(var.IsValid()) {
+					//global should have defined in the same InputSource as dictated by the scope
+					if(variablescopes.Last()->GetScopingMode()==VariableScope::LimitGlobals) {
+						//if not
+						if(!var.Current().second.IsDefinedIn(executionscopes.Last()->GetSource())) {
+							//this scope cannot use this global
+							throw SymbolNotFoundException(name, SymbolType::Variable);
+						}
+					}
+
+					//return
+					return var.Current().second;
+				}
+				//if not
+				else {
+					//nothing more to try
+					throw SymbolNotFoundException(name, SymbolType::Variable);
+				}
+			}
+		}
+
+		void VirtualMachine::functioncall(const Instruction *inst) {
+			const Function *fn=nullptr;
+			std::string functionname;
+
+			//function call from a literal, should be a string.
+			if(inst->Name.Type==ValueType::Literal) {
+				try {
+					functionname=inst->Name.Literal.GetValue<std::string>();
+				} catch(...) {
+					throw std::runtime_error("Invalid instruction. Function names should be string literals.");
+				}
+			} else {
+				ASSERT(false, "Not implemented", 2);
+			}
+
+			// find requested function
+			//try library functions
+			try {
+				fn=&FindFunction(functionname);
+			}
+			//if not found, try member functions
+			catch(const SymbolNotFoundException &) {
+				//should have parameter for resolving
+				if(inst->Parameters.size()==0) {
+					throw;
+				}
+
+				//search in the type of the first parameter
+				Data data=getvalue(inst->Parameters[0]);
+				auto fnit=data.GetType().Functions.Find(functionname);
+
+				//if found
+				if(fnit.IsValid()) {
+					fn=&fnit.Current().second;
+				} else {
+					//cannot find anywhere
+					throw;
+				}
+			} catch(...) {
+				//some other error
+				throw;
+			}
+
+			// call it
+			Data ret=callfunction(fn, false, inst->Parameters);
+
+			//if requested
+			if(inst->Store) {
+				//store the result
+				temporaries[inst->Store]=ret;
+			}
+		}
+
+
+
 	}
 }

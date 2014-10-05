@@ -146,6 +146,8 @@ namespace Gorgon {
 		template<class T_>
 		Any &operator =(T_ &&value) {
 			Set(std::move(value));
+
+			return *this;
 		}
 
 		/// Swaps the contents of the current any with another. Does

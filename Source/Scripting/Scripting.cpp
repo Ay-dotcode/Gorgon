@@ -5,7 +5,7 @@
 
 namespace Gorgon { namespace Scripting {
 	
-	Data::Data(Type& type) : type(&type) {
+	Data::Data(const Type& type) : type(&type) {
 		data = type.GetDefaultValue();
 	}
 	

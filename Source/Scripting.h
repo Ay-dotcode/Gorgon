@@ -9,7 +9,6 @@
 #include "Any.h"
 
 #include "Scripting/Reflection.h"
-#include "Scripting/InputSource.h"
 #include "Scripting/Data.h"
 
 namespace Gorgon {

@@ -22,11 +22,27 @@ namespace Gorgon {
 				case '.':
 					storedfn(input, ch);
 					return 1;
-					
+
+				case '+': {
+					List.resize(List.size()+1);
+					auto &inst=List.back();
+					inst.Type=InstructionType::Mark;
+					inst.Name=parsevalue(input, ch);
+					break;
+				}
+
 				case '-':
 					fncall(input, ch);
 					return 1;
-					
+
+				case '*':
+					fncall(input, ch);
+					return 1;
+
+				case '/':
+					fncall(input, ch);
+					return 1;
+
 				case '$':
 					varassign(input, ch);
 					return 1;
@@ -46,7 +62,6 @@ namespace Gorgon {
 			
 			List.resize(List.size()+1);
 			auto &inst=List.back();
-			inst.Type=InstructionType::FunctionCall;
 			inst.Store=parsetemporary(input, ch);
 			
 			eatwhite(input, ch);
@@ -64,7 +79,13 @@ namespace Gorgon {
 			if(input.size()<=ch) {
 				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected -, end of string encountered."});
 			}
-			if(input[ch]!='-') {
+			if(input[ch]=='-') {
+				inst.Type=InstructionType::FunctionCall;
+			}
+			else if(input[ch]=='*') {
+				inst.Type=InstructionType::MemberFunctionCall;
+			}
+			else {
 				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected -, found: "+input.substr(ch,1)});
 			}
 			ch++;
@@ -83,8 +104,13 @@ namespace Gorgon {
 			
 			List.resize(List.size()+1);
 			auto &inst=List.back();
-			inst.Type=InstructionType::FunctionCall;
-			inst.Store=0;
+			if(input[ch]=='*')
+				inst.Type=InstructionType::MemberFunctionCall;
+			else if(input[ch]=='/')
+				inst.Type=InstructionType::MethodCall;
+			else
+				inst.Type=InstructionType::FunctionCall;
+				inst.Store=0;
 			
 			eatwhite(input, ch);
 			
@@ -104,8 +130,8 @@ namespace Gorgon {
 			auto &inst=List.back();
 			inst.Type=InstructionType::Assignment;
 			
-			inst.Name.Type=ValueType::Literal;
-			inst.Name.Literal={Integrals.Types["String"], extractquotes(input, ch)};
+			inst.Name.Type=ValueType::Variable;
+			inst.Name.Name=extractquotes(input, ch);
 			
 			eatwhite(input, ch);
 			
@@ -177,6 +203,7 @@ namespace Gorgon {
 					else {
 						throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected 0 or 1, found: "+input.substr(ch,1)});
 					}
+					ch++;
 					return ret;
 					
 				case 's':
@@ -211,12 +238,13 @@ namespace Gorgon {
 					else if(input[ch]=='\\') {
 						ret.push_back('\\');
 					}
-					else if(input[ch]=='\n') {
+					else if(input[ch]=='n') {
 						ret.push_back('\n');
 					}
 					else {
 						throw ParseError({ParseError::UnexpectedToken, 0, ch, "Invalid escape sequence: \\"+input.substr(ch,1)});
 					}
+					escape=false;
 				}
 				else {
 					if(input[ch]=='\\') {
@@ -246,7 +274,7 @@ namespace Gorgon {
 			//TODO: Exception on not an int
 			auto str=extractquotes(input, ch);
 			auto ret=String::To<unsigned long>(str);
-			if(ret==0) {
+			if(ret==0 && ret>255) {
 				throw std::runtime_error("Invalid temporary: "+str);
 			}
 			return ret;

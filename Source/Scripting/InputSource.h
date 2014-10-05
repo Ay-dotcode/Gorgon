@@ -7,6 +7,7 @@
 #include <fstream>
 #include "../String.h"
 #include "Parser.h"
+#include "../Scripting.h"
 
 namespace Gorgon {
 	
@@ -156,28 +157,50 @@ namespace Gorgon {
 		public:
 			
 			/// Constructor requires an input provider and a name to define this input source
-			InputSource(InputProvider &provider, const std::string &name);
+			InputSource(InputProvider &provider, const std::string &name) : provider(provider), name(name) {
+				switch(provider.GetDialect()) {
+				case InputProvider::Intermediate:
+					parser=new IntermediateParser();
+				}
+			}
 			
 			const Instruction *ReadInstruction(unsigned long line) {
-				if(lines.size()<line) {
+				if(line<lines.size()) {
 					return &lines[line].instruction;
 				}
 				else {
 					if(provider.GetDialect()==InputProvider::Intermediate) {
-						while(lines.size()>=line) {
+						while(line>=lines.size()) {
 							std::string str;
 							
 							if(!provider.ReadLine(str, true)) {
 								return nullptr;
 							}
-							
-							//lines.push_back(ParseIntermediate(str));
+							pline++;
+
+							try {
+								parser->Parse(str);
+							}
+							catch(const ParseError &err) {
+								throw ParseError({err.Code, pline, err.Char, err.What});
+							}
+
+							for(auto &inst : parser->List)
+								lines.push_back({inst, pline});
+
+							parser->List.clear();
 						}
 						
 						return &lines[line].instruction;
 					}
 				}
 			}
+
+			unsigned long GetPhysicalLine() const {
+				return pline;
+			}
+
+			std::string GetName() const { return name; }
 			
 			/// Unloads an input source by erasing all current data. Unload should only be
 			/// called when no more callbacks can be performed and no more lines are left.
@@ -197,6 +220,9 @@ namespace Gorgon {
 			InputProvider &provider;
 			
 			unsigned long pline = 0;
+			std::string name;
+
+			ParserBase *parser;
 			
 			/// Every logical line up until current execution point. They are kept so that
 			/// it is possible to jump back. Logical lines do not contain comments 

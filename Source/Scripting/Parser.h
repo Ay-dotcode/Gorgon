@@ -5,17 +5,31 @@
 #include <vector>
 
 #include "Data.h"
+#include "../Types.h"
 
 namespace Gorgon {
 	namespace Scripting {
 
 		/// Describes the type of an instruction
 		enum class InstructionType {
-			/// Marks instruction as a function call.
+
+			/// Marks the start of a function call, intended for keywords only
+			Mark = 1,
+
+			/// Marks instruction as a regular function call. Regular function calls can also be member functions,
+			/// however, they cannot be data members.
 			FunctionCall,
 
+			/// Marks this instruction as a member function call. This means the function is either a data member
+			/// and will return or set the value of the member or a member function that will be called.
+			MemberFunctionCall,
+
+			/// Marks this instruction as a member function call. This means the function is either a data member
+			/// and will return or set the value of the member or a member function that will be called.
+			MethodCall,
+
 			/// Marks instruction as an assignment
-			Assignment
+			Assignment,
 		};
 
 		/// Possible value types
@@ -37,21 +51,21 @@ namespace Gorgon {
 			None,
 		};
 		
-		/// This class contains a parsed value. A value can be a temporary, literal, variable of a contant
-		/// for variables and constants, Name is stored. For a temporary, Result is stored, for a literal
+		/// This class contains a parsed value. A value can be a temporary, literal, variable or a constant.
+		/// For variables and constants, Name is stored. For a temporary, Result is stored, for a literal
 		/// Value is stored.
 		struct Value {
-			/// Type of this value.
-			ValueType Type;
-			
 			/// Used for variables and constants
 			std::string Name;
-			
-			/// Used for temporary results
-			unsigned long Result;
-			
+
 			/// Used for literal values
 			Data Literal=Data::Invalid();
+
+			/// Type of this value.
+			ValueType Type;
+
+			/// Used for temporary results
+			Byte Result;
 		};
 		
 		/**
@@ -73,14 +87,14 @@ namespace Gorgon {
 			/// Name of the function or variable
 			Value Name;
 			
-			/// Whether to store the result of the function
-			unsigned long Store;
-			
 			/// The value that will be assigned to the variable
 			Value RHS;
 			
 			/// Parameters of the function.
 			std::vector<Value> Parameters;
+
+			/// Whether to store the result of the function
+			Byte Store;
 		};
 		
 		class ParserBase {
