@@ -34,7 +34,7 @@ namespace Gorgon { namespace Scripting {
 			
 			IfScope scope;
 			
-			if(expression) {
+			if(!expression) {
 				vm.StartSkipping();
 				scope.skipping=true;
 			}
@@ -106,6 +106,8 @@ namespace Gorgon { namespace Scripting {
 					}
 				}
 			}
+
+			current.SetData(scope);
 		}
 	}
 	

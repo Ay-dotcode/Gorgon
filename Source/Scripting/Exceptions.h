@@ -17,6 +17,7 @@ namespace Gorgon {
 			UnexpectedKeyword,
 			FlowError,
 			MissingParameter,
+			NoReturn
 		};
 		
 		DefineEnumStrings(ExceptionType,
@@ -27,7 +28,8 @@ namespace Gorgon {
 			{ExceptionType::NullValue, "Value is null"},
 			{ExceptionType::UnexpectedKeyword, "Unexpected keyword"},
 			{ExceptionType::FlowError, "Flow error"},
-			{ExceptionType::MissingParameter, "Missing parameter"}
+			{ExceptionType::MissingParameter, "Missing parameter"},
+			{ExceptionType::NoReturn, "No return type"}
 		);
 		
 		enum class SymbolType {
@@ -133,9 +135,19 @@ namespace Gorgon {
 		class MissingParameterException : public Exception {
 		public:
 			explicit MissingParameterException(const std::string &parameter, int index, const std::string &type, const std::string &details="", long linenumber=-1) :
-			Exception(ExceptionType::MissingParameter, 
-					  "Missing parameter "+String::From(index+1)+", "+parameter+" ("+type+")", linenumber) {
-				
+				Exception(ExceptionType::MissingParameter,
+				"Missing parameter "+String::From(index+1)+", "+parameter+" ("+type+")", linenumber) {
+
+				this->details = details;
+			}
+		};
+
+		class NoReturnException : public Exception {
+		public:
+			explicit NoReturnException(const std::string &function, const std::string &details="", long linenumber=-1) :
+				Exception(ExceptionType::NoReturn,
+				"Function "+function+" does not return a value", linenumber) {
+
 				this->details = details;
 			}
 		};

@@ -27,6 +27,7 @@ namespace Gorgon {
 					List.resize(List.size()+1);
 					auto &inst=List.back();
 					inst.Type=InstructionType::Mark;
+					ch++;
 					inst.Name=parsevalue(input, ch);
 					break;
 				}

@@ -29,6 +29,31 @@ namespace Gorgon {
 				}
 				return String::To<bool>(str);
 			}
+
+			void End(std::string validate="") {
+				auto &vm=VirtualMachine::Get();
+				if(!vm.HasKeywordScope()) {
+					throw FlowException("end without any keyword");
+				}
+
+				if(validate!="") {
+					if(vm.GetKeywordScope().GetFunction().GetLowercaseName()!=String::ToLower(validate)) {
+						throw FlowException("end does not match with the correct keyword", 
+							"Current scope is "+vm.GetKeywordScope().GetFunction().GetLowercaseName()+
+							" while given keyword for end is "+validate);
+					}
+				}
+
+				if(vm.SkippingDepth()) {
+					vm.ReduceSkipping();
+				}
+				else {
+					if(vm.GetKeywordScope().CallEnd()) {
+						vm.PopKeywordScope();
+					}
+				}
+			}
+
 		}
 
 		Function *If();
@@ -38,7 +63,7 @@ namespace Gorgon {
 		void init_builtin() {						
 			auto Int = new MappedValueType<int>( "Int", 
 				"Integer data type. This type is binary saved/loaded as int32_t regardless of the platform. "
-				"This data type does not support binary operatoration (bit shift, bitwise and/or). You should "
+				"This data type does not support binary operator (bit shift, bitwise and/or). You should "
 				"use *unsigned* for this purpose."
 			);
 			
@@ -170,7 +195,20 @@ namespace Gorgon {
 			Keywords={"Keywords", "Standard keywords like if and for.",
 				TypeList {},
 				FunctionList {
-					If(), ElseIf(), Else()
+					If(), ElseIf(), Else(), 
+					new MappedFunction("end", 
+						"Ends the current scope",
+						nullptr, nullptr,
+						ParameterList {
+							new Parameter(
+								"Keyword",
+								"This function accepts a keyword name for scope validation.",
+								Integrals.Types["String"], OptionalTag
+							)
+						},
+						MappedFunctions(&End, []() { End(); }), MappedMethods(), 
+						KeywordTag, NeverSkipTag
+					)
 				},
 			};
 			

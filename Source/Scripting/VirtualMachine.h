@@ -133,8 +133,10 @@ namespace Gorgon {
 			/// will not execute them unless they are marked as no skip. VM can be placed into
 			/// skipping mode by any function, not necessarily by a scoped keyword.
 			void StartSkipping() {
-				throw FlowException("Already skipping.", "The VM is already placed in skipping mode "
-					"by another keyword. Quiting to evade further problems.");
+				if(skipping) {
+					throw FlowException("Already skipping.", "The VM is already placed in skipping mode "
+						"by another keyword. Quiting to evade further problems.");
+				}
 				skipping=true;
 			}
 
@@ -148,6 +150,11 @@ namespace Gorgon {
 				skipping=false;
 			}
 
+			/// Returns whether the VM is in skipping mode
+			bool IsSkipping() const {
+				return skipping;
+			}
+
 			/// This function returns the depth of skipping. Depth of skipping is the number of silent
 			/// (skipped) scoped keywords that still need to be terminated. For instance, if there are
 			/// two if scopes inside each other and both have else statements and if exterior if statement
@@ -157,6 +164,14 @@ namespace Gorgon {
 			/// not be stopped.
 			int SkippingDepth() const {
 				return skippingdepth;
+			}
+
+			/// Reduces the skipping count
+			void ReduceSkipping() {
+				if(skippingdepth==0) {
+					throw FlowException("Cannot reduce skipping, It is already been reduced to 0.");
+				}
+				skippingdepth--;
 			}
 
 			/// Returns if there is an active keyword scope
@@ -170,6 +185,15 @@ namespace Gorgon {
 					throw FlowException("No active keyword scope.");
 				}
 				return *keywordscopes.Last();
+			}
+
+			/// Removes the last keyword scope, removing skipping mode if it is set
+			void PopKeywordScope() {
+				if(keywordscopes.GetCount()==0) {
+					throw FlowException("No active keyword scope.");
+				}
+				keywordscopes.Last().Delete();
+				skipping=false;
 			}
 
 			/// Returns the name of the current variable scope. This could be a function name or

@@ -582,13 +582,25 @@ namespace Gorgon {
 				throw;
 			}
 
-			// call it
-			Data ret=callfunction(fn, false, inst->Parameters);
+			if(!skipping || fn->NeverSkip()) {
+				// call it
+				Data ret=callfunction(fn, false, inst->Parameters);
 
-			//if requested
-			if(inst->Store) {
-				//store the result
-				temporaries[inst->Store]=ret;
+				if(fn->IsScoped()) {
+					auto scope=new KeywordScope{*fn, ret.GetValue<Data>()};
+					keywordscopes.Add(scope);
+				}
+
+				//if requested
+				if(inst->Store) {
+					if(!fn->IsScoped() && fn->HasReturnType()) {
+						//store the result
+						temporaries[inst->Store]=ret;
+					} 
+					else {
+						throw NoReturnException(functionname);
+					}
+				}
 			}
 		}
 
