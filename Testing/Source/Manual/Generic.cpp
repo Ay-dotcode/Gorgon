@@ -31,10 +31,22 @@ int main() {
 
 	VirtualMachine vm;
 
+	std::cout<<std::endl<<std::endl;
+	Gorgon::Console::SetBold();
+	Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+	std::cout<<"OUTPUT: "<<std::endl;
+	Gorgon::Console::Reset();
+
 	try {
 		vm.Start(input);
 	}
 	catch(const Exception &ex) {
+
+		std::cout<<std::endl<<std::endl;
+		Gorgon::Console::SetBold();
+		Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+		std::cout<<"SOURCE CODE: "<<std::endl;
+		Gorgon::Console::Reset();
 
 		std::stringstream ss2(source);
 		std::string line;
@@ -52,6 +64,12 @@ int main() {
 		}
 		std::cout<<std::endl<<std::endl;
 
+
+		std::cout<<std::endl<<std::endl;
+		Gorgon::Console::SetBold();
+		Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+		std::cout<<"ERROR: "<<std::endl;
+		Gorgon::Console::Reset();
 
 		Gorgon::Console::SetBold();
 		std::cout<<"At line "<<ex.GetLine();
@@ -91,6 +109,12 @@ int main() {
 		std::cout<<std::endl<<std::endl;
 
 
+		std::cout<<std::endl<<std::endl;
+		Gorgon::Console::SetBold();
+		Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+		std::cout<<"ERROR: "<<std::endl;
+		Gorgon::Console::Reset();
+
 		Gorgon::Console::SetBold();
 		std::cout<<"At line "<<ex.Line<<":"<<ex.Char;
 		Gorgon::Console::SetBold(false);
@@ -101,6 +125,25 @@ int main() {
 
 		return 2;
 	}
+
+	std::cout<<std::endl<<std::endl;
+	Gorgon::Console::SetBold();
+	Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+	std::cout<<"SOURCE CODE: "<<std::endl;
+	Gorgon::Console::Reset();
+
+	std::stringstream ss2(source);
+	std::string line;
+	int linenr=0;
+	while(std::getline(ss2, line)) {
+		linenr++;
+		Gorgon::Console::SetBold();
+		std::cout<<std::setw(3)<<linenr<<" ";
+		Gorgon::Console::SetBold(false);
+		std::cout<<line<<std::endl;
+		Gorgon::Console::Reset();
+	}
+	std::cout<<std::endl<<std::endl;
 
 	std::cout<<std::endl<<std::endl;
 	Gorgon::Console::SetColor(Gorgon::Console::Green);
