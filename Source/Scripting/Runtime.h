@@ -74,7 +74,7 @@ namespace Gorgon {
 		public:
 			/// Constructor requires the function that is creating this scope and data associated
 			/// with it. Data type checking will not be performed on embedded keywords.
-			KeywordScope(const Function &fn, Data data) : data(data), fn(&fn) {
+			KeywordScope(const Function &fn, Data data, unsigned long pline) : data(data), fn(&fn), pline(pline) {
 			}
 			
 			/// Returns the data associated with this scope
@@ -87,6 +87,11 @@ namespace Gorgon {
 			void SetData(Data data) {
 				this->data=data;
 			}
+
+			/// Returns the line number 
+			unsigned long GetPhysicalLine() const {
+				return pline;
+			}
 			
 			/// Signals the end of the scope. If return value is false, this means that the scope is not
 			/// yet ended. CallEnd function is responsible to move execution point back inside the keyword
@@ -95,6 +100,7 @@ namespace Gorgon {
 				return fn->CallEnd(data);
 			}
 			
+			/// Returns the function that created this scope
 			const Function &GetFunction() const {
 				return *fn;
 			}
@@ -102,6 +108,7 @@ namespace Gorgon {
 		private:
 			const Function *fn;
 			Data data;
+			unsigned long pline;
 		};
 		
 		/**

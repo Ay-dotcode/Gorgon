@@ -33,17 +33,26 @@ namespace Gorgon {
 		/// used as an exception.
 		class ParseError {
 		public:
+
 			/// This enumeration lists all parse error types.
 			enum ErrorCode {
 				MismatchedParenthesis,
 				UnexpectedToken,
 			}; 
+
+			ParseError() {};
+
+			ParseError(ErrorCode code, unsigned long line, int chr, const std::string &what) : Code(code), Line(line), 
+				Char(chr), What(What) {
+			}
+
+
 			
 			/// The code of the error
 			ErrorCode Code;
 			
 			/// The line that contains parse error
-			int Line;
+			unsigned long Line;
 			
 			/// The exact character that contains parse error. If it cannot be determined
 			/// it will reported as -1.

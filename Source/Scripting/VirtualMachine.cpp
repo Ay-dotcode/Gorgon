@@ -216,7 +216,6 @@ namespace Gorgon {
 			}
 		}
 		
-		
 		const Constant &VirtualMachine::FindConstant(std::string name) {
 			using std::swap;
 
@@ -344,7 +343,15 @@ namespace Gorgon {
 			if(target<0) {
 				throw std::runtime_error("No scope to execute.");
 			}
-			while(executionscopes.GetCount()) {
+
+			Run(target);
+		}
+
+		void VirtualMachine::Run(unsigned executiontarget) {
+			int keywordtarget=keywordscopes.GetCount();
+			int variabletarget=variablescopes.GetCount();
+
+			while(executionscopes.GetCount()>executiontarget) {
 				auto inst=executionscopes.Last()->Get();
 
 				try {
@@ -353,16 +360,26 @@ namespace Gorgon {
 						executionscopes.Last().Delete();
 					} else {
 						if(inst->Type==InstructionType::Mark) {
-
+							auto &fn=FindFunction(inst->Name.Name);
+							if(fn.NeverSkip()) {
+								markednoskip=true;
+							}
+							markedkeyword=&fn;
 						}
 						// assignment ...
 						else if(inst->Type==InstructionType::Assignment) {
-							ASSERT(inst->Name.Type==ValueType::Variable, "Variables can only be represented with variables.", 1);
-							SetVariable(inst->Name.Name, getvalue(inst->RHS));
+							if(inst->Name.Type!=ValueType::Variable)
+								throw std::runtime_error("Variables can only be represented with variables.");
+
+							if(!skipping || markednoskip) {
+								SetVariable(inst->Name.Name, getvalue(inst->RHS));
+							}
 						}
 						//function call
 						else if(inst->Type==InstructionType::FunctionCall) {
-							functioncall(inst);
+							if(!skipping || markednoskip) {
+								functioncall(inst);
+							}
 						} else if(inst->Type==InstructionType::MemberFunctionCall) {
 							ASSERT(false, "Not implemented", 0, 8);
 						} else if(inst->Type==InstructionType::MethodCall) {
@@ -375,6 +392,20 @@ namespace Gorgon {
 
 					throw ex;
 				}
+			}
+
+			if(executionscopes.GetCount()==executiontarget) {
+				if(keywordtarget<keywordscopes.GetCount()) {
+					throw FlowException("Missing end statement",
+						"While searching the end for "+keywordscopes.Last()->GetFunction().GetName(),
+						keywordscopes.Last()->GetPhysicalLine()
+					);
+				}
+				else if(keywordtarget>keywordscopes.GetCount()) {
+					throw FlowException("Extra end statement");
+				}
+
+				ASSERT(variabletarget==variablescopes.GetCount(), "Variable scope error",0,8);
 			}
 		}
 
@@ -582,24 +613,26 @@ namespace Gorgon {
 				throw;
 			}
 
-			if(!skipping || fn->NeverSkip()) {
-				// call it
-				Data ret=callfunction(fn, false, inst->Parameters);
+			// call it
+			Data ret=callfunction(fn, false, inst->Parameters);
 
-				if(fn->IsScoped()) {
-					auto scope=new KeywordScope{*fn, ret.GetValue<Data>()};
-					keywordscopes.Add(scope);
-				}
+			if(fn->IsScoped()) {
+				auto scope=new KeywordScope{*fn, ret.GetValue<Data>(), executionscopes.Last()->GetSource().GetPhysicalLine()};
+				keywordscopes.Add(scope);
+			}
 
-				//if requested
-				if(inst->Store) {
-					if(!fn->IsScoped() && fn->HasReturnType()) {
-						//store the result
-						temporaries[inst->Store]=ret;
-					} 
-					else {
-						throw NoReturnException(functionname);
-					}
+			if(markednoskip && fn==markedkeyword) {
+				markednoskip=false;
+			}
+
+			//if requested
+			if(inst->Store) {
+				if(!fn->IsScoped() && fn->HasReturnType()) {
+					//store the result
+					temporaries[inst->Store]=ret;
+				} 
+				else {
+					throw NoReturnException(functionname);
 				}
 			}
 		}

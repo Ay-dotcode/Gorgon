@@ -38,6 +38,9 @@ namespace Gorgon {
 			/// This method starts the virtual machine
 			void Run();
 
+			/// This method starts the virtual machine
+			void Run(unsigned executiontarget);
+
 
 			/// This method starts the virtual machine with the given input source
 			void Start(InputSource &source);
@@ -207,6 +210,12 @@ namespace Gorgon {
 				return variablescopes.Last()->GetName();
 			}
 
+			/// Returns the number of active execution scopes. If this number is 0, VM cannot be started without
+			/// providing additional code source.
+			unsigned GetExecutionScopeCount() const {
+				return executionscopes.GetCount();
+			}
+
 			/// Resets any runtime information that this VM has. This includes all scopes and global
 			/// variables
 			void Reset();
@@ -248,6 +257,8 @@ namespace Gorgon {
 
 			bool skipping = false;
 			int  skippingdepth = 0;
+			bool markednoskip = false;
+			const Function *markedkeyword=nullptr;
 
 			std::vector<Data> temporaries;
 

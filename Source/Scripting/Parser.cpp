@@ -28,7 +28,8 @@ namespace Gorgon {
 					auto &inst=List.back();
 					inst.Type=InstructionType::Mark;
 					ch++;
-					inst.Name=parsevalue(input, ch);
+					eatwhite(input, ch);
+					inst.Name.Name=extractquotes(input, ch);
 					break;
 				}
 
