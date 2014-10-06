@@ -228,7 +228,7 @@ namespace Gorgon {
 		private:
 			Data callfunction(const Function *fn, bool method, const std::vector<Value> &params);
 			Data getvalue(const Value &val);
-			void functioncall(const Instruction *inst);
+			void functioncall(const Instruction *inst, bool memberonly, bool method);
 
 			/// All libraries that are available globally. 
 			Containers::Hashmap<std::string, const Library, &Library::GetLowercaseName> libraries;

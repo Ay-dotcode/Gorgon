@@ -522,7 +522,8 @@ namespace Gorgon {
 					}
 					else {
 						auto ret = functions->call(parameters);
-						VirtualMachine::Get().GetOutput()<<ret;
+						if(HasReturnType())
+							VirtualMachine::Get().GetOutput()<<ret<<std::endl<<std::endl;
 					}
 					
 					return Data::Invalid();

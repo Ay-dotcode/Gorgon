@@ -358,7 +358,8 @@ namespace Gorgon {
 					// execution scope is done, cull it
 					if(inst==nullptr) {
 						executionscopes.Last().Delete();
-					} else {
+					} 
+					else {
 						if(inst->Type==InstructionType::Mark) {
 							auto &fn=FindFunction(inst->Name.Name);
 							if(fn.NeverSkip()) {
@@ -378,12 +379,26 @@ namespace Gorgon {
 						//function call
 						else if(inst->Type==InstructionType::FunctionCall) {
 							if(!skipping || markednoskip) {
-								functioncall(inst);
+								functioncall(inst, false, false);
 							}
-						} else if(inst->Type==InstructionType::MemberFunctionCall) {
-							ASSERT(false, "Not implemented", 0, 8);
-						} else if(inst->Type==InstructionType::MethodCall) {
-							ASSERT(false, "Not implemented", 0, 8);
+						} 
+						else if(inst->Type==InstructionType::MemberFunctionCall) {
+							if(!skipping) {
+								functioncall(inst, true, false);
+							}
+						} 
+						else if(inst->Type==InstructionType::MethodCall) {
+							if(!skipping || markednoskip) {
+								functioncall(inst, false, true);
+							}
+						}
+						else if(inst->Type==InstructionType::MemberMethodCall) {
+							if(!skipping) {
+								functioncall(inst, true, true);
+							}
+						}
+						else {
+							ASSERT(false, "Unknown instruction type.", 0, 8);
 						}
 					}
 				}
@@ -570,7 +585,7 @@ namespace Gorgon {
 			}
 		}
 
-		void VirtualMachine::functioncall(const Instruction *inst) {
+		void VirtualMachine::functioncall(const Instruction *inst, bool memberonly, bool method) {
 			const Function *fn=nullptr;
 			std::string functionname;
 
@@ -586,15 +601,37 @@ namespace Gorgon {
 			}
 
 			// find requested function
-			//try library functions
-			try {
-				fn=&FindFunction(functionname);
-			}
-			//if not found, try member functions
-			catch(const SymbolNotFoundException &) {
-				//should have parameter for resolving
-				if(inst->Parameters.size()==0) {
+			if(!memberonly) {
+				//try library functions
+				try {
+					fn=&FindFunction(functionname);
+				}
+				//if not found, try member functions
+				catch(const SymbolNotFoundException &) {
+					//should have parameter for resolving
+					if(inst->Parameters.size()==0) {
+						throw;
+					}
+
+					//search in the type of the first parameter
+					Data data=getvalue(inst->Parameters[0]);
+					auto fnit=data.GetType().Functions.Find(functionname);
+
+					//if found
+					if(fnit.IsValid()) {
+						fn=&fnit.Current().second;
+					} else {
+						//cannot find anywhere
+						throw;
+					}
+				} catch(...) {
+					//some other error
 					throw;
+				}
+			}
+			else {
+				if(inst->Parameters.size()==0) {
+					throw std::runtime_error("Invalid intermediate instruction, missing this parameter");
 				}
 
 				//search in the type of the first parameter
@@ -605,16 +642,14 @@ namespace Gorgon {
 				if(fnit.IsValid()) {
 					fn=&fnit.Current().second;
 				} else {
-					//cannot find anywhere
-					throw;
+					//cannot find it
+					throw SymbolNotFoundException(functionname, SymbolType::Function, 
+						"Cannot find the member function "+data.GetType().GetName()+":"+functionname);
 				}
-			} catch(...) {
-				//some other error
-				throw;
 			}
 
 			// call it
-			Data ret=callfunction(fn, false, inst->Parameters);
+			Data ret=callfunction(fn, method, inst->Parameters);
 
 			if(fn->IsScoped()) {
 				auto scope=new KeywordScope{*fn, ret.GetValue<Data>(), executionscopes.Last()->GetSource().GetPhysicalLine()};

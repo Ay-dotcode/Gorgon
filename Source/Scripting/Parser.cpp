@@ -45,6 +45,10 @@ namespace Gorgon {
 					fncall(input, ch);
 					return 1;
 
+				case '%':
+					fncall(input, ch);
+					return 1;
+
 				case '$':
 					varassign(input, ch);
 					return 1;
@@ -102,17 +106,21 @@ namespace Gorgon {
 		}
 		
 		void IntermediateParser::fncall(const std::string& input, int &ch) {
-			ch++;
-			
 			List.resize(List.size()+1);
 			auto &inst=List.back();
 			if(input[ch]=='*')
 				inst.Type=InstructionType::MemberFunctionCall;
 			else if(input[ch]=='/')
 				inst.Type=InstructionType::MethodCall;
+			else if(input[ch]=='%')
+				inst.Type=InstructionType::MemberMethodCall;
 			else
 				inst.Type=InstructionType::FunctionCall;
-				inst.Store=0;
+
+			inst.Store=0;
+
+			ch++;
+
 			
 			eatwhite(input, ch);
 			

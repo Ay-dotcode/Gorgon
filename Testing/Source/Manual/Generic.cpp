@@ -5,19 +5,40 @@
 
 using namespace Gorgon::Scripting;
 
-const std::string source = R"(
+const std::string source = R"(# $a = 4;
 $"a" = i"4"
-+"if"
-."1" = -s"=" $"a" i"5"
+
+# echo 3=pi
+#."1" = -s"=" i"3" c"pi"
+#-s"echo" ."1"
+
+# if $a = 4
++ "if"
+."1" = *s"=" $"a" i"4"
 -s"if" ."1"
-	-s"echo" s"Working..."
+	# echo("working")
+	/s"echo" s"Working..."
+
+	# Echo $a=5
+	# normally cannot be generated
 	-s"Echo" ."1"
+
+	%s"=" $"a" i"5"
+
+	# Echo pi
 	-s"Echo" c"pi"
+
+# else
 + "else"
 -s"else"
+	
+	# echo("Really working")
 	-s"echo" s"Really working..."
-+"end"
+
+# end
++ "end"
 -s"end"
+
 )";
 
 int main() {
@@ -124,6 +145,14 @@ int main() {
 		std::cout<<": "<<ex.What<<std::endl;
 
 		return 2;
+	}
+	catch(const std::exception &ex) {
+		Gorgon::Console::SetColor(Gorgon::Console::Red);
+		Gorgon::Console::SetBold();
+		std::cout<<ex.what()<<std::endl;
+		Gorgon::Console::Reset();
+		std::cout<<std::endl<<std::endl;
+		return 3;
 	}
 
 	std::cout<<std::endl<<std::endl;
