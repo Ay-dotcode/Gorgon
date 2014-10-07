@@ -191,12 +191,12 @@ namespace Gorgon {
 					
 				case 'i':
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Integrals.Types["Int"], String::To<int>(extractquotes(input, ch))};
+					ret.Literal = {Integrals.Types["int"], String::To<int>(extractquotes(input, ch))};
 					return ret;
 					
 				case 'f':
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Integrals.Types["Float"], String::To<float>(extractquotes(input, ch))};
+					ret.Literal = {Integrals.Types["float"], String::To<float>(extractquotes(input, ch))};
 					return ret;
 					
 				case 'b':
@@ -205,10 +205,10 @@ namespace Gorgon {
 						throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected 0 or 1, end of string encountered."});
 					}
 					if(input[ch]=='0') {
-						ret.Literal = {Integrals.Types["Float"], false};
+						ret.Literal = {Integrals.Types["float"], false};
 					}
 					else if(input[ch]=='1') {
-						ret.Literal = {Integrals.Types["Float"], true};
+						ret.Literal = {Integrals.Types["float"], true};
 					}
 					else {
 						throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected 0 or 1, found: "+input.substr(ch,1)});
@@ -218,7 +218,7 @@ namespace Gorgon {
 					
 				case 's':
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Integrals.Types["String"], extractquotes(input, ch)};
+					ret.Literal = {Integrals.Types["string"], extractquotes(input, ch)};
 					return ret;
 
 				default:

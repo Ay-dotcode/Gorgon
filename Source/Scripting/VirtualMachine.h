@@ -246,6 +246,8 @@ namespace Gorgon {
 
 			Containers::Collection<InputSource>		inputsources;
 
+			Library runtime;
+
 			Containers::Hashmap<std::string, Variable, &Variable::GetLowercaseName>	globalvariables;
 			std::map<Function*, Containers::Hashmap<std::string, Variable>> staticvariables;
 

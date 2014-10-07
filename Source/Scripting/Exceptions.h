@@ -17,7 +17,8 @@ namespace Gorgon {
 			UnexpectedKeyword,
 			FlowError,
 			MissingParameter,
-			NoReturn
+			NoReturn,
+			CastError
 		};
 		
 		DefineEnumStrings(ExceptionType,
@@ -29,7 +30,8 @@ namespace Gorgon {
 			{ExceptionType::UnexpectedKeyword, "Unexpected keyword"},
 			{ExceptionType::FlowError, "Flow error"},
 			{ExceptionType::MissingParameter, "Missing parameter"},
-			{ExceptionType::NoReturn, "No return type"}
+			{ExceptionType::NoReturn, "No return type"},
+			{ExceptionType::CastError, "Cast error"}
 		);
 		
 		enum class SymbolType {
@@ -151,6 +153,18 @@ namespace Gorgon {
 				this->details = details;
 			}
 		};
+
+		class CastException : public Exception {
+		public:
+			explicit CastException(const std::string &from, const std::string &to, const std::string &details="", long linenumber=-1) :
+				Exception(ExceptionType::CastError,
+				"Cannot cast from "+from+" to "+to, linenumber) {
+
+				this->details = details;
+			}
+		};
+
+
 
 	}
 }

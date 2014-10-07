@@ -763,12 +763,17 @@ namespace Gorgon {
 			Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue), 
 			referencetype(isref)
 			{ }			
-			
+
 			/// Returns the name of this type.
 			std::string GetName() const {
 				return name;
 			}
-			
+
+			/// Returns the name of this type in lowercase
+			std::string GetLowercaseName() const {
+				return String::ToLower(name);
+			}
+
 			/// Returns the help string. Help strings may contain markdown notation.
 			std::string GetHelp() const {
 				return help;
@@ -826,8 +831,8 @@ namespace Gorgon {
 			void AddConstructors(std::initializer_list<Function*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(element->parent==this,
-						   "This type should be listed as the parent of this function", 1, 2);
+					ASSERT(element->HasReturnType() && element->GetReturnType()==this,
+						   "Given constructor should return this ("+name+") type", 1, 2);
 					//TODO check for duplicate constructors
 					constructors.Add(element);
 				}
@@ -918,7 +923,7 @@ namespace Gorgon {
 			const EventList							&Events;
 			
 			/// Inheritance list. 
-			const Containers::Hashmap<std::string, const Type, &Type::GetName> &InheritsFrom;
+			const Containers::Hashmap<std::string, const Type, &Type::GetLowercaseName> &InheritsFrom;
 			
 		private:
 			std::string name;
@@ -930,7 +935,7 @@ namespace Gorgon {
 			
 			/// Data members of this type. Notice that not every type has data members.
 			DataMemberList						datamembers;
-			
+
 			/// Contains the functions related with this type. These functions can be operators,
 			/// or type casting functions. Functions with the name of another type are called
 			/// type casting functions. These functions are stored with [Library]Typename format.
@@ -948,12 +953,12 @@ namespace Gorgon {
 			EventList							events;
 			
 			/// Inheritance list. 
-			Containers::Hashmap<std::string, const Type, &Type::GetName> inheritsfrom;
+			Containers::Hashmap<std::string, const Type, &Type::GetLowercaseName> inheritsfrom;
 			
 			bool referencetype = false;
 		};
 		
-		using TypeList = Containers::Hashmap<std::string, const Type, &Type::GetName>;
+		using TypeList = Containers::Hashmap<std::string, const Type, &Type::GetLowercaseName>;
 		
 		/**
 		 * This class represents a library. Libraries can be loaded into virtual machines to be used.

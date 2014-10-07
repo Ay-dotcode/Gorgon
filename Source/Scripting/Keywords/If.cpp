@@ -117,7 +117,7 @@ namespace Gorgon { namespace Scripting {
 			ParameterList{
 				new Parameter("Condition", 
 					"Condition for the if statement. If true the contents will be executed.",
-					Integrals.Types["Bool"]
+					Integrals.Types["bool"]
 				)
 			}, 
 			MappedFunctions(IfFn), IfEnd
@@ -133,7 +133,7 @@ namespace Gorgon { namespace Scripting {
 			ParameterList{ 
 				new Parameter("Condition", 
 					"Condition for the if statement. If true the contents will be executed.",
-					Integrals.Types["Bool"]
+					Integrals.Types["bool"]
 				)
 			},
 			MappedFunctions(ElseIfFn), MappedMethods(), KeywordTag, NeverSkipTag

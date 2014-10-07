@@ -471,7 +471,7 @@ namespace Gorgon {
 
 			for(const auto &pdef : fn->Parameters) {
 				if(pdef.IsReference()) {
-
+					ASSERT(false, "Not implemented", 0, 8);
 				}
 				else if(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
@@ -479,15 +479,35 @@ namespace Gorgon {
 					if(param.GetType()==pdef.GetType()) {
 						//no worries
 					}
-					//tostring
-					else if(pdef.GetType()==Integrals.Types["String"]) {
-						param={Integrals.Types["String"], param.GetType().ToString(param)};
-					} 
+					//to string
+					else if(pdef.GetType()==Integrals.Types["string"]) {
+						param={Integrals.Types["string"], param.GetType().ToString(param)};
+					}
+					//from string 
+					else if(param.GetType()==Integrals.Types["string"]) {
+						param={pdef.GetType(), pdef.GetType().Parse(param.GetValue<std::string>())};
+					}
+					//to variant
 					else if(pdef.GetType()==Variant) {
 						param={Variant, param};
 					}
+					//from variant
+					else if(param.GetType()==Variant && param.GetValue<Data>().GetType()==pdef.GetType()) {
+						param={pdef.GetType(), param.GetValue<Data>()};
+					}
 					else {
-						ASSERT(false, "Not implemented", 0,8);
+						bool done=false;
+						for(const auto &ctor : pdef.GetType().Constructors) {
+							if(ctor.Parameters.GetCount()==1 && ctor.Parameters[0].GetType()==param.GetType()) {
+								param=ctor.Call(false, {param});
+								done=true;
+								break;
+							}
+						}
+						if(!done) {
+							throw CastException(param.GetType().GetName(), pdef.GetType().GetName(), 
+												"Cannot cast while trying to call "+fn->GetName());
+						}
 					}
 
 					params.push_back(param);

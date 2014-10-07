@@ -150,6 +150,25 @@ namespace Gorgon {
 				MAP_COMPARE( >, >,  Int, int),
 				MAP_COMPARE( <, <,  Int, int),
 			});
+
+			Int->AddConstructors({
+				new MappedFunction(
+					"Integrals:Float", "Constructs a new int from a float",
+					Int, nullptr, ParameterList {
+						new Parameter("value", "", Float)							
+					},
+					MappedFunctions([](float val) { return int(val); }),
+					MappedMethods()
+				),
+				new MappedFunction(
+					"Integrals:Double", "Constructs a new int from a double",
+					Int, nullptr, ParameterList {
+						new Parameter("value", "", Double)							
+					},
+					MappedFunctions([](double val) { return int(val); }),
+					MappedMethods()
+				)
+			});
 			
 			String->AddFunctions({
 				new MappedFunction("Length",
@@ -157,7 +176,12 @@ namespace Gorgon {
 					MappedFunctions(&std::string::length), MappedMethods()
 				),
 				
-				MAP_COMPARE( =, ==, String, std::string)
+				MAP_COMPARE( =, ==, String, std::string),
+
+				new MappedOperator("+",
+					"String concatenation", String, String, String, 
+					[](std::string left, std::string right) { return left+right; }
+				)
 			});
 			
 			
@@ -170,7 +194,8 @@ namespace Gorgon {
 					Unsigned,
 					Byte,
 					Char,
-					String
+					String,
+					&Variant
 				},
 				FunctionList {
 					new MappedFunction("Echo",
@@ -203,7 +228,7 @@ namespace Gorgon {
 							new Parameter(
 								"Keyword",
 								"This function accepts a keyword name for scope validation.",
-								Integrals.Types["String"], OptionalTag
+								String, OptionalTag
 							)
 						},
 						MappedFunctions(&End, []() { End(); }), MappedMethods(), 
