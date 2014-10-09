@@ -351,7 +351,7 @@ namespace Gorgon {
 			int keywordtarget=keywordscopes.GetCount();
 			int variabletarget=variablescopes.GetCount();
 
-			while(executionscopes.GetCount()>executiontarget) {
+			while(executionscopes.GetCount()>(long)executiontarget) {
 				auto inst=executionscopes.Last()->Get();
 
 				try {
@@ -671,13 +671,14 @@ namespace Gorgon {
 			// call it
 			Data ret=callfunction(fn, method, inst->Parameters);
 
-			if(fn->IsScoped()) {
+			if(fn->IsScoped() && ret.IsValid()) {
 				auto scope=new KeywordScope{*fn, ret.GetValue<Data>(), executionscopes.Last()->GetSource().GetPhysicalLine()};
 				keywordscopes.Add(scope);
 			}
 
 			if(markednoskip && fn==markedkeyword) {
 				markednoskip=false;
+				markedkeyword=nullptr;
 			}
 
 			//if requested

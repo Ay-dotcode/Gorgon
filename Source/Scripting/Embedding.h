@@ -288,7 +288,7 @@ namespace Gorgon {
 					if(num==maxarity-1 && parent.RepeatLast()) {
 						using nonvector=typename remove_vector<T_>::type;
 						std::vector<nonvector> v;
-						for(int i=num;i<datav.size();i++) {
+						for(unsigned i=num;i<datav.size();i++) {
 							v.push_back(datav[i].GetValue< nonvector >());
 						}
 						return v;
@@ -582,6 +582,22 @@ namespace Gorgon {
 				Bool, mappedtype, mappedtype, [](cpptype l, cpptype r) { return l op r; } \
 			)
 		
+		/**
+		 * Maps a constructor for type casting
+		 */
+		template<class from_, class to_>
+		Function *Map_Typecast(const std::string &fromnamespace, Type *from, Type *to) {
+			return new MappedFunction(
+				fromnamespace+":"+from->GetName(), "Constructs a new "+to->GetLowercaseName()+" from a "+from->GetLowercaseName(),
+				to, nullptr, ParameterList {
+					new Parameter("value", "", from)
+				},
+				MappedFunctions([](from_ val) { return to_(val); }),
+				MappedMethods()
+			);
+		}
+
+
 		/**
 		 * Scoped keyword helps to build scoped keywords from embedded functions.
 		 * This class features an additional function, end to be added.

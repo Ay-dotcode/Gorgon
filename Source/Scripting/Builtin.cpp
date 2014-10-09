@@ -152,22 +152,10 @@ namespace Gorgon {
 			});
 
 			Int->AddConstructors({
-				new MappedFunction(
-					"Integrals:Float", "Constructs a new int from a float",
-					Int, nullptr, ParameterList {
-						new Parameter("value", "", Float)							
-					},
-					MappedFunctions([](float val) { return int(val); }),
-					MappedMethods()
-				),
-				new MappedFunction(
-					"Integrals:Double", "Constructs a new int from a double",
-					Int, nullptr, ParameterList {
-						new Parameter("value", "", Double)							
-					},
-					MappedFunctions([](double val) { return int(val); }),
-					MappedMethods()
-				)
+				Map_Typecast<float, int>("Integrals", Float, Int),
+				Map_Typecast<double, int>("Integrals", Double, Int),
+				Map_Typecast<unsigned, int>("Integrals", Unsigned, Int),
+				Map_Typecast<Gorgon::Byte, int>("Integrals", Byte, Int)
 			});
 			
 			String->AddFunctions({

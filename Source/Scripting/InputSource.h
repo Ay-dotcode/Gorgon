@@ -193,6 +193,9 @@ namespace Gorgon {
 						
 						return &lines[line].instruction;
 					}
+					else {
+						ASSERT(false, "Not implemented", 0, 8);
+					}
 				}
 			}
 
