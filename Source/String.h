@@ -44,8 +44,14 @@ namespace Gorgon {
 				for(unsigned i=0; i<len; i++) {
 					auto lc=tolower(*l);
 					auto rc=tolower(*r);
-					if(lc<rc) return true;
-					else if(lc>rc) return false;
+					if(lc<rc) {
+						return true; 
+					}
+					else if(lc>rc) {
+						return false;
+					}
+					++l;
+					++r;
 				}
 				
 				return left.length()<right.length();

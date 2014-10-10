@@ -17,6 +17,7 @@ namespace Gorgon {
 			UnexpectedKeyword,
 			FlowError,
 			MissingParameter,
+			TooManyParameters,
 			NoReturn,
 			CastError
 		};
@@ -30,6 +31,7 @@ namespace Gorgon {
 			{ExceptionType::UnexpectedKeyword, "Unexpected keyword"},
 			{ExceptionType::FlowError, "Flow error"},
 			{ExceptionType::MissingParameter, "Missing parameter"},
+			{ExceptionType::TooManyParameters, "Too many parameters"},
 			{ExceptionType::NoReturn, "No return type"},
 			{ExceptionType::CastError, "Cast error"}
 		);
@@ -139,6 +141,16 @@ namespace Gorgon {
 			explicit MissingParameterException(const std::string &parameter, int index, const std::string &type, const std::string &details="", long linenumber=-1) :
 				Exception(ExceptionType::MissingParameter,
 				"Missing parameter "+String::From(index+1)+", "+parameter+" ("+type+")", linenumber) {
+
+				this->details = details;
+			}
+		};
+
+		class TooManyParametersException : public Exception {
+		public:
+			explicit TooManyParametersException(int given, int total, const std::string &details="", long linenumber=-1) :
+				Exception(ExceptionType::TooManyParameters,
+				"Too many parameters, "+String::From(given)+" given, should be "+String::From(total), linenumber) {
 
 				this->details = details;
 			}

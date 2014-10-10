@@ -11,7 +11,7 @@ $"a" = i"4"
 # echo "3=pi ? " + (3=pi)
 ."1" = -s"=" i"3" c"pi"
 ."2" = *s"+" s"3=pi ? " ."1"
--s"echo" ."2"
+-s"echo" s"The result is " ."2"
 
 # if $a = 4
 + "if"

@@ -805,7 +805,22 @@ namespace Gorgon {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
 					ASSERT(element->HasReturnType() && element->GetReturnType()==this,
 						   "Given constructor should return this ("+name+") type", 1, 2);
-					//TODO check for duplicate constructors
+					
+					for(auto &c : constructors) {
+						if(c.Parameters.GetCount()!=element->Parameters.GetCount()) continue;
+						
+						bool mismatched=false;
+						for(int i=0;i<c.Parameters.GetCount();i++) {
+							if(c.Parameters[i].GetType()!=element->Parameters[i].GetType()) {
+								mismatched=true;
+								continue;
+							}
+						}
+						if(mismatched) continue;
+						
+						ASSERT(false, "The given constructor already exists: "+element->GetName(), 1, 2);
+					}
+					
 					constructors.Add(element);
 				}
 			}

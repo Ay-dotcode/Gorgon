@@ -468,7 +468,44 @@ namespace Gorgon {
 				}
 				pin++;
 			}
+			
+			auto fixparam = [&] (Data &param, const Parameter &pdef) {
+				if(param.GetType()==pdef.GetType()) {
+					//no worries
+				}
+				//to string
+				else if(pdef.GetType()==Integrals.Types["string"]) {
+					param={Integrals.Types["string"], param.GetType().ToString(param)};
+				}
+				//from string 
+				else if(param.GetType()==Integrals.Types["string"]) {
+					param={pdef.GetType(), pdef.GetType().Parse(param.GetValue<std::string>())};
+				}
+				//to variant
+				else if(pdef.GetType()==Variant) {
+					param={Variant, param};
+				}
+				//from variant
+				else if(param.GetType()==Variant && param.GetValue<Data>().GetType()==pdef.GetType()) {
+					param={pdef.GetType(), param.GetValue<Data>()};
+				}
+				else {
+					bool done=false;
+					for(const auto &ctor : pdef.GetType().Constructors) {
+						if(ctor.Parameters.GetCount()==1 && ctor.Parameters[0].GetType()==param.GetType()) {
+							param=ctor.Call(false, {param});
+							done=true;
+							break;
+						}
+					}
+					if(!done) {
+						throw CastException(param.GetType().GetName(), pdef.GetType().GetName(), 
+											"Cannot cast while trying to call "+fn->GetName());
+					}
+				}
+			};
 
+			int ind=1;
 			for(const auto &pdef : fn->Parameters) {
 				if(pdef.IsReference()) {
 					ASSERT(false, "Not implemented", 0, 8);
@@ -476,53 +513,38 @@ namespace Gorgon {
 				else if(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
 
-					if(param.GetType()==pdef.GetType()) {
-						//no worries
-					}
-					//to string
-					else if(pdef.GetType()==Integrals.Types["string"]) {
-						param={Integrals.Types["string"], param.GetType().ToString(param)};
-					}
-					//from string 
-					else if(param.GetType()==Integrals.Types["string"]) {
-						param={pdef.GetType(), pdef.GetType().Parse(param.GetValue<std::string>())};
-					}
-					//to variant
-					else if(pdef.GetType()==Variant) {
-						param={Variant, param};
-					}
-					//from variant
-					else if(param.GetType()==Variant && param.GetValue<Data>().GetType()==pdef.GetType()) {
-						param={pdef.GetType(), param.GetValue<Data>()};
-					}
-					else {
-						bool done=false;
-						for(const auto &ctor : pdef.GetType().Constructors) {
-							if(ctor.Parameters.GetCount()==1 && ctor.Parameters[0].GetType()==param.GetType()) {
-								param=ctor.Call(false, {param});
-								done=true;
-								break;
-							}
-						}
-						if(!done) {
-							throw CastException(param.GetType().GetName(), pdef.GetType().GetName(), 
-												"Cannot cast while trying to call "+fn->GetName());
-						}
-					}
+					fixparam(param, pdef);
 
 					params.push_back(param);
 				}
 				else {
 					if(!pdef.IsOptional()) {
-						throw std::runtime_error("Parameter: "+pdef.GetName()+" is not optional.");
+						throw MissingParameterException(pdef.GetName(), ind, pdef.GetType().GetName(),
+							"Parameter "+pdef.GetName()+" is not optional."
+						);
 					}
 
 					break;
 				}
 				++pin;
+				++ind;
 			}
-			if(pin!=incomingparams.end()) {
-				ASSERT(false, "Not implemented", 0, 8);
+			
+			// if last parameter can be repeated
+			if(fn->RepeatLast()) {
+				//add remaining parameters to the parameter list
+				while(pin!=incomingparams.end()) {
+					Data param=getvalue(*pin);
+					fixparam(param, fn->Parameters.Last().Current());
+					params.push_back(param);
+					++pin;
+				}
+			}
+			// if not and there are extra parameters
+			else if(pin!=incomingparams.end()) {
+				throw TooManyParametersException(incomingparams.size(), fn->Parameters.GetCount(), 
+					"Too many parameters supplied for "+fn->GetName()
+				);
 			}
 
 			return fn->Call(method, params);

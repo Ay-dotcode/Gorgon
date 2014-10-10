@@ -247,17 +247,17 @@ namespace Gorgon {
 						//optional check
 						if(param.IsOptional()) {
 							optionalcount++;
-							if(first) optionalatstart=true;
+							if(first) shouldallbeoptional=true;
 							if(passedfirstnonoptional) {
 								ASSERT(!optionalatstart,
-									String::Concat("Optional parameters should be at the start ",
-									"or at the end, offender: ",param.GetName()),2,2);
+									String::Concat("Optional parameters should be at the ",
+									"end, offender: ",param.GetName()),2,2);
 							}
 						}
 						else {
 							ASSERT(!shouldallbeoptional,
 								String::Concat("All optional function parameters should be either at ",
-								"the beginning or at the end, never at both sides, offender: ",
+								"the end, offender: ",
 								param.GetName()),2,2);
 							
 							passedfirstnonoptional=true;
@@ -363,7 +363,8 @@ namespace Gorgon {
 				template<class R_, int variant, int ...S>
 				typename std::enable_if<std::is_same<R_, void>::value && traitsof<0>::IsMember, Data>::type 
 				callfn(TMP::Sequence<S...>, const std::vector<Data> &data) const {
-					ASSERT(data.size()==sizeof...(S), String::Concat("Size of data (",
+					ASSERT(data.size()==sizeof...(S) || (parent.RepeatLast() && data.size()>=sizeof...(S)), 
+						String::Concat("Size of data (",
 						data.size() ,") does not match to the number of parameters (",
 						sizeof...(S),")!"), 5, 2);
 					
@@ -384,7 +385,8 @@ namespace Gorgon {
 				template<class R_, int variant, int ...S>
 				typename std::enable_if<!std::is_same<R_, void>::value && traitsof<0>::IsMember, Data>::type 
 				callfn(TMP::Sequence<S...>, const std::vector<Data> &data) const {
-					ASSERT(data.size()==sizeof...(S), String::Concat("Size of data (",
+					ASSERT(data.size()==sizeof...(S) || (parent.RepeatLast() && data.size()>=sizeof...(S)), 
+						String::Concat("Size of data (",
 						data.size() ,") does not match to the number of parameters (",
 						sizeof...(S),")!"), 5, 2);
 					
@@ -404,7 +406,8 @@ namespace Gorgon {
 				template<class R_, int variant, int ...S>
 				typename std::enable_if<std::is_same<R_, void>::value && !traitsof<0>::IsMember, Data>::type 
 				callfn(TMP::Sequence<S...>, const std::vector<Data> &data) const {
-					ASSERT(data.size()==sizeof...(S), String::Concat("Size of data (",
+					ASSERT(data.size()==sizeof...(S) || (parent.RepeatLast() && data.size()>=sizeof...(S)), 
+						String::Concat("Size of data (",
 						data.size() ,") does not match to the number of parameters (",
 						sizeof...(S),")!"), 5, 2);
 					
@@ -418,7 +421,8 @@ namespace Gorgon {
 				template<class R_, int variant, int ...S>
 				typename std::enable_if<!std::is_same<R_, void>::value && !traitsof<0>::IsMember, Data>::type 
 				callfn(TMP::Sequence<S...>, const std::vector<Data> &data) const {
-					ASSERT(data.size()==sizeof...(S), String::Concat("Size of data (",
+					ASSERT(data.size()==sizeof...(S) || (parent.RepeatLast() && data.size()>=sizeof...(S)), 
+						String::Concat("Size of data (",
 						data.size() ,") does not match to the number of parameters (",
 						sizeof...(S),")!"), 5, 2);
 					
@@ -445,7 +449,11 @@ namespace Gorgon {
 				/// Expand all variants and chooses the correct one call
 				template<int ...variants>
 				Data expandvariants(TMP::Sequence<variants...>, int variant, const std::vector<Data> &data) const {
-					ASSERT(variant<sizeof...(Fns_) , "Missing parameter", 3, 2);
+					if(variant<0 && parent.RepeatLast()) variant=0;
+					
+					ASSERT(variant<sizeof...(Fns_) , "Missing parameter for "+parent.GetName()+
+						". Data size is "+String::From(data.size())+". Requested variant is: "+
+						String::From(variant), 3, 2);
 					typedef Data(fnstorageimpl::*calltype)(const std::vector<Data>&) const;
 					static calltype list[]={&fnstorageimpl::callvariant<variants>...};
 					return (this->*list[variant])(data);
