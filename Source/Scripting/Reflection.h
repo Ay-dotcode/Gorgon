@@ -212,9 +212,7 @@ namespace Gorgon {
 		 * or stand alone functions in libraries. EmbeddedFunction class should be used to 
 		 * functions that are pointing to C++ function stubs. These stubs should extract and
 		 * forward parameters to real functions. Functions are non-mutable after construction.
-		 * Function names should be unique in their respective scopes case-insensitively. Console
-		 * dialect allows calling method functions lowercase (*this might get extended to programming
-		 * dialect*).
+		 * Function names should be unique in their respective scopes case-insensitively.
 		 * 
 		 * Function object allows following tags:
 		 * 
@@ -292,11 +290,6 @@ namespace Gorgon {
 			/// Returns the name of this function.
 			std::string GetName() const {
 				return name;
-			}
-
-			/// Returns the name of this function in lower case
-			std::string GetLowercaseName() const {
-				return String::ToLower(name);
 			}
 
 			/// Returns the help string. Help strings may contain markdown notation.
@@ -553,7 +546,7 @@ namespace Gorgon {
 			const Type *parent;
 		};
 		
-		using FunctionList = Containers::Hashmap<std::string, const Function, &Function::GetLowercaseName>;
+		using FunctionList = Containers::Hashmap<std::string, const Function, &Function::GetName, std::map, String::CaseInsensitiveLess>;
 		
 		/**
 		 * Constants are values that are fixed and can be accessed without $ sign. They can be a part of a
@@ -569,12 +562,6 @@ namespace Gorgon {
 			/// Returns the name of the constant
 			std::string GetName() const {
 				return name;
-			}
-
-
-			/// Returns the name of the constant in lowercase
-			std::string GetLowercaseName() const {
-				return String::ToLower(name);
 			}
 
 			/// Returns the help related with this constant
@@ -604,7 +591,7 @@ namespace Gorgon {
 			Data data;
 		};
 		
-		using ConstantList = Containers::Hashmap<std::string, const Constant, &Constant::GetLowercaseName>;
+		using ConstantList = Containers::Hashmap<std::string, const Constant, &Constant::GetName, std::map, String::CaseInsensitiveLess>;
 		
 		/// Data members that can be accessed through an instance of the a type. 
 		class DataMember {
@@ -628,11 +615,6 @@ namespace Gorgon {
 			/// Returns the name of this datamember.
 			std::string GetName() const {
 				return name;
-			}
-
-			/// Returns the name of this datamember in lower case.
-			std::string GetLowercaseName() const {
-				return String::ToLower(name);
 			}
 
 			/// Returns the help string. Help strings may contain markdown notation.
@@ -700,7 +682,7 @@ namespace Gorgon {
 			bool staticmember = false;
 		};
 		
-		using DataMemberList = Containers::Hashmap<std::string, const DataMember, &DataMember::GetLowercaseName>;
+		using DataMemberList = Containers::Hashmap<std::string, const DataMember, &DataMember::GetName, std::map, String::CaseInsensitiveLess>;
 		
 		/// Events allow an easy mechanism to program logic into actions instead of checking actions
 		/// continuously. This system is vital for UI programming. Events are basically function descriptors.
@@ -717,11 +699,6 @@ namespace Gorgon {
 			/// Returns the name of this event.
 			std::string GetName() const {
 				return name;
-			}
-
-			/// Returns the name of this event in lowercase.
-			std::string GetLowercaseName() const {
-				return String::ToLower(name);
 			}
 
 			/// Returns the help event. Help strings may contain markdown notation.
@@ -742,7 +719,7 @@ namespace Gorgon {
 			ParameterList parameters;
 		};
 		
-		using EventList = Containers::Hashmap<std::string, const Event, &Event::GetLowercaseName>;
+		using EventList = Containers::Hashmap<std::string, const Event, &Event::GetName, std::map, String::CaseInsensitiveLess>;
 		
 		/** 
 		 * This class stores information about types. Types can have their own functions, members,
@@ -769,11 +746,6 @@ namespace Gorgon {
 				return name;
 			}
 
-			/// Returns the name of this type in lowercase
-			std::string GetLowercaseName() const {
-				return String::ToLower(name);
-			}
-
 			/// Returns the help string. Help strings may contain markdown notation.
 			std::string GetHelp() const {
 				return help;
@@ -793,14 +765,14 @@ namespace Gorgon {
 			void AddDataMembers(std::initializer_list<DataMember*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!datamembers.Exists(element->GetLowercaseName()), 
-						   "Data member " + element->GetLowercaseName() + " is already added as a data member.", 1, 2);
-					ASSERT(!functions.Exists(element->GetLowercaseName()), 
-						   "Data member " + element->GetLowercaseName() + " is already added as a function.", 1, 2);
-					ASSERT(!constants.Exists(element->GetLowercaseName()), 
-						   "Data member " + element->GetLowercaseName() + " is already added as a constant.", 1, 2);
-					ASSERT(!events.Exists(element->GetLowercaseName()), 
-						   "Data member " + element->GetLowercaseName() + " is already added as an event.", 1, 2);
+					ASSERT(!datamembers.Exists(element->GetName()), 
+						   "Data member " + element->GetName() + " is already added as a data member.", 1, 2);
+					ASSERT(!functions.Exists(element->GetName()), 
+						   "Data member " + element->GetName() + " is already added as a function.", 1, 2);
+					ASSERT(!constants.Exists(element->GetName()), 
+						   "Data member " + element->GetName() + " is already added as a constant.", 1, 2);
+					ASSERT(!events.Exists(element->GetName()), 
+						   "Data member " + element->GetName() + " is already added as an event.", 1, 2);
 					
 					element->typecheck(this);
 					datamembers.Add(element);
@@ -811,14 +783,14 @@ namespace Gorgon {
 			void AddFunctions(std::initializer_list<Function*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!datamembers.Exists(element->GetLowercaseName()), 
-						   "Function " + element->GetLowercaseName() + " is already added as a data member.", 1, 2);
-					ASSERT(!functions.Exists(element->GetLowercaseName()), 
-						   "Function " + element->GetLowercaseName() + " is already added as a function.", 1, 2);
-					ASSERT(!constants.Exists(element->GetLowercaseName()), 
-						   "Function " + element->GetLowercaseName() + " is already added as a constant.", 1, 2);
-					ASSERT(!events.Exists(element->GetLowercaseName()), 
-						   "Function " + element->GetLowercaseName() + " is already added as an event.", 1, 2);
+					ASSERT(!datamembers.Exists(element->GetName()), 
+						   "Function " + element->GetName() + " is already added as a data member.", 1, 2);
+					ASSERT(!functions.Exists(element->GetName()), 
+						   "Function " + element->GetName() + " is already added as a function.", 1, 2);
+					ASSERT(!constants.Exists(element->GetName()), 
+						   "Function " + element->GetName() + " is already added as a constant.", 1, 2);
+					ASSERT(!events.Exists(element->GetName()), 
+						   "Function " + element->GetName() + " is already added as an event.", 1, 2);
 					ASSERT(element->parent==this,
 						   "This type should be listed as the parent of this function", 1, 2);
 					
@@ -842,14 +814,14 @@ namespace Gorgon {
 			void AddConstants(std::initializer_list<Constant*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!datamembers.Exists(element->GetLowercaseName()), 
-						"Constant " + element->GetLowercaseName() + " is already added as a data member.", 1, 2);
-					ASSERT(!functions.Exists(element->GetLowercaseName()), 
-						"Constant " + element->GetLowercaseName() + " is already added as a function.", 1, 2);
-					ASSERT(!constants.Exists(element->GetLowercaseName()), 
-						"Constant " + element->GetLowercaseName() + " is already added as a constant.", 1, 2);
-					ASSERT(!events.Exists(element->GetLowercaseName()), 
-						"Constant " + element->GetLowercaseName() + " is already added as an event.", 1, 2);
+					ASSERT(!datamembers.Exists(element->GetName()), 
+						"Constant " + element->GetName() + " is already added as a data member.", 1, 2);
+					ASSERT(!functions.Exists(element->GetName()), 
+						"Constant " + element->GetName() + " is already added as a function.", 1, 2);
+					ASSERT(!constants.Exists(element->GetName()), 
+						"Constant " + element->GetName() + " is already added as a constant.", 1, 2);
+					ASSERT(!events.Exists(element->GetName()), 
+						"Constant " + element->GetName() + " is already added as an event.", 1, 2);
 					
 					constants.Add(element);
 				}
@@ -859,14 +831,14 @@ namespace Gorgon {
 			void AddEvents(std::initializer_list<Event*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!datamembers.Exists(element->GetLowercaseName()), 
-						"Event " + element->GetLowercaseName() + " is already added as a data member.", 1, 2);
-					ASSERT(!functions.Exists(element->GetLowercaseName()), 
-						"Event " + element->GetLowercaseName() + " is already added as a function.", 1, 2);
-					ASSERT(!constants.Exists(element->GetLowercaseName()), 
-						"Event " + element->GetLowercaseName() + " is already added as a constant.", 1, 2);
-					ASSERT(!events.Exists(element->GetLowercaseName()), 
-						"Event " + element->GetLowercaseName() + " is already added as an event.", 1, 2);
+					ASSERT(!datamembers.Exists(element->GetName()), 
+						"Event " + element->GetName() + " is already added as a data member.", 1, 2);
+					ASSERT(!functions.Exists(element->GetName()), 
+						"Event " + element->GetName() + " is already added as a function.", 1, 2);
+					ASSERT(!constants.Exists(element->GetName()), 
+						"Event " + element->GetName() + " is already added as a constant.", 1, 2);
+					ASSERT(!events.Exists(element->GetName()), 
+						"Event " + element->GetName() + " is already added as an event.", 1, 2);
 					
 					events.Add(element);
 				}
@@ -923,7 +895,7 @@ namespace Gorgon {
 			const EventList							&Events;
 			
 			/// Inheritance list. 
-			const Containers::Hashmap<std::string, const Type, &Type::GetLowercaseName> &InheritsFrom;
+			const Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess> &InheritsFrom;
 			
 		private:
 			std::string name;
@@ -953,12 +925,12 @@ namespace Gorgon {
 			EventList							events;
 			
 			/// Inheritance list. 
-			Containers::Hashmap<std::string, const Type, &Type::GetLowercaseName> inheritsfrom;
+			Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess> inheritsfrom;
 			
 			bool referencetype = false;
 		};
 		
-		using TypeList = Containers::Hashmap<std::string, const Type, &Type::GetLowercaseName>;
+		using TypeList = Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess>;
 		
 		/**
 		 * This class represents a library. Libraries can be loaded into virtual machines to be used.
@@ -1012,11 +984,6 @@ namespace Gorgon {
 			/// Returns the name of this library. Library names are also used as namespace specifiers
 			std::string GetName() const {
 				return name;
-			}
-
-			/// Returns the name of this library in lower case. Library names are also used as namespace specifiers
-			std::string GetLowercaseName() const {
-				return String::ToLower(name);
 			}
 
 			/// Returns the help string. Help strings may contain markdown notation.

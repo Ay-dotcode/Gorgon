@@ -35,6 +35,23 @@ namespace Gorgon {
 		}
 		/// @endcond
 		
+		struct CaseInsensitiveLess {
+			bool operator()(const std::string &left, const std::string &right) const {
+				unsigned len=std::min(left.length(), right.length());
+				
+				auto l=left.begin();
+				auto r=right.begin();
+				for(unsigned i=0; i<len; i++) {
+					auto lc=tolower(*l);
+					auto rc=tolower(*r);
+					if(lc<rc) return true;
+					else if(lc>rc) return false;
+				}
+				
+				return left.length()<right.length();
+			}
+		};
+		
 
 #ifdef DOXYGEN
 		/// Converts a string to another type. Works for integral types and

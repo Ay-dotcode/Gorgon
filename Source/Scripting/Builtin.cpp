@@ -37,9 +37,9 @@ namespace Gorgon {
 				}
 
 				if(validate!="") {
-					if(vm.GetKeywordScope().GetFunction().GetLowercaseName()!=String::ToLower(validate)) {
+					if(String::ToLower(vm.GetKeywordScope().GetFunction().GetName())!=String::ToLower(validate)) {
 						throw FlowException("end does not match with the correct keyword", 
-							"Current scope is "+vm.GetKeywordScope().GetFunction().GetLowercaseName()+
+							"Current scope is "+vm.GetKeywordScope().GetFunction().GetName()+
 							" while given keyword for end is "+validate);
 					}
 				}

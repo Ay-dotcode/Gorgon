@@ -588,7 +588,8 @@ namespace Gorgon {
 		template<class from_, class to_>
 		Function *Map_Typecast(const std::string &fromnamespace, Type *from, Type *to) {
 			return new MappedFunction(
-				fromnamespace+":"+from->GetName(), "Constructs a new "+to->GetLowercaseName()+" from a "+from->GetLowercaseName(),
+				fromnamespace+":"+from->GetName(), "Constructs a new "+String::ToLower(to->GetName())+" from a "+
+				String::ToLower(from->GetName()),
 				to, nullptr, ParameterList {
 					new Parameter("value", "", from)
 				},

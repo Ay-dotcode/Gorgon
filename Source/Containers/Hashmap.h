@@ -11,6 +11,8 @@
 #include <tuple>
 #include <sstream>
 
+#include "../Utils/Assert.h"
+
 #include "Iterator.h"
 
 namespace Gorgon { 
@@ -28,9 +30,9 @@ namespace Gorgon {
 		 * and might not be compatible with all library functions. * operator returns a copy
 		 * of the pair, not a reference to it.
 		 */
-		template<class K_, class T_, K_ (T_::*KeyFn)() const = nullptr, template <class ...> class M_=std::map>
+		template<class K_, class T_, K_ (T_::*KeyFn)() const = nullptr, template <class ...> class M_=std::map, class C_=std::less<K_>>
 		class Hashmap {
-			using MapType=M_<K_, T_*, std::less<K_>, std::allocator<std::pair<const K_, T_*>>>;
+			using MapType=M_<K_, T_*, C_, std::allocator<std::pair<const K_, T_*>>>;
 			
 			/// Iterators are derived from this class. Any operations on uninitialized iterators
 			/// is undefined behavior.
@@ -481,19 +483,25 @@ namespace Gorgon {
 				std::stringstream ss;
 				ss<<"Item not found: ";
 				ss<<key;
+#ifdef TEST
+				ASSERT(false, ss.str(), 0, 8);
+#endif
 				throw std::runtime_error(ss.str());
 			}
 			
 			template<class K__>
 			typename std::enable_if<!IsStreamable<K__>::Value, void>::type properthrow(const K__ &key) const {
+#ifdef TEST
+				ASSERT(false, "Item not found", 0, 8);
+#endif
 				throw std::runtime_error("Item not found");
 			}
 			
 			MapType mapping;
 		};
 		
-		template<class K_, class T_, K_ (T_::*KeyFn)(), template <class ...> class M_=std::map>
-		void swap(Hashmap<K_, T_, KeyFn, M_> &left, Hashmap<K_, T_, KeyFn, M_> &right) {
+		template<class K_, class T_, K_ (T_::*KeyFn)(), template <class ...> class M_, class C_>
+		void swap(Hashmap<K_, T_, KeyFn, M_, C_> &left, Hashmap<K_, T_, KeyFn, M_, C_> &right) {
 			left.Swap(right);
 		}
 		

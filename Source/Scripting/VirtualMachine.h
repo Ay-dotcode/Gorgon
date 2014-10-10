@@ -223,7 +223,7 @@ namespace Gorgon {
 			//TODO: events
 
 			/// Allows read-only access to libraries
-			const Containers::Hashmap<std::string, const Library, &Library::GetLowercaseName> &Libraries;
+			const Containers::Hashmap<std::string, const Library, &Library::GetName, std::map, String::CaseInsensitiveLess> &Libraries;
 
 		private:
 			Data callfunction(const Function *fn, bool method, const std::vector<Value> &params);
@@ -231,7 +231,7 @@ namespace Gorgon {
 			void functioncall(const Instruction *inst, bool memberonly, bool method);
 
 			/// All libraries that are available globally. 
-			Containers::Hashmap<std::string, const Library, &Library::GetLowercaseName> libraries;
+			Containers::Hashmap<std::string, const Library, &Library::GetName, std::map, String::CaseInsensitiveLess> libraries;
 
 			std::string alllibnames;
 
@@ -248,7 +248,7 @@ namespace Gorgon {
 
 			Library runtime;
 
-			Containers::Hashmap<std::string, Variable, &Variable::GetLowercaseName>	globalvariables;
+			Containers::Hashmap<std::string, Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess>	globalvariables;
 			std::map<Function*, Containers::Hashmap<std::string, Variable>> staticvariables;
 
 			std::ostream *output;
