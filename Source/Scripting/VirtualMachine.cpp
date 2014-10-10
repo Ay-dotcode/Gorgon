@@ -9,7 +9,7 @@ namespace Gorgon {
 	
 	namespace Scripting {		
 		
-		Containers::Hashmap<std::thread::id, VirtualMachine> VirtualMachine::activevms;
+		Containers::Hashmap<std::thread::id, VirtualMachine, &VirtualMachine::getthread> VirtualMachine::activevms;
 		
 		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
 		Libraries(libraries), output(&out), input(&in), 

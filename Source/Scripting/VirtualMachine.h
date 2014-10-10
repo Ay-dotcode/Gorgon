@@ -229,6 +229,7 @@ namespace Gorgon {
 			Data callfunction(const Function *fn, bool method, const std::vector<Value> &params);
 			Data getvalue(const Value &val);
 			void functioncall(const Instruction *inst, bool memberonly, bool method);
+			std::thread::id getthread() const { throw "this should never be called"; }
 
 			/// All libraries that are available globally. 
 			Containers::Hashmap<std::string, const Library, &Library::GetName, std::map, String::CaseInsensitiveLess> libraries;
@@ -249,7 +250,7 @@ namespace Gorgon {
 			Library runtime;
 
 			Containers::Hashmap<std::string, Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess>	globalvariables;
-			std::map<Function*, Containers::Hashmap<std::string, Variable>> staticvariables;
+			std::map<Function*, Containers::Hashmap<std::string, Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess>> staticvariables;
 
 			std::ostream *output;
 			std::istream *input;
@@ -267,7 +268,7 @@ namespace Gorgon {
 			
 			/// List of active VMs. A VM can be active on more than one thread. But it cannot
 			/// execute two different contexts.
-			static Containers::Hashmap<std::thread::id, VirtualMachine> activevms;
+			static Containers::Hashmap<std::thread::id, VirtualMachine, &VirtualMachine::getthread> activevms;
 		};
 		
 		

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
+#include <algorithm>
 #include "String/Exceptions.h"
 #include "Enum.h"
 

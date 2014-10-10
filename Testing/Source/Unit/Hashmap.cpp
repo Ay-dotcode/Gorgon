@@ -40,7 +40,7 @@ public:
 };
 
 int A::acnt=0;
-
+/*
 TEST_CASE("Hashmap", "[Hashmap]") {
 	Hashmap<string, A> amap;
 	
@@ -187,3 +187,4 @@ TEST_CASE("Hashmap constructors", "[Hashmap]") {
 	
 
 }
+*/

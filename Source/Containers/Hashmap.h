@@ -30,7 +30,7 @@ namespace Gorgon {
 		 * and might not be compatible with all library functions. * operator returns a copy
 		 * of the pair, not a reference to it.
 		 */
-		template<class K_, class T_, K_ (T_::*KeyFn)() const = nullptr, template <class ...> class M_=std::map, class C_=std::less<K_>>
+		template<class K_, class T_, K_ (T_::*KeyFn)() const = 0, template <class ...> class M_=std::map, class C_=std::less<K_>>
 		class Hashmap {
 			using MapType=M_<K_, T_*, C_, std::allocator<std::pair<const K_, T_*>>>;
 			
@@ -500,7 +500,7 @@ namespace Gorgon {
 			MapType mapping;
 		};
 		
-		template<class K_, class T_, K_ (T_::*KeyFn)(), template <class ...> class M_, class C_>
+		template<class K_, class T_, K_ (T_::*KeyFn)()=nullptr, template <class ...> class M_=std::map, class C_=std::less<K_>>
 		void swap(Hashmap<K_, T_, KeyFn, M_, C_> &left, Hashmap<K_, T_, KeyFn, M_, C_> &right) {
 			left.Swap(right);
 		}
