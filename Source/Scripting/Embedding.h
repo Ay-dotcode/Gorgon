@@ -94,7 +94,14 @@ namespace Gorgon {
 			/// Parses a string into this data. This function is allowed to throw.
 			virtual Data Parse(const std::string &str) const override {
 				return Data(this, Parse_(str));
-			}			
+			}		
+			
+		protected:
+			virtual void deleteobject(const Data &obj) const override {
+				if(obj.GetValue<T_*>()!=nullptr) {
+					delete obj.GetValue<T_*>();
+				}
+			}
 		};
 		
 		Data GetVariableValue(const std::string &varname);

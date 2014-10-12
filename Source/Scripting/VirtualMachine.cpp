@@ -353,6 +353,17 @@ namespace Gorgon {
 
 			while(executionscopes.GetCount()>(long)executiontarget) {
 				auto inst=executionscopes.Last()->Get();
+#ifdef TEST
+				Console::SetColor(Console::Black);
+				Console::SetBold();
+				if(inst) {
+					std::cout<<"Executing: "<<executionscopes.Last()->GetSource().GetPhysicalLine()<<std::endl;
+				}
+				else {
+					std::cout<<"Scope finished"<<std::endl;
+				}
+				Console::Reset();
+#endif
 
 				try {
 					// execution scope is done, cull it

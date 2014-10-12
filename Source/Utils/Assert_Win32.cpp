@@ -1589,7 +1589,10 @@ namespace Gorgon {
 		void CrashHandler::Backtrace() {
 			Walker walker;
 			walker.ShowCallstack();
-			
+#ifdef TEST
+			depth=16;
+#endif			
+
 			auto report=[&](int i) {
 				//last directory before filename
 				std::string filename = String::Replace(walker.Stack[i].file, "\\", "/");

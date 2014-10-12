@@ -34,17 +34,23 @@ ELSE()
 	ENDIF()
 ENDIF()
 
+OPTION(ENABLE_64_BIT "Enable 64 bit compilation" OFF)
+
 #enable C++11 and 32-bit compilation
 INCLUDE(CheckCXXCompilerFlag)
 IF(CMAKE_COMPILER_IS_GNUCXX)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -m32")
-	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+	IF(${ENABLE_64_BIT})
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+	ELSE()
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -m32")
+		SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+	ENDIF()
 ENDIF()
 
 #make sure 64bits cannot be activated
 IF(MSVC)
 	ADD_DEFINITIONS(-D_SBCS -D_CRT_SECURE_NO_WARNINGS)
-	IF(${CMAKE_CL_64})
+	IF(${CMAKE_CL_64} AND NOT(${ENABLE_64_BIT}))
 		MESSAGE(FATAL_ERROR "Gorgon Library works only 32bits")
 	ENDIF()
 ENDIF()

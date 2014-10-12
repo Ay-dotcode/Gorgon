@@ -161,7 +161,9 @@ namespace Gorgon {
 			String->AddFunctions({
 				new MappedFunction("Length",
 					"Returns the length of the string", Unsigned, String, {}, 
-					MappedFunctions(&std::string::length), MappedMethods()
+					MappedFunctions(
+						[](std::string str) -> unsigned { return (unsigned)str.length(); }
+					), MappedMethods()
 				),
 				
 				MAP_COMPARE( =, ==, String, std::string),

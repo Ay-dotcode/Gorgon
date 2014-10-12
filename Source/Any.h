@@ -37,8 +37,17 @@ namespace Gorgon {
 			virtual bool  IsSameType(const std::type_info &) const=0;
 			virtual long  GetSize() const = 0;
 			virtual const std::type_info &TypeInfo() const = 0;
+			bool IsPointer() const {
+				return pointer;
+			}
 			
 			virtual ~TypeInterface() { }
+			
+		protected:
+			bool pointer;
+#ifndef NDEBUG
+			const char *name;
+#endif
 		};
 
 		/// Type dependent implementation for TypeInterface.
@@ -46,6 +55,13 @@ namespace Gorgon {
 		/// functions.
 		template<class T_> class Type : public TypeInterface {
 		public:
+			Type() {
+				pointer=std::is_pointer<T_>::value;
+#ifndef NDEBUG
+				name=typeid(T_).name();
+#endif
+			}
+
 			virtual void Delete(void *obj) const override {
 				delete static_cast<T_*>(obj);
 			}
@@ -72,20 +88,13 @@ namespace Gorgon {
 		/// duplicates the given data.
 		/// Requires type in the copied Any to be copy constructible.
 		template <class T_>
-		Any(const T_ &data, typename std::enable_if<!std::is_same<typename std::decay<T_>::type, Any>::value, privatetype>::type *dummy=nullptr) {
+		Any(const T_ &data) {
+			static_assert(!std::is_same<typename std::decay<typename std::remove_reference<T_>::type>::type, Any>::value,
+						  "Something is wrong in here");
 			type=new Type<T_>;
 			content=type->Clone(&data);
 		}
 
-		/// Creates a new Any from the given data. This constructor
-		/// moves the given data.
-		/// Requires type in the moved Any to be move constructible.
-		template <class T_>
-		explicit Any(T_ &&data, typename std::enable_if<!std::is_same<typename std::decay<T_>::type, Any>::value, privatetype>::type *dummy=nullptr) {
-			type=new Type<T_>;
-			T_ *n=new T_(std::move(data));
-			content=n;
-		}
 		/// Copy constructor.
 		/// Requires type in the copied Any to be copy constructible.
 		Any(const Any &any) {
@@ -93,17 +102,29 @@ namespace Gorgon {
 				type=(TypeInterface*)malloc(sizeof(TypeInterface));
 				std::memcpy(type, any.type, sizeof(TypeInterface));
 				content=type->Clone(any.content);
-			} else {
+			}
+			else {
 				content=nullptr;
 				type=nullptr;
 			}
 		}
-		
+
+
 		/// Move constructor.
 		/// Requires type in the copied Any to be move constructible.
 		Any(Any &&any) : content(nullptr), type(nullptr) {
 			Swap(any);
 		}
+
+		/// Creates a new Any from the given data. This constructor
+		/// moves the given data.
+		/// Requires type in the moved Any to be move constructible.
+		//template <class T_>
+		//Any(T_ &&data) {
+		//	type=new Type<T_>;
+		//	auto *n=new T_(std::move(data));
+		//	content=n;
+		//}
 		
 		/// Copies the information in the given Any. It requires
 		/// type in the copied Any to be copy constructible.
@@ -138,17 +159,11 @@ namespace Gorgon {
 		/// is duplicated. Requires T_ to be copy constructible.
 		template<class T_>
 		Any &operator =(const T_ &value) {
+			static_assert(!std::is_same<typename std::decay<typename std::remove_reference<T_>::type>::type, Any>::value,
+						  "Something is wrong in here");
 			Set(value);
 		}
 
-		/// Set the content of the Any to the given value. The value
-		/// is moved. Requires T_ to be move constructible.
-		template<class T_>
-		Any &operator =(T_ &&value) {
-			Set(std::move(value));
-
-			return *this;
-		}
 
 		/// Swaps the contents of the current any with another. Does
 		/// not perform copying or moving.
@@ -261,6 +276,17 @@ namespace Gorgon {
 		bool IsSameType(const Any &other) const {
 			return type->IsSameType(other.type->TypeInfo());
 		}
+
+		/// Checks if any contains a pointer
+		bool IsPointer() const {
+			return type->IsPointer();
+		}
+
+		/// Returns the pointer without type information
+		void *Pointer() const {
+			return *reinterpret_cast<void**>(content);
+		}
+
 		
 		/// Compares the contents of this Any to the given value. The value
 		/// should be the same type as this Any. Even if it is possible, 
@@ -342,4 +368,6 @@ namespace Gorgon {
 		TypeInterface *type;
 	};
 	
+
+
 }

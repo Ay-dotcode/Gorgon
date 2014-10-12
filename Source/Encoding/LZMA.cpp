@@ -138,7 +138,7 @@ namespace Gorgon { namespace Encoding {
 			unsigned outPos = 0, inPos=LZMA_PROPS_SIZE;
 			if(UseUncompressedSize) inPos+=8;
 			while(outPos < fullsize) {
-				size_t destLen = (size_t)std::min(BUF_SIZE, fullsize - outPos);
+				size_t destLen = (size_t)std::min<unsigned long long>(BUF_SIZE, fullsize - outPos);
 				size_t srcLen=BUF_SIZE;
 
 				reader->Read(reader, &inBuf[0], &srcLen);

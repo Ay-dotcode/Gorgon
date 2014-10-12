@@ -225,6 +225,9 @@ namespace Gorgon {
 			/// Allows read-only access to libraries
 			const Containers::Hashmap<std::string, const Library, &Library::GetName, std::map, String::CaseInsensitiveLess> &Libraries;
 
+			/// This system allows objects of automatic lifetime.
+			ReferenceCounter References;
+
 		private:
 			Data callfunction(const Function *fn, bool method, const std::vector<Value> &params);
 			Data getvalue(const Value &val);

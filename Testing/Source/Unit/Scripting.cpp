@@ -63,6 +63,8 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE(datatest.GetValue<A>().bb == 4);	
 	REQUIRE(myvaluetype->DataMembers["bb"].Get(datatest).GetValue<int>() == 4);
 	
+	throw 0;
+	
 	myvaluetype->DataMembers["cc"].Set(datatest, Data(Integrals.Types["Int"], Any(4)));
 	REQUIRE(testval == 4);
 	REQUIRE(myvaluetype->DataMembers["cc"].Get(datatest).GetValue<int>() == 5);

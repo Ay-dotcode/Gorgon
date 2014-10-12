@@ -24,20 +24,25 @@ namespace Gorgon {
 			/// Constructs an invalid data object. Data object does not perform validity check
 			/// therefore, use of this function should be very limited.
 			static Data Invalid() { return {}; }
-			
+
+			/// Copy constructor
+			Data(const Data &other);
+
+			/// Move constructor
+			Data(Data &&other);
+
 			/// Any constructor. Allows both data and type to be specified
-			Data(const Type &type, Any data) : type(&type), data(data) {
-				check();
-			}
-			
+			Data(const Type *type, const Any &data);
+
 			/// Any constructor. Allows both data and type to be specified
-			Data(const Type *type, Any data) : type(type), data(data) {
-				check();
-				ASSERT( (type!=nullptr), "Data type cannot be nullptr", 1, 2);
+			Data(const Type &type, const Any &data) : Data(&type, data) {
 			}
 			
 			/// Default value constructor. Value of the data is determined from the type
 			Data(const Type &type);
+
+			/// Assignment operator
+			Data &operator =(Data);
 			
 			
 			/// Returns the value of this data in the requested format
@@ -62,6 +67,8 @@ namespace Gorgon {
 				
 				return *type;
 			}
+
+			virtual ~Data();
 			
 		protected:
 			/// Stored data

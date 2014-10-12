@@ -735,7 +735,7 @@ namespace Gorgon {
 		public:
 			
 			/// Constructor, unlike other reflection objects, Type is not constructed fully.
-			Type(const std::string &name, const std::string &help, Any defaultvalue, bool isref) :
+			Type(const std::string &name, const std::string &help, const Any &defaultvalue, bool isref) :
 			name(name), help(help), DataMembers(datamembers), Functions(functions), Constructors(constructors),
 			Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue), 
 			referencetype(isref)
@@ -881,6 +881,13 @@ namespace Gorgon {
 			operator const Type *() const {
 				return this;
 			}
+
+			/// Deletes the object
+			void Delete(const Data &obj) const {
+				ASSERT(referencetype, "Cannot delete non-reference type objects. They are automatically destroyed.", 1, 4);
+
+				deleteobject(obj);
+			}
 			
 			/// Converts a data of this type to string. This function should never throw, if there is
 			/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
@@ -894,9 +901,7 @@ namespace Gorgon {
 			const DataMemberList					&DataMembers;
 			
 			/// Contains the functions related with this type. These functions can be operators,
-			/// or type casting functions. Functions with the name of another type are called
-			/// type casting functions. These functions are stored with [Library]Typename format.
-			/// However, if the library is never specified they are listed as []Typename.
+			/// or type casting functions.
 			const FunctionList 						&Functions;
 			
 			/// Constructors of this type. They can also act like conversion from operators. Implicit
@@ -912,6 +917,12 @@ namespace Gorgon {
 			/// Inheritance list. 
 			const Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess> &InheritsFrom;
 			
+		protected:
+
+			/// This function should delete the given object.
+			virtual void deleteobject(const Data &) const { }
+
+
 		private:
 			std::string name;
 			

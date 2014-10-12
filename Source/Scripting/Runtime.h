@@ -14,6 +14,52 @@ namespace Gorgon {
 	
 	namespace Scripting {
 		
+		/// This class allows references to be counted and destroyed properly.
+		class ReferenceCounter {
+		public:
+
+			/// Registers a new object of reference counting
+			void Register(const Data &data) {
+				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
+					   "offender: "+data.GetType().GetName(), 1, 4);
+
+				void *ptr=data.GetData().Pointer();
+				references[ptr]++;
+			}
+
+			/// Increases the reference count of the given object. If it is not registered, this request is ignored
+			void Increase(const Data &data) {
+				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
+					   "offender: "+data.GetType().GetName(), 1, 4);
+
+				void *ptr=data.GetData().Pointer();
+				auto f=references.find(ptr);
+				if(f==references.end()) return;
+
+				f->second++;
+			}
+
+			/// Decreases the reference count of the given object. If it is not registered, this request is ignored.
+			/// If reference count of the object reaches 0, it is deleted.
+			void Decrease(const Data &data) {
+				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
+					   "offender: "+data.GetType().GetName(), 1, 4);
+
+				void *ptr=data.GetData().Pointer();
+				auto f=references.find(ptr);
+				if(f==references.end()) return;
+
+				int &v=f->second;
+				v--;
+				if(v<=0) {
+					data.GetType().Delete(data);
+					references.erase(f);
+				}
+			}
+
+		private:
+			std::map<void*, int> references;
+		};
 		
 		/// This class represents a variable. It contains the data and the name of the variable.
 		class Variable : public Data {
@@ -21,7 +67,7 @@ namespace Gorgon {
 			
 			/// Constructor that sets the name, type and value of the variable. Unless this variable is
 			/// declared inside an executing code, definedin should be left nullptr.
-			Variable(const std::string &name, const Type &type, Any value, const InputSource *definedin=nullptr) : 
+			Variable(const std::string &name, const Type &type, const Any &value, const InputSource *definedin=nullptr) : 
 			name(name), Data(type, value), definedin(definedin) {
 			}
 			
