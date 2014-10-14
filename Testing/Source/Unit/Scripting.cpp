@@ -6,10 +6,12 @@
 
 #include <Source/Scripting/Embedding.h>
 #include <Source/TMP.h>
+#include "Source/Geometry/Point.h"
 
 
 using namespace Gorgon::Scripting;
 using namespace Gorgon;
+using Gorgon::Geometry::Point;
 
 int checktestfn=0;
 
@@ -45,11 +47,22 @@ public:
 TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	Scripting::Initialize();
-	
+	VirtualMachine vm;
+	vm.Activate();
 	auto myfloattype=new MappedValueType<float>("myfloattype", "test type");
 	auto myvaluetype = new MappedValueType<A>("myvaluetype", "test type");
 	auto myreftype=new MappedReferenceType<A>("myreftype", "test type");
+	auto mypointtype = MappedValueType<Point>("mypointtype", "test type");
+
+	mypointtype.AddDataMembers({
+		new MappedData<Point, int>(&Point::X, "x", "field storing location on x coordinate", Integrals.Types["Int"]),
+		new MappedData<Point, int>(&Point::Y, "y", "field storing location on y coordinate", Integrals.Types["Int"])
+	});
+	Data pointdatatest = { mypointtype, Any(Point{1, 1}) };
 	
+	REQUIRE(pointdatatest.GetValue<Point>().X == 1);
+	REQUIRE(pointdatatest.GetValue<Point>().Y == 1);
+
 	int testval=0;
 	myvaluetype->AddDataMembers({
 		new MappedData  <A, int>(&A::bb, "bb", "bb is bla bla", Integrals.Types["Int"]),
@@ -63,7 +76,6 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE(datatest.GetValue<A>().bb == 4);	
 	REQUIRE(myvaluetype->DataMembers["bb"].Get(datatest).GetValue<int>() == 4);
 	
-	throw 0;
 	
 	myvaluetype->DataMembers["cc"].Set(datatest, Data(Integrals.Types["Int"], Any(4)));
 	REQUIRE(testval == 4);

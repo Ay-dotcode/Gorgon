@@ -4,4 +4,5 @@ SET(Local
 	Point.h
 	Rectangle.h
 	Size.h
+	Scripting.cpp
 )
