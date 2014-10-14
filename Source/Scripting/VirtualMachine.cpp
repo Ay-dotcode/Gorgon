@@ -248,7 +248,7 @@ namespace Gorgon {
 				else if(found>1) {
 					throw AmbiguousSymbolException(
 						name, SymbolType::Constant,
-						name+" contstant found in following libraries: "+foundlibnames
+						name+" constant found in following libraries: "+foundlibnames
 					);
 				}
 				
@@ -501,15 +501,12 @@ namespace Gorgon {
 					param={pdef.GetType(), param.GetValue<Data>()};
 				}
 				else {
-					bool done=false;
-					for(const auto &ctor : pdef.GetType().Constructors) {
-						if(ctor.Parameters.GetCount()==1 && ctor.Parameters[0].GetType()==param.GetType()) {
-							param=ctor.Call(false, {param});
-							done=true;
-							break;
-						}
+					const Function *ctor=pdef.GetType().GetTypeCasting(param.GetType());
+
+					if(ctor) {
+						param=ctor->Call(false, {param});
 					}
-					if(!done) {
+					else {
 						throw CastException(param.GetType().GetName(), pdef.GetType().GetName(), 
 											"Cannot cast while trying to call "+fn->GetName());
 					}

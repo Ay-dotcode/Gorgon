@@ -280,6 +280,8 @@ namespace Gorgon {
 				swap(parameters, this->parameters);
 				UnpackTags(tags...);
 			}
+
+			Function(const Function &)=delete;
 			
 			
 			/// Destructor frees all parameters.
@@ -739,7 +741,7 @@ namespace Gorgon {
 			name(name), help(help), DataMembers(datamembers), Functions(functions), Constructors(constructors),
 			Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue), 
 			referencetype(isref)
-			{ }			
+			{ }
 
 			/// Returns the name of this type.
 			std::string GetName() const {
@@ -808,16 +810,16 @@ namespace Gorgon {
 					
 					for(auto &c : constructors) {
 						if(c.Parameters.GetCount()!=element->Parameters.GetCount()) continue;
-						
+
 						bool mismatched=false;
-						for(int i=0;i<c.Parameters.GetCount();i++) {
+						for(int i=0; i<c.Parameters.GetCount(); i++) {
 							if(c.Parameters[i].GetType()!=element->Parameters[i].GetType()) {
 								mismatched=true;
 								continue;
 							}
 						}
 						if(mismatched) continue;
-						
+
 						ASSERT(false, "The given constructor already exists: "+element->GetName(), 1, 2);
 					}
 					
@@ -881,6 +883,19 @@ namespace Gorgon {
 			operator const Type *() const {
 				return this;
 			}
+
+			const Function *GetTypeCasting(const Type *other) const {
+				for(const auto &ctor : constructors) {
+					if(ctor.Parameters.GetCount()==1 && ctor.Parameters[0].GetType()==other) {
+						return &ctor;
+					}
+				}
+
+				return nullptr;
+			}
+
+			/// Constructs a new object from the given parameters
+			Data Construct(const std::vector<Data> &parameters) const;
 
 			/// Deletes the object
 			void Delete(const Data &obj) const {

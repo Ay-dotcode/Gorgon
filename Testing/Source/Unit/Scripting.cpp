@@ -26,6 +26,7 @@ void TestFn_1(int a) {
 class A {
 public:
 	A() { }
+	explicit A(int bb) : bb(bb) { }
 	explicit A(const std::string &) {}
 	
 	int a() {
@@ -49,6 +50,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	Scripting::Initialize();
 	VirtualMachine vm;
 	vm.Activate();
+	
 	auto myfloattype=new MappedValueType<float>("myfloattype", "test type");
 	auto myvaluetype = new MappedValueType<A>("myvaluetype", "test type");
 	auto myreftype=new MappedReferenceType<A>("myreftype", "test type");
@@ -75,7 +77,6 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	REQUIRE(datatest.GetValue<A>().bb == 4);	
 	REQUIRE(myvaluetype->DataMembers["bb"].Get(datatest).GetValue<int>() == 4);
-	
 	
 	myvaluetype->DataMembers["cc"].Set(datatest, Data(Integrals.Types["Int"], Any(4)));
 	REQUIRE(testval == 4);
@@ -246,6 +247,16 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {Integrals.Types["Int"], 1} }).GetValue<int>());
 	;
 	
-	VirtualMachine vm;
 	REQUIRE( vm.FindConstant("Pi").GetData().GetValue<double>() == Approx(3.1416f) );
+
+	myvaluetype->AddConstructors({
+		new MappedValueConstructor<A, int>("Filling constructor", 
+			myvaluetype, ParameterList{
+				new Parameter("value", "help", Integrals.Types["Int"])
+			}
+		)
+	});
+
+	Data d=myvaluetype->Construct({{Integrals.Types["Int"], 14}});
+	REQUIRE(d.GetValue<A>().bb==14);
 }

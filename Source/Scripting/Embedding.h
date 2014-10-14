@@ -154,7 +154,7 @@ namespace Gorgon {
 						"Function types do not match!"
 					);
 					
-					if(parent.HasParent()) {
+					if(parent.HasParent() && !parent.IsStatic()) {
 						if(param==0) {
 							if(traitsof<0>::IsMember && !parent.GetParent().IsReferenceType()) {
 								ASSERT( (parent.GetParent().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , 
@@ -233,10 +233,10 @@ namespace Gorgon {
 					static_assert(sizeof...(Fns_)<=traitsof<0>::Arity+1,
 								  "Number of functions are more than possible");
 					
-					ASSERT( (traitsof<0>::Arity == parent.Parameters.GetCount() + parent.HasParent()),  
+					ASSERT( (traitsof<0>::Arity == parent.Parameters.GetCount() + parent.HasParent() - parent.IsStatic()),  
 							String::Concat("Defined parameters (", parent.Parameters.GetCount(),
 										   ") does not match the number of function parameters (", 
-										   traitsof<0>::Arity - parent.HasParent(), ")") ,2,2);					
+										   traitsof<0>::Arity - parent.HasParent() - parent.IsStatic(), ")"), 2, 2);
 					
 					checkallfns(typename TMP::Generate<sizeof...(Fns_)>::Type());
 					
@@ -310,7 +310,7 @@ namespace Gorgon {
 				template<int num>
 				paramof<0, num> castparam(const std::vector<Data> &datav) const {
 					const Data &data=datav[num];
-					if(parent.HasParent()) {
+					if(parent.HasParent() && !parent.IsStatic()) {
 						if(num==0) {
 							if(&data.GetType() != &parent.GetParent()) {
 								throw std::runtime_error("Cannot convert $this to original parent type.");
@@ -340,7 +340,7 @@ namespace Gorgon {
 				castparam_firstnonptr(const std::vector<Data> &datav) const {
 					const Data &data=datav[num];
 					
-					if(parent.HasParent()) {
+					if(parent.HasParent() && !parent.IsStatic()) {
 						if(num==0) {
 							if(&data.GetType() != &parent.GetParent()) {
 								throw std::runtime_error("Cannot convert $this to original parent type.");
@@ -377,8 +377,8 @@ namespace Gorgon {
 					
 					auto fn = std::get<variant>(fns);
 					
-					if((parent.HasParent() && !parent.GetParent().IsReferenceType()) || 
-						(!parent.HasParent() && parent.Parameters.GetCount() && !parent.Parameters[0].GetType().IsReferenceType())
+					if((parent.HasParent() && !parent.IsStatic() && !parent.GetParent().IsReferenceType()) ||
+						(!(parent.HasParent() && !parent.IsStatic()) && parent.Parameters.GetCount() && !parent.Parameters[0].GetType().IsReferenceType())
 					) {
 						std::bind(fn, castparam_firstnonptr<S>(data)...)();
 					}
@@ -399,8 +399,8 @@ namespace Gorgon {
 					
 					auto fn = std::get<variant>(fns);
 					
-					if((parent.HasParent() && !parent.GetParent().IsReferenceType()) || 
-						(!parent.HasParent() && parent.Parameters.GetCount() && !parent.Parameters[0].GetType().IsReferenceType())
+					if((parent.HasParent() && !parent.IsStatic() && !parent.GetParent().IsReferenceType()) ||
+						(!(parent.HasParent() && !parent.IsStatic()) && parent.Parameters.GetCount() && !parent.Parameters[0].GetType().IsReferenceType())
 					) {
 						return Data{parent.GetReturnType(), Any(std::bind(fn, castparam_firstnonptr<S>(data)...)())};
 					}
@@ -564,6 +564,42 @@ namespace Gorgon {
 		};
 		
 		/**
+		 * This class maps a constructor of a reference type
+		 */
+		template<class C_, class ...Params_>
+		class MappedReferenceConstructor : public MappedFunction {
+		public:
+
+			MappedReferenceConstructor(const std::string &help, const Type *parent, ParameterList params) :
+			MappedFunction("", help, parent, parent, std::move(params), MappedFunctions(&MappedReferenceConstructor::New),
+						   MappedMethods(), StaticTag)
+			{
+			}
+
+			static C_ *New(Params_ ...params) {
+				C_ *obj=new C_{std::forward<Params_>(params)...};
+				VirtualMachine::Get().References.Register({GetParent(), obj});
+				return obj;
+			}
+		};
+
+		/**
+		* This class maps a constructor of a value type
+		*/
+		template<class C_, class ...Params_>
+		class MappedValueConstructor : public MappedFunction {
+		public:
+
+			MappedValueConstructor(const std::string &help, const Type *parent, ParameterList params) :
+				MappedFunction("", help, parent, parent, std::move(params), MappedFunctions(&MappedValueConstructor::New),
+				MappedMethods(), StaticTag) {}
+
+			static C_ New(Params_ ...params) {
+				return C_{std::forward<Params_>(params)...};
+			}
+		};
+
+		/**
 		 * This class makes working with operators easier.
 		 */
 		class MappedOperator : public MappedFunction {
@@ -598,7 +634,7 @@ namespace Gorgon {
 			)
 		
 		/**
-		 * Maps a constructor for type casting
+		 * Maps a constructor for type casting, works for value types
 		 */
 		template<class from_, class to_>
 		Function *Map_Typecast(const std::string &fromnamespace, Type *from, Type *to) {
