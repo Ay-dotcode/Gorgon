@@ -8,10 +8,16 @@
 #include <Source/TMP.h>
 #include "Source/Geometry/Point.h"
 
+namespace Gorgon { namespace Geometry {
+	extern Scripting::Library LibGeometry;
+	void init_scripting();
+} }
 
 using namespace Gorgon::Scripting;
 using namespace Gorgon;
 using Gorgon::Geometry::Point;
+using Gorgon::Geometry::init_scripting;
+using Gorgon::Geometry::LibGeometry;
 
 int checktestfn=0;
 
@@ -51,20 +57,23 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	VirtualMachine vm;
 	vm.Activate();
 	
+	init_scripting();
+
 	auto myfloattype=new MappedValueType<float>("myfloattype", "test type");
 	auto myvaluetype = new MappedValueType<A>("myvaluetype", "test type");
 	auto myreftype=new MappedReferenceType<A>("myreftype", "test type");
-	auto mypointtype = MappedValueType<Point>("mypointtype", "test type");
-
+	auto &mypointtype = LibGeometry.Types["Point"];
+/*
 	mypointtype.AddDataMembers({
 		new MappedData<Point, int>(&Point::X, "x", "field storing location on x coordinate", Integrals.Types["Int"]),
 		new MappedData<Point, int>(&Point::Y, "y", "field storing location on y coordinate", Integrals.Types["Int"])
 	});
-	Data pointdatatest = { mypointtype, Any(Point{1, 1}) };
-	
-	REQUIRE(pointdatatest.GetValue<Point>().X == 1);
-	REQUIRE(pointdatatest.GetValue<Point>().Y == 1);
+*/
+	//LibGeometry.Types["Point"];
 
+	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Call(false, {{mypointtype, Point(1, 1)}, {mypointtype, Point(1, 1)}}).GetValue<float>() == 0.f);
+	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Call(false, {{mypointtype, Point(1, 0)}}).GetValue<float>() == 1.f) ;
+	
 	int testval=0;
 	myvaluetype->AddDataMembers({
 		new MappedData  <A, int>(&A::bb, "bb", "bb is bla bla", Integrals.Types["Int"]),
