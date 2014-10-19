@@ -18,13 +18,13 @@ namespace Gorgon {
 		class ReferenceCounter {
 		public:
 
-			/// Registers a new object of reference counting
+			/// Registers a new object of reference counting, this does not increase the reference count
 			void Register(const Data &data) {
 				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
 					   "offender: "+data.GetType().GetName(), 1, 4);
 
 				void *ptr=data.GetData().Pointer();
-				references[ptr]++;
+				references[ptr]=0;
 			}
 
 			/// Increases the reference count of the given object. If it is not registered, this request is ignored
@@ -55,6 +55,44 @@ namespace Gorgon {
 					data.GetType().Delete(data);
 					references.erase(f);
 				}
+			}
+			
+			bool IsRegistered(const Data &data) const {
+				if(!data.IsValid()) return false;
+				
+				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
+				"offender: "+data.GetType().GetName(), 1, 4);
+				
+				void *ptr=data.GetData().Pointer();
+				auto f=references.find(ptr);
+				if(f==references.end()) return false;
+				
+				return true;
+			}
+			
+			/// Unregisters an object from reference counter
+			void Unregister(const Data &data) {
+				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
+				"offender: "+data.GetType().GetName(), 1, 4);
+				
+				void *ptr=data.GetData().Pointer();
+				references.erase(ptr);
+			}
+			
+			/// Never use without a proper reason. Gets rid of the data without destroying its content. It does
+			/// decrease reference count. However, if it hits 0 it will 
+			void GetRidOf(Data &data) {
+				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
+				"offender: "+data.GetType().GetName(), 1, 4);
+				
+				void *ptr=data.GetData().Pointer();
+				auto f=references.find(ptr);
+				if(f==references.end()) return;
+				
+				int &v=f->second;
+				v++;
+				data=Data::Invalid();
+				v--;
 			}
 
 		private:

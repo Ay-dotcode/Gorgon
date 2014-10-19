@@ -575,10 +575,38 @@ namespace Gorgon {
 						   MappedMethods(), StaticTag)
 			{
 			}
-
+			
+		private:
 			static C_ *New(Params_ ...params) {
-				C_ *obj=new C_{std::forward<Params_>(params)...};
-				VirtualMachine::Get().References.Register({GetParent(), obj});
+				C_ *obj=nullptr;
+				Data objdata=Scripting::Data::Invalid();
+				auto &refs=Scripting::VirtualMachine::Get().References;
+				
+				try {
+					obj=new C_{std::forward<Params_>(params)...};
+					objdata={GetParent(), obj};
+					
+					refs.Register(objdata);
+				}
+				catch(...) {
+					delete obj;
+					
+					throw;
+				}
+				
+				try {
+					refs.Increase(objdata);
+					refs.GetRidOf(objdata);
+				}
+				catch(...) {
+					if(refs.IsRegistered(objdata)) {
+						refs.Unregister(objdata);
+						delete obj;
+					}
+					
+					throw;
+				}
+		
 				return obj;
 			}
 		};
@@ -594,6 +622,7 @@ namespace Gorgon {
 				MappedFunction("", help, parent, parent, std::move(params), MappedFunctions(&MappedValueConstructor::New),
 				MappedMethods(), StaticTag) {}
 
+		private:
 			static C_ New(Params_ ...params) {
 				return C_{std::forward<Params_>(params)...};
 			}
