@@ -13,5 +13,8 @@ SET(Local
 	VirtualMachine.cpp
 	
 	Keywords/If.cpp
+	
+	Types/Array.h
+	Types/Array.cpp
 )
 
