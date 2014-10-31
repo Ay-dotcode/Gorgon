@@ -1,4 +1,4 @@
-#define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_RUNNER
 
 #define WINDOWS_LEAN_AND_MEAN
 
@@ -13,11 +13,23 @@ namespace Gorgon { namespace Geometry {
 	void init_scripting();
 } }
 
+
 using namespace Gorgon::Scripting;
 using namespace Gorgon;
 using Gorgon::Geometry::Point;
 using Gorgon::Geometry::init_scripting;
 using Gorgon::Geometry::LibGeometry;
+
+int main (int argc, char * const argv[]) {
+	Scripting::Initialize();
+	VirtualMachine vm;
+	vm.Activate();
+	
+	init_scripting();
+
+	return Catch::Session().run( argc, argv );
+}	
+
 
 int checktestfn=0;
 
@@ -51,14 +63,36 @@ public:
 };
 
 
-TEST_CASE("Basic scripting", "[firsttest]") {
-	
-	Scripting::Initialize();
-	VirtualMachine vm;
-	vm.Activate();
-	
-	init_scripting();
+int bcount=0;
 
+class B {
+public:
+	B() { bcount++; }
+	explicit B(int bb) : bb(bb) { 
+		bcount++;
+	}
+
+	~B() { bcount--; }
+	
+	int a() {
+		return 42;
+	}
+	
+	int b(float a) {
+		return 42*a;
+	}
+	
+	explicit operator std::string() const {
+		return String::From(bb);
+	}
+	
+	int bb;
+};
+
+
+TEST_CASE("Basic scripting", "[firsttest]") {
+	auto &vm=VirtualMachine::Get();
+	
 	auto myfloattype=new MappedValueType<float>("myfloattype", "test type");
 	auto myvaluetype = new MappedValueType<A>("myvaluetype", "test type");
 	auto myreftype=new MappedReferenceType<A>("myreftype", "test type");
@@ -268,4 +302,35 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 
 	Data d=myvaluetype->Construct({{Integrals.Types["Int"], 14}});
 	REQUIRE(d.GetValue<A>().bb==14);
+}
+
+TEST_CASE("Reference counting", "[Data]") {
+	Type *BType = new MappedReferenceType<B>("B", "B type");
+	BType->AddConstructors({
+		new MappedReferenceConstructor<B>("Default constructor", BType, ParameterList()),
+		new MappedReferenceConstructor<B, int>("Initializing constructor", BType, ParameterList(
+			new Parameter{ "bb", 
+				"bb parameter",
+				Integrals.Types["Int"]
+			}
+		))
+	});
+	
+	Data data=BType->Construct({});
+	REQUIRE(bcount == 1);
+	data=Data::Invalid();
+	REQUIRE(bcount == 0);
+	
+	data=BType->Construct({{Integrals.Types["Int"], 5}});
+	{
+		Data data2=data;
+		REQUIRE(bcount == 1);
+		data=Data::Invalid();
+		REQUIRE(bcount == 1);
+		data=BType->Construct({});
+		REQUIRE(bcount == 2);
+	}
+	REQUIRE(bcount == 1);
+	data=Data::Invalid();
+	REQUIRE(bcount == 0);
 }

@@ -234,9 +234,10 @@ namespace Gorgon {
 								  "Number of functions are more than possible");
 					
 					ASSERT( (traitsof<0>::Arity == parent.Parameters.GetCount() + parent.HasParent() - parent.IsStatic()),  
-							String::Concat("Defined parameters (", parent.Parameters.GetCount(),
+							String::Concat("Defined parameters (", 
+										   parent.Parameters.GetCount() + (parent.HasParent() - parent.IsStatic()),
 										   ") does not match the number of function parameters (", 
-										   traitsof<0>::Arity - parent.HasParent() - parent.IsStatic(), ")"), 2, 2);
+										   int(traitsof<0>::Arity), ")"), 2, 2);
 					
 					checkallfns(typename TMP::Generate<sizeof...(Fns_)>::Type());
 					
@@ -506,7 +507,8 @@ namespace Gorgon {
 				if(returntype) {
 					using fn = typename fnstorageimpl<Fns1_...>::template traitsof<0>;
 					ASSERT(returntype->GetDefaultValue().TypeCheck<typename fn::ReturnType>(), 
-						"Function return type does not match with designated return type", 1, 2);
+						"Function return type ("+Utils::GetTypeName<typename fn::ReturnType>()+
+						") does not match with designated return type ("+returntype->GetName()+")", 1, 2);
 				}
 				
 				ASSERT(
@@ -570,21 +572,25 @@ namespace Gorgon {
 		class MappedReferenceConstructor : public MappedFunction {
 		public:
 
-			MappedReferenceConstructor(const std::string &help, const Type *parent, ParameterList params) :
-			MappedFunction("", help, parent, parent, std::move(params), MappedFunctions(&MappedReferenceConstructor::New),
-						   MappedMethods(), StaticTag)
+			MappedReferenceConstructor(const std::string &help, const Scripting::Type *parent, ParameterList params) :
+			MappedFunction("", help, parent, parent, std::move(params), 
+						   MappedFunctions([this](Params_... params) {return New(params...);}),
+						   MappedMethods(), Scripting::StaticTag), parent(parent)
 			{
+				ASSERT(parent->IsReferenceType(), "Only reference types can have reference constructor.", 1, 4);
 			}
 			
 		private:
-			static C_ *New(Params_ ...params) {
+			const Type *parent;
+			
+			C_ *New(Params_ ...params) {
 				C_ *obj=nullptr;
 				Data objdata=Scripting::Data::Invalid();
 				auto &refs=Scripting::VirtualMachine::Get().References;
 				
 				try {
 					obj=new C_{std::forward<Params_>(params)...};
-					objdata={GetParent(), obj};
+					objdata={parent, obj};
 					
 					refs.Register(objdata);
 				}
@@ -595,7 +601,6 @@ namespace Gorgon {
 				}
 				
 				try {
-					refs.Increase(objdata);
 					refs.GetRidOf(objdata);
 				}
 				catch(...) {
@@ -620,7 +625,9 @@ namespace Gorgon {
 
 			MappedValueConstructor(const std::string &help, const Type *parent, ParameterList params) :
 				MappedFunction("", help, parent, parent, std::move(params), MappedFunctions(&MappedValueConstructor::New),
-				MappedMethods(), StaticTag) {}
+				MappedMethods(), StaticTag) {
+					ASSERT(!parent->IsReferenceType(), "Only non-reference types can have value type constructor.", 1, 4);
+				}
 
 		private:
 			static C_ New(Params_ ...params) {

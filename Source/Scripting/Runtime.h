@@ -18,13 +18,18 @@ namespace Gorgon {
 		class ReferenceCounter {
 		public:
 
-			/// Registers a new object of reference counting, this does not increase the reference count
+			/// Registers a new object of reference counting, this will set reference count to one. This function
+			/// ignores register requests for nullptr
 			void Register(const Data &data) {
 				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
 					   "offender: "+data.GetType().GetName(), 1, 4);
 
 				void *ptr=data.GetData().Pointer();
-				references[ptr]=0;
+				
+				//ignore register requests to nullptr
+				if(ptr==nullptr) return;
+				
+				references[ptr]=1;
 			}
 
 			/// Increases the reference count of the given object. If it is not registered, this request is ignored
@@ -38,7 +43,7 @@ namespace Gorgon {
 
 				f->second++;
 			}
-
+			
 			/// Decreases the reference count of the given object. If it is not registered, this request is ignored.
 			/// If reference count of the object reaches 0, it is deleted.
 			void Decrease(const Data &data) {
@@ -55,6 +60,19 @@ namespace Gorgon {
 					data.GetType().Delete(data);
 					references.erase(f);
 				}
+			}
+			
+			/// Resets the reference count to 0
+			void Reset(const Data &data) {
+				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
+					   "offender: "+data.GetType().GetName(), 1, 4);
+
+				void *ptr=data.GetData().Pointer();
+				auto f=references.find(ptr);
+				if(f==references.end()) return;
+
+				int &v=f->second;
+				v=0;
 			}
 			
 			bool IsRegistered(const Data &data) const {

@@ -26,6 +26,10 @@ namespace Gorgon { namespace Scripting {
 	
 	Data::Data(const Type& type) : type(&type) {
 		data = type.GetDefaultValue();
+		
+		if(type.IsReferenceType() && data.Pointer()) {
+			VirtualMachine::Get().References.Increase(*this);
+		}
 	}
 
 	Data::Data(const Type *type, const Any &data) : type(type), data(data) {
@@ -42,12 +46,16 @@ namespace Gorgon { namespace Scripting {
 	}
 
 	Data &Data::operator =(Data other) {
+		if(type && type->IsReferenceType() && data.IsSet() && data.Pointer()) {
+			VirtualMachine::Get().References.Decrease(*this);
+		}
+		
 		type=other.type;
 		data=other.data;
-
+		
 		other.data=Any();
 		other.type=nullptr;
-
+		
 		return *this;
 	}
 
