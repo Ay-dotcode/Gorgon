@@ -971,6 +971,11 @@ namespace Gorgon {
 			bool referencetype = false;
 		};
 		
+		inline std::ostream &operator <<(std::ostream &out, const Type &type) {
+			out<<type.GetName();
+			return out;
+		}
+		
 		using TypeList = Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess>;
 		
 		/**
@@ -982,15 +987,7 @@ namespace Gorgon {
 		public:
 			/// Constructor
 			Library(const std::string &name, const std::string &help,
-					TypeList types, FunctionList functions, ConstantList constants=ConstantList()) :
-			name(name), help(help), Types(this->types), Functions(this->functions), Constants(this->constants)
-			{
-				using std::swap;
-				
-				swap(types, this->types);
-				swap(functions, this->functions);
-				swap(constants, this->constants);
-			}
+					TypeList types, FunctionList functions, ConstantList constants=ConstantList());
 			
 			/// For late initialization
 			Library() : Types(this->types), Functions(this->functions), Constants(this->constants) { }

@@ -11,6 +11,7 @@
 #include <typeinfo>
 #include <algorithm>
 #include <typeinfo>
+#include "Utils/Assert.h"
 
 
 
@@ -226,6 +227,12 @@ namespace Gorgon {
 #endif
 
 			return *static_cast<T_*>(content);
+		}
+		
+		std::string GetTypeName() const {
+			if(!type) return "";
+			
+			return Utils::demangle(type->TypeInfo().name());
 		}
 
 		/// Returns the value contained with this any. If this Any is not

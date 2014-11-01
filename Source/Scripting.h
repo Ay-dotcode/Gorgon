@@ -94,11 +94,29 @@ namespace Gorgon {
 		
 		/// Initializes the scripting system
 		inline void Initialize() {
-			init_builtin();
+			//init_builtin();
 		}
 		
 		/// This library requires Initialize to be called
 		extern Library Integrals;
 		extern Library Keywords;
+		extern Library Reflection;
+		
+		/// Allows easy and fast access to integral types
+		namespace Types {
+#define DEFTYPE(name) inline const Type *name() { static const Type *type = Integrals.Types[#name]; return type; }
+			
+			DEFTYPE(String);
+			DEFTYPE(Int);
+			DEFTYPE(Float);
+			DEFTYPE(Bool);
+			DEFTYPE(Double);
+			DEFTYPE(Char);
+			DEFTYPE(Byte);
+			DEFTYPE(Variant);
+			DEFTYPE(Unsigned);
+			
+#undef DEFTYPE
+		}
 	}
 }

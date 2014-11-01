@@ -8,6 +8,12 @@ using namespace Gorgon::Scripting;
 const std::string source = R"(# $a = 4;
 $"a" = i"4"
 
+."1" = *s"help" c"type"
+-s"echo" s""
+-s"echo" s"Type help" 
+-s"echo" ."1"
+-s"echo" s""
+
 # echo "3=pi ? " + (3=pi)
 ."1" = -s"=" i"3" c"pi"
 ."2" = *s"+" s"3=pi ? " ."1"

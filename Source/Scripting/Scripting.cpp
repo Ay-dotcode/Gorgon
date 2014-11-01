@@ -42,7 +42,10 @@ namespace Gorgon { namespace Scripting {
 	}
 
 	void Data::check() {
-		ASSERT(type->GetDefaultValue().IsSameType(data), "Given data type does not match with: "+type->GetName(), 2, 2);
+		ASSERT(type->GetDefaultValue().IsSameType(data), "Given data type ("+data.GetTypeName()+
+			   ") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+			   , 2, 2
+		);
 	}
 
 	Data &Data::operator =(Data other) {
@@ -154,6 +157,25 @@ namespace Gorgon { namespace Scripting {
 		}
 		else {
 			return rankedlist.begin()->second->Call(false, parameters);
+		}
+	}
+	
+	const Type *TypeType();
+	
+	Library::Library(const std::string &name, const std::string &help,
+			TypeList types, FunctionList functions, ConstantList constants) :
+	name(name), help(help), Types(this->types), Functions(this->functions), Constants(this->constants)
+	{
+		using std::swap;
+		
+		swap(types, this->types);
+		swap(functions, this->functions);
+		swap(constants, this->constants);
+		
+		for(const auto &type : this->types) {
+			this->constants.Add(
+				new Constant(type.first, type.second.GetHelp(), {TypeType(), &type.second})
+			);
 		}
 	}
 	

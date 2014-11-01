@@ -24,7 +24,7 @@ namespace Gorgon {
 
 			if(!array) {
 				array=new MappedReferenceType<Array, ArrayToStr>("Array", "This is an array", (Array*)nullptr);
-
+				
 				//array->AddConstructors()
 			}
 			

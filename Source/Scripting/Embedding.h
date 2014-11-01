@@ -119,6 +119,16 @@ namespace Gorgon {
 			return std::make_tuple(args...);
 		}
 		
+		template <class C_, class R_, class ...P_>
+		std::function<R_(const C_*, P_...)> MapConstReferenceMemberFunction(R_(C_::*fn)(P_...)const) {
+			return [fn](const C_ *o, P_... params) { return (o->*fn)(params...); };
+		}
+		
+		template <class C_, class R_, class ...P_>
+		std::function<R_(const C_&, P_...)> MapConstValueMemberFunction(R_(C_::*fn)(P_...)const) {
+			return [fn](const C_ &o, P_... params) { return (o.*fn)(params...); };
+		}
+		
 		/// This class is used to create linking to a c++ function
 		class MappedFunction : public Scripting::Function {
 			/// @cond INTERAL

@@ -14,10 +14,14 @@ namespace Gorgon {
 		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
 		Libraries(libraries), output(&out), input(&in), 
 		defoutput(&out), definput(&in), automaticreset(automaticreset), temporaries(256, Data::Invalid())
-		{ 
-			variablescopes.AddNew("[main]", VariableScope::DefaultLocal);
+		{
+			Activate();
+			init_builtin();
 			libraries.Add(Integrals);
 			libraries.Add(Keywords);
+			libraries.Add(Reflection);
+			
+			variablescopes.AddNew("[main]", VariableScope::DefaultLocal);
 		}
 		
 		void VirtualMachine::AddLibrary(const Library &library) { 
@@ -353,7 +357,7 @@ namespace Gorgon {
 
 			while(executionscopes.GetCount()>(long)executiontarget) {
 				auto inst=executionscopes.Last()->Get();
-#ifdef TEST
+#ifdef TESTVM
 				Console::SetColor(Console::Black);
 				Console::SetBold();
 				if(inst) {

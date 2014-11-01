@@ -6,6 +6,7 @@ namespace Gorgon {
 		
 		Library Integrals;
 		Library Keywords;
+		Library Reflection;
 		
 		namespace {
 			void Echo(std::vector<std::string> datav) {
@@ -60,7 +61,12 @@ namespace Gorgon {
 		Function *ElseIf();
 		Function *Else();
 		
-		void init_builtin() {						
+		const Type *TypeType();
+		void InitTypeType();
+		
+		void init_builtin() {
+			if(Integrals.Types.GetCount()) return;
+			
 			auto Int = new MappedValueType<int>( "Int", 
 				"Integer data type. This type is binary saved/loaded as int32_t regardless of the platform. "
 				"This data type does not support binary operator (bit shift, bitwise and/or). You should "
@@ -227,7 +233,12 @@ namespace Gorgon {
 				},
 			};
 			
+			Reflection={"Reflection", "This library contains reflection objects",
+				TypeList { TypeType() },
+				FunctionList { }
+			};
 			
+			InitTypeType();
 		}
 		
 	}
