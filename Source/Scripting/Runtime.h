@@ -17,21 +17,31 @@ namespace Gorgon {
 		/// This class allows references to be counted and destroyed properly.
 		class ReferenceCounter {
 		public:
-
+			
 			/// Registers a new object of reference counting, this will set reference count to one. This function
 			/// ignores register requests for nullptr
 			void Register(const Data &data) {
 				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
-					   "offender: "+data.GetType().GetName(), 1, 4);
-
+				"offender: "+data.GetType().GetName(), 1, 4);
+				
 				void *ptr=data.GetData().Pointer();
 				
 				//ignore register requests to nullptr
 				if(ptr==nullptr) return;
 				
-				references[ptr]=1;
+				if(references[ptr]==0)
+					references[ptr]=1;
 			}
-
+			
+			/// Registers a new object of reference counting, this will set reference count to 0. This function
+			/// ignores register requests for nullptr
+			void Register(void *ptr) {
+				//ignore register requests to nullptr
+				if(ptr==nullptr) return;
+				
+				references[ptr];
+			}
+			
 			/// Increases the reference count of the given object. If it is not registered, this request is ignored
 			void Increase(const Data &data) {
 				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "

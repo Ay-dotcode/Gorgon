@@ -12,7 +12,7 @@ namespace Gorgon {
 		
 		static Type *type=nullptr;
 		
-		const Type *TypeType() {
+		Type *TypeType() {
 			if(type==nullptr) {
 				type=new Scripting::MappedReferenceType<const Type, &TypeToStr>("Type",
 					"Contains information about a type. Also contains "

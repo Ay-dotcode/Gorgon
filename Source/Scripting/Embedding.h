@@ -129,6 +129,16 @@ namespace Gorgon {
 			return [fn](const C_ &o, P_... params) { return (o.*fn)(params...); };
 		}
 		
+		template <class C_, class R_, class ...P_>
+		std::function<R_(C_*, P_...)> MapConstReferenceMemberFunctionNonConst(R_(C_::*fn)(P_...)const) {
+			return [fn](C_ *o, P_... params) { return (o->*fn)(params...); };
+		}
+		
+		template <class C_, class R_, class ...P_>
+		std::function<R_(C_&, P_...)> MapConstValueMemberFunctionNonConst(R_(C_::*fn)(P_...)const) {
+			return [fn](C_ &o, P_... params) { return (o.*fn)(params...); };
+		}
+		
 		/// This class is used to create linking to a c++ function
 		class MappedFunction : public Scripting::Function {
 			/// @cond INTERAL
@@ -173,7 +183,8 @@ namespace Gorgon {
 							}
 							else {
 								ASSERT((parent.GetParent().GetDefaultValue().TypeCheck<paramof<level, param>>()) ,
-									   "Function parameter type and object type does not match. In function: "+
+									   "Function parameter type ("+Utils::GetTypeName<paramof<level, param>>()+") "
+									   "and object type ("+parent.GetParent().GetDefaultValue().GetTypeName()+") does not match. In function: "+
 									   parent.GetName()+" parameter", 5, 2);
 							}
 						}

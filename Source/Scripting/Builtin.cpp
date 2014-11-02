@@ -1,5 +1,6 @@
 #include "Embedding.h"
 #include "Exceptions.h"
+#include "Types/Array.h"
 
 namespace Gorgon {
 	namespace Scripting {
@@ -61,8 +62,11 @@ namespace Gorgon {
 		Function *ElseIf();
 		Function *Else();
 		
-		const Type *TypeType();
+		Type *TypeType();
 		void InitTypeType();
+		
+		Type *ArrayType();
+		std::initializer_list<Function*> ArrayFunctions();
 		
 		void init_builtin() {
 			if(Integrals.Types.GetCount()) return;
@@ -180,7 +184,6 @@ namespace Gorgon {
 				)
 			});
 			
-			
 			Integrals={"Integral", "Integral types and functions", 
 				TypeList {
 					Bool,
@@ -193,25 +196,26 @@ namespace Gorgon {
 					String,
 					&Variant
 				},
-				FunctionList {
-					new MappedFunction("Echo",
-						"This function prints the given parameters to the screen.",
-						nullptr, nullptr, ParameterList {
-							new Parameter( "string",
-								"The strings that will be printed.",
-								String
-							)
-						},
-						MappedFunctions(Echo), MappedMethods(),
-						StretchTag, RepeatTag
-					)
-				},
+				FunctionList{},
 				ConstantList {
 					new Constant("Pi", "Contains the value of PI", {Double, 3.14159265358979}),
 				}
 			};
 			
-			
+			Integrals.AddFunctions(ArrayFunctions());
+			Integrals.AddFunctions({
+				new MappedFunction("Echo",
+					"This function prints the given parameters to the screen.",
+					nullptr, nullptr, ParameterList {
+						new Parameter( "string",
+							"The strings that will be printed.",
+							String
+						)
+					},
+					MappedFunctions(Echo), MappedMethods(),
+					StretchTag, RepeatTag
+				)
+			});
 			
 			Keywords={"Keywords", "Standard keywords like if and for.",
 				TypeList {},

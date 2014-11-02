@@ -1018,6 +1018,12 @@ namespace Gorgon {
 				
 				return *this;
 			}
+			
+			void AddFunctions(const std::initializer_list<Function*> &list) {
+				for(auto &fn : list) {
+					functions.Add(fn);
+				}
+			}
 
 			/// Returns the name of this library. Library names are also used as namespace specifiers
 			std::string GetName() const {

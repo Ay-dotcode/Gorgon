@@ -96,6 +96,15 @@ namespace Gorgon {
 			long linenumber;
 		};
 		
+		class OutofBoundsException : public Exception {
+		public:
+			explicit OutofBoundsException(long index, long max, const std::string &objectype, const std::string &details="", long linenumber=-1) :
+			Exception(ExceptionType::OutofBounds, objectype+" index "+String::From(index)+" is out of bounds."
+					  "should be [0, "+String::From(max)+").", linenumber) { 
+				this->details = details;
+			}
+		}; 
+		
 		class AmbiguousSymbolException : public Exception {
 		public:
 			explicit AmbiguousSymbolException(const std::string &symbolname, SymbolType type, const std::string &details="", long linenumber=-1) :
