@@ -39,7 +39,25 @@ namespace Gorgon {
 							}
 						},
 						MappedFunctions(MapConstReferenceMemberFunctionNonConst(&Array::GetItemData)), MappedMethods()	
-					}
+					},
+					new MappedFunction{"Push", "Pushes a new element at the end of the array.",
+						nullptr, array, ParameterList{
+							new Parameter { "Element",
+								"Element to be added.",
+								Types::Variant()
+							}
+						},
+						MappedFunctions(&Array::PushData), MappedMethods()	
+					},
+					new MappedFunction{"Resize", "Changes the size of the array. New elements will have their default value.",
+						nullptr, array, ParameterList{
+							new Parameter { "Size",
+								"The new size.",
+								Types::Unsigned()
+							}
+						},
+						MappedFunctions(&Array::Resize), MappedMethods()	
+					},
 				});
 			}
 			

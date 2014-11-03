@@ -168,6 +168,39 @@ namespace Gorgon {
 				Map_Typecast<Gorgon::Byte, int>("Integrals", Byte, Int)
 			});
 			
+			Unsigned->AddConstructors({
+				Map_Typecast<float, unsigned>("Integrals", Float, Unsigned),
+				Map_Typecast<double, unsigned>("Integrals", Double, Unsigned),
+				Map_Typecast<int, unsigned>("Integrals", Int, Unsigned),
+				Map_Typecast<Gorgon::Byte, unsigned>("Integrals", Byte, Unsigned)
+			});
+			
+			Float->AddConstructors({
+				Map_Typecast<unsigned, float>("Integrals", Unsigned, Float),
+				Map_Typecast<double, float>("Integrals", Double, Float),
+				Map_Typecast<int, float>("Integrals", Int, Float),
+				Map_Typecast<Gorgon::Byte, float>("Integrals", Byte, Float)
+			});
+			
+			Double->AddConstructors({
+				Map_Typecast<float, double>("Integrals", Float, Double),
+				Map_Typecast<unsigned, double>("Integrals", Unsigned, Double),
+				Map_Typecast<int, double>("Integrals", Int, Double),
+				Map_Typecast<Gorgon::Byte, double>("Integrals", Byte, Double)
+			});
+			
+			Byte->AddConstructors({
+				Map_Typecast<float, Gorgon::Byte>("Integrals", Float, Byte),
+				Map_Typecast<double, Gorgon::Byte>("Integrals", Double, Byte),
+				Map_Typecast<int, Gorgon::Byte>("Integrals", Int, Byte),
+				Map_Typecast<unsigned, Gorgon::Byte>("Integrals", Unsigned, Byte),
+				Map_Typecast<char, Gorgon::Byte>("Integrals", Char, Byte)
+			});
+			
+			Char->AddConstructors({
+				Map_Typecast<Gorgon::Byte, char>("Integrals", Byte, Char)
+			});
+			
 			String->AddFunctions({
 				new MappedFunction("Length",
 					"Returns the length of the string", Unsigned, String, {}, 

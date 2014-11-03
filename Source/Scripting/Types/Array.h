@@ -47,8 +47,16 @@ namespace Gorgon {
 				elements.push_back(elm);
 			}
 			
+			void PushData(Data elm) {
+				if(elm.GetType()!=type) {
+					//not implemented
+					ASSERT(false, "Not implemented", 0, 16);
+				}
+				elements.push_back(elm.GetData());
+			}
+			
 			void Resize(unsigned size) {
-				elements.resize(size);
+				elements.resize(size, type->GetDefaultValue());
 			}
 			
 			unsigned GetSize() const {

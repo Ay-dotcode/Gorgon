@@ -15,6 +15,8 @@ $"a" = i"4"
 -s"echo" s""
 
 ."1" = -s"range" i"0" i"5"
+*s"push" ."1" i"9"
+*s"resize" ."1" i"10"
 -s"echo" ."1"
 
 # echo "3=pi ? " + (3=pi)
