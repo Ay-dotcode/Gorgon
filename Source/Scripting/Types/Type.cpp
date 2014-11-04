@@ -1,6 +1,7 @@
 #include "../../Any.h"
 #include "../Reflection.h"
 #include "../Embedding.h"
+#include "Array.h"
 
 
 namespace Gorgon {
@@ -22,6 +23,9 @@ namespace Gorgon {
 			
 			return type;
 		}
+
+		Array *BuildArray(const Type *type, std::vector<Data> data);
+		Type *ArrayType();
 		
 		void InitTypeType() {
 			if(type->Functions.GetCount()==0) {				
@@ -29,12 +33,23 @@ namespace Gorgon {
 					new Scripting::MappedFunction{"Name",
 						"Returns the name of the type", 
 						Types::String(), type, ParameterList(),
-						MappedFunctions(MapConstReferenceMemberFunction(&Type::GetName)), MappedMethods()
+						MappedFunctions([](const Type *o){return o->GetName();}), MappedMethods()
 					},
 					new Scripting::MappedFunction{"Help",
 						"Returns help for the type", 
 						Types::String(), type, ParameterList(),
-						MappedFunctions(MapConstReferenceMemberFunction(&Type::GetHelp)), MappedMethods()
+						MappedFunctions([](const Type *o) {return o->GetHelp(); }), MappedMethods()
+					},
+					new Scripting::MappedFunction{"[]",
+						"Creates a new array for this type.",
+						ArrayType(), type, ParameterList(
+							new Parameter{"Elements",
+								"The newly constructed array will be filled with these elements",
+								Types::Variant(), OptionalTag
+							}
+						),
+						MappedFunctions(&BuildArray, [](const Type *type){ return BuildArray(type, {}); }), MappedMethods(),
+						RepeatTag
 					},
 				});
 			}

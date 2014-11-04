@@ -38,7 +38,7 @@ namespace Gorgon {
 								Types::Unsigned()
 							}
 						},
-						MappedFunctions(MapConstReferenceMemberFunctionNonConst(&Array::GetItemData)), MappedMethods()	
+						MappedFunctions([](Array *a, unsigned ind){return a->GetItemData(ind);}), MappedMethods()	
 					},
 					new MappedFunction{"Push", "Pushes a new element at the end of the array.",
 						nullptr, array, ParameterList{
@@ -90,6 +90,19 @@ namespace Gorgon {
 				ret->PushWithoutCheck(i);
 			}
 			
+			return ret;
+		}
+
+		Array *BuildArray(const Type *type, std::vector<Data> datav) {
+			if(type==nullptr) return nullptr;
+
+			Array *ret=new Array(*type);
+
+			for(auto &data : datav) {
+				ret->PushData(data);
+			}
+
+
 			return ret;
 		}
 		

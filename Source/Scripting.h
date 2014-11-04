@@ -115,7 +115,9 @@ namespace Gorgon {
 			DEFTYPE(Byte);
 			DEFTYPE(Variant);
 			DEFTYPE(Unsigned);
-			
+
+			DEFTYPE(Array);
+
 #undef DEFTYPE
 		}
 	}

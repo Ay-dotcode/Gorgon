@@ -88,6 +88,7 @@ namespace Gorgon {
 			/// Converts a data of this type to string. This function should never throw, if there is
 			/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
 			virtual std::string ToString(const Data &data) const override {
+				if(data.GetValue<T_*>()==nullptr) return "<null>";
 				return ToString_(*data.GetValue<T_*>());
 			}
 			
@@ -195,7 +196,7 @@ namespace Gorgon {
 								   parent.GetName()+", "+parent.Parameters[param-1].GetName()+" parameter", 5, 2);
 						}
 						else if(param==maxarity-1 && parent.RepeatLast()) {
-							ASSERT((parent.Parameters[param-1].GetType().GetDefaultValue().TypeCheck< remove_vector<paramof<level, param>> >()) , 
+							ASSERT((parent.Parameters[param-1].GetType().GetDefaultValue().TypeCheck< typename std::remove_const<typename remove_vector<paramof<level, param>>::type>::type >()),
 								   "Functions with RepeatTag should have their last parameter as std::vector<type>. In function: "+
 								   parent.GetName()+", "+parent.Parameters[param-1].GetName()+" parameter", 5, 2);
 						}
@@ -218,7 +219,7 @@ namespace Gorgon {
 								   parent.GetName()+", "+parent.Parameters[param].GetName()+" parameter", 5, 2);
 						}
 						else if(param==maxarity-1 && parent.RepeatLast()) {
-							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck< typename remove_vector<paramof<level, param>>::type >()) , 
+							ASSERT((parent.Parameters[param].GetType().GetDefaultValue().TypeCheck< typename std::remove_const<typename remove_vector<paramof<level, param>>::type>::type >()) , 
 								   "Functions with RepeatTag should have their last parameter as std::vector<`"+
 								   parent.Parameters[param].GetType().GetName()+"`>. In function: "+
 								   parent.GetName()+", "+parent.Parameters[param].GetName()+" parameter. Type in c++ function "

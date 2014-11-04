@@ -160,7 +160,7 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
-	const Type *TypeType();
+	Type *TypeType();
 	
 	Library::Library(const std::string &name, const std::string &help,
 			TypeList types, FunctionList functions, ConstantList constants) :
