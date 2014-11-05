@@ -455,7 +455,7 @@ namespace Gorgon {
 				case ValueType::Variable:
 					return GetVariable(val.Name);
 				default:
-					ASSERT(false, "Invalid value type.");
+					Utils::ASSERT_FALSE("Invalid value type.");
 			}
 
 		}
@@ -473,7 +473,7 @@ namespace Gorgon {
 						//no worries
 					}
 					else {
-						ASSERT(false, "Not implemented", 0, 8);
+						Utils::NotImplemented("Polymorphism");
 					}
 
 					params.push_back(param);
@@ -519,7 +519,7 @@ namespace Gorgon {
 
 			int ind=1;
 			for(const auto &pdef : fn->Parameters) {
-				if(pdef.IsReference()) {
+				if(0 && pdef.IsReference()) {
 					ASSERT(false, "Not implemented", 0, 8);
 				}
 				else if(pin!=incomingparams.end()) {
@@ -726,7 +726,16 @@ namespace Gorgon {
 				}
 			}
 		}
-
+		
+		void VirtualMachine::Jump(SourceMarker marker) {
+			if(reinterpret_cast<ExecutionScope*>(marker.GetSource())!=executionscopes.Last().CurrentPtr()) {
+				throw FlowException("Jump destination is not valid", "While performing a short jump, a different "
+					"execution scope is requested."
+				);
+			}
+			
+			executionscopes.Last()->Jumpto(marker.GetLine());
+		}
 
 
 	}

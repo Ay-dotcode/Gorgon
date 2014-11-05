@@ -41,6 +41,8 @@ namespace Gorgon { namespace Resource {
 
 			this->type=type;
 			isloaded=true;
+			
+			return data;
 		}
 		
 		/// Destroys the data stored in the blob

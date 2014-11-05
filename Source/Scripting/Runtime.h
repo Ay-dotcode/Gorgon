@@ -266,6 +266,7 @@ namespace Gorgon {
 		class SourceMarker {
 			friend class ExecutionScope;
 		public:
+			SourceMarker() { }
 			SourceMarker(const SourceMarker &)=default;
 			
 			SourceMarker &operator=(const SourceMarker &)=default;
@@ -274,11 +275,17 @@ namespace Gorgon {
 				return (source == other.source ? line<other.line : source<other.source);
 			}
 			
+			bool IsValid() const { return source!=0; }
+			
+			uintptr_t GetSource() const { return source; }
+			
+			uintptr_t GetLine() const { return line; }
+			
 		private:
 			SourceMarker(unsigned long line, uintptr_t source) : line(line), source(source) {}
 			
-			unsigned long line;
-			uintptr_t 	  source;
+			unsigned long line = 0;
+			uintptr_t 	  source = 0;
 		};
 		
 		class ExecutionScope { 
@@ -295,13 +302,13 @@ namespace Gorgon {
 			
 			/// Returns the current executing logical line number
 			unsigned long GetLineNumber() const {
-				return current;
+				return current-1;
 			}
 			
 			/// Returns a unique identifier for the next line in source code. This information can be
 			/// used to go back across execution scopes. Useful for Try Catch like structures.
 			SourceMarker GetMarkerForNext() const {
-				return {current+1, reinterpret_cast<uintptr_t>(this)};
+				return {current, reinterpret_cast<uintptr_t>(this)};
 			}
 			
 			/// Returns the code at the current line and increments the current line

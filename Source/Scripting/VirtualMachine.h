@@ -216,6 +216,10 @@ namespace Gorgon {
 				return executionscopes.GetCount();
 			}
 
+			SourceMarker GetMarkerForNext() const {
+				return executionscopes.First()->GetMarkerForNext();
+			}
+
 			/// Resets any runtime information that this VM has. This includes all scopes and global
 			/// variables
 			void Reset();

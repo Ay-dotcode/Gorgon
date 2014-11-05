@@ -50,6 +50,8 @@ namespace Gorgon {
 			children.Clear();
 			
 			Swap(other);
+			
+			return *this;
 		}
 
 		/// Destructor

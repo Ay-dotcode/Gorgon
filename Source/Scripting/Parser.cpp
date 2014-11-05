@@ -61,6 +61,8 @@ namespace Gorgon {
 			if(ch<input.size()) {
 				throw ParseError({ParseError::UnexpectedToken, 0, 1, "Expected end of line, found: "+input.substr(ch,1)});
 			}
+			
+			return 0;
 		}
 			
 		void IntermediateParser::storedfn(const std::string& input, int &ch) {

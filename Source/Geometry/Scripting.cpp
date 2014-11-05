@@ -52,7 +52,7 @@ namespace Gorgon { namespace Geometry {
 
 		LibGeometry = {
 			"Geometry",
-			"Data types under geometry and their member functions and operators",
+			"Data types under geometry module and their member functions and operators",
 			Scripting::TypeList {
 				point,
 			},

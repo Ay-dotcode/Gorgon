@@ -138,11 +138,15 @@ namespace Gorgon { namespace Graphics {
 			static_assert(sizeof(int)>=4, "This conversion requires size of int to be at least 4 bytes");
 
 			memcpy(this, &color, 4);
+			
+			return *this;
 		}
 
 		/// From integer assignment
 		RGBA &operator =(const uint32_t &color) {
 			memcpy(this, &color, 4);
+			
+			return *this;
 		}
 
 		/// From float assignment. Assumes the given float value is a 0 to 1 luminance. Sets alpha to 255
@@ -152,6 +156,8 @@ namespace Gorgon { namespace Graphics {
 
 			R=G=B=Byte(lum*255);
 			A=255;
+			
+			return *this;
 		}
 
 		/// Compares two colors

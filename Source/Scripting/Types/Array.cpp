@@ -22,6 +22,35 @@ namespace Gorgon {
 				
 				return ret;
 			}
+
+			Array *Range2(int start, int end) {
+				Array *ret=new Array(*Types::Int());
+
+				if(start<end) {
+					for(int i=start; i<end; i++) {
+						ret->PushWithoutCheck(i);
+					}
+				}
+				else {
+					for(int i=start; i<end; i--) {
+						ret->PushWithoutCheck(i);
+					}
+				}
+
+				VirtualMachine::Get().References.Register(ret);
+
+				return ret;
+			}
+
+			Array *Range3(int start, int end, int step) {
+				Array *ret=new Array(*Types::Int());
+
+				for(int i=start; i<end; i++) {
+					ret->PushWithoutCheck(i);
+				}
+
+				return ret;
+			}
 		}
 		
 		Type *ArrayType() {
@@ -62,35 +91,6 @@ namespace Gorgon {
 			}
 			
 			return array;
-		}
-		
-		static Array *Range2(int start, int end) {
-			Array *ret=new Array(*Types::Int());
-			
-			if(start<end) {
-				for(int i=start;i<end;i++) {
-					ret->PushWithoutCheck(i);
-				}
-			}
-			else {
-				for(int i=start;i<end;i--) {
-					ret->PushWithoutCheck(i);
-				}
-			}
-			
-			VirtualMachine::Get().References.Register(ret);
-			
-			return ret;
-		}
-		
-		static Array *Range3(int start, int end, int step) {
-			Array *ret=new Array(*Types::Int());
-			
-			for(int i=start;i<end;i++) {
-				ret->PushWithoutCheck(i);
-			}
-			
-			return ret;
 		}
 
 		Array *BuildArray(const Type *type, std::vector<Data> datav) {

@@ -12,6 +12,10 @@ SET(UnitTests
 	GarbageCollection
 	Geometry
 	Hashmap
-	Scripting
 	String
 )
+IF(${SCRIPTING})
+	LIST(APPEND UnitTests
+		Scripting
+	)
+ENDIF()

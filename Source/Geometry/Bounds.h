@@ -78,7 +78,8 @@ namespace Gorgon { namespace Geometry {
 		}
 		
 		operator std::string() const {
-			
+			//!TODO
+			return "";
 		}
 
 		/// Compares two bounds objects

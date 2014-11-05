@@ -163,6 +163,8 @@ namespace Gorgon {
 			static_assert(!std::is_same<typename std::decay<typename std::remove_reference<T_>::type>::type, Any>::value,
 						  "Something is wrong in here");
 			Set(value);
+			
+			return *this;
 		}
 
 

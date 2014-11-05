@@ -255,7 +255,7 @@ namespace Gorgon {
 
 			/// Calculates the size of the object according to the tiling and placement rules
 			Geometry::Point CalculateOffset(const Geometry::Size &objectsize, const Geometry::Size &area) const {
-				Graphics::CalculateOffset(Place, area-CalculateSize(objectsize, area));
+				return Graphics::CalculateOffset(Place, area-CalculateSize(objectsize, area));
 			}
 
 			/// Calculates the drawing area of the object according to the tiling and placement rules
@@ -317,7 +317,7 @@ namespace Gorgon {
 
 			/// Calculates the size of the object according to the tiling and placement rules
 			Geometry::Point CalculateOffset(const Geometry::Size &repeatingsize, const Geometry::Size &fixedsize, const Geometry::Size &area) const {
-				Graphics::CalculateOffset(Place, area-CalculateSize(repeatingsize, fixedsize, area));
+				return Graphics::CalculateOffset(Place, area-CalculateSize(repeatingsize, fixedsize, area));
 			}
 
 			/// Calculates the drawing area of the object according to the tiling and placement rules

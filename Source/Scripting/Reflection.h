@@ -1024,12 +1024,19 @@ namespace Gorgon {
 					functions.Add(fn);
 				}
 			}
-
+			
+			void AddTypes(const std::initializer_list<Type*> &list) {
+				for(auto &type : list) {
+					types.Add(type);
+				}
+			}
+			
+			
 			/// Returns the name of this library. Library names are also used as namespace specifiers
 			std::string GetName() const {
 				return name;
 			}
-
+			
 			/// Returns the help string. Help strings may contain markdown notation.
 			std::string GetHelp() const {
 				return help;

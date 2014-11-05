@@ -215,11 +215,15 @@ namespace Gorgon {
 			/// Or assignment
 			Modifier &operator |=(const Modifier &r) {
 				Key = (Type)(Key | r.Key);
+				
+				return *this;
 			}
 			
 			/// And assignment
 			Modifier &operator &=(const Modifier &r) {
 				Key = (Type)(Key & r.Key);
+				
+				return *this;
 			}
 		
 			/// Or operator

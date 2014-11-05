@@ -68,6 +68,8 @@ namespace Gorgon {
 		Type *ArrayType();
 		std::initializer_list<Function*> ArrayFunctions();
 		
+		Function *For();
+		
 		void init_builtin() {
 			if(Integrals.Types.GetCount()) return;
 			
@@ -235,6 +237,7 @@ namespace Gorgon {
 				}
 			};
 			
+			Integrals.AddTypes({ArrayType()});
 			Integrals.AddFunctions(ArrayFunctions());
 			Integrals.AddFunctions({
 				new MappedFunction("Echo",
@@ -253,7 +256,7 @@ namespace Gorgon {
 			Keywords={"Keywords", "Standard keywords like if and for.",
 				TypeList {},
 				FunctionList {
-					If(), ElseIf(), Else(), 
+					If(), ElseIf(), Else(), For(),
 					new MappedFunction("end", 
 						"Ends the current scope",
 						nullptr, nullptr,

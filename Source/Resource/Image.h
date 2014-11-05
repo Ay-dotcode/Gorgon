@@ -69,6 +69,8 @@ namespace Gorgon { namespace Resource {
 			Graphics::Texture::Destroy();
 
 			Swap(other);
+			
+			return *this;
 		}
 
 		/// Duplicates this image. Only the data portion is duplicated. No other information is

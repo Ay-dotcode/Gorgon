@@ -157,6 +157,26 @@ namespace Gorgon {
 		 */
 		#define ASSERT_ALL(expression, message, ...) do { if(!bool(expression)) { \
 			(Gorgon::Utils::CrashHandler(1, #expression, message, ##__VA_ARGS__) < expression); } } while(0)
+			
+#	ifdef MSVC
+		__declspec(noreturn) void NotImplemented(const std::string &what="This feature") { ASSERT(false, what+" is not implemented.", 0, 8); }
+		
+		__declspec(noreturn) void ASSERT_FALSE(const std::string &message, int skip=1, int depth=4) { 
+			ASSERT(false, message, skip, depth); 		
+		}
+#	else
+		void NotImplemented (const std::string &what="This feature") __attribute__((noreturn));
+		void ASSERT_FALSE(const std::string &message, int skip=1, int depth=4) __attribute__((noreturn));
+		
+		inline void NotImplemented (const std::string &what) { 
+			ASSERT(false, what+" is not implemented.", 0, 8); 
+			throw 0;
+		}
+		inline void ASSERT_FALSE(const std::string &message, int skip, int depth) { 
+			ASSERT(false, message, skip, depth);
+			throw 0;
+		}
+#	endif
 #endif
 	}
 }
