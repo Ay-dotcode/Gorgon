@@ -86,6 +86,8 @@ namespace Gorgon {
 		 * 
 		 * **ReferenceTag**: This parameter becomes bidirectional reference. That is, it needs to exist
 		 * before the call to the function. The value of the parameter can be modified or left as is.
+		 * Reference parameters are simply a variable name. They are passed as variables from the
+		 * source.
 		 * 
 		 * **OutputTag**: This parameter becomes output only reference. Output only references can be
 		 * read after it is set first time. The function is free not to set the value of an output
@@ -190,7 +192,7 @@ namespace Gorgon {
 						input=false;
 						break;
 					default:
-						ASSERT(false, "Unknown tag", 2, 16);
+						Utils::ASSERT_FALSE("Unknown tag");
 				}
 				UnpackTags(tags...);
 			}

@@ -14,6 +14,7 @@ SET(Local
 	
 	Keywords/If.cpp
 	Keywords/For.cpp
+	Keywords/While.cpp
 	
 	Types/Array.h
 	Types/Array.cpp

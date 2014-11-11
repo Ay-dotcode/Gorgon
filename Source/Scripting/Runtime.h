@@ -311,6 +311,12 @@ namespace Gorgon {
 				return {current, reinterpret_cast<uintptr_t>(this)};
 			}
 			
+			/// Returns a unique identifier for the next line in source code. This information can be
+			/// used to go back across execution scopes. Useful for Try Catch like structures.
+			SourceMarker GetMarkerForCurrent() const {
+				return {current-1, reinterpret_cast<uintptr_t>(this)};
+			}
+			
 			/// Returns the code at the current line and increments the current line
 			const Instruction *Get() {
 				auto ret=source->ReadInstruction(current);

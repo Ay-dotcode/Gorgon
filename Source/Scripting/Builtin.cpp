@@ -69,6 +69,7 @@ namespace Gorgon {
 		std::initializer_list<Function*> ArrayFunctions();
 		
 		Function *For();
+		Function *While();
 		
 		void init_builtin() {
 			if(Integrals.Types.GetCount()) return;
@@ -111,7 +112,7 @@ namespace Gorgon {
 #define intop(op, name, help, ch) \
 				new MappedOperator( #name, \
 					#help, Variant, Int, Variant, \
-					[&](int l, Scripting::Data r) -> Scripting::Data { \
+					[=](int l, Scripting::Data r) -> Scripting::Data { \
 						if(r.GetType()==Int) \
 							return {Int, l op r.GetValue<int>()}; \
 						else if(ch && r.GetType()==Char) \
@@ -250,13 +251,14 @@ namespace Gorgon {
 					},
 					MappedFunctions(Echo), MappedMethods(),
 					StretchTag, RepeatTag
-				)
+				),
 			});
 			
 			Keywords={"Keywords", "Standard keywords like if and for.",
 				TypeList {},
 				FunctionList {
-					If(), ElseIf(), Else(), For(),
+					If(), ElseIf(), Else(), 
+					For(), While(),
 					new MappedFunction("end", 
 						"Ends the current scope",
 						nullptr, nullptr,
@@ -275,7 +277,22 @@ namespace Gorgon {
 			
 			Reflection={"Reflection", "This library contains reflection objects",
 				TypeList { TypeType() },
-				FunctionList { }
+				FunctionList {
+					new MappedFunction("TypeOf",
+						"This function returns the type of the given variable.",
+						TypeType(), nullptr,
+						ParameterList {
+							new Parameter(
+								"Variable",
+								"The variable to determine its type.",
+								String, ReferenceTag
+							)
+						},
+						MappedFunctions([](std::string variable) {
+							return &VirtualMachine::Get().GetVariable(variable).GetType();
+						}), MappedMethods()
+					)
+				}
 			};
 			
 			InitTypeType();

@@ -219,6 +219,10 @@ namespace Gorgon {
 			SourceMarker GetMarkerForNext() const {
 				return executionscopes.First()->GetMarkerForNext();
 			}
+			
+			SourceMarker GetMarkerForKeywordStart() const {
+				return markedline;
+			}
 
 			/// Resets any runtime information that this VM has. This includes all scopes and global
 			/// variables
@@ -269,6 +273,7 @@ namespace Gorgon {
 			int  skippingdepth = 0;
 			bool markednoskip = false;
 			const Function *markedkeyword=nullptr;
+			SourceMarker markedline;
 
 			std::vector<Data> temporaries;
 

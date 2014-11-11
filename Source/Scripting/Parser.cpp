@@ -224,7 +224,7 @@ namespace Gorgon {
 					return ret;
 
 				default:
-					throw ParseError({ ParseError::UnexpectedToken, 0, ch, "Expected i, f, s, b, $, ., found: " + input.substr(ch, 1) });
+					throw ParseError({ ParseError::UnexpectedToken, 0, ch, "Expected i, f, s, b, $, ., found: " + input.substr(ch-1, 1) });
 			}
 		}
 		

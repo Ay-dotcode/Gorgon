@@ -14,6 +14,19 @@ $"a" = i"4"
 -s"echo" ."1"
 -s"echo" s""
 
+$"i" = i"1"
++ "while"
+."1" = -s"<" $"i" i"5"
+-s"while" ."1"
+	
+	-s"echo" $"i"
+
+	."1" = -s"+" $"i" i"1"
+	$"i" = ."1"
+	
++ "end"
+-s"end"
+
 ."1" = -s"range" i"0" i"5"
 *s"push" ."1" i"9"
 *s"resize" ."1" i"10"

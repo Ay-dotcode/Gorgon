@@ -381,6 +381,7 @@ namespace Gorgon {
 								markednoskip=true;
 							}
 							markedkeyword=&fn;
+							markedline=executionscopes.Last()->GetMarkerForCurrent();
 						}
 						// assignment ...
 						else if(inst->Type==InstructionType::Assignment) {
@@ -417,11 +418,14 @@ namespace Gorgon {
 						}
 					}
 				}
-				catch(Exception &ex) {
-					ex.SetLine(executionscopes.Last()->GetSource().GetPhysicalLine());
-
-					throw ex;
+				catch(ParseError) {
+					throw;
 				}
+// 				catch(Exception &ex) {
+// 					ex.SetLine(executionscopes.Last()->GetSource().GetPhysicalLine());
+// 
+// 					throw ex;
+// 				}
 			}
 
 			if(executionscopes.GetCount()==executiontarget) {
@@ -705,7 +709,7 @@ namespace Gorgon {
 			// call it
 			Data ret=callfunction(fn, method, inst->Parameters);
 
-			if(fn->IsScoped() && ret.IsValid()) {
+			if(fn->IsScoped() && ret.IsValid() && ret.GetValue<Data>().IsValid() ) {
 				auto scope=new KeywordScope{*fn, ret.GetValue<Data>(), executionscopes.Last()->GetSource().GetPhysicalLine()};
 				keywordscopes.Add(scope);
 			}
@@ -719,6 +723,9 @@ namespace Gorgon {
 			if(inst->Store) {
 				if(!fn->IsScoped() && fn->HasReturnType()) {
 					//store the result
+					if(ret.GetType()==Types::Variant()) {
+						ret=ret.GetValue<Data>();
+					}
 					temporaries[inst->Store]=ret;
 				} 
 				else {
