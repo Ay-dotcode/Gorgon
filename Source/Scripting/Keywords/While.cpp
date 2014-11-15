@@ -6,6 +6,7 @@ namespace Gorgon {
 	namespace Scripting {
 
 		extern std::map<const Function *, std::function<void()>> BreakableFunctions;
+		extern std::map<const Function *, std::function<void()>> ContinuableFunctions;
 		
 		// to avoid name clashes
 		namespace {
@@ -99,6 +100,12 @@ namespace Gorgon {
 				
 				vm.StartSkipping();
 			}
+			
+			void WhileContinue() {
+				auto &vm = VirtualMachine::Get();
+				
+				WhileEnd(vm.GetKeywordScope().GetData());
+			}
 		}
 		
 		Function *While() {
@@ -117,6 +124,7 @@ namespace Gorgon {
 				};
 				
 				BreakableFunctions.insert(std::make_pair(fn, WhileBreak));
+				ContinuableFunctions.insert(std::make_pair(fn, WhileContinue));
 			}
 			return fn;
 		}

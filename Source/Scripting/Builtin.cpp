@@ -71,6 +71,7 @@ namespace Gorgon {
 		Function *For();
 		Function *While();
 		Function *Break();
+		Function *Continue();
 		
 		void init_builtin() {
 			if(Integrals.Types.GetCount()) return;
@@ -259,7 +260,7 @@ namespace Gorgon {
 				TypeList {},
 				FunctionList {
 					If(), ElseIf(), Else(), 
-					For(), While(), Break(),
+					For(), While(), Break(), Continue(),
 					new MappedFunction("end", 
 						"Ends the current scope",
 						nullptr, nullptr,
