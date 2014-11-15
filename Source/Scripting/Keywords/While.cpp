@@ -5,6 +5,8 @@
 namespace Gorgon {
 	namespace Scripting {
 
+		extern std::map<const Function *, std::function<void()>> BreakableFunctions;
+		
 		// to avoid name clashes
 		namespace {
 			struct WhileScope {
@@ -91,19 +93,31 @@ namespace Gorgon {
 					return false;
 				}
 			}
+			
+			void WhileBreak() {
+				auto &vm = VirtualMachine::Get();
+				
+				vm.StartSkipping();
+			}
 		}
 		
 		Function *While() {
-			static Function *fn=new Scripting::ScopedKeyword{"while",
-				"This function allows condition controlled loops.",
-				ParameterList{
-					new Parameter{"Condition",
-						"Condition that controls whether the loop would occur.",
-						Types::Bool()
-					}
-				}, 
-				MappedFunctions(WhileFn), WhileEnd
-			};
+			static Function *fn=nullptr;
+			
+			if(!fn) {
+				fn=new Scripting::ScopedKeyword{"while",
+					"This function allows condition controlled loops.",
+					ParameterList{
+						new Parameter{"Condition",
+							"Condition that controls whether the loop would occur.",
+							Types::Bool()
+						}
+					}, 
+					MappedFunctions(WhileFn), WhileEnd
+				};
+				
+				BreakableFunctions.insert(std::make_pair(fn, WhileBreak));
+			}
 			return fn;
 		}
 	}

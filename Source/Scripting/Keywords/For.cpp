@@ -4,7 +4,10 @@
 
 namespace Gorgon {
 	namespace Scripting {
-
+		
+		/// This function should be filled with the break handlers for breakable functions
+		std::map<const Function *, std::function<void()>> BreakableFunctions;
+		
 		// to avoid name clashes
 		namespace {
 			struct ForScope {
@@ -78,25 +81,77 @@ namespace Gorgon {
 					}
 				}
 			}
+			
+			void ForBreak() {
+				auto &vm = VirtualMachine::Get();
+				
+				vm.StartSkipping();
+			}
+			
+			void BreakFn() {
+				auto &vm = VirtualMachine::Get();
+				
+				if(!vm.HasKeywordScope()) {
+					throw FlowException("Break requires a keyword scope.");
+				}
+				
+				auto &scopefn=vm.GetKeywordScope().GetFunction();
+				std::function<void()> fntocall;
+				
+				for(auto &fn : BreakableFunctions) {
+					if(fn.first==&scopefn) {
+						fntocall=fn.second;
+						break;
+					}
+				}
+				
+				if(!fntocall) {
+					throw FlowException("Break cannot break out of the current keyword: "+scopefn.GetName());
+				}
+				
+				fntocall();
+			}
 
 		}
 
 		
 		Function *For() {
-			static Function *fn=new Scripting::ScopedKeyword{"for",
-				"This function allows iteration over a given array.",
-				ParameterList{
-					new Parameter{"Variable",
-						"Variable that will be assigned to the value of the current element.",
-						Types::String(), ReferenceTag, OutputTag
-					},
-					new Parameter{"Array",
-						"Array to iterate over.",
-						Types::Array()
-					}
-				}, 
-				MappedFunctions(ForFn), ForEnd
-			};
+			static Function *fn=nullptr;			
+			
+			if(!fn) {
+				fn=new Scripting::ScopedKeyword{"for",
+					"This function allows iteration over a given array.",
+					ParameterList{
+						new Parameter{"Variable",
+							"Variable that will be assigned to the value of the current element.",
+							Types::String(), ReferenceTag, OutputTag
+						},
+						new Parameter{"Array",
+							"Array to iterate over.",
+							Types::Array()
+						}
+					}, 
+					MappedFunctions(ForFn), ForEnd
+				};
+				
+				BreakableFunctions.insert(std::make_pair(fn, ForBreak));
+			}
+			
+			return fn;
+		}
+		
+		Function *Break() {
+			static Function *fn=nullptr;
+			
+			if(!fn) {
+				fn=new Scripting::MappedFunction{"break",
+					"This function breaks from a supported keyword scope.",
+					nullptr, nullptr, ParameterList(),
+					MappedFunctions(BreakFn), MappedMethods(),
+					KeywordTag
+				};
+			}
+			
 			return fn;
 		}
 	}
