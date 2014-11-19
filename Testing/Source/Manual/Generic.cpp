@@ -33,7 +33,7 @@ $"i" = i"1"
 -s"echo" ."1"
 
 + "for"
--s"for" s"i" ."1"
+-s"for" $"i" ."1"
 	-s"echo" $"i"
 + "end"
 -s"end"

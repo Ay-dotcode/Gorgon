@@ -523,8 +523,26 @@ namespace Gorgon {
 
 			int ind=1;
 			for(const auto &pdef : fn->Parameters) {
-				if(0 && pdef.IsReference()) {
-					ASSERT(false, "Not implemented", 0, 8);
+				if(pdef.IsReference()) {
+					if(pin->Type==ValueType::Variable) {
+						if(pdef.IsInput()) {
+							GetVariable(pin->Name);
+						}
+						
+						Data param={Types::String(), pin->Name};
+						
+						params.push_back(param);
+					}
+					else  if(pin->Type==ValueType::Literal) {
+						if(pin->Literal.GetType()!=Types::String()) {
+							Utils::NotImplemented("Needs a proper error message");
+						}
+						
+						params.push_back(pin->Literal);
+					}
+					else {
+						Utils::NotImplemented("Needs a proper error message");
+					}
 				}
 				else if(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
@@ -603,6 +621,21 @@ namespace Gorgon {
 				}
 			}
 		}
+		
+		bool VirtualMachine::IsVariableSet(const std::string &name) {
+			auto &vars=variablescopes.Last()->Variables;
+			auto var=vars.Find(String::ToLower(name));
+			
+			if(var.IsValid()) return true;
+			
+			var=globalvariables.Find(String::ToLower(name));
+
+			//if found
+			if(var.IsValid()) return true;
+			
+			return false;
+		}
+
 
 		Variable &VirtualMachine::GetVariable(const std::string &name) {
 			//check variable scopes first
