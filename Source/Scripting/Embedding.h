@@ -169,21 +169,26 @@ namespace Gorgon {
 					using type=T_;
 				};
 				
+				/// This function checks if [param] parameter of function at [level] is correct or not.
 				template<int level, int param>
 				void checkfnparam() {
+					//compare with the first level
 					static_assert(std::is_same<paramof<level, param>, paramof<0, param>>::value,
 						"Function types do not match!"
 					);
 					
+					//check if the param type fits with the in-system parameters
+					
+					//if has parent and non-static, this function should have parent object as first parameter
 					if(parent.HasParent() && !parent.IsStatic()) {
 						if(param==0) {
 							if(traitsof<0>::IsMember && !parent.GetParent().IsReferenceType()) {
-								ASSERT( (parent.GetParent().GetDefaultValue().TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , 
+								ASSERT( (parent.GetParent().GetDefaultValue().template TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()) , 
 										"Function parameter type and object type does not match. In function: "+
 										parent.GetName()+" parameter", 5, 2);
 							}
 							else {
-								ASSERT((parent.GetParent().GetDefaultValue().TypeCheck<paramof<level, param>>()) ,
+								ASSERT((parent.GetParent().GetDefaultValue().template TypeCheck<paramof<level, param>>()) ,
 									   "Function parameter type ("+Utils::GetTypeName<paramof<level, param>>()+") "
 									   "and object type ("+parent.GetParent().GetDefaultValue().GetTypeName()+") does not match. In function: "+
 									   parent.GetName()+" parameter", 5, 2);
@@ -233,6 +238,7 @@ namespace Gorgon {
 					}
 				}
 				
+				/// Checks all parameters and return type of the function at [level]
 				template<int level, int ...S>
 				void checkfnlevel(TMP::Sequence<S...>) {
 					static_assert(traitsof<level>::Arity == traitsof<0>::Arity-level, 
@@ -245,13 +251,16 @@ namespace Gorgon {
 					char dummy[] = {0, (checkfnparam<level, S>(),'\0')...};
 				}
 				
+				/// Checks all parameters and returns types of all function levels
 				template<int ...S>
 				void checkallfns(TMP::Sequence<S...>) {
 					char dummy[]={0, (checkfnlevel<S>(typename TMP::Generate<traitsof<S>::Arity>::Type()),'\0')...};
 				}
 
+				/// Constructor, performs assignments and checks
 				fnstorageimpl(MappedFunction &parent, std::tuple<Fns_...> fns) : parent(parent), fns(fns) {
 					
+					///check number of functions
 					static_assert(sizeof...(Fns_)<=traitsof<0>::Arity+1,
 								  "Number of functions are more than possible");
 					
@@ -263,6 +272,7 @@ namespace Gorgon {
 					
 					checkallfns(typename TMP::Generate<sizeof...(Fns_)>::Type());
 					
+					//check optional parameters
 					bool shouldallbeoptional = false;
 					if(parent.Parameters.GetCount()>0 && parent.Parameters[0].IsOptional() && 
 						parent.Parameters.Last()->IsOptional()) {
@@ -306,6 +316,7 @@ namespace Gorgon {
 				static const int maxarity=traitsof<0>::Arity;
 				
 				
+				/// vector cast is for the repeating functions
 				template<int num, class T_>
 				typename std::enable_if<std::is_same<typename remove_vector<T_>::type, void>::value, T_>::type
 				vectorcast(const std::vector<Data> &datav) const {
@@ -365,6 +376,9 @@ namespace Gorgon {
 					
 					if(parent.HasParent() && !parent.IsStatic()) {
 						if(num==0) {
+							if(datav[num].IsNull()) {
+								throw std::runtime_error("Null value given for parent parameter");
+							}
 							if(&data.GetType() != &parent.GetParent()) {
 								throw std::runtime_error("Cannot convert $this to original parent type.");
 							}

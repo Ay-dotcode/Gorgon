@@ -421,11 +421,11 @@ namespace Gorgon {
 				catch(ParseError) {
 					throw;
 				}
-// 				catch(Exception &ex) {
-// 					ex.SetLine(executionscopes.Last()->GetSource().GetPhysicalLine());
-// 
-// 					throw ex;
-// 				}
+ 				catch(Exception &ex) {
+ 					ex.SetLine(executionscopes.Last()->GetSource().GetPhysicalLine());
+ 
+ 					throw ex;
+ 				}
 			}
 
 			if(executionscopes.GetCount()==executiontarget) {
@@ -472,6 +472,17 @@ namespace Gorgon {
 			if(fn->HasParent()) {
 				if(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
+					
+					if(fn->GetParent().IsReferenceType()) {
+						if(param.IsNull()) {
+							if(pin->Type==ValueType::Variable) {
+								throw NullValueException("$"+pin->Name);
+							}
+							else {
+								throw NullValueException("parent parameter");
+							}
+						}
+					}
 
 					if(param.GetType()==fn->GetParent()) {
 						//no worries
@@ -535,13 +546,13 @@ namespace Gorgon {
 					}
 					else  if(pin->Type==ValueType::Literal) {
 						if(pin->Literal.GetType()!=Types::String()) {
-							Utils::NotImplemented("Needs a proper error message");
+							throw InstructionException("Reference type can only be represented string literals and variables");
 						}
 						
 						params.push_back(pin->Literal);
 					}
 					else {
-						Utils::NotImplemented("Needs a proper error message");
+						throw InstructionException("Reference type can only be represented string literals and variables");
 					}
 				}
 				else if(pin!=incomingparams.end()) {

@@ -61,7 +61,17 @@ namespace Gorgon { namespace Scripting {
 		
 		return *this;
 	}
-
+	
+	bool Data::IsNull() const {
+		ASSERT(type, "Type is not set", 1, 2);
+		
+		if(type->IsReferenceType()) {
+			return data.Pointer()==nullptr;
+		}
+		else
+			return false;
+	}
+	
 	Data::~Data() {
 		if(type && type->IsReferenceType() && data.IsSet() && data.Pointer()) {
 			VirtualMachine::Get().References.Decrease(*this);

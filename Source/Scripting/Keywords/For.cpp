@@ -25,7 +25,7 @@ namespace Gorgon {
 				}
 
 				operator Data() {
-					static auto type=MappedValueType<ForScope, String::From<ForScope>, ParseThrow<ForScope>>("ForScope", "");
+					static MappedValueType<ForScope, String::From<ForScope>, ParseThrow<ForScope>> type("ForScope", "");
 
 					return Data(type, *this);
 				}

@@ -21,7 +21,7 @@ namespace Gorgon {
 				}
 				
 				static Type &selftype() {
-					static auto type=MappedValueType<WhileScope, String::From<WhileScope>, ParseThrow<WhileScope>>("WhileScope", "");
+					static MappedValueType<WhileScope, String::From<WhileScope>, ParseThrow<WhileScope>> type("WhileScope", "");
 					
 					return type;
 				}

@@ -66,7 +66,7 @@ namespace Gorgon {
 		void InitTypeType();
 		
 		Type *ArrayType();
-		std::initializer_list<Function*> ArrayFunctions();
+		std::vector<Function*> ArrayFunctions();
 		
 		Function *For();
 		Function *While();
@@ -253,6 +253,17 @@ namespace Gorgon {
 					},
 					MappedFunctions(Echo), MappedMethods(),
 					StretchTag, RepeatTag
+				),
+				new MappedFunction("Echo2",
+				"This function prints the given parameters to the screen.",
+				nullptr, nullptr, ParameterList{
+					new Parameter("string",
+					"The strings that will be printed.",
+					String
+					)
+				},
+				MappedFunctions(Echo), MappedMethods(),
+				StretchTag, RepeatTag
 				),
 			});
 			

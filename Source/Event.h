@@ -88,6 +88,8 @@ namespace Gorgon {
 			template<class Source_, typename... Params_>
 			struct HandlerBase {
 				virtual void Fire(std::mutex &locker, Source_ *, Params_...) = 0;
+				
+				virtual ~HandlerBase() {}
 			};
 
 			template<class Source_, typename... Params_>

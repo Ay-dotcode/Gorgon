@@ -64,7 +64,7 @@ namespace Gorgon {
 						throw std::runtime_error("Iterator is not valid.");
 					}
 					
-					currentit=container->mapping.erase(current);
+					currentit=container->mapping.erase(current());
 				}
 				
 				/// Deletes the item pointed by this iterator from the container. 
@@ -78,7 +78,7 @@ namespace Gorgon {
 					
 					typename H_::Type *item=currentit->second;
 					
-					currentit=container->mapping.erase(current);
+					currentit=container->mapping.erase(current());
 					delete item;
 				}				
 				
@@ -266,6 +266,8 @@ namespace Gorgon {
 			Hashmap &operator= (Hashmap &&other) {
 				RemoveAll();
 				Swap(other);
+				
+				return *this;
 			}
 			
 			/// Adds the given item with the related key. If the key already exists, the object it

@@ -207,7 +207,6 @@ namespace Gorgon {
 
 			/// Move constructor
 			Collection(Collection &&col) : list(std::move(col.list)) { 
-				col;
 			}
 
 			/// Move assignment
@@ -323,9 +322,7 @@ namespace Gorgon {
 
 			/// this method moves the given object in the collection in front of the reference
 			void MoveBefore(unsigned index, unsigned before) {
-				if(index<0 && index>=list.size())
-					throw std::out_of_range("Invalid location");
-				if(before<0)
+				if(index>=list.size())
 					throw std::out_of_range("Invalid location");
 				if(before>list.size())
 					throw std::out_of_range("Invalid location");

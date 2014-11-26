@@ -19,7 +19,8 @@ namespace Gorgon {
 			MissingParameter,
 			TooManyParameters,
 			NoReturn,
-			CastError
+			CastError,
+			InstructionError
 		};
 		
 		DefineEnumStrings(ExceptionType,
@@ -33,7 +34,8 @@ namespace Gorgon {
 			{ExceptionType::MissingParameter, "Missing parameter"},
 			{ExceptionType::TooManyParameters, "Too many parameters"},
 			{ExceptionType::NoReturn, "No return type"},
-			{ExceptionType::CastError, "Cast error"}
+			{ExceptionType::CastError, "Cast error"},
+			{ExceptionType::InstructionError, "Instruction error"}
 		);
 		
 		enum class SymbolType {
@@ -182,6 +184,14 @@ namespace Gorgon {
 				"Cannot cast from "+from+" to "+to, linenumber) {
 
 				this->details = details;
+			}
+		};
+		
+		class InstructionException : public Exception {
+		public:
+			explicit InstructionException(const std::string& message, const std::string &details="", long int linenumber = -1) :
+			Exception(ExceptionType::InstructionError, message, linenumber) {
+				this->details=details;
 			}
 		};
 

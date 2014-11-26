@@ -44,6 +44,7 @@ namespace Gorgon {
 			/// Assignment operator
 			Data &operator =(Data);
 			
+			bool IsNull() const;
 			
 			/// Returns the value of this data in the requested format
 			template <class T_>

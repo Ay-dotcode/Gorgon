@@ -78,15 +78,19 @@ namespace Gorgon {
 						},
 						MappedFunctions(&Array::PushData), MappedMethods()	
 					},
+					new MappedFunction{"Size", "Returns the size of the array.",
+						Types::Unsigned(), array, ParameterList{ },
+						MappedFunctions([](Array *a) { return a->GetSize(); }), MappedMethods()	
+					},
 					new MappedFunction{"Resize", "Changes the size of the array. New elements will have their default value.",
-						nullptr, array, ParameterList{
-							new Parameter { "Size",
-								"The new size.",
-								Types::Unsigned()
+					nullptr, array, ParameterList{
+							new Parameter{"Size",
+							"The new size.",
+							Types::Unsigned()
 							}
 						},
-						MappedFunctions(&Array::Resize), MappedMethods()	
-					},
+							MappedFunctions(&Array::Resize), MappedMethods()
+						},
 				});
 			}
 			
@@ -106,7 +110,7 @@ namespace Gorgon {
 			return ret;
 		}
 		
-		std::initializer_list<Function*> ArrayFunctions() {
+		std::vector<Function*> ArrayFunctions() {
 			return {
 				new MappedFunction{"Range",
 					"Creates a range array between two numbers",
@@ -126,7 +130,7 @@ namespace Gorgon {
 						}
 					},
 					MappedFunctions(Range3, Range2), MappedMethods()
-				}
+				},
 			};
 		}
 	}

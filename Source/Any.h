@@ -38,17 +38,10 @@ namespace Gorgon {
 			virtual bool  IsSameType(const std::type_info &) const=0;
 			virtual long  GetSize() const = 0;
 			virtual const std::type_info &TypeInfo() const = 0;
-			bool IsPointer() const {
-				return pointer;
-			}
-			
+			virtual bool IsPointer() const = 0;
+			virtual TypeInterface *Duplicate() const=0;
 			virtual ~TypeInterface() { }
-			
-		protected:
-			bool pointer;
-#ifndef NDEBUG
-			const char *name;
-#endif
+			virtual const char *name() const=0; // for debugging
 		};
 
 		/// Type dependent implementation for TypeInterface.
@@ -56,13 +49,6 @@ namespace Gorgon {
 		/// functions.
 		template<class T_> class Type : public TypeInterface {
 		public:
-			Type() {
-				pointer=std::is_pointer<T_>::value;
-#ifndef NDEBUG
-				name=typeid(T_).name();
-#endif
-			}
-
 			virtual void Delete(void *obj) const override {
 				delete static_cast<T_*>(obj);
 			}
@@ -77,7 +63,9 @@ namespace Gorgon {
 				return typeid(T_);
 			}
 			virtual long GetSize() const override { return sizeof(T_); }
-			
+			virtual TypeInterface *Duplicate() const override { return new Type(); }
+			virtual bool IsPointer() const override { return std::is_pointer<T_>::value; }
+			virtual const char *name() const override { return typeid(T_).name(); }
 		};
 
 	public:
@@ -100,8 +88,7 @@ namespace Gorgon {
 		/// Requires type in the copied Any to be copy constructible.
 		Any(const Any &any) {
 			if(any.content) {
-				type=(TypeInterface*)malloc(sizeof(TypeInterface));
-				std::memcpy(type, any.type, sizeof(TypeInterface));
+				type=any.type->Duplicate();
 				content=type->Clone(any.content);
 			}
 			else {
@@ -133,8 +120,7 @@ namespace Gorgon {
 			Clear();
 			
 			if(any.type) {
-				type=(TypeInterface*)malloc(sizeof(TypeInterface));
-				std::memcpy(type, any.type, sizeof(TypeInterface));
+				type=any.type->Duplicate();
 				content=type->Clone(any.content);
 			}
 			else {
@@ -224,7 +210,7 @@ namespace Gorgon {
 #endif
 #ifndef NDEBUG
 			if(!type->IsSameType(typeid(T_))) {
-				throw std::bad_cast("Cannot cast: not the same type");
+				throw std::bad_cast();
 			}
 #endif
 
@@ -312,7 +298,7 @@ namespace Gorgon {
 #endif
 #ifndef NDEBUG
 			if(!type->IsSameType(typeid(T_))) {
-				throw std::bad_cast("Cannot cast: not the same type");
+				throw std::bad_cast();
 			}
 #endif
 

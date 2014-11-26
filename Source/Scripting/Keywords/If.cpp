@@ -17,7 +17,7 @@ namespace Gorgon { namespace Scripting {
 			bool skipping = false;
 			
 			operator Data() {
-				static auto type=MappedValueType<IfScope, String::From<IfScope>, ParseThrow<IfScope>>("IfScope", "");
+				static MappedValueType<IfScope, String::From<IfScope>, ParseThrow<IfScope>> type("IfScope", "");
 				
 				return Data(type, *this);
 			}

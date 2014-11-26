@@ -14,6 +14,9 @@ $"a" = i"4"
 -s"echo" ."1"
 -s"echo" s""
 
+#."1"=-s"nullarr"
+#*s"size" ."1"
+
 $"i" = i"1"
 + "while"
 ."1" = -s"<" $"i" i"5"
@@ -94,50 +97,50 @@ int main() {
 	try {
 		vm.Start(input);
 	}
-// 	catch(const Exception &ex) {
-// 
-// 		std::cout<<std::endl<<std::endl;
-// 		Gorgon::Console::SetBold();
-// 		Gorgon::Console::SetColor(Gorgon::Console::Yellow);
-// 		std::cout<<"SOURCE CODE: "<<std::endl;
-// 		Gorgon::Console::Reset();
-// 
-// 		std::stringstream ss2(source);
-// 		std::string line;
-// 		int linenr=0;
-// 		while(std::getline(ss2, line)) {
-// 			linenr++;
-// 			if(linenr==ex.GetLine())
-// 				Gorgon::Console::SetColor(Gorgon::Console::Red);
-// 
-// 			Gorgon::Console::SetBold();
-// 			std::cout<<std::setw(3)<<linenr<<" ";
-// 			Gorgon::Console::SetBold(false);
-// 			std::cout<<line<<std::endl;
-// 			Gorgon::Console::Reset();
-// 		}
-// 		std::cout<<std::endl<<std::endl;
-// 
-// 
-// 		std::cout<<std::endl<<std::endl;
-// 		Gorgon::Console::SetBold();
-// 		Gorgon::Console::SetColor(Gorgon::Console::Yellow);
-// 		std::cout<<"ERROR: "<<std::endl;
-// 		Gorgon::Console::Reset();
-// 
-// 		Gorgon::Console::SetBold();
-// 		std::cout<<"At line "<<ex.GetLine();
-// 		Gorgon::Console::SetBold(false);
-// 		Gorgon::Console::SetColor(Gorgon::Console::Red);
-// 		std::cout<<": "<<ex.GetType();
-// 		Gorgon::Console::SetColor(Gorgon::Console::Default);
-// 		std::cout<<": "<<ex.GetMessage()<<std::endl;
-// 		if(ex.GetDetails()!="") {
-// 			std::cout<<" > "<<ex.GetDetails()<<std::endl;
-// 		}
-// 
-// 		return 1;
-// 	}
+	catch(const Exception &ex) {
+
+		std::cout<<std::endl<<std::endl;
+		Gorgon::Console::SetBold();
+		Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+		std::cout<<"SOURCE CODE: "<<std::endl;
+		Gorgon::Console::Reset();
+
+		std::stringstream ss2(source);
+		std::string line;
+		int linenr=0;
+		while(std::getline(ss2, line)) {
+			linenr++;
+			if(linenr==ex.GetLine())
+				Gorgon::Console::SetColor(Gorgon::Console::Red);
+
+			Gorgon::Console::SetBold();
+			std::cout<<std::setw(3)<<linenr<<" ";
+			Gorgon::Console::SetBold(false);
+			std::cout<<line<<std::endl;
+			Gorgon::Console::Reset();
+		}
+		std::cout<<std::endl<<std::endl;
+
+
+		std::cout<<std::endl<<std::endl;
+		Gorgon::Console::SetBold();
+		Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+		std::cout<<"ERROR: "<<std::endl;
+		Gorgon::Console::Reset();
+
+		Gorgon::Console::SetBold();
+		std::cout<<"At line "<<ex.GetLine();
+		Gorgon::Console::SetBold(false);
+		Gorgon::Console::SetColor(Gorgon::Console::Red);
+		std::cout<<": "<<ex.GetType();
+		Gorgon::Console::SetColor(Gorgon::Console::Default);
+		std::cout<<": "<<ex.GetMessage()<<std::endl;
+		if(ex.GetDetails()!="") {
+			std::cout<<" > "<<ex.GetDetails()<<std::endl;
+		}
+
+		return 1;
+	}
 	catch(const ParseError &ex) {
 
 		std::stringstream ss2(source);

@@ -287,7 +287,7 @@ namespace Gorgon {
 			
 			
 			/// Destructor frees all parameters.
-			~Function() {
+			virtual ~Function() {
 				parameters.DeleteAll();
 			}
 
@@ -647,6 +647,8 @@ namespace Gorgon {
 			/// Sets the data of the data member
 			virtual void Set(Data &source, const Data &value) const = 0;
 			
+			virtual ~DataMember() { }
+			
 		protected:
 			/// @cond INTERNAL
 			void UnpackTags() { }
@@ -934,6 +936,8 @@ namespace Gorgon {
 			/// Inheritance list. 
 			const Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess> &InheritsFrom;
 			
+			
+			virtual ~Type() { }	
 		protected:
 
 			/// This function should delete the given object.
@@ -1020,19 +1024,31 @@ namespace Gorgon {
 				
 				return *this;
 			}
-			
+
 			void AddFunctions(const std::initializer_list<Function*> &list) {
 				for(auto &fn : list) {
 					functions.Add(fn);
 				}
 			}
-			
+
 			void AddTypes(const std::initializer_list<Type*> &list) {
 				for(auto &type : list) {
 					types.Add(type);
 				}
 			}
-			
+
+			void AddFunctions(const std::vector<Function*> &list) {
+				for(auto &fn : list) {
+					functions.Add(fn);
+				}
+			}
+
+			void AddTypes(const std::vector<Type*> &list) {
+				for(auto &type : list) {
+					types.Add(type);
+				}
+			}
+
 			
 			/// Returns the name of this library. Library names are also used as namespace specifiers
 			std::string GetName() const {
