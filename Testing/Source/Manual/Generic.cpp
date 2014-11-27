@@ -8,72 +8,72 @@ using namespace Gorgon::Scripting;
 const std::string source = R"(# $a = 4;
 $"a" = i"4"
 
-."1" = *s"help" c"type"
--s"echo" s""
--s"echo" s"Type help" 
--s"echo" ."1"
--s"echo" s""
+."1" = fns"help" !"type"
+fns"echo" s""
+fns"echo" s"Type help" 
+fns"echo" ."1"
+fns"echo" s""
 
-#."1"=-s"nullarr"
-#*s"size" ."1"
+#."1"=fns"nullarr"
+#fms"size" ."1"
 
 $"i" = i"1"
-+ "while"
-."1" = -s"<" $"i" i"5"
--s"while" ."1"
-	-s"echo" $"i"
+fkm"while"
+."1" = fns"<" $"i" i"5"
+fns"while" ."1"
+	fns"echo" $"i"
 
-	."1" = -s"+" $"i" i"1"
+	."1" = fns"+" $"i" i"1"
 	$"i" = ."1"
 	
-	#-s"break"
-+ "end"
--s"end"
+	#fns"break"
+fkm"end"
+fns"end"
 
-."1" = -s"range" i"0" i"5"
-*s"push" ."1" i"9"
-*s"resize" ."1" i"10"
--s"echo" ."1"
+."1" = fns"range" i"0" i"5"
+fms"push" ."1" i"9"
+fms"resize" ."1" i"10"
+fns"echo" ."1"
 
-+ "for"
--s"for" $"i" ."1"
-	-s"echo" $"i"
-+ "end"
--s"end"
+fkm"for"
+fns"for" $"i" ."1"
+	fns"echo" $"i"
+fkm"end"
+fns"end"
 
-%s"[]" c"float" f"5" f"7"
+mms"[]" !"float" f"5" f"7"
 
 # echo "3=pi ? " + (3=pi)
-."1" = -s"=" i"3" c"pi"
-."2" = *s"+" s"3=pi ? " ."1"
--s"echo" s"The result is " ."2"
+."1" = fns"=" i"3" !"pi"
+."2" = fms"+" s"3=pi ? " ."1"
+fns"echo" s"The result is " ."2"
 
 # if $a = 4
-+ "if"
-."1" = *s"=" $"a" i"4"
--s"if" ."1"
+fkm"if"
+."1" = fms"=" $"a" i"4"
+fns"if" ."1"
 	# echo("working")
-	/s"echo" s"Working..."
+	mns"echo" s"Working..."
 
 	# Echo $a=5
 	# normally cannot be generated
-	-s"Echo" ."1"
+	fns"Echo" ."1"
 
-	%s"=" $"a" i"5"
+	mms"=" $"a" i"5"
 
 	# Echo pi
-	-s"Echo" c"pi"
+	fns"Echo" !"pi"
 
 # else
-+ "else"
--s"else"
+fkm"else"
+fns"else"
 	
 	# echo("Really working")
-	-s"echo" s"Really working..."
+	fns"echo" s"Really working..."
 
 # end
-+ "end"
--s"end"
+fkm"end"
+fns"end"
 
 )";
 
@@ -141,7 +141,7 @@ int main() {
 
 		return 1;
 	}
-	catch(const ParseError &ex) {
+	catch(const Gorgon::Scripting::ParseError &ex) {
 
 		std::stringstream ss2(source);
 		std::string line;

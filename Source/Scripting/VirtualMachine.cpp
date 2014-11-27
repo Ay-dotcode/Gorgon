@@ -418,8 +418,9 @@ namespace Gorgon {
 						}
 					}
 				}
-				catch(ParseError) {
-					throw;
+				catch(ParseError &ex) {
+					ex.Line=executionscopes.Last()->GetSource().GetPhysicalLine();
+					throw ex;
 				}
  				catch(Exception &ex) {
  					ex.SetLine(executionscopes.Last()->GetSource().GetPhysicalLine());

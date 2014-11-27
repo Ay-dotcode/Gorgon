@@ -117,7 +117,7 @@ namespace Gorgon {
 private:
 			void storedfn(const std::string &input, int &ch);
 			
-			void fncall(const std::string &input, int &ch);
+			void fncall(const std::string &input, int &ch, bool allowmethod=true);
 			
 			void varassign(const std::string &input, int &ch);
 			

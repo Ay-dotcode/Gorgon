@@ -43,7 +43,7 @@ namespace Gorgon {
 			ParseError() {};
 
 			ParseError(ErrorCode code, unsigned long line, int chr, const std::string &what) : Code(code), Line(line), 
-				Char(chr), What(What) {
+				Char(chr), What(what) {
 			}
 
 

@@ -5,6 +5,40 @@
 namespace Gorgon {
 	namespace Scripting {
 		
+		template<class ...P_>
+		static int CheckInputFor(const std::string &input, int &ch, P_ ...args) {
+			char allowed[]={args...};
+			int elements=sizeof...(args);
+
+			auto errstr=[&] ()-> std::string {
+				std::string ret="Expected ";
+				for(int i=0;i<elements;i++) {
+					if(i!=0) {
+						ret.push_back('/');
+					}
+					ret.push_back(allowed[i]);
+				}
+				
+				return ret;
+			};
+			
+			if(input.length()<=ch) {
+				throw ParseError({ParseError::UnexpectedToken, 0, ch, errstr()+", end of string encountered."});
+			}
+			
+			char c=input[ch++];
+			
+			for(int i=0;i<sizeof...(args);i++) {
+				if(allowed[i]==c) {
+					return i;
+				}
+			}
+			
+			ch--;
+			throw ParseError({ParseError::UnexpectedToken, 0, ch, errstr()+", found: "+input.substr(ch,1)});
+		}
+		
+		
 		unsigned IntermediateParser::Parse(const std::string &input) {
 			
 			Instruction instruction;
@@ -14,47 +48,27 @@ namespace Gorgon {
 			
 			if(input.size()<=ch) return 0;
 			
-			switch(input[ch]) {
-				// comment
-				case '#':
+			int ret=0;
+			
+			switch(CheckInputFor(input, ch, '#', '.', 'f', 'm', '$')) {
+				case 0:
 					return 0;
 					
-				case '.':
+				case 1:
 					storedfn(input, ch);
-					return 1;
-
-				case '+': {
-					List.resize(List.size()+1);
-					auto &inst=List.back();
-					inst.Type=InstructionType::Mark;
-					ch++;
-					eatwhite(input, ch);
-					inst.Name.Name=extractquotes(input, ch);
+					ret=1;
 					break;
-				}
 
-				case '-':
-					fncall(input, ch);
-					return 1;
+				case 2:
+				case 3:
+					fncall(input, --ch);
+					ret=1;
+					break;
 
-				case '*':
-					fncall(input, ch);
-					return 1;
-
-				case '/':
-					fncall(input, ch);
-					return 1;
-
-				case '%':
-					fncall(input, ch);
-					return 1;
-
-				case '$':
+				case 4:
 					varassign(input, ch);
-					return 1;
-					
-				default:
-					throw ParseError({ParseError::UnexpectedToken, 0, 1, "Expected #, ., -, or $, found: "+input.substr(ch,1)});
+					ret=1;
+					break;
 			}
 			
 			eatwhite(input, ch);
@@ -62,67 +76,50 @@ namespace Gorgon {
 				throw ParseError({ParseError::UnexpectedToken, 0, 1, "Expected end of line, found: "+input.substr(ch,1)});
 			}
 			
-			return 0;
+			return ret;
 		}
 			
 		void IntermediateParser::storedfn(const std::string& input, int &ch) {
-			ch++;
+			auto temp=parsetemporary(input, ch);
 			
-			List.resize(List.size()+1);
+			eatwhite(input, ch);			
+			CheckInputFor(input, ch, '=');
+			eatwhite(input, ch);
+			
+			fncall(input, ch, false);
+
 			auto &inst=List.back();
-			inst.Store=parsetemporary(input, ch);
-			
-			eatwhite(input, ch);
-			
-			if(input.size()<=ch) {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected =, end of string encountered."});
-			}
-			if(input[ch]!='=') {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected =, found: "+input.substr(ch,1)});
-			}
-			ch++;
-			
-			eatwhite(input, ch);
-			
-			if(input.size()<=ch) {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected -, end of string encountered."});
-			}
-			if(input[ch]=='-') {
-				inst.Type=InstructionType::FunctionCall;
-			}
-			else if(input[ch]=='*') {
-				inst.Type=InstructionType::MemberFunctionCall;
-			}
-			else {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected -, found: "+input.substr(ch,1)});
-			}
-			ch++;
-			
-			inst.Name=parsevalue(input, ch);
-			
-			while(ch<input.size()) {				
-				inst.Parameters.push_back(parsevalue(input, ch));
-				
-				eatwhite(input, ch);
-			}
+			inst.Store=temp;
 		}
 		
-		void IntermediateParser::fncall(const std::string& input, int &ch) {
+		void IntermediateParser::fncall(const std::string& input, int &ch, bool allowmethod) {
 			List.resize(List.size()+1);
 			auto &inst=List.back();
-			if(input[ch]=='*')
-				inst.Type=InstructionType::MemberFunctionCall;
-			else if(input[ch]=='/')
-				inst.Type=InstructionType::MethodCall;
-			else if(input[ch]=='%')
-				inst.Type=InstructionType::MemberMethodCall;
-			else
-				inst.Type=InstructionType::FunctionCall;
-
+			
+			bool ismethod=CheckInputFor(input, ch, 'f', (allowmethod ? 'm' : '\0'))==1;
+			
+			if(ismethod) {
+				bool ismember=CheckInputFor(input, ch, 'n', 'm');
+				
+				inst.Type=ismember ? InstructionType::MemberMethodCall : InstructionType::MethodCall;
+			}
+			else {
+				switch(CheckInputFor(input, ch, 'm', 'n', (allowmethod ? 'k': '\0'))) {
+				case 0:
+					inst.Type=InstructionType::MemberFunctionCall;
+					break;
+				case 1:
+					inst.Type=InstructionType::FunctionCall;
+					break;
+				case 2:
+					inst.Type=InstructionType::Mark;
+					CheckInputFor(input, ch, 'm');
+					inst.Name.Name=extractquotes(input, ch);
+					return;
+				}
+			}
+			
 			inst.Store=0;
-
-			ch++;
-
 			
 			eatwhite(input, ch);
 			
@@ -130,14 +127,11 @@ namespace Gorgon {
 			
 			while(ch<input.size()) {				
 				inst.Parameters.push_back(parsevalue(input, ch));
-				
 				eatwhite(input, ch);
 			}
 		}			
 		
 		void IntermediateParser::varassign(const std::string& input, int &ch) {
-			ch++;
-			
 			List.resize(List.size()+1);
 			auto &inst=List.back();
 			inst.Type=InstructionType::Assignment;
@@ -147,16 +141,7 @@ namespace Gorgon {
 			
 			eatwhite(input, ch);
 			
-			if(input.size()<=ch) {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected =, end of string encountered."});
-			}
-			if(input[ch]!='=') {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected =, found: "+input.substr(ch,1)});
-			}
-			ch++;
-			
-			eatwhite(input, ch);			
-			
+			CheckInputFor(input, ch, '=');
 			
 			inst.RHS=parsevalue(input, ch);
 		}
@@ -169,39 +154,36 @@ namespace Gorgon {
 		
 		Value IntermediateParser::parsevalue(const std::string& input, int& ch) {
 			eatwhite(input, ch);
-			if(input.size()<=ch) {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected i, f, s, b, $, ., end of string encountered."});
-			}
-			
+
 			Value ret;
 			
-			switch(input[ch++]) {
-				case '.':
+			switch(CheckInputFor(input, ch, '.', '$', '!', 'i', 'f', 'b', 's', 'a', 'n', 'd', 'u')) {
+				case 0:
 					ret.Type  =ValueType::Temp;
 					ret.Result=parsetemporary(input, ch);
 					return ret;
 					
-				case '$':
+				case 1:
 					ret.Type  = ValueType::Variable;
 					ret.Name  = extractquotes(input, ch);
 					return ret;
 					
-				case 'c':
+				case 2:
 					ret.Type  = ValueType::Constant;
 					ret.Name  = extractquotes(input, ch);
 					return ret;
 					
-				case 'i':
+				case 3:
 					ret.Type    = ValueType::Literal;
 					ret.Literal = {Types::Int(), String::To<int>(extractquotes(input, ch))};
 					return ret;
 					
-				case 'f':
+				case 4:
 					ret.Type    = ValueType::Literal;
 					ret.Literal = {Types::Float(), String::To<float>(extractquotes(input, ch))};
 					return ret;
 					
-				case 'b':
+				case 5:
 					ret.Type    = ValueType::Literal;
 					if(input.size()<=ch) {
 						throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected 0 or 1, end of string encountered."});
@@ -218,74 +200,98 @@ namespace Gorgon {
 					ch++;
 					return ret;
 					
-				case 's':
+				case 6:
 					ret.Type    = ValueType::Literal;
 					ret.Literal = {Types::String(), extractquotes(input, ch)};
 					return ret;
-
-				default:
-					throw ParseError({ ParseError::UnexpectedToken, 0, ch, "Expected i, f, s, b, $, ., found: " + input.substr(ch-1, 1) });
+					
+				case 7:
+					ret.Type    = ValueType::Literal;
+					ret.Literal = {Types::Char(), (char)String::To<int>(extractquotes(input, ch))};
+					return ret;
+					
+				case 8:
+					ret.Type    = ValueType::Literal;
+					ret.Literal = {Types::Byte(), (Gorgon::Byte)String::To<int>(extractquotes(input, ch))};
+					return ret;
+					
+				case 9:
+					ret.Type    = ValueType::Literal;
+					ret.Literal = {Types::Double(), String::To<double>(extractquotes(input, ch))};
+					return ret;
+					
+				case 10:
+					ret.Type    = ValueType::Literal;
+					ret.Literal = {Types::Unsigned(), String::To<unsigned>(extractquotes(input, ch))};
+					return ret;
 			}
+			
+			throw 0;
 		}
 		
 		std::string IntermediateParser::extractquotes(const std::string &input, int &ch) {
-			if(input.size()<=ch) {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected \", end of string encountered."});
-			}
-			if(input[ch]!='"') {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected \", found: "+input.substr(ch,1)});
-			}
-			
 			std::string ret="";
 			
-			ch++;
+			CheckInputFor(input, ch, '"');
+			
 			int start=ch;
 			
 			bool escape=false;
+			int escapenum=0;
+			Gorgon::Byte num;
 			for(; ch<input.size(); ch++) {
+				char c=input[ch];
 				if(escape) {
-					if(input[ch]=='"') {
+					if(c=='"') {
 						ret.push_back('"');
 					}
-					else if(input[ch]=='\\') {
+					else if(c=='\\') {
 						ret.push_back('\\');
 					}
-					else if(input[ch]=='n') {
+					else if(c=='n') {
 						ret.push_back('\n');
+					}
+					else if(c>='0' && c<='9') {
+						escapenum++;
+						num=num<<4+(c-'0');
+					}
+					else if(c>='a' && c<='f') {
+						escapenum++;
+						num=num<<4+(c-'a'+10);
 					}
 					else {
 						throw ParseError({ParseError::UnexpectedToken, 0, ch, "Invalid escape sequence: \\"+input.substr(ch,1)});
 					}
-					escape=false;
+					
+					if(escapenum!=1) {
+						escape=false;
+					}
+					if(escapenum==2) {
+						ret.push_back((char)num);
+					}
 				}
 				else {
-					if(input[ch]=='\\') {
+					if(c=='\\') {
 						escape=true;
 					}
-					else if(input[ch]=='"') {
+					else if(c=='"') {
 						break;
 					}
 					else {
-						ret.push_back(input[ch]);
+						ret.push_back(c);
 					}
 				}
 			}
 			
-			if(input.size()<=ch) {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Closing \" not found."});
-			}
-			if(input[ch]!='"') {
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, "Expected \", found: "+input.substr(ch,1)});
-			}
+			CheckInputFor(input, ch, '"');
 			
-			ch++;
 			return ret;
 		}
 		
 		unsigned long IntermediateParser::parsetemporary(const std::string &input, int &ch) {
 			//TODO: Exception on not an int
 			auto str=extractquotes(input, ch);
-			auto ret=String::To<unsigned long>(str);
+			auto ret=String::To<Gorgon::Byte>(str);
 			if(ret==0 && ret>255) {
 				throw std::runtime_error("Invalid temporary: "+str);
 			}
