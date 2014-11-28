@@ -413,6 +413,9 @@ namespace Gorgon {
 								functioncall(inst, true, true);
 							}
 						}
+						else if(inst->Type==InstructionType::RemoveTemp) {
+							temporaries[inst->Store]=Data::Invalid();
+						}
 						else {
 							ASSERT(false, "Unknown instruction type.", 0, 8);
 						}

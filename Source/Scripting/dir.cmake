@@ -6,7 +6,7 @@ SET(Local
 	Embedding.h
 	InputSource.h
 	Parser.h
-	Parser.cpp
+	ILParser.cpp
 	Reflection.h
 	Runtime.h
 	VirtualMachine.h

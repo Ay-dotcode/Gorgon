@@ -47,6 +47,8 @@ mms"[]" !"float" f"5" f"7"
 ."1" = fns"=" i"3" !"pi"
 ."2" = fms"+" s"3=pi ? " ."1"
 fns"echo" s"The result is " ."2"
+x"1"
+x"2"
 
 # if $a = 4
 fkm"if"

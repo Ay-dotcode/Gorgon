@@ -29,6 +29,15 @@ namespace Gorgon {
 	 */
 	namespace Scripting {
 		
+		/**
+		 * @page GScript Gorgon Script
+		 * 
+		 * Gorgon::Scripting allows embedded scripting capabilities to the users of the library. It has multiple dialects
+		 * and full extension capabilities.
+		 * 
+		 */
+
+		
 		/// This class contains information about a parse error. It is not intended to be
 		/// used as an exception.
 		class ParseError {
