@@ -9,6 +9,8 @@
 
 namespace Gorgon {
 	namespace Scripting {
+		namespace internal { struct node; };
+
 
 		/// Describes the type of an instruction
 		enum class InstructionType {
@@ -128,6 +130,17 @@ private:
 			std::string extractquotes(const std::string &input, int &ch);
 			
 			void eatwhite(const std::string &input, int &ch);
+		};
+
+
+		class ProgrmmingParser: public ParserBase {
+		public:
+
+			virtual unsigned Parse(const std::string &input) override;
+
+		private:
+			internal::node parse(const std::string &input);
+
 		};
 	}
 }
