@@ -218,18 +218,32 @@ namespace Gorgon {
 				return executionscopes.GetCount();
 			}
 
+			/// Returns the code marker for the next line.
 			SourceMarker GetMarkerForNext() const {
 				return executionscopes.First()->GetMarkerForNext();
 			}
 			
+			/// Returns the marker to the start of the keyword. This system is designed to work with scoped keywords. It may or
+			/// may not work with other keywords and function calls
 			SourceMarker GetMarkerForKeywordStart() const {
 				return markedline;
+			}
+			
+			/// Returns the data returned from the last executed script
+			Data GetReturnValue() const {
+				return returnvalue;
+			}
+			
+			/// Returns from the currently running script and sets return data to the given value.
+			void Return(Data value=Data::Invalid()) {
+				returnvalue=value;
+				returnimmediately=true;
 			}
 
 			/// Resets any runtime information that this VM has. This includes all scopes and global
 			/// variables
 			void Reset();
-
+			
 			//TODO: events
 
 			/// Allows read-only access to libraries
@@ -248,10 +262,15 @@ namespace Gorgon {
 			Containers::Hashmap<std::string, const Library, &Library::GetName, std::map, String::CaseInsensitiveLess> libraries;
 
 			std::string alllibnames;
+			
+			bool returnimmediately=false;
 
 
 			/// If set, VM will reset itself as soon as the execution is stopped
 			bool automaticreset;
+			
+			/// If a data is returned, it will be stored here
+			Data returnvalue=Data::Invalid();
 
 
 			Containers::Collection<KeywordScope> 	keywordscopes;

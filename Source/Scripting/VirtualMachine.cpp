@@ -354,8 +354,16 @@ namespace Gorgon {
 		void VirtualMachine::Run(unsigned executiontarget) {
 			int keywordtarget=keywordscopes.GetCount();
 			int variabletarget=variablescopes.GetCount();
+			
+			returnimmediately=false;
+			returnvalue=Data::Invalid();
 
 			while(executionscopes.GetCount()>(long)executiontarget) {
+				if(returnimmediately) {
+					executionscopes.DeleteAll();
+					return;
+				}
+				
 				auto inst=executionscopes.Last()->Get();
 #ifdef TESTVM
 				Console::SetColor(Console::Black);
