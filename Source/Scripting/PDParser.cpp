@@ -2,6 +2,11 @@
 #include "../Scripting.h"
 #include <locale>
 #include "../Enum.h"
+#include <sstream>
+#include <vector>
+#include <string>
+#include <memory>
+
 #include "../Console.h"
 
 namespace Gorgon { namespace Scripting {
@@ -10,38 +15,21 @@ using namespace internal;
 
 namespace {
 
-enum TokenType {
-	EndOfString,
-	Identifier,
-	IntLiteral,
-	StringLiteral,
-	FloatLiteral,
-	BooleanLiteral,
-	VariableIdentifier,
-	Operator,
-	LPar, RPar,
-	LSq, RSq,
-	LCur, RCur,
-	Comma,
-	Dot,
-	NSOp,
-	EqualSign,
-	None,
-};
-
-DefineEnumStrings(TokenType,
-	{EndOfString, "EndOfString"}, {Identifier, "Identifier"}, {IntLiteral, "IntLiteral"},
-	{StringLiteral, "StringLiteral"}, {FloatLiteral, "FloatLiteral"}, {BooleanLiteral, "BooleanLiteral"},
-	{VariableIdentifier, "VariableIdentifier"}, {Operator, "Operator"}, {LPar, "LPar"},
-	{RPar, "RPar"}, {LSq, "LSq"}, {RSq, "RSq"}, {LCur, "LCur"}, {RCur, "RCur"}, {Comma, "Comma"},
-	{Dot, "Dot"}, {NSOp, "NSOp"}, {EqualSign, "EqualSign"}, {None, "None"}
-);
-
 struct Token {
-	Token(TokenType type = None, std::string value = ""): Type(type), Value(value) {
-	}
-	TokenType Type;
-	std::string Value;
+	enum Type {
+		Float = 1, Int = 2, Bool = 3, String = 4,
+		Identifier, Operator, LeftP, RightP, LeftSqrP,
+		RightSqrP, LeftCrlyP, RightCrlyP, Seperator,
+		Membership, Namespace, EoS, None,
+	};
+
+	Token(const std::string &repr = "", Type type = None): repr(repr), type(type) {}
+
+	virtual std::string getrepr() const { return repr; }
+	Type gettype() const { return type; }
+
+	std::string repr;
+	Type type;
 };
 
 template<class ...P_>
@@ -166,6 +154,7 @@ bool isbreaker(char c) {
 	case ']':
 	case '{':
 	case '}':
+	case '.':
 	case '$':
 		return true;
 	default:
@@ -192,30 +181,63 @@ bool isoperator(char c) {
 	}
 }
 
+int getprecedence(const std::string &op) {
+	if(op == ")") {
+		return 8;
+	}
+	else if(op == "*" || op == "/" || op == "%") {
+		return 7;
+	}
+	else if(op == "+" || op == "-") {
+		return 6;
+	}
+	else if(op == "<" || op == "<=" || op == ">" || op == ">=") {
+		return 5;
+	}
+	else if(op == "==" || op == "!=") {
+		return 4;
+	}
+	else if(op == "&") {
+		return 3;
+	}
+	else if(op == "|") {
+		return 2;
+	}
+	else if(op == "(") {
+		return 1;
+	}
+	else if(op == "=") {
+		return 0;
+	}
+	else {
+		throw ParseError{ParseError::UnexpectedToken, 0, '~', "Unexpected operator"};
+	}
+}
 
-Token getnexttoken(const std::string &input, int &index) {
+Token consumenexttoken(const std::string &input, int &index) {
 	while(index < input.length() && isspace(input[index])) index++;
 
-	if(index >= input.length()) return EndOfString;
+	if(index >= input.length()) return Token{";", Token::EoS};
 
 	std::string acc = "";
 
 
 	char c = input[index++];
 	switch(c) {
-	case '"':
-	case '\'':
-		return Token(StringLiteral, extractquotes(input, --index));
-	case '(': return LPar;
-	case ')': return RPar;
-	case '[': return LSq;
-	case ']': return RSq;
-	case '{': return LCur;
-	case '}': return RCur;
-	case '=': return EqualSign;
-	case '.': return Dot;
-	case ':': return NSOp;
-	case ',': return Comma;
+		case '"' :
+		case '\'':
+			return Token{extractquotes(input, --index), Token::String};
+
+		case '(': return Token{"(", Token::Operator};
+		case ')': return Token{")", Token::Operator};
+		case '[': return Token{"[", Token::LeftSqrP};
+		case ']': return Token{"]", Token::RightSqrP};
+		case '{': return Token{"{", Token::LeftCrlyP};
+		case '}': return Token{"}", Token::RightCrlyP};
+		case '=': return Token{"=", Token::Operator};
+		case '.': return Token{".", Token::Membership};
+		case ':': return Token{":", Token::Namespace};
+		case ',': return Token{",", Token::Seperator};
 	}
 
 	bool opornumber = false;
@@ -239,7 +261,7 @@ Token getnexttoken(const std::string &input, int &index) {
 		acc.clear();
 	}
 	else if(!isalpha(c)) {
-		throw ParseError({ParseError::UnexpectedToken, 0, c, "Invalid char" + input.substr(c, 1)});
+		throw ParseError{ParseError::UnexpectedToken, 0, c, "Invalid character"};
 	}
 
 	for(; index<input.length() + 1; index++) {
@@ -255,16 +277,16 @@ Token getnexttoken(const std::string &input, int &index) {
 			}
 			else if(c == '.') {
 				if(flt) {
-					ParseError({ParseError::UnexpectedToken, 0, c, "Unexpected character" + input.substr(c, 1)});
+					throw ParseError{ParseError::UnexpectedToken, 0, c, "Unexpected character"};
 				}
 				acc.push_back(c);
 				flt = true;
 			}
 			else if(isbreaker(c)) {
-				return{flt ? FloatLiteral : IntLiteral, acc};
+				return Token{acc, flt ? Token::Float : Token::Int};
 			}
 			else {
-				ParseError({ParseError::UnexpectedToken, 0, c, "Unknown character" + input.substr(c, 1)});
+				throw ParseError{ParseError::UnexpectedToken, 0, c, "Unknown character"};
 			}
 		}
 		else if(isdigit(c)) {
@@ -279,7 +301,7 @@ Token getnexttoken(const std::string &input, int &index) {
 				acc.push_back(c);
 			}
 			else {
-				return{Operator, acc};
+				return Token{acc, Token::Operator};
 			}
 			op = true;
 			opornumber = false;
@@ -290,38 +312,42 @@ Token getnexttoken(const std::string &input, int &index) {
 		else if(isbreaker(c)) {
 
 			if(acc == "true" || acc == "false") {
-				return{BooleanLiteral, acc};
+				return Token{acc, Token::Bool};
 			}
 
-			return{var ? VariableIdentifier : Identifier, acc};
+			return Token{acc, /*var ? Token::Variable : */Token::Identifier};
 		}
 	}
 }
 
 Token peeknexttoken(const std::string &input, int index) {
-	return getnexttoken(input, index);
+	return consumenexttoken(input, index);
 }
+
+DefineEnumStrings(Token::Type,
+	{Token::Float, "Float"}, {Token::Int, "Int"}, {Token::Bool, "Bool"}, {Token::String, "String"},
+	{Token::Identifier, "Identifier"}, {Token::Operator, "Operator"}, {Token::LeftP, "LeftP"},
+	{Token::RightP, "RightP"},{Token::LeftSqrP, "LeftSqrP"},{Token::RightSqrP, "RightSqrP"},
+	{Token::LeftCrlyP, "LeftCrlyP"}, {Token::RightCrlyP, "RightCrlyP"}, {Token::Seperator, "Seperator"}, 
+	{Token::Membership, "Membership"}, {Token::Namespace, "Namespace"}, {Token::EoS, "EoS"}, {Token::None, "None"}
+);
 
 } // end of unnamed namespace
 
-
-
-
 namespace internal {
 	struct node {
-		node(const Token &token = {}, node *l = nullptr, node *r = nullptr, bool b = false):
-			value(token), left(l), right(r), binary(b) {}
+		node() {}
+		node(const Token data): data(data) {}
 
-		Token value;
-		node *left;
-		node *right;	
-
-		bool binary;
+		Token data;
+		std::vector<node*> leaves;
 
 		~node() {
-			if(left) delete left;
-			if(right) delete right;
+			for(std::size_t i = 0; i < leaves.size(); i++) {
+				if(leaves[i]) delete leaves[i];
+			}
 		}
+
 	};
 
 	void testlexer(const std::string &input, std::ostream *cases) {
@@ -329,19 +355,19 @@ namespace internal {
 		int i = 0;
 		Token token;
 		if(cases) {
-			(*cases) << "	{" << std::endl
-				<< "		auto tokens=parser.parse(\"" << input << "\");" << std::endl << std::endl;
+			(*cases) << "\t{" << std::endl
+				<< "\t\tauto tokens=parser.parse(\"" << input << "\");" << std::endl << std::endl;
 		}
-		while((token = getnexttoken(input, index)).Type != EndOfString) {
+		while((token = consumenexttoken(input, index)).type != Token::EoS) {
 			if(cases) {
-				(*cases) << "		REQUIRE(tokens[" << i << "].Type == " << String::From(token.Type) << ");" << std::endl;
-				(*cases) << "		REQUIRE(tokens[" << i << "].Value == \"" << String::Replace(token.Value, "\"", "\\\"") << "\");" << std::endl << std::endl;
+				(*cases) << "\t\tREQUIRE(tokens[" << i << "].type == "    << String::From(token.type)<< ");" << std::endl;
+				(*cases) << "\t\tREQUIRE(tokens[" << i << "].value == \"" << String::Replace(token.repr, "\"", "\\\"") << "\");" << std::endl << std::endl;
 			}
 			Gorgon::Console::SetColor(Gorgon::Console::Yellow);
 			Gorgon::Console::SetBold();
-			std::cout << String::From(token.Type) << ": ";
+			std::cout << String::From(token.type) << ": ";
 			Gorgon::Console::SetBold(false);
-			std::cout << token.Value << std::endl;
+			std::cout << token.repr << std::endl;
 			std::cout << input << std::endl;
 			for(int i = 0; i < index; i++) { std::cout << "'"; }
 			std::cout << std::endl << std::endl;
@@ -349,70 +375,69 @@ namespace internal {
 			i++;
 		}
 		if(cases) {
-			(*cases) << "		REQUIRE(tokens[" << i << "].Type == " << String::From(token.Type) << ");" << std::endl;
-			(*cases) << "	}" << std::endl << std::endl;
+			(*cases) << "\t\tREQUIRE(tokens[" << i << "].type == " << String::From(token.type) << ");" << std::endl;
+			(*cases) << "\t}" << std::endl << std::endl;
 		}
 	}
 
 } // end of internal
 
 
-internal::node *ProgrammingParser::parse(const std::string &input) {
+node *ProgrammingParser::parse(const std::string &input) {
 	int index = 0;
-	Token token = getnexttoken(input, index);
-
-	if(token.Type == EndOfString) {
-		throw ParseError({ParseError::UnexpectedToken, 0, input[index], "Unexpected end of string"});
-	}
-
-	internal::node *root = new node;
-
-	if(token.Type == VariableIdentifier) {
-		root = assignment(input, 0);
-	}
-	else if(token.Type == Identifier) {
-		Token next = peeknexttoken(input, index);
-
-		if(next.Type == LPar) {
-			root = fncall(input, 0);
-		}
-		else if(next.Type == EqualSign) { // variable without $ at the beginning
-			root = assignment(input, 0);
-		}
-		else {
-			root = keyword(input, 0);
-		}
-	}
-
-	token = getnexttoken(input, index);
-
-	if(token.Type != EndOfString) {
-		throw ParseError({ParseError::UnexpectedToken, 0, input[index], "Expected end of input"});
-	}
+	//node *root = variable(input, index);
+	
+	return root;
 }
 
+node *ProgrammingParser::operand(const std::string &input, int &index) {
+	node *root = new node;
+	Token current, peek;
+	int localindex = index;
 
-node *ProgrammingParser::assignment(const std::string &input, int index) {
-	node *assignment = new node, *lhs = new node, *rhs = new node;
-	assignment->left = lhs;
-	assignment->right = rhs;
+	do {
+		current = consumenexttoken(input, localindex);
 
-	Token token;
+		if(current.type != Token::Identifier) {
+			throw ParseError{ParseError::UnexpectedToken, 0, '~', "Expected an identifier"};
+		}
 
-	token = getnexttoken(input, index);
-	lhs->value = token;
+		peek = peeknexttoken(input, localindex);
 
-	token = getnexttoken(input, index);
-	if(token.Type != EqualSign) {
-		throw ParseError({ParseError::UnexpectedToken, 0, input[index], "Expected assignment operator"});
-	}
-	assignment->value = token;
+		if(peek.type == Token::LeftSqrP) {
+			consumenexttoken(input, localindex);
+			std::unique_ptr<node> expr(expression(input, localindex));
+			
+			peek = peeknexttoken(input, localindex);
 
-	rhs = expression(input, index);
+			if(peek.type != Token::RSq) {
+				throw ParseError{ParseError::UnexpectedToken, 0, '~', "Expected closing square brackets"};
+			}
 
+			consumenexttoken(input, localindex);
+		}
 
-	return assignment;
+		data->elements.push_back(curelem);
+		index = localindex;
+
+	} while(consumenexttoken(input, localindex).type == Token::Dot);
+
+	return variable;
 }
+
+node *ProgrammingParser::expression(const std::string &input, int &index) {
+	node *expression = new node;
+	Token current, peek;
+
+	peek = peeknexttoken(input, index);
+
+	if(peek.type == Token::LPar) {
+		
+	}
+	else if(peek.type == Token::)
+	return expression;
+}
+
 
 }} // end of namespaces scripting and gorgon
 

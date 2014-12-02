@@ -9,7 +9,7 @@
 
 namespace Gorgon {
 	namespace Scripting {
-		namespace internal { struct node; void textlexer(const std::string &, std::ostream *); };
+		namespace internal { struct node; void testlexer(const std::string &input, std::ostream *cases); };
 
 
 		/// Describes the type of an instruction
@@ -141,9 +141,8 @@ namespace Gorgon {
 			internal::node *parse(const std::string &input);
 
 		private:			
-			internal::node *assignment(const std::string &input, int index);
-			internal::node *fncall(const std::string &input, int index);
-			internal::node *keyword(const std::string &input, int index);
+			internal::node *operand(const std::string &input, int &index);
+			internal::node *expression(const std::string &input, int &index);
 
 		};
 	}
