@@ -2,6 +2,7 @@
 #include <Source/Scripting/VirtualMachine.h>
 #include <thread>
 #include <iostream>
+#include "../../../Source/Scripting/VirtualMachine.h"
 
 using namespace Gorgon::Scripting;
 
@@ -16,6 +17,8 @@ fns"echo" s""
 
 #."1"=fns"nullarr"
 #fms"size" ."1"
+
+#fns"return" i"4"
 
 $"i" = i"1"
 fkm"while"
@@ -47,6 +50,8 @@ mms"[]" !"float" f"5" f"7"
 ."1" = fns"=" i"3" !"pi"
 ."2" = fms"+" s"3=pi ? " ."1"
 fns"echo" s"The result is " ."2"
+x"1"
+x"2"
 
 # if $a = 4
 fkm"if"
@@ -213,6 +218,11 @@ int main() {
 	std::cout<<std::endl<<std::endl;
 	Gorgon::Console::SetColor(Gorgon::Console::Green);
 	std::cout<<"Execution successful."<<std::endl<<std::endl;
+	
+	Data ret=vm.GetReturnValue();
+	if(ret.IsValid()) {
+		std::cout<<"Return value: "<<ret<<std::endl;
+	}
 	Gorgon::Console::Reset();
 
 	//std::cout<<vm.GetVariable("a")<<std::endl;

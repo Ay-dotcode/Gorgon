@@ -11,7 +11,8 @@ namespace Gorgon {
 	namespace Scripting {
 		namespace internal { struct node; void testlexer(const std::string &input, std::ostream *cases); };
 
-
+		
+		
 		/// Describes the type of an instruction
 		enum class InstructionType {
 
@@ -24,7 +25,7 @@ namespace Gorgon {
 
 			/// Marks this instruction as a member function call. This means the function is either a data member
 			/// and will return or set the value of the member or a member function that will be called.
-			MemberFunctionCall,
+			MemberFunctionCall,	
 
 			/// Marks this instruction as a method call.
 			MethodCall,
@@ -36,6 +37,9 @@ namespace Gorgon {
 
 			/// Marks instruction as an assignment
 			Assignment,
+			
+			/// Marks instruction as a removal of a temporary. Temporary index should be stored in the Store member
+			RemoveTemp,
 		};
 
 		/// Possible value types

@@ -17,6 +17,14 @@ namespace Gorgon {
 				}
 				out<<std::endl;
 			}
+			
+			void Return1(Data data) {
+				VirtualMachine::Get().Return(data);
+			}
+			
+			void Return0() {
+				VirtualMachine::Get().Return();
+			}
 
 			std::string BoolToString(const bool &val) {
 				return val ? "true" : "false";
@@ -284,6 +292,21 @@ namespace Gorgon {
 						},
 						MappedFunctions(&End, []() { End(); }), MappedMethods(), 
 						KeywordTag, NeverSkipTag
+					),
+					new MappedFunction("return",
+						"Returns from the current function or terminates the execution if not in a "
+						"function. If a value is supplied, it is assumed to be the return value of "
+						"the function or execution",
+						nullptr, nullptr,
+						ParameterList {
+							new Parameter(
+								"Value",
+								"This value is used as the return value of the function or execution",
+								Variant, OptionalTag
+							)
+						},
+						MappedFunctions(Return1, Return0), MappedMethods(),
+						KeywordTag
 					)
 				},
 			};

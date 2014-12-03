@@ -1,4 +1,4 @@
-/// @file Exceptions This file contains string related exceptions
+/// @file Exceptions.h Exceptions This file contains string related exceptions
 
 #pragma once
 

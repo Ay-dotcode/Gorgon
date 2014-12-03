@@ -354,8 +354,16 @@ namespace Gorgon {
 		void VirtualMachine::Run(unsigned executiontarget) {
 			int keywordtarget=keywordscopes.GetCount();
 			int variabletarget=variablescopes.GetCount();
+			
+			returnimmediately=false;
+			returnvalue=Data::Invalid();
 
 			while(executionscopes.GetCount()>(long)executiontarget) {
+				if(returnimmediately) {
+					executionscopes.DeleteAll();
+					return;
+				}
+				
 				auto inst=executionscopes.Last()->Get();
 #ifdef TESTVM
 				Console::SetColor(Console::Black);
@@ -412,6 +420,9 @@ namespace Gorgon {
 							if(!skipping) {
 								functioncall(inst, true, true);
 							}
+						}
+						else if(inst->Type==InstructionType::RemoveTemp) {
+							temporaries[inst->Store]=Data::Invalid();
 						}
 						else {
 							ASSERT(false, "Unknown instruction type.", 0, 8);
