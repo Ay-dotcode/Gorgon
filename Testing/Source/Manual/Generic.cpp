@@ -44,6 +44,12 @@ fns"for" $"i" ."1"
 fkm"end"
 fns"end"
 
+."1"=fms"{}" !"Point"
+fms".x" ."1" i"5"
+."2"=fms".x" ."1"
+fns"echo" s"x value for point is: " ."2"
+
+
 mms"[]" !"float" f"5" f"7"
 
 # echo "3=pi ? " + (3=pi)
@@ -82,8 +88,13 @@ fns"end"
 
 )";
 
+namespace Gorgon { namespace Geometry {
+	extern Scripting::Library LibGeometry;
+	void init_scripting();
+	
+} }
+
 int main() {
-	Initialize();
 
 	
 	std::stringstream ss(source);
@@ -92,6 +103,8 @@ int main() {
 
 
 	VirtualMachine vm;
+	Gorgon::Geometry::init_scripting();
+	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 
 	std::cout<<std::endl<<std::endl;
 	Gorgon::Console::SetBold();

@@ -44,10 +44,14 @@ namespace Gorgon { namespace Geometry {
 				Scripting::MappedMethods()
 			)
 		});
+		
+		point->AddConstructors({
+			new Scripting::MappedValueConstructor<Point>("Constructs an empty point", point, Scripting::ParameterList())
+		});
 
 		point->AddDataMembers({
-			new Scripting::MappedData<Point, int>(&Point::X, "x", "field storing location on x coordinate", Scripting::Integrals.Types["Int"]),
-			new Scripting::MappedData<Point, int>(&Point::Y, "y", "field storing location on y coordinate", Scripting::Integrals.Types["Int"])
+			new Scripting::MappedData<Point, int>(&Point::X, "x", "field storing location on x coordinate", Scripting::Types::Int()),
+			new Scripting::MappedData<Point, int>(&Point::Y, "y", "field storing location on y coordinate", Scripting::Types::Int())
 		});
 
 		LibGeometry = {

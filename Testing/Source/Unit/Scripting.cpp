@@ -89,7 +89,6 @@ public:
 	int bb;
 };
 
-
 TEST_CASE("Basic scripting", "[firsttest]") {
 	auto &vm=VirtualMachine::Get();
 	
@@ -302,6 +301,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 
 	Data d=myvaluetype->Construct({{Integrals.Types["Int"], 14}});
 	REQUIRE(d.GetValue<A>().bb==14);
+	
 }
 
 TEST_CASE("Reference counting", "[Data]") {

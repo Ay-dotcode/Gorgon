@@ -331,7 +331,27 @@ namespace Gorgon {
 				}
 				
 			}
-		}		
+		}
+		
+		const SymbolType FindSymbol(std::string name, SymbolType hint, Any &result) {
+			using std::swap;
+			
+			name=String::ToLower(name);
+			
+			std::string namespc=String::Extract(name, ':');
+			if(name=="") swap(namespc, name);
+			
+			if(namespc!="") {
+				//cannot be variable
+			}
+			else {
+			}
+			
+			
+			//!TODO
+			
+			throw SymbolNotFoundException(name, SymbolType::Unknown);
+		}
 		
 		void VirtualMachine::Start(InputSource &source) {
 			Activate();
@@ -699,6 +719,7 @@ namespace Gorgon {
 			}
 		}
 
+		// !Careful there are early terminations
 		void VirtualMachine::functioncall(const Instruction *inst, bool memberonly, bool method) {
 			const Function *fn=nullptr;
 			std::string functionname;
@@ -747,18 +768,75 @@ namespace Gorgon {
 				if(inst->Parameters.size()==0) {
 					throw std::runtime_error("Invalid intermediate instruction, missing this parameter");
 				}
-
+				
 				//search in the type of the first parameter
 				Data data=getvalue(inst->Parameters[0]);
-				auto fnit=data.GetType().Functions.Find(functionname);
 
-				//if found
-				if(fnit.IsValid()) {
-					fn=&fnit.Current().second;
-				} else {
-					//cannot find it
-					throw SymbolNotFoundException(functionname, SymbolType::Function, 
-						"Cannot find the member function "+data.GetType().GetName()+":"+functionname);
+				if(functionname=="{}") { //constructor
+					if(data.GetType()!=Reflection.Types["Type"]) {
+						throw std::runtime_error("Invalid intermediate instruction, missing type parameter is not a type");
+					}
+					
+					std::vector<Data> params;
+					int i=0;
+					for(auto &pin : inst->Parameters) {
+						if(i++!=0) {
+							params.push_back(getvalue(pin));
+						}
+					}
+					
+					Data ret=data.GetValue<const Type*>()->Construct(params);
+					if(inst->Store) {
+						temporaries[inst->Store]=ret;
+					}
+					
+					return;
+				}				
+				else if(functionname[0]=='.') {
+					if(inst->Parameters.size()==1) {
+						Data ret=data.GetType().DataMembers[functionname.substr(1)].Get(data);
+						
+						if(inst->Store) {
+							//store the result
+							if(ret.GetType()==Types::Variant()) {
+								ret=ret.GetValue<Data>();
+							}
+							temporaries[inst->Store]=ret;
+						}
+					}
+					else if(inst->Parameters.size()==2) {
+						if(inst->Store) {
+							throw NoReturnException("Data member: "+data.GetType().DataMembers[functionname.substr(1)].GetName());
+						}
+						if(inst->Parameters[0].Type==ValueType::Variable) {
+							data.GetType().DataMembers[functionname.substr(1)].
+								Set(GetVariable(inst->Parameters[0].Name), getvalue(inst->Parameters[1]));
+						}
+						else if(inst->Parameters[0].Type==ValueType::Temp) {
+							data.GetType().DataMembers[functionname.substr(1)].
+							Set(temporaries[inst->Parameters[0].Result], getvalue(inst->Parameters[1]));
+						}
+						else {
+							throw std::runtime_error("Cannot assign to literal or constants");
+						}						
+					}
+					else {
+						throw std::runtime_error("Member access or mutate requires exactly 1 and 2 parameters");
+					}
+					
+					return;
+				}
+				else {
+					auto fnit=data.GetType().Functions.Find(functionname);
+
+					//if found
+					if(fnit.IsValid()) {
+						fn=&fnit.Current().second;
+					} else {
+						//cannot find it
+						throw SymbolNotFoundException(functionname, SymbolType::Function, 
+							"Cannot find the member function "+data.GetType().GetName()+":"+functionname);
+					}
 				}
 			}
 
