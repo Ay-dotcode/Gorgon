@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include "ParserUtils.h"
 #include "../Scripting.h"
 
 
@@ -15,9 +16,10 @@ namespace Gorgon {
 		 * 
 		 * Gorgon Script Intermediate Language (IL) is designed for debugging and disassembling. It is human readable
 		 * representation of the underlying data structure. It is not designed to be back compatible. Therefore,
-		 * it is not adviced to do any serious programming with this language. However, it is very usable to see
+		 * it is not advised to do any serious programming with this language. However, it is very usable to see
 		 * dialect compiler outputs to check for any errors. Its one to one representation makes it very easy to 
-		 * convert from/to internal data structure.
+		 * convert from/to internal data structure. Current implementation allows single quotes to be used instead
+		 * of double quotes. This feature is not guaranteed in the future versions.
 		 * 
 		 * @section Structure Structure
 		 * Every instruction is in a single line. The structure of IL is very rigid and the rules are enforced.
@@ -99,7 +101,7 @@ namespace Gorgon {
 		 * @subsection Call Function/Method call
 		 * A function call is denoted by "f" symbol, while "m" is method call. These symbols are followed by either "n" or "m",
 		 * "n" meaning namespace function/method where as "m" is member. Please note that GScript supports argument dependent 
-		 * lookup over types. This means that even if a function/method is marked as namespace and it does not exists, it is looked
+		 * look up over types. This means that even if a function/method is marked as namespace and it does not exists, it is looked
 		 * from the first argument. This system is consistent with the notion that "this" object is passed as the first parameter
 		 * to member functions/methods. A value should follow to indicate the function/method identifier. This could be either
 		 * a string literal, constant (same as string literal) or variable. If it is a variable and its type is string, that function
@@ -127,40 +129,6 @@ namespace Gorgon {
 		
 		
 		
-		namespace {
-			template<class ...P_>
-			int CheckInputFor(const std::string &input, int &ch, P_ ...args) {
-				char allowed[]={args...};
-				int elements=sizeof...(args);
-
-				auto errstr=[&] ()-> std::string {
-					std::string ret="Expected ";
-					for(int i=0;i<elements;i++) {
-						if(i!=0) {
-							ret.push_back('/');
-						}
-						ret.push_back(allowed[i]);
-					}
-					
-					return ret;
-				};
-				
-				if(input.length()<=ch) {
-					throw ParseError({ParseError::UnexpectedToken, 0, ch, errstr()+", end of string encountered."});
-				}
-				
-				char c=input[ch++];
-				
-				for(int i=0;i<sizeof...(args);i++) {
-					if(allowed[i]==c) {
-						return i;
-					}
-				}
-				
-				ch--;
-				throw ParseError({ParseError::UnexpectedToken, 0, ch, errstr()+", found: "+input.substr(ch,1)});
-			}
-		}
 		
 		unsigned IntermediateParser::Parse(const std::string &input) {
 			
@@ -246,7 +214,7 @@ namespace Gorgon {
 				case 2:
 					inst.Type=InstructionType::Mark;
 					CheckInputFor(input, ch, 'm');
-					inst.Name.Name=extractquotes(input, ch);
+					inst.Name.Name=ExtractQuotes(input, ch);
 					return;
 				}
 			}
@@ -269,7 +237,7 @@ namespace Gorgon {
 			inst.Type=InstructionType::Assignment;
 			
 			inst.Name.Type=ValueType::Variable;
-			inst.Name.Name=extractquotes(input, ch);
+			inst.Name.Name=ExtractQuotes(input, ch);
 			
 			eatwhite(input, ch);
 			
@@ -297,22 +265,22 @@ namespace Gorgon {
 					
 				case 1:
 					ret.Type  = ValueType::Variable;
-					ret.Name  = extractquotes(input, ch);
+					ret.Name  = ExtractQuotes(input, ch);
 					return ret;
 					
 				case 2:
 					ret.Type  = ValueType::Constant;
-					ret.Name  = extractquotes(input, ch);
+					ret.Name  = ExtractQuotes(input, ch);
 					return ret;
 					
 				case 3:
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Types::Int(), String::To<int>(extractquotes(input, ch))};
+					ret.Literal = {Types::Int(), String::To<int>(ExtractQuotes(input, ch))};
 					return ret;
 					
 				case 4:
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Types::Float(), String::To<float>(extractquotes(input, ch))};
+					ret.Literal = {Types::Float(), String::To<float>(ExtractQuotes(input, ch))};
 					return ret;
 					
 				case 5:
@@ -325,94 +293,35 @@ namespace Gorgon {
 					
 				case 6:
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Types::String(), extractquotes(input, ch)};
+					ret.Literal = {Types::String(), ExtractQuotes(input, ch)};
 					return ret;
 					
 				case 7:
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Types::Char(), (char)String::To<int>(extractquotes(input, ch))};
+					ret.Literal = {Types::Char(), (char)String::To<int>(ExtractQuotes(input, ch))};
 					return ret;
 					
 				case 8:
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Types::Byte(), (Gorgon::Byte)String::To<int>(extractquotes(input, ch))};
+					ret.Literal = {Types::Byte(), (Gorgon::Byte)String::To<int>(ExtractQuotes(input, ch))};
 					return ret;
 					
 				case 9:
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Types::Double(), String::To<double>(extractquotes(input, ch))};
+					ret.Literal = {Types::Double(), String::To<double>(ExtractQuotes(input, ch))};
 					return ret;
 					
 				case 10:
 					ret.Type    = ValueType::Literal;
-					ret.Literal = {Types::Unsigned(), String::To<unsigned>(extractquotes(input, ch))};
+					ret.Literal = {Types::Unsigned(), String::To<unsigned>(ExtractQuotes(input, ch))};
 					return ret;
 			}
 			
 			throw 0;
 		}
 		
-		std::string IntermediateParser::extractquotes(const std::string &input, int &ch) {
-			std::string ret="";
-			
-			CheckInputFor(input, ch, '"');
-			
-			int start=ch;
-			
-			bool escape=false;
-			int escapenum=0;
-			Gorgon::Byte num;
-			for(; ch<input.size(); ch++) {
-				char c=input[ch];
-				if(escape) {
-					if(c=='"') {
-						ret.push_back('"');
-					}
-					else if(c=='\\') {
-						ret.push_back('\\');
-					}
-					else if(c=='n') {
-						ret.push_back('\n');
-					}
-					else if(c>='0' && c<='9') {
-						escapenum++;
-						num=num<<4+(c-'0');
-					}
-					else if(c>='a' && c<='f') {
-						escapenum++;
-						num=num<<4+(c-'a'+10);
-					}
-					else {
-						throw ParseError({ParseError::UnexpectedToken, 0, ch, "Invalid escape sequence: \\"+input.substr(ch,1)});
-					}
-					
-					if(escapenum!=1) {
-						escape=false;
-					}
-					if(escapenum==2) {
-						ret.push_back((char)num);
-					}
-				}
-				else {
-					if(c=='\\') {
-						escape=true;
-					}
-					else if(c=='"') {
-						break;
-					}
-					else {
-						ret.push_back(c);
-					}
-				}
-			}
-			
-			CheckInputFor(input, ch, '"');
-			
-			return ret;
-		}
-		
 		unsigned long IntermediateParser::parsetemporary(const std::string &input, int &ch) {
-			auto str=extractquotes(input, ch);
+			auto str=ExtractQuotes(input, ch);
 			auto ret=String::To<Gorgon::Byte>(str);
 			if(ret==0 && ret>255) {
 				throw std::runtime_error("Invalid temporary: "+str);

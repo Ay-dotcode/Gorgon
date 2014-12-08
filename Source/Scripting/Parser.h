@@ -131,8 +131,6 @@ namespace Gorgon {
 			
 			unsigned long parsetemporary(const std::string &input, int &ch);
 			
-			std::string extractquotes(const std::string &input, int &ch);
-			
 			void eatwhite(const std::string &input, int &ch);
 		};
 
