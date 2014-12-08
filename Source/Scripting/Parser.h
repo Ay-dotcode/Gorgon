@@ -145,8 +145,6 @@ namespace Gorgon {
 			internal::node *parse(const std::string &input);
 
 		private:			
-			internal::node *operand(const std::string &input, int &index);
-			internal::node *expression(const std::string &input, int &index);
 
 		};
 	}

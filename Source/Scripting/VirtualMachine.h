@@ -62,6 +62,9 @@ namespace Gorgon {
 			/// Finds the given type by name. Namespace information will be extracted if exists. 
 			/// This function may throw symbol not found / ambiguous symbol.
 			const Constant &FindConstant(std::string name);
+			
+			/// Finds the given symbol with the given hint.
+			const SymbolType FindSymbol(std::string name, SymbolType hint, Any &result);
 
 			/// Sets the input source to read code lines from. Does not change active execution context.
 			/// only allows 

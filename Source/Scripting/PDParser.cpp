@@ -20,13 +20,17 @@ struct Token {
 		Float = 1, Int = 2, Bool = 3, String = 4,
 		Identifier, Operator, LeftP, RightP, LeftSqrP,
 		RightSqrP, LeftCrlyP, RightCrlyP, Seperator,
-		Membership, Namespace, EoS, None,
+		Membership, Namespace, EoS, EqualSign, None,
 	};
 
 	Token(const std::string &repr = "", Type type = None): repr(repr), type(type) {}
 
 	virtual std::string getrepr() const { return repr; }
 	Type gettype() const { return type; }
+	
+	bool operator == (Type type) const { return type==this->type; }
+	
+	bool operator != (Type type) const { return type!=this->type; }
 
 	std::string repr;
 	Type type;
@@ -234,13 +238,13 @@ Token consumenexttoken(const std::string &input, int &index) {
 		case ']': return Token{"]", Token::RightSqrP};
 		case '{': return Token{"{", Token::LeftCrlyP};
 		case '}': return Token{"}", Token::RightCrlyP};
-		case '=': return Token{"=", Token::Operator};
 		case '.': return Token{".", Token::Membership};
 		case ':': return Token{":", Token::Namespace};
 		case ',': return Token{",", Token::Seperator};
 	}
 
 	bool opornumber = false;
+	bool oporequals=false;
 	bool numeric = false;
 	bool flt = false; //float
 	bool op = false;
@@ -259,6 +263,9 @@ Token consumenexttoken(const std::string &input, int &index) {
 	else if(c == '$') {
 		var = true;
 		acc.clear();
+	}
+	else if(c== '=') {
+		oporequals=true;
 	}
 	else if(!isalpha(c)) {
 		throw ParseError{ParseError::UnexpectedToken, 0, c, "Invalid character"};
@@ -293,10 +300,13 @@ Token consumenexttoken(const std::string &input, int &index) {
 			if(opornumber) {
 				numeric = true;
 			}
+			else if(oporequals) {
+				return Token{acc, Token::EqualSign};
+			}
 
 			acc.push_back(c);
 		}
-		else if(op || opornumber) {
+		else if(op || opornumber || oporequals) {
 			if(isoperator(c)) {
 				acc.push_back(c);
 			}
@@ -305,6 +315,10 @@ Token consumenexttoken(const std::string &input, int &index) {
 			}
 			op = true;
 			opornumber = false;
+			oporequals = false;
+		}
+		else if(oporequals) {
+			return Token{acc, Token::EqualSign};
 		}
 		else if(isalpha(c) || c == '_' || c == ':') {
 			acc.push_back(c);
@@ -317,6 +331,9 @@ Token consumenexttoken(const std::string &input, int &index) {
 
 			return Token{acc, /*var ? Token::Variable : */Token::Identifier};
 		}
+		else {
+			throw ParseError{ParseError::UnexpectedToken, 0, c, "Unknown character"};
+		}
 	}
 }
 
@@ -324,7 +341,7 @@ Token peeknexttoken(const std::string &input, int index) {
 	return consumenexttoken(input, index);
 }
 
-DefineEnumStrings(Token::Type,
+DefineEnumStringsCM(Token, Type,
 	{Token::Float, "Float"}, {Token::Int, "Int"}, {Token::Bool, "Bool"}, {Token::String, "String"},
 	{Token::Identifier, "Identifier"}, {Token::Operator, "Operator"}, {Token::LeftP, "LeftP"},
 	{Token::RightP, "RightP"},{Token::LeftSqrP, "LeftSqrP"},{Token::RightSqrP, "RightSqrP"},
@@ -341,6 +358,8 @@ namespace internal {
 
 		Token data;
 		std::vector<node*> leaves;
+		
+		int startlocation;
 
 		~node() {
 			for(std::size_t i = 0; i < leaves.size(); i++) {
@@ -382,60 +401,97 @@ namespace internal {
 
 } // end of internal
 
+node *parseexpression(const std::string &input, int &index) {
+	Token token;
+	
+	int par=0;
+	
+	while(1) {
+		token=consumenexttoken(input, index);
+		
+		
+	}
+}
 
 node *ProgrammingParser::parse(const std::string &input) {
 	int index = 0;
-	//node *root = variable(input, index);
+	node *root = new node;
+	
+	Token token=consumenexttoken(input, index);
+	
+	if(token == Token::EoS) return nullptr;
+	
+	if(token.type != Token::Identifier) {
+		throw "Should be identifier";
+	}
+	
+	bool canbekeyword=true;
+	while(1) {
+		token=consumenexttoken(input, index);
+		
+		if(token==Token::Membership) {
+			//cont
+			token=consumenexttoken(input, index);
+			if(token!=Token::Identifier) {
+				throw "Should be identifier";
+			}
+			canbekeyword=false;
+		}
+		else if(token==Token::LeftSqrP) {
+			//cont
+			//parseexpression(input, index);
+			token=consumenexttoken(input, index);
+			if(token!=Token::RightSqrP) {
+				throw "should be expression";
+			}
+			canbekeyword=false;
+		}
+		else if(token==Token::EqualSign) {
+			//assignment
+			//parseexpression(input, index);
+			token=consumenexttoken(input, index);
+			if(token != Token::EoS) {
+				throw "string should end";
+			}
+			
+			break;
+		}
+		else if(token==Token::LeftP) {
+			//exprarry=parseexpressionarray(input, index);
+			token=consumenexttoken(input, index);
+			if(token!=Token::RightP) {
+				throw "should be expression";
+			}
+			
+			token=peeknexttoken(input, index);
+			if(token != Token::EoS) {
+				if(!canbekeyword) {
+					throw "unexpected something";
+				}
+				
+				//if(exprarry.leaves.size()>1) throw "hata"
+				
+				while(token!=Token::EoS) {
+					//parseexpression(input, index);
+					token=peeknexttoken(input, index);
+				}
+			}
+		}
+		else {
+			if(!canbekeyword) {
+				throw "unexpected something";
+			}
+			
+			token=peeknexttoken(input, index);
+			while(token!=Token::EoS) {
+				//parseexpression(input, index);
+				token=peeknexttoken(input, index);
+			}
+		}
+	}
+	
 	
 	return root;
-}
-
-node *ProgrammingParser::operand(const std::string &input, int &index) {
-	node *root = new node;
-	Token current, peek;
-	int localindex = index;
-
-	do {
-		current = consumenexttoken(input, localindex);
-
-		if(current.type != Token::Identifier) {
-			throw ParseError{ParseError::UnexpectedToken, 0, '~', "Expected an identifier"};
-		}
-
-		peek = peeknexttoken(input, localindex);
-
-		if(peek.type == Token::LeftSqrP) {
-			consumenexttoken(input, localindex);
-			std::unique_ptr<node> expr(expression(input, localindex));
-			
-			peek = peeknexttoken(input, localindex);
-
-			if(peek.type != Token::RSq) {
-				throw ParseError{ParseError::UnexpectedToken, 0, '~', "Expected closing square brackets"};
-			}
-
-			consumenexttoken(input, localindex);
-		}
-
-		data->elements.push_back(curelem);
-		index = localindex;
-
-	} while(consumenexttoken(input, localindex).type == Token::Dot);
-
-	return variable;
-}
-
-node *ProgrammingParser::expression(const std::string &input, int &index) {
-	node *expression = new node;
-	Token current, peek;
-
-	peek = peeknexttoken(input, index);
-
-	if(peek.type == Token::LPar) {
-		
-	}
-	else if(peek.type == Token::)
-	return expression;
 }
 
 

@@ -46,7 +46,8 @@ namespace Gorgon {
 			Function,
 			Operator,
 			Namespace,
-			Library
+			Library,
+			Unknown
 		};
 		
 		DefineEnumStrings(SymbolType,
@@ -57,7 +58,8 @@ namespace Gorgon {
 			{SymbolType::Function, "Function"},
 			{SymbolType::Operator, "Operator"},
 			{SymbolType::Namespace, "Namespace"},
-			{SymbolType::Library, "Library"}
+			{SymbolType::Library, "Library"},
+			{SymbolType::Unknown, "Unknown"}
 		);
 		
 		class Exception : public std::runtime_error {
