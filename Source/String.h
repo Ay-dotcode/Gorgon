@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
+#include <algorithm>
 #include "String/Exceptions.h"
 #include "Enum.h"
 
@@ -34,6 +35,29 @@ namespace Gorgon {
 			};
 		}
 		/// @endcond
+		
+		struct CaseInsensitiveLess {
+			bool operator()(const std::string &left, const std::string &right) const {
+				unsigned len=std::min(left.length(), right.length());
+				
+				auto l=left.begin();
+				auto r=right.begin();
+				for(unsigned i=0; i<len; i++) {
+					auto lc=tolower(*l);
+					auto rc=tolower(*r);
+					if(lc<rc) {
+						return true; 
+					}
+					else if(lc>rc) {
+						return false;
+					}
+					++l;
+					++r;
+				}
+				
+				return left.length()<right.length();
+			}
+		};
 		
 
 #ifdef DOXYGEN
@@ -398,7 +422,7 @@ namespace Gorgon {
 		}
 
 		template<class T_> 
-		typename std::enable_if<!internal::has_stringoperator<T_>::value && !decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::string>::type 
+		typename std::enable_if<!internal::has_stringoperator<T_>::value && !decltype(gorgon__enum_trait_locator((*(T_*)nullptr)))::isupgradedenum, std::string>::type 
 		From(const T_ &item) {
 			std::stringstream ss;
 			ss<<item;
@@ -415,12 +439,12 @@ namespace Gorgon {
 			};
 
 			template<class TT>
-			static one test(typename decltype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one; }
+			static one test(decltypetype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one(); }
 			
-			static two test(...)  { return two;  }
+			static two test(...)  { return two();  }
 						
 		public:
-			static const bool Value = sizeof( test(*(std::ostream*)nullptr) );
+			static const bool Value = sizeof( test(*(std::ostream*)nullptr) )==1;
 		};
 		
 		inline void streamthis(std::stringstream &stream) {			
@@ -439,7 +463,7 @@ namespace Gorgon {
 			static const bool Value = 
 				IsStreamable<T_>::Value || 
 				internal::has_stringoperator<T_>::value || 
-				decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum;
+				decltype(gorgon__enum_trait_locator(*((typename std::decay<T_>::type*)nullptr)))::isupgradedenum;
 		};
 		
 		/// Streams the given parameters into a stringstream and returns the result, effectively

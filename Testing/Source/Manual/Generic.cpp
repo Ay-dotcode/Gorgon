@@ -1,5 +1,6 @@
 #include <Source/Utils/Assert.h>
 #include <thread>
+#include "../../../Source/Containers/Collection.h"
 
 void testassert() {
 	int a=5;
@@ -9,8 +10,14 @@ void testassert() {
 
 int main() {
 	
-	int a;
+	int a=4;
 	int b;
+	
+	Gorgon::Containers::Collection<int> C;
+	C.Push(a);
+	
+	std::cout<<C.Pop();
+	std::cout<<": "<<C.GetCount()<<std::endl;
 	
 	testassert();
 	

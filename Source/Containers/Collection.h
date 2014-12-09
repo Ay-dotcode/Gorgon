@@ -235,6 +235,11 @@ namespace Gorgon {
 				return list.size();
 			}
 
+			/// Returns number of elements
+			long GetSize() const {
+				return list.size();
+			}
+
 
 			/// Adds the given item to the end of the list
 			void Add(T_* Data) {
@@ -245,6 +250,28 @@ namespace Gorgon {
 			/// Adds a the given item to the end of the list
 			void Add(T_& data) {
 				Add(&data);
+			}
+
+			/// Adds the given item to the end of the list
+			void Push(T_* Data) {
+				Add(Data);
+			}
+
+			/// Adds a the given item to the end of the list
+			void Push(T_& data) {
+				Add(data);
+			}
+			
+			/// Removes and returns the last item in the collection
+			T_ &Pop() {
+				if(!GetCount()) {
+					throw std::out_of_range("No items in the collection");
+				}
+				
+				T_ &ret = Get(GetCount()-1);
+				Remove(GetCount()-1);
+				
+				return ret;
 			}
 
 			/// Adds the given item to the end of the list
