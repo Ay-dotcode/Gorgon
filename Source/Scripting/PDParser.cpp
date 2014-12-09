@@ -38,7 +38,7 @@ namespace Gorgon { namespace Scripting {
 				None,
 			};
 
-			Token(const std::string &repr = "", Type type = None): repr(repr), type(type) {}
+			Token(const std::string &repr, Type type, int start): repr(repr), type(type), start(start) {}
 
 			virtual std::string getrepr() const {
 				return repr;
@@ -57,6 +57,7 @@ namespace Gorgon { namespace Scripting {
 
 			std::string repr;
 			Type type;
+			int start;
 		};
 
 		bool isbreaker(char c) {
@@ -146,8 +147,10 @@ namespace Gorgon { namespace Scripting {
 
 		Token consumenexttoken(const std::string &input, int &index) {
 			while(index < input.length() && isspace(input[index])) index++;
+			
+			int start=index;
 
-			if(index >= input.length()) return Token {";", Token::EoS};
+			if(index >= input.length()) return Token {";", Token::EoS, start};
 
 			std::string acc = "";
 
@@ -156,26 +159,26 @@ namespace Gorgon { namespace Scripting {
 			switch(c) {
 			case '"' :
 			case '\'':
-				return Token {ExtractQuotes(input, --index), Token::String};
+				return Token {ExtractQuotes(input, --index), Token::String, start};
 
 			case '(':
-				return Token {"(", Token::Operator};
+				return Token {"(", Token::Operator, start};
 			case ')':
-				return Token {")", Token::Operator};
+				return Token {")", Token::Operator, start};
 			case '[':
-				return Token {"[", Token::LeftSqrP};
+				return Token {"[", Token::LeftSqrP, start};
 			case ']':
-				return Token {"]", Token::RightSqrP};
+				return Token {"]", Token::RightSqrP, start};
 			case '{':
-				return Token {"{", Token::LeftCrlyP};
+				return Token {"{", Token::LeftCrlyP, start};
 			case '}':
-				return Token {"}", Token::RightCrlyP};
+				return Token {"}", Token::RightCrlyP, start};
 			case '.':
-				return Token {".", Token::Membership};
+				return Token {".", Token::Membership, start};
 			case ':':
-				return Token {":", Token::Namespace};
+				return Token {":", Token::Namespace, start};
 			case ',':
-				return Token {",", Token::Seperator};
+				return Token {",", Token::Seperator, start};
 			}
 
 			bool opornumber = false;
@@ -225,7 +228,7 @@ namespace Gorgon { namespace Scripting {
 						flt = true;
 					}
 					else if(isbreaker(c)) {
-						return Token {acc, flt ? Token::Float : Token::Int};
+						return Token {acc, flt ? Token::Float : Token::Int, start};
 					}
 					else {
 						throw ParseError {ParseError::UnexpectedToken, 0, index, "Unknown character"};
@@ -236,7 +239,7 @@ namespace Gorgon { namespace Scripting {
 						numeric = true;
 					}
 					else if(oporequals) {
-						return Token {acc, Token::EqualSign};
+						return Token {acc, Token::EqualSign, start};
 					}
 
 					acc.push_back(c);
@@ -246,14 +249,14 @@ namespace Gorgon { namespace Scripting {
 						acc.push_back(c);
 					}
 					else {
-						return Token {acc, Token::Operator};
+						return Token {acc, Token::Operator, start};
 					}
 					op = true;
 					opornumber = false;
 					oporequals = false;
 				}
 				else if(oporequals) {
-					return Token {acc, Token::EqualSign};
+					return Token {acc, Token::EqualSign, start};
 				}
 				else if(isalpha(c) || c == '_' || c == ':') {
 					acc.push_back(c);
@@ -261,10 +264,10 @@ namespace Gorgon { namespace Scripting {
 				else if(isbreaker(c)) {
 
 					if(acc == "true" || acc == "false") {
-						return Token {acc, Token::Bool};
+						return Token {acc, Token::Bool, start};
 					}
 
-					return Token {acc, /*var ? Token::Variable : */Token::Identifier};
+					return Token {acc, /*var ? Token::Variable : */Token::Identifier, start};
 				}
 				else {
 					throw ParseError {ParseError::UnexpectedToken, 0, index, "Unknown character"};
@@ -286,18 +289,14 @@ namespace Gorgon { namespace Scripting {
 		);
 
 		struct node {
-			node() {}
+			node() : data("", Token::None, 0) {}
 			node(const Token data): data(data) {}
 
 			Token data;
-			std::vector<node*> leaves;
-
-			int startlocation;
+			Containers::Collection<node> leaves;
 
 			~node() {
-				for(std::size_t i = 0; i < leaves.size(); i++) {
-					if(leaves[i]) delete leaves[i];
-				}
+				leaves.Destroy();
 			}
 
 		};
@@ -333,18 +332,35 @@ namespace Gorgon { namespace Scripting {
 				(*cases) << "\t}" << std::endl << std::endl;
 			}
 		}
-
 	}
 
 	node *parseexpression(const std::string &input, int &index) {
 		Token token;
 
 		int par=0;
+		bool nextisop=false;
+		
+		Containers::Collection<node> opstack;
+		Containers::Collection<node> outputstack;
 
 		while(1) {
 			token=consumenexttoken(input, index);
-
-
+			
+			if(nextisop) {
+				
+				
+				nextisop=false;
+			}
+			else {
+				if(token==Token::Int) {
+					outputstack.Add(token);					
+				}
+				else {
+					throw 0;
+				}
+				
+				nextisop=true;
+			}
 		}
 	}
 
