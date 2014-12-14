@@ -6,12 +6,14 @@
 
 using namespace Gorgon;
 using namespace Gorgon::Scripting;
-using namespace Gorgon::Scripting::internal;
+
+
 int main() {
 
 	ProgrammingParser parser;
+	
 
-	std::ofstream file("test.cpp");
+	//std::ofstream file("test.cpp");
 
 	std::string str;
 	while(true) {
@@ -21,7 +23,9 @@ int main() {
 			std::getline(std::cin, str);
 			std::cout<<std::endl;
 
-			testlexer(str, &file);
+			parser.parseexpr(str);
+
+			//testlexer(str, &file);
 
 			Gorgon::Console::SetColor(Gorgon::Console::Black);
 			Gorgon::Console::SetBold();
@@ -32,8 +36,15 @@ int main() {
 
 			std::cout << e.What << std::endl;
 
-			file << "REQUIRE_THROWS( parser.parse(\""<<str<<"\") );"<< std::endl;
+			//file << "REQUIRE_THROWS( parser.parse(\""<<str<<"\") );"<< std::endl;
 		}
+// 		catch(const char *e) {
+// 			Gorgon::Console::SetColor(Gorgon::Console::Red);
+// 
+// 			std::cout << e << std::endl;
+// 
+// 			//file << "REQUIRE_THROWS( parser.parse(\""<<str<<"\") );"<< std::endl;
+// 		}
 	}
 	
 

@@ -9,7 +9,7 @@
 
 namespace Gorgon {
 	namespace Scripting {
-		namespace internal { struct node; void testlexer(const std::string &input, std::ostream *cases); };
+		//namespace internal { struct node; void testlexer(const std::string &input, std::ostream *cases); };
 
 		
 		
@@ -140,7 +140,9 @@ namespace Gorgon {
 
 			virtual unsigned Parse(const std::string &input) override { return 0;  }
 
-			internal::node *parse(const std::string &input);
+			//node *parse(const std::string &input);
+			
+			void parseexpr(const std::string &input);
 
 		private:			
 

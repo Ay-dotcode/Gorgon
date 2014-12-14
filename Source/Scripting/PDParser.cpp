@@ -12,8 +12,6 @@
 
 namespace Gorgon { namespace Scripting {
 
-	using namespace internal;
-
 	namespace {
 
 		struct Token {
@@ -39,6 +37,8 @@ namespace Gorgon { namespace Scripting {
 			};
 
 			Token(const std::string &repr, Type type, int start): repr(repr), type(type), start(start) {}
+			
+			Token() : type(None), start(-1) { }
 
 			virtual std::string getrepr() const {
 				return repr;
@@ -71,6 +71,7 @@ namespace Gorgon { namespace Scripting {
 			case '*':
 			case '/':
 			case '<':
+			case '^':
 			case '>':
 			case '&':
 			case '|':
@@ -99,6 +100,7 @@ namespace Gorgon { namespace Scripting {
 			case '-':
 			case '*':
 			case '/':
+			case '^':
 			case '<':
 			case '>':
 			case '&':
@@ -113,36 +115,65 @@ namespace Gorgon { namespace Scripting {
 		}
 
 		int getprecedence(const std::string &op) {
-			if(op == ")") {
-				return 8;
+			if(op=="") {
+				throw "Invalid operator";
 			}
-			else if(op == "*" || op == "/" || op == "%") {
-				return 7;
+			
+			if(op.length()==1) {
+				switch(op[0]) {
+				case '^':
+					return 4;
+					
+				case '*':
+				case '/':
+					return 6;
+					
+				case '+':
+				case '-':
+					return 9;
+					
+				case '<':
+				case '>':
+				case '=':
+					return 12;
+					
+				case '&':
+				case '|':
+					return 13;
+					
+				default:
+					throw "Invalid operator";
+				}
 			}
-			else if(op == "+" || op == "-") {
-				return 6;
+			else if(op.length()==2) {
+				if(op[1]=='=') {
+					switch(op[0]) {
+					case '>':
+					case '<':
+					case '!':
+					case '=':
+						return 10;
+						
+					default:
+						throw "Invalid operator";
+					}
+				}
 			}
-			else if(op == "<" || op == "<=" || op == ">" || op == ">=") {
+				
+			if(op=="<<" || op==">>" || op=="bitleft" || op=="bitright") {
 				return 5;
 			}
-			else if(op == "==" || op == "!=") {
-				return 4;
+			else if(op=="bitand" || op=="bitor" || op=="bitxor") {
+				return 7;
 			}
-			else if(op == "&") {
-				return 3;
+			else if(op=="bitset" || op=="contains" || op=="in" || op=="notin" || op=="union" || op=="intersect") {
+				return 10;
 			}
-			else if(op == "|") {
-				return 2;
+			else if(op=="mod") {
+				return 6;
 			}
-			else if(op == "(") {
-				return 1;
-			}
-			else if(op == "=") {
-				return 0;
-			}
-			else {
-				throw ParseError {ParseError::UnexpectedToken, 0, '~', "Unexpected operator"};
-			}
+			
+			throw "Invalid operator";
 		}
 
 		Token consumenexttoken(const std::string &input, int &index) {
@@ -162,9 +193,9 @@ namespace Gorgon { namespace Scripting {
 				return Token {ExtractQuotes(input, --index), Token::String, start};
 
 			case '(':
-				return Token {"(", Token::Operator, start};
+				return Token {"(", Token::LeftP, start};
 			case ')':
-				return Token {")", Token::Operator, start};
+				return Token {")", Token::RightP, start};
 			case '[':
 				return Token {"[", Token::LeftSqrP, start};
 			case ']':
@@ -234,7 +265,7 @@ namespace Gorgon { namespace Scripting {
 						throw ParseError {ParseError::UnexpectedToken, 0, index, "Unknown character"};
 					}
 				}
-				else if(isdigit(c)) {
+				else if(isdigit(c) && !op) {
 					if(opornumber) {
 						numeric = true;
 					}
@@ -273,6 +304,8 @@ namespace Gorgon { namespace Scripting {
 					throw ParseError {ParseError::UnexpectedToken, 0, index, "Unknown character"};
 				}
 			}
+			
+			throw "Invalid token";
 		}
 
 		Token peeknexttoken(const std::string &input, int index) {
@@ -288,7 +321,7 @@ namespace Gorgon { namespace Scripting {
 			{Token::Membership, "Membership"}, {Token::Namespace, "Namespace"}, {Token::EoS, "EoS"}, {Token::None, "None"}
 		);
 
-		struct node {
+		struct node {			
 			node() : data("", Token::None, 0) {}
 			node(const Token data): data(data) {}
 
@@ -340,31 +373,125 @@ namespace Gorgon { namespace Scripting {
 		int par=0;
 		bool nextisop=false;
 		
-		Containers::Collection<node> opstack;
+		struct opnode {
+			node *op;
+			int precedence;
+		};
+		
+		std::vector<opnode> opstack;
 		Containers::Collection<node> outputstack;
+		
+		std::function<void(node&)> printtree = [&](node &tree) {
+			for(auto &n : tree.leaves) {
+				printtree(n);
+			}
+			
+			std::cout<<tree.data.repr<<" ";
+		};
+		
+		auto printtrees = [&]() {
+			for(auto &t : outputstack) {
+				printtree(t);
+				std::cout<<std::endl;
+			}
+			
+			for(auto &op : opstack) {
+				std::cout<<op.op->data.repr<<" ";
+			}
+			
+			std::cout<<std::endl;
+			std::cout<<std::string('*', 20);
+			std::cout<<std::endl;
+		};
+		
+		auto popoff = [&] {
+			node *second  = &outputstack.Pop();
+			node *first = &outputstack.Pop();
+			
+			node *op=opstack.back().op;
+			opstack.pop_back();
+			
+			op->leaves.Add(first);
+			op->leaves.Add(second);
+			
+			outputstack.Push(op);
+		};
+		
+		int parcount=0;
+		
 
-		while(1) {
+		while(true) {
 			token=consumenexttoken(input, index);
 			
+			printtrees();
+			
 			if(nextisop) {
-				
-				
 				nextisop=false;
-			}
-			else {
-				if(token==Token::Int) {
-					outputstack.Add(token);					
+
+				if(token==Token::Operator || token==Token::Identifier) {
+					int precedence=getprecedence(token.repr);
+					
+					token.type=Token::Operator;
+					
+					node *op=new node(token);
+					
+					while(opstack.size() && opstack.back().precedence < precedence) {
+						popoff();
+					}
+					
+					opstack.push_back({op, precedence});
+				}
+				else if(token==Token::RightP && parcount) {
+					while(opstack.back().op->data!=Token::LeftP) {
+						popoff();
+					}
+					
+					auto n=opstack.back();
+					opstack.pop_back();
+					delete n.op;
+					
+					parcount--;
+					nextisop=true;
 				}
 				else {
-					throw 0;
+					index=token.start;
+					break;
 				}
-				
+			}
+			else {
 				nextisop=true;
+
+				if(token==Token::Int) {
+					outputstack.Push(new node(token));
+				}
+				else if(token==Token::LeftP) {
+					opstack.push_back({new node(token), 25});
+					parcount++;
+					nextisop=false;
+				}
+				else {
+					throw "Unexpected token";
+				}
 			}
 		}
+		
+		while(opstack.size()) {
+			popoff();
+		}
+		
+		if(outputstack.GetSize()!=1) throw "Invalid expression";
+		
+		printtree(outputstack[0]);
+		
+		return &outputstack[0];
+	}
+	
+	void ProgrammingParser::parseexpr(const std::string &input) {
+		int index=0;
+		parseexpression(input, index);
 	}
 
-	node *ProgrammingParser::parse(const std::string &input) {
+	node *parse(const std::string &input) {
 		int index = 0;
 		node *root = new node;
 
