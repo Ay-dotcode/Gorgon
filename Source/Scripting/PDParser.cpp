@@ -16,8 +16,8 @@ namespace Gorgon { namespace Scripting {
 
 		struct Token {
 			enum Type {
-				Float,
 				Int,
+				Float,
 				Bool,
 				String,
 				Identifier,
@@ -54,6 +54,18 @@ namespace Gorgon { namespace Scripting {
 			bool operator != (Type type) const {
 				return type!=this->type;
 			}
+			
+			bool isliteral() {
+				switch(type) {
+					case Int:
+					case Float:
+					case Bool:
+					case String:
+						return true;
+					default:
+						return false;
+				}
+			}
 
 			std::string repr;
 			Type type;
@@ -88,6 +100,7 @@ namespace Gorgon { namespace Scripting {
 			case '}':
 			case '.':
 			case '$':
+			case ',':
 				return true;
 			default:
 				return false;
@@ -176,7 +189,7 @@ namespace Gorgon { namespace Scripting {
 			throw "Invalid operator";
 		}
 
-		Token consumenexttoken(const std::string &input, int &index) {
+		Token consumenexttoken(const std::string &input, int &index, bool expectop=false) {
 			while(index < input.length() && isspace(input[index])) index++;
 			
 			int start=index;
@@ -185,7 +198,7 @@ namespace Gorgon { namespace Scripting {
 
 			std::string acc = "";
 
-
+			
 			char c = input[index++];
 			switch(c) {
 			case '"' :
@@ -223,7 +236,7 @@ namespace Gorgon { namespace Scripting {
 			if(isdigit(c)) {
 				numeric = true;
 			}
-			else if(c == '-') {
+			else if(c == '-' && !expectop) {
 				opornumber = true;
 			}
 			else if(isoperator(c)) {
@@ -321,9 +334,17 @@ namespace Gorgon { namespace Scripting {
 			{Token::Membership, "Membership"}, {Token::Namespace, "Namespace"}, {Token::EoS, "EoS"}, {Token::None, "None"}
 		);
 
-		struct node {			
-			node() : data("", Token::None, 0) {}
-			node(const Token data): data(data) {}
+		struct node {
+			enum Type {
+				Literal,
+				FunctionCall,
+				Member,
+				Identifier,
+				Operator
+			} type;
+			
+			//node() : data("", Token::None, 0) {}
+			node(Type type, const Token data): data(data), type(type) {}
 
 			Token data;
 			Containers::Collection<node> leaves;
@@ -386,7 +407,12 @@ namespace Gorgon { namespace Scripting {
 				printtree(n);
 			}
 			
-			std::cout<<tree.data.repr<<" ";
+			if(tree.type==node::FunctionCall) {
+				std::cout<<"[CALL] ";
+			}
+			else {
+				std::cout<<tree.data.repr<<" ";
+			}
 		};
 		
 		auto printtrees = [&]() {
@@ -418,10 +444,10 @@ namespace Gorgon { namespace Scripting {
 		};
 		
 		int parcount=0;
-		
+		int infunction=0;
 
 		while(true) {
-			token=consumenexttoken(input, index);
+			token=consumenexttoken(input, index, true);
 			
 			printtrees();
 			
@@ -433,13 +459,18 @@ namespace Gorgon { namespace Scripting {
 					
 					token.type=Token::Operator;
 					
-					node *op=new node(token);
+					node *op=new node(node::Operator, token);
 					
 					while(opstack.size() && opstack.back().precedence < precedence) {
 						popoff();
 					}
 					
 					opstack.push_back({op, precedence});
+				}
+				else if(token==Token::Seperator) {
+					while(opstack.back().op->data!=Token::LeftP) {
+						popoff();
+					}
 				}
 				else if(token==Token::RightP && parcount) {
 					while(opstack.back().op->data!=Token::LeftP) {
@@ -449,6 +480,19 @@ namespace Gorgon { namespace Scripting {
 					auto n=opstack.back();
 					opstack.pop_back();
 					delete n.op;
+					
+					if(infunction--) {
+						Containers::Collection<node> params;
+						
+						while(outputstack.Last()->type!=node::FunctionCall || outputstack.Last()->data.type!=Token::EoS) {
+							params.Push(&outputstack.Pop());
+						}
+						
+						outputstack.Last()->data.type=Token::None;
+						for(auto &p : params) {
+							outputstack.Last()->leaves.Push(p);
+						}
+					}
 					
 					parcount--;
 					nextisop=true;
@@ -461,11 +505,27 @@ namespace Gorgon { namespace Scripting {
 			else {
 				nextisop=true;
 
-				if(token==Token::Int) {
-					outputstack.Push(new node(token));
+				if(token.isliteral()) {
+					outputstack.Push(new node(node::Literal, token));
+				}
+				else if(token==Token::Identifier) { //either variable/constant or a function call
+					if(peeknexttoken(input, index)==Token::LeftP) { //function call
+						infunction++;
+						//parcount++;
+						auto fn=new node(node::FunctionCall, {"", Token::EoS, token.start});
+						fn->leaves.Push(new node(node::Identifier, token));
+						outputstack.Push(fn);
+
+						//opstack.push_back({new node(node::Operator, token), 25});
+						
+						nextisop=false;
+					}
+					else {
+						outputstack.Push(new node(node::Identifier, token));
+					}
 				}
 				else if(token==Token::LeftP) {
-					opstack.push_back({new node(token), 25});
+					opstack.push_back({new node(node::Operator, token), 25});
 					parcount++;
 					nextisop=false;
 				}
@@ -493,7 +553,7 @@ namespace Gorgon { namespace Scripting {
 
 	node *parse(const std::string &input) {
 		int index = 0;
-		node *root = new node;
+		node *root = nullptr;
 
 		Token token=consumenexttoken(input, index);
 

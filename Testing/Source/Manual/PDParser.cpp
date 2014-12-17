@@ -38,13 +38,13 @@ int main() {
 
 			//file << "REQUIRE_THROWS( parser.parse(\""<<str<<"\") );"<< std::endl;
 		}
-// 		catch(const char *e) {
-// 			Gorgon::Console::SetColor(Gorgon::Console::Red);
-// 
-// 			std::cout << e << std::endl;
-// 
-// 			//file << "REQUIRE_THROWS( parser.parse(\""<<str<<"\") );"<< std::endl;
-// 		}
+		catch(const char *e) {
+			Gorgon::Console::SetColor(Gorgon::Console::Red);
+
+			std::cout << e << std::endl;
+
+			//file << "REQUIRE_THROWS( parser.parse(\""<<str<<"\") );"<< std::endl;
+		}
 	}
 	
 
