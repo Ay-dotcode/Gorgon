@@ -242,10 +242,10 @@ namespace Gorgon { namespace Scripting {
 			else if(isoperator(c)) {
 				op = true;
 			}
-			else if(c == '$') {
-				var = true;
-				acc.clear();
-			}
+// 			else if(c == '$') {
+// 				var = true;
+// 				acc.clear();
+// 			}
 			else if(c== '=') {
 				oporequals=true;
 			}
@@ -340,7 +340,8 @@ namespace Gorgon { namespace Scripting {
 				FunctionCall,
 				Member,
 				Identifier,
-				Operator
+				Operator,
+				Term
 			} type;
 			
 			//node() : data("", Token::None, 0) {}
@@ -387,6 +388,66 @@ namespace Gorgon { namespace Scripting {
 			}
 		}
 	}
+	
+	node *parseexpression(const std::string &input, int &index);
+	
+	node *parseterm(const std::string &input, int &index) {
+		Token token=consumenexttoken(input, index);
+		
+		// first token should be identifier
+		if(token.type != Token::Identifier) {
+			throw "Should be identifier";
+		}
+		
+		//start with first
+		auto root=new node(node::Identifier, token);
+		
+		while(1) {
+			token=consumenexttoken(input, index);
+
+			//membership has a single following identifier
+			if(token==Token::Membership) {
+				auto nw = new node(node::Member, token);
+				token=consumenexttoken(input, index);
+				
+				if(token!=Token::Identifier) {
+					delete root;
+					delete nw;
+					
+					throw "Should be identifier";
+				}
+				
+				nw->leaves.Push(root);
+				nw->leaves.Push(new node(node::Identifier, token));
+				root=nw;
+			}
+			else if(token==Token::LeftSqrP) { //[] contains an expression
+				auto nw = new node(node::Member, token);
+				
+				auto expr=parseexpression(input, index);
+				
+				token=consumenexttoken(input, index);
+				
+				if(token!=Token::RightSqrP) {
+					delete root;
+					delete nw;
+					throw "should be expression";
+				}
+				
+				nw->leaves.Push(root);
+				nw->leaves.Push(expr);
+				root=nw;
+			}
+			else {
+				//anything unknown will be rolled back and we will exit
+				index=token.start;
+				
+				break;
+			}
+		}
+		
+		return root;
+	}
 
 	node *parseexpression(const std::string &input, int &index) {
 		Token token;
@@ -403,12 +464,20 @@ namespace Gorgon { namespace Scripting {
 		Containers::Collection<node> outputstack;
 		
 		std::function<void(node&)> printtree = [&](node &tree) {
+			if(tree.type==node::FunctionCall) {
+				std::cout<<"( ";
+			}
+
 			for(auto &n : tree.leaves) {
 				printtree(n);
+				
+				if(tree.type==node::FunctionCall) {
+					std::cout<<" , ";
+				}
 			}
 			
 			if(tree.type==node::FunctionCall) {
-				std::cout<<"[CALL] ";
+				std::cout<<")[CALL] ";
 			}
 			else {
 				std::cout<<tree.data.repr<<" ";
@@ -430,6 +499,8 @@ namespace Gorgon { namespace Scripting {
 			std::cout<<std::endl;
 		};
 		
+		//pops an operator from the opstack and joins last two elements in the
+		//output stack using it
 		auto popoff = [&] {
 			node *second  = &outputstack.Pop();
 			node *first = &outputstack.Pop();
@@ -446,49 +517,67 @@ namespace Gorgon { namespace Scripting {
 		int parcount=0;
 		int infunction=0;
 
+		//this algorithm terminates on the first token that cannot be processed
+		//and will not throw if there is no error up to that point.
 		while(true) {
-			token=consumenexttoken(input, index, true);
+			token=consumenexttoken(input, index, nextisop);
 			
 			printtrees();
 			
+			//if an operator is expected
 			if(nextisop) {
+				//next will not be an operator unless some specific case occurs
 				nextisop=false;
 
+				//token is an operator (can be identified as identifier as well)
 				if(token==Token::Operator || token==Token::Identifier) {
+					//find precedence, this also validates the operator
 					int precedence=getprecedence(token.repr);
 					
-					token.type=Token::Operator;
-					
+					//create the node
+					token.type=Token::Operator;					
 					node *op=new node(node::Operator, token);
 					
+					//process higher precedence operators
 					while(opstack.size() && opstack.back().precedence < precedence) {
 						popoff();
 					}
 					
+					//add to the op stack
 					opstack.push_back({op, precedence});
 				}
-				else if(token==Token::Seperator) {
+				else if(token==Token::Seperator) { //comma
+					//process until to the start of the function call. if there are previous
+					//parameters, they would have already been processed.
 					while(opstack.back().op->data!=Token::LeftP) {
 						popoff();
 					}
 				}
-				else if(token==Token::RightP && parcount) {
+				else if(token==Token::RightP && parcount) { //if no parenthesis is expected, just exit.
+					//pop until the start of the parenthesis
 					while(opstack.back().op->data!=Token::LeftP) {
 						popoff();
 					}
 					
+					//get rid of the starting parenthesis as it is not required.
 					auto n=opstack.back();
 					opstack.pop_back();
 					delete n.op;
 					
+					//if these parenthesis are a part of a function call
 					if(infunction--) {
+						//collect parameters
 						Containers::Collection<node> params;
 						
+						//if there are multiple function calls, the ones that are processed will have their token type
+						//set to none
 						while(outputstack.Last()->type!=node::FunctionCall || outputstack.Last()->data.type!=Token::EoS) {
 							params.Push(&outputstack.Pop());
 						}
 						
 						outputstack.Last()->data.type=Token::None;
+						
+						//place parameters into the function call
 						for(auto &p : params) {
 							outputstack.Last()->leaves.Push(p);
 						}
@@ -497,31 +586,37 @@ namespace Gorgon { namespace Scripting {
 					parcount--;
 					nextisop=true;
 				}
-				else {
+				else { //unknown token, just break from the loop, this could be a possible termination token
 					index=token.start;
 					break;
 				}
 			}
-			else {
+			else { //expecting an operand
+				//next will be an operator unless there is specific situation
 				nextisop=true;
 
+				//literals are used as is
 				if(token.isliteral()) {
 					outputstack.Push(new node(node::Literal, token));
 				}
 				else if(token==Token::Identifier) { //either variable/constant or a function call
+					index=token.start; //roll back so parseterm could do the parsing
+					auto term = parseterm(input, index);
+					auto nw = new node(node::Term, {"", Token::None, token.start});
+					nw->leaves.Push(term);
+					term=nw;
+					
 					if(peeknexttoken(input, index)==Token::LeftP) { //function call
 						infunction++;
-						//parcount++;
-						auto fn=new node(node::FunctionCall, {"", Token::EoS, token.start});
-						fn->leaves.Push(new node(node::Identifier, token));
+						//function call node
+						auto fn=new node(node::FunctionCall, {"", Token::EoS, token.start}); //EoS marks active function call
+						fn->leaves.Push(term);
 						outputstack.Push(fn);
-
-						//opstack.push_back({new node(node::Operator, token), 25});
 						
 						nextisop=false;
 					}
-					else {
-						outputstack.Push(new node(node::Identifier, token));
+					else { //variable/constant
+						outputstack.Push(term);
 					}
 				}
 				else if(token==Token::LeftP) {
@@ -559,9 +654,6 @@ namespace Gorgon { namespace Scripting {
 
 		if(token == Token::EoS) return nullptr;
 
-		if(token.type != Token::Identifier) {
-			throw "Should be identifier";
-		}
 
 		bool canbekeyword=true;
 		while(1) {
