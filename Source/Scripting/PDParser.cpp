@@ -239,15 +239,11 @@ namespace Gorgon { namespace Scripting {
 			else if(c == '-' && !expectop) {
 				opornumber = true;
 			}
-			else if(isoperator(c)) {
-				op = true;
-			}
-// 			else if(c == '$') {
-// 				var = true;
-// 				acc.clear();
-// 			}
 			else if(c== '=') {
 				oporequals=true;
+			}
+			else if(isoperator(c)) {
+				op = true;
 			}
 			else if(!isalpha(c)) {
 				throw ParseError {ParseError::UnexpectedToken, 0, index, "Invalid character"};
@@ -344,6 +340,8 @@ namespace Gorgon { namespace Scripting {
 				Term,
 				Index,
 				Construct,
+				Keyword,
+				Assignment,
 				Empty
 			} type;
 			
@@ -517,6 +515,42 @@ namespace Gorgon { namespace Scripting {
 		
 		return root;
 	}
+	
+	void printtree(node &tree) {
+		if(tree.type==node::FunctionCall) {
+			std::cout<<"( ";
+		}
+		
+		if(tree.type==node::Construct) {
+			std::cout<<"{ ";
+		}
+		if(tree.type==node::Index) {
+			std::cout<<"[ ";
+		}
+
+		int i=0;
+		for(auto &n : tree.leaves) {
+			
+			if((tree.type==node::FunctionCall || tree.type==node::Construct || tree.type==node::Index) && i++) {
+				std::cout<<", ";
+			}
+
+			printtree(n);
+		}
+		
+		if(tree.type==node::FunctionCall) {
+			std::cout<<")[CALL] ";
+		}
+		else if(tree.type==node::Construct) {
+			std::cout<<"} ";
+		}
+		else if(tree.type==node::Index) {
+			std::cout<<"] ";
+		}
+		else {
+			std::cout<<tree.data.repr<<" ";
+		}
+	};
 
 	node *parseexpression(const std::string &input, int &index) {
 		Token token;
@@ -532,41 +566,6 @@ namespace Gorgon { namespace Scripting {
 		std::vector<opnode> opstack;
 		Containers::Collection<node> outputstack;
 		
-		std::function<void(node&)> printtree = [&](node &tree) {
-			if(tree.type==node::FunctionCall) {
-				std::cout<<"( ";
-			}
-			
-			if(tree.type==node::Construct) {
-				std::cout<<"{ ";
-			}
-			if(tree.type==node::Index) {
-				std::cout<<"[ ";
-			}
-
-			int i=0;
-			for(auto &n : tree.leaves) {
-				
-				if((tree.type==node::FunctionCall || tree.type==node::Construct || tree.type==node::Index) && i++) {
-					std::cout<<", ";
-				}
-
-				printtree(n);
-			}
-			
-			if(tree.type==node::FunctionCall) {
-				std::cout<<")[CALL] ";
-			}
-			else if(tree.type==node::Construct) {
-				std::cout<<"} ";
-			}
-			else if(tree.type==node::Index) {
-				std::cout<<"] ";
-			}
-			else {
-				std::cout<<tree.data.repr<<" ";
-			}
-		};
 		
 		auto printtrees = [&]() {
 			for(auto &t : outputstack) {
@@ -586,6 +585,9 @@ namespace Gorgon { namespace Scripting {
 		//pops an operator from the opstack and joins last two elements in the
 		//output stack using it
 		auto popoff = [&] {
+			if(outputstack.GetSize()<2) {
+				throw "Missing operand";
+			}
 			node *second  = &outputstack.Pop();
 			node *first = &outputstack.Pop();
 			
@@ -606,7 +608,7 @@ namespace Gorgon { namespace Scripting {
 		while(true) {
 			token=consumenexttoken(input, index, nextisop);
 			
-			printtrees();
+			//printtrees();
 			
 			//if an operator is expected
 			if(nextisop) {
@@ -615,8 +617,20 @@ namespace Gorgon { namespace Scripting {
 
 				//token is an operator (can be identified as identifier as well)
 				if(token==Token::Operator || token==Token::Identifier) {
-					//find precedence, this also validates the operator
-					int precedence=getprecedence(token.repr);
+					int precedence=0;
+					if(token==Token::Identifier) {
+						try {
+							precedence=getprecedence(token.repr);
+						}
+						catch(...) {
+							index=token.start;
+							break;
+						}
+					}
+					else {
+						//find precedence, this also validates the operator
+						precedence=getprecedence(token.repr);
+					}
 					
 					//create the node
 					token.type=Token::Operator;					
@@ -714,6 +728,8 @@ namespace Gorgon { namespace Scripting {
 				}
 			}
 		}
+
+		if(parcount) throw "Unclosed parenthesis";
 		
 		while(opstack.size()) {
 			popoff();
@@ -721,7 +737,7 @@ namespace Gorgon { namespace Scripting {
 		
 		if(outputstack.GetSize()!=1) throw "Invalid expression";
 		
-		printtree(outputstack[0]);
+		//printtree(outputstack[0]);
 		
 		return &outputstack[0];
 	}
@@ -739,76 +755,62 @@ namespace Gorgon { namespace Scripting {
 
 		if(token == Token::EoS) return nullptr;
 
-
-		bool canbekeyword=true;
-		while(1) {
-			token=consumenexttoken(input, index);
-
-			if(token==Token::Membership) {
-				//cont
-				token=consumenexttoken(input, index);
-				if(token!=Token::Identifier) {
-					throw "Should be identifier";
-				}
-				canbekeyword=false;
-			}
-			else if(token==Token::LeftSqrP) {
-				//cont
-				//parseexpression(input, index);
-				token=consumenexttoken(input, index);
-				if(token!=Token::RightSqrP) {
-					throw "should be expression";
-				}
-				canbekeyword=false;
-			}
-			else if(token==Token::EqualSign) {
-				//assignment
-				//parseexpression(input, index);
-				token=consumenexttoken(input, index);
-				if(token != Token::EoS) {
-					throw "string should end";
-				}
-
-				break;
-			}
-			else if(token==Token::LeftP) {
-				//exprarry=parseexpressionarray(input, index);
-				token=consumenexttoken(input, index);
-				if(token!=Token::RightP) {
-					throw "should be expression";
-				}
-
+		if(token!=Token::Identifier) {
+			throw "Should be identifier";
+		}
+		
+		if(KeywordNames.count(token.repr)) { //keyword
+			root=new node(node::Keyword, token);
+			
+			token=peeknexttoken(input, index);
+			
+			while(token!=Token::EoS) {
+				auto expr=parseexpression(input, index);
+				root->leaves.Push(expr);
+				
 				token=peeknexttoken(input, index);
-				if(token != Token::EoS) {
-					if(!canbekeyword) {
-						throw "unexpected something";
-					}
-
-					//if(exprarry.leaves.size()>1) throw "hata"
-
-					while(token!=Token::EoS) {
-						//parseexpression(input, index);
-						token=peeknexttoken(input, index);
-					}
+			}
+		}
+		else {
+			index=0; //parse from start
+			auto term=parseterm(input, index);
+			
+			token=consumenexttoken(input, index);
+			
+			if(token==Token::EqualSign) {
+				auto expr=parseexpression(input, index);
+				
+				root=new node(node::Assignment, token);
+				root->leaves.Push(term);
+				root->leaves.Push(expr);
+				
+				if( (token=consumenexttoken(input, index)) !=Token::EoS) {
+					throw "Scrap at the end of expression.";
+				}
+			}
+			else if(token==Token::LeftP) { //function
+				index=0; //let expression do the parsing
+				root=parseexpression(input, index);
+				
+				if( (token=consumenexttoken(input, index)) !=Token::EoS) {
+					throw "Scrap at the end of expression.";
 				}
 			}
 			else {
-				if(!canbekeyword) {
-					throw "unexpected something";
-				}
-
-				token=peeknexttoken(input, index);
-				while(token!=Token::EoS) {
-					//parseexpression(input, index);
-					token=peeknexttoken(input, index);
-				}
+				throw "Invalid expression";
 			}
 		}
-
-
+		
+		printtree(*root);
+		
 		return root;
 	}
 
+	unsigned ProgrammingParser::Parse(const std::string &input) { 
+		parse(input);
+		
+		return 0;  
+	}
 
 } }
 

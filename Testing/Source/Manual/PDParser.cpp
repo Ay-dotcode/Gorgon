@@ -11,6 +11,7 @@ using namespace Gorgon::Scripting;
 int main() {
 
 	ProgrammingParser parser;
+	Initialize();
 	
 
 	//std::ofstream file("test.cpp");
@@ -23,7 +24,7 @@ int main() {
 			std::getline(std::cin, str);
 			std::cout<<std::endl;
 
-			parser.parseexpr(str);
+			parser.Parse(str);
 
 			//testlexer(str, &file);
 

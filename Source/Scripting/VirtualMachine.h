@@ -91,6 +91,11 @@ namespace Gorgon {
 				return activevms[std::this_thread::get_id()];
 			}
 
+			/// Returns the current VM for this thread.
+			static bool Exists() {
+				return activevms.Exists(std::this_thread::get_id());
+			}
+
 			bool IsVariableSet(const std::string &name);
 			
 			Variable &GetVariable(const std::string &name);

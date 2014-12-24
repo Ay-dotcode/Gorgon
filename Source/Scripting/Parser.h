@@ -138,7 +138,7 @@ namespace Gorgon {
 		class ProgrammingParser: public ParserBase {
 		public:
 
-			virtual unsigned Parse(const std::string &input) override { return 0;  }
+			virtual unsigned Parse(const std::string &input) override;
 
 			//node *parse(const std::string &input);
 			

@@ -281,6 +281,8 @@ namespace Gorgon {
 				
 				swap(parameters, this->parameters);
 				UnpackTags(tags...);
+				
+				init();
 			}
 
 			Function(const Function &)=delete;
@@ -547,6 +549,8 @@ namespace Gorgon {
 			bool isoperator = false;
 			
 		private:
+			void init();
+			
 			const Type *parent;
 		};
 		

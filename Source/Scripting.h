@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <set>
 
 #include "Types.h"
 #include "Enum.h"
@@ -103,13 +104,15 @@ namespace Gorgon {
 		
 		/// Initializes the scripting system
 		inline void Initialize() {
-			//init_builtin();
+			init_builtin();
 		}
 		
 		/// This library requires Initialize to be called
 		extern Library Integrals;
 		extern Library Keywords;
 		extern Library Reflection;
+		
+		extern std::set<std::string, String::CaseInsensitiveLess> KeywordNames;
 		
 		/// Allows easy and fast access to integral types
 		namespace Types {
