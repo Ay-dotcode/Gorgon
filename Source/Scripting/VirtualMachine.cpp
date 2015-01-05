@@ -361,6 +361,13 @@ namespace Gorgon {
 
 			Run();
 		}
+	
+		void VirtualMachine::Begin(InputSource &source) {
+			Activate();
+			inputsources.Add(source);
+
+			executionscopes.Add(new ExecutionScope(source));
+		}
 
 		void VirtualMachine::Run() {
 			int target=executionscopes.GetCount()-1;
@@ -678,8 +685,18 @@ namespace Gorgon {
 			
 			return false;
 		}
+		
+		void VirtualMachine::CompileCurrent() {
+			if(executionscopes.GetCount()==0) {
+				throw FlowException("No active execution scope");
+			}
+			
+			executionscopes.Last()->Compile();
+		}
+		
+		
 
-
+		
 		Variable &VirtualMachine::GetVariable(const std::string &name) {
 			//check variable scopes first
 			auto &vars=variablescopes.Last()->Variables;

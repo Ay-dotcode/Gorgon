@@ -55,6 +55,9 @@ namespace Gorgon {
 			/// Marks this value as a constant
 			Constant,
 			
+			/// Marks this value as an identifier, either a constant or a variable
+			Identifier,
+			
 			/// For error checking purposes
 			None,
 		};
@@ -133,5 +136,13 @@ private:
 			
 			void eatwhite(const std::string &input, int &ch);
 		};
+		
+		/// Disassembles the given instruction
+		std::string Disassemble(const Instruction *);
+		
+		class InputSource;
+		
+		/// Disassembles entire input source to the given stream
+		void Disassemble(InputSource &source, std::ostream &out);
 	}
 }

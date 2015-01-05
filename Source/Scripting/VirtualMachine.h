@@ -41,9 +41,15 @@ namespace Gorgon {
 			/// This method starts the virtual machine
 			void Run(unsigned executiontarget);
 
-
 			/// This method starts the virtual machine with the given input source
 			void Start(InputSource &source);
+			
+			/// This method begins a new execution scope without starting execution
+			void Begin(InputSource &source);
+			
+			/// Commands virtual machine to compile current execution scope. Might cause issues with interactive
+			/// input sources.
+			void CompileCurrent();
 
 			/// Includes a new library to be used in this virtual machine
 			void AddLibrary(const Library &library);
@@ -67,7 +73,6 @@ namespace Gorgon {
 			const SymbolType FindSymbol(std::string name, SymbolType hint, Any &result);
 
 			/// Sets the input source to read code lines from. Does not change active execution context.
-			/// only allows 
 			void AddInputSource(InputSource &source);
 
 			/// Changes the current executing line.
@@ -219,6 +224,11 @@ namespace Gorgon {
 			/// providing additional code source.
 			unsigned GetExecutionScopeCount() const {
 				return executionscopes.GetCount();
+			}
+			
+			/// Returns the current exection scope
+			const ExecutionScope &CurrentExecutionScope() const {
+				return executionscopes.Last().Current();
 			}
 
 			/// Returns the code marker for the next line.

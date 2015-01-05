@@ -325,6 +325,12 @@ namespace Gorgon {
 				return ret;
 			}
 			
+			/// Forces the compilation of entire input source
+			void Compile() {
+				int c=current;
+				while(source->ReadInstruction(c++)) ;
+			}			
+			
 			/// Returns the code at the current line without incrementing it.
 			const Instruction *Peek() {
 				return source->ReadInstruction(current);

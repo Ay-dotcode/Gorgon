@@ -111,9 +111,15 @@ int main() {
 	Gorgon::Console::SetColor(Gorgon::Console::Yellow);
 	std::cout<<"OUTPUT: "<<std::endl;
 	Gorgon::Console::Reset();
+	
+	vm.Begin(input);
+	//Disassemble(input, std::cout);
+	
+	std::cout<<std::endl<<std::endl;
+	
 
 	try {
-		vm.Start(input);
+		vm.Run();
 	}
 	catch(const Exception &ex) {
 

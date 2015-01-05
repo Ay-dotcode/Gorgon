@@ -4,6 +4,7 @@ SET(Local
 	Builtin.cpp
 	Data.h
 	Embedding.h
+	Generator.cpp
 	InputSource.h
 	Parser.h
 	ILParser.cpp
