@@ -8,6 +8,7 @@ SET(Local
 	InputSource.h
 	Parser.h
 	ILParser.cpp
+	PDParser.cpp
 	Reflection.h
 	Runtime.h
 	VirtualMachine.h

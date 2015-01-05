@@ -59,6 +59,28 @@ namespace Gorgon {
 			}
 		};
 		
+		/// Compares two strings case insensitive. Works similar to strcmp
+		inline int CaseInsensitiveCompare(const std::string &left, const std::string &right) {
+			unsigned len=std::min(left.length(), right.length());
+			
+			auto l=left.begin();
+			auto r=right.begin();
+			for(unsigned i=0; i<len; i++) {
+				auto lc=tolower(*l);
+				auto rc=tolower(*r);
+				if(lc<rc) {
+					return -1;
+				}
+				else if(lc>rc) {
+					return 1;
+				}
+				++l;
+				++r;
+			}
+			
+			return left.length()<right.length() ? -1 : (left.length()==right.length() ? 0 : 1);
+		}
+		
 
 #ifdef DOXYGEN
 		/// Converts a string to another type. Works for integral types and

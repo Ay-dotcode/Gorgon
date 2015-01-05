@@ -9,6 +9,8 @@
 
 namespace Gorgon {
 	namespace Scripting {
+		//namespace internal { struct node; void testlexer(const std::string &input, std::ostream *cases); };
+
 		
 		
 		/// Describes the type of an instruction
@@ -121,7 +123,7 @@ namespace Gorgon {
 			
 			virtual unsigned Parse(const std::string &input) override;
 			
-private:
+		private:
 			void storedfn(const std::string &input, int &ch);
 			
 			void fncall(const std::string &input, int &ch, bool allowmethod=true);
@@ -132,9 +134,21 @@ private:
 			
 			unsigned long parsetemporary(const std::string &input, int &ch);
 			
-			std::string extractquotes(const std::string &input, int &ch);
-			
 			void eatwhite(const std::string &input, int &ch);
+		};
+
+
+		class ProgrammingParser: public ParserBase {
+		public:
+
+			virtual unsigned Parse(const std::string &input) override;
+
+			//node *parse(const std::string &input);
+			
+			void parseexpr(const std::string &input);
+
+		private:			
+
 		};
 		
 		/// Disassembles the given instruction

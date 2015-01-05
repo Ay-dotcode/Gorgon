@@ -1,6 +1,6 @@
 (* Language Productions *)
 
-statement = keyword_call | function_call | expression | assignment, [";" | "\n"];
+statement = keyword_call | function_call | assignment, [";" | "\n"];
 
 variable = "$", variable_identifier;
 

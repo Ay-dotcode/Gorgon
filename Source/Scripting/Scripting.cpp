@@ -11,7 +11,7 @@ namespace Gorgon { namespace Scripting {
 		type=other.type;
 
 
-		if(type && type->IsReferenceType() && data.Pointer()) {
+		if(type && type->IsReferenceType() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Increase(*this);
 		}
 	}
@@ -27,7 +27,7 @@ namespace Gorgon { namespace Scripting {
 	Data::Data(const Type& type) : type(&type) {
 		data = type.GetDefaultValue();
 		
-		if(type.IsReferenceType() && data.Pointer()) {
+		if(type.IsReferenceType() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Increase(*this);
 		}
 	}
@@ -36,7 +36,7 @@ namespace Gorgon { namespace Scripting {
 		check();
 		ASSERT((type!=nullptr), "Data type cannot be nullptr", 1, 2);
 
-		if(type->IsReferenceType() && data.Pointer()) {
+		if(type->IsReferenceType() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Increase(*this);
 		}
 	}
@@ -73,7 +73,7 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Data::~Data() {
-		if(type && type->IsReferenceType() && data.IsSet() && data.Pointer()) {
+		if(type && type->IsReferenceType() && data.IsSet() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Decrease(*this);
 		}
 	}
@@ -86,6 +86,12 @@ namespace Gorgon { namespace Scripting {
 	
 	void Function::CallRedirect(Data,std::string &) const { 
 		assert( false && "Redirect call on a non-redirecting function");
+	}
+	
+	void Function::init() {
+		if(keyword) {
+			KeywordNames.insert(name);
+		}
 	}
 	
 	Data GetVariableValue(const std::string &varname) { throw 0; }
@@ -195,4 +201,5 @@ namespace Gorgon { namespace Scripting {
 	};
 	
 	int VariableScope::nextid=0;
+	std::set<std::string, String::CaseInsensitiveLess> KeywordNames;
 } }
