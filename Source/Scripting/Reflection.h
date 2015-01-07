@@ -12,6 +12,7 @@
 #include "../Utils/Assert.h"
 
 #include "Data.h"
+#include "Exceptions.h"
 
 namespace Gorgon {
 	
@@ -1031,28 +1032,63 @@ namespace Gorgon {
 
 			void AddFunctions(const std::initializer_list<Function*> &list) {
 				for(auto &fn : list) {
+					ASSERT(!SymbolExists(fn.GetName()), "Symbol "+fn.GetName()+" already exists", 1, 2);
+					
 					functions.Add(fn);
 				}
 			}
-
+			
 			void AddTypes(const std::initializer_list<Type*> &list) {
 				for(auto &type : list) {
+					ASSERT(!SymbolExists(fn.GetName()), "Symbol "+fn.GetName()+" already exists", 1, 2);
+					
 					types.Add(type);
 				}
 			}
-
+			
+			void AddConstants(const std::initializer_list<Constant*> &list) {
+				for(auto &constant : list) {
+					ASSERT(!SymbolExists(constant.GetName()), "Symbol "+constant.GetName()+" already exists", 1, 2);
+					
+					constants.Add(constant);
+				}
+			}
+			
 			void AddFunctions(const std::vector<Function*> &list) {
 				for(auto &fn : list) {
+					ASSERT(!SymbolExists(fn.GetName()), "Symbol "+fn.GetName()+" already exists", 1, 2);
+					
 					functions.Add(fn);
 				}
 			}
 
 			void AddTypes(const std::vector<Type*> &list) {
 				for(auto &type : list) {
+					ASSERT(!SymbolExists(fn.GetName()), "Symbol "+fn.GetName()+" already exists", 1, 2);
+					
 					types.Add(type);
 				}
 			}
-
+			
+			void AddConstants(const std::vector<Constant*> &list) {
+				for(auto &constant : list) {
+					ASSERT(!SymbolExists(constant.GetName()), "Symbol "+constant.GetName()+" already exists", 1, 2);
+					
+					constants.Add(constant);
+				}
+			}
+			
+			bool SymbolExists(const std::string &name) const {
+				return types.Exists(name) || functions.Exists(name) || constants.Exists(name);
+			}
+			
+			SymbolType TypeOf(const std::string &name) const {
+				if(functions.Exists(name)) return SymbolType::Function;
+				if(types.Exists(name)) return SymbolType::Type;
+				if(constants.Exists(name)) return SymbolType::Constant;
+				
+				return SymbolType::Unknown;
+			}
 			
 			/// Returns the name of this library. Library names are also used as namespace specifiers
 			std::string GetName() const {

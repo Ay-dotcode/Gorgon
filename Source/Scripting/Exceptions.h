@@ -112,25 +112,35 @@ namespace Gorgon {
 		class AmbiguousSymbolException : public Exception {
 		public:
 			explicit AmbiguousSymbolException(const std::string &symbolname, SymbolType type, const std::string &details="", long linenumber=-1) :
-			Exception(ExceptionType::AmbiguousSymbol, String::From(type) + " " + symbolname + " is ambiguous.", linenumber) { 
+			Exception(ExceptionType::AmbiguousSymbol, String::From(type) + " " + symbolname + " is ambiguous.", linenumber),
+			type(type) { 
 				this->details = details;
 			}
+			
+			SymbolType type;
 		};
 		
 		class SymbolNotFoundException : public Exception {
 		public:
 			explicit SymbolNotFoundException(const std::string &symbolname, SymbolType type, const std::string &details="", long linenumber=-1) :
-			Exception(ExceptionType::SymbolNotFound, "Cannot find " + String::ToLower(String::From(type)) + " " + symbolname, linenumber) { 
+			Exception(ExceptionType::SymbolNotFound, "Cannot find " + String::ToLower(String::From(type)) + " " + symbolname, linenumber),
+			name(symbolname), type(type) { 
 				this->details = details;
 			}
+			
+			std::string name;
+			SymbolType type;
 		};
 		
 		class NullValueException : public Exception {
 		public:
 			explicit NullValueException(const std::string &symbolname, const std::string &details="", long linenumber=-1) :
-			Exception(ExceptionType::NullValue, "The value of " + symbolname + " is NULL", linenumber) { 
+			Exception(ExceptionType::NullValue, "The value of " + symbolname + " is NULL", linenumber),
+			name(symbolname) { 
 				this->details = details;
 			}
+			
+			std::string name;
 		};
 		
 		class UnexpectedKeywordException : public Exception {
