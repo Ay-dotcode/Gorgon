@@ -1032,7 +1032,7 @@ namespace Gorgon {
 
 			void AddFunctions(const std::initializer_list<Function*> &list) {
 				for(auto &fn : list) {
-					ASSERT(!SymbolExists(fn.GetName()), "Symbol "+fn.GetName()+" already exists", 1, 2);
+					ASSERT(!SymbolExists(fn->GetName()), "Symbol "+fn->GetName()+" already exists", 1, 2);
 					
 					functions.Add(fn);
 				}
@@ -1040,7 +1040,7 @@ namespace Gorgon {
 			
 			void AddTypes(const std::initializer_list<Type*> &list) {
 				for(auto &type : list) {
-					ASSERT(!SymbolExists(fn.GetName()), "Symbol "+fn.GetName()+" already exists", 1, 2);
+					ASSERT(!SymbolExists(type->GetName()), "Symbol "+type->GetName()+" already exists", 1, 2);
 					
 					types.Add(type);
 				}
@@ -1048,7 +1048,7 @@ namespace Gorgon {
 			
 			void AddConstants(const std::initializer_list<Constant*> &list) {
 				for(auto &constant : list) {
-					ASSERT(!SymbolExists(constant.GetName()), "Symbol "+constant.GetName()+" already exists", 1, 2);
+					ASSERT(!SymbolExists(constant->GetName()), "Symbol "+constant->GetName()+" already exists", 1, 2);
 					
 					constants.Add(constant);
 				}
@@ -1056,7 +1056,7 @@ namespace Gorgon {
 			
 			void AddFunctions(const std::vector<Function*> &list) {
 				for(auto &fn : list) {
-					ASSERT(!SymbolExists(fn.GetName()), "Symbol "+fn.GetName()+" already exists", 1, 2);
+					ASSERT(!SymbolExists(fn->GetName()), "Symbol "+fn->GetName()+" already exists", 1, 2);
 					
 					functions.Add(fn);
 				}
@@ -1064,7 +1064,7 @@ namespace Gorgon {
 
 			void AddTypes(const std::vector<Type*> &list) {
 				for(auto &type : list) {
-					ASSERT(!SymbolExists(fn.GetName()), "Symbol "+fn.GetName()+" already exists", 1, 2);
+					ASSERT(!SymbolExists(type->GetName()), "Symbol "+type->GetName()+" already exists", 1, 2);
 					
 					types.Add(type);
 				}
@@ -1072,7 +1072,7 @@ namespace Gorgon {
 			
 			void AddConstants(const std::vector<Constant*> &list) {
 				for(auto &constant : list) {
-					ASSERT(!SymbolExists(constant.GetName()), "Symbol "+constant.GetName()+" already exists", 1, 2);
+					ASSERT(!SymbolExists(constant->GetName()), "Symbol "+constant->GetName()+" already exists", 1, 2);
 					
 					constants.Add(constant);
 				}

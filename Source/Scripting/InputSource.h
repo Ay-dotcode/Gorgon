@@ -6,8 +6,8 @@
 #include <iomanip>
 #include <fstream>
 #include "../String.h"
-#include "Parser.h"
 #include "../Scripting.h"
+#include "Execution.h"
 
 namespace Gorgon {
 	
@@ -146,6 +146,8 @@ namespace Gorgon {
 		};
 		/// @endcond
 
+		class ParserBase;
+		
 		/** 
 		 * Base class for input sources. This system allows different input sources to supply 
 		 * code to virtual machine. When source code is loaded into virtual machine, it stays
@@ -157,47 +159,9 @@ namespace Gorgon {
 		public:
 			
 			/// Constructor requires an input provider and a name to define this input source
-			InputSource(InputProvider &provider, const std::string &name) : provider(provider), name(name) {
-				switch(provider.GetDialect()) {
-				case InputProvider::Intermediate:
-					parser=new IntermediateParser();
-				}
-			}
+			InputSource(InputProvider &provider, const std::string &name);
 			
-			const Instruction *ReadInstruction(unsigned long line) {
-				if(line<lines.size()) {
-					return &lines[line].instruction;
-				}
-				else {
-					if(provider.GetDialect()==InputProvider::Intermediate) {
-						while(line>=lines.size()) {
-							std::string str;
-							
-							if(!provider.ReadLine(str, true)) {
-								return nullptr;
-							}
-							pline++;
-
-							try {
-								parser->Parse(str);
-							}
-							catch(const ParseError &err) {
-								throw ParseError({err.Code, pline, err.Char, err.What});
-							}
-
-							for(auto &inst : parser->List)
-								lines.push_back({inst, pline});
-
-							parser->List.clear();
-						}
-						
-						return &lines[line].instruction;
-					}
-					else {
-						Utils::NotImplemented("Other parsers");
-					}
-				}
-			}
+			const Instruction *ReadInstruction(unsigned long line);
 
 			unsigned long GetPhysicalLine() const {
 				return pline;

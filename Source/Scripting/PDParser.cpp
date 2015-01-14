@@ -101,6 +101,7 @@ namespace Gorgon { namespace Scripting {
 			case '.':
 			case '$':
 			case ',':
+			case '\n':
 				return true;
 			default:
 				return false;
@@ -289,7 +290,7 @@ namespace Gorgon { namespace Scripting {
 						acc.push_back(c);
 					}
 					else {
-						return Token {acc, Token::Operator, start};
+						return Token {acc, oporequals ? Token::EqualSign : Token::Operator, start};
 					}
 					op = true;
 					opornumber = false;
@@ -802,14 +803,163 @@ namespace Gorgon { namespace Scripting {
 		}
 		
 		printtree(*root);
+		std::cout<<std::endl;
 		
 		return root;
 	}
 
-	unsigned ProgrammingParser::Parse(const std::string &input) { 
-		parse(input);
+	unsigned ProgrammingParser::Parse(const std::string &input) {
+		//If necessary split the line or request more input
+		int inquotes=0, escape=0;
+		struct parenthesis {
+			unsigned long location;
+			char type;
+		};
+		std::vector<parenthesis> parens;
 		
-		return 0;  
+		if(left.size()) {
+			left.push_back('\n');
+		}
+		linestarts.push_back(left.size());
+
+		left.append(input);
+		
+		auto transform = [&](int ch, int &oline, int &och) {
+			for(int line=0;line<linestarts.size();line++) {
+				if(linestarts[line]>ch) {
+					oline=line-1;
+					och=ch-linestarts[line-1];
+					
+					return;
+				}
+			}
+			
+			oline=linestarts.size()-1;
+			och=ch-linestarts.back();
+		};
+		
+		int elements=0;
+		
+		while(left.length()) { //parse until we run out of data
+			unsigned len=left.length();
+			int cutfrom=-1;
+			
+			for(unsigned i=0;i<len;i++) {
+				char c=left[i];
+				
+				if(inquotes) {
+					if(escape==1) {
+						if(std::isdigit(c)) {
+							escape=2;
+						}
+						else {
+							escape=0;
+						}
+					}
+					else if(escape==2) {
+						escape=0;
+					}
+					else if(c=='\\') {
+						escape=1;
+					}
+					else if(inquotes==1 && c=='\'') {
+						inquotes=0;
+					}
+					else if(inquotes==2 && c=='"') {
+						inquotes=0;
+					}
+				}
+				else if(c=='\'') {
+					inquotes=1;
+				}
+				else if(c=='"') {
+					inquotes=2;
+				}
+				else if(c==';' || c=='#') {
+					int cline, pline, cchar, pchar;
+					
+					if(parens.size()) {
+						transform(i, cline, cchar);
+						transform(parens.back().location, pline, pchar);
+						
+						left="";
+						if(cline!=pline) {
+							throw ParseError(ParseError::MismatchedParenthesis, -cline, cchar,
+											"`"+std::string(1, parens.back().type)+"` at character "+
+											String::From(pchar+1) + " " + String::From(cline-pline) + " lines above "
+											" is not closed.");
+						}
+						else {
+							throw ParseError(ParseError::MismatchedParenthesis, -cline, cchar, 
+											"`"+std::string(1, parens.back().type)+"` at character "+
+											String::From(pchar+1) +
+											" is not closed.");
+						}
+					}
+					
+					if(c==';') {
+						cutfrom=i;
+					}
+					break;
+				}
+				else if(c=='(' || c=='[' || c=='{') {
+					parens.push_back({i, c});
+				}
+				else if(c==')' || c==']' || c=='}') {
+					bool error=
+						parens.size()==0 ||
+						(c==')' && parens.back().type!='(') ||
+						(c==']' && parens.back().type!='[') ||
+						(c=='}' && parens.back().type!='{')	;
+					
+					if(error) {
+						int cline, cchar;
+						transform(i, cline, cchar);
+						
+						throw ParseError(ParseError::UnexpectedToken, -cline, cchar,
+										"`"+std::string(1, c)+"` is unexpected"
+										);
+					}
+					else {
+						parens.pop_back();
+					}
+				}
+			}
+			
+			std::string process;
+			
+			if(cutfrom==-1) {
+				//everything is fine, line ends at the very end
+				if(inquotes==0 && parens.size()==0) {
+					using std::swap;
+					swap(process, left);
+					linestarts.clear();
+				}
+				else {
+					return 0;
+				}
+			}
+			else {
+				process=left.substr(0, cutfrom);
+				left=left.substr(cutfrom+1);
+				
+				auto last=linestarts.back();
+				linestarts.clear();
+				linestarts.push_back(cutfrom-last);
+			}
+			
+			auto ret=parse(process);
+			if(ret)
+				elements++;
+		}
+		
+		
+		return elements++;
+	}
+	
+	void ProgrammingParser::Finalize() {
+		left.push_back(';');
+		Parse("");
 	}
 
 } }

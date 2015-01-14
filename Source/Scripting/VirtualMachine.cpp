@@ -457,11 +457,16 @@ namespace Gorgon {
 					}
 				}
 				catch(ParseError &ex) {
-					ex.Line=executionscopes.Last()->GetSource().GetPhysicalLine();
+					if(ex.Line<=0) {
+						ex.Line=-ex.Line+executionscopes.Last()->GetSource().GetPhysicalLine();
+					}
+
 					throw ex;
 				}
  				catch(Exception &ex) {
- 					ex.SetLine(executionscopes.Last()->GetSource().GetPhysicalLine());
+					if(ex.GetLine()<=0) {
+						ex.SetLine(-ex.GetLine()+executionscopes.Last()->GetSource().GetPhysicalLine());
+					}
  
  					throw ex;
  				}

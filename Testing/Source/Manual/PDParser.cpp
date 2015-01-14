@@ -23,6 +23,11 @@ int main() {
 			Gorgon::Console::SetBold(false);
 			std::getline(std::cin, str);
 			std::cout<<std::endl;
+			
+			if(str=="!q") {
+				parser.Finalize();
+				exit(0);
+			}
 
 			parser.Parse(str);
 

@@ -2,6 +2,7 @@
 #include "Reflection.h"
 #include "VirtualMachine.h"
 #include "Embedding.h"
+#include "Parser.h"
 #include <map>
 
 namespace Gorgon { namespace Scripting {
@@ -194,6 +195,48 @@ namespace Gorgon { namespace Scripting {
 			);
 		}
 	}
+	
+	const Instruction *InputSource::ReadInstruction(unsigned long line) {
+		if(line<lines.size()) {
+			return &lines[line].instruction;
+		}
+		else {
+			while(line>=lines.size()) {
+				std::string str;
+				
+				if(!provider.ReadLine(str, true)) {
+					parser->Finalize();
+					
+					return nullptr;
+				}
+				pline++;
+
+				try {
+					parser->Parse(str);
+				}
+				catch(const ParseError &err) {
+					throw ParseError({err.Code, pline, err.Char, err.What});
+				}
+
+				for(auto &inst : parser->List)
+					lines.push_back({inst, pline});
+
+				parser->List.clear();
+			}
+			
+			return &lines[line].instruction;
+		}
+	}
+
+	InputSource::InputSource(InputProvider &provider, const std::string &name) : provider(provider), name(name) {
+		switch(provider.GetDialect()) {
+		case InputProvider::Intermediate:
+			parser=new IntermediateParser();
+		case InputProvider::Programming:
+			parser=new ProgrammingParser();
+		}
+	}
+
 	
 	MappedValueType<Data, String::From<Data>, GetVariableValue> Variant = {"Variant", 
 		"This type can contain any type.",

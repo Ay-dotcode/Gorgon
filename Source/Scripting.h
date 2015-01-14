@@ -52,7 +52,14 @@ namespace Gorgon {
 
 			ParseError() {};
 
-			ParseError(ErrorCode code, unsigned long line, int chr, const std::string &what) : Code(code), Line(line), 
+			ParseError(ErrorCode code, int line, int chr, const std::string &what) : Code(code), Line(line), 
+				Char(chr), What(what) {
+			}
+			ParseError(ErrorCode code, long line, int chr, const std::string &what) : Code(code), Line(line), 
+				Char(chr), What(what) {
+			}
+			
+			ParseError(ErrorCode code, unsigned long line, int chr, const std::string &what) : Code(code), Line((long)line), 
 				Char(chr), What(what) {
 			}
 
@@ -62,7 +69,7 @@ namespace Gorgon {
 			ErrorCode Code;
 			
 			/// The line that contains parse error
-			unsigned long Line;
+			long Line;
 			
 			/// The exact character that contains parse error. If it cannot be determined
 			/// it will reported as -1.
