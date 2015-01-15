@@ -152,8 +152,10 @@ namespace Gorgon { namespace Scripting {
 					return 12;
 					
 				case '&':
-				case '|':
 					return 13;
+					
+				case '|':
+					return 14;
 					
 				default:
 					throw "Invalid operator";
@@ -185,6 +187,12 @@ namespace Gorgon { namespace Scripting {
 			}
 			else if(op=="mod") {
 				return 6;
+			}
+			else if(op=="and") {
+				return 13;
+			}
+			else if(op=="or") {
+				return 14;
 			}
 			
 			throw "Invalid operator";
@@ -290,7 +298,7 @@ namespace Gorgon { namespace Scripting {
 						acc.push_back(c);
 					}
 					else {
-						return Token {acc, oporequals ? Token::EqualSign : Token::Operator, start};
+						return Token {acc, (oporequals && !expectop) ? Token::EqualSign : Token::Operator, start};
 					}
 					op = true;
 					opornumber = false;
@@ -843,6 +851,7 @@ namespace Gorgon { namespace Scripting {
 		while(left.length()) { //parse until we run out of data
 			unsigned len=left.length();
 			int cutfrom=-1;
+			int clearafter=-1;
 			
 			for(unsigned i=0;i<len;i++) {
 				char c=left[i];
@@ -875,7 +884,11 @@ namespace Gorgon { namespace Scripting {
 				else if(c=='"') {
 					inquotes=2;
 				}
-				else if(c==';' || c=='#') {
+				else if(c=='#') { //simply skip to the end of the line
+					clearafter=i;
+					break;
+				}
+				else if(c==';') { // the line will end
 					int cline, pline, cchar, pchar;
 					
 					if(parens.size()) {
@@ -929,6 +942,10 @@ namespace Gorgon { namespace Scripting {
 			std::string process;
 			
 			if(cutfrom==-1) {
+				if(clearafter!=-1) {
+					left=left.substr(0, clearafter);
+				}
+				
 				//everything is fine, line ends at the very end
 				if(inquotes==0 && parens.size()==0) {
 					using std::swap;
@@ -963,4 +980,3 @@ namespace Gorgon { namespace Scripting {
 	}
 
 } }
-
