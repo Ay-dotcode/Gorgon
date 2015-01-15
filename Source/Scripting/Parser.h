@@ -47,8 +47,6 @@ namespace Gorgon {
 			virtual unsigned Parse(const std::string &input) override;
 			
 			virtual void Finalize() override;
-			
-			void parseexpr(const std::string &input);
 
 		private:
 			std::string left;

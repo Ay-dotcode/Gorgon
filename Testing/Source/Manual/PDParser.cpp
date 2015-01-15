@@ -17,6 +17,9 @@ int main() {
 	//std::ofstream file("test.cpp");
 
 	std::string str;
+	
+	int ind=0;
+	
 	while(true) {
 		try {
 			Gorgon::Console::SetColor(Gorgon::Console::White);
@@ -30,6 +33,9 @@ int main() {
 			}
 
 			parser.Parse(str);
+			for(; ind<parser.List.size(); ind++)  {
+				std::cout<<Disassemble(&parser.List[ind])<<std::endl;
+			}
 
 			//testlexer(str, &file);
 

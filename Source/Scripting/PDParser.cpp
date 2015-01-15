@@ -751,11 +751,6 @@ namespace Gorgon { namespace Scripting {
 		return &outputstack[0];
 	}
 	
-	void ProgrammingParser::parseexpr(const std::string &input) {
-		int index=0;
-		parseexpression(input, index);
-	}
-
 	node *parse(const std::string &input) {
 		int index = 0;
 		node *root = nullptr;
@@ -816,8 +811,7 @@ namespace Gorgon { namespace Scripting {
 		return root;
 	}
 
-	unsigned ProgrammingParser::Parse(const std::string &input) {
-		//If necessary split the line or request more input
+	void extractline(std::string &input, std::string &prepared, std::vector<unsigned> &linestarts) {
 		int inquotes=0, escape=0;
 		struct parenthesis {
 			unsigned long location;
@@ -825,12 +819,10 @@ namespace Gorgon { namespace Scripting {
 		};
 		std::vector<parenthesis> parens;
 		
-		if(left.size()) {
-			left.push_back('\n');
-		}
-		linestarts.push_back(left.size());
+		unsigned len=input.length();
+		int cutfrom=-1;
+		int clearafter=-1;
 
-		left.append(input);
 		
 		auto transform = [&](int ch, int &oline, int &och) {
 			for(int line=0;line<linestarts.size();line++) {
@@ -846,132 +838,162 @@ namespace Gorgon { namespace Scripting {
 			och=ch-linestarts.back();
 		};
 		
+		for(unsigned i=0;i<len;i++) {
+			char c=input[i];
+			
+			if(inquotes) {
+				if(escape==1) {
+					if(std::isdigit(c)) {
+						escape=2;
+					}
+					else {
+						escape=0;
+					}
+				}
+				else if(escape==2) {
+					escape=0;
+				}
+				else if(c=='\\') {
+					escape=1;
+				}
+				else if(inquotes==1 && c=='\'') {
+					inquotes=0;
+				}
+				else if(inquotes==2 && c=='"') {
+					inquotes=0;
+				}
+			}
+			else if(c=='\'') {
+				inquotes=1;
+			}
+			else if(c=='"') {
+				inquotes=2;
+			}
+			else if(c=='#') { //simply skip to the end of the line
+				clearafter=i;
+				break;
+			}
+			else if(c==';') { // the line will end
+				int cline, pline, cchar, pchar;
+				
+				if(parens.size()) {
+					transform(i, cline, cchar);
+					transform(parens.back().location, pline, pchar);
+					
+					input="";
+					if(cline!=pline) {
+						throw ParseError(ParseError::MismatchedParenthesis, -cline, cchar,
+										"`"+std::string(1, parens.back().type)+"` at character "+
+										String::From(pchar+1) + " " + String::From(cline-pline) + " lines above "
+										" is not closed.");
+					}
+					else {
+						throw ParseError(ParseError::MismatchedParenthesis, -cline, cchar, 
+										"`"+std::string(1, parens.back().type)+"` at character "+
+										String::From(pchar+1) +
+										" is not closed.");
+					}
+				}
+				
+				if(c==';') {
+					cutfrom=i;
+				}
+				break;
+			}
+			else if(c=='(' || c=='[' || c=='{') {
+				parens.push_back({i, c});
+			}
+			else if(c==')' || c==']' || c=='}') {
+				bool error=
+					parens.size()==0 ||
+					(c==')' && parens.back().type!='(') ||
+					(c==']' && parens.back().type!='[') ||
+					(c=='}' && parens.back().type!='{')	;
+				
+				if(error) {
+					int cline, cchar;
+					transform(i, cline, cchar);
+					
+					throw ParseError(ParseError::UnexpectedToken, -cline, cchar,
+									"`"+std::string(1, c)+"` is unexpected"
+									);
+				}
+				else {
+					parens.pop_back();
+				}
+			}
+		}
+		
+		if(cutfrom==-1) {
+			if(clearafter!=-1) {
+				input=input.substr(0, clearafter);
+			}
+			
+			//everything is fine, line ends at the very end
+			if(inquotes==0 && parens.size()==0) {
+				using std::swap;
+				swap(prepared, input);
+				linestarts.clear();
+			}
+			else {
+				return;
+			}
+		}
+		else {
+			prepared=input.substr(0, cutfrom);
+			input=input.substr(cutfrom+1);
+			
+			auto last=linestarts.back();
+			linestarts.clear();
+			linestarts.push_back(cutfrom-last);
+		}
+	}
+	
+	//only adds to the list
+	unsigned compile(node *tree, std::vector<Instruction> &list) {
+		if(tree->type==node::Assignment) {
+			Instruction inst;
+			inst.Type=InstructionType::Assignment;
+			inst.Name.Type=ValueType::Variable;
+			inst.Name.Name=tree->leaves[0].data.repr;
+			inst.RHS.Type=ValueType::Literal;
+			inst.RHS.Literal=Data(Types::Int(), String::To<int>(tree->leaves[1].data.repr));
+			
+			list.push_back(inst);
+			
+			return 1;
+		}
+		
+		return 0;
+	}
+	
+	unsigned ProgrammingParser::Parse(const std::string &input) {
+		//If necessary split the line or request more input
+		if(left.size()) {
+			left.push_back('\n');
+		}
+		linestarts.push_back(left.size());
+
+		left.append(input);
+		
 		int elements=0;
 		
 		while(left.length()) { //parse until we run out of data
-			unsigned len=left.length();
-			int cutfrom=-1;
-			int clearafter=-1;
-			
-			for(unsigned i=0;i<len;i++) {
-				char c=left[i];
-				
-				if(inquotes) {
-					if(escape==1) {
-						if(std::isdigit(c)) {
-							escape=2;
-						}
-						else {
-							escape=0;
-						}
-					}
-					else if(escape==2) {
-						escape=0;
-					}
-					else if(c=='\\') {
-						escape=1;
-					}
-					else if(inquotes==1 && c=='\'') {
-						inquotes=0;
-					}
-					else if(inquotes==2 && c=='"') {
-						inquotes=0;
-					}
-				}
-				else if(c=='\'') {
-					inquotes=1;
-				}
-				else if(c=='"') {
-					inquotes=2;
-				}
-				else if(c=='#') { //simply skip to the end of the line
-					clearafter=i;
-					break;
-				}
-				else if(c==';') { // the line will end
-					int cline, pline, cchar, pchar;
-					
-					if(parens.size()) {
-						transform(i, cline, cchar);
-						transform(parens.back().location, pline, pchar);
-						
-						left="";
-						if(cline!=pline) {
-							throw ParseError(ParseError::MismatchedParenthesis, -cline, cchar,
-											"`"+std::string(1, parens.back().type)+"` at character "+
-											String::From(pchar+1) + " " + String::From(cline-pline) + " lines above "
-											" is not closed.");
-						}
-						else {
-							throw ParseError(ParseError::MismatchedParenthesis, -cline, cchar, 
-											"`"+std::string(1, parens.back().type)+"` at character "+
-											String::From(pchar+1) +
-											" is not closed.");
-						}
-					}
-					
-					if(c==';') {
-						cutfrom=i;
-					}
-					break;
-				}
-				else if(c=='(' || c=='[' || c=='{') {
-					parens.push_back({i, c});
-				}
-				else if(c==')' || c==']' || c=='}') {
-					bool error=
-						parens.size()==0 ||
-						(c==')' && parens.back().type!='(') ||
-						(c==']' && parens.back().type!='[') ||
-						(c=='}' && parens.back().type!='{')	;
-					
-					if(error) {
-						int cline, cchar;
-						transform(i, cline, cchar);
-						
-						throw ParseError(ParseError::UnexpectedToken, -cline, cchar,
-										"`"+std::string(1, c)+"` is unexpected"
-										);
-					}
-					else {
-						parens.pop_back();
-					}
-				}
-			}
-			
 			std::string process;
 			
-			if(cutfrom==-1) {
-				if(clearafter!=-1) {
-					left=left.substr(0, clearafter);
-				}
-				
-				//everything is fine, line ends at the very end
-				if(inquotes==0 && parens.size()==0) {
-					using std::swap;
-					swap(process, left);
-					linestarts.clear();
-				}
-				else {
-					return 0;
-				}
-			}
-			else {
-				process=left.substr(0, cutfrom);
-				left=left.substr(cutfrom+1);
-				
-				auto last=linestarts.back();
-				linestarts.clear();
-				linestarts.push_back(cutfrom-last);
-			}
+			extractline(left, process, linestarts);
 			
 			auto ret=parse(process);
-			if(ret)
-				elements++;
+			
+			if(ret) {
+				elements+=compile(ret, List);
+			}
+			else {
+				break;
+			}
 		}
 		
-		
-		return elements++;
+		return elements;
 	}
 	
 	void ProgrammingParser::Finalize() {
