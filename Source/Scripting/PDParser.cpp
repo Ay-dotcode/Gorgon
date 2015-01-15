@@ -127,7 +127,7 @@ namespace Gorgon { namespace Scripting {
 				return false;
 			}
 		}
-
+		
 		int getprecedence(const std::string &op) {
 			if(op=="") {
 				throw "Invalid operator";
@@ -298,7 +298,13 @@ namespace Gorgon { namespace Scripting {
 						acc.push_back(c);
 					}
 					else {
-						return Token {acc, (oporequals && !expectop) ? Token::EqualSign : Token::Operator, start};
+						return Token {acc, 
+							(
+								oporequals || 
+								(acc.back()=='=' && acc.size()==2 && acc.front()!='>' && acc.front()!='!' && acc.front()!='=' && acc.front()!='<')
+							) && 
+							!expectop
+							? Token::EqualSign : Token::Operator, start};
 					}
 					op = true;
 					opornumber = false;
@@ -356,6 +362,13 @@ namespace Gorgon { namespace Scripting {
 			
 			//node() : data("", Token::None, 0) {}
 			node(Type type, const Token data): data(data), type(type) {}
+			
+			node *duplicate() {
+				node *newnode=new node(type, data);
+				newnode->leaves=leaves.Duplicate();
+				
+				return newnode;
+			}
 
 			Token data;
 			Containers::Collection<node> leaves;
@@ -784,6 +797,21 @@ namespace Gorgon { namespace Scripting {
 			if(token==Token::EqualSign) {
 				auto expr=parseexpression(input, index);
 				
+				if(token.repr.size()!=1) {
+					ASSERT(token.repr.size()==2, "Assignment operator size problem.");
+					
+					//check if this really is an operator
+					getprecedence(token.repr.substr(0,1));
+					
+					node *compound=new node(node::Operator, {token.repr.substr(0,1), Token::Operator, token.start});
+					
+					token.repr=token.repr.substr(1);
+					
+					compound->leaves.Push(term->duplicate());
+					compound->leaves.Push(expr);
+					expr=compound;
+				}
+				
 				root=new node(node::Assignment, token);
 				root->leaves.Push(term);
 				root->leaves.Push(expr);
@@ -983,10 +1011,15 @@ namespace Gorgon { namespace Scripting {
 			
 			extractline(left, process, linestarts);
 			
-			auto ret=parse(process);
+				auto ret=parse(process);
 			
 			if(ret) {
-				elements+=compile(ret, List);
+				try {
+					elements+=compile(ret, List);
+				}
+				catch(...) {
+					delete ret;
+				}
 			}
 			else {
 				break;
