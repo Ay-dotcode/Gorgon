@@ -81,6 +81,7 @@ namespace Gorgon {
 		 * - c : Char
 		 * - n : Byte
 		 * - s : %String
+		 * - b : Bool
 		 * 
 		 * 
 		 * @section Instruction_Types Instruction Types
@@ -257,7 +258,7 @@ namespace Gorgon {
 
 			Value ret;
 			
-			switch(CheckInputFor(input, ch, '.', '$', '!', 'i', 'f', 'b', 's', 'c', 'B', 'd', 'u')) {
+			switch(CheckInputFor(input, ch, '.', '$', '!', 'i', 'f', 'b', 's', 'c', 'n', 'd', 'u')) {
 				case 0:
 					ret.Type  =ValueType::Temp;
 					ret.Result=parsetemporary(input, ch);

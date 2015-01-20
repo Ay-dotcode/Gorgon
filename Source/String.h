@@ -228,6 +228,14 @@ namespace Gorgon {
 		}
 		
 		template <>
+		inline bool To<bool>(const std::string &value) {
+			if(value=="false" || value=="no" || value=="" || To<int>(value)==0)
+				return false;
+			else
+				return true;
+		}
+		
+		template <>
 		inline char To<char>(const char *value) {
 			char *n;
 			return (char)std::strtol(value, &n, 10);
@@ -300,6 +308,11 @@ namespace Gorgon {
 		template <>
 		inline long double To<long double>(const char *value) {
 			return std::atof(value);
+		}
+
+		template <>
+		inline bool To<bool>(const char *value) {
+			return To<bool>(std::string(value));
 		}
 		/// @endcond
 

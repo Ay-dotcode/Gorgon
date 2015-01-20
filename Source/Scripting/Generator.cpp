@@ -32,12 +32,15 @@ namespace Gorgon { namespace Scripting {
 				else if(type==Types::Byte()) {
 					return "n\""+ String::From(value.Literal.GetValue<Byte>()) + "\"";
 				}
+				else if(type==Types::Unsigned()) {
+					return "u\""+ String::From(value.Literal.GetValue<unsigned>()) + "\"";
+				}
 				else {
 					throw std::runtime_error("Unknown literal type");
 				}
 			}
 			case ValueType::Temp:
-				return "i\""+ String::From(value.Result) +"\"";
+				return ".\""+ String::From(value.Result) +"\"";
 				
 			case ValueType::Variable:
 				return "$\""+value.Name+"\"";
@@ -85,7 +88,7 @@ namespace Gorgon { namespace Scripting {
 		}
 			
 		case InstructionType::Mark:
-			return "fmk\""+instruction->Name.Name+"\"";
+			return "fkm\""+instruction->Name.Name+"\"";
 
 		case InstructionType::RemoveTemp:
 			return "x\""+String::From(instruction->Store)+"\"";

@@ -308,6 +308,8 @@ namespace Gorgon {
 				if(before==list.size())
 					Add(data);
 
+				list.resize(list.size()+1);
+				
 				for(long i=list.size()-1;i>before;i--)
 					list[i]=list[i-1];
 

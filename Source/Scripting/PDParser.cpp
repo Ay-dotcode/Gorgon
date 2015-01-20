@@ -7,8 +7,11 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <fstream>
 
 #include "../Console.h"
+
+///@cond INTERNAL
 
 namespace Gorgon { namespace Scripting {
 
@@ -40,12 +43,6 @@ namespace Gorgon { namespace Scripting {
 			
 			Token() : type(None), start(-1) { }
 
-			virtual std::string getrepr() const {
-				return repr;
-			}
-			Type gettype() const {
-				return type;
-			}
 
 			bool operator == (Type type) const {
 				return type==this->type;
@@ -53,6 +50,23 @@ namespace Gorgon { namespace Scripting {
 
 			bool operator != (Type type) const {
 				return type!=this->type;
+			}
+			
+			const Data GetLiteralValue() {
+				ASSERT(isliteral(), "This token does not represent a literal");
+				
+				switch(type) {
+					case Int:
+						return Data(Types::Int(), String::To<int>(repr));
+					case Float:
+						return Data(Types::Float(), String::To<float>(repr));
+					case Bool:
+						return Data(Types::Bool(), String::To<bool>(repr));
+					case String:
+						return Data(Types::String(), repr);
+					default:
+						throw 0;
+				}
 			}
 			
 			bool isliteral() {
@@ -349,6 +363,7 @@ namespace Gorgon { namespace Scripting {
 			enum Type {
 				Literal,
 				FunctionCall,
+				MethodCall,
 				Member,
 				Identifier,
 				Operator,
@@ -538,6 +553,107 @@ namespace Gorgon { namespace Scripting {
 		return root;
 	}
 	
+	std::string dottree(node &tree, int &ind) {
+		std::string type;
+		std::string detail;
+		std::string ret;
+		
+		switch(tree.type) {
+		case node::Assignment:
+			type="Asgn";
+			break;
+		case node::Construct:
+			type="Const";
+			break;
+		case node::Empty:
+			type="Empt";
+			break;
+		case node::FunctionCall:
+			type="Func";
+			break;
+		case node::MethodCall:
+			type="Func";
+			break;
+		case node::Identifier:
+			type="Iden";
+			detail=tree.data.repr;
+			break;
+		case node::Index:
+			type="Indx";
+			break;
+		case node::Keyword:
+			type="Kywd";
+			detail=tree.data.repr;
+			break;
+		case node::Literal:
+			type="Ltrl";
+			detail=tree.data.repr+" ("+String::From(tree.data.type)+")";
+			break;
+		case node::Member:
+			type="Mmbr";
+			break;
+		case node::Operator:
+			type="Oper";
+			detail=tree.data.repr;
+			break;
+		case node::Term:
+			type="Term";
+			break;
+		default:
+			type="Unknown";
+			break;
+		}
+		
+		int myid=ind;
+		
+		if(detail.length()) {
+			detail=String::Replace(String::Replace(String::Replace(detail, "\"", "\\\""),"|", "\\|")," ","\\ ");
+			ret=String::From(ind++)+"[shape=record, label=\"{"+type+"|"+detail+"}\"];\n";
+		}
+		else {
+			ret=String::From(ind++)+"[shape=rectangle, label=\""+type+"\"];\n";
+		}
+		
+		for(auto &chld : tree.leaves) {
+			ret+=String::From(myid)+"->"+String::From(ind)+";\n";
+			
+			ret+=dottree(chld, ind);			
+		}
+		
+		return ret;
+	}
+	
+	void dottree(const std::string &line, node &tree, const std::vector<std::string> &last) {
+		std::string dot = "digraph { 0[shape=rectangle, label=\""+String::Replace(line, "\"", "\\\"")+"\"];\n";
+		
+		int n=1;
+		dot+=dottree(tree, n);
+		
+		dot+="0 -> 1;\n";
+		if(last.size()) {
+			dot+="{rank=sink; last[shape=record, label=\"{";
+		}
+		int i=0;
+		for(auto &str : last) {
+			if(i++) {
+				dot+="|";
+			}
+			dot+=String::Replace(String::Replace(String::Replace(String::Replace(String::Replace(str, "\"", "\\\""),"|", "\\|")," ","\\ "), "{", "\\{"),"}", "\\}");
+		}
+		if(last.size()) {
+			dot+="}\"];}";
+		}
+		dot+="}";
+		
+		{
+			std::ofstream temp("temp.dot");
+			temp<<dot;
+		}
+		
+		OS::Start("dot", {"temp.dot", "-Tsvg", "temp.dot", "-O"});
+		OS::Open("temp.dot.svg");
+	}
+	
 	void printtree(node &tree) {
 		if(tree.type==node::FunctionCall) {
 			std::cout<<"( ";
@@ -686,7 +802,8 @@ namespace Gorgon { namespace Scripting {
 					delete n.op;
 					
 					//if these parenthesis are a part of a function call
-					if(infunction--) {
+					if(infunction) {
+						infunction--;
 						//collect parameters
 						Containers::Collection<node> params;
 						
@@ -723,9 +840,9 @@ namespace Gorgon { namespace Scripting {
 				else if(token==Token::Identifier || token==Token::LeftCrlyP) { //either variable/constant or a function call
 					index=token.start; //roll back so parseterm could do the parsing
 					auto term = parseterm(input, index);
-					auto nw = new node(node::Term, {"", Token::None, token.start});
-					nw->leaves.Push(term);
-					term=nw;
+// 					auto nw = new node(node::Term, {"", Token::None, token.start});
+// 					nw->leaves.Push(term);
+// 					term=nw;
 					
 					if(peeknexttoken(input, index)==Token::LeftP) { //function call
 						infunction++;
@@ -762,6 +879,23 @@ namespace Gorgon { namespace Scripting {
 		//printtree(outputstack[0]);
 		
 		return &outputstack[0];
+	}
+	
+	void fixconstructors(node *tree, node *parent=nullptr) {
+		if(tree->type==node::Construct) {
+			if(tree->leaves[0].type==node::Empty) {
+				if(parent->type!=node::Index) {
+					throw "Empty constructors can only be used inside array constructors";
+				}
+				
+				tree->leaves.Delete(*tree->leaves.begin());
+				tree->leaves.Insert(parent->leaves[0].duplicate(),0);
+			}
+		}
+		
+		for(auto &node : tree->leaves) {
+			fixconstructors(&node, tree);
+		}
 	}
 	
 	node *parse(const std::string &input) {
@@ -833,12 +967,16 @@ namespace Gorgon { namespace Scripting {
 			}
 		}
 		
+		fixconstructors(root);
+		
 		printtree(*root);
 		std::cout<<std::endl;
+		
 		
 		return root;
 	}
 
+	//extracts a line from input string
 	void extractline(std::string &input, std::string &prepared, std::vector<unsigned> &linestarts) {
 		int inquotes=0, escape=0;
 		struct parenthesis {
@@ -977,22 +1115,156 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
-	//only adds to the list
-	unsigned compile(node *tree, std::vector<Instruction> &list) {
-		if(tree->type==node::Assignment) {
+	//generate output works only with functioncalls, it can be used to suppress result saving
+	Value compilevalue(node &tree, std::vector<Instruction> &list, Byte &tempind, bool generateoutput=true) {
+		if(tree.type==node::Operator) { //arithmetic
+			ASSERT(tree.leaves.GetSize()==2, "Operators require two operands");
+			
 			Instruction inst;
-			inst.Type=InstructionType::Assignment;
-			inst.Name.Type=ValueType::Variable;
-			inst.Name.Name=tree->leaves[0].data.repr;
-			inst.RHS.Type=ValueType::Literal;
-			inst.RHS.Literal=Data(Types::Int(), String::To<int>(tree->leaves[1].data.repr));
+			inst.Type=InstructionType::FunctionCall;
+			inst.Name.Type=ValueType::Literal;
+			inst.Name.Literal=Data(Types::String(), tree.data.repr);
+			inst.Parameters.push_back(compilevalue(tree.leaves[0], list, tempind));
+			inst.Parameters.push_back(compilevalue(tree.leaves[1], list, tempind));
+			inst.Store=tempind;
 			
 			list.push_back(inst);
 			
-			return 1;
+			Value v;
+			v.Type=ValueType::Temp;
+			v.Result=tempind++;
+			
+			return v;
 		}
 		
-		return 0;
+		if(tree.type==node::Literal) {
+			Value v;
+			v.Type=ValueType::Literal;
+			v.Literal=tree.data.GetLiteralValue();
+			
+			return v;
+		}
+		
+		if(tree.type==node::Identifier) {
+			Value v;
+			v.Type=ValueType::Identifier;
+			v.Name=tree.data.repr;
+			
+			return v;
+		}
+		
+		if(tree.type==node::FunctionCall || tree.type==node::MethodCall) {
+			ASSERT(tree.leaves.GetSize()>0, "Function name is missing");
+			
+			Instruction inst;
+			inst.Type=(tree.type==node::MethodCall ? InstructionType::MethodCall : InstructionType::FunctionCall);
+			inst.Name.Type=ValueType::Literal;
+			inst.Name.Literal=Data(Types::String(), tree.leaves[0].data.repr);
+			
+			for(int i=1;i<tree.leaves.GetCount();i++) {
+				inst.Parameters.push_back(compilevalue(tree.leaves[i], list, tempind));
+			}
+			
+			inst.Store=generateoutput ? tempind : 0;
+			
+			list.push_back(inst);
+			
+			Value v;
+			v.Type=ValueType::Temp;
+			v.Result=generateoutput ? tempind++ : 0;
+			
+			return v;
+		}
+		
+		if(tree.type==node::Construct) {
+			ASSERT(tree.leaves.GetSize()>0, "Object name is missing");
+			
+			Instruction inst;
+			inst.Type=InstructionType::FunctionCall;
+			inst.Name.Type=ValueType::Literal;
+			inst.Name.Literal=Data(Types::String(), std::string("{}"));
+			
+			for(int i=0;i<tree.leaves.GetCount();i++) {
+				inst.Parameters.push_back(compilevalue(tree.leaves[i], list, tempind));
+			}
+			
+			inst.Store=tempind;
+			
+			list.push_back(inst);
+			
+			Value v;
+			v.Type=ValueType::Temp;
+			v.Result=tempind++;
+			
+			return v;
+		}
+		
+		if(tree.type==node::Index) {
+			ASSERT(tree.leaves.GetSize()>0, "Object name is missing");
+			
+			Instruction inst;
+			inst.Type=InstructionType::FunctionCall;
+			inst.Name.Type=ValueType::Literal;
+			inst.Name.Literal=Data(Types::String(), std::string("[]"));
+			
+			for(int i=0;i<tree.leaves.GetCount();i++) {
+				inst.Parameters.push_back(compilevalue(tree.leaves[i], list, tempind));
+			}
+			
+			inst.Store=tempind;
+			
+			list.push_back(inst);
+			
+			Value v;
+			v.Type=ValueType::Temp;
+			v.Result=tempind++;
+			
+			return v;
+		}
+		
+		Utils::NotImplemented();
+	}
+	
+	//only adds to the list
+	unsigned compile(node *tree, std::vector<Instruction> &list) {
+		auto sz=list.size();
+		
+		Byte tempind=1;
+		if(tree->type==node::Assignment) {
+			Instruction inst;
+			inst.Type=InstructionType::Assignment;
+			if(tree->leaves[0].type==node::Identifier) {
+				inst.Name.Type=ValueType::Variable;
+				inst.Name.Name=tree->leaves[0].data.repr;
+			}
+			else if(tree->leaves[0].type==node::Member) {
+				//tree->leaves[0].leaves[0]
+			}
+			
+			inst.RHS=compilevalue(tree->leaves[1], list, tempind);
+			
+			list.push_back(inst);
+		}
+		else if(tree->type==node::FunctionCall || tree->type==node::MethodCall) {
+			auto v=compilevalue(*tree, list, tempind, false);
+		}
+		else if(tree->type==node::Keyword) {
+			Instruction inst1, inst2;
+			inst1.Type=InstructionType::Mark;
+			inst1.Name.Name=tree->data.repr;
+			list.push_back(inst1);
+			
+			inst2.Type=InstructionType::FunctionCall;
+			inst2.Name.Type=ValueType::Literal;
+			inst2.Name.Literal=Data(Types::String(), tree->data.repr);
+			inst2.Store=0;
+			for(auto &p : tree->leaves) {
+				inst2.Parameters.push_back(compilevalue(p, list, tempind));
+			}
+			list.push_back(inst2);
+		}
+		
+		return list.size()-sz;
 	}
 	
 	unsigned ProgrammingParser::Parse(const std::string &input) {
@@ -1011,7 +1283,7 @@ namespace Gorgon { namespace Scripting {
 			
 			extractline(left, process, linestarts);
 			
-				auto ret=parse(process);
+			auto ret=parse(process);
 			
 			if(ret) {
 				try {
@@ -1024,6 +1296,14 @@ namespace Gorgon { namespace Scripting {
 			else {
 				break;
 			}
+
+			std::vector<std::string> strlines;
+			for(auto it=List.end()-elements;it!=List.end();++it) {
+				strlines.push_back(Disassemble(&(*it)));
+			}
+			
+			dottree(input, *ret, strlines);
+			
 		}
 		
 		return elements;
@@ -1035,3 +1315,4 @@ namespace Gorgon { namespace Scripting {
 	}
 
 } }
+//@endcond
