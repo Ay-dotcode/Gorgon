@@ -10,6 +10,7 @@
 #include <fstream>
 
 #include "../Console.h"
+#include <../../../../../../../Program Files (x86)/Microsoft Visual Studio 11.0/VC/include/locale>
 
 ///@cond INTERNAL
 
@@ -65,7 +66,7 @@ namespace Gorgon { namespace Scripting {
 					case String:
 						return Data(Types::String(), repr);
 					default:
-						throw 0;
+						throw ParseError{ParseError::UnexpectedToken, "Invalid literal type."};
 				}
 			}
 			
@@ -144,7 +145,7 @@ namespace Gorgon { namespace Scripting {
 		
 		int getprecedence(const std::string &op) {
 			if(op=="") {
-				throw "Invalid operator";
+				throw ParseError{ParseError::UnexpectedToken, "Invalid operator."};
 			}
 			
 			if(op.length()==1) {
@@ -172,7 +173,7 @@ namespace Gorgon { namespace Scripting {
 					return 14;
 					
 				default:
-					throw "Invalid operator";
+					throw ParseError{ParseError::UnexpectedToken, "Invalid operator.", op.front()};
 				}
 			}
 			else if(op.length()==2) {
@@ -185,7 +186,7 @@ namespace Gorgon { namespace Scripting {
 						return 10;
 						
 					default:
-						throw "Invalid operator";
+						throw ParseError{ParseError::UnexpectedToken, "Invalid operator.", op.front()};
 					}
 				}
 			}
@@ -209,7 +210,7 @@ namespace Gorgon { namespace Scripting {
 				return 14;
 			}
 			
-			throw "Invalid operator";
+			throw ParseError({ParseError::UnexpectedToken, "Invalid operator."});
 		}
 
 		Token consumenexttoken(const std::string &input, int &index, bool expectop=false) {
@@ -269,7 +270,7 @@ namespace Gorgon { namespace Scripting {
 				op = true;
 			}
 			else if(!isalpha(c)) {
-				throw ParseError {ParseError::UnexpectedToken, 0, index, "Invalid character"};
+				throw ParseError{ParseError::UnexpectedToken, "Invalid character.", c, index};
 			}
 
 			for(; index<input.length() + 1; index++) {
@@ -285,7 +286,7 @@ namespace Gorgon { namespace Scripting {
 					}
 					else if(c == '.') {
 						if(flt) {
-							throw ParseError {ParseError::UnexpectedToken, 0, index, "Unexpected character"};
+							throw ParseError{ParseError::UnexpectedToken, "Unexpected character", c, index};
 						}
 						acc.push_back(c);
 						flt = true;
@@ -294,7 +295,7 @@ namespace Gorgon { namespace Scripting {
 						return Token {acc, flt ? Token::Float : Token::Int, start};
 					}
 					else {
-						throw ParseError {ParseError::UnexpectedToken, 0, index, "Unknown character"};
+						throw ParseError{ParseError::UnexpectedToken, "Unknown character.", c, index};
 					}
 				}
 				else if(isdigit(c) && !op) {
@@ -339,11 +340,11 @@ namespace Gorgon { namespace Scripting {
 					return Token {acc, /*var ? Token::Variable : */Token::Identifier, start};
 				}
 				else {
-					throw ParseError {ParseError::UnexpectedToken, 0, index, "Unknown character"};
+					throw ParseError{ParseError::UnexpectedToken, "Unknown character.", c, index};
 				}
 			}
 			
-			throw "Invalid token";
+			throw ParseError{ParseError::UnexpectedToken, "Invalid token."};
 		}
 
 		Token peeknexttoken(const std::string &input, int index) {
@@ -467,7 +468,7 @@ namespace Gorgon { namespace Scripting {
 			
 			if(token!=Token::RightCrlyP) {
 				delete nw;
-				throw "should be expression list";
+				throw ParseError{ParseError::UnexpectedToken, "Expected expression list."};
 			}
 			
 			nw->leaves.Push(new node(node::Empty,{}));
@@ -477,7 +478,7 @@ namespace Gorgon { namespace Scripting {
 			return nw;
 		}
 		else {
-			throw "Should be identifier";
+			throw ParseError{ParseError::UnexpectedToken, "Expected identifier."};
 		}
 		
 		
@@ -497,7 +498,7 @@ namespace Gorgon { namespace Scripting {
 					delete root;
 					delete nw;
 					
-					throw "Should be identifier";
+					throw ParseError{ParseError::UnexpectedToken, "Expected identifier."};
 				}
 				
 				nw->leaves.Push(root);
@@ -514,7 +515,7 @@ namespace Gorgon { namespace Scripting {
 				if(token!=Token::RightCrlyP) {
 					delete root;
 					delete nw;
-					throw "should be expression list";
+					throw ParseError{ParseError::UnexpectedToken, "Expected expression list."};
 				}
 				
 				nw->leaves.Push(root);
@@ -533,7 +534,7 @@ namespace Gorgon { namespace Scripting {
 				if(token!=Token::RightSqrP) {
 					delete root;
 					delete nw;
-					throw "should be expression list";
+					throw ParseError{ParseError::UnexpectedToken, "Expected expression list."};
 				}
 				
 				nw->leaves.Push(root);
@@ -724,7 +725,7 @@ namespace Gorgon { namespace Scripting {
 		//output stack using it
 		auto popoff = [&] {
 			if(outputstack.GetSize()<2) {
-				throw "Missing operand";
+				throw ParseError{ParseError::UnexpectedToken, "Missing operand."};
 			}
 			node *second  = &outputstack.Pop();
 			node *first = &outputstack.Pop();
@@ -788,7 +789,7 @@ namespace Gorgon { namespace Scripting {
 					while(opstack.size() && opstack.back().op->data!=Token::LeftP) {
 						popoff();
 					}
-					if(opstack.size()==0) throw "Invalid comma";
+					if(opstack.size()==0) throw ParseError{ParseError::UnexpectedToken, "Unexpected token.", ','};
 				}
 				else if(token==Token::RightP && parcount) { //if no parenthesis is expected, just exit.
 					//pop until the start of the parenthesis
@@ -863,18 +864,18 @@ namespace Gorgon { namespace Scripting {
 					nextisop=false;
 				}
 				else {
-					throw "Unexpected token";
+					throw ParseError{ParseError::UnexpectedToken, "Unexpected token."};
 				}
 			}
 		}
 
-		if(parcount) throw "Unclosed parenthesis";
+		if(parcount) throw ParseError{ParseError::MismatchedParenthesis, "Mismatched parentheses."};
 		
 		while(opstack.size()) {
 			popoff();
 		}
 		
-		if(outputstack.GetSize()!=1) throw "Invalid expression";
+		if(outputstack.GetSize()!=1) throw ParseError{ParseError::UnexpectedToken, "Invalid expression."};
 		
 		//printtree(outputstack[0]);
 		
@@ -885,7 +886,7 @@ namespace Gorgon { namespace Scripting {
 		if(tree->type==node::Construct) {
 			if(tree->leaves[0].type==node::Empty) {
 				if(parent->type!=node::Index) {
-					throw "Empty constructors can only be used inside array constructors";
+					throw ParseError{ParseError::UnexpectedToken, "Unexpected empty constructor."};
 				}
 				
 				tree->leaves.Delete(*tree->leaves.begin());
@@ -907,7 +908,7 @@ namespace Gorgon { namespace Scripting {
 		if(token == Token::EoS) return nullptr;
 
 		if(token!=Token::Identifier) {
-			throw "Should be identifier";
+			throw ParseError{ParseError::UnexpectedToken, "Expected identifier."};
 		}
 		
 		if(KeywordNames.count(token.repr)) { //keyword
@@ -951,7 +952,7 @@ namespace Gorgon { namespace Scripting {
 				root->leaves.Push(expr);
 				
 				if( (token=consumenexttoken(input, index)) !=Token::EoS) {
-					throw "Scrap at the end of expression.";
+					throw ParseError{ParseError::UnexpectedToken, "Expected End of String."};
 				}
 			}
 			else if(token==Token::LeftP) { //function
@@ -959,11 +960,11 @@ namespace Gorgon { namespace Scripting {
 				root=parseexpression(input, index);
 				
 				if( (token=consumenexttoken(input, index)) !=Token::EoS) {
-					throw "Scrap at the end of expression.";
+					throw ParseError{ParseError::UnexpectedToken, "Expected End of String."};
 				}
 			}
 			else {
-				throw "Invalid expression";
+				throw ParseError{ParseError::UnexpectedToken, "Invalid expression."};
 			}
 		}
 		
@@ -1009,7 +1010,7 @@ namespace Gorgon { namespace Scripting {
 			
 			if(inquotes) {
 				if(escape==1) {
-					if(std::isdigit(c)) {
+					if(isdigit(c)) {
 						escape=2;
 					}
 					else {
@@ -1048,16 +1049,21 @@ namespace Gorgon { namespace Scripting {
 					
 					input="";
 					if(cline!=pline) {
-						throw ParseError(ParseError::MismatchedParenthesis, -cline, cchar,
-										"`"+std::string(1, parens.back().type)+"` at character "+
-										String::From(pchar+1) + " " + String::From(cline-pline) + " lines above "
-										" is not closed.");
+						throw ParseError{ParseError::MismatchedParenthesis, 
+									     "`" + std::string(1, parens.back().type) + "` at character " +
+											String::From(pchar + 1) + " " + String::From(cline - pline) + " lines above " +
+											" is not closed.",
+										 cchar, -cline
+						};
 					}
 					else {
-						throw ParseError(ParseError::MismatchedParenthesis, -cline, cchar, 
-										"`"+std::string(1, parens.back().type)+"` at character "+
-										String::From(pchar+1) +
-										" is not closed.");
+						throw ParseError{ParseError::MismatchedParenthesis,
+										 "`" + std::string(1, parens.back().type) + "` at character " +
+											 String::From(pchar + 1) +
+											 " is not closed.",
+										 cchar, -cline
+										
+						};
 					}
 				}
 				
@@ -1080,9 +1086,9 @@ namespace Gorgon { namespace Scripting {
 					int cline, cchar;
 					transform(i, cline, cchar);
 					
-					throw ParseError(ParseError::UnexpectedToken, -cline, cchar,
-									"`"+std::string(1, c)+"` is unexpected"
-									);
+					throw ParseError{ParseError::UnexpectedToken, "`"+std::string(1, c)+"` is unexpected",
+						cchar, -cline		
+					};
 				}
 				else {
 					parens.pop_back();
