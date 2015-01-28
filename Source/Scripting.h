@@ -52,31 +52,34 @@ namespace Gorgon {
 
 			ParseError() {};
 
-			ParseError(ErrorCode code, int line, int chr, const std::string &what) : Code(code), Line(line), 
-				Char(chr), What(what) {
-			}
-			ParseError(ErrorCode code, long line, int chr, const std::string &what) : Code(code), Line(line), 
-				Char(chr), What(what) {
-			}
+			ParseError(ErrorCode code, const std::string &what, int chr = -1, int  line = -1): Code(code), What(what), Char(chr), Line(line) {}
 			
-			ParseError(ErrorCode code, unsigned long line, int chr, const std::string &what) : Code(code), Line((long)line), 
+			/*
+			ParseError(ErrorCode code, const std::string &what, int chr = -1, long line = -1): Code(code), What(what), Char(chr), Line(line) {}
+			*/
+
+			/*
+			ParseError(ErrorCode code, unsigned long line, int chr, const std::string &what): Code(code), Line((long)line), 
 				Char(chr), What(what) {
 			}
+			*/
 
 
 			
 			/// The code of the error
 			ErrorCode Code;
-			
-			/// The line that contains parse error
-			long Line;
-			
+						
+			std::string What;
+
 			/// The exact character that contains parse error. If it cannot be determined
 			/// it will reported as -1.
 			int Char;
+
+			/// The line that contains parse error
+			/// it will reported as -1.
+			long Line;
+
 			
-			
-			std::string What;
 		};
 		
 		DefineEnumStringsCM(ParseError, ErrorCode, 

@@ -174,7 +174,7 @@ namespace Gorgon {
 			
 			eatwhite(input, ch);
 			if(ch<input.size()) {
-				throw ParseError({ParseError::UnexpectedToken, 0, 1, "Expected end of line, found: "+input.substr(ch,1)});
+				throw ParseError{ParseError::UnexpectedToken, "Expected end of line, found: "+input.substr(ch,1), 1, 0};
 			}
 			
 			return ret;

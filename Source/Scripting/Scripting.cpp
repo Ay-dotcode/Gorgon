@@ -215,7 +215,7 @@ namespace Gorgon { namespace Scripting {
 					parser->Parse(str);
 				}
 				catch(const ParseError &err) {
-					throw ParseError({err.Code, pline, err.Char, err.What});
+					throw ParseError({err.Code, err.What, err.Char, (int)pline}); //!!! problem
 				}
 
 				for(auto &inst : parser->List)
