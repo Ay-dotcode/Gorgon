@@ -258,7 +258,7 @@ namespace Gorgon {
 
 			Value ret;
 			
-			switch(CheckInputFor(input, ch, '.', '$', '!', 'i', 'f', 'b', 's', 'c', 'n', 'd', 'u')) {
+			switch(CheckInputFor(input, ch, '.', '$', '!', 'i', 'f', 'b', 's', 'c', 'n', 'd', 'u', '?')) {
 				case 0:
 					ret.Type  =ValueType::Temp;
 					ret.Result=parsetemporary(input, ch);
@@ -316,6 +316,10 @@ namespace Gorgon {
 					ret.Type    = ValueType::Literal;
 					ret.Literal = {Types::Unsigned(), String::To<unsigned>(ExtractQuotes(input, ch))};
 					return ret;
+					
+				case 11:
+					ret.Type 	= ValueType::Identifier;
+					ret.Name	= ExtractQuotes(input, ch);
 			}
 			
 			throw 0;

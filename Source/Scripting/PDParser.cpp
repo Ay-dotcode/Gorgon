@@ -1116,7 +1116,7 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	//generate output works only with functioncalls, it can be used to suppress result saving
-	Value compilevalue(node &tree, std::vector<Instruction> &list, Byte &tempind, bool generateoutput=true) {
+	Value compilevalue(node &tree, std::vector<Instruction> &list, Byte &tempind, bool generateoutput=true, std::vector<Instruction> *writeback=nullptr) {
 		if(tree.type==node::Operator) { //arithmetic
 			ASSERT(tree.leaves.GetSize()==2, "Operators require two operands");
 			
@@ -1157,9 +1157,20 @@ namespace Gorgon { namespace Scripting {
 			ASSERT(tree.leaves.GetSize()>0, "Function name is missing");
 			
 			Instruction inst;
+			std::vector<Instruction> writebacks;
 			inst.Type=(tree.type==node::MethodCall ? InstructionType::MethodCall : InstructionType::FunctionCall);
-			inst.Name.Type=ValueType::Literal;
-			inst.Name.Literal=Data(Types::String(), tree.leaves[0].data.repr);
+			if(tree.leaves[0].type==node::Identifier) {
+				inst.Name.Type=ValueType::Identifier;
+				inst.Name.Name=tree.leaves[0].data.repr;
+			}
+			else if(tree.leaves[0].type==node::Member) {
+				ASSERT(tree.leaves[0].leaves.GetCount()==2, "Membership nodes should have two children");
+				
+				inst.Name.Type=ValueType::Literal;
+				inst.Name.Literal={Types::String(), tree.leaves[0].leaves[1].data.repr};
+				inst.Parameters.push_back(compilevalue(tree.leaves[0].leaves[0], list, tempind, &writebacks));
+				inst.Type=(tree.type==node::MethodCall ? InstructionType::MemberMethodCall : InstructionType::MemberFunctionCall);
+			}
 			
 			for(int i=1;i<tree.leaves.GetCount();i++) {
 				inst.Parameters.push_back(compilevalue(tree.leaves[i], list, tempind));
@@ -1168,6 +1179,10 @@ namespace Gorgon { namespace Scripting {
 			inst.Store=generateoutput ? tempind : 0;
 			
 			list.push_back(inst);
+			
+			for(auto &inst : writebacks) {
+				list.push_back(inst);
+			}
 			
 			Value v;
 			v.Type=ValueType::Temp;
@@ -1222,6 +1237,38 @@ namespace Gorgon { namespace Scripting {
 			return v;
 		}
 		
+		if(tree.type==node::Member) { //writeback is required in some cases
+			ASSERT(tree.leaves.GetCount()==2, "Membership nodes should have two children");
+			
+			Instruction inst;
+			inst.Type=InstructionType::FunctionCall;
+			inst.Name.Type=ValueType::Literal;
+			inst.Name.Literal=Data(Types::String(), tree.leaves[1].data.repr);
+			
+			auto accessval=compilevalue(tree.leaves[0], list, tempind, writeback);
+			inst.Parameters.push_back(accessval);
+			inst.Store=tempind;
+			
+			list.push_back(inst);
+
+			Value v;
+			v.Type=ValueType::Temp;
+			v.Result=tempind++;
+			
+			if(writeback) {
+				Instruction writebackinst;
+				
+				writebackinst.Type=InstructionType::MemberFunctionCall;
+				writebackinst.Name=inst.Name;
+				writebackinst.Parameters.push_back(accessval);
+				writebackinst.Parameters.push_back(v);
+				
+				writeback->push_back(writebackinst);
+			}
+			
+			return v;
+		}
+		
 		Utils::NotImplemented();
 	}
 	
@@ -1233,15 +1280,21 @@ namespace Gorgon { namespace Scripting {
 		if(tree->type==node::Assignment) {
 			Instruction inst;
 			inst.Type=InstructionType::Assignment;
+			
+			inst.RHS=compilevalue(tree->leaves[1], list, tempind);
+
 			if(tree->leaves[0].type==node::Identifier) {
 				inst.Name.Type=ValueType::Variable;
 				inst.Name.Name=tree->leaves[0].data.repr;
 			}
 			else if(tree->leaves[0].type==node::Member) {
-				//tree->leaves[0].leaves[0]
+				ASSERT(tree->leaves[0].leaves.GetCount()==2, "Membership nodes should have two children");
+				
+				inst.Name.Type=ValueType::Literal;
+				inst.Name.Literal={Types::String(), tree->leaves[0].leaves[1].data.repr};
+				inst.Parameters.push_back(compilevalue(tree->leaves[0].leaves[0], list, tempind));
+				inst.Type=(tree->type==node::MethodCall ? InstructionType::MemberMethodCall : InstructionType::MemberFunctionCall);
 			}
-			
-			inst.RHS=compilevalue(tree->leaves[1], list, tempind);
 			
 			list.push_back(inst);
 		}
