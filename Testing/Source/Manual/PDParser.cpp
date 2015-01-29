@@ -43,13 +43,13 @@ int main() {
 			Gorgon::Console::SetBold();
 			std::cout << std::endl << std::endl << "---------------------------------" << std::endl;
 		}
-		catch(const ParseError &e) {
-			Gorgon::Console::SetColor(Gorgon::Console::Red);
-
-			std::cout << e.What << std::endl;
-
-			//file << "REQUIRE_THROWS( parser.parse(\""<<str<<"\") );"<< std::endl;
-		}
+// 		catch(const ParseError &e) {
+// 			Gorgon::Console::SetColor(Gorgon::Console::Red);
+// 
+// 			std::cout << e.What << std::endl;
+// 
+// 			//file << "REQUIRE_THROWS( parser.parse(\""<<str<<"\") );"<< std::endl;
+// 		}
 		catch(const char *e) {
 			Gorgon::Console::SetColor(Gorgon::Console::Red);
 

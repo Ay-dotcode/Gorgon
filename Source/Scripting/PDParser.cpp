@@ -10,7 +10,6 @@
 #include <fstream>
 
 #include "../Console.h"
-#include <../../../../../../../Program Files (x86)/Microsoft Visual Studio 11.0/VC/include/locale>
 
 ///@cond INTERNAL
 
@@ -749,6 +748,7 @@ namespace Gorgon { namespace Scripting {
 			
 			//printtrees();
 			
+		reevalute:
 			//if an operator is expected
 			if(nextisop) {
 				//next will not be an operator unless some specific case occurs
@@ -862,6 +862,9 @@ namespace Gorgon { namespace Scripting {
 					opstack.push_back({new node(node::Operator, token), 25});
 					parcount++;
 					nextisop=false;
+				}
+				else if(token==Token::RightP) {
+					goto reevalute;
 				}
 				else {
 					throw ParseError{ParseError::UnexpectedToken, "Unexpected token."};
@@ -1174,7 +1177,7 @@ namespace Gorgon { namespace Scripting {
 				
 				inst.Name.Type=ValueType::Literal;
 				inst.Name.Literal={Types::String(), tree.leaves[0].leaves[1].data.repr};
-				inst.Parameters.push_back(compilevalue(tree.leaves[0].leaves[0], list, tempind, &writebacks));
+				inst.Parameters.push_back(compilevalue(tree.leaves[0].leaves[0], list, tempind, true, &writebacks));
 				inst.Type=(tree.type==node::MethodCall ? InstructionType::MemberMethodCall : InstructionType::MemberFunctionCall);
 			}
 			
@@ -1186,8 +1189,8 @@ namespace Gorgon { namespace Scripting {
 			
 			list.push_back(inst);
 			
-			for(auto &inst : writebacks) {
-				list.push_back(inst);
+			for(auto inst=writebacks.rbegin(); inst!=writebacks.rend(); ++inst) {
+				list.push_back(*inst);
 			}
 			
 			Value v;
@@ -1251,7 +1254,7 @@ namespace Gorgon { namespace Scripting {
 			inst.Name.Type=ValueType::Literal;
 			inst.Name.Literal=Data(Types::String(), tree.leaves[1].data.repr);
 			
-			auto accessval=compilevalue(tree.leaves[0], list, tempind, writeback);
+			auto accessval=compilevalue(tree.leaves[0], list, tempind, true, writeback);
 			inst.Parameters.push_back(accessval);
 			inst.Store=tempind;
 			
@@ -1268,6 +1271,7 @@ namespace Gorgon { namespace Scripting {
 				writebackinst.Name=inst.Name;
 				writebackinst.Parameters.push_back(accessval);
 				writebackinst.Parameters.push_back(v);
+				writebackinst.Store=0;
 				
 				writeback->push_back(writebackinst);
 			}
@@ -1337,7 +1341,7 @@ namespace Gorgon { namespace Scripting {
 		
 		int elements=0;
 		
-		while(left.length()) { //parse until we run out of data
+ 		while(left.length()) { //parse until we run out of data
 			std::string process;
 			
 			extractline(left, process, linestarts);
