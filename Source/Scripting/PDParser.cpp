@@ -973,8 +973,8 @@ namespace Gorgon { namespace Scripting {
 		
 		fixconstructors(root);
 		
-		printtree(*root);
-		std::cout<<std::endl;
+		//printtree(*root);
+		//std::cout<<std::endl;
 		
 		
 		return root;
@@ -1204,7 +1204,7 @@ namespace Gorgon { namespace Scripting {
 			ASSERT(tree.leaves.GetSize()>0, "Object name is missing");
 			
 			Instruction inst;
-			inst.Type=InstructionType::FunctionCall;
+			inst.Type=InstructionType::MemberFunctionCall;
 			inst.Name.Type=ValueType::Literal;
 			inst.Name.Literal=Data(Types::String(), std::string("{}"));
 			
@@ -1252,7 +1252,7 @@ namespace Gorgon { namespace Scripting {
 			Instruction inst;
 			inst.Type=InstructionType::FunctionCall;
 			inst.Name.Type=ValueType::Literal;
-			inst.Name.Literal=Data(Types::String(), tree.leaves[1].data.repr);
+			inst.Name.Literal=Data(Types::String(), "."+tree.leaves[1].data.repr);
 			
 			auto accessval=compilevalue(tree.leaves[0], list, tempind, true, writeback);
 			inst.Parameters.push_back(accessval);
@@ -1292,6 +1292,7 @@ namespace Gorgon { namespace Scripting {
 			inst.Type=InstructionType::Assignment;
 			
 			inst.RHS=compilevalue(tree->leaves[1], list, tempind);
+			std::vector<Instruction> writebacks;
 
 			if(tree->leaves[0].type==node::Identifier) {
 				inst.Name.Type=ValueType::Variable;
@@ -1301,12 +1302,18 @@ namespace Gorgon { namespace Scripting {
 				ASSERT(tree->leaves[0].leaves.GetCount()==2, "Membership nodes should have two children");
 				
 				inst.Name.Type=ValueType::Literal;
-				inst.Name.Literal={Types::String(), tree->leaves[0].leaves[1].data.repr};
-				inst.Parameters.push_back(compilevalue(tree->leaves[0].leaves[0], list, tempind));
-				inst.Type=(tree->type==node::MethodCall ? InstructionType::MemberMethodCall : InstructionType::MemberFunctionCall);
+				inst.Name.Literal={Types::String(),"."+ tree->leaves[0].leaves[1].data.repr};
+				inst.Store=0;
+				inst.Parameters.push_back(compilevalue(tree->leaves[0].leaves[0], list, tempind, true, &writebacks));
+				inst.Parameters.push_back(compilevalue(tree->leaves[1], list, tempind));
+				inst.Type=InstructionType::MemberFunctionCall;
 			}
 			
 			list.push_back(inst);
+			
+			for(auto inst=writebacks.rbegin(); inst!=writebacks.rend(); ++inst) {
+				list.push_back(*inst);
+			}
 		}
 		else if(tree->type==node::FunctionCall || tree->type==node::MethodCall) {
 			auto v=compilevalue(*tree, list, tempind, false);
@@ -1365,7 +1372,7 @@ namespace Gorgon { namespace Scripting {
 				strlines.push_back(Disassemble(&(*it)));
 			}
 			
-			dottree(input, *ret, strlines);
+			//dottree(input, *ret, strlines);
 			
 		}
 		

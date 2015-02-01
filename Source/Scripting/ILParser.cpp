@@ -25,10 +25,10 @@ namespace Gorgon {
 		 * Every instruction is in a single line. The structure of IL is very rigid and the rules are enforced.
 		 * \# character at the *beginning* of the line causes parser to ignore that line. Empty lines are ignored.
 		 * Additionally, spaces at the beginning and the end of the line are ignored. Tabs are also counted as space.
-		 * Following is a simple assignment that performs `$var = 3 + $i`
+		 * Following is a simple assignment that performs `var = 3 + i`
 		 * @code
-		 * #$var = 3 + $i
-		 * ."1"   = fms"+" i"3" $"i"
+		 * #var = 3 + i
+		 * ."1"   = fms"+" i"3" "i"
 		 * $"var" = ."1"
 		 * @endcode
 		 * 

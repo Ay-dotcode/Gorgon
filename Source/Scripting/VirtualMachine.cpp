@@ -502,6 +502,11 @@ namespace Gorgon {
 				}
 				case ValueType::Variable:
 					return GetVariable(val.Name);
+				case ValueType::Identifier:
+					if(IsVariableSet(val.Name))
+						return GetVariable(val.Name);
+					else//!constants
+						return {Types::String(), val.Name};
 				default:
 					Utils::ASSERT_FALSE("Invalid value type.");
 			}
@@ -753,7 +758,14 @@ namespace Gorgon {
 				} catch(...) {
 					throw std::runtime_error("Invalid instruction. Function names should be string literals.");
 				}
-			} else {
+			}
+			else if(inst->Name.Type==ValueType::Identifier && IsVariableSet(inst->Name.Name)) {
+				fn=GetVariableValue(inst->Name.Name).GetValue<const Function *>();
+			}
+			else if(inst->Name.Type==ValueType::Identifier) {
+				functionname=inst->Name.Name;
+			}
+			else {
 				ASSERT(false, "Not implemented", 2);
 			}
 
@@ -761,7 +773,8 @@ namespace Gorgon {
 			if(!memberonly) {
 				//try library functions
 				try {
-					fn=&FindFunction(functionname);
+					if(!fn)
+						fn=&FindFunction(functionname);
 				}
 				//if not found, try member functions
 				catch(const SymbolNotFoundException &) {
@@ -795,8 +808,11 @@ namespace Gorgon {
 				Data data=getvalue(inst->Parameters[0]);
 
 				if(functionname=="{}") { //constructor
-					if(data.GetType()!=Reflection.Types["Type"]) {
-						throw std::runtime_error("Invalid intermediate instruction, missing type parameter is not a type");
+					if(data.GetType()==Types::String()) {
+						data={Reflection.Types["Type"], (const Type*)(&FindType(data.GetValue<std::string>()))};
+					}
+					else if(data.GetType()!=Reflection.Types["Type"]) {
+						throw std::runtime_error("Invalid intermediate instruction, type parameter is not a type");
 					}
 					
 					std::vector<Data> params;
@@ -836,10 +852,18 @@ namespace Gorgon {
 						}
 						else if(inst->Parameters[0].Type==ValueType::Temp) {
 							data.GetType().DataMembers[functionname.substr(1)].
-							Set(temporaries[inst->Parameters[0].Result], getvalue(inst->Parameters[1]));
+								Set(temporaries[inst->Parameters[0].Result], getvalue(inst->Parameters[1]));
 						}
+						else if(inst->Parameters[0].Type==ValueType::Identifier) {
+							ASSERT(IsVariableSet(inst->Parameters[0].Name), "Only variable identifiers can be assigned to");
+							
+							data.GetType().DataMembers[functionname.substr(1)].
+								Set(GetVariable(inst->Parameters[0].Name), getvalue(inst->Parameters[1]));
+						}
+						else if(inst->Parameters[0].Type==ValueType::Literal || inst->Parameters[0].Type==ValueType::Constant) {
+							ASSERT(false, "Cannot assign to literal or constants");
+						}						
 						else {
-							throw std::runtime_error("Cannot assign to literal or constants");
 						}						
 					}
 					else {

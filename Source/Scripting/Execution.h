@@ -96,7 +96,7 @@ namespace Gorgon { namespace Scripting {
 			std::vector<Value> Parameters;
 
 			/// Whether to store the result of the function
-			Byte Store;
+			Byte Store=0;
 		};
 		
 } }

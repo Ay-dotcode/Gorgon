@@ -3,10 +3,22 @@
 #include <thread>
 #include <iostream>
 #include "../../../Source/Scripting/VirtualMachine.h"
+#include <Source/Scripting/Parser.h>
 
 using namespace Gorgon::Scripting;
 
-const std::string source = R"(# $a = 4;
+const std::string source = 
+R"(
+	a=4
+	b=6
+	if a>b
+		echo(a)
+	else
+		echo(b)
+	end
+)";
+
+/*R"(# $a = 4;
 $"a" = i"4"
 
 ."1" = fns"help" !"type"
@@ -86,7 +98,7 @@ fns"else"
 fkm"end"
 fns"end"
 
-)";
+)";*/
 
 namespace Gorgon { namespace Geometry {
 	extern Scripting::Library LibGeometry;
@@ -98,7 +110,7 @@ int main() {
 
 	
 	std::stringstream ss(source);
-	StreamInput streaminput={ss, InputProvider::Intermediate};
+	StreamInput streaminput={std::cin, InputProvider::Programming};
 	InputSource input={streaminput, ""};
 
 
