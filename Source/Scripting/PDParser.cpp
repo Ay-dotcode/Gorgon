@@ -649,9 +649,10 @@ namespace Gorgon { namespace Scripting {
 			std::ofstream temp("temp.dot");
 			temp<<dot;
 		}
-		
+#ifdef LINUX
 		OS::Start("dot", {"temp.dot", "-Tsvg", "temp.dot", "-O"});
 		OS::Open("temp.dot.svg");
+#endif
 	}
 	
 	void printtree(node &tree) {

@@ -107,8 +107,6 @@ namespace Gorgon { namespace Geometry {
 } }
 
 int main() {
-
-	
 	std::stringstream ss(source);
 	StreamInput streaminput={std::cin, InputProvider::Programming};
 	InputSource input={streaminput, ""};
