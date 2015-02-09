@@ -7,7 +7,8 @@
 #include <fstream>
 #include "../String.h"
 #include "../Scripting.h"
-#include "Execution.h"
+#include "Instruction.h"
+#include "Compilers.h"
 
 namespace Gorgon {
 	
@@ -113,6 +114,7 @@ namespace Gorgon {
 				if(loc!=filename.npos)
 					ext=filename.substr(loc);
 				
+				//determine dialect from the extension
 				if(ext.length()>=3 && ext.substr(0,3)=="gsb") {
 					dialect=InputProvider::Binary;
 				}
@@ -146,7 +148,7 @@ namespace Gorgon {
 		};
 		/// @endcond
 
-		class ParserBase;
+		class CompilerBase;
 		
 		/** 
 		 * Base class for input sources. This system allows different input sources to supply 
@@ -188,8 +190,8 @@ namespace Gorgon {
 			
 			unsigned long pline = 0;
 			std::string name;
-
-			ParserBase *parser;
+			
+			Compilers::Base *parser;
 			
 			/// Every logical line up until current execution point. They are kept so that
 			/// it is possible to jump back. Logical lines do not contain comments 

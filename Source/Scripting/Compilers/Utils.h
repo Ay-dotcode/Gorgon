@@ -1,6 +1,6 @@
-#include "../Scripting.h"
+#include "../../Scripting.h"
 
-namespace Gorgon { namespace Scripting {
+namespace Gorgon { namespace Scripting { namespace Compilers {
 
 	/// @cond INTERNAL
 	/// Checks if the input string contains one of the given characters at current point. If it does
@@ -24,7 +24,7 @@ namespace Gorgon { namespace Scripting {
 		};
 		
 		if(input.length() <= ch) {
-			throw ParseError({ParseError::UnexpectedToken, errstr() + ", end of string encountered.", ch, 0});
+			throw ParseError({ExceptionType::UnexpectedToken, errstr() + ", end of string encountered.", ch, 0});
 		}
 		
 		char c = input[ch++];
@@ -36,7 +36,7 @@ namespace Gorgon { namespace Scripting {
 		}
 		
 		ch--;
-		throw ParseError({ParseError::UnexpectedToken, errstr() + ", found: " + input.substr(ch, 1), ch, 0});
+		throw ParseError({ExceptionType::UnexpectedToken, errstr() + ", found: " + input.substr(ch, 1), ch, 0});
 	}
 	
 	/// Extracts a string that is in quotes. This function supports both single and double quotes. Additionally,
@@ -73,7 +73,7 @@ namespace Gorgon { namespace Scripting {
 					num = (num << 4) + (c - 'a' + 10);
 				}
 				else {
-					throw ParseError{ParseError::UnexpectedToken, "Invalid escape sequence: \\" + input.substr(ch, 1), ch, 0};
+					throw ParseError{ExceptionType::UnexpectedToken, "Invalid escape sequence: \\" + input.substr(ch, 1), ch, 0};
 				}
 				
 				if(escapenum != 1) {
@@ -106,4 +106,4 @@ namespace Gorgon { namespace Scripting {
 		return ret;
 	}
 	///@endcond
-} }
+} } }

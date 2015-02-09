@@ -1,9 +1,9 @@
+#include <map>
+
 #include "../Scripting.h"
 #include "Reflection.h"
 #include "VirtualMachine.h"
 #include "Embedding.h"
-#include "Parser.h"
-#include <map>
 
 namespace Gorgon { namespace Scripting {
 
@@ -47,6 +47,12 @@ namespace Gorgon { namespace Scripting {
 			   ") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
 			   , 2, 2
 		);
+	}
+	
+	std::string Data::ToString() const {
+		ASSERT(type, "Type is not set", 1, 2);
+		
+		return type->ToString(*this);
 	}
 
 	Data &Data::operator =(Data other) {
@@ -212,10 +218,13 @@ namespace Gorgon { namespace Scripting {
 				pline++;
 
 				try {
-					parser->Parse(str);
+					parser->Compile(str);
 				}
-				catch(const ParseError &err) {
-					throw ParseError({err.Code, err.What, err.Char, (int)pline}); //!!! problem
+				catch(ParseError &err) {
+					if(err.GetLine()<0)
+						err.SetLine(pline-err.GetLine());
+					
+					throw err;
 				}
 
 				for(auto &inst : parser->List)
@@ -231,9 +240,9 @@ namespace Gorgon { namespace Scripting {
 	InputSource::InputSource(InputProvider &provider, const std::string &name) : provider(provider), name(name) {
 		switch(provider.GetDialect()) {
 		case InputProvider::Intermediate:
-			parser=new IntermediateParser();
+			parser=new Compilers::Intermediate();
 		case InputProvider::Programming:
-			parser=new ProgrammingParser();
+			parser=new Compilers::Programming();
 		}
 	}
 

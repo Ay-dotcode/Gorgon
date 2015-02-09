@@ -9,7 +9,6 @@ namespace Gorgon {
 	namespace Scripting {
 		
 		enum class ExceptionType {
-			Parse,
 			OutofBounds,
 			AmbiguousSymbol,
 			SymbolNotFound,
@@ -20,11 +19,12 @@ namespace Gorgon {
 			TooManyParameters,
 			NoReturn,
 			CastError,
-			InstructionError
+			InstructionError,
+			MismatchedParenthesis,
+			UnexpectedToken,
 		};
 		
 		DefineEnumStrings(ExceptionType,
-			{ExceptionType::Parse, "Parse error"},
 			{ExceptionType::OutofBounds, "Index out of bounds"},
 			{ExceptionType::AmbiguousSymbol, "Ambiguous symbol"},
 			{ExceptionType::SymbolNotFound, "Symbol not found"},
@@ -35,7 +35,9 @@ namespace Gorgon {
 			{ExceptionType::TooManyParameters, "Too many parameters"},
 			{ExceptionType::NoReturn, "No return type"},
 			{ExceptionType::CastError, "Cast error"},
-			{ExceptionType::InstructionError, "Instruction error"}
+			{ExceptionType::InstructionError, "Instruction error"},
+			{ExceptionType::MismatchedParenthesis, "Mismatched paranthesis"},
+			{ExceptionType::UnexpectedToken, "Unexpected token"}
 		);
 		
 		enum class SymbolType {
@@ -207,7 +209,28 @@ namespace Gorgon {
 			}
 		};
 
-
+		
+		/// This class contains information about a parse error. It is not intended to be
+		/// used as an exception.
+		class ParseError : public Exception {
+		public:
+			
+			ParseError(ExceptionType type, const std::string &message, const std::string &details, int chr = -1, long line = -1): 
+			Exception(type, message, line), Char(chr) {
+				this->details=details;
+			}			
+			
+			ParseError(ExceptionType type, const std::string &message, int chr = -1, long  line = -1): 
+			Exception(type, message, line), Char(chr) {}			
+			
+			
+			/// The exact character that contains parse error. If it cannot be determined
+			/// it will reported as -1.
+			int Char;
+			
+			
+		};
+		
 
 	}
 }

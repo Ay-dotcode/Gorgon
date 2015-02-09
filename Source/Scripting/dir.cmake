@@ -4,16 +4,21 @@ SET(Local
 	Builtin.cpp
 	Data.h
 	Embedding.h
-	Execution.h
-	Generator.cpp
+	Instruction.h
 	InputSource.h
-	Parser.h
-	ILParser.cpp
-	PDParser.cpp
 	Reflection.h
 	Runtime.h
 	VirtualMachine.h
 	VirtualMachine.cpp
+
+	Compilers.h
+	Compilers/AST.h
+	Compilers/Language.h
+	Compilers/Utils.h
+	Compilers/AST.cpp
+	Compilers/IL.cpp
+	Compilers/PD.cpp
+	Compilers/Generator.cpp
 	
 	Keywords/If.cpp
 	Keywords/For.cpp

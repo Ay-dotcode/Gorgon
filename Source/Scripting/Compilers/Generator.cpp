@@ -1,8 +1,8 @@
-#include "Parser.h"
-#include "InputSource.h"
-#include "../Scripting.h"
+#include "../InputSource.h"
+#include "../Instruction.h"
+#include "../../Scripting.h"
 
-namespace Gorgon { namespace Scripting {
+namespace Gorgon { namespace Scripting { namespace Compilers {
 	
 	std::string disassemblevalue(const Value &value) {
 		switch(value.Type) {
@@ -89,9 +89,22 @@ namespace Gorgon { namespace Scripting {
 			
 		case InstructionType::Mark:
 			return "fkm\""+instruction->Name.Name+"\"";
-
+			
 		case InstructionType::RemoveTemp:
 			return "x\""+String::From(instruction->Store)+"\"";
+			
+		case InstructionType::Label:
+			return "l\"" + String::From(instruction->Store) + "\"";
+			
+		case InstructionType::Jump:
+			return "ja\"" + String::From(instruction->Store) + "\"";
+			
+		case InstructionType::JumpNonZero:
+			return "jn\"" + String::From(instruction->Store) + "\"" + disassemblevalue(instruction->RHS);
+			
+		case InstructionType::JumpZero:
+			return "jz\"" + String::From(instruction->Store) + "\"" + disassemblevalue(instruction->RHS);
+			
 		}
 		
 		return "";
@@ -104,4 +117,4 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 
-} }
+} } }

@@ -68,6 +68,8 @@ namespace Gorgon {
 				
 				return *type;
 			}
+			
+			std::string ToString() const;
 
 			virtual ~Data();
 			

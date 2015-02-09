@@ -39,54 +39,6 @@ namespace Gorgon {
 		 */
 
 		
-		/// This class contains information about a parse error. It is not intended to be
-		/// used as an exception.
-		class ParseError {
-		public:
-
-			/// This enumeration lists all parse error types.
-			enum ErrorCode {
-				MismatchedParenthesis,
-				UnexpectedToken,
-			}; 
-
-			ParseError() {};
-
-			ParseError(ErrorCode code, const std::string &what, int chr = -1, int  line = -1): Code(code), What(what), Char(chr), Line(line) {}
-			
-			/*
-			ParseError(ErrorCode code, const std::string &what, int chr = -1, long line = -1): Code(code), What(what), Char(chr), Line(line) {}
-			*/
-
-			/*
-			ParseError(ErrorCode code, unsigned long line, int chr, const std::string &what): Code(code), Line((long)line), 
-				Char(chr), What(what) {
-			}
-			*/
-
-
-			
-			/// The code of the error
-			ErrorCode Code;
-						
-			std::string What;
-
-			/// The exact character that contains parse error. If it cannot be determined
-			/// it will reported as -1.
-			int Char;
-
-			/// The line that contains parse error
-			/// it will reported as -1.
-			long Line;
-
-			
-		};
-		
-		DefineEnumStringsCM(ParseError, ErrorCode, 
-			{ParseError::MismatchedParenthesis, "Mismatched paranthesis"},
-			{ParseError::UnexpectedToken, "Unexpected token"}
-		);
-		
 		/** 
 		 * This function parses the code and returns any syntax errors. This function
 		 * cannot check parse errors that can be caused by type assignments. Additionally
@@ -94,6 +46,7 @@ namespace Gorgon {
 		 * dynamically defined at runtime. The given code will be tokenized into lines.
 		 * Additionally, any referred files will also be parsed for errors.
 		 */
+		//!might be removed
 		std::vector<ParseError> Parse(const std::string &code);
 
 		/// @cond INTERNAL

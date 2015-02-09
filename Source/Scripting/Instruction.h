@@ -1,4 +1,5 @@
 #pragma once
+#include "../Scripting.h"
 
 namespace Gorgon { namespace Scripting {
 	
@@ -29,6 +30,18 @@ namespace Gorgon { namespace Scripting {
 			
 			/// Marks instruction as a removal of a temporary. Temporary index should be stored in the Store member
 			RemoveTemp,
+			
+			/// Marks a label
+			Label,
+			
+			/// Unconditionally jumps to the given label
+			Jump,
+			
+			/// Jumps to the label if the RHS value is zero
+			JumpZero,
+			
+			/// Jumps to the label if the RHS value is non zero
+			JumpNonZero,
 		};
 
 		/// Possible value types
@@ -68,6 +81,26 @@ namespace Gorgon { namespace Scripting {
 
 			/// Used for temporary results
 			Byte Result;
+			
+			void SetLiteral(const Scripting::Type *type, Any value) {
+				Type=ValueType::Literal;
+				Literal={type, value};
+			}
+			
+			void SetStringLiteral(const std::string &value) {
+				Type=ValueType::Literal;
+				Literal={Types::String(), {value}};
+			}
+			
+			void SetVariable(const std::string &name) {
+				Type=ValueType::Variable;
+				Name=name;
+			}
+			
+			void SetConstant(const std::string &name) {
+				Type=ValueType::Constant;
+				Name=name;
+			}
 		};
 		
 		/**

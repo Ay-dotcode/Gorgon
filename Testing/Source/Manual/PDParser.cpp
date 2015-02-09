@@ -1,16 +1,17 @@
 #include <iostream>
 #include <fstream>
-#include <Source/Scripting/Parser.h>
+#include <Source/Scripting/Compilers.h>
 #include "Source/Console.h"
 #include "Source/Scripting.h"
 
 using namespace Gorgon;
 using namespace Gorgon::Scripting;
+using namespace Gorgon::Scripting::Compilers;
 
 
 int main() {
 
-	ProgrammingParser parser;
+	Programming parser;
 	Initialize();
 	
 
@@ -32,7 +33,7 @@ int main() {
 				exit(0);
 			}
 
-			parser.Parse(str);
+			parser.Compile(str);
 			for(; ind<parser.List.size(); ind++)  {
 				std::cout<<Disassemble(&parser.List[ind])<<std::endl;
 			}
