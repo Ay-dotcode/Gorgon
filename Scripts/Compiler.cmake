@@ -18,7 +18,7 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 ELSEIF(MSVC)
 	IF(MSVC_VERSION VERSION_LESS 12)
 		IF(IGNORE_COMPILER_VERSION)
-			MESSAGE(STATUS "Gorgon Library requires Visual Studio 2012+")
+			MESSAGE(STATUS "Gorgon Library requires Visual Studio 2013+")
 		ELSE()
 			MESSAGE(STATUS "use cmake -DIGNORE_COMPILER_VERSION=ON to continue anyway")
 			MESSAGE(FATAL_ERROR "Gorgon Library requires Visual Studio 2012+")
@@ -41,9 +41,30 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
 ENDIF()
 
+#MACRO(FixProject) 
+#ENDMACRO()
+
 #make sure 64bits cannot be activated
 IF(MSVC)
 	ADD_DEFINITIONS(-D_SBCS -D_CRT_SECURE_NO_WARNINGS)
++	
++	SET(configs
++      CMAKE_C_FLAGS_DEBUG
++      CMAKE_C_FLAGS_MINSIZEREL
++      CMAKE_C_FLAGS_RELEASE
++      CMAKE_C_FLAGS_RELWITHDEBINFO
++      CMAKE_CXX_FLAGS_DEBUG
++      CMAKE_CXX_FLAGS_MINSIZEREL
++      CMAKE_CXX_FLAGS_RELEASE
++      CMAKE_CXX_FLAGS_RELWITHDEBINFO
++    )
++	
++	FOREACH(config ${configs})
++      IF(${config} MATCHES "/MD")
++        STRING(REGEX REPLACE "/MD" "/MT" ${config} "${${config}}")
++      ENDIF()
++    ENDFOREACH()
++
 	IF(${CMAKE_CL_64})
 		MESSAGE(FATAL_ERROR "Gorgon Library works only 32bits")
 	ENDIF()

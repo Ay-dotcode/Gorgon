@@ -69,31 +69,44 @@ namespace Gorgon { namespace OS {
 	}
 	
 	bool Start(const std::string &name, const std::vector<std::string> &args) {
-		char *v[args.size()+2];
-		int arg=1;
-		v[0]=(char*)malloc(name.length()+1);
-		strcpy(v[0], Filesystem::GetFile(name).c_str());
-		
-		for(auto &s : args) {
-			v[arg] = (char*)malloc(s.length()+1);
-			strcpy(v[arg],s.c_str());
-			arg++;
-		}
-		v[args.size()+1]=nullptr;
-		
 		int execpipe[2];
-		pipe(execpipe);
-		fcntl(execpipe[1], F_SETFD, fcntl(execpipe[1], F_GETFD) | FD_CLOEXEC);
+		if(pipe(execpipe)) {
+			return false;
+		}
+
+		if(fcntl(execpipe[1], F_SETFD, fcntl(execpipe[1], F_GETFD) | FD_CLOEXEC)==-1) {
+			close(execpipe[0]);
+			close(execpipe[1]);
+
+			return false;
+		}
 		
 		int f=fork();
 		
 		if(f==-1) {
 			close(execpipe[0]);
 			close(execpipe[1]);
+
 			return false;
 		}
 		
 		if(f==0) {
+			close(execpipe[0]);
+
+			//build args
+			char *v[args.size()+2];
+			int arg=1;
+			v[0]=(char*)malloc(name.length()+1);
+			strcpy(v[0], Filesystem::GetFile(name).c_str());
+
+			for(auto &s : args) {
+				v[arg] = (char*)malloc(s.length()+1);
+				strcpy(v[arg], s.c_str());
+				arg++;
+			}
+			v[args.size()+1]=nullptr;
+
+			//if path is given, from current directory
 			if(name.find_first_of('/')!=name.npos) {
 				execv(name.c_str(), v);
 			}
@@ -101,17 +114,18 @@ namespace Gorgon { namespace OS {
 				execvp(name.c_str(), v);
 			}
 
+			//only arrives here if there is an error
 			write(execpipe[1], &errno, sizeof(errno));
-			exit(0);
+			exit(-1);
 		}
 		else {
-			for(int i=0;i<arg;i++) {
-				free(v[i]);
-			}
 			close(execpipe[1]);
 			int childErrno;
+
+			//check if execution is successful
 			if(read(execpipe[0], &childErrno, sizeof(childErrno)) == sizeof(childErrno)) {
 				close(execpipe[0]);
+
 				return false;
 			}
 			close(execpipe[0]);

@@ -204,6 +204,74 @@ namespace Gorgon {
 		}
 	}
 
+	bool Start(const std::string &name, const std::vector<std::string> &args) {
+		STARTUPINFO si;
+		memset(&si, 0, sizeof(si));
+
+		PROCESS_INFORMATION pi;
+
+		bool usepath=name.find_first_of("/")==name.npos;
+		int size=0;
+		size=name.length()+3;
+		if(usepath) size*=2;
+		for(auto &arg : args) {
+			size+=arg.size()+3;
+		}
+
+		//build command line
+		char *cmd=new char[size];
+		int current=0;
+
+		if(usepath) {
+			//application to run
+			cmd[current++]='"';
+			strcpy(cmd+current, name.c_str());
+			current+=name.size();
+			cmd[current++]='"';
+			cmd[current++]=' ';
+		}
+
+		//application name as first arg
+		cmd[current++]='"';
+		strcpy(cmd, name.c_str());
+		current+=name.size();
+		cmd[current++]='"';
+		cmd[current++]=' ';
+
+		//arguments
+		for(auto arg : args) {
+			cmd[current++]='"';
+			strcpy(cmd, arg.c_str());
+			current+=arg.size();
+			cmd[current++]='"';
+			cmd[current++]=' ';
+		}
+		cmd[size]='\0';
+
+		bool ret;
+
+		if(usepath) {
+			ret=CreateProcess(nullptr, cmd, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi)!=0;
+		}
+		else {
+			ret=CreateProcess(name.c_str(), cmd, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi)!=0;
+		}
+
+		if(ret) {
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
+
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	bool Open(const std::string &file) {
+		return (int)ShellExecute(nullptr, "open", file.c_str(), nullptr, nullptr, SW_SHOWNORMAL)>32;
+	}
+
 } }
 /*	HINSTANCE Instance;
 

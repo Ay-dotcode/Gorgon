@@ -16,5 +16,7 @@ ipch
 *.opensdf
 .kdev_include_paths
 build
+clang/
+codeblocks/
 syntax: regexp
 .*\.kdev4(_.*)?
