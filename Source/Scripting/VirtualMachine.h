@@ -21,6 +21,21 @@ namespace Gorgon {
 	
 	namespace Scripting {
 		
+		/// Represents a symbol, can be a variable, type, function or constant.
+		class Symbol {
+		public:
+			/// Namespace that this symbol is in. For variables, namespc could be local
+			std::string namespc;
+			
+			/// Type of the symbol
+			SymbolType  type;
+			
+			/// The object
+			Any object;
+			
+			// Name of the symbol is optimized out
+			// std::string name;
+		};
 		
 		/// This class defines a virtual environment for scripts to run. It determines
 		/// which additional functions the script can access, working directory, and safety
@@ -39,6 +54,7 @@ namespace Gorgon {
 			void Run();
 
 			/// This method starts the virtual machine
+			///@param executiontarget depth of aimed execution. This value should be less than the current.
 			void Run(unsigned executiontarget);
 
 			/// This method starts the virtual machine with the given input source
@@ -68,9 +84,6 @@ namespace Gorgon {
 			/// Finds the given type by name. Namespace information will be extracted if exists. 
 			/// This function may throw symbol not found / ambiguous symbol.
 			const Constant &FindConstant(std::string name);
-			
-			/// Finds the given symbol with the given hint.
-			const SymbolType FindSymbol(std::string name, SymbolType hint, Any &result);
 
 			/// Sets the input source to read code lines from. Does not change active execution context.
 			void AddInputSource(InputSource &source);
@@ -289,6 +302,12 @@ namespace Gorgon {
 			
 			/// If a data is returned, it will be stored here
 			Data returnvalue=Data::Invalid();
+			
+			/// The list of symbols
+			std::multimap<std::string, Symbol, String::CaseInsensitiveLess> symbols;
+			
+			/// List of types
+			std::multimap<std::string, const Type*, String::CaseInsensitiveLess> types;
 
 
 			Containers::Collection<KeywordScope> 	keywordscopes;

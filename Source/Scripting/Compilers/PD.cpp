@@ -238,7 +238,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 						numeric = true;
 					}
 					else if(oporequals) {
-						return Token {acc, Token::EqualSign, start};
+						return Token {acc, !expectop ? Token::EqualSign : Token::Operator, start};
 					}
 
 					acc.push_back(c);

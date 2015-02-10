@@ -147,7 +147,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			ASSERT(tree.Leaves.GetSize()==2, "Operators require two operands");
 			
 			Instruction inst;
-			inst.Type=InstructionType::FunctionCall;
+			inst.Type=InstructionType::MemberFunctionCall;
 			inst.Name.Type=ValueType::Literal;
 			inst.Name.Literal=Data(Types::String(), tree.Text);
 			inst.Parameters.push_back(compilevalue(tree.Leaves[0], list, tempind));
@@ -268,7 +268,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			ASSERT(tree.Leaves.GetSize()>0, "Object name is missing");
 			
 			Instruction inst;
-			inst.Type=InstructionType::FunctionCall;
+			inst.Type=InstructionType::MemberFunctionCall;
 			inst.Name.SetStringLiteral("[]");
 			
 			//parameters of index operator

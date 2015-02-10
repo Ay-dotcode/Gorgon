@@ -3,10 +3,12 @@ SET(Local
 	Scripting.cpp
 	Builtin.cpp
 	Data.h
+	Data.cpp
 	Embedding.h
 	Instruction.h
 	InputSource.h
 	Reflection.h
+	Reflection.cpp
 	Runtime.h
 	VirtualMachine.h
 	VirtualMachine.cpp

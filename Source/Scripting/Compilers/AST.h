@@ -100,7 +100,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 
 	};
 	
-	/// This function compiles given abstract syntax tree
+	/// This function compiles given abstract syntax tree, returns the number of instructions generated.
+	///@param tree is the AST to be compiled
+	///@param list is the list where the instructions will be placed. Instructions will be added
+	/// at the end of the list
 	unsigned CompileAST(ASTNode *tree, std::vector<Instruction> &list);
 
 	/// Converts given AST to an SVG file. This function requires GraphViz dot to be in path. The SVG will be saved

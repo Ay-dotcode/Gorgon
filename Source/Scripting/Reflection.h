@@ -1062,13 +1062,7 @@ namespace Gorgon {
 				}
 			}
 
-			void AddTypes(const std::vector<Type*> &list) {
-				for(auto &type : list) {
-					ASSERT(!SymbolExists(type->GetName()), "Symbol "+type->GetName()+" already exists", 1, 2);
-					
-					types.Add(type);
-				}
-			}
+			void AddTypes(const std::vector<Type*> &list);
 			
 			void AddConstants(const std::vector<Constant*> &list) {
 				for(auto &constant : list) {

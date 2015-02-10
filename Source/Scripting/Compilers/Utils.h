@@ -2,7 +2,6 @@
 
 namespace Gorgon { namespace Scripting { namespace Compilers {
 
-	/// @cond INTERNAL
 	/// Checks if the input string contains one of the given characters at current point. If it does
 	/// the index of the character found is returned and index is incremented. If not, an exception
 	/// is thrown
@@ -105,5 +104,5 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		return ret;
 	}
-	///@endcond
+	
 } } }

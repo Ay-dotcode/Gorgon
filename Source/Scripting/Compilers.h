@@ -11,18 +11,30 @@
 namespace Gorgon {	namespace Scripting { 
 	
 	class InputSource;
-	
+
+/// This namespace contains compliers and any utilities related with it
 namespace Compilers {
 
+	/// The base class for compilers
 	class Base {
 	public:
 		
+		/// Asks the compiler to compile the given input. Returns the number of instructions
+		/// generated from the code. Compiler is free to request additional input by returning
+		/// zero. This does not necessarily mean there is no compilable source in the given input
+		/// it may simply be an incomplete line. When there is no more input, caller should finish
+		/// compilation by calling Finalize
 		virtual unsigned Compile(const std::string &input) = 0;
+		
+		/// Finalizes the compilation. Compiler may throw an error about missing constructs at this
+		/// point.
 		virtual void Finalize() = 0;
 		
+		/// The instructions that are compiled
 		std::vector<Instruction> List;
 	};
 
+	/// Intermediate language complier
 	class Intermediate : public Base {
 	public:
 		
@@ -43,7 +55,7 @@ namespace Compilers {
 		void eatwhite(const std::string &input, int &ch);
 	};
 
-
+	/// Programming dialect compiler
 	class Programming : public Base {
 	public:
 

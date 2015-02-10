@@ -31,16 +31,25 @@ namespace Gorgon {
 				return "??";
 			}
 		public:
+			static struct alltag {} AllTag;
+			static struct dumponlytag {} DumpOnlyTag;
+			
 			CrashHandler(const std::string &expression, const std::string &message, int skip=1, 
 						 int depth=4, bool se=false, bool so=false) :
 				original(expression), message(message), skip(skip), depth(depth),
 				show_expanded(se), show_original(so)
 			{
 			}
-			CrashHandler(int, const std::string &expression, const std::string &message, int skip=1, 
+			CrashHandler(alltag, const std::string &expression, const std::string &message, int skip=1, 
 						 int depth=4, bool se=true, bool so=true) :
 				original(expression), message(message), skip(skip), depth(depth),
 				show_expanded(se), show_original(so)
+			{
+			}
+			CrashHandler(dumponlytag, const std::string &expression, const std::string &message, int skip=1, 
+						 int depth=4, bool se=false, bool so=false) :
+				original(expression), message(message), skip(skip), depth(depth),
+				show_expanded(se), show_original(so), dumponly(true)
 			{
 			}
 			
@@ -72,12 +81,13 @@ namespace Gorgon {
 				Backtrace();
 				
 				Console::Reset();
-				
+				if(!dumponly) {
 #ifdef TEST
-				throw AssertationException(message);
+					throw AssertationException(message);
 #else
-				exit(1);
+					exit(1);
 #endif
+				}
 			}
 			
 #define gorgon_makeoperator(op) \
@@ -122,6 +132,8 @@ namespace Gorgon {
 			
 			bool show_original;
 			bool show_expanded;
+			
+			bool dumponly=false;
 		};
 		std::string demangle(const std::string &);
 		/// @endcond
@@ -137,6 +149,7 @@ namespace Gorgon {
 #ifdef NDEBUG
 	#define ASSERT(...)
 	#define ASSERT_ALL(...)
+	#define ASSERT_DUMP(...)
 #else
 		/** 
 		 * Replaces regular assert to allow messages and backtrace. Has four additional parameters:
@@ -156,7 +169,18 @@ namespace Gorgon {
 		 * skip defaults to 1, depth defaults to 4, expanded defaults to true, original defaults to true
 		 */
 		#define ASSERT_ALL(expression, message, ...) do { if(!bool(expression)) { \
-			(Gorgon::Utils::CrashHandler(1, #expression, message, ##__VA_ARGS__) < expression); } } while(0)
+			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::AllTag, #expression, message, ##__VA_ARGS__) < expression); } } while(0)
+
+		/** 
+		 * Replaces regular assert to allow messages and backtrace.  This variant does not crash or exit the 
+		 * program. It simply dumps the message and stacktrace if assertation fails. Has four additional parameters:
+		 * skip, which controls how many entries should be skipped from the start in backtrace and
+		 * depth to control how many entries should be shown in backtrace. Third parameter is to show
+		 * expanded expression. Fourth decides if the original expression should be displayed
+		 * skip defaults to 1, depth defaults to 4, expanded defaults to false, original defaults to false
+		 */
+		#define ASSERT_DUMP(expression, message, ...) do { if(!bool(expression)) { \
+			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::DumpOnlyTag,#expression, message, ##__VA_ARGS__) < expression); } } while(0)
 			
 #	ifdef _MSC_VER
 		__declspec(noreturn) inline void NotImplemented(const std::string &what="This feature") { ASSERT(false, what+" is not implemented.", 0, 8); }

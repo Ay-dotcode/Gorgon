@@ -17,9 +17,9 @@ namespace Gorgon {
 		{
 			Activate();
 			init_builtin();
-			libraries.Add(Integrals);
-			libraries.Add(Keywords);
-			libraries.Add(Reflection);
+			AddLibrary(Integrals);
+			AddLibrary(Keywords);
+			AddLibrary(Reflection);
 			
 			variablescopes.AddNew("[main]", VariableScope::DefaultLocal);
 		}
@@ -28,6 +28,18 @@ namespace Gorgon {
 			libraries.Add(library);
 			if(alllibnames!="") alllibnames+=", ";
 			alllibnames+=library.GetName();
+			
+			for(const auto &elm : library.Types) {
+				types.insert(std::make_pair(elm.first, &elm.second));
+			}
+			
+			for(const auto &elm : library.Constants) {
+				symbols.insert(std::make_pair(elm.first, Symbol{library.GetName(), SymbolType::Constant, &elm.second}));
+			}
+			
+			for(const auto &elm : library.Functions) {
+				symbols.insert(std::make_pair(elm.first, Symbol{library.GetName(), SymbolType::Function, &elm.second}));
+			}
 		}
 		
 		void VirtualMachine::RemoveLibrary(const Library &library) {
@@ -55,6 +67,8 @@ namespace Gorgon {
 			std::string namespc=String::Extract(name, ':');
 			if(name=="") swap(namespc, name);
 			
+			
+			
 			if(namespc!="") {
 				auto lib=libraries.Find(namespc);
 				if(!lib.IsValid()) {
@@ -75,18 +89,25 @@ namespace Gorgon {
 				
 				return element.Current().second;
 			}
-			else { //search all
-				const Type *foundelement;
+			else { //use types table
+				const Type *foundelement=nullptr;
 				std::string foundlibnames;
+				
+				auto range=types.equal_range(name);
 				int found=0;
 				
-				for(const auto &lib : libraries) {
-					auto element=lib.second.Types.Find(name);
-					if(element.IsValid()) {
+				for(auto it=range.first; it!=range.second; ++it) {
+					if(foundlibnames!="") foundlibnames+=", ";
+					foundlibnames+=it->first;
+					if(!foundelement || Integrals.Functions.Exists(name)) {
+						foundelement=it->second;
+						
 						found++;
-						foundelement=&element.Current().second;
-						if(foundlibnames!="") foundlibnames+=", ";
-						foundlibnames+=lib.first;
+						
+						if(Integrals.Functions.Exists(name)) { //Integral library takes precedence
+							found=1;
+							break;
+						}
 					}
 				}
 				
@@ -115,18 +136,28 @@ namespace Gorgon {
 			std::string namespc=String::Extract(name, ':');
 			if(name=="") swap(namespc, name);
 			
-			if(namespc=="") { //search all
-				const Function *foundelement;
+			if(namespc=="") { //look in the symbol table
+				const Function *foundelement=nullptr;
 				std::string foundlibnames;
+				
+				auto range=symbols.equal_range(name);
 				int found=0;
 				
-				for(const auto &lib : libraries) {
-					auto element=lib.second.Functions.Find(name);
-					if(element.IsValid()) {
-						found++;
-						foundelement=&element.Current().second;
+				for(auto it=range.first; it!=range.second; ++it) {
+					if(it->second.type==SymbolType::Function) {
 						if(foundlibnames!="") foundlibnames+=", ";
-						foundlibnames+=lib.first;
+						foundlibnames+=it->first;
+						found++;
+
+						if(!foundelement || it->second.namespc=="Integral") {
+							foundelement=it->second.object.Get<const Function*>();
+							
+							
+							if(it->second.namespc=="Integral") { //Integral library takes precedence
+								found=1;
+								break;
+							}
+						}
 					}
 				}
 				
@@ -228,18 +259,28 @@ namespace Gorgon {
 			std::string namespc=String::Extract(name, ':');
 			if(name=="") swap(namespc, name);
 			
-			if(namespc=="") { //search all
-				const Constant *foundelement;
+			if(namespc=="") { //use symbol table
+				const Constant *foundelement=nullptr;
 				std::string foundlibnames;
+				
+				auto range=symbols.equal_range(name);
 				int found=0;
 				
-				for(const auto &lib : libraries) {
-					auto element=lib.second.Constants.Find(name);
-					if(element.IsValid()) {
-						found++;
-						foundelement=&element.Current().second;
+				for(auto it=range.first; it!=range.second; ++it) {
+					if(it->second.type==SymbolType::Constant) {
 						if(foundlibnames!="") foundlibnames+=", ";
-						foundlibnames+=lib.first;
+						foundlibnames+=it->first;
+						found++;
+
+						if(!foundelement || it->second.namespc=="Integral") {
+							foundelement=it->second.object.Get<const Constant*>();
+							
+							
+							if(it->second.namespc=="Integral") { //Integral library takes precedence
+								found=1;
+								break;
+							}
+						}
 					}
 				}
 				
@@ -333,26 +374,6 @@ namespace Gorgon {
 			}
 		}
 		
-		const SymbolType FindSymbol(std::string name, SymbolType hint, Any &result) {
-			using std::swap;
-			
-			name=String::ToLower(name);
-			
-			std::string namespc=String::Extract(name, ':');
-			if(name=="") swap(namespc, name);
-			
-			if(namespc!="") {
-				//cannot be variable
-			}
-			else {
-			}
-			
-			
-			//!TODO
-			
-			throw SymbolNotFoundException(name, SymbolType::Unknown);
-		}
-		
 		void VirtualMachine::Start(InputSource &source) {
 			Activate();
 			inputsources.Add(source);
@@ -385,6 +406,7 @@ namespace Gorgon {
 			returnimmediately=false;
 			returnvalue=Data::Invalid();
 
+			//until execution target is reached
 			while(executionscopes.GetCount()>(long)executiontarget) {
 				if(returnimmediately) {
 					executionscopes.DeleteAll();
@@ -452,7 +474,7 @@ namespace Gorgon {
 							temporaries[inst->Store]=Data::Invalid();
 						}
 						else {
-							ASSERT(false, "Unknown instruction type.", 0, 8);
+							Utils::ASSERT_FALSE("Unknown instruction type.", 0, 8);
 						}
 					}
 				}
@@ -498,14 +520,85 @@ namespace Gorgon {
 				case ValueType::Identifier:
 					if(IsVariableSet(val.Name))
 						return GetVariable(val.Name);
-					else//!constants
-						return {Types::String(), val.Name};
+					else {
+						int namespcs=std::count(val.Name.begin(), val.Name.end(), ':');
+						
+						if(namespcs==2) { //function or constant in a type
+							auto name=val.Name;
+							auto lib=String::Extract(name, ':');
+							auto typ=String::Extract(name, ':');
+							
+							auto &type=Libraries[lib].Types[typ];
+							if(type.Constants.Exists(name)) {
+								return type.Constants[name].GetData();
+							}
+							else if(type.Functions.Exists(name)) {
+								Utils::NotImplemented("Function objects");
+							}
+							else {
+								throw SymbolNotFoundException(name, SymbolType::Unknown);
+							}
+						}
+						else if(namespcs==1) { //function or constant in a library
+							auto name=val.Name;
+							auto libname=String::Extract(name, ':');
+							
+							auto &lib=Libraries[libname];
+							if(lib.Constants.Exists(name)) {
+								return lib.Constants[name].GetData();
+							}
+							else if(lib.Functions.Exists(name)) {
+								Utils::NotImplemented("Function objects");
+							}
+							else { //could be a function or constant in a type which is in an unknown library
+								auto range=types.equal_range(libname);
+								if(range.first==range.second) {
+									throw SymbolNotFoundException(libname, SymbolType::Unknown);
+								}
+								else if(range.first!=--range.second) {
+									throw AmbiguousSymbolException(libname, SymbolType::Unknown);
+								}
+								else {
+									if(range.first->second->Constants.Exists(name)) {
+										return range.first->second->Constants[name].GetData();
+									}
+									else if(range.first->second->Functions.Exists(name)) {
+										Utils::NotImplemented("Function objects");
+									}
+									else {
+										throw SymbolNotFoundException(val.Name, SymbolType::Unknown);
+									}
+								}
+							}
+						}
+						else {
+							auto range=symbols.equal_range(val.Name);
+							if(range.first==range.second) {
+								throw SymbolNotFoundException(val.Name, SymbolType::Unknown);
+							}
+							else if(range.first!=--range.second) {
+								throw AmbiguousSymbolException(val.Name, SymbolType::Unknown);
+							}
+							else {
+								if(range.first->second.type==SymbolType::Constant) {
+									return range.first->second.object.Get<const Constant*>()->GetData();
+								}
+								else if(range.first->second.type==SymbolType::Function) {
+									Utils::NotImplemented("Function objects");
+								}
+								else {
+									throw SymbolNotFoundException(val.Name, SymbolType::Unknown, "An unsupported symbol is found");
+								}
+							}
+						}
+					}
 				default:
 					Utils::ASSERT_FALSE("Invalid value type.");
 			}
 
 		}
 
+		//calls the given function with the given values.
 		Data VirtualMachine::callfunction(const Function *fn, bool method, const std::vector<Value> &incomingparams) {
 			auto pin=incomingparams.begin();
 
@@ -540,6 +633,7 @@ namespace Gorgon {
 				}
 				pin++;
 			}
+			//else nothing else is needed
 			
 			auto fixparam = [&] (Data &param, const Parameter &pdef) {
 				if(param.GetType()==pdef.GetType()) {
@@ -633,6 +727,7 @@ namespace Gorgon {
 					"Too many parameters supplied for "+fn->GetName()
 				);
 			}
+			//else ok
 
 			return fn->Call(method, params);
 		}
@@ -656,6 +751,7 @@ namespace Gorgon {
 					}
 				}
 			}
+			//else ok
 
 			//if found
 			if(var.IsValid()) {

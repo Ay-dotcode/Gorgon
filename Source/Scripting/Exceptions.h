@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "../Enum.h"
+#include "../Utils/Assert.h"
 
 namespace Gorgon {
 	namespace Scripting {
@@ -67,34 +68,35 @@ namespace Gorgon {
 		class Exception : public std::runtime_error {
 		public:
 			
-		explicit Exception(ExceptionType type, const std::string &message, long linenumber=0) : linenumber(linenumber), 
-			std::runtime_error(message),
-		type(type) { }
-		
-		ExceptionType GetType() const {
-			return type;
-		}
-		
-		virtual std::string GetMessage() const {
-			return what();
-		}
-		
-		virtual std::string GetDetails() const {
-			if(details=="") {
+			explicit Exception(ExceptionType type, const std::string &message, long linenumber=0) : linenumber(linenumber), 
+				std::runtime_error(message), type(type) { 
+#ifndef TESTMODE
+				ASSERT_DUMP(false, message);
+#endif
+			}
+			
+			ExceptionType GetType() const {
+				return type;
+			}
+			
+			virtual std::string GetMessage() const {
 				return what();
 			}
-			else {
-				return details;
+			
+			virtual std::string GetDetails() const {
+				if(details=="") {
+					return what();
+				}
+				else {
+					return details;
+				}
 			}
-		}
 
-		long GetLine() const { return linenumber; }
+			long GetLine() const { return linenumber; }
 
-		void SetLine(long line) {
-			linenumber=line;
-		}
-
-
+			void SetLine(long line) {
+				linenumber=line;
+			}
 
 		protected:
 			ExceptionType type;
