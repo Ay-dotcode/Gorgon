@@ -305,8 +305,10 @@ namespace Gorgon {
 				if(before<0 || before>(long)list.size())
 					throw std::out_of_range("Invalid location");
 
-				if(before==list.size())
+				if(before==list.size()) {
 					Add(data);
+					return;
+				}
 
 				list.resize(list.size()+1);
 				

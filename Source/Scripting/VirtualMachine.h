@@ -284,6 +284,7 @@ namespace Gorgon {
 			ReferenceCounter References;
 
 		private:
+			void execute(const Instruction* inst);
 			Data callfunction(const Function *fn, bool method, const std::vector<Value> &params);
 			Data getvalue(const Value &val);
 			void functioncall(const Instruction *inst, bool memberonly, bool method);

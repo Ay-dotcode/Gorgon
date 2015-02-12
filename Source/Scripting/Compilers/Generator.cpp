@@ -93,17 +93,15 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		case InstructionType::RemoveTemp:
 			return "x\""+String::From(instruction->Store)+"\"";
 			
-		case InstructionType::Label:
-			return "l\"" + String::From(instruction->Store) + "\"";
 			
 		case InstructionType::Jump:
 			return "ja\"" + String::From(instruction->Store) + "\"";
 			
-		case InstructionType::JumpNonZero:
-			return "jn\"" + String::From(instruction->Store) + "\"" + disassemblevalue(instruction->RHS);
+		case InstructionType::JumpTrue:
+			return "jt\"" + String::From(instruction->Store) + "\"" + disassemblevalue(instruction->RHS);
 			
-		case InstructionType::JumpZero:
-			return "jz\"" + String::From(instruction->Store) + "\"" + disassemblevalue(instruction->RHS);
+		case InstructionType::JumpFalse:
+			return "jf\"" + String::From(instruction->Store) + "\"" + disassemblevalue(instruction->RHS);
 			
 		}
 		

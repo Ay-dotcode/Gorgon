@@ -128,11 +128,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* 
 	* 
 	* @subsection Jumps Jump instructions
-	* There are three jump instructions, `ja`: jump always, `jz`: jump on zero, `jn`: jump on non-zero. A label is required for
-	* jump instructions to work. "l" symbol followed by a quoted byte marks a label. Labels can be redefined. All jump 
-	* instructions are followed by a label number in quotes. For jump on zero and jump on non-zero, a value follows the label
-	* number. Jump instructions are much faster compared to regular keyword functions. Therefore, should be used instead of
-	* keywords if possible.
+	* There are three jump instructions, `ja`: jump always, `jf`: jump on false, `jt`: jump on true. All jump 
+	* instructions are followed by the number of lines that should be jumped from the current line. Like others,
+	* this value should be in quotes For jump on false and jump on true, a value should follow the jump distance
+	* Jump instructions are required for keywords.
 	* 
 	*/
 
@@ -150,7 +149,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		int ret=0;
 		
-		switch(CheckInputFor(input, ch, '#', '.', 'f', 'm', '$', 'x')) {
+		switch(CheckInputFor(input, ch, '#', '.', 'f', 'm', '$', 'x', 'j')) {
 			case 0:
 				return 0;
 				
@@ -171,13 +170,17 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				break;
 				
 				
-			case 5:
+			case 5: {
 				List.resize(List.size()+1);
 				auto &inst=List.back();
 				inst.Type  = InstructionType::RemoveTemp;
 				inst.Store = parsetemporary(input, ch);
 				ret=1;
 				break;
+			}
+				
+			case 6:
+				this->jinst(input, ch);
 		}
 		
 		eatwhite(input, ch);
@@ -239,6 +242,29 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			eatwhite(input, ch);
 		}
 	}			
+	
+	void Intermediate::jinst(std::string input, int ch) {
+		List.resize(List.size()+1);
+		auto &inst=List.back();
+		auto type=CheckInputFor(input, ch, 'a', 't', 'f');
+		inst.JumpOffset=String::To<int>(ExtractQuotes(input,ch)); //!check wellformed
+		
+		switch(type) {
+			case 0:
+				inst.Type=InstructionType::Jump;
+				return;
+				
+			case 1:
+				inst.Type=InstructionType::JumpTrue;
+				inst.RHS=parsevalue(input, ch);
+				return;
+				
+			case 2:
+				inst.Type=InstructionType::JumpFalse;
+				inst.RHS=parsevalue(input, ch);
+				return;
+		}
+	}	
 	
 	void Intermediate::varassign(const std::string& input, int &ch) {
 		List.resize(List.size()+1);
@@ -341,4 +367,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 		return ret;
 	}
+	
+	
 } } }

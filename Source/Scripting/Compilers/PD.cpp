@@ -673,7 +673,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	void fixconstructors(ASTNode *tree, ASTNode *parent=nullptr) {
 		if(tree->Type==ASTNode::Construct) {
 			if(tree->Leaves[0].Type==ASTNode::Empty) {
-				if(parent->Type!=ASTNode::Index) {
+				if(!parent || parent->Type!=ASTNode::Index) {
 					throw std::runtime_error("Unexpected empty constructor.");
 				}
 				
@@ -950,7 +950,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				strlines.push_back(Disassemble(&(*it)));
 			}
 			
-			//ASTToSVG(input, *ret, strlines, true);
+			ASTToSVG(input, *ret, strlines, true);
 			
 		}
 		

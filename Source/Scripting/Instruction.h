@@ -31,17 +31,14 @@ namespace Gorgon { namespace Scripting {
 			/// Marks instruction as a removal of a temporary. Temporary index should be stored in the Store member
 			RemoveTemp,
 			
-			/// Marks a label
-			Label,
-			
-			/// Unconditionally jumps to the given label
+			/// Unconditionally jumps by the given offset. Offset should be in JumpOffset field
 			Jump,
 			
-			/// Jumps to the label if the RHS value is zero
-			JumpZero,
+			/// Jumps by the given offset if RHS is false. Offset should be in JumpOffset field
+			JumpFalse,
 			
-			/// Jumps to the label if the RHS value is non zero
-			JumpNonZero,
+			/// Jumps by the given offset if RHS is true. Offset should be in JumpOffset field
+			JumpTrue,
 		};
 
 		/// Possible value types
@@ -128,8 +125,11 @@ namespace Gorgon { namespace Scripting {
 			/// Parameters of the function.
 			std::vector<Value> Parameters;
 
-			/// Whether to store the result of the function
-			Byte Store=0;
+			union {
+				/// Whether to store the result of the function
+				Byte Store;
+				int JumpOffset=0;
+			};
 		};
 		
 } }

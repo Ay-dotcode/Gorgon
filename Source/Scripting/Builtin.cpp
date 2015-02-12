@@ -185,7 +185,7 @@ namespace Gorgon {
 				Map_Typecast<float, unsigned>("Integrals", Float, Unsigned),
 				Map_Typecast<double, unsigned>("Integrals", Double, Unsigned),
 				Map_Typecast<int, unsigned>("Integrals", Int, Unsigned),
-				Map_Typecast<Gorgon::Byte, unsigned>("Integrals", Byte, Unsigned)
+				Map_Typecast<Gorgon::Byte, unsigned>("Integrals", Byte, Unsigned),
 			});
 			
 			Float->AddConstructors({
@@ -212,6 +212,12 @@ namespace Gorgon {
 			
 			Char->AddConstructors({
 				Map_Typecast<Gorgon::Byte, char>("Integrals", Byte, Char)
+			});
+			
+			Bool->AddConstructors({
+				Map_Typecast<Gorgon::Byte, bool>("Integrals", Byte, Bool),
+				Map_Typecast<unsigned, bool>("Integrals", Unsigned, Bool),
+				Map_Typecast<int, bool>("Integrals", Int, Bool),
 			});
 			
 			String->AddFunctions({

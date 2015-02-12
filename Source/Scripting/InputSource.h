@@ -168,6 +168,10 @@ namespace Gorgon {
 			unsigned long GetPhysicalLine() const {
 				return pline;
 			}
+			
+			unsigned ReadyInstructionCount() const {
+				return lines.size();
+			}
 
 			std::string GetName() const { return name; }
 			

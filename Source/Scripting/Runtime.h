@@ -340,6 +340,10 @@ namespace Gorgon {
 			const Instruction *Peek(unsigned long line) {
 				return source->ReadInstruction(line);
 			}
+			
+			void MoveToEnd() {
+				current=source->ReadyInstructionCount();
+			}
 
 			InputSource &GetSource() const { return *source; }
 			

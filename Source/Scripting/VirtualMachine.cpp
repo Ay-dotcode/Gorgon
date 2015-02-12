@@ -432,55 +432,16 @@ namespace Gorgon {
 						executionscopes.Last().Delete();
 					} 
 					else {
-						if(inst->Type==InstructionType::Mark) {
-							auto &fn=FindFunction(inst->Name.Name);
-							if(fn.NeverSkip()) {
-								markednoskip=true;
-							}
-							markedkeyword=&fn;
-							markedline=executionscopes.Last()->GetMarkerForCurrent();
-						}
-						// assignment ...
-						else if(inst->Type==InstructionType::Assignment) {
-							if(inst->Name.Type!=ValueType::Variable)
-								throw std::runtime_error("Variables can only be represented with variables.");
-
-							if(!skipping || markednoskip) {
-								SetVariable(inst->Name.Name, getvalue(inst->RHS));
-							}
-						}
-						//function call
-						else if(inst->Type==InstructionType::FunctionCall) {
-							if(!skipping || markednoskip) {
-								functioncall(inst, false, false);
-							}
-						} 
-						else if(inst->Type==InstructionType::MemberFunctionCall) {
-							if(!skipping) {
-								functioncall(inst, true, false);
-							}
-						} 
-						else if(inst->Type==InstructionType::MethodCall) {
-							if(!skipping || markednoskip) {
-								functioncall(inst, false, true);
-							}
-						}
-						else if(inst->Type==InstructionType::MemberMethodCall) {
-							if(!skipping) {
-								functioncall(inst, true, true);
-							}
-						}
-						else if(inst->Type==InstructionType::RemoveTemp) {
-							temporaries[inst->Store]=Data::Invalid();
-						}
-						else {
-							Utils::ASSERT_FALSE("Unknown instruction type.", 0, 8);
-						}
+						execute(inst);
 					}
 				}
  				catch(Exception &ex) {
-					if(ex.GetLine()<=0) {
-						ex.SetLine(-ex.GetLine()+executionscopes.Last()->GetSource().GetPhysicalLine());
+					if(executionscopes.GetCount()) {
+						executionscopes.Last()->MoveToEnd();
+						
+						if(ex.GetLine()<=0) {
+							ex.SetLine(-ex.GetLine()+executionscopes.Last()->GetSource().GetPhysicalLine());
+						}
 					}
  
  					throw ex;
@@ -502,12 +463,114 @@ namespace Gorgon {
 			}
 		}
 
+		void VirtualMachine::SetVariable(const std::string &name, Data data) {
+			//check if it exists
+			auto &vars=variablescopes.Last()->Variables;
+			auto var=vars.Find(String::ToLower(name));
+
+			//if not found in locals
+			if(!var.IsValid()) {
+				//search in globals
+				var=globalvariables.Find(String::ToLower(name));
+
+				//global should have defined in the same InputSource as dictated by the scope
+				if(variablescopes.Last()->GetScopingMode()==VariableScope::LimitGlobals) {
+					//if not
+					if(!var.Current().second.IsDefinedIn(executionscopes.Last()->GetSource())) {
+						//this scope cannot use this global and should define a new local variable
+						var=globalvariables.end();
+					}
+				}
+			}
+			//else ok
+
+			//if found
+			if(var.IsValid()) {
+				//change existing variable
+				var.Current().second.Set(data.GetType(), data.GetData());
+			}
+			else {
+				//add a new one
+				if(variablescopes.Last()->GetScopingMode()==VariableScope::DefaultGlobal) {
+					//as global
+					globalvariables.Add(new Variable(name, data.GetType(), data.GetData()));
+				}
+				else {
+					//as local
+					vars.Add(new Variable(name, data.GetType(), data.GetData()));
+				}
+			}
+		}
+		
+		bool VirtualMachine::IsVariableSet(const std::string &name) {
+			auto &vars=variablescopes.Last()->Variables;
+			auto var=vars.Find(String::ToLower(name));
+			
+			if(var.IsValid()) return true;
+			
+			var=globalvariables.Find(String::ToLower(name));
+
+			//if found
+			if(var.IsValid()) return true;
+			
+			return false;
+		}
+		
+		void VirtualMachine::CompileCurrent() {
+			if(executionscopes.GetCount()==0) {
+				throw FlowException("No active execution scope");
+			}
+			
+			executionscopes.Last()->Compile();
+		}
+		
+		Variable &VirtualMachine::GetVariable(const std::string &name) {
+			//check variable scopes first
+			auto &vars=variablescopes.Last()->Variables;
+			auto var=vars.Find(String::ToLower(name));
+
+			//TODO static variables? may be they can be handled by function function
+
+			//if found
+			if(var.IsValid()) {
+				//return
+				return var.Current().second;
+			}
+			//if not
+			else {
+				//search globals
+				auto var=globalvariables.Find(String::ToLower(name));
+
+				//if found
+				if(var.IsValid()) {
+					//global should have defined in the same InputSource as dictated by the scope
+					if(variablescopes.Last()->GetScopingMode()==VariableScope::LimitGlobals) {
+						//if not
+						if(!var.Current().second.IsDefinedIn(executionscopes.Last()->GetSource())) {
+							//this scope cannot use this global
+							throw SymbolNotFoundException(name, SymbolType::Variable);
+						}
+					}
+
+					//return
+					return var.Current().second;
+				}
+				//if not
+				else {
+					//nothing more to try
+					throw SymbolNotFoundException(name, SymbolType::Variable);
+				}
+			}
+		}
+		
 		Data VirtualMachine::getvalue(const Value &val) {
 			switch(val.Type) {
 				case ValueType::Literal:
 					return val.Literal;
+					
 				case ValueType::Constant:
 					return FindConstant(val.Name).GetData();
+					
 				case ValueType::Temp: {
 					auto &data=temporaries[val.Result];
 					if(!data.IsValid()) {
@@ -515,9 +578,12 @@ namespace Gorgon {
 					}
 					return temporaries[val.Result];
 				}
+				
 				case ValueType::Variable:
 					return GetVariable(val.Name);
+					
 				case ValueType::Identifier:
+					
 					if(IsVariableSet(val.Name))
 						return GetVariable(val.Name);
 					else {
@@ -592,18 +658,51 @@ namespace Gorgon {
 							}
 						}
 					}
-				default:
-					Utils::ASSERT_FALSE("Invalid value type.");
+					default:
+						Utils::ASSERT_FALSE("Invalid value type.");
 			}
-
 		}
+		
 
-		//calls the given function with the given values.
+		
+		void fixparameter(Data &param, const Type &pdef, const std::string &error) {
+			if(param.GetType()==pdef) {
+				//no worries
+			}
+			//to string
+			else if(pdef==Integrals.Types["string"]) {
+				param={Integrals.Types["string"], param.GetType().ToString(param)};
+			}
+			//from string 
+			else if(param.GetType()==Integrals.Types["string"]) {
+				param={pdef, pdef.Parse(param.GetValue<std::string>())};
+			}
+			//to variant
+			else if(pdef==Variant) {
+				param={Variant, param};
+			}
+			//from variant
+			else if(param.GetType()==Variant && param.GetValue<Data>().GetType()==pdef) {
+				param={pdef, param.GetValue<Data>()};
+			}
+			else {
+				const Function *ctor=pdef.GetTypeCasting(param.GetType());
+				
+				if(ctor) {
+					param=ctor->Call(false, {param});
+				}
+				else {
+					throw CastException(param.GetType().GetName(), pdef.GetName(), error);
+				}
+			}
+		}
+		
+		/// Calls the given function with the given values.
 		Data VirtualMachine::callfunction(const Function *fn, bool method, const std::vector<Value> &incomingparams) {
 			auto pin=incomingparams.begin();
-
+			
 			std::vector<Data> params;
-
+			
 			if(fn->HasParent()) {
 				if(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
@@ -618,14 +717,14 @@ namespace Gorgon {
 							}
 						}
 					}
-
+					
 					if(param.GetType()==fn->GetParent()) {
 						//no worries
 					}
 					else {
 						Utils::NotImplemented("Polymorphism");
 					}
-
+					
 					params.push_back(param);
 				}
 				else {
@@ -635,39 +734,6 @@ namespace Gorgon {
 			}
 			//else nothing else is needed
 			
-			auto fixparam = [&] (Data &param, const Parameter &pdef) {
-				if(param.GetType()==pdef.GetType()) {
-					//no worries
-				}
-				//to string
-				else if(pdef.GetType()==Integrals.Types["string"]) {
-					param={Integrals.Types["string"], param.GetType().ToString(param)};
-				}
-				//from string 
-				else if(param.GetType()==Integrals.Types["string"]) {
-					param={pdef.GetType(), pdef.GetType().Parse(param.GetValue<std::string>())};
-				}
-				//to variant
-				else if(pdef.GetType()==Variant) {
-					param={Variant, param};
-				}
-				//from variant
-				else if(param.GetType()==Variant && param.GetValue<Data>().GetType()==pdef.GetType()) {
-					param={pdef.GetType(), param.GetValue<Data>()};
-				}
-				else {
-					const Function *ctor=pdef.GetType().GetTypeCasting(param.GetType());
-
-					if(ctor) {
-						param=ctor->Call(false, {param});
-					}
-					else {
-						throw CastException(param.GetType().GetName(), pdef.GetType().GetName(), 
-											"Cannot cast while trying to call "+fn->GetName());
-					}
-				}
-			};
-
 			int ind=1;
 			for(const auto &pdef : fn->Parameters) {
 				if(pdef.IsReference()) {
@@ -693,18 +759,19 @@ namespace Gorgon {
 				}
 				else if(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
-
-					fixparam(param, pdef);
-
+					
+					fixparameter(param, pdef.GetType(), 
+								 "Cannot cast while trying to call "+fn->GetName());
+					
 					params.push_back(param);
 				}
 				else {
 					if(!pdef.IsOptional()) {
 						throw MissingParameterException(pdef.GetName(), ind, pdef.GetType().GetName(),
-							"Parameter "+pdef.GetName()+" is not optional."
+														"Parameter "+pdef.GetName()+" is not optional."
 						);
 					}
-
+					
 					break;
 				}
 				++pin;
@@ -716,7 +783,8 @@ namespace Gorgon {
 				//add remaining parameters to the parameter list
 				while(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
-					fixparam(param, fn->Parameters.Last().Current());
+					fixparameter(param, fn->Parameters.Last().Current().GetType(),  
+								 "Cannot cast while trying to call "+fn->GetName());
 					params.push_back(param);
 					++pin;
 				}
@@ -724,118 +792,16 @@ namespace Gorgon {
 			// if not and there are extra parameters
 			else if(pin!=incomingparams.end()) {
 				throw TooManyParametersException(incomingparams.size(), fn->Parameters.GetCount(), 
-					"Too many parameters supplied for "+fn->GetName()
+												 "Too many parameters supplied for "+fn->GetName()
 				);
 			}
 			//else ok
-
+			
 			return fn->Call(method, params);
 		}
-
-		void VirtualMachine::SetVariable(const std::string &name, Data data) {
-			//check if it exists
-			auto &vars=variablescopes.Last()->Variables;
-			auto var=vars.Find(String::ToLower(name));
-
-			//if not found in locals
-			if(!var.IsValid()) {
-				//search in globals
-				var=globalvariables.Find(String::ToLower(name));
-
-				//global should have defined in the same InputSource as dictated by the scope
-				if(variablescopes.Last()->GetScopingMode()==VariableScope::LimitGlobals) {
-					//if not
-					if(!var.Current().second.IsDefinedIn(executionscopes.Last()->GetSource())) {
-						//this scope cannot use this global and should define a new local variable
-						var=globalvariables.end();
-					}
-				}
-			}
-			//else ok
-
-			//if found
-			if(var.IsValid()) {
-				//change existing variable
-				var.Current().second.Set(data.GetType(), data.GetData());
-			}
-			else {
-				//add a new one
-				if(variablescopes.Last()->GetScopingMode()==VariableScope::DefaultGlobal) {
-					//as global
-					globalvariables.Add(new Variable(name, data.GetType(), data.GetData()));
-				}
-				else {
-					//as local
-					vars.Add(new Variable(name, data.GetType(), data.GetData()));
-				}
-			}
-		}
 		
-		bool VirtualMachine::IsVariableSet(const std::string &name) {
-			auto &vars=variablescopes.Last()->Variables;
-			auto var=vars.Find(String::ToLower(name));
-			
-			if(var.IsValid()) return true;
-			
-			var=globalvariables.Find(String::ToLower(name));
-
-			//if found
-			if(var.IsValid()) return true;
-			
-			return false;
-		}
-		
-		void VirtualMachine::CompileCurrent() {
-			if(executionscopes.GetCount()==0) {
-				throw FlowException("No active execution scope");
-			}
-			
-			executionscopes.Last()->Compile();
-		}
-		
-		
-
-		
-		Variable &VirtualMachine::GetVariable(const std::string &name) {
-			//check variable scopes first
-			auto &vars=variablescopes.Last()->Variables;
-			auto var=vars.Find(String::ToLower(name));
-
-			//TODO static variables? may be they can be handled by function function
-
-			//if found
-			if(var.IsValid()) {
-				//return
-				return var.Current().second;
-			}
-			//if not
-			else {
-				//search globals
-				auto var=globalvariables.Find(String::ToLower(name));
-
-				//if found
-				if(var.IsValid()) {
-					//global should have defined in the same InputSource as dictated by the scope
-					if(variablescopes.Last()->GetScopingMode()==VariableScope::LimitGlobals) {
-						//if not
-						if(!var.Current().second.IsDefinedIn(executionscopes.Last()->GetSource())) {
-							//this scope cannot use this global
-							throw SymbolNotFoundException(name, SymbolType::Variable);
-						}
-					}
-
-					//return
-					return var.Current().second;
-				}
-				//if not
-				else {
-					//nothing more to try
-					throw SymbolNotFoundException(name, SymbolType::Variable);
-				}
-			}
-		}
-
 		// !Careful there are early terminations
+		/// Handles function/method call instructions
 		void VirtualMachine::functioncall(const Instruction *inst, bool memberonly, bool method) {
 			const Function *fn=nullptr;
 			std::string functionname;
@@ -921,6 +887,9 @@ namespace Gorgon {
 				}				
 				else if(functionname[0]=='.') {
 					if(inst->Parameters.size()==1) {
+						if(!data.GetType().DataMembers.Exists(functionname.substr(1))) {
+							throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
+						}
 						Data ret=data.GetType().DataMembers[functionname.substr(1)].Get(data);
 						
 						if(inst->Store) {
@@ -1003,7 +972,72 @@ namespace Gorgon {
 			}
 		}
 		
+		void VirtualMachine::execute(const Instruction* inst) {
+			if(inst->Type==InstructionType::Mark) {
+				auto &fn=FindFunction(inst->Name.Name);
+				if(fn.NeverSkip()) {
+					markednoskip=true;
+				}
+				markedkeyword=&fn;
+				markedline=executionscopes.Last()->GetMarkerForCurrent();
+			}
+			// assignment ...
+			else if(inst->Type==InstructionType::Assignment) {
+				if(inst->Name.Type!=ValueType::Variable)
+					throw std::runtime_error("Variables can only be represented with variables.");
+				
+				if(!skipping || markednoskip) {
+					SetVariable(inst->Name.Name, getvalue(inst->RHS));
+				}
+			}
+			//function call
+			else if(inst->Type==InstructionType::FunctionCall) {
+				if(!skipping || markednoskip) {
+					functioncall(inst, false, false);
+				}
+			} 
+			else if(inst->Type==InstructionType::MemberFunctionCall) {
+				if(!skipping) {
+					functioncall(inst, true, false);
+				}
+			} 
+			else if(inst->Type==InstructionType::MethodCall) {
+				if(!skipping || markednoskip) {
+					functioncall(inst, false, true);
+				}
+			}
+			else if(inst->Type==InstructionType::MemberMethodCall) {
+				if(!skipping) {
+					functioncall(inst, true, true);
+				}
+			}
+			else if(inst->Type==InstructionType::RemoveTemp) {
+				temporaries[inst->Store]=Data::Invalid();
+			}
+			else if(inst->Type==InstructionType::Jump) {
+				executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+			}
+			else if(inst->Type==InstructionType::JumpTrue) {
+				auto dat=getvalue(inst->RHS);
+				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
+				if(dat.GetValue<bool>()) {
+					executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+				}
+			}
+			else if(inst->Type==InstructionType::JumpFalse) {
+				auto dat=getvalue(inst->RHS);
+				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
+				if(!dat.GetValue<bool>()) {
+					executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+				}
+			}
+			else {
+				Utils::ASSERT_FALSE("Unknown instruction type.", 0, 8);
+			}
+		}
+		
 		void VirtualMachine::Jump(SourceMarker marker) {
+			
 			if(reinterpret_cast<ExecutionScope*>(marker.GetSource())!=executionscopes.Last().CurrentPtr()) {
 				throw FlowException("Jump destination is not valid", "While performing a short jump, a different "
 					"execution scope is requested."
