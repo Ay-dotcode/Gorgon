@@ -181,6 +181,24 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			return v;
 		}
 		
+		//variable, use as is
+		if(tree.Type==ASTNode::Variable) {
+			Value v;
+			v.Type=ValueType::Variable;
+			v.Name=tree.Text;
+			
+			return v;
+		}
+		
+		//constant, use as is
+		if(tree.Type==ASTNode::Constant) {
+			Value v;
+			v.Type=ValueType::Constant;
+			v.Name=tree.Text;
+			
+			return v;
+		}
+		
 		//function call
 		if(tree.Type==ASTNode::FunctionCall || tree.Type==ASTNode::MethodCall) {
 			ASSERT(tree.Leaves.GetSize()>0, "Function name is missing");

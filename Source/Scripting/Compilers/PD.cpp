@@ -697,19 +697,36 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			if(token == Token::EoS) return nullptr;
 
 			if(token!=Token::Identifier) {
-				throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier.", index};
+				throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier, found: "+token.repr, index};
 			}
 			
 			if(KeywordNames.count(token.repr)) { //keyword
 				root=NewNode(ASTNode::Keyword, token);
 				
-				token=peeknexttoken(input, index);
-				
-				while(token!=Token::EoS) {
+				if(String::ToLower(token.repr)=="for") {
+					auto tokenvar=consumenexttoken(input, index);
+					if(tokenvar!=Token::Identifier) {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier, found: "+token.repr, index};
+					}
+					root->Leaves.Push(NewNode(ASTNode::Variable, tokenvar));
+					
+					auto tokenin=consumenexttoken(input, index);					
+					if(String::ToLower(tokenin.repr)!="in") {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected `in`, found: "+tokenin.repr, index};
+					}
+					
 					auto expr=parseexpression(input, index);
 					root->Leaves.Push(expr);
-					
+				}
+				else {
 					token=peeknexttoken(input, index);
+					
+					while(token!=Token::EoS) {
+						auto expr=parseexpression(input, index);
+						root->Leaves.Push(expr);
+						
+						token=peeknexttoken(input, index);
+					}
 				}
 			}
 			else {
