@@ -54,7 +54,7 @@ namespace Compilers {
 		
 		void eatwhite(const std::string &input, int &ch);
 		
-		void jinst(std::string input, int ch);
+		void jinst(std::string input, int &ch);
 	};
 
 	/// Programming dialect compiler

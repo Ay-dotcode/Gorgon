@@ -1,5 +1,6 @@
 #include <Source/Scripting.h>
 #include <Source/Scripting/VirtualMachine.h>
+#include <Source/Scripting/Embedding.h>
 #include <thread>
 #include <iostream>
 #include "../../../Source/Scripting/VirtualMachine.h"
@@ -7,8 +8,8 @@
 
 using namespace Gorgon::Scripting;
 
-const std::string source = 
-R"(
+const std::string source = "";
+/*R"(
 	a=4
 	b=6
 	if a>b
@@ -18,10 +19,11 @@ R"(
 	end
 )";
 
-/*R"(# $a = 4;
-$"a" = i"4"
+R"(# $a = 4;
 
-."1" = fns"help" !"type"
+$"a" = i"4"
+#ja"5"
+."1" = fms"help" !"type"
 fns"echo" s""
 fns"echo" s"Type help" 
 fns"echo" ."1"
@@ -34,11 +36,11 @@ fns"echo" s""
 
 $"i" = i"1"
 fkm"while"
-."1" = fns"<" $"i" i"5"
+."1" = fms"<" $"i" i"5"
 fns"while" ."1"
 	fns"echo" $"i"
 
-	."1" = fns"+" $"i" i"1"
+	."1" = fms"+" $"i" i"1"
 	$"i" = ."1"
 	
 	#fns"break"
@@ -65,7 +67,7 @@ fns"echo" s"x value for point is: " ."2"
 mms"[]" !"float" f"5" f"7"
 
 # echo "3=pi ? " + (3=pi)
-."1" = fns"=" i"3" !"pi"
+."1" = fms"=" i"3" !"pi"
 ."2" = fms"+" s"3=pi ? " ."1"
 fns"echo" s"The result is " ."2"
 x"1"
@@ -97,8 +99,16 @@ fns"else"
 # end
 fkm"end"
 fns"end"
-
+fns"return"
 )";*/
+
+namespace Gorgon { namespace Scripting { namespace Compilers {
+	extern bool showsvg__;
+} } }
+
+void togglesvg() {
+	Compilers::showsvg__=!Compilers::showsvg__;
+}
 
 namespace Gorgon { namespace Geometry {
 	extern Scripting::Library LibGeometry;
@@ -115,6 +125,13 @@ int main() {
 	VirtualMachine vm;
 	Gorgon::Geometry::init_scripting();
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
+	
+	Library mylib;
+	mylib.AddFunctions({
+		new MappedFunction("svg", "", nullptr, nullptr, ParameterList{}, 
+						   MappedFunctions(togglesvg), MappedMethods(), KeywordTag)
+	});
+	vm.AddLibrary(mylib);
 
 	std::cout<<std::endl<<std::endl;
 	Gorgon::Console::SetBold();

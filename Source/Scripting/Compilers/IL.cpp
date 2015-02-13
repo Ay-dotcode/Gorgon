@@ -181,6 +181,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				
 			case 6:
 				this->jinst(input, ch);
+				break;
 		}
 		
 		eatwhite(input, ch);
@@ -243,7 +244,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 	}			
 	
-	void Intermediate::jinst(std::string input, int ch) {
+	void Intermediate::jinst(std::string input, int &ch) {
 		List.resize(List.size()+1);
 		auto &inst=List.back();
 		auto type=CheckInputFor(input, ch, 'a', 't', 'f');

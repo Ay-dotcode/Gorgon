@@ -16,10 +16,11 @@
 #	include "../../Console.h"
 #endif
 
+
 ///@cond INTERNAL
 
 namespace Gorgon { namespace Scripting { namespace Compilers {
-
+	bool showsvg__=false;
 	namespace {
 
 		struct Token {
@@ -66,7 +67,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					case Float:
 						return Data(Types::Float(), String::To<float>(repr));
 					case Bool:
-						return Data(Types::Bool(), String::To<bool>(repr));
+						if(repr=="true")
+							return Data(Types::Bool(), true);
+						else 
+							return Data(Types::Bool(), String::To<bool>(repr));
 					case String:
 						return Data(Types::String(), repr);
 					default:
@@ -967,7 +971,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				strlines.push_back(Disassemble(&(*it)));
 			}
 			
-			ASTToSVG(input, *ret, strlines, true);
+			if(showsvg__)
+				ASTToSVG(input, *ret, strlines, true);
 			
 		}
 		

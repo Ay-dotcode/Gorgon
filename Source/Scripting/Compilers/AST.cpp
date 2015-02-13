@@ -417,27 +417,33 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		else if(tree->Type==ASTNode::FunctionCall || tree->Type==ASTNode::MethodCall) {
 			auto v=compilevalue(*tree, list, tempind, false);
 		}
+		
 		//Keyword call
 		else if(tree->Type==ASTNode::Keyword) {
-			Instruction instmark, inst;
-			
-			//Mark the start of the keyword
-			instmark.Type=InstructionType::Mark;
-			instmark.Name.Name=tree->Text;
-			list.push_back(instmark);
-			
-			//Call the keyword as a function
-			inst.Type=InstructionType::FunctionCall;
-			inst.Name.SetStringLiteral(tree->Text);
-			
-			//keywords do not have return values
-			inst.Store=0;
-			
-			//parameters
-			for(auto &p : tree->Leaves) {
-				inst.Parameters.push_back(compilevalue(p, list, tempind));
-			}
-			list.push_back(inst);
+// 			if(tree->Text=="if") {
+// 				
+// 			}
+// 			else {
+				Instruction instmark, inst;
+				
+				//Mark the start of the keyword
+				instmark.Type=InstructionType::Mark;
+				instmark.Name.Name=tree->Text;
+				list.push_back(instmark);
+				
+				//Call the keyword as a function
+				inst.Type=InstructionType::FunctionCall;
+				inst.Name.SetStringLiteral(tree->Text);
+				
+				//keywords do not have return values
+				inst.Store=0;
+				
+				//parameters
+				for(auto &p : tree->Leaves) {
+					inst.Parameters.push_back(compilevalue(p, list, tempind));
+				}
+				list.push_back(inst);
+// 			}
 		}
 		else {
 			ASSERT(false, "Unknown top level AST Node");

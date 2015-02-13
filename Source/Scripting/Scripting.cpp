@@ -46,8 +46,12 @@ namespace Gorgon { namespace Scripting {
 		switch(provider.GetDialect()) {
 		case InputProvider::Intermediate:
 			parser=new Compilers::Intermediate();
+			break;
 		case InputProvider::Programming:
 			parser=new Compilers::Programming();
+			break;
+		default:
+			Utils::ASSERT_FALSE("Unknown dialect");
 		}
 	}
 
