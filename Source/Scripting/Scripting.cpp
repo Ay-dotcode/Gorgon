@@ -22,8 +22,9 @@ namespace Gorgon { namespace Scripting {
 				}
 				pline++;
 
+				int compiled=0;
 				try {
-					parser->Compile(str);
+					compiled=parser->Compile(str);
 				}
 				catch(ParseError &err) {
 					if(err.GetLine()<0)
@@ -32,10 +33,11 @@ namespace Gorgon { namespace Scripting {
 					throw err;
 				}
 
-				for(auto &inst : parser->List)
-					lines.push_back({inst, pline});
+				for(int i=parser->List.size()-compiled;i<parser->List.size();i++) {
+					lines.push_back({parser->List[i], pline});
+				}
 
-				parser->List.clear();
+				parser->List.erase(parser->List.end()-compiled, parser->List.end());
 			}
 			
 			return &lines[line].instruction;

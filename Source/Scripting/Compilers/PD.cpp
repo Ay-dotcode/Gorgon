@@ -945,7 +945,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 
 		left.append(input);
 		
-		int elements=0;
+		int elements=waiting;
+		waiting=0;
 		
  		while(left.length()) { //parse until we run out of data
 			std::string process;
@@ -956,7 +957,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			if(ret) {
 				try {
-					elements+=CompileAST(ret, List);
+					elements+=compiler.Compile(ret);
 				}
 				catch(...) {
 					delete ret;
@@ -965,15 +966,21 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			else {
 				break;
 			}
-
-			std::vector<std::string> strlines;
-			for(auto it=List.end()-elements;it!=List.end();++it) {
-				strlines.push_back(Disassemble(&(*it)));
+			
+			if(showsvg__) {
+				std::vector<std::string> strlines;
+				for(auto it=List.end()-elements;it!=List.end();++it) {
+					strlines.push_back(Disassemble(&(*it)));
+				}
+				
+				ASTToSVG(input, *ret, strlines, true);
 			}
 			
-			if(showsvg__)
-				ASTToSVG(input, *ret, strlines, true);
-			
+		}
+		
+		if(!compiler.IsReady()) {
+			waiting=elements;
+			elements=0;
 		}
 		
 		return elements;

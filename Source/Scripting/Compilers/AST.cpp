@@ -361,12 +361,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		Utils::ASSERT_FALSE("Unknown AST Node");
 	}
 	
-	//This function compiles a given AST tree
-	unsigned CompileAST(ASTNode *tree, std::vector<Instruction> &list) {
+	unsigned ASTCompiler::Compile(ASTNode *tree) {
 		auto sz=list.size();
 		
 		//temporaries start from 1
 		Byte tempind=1;
+
+		std::vector<Instruction> writebacks;
 		
 		//Assignment operation
 		if(tree->Type==ASTNode::Assignment) {
@@ -374,7 +375,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			inst.Type=InstructionType::Assignment;
 			
 			inst.RHS=compilevalue(tree->Leaves[1], list, tempind);
-			std::vector<Instruction> writebacks;
 			
 			if(tree->Leaves[0].Type==ASTNode::Identifier || tree->Leaves[0].Type==ASTNode::Variable) {
 				inst.Name.Type=ValueType::Variable;
@@ -420,10 +420,92 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		//Keyword call
 		else if(tree->Type==ASTNode::Keyword) {
-// 			if(tree->Text=="if") {
-// 				
-// 			}
-// 			else {
+			//fully compile if keyword
+			if(String::ToLower(tree->Text)=="if") {
+				if(tree->Leaves.GetCount()==0) {
+					throw MissingParameterException("condition", 0, "Bool", "Condition for If keyword is not specified");
+				}
+				else if(tree->Leaves.GetCount()>1) {
+					throw TooManyParametersException(tree->Leaves.GetCount(), 1, "If keyword requires only a single condition");
+				}
+				
+				Instruction jf;
+				jf.Type=InstructionType::JumpFalse;
+				jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
+				
+				scopes.push_back(scope{scope::ifkeyword, (int)list.size()});
+				
+				list.push_back(jf);
+				waitingcount++;
+			}
+			else if(String::ToLower(tree->Text)=="else") {
+				if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
+					throw FlowException("Else without If");
+				}
+				if(scopes.back().elsepassed) {
+					throw FlowException("Multiple Else for a single If");
+				}
+				
+				Instruction ja;
+				ja.Type=InstructionType::Jump;
+				list.push_back(ja);
+				
+				list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
+				scopes.back().indices.back()=list.size()-1;
+				scopes.back().elsepassed=true;
+			}
+			else if(String::ToLower(tree->Text)=="elseif") {
+				if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
+					throw FlowException("ElseIf without If");
+				}
+				if(scopes.back().elsepassed) {
+					throw FlowException("ElseIf statements must be before Else statement");
+				}
+				if(tree->Leaves.GetCount()==0) {
+					throw MissingParameterException("condition", 0, "Bool", "Condition for ElseIf keyword is not specified");
+				}
+				else if(tree->Leaves.GetCount()>1) {
+					throw TooManyParametersException(tree->Leaves.GetCount(), 1, "ElseIf keyword requires only a single condition");
+				}
+				
+				Instruction ja;
+				ja.Type=InstructionType::Jump;
+				list.push_back(ja);
+				
+				list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
+				scopes.back().indices.back()=list.size()-1;
+				
+				Instruction jf;
+				jf.Type=InstructionType::JumpFalse;
+				jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
+				
+				scopes.back().indices.push_back(list.size());
+				list.push_back(jf);				
+			}
+			else if(String::ToLower(tree->Text)=="end" && (scopes.size()==0 || scopes.back().type!=scope::unknown) ) {
+				if(scopes.size()==0) {
+					throw FlowException("end without keyword");
+				}
+				
+				switch(scopes.back().type) {
+				case scope::ifkeyword:
+					for(auto &index : scopes.back().indices) {
+						list[index].JumpOffset=list.size()-index;
+					}
+					break;
+				}
+				
+				scopes.pop_back();
+				waitingcount--;
+			}
+			else {
+				if(String::ToLower(tree->Text)=="end") {
+					scopes.pop_back();
+				}
+				else if(Keywords.Functions[tree->Text].IsScoped()) {
+					scopes.push_back(scope{scope::unknown, (int)list.size()});
+				}
+				
 				Instruction instmark, inst;
 				
 				//Mark the start of the keyword
@@ -443,10 +525,19 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					inst.Parameters.push_back(compilevalue(p, list, tempind));
 				}
 				list.push_back(inst);
-// 			}
+			}
 		}
 		else {
 			ASSERT(false, "Unknown top level AST Node");
+		}
+		
+		//release used temporaries
+		for(int i=1;i<tempind;i++) {
+			Instruction inst;
+			inst.Type=InstructionType::RemoveTemp;
+			inst.Store=i;
+			
+			list.push_back(inst);
 		}
 		
 		return list.size()-sz;

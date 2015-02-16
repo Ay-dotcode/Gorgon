@@ -100,11 +100,47 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 
 	};
 	
-	/// This function compiles given abstract syntax tree, returns the number of instructions generated.
-	///@param tree is the AST to be compiled
-	///@param list is the list where the instructions will be placed. Instructions will be added
-	/// at the end of the list
-	unsigned CompileAST(ASTNode *tree, std::vector<Instruction> &list);
+	/**
+	 * ASTCompiler stores states for AST compiler. This class requires the list of instructions to be saved.
+	 * 
+	 */
+	class ASTCompiler {
+	public:
+		
+		/// AST compiler requires a vector of instructions. The compiler appends elements to the end of the
+		/// list. However, it is important not to modify the list while IsReady function returns false.
+		ASTCompiler(std::vector<Instruction> &list) : list(list) { }
+		
+		/// This function compiles given abstract syntax tree, returns the number of instructions generated.
+		/// You should check IsReady function before using instructions.
+		///@param tree is the AST to be compiled
+		unsigned Compile(ASTNode *tree);
+		
+		/// If this function returns true, it is ok to use instructions from the list. A return value of 
+		/// false means not all instructions are fully completed. In these cases, more ASTs should be
+		/// supplied to the compiler
+		bool IsReady() const { return waitingcount==0; }
+		
+	private:
+		
+		struct scope {
+			enum scopetype {
+				unknown,
+				ifkeyword,
+			} type;
+			
+			scope(scopetype type, int index) : type(type) { indices.push_back(index); }
+			
+			bool elsepassed=0;
+			std::vector<int> indices;
+		};
+		
+		std::vector<scope> scopes;
+		
+		int waitingcount = 0;
+		std::vector<Instruction> &list;
+		
+	};
 
 	/// Converts given AST to an SVG file. This function requires GraphViz dot to be in path. The SVG will be saved
 	/// as temp.dot.svg in the current directory.

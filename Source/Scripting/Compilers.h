@@ -6,6 +6,7 @@
 
 #include "Data.h"
 #include "Instruction.h"
+#include "Compilers/AST.h"
 #include "../Types.h"
 
 namespace Gorgon {	namespace Scripting { 
@@ -60,14 +61,17 @@ namespace Compilers {
 	/// Programming dialect compiler
 	class Programming : public Base {
 	public:
-
+		Programming() : compiler(List) { }
+		
 		virtual unsigned Compile(const std::string &input) override;
 		
 		virtual void Finalize() override;
 
 	private:
+		ASTCompiler compiler;
 		std::string left;
 		std::vector<unsigned> linestarts;
+		int waiting=0;
 	};
 	
 	/// Disassembles the given instruction
