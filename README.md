@@ -4,7 +4,6 @@ Gorgon Game Engine (GGE) is a C++ game engine that handles many tasks.
 
 GGE is a multi-module, interface driven, C++ game engine that handles graphics, animations, sound, multimedia, input, operating system, resource management, simple effects and user interface. Its primary aim is to be easy to program on.
 
-http://darkgaze.org/pm/page/gorgon-ge
 https://sourceforge.net/p/gorgon-ge/
 
 ## Requirements
