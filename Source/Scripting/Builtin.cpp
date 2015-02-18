@@ -43,12 +43,12 @@ namespace Gorgon {
 			void End(std::string validate="") {
 				auto &vm=VirtualMachine::Get();
 				if(!vm.HasKeywordScope()) {
-					throw FlowException("end without any keyword");
+					throw FlowException("`End` without any keyword scope");
 				}
 
 				if(validate!="") {
 					if(String::ToLower(vm.GetKeywordScope().GetFunction().GetName())!=String::ToLower(validate)) {
-						throw FlowException("end does not match with the correct keyword", 
+						throw FlowException("`End` does not match with the correct keyword", 
 							"Current scope is "+vm.GetKeywordScope().GetFunction().GetName()+
 							" while given keyword for end is "+validate);
 					}

@@ -140,7 +140,7 @@ int main() {
 	Gorgon::Console::Reset();
 	
 	vm.Begin(input);
-	//Disassemble(input, std::cout);
+	//Compilers::Disassemble(input, std::cout);
 	
 	std::cout<<std::endl<<std::endl;
 	

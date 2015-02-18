@@ -122,24 +122,29 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		bool IsReady() const { return waitingcount==0; }
 		
 	private:
+		bool compilekeyword(ASTNode *tree, Byte &tempind);
+		
 		
 		struct scope {
 			enum scopetype {
 				unknown,
 				ifkeyword,
+				whilekeyword
 			} type;
+			
+			static const std::string keywordnames[];
 			
 			scope(scopetype type, int index) : type(type) { indices.push_back(index); }
 			
 			bool elsepassed=0;
 			std::vector<int> indices;
+			std::vector<int> indices2;
 		};
 		
 		std::vector<scope> scopes;
 		
 		int waitingcount = 0;
 		std::vector<Instruction> &list;
-		
 	};
 
 	/// Converts given AST to an SVG file. This function requires GraphViz dot to be in path. The SVG will be saved

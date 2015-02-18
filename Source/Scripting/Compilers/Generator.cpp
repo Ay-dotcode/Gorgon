@@ -95,13 +95,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			
 		case InstructionType::Jump:
-			return "ja\"" + String::From(instruction->Store) + "\"";
+			return "ja\"" + String::From(instruction->JumpOffset) + "\"";
 			
 		case InstructionType::JumpTrue:
-			return "jt\"" + String::From(instruction->Store) + "\"" + disassemblevalue(instruction->RHS);
+			return "jt\"" + String::From(instruction->JumpOffset) + "\"" + disassemblevalue(instruction->RHS);
 			
 		case InstructionType::JumpFalse:
-			return "jf\"" + String::From(instruction->Store) + "\"" + disassemblevalue(instruction->RHS);
+			return "jf\"" + String::From(instruction->JumpOffset) + "\"" + disassemblevalue(instruction->RHS);
 			
 		}
 		

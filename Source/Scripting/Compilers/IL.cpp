@@ -112,8 +112,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* 
 	* 
 	* The following line calls echo function as `echo("Result: ", 3+4);`
+	* @code
 	* ."1" = fns"+" i"3" i"4"
 	* fns"echo" s"Result" ."1"
+	* @endcode
 	* 
 	* 
 	* @subsection KeywordMarker Keyword marker
@@ -130,7 +132,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* @subsection Jumps Jump instructions
 	* There are three jump instructions, `ja`: jump always, `jf`: jump on false, `jt`: jump on true. All jump 
 	* instructions are followed by the number of lines that should be jumped from the current line. Like others,
-	* this value should be in quotes For jump on false and jump on true, a value should follow the jump distance
+	* this value should be in quotes. For jump on false and jump on true, a value should follow the jump distance.
 	* Jump instructions are required for keywords.
 	* 
 	*/

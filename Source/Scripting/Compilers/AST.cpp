@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "AST.h"
+#include "../VirtualMachine.h"
 #include "../../Scripting.h"
 
 namespace Gorgon { namespace Scripting { namespace Compilers {
@@ -420,90 +421,23 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		//Keyword call
 		else if(tree->Type==ASTNode::Keyword) {
-			//fully compile if keyword
-			if(String::ToLower(tree->Text)=="if") {
-				if(tree->Leaves.GetCount()==0) {
-					throw MissingParameterException("condition", 0, "Bool", "Condition for If keyword is not specified");
-				}
-				else if(tree->Leaves.GetCount()>1) {
-					throw TooManyParametersException(tree->Leaves.GetCount(), 1, "If keyword requires only a single condition");
-				}
-				
-				Instruction jf;
-				jf.Type=InstructionType::JumpFalse;
-				jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
-				
-				scopes.push_back(scope{scope::ifkeyword, (int)list.size()});
-				
-				list.push_back(jf);
-				waitingcount++;
-			}
-			else if(String::ToLower(tree->Text)=="else") {
-				if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
-					throw FlowException("Else without If");
-				}
-				if(scopes.back().elsepassed) {
-					throw FlowException("Multiple Else for a single If");
-				}
-				
-				Instruction ja;
-				ja.Type=InstructionType::Jump;
-				list.push_back(ja);
-				
-				list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
-				scopes.back().indices.back()=list.size()-1;
-				scopes.back().elsepassed=true;
-			}
-			else if(String::ToLower(tree->Text)=="elseif") {
-				if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
-					throw FlowException("ElseIf without If");
-				}
-				if(scopes.back().elsepassed) {
-					throw FlowException("ElseIf statements must be before Else statement");
-				}
-				if(tree->Leaves.GetCount()==0) {
-					throw MissingParameterException("condition", 0, "Bool", "Condition for ElseIf keyword is not specified");
-				}
-				else if(tree->Leaves.GetCount()>1) {
-					throw TooManyParametersException(tree->Leaves.GetCount(), 1, "ElseIf keyword requires only a single condition");
-				}
-				
-				Instruction ja;
-				ja.Type=InstructionType::Jump;
-				list.push_back(ja);
-				
-				list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
-				scopes.back().indices.back()=list.size()-1;
-				
-				Instruction jf;
-				jf.Type=InstructionType::JumpFalse;
-				jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
-				
-				scopes.back().indices.push_back(list.size());
-				list.push_back(jf);				
-			}
-			else if(String::ToLower(tree->Text)=="end" && (scopes.size()==0 || scopes.back().type!=scope::unknown) ) {
-				if(scopes.size()==0) {
-					throw FlowException("end without keyword");
-				}
-				
-				switch(scopes.back().type) {
-				case scope::ifkeyword:
-					for(auto &index : scopes.back().indices) {
-						list[index].JumpOffset=list.size()-index;
-					}
-					break;
-				}
-				
-				scopes.pop_back();
-				waitingcount--;
+			if(compilekeyword(tree, tempind)) {
+				//nothing to do
 			}
 			else {
 				if(String::ToLower(tree->Text)=="end") {
 					scopes.pop_back();
 				}
-				else if(Keywords.Functions[tree->Text].IsScoped()) {
+				else if(Keywords.Functions.Exists(tree->Text) && Keywords.Functions[tree->Text].IsScoped()) {
 					scopes.push_back(scope{scope::unknown, (int)list.size()});
+				}
+				else {
+					try {
+						if(VirtualMachine::Get().FindFunction(tree->Text).IsScoped()) {
+							scopes.push_back(scope{scope::unknown, (int)list.size()});
+						}
+					}
+					catch(SymbolNotFoundException ex) { throw SymbolNotFoundException(tree->Text, SymbolType::Function, "Keyword not found"); }
 				}
 				
 				Instruction instmark, inst;
@@ -542,5 +476,197 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		return list.size()-sz;
 	}
+	
+	bool ASTCompiler::compilekeyword(ASTNode *tree, Byte &tempind) {
+		//fully compile if keyword
+		if(String::ToLower(tree->Text)=="if") {
+			if(tree->Leaves.GetCount()==0) {
+				throw MissingParameterException("condition", 0, "Bool", "Condition for If keyword is not specified");
+			}
+			else if(tree->Leaves.GetCount()>1) {
+				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "If keyword requires only a single condition");
+			}
+			
+			Instruction jf;
+			jf.Type=InstructionType::JumpFalse;
+			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
+			
+			scopes.push_back(scope{scope::ifkeyword, (int)list.size()});
+			
+			list.push_back(jf);
+			waitingcount++;
+			
+			return true;
+		}
+		else if(String::ToLower(tree->Text)=="else") {
+			if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
+				throw FlowException("Else without If");
+			}
+			if(scopes.back().elsepassed) {
+				throw FlowException("Multiple Else for a single If");
+			}
+			
+			Instruction ja;
+			ja.Type=InstructionType::Jump;
+			list.push_back(ja);
+			
+			list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
+			scopes.back().indices.back()=list.size()-1;
+			scopes.back().elsepassed=true;
+			
+			return true;
+		}
+		else if(String::ToLower(tree->Text)=="elseif") {
+			if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
+				throw FlowException("ElseIf without If");
+			}
+			if(scopes.back().elsepassed) {
+				throw FlowException("ElseIf statements must be before Else statement");
+			}
+			if(tree->Leaves.GetCount()==0) {
+				throw MissingParameterException("condition", 0, "Bool", "Condition for ElseIf keyword is not specified");
+			}
+			else if(tree->Leaves.GetCount()>1) {
+				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "ElseIf keyword requires only a single condition");
+			}
+			
+			Instruction ja;
+			ja.Type=InstructionType::Jump;
+			list.push_back(ja);
+			
+			list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
+			scopes.back().indices.back()=list.size()-1;
+			
+			Instruction jf;
+			jf.Type=InstructionType::JumpFalse;
+			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
+			
+			scopes.back().indices.push_back(list.size());
+			list.push_back(jf);				
+			
+			return true;
+		}
+		else if(String::ToLower(tree->Text)=="while") {
+			if(tree->Leaves.GetCount()==0) {
+				throw MissingParameterException("condition", 0, "Bool", "Condition for While keyword is not specified");
+			}
+			else if(tree->Leaves.GetCount()>1) {
+				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "While keyword requires only a single condition");
+			}
+			
+			scopes.push_back(scope{scope::whilekeyword, (int)list.size()});
+			
+			Instruction jf;
+			jf.Type=InstructionType::JumpFalse;
+			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
+			
+			scopes.back().indices.push_back((int)list.size());
+			
+			list.push_back(jf);
+			waitingcount++;
+			
+			return true;
+		}
+		else if(String::ToLower(tree->Text)=="break" && (scopes.size()==0 || scopes.back().type!=scope::unknown) ) {
+			scope *supported=nullptr;
+			for(auto it=scopes.rbegin(); it!=scopes.rend(); ++it) {
+				if(it->type==scope::whilekeyword) {
+					supported=&*it;
+					break;
+				}
+			}
+			
+			if(supported==nullptr) {
+				throw FlowException("Break without a breakable keyword scope");
+			}
+			else if(tree->Leaves.GetCount()>0) {
+				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "Break keyword requires no parameters");
+			}
+			
+			supported->indices.push_back((int)list.size());
+			
+			Instruction ja;
+			ja.Type=InstructionType::Jump;
+			list.push_back(ja);
+			
+			return true;
+		}
+		else if(String::ToLower(tree->Text)=="continue" && (scopes.size()==0 || scopes.back().type!=scope::unknown) ) {
+			scope *supported=nullptr;
+			for(auto it=scopes.rbegin(); it!=scopes.rend(); ++it) {
+				if(it->type==scope::whilekeyword) {
+					supported=&*it;
+					break;
+				}
+			}
+			
+			if(supported==nullptr) {
+				throw FlowException("Continue without a supported keyword scope");
+			}
+			else if(tree->Leaves.GetCount()>0) {
+				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "Continue keyword requires no parameters");
+			}
+			
+			supported->indices2.push_back((int)list.size());
+			
+			Instruction ja;
+			ja.Type=InstructionType::Jump;
+			list.push_back(ja);
+			
+			return true;
+		}
+		else if(String::ToLower(tree->Text)=="end" && (scopes.size()==0 || scopes.back().type!=scope::unknown) ) {
+			if(scopes.size()==0) {
+				throw FlowException("`End` without a keyword scope");
+			}
+			
+			if(tree->Leaves.GetCount()==1) {
+				if(String::ToLower(tree->Leaves[0].Text)!=scope::keywordnames[scopes.back().type]) {
+					throw FlowException("`End` does not match with the correct keyword", 
+										"Current scope is "+scope::keywordnames[scopes.back().type]+
+										" while given keyword for end is "+tree->Leaves[0].Text);
+				}
+			}
+			else if(tree->Leaves.GetCount()!=0) {
+				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "`End` keyword has only one optional parameter.");
+			}
+			
+			switch(scopes.back().type) {
+				case scope::ifkeyword:
+					for(auto &index : scopes.back().indices) {
+						list[index].JumpOffset=list.size()-index;
+					}
+					break;
+				
+				case scope::whilekeyword:					
+					auto start=scopes.back().indices.front();
+					
+					Instruction ja;
+					ja.Type=InstructionType::Jump;
+					ja.JumpOffset=start-list.size();
+					list.push_back(ja);
+					
+					auto elm=scopes.back().indices.size();
+					for(unsigned i=1; i<elm; i++) {
+						auto index=scopes.back().indices[i];
+						list[index].JumpOffset=list.size()-index;
+					}
+					for(auto &index : scopes.back().indices2) {
+						list[index].JumpOffset=start-index;
+					}
+					
+					break;
+			}
+			
+			scopes.pop_back();
+			waitingcount--;
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	const std::string ASTCompiler::scope::keywordnames[] = {"none", "if", "while"};
 	
 } } }
