@@ -188,7 +188,10 @@ namespace Gorgon {
 										parent.GetName()+" parameter", 5, 2);
 							}
 							else {
-								ASSERT((parent.GetParent().GetDefaultValue().template TypeCheck<paramof<level, param>>()) ,
+								ASSERT((
+											parent.GetParent().GetDefaultValue().template TypeCheck<paramof<level, param>>()/* ||
+											parent.GetParent().GetDefaultValue().template TypeCheck<typename std::remove_pointer<paramof<level, param>>::type>()*/
+										) ,
 									   "Function parameter type ("+Utils::GetTypeName<paramof<level, param>>()+") "
 									   "and object type ("+parent.GetParent().GetDefaultValue().GetTypeName()+") does not match. In function: "+
 									   parent.GetName()+" parameter", 5, 2);

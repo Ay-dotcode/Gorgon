@@ -72,8 +72,14 @@ namespace Gorgon {
 			
 			explicit Exception(ExceptionType type, const std::string &message, long linenumber=0) : linenumber(linenumber), 
 				std::runtime_error(message), type(type) { 
-#ifndef TESTMODE
+#ifdef TEST
+				std::streambuf* oldbuf = std::cout.rdbuf();
+				std::ostringstream newbuf;
+				std::cout.rdbuf( newbuf.rdbuf() );
+				
 				ASSERT_DUMP(false, message);
+				dump = newbuf.str();
+				std::cout.rdbuf(oldbuf);
 #endif
 			}
 			
@@ -86,12 +92,11 @@ namespace Gorgon {
 			}
 			
 			virtual std::string GetDetails() const {
-				if(details=="") {
-					return what();
-				}
-				else {
-					return details;
-				}
+#ifdef TEST
+				return details+"\n"+dump;
+#else
+				return details;
+#endif
 			}
 
 			long GetLine() const { return linenumber; }
@@ -103,6 +108,10 @@ namespace Gorgon {
 		protected:
 			ExceptionType type;
 			std::string details;
+			
+#ifdef TEST
+			std::string dump;
+#endif
 			long linenumber;
 		};
 		

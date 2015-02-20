@@ -187,6 +187,9 @@ int main() {
 			std::cout<<": "<<ex.GetType();
 			Gorgon::Console::SetColor(Gorgon::Console::Default);
 			std::cout<<": "<<ex.GetMessage()<<std::endl;
+			if(ex.GetDetails()!="") {
+				std::cout<<" > "<<ex.GetDetails()<<std::endl;
+			}
 			
 		}
 		catch(const Exception &ex) {

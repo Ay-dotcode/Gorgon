@@ -145,14 +145,14 @@ namespace Gorgon {
 			Int->AddFunctions({
 				intop(+, +, "Adds two numbers together", true),
 				
-				intop(-, -, "Subtracts the given number", true),
+				intop(-, -, "Subtracts the given number", true),		
+				
+				intop(*, *, "Multiplies two numbers together", false),
 				
 				new MappedOperator( "/",
 					"Divides this number to the given one. Division operation is performed in double type",
 					Double, Int, Double, [](int l, double r) { return double(l)/r; }
 				),
-				
-				intop(*, *, "Multiplies two numbers together", false),
 				
 				new MappedOperator( "^",
 					"Raises this number to the given power. All power operations are performed in double type",
@@ -169,7 +169,7 @@ namespace Gorgon {
 				MAP_COMPARE( =, ==, Int, int),
 				MAP_COMPARE(>=, >=, Int, int),
 				MAP_COMPARE(<=, <=, Int, int),
-				MAP_COMPARE(<>, !=, Int, int),
+				MAP_COMPARE(!=, !=, Int, int),
 				MAP_COMPARE( >, >,  Int, int),
 				MAP_COMPARE( <, <,  Int, int),
 			});
@@ -214,6 +214,30 @@ namespace Gorgon {
 				Map_Typecast<Gorgon::Byte, char>("Integrals", Byte, Char)
 			});
 			
+			Bool->AddFunctions({
+				new MappedOperator("and", 
+					"Conjunction of two boolean values",
+					Bool, Bool, Bool, [](bool l, bool r) { return l && r; }
+				),
+				
+				new MappedOperator("or", 
+				   "Disjunction of two boolean values",
+				   Bool, Bool, Bool, [](bool l, bool r) { return l || r; }
+				),
+				
+				new MappedOperator("xor", 
+				   "Exclusive or of two boolean values",
+				   Bool, Bool, Bool, [](bool l, bool r) { return l != r; }
+				),
+				
+				new MappedFunction("not",
+					"Inverts boolean value",
+					Bool, Bool, ParameterList(), 
+					MappedFunctions([](bool val) { return !val; }),
+					MappedMethods()
+				)
+			});
+			
 			Bool->AddConstructors({
 				Map_Typecast<Gorgon::Byte, bool>("Integrals", Byte, Bool),
 				Map_Typecast<unsigned, bool>("Integrals", Unsigned, Bool),
@@ -228,11 +252,99 @@ namespace Gorgon {
 					), MappedMethods()
 				),
 				
-				MAP_COMPARE( =, ==, String, std::string),
-
+				new MappedFunction("Substr",
+					"Returns a part of the string", String, String, {
+						new Parameter("Start", "Start of the substring, first element is at 0", Unsigned),
+						new Parameter("Length", "Length of the substring, if not specified, "
+							"all of the string after the start is taken", Unsigned, OptionalTag),
+					}, 
+					MappedFunctions(
+						[](std::string str, unsigned start, unsigned len) -> std::string { 
+							return str.substr(start, len); 
+						},
+ 						[](std::string str, unsigned start) -> std::string { 
+							return str.substr(start); 
+						}
+					), MappedMethods()
+				),
+				
+				new MappedFunction("Find",
+					"Returns the position of a given string", Unsigned, String, {
+						new Parameter("Search", "The string to be searched", String),
+						new Parameter("Start", "Starting point of the search, "
+							"if not specified search will start from the beginning", Unsigned, OptionalTag),
+					}, 
+					MappedFunctions(
+						[](std::string str, std::string src, unsigned pos) -> unsigned { return str.find(src, pos); },
+						[](std::string str, std::string src) -> unsigned { return str.find(src); }
+					), MappedMethods()
+				),
+				
+				new MappedFunction("ToLower",
+					"Returns lowercase string", String, String, {}, 
+					MappedFunctions(
+						[](std::string str) { return String::ToLower(str); }
+					), MappedMethods()
+				),
+				
+				new MappedFunction("ToUpper",
+					"Returns lowercase string", String, String, {}, 
+					MappedFunctions(
+						[](std::string str) { return String::ToUpper(str); }
+					), MappedMethods()
+				),
+				
+				new MappedFunction("Trim",
+					"Trims start and the end of the string", String, String, {}, 
+					MappedFunctions(
+						[](std::string str) { return String::Trim(str); }
+					), MappedMethods()
+				),
+				/*
+				new MappedFunction("Extract",
+					"Extracts the part of the string up to the given marker", String, String, {
+						new Parameter("Marker", "String that will be searched.", String)						
+					}, 
+					MappedFunctions(
+						[](std::string &str, std::string marker) { return String::Extract(str, marker); }
+					), MappedMethods()
+				),*/
+				
+				new MappedFunction("Replace",
+					"Replaces all the given substring in this string to another", String, String, {
+						new Parameter("Search", "Search string to be replaced", String),
+						new Parameter("Replace", "String to replace, if not specified, "
+							"empty string is assumed", String, OptionalTag),
+					}, 
+					MappedFunctions(
+						[](std::string str, std::string search, std::string replace) { 
+							return String::Replace(str, search, replace); 
+						},
+						[](std::string str, std::string search) -> std::string { 
+							return String::Replace(str, search, ""); 
+						}
+					), MappedMethods()
+				),
+				
+				MAP_COMPARE( =,==, String, std::string),
+				MAP_COMPARE(!=,!=, String, std::string),
+				MAP_COMPARE( >, >, String, std::string),
+				MAP_COMPARE( <, <, String, std::string),
+				MAP_COMPARE(>=,>=, String, std::string),
+				MAP_COMPARE(<=,<=, String, std::string),
+				
 				new MappedOperator("+",
 					"String concatenation", String, String, String, 
 					[](std::string left, std::string right) { return left+right; }
+				),
+				
+				new MappedOperator("*", 
+					"String duplication", String, String, Int,
+					[](std::string l, int r) -> std::string { 
+						std::string out; 
+						for(int i=0;i<r;i++) out+=l;
+						return out;
+					}
 				)
 			});
 			
