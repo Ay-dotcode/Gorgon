@@ -3,10 +3,6 @@ SET(Local
 	WindowManager.cpp
 )
 
-FIND_PACKAGE(OpenGL REQUIRED)
-
-LIST(APPEND Libs ${OPENGL_LIBRARIES})
-
 IF(${WIN32})
 	LIST(APPEND Local
 		DWM.cpp
