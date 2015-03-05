@@ -47,24 +47,24 @@ ENDIF()
 #make sure 64bits cannot be activated
 IF(MSVC)
 	ADD_DEFINITIONS(-D_SBCS -D_CRT_SECURE_NO_WARNINGS)
-+	
-+	SET(configs
-+      CMAKE_C_FLAGS_DEBUG
-+      CMAKE_C_FLAGS_MINSIZEREL
-+      CMAKE_C_FLAGS_RELEASE
-+      CMAKE_C_FLAGS_RELWITHDEBINFO
-+      CMAKE_CXX_FLAGS_DEBUG
-+      CMAKE_CXX_FLAGS_MINSIZEREL
-+      CMAKE_CXX_FLAGS_RELEASE
-+      CMAKE_CXX_FLAGS_RELWITHDEBINFO
-+    )
-+	
-+	FOREACH(config ${configs})
-+      IF(${config} MATCHES "/MD")
-+        STRING(REGEX REPLACE "/MD" "/MT" ${config} "${${config}}")
-+      ENDIF()
-+    ENDFOREACH()
-+
+	
+	SET(configs
+      CMAKE_C_FLAGS_DEBUG
+      CMAKE_C_FLAGS_MINSIZEREL
+      CMAKE_C_FLAGS_RELEASE
+      CMAKE_C_FLAGS_RELWITHDEBINFO
+      CMAKE_CXX_FLAGS_DEBUG
+      CMAKE_CXX_FLAGS_MINSIZEREL
+      CMAKE_CXX_FLAGS_RELEASE
+      CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    )
+	
+	FOREACH(config ${configs})
+      IF(${config} MATCHES "/MD")
+        STRING(REGEX REPLACE "/MD" "/MT" ${config} "${${config}}")
+      ENDIF()
+    ENDFOREACH()
+
 	IF(${CMAKE_CL_64})
 		MESSAGE(FATAL_ERROR "Gorgon Library works only 32bits")
 	ENDIF()
