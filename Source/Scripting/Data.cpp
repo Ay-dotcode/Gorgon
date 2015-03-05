@@ -32,7 +32,7 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
-	Data::Data(const Type *type, const Any &data) : type(type), data(data) {
+	Data::Data(const Type *type, const Any &data, bool isreference) : type(type), data(data), isreference(isreference) {
 		check();
 		ASSERT((type!=nullptr), "Data type cannot be nullptr", 1, 2);
 		
@@ -42,10 +42,19 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	void Data::check() {
-		ASSERT(type->GetDefaultValue().IsSameType(data), "Given data type ("+data.GetTypeName()+
-		") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
-		, 2, 2
-		);
+		if(isreference && !type->IsReferenceType()) {
+			//!TODO
+			ASSERT(type->GetDefaultValue().IsSameType(data), "Given data type ("+data.GetTypeName()+
+				") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+				, 2, 2
+			);
+		}
+		else {
+			ASSERT(type->GetDefaultValue().IsSameType(data), "Given data type ("+data.GetTypeName()+
+			") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+			, 2, 2
+			);
+		}
 	}
 	
 	std::string Data::ToString() const {
@@ -61,6 +70,7 @@ namespace Gorgon { namespace Scripting {
 		
 		type=other.type;
 		data=other.data;
+		isreference=other.isreference;
 		
 		other.data=Any();
 		other.type=nullptr;

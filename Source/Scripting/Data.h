@@ -32,10 +32,10 @@ namespace Gorgon {
 			Data(Data &&other);
 
 			/// Any constructor. Allows both data and type to be specified
-			Data(const Type *type, const Any &data);
+			Data(const Type *type, const Any &data, bool isreference=false);
 
 			/// Any constructor. Allows both data and type to be specified
-			Data(const Type &type, const Any &data) : Data(&type, data) {
+			Data(const Type &type, const Any &data, bool isreference=false) : Data(&type, data, isreference) {
 			}
 			
 			/// Default value constructor. Value of the data is determined from the type
@@ -48,8 +48,20 @@ namespace Gorgon {
 			
 			/// Returns the value of this data in the requested format
 			template <class T_>
-			T_ GetValue() const {
-				return data.Get<T_>();
+			const T_ &GetValue() const {
+				if(isreference)
+					return *data.Get<T_*>();
+				else
+					return data.Get<T_>();
+			}
+			
+			/// Returns the value of this data in the requested format
+			template <class T_>
+			T_ &GetValue() {
+				if(isreference)
+					return *data.Get<T_*>();
+				else
+					return data.Get<T_>();
 			}
 			
 			/// Returns the data contained in this data element
@@ -79,6 +91,8 @@ namespace Gorgon {
 			
 			///Type of the data
 			const Type *type = nullptr;
+			
+			bool isreference = false;
 			
 			
 		private:
