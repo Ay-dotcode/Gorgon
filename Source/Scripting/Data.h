@@ -48,26 +48,28 @@ namespace Gorgon {
 			
 			/// Returns the value of this data in the requested format
 			template <class T_>
-			const T_ &GetValue() const {
+			const typename std::remove_reference<T_>::type &GetValue() const {
 				if(isreference)
-					return *data.Get<T_*>();
+					return *data.Get<typename std::remove_reference<T_>::type*>();
 				else
-					return data.Get<T_>();
+					return data.Get<typename std::remove_reference<T_>::type>();
 			}
 			
 			/// Returns the value of this data in the requested format
 			template <class T_>
 			T_ &GetValue() {
 				if(isreference)
-					return *data.Get<T_*>();
+					return *data.Get<typename std::remove_reference<T_>::type*>();
 				else
-					return data.Get<T_>();
+					return data.Get<typename std::remove_reference<T_>::type>();
 			}
 			
 			/// Returns the data contained in this data element
 			Any GetData() const {
 				return data;
 			}
+			
+			Any GetReference();
 			
 			/// Returns if the data is in a valid state
 			bool IsValid() const {

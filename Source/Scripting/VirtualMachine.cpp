@@ -579,9 +579,10 @@ namespace Gorgon {
 					return temporaries[val.Result];
 				}
 				
-				case ValueType::Variable:
-					return GetVariable(val.Name);
-					
+				case ValueType::Variable: {
+					auto &var=GetVariable(val.Name);
+					return Data(var.GetType(), var.GetReference());
+				}
 				case ValueType::Identifier:
 					
 					if(IsVariableSet(val.Name))

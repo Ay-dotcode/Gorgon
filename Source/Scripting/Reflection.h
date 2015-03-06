@@ -745,12 +745,16 @@ namespace Gorgon {
 		class Type {
 		public:
 			
-			/// Constructor, unlike other reflection objects, Type is not constructed fully.
-			Type(const std::string &name, const std::string &help, const Any &defaultvalue, bool isref) :
+			/// Constructor, unlike other reflection objects, Type is not constructed fully. TypeInterace for pointer type
+			/// can be constructed using Any::Type.
+			Type(const std::string &name, const std::string &help, const Any &defaultvalue, Any::TypeInterface *ptrtype,bool isref) :
 			name(name), help(help), DataMembers(datamembers), Functions(functions), Constructors(constructors),
 			Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue), 
-			referencetype(isref)
-			{ }
+			referencetype(isref), TypeInterface(defaultvalue.GetTypeInterface()), PtrTypeInterface(ptrtype)
+			{ 
+				ASSERT((defaultvalue.GetTypeInterface()->PtrTypeInfo()==PtrTypeInterface->TypeInfo()), 
+					   "The type and its pointer does not match");
+			}
 
 			/// Returns the name of this type.
 			std::string GetName() const {
@@ -941,8 +945,16 @@ namespace Gorgon {
 			/// Inheritance list. 
 			const Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess> &InheritsFrom;
 			
+			/// Type info for normal type
+			const Any::TypeInterface * const TypeInterface;
 			
-			virtual ~Type() { }	
+			/// Type info for pointer type
+			const Any::TypeInterface * const PtrTypeInterface;
+			
+			virtual ~Type() { 
+				delete TypeInterface;
+				delete PtrTypeInterface;
+			}	
 		protected:
 
 			/// This function should delete the given object.

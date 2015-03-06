@@ -300,7 +300,7 @@ namespace Gorgon {
 						[](std::string str) { return String::Trim(str); }
 					), MappedMethods()
 				),
-				/*
+				
 				new MappedFunction("Extract",
 					"Extracts the part of the string up to the given marker", String, String, {
 						new Parameter("Marker", "String that will be searched.", String)						
@@ -308,7 +308,7 @@ namespace Gorgon {
 					MappedFunctions(
 						[](std::string &str, std::string marker) { return String::Extract(str, marker); }
 					), MappedMethods()
-				),*/
+				),
 				
 				new MappedFunction("Replace",
 					"Replaces all the given substring in this string to another", String, String, {

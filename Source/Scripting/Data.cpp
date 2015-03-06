@@ -44,7 +44,7 @@ namespace Gorgon { namespace Scripting {
 	void Data::check() {
 		if(isreference && !type->IsReferenceType()) {
 			//!TODO
-			ASSERT(type->GetDefaultValue().IsSameType(data), "Given data type ("+data.GetTypeName()+
+			ASSERT(data.IsSamePtrType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
 				") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
 				, 2, 2
 			);
@@ -95,5 +95,15 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Data GetVariableValue(const std::string &varname) { throw 0; }
+	
+	Any Data::GetReference() {
+		ASSERT(!isreference, "Reference of a reference");
+		
+		void *r=data.GetRaw();
+		void **p = new void*(r);
+		
+		return {type->PtrTypeInterface, p};
+		delete p;
+	}
 	
 } }

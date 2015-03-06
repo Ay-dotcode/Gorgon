@@ -28,7 +28,7 @@ namespace Gorgon {
 	/// to remove these checks.
 	/// 
 	class Any {
-		class privatetype {};
+	public:
 		/// Used internally by Any to unify different types.
 		/// It is implemented by type dependent Type class.
 		class TypeInterface {
@@ -38,12 +38,13 @@ namespace Gorgon {
 			virtual bool  IsSameType(const std::type_info &) const=0;
 			virtual long  GetSize() const = 0;
 			virtual const std::type_info &TypeInfo() const = 0;
+			virtual const std::type_info &PtrTypeInfo() const = 0;
 			virtual bool IsPointer() const = 0;
 			virtual TypeInterface *Duplicate() const=0;
 			virtual ~TypeInterface() { }
 			virtual const char *name() const=0; // for debugging
 		};
-
+	
 		/// Type dependent implementation for TypeInterface.
 		/// This class is created by Any to provide type related
 		/// functions.
@@ -62,6 +63,9 @@ namespace Gorgon {
 			virtual const std::type_info &TypeInfo() const override {
 				return typeid(T_);
 			}
+			virtual const std::type_info &PtrTypeInfo() const override {
+				return typeid(T_*);
+			}
 			virtual long GetSize() const override { return sizeof(T_); }
 			virtual TypeInterface *Duplicate() const override { return new Type(); }
 			virtual bool IsPointer() const override { return std::is_pointer<T_>::value; }
@@ -72,6 +76,13 @@ namespace Gorgon {
 		/// Default constructor.
 		/// Initializes and empty Any.
 		Any() : content(nullptr),type(nullptr) { }
+		
+		/// Unsafe! Constructs any from give raw data. Both typeinterface and data is duplicated.
+		/// @warning Using this constructor might be dangerous
+		Any(const TypeInterface *typeinterface, void *data) {
+			type=typeinterface->Duplicate();
+			content=type->Clone(data);
+		}
 
 		/// Creates a new Any from the given data. This constructor
 		/// duplicates the given data.
@@ -102,6 +113,13 @@ namespace Gorgon {
 		/// Requires type in the copied Any to be move constructible.
 		Any(Any &&any) : content(nullptr), type(nullptr) {
 			Swap(any);
+		}
+		
+		/// Returns TypeInterface used by this any. Returns a new TypeInterface object.
+		/// @warning Using this function might be dangerous. Possible memory leak, caller is responsible for
+		/// deallocation
+		TypeInterface *GetTypeInterface() const {
+			return type->Duplicate();
 		}
 
 		/// Creates a new Any from the given data. This constructor
@@ -194,6 +212,31 @@ namespace Gorgon {
 				content=nullptr;
 			}
 		}
+		
+		/// Unsafe! This function returns raw data contained within any.
+		/// @warning this function is unsafe
+		void *GetRaw() const {
+			return content;
+		}
+		
+		/// Unsafe! This function sets the raw data contained within any, without modifying its
+		/// type data. data is duplicated.
+		///@warning this function is unsafe
+		void SetRaw(void *data) {
+			if(content) type->Delete(content);
+			
+			content=type->Clone(data);
+		}
+		
+		/// Unsafe! This function sets the raw data contained within any, while modifying its
+		/// type data. type and data are duplicated.
+		///@warning this function is unsafe
+		void SetRaw(TypeInterface *type, void *data) {
+			Clear();
+			
+			this->type=type->Duplicate();
+			content=type->Clone(data);
+		}
 
 		/// Returns the value contained with this any. If this Any is not
 		/// const, this method could be used to move the object out of
@@ -270,6 +313,11 @@ namespace Gorgon {
 		/// Checks whether the Any is the same type with the given type.
 		bool IsSameType(const Any &other) const {
 			return type->IsSameType(other.type->TypeInfo());
+		}
+		
+		/// Checks whether the Any is the same type with the pointer of given type.
+		bool IsSamePtrType(const Any &other) const {
+			return type->IsSameType(other.type->PtrTypeInfo());
 		}
 
 		/// Checks if any contains a pointer
