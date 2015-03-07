@@ -576,17 +576,19 @@ namespace Gorgon {
 					if(!data.IsValid()) {
 						throw std::runtime_error("Invalid temporary.");
 					}
-					return temporaries[val.Result];
+					return Data(data.GetType(), data.GetReference(), true);
 				}
 				
 				case ValueType::Variable: {
 					auto &var=GetVariable(val.Name);
-					return Data(var.GetType(), var.GetReference());
+					return Data(var.GetType(), var.GetReference(), true);
 				}
 				case ValueType::Identifier:
 					
-					if(IsVariableSet(val.Name))
-						return GetVariable(val.Name);
+					if(IsVariableSet(val.Name)) {
+						auto &var=GetVariable(val.Name);
+						return Data(var.GetType(), var.GetReference(), true);
+					}
 					else {
 						int namespcs=std::count(val.Name.begin(), val.Name.end(), ':');
 						
@@ -663,8 +665,6 @@ namespace Gorgon {
 						Utils::ASSERT_FALSE("Invalid value type.");
 			}
 		}
-		
-
 		
 		void fixparameter(Data &param, const Type &pdef, const std::string &error) {
 			if(param.GetType()==pdef) {

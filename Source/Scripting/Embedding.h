@@ -321,8 +321,21 @@ namespace Gorgon {
 				
 				/// vector cast is for the repeating functions
 				template<int num, class T_>
-				typename std::enable_if<std::is_same<typename remove_vector<T_>::type, void>::value, T_>::type
-				vectorcast(const std::vector<Data> &datav) const {
+				typename std::enable_if<
+					std::is_same<typename remove_vector<T_>::type, void>::value &&
+					std::is_reference<T_>::value,
+					T_
+				>::type
+				vectorcast(const std::vector<Scripting::Data> &datav) const {
+					return datav[num].ReferenceValue<T_>();
+				}
+				
+				template<int num, class T_>
+				typename std::enable_if<
+				std::is_same<typename remove_vector<T_>::type, void>::value &&
+				!std::is_reference<T_>::value
+				, T_>::type
+				vectorcast(const std::vector<Scripting::Data> &datav) const {
 					return datav[num].GetValue<T_>();
 				}
 				
@@ -345,8 +358,12 @@ namespace Gorgon {
 				/// Casts the given data to the type of the num^{th} parameter. Parameter list is always taken from 
 				/// first function
 				template<int num>
-				paramof<0, num> castparam(const std::vector<Data> &datav) const {
-					const Data &data=datav[num];
+				typename TMP::Choose<
+					!std::is_reference<paramof<0, num>>::value,
+					std::reference_wrapper<typename std::remove_reference<paramof<0, num>>::type>,
+					paramof<0, num>
+				>::Type castparam(const std::vector<Data> &datav) const {
+					const Scripting::Data &data=datav[num];
 					if(parent.HasParent() && !parent.IsStatic()) {
 						if(num==0) {
 							if(&data.GetType() != &parent.GetParent()) {

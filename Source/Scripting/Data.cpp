@@ -9,6 +9,7 @@ namespace Gorgon { namespace Scripting {
 	Data::Data(const Data &other) {
 		data=other.data;
 		type=other.type;
+		isreference=other.isreference;
 		
 		
 		if(type && type->IsReferenceType() && data.Pointer() && VirtualMachine::Exists()) {
@@ -19,6 +20,7 @@ namespace Gorgon { namespace Scripting {
 	Data::Data(Data &&other) {
 		data=other.data;
 		type=other.type;
+		isreference=other.isreference;
 		
 		other.data=Any();
 		other.type=nullptr;
@@ -102,8 +104,10 @@ namespace Gorgon { namespace Scripting {
 		void *r=data.GetRaw();
 		void **p = new void*(r);
 		
-		return {type->PtrTypeInterface, p};
+		Any a={type->PtrTypeInterface, p};
 		delete p;
+		
+		return a;
 	}
 	
 } }

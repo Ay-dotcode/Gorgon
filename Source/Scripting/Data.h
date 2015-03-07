@@ -64,6 +64,16 @@ namespace Gorgon {
 					return data.Get<typename std::remove_reference<T_>::type>();
 			}
 			
+			
+			/// Returns the value of this data in the requested format. Requested type should
+			/// ideally be a reference. Though this is not a requirement.
+			template <class T_>
+			T_ ReferenceValue() const {
+				ASSERT(isreference, "The data contained is not a reference");
+				
+				return *data.Get<typename std::remove_reference<T_>::type*>();
+			}
+			
 			/// Returns the data contained in this data element
 			Any GetData() const {
 				return data;
@@ -74,6 +84,10 @@ namespace Gorgon {
 			/// Returns if the data is in a valid state
 			bool IsValid() const {
 				return type != nullptr;
+			}
+			
+			bool IsReference() const {
+				return isreference;
 			}
 			
 			/// Returns the type of the data
