@@ -414,6 +414,21 @@ namespace Gorgon {
 						},
 						MappedFunctions(Return1, Return0), MappedMethods(),
 						KeywordTag
+					),
+					new MappedFunction("const",
+						"Makes a given variable a constant",
+						nullptr, nullptr,
+						ParameterList {
+							new Parameter(
+								"Variable",
+								"This is the variable to become constant",
+								String, ReferenceTag
+							)
+						},
+						MappedFunctions([](std::string varname) {
+							VirtualMachine::Get().GetVariable(varname).MakeConstant();
+						}), MappedMethods(),
+						KeywordTag
 					)
 				},
 			};

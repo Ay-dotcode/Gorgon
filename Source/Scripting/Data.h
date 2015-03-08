@@ -32,10 +32,10 @@ namespace Gorgon {
 			Data(Data &&other);
 
 			/// Any constructor. Allows both data and type to be specified
-			Data(const Type *type, const Any &data, bool isreference=false);
+			Data(const Type *type, const Any &data, bool isreference=false, bool isconstant=false);
 
 			/// Any constructor. Allows both data and type to be specified
-			Data(const Type &type, const Any &data, bool isreference=false) : Data(&type, data, isreference) {
+			Data(const Type &type, const Any &data, bool isreference=false, bool isconstant=false) : Data(&type, data, isreference, isconstant) {
 			}
 			
 			/// Default value constructor. Value of the data is determined from the type
@@ -79,15 +79,26 @@ namespace Gorgon {
 				return data;
 			}
 			
-			Any GetReference();
+			Data GetReference();
 			
 			/// Returns if the data is in a valid state
 			bool IsValid() const {
 				return type != nullptr;
 			}
 			
+			/// Returns if this data contains a reference
 			bool IsReference() const {
 				return isreference;
+			}
+			
+			/// Returns if this data is constant
+			bool IsConstant() const {
+				return isconstant;
+			}
+			
+			/// Makes this data a constant
+			void MakeConstant() {
+				isconstant=true;
 			}
 			
 			/// Returns the type of the data
@@ -108,7 +119,11 @@ namespace Gorgon {
 			///Type of the data
 			const Type *type = nullptr;
 			
+			/// Is a reference, data is a ptr to the original type
 			bool isreference = false;
+			
+			/// This data is a constant and should not be changed
+			bool isconstant = false;
 			
 			
 		private:

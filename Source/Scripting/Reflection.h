@@ -72,7 +72,10 @@ namespace Gorgon {
 			OperatorTag,
 			
 			/// Redirects all the code inside a scoped keyword to the keyword
-			RedirectTag
+			RedirectTag,
+			
+			/// Marks a parameter or a function constant
+			ConstTag,
 		};
 		
 		typedef std::vector<Any> OptionList;
@@ -93,6 +96,8 @@ namespace Gorgon {
 		 * **OutputTag**: This parameter becomes output only reference. Output only references can be
 		 * read after it is set first time. The function is free not to set the value of an output
 		 * reference, however, this may cause confusion to the user.
+		 * 
+		 * **ConstTag**: This parameter is a constant and its value cannot be changed.
 		 */
 		class Parameter {
 		public:
@@ -192,6 +197,10 @@ namespace Gorgon {
 						output=true;
 						input=false;
 						break;
+					case ConstTag:
+						constant=true;
+						break;
+						
 					default:
 						Utils::ASSERT_FALSE("Unknown tag");
 				}
@@ -207,6 +216,7 @@ namespace Gorgon {
 			bool reference = false;
 			bool input     = true;
 			bool output    = false;
+			bool constant  = false;
 		};
 		
 		using ParameterList = Containers::Collection<const Parameter>;
@@ -266,6 +276,9 @@ namespace Gorgon {
 		 * functions can be accessed from the type using scope resolution: [type]function
 		 * 
 		 * **OperatorTag**: Makes this function an operator. Operators could be symbols or regular identifiers.
+		 * 
+		 * **ConstTag**: Works only on member functions. This function becomes a constant, unable to change
+		 * the contents of this object.
 		 */
 		class Function {
 			friend class Type;
@@ -365,6 +378,11 @@ namespace Gorgon {
 			/// Returns if this function is static. Only meaningful when the function is a member function.
 			bool IsStatic() const {
 				return staticmember;
+			}
+			
+			/// Returns whether this function is a constant
+			bool IsConstant() const {
+				return constant;
 			}
 
 			/// Returns if this function is a member function of a type.
@@ -486,6 +504,9 @@ namespace Gorgon {
 						isoperator=true;
 						assert(!staticmember && "Cannot be static operator");
 						break;
+					case ConstTag:
+						constant=true;
+						break;
 					default:
 						ASSERT(false, "Unknown tag", 2, 16);
 				}
@@ -548,6 +569,9 @@ namespace Gorgon {
 			
 			/// Makes this function an operator. All operators should be member functions
 			bool isoperator = false;
+			
+			/// Makes this function constant. Only works on member functions.
+			bool constant = false;
 			
 		private:
 			void init();

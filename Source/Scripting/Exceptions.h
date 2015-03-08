@@ -23,6 +23,7 @@ namespace Gorgon {
 			InstructionError,
 			MismatchedParenthesis,
 			UnexpectedToken,
+			Constant,
 		};
 		
 		DefineEnumStrings(ExceptionType,
@@ -38,7 +39,8 @@ namespace Gorgon {
 			{ExceptionType::CastError, "Cast error"},
 			{ExceptionType::InstructionError, "Instruction error"},
 			{ExceptionType::MismatchedParenthesis, "Mismatched paranthesis"},
-			{ExceptionType::UnexpectedToken, "Unexpected token"}
+			{ExceptionType::UnexpectedToken, "Unexpected token"},
+			{ExceptionType::Constant, "Identifier is constant"}
 		);
 		
 		enum class SymbolType {
@@ -221,7 +223,14 @@ namespace Gorgon {
 				this->details=details;
 			}
 		};
-
+		
+		class ConstantException : public Exception {
+		public:
+			explicit ConstantException(const std::string& identifier, const std::string &details="", long int linenumber = 0) :
+			Exception(ExceptionType::Constant, identifier+" is a constant", linenumber) {
+				this->details=details;
+			}
+		};
 		
 		/// This class contains information about a parse error. It is not intended to be
 		/// used as an exception.

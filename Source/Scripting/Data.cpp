@@ -11,6 +11,9 @@ namespace Gorgon { namespace Scripting {
 		type=other.type;
 		isreference=other.isreference;
 		
+		if(isreference)
+			isconstant=other.isconstant;
+		
 		
 		if(type && type->IsReferenceType() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Increase(*this);
@@ -20,7 +23,9 @@ namespace Gorgon { namespace Scripting {
 	Data::Data(Data &&other) {
 		data=other.data;
 		type=other.type;
+		
 		isreference=other.isreference;
+		isconstant=other.isconstant;
 		
 		other.data=Any();
 		other.type=nullptr;
@@ -34,7 +39,10 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
-	Data::Data(const Type *type, const Any &data, bool isreference) : type(type), data(data), isreference(isreference) {
+	Data::Data(const Type *type, const Any &data, bool isreference, bool isconstant) : 
+		type(type), data(data), 
+		isreference(isreference), isconstant(isconstant)
+	{
 		check();
 		ASSERT((type!=nullptr), "Data type cannot be nullptr", 1, 2);
 		
@@ -74,6 +82,9 @@ namespace Gorgon { namespace Scripting {
 		data=other.data;
 		isreference=other.isreference;
 		
+		if(isreference)
+			isconstant=other.isconstant;
+		
 		other.data=Any();
 		other.type=nullptr;
 		
@@ -98,8 +109,8 @@ namespace Gorgon { namespace Scripting {
 	
 	Data GetVariableValue(const std::string &varname) { throw 0; }
 	
-	Any Data::GetReference() {
-		ASSERT(!isreference, "Reference of a reference");
+	Data Data::GetReference() {
+		if(isreference) return *this;
 		
 		void *r=data.GetRaw();
 		void **p = new void*(r);
@@ -107,7 +118,7 @@ namespace Gorgon { namespace Scripting {
 		Any a={type->PtrTypeInterface, p};
 		delete p;
 		
-		return a;
+		return {type, a, true, isconstant};
 	}
 	
 } }

@@ -563,31 +563,50 @@ namespace Gorgon {
 			}
 		}
 		
-		Data VirtualMachine::getvalue(const Value &val) {
+		Data VirtualMachine::getvalue(const Value &val, bool reference) {
 			switch(val.Type) {
 				case ValueType::Literal:
+					if(reference) {
+						throw CastException("literal", "reference");
+					}
 					return val.Literal;
 					
 				case ValueType::Constant:
-					return FindConstant(val.Name).GetData();
+					if(reference) {
+						auto data=FindConstant(val.Name).GetData().GetReference();
+						data.MakeConstant();
+						return data;
+					}
+					else {
+						return FindConstant(val.Name).GetData();
+					}
 					
 				case ValueType::Temp: {
 					auto &data=temporaries[val.Result];
 					if(!data.IsValid()) {
 						throw std::runtime_error("Invalid temporary.");
 					}
-					return Data(data.GetType(), data.GetReference(), true);
+					if(reference)
+						return data.GetReference();
+					else
+						return data;
 				}
 				
 				case ValueType::Variable: {
 					auto &var=GetVariable(val.Name);
-					return Data(var.GetType(), var.GetReference(), true);
+					if(reference)
+						return var.GetReference();
+					else
+						return var;
 				}
 				case ValueType::Identifier:
 					
 					if(IsVariableSet(val.Name)) {
 						auto &var=GetVariable(val.Name);
-						return Data(var.GetType(), var.GetReference(), true);
+						if(reference)
+							return var.GetReference();
+						else
+							return var;
 					}
 					else {
 						int namespcs=std::count(val.Name.begin(), val.Name.end(), ':');
@@ -599,7 +618,15 @@ namespace Gorgon {
 							
 							auto &type=Libraries[lib].Types[typ];
 							if(type.Constants.Exists(name)) {
-								return type.Constants[name].GetData();
+								if(reference) {
+									auto data=type.Constants[name].GetData().GetReference();
+									data.MakeConstant();
+									
+									return data;
+								}
+								else {
+									return type.Constants[name].GetData();
+								}
 							}
 							else if(type.Functions.Exists(name)) {
 								Utils::NotImplemented("Function objects");
@@ -614,7 +641,15 @@ namespace Gorgon {
 							
 							auto &lib=Libraries[libname];
 							if(lib.Constants.Exists(name)) {
-								return lib.Constants[name].GetData();
+								if(reference) {
+									auto data=lib.Constants[name].GetData().GetReference();
+									data.MakeConstant();
+									
+									return data;
+								}
+								else {
+									return lib.Constants[name].GetData();
+								}
 							}
 							else if(lib.Functions.Exists(name)) {
 								Utils::NotImplemented("Function objects");
@@ -629,7 +664,15 @@ namespace Gorgon {
 								}
 								else {
 									if(range.first->second->Constants.Exists(name)) {
-										return range.first->second->Constants[name].GetData();
+										if(reference) {
+											auto data=range.first->second->Constants[name].GetData().GetReference();
+											data.MakeConstant();
+											
+											return data;
+										}
+										else {
+											return range.first->second->Constants[name].GetData();
+										}
 									}
 									else if(range.first->second->Functions.Exists(name)) {
 										Utils::NotImplemented("Function objects");
@@ -650,7 +693,15 @@ namespace Gorgon {
 							}
 							else {
 								if(range.first->second.type==SymbolType::Constant) {
-									return range.first->second.object.Get<const Constant*>()->GetData();
+									if(reference) {
+										auto data=range.first->second.object.Get<const Constant*>()->GetData().GetReference();
+										data.MakeConstant();
+										
+										return data;
+									}
+									else {
+										return range.first->second.object.Get<const Constant*>()->GetData();
+									}
 								}
 								else if(range.first->second.type==SymbolType::Function) {
 									Utils::NotImplemented("Function objects");
@@ -704,10 +755,12 @@ namespace Gorgon {
 			
 			std::vector<Data> params;
 			
-			if(fn->HasParent()) {
+			if(fn->HasParent() && !fn->IsStatic()) {
 				if(pin!=incomingparams.end()) {
-					Data param=getvalue(*pin);
+					// guarantees that the param is a reference
+					Data param=getvalue(*pin, true);
 					
+					// check for nullness
 					if(fn->GetParent().IsReferenceType()) {
 						if(param.IsNull()) {
 							if(pin->Type==ValueType::Variable) {
@@ -718,6 +771,13 @@ namespace Gorgon {
 							}
 						}
 					}
+					//else ok
+					
+					// check constantness
+					if(!fn->IsConstant() && param.IsConstant()) {
+						throw ConstantException(pin->Name, "While calling member function: "+fn->GetName());
+					}
+					//else ok
 					
 					if(param.GetType()==fn->GetParent()) {
 						//no worries
@@ -738,7 +798,7 @@ namespace Gorgon {
 			int ind=1;
 			for(const auto &pdef : fn->Parameters) {
 				if(pdef.IsReference()) {
-					if(pin->Type==ValueType::Variable) {
+					if(pin->Type==ValueType::Variable || pin->Type==ValueType::Identifier) {
 						if(pdef.IsInput()) {
 							GetVariable(pin->Name);
 						}
@@ -766,12 +826,13 @@ namespace Gorgon {
 					
 					params.push_back(param);
 				}
-				else {
+				else { // no value is given for the parameter
 					if(!pdef.IsOptional()) {
 						throw MissingParameterException(pdef.GetName(), ind, pdef.GetType().GetName(),
 														"Parameter "+pdef.GetName()+" is not optional."
 						);
 					}
+					//else ok, it was optional
 					
 					break;
 				}
@@ -796,7 +857,7 @@ namespace Gorgon {
 												 "Too many parameters supplied for "+fn->GetName()
 				);
 			}
-			//else ok
+			//else no additional parameters at the end
 			
 			return fn->Call(method, params);
 		}
@@ -857,11 +918,11 @@ namespace Gorgon {
 			}
 			else {
 				if(inst->Parameters.size()==0) {
-					throw std::runtime_error("Invalid intermediate instruction, missing this parameter");
+					throw std::runtime_error("Invalid instruction, missing this parameter");
 				}
 				
 				//search in the type of the first parameter
-				Data data=getvalue(inst->Parameters[0]);
+				Data data=getvalue(inst->Parameters[0], true);
 
 				if(functionname=="{}") { //constructor
 					if(data.GetType()==Types::String()) {
@@ -870,6 +931,7 @@ namespace Gorgon {
 					else if(data.GetType()!=Reflection.Types["Type"]) {
 						throw std::runtime_error("Invalid intermediate instruction, type parameter is not a type");
 					}
+					//else Reflection:Type typed variable/temporary
 					
 					std::vector<Data> params;
 					int i=0;
@@ -877,12 +939,16 @@ namespace Gorgon {
 						if(i++!=0) {
 							params.push_back(getvalue(pin));
 						}
+						//else ignore the first
 					}
 					
+					//call the constructor
 					Data ret=data.GetValue<const Type*>()->Construct(params);
+					
 					if(inst->Store) {
 						temporaries[inst->Store]=ret;
 					}
+					//else do not store the created object, maybe a warning is necessary
 					
 					return;
 				}				
@@ -899,9 +965,16 @@ namespace Gorgon {
 								ret=ret.GetValue<Data>();
 							}
 							temporaries[inst->Store]=ret;
+							if(data.IsConstant())
+								temporaries[inst->Store].MakeConstant();;
 						}
 					}
 					else if(inst->Parameters.size()==2) {
+						if(data.IsConstant()) {
+							throw ConstantException(inst->Parameters[0].Name, "While setting member: "+functionname.substr(1));
+						}
+						//else ok
+						
 						if(inst->Store) {
 							throw NoReturnException("Data member: "+data.GetType().DataMembers[functionname.substr(1)].GetName());
 						}
@@ -923,6 +996,7 @@ namespace Gorgon {
 							ASSERT(false, "Cannot assign to literal or constants");
 						}						
 						else {
+							Utils::ASSERT_FALSE("Unknown value type");
 						}						
 					}
 					else {
@@ -948,6 +1022,7 @@ namespace Gorgon {
 			// call it
 			Data ret=callfunction(fn, method, inst->Parameters);
 
+			// if scoped keyword
 			if(fn->IsScoped() && ret.IsValid() && ret.GetValue<Data>().IsValid() ) {
 				auto scope=new KeywordScope{*fn, ret.GetValue<Data>(), executionscopes.Last()->GetSource().GetPhysicalLine()};
 				keywordscopes.Add(scope);
@@ -962,12 +1037,15 @@ namespace Gorgon {
 			if(inst->Store) {
 				if(!fn->IsScoped() && fn->HasReturnType()) {
 					//store the result
+					
+					//fix variants
 					if(ret.GetType()==Types::Variant()) {
 						ret=ret.GetValue<Data>();
 					}
 					temporaries[inst->Store]=ret;
 				} 
 				else {
+					//if requested but function does not return a value
 					throw NoReturnException(functionname);
 				}
 			}
