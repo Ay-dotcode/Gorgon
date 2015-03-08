@@ -38,7 +38,11 @@ namespace Gorgon {
 			virtual bool  IsSameType(const std::type_info &) const=0;
 			virtual long  GetSize() const = 0;
 			virtual const std::type_info &TypeInfo() const = 0;
+			virtual const std::type_info &ConstTypeInfo() const = 0;
 			virtual const std::type_info &PtrTypeInfo() const = 0;
+			virtual const std::type_info &ConstPtrTypeInfo() const = 0;
+			virtual const std::type_info &RefTypeInfo() const = 0;
+			virtual const std::type_info &ConstRefTypeInfo() const = 0;
 			virtual bool IsPointer() const = 0;
 			virtual TypeInterface *Duplicate() const=0;
 			virtual ~TypeInterface() { }
@@ -54,7 +58,7 @@ namespace Gorgon {
 				delete static_cast<T_*>(obj);
 			}
 			virtual void *Clone(const void* const obj) const override {
-				T_ *n = new T_(*reinterpret_cast<const T_*>(obj));
+				auto n = new typename std::remove_const<T_>::type(*reinterpret_cast<const T_*>(obj));
 				return n;
 			}
 			virtual bool IsSameType(const std::type_info &info) const override {
@@ -63,8 +67,20 @@ namespace Gorgon {
 			virtual const std::type_info &TypeInfo() const override {
 				return typeid(T_);
 			}
+			virtual const std::type_info &ConstTypeInfo() const override {
+				return typeid(const T_);
+			}
 			virtual const std::type_info &PtrTypeInfo() const override {
 				return typeid(T_*);
+			}
+			virtual const std::type_info &ConstPtrTypeInfo() const override {
+				return typeid(const T_*);
+			}
+			virtual const std::type_info &RefTypeInfo() const override {
+				return typeid(T_&);
+			}
+			virtual const std::type_info &ConstRefTypeInfo() const override {
+				return typeid(const T_&);
 			}
 			virtual long GetSize() const override { return sizeof(T_); }
 			virtual TypeInterface *Duplicate() const override { return new Type(); }
@@ -77,13 +93,21 @@ namespace Gorgon {
 		/// Initializes and empty Any.
 		Any() : content(nullptr),type(nullptr) { }
 		
-		/// Unsafe! Constructs any from give raw data. Both typeinterface and data is duplicated.
+		/// Unsafe! Constructs any from give raw data. Both typeinterface and data are duplicated.
 		/// @warning Using this constructor might be dangerous
 		Any(const TypeInterface *typeinterface, void *data) {
 			type=typeinterface->Duplicate();
 			content=type->Clone(data);
 		}
-
+		
+		/// Unsafe! Constructs any from give raw data. typeinterface is duplicated. Ownership of
+		/// data is taken.
+		/// @warning Using this constructor might be dangerous
+		Any(void *data, const TypeInterface *typeinterface) {
+			type=typeinterface->Duplicate();
+			content=type->Clone(data);
+		}
+		
 		/// Creates a new Any from the given data. This constructor
 		/// duplicates the given data.
 		/// Requires type in the copied Any to be copy constructible.
@@ -237,7 +261,24 @@ namespace Gorgon {
 			this->type=type->Duplicate();
 			content=type->Clone(data);
 		}
-
+		
+		/// Unsafe! This function sets the raw data contained within any, while modifying its
+		/// type data. type is duplicated, whereas data ownership is assumed.
+		///@warning this function is unsafe
+		void AssumeRaw(TypeInterface *type, void *data) {
+			Clear();
+			
+			this->type=type->Duplicate();
+			content=data;
+		}
+		
+		/// Unsafe! This function modifies type information of the data content. type is duplicated
+		///@warning this function is extremely unsafe, basically, it performs reinterpret_cast
+		void SetType(const TypeInterface *type) {
+			if(this->type) delete this->type;
+			this->type=type->Duplicate();
+		}
+		
 		/// Returns the value contained with this any. If this Any is not
 		/// const, this method could be used to move the object out of
 		/// Any. It can also be used to modify the value contained within
@@ -315,11 +356,31 @@ namespace Gorgon {
 			return type->IsSameType(other.type->TypeInfo());
 		}
 		
+		/// Checks whether the Any is the same type with the const of given type.
+		bool IsSameConstOfType(const Any &other) const {
+			return type->IsSameType(other.type->ConstTypeInfo());
+		}
+		
 		/// Checks whether the Any is the same type with the pointer of given type.
-		bool IsSamePtrType(const Any &other) const {
+		bool IsSamePtrOfType(const Any &other) const {
 			return type->IsSameType(other.type->PtrTypeInfo());
 		}
-
+		
+		/// Checks whether the Any is the same type with the const pointer of given type.
+		bool IsSameConstPtrOfType(const Any &other) const {
+			return type->IsSameType(other.type->ConstPtrTypeInfo());
+		}
+		
+		/// Checks whether the Any is the same type with the ref of given type.
+		bool IsSameRefOfType(const Any &other) const {
+			return type->IsSameType(other.type->RefTypeInfo());
+		}
+		
+		/// Checks whether the Any is the same type with the const ref of given type.
+		bool IsSameConstRefOfType(const Any &other) const {
+			return type->IsSameType(other.type->ConstRefTypeInfo());
+		}
+		
 		/// Checks if any contains a pointer
 		bool IsPointer() const {
 			return type->IsPointer();

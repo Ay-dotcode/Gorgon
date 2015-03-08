@@ -771,10 +771,12 @@ namespace Gorgon {
 			
 			/// Constructor, unlike other reflection objects, Type is not constructed fully. TypeInterace for pointer type
 			/// can be constructed using Any::Type.
-			Type(const std::string &name, const std::string &help, const Any &defaultvalue, Any::TypeInterface *ptrtype,bool isref) :
+			Type(const std::string &name, const std::string &help, const Any &defaultvalue, 
+				 Any::TypeInterface *consttype, Any::TypeInterface *ptrtype, Any::TypeInterface *constptrtype, bool isref) :
 			name(name), help(help), DataMembers(datamembers), Functions(functions), Constructors(constructors),
 			Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue), 
-			referencetype(isref), TypeInterface(defaultvalue.GetTypeInterface()), PtrTypeInterface(ptrtype)
+			referencetype(isref), TypeInterface(defaultvalue.GetTypeInterface()), ConstTypeInterface(consttype),
+			PtrTypeInterface(ptrtype), ConstPtrTypeInterface(constptrtype)
 			{ 
 				ASSERT((defaultvalue.GetTypeInterface()->PtrTypeInfo()==PtrTypeInterface->TypeInfo()), 
 					   "The type and its pointer does not match");
@@ -972,8 +974,14 @@ namespace Gorgon {
 			/// Type info for normal type
 			const Any::TypeInterface * const TypeInterface;
 			
+			/// Type info for const type
+			const Any::TypeInterface * const ConstTypeInterface;
+			
 			/// Type info for pointer type
 			const Any::TypeInterface * const PtrTypeInterface;
+			
+			/// Type info for const pointer type
+			const Any::TypeInterface * const ConstPtrTypeInterface;
 			
 			virtual ~Type() { 
 				delete TypeInterface;

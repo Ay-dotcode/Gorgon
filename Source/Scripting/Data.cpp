@@ -52,18 +52,33 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	void Data::check() {
-		if(isreference && !type->IsReferenceType()) {
-			//!TODO
-			ASSERT(data.IsSamePtrType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
+		if(isconstant) {
+			if(isreference && !type->IsReferenceType()) {
+				ASSERT(data.IsSameConstPtrOfType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
 				") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
 				, 2, 2
-			);
+				);
+			}
+			else {
+				ASSERT(data.IsSameConstOfType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
+				") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+				, 2, 2
+				);
+			}
 		}
 		else {
-			ASSERT(type->GetDefaultValue().IsSameType(data), "Given data type ("+data.GetTypeName()+
-			") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
-			, 2, 2
-			);
+			if(isreference && !type->IsReferenceType()) {
+				ASSERT(data.IsSamePtrOfType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
+					") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+					, 2, 2
+				);
+			}
+			else {
+				ASSERT(data.IsSameType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
+				") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+				, 2, 2
+				);
+			}
 		}
 	}
 	
@@ -110,15 +125,33 @@ namespace Gorgon { namespace Scripting {
 	Data GetVariableValue(const std::string &varname) { throw 0; }
 	
 	Data Data::GetReference() {
+		ASSERT(type, "Type is not set", 1, 2);
+		
 		if(isreference) return *this;
+		if(type->IsReferenceType()) return *this;
 		
 		void *r=data.GetRaw();
 		void **p = new void*(r);
 		
-		Any a={type->PtrTypeInterface, p};
-		delete p;
+		if(isconstant) {
+			return {type, {p, type->ConstPtrTypeInterface}, true, true};
+		}
+		else {
+			return {type, {p, type->PtrTypeInterface}, true, false};
+		}
+	}
+	
+	void Data::MakeConstant() {
+		ASSERT(type, "Type is not set", 1, 2);
 		
-		return {type, a, true, isconstant};
+		if(!isconstant) {
+			if(isreference && !type->IsReferenceType())
+				data.SetType(type->ConstPtrTypeInterface);
+			else
+				data.SetType(type->ConstTypeInterface);
+			
+			isconstant=true;
+		}
 	}
 	
 } }

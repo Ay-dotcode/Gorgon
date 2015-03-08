@@ -49,21 +49,19 @@ namespace Gorgon {
 			/// Returns the value of this data in the requested format
 			template <class T_>
 			const typename std::remove_reference<T_>::type &GetValue() const {
-				if(isreference)
-					return *data.Get<typename std::remove_reference<T_>::type*>();
-				else
-					return data.Get<typename std::remove_reference<T_>::type>();
+				if(isconstant) {
+					if(isreference)
+						return *data.Get<typename std::remove_reference<const T_>::type*>();
+					else
+						return data.Get<typename std::remove_reference<const T_>::type>();
+				}
+				else {
+					if(isreference)
+						return *data.Get<typename std::remove_reference<T_>::type*>();
+					else
+						return data.Get<typename std::remove_reference<T_>::type>();
+				}					
 			}
-			
-			/// Returns the value of this data in the requested format
-			template <class T_>
-			T_ &GetValue() {
-				if(isreference)
-					return *data.Get<typename std::remove_reference<T_>::type*>();
-				else
-					return data.Get<typename std::remove_reference<T_>::type>();
-			}
-			
 			
 			/// Returns the value of this data in the requested format. Requested type should
 			/// ideally be a reference. Though this is not a requirement.
@@ -97,9 +95,7 @@ namespace Gorgon {
 			}
 			
 			/// Makes this data a constant
-			void MakeConstant() {
-				isconstant=true;
-			}
+			void MakeConstant();
 			
 			/// Returns the type of the data
 			const Type &GetType() const {

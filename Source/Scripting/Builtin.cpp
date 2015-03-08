@@ -249,7 +249,8 @@ namespace Gorgon {
 					"Returns the length of the string", Unsigned, String, {}, 
 					MappedFunctions(
 						[](std::string str) -> unsigned { return (unsigned)str.length(); }
-					), MappedMethods()
+					), MappedMethods(),
+					ConstTag
 				),
 				
 				new MappedFunction("Substr",
