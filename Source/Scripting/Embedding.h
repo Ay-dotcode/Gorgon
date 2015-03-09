@@ -197,7 +197,7 @@ namespace Gorgon {
 									   parent.GetName()+" parameter", 5, 2);
 							}
 						}
-						else if(parent.Parameters[param-1].IsReference()) {
+						else if(parent.Parameters[param-1].IsVariable()) {
 							ASSERT((std::is_same<paramof<level, param>, std::string>::value) , 
 								   "Function parameter type and designated type does not match,"
 								   "reference parameters are accessed as std::string variables. In function: "+
@@ -220,7 +220,7 @@ namespace Gorgon {
 								   "Function parameter type and designated type does not match. In function: "+
 								   parent.GetName()+", "+parent.Parameters[param].GetName()+" parameter", 5, 2);
 						}
-						else if(parent.Parameters[param].IsReference()) {
+						else if(parent.Parameters[param].IsVariable()) {
 							ASSERT((std::is_same<paramof<level, param>, std::string>::value) , 
 								   "Function parameter type and designated type does not match,"
 								   "reference parameters are accessed as std::string variables. In function: "+

@@ -417,13 +417,13 @@ namespace Gorgon {
 						KeywordTag
 					),
 					new MappedFunction("const",
-						"Makes a given variable a constant",
+						"Makes the given variable a constant",
 						nullptr, nullptr,
 						ParameterList {
 							new Parameter(
 								"Variable",
 								"This is the variable to become constant",
-								String, ReferenceTag
+								String, VariableTag
 							)
 						},
 						MappedFunctions([](std::string varname) {
@@ -444,7 +444,7 @@ namespace Gorgon {
 							new Parameter(
 								"Variable",
 								"The variable to determine its type.",
-								String, ReferenceTag
+								String, VariableTag
 							)
 						},
 						MappedFunctions([](std::string variable) {

@@ -110,6 +110,10 @@ void togglesvg() {
 	Compilers::showsvg__=!Compilers::showsvg__;
 }
 
+void testfill(std::string &s) {
+	s+="abcdefg";
+}
+
 namespace Gorgon { namespace Geometry {
 	extern Scripting::Library LibGeometry;
 	void init_scripting();
@@ -129,7 +133,13 @@ int main() {
 	Library mylib;
 	mylib.AddFunctions({
 		new MappedFunction("svg", "", nullptr, nullptr, ParameterList{}, 
-						   MappedFunctions(togglesvg), MappedMethods(), KeywordTag)
+						   MappedFunctions(togglesvg), MappedMethods(), KeywordTag),
+					   
+		new MappedFunction("testfill", "", nullptr, nullptr, 
+			ParameterList{
+				new Parameter("a", "", Types::String(), Gorgon::Scripting::ReferenceTag)
+			}, MappedFunctions(testfill), MappedMethods()
+		)
 	});
 	vm.AddLibrary(mylib);
 

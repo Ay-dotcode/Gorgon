@@ -157,7 +157,7 @@ namespace Gorgon {
 					ParameterList{
 						new Parameter{"Variable",
 							"Variable that will be assigned to the value of the current element.",
-							Types::String(), ReferenceTag, OutputTag
+							Types::String(), VariableTag
 						},
 						new Parameter{"Array",
 							"Array to iterate over.",

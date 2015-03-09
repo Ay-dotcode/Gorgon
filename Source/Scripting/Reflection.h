@@ -37,7 +37,7 @@ namespace Gorgon {
 			InputTag,
 			
 			/// Marks the object as output. This may set ReferenceTag and unset InputTag.
-			OutputTag,
+			//OutputTag,
 			
 			/// Denotes that a function has a method variant
 			MethodTag,
@@ -76,6 +76,10 @@ namespace Gorgon {
 			
 			/// Marks a parameter or a function constant
 			ConstTag,
+			
+			/// Makes this parameter a variable accepting parameter. Variable parameters are type checked
+			/// against supplied type, however, they are always passed as strings denoting the name of the variable
+			VariableTag,
 		};
 		
 		typedef std::vector<Any> OptionList;
@@ -90,14 +94,13 @@ namespace Gorgon {
 		 * 
 		 * **ReferenceTag**: This parameter becomes bidirectional reference. That is, it needs to exist
 		 * before the call to the function. The value of the parameter can be modified or left as is.
-		 * Reference parameters are simply a variable name. They are passed as variables from the
-		 * source.
-		 * 
-		 * **OutputTag**: This parameter becomes output only reference. Output only references can be
-		 * read after it is set first time. The function is free not to set the value of an output
-		 * reference, however, this may cause confusion to the user.
+		 * Reference parameters are either passed as pointer or reference. A reference parameter can be
+		 * Const as well.
 		 * 
 		 * **ConstTag**: This parameter is a constant and its value cannot be changed.
+		 * 
+		 * **VariableTag**: Marks this parameter as a variable. Useful to allow an undefined variable to be
+		 * passed to the function.
 		 */
 		class Parameter {
 		public:
@@ -154,26 +157,16 @@ namespace Gorgon {
 			}
 			
 			/// Checks if the parameter is a reference. When a parameter is a reference,
-			/// instead of the value of the variable the variable itself is passed. Making
-			/// a parameter reference automatically make the parameter output. However,
-			/// unless OutputTag is specified, parameter will be bidirectional, meaning
-			/// it should exist. If the variable is output only, then an undefined
-			/// variable can also be sent.
+			/// its passed as a reference or pointer. Therefore, this value can be changed.
+			/// Literal values cannot be passed as references.
 			bool IsReference() const {
 				return reference;
 			}
 			
-			/// Checks if changes to this parameter is propagated. Always returns same value
-			/// as IsReference
-			bool IsOutput() const {
-				return output;
-			}
-			
-			/// Checks if the parameter value will be read. If a parameter is not a reference,
-			/// IsInput is always true. When ReferenceTag is set, IsInput might be true or false
-			/// depending on whether OutputTag is sent.
-			bool IsInput() const {
-				return input;
+			/// If true, this parameter is a variable and its name is given to the function as
+			/// a string.
+			bool IsVariable() const {
+				return variable;
 			}
 			
 			/// Allowed values for this parameter
@@ -190,15 +183,12 @@ namespace Gorgon {
 						break;
 					case ReferenceTag:
 						reference=true;
-						output=true;
-						break;
-					case OutputTag:
-						reference=true;
-						output=true;
-						input=false;
 						break;
 					case ConstTag:
 						constant=true;
+						break;
+					case VariableTag:
+						variable=true;
 						break;
 						
 					default:
@@ -214,9 +204,8 @@ namespace Gorgon {
 			
 			bool optional  = false;
 			bool reference = false;
-			bool input     = true;
-			bool output    = false;
 			bool constant  = false;
+			bool variable  = false;
 		};
 		
 		using ParameterList = Containers::Collection<const Parameter>;

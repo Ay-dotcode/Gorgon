@@ -797,34 +797,43 @@ namespace Gorgon {
 			
 			int ind=1;
 			for(const auto &pdef : fn->Parameters) {
-				if(pdef.IsReference()) {
-					if(pin->Type==ValueType::Variable || pin->Type==ValueType::Identifier) {
-						if(pdef.IsInput()) {
-							GetVariable(pin->Name);
+				if(pin!=incomingparams.end()) {
+					if(pdef.IsVariable()) {
+						if(pin->Type==ValueType::Variable || pin->Type==ValueType::Identifier) {
+							Data param={Types::String(), pin->Name};
+							
+							params.push_back(param);
 						}
+						else  if(pin->Type==ValueType::Literal) {
+							if(pin->Literal.GetType()!=Types::String()) {
+								throw InstructionException("Reference type can only be represented string literals and variables");
+							}
+							
+							params.push_back(pin->Literal);
+						}
+						else {
+							throw InstructionException("Reference type can only be represented string literals and variables");
+						}
+					}
+					else if(pdef.IsReference()) {
+						Data param=getvalue(*pin, true);
 						
-						Data param={Types::String(), pin->Name};
+						if(pdef.GetType()!=param.GetType()) {
+							Utils::NotImplemented("Polymorphism");
+						}
 						
 						params.push_back(param);
 					}
-					else  if(pin->Type==ValueType::Literal) {
-						if(pin->Literal.GetType()!=Types::String()) {
-							throw InstructionException("Reference type can only be represented string literals and variables");
-						}
-						
-						params.push_back(pin->Literal);
-					}
 					else {
-						throw InstructionException("Reference type can only be represented string literals and variables");
+						Data param=getvalue(*pin);
+						
+						fixparameter(param, pdef.GetType(), 
+									"Cannot cast while trying to call "+fn->GetName());
+						
+						params.push_back(param);
 					}
-				}
-				else if(pin!=incomingparams.end()) {
-					Data param=getvalue(*pin);
 					
-					fixparameter(param, pdef.GetType(), 
-								 "Cannot cast while trying to call "+fn->GetName());
-					
-					params.push_back(param);
+					++pin;
 				}
 				else { // no value is given for the parameter
 					if(!pdef.IsOptional()) {
@@ -836,7 +845,6 @@ namespace Gorgon {
 					
 					break;
 				}
-				++pin;
 				++ind;
 			}
 			
