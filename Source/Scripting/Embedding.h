@@ -844,9 +844,15 @@ namespace Gorgon {
 			
 			/// Sets the data of the data member
 			virtual void Set(Data &source, const Data &value) const override {
-				C_ obj  = source.GetValue<C_>();
-				obj.*member = value.GetValue <T_>();
-				source={source.GetType(), obj};
+				if(source.IsReference()) {					
+					C_ &obj  = source.GetReference<C_>();
+					obj.*member = value.GetValue <T_>();
+				}
+				else {
+					C_ obj  = source.GetValue<C_>();
+					obj.*member = value.GetValue <T_>();
+					source={source.GetType(), obj};
+				}
 			}
 			
 		protected:

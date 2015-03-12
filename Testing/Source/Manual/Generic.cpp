@@ -131,6 +131,18 @@ int main() {
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 	
 	Library mylib;
+	
+	auto mystr = new MappedValueType<std::string>("MyStr", "");
+
+	auto StringToMyStrConvert=[&mystr](Data data) { 
+		return Data{mystr, data.GetValue<std::string>()}; 
+	};
+
+	auto MyStrToStringConvert=[&mystr](Data data) {
+		return Data{Types::String(), data.GetValue<std::string>()}; 
+	};
+	mystr->AddInheritance(Types::String(), StringToMyStrConvert, MyStrToStringConvert);
+
 	mylib.AddFunctions({
 		new MappedFunction("svg", "", nullptr, nullptr, ParameterList{}, 
 						   MappedFunctions(togglesvg), MappedMethods(), KeywordTag),
@@ -139,8 +151,12 @@ int main() {
 			ParameterList{
 				new Parameter("a", "", Types::String(), Gorgon::Scripting::ReferenceTag)
 			}, MappedFunctions(testfill), MappedMethods()
-		)
+		),
+		
+		new MappedFunction("gen", "", mystr, nullptr, ParameterList{},
+						   MappedFunctions([]{ return std::string("abc"); }), MappedMethods()),
 	});
+	
 	vm.AddLibrary(mylib);
 
 	std::cout<<std::endl<<std::endl;

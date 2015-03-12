@@ -662,7 +662,8 @@ namespace Gorgon {
 			/// Gets data from the datamember
 			virtual Data Get(const Data &source) const = 0;
 			
-			/// Sets the data of the data member
+			/// Sets the data of the data member, if the source is a reference,
+			/// this function should perform in place replacement of the value
 			virtual void Set(Data &source, const Data &value) const = 0;
 			
 			virtual ~DataMember() { }
@@ -758,18 +759,25 @@ namespace Gorgon {
 		class Type {
 		public:
 			
+			class Inheritance {
+				friend class Type;
+				
+			public:
+				using ConversionFunction = std::function<Data(Data)>;
+				
+				Inheritance(const Type &target, ConversionFunction from, ConversionFunction to) : 
+				target(target), from(from), to(to) { }
+				
+				const Type &target;
+				
+			private:
+				ConversionFunction from, to;
+			};
+			
 			/// Constructor, unlike other reflection objects, Type is not constructed fully. TypeInterace for pointer type
 			/// can be constructed using Any::Type.
 			Type(const std::string &name, const std::string &help, const Any &defaultvalue, 
-				 Any::TypeInterface *consttype, Any::TypeInterface *ptrtype, Any::TypeInterface *constptrtype, bool isref) :
-			name(name), help(help), DataMembers(datamembers), Functions(functions), Constructors(constructors),
-			Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue), 
-			referencetype(isref), TypeInterface(defaultvalue.GetTypeInterface()), ConstTypeInterface(consttype),
-			PtrTypeInterface(ptrtype), ConstPtrTypeInterface(constptrtype)
-			{ 
-				ASSERT((defaultvalue.GetTypeInterface()->PtrTypeInfo()==PtrTypeInterface->TypeInfo()), 
-					   "The type and its pointer does not match");
-			}
+				 Any::TypeInterface *consttype, Any::TypeInterface *ptrtype, Any::TypeInterface *constptrtype, bool isref);
 
 			/// Returns the name of this type.
 			std::string GetName() const {
@@ -790,6 +798,14 @@ namespace Gorgon {
 			bool IsReferenceType() const {
 				return referencetype;
 			}
+			
+			/// Adds an inheritance parent. from and to function should handle reference and constness of the data.
+			/// Inheritance should be added in order. After using a class as a parent, no parent should be added to that
+			/// class
+			void AddInheritance(const Type &type, Inheritance::ConversionFunction from, Inheritance::ConversionFunction to);
+			
+			/// Morphs the given data into the target type.
+			Data MorphTo(const Type &type, Data source) const;
 			
 			/// Adds new datamembers to the type
 			void AddDataMembers(std::initializer_list<DataMember*> elements) {
@@ -957,8 +973,14 @@ namespace Gorgon {
 			/// Events of this type.
 			const EventList							&Events;
 			
+			/// Parents of this type. This includes indirect parents as well
+			const std::map<const Type *, const Type *> &Parents;
+			
 			/// Inheritance list. 
-			const Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess> &InheritsFrom;
+			const std::map<const Type *, Inheritance> &InheritsFrom;
+			
+			/// Inherited symbols
+			const Containers::Hashmap<std::string, const Type, nullptr, std::map, String::CaseInsensitiveLess> &InheritedSymbols;
 			
 			/// Type info for normal type
 			const Any::TypeInterface * const TypeInterface;
@@ -975,7 +997,8 @@ namespace Gorgon {
 			virtual ~Type() { 
 				delete TypeInterface;
 				delete PtrTypeInterface;
-			}	
+			}
+			
 		protected:
 
 			/// This function should delete the given object.
@@ -1010,7 +1033,13 @@ namespace Gorgon {
 			EventList							events;
 			
 			/// Inheritance list. 
-			Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess> inheritsfrom;
+			std::map<const Type *, Inheritance> inheritsfrom;
+			
+			/// Inherited symbols
+			Containers::Hashmap<std::string, const Type, nullptr, std::map, String::CaseInsensitiveLess> inheritedsymbols;
+			
+			/// This lists all parents of this type in the entire hierarchy.
+			std::map<const Type *, const Type *> parents;
 			
 			bool referencetype = false;
 		};

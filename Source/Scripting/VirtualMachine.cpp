@@ -227,7 +227,16 @@ namespace Gorgon {
 					
 					auto element=type->Functions.Find(name);
 					
+					//not in this type
 					if(!element.IsValid()) {
+						//search parents
+						for(auto t : type->Parents) {
+							if(t.first->Functions.Find(name)) {
+								
+							}
+						}
+						
+						//not found anywhere
 						throw SymbolNotFoundException(
 							namespc+":"+name, SymbolType::Function, 
 							"Cannot find "+name+" function in library "+namespc
@@ -351,6 +360,9 @@ namespace Gorgon {
 					auto element=type->Constants.Find(name);
 					
 					if(!element.IsValid()) {
+						/*for(auto &t : type->Parents) {
+							
+						}*/
 						throw SymbolNotFoundException(
 							namespc+":"+name, SymbolType::Constant, 
 							"Cannot find "+name+" constant in library "+namespc
@@ -783,7 +795,7 @@ namespace Gorgon {
 						//no worries
 					}
 					else {
-						Utils::NotImplemented("Polymorphism");
+						param=param.GetType().MorphTo(fn->GetParent(), param);
 					}
 					
 					params.push_back(param);
@@ -818,8 +830,8 @@ namespace Gorgon {
 					else if(pdef.IsReference()) {
 						Data param=getvalue(*pin, true);
 						
-						if(pdef.GetType()!=param.GetType()) {
-							Utils::NotImplemented("Polymorphism");
+						if(pdef.GetType()!=param.GetType()) {							
+							param=param.GetType().MorphTo(pdef.GetType(),param);
 						}
 						
 						params.push_back(param);
@@ -929,7 +941,7 @@ namespace Gorgon {
 					throw std::runtime_error("Invalid instruction, missing this parameter");
 				}
 				
-				//search in the type of the first parameter
+				//search in the type of the first parameter, this ensures the data is a reference
 				Data data=getvalue(inst->Parameters[0], true);
 
 				if(functionname=="{}") { //constructor
@@ -960,52 +972,71 @@ namespace Gorgon {
 					
 					return;
 				}				
-				else if(functionname[0]=='.') {
+				else if(functionname[0]=='.') { //data member
+					//data access
 					if(inst->Parameters.size()==1) {
+						Data ret=Data::Invalid();
 						if(!data.GetType().DataMembers.Exists(functionname.substr(1))) {
-							throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
+							//check parent symbols
+							auto it=data.GetType().InheritedSymbols.Find(functionname.substr(1));
+							
+							//if found
+							if(it.IsValid()) {
+								//cast current data to its parent and perform the data retrieval
+								ret=it.Current().second.DataMembers[functionname.substr(1)].Get(data.GetType().MorphTo(it.Current().second, data));
+							}
+							else {							
+								throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
+							}
 						}
-						Data ret=data.GetType().DataMembers[functionname.substr(1)].Get(data);
+						else {
+							ret=data.GetType().DataMembers[functionname.substr(1)].Get(data);
+						}
 						
+						//store the result
 						if(inst->Store) {
-							//store the result
+							//variants should be casted
 							if(ret.GetType()==Types::Variant()) {
 								ret=ret.GetValue<Data>();
 							}
+							//else ok
+
 							temporaries[inst->Store]=ret;
+							
+							//if the source is constant, then the result should be a constant too
 							if(data.IsConstant())
-								temporaries[inst->Store].MakeConstant();;
+								temporaries[inst->Store].MakeConstant();
 						}
 					}
+					//data mutate
 					else if(inst->Parameters.size()==2) {
 						if(data.IsConstant()) {
 							throw ConstantException(inst->Parameters[0].Name, "While setting member: "+functionname.substr(1));
 						}
 						//else ok
 						
+						//cannot store the result of assignment
 						if(inst->Store) {
 							throw NoReturnException("Data member: "+data.GetType().DataMembers[functionname.substr(1)].GetName());
 						}
-						if(inst->Parameters[0].Type==ValueType::Variable) {
-							data.GetType().DataMembers[functionname.substr(1)].
-								Set(GetVariable(inst->Parameters[0].Name), getvalue(inst->Parameters[1]));
-						}
-						else if(inst->Parameters[0].Type==ValueType::Temp) {
-							data.GetType().DataMembers[functionname.substr(1)].
-								Set(temporaries[inst->Parameters[0].Result], getvalue(inst->Parameters[1]));
-						}
-						else if(inst->Parameters[0].Type==ValueType::Identifier) {
-							ASSERT(IsVariableSet(inst->Parameters[0].Name), "Only variable identifiers can be assigned to");
+						//else ok
+						
+						if(!data.GetType().DataMembers.Exists(functionname.substr(1))) {
+							//check parent symbols
+							auto it=data.GetType().InheritedSymbols.Find(functionname.substr(1));
 							
-							data.GetType().DataMembers[functionname.substr(1)].
-								Set(GetVariable(inst->Parameters[0].Name), getvalue(inst->Parameters[1]));
+							//if found
+							if(it.IsValid()) {
+								//cast current data to its parent and let the rest do the work
+								data=data.GetType().MorphTo(it.Current().second, data); //:data is reference
+							}
+							else {							
+								throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
+							}
 						}
-						else if(inst->Parameters[0].Type==ValueType::Literal || inst->Parameters[0].Type==ValueType::Constant) {
-							ASSERT(false, "Cannot assign to literal or constants");
-						}						
-						else {
-							Utils::ASSERT_FALSE("Unknown value type");
-						}						
+						//else ok
+						
+						data.GetType().DataMembers[functionname.substr(1)].Set(data, getvalue(inst->Parameters[1]));
 					}
 					else {
 						throw std::runtime_error("Member access or mutate requires exactly 1 and 2 parameters");
@@ -1015,14 +1046,25 @@ namespace Gorgon {
 				}
 				else {
 					auto fnit=data.GetType().Functions.Find(functionname);
-
+					
 					//if found
 					if(fnit.IsValid()) {
 						fn=&fnit.Current().second;
-					} else {
-						//cannot find it
-						throw SymbolNotFoundException(functionname, SymbolType::Function, 
-							"Cannot find the member function "+data.GetType().GetName()+":"+functionname);
+					} 
+					//cannot find it
+					else {
+						
+						//check inherited symbols for it
+						auto it=data.GetType().InheritedSymbols.Find(functionname);
+						//if found
+						if(it.IsValid()) {
+							//use that function instead
+							fn=&it.Current().second.Functions[functionname];
+						}
+						else {						
+							throw SymbolNotFoundException(functionname, SymbolType::Function, 
+								"Cannot find the member function "+data.GetType().GetName()+":"+functionname);
+						}
 					}
 				}
 			}
@@ -1044,16 +1086,16 @@ namespace Gorgon {
 			//if requested
 			if(inst->Store) {
 				if(!fn->IsScoped() && fn->HasReturnType()) {
-					//store the result
-					
 					//fix variants
 					if(ret.GetType()==Types::Variant()) {
 						ret=ret.GetValue<Data>();
 					}
+
+					//store the result
 					temporaries[inst->Store]=ret;
 				} 
 				else {
-					//if requested but function does not return a value
+					//requested but function does not return a value
 					throw NoReturnException(functionname);
 				}
 			}
@@ -1062,6 +1104,7 @@ namespace Gorgon {
 		void VirtualMachine::execute(const Instruction* inst) {
 			if(inst->Type==InstructionType::Mark) {
 				auto &fn=FindFunction(inst->Name.Name);
+				//this instruction should not be skipped
 				if(fn.NeverSkip()) {
 					markednoskip=true;
 				}
@@ -1070,7 +1113,7 @@ namespace Gorgon {
 			}
 			// assignment ...
 			else if(inst->Type==InstructionType::Assignment) {
-				if(inst->Name.Type!=ValueType::Variable)
+				if(inst->Name.Type!=ValueType::Variable && inst->Name.Type!=ValueType::Identifier)
 					throw std::runtime_error("Variables can only be represented with variables.");
 				
 				if(!skipping || markednoskip) {
@@ -1102,20 +1145,26 @@ namespace Gorgon {
 				temporaries[inst->Store]=Data::Invalid();
 			}
 			else if(inst->Type==InstructionType::Jump) {
-				executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
-			}
-			else if(inst->Type==InstructionType::JumpTrue) {
-				auto dat=getvalue(inst->RHS);
-				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
-				if(dat.GetValue<bool>()) {
+				if(!skipping) {
 					executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
 				}
 			}
+			else if(inst->Type==InstructionType::JumpTrue) {
+				if(!skipping) {
+					auto dat=getvalue(inst->RHS);
+					fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
+					if(dat.GetValue<bool>()) {
+						executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+					}
+				}
+			}
 			else if(inst->Type==InstructionType::JumpFalse) {
-				auto dat=getvalue(inst->RHS);
-				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
-				if(!dat.GetValue<bool>()) {
-					executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+				if(!skipping) {
+					auto dat=getvalue(inst->RHS);
+					fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
+					if(!dat.GetValue<bool>()) {
+						executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+					}
 				}
 			}
 			else {
