@@ -470,6 +470,10 @@ namespace Gorgon {
 
 			//if found
 			if(var.IsValid()) {
+				if(var.Current().second.IsConstant()) {
+					throw ConstantException(name, "Variable is constant.");
+				}
+				
 				//change existing variable
 				var.Current().second.Set(data.GetType(), data.GetData());
 			}

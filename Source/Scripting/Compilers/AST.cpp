@@ -595,6 +595,25 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
+		else if(String::ToLower(tree->Text)=="const") {
+			ASSERT(tree->Leaves.GetSize()==1, "const keyword requires a single parameter");
+			ASSERT(tree->Leaves[0].Leaves[0].Type==ASTNode::Identifier || 
+				   tree->Leaves[0].Leaves[0].Type==ASTNode::ASTNode::Variable,
+				   "const can only be applied to simple variables"
+			);
+			
+			Compile(&tree->Leaves[0]);
+			
+			Instruction inst;
+			inst.Type=InstructionType::FunctionCall;
+			inst.Name.SetStringLiteral("const");
+			Value v;
+			v.SetVariable(tree->Leaves[0].Leaves[0].Text);
+			inst.Parameters.push_back(v);
+			list.push_back(inst);
+			
+			return true;
+		}
 		else if(String::ToLower(tree->Text)=="end") {
 			if(scopes.size()==0) {
 				throw FlowException("`End` without a keyword scope");

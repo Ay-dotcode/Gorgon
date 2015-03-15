@@ -702,6 +702,43 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		try {
 			Token token=consumenexttoken(input, index);
 
+			auto assignment = [&](ASTNode *term, std::string keyword) {
+				if(!term) {
+					term=parseterm(input, index);
+					
+					token=consumenexttoken(input, index);
+					
+					if(token!=Token::EqualSign) {					
+						throw ParseError{ExceptionType::UnexpectedToken, keyword+" should be followed by an assignment.", index};
+					}
+				}
+				
+				auto expr=parseexpression(input, index);
+				
+				if(token.repr.size()!=1) {
+					ASSERT(token.repr.size()==2, "Assignment operator size problem.");
+					
+					//check if this really is an operator
+					GetPrecedence(token.repr.substr(0,1));
+					
+					ASTNode *compound=NewNode(ASTNode::Operator, {token.repr.substr(0,1), Token::Operator, token.start});
+					
+					token.repr=token.repr.substr(1);
+					
+					compound->Leaves.Push(term->Duplicate());
+					compound->Leaves.Push(expr);
+					expr=compound;
+				}
+				
+				root=NewNode(ASTNode::Assignment, token);
+				root->Leaves.Push(term);
+				root->Leaves.Push(expr);
+				
+				if( (token=consumenexttoken(input, index)) !=Token::EoS) {
+					throw ParseError{ExceptionType::UnexpectedToken, "Expected End of String.", index};
+				}
+			};
+			
 			if(token == Token::EoS) return nullptr;
 
 			if(token!=Token::Identifier) {
@@ -726,6 +763,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					auto expr=parseexpression(input, index);
 					root->Leaves.Push(expr);
 				}
+				else if(String::ToLower(token.repr)=="const") { //this is actually an assignment
+					assignment(nullptr, "const");
+					auto proot=root;
+					root=new ASTNode(ASTNode::Keyword);
+					root->Text="const",
+					root->Leaves.Push(proot);
+				}
 				else {
 					token=peeknexttoken(input, index);
 					
@@ -744,30 +788,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				token=consumenexttoken(input, index);
 				
 				if(token==Token::EqualSign) {//assignment
-					auto expr=parseexpression(input, index);
-					
-					if(token.repr.size()!=1) {
-						ASSERT(token.repr.size()==2, "Assignment operator size problem.");
-						
-						//check if this really is an operator
-						GetPrecedence(token.repr.substr(0,1));
-						
-						ASTNode *compound=NewNode(ASTNode::Operator, {token.repr.substr(0,1), Token::Operator, token.start});
-						
-						token.repr=token.repr.substr(1);
-						
-						compound->Leaves.Push(term->Duplicate());
-						compound->Leaves.Push(expr);
-						expr=compound;
-					}
-					
-					root=NewNode(ASTNode::Assignment, token);
-					root->Leaves.Push(term);
-					root->Leaves.Push(expr);
-					
-					if( (token=consumenexttoken(input, index)) !=Token::EoS) {
-						throw ParseError{ExceptionType::UnexpectedToken, "Expected End of String.", index};
-					}
+					assignment(term, "");
 				}
 				else if(token==Token::LeftP) { //function
 					index=0; //let expression do the parsing
