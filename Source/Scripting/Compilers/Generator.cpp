@@ -87,9 +87,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			return ret;
 		}
 			
-		case InstructionType::Mark:
-			return "fkm\""+instruction->Name.Name+"\"";
-			
 		case InstructionType::RemoveTemp:
 			return "x\""+String::From(instruction->Store)+"\"";
 			

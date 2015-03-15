@@ -174,92 +174,6 @@ namespace Gorgon {
 			const InputSource *definedin;
 		};
 		
-		/**
-		 * This class stores information about a scope that is built by a scoped keyword.
-		 */
-		class KeywordScope { 
-		public:
-			/// Constructor requires the function that is creating this scope and data associated
-			/// with it. Data type checking will not be performed on embedded keywords.
-			KeywordScope(const Function &fn, Data data, unsigned long pline) : data(data), fn(&fn), pline(pline) {
-			}
-			
-			/// Returns the data associated with this scope
-			Data GetData() const {
-				return data;
-			}
-			
-			/// Replaces the current data of this scope with another. Useful for modified value type
-			/// scope data
-			void SetData(Data data) {
-				this->data=data;
-			}
-
-			/// Returns the line number 
-			unsigned long GetPhysicalLine() const {
-				return pline;
-			}
-			
-			/// Signals the end of the scope. If return value is false, this means that the scope is not
-			/// yet ended. CallEnd function is responsible to move execution point back inside the keyword
-			/// scope.
-			bool CallEnd() const {
-				return fn->CallEnd(data);
-			}
-			
-			/// Returns the function that created this scope
-			const Function &GetFunction() const {
-				return *fn;
-			}
-			
-		private:
-			const Function *fn;
-			Data data;
-			unsigned long pline;
-		};
-		
-		/**
-		 * This class contains information about a variable scope. Variable scopes are generally created
-		 * by functions.
-		 */
-		class VariableScope { 
-		public:
-			
-			/// Scoping mode dictates what variable scoping mode should be used for auto allocated variables
-			enum ScopingMode {
-				DefaultGlobal,
-				DefaultLocal,
-				LimitGlobals
-			};
-			
-			/// Default constructor requires a name and working mode. Name is generally name of the
-			/// function that opens the scope, but could also contain additional information like values
-			/// of parameters (not necessary)
-			VariableScope(const std::string &name, ScopingMode mode=DefaultLocal) : 
-			name(name+" #"+String::From(nextid++)), mode(mode) { }
-			
-			/// Name of the variable scope
-			std::string GetName() const {
-				return name;
-			}
-			
-			/// Returns the scoping mode for the variables that are auto allocated, i.e $var = val;
-			/// instead of local $var = val; or global $var = val;
-			ScopingMode GetScopingMode() const {
-				return mode;
-			}
-			
-			/// Variables defined in this scope
-			Containers::Hashmap<std::string, class Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess> Variables;
-			
-		private:
-			std::string name;
-
-			static int nextid;
-			
-			ScopingMode mode;
-		};
-		
 		
 		/// This class uniquely represents a source code line. uintptr_t is used for source
 		/// to reduce dependency
@@ -292,7 +206,7 @@ namespace Gorgon {
 		public:
 			
 			/// Constructor requires an input source. Execution scopes can share same input source
-			ExecutionScope(InputSource &source) : source(&source) {
+			ExecutionScope(InputSource &source) : source(&source), name(source.GetName()+" #"+String::From(nextid++)) {
 			}
 			
 			/// Jumps to the given line, line numbers start at zero.
@@ -325,6 +239,10 @@ namespace Gorgon {
 				return ret;
 			}
 			
+			std::string GetName() const {
+				return name;
+			}
+			
 			/// Forces the compilation of entire input source
 			void Compile() {
 				int c=current;
@@ -347,7 +265,14 @@ namespace Gorgon {
 
 			InputSource &GetSource() const { return *source; }
 			
-		private:
+			/// Variables defined in this scope
+			Containers::Hashmap<std::string, class Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess> Variables;
+			
+		private:			
+			std::string name;
+			
+			static int nextid;
+
 			/// Current logical line
 			unsigned long current = 0;
 			

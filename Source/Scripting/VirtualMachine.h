@@ -160,84 +160,6 @@ namespace Gorgon {
 				activevms.Add(std::this_thread::get_id(), this);
 			}
 
-			/// Puts the VM into skipping mode. In skipping mode, VM will parse the commands but
-			/// will not execute them unless they are marked as no skip. VM can be placed into
-			/// skipping mode by any function, not necessarily by a scoped keyword.
-			void StartSkipping() {
-				if(skipping) {
-					throw FlowException("Already skipping.", "The VM is already placed in skipping mode "
-						"by another keyword. Quiting to evade further problems.");
-				}
-				skipping=true;
-			}
-
-			/// VM will stop skipping. 
-			void StopSkipping() {
-				if(skippingdepth) {
-					throw FlowException("Cannot stop skipping, code execution should be resumed by the"
-						"scope that started it.", "The VM is placed in skipping mode by another scope."
-						"Quiting to evade further problems.");
-				}
-				skipping=false;
-			}
-
-			/// Returns whether the VM is in skipping mode
-			bool IsSkipping() const {
-				return skipping;
-			}
-
-			/// This function returns the depth of skipping. Depth of skipping is the number of silent
-			/// (skipped) scoped keywords that still need to be terminated. For instance, if there are
-			/// two if scopes inside each other and both have else statements and if exterior if statement
-			/// is false, the interior else may want to resume code execution even if it is not the else
-			/// statement that should resume code execution. However, at the point interior else is reached,
-			/// skipping depth would be 1, denoting the code skipping is now inside another scope and should
-			/// not be stopped.
-			int SkippingDepth() const {
-				return skippingdepth;
-			}
-
-			/// Reduces the skipping count
-			void ReduceSkipping() {
-				if(skippingdepth==0) {
-					throw FlowException("Cannot reduce skipping, It is already been reduced to 0.");
-				}
-				skippingdepth--;
-			}
-
-			/// Returns if there is an active keyword scope
-			bool HasKeywordScope() const {
-				return keywordscopes.GetCount()!=0;
-			}
-
-			/// Returns current keyword scope
-			KeywordScope &GetKeywordScope() {
-				if(keywordscopes.GetCount()==0) {
-					throw FlowException("No active keyword scope.");
-				}
-				return *keywordscopes.Last();
-			}
-
-			/// Removes the last keyword scope, removing skipping mode if it is set
-			void PopKeywordScope() {
-				if(keywordscopes.GetCount()==0) {
-					throw FlowException("No active keyword scope.");
-				}
-				keywordscopes.Last().Delete();
-				skipping=false;
-			}
-
-			/// Returns the name of the current variable scope. This could be a function name or
-			/// [main] if no function is yet called. Embedded functions do not have their own
-			/// variable scopes, therefore, this function will return the encompassing scope.
-			std::string GetVariableScopeName() const {
-				if(variablescopes.GetCount()==0) {
-					throw FlowException("No active variable scope.", "This shows that VM is currently in "
-						"an invalid state.");
-				}
-				return variablescopes.Last()->GetName();
-			}
-
 			/// Returns the number of active execution scopes. If this number is 0, VM cannot be started without
 			/// providing additional code source.
 			unsigned GetExecutionScopeCount() const {
@@ -254,11 +176,6 @@ namespace Gorgon {
 				return executionscopes.First()->GetMarkerForNext();
 			}
 			
-			/// Returns the marker to the start of the keyword. This system is designed to work with scoped keywords. It may or
-			/// may not work with other keywords and function calls
-			SourceMarker GetMarkerForKeywordStart() const {
-				return markedline;
-			}
 			
 			/// Returns the data returned from the last executed script
 			Data GetReturnValue() const {
@@ -310,29 +227,18 @@ namespace Gorgon {
 			/// List of types
 			std::multimap<std::string, const Type*, String::CaseInsensitiveLess> types;
 
-
-			Containers::Collection<KeywordScope> 	keywordscopes;
 			Containers::Collection<ExecutionScope> 	executionscopes;
-			Containers::Collection<VariableScope> 	variablescopes;
-
 			Containers::Collection<InputSource>		inputsources;
 
 			Library runtime;
 
 			Containers::Hashmap<std::string, Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess>	globalvariables;
-			std::map<Function*, Containers::Hashmap<std::string, Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess>> staticvariables;
 
 			std::ostream *output;
 			std::istream *input;
 
 			std::ostream *defoutput;
 			std::istream *definput;
-
-			bool skipping = false;
-			int  skippingdepth = 0;
-			bool markednoskip = false;
-			const Function *markedkeyword=nullptr;
-			SourceMarker markedline;
 
 			std::vector<Data> temporaries;
 

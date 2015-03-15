@@ -691,6 +691,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 	}
 	
+	static const std::set<std::string, String::CaseInsensitiveLess> internalkeywords={
+		"if", "for", "elseif", "else", "while", "continue", "break", "end"
+	};
+	
 	ASTNode *parse(const std::string &input) {
 		int index = 0;
 		ASTNode *root = nullptr;
@@ -704,7 +708,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier, found: "+token.repr, index};
 			}
 			
-			if(KeywordNames.count(token.repr)) { //keyword
+			if(KeywordNames.count(token.repr) || internalkeywords.count(token.repr)) { //keyword
 				root=NewNode(ASTNode::Keyword, token);
 				
 				if(String::ToLower(token.repr)=="for") {

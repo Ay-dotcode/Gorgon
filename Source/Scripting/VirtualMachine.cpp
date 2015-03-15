@@ -20,8 +20,6 @@ namespace Gorgon {
 			AddLibrary(Integrals);
 			AddLibrary(Keywords);
 			AddLibrary(Reflection);
-			
-			variablescopes.AddNew("[main]", VariableScope::DefaultLocal);
 		}
 		
 		void VirtualMachine::AddLibrary(const Library &library) { 
@@ -412,9 +410,6 @@ namespace Gorgon {
 		}
 
 		void VirtualMachine::Run(unsigned executiontarget) {
-			int keywordtarget=keywordscopes.GetCount();
-			int variabletarget=variablescopes.GetCount();
-			
 			returnimmediately=false;
 			returnvalue=Data::Invalid();
 
@@ -459,40 +454,17 @@ namespace Gorgon {
  					throw ex;
  				}
 			}
-
-			if(executionscopes.GetCount()==executiontarget) {
-				if(keywordtarget<keywordscopes.GetCount()) {
-					throw FlowException("Missing end statement",
-						"While searching the end for "+keywordscopes.Last()->GetFunction().GetName(),
-						keywordscopes.Last()->GetPhysicalLine()
-					);
-				}
-				else if(keywordtarget>keywordscopes.GetCount()) {
-					throw FlowException("Extra end statement");
-				}
-
-				ASSERT(variabletarget==variablescopes.GetCount(), "Variable scope error",0,8);
-			}
 		}
 
 		void VirtualMachine::SetVariable(const std::string &name, Data data) {
 			//check if it exists
-			auto &vars=variablescopes.Last()->Variables;
+			auto &vars=executionscopes.Last()->Variables;
 			auto var=vars.Find(String::ToLower(name));
 
 			//if not found in locals
 			if(!var.IsValid()) {
 				//search in globals
 				var=globalvariables.Find(String::ToLower(name));
-
-				//global should have defined in the same InputSource as dictated by the scope
-				if(variablescopes.Last()->GetScopingMode()==VariableScope::LimitGlobals) {
-					//if not
-					if(!var.Current().second.IsDefinedIn(executionscopes.Last()->GetSource())) {
-						//this scope cannot use this global and should define a new local variable
-						var=globalvariables.end();
-					}
-				}
 			}
 			//else ok
 
@@ -502,20 +474,13 @@ namespace Gorgon {
 				var.Current().second.Set(data.GetType(), data.GetData());
 			}
 			else {
-				//add a new one
-				if(variablescopes.Last()->GetScopingMode()==VariableScope::DefaultGlobal) {
-					//as global
-					globalvariables.Add(new Variable(name, data.GetType(), data.GetData()));
-				}
-				else {
-					//as local
-					vars.Add(new Variable(name, data.GetType(), data.GetData()));
-				}
+				//as local
+				vars.Add(new Variable(name, data.GetType(), data.GetData()));
 			}
 		}
 		
 		bool VirtualMachine::IsVariableSet(const std::string &name) {
-			auto &vars=variablescopes.Last()->Variables;
+			auto &vars=executionscopes.Last()->Variables;
 			auto var=vars.Find(String::ToLower(name));
 			
 			if(var.IsValid()) return true;
@@ -538,7 +503,7 @@ namespace Gorgon {
 		
 		Variable &VirtualMachine::GetVariable(const std::string &name) {
 			//check variable scopes first
-			auto &vars=variablescopes.Last()->Variables;
+			auto &vars=executionscopes.Last()->Variables;
 			auto var=vars.Find(String::ToLower(name));
 
 			//TODO static variables? may be they can be handled by function function
@@ -555,15 +520,6 @@ namespace Gorgon {
 
 				//if found
 				if(var.IsValid()) {
-					//global should have defined in the same InputSource as dictated by the scope
-					if(variablescopes.Last()->GetScopingMode()==VariableScope::LimitGlobals) {
-						//if not
-						if(!var.Current().second.IsDefinedIn(executionscopes.Last()->GetSource())) {
-							//this scope cannot use this global
-							throw SymbolNotFoundException(name, SymbolType::Variable);
-						}
-					}
-
 					//return
 					return var.Current().second;
 				}
@@ -578,15 +534,15 @@ namespace Gorgon {
 		Data VirtualMachine::getvalue(const Value &val, bool reference) {
 			switch(val.Type) {
 				case ValueType::Literal:
-					if(reference) {
+					if(reference) { //literals cannot be converted to reference
 						throw CastException("literal", "reference");
 					}
 					return val.Literal;
 					
 				case ValueType::Constant:
-					if(reference) {
+					if(reference) { //constant refrence
 						auto data=FindConstant(val.Name).GetData().GetReference();
-						data.MakeConstant();
+						data.MakeConstant(); //should be constant
 						return data;
 					}
 					else {
@@ -595,9 +551,11 @@ namespace Gorgon {
 					
 				case ValueType::Temp: {
 					auto &data=temporaries[val.Result];
+					
 					if(!data.IsValid()) {
 						throw std::runtime_error("Invalid temporary.");
 					}
+					
 					if(reference)
 						return data.GetReference();
 					else
@@ -606,15 +564,17 @@ namespace Gorgon {
 				
 				case ValueType::Variable: {
 					auto &var=GetVariable(val.Name);
+					
 					if(reference)
 						return var.GetReference();
 					else
 						return var;
 				}
-				case ValueType::Identifier:
-					
+				case ValueType::Identifier:		
+					//if it is a variable
 					if(IsVariableSet(val.Name)) {
 						auto &var=GetVariable(val.Name);
+						
 						if(reference)
 							return var.GetReference();
 						else
@@ -1072,20 +1032,9 @@ namespace Gorgon {
 			// call it
 			Data ret=callfunction(fn, method, inst->Parameters);
 
-			// if scoped keyword
-			if(fn->IsScoped() && ret.IsValid() && ret.GetValue<Data>().IsValid() ) {
-				auto scope=new KeywordScope{*fn, ret.GetValue<Data>(), executionscopes.Last()->GetSource().GetPhysicalLine()};
-				keywordscopes.Add(scope);
-			}
-
-			if(markednoskip && fn==markedkeyword) {
-				markednoskip=false;
-				markedkeyword=nullptr;
-			}
-
 			//if requested
 			if(inst->Store) {
-				if(!fn->IsScoped() && fn->HasReturnType()) {
+				if(fn->HasReturnType()) {
 					//fix variants
 					if(ret.GetType()==Types::Variant()) {
 						ret=ret.GetValue<Data>();
@@ -1102,71 +1051,50 @@ namespace Gorgon {
 		}
 		
 		void VirtualMachine::execute(const Instruction* inst) {
-			if(inst->Type==InstructionType::Mark) {
-				auto &fn=FindFunction(inst->Name.Name);
-				//this instruction should not be skipped
-				if(fn.NeverSkip()) {
-					markednoskip=true;
-				}
-				markedkeyword=&fn;
-				markedline=executionscopes.Last()->GetMarkerForCurrent();
-			}
 			// assignment ...
-			else if(inst->Type==InstructionType::Assignment) {
+			if(inst->Type==InstructionType::Assignment) {
 				if(inst->Name.Type!=ValueType::Variable && inst->Name.Type!=ValueType::Identifier)
 					throw std::runtime_error("Variables can only be represented with variables.");
 				
-				if(!skipping || markednoskip) {
-					SetVariable(inst->Name.Name, getvalue(inst->RHS));
-				}
+				SetVariable(inst->Name.Name, getvalue(inst->RHS));
 			}
-			//function call
+			
+			//function calls
 			else if(inst->Type==InstructionType::FunctionCall) {
-				if(!skipping || markednoskip) {
-					functioncall(inst, false, false);
-				}
+				functioncall(inst, false, false);
 			} 
 			else if(inst->Type==InstructionType::MemberFunctionCall) {
-				if(!skipping) {
-					functioncall(inst, true, false);
-				}
+				functioncall(inst, true, false);
 			} 
 			else if(inst->Type==InstructionType::MethodCall) {
-				if(!skipping || markednoskip) {
-					functioncall(inst, false, true);
-				}
+				functioncall(inst, false, true);
 			}
 			else if(inst->Type==InstructionType::MemberMethodCall) {
-				if(!skipping) {
-					functioncall(inst, true, true);
-				}
+				functioncall(inst, true, true);
 			}
 			else if(inst->Type==InstructionType::RemoveTemp) {
 				temporaries[inst->Store]=Data::Invalid();
 			}
+			
+			//jumps
 			else if(inst->Type==InstructionType::Jump) {
-				if(!skipping) {
+				executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+			}
+			else if(inst->Type==InstructionType::JumpTrue) {
+				auto dat=getvalue(inst->RHS);
+				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
+				if(dat.GetValue<bool>()) {
 					executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
 				}
 			}
-			else if(inst->Type==InstructionType::JumpTrue) {
-				if(!skipping) {
-					auto dat=getvalue(inst->RHS);
-					fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
-					if(dat.GetValue<bool>()) {
-						executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
-					}
-				}
-			}
 			else if(inst->Type==InstructionType::JumpFalse) {
-				if(!skipping) {
-					auto dat=getvalue(inst->RHS);
-					fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
-					if(!dat.GetValue<bool>()) {
-						executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
-					}
+				auto dat=getvalue(inst->RHS);
+				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
+				if(!dat.GetValue<bool>()) {
+					executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
 				}
 			}
+			
 			else {
 				Utils::ASSERT_FALSE("Unknown instruction type.", 0, 8);
 			}

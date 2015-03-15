@@ -40,46 +40,13 @@ namespace Gorgon {
 				return String::To<bool>(str);
 			}
 
-			void End(std::string validate="") {
-				auto &vm=VirtualMachine::Get();
-				if(!vm.HasKeywordScope()) {
-					throw FlowException("`End` without any keyword scope");
-				}
-
-				if(validate!="") {
-					if(String::ToLower(vm.GetKeywordScope().GetFunction().GetName())!=String::ToLower(validate)) {
-						throw FlowException("`End` does not match with the correct keyword", 
-							"Current scope is "+vm.GetKeywordScope().GetFunction().GetName()+
-							" while given keyword for end is "+validate);
-					}
-				}
-
-				if(vm.SkippingDepth()) {
-					vm.ReduceSkipping();
-				}
-				else {
-					if(vm.GetKeywordScope().CallEnd()) {
-						vm.PopKeywordScope();
-					}
-				}
-			}
-
 		}
 
-		Function *If();
-		Function *ElseIf();
-		Function *Else();
-		
 		Type *TypeType();
 		void InitTypeType();
 		
 		Type *ArrayType();
 		std::vector<Function*> ArrayFunctions();
-		
-		Function *For();
-		Function *While();
-		Function *Break();
-		Function *Continue();
 		
 		void init_builtin() {
 			if(Integrals.Types.GetCount()) return;
@@ -386,21 +353,6 @@ namespace Gorgon {
 			Keywords={"Keywords", "Standard keywords like if and for.",
 				TypeList {},
 				FunctionList {
-					If(), ElseIf(), Else(), 
-					For(), While(), Break(), Continue(),
-					new MappedFunction("end", 
-						"Ends the current scope",
-						nullptr, nullptr,
-						ParameterList {
-							new Parameter(
-								"Keyword",
-								"This function accepts a keyword name for scope validation.",
-								String, OptionalTag
-							)
-						},
-						MappedFunctions(&End, []() { End(); }), MappedMethods(), 
-						KeywordTag, NeverSkipTag
-					),
 					new MappedFunction("return",
 						"Returns from the current function or terminates the execution if not in a "
 						"function. If a value is supplied, it is assumed to be the return value of "

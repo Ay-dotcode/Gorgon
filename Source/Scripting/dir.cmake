@@ -22,10 +22,6 @@ SET(Local
 	Compilers/PD.cpp
 	Compilers/Generator.cpp
 	
-	Keywords/If.cpp
-	Keywords/For.cpp
-	Keywords/While.cpp
-	
 	Types/Array.h
 	Types/Array.cpp
 	Types/Type.cpp

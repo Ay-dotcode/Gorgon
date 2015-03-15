@@ -425,27 +425,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				//nothing to do
 			}
 			else {
-				if(String::ToLower(tree->Text)=="end") {
-					scopes.pop_back();
-				}
-				else if(Keywords.Functions.Exists(tree->Text) && Keywords.Functions[tree->Text].IsScoped()) {
-					scopes.push_back(scope{scope::unknown, (int)list.size()});
-				}
-				else {
-					try {
-						if(VirtualMachine::Get().FindFunction(tree->Text).IsScoped()) {
-							scopes.push_back(scope{scope::unknown, (int)list.size()});
-						}
-					}
-					catch(SymbolNotFoundException ex) { throw SymbolNotFoundException(tree->Text, SymbolType::Function, "Keyword not found"); }
-				}
-				
-				Instruction instmark, inst;
-				
-				//Mark the start of the keyword
-				instmark.Type=InstructionType::Mark;
-				instmark.Name.Name=tree->Text;
-				list.push_back(instmark);
+				Instruction  inst;
 				
 				//Call the keyword as a function
 				inst.Type=InstructionType::FunctionCall;
@@ -567,7 +547,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="break" && (scopes.size()==0 || scopes.back().type!=scope::unknown) ) {
+		else if(String::ToLower(tree->Text)=="break") {
 			scope *supported=nullptr;
 			for(auto it=scopes.rbegin(); it!=scopes.rend(); ++it) {
 				if(it->type==scope::whilekeyword) {
@@ -591,7 +571,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="continue" && (scopes.size()==0 || scopes.back().type!=scope::unknown) ) {
+		else if(String::ToLower(tree->Text)=="continue") {
 			scope *supported=nullptr;
 			for(auto it=scopes.rbegin(); it!=scopes.rend(); ++it) {
 				if(it->type==scope::whilekeyword) {
@@ -615,7 +595,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="end" && (scopes.size()==0 || scopes.back().type!=scope::unknown) ) {
+		else if(String::ToLower(tree->Text)=="end") {
 			if(scopes.size()==0) {
 				throw FlowException("`End` without a keyword scope");
 			}

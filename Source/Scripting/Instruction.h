@@ -5,9 +5,8 @@ namespace Gorgon { namespace Scripting {
 	
 		/// Describes the type of an instruction
 		enum class InstructionType {
-
-			/// Marks the start of a function call, intended for keywords only
-			Mark = 1,
+			/// This value is not valid
+			Unknown,
 
 			/// Marks instruction as a regular function call. Regular function calls can also be member functions,
 			/// however, they cannot be data members.
@@ -113,8 +112,14 @@ namespace Gorgon { namespace Scripting {
 		 * to the variable.
 		 */
 		struct Instruction {
+			Instruction() { }
+			
+			Instruction(const Instruction &inst) :
+			Type(inst.Type), Name(inst.Name), RHS(inst.RHS), Parameters(inst.Parameters), JumpOffset(inst.JumpOffset)
+			{ }
+			
 			/// Type of the instruction
-			InstructionType Type;
+			InstructionType Type = InstructionType::Unknown;
 			
 			/// Name of the function or variable
 			Value Name;

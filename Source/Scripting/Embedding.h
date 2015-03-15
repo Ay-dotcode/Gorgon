@@ -608,7 +608,6 @@ namespace Gorgon {
 			
 		protected:
 			virtual void overrideablechecks() const {
-				ASSERT(!IsScoped() , "Regular embedded functions cannot be scoped keywords", 2, 2);
 			}
 			
 		private:
@@ -741,88 +740,6 @@ namespace Gorgon {
 			);
 		}
 
-
-		/**
-		 * Scoped keyword helps to build scoped keywords from embedded functions.
-		 * This class features an additional function, end to be added.
-		 * 
-		 * end function should return true if the scope really ends. In this case, the system will 
-		 * clean up current scope. Single time execution scopes should always return true. 
-		 * Additionally redirecting keywords should return true after direction is completed. Only 
-		 * time this function retuns false is when the scope should be repeated again, like in loops. 
-		 * 
-		 * Functions should all return Data which contains the data that will be passed to end function.
-		 */
-		class ScopedKeyword : public MappedFunction {
-		public:
-			/** 
-			 * Constructor, tags are optional.
-			 */
-			template<class ...P_, class ...Fns1_>
-			ScopedKeyword(const std::string &name, const std::string &help, ParameterList parameters, 
-						  std::tuple<Fns1_...> functions, std::function<bool(Data)> end, P_ ...tags) :  
-			MappedFunction(name, help, &Variant, nullptr, std::move(parameters), functions, MappedMethods(), 
-						   Scripting::ScopedTag, tags...), end(end)
-			{ }
-			
-			virtual bool CallEnd(Data data) const override {
-				return end(data);
-			}
-			
-		protected:
-			virtual void overrideablechecks() const override {
-				ASSERT(!IsRedirecting() , "Regular scoped keyword functions cannot be redirecting", 2, 2);
-			}
-			
-			/// The function that will be called at the end of the scope
-			std::function<bool(Data)> end;
-		};
-		
-		/**
-		 * A redirecting keyword is given chance to read and modify the code inside its own scope.
-		 * This is useful for keywords like enum, class or library where either contents of the scope
-		 * requires additional parsing (enum) or the functions can be used inside the scope is limited.
-		 * Enum like keywords should return "" after performing its own processing. Redirecting keywords
-		 * should always allow end function to pass. Redirecting keywords are a type of scoped keywords,
-		 * thus they also contain end function.
-		 * 
-		 * end function should return true if the scope really ends. In this case, the system will 
-		 * clean up current scope. Single time execution scopes should always return true. 
-		 * Additionally redirecting keywords should return true after direction is completed. Only 
-		 * time this function retuns false is when the scope should be repeated again, like in loops. 
-		 * 
-		 * Functions should all return Data which contains the data that will be passed to end function.
-		 * 
-		 * While this scope is in effect, all the data that is read from the system will be passed to
-		 * redirect function right after the entire logical line is obtained. redirect function should
-		 * return a string that should be processed. This can empty the given string, leave it original
-		 * or perform a transformation. If there are multiple redirecting scopes exists, the inner 
-		 * scope is given priority. Comments are never redirected. 
-		 */
-		class RedirectingKeyword : public ScopedKeyword {
-		public:
-			/** 
-			 * Constructor, tags are optional.
-			 */
-			template<class ...P_, class ...Fns1_>
-			RedirectingKeyword(const std::string &name, const std::string &help, ParameterList parameters, 
-							   std::tuple<Fns1_...> functions, std::function<bool(Data)> end, 
-							   std::function<void(Data, std::string &)> redirect, P_ ...tags) :  
-			ScopedKeyword(name, help, std::move(parameters), functions, end, Scripting::RedirectTag, tags...),
-			redirect(redirect)
-			{ }
-			
-			virtual void CallRedirect(Data data, std::string &line) const override { 
-				redirect(data, line);
-			}
-			
-		protected:
-			virtual void overrideablechecks() const override { }
-			
-			/// The function that the code will be redirected to
-			std::function<void(Data, std::string &)> redirect;
-		};
-		
 		
 		/**
 		 * This class allows a one to one mapping of a data member to a c++ data member. First template
@@ -840,12 +757,12 @@ namespace Gorgon {
 			
 			virtual Data Get(const Data &data) const override {
 				return {GetType(), data.GetValue<C_>().*member};
-			}			
+			}
 			
 			/// Sets the data of the data member
 			virtual void Set(Data &source, const Data &value) const override {
 				if(source.IsReference()) {					
-					C_ &obj  = source.GetReference<C_>();
+					C_ &obj  = source.ReferenceValue<C_&>();
 					obj.*member = value.GetValue <T_>();
 				}
 				else {

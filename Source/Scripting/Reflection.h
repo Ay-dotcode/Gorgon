@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <assert.h>
+#include <functional>
 
 #include "../Types.h"
 #include "../Containers/Collection.h"
@@ -52,13 +53,6 @@ namespace Gorgon {
 			/// Marks object as a keyword
 			KeywordTag,
 			
-			/// Marks this object as scoped. 
-			ScopedTag,
-			
-			/// Virtual machine may go into skipping mode due to various keywords. This tag
-			/// marks this object not to be skipped by the virtual machine
-			NeverSkipTag,
-			
 			/// Makes the object private, allowing only access from it parent
 			PrivateTag,
 			
@@ -70,9 +64,6 @@ namespace Gorgon {
 			
 			/// Makes a function operator
 			OperatorTag,
-			
-			/// Redirects all the code inside a scoped keyword to the keyword
-			RedirectTag,
 			
 			/// Marks a parameter or a function constant
 			ConstTag,
@@ -224,23 +215,6 @@ namespace Gorgon {
 		 * StretchTag. This way, a keyword can parse its own parameters. This allows function keyword
 		 * to have `function name(type param, type param...)` returns type syntax
 		 * 
-		 * **ScopedTag**: Makes this function a scoped keyword. It also sets keyword tag. A neverskip 
-		 * function may or may not be a scoped keyword. For instance, case functions inside a switch
-		 * scope are not scoped, they use its parent scope. If a scoped keyword is not a never skip
-		 * function and is encountered while skipping, an empty scope will be created for it.
-		 * 
-		 * **RedirectTag**: Redirects all the code inside a scope keyword. Sets keyword and scoped
-		 * tags as well. If there are neverskip functions inside a redirected scope keyword, they are first
-		 * processed, then redirected. While redirecting, VM will go into skipping mode.
-		 * 
-		 * **NeverSkipTag**: Due to control structures, some scopes are skipped by virtual machine.
-		 * When this tag is attached to this function, virtual machine will never skip it. This is
-		 * required for scoped keywords. It could also be helpful for writing debugging functions.
-		 * A function marked with NeverSkipTag should always check current state of the virtual machine
-		 * so that it will not perform any operation with side effects. If the machine is in skipping
-		 * mode, a scoped keyword should increase scope depth, so that end keywords will match properly.
-		 * A custom function that has scoping should have a section called `scopeend`.
-		 * 
 		 * **StretchTag**: If this tag is set, in console dialect, spaces in the last parameter are not 
 		 * treated as parameter separator as if it is in quotes. Helpful for functions like echo. But also 
 		 * helpful for keywords that requires their own parsing.
@@ -323,21 +297,6 @@ namespace Gorgon {
 				return keyword;
 			}
 			
-			/// If true, this function is a scoped keyword (like if ... end statement)
-			bool IsScoped() const {
-				return scoped;
-			}
-			
-			/// If true, this function is a redirecting scoped keyword (like class ... end)
-			bool IsRedirecting() const {
-				return redirect;
-			}
-			
-			/// Returns whether this function should never be skipped. This property can be true even if
-			/// this function is not a keyword
-			bool NeverSkip() const {
-				return neverskip;
-			}
 			
 			/// Returns if the last parameter of this function should be stretched. 
 			/// If true, in console dialect, spaces in the last parameter are not treated as parameter
@@ -457,18 +416,7 @@ namespace Gorgon {
 				switch(tag) {
 					case KeywordTag:
 						keyword=true;
-						break;
-					case ScopedTag:
-						keyword=true;
-						scoped=true;
-						break;
-					case RedirectTag:
-						keyword=true;
-						scoped=true;
-						redirect=true;
-						break;
-					case NeverSkipTag:
-						neverskip=true;
+						break;;
 						break;
 					case StretchTag:
 						stretchlast=true;
@@ -481,7 +429,7 @@ namespace Gorgon {
 						break;
 					case StaticTag:
 						staticmember=true;
-						assert(!isoperator && "Cannot be static operator");
+						ASSERT(!isoperator, "A function cannot be a static operator");
 						break;
 					case PrivateTag:
 						accessible=false;
@@ -491,7 +439,7 @@ namespace Gorgon {
 						break;
 					case OperatorTag:
 						isoperator=true;
-						assert(!staticmember && "Cannot be static operator");
+						ASSERT(!staticmember, "A function cannot be a static operator");
 						break;
 					case ConstTag:
 						constant=true;
@@ -520,19 +468,6 @@ namespace Gorgon {
 			/// programming dialect and its parameters are always separated by space.
 			bool keyword = false;
 			
-			/// Never skip functions are always called, even if code execution is being skipped. However,
-			/// to avoid any side effects, they should mind whether the virtual machine is currently
-			/// skipping. All scoped functions (if, for, etc...) should set both keyword and neverskip
-			/// tags.
-			bool neverskip = false;
-			
-			/// Marks this function as a scoped keyword
-			bool scoped = false;
-			
-			/// Marks this function as a scoped keyword that parses its own contents. Note that neverskip
-			/// functions are not skipped as they may modify current scoping. While redirecting, VM will
-			/// go into skipping mode.
-			bool redirect = false;
 			
 			/// If true, in console dialect, spaces in the last parameter are not treated as parameter
 			/// separator as if it is in quotes. Helpful for functions like echo

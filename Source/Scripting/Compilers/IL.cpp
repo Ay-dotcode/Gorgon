@@ -118,12 +118,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* @endcode
 	* 
 	* 
-	* @subsection KeywordMarker Keyword marker
-	* A keyword should be placed before any calculations for a keyword is made. It is required to mark the start of the keyword
-	* call, as this point could be used later on as a jump target. A keyword marker starts with "fkm" character series and is
-	* followed by the name of the keyword in double quotes.
-	* 
-	* 
 	* @subsection RemoveTemp Remove temporary
 	* Remove temporary instruction is used to unset temporaries so that if they contain a reference object, it can be
 	* destructed. The format for this instruction is an x followed by temporary index in quotes.
@@ -219,18 +213,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			inst.Type=ismember ? InstructionType::MemberMethodCall : InstructionType::MethodCall;
 		}
 		else {
-			switch(CheckInputFor(input, ch, 'm', 'n', (allowmethod ? 'k': '\0'))) {
+			switch(CheckInputFor(input, ch, 'm', 'n')) {
 			case 0:
 				inst.Type=InstructionType::MemberFunctionCall;
 				break;
 			case 1:
 				inst.Type=InstructionType::FunctionCall;
 				break;
-			case 2:
-				inst.Type=InstructionType::Mark;
-				CheckInputFor(input, ch, 'm');
-				inst.Name.Name=ExtractQuotes(input, ch);
-				return;
 			}
 		}
 		

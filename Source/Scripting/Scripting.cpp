@@ -63,6 +63,6 @@ namespace Gorgon { namespace Scripting {
 		Data::Invalid()
 	};
 	
-	int VariableScope::nextid=0;
+	int ExecutionScope::nextid=0;
 	std::set<std::string, String::CaseInsensitiveLess> KeywordNames;
 } }
