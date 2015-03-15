@@ -279,7 +279,7 @@ namespace Gorgon {
 				),
 				
 				new MappedFunction("Replace",
-					"Replaces all the given substring in this string to another", String, String, {
+					"Replaces all instances of the given substring in this string with another string", String, String, {
 						new Parameter("Search", "Search string to be replaced", String),
 						new Parameter("Replace", "String to replace, if not specified, "
 							"empty string is assumed", String, OptionalTag),

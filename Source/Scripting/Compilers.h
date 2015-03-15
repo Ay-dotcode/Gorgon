@@ -25,7 +25,7 @@ namespace Compilers {
 		/// zero. This does not necessarily mean there is no compilable source in the given input
 		/// it may simply be an incomplete line. When there is no more input, caller should finish
 		/// compilation by calling Finalize
-		virtual unsigned Compile(const std::string &input) = 0;
+		virtual unsigned Compile(const std::string &input, unsigned long pline) = 0;
 		
 		/// Finalizes the compilation. Compiler may throw an error about missing constructs at this
 		/// point.
@@ -39,7 +39,7 @@ namespace Compilers {
 	class Intermediate : public Base {
 	public:
 		
-		virtual unsigned Compile(const std::string &input) override;
+		virtual unsigned Compile(const std::string &input, unsigned long pline) override;
 		virtual void Finalize() override { }
 		
 	private:
@@ -63,7 +63,7 @@ namespace Compilers {
 	public:
 		Programming() : compiler(List) { }
 		
-		virtual unsigned Compile(const std::string &input) override;
+		virtual unsigned Compile(const std::string &input, unsigned long pline) override;
 		
 		virtual void Finalize() override;
 

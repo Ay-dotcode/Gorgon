@@ -88,6 +88,9 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		/// Starting character of the node. Used for error locating
 		int Start = -1;
 		
+		/// Starting line of this ASTNode
+		int Line = -1;
+		
 		/// Textual data held by this node
 		std::string Text;
 		

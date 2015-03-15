@@ -33,8 +33,8 @@ namespace Gorgon {
 		/**
 		 * @page GScript Gorgon Script
 		 * 
-		 * Gorgon::Scripting allows embedded scripting capabilities to the users of the library. It has multiple dialects
-		 * and full extension capabilities.
+		 * Gorgon::Scripting allows embedded scripting capabilities to the users of the library. It has multiple 
+		 * dialects and an easy method for embedding functions.
 		 * 
 		 */
 

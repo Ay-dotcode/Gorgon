@@ -33,7 +33,7 @@ int main() {
 				exit(0);
 			}
 
-			parser.Compile(str);
+			parser.Compile(str, 1);
 			for(; ind<parser.List.size(); ind++)  {
 				std::cout<<Disassemble(&parser.List[ind])<<std::endl;
 			}

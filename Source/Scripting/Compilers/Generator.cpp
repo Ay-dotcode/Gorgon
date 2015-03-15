@@ -1,4 +1,4 @@
-#include "../InputSource.h"
+#include "../Scope.h"
 #include "../Instruction.h"
 #include "../../Scripting.h"
 
@@ -105,9 +105,9 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		return "";
 	}
 
-	void Disassemble(InputSource &source, std::ostream &out)  {
+	void Disassemble(Scope &scope, std::ostream &out)  {
 		unsigned long line=0;
-		while(auto inst=source.ReadInstruction(line++)) {
+		while(auto inst=scope.ReadInstruction(line++)) {
 			out<<Disassemble(inst)<<std::endl;
 		}
 	}

@@ -134,7 +134,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 
 	
 	
-	unsigned Intermediate::Compile(const std::string &input) {
+	unsigned Intermediate::Compile(const std::string &input, unsigned long pline) {
 		
 		Instruction instruction;
 		

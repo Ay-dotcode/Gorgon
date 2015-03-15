@@ -940,7 +940,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 	}
 	
-	unsigned Programming::Compile(const std::string &input) {
+	unsigned Programming::Compile(const std::string &input, unsigned long pline) {
 		//If necessary split the line or request more input
 		if(left.size()) {
 			left.push_back('\n');
@@ -958,6 +958,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			extractline(left, process, linestarts);
 			
 			auto ret=parse(process);
+
+			///... fix line and char start of ast tree
 			
 			if(ret) {
 				try {
@@ -992,7 +994,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	
 	void Programming::Finalize() {
 		left.push_back(';');
-		Compile("");
+		Compile("", -1);
 	}
 
 } } }

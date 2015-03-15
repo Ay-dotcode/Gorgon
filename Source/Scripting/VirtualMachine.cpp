@@ -384,20 +384,20 @@ namespace Gorgon {
 			}
 		}
 		
-		void VirtualMachine::Start(InputSource &source) {
+		void VirtualMachine::Start(Scope &scope) {
 			Activate();
-			inputsources.Add(source);
+			scopes.Add(scope);
 
-			executionscopes.Add(new ExecutionScope(source));
+			executionscopes.Add(new ExecutionScope(scope));
 
 			Run();
 		}
 	
-		void VirtualMachine::Begin(InputSource &source) {
+		void VirtualMachine::Begin(Scope &scope) {
 			Activate();
-			inputsources.Add(source);
+			scopes.Add(scope);
 
-			executionscopes.Add(new ExecutionScope(source));
+			executionscopes.Add(new ExecutionScope(scope));
 		}
 
 		void VirtualMachine::Run() {
@@ -447,7 +447,7 @@ namespace Gorgon {
 						executionscopes.Last()->MoveToEnd();
 						
 						if(ex.GetLine()<=0) {
-							ex.SetLine(-ex.GetLine()+executionscopes.Last()->GetSource().GetPhysicalLine());
+							ex.SetLine(-ex.GetLine()+executionscopes.Last()->GetScope().GetPhysicalLine());
 						}
 					}
  
@@ -505,8 +505,6 @@ namespace Gorgon {
 			//check variable scopes first
 			auto &vars=executionscopes.Last()->Variables;
 			auto var=vars.Find(String::ToLower(name));
-
-			//TODO static variables? may be they can be handled by function function
 
 			//if found
 			if(var.IsValid()) {

@@ -6,10 +6,13 @@ SET(Local
 	Data.cpp
 	Embedding.h
 	Instruction.h
-	InputSource.h
+	Input.h
 	Reflection.h
 	Reflection.cpp
 	Runtime.h
+	Runtime.cpp
+	Scope.h
+	Scope.cpp
 	VirtualMachine.h
 	VirtualMachine.cpp
 

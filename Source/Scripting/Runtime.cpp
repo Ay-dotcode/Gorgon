@@ -4,7 +4,7 @@ namespace Gorgon {
 	
 	namespace Scripting {
 		
-		int VariableScope::nextid=1;
+		int ExecutionScope::nextid=0;
 		
 	}
 }

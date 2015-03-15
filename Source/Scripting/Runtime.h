@@ -8,7 +8,7 @@
 
 #include "Reflection.h"
 #include "Data.h"
-#include "InputSource.h"
+#include "Scope.h"
 
 namespace Gorgon {
 	
@@ -202,11 +202,13 @@ namespace Gorgon {
 			uintptr_t 	  source = 0;
 		};
 		
+		
+		/// This is an instantiation of a scope
 		class ExecutionScope { 
 		public:
 			
 			/// Constructor requires an input source. Execution scopes can share same input source
-			ExecutionScope(InputSource &source) : source(&source), name(source.GetName()+" #"+String::From(nextid++)) {
+			ExecutionScope(Scope &parent) : parent(parent), name(parent.GetName()+" #"+String::From(nextid++)) {
 			}
 			
 			/// Jumps to the given line, line numbers start at zero.
@@ -233,7 +235,7 @@ namespace Gorgon {
 			
 			/// Returns the code at the current line and increments the current line
 			const Instruction *Get() {
-				auto ret=source->ReadInstruction(current);
+				auto ret=parent.ReadInstruction(current);
 				current++;
 				
 				return ret;
@@ -246,40 +248,38 @@ namespace Gorgon {
 			/// Forces the compilation of entire input source
 			void Compile() {
 				int c=current;
-				while(source->ReadInstruction(c++)) ;
+				while(parent.ReadInstruction(c++)) ;
 			}			
 			
 			/// Returns the code at the current line without incrementing it.
 			const Instruction *Peek() {
-				return source->ReadInstruction(current);
+				return parent.ReadInstruction(current);
 			}
 			
 			/// Returns the code at the given line without incrementing current line.
 			const Instruction *Peek(unsigned long line) {
-				return source->ReadInstruction(line);
+				return parent.ReadInstruction(line);
 			}
 			
 			void MoveToEnd() {
-				current=source->ReadyInstructionCount();
+				current=parent.ReadyInstructionCount();
 			}
 
-			InputSource &GetSource() const { return *source; }
+			Scope &GetScope() const { return parent; }
 			
 			/// Variables defined in this scope
 			Containers::Hashmap<std::string, class Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess> Variables;
 			
-		private:			
+		private:
 			std::string name;
 			
 			static int nextid;
+			
+			Scope &parent;
 
 			/// Current logical line
 			unsigned long current = 0;
-			
-			/// InputSource for the current execution scope
-			InputSource *source;
 		};
-		
 		
 		///@cond INTERNAL
 		class CustomFunction : public Function {

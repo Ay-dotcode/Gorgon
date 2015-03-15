@@ -11,7 +11,6 @@
 
 #include "Reflection.h"
 #include "Runtime.h"
-#include "InputSource.h"
 #include "Data.h"
 #include "Exceptions.h"
 
@@ -58,10 +57,10 @@ namespace Gorgon {
 			void Run(unsigned executiontarget);
 
 			/// This method starts the virtual machine with the given input source
-			void Start(InputSource &source);
+			void Start(Scope &scope);
 			
 			/// This method begins a new execution scope without starting execution
-			void Begin(InputSource &source);
+			void Begin(Scope &scope);
 			
 			/// Commands virtual machine to compile current execution scope. Might cause issues with interactive
 			/// input sources.
@@ -228,7 +227,7 @@ namespace Gorgon {
 			std::multimap<std::string, const Type*, String::CaseInsensitiveLess> types;
 
 			Containers::Collection<ExecutionScope> 	executionscopes;
-			Containers::Collection<InputSource>		inputsources;
+			Containers::Collection<Scope>		scopes;
 
 			Library runtime;
 
