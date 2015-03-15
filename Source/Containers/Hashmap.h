@@ -76,9 +76,9 @@ namespace Gorgon {
 						throw std::runtime_error("Iterator is not valid.");
 					}
 					
-					typename H_::Type *item=currentit->second;
+					auto item=currentit->second;
 					
-					currentit=container->mapping.erase(current());
+					currentit=container->mapping.erase(currentit);
 					delete item;
 				}				
 				

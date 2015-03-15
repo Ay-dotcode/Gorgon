@@ -455,19 +455,19 @@ namespace Gorgon {
  				}
 			}
 		}
-
+		
 		void VirtualMachine::SetVariable(const std::string &name, Data data) {
 			//check if it exists
 			auto &vars=executionscopes.Last()->Variables;
 			auto var=vars.Find(String::ToLower(name));
-
+			
 			//if not found in locals
 			if(!var.IsValid()) {
 				//search in globals
 				var=globalvariables.Find(String::ToLower(name));
 			}
 			//else ok
-
+			
 			//if found
 			if(var.IsValid()) {
 				if(var.Current().second.IsConstant()) {
@@ -480,6 +480,24 @@ namespace Gorgon {
 			else {
 				//as local
 				vars.Add(new Variable(name, data.GetType(), data.GetData()));
+			}
+		}
+		
+		void VirtualMachine::UnsetVariable(const std::string &name) {
+			//check if it exists
+			auto &vars=executionscopes.Last()->Variables;
+			auto var=vars.Find(String::ToLower(name));
+			
+			//if not found in locals
+			if(!var.IsValid()) {
+				//search in globals
+				var=globalvariables.Find(String::ToLower(name));
+				if(var.IsValid()) {
+					var.Delete();
+				}
+			}
+			else {
+				var.Delete();
 			}
 		}
 		

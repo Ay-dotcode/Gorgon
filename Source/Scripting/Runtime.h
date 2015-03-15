@@ -211,6 +211,10 @@ namespace Gorgon {
 			ExecutionScope(Scope &parent) : parent(parent), name(parent.GetName()+" #"+String::From(nextid++)) {
 			}
 			
+			~ExecutionScope() {
+				Variables.Destroy();
+			}
+			
 			/// Jumps to the given line, line numbers start at zero.
 			void Jumpto(unsigned long line) {
 				current=line;

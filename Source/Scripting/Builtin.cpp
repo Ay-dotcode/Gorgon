@@ -382,7 +382,22 @@ namespace Gorgon {
 							VirtualMachine::Get().GetVariable(varname).MakeConstant();
 						}), MappedMethods(),
 						KeywordTag
-					)
+					),
+					new MappedFunction("unset",
+						"Unsets a given variable",
+						nullptr, nullptr,
+						ParameterList {
+							new Parameter(
+								"Variable",
+								"This is the variable to be unset",
+								String, VariableTag
+							)
+						},
+						MappedFunctions([](std::string varname) {
+							VirtualMachine::Get().UnsetVariable(varname);
+						}), MappedMethods(),
+						KeywordTag
+					),
 				},
 			};
 			

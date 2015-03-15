@@ -44,6 +44,10 @@ namespace Gorgon {
 
 			/// Default constructor
 			VirtualMachine(bool automaticreset=true, std::ostream &out=std::cout, std::istream &in=std::cin);
+			
+			~VirtualMachine() {
+				globalvariables.Destroy();
+			}
 
 			/// Executes a single statement in this virtual machine. This operation will create a new
 			/// input scope and will not affect current scope
@@ -118,6 +122,8 @@ namespace Gorgon {
 			Variable &GetVariable(const std::string &name);
 
 			void SetVariable(const std::string &name, Data data);
+			
+			void UnsetVariable(const std::string &name);
 
 			/// Creates a new InputSource using a console input provider. Also creates an activates
 			/// a new execution scope using this input source.

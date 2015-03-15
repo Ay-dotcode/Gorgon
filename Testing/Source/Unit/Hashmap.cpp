@@ -40,6 +40,7 @@ public:
 };
 
 int A::acnt=0;
+//...Iterator Delete, Remove
 //
 //TEST_CASE("Hashmap", "[Hashmap]") {
 //	Hashmap<string, A> amap;
