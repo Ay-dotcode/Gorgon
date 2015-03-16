@@ -5,6 +5,8 @@
 #include <iostream>
 #include "../../../Source/Scripting/VirtualMachine.h"
 #include <Source/Scripting/Compilers.h>
+#include <Source/Filesystem/Iterator.h>
+#include <Source/Filesystem.h>
 
 using namespace Gorgon::Scripting;
 
@@ -120,16 +122,62 @@ namespace Gorgon { namespace Geometry {
 	
 } }
 
+void test() {
+	std::string scriptdir="../Source/Unit/Scripts";
+	Gorgon::Filesystem::Iterator dir(scriptdir);
+		
+	for( ; dir.IsValid(); dir.Next()) {
+		std::ifstream file(scriptdir+"/"+dir.Current());
+		std::cout<<*dir<<std::endl;
+
+		std::string line;
+		bool outputmode=false;
+		std::string code;
+		std::string output;
+		
+		while( std::getline(file, line) ) {
+			if(outputmode) {
+				output+=line+"\n";
+			}
+			else if(Gorgon::String::Trim(line)=="## OUTPUT ##") {
+				outputmode=true;
+			}
+			else {
+				code+=line+"\n";
+			}
+		}
+		std::cout<<output<<std::endl;
+		if(output!="") output=output.substr(0, output.length()-1);
+		
+		std::stringstream codestream(code), outputstream(output), scriptoutput;
+		Gorgon::Scripting::StreamInput input(codestream, Gorgon::Scripting::InputProvider::Programming, dir.Current());
+		Gorgon::Scripting::VirtualMachine &vm=Gorgon::Scripting::VirtualMachine::Get();
+		
+		//vm.SetOutput(scriptoutput);
+		vm.Begin(input);
+		vm.Run();
+		
+		std::string line2;
+		while(std::getline(outputstream, line),std::getline(scriptoutput, line2)) {
+			//REQUIRE(line==line2);
+		}
+		
+		//REQUIRE(outputstream.rdstate()==scriptoutput.rdstate());
+	}
+}
+
 int main() {
-	std::stringstream ss(source);
-	StreamInput streaminput={std::cin, InputProvider::Programming};
-	Scope input={streaminput, ""};
-
-
 	VirtualMachine vm;
 	Gorgon::Geometry::init_scripting();
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 	
+
+	//test();
+
+	std::stringstream ss(source);
+	StreamInput streaminput={std::cin, InputProvider::Programming};
+
+
 	Library mylib;
 	
 	auto mystr = new MappedValueType<std::string>("MyStr", "");
@@ -165,7 +213,7 @@ int main() {
 	std::cout<<"OUTPUT: "<<std::endl;
 	Gorgon::Console::Reset();
 	
-	vm.Begin(input);
+	vm.Begin(streaminput);
 	//Compilers::Disassemble(input, std::cout);
 	
 	std::cout<<std::endl<<std::endl;

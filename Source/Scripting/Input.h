@@ -30,6 +30,8 @@ namespace Gorgon { namespace Scripting {
 			checkdialect();
 		}
 		
+		std::string GetName() const { return name; }
+		
 		
 		/// This method should read a single physical line from the source. Logical line separation
 		/// is handled by InputSource. Return of false means no input is fetched as it is finished.
@@ -42,6 +44,8 @@ namespace Gorgon { namespace Scripting {
 		virtual void Reset() = 0;
 		
 	protected:
+		std::string name;
+		
 		virtual void checkdialect() { }
 		
 		Dialect dialect;
@@ -53,7 +57,9 @@ namespace Gorgon { namespace Scripting {
 		
 		/// Initializes console input. line number will be appended at the start of the prompt
 		ConsoleInput(Dialect dialect=InputProvider::Console, const std::string &prompt="> ") : InputProvider(dialect),
-		prompt(prompt) { }
+		prompt(prompt) { 
+			name="#Console";
+		}
 		
 		void SetPrompt(const std::string &prompt) {
 			this->prompt=prompt;
@@ -86,7 +92,8 @@ namespace Gorgon { namespace Scripting {
 	/// Reads lines from a stream
 	class StreamInput : public InputProvider {
 	public:
-		StreamInput(std::istream &stream, Dialect dialect) : InputProvider(dialect), stream(stream) {
+		StreamInput(std::istream &stream, Dialect dialect, const std::string &name="") : InputProvider(dialect), stream(stream) {
+			this->name=name;
 		}
 		
 		virtual bool ReadLine(std::string &input, bool) override final {
@@ -109,6 +116,8 @@ namespace Gorgon { namespace Scripting {
 			std::string ext="";
 			if(loc!=filename.npos)
 				ext=filename.substr(loc);
+			
+			name=filename;
 			
 			//determine dialect from the extension
 			if(ext.length()>=3 && ext.substr(0,3)=="gsb") {

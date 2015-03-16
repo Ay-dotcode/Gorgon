@@ -384,20 +384,20 @@ namespace Gorgon {
 			}
 		}
 		
-		void VirtualMachine::Start(Scope &scope) {
+		void VirtualMachine::Start(InputProvider &input) {
 			Activate();
-			scopes.Add(scope);
+			scopes.Add(new Scope(input, input.GetName()));
 
-			executionscopes.Add(new ExecutionScope(scope));
+			executionscopes.Add(new ExecutionScope(*scopes.Last()));
 
 			Run();
 		}
 	
-		void VirtualMachine::Begin(Scope &scope) {
+		void VirtualMachine::Begin(InputProvider &input) {
 			Activate();
-			scopes.Add(scope);
+			scopes.Add(new Scope(input, input.GetName()));
 
-			executionscopes.Add(new ExecutionScope(scope));
+			executionscopes.Add(new ExecutionScope(*scopes.Last()));
 		}
 
 		void VirtualMachine::Run() {

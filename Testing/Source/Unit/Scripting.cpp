@@ -7,6 +7,7 @@
 #include <Source/Scripting/Embedding.h>
 #include <Source/TMP.h>
 #include "Source/Geometry/Point.h"
+#include <Source/Filesystem/Iterator.h>
 
 namespace Gorgon { namespace Geometry {
 	extern Scripting::Library LibGeometry;
@@ -21,7 +22,6 @@ using Gorgon::Geometry::init_scripting;
 using Gorgon::Geometry::LibGeometry;
 
 int main (int argc, char * const argv[]) {
-	Scripting::Initialize();
 	VirtualMachine vm;
 	vm.Activate();
 	
@@ -89,6 +89,48 @@ public:
 	int bb;
 };
 
+TEST_CASE("Scripts", "[scripting]") {
+	std::string scriptdir="../Source/Unit/Scripts";
+	Gorgon::Filesystem::Iterator dir(scriptdir);
+		
+	for( ; dir.IsValid(); dir.Next()) {
+		std::ifstream file(scriptdir+"/"+dir.Current());
+
+		std::string line;
+		bool outputmode=false;
+		std::string code;
+		std::string output;
+		while( std::getline(file, line) ) {
+			if(outputmode) {
+				output+=line+"\n";
+			}
+			else if(Gorgon::String::Trim(line)=="## OUTPUT ##") {
+				outputmode=true;
+			}
+			else {
+				code+=line+"\n";
+			}
+		}
+		
+		if(output!="") output=output.substr(0, output.length()-1);
+		
+		std::stringstream codestream(code), outputstream(output), scriptoutput;
+		Gorgon::Scripting::StreamInput input(codestream, Gorgon::Scripting::InputProvider::Programming, dir.Current());
+		Gorgon::Scripting::VirtualMachine &vm=Gorgon::Scripting::VirtualMachine::Get();
+		
+		vm.SetOutput(scriptoutput);
+		vm.Begin(input);
+		vm.Run();
+		
+		std::string line2;
+		while(std::getline(outputstream, line),std::getline(scriptoutput, line2)) {
+			REQUIRE(line==line2);
+		}
+		
+		REQUIRE(outputstream.rdstate()==scriptoutput.rdstate());
+	}
+}
+
 TEST_CASE("Basic scripting", "[firsttest]") {
 	auto &vm=VirtualMachine::Get();
 	
@@ -145,38 +187,32 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	
 	
-	//const Parameter param1("name", "heeelp", Integrals.Types["Int"], OutputTag);
-	//
-	//REQUIRE(param1.GetName() == "name");
-	//REQUIRE(param1.GetHelp() == "heeelp");
-	//REQUIRE(&param1.GetType() == Integrals.Types["Int"]);
-	//
-	//REQUIRE(param1.IsReference());
-	//
-	//REQUIRE(param1.IsOutput());
-	//
-	//REQUIRE_FALSE(param1.IsInput());
-	//
-	//
-	//const Parameter param2("name2", "heeelp", Integrals.Types["Int"], OptionalTag);
-	//
-	//REQUIRE_FALSE(param2.IsReference());
-	//
-	//REQUIRE(param2.IsOptional());
-	//
-	//
-	//const Parameter param3("name2", "heeelp", Integrals.Types["Int"],  {Any(1), Any(2), Any(3)}, OptionalTag);
-	//
-	//REQUIRE_FALSE(param3.IsReference());
-	//
-	//REQUIRE(param3.IsOptional());
-	//
-	//
-	//const Parameter param4("name2", "heeelp", Integrals.Types["Int"], {}, {OptionalTag});
-	//
-	//REQUIRE_FALSE(param4.IsReference());
-	//
-	//REQUIRE(param4.IsOptional());
+	const Parameter param1("name", "heeelp", Integrals.Types["Int"]);
+	
+	REQUIRE(param1.GetName() == "name");
+	REQUIRE(param1.GetHelp() == "heeelp");
+	REQUIRE(&param1.GetType() == Integrals.Types["Int"]);
+	
+	
+	const Parameter param2("name2", "heeelp", Integrals.Types["Int"], OptionalTag);
+	
+	REQUIRE_FALSE(param2.IsReference());
+	
+	REQUIRE(param2.IsOptional());
+	
+	
+	const Parameter param3("name2", "heeelp", Integrals.Types["Int"],  {Any(1), Any(2), Any(3)}, OptionalTag);
+	
+	REQUIRE_FALSE(param3.IsReference());
+	
+	REQUIRE(param3.IsOptional());
+	
+	
+	const Parameter param4("name2", "heeelp", Integrals.Types["Int"], {}, {OptionalTag});
+	
+	REQUIRE_FALSE(param4.IsReference());
+	
+	REQUIRE(param4.IsOptional());
 	
 	const MappedFunction fn1{ "TestFn",
 		"This is a test function bla bla bla",

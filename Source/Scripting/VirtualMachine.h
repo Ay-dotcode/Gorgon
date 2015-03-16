@@ -61,10 +61,10 @@ namespace Gorgon {
 			void Run(unsigned executiontarget);
 
 			/// This method starts the virtual machine with the given input source
-			void Start(Scope &scope);
+			void Start(InputProvider &input);
 			
 			/// This method begins a new execution scope without starting execution
-			void Begin(Scope &scope);
+			void Begin(InputProvider &input);
 			
 			/// Commands virtual machine to compile current execution scope. Might cause issues with interactive
 			/// input sources.
