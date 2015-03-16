@@ -8,6 +8,7 @@
 #include <Source/TMP.h>
 #include "Source/Geometry/Point.h"
 #include <Source/Filesystem/Iterator.h>
+#include "Source/Filesystem.h"
 
 namespace Gorgon { namespace Geometry {
 	extern Scripting::Library LibGeometry;
@@ -91,6 +92,9 @@ public:
 
 TEST_CASE("Scripts", "[scripting]") {
 	std::string scriptdir="../Source/Unit/Scripts";
+	if(!Gorgon::Filesystem::IsDirectory(scriptdir)) {
+		scriptdir="../Testing/Source/Unit/Scripts";
+	}
 	Gorgon::Filesystem::Iterator dir(scriptdir);
 		
 	for( ; dir.IsValid(); dir.Next()) {
@@ -186,32 +190,31 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	
 	
 	
-	
+
 	const Parameter param1("name", "heeelp", Integrals.Types["Int"]);
-	
+
 	REQUIRE(param1.GetName() == "name");
 	REQUIRE(param1.GetHelp() == "heeelp");
 	REQUIRE(&param1.GetType() == Integrals.Types["Int"]);
-	
-	
+
 	const Parameter param2("name2", "heeelp", Integrals.Types["Int"], OptionalTag);
-	
+
 	REQUIRE_FALSE(param2.IsReference());
-	
+
 	REQUIRE(param2.IsOptional());
-	
-	
+
+
 	const Parameter param3("name2", "heeelp", Integrals.Types["Int"],  {Any(1), Any(2), Any(3)}, OptionalTag);
-	
+
 	REQUIRE_FALSE(param3.IsReference());
-	
+
 	REQUIRE(param3.IsOptional());
-	
-	
-	const Parameter param4("name2", "heeelp", Integrals.Types["Int"], {}, {OptionalTag});
-	
+
+
+	const Parameter param4("name2", "heeelp", Integrals.Types["Int"], Gorgon::Scripting::OptionList(), {OptionalTag});
+
 	REQUIRE_FALSE(param4.IsReference());
-	
+
 	REQUIRE(param4.IsOptional());
 	
 	const MappedFunction fn1{ "TestFn",
@@ -228,8 +231,9 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 				Integrals.Types["Int"], OptionalTag
 			}
 		},
-		MappedFunctions(&TestFn, &TestFn_1, []{TestFn(1);}), MappedMethods(TestFn, TestFn_1, []{TestFn(1);}),
-		StretchTag, MethodTag
+		MappedFunctions(std::function<void(int,int)>(&TestFn), std::function<void(int)>(&TestFn_1), []{TestFn(1);}), 
+		MappedMethods(/*std::function<void(int, int)>(TestFn), std::function<void(int)>(TestFn_1), [] {TestFn(1); }*/),
+		StretchTag/*, MethodTag*/
 	};
 	
 	REQUIRE(fn1.GetName()=="TestFn");

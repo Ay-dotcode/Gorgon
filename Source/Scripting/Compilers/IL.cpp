@@ -287,7 +287,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		switch(CheckInputFor(input, ch, '.', '$', '!', 'i', 'f', 'b', 's', 'c', 'n', 'd', 'u', '?')) {
 			case 0:
 				ret.Type  =ValueType::Temp;
-				ret.Result=parsetemporary(input, ch);
+				ret.Result=(Byte)parsetemporary(input, ch);
 				return ret;
 				
 			case 1:

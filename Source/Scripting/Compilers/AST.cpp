@@ -598,7 +598,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		else if(String::ToLower(tree->Text)=="const") {
 			ASSERT(tree->Leaves.GetSize()==1, "const keyword requires a single parameter");
 			ASSERT(tree->Leaves[0].Leaves[0].Type==ASTNode::Identifier || 
-				   tree->Leaves[0].Leaves[0].Type==ASTNode::ASTNode::Variable,
+				   tree->Leaves[0].Leaves[0].Type==ASTNode::Variable,
 				   "const can only be applied to simple variables"
 			);
 			

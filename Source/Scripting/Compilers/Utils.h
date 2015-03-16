@@ -51,7 +51,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		bool escape = false;
 		int escapenum = 0;
 		Gorgon::Byte num;
-		for(; ch < input.size(); ch++) {
+		for(; ch < (int)input.size(); ch++) {
 			char c = input[ch];
 			if(escape) {
 				if(c == '"') {

@@ -192,7 +192,7 @@ namespace Gorgon { namespace Scripting {
 			
 			return data;
 		}
-		catch(const std::bad_cast &cast) {
+		catch(const std::bad_cast &) {
 			if(downcasting) {
 				throw CastException(GetName(), type.GetName(), "Source is not instantiated from the target");
 			}

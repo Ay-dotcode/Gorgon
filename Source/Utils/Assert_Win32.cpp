@@ -1636,5 +1636,8 @@ namespace Gorgon {
 				report(i);
 			}
 		}
+
+		struct CrashHandler::dumponlytag CrashHandler::DumpOnlyTag;
+
 	}
 }
