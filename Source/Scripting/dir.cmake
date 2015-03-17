@@ -28,5 +28,6 @@ SET(Local
 	Types/Array.h
 	Types/Array.cpp
 	Types/Type.cpp
+	Types/Function.cpp
 )
 

@@ -44,6 +44,8 @@ namespace Gorgon {
 
 		Type *TypeType();
 		void InitTypeType();
+
+		Type *FunctionType();
 		
 		Type *ArrayType();
 		std::vector<Function*> ArrayFunctions();
@@ -402,7 +404,7 @@ namespace Gorgon {
 			};
 			
 			Reflection={"Reflection", "This library contains reflection objects",
-				TypeList { TypeType() },
+				TypeList { TypeType(), FunctionType() },
 				FunctionList {
 					new MappedFunction("TypeOf",
 						"This function returns the type of the given variable.",

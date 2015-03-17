@@ -608,6 +608,13 @@ namespace Gorgon {
 							auto lib=String::Extract(name, ':');
 							auto typ=String::Extract(name, ':');
 							
+							//-use iterators
+							if(!Libraries.Exists(lib)) {
+								throw SymbolNotFoundException(lib, SymbolType::Library);
+							}
+							if(!Libraries[lib].Types.Exists(typ)) {
+								throw SymbolNotFoundException(typ, SymbolType::Type);
+							}
 							auto &type=Libraries[lib].Types[typ];
 							if(type.Constants.Exists(name)) {
 								if(reference) {
@@ -621,7 +628,7 @@ namespace Gorgon {
 								}
 							}
 							else if(type.Functions.Exists(name)) {
-								Utils::NotImplemented("Function objects");
+								return {Types::Function(), &type.Functions[name]};
 							}
 							else {
 								throw SymbolNotFoundException(name, SymbolType::Unknown);
@@ -631,20 +638,27 @@ namespace Gorgon {
 							auto name=val.Name;
 							auto libname=String::Extract(name, ':');
 							
-							auto &lib=Libraries[libname];
-							if(lib.Constants.Exists(name)) {
+							//...function or constant in a type
+							
+							//-use iterators
+							
+							const Library *lib=nullptr;
+							if(Libraries.Exists(libname))
+								lib=&Libraries[libname];
+							
+							if(lib && lib->Constants.Exists(name)) {
 								if(reference) {
-									auto data=lib.Constants[name].GetData().GetReference();
+									auto data=lib->Constants[name].GetData().GetReference();
 									data.MakeConstant();
 									
 									return data;
 								}
 								else {
-									return lib.Constants[name].GetData();
+									return lib->Constants[name].GetData();
 								}
 							}
-							else if(lib.Functions.Exists(name)) {
-								Utils::NotImplemented("Function objects");
+							else if(lib && lib->Functions.Exists(name)) {
+								return {Types::Function(), &lib->Functions[name]};
 							}
 							else { //could be a function or constant in a type which is in an unknown library
 								auto range=types.equal_range(libname);
@@ -667,7 +681,7 @@ namespace Gorgon {
 										}
 									}
 									else if(range.first->second->Functions.Exists(name)) {
-										Utils::NotImplemented("Function objects");
+										return {Types::Function(), &range.first->second->Functions[name]};
 									}
 									else {
 										throw SymbolNotFoundException(val.Name, SymbolType::Unknown);
@@ -696,7 +710,7 @@ namespace Gorgon {
 									}
 								}
 								else if(range.first->second.type==SymbolType::Function) {
-									Utils::NotImplemented("Function objects");
+									return {Types::Function(), range.first->second.object.Get<const Function*>()};
 								}
 								else {
 									throw SymbolNotFoundException(val.Name, SymbolType::Unknown, "An unsupported symbol is found");
@@ -877,7 +891,7 @@ namespace Gorgon {
 				}
 			}
 			else if(inst->Name.Type==ValueType::Identifier && IsVariableSet(inst->Name.Name)) {
-				fn=GetVariableValue(inst->Name.Name).GetValue<const Function *>();
+				fn=GetVariable(inst->Name.Name).GetValue<const Function *>();
 			}
 			else if(inst->Name.Type==ValueType::Identifier) {
 				functionname=inst->Name.Name;
