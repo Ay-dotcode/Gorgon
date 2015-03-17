@@ -6,6 +6,8 @@ GGE is a multi-module, interface driven, C++ game engine that handles graphics, 
 
 https://sourceforge.net/p/gorgon-ge/
 
+# GGE 3.x (default branch)
+
 ## Requirements
 On Linux:
 GCC 4.8.1+
@@ -23,10 +25,24 @@ OpenAL
 ## Documentation
 Follow the steps in [GGE_VS_INSTALLATION_TURKISH.pdf](GGE_VS_INSTALLATION_TURKISH.pdf) (in Turkish)
 
-## License
+# GGE 4.x (4.x-dev, gscript or audio branches)
+
+audio branch is not tested under Linux.
+
+## Requirements
+GCC 4.8.1+ / Visual Studio 2013
+CMake 2.8
+X11 (Linux)
+doxygen
+OpenGL
+
+## Documentation
+http://darkgaze.org/GGEDoc/index.html or can be built using doxygen
+
+# License
 [GPL](http://www.gnu.org/copyleft/gpl.html) (commercial use might be allowed depending on the project, please send a mail for details)
 
-## Contributing
+# Contributing
 All contributions should be filed on the [sf.net/gorgon-ge](https://hg.code.sf.net/p/gorgon-ge/code) repository.
 
 * Fork the repo, push your changes to your fork, and submit a pull request.
