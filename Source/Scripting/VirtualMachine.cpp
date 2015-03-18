@@ -388,7 +388,7 @@ namespace Gorgon {
 			Activate();
 			scopes.Add(new Scope(input, input.GetName()));
 
-			executionscopes.Add(new ExecutionScope(*scopes.Last()));
+			executionscopes.Add(new ScopeInstance(*scopes.Last()));
 
 			Run();
 		}
@@ -397,7 +397,7 @@ namespace Gorgon {
 			Activate();
 			scopes.Add(new Scope(input, input.GetName()));
 
-			executionscopes.Add(new ExecutionScope(*scopes.Last()));
+			executionscopes.Add(new ScopeInstance(*scopes.Last()));
 		}
 
 		void VirtualMachine::Run() {
@@ -1136,7 +1136,7 @@ namespace Gorgon {
 		
 		void VirtualMachine::Jump(SourceMarker marker) {
 			
-			if(reinterpret_cast<ExecutionScope*>(marker.GetSource())!=executionscopes.Last().CurrentPtr()) {
+			if(reinterpret_cast<ScopeInstance*>(marker.GetSource())!=executionscopes.Last().CurrentPtr()) {
 				throw FlowException("Jump destination is not valid", "While performing a short jump, a different "
 					"execution scope is requested."
 				);

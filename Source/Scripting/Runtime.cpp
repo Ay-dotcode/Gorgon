@@ -3,8 +3,5 @@
 namespace Gorgon {
 	
 	namespace Scripting {
-		
-		int ExecutionScope::nextid=0;
-		
 	}
 }

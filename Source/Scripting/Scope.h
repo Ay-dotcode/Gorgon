@@ -7,6 +7,7 @@
 #include "Instruction.h"
 #include "Input.h"
 #include "Compilers.h"
+#include "Runtime.h"
 
 namespace Gorgon { namespace Scripting {
 	
@@ -21,6 +22,33 @@ namespace Gorgon { namespace Scripting {
 	/// @endcond
 	
 	class CompilerBase;
+		
+	/// This class uniquely represents a source code line. uintptr_t is used for source
+	/// to reduce dependency
+	class SourceMarker {
+		friend class ScopeInstance;
+	public:
+		SourceMarker() { }
+		SourceMarker(const SourceMarker &)=default;
+		
+		SourceMarker &operator=(const SourceMarker &)=default;
+
+		bool operator <(const SourceMarker &other) {
+			return (source == other.source ? line<other.line : source<other.source);
+		}
+		
+		bool IsValid() const { return source!=0; }
+		
+		uintptr_t GetSource() const { return source; }
+		
+		uintptr_t GetLine() const { return line; }
+		
+	private:
+		SourceMarker(unsigned long line, uintptr_t source) : line(line), source(source) {}
+		
+		unsigned long line = 0;
+		uintptr_t 	  source = 0;
+	};
 	
 	/** 
 	 * A new scope is created automatically when a new input source or a function like construct
@@ -82,6 +110,88 @@ namespace Gorgon { namespace Scripting {
 		/// Every logical line up until current execution point. They are kept so that
 		/// it is possible to jump back. Logical lines do not contain comments 
 		std::vector<Line> lines;
+	};
+		
+	/// This is an instantiation of a scope
+	class ScopeInstance { 
+	public:
+		
+		/// Constructor requires an input source. Execution scopes can share same input source
+		ScopeInstance(Scope &parent) : parent(parent), name(parent.GetName()+" #"+String::From(nextid++)) {
+		}
+		
+		~ScopeInstance() {
+			Variables.Destroy();
+		}
+		
+		/// Jumps to the given line, line numbers start at zero.
+		void Jumpto(unsigned long line) {
+			current=line;
+		}
+		
+		/// Returns the current executing logical line number
+		unsigned long GetLineNumber() const {
+			return current-1;
+		}
+		
+		/// Returns a unique identifier for the next line in source code. This information can be
+		/// used to go back across execution scopes. Useful for Try Catch like structures.
+		SourceMarker GetMarkerForNext() const {
+			return {current, reinterpret_cast<uintptr_t>(this)};
+		}
+		
+		/// Returns a unique identifier for the next line in source code. This information can be
+		/// used to go back across execution scopes. Useful for Try Catch like structures.
+		SourceMarker GetMarkerForCurrent() const {
+			return {current-1, reinterpret_cast<uintptr_t>(this)};
+		}
+		
+		/// Returns the code at the current line and increments the current line
+		const Instruction *Get() {
+			auto ret=parent.ReadInstruction(current);
+			current++;
+			
+			return ret;
+		}
+		
+		std::string GetName() const {
+			return name;
+		}
+		
+		/// Forces the compilation of entire input source
+		void Compile() {
+			int c=current;
+			while(parent.ReadInstruction(c++)) ;
+		}			
+		
+		/// Returns the code at the current line without incrementing it.
+		const Instruction *Peek() {
+			return parent.ReadInstruction(current);
+		}
+		
+		/// Returns the code at the given line without incrementing current line.
+		const Instruction *Peek(unsigned long line) {
+			return parent.ReadInstruction(line);
+		}
+		
+		void MoveToEnd() {
+			current=parent.ReadyInstructionCount();
+		}
+
+		Scope &GetScope() const { return parent; }
+		
+		/// Variables defined in this scope
+		Containers::Hashmap<std::string, class Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess> Variables;
+		
+	private:
+		std::string name;
+		
+		static int nextid;
+		
+		Scope &parent;
+
+		/// Current logical line
+		unsigned long current = 0;
 	};
 	
 } }

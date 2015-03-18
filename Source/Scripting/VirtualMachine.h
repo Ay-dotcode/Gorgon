@@ -13,6 +13,8 @@
 #include "Runtime.h"
 #include "Data.h"
 #include "Exceptions.h"
+#include "Instruction.h"
+#include "Scope.h"
 
 
 
@@ -87,9 +89,6 @@ namespace Gorgon {
 			/// Finds the given type by name. Namespace information will be extracted if exists. 
 			/// This function may throw symbol not found / ambiguous symbol.
 			const Constant &FindConstant(std::string name);
-
-			/// Sets the input source to read code lines from. Does not change active execution context.
-			void AddInputSource(InputSource &source);
 
 			/// Changes the current executing line.
 			void Jump(unsigned long line);
@@ -167,12 +166,12 @@ namespace Gorgon {
 
 			/// Returns the number of active execution scopes. If this number is 0, VM cannot be started without
 			/// providing additional code source.
-			unsigned GetExecutionScopeCount() const {
+			unsigned GetScopeInstanceCount() const {
 				return executionscopes.GetCount();
 			}
 			
 			/// Returns the current exection scope
-			const ExecutionScope &CurrentExecutionScope() const {
+			const ScopeInstance &CurrentScopeInstance() const {
 				return executionscopes.Last().Current();
 			}
 
@@ -232,7 +231,7 @@ namespace Gorgon {
 			/// List of types
 			std::multimap<std::string, const Type*, String::CaseInsensitiveLess> types;
 
-			Containers::Collection<ExecutionScope> 	executionscopes;
+			Containers::Collection<ScopeInstance> 	executionscopes;
 			Containers::Collection<Scope>		scopes;
 
 			Library runtime;

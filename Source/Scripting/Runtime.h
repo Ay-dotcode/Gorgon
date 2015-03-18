@@ -8,7 +8,7 @@
 
 #include "Reflection.h"
 #include "Data.h"
-#include "Scope.h"
+#include "Input.h"
 
 namespace Gorgon {
 	
@@ -133,16 +133,16 @@ namespace Gorgon {
 			
 			/// Constructor that sets the name, type and value of the variable. Unless this variable is
 			/// declared inside an executing code, definedin should be left nullptr.
-			Variable(const std::string &name, const Type &type, const Any &value, const InputSource *definedin=nullptr) : 
-			name(name), Data(type, value), definedin(definedin) {
+			Variable(const std::string &name, const Type &type, const Any &value) : 
+			name(name), Data(type, value) {
 			}
 			
 			
 			/// Constructor that sets the name, and type of the variable. Default value of the specified
 			/// type is used as value. Unless this variable is declared inside an executing code, definedin 
 			/// should be left nullptr.
-			Variable(const std::string &name, const Type &type, const InputSource *definedin=nullptr) :
-			name(name), Data(type), definedin(definedin) {
+			Variable(const std::string &name, const Type &type) :
+			name(name), Data(type) {
 			}
 			
 			
@@ -163,137 +163,10 @@ namespace Gorgon {
 				return name;
 			}
 
-			/// Checks if this variable is defined in the given scope. Used in determining automatic global
-			/// marks
-			bool IsDefinedIn(const InputSource &source) {
-				return &source==definedin;
-			}
 			
 		private:
 			std::string name;
-			const InputSource *definedin;
 		};
-		
-		
-		/// This class uniquely represents a source code line. uintptr_t is used for source
-		/// to reduce dependency
-		class SourceMarker {
-			friend class ExecutionScope;
-		public:
-			SourceMarker() { }
-			SourceMarker(const SourceMarker &)=default;
-			
-			SourceMarker &operator=(const SourceMarker &)=default;
-
-			bool operator <(const SourceMarker &other) {
-				return (source == other.source ? line<other.line : source<other.source);
-			}
-			
-			bool IsValid() const { return source!=0; }
-			
-			uintptr_t GetSource() const { return source; }
-			
-			uintptr_t GetLine() const { return line; }
-			
-		private:
-			SourceMarker(unsigned long line, uintptr_t source) : line(line), source(source) {}
-			
-			unsigned long line = 0;
-			uintptr_t 	  source = 0;
-		};
-		
-		
-		/// This is an instantiation of a scope
-		class ExecutionScope { 
-		public:
-			
-			/// Constructor requires an input source. Execution scopes can share same input source
-			ExecutionScope(Scope &parent) : parent(parent), name(parent.GetName()+" #"+String::From(nextid++)) {
-			}
-			
-			~ExecutionScope() {
-				Variables.Destroy();
-			}
-			
-			/// Jumps to the given line, line numbers start at zero.
-			void Jumpto(unsigned long line) {
-				current=line;
-			}
-			
-			/// Returns the current executing logical line number
-			unsigned long GetLineNumber() const {
-				return current-1;
-			}
-			
-			/// Returns a unique identifier for the next line in source code. This information can be
-			/// used to go back across execution scopes. Useful for Try Catch like structures.
-			SourceMarker GetMarkerForNext() const {
-				return {current, reinterpret_cast<uintptr_t>(this)};
-			}
-			
-			/// Returns a unique identifier for the next line in source code. This information can be
-			/// used to go back across execution scopes. Useful for Try Catch like structures.
-			SourceMarker GetMarkerForCurrent() const {
-				return {current-1, reinterpret_cast<uintptr_t>(this)};
-			}
-			
-			/// Returns the code at the current line and increments the current line
-			const Instruction *Get() {
-				auto ret=parent.ReadInstruction(current);
-				current++;
-				
-				return ret;
-			}
-			
-			std::string GetName() const {
-				return name;
-			}
-			
-			/// Forces the compilation of entire input source
-			void Compile() {
-				int c=current;
-				while(parent.ReadInstruction(c++)) ;
-			}			
-			
-			/// Returns the code at the current line without incrementing it.
-			const Instruction *Peek() {
-				return parent.ReadInstruction(current);
-			}
-			
-			/// Returns the code at the given line without incrementing current line.
-			const Instruction *Peek(unsigned long line) {
-				return parent.ReadInstruction(line);
-			}
-			
-			void MoveToEnd() {
-				current=parent.ReadyInstructionCount();
-			}
-
-			Scope &GetScope() const { return parent; }
-			
-			/// Variables defined in this scope
-			Containers::Hashmap<std::string, class Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess> Variables;
-			
-		private:
-			std::string name;
-			
-			static int nextid;
-			
-			Scope &parent;
-
-			/// Current logical line
-			unsigned long current = 0;
-		};
-		
-		///@cond INTERNAL
-		class CustomFunction : public Function {
-		public:
-			
-		private:
-			InputSource *source;
-		};
-		///@endcond
-		
 		
 	}
 }

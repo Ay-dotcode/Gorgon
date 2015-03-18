@@ -51,5 +51,7 @@ namespace Gorgon { namespace Scripting {
 				Utils::ASSERT_FALSE("Unknown dialect");
 		}
 	}
-	
+		
+	int ScopeInstance::nextid=0;
+		
 } }

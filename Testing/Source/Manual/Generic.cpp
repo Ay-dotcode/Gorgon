@@ -219,7 +219,7 @@ int main() {
 	std::cout<<std::endl<<std::endl;
 	
 
-	while(vm.GetExecutionScopeCount()) {
+	while(vm.GetScopeInstanceCount()) {
 		try {
 			vm.Run();
 		}
