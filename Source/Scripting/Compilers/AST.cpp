@@ -372,6 +372,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		//Assignment operation
 		if(tree->Type==ASTNode::Assignment) {
+			ASSERT(tree->Leaves.GetCount()==2, "Assignment requires two parameters");
+			
 			Instruction inst;
 			inst.Type=InstructionType::Assignment;
 			
@@ -597,6 +599,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 		else if(String::ToLower(tree->Text)=="const") {
 			ASSERT(tree->Leaves.GetSize()==1, "const keyword requires a single parameter");
+			ASSERT(tree->Leaves[0].Leaves.GetSize()==2, "Assignment requires two parameters");
 			ASSERT(tree->Leaves[0].Leaves[0].Type==ASTNode::Identifier || 
 				   tree->Leaves[0].Leaves[0].Type==ASTNode::Variable,
 				   "const can only be applied to simple variables"
@@ -610,6 +613,26 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			Value v;
 			v.SetVariable(tree->Leaves[0].Leaves[0].Text);
 			inst.Parameters.push_back(v);
+			list.push_back(inst);
+			
+			return true;
+		}
+		else if(String::ToLower(tree->Text)=="static") {
+			ASSERT(tree->Leaves.GetSize()==1, "static keyword requires a single parameter");
+			ASSERT(tree->Leaves[0].Leaves.GetSize()==2, "Assignment requires two parameters");
+			ASSERT(tree->Leaves[0].Leaves[0].Type==ASTNode::Identifier || 
+				   tree->Leaves[0].Leaves[0].Type==ASTNode::Variable,
+				   "static can only be applied to simple variables"
+			);
+			
+			Instruction inst;
+			inst.Type=InstructionType::FunctionCall;
+			inst.Name.SetStringLiteral("static");
+			inst.Store=0;
+			Value v;
+			v.SetVariable(tree->Leaves[0].Leaves[0].Text);
+			inst.Parameters.push_back(v);
+			inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[1], list, tempind));
 			list.push_back(inst);
 			
 			return true;

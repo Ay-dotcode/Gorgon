@@ -39,6 +39,28 @@ namespace Gorgon {
 				}
 				return String::To<bool>(str);
 			}
+			
+			void static2(std::string name, Data value) {
+				auto &vm=VirtualMachine::Get();
+				
+				auto &scope=vm.CurrentScopeInstance().GetScope();
+				auto var=scope.GetVariable(name);
+				
+				// if static variable is being redefined, it will not be reassigned
+				if(var) 
+					return;
+				
+				//if this variable is already defined, throw error
+				if(vm.CurrentScopeInstance().GetLocalVariable(name)) {
+					throw AmbiguousSymbolException(name, SymbolType::Variable, "Variable is already declared non-static");
+				}
+				
+				scope.SetVariable(name, value);
+			}
+			
+			void static1(std::string name) {
+				static2(name, Data::Invalid());
+			}
 
 		}
 
@@ -383,6 +405,24 @@ namespace Gorgon {
 						MappedFunctions([](std::string varname) {
 							VirtualMachine::Get().GetVariable(varname).MakeConstant();
 						}), MappedMethods(),
+						KeywordTag
+					),
+					new MappedFunction("static",
+						"Creates a static variable",
+						nullptr, nullptr,
+						ParameterList {
+							new Parameter(
+								"Variable",
+								"This is the variable to be declared",
+								String, VariableTag
+							),
+							new Parameter(
+								"Value",
+								"This is the variable to be declared",
+								Variant, OptionalTag
+							)
+						},
+						MappedFunctions(static2, static1), MappedMethods(),
 						KeywordTag
 					),
 					new MappedFunction("unset",

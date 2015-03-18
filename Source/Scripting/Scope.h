@@ -217,6 +217,14 @@ namespace Gorgon { namespace Scripting {
 			return name;
 		}
 		
+		Variable *GetLocalVariable(const std::string &name) {
+			auto varit=variables.find(name);
+			if( varit !=variables.end() )
+				return &varit->second;
+			else
+				return nullptr;
+		}
+		
 		Variable *GetVariable(const std::string &name) {
 			auto varit=variables.find(name);
 			if( varit !=variables.end() )

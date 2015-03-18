@@ -170,7 +170,7 @@ namespace Gorgon {
 			}
 			
 			/// Returns the current exection scope
-			const ScopeInstance &CurrentScopeInstance() const {
+			ScopeInstance &CurrentScopeInstance() const {
 				return scopeinstances.Last().Current();
 			}
 

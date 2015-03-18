@@ -692,7 +692,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	}
 	
 	static const std::set<std::string, String::CaseInsensitiveLess> internalkeywords={
-		"if", "for", "elseif", "else", "while", "continue", "break", "end"
+		"if", "for", "elseif", "else", "while", "continue", "break", "end", "static"
 	};
 	
 	ASTNode *parse(const std::string &input) {
@@ -763,11 +763,12 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					auto expr=parseexpression(input, index);
 					root->Leaves.Push(expr);
 				}
-				else if(String::ToLower(token.repr)=="const") { //this is actually an assignment
-					assignment(nullptr, "const");
+				else if(String::ToLower(token.repr)=="const" || String::ToLower(token.repr)=="static") { //this is actually an assignment
+					auto name=String::ToLower(token.repr);
+					assignment(nullptr, name);
 					auto proot=root;
 					root=new ASTNode(ASTNode::Keyword);
-					root->Text="const",
+					root->Text=name;
 					root->Leaves.Push(proot);
 				}
 				else {
