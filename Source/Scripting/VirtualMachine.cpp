@@ -388,7 +388,7 @@ namespace Gorgon {
 			Activate();
 			scopes.Add(new Scope(input, input.GetName()));
 
-			executionscopes.Add(new ScopeInstance(*scopes.Last()));
+			scopeinstances.Add(scopes.Last()->Instantiate());
 
 			Run();
 		}
@@ -397,11 +397,11 @@ namespace Gorgon {
 			Activate();
 			scopes.Add(new Scope(input, input.GetName()));
 
-			executionscopes.Add(new ScopeInstance(*scopes.Last()));
+			scopeinstances.Add(scopes.Last()->Instantiate());
 		}
 
 		void VirtualMachine::Run() {
-			int target=executionscopes.GetCount()-1;
+			int target=scopeinstances.GetCount()-1;
 			if(target<0) {
 				throw std::runtime_error("No scope to execute.");
 			}
@@ -414,13 +414,13 @@ namespace Gorgon {
 			returnvalue=Data::Invalid();
 
 			//until execution target is reached
-			while(executionscopes.GetCount()>(long)executiontarget) {
+			while(scopeinstances.GetCount()>(long)executiontarget) {
 				if(returnimmediately) {
-					executionscopes.DeleteAll();
+					scopeinstances.DeleteAll();
 					return;
 				}
 				
-				auto inst=executionscopes.Last()->Get();
+				auto inst=scopeinstances.Last()->Get();
 #ifdef TESTVM
 				Console::SetColor(Console::Black);
 				Console::SetBold();
@@ -436,18 +436,18 @@ namespace Gorgon {
 				try {
 					// execution scope is done, cull it
 					if(inst==nullptr) {
-						executionscopes.Last().Delete();
+						scopeinstances.Last().Delete();
 					} 
 					else {
 						execute(inst);
 					}
 				}
  				catch(Exception &ex) {
-					if(executionscopes.GetCount()) {
-						executionscopes.Last()->MoveToEnd();
+					if(scopeinstances.GetCount()) {
+						scopeinstances.Last()->MoveToEnd();
 						
 						if(ex.GetLine()<=0) {
-							ex.SetLine(-ex.GetLine()+executionscopes.Last()->GetScope().GetPhysicalLine());
+							ex.SetLine(-ex.GetLine()+scopeinstances.Last()->GetPhysicalLine());
 						}
 					}
  
@@ -456,99 +456,76 @@ namespace Gorgon {
 			}
 		}
 		
-		void VirtualMachine::SetVariable(const std::string &name, Data data) {
-			//check if it exists
-			auto &vars=executionscopes.Last()->Variables;
-			auto var=vars.Find(String::ToLower(name));
+		Variable &VirtualMachine::GetVariable(const std::string &name) {
+			ASSERT(scopeinstances.GetCount(), "No scope instance is active");
 			
-			//if not found in locals
-			if(!var.IsValid()) {
-				//search in globals
-				var=globalvariables.Find(String::ToLower(name));
+			auto var=scopeinstances.Last()->GetVariable(name);
+
+			//if found
+			if(var) {
+				//return
+				return *var;
 			}
-			//else ok
+			
+/*			//search globals
+			auto varit=globalvariables.find(String::ToLower(name));
+
+			//if found
+			if(varit!=globalvariables.end()) {
+				//return
+				return &varit->second;
+			}
+			//if not
+			else */{
+				//nothing more to try
+				throw SymbolNotFoundException(name, SymbolType::Variable);
+			}
+		}
+		
+		void VirtualMachine::SetVariable(const std::string &name, Data data) {
+			ASSERT(scopeinstances.GetCount(), "No scope instance is active");
+			
+			//check if it exists
+			auto var=scopeinstances.Last()->GetVariable(name);
 			
 			//if found
-			if(var.IsValid()) {
-				if(var.Current().second.IsConstant()) {
-					throw ConstantException(name, "Variable is constant.");
-				}
+			if(var) {
+				//assign and return 
+				var->Set(data);
 				
-				//change existing variable
-				var.Current().second.Set(data.GetType(), data.GetData());
+				return;
 			}
-			else {
-				//as local
-				vars.Add(new Variable(name, data.GetType(), data.GetData()));
-			}
+			
+			//create a new one
+			scopeinstances.Last()->SetVariable(name, data);
 		}
 		
 		void VirtualMachine::UnsetVariable(const std::string &name) {
-			//check if it exists
-			auto &vars=executionscopes.Last()->Variables;
-			auto var=vars.Find(String::ToLower(name));
+			ASSERT(scopeinstances.GetCount(), "No scope instance is active");
 			
-			//if not found in locals
-			if(!var.IsValid()) {
-				//search in globals
-				var=globalvariables.Find(String::ToLower(name));
-				if(var.IsValid()) {
-					var.Delete();
-				}
-			}
-			else {
-				var.Delete();
-			}
+			scopeinstances.Last()->UnsetVariable(name);
 		}
 		
 		bool VirtualMachine::IsVariableSet(const std::string &name) {
-			auto &vars=executionscopes.Last()->Variables;
-			auto var=vars.Find(String::ToLower(name));
+			ASSERT(scopeinstances.GetCount(), "No scope instance is active");
 			
-			if(var.IsValid()) return true;
-			
-			var=globalvariables.Find(String::ToLower(name));
+			auto var=scopeinstances.Last()->GetVariable(name);
 
 			//if found
-			if(var.IsValid()) return true;
+			if(var) {
+				//return
+				return true;
+			}
 			
 			return false;
 		}
 		
 		void VirtualMachine::CompileCurrent() {
-			if(executionscopes.GetCount()==0) {
+			if(scopeinstances.GetCount()==0) {
 				throw FlowException("No active execution scope");
 			}
 			
-			executionscopes.Last()->Compile();
-		}
-		
-		Variable &VirtualMachine::GetVariable(const std::string &name) {
-			//check variable scopes first
-			auto &vars=executionscopes.Last()->Variables;
-			auto var=vars.Find(String::ToLower(name));
-
-			//if found
-			if(var.IsValid()) {
-				//return
-				return var.Current().second;
-			}
-			//if not
-			else {
-				//search globals
-				auto var=globalvariables.Find(String::ToLower(name));
-
-				//if found
-				if(var.IsValid()) {
-					//return
-					return var.Current().second;
-				}
-				//if not
-				else {
-					//nothing more to try
-					throw SymbolNotFoundException(name, SymbolType::Variable);
-				}
-			}
+			scopeinstances.Last()->Compile();
 		}
 		
 		Data VirtualMachine::getvalue(const Value &val, bool reference) {
@@ -631,7 +608,7 @@ namespace Gorgon {
 								return {Types::Function(), &type.Functions[name]};
 							}
 							else {
-								throw SymbolNotFoundException(name, SymbolType::Unknown);
+								throw SymbolNotFoundException(name, SymbolType::Identifier);
 							}
 						}
 						else if(namespcs==1) { //function or constant in a library
@@ -663,10 +640,10 @@ namespace Gorgon {
 							else { //could be a function or constant in a type which is in an unknown library
 								auto range=types.equal_range(libname);
 								if(range.first==range.second) {
-									throw SymbolNotFoundException(libname, SymbolType::Unknown);
+									throw SymbolNotFoundException(libname, SymbolType::Identifier);
 								}
 								else if(range.first!=--range.second) {
-									throw AmbiguousSymbolException(libname, SymbolType::Unknown);
+									throw AmbiguousSymbolException(libname, SymbolType::Identifier);
 								}
 								else {
 									if(range.first->second->Constants.Exists(name)) {
@@ -684,7 +661,7 @@ namespace Gorgon {
 										return {Types::Function(), &range.first->second->Functions[name]};
 									}
 									else {
-										throw SymbolNotFoundException(val.Name, SymbolType::Unknown);
+										throw SymbolNotFoundException(val.Name, SymbolType::Identifier);
 									}
 								}
 							}
@@ -692,10 +669,10 @@ namespace Gorgon {
 						else {
 							auto range=symbols.equal_range(val.Name);
 							if(range.first==range.second) {
-								throw SymbolNotFoundException(val.Name, SymbolType::Unknown);
+								throw SymbolNotFoundException(val.Name, SymbolType::Identifier);
 							}
 							else if(range.first!=--range.second) {
-								throw AmbiguousSymbolException(val.Name, SymbolType::Unknown);
+								throw AmbiguousSymbolException(val.Name, SymbolType::Identifier);
 							}
 							else {
 								if(range.first->second.type==SymbolType::Constant) {
@@ -713,7 +690,7 @@ namespace Gorgon {
 									return {Types::Function(), range.first->second.object.Get<const Function*>()};
 								}
 								else {
-									throw SymbolNotFoundException(val.Name, SymbolType::Unknown, "An unsupported symbol is found");
+									throw SymbolNotFoundException(val.Name, SymbolType::Identifier, "An unsupported symbol is found");
 								}
 							}
 						}
@@ -1112,20 +1089,20 @@ namespace Gorgon {
 			
 			//jumps
 			else if(inst->Type==InstructionType::Jump) {
-				executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+				scopeinstances.Last()->Jumpto(scopeinstances.Last()->GetLineNumber()+inst->JumpOffset);
 			}
 			else if(inst->Type==InstructionType::JumpTrue) {
 				auto dat=getvalue(inst->RHS);
 				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
 				if(dat.GetValue<bool>()) {
-					executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+					scopeinstances.Last()->Jumpto(scopeinstances.Last()->GetLineNumber()+inst->JumpOffset);
 				}
 			}
 			else if(inst->Type==InstructionType::JumpFalse) {
 				auto dat=getvalue(inst->RHS);
 				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
 				if(!dat.GetValue<bool>()) {
-					executionscopes.Last()->Jumpto(executionscopes.Last()->GetLineNumber()+inst->JumpOffset);
+					scopeinstances.Last()->Jumpto(scopeinstances.Last()->GetLineNumber()+inst->JumpOffset);
 				}
 			}
 			
@@ -1136,13 +1113,13 @@ namespace Gorgon {
 		
 		void VirtualMachine::Jump(SourceMarker marker) {
 			
-			if(reinterpret_cast<ScopeInstance*>(marker.GetSource())!=executionscopes.Last().CurrentPtr()) {
+			if(reinterpret_cast<ScopeInstance*>(marker.GetSource())!=scopeinstances.Last().CurrentPtr()) {
 				throw FlowException("Jump destination is not valid", "While performing a short jump, a different "
 					"execution scope is requested."
 				);
 			}
 			
-			executionscopes.Last()->Jumpto(marker.GetLine());
+			scopeinstances.Last()->Jumpto(marker.GetLine());
 		}
 
 

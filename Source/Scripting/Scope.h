@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+
 #include "../String.h"
 #include "../Scripting.h"
 #include "Instruction.h"
@@ -17,12 +18,12 @@ namespace Gorgon { namespace Scripting {
 	public:
 		Instruction instruction;
 		
-		unsigned long physical;
+		long physical;
 	};
 	/// @endcond
 	
 	class CompilerBase;
-		
+	
 	/// This class uniquely represents a source code line. uintptr_t is used for source
 	/// to reduce dependency
 	class SourceMarker {
@@ -50,14 +51,16 @@ namespace Gorgon { namespace Scripting {
 		uintptr_t 	  source = 0;
 	};
 	
+	class ScopeInstance;
+	
 	/** 
 	 * A new scope is created automatically when a new input source or a function like construct
 	 * is created. Scopes can be linked to each other. There are two methods to supply codes to
 	 * a scope: from an InputProvider and directly registering instructions to it.
 	 */
 	class Scope {
+		friend class ScopeInstance;
 	public:
-		
 		/// Constructor requires an input provider and a name to define this input source
 		Scope(InputProvider &provider, const std::string &name);
 		
@@ -70,19 +73,69 @@ namespace Gorgon { namespace Scripting {
 		const Instruction *ReadInstruction(unsigned long line);
 		
 		/// Current physical line
-		unsigned long GetPhysicalLine() const {
-			return pline;
+		long GetPhysicalLine(unsigned long line) {
+			if(ReadInstruction(line)) {
+				return lines[line].physical;
+			}
+			else {
+				return -1;
+			}
 		}
 		
 		unsigned ReadyInstructionCount() const {
 			return lines.size();
 		}
 		
-		
 		std::string GetName() const { return name; }
 		
-		void SaveInstruction(Instruction inst, unsigned long pline) {
+		void SaveInstruction(Instruction inst, long pline) {
 			lines.push_back({inst, pline});
+		}
+		
+		ScopeInstance &Instantiate();
+		
+		ScopeInstance &Instantiate(ScopeInstance &current);
+		
+		bool HasInstance() const {
+			return instances.GetCount()!=0;
+		}
+		
+		ScopeInstance &LastInstance() const {
+			ASSERT(instances.GetCount(), "There are no instances available");
+			
+			return *instances.Last();
+		}
+		
+		bool HasParent() const {
+			return parent!=nullptr;
+		}
+		
+		Scope &GetParent() const {
+			return *parent;
+		}
+		
+		Variable *GetVariable(const std::string &name) {
+			auto var=variables.find(name);
+			
+			if( var !=variables.end() )
+				return &var->second;
+			else
+				return nullptr;
+		}
+		
+		void SetVariable(const std::string &name, const Data &data) {
+			variables[name]={name, data};
+		}
+		
+		bool UnsetVariable(const std::string &name) {
+			auto var=variables.find(name);
+			
+			if( var !=variables.end() ) {
+				variables.erase(var);
+				return true;
+			}
+			else
+				return false;
 		}
 		
 		/// Unloads an input source by erasing all current data. Unload should only be
@@ -94,34 +147,40 @@ namespace Gorgon { namespace Scripting {
 			
 			std::vector<Line> temp;	
 			swap(temp, lines);
-			pline=0;
 			
-			provider.Reset();
+			provider->Reset();
 		}
 		
 	private:
-		InputProvider &provider;
-		
-		unsigned long pline = 0;
 		std::string name;
 		
-		Compilers::Base *parser;
+		int nextid=1;
 		
-		/// Every logical line up until current execution point. They are kept so that
-		/// it is possible to jump back. Logical lines do not contain comments 
+		long pline=0;
+
+		InputProvider *provider = nullptr;
+		
+		Compilers::Base *parser =nullptr;
+		
+		Scope *parent=nullptr;
+		
+		Containers::Collection<ScopeInstance> instances;
+		
+		//-unordered map
+		std::map<std::string, Variable, String::CaseInsensitiveLess> variables;
+		
+		/// Every logical line at least up until current execution point. They are kept so that
+		/// it is possible to jump back. Logical lines do not contain comments.
 		std::vector<Line> lines;
 	};
-		
+	
 	/// This is an instantiation of a scope
 	class ScopeInstance { 
+		friend class Scope;
 	public:
 		
-		/// Constructor requires an input source. Execution scopes can share same input source
-		ScopeInstance(Scope &parent) : parent(parent), name(parent.GetName()+" #"+String::From(nextid++)) {
-		}
-		
 		~ScopeInstance() {
-			Variables.Destroy();
+			scope.instances.Remove(this);
 		}
 		
 		/// Jumps to the given line, line numbers start at zero.
@@ -148,7 +207,7 @@ namespace Gorgon { namespace Scripting {
 		
 		/// Returns the code at the current line and increments the current line
 		const Instruction *Get() {
-			auto ret=parent.ReadInstruction(current);
+			auto ret=scope.ReadInstruction(current);
 			current++;
 			
 			return ret;
@@ -158,37 +217,84 @@ namespace Gorgon { namespace Scripting {
 			return name;
 		}
 		
-		/// Forces the compilation of entire input source
+		Variable *GetVariable(const std::string &name) {
+			auto varit=variables.find(name);
+			if( varit !=variables.end() )
+				return &varit->second;
+			
+			auto var=scope.GetVariable(name);
+			if(var)
+				return var;
+			
+			if(scope.HasParent() && scope.GetParent().HasInstance())
+				var=scope.GetParent().LastInstance().GetVariable(name);
+			
+			return var;
+		}
+		
+		void SetVariable(const std::string &name, const Data &data) {
+			variables[name]={name, data};
+		}
+		
+		bool UnsetVariable(const std::string &name) {
+			auto var=variables.find(name);
+			
+			if( var !=variables.end() ) {
+				variables.erase(var);
+				return true;
+			}
+			
+			auto done=scope.UnsetVariable(name);
+			if(done)
+				return true;
+			
+			if(scope.HasParent() && scope.GetParent().HasInstance())
+				done=scope.GetParent().LastInstance().UnsetVariable(name);
+			
+			return done;
+		}
+		
+		/// Forces the compilation of entire scope
 		void Compile() {
 			int c=current;
-			while(parent.ReadInstruction(c++)) ;
+			while(scope.ReadInstruction(c++)) ;
 		}			
 		
 		/// Returns the code at the current line without incrementing it.
 		const Instruction *Peek() {
-			return parent.ReadInstruction(current);
+			return scope.ReadInstruction(current);
 		}
 		
-		/// Returns the code at the given line without incrementing current line.
+		/// Returns the code at the given line without changing current line.
 		const Instruction *Peek(unsigned long line) {
-			return parent.ReadInstruction(line);
+			return scope.ReadInstruction(line);
 		}
 		
 		void MoveToEnd() {
-			current=parent.ReadyInstructionCount();
+			current=scope.ReadyInstructionCount();
+		}
+		
+		long GetPhysicalLine() {
+			return scope.GetPhysicalLine(current-1);
 		}
 
-		Scope &GetScope() const { return parent; }
-		
-		/// Variables defined in this scope
-		Containers::Hashmap<std::string, class Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess> Variables;
+		Scope &GetScope() const { return scope; }
 		
 	private:
+		
+		/// Constructor requires an input source. Execution scopes can share same input source
+		ScopeInstance(Scope &scope, ScopeInstance *parent) : scope(scope), parent(parent) {
+			name=scope.GetName()+" #"+String::From(scope.nextid++);
+		}
+		
+		//-unordered map
+		std::map<std::string, Variable, String::CaseInsensitiveLess> variables;
+
+		ScopeInstance *parent = nullptr;
+		
 		std::string name;
 		
-		static int nextid;
-		
-		Scope &parent;
+		Scope &scope;
 
 		/// Current logical line
 		unsigned long current = 0;

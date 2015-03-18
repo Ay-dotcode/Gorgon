@@ -48,7 +48,6 @@ namespace Gorgon {
 			VirtualMachine(bool automaticreset=true, std::ostream &out=std::cout, std::istream &in=std::cin);
 			
 			~VirtualMachine() {
-				globalvariables.Destroy();
 			}
 
 			/// Executes a single statement in this virtual machine. This operation will create a new
@@ -167,17 +166,17 @@ namespace Gorgon {
 			/// Returns the number of active execution scopes. If this number is 0, VM cannot be started without
 			/// providing additional code source.
 			unsigned GetScopeInstanceCount() const {
-				return executionscopes.GetCount();
+				return scopeinstances.GetCount();
 			}
 			
 			/// Returns the current exection scope
 			const ScopeInstance &CurrentScopeInstance() const {
-				return executionscopes.Last().Current();
+				return scopeinstances.Last().Current();
 			}
 
 			/// Returns the code marker for the next line.
 			SourceMarker GetMarkerForNext() const {
-				return executionscopes.First()->GetMarkerForNext();
+				return scopeinstances.First()->GetMarkerForNext();
 			}
 			
 			
@@ -231,12 +230,13 @@ namespace Gorgon {
 			/// List of types
 			std::multimap<std::string, const Type*, String::CaseInsensitiveLess> types;
 
-			Containers::Collection<ScopeInstance> 	executionscopes;
-			Containers::Collection<Scope>		scopes;
+			Containers::Collection<ScopeInstance> 	scopeinstances;
+			Containers::Collection<Scope>			scopes;
 
 			Library runtime;
 
-			Containers::Hashmap<std::string, Variable, &Variable::GetName, std::map, String::CaseInsensitiveLess>	globalvariables;
+			//-unordered map
+			//std::map<std::string, Variable, String::CaseInsensitiveLess>	globalvariables;
 
 			std::ostream *output;
 			std::istream *input;

@@ -131,6 +131,9 @@ namespace Gorgon {
 		class Variable : public Data {
 		public:
 			
+			/// Creates an invalid variable
+			Variable(const std::string &name="", const Data &data=Data::Invalid()) : name(name), Data(data) { }
+			
 			/// Constructor that sets the name, type and value of the variable. Unless this variable is
 			/// declared inside an executing code, definedin should be left nullptr.
 			Variable(const std::string &name, const Type &type, const Any &value) : 
@@ -149,6 +152,12 @@ namespace Gorgon {
 			/// Sets the data contained in this variable without changing its type
 			void Set(Any value) {
 				data.Swap(value);
+			}
+			
+			/// Sets the data contained in this variable
+			void Set(const Data &value) {
+				data=value.GetData();
+				type=value.GetType();
 			}
 			
 			/// Sets the data contained in this variable by modifying its type. Also this function

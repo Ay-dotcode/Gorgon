@@ -7,10 +7,12 @@ namespace Gorgon { namespace Scripting {
 			return &lines[line].instruction;
 		}
 		else {
+			if(!provider) return nullptr;
+			
 			while(line>=lines.size()) {
 				std::string str;
 				
-				if(!provider.ReadLine(str, true)) {
+				if(!provider->ReadLine(str, true)) {
 					parser->Finalize();
 					
 					return nullptr;
@@ -39,7 +41,7 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
-	Scope::Scope(InputProvider &provider, const std::string &name) : provider(provider), name(name) {
+	Scope::Scope(InputProvider &provider, const std::string &name) : provider(&provider), name(name) {
 		switch(provider.GetDialect()) {
 			case InputProvider::Intermediate:
 				parser=new Compilers::Intermediate();
@@ -51,7 +53,25 @@ namespace Gorgon { namespace Scripting {
 				Utils::ASSERT_FALSE("Unknown dialect");
 		}
 	}
+	
+	Scope::Scope(Scope& parent, const std::string& name) : parent(&parent), name(name) {
 		
-	int ScopeInstance::nextid=0;
+	}
+
+	
+	ScopeInstance& Scope::Instantiate() {
+		auto inst=new ScopeInstance(*this, nullptr);
 		
+		inst->parent=nullptr;
+		instances.Add(inst);
+		
+		return *inst;
+	}
+	
+	ScopeInstance& Scope::Instantiate(ScopeInstance &parent) {
+		auto &inst=Instantiate();
+		inst.parent=&parent;
+		
+		return inst;
+	}
 } }
