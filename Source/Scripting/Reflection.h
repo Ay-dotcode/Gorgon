@@ -199,77 +199,115 @@ namespace Gorgon {
 			bool variable  = false;
 		};
 		
-		using ParameterList = Containers::Collection<const Parameter>;
+		using ParameterList = std::vector<Parameter>;
 		
-		/** This class stores information about a function. Functions can be related to a type
-		 * or stand alone functions in libraries. EmbeddedFunction class should be used to 
-		 * functions that are pointing to C++ function stubs. These stubs should extract and
-		 * forward parameters to real functions. Functions are non-mutable after construction.
-		 * Function names should be unique in their respective scopes case-insensitively.
-		 * 
-		 * Function object allows following tags:
-		 * 
-		 * **KeywordTag**: Makes this function a keyword. Keywords acts differently in programming
-		 * dialect. Instead of requiring parenthesis and commas between elements, it acts like in
-		 * console dialect. This can be further exploited to have a single parameter with setting
-		 * StretchTag. This way, a keyword can parse its own parameters. This allows function keyword
-		 * to have `function name(type param, type param...)` returns type syntax
-		 * 
-		 * **StretchTag**: If this tag is set, in console dialect, spaces in the last parameter are not 
-		 * treated as parameter separator as if it is in quotes. Helpful for functions like echo. But also 
-		 * helpful for keywords that requires their own parsing.
-		 * 
-		 * **RepeatTag**: This tag makes the last parameter repeatable. This way, the function can be 
-		 * called by as many parameters as user likes. In embedded functions, these parameters are also
-		 * placed in the data list. In custom functions, the parameter that is marked as repeatable can 
-		 * be accessed like an array. If both RepeatTag and StretchTag is set, stretch will be effective
-		 * first. Therefore, for regular functions, in console dialect stretch will work, resulting a
-		 * single parameter, however, in programming dialect, repeat will be in effect.
-		 * 
-		 * **MethodTag**: This tag denotes that this function has a method variant. Method variant is called 
-		 * in console dialect when the return value is not queried. In programming dialect method version of a 
-		 * function can be called using call function. Methods are expected to convey their output directly
-		 * to the stdout. For instance, a function that normally returns elements of an object could list the 
-		 * elements to stdout when invoked as a method.
-		 * 
-		 * **PrivateTag**: If this function is a member function, this tag will make it private. This tag is
-		 * not useful for embedded functions. PublicTag can also be used for clarity.
-		 * 
-		 * **StaticTag**: Only works when this function is a class member. Marks the function as static. Static
-		 * functions can be accessed from the type using scope resolution: [type]function
-		 * 
-		 * **OperatorTag**: Makes this function an operator. Operators could be symbols or regular identifiers.
-		 * 
-		 * **ConstTag**: Works only on member functions. This function becomes a constant, unable to change
-		 * the contents of this object.
-		 */
 		class Function {
 			friend class Type;
 		public:
 			
-			/// Function constructor fully constructs a function object. Both return type and tags are
-			/// optional and its possible to skip return type and specify tags directly.
+			class Variant {
+			public:
+				template<class ...P_>
+				Variant(ParameterList parameters, const Type *returntype, Function &parent, P_ ...tags) :
+				parent(parent), returntype(returntype)
+				{
+					using std::swap;
+					swap(parameters, this->parameters);
+					
+					unpacktags(tags...);
+				}
+				
+				Variant(ParameterList parameters, const Type *returntype, bool stretchlast, bool repeatlast,
+					    bool accessible, bool constant, Function &parent, bool returnsref) :
+				parent(parent), returntype(returntype), stretchlast(stretchlast), repeatlast(repeatlast), 
+				accessible(accessible), constant(constant), returnsref(returnsref)
+				{
+					using std::swap;
+					swap(parameters, this->parameters);
+				}
+			
+				/// Returns if the last parameter of this function should be stretched. 
+				/// If true, in console dialect, spaces in the last parameter are not treated as parameter
+				/// separator as if it is in quotes. Helpful for functions like echo. But also helpful for
+				/// keywords that requires their own parsing.
+				bool StretchLast() const {
+					return stretchlast;
+				}
+				
+				/// Returns if the last parameter of this function should be repeated. If true last parameter 
+				/// can be specified any number of times. This number can be obtained from data list supplied 
+				/// to function stub. If both StretchTag and RepeatTag is specified, in console dialect stretch
+				/// is used, while in programming dialect repeat is used.
+				bool RepeatLast() const {
+					return repeatlast;
+				}
+				
+				/// Returns whether this function is a constant
+				bool IsConstant() const {
+					return constant;
+				}
+				
+				/// This function variant returns a reference to a value rather than the value itself
+				bool ReturnsRef() const {
+					return returnsref;
+				}
+				
+				const Function &GetParent() const {
+					return parent;
+				}
+		
+				/** 
+				* Class the stub for this function. If ismethod parameter is set and method variant exists
+				* method variant is called. But if there is no method variant, it simply prints out the return
+				* of the function. When ismethod is set, this function will never return a value. 
+				*/
+				virtual Data Call(bool ismethod, const std::vector<Data> &parameters) const = 0;
+				
+			private:
+				ParameterList parameters;
+				
+				/// Return type of this function variant. If nullptr this function does not return a value.
+				const Type *returntype = nullptr;
+			
+				/// If true, in console dialect, spaces in the last parameter are not treated as parameter
+				/// separator as if it is in quotes. Helpful for functions like echo
+				bool stretchlast = false;
+				
+				/// If true last parameter can be specified any number of times. This number can be obtained
+				/// from data list supplied to function stub.
+				bool repeatlast = false;
+				
+				/// Only meaningful in class member functions. If true this function can be access from outside
+				/// the type itself
+				bool accessible = true;
+				
+				/// Makes this function constant. Only works on member functions.
+				bool constant = false;
+				
+				/// This function variant returns a reference
+				bool returnsref = false;
+				
+				/// The parent function of this variant
+				Function &parent;
+				
+			};
+			
 			template<class ...P_>
-			Function(const std::string &name, const std::string &help, const Type *returntype, 
-					 const Type *parent, ParameterList parameters, P_ ...tags) :
-			name(name), help(help), returntype(returntype), parent(parent), Parameters(this->parameters)
-			{
-				using std::swap;
-				
-				swap(parameters, this->parameters);
-				UnpackTags(tags...);
-				
-				init();
+			Function(const std::string &name, const std::string &help, const Type *parent, Tag tag, P_ ...tags) : 
+			name(name), help(help), parent(parent)
+			{ 
+				unpacktags(tag);
+				unpacktags(tags...);
 			}
 
-			Function(const Function &)=delete;
-			
-			
-			/// Destructor frees all parameters.
-			virtual ~Function() {
-				parameters.DeleteAll();
+			template<class ...P_>
+			Function(const std::string &name, const std::string &help, const Type *parent, 
+					 bool keyword=false, bool isoperator=false, bool staticmember=false) : Function(name, help, parent) {
+				this->keyword=keyword;
+				this->isoperator=isoperator;
+				this->staticmember=staticmember;
 			}
-
+			
 			/// Returns the name of this function.
 			std::string GetName() const {
 				return name;
@@ -280,57 +318,14 @@ namespace Gorgon {
 				return help;
 			}
 			
-			/// Checks if this function returns anything
-			bool HasReturnType() const {
-				return returntype!=nullptr;
-			}
-			
-			/// Returns the return type of this function. This value can be null, therefore, it should
-			/// be checked before it is retrieved
-			const Type &GetReturnType() const {
-				ASSERT(returntype, "This function does not have a return type", 1, 2);
-				return *returntype;
-			}
-			
 			/// Returns if this function is actually a keyword.
 			bool IsKeyword() const {
 				return keyword;
 			}
 			
-			
-			/// Returns if the last parameter of this function should be stretched. 
-			/// If true, in console dialect, spaces in the last parameter are not treated as parameter
-			/// separator as if it is in quotes. Helpful for functions like echo. But also helpful for
-			/// keywords that requires their own parsing.
-			bool StretchLast() const {
-				return stretchlast;
-			}
-			
-			/// Returns if the last parameter of this function should be repeated. If true last parameter 
-			/// can be specified any number of times. This number can be obtained from data list supplied 
-			/// to function stub. If both StretchTag and RepeatTag is specified, in console dialect stretch
-			/// is used, while in programming dialect repeat is used.
-			bool RepeatLast() const {
-				return repeatlast;
-			}
-			
-			/// Returns whether this function has a method variant. Method variant is called in console dialect
-			/// when the return value is not queried. In programming dialect, method variant of a function
-			/// can be called using call function. Methods are expected to convey their output directly
-			/// to the stdout. For instance, a function that normally returns elements of an object could
-			/// list the elements to stdout when invoked as a method. 
-			bool HasMethod() const {
-				return method;
-			}
-			
 			/// Returns if this function is static. Only meaningful when the function is a member function.
 			bool IsStatic() const {
 				return staticmember;
-			}
-			
-			/// Returns whether this function is a constant
-			bool IsConstant() const {
-				return constant;
 			}
 
 			/// Returns if this function is a member function of a type.
@@ -341,168 +336,68 @@ namespace Gorgon {
 			/// If this function is a member function, returns the owner object. If this function is not a
 			/// member function, this function crashes.
 			const Type &GetOwner() const {
-				ASSERT(parent, "This class does not gave an owner.", 1,2);
+				ASSERT(parent, "This function does not gave an owner.", 1,2);
 				
 				return *parent;
 			}
 			
-			/// If this function is a member function, this function returns if it is publicly accessible
-			bool IsAccessible() const {
-				return accessible;
+			void AddVariant(Variant &var) {
+				Variants.Push(var);
 			}
 			
-			/// Returns if this function is an operator. All operators should be member functions
-			bool IsOperator() const {
-				return isoperator;
+			void AddMethod(Variant &var) {
+				Methods.Push(var);
 			}
 			
-			/// Returns if this function has a parent type, meaning it is a member function
-			bool HasParent() const {
-				return parent!=nullptr;
-			}
+			Containers::Collection<Variant> Variants;
 			
-			/// Returns the parent type. If this function is not a member function, this function will
-			/// cause a runtime error
-			const Type &GetParent() const {
-				if(parent==nullptr) {
-					throw std::runtime_error("This function is not a member function");
-				}
-				
-				return *parent;
-			}
+			Containers::Collection<Variant> Methods;
 			
-			/** 
-			 * Class the stub for this function. If ismethod parameter is set and method variant exists
-			 * method variant is called. But if there is no method variant, it simply prints out the return
-			 * of the function. When ismethod is set, this function will never return a value. 
-			 */
-			virtual Data Call(bool ismethod, const std::vector<Data> &parameters) const = 0;
-			
-			/// This function is only for scoped keywords
-			virtual bool CallEnd(Data) const;
-			
-			/// This function is only for redirecting scoped keywords
-			virtual void CallRedirect(Data,std::string &) const;
-			
-			
-			/// Compares two functions
-			bool operator ==(const Function &other) const {
-				return this==&other;
-			}
-			
-			bool operator ==(const Function *other) const {
-				return this==other;
-			}
-			
-			/// Compares two functions
-			bool operator !=(const Function &other) const {
-				return this!=&other;
-			}
-			
-			bool operator !=(const Function *other) const {
-				return this!=other;
-			}
-			
-			/// Parameters that this function have
-			const ParameterList &Parameters;
-			
-		protected:
+		private:
 			
 			/// @cond INTERNAL
-			void UnpackTags() {}
+			void unpacktags() {}
 			
 			template<class ...P_>
-			void UnpackTags(Tag tag, P_ ...rest) {
+			void unpacktags(Tag tag, P_ ...rest) {
 				switch(tag) {
 					case KeywordTag:
 						keyword=true;
-						break;;
 						break;
-					case StretchTag:
-						stretchlast=true;
-						break;
-					case RepeatTag:
-						repeatlast=true;
-						break;
-					case MethodTag:
-						method=true;
-						break;
+						
 					case StaticTag:
 						staticmember=true;
 						ASSERT(!isoperator, "A function cannot be a static operator");
 						break;
-					case PrivateTag:
-						accessible=false;
-						break;
-					case PublicTag:
-						accessible=true;
-						break;
+						
 					case OperatorTag:
 						isoperator=true;
 						ASSERT(!staticmember, "A function cannot be a static operator");
 						break;
-					case ConstTag:
-						constant=true;
-						break;
+						
 					default:
 						ASSERT(false, "Unknown tag", 2, 16);
 				}
 				
-				UnpackTags(rest...);
+				unpacktags(rest...);
 			}
 			/// @endcond
+
 			
-			/// Return type of the function could be nullptr denoting it is void.
-			const Type *returntype = nullptr;
+			const Type *parent = nullptr;
 			
-			/// List of parameters
-			ParameterList parameters;
-			
-			/// The name of the function
 			std::string name;
 			
-			/// Help string of the function
 			std::string help;
 			
-			/// This function is treated as a keyword. That is, it does not require parenthesis in
-			/// programming dialect and its parameters are always separated by space.
 			bool keyword = false;
 			
-			
-			/// If true, in console dialect, spaces in the last parameter are not treated as parameter
-			/// separator as if it is in quotes. Helpful for functions like echo
-			bool stretchlast = false;
-			
-			/// If true last parameter can be specified any number of times. This number can be obtained
-			/// from data list supplied to function stub.
-			bool repeatlast = false;
-			
-			/// If true, this function has a method variant. Method variant is called in console dialect
-			/// when the return value is not queried. In programming dialect method version of a function
-			/// can be called using call function. Methods are expected to convey their output directly
-			/// to the stdout. For instance, a function that normally returns elements of an object could
-			/// list the elements to stdout when invoked as a method.
-			bool method = false;
-			
-			/// Only meaningful in class member functions. If true, makes this function static.
-			bool staticmember = false;
-			
-			/// Only meaningful in class member functions. If true this function can be access from outside
-			/// the type itself
-			bool accessible = true;
-			
-			/// Makes this function an operator. All operators should be member functions
 			bool isoperator = false;
 			
-			/// Makes this function constant. Only works on member functions.
-			bool constant = false;
-			
-		private:
-			void init();
-			
-			const Type *parent;
+			bool staticmember = false;
 		};
 		
+		///-use unordered_map
 		using FunctionList = Containers::Hashmap<std::string, const Function, &Function::GetName, std::map, String::CaseInsensitiveLess>;
 		
 		/**
