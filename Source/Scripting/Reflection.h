@@ -71,6 +71,9 @@ namespace Gorgon {
 			/// Makes this parameter a variable accepting parameter. Variable parameters are type checked
 			/// against supplied type, however, they are always passed as strings denoting the name of the variable
 			VariableTag,
+			
+			/// Makes a constructor implicit
+			ImplicitTag,
 		};
 		
 		typedef std::vector<Any> OptionList;
@@ -97,30 +100,36 @@ namespace Gorgon {
 		public:
 			
 			/// Constructs a new parameter. All information regarding to a parameter should be specified
-			/// in the constructor. After construction parameter is non-mutable. Both options and tags
+			/// in the constructor. After construction parameter is non-mutable. options, tags, and defaultvalue
 			/// are optional
 			template <class ...Params_>
 			Parameter(const std::string &name, const std::string &help, const Type *type, 
-					 OptionList options, Params_ ...tags) : 
-			name(name), type(type), help(help), Options(std::move(options)) {
+					 Data defaultvalue, OptionList options, Params_ ...tags) : 
+			name(name), type(type), help(help), Options(std::move(options)), defaultvalue(defaultvalue) {
 				ASSERT((type!=nullptr), "Parameter type cannot be nullptr", 1, 2);
 				
 				UnpackTags(tags...);
 			}
 			
 			/// @cond INTERNAL
-			Parameter(const std::string &name, const std::string &help, const Type *type) : 
-			Parameter(name, help, type, OptionList{}) { }
+			Parameter(const std::string &name, const std::string &help, const Type *type, Data defaultvalue=Data::Invalid()) : 
+			Parameter(name, help, type, defaultvalue, OptionList{}) { }
 			
 			template <class ...Params_>
 			Parameter(const std::string &name, const std::string &help, const Type *type, Tag firsttag,
 					  Params_ ...tags) : 
-			Parameter(name, help, type, OptionList{}, firsttag, std::forward<Params_>(tags)...) {
+			Parameter(name, help, type, Data::Invalid(), OptionList{}, firsttag, std::forward<Params_>(tags)...) {
+			}
+			
+			template <class ...Params_>
+			Parameter(const std::string &name, const std::string &help, const Type *type, Data defaultvalue,
+					  Tag firsttag, Params_ ...tags) : 
+			Parameter(name, help, type, defaultvalue, OptionList{}, firsttag, std::forward<Params_>(tags)...) {
 			}
 			 
 			Parameter(const std::string &name, const std::string &help, const Type *type, 
-					  OptionList options, const std::vector<Tag> &tags) :
-			Parameter(name, help, type, options) {
+					  Data defaultvalue, OptionList options, const std::vector<Tag> &tags) :
+			Parameter(name, help, type, defaultvalue, options) {
 				for(auto tag : tags) {
 					UnpackTags(tag);
 				}
@@ -154,10 +163,22 @@ namespace Gorgon {
 				return reference;
 			}
 			
+			/// Checks if this parameter accepts a constant value
+			bool IsConstant() const {
+				return constant;
+			}
+			
 			/// If true, this parameter is a variable and its name is given to the function as
 			/// a string.
 			bool IsVariable() const {
 				return variable;
+			}
+			
+			/// Returns the default value for this parameter
+			Data GetDefaultValue() const {
+				ASSERT(optional, name+" parameter does not have default value");
+				
+				return defaultvalue;
 			}
 			
 			/// Allowed values for this parameter
@@ -170,14 +191,18 @@ namespace Gorgon {
 			void UnpackTags(Tag tag, Params_ ...tags) {
 				switch(tag) {
 					case OptionalTag:
+						ASSERT(defaultvalue.IsValid(), "Optional parameters should have their default values");
 						optional=true;
 						break;
+						
 					case ReferenceTag:
 						reference=true;
 						break;
+						
 					case ConstTag:
 						constant=true;
 						break;
+						
 					case VariableTag:
 						variable=true;
 						break;
@@ -192,6 +217,7 @@ namespace Gorgon {
 			std::string name;
 			std::string help;
 			const Type *type;
+			Data defaultvalue=Data::Invalid();
 			
 			bool optional  = false;
 			bool reference = false;
@@ -206,10 +232,11 @@ namespace Gorgon {
 		public:
 			
 			class Variant {
+				friend class Function;
 			public:
 				template<class ...P_>
-				Variant(ParameterList parameters, const Type *returntype, Function &parent, P_ ...tags) :
-				parent(parent), returntype(returntype)
+				Variant(ParameterList parameters, const Type *returntype, P_ ...tags) :
+				parent(parent), returntype(returntype), Parameters(this->parameters)
 				{
 					using std::swap;
 					swap(parameters, this->parameters);
@@ -217,10 +244,11 @@ namespace Gorgon {
 					unpacktags(tags...);
 				}
 				
-				Variant(ParameterList parameters, const Type *returntype, bool stretchlast, bool repeatlast,
-					    bool accessible, bool constant, Function &parent, bool returnsref) :
+				Variant(ParameterList parameters, const Type *returntype, bool stretchlast, bool repeatlast, 
+						bool accessible, bool constant, bool returnsref, bool implicit) :
 				parent(parent), returntype(returntype), stretchlast(stretchlast), repeatlast(repeatlast), 
-				accessible(accessible), constant(constant), returnsref(returnsref)
+				accessible(accessible), constant(constant), returnsref(returnsref), implicit(implicit), 
+				Parameters(this->parameters)
 				{
 					using std::swap;
 					swap(parameters, this->parameters);
@@ -252,8 +280,28 @@ namespace Gorgon {
 					return returnsref;
 				}
 				
+				/// Returns the function this variant belongs
 				const Function &GetParent() const {
-					return parent;
+					ASSERT(parent, "Parent is not set");
+					
+					return *parent;
+				}
+				
+				/// Returns whether this variant returns a value
+				bool HasReturnType() const {
+					return returntype!=nullptr;
+				}
+				
+				/// Returns the type this variant returns
+				const Type &GetReturnType() const {
+					ASSERT(returntype, "This function does not return a value");
+					
+					return *returntype;
+				}
+				
+				/// Returns if this variant can be used as implicit conversion
+				bool IsImplicit() const {
+					return implicit;
 				}
 		
 				/** 
@@ -263,7 +311,53 @@ namespace Gorgon {
 				*/
 				virtual Data Call(bool ismethod, const std::vector<Data> &parameters) const = 0;
 				
+				const ParameterList &Parameters;
+				
 			private:
+			
+				/// @cond INTERNAL
+				void unpacktags() {}
+				
+				template<class ...P_>
+				void unpacktags(Tag tag, P_ ...rest) {
+					switch(tag) {
+						case ConstTag:
+							constant=true;
+							break;
+							
+						case StretchTag:
+							stretchlast=true;
+							break;
+							
+						case RepeatTag:
+							repeatlast=true;
+							break;
+							
+						case PublicTag:
+							accessible=true;
+							break;
+							
+						case PrivateTag:
+							accessible=false;
+							break;
+							
+						case ReferenceTag:
+							returnsref=true;
+							break;
+							
+						case ImplicitTag:
+							implicit=true;
+							break;
+							
+						default:
+							ASSERT(false, "Unknown tag", 2, 16);
+					}
+					
+					unpacktags(rest...);
+				}
+				/// @endcond
+				
+				
 				ParameterList parameters;
 				
 				/// Return type of this function variant. If nullptr this function does not return a value.
@@ -288,16 +382,64 @@ namespace Gorgon {
 				bool returnsref = false;
 				
 				/// The parent function of this variant
-				Function &parent;
+				Function *parent;
+				
+				/// If the parent function is constructor, marks this variant as an implicit type conversion
+				bool implicit = false;
 				
 			};
 			
 			template<class ...P_>
-			Function(const std::string &name, const std::string &help, const Type *parent, Tag tag, P_ ...tags) : 
+			Function(const std::string &name, const std::string &help, const Type *parent, 
+					 Containers::Collection<Variant> variants, Containers::Collection<Variant> methods, Tag tag, P_ ...tags) : 
 			name(name), help(help), parent(parent)
-			{ 
+			{
+				Variants.Swap(variants);
+				Methods.Swap(methods);
+				
+				for(auto &variant : Variants) {
+					variant.parent=this;
+				}
+				
+				for(auto &variant : Methods) {
+					variant.parent=this;
+				}
+				
 				unpacktags(tag);
 				unpacktags(tags...);
+			}
+			
+			template<class ...P_>
+			Function(const std::string &name, const std::string &help, const Type *parent, 
+					 Containers::Collection<Variant> variants, Tag tag, P_ ...tags) : 
+			name(name), help(help), parent(parent)
+			{
+				Variants.Swap(variants);
+				
+				for(auto &variant : Variants) {
+					variant.parent=this;
+				}
+				
+				unpacktags(tag);
+				unpacktags(tags...);
+			}
+			
+			template<class ...P_>
+			Function(const std::string &name, const std::string &help, const Type *parent,
+					 Containers::Collection<Variant> variants, Containers::Collection<Variant> methods={}
+			) : 
+			name(name), help(help), parent(parent)
+			{ 
+				Variants.Swap(variants);
+				Methods.Swap(methods);
+				
+				for(auto &variant : Variants) {
+					variant.parent=this;
+				}
+				
+				for(auto &variant : Methods) {
+					variant.parent=this;
+				}
 			}
 
 			template<class ...P_>
@@ -336,16 +478,18 @@ namespace Gorgon {
 			/// If this function is a member function, returns the owner object. If this function is not a
 			/// member function, this function crashes.
 			const Type &GetOwner() const {
-				ASSERT(parent, "This function does not gave an owner.", 1,2);
+				ASSERT(parent, "This function does not have an owner.", 1,2);
 				
 				return *parent;
 			}
 			
 			void AddVariant(Variant &var) {
+				var.parent=this;
 				Variants.Push(var);
 			}
 			
 			void AddMethod(Variant &var) {
+				var.parent=this;
 				Methods.Push(var);
 			}
 			
@@ -676,28 +820,13 @@ namespace Gorgon {
 			}
 			
 			/// Adds new constructors to the type
-			void AddConstructors(std::initializer_list<Function*> elements) {
+			void AddConstructors(std::initializer_list<Function::Variant*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
 					ASSERT(element->HasReturnType() && element->GetReturnType()==this,
 						   "Given constructor should return this ("+name+") type", 1, 2);
 					
-					for(auto &c : constructors) {
-						if(c.Parameters.GetCount()!=element->Parameters.GetCount()) continue;
-
-						bool mismatched=false;
-						for(int i=0; i<c.Parameters.GetCount(); i++) {
-							if(c.Parameters[i].GetType()!=element->Parameters[i].GetType()) {
-								mismatched=true;
-								continue;
-							}
-						}
-						if(mismatched) continue;
-
-						ASSERT(false, "The given constructor already exists: "+element->GetName(), 1, 2);
-					}
-					
-					constructors.Add(element);
+					constructor.AddVariant(*element);
 				}
 			}
 			
@@ -758,9 +887,11 @@ namespace Gorgon {
 				return this;
 			}
 
-			const Function *GetTypeCasting(const Type *other) const {
-				for(const auto &ctor : constructors) {
-					if(ctor.Parameters.GetCount()==1 && ctor.Parameters[0].GetType()==other) {
+			const Function::Variant *GetTypeCastingFrom(const Type *other, bool implicit=true) const {
+				for(const auto &ctor : constructor.Variants) {
+					if(ctor.Parameters.size()==1 && ctor.Parameters[0].GetType()==other && 
+						(!implicit || ctor.IsImplicit())
+					) {
 						return &ctor;
 					}
 				}
@@ -794,8 +925,8 @@ namespace Gorgon {
 			const FunctionList 						&Functions;
 			
 			/// Constructors of this type. They can also act like conversion from operators. Implicit
-			/// conversion constructors should have their operator flag set.
-			const Containers::Collection<Function> 	&Constructors;
+			/// conversion constructors should have their flag set.
+			const Function	 						&Constructor;
 			
 			/// Constants related with this type. Constants can be of the same type as this one.
 			const ConstantList    					&Constants;
@@ -853,8 +984,8 @@ namespace Gorgon {
 			FunctionList 						functions;
 			
 			/// Constructors of this type. They can also act like conversion from operators. Implicit
-			/// conversion constructors should have their operator flag set.
-			Containers::Collection<Function>	constructors;
+			/// conversion constructors should have their flag set.
+			Function							constructor;
 			
 			/// Constants related with this type. Constants can be of the same type as this one.
 			ConstantList    					constants;

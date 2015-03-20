@@ -132,10 +132,11 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Type::Type(const std::string& name, const std::string& help, const Any& defaultvalue, Any::TypeInterface* consttype, Any::TypeInterface* ptrtype, Any::TypeInterface* constptrtype, bool isref):
-		name(name), help(help), DataMembers(datamembers), Functions(functions), Constructors(constructors),
+		name(name), help(help), DataMembers(datamembers), Functions(functions), Constructor(constructor),
 		Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),
 		referencetype(isref), TypeInterface(defaultvalue.GetTypeInterface()), ConstTypeInterface(consttype),
-		PtrTypeInterface(ptrtype), ConstPtrTypeInterface(constptrtype), Parents(parents), InheritedSymbols(inheritedsymbols)
+		PtrTypeInterface(ptrtype), ConstPtrTypeInterface(constptrtype), Parents(parents), InheritedSymbols(inheritedsymbols),
+		constructor("{}", "Constructs "+name, this, {}, StaticTag)
 	{
 		ASSERT((defaultvalue.GetTypeInterface()->PtrTypeInfo()==PtrTypeInterface->TypeInfo()),
 			"The type and its pointer does not match");
