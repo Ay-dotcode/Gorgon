@@ -721,7 +721,7 @@ namespace Gorgon {
 				param={pdef, param.GetValue<Data>()};
 			}
 			else {
-				const Function *ctor=pdef.GetTypeCasting(param.GetType());
+				const Function *ctor=pdef.GetTypeCastingFrom(param.GetType());
 				
 				if(ctor) {
 					param=ctor->Call(false, {param});

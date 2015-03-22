@@ -235,7 +235,7 @@ namespace Gorgon {
 				friend class Function;
 			public:
 				template<class ...P_>
-				Variant(ParameterList parameters, const Type *returntype, P_ ...tags) :
+				Variant(const Type *returntype, ParameterList parameters, P_ ...tags) :
 				parent(parent), returntype(returntype), Parameters(this->parameters)
 				{
 					using std::swap;
@@ -244,7 +244,7 @@ namespace Gorgon {
 					unpacktags(tags...);
 				}
 				
-				Variant(ParameterList parameters, const Type *returntype, bool stretchlast, bool repeatlast, 
+				Variant(const Type *returntype, ParameterList parameters, bool stretchlast, bool repeatlast, 
 						bool accessible, bool constant, bool returnsref, bool implicit) :
 				parent(parent), returntype(returntype), stretchlast(stretchlast), repeatlast(repeatlast), 
 				accessible(accessible), constant(constant), returnsref(returnsref), implicit(implicit), 
@@ -313,7 +313,7 @@ namespace Gorgon {
 				
 				const ParameterList &Parameters;
 				
-			private:
+			protected:
 			
 				/// @cond INTERNAL
 				void unpacktags() {}
@@ -357,6 +357,8 @@ namespace Gorgon {
 				}
 				/// @endcond
 				
+				virtual void dochecks(bool ismethod) = 0;
+				
 				
 				ParameterList parameters;
 				
@@ -399,10 +401,12 @@ namespace Gorgon {
 				
 				for(auto &variant : Variants) {
 					variant.parent=this;
+					variant.dochecks(false);
 				}
 				
 				for(auto &variant : Methods) {
 					variant.parent=this;
+					variant.dochecks(true);
 				}
 				
 				unpacktags(tag);
@@ -418,6 +422,7 @@ namespace Gorgon {
 				
 				for(auto &variant : Variants) {
 					variant.parent=this;
+					variant.dochecks(false);
 				}
 				
 				unpacktags(tag);
@@ -435,16 +440,19 @@ namespace Gorgon {
 				
 				for(auto &variant : Variants) {
 					variant.parent=this;
+					variant.dochecks(false);
 				}
 				
 				for(auto &variant : Methods) {
 					variant.parent=this;
+					variant.dochecks(true);
 				}
 			}
 
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
-					 bool keyword=false, bool isoperator=false, bool staticmember=false) : Function(name, help, parent) {
+					 bool keyword=false, bool isoperator=false, bool staticmember=false) : 
+			Function(name, help, parent, Containers::Collection<Variant>()) {
 				this->keyword=keyword;
 				this->isoperator=isoperator;
 				this->staticmember=staticmember;
@@ -485,11 +493,13 @@ namespace Gorgon {
 			
 			void AddVariant(Variant &var) {
 				var.parent=this;
+				var.dochecks(false);
 				Variants.Push(var);
 			}
 			
 			void AddMethod(Variant &var) {
 				var.parent=this;
+				var.dochecks(true);
 				Methods.Push(var);
 			}
 			
