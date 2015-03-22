@@ -73,7 +73,7 @@ namespace Gorgon { namespace Scripting {
 				
 				++pin;
 			}
-			if(status==-1) break;
+			if(status==-1) continue;
 			
 			if(pin!=parameters.end()) {
 				if(fn.parameters.GetCount() && fn.RepeatLast()) {

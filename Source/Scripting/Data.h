@@ -85,9 +85,7 @@ namespace Gorgon {
 			}
 			
 			/// Returns if this data contains a reference
-			bool IsReference() const {
-				return isreference;
-			}
+			bool IsReference() const;
 			
 			/// Returns if this data is constant
 			bool IsConstant() const {

@@ -206,6 +206,7 @@ namespace Gorgon {
 		private:
 			void execute(const Instruction* inst);
 			Data callfunction(const Function *fn, bool method, const std::vector<Value> &params);
+			Data callvariant(const Function *fn, const Function::Variant *variant, bool method, const std::vector<Value> &params);
 			Data getvalue(const Value &val, bool reference=false);
 			void functioncall(const Instruction *inst, bool memberonly, bool method);
 			std::thread::id getthread() const { throw "this should never be called"; }

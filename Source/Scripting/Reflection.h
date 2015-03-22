@@ -393,20 +393,16 @@ namespace Gorgon {
 			
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
-					 Containers::Collection<Variant> variants, Containers::Collection<Variant> methods, Tag tag, P_ ...tags) : 
-			name(name), help(help), parent(parent)
+					 const Containers::Collection<Variant> &variants, const Containers::Collection<Variant> &methods, 
+					 Tag tag, P_ ...tags) : 
+			name(name), help(help), parent(parent), Variants(variants), Methods(methods)
 			{
-				Variants.Swap(variants);
-				Methods.Swap(methods);
-				
-				for(auto &variant : Variants) {
-					variant.parent=this;
-					variant.dochecks(false);
+				for(auto &variant : variants) {
+					AddVariant(variant);
 				}
 				
-				for(auto &variant : Methods) {
-					variant.parent=this;
-					variant.dochecks(true);
+				for(auto &variant : methods) {
+					AddMethod(variant);
 				}
 				
 				unpacktags(tag);
@@ -415,14 +411,11 @@ namespace Gorgon {
 			
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
-					 Containers::Collection<Variant> variants, Tag tag, P_ ...tags) : 
-			name(name), help(help), parent(parent)
+					 const Containers::Collection<Variant> &variants, Tag tag, P_ ...tags) : 
+			name(name), help(help), parent(parent), Variants(variants), Methods(methods)
 			{
-				Variants.Swap(variants);
-				
-				for(auto &variant : Variants) {
-					variant.parent=this;
-					variant.dochecks(false);
+				for(auto &variant : variants) {
+					AddVariant(variant);
 				}
 				
 				unpacktags(tag);
@@ -431,27 +424,22 @@ namespace Gorgon {
 			
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent,
-					 Containers::Collection<Variant> variants, Containers::Collection<Variant> methods={}
+					 const Containers::Collection<Variant> &variants, const Containers::Collection<Variant> &methods={}
 			) : 
-			name(name), help(help), parent(parent)
+			name(name), help(help), parent(parent), Variants(variants), Methods(methods)
 			{ 
-				Variants.Swap(variants);
-				Methods.Swap(methods);
-				
-				for(auto &variant : Variants) {
-					variant.parent=this;
-					variant.dochecks(false);
+				for(auto &variant : variants) {
+					AddVariant(variant);
 				}
 				
-				for(auto &variant : Methods) {
-					variant.parent=this;
-					variant.dochecks(true);
+				for(auto &variant : methods) {
+					AddMethod(variant);
 				}
 			}
 
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
-					 bool keyword=false, bool isoperator=false, bool staticmember=false) : 
+					 bool keyword, bool isoperator, bool staticmember) : 
 			Function(name, help, parent, Containers::Collection<Variant>()) {
 				this->keyword=keyword;
 				this->isoperator=isoperator;
@@ -494,18 +482,18 @@ namespace Gorgon {
 			void AddVariant(Variant &var) {
 				var.parent=this;
 				var.dochecks(false);
-				Variants.Push(var);
+				variants.Push(var);
 			}
 			
 			void AddMethod(Variant &var) {
 				var.parent=this;
 				var.dochecks(true);
-				Methods.Push(var);
+				methods.Push(var);
 			}
 			
-			Containers::Collection<Variant> Variants;
+			const Containers::Collection<Variant> &Variants;
 			
-			Containers::Collection<Variant> Methods;
+			const Containers::Collection<Variant> &Methods;
 			
 		private:
 			
@@ -549,6 +537,10 @@ namespace Gorgon {
 			bool isoperator = false;
 			
 			bool staticmember = false;
+			
+			Containers::Collection<Variant> variants;
+			
+			Containers::Collection<Variant> methods;
 		};
 		
 		///-use unordered_map

@@ -721,7 +721,7 @@ namespace Gorgon {
 				param={pdef, param.GetValue<Data>()};
 			}
 			else {
-				const Function *ctor=pdef.GetTypeCastingFrom(param.GetType());
+				const Function::Variant *ctor=pdef.GetTypeCastingFrom(param.GetType());
 				
 				if(ctor) {
 					param=ctor->Call(false, {param});
@@ -732,19 +732,99 @@ namespace Gorgon {
 			}
 		}
 		
+		
 		/// Calls the given function with the given values.
 		Data VirtualMachine::callfunction(const Function *fn, bool method, const std::vector<Value> &incomingparams) {
+			const Function::Variant *var=nullptr;
+			
+			int count=fn->Variants.GetCount()+method*fn->Methods.GetCount();
+			ASSERT(count, "This function has no registered body.");
+			
+			// easy way out, only a single variant exists
+			if(count==1) {
+				if(fn->Variants.GetCount()==0) {
+					ASSERT(method, "This function has no registered body.");
+					return callvariant(fn, fn->Methods[0], method, incomingparams);
+				}
+				else {
+					return callvariant(fn, fn->Variants[0], method, incomingparams);
+				}
+			}
+			
+			
+			//find correct variant
+			std::multi_map<int, Function::Variant*> variants;
+			
+			auto list=[&](const Containers::Collection<Function::Variant> &variants, int start) {
+				for(const auto &var : variants) {
+					auto pin=incomingparams.begin();
+					int current=0;
+					
+					for(const Parameter &param : var.Parameters) {
+						if(pin==incomingparams.end()) {
+							if(!param.IsOptional()) {
+								current=-1;
+								break;
+							}
+							else continue;
+						}
+
+						const Value &cval=*pin;
+						
+						if(param.IsReference() || param.GetType().IsReferenceType()) {
+							Data d=Data::Invalid();
+							try {
+								d=getvalue(cval, !param.IsConstant());
+							} 
+							catch(const CastException &) { 
+								current=-1; 
+								break;
+							}
+							
+							if(param.IsConstant()) {
+								if(!d.IsReference()) current++;
+							}
+							else { //non const ref
+								if(d.IsConstant()) {
+									current=-1;
+									break;
+								}
+							}
+						}
+						
+						++pin;
+					}
+					if(current==-1) continue;
+				}
+			};
+			
+			if(method) {
+				list(fn->Methods, 0);
+			}
+			list(fn->Variants, method ? 1000 : 0);
+			
+			if(variants.size()) {
+				var=*variants.begin();
+			}
+			else {
+				throw 0; //...
+			}
+			
+			return callvariant(var, method, incomingparams);
+		}
+		
+		Data VirtualMachine::callvariant(const Function *fn, const Function::Variant *variant, bool method, const std::vector<Value> &incomingparams) {
 			auto pin=incomingparams.begin();
 			
 			std::vector<Data> params;
 			
-			if(fn->HasParent() && !fn->IsStatic()) {
+			if(fn->IsMember() && !fn->IsStatic()) {
 				if(pin!=incomingparams.end()) {
 					// guarantees that the param is a reference
 					Data param=getvalue(*pin, true);
 					
 					// check for nullness
-					if(fn->GetParent().IsReferenceType()) {
+					if(fn->GetOwner().IsReferenceType()) {
 						if(param.IsNull()) {
 							if(pin->Type==ValueType::Variable) {
 								throw NullValueException("$"+pin->Name);
@@ -757,29 +837,29 @@ namespace Gorgon {
 					//else ok
 					
 					// check constantness
-					if(!fn->IsConstant() && param.IsConstant()) {
+					if(!variant->IsConstant() && param.IsConstant()) {
 						throw ConstantException(pin->Name, "While calling member function: "+fn->GetName());
 					}
 					//else ok
 					
-					if(param.GetType()==fn->GetParent()) {
+					if(param.GetType()==fn->GetOwner()) {
 						//no worries
 					}
 					else {
-						param=param.GetType().MorphTo(fn->GetParent(), param);
+						param=param.GetType().MorphTo(fn->GetOwner(), param);
 					}
 					
 					params.push_back(param);
 				}
 				else {
-					throw MissingParameterException("this", 0, fn->GetParent().GetName());
+					throw MissingParameterException("this", 0, fn->GetOwner().GetName());
 				}
 				pin++;
 			}
 			//else nothing else is needed
 			
 			int ind=1;
-			for(const auto &pdef : fn->Parameters) {
+			for(const auto &pdef : variant->Parameters) {
 				if(pin!=incomingparams.end()) {
 					if(pdef.IsVariable()) {
 						if(pin->Type==ValueType::Variable || pin->Type==ValueType::Identifier) {
@@ -832,11 +912,11 @@ namespace Gorgon {
 			}
 			
 			// if last parameter can be repeated
-			if(fn->RepeatLast()) {
+			if(variant->RepeatLast()) {
 				//add remaining parameters to the parameter list
 				while(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
-					fixparameter(param, fn->Parameters.Last().Current().GetType(),  
+					fixparameter(param, variant->Parameters.back().Current().GetType(),  
 								 "Cannot cast while trying to call "+fn->GetName());
 					params.push_back(param);
 					++pin;
@@ -844,13 +924,13 @@ namespace Gorgon {
 			}
 			// if not and there are extra parameters
 			else if(pin!=incomingparams.end()) {
-				throw TooManyParametersException(incomingparams.size(), fn->Parameters.GetCount(), 
+				throw TooManyParametersException(incomingparams.size(), variant->Parameters.size(), 
 												 "Too many parameters supplied for "+fn->GetName()
 				);
 			}
 			//else no additional parameters at the end
 			
-			return fn->Call(method, params);
+			return variant->Call(method, params);
 		}
 		
 		// !Careful there are early terminations

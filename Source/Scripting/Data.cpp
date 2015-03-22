@@ -154,4 +154,8 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
+	bool Data::IsReference() const {
+		return isreference || type->IsReferenceType();
+	}
+	
 } }
