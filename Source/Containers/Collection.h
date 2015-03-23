@@ -634,7 +634,7 @@ namespace Gorgon {
 			}
 
 			T_ *get_(long Index) {
-				if(Index<0 || Index>=list.size())
+				if(Index<0 || Index>=(long)list.size())
 					return NULL;
 
 				return list[Index];

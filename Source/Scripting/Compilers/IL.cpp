@@ -2,6 +2,7 @@
 #include "Utils.h"
 #include "../../Scripting.h"
 
+#pragma warning(disable:4018)
 
 namespace Gorgon { namespace Scripting { namespace Compilers {
 		

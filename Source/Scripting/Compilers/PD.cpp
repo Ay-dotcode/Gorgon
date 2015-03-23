@@ -16,6 +16,8 @@
 #	include "../../Console.h"
 #endif
 
+#pragma warning(disable:4018)
+
 
 ///@cond INTERNAL
 
@@ -320,7 +322,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				Gorgon::Console::SetBold(false);
 				std::cout << token.repr << std::endl;
 				std::cout << input << std::endl;
-				for(int i = 0; i < index; i++) {
+				for(int j = 0; j < index; j++) {
 					std::cout << "'";
 				}
 				std::cout << std::endl << std::endl;

@@ -407,6 +407,8 @@ namespace Gorgon {
 				
 				unpacktags(tag);
 				unpacktags(tags...);
+
+				init();
 			}
 			
 			template<class ...P_>
@@ -435,6 +437,8 @@ namespace Gorgon {
 				for(auto &variant : methods) {
 					AddMethod(variant);
 				}
+
+				init();
 			}
 
 			template<class ...P_>
@@ -444,6 +448,8 @@ namespace Gorgon {
 				this->keyword=keyword;
 				this->isoperator=isoperator;
 				this->staticmember=staticmember;
+
+				init();
 			}
 			
 			/// Returns the name of this function.
@@ -523,6 +529,8 @@ namespace Gorgon {
 				
 				unpacktags(rest...);
 			}
+
+			void init();
 			/// @endcond
 
 			

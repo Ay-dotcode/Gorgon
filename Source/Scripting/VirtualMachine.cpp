@@ -744,16 +744,16 @@ namespace Gorgon {
 			if(count==1) {
 				if(fn->Variants.GetCount()==0) {
 					ASSERT(method, "This function has no registered body.");
-					return callvariant(fn, fn->Methods[0], method, incomingparams);
+					return callvariant(fn, &fn->Methods[0], method, incomingparams);
 				}
 				else {
-					return callvariant(fn, fn->Variants[0], method, incomingparams);
+					return callvariant(fn,& fn->Variants[0], method, incomingparams);
 				}
 			}
 			
 			
 			//find correct variant
-			std::multi_map<int, Function::Variant*> variants;
+			std::multimap<int, Function::Variant*> variants;
 			
 			auto list=[&](const Containers::Collection<Function::Variant> &variants, int start) {
 				for(const auto &var : variants) {
@@ -804,13 +804,13 @@ namespace Gorgon {
 			list(fn->Variants, method ? 1000 : 0);
 			
 			if(variants.size()) {
-				var=*variants.begin();
+				var=variants.begin()->second;
 			}
 			else {
 				throw 0; //...
 			}
 			
-			return callvariant(var, method, incomingparams);
+			return callvariant(fn, var, method, incomingparams);
 		}
 		
 		Data VirtualMachine::callvariant(const Function *fn, const Function::Variant *variant, bool method, const std::vector<Value> &incomingparams) {
@@ -916,7 +916,7 @@ namespace Gorgon {
 				//add remaining parameters to the parameter list
 				while(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
-					fixparameter(param, variant->Parameters.back().Current().GetType(),  
+					fixparameter(param, variant->Parameters.back().GetType(),  
 								 "Cannot cast while trying to call "+fn->GetName());
 					params.push_back(param);
 					++pin;
@@ -1125,7 +1125,7 @@ namespace Gorgon {
 
 			//if requested
 			if(inst->Store) {
-				if(fn->HasReturnType()) {
+				if(ret.IsValid()) {
 					//fix variants
 					if(ret.GetType()==Types::Variant()) {
 						ret=ret.GetValue<Data>();

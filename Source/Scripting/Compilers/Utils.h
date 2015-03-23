@@ -22,7 +22,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			return ret;
 		};
 		
-		if(input.length() <= ch) {
+		if((int)input.length() <= ch) {
 			throw ParseError({ExceptionType::UnexpectedToken, errstr() + ", end of string encountered.", ch, 0});
 		}
 		

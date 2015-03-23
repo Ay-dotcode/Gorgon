@@ -42,13 +42,13 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Data Type::Construct(const std::vector<Data> &parameters) const {
-		std::multimap<int, const Function *> rankedlist;
+		std::multimap<int, const Function::Variant *> rankedlist;
 		
-		for(const auto &fn : constructors) {
+		for(const auto &var : constructor.Variants) {
 			int status=0;
 			
 			auto pin = parameters.begin();
-			for(const auto &pdef : fn.Parameters) {
+			for(const auto &pdef : var.Parameters) {
 				if(pin==parameters.end()) {
 					if(pdef.IsOptional()) { 
 						continue; 
@@ -62,7 +62,7 @@ namespace Gorgon { namespace Scripting {
 				if(pdef.GetType()==pin->GetType()) {
 					// perfect match
 				}
-				else if(pdef.GetType().GetTypeCasting(pin->GetType())) {
+				else if(pdef.GetType().GetTypeCastingFrom(pin->GetType())) {
 					// good match
 					status++; 
 				}
@@ -76,14 +76,14 @@ namespace Gorgon { namespace Scripting {
 			if(status==-1) continue;
 			
 			if(pin!=parameters.end()) {
-				if(fn.parameters.GetCount() && fn.RepeatLast()) {
+				if(var.Parameters.size() && var.RepeatLast()) {
 					int worst=0;
-					const auto &pdef=*fn.parameters.Last();
+					const auto &pdef=*var.Parameters.rbegin();
 					while(pin!=parameters.end()) {
 						if(pdef.GetType()==pin->GetType()) {
 							// perfect match
 						}
-						else if(pdef.GetType().GetTypeCasting(pin->GetType())) {
+						else if(pdef.GetType().GetTypeCastingFrom(pin->GetType())) {
 							// good match
 							if(worst<1) worst=1;
 						}
@@ -103,7 +103,7 @@ namespace Gorgon { namespace Scripting {
 			}
 			
 			if(status!=-1) {
-				rankedlist.insert(std::make_pair(status, &fn));
+				rankedlist.insert(std::make_pair(status, &var));
 			}
 		}
 		
@@ -126,7 +126,7 @@ namespace Gorgon { namespace Scripting {
 		Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),
 		referencetype(isref), TypeInterface(defaultvalue.GetTypeInterface()), ConstTypeInterface(consttype),
 		PtrTypeInterface(ptrtype), ConstPtrTypeInterface(constptrtype), Parents(parents), InheritedSymbols(inheritedsymbols),
-		constructor("{}", "Constructs "+name, this, {}, StaticTag)
+		constructor("{}", "Constructs "+name, this, Containers::Collection<Function::Variant>(), StaticTag)
 	{
 		ASSERT((defaultvalue.GetTypeInterface()->PtrTypeInfo()==PtrTypeInterface->TypeInfo()),
 			"The type and its pointer does not match");
