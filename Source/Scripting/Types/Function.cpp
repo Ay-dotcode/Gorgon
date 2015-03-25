@@ -20,16 +20,29 @@ namespace Gorgon {
 				);
 				
 				fn->AddFunctions({
-					new Scripting::MappedFunction{"Name",
-						"Returns the name of the function", 
-						Types::String(), fn, ParameterList(),
-						MappedFunctions([](const Function *o){return o->GetName();}), MappedMethods()
-					},
-					new Scripting::MappedFunction{"Help",
-						"Returns help for the function", 
-						Types::String(), fn, ParameterList(),
-						MappedFunctions([](const Function *o) {return o->GetHelp(); }), MappedMethods()
-					},
+					new Scripting::Function("Name",
+						"Returns the name of the function", fn,
+						{
+							MapFunction(
+								[](const Function *o) {
+									return o->GetName();
+								}, Types::String(),
+								{ }
+							)
+						}
+					),
+					
+					new Scripting::Function("Help",
+						"Returns help for the function", fn,
+						{
+							MapFunction(
+								[](const Function *o) {
+									return o->GetHelp(); 
+								}, Types::String(), 
+								{ }
+							)
+						}
+					),
 				});
 			}
 			

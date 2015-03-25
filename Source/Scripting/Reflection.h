@@ -253,6 +253,8 @@ namespace Gorgon {
 					using std::swap;
 					swap(parameters, this->parameters);
 				}
+				
+				virtual ~Variant() { }
 			
 				/// Returns if the last parameter of this function should be stretched. 
 				/// If true, in console dialect, spaces in the last parameter are not treated as parameter
@@ -395,7 +397,7 @@ namespace Gorgon {
 			Function(const std::string &name, const std::string &help, const Type *parent, 
 					 const Containers::Collection<Variant> &variants, const Containers::Collection<Variant> &methods, 
 					 Tag tag, P_ ...tags) : 
-			name(name), help(help), parent(parent), Variants(variants), Methods(methods)
+			name(name), help(help), parent(parent), Variants(this->variants), Methods(this->methods)
 			{
 				for(auto &variant : variants) {
 					AddVariant(variant);
@@ -414,7 +416,7 @@ namespace Gorgon {
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
 					 const Containers::Collection<Variant> &variants, Tag tag, P_ ...tags) : 
-			name(name), help(help), parent(parent), Variants(variants), Methods(methods)
+			name(name), help(help), parent(parent), Variants(this->variants), Methods(this->methods)
 			{
 				for(auto &variant : variants) {
 					AddVariant(variant);
@@ -428,7 +430,7 @@ namespace Gorgon {
 			Function(const std::string &name, const std::string &help, const Type *parent,
 					 const Containers::Collection<Variant> &variants, const Containers::Collection<Variant> &methods={}
 			) : 
-			name(name), help(help), parent(parent), Variants(variants), Methods(methods)
+			name(name), help(help), parent(parent), Variants(this->variants), Methods(this->methods)
 			{ 
 				for(auto &variant : variants) {
 					AddVariant(variant);
@@ -451,6 +453,8 @@ namespace Gorgon {
 
 				init();
 			}
+			
+			virtual ~Function() { } 
 			
 			/// Returns the name of this function.
 			std::string GetName() const {
@@ -485,16 +489,28 @@ namespace Gorgon {
 				return *parent;
 			}
 			
-			void AddVariant(Variant &var) {
+			virtual void AddVariant(Variant &var) {
 				var.parent=this;
 				var.dochecks(false);
 				variants.Push(var);
 			}
 			
-			void AddMethod(Variant &var) {
+			virtual void AddMethod(Variant &var) {
 				var.parent=this;
 				var.dochecks(true);
 				methods.Push(var);
+			}
+			
+			virtual void AddVariant(Variant *var) {
+				ASSERT(var, "Empty variant");
+
+				AddVariant(*var);
+			}
+			
+			virtual void AddMethod(Variant *var) {
+				ASSERT(var, "Empty variant");
+
+				AddMethod(*var);
 			}
 			
 			const Containers::Collection<Variant> &Variants;

@@ -160,65 +160,90 @@ namespace Gorgon { namespace Scripting {
 	Scripting::Function::Variant *MapFunction(F_ fn, const Type *returntype, ParameterList parameters, P_ ...tags) {
 		return new MappedFunction<F_>(fn, returntype, std::move(parameters), tags...);
 	}
+
+	/**
+		* This class makes working with operators easier.
+		*/
+	class MappedOperator : public Scripting::Function {
+	public:
+		/// Constructor, returntype and parent could be nullptr, tags are optional. 
+		template<class F_>
+		MappedOperator(const std::string &name, const std::string &help, const Type *returntype, 
+					   const Type *parent, const Type *rhs, F_ fn) :
+		Function( name, help, *parent, {}, Scripting::OperatorTag ) {
+			ASSERT(returntype, "Operators should have a return type", 1, 1);
+			ASSERT(parent, "Operators should belong a class", 1, 1);
+			
+			Function::AddVariant(
+				MapFunction(fn, returntype, 
+					{
+						Scripting::Parameter("rhs", "Right hand side of the operator", rhs)
+					},
+					ConstTag
+				)
+			);
+		}
+		
+		template<class F_>
+		void AddVariant(const Type *returntype, const Type *rhs, F_ fn) {
+			ASSERT(returntype, "Operators should have a return type", 1, 1);
+			
+			Function::AddVariant(
+				MapFunction(fn, returntype, 
+					{
+						Scripting::Parameter("rhs", 
+							"Right hand side of the operator", rhs
+						)
+					}, 
+					ConstTag
+				)
+			);
+		}
+		
+		virtual void AddMethod(Variant &var) override {
+			Utils::ASSERT_FALSE("Operators cannot have method variants");
+		}
+		
+	private:
+	};
 	
-	void aa(int) { }
+	/**
+	* Creates a comparison function
+	*/
+	#define MAP_COMPARE(opname, op, mappedtype, cpptype) \
+		new MappedOperator( #opname, \
+			"Compares two "#mappedtype" types.", \
+			Bool, mappedtype, mappedtype, [](cpptype l, cpptype r) { return l op r; } \
+		)
 	
-	void test() {
-		new Scripting::Function("fn", "bla", nullptr, {
-			MapFunction(aa, nullptr, {})
-		});
+	/**
+	* Maps a constructor for type casting, works for value types
+	*/
+	template<class from_, class to_>
+	Scripting::Function::Variant *Map_Typecast(Type *from, Type *to, bool implicit=true) {
+		if(implicit) {
+			return MapFunction(
+				[](from_ val) { 
+					return to_(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				},
+				ImplicitTag
+			);
+		}
+		else {
+			return MapFunction(
+				[](from_ val) { 
+					return to_(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				}
+			);
+		}
 	}
 
-// 	/**
-// 		* This class makes working with operators easier.
-// 		*/
-// 	class MappedOperator : public MappedFunction {
-// 	public:
-// 		/// Constructor, returntype and parent could be nullptr, tags are optional. 
-// 		template<class F_>
-// 		MappedOperator(const std::string &name, const std::string &help, const Type *returntype, 
-// 						const Type *parent, const Type *rhs, F_ fn) :
-// 		MappedFunction(
-// 			name, help, returntype, parent, Scripting::ParameterList{
-// 			new Scripting::Parameter(
-// 				"rhs", 
-// 				"Right hand side of the operator", 
-// 				rhs)
-// 			}, 
-// 			MappedFunctions(fn), MappedMethods(), 
-// 			Scripting::OperatorTag
-// 		)
-// 		{
-// 			ASSERT(returntype, "Operators should have a return type", 1, 1);
-// 			ASSERT(parent, "Operators should be a member function", 1, 1);
-// 		}
-// 	};
-// 	
-	/**
-		* Creates a comparison function
-		*/
-// 	#define MAP_COMPARE(opname, op, mappedtype, cpptype) \
-// 		new MappedOperator( #opname, \
-// 			"Compares two "#mappedtype" types.", \
-// 			Bool, mappedtype, mappedtype, [](cpptype l, cpptype r) { return l op r; } \
-// 		)
-	
-// 	/**
-// 		* Maps a constructor for type casting, works for value types
-// 		*/
-// 	template<class from_, class to_>
-// 	Function *Map_Typecast(const std::string &fromnamespace, Type *from, Type *to) {
-// 		return new MappedFunction(
-// 			fromnamespace+":"+from->GetName(), "Constructs a new "+String::ToLower(to->GetName())+" from a "+
-// 			String::ToLower(from->GetName()),
-// 			to, nullptr, ParameterList {
-// 				new Parameter("value", "", from)
-// 			},
-// 			MappedFunctions([](from_ val) { return to_(val); }),
-// 			MappedMethods()
-// 		);
-// 	}
-// 
 	
 	/**
 		* This class allows a one to one mapping of a data member to a c++ data member. First template

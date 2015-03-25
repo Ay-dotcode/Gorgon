@@ -25,28 +25,31 @@ namespace Gorgon { namespace Geometry {
 				point, point, point, 
 				[] (Point lhs, Point rhs) { return lhs + rhs; }
 			),
-			new Scripting::MappedFunction(
-				"Distance",
-				"Returns the distance between two Points",
-				Scripting::Integrals.Types["Float"], point,
-				Scripting::ParameterList{
-					new Scripting::Parameter(
-						"Point",
-						"Another point to calculate distance in between",
-						point,
-						Scripting::OptionalTag
+			new Scripting::Function("Distance",
+				"Returns the distance between two Points", point,
+				{
+					Scripting::MapFunction(
+						[] (Point owner, Point other) { 
+							return owner.Distance(other); 
+						}, Scripting::Types::Float(),
+						{
+							Scripting::Parameter("Point", "Another point to calculate distance in between", point)
+						},
+						Scripting::ConstTag
 					),
-				},	
-				Scripting::MappedFunctions(
-					[] (Point owner, Point other) { return owner.Distance(other); },
-					[] (Point owner) { return owner.Distance(); }
-				),
-				Scripting::MappedMethods()
+					Scripting::MapFunction(
+						[] (Point owner) { 
+							return owner.Distance(); 
+						}, Scripting::Types::Float(),
+						{ },
+						Scripting::ConstTag
+					),
+				}
 			)
 		});
 		
 		point->AddConstructors({
-			new Scripting::MappedValueConstructor<Point>("Constructs an empty point", point, Scripting::ParameterList())
+			Scripting::MapFunction([]{ return Point(0,0); }, point, {})
 		});
 
 		point->AddDataMembers({

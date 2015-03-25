@@ -30,26 +30,44 @@ namespace Gorgon {
 		void InitTypeType() {
 			if(type->Functions.GetCount()==0) {				
 				type->AddFunctions({
-					new Scripting::MappedFunction{"Name",
-						"Returns the name of the type", 
-						Types::String(), type, ParameterList(),
-						MappedFunctions([](const Type *o){return o->GetName();}), MappedMethods()
+					new Scripting::Function{"Name",
+						"Returns the name of the type", type,
+					    {
+							MapFunction(
+								[](const Type *o) { 
+									return o->GetName();
+								}, Types::String(),
+								{ }
+							)
+						}
 					},
-					new Scripting::MappedFunction{"Help",
-						"Returns help for the type", 
-						Types::String(), type, ParameterList(),
-						MappedFunctions([](const Type *o) {return o->GetHelp(); }), MappedMethods()
+
+					new Scripting::Function{"Help",
+						"Returns help for the type", type,
+					    {
+							MapFunction(
+								[](const Type *o) { 
+									return o->GetHelp();
+								}, Types::String(),
+								{ }
+							)
+						}
 					},
-					new Scripting::MappedFunction{"[]",
-						"Creates a new array for this type.",
-						ArrayType(), type, ParameterList(
-							new Parameter{"Elements",
-								"The newly constructed array will be filled with these elements",
-								Types::Variant(), OptionalTag
-							}
-						),
-						MappedFunctions(&BuildArray, [](const Type *type){ return BuildArray(type, {}); }), MappedMethods(),
-						RepeatTag
+
+					new Scripting::Function{"[]",
+						"Creates a new array for this type.", type, 
+					    {
+							MapFunction(
+								&BuildArray, ArrayType(),
+								{
+									Parameter("Elements",
+										"The newly constructed array will be filled with these elements",
+										Types::Variant()/*, OptionalTag*///...
+									)
+								},
+								RepeatTag
+							)
+						}
 					},
 				});
 			}

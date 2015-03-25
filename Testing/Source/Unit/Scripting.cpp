@@ -150,8 +150,8 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 */
 	//LibGeometry.Types["Point"];
 
-	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Call(false, {{mypointtype, Point(1, 1)}, {mypointtype, Point(1, 1)}}).GetValue<float>() == 0.f);
-	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Call(false, {{mypointtype, Point(1, 0)}}).GetValue<float>() == 1.f) ;
+	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Variants[0].Call(false, {{mypointtype, Point(1, 1)}, {mypointtype, Point(1, 1)}}).GetValue<float>() == 0.f);
+	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Variants[0].Call(false, {{mypointtype, Point(1, 0)}}).GetValue<float>() == 1.f) ;
 	
 	int testval=0;
 	myvaluetype->AddDataMembers({
@@ -189,7 +189,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE(myreftype->DataMembers["cc"].Get(datareftest).GetValue<int>() == 6);
 	
 	
-	
+	/*
 
 	const Parameter param1("name", "heeelp", Integrals.Types["Int"]);
 
@@ -232,8 +232,8 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 			}
 		},
 		MappedFunctions(std::function<void(int,int)>(&TestFn), std::function<void(int)>(&TestFn_1), []{TestFn(1);}), 
-		MappedMethods(/*std::function<void(int, int)>(TestFn), std::function<void(int)>(TestFn_1), [] {TestFn(1); }*/),
-		StretchTag/*, MethodTag*/
+		MappedMethods(std::function<void(int, int)>(TestFn), std::function<void(int)>(TestFn_1), [] {TestFn(1); }),
+		StretchTag
 	};
 	
 	REQUIRE(fn1.GetName()=="TestFn");
@@ -327,14 +327,17 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE( fn5.Call(false, { {myreftype, new A()}, {myfloattype, 1.0f} }).GetValue<int>() == 42 );
 	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {myfloattype, 1.0f} }).GetValue<int>());
 	REQUIRE_THROWS( fn5.Call(false, { {myvaluetype, A()}, {Integrals.Types["Int"], 1} }).GetValue<int>());
-	;
+	;*/
 	
 	REQUIRE( vm.FindConstant("Pi").GetData().GetValue<double>() == Approx(3.1416f) );
 
 	myvaluetype->AddConstructors({
-		new MappedValueConstructor<A, int>("Filling constructor", 
-			myvaluetype, ParameterList{
-				new Parameter("value", "help", Integrals.Types["Int"])
+		MapFunction(
+			[](int value) { 
+				return A(value); 
+			}, myvaluetype, 
+			{
+				Parameter("value", "help", Integrals.Types["Int"])
 			}
 		)
 	});
@@ -347,13 +350,23 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 TEST_CASE("Reference counting", "[Data]") {
 	Type *BType = new MappedReferenceType<B>("B", "B type");
 	BType->AddConstructors({
-		new MappedReferenceConstructor<B>("Default constructor", BType, ParameterList()),
-		new MappedReferenceConstructor<B, int>("Initializing constructor", BType, ParameterList(
-			new Parameter{ "bb", 
-				"bb parameter",
-				Integrals.Types["Int"]
+		MapFunction(
+			[]{
+				return new B();
+			}, BType,
+			{}
+		),
+		
+		MapFunction(
+			[](int bb) {
+				return new B(bb);
+			}, BType, 
+			{
+				Parameter( "bb", "bb parameter",
+					Integrals.Types["Int"]
+				)
 			}
-		))
+		)
 	});
 	
 	Data data=BType->Construct({});

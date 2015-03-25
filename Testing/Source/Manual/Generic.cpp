@@ -192,17 +192,34 @@ int main() {
 	mystr->AddInheritance(Types::String(), StringToMyStrConvert, MyStrToStringConvert);
 
 	mylib.AddFunctions({
-		new MappedFunction("svg", "", nullptr, nullptr, ParameterList{}, 
-						   MappedFunctions(togglesvg), MappedMethods(), KeywordTag),
+		new Function("svg", "", nullptr,
+			{
+				MapFunction(&togglesvg, nullptr, {})
+			},
+			KeywordTag
+		),
 					   
-		new MappedFunction("testfill", "", nullptr, nullptr, 
-			ParameterList{
-				new Parameter("a", "", Types::String(), Gorgon::Scripting::ReferenceTag)
-			}, MappedFunctions(testfill), MappedMethods()
+		new Function("testfill", "", nullptr, 
+			{
+				MapFunction(
+					testfill, nullptr,
+					{
+						Parameter("a", "", Types::String(), Gorgon::Scripting::ReferenceTag)
+					}
+				)
+			}
 		),
 		
-		new MappedFunction("gen", "", mystr, nullptr, ParameterList{},
-						   MappedFunctions([]{ return std::string("abc"); }), MappedMethods()),
+		new Function("gen", "", nullptr,
+			{
+				MapFunction(
+					[]{ 
+						return std::string("abc"); 	
+					}, mystr, 
+					{ }
+				), 
+			}
+		),
 	});
 	
 	vm.AddLibrary(mylib);

@@ -110,36 +110,32 @@ namespace Gorgon {
 				"Represents a truth statement. Can either be true or false."
 			);
 			
-#define intop(op, name, help, ch) \
-				new MappedOperator( #name, \
-					#help, Variant, Int, Variant, \
-					[=](int l, Scripting::Data r) -> Scripting::Data { \
-						if(r.GetType()==Int) \
-							return {Int, l op r.GetValue<int>()}; \
-						else if(ch && r.GetType()==Char) \
-							return {Int, l op r.GetValue<char>()}; \
-						else if(r.GetType()==Byte) \
-							return {Int, l op r.GetValue<Gorgon::Byte>()}; \
-						else if(r.GetType()==Unsigned) \
-							return {Int, l op r.GetValue<unsigned>()}; \
-						else if(r.GetType()==Float) \
-							return Float->Functions["+"].Call(false, {{Float, float(l)}}); \
-						else if(r.GetType()==Double) \
-							return Double->Functions["+"].Call(false, {{Double, double(l)}}); \
-						else \
-							throw SymbolNotFoundException( \
-								#name, SymbolType::Function, \
-								"Cannot find "#name" operator between int and "+r.GetType().GetName()); \
-					} \
-				) \
+			auto intadd=new MappedOperator("+", "Adds two numbers together",
+				Int, Int, Int, 
+				[](int l, int r) { return l+r; }
+			);
+			intadd->AddVariant(Double, Double, [](int l, double r) { return l+r; });
+			intadd->AddVariant(Float,  Float,  [](int l, float r) { return l+r; });
+			
+			auto intsub=new MappedOperator("-", "Subtracts a number from this one",
+					Int, Int, Int, 
+					[](int l, int r) { return l-r; }
+			);
+			intsub->AddVariant(Double, Double, [](int l, double r) { return l-r; });
+			intsub->AddVariant(Float,  Float,  [](int l, float r) { return l-r; });
+			
+			auto intmul=new MappedOperator("*", "Multiplies two numbers together",
+					Int, Int, Int, 
+					[](int l, int r) { return l*r; }
+			);
+			intmul->AddVariant(Double, Double, [](int l, double r) { return l*r; });
+			intmul->AddVariant(Float,  Float,  [](int l, float r) { return l*r; });
+
 			
 			Int->AddFunctions({
-				intop(+, +, "Adds two numbers together", true),
 				
-				intop(-, -, "Subtracts the given number", true),		
-				
-				intop(*, *, "Multiplies two numbers together", false),
-				
+				intadd, intsub, intmul,
+
 				new MappedOperator( "/",
 					"Divides this number to the given one. Division operation is performed in double type",
 					Double, Int, Double, [](int l, double r) { return double(l)/r; }
@@ -166,43 +162,43 @@ namespace Gorgon {
 			});
 
 			Int->AddConstructors({
-				Map_Typecast<float, int>("Integrals", Float, Int),
-				Map_Typecast<double, int>("Integrals", Double, Int),
-				Map_Typecast<unsigned, int>("Integrals", Unsigned, Int),
-				Map_Typecast<Gorgon::Byte, int>("Integrals", Byte, Int)
+				Map_Typecast<float, int>(Float, Int),
+				Map_Typecast<double, int>(Double, Int),
+				Map_Typecast<unsigned, int>(Unsigned, Int),
+				Map_Typecast<Gorgon::Byte, int>(Byte, Int)
 			});
 			
 			Unsigned->AddConstructors({
-				Map_Typecast<float, unsigned>("Integrals", Float, Unsigned),
-				Map_Typecast<double, unsigned>("Integrals", Double, Unsigned),
-				Map_Typecast<int, unsigned>("Integrals", Int, Unsigned),
-				Map_Typecast<Gorgon::Byte, unsigned>("Integrals", Byte, Unsigned),
+				Map_Typecast<float, unsigned>(Float, Unsigned),
+				Map_Typecast<double, unsigned>(Double, Unsigned),
+				Map_Typecast<int, unsigned>(Int, Unsigned),
+				Map_Typecast<Gorgon::Byte, unsigned>(Byte, Unsigned),
 			});
 			
 			Float->AddConstructors({
-				Map_Typecast<unsigned, float>("Integrals", Unsigned, Float),
-				Map_Typecast<double, float>("Integrals", Double, Float),
-				Map_Typecast<int, float>("Integrals", Int, Float),
-				Map_Typecast<Gorgon::Byte, float>("Integrals", Byte, Float)
+				Map_Typecast<unsigned, float>(Unsigned, Float),
+				Map_Typecast<double, float>(Double, Float),
+				Map_Typecast<int, float>(Int, Float),
+				Map_Typecast<Gorgon::Byte, float>(Byte, Float)
 			});
 			
 			Double->AddConstructors({
-				Map_Typecast<float, double>("Integrals", Float, Double),
-				Map_Typecast<unsigned, double>("Integrals", Unsigned, Double),
-				Map_Typecast<int, double>("Integrals", Int, Double),
-				Map_Typecast<Gorgon::Byte, double>("Integrals", Byte, Double)
+				Map_Typecast<float, double>(Float, Double),
+				Map_Typecast<unsigned, double>(Unsigned, Double),
+				Map_Typecast<int, double>(Int, Double),
+				Map_Typecast<Gorgon::Byte, double>(Byte, Double)
 			});
 			
 			Byte->AddConstructors({
-				Map_Typecast<float, Gorgon::Byte>("Integrals", Float, Byte),
-				Map_Typecast<double, Gorgon::Byte>("Integrals", Double, Byte),
-				Map_Typecast<int, Gorgon::Byte>("Integrals", Int, Byte),
-				Map_Typecast<unsigned, Gorgon::Byte>("Integrals", Unsigned, Byte),
-				Map_Typecast<char, Gorgon::Byte>("Integrals", Char, Byte)
+				Map_Typecast<float, Gorgon::Byte>(Float, Byte),
+				Map_Typecast<double, Gorgon::Byte>(Double, Byte),
+				Map_Typecast<int, Gorgon::Byte>(Int, Byte),
+				Map_Typecast<unsigned, Gorgon::Byte>(Unsigned, Byte),
+				Map_Typecast<char, Gorgon::Byte>(Char, Byte)
 			});
 			
 			Char->AddConstructors({
-				Map_Typecast<Gorgon::Byte, char>("Integrals", Byte, Char)
+				Map_Typecast<Gorgon::Byte, char>(Byte, Char)
 			});
 			
 			Bool->AddFunctions({
@@ -221,101 +217,105 @@ namespace Gorgon {
 				   Bool, Bool, Bool, [](bool l, bool r) { return l != r; }
 				),
 				
-				new MappedFunction("not",
-					"Inverts boolean value",
-					Bool, Bool, ParameterList(), 
-					MappedFunctions([](bool val) { return !val; }),
-					MappedMethods()
-				)
+				new Function("not", "Inverts boolean value", Bool, {
+					MapFunction(
+						[](bool val) { return !val; },
+						Bool, ParameterList(), ConstTag
+					)
+				})
 			});
 			
 			Bool->AddConstructors({
-				Map_Typecast<Gorgon::Byte, bool>("Integrals", Byte, Bool),
-				Map_Typecast<unsigned, bool>("Integrals", Unsigned, Bool),
-				Map_Typecast<int, bool>("Integrals", Int, Bool),
+				Map_Typecast<Gorgon::Byte, bool>(Byte, Bool),
+				Map_Typecast<unsigned, bool>(Unsigned, Bool),
+				Map_Typecast<int, bool>(Int, Bool),
 			});
 			
 			String->AddFunctions({
-				new MappedFunction("Length",
-					"Returns the length of the string", Unsigned, String, {}, 
-					MappedFunctions(
-						[](std::string str) -> unsigned { return (unsigned)str.length(); }
-					), MappedMethods(),
-					ConstTag
+				new Function("Length",
+					"Returns the length of the string", String, 
+				 {MapFunction(&std::string::length, Unsigned, {}, ConstTag)}
 				),
 				
-				new MappedFunction("Substr",
-					"Returns a part of the string", String, String, {
-						new Parameter("Start", "Start of the substring, first element is at 0", Unsigned),
-						new Parameter("Length", "Length of the substring, if not specified, "
-							"all of the string after the start is taken", Unsigned, OptionalTag),
-					}, 
-					MappedFunctions(
-						[](std::string str, unsigned start, unsigned len) -> std::string { 
-							return str.substr(start, len); 
-						},
- 						[](std::string str, unsigned start) -> std::string { 
-							return str.substr(start); 
-						}
-					), MappedMethods()
+				new Function("Substr",
+					"Returns a part of the string", String, 
+					{
+						MapFunction(
+							&std::string::substr, String, 
+							{
+								Parameter("Start", "Start of the substring, first element is at 0", Unsigned),
+								Parameter("Length", "Length of the substring to be returned", Unsigned, 
+										  Data(Unsigned, std::string::npos), OptionalTag)
+							},
+							ConstTag
+						)
+					}
 				),
 				
-				new MappedFunction("Find",
-					"Returns the position of a given string", Unsigned, String, {
-						new Parameter("Search", "The string to be searched", String),
-						new Parameter("Start", "Starting point of the search, "
-							"if not specified search will start from the beginning", Unsigned, OptionalTag),
-					}, 
-					MappedFunctions(
-						[](std::string str, std::string src, unsigned pos) -> unsigned { return str.find(src, pos); },
-						[](std::string str, std::string src) -> unsigned { return str.find(src); }
-					), MappedMethods()
+				new Function("Find",
+					"Returns the position of a given string", String, 
+					{
+						MapFunction(
+							(std::size_t(std::string::*)(const std::string &, std::size_t) const)&std::string::find, Unsigned, 
+							{
+								Parameter("Search", "The string to be searched", String),
+								Parameter("Start", "Starting point of the search, "
+									"if not specified search will start from the beginning", Unsigned, 
+									Data(Unsigned, 0u), OptionalTag
+ 								),
+							},
+							ConstTag
+						),
+					}
 				),
 				
-				new MappedFunction("ToLower",
-					"Returns lowercase string", String, String, {}, 
-					MappedFunctions(
-						[](std::string str) { return String::ToLower(str); }
-					), MappedMethods()
+				new Function("ToLower",
+					"Returns lowercase string", String,
+					{
+						MapFunction(&String::ToLower, String, { }, ConstTag)
+					}
 				),
 				
-				new MappedFunction("ToUpper",
-					"Returns lowercase string", String, String, {}, 
-					MappedFunctions(
-						[](std::string str) { return String::ToUpper(str); }
-					), MappedMethods()
+				new Function("ToUpper",
+					"Returns upper string", String,
+					{
+						MapFunction(&String::ToUpper, String, { }, ConstTag)
+					}
 				),
 				
-				new MappedFunction("Trim",
-					"Trims start and the end of the string", String, String, {}, 
-					MappedFunctions(
-						[](std::string str) { return String::Trim(str); }
-					), MappedMethods()
+				
+				new Function("Trim",
+					"Trims start and the end of the string", String, 
+					{
+						MapFunction(&String::Trim, String, { }, ConstTag)
+					}
 				),
 				
-				new MappedFunction("Extract",
-					"Extracts the part of the string up to the given marker", String, String, {
-						new Parameter("Marker", "String that will be searched.", String)						
-					}, 
-					MappedFunctions(
-						[](std::string &str, std::string marker) { return String::Extract(str, marker); }
-					), MappedMethods()
+				new Function("Extract",
+					"Extracts the part of the string up to the given marker", String, 
+					{
+						MapFunction(
+							(std::string(*)(std::string &, const std::string))String::Extract, String, 
+							{
+								Parameter("Marker", "String that will be searched.", String)
+							}
+						)
+					}
 				),
 				
-				new MappedFunction("Replace",
-					"Replaces all instances of the given substring in this string with another string", String, String, {
-						new Parameter("Search", "Search string to be replaced", String),
-						new Parameter("Replace", "String to replace, if not specified, "
-							"empty string is assumed", String, OptionalTag),
-					}, 
-					MappedFunctions(
-						[](std::string str, std::string search, std::string replace) { 
-							return String::Replace(str, search, replace); 
-						},
-						[](std::string str, std::string search) -> std::string { 
-							return String::Replace(str, search, ""); 
-						}
-					), MappedMethods()
+				new Function("Replace",
+					"Replaces all instances of the given substring in this string with another string", String, 
+					{
+						MapFunction(
+							(std::string(*)(const std::string &, const std::string &))&String::Replace, String,
+							{
+								Parameter("Search", "Search string to be replaced", String),
+								Parameter("Replace", "String to replace, if not specified, "
+									"empty string is assumed", String, Data(String, std::string("")), OptionalTag),
+							},
+							ConstTag
+   						)
+					}
 				),
 				
 				MAP_COMPARE( =,==, String, std::string),
@@ -361,83 +361,114 @@ namespace Gorgon {
 			Integrals.AddTypes({ArrayType()});
 			Integrals.AddFunctions(ArrayFunctions());
 			Integrals.AddFunctions({
-				new MappedFunction("Echo",
-					"This function prints the given parameters to the screen.",
-					nullptr, nullptr, ParameterList {
-						new Parameter( "string",
-							"The strings that will be printed.",
-							String
+				new Function("Echo",
+					"This function prints the given parameters to the screen.", nullptr,
+					{
+						MapFunction(
+							Echo, nullptr, 
+							{
+								Parameter( "string",
+									"The strings that will be printed.",
+									String
+								)
+							},
+							StretchTag, RepeatTag
 						)
-					},
-					MappedFunctions(Echo), MappedMethods(),
-					StretchTag, RepeatTag
+					}
 				)
 			});
 			
 			Keywords={"Keywords", "Standard keywords like if and for.",
 				TypeList {},
 				FunctionList {
-					new MappedFunction("return",
+					new Function("return",
 						"Returns from the current function or terminates the execution if not in a "
 						"function. If a value is supplied, it is assumed to be the return value of "
-						"the function or execution",
-						nullptr, nullptr,
-						ParameterList {
-							new Parameter(
-								"Value",
-								"This value is used as the return value of the function or execution",
-								Variant, OptionalTag
-							)
-						},
-						MappedFunctions(Return1, Return0), MappedMethods(),
-						KeywordTag
-					),
-					new MappedFunction("const",
-						"Makes the given variable a constant",
-						nullptr, nullptr,
-						ParameterList {
-							new Parameter(
-								"Variable",
-								"This is the variable to become constant",
-								String, VariableTag
-							)
-						},
-						MappedFunctions([](std::string varname) {
-							VirtualMachine::Get().GetVariable(varname).MakeConstant();
-						}), MappedMethods(),
-						KeywordTag
-					),
-					new MappedFunction("static",
-						"Creates a static variable",
-						nullptr, nullptr,
-						ParameterList {
-							new Parameter(
-								"Variable",
-								"This is the variable to be declared",
-								String, VariableTag
+						"the function or execution", nullptr,
+						{
+							MapFunction(
+								[](Data data) {
+									VirtualMachine::Get().Return(data);
+								}, nullptr,
+								{
+									Parameter("Value",
+										"This value is used as the return value of the function or execution",
+										Variant
+									)
+								}
 							),
-							new Parameter(
-								"Value",
-								"This is the variable to be declared",
-								Variant, OptionalTag
+							MapFunction(
+								[]() {
+									VirtualMachine::Get().Return();
+								}, nullptr,
+								{ }
 							)
 						},
-						MappedFunctions(static2, static1), MappedMethods(),
 						KeywordTag
 					),
-					new MappedFunction("unset",
-						"Unsets a given variable",
-						nullptr, nullptr,
-						ParameterList {
-							new Parameter(
-								"Variable",
-								"This is the variable to be unset",
-								String, VariableTag
+					new Function("const",
+						"Makes the given variable a constant", nullptr,
+						{
+							MapFunction(
+								[](std::string varname) {
+									VirtualMachine::Get().GetVariable(varname).MakeConstant();
+								}, nullptr,
+								{
+									Parameter("Variable",
+										"This is the variable to become constant",
+										String, VariableTag
+									)
+								}
 							)
 						},
-						MappedFunctions([](std::string varname) {
-							VirtualMachine::Get().UnsetVariable(varname);
-						}), MappedMethods(),
+						KeywordTag
+					),
+					new Function("static",
+						"Creates a static variable", nullptr, 
+						{
+							MapFunction(
+								static1, nullptr,
+								{
+									Parameter(
+										"Variable",
+										"This is the variable to be declared",
+										String, VariableTag
+									)
+								}
+							),
+							MapFunction(
+								static2, nullptr,
+								{
+									Parameter(
+										"Variable",
+										"This is the variable to be declared",
+										String, VariableTag
+									),
+									Parameter(
+										"Value",
+										"This is the variable to be declared",
+										Variant
+									)
+								}
+							)
+						},
+						KeywordTag
+					),
+					new Function("unset",
+						"Unsets a given variable", nullptr,
+						{
+							MapFunction(
+								[](std::string varname) {
+									VirtualMachine::Get().UnsetVariable(varname);
+								}, nullptr,
+								{
+									Parameter("Variable",
+										"This is the variable to be unset",
+										String, VariableTag
+									)
+								}
+							)
+						},
 						KeywordTag
 					),
 				},
@@ -446,19 +477,22 @@ namespace Gorgon {
 			Reflection={"Reflection", "This library contains reflection objects",
 				TypeList { TypeType(), FunctionType() },
 				FunctionList {
-					new MappedFunction("TypeOf",
-						"This function returns the type of the given variable.",
-						TypeType(), nullptr,
-						ParameterList {
-							new Parameter(
-								"Variable",
-								"The variable to determine its type.",
-								String, VariableTag
+					new Function("TypeOf",
+						"This function returns the type of the given variable.", nullptr, 
+						{
+							MapFunction(
+								[](std::string variable) {
+									return &VirtualMachine::Get().GetVariable(variable).GetType();
+								}, TypeType(),
+								{
+									Parameter("Variable",
+										"The variable to determine its type.",
+										String, VariableTag
+									)
+								}			
 							)
-						},
-						MappedFunctions([](std::string variable) {
-							return &VirtualMachine::Get().GetVariable(variable).GetType();
-						}), MappedMethods()
+							
+						}
 					)
 				}
 			};

@@ -60,37 +60,61 @@ namespace Gorgon {
 				array=new MappedReferenceType<Array, ArrayToStr>("Array", "This is an array", (Array*)nullptr);
 				
 				array->AddFunctions({
-					new MappedFunction{"[]", "Returns the element at the given index.",
-						Variant, array, ParameterList{
-							new Parameter { "Index",
-								"The index of the element",
-								Types::Unsigned()
-							}
-						},
-						MappedFunctions([](Array *a, unsigned ind){return a->GetItemData(ind);}), MappedMethods()	
-					},
-					new MappedFunction{"Push", "Pushes a new element at the end of the array.",
-						nullptr, array, ParameterList{
-							new Parameter { "Element",
-								"Element to be added.",
-								Types::Variant()
-							}
-						},
-						MappedFunctions(&Array::PushData), MappedMethods()	
-					},
-					new MappedFunction{"Size", "Returns the size of the array.",
-						Types::Unsigned(), array, ParameterList{ },
-						MappedFunctions([](Array *a) { return a->GetSize(); }), MappedMethods()	
-					},
-					new MappedFunction{"Resize", "Changes the size of the array. New elements will have their default value.",
-					nullptr, array, ParameterList{
-							new Parameter{"Size",
-							"The new size.",
-							Types::Unsigned()
-							}
-						},
-							MappedFunctions(&Array::Resize), MappedMethods()
-						},
+					new Function("[]", 
+						"Returns the element at the given index.", array,
+						{
+							MapFunction(
+								[](Array *a, unsigned ind) {
+									return a->GetItemData(ind);
+								}, Variant,
+								{
+									Parameter( "Index",
+										"The index of the element",
+										Types::Unsigned()
+									)
+								}
+							)
+						}
+					),
+					
+					new Function("Push", 
+						"Pushes a new element at the end of the array.", array,
+						{
+							MapFunction(
+								&Array::PushData, nullptr,
+								{
+									Parameter { "Element",
+										"Element to be added.",
+										Types::Variant()
+									}
+								}
+							)
+						}
+					),
+				  
+					new Function("Size", 
+						"Returns the size of the array.", array,
+						{
+							MapFunction(
+								[](Array *a) { 
+									return a->GetSize(); 
+								}, Types::Unsigned(),
+								{ }
+							)
+						}
+					),
+					
+					new Function("Resize", 
+						"Changes the size of the array. New elements will have their default value.", array, 
+						{
+							MapFunction(
+								&Array::Resize, nullptr,
+								{
+									Parameter("Size", "The new size.", Types::Unsigned())
+								}
+							)
+						}
+					)
 				});
 			}
 			
@@ -112,25 +136,42 @@ namespace Gorgon {
 		
 		std::vector<Function*> ArrayFunctions() {
 			return {
-				new MappedFunction{"Range",
-					"Creates a range array between two numbers",
-					ArrayType(), nullptr, ParameterList {
-						new Parameter { "Start",
-							"Starting value for the range. This value is included in the array.",
-							Types::Int()
-						},
-						new Parameter { "End",
-							"Ending value for the range. This value is not included in the array.",
-							Types::Int()
-						},
-						new Parameter { "Step",
-							"Stepping amount for the range. If not given its determined to be either 1 or -1.",
-							Types::Int(),
-							OptionalTag
-						}
-					},
-					MappedFunctions(Range3, Range2), MappedMethods()
-				},
+				new Function("Range",
+					"Creates a range array between two numbers", nullptr,
+					{
+						MapFunction(
+							&Range3, ArrayType(),
+							{
+								Parameter { "Start",
+									"Starting value for the range. This value is included in the array.",
+									Types::Int()
+								},
+								Parameter { "End",
+									"Ending value for the range. This value is not included in the array.",
+									Types::Int()
+								},
+								Parameter { "Step",
+									"Stepping amount for the range. If not given its determined to be either 1 or -1.",
+									Types::Int()
+								}
+							}
+						),
+						
+						MapFunction(
+							&Range2, ArrayType(),
+							{
+								Parameter { "Start",
+									"Starting value for the range. This value is included in the array.",
+									Types::Int()
+								},
+								Parameter { "End",
+									"Ending value for the range. This value is not included in the array.",
+									Types::Int()
+								}
+							}
+						),
+					}
+				),
 			};
 		}
 	}
