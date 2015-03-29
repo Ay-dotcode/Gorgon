@@ -1,7 +1,6 @@
 #include "VirtualMachine.h"
 #include "Exceptions.h"
 #include "../Scripting.h"
-#include "Embedding.h"
 
 
 
@@ -10,7 +9,10 @@ namespace Gorgon {
 	namespace Scripting {		
 		
 		Containers::Hashmap<std::thread::id, VirtualMachine, &VirtualMachine::getthread> VirtualMachine::activevms;
-		
+
+
+		extern Type &Variant;
+
 		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
 		Libraries(libraries), output(&out), input(&in), 
 		defoutput(&out), definput(&in), automaticreset(automaticreset), temporaries(256, Data::Invalid())

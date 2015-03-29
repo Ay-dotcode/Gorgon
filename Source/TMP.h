@@ -68,14 +68,14 @@ namespace Gorgon {
 		/// @cond
 		template<class C_, class R_, class ...Args_>
 		struct FunctionTraits<R_(C_::*)(Args_...)> : 
-			public FunctionTraits<R_(typename std::decay<C_>::type*, Args_...)>
+			public FunctionTraits<R_(typename std::decay<C_>::type&, Args_...)>
 		{ 
 			static const bool IsMember = true;
 		};
 		
 		template<class C_, class R_, class ...Args_>
 		struct FunctionTraits<R_(C_::*)(Args_...) const> :
-			public FunctionTraits<R_(const typename std::decay<C_>::type*, Args_...)> 
+			public FunctionTraits<R_(const typename std::decay<C_>::type&, Args_...)> 
 		{ 
 			static const bool IsMember = true;
 		};
@@ -117,12 +117,12 @@ namespace Gorgon {
 		/// @cond
 		template<class T1_, class T2_>
 		struct Choose<false, T1_, T2_> {
-			using Type = T1_;
+			using Type = T2_;
 		};
 		
 		template<class T1_, class T2_>
 		struct Choose<true, T1_, T2_> {
-			using Type = T2_;
+			using Type = T1_;
 		};
 		///@endcond
 	}

@@ -102,9 +102,8 @@ namespace Gorgon { namespace Scripting {
 			}
 		}
 	};
-	
-	Data GetVariableValue(const std::string &varname);
-	extern MappedValueType<Data, String::From<Data>, GetVariableValue> Variant;
+
+	extern Type &Variant;
 	
 	template<class F_>
 	class MappedFunction : public Scripting::Function::Variant {
@@ -117,12 +116,107 @@ namespace Gorgon { namespace Scripting {
 		MappedFunction(F_ fn, const Scripting::Type *returntype, Scripting::ParameterList parameters, P_ ...tags) :
 		variant(returntype, std::move(parameters), tags...), fn(fn)
 		{ }
-		
+
 		virtual Data Call(bool ismethod, const std::vector<Data> &parameters) const override {
+			auto ret=callfn<typename traits::ReturnType>(typename TMP::Generate<traits::Arity>::Type(), parameters);
+
+			if(ismethod) {
+				if(ret.IsValid()) {
+					VirtualMachine::Get().GetOutput()<<ret<<std::endl<<std::endl;
+
+					return Data::Invalid();
+				}
+			}
+
+			return ret;
+		}
+
+	private:
+
+		template<class T_>
+		struct extractvector {
+			enum { isvector = false };
+		};
+
+		template<template<class, class> class V_, class T_, class A_>
+		struct extractvector<V_<T_, A_>> {
+			enum { isvector = std::is_same<V_<T_, A_>, std::vector<T_, A_>>::value };
+
+			using inner = T_;
+		};
+
+		template<class T_>
+		struct is_nonconstref {
+			enum { value = std::is_reference<T_>::value && !std::is_const<typename std::remove_reference<T_>::type>::value };
+		};
+
+		template<class T_>
+		inline typename std::enable_if<
+			is_nonconstref<T_>::value, 
+			T_
+		>::type castto(const Data &d) const {
+			///... do the logic to turn underlying type to T_
+			return d.ReferenceValue<T_>();
+		}
+
+		template<class T_>
+		inline typename std::enable_if<!is_nonconstref<T_>::value, T_>::type castto(const Data &d) const {
+			///... do the logic to turn underlying type to T_
+			return d.GetValue<T_>();
+		}
+
+		template<int P_>
+		typename std::enable_if<!extractvector<param<P_>>::isvector, param<P_>>::type
+		accumulatevector(const std::vector<Data> &parameters) const {
+			Utils::ASSERT_FALSE("Invalid accumulation");
+		}
+
+		template<int P_>
+		typename std::enable_if<extractvector<param<P_>>::isvector, param<P_>>::type
+		accumulatevector(const std::vector<Data> &parameters) const {
+			param<P_> v;
+			for(unsigned i=P_; i<parameters.size(); i++) {
+				v.push_back(castto<typename extractvector<param<P_>>::inner>(parameters[i]));
+			}
+
+			return v;
+		}
+
+		template<int P_>
+		inline typename TMP::Choose<
+			is_nonconstref<param<P_>>::value && !extractvector<param<P_>>::isvector,
+			std::reference_wrapper<typename std::remove_reference<param<P_>>::type>,
+			param<P_>
+		>::Type cast(const std::vector<Data> &parameters) const {
+			ASSERT(parameters.size()>P_, "Number of parameters does not match");
+
+			if(P_==this->parameters.size()-1 && repeatlast) {
+				ASSERT(extractvector<param<P_>>::isvector, "Repeating parameter should be a vector");
+
+				return accumulatevector<P_>(parameters);
+			}
+			
+			return castto<param<P_>>(parameters[P_]);
+		}
+
+		template<class R_, int ...S_>
+		typename std::enable_if<!std::is_same<R_, void>::value, Data>::type
+		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
+			return Data(returntype, Any(
+				std::bind(fn, cast<S_>(parameters)...)()
+			));
+		}
+
+		template<class R_, int ...S_>
+		typename std::enable_if<std::is_same<R_, void>::value, Data>::type
+		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
+			Data ret=Data::Invalid();
+
+			std::bind(fn, cast<S_>(parameters)...)();
+
 			return Data::Invalid();
 		}
-	private:
-		
+
 		template<int P_>
 		void checkparam() {
 		}

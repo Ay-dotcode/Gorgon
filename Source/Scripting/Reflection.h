@@ -442,11 +442,13 @@ namespace Gorgon {
 				
 				unpacktags(tag);
 				unpacktags(tags...);
+
+				init();
 			}
 			
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent,
-					 const Containers::Collection<Variant> &variants, const Containers::Collection<Variant> &methods={}
+					 const Containers::Collection<Variant> &variants, const Containers::Collection<Variant> &methods=Containers::Collection<Variant>()
 			) : 
 			name(name), help(help), parent(parent), Variants(this->variants), Methods(this->methods)
 			{ 

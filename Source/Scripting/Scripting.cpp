@@ -8,10 +8,12 @@
 namespace Gorgon { namespace Scripting {
 
 	
-	MappedValueType<Data, String::From<Data>, GetVariableValue> Variant = {"Variant", 
+
+	Data GetVariableValue(const std::string &varname);
+	Type &Variant = *new MappedValueType<Data, String::From<Data>, GetVariableValue>("Variant",
 		"This type can contain any type.",
 		Data::Invalid()
-	};
+	);
 	
 	
 	std::set<std::string, String::CaseInsensitiveLess> KeywordNames;
