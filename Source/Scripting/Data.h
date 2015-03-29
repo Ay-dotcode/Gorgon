@@ -25,6 +25,10 @@ namespace Gorgon {
 			/// therefore, use of this function should be very limited.
 			static Data Invalid() { return {}; }
 
+			/// Constructs an invalid data. Performing any operation on this data might cause
+			/// crashes. Never use this constructor unless its absolutely necessary
+			Data() {}
+
 			/// Copy constructor
 			Data(const Data &other);
 
@@ -121,9 +125,6 @@ namespace Gorgon {
 			
 			
 		private:
-			/// Constructs an invalid data. Performing any operation on this data might cause
-			/// crashes. Never use this constructor unless its absolutely necessary
-			Data() {}
 			
 			void check();
 		};

@@ -30,7 +30,7 @@ namespace Gorgon { namespace Scripting {
 					throw err;
 				}
 				
-				for(int i=parser->List.size()-compiled;i<parser->List.size();i++) {
+				for(unsigned i=parser->List.size()-compiled;i<parser->List.size();i++) {
 					lines.push_back({parser->List[i], pline});
 				}
 				

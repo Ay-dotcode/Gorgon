@@ -171,7 +171,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				List.resize(List.size()+1);
 				auto &inst=List.back();
 				inst.Type  = InstructionType::RemoveTemp;
-				inst.Store = parsetemporary(input, ch);
+				inst.Store = Byte(parsetemporary(input, ch));
 				ret=1;
 				break;
 			}
@@ -199,7 +199,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		fncall(input, ch, false);
 
 		auto &inst=List.back();
-		inst.Store=temp;
+		inst.Store=Byte(temp);
 	}
 	
 	void Intermediate::fncall(const std::string& input, int &ch, bool allowmethod) {

@@ -30,8 +30,7 @@ namespace Gorgon {
 			
 			/// Marks the object as a reference. When this tag affects types, it marks the
 			/// type as a reference type, meaning it will always be moved around as a reference.
-			/// When this tag affects parameters or variables, object becomes a reference to the
-			/// parameter
+			/// When this tag affects parameters, object becomes a reference to the parameter
 			ReferenceTag,
 			
 			/// Marks the object as input
@@ -105,26 +104,29 @@ namespace Gorgon {
 			template <class ...Params_>
 			Parameter(const std::string &name, const std::string &help, const Type *type, 
 					 Data defaultvalue, OptionList options, Params_ ...tags) : 
-			name(name), type(type), help(help), Options(std::move(options)), defaultvalue(defaultvalue) {
+			name(name), type(type), help(help), Options(this->options), defaultvalue(defaultvalue) {
 				ASSERT((type!=nullptr), "Parameter type cannot be nullptr", 1, 2);
-				
+				using std::swap;
+
+				swap(options, this->options);
+
 				UnpackTags(tags...);
 			}
 			
 			/// @cond INTERNAL
 			Parameter(const std::string &name, const std::string &help, const Type *type, Data defaultvalue=Data::Invalid()) : 
-			Parameter(name, help, type, defaultvalue, OptionList{}) { }
+			Parameter(name, help, type, defaultvalue, OptionList()) { }
 			
 			template <class ...Params_>
 			Parameter(const std::string &name, const std::string &help, const Type *type, Tag firsttag,
 					  Params_ ...tags) : 
-			Parameter(name, help, type, Data::Invalid(), OptionList{}, firsttag, std::forward<Params_>(tags)...) {
+			Parameter(name, help, type, Data::Invalid(), OptionList(), firsttag, std::forward<Params_>(tags)...) {
 			}
 			
 			template <class ...Params_>
 			Parameter(const std::string &name, const std::string &help, const Type *type, Data defaultvalue,
 					  Tag firsttag, Params_ ...tags) : 
-			Parameter(name, help, type, defaultvalue, OptionList{}, firsttag, std::forward<Params_>(tags)...) {
+			Parameter(name, help, type, defaultvalue, OptionList(), firsttag, std::forward<Params_>(tags)...) {
 			}
 			 
 			Parameter(const std::string &name, const std::string &help, const Type *type, 
@@ -135,6 +137,20 @@ namespace Gorgon {
 				}
 			}
 			/// @endcond
+
+			Parameter &operator =(const Parameter &p) {
+				name		= p.name		;
+				help		= p.help		;
+				type		= p.type		;
+				defaultvalue= p.defaultvalue;
+				options		= p.options		;
+				optional	= p.optional	;
+				reference	= p.reference	;
+				constant	= p.constant	;
+				variable	= p.variable	;
+
+				return *this;
+			}
 			
 			/// Returns the name of the parameter
 			std::string GetName() const {
@@ -218,6 +234,8 @@ namespace Gorgon {
 			std::string help;
 			const Type *type;
 			Data defaultvalue=Data::Invalid();
+
+			OptionList options;
 			
 			bool optional  = false;
 			bool reference = false;

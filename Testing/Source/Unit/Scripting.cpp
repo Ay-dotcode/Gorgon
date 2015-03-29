@@ -53,7 +53,7 @@ public:
 	}
 	
 	int b(float a) {
-		return 42*a;
+		return int(42*a);
 	}
 	
 	explicit operator std::string() const {
@@ -80,7 +80,7 @@ public:
 	}
 	
 	int b(float a) {
-		return 42*a;
+		return int(42*a);
 	}
 	
 	explicit operator std::string() const {

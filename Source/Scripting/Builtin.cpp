@@ -224,7 +224,7 @@ namespace Gorgon {
 					)
 				})
 			});
-			
+
 			Bool->AddConstructors({
 				Map_Typecast<Gorgon::Byte, bool>(Byte, Bool),
 				Map_Typecast<unsigned, bool>(Unsigned, Bool),
