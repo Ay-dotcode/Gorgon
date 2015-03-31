@@ -254,7 +254,7 @@ namespace Gorgon {
 			public:
 				template<class ...P_>
 				Variant(const Type *returntype, ParameterList parameters, P_ ...tags) :
-				parent(parent), returntype(returntype), Parameters(this->parameters)
+				returntype(returntype), Parameters(this->parameters)
 				{
 					using std::swap;
 					swap(parameters, this->parameters);
@@ -264,7 +264,7 @@ namespace Gorgon {
 				
 				Variant(const Type *returntype, ParameterList parameters, bool stretchlast, bool repeatlast, 
 						bool accessible, bool constant, bool returnsref, bool implicit) :
-				parent(parent), returntype(returntype), stretchlast(stretchlast), repeatlast(repeatlast), 
+				returntype(returntype), stretchlast(stretchlast), repeatlast(repeatlast), 
 				accessible(accessible), constant(constant), returnsref(returnsref), implicit(implicit), 
 				Parameters(this->parameters)
 				{
@@ -500,6 +500,11 @@ namespace Gorgon {
 			bool IsMember() const {
 				return parent!=nullptr;
 			}
+				
+			/// Returns if this function is an operator
+			bool IsOperator() const {
+				return isoperator;
+			}
 			
 			/// If this function is a member function, returns the owner object. If this function is not a
 			/// member function, this function crashes.
@@ -510,12 +515,16 @@ namespace Gorgon {
 			}
 			
 			virtual void AddVariant(Variant &var) {
+				ASSERT(!isoperator || var.parameters.size()==1, "Operators should have only a single parameter");
+
 				var.parent=this;
 				var.dochecks(false);
 				variants.Push(var);
 			}
 			
 			virtual void AddMethod(Variant &var) {
+				ASSERT(!isoperator, "Operators cannot be methods");
+				
 				var.parent=this;
 				var.dochecks(true);
 				methods.Push(var);
@@ -557,6 +566,8 @@ namespace Gorgon {
 					case OperatorTag:
 						isoperator=true;
 						ASSERT(!staticmember, "A function cannot be a static operator");
+						ASSERT(parent, "Operators should be member functions");
+
 						break;
 						
 					default:

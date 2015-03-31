@@ -755,7 +755,79 @@ namespace Gorgon {
 			
 			
 			//find correct variant
-			std::multimap<int, Function::Variant*> variants;
+			std::multimap<int, const Function::Variant*> variantlist;
+			
+			auto checkparam=[this](const Parameter &param, const Value &cval) {
+				int c=0;
+				//target is reference
+				if(param.IsReference() || param.GetType().IsReferenceType()) {
+					Data d=Data::Invalid();
+					try {
+						d=getvalue(cval, !param.IsConstant());
+					} 
+					catch(const CastException &) { 
+						return -1;
+					}
+					
+					if(param.IsConstant()) {
+						if(!d.IsReference()) c+=1;
+					}
+					else { //non const ref
+						if(d.IsConstant()) {
+							return -1;
+						}
+					}
+					
+					//check polycast
+					//if const check implicit cast
+					if(d.GetType()==param.GetType() || param.GetType()==Variant) {
+						return c;
+					}
+					else if(d.GetType().Parents.count(param.GetType())) {
+						//polycast
+						return c+2;
+					}
+					else if(param.IsConstant() && param.GetType().GetTypeCastingFrom(d.GetType())) {
+						//implicit constructor cast
+						return c+10;
+					}
+					else {
+						return -1;
+					}
+					
+				}
+				else { //target is non reference
+					Data d=getvalue(cval);
+					
+					if(d.IsConstant()) {
+						if(d.IsReference()) {
+							if(!param.IsConstant()) {
+								return -1;
+							}
+						}
+						else {
+							c+=!param.IsConstant();
+						}
+					}
+					
+					//check implicit cast
+					//if source is ref check polycast
+					if(d.GetType()==param.GetType() || param.GetType()==Variant) {
+						return c;
+					}
+					else if(param.GetType().GetTypeCastingFrom(d.GetType())) {
+						//implicit constructor cast
+						return c+10;
+					}
+					else if(d.IsReference() && d.GetType().Parents.count(param.GetType())) {
+						//polycast
+						return c+2;
+					}
+					else {
+						return -1;
+					}
+				}
+			};
 			
 			auto list=[&](const Containers::Collection<Function::Variant> &variants, int start) {
 				for(const auto &var : variants) {
@@ -773,30 +845,50 @@ namespace Gorgon {
 
 						const Value &cval=*pin;
 						
-						if(param.IsReference() || param.GetType().IsReferenceType()) {
-							Data d=Data::Invalid();
-							try {
-								d=getvalue(cval, !param.IsConstant());
-							} 
-							catch(const CastException &) { 
-								current=-1; 
-								break;
-							}
-							
-							if(param.IsConstant()) {
-								if(!d.IsReference()) current++;
-							}
-							else { //non const ref
-								if(d.IsConstant()) {
-									current=-1;
-									break;
-								}
-							}
+						int c=checkparam(param, cval);
+						if(c==-1) {
+							current=-1;
+							break;
+						}
+						else {
+							current+=c;
 						}
 						
 						++pin;
 					}
 					if(current==-1) continue;
+					
+					//check extra parameters
+					if(pin!=incomingparams.end()) {
+						if(var.RepeatLast() && var.Parameters.size()) {
+							int maxp=0;
+							while(pin!=incomingparams.end()) {
+								int c=checkparam(var.Parameters.back(), *pin);
+								if(c==-1) {
+									//parameter does not fit repeating parameter
+									continue;
+								}
+								else {
+									if(c>maxp) maxp=c;
+								}
+								
+								++pin;
+								current+=5;
+							}
+							
+							current+=maxp;
+						}
+						else {
+							//extra params
+							continue;
+						}
+					}
+					
+					if(var.GetParent().IsOperator() && var.Parameters[1].GetType()==var.GetParent().GetOwner() && current>0) {
+						current-=1;
+					}
+					
+					variantlist.insert(std::make_pair(current,&var));
 				}
 			};
 			
@@ -805,11 +897,16 @@ namespace Gorgon {
 			}
 			list(fn->Variants, method ? 1000 : 0);
 			
-			if(variants.size()) {
-				var=variants.begin()->second;
+			if(variantlist.size()) {
+				if(variantlist.size()>1 && variantlist.count(variantlist.begin()->first)>1) {
+					throw AmbiguousSymbolException(fn->GetName(), SymbolType::Function, "For these arguments.");
+				}
+
+				var=variantlist.begin()->second;
 			}
 			else {
-				throw 0; //...
+				///... better error reporting
+				throw SymbolNotFoundException(fn->GetName(), SymbolType::Function, "For these arguments.");
 			}
 			
 			return callvariant(fn, var, method, incomingparams);
