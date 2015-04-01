@@ -64,6 +64,18 @@ namespace Gorgon {
 						"Returns the element at the given index.", array,
 						{
 							MapFunction(
+								[](const Array *a, unsigned ind) {
+									return a->GetItemData(ind);
+								}, Variant,
+								{
+									Parameter( "Index",
+										"The index of the element",
+										Types::Unsigned()
+									)
+								},
+								ConstTag
+							),
+							MapFunction(
 								[](Array *a, unsigned ind) {
 									return a->GetItemData(ind);
 								}, Variant,
@@ -72,8 +84,33 @@ namespace Gorgon {
 										"The index of the element",
 										Types::Unsigned()
 									)
+								},
+								ReferenceTag
+							)
+				  
+						}
+					),
+					
+					
+					new Function("[]=", 
+						"Changes the element at the given index.", array,
+						{
+							MapFunction(
+								[](Array &a, unsigned ind, Data d) {
+									return a.SetItemData(ind, d);
+								}, nullptr,
+								{
+									Parameter( "Index",
+										"The index of the element",
+										Types::Unsigned()
+									),
+									Parameter( "Value",
+										"Value to be assigned",
+										Variant
+									)
 								}
 							)
+				
 						}
 					),
 					

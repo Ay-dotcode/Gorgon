@@ -30,13 +30,23 @@ namespace Gorgon {
 				return {type, elements[index]};
 			}
 			
+			Data GetItemData(unsigned index) {
+				if(index>=elements.size()) {
+					throw OutofBoundsException(index, elements.size(), "Array");
+				}
+		
+				void *r=elements[index].GetRaw();
+				void **p = new void*(r);
+				
+				return {type, {p, type->PtrTypeInterface}, true};
+			}
+			
 			void SetItemData(unsigned index, Data data) {
 				if(index>=elements.size()) {
 					throw OutofBoundsException(index, elements.size(), "Array");
 				}
 				if(type!=&data.GetType()) {
-					//not implemented
-					ASSERT(false, "Not implemented", 0, 16);
+					data=data.GetType().MorphTo(*type, data);
 				}
 				
 				elements[index]=data.GetData();
@@ -49,8 +59,7 @@ namespace Gorgon {
 			
 			void PushData(Data elm) {
 				if(elm.GetType()!=type) {
-					//not implemented
-					ASSERT(false, "Not implemented", 0, 16);
+					elm=elm.GetType().MorphTo(*type, elm);
 				}
 				elements.push_back(elm.GetData());
 			}

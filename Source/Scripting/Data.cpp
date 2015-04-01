@@ -155,7 +155,10 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	bool Data::IsReference() const {
+		ASSERT(type, "Type is not set", 1, 2);
+		
 		return isreference || type->IsReferenceType();
 	}
+	
 	
 } }

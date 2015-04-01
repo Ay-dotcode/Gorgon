@@ -132,7 +132,7 @@ namespace Gorgon { namespace Scripting {
 			"The type and its pointer does not match");
 	}
 	
-	Data Type::MorphTo(const Type& type, Data source) const {
+	Data Type::MorphTo(const Type& type, Data source, bool allowtypecast) const {
 		auto inheritance=inheritsfrom.find(type);
 		Inheritance::ConversionFunction fn;
 		bool downcasting=false;
@@ -144,7 +144,12 @@ namespace Gorgon { namespace Scripting {
 			
 			if(relative!=parents.end()) {
 				//it is relative parent, call parent to handle it
-				return relative->second->MorphTo(type, inheritsfrom.at(relative->first).to(source));
+				auto data=relative->second->MorphTo(type, inheritsfrom.at(relative->first).to(source));
+					
+				ASSERT((data.GetType()==type), "Type casting function from "+GetName()+" to "+type.GetName()+
+					" does not perform its job. Instead it casts data to "+data.GetType().GetName());
+				
+				return data;				
 			}
 			
 			//check reverse, may be this is a type that is inherited from this one
@@ -155,7 +160,23 @@ namespace Gorgon { namespace Scripting {
 				auto relative=type.parents.find(this);
 				
 				if(relative!=type.parents.end()) {
-					return inheritsfrom.at(relative->first).from(relative->second->MorphTo(type, source));
+					auto data=inheritsfrom.at(relative->first).from(relative->second->MorphTo(type, source));
+					
+					ASSERT((data.GetType()==type), "Type casting function from "+GetName()+" to "+type.GetName()+
+						" does not perform its job. Instead it casts data to "+data.GetType().GetName());
+					
+					return data;
+				}
+				
+				//Try casting
+				if(allowtypecast && type.GetTypeCastingFrom(*this)!=nullptr) {
+					//call the constructor and perform conversion
+					auto data=type.GetTypeCastingFrom(*this)->Call(false, {source});
+					
+					ASSERT((data.GetType()==type), "Type casting function from "+GetName()+" to "+type.GetName()+
+						" does not perform its job. Instead it casts data to "+data.GetType().GetName());
+					
+					return data;				
 				}
 				
 				throw CastException(GetName(), type.GetName(), "Source type is neither derived from destination or is a parent of it.");
@@ -192,6 +213,47 @@ namespace Gorgon { namespace Scripting {
 			}
 		}
 		
+	}
+	
+	Type::MorphType Type::CanMorphTo(const Type& type) const {
+		auto inheritance=inheritsfrom.find(type);
+		Inheritance::ConversionFunction fn;
+		bool downcasting=false;
+		
+		//not a direct parent
+		if(inheritance==inheritsfrom.end()) {
+			//relative parent?
+			auto relative=parents.find(type);
+			
+			if(relative!=parents.end()) {
+				//it is relative parent, call parent to handle it
+				return relative->second->CanMorphTo(type);
+			}
+			
+			//check reverse, may be this is a type that is inherited from this one
+			inheritance=type.inheritsfrom.find(this);
+			
+			//not a direct decendant
+			if(inheritance==type.inheritsfrom.end()) {
+				auto relative=type.parents.find(this);
+				
+				if(relative!=type.parents.end()) {
+					return DownCasting;
+				}
+				
+				//Try casting
+				if(type.GetTypeCastingFrom(*this)!=nullptr) {
+					return TypeCasting;				
+				}
+				
+				return NotPossible;
+			}
+			
+			return DownCasting;
+		}
+		else {
+			return UpCasting;
+		}		
 	}
 	
 	void Type::AddInheritance(const Type& type, Type::Inheritance::ConversionFunction from, Type::Inheritance::ConversionFunction to) {

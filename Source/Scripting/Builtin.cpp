@@ -40,6 +40,10 @@ namespace Gorgon {
 				return String::To<bool>(str);
 			}
 			
+			std::string CharToString(const char &c) {
+				return std::string(1, c);
+			}
+			
 			void static2(std::string name, Data value) {
 				auto &vm=VirtualMachine::Get();
 				
@@ -98,7 +102,7 @@ namespace Gorgon {
 				"used to represent a character in a string."
 			);
 			
-			auto Char = new MappedValueType<char>( "Char",
+			auto Char = new MappedValueType<char, CharToString>( "Char",
 				"Represents single character. This variable type should not be used for binary operations."
 			);
 			
@@ -287,7 +291,13 @@ namespace Gorgon {
 				new Function("Trim",
 					"Trims start and the end of the string", String, 
 					{
-						MapFunction(&String::Trim, String, { }, ConstTag)
+						MapFunction(
+							[](const std::string &s) { 
+								return String::Trim(s); 
+							}, String, 
+							{ 
+							}, ConstTag
+						)
 					}
 				),
 				
@@ -315,6 +325,48 @@ namespace Gorgon {
 							},
 							ConstTag
    						)
+					}
+				),
+				
+				new Function("[]",
+					"Accesses individual characters of the string", String,
+					{
+						MapFunction(
+							[](const std::string &str, unsigned index) {
+								//...out of bounds error
+								return str[index];
+							}, Char,
+							{
+								Parameter("Index", "Index of the element to be retrieved", Unsigned)
+							},
+							ConstTag
+						),
+						MapFunction(
+							[](std::string &str, unsigned index) -> char& {
+								//...out of bounds error
+								return str[index];
+							}, Char,
+							{
+								Parameter("Index", "Index of the element to be retrieved", Unsigned)
+							},
+							ReferenceTag
+						),						
+					}
+				),
+				
+				new Function("[]=",
+					"Changes individual characters of the string", String,
+					{
+						MapFunction(
+							[](std::string &str, unsigned index, char c) {
+								//...out of bounds error
+								str[index]=c;
+							}, nullptr,
+							{
+								Parameter("Index", "Index of the element to be retrieved", Unsigned),
+								Parameter("Value", "Value to be assigned to the element", Char)
+							}
+						),						
 					}
 				),
 				

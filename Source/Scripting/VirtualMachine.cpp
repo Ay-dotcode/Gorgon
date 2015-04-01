@@ -555,8 +555,15 @@ namespace Gorgon {
 						throw std::runtime_error("Invalid temporary.");
 					}
 					
-					if(reference)
-						return data.GetReference();
+					if(reference) {
+						if(!data.IsReference()) { 
+							//temporaries that are not already a reference, cannot be converted to
+							//a reference
+							throw CastException("non reference temporary", "reference");
+						}
+							
+						return data;
+					}
 					else
 						return data;
 				}
@@ -702,35 +709,28 @@ namespace Gorgon {
 			}
 		}
 		
-		void fixparameter(Data &param, const Type &pdef, const std::string &error) {
+		void fixparameter(Data &param, const Type &pdef, bool ref, const std::string &error) {
 			if(param.GetType()==pdef) {
 				//no worries
-			}
-			//to string
-			else if(pdef==Integrals.Types["string"]) {
-				param={Integrals.Types["string"], param.GetType().ToString(param)};
-			}
-			//from string 
-			else if(param.GetType()==Integrals.Types["string"]) {
-				param={pdef, pdef.Parse(param.GetValue<std::string>())};
 			}
 			//to variant
 			else if(pdef==Variant) {
 				param={Variant, param};
 			}
+			//to string
+			else if(pdef==Integrals.Types["string"]) {
+				param={Integrals.Types["string"], param.GetType().ToString(param)};
+			}
+// 			//from string 
+// 			else if(param.GetType()==Integrals.Types["string"]) {
+// 				param={pdef, pdef.Parse(param.GetValue<std::string>())};
+// 			}
 			//from variant
 			else if(param.GetType()==Variant && param.GetValue<Data>().GetType()==pdef) {
 				param={pdef, param.GetValue<Data>()};
 			}
 			else {
-				const Function::Variant *ctor=pdef.GetTypeCastingFrom(param.GetType());
-				
-				if(ctor) {
-					param=ctor->Call(false, {param});
-				}
-				else {
-					throw CastException(param.GetType().GetName(), pdef.GetName(), error);
-				}
+				param=param.GetType().MorphTo(pdef, param, !ref);
 			}
 		}
 		
@@ -770,7 +770,9 @@ namespace Gorgon {
 					}
 					
 					if(param.IsConstant()) {
-						if(!d.IsReference()) c+=1;
+						if(cval.Type==ValueType::Literal) c+=1;
+						
+						if(!d.IsConstant()) c+=1;
 					}
 					else { //non const ref
 						if(d.IsConstant()) {
@@ -786,6 +788,10 @@ namespace Gorgon {
 					else if(d.GetType().Parents.count(param.GetType())) {
 						//polycast
 						return c+2;
+					}
+					else if(param.GetType().Parents.count(d.GetType())) {
+						//polycast downcast
+						return c+3;
 					}
 					else if(param.IsConstant() && param.GetType().GetTypeCastingFrom(d.GetType())) {
 						//implicit constructor cast
@@ -809,6 +815,9 @@ namespace Gorgon {
 							c+=!param.IsConstant();
 						}
 					}
+					else {
+						if(param.IsConstant()) c+=1;
+					}
 					
 					//check implicit cast
 					//if source is ref check polycast
@@ -819,11 +828,26 @@ namespace Gorgon {
 						//implicit constructor cast
 						return c+10;
 					}
-					else if(d.IsReference() && d.GetType().Parents.count(param.GetType())) {
+					else if(d.GetType().Parents.count(param.GetType())) { //poly upcasting
 						//polycast
 						return c+2;
 					}
-					else {
+					else { 
+						//last chance, polymorphic down casting
+						try {
+							//requires a reference
+							d=getvalue(cval, true);
+						} catch(...) { return -1; }
+						
+						//reference and constant
+						if(d.IsConstant() && !param.IsConstant()) {
+							return -1;
+						}
+						
+						if(param.GetType().Parents.count(d.GetType())) {
+							return c+3;
+						}
+						
 						return -1;
 					}
 				}
@@ -833,6 +857,22 @@ namespace Gorgon {
 				for(const auto &var : variants) {
 					auto pin=incomingparams.begin();
 					int current=0;
+					
+					if(fn->IsMember() && !fn->IsStatic()) {
+						if(pin==incomingparams.end()) {
+							throw MissingParameterException(
+								"this", 1, fn->GetOwner().GetName(), 
+								"Missing this pointer for member function call"
+							);
+						}
+
+						auto p=Scripting::Parameter("","",fn->GetOwner(), ReferenceTag, (var.IsConstant() ? ConstTag : ReferenceTag));
+						
+						current=checkparam(p, *pin);
+						if(current==-1) continue;
+						
+						++pin;
+					}
 					
 					for(const Parameter &param : var.Parameters) {
 						if(pin==incomingparams.end()) {
@@ -920,7 +960,15 @@ namespace Gorgon {
 			if(fn->IsMember() && !fn->IsStatic()) {
 				if(pin!=incomingparams.end()) {
 					// guarantees that the param is a reference
-					Data param=getvalue(*pin, true);
+					Data param;
+					
+					//if data is literal and variant is constant, then a copy of
+					//the value can be passed
+					if(variant->IsConstant() && (pin->Type==ValueType::Literal || 
+						(pin->Type==ValueType::Temp && !temporaries[pin->Result].IsReference())))
+						param=getvalue(*pin);
+					else
+						param=getvalue(*pin, true);
 					
 					// check for nullness
 					if(fn->GetOwner().IsReferenceType()) {
@@ -977,19 +1025,28 @@ namespace Gorgon {
 							throw InstructionException("Reference type can only be represented string literals and variables");
 						}
 					}
-					else if(pdef.IsReference()) {
+					else if(pdef.IsReference() && !pdef.IsConstant()) {
 						Data param=getvalue(*pin, true);
 						
-						if(pdef.GetType()!=param.GetType()) {							
-							param=param.GetType().MorphTo(pdef.GetType(),param);
+						if(pdef.GetType()!=param.GetType()) {
+							param=param.GetType().MorphTo(pdef.GetType(), param, pdef.IsConstant());
 						}
 						
 						params.push_back(param);
 					}
 					else {
-						Data param=getvalue(*pin);
+						Data param;
+						if(pdef.IsReference()) {
+							if((pin->Type==ValueType::Literal || (pin->Type==ValueType::Temp && !temporaries[pin->Result].IsReference())))
+								param=getvalue(*pin);
+							else
+								param=getvalue(*pin, true);
+						}
+						else {
+							param=getvalue(*pin);
+						}
 						
-						fixparameter(param, pdef.GetType(), 
+						fixparameter(param, pdef.GetType(), pdef.IsReference(),
 									"Cannot cast while trying to call "+fn->GetName());
 						
 						params.push_back(param);
@@ -1015,7 +1072,7 @@ namespace Gorgon {
 				//add remaining parameters to the parameter list
 				while(pin!=incomingparams.end()) {
 					Data param=getvalue(*pin);
-					fixparameter(param, variant->Parameters.back().GetType(),  
+					fixparameter(param, variant->Parameters.back().GetType(), variant->Parameters.back().IsReference(),
 								 "Cannot cast while trying to call "+fn->GetName());
 					params.push_back(param);
 					++pin;
@@ -1091,8 +1148,14 @@ namespace Gorgon {
 					throw std::runtime_error("Invalid instruction, missing this parameter");
 				}
 				
+				Data data;
 				//search in the type of the first parameter, this ensures the data is a reference
-				Data data=getvalue(inst->Parameters[0], true);
+				if(inst->Parameters[0].Type==ValueType::Literal) {
+					data=getvalue(inst->Parameters[0]);
+				}
+				else {
+					data=getvalue(inst->Parameters[0], true);
+				}
 
 				if(functionname=="{}") { //constructor
 					if(data.GetType()==Types::String()) {
@@ -1154,13 +1217,13 @@ namespace Gorgon {
 							temporaries[inst->Store]=ret;
 							
 							//if the source is constant, then the result should be a constant too
-							if(data.IsConstant())
+							if(data.IsConstant() || !data.IsReference())
 								temporaries[inst->Store].MakeConstant();
 						}
 					}
 					//data mutate
 					else if(inst->Parameters.size()==2) {
-						if(data.IsConstant()) {
+						if(data.IsConstant() || !data.IsReference()) {
 							throw ConstantException(inst->Parameters[0].Name, "While setting member: "+functionname.substr(1));
 						}
 						//else ok
@@ -1201,9 +1264,9 @@ namespace Gorgon {
 					if(fnit.IsValid()) {
 						fn=&fnit.Current().second;
 					} 
+					
 					//cannot find it
 					else {
-						
 						//check inherited symbols for it
 						auto it=data.GetType().InheritedSymbols.Find(functionname);
 						//if found
@@ -1272,14 +1335,14 @@ namespace Gorgon {
 			}
 			else if(inst->Type==InstructionType::JumpTrue) {
 				auto dat=getvalue(inst->RHS);
-				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
+				fixparameter(dat, Types::Bool(), false, "While executing jump. The given value should be convertable to bool");
 				if(dat.GetValue<bool>()) {
 					scopeinstances.Last()->Jumpto(scopeinstances.Last()->GetLineNumber()+inst->JumpOffset);
 				}
 			}
 			else if(inst->Type==InstructionType::JumpFalse) {
 				auto dat=getvalue(inst->RHS);
-				fixparameter(dat, Types::Bool(), "While executing jump. The given value should be convertable to bool");
+				fixparameter(dat, Types::Bool(), false, "While executing jump. The given value should be convertable to bool");
 				if(!dat.GetValue<bool>()) {
 					scopeinstances.Last()->Jumpto(scopeinstances.Last()->GetLineNumber()+inst->JumpOffset);
 				}

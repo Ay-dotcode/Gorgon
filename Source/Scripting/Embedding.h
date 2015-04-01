@@ -190,7 +190,7 @@ namespace Gorgon { namespace Scripting {
 		>::Type cast(const std::vector<Data> &parameters) const {
 			ASSERT(parameters.size()>P_, "Number of parameters does not match");
 
-			if(P_==this->parameters.size()-1 && repeatlast) {
+			if(P_-(parent->IsMember() && !parent->IsStatic())==this->parameters.size()-1 && repeatlast) {
 				ASSERT(extractvector<param<P_>>::isvector, "Repeating parameter should be a vector");
 
 				return accumulatevector<P_>(parameters);
@@ -200,18 +200,43 @@ namespace Gorgon { namespace Scripting {
 		}
 
 		template<class R_, int ...S_>
-		typename std::enable_if<!std::is_same<R_, void>::value, Data>::type
+		typename std::enable_if<!std::is_same<R_, void>::value && !std::is_reference<R_>::value, Data>::type
 		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
-			return Data(returntype, Any(
+			Data data;
+			
+			ASSERT((!returnsref || returntype==Scripting::Variant), "Embedded function does not return a reference");
+			
+			data=Data(returntype, Any(
 				std::bind(fn, cast<S_>(parameters)...)()
-			));
+			), false, constant);
+			
+			ASSERT((!returnsref || (returntype==Scripting::Variant && data.GetValue<Data>().IsReference())), 
+				   "Embedded function does not return a reference");
+			
+			return data;
+		}
+
+		template<class R_, int ...S_>
+		typename std::enable_if<!std::is_same<R_, void>::value && std::is_reference<R_>::value, Data>::type
+		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
+			Data data;
+			if(returnsref) {
+				data=Data(returntype, Any(
+					&std::bind(fn, cast<S_>(parameters)...)()
+				), true, constant);
+			}
+			else {
+				data=Data(returntype, Any(
+					std::bind(fn, cast<S_>(parameters)...)()
+				), false, constant);
+			}
+			
+			return data;
 		}
 
 		template<class R_, int ...S_>
 		typename std::enable_if<std::is_same<R_, void>::value, Data>::type
 		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
-			Data ret=Data::Invalid();
-
 			std::bind(fn, cast<S_>(parameters)...)();
 
 			return Data::Invalid();

@@ -393,14 +393,15 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				inst.Type=InstructionType::MemberFunctionCall;
 			}
 			else if(tree->Leaves[0].Type==ASTNode::Index) {
-				ASSERT(tree->Leaves[0].Leaves.GetCount()==1, "Missing object");
+				ASSERT(tree->Leaves[0].Leaves.GetCount()>1, "Missing object");
 				
 				inst.Name.SetStringLiteral("[]=");
 				inst.Store=0;
 				inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[0], list, tempind, true, &writebacks));
-				for(int i=1; i<tree->Leaves.GetSize(); i++) {
-					inst.Parameters.push_back(compilevalue(tree->Leaves[i], list, tempind));
+				for(int i=1; i<tree->Leaves[0].Leaves.GetSize(); i++) {
+					inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[i], list, tempind));
 				}
+				inst.Parameters.push_back(inst.RHS);
 				inst.Type=InstructionType::MemberFunctionCall;
 			}
 			else {

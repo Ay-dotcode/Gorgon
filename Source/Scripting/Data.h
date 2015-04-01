@@ -69,9 +69,24 @@ namespace Gorgon {
 			
 			/// Returns the value of this data in the requested format. Requested type should
 			/// ideally be a reference. Though this is not a requirement.
-			template <class T_>
-			T_ ReferenceValue() const {
-				ASSERT(isreference, "The data contained is not a reference");
+			template <class T_>	
+			typename std::enable_if<std::is_pointer<T_>::value, T_>::type 
+			ReferenceValue() const {
+				ASSERT(type, "Type is not set", 1, 2);
+				
+				ASSERT(IsReference(), "The data contained is not a reference", 1, 10);
+				
+				return data.Get<typename std::remove_pointer<T_>::type *>();
+			}
+			
+			/// Returns the value of this data in the requested format. Requested type should
+			/// ideally be a reference. Though this is not a requirement.
+			template <class T_>	
+			typename std::enable_if<!std::is_pointer<T_>::value, T_>::type 
+			ReferenceValue() const {
+				ASSERT(type, "Type is not set", 1, 2);
+				
+				ASSERT(IsReference(), "The data contained is not a reference", 1, 10);
 				
 				return *data.Get<typename std::remove_reference<T_>::type*>();
 			}

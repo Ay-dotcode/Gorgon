@@ -790,6 +790,21 @@ namespace Gorgon {
 		class Type {
 		public:
 			
+			/// There are multiple ways to morph a type to another, this enumeration holds these types
+			enum MorphType {
+				/// Morphing is not possible
+				NotPossible,
+				
+				/// This is an upcasting, but not a direct one
+				UpCasting,
+				
+				/// This is a down casting
+				DownCasting,
+				
+				/// This is a type casting
+				TypeCasting
+			};
+			
 			class Inheritance {
 				friend class Type;
 				
@@ -836,7 +851,10 @@ namespace Gorgon {
 			void AddInheritance(const Type &type, Inheritance::ConversionFunction from, Inheritance::ConversionFunction to);
 			
 			/// Morphs the given data into the target type.
-			Data MorphTo(const Type &type, Data source) const;
+			Data MorphTo(const Type &type, Data source, bool allowtypecast=true) const;
+			
+			/// Check if it is possible to morph this type to the other
+			MorphType CanMorphTo(const Type &type) const;
 			
 			/// Adds new datamembers to the type
 			void AddDataMembers(std::initializer_list<DataMember*> elements) {

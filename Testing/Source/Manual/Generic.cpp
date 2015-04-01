@@ -116,6 +116,10 @@ void testfill(std::string &s) {
 	s+="abcdefg";
 }
 
+void testset(char &c) {
+	c='5';
+}
+
 namespace Gorgon { namespace Geometry {
 	extern Scripting::Library LibGeometry;
 	void init_scripting();
@@ -217,6 +221,17 @@ int main() {
 						return std::string("abc"); 	
 					}, mystr, 
 					{ }
+				), 
+			}
+		),
+		
+		new Function("testset", "", nullptr,
+			{
+				MapFunction(
+					testset, nullptr, 
+					{
+						Parameter("c","",Types::Char(), Gorgon::Scripting::ReferenceTag)
+					}
 				), 
 			}
 		),
