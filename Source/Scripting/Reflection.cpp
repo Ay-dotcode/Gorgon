@@ -308,4 +308,41 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
+	void Function::Variant::dochecks(bool ismethod) {
+		int i=0;
+		bool restoptional=false;
+		//check params
+		for(const Parameter &p : parameters) {
+			//if optional
+			if(p.IsOptional()) {
+				restoptional=true;
+				//should either be a repeating parameter or default value should be set
+				ASSERT(
+					p.GetDefaultValue().IsValid() || (i==parameters.size()-1 && repeatlast),
+					"An optional parameter #"+String::From(i+1)+" should have its default value set\n "
+					"in function "+parent->GetName()
+				);
+			}
+			else {
+				//regular parameters cannot follow option ones
+				ASSERT(
+					!restoptional,
+					"Parameter #"+String::From(i+1)+" should be optional\n "
+					"in function "+parent->GetName()
+				);
+			}
+
+			i++;
+		}
+
+		//methods cannot return values
+		if(ismethod) {
+			ASSERT(
+				returntype==nullptr,
+				"Methods cannot return values. "+returntype->GetName()+" is given\n "
+				"in function "+parent->GetName()
+			);
+		}
+	}
+	
 } }

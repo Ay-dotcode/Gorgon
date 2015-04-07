@@ -207,7 +207,6 @@ namespace Gorgon {
 			void UnpackTags(Tag tag, Params_ ...tags) {
 				switch(tag) {
 					case OptionalTag:
-						ASSERT(defaultvalue.IsValid(), "Optional parameters should have their default values");
 						optional=true;
 						break;
 						
@@ -377,7 +376,9 @@ namespace Gorgon {
 				}
 				/// @endcond
 				
-				virtual void dochecks(bool ismethod) = 0;
+				/// This function should perform validity checks on the variant. The base function
+				/// should be called unless similar checks are repeated
+				virtual void dochecks(bool ismethod);
 				
 				
 				ParameterList parameters;

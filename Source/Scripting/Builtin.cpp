@@ -421,7 +421,7 @@ namespace Gorgon {
 							{
 								Parameter( "string",
 									"The strings that will be printed.",
-									String
+									String, OptionalTag
 								)
 							},
 							StretchTag, RepeatTag

@@ -252,21 +252,26 @@ namespace Gorgon { namespace Scripting {
 		}
 		
 		virtual void dochecks(bool ismethod) override {
-			//sanity check
-			if(ismethod) {
-				ASSERT(returntype==nullptr, "Methods cannot return values. "+returntype->GetName()+" is given.");
-			}
-			
+			Function::Variant::dochecks(ismethod);
+
 			//check return type
 			//if void
 			if(std::is_same<typename traits::ReturnType, void>::value) {
 				//return type should be nullptr
-				ASSERT(returntype==nullptr, "This function variant expects a return type of "+
-				       returntype->GetName()+".");
+				ASSERT(
+					returntype==nullptr, 
+					"This function variant expects a return type of "+
+				    returntype->GetName()+"\n"
+					"in function "+parent->GetName()
+				);
 			}
 			else {
-				ASSERT(returntype!=nullptr, "Return type is marked as void. Supplied function's return type is :"+
-					   Utils::GetTypeName<typename traits::ReturnType>());
+				ASSERT(
+					returntype!=nullptr, 
+					"Return type is marked as void. Supplied function's return type is :"+
+					Utils::GetTypeName<typename traits::ReturnType>()+
+					"in function "+parent->GetName()
+				);
 			}
 			
 			check(typename TMP::Generate<traits::Arity>::Type());
