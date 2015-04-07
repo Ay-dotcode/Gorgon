@@ -317,7 +317,7 @@ namespace Gorgon {
 					"Replaces all instances of the given substring in this string with another string", String, 
 					{
 						MapFunction(
-							(std::string(*)(const std::string &, const std::string &))&String::Replace, String,
+							(std::string(*)(const std::string &, const std::string &, const std::string &))&String::Replace, String,
 							{
 								Parameter("Search", "Search string to be replaced", String),
 								Parameter("Replace", "String to replace, if not specified, "
@@ -350,7 +350,7 @@ namespace Gorgon {
 								Parameter("Index", "Index of the element to be retrieved", Unsigned)
 							},
 							ReferenceTag
-						),						
+						),
 					}
 				),
 				
