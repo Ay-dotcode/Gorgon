@@ -136,6 +136,8 @@ namespace Gorgon { namespace Scripting {
 		template<class T_>
 		struct extractvector {
 			enum { isvector = false };
+			
+			using inner = T_;
 		};
 
 		template<template<class, class> class V_, class T_, class A_>
@@ -213,6 +215,12 @@ namespace Gorgon { namespace Scripting {
 			ASSERT((!returnsref || (returntype==Scripting::Variant && data.GetValue<Data>().IsReference())), 
 				   "Embedded function does not return a reference");
 			
+			if(returnsref && returntype==Scripting::Variant) {
+				if(!data.GetValue<Data>().IsReference()) {
+					throw CastException("Non-reference variant", "Reference variant", "While returning value from "+parent->GetName());
+				}
+			}
+			
 			return data;
 		}
 
@@ -244,6 +252,169 @@ namespace Gorgon { namespace Scripting {
 
 		template<int P_>
 		void checkparam() {
+			using T=param<P_>;
+			TMP::AbstractRTTC<typename std::remove_pointer<T>::type> rtt;
+			
+			bool ismember=parent->IsMember() && !parent->IsStatic();
+
+			//** Constant and reference checks
+			if(is_nonconstref<T>::value || (std::is_pointer<T>::value && !std::is_const<typename std::remove_pointer<T>::type>::value)) {
+				if(P_==0 && ismember) {
+					ASSERT(
+						!IsConstant(), 
+						"This function variant is marked as const, yet its implementation requires non-const "
+						"pointer or reference\n"
+						"in function "+parent->GetName()
+					);
+				}
+				else {
+					const auto &param=parameters[P_-ismember];
+					
+					ASSERT(
+						P_-ismember!=parameters.size()-1 || !repeatlast, 
+						"Repeating parameter vectors cannot be non-const references"
+					);
+					
+					ASSERT(param.IsReference(),
+						"Parameter #"+String::From(P_-ismember)+" is not declared as reference, "
+						"yet its implementation is\n"
+						"in function "+parent->GetName()
+					);
+					
+					ASSERT(!param.IsConstant(),
+						"Parameter #"+String::From(P_-ismember)+" is declared as constant, "
+						"yet its implementation is not const\n"
+						"in function "+parent->GetName()
+					);
+				}
+			}
+			else if(std::is_pointer<T>::value) {
+				if(P_==0 && ismember) {
+#ifdef TEST
+					if(!IsConstant()) {
+						std::cout<<"This function variant is not marked as const, yet its implementation requires const "
+						"pointer or reference\n"
+						"in function "+parent->GetName()<<std::endl;
+					}
+#endif
+				}
+				else {
+					const auto &param=parameters[P_-ismember];
+					
+					ASSERT(
+						P_-ismember!=parameters.size()-1 || !repeatlast, 
+						"Repeating parameter vectors cannot be a pointer"
+					);
+					
+					ASSERT(param.IsReference(),
+						   "Parameter #"+String::From(P_-ismember+1)+" is not declared as reference, "
+						   "yet its implementation is\n"
+						   "in function "+parent->GetName()
+					);
+					
+#ifdef TEST
+					if(!IsConstant()) {
+						std::cout<<"This function variant is not marked as const, yet its implementation requires const "
+						"pointer or reference\n"
+						"in function "+parent->GetName()<<std::endl;
+					}
+#endif
+				}
+			}
+			else if(std::is_reference<T>::value) { //const ref can be anything
+				//nothing to do
+			}
+			else if(std::is_const<T>::value) { //constant value type
+				if(P_==0 && ismember) {
+					ASSERT(
+						IsConstant(), 
+						"This function variant is marked as a non-const member function, "
+						"yet its implementation requests a constant value which cannot modify the this pointer.\n"
+						"in function "+parent->GetName()
+					);
+				}
+				else {
+					const auto &param=parameters[P_-ismember];
+					
+					if(P_-ismember!=parameters.size()-1 || !repeatlast) {
+						ASSERT(!param.IsReference(),
+							"Parameter #"+String::From(P_-ismember+1)+" is declared as reference "
+							"yet its implementation not\n"
+							"in function "+parent->GetName()
+						);
+						
+#ifdef TEST
+						if(!IsConstant()) {
+							std::cout<<"This function variant is not marked as const, yet its implementation requires const "
+							"value\n"
+							"in function "+parent->GetName()<<std::endl;
+						}
+#endif
+					}
+				}
+			}
+			else { //normal value type
+				if(P_==0 && ismember) {
+					ASSERT(
+						IsConstant(), 
+						"This function variant is marked as a non-const member function, "
+						"yet its implementation requests a value which cannot modify the this pointer.\n"
+						"in function "+parent->GetName()
+					);
+				}
+				else {
+					const auto &param=parameters[P_-ismember];
+					
+					if(P_-ismember!=parameters.size()-1 || !repeatlast) {
+						ASSERT(!param.IsReference(),
+							"Parameter #"+String::From(P_-ismember+1)+" is declared as reference, "
+							"yet its implementation not\n"
+							"in function "+parent->GetName()
+						);
+						
+						ASSERT(!param.IsConstant(),
+							"Parameter #"+String::From(P_-ismember+1)+" is declared as constant, "
+							"yet its implementation is not const\n"
+							"in function "+parent->GetName()
+						);
+					}
+				}
+			}
+			
+			//type check
+			if(P_==0 && ismember) {
+				ASSERT(
+					(rtt.NormalType==parent->GetOwner().TypeInterface.NormalType),
+					"The declared type ("+parent->GetOwner().GetName()+", "+
+					parent->GetOwner().TypeInterface.NormalType.Name()+") of "
+					"parameter #"+String::From(P_-ismember+1)+" does not match with the function type ("+
+					rtt.NormalType.Name()+")\n"+
+					"in function "+parent->GetName()
+				);
+			}
+			else if(P_-ismember==parameters.size()-1 && repeatlast) {
+				const auto &param=parameters[P_-ismember];
+				
+				ASSERT(
+					(TMP::RTT<typename extractvector<T>::inner>()==param.GetType().TypeInterface.NormalType),
+					"The declared type ("+parent->GetOwner().GetName()+", "+
+					parent->GetOwner().TypeInterface.NormalType.Name()+") of "
+					"parameter #"+String::From(P_-ismember+1)+" does not match with the function type ("+
+					rtt.NormalType.Name()+")\n"+
+					"in function "+parent->GetName()
+				);
+			}
+			else {
+				const auto &param=parameters[P_-ismember];
+				
+				ASSERT(
+					rtt.NormalType==param.GetType().TypeInterface.NormalType,
+					"The declared type ("+param.GetType().GetName()+", "+param.GetType().TypeInterface.NormalType.Name()+") of "
+					"parameter #"+String::From(P_-ismember+1)+" does not match with the function type ("+
+					rtt.NormalType.Name()+")\n"
+					"in function "+parent->GetName()
+				);
+			}
 		}
 		
 		template<int ...S_>

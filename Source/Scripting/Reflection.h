@@ -519,7 +519,9 @@ namespace Gorgon {
 				ASSERT(!isoperator || var.parameters.size()==1, "Operators should have only a single parameter");
 
 				var.parent=this;
+#ifndef NDEBUG
 				var.dochecks(false);
+#endif
 				variants.Push(var);
 			}
 			
@@ -527,7 +529,9 @@ namespace Gorgon {
 				ASSERT(!isoperator, "Operators cannot be methods");
 				
 				var.parent=this;
+#ifndef NDEBUG
 				var.dochecks(true);
+#endif
 				methods.Push(var);
 			}
 			
