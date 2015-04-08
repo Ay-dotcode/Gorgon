@@ -24,7 +24,7 @@ namespace Gorgon { namespace Scripting {
 		
 		for(const auto &type : this->types) {
 			this->constants.Add(
-				new Constant(type.first, type.second.GetHelp(), {TypeType(), &type.second})
+				new Constant(type.first, type.second.GetHelp(), TypeType(), Any(&type.second))
 			);
 		}
 	}
@@ -36,7 +36,7 @@ namespace Gorgon { namespace Scripting {
 			types.Add(type);
 
 			this->constants.Add(
-				new Constant(type->GetName(), type->GetHelp(), {TypeType(), type})
+				new Constant(type->GetName(), type->GetHelp(), TypeType(), type)
 			);
 		}
 	}
@@ -121,15 +121,17 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
-	Type::Type(const std::string& name, const std::string& help, const Any& defaultvalue, Any::TypeInterface* consttype, Any::TypeInterface* ptrtype, Any::TypeInterface* constptrtype, bool isref):
+	Type::Type(const std::string& name, const std::string& help, const Any& defaultvalue, TMP::RTTH *typeinterface, bool isref):
 		name(name), help(help), DataMembers(datamembers), Functions(functions), Constructor(constructor),
 		Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),
-		referencetype(isref), TypeInterface(defaultvalue.GetTypeInterface()), ConstTypeInterface(consttype),
-		PtrTypeInterface(ptrtype), ConstPtrTypeInterface(constptrtype), Parents(parents), InheritedSymbols(inheritedsymbols),
+		referencetype(isref), TypeInterface(*typeinterface), Parents(parents), InheritedSymbols(inheritedsymbols),
 		constructor("{}", "Constructs "+name, this, Containers::Collection<Function::Variant>(), StaticTag)
 	{
-		ASSERT((defaultvalue.GetTypeInterface()->PtrTypeInfo()==PtrTypeInterface->TypeInfo()),
-			"The type and its pointer does not match");
+		ASSERT(
+			isref ? 
+			defaultvalue.TypeInfo()==TypeInterface.PtrType.TypeInfo() : 
+			defaultvalue.TypeInfo()==TypeInterface.NormalType.TypeInfo(),
+			"Default value and the type does not match");
 	}
 	
 	Data Type::MorphTo(const Type& type, Data source, bool allowtypecast) const {

@@ -38,7 +38,7 @@ namespace Gorgon {
 				void *r=elements[index].GetRaw();
 				void **p = new void*(r);
 				
-				return {type, {p, type->PtrTypeInterface}, true};
+				return {type, Any(p, type->TypeInterface.PtrType), true};
 			}
 			
 			void SetItemData(unsigned index, Data data) {

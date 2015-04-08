@@ -15,7 +15,7 @@ namespace Gorgon {
 		
 		Type *FunctionType() {
 			if(fn==nullptr) {
-				fn=new Scripting::MappedReferenceType<const Function, &FunctionToStr>("Function",
+				fn=new Scripting::MappedReferenceType<Function, &FunctionToStr>("Function",
 					"Contains information about a function, also allows them to be called. Functions are immutable."
 				);
 				
@@ -27,7 +27,7 @@ namespace Gorgon {
 								[](const Function *o) {
 									return o->GetName();
 								}, Types::String(),
-								{ }
+								{ }, ConstTag
 							)
 						}
 					),
@@ -39,7 +39,7 @@ namespace Gorgon {
 								[](const Function *o) {
 									return o->GetHelp(); 
 								}, Types::String(), 
-								{ }
+								{ }, ConstTag
 							)
 						}
 					),

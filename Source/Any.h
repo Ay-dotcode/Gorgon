@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <typeinfo>
 #include "Utils/Assert.h"
+#include "TMP.h"
 
 
 
@@ -29,82 +30,22 @@ namespace Gorgon {
 	/// 
 	class Any {
 	public:
-		/// Used internally by Any to unify different types.
-		/// It is implemented by type dependent Type class.
-		class TypeInterface {
-		public:
-			virtual void  Delete(void* obj) const=0;
-			virtual void *Clone(const void* const obj) const=0;
-			virtual bool  IsSameType(const std::type_info &) const=0;
-			virtual long  GetSize() const = 0;
-			virtual const std::type_info &TypeInfo() const = 0;
-			virtual const std::type_info &ConstTypeInfo() const = 0;
-			virtual const std::type_info &PtrTypeInfo() const = 0;
-			virtual const std::type_info &ConstPtrTypeInfo() const = 0;
-			virtual const std::type_info &RefTypeInfo() const = 0;
-			virtual const std::type_info &ConstRefTypeInfo() const = 0;
-			virtual bool IsPointer() const = 0;
-			virtual TypeInterface *Duplicate() const=0;
-			virtual ~TypeInterface() { }
-			virtual const char *name() const=0; // for debugging
-		};
-	
-		/// Type dependent implementation for TypeInterface.
-		/// This class is created by Any to provide type related
-		/// functions.
-		template<class T_> class Type : public TypeInterface {
-		public:
-			virtual void Delete(void *obj) const override {
-				delete static_cast<T_*>(obj);
-			}
-			virtual void *Clone(const void* const obj) const override {
-				auto n = new typename std::remove_const<T_>::type(*reinterpret_cast<const T_*>(obj));
-				return n;
-			}
-			virtual bool IsSameType(const std::type_info &info) const override {
-				return info==typeid(T_);
-			}
-			virtual const std::type_info &TypeInfo() const override {
-				return typeid(T_);
-			}
-			virtual const std::type_info &ConstTypeInfo() const override {
-				return typeid(const T_);
-			}
-			virtual const std::type_info &PtrTypeInfo() const override {
-				return typeid(T_*);
-			}
-			virtual const std::type_info &ConstPtrTypeInfo() const override {
-				return typeid(const T_*);
-			}
-			virtual const std::type_info &RefTypeInfo() const override {
-				return typeid(T_&);
-			}
-			virtual const std::type_info &ConstRefTypeInfo() const override {
-				return typeid(const T_&);
-			}
-			virtual long GetSize() const override { return sizeof(T_); }
-			virtual TypeInterface *Duplicate() const override { return new Type(); }
-			virtual bool IsPointer() const override { return std::is_pointer<T_>::value; }
-			virtual const char *name() const override { return typeid(T_).name(); }
-		};
-
-	public:
 		/// Default constructor.
 		/// Initializes and empty Any.
 		Any() : content(nullptr),type(nullptr) { }
 		
 		/// Unsafe! Constructs any from give raw data. Both typeinterface and data are duplicated.
 		/// @warning Using this constructor might be dangerous
-		Any(const TypeInterface *typeinterface, void *data) {
-			type=typeinterface->Duplicate();
+		Any(const TMP::RTTS &typeinterface, void *data) {
+			type=typeinterface.Duplicate();
 			content=type->Clone(data);
 		}
 		
 		/// Unsafe! Constructs any from give raw data. typeinterface is duplicated. Ownership of
 		/// data is taken.
 		/// @warning Using this constructor might be dangerous
-		Any(void *data, const TypeInterface *typeinterface) {
-			type=typeinterface->Duplicate();
+		Any(void *data, const TMP::RTTS &typeinterface) {
+			type=typeinterface.Duplicate();
 			content=type->Clone(data);
 		}
 		
@@ -113,9 +54,11 @@ namespace Gorgon {
 		/// Requires type in the copied Any to be copy constructible.
 		template <class T_>
 		Any(const T_ &data) {
+			using Type = typename std::decay<T_>::type;
 			static_assert(!std::is_same<typename std::decay<typename std::remove_reference<T_>::type>::type, Any>::value,
 						  "Something is wrong in here");
-			type=new Type<T_>;
+
+			type=new TMP::RTT<Type>;
 			content=type->Clone(&data);
 		}
 
@@ -139,22 +82,18 @@ namespace Gorgon {
 			Swap(any);
 		}
 		
-		/// Returns TypeInterface used by this any. Returns a new TypeInterface object.
-		/// @warning Using this function might be dangerous. Possible memory leak, caller is responsible for
-		/// deallocation
-		TypeInterface *GetTypeInterface() const {
-			return type->Duplicate();
+		/// Returns TypeInfo used by current data
+		TMP::RTTI &TypeInfo() const {
+			ASSERT(type, "Any is not set");
+			
+			return *type;
+		}
+		
+		/// Returns TypeInterface used by this any.
+		TMP::RTTS *TypeServices() const {
+			return type;
 		}
 
-		/// Creates a new Any from the given data. This constructor
-		/// moves the given data.
-		/// Requires type in the moved Any to be move constructible.
-		//template <class T_>
-		//Any(T_ &&data) {
-		//	type=new Type<T_>;
-		//	auto *n=new T_(std::move(data));
-		//	content=n;
-		//}
 		
 		/// Copies the information in the given Any. It requires
 		/// type in the copied Any to be copy constructible.
@@ -211,7 +150,9 @@ namespace Gorgon {
 		void Set(const T_ &data) {
 			Clear();
 
-			type=new Type<T_>;
+			using Type = typename std::decay<T_>::type;
+			
+			type=new TMP::RTT<Type>;
 			content=type->Clone(&data);
 		}
 
@@ -221,12 +162,15 @@ namespace Gorgon {
 		void Set(T_ &&data) {
 			Clear();
 
-			type=new Type<T_>;
-			T_ *n=new T_(std::move(data));
+
+			using Type = typename std::decay<T_>::type;
+			
+			type=new TMP::RTT<Type>;
+			Type *n=new Type(std::move(data));
 			content=n;
 		}
 
-		/// 
+		
 		/// Clears the content of the any.
 		void Clear() {
 			if(content) {
@@ -255,7 +199,7 @@ namespace Gorgon {
 		/// Unsafe! This function sets the raw data contained within any, while modifying its
 		/// type data. type and data are duplicated.
 		///@warning this function is unsafe
-		void SetRaw(TypeInterface *type, void *data) {
+		void SetRaw(TMP::RTTS *type, void *data) {
 			Clear();
 			
 			this->type=type->Duplicate();
@@ -265,18 +209,18 @@ namespace Gorgon {
 		/// Unsafe! This function sets the raw data contained within any, while modifying its
 		/// type data. type is duplicated, whereas data ownership is assumed.
 		///@warning this function is unsafe
-		void AssumeRaw(TypeInterface *type, void *data) {
+		void AssumeRaw(TMP::RTTS &type, void *data) {
 			Clear();
 			
-			this->type=type->Duplicate();
+			this->type=type.Duplicate();
 			content=data;
 		}
 		
 		/// Unsafe! This function modifies type information of the data content. type is duplicated
 		///@warning this function is extremely unsafe, basically, it performs reinterpret_cast
-		void SetType(const TypeInterface *type) {
+		void SetType(const TMP::RTTS &type) {
 			if(this->type) delete this->type;
-			this->type=type->Duplicate();
+			this->type=type.Duplicate();
 		}
 		
 		/// Returns the value contained with this any. If this Any is not
@@ -354,31 +298,6 @@ namespace Gorgon {
 		/// Checks whether the Any is the same type with the given type.
 		bool IsSameType(const Any &other) const {
 			return type->IsSameType(other.type->TypeInfo());
-		}
-		
-		/// Checks whether the Any is the same type with the const of given type.
-		bool IsSameConstOfType(const Any &other) const {
-			return type->IsSameType(other.type->ConstTypeInfo());
-		}
-		
-		/// Checks whether the Any is the same type with the pointer of given type.
-		bool IsSamePtrOfType(const Any &other) const {
-			return type->IsSameType(other.type->PtrTypeInfo());
-		}
-		
-		/// Checks whether the Any is the same type with the const pointer of given type.
-		bool IsSameConstPtrOfType(const Any &other) const {
-			return type->IsSameType(other.type->ConstPtrTypeInfo());
-		}
-		
-		/// Checks whether the Any is the same type with the ref of given type.
-		bool IsSameRefOfType(const Any &other) const {
-			return type->IsSameType(other.type->RefTypeInfo());
-		}
-		
-		/// Checks whether the Any is the same type with the const ref of given type.
-		bool IsSameConstRefOfType(const Any &other) const {
-			return type->IsSameType(other.type->ConstRefTypeInfo());
 		}
 		
 		/// Checks if any contains a pointer
@@ -469,7 +388,7 @@ namespace Gorgon {
 		void *content;
 		///
 		/// Type of the data stored.
-		TypeInterface *type;
+		TMP::RTTS *type;
 	};
 	
 

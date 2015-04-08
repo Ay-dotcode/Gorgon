@@ -5,6 +5,7 @@
 #include "../String.h"
 #include "../OS.h"
 #include "../Console.h"
+#include "Compiler.h"
 
 namespace Gorgon {
 	namespace Utils {
@@ -89,23 +90,24 @@ namespace Gorgon {
 #endif
 				}
 			}
-			
+	
+	//!Expansion is disabled
 #define gorgon_makeoperator(op) \
 	template<class T_> \
 	CrashHandler &operator op(const T_ &arg) { \
-		expanded += " " #op " " + fromhelper<T_>(arg); \
 		return *this; \
 	}
+//		expanded += " " #op " " + fromhelper<T_>(arg); \
 			
 			// traps right hand side
 			template<class T_>
 			CrashHandler &operator <(const T_ &arg) {
-				if(expanded=="") {
-					expanded = fromhelper<T_>(arg);
-				}
-				else {
-					expanded+=" < " + fromhelper<T_>(arg);
-				}
+// 				if(expanded=="") {
+// 					expanded = fromhelper<T_>(arg);
+// 				}
+// 				else {
+// 					expanded+=" < " + fromhelper<T_>(arg);
+// 				}
 				
 				return *this;
 			}
@@ -135,16 +137,7 @@ namespace Gorgon {
 			
 			bool dumponly=false;
 		};
-		std::string demangle(const std::string &);
 		/// @endcond
-		
-		/// Returns the human readable form of the typename. By the standard typeid::name is 
-		/// not required to be the same as declared type. This function uses compiler facilities
-		/// to obtain readable name.
-		template<class T_>
-		std::string GetTypeName() {
-			return demangle(typeid(T_).name());
-		}
 		
 #ifdef NDEBUG
 	#define ASSERT(...)
@@ -159,7 +152,7 @@ namespace Gorgon {
 		 * skip defaults to 1, depth defaults to 4, expanded defaults to false, original defaults to false
 		 */
 		#define ASSERT(expression, message, ...) do { if(!bool(expression)) { \
-			(Gorgon::Utils::CrashHandler(#expression, message, ##__VA_ARGS__) < expression); } } while(0)
+			(Gorgon::Utils::CrashHandler(#expression, message, ##__VA_ARGS__)); } } while(0)
 		
 		/** 
 		 * Replaces regular assert to allow messages and backtrace. Has four additional parameters:
@@ -169,7 +162,7 @@ namespace Gorgon {
 		 * skip defaults to 1, depth defaults to 4, expanded defaults to true, original defaults to true
 		 */
 		#define ASSERT_ALL(expression, message, ...) do { if(!bool(expression)) { \
-			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::AllTag, #expression, message, ##__VA_ARGS__) < expression); } } while(0)
+			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::AllTag, #expression, message, ##__VA_ARGS__)); } } while(0)
 
 		/** 
 		 * Replaces regular assert to allow messages and backtrace.  This variant does not crash or exit the 
@@ -180,7 +173,7 @@ namespace Gorgon {
 		 * skip defaults to 1, depth defaults to 4, expanded defaults to false, original defaults to false
 		 */
 		#define ASSERT_DUMP(expression, message, ...) do { if(!bool(expression)) { \
-			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::DumpOnlyTag,#expression, message, ##__VA_ARGS__) < expression); } } while(0)
+			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::DumpOnlyTag,#expression, message, ##__VA_ARGS__)); } } while(0)
 			
 #	ifdef _MSC_VER
 		__declspec(noreturn) inline void NotImplemented(const std::string &what="This feature") { ASSERT(false, what+" is not implemented.", 0, 8); }

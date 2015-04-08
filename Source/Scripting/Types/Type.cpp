@@ -15,7 +15,7 @@ namespace Gorgon {
 		
 		Type *TypeType() {
 			if(type==nullptr) {
-				type=new Scripting::MappedReferenceType<const Type, &TypeToStr>("Type",
+				type=new Scripting::MappedReferenceType<Type, &TypeToStr>("Type",
 					"Contains information about a type. Also contains "
 					"functions for various purposes. Types are immutable."
 				);
@@ -37,7 +37,7 @@ namespace Gorgon {
 								[](const Type *o) { 
 									return o->GetName();
 								}, Types::String(),
-								{ }
+								{ }, ConstTag
 							)
 						}
 					},
@@ -49,7 +49,7 @@ namespace Gorgon {
 								[](const Type *o) { 
 									return o->GetHelp();
 								}, Types::String(),
-								{ }
+								{ }, ConstTag
 							)
 						}
 					},
@@ -65,7 +65,7 @@ namespace Gorgon {
 										Types::Variant()/*, OptionalTag*///...
 									)
 								},
-								RepeatTag
+								RepeatTag, ConstTag
 							)
 						}
 					},

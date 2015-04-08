@@ -53,29 +53,29 @@ namespace Gorgon { namespace Scripting {
 	
 	void Data::check() {
 		if(isconstant) {
-			if(isreference && !type->IsReferenceType()) {
-				ASSERT(data.IsSameConstPtrOfType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
-				") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+			if(IsReference()) {
+				ASSERT(data.TypeInfo()==type->TypeInterface.ConstPtrType, "Given data type ("+data.GetTypeName()+
+				") does not match with: "+type->GetName()+" ("+type->TypeInterface.ConstPtrType.Name()+")"
 				, 2, 2
 				);
 			}
 			else {
-				ASSERT(data.IsSameConstOfType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
-				") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+				ASSERT(data.TypeInfo()==type->TypeInterface.ConstType, "Given data type ("+data.GetTypeName()+
+				") does not match with: "+type->GetName()+" ("+type->TypeInterface.ConstType.Name()+")"
 				, 2, 2
 				);
 			}
 		}
 		else {
-			if(isreference && !type->IsReferenceType()) {
-				ASSERT(data.IsSamePtrOfType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
-					") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+			if(IsReference()) {
+				ASSERT(data.TypeInfo()==type->TypeInterface.PtrType, "Given data type ("+data.GetTypeName()+
+					") does not match with: "+type->GetName()+" ("+type->TypeInterface.PtrType.Name()+")"
 					, 2, 2
 				);
 			}
 			else {
-				ASSERT(data.IsSameType(type->GetDefaultValue()), "Given data type ("+data.GetTypeName()+
-				") does not match with: "+type->GetName()+" ("+type->GetDefaultValue().GetTypeName()+")"
+				ASSERT(data.TypeInfo()==type->TypeInterface.NormalType, "Given data type ("+data.GetTypeName()+
+				") does not match with: "+type->GetName()+" ("+type->TypeInterface.NormalType.Name()+")"
 				, 2, 2
 				);
 			}
@@ -127,17 +127,16 @@ namespace Gorgon { namespace Scripting {
 	Data Data::GetReference() {
 		ASSERT(type, "Type is not set", 1, 2);
 		
-		if(isreference) return *this;
-		if(type->IsReferenceType()) return *this;
+		if(IsReference()) return *this;
 		
 		void *r=data.GetRaw();
 		void **p = new void*(r);
 		
 		if(isconstant) {
-			return {type, {p, type->ConstPtrTypeInterface}, true, true};
+			return {type, {p, type->TypeInterface.ConstRefType}, true, true};
 		}
 		else {
-			return {type, {p, type->PtrTypeInterface}, true, false};
+			return {type, {p, type->TypeInterface.PtrType}, true, false};
 		}
 	}
 	
@@ -145,10 +144,10 @@ namespace Gorgon { namespace Scripting {
 		ASSERT(type, "Type is not set", 1, 2);
 		
 		if(!isconstant) {
-			if(isreference && !type->IsReferenceType())
-				data.SetType(type->ConstPtrTypeInterface);
+			if(IsReference())
+				data.SetType(type->TypeInterface.ConstPtrType);
 			else
-				data.SetType(type->ConstTypeInterface);
+				data.SetType(type->TypeInterface.ConstType);
 			
 			isconstant=true;
 		}

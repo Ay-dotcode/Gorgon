@@ -610,8 +610,10 @@ namespace Gorgon {
 		public:
 			/// Constructor
 			Constant(const std::string &name, const std::string &help, 
-					 const Data &data) : 
-			name(name), help(help), data(data) { }
+					 const Type *type, Any data) : 
+			name(name), help(help), data(type, data, false, true) { 
+				ASSERT(type, "Type cannot be nullptr");
+			}
 			
 			/// Returns the name of the constant
 			std::string GetName() const {
@@ -821,10 +823,9 @@ namespace Gorgon {
 				ConversionFunction from, to;
 			};
 			
-			/// Constructor, unlike other reflection objects, Type is not constructed fully. TypeInterace for pointer type
-			/// can be constructed using Any::Type.
+			/// Constructor, unlike other reflection objects, Type is not constructed fully.
 			Type(const std::string &name, const std::string &help, const Any &defaultvalue, 
-				 Any::TypeInterface *consttype, Any::TypeInterface *ptrtype, Any::TypeInterface *constptrtype, bool isref);
+				 TMP::RTTH *typeinterface, bool isref);
 
 			/// Returns the name of this type.
 			std::string GetName() const {
@@ -1019,21 +1020,10 @@ namespace Gorgon {
 			/// Inherited symbols
 			const Containers::Hashmap<std::string, const Type, nullptr, std::map, String::CaseInsensitiveLess> &InheritedSymbols;
 			
-			/// Type info for normal type
-			const Any::TypeInterface * const TypeInterface;
+			TMP::RTTH &TypeInterface;
 			
-			/// Type info for const type
-			const Any::TypeInterface * const ConstTypeInterface;
-			
-			/// Type info for pointer type
-			const Any::TypeInterface * const PtrTypeInterface;
-			
-			/// Type info for const pointer type
-			const Any::TypeInterface * const ConstPtrTypeInterface;
-			
-			virtual ~Type() { 
-				delete TypeInterface;
-				delete PtrTypeInterface;
+			virtual ~Type() {
+				delete &TypeInterface;
 			}
 			
 		protected:

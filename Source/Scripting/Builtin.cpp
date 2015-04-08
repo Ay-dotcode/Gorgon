@@ -406,7 +406,7 @@ namespace Gorgon {
 				},
 				FunctionList{},
 				ConstantList {
-					new Constant("Pi", "Contains the value of PI", {Double, 3.14159265358979}),
+					new Constant("Pi", "Contains the value of PI", Double, Any(3.14159265358979)),
 				}
 			};
 			

@@ -1553,10 +1553,6 @@ void StackWalker::OnOutput(LPCSTR buffer)
 namespace Gorgon {
 	namespace Utils {
 		
-		std::string demangle(const std::string &name) {
-			return name;
-		}
-
 		struct stackentry {
 			std::string file;
 			int line;

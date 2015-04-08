@@ -39,7 +39,7 @@ namespace Gorgon { namespace Scripting {
 	class MappedValueType : public Type {
 	public:
 		MappedValueType(const std::string &name, const std::string &help, const T_ &def) :
-		Type(name, help, def, new Any::Type<const T_>(), new Any::Type<T_*>(), new Any::Type<const T_*>(), false)
+		Type(name, help, def, new TMP::RTTC<T_>(), false)
 		{
 		}
 		
@@ -75,7 +75,7 @@ namespace Gorgon { namespace Scripting {
 	class MappedReferenceType : public Type {
 	public:
 		MappedReferenceType(const std::string &name, const std::string &help, T_ *def) :
-		Type(name, help, def, new Any::Type<const T_*>(), new Any::Type<T_**>(), new Any::Type<const T_**>(), true)
+		Type(name, help, def, new TMP::AbstractRTTC<T_>(), true)
 		{
 		}
 		
