@@ -272,7 +272,10 @@ namespace Gorgon {
 				}
 				
 				virtual ~Variant() { }
-			
+				
+				/// Compares two variants if they have the same signature
+				bool IsSame(const Variant &var) const;
+				
 				/// Returns if the last parameter of this function should be stretched. 
 				/// If true, in console dialect, spaces in the last parameter are not treated as parameter
 				/// separator as if it is in quotes. Helpful for functions like echo. But also helpful for
@@ -510,39 +513,51 @@ namespace Gorgon {
 			/// If this function is a member function, returns the owner object. If this function is not a
 			/// member function, this function crashes.
 			const Type &GetOwner() const {
-				ASSERT(parent, "This function does not have an owner.", 1,2);
+				ASSERT(parent, "This function does not have an owner.", 1, 5);
 				
 				return *parent;
 			}
 			
 			virtual void AddVariant(Variant &var) {
-				ASSERT(!isoperator || var.parameters.size()==1, "Operators should have only a single parameter");
+				ASSERT(
+					!isoperator || var.parameters.size()==1, 
+					"Operators should have only a single parameter\n"					
+					"in function "+name, 1, 3
+				);
 
 				var.parent=this;
 #ifndef NDEBUG
+				for(const auto &v : variants) {
+					ASSERT(!var.IsSame(v), "Ambiguous function variant\n in function "+name,1,3);
+				}
+				
 				var.dochecks(false);
 #endif
 				variants.Push(var);
 			}
 			
 			virtual void AddMethod(Variant &var) {
-				ASSERT(!isoperator, "Operators cannot be methods");
+				ASSERT(!isoperator, "Operators cannot be methods\n in function "+name, 1, 3);
 				
 				var.parent=this;
 #ifndef NDEBUG
+				for(const auto &v : methods) {
+					ASSERT(!var.IsSame(v), "Ambiguous function variant\n in function "+name,1,3);
+				}
+				
 				var.dochecks(true);
 #endif
 				methods.Push(var);
 			}
 			
 			virtual void AddVariant(Variant *var) {
-				ASSERT(var, "Empty variant");
+				ASSERT(var, "Empty variant\n in function "+name);
 
 				AddVariant(*var);
 			}
 			
 			virtual void AddMethod(Variant *var) {
-				ASSERT(var, "Empty variant");
+				ASSERT(var, "Empty variant\n in function "+name);
 
 				AddMethod(*var);
 			}

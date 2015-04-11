@@ -264,7 +264,7 @@ namespace Gorgon { namespace Scripting {
 						!IsConstant(), 
 						"This function variant is marked as const, yet its implementation requires non-const "
 						"pointer or reference\n"
-						"in function "+parent->GetName()
+						"in function "+parent->GetName(), 4, 3
 					);
 				}
 				else {
@@ -273,18 +273,19 @@ namespace Gorgon { namespace Scripting {
 					ASSERT(
 						P_-ismember!=parameters.size()-1 || !repeatlast, 
 						"Repeating parameter vectors cannot be non-const references"
+						"in function "+parent->GetName(), 4, 3
 					);
 					
 					ASSERT(param.IsReference(),
 						"Parameter #"+String::From(P_-ismember)+" is not declared as reference, "
 						"yet its implementation is\n"
-						"in function "+parent->GetName()
+						"in function "+parent->GetName(), 4, 3
 					);
 					
 					ASSERT(!param.IsConstant(),
 						"Parameter #"+String::From(P_-ismember)+" is declared as constant, "
 						"yet its implementation is not const\n"
-						"in function "+parent->GetName()
+						"in function "+parent->GetName(), 4, 3
 					);
 				}
 			}
@@ -309,7 +310,7 @@ namespace Gorgon { namespace Scripting {
 					ASSERT(param.IsReference(),
 						   "Parameter #"+String::From(P_-ismember+1)+" is not declared as reference, "
 						   "yet its implementation is\n"
-						   "in function "+parent->GetName()
+						   "in function "+parent->GetName(), 4, 3
 					);
 					
 #ifdef TEST
@@ -330,7 +331,7 @@ namespace Gorgon { namespace Scripting {
 						IsConstant(), 
 						"This function variant is marked as a non-const member function, "
 						"yet its implementation requests a constant value which cannot modify the this pointer.\n"
-						"in function "+parent->GetName()
+						"in function "+parent->GetName(), 4, 3
 					);
 				}
 				else {
@@ -340,7 +341,7 @@ namespace Gorgon { namespace Scripting {
 						ASSERT(!param.IsReference(),
 							"Parameter #"+String::From(P_-ismember+1)+" is declared as reference "
 							"yet its implementation not\n"
-							"in function "+parent->GetName()
+							"in function "+parent->GetName(), 4, 3
 						);
 						
 #ifdef TEST
@@ -359,7 +360,7 @@ namespace Gorgon { namespace Scripting {
 						IsConstant(), 
 						"This function variant is marked as a non-const member function, "
 						"yet its implementation requests a value which cannot modify the this pointer.\n"
-						"in function "+parent->GetName()
+						"in function "+parent->GetName(), 4, 3
 					);
 				}
 				else {
@@ -369,13 +370,13 @@ namespace Gorgon { namespace Scripting {
 						ASSERT(!param.IsReference(),
 							"Parameter #"+String::From(P_-ismember+1)+" is declared as reference, "
 							"yet its implementation not\n"
-							"in function "+parent->GetName()
+							"in function "+parent->GetName(), 4, 3
 						);
 						
 						ASSERT(!param.IsConstant(),
 							"Parameter #"+String::From(P_-ismember+1)+" is declared as constant, "
 							"yet its implementation is not const\n"
-							"in function "+parent->GetName()
+							"in function "+parent->GetName(), 4, 3
 						);
 					}
 				}
@@ -389,7 +390,7 @@ namespace Gorgon { namespace Scripting {
 					parent->GetOwner().TypeInterface.NormalType.Name()+") of "
 					"parameter #"+String::From(P_-ismember+1)+" does not match with the function type ("+
 					rtt.NormalType.Name()+")\n"+
-					"in function "+parent->GetName()
+					"in function "+parent->GetName(), 4, 3
 				);
 			}
 			else if(P_-ismember==parameters.size()-1 && repeatlast) {
@@ -401,7 +402,7 @@ namespace Gorgon { namespace Scripting {
 					parent->GetOwner().TypeInterface.NormalType.Name()+") of "
 					"parameter #"+String::From(P_-ismember+1)+" does not match with the function type ("+
 					rtt.NormalType.Name()+")\n"+
-					"in function "+parent->GetName()
+					"in function "+parent->GetName(), 4, 3
 				);
 			}
 			else {
@@ -412,7 +413,7 @@ namespace Gorgon { namespace Scripting {
 					"The declared type ("+param.GetType().GetName()+", "+param.GetType().TypeInterface.NormalType.Name()+") of "
 					"parameter #"+String::From(P_-ismember+1)+" does not match with the function type ("+
 					rtt.NormalType.Name()+")\n"
-					"in function "+parent->GetName()
+					"in function "+parent->GetName(), 4, 3
 				);
 			}
 		}
@@ -433,7 +434,7 @@ namespace Gorgon { namespace Scripting {
 					returntype==nullptr, 
 					"This function variant expects a return type of "+
 				    returntype->GetName()+"\n"
-					"in function "+parent->GetName()
+					"in function "+parent->GetName(), 4, 3
 				);
 			}
 			else {
@@ -441,7 +442,7 @@ namespace Gorgon { namespace Scripting {
 					returntype!=nullptr, 
 					"Return type is marked as void. Supplied function's return type is :"+
 					Utils::GetTypeName<typename traits::ReturnType>()+
-					"in function "+parent->GetName()
+					"in function "+parent->GetName(), 4, 3
 				);
 			}
 			

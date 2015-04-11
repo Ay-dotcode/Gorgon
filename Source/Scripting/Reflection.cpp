@@ -347,4 +347,32 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
+	bool Function::Variant::IsSame(const Function::Variant& var) const {
+		if(var.IsConstant() != constant) {
+			return false;
+		}
+
+		if(var.RepeatLast() != repeatlast) {
+			return false;
+		}
+
+		if(var.Parameters.size() != parameters.size()) {
+			return false;
+		}
+
+		auto otherp = var.Parameters.begin();
+		auto p = parameters.begin();
+
+		while(p!=parameters.end() && otherp!=var.Parameters.end()) {
+			if(p->GetType()    != otherp->GetType())		return false;
+			if(p->IsConstant() != otherp->IsConstant()) 	return false;
+			if(p->IsVariable() != otherp->IsVariable()) 	return false;
+
+			if(!p->GetType().IsReferenceType())
+				if(p->IsReference() != otherp->IsReference()) 	return false;
+		}
+
+		return true;
+	}
+	
 } }
