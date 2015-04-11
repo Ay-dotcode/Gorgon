@@ -118,22 +118,22 @@ namespace Gorgon {
 				Int, Int, Int, 
 				[](int l, int r) { return l+r; }
 			);
-			intadd->AddVariant(Double, Double, [](int l, double r) { return l+r; });
-			intadd->AddVariant(Float,  Float,  [](int l, float r) { return l+r; });
+			intadd->AddOverload(Double, Double, [](int l, double r) { return l+r; });
+			intadd->AddOverload(Float,  Float,  [](int l, float r) { return l+r; });
 			
 			auto intsub=new MappedOperator("-", "Subtracts a number from this one",
 					Int, Int, Int, 
 					[](int l, int r) { return l-r; }
 			);
-			intsub->AddVariant(Double, Double, [](int l, double r) { return l-r; });
-			intsub->AddVariant(Float,  Float,  [](int l, float r) { return l-r; });
+			intsub->AddOverload(Double, Double, [](int l, double r) { return l-r; });
+			intsub->AddOverload(Float,  Float,  [](int l, float r) { return l-r; });
 			
 			auto intmul=new MappedOperator("*", "Multiplies two numbers together",
 					Int, Int, Int, 
 					[](int l, int r) { return l*r; }
 			);
-			intmul->AddVariant(Double, Double, [](int l, double r) { return l*r; });
-			intmul->AddVariant(Float,  Float,  [](int l, float r) { return l*r; });
+			intmul->AddOverload(Double, Double, [](int l, double r) { return l*r; });
+			intmul->AddOverload(Float,  Float,  [](int l, float r) { return l*r; });
 
 			
 			Int->AddFunctions({
@@ -166,43 +166,43 @@ namespace Gorgon {
 			});
 
 			Int->AddConstructors({
-				Map_Typecast<float, int>(Float, Int),
-				Map_Typecast<double, int>(Double, Int),
-				Map_Typecast<unsigned, int>(Unsigned, Int),
-				Map_Typecast<Gorgon::Byte, int>(Byte, Int)
+				MapTypecast<float, int>(Float, Int),
+				MapTypecast<double, int>(Double, Int),
+				MapTypecast<unsigned, int>(Unsigned, Int),
+				MapTypecast<Gorgon::Byte, int>(Byte, Int)
 			});
 			
 			Unsigned->AddConstructors({
-				Map_Typecast<float, unsigned>(Float, Unsigned),
-				Map_Typecast<double, unsigned>(Double, Unsigned),
-				Map_Typecast<int, unsigned>(Int, Unsigned),
-				Map_Typecast<Gorgon::Byte, unsigned>(Byte, Unsigned),
+				MapTypecast<float, unsigned>(Float, Unsigned),
+				MapTypecast<double, unsigned>(Double, Unsigned),
+				MapTypecast<int, unsigned>(Int, Unsigned),
+				MapTypecast<Gorgon::Byte, unsigned>(Byte, Unsigned),
 			});
 			
 			Float->AddConstructors({
-				Map_Typecast<unsigned, float>(Unsigned, Float),
-				Map_Typecast<double, float>(Double, Float),
-				Map_Typecast<int, float>(Int, Float),
-				Map_Typecast<Gorgon::Byte, float>(Byte, Float)
+				MapTypecast<unsigned, float>(Unsigned, Float),
+				MapTypecast<double, float>(Double, Float),
+				MapTypecast<int, float>(Int, Float),
+				MapTypecast<Gorgon::Byte, float>(Byte, Float)
 			});
 			
 			Double->AddConstructors({
-				Map_Typecast<float, double>(Float, Double),
-				Map_Typecast<unsigned, double>(Unsigned, Double),
-				Map_Typecast<int, double>(Int, Double),
-				Map_Typecast<Gorgon::Byte, double>(Byte, Double)
+				MapTypecast<float, double>(Float, Double),
+				MapTypecast<unsigned, double>(Unsigned, Double),
+				MapTypecast<int, double>(Int, Double),
+				MapTypecast<Gorgon::Byte, double>(Byte, Double)
 			});
 			
 			Byte->AddConstructors({
-				Map_Typecast<float, Gorgon::Byte>(Float, Byte),
-				Map_Typecast<double, Gorgon::Byte>(Double, Byte),
-				Map_Typecast<int, Gorgon::Byte>(Int, Byte),
-				Map_Typecast<unsigned, Gorgon::Byte>(Unsigned, Byte),
-				Map_Typecast<char, Gorgon::Byte>(Char, Byte)
+				MapTypecast<float, Gorgon::Byte>(Float, Byte),
+				MapTypecast<double, Gorgon::Byte>(Double, Byte),
+				MapTypecast<int, Gorgon::Byte>(Int, Byte),
+				MapTypecast<unsigned, Gorgon::Byte>(Unsigned, Byte),
+				MapTypecast<char, Gorgon::Byte>(Char, Byte)
 			});
 			
 			Char->AddConstructors({
-				Map_Typecast<Gorgon::Byte, char>(Byte, Char)
+				MapTypecast<Gorgon::Byte, char>(Byte, Char)
 			});
 			
 			Bool->AddFunctions({
@@ -230,9 +230,9 @@ namespace Gorgon {
 			});
 
 			Bool->AddConstructors({
-				Map_Typecast<Gorgon::Byte, bool>(Byte, Bool),
-				Map_Typecast<unsigned, bool>(Unsigned, Bool),
-				Map_Typecast<int, bool>(Int, Bool),
+				MapTypecast<Gorgon::Byte, bool>(Byte, Bool),
+				MapTypecast<unsigned, bool>(Unsigned, Bool),
+				MapTypecast<int, bool>(Int, Bool),
 			});
 			
 			String->AddFunctions({

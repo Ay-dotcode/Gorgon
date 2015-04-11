@@ -247,15 +247,65 @@ namespace Gorgon {
 		
 		using ParameterList = std::vector<Parameter>;
 		
+
+		/**
+		 * Represents a function. Functions contains overloads that vary in parameters and/or traits. Overloads
+		 * can be C++ functions or functions that are defined by scripting. Overloads can be added after the object
+		 * is constructed.
+		 * 
+		 * A function can act as a keyword. While keywords do not have special traits they have additional 
+		 * restrictions. Keywords cannot return values and cannot be member functions. Keywords may have special
+		 * syntax based on the dialect that is effect. For instance, in programming dialect, keywords do not require
+		 * parenthesis to be called. A function can be marked as a keyword using **KeywordTag**.
+		 * 
+		 * If a owner (or parent) is set, the function will become a **member function**. Member functions becomes a part
+		 * of the owner type. A member function can also be static using **StaticTag**. A static member function do not
+		 * have this pointer and cannot be access from a member of the type. Instead it can be accessed using `Type:Fn`
+		 * syntax. Constructor functions are also marked as static. Member functions can be called either by issuing 
+		 * `Object.fn(...)` or `fn(Object, ...)`. Latter case is useful for calling member functions on literals. 
+		 * 
+		 * A member function can act as an operator if **OperatorTag** is set. Operator functions must have a single 
+		 * parameter and cannot be static. While performing overload resolution, if ambiguity occurs, the overload that
+		 * has same parameter type as the owner type is favored. This solves cases where the right hand side type do
+		 * not have a specific overload but can be converted to multiple type that have overloads.
+		 */
 		class Function {
 			friend class Type;
 		public:
 			
-			class Variant {
+			/**
+			 * Represents a function overload. Function overloads can either be C++ functions or defined by scripting.
+			 * A C++ function can be embedded using MapFunction. 
+			 * 
+			 * Return value of an overload is specified by returntype. A `nullptr` value marks the function void. If the
+			 * overload returns a reference, **ReferenceTag** must be set. An embedded function can return reference
+			 * by reference or a pointer. Reference types should always be returned as a reference or pointer. If the
+			 * returned reference is constant, **ReturnsConstTag** should be set.
+			 * 
+			 * A constructor overload should return the object that is constructed. A constructor that has a single
+			 * parameter can be used as a casting operator if the variant is marked with **ImplicitTag**. Otherwise,
+			 * all constructors should be invoked manually.
+			 * 
+			 * If a function is a member function, an overload of this function can be made private using **PrivateTag**.
+			 * A private function can only be called from the function of the owner type or any type that is descendant of
+			 * it. Private overloads are useful in scripting defined types. 
+			 * 
+			 * A member function overload can be marked as constant by using **ConstTag**. If an embedded constant overload
+			 * is a member function, it should be const. If it is a namespace function, it should take this pointer as either
+			 * `const Type *` or `const Type &`. It is also possible to use `Type` for value types, however, this usage is
+			 * discouraged.
+			 * 
+			 * If an overload is marked with **RepeatLastTag**, the last parameter can be repeated as many times as needed.
+			 * However, unless **OptionalTag** of the last parameter is set, at least a single parameter is required for
+			 * these repeating overloads. Embedded functions should receive these parameters as either a const reference
+			 * a normal std::vector of the specified type.
+			 */
+			class Overload {
 				friend class Function;
 			public:
+				/// Regular constructor that can take as many tags as needed.
 				template<class ...P_>
-				Variant(const Type *returntype, ParameterList parameters, P_ ...tags) :
+				Overload(const Type *returntype, ParameterList parameters, P_ ...tags) :
 				returntype(returntype), Parameters(this->parameters)
 				{
 					using std::swap;
@@ -264,7 +314,8 @@ namespace Gorgon {
 					unpacktags(tags...);
 				}
 				
-				Variant(const Type *returntype, ParameterList parameters, bool stretchlast, bool repeatlast, 
+				/// A full constructor
+				Overload(const Type *returntype, ParameterList parameters, bool stretchlast, bool repeatlast, 
 						bool accessible, bool constant, bool returnsref, bool returnsconst, bool implicit) :
 				returntype(returntype), stretchlast(stretchlast), repeatlast(repeatlast), 
 				accessible(accessible), constant(constant), returnsref(returnsref), returnsconst(returnsconst),
@@ -274,10 +325,10 @@ namespace Gorgon {
 					swap(parameters, this->parameters);
 				}
 				
-				virtual ~Variant() { }
+				virtual ~Overload() { }
 				
 				/// Compares two variants if they have the same signature
-				bool IsSame(const Variant &var) const;
+				bool IsSame(const Overload &var) const;
 				
 				/// Returns if the last parameter of this function should be stretched. 
 				/// If true, in console dialect, spaces in the last parameter are not treated as parameter
@@ -341,6 +392,7 @@ namespace Gorgon {
 				*/
 				virtual Data Call(bool ismethod, const std::vector<Data> &parameters) const = 0;
 				
+				/// The parameters of this overload
 				const ParameterList &Parameters;
 				
 			protected:
@@ -395,7 +447,7 @@ namespace Gorgon {
 				/// should be called unless similar checks are repeated
 				virtual void dochecks(bool ismethod);
 				
-				
+				/// Modifiable parameters of this overload
 				ParameterList parameters;
 				
 				/// Return type of this function variant. If nullptr this function does not return a value.
@@ -420,7 +472,7 @@ namespace Gorgon {
 				bool returnsref = false;
 				
 				/// This function variant returns a constant, useful with references
-				bool returnsconst;
+				bool returnsconst = false;
 				
 				/// The parent function of this variant
 				Function *parent;
@@ -429,14 +481,15 @@ namespace Gorgon {
 				bool implicit = false;
 			};
 			
+			/// Regular constructor with both overloads and methods specified a long with at least a single tag
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
-					 const Containers::Collection<Variant> &variants, const Containers::Collection<Variant> &methods, 
+					 const Containers::Collection<Overload> &overloads, const Containers::Collection<Overload> &methods, 
 					 Tag tag, P_ ...tags) : 
-			name(name), help(help), parent(parent), Variants(this->variants), Methods(this->methods)
+			name(name), help(help), parent(parent), Overloads(this->overloads), Methods(this->methods)
 			{
-				for(auto &variant : variants) {
-					AddVariant(variant);
+				for(auto &variant : overloads) {
+					AddOverload(variant);
 				}
 				
 				for(auto &variant : methods) {
@@ -449,13 +502,14 @@ namespace Gorgon {
 				init();
 			}
 			
+			/// Regular constructor with overloads specified a long with at least a single tag
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
-					 const Containers::Collection<Variant> &variants, Tag tag, P_ ...tags) : 
-			name(name), help(help), parent(parent), Variants(this->variants), Methods(this->methods)
+					 const Containers::Collection<Overload> &overloads, Tag tag, P_ ...tags) :
+			name(name), help(help), parent(parent), Overloads(this->overloads), Methods(this->methods)
 			{
-				for(auto &variant : variants) {
-					AddVariant(variant);
+				for(auto &overload : overloads) {
+					AddOverload(overload);
 				}
 				
 				unpacktags(tag);
@@ -464,27 +518,29 @@ namespace Gorgon {
 				init();
 			}
 			
+			/// Regular constructor with both overloads and methods without any tags
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent,
-					 const Containers::Collection<Variant> &variants, const Containers::Collection<Variant> &methods=Containers::Collection<Variant>()
+					 const Containers::Collection<Overload> &overloads, const Containers::Collection<Overload> &methods=Containers::Collection<Overload>()
 			) : 
-			name(name), help(help), parent(parent), Variants(this->variants), Methods(this->methods)
+			name(name), help(help), parent(parent), Overloads(this->overloads), Methods(this->methods)
 			{ 
-				for(auto &variant : variants) {
-					AddVariant(variant);
+				for(auto &overload : overloads) {
+					AddOverload(overload);
 				}
 				
-				for(auto &variant : methods) {
-					AddMethod(variant);
+				for(auto &overload : methods) {
+					AddMethod(overload);
 				}
 
 				init();
 			}
 
+			/// Full constructor
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
 					 bool keyword, bool isoperator, bool staticmember) : 
-			Function(name, help, parent, Containers::Collection<Variant>()) {
+			Function(name, help, parent, Containers::Collection<Overload>()) {
 				this->keyword=keyword;
 				this->isoperator=isoperator;
 				this->staticmember=staticmember;
@@ -532,53 +588,59 @@ namespace Gorgon {
 				return *parent;
 			}
 			
-			virtual void AddVariant(Variant &var) {
+			/// Adds the given overload to this function after performing necessary checks
+			virtual void AddOverload(Overload &overload) {
 				ASSERT(
-					!isoperator || var.parameters.size()==1, 
+					!isoperator || overload.parameters.size()==1,
 					"Operators should have only a single parameter\n"					
 					"in function "+name, 1, 3
 				);
 
-				var.parent=this;
+				overload.parent=this;
 #ifndef NDEBUG
-				for(const auto &v : variants) {
-					ASSERT(!var.IsSame(v), "Ambiguous function variant\n in function "+name,1,3);
+				for(const auto &v : overloads) {
+					ASSERT(!overload.IsSame(v), "Ambiguous function variant\n in function "+name, 1, 3);
 				}
 				
-				var.dochecks(false);
+				overload.dochecks(false);
 #endif
-				variants.Push(var);
+				overloads.Push(overload);
 			}
 			
-			virtual void AddMethod(Variant &var) {
+			/// Adds the given overload as a method to this function after performing necessary checks
+			virtual void AddMethod(Overload &overload) {
 				ASSERT(!isoperator, "Operators cannot be methods\n in function "+name, 1, 3);
 				
-				var.parent=this;
+				overload.parent=this;
 #ifndef NDEBUG
 				for(const auto &v : methods) {
-					ASSERT(!var.IsSame(v), "Ambiguous function variant\n in function "+name,1,3);
+					ASSERT(!overload.IsSame(v), "Ambiguous function variant\n in function "+name, 1, 3);
 				}
 				
-				var.dochecks(true);
+				overload.dochecks(true);
 #endif
-				methods.Push(var);
+				methods.Push(overload);
 			}
 			
-			virtual void AddVariant(Variant *var) {
-				ASSERT(var, "Empty variant\n in function "+name);
+			/// Adds the given overload to this function after performing necessary checks
+			virtual void AddOverload(Overload *overload) {
+				ASSERT(overload, "Empty variant\n in function "+name);
 
-				AddVariant(*var);
+				AddOverload(*overload);
 			}
 			
-			virtual void AddMethod(Variant *var) {
-				ASSERT(var, "Empty variant\n in function "+name);
+			/// Adds the given overload as a method to this function after performing necessary checks
+			virtual void AddMethod(Overload *overload) {
+				ASSERT(overload, "Empty variant\n in function "+name);
 
-				AddMethod(*var);
+				AddMethod(*overload);
 			}
 			
-			const Containers::Collection<Variant> &Variants;
+			/// The list of overloads this function has
+			const Containers::Collection<Overload> &Overloads;
 			
-			const Containers::Collection<Variant> &Methods;
+			/// The list of methods this function has
+			const Containers::Collection<Overload> &Methods;
 			
 		private:
 			
@@ -627,12 +689,13 @@ namespace Gorgon {
 			
 			bool staticmember = false;
 			
-			Containers::Collection<Variant> variants;
+			Containers::Collection<Overload> overloads;
 			
-			Containers::Collection<Variant> methods;
+			Containers::Collection<Overload> methods;
 		};
 		
-		///-use unordered_map
+		//-use unordered_map
+		/// The type to store list of functions
 		using FunctionList = Containers::Hashmap<std::string, const Function, &Function::GetName, std::map, String::CaseInsensitiveLess>;
 		
 		/**
@@ -680,6 +743,7 @@ namespace Gorgon {
 			Data data;
 		};
 		
+		/// The type to store list of constants
 		using ConstantList = Containers::Hashmap<std::string, const Constant, &Constant::GetName, std::map, String::CaseInsensitiveLess>;
 		
 		/// Data members that can be accessed through an instance of the a type. 
@@ -930,13 +994,13 @@ namespace Gorgon {
 			}
 			
 			/// Adds new constructors to the type
-			void AddConstructors(std::initializer_list<Function::Variant*> elements) {
+			void AddConstructors(std::initializer_list<Function::Overload*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
 					ASSERT(element->HasReturnType() && element->GetReturnType()==this,
 						   "Given constructor should return this ("+name+") type", 1, 2);
 					
-					constructor.AddVariant(*element);
+					constructor.AddOverload(*element);
 				}
 			}
 			
@@ -997,8 +1061,8 @@ namespace Gorgon {
 				return this;
 			}
 
-			const Function::Variant *GetTypeCastingFrom(const Type *other, bool implicit=true) const {
-				for(const auto &ctor : constructor.Variants) {
+			const Function::Overload *GetTypeCastingFrom(const Type *other, bool implicit=true) const {
+				for(const auto &ctor : constructor.Overloads) {
 					if(ctor.Parameters.size()==1 && ctor.Parameters[0].GetType()==other && 
 						(!implicit || ctor.IsImplicit())
 					) {

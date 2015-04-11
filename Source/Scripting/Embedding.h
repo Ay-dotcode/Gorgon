@@ -117,15 +117,19 @@ namespace Gorgon { namespace Scripting {
 		}
 	};
 
+	/// Variant data type can hold any type of data
 	extern Type &Variant;
 	
+	/// This class wraps a C++ function into an overload. It can be constructed using MapFunction.
 	template<class F_>
-	class MappedFunction : public Scripting::Function::Variant {
-		using variant = Scripting::Function::Variant;
+	class MappedFunction : public Scripting::Function::Overload {
+		using variant = Scripting::Function::Overload;
 		using traits  = TMP::FunctionTraits<F_>;
 		template<int P_>
 		using param = typename traits::template Arguments<P_>::Type;
 	public:
+
+		/// Constructor
 		template<class ...P_>
 		MappedFunction(F_ fn, const Scripting::Type *returntype, Scripting::ParameterList parameters, P_ ...tags) :
 		variant(returntype, std::move(parameters), tags...), fn(fn)
@@ -239,7 +243,7 @@ namespace Gorgon { namespace Scripting {
 		}
 		
 		template<class R_, int ...S_>
-		typename std::enable_if<!std::is_same<R_, void>::value && std::is_reference<R_>::value, Data>::type
+		typename std::enable_if<!std::is_same<R_, void>::value && std::is_reference<R_>::value && !std::is_pointer<R_>::value, Data>::type
 		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
 			Data data;
 			if(returnsref || returntype->IsReferenceType()) {
@@ -286,8 +290,11 @@ namespace Gorgon { namespace Scripting {
 			bool ismember=parent->IsMember() && !parent->IsStatic();
 
 			//** Constant and reference checks
+			//nonconst ptr or reference
 			if(is_nonconstref<T>::value || (std::is_pointer<T>::value && !std::is_const<typename std::remove_pointer<T>::type>::value)) {
+				//this pointer
 				if(P_==0 && ismember) {
+					//should not be a constant
 					ASSERT(
 						!IsConstant(), 
 						"This function variant is marked as const, yet its implementation requires non-const "
@@ -298,18 +305,21 @@ namespace Gorgon { namespace Scripting {
 				else {
 					const auto &param=parameters[P_-ismember];
 					
+					//repeating parameters cannot be a non-const reference or a pointer
 					ASSERT(
 						P_-ismember!=parameters.size()-1 || !repeatlast, 
 						"Repeating parameter vectors cannot be non-const references"
 						"in function "+parent->GetName(), 4, 3
 					);
 					
+					//parameter should be a reference
 					ASSERT(param.IsReference(),
 						"Parameter #"+String::From(P_-ismember)+" is not declared as reference, "
 						"yet its implementation is\n"
 						"in function "+parent->GetName(), 4, 3
 					);
 					
+					//and should not be a constant
 					ASSERT(!param.IsConstant(),
 						"Parameter #"+String::From(P_-ismember)+" is declared as constant, "
 						"yet its implementation is not const\n"
@@ -317,12 +327,15 @@ namespace Gorgon { namespace Scripting {
 					);
 				}
 			}
+			//const pointer
 			else if(std::is_pointer<T>::value) {
+				//this pointer
 				if(P_==0 && ismember) {
 #ifdef TEST
+					//it is ok if the function is not marked as constant, but this might be a mistake
 					if(!IsConstant()) {
 						std::cout<<"This function variant is not marked as const, yet its implementation requires const "
-						"pointer or reference\n"
+						"pointer\n"
 						"in function "+parent->GetName()<<std::endl;
 					}
 #endif
@@ -330,11 +343,13 @@ namespace Gorgon { namespace Scripting {
 				else {
 					const auto &param=parameters[P_-ismember];
 					
+					//a repeating parameter cannot be a pointer
 					ASSERT(
 						P_-ismember!=parameters.size()-1 || !repeatlast, 
 						"Repeating parameter vectors cannot be a pointer"
 					);
 					
+					//parameter should be a reference, since type is a pointer
 					ASSERT(param.IsReference(),
 						   "Parameter #"+String::From(P_-ismember+1)+" is not declared as reference, "
 						   "yet its implementation is\n"
@@ -342,9 +357,10 @@ namespace Gorgon { namespace Scripting {
 					);
 					
 #ifdef TEST
-					if(!IsConstant()) {
-						std::cout<<"This function variant is not marked as const, yet its implementation requires const "
-						"pointer or reference\n"
+					//it is ok if the parameter is not marked as constant, but this might be a mistake
+					if(!param.IsConstant()) {
+						std::cout<< "Parameter #"+String::From(P_-ismember+1)+" is not marked as const, "
+						"yet its implementation requires const pointer\n"
 						"in function "+parent->GetName()<<std::endl;
 					}
 #endif
@@ -354,7 +370,9 @@ namespace Gorgon { namespace Scripting {
 				//nothing to do
 			}
 			else if(std::is_const<T>::value) { //constant value type
+				//this pointer
 				if(P_==0 && ismember) {
+					//should not a be constant, this behavior can be supported but it might lead to more problems
 					ASSERT(
 						IsConstant(), 
 						"This function variant is marked as a non-const member function, "
@@ -365,6 +383,7 @@ namespace Gorgon { namespace Scripting {
 				else {
 					const auto &param=parameters[P_-ismember];
 					
+					//if not the repeating parmeter
 					if(P_-ismember!=parameters.size()-1 || !repeatlast) {
 						ASSERT(!param.IsReference(),
 							"Parameter #"+String::From(P_-ismember+1)+" is declared as reference "
@@ -373,17 +392,21 @@ namespace Gorgon { namespace Scripting {
 						);
 						
 #ifdef TEST
-						if(!IsConstant()) {
-							std::cout<<"This function variant is not marked as const, yet its implementation requires const "
+						//it is ok if the parameter is not marked as constant, but this might be a mistake
+						if(!param.IsConstant()) {
+							std::cout<<"Parameter #"+String::From(P_-ismember+1)+" is not marked as const, yet its implementation requires const "
 							"value\n"
 							"in function "+parent->GetName()<<std::endl;
 						}
 #endif
 					}
+					//else const std::vector<...> is allowed
 				}
 			}
 			else { //normal value type
+				//this pointer
 				if(P_==0 && ismember) {
+					//if passed by value, this function cannot modify this pointer, and therefore, should be constant
 					ASSERT(
 						IsConstant(), 
 						"This function variant is marked as a non-const member function, "
@@ -394,23 +417,29 @@ namespace Gorgon { namespace Scripting {
 				else {
 					const auto &param=parameters[P_-ismember];
 					
+					//if not the repeating parameter
 					if(P_-ismember!=parameters.size()-1 || !repeatlast) {
+						//cannot be a reference as it is passed by value
 						ASSERT(!param.IsReference(),
 							"Parameter #"+String::From(P_-ismember+1)+" is declared as reference, "
 							"yet its implementation not\n"
 							"in function "+parent->GetName(), 4, 3
 						);
 						
+						//for the sake of clarity, if a function requires const, it should be marked as const
 						ASSERT(!param.IsConstant(),
 							"Parameter #"+String::From(P_-ismember+1)+" is declared as constant, "
 							"yet its implementation is not const\n"
 							"in function "+parent->GetName(), 4, 3
 						);
 					}
+					//else std::vector<...> is allowed
 				}
 			}
 			
-			//type check
+			//**type check
+			//** 
+			//this pointer
 			if(P_==0 && ismember) {
 				ASSERT(
 					(rtt.NormalType==parent->GetOwner().TypeInterface.NormalType),
@@ -421,6 +450,7 @@ namespace Gorgon { namespace Scripting {
 					"in function "+parent->GetName(), 4, 3
 				);
 			}
+			//repeating parameter
 			else if(P_-ismember==parameters.size()-1 && repeatlast) {
 				const auto &param=parameters[P_-ismember];
 				
@@ -433,6 +463,7 @@ namespace Gorgon { namespace Scripting {
 					"in function "+parent->GetName(), 4, 3
 				);
 			}
+			//regular parameters
 			else {
 				const auto &param=parameters[P_-ismember];
 				
@@ -452,7 +483,7 @@ namespace Gorgon { namespace Scripting {
 		}
 		
 		virtual void dochecks(bool ismethod) override {
-			Function::Variant::dochecks(ismethod);
+			Function::Overload::dochecks(ismethod);
 
 			//check return type
 			//if void
@@ -475,9 +506,13 @@ namespace Gorgon { namespace Scripting {
 				
 				TMP::AbstractRTT<typename traits::ReturnType> returnrtt;
 
-					
+				//**return type check
+
+				//returns a reference value
 				if(returnsref || returntype->IsReferenceType()) {
+					//in case of const
 					if(returnsconst) {
+						//can either return const ptr or const ref of the given type
 						ASSERT(
 							returntype->TypeInterface.ConstPtrType==returnrtt ||
 							returntype->TypeInterface.ConstRefType==returnrtt,
@@ -488,6 +523,7 @@ namespace Gorgon { namespace Scripting {
 						);
 					}
 					else {
+						//can either return non-const ptr or non-const ref of the given type
 						ASSERT(
 							returntype->TypeInterface.PtrType==returnrtt ||
 							returntype->TypeInterface.RefType==returnrtt,
@@ -498,8 +534,12 @@ namespace Gorgon { namespace Scripting {
 						);
 					}
 				}
+				//returns a value
 				else {
+					//in case of const
 					if(returnsconst) {
+						//should return const of that type, non-const can also be supported but
+						//no point in doing so
 						ASSERT(
 							returntype->TypeInterface.ConstType==returnrtt,
 							"Return type of the function ("+returntype->GetName()+", "+
@@ -509,6 +549,8 @@ namespace Gorgon { namespace Scripting {
 						);
 					}
 					else {
+						//should return the type, const can also be supported but
+						//no point in doing so
 						ASSERT(
 							returntype->TypeInterface.NormalType==returnrtt,
 							"Return type of the function ("+returntype->GetName()+", "+
@@ -527,7 +569,7 @@ namespace Gorgon { namespace Scripting {
 	};
 	
 	template<class F_, class ...P_>
-	Scripting::Function::Variant *MapFunction(F_ fn, const Type *returntype, ParameterList parameters, P_ ...tags) {
+	Scripting::Function::Overload *MapFunction(F_ fn, const Type *returntype, ParameterList parameters, P_ ...tags) {
 		return new MappedFunction<F_>(fn, returntype, std::move(parameters), tags...);
 	}
 
@@ -544,7 +586,7 @@ namespace Gorgon { namespace Scripting {
 			ASSERT(returntype, "Operators should have a return type", 1, 1);
 			ASSERT(parent, "Operators should belong a class", 1, 1);
 			
-			Function::AddVariant(
+			Function::AddOverload(
 				MapFunction(fn, returntype, 
 					{
 						Scripting::Parameter("rhs", "Right hand side of the operator", rhs)
@@ -554,11 +596,12 @@ namespace Gorgon { namespace Scripting {
 			);
 		}
 		
+		/// Adds a new operator overload
 		template<class F_>
-		void AddVariant(const Type *returntype, const Type *rhs, F_ fn) {
+		void AddOverload(const Type *returntype, const Type *rhs, F_ fn) {
 			ASSERT(returntype, "Operators should have a return type", 1, 1);
 			
-			Function::AddVariant(
+			Function::AddOverload(
 				MapFunction(fn, returntype, 
 					{
 						Scripting::Parameter("rhs", 
@@ -568,10 +611,6 @@ namespace Gorgon { namespace Scripting {
 					ConstTag
 				)
 			);
-		}
-		
-		virtual void AddMethod(Variant &var) override {
-			Utils::ASSERT_FALSE("Operators cannot have method variants");
 		}
 		
 	private:
@@ -590,7 +629,7 @@ namespace Gorgon { namespace Scripting {
 	* Maps a constructor for type casting, works for value types
 	*/
 	template<class from_, class to_>
-	Scripting::Function::Variant *Map_Typecast(Type *from, Type *to, bool implicit=true) {
+	Scripting::Function::Overload *MapTypecast(Type *from, Type *to, bool implicit=true) {
 		if(implicit) {
 			return MapFunction(
 				[](from_ val) { 
@@ -616,9 +655,121 @@ namespace Gorgon { namespace Scripting {
 
 	
 	/**
-		* This class allows a one to one mapping of a data member to a c++ data member. First template
-		* parameter is the type of the object and the second is the type of the data member
-		*/
+	* Maps a constructor for type casting, works for polymorphic types
+	*/
+	template<class from_, class to_>
+	Scripting::Function::Overload *MapDynamiccast(Type *from, Type *to, bool implicit=true) {
+		if(implicit) {
+			return MapFunction(
+				[](from_ &val) { 
+					return dynamic_cast<to_&>(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				},
+				ImplicitTag
+			);
+		}
+		else {
+			return MapFunction(
+				[](from_ &val) { 
+					return dynamic_cast<to_&>(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				}
+			);
+		}
+	}
+		
+	/**
+	* Maps a constructor for type casting, works for polymorphic types
+	*/
+	template<class from_, class to_>
+	Scripting::Function::Overload *MapConstDynamiccast(Type *from, Type *to, bool implicit=true) {
+		if(implicit) {
+			return MapFunction(
+				[](from_ &val) { 
+					return dynamic_cast<to_&>(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				},
+				ImplicitTag
+			);
+		}
+		else {
+			return MapFunction(
+				[](from_ &val) { 
+					return dynamic_cast<to_&>(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				}
+			);
+		}
+	}
+
+	/**
+	* Maps a constructor for type casting, works for reference types
+	*/
+	template<class from_, class to_>
+	Scripting::Function::Overload *MapStaticcast(Type *from, Type *to, bool implicit=true) {
+		if(implicit) {
+			return MapFunction(
+				[](const from_ &val) { 
+					return static_cast<const to_&>(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				},
+				ImplicitTag
+			);
+		}
+		else {
+			return MapFunction(
+				[](const from_ &val) { 
+					return static_cast<const to_&>(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				}
+			);
+		}
+	}
+	
+	/**
+	* Maps a constructor for type casting, works for const reference types
+	*/
+	template<class from_, class to_>
+	Scripting::Function::Overload *MapConstStaticcast(Type *from, Type *to, bool implicit=true) {
+		if(implicit) {
+			return MapFunction(
+				[](const from_ &val) { 
+					return static_cast<const to_&>(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				},
+				ImplicitTag
+			);
+		}
+		else {
+			return MapFunction(
+				[](const from_ &val) { 
+					return static_cast<const to_&>(val); 
+				}, to, 
+				{ 
+					Parameter("value", "", from) 
+				}
+			);
+		}
+	}
+	
+	/**
+	* This class allows a one to one mapping of a data member to a c++ data member. First template
+	* parameter is the type of the object and the second is the type of the data member
+	*/
 	template<class C_, class T_>
 	class MappedData : public DataMember {
 	public:

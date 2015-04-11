@@ -42,9 +42,9 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Data Type::Construct(const std::vector<Data> &parameters) const {
-		std::multimap<int, const Function::Variant *> rankedlist;
+		std::multimap<int, const Function::Overload *> rankedlist;
 		
-		for(const auto &var : constructor.Variants) {
+		for(const auto &var : constructor.Overloads) {
 			int status=0;
 			
 			auto pin = parameters.begin();
@@ -125,7 +125,7 @@ namespace Gorgon { namespace Scripting {
 		name(name), help(help), DataMembers(datamembers), Functions(functions), Constructor(constructor),
 		Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),
 		referencetype(isref), TypeInterface(*typeinterface), Parents(parents), InheritedSymbols(inheritedsymbols),
-		constructor("{}", "Constructs "+name, this, Containers::Collection<Function::Variant>(), StaticTag)
+		constructor("{}", "Constructs "+name, this, Containers::Collection<Function::Overload>(), StaticTag)
 	{
 		ASSERT(
 			isref ? 
@@ -310,7 +310,7 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
-	void Function::Variant::dochecks(bool ismethod) {
+	void Function::Overload::dochecks(bool ismethod) {
 		int i=0;
 		bool restoptional=false;
 		//check params
@@ -347,7 +347,7 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
-	bool Function::Variant::IsSame(const Function::Variant& var) const {
+	bool Function::Overload::IsSame(const Function::Overload& var) const {
 		if(var.IsConstant() != constant) {
 			return false;
 		}

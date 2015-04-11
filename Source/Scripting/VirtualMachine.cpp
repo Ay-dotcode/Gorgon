@@ -737,25 +737,25 @@ namespace Gorgon {
 		
 		/// Calls the given function with the given values.
 		Data VirtualMachine::callfunction(const Function *fn, bool method, const std::vector<Value> &incomingparams) {
-			const Function::Variant *var=nullptr;
+			const Function::Overload *var=nullptr;
 			
-			int count=fn->Variants.GetCount()+method*fn->Methods.GetCount();
+			int count=fn->Overloads.GetCount()+method*fn->Methods.GetCount();
 			ASSERT(count, "This function has no registered body.");
 			
 			// easy way out, only a single variant exists
 			if(count==1) {
-				if(fn->Variants.GetCount()==0) {
+				if(fn->Overloads.GetCount()==0) {
 					ASSERT(method, "This function has no registered body.");
 					return callvariant(fn, &fn->Methods[0], method, incomingparams);
 				}
 				else {
-					return callvariant(fn,& fn->Variants[0], method, incomingparams);
+					return callvariant(fn,& fn->Overloads[0], method, incomingparams);
 				}
 			}
 			
 			
 			//find correct variant
-			std::multimap<int, const Function::Variant*> variantlist;
+			std::multimap<int, const Function::Overload*> variantlist;
 			
 			auto checkparam=[this](const Parameter &param, const Value &cval) {
 				int c=0;
@@ -853,7 +853,7 @@ namespace Gorgon {
 				}
 			};
 			
-			auto list=[&](const Containers::Collection<Function::Variant> &variants, int start) {
+			auto list=[&](const Containers::Collection<Function::Overload> &variants, int start) {
 				for(const auto &var : variants) {
 					auto pin=incomingparams.begin();
 					int current=0;
@@ -935,7 +935,7 @@ namespace Gorgon {
 			if(method) {
 				list(fn->Methods, 0);
 			}
-			list(fn->Variants, method ? 1000 : 0);
+			list(fn->Overloads, method ? 1000 : 0);
 			
 			if(variantlist.size()) {
 				if(variantlist.size()>1 && variantlist.count(variantlist.begin()->first)>1) {
@@ -952,7 +952,7 @@ namespace Gorgon {
 			return callvariant(fn, var, method, incomingparams);
 		}
 		
-		Data VirtualMachine::callvariant(const Function *fn, const Function::Variant *variant, bool method, const std::vector<Value> &incomingparams) {
+		Data VirtualMachine::callvariant(const Function *fn, const Function::Overload *variant, bool method, const std::vector<Value> &incomingparams) {
 			auto pin=incomingparams.begin();
 			
 			std::vector<Data> params;
