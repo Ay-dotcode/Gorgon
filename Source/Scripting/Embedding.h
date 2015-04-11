@@ -86,8 +86,14 @@ namespace Gorgon { namespace Scripting {
 		/// Converts a data of this type to string. This function should never throw, if there is
 		/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
 		virtual std::string ToString(const Data &data) const override {
-			if(data.GetValue<T_*>()==nullptr) return "<null>";
-			return ToString_(*data.GetValue<T_*>());
+			if(data.IsConstant()) {
+				if(data.ReferenceValue<const T_*>()==nullptr) return "<null>";
+				return ToString_(*data.ReferenceValue<const T_*>());
+			}
+			else {
+				if(data.ReferenceValue<T_*>()==nullptr) return "<null>";
+				return ToString_(*data.ReferenceValue<T_*>());
+			}
 		}
 		
 		/// Parses a string into this data. This function is allowed to throw.
@@ -97,8 +103,16 @@ namespace Gorgon { namespace Scripting {
 		
 	protected:
 		virtual void deleteobject(const Data &obj) const override {
-			if(obj.GetValue<T_*>()!=nullptr) {
-				delete obj.GetValue<T_*>();
+			T_ *ptr;
+			if(obj.IsConstant()) {
+				//force to non-const
+				ptr=const_cast<T_*>(obj.ReferenceValue<const T_*>());
+			}
+			else {
+				ptr=obj.ReferenceValue<T_*>();
+			}
+			if(ptr!=nullptr) {
+				delete ptr;
 			}
 		}
 	};
@@ -202,7 +216,7 @@ namespace Gorgon { namespace Scripting {
 		}
 
 		template<class R_, int ...S_>
-		typename std::enable_if<!std::is_same<R_, void>::value && !std::is_reference<R_>::value, Data>::type
+		typename std::enable_if<!std::is_same<R_, void>::value && !std::is_reference<R_>::value && !std::is_pointer<R_>::value, Data>::type
 		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
 			Data data;
 			
@@ -210,7 +224,7 @@ namespace Gorgon { namespace Scripting {
 			
 			data=Data(returntype, Any(
 				std::bind(fn, cast<S_>(parameters)...)()
-			), false, constant);
+			), false, returnsconst);
 			
 			ASSERT((!returnsref || (returntype==Scripting::Variant && data.GetValue<Data>().IsReference())), 
 				   "Embedded function does not return a reference");
@@ -223,25 +237,39 @@ namespace Gorgon { namespace Scripting {
 			
 			return data;
 		}
-
+		
 		template<class R_, int ...S_>
 		typename std::enable_if<!std::is_same<R_, void>::value && std::is_reference<R_>::value, Data>::type
 		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
 			Data data;
-			if(returnsref) {
+			if(returnsref || returntype->IsReferenceType()) {
 				data=Data(returntype, Any(
 					&std::bind(fn, cast<S_>(parameters)...)()
-				), true, constant);
+				), true, returnsconst);
 			}
 			else {
-				data=Data(returntype, Any(
-					std::bind(fn, cast<S_>(parameters)...)()
-				), false, constant);
+				Utils::ASSERT_FALSE("Cannot happen");
 			}
 			
 			return data;
 		}
-
+		
+		template<class R_, int ...S_>
+		typename std::enable_if<!std::is_same<R_, void>::value && std::is_pointer<R_>::value, Data>::type
+		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
+			Data data;
+			if(returnsref || returntype->IsReferenceType()) {
+				data=Data(returntype, Any(
+					std::bind(fn, cast<S_>(parameters)...)()
+				), true, returnsconst);
+			}
+			else {
+				Utils::ASSERT_FALSE("Cannot happen");
+			}
+			
+			return data;
+		}
+		
 		template<class R_, int ...S_>
 		typename std::enable_if<std::is_same<R_, void>::value, Data>::type
 		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
@@ -444,6 +472,52 @@ namespace Gorgon { namespace Scripting {
 					Utils::GetTypeName<typename traits::ReturnType>()+
 					"in function "+parent->GetName(), 4, 3
 				);
+				
+				TMP::AbstractRTT<typename traits::ReturnType> returnrtt;
+
+					
+				if(returnsref || returntype->IsReferenceType()) {
+					if(returnsconst) {
+						ASSERT(
+							returntype->TypeInterface.ConstPtrType==returnrtt ||
+							returntype->TypeInterface.ConstRefType==returnrtt,
+							"Return type of the function ("+returntype->GetName()+", "+
+							returntype->TypeInterface.ConstPtrType.Name()+") does not match "
+							"with its implementation ("+returnrtt.Name()+")"
+							"in function "+parent->GetName(), 4, 3
+						);
+					}
+					else {
+						ASSERT(
+							returntype->TypeInterface.PtrType==returnrtt ||
+							returntype->TypeInterface.RefType==returnrtt,
+							"Return type of the function ("+returntype->GetName()+", "+
+							returntype->TypeInterface.PtrType.Name()+") does not match "
+							"with its implementation ("+returnrtt.Name()+")"
+							"in function "+parent->GetName(), 4, 3
+						);
+					}
+				}
+				else {
+					if(returnsconst) {
+						ASSERT(
+							returntype->TypeInterface.ConstType==returnrtt,
+							"Return type of the function ("+returntype->GetName()+", "+
+							returntype->TypeInterface.ConstType.Name()+") does not match "
+							"with its implementation ("+returnrtt.Name()+")"
+							"in function "+parent->GetName(), 4, 3
+						);
+					}
+					else {
+						ASSERT(
+							returntype->TypeInterface.NormalType==returnrtt,
+							"Return type of the function ("+returntype->GetName()+", "+
+							returntype->TypeInterface.NormalType.Name()+") does not match "
+							"with its implementation ("+returnrtt.Name()+")"
+							"in function "+parent->GetName(), 4, 3
+						);
+					}
+				}
 			}
 			
 			check(typename TMP::Generate<traits::Arity>::Type());

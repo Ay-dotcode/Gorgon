@@ -24,6 +24,7 @@ namespace Gorgon {
 			MismatchedParenthesis,
 			UnexpectedToken,
 			Constant,
+			InvalidLiteral,
 		};
 		
 		DefineEnumStrings(ExceptionType,
@@ -40,7 +41,8 @@ namespace Gorgon {
 			{ExceptionType::InstructionError, "Instruction error"},
 			{ExceptionType::MismatchedParenthesis, "Mismatched paranthesis"},
 			{ExceptionType::UnexpectedToken, "Unexpected token"},
-			{ExceptionType::Constant, "Identifier is constant"}
+			{ExceptionType::Constant, "Identifier is constant"},
+			{ExceptionType::InvalidLiteral, "Invalid literal"}
 		);
 		
 		enum class SymbolType {

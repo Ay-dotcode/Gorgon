@@ -65,7 +65,7 @@ namespace Gorgon {
 										Types::Variant()/*, OptionalTag*///...
 									)
 								},
-								RepeatTag, ConstTag
+								RepeatTag, ConstTag, ReferenceTag
 							)
 						}
 					},

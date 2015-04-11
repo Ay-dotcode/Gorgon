@@ -533,7 +533,7 @@ namespace Gorgon {
 						"This function returns the type of the given variable.", nullptr, 
 						{
 							MapFunction(
-								[](std::string variable) {
+								[](std::string variable) -> const Type* {
 									return &VirtualMachine::Get().GetVariable(variable).GetType();
 								}, TypeType(),
 								{
@@ -541,7 +541,7 @@ namespace Gorgon {
 										"The variable to determine its type.",
 										String, VariableTag
 									)
-								}			
+								}, ReturnsConstTag
 							)
 							
 						}

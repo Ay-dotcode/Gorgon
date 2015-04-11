@@ -28,9 +28,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		struct Token {
 			enum Type {
 				Int,
+				Unsigned,
 				Float,
-				Bool,
+				Double,
+				Char,
+				Byte,
 				String,
+				Bool,
 				Identifier,
 				Operator,
 				LeftP,
@@ -61,20 +65,26 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			}
 			
 			const Data GetLiteralValue() {
-				ASSERT(isliteral(), "This token does not represent a literal");
-				
 				switch(type) {
 					case Int:
 						return Data(Types::Int(), String::To<int>(repr));
+					case Unsigned:
+						return Data(Types::Unsigned(), String::To<unsigned>(repr));
 					case Float:
 						return Data(Types::Float(), String::To<float>(repr));
+					case Double:
+						return Data(Types::Double(), String::To<double>(repr));
+					case Char:
+						return Data(Types::Char(), String::To<char>(repr));
+					case Byte:
+						return Data(Types::Byte(), String::To<Gorgon::Byte>(repr));
+					case String:
+						return Data(Types::String(), repr);
 					case Bool:
 						if(repr=="true")
 							return Data(Types::Bool(), true);
 						else 
 							return Data(Types::Bool(), String::To<bool>(repr));
-					case String:
-						return Data(Types::String(), repr);
 					default:
 						Utils::ASSERT_FALSE("This token does not represent a literal");
 				}
@@ -83,9 +93,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			bool isliteral() {
 				switch(type) {
 					case Int:
+					case Unsigned:
 					case Float:
+					case Double:
 					case Bool:
 					case String:
+					case Char:
+					case Byte:
 						return true;
 					default:
 						return false;
@@ -167,9 +181,25 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			char c = input[index++];
 			switch(c) {
 			case '"' :
-			case '\'':
-				return Token {ExtractQuotes(input, --index), Token::String, start};
-
+			case '\'': {
+				auto s=ExtractQuotes(input, --index);
+				std::string literalmarker;
+				while(input.length()>index && !isbreaker(input[index])) {
+					literalmarker.push_back(input[index++]);
+				}
+				if(literalmarker=="" || literalmarker=="s") {
+					return Token {s, Token::String, start};
+				}
+				else if(literalmarker=="c") {
+					if(s.length()!=1) {
+						throw ParseError(ExceptionType::InvalidLiteral, "Literal 'c' is only valid for single character", index);
+					}
+					return Token {String::From(s[0]), Token::Char, start};
+				}
+				else {
+					throw ParseError(ExceptionType::InvalidLiteral, "Unknown string literal: "+literalmarker, index);
+				}
+			}
 			case '(':
 				return Token {"(", Token::LeftP, start};
 			case ')':
@@ -214,6 +244,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				throw ParseError{ExceptionType::UnexpectedToken, "Invalid character.", index};
 			}
 
+			bool literalpart=false;
+			std::string literal;
 			for(; index<input.length() + 1; index++) {
 				char c;
 				if(input.length()>index)
@@ -222,7 +254,41 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					c = 0;
 
 				if(numeric) {
-					if(isdigit(c)) {
+					if(isalpha(c) || literalpart) {
+						if(isbreaker(c)) {
+							if(literal=="i") {
+								return Token {acc, Token::Int, start};
+							}
+							else if(literal=="u") {
+								return Token {acc, Token::Unsigned, start};
+							}
+							else if(literal=="f") {
+								return Token {acc, Token::Float, start};
+							}
+							else if(literal=="d") {
+								return Token {acc, Token::Double, start};
+							}
+							else if(literal=="c") {
+								return Token {acc, Token::Char, start};
+							}
+							else if(literal=="n") {
+								return Token {acc, Token::Byte, start};
+							}
+							else if(literal=="b") {
+								return Token {acc, Token::Char, start};
+							}
+							else if(literal=="s") {
+								return Token {acc, Token::String, start};
+							}
+							else {
+								throw ParseError(ExceptionType::InvalidLiteral, "Unknown numeric literal: "+literal, index);
+							}
+						}
+						
+						literal+=c;
+						literalpart=true;
+					}
+					else if(isdigit(c)) {
 						acc.push_back(c);
 					}
 					else if(c == '.') {

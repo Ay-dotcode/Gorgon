@@ -67,6 +67,9 @@ namespace Gorgon {
 			/// Marks a parameter or a function constant
 			ConstTag,
 			
+			/// Denotes a function that returns const
+			ReturnsConstTag,
+			
 			/// Makes this parameter a variable accepting parameter. Variable parameters are type checked
 			/// against supplied type, however, they are always passed as strings denoting the name of the variable
 			VariableTag,
@@ -262,10 +265,10 @@ namespace Gorgon {
 				}
 				
 				Variant(const Type *returntype, ParameterList parameters, bool stretchlast, bool repeatlast, 
-						bool accessible, bool constant, bool returnsref, bool implicit) :
+						bool accessible, bool constant, bool returnsref, bool returnsconst, bool implicit) :
 				returntype(returntype), stretchlast(stretchlast), repeatlast(repeatlast), 
-				accessible(accessible), constant(constant), returnsref(returnsref), implicit(implicit), 
-				Parameters(this->parameters)
+				accessible(accessible), constant(constant), returnsref(returnsref), returnsconst(returnsconst),
+				implicit(implicit), Parameters(this->parameters)
 				{
 					using std::swap;
 					swap(parameters, this->parameters);
@@ -300,6 +303,11 @@ namespace Gorgon {
 				/// This function variant returns a reference to a value rather than the value itself
 				bool ReturnsRef() const {
 					return returnsref;
+				}
+				
+				/// This function variant returns a constant
+				bool ReturnsConst() const {
+					return returnsconst;
 				}
 				
 				/// Returns the function this variant belongs
@@ -367,6 +375,10 @@ namespace Gorgon {
 							returnsref=true;
 							break;
 							
+						case ReturnsConstTag:
+							returnsconst=true;
+							break;
+							
 						case ImplicitTag:
 							implicit=true;
 							break;
@@ -407,12 +419,14 @@ namespace Gorgon {
 				/// This function variant returns a reference
 				bool returnsref = false;
 				
+				/// This function variant returns a constant, useful with references
+				bool returnsconst;
+				
 				/// The parent function of this variant
 				Function *parent;
 				
 				/// If the parent function is constructor, marks this variant as an implicit type conversion
 				bool implicit = false;
-				
 			};
 			
 			template<class ...P_>

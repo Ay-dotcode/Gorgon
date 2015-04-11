@@ -272,10 +272,47 @@ namespace Gorgon {
 			virtual long GetSize() const override { return sizeof(T_); }
 			
 			virtual bool IsPointer() const override { return std::is_pointer<T_>::value; }
-
+			
 			virtual bool IsReference() const override { return std::is_reference<T_>::value; }
-
+			
 			virtual bool IsConstant() const override { return std::is_const<T_>::value; }
+		};
+		
+		///Runtime Type. This class implements both RTTS and RTTI
+		template<>
+		class AbstractRTT<void> : public RTTS {
+			
+			virtual RTTS *Duplicate() const {
+				return new AbstractRTT<void>();
+			}
+			
+			virtual void *Create() const {
+				return nullptr;
+			}
+			
+			virtual void *Clone(const void* const obj) const override {
+				return nullptr;
+			}
+			
+			virtual void Delete(void *obj) const override {
+				throw std::runtime_error("type is void");
+			}
+			
+			virtual bool IsSameType(const std::type_info &info) const override {
+				return info==typeid(void);
+			}
+			
+			virtual const std::type_info &TypeInfo() const override {
+				return typeid(void);
+			}
+			
+			virtual long GetSize() const override { return 0; }
+			
+			virtual bool IsPointer() const override { return std::is_pointer<void>::value; }
+			
+			virtual bool IsReference() const override { return std::is_reference<void>::value; }
+			
+			virtual bool IsConstant() const override { return std::is_const<void>::value; }
 		};
 		
 		
