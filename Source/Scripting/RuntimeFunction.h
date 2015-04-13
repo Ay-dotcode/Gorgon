@@ -41,6 +41,10 @@ namespace Gorgon { namespace Scripting {
 			scope.SaveInstruction(inst, pline);
 		}
 		
+		void SaveInstructions(const std::vector<Instruction> &instructions) {
+			scope.SaveInstructions(instructions);
+		}
+		
 		std::shared_ptr<ScopeInstance> Instantiate(ScopeInstance &current) const {
 			return scope.Instantiate(current);
 		}

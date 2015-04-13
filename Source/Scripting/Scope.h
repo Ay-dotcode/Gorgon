@@ -93,6 +93,13 @@ namespace Gorgon { namespace Scripting {
 			lines.push_back({inst, pline});
 		}
 		
+		void SaveInstructions(const std::vector<Instruction> &insts) {
+			long pline=0;
+			for(auto &inst : insts) {
+				lines.push_back({inst, pline});
+			}
+		}
+		
 		std::shared_ptr<ScopeInstance> Instantiate();
 		
 		std::shared_ptr<ScopeInstance> Instantiate(ScopeInstance &current);
