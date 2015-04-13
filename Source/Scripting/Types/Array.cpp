@@ -22,9 +22,24 @@ namespace Gorgon {
 				
 				return ret;
 			}
+			
+			template<class T_>
+			struct CPPToScripting {
+				static const Type &GetType() {
+					throw std::runtime_error("Unknown type");
+				}
+			};
+			
+			template<>
+			struct CPPToScripting<int> {
+				static const Type &GetType() {
+					return Types::Int();
+				}
+			};
 
-			Array *Range2(int start, int end) {
-				Array *ret=new Array(*Types::Int());
+			template<class T_>
+			Array *Range2(T_ start, T_ end) {
+				Array *ret=new Array(CPPToScripting<T_>::GetType());
 
 				if(start<end) {
 					for(int i=start; i<end; i++) {
@@ -42,13 +57,16 @@ namespace Gorgon {
 				return ret;
 			}
 
-			Array *Range3(int start, int end, int step) {
-				Array *ret=new Array(*Types::Int());
+			template<class T_>
+			Array *Range3(T_ start, T_ end, T_ step) {
+				Array *ret=new Array(CPPToScripting<T_>::GetType());
 
 				for(int i=start; i<end; i++) {
 					ret->PushWithoutCheck(i);
 				}
 
+				VirtualMachine::Get().References.Register(ret);
+				
 				return ret;
 			}
 		}
@@ -177,7 +195,7 @@ namespace Gorgon {
 					"Creates a range array between two numbers", nullptr,
 					{
 						MapFunction(
-							&Range3, ArrayType(),
+							&Range3<int>, ArrayType(),
 							{
 								Parameter { "Start",
 									"Starting value for the range. This value is included in the array.",
@@ -195,7 +213,7 @@ namespace Gorgon {
 						),
 						
 						MapFunction(
-							&Range2, ArrayType(),
+							&Range2<int>, ArrayType(),
 							{
 								Parameter { "Start",
 									"Starting value for the range. This value is included in the array.",

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "../String.h"
 #include "../Scripting.h"
@@ -92,9 +93,9 @@ namespace Gorgon { namespace Scripting {
 			lines.push_back({inst, pline});
 		}
 		
-		ScopeInstance &Instantiate();
+		std::shared_ptr<ScopeInstance> Instantiate();
 		
-		ScopeInstance &Instantiate(ScopeInstance &current);
+		std::shared_ptr<ScopeInstance> Instantiate(ScopeInstance &current);
 		
 		bool HasInstance() const {
 			return instances.GetCount()!=0;
@@ -149,6 +150,12 @@ namespace Gorgon { namespace Scripting {
 			swap(temp, lines);
 			
 			provider->Reset();
+		}
+		
+		/// In rare cases where scope name cannot be determined at the construction, this function
+		/// can be used to set its name
+		void SetName(const std::string &name) {
+			this->name=name;
 		}
 		
 	private:
@@ -287,6 +294,8 @@ namespace Gorgon { namespace Scripting {
 		}
 
 		Scope &GetScope() const { return scope; }
+		
+		Data ReturnValue;
 		
 	private:
 		

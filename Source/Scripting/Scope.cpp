@@ -59,18 +59,18 @@ namespace Gorgon { namespace Scripting {
 	}
 
 	
-	ScopeInstance& Scope::Instantiate() {
+	std::shared_ptr<ScopeInstance> Scope::Instantiate() {
 		auto inst=new ScopeInstance(*this, nullptr);
 		
 		inst->parent=nullptr;
 		instances.Add(inst);
 		
-		return *inst;
+		return std::shared_ptr<ScopeInstance>(inst);
 	}
 	
-	ScopeInstance& Scope::Instantiate(ScopeInstance &parent) {
-		auto &inst=Instantiate();
-		inst.parent=&parent;
+	std::shared_ptr<ScopeInstance> Scope::Instantiate(ScopeInstance &parent) {
+		auto inst=Instantiate();
+		inst->parent=&parent;
 		
 		return inst;
 	}

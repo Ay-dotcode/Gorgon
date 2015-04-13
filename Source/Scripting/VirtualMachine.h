@@ -57,6 +57,9 @@ namespace Gorgon {
 			/// This method starts the virtual machine
 			void Run();
 
+			/// This method starts the virtual machine with the given scopeinstance
+			void Run(std::shared_ptr<ScopeInstance> scope);
+
 			/// This method starts the virtual machine
 			///@param executiontarget depth of aimed execution. This value should be less than the current.
 			void Run(unsigned executiontarget);
@@ -166,17 +169,17 @@ namespace Gorgon {
 			/// Returns the number of active execution scopes. If this number is 0, VM cannot be started without
 			/// providing additional code source.
 			unsigned GetScopeInstanceCount() const {
-				return scopeinstances.GetCount();
+				return scopeinstances.size();
 			}
 			
 			/// Returns the current exection scope
 			ScopeInstance &CurrentScopeInstance() const {
-				return scopeinstances.Last().Current();
+				return *scopeinstances.back();
 			}
 
 			/// Returns the code marker for the next line.
 			SourceMarker GetMarkerForNext() const {
-				return scopeinstances.First()->GetMarkerForNext();
+				return scopeinstances.front()->GetMarkerForNext();
 			}
 			
 			
@@ -187,7 +190,10 @@ namespace Gorgon {
 			
 			/// Returns from the currently running script and sets return data to the given value.
 			void Return(Data value=Data::Invalid()) {
-				returnvalue=value;
+				if(scopeinstances.size()==0) {
+					throw std::runtime_error("No scope instance to return from.");
+				}
+				scopeinstances.back()->ReturnValue=value;
 				returnimmediately=true;
 			}
 
@@ -231,8 +237,8 @@ namespace Gorgon {
 			/// List of types
 			std::multimap<std::string, const Type*, String::CaseInsensitiveLess> types;
 
-			Containers::Collection<ScopeInstance> 	scopeinstances;
-			Containers::Collection<Scope>			scopes;
+			std::vector<std::shared_ptr<ScopeInstance>> scopeinstances;
+			Containers::Collection<Scope>				scopes;
 
 			Library runtime;
 
@@ -246,6 +252,8 @@ namespace Gorgon {
 			std::istream *definput;
 
 			std::vector<Data> temporaries;
+			
+			std::shared_ptr<ScopeInstance> toplevel;
 
 			
 			/// List of active VMs. A VM can be active on more than one thread. But it cannot

@@ -4,6 +4,7 @@
 #include "AST.h"
 #include "../VirtualMachine.h"
 #include "../../Scripting.h"
+#include "../RuntimeFunction.h"
 
 namespace Gorgon { namespace Scripting { namespace Compilers {
 	
