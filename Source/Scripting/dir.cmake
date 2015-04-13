@@ -11,6 +11,7 @@ SET(Local
 	Reflection.cpp
 	Runtime.h
 	Runtime.cpp
+	RuntimeFunction.h
 	Scope.h
 	Scope.cpp
 	VirtualMachine.h
