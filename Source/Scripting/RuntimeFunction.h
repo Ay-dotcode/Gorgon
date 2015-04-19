@@ -18,6 +18,7 @@
 namespace Gorgon { namespace Scripting {
 		
 	class RuntimeOverload : public Function::Overload {
+	public:
 		RuntimeOverload(
 			Scope &parent,
 			const Type* returntype, ParameterList parameters, 

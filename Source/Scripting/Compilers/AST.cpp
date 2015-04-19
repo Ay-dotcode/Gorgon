@@ -10,14 +10,7 @@
 
 namespace Gorgon { namespace Scripting { namespace Compilers {
 	
-	class ilist : public std::vector<Instruction> {
-	public:
-		~ilist() {
-			std::cout<<"Destroyed!!"<<std::endl;
-		}
-	};
-	
-	MappedReferenceType<ilist, &ToEmptyString> instructionlisttype("#instructionlist", "");
+	MappedReferenceType<std::vector<Instruction>, &ToEmptyString> instructionlisttype("#instructionlist", "");
 	
 	std::string dottree(ASTNode &tree, int &ind) {
 		std::string type;
@@ -474,7 +467,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		if(scopes.size() && scopes.back().type==scope::functionkeyword) {
 			if(scopes.back().passed) {
 				for(int i=sz; i<list.size(); i++) {
-					auto instructionlist=scopes.back().data.GetValue<ilist*>();
+					auto instructionlist=scopes.back().data.GetValue<std::vector<Instruction>*>();
 					
 					instructionlist->push_back(list[i]);
 				}
@@ -690,9 +683,9 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				   "Function return type should either be a keyword nothing or an identifier representing a type"
 			);
 
-			auto instlist=new ilist();
-			Data instlistd{instructionlisttype, instlist};
+			auto instlist=new std::vector<Instruction>();
 			VirtualMachine::Get().References.Register(instlist);
+			Data instlistd{instructionlisttype, instlist};
 			scopes.push_back({scope::functionkeyword,instlistd});
 			
 			Instruction inst;

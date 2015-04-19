@@ -548,7 +548,10 @@ namespace Gorgon {
 				init();
 			}
 			
-			virtual ~Function() { } 
+			virtual ~Function() { 
+				overloads.Destroy();
+				methods.Destroy();
+			} 
 			
 			/// Returns the name of this function.
 			std::string GetName() const {

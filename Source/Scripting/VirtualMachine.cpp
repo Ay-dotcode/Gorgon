@@ -1,5 +1,6 @@
 #include "VirtualMachine.h"
 #include "Exceptions.h"
+#include "RuntimeFunction.h"
 #include "../Scripting.h"
 
 
@@ -1116,14 +1117,25 @@ namespace Gorgon {
 					throw std::runtime_error("Invalid instruction. Function names should be string literals.");
 				}
 			}
-			else if(inst->Name.Type==ValueType::Identifier && IsVariableSet(inst->Name.Name)) {
-				fn=GetVariable(inst->Name.Name).GetValue<const Function *>();
+			else if((inst->Name.Type==ValueType::Identifier || inst->Name.Type==ValueType::Variable) && IsVariableSet(inst->Name.Name)) {
+				auto var=GetVariable(inst->Name.Name);
+				
+				Type *FunctionType();				
+				if(var.GetType()!=FunctionType()) {
+					throw CastException(var.GetType().GetName(), "Function", inst->Name.Name+
+						" is a variable that do not contain a function");
+				}
+				
+				if(var.IsConstant())
+					fn=var.GetValue<const Function *>();
+				else
+					fn=var.GetValue<Function *>();
 			}
 			else if(inst->Name.Type==ValueType::Identifier) {
 				functionname=inst->Name.Name;
 			}
 			else {
-				ASSERT(false, "Not implemented", 2);
+				throw SymbolNotFoundException(inst->Name.Name, SymbolType::Function);
 			}
 
 			// find requested function
@@ -1359,6 +1371,27 @@ namespace Gorgon {
 				if(!dat.GetValue<bool>()) {
 					scopeinstances.back()->Jumpto(scopeinstances.back()->GetLineNumber()+inst->JumpOffset);
 				}
+			}
+			
+			//this instruction declares a new overload
+			else if(inst->Type==InstructionType::DeclOverload) {
+				ASSERT(inst->Parameters.size()>=3, "Overload declaration requires iskeyword, return type, and instructionlist");
+				Function *fn;
+				if(IsVariableSet(inst->Name.Name)) {
+					fn=GetVariable(inst->Name.Name).ReferenceValue<Function *>();
+				}
+				else {
+					fn=new Function(inst->Name.Name, "", nullptr, inst->Parameters[0].Literal.GetValue<bool>(), false, false);
+					References.Register(fn);
+					Type *FunctionType();
+					SetVariable(inst->Name.Name, {FunctionType(), fn});
+				}
+				
+				auto overld=new RuntimeOverload(CurrentScopeInstance().GetScope(), nullptr, 
+											{}, false, false, false, false, false, false, false);
+				
+				overld->SaveInstructions(*inst->Parameters[2].Literal.ReferenceValue<std::vector<Instruction>*>());
+				fn->AddOverload(overld);
 			}
 			
 			else {
