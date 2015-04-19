@@ -27,6 +27,11 @@ namespace Gorgon { namespace Scripting {
 	>
 	class MappedValueType;
 	
+	template<class T_>
+	std::string ToEmptyString(const T_ &) {
+		return "";
+	}
+	
 	/**
 		* This class allows embedded types to become scripting types that are passed around
 		* as values. This class requires T_ to be copy constructable.

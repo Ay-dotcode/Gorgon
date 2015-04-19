@@ -1093,7 +1093,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			extractline(left, process, linestarts);
 			
 			auto ret=parse(process);
-			ASTToSVG(input, *ret, {}, true);
+			//ASTToSVG(input, *ret, {}, true);
 			///... fix line and char start of ast tree
 			
 			if(ret) {

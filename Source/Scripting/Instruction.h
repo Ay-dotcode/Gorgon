@@ -38,6 +38,9 @@ namespace Gorgon { namespace Scripting {
 			
 			/// Jumps by the given offset if RHS is true. Offset should be in JumpOffset field
 			JumpTrue,
+			
+			/// Declares a new function overload. If the function does not exists, it will define the function
+			DeclOverload,
 		};
 
 		/// Possible value types

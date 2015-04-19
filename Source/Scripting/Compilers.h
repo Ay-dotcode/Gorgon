@@ -9,8 +9,9 @@
 #include "Compilers/AST.h"
 #include "../Types.h"
 
-namespace Gorgon {	namespace Scripting { 
-	
+namespace Gorgon {	namespace Scripting {
+
+	class Scope;
 	class InputSource;
 
 /// This namespace contains compliers and any utilities related with it
@@ -19,6 +20,7 @@ namespace Compilers {
 	/// The base class for compilers
 	class Base {
 	public:
+		Base(Scope *scope) : scope(scope) { }
 		
 		/// Asks the compiler to compile the given input. Returns the number of instructions
 		/// generated from the code. Compiler is free to request additional input by returning
@@ -31,16 +33,37 @@ namespace Compilers {
 		/// point.
 		virtual void Finalize() = 0;
 		
+		virtual Base &Duplicate(Scope *scope) const = 0;
+		
+		/// Returns if this compiler is bound to a scope
+		bool HasScope() const {
+			return scope!=nullptr;
+		}
+		
+		/// Returns the scope that compiler will compile
+		Scope &GetScope() const {
+			return *scope;
+		}
+		
 		/// The instructions that are compiled
 		std::vector<Instruction> List;
+		
+	protected:
+		/// The current scope the compiler is compiling, can be nullptr
+		Scope *scope;
 	};
 
 	/// Intermediate language complier
 	class Intermediate : public Base {
 	public:
+		Intermediate(Scope *scope=nullptr) : Base(scope) { }
 		
 		virtual unsigned Compile(const std::string &input, unsigned long pline) override;
 		virtual void Finalize() override { }
+		
+		virtual Intermediate &Duplicate(Scope *scope) const {
+			return *new Intermediate(scope);
+		}
 		
 	private:
 		void storedfn(const std::string &input, int &ch);
@@ -61,12 +84,16 @@ namespace Compilers {
 	/// Programming dialect compiler
 	class Programming : public Base {
 	public:
-		Programming() : compiler(List) { }
+		Programming(Scope *scope=nullptr) : Base(scope), compiler(List, *this) { }
 		
 		virtual unsigned Compile(const std::string &input, unsigned long pline) override;
 		
 		virtual void Finalize() override;
-
+		
+		virtual Programming &Duplicate(Scope *scope) const override {
+			return *new Programming(scope);
+		}
+		
 	private:
 		ASTCompiler compiler;
 		std::string left;

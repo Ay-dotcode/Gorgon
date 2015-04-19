@@ -5,8 +5,19 @@
 #include "../VirtualMachine.h"
 #include "../../Scripting.h"
 #include "../RuntimeFunction.h"
+#include "../Compilers.h"
+#include "../Embedding.h"
 
 namespace Gorgon { namespace Scripting { namespace Compilers {
+	
+	class ilist : public std::vector<Instruction> {
+	public:
+		~ilist() {
+			std::cout<<"Destroyed!!"<<std::endl;
+		}
+	};
+	
+	MappedReferenceType<ilist, &ToEmptyString> instructionlisttype("#instructionlist", "");
 	
 	std::string dottree(ASTNode &tree, int &ind) {
 		std::string type;
@@ -458,6 +469,22 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			list.push_back(inst);
 		}
 		
+		//if we are processing a function, transfer instructions to function
+		//instructions
+		if(scopes.size() && scopes.back().type==scope::functionkeyword) {
+			if(scopes.back().passed) {
+				for(int i=sz; i<list.size(); i++) {
+					auto instructionlist=scopes.back().data.GetValue<ilist*>();
+					
+					instructionlist->push_back(list[i]);
+				}
+				list.erase(list.begin()+sz, list.end());
+			}
+			else {
+				scopes.back().passed=true;
+			}
+		}
+		
 		return list.size()-sz;
 	}
 	
@@ -471,10 +498,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "If keyword requires only a single condition");
 			}
 			
+			//if value is false, just skip to the end
 			Instruction jf;
 			jf.Type=InstructionType::JumpFalse;
 			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
 			
+			//but since the end is not known, it will be filled later, using
+			//the index of the current instruction
 			scopes.push_back(scope{scope::ifkeyword, (int)list.size()});
 			
 			list.push_back(jf);
@@ -486,17 +516,20 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
 				throw FlowException("Else without If");
 			}
-			if(scopes.back().elsepassed) {
+			if(scopes.back().passed) {
 				throw FlowException("Multiple Else for a single If");
 			}
 			
+			//this jumps out of else if if or elseif block is executed
 			Instruction ja;
 			ja.Type=InstructionType::Jump;
 			list.push_back(ja);
 			
+			//update the if (or elseif) instruction to jump to else, since ja is already inserted
+			//this jump will skip ja
 			list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
 			scopes.back().indices.back()=list.size()-1;
-			scopes.back().elsepassed=true;
+			scopes.back().passed=true;
 			
 			return true;
 		}
@@ -504,7 +537,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
 				throw FlowException("ElseIf without If");
 			}
-			if(scopes.back().elsepassed) {
+			if(scopes.back().passed) {
 				throw FlowException("ElseIf statements must be before Else statement");
 			}
 			if(tree->Leaves.GetCount()==0) {
@@ -514,19 +547,23 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "ElseIf keyword requires only a single condition");
 			}
 			
+			//this jumps out of elseif if a previous if or elseif block is executed
 			Instruction ja;
 			ja.Type=InstructionType::Jump;
 			list.push_back(ja);
 			
+			//previous if or elseif should jump here
 			list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
 			scopes.back().indices.back()=list.size()-1;
 			
+			//to check if the condition of this elseif holds, if not it will jump to end
 			Instruction jf;
 			jf.Type=InstructionType::JumpFalse;
 			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
 			
+			//which will be determined later
 			scopes.back().indices.push_back(list.size());
-			list.push_back(jf);				
+			list.push_back(jf);
 			
 			return true;
 		}
@@ -540,10 +577,12 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			scopes.push_back(scope{scope::whilekeyword, (int)list.size()});
 			
+			//terminate if the condition is no longer true
 			Instruction jf;
 			jf.Type=InstructionType::JumpFalse;
 			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
 			
+			//termination point will be determined later
 			scopes.back().indices.push_back((int)list.size());
 			
 			list.push_back(jf);
@@ -569,6 +608,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			supported->indices.push_back((int)list.size());
 			
+			//breaks out of the loop
 			Instruction ja;
 			ja.Type=InstructionType::Jump;
 			list.push_back(ja);
@@ -591,6 +631,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "Continue keyword requires no parameters");
 			}
 			
+			//jumps to the start of the loop
 			supported->indices2.push_back((int)list.size());
 			
 			Instruction ja;
@@ -607,8 +648,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				   "const can only be applied to simple variables"
 			);
 			
+			//create an assignment instruction
 			Compile(&tree->Leaves[0]);
 			
+			//and a function call that makes the variable const
 			Instruction inst;
 			inst.Type=InstructionType::FunctionCall;
 			inst.Name.SetStringLiteral("const");
@@ -642,12 +685,46 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		else if(tree->Text=="function") {
 			ASSERT(tree->Leaves.GetSize()>=2, "function keyword requires at least name and return type");
 			ASSERT(tree->Leaves[0].Type==ASTNode::Identifier, "Function names should be represented as identfiers");
-			ASSERT(tree->Leaves[1]->Type==ASTNode::Identifier ||
-				   (tree->Leaves[1]->Type==ASTNode::Keyword && tree->Leaves.Last()->Text=="nothing"), 
+			ASSERT(tree->Leaves[1].Type==ASTNode::Identifier ||
+				   (tree->Leaves[1].Type==ASTNode::Keyword && tree->Leaves.Last()->Text=="nothing"), 
 				   "Function return type should either be a keyword nothing or an identifier representing a type"
 			);
+
+			auto instlist=new ilist();
+			Data instlistd{instructionlisttype, instlist};
+			VirtualMachine::Get().References.Register(instlist);
+			scopes.push_back({scope::functionkeyword,instlistd});
 			
-			new Function(tree->Leaves[0].Text, "", nullptr, false, false, false);
+			Instruction inst;
+			Value v;
+
+			inst.Type=InstructionType::DeclOverload;
+			inst.Name.Name=tree->Leaves[0].Text;
+			
+			//is keyword
+			v.SetLiteral(Types::Bool(), false);
+			inst.Parameters.push_back(v);
+			
+			//return type
+			if(tree->Leaves[1].Type==ASTNode::Identifier) {
+				v.Type=ValueType::Identifier;
+				v.Name=tree->Leaves[1].Text;
+			}
+			else {
+				v.SetStringLiteral("");
+			}
+			inst.Parameters.push_back(v);
+			
+			//instructionlist
+			v.SetLiteral(instructionlisttype, instlist);
+			inst.Parameters.push_back(v);
+			
+			//... parameters
+			
+			list.push_back(inst);
+			waitingcount++;
+			
+			return true;
 		}
 		else if(tree->Text=="end") {
 			if(scopes.size()==0) {
@@ -672,7 +749,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					}
 					break;
 				
-				case scope::whilekeyword:					
+				case scope::whilekeyword: {					
 					auto start=scopes.back().indices.front();
 					
 					Instruction ja;
@@ -690,6 +767,14 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					}
 					
 					break;
+				}
+					
+				case scope::functionkeyword:
+					//no need to do anything
+					break;
+					
+				default:
+					Utils::ASSERT_FALSE("Unknown scope");
 			}
 			
 			scopes.pop_back();
@@ -701,6 +786,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		return false;
 	}
 	
-	const std::string ASTCompiler::scope::keywordnames[] = {"none", "if", "while"};
+	const std::string ASTCompiler::scope::keywordnames[] = {"none", "if", "while", "function"};
 	
 } } }

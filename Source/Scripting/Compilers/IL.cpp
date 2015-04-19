@@ -130,6 +130,9 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* this value should be in quotes. For jump on false and jump on true, a value should follow the jump distance.
 	* Jump instructions are required for keywords.
 	* 
+	* @subsection DeclOverload Declare function overload
+	* This instruction will declare a new function overload. Unlike the VM instruction, source code for the function follows
+	* this directive until an fns"end" is found. 
 	*/
 
 

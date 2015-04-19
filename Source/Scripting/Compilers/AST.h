@@ -9,6 +9,8 @@
 
 namespace Gorgon { namespace Scripting { namespace Compilers {
 
+	class Base;
+
 	/**
 	 * Represents a node in abstract syntax tree. A new language dialect can easily be added by parsing
 	 * language syntax into AST and asking AST Compiler to generate instructions out of it. This method
@@ -112,7 +114,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		/// AST compiler requires a vector of instructions. The compiler appends elements to the end of the
 		/// list. However, it is important not to modify the list while IsReady function returns false.
-		ASTCompiler(std::vector<Instruction> &list) : list(list) { }
+		ASTCompiler(std::vector<Instruction> &list, Base &parser) : parser(parser), list(list) { }
 		
 		/// This function compiles given abstract syntax tree, returns the number of instructions generated.
 		/// You should check IsReady function before using instructions.
@@ -132,14 +134,20 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			enum scopetype {
 				unknown,
 				ifkeyword,
-				whilekeyword
+				whilekeyword,
+				functionkeyword
 			} type;
 			
 			static const std::string keywordnames[];
 			
 			scope(scopetype type, int index) : type(type) { indices.push_back(index); }
 			
-			bool elsepassed=0;
+			scope(scopetype type) : type(type) { }
+			
+			scope(scopetype type, const Data &data) : type(type), data(data) { }
+			
+			bool passed=0;
+			Data data;
 			std::vector<int> indices;
 			std::vector<int> indices2;
 		};
@@ -148,6 +156,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		int waitingcount = 0;
 		std::vector<Instruction> &list;
+		Base &parser;
 	};
 
 	/// Converts given AST to an SVG file. This function requires GraphViz dot to be in path. The SVG will be saved

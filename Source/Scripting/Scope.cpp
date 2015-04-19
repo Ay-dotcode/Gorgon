@@ -44,10 +44,10 @@ namespace Gorgon { namespace Scripting {
 	Scope::Scope(InputProvider &provider, const std::string &name) : provider(&provider), name(name) {
 		switch(provider.GetDialect()) {
 			case InputProvider::Intermediate:
-				parser=new Compilers::Intermediate();
+				parser=new Compilers::Intermediate(this);
 				break;
 			case InputProvider::Programming:
-				parser=new Compilers::Programming();
+				parser=new Compilers::Programming(this);
 				break;
 			default:
 				Utils::ASSERT_FALSE("Unknown dialect");
