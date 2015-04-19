@@ -463,7 +463,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	
 	bool ASTCompiler::compilekeyword(ASTNode *tree, Byte &tempind) {
 		//fully compile if keyword
-		if(String::ToLower(tree->Text)=="if") {
+		if(tree->Text=="if") {
 			if(tree->Leaves.GetCount()==0) {
 				throw MissingParameterException("condition", 0, "Bool", "Condition for If keyword is not specified");
 			}
@@ -482,7 +482,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="else") {
+		else if(tree->Text=="else") {
 			if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
 				throw FlowException("Else without If");
 			}
@@ -500,7 +500,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="elseif") {
+		else if(tree->Text=="elseif") {
 			if(scopes.size()==0 || scopes.back().type!=scope::ifkeyword) {
 				throw FlowException("ElseIf without If");
 			}
@@ -530,7 +530,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="while") {
+		else if(tree->Text=="while") {
 			if(tree->Leaves.GetCount()==0) {
 				throw MissingParameterException("condition", 0, "Bool", "Condition for While keyword is not specified");
 			}
@@ -551,7 +551,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="break") {
+		else if(tree->Text=="break") {
 			scope *supported=nullptr;
 			for(auto it=scopes.rbegin(); it!=scopes.rend(); ++it) {
 				if(it->type==scope::whilekeyword) {
@@ -575,7 +575,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="continue") {
+		else if(tree->Text=="continue") {
 			scope *supported=nullptr;
 			for(auto it=scopes.rbegin(); it!=scopes.rend(); ++it) {
 				if(it->type==scope::whilekeyword) {
@@ -599,7 +599,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="const") {
+		else if(tree->Text=="const") {
 			ASSERT(tree->Leaves.GetSize()==1, "const keyword requires a single parameter");
 			ASSERT(tree->Leaves[0].Leaves.GetSize()==2, "Assignment requires two parameters");
 			ASSERT(tree->Leaves[0].Leaves[0].Type==ASTNode::Identifier || 
@@ -619,7 +619,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="static") {
+		else if(tree->Text=="static") {
 			ASSERT(tree->Leaves.GetSize()==1, "static keyword requires a single parameter");
 			ASSERT(tree->Leaves[0].Leaves.GetSize()==2, "Assignment requires two parameters");
 			ASSERT(tree->Leaves[0].Leaves[0].Type==ASTNode::Identifier || 
@@ -639,7 +639,17 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(String::ToLower(tree->Text)=="end") {
+		else if(tree->Text=="function") {
+			ASSERT(tree->Leaves.GetSize()>=2, "function keyword requires at least name and return type");
+			ASSERT(tree->Leaves[0].Type==ASTNode::Identifier, "Function names should be represented as identfiers");
+			ASSERT(tree->Leaves[1]->Type==ASTNode::Identifier ||
+				   (tree->Leaves[1]->Type==ASTNode::Keyword && tree->Leaves.Last()->Text=="nothing"), 
+				   "Function return type should either be a keyword nothing or an identifier representing a type"
+			);
+			
+			new Function(tree->Leaves[0].Text, "", nullptr, false, false, false);
+		}
+		else if(tree->Text=="end") {
 			if(scopes.size()==0) {
 				throw FlowException("`End` without a keyword scope");
 			}

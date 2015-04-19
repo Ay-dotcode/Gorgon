@@ -760,7 +760,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	}
 	
 	static const std::set<std::string, String::CaseInsensitiveLess> internalkeywords={
-		"if", "for", "elseif", "else", "while", "continue", "break", "end", "static"
+		"if", "for", "elseif", "else", "while", "continue", "break", "end", "static", "function"
 	};
 	
 	ASTNode *parse(const std::string &input) {
@@ -814,6 +814,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			}
 			
 			if(KeywordNames.count(token.repr) || internalkeywords.count(token.repr)) { //keyword
+				token.repr=String::ToLower(token.repr); //make sure its lowercase
 				root=NewNode(ASTNode::Keyword, token);
 				
 				if(String::ToLower(token.repr)=="for") {
@@ -830,6 +831,50 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					
 					auto expr=parseexpression(input, index);
 					root->Leaves.Push(expr);
+				}
+				else if(String::ToLower(token.repr)=="function") {
+					//parse name
+					token=consumenexttoken(input, index);
+					if(token!=Token::Identifier) {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected function name, found: "+token.repr, index};
+					}
+					
+					root->Leaves.Push(NewNode(ASTNode::Identifier, token));
+					
+					token=consumenexttoken(input, index);
+					
+					//parse parameters
+					if(token==Token::LeftP) {
+						while( (token=consumenexttoken(input, index)) != Token::RightP ) {
+							//... add parameters
+						}
+						
+						token=consumenexttoken(input, index);
+					}
+					
+					//parse return
+					if(token==Token::EoS) {
+						root->Leaves.Push(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)));
+					}
+					else {
+						if(token!=Token::Identifier || String::ToLower(token.repr)!="returns") {
+							throw ParseError{ExceptionType::UnexpectedToken, "Expected 'returns', found: "+token.repr, index};
+						}
+						
+						token=consumenexttoken(input, index);
+						//... const, ref
+						if(token!=Token::Identifier) {
+							throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
+						}
+						
+						if(String::ToLower(token.repr)=="nothing") {
+							token.repr="nothing"; //make sure lowercase
+							root->Leaves.Insert(NewNode(ASTNode::Keyword, token), 1);
+						}
+						else {
+							root->Leaves.Insert(NewNode(ASTNode::Identifier, token), 1);
+						}
+					}
 				}
 				else if(String::ToLower(token.repr)=="const" || String::ToLower(token.repr)=="static") { //this is actually an assignment
 					auto name=String::ToLower(token.repr);
@@ -1048,7 +1093,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			extractline(left, process, linestarts);
 			
 			auto ret=parse(process);
-			//ASTToSVG(input, *ret, {}, true);
+			ASTToSVG(input, *ret, {}, true);
 			///... fix line and char start of ast tree
 			
 			if(ret) {
@@ -1056,7 +1101,12 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					elements+=compiler.Compile(ret);
 				}
 				catch(...) {
+					if(showsvg__) {
+						ASTToSVG(input, *ret, {}, true);
+					}
+					
 					delete ret;
+					throw;
 				}
 			}
 			else {
