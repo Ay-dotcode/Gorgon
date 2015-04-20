@@ -433,6 +433,7 @@ namespace Gorgon {
 						returnvalue=scopeinstances.back()->ReturnValue;
 					}
 					scopeinstances.pop_back();
+					returnimmediately=false;
 					continue;
 				}
 				
@@ -559,7 +560,11 @@ namespace Gorgon {
 						return data;
 					}
 					else {
-						return FindConstant(val.Name).GetData();
+						auto data=FindConstant(val.Name).GetData();
+						if(data.IsReference())
+							data.MakeConstant();
+						
+						return data;
 					}
 					
 				case ValueType::Temp: {
@@ -1387,7 +1392,36 @@ namespace Gorgon {
 					SetVariable(inst->Name.Name, {FunctionType(), fn});
 				}
 				
-				auto overld=new RuntimeOverload(CurrentScopeInstance().GetScope(), nullptr, 
+				const Type *rettype=nullptr;
+				if(inst->Parameters[1].Type==ValueType::Literal) { //if literal
+					//should be empty string
+					ASSERT(
+						inst->Parameters[1].Literal.GetType()==Types::String() &&
+						inst->Parameters[1].Literal.GetValue<std::string>()=="",
+						"Literal return type should be empty string to denote nothing"
+					);
+				}
+				else {
+					ASSERT(
+						inst->Parameters[1].Type==ValueType::Identifier,
+						"Return type should be an identifier"
+					);
+					
+					auto ret=getvalue(inst->Parameters[1]);
+					
+					Type *TypeType();
+					if(ret.GetType()!=TypeType()) {
+						throw CastException(ret.GetType().GetName(), "Type", "Cannot convert return type to a type");
+					}
+					
+					//...fix constant get
+					if(ret.IsConstant())
+						rettype=ret.GetValue<const Type*>();
+					else 
+						rettype=ret.GetValue<Type*>();
+				}
+				
+				auto overld=new RuntimeOverload(CurrentScopeInstance().GetScope(), rettype, 
 											{}, false, false, false, false, false, false, false);
 				
 				overld->SaveInstructions(*inst->Parameters[2].Literal.ReferenceValue<std::vector<Instruction>*>());

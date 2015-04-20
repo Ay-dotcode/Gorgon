@@ -148,7 +148,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	};
 	
 	//generate output works only with functioncalls, it can be used to suppress result saving
-	Value compilevalue(ASTNode &tree, std::vector<Instruction> &list, Byte &tempind, bool generateoutput=true, std::vector<Instruction> *writeback=nullptr) {
+	Value compilevalue(ASTNode &tree, std::vector<Instruction> *list, Byte &tempind, bool generateoutput=true, std::vector<Instruction> *writeback=nullptr) {
 		if(tree.Type==ASTNode::Operator) { //arithmetic
 			ASSERT(tree.Leaves.GetSize()==2, "Operators require two operands");
 			
@@ -160,7 +160,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			inst.Parameters.push_back(compilevalue(tree.Leaves[1], list, tempind));
 			inst.Store=tempind;
 			
-			list.push_back(inst);
+			list->push_back(inst);
 			
 			Value v;
 			v.Type=ValueType::Temp;
@@ -243,12 +243,12 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			inst.Store=generateoutput ? tempind : 0;
 			
 			//add function call
-			list.push_back(inst);
+			list->push_back(inst);
 			
 			//add writebacks after the function call, so that execution will first retrieve
 			//the object, call the function and write it back
 			for(auto inst=writebacks.rbegin(); inst!=writebacks.rend(); ++inst) {
-				list.push_back(*inst);
+				list->push_back(*inst);
 			}
 			
 			//prepare the value to be used. 
@@ -275,7 +275,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			inst.Store=tempind;
 			
-			list.push_back(inst);
+			list->push_back(inst);
 			
 			Value v;
 			v.Type=ValueType::Temp;
@@ -302,7 +302,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			inst.Store=tempind;
 			
-			list.push_back(inst);
+			list->push_back(inst);
 			
 			//if writeback is requested, instructions to check if the given item is an array like, if so
 			//instructions to writeback the member should be used.
@@ -340,7 +340,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			inst.Parameters.push_back(accessval);
 			inst.Store=tempind;
 			
-			list.push_back(inst);
+			list->push_back(inst);
 			
 			Value v;
 			v.Type=ValueType::Temp;
@@ -368,7 +368,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	}
 	
 	unsigned ASTCompiler::Compile(ASTNode *tree) {
-		auto sz=list.size();
+		auto sz=list->size();
 		
 		//temporaries start from 1
 		Byte tempind=1;
@@ -413,11 +413,11 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				ASSERT(false, "Assignment can only be performed to variable, membership and indexing nodes");
 			}
 			
-			list.push_back(inst);
+			list->push_back(inst);
 			
 			//save any writebacks
 			for(auto inst=writebacks.rbegin(); inst!=writebacks.rend(); ++inst) {
-				list.push_back(*inst);
+				list->push_back(*inst);
 			}
 		}
 		
@@ -446,7 +446,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				for(auto &p : tree->Leaves) {
 					inst.Parameters.push_back(compilevalue(p, list, tempind));
 				}
-				list.push_back(inst);
+				list->push_back(inst);
 			}
 		}
 		else {
@@ -459,26 +459,19 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			inst.Type=InstructionType::RemoveTemp;
 			inst.Store=i;
 			
-			list.push_back(inst);
+			list->push_back(inst);
 		}
 		
 		//if we are processing a function, transfer instructions to function
 		//instructions
-		if(scopes.size() && scopes.back().type==scope::functionkeyword) {
-			if(scopes.back().passed) {
-				for(int i=sz; i<list.size(); i++) {
-					auto instructionlist=scopes.back().data.GetValue<std::vector<Instruction>*>();
-					
-					instructionlist->push_back(list[i]);
-				}
-				list.erase(list.begin()+sz, list.end());
-			}
-			else {
-				scopes.back().passed=true;
-			}
+		if(scopes.size() && scopes.back().type==scope::functionkeyword && !scopes.back().passed) {
+			scopes.back().passed=true;
+			redirects.push_back(list);
+			list=scopes.back().data.GetValue<std::vector<Instruction>*>();
 		}
 		
-		return list.size()-sz;
+		
+		return list->size()-sz;
 	}
 	
 	bool ASTCompiler::compilekeyword(ASTNode *tree, Byte &tempind) {
@@ -498,9 +491,9 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			//but since the end is not known, it will be filled later, using
 			//the index of the current instruction
-			scopes.push_back(scope{scope::ifkeyword, (int)list.size()});
+			scopes.push_back(scope{scope::ifkeyword, (int)list->size()});
 			
-			list.push_back(jf);
+			list->push_back(jf);
 			waitingcount++;
 			
 			return true;
@@ -516,12 +509,12 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			//this jumps out of else if if or elseif block is executed
 			Instruction ja;
 			ja.Type=InstructionType::Jump;
-			list.push_back(ja);
+			list->push_back(ja);
 			
 			//update the if (or elseif) instruction to jump to else, since ja is already inserted
 			//this jump will skip ja
-			list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
-			scopes.back().indices.back()=list.size()-1;
+			(*list)[scopes.back().indices.back()].JumpOffset=list->size()-scopes.back().indices.back();
+			scopes.back().indices.back()=list->size()-1;
 			scopes.back().passed=true;
 			
 			return true;
@@ -543,11 +536,11 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			//this jumps out of elseif if a previous if or elseif block is executed
 			Instruction ja;
 			ja.Type=InstructionType::Jump;
-			list.push_back(ja);
+			list->push_back(ja);
 			
 			//previous if or elseif should jump here
-			list[scopes.back().indices.back()].JumpOffset=list.size()-scopes.back().indices.back();
-			scopes.back().indices.back()=list.size()-1;
+			(*list)[scopes.back().indices.back()].JumpOffset=list->size()-scopes.back().indices.back();
+			scopes.back().indices.back()=list->size()-1;
 			
 			//to check if the condition of this elseif holds, if not it will jump to end
 			Instruction jf;
@@ -555,8 +548,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
 			
 			//which will be determined later
-			scopes.back().indices.push_back(list.size());
-			list.push_back(jf);
+			scopes.back().indices.push_back(list->size());
+			list->push_back(jf);
 			
 			return true;
 		}
@@ -568,7 +561,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "While keyword requires only a single condition");
 			}
 			
-			scopes.push_back(scope{scope::whilekeyword, (int)list.size()});
+			scopes.push_back(scope{scope::whilekeyword, (int)list->size()});
 			
 			//terminate if the condition is no longer true
 			Instruction jf;
@@ -576,9 +569,9 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
 			
 			//termination point will be determined later
-			scopes.back().indices.push_back((int)list.size());
+			scopes.back().indices.push_back((int)list->size());
 			
-			list.push_back(jf);
+			list->push_back(jf);
 			waitingcount++;
 			
 			return true;
@@ -599,12 +592,12 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				throw TooManyParametersException(tree->Leaves.GetCount(), 1, "Break keyword requires no parameters");
 			}
 			
-			supported->indices.push_back((int)list.size());
+			supported->indices.push_back((int)list->size());
 			
 			//breaks out of the loop
 			Instruction ja;
 			ja.Type=InstructionType::Jump;
-			list.push_back(ja);
+			list->push_back(ja);
 			
 			return true;
 		}
@@ -625,11 +618,11 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			}
 			
 			//jumps to the start of the loop
-			supported->indices2.push_back((int)list.size());
+			supported->indices2.push_back((int)list->size());
 			
 			Instruction ja;
 			ja.Type=InstructionType::Jump;
-			list.push_back(ja);
+			list->push_back(ja);
 			
 			return true;
 		}
@@ -651,7 +644,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			Value v;
 			v.SetVariable(tree->Leaves[0].Leaves[0].Text);
 			inst.Parameters.push_back(v);
-			list.push_back(inst);
+			list->push_back(inst);
 			
 			return true;
 		}
@@ -671,7 +664,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			v.SetVariable(tree->Leaves[0].Leaves[0].Text);
 			inst.Parameters.push_back(v);
 			inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[1], list, tempind));
-			list.push_back(inst);
+			list->push_back(inst);
 			
 			return true;
 		}
@@ -714,7 +707,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			//... parameters
 			
-			list.push_back(inst);
+			list->push_back(inst);
 			waitingcount++;
 			
 			return true;
@@ -738,7 +731,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			switch(scopes.back().type) {
 				case scope::ifkeyword:
 					for(auto &index : scopes.back().indices) {
-						list[index].JumpOffset=list.size()-index;
+						(*list)[index].JumpOffset=list->size()-index;
 					}
 					break;
 				
@@ -747,23 +740,30 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					
 					Instruction ja;
 					ja.Type=InstructionType::Jump;
-					ja.JumpOffset=start-list.size();
-					list.push_back(ja);
+					ja.JumpOffset=start-list->size();
+					list->push_back(ja);
 					
 					auto elm=scopes.back().indices.size();
 					for(unsigned i=1; i<elm; i++) {
 						auto index=scopes.back().indices[i];
-						list[index].JumpOffset=list.size()-index;
+						(*list)[index].JumpOffset=list->size()-index;
 					}
 					for(auto &index : scopes.back().indices2) {
-						list[index].JumpOffset=start-index;
+						(*list)[index].JumpOffset=start-index;
 					}
 					
 					break;
 				}
 					
 				case scope::functionkeyword:
-					//no need to do anything
+					
+					for(const auto &inst : *redirects.back()) {
+						std::cout<<Disassemble(inst)<<std::endl;
+					}
+					
+					list=redirects.back();
+					redirects.pop_back();
+					
 					break;
 					
 				default:

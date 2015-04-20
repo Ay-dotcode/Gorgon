@@ -104,6 +104,9 @@ namespace Compilers {
 	/// Disassembles the given instruction
 	std::string Disassemble(const Instruction *);
 	
+	/// Disassembles the given instruction
+	inline std::string Disassemble(const Instruction &inst) { return Disassemble(&inst); }
+	
 	/// Disassembles entire input source to the given stream
 	void Disassemble(InputSource &source, std::ostream &out);
 	

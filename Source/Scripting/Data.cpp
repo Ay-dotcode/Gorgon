@@ -11,7 +11,7 @@ namespace Gorgon { namespace Scripting {
 		type=other.type;
 		isreference=other.isreference;
 		
-		if(isreference)
+		if(type && IsReference())
 			isconstant=other.isconstant;
 		
 		

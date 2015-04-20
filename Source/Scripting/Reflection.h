@@ -600,11 +600,13 @@ namespace Gorgon {
 				);
 
 				overload.parent=this;
-#ifndef NDEBUG
 				for(const auto &v : overloads) {
-					ASSERT(!overload.IsSame(v), "Ambiguous function variant\n in function "+name, 1, 3);
+					if(overload.IsSame(v)) {
+						throw AmbiguousSymbolException(name, SymbolType::Function, "Ambiguous function variant");
+					}
 				}
 				
+#ifndef NDEBUG
 				overload.dochecks(false);
 #endif
 				overloads.Push(overload);
