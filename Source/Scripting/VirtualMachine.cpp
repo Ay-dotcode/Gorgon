@@ -10,6 +10,8 @@ namespace Gorgon {
 	namespace Scripting {		
 		
 		Containers::Hashmap<std::thread::id, VirtualMachine, &VirtualMachine::getthread> VirtualMachine::activevms;
+		Type *TypeType();
+		Type *FunctionType();
 
 
 		extern Type &Variant;
@@ -427,7 +429,7 @@ namespace Gorgon {
 			returnvalue=Data::Invalid();
 
 			//until execution target is reached
-			while(scopeinstances.size()>(long)executiontarget) {
+			while(scopeinstances.size()>executiontarget) {
 				if(returnimmediately) {
 					if(toplevel && scopeinstances.back().get()==toplevel.get()) {
 						returnvalue=scopeinstances.back()->ReturnValue;
@@ -779,7 +781,13 @@ namespace Gorgon {
 			auto checkparam=[this](const Parameter &param, const Value &cval) {
 				int c=0;
 				//target is reference
-				if(param.IsReference() || param.GetType().IsReferenceType()) {
+				if(param.IsVariable()) {
+					if(cval.Type!=ValueType::Identifier && cval.Type!=ValueType::Variable)
+						return -1;
+					else 
+						return 0;
+				}
+				else if(param.IsReference() || param.GetType().IsReferenceType()) {
 					Data d=Data::Invalid();
 					try {
 						d=getvalue(cval, !param.IsConstant());
@@ -943,7 +951,7 @@ namespace Gorgon {
 						}
 					}
 					
-					if(var.GetParent().IsOperator() && var.Parameters[1].GetType()==var.GetParent().GetOwner() && current>0) {
+					if(var.GetParent().IsOperator() && var.Parameters[0].GetType()==var.GetParent().GetOwner() && current>0) {
 						current-=1;
 					}
 					
@@ -1125,7 +1133,6 @@ namespace Gorgon {
 			else if((inst->Name.Type==ValueType::Identifier || inst->Name.Type==ValueType::Variable) && IsVariableSet(inst->Name.Name)) {
 				auto var=GetVariable(inst->Name.Name);
 				
-				Type *FunctionType();				
 				if(var.GetType()!=FunctionType()) {
 					throw CastException(var.GetType().GetName(), "Function", inst->Name.Name+
 						" is a variable that do not contain a function");
@@ -1388,7 +1395,6 @@ namespace Gorgon {
 				else {
 					fn=new Function(inst->Name.Name, "", nullptr, inst->Parameters[0].Literal.GetValue<bool>(), false, false);
 					References.Register(fn);
-					Type *FunctionType();
 					SetVariable(inst->Name.Name, {FunctionType(), fn});
 				}
 				
@@ -1409,7 +1415,6 @@ namespace Gorgon {
 					
 					auto ret=getvalue(inst->Parameters[1]);
 					
-					Type *TypeType();
 					if(ret.GetType()!=TypeType()) {
 						throw CastException(ret.GetType().GetName(), "Type", "Cannot convert return type to a type");
 					}
