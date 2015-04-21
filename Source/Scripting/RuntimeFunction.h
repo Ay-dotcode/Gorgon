@@ -85,9 +85,14 @@ namespace Gorgon { namespace Scripting {
 					else {
 						v=*pin;
 					}
+					pin++;
 				}
 				
+				if(v.GetType()==Types::Variant()) {
+					v=v.GetValue<Data>();
+				}
 				scope->SetVariable(par->GetName(), v);
+				par++;
 			}
 			
 			while(pin!=parameters.end()) {

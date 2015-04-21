@@ -39,6 +39,10 @@ namespace Gorgon {
 				}
 				return String::To<bool>(str);
 			}
+
+			Data StringToData(const std::string &str) {
+				return {Types::String(), str};
+			}
 			
 			std::string CharToString(const char &c) {
 				return std::string(1, c);
@@ -72,13 +76,19 @@ namespace Gorgon {
 		void InitTypeType();
 
 		Type *FunctionType();
+		Type *ParameterType();
 		
 		Type *ArrayType();
 		std::vector<Function*> ArrayFunctions();
 		
 		void init_builtin() {
 			if(Integrals.Types.GetCount()) return;
-			
+
+			auto Variant = new MappedValueType<Data, String::From<Data>, StringToData>("Variant",
+				"This type can contain any type.",
+				Data::Invalid()
+			);
+
 			auto Int = new MappedValueType<int>( "Int", 
 				"Integer data type. This type is binary saved/loaded as int32_t regardless of the platform. "
 				"This data type does not support binary operator (bit shift, bitwise and/or). You should "
@@ -402,7 +412,7 @@ namespace Gorgon {
 					Byte,
 					Char,
 					String,
-					&Variant
+					Variant
 				},
 				FunctionList{},
 				ConstantList {
@@ -527,7 +537,7 @@ namespace Gorgon {
 			};
 			
 			Reflection={"Reflection", "This library contains reflection objects",
-				TypeList { TypeType(), FunctionType() },
+				TypeList { TypeType(), FunctionType(), ParameterType() },
 				FunctionList {
 					new Function("TypeOf",
 						"This function returns the type of the given variable.", nullptr, 

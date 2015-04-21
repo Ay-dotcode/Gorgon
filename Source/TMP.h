@@ -181,10 +181,6 @@ namespace Gorgon {
 			///Duplicates this service
 			virtual RTTS *Duplicate() const = 0;
 			
-			///Creates a new instance of the object. If this type is a reference, pointer of this type
-			///is created, this function can return nullptr
-			virtual void *Create() const = 0;
-			
 			///Clones the given object
 			virtual void *Clone(const void* const obj) const = 0;
 			
@@ -207,9 +203,6 @@ namespace Gorgon {
 				return new RTT<T_>();
 			}
 			
-			virtual void *Create() const {
-				return new NewType();
-			}
 			
 			virtual void *Clone(const void* const obj) const override {
 				auto n = new NewType(*reinterpret_cast<CloneType>(obj));
@@ -247,10 +240,6 @@ namespace Gorgon {
 			
 			virtual RTTS *Duplicate() const {
 				return new AbstractRTT<T_>();
-			}
-			
-			virtual void *Create() const {
-				return nullptr;
 			}
 			
 			virtual void *Clone(const void* const obj) const override {

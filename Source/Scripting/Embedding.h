@@ -44,7 +44,7 @@ namespace Gorgon { namespace Scripting {
 	class MappedValueType : public Type {
 	public:
 		MappedValueType(const std::string &name, const std::string &help, const T_ &def) :
-		Type(name, help, def, new TMP::RTTC<T_>(), false)
+		Type(name, help, def, new TMP::AbstractRTTC<T_>(), false)
 		{
 		}
 		
@@ -122,8 +122,6 @@ namespace Gorgon { namespace Scripting {
 		}
 	};
 
-	/// Variant data type can hold any type of data
-	extern Type &Variant;
 	
 	/// This class wraps a C++ function into an overload. It can be constructed using MapFunction.
 	template<class F_>
@@ -229,16 +227,16 @@ namespace Gorgon { namespace Scripting {
 		callfn(TMP::Sequence<S_...>, const std::vector<Data> &parameters) const {
 			Data data;
 			
-			ASSERT((!returnsref || returntype==Scripting::Variant), "Embedded function does not return a reference");
+			ASSERT((!returnsref || returntype==Types::Variant()), "Embedded function does not return a reference");
 			
 			data=Data(returntype, Any(
 				std::bind(fn, cast<S_>(parameters)...)()
 			), false, returnsconst);
 			
-			ASSERT((!returnsref || (returntype==Scripting::Variant && data.GetValue<Data>().IsReference())), 
+			ASSERT((!returnsref || (returntype==Types::Variant() && data.GetValue<Data>().IsReference())),
 				   "Embedded function does not return a reference");
 			
-			if(returnsref && returntype==Scripting::Variant) {
+			if(returnsref && returntype==Types::Variant()) {
 				if(!data.GetValue<Data>().IsReference()) {
 					throw CastException("Non-reference variant", "Reference variant", "While returning value from "+parent->GetName());
 				}

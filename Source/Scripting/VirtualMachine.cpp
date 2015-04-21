@@ -12,9 +12,7 @@ namespace Gorgon {
 		Containers::Hashmap<std::thread::id, VirtualMachine, &VirtualMachine::getthread> VirtualMachine::activevms;
 		Type *TypeType();
 		Type *FunctionType();
-
-
-		extern Type &Variant;
+		Type *ParameterType();
 
 		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
 		Libraries(libraries), output(&out), input(&in), 
@@ -735,8 +733,8 @@ namespace Gorgon {
 				//no worries
 			}
 			//to variant
-			else if(pdef==Variant) {
-				param={Variant, param};
+			else if(pdef==Types::Variant()) {
+				param={Types::Variant(), param};
 			}
 			//to string
 			else if(pdef==Integrals.Types["string"]) {
@@ -747,7 +745,7 @@ namespace Gorgon {
 // 				param={pdef, pdef.Parse(param.GetValue<std::string>())};
 // 			}
 			//from variant
-			else if(param.GetType()==Variant && param.GetValue<Data>().GetType()==pdef) {
+			else if(param.GetType()==Types::Variant() && param.GetValue<Data>().GetType()==pdef) {
 				param={pdef, param.GetValue<Data>()};
 			}
 			else {
@@ -809,7 +807,7 @@ namespace Gorgon {
 					
 					//check polycast
 					//if const check implicit cast
-					if(d.GetType()==param.GetType() || param.GetType()==Variant) {
+					if(d.GetType()==param.GetType() || param.GetType()==Types::Variant()) {
 						return c;
 					}
 					else if(d.GetType().Parents.count(param.GetType())) {
@@ -848,7 +846,7 @@ namespace Gorgon {
 					
 					//check implicit cast
 					//if source is ref check polycast
-					if(d.GetType()==param.GetType() || param.GetType()==Variant) {
+					if(d.GetType()==param.GetType() || param.GetType()==Types::Variant()) {
 						return c;
 					}
 					else if(param.GetType().GetTypeCastingFrom(d.GetType())) {
@@ -1372,14 +1370,14 @@ namespace Gorgon {
 			}
 			else if(inst->Type==InstructionType::JumpTrue) {
 				auto dat=getvalue(inst->RHS);
-				fixparameter(dat, Types::Bool(), false, "While executing jump. The given value should be convertable to bool");
+				fixparameter(dat, Types::Bool(), false, "While executing jump. The given value should be convertible to bool");
 				if(dat.GetValue<bool>()) {
 					scopeinstances.back()->Jumpto(scopeinstances.back()->GetLineNumber()+inst->JumpOffset);
 				}
 			}
 			else if(inst->Type==InstructionType::JumpFalse) {
 				auto dat=getvalue(inst->RHS);
-				fixparameter(dat, Types::Bool(), false, "While executing jump. The given value should be convertable to bool");
+				fixparameter(dat, Types::Bool(), false, "While executing jump. The given value should be convertible to bool");
 				if(!dat.GetValue<bool>()) {
 					scopeinstances.back()->Jumpto(scopeinstances.back()->GetLineNumber()+inst->JumpOffset);
 				}
@@ -1425,9 +1423,25 @@ namespace Gorgon {
 					else 
 						rettype=ret.GetValue<Type*>();
 				}
+
+				std::vector<Parameter> paramlist;
+				for(unsigned i=3; i<inst->Parameters.size(); i++) {
+					ASSERT(
+						inst->Parameters[i].Type==ValueType::Literal && inst->Parameters[i].Literal.GetType()==ParameterType(),
+						"Overload parameters should be defined as Parameter literals."
+					);
+
+					paramlist.push_back(inst->Parameters[i].Literal.GetValue<Parameter>());
+				}
 				
-				auto overld=new RuntimeOverload(CurrentScopeInstance().GetScope(), rettype, 
-											{}, false, false, false, false, false, false, false);
+				ASSERT(
+					inst->Parameters[2].Type==ValueType::Literal && 
+					inst->Parameters[2].Literal.GetType().TypeInterface.NormalType==TMP::RTT<std::vector<Instruction>>() &&
+					inst->Parameters[2].Literal.GetType().IsReferenceType(),
+					"Instruction list should be saved as reference typed std::vector<Instruction> literal."
+				);
+				auto overld=new RuntimeOverload(CurrentScopeInstance().GetScope(), rettype,
+											paramlist, false, false, false, false, false, false, false);
 				
 				overld->SaveInstructions(*inst->Parameters[2].Literal.ReferenceValue<std::vector<Instruction>*>());
 				fn->AddOverload(overld);

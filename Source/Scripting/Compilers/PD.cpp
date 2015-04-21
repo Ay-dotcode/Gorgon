@@ -21,7 +21,10 @@
 
 ///@cond INTERNAL
 
-namespace Gorgon { namespace Scripting { namespace Compilers {
+namespace Gorgon { namespace Scripting { 
+	Type *ParameterType();
+
+namespace Compilers {
 	bool showsvg__=false;
 	namespace {
 
@@ -763,6 +766,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		"if", "for", "elseif", "else", "while", "continue", "break", "end", "static", "function"
 	};
 	
+
 	ASTNode *parse(const std::string &input) {
 		int index = 0;
 		ASTNode *root = nullptr;
@@ -846,7 +850,19 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					//parse parameters
 					if(token==Token::LeftP) {
 						while( (token=consumenexttoken(input, index)) != Token::RightP ) {
-							//... add parameters
+							if(token!=Token::Identifier) {
+								throw ParseError{ExceptionType::UnexpectedToken, "Expected parameter identifier"+token.repr, index};
+							}
+							Parameter p(token.repr, "", Types::Variant());
+
+							auto node=new ASTNode(ASTNode::Literal);
+							node->LiteralValue={ParameterType(), p};
+							root->Leaves.Push(*node);
+
+							token=peeknexttoken(input, index);
+							if(token==Token::Seperator) {
+								consumenexttoken(input, index);
+							}
 						}
 						
 						token=consumenexttoken(input, index);
@@ -854,7 +870,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					
 					//parse return
 					if(token==Token::EoS) {
-						root->Leaves.Push(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)));
+						root->Leaves.Insert(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)), 1);
 					}
 					else {
 						if(token!=Token::Identifier || String::ToLower(token.repr)!="returns") {

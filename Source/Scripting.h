@@ -80,7 +80,8 @@ namespace Gorgon {
 		/// Allows easy and fast access to integral types
 		namespace Types {
 #define DEFTYPE(name) inline const Type &name() { static const Scripting::Type *type = Integrals.Types[#name]; return *type; }
-			
+
+			DEFTYPE(Variant);
 			DEFTYPE(String);
 			DEFTYPE(Int);
 			DEFTYPE(Float);
@@ -88,7 +89,6 @@ namespace Gorgon {
 			DEFTYPE(Double);
 			DEFTYPE(Char);
 			DEFTYPE(Byte);
-			DEFTYPE(Variant);
 			DEFTYPE(Unsigned);
 
 			DEFTYPE(Array);

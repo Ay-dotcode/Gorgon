@@ -672,7 +672,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			ASSERT(tree->Leaves.GetSize()>=2, "function keyword requires at least name and return type");
 			ASSERT(tree->Leaves[0].Type==ASTNode::Identifier, "Function names should be represented as identfiers");
 			ASSERT(tree->Leaves[1].Type==ASTNode::Identifier ||
-				   (tree->Leaves[1].Type==ASTNode::Keyword && tree->Leaves.Last()->Text=="nothing"), 
+				   (tree->Leaves[1].Type==ASTNode::Keyword && tree->Leaves[1].Text=="nothing"), 
 				   "Function return type should either be a keyword nothing or an identifier representing a type"
 			);
 
@@ -705,7 +705,11 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			v.SetLiteral(instructionlisttype, instlist);
 			inst.Parameters.push_back(v);
 			
-			//... parameters
+			for(int i=2; i<tree->Leaves.GetSize(); i++) {
+				v.Literal=tree->Leaves[i].LiteralValue;
+				v.Type=ValueType::Literal;
+				inst.Parameters.push_back(v);
+			}
 			
 			list->push_back(inst);
 			waitingcount++;
@@ -756,11 +760,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				}
 					
 				case scope::functionkeyword:
-					
-					for(const auto &inst : *redirects.back()) {
-						std::cout<<Disassemble(inst)<<std::endl;
-					}
-					
 					list=redirects.back();
 					redirects.pop_back();
 					

@@ -84,7 +84,7 @@ namespace Gorgon {
 							MapFunction(
 								[](const Array *a, unsigned ind) {
 									return a->GetItemData(ind);
-								}, Variant,
+								}, Types::Variant(),
 								{
 									Parameter( "Index",
 										"The index of the element",
@@ -96,7 +96,7 @@ namespace Gorgon {
 							MapFunction(
 								[](Array *a, unsigned ind) {
 									return a->GetItemData(ind);
-								}, Variant,
+								}, Types::Variant(),
 								{
 									Parameter( "Index",
 										"The index of the element",
@@ -124,7 +124,7 @@ namespace Gorgon {
 									),
 									Parameter( "Value",
 										"Value to be assigned",
-										Variant
+										Types::Variant()
 									)
 								}
 							)

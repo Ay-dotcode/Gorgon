@@ -11,7 +11,7 @@ namespace Gorgon { namespace Scripting {
 		type=other.type;
 		isreference=other.isreference;
 		
-		if(type && IsReference())
+		if(isreference || (type && type->IsReferenceType()))
 			isconstant=other.isconstant;
 		
 		
@@ -97,7 +97,7 @@ namespace Gorgon { namespace Scripting {
 		data=other.data;
 		isreference=other.isreference;
 		
-		if(isreference)
+		if(isreference || (type && type->IsReferenceType()))
 			isconstant=other.isconstant;
 		
 		other.data=Any();
@@ -121,8 +121,6 @@ namespace Gorgon { namespace Scripting {
 			VirtualMachine::Get().References.Decrease(*this);
 		}
 	}
-	
-	Data GetVariableValue(const std::string &varname) { throw 0; }
 	
 	Data Data::GetReference() {
 		ASSERT(type, "Type is not set", 1, 2);
