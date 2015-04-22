@@ -764,7 +764,7 @@ namespace Compilers {
 	}
 	
 	static const std::set<std::string, String::CaseInsensitiveLess> internalkeywords={
-		"if", "for", "elseif", "else", "while", "continue", "break", "end", "static", "function"
+		"if", "for", "elseif", "else", "while", "continue", "break", "end", "static", "function", "method", "call"
 	};
 	
 
@@ -822,7 +822,7 @@ namespace Compilers {
 				token.repr=String::ToLower(token.repr); //make sure its lowercase
 				root=NewNode(ASTNode::Keyword, token);
 				
-				if(String::ToLower(token.repr)=="for") {
+				if(token.repr=="for") {
 					auto tokenvar=consumenexttoken(input, index);
 					if(tokenvar!=Token::Identifier) {
 						throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier, found: "+token.repr, index};
@@ -837,7 +837,16 @@ namespace Compilers {
 					auto expr=parseexpression(input, index);
 					root->Leaves.Push(expr);
 				}
-				else if(String::ToLower(token.repr)=="function") {
+				else if(token.repr=="call") {
+					delete root;
+					root=parse(input.substr(index));
+					if(root->Type!=ASTNode::FunctionCall) {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected method call", index};
+					}
+					
+					root->Type=ASTNode::MethodCall;
+				}
+				else if(token.repr=="function" || token.repr=="method") {
 					//parse name
 					token=consumenexttoken(input, index);
 					if(token!=Token::Identifier) {
@@ -895,6 +904,9 @@ namespace Compilers {
 					//parse return
 					if(token==Token::EoS) {
 						root->Leaves.Insert(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)), 1);
+					}
+					else if(token.repr=="method") {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected end of line, found: "+token.repr, index};
 					}
 					else {
 						if(token!=Token::Identifier || String::ToLower(token.repr)!="returns") {

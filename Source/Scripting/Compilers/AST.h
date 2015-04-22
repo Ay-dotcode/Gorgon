@@ -135,7 +135,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				unknown,
 				ifkeyword,
 				whilekeyword,
-				functionkeyword
+				functionkeyword,
+				methodkeyword
 			} type;
 			
 			static const std::string keywordnames[];

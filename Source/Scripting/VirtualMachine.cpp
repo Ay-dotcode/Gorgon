@@ -759,18 +759,26 @@ namespace Gorgon {
 		Data VirtualMachine::callfunction(const Function *fn, bool method, const std::vector<Value> &incomingparams) {
 			const Function::Overload *var=nullptr;
 			
-			int count=fn->Overloads.GetCount()+method*fn->Methods.GetCount();
+			int count=fn->Overloads.GetCount()+fn->Methods.GetCount();
 			ASSERT(count, "This function has no registered body.");
 			
 			// easy way out, only a single variant exists
 			if(count==1) {
 				if(fn->Overloads.GetCount()==0) {
-					ASSERT(method, "This function has no registered body.");
+					//ASSERT(method, "This function has no registered body.");
 					return callvariant(fn, &fn->Methods[0], method, incomingparams);
 				}
 				else {
-					return callvariant(fn,& fn->Overloads[0], method, incomingparams);
+					return callvariant(fn, &fn->Overloads[0], method, incomingparams);
 				}
+			}
+			
+			if(!method && fn->Overloads.GetCount()==1) {
+				return callvariant(fn, &fn->Overloads[0], method, incomingparams);
+			}
+			
+			if(method && fn->Methods.GetCount()==1) {
+				return callvariant(fn, &fn->Methods[0], method, incomingparams);
 			}
 			
 			
@@ -959,9 +967,13 @@ namespace Gorgon {
 			};
 			
 			if(method) {
-				list(fn->Methods, 0);
+				list(fn->Methods,      0);
+				list(fn->Overloads, 1000);
 			}
-			list(fn->Overloads, method ? 1000 : 0);
+			else {
+				list(fn->Overloads,  0);
+				list(fn->Methods, 1000);
+			}
 			
 			if(variantlist.size()) {
 				if(variantlist.size()>1 && variantlist.count(variantlist.begin()->first)>1) {
@@ -1392,7 +1404,7 @@ namespace Gorgon {
 					fn=GetVariable(inst->Name.Name).ReferenceValue<Function *>();
 				}
 				else {
-					fn=new Function(inst->Name.Name, "", nullptr, inst->Parameters[0].Literal.GetValue<bool>(), false, false);
+					fn=new Function(inst->Name.Name, "", nullptr, false, false, false);
 					References.Register(fn);
 					SetVariable(inst->Name.Name, {FunctionType(), fn});
 				}
@@ -1458,7 +1470,11 @@ namespace Gorgon {
 											paramlist, false, false, false, false, false, false, false);
 				
 				overld->SaveInstructions(*inst->Parameters[2].Literal.ReferenceValue<std::vector<Instruction>*>());
-				fn->AddOverload(overld);
+				
+				if(inst->Parameters[0].Literal.GetValue<bool>())
+					fn->AddMethod(overld);
+				else
+					fn->AddOverload(overld);
 			}
 			
 			else {

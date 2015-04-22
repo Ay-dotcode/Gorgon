@@ -464,7 +464,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		//if we are processing a function, transfer instructions to function
 		//instructions
-		if(scopes.size() && scopes.back().type==scope::functionkeyword && !scopes.back().passed) {
+		if(scopes.size() && (scopes.back().type==scope::functionkeyword || scopes.back().type==scope::methodkeyword) && !scopes.back().passed) {
 			scopes.back().passed=true;
 			redirects.push_back(list);
 			list=scopes.back().data.GetValue<std::vector<Instruction>*>();
@@ -668,18 +668,19 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return true;
 		}
-		else if(tree->Text=="function") {
+		else if(tree->Text=="function" || tree->Text=="method") {
 			ASSERT(tree->Leaves.GetSize()>=2, "function keyword requires at least name and return type");
 			ASSERT(tree->Leaves[0].Type==ASTNode::Identifier, "Function names should be represented as identfiers");
-			ASSERT(tree->Leaves[1].Type==ASTNode::Identifier ||
-				   (tree->Leaves[1].Type==ASTNode::Keyword && tree->Leaves[1].Text=="nothing"), 
-				   "Function return type should either be a keyword nothing or an identifier representing a type"
+			ASSERT(
+				(tree->Leaves[1].Type==ASTNode::Identifier && tree->Text!="method") ||
+				(tree->Leaves[1].Type==ASTNode::Keyword && tree->Leaves[1].Text=="nothing"), 
+				"Function return type should either be a keyword nothing or an identifier representing a type"
 			);
 
 			auto instlist=new std::vector<Instruction>();
 			VirtualMachine::Get().References.Register(instlist);
 			Data instlistd{instructionlisttype, instlist};
-			scopes.push_back({scope::functionkeyword,instlistd});
+			scopes.push_back({tree->Text=="method" ? scope::methodkeyword : scope::functionkeyword,instlistd});
 			
 			Instruction inst;
 			Value v;
@@ -687,8 +688,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			inst.Type=InstructionType::DeclOverload;
 			inst.Name.Name=tree->Leaves[0].Text;
 			
-			//is keyword
-			v.SetLiteral(Types::Bool(), false);
+			//is method
+			v.SetLiteral(Types::Bool(), tree->Text=="method");
 			inst.Parameters.push_back(v);
 			
 			//return type
@@ -760,6 +761,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				}
 					
 				case scope::functionkeyword:
+				case scope::methodkeyword:
 					list=redirects.back();
 					redirects.pop_back();
 					
@@ -778,6 +780,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		return false;
 	}
 	
-	const std::string ASTCompiler::scope::keywordnames[] = {"none", "if", "while", "function"};
+	const std::string ASTCompiler::scope::keywordnames[] = {"none", "if", "while", "function", "method"};
 	
 } } }
