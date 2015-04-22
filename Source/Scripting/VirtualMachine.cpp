@@ -389,11 +389,7 @@ namespace Gorgon {
 		}
 		
 		void VirtualMachine::Start(InputProvider &input) {
-			Activate();
-			scopes.Add(new Scope(input, input.GetName()));
-
-			toplevel=scopes.Last()->Instantiate();
-			scopeinstances.push_back(toplevel);
+			Begin(input);
 
 			Run();
 		}
@@ -403,7 +399,15 @@ namespace Gorgon {
 			scopes.Add(new Scope(input, input.GetName()));
 
 			toplevel=scopes.Last()->Instantiate();
-			scopeinstances.push_back(toplevel);
+			activatescopeinstance(toplevel);
+		}
+		
+		void VirtualMachine::activatescopeinstance(std::shared_ptr<ScopeInstance> instance) {
+			tempbases.push_back(tempbase);
+			tempbase+=highesttemp;
+			highesttemp=0;
+			
+			scopeinstances.push_back(instance);
 		}
 
 		void VirtualMachine::Run() {
@@ -418,7 +422,7 @@ namespace Gorgon {
 		void VirtualMachine::Run(std::shared_ptr<ScopeInstance> scope) {
 			int target=scopeinstances.size();
 
-			scopeinstances.push_back(scope);
+			activatescopeinstance(scope);
 
 			Run(target);
 		}
@@ -434,6 +438,8 @@ namespace Gorgon {
 						returnvalue=scopeinstances.back()->ReturnValue;
 					}
 					scopeinstances.pop_back();
+					tempbase=tempbases.back();
+					tempbases.pop_back();
 					returnimmediately=false;
 					continue;
 				}
@@ -455,6 +461,8 @@ namespace Gorgon {
 					// execution scope is done, cull it
 					if(inst==nullptr) {
 						scopeinstances.pop_back();
+						tempbase=tempbases.back();
+						tempbases.pop_back();
 					} 
 					else {
 						execute(inst);
@@ -569,7 +577,7 @@ namespace Gorgon {
 					}
 					
 				case ValueType::Temp: {
-					auto &data=temporaries[val.Result];
+					auto &data=temporaries[val.Result+tempbase];
 					
 					if(!data.IsValid()) {
 						throw std::runtime_error("Invalid temporary.");
@@ -1003,7 +1011,7 @@ namespace Gorgon {
 					//if data is literal and variant is constant, then a copy of
 					//the value can be passed
 					if(variant->IsConstant() && (pin->Type==ValueType::Literal || 
-						(pin->Type==ValueType::Temp && !temporaries[pin->Result].IsReference())))
+						(pin->Type==ValueType::Temp && !temporaries[pin->Result+tempbase].IsReference())))
 						param=getvalue(*pin);
 					else
 						param=getvalue(*pin, true);
@@ -1075,7 +1083,7 @@ namespace Gorgon {
 					else {
 						Data param;
 						if(pdef.IsReference()) {
-							if((pin->Type==ValueType::Literal || (pin->Type==ValueType::Temp && !temporaries[pin->Result].IsReference())))
+							if((pin->Type==ValueType::Literal || (pin->Type==ValueType::Temp && !temporaries[pin->Result+tempbase].IsReference())))
 								param=getvalue(*pin);
 							else
 								param=getvalue(*pin, true);
@@ -1198,7 +1206,9 @@ namespace Gorgon {
 				
 				Data data;
 				//search in the type of the first parameter, this ensures the data is a reference
-				if(inst->Parameters[0].Type==ValueType::Literal) {
+				if(inst->Parameters[0].Type==ValueType::Literal || 
+					(inst->Parameters[0].Type==ValueType::Temp && !temporaries[inst->Store+tempbase].IsReference())
+				) {
 					data=getvalue(inst->Parameters[0]);
 				}
 				else {
@@ -1227,7 +1237,10 @@ namespace Gorgon {
 					Data ret=data.GetValue<const Type*>()->Construct(params);
 					
 					if(inst->Store) {
-						temporaries[inst->Store]=ret;
+						temporaries[inst->Store+tempbase]=ret;
+						
+						if(highesttemp<inst->Store)
+							highesttemp=inst->Store;
 					}
 					//else do not store the created object, maybe a warning is necessary
 					
@@ -1262,11 +1275,14 @@ namespace Gorgon {
 							}
 							//else ok
 
-							temporaries[inst->Store]=ret;
+							temporaries[inst->Store+tempbase]=ret;
+							if(highesttemp<inst->Store)
+								highesttemp=inst->Store;
+							
 							
 							//if the source is constant, then the result should be a constant too
 							if(data.IsConstant() || !data.IsReference())
-								temporaries[inst->Store].MakeConstant();
+								temporaries[inst->Store+tempbase].MakeConstant();
 						}
 					}
 					//data mutate
@@ -1342,7 +1358,10 @@ namespace Gorgon {
 					}
 
 					//store the result
-					temporaries[inst->Store]=ret;
+					temporaries[inst->Store+tempbase]=ret;
+						
+					if(highesttemp<inst->Store)
+						highesttemp=inst->Store;
 				} 
 				else {
 					//requested but function does not return a value
@@ -1374,7 +1393,11 @@ namespace Gorgon {
 				functioncall(inst, true, true);
 			}
 			else if(inst->Type==InstructionType::RemoveTemp) {
-				temporaries[inst->Store]=Data::Invalid();
+				temporaries[inst->Store+tempbase]=Data::Invalid();
+				
+				if(highesttemp==inst->Store) {
+					highesttemp--;
+				}
 			}
 			
 			//jumps

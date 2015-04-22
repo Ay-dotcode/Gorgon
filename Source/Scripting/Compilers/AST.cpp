@@ -454,7 +454,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 		
 		//release used temporaries
-		for(int i=1;i<tempind;i++) {
+		for(int i=tempind-1;i>0;i--) {
 			Instruction inst;
 			inst.Type=InstructionType::RemoveTemp;
 			inst.Store=i;

@@ -847,6 +847,8 @@ namespace Compilers {
 					root->Type=ASTNode::MethodCall;
 				}
 				else if(token.repr=="function" || token.repr=="method") {
+					bool ismethod=token.repr=="method";
+					
 					//parse name
 					token=consumenexttoken(input, index);
 					if(token!=Token::Identifier) {
@@ -903,9 +905,14 @@ namespace Compilers {
 					
 					//parse return
 					if(token==Token::EoS) {
-						root->Leaves.Insert(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)), 1);
+						if(ismethod) {
+							root->Leaves.Insert(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)), 1);
+						}
+						else {
+							root->Leaves.Insert(NewNode(ASTNode::Identifier, Token("Integral:Variant", Token::Identifier, token.start)), 1);
+						}
 					}
-					else if(token.repr=="method") {
+					else if(ismethod) {
 						throw ParseError{ExceptionType::UnexpectedToken, "Expected end of line, found: "+token.repr, index};
 					}
 					else {

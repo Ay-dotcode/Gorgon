@@ -216,6 +216,7 @@ namespace Gorgon {
 			Data getvalue(const Value &val, bool reference=false);
 			void functioncall(const Instruction *inst, bool memberonly, bool method);
 			std::thread::id getthread() const { throw "this should never be called"; }
+			void activatescopeinstance(std::shared_ptr<ScopeInstance> instance);
 
 			/// All libraries that are available globally. 
 			Containers::Hashmap<std::string, const Library, &Library::GetName, std::map, String::CaseInsensitiveLess> libraries;
@@ -241,6 +242,10 @@ namespace Gorgon {
 			Containers::Collection<Scope>				scopes;
 
 			Library runtime;
+			
+			int highesttemp=0;
+			int tempbase = -1;
+			std::vector<int> tempbases;
 
 			//-unordered map
 			//std::map<std::string, Variable, String::CaseInsensitiveLess>	globalvariables;
