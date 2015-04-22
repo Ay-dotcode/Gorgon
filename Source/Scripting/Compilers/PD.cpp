@@ -11,6 +11,7 @@
 #include "AST.h"
 #include "Language.h"
 #include "Utils.h"
+#include "../Runtime.h"
 
 #ifndef _NDEBUG
 #	include "../../Console.h"
@@ -22,7 +23,7 @@
 ///@cond INTERNAL
 
 namespace Gorgon { namespace Scripting { 
-	Type *ParameterType();
+	Type *ParameterTemplateType();
 
 namespace Compilers {
 	bool showsvg__=false;
@@ -851,18 +852,41 @@ namespace Compilers {
 					if(token==Token::LeftP) {
 						while( (token=consumenexttoken(input, index)) != Token::RightP ) {
 							if(token!=Token::Identifier) {
-								throw ParseError{ExceptionType::UnexpectedToken, "Expected parameter identifier"+token.repr, index};
+								throw ParseError{ExceptionType::UnexpectedToken, "Expected parameter identifier, found: "+token.repr, index};
 							}
-							Parameter p(token.repr, "", Types::Variant());
-
-							auto node=new ASTNode(ASTNode::Literal);
-							node->LiteralValue={ParameterType(), p};
-							root->Leaves.Push(*node);
+							
+							ParameterTemplate p;
+							p.name=token.repr;
+							p.type.SetIdentifier("Integral:Variant");
 
 							token=peeknexttoken(input, index);
 							if(token==Token::Seperator) {
 								consumenexttoken(input, index);
 							}
+							else if(token==Token::Identifier) {
+								if(String::ToLower(token.repr)!="as") {
+									throw ParseError{ExceptionType::UnexpectedToken, 
+										"Expected comma, as statement, or right parentheses, found: "+token.repr, index};
+								}
+								
+								consumenexttoken(input, index);
+								token=consumenexttoken(input, index);
+								
+								if(token!=Token::Identifier) {
+									throw ParseError{ExceptionType::UnexpectedToken, 
+										"Expected type specifier, found: "+token.repr, index};
+								}
+								
+								p.type.SetIdentifier(token.repr);
+							}
+							else if(token!=Token::RightP) {
+								throw ParseError{ExceptionType::UnexpectedToken, 
+									"Expected comma, as statement, or right parentheses, found: "+token.repr, index};
+							}
+							
+							auto node=new ASTNode(ASTNode::Literal);
+							node->LiteralValue={ParameterTemplateType(), p};
+							root->Leaves.Push(*node);
 						}
 						
 						token=consumenexttoken(input, index);

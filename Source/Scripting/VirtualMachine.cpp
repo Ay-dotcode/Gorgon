@@ -13,6 +13,7 @@ namespace Gorgon {
 		Type *TypeType();
 		Type *FunctionType();
 		Type *ParameterType();
+		Type *ParameterTemplateType();
 
 		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
 		Libraries(libraries), output(&out), input(&in), 
@@ -1030,7 +1031,7 @@ namespace Gorgon {
 			}
 			//else nothing else is needed
 			
-			int ind=1;
+			int ind=0;
 			for(const auto &pdef : variant->Parameters) {
 				if(pin!=incomingparams.end()) {
 					if(pdef.IsVariable()) {
@@ -1427,11 +1428,24 @@ namespace Gorgon {
 				std::vector<Parameter> paramlist;
 				for(unsigned i=3; i<inst->Parameters.size(); i++) {
 					ASSERT(
-						inst->Parameters[i].Type==ValueType::Literal && inst->Parameters[i].Literal.GetType()==ParameterType(),
+						inst->Parameters[i].Type==ValueType::Literal && inst->Parameters[i].Literal.GetType()==ParameterTemplateType(),
 						"Overload parameters should be defined as Parameter literals."
 					);
 
-					paramlist.push_back(inst->Parameters[i].Literal.GetValue<Parameter>());
+					ParameterTemplate ptemp=inst->Parameters[i].Literal.GetValue<ParameterTemplate>();
+					Data type=getvalue(ptemp.type);
+					if(type.GetType()!=TypeType()) {
+						throw CastException(type.GetType().GetName(), "Type", "Function parameter types should be type identifiers");
+					}
+
+					const Type *ptype;
+					if(type.IsConstant())
+						ptype=type.GetValue<const Type*>();
+					else 
+						ptype=type.GetValue<Type*>();
+					
+					//...other info
+					paramlist.push_back({ptemp.name, ptemp.help, ptype});
 				}
 				
 				ASSERT(

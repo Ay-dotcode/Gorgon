@@ -96,6 +96,11 @@ namespace Gorgon { namespace Scripting {
 				Name=name;
 			}
 			
+			void SetIdentifier(const std::string &name) {
+				Type=ValueType::Identifier;
+				Name=name;
+			}
+			
 			void SetConstant(const std::string &name) {
 				Type=ValueType::Constant;
 				Name=name;
@@ -139,5 +144,4 @@ namespace Gorgon { namespace Scripting {
 				int JumpOffset=0;
 			};
 		};
-		
 } }

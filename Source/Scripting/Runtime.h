@@ -9,6 +9,7 @@
 #include "Reflection.h"
 #include "Data.h"
 #include "Input.h"
+#include "Instruction.h"
 
 namespace Gorgon {
 	
@@ -175,6 +176,13 @@ namespace Gorgon {
 			
 		private:
 			std::string name;
+		};
+
+		/// This class holds information about a parameter without resolving constructs
+		struct ParameterTemplate {
+			std::string name, help, defaultvalue, options;
+			Value type;
+			bool optional, reference, constant, variable;
 		};
 		
 	}

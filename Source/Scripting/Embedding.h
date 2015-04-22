@@ -32,6 +32,9 @@ namespace Gorgon { namespace Scripting {
 		return "";
 	}
 	
+	template<class T_>
+	T_ ParseThrow(const std::string &) { throw std::runtime_error("This type cannot be parsed."); }
+	
 	/**
 		* This class allows embedded types to become scripting types that are passed around
 		* as values. This class requires T_ to be copy constructable.
@@ -63,9 +66,6 @@ namespace Gorgon { namespace Scripting {
 			return Data(this, Parse_(str));
 		}
 	};
-	
-	template<class T_>
-	T_ ParseThrow(const std::string &) { throw std::runtime_error("This type cannot be parsed."); }
 	
 	/**
 		* This class allows embedded types to become scripting types that are passed around
