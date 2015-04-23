@@ -151,6 +151,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			Data data;
 			std::vector<int> indices;
 			std::vector<int> indices2;
+
+			int state=0;
 		};
 		
 		std::vector<scope> scopes;

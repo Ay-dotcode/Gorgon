@@ -681,6 +681,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			VirtualMachine::Get().References.Register(instlist);
 			Data instlistd{instructionlisttype, instlist};
 			scopes.push_back({tree->Text=="method" ? scope::methodkeyword : scope::functionkeyword,instlistd});
+			scopes.back().indices.push_back(list->size());
+			scopes.back().state=tree->Leaves[1].Type==ASTNode::Identifier;
 			
 			Instruction inst;
 			Value v;
@@ -716,6 +718,29 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			waitingcount++;
 			
 			return true;
+		}
+		else if(tree->Text=="return" && scopes.size()) {
+			for(unsigned i=scopes.size()-1; i>=0; i--) {
+				if(scopes[i].type==scope::functionkeyword) {
+					if(scopes[i].state>0) {
+						if(tree->Leaves.GetSize()==0) {
+							throw FlowException("The function "+redirects.back()->at(scopes[i].indices[0]).Name.Name+" should return a value.");
+						}
+						else {
+							scopes[i].state=2;
+						}
+					}
+					else {
+						if(tree->Leaves.GetSize()>0) {
+							throw FlowException("The function "+redirects.back()->at(scopes[i].indices[0]).Name.Name+" is marked as returns nothing.");
+						}
+					}
+
+					break;
+				}
+			}
+
+			return false;
 		}
 		else if(tree->Text=="end") {
 			if(scopes.size()==0) {
@@ -764,6 +789,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				case scope::methodkeyword:
 					list=redirects.back();
 					redirects.pop_back();
+
+					if(scopes.back().state==1) {
+						throw FlowException("The function "+list->at(scopes.back().indices[0]).Name.Name+" should return a value.");
+					}
 					
 					break;
 					

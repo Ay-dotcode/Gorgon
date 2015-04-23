@@ -902,6 +902,9 @@ namespace Compilers {
 						
 						token=consumenexttoken(input, index);
 					}
+					else {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected `(` found: "+token.repr, index}; 
+					}
 					
 					//parse return
 					if(token==Token::EoS) {
