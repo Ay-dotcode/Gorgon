@@ -10,7 +10,7 @@ namespace Gorgon {
 		Library Reflection;
 		
 		namespace {
-			void Echo(std::vector<std::string> datav) {
+			void Print(std::vector<std::string> datav) {
 				auto &out=VirtualMachine::Get().GetOutput();
 				for(auto &data : datav) {
 					out<<data;
@@ -423,11 +423,11 @@ namespace Gorgon {
 			Integrals.AddTypes({ArrayType()});
 			Integrals.AddFunctions(ArrayFunctions());
 			Integrals.AddFunctions({
-				new Function("Echo",
+				new Function("Print",
 					"This function prints the given parameters to the screen.", nullptr,
 					{
 						MapFunction(
-							Echo, nullptr, 
+							Print, nullptr, 
 							{
 								Parameter( "string",
 									"The strings that will be printed.",

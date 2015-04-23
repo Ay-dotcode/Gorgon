@@ -405,6 +405,7 @@ namespace Gorgon {
 		void VirtualMachine::activatescopeinstance(std::shared_ptr<ScopeInstance> instance) {
 			tempbases.push_back(tempbase);
 			tempbase+=highesttemp;
+			//std::cout<<"! tempbase="<<tempbase<<std::endl;
 			highesttemp=0;
 			
 			scopeinstances.push_back(instance);
@@ -439,6 +440,7 @@ namespace Gorgon {
 					}
 					scopeinstances.pop_back();
 					tempbase=tempbases.back();
+					//std::cout<<"! tempbase="<<tempbase<<std::endl;
 					tempbases.pop_back();
 					returnimmediately=false;
 					continue;
@@ -462,6 +464,7 @@ namespace Gorgon {
 					if(inst==nullptr) {
 						scopeinstances.pop_back();
 						tempbase=tempbases.back();
+						//std::cout<<"! tempbase="<<tempbase<<std::endl;
 						tempbases.pop_back();
 					} 
 					else {
@@ -578,6 +581,8 @@ namespace Gorgon {
 					
 				case ValueType::Temp: {
 					auto &data=temporaries[val.Result+tempbase];
+					//std::cout<<"F> "<<val.Result+tempbase<<" = "<<data<<std::endl;
+
 					
 					if(!data.IsValid()) {
 						throw std::runtime_error("Invalid temporary.");
@@ -1207,7 +1212,7 @@ namespace Gorgon {
 				Data data;
 				//search in the type of the first parameter, this ensures the data is a reference
 				if(inst->Parameters[0].Type==ValueType::Literal || 
-					(inst->Parameters[0].Type==ValueType::Temp && !temporaries[inst->Store+tempbase].IsReference())
+					(inst->Parameters[0].Type==ValueType::Temp && !temporaries[inst->Parameters[0].Result+tempbase].IsReference())
 				) {
 					data=getvalue(inst->Parameters[0]);
 				}
@@ -1238,6 +1243,8 @@ namespace Gorgon {
 					
 					if(inst->Store) {
 						temporaries[inst->Store+tempbase]=ret;
+						//std::cout<<"S> "<<inst->Store+tempbase<<std::endl;
+
 						
 						if(highesttemp<inst->Store)
 							highesttemp=inst->Store;
@@ -1276,6 +1283,7 @@ namespace Gorgon {
 							//else ok
 
 							temporaries[inst->Store+tempbase]=ret;
+							//std::cout<<"S> "<<inst->Store+tempbase<<std::endl;
 							if(highesttemp<inst->Store)
 								highesttemp=inst->Store;
 							
@@ -1359,6 +1367,8 @@ namespace Gorgon {
 
 					//store the result
 					temporaries[inst->Store+tempbase]=ret;
+					//std::cout<<"S> "<<inst->Store+tempbase<<std::endl;
+
 						
 					if(highesttemp<inst->Store)
 						highesttemp=inst->Store;
@@ -1371,6 +1381,7 @@ namespace Gorgon {
 		}
 		
 		void VirtualMachine::execute(const Instruction* inst) {
+			//std::cout<<CurrentScopeInstance().GetName()<<"> "<<Compilers::Disassemble(inst)<<std::endl;
 			// assignment ...
 			if(inst->Type==InstructionType::Assignment) {
 				if(inst->Name.Type!=ValueType::Variable && inst->Name.Type!=ValueType::Identifier)
@@ -1394,6 +1405,7 @@ namespace Gorgon {
 			}
 			else if(inst->Type==InstructionType::RemoveTemp) {
 				temporaries[inst->Store+tempbase]=Data::Invalid();
+				//std::cout<<"X> "<<inst->Store+tempbase<<std::endl;
 				
 				if(highesttemp==inst->Store) {
 					highesttemp--;
