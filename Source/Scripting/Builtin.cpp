@@ -17,8 +17,12 @@ namespace Gorgon {
 				}
 				out<<std::endl;
 			}
-			
+
 			void Return1(Data data) {
+				VirtualMachine::Get().Return(data);
+			}
+
+			void Return1c(const Data &data) {
 				VirtualMachine::Get().Return(data);
 			}
 			
@@ -440,7 +444,7 @@ namespace Gorgon {
 				)
 			});
 			
-			Keywords={"Keywords", "Standard keywords like if and for.",
+			Keywords={"Keywords", "Function like keywords.",
 				TypeList {},
 				FunctionList {
 					new Function("return",
@@ -449,9 +453,7 @@ namespace Gorgon {
 						"the function or execution", nullptr,
 						{
 							MapFunction(
-								[](Data data) {
-									VirtualMachine::Get().Return(data);
-								}, nullptr,
+								Return1, nullptr,
 								{
 									Parameter("Value",
 										"This value is used as the return value of the function or execution",
@@ -460,9 +462,16 @@ namespace Gorgon {
 								}
 							),
 							MapFunction(
-								[]() {
-									VirtualMachine::Get().Return();
-								}, nullptr,
+								Return1c, nullptr,
+								{
+									Parameter("Value",
+										"This value is used as the return value of the function or execution",
+										Variant, ConstTag
+									)
+								}
+							),
+							MapFunction(
+								Return0, nullptr,
 								{ }
 							)
 						},

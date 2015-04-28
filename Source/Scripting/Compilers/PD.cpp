@@ -928,12 +928,33 @@ namespace Compilers {
 						if(token!=Token::Identifier) {
 							throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
 						}
-						
+
+
+						bool constant=false, ref=false;
+						if(String::ToLower(token.repr)=="const") {
+							constant=true;
+
+							token=consumenexttoken(input, index);
+							if(token!=Token::Identifier) {
+								throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
+							}
+						}
+
+						if(String::ToLower(token.repr)=="ref") {
+							ref=true;
+
+							token=consumenexttoken(input, index);
+							if(token!=Token::Identifier) {
+								throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
+							}
+						}
+
 						if(String::ToLower(token.repr)=="nothing") {
 							token.repr="nothing"; //make sure lowercase
 							root->Leaves.Insert(NewNode(ASTNode::Keyword, token), 1);
 						}
 						else {
+							token.repr=String::From(constant)+String::From(ref)+token.repr;
 							root->Leaves.Insert(NewNode(ASTNode::Identifier, token), 1);
 						}
 					}

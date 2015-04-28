@@ -1445,6 +1445,7 @@ namespace Gorgon {
 				}
 				
 				const Type *rettype=nullptr;
+				bool retconst=false, retref=false;
 				if(inst->Parameters[1].Type==ValueType::Literal) { //if literal
 					//should be empty string
 					ASSERT(
@@ -1459,7 +1460,12 @@ namespace Gorgon {
 						"Return type should be an identifier"
 					);
 					
-					auto ret=getvalue(inst->Parameters[1]);
+
+					auto v=inst->Parameters[1];
+					retconst=v.Name[0]=='1';
+					retref=v.Name[1]=='1';
+					v.Name=v.Name.substr(2);
+					auto ret=getvalue(v);
 					
 					if(ret.GetType()!=TypeType()) {
 						throw CastException(ret.GetType().GetName(), "Type", "Cannot convert return type to a type");
@@ -1502,7 +1508,7 @@ namespace Gorgon {
 					"Instruction list should be saved as reference typed std::vector<Instruction> literal."
 				);
 				auto overld=new RuntimeOverload(CurrentScopeInstance().GetScope(), rettype,
-											paramlist, false, false, false, false, false, false, false);
+											paramlist, false, false, false, false, retref, retconst, false);
 				
 				overld->SaveInstructions(*inst->Parameters[2].Literal.ReferenceValue<std::vector<Instruction>*>());
 				
