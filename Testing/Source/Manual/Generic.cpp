@@ -120,6 +120,10 @@ void testset(char &c) {
 	c='5';
 }
 
+void dumprefs() {
+	VirtualMachine::Get().References.list();
+}
+
 namespace Gorgon { namespace Geometry {
 	extern Scripting::Library LibGeometry;
 	void init_scripting();
@@ -234,6 +238,15 @@ int main() {
 					}
 				), 
 			}
+		),
+
+		new Function("dumprefs", "", nullptr,
+			{
+				MapFunction(
+					dumprefs, nullptr, 
+					{ }
+				), 
+			}, KeywordTag
 		),
 	});
 	

@@ -65,6 +65,23 @@ namespace Gorgon { namespace Scripting {
 		virtual Data Parse(const std::string &str) const override {
 			return Data(this, Parse_(str));
 		}
+		
+	protected:
+		virtual void deleteobject(const Data &obj) const override {
+			ASSERT(obj.IsReference(), "Deleting a non reference");
+				
+			T_ *ptr;
+			if(obj.IsConstant()) {
+				//force to non-const
+				ptr=const_cast<T_*>(obj.ReferenceValue<const T_*>());
+			}
+			else {
+				ptr=obj.ReferenceValue<T_*>();
+			}
+			if(ptr!=nullptr) {
+				delete ptr;
+			}
+		}
 	};
 	
 	/**

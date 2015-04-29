@@ -114,6 +114,9 @@ namespace Gorgon {
 			/// Makes this data a constant
 			void MakeConstant();
 			
+			/// Attempts to delete the data contained in this data
+			void Delete() const;
+			
 			/// Returns the type of the data
 			const Type &GetType() const {
 				ASSERT(type, "Type is not set", 1, 2);

@@ -1083,8 +1083,6 @@ namespace Gorgon {
 
 			/// Deletes the object
 			void Delete(const Data &obj) const {
-				ASSERT(referencetype, "Cannot delete non-reference type objects. They are automatically destroyed.", 1, 4);
-
 				deleteobject(obj);
 			}
 			
@@ -1131,7 +1129,7 @@ namespace Gorgon {
 		protected:
 
 			/// This function should delete the given object.
-			virtual void deleteobject(const Data &) const { }
+			virtual void deleteobject(const Data &) const=0;
 
 
 		private:

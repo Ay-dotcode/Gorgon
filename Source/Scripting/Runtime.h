@@ -68,7 +68,7 @@ namespace Gorgon {
 				int &v=f->second;
 				v--;
 				if(v<=0) {
-					data.GetType().Delete(data);
+					data.Delete();
 					references.erase(f);
 				}
 			}
@@ -109,7 +109,7 @@ namespace Gorgon {
 			}
 			
 			/// Never use without a proper reason. Gets rid of the data without destroying its content. It does
-			/// decrease reference count. However, if it hits 0 it will 
+			/// decrease reference count. However, if it hits 0 it will not destroy its count.
 			void GetRidOf(Data &data) {
 				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
 				"offender: "+data.GetType().GetName(), 1, 4);
@@ -122,6 +122,12 @@ namespace Gorgon {
 				v++;
 				data=Data::Invalid();
 				v--;
+			}
+			
+			void list() {
+				for(auto it : references) {
+					std::cout<<it.first<<": "<<it.second<<std::endl;
+				}
 			}
 
 		private:

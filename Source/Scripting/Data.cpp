@@ -15,7 +15,7 @@ namespace Gorgon { namespace Scripting {
 			isconstant=other.isconstant;
 		
 		
-		if(type && type->IsReferenceType() && data.Pointer() && VirtualMachine::Exists()) {
+		if(type && IsReference() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Increase(*this);
 		}
 	}
@@ -46,7 +46,7 @@ namespace Gorgon { namespace Scripting {
 		check();
 		ASSERT((type!=nullptr), "Data type cannot be nullptr", 1, 2);
 		
-		if(type->IsReferenceType() && data.Pointer() && VirtualMachine::Exists()) {
+		if(IsReference() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Increase(*this);
 		}
 	}
@@ -117,8 +117,20 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Data::~Data() {
-		if(type && type->IsReferenceType() && data.IsSet() && data.Pointer() && VirtualMachine::Exists()) {
+		if(type && IsReference() && data.IsSet() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Decrease(*this);
+		}
+	}
+	
+	void Data::Delete() const {
+		if(type && type->IsReferenceType() && data.IsSet() && data.Pointer()) {
+			type->Delete(*this);
+		}
+		else if(data.IsSet() && data.Pointer() && IsReference()) {
+			type->Delete(*this);
+		}
+		else {
+			throw CastException("Value type", "Reference", "Value typed objects cannot be deleted explicitly.");
 		}
 	}
 	
@@ -127,14 +139,30 @@ namespace Gorgon { namespace Scripting {
 		
 		if(IsReference()) return *this;
 		
-		void *r=data.GetRaw();
-		void **p = new void*(r);
-		
+		void *r=data.Disown();
+		VirtualMachine::Get().References.Register(r);
+
 		if(isconstant) {
-			return {type, {p, type->TypeInterface.ConstRefType}, true, true};
+			data.Set<void*>(r, &type->TypeInterface.ConstPtrType);
 		}
 		else {
-			return {type, {p, type->TypeInterface.PtrType}, true, false};
+			data.Set<void*>(r, &type->TypeInterface.PtrType);
+		}
+			
+		VirtualMachine::Get().References.Increase(*this);
+		isreference=true;
+		
+		Any a;
+		
+		if(isconstant) {
+			a.Set<void*>(r, &type->TypeInterface.ConstPtrType);
+			
+			return {type, a, true, true};
+		}
+		else {
+			a.Set<void*>(r, &type->TypeInterface.PtrType);
+			
+			return {type, a, true, false};
 		}
 	}
 	

@@ -206,6 +206,18 @@ namespace Gorgon {
 			content=type->Clone(data);
 		}
 		
+		/// Unsafe! This function sets the data contained within any with regular means. However, the
+		/// type info is user supplied. Its primary aim is to be able to set pointer types from
+		/// from void pointers. This can also be used as type casting.
+		///@warning this function is unsafe
+		template<class T_>
+		void Set(const T_ &data, TMP::RTTS *type) {
+			Clear();
+			
+			this->type=type->Duplicate();
+			content=type->Clone(&data);
+		}
+		
 		/// Unsafe! This function sets the raw data contained within any, while modifying its
 		/// type data. type is duplicated, whereas data ownership is assumed.
 		///@warning this function is unsafe
@@ -214,6 +226,18 @@ namespace Gorgon {
 			
 			this->type=type.Duplicate();
 			content=data;
+		}
+		
+		/// Unsafe! Disowns the data contained in this any. The data is not freed. This function
+		/// returns the raw pointer that is disowned
+		void *Disown() {
+			auto ret=content;
+			
+			delete type;
+			type=nullptr;
+			content=nullptr;
+			
+			return ret;
 		}
 		
 		/// Unsafe! This function modifies type information of the data content. type is duplicated
