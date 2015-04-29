@@ -89,7 +89,7 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Data &Data::operator =(Data other) {
-		if(type && type->IsReferenceType() && data.IsSet() && data.Pointer()) {
+		if(type && IsReference() && data.IsSet() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Decrease(*this);
 		}
 		
@@ -165,6 +165,25 @@ namespace Gorgon { namespace Scripting {
 			return {type, a, true, false};
 		}
 	}
+	
+	Data Data::DeReference() {
+		ASSERT(type, "Type is not set", 1, 2);
+		
+		if(!isreference) return *this;
+		if(type->IsReferenceType()) return *this;
+		
+		void *p=data.UnsafeGet<void *>();
+		Any a;
+		if(isconstant) {
+			a.SetRaw(&type->TypeInterface.ConstType, p);
+		}
+		else {
+			a.SetRaw(&type->TypeInterface.NormalType, p);
+		}
+		
+		return {type, a, false, false};
+	}
+
 	
 	void Data::MakeConstant() {
 		ASSERT(type, "Type is not set", 1, 2);

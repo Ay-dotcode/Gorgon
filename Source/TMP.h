@@ -184,9 +184,11 @@ namespace Gorgon {
 			///Clones the given object
 			virtual void *Clone(const void* const obj) const = 0;
 			
+			///Clones the given object
+			virtual void Clone(void* const dest, const void* const obj) const = 0;
+			
 			///Deletes the given object
 			virtual void  Delete(void* obj) const = 0;
-			
 			
 			///Destructor
 			virtual ~RTTS() { }
@@ -210,6 +212,11 @@ namespace Gorgon {
 				return n;
 			}
 			
+			virtual void Clone(void* const dest, const void* const obj) const override {
+				*reinterpret_cast<StorageType>(dest) = *reinterpret_cast<CloneType>(obj);
+			}
+			
+			
 			virtual void Delete(void *obj) const override {
 				delete static_cast<StorageType>(obj);
 			}
@@ -231,6 +238,33 @@ namespace Gorgon {
 			virtual bool IsConstant() const override { return std::is_const<T_>::value; }
 		};
 		
+		template<class T_> 
+		typename std::enable_if<std::is_copy_constructible<T_>::value, void*>::type clonetype_wnull(const void* const obj) {
+			using NewType = typename std::remove_const<typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type>::type;
+			using CloneType = const typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type* const;
+			
+			auto n = new NewType(*reinterpret_cast<CloneType>(obj));
+			
+			return n;
+		}
+		template<class T_> 
+		typename std::enable_if<!std::is_copy_constructible<T_>::value, void*>::type clonetype_wnull(const void* const obj) {
+			return nullptr;
+		}
+		
+		template<class T_> 
+		typename std::enable_if<std::is_copy_assignable<T_>::value, void>::type copytype_wnull(void* const dest, const void* const obj) {
+			using NewType = typename std::remove_const<typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type>::type;
+			using CloneType = const typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type* const;
+			using StorageType = typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type*;
+			
+			*reinterpret_cast<StorageType>(dest) = *reinterpret_cast<CloneType>(obj);
+		}
+		template<class T_> 
+		typename std::enable_if<!std::is_copy_assignable<T_>::value, void>::type copytype_wnull(void* const dest, const void* const obj) {
+			
+		}
+		
 		///Runtime Type. This class implements both RTTS and RTTI
 		template<class T_>
 		class AbstractRTT : public RTTS {
@@ -242,9 +276,13 @@ namespace Gorgon {
 				return new AbstractRTT<T_>();
 			}
 			
-			virtual void *Clone(const void* const obj) const override {
-				return nullptr;
+			virtual void* Clone(const void* const obj) const override {
+				return clonetype_wnull<T_>(obj);
 			}
+			
+			virtual void Clone(void* const dest, const void* const obj) const override {
+				copytype_wnull<T_>(dest, obj);
+			}			
 			
 			virtual void Delete(void *obj) const override {
 				delete static_cast<StorageType>(obj);
@@ -281,6 +319,10 @@ namespace Gorgon {
 			
 			virtual void *Clone(const void* const obj) const override {
 				return nullptr;
+			}
+			
+			virtual void Clone(void* const dest, const void* const obj) const override {
+				
 			}
 			
 			virtual void Delete(void *obj) const override {

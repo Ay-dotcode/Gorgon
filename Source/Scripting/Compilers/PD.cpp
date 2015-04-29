@@ -764,7 +764,8 @@ namespace Compilers {
 	}
 	
 	static const std::set<std::string, String::CaseInsensitiveLess> internalkeywords={
-		"if", "for", "elseif", "else", "while", "continue", "break", "end", "static", "function", "method", "call"
+		"if", "for", "elseif", "else", "while", "continue", "break", "end", "static", "function", 
+		"method", "call", "return"
 	};
 	
 
@@ -912,7 +913,7 @@ namespace Compilers {
 							root->Leaves.Insert(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)), 1);
 						}
 						else {
-							root->Leaves.Insert(NewNode(ASTNode::Identifier, Token("Integral:Variant", Token::Identifier, token.start)), 1);
+							root->Leaves.Insert(NewNode(ASTNode::Identifier, Token("00Integral:Variant", Token::Identifier, token.start)), 1);
 						}
 					}
 					else if(ismethod) {

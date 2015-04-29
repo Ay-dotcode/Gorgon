@@ -98,6 +98,8 @@ namespace Gorgon {
 			
 			Data GetReference();
 			
+			Data DeReference();
+			
 			/// Returns if the data is in a valid state
 			bool IsValid() const {
 				return type != nullptr;

@@ -38,6 +38,7 @@ namespace Gorgon {
 			// std::string name;
 		};
 		
+		
 		/// This class defines a virtual environment for scripts to run. It determines
 		/// which additional functions the script can access, working directory, and safety
 		/// level.
@@ -245,7 +246,6 @@ namespace Gorgon {
 			
 			int highesttemp=0;
 			int tempbase = -1;
-			std::vector<int> tempbases;
 
 			//-unordered map
 			//std::map<std::string, Variable, String::CaseInsensitiveLess>	globalvariables;
@@ -259,6 +259,7 @@ namespace Gorgon {
 			std::vector<Data> temporaries;
 			
 			std::shared_ptr<ScopeInstance> toplevel;
+			
 
 			
 			/// List of active VMs. A VM can be active on more than one thread. But it cannot

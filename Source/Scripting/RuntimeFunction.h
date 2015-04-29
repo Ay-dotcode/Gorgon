@@ -59,6 +59,7 @@ namespace Gorgon { namespace Scripting {
 			auto par=this->parameters.begin();
 			if(parent->IsMember()) {
 				//...
+				Utils::NotImplemented("Member functions");
 			}
 			
 			Array *repeater=nullptr;
@@ -100,6 +101,10 @@ namespace Gorgon { namespace Scripting {
 				ASSERT(repeater, "???");
 				
 				repeater->PushData(*pin);
+			}
+			
+			if(returntype) {
+				scope->SetReturn({returntype, returnsconst, returnsref});
 			}
 			
 			vm.Run(scope);

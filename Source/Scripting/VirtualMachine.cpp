@@ -403,9 +403,8 @@ namespace Gorgon {
 		}
 		
 		void VirtualMachine::activatescopeinstance(std::shared_ptr<ScopeInstance> instance) {
-			tempbases.push_back(tempbase);
 			tempbase+=highesttemp;
-			//std::cout<<"! tempbase="<<tempbase<<std::endl;
+			instance->tempbase=tempbase;
 			highesttemp=0;
 			
 			scopeinstances.push_back(instance);
@@ -439,9 +438,7 @@ namespace Gorgon {
 						returnvalue=scopeinstances.back()->ReturnValue;
 					}
 					scopeinstances.pop_back();
-					tempbase=tempbases.back();
-					//std::cout<<"! tempbase="<<tempbase<<std::endl;
-					tempbases.pop_back();
+					tempbase=scopeinstances.size() ? scopeinstances.back()->tempbase : -1;
 					returnimmediately=false;
 					continue;
 				}
@@ -463,9 +460,7 @@ namespace Gorgon {
 					// execution scope is done, cull it
 					if(inst==nullptr) {
 						scopeinstances.pop_back();
-						tempbase=tempbases.back();
-						//std::cout<<"! tempbase="<<tempbase<<std::endl;
-						tempbases.pop_back();
+						tempbase=scopeinstances.size() ? scopeinstances.back()->tempbase : -1;
 					} 
 					else {
 						execute(inst);
@@ -482,6 +477,27 @@ namespace Gorgon {
  
  					throw ex;
  				}
+			}
+		}
+		
+		void fixparameter(Data &param, const Type &pdef, bool ref, const std::string &error) {
+			if(param.GetType()==pdef) {
+				//no worries
+			}
+			//to variant
+			else if(pdef==Types::Variant()) {
+				param={Types::Variant(), param};
+			}
+			//to string
+			else if(pdef==Types::String()) {
+				param={Types::String(), param.GetType().ToString(param)};
+			}
+			//from variant
+			else if(param.GetType()==Types::Variant() && param.GetValue<Data>().GetType()==pdef) {
+				param={pdef, param.GetValue<Data>()};
+			}
+			else {
+				param=param.GetType().MorphTo(pdef, param, !ref);
 			}
 		}
 		
@@ -519,8 +535,20 @@ namespace Gorgon {
 			
 			//if found
 			if(var) {
-				//assign and return 
-				var->Set(data);
+				if(var->IsValid() && var->IsReference() && !var->GetType().IsReferenceType()) {
+					fixparameter(data, var->GetType(), false, "");
+					
+					if(data.IsReference()) {
+						var->Set(data);
+						
+						return;
+					}
+					
+					var->SetReferenceable(data);
+				}
+				else {
+					var->Set(data);
+				}
 				
 				return;
 			}
@@ -739,31 +767,6 @@ namespace Gorgon {
 					}
 					default:
 						Utils::ASSERT_FALSE("Invalid value type.");
-			}
-		}
-		
-		void fixparameter(Data &param, const Type &pdef, bool ref, const std::string &error) {
-			if(param.GetType()==pdef) {
-				//no worries
-			}
-			//to variant
-			else if(pdef==Types::Variant()) {
-				param={Types::Variant(), param};
-			}
-			//to string
-			else if(pdef==Integrals.Types["string"]) {
-				param={Integrals.Types["string"], param.GetType().ToString(param)};
-			}
-// 			//from string 
-// 			else if(param.GetType()==Integrals.Types["string"]) {
-// 				param={pdef, pdef.Parse(param.GetValue<std::string>())};
-// 			}
-			//from variant
-			else if(param.GetType()==Types::Variant() && param.GetValue<Data>().GetType()==pdef) {
-				param={pdef, param.GetValue<Data>()};
-			}
-			else {
-				param=param.GetType().MorphTo(pdef, param, !ref);
 			}
 		}
 		
@@ -1173,6 +1176,40 @@ namespace Gorgon {
 			else {
 				throw SymbolNotFoundException(inst->Name.Name, SymbolType::Function);
 			}
+			
+			//special functions
+			if(functionname=="return") {
+				auto &scope=CurrentScopeInstance();
+				if(scope.returns.type) {
+					if(inst->Parameters.size()==0) {
+						throw CastException("Empty", scope.returns.type->GetName(), 
+											scope.GetName()+" should return a "+scope.returns.type->GetName());
+					}
+					
+					Data data=getvalue(inst->Parameters[0], scope.returns.reference);
+					fixparameter(data, *scope.returns.type, scope.returns.reference, "");
+					if(data.IsConstant() && data.IsReference() && !scope.returns.constant) {
+						throw CastException("Constant", "Non constant", 
+											scope.GetName()+" should return a non-const "+scope.returns.type->GetName()+" reference");
+					}
+					
+					if(scope.returns.constant) {
+						data.MakeConstant();
+					}
+					
+					Return(data);
+				}
+				else {
+					if(inst->Parameters.size()==0) {
+						Return();
+					}
+					else {
+						Return(getvalue(inst->Parameters[0]));
+					}
+				}
+				
+				return;
+			}
 
 			// find requested function
 			if(!memberonly) {
@@ -1387,7 +1424,12 @@ namespace Gorgon {
 				if(inst->Name.Type!=ValueType::Variable && inst->Name.Type!=ValueType::Identifier)
 					throw std::runtime_error("Variables can only be represented with variables.");
 				
-				SetVariable(inst->Name.Name, getvalue(inst->RHS));
+				Data v=getvalue(inst->RHS);
+				if(v.IsReference() && !v.GetType().IsReferenceType() && inst->RHS.Type!=ValueType::Temp) {
+					v=v.DeReference();
+				}
+				
+				SetVariable(inst->Name.Name, v);
 			}
 			
 			//function calls

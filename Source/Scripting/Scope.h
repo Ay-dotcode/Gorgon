@@ -188,9 +188,24 @@ namespace Gorgon { namespace Scripting {
 		std::vector<Line> lines;
 	};
 	
+	/// Represents what could be returned from a scope instance
+	class Return {
+	public:
+		/// Return type, nullptr means anything
+		const Type *type;
+		
+		/// Marked scope can return a constant. If the type is a value type
+		/// and return is not marked as a reference, constant has no real implication
+		bool constant;
+		
+		/// Marks this return as a constant
+		bool reference;
+	};
+	
 	/// This is an instantiation of a scope
 	class ScopeInstance { 
 		friend class Scope;
+		friend class VirtualMachine;
 	public:
 		
 		~ScopeInstance() {
@@ -302,6 +317,8 @@ namespace Gorgon { namespace Scripting {
 
 		Scope &GetScope() const { return scope; }
 		
+		void SetReturn(Return returns) { this->returns=returns; }
+		
 		Data ReturnValue;
 		
 	private:
@@ -310,6 +327,9 @@ namespace Gorgon { namespace Scripting {
 		ScopeInstance(Scope &scope, ScopeInstance *parent) : scope(scope), parent(parent) {
 			name=scope.GetName()+" #"+String::From(scope.nextid++);
 		}
+		
+		Return returns = {nullptr, false, false};
+		int tempbase;
 		
 		//-unordered map
 		std::map<std::string, Variable, String::CaseInsensitiveLess> variables;

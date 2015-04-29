@@ -18,18 +18,6 @@ namespace Gorgon {
 				out<<std::endl;
 			}
 
-			void Return1(Data data) {
-				VirtualMachine::Get().Return(data);
-			}
-
-			void Return1c(const Data &data) {
-				VirtualMachine::Get().Return(data);
-			}
-			
-			void Return0() {
-				VirtualMachine::Get().Return();
-			}
-
 			std::string BoolToString(const bool &val) {
 				return val ? "true" : "false";
 			}
@@ -447,36 +435,6 @@ namespace Gorgon {
 			Keywords={"Keywords", "Function like keywords.",
 				TypeList {},
 				FunctionList {
-					new Function("return",
-						"Returns from the current function or terminates the execution if not in a "
-						"function. If a value is supplied, it is assumed to be the return value of "
-						"the function or execution", nullptr,
-						{
-							MapFunction(
-								Return1, nullptr,
-								{
-									Parameter("Value",
-										"This value is used as the return value of the function or execution",
-										Variant
-									)
-								}
-							),
-							MapFunction(
-								Return1c, nullptr,
-								{
-									Parameter("Value",
-										"This value is used as the return value of the function or execution",
-										Variant, ConstTag
-									)
-								}
-							),
-							MapFunction(
-								Return0, nullptr,
-								{ }
-							)
-						},
-						KeywordTag
-					),
 					new Function("const",
 						"Makes the given variable a constant", nullptr,
 						{
@@ -555,6 +513,34 @@ namespace Gorgon {
 								[](std::string variable) -> const Type* {
 									return &VirtualMachine::Get().GetVariable(variable).GetType();
 								}, TypeType(),
+								{
+									Parameter("Variable",
+										"The variable to determine its type.",
+										String, VariableTag
+									)
+								}, ReturnsConstTag
+							)
+							
+						}
+					),
+					new Function("VarInfo",
+						"This function returns information about a variable.", nullptr, 
+						{
+							MapFunction(
+								[](std::string variable) {
+									auto &vm=VirtualMachine::Get();
+									auto &var=vm.GetVariable(variable);
+									vm.GetOutput()<<"Name : "<<var.GetName()<<std::endl;
+									if(var.IsValid()) {
+										vm.GetOutput()<<"Type : "<<var.GetType().GetName()<<std::endl;
+										vm.GetOutput()<<"Ref  : "<<(var.IsReference() ? "yes" : "no")<<std::endl;
+										vm.GetOutput()<<"Const: "<<(var.IsConstant()  ? "yes" : "no")<<std::endl;
+										vm.GetOutput()<<"Value: "<<var.GetType().ToString(var)<<std::endl;
+									}
+									else {
+										vm.GetOutput()<<"Value: <Invalid>"<<std::endl;
+									}
+								}, nullptr,
 								{
 									Parameter("Variable",
 										"The variable to determine its type.",

@@ -158,20 +158,40 @@ namespace Gorgon {
 			
 			/// Sets the data contained in this variable without changing its type
 			void Set(Any value) {
+				isreference=false;
+				isconstant=false;
+				
 				data.Swap(value);
 			}
 			
 			/// Sets the data contained in this variable
 			void Set(const Data &value) {
-				data=value.GetData();
-				type=value.GetType();
+				Data::operator=(value);
 			}
 			
 			/// Sets the data contained in this variable by modifying its type. Also this function
 			/// resets the tags unless they are re-specified
 			void Set(const Type &type, Any value) {
+				isreference=false;
+				isconstant=false;
+				
 				data.Swap(value);
 				this->type=&type;
+			}
+			
+			/// Sets the data contained in this variable. If it is a reference, the value that is referenced
+			/// is updated
+			void SetReferenceable(const Data &value) {
+				if(isconstant) {
+					throw CastException("Constant", "Non-constant", "While performing assignment");
+				}
+				
+				if(value.IsReference()) {
+					data.TypeServices()->Clone(data.UnsafeGet<void *>(), value.GetData().UnsafeGet<void *>());
+				}
+				else {
+					data.TypeServices()->Clone(data.UnsafeGet<void *>(), value.GetData().GetRaw());
+				}
 			}
 
 			/// Returns the name of the variable
