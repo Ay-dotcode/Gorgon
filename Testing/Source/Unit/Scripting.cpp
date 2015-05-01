@@ -60,6 +60,10 @@ public:
 		return "A";
 	}
 	
+	bool operator ==(const A &a) const {
+		return bb==a.bb;
+	}
+	
 	int bb;
 };
 

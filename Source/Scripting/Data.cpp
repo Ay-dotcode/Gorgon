@@ -204,5 +204,12 @@ namespace Gorgon { namespace Scripting {
 		return isreference || type->IsReferenceType();
 	}
 	
+	bool Data::operator==(const Data& r) const {
+		if(!type) return !r.type;
+		if(!r.type) return false;
+
+		return type->Compare(*this, r);
+	}
+	
 	
 } }

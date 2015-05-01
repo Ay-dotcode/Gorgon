@@ -206,9 +206,20 @@ namespace Gorgon {
 
 		/// This class holds information about a parameter without resolving constructs
 		struct ParameterTemplate {
-			std::string name, help, defaultvalue, options;
+			std::string name, help;
+			std::vector<Value> options;
+			Value defaultvalue;
 			Value type;
-			bool optional, reference, constant, variable;
+			bool optional=false, reference=false, constant=false, variable=false;
+
+			void *defvaldata=nullptr;
+			void *optdata=nullptr;
+			
+			bool operator ==(const ParameterTemplate &) const {
+				Utils::ASSERT_FALSE("This cannot occur");
+				
+				return false;
+			}
 		};
 		
 	}

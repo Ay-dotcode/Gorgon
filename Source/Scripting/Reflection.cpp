@@ -121,6 +121,19 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
+	bool Type::Compare(const Data& l, const Data& r) const {
+		if(!l.IsValid() || !r.IsValid() || l.GetType()!=this || r.GetType()!=this) {
+			throw std::runtime_error("These elements cannot be compared");
+		}
+		
+		if(l.IsReference() && r.IsReference()) {
+			return l.GetData().Pointer()==r.GetData().Pointer();
+		}
+		
+		return compare(l, r);
+	}
+
+	
 	Type::Type(const std::string& name, const std::string& help, const Any& defaultvalue, TMP::RTTH *typeinterface, bool isref):
 		name(name), help(help), DataMembers(datamembers), Functions(functions), Constructor(constructor),
 		Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),

@@ -1060,7 +1060,7 @@ namespace Gorgon {
 			//else nothing else is needed
 			
 			int ind=0;
-			for(const auto &pdef : variant->Parameters) {
+			for(const Parameter &pdef : variant->Parameters) {
 				if(pin!=incomingparams.end()) {
 					if(pdef.IsVariable()) {
 						if(pin->Type==ValueType::Variable || pin->Type==ValueType::Identifier) {
@@ -1098,6 +1098,46 @@ namespace Gorgon {
 						}
 						else {
 							param=getvalue(*pin);
+
+							//validate options
+							if(pdef.Options.size()) {
+								//we need fix immediately
+								fixparameter(param, pdef.GetType(), pdef.IsReference(),
+											 "Cannot cast while trying to call "+fn->GetName());
+								
+								bool ok=false;
+								if(pdef.GetType()==Types::String()) {
+									//lowercase matching
+									for(auto &opt : pdef.Options) {
+										if(Types::String().Compare(
+											{Types::String(), String::ToLower(param.GetValue<std::string>())},
+											{Types::String(), String::ToLower(opt.Get<std::string>())}
+										)) {
+											ok=true;
+											param={Types::String(), opt.Get<std::string>()};
+											break;
+										}
+									}
+								}
+								else {
+									for(auto &opt : pdef.Options) {
+										if(param.GetType().Compare(param, {param.GetType(), opt})) {
+											ok=true;
+											break;
+										}
+									}
+								}
+								
+								if(!ok) {
+									std::string list;
+									for(auto &opt : pdef.Options) {
+										if(list.size()) list += ", ";
+										list+=pdef.GetType().ToString({pdef.GetType(), opt});
+									}
+									throw CastException(param.GetType().GetName(), pdef.GetType().GetName()+" oneof("+list+")");
+								}
+							}
+							
 						}
 						
 						fixparameter(param, pdef.GetType(), pdef.IsReference(),
@@ -1540,7 +1580,29 @@ namespace Gorgon {
 						ptype=type.GetValue<Type*>();
 					
 					//...other info
-					paramlist.push_back({ptemp.name, ptemp.help, ptype, Data::Invalid(), OptionList{}, ptemp.reference, ptemp.constant, false});
+					Data def=Data::Invalid();
+					//check if defaultvalue is valid
+					if(ptemp.defaultvalue.Type!=ValueType::Literal || ptemp.defaultvalue.Literal.IsValid()) {
+						def=getvalue(ptemp.defaultvalue, ptemp.reference);
+					}
+					
+					OptionList opts;
+					if(ptemp.options.size() && ptype->IsReferenceType()) {
+						throw "Reference types cannot have options";
+					}
+					
+					for(auto v : ptemp.options) {
+						Data d=getvalue(v);
+						fixparameter(d, *ptype, false, "");
+						
+						if(d.IsReference()) {
+							d=d.DeReference();
+						}
+						
+						opts.push_back(d.GetData());
+					}
+					
+					paramlist.emplace_back(ptemp.name, ptemp.help, ptype, def, opts, ptemp.reference, ptemp.constant, false);
 				}
 				
 				ASSERT(
@@ -1558,6 +1620,8 @@ namespace Gorgon {
 					fn->AddMethod(overld);
 				else
 					fn->AddOverload(overld);
+				
+				fn=fn;
 			}
 			
 			else {

@@ -107,11 +107,11 @@ namespace Gorgon {
 			template <class ...Params_>
 			Parameter(const std::string &name, const std::string &help, const Type *type, 
 					 Data defaultvalue, OptionList options, Params_ ...tags) : 
-			name(name), type(type), help(help), Options(this->options), defaultvalue(defaultvalue) {
+			name(name), type(type), help(help), defaultvalue(defaultvalue) {
 				ASSERT((type!=nullptr), "Parameter type cannot be nullptr", 1, 2);
 				using std::swap;
 
-				swap(options, this->options);
+				swap(options, this->Options);
 
 				UnpackTags(tags...);
 			}
@@ -142,19 +142,32 @@ namespace Gorgon {
 				this->optional  = defaultvalue.IsValid();
 			}
 			/// @endcond
-
+			
+			/// Copy assignment
 			Parameter &operator =(const Parameter &p) {
 				name		= p.name		;
 				help		= p.help		;
 				type		= p.type		;
 				defaultvalue= p.defaultvalue;
-				options		= p.options		;
+				Options		= p.Options		;
 				optional	= p.optional	;
 				reference	= p.reference	;
 				constant	= p.constant	;
 				variable	= p.variable	;
-
+				
 				return *this;
+			}
+			
+			/// Compares two parameters, not very reliable, it does not check defaultvalue and options
+			bool operator ==(const Parameter &p) const {
+				return 
+					name		== p.name		&&
+					help		== p.help		&&
+					type		== p.type		&&
+					optional	== p.optional	&&
+					reference	== p.reference	&&
+					constant	== p.constant	&&
+					variable	== p.variable	;
 			}
 			
 			/// Returns the name of the parameter
@@ -203,7 +216,7 @@ namespace Gorgon {
 			}
 			
 			/// Allowed values for this parameter
-			const OptionList &Options;
+			OptionList Options;
 			
 		private:
 			void UnpackTags() {}
@@ -238,8 +251,6 @@ namespace Gorgon {
 			std::string help;
 			const Type *type;
 			Data defaultvalue=Data::Invalid();
-
-			OptionList options;
 			
 			bool optional  = false;
 			bool reference = false;
@@ -1088,6 +1099,9 @@ namespace Gorgon {
 				deleteobject(obj);
 			}
 			
+			/// This function compares two instances of this type. Both left and right should of this type.
+			bool Compare(const Data &l, const Data &r) const;
+			
 			/// Converts a data of this type to string. This function should never throw, if there is
 			/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
 			virtual std::string ToString(const Data &) const = 0;
@@ -1132,6 +1146,10 @@ namespace Gorgon {
 
 			/// This function should delete the given object.
 			virtual void deleteobject(const Data &) const=0;
+			
+			/// This function should compare two instances of the type. Not required for reference types as pointers
+			/// will be compared
+			virtual bool compare(const Data &l, const Data &r) const { throw std::runtime_error("These elements cannot be compared"); }
 
 
 		private:

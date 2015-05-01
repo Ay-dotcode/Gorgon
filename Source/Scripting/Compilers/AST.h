@@ -63,7 +63,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			Assignment,
 			
 			/// This node is empty, possibly a placeholder for an identifier
-			Empty
+			Empty,
+			
+			/// List of expressions to be compiled
+			List,
 		};
 
 		/// Constructor requires the node type

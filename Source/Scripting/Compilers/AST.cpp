@@ -708,9 +708,33 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			v.SetLiteral(instructionlisttype, instlist);
 			inst.Parameters.push_back(v);
 			
+			//parameters
 			for(int i=2; i<tree->Leaves.GetSize(); i++) {
-				v.Literal=tree->Leaves[i].LiteralValue;
+				ParameterTemplate p=tree->Leaves[i].LiteralValue.GetValue<ParameterTemplate>();
 				v.Type=ValueType::Literal;
+				//compile default value
+				if(p.defvaldata) {
+					p.defaultvalue=compilevalue(*(ASTNode*)p.defvaldata, list, tempind);
+					delete (ASTNode*)p.defvaldata;
+					p.defvaldata=nullptr;
+				}
+				else {
+					p.defaultvalue.Type=ValueType::Literal;
+					p.defaultvalue.Literal=Data::Invalid();
+				}
+				
+				if(p.optdata) {
+					ASTNode *opts=(ASTNode*)p.optdata;
+					
+					for(auto &n : opts->Leaves) {
+						p.options.push_back(compilevalue(n, list, tempind));
+					}
+					
+					delete opts;
+					p.optdata=nullptr;
+				}
+				
+				v.Literal=Data(tree->Leaves[i].LiteralValue.GetType(), p);
 				inst.Parameters.push_back(v);
 			}
 			

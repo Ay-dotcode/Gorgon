@@ -82,6 +82,10 @@ namespace Gorgon { namespace Scripting {
 				delete ptr;
 			}
 		}
+		
+		bool compare(const Data &l, const Data &r) const override {
+			return l.GetValue<T_>()==r.GetValue<T_>();
+		}
 	};
 	
 	/**

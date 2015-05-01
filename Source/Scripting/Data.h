@@ -119,6 +119,8 @@ namespace Gorgon {
 			/// Attempts to delete the data contained in this data
 			void Delete() const;
 			
+			bool operator==(const Data &r) const;
+			
 			/// Returns the type of the data
 			const Type &GetType() const {
 				ASSERT(type, "Type is not set", 1, 2);
