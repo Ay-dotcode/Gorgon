@@ -126,6 +126,12 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		/// supplied to the compiler
 		bool IsReady() const { return waitingcount==0; }
 		
+		void Finalize() {
+			if(scopes.size()) {
+				throw FlowException(scope::keywordnames[scopes.back().type]+" scope is not closed.");
+			}
+		}
+		
 	private:
 		bool compilekeyword(ASTNode *tree, Byte &tempind);
 		

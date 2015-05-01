@@ -776,6 +776,7 @@ namespace Compilers {
 		try {
 			Token token=consumenexttoken(input, index);
 
+			//this lambda parses an assignment
 			auto assignment = [&](ASTNode *term, std::string keyword) {
 				if(!term) {
 					term=parseterm(input, index);
@@ -813,8 +814,10 @@ namespace Compilers {
 				}
 			};
 			
+			//empty line
 			if(token == Token::EoS) return nullptr;
 
+			//all expressions starts with an identifier
 			if(token!=Token::Identifier) {
 				throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier, found: "+token.repr, index};
 			}
@@ -823,6 +826,7 @@ namespace Compilers {
 				token.repr=String::ToLower(token.repr); //make sure its lowercase
 				root=NewNode(ASTNode::Keyword, token);
 				
+				//keywords that require special treatment
 				if(token.repr=="for") {
 					auto tokenvar=consumenexttoken(input, index);
 					if(tokenvar!=Token::Identifier) {
@@ -830,6 +834,7 @@ namespace Compilers {
 					}
 					root->Leaves.Push(NewNode(ASTNode::Variable, tokenvar));
 					
+					//should have "in" between variable and the container
 					auto tokenin=consumenexttoken(input, index);					
 					if(String::ToLower(tokenin.repr)!="in") {
 						throw ParseError{ExceptionType::UnexpectedToken, "Expected `in`, found: "+tokenin.repr, index};
@@ -838,6 +843,8 @@ namespace Compilers {
 					auto expr=parseexpression(input, index);
 					root->Leaves.Push(expr);
 				}
+				
+				//makes a method call
 				else if(token.repr=="call") {
 					delete root;
 					root=parse(input.substr(index));
@@ -847,6 +854,8 @@ namespace Compilers {
 					
 					root->Type=ASTNode::MethodCall;
 				}
+				
+				//defines a function or a method
 				else if(token.repr=="function" || token.repr=="method") {
 					bool ismethod=token.repr=="method";
 					
@@ -863,25 +872,36 @@ namespace Compilers {
 					//parse parameters
 					if(token==Token::LeftP) {
 						while( (token=consumenexttoken(input, index)) != Token::RightP ) {
+							//parameter name should be an identifier
 							if(token!=Token::Identifier) {
 								throw ParseError{ExceptionType::UnexpectedToken, "Expected parameter identifier, found: "+token.repr, index};
 							}
 							
 							ParameterTemplate p;
 							p.name=token.repr;
+							//default type is variant
 							p.type.SetIdentifier("Integral:Variant");
-
+							
+							//after parameter name there should either be a comma, as statement, or a right parenthesis
 							token=peeknexttoken(input, index);
+							
+							//if comma, the continue with the next
 							if(token==Token::Seperator) {
 								consumenexttoken(input, index);
 							}
+							
+							//as statement
 							else if(token==Token::Identifier) {
+								
 								if(String::ToLower(token.repr)!="as") {
 									throw ParseError{ExceptionType::UnexpectedToken, 
 										"Expected comma, as statement, or right parentheses, found: "+token.repr, index};
 								}
 								
+								//remove as from the stack
 								consumenexttoken(input, index);
+								
+								//get the type or ref or const
 								token=consumenexttoken(input, index);
 								
 								if(token!=Token::Identifier) {
@@ -889,18 +909,41 @@ namespace Compilers {
 										"Expected type specifier, found: "+token.repr, index};
 								}
 								
+								//check if constant
+								if(String::ToLower(token.repr)=="const") {
+									p.constant=true;
+
+									token=consumenexttoken(input, index);
+									if(token!=Token::Identifier) {
+										throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
+									}
+								}
+
+								//check if ref
+								if(String::ToLower(token.repr)=="ref") {
+									p.reference=true;
+
+									token=consumenexttoken(input, index);
+									if(token!=Token::Identifier) {
+										throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
+									}
+								}
+								
 								p.type.SetIdentifier(token.repr);
 							}
+							//if neither comma or identifier (as statement), next token should be right parenthesis
 							else if(token!=Token::RightP) {
 								throw ParseError{ExceptionType::UnexpectedToken, 
 									"Expected comma, as statement, or right parentheses, found: "+token.repr, index};
 							}
 							
+							//add this parameter
 							auto node=new ASTNode(ASTNode::Literal);
 							node->LiteralValue={ParameterTemplateType(), p};
 							root->Leaves.Push(*node);
 						}
 						
+						//consume right parenthesis
 						token=consumenexttoken(input, index);
 					}
 					else {
@@ -1219,6 +1262,7 @@ namespace Compilers {
 	void Programming::Finalize() {
 		left.push_back(';');
 		Compile("", -1);
+		compiler.Finalize();
 	}
 
 } } }

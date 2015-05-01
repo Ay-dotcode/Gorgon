@@ -1540,7 +1540,7 @@ namespace Gorgon {
 						ptype=type.GetValue<Type*>();
 					
 					//...other info
-					paramlist.push_back({ptemp.name, ptemp.help, ptype});
+					paramlist.push_back({ptemp.name, ptemp.help, ptype, Data::Invalid(), OptionList{}, ptemp.reference, ptemp.constant, false});
 				}
 				
 				ASSERT(

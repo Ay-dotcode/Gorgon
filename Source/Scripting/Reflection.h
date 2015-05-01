@@ -133,11 +133,13 @@ namespace Gorgon {
 			}
 			 
 			Parameter(const std::string &name, const std::string &help, const Type *type, 
-					  Data defaultvalue, OptionList options, const std::vector<Tag> &tags) :
-			Parameter(name, help, type, defaultvalue, options) {
-				for(auto tag : tags) {
-					UnpackTags(tag);
-				}
+					  Data defaultvalue, OptionList options, bool reference, bool constant, bool variable) :
+			Parameter(name, help, type, defaultvalue, options)
+			{
+				this->reference = reference;
+				this->constant  = constant;
+				this->variable  = variable;
+				this->optional  = defaultvalue.IsValid();
 			}
 			/// @endcond
 

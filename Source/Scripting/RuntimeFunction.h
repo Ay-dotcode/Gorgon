@@ -92,6 +92,10 @@ namespace Gorgon { namespace Scripting {
 				if(v.GetType()==Types::Variant()) {
 					v=v.GetValue<Data>();
 				}
+				if(v.IsReference() && par->IsConstant()) {
+					v.MakeConstant();
+				}
+				
 				scope->SetVariable(par->GetName(), v);
 				par++;
 			}
@@ -100,7 +104,16 @@ namespace Gorgon { namespace Scripting {
 				ASSERT(repeatlast, "Extra parameters supplied");
 				ASSERT(repeater, "???");
 				
-				repeater->PushData(*pin);
+				auto v=*pin;
+				if(v.GetType()==Types::Variant()) {
+					v=v.GetValue<Data>();
+				}
+				if(v.IsReference() && par->IsConstant()) {
+					v.MakeConstant();
+				}
+				
+				repeater->PushData(v);
+				pin++;
 			}
 			
 			if(returntype) {
