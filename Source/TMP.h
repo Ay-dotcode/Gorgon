@@ -239,7 +239,7 @@ namespace Gorgon {
 		};
 		
 		template<class T_> 
-		typename std::enable_if<std::is_copy_constructible<T_>::value, void*>::type clonetype_wnull(const void* const obj) {
+		typename std::enable_if<std::is_copy_constructible<T_>::value && !std::is_abstract<T_>::value, void*>::type clonetype_wnull(const void* const obj) {
 			using NewType = typename std::remove_const<typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type>::type;
 			using CloneType = const typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type* const;
 			
@@ -248,12 +248,12 @@ namespace Gorgon {
 			return n;
 		}
 		template<class T_> 
-		typename std::enable_if<!std::is_copy_constructible<T_>::value, void*>::type clonetype_wnull(const void* const obj) {
+		typename std::enable_if<!std::is_copy_constructible<T_>::value || std::is_abstract<T_>::value, void*>::type clonetype_wnull(const void* const obj) {
 			return nullptr;
 		}
 		
 		template<class T_> 
-		typename std::enable_if<std::is_copy_assignable<T_>::value, void>::type copytype_wnull(void* const dest, const void* const obj) {
+		typename std::enable_if<std::is_copy_assignable<T_>::value && !std::is_const<T_>::value, void>::type copytype_wnull(void* const dest, const void* const obj) {
 			using NewType = typename std::remove_const<typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type>::type;
 			using CloneType = const typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type* const;
 			using StorageType = typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type*;
@@ -261,7 +261,7 @@ namespace Gorgon {
 			*reinterpret_cast<StorageType>(dest) = *reinterpret_cast<CloneType>(obj);
 		}
 		template<class T_> 
-		typename std::enable_if<!std::is_copy_assignable<T_>::value, void>::type copytype_wnull(void* const dest, const void* const obj) {
+		typename std::enable_if<!std::is_copy_assignable<T_>::value || std::is_const<T_>::value, void>::type copytype_wnull(void* const dest, const void* const obj) {
 			
 		}
 		

@@ -764,488 +764,509 @@ namespace Compilers {
 		
 		static const std::set<std::string, String::CaseInsensitiveLess> internalkeywords={
 			"if", "for", "elseif", "else", "while", "continue", "break", "end", "static", "function", 
-			"method", "call", "return"
+			"method", "call", "return", "source"
 		};
 		
+	}
 
-		ASTNode *parse(const std::string &input) {
-			int index = 0;
-			ASTNode *root = nullptr;
+	ASTNode *Programming::parse(const std::string &input) {
+		int index = 0;
+		ASTNode *root = nullptr;
 
-			try {
-				Token token=consumenexttoken(input, index);
+		try {
+			Token token=consumenexttoken(input, index);
 
-				//this lambda parses an assignment
-				auto assignment = [&](ASTNode *term, std::string keyword) {
-					if(!term) {
-						term=parseterm(input, index);
+			//this lambda parses an assignment
+			auto assignment = [&](ASTNode *term, std::string keyword) {
+				if(!term) {
+					term=parseterm(input, index);
 						
-						token=consumenexttoken(input, index);
+					token=consumenexttoken(input, index);
 						
-						if(token!=Token::EqualSign) {					
-							throw ParseError{ExceptionType::UnexpectedToken, keyword+" should be followed by an assignment.", index};
-						}
+					if(token!=Token::EqualSign) {					
+						throw ParseError{ExceptionType::UnexpectedToken, keyword+" should be followed by an assignment.", index};
 					}
-					
-					auto expr=parseexpression(input, index);
-					
-					if(token.repr.size()!=1) {
-						ASSERT(token.repr.size()==2, "Assignment operator size problem.");
-						
-						//check if this really is an operator
-						GetPrecedence(token.repr.substr(0,1));
-						
-						ASTNode *compound=NewNode(ASTNode::Operator, {token.repr.substr(0,1), Token::Operator, token.start});
-						
-						token.repr=token.repr.substr(1);
-						
-						compound->Leaves.Push(term->Duplicate());
-						compound->Leaves.Push(expr);
-						expr=compound;
-					}
-					
-					root=NewNode(ASTNode::Assignment, token);
-					root->Leaves.Push(term);
-					root->Leaves.Push(expr);
-					
-					if( (token=consumenexttoken(input, index)) !=Token::EoS) {
-						throw ParseError{ExceptionType::UnexpectedToken, "Expected End of String.", index};
-					}
-				};
-				
-				//empty line
-				if(token == Token::EoS) return nullptr;
-
-				//all expressions starts with an identifier
-				if(token!=Token::Identifier) {
-					throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier, found: "+token.repr, index};
 				}
+					
+				auto expr=parseexpression(input, index);
+					
+				if(token.repr.size()!=1) {
+					ASSERT(token.repr.size()==2, "Assignment operator size problem.");
+						
+					//check if this really is an operator
+					GetPrecedence(token.repr.substr(0,1));
+						
+					ASTNode *compound=NewNode(ASTNode::Operator, {token.repr.substr(0,1), Token::Operator, token.start});
+						
+					token.repr=token.repr.substr(1);
+						
+					compound->Leaves.Push(term->Duplicate());
+					compound->Leaves.Push(expr);
+					expr=compound;
+				}
+					
+				root=NewNode(ASTNode::Assignment, token);
+				root->Leaves.Push(term);
+				root->Leaves.Push(expr);
+					
+				if( (token=consumenexttoken(input, index)) !=Token::EoS) {
+					throw ParseError{ExceptionType::UnexpectedToken, "Expected End of String.", index};
+				}
+			};
 				
-				if(KeywordNames.count(token.repr) || internalkeywords.count(token.repr)) { //keyword
-					token.repr=String::ToLower(token.repr); //make sure its lowercase
-					root=NewNode(ASTNode::Keyword, token);
+			//empty line
+			if(token == Token::EoS) return nullptr;
+
+			//all expressions starts with an identifier
+			if(token!=Token::Identifier) {
+				throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier, found: "+token.repr, index};
+			}
+				
+			if(KeywordNames.count(token.repr) || internalkeywords.count(token.repr)) { //keyword
+				token.repr=String::ToLower(token.repr); //make sure its lowercase
+				root=NewNode(ASTNode::Keyword, token);
 					
-					//keywords that require special treatment
-					if(token.repr=="for") {
-						auto tokenvar=consumenexttoken(input, index);
-						if(tokenvar!=Token::Identifier) {
-							throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier, found: "+token.repr, index};
-						}
-						root->Leaves.Push(NewNode(ASTNode::Variable, tokenvar));
-						
-						//should have "in" between variable and the container
-						auto tokenin=consumenexttoken(input, index);					
-						if(String::ToLower(tokenin.repr)!="in") {
-							throw ParseError{ExceptionType::UnexpectedToken, "Expected `in`, found: "+tokenin.repr, index};
-						}
-						
-						auto expr=parseexpression(input, index);
-						root->Leaves.Push(expr);
+				//keywords that require special treatment
+				if(token.repr=="for") {
+					auto tokenvar=consumenexttoken(input, index);
+					if(tokenvar!=Token::Identifier) {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected identifier, found: "+token.repr, index};
 					}
-					
-					//makes a method call
-					else if(token.repr=="call") {
-						delete root;
-						root=parse(input.substr(index));
-						if(root->Type!=ASTNode::FunctionCall) {
-							throw ParseError{ExceptionType::UnexpectedToken, "Expected method call", index};
-						}
+					root->Leaves.Push(NewNode(ASTNode::Variable, tokenvar));
 						
-						root->Type=ASTNode::MethodCall;
+					//should have "in" between variable and the container
+					auto tokenin=consumenexttoken(input, index);					
+					if(String::ToLower(tokenin.repr)!="in") {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected `in`, found: "+tokenin.repr, index};
 					}
+						
+					auto expr=parseexpression(input, index);
+					root->Leaves.Push(expr);
+				}
 					
-					//defines a function or a method
-					else if(token.repr=="function" || token.repr=="method") {
-						bool ismethod=token.repr=="method";
+				//makes a method call
+				else if(token.repr=="call") {
+					delete root;
+					root=parse(input.substr(index));
+					if(root->Type!=ASTNode::FunctionCall) {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected method call", index};
+					}
 						
-						//parse name
-						token=consumenexttoken(input, index);
-						if(token!=Token::Identifier) {
-							throw ParseError{ExceptionType::UnexpectedToken, "Expected function name, found: "+token.repr, index};
-						}
+					root->Type=ASTNode::MethodCall;
+				}
+					
+				//defines a function or a method
+				else if(token.repr=="function" || token.repr=="method") {
+					bool ismethod=token.repr=="method";
 						
-						root->Leaves.Push(NewNode(ASTNode::Identifier, token));
+					//parse name
+					token=consumenexttoken(input, index);
+					if(token!=Token::Identifier) {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected function name, found: "+token.repr, index};
+					}
 						
-						token=consumenexttoken(input, index);
+					root->Leaves.Push(NewNode(ASTNode::Identifier, token));
 						
-						//parse parameters
-						if(token==Token::LeftP) {
-							while( (token=consumenexttoken(input, index)) != Token::RightP ) {
-								//parameter name should be an identifier
+					token=consumenexttoken(input, index);
+						
+					//parse parameters
+					if(token==Token::LeftP) {
+						while( (token=consumenexttoken(input, index)) != Token::RightP ) {
+							//parameter name should be an identifier
+							if(token!=Token::Identifier) {
+								throw ParseError{ExceptionType::UnexpectedToken, "Expected parameter identifier, found: "+token.repr, index};
+							}
+								
+							ParameterTemplate p;
+							p.name=token.repr;
+							//default type is variant
+							p.type.SetIdentifier("Integral:Variant");
+								
+							//after parameter name there should either be a comma, as statement, or a right parenthesis
+							token=peeknexttoken(input, index);
+								
+							bool asdone=false;
+							//as statement
+							if(token==Token::Identifier && String::ToLower(token.repr)=="as") {
+									
+								//remove as from the stack
+								consumenexttoken(input, index);
+									
+								//get the type or ref or const
+								token=consumenexttoken(input, index);
+									
 								if(token!=Token::Identifier) {
-									throw ParseError{ExceptionType::UnexpectedToken, "Expected parameter identifier, found: "+token.repr, index};
-								}
-								
-								ParameterTemplate p;
-								p.name=token.repr;
-								//default type is variant
-								p.type.SetIdentifier("Integral:Variant");
-								
-								//after parameter name there should either be a comma, as statement, or a right parenthesis
-								token=peeknexttoken(input, index);
-								
-								bool asdone=false;
-								//as statement
-								if(token==Token::Identifier && String::ToLower(token.repr)=="as") {
-									
-									//remove as from the stack
-									consumenexttoken(input, index);
-									
-									//get the type or ref or const
-									token=consumenexttoken(input, index);
-									
-									if(token!=Token::Identifier) {
-										throw ParseError{ExceptionType::UnexpectedToken, 
-											"Expected type specifier, found: "+token.repr, index};
-									}
-									
-									//check if constant
-									if(String::ToLower(token.repr)=="const") {
-										p.constant=true;
-
-										token=consumenexttoken(input, index);
-										if(token!=Token::Identifier) {
-											throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
-										}
-									}
-
-									//check if ref
-									if(String::ToLower(token.repr)=="ref") {
-										p.reference=true;
-
-										token=consumenexttoken(input, index);
-										if(token!=Token::Identifier) {
-											throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
-										}
-									}
-									
-									p.type.SetIdentifier(token.repr);
-									
-									asdone=true;
-									token=peeknexttoken(input, index);
-								}
-								
-								//check oneof statement
-								if(token==Token::Identifier && String::ToLower(token.repr)=="oneof") {
-									if(p.reference) {
-										throw ParseError(ExceptionType::UnexpectedToken, "oneof statement cannot be used for references");
-									}
-									
-									//remove oneof
-									consumenexttoken(input, index);
-									
-									//left p
-									token=consumenexttoken(input, index);
-									if(token!=Token::LeftP) {
-										throw ParseError(ExceptionType::UnexpectedToken, "`oneof` should be followed by `(`, "
-											"found: "+token.repr);
-									}
-									
-									ASTNode *opts=new ASTNode(ASTNode::List);
-									auto parsed=parseexpressions(input, index);
-									
-									opts->Leaves.Swap(parsed);
-									p.optdata=opts;
-									
-									//right p
-									token=consumenexttoken(input, index);
-									if(token!=Token::RightP) {
-										throw ParseError(ExceptionType::UnexpectedToken, "Expected `)`, "
-										"found: "+token.repr);
-									}
-									
-									token=peeknexttoken(input, index);
-								}
-								
-								//check if there is an = sign for default value
-								if(token==Token::EqualSign) {
-									//remove =
-									consumenexttoken(input, index);
-									
-									//set default value, (exp	ression until ,)
-									p.defvaldata=parseexpression(input, index);
-									p.optional=true;
-									
-									token=peeknexttoken(input, index);
-								}
-								
-								//a parameter should end with either , or )
-								if(token!=Token::RightP && token!=Token::Seperator) {
 									throw ParseError{ExceptionType::UnexpectedToken, 
-										std::string("Expected comma, ")+(!asdone ? "as statement, ":"")+
-										"or right parentheses, found: "+token.repr, index};
+										"Expected type specifier, found: "+token.repr, index};
 								}
-								
-								if(token==Token::Seperator) {
-									//get rid of seperator
-									consumenexttoken(input, index);
+									
+								//check if constant
+								if(String::ToLower(token.repr)=="const") {
+									p.constant=true;
+
+									token=consumenexttoken(input, index);
+									if(token!=Token::Identifier) {
+										throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
+									}
 								}
-								
-								//add this parameter
-								auto node=new ASTNode(ASTNode::Literal);
-								node->LiteralValue={ParameterTemplateType(), p};
-								root->Leaves.Push(*node);
+
+								//check if ref
+								if(String::ToLower(token.repr)=="ref") {
+									p.reference=true;
+
+									token=consumenexttoken(input, index);
+									if(token!=Token::Identifier) {
+										throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
+									}
+								}
+									
+								p.type.SetIdentifier(token.repr);
+									
+								asdone=true;
+								token=peeknexttoken(input, index);
 							}
+								
+							//check oneof statement
+							if(token==Token::Identifier && String::ToLower(token.repr)=="oneof") {
+								if(p.reference) {
+									throw ParseError(ExceptionType::UnexpectedToken, "oneof statement cannot be used for references");
+								}
+									
+								//remove oneof
+								consumenexttoken(input, index);
+									
+								//left p
+								token=consumenexttoken(input, index);
+								if(token!=Token::LeftP) {
+									throw ParseError(ExceptionType::UnexpectedToken, "`oneof` should be followed by `(`, "
+										"found: "+token.repr);
+								}
+									
+								ASTNode *opts=new ASTNode(ASTNode::List);
+								auto parsed=parseexpressions(input, index);
+									
+								opts->Leaves.Swap(parsed);
+								p.optdata=opts;
+									
+								//right p
+								token=consumenexttoken(input, index);
+								if(token!=Token::RightP) {
+									throw ParseError(ExceptionType::UnexpectedToken, "Expected `)`, "
+									"found: "+token.repr);
+								}
+									
+								token=peeknexttoken(input, index);
+							}
+								
+							//check if there is an = sign for default value
+							if(token==Token::EqualSign) {
+								//remove =
+								consumenexttoken(input, index);
+									
+								//set default value, (exp	ression until ,)
+								p.defvaldata=parseexpression(input, index);
+								p.optional=true;
+									
+								token=peeknexttoken(input, index);
+							}
+								
+							//a parameter should end with either , or )
+							if(token!=Token::RightP && token!=Token::Seperator) {
+								throw ParseError{ExceptionType::UnexpectedToken, 
+									std::string("Expected comma, ")+(!asdone ? "as statement, ":"")+
+									"or right parentheses, found: "+token.repr, index};
+							}
+								
+							if(token==Token::Seperator) {
+								//get rid of seperator
+								consumenexttoken(input, index);
+							}
+								
+							//add this parameter
+							auto node=new ASTNode(ASTNode::Literal);
+							node->LiteralValue={ParameterTemplateType(), p};
+							root->Leaves.Push(*node);
+						}
 							
-							//consume right parenthesis
-							token=consumenexttoken(input, index);
-						}
-						else {
-							throw ParseError{ExceptionType::UnexpectedToken, "Expected `(` found: "+token.repr, index}; 
-						}
+						//consume right parenthesis
+						token=consumenexttoken(input, index);
+					}
+					else {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected `(` found: "+token.repr, index}; 
+					}
 						
-						//parse return
-						if(token==Token::EoS) {
-							if(ismethod) {
-								root->Leaves.Insert(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)), 1);
-							}
-							else {
-								root->Leaves.Insert(NewNode(ASTNode::Identifier, Token("00Integral:Variant", Token::Identifier, token.start)), 1);
-							}
-						}
-						else if(ismethod) {
-							throw ParseError{ExceptionType::UnexpectedToken, "Expected end of line, found: "+token.repr, index};
+					//parse return
+					if(token==Token::EoS) {
+						if(ismethod) {
+							root->Leaves.Insert(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)), 1);
 						}
 						else {
-							if(token!=Token::Identifier || String::ToLower(token.repr)!="returns") {
-								throw ParseError{ExceptionType::UnexpectedToken, "Expected 'returns', found: "+token.repr, index};
-							}
+							root->Leaves.Insert(NewNode(ASTNode::Identifier, Token("00Integral:Variant", Token::Identifier, token.start)), 1);
+						}
+					}
+					else if(ismethod) {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected end of line, found: "+token.repr, index};
+					}
+					else {
+						if(token!=Token::Identifier || String::ToLower(token.repr)!="returns") {
+							throw ParseError{ExceptionType::UnexpectedToken, "Expected 'returns', found: "+token.repr, index};
+						}
 							
+						token=consumenexttoken(input, index);
+						//... const, ref
+						if(token!=Token::Identifier) {
+							throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
+						}
+
+
+						bool constant=false, ref=false;
+						if(String::ToLower(token.repr)=="const") {
+							constant=true;
+
 							token=consumenexttoken(input, index);
-							//... const, ref
 							if(token!=Token::Identifier) {
 								throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
 							}
+						}
 
+						if(String::ToLower(token.repr)=="ref") {
+							ref=true;
 
-							bool constant=false, ref=false;
-							if(String::ToLower(token.repr)=="const") {
-								constant=true;
-
-								token=consumenexttoken(input, index);
-								if(token!=Token::Identifier) {
-									throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
-								}
-							}
-
-							if(String::ToLower(token.repr)=="ref") {
-								ref=true;
-
-								token=consumenexttoken(input, index);
-								if(token!=Token::Identifier) {
-									throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
-								}
-							}
-
-							if(String::ToLower(token.repr)=="nothing") {
-								token.repr="nothing"; //make sure lowercase
-								root->Leaves.Insert(NewNode(ASTNode::Keyword, token), 1);
-							}
-							else {
-								token.repr=String::From(constant)+String::From(ref)+token.repr;
-								root->Leaves.Insert(NewNode(ASTNode::Identifier, token), 1);
+							token=consumenexttoken(input, index);
+							if(token!=Token::Identifier) {
+								throw ParseError{ExceptionType::UnexpectedToken, "Expected return type, found: "+token.repr, index};
 							}
 						}
-					}
-					else if(String::ToLower(token.repr)=="const" || String::ToLower(token.repr)=="static") { //this is actually an assignment
-						auto name=String::ToLower(token.repr);
-						assignment(nullptr, name);
-						auto proot=root;
-						root=new ASTNode(ASTNode::Keyword);
-						root->Text=name;
-						root->Leaves.Push(proot);
-					}
-					else {
-						token=peeknexttoken(input, index);
-						
-						while(token!=Token::EoS) {
-							auto expr=parseexpression(input, index);
-							root->Leaves.Push(expr);
-							
-							token=peeknexttoken(input, index);
+
+						if(String::ToLower(token.repr)=="nothing") {
+							token.repr="nothing"; //make sure lowercase
+							root->Leaves.Insert(NewNode(ASTNode::Keyword, token), 1);
+						}
+						else {
+							token.repr=String::From(constant)+String::From(ref)+token.repr;
+							root->Leaves.Insert(NewNode(ASTNode::Identifier, token), 1);
 						}
 					}
 				}
-				else {
-					index=0; //parse from start
-					auto term=parseterm(input, index);
-					
+				else if(token.repr=="const" || token.repr=="static") { //this is actually an assignment
+					auto name=String::ToLower(token.repr);
+					assignment(nullptr, name);
+					auto proot=root;
+					root=new ASTNode(ASTNode::Keyword);
+					root->Text=name;
+					root->Leaves.Push(proot);
+				}
+
+				else if(token.repr=="source") {
 					token=consumenexttoken(input, index);
-					
-					if(token==Token::EqualSign) {//assignment
-						assignment(term, "");
+					if(token!=Token::String) {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected filename, found: "+token.repr, index};
 					}
-					else if(token==Token::LeftP) { //function
-						index=0; //let expression do the parsing
-						root=parseexpression(input, index);
-						
-						if( (token=consumenexttoken(input, index)) !=Token::EoS) {
-							throw ParseError{ExceptionType::UnexpectedToken, "Expected End of String.", index};
-						}
+					std::ifstream file(token.repr);
+					if(!file.is_open()) {
+						throw FileNotFoundException(token.repr);
 					}
-					else {
-						throw ParseError{ExceptionType::UnexpectedToken, "Invalid expression.", index};
-					}
-				}
-				
-				fixconstructors(root);
-			}
-			catch(...) {
-				delete root;
-				throw;
-			}
-			
-			//PrintAST(*root);
-			//std::cout<<std::endl;
-			
-			
-			return root;
-		}
 
-		//extracts a line from input string
-		void extractline(std::string &input, std::string &prepared, std::vector<unsigned> &linestarts) {
-			int inquotes=0, escape=0;
-			struct parenthesis {
-				unsigned long location;
-				char type;
-			};
-			std::vector<parenthesis> parens;
-			
-			unsigned len=input.length();
-			int cutfrom=-1;
-			int clearafter=-1;
+					std::string line;
+					int linenr=1;
+					while(std::getline(file, line)) {
+						Compile(line, linenr++);
+					}
+					
+					return nullptr;
+				}
 
-			
-			auto transform = [&](int ch, int &oline, int &och) {
-				for(int line=0;line<linestarts.size();line++) {
-					if(linestarts[line]>ch) {
-						oline=line-1;
-						och=ch-linestarts[line-1];
-						
-						return;
-					}
-				}
-				
-				oline=linestarts.size()-1;
-				och=ch-linestarts.back();
-			};
-			
-			for(unsigned i=0;i<len;i++) {
-				char c=input[i];
-				
-				if(inquotes) {
-					if(escape==1) {
-						if(isdigit(c)) {
-							escape=2;
-						}
-						else {
-							escape=0;
-						}
-					}
-					else if(escape==2) {
-						escape=0;
-					}
-					else if(c=='\\') {
-						escape=1;
-					}
-					else if(inquotes==1 && c=='\'') {
-						inquotes=0;
-					}
-					else if(inquotes==2 && c=='"') {
-						inquotes=0;
-					}
-				}
-				else if(c=='\'') {
-					inquotes=1;
-				}
-				else if(c=='"') {
-					inquotes=2;
-				}
-				else if(c=='#') { //simply skip to the end of the line
-					clearafter=i;
-					break;
-				}
-				else if(c==';') { // the line will end
-					int cline, pline, cchar, pchar;
-					
-					if(parens.size()) {
-						transform(i, cline, cchar);
-						transform(parens.back().location, pline, pchar);
-						
-						input="";
-						if(cline!=pline) {
-							throw ParseError{ExceptionType::MismatchedParenthesis, 
-								"`" + std::string(1, parens.back().type) + "` at character " +
-								String::From(pchar + 1) + " " + String::From(cline - pline) + " lines above " +
-								" is not closed.",
-								cchar, -cline
-							};
-						}
-						else {
-							throw ParseError{ExceptionType::MismatchedParenthesis,
-								"`" + std::string(1, parens.back().type) + "` at character " +
-									String::From(pchar + 1) +
-									" is not closed.",
-								cchar, -cline
-											
-							};
-						}
-					}
-					
-					if(c==';') {
-						cutfrom=i;
-					}
-					break;
-				}
-				else if(c=='(' || c=='[' || c=='{') {
-					parens.push_back({i, c});
-				}
-				else if(c==')' || c==']' || c=='}') {
-					bool error=
-						parens.size()==0 ||
-						(c==')' && parens.back().type!='(') ||
-						(c==']' && parens.back().type!='[') ||
-						(c=='}' && parens.back().type!='{')	;
-					
-					if(error) {
-						int cline, cchar;
-						transform(i, cline, cchar);
-						
-						throw ParseError{ExceptionType::UnexpectedToken, "`"+std::string(1, c)+"` is unexpected",
-							cchar, -cline		
-						};
-					}
-					else {
-						parens.pop_back();
-					}
-				}
-			}
-			
-			if(cutfrom==-1) {
-				if(clearafter!=-1) {
-					input=input.substr(0, clearafter);
-				}
-				
-				//everything is fine, line ends at the very end
-				if(inquotes==0 && parens.size()==0) {
-					using std::swap;
-					swap(prepared, input);
-					linestarts.clear();
-				}
+				//other keywords
 				else {
-					return;
+					token=peeknexttoken(input, index);
+						
+					while(token!=Token::EoS) {
+						auto expr=parseexpression(input, index);
+						root->Leaves.Push(expr);
+							
+						token=peeknexttoken(input, index);
+					}
 				}
 			}
 			else {
-				prepared=input.substr(0, cutfrom);
-				input=input.substr(cutfrom+1);
+				index=0; //parse from start
+				auto term=parseterm(input, index);
+					
+				token=consumenexttoken(input, index);
+					
+				if(token==Token::EqualSign) {//assignment
+					assignment(term, "");
+				}
+				else if(token==Token::LeftP) { //function
+					index=0; //let expression do the parsing
+					root=parseexpression(input, index);
+						
+					if( (token=consumenexttoken(input, index)) !=Token::EoS) {
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected End of String.", index};
+					}
+				}
+				else {
+					throw ParseError{ExceptionType::UnexpectedToken, "Invalid expression.", index};
+				}
+			}
 				
-				auto last=linestarts.back();
-				linestarts.clear();
-				linestarts.push_back(cutfrom-last);
+			fixconstructors(root);
+		}
+		catch(...) {
+			delete root;
+			throw;
+		}
+			
+		//PrintAST(*root);
+		//std::cout<<std::endl;
+			
+			
+		return root;
+	}
+
+	//extracts a line from input string
+	void Programming::extractline(std::string &input, std::string &prepared, std::vector<unsigned> &linestarts) {
+		int inquotes=0, escape=0;
+		struct parenthesis {
+			unsigned long location;
+			char type;
+		};
+		std::vector<parenthesis> parens;
+			
+		unsigned len=input.length();
+		int cutfrom=-1;
+		int clearafter=-1;
+
+			
+		auto transform = [&](int ch, int &oline, int &och) {
+			for(int line=0;line<linestarts.size();line++) {
+				if(linestarts[line]>ch) {
+					oline=line-1;
+					och=ch-linestarts[line-1];
+						
+					return;
+				}
+			}
+				
+			oline=linestarts.size()-1;
+			och=ch-linestarts.back();
+		};
+			
+		for(unsigned i=0;i<len;i++) {
+			char c=input[i];
+				
+			if(inquotes) {
+				if(escape==1) {
+					if(isdigit(c)) {
+						escape=2;
+					}
+					else {
+						escape=0;
+					}
+				}
+				else if(escape==2) {
+					escape=0;
+				}
+				else if(c=='\\') {
+					escape=1;
+				}
+				else if(inquotes==1 && c=='\'') {
+					inquotes=0;
+				}
+				else if(inquotes==2 && c=='"') {
+					inquotes=0;
+				}
+			}
+			else if(c=='\'') {
+				inquotes=1;
+			}
+			else if(c=='"') {
+				inquotes=2;
+			}
+			else if(c=='#') { //simply skip to the end of the line
+				clearafter=i;
+				break;
+			}
+			else if(c==';') { // the line will end
+				int cline, pline, cchar, pchar;
+					
+				if(parens.size()) {
+					transform(i, cline, cchar);
+					transform(parens.back().location, pline, pchar);
+						
+					input="";
+					if(cline!=pline) {
+						throw ParseError{ExceptionType::MismatchedParenthesis, 
+							"`" + std::string(1, parens.back().type) + "` at character " +
+							String::From(pchar + 1) + " " + String::From(cline - pline) + " lines above " +
+							" is not closed.",
+							cchar, -cline
+						};
+					}
+					else {
+						throw ParseError{ExceptionType::MismatchedParenthesis,
+							"`" + std::string(1, parens.back().type) + "` at character " +
+								String::From(pchar + 1) +
+								" is not closed.",
+							cchar, -cline
+											
+						};
+					}
+				}
+					
+				if(c==';') {
+					cutfrom=i;
+				}
+				break;
+			}
+			else if(c=='(' || c=='[' || c=='{') {
+				parens.push_back({i, c});
+			}
+			else if(c==')' || c==']' || c=='}') {
+				bool error=
+					parens.size()==0 ||
+					(c==')' && parens.back().type!='(') ||
+					(c==']' && parens.back().type!='[') ||
+					(c=='}' && parens.back().type!='{')	;
+					
+				if(error) {
+					int cline, cchar;
+					transform(i, cline, cchar);
+						
+					throw ParseError{ExceptionType::UnexpectedToken, "`"+std::string(1, c)+"` is unexpected",
+						cchar, -cline		
+					};
+				}
+				else {
+					parens.pop_back();
+				}
 			}
 		}
-	}	
+			
+		if(cutfrom==-1) {
+			if(clearafter!=-1) {
+				input=input.substr(0, clearafter);
+			}
+				
+			//everything is fine, line ends at the very end
+			if(inquotes==0 && parens.size()==0) {
+				using std::swap;
+				swap(prepared, input);
+				linestarts.clear();
+			}
+			else {
+				return;
+			}
+		}
+		else {
+			prepared=input.substr(0, cutfrom);
+			input=input.substr(cutfrom+1);
+				
+			auto last=linestarts.back();
+			linestarts.clear();
+			linestarts.push_back(cutfrom-last);
+		}
+	}
 	
 	unsigned Programming::Compile(const std::string &input, unsigned long pline) {
 		//If necessary split the line or request more input
@@ -1264,7 +1285,10 @@ namespace Compilers {
 			
 			extractline(left, process, linestarts);
 			
+			int prevsz=List.size();
 			auto ret=parse(process);
+			elements+=List.size()-prevsz;
+
 			//ASTToSVG(input, *ret, {}, true);
 			///... fix line and char start of ast tree
 			

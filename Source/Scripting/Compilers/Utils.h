@@ -57,19 +57,25 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				if(c == '"') {
 					ret.push_back('"');
 				}
+				else if(c == '\'') {
+					ret.push_back('\'');
+				}
 				else if(c == '\\') {
 					ret.push_back('\\');
 				}
 				else if(c == 'n') {
 					ret.push_back('\n');
 				}
+				else if(c == 't') {
+					ret.push_back('\n');
+				}
 				else if(c >= '0' && c <= '9') {
 					escapenum++;
 					num = (num << 4) + (c - '0');
 				}
-				else if(c >= 'a' && c <= 'f') {
+				else if(tolower(c) >= 'a' && tolower(c) <= 'f') {
 					escapenum++;
-					num = (num << 4) + (c - 'a' + 10);
+					num = (num << 4) + (tolower(c) - 'a' + 10);
 				}
 				else {
 					throw ParseError{ExceptionType::UnexpectedToken, "Invalid escape sequence: \\" + input.substr(ch, 1), ch, 0};

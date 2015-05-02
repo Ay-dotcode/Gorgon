@@ -561,6 +561,8 @@ namespace Gorgon {
 				init();
 			}
 			
+			Function(const Function &) = delete;
+
 			virtual ~Function() { 
 				overloads.Destroy();
 				methods.Destroy();

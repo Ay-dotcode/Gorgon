@@ -328,7 +328,7 @@ namespace Gorgon { namespace Scripting {
 			name=scope.GetName()+" #"+String::From(scope.nextid++);
 		}
 		
-		Return returns = {nullptr, false, false};
+		Return returns = Return({nullptr, false, false});
 		int tempbase;
 		
 		//-unordered map

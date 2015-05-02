@@ -50,9 +50,9 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* 
 	* @subsection VT_Constant Constant
 	* %Constant is denoted with ! symbol. It should be followed by constant name in double quotes. %Constant can be qualified
-	* with namespace (using column for separator). Following is the constant Pi in the library `Integrals`:
+	* with namespace (using column for separator). Following is the constant Pi in the library `Integral`:
 	* @code
-	* !"Integrals:Pi"
+	* !"Integral:Pi"
 	* @endcode
 	* 
 	* 

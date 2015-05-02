@@ -95,6 +95,9 @@ namespace Compilers {
 		}
 		
 	private:
+		ASTNode *parse(const std::string &input);
+		void extractline(std::string &input, std::string &prepared, std::vector<unsigned> &linestarts);
+
 		ASTCompiler compiler;
 		std::string left;
 		std::vector<unsigned> linestarts;

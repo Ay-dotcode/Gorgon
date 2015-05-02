@@ -25,6 +25,7 @@ namespace Gorgon {
 			UnexpectedToken,
 			Constant,
 			InvalidLiteral,
+			FileNotFound,
 		};
 		
 		DefineEnumStrings(ExceptionType,
@@ -42,7 +43,7 @@ namespace Gorgon {
 			{ExceptionType::MismatchedParenthesis, "Mismatched paranthesis"},
 			{ExceptionType::UnexpectedToken, "Unexpected token"},
 			{ExceptionType::Constant, "Identifier is constant"},
-			{ExceptionType::InvalidLiteral, "Invalid literal"}
+			{ExceptionType::FileNotFound, "File not found"},
 		);
 		
 		enum class SymbolType {
@@ -232,6 +233,14 @@ namespace Gorgon {
 		public:
 			explicit ConstantException(const std::string& identifier, const std::string &details="", long int linenumber = 0) :
 			Exception(ExceptionType::Constant, identifier+" is a constant", linenumber) {
+				this->details=details;
+			}
+		};
+		
+		class FileNotFoundException : public Exception {
+		public:
+			explicit FileNotFoundException(const std::string& filename, const std::string &details="", long int linenumber = 0) :
+			Exception(ExceptionType::FileNotFound, "Cannot find or access file: "+filename, linenumber) {
 				this->details=details;
 			}
 		};
