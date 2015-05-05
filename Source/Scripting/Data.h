@@ -100,6 +100,16 @@ namespace Gorgon {
 			
 			Data DeReference();
 			
+			void SetParent(const Data data) {
+				delete parent;
+				parent=new Data(data);
+			}
+			
+			void RemoveParent() {
+				delete parent;
+				parent=nullptr;
+			}
+			
 			/// Returns if the data is in a valid state
 			bool IsValid() const {
 				return type != nullptr;
@@ -145,7 +155,7 @@ namespace Gorgon {
 			/// This data is a constant and should not be changed
 			bool isconstant = false;
 			
-			
+			Data *parent = nullptr;
 		private:
 			
 			void check();

@@ -12,7 +12,8 @@
 
 
 
-namespace Gorgon { namespace Scripting {
+namespace Gorgon { 
+namespace Scripting {
 		
 	template<class T_>
 	using StringFromFn = std::string(*)(const T_ &);
@@ -795,7 +796,7 @@ namespace Gorgon { namespace Scripting {
 	* parameter is the type of the object and the second is the type of the data member
 	*/
 	template<class C_, class T_>
-	class MappedData : public DataMember {
+	class MappedData : public Scripting::DataMember {
 	public:
 		/// Constructor
 		template<class ...P_>
@@ -804,13 +805,35 @@ namespace Gorgon { namespace Scripting {
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
 		}
 		
-		virtual Data Get(const Data &data) const override {
-			return {GetType(), data.GetValue<C_>().*member};
+		virtual Data Get(const Scripting::Data &data) const override {
+			if(data.IsConstant() || !data.IsReference()) {
+				return {GetType(), data.GetValue<const C_>().*member, false, true};
+			}
+			else {
+				Data d={GetType(), &(data.ReferenceValue<C_&>().*member), true, false};
+				d.SetParent(data);
+				return d;
+			}
+		}
+		virtual Data Get(Scripting::Data &data) const override {
+			if(data.IsConstant()) {
+				return {GetType(), data.GetValue<const C_>().*member, false, true};
+			}
+			else {
+				data.GetReference();
+				Data d={GetType(), &(data.ReferenceValue<C_&>().*member), true, false};
+				d.SetParent(data);
+				return d;
+			}
 		}
 		
 		/// Sets the data of the data member
 		virtual void Set(Data &source, const Data &value) const override {
-			if(source.IsReference()) {					
+			if(source.IsConstant()) {
+				throw ConstantException("Given item");
+			}
+			
+			if(source.IsReference()) {
 				C_ &obj  = source.ReferenceValue<C_&>();
 				obj.*member = value.GetValue <T_>();
 			}
@@ -851,11 +874,27 @@ namespace Gorgon { namespace Scripting {
 			if(obj==nullptr) {
 				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
 			}
-			return {GetType(), obj->*member};
-		}			
+			Data d={GetType(), &(obj->*member), true, data.IsConstant()};
+			d.SetParent(data);
+			return d;
+		}
+		
+		virtual Data Get(Data &data) const override {
+			C_ *obj=data.GetValue<C_*>();
+			if(obj==nullptr) {
+				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
+			}
+			Data d={GetType(), &(obj->*member), true, data.IsConstant()};
+			d.SetParent(data);
+			return d;
+		}
 		
 		/// Sets the data of the data member
 		virtual void Set(Data &source, const Data &value) const override {
+			if(source.IsConstant()) {
+				throw ConstantException("Given item");
+			}
+			
 			C_ *obj=source.GetValue<C_*>();
 			if(obj==nullptr) {
 				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
@@ -892,7 +931,11 @@ namespace Gorgon { namespace Scripting {
 		
 		virtual Data Get(const Data &data) const override {
 			return {GetType(), getter(data.GetValue<C_>())};
-		}			
+		}
+
+		virtual Data Get(Data &data) const override {
+			return {GetType(), getter(data.GetValue<C_>())};
+		}
 		
 		/// Sets the data of the data member
 		virtual void Set(Data &source, const Data &value) const override {
@@ -929,6 +972,14 @@ namespace Gorgon { namespace Scripting {
 		}
 		
 		virtual Data Get(const Data &data) const override {
+			C_ *obj=data.GetValue<C_*>();
+			if(obj==nullptr) {
+				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
+			}
+			return {GetType(), getter(*obj)};
+		}
+		
+		virtual Data Get(Data &data) const override {
 			C_ *obj=data.GetValue<C_*>();
 			if(obj==nullptr) {
 				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");

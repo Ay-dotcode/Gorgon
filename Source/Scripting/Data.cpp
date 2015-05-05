@@ -11,6 +11,9 @@ namespace Gorgon { namespace Scripting {
 		type=other.type;
 		isreference=other.isreference;
 		
+		if(other.parent)
+			parent=new Data(*other.parent);
+		
 		if(isreference || (type && type->IsReferenceType()))
 			isconstant=other.isconstant;
 		
@@ -26,9 +29,11 @@ namespace Gorgon { namespace Scripting {
 		
 		isreference=other.isreference;
 		isconstant=other.isconstant;
+		parent=other.parent;
 		
 		other.data=Any();
 		other.type=nullptr;
+		other.parent=nullptr;
 	}
 	
 	Data::Data(const Type& type) : type(&type) {
@@ -93,15 +98,19 @@ namespace Gorgon { namespace Scripting {
 			VirtualMachine::Get().References.Decrease(*this);
 		}
 		
+		delete parent;
+		
 		type=other.type;
 		data=other.data;
 		isreference=other.isreference;
+		parent=other.parent;
 		
 		if(isreference || (type && type->IsReferenceType()))
 			isconstant=other.isconstant;
 		
 		other.data=Any();
 		other.type=nullptr;
+		other.parent=nullptr;
 		
 		return *this;
 	}
@@ -120,6 +129,8 @@ namespace Gorgon { namespace Scripting {
 		if(type && IsReference() && data.IsSet() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Decrease(*this);
 		}
+		
+		delete parent;
 	}
 	
 	void Data::Delete() const {

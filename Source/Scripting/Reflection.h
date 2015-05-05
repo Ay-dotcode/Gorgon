@@ -812,6 +812,7 @@ namespace Gorgon {
 			
 			/// Gets data from the datamember
 			virtual Data Get(const Data &source) const = 0;
+			virtual Data Get(      Data &source) const = 0;
 			
 			/// Sets the data of the data member, if the source is a reference,
 			/// this function should perform in place replacement of the value

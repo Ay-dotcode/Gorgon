@@ -148,7 +148,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	};
 	
 	//generate output works only with functioncalls, it can be used to suppress result saving
-	Value compilevalue(ASTNode &tree, std::vector<Instruction> *list, Byte &tempind, bool generateoutput=true, std::vector<Instruction> *writeback=nullptr) {
+	Value compilevalue(ASTNode &tree, std::vector<Instruction> *list, Byte &tempind, bool generateoutput=true) {
 		if(tree.Type==ASTNode::Operator) { //arithmetic
 			ASSERT(tree.Leaves.GetSize()==2, "Operators require two operands");
 			
@@ -210,8 +210,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			ASSERT(tree.Leaves.GetSize()>0, "Function name is missing");
 			
 			Instruction inst;
-			//writebacks are the instructions necessary to write back composition nodes in an object.
-			std::vector<Instruction> writebacks;
 			
 			//regular function call
 			if(tree.Leaves[0].Type==ASTNode::Identifier) {
@@ -227,9 +225,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				//extract function name, it is the right most child in membership tree
 				inst.Name.SetStringLiteral(tree.Leaves[0].Leaves[1].Text);
 				
-				//first parameter is the this pointer, compile that too. This enables cascading. Writeback is necessary
-				//to save composition node objects after calling the function as the function might modify that object
-				inst.Parameters.push_back(compilevalue(tree.Leaves[0].Leaves[0], list, tempind, true, &writebacks));
+				//first parameter is the this pointer, compile that too. This enables cascading.
+				inst.Parameters.push_back(compilevalue(tree.Leaves[0].Leaves[0], list, tempind, true));
 				
 				inst.Type=(tree.Type==ASTNode::MethodCall ? InstructionType::MemberMethodCall : InstructionType::MemberFunctionCall);
 			}
@@ -244,12 +241,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			//add function call
 			list->push_back(inst);
-			
-			//add writebacks after the function call, so that execution will first retrieve
-			//the object, call the function and write it back
-			for(auto inst=writebacks.rbegin(); inst!=writebacks.rend(); ++inst) {
-				list->push_back(*inst);
-			}
 			
 			//prepare the value to be used. 
 			Value v;
@@ -285,9 +276,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 
 		//index access or array construction, a proper compiler should known types to generate
-		//much better code. As we do know anything about whats going on we should generate
-		//[] and []= code together if writebacks are requested. This node must generate optional writebacks.
-		//!TODO add writeback
+		//much better code.
 		if(tree.Type==ASTNode::Index) {
 			ASSERT(tree.Leaves.GetSize()>0, "Object name is missing");
 			
@@ -304,20 +293,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			list->push_back(inst);
 			
-			//if writeback is requested, instructions to check if the given item is an array like, if so
-			//instructions to writeback the member should be used.
-// 			if(writeback) {
-// 				Instruction writebackinst;
-// 				
-// 				writebackinst.Type=InstructionType::MemberFunctionCall;
-// 				writebackinst.Name="[]=";
-// 				writebackinst.Parameters.push_back(accessval);
-// 				writebackinst.Parameters.push_back(v);
-// 				writebackinst.Store=0;
-// 				
-// 				writeback->push_back(writebackinst);
-// 			}
-			
 			//return the result as a temporary
 			Value v;
 			v.Type=ValueType::Temp;
@@ -325,7 +300,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return v;
 		}
-		//Membership nodes accesses composition nodes and writeback is required in some cases
+		//Membership nodes accesses composition nodes
 		if(tree.Type==ASTNode::Member) { 
 			ASSERT(tree.Leaves.GetCount()==2, "Membership nodes should have two children");
 			
@@ -336,7 +311,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			inst.Name.SetStringLiteral("."+tree.Leaves[1].Text);
 			
 			//compile left tree, it may have more memberships or indexed access
-			auto accessval=compilevalue(tree.Leaves[0], list, tempind, true, writeback);
+			auto accessval=compilevalue(tree.Leaves[0], list, tempind, true);
 			inst.Parameters.push_back(accessval);
 			inst.Store=tempind;
 			
@@ -345,21 +320,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			Value v;
 			v.Type=ValueType::Temp;
 			v.Result=tempind++;
-			
-			//if requested prepare write back. Const markings and symbol table based compilation
-			//will reduce the amount of writebacks
-			if(writeback) {
-				Instruction writebackinst;
-				
-				//same as access
-				writebackinst.Type=InstructionType::MemberFunctionCall;
-				writebackinst.Name=inst.Name;
-				writebackinst.Parameters.push_back(accessval);
-				writebackinst.Parameters.push_back(v);
-				writebackinst.Store=0;
-				
-				writeback->push_back(writebackinst);
-			}
 			
 			return v;
 		}
@@ -373,14 +333,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		//temporaries start from 1
 		Byte tempind=1;
 
-		std::vector<Instruction> writebacks;
-		
 		//Assignment operation
 		if(tree->Type==ASTNode::Assignment) {
 			ASSERT(tree->Leaves.GetCount()==2, "Assignment requires two parameters");
 			
 			Instruction inst;
 			inst.Type=InstructionType::Assignment;
+			inst.Reference=false;
 			
 			inst.RHS=compilevalue(tree->Leaves[1], list, tempind);
 			
@@ -393,7 +352,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				
 				inst.Name.SetStringLiteral("."+ tree->Leaves[0].Leaves[1].Text);
 				inst.Store=0;
-				inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[0], list, tempind, true, &writebacks));
+				inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[0], list, tempind, true));
 				inst.Parameters.push_back(compilevalue(tree->Leaves[1], list, tempind));
 				inst.Type=InstructionType::MemberFunctionCall;
 			}
@@ -402,7 +361,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				
 				inst.Name.SetStringLiteral("[]=");
 				inst.Store=0;
-				inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[0], list, tempind, true, &writebacks));
+				inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[0], list, tempind, true));
 				for(int i=1; i<tree->Leaves[0].Leaves.GetSize(); i++) {
 					inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[i], list, tempind));
 				}
@@ -414,11 +373,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			}
 			
 			list->push_back(inst);
-			
-			//save any writebacks
-			for(auto inst=writebacks.rbegin(); inst!=writebacks.rend(); ++inst) {
-				list->push_back(*inst);
-			}
 		}
 		
 		//Simple function or method call, difer the compilation to compile value. Result of the function call
@@ -664,6 +618,23 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			v.SetVariable(tree->Leaves[0].Leaves[0].Text);
 			inst.Parameters.push_back(v);
 			inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[1], list, tempind));
+			list->push_back(inst);
+			
+			return true;
+		}
+		else if(tree->Text=="ref") {
+			ASSERT(tree->Leaves.GetSize()==1, "ref keyword requires a single parameter");
+			ASSERT(tree->Leaves[0].Leaves.GetSize()==2, "Assignment requires two parameters");
+			ASSERT(tree->Leaves[0].Leaves[0].Type==ASTNode::Identifier || 
+				   tree->Leaves[0].Leaves[0].Type==ASTNode::Variable,
+				   "ref can only be applied to simple variables"
+			);
+			
+			Instruction inst;
+			inst.Type=InstructionType::Assignment;
+			inst.Name.SetVariable(tree->Leaves[0].Leaves[0].Text);
+			inst.Reference=true;
+			inst.RHS=compilevalue(tree->Leaves[0].Leaves[1], list, tempind);
 			list->push_back(inst);
 			
 			return true;

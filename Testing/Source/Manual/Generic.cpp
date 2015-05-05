@@ -116,7 +116,7 @@ void testfill(std::string &s) {
 	s+="abcdefg";
 }
 
-void testset(char &c) {
+void testset(int &c) {
 	c='5';
 }
 
@@ -234,7 +234,7 @@ int main() {
 				MapFunction(
 					testset, nullptr, 
 					{
-						Parameter("c","",Types::Char(), Gorgon::Scripting::ReferenceTag)
+						Parameter("c","",Types::Int(), Gorgon::Scripting::ReferenceTag)
 					}
 				), 
 			}
