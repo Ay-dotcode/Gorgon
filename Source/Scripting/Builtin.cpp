@@ -116,46 +116,73 @@ namespace Gorgon {
 				"Represents a truth statement. Can either be true or false."
 			);
 			
-			auto intadd=new MappedOperator("+", "Adds two numbers together",
-				Int, Int, Int, 
-				[](int l, int r) { return l+r; }
-			);
-			intadd->AddOverload(Double, Double, [](int l, double r) { return l+r; });
-			intadd->AddOverload(Float,  Float,  [](int l, float r) { return l+r; });
 			
-			auto intsub=new MappedOperator("-", "Subtracts a number from this one",
-					Int, Int, Int, 
-					[](int l, int r) { return l-r; }
-			);
-			intsub->AddOverload(Double, Double, [](int l, double r) { return l-r; });
-			intsub->AddOverload(Float,  Float,  [](int l, float r) { return l-r; });
-			
-			auto intmul=new MappedOperator("*", "Multiplies two numbers together",
-					Int, Int, Int, 
-					[](int l, int r) { return l*r; }
-			);
-			intmul->AddOverload(Double, Double, [](int l, double r) { return l*r; });
-			intmul->AddOverload(Float,  Float,  [](int l, float r) { return l*r; });
-
-			
-			Int->AddFunctions({
+			Int->AddFunctions({				
+				new MappedOperator("+", "Adds two numbers together",
+					Int, {
+						MapOperator(
+							[](int l, int r) { return l+r; }, 
+							Int, Int
+						),
+						MapOperator(
+							[](int l, double r) { return l+r; },
+							Double, Double
+						),
+						MapOperator(
+							[](int l, float r) { return l+r; },
+							Float, Float
+						),
+					}
+				),
 				
-				intadd, intsub, intmul,
+				new MappedOperator("-", "Subtracts a number from this one",
+					Int, {
+						MapOperator(
+							[](int l, int r) { return l-r; }, 
+							Int, Int
+						),
+						MapOperator(
+							[](int l, double r) { return l-r; },
+							Double, Double
+						),
+						MapOperator(
+							[](int l, float r) { return l-r; },
+							Float, Float
+						),
+					}
+				),
+				
+				new MappedOperator("*", "Multiplies two numbers together",
+					Int, {
+						MapOperator(
+							[](int l, int r) { return l*r; }, 
+							Int, Int
+						),
+						MapOperator(
+							[](int l, double r) { return l*r; },
+							Double, Double
+						),
+						MapOperator(
+							[](int l, float r) { return l*r; },
+							Float, Float
+						),
+					}
+				),
 
 				new MappedOperator( "/",
 					"Divides this number to the given one. Division operation is performed in double type",
-					Double, Int, Double, [](int l, double r) { return double(l)/r; }
+					Int, Double, Double, [](int l, double r) { return double(l)/r; }
 				),
 				
 				new MappedOperator( "^",
 					"Raises this number to the given power. All power operations are performed in double type",
-					Double, Int, Double, [](int l, double r) { return pow(double(l), r); }
+					Int, Double, Double, [](int l, double r) { return pow(double(l), r); }
 				),
 				
 				new MappedOperator( "mod",
 					"Returns the remainder of the division of the left operand to the right operand.",
 					Int, Int, Int, [](int l, int r) { 
-						return l>=0 ? l%r : (l%r)+r;
+						return l%r;
 					}
 				),
 				
@@ -165,6 +192,228 @@ namespace Gorgon {
 				MAP_COMPARE(!=, !=, Int, int),
 				MAP_COMPARE( >, >,  Int, int),
 				MAP_COMPARE( <, <,  Int, int),
+			});
+			
+			Float->AddFunctions({
+				new MappedOperator("+", "Adds two numbers together",
+					Float, {
+						MapOperator(
+							[](float l, double r) { return l+r; },
+							Double, Double
+						),
+						MapOperator(
+							[](float l, float r) { return l+r; },
+							Float, Float
+						),
+					}
+				),
+				
+				new MappedOperator("-", "Subtracts a number from this one",
+					Float, {
+						MapOperator(
+							[](float l, double r) { return l-r; },
+							Double, Double
+						),
+						MapOperator(
+							[](float l, float r) { return l-r; },
+							Float, Float
+						),
+					}
+				),
+				
+				new MappedOperator("*", "Multiplies two numbers together",
+					Float, {
+						MapOperator(
+							[](float l, double r) { return l*r; },
+							Double, Double
+						),
+						MapOperator(
+							[](float l, float r) { return l*r; },
+							Float, Float
+						),
+					}
+				),
+
+				new MappedOperator( "/",
+					"Divides this number to the given one. Division operation is performed in double type",
+					Float, Double, Double, [](float l, double r) { return double(l)/r; }
+				),
+				
+				new MappedOperator( "^",
+					"Raises this number to the given power. All power operations are performed in double type",
+					Float, Double, Double, [](float l, double r) { return pow(double(l), r); }
+				),
+				
+				new MappedOperator( "mod",
+					"Returns the remainder of the division of the left operand to the right operand.",
+					Float, Float, Float, [](float l, float r) -> float { 
+						return fmod(l, r);
+					}
+				),
+				
+				new Function( "floor",
+					"Returns the largest integer number smaller than this one.", 
+					Float, {
+						MapFunction(
+							[](float v) -> float {
+								return floor(v);
+							}, Float,
+							{ },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function( "ceil",
+					"Returns the smallest integer number larger than this one.", 
+					Float, {
+						MapFunction(
+							[](float v) -> float {
+								return ceil(v);
+							}, Float,
+							{ },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function( "round",
+					"Returns the closest integer number to this one.", 
+					Float, {
+						MapFunction(
+							[](float v) -> float {
+								return round(v);
+							}, Float,
+							{ },
+							ConstTag
+						),
+						MapFunction(
+							[](float v, int digits) -> float {
+								double exp=exp10(digits);
+								return round(v*exp)/exp;
+							}, Float,
+							{ 
+								Parameter( "digits",
+									"The digits that will be kept after the decimal point.",
+									Int
+								)
+							},
+							ConstTag
+						),
+					}
+				),
+				
+				MAP_COMPARE( =, ==, Float, float),
+				MAP_COMPARE(>=, >=, Float, float),
+				MAP_COMPARE(<=, <=, Float, float),
+				MAP_COMPARE(!=, !=, Float, float),
+				MAP_COMPARE( >, >,  Float, float),
+				MAP_COMPARE( <, <,  Float, float),
+			});
+			
+			Double->AddFunctions({
+				new MappedOperator("+", "Adds two numbers together",
+					Double, {
+						MapOperator(
+							[](double l, double r) { return l+r; },
+							Double, Double
+						),
+					}
+				),
+				
+				new MappedOperator("-", "Subtracts a number from this one",
+					Double, {
+						MapOperator(
+							[](double l, double r) { return l-r; },
+							Double, Double
+						),
+					}
+				),
+				
+				new MappedOperator("*", "Multiplies two numbers together",
+					Double, {
+						MapOperator(
+							[](double l, double r) { return l*r; },
+							Double, Double
+						),
+					}
+				),
+
+				new MappedOperator( "/",
+					"Divides this number to the given one. Division operation is performed in double type",
+					Double, Double, Double, [](double l, double r) { return l/r; }
+				),
+				
+				new MappedOperator( "^",
+					"Raises this number to the given power. All power operations are performed in double type",
+					Double, Double, Double, [](double l, double r) { return pow(l, r); }
+				),
+				
+				new MappedOperator( "mod",
+					"Returns the remainder of the division of the left operand to the right operand.",
+					Double, Double, Double, [](double l, double r) { 
+						return fmod(l, r);
+					}
+				),
+				
+				new Function( "floor",
+					"Returns the largest integer number smaller than this one.", 
+					Double, {
+						MapFunction(
+							[](double v) -> double {
+								return floor(v);
+							}, Double,
+							{ },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function( "ceil",
+					"Returns the smallest integer number larger than this one.", 
+					Double, {
+						MapFunction(
+							[](double v) -> double {
+								return ceil(v);
+							}, Double,
+							{ },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function( "round",
+					"Returns the closest integer number to this one.", 
+					Double, {
+						MapFunction(
+							[](double v) {
+								return round(v);
+							}, Double,
+							{ },
+							ConstTag
+						),
+						MapFunction(
+							[](double v, int digits) {
+								double exp=exp10(digits);
+								return round(v*exp)/exp;
+							}, Double,
+							{ 
+								Parameter( "digits",
+									"The digits that will be kept after the decimal point.",
+									Int
+								)
+							},
+							ConstTag
+						),
+					}
+				),
+				
+				MAP_COMPARE( =, ==, Double, double),
+				MAP_COMPARE(>=, >=, Double, double),
+				MAP_COMPARE(<=, <=, Double, double),
+				MAP_COMPARE(!=, !=, Double, double),
+				MAP_COMPARE( >, >,  Double, double),
+				MAP_COMPARE( <, <,  Double, double),
 			});
 
 			Int->AddConstructors({

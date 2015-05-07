@@ -597,6 +597,13 @@ namespace Scripting {
 	Scripting::Function::Overload *MapFunction(F_ fn, const Type *returntype, ParameterList parameters, P_ ...tags) {
 		return new MappedFunction<F_>(fn, returntype, std::move(parameters), tags...);
 	}
+	
+	template<class F_, class ...P_>
+	Scripting::Function::Overload *MapOperator(F_ fn, const Type *returntype, const Type *rhs) {
+		return new MappedFunction<F_>(fn, returntype, {
+			Scripting::Parameter("rhs", "Right hand side of the operator", rhs)
+		}, ConstTag);
+	}
 
 	/**
 		* This class makes working with operators easier.
@@ -605,8 +612,8 @@ namespace Scripting {
 	public:
 		/// Constructor, returntype and parent could be nullptr, tags are optional. 
 		template<class F_>
-		MappedOperator(const std::string &name, const std::string &help, const Type *returntype, 
-					   const Type *parent, const Type *rhs, F_ fn) :
+		MappedOperator(const std::string &name, const std::string &help, const Type *parent, 
+					   const Type *returntype, const Type *rhs, F_ fn) :
 		Function( name, help, *parent, {}, Scripting::OperatorTag ) {
 			ASSERT(returntype, "Operators should have a return type", 1, 1);
 			ASSERT(parent, "Operators should belong a class", 1, 1);
@@ -621,9 +628,23 @@ namespace Scripting {
 			);
 		}
 		
+		MappedOperator(const std::string &name, const std::string &help, const Type *parent, 
+					   std::initializer_list<Function::Overload *> overloads) : 
+		Function( name, help, *parent, {}, Scripting::OperatorTag) {
+			
+			for(auto overload : overloads) {
+				ASSERT(overload->HasReturnType(), "Operators should have a return type", 1, 1);
+				ASSERT(overload->IsConstant(), "Operators should be constant functions", 1, 1);
+				ASSERT(overload->Parameters.size()==1, "Operators should have a single parameter", 1, 1);
+				
+				Function::AddOverload(overload);
+			}
+			
+		}
+		
 		/// Adds a new operator overload
 		template<class F_>
-		void AddOverload(const Type *returntype, const Type *rhs, F_ fn) {
+		void AddOverload(F_ fn, const Type *returntype, const Type *rhs) {
 			ASSERT(returntype, "Operators should have a return type", 1, 1);
 			
 			Function::AddOverload(
@@ -646,8 +667,8 @@ namespace Scripting {
 	*/
 	#define MAP_COMPARE(opname, op, mappedtype, cpptype) \
 		new MappedOperator( #opname, \
-			"Compares two "#mappedtype" types.", \
-			Bool, mappedtype, mappedtype, [](cpptype l, cpptype r) { return l op r; } \
+			"Compares two "#mappedtype" types.", mappedtype, \
+			Bool, mappedtype, [](cpptype l, cpptype r) { return l op r; } \
 		)
 	
 	/**

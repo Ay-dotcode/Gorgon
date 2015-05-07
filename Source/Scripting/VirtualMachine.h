@@ -39,9 +39,7 @@ namespace Gorgon {
 		};
 		
 		
-		/// This class defines a virtual environment for scripts to run. It determines
-		/// which additional functions the script can access, working directory, and safety
-		/// level.
+		/// This class defines a virtual environment for scripts to run.
 		class VirtualMachine {
 		public:
 
