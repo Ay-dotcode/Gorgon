@@ -764,7 +764,7 @@ namespace Compilers {
 		
 		static const std::set<std::string, String::CaseInsensitiveLess> internalkeywords={
 			"if", "for", "elseif", "else", "while", "continue", "break", "end", "static", "function", 
-			"method", "call", "return", "source"
+			"method", "call", "return", "source", "ref"
 		};
 		
 	}
@@ -1048,7 +1048,7 @@ namespace Compilers {
 						}
 					}
 				}
-				else if(token.repr=="const" || token.repr=="static") { //this is actually an assignment
+				else if(token.repr=="const" || token.repr=="static" || token.repr=="ref") { //this is actually an assignment
 					auto name=String::ToLower(token.repr);
 					assignment(nullptr, name);
 					auto proot=root;

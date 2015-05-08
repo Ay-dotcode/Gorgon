@@ -12,6 +12,7 @@
 			<item>const</item>
 			<item>unset</item>
 			<item>source</item>
+			<item>ref</item>
 		</list>
 		
 		<list name="functions">
@@ -38,6 +39,7 @@
 				<!-- Special keywords -->
 				<StringDetect attribute="Keyword" context="#stay" String="const" />
 				<StringDetect attribute="Keyword" context="#stay" String="static" />
+				<StringDetect attribute="Keyword" context="#stay" String="ref" />
 				
 				<!-- Line end and spacing -->
 				<DetectChar attribute="Normal Text" context="#stay" char=";" />

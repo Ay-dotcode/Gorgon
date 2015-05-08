@@ -141,6 +141,7 @@ namespace Gorgon { namespace Scripting {
 			union {
 				/// Whether to store the result of the function
 				Byte Store;
+				bool Reference;
 				int JumpOffset=0;
 			};
 		};

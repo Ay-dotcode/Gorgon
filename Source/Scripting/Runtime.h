@@ -160,6 +160,8 @@ namespace Gorgon {
 			void Set(Any value) {
 				isreference=false;
 				isconstant=false;
+				delete parent;
+				parent=nullptr;
 				
 				data.Swap(value);
 			}
@@ -174,6 +176,8 @@ namespace Gorgon {
 			void Set(const Type &type, Any value) {
 				isreference=false;
 				isconstant=false;
+				delete parent;
+				parent=nullptr;
 				
 				data.Swap(value);
 				this->type=&type;

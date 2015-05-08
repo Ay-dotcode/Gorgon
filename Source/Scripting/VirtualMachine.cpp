@@ -1464,8 +1464,8 @@ namespace Gorgon {
 				if(inst->Name.Type!=ValueType::Variable && inst->Name.Type!=ValueType::Identifier)
 					throw std::runtime_error("Variables can only be represented with variables.");
 				
-				Data v=getvalue(inst->RHS);
-				if(v.IsReference() && !v.GetType().IsReferenceType() && inst->RHS.Type!=ValueType::Temp) {
+				Data v=getvalue(inst->RHS, inst->Reference);
+				if(v.IsReference() && !inst->Reference) {
 					v=v.DeReference();
 				}
 				

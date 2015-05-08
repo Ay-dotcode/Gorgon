@@ -148,6 +148,10 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Data Type::MorphTo(const Type& type, Data source, bool allowtypecast) const {
+		if(type==Types::Variant()) {
+			return {Types::Variant(), source};
+		}
+			
 		auto inheritance=inheritsfrom.find(type);
 		Inheritance::ConversionFunction fn;
 		bool downcasting=false;
