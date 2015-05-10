@@ -1312,7 +1312,9 @@ namespace Compilers {
 			if(showsvg__) {
 				std::vector<std::string> strlines;
 				for(auto it=List.end()-elements;it!=List.end();++it) {
-					strlines.push_back(Disassemble(&(*it)));
+					auto l=Disassemble(&(*it));
+					strlines.push_back(l);
+					std::cout<<" >>> "<<l<<std::endl;
 				}
 				
 				ASTToSVG(input, *ret, strlines, true);

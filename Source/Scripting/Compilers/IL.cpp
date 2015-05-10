@@ -91,13 +91,19 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* 
 	* @subsection Assignment Assignment
 	* Assignment instructions starts with a variable value and can uniquely be identified from the first $ sign. After
-	* variable value (see \ref VT_Variable), there should be an equal sign followed by the value to be assigned. This
-	* value could be represented with any value type denoted in \ref Value_Types. Assignment to a function result is not 
-	* possible without using a temporary. Following is an example for assignment:
+	* variable value (see \ref VT_Variable), there should be an equal sign or a column (column denoting assignment will
+	* be performed as reference) followed by the value to be assigned. This value could be represented with any value 
+	* type denoted in \ref Value_Types. Assignment to a function result is not possible without using a temporary. 
+	* Following is an example for assignment:
 	* @code
 	* $"start" = i"4"
 	* @endcode
 	* 
+	* @subsection SaveToTemp Save to temporary
+	* Saves a value to a temporary. If column is used instead of equal sign, reference assignment is performed. Example:
+	* @code
+	* ."1" = $a
+	* @endcode
 	* 
 	* @subsection Call Function/Method call
 	* A function call is denoted by "f" symbol, while "m" is method call. These symbols are followed by either "n" or "m",
@@ -110,6 +116,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* 
 	* After the function identifier, parameters of the function is supplied. Each parameter is a value. Values do not need
 	* spaces in between, however, it is possible to separate them with spaces. 
+	* 
+	* Return value of the function can be saved to a temporary.
 	* 
 	* 
 	* The following line calls echo function as `echo("Result: ", 3+4);`
@@ -198,6 +206,17 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		eatwhite(input, ch);			
 		CheckInputFor(input, ch, '=');
 		eatwhite(input, ch);
+		
+		if(input[ch]!='m' && input[ch]!='f') { //save to temp
+			List.resize(List.size()+1);
+			auto &inst = List.back();
+			
+			inst.Type  = InstructionType::SaveToTemp;
+			inst.Store = Byte(temp);
+			inst.RHS   = parsevalue(input, ch);
+			
+			return ;
+		}
 		
 		fncall(input, ch, false);
 

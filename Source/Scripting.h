@@ -16,17 +16,7 @@ namespace Gorgon {
 
 	/** 
 	 * This namespace contains Gorgon Script parser and reflection facilities.
-	 * Gorgon Script allows applications to have embedded scripting capabilities. This
-	 * scripting system has two dialects. First one is console dialect. This dialect
-	 * allows fast command entry much like Bash script. Strings does not need to be
-	 * quoted, function parameters are separated by space. Nested functions should contain
-	 * surrounding parenthesis.
-	 * 
-	 * Second dialect is the programming dialect. 
-	 * In this dialect strings should be quoted, function parameters should be placed inside 
-	 * parenthesis, and they should be separated using comma. Additionally, scripting dialect
-	 * allows lines to be terminated using semicolon. Much like in Javascript, semicolon 
-	 * is not mandatory.
+	 * @see GScript
 	 */
 	namespace Scripting {
 		
@@ -36,8 +26,34 @@ namespace Gorgon {
 		 * Gorgon::Scripting allows embedded scripting capabilities to the users of the library. It has multiple 
 		 * dialects and an easy method for embedding functions.
 		 * 
+		 * Gorgon Script allows applications to have embedded scripting capabilities. This
+		 * scripting system has two dialects. First one is console dialect. This dialect
+		 * allows fast command entry much like Bash script. Strings does not need to be
+		 * quoted, function parameters are separated by space. Nested functions should contain
+		 * surrounding parenthesis.
+		 * 
+		 * Second dialect is the programming dialect. 
+		 * In this dialect strings should be quoted, function parameters should be placed inside 
+		 * parenthesis, and they should be separated using comma. Additionally, scripting dialect
+		 * allows lines to be terminated using semicolon. Much like in Javascript, semicolon 
+		 * is not mandatory.
 		 */
-
+		
+		/**
+		 * @page GScript
+		 * @subpage GScript-todo
+		 * 
+		 */
+		
+		 /** 
+		 * @page GScript-todo TODO
+		 * Tasks that are left for later:
+		 * * Save compiled instructions to a file
+		 * * Events
+		 * * Custom types
+		 * * Range operator (..)
+		 * 
+		 */
 		
 		/** 
 		 * This function parses the code and returns any syntax errors. This function

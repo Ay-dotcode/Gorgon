@@ -137,6 +137,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 	private:
 		bool compilekeyword(ASTNode *tree, Byte &tempind);
+		void release(int start, int except=-1);
+		void release(int start, Value except);
 		
 		
 		struct scope {
@@ -145,7 +147,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				ifkeyword,
 				whilekeyword,
 				functionkeyword,
-				methodkeyword
+				methodkeyword,
+				forkeyword
 			} type;
 			
 			static const std::string keywordnames[];
@@ -160,13 +163,16 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			Data data;
 			std::vector<int> indices;
 			std::vector<int> indices2;
-
+			
 			int state=0;
+			int clear=-1;
 		};
 		
 		std::vector<scope> scopes;
 		std::vector<std::vector<Instruction>*> redirects;
 		
+		//temporaries start from 1
+		int indstart=1;
 		int waitingcount = 0;
 		std::vector<Instruction> *list;
 		Base &parser;

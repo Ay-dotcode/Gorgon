@@ -60,7 +60,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		switch(instruction->Type) {
 		case InstructionType::Assignment:
-			return std::string("$\"")+instruction->Name.Name+"\" = "+disassemblevalue(instruction->RHS);
+			if(instruction->Reference) 
+				return std::string("$\"")+instruction->Name.Name+"\" : "+disassemblevalue(instruction->RHS);
+			else
+				return std::string("$\"")+instruction->Name.Name+"\" = "+disassemblevalue(instruction->RHS);
 			
 		case InstructionType::FunctionCall:
 			fnmark="fn";
@@ -86,6 +89,12 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			return ret;
 		}
+		
+		case InstructionType::SaveToTemp:
+			if(instruction->Reference) 
+				return ".\""+String::From(instruction->Store)+"\" : " + disassemblevalue(instruction->RHS);
+			else
+				return ".\""+String::From(instruction->Store)+"\" = " + disassemblevalue(instruction->RHS);
 			
 		case InstructionType::RemoveTemp:
 			return "x\""+String::From(instruction->Store)+"\"";

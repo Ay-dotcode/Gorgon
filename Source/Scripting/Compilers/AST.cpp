@@ -37,6 +37,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				type="Iden";
 				detail=tree.Text;
 				break;
+			case ASTNode::Variable:
+				type="Var";
+				detail=tree.Text;
+				break;
 			case ASTNode::Index:
 				type="Indx";
 				break;
@@ -64,6 +68,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		if(detail.length()) {
 			detail=String::Replace(String::Replace(String::Replace(detail, "\"", "\\\""),"|", "\\|")," ","\\ ");
+			detail=String::Replace(String::Replace(detail, ">", "\\>"),"<", "\\<");
+			detail=String::Replace(String::Replace(detail, "+", "\\+"),"-", "\\-");
 			ret=String::From(ind++)+"[shape=record, label=\"{"+type+"|"+detail+"}\"];\n";
 		}
 		else {
@@ -327,11 +333,32 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		Utils::ASSERT_FALSE("Unknown AST Node");
 	}
 	
+	void ASTCompiler::release(int start, int except) {
+		for(int i=start;i>=indstart;i--) {
+			if(i!=except) {
+				Instruction inst;
+				inst.Type=InstructionType::RemoveTemp;
+				inst.Store=i;
+				
+				list->push_back(inst);
+			}
+		}
+	}
+	
+	void ASTCompiler::release(int start, Value except) {
+		if(except.Type==ValueType::Temp) {
+			release(start, except.Result);
+		}
+		else {
+			release(start);
+		}
+	}
+	
 	unsigned ASTCompiler::Compile(ASTNode *tree) {
 		auto sz=list->size();
 		
-		//temporaries start from 1
-		Byte tempind=1;
+		
+		Byte tempind=indstart;
 
 		//Assignment operation
 		if(tree->Type==ASTNode::Assignment) {
@@ -408,13 +435,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 		
 		//release used temporaries
-		for(int i=tempind-1;i>0;i--) {
-			Instruction inst;
-			inst.Type=InstructionType::RemoveTemp;
-			inst.Store=i;
-			
-			list->push_back(inst);
-		}
+		release(tempind-1);
 		
 		//if we are processing a function, transfer instructions to function
 		//instructions
@@ -443,9 +464,15 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			jf.Type=InstructionType::JumpFalse;
 			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
 			
+			release(tempind-1, jf.RHS);
+			
+			
 			//but since the end is not known, it will be filled later, using
 			//the index of the current instruction
 			scopes.push_back(scope{scope::ifkeyword, (int)list->size()});
+
+			if(jf.RHS.Type==ValueType::Temp)
+				scopes.back().clear=jf.RHS.Result;
 			
 			list->push_back(jf);
 			waitingcount++;
@@ -496,10 +523,23 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			(*list)[scopes.back().indices.back()].JumpOffset=list->size()-scopes.back().indices.back();
 			scopes.back().indices.back()=list->size()-1;
 			
+			if(scopes.back().clear!=-1) {
+				Instruction remtemp;
+				remtemp.Type=InstructionType::RemoveTemp;
+				remtemp.Store=scopes.back().clear;
+				list->push_back(remtemp);
+				scopes.back().clear=-1;
+			}
+			
 			//to check if the condition of this elseif holds, if not it will jump to end
 			Instruction jf;
 			jf.Type=InstructionType::JumpFalse;
 			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
+			
+			release(tempind-1, jf.RHS);
+			
+			if(jf.RHS.Type==ValueType::Temp) 
+				scopes.back().clear=jf.RHS.Result;
 			
 			//which will be determined later
 			scopes.back().indices.push_back(list->size());
@@ -522,18 +562,138 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			jf.Type=InstructionType::JumpFalse;
 			jf.RHS=compilevalue(tree->Leaves[0], list, tempind);
 			
+			release(tempind-1, jf.RHS);
+			tempind=indstart;
+			
 			//termination point will be determined later
 			scopes.back().indices.push_back((int)list->size());
 			
 			list->push_back(jf);
+			if(jf.RHS.Type==ValueType::Temp) {
+				scopes.back().clear=jf.RHS.Result;
+			}
+			
 			waitingcount++;
 			
+			return true;
+		}
+		else if(tree->Text=="for") {
+			ASSERT(tree->Leaves.GetCount()==2, "For keyword requires two parameters, variable and array");
+			ASSERT(tempind==indstart, "Some is wrong here");
+			
+			Instruction remtemp;
+			remtemp.Type=InstructionType::RemoveTemp;
+			
+			//compile the container
+			auto forind=tempind++;
+			auto forarr=tempind++;
+			
+			//index
+			Instruction save0;
+			save0.Type=InstructionType::SaveToTemp;
+			save0.Store=forind;
+			save0.RHS.SetLiteral(Types::Int(), 0);
+			save0.Reference=false;
+			list->push_back(save0);
+			
+			Value val=compilevalue(tree->Leaves[1], list, tempind);
+			
+			//save into a temporary that will stay during the loop
+			if(val.Type!=ValueType::Temp) {
+				Instruction inst;
+				inst.Type=InstructionType::SaveToTemp;
+				inst.Store=forarr;
+				inst.Reference=false;
+				inst.RHS=val;
+				
+				list->push_back(inst);
+			}
+			else { //if already saved as a temp
+				list->back().Store=forarr;
+			}
+			indstart+=2;
+			
+			for(int i=tempind-1;i>=indstart;i--) {
+				remtemp.Store=i;
+				
+				list->push_back(remtemp);
+			}
+			tempind=indstart;
+			
+			scopes.push_back(scope{scope::forkeyword, (int)list->size()});
+			scopes.back().state=forind;
+			
+			//get the current size of the array
+			Instruction callsize;
+			callsize.Type=InstructionType::MemberFunctionCall;
+			callsize.Name.SetStringLiteral("size");
+			callsize.Parameters.push_back({});
+			callsize.Parameters.back().SetTemp(forarr);
+			callsize.Store=tempind++;
+			list->push_back(callsize);
+			
+			//compare it with the current index
+			Instruction compsize;
+			compsize.Type=InstructionType::MemberFunctionCall;
+			compsize.Name.SetStringLiteral("<");
+			compsize.Parameters.push_back({});
+			compsize.Parameters.back().SetTemp(forind);
+			compsize.Parameters.push_back({});
+			compsize.Parameters.back().SetTemp(tempind-1);
+			compsize.Store=tempind++;
+			list->push_back(compsize);
+			
+			//jump out if not valid
+			Instruction jf;
+			jf.Type=InstructionType::JumpFalse;
+			jf.RHS.SetTemp(tempind-1);
+			
+			release(tempind-2);
+			
+			//termination point will be determined later
+			scopes.back().indices.push_back((int)list->size());
+			
+			list->push_back(jf);
+			
+			scopes.back().clear=tempind-1;
+			remtemp.Store=tempind-1;
+			list->push_back(remtemp);
+
+			tempind=indstart;
+			
+			
+			//get element
+			Instruction elm;
+			elm.Type=InstructionType::MemberFunctionCall;
+			elm.Name.SetStringLiteral("[]");
+			elm.Parameters.push_back({});
+			elm.Parameters.back().SetTemp(forarr);
+			elm.Parameters.push_back({});
+			elm.Parameters.back().SetTemp(forind);
+			elm.Store=tempind++;
+			list->push_back(elm);
+			
+			//assign the variable
+			Instruction assgn;
+			assgn.Type=InstructionType::Assignment;
+			assgn.Name.SetVariable(tree->Leaves[0].Text);
+			assgn.RHS.SetTemp(tempind-1);
+			list->push_back(assgn);
+			
+			remtemp.Store=--tempind;
+			list->push_back(remtemp);
+			
+			waitingcount++;
 			return true;
 		}
 		else if(tree->Text=="break") {
 			scope *supported=nullptr;
 			for(auto it=scopes.rbegin(); it!=scopes.rend(); ++it) {
 				if(it->type==scope::whilekeyword) {
+					supported=&*it;
+					break;
+				}
+				else if(it->type==scope::forkeyword) {
 					supported=&*it;
 					break;
 				}
@@ -559,6 +719,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			scope *supported=nullptr;
 			for(auto it=scopes.rbegin(); it!=scopes.rend(); ++it) {
 				if(it->type==scope::whilekeyword) {
+					supported=&*it;
+					break;
+				}
+				else if(it->type==scope::forkeyword) {
 					supported=&*it;
 					break;
 				}
@@ -779,6 +943,50 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					
 					break;
 				}
+				
+				case scope::forkeyword: {
+					auto start=scopes.back().indices.front();
+					Byte forind=scopes.back().state;
+					
+					Instruction remtemp;
+					remtemp.Type=InstructionType::RemoveTemp;
+					
+					
+					Instruction incr;
+					incr.Type=InstructionType::MemberFunctionCall;
+					incr.Name.SetStringLiteral("+");
+					incr.Parameters.push_back({});
+					incr.Parameters.back().SetTemp(forind);
+					incr.Parameters.push_back({});
+					incr.Parameters.back().SetLiteral(Types::Int(), 1);
+					incr.Store=forind;
+					list->push_back(incr);
+					
+					Instruction ja;
+					ja.Type=InstructionType::Jump;
+					ja.JumpOffset=start-list->size();
+					list->push_back(ja);
+					
+					
+					auto elm=scopes.back().indices.size();
+					for(unsigned i=1; i<elm; i++) {
+						auto index=scopes.back().indices[i];
+						(*list)[index].JumpOffset=list->size()-index;
+					}
+					for(auto &index : scopes.back().indices2) {
+						(*list)[index].JumpOffset=start-index;
+					}
+					
+					remtemp.Store=forind;
+					list->push_back(remtemp);
+					
+					remtemp.Store=forind+1;
+					list->push_back(remtemp);
+					
+					indstart-=2;
+					
+					break;
+				}
 					
 				case scope::functionkeyword:
 				case scope::methodkeyword:
@@ -795,6 +1003,14 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					Utils::ASSERT_FALSE("Unknown scope");
 			}
 			
+			if(scopes.back().clear!=-1) {
+				Instruction remtemp;
+				remtemp.Type=InstructionType::RemoveTemp;
+				remtemp.Store=scopes.back().clear;
+				list->push_back(remtemp);
+			}
+			
+			
 			scopes.pop_back();
 			waitingcount--;
 			
@@ -804,6 +1020,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		return false;
 	}
 	
-	const std::string ASTCompiler::scope::keywordnames[] = {"none", "if", "while", "function", "method"};
+	const std::string ASTCompiler::scope::keywordnames[] = {"none", "if", "while", "function", "method", "for"};
 	
 } } }

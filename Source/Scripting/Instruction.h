@@ -30,6 +30,9 @@ namespace Gorgon { namespace Scripting {
 			/// Marks instruction as a removal of a temporary. Temporary index should be stored in the Store member
 			RemoveTemp,
 			
+			/// This instruction saves a value to the temporary
+			SaveToTemp,
+			
 			/// Unconditionally jumps by the given offset. Offset should be in JumpOffset field
 			Jump,
 			
@@ -105,6 +108,11 @@ namespace Gorgon { namespace Scripting {
 				Type=ValueType::Constant;
 				Name=name;
 			}
+			
+			void SetTemp(Byte index) {
+				Type=ValueType::Temp;
+				Result=index;
+			}
 		};
 		
 		/**
@@ -123,7 +131,8 @@ namespace Gorgon { namespace Scripting {
 			Instruction() { }
 			
 			Instruction(const Instruction &inst) :
-			Type(inst.Type), Name(inst.Name), RHS(inst.RHS), Parameters(inst.Parameters), JumpOffset(inst.JumpOffset)
+			Type(inst.Type), Name(inst.Name), RHS(inst.RHS), Parameters(inst.Parameters), JumpOffset(inst.JumpOffset),
+			Reference(Reference)
 			{ }
 			
 			/// Type of the instruction
@@ -137,11 +146,12 @@ namespace Gorgon { namespace Scripting {
 			
 			/// Parameters of the function.
 			std::vector<Value> Parameters;
+			
+			bool Reference=false;
 
 			union {
 				/// Whether to store the result of the function
 				Byte Store;
-				bool Reference;
 				int JumpOffset=0;
 			};
 		};

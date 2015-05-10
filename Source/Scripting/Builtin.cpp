@@ -112,12 +112,13 @@ namespace Gorgon {
 				"Represents a string."
 			);
 			
-			auto Bool = new MappedValueType<bool, &BoolToString, &StringToBool> ( "Bool",
-				"Represents a truth statement. Can either be true or false."
+				auto Bool = new MappedValueType<bool, &BoolToString, &StringToBool> ( "Bool",
+					"Represents a truth statement. Can either be true or false."
 			);
 			
 			
-			Int->AddFunctions({				
+			Int->AddFunctions({
+
 				new MappedOperator("+", "Adds two numbers together",
 					Int, {
 						MapOperator(

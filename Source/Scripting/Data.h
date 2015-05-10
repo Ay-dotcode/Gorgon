@@ -2,6 +2,7 @@
 
 #include "../Any.h"
 #include "../Utils/Assert.h"
+#include "Exceptions.h"
 
 namespace Gorgon {
 	
@@ -52,19 +53,38 @@ namespace Gorgon {
 			
 			/// Returns the value of this data in the requested format
 			template <class T_>
-			const typename std::remove_reference<T_>::type &GetValue() const {
+			typename std::enable_if<!std::is_pointer<T_>::value, const typename std::remove_reference<T_>::type &>::type
+			GetValue() const {
 				if(isconstant) {
-					if(isreference)
+					if(IsReference())
 						return *data.Get<typename std::remove_reference<const T_>::type*>();
 					else
 						return data.Get<typename std::remove_reference<const T_>::type>();
 				}
 				else {
-					if(isreference)
+					if(IsReference())
 						return *data.Get<typename std::remove_const<typename std::remove_reference<T_>::type>::type*>();
 					else
 						return data.Get<typename std::remove_reference<T_>::type>();
 				}					
+			}
+			
+			/// Returns the value of this data in the requested format
+			template <class T_>
+			typename std::enable_if<std::is_pointer<T_>::value, const typename std::remove_reference<T_>::type &>::type
+			GetValue() const {
+				if(isconstant) {
+					if(IsReference())
+						return data.Get<typename std::remove_reference<const T_>::type>();
+					else
+						throw CastException("Value", "Reference");
+				}
+				else {
+					if(IsReference())
+						return data.Get<typename std::remove_const<typename std::remove_reference<T_>::type>::type>();
+					else
+						throw CastException("Value", "Reference");
+				}
 			}
 			
 			/// Returns the value of this data in the requested format. Requested type should

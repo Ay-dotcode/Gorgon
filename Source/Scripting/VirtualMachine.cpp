@@ -3,7 +3,7 @@
 #include "RuntimeFunction.h"
 #include "../Scripting.h"
 
-
+#include <chrono>
 
 namespace Gorgon {
 	
@@ -17,7 +17,7 @@ namespace Gorgon {
 
 		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
 		Libraries(libraries), output(&out), input(&in), 
-		defoutput(&out), definput(&in), automaticreset(automaticreset), temporaries(256, Data::Invalid())
+		defoutput(&out), definput(&in), automaticreset(automaticreset), temporaries(300, Data::Invalid())
 		{
 			Activate();
 			init_builtin();
@@ -406,6 +406,9 @@ namespace Gorgon {
 			tempbase+=highesttemp;
 			instance->tempbase=tempbase;
 			highesttemp=0;
+			
+			if(tempbase+256>temporaries.size())
+				temporaries.resize(tempbase+256);
 			
 			scopeinstances.push_back(instance);
 		}
@@ -1458,7 +1461,9 @@ namespace Gorgon {
 		}
 		
 		void VirtualMachine::execute(const Instruction* inst) {
-			//std::cout<<CurrentScopeInstance().GetName()<<"> "<<Compilers::Disassemble(inst)<<std::endl;
+			//std::this_thread::sleep_for(std::chrono::milliseconds(200));
+			//std::cout<<" | "<<CurrentScopeInstance().GetName()<<"> "<<Compilers::Disassemble(inst)<<std::endl;
+			
 			// assignment ...
 			if(inst->Type==InstructionType::Assignment) {
 				if(inst->Name.Type!=ValueType::Variable && inst->Name.Type!=ValueType::Identifier)
@@ -1470,6 +1475,10 @@ namespace Gorgon {
 				}
 				
 				SetVariable(inst->Name.Name, v);
+			}
+			
+			else if(inst->Type==InstructionType::SaveToTemp) {
+				temporaries[inst->Store+tempbase]=getvalue(inst->RHS, inst->Reference);
 			}
 			
 			//function calls
