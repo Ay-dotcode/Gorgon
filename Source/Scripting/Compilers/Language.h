@@ -49,7 +49,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					case '<':
 					case '!':
 					case '=':
-						return 10;
+						return 12;
 						
 					default:	
 						return -1;
@@ -57,19 +57,19 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			}
 		}
 		
-		if(op=="<<" || op==">>" || op=="bitleft" || op=="bitright") {
+		if(op=="<<" || op==">>" || op=="shl" || op=="shr" || op=="rol" || op=="ror") {
 			return 5;
 		}
-		else if(op=="bitand" || op=="bitor" || op=="bitxor") {
-			return 7;
+		else if(op=="band" || op=="bor" || op=="bxor" || op=="bittest") {
+			return 9;
 		}
-		else if(op=="bitset" || op=="contains" || op=="in" || op=="notin" || op=="union" || op=="intersect") {
-			return 10;
+		else if(op=="bitset" || op=="bitunset" || op=="contains" || op=="in" || op=="notin" || op=="union" || op=="intersect") {
+			return 8;
 		}
 		else if(op=="mod") {
 			return 6;
 		}
-		else if(op=="and") {
+		else if(op=="and" || op=="xor") {
 			return 13;
 		}
 		else if(op=="or") {

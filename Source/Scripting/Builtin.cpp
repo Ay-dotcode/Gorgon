@@ -88,7 +88,7 @@ namespace Gorgon {
 			);
 			
 			auto Float = new MappedValueType<float>( "Float",
-				"Floating point data type. Gorgon library only supports system that has 32bit floats."
+				"Floating point data type. Gorgon library only supports systems that have 32bit floats."
 			);
 			
 			auto Double = new MappedValueType<double>( "Double",
@@ -417,6 +417,162 @@ namespace Gorgon {
 				MAP_COMPARE( <, <,  Double, double),
 			});
 
+			Unsigned->AddFunctions({
+				new MappedOperator("+", "Adds two numbers together",
+					Unsigned, {
+						MapOperator(
+							[](unsigned l, unsigned r) { return l+r; }, 
+							Unsigned, Unsigned
+						),
+						MapOperator(
+							[](unsigned l, double r) { return l+r; },
+							Double, Double
+						),
+						MapOperator(
+							[](unsigned l, float r) { return l+r; },
+							Float, Float
+						),
+					}
+				),
+				
+				new MappedOperator("-", "Subtracts a number from this one. This operation may cause overflow",
+					Unsigned, {
+						MapOperator(
+							[](unsigned l, unsigned r) { return (int)l-(int)r; }, 
+							Int, Unsigned
+						),
+						MapOperator(
+							[](unsigned l, int r) { return (int)l-r; }, 
+							Int, Int
+						),
+						MapOperator(
+							[](unsigned l, double r) { return (double)l-r; },
+							Double, Double
+						),
+						MapOperator(
+							[](unsigned l, float r) { return (float)l-r; },
+							Float, Float
+						),
+					}
+				),
+				
+				new MappedOperator("*", "Multiplies two numbers together",
+					Unsigned, {
+						MapOperator(
+							[](unsigned l, unsigned r) { return l*r; }, 
+							Unsigned, Unsigned
+						),
+						MapOperator(
+							[](unsigned l, int r) { return (int)l*r; }, 
+							Int, Int
+						),
+						MapOperator(
+							[](unsigned l, double r) { return (double)l*r; },
+							Double, Double
+						),
+						MapOperator(
+							[](unsigned l, float r) { return (float)l*r; },
+							Float, Float
+						),
+					}
+				),
+				
+				new MappedOperator( "band",
+					"Performs a bitwise and operation",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { return l&r; }
+				),
+				
+				new MappedOperator( "bor",
+					"Performs a bitwise or operation",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { return l|r; }
+				),
+				
+				new MappedOperator( "bxor",
+					"Performs a bitwise xor operation",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { return l^r; }
+				),
+				
+				new MappedOperator( "bitset",
+					"Makes the given bit 1",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { return l|(1<<r); }
+				),
+				
+				new MappedOperator( "bitunset",
+					"Makes the given bit 0",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { return l&(~(1<<r)); }
+				),
+				
+				new MappedOperator( "bittest",
+					"Checks if the given bit is 1",
+					Unsigned, Bool, Unsigned, [](unsigned l, unsigned r) { return (l&(1<<r))!=0; }
+				),
+				
+				new MappedOperator( "shl",
+					"Shifts the bits of this number to left",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { return l<<r; }
+				),
+				
+				new MappedOperator( "shr",
+					"Shifts the bits of this number to right",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { return l>>r; }
+				),
+				
+				new MappedOperator( "rol",
+					"Rotates the bits of this number to left",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { return (l<<r)|(l>>(sizeof(unsigned)*8-r)); } //gorgon works only on 8bit per byte systems
+				),
+				
+				new MappedOperator( "ror",
+					"Rotates the bits of this number to right",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { return (l>>r)|(l<<(sizeof(unsigned)*8-r)); } //gorgon works only on 8bit per byte systems
+				),
+
+				new MappedOperator( "/",
+					"Divides this number to the given one. Division operation is performed in double type",
+					Unsigned, Double, Double, [](unsigned l, double r) { return double(l)/r; }
+				),
+				
+				new MappedOperator( "^",
+					"Raises this number to the given power. All power operations are performed in double type",
+					Unsigned, Double, Double, [](unsigned l, double r) { return pow(double(l), r); }
+				),
+				
+				new MappedOperator( "mod",
+					"Returns the remainder of the division of the left operand to the right operand.",
+					Unsigned, Unsigned, Unsigned, [](unsigned l, unsigned r) { 
+						return l%r;
+					}
+				),
+				
+				new Function("inverse", "Inverts the bits", Unsigned, {
+					MapFunction(
+						[](unsigned val) { return ~val; },
+						Unsigned, ParameterList(), ConstTag
+					)
+				}),
+				
+				new Function("binary", "Converts this number into a binary string", Unsigned, {
+					MapFunction(
+						[](unsigned val) -> std::string { 
+							std::string ret(' ', sizeof(unsigned)*8);
+							for(unsigned i=0;i<sizeof(unsigned)*8;i++) {
+								ret[sizeof(unsigned)*8-i-1]=val&1 ? '1':'0';
+								val=val>>1;
+							}
+							return ret; 
+						},
+						String, ParameterList(), ConstTag
+					)
+				}),
+				
+				MAP_COMPARE( =, ==, Unsigned, unsigned),
+				MAP_COMPARE(>=, >=, Unsigned, unsigned),
+				MAP_COMPARE(<=, <=, Unsigned, unsigned),
+				MAP_COMPARE(!=, !=, Unsigned, unsigned),
+				MAP_COMPARE( >, >,  Unsigned, unsigned),
+				MAP_COMPARE( <, <,  Unsigned, unsigned),
+			});
+			
 			Int->AddConstructors({
 				MapTypecast<float, int>(Float, Int),
 				MapTypecast<double, int>(Double, Int),

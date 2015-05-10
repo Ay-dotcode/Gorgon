@@ -132,7 +132,7 @@ namespace Gorgon { namespace Scripting {
 			
 			Instruction(const Instruction &inst) :
 			Type(inst.Type), Name(inst.Name), RHS(inst.RHS), Parameters(inst.Parameters), JumpOffset(inst.JumpOffset),
-			Reference(Reference)
+			Reference(inst.Reference)
 			{ }
 			
 			/// Type of the instruction
