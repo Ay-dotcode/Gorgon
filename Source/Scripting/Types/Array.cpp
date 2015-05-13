@@ -146,6 +146,17 @@ namespace Gorgon {
 							)
 						}
 					),
+					
+					new Function("Pop", 
+						"Pops the element at the end of the array.", array,
+						{
+							MapFunction(
+								&Array::PopData, Types::Variant(),
+								{
+								}
+							)
+						}
+					),
 				  
 					new Function("Size", 
 						"Returns the size of the array.", array,

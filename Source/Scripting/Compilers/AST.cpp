@@ -759,6 +759,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			Instruction inst;
 			inst.Type=InstructionType::FunctionCall;
 			inst.Name.SetStringLiteral("const");
+			inst.Store=0;
 			Value v;
 			v.SetVariable(tree->Leaves[0].Leaves[0].Text);
 			inst.Parameters.push_back(v);

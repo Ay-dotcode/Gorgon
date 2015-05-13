@@ -64,6 +64,17 @@ namespace Gorgon {
 				elements.push_back(elm.GetData());
 			}
 			
+			Data PopData() {
+				if(!elements.size()) {
+					throw OutofBoundsException(0, elements.size(), "Array");
+				}
+				
+				Any d=elements.back();
+				elements.pop_back();
+				
+				return {type, d};
+			}
+			
 			void Resize(unsigned size) {
 				elements.resize(size, type->GetDefaultValue());
 			}
