@@ -233,13 +233,13 @@ namespace Scripting {
 			std::reference_wrapper<typename std::remove_reference<param<P_>>::type>,
 			param<P_>
 		>::Type cast(const std::vector<Data> &parameters) const {
-			ASSERT(parameters.size()>P_, "Number of parameters does not match");
-
 			if(P_-(parent->IsMember() && !parent->IsStatic())==this->parameters.size()-1 && repeatlast) {
 				ASSERT(extractvector<param<P_>>::isvector, "Repeating parameter should be a vector");
 
 				return accumulatevector<P_>(parameters);
 			}
+
+			ASSERT(parameters.size()>P_, "Number of parameters does not match");
 			
 			return castto<param<P_>>(parameters[P_]);
 		}

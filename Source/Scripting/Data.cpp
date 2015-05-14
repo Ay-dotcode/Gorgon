@@ -49,7 +49,7 @@ namespace Gorgon { namespace Scripting {
 		isreference(isreference), isconstant(isconstant)
 	{
 		check();
-		ASSERT((type!=nullptr), "Data type cannot be nullptr", 1, 2);
+		ASSERT((type!=nullptr), "Data type cannot be nullptr", 1, 5);
 		
 		if(IsReference() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Increase(*this);
@@ -88,7 +88,7 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	std::string Data::ToString() const {
-		ASSERT(type, "Type is not set", 1, 2);
+		ASSERT(type, "Type is not set", 1, 5);
 		
 		return type->ToString(*this);
 	}
@@ -116,7 +116,7 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	bool Data::IsNull() const {
-		ASSERT(type, "Type is not set", 1, 2);
+		ASSERT(type, "Type is not set", 1, 5);
 		
 		if(type->IsReferenceType()) {
 			return data.Pointer()==nullptr;
@@ -146,7 +146,7 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Data Data::GetReference() {
-		ASSERT(type, "Type is not set", 1, 2);
+		ASSERT(type, "Type is not set", 1, 5);
 		
 		if(IsReference()) return *this;
 		
@@ -178,7 +178,7 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Data Data::DeReference() {
-		ASSERT(type, "Type is not set", 1, 2);
+		ASSERT(type, "Type is not set", 1, 5);
 		
 		if(!isreference) return *this;
 		if(type->IsReferenceType()) return *this;
@@ -197,7 +197,7 @@ namespace Gorgon { namespace Scripting {
 
 	
 	void Data::MakeConstant() {
-		ASSERT(type, "Type is not set", 1, 2);
+		ASSERT(type, "Type is not set", 1, 5);
 		
 		if(!isconstant) {
 			if(IsReference())
@@ -210,7 +210,7 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	bool Data::IsReference() const {
-		ASSERT(type, "Type is not set", 1, 2);
+		ASSERT(type, "Type is not set", 1, 5);
 		
 		return isreference || type->IsReferenceType();
 	}

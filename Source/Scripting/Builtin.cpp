@@ -15,9 +15,16 @@ namespace Gorgon {
 				for(auto &data : datav) {
 					out<<data;
 				}
+			}
+			
+			void Echo(std::vector<std::string> datav) {
+				auto &out=VirtualMachine::Get().GetOutput();
+				for(auto &data : datav) {
+					out<<data;
+				}
 				out<<std::endl;
 			}
-
+			
 			std::string BoolToString(const bool &val) {
 				return val ? "true" : "false";
 			}
@@ -187,6 +194,19 @@ namespace Gorgon {
 					}
 				),
 				
+				new Function( "abs",
+					"Returns the absolute value of this value",
+					Int, {
+						MapFunction(
+							[](int v) {
+								return abs(v);
+							},
+							Int,
+							{}, ConstTag
+						)
+					}
+				),
+				
 				MAP_COMPARE( =, ==, Int, int),
 				MAP_COMPARE(>=, >=, Int, int),
 				MAP_COMPARE(<=, <=, Int, int),
@@ -249,6 +269,19 @@ namespace Gorgon {
 					"Returns the remainder of the division of the left operand to the right operand.",
 					Float, Float, Float, [](float l, float r) -> float { 
 						return fmod(l, r);
+					}
+				),
+				
+				new Function( "abs",
+					"Returns the absolute value of this value",
+					Float, {
+						MapFunction(
+							[](float v) {
+								return v*(v<0?-1:1);
+							},
+							Float,
+							{}, ConstTag
+						)
 					}
 				),
 				
@@ -354,6 +387,19 @@ namespace Gorgon {
 					"Returns the remainder of the division of the left operand to the right operand.",
 					Double, Double, Double, [](double l, double r) { 
 						return fmod(l, r);
+					}
+				),
+				
+				new Function( "abs",
+					"Returns the absolute value of this value",
+					Double, {
+						MapFunction(
+							[](double v) {
+								return fabs(v);
+							},
+							Double,
+							{}, ConstTag
+						)
 					}
 				),
 				
@@ -814,7 +860,10 @@ namespace Gorgon {
 				},
 				FunctionList{},
 				ConstantList {
-					new Constant("Pi", "Contains the value of PI", Double, Any(3.14159265358979)),
+					new Constant("Pi", "Contains the value of PI", Double,             Any(3.14159265358979)),
+					new Constant("e",  "Contains the value of Euler's number", Double, Any(2.71828182845905)),
+					new Constant("MAX_INT",  "Maximum value an integer can hold", Int, Any(std::numeric_limits<int>::max())),
+					new Constant("MIN_INT",  "Minimum value an integer can hold", Int, Any(std::numeric_limits<int>::min())),
 				}
 			};
 			
@@ -822,7 +871,7 @@ namespace Gorgon {
 			Integrals.AddFunctions(ArrayFunctions());
 			Integrals.AddFunctions({
 				new Function("Print",
-					"This function prints the given parameters to the screen.", nullptr,
+					"This function prints the given parameters to the screen without a new line at the end.", nullptr,
 					{
 						MapFunction(
 							Print, nullptr, 
@@ -833,6 +882,51 @@ namespace Gorgon {
 								)
 							},
 							StretchTag, RepeatTag
+						)
+					}
+				),
+				
+				new Function("GetEnv",
+					"Returns the environment variable with the given name", nullptr,
+					{
+						MapFunction(
+							[](const std::string &n) -> std::string {
+								char *v=getenv(n.c_str());
+								if(v)
+									return v;
+								else
+									return "";
+							}, 
+							Types::String(), 
+							{
+								Parameter( "string",
+									"The name of the environment variable.",
+									String
+								)
+							}
+						)
+					}
+				),
+				
+				
+				new Function("Read",
+					"This function reads a value from the console.", nullptr,
+					{
+						MapFunction(
+							[](const Type *type) -> Data {
+								std::string line;
+								std::getline(VirtualMachine::Get().GetInput(), line);
+								
+								return type->Parse(line);
+							}, 
+							Types::Variant(),
+							{
+								Parameter( "type",
+									"The type of the input",
+									TypeType(), Data(TypeType(), &Types::String(), true, true), 
+									ConstTag, ReferenceTag, OptionalTag
+								)
+							}
 						)
 					}
 				)
@@ -912,6 +1006,21 @@ namespace Gorgon {
 			Reflection={"Reflection", "This library contains reflection objects",
 				TypeList { TypeType(), FunctionType(), ParameterType() },
 				FunctionList {
+				new Function("Echo",
+					"This function prints the given parameters to the screen with a newline following them.", nullptr,
+					{
+						MapFunction(
+							Echo, nullptr, 
+							{
+								Parameter( "string",
+									"The strings that will be printed.",
+									String, OptionalTag
+								)
+							},
+							StretchTag, RepeatTag
+						)
+					}, KeywordTag
+				),
 					new Function("TypeOf",
 						"This function returns the type of the given variable.", nullptr, 
 						{

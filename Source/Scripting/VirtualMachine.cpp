@@ -1157,7 +1157,9 @@ namespace Gorgon {
 														"Parameter "+pdef.GetName()+" is not optional."
 						);
 					}
-					//else ok, it was optional
+					else if(!(variant->RepeatLast() && ind==variant->Parameters.size()-1)) {
+						params.push_back(pdef.GetDefaultValue());
+					}
 					
 					break;
 				}

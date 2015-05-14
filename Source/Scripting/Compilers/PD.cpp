@@ -1083,8 +1083,12 @@ namespace Compilers {
 					while(token!=Token::EoS) {
 						auto expr=parseexpression(input, index);
 						root->Leaves.Push(expr);
-							
+						
 						token=peeknexttoken(input, index);
+						if(token==Token::Seperator) {
+							consumenexttoken(input,index);
+							token=peeknexttoken(input, index);
+						}
 					}
 				}
 			}
