@@ -23,11 +23,13 @@ namespace Gorgon { namespace Scripting {
 				try {
 					compiled=parser->Compile(str, pline);
 				}
-				catch(ParseError &err) {
-					if(err.GetLine()<0)
-						err.SetLine(pline-err.GetLine());
-					
-					throw err;
+				catch(Exception &err) {
+					if(!err.IsLineSet())
+						err.SetLine(pline+err.GetLine());
+					if(err.GetSourcename()=="") {
+						err.SetSourcename(GetName());
+					}
+					throw;
 				}
 				
 				for(unsigned i=parser->List.size()-compiled;i<parser->List.size();i++) {

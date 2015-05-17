@@ -96,12 +96,21 @@ namespace Compilers {
 		
 	private:
 		ASTNode *parse(const std::string &input);
-		void extractline(std::string &input, std::string &prepared, std::vector<unsigned> &linestarts);
+		void extractline(std::string &input, std::string &prepared);
+		
+		void transformpos(int ch, int &oline, int &och);
 
 		ASTCompiler compiler;
 		std::string left;
-		std::vector<unsigned> linestarts;
+		struct charmarker {
+			int pos;
+			int chr;
+			int line;
+			int off;
+		};
+		std::vector<charmarker> linemarkers;
 		int waiting=0;
+		int plinespassed=0; //physical lines that are passed while trying to find the end of the logical line
 	};
 	
 	/// Disassembles the given instruction

@@ -105,21 +105,36 @@ namespace Gorgon {
 				return details;
 #endif
 			}
-
+			
 			long GetLine() const { return linenumber; }
-
+			
 			void SetLine(long line) {
 				linenumber=line;
+				missinglinenumber=false;
 			}
+			
+			void ModifyLine(long line) {
+				linenumber=line;
+			}
+			
+			std::string GetSourcename() const { return sourcename; }
+			
+			void SetSourcename(const std::string &sourcename) {
+				this->sourcename=sourcename;
+			}		
+			
+			bool IsLineSet() const { return !missinglinenumber; }
 
 		protected:
 			ExceptionType type;
 			std::string details;
+			std::string sourcename;
 			
 #ifdef TEST
 			std::string dump;
 #endif
 			long linenumber;
+			bool missinglinenumber=true;
 		};
 		
 		class OutofBoundsException : public Exception {
@@ -250,13 +265,13 @@ namespace Gorgon {
 		class ParseError : public Exception {
 		public:
 			
-			ParseError(ExceptionType type, const std::string &message, const std::string &details, int chr = -1, long line = -1): 
+			ParseError(ExceptionType type, const std::string &message, const std::string &details, int chr = -1, long line = 0): 
 			Exception(type, message, line), Char(chr) {
 				this->details=details;
 			}			
 			
-			ParseError(ExceptionType type, const std::string &message, int chr = -1, long  line = -1): 
-			Exception(type, message, line), Char(chr) {}			
+			ParseError(ExceptionType type, const std::string &message, int chr = -1, long  line = 0): 
+			Exception(type, message, line), Char(chr) {}	
 			
 			
 			/// The exact character that contains parse error. If it cannot be determined

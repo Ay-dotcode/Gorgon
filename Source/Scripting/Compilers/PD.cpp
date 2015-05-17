@@ -1070,7 +1070,18 @@ namespace Compilers {
 					std::string line;
 					int linenr=1;
 					while(std::getline(file, line)) {
-						Compile(line, linenr++);
+						try {
+							Compile(line, linenr++);
+						}
+						catch(Exception &err) {
+							if(!err.IsLineSet())
+								err.SetLine(linenr+err.GetLine());
+							if(err.GetSourcename()=="") {
+								err.SetSourcename(token.repr);
+							}
+							
+							throw;
+						}
 					}
 					
 					return nullptr;
@@ -1127,38 +1138,44 @@ namespace Compilers {
 			
 		return root;
 	}
-
+	
+	void Programming::transformpos(int ch, int &oline, int &och) {
+		auto it=linemarkers.rbegin();
+		
+		while(it!=linemarkers.rend()) {
+			if(it->pos<ch) {
+				och=ch+it->chr-it->pos;
+				oline=it->line;
+				return;
+			}
+			it++;
+		}
+		
+		oline=0; och=-1;
+	}
+	
 	//extracts a line from input string
-	void Programming::extractline(std::string &input, std::string &prepared, std::vector<unsigned> &linestarts) {
+	void Programming::extractline(std::string &input, std::string &prepared) {
 		int inquotes=0, escape=0;
 		struct parenthesis {
 			unsigned long location;
 			char type;
 		};
 		std::vector<parenthesis> parens;
-			
+		
+// 		if(!linemarkers.size()) {
+// 			linemarkers.push_back();
+// 		}
+		
+		
 		unsigned len=input.length();
 		int cutfrom=-1;
 		int clearafter=-1;
 
-			
-		auto transform = [&](int ch, int &oline, int &och) {
-			for(int line=0;line<linestarts.size();line++) {
-				if(linestarts[line]>ch) {
-					oline=line-1;
-					och=ch-linestarts[line-1];
-						
-					return;
-				}
-			}
-				
-			oline=linestarts.size()-1;
-			och=ch-linestarts.back();
-		};
-			
 		for(unsigned i=0;i<len;i++) {
 			char c=input[i];
-				
+			
+			//quote management
 			if(inquotes) {
 				if(escape==1) {
 					if(isdigit(c)) {
@@ -1195,32 +1212,30 @@ namespace Compilers {
 				int cline, pline, cchar, pchar;
 					
 				if(parens.size()) {
-					transform(i, cline, cchar);
-					transform(parens.back().location, pline, pchar);
+					transformpos(i, cline, cchar);
+					transformpos(parens.back().location, pline, pchar);
 						
 					input="";
 					if(cline!=pline) {
 						throw ParseError{ExceptionType::MismatchedParenthesis, 
 							"`" + std::string(1, parens.back().type) + "` at character " +
-							String::From(pchar + 1) + " " + String::From(cline - pline) + " lines above " +
-							" is not closed.",
-							cchar, -cline
+							String::From(pchar + 1) + ", " + String::From(cline - pline) + (cline - pline==1?" line":" lines")+" above " +
+							"is not closed.",
+							cchar, cline-plinespassed
 						};
 					}
 					else {
 						throw ParseError{ExceptionType::MismatchedParenthesis,
 							"`" + std::string(1, parens.back().type) + "` at character " +
-								String::From(pchar + 1) +
-								" is not closed.",
-							cchar, -cline
-											
+							String::From(pchar + 1) +
+							" is not closed.",
+							cchar, cline-plinespassed
 						};
 					}
 				}
-					
-				if(c==';') {
-					cutfrom=i;
-				}
+				
+				cutfrom=i;
+				linemarkers.push_back({i+1, i+1+linemarkers.back().chr-linemarkers.back().off, linemarkers.back().line,linemarkers.back().off});
 				break;
 			}
 			else if(c=='(' || c=='[' || c=='{') {
@@ -1235,10 +1250,10 @@ namespace Compilers {
 					
 				if(error) {
 					int cline, cchar;
-					transform(i, cline, cchar);
+					transformpos(i, cline, cchar);
 						
 					throw ParseError{ExceptionType::UnexpectedToken, "`"+std::string(1, c)+"` is unexpected",
-						cchar, -cline		
+						cchar, cline-plinespassed
 					};
 				}
 				else {
@@ -1249,48 +1264,67 @@ namespace Compilers {
 			
 		if(cutfrom==-1) {
 			if(clearafter!=-1) {
-				input=input.substr(0, clearafter);
+				input.resize(clearafter);
 			}
 				
 			//everything is fine, line ends at the very end
 			if(inquotes==0 && parens.size()==0) {
 				using std::swap;
+				//no more input left, put everything left into prepared
 				swap(prepared, input);
-				linestarts.clear();
+				
 			}
-			else {
+			else { //need more input
 				return;
 			}
 		}
 		else {
+			//get the first line
 			prepared=input.substr(0, cutfrom);
-			input=input.substr(cutfrom+1);
-				
-			auto last=linestarts.back();
-			linestarts.clear();
-			linestarts.push_back(cutfrom-last);
+			
+			//put the rest back into input
+			input=input.substr(cutfrom+1);			
 		}
 	}
 	
 	unsigned Programming::Compile(const std::string &input, unsigned long pline) {
-		//If necessary split the line or request more input
+		//second line of a partial line
 		if(left.size()) {
 			left.push_back('\n');
+			linemarkers.push_back({left.size(), 0, linemarkers.back().line+1, linemarkers.back().off+left.size()});
+			plinespassed++;
 		}
-		linestarts.push_back(left.size());
+		else {
+			//first line
+			linemarkers.clear();
+			linemarkers.push_back({0, 0, 0, 0});
+			plinespassed=0;
+		}
 
 		left.append(input);
 		
 		int elements=waiting;
 		waiting=0;
 		
- 		while(left.length()) { //parse until we run out of data
+		while(left.length()) { //parse until we run out of data
+			int totalinput=left.size();
 			std::string process;
 			
-			extractline(left, process, linestarts);
+			extractline(left, process);
 			
 			int prevsz=List.size();
-			auto ret=parse(process);
+			ASTNode* ret;
+			try {
+				ret=parse(process);
+			}
+			catch(ParseError &ex) {
+				int cline, cchar;
+				transformpos(ex.Char, cline, cchar);
+				ex.ModifyLine(cline);
+				ex.Char=cchar;
+				
+				throw;
+			}
 			elements+=List.size()-prevsz;
 
 			//ASTToSVG(input, *ret, {}, true);
@@ -1311,6 +1345,26 @@ namespace Compilers {
 			}
 			else {
 				break;
+			}
+			
+			//means we have data to process and some more is left for next lline
+			if(!process.empty() && !left.empty()) {
+				ASSERT(linemarkers.size()>1, "there shouldnt be any more data left");
+				
+				char p=totalinput-left.size();
+				
+				auto it=linemarkers.end()-1;
+				while(true) {
+					if(it->pos==p) {
+						linemarkers.erase(linemarkers.begin(), it);
+						break;
+					}
+					ASSERT(it==linemarkers.begin(), "lline end is not in the line ends");
+					it--;
+				}
+				for(auto &m : linemarkers) {
+					m.pos-=p;
+				}
 			}
 			
 			if(showsvg__) {

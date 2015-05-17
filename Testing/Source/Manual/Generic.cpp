@@ -178,28 +178,6 @@ int main() {
 		}
 		catch(const Gorgon::Scripting::ParseError &ex) {
 			
-			std::stringstream ss2(source);
-			std::string line;
-			int linenr=0;
-			while(std::getline(ss2, line)) {
-				linenr++;
-				if(linenr==ex.GetLine())
-					Gorgon::Console::SetColor(Gorgon::Console::Red);
-				
-				Gorgon::Console::SetBold();
-				std::cout<<std::setw(3)<<linenr<<" ";
-				Gorgon::Console::SetBold(false);
-				std::cout<<line<<std::endl;
-				Gorgon::Console::Reset();
-				if(linenr==ex.GetLine()) {
-					for(int i=0; i<ex.Char+4; i++) {
-						std::cout<<" ";
-					}
-					std::cout<<"^"<<std::endl;
-				}
-			}
-			std::cout<<std::endl<<std::endl;
-			
 			
 			std::cout<<std::endl<<std::endl;
 			Gorgon::Console::SetBold();
@@ -208,7 +186,7 @@ int main() {
 			Gorgon::Console::Reset();
 			
 			Gorgon::Console::SetBold();
-			std::cout<<"At line "<<ex.GetLine()<<":"<<ex.Char;
+			std::cout<<"At line "<<ex.GetLine()<<":"<<ex.Char+1;
 			Gorgon::Console::SetBold(false);
 			Gorgon::Console::SetColor(Gorgon::Console::Red);
 			std::cout<<": "<<ex.GetType();
