@@ -36,7 +36,18 @@ namespace Gorgon { namespace Scripting {
 			types.Add(type);
 
 			this->constants.Add(
-				new Constant(type->GetName(), type->GetHelp(), TypeType(), type)
+				new Constant(type->GetName(), type->GetHelp(), TypeType(), (const Type*)type)
+			);
+		}
+	}
+	void Library::AddTypes(const std::initializer_list< Type* >& list) {
+		for(auto &type : list) {
+			ASSERT(!SymbolExists(type->GetName()), "Symbol "+type->GetName()+" already exists", 1, 2);
+			
+			types.Add(type);
+			
+			this->constants.Add(
+				new Constant(type->GetName(), type->GetHelp(), TypeType(), (const Type*)type)
 			);
 		}
 	}

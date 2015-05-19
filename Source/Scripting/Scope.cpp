@@ -18,6 +18,22 @@ namespace Gorgon { namespace Scripting {
 					return nullptr;
 				}
 				pline++;
+				if(str=="!dialect programming" && provider->GetDialect()!=InputProvider::Programming) {
+					provider->SetDialect(InputProvider::Programming);
+					delete parser;
+					parser=new Compilers::Programming(this);
+					continue;
+				}
+				else if(str=="!dialect console" && provider->GetDialect()!=InputProvider::Console) {
+					provider->SetDialect(InputProvider::Programming);
+					Utils::ASSERT_FALSE("Unknown dialect");
+					continue;
+				}
+				else if(str=="!dialect int" && provider->GetDialect()!=InputProvider::Console) {
+					provider->SetDialect(InputProvider::Intermediate);
+					parser=new Compilers::Intermediate(this);
+					continue;
+				}
 				
 				int compiled=0;
 				try {

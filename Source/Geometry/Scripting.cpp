@@ -51,10 +51,14 @@ namespace Gorgon { namespace Geometry {
 		point->AddConstructors({
 			Scripting::MapFunction([]{ return Point(0,0); }, point, {})
 		});
+		point->MapConstructor<int, int>({
+			Scripting::Parameter("x", "X coordinate", Scripting::Types::Int()),
+			Scripting::Parameter("x", "Y coordinate", Scripting::Types::Int())
+		});
 
 		point->AddDataMembers({
-			new Scripting::MappedData<Point, int>(&Point::X, "x", "field storing location on x coordinate", Scripting::Types::Int()),
-			new Scripting::MappedData<Point, int>(&Point::Y, "y", "field storing location on y coordinate", Scripting::Types::Int())
+			new Scripting::MappedData<Point, int>(&Point::X, "x", "X coordinate", Scripting::Types::Int()),
+			new Scripting::MappedData<Point, int>(&Point::Y, "y", "Y coordinate", Scripting::Types::Int())
 		});
 
 		LibGeometry = {

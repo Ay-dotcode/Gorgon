@@ -259,11 +259,10 @@ namespace Gorgon {
 			if(!type || !content) {
 				throw std::runtime_error("Any storage is empty");
 			}
-#endif
-#ifndef NDEBUG
-			if(!type->IsSameType(typeid(T_))) {
-				throw std::bad_cast();
-			}
+			
+			ASSERT(type->IsSameType(typeid(T_)),
+				"Type mismatch, orginal: "+type->Name()+", target: "+Utils::GetTypeName<T_>()
+			);
 #endif
 
 			return *static_cast<T_*>(content);
@@ -287,11 +286,10 @@ namespace Gorgon {
 			if(!type || !content) {
 				throw std::runtime_error("Any storage is empty");
 			}
-#endif
-#ifndef NDEBUG
-			if(!type->IsSameType(typeid(T_))) {
-				throw std::bad_cast();
-			}
+			
+			ASSERT(type->IsSameType(typeid(T_)),
+				"Type mismatch, orginal: "+type->Name()+", target: "+Utils::GetTypeName<T_>()
+			);
 #endif
 
 			return *static_cast<T_*>(content);
@@ -347,11 +345,10 @@ namespace Gorgon {
 			if(!type || !this->content) {
 				throw std::runtime_error("Any storage is empty");
 			}
-#endif
-#ifndef NDEBUG
-			if(!type->IsSameType(typeid(T_))) {
-				throw std::bad_cast();
-			}
+			
+			ASSERT(type->IsSameType(typeid(T_)),
+				"Type mismatch, orginal: "+type->Name()+", target: "+Utils::GetTypeName<T_>()
+			);
 #endif
 
 			return *static_cast<T_*>(this->content)==content;
@@ -367,10 +364,11 @@ namespace Gorgon {
 			else if(!content.content || !this->content) {
 				return false;
 			}
-#ifndef NDEBUG
-			if(type->TypeInfo() != content.type->TypeInfo()) {
-				throw std::bad_cast{};
-			}
+			
+#ifndef GORGON_FAST_ANY
+			ASSERT(type->TypeInfo() != content.type->TypeInfo(),
+				"Type mismatch, left: "+type->Name()+", right: "+content.type->Name()
+			);
 #endif
 
 			return memcmp(this->content, content.content, type->GetSize())==0;

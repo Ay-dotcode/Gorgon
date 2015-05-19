@@ -15,6 +15,8 @@ namespace Gorgon {
 		public:
 			Array(const Type &type) : type(&type), Elements(elements) {}
 			
+			Array(const Array &arr) : type(arr.type), elements(arr.elements), Elements(elements) {}
+			
 			template<class T_>
 			Array(const Type &type, const std::initializer_list<T_> &elements) : Array(type) {
 				ASSERT(type.GetDefaultValue().TypeCheck<T_>(), "Given data type ("+Utils::GetTypeName<T_>()+

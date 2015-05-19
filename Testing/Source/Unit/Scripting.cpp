@@ -155,7 +155,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	//LibGeometry.Types["Point"];
 
 	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Overloads[0].Call(false, {{mypointtype, Point(1, 1)}, {mypointtype, Point(1, 1)}}).GetValue<float>() == 0.f);
-	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Overloads[0].Call(false, {{mypointtype, Point(1, 0)}}).GetValue<float>() == 1.f);
+	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Overloads[1].Call(false, {{mypointtype, Point(1, 0)}}).GetValue<float>() == 1.f);
 	
 	int testval=0;
 	myvaluetype->AddDataMembers({
@@ -352,24 +352,12 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 }
 
 TEST_CASE("Reference counting", "[Data]") {
-	Type *BType = new MappedReferenceType<B>("B", "B type");
-	BType->AddConstructors({
-		MapFunction(
-			[]{
-				return new B();
-			}, BType,
-			{}
-		),
+	auto BType = new MappedReferenceType<B>("B", "B type");
+	BType->MapConstructor<>({});
 		
-		MapFunction(
-			[](int bb) {
-				return new B(bb);
-			}, BType, 
-			{
-				Parameter( "bb", "bb parameter",
-					Integrals.Types["Int"]
-				)
-			}
+	BType->MapConstructor<int>({
+		Parameter( "bb", "bb parameter",
+			Integrals.Types["Int"]
 		)
 	});
 	

@@ -1,9 +1,9 @@
 a=5
 b=3
-print(a+b)
-print(a-b)
+echo a+b
+echo a-b
 a *= b
-print(a)
+echo a
 
 ## OUTPUT ##
 8

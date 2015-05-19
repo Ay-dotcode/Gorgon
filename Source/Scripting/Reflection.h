@@ -1094,7 +1094,7 @@ namespace Gorgon {
 				return nullptr;
 			}
 
-			/// Constructs a new object from the given parameters
+			/// !Unsafe. Constructs a new object from the given parameters. Requires parameters to be the exact type.
 			Data Construct(const std::vector<Data> &parameters) const;
 
 			/// Deletes the object
@@ -1250,13 +1250,7 @@ namespace Gorgon {
 				}
 			}
 			
-			void AddTypes(const std::initializer_list<Type*> &list) {
-				for(auto &type : list) {
-					ASSERT(!SymbolExists(type->GetName()), "Symbol "+type->GetName()+" already exists", 1, 2);
-					
-					types.Add(type);
-				}
-			}
+			void AddTypes(const std::initializer_list<Type*> &list);
 			
 			void AddConstants(const std::initializer_list<Constant*> &list) {
 				for(auto &constant : list) {

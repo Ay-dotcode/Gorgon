@@ -1055,6 +1055,9 @@ namespace Gorgon {
 										vm.GetOutput()<<"Ref  : "<<(var.IsReference() ? "yes" : "no")<<std::endl;
 										vm.GetOutput()<<"Const: "<<(var.IsConstant()  ? "yes" : "no")<<std::endl;
 										vm.GetOutput()<<"Value: "<<var.GetType().ToString(var)<<std::endl;
+										if(var.IsReference()) {
+											vm.GetOutput()<<"Ptr  : "<<var.GetData().Pointer()<<std::endl;
+										}
 									}
 									else {
 										vm.GetOutput()<<"Value: <Invalid>"<<std::endl;

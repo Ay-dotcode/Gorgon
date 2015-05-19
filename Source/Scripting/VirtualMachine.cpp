@@ -1349,7 +1349,11 @@ namespace Gorgon {
 				
 				return;
 			}
-
+			
+			//allows modification of params
+			const std::vector<Value> *params=&inst->Parameters;
+			std::vector<Value> temp;
+			
 			// find requested function
 			if(!memberonly) {
 				//try library functions
@@ -1405,29 +1409,13 @@ namespace Gorgon {
 					}
 					//else Reflection:Type typed variable/temporary
 					
-					std::vector<Data> params;
-					int i=0;
-					for(auto &pin : inst->Parameters) {
-						if(i++!=0) {
-							params.push_back(getvalue(pin));
-						}
-						//else ignore the first
-					}
-					
 					//call the constructor
-					Data ret=data.GetValue<const Type*>()->Construct(params);
+					fn=&data.GetValue<const Type*>()->Constructor;
 					
-					if(inst->Store) {
-						temporaries[inst->Store+tempbase]=ret;
-						//std::cout<<"S> "<<inst->Store+tempbase<<std::endl;
-
-						
-						if(highesttemp<inst->Store)
-							highesttemp=inst->Store;
-					}
-					//else do not store the created object, maybe a warning is necessary
-					
-					return;
+					//to remove first param
+					params=&temp;
+					temp=inst->Parameters;
+					temp.erase(temp.begin());
 				}				
 				else if(functionname[0]=='.') { //data member
 					//data access
@@ -1531,7 +1519,7 @@ namespace Gorgon {
 			}
 
 			// call it
-			Data ret=callfunction(fn, method, inst->Parameters);
+			Data ret=callfunction(fn, method, *params);
 
 			//if requested
 			if(inst->Store) {

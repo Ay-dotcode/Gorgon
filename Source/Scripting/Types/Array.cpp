@@ -191,6 +191,7 @@ namespace Gorgon {
 			if(type==nullptr) return nullptr;
 
 			Array *ret=new Array(*type);
+			VirtualMachine::Get().References.Register(ret);
 
 			for(auto &data : datav) {
 				ret->PushData(data);

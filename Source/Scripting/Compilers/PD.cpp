@@ -205,7 +205,7 @@ namespace Compilers {
 					throw ParseError(ExceptionType::InvalidLiteral, "Unknown string literal: "+literalmarker, index);
 				}
 			}
-			case '@':
+			case '@': //special identifiers
 			case '%':
 			case '!':
 				specialident=true;
@@ -1281,7 +1281,7 @@ namespace Compilers {
 				}
 				
 				cutfrom=i;
-				linemarkers.push_back({i+1, i+1+linemarkers.back().chr-linemarkers.back().off, linemarkers.back().line,linemarkers.back().off});
+				linemarkers.push_back({int(i+1), int(i+1+linemarkers.back().chr-linemarkers.back().off), linemarkers.back().line,linemarkers.back().off});
 				break;
 			}
 			else if(c=='(' || c=='[' || c=='{') {
@@ -1337,7 +1337,7 @@ namespace Compilers {
 		//second line of a partial line
 		if(left.size()) {
 			left.push_back('\n');
-			linemarkers.push_back({left.size(), 0, linemarkers.back().line+1, linemarkers.back().off+left.size()});
+			linemarkers.push_back({int(left.size()), 0, linemarkers.back().line+1, int(linemarkers.back().off+left.size())});
 			plinespassed++;
 		}
 		else {

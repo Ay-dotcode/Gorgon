@@ -35,114 +35,6 @@ namespace Scripting {
 	
 	template<class T_>
 	T_ ParseThrow(const std::string &) { throw std::runtime_error("This type cannot be parsed."); }
-	
-	/**
-		* This class allows embedded types to become scripting types that are passed around
-		* as values. This class requires T_ to be copy constructable.
-		*/
-	template <
-		class T_, 
-		StringFromFn<T_> ToString_, 
-		ParseFn<T_> Parse_
-	>
-	class MappedValueType : public Type {
-	public:
-		MappedValueType(const std::string &name, const std::string &help, const T_ &def) :
-		Type(name, help, def, new TMP::AbstractRTTC<T_>(), false)
-		{
-		}
-		
-		MappedValueType(const std::string &name, const std::string &help) : MappedValueType(name, help, T_()) {
-		}
-		
-		
-		/// Converts a data of this type to string. This function should never throw, if there is
-		/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
-		virtual std::string ToString(const Data &data) const override {
-			return ToString_(data.GetValue<T_>());
-		}
-		
-		/// Parses a string into this data. This function is allowed to throw.
-		virtual Data Parse(const std::string &str) const override {
-			return Data(this, Parse_(str));
-		}
-		
-	protected:
-		virtual void deleteobject(const Data &obj) const override {
-			ASSERT(obj.IsReference(), "Deleting a non reference");
-				
-			T_ *ptr;
-			if(obj.IsConstant()) {
-				//force to non-const
-				ptr=const_cast<T_*>(obj.ReferenceValue<const T_*>());
-			}
-			else {
-				ptr=obj.ReferenceValue<T_*>();
-			}
-			if(ptr!=nullptr) {
-				delete ptr;
-			}
-		}
-		
-		bool compare(const Data &l, const Data &r) const override {
-			return l.GetValue<T_>()==r.GetValue<T_>();
-		}
-	};
-	
-	/**
-		* This class allows embedded types to become scripting types that are passed around
-		* as references. Parsing requires a pointer, therefore, a regular parse function will not
-		* be sufficient. Default parsing function throws.
-		*/
-	template <
-	class T_, 
-	std::string(*ToString_)(const T_ &)=&String::From<T_>, 
-	T_*(*Parse_)(const std::string &)=&ParseThrow<T_*>
-	>
-	class MappedReferenceType : public Type {
-	public:
-		MappedReferenceType(const std::string &name, const std::string &help, T_ *def) :
-		Type(name, help, def, new TMP::AbstractRTTC<T_>(), true)
-		{
-		}
-		
-		MappedReferenceType(const std::string &name, const std::string &help) : MappedReferenceType(name, help, nullptr) {
-		}
-		
-		
-		/// Converts a data of this type to string. This function should never throw, if there is
-		/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
-		virtual std::string ToString(const Data &data) const override {
-			if(data.IsConstant()) {
-				if(data.ReferenceValue<const T_*>()==nullptr) return "<null>";
-				return ToString_(*data.ReferenceValue<const T_*>());
-			}
-			else {
-				if(data.ReferenceValue<T_*>()==nullptr) return "<null>";
-				return ToString_(*data.ReferenceValue<T_*>());
-			}
-		}
-		
-		/// Parses a string into this data. This function is allowed to throw.
-		virtual Data Parse(const std::string &str) const override {
-			return Data(this, Parse_(str));
-		}
-		
-	protected:
-		virtual void deleteobject(const Data &obj) const override {
-			T_ *ptr;
-			if(obj.IsConstant()) {
-				//force to non-const
-				ptr=const_cast<T_*>(obj.ReferenceValue<const T_*>());
-			}
-			else {
-				ptr=obj.ReferenceValue<T_*>();
-			}
-			if(ptr!=nullptr) {
-				delete ptr;
-			}
-		}
-	};
 
 	
 	/// This class wraps a C++ function into an overload. It can be constructed using MapFunction.
@@ -203,11 +95,43 @@ namespace Scripting {
 			///... do the logic to turn underlying type to T_
 			return d.ReferenceValue<T_>();
 		}
-
+		
 		template<class T_>
-		inline typename std::enable_if<!is_nonconstref<T_>::value, T_>::type castto(const Data &d) const {
+		inline typename std::enable_if<!is_nonconstref<T_>::value && std::is_pointer<T_>::value, T_>::type castto(const Data &d) const {
 			///... do the logic to turn underlying type to T_
-			return d.GetValue<T_>();
+			bool isconst=std::is_const<typename std::remove_pointer<T_>::type>::value;
+			
+			if(isconst && !d.IsConstant()) {
+				return d.GetValue<typename std::remove_const<typename std::remove_pointer<T_>::type>::type *>();
+			}
+			else {
+				return d.GetValue<T_>();
+			}
+		}
+		
+		template<class T_>
+		inline typename std::enable_if<!is_nonconstref<T_>::value && !std::is_pointer<T_>::value, T_>::type castto(const Data &d) const {
+			///... do the logic to turn underlying type to T_
+			bool isref=false, isconst=false;
+			if(std::is_reference<T_>::value) {
+				isref=true;
+				isconst=std::is_const<typename std::remove_reference<T_>::type>::value;
+			}
+			else {
+				isconst=std::is_const<T_>::value;
+			}
+			
+			if(isconst && !d.IsConstant()) {
+				if(isref) {
+					return d.GetValue<typename std::remove_const<typename std::remove_reference<T_>::type>::type &>();
+				}
+				else {
+					return d.GetValue<typename std::remove_const<T_>::type>();
+				}
+			}
+			else {
+				return d.GetValue<T_>();
+			}
 		}
 
 		template<int P_>
@@ -1026,6 +950,191 @@ namespace Scripting {
 	private:
 		std::function<T_(const C_ &)> getter;
 		std::function<void(C_ &, const T_ &)> setter;
+	};
+	
+	/**
+	 * This class allows embedded types to become scripting types that are passed around
+	 * as values. This class requires T_ to be copy constructable.
+	 */
+	template <
+	class T_, 
+	StringFromFn<T_> ToString_, 
+	ParseFn<T_> Parse_
+	>
+	class MappedValueType : public Type {
+	public:
+		MappedValueType(const std::string &name, const std::string &help, const T_ &def) :
+		Type(name, help, def, new TMP::AbstractRTTC<T_>(), false)
+		{
+			addcopyconst<T_>();
+		}
+		
+		MappedValueType(const std::string &name, const std::string &help) : MappedValueType(name, help, T_()) {
+		}
+		
+		template<class ...P_>
+		void MapConstructor(ParameterList params) {
+			ASSERT(sizeof...(P_)==params.size(), "Number of parameters does not match");
+			AddConstructors({
+				MapFunction(
+					[](P_... args) {
+						return T_(args...);
+					},
+					*this,
+					params
+				)
+			});
+		}
+		
+		/// Converts a data of this type to string. This function should never throw, if there is
+		/// no data to display, recommended this play is either [ EMPTY ], or Typename #id
+		virtual std::string ToString(const Data &data) const override {
+			return ToString_(data.GetValue<T_>());
+		}
+		
+		/// Parses a string into this data. This function is allowed to throw.
+		virtual Data Parse(const std::string &str) const override {
+			return Data(this, Parse_(str));
+		}
+		
+	protected:
+		virtual void deleteobject(const Data &obj) const override {
+			ASSERT(obj.IsReference(), "Deleting a non reference");
+			
+			T_ *ptr;
+			if(obj.IsConstant()) {
+				//force to non-const
+				ptr=const_cast<T_*>(obj.ReferenceValue<const T_*>());
+			}
+			else {
+				ptr=obj.ReferenceValue<T_*>();
+			}
+			if(ptr!=nullptr) {
+				delete ptr;
+			}
+		}
+		
+		bool compare(const Data &l, const Data &r) const override {
+			return l.GetValue<T_>()==r.GetValue<T_>();
+		}
+		
+		template<class O_>
+		typename std::enable_if<std::is_copy_constructible<O_>::value, void>::type
+		addcopyconst() {
+			//automatic copy constructor
+			AddConstructors({
+				MapFunction(
+					[](O_ o) {
+						return T_(o);
+					},
+				*this,
+				{
+					Parameter("value", "The value to be copied", this)
+				}
+				)
+			});
+		}
+		template<class O_>
+		typename std::enable_if<!std::is_copy_constructible<O_>::value, void>::type
+		addcopyconst() {
+		}
+	};
+	
+	/**
+	 * This class allows embedded types to become scripting types that are passed around
+	 * as references. Parsing requires a pointer, therefore, a regular parse function will not
+	 * be sufficient. Default parsing function throws.
+	 */
+	template <
+	class T_, 
+	std::string(*ToString_)(const T_ &)=&String::From<T_>, 
+	T_*(*Parse_)(const std::string &)=&ParseThrow<T_*>
+	>
+	class MappedReferenceType : public Type {
+	public:
+		MappedReferenceType(const std::string &name, const std::string &help, T_ *def) :
+		Type(name, help, def, new TMP::AbstractRTTC<T_>(), true)
+		{
+			addcopyconst<T_>();
+		}
+		
+		MappedReferenceType(const std::string &name, const std::string &help) : MappedReferenceType(name, help, nullptr) {
+		}
+		
+		
+		/// Converts a data of this type to string. This function should never throw, if there is
+		/// no data to display, recommended display is either [ EMPTY ], or Typename #id
+		virtual std::string ToString(const Data &data) const override {
+			if(data.IsConstant()) {
+				if(data.ReferenceValue<const T_*>()==nullptr) return "<null>";
+				return ToString_(*data.ReferenceValue<const T_*>());
+			}
+			else {
+				if(data.ReferenceValue<T_*>()==nullptr) return "<null>";
+				return ToString_(*data.ReferenceValue<T_*>());
+			}
+		}
+		
+		template<class ...P_>
+		void MapConstructor(ParameterList params) {
+			ASSERT(sizeof...(P_)==params.size(), "Number of parameters does not match");
+			AddConstructors({
+				MapFunction(
+					[](P_... args) {
+						auto obj=new T_(args...);
+						VirtualMachine::Get().References.Register(obj);
+						
+						return obj;
+					},
+				*this,
+				params
+				)
+			});
+		}
+		
+		/// Parses a string into this data. This function is allowed to throw.
+		virtual Data Parse(const std::string &str) const override {
+			return Data(this, Parse_(str));
+		}
+		
+	protected:
+		virtual void deleteobject(const Data &obj) const override {
+			T_ *ptr;
+			if(obj.IsConstant()) {
+				//force to non-const
+				ptr=const_cast<T_*>(obj.ReferenceValue<const T_*>());
+			}
+			else {
+				ptr=obj.ReferenceValue<T_*>();
+			}
+			if(ptr!=nullptr) {
+				delete ptr;
+			}
+		}
+		
+		template<class O_>
+		typename std::enable_if<std::is_copy_constructible<O_>::value, void>::type
+		addcopyconst() {
+			//automatic copy constructor
+			AddConstructors({
+				MapFunction(
+					[](const O_ *o) {
+						auto obj=new T_(*o);
+						VirtualMachine::Get().References.Register(obj);
+						
+						return obj;
+					},
+				*this,
+				{
+					Parameter("value", "The value to be copied", this, ReferenceTag, ConstTag)
+				}
+				)
+			});
+		}
+		template<class O_>
+		typename std::enable_if<!std::is_copy_constructible<O_>::value, void>::type
+		addcopyconst() {
+		}
 	};
 	
 } }
