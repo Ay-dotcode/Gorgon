@@ -504,8 +504,28 @@ namespace Gorgon {
 			}
 		}
 		
-		Variable &VirtualMachine::GetVariable(const std::string &name) {
+		Variable VirtualMachine::GetVariable(const std::string &name) {
 			ASSERT(scopeinstances.size(), "No scope instance is active");
+			
+			bool spec=false;
+			switch(name[0]) {
+				case '@':
+				case '%':
+				case '!':
+					spec=true;
+			}
+			
+			if(spec) {
+				bool done=false;
+				if(spechandler) {
+					Data dat=spechandler(name[0], &name[1]);
+					if(dat.IsValid()) {
+						return {name, dat};
+					}
+				}
+				
+				throw SymbolNotFoundException(name, SymbolType::Identifier, "Special identifier "+name+" cannot be found");
+			}
 			
 			auto var=scopeinstances.back()->GetVariable(name);
 
@@ -530,8 +550,51 @@ namespace Gorgon {
 			}
 		}
 		
+		Variable *VirtualMachine::getvarref(const std::string &name) {
+			ASSERT(scopeinstances.size(), "No scope instance is active");
+			
+			auto var=scopeinstances.back()->GetVariable(name);
+			
+			return var;
+		}
+		
 		void VirtualMachine::SetVariable(const std::string &name, Data data) {
 			ASSERT(scopeinstances.size(), "No scope instance is active");
+			
+			bool spec=false;
+			switch(name[0]) {
+			case '@':
+			case '%':
+			case '!':
+				spec=true;
+			}
+			
+			if(spec) {
+				bool done=false;
+				if(spechandler) {
+					Data dat=spechandler(name[0], &name[1]);
+					if(dat.IsValid()) {
+						if(!dat.IsReference() || dat.IsConstant()) {
+							throw ConstantException(name);
+						}
+						
+						fixparameter(data, dat.GetType(), false, "");
+						
+						if(data.IsReference()) {
+							dat.GetData().TypeServices()->Clone(dat.GetData().UnsafeGet<void *>(), data.GetData().UnsafeGet<void *>());
+						}
+						else {
+							dat.GetData().TypeServices()->Clone(dat.GetData().UnsafeGet<void *>(), data.GetData().GetRaw());
+						}
+						
+						done=true;
+					}
+				}
+				
+				if(!done) {
+					throw SymbolNotFoundException(name, SymbolType::Identifier, "Special identifier "+name+" cannot be found");
+				}
+			}
 			
 			//check if it exists
 			auto var=scopeinstances.back()->GetVariable(name);
@@ -541,11 +604,12 @@ namespace Gorgon {
 				if(var->IsValid() && var->IsReference() && !var->GetType().IsReferenceType()) {
 					fixparameter(data, var->GetType(), false, "");
 					
-					if(data.IsReference()) {
-						var->Set(data);
-						
-						return;
-					}
+					//!?
+// 					if(data.IsReference()) {
+// 						var->Set(data);
+// 						
+// 						return;
+// 					}
 					
 					var->SetReferenceable(data);
 				}
@@ -590,186 +654,216 @@ namespace Gorgon {
 		
 		Data VirtualMachine::getvalue(const Value &val, bool reference) {
 			switch(val.Type) {
-				case ValueType::Literal:
-					if(reference) { //literals cannot be converted to reference
-						throw CastException("literal", "reference");
-					}
-					return val.Literal;
+			case ValueType::Literal:
+				if(reference) { //literals cannot be converted to reference
+					throw CastException("literal", "reference");
+				}
+				return val.Literal;
+				
+			case ValueType::Constant:
+				if(reference) { //constant refrence
+					auto data=FindConstant(val.Name).GetData().GetReference();
+					data.MakeConstant(); //should be constant
+					return data;
+				}
+				else {
+					auto data=FindConstant(val.Name).GetData();
+					if(data.IsReference())
+						data.MakeConstant();
 					
-				case ValueType::Constant:
-					if(reference) { //constant refrence
-						auto data=FindConstant(val.Name).GetData().GetReference();
-						data.MakeConstant(); //should be constant
-						return data;
-					}
-					else {
-						auto data=FindConstant(val.Name).GetData();
-						if(data.IsReference())
-							data.MakeConstant();
-						
-						return data;
-					}
-					
-				case ValueType::Temp: {
-					auto &data=temporaries[val.Result+tempbase];
-					//std::cout<<"F> "<<val.Result+tempbase<<" = "<<data<<std::endl;
-
-					
-					if(!data.IsValid()) {
-						throw std::runtime_error("Invalid temporary.");
-					}
-					
-					if(reference) {
-						if(!data.IsReference()) { 
-							//temporaries that are not already a reference, cannot be converted to
-							//a reference
-							throw CastException("non reference temporary", "reference");
-						}
-							
-						return data;
-					}
-					else
-						return data;
+					return data;
 				}
 				
-				case ValueType::Variable: {
-					auto &var=GetVariable(val.Name);
-					
-					if(reference)
-						return var.GetReference();
-					else
-						return var;
+			case ValueType::Temp: {
+				auto &data=temporaries[val.Result+tempbase];
+				//std::cout<<"F> "<<val.Result+tempbase<<" = "<<data<<std::endl;
+
+				
+				if(!data.IsValid()) {
+					throw std::runtime_error("Invalid temporary.");
 				}
-				case ValueType::Identifier:		
-					//if it is a variable
-					if(IsVariableSet(val.Name)) {
-						auto &var=GetVariable(val.Name);
+				
+				if(reference) {
+					if(!data.IsReference()) { 
+						//temporaries that are not already a reference, cannot be converted to
+						//a reference
+						throw CastException("non reference temporary", "reference");
+					}
 						
-						if(reference)
-							return var.GetReference();
-						else
-							return var;
+					return data;
+				}
+				else
+					return data;
+			}
+			
+			case ValueType::Variable: {
+				if(reference) {
+					Variable *var=getvarref(val.Name);
+					if(var) {
+						return var->GetReference();
 					}
 					else {
-						int namespcs=std::count(val.Name.begin(), val.Name.end(), ':');
-						
-						if(namespcs==2) { //function or constant in a type
-							auto name=val.Name;
-							auto lib=String::Extract(name, ':');
-							auto typ=String::Extract(name, ':');
-							
-							//-use iterators
-							if(!Libraries.Exists(lib)) {
-								throw SymbolNotFoundException(lib, SymbolType::Library);
-							}
-							if(!Libraries[lib].Types.Exists(typ)) {
-								throw SymbolNotFoundException(typ, SymbolType::Type);
-							}
-							auto &type=Libraries[lib].Types[typ];
-							if(type.Constants.Exists(name)) {
-								if(reference) {
-									auto data=type.Constants[name].GetData().GetReference();
-									data.MakeConstant();
-									
-									return data;
-								}
-								else {
-									return type.Constants[name].GetData();
-								}
-							}
-							else if(type.Functions.Exists(name)) {
-								return {Types::Function(), &type.Functions[name]};
-							}
-							else {
-								throw SymbolNotFoundException(name, SymbolType::Identifier);
-							}
+						//last chance
+						const Variable &var=GetVariable(val.Name);
+						if(!var.IsReference()) {
+							throw CastException("non-reference special variable", "reference");
 						}
-						else if(namespcs==1) { //function or constant in a library
-							auto name=val.Name;
-							auto libname=String::Extract(name, ':');
-							
-							//...function or constant in a type
-							
-							//-use iterators
-							
-							const Library *lib=nullptr;
-							if(Libraries.Exists(libname))
-								lib=&Libraries[libname];
-							
-							if(lib && lib->Constants.Exists(name)) {
-								if(reference) {
-									auto data=lib->Constants[name].GetData().GetReference();
-									data.MakeConstant();
-									
-									return data;
-								}
-								else {
-									return lib->Constants[name].GetData();
-								}
-							}
-							else if(lib && lib->Functions.Exists(name)) {
-								return {Types::Function(), &lib->Functions[name]};
-							}
-							else { //could be a function or constant in a type which is in an unknown library
-								auto range=types.equal_range(libname);
-								if(range.first==range.second) {
-									throw SymbolNotFoundException(libname, SymbolType::Identifier);
-								}
-								else if(range.first!=--range.second) {
-									throw AmbiguousSymbolException(libname, SymbolType::Identifier);
-								}
-								else {
-									if(range.first->second->Constants.Exists(name)) {
-										if(reference) {
-											auto data=range.first->second->Constants[name].GetData().GetReference();
-											data.MakeConstant();
-											
-											return data;
-										}
-										else {
-											return range.first->second->Constants[name].GetData();
-										}
-									}
-									else if(range.first->second->Functions.Exists(name)) {
-										return {Types::Function(), &range.first->second->Functions[name]};
-									}
-									else {
-										throw SymbolNotFoundException(val.Name, SymbolType::Identifier);
-									}
-								}
-							}
+						
+						return var;
+					}
+				}
+				else {
+					return GetVariable(val.Name);
+				}
+			}
+			case ValueType::Identifier: {
+				bool specvar=false;
+				if(val.Name[0]=='!' || val.Name[0]=='@' || val.Name[0]=='%') {
+					if(spechandler && spechandler(val.Name[0], &val.Name[1]).IsValid())
+						specvar=true;
+				}
+				//if it is a variable
+				if(specvar || IsVariableSet(val.Name)) {
+					if(reference) {
+						Variable *var=getvarref(val.Name);
+						if(var) {
+							return var->GetReference();
 						}
 						else {
-							auto range=symbols.equal_range(val.Name);
-							if(range.first==range.second) {
-								throw SymbolNotFoundException(val.Name, SymbolType::Identifier);
+							//last chance
+							const Variable &var=GetVariable(val.Name);
+							if(!var.IsReference()) {
+								throw CastException("non-reference special variable", "reference");
 							}
-							else if(range.first!=--range.second) {
-								throw AmbiguousSymbolException(val.Name, SymbolType::Identifier);
+							
+							return var;
+						}
+					}
+					else {
+						return GetVariable(val.Name);
+					}
+				}
+				else {
+					int namespcs=std::count(val.Name.begin(), val.Name.end(), ':');
+					
+					if(namespcs==2) { //function or constant in a type
+						auto name=val.Name;
+						auto lib=String::Extract(name, ':');
+						auto typ=String::Extract(name, ':');
+						
+						//-use iterators
+						if(!Libraries.Exists(lib)) {
+							throw SymbolNotFoundException(lib, SymbolType::Library);
+						}
+						if(!Libraries[lib].Types.Exists(typ)) {
+							throw SymbolNotFoundException(typ, SymbolType::Type);
+						}
+						auto &type=Libraries[lib].Types[typ];
+						if(type.Constants.Exists(name)) {
+							if(reference) {
+								auto data=type.Constants[name].GetData().GetReference();
+								data.MakeConstant();
+								
+								return data;
 							}
 							else {
-								if(range.first->second.type==SymbolType::Constant) {
+								return type.Constants[name].GetData();
+							}
+						}
+						else if(type.Functions.Exists(name)) {
+							return {Types::Function(), &type.Functions[name]};
+						}
+						else {
+							throw SymbolNotFoundException(name, SymbolType::Identifier);
+						}
+					}
+					else if(namespcs==1) { //function or constant in a library
+						auto name=val.Name;
+						auto libname=String::Extract(name, ':');
+						
+						//...function or constant in a type
+						
+						//-use iterators
+						
+						const Library *lib=nullptr;
+						if(Libraries.Exists(libname))
+							lib=&Libraries[libname];
+						
+						if(lib && lib->Constants.Exists(name)) {
+							if(reference) {
+								auto data=lib->Constants[name].GetData().GetReference();
+								data.MakeConstant();
+								
+								return data;
+							}
+							else {
+								return lib->Constants[name].GetData();
+							}
+						}
+						else if(lib && lib->Functions.Exists(name)) {
+							return {Types::Function(), &lib->Functions[name]};
+						}
+						else { //could be a function or constant in a type which is in an unknown library
+							auto range=types.equal_range(libname);
+							if(range.first==range.second) {
+								throw SymbolNotFoundException(libname, SymbolType::Identifier);
+							}
+							else if(range.first!=--range.second) {
+								throw AmbiguousSymbolException(libname, SymbolType::Identifier);
+							}
+							else {
+								if(range.first->second->Constants.Exists(name)) {
 									if(reference) {
-										auto data=range.first->second.object.Get<const Constant*>()->GetData().GetReference();
+										auto data=range.first->second->Constants[name].GetData().GetReference();
 										data.MakeConstant();
 										
 										return data;
 									}
 									else {
-										return range.first->second.object.Get<const Constant*>()->GetData();
+										return range.first->second->Constants[name].GetData();
 									}
 								}
-								else if(range.first->second.type==SymbolType::Function) {
-									return {Types::Function(), range.first->second.object.Get<const Function*>()};
+								else if(range.first->second->Functions.Exists(name)) {
+									return {Types::Function(), &range.first->second->Functions[name]};
 								}
 								else {
-									throw SymbolNotFoundException(val.Name, SymbolType::Identifier, "An unsupported symbol is found");
+									throw SymbolNotFoundException(val.Name, SymbolType::Identifier);
 								}
 							}
 						}
 					}
-					default:
-						Utils::ASSERT_FALSE("Invalid value type.");
+					else {
+						auto range=symbols.equal_range(val.Name);
+						if(range.first==range.second) {
+							throw SymbolNotFoundException(val.Name, SymbolType::Identifier);
+						}
+						else if(range.first!=--range.second) {
+							throw AmbiguousSymbolException(val.Name, SymbolType::Identifier);
+						}
+						else {
+							if(range.first->second.type==SymbolType::Constant) {
+								if(reference) {
+									auto data=range.first->second.object.Get<const Constant*>()->GetData().GetReference();
+									data.MakeConstant();
+									
+									return data;
+								}
+								else {
+									return range.first->second.object.Get<const Constant*>()->GetData();
+								}
+							}
+							else if(range.first->second.type==SymbolType::Function) {
+								return {Types::Function(), range.first->second.object.Get<const Function*>()};
+							}
+							else {
+								throw SymbolNotFoundException(val.Name, SymbolType::Identifier, "An unsupported symbol is found");
+							}
+						}
+					}
+				}
+			}
+			default:
+				Utils::ASSERT_FALSE("Invalid value type.");
 			}
 		}
 		

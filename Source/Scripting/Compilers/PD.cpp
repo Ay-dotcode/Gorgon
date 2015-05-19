@@ -181,6 +181,7 @@ namespace Compilers {
 
 			std::string acc = "";
 
+			bool specialident=false;
 			
 			char c = input[index++];
 			switch(c) {
@@ -204,6 +205,11 @@ namespace Compilers {
 					throw ParseError(ExceptionType::InvalidLiteral, "Unknown string literal: "+literalmarker, index);
 				}
 			}
+			case '@':
+			case '%':
+			case '!':
+				specialident=true;
+				break;
 			case '(':
 				return Token {"(", Token::LeftP, start};
 			case ')':
@@ -232,7 +238,11 @@ namespace Compilers {
 			bool var = false;
 
 			acc.push_back(c);
-			if(isdigit(c)) {
+			
+			if(specialident) {
+				; //do nothing
+			}
+			else if(isdigit(c)) {
 				numeric = true;
 			}
 			else if(c == '-' && !expectop) {
@@ -257,7 +267,15 @@ namespace Compilers {
 				else
 					c = 0;
 
-				if(numeric) {
+				if(specialident) {
+					if(isbreaker(c)) {
+						return {acc, Token::Identifier, start};
+					}
+					else {
+						acc.push_back(c);
+					}
+				}
+				else if(numeric) {
 					if(isalpha(c) || literalpart) {
 						if(isbreaker(c)) {
 							if(literal=="i") {
@@ -767,6 +785,26 @@ namespace Compilers {
 			"method", "call", "return", "source", "ref"
 		};
 		
+		//checks an identifier if it can be a variable
+		bool checkvar(const std::string &text) {
+			for(auto c : text) {
+				if(c==':') return false;
+			}
+			
+			return true;
+		}
+		
+		//checks an identifier if it can be a new identifier, such as function name or a parameter name
+		bool checknewident(const std::string &text) {
+			char c=text[0];
+			if(c=='%' || c=='@' || c=='!') return false;
+			for(auto c : text) {
+				if(c==':') return false;
+			}
+			
+			return true;
+		}
+		
 	}
 
 	ASTNode *Programming::parse(const std::string &input) {
@@ -780,11 +818,19 @@ namespace Compilers {
 			auto assignment = [&](ASTNode *term, std::string keyword) {
 				if(!term) {
 					term=parseterm(input, index);
-						
+					if(term->Type!=ASTNode::Identifier || !checknewident(term->Text)) {
+						throw ParseError(ExceptionType::UnexpectedToken, term->Text+" is not a valid identifier for "+keyword);
+					}
+					
 					token=consumenexttoken(input, index);
 						
-					if(token!=Token::EqualSign) {					
+					if(token!=Token::EqualSign) {
 						throw ParseError{ExceptionType::UnexpectedToken, keyword+" should be followed by an assignment.", index};
+					}
+				}
+				else {
+					if(term->Type==ASTNode::Identifier && !checkvar(term->Text)) {
+						throw ParseError(ExceptionType::UnexpectedToken, term->Text+" is not a valid variable name");
 					}
 				}
 					
@@ -861,22 +907,22 @@ namespace Compilers {
 						
 					//parse name
 					token=consumenexttoken(input, index);
-					if(token!=Token::Identifier) {
+					if(token!=Token::Identifier || !checknewident(token.repr)) {
 						throw ParseError{ExceptionType::UnexpectedToken, "Expected function name, found: "+token.repr, index};
 					}
-						
+					
 					root->Leaves.Push(NewNode(ASTNode::Identifier, token));
-						
+					
 					token=consumenexttoken(input, index);
-						
+					
 					//parse parameters
 					if(token==Token::LeftP) {
 						while( (token=consumenexttoken(input, index)) != Token::RightP ) {
 							//parameter name should be an identifier
-							if(token!=Token::Identifier) {
+							if(token!=Token::Identifier || checknewident(token.repr)) {
 								throw ParseError{ExceptionType::UnexpectedToken, "Expected parameter identifier, found: "+token.repr, index};
 							}
-								
+							
 							ParameterTemplate p;
 							p.name=token.repr;
 							//default type is variant

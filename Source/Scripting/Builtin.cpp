@@ -940,7 +940,11 @@ namespace Gorgon {
 						{
 							MapFunction(
 								[](std::string varname) {
-									VirtualMachine::Get().GetVariable(varname).MakeConstant();
+									auto var=VirtualMachine::Get().getvarref(varname);
+									if(!var) {
+										throw SymbolNotFoundException(varname, SymbolType::Variable);
+									}
+									var->MakeConstant();
 								}, nullptr,
 								{
 									Parameter("Variable",
@@ -1044,7 +1048,7 @@ namespace Gorgon {
 							MapFunction(
 								[](std::string variable) {
 									auto &vm=VirtualMachine::Get();
-									auto &var=vm.GetVariable(variable);
+									auto var=vm.GetVariable(variable);
 									vm.GetOutput()<<"Name : "<<var.GetName()<<std::endl;
 									if(var.IsValid()) {
 										vm.GetOutput()<<"Type : "<<var.GetType().GetName()<<std::endl;

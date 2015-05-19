@@ -119,7 +119,7 @@ namespace Gorgon {
 
 			bool IsVariableSet(const std::string &name);
 			
-			Variable &GetVariable(const std::string &name);
+			Variable GetVariable(const std::string &name);
 
 			void SetVariable(const std::string &name, Data data);
 			
@@ -195,10 +195,19 @@ namespace Gorgon {
 				scopeinstances.back()->ReturnValue=value;
 				returnimmediately=true;
 			}
+			
+			/// Sets the handler for special identifiers. These are application defined variables and values.
+			/// Unless they are returned as references, they will be considered as readonly.
+			void SetSpecialIdentifierHandler(std::function<Data(char,std::string)> handler) {
+				spechandler=handler;
+			}
 
 			/// Resets any runtime information that this VM has. This includes all scopes and global
 			/// variables
 			void Reset();
+			
+			/// Internal, returns pointer to the variable. Can return nullptr. Only searches in VM variables
+			Variable *getvarref(const std::string &var);
 			
 			//TODO: events
 
@@ -223,6 +232,9 @@ namespace Gorgon {
 			std::string alllibnames;
 			
 			bool returnimmediately=false;
+			
+			//special identifier handler.
+			std::function<Data(char, std::string)> spechandler;
 
 
 			/// If set, VM will reset itself as soon as the execution is stopped

@@ -82,10 +82,26 @@ void test() {
 	}
 }
 
+std::vector<int> v(40);
+
+Data SpecHandler(char c, std::string var) {
+	if(c=='!') {
+		return {Gorgon::Scripting::Types::String(), var};
+	}
+	else if(c=='%') {
+		if(Gorgon::String::To<int>(var)<40 && Gorgon::String::To<int>(var)>0) {
+			return {Gorgon::Scripting::Types::Int(), &v[Gorgon::String::To<int>(var)], true, false};
+		}
+	}
+	
+	return {};
+}
+
 int main() {
 	VirtualMachine vm;
 	Gorgon::Geometry::init_scripting();
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
+	vm.SetSpecialIdentifierHandler(SpecHandler);
 	
 
 	//test();
