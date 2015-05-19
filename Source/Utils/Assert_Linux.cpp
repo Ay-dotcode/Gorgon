@@ -73,7 +73,12 @@ namespace Gorgon { namespace Utils {
 				std::cout<<"  ["<<(i-skip-1)<<"] ";
 				Console::SetBold(false);
 				Console::SetColor(Console::Default);
-				if(name!="") {
+				if(!demangled.empty()) {
+					std::cout<<"In function ";
+					Console::SetColor(Console::Yellow);
+					std::cout<<demangled<<" ";
+				}
+				else if(!name.empty()) {
 					std::cout<<"In function ";
 					Console::SetColor(Console::Yellow);
 					std::cout<<name<<" ";
