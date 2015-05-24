@@ -1,6 +1,10 @@
 
 #include "Assert.h"
 
+#pragma warning(push)
+#pragma warning(disable:4091) //warning is in windows headers
+#pragma warning(disable:4996) //warning is in StackWalker code
+
 //******** BEGIN STACKWALKER
 #pragma region STACKWALKER
 /**********************************************************************
@@ -144,7 +148,7 @@ protected:
 		CHAR loadedImageName[STACKWALK_MAX_NAMELEN];
 	} CallstackEntry;
 
-	typedef enum CallstackEntryType { firstEntry, nextEntry, lastEntry };
+	enum CallstackEntryType { firstEntry, nextEntry, lastEntry };
 
 	virtual void OnSymInit(LPCSTR szSearchPath, DWORD symOptions, LPCSTR szUserName);
 	virtual void OnLoadModule(LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD size, DWORD result, LPCSTR symType, LPCSTR pdbName, ULONGLONG fileVersion);
@@ -612,7 +616,7 @@ public:
 	LPSTR m_szSymPath;
 
 #pragma pack(push,8)
-	typedef struct IMAGEHLP_MODULE64_V3 {
+	struct IMAGEHLP_MODULE64_V3 {
 		DWORD    SizeOfStruct;           // set to sizeof(IMAGEHLP_MODULE64)
 		DWORD64  BaseOfImage;            // base load address of module
 		DWORD    ImageSize;              // virtual size of the loaded module
@@ -640,7 +644,7 @@ public:
 		BOOL     Publics;                // contains public symbols
 	};
 
-	typedef struct IMAGEHLP_MODULE64_V2 {
+	struct IMAGEHLP_MODULE64_V2 {
 		DWORD    SizeOfStruct;           // set to sizeof(IMAGEHLP_MODULE64)
 		DWORD64  BaseOfImage;            // base load address of module
 		DWORD    ImageSize;              // virtual size of the loaded module
@@ -1574,7 +1578,7 @@ namespace Gorgon {
 			virtual void OnCallstackEntry(CallstackEntryType type, CallstackEntry &entry) {
 				if (entry.lineFileName[0] == 0) return;
 
-				Stack.push_back({entry.lineFileName, entry.lineNumber, entry.name});
+				Stack.push_back({entry.lineFileName, int(entry.lineNumber), entry.name});
 			}
 
 		public:

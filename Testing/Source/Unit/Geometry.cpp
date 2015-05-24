@@ -630,7 +630,7 @@ TEST_CASE( "Size constructors", "[Size]" ) {
 	REQUIRE(s13.Width == Approx(2.2));
 	REQUIRE(s13.Height == Approx(5.2));
 	
-	REQUIRE( ((basic_Point<int>)s1) == Point(2, 5) );
+	//REQUIRE( ((basic_Point<int>)s1) == Point(2, 5) );
 	//REQUIRE( (Pointf)s2 == Pointf(4, 4) );
 }
 

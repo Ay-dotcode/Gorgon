@@ -690,7 +690,7 @@ namespace Gorgon {
 
 				HWND ret;
 
-				///*Creating window class
+				//Creating window class
 				windclass.cbClsExtra=0;
 				windclass.cbSize=sizeof(WNDCLASSEX);
 				windclass.cbWndExtra=0;
@@ -705,7 +705,7 @@ namespace Gorgon {
 				windclass.style=3;
 				RegisterClassEx(&windclass);
 
-				///*Setting fullscreen parameters
+				//Setting fullscreen parameters
 				if (FullScreen) {
 					DEVMODE dmScreenSettings;									// device mode
 					memset(&dmScreenSettings,0,sizeof(dmScreenSettings));
@@ -720,13 +720,13 @@ namespace Gorgon {
 					}
 				}
 
-				///*Creating window
+				//Creating window
 				if(!FullScreen)
 					ret=CreateWindowExA(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, Name.c_str(), Title.c_str(), WS_MINIMIZEBOX | WS_SYSMENU | WS_CLIPSIBLINGS |WS_CLIPCHILDREN ,CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, (HINSTANCE)Instance, NULL);
 				else																							   
 					ret=CreateWindowA(Name.c_str(), Title.c_str(), WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, (HINSTANCE)Instance, NULL);
 
-				///*Adjusting window size and position
+				//Adjusting window size and position
 				if(Show)
 					::ShowWindow(ret,1);
 

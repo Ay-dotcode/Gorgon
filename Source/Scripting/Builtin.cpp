@@ -1,6 +1,11 @@
 #include "Embedding.h"
 #include "Exceptions.h"
 #include "Types/Array.h"
+#include <math.h>
+
+#ifdef _MSC_VER
+	double exp10(double num) { return exp(num)/exp(2); }
+#endif
 
 namespace Gorgon {
 	namespace Scripting {
@@ -324,7 +329,7 @@ namespace Gorgon {
 						MapFunction(
 							[](float v, int digits) -> float {
 								double exp=exp10(digits);
-								return round(v*exp)/exp;
+								return float(round(v*exp)/exp);
 							}, Float,
 							{ 
 								Parameter( "digits",

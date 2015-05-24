@@ -1,5 +1,8 @@
 #pragma once
 
+#pragma warning(push)
+#pragma warning(disable:4297)
+
 #include <typeinfo>
 
 #include "../String.h"
@@ -197,3 +200,4 @@ namespace Gorgon {
 #endif
 	}
 }
+#pragma warning(pop)

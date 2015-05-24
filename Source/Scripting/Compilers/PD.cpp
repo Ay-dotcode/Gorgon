@@ -1374,7 +1374,6 @@ namespace Compilers {
 			elements+=List.size()-prevsz;
 
 			//ASTToSVG(input, *ret, {}, true);
-			///... fix line and char start of ast tree
 			
 			if(ret) {
 				try {
@@ -1397,7 +1396,7 @@ namespace Compilers {
 			if(!process.empty() && !left.empty()) {
 				ASSERT(linemarkers.size()>1, "there shouldnt be any more data left");
 				
-				char p=totalinput-left.size();
+				int p=totalinput-left.size();
 				
 				auto it=linemarkers.end()-1;
 				while(true) {

@@ -7,6 +7,6 @@ SET(Local
 )
 IF(${SCRIPTING})
 	LIST(APPEND Local
-		Scripting
+		Scripting.cpp
 	)
 ENDIF()

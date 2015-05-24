@@ -407,7 +407,7 @@ namespace Gorgon {
 			instance->tempbase=tempbase;
 			highesttemp=0;
 			
-			if(tempbase+256>temporaries.size())
+			if(tempbase+256>(int)temporaries.size())
 				temporaries.resize(tempbase+256);
 			
 			scopeinstances.push_back(instance);
@@ -603,13 +603,6 @@ namespace Gorgon {
 			if(var) {
 				if(var->IsValid() && var->IsReference() && !var->GetType().IsReferenceType()) {
 					fixparameter(data, var->GetType(), false, "");
-					
-					//!?
-// 					if(data.IsReference()) {
-// 						var->Set(data);
-// 						
-// 						return;
-// 					}
 					
 					var->SetReferenceable(data);
 				}
