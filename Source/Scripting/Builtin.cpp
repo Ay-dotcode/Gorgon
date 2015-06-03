@@ -81,6 +81,7 @@ namespace Gorgon {
 
 		Type *FunctionType();
 		Type *ParameterType();
+		void InitReflection();
 		
 		Type *ArrayType();
 		std::vector<Function*> ArrayFunctions();
@@ -940,6 +941,21 @@ namespace Gorgon {
 			Keywords={"Keywords", "Function like keywords.",
 				TypeList {},
 				FunctionList {
+					new Function("Echo",
+						"This function prints the given parameters to the screen with a newline following them.", nullptr,
+						{
+							MapFunction(
+								Echo, nullptr, 
+								{
+									Parameter( "string",
+										"The strings that will be printed.",
+										String, OptionalTag
+									)
+								},
+								StretchTag, RepeatTag
+							)
+						}, KeywordTag
+					),
 					new Function("const",
 						"Makes the given variable a constant", nullptr,
 						{
@@ -1012,77 +1028,9 @@ namespace Gorgon {
 				},
 			};
 			
-			Reflection={"Reflection", "This library contains reflection objects",
-				TypeList { TypeType(), FunctionType(), ParameterType() },
-				FunctionList {
-				new Function("Echo",
-					"This function prints the given parameters to the screen with a newline following them.", nullptr,
-					{
-						MapFunction(
-							Echo, nullptr, 
-							{
-								Parameter( "string",
-									"The strings that will be printed.",
-									String, OptionalTag
-								)
-							},
-							StretchTag, RepeatTag
-						)
-					}, KeywordTag
-				),
-					new Function("TypeOf",
-						"This function returns the type of the given variable.", nullptr, 
-						{
-							MapFunction(
-								[](std::string variable) -> const Type* {
-									return &VirtualMachine::Get().GetVariable(variable).GetType();
-								}, TypeType(),
-								{
-									Parameter("Variable",
-										"The variable to determine its type.",
-										String, VariableTag
-									)
-								}, ReturnsConstTag
-							)
-							
-						}
-					),
-					new Function("VarInfo",
-						"This function returns information about a variable.", nullptr, 
-						{
-							MapFunction(
-								[](std::string variable) {
-									auto &vm=VirtualMachine::Get();
-									auto var=vm.GetVariable(variable);
-									vm.GetOutput()<<"Name : "<<var.GetName()<<std::endl;
-									if(var.IsValid()) {
-										vm.GetOutput()<<"Type : "<<var.GetType().GetName()<<std::endl;
-										vm.GetOutput()<<"Ref  : "<<(var.IsReference() ? "yes" : "no")<<std::endl;
-										vm.GetOutput()<<"Const: "<<(var.IsConstant()  ? "yes" : "no")<<std::endl;
-										vm.GetOutput()<<"Value: "<<var.GetType().ToString(var)<<std::endl;
-										if(var.IsReference()) {
-											vm.GetOutput()<<"Ptr  : "<<var.GetData().Pointer()<<std::endl;
-										}
-									}
-									else {
-										vm.GetOutput()<<"Value: <Invalid>"<<std::endl;
-									}
-								}, nullptr,
-								{
-									Parameter("Variable",
-										"The variable to determine its type.",
-										String, VariableTag
-									)
-								}, ReturnsConstTag
-							)
-							
-						}
-					)
-				}
-			};
-			
-			InitTypeType();
+			InitReflection();
 		}
 		
 	}
 }
+

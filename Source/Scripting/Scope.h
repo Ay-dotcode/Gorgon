@@ -254,6 +254,10 @@ namespace Gorgon { namespace Scripting {
 				return nullptr;
 		}
 		
+		const std::map<std::string, Variable, String::CaseInsensitiveLess> &GetLocalVariables() {
+			return variables;
+		}
+		
 		Variable *GetVariable(const std::string &name) {
 			auto varit=variables.find(name);
 			if( varit !=variables.end() )

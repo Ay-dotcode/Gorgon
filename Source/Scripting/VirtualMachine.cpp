@@ -42,6 +42,10 @@ namespace Gorgon {
 			for(const auto &elm : library.Functions) {
 				symbols.insert(std::make_pair(elm.first, Symbol{library.GetName(), SymbolType::Function, &elm.second}));
 			}
+			
+			for(const auto &elm : library.Types) {
+				symbols.insert(std::make_pair(elm.first, Symbol{library.GetName(), SymbolType::Type, &elm.second}));
+			}
 		}
 		
 		void VirtualMachine::RemoveLibrary(const Library &library) {
@@ -217,15 +221,16 @@ namespace Gorgon {
 						type=&FindType(namespc);
 					}
 					catch(const SymbolNotFoundException &) {
+						throw SymbolNotFoundException(
+							namespc, SymbolType::Namespace, 
+							"Cannot find "+namespc+" namespace while looking for function "+name
+						);
 					}
 					catch(...) { 
 						throw;
 					}
 					
-					throw SymbolNotFoundException(
-						namespc, SymbolType::Namespace, 
-						"Cannot find "+namespc+" namespace while looking for function "+name
-					);
+					
 					
 					auto element=type->Functions.Find(name);
 					
@@ -764,7 +769,7 @@ namespace Gorgon {
 							}
 						}
 						else if(type.Functions.Exists(name)) {
-							return {Types::Function(), &type.Functions[name]};
+							return {Types::Function(), &type.Functions[name], true, true};
 						}
 						else {
 							throw SymbolNotFoundException(name, SymbolType::Identifier);
@@ -817,7 +822,7 @@ namespace Gorgon {
 									}
 								}
 								else if(range.first->second->Functions.Exists(name)) {
-									return {Types::Function(), &range.first->second->Functions[name]};
+									return {Types::Function(), &range.first->second->Functions[name], true, true};
 								}
 								else {
 									throw SymbolNotFoundException(val.Name, SymbolType::Identifier);
@@ -846,7 +851,7 @@ namespace Gorgon {
 								}
 							}
 							else if(range.first->second.type==SymbolType::Function) {
-								return {Types::Function(), range.first->second.object.Get<const Function*>()};
+								return {Types::Function(), range.first->second.object.Get<const Function*>(), true, true};
 							}
 							else {
 								throw SymbolNotFoundException(val.Name, SymbolType::Identifier, "An unsupported symbol is found");

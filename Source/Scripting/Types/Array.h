@@ -17,30 +17,20 @@ namespace Gorgon {
 			
 			Array(const Array &arr) : type(arr.type), elements(arr.elements), Elements(elements) {}
 			
-			template<class T_>
-			Array(const Type &type, const std::initializer_list<T_> &elements) : Array(type) {
-				ASSERT(type.GetDefaultValue().TypeCheck<T_>(), "Given data type ("+Utils::GetTypeName<T_>()+
-					   ") does not match with: "+type.GetName()+" ("+type.GetDefaultValue().GetTypeName()+")",
-					   1, 4
-				);
-			}
 			
 			Data GetItemData(unsigned index) const {
 				if(index>=elements.size()) {
 					throw OutofBoundsException(index, elements.size(), "Array");
 				}
-				return {type, elements[index]};
+				return elements[index];
 			}
 			
 			Data GetItemData(unsigned index) {
 				if(index>=elements.size()) {
 					throw OutofBoundsException(index, elements.size(), "Array");
 				}
-		
-				void *r=elements[index].GetRaw();
-				void **p = new void*(r);
 				
-				return {type, Any(p, type->TypeInterface.PtrType), true};
+				return elements[index].GetReference();
 			}
 			
 			void SetItemData(unsigned index, Data data) {
@@ -51,19 +41,23 @@ namespace Gorgon {
 					data=data.GetType().MorphTo(*type, data);
 				}
 				
-				elements[index]=data.GetData();
+				elements[index]=data;
 			}
 			
 			template<class T_>
 			void PushWithoutCheck(const T_ &elm) {
-				elements.push_back(elm);
+				elements.push_back({type, elm});
 			}
 			
 			void PushData(Data elm) {
 				if(elm.GetType()!=type) {
 					elm=elm.GetType().MorphTo(*type, elm);
 				}
-				elements.push_back(elm.GetData());
+				elements.push_back(elm);
+			}
+			
+			void PushData(Any elm, bool ref=false, bool cnst=false) {
+				elements.push_back({type, elm, ref, cnst});
 			}
 			
 			Data PopData() {
@@ -71,14 +65,14 @@ namespace Gorgon {
 					throw OutofBoundsException(0, elements.size(), "Array");
 				}
 				
-				Any d=elements.back();
+				Data d=elements.back();
 				elements.pop_back();
 				
-				return {type, d};
+				return d;
 			}
 			
 			void Resize(unsigned size) {
-				elements.resize(size, type->GetDefaultValue());
+				elements.resize(size, {type, type->GetDefaultValue()});
 			}
 			
 			unsigned GetSize() const {
@@ -89,10 +83,10 @@ namespace Gorgon {
 				return *type;
 			}
 			
-			const std::vector<Any> &Elements;
+			const std::vector<Data> &Elements;
 
 		protected:
-			std::vector<Any> elements;
+			std::vector<Data> elements;
 
 			const Type *type;
 		};

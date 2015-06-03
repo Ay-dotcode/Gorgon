@@ -13,7 +13,7 @@ namespace Gorgon {
 					if(ret!="") ret+=", ";
 					else ret=array.GetType().GetName()+"[";
 					
-					ret+=array.GetType().ToString({array.GetType(), a});
+					ret+=array.GetType().ToString(a);
 				}
 				if(ret=="") {
 					ret=array.GetType().GetName()+"[";
@@ -136,7 +136,9 @@ namespace Gorgon {
 						"Pushes a new element at the end of the array.", array,
 						{
 							MapFunction(
-								&Array::PushData, nullptr,
+								[](Array *arr, Data d) {
+									arr->PushData(d);									
+								}, nullptr,
 								{
 									Parameter { "Element",
 										"Element to be added.",

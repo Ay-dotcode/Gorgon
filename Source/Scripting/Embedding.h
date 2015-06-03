@@ -81,24 +81,51 @@ namespace Scripting {
 
 			using inner = T_;
 		};
-
+		
+		//checks if this type is a reference that cannot be initialized from a value
+		template<class T_>
+		struct is_nontmpref {
+			enum { 
+				value = 
+				!std::is_copy_constructible<typename std::remove_const<typename std::remove_reference<T_>::type>::type>::value || 
+				(std::is_reference<T_>::value && !std::is_const<typename std::remove_reference<T_>::type>::value) };
+		};
+		
+		//checks if this type is a reference that cannot be initialized from a value
 		template<class T_>
 		struct is_nonconstref {
-			enum { value = std::is_reference<T_>::value && !std::is_const<typename std::remove_reference<T_>::type>::value };
+			enum { 
+				value = (std::is_reference<T_>::value && !std::is_const<typename std::remove_reference<T_>::type>::value) 
+			};
 		};
+		
+		template<class T_>
+		inline typename std::enable_if<
+			is_nontmpref<T_>::value && std::is_const<typename std::remove_reference<T_>::type>::value, 
+			T_
+		>::type castto(const Data &d) const {
+			using regtype=typename std::remove_reference<T_>::type;
+			if(d.IsConstant()) {
+				return d.ReferenceValue<T_>();
+			}
+			else {
+				return d.ReferenceValue<typename std::remove_const<regtype>::type &>();
+			}
+		}
 
 		template<class T_>
 		inline typename std::enable_if<
-			is_nonconstref<T_>::value, 
+			is_nontmpref<T_>::value && !std::is_const<typename std::remove_reference<T_>::type>::value, 
 			T_
 		>::type castto(const Data &d) const {
-			///... do the logic to turn underlying type to T_
+			using regtype=typename std::remove_reference<T_>::type;
+			
+			ASSERT(!d.IsConstant(), "Constant data is being submitted to non-const reference");
 			return d.ReferenceValue<T_>();
 		}
 		
 		template<class T_>
-		inline typename std::enable_if<!is_nonconstref<T_>::value && std::is_pointer<T_>::value, T_>::type castto(const Data &d) const {
-			///... do the logic to turn underlying type to T_
+		inline typename std::enable_if<!is_nontmpref<T_>::value && std::is_pointer<T_>::value, T_>::type castto(const Data &d) const {
 			bool isconst=std::is_const<typename std::remove_pointer<T_>::type>::value;
 			
 			if(isconst && !d.IsConstant()) {
@@ -110,8 +137,7 @@ namespace Scripting {
 		}
 		
 		template<class T_>
-		inline typename std::enable_if<!is_nonconstref<T_>::value && !std::is_pointer<T_>::value, T_>::type castto(const Data &d) const {
-			///... do the logic to turn underlying type to T_
+		inline typename std::enable_if<!is_nontmpref<T_>::value && !std::is_pointer<T_>::value, T_>::type castto(const Data &d) const {
 			bool isref=false, isconst=false;
 			if(std::is_reference<T_>::value) {
 				isref=true;
@@ -153,10 +179,11 @@ namespace Scripting {
 
 		template<int P_>
 		inline typename TMP::Choose<
-			is_nonconstref<param<P_>>::value && !extractvector<param<P_>>::isvector,
+		is_nontmpref<param<P_>>::value && !extractvector<param<P_>>::isvector,
 			std::reference_wrapper<typename std::remove_reference<param<P_>>::type>,
 			param<P_>
 		>::Type cast(const std::vector<Data> &parameters) const {
+			bool b=is_nontmpref<param<P_>>::value;
 			if(P_-(parent->IsMember() && !parent->IsStatic())==this->parameters.size()-1 && repeatlast) {
 				ASSERT(extractvector<param<P_>>::isvector, "Repeating parameter should be a vector");
 

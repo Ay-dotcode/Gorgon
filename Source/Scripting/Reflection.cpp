@@ -21,12 +21,6 @@ namespace Gorgon { namespace Scripting {
 		swap(types, this->types);
 		swap(functions, this->functions);
 		swap(constants, this->constants);
-		
-		for(const auto &type : this->types) {
-			this->constants.Add(
-				new Constant(type.first, type.second.GetHelp(), TypeType(), Any(&type.second))
-			);
-		}
 	}
 	
 	void Library::AddTypes(const std::vector<Type*> &list) {
@@ -34,10 +28,6 @@ namespace Gorgon { namespace Scripting {
 			ASSERT(!SymbolExists(type->GetName()), "Symbol "+type->GetName()+" already exists", 1, 2);
 
 			types.Add(type);
-
-			this->constants.Add(
-				new Constant(type->GetName(), type->GetHelp(), TypeType(), (const Type*)type)
-			);
 		}
 	}
 	void Library::AddTypes(const std::initializer_list< Type* >& list) {
@@ -45,10 +35,6 @@ namespace Gorgon { namespace Scripting {
 			ASSERT(!SymbolExists(type->GetName()), "Symbol "+type->GetName()+" already exists", 1, 2);
 			
 			types.Add(type);
-			
-			this->constants.Add(
-				new Constant(type->GetName(), type->GetHelp(), TypeType(), (const Type*)type)
-			);
 		}
 	}
 	
