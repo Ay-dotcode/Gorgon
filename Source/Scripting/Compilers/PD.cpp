@@ -297,7 +297,7 @@ namespace Compilers {
 								return Token {acc, Token::Byte, start};
 							}
 							else if(literal=="b") {
-								return Token {acc, Token::Char, start};
+								return Token {acc, Token::Bool, start};
 							}
 							else if(literal=="s") {
 								return Token {acc, Token::String, start};

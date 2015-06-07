@@ -86,6 +86,10 @@ namespace Gorgon {
 		Type *ArrayType();
 		std::vector<Function*> ArrayFunctions();
 		
+		std::string ByteToString(const Gorgon::Byte &b) {
+			return String::From((int)b);
+		}
+		
 		void init_builtin() {
 			if(Integrals.Types.GetCount()) return;
 
@@ -112,7 +116,7 @@ namespace Gorgon {
 				"Unsigned integer. Supports bit operations."
 			);
 			
-			auto Byte = new MappedValueType<Gorgon::Byte>( "Byte",
+			auto Byte = new MappedValueType<Gorgon::Byte, ByteToString>( "Byte",
 				"Represents a single byte in a memory type. This is a binary data type. *Char* should be "
 				"used to represent a character in a string."
 			);
@@ -219,6 +223,13 @@ namespace Gorgon {
 				MAP_COMPARE(!=, !=, Int, int),
 				MAP_COMPARE( >, >,  Int, int),
 				MAP_COMPARE( <, <,  Int, int),
+			});
+			
+			Int->AddConstructors({
+				MapTypecast<float, int>(Float, Int),
+				MapTypecast<double, int>(Double, Int),
+				MapTypecast<unsigned, int>(Unsigned, Int),
+				MapTypecast<Gorgon::Byte, int>(Byte, Int)
 			});
 			
 			Float->AddFunctions({
@@ -351,6 +362,13 @@ namespace Gorgon {
 				MAP_COMPARE( <, <,  Float, float),
 			});
 			
+			Float->AddConstructors({
+				MapTypecast<unsigned, float>(Unsigned, Float),
+				MapTypecast<double, float>(Double, Float),
+				MapTypecast<int, float>(Int, Float),
+				MapTypecast<Gorgon::Byte, float>(Byte, Float)
+			});
+			
 			Double->AddFunctions({
 				new MappedOperator("+", "Adds two numbers together",
 					Double, {
@@ -467,6 +485,13 @@ namespace Gorgon {
 				MAP_COMPARE(!=, !=, Double, double),
 				MAP_COMPARE( >, >,  Double, double),
 				MAP_COMPARE( <, <,  Double, double),
+			});
+			
+			Double->AddConstructors({
+				MapTypecast<float, double>(Float, Double),
+				MapTypecast<unsigned, double>(Unsigned, Double),
+				MapTypecast<int, double>(Int, Double),
+				MapTypecast<Gorgon::Byte, double>(Byte, Double)
 			});
 
 			Unsigned->AddFunctions({
@@ -625,13 +650,6 @@ namespace Gorgon {
 				MAP_COMPARE( <, <,  Unsigned, unsigned),
 			});
 			
-			Int->AddConstructors({
-				MapTypecast<float, int>(Float, Int),
-				MapTypecast<double, int>(Double, Int),
-				MapTypecast<unsigned, int>(Unsigned, Int),
-				MapTypecast<Gorgon::Byte, int>(Byte, Int)
-			});
-			
 			Unsigned->AddConstructors({
 				MapTypecast<float, unsigned>(Float, Unsigned),
 				MapTypecast<double, unsigned>(Double, Unsigned),
@@ -639,18 +657,172 @@ namespace Gorgon {
 				MapTypecast<Gorgon::Byte, unsigned>(Byte, Unsigned),
 			});
 			
-			Float->AddConstructors({
-				MapTypecast<unsigned, float>(Unsigned, Float),
-				MapTypecast<double, float>(Double, Float),
-				MapTypecast<int, float>(Int, Float),
-				MapTypecast<Gorgon::Byte, float>(Byte, Float)
-			});
-			
-			Double->AddConstructors({
-				MapTypecast<float, double>(Float, Double),
-				MapTypecast<unsigned, double>(Unsigned, Double),
-				MapTypecast<int, double>(Int, Double),
-				MapTypecast<Gorgon::Byte, double>(Byte, Double)
+			Byte->AddFunctions({
+				new MappedOperator("+", "Adds two numbers together",
+					Byte, {
+						MapOperator(
+							[](Gorgon::Byte l, Gorgon::Byte r) { return Gorgon::Byte(l+r); }, 
+							Byte, Byte
+						),
+						MapOperator(
+							[](Gorgon::Byte l, double r) { return l+r; },
+							Double, Double
+						),
+						MapOperator(
+							[](Gorgon::Byte l, float r) { return l+r; },
+							Float, Float
+						),
+						MapOperator(
+							[](Gorgon::Byte l, unsigned r) { return unsigned(l)+r; },
+							Unsigned, Unsigned
+						),
+					}
+				),
+				
+				new MappedOperator("-", "Subtracts a number from this one. This operation may cause overflow",
+					Byte, {
+						MapOperator(
+							[](Gorgon::Byte l, Gorgon::Byte r) { return (int)l-(int)r; }, 
+							Int, Byte
+						),
+						MapOperator(
+							[](Gorgon::Byte l, int r) { return (int)l-r; }, 
+							Int, Int
+						),
+						MapOperator(
+							[](Gorgon::Byte l, double r) { return (double)l-r; },
+							Double, Double
+						),
+						MapOperator(
+							[](Gorgon::Byte l, float r) { return (float)l-r; },
+							Float, Float
+						),
+						MapOperator(
+							[](Gorgon::Byte l, unsigned r) { return (int)l-(int)r; },
+							Int, Unsigned
+						),
+					}
+				),
+				
+				new MappedOperator("*", "Multiplies two numbers together",
+					Byte, {
+						MapOperator(
+							[](Gorgon::Byte l, Gorgon::Byte r) { return Gorgon::Byte(l*r); }, 
+							Byte, Byte
+						),
+						MapOperator(
+							[](Gorgon::Byte l, int r) { return (int)l*r; }, 
+							Int, Int
+						),
+						MapOperator(
+							[](Gorgon::Byte l, double r) { return (double)l*r; },
+							Double, Double
+						),
+						MapOperator(
+							[](Gorgon::Byte l, float r) { return (float)l*r; },
+							Float, Float
+						),
+						MapOperator(
+							[](Gorgon::Byte l, unsigned r) { return unsigned(l)*r; },
+							Unsigned, Unsigned
+						),
+					}
+				),
+				
+				new MappedOperator( "band",
+					"Performs a bitwise and operation",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { return l&r; }
+				),
+				
+				new MappedOperator( "bor",
+					"Performs a bitwise or operation",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { return l|r; }
+				),
+				
+				new MappedOperator( "bxor",
+					"Performs a bitwise xor operation",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { return l^r; }
+				),
+				
+				new MappedOperator( "bitset",
+					"Makes the given bit 1",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { return l|(1<<r); }
+				),
+				
+				new MappedOperator( "bitunset",
+					"Makes the given bit 0",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { return l&(~(1<<r)); }
+				),
+				
+				new MappedOperator( "bittest",
+					"Checks if the given bit is 1",
+					Byte, Bool, Byte, [](Gorgon::Byte l, Gorgon::Byte r) { return (l&(1<<r))!=0; }
+				),
+				
+				new MappedOperator( "shl",
+					"Shifts the bits of this number to left",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { return l<<r; }
+				),
+				
+				new MappedOperator( "shr",
+					"Shifts the bits of this number to right",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { return l>>r; }
+				),
+				
+				new MappedOperator( "rol",
+					"Rotates the bits of this number to left",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { return (l<<r)|(l>>(sizeof(Gorgon::Byte)*8-r)); } //gorgon works only on 8bit per byte systems
+				),
+				
+				new MappedOperator( "ror",
+					"Rotates the bits of this number to right",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { return (l>>r)|(l<<(sizeof(Gorgon::Byte)*8-r)); } //gorgon works only on 8bit per byte systems
+				),
+
+				new MappedOperator( "/",
+					"Divides this number to the given one. Division operation is performed in double type",
+					Byte, Double, Double, [](Gorgon::Byte l, double r) { return double(l)/r; }
+				),
+				
+				new MappedOperator( "^",
+					"Raises this number to the given power. All power operations are performed in double type",
+					Byte, Double, Double, [](Gorgon::Byte l, double r) { return pow(double(l), r); }
+				),
+				
+				new MappedOperator( "mod",
+					"Returns the remainder of the division of the left operand to the right operand.",
+					Byte, Byte, Byte, [](Gorgon::Byte l, Gorgon::Byte r) -> Gorgon::Byte { 
+						return l%r;
+					}
+				),
+				
+				new Function("inverse", "Inverts the bits", Byte, {
+					MapFunction(
+						[](Gorgon::Byte val) -> Gorgon::Byte { return ~val; },
+						Byte, ParameterList(), ConstTag
+					)
+				}),
+				
+				new Function("binary", "Converts this number into a binary string", Byte, {
+					MapFunction(
+						[](Gorgon::Byte val) -> std::string { 
+							std::string ret(' ', sizeof(Gorgon::Byte)*8);
+							for(Gorgon::Byte i=0;i<sizeof(Gorgon::Byte)*8;i++) {
+								ret[sizeof(Gorgon::Byte)*8-i-1]=val&1 ? '1':'0';
+								val=val>>1;
+							}
+							return ret; 
+						},
+						String, ParameterList(), ConstTag
+					)
+				}),
+				
+				MAP_COMPARE( =, ==, Byte, Gorgon::Byte),
+				MAP_COMPARE(>=, >=, Byte, Gorgon::Byte),
+				MAP_COMPARE(<=, <=, Byte, Gorgon::Byte),
+				MAP_COMPARE(!=, !=, Byte, Gorgon::Byte),
+				MAP_COMPARE( >, >,  Byte, Gorgon::Byte),
+				MAP_COMPARE( <, <,  Byte, Gorgon::Byte),
 			});
 			
 			Byte->AddConstructors({
@@ -659,6 +831,128 @@ namespace Gorgon {
 				MapTypecast<int, Gorgon::Byte>(Int, Byte),
 				MapTypecast<unsigned, Gorgon::Byte>(Unsigned, Byte),
 				MapTypecast<char, Gorgon::Byte>(Char, Byte)
+			});
+			
+			Char->AddFunctions({
+
+				new MappedOperator("+", "Adds an offset to a char",
+					Char, {
+						MapOperator(
+							[](char l, int r) { return char(l+r); }, 
+							Char, Int
+						),
+					}
+				),
+				
+				new MappedOperator("-", "Finds the difference between two chars or subtracts an offset from a char",
+					Char, {
+						MapOperator(
+							[](char l, int r) { return char(l-r); }, 
+							Char, Int
+						),
+						MapOperator(
+							[](char l, char r) -> int { return l-r; },
+							Int, Char
+						),
+					}
+				),
+				
+				new Function("ToUpper", 
+					"Returns the uppercase equivalent of this char. The same char will be returned unless "
+					"this char is a lowercase char.", Char, {
+						MapFunction(
+							[](char c) -> char { 
+								return toupper(c); 
+							}, Char, { },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function("ToLower", 
+					"Returns the lowercase equivalent of this char. The same char will be returned unless "
+					"this char is a uppercase char.", Char, {
+						MapFunction(
+							[](char c) -> char { 
+								return tolower(c); 
+							}, Char, { },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function("IsAlpha",
+					"Returns true if this char is an alphabetical character.", Char, {
+						MapFunction(
+							[] (char c) -> bool { 
+								return isalpha(c);
+							}, Bool, { },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function("IsAlphaNum",
+					"Returns true if this char is an alphabetical or numerical character.", Char, {
+						MapFunction(
+							[] (char c) -> bool { 
+								return isalnum(c);
+							}, Bool, { },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function("IsDigit",
+					"Returns true if this char is a numerical character.", Char, {
+						MapFunction(
+							[] (char c) -> bool { 
+								return isdigit(c);
+							}, Bool, { },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function("IsSpace",
+					"Returns true if this char is a space character.", Char, {
+						MapFunction(
+							[] (char c) -> bool { 
+								return isspace(c);
+							}, Bool, { },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function("IsUpper",
+					"Returns true if this char is an uppercase alphabetical character.", Char, {
+						MapFunction(
+							[] (char c) -> bool { 
+								return isupper(c);
+							}, Bool, { },
+							ConstTag
+						)
+					}
+				),
+				
+				new Function("IsPrintable",
+					"Returns true if this char can be printed on screen.", Char, {
+						MapFunction(
+							[] (char c) -> bool { 
+								return isprint(c);
+							}, Bool, { },
+							ConstTag
+						)
+					}
+				),
+				
+				MAP_COMPARE( =, ==, Char, char),
+				MAP_COMPARE(>=, >=, Char, char),
+				MAP_COMPARE(<=, <=, Char, char),
+				MAP_COMPARE(!=, !=, Char, char),
+				MAP_COMPARE( >, >,  Char, char),
+				MAP_COMPARE( <, <,  Char, char),
 			});
 			
 			Char->AddConstructors({
@@ -849,6 +1143,21 @@ namespace Gorgon {
 						for(int i=0;i<r;i++) out+=l;
 						return out;
 					}
+				)
+			});
+			
+			String->AddConstructors({
+				MapFunction(
+					[](char c) { 
+						return std::string(1, c); 
+					}, String,
+					{
+						Parameter{"char", 
+							"The character to be transformed into string",
+							Char
+						}
+					},
+					ImplicitTag
 				)
 			});
 			
