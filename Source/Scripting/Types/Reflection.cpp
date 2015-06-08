@@ -50,6 +50,59 @@ namespace Gorgon { namespace Scripting {
 		
 		return fn;
 	}
+	
+	Type *ConstantType() {		
+		static Type *obj=nullptr;
+		if(obj==nullptr) {
+			obj=new Scripting::MappedReferenceType<Constant, &GetNameOf<Constant>>("Constant",
+				"Contains information about a constant."
+			);
+			
+			obj->AddFunctions({
+				new Scripting::Function("Name",
+					"Returns the name of the constant", obj,
+					{
+						MapFunction(
+							&GetNameOf<Constant>, Types::String(),
+							{ }, ConstTag
+						)
+					}
+				),
+				
+				new Scripting::Function("Help",
+					"Returns help for the constant", obj,
+					{
+						MapFunction(
+							&GetHelpOf<Constant>, Types::String(), 
+							{ }, ConstTag
+						)
+					}
+				),
+				
+				new Scripting::Function("Value",
+					"Returns the value of the constant", obj,
+					{
+						MapFunction(
+							&Constant::GetData, Types::Variant(), 
+							{ }, ConstTag
+						)
+					}
+				),
+				
+				new Scripting::Function("Type",
+					"Returns the type of the constant", obj,
+					{
+						MapFunction(
+							&Constant::GetType, Types::Type(), 
+							{ }, ConstTag, ReturnsConstTag, ReferenceTag
+						)
+					}
+				),
+			});
+		}
+		
+		return obj;
+	}
 
 	Type *ParameterType() {
 		static Type *param = nullptr;
@@ -140,6 +193,68 @@ namespace Gorgon { namespace Scripting {
 						)
 					}
 				},
+				
+				new Scripting::Function{"Functions", 
+					"Returns the functions in this type", type,
+					{
+						MapFunction(
+							[](const Type &type) -> Array* {
+								auto arr=new Array(*FunctionType());
+								VirtualMachine::Get().References.Register(arr);
+								for(auto it=type.Functions.First(); it.IsValid(); it.Next()) {
+									arr->PushData(&it.Current().second, true, true);
+								}
+								
+								return arr;
+							},ArrayType(),
+							{ }, ReferenceTag, ConstTag
+						)
+					}
+				},
+				
+				new Scripting::Function{"Constants", 
+					"Returns the constants in this type", type,
+					{
+						MapFunction(
+							[](const Type &type) -> Array* {
+								auto arr=new Array(*ConstantType());
+								VirtualMachine::Get().References.Register(arr);
+								for(auto it=type.Constants.First(); it.IsValid(); it.Next()) {
+									arr->PushData(&it.Current().second, true, true);
+								}
+								
+								return arr;
+							},ArrayType(),
+							{ }, ReferenceTag, ConstTag
+						)
+					}
+				},
+				
+				
+				new Scripting::Function{"IsReference", 
+					"Returns if this type is a reference type", type,
+					{
+						MapFunction(
+							&Type::IsReferenceType,Types::Bool(),
+							{ }, ConstTag
+						)
+					}
+				},
+				
+				new Scripting::Function{"DefaultValue", 
+					"Returns the default value of this type. Reference types might return null.", type,
+					{
+						MapFunction(
+							[](const Type *type) {
+								auto c=Data(type, type->GetDefaultValue(), type->IsReferenceType());
+								c.MakeConstant();
+								return c;
+							}, Types::Variant(),
+							{ }, ConstTag
+						)
+					}
+				},
+				
 			});
 		}
 	}
@@ -209,6 +324,42 @@ namespace Gorgon { namespace Scripting {
 						)
 					}
 				},
+				
+				new Scripting::Function{"Constants", 
+					"Returns the constants in this library", lib,
+					{
+						MapFunction(
+							[](const Library &lib) -> Array* {
+								auto arr=new Array(*ConstantType());
+								VirtualMachine::Get().References.Register(arr);
+								for(auto it=lib.Constants.First(); it.IsValid(); it.Next()) {
+									arr->PushData(&it.Current().second, true, true);
+								}
+								
+								return arr;
+							},ArrayType(),
+							{ }, ReferenceTag, ConstTag
+						)
+					}
+				},
+				
+				new Scripting::Function{"Types", 
+					"Returns the types in this library", lib,
+					{
+						MapFunction(
+							[](const Library &lib) -> Array* {
+								auto arr=new Array(*TypeType());
+								VirtualMachine::Get().References.Register(arr);
+								for(auto it=lib.Types.First(); it.IsValid(); it.Next()) {
+									arr->PushData(&it.Current().second, true, true);
+								}
+								
+								return arr;
+							},ArrayType(),
+							{ }, ReferenceTag, ConstTag
+						)
+					}
+				},
 			});
 		}
 		
@@ -216,9 +367,12 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	void InitReflection() {		
-		Reflection={"Reflection", "This library contains reflection objects",
-			TypeList { TypeType(), FunctionType(), ParameterType(), LibraryType() },
-			FunctionList {
+		Reflection=Library("Reflection", "This library contains reflection objects", {}, {});
+		Reflection.AddTypes( { TypeType() } );
+			
+		Reflection.AddTypes( {FunctionType(), ParameterType(), LibraryType(), ConstantType() });
+		
+		Reflection.AddFunctions({
 				new Function("TypeOf",
 					"This function returns the type of the given variable.", nullptr, 
 					{
@@ -315,7 +469,7 @@ namespace Gorgon { namespace Scripting {
 					}
 				)
 			}
-		};
+		);
 		
 		InitTypeType();
 	}

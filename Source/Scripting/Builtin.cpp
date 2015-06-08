@@ -117,7 +117,7 @@ namespace Gorgon {
 			);
 			
 			auto Byte = new MappedValueType<Gorgon::Byte, ByteToString>( "Byte",
-				"Represents a single byte in a memory type. This is a binary data type. *Char* should be "
+				"Represents a single byte in a memory. This is a binary data type. *Char* should be "
 				"used to represent a character in a string."
 			);
 			
