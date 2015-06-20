@@ -232,6 +232,11 @@ namespace Gorgon {
 				MapTypecast<Gorgon::Byte, int>(Byte, Int)
 			});
 			
+			Int->AddConstants({
+				new Constant("max",  "Maximum value an integer can hold", Int, Any(std::numeric_limits<int>::max())),
+				new Constant("min",  "Minimum value an integer can hold", Int, Any(std::numeric_limits<int>::min())),				
+			});
+			
 			Float->AddFunctions({
 				new MappedOperator("+", "Adds two numbers together",
 					Float, {
@@ -286,6 +291,19 @@ namespace Gorgon {
 					"Returns the remainder of the division of the left operand to the right operand.",
 					Float, Float, Float, [](float l, float r) -> float { 
 						return fmod(l, r);
+					}
+				),
+					
+				new Function( "isnan",
+					"Returns true if this value is not a number.",
+					Float, {
+						MapFunction(
+							[](float v) -> bool {
+								return isnan(v);
+							},
+							Bool,
+							{}, ConstTag
+						)
 					}
 				),
 				
@@ -369,6 +387,12 @@ namespace Gorgon {
 				MapTypecast<Gorgon::Byte, float>(Byte, Float)
 			});
 			
+			Float->AddConstants({
+				new Constant("max",  "Maximum value a float can hold", Float, Any(std::numeric_limits<float>::max())),
+				new Constant("min",  "Minimum value a float can hold", Float, Any(std::numeric_limits<float>::lowest())),	
+				new Constant("inf",  "Positive infinity", Float, Any(std::numeric_limits<float>::infinity()))
+			});
+			
 			Double->AddFunctions({
 				new MappedOperator("+", "Adds two numbers together",
 					Double, {
@@ -413,7 +437,20 @@ namespace Gorgon {
 						return fmod(l, r);
 					}
 				),
-				
+					
+				new Function( "isnan",
+					"Returns true if this value is not a number.",
+					Double, {
+						MapFunction(
+							[](double v) -> bool {
+								return isnan(v);
+							},
+							Bool,
+							{}, ConstTag
+						)
+					}
+				),
+			
 				new Function( "abs",
 					"Returns the absolute value of this value",
 					Double, {
@@ -492,6 +529,12 @@ namespace Gorgon {
 				MapTypecast<unsigned, double>(Unsigned, Double),
 				MapTypecast<int, double>(Int, Double),
 				MapTypecast<Gorgon::Byte, double>(Byte, Double)
+			});
+			
+			Double->AddConstants({
+				new Constant("max",  "Maximum value a double can hold", Double, Any(std::numeric_limits<double>::max())),
+				new Constant("min",  "Minimum value a double can hold", Double, Any(std::numeric_limits<double>::lowest())),	
+				new Constant("inf",  "Positive infinity", Double, Any(std::numeric_limits<double>::infinity()))			
 			});
 
 			Unsigned->AddFunctions({
@@ -655,6 +698,11 @@ namespace Gorgon {
 				MapTypecast<double, unsigned>(Double, Unsigned),
 				MapTypecast<int, unsigned>(Int, Unsigned),
 				MapTypecast<Gorgon::Byte, unsigned>(Byte, Unsigned),
+			});
+			
+			Unsigned->AddConstants({
+				new Constant("max",  "Maximum value an unsigned integer can hold", Unsigned, Any(std::numeric_limits<unsigned>::max())),
+				new Constant("min",  "Minimum value an unsigned integer can hold", Unsigned, Any(std::numeric_limits<unsigned>::min())),				
 			});
 			
 			Byte->AddFunctions({
@@ -831,6 +879,11 @@ namespace Gorgon {
 				MapTypecast<int, Gorgon::Byte>(Int, Byte),
 				MapTypecast<unsigned, Gorgon::Byte>(Unsigned, Byte),
 				MapTypecast<char, Gorgon::Byte>(Char, Byte)
+			});
+			
+			Byte->AddConstants({
+				new Constant("max",  "Maximum value a byte can hold", Byte, Any(std::numeric_limits<Gorgon::Byte>::max())),
+				new Constant("min",  "Minimum value a byte can hold", Byte, Any(std::numeric_limits<Gorgon::Byte>::min())),				
 			});
 			
 			Char->AddFunctions({
@@ -1176,9 +1229,7 @@ namespace Gorgon {
 				FunctionList{},
 				ConstantList {
 					new Constant("Pi", "Contains the value of PI", Double,             Any(3.14159265358979)),
-					new Constant("e",  "Contains the value of Euler's number", Double, Any(2.71828182845905)),
-					new Constant("MAX_INT",  "Maximum value an integer can hold", Int, Any(std::numeric_limits<int>::max())),
-					new Constant("MIN_INT",  "Minimum value an integer can hold", Int, Any(std::numeric_limits<int>::min())),
+					new Constant("Euler",  "Contains the value of Euler's number", Double, Any(2.71828182845905)),
 				}
 			};
 			
