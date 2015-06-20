@@ -32,6 +32,24 @@ void dumprefs() {
 	VirtualMachine::Get().References.list();
 }
 
+class NullTest {
+};
+
+NullTest *thisisnull() { return nullptr; }
+
+void nonull(NullTest &n) {
+	std::cout<<"Cannot be null :"<<(&n)<<std::endl;
+}
+
+void allownull(NullTest *n) {
+	std::cout<<"Can be null :"<<n<<std::endl;
+}
+
+std::ostream &operator<<(std::ostream &out, const NullTest &n) {
+	out<<(&n);
+	return out;
+}
+
 namespace Gorgon { namespace Geometry {
 	extern Scripting::Library LibGeometry;
 	void init_scripting();
@@ -110,7 +128,7 @@ int main() {
 	StreamInput streaminput={std::cin, InputProvider::Programming};
 
 
-	Library mylib;
+	Library mylib("GTTest", "");
 	
 	auto mystr = new MappedValueType<std::string>("MyStr", "");
 
@@ -122,6 +140,12 @@ int main() {
 		return Data{Types::String(), data.GetValue<std::string>()}; 
 	};
 	mystr->AddInheritance(Types::String(), StringToMyStrConvert, MyStrToStringConvert);
+	
+	auto nulltype=new MappedReferenceType<NullTest>("NullTest", "");
+	
+	mylib.AddTypes({
+		nulltype
+	});
 
 	mylib.AddFunctions({
 		new Function("svg", "", nullptr,
@@ -130,7 +154,29 @@ int main() {
 			},
 			KeywordTag
 		),
-					   
+		
+		new Function("thisisnull", "", nullptr, 
+			{
+				MapFunction(&thisisnull, nulltype, {})
+			}
+		),
+		
+		new Function("nonull", "", nullptr, 
+			{
+				MapFunction(&nonull, nullptr, {
+					Parameter("v", "", nulltype)
+				})
+			}
+		),		
+			
+		new Function("allownull", "", nullptr, 
+			{
+				MapFunction(&allownull, nullptr, {
+					Parameter("v", "", nulltype, AllowNullTag)
+				})
+			}
+		),		
+	
 		new Function("testfill", "", nullptr, 
 			{
 				MapFunction(

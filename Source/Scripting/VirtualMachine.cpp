@@ -1157,6 +1157,7 @@ namespace Gorgon {
 			int ind=0;
 			for(const Parameter &pdef : variant->Parameters) {
 				if(pin!=incomingparams.end()) {
+					//should be a variable
 					if(pdef.IsVariable()) {
 						if(pin->Type==ValueType::Variable || pin->Type==ValueType::Identifier) {
 							Data param={Types::String(), pin->Name};
@@ -1174,8 +1175,20 @@ namespace Gorgon {
 							throw InstructionException("Reference type can only be represented string literals and variables");
 						}
 					}
-					else if(pdef.IsReference() && !pdef.IsConstant()) {
+					
+					//non const ref
+					else if((pdef.IsReference() || pdef.GetType().IsReferenceType()) && !pdef.IsConstant()) {
 						Data param=getvalue(*pin, true);
+						
+						//check for nullness
+						if(!pdef.AllowsNull() && param.IsNull()) {
+							if(pin->Type==ValueType::Identifier || pin->Type==ValueType::Variable) {
+								throw NullValueException("$"+pin->Name);
+							}
+							else {
+								throw NullValueException("parameter "+String::From(ind+1));
+							}
+						}
 						
 						if(pdef.GetType()!=param.GetType()) {
 							param=param.GetType().MorphTo(pdef.GetType(), param, pdef.IsConstant());
@@ -1183,13 +1196,27 @@ namespace Gorgon {
 						
 						params.push_back(param);
 					}
+					
+					//others
 					else {
 						Data param;
-						if(pdef.IsReference()) {
+						if(pdef.IsReference() || pdef.GetType().IsReferenceType()) {
 							if((pin->Type==ValueType::Literal || (pin->Type==ValueType::Temp && !temporaries[pin->Result+tempbase].IsReference())))
 								param=getvalue(*pin);
 							else
 								param=getvalue(*pin, true);
+							
+							if(param.IsReference()) {
+								//check for nullness
+								if(!pdef.AllowsNull() && param.IsNull()) {
+									if(pin->Type==ValueType::Identifier || pin->Type==ValueType::Variable) {
+										throw NullValueException("$"+pin->Name);
+									}
+									else {
+										throw NullValueException("parameter "+String::From(ind+1));
+									}
+								}
+							}
 						}
 						else {
 							param=getvalue(*pin);
@@ -1693,7 +1720,7 @@ namespace Gorgon {
 						opts.push_back(d.GetData());
 					}
 					
-					paramlist.emplace_back(ptemp.name, ptemp.help, ptype, def, opts, ptemp.reference, ptemp.constant, false);
+					paramlist.emplace_back(ptemp.name, ptemp.help, ptype, def, opts, ptemp.reference, ptemp.constant, false, false);
 				}
 				
 				ASSERT(

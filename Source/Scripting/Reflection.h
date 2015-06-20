@@ -76,6 +76,9 @@ namespace Gorgon {
 			
 			/// Makes a constructor implicit
 			ImplicitTag,
+			
+			/// Allows a parameter to be NULL
+			AllowNullTag,
 		};
 		
 		typedef std::vector<Any> OptionList;
@@ -97,6 +100,9 @@ namespace Gorgon {
 		 * 
 		 * **VariableTag**: Marks this parameter as a variable. Useful to allow an undefined variable to be
 		 * passed to the function.
+		 * 
+		 * **AllowNullTag**: Allows a parameter that requires a reference type to accept a Null value.
+		 * Null values are dangerous when combined with references.
 		 */
 		class Parameter {
 		public:
@@ -133,13 +139,14 @@ namespace Gorgon {
 			}
 			 
 			Parameter(const std::string &name, const std::string &help, const Type *type, 
-					  Data defaultvalue, OptionList options, bool reference, bool constant, bool variable) :
+					  Data defaultvalue, OptionList options, bool reference, bool constant, bool variable, bool allownull) :
 			Parameter(name, help, type, defaultvalue, options)
 			{
 				this->reference = reference;
 				this->constant  = constant;
 				this->variable  = variable;
 				this->optional  = defaultvalue.IsValid();
+				this->allownull = allownull;
 			}
 			/// @endcond
 			
@@ -154,6 +161,7 @@ namespace Gorgon {
 				reference	= p.reference	;
 				constant	= p.constant	;
 				variable	= p.variable	;
+				allownull	= p.allownull	;
 				
 				return *this;
 			}
@@ -167,7 +175,8 @@ namespace Gorgon {
 					optional	== p.optional	&&
 					reference	== p.reference	&&
 					constant	== p.constant	&&
-					variable	== p.variable	;
+					variable	== p.variable	&&
+					allownull   == p.allownull  ;
 			}
 			
 			/// Returns the name of the parameter
@@ -193,9 +202,7 @@ namespace Gorgon {
 			/// Checks if the parameter is a reference. When a parameter is a reference,
 			/// its passed as a reference or pointer. Therefore, this value can be changed.
 			/// Literal values cannot be passed as references.
-			bool IsReference() const {
-				return reference;
-			}
+			bool IsReference() const;
 			
 			/// Checks if this parameter accepts a constant value
 			bool IsConstant() const {
@@ -206,6 +213,11 @@ namespace Gorgon {
 			/// a string.
 			bool IsVariable() const {
 				return variable;
+			}
+			
+			/// If true, a null reference can be passed to this parameter
+			bool AllowsNull() const {
+				return allownull;
 			}
 			
 			/// Returns the default value for this parameter
@@ -240,6 +252,10 @@ namespace Gorgon {
 						variable=true;
 						break;
 						
+					case AllowNullTag:
+						allownull=true;
+						break;
+						
 					default:
 						Utils::ASSERT_FALSE("Unknown tag");
 				}
@@ -256,6 +272,7 @@ namespace Gorgon {
 			bool reference = false;
 			bool constant  = false;
 			bool variable  = false;
+			bool allownull = false;
 		};
 		
 		using ParameterList = std::vector<Parameter>;
@@ -1211,6 +1228,8 @@ namespace Gorgon {
 			/// Constructor
 			Library(const std::string &name, const std::string &help,
 					TypeList types, FunctionList functions, ConstantList constants=ConstantList());
+			
+			Library(const std::string &name, const std::string &help) : Library(name, help, {}, {}) { }
 			
 			/// For late initialization
 			Library() : Types(this->types), Functions(this->functions), Constants(this->constants) { }

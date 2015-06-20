@@ -301,6 +301,14 @@ namespace Scripting {
 						"yet its implementation is not const\n"
 						"in function "+parent->GetName(), 4, 3
 					);
+					
+					if(is_nonconstref<T>::value) {
+						ASSERT(!param.AllowsNull(), 
+							"Parameter #"+String::From(P_-ismember)+" is a reference "
+							"and its implementation allows nullptr. This may cause crashes\n"
+							"in function "+parent->GetName(), 4, 3
+						);
+					}
 				}
 			}
 			//const pointer
@@ -343,7 +351,19 @@ namespace Scripting {
 				}
 			}
 			else if(std::is_reference<T>::value) { //const ref can be anything
-				//nothing to do
+				if(!ismember || P_!=0)  {
+					const auto &param=parameters[P_-ismember];
+					
+					//if really is a reference
+					if(param.IsReference()) {
+						//it cannot accept null
+						ASSERT(!param.AllowsNull(), 
+							"Parameter #"+String::From(P_-ismember)+" is a reference "
+							"and its implementation allows nullptr. This may cause crashes\n"
+							"in function "+parent->GetName(), 4, 3
+						);
+					}
+				}
 			}
 			else if(std::is_const<T>::value) { //constant value type
 				//this pointer

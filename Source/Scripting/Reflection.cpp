@@ -389,4 +389,8 @@ namespace Gorgon { namespace Scripting {
 		return true;
 	}
 	
+	bool Parameter::IsReference() const {
+		return reference || type->IsReferenceType();
+	}
+	
 } }
