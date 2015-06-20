@@ -256,7 +256,7 @@ namespace Gorgon {
 			
 			int highesttemp=0;
 			int tempbase = -1;
-
+			
 			//-unordered map
 			//std::map<std::string, Variable, String::CaseInsensitiveLess>	globalvariables;
 

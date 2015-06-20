@@ -21,10 +21,12 @@ namespace Gorgon { namespace Scripting {
 		
 		InputProvider(Dialect dialect) : dialect(dialect) {}
 		
+		/// Returns the current dialect of the input
 		Dialect GetDialect() const {
 			return dialect;
 		}
 		
+		/// Changes the current dialect of the input
 		void SetDialect(Dialect dialect) {
 			this->dialect=dialect;
 			checkdialect();
@@ -39,8 +41,12 @@ namespace Gorgon { namespace Scripting {
 		/// newline parameter denotes that this line is a new line, not continuation of another.
 		virtual bool ReadLine(std::string &, bool newline) = 0;
 		
+		/// Returns if this input provider allows interaction
+		virtual bool IsInteractive() const { return false; }
+		
 		//virtual int ReadBinary(std::vector<Byte> &buffer) = 0;
 		
+		/// Resets the input to the beginning
 		virtual void Reset() = 0;
 		
 	protected:
@@ -75,6 +81,9 @@ namespace Gorgon { namespace Scripting {
 		virtual void Reset() override {
 			line=0;
 		}
+		
+		virtual bool IsInteractive() const override { return true; }
+		
 		
 	protected:
 		virtual void checkdialect() override { 

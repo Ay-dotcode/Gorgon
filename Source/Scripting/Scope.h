@@ -83,12 +83,22 @@ namespace Gorgon { namespace Scripting {
 			}
 		}
 		
+		/// Returns if this scope is interactive (i.e. code is entered by user)
+		bool IsInteractive() const {
+			if(!provider) return false;
+			
+			return provider->IsInteractive();
+		}
+		
+		/// Current number of instructions that are prepared
 		unsigned ReadyInstructionCount() const {
 			return lines.size();
 		}
 		
+		/// Returns the name of this scope
 		std::string GetName() const { return name; }
 		
+		/// Saves an instruction to the scope
 		void SaveInstruction(Instruction inst, long pline) {
 			lines.push_back({inst, pline});
 		}

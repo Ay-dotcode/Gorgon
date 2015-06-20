@@ -474,12 +474,23 @@ namespace Gorgon {
 						execute(inst);
 					}
 				}
- 				catch(Exception &ex) {
+				catch(Exception &ex) {
+					if(ex.GetLine()<=0) {
+						ex.SetLine(-ex.GetLine()+scopeinstances.back()->GetPhysicalLine());
+					}
+					
 					if(scopeinstances.size()) {
 						scopeinstances.back()->MoveToEnd();
 						
-						if(ex.GetLine()<=0) {
-							ex.SetLine(-ex.GetLine()+scopeinstances.back()->GetPhysicalLine());
+						while(scopeinstances.size()>executiontarget && !scopeinstances.back()->GetScope().IsInteractive()) {
+							scopeinstances.pop_back();
+							if(scopeinstances.size()) {
+								tempbase=scopeinstances.size() ? scopeinstances.back()->tempbase : -1;
+								scopeinstances.back()->MoveToEnd();
+							}
+							else {
+								tempbase=-1;
+							}
 						}
 					}
  
@@ -801,6 +812,9 @@ namespace Gorgon {
 						else if(lib && lib->Functions.Exists(name)) {
 							return {Types::Function(), &lib->Functions[name]};
 						}
+						else if(lib && lib->Types.Exists(name)) {
+							return {Types::Type(), &lib->Types[name]};
+						}
 						else { //could be a function or constant in a type which is in an unknown library
 							auto range=types.equal_range(libname);
 							if(range.first==range.second) {
@@ -852,6 +866,9 @@ namespace Gorgon {
 							}
 							else if(range.first->second.type==SymbolType::Function) {
 								return {Types::Function(), range.first->second.object.Get<const Function*>(), true, true};
+							}
+							else if(range.first->second.type==SymbolType::Type) {
+								return {Types::Type(), range.first->second.object.Get<const Type*>(), true, true};
 							}
 							else {
 								throw SymbolNotFoundException(val.Name, SymbolType::Identifier, "An unsupported symbol is found");

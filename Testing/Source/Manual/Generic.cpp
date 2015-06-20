@@ -125,7 +125,7 @@ int main() {
 	//test();
 
 	std::stringstream ss(source);
-	StreamInput streaminput={std::cin, InputProvider::Programming};
+	ConsoleInput streaminput={InputProvider::Programming};
 
 
 	Library mylib("GTTest", "");
