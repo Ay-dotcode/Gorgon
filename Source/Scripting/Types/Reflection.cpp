@@ -186,7 +186,7 @@ namespace Gorgon { namespace Scripting {
 							{
 								Parameter("Elements",
 									"The newly constructed array will be filled with these elements",
-									Types::Variant()/*, OptionalTag*///...
+									Types::Variant(), OptionalTag
 								)
 							},
 							RepeatTag, ConstTag, ReferenceTag

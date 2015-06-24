@@ -555,6 +555,25 @@ namespace Compilers {
 					
 					root=nw;
 				}
+				else if(token==Token::LeftP) { //() function call
+					auto nw = NewNode(ASTNode::FunctionCall, token);
+					
+					auto exprs=parseexpressions(input, index);
+					
+					token=consumenexttoken(input, index);
+					
+					if(token!=Token::RightP) {
+						delete root;
+						delete nw;
+						throw ParseError{ExceptionType::UnexpectedToken, "Expected expression list.", index};
+					}
+					
+					nw->Leaves.Push(root);
+					for(auto &expr : exprs)
+						nw->Leaves.Push(expr);
+					
+					root=nw;
+				}
 				else {
 					//anything unknown will be rolled back and we will exit
 					index=token.start;
@@ -616,7 +635,6 @@ namespace Compilers {
 			};
 			
 			int parcount=0;
-			int infunction=0;
 
 			//this algorithm terminates on the first token that cannot be processed
 			//and will not throw if there is no error up to that point.
@@ -660,14 +678,6 @@ namespace Compilers {
 						//add to the op stack
 						opstack.push_back({op, token, precedence});
 					}
-					else if(token==Token::Seperator && infunction) { //comma
-						//process until to the start of the function call. if there are previous
-						//parameters, they would have already been processed.
-						while(opstack.size() && opstack.back().data!=Token::LeftP) {
-							popoff();
-						}
-						if(opstack.size()==0) throw ParseError{ExceptionType::UnexpectedToken, "Unexpected token.", ',', index};
-					}
 					else if(token==Token::RightP && parcount) { //if no parenthesis is expected, just exit.
 						//pop until the start of the parenthesis
 						while(opstack.back().data!=Token::LeftP) {
@@ -678,26 +688,6 @@ namespace Compilers {
 						auto n=opstack.back();
 						opstack.pop_back();
 						delete n.op;
-						
-						//if these parenthesis are a part of a function call
-						if(infunction) {
-							infunction--;
-							//collect parameters
-							Containers::Collection<ASTNode> params;
-							
-							//if there are multiple function calls, the ones that are processed will have their token type
-							//set to none
-							while(outputstack.Last()->Type!=ASTNode::FunctionCall || outputstack.Last()->Text!="!!!!!") {
-								params.Push(&outputstack.Pop());
-							}
-							
-							outputstack.Last()->Text="";
-							
-							//place parameters into the function call
-							for(auto it=params.Last();it.IsValid();--it) {
-								outputstack.Last()->Leaves.Push(*it);
-							}
-						}
 						
 						parcount--;
 						nextisop=true;
@@ -717,24 +707,9 @@ namespace Compilers {
 					}
 					else if(token==Token::Identifier || token==Token::LeftCrlyP) { //either variable/constant or a function call
 						index=token.start; //roll back so parseterm could do the parsing
-						auto term = parseterm(input, index);
-	// 					auto nw = NewNode(ASTNode::Term, {"", Token::None, token.start});
-	// 					nw->leaves.Push(term);
-	// 					term=nw;
+						auto term = parseterm(input, index);						
 						
-						if(peeknexttoken(input, index)==Token::LeftP) { //function call
-							infunction++;
-							//function call ASTNode
-							//!ugly
-							auto fn=NewNode(ASTNode::FunctionCall, {"!!!!!", Token::EoS, token.start}); //EoS marks active function call
-							fn->Leaves.Push(term);
-							outputstack.Push(fn);
-							
-							nextisop=false;
-						}
-						else { //variable/constant
-							outputstack.Push(term);
-						}
+						outputstack.Push(term);
 					}
 					else if(token==Token::LeftP) {
 						opstack.push_back({NewNode(ASTNode::Operator, token), token, 25});
@@ -763,6 +738,7 @@ namespace Compilers {
 			return &outputstack[0];
 		}
 		
+		//fix constructors inside an array
 		void fixconstructors(ASTNode *tree, ASTNode *parent=nullptr) {
 			if(tree->Type==ASTNode::Construct) {
 				if(tree->Leaves[0].Type==ASTNode::Empty) {
