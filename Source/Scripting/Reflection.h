@@ -900,6 +900,10 @@ namespace Gorgon {
 				return help;
 			}
 			
+			virtual void Fire(const std::vector<Data> &params) = 0;
+			virtual void Register() = 0;
+			virtual void Unregister() = 0;
+			
 			/// Read only list of parameters
 			const ParameterList &Parameters;
 		protected:

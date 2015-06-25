@@ -1184,4 +1184,16 @@ namespace Scripting {
 		}
 	};
 	
+	template<class C_, class ...P_>
+	class MappedHandler {
+	public:
+		void handler(C_ &obj, P_... params) {
+		}
+	};
+	
+	template <class C_, class ...P_>
+	class MappedEvent {
+		
+	};
+	
 } }
