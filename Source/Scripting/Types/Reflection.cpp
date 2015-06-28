@@ -136,6 +136,42 @@ namespace Gorgon { namespace Scripting {
 
 		return param;
 	}
+
+	Type *EventType() {
+		static Type *obj=nullptr;
+		if(obj==nullptr) {
+			obj=new Scripting::MappedReferenceType<Event, &GetNameOf<Event>>("Event",
+				"Contains information about an event."
+			);
+			
+			obj->AddFunctions({
+				new Scripting::Function("Name",
+					"Returns the name of the event", obj,
+					{
+						MapFunction(
+							&GetNameOf<Event>, Types::String(),
+							{ }, ConstTag
+						)
+					}
+				),
+				
+				new Scripting::Function("Help",
+					"Returns help for the event", obj,
+					{
+						MapFunction(
+							&GetHelpOf<Event>, Types::String(), 
+							{ }, ConstTag
+						)
+					}
+				),
+				
+				//fire, register, unregister
+				//parameters, return
+			});
+		}
+		
+		return obj;
+	}
 	
 	
 	//Initialization should be separate as Type type should be created before any types are added to
@@ -351,6 +387,24 @@ namespace Gorgon { namespace Scripting {
 								auto arr=new Array(*TypeType());
 								VirtualMachine::Get().References.Register(arr);
 								for(auto it=lib.Types.First(); it.IsValid(); it.Next()) {
+									arr->PushData(&it.Current().second, true, true);
+								}
+								
+								return arr;
+							},ArrayType(),
+							{ }, ReferenceTag, ConstTag
+						)
+					}
+				},
+				
+				new Scripting::Function{"Events", 
+					"Returns the events in this library", lib,
+					{
+						MapFunction(
+							[](const Library &lib) -> Array* {
+								auto arr=new Array(*EventType());
+								VirtualMachine::Get().References.Register(arr);
+								for(auto it=lib.Events.First(); it.IsValid(); it.Next()) {
 									arr->PushData(&it.Current().second, true, true);
 								}
 								

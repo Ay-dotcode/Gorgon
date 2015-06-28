@@ -121,7 +121,9 @@ int main() {
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 	vm.SetSpecialIdentifierHandler(SpecHandler);
 	
-
+	Gorgon::Event<> ev;
+	//MappedEvent<void, Gorgon::Event<>> event(ev, Types::Int(), Types::Int(), "", "", {});
+	
 	//test();
 
 	std::stringstream ss(source);

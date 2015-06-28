@@ -1184,16 +1184,59 @@ namespace Scripting {
 		}
 	};
 	
-	template<class C_, class ...P_>
-	class MappedHandler {
+	template<class R_, class ...P_>
+	class MappedEvent_Handler {
+		template<class R1_, class ...P1_>
+		typename std::enable_if< std::is_same<R1_, void>::value, R1_>::type
+		h(P1_ ...) {
+			
+		}
+
+		template<class R1_, class ...P1_>
+		typename std::enable_if<!std::is_same<R1_, void>::value, R1_>::type
+		h(P1_ ...) {
+			return R1_();
+		}
+		
 	public:
-		void handler(C_ &obj, P_... params) {
+		R_ handler(P_... params) {
+			return h<R_, P_...>(std::forward<P_>(params)...);
 		}
 	};
 	
-	template <class C_, class ...P_>
-	class MappedEvent {
+	/// R_: return type, P_: parameters, E_: event object type. E_ should support Register function that allows
+	/// member functions which returns handler token, Unregister function accepts handler token and Fire function 
+	/// that returns R_ and accepts P_ as parameter. R_ could be void, P_ could be empty.
+	template <class R_, class E_, class ...P_>
+	class MappedEvent : public Scripting::Event {
+	public:
+		MappedEvent(E_ &event, const Type &eventtype, const Type &tokentype, 
+					const std::string &name, const std::string &help, 
+					const ParameterList &parameters, const Type *ret=nullptr) : 
+		Event(name, help, parameters, ret), event(event), fn(&E_::operator(), ret, parameters),
+		f("fire", "", &eventtype, {fn})
+		{ }
 		
+		
+		/// Manually fires the event, if the event is a part of an object, it should be passed as the first parameter
+		virtual R_ Fire(const std::vector<Data> &params) override {
+			
+		}
+		
+		/// Registers an event handler, can accept a single parameter if the event is a member of an object
+		virtual Data Register(const std::vector<Data> &params) override {
+			return Data();
+		}
+		
+		/// Unregisters an event handler, even handler id is required for this operation. If the event is a member of
+		/// an object, the it should be passed as the first parameter
+		virtual void Unregister(const std::vector<Data> &params) override {
+		}
+		
+	private:
+		E_ &event;
+		MappedFunction<decltype(&E_::operator())> fn;
+		Function f;
 	};
 	
 } }

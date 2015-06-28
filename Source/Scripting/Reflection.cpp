@@ -13,14 +13,16 @@ namespace Gorgon { namespace Scripting {
 	Type *TypeType();
 	
 	Library::Library(const std::string &name, const std::string &help,
-	TypeList types, FunctionList functions, ConstantList constants) :
-	name(name), help(help), Types(this->types), Functions(this->functions), Constants(this->constants)
+	TypeList types, FunctionList functions, ConstantList constants, EventList events) :
+	name(name), help(help), Types(this->types), Functions(this->functions), 
+	Constants(this->constants), Events(this->events)
 	{
 		using std::swap;
 		
 		swap(types, this->types);
 		swap(functions, this->functions);
 		swap(constants, this->constants);
+		swap(events, this->events);
 	}
 	
 	void Library::AddTypes(const std::vector<Type*> &list) {

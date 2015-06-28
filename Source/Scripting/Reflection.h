@@ -883,8 +883,8 @@ namespace Gorgon {
 		/// Event handlers can access the object that is the source for event using $_eventsource variable.
 		class Event {
 		public:
-			Event(const std::string &name, const std::string &help, ParameterList parameters) : 
-			name(name), help(help), Parameters(this->parameters) {
+			Event(const std::string &name, const std::string &help, ParameterList parameters, const Type *ret=nullptr) : 
+			name(name), help(help), Parameters(this->parameters), returntype(ret) {
 				using std::swap;
 				
 				swap(parameters, this->parameters);
@@ -900,9 +900,27 @@ namespace Gorgon {
 				return help;
 			}
 			
+			/// Manually fires the event, if the event is a part of an object, it should be passed as the first parameter
 			virtual void Fire(const std::vector<Data> &params) = 0;
-			virtual void Register() = 0;
-			virtual void Unregister() = 0;
+			
+			/// Registers an event handler, can accept a single parameter if the event is a member of an object
+			virtual Data Register(const std::vector<Data> &params) = 0;
+			
+			/// Unregisters an event handler, even handler id is required for this operation. If the event is a member of
+			/// an object, the it should be passed as the first parameter
+			virtual void Unregister(const std::vector<Data> &params) = 0;
+			
+			/// Returns whether event handlers should return a value
+			bool HasReturnType() const {
+				return returntype!=nullptr;
+			}
+			
+			/// Returns the return type expected from the handlers.
+			const Type &ReturnType() const {
+				ASSERT(returntype, "This event does not allow returns");
+				
+				return *returntype;
+			}
 			
 			/// Read only list of parameters
 			const ParameterList &Parameters;
@@ -915,6 +933,9 @@ namespace Gorgon {
 			
 			/// Parameters that every event handler should accept. 
 			ParameterList parameters;
+			
+			/// The return type of this event, if it is allowed to return a value
+			const Type *returntype;
 		};
 		
 		using EventList = Containers::Hashmap<std::string, const Event, &Event::GetName, std::map, String::CaseInsensitiveLess>;
@@ -1231,19 +1252,22 @@ namespace Gorgon {
 		public:
 			/// Constructor
 			Library(const std::string &name, const std::string &help,
-					TypeList types, FunctionList functions, ConstantList constants=ConstantList());
+					TypeList types, FunctionList functions, 
+					ConstantList constants=ConstantList(), EventList events=EventList());
 			
 			Library(const std::string &name, const std::string &help) : Library(name, help, {}, {}) { }
 			
 			/// For late initialization
-			Library() : Types(this->types), Functions(this->functions), Constants(this->constants) { }
+			Library() : Types(this->types), Functions(this->functions), Constants(this->constants),	Events(this->events) { }
 			
-			Library(Library &&lib) : Types(this->types), Functions(this->functions), Constants(this->constants) {
+			Library(Library &&lib) : Types(this->types), Functions(this->functions), 
+			Constants(this->constants),	Events(this->events) {
 				using std::swap;
 				
 				swap(types, lib.types);
 				swap(functions, lib.functions);
 				swap(constants, lib.constants);
+				swap(events, lib.events);
 				swap(name, lib.name);
 				swap(help, lib.help);
 			}
@@ -1259,6 +1283,7 @@ namespace Gorgon {
 				swap(types, lib.types);
 				swap(functions, lib.functions);
 				swap(constants, lib.constants);
+				swap(events, lib.events);
 				swap(name, lib.name);
 				swap(help, lib.help);
 				
@@ -1283,6 +1308,14 @@ namespace Gorgon {
 				}
 			}
 			
+			void AddEvents(const std::initializer_list<Event*> &list) {
+				for(auto &event : list) {
+					ASSERT(!SymbolExists(event->GetName()), "Symbol "+event->GetName()+" already exists", 1, 2);
+					
+					events.Add(event);
+				}
+			}
+			
 			void AddFunctions(const std::vector<Function*> &list) {
 				for(auto &fn : list) {
 					ASSERT(!SymbolExists(fn->GetName()), "Symbol "+fn->GetName()+" already exists", 1, 2);
@@ -1301,14 +1334,23 @@ namespace Gorgon {
 				}
 			}
 			
+			void AddEvents(const std::vector<Event*> &list) {
+				for(auto &event : list) {
+					ASSERT(!SymbolExists(event->GetName()), "Symbol "+event->GetName()+" already exists", 1, 2);
+					
+					events.Add(event);
+				}
+			}
+			
 			bool SymbolExists(const std::string &name) const {
-				return types.Exists(name) || functions.Exists(name) || constants.Exists(name);
+				return types.Exists(name) || functions.Exists(name) || constants.Exists(name) || events.Exists(name);
 			}
 			
 			SymbolType TypeOf(const std::string &name) const {
 				if(functions.Exists(name)) return SymbolType::Function;
 				if(types.Exists(name)) return SymbolType::Type;
 				if(constants.Exists(name)) return SymbolType::Constant;
+				if(events.Exists(name)) return SymbolType::Event;
 				
 				return SymbolType::Unknown;
 			}
@@ -1326,11 +1368,14 @@ namespace Gorgon {
 			/// List of types that this library contains
 			const TypeList 		&Types;
 			
-			/// List of functions this library contains
+			/// List of functions that this library contains
 			const FunctionList 	&Functions;
 			
-			/// List of constants this library contains
+			/// List of constants that this library contains
 			const ConstantList 	&Constants;
+			
+			/// List of events that this library contains
+			const EventList &Events;
 			
 		private:
 			std::string name;
@@ -1338,6 +1383,7 @@ namespace Gorgon {
 			TypeList 	 types;
 			FunctionList functions;
 			ConstantList constants;
+			EventList events;
 		};
 	}
 }
