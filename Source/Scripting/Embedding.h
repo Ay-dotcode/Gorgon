@@ -1204,28 +1204,57 @@ namespace Scripting {
 		}
 	};
 	
+	/// @cond INTERNAL
+	/// Automatically generates Type to be used internally, will always return same constructed type
+	/// for the same embedded type
+	template <class T_>
+	struct InternalReferenceType {
+		static Type *type;
+	};
+	
+	template <class T_>
+	Type *InternalReferenceType<T_>::type = new MappedReferenceType<T_, &ToEmptyString<T_>>("", "");
+	
+	/// Automatically generates Type to be used internally, will always return same constructed type
+	/// for the same embedded type. Requires T_ to be default constructible
+	template <class T_>
+	struct InternalValueType {
+		static Type *type;
+	};
+	
+	template <class T_>
+	Type *InternalValueType<T_>::type = new MappedValueType<T_>("", "");
+	/// @endcond
+	
 	/// R_: return type, P_: parameters, E_: event object type. E_ should support Register function that allows
 	/// member functions which returns handler token, Unregister function accepts handler token and Fire function 
 	/// that returns R_ and accepts P_ as parameter. R_ could be void, P_ could be empty.
-	template <class R_, class E_, class ...P_>
+	template <class E_, class R_, class ...P_>
 	class MappedEvent : public Scripting::Event {
+		using handlertype = MappedEvent_Handler<R_, P_...>;
+		
 	public:
-		MappedEvent(E_ &event, const Type &eventtype, const Type &tokentype, 
-					const std::string &name, const std::string &help, 
+		MappedEvent(E_ &event, const std::string &name, const std::string &help, 
 					const ParameterList &parameters, const Type *ret=nullptr) : 
 		Event(name, help, parameters, ret), event(event), fn(&E_::operator(), ret, parameters),
-		f("fire", "", &eventtype, {fn})
+		f("fire", "", InternalReferenceType<E_>::type, {fn})
 		{ }
 		
 		
 		/// Manually fires the event, if the event is a part of an object, it should be passed as the first parameter
 		virtual R_ Fire(const std::vector<Data> &params) override {
-			
+			std::vector<Data> p={{InternalReferenceType<E_>::type, &event}};
+			p.resize(params.size()+1);
+			std::copy(params.begin(), params.end(), p.begin()+1);
+			fn.Call(false, p);
 		}
 		
 		/// Registers an event handler, can accept a single parameter if the event is a member of an object
 		virtual Data Register(const std::vector<Data> &params) override {
-			return Data();
+			auto handlerfn = &handlertype::handler;
+			
+			return Data(InternalValueType<decltype(event.Register(handler, handlerfn))>::type, 
+						event.Register(handler, handlerfn));
 		}
 		
 		/// Unregisters an event handler, even handler id is required for this operation. If the event is a member of
@@ -1237,6 +1266,7 @@ namespace Scripting {
 		E_ &event;
 		MappedFunction<decltype(&E_::operator())> fn;
 		Function f;
+		handlertype handler;
 	};
 	
 } }

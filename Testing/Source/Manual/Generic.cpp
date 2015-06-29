@@ -122,7 +122,11 @@ int main() {
 	vm.SetSpecialIdentifierHandler(SpecHandler);
 	
 	Gorgon::Event<> ev;
-	//MappedEvent<void, Gorgon::Event<>> event(ev, Types::Int(), Types::Int(), "", "", {});
+	MappedEvent<Gorgon::Event<>, void> event(ev, "", "", {});
+	
+	ev.Register([]{ std::cout<<"OK"<<std::endl; });
+	
+	
 	
 	//test();
 
