@@ -812,7 +812,7 @@ namespace Gorgon {
 				return help;
 			}
 			
-			/// Returns if this function is static. Only meaningful when the function is a member function.
+			/// Returns if this data member is static. Only meaningful when the function is a member.
 			bool IsStatic() const {
 				return staticmember;
 			}
@@ -878,68 +878,6 @@ namespace Gorgon {
 		
 		using DataMemberList = Containers::Hashmap<std::string, const DataMember, &DataMember::GetName, std::map, String::CaseInsensitiveLess>;
 		
-		/// Events allow an easy mechanism to program logic into actions instead of checking actions
-		/// continuously. This system is vital for UI programming. Events are basically function descriptors.
-		/// Event handlers can access the object that is the source for event using $_eventsource variable.
-		class Event {
-		public:
-			Event(const std::string &name, const std::string &help, ParameterList parameters, const Type *ret=nullptr) : 
-			name(name), help(help), Parameters(this->parameters), returntype(ret) {
-				using std::swap;
-				
-				swap(parameters, this->parameters);
-			}
-
-			/// Returns the name of this event.
-			std::string GetName() const {
-				return name;
-			}
-
-			/// Returns the help event. Help strings may contain markdown notation.
-			std::string GetHelp() const {
-				return help;
-			}
-			
-			/// Manually fires the event, if the event is a part of an object, it should be passed as the first parameter
-			virtual void Fire(const std::vector<Data> &params) = 0;
-			
-			/// Registers an event handler, can accept a single parameter if the event is a member of an object
-			virtual Data Register(const std::vector<Data> &params) = 0;
-			
-			/// Unregisters an event handler, even handler id is required for this operation. If the event is a member of
-			/// an object, the it should be passed as the first parameter
-			virtual void Unregister(const std::vector<Data> &params) = 0;
-			
-			/// Returns whether event handlers should return a value
-			bool HasReturnType() const {
-				return returntype!=nullptr;
-			}
-			
-			/// Returns the return type expected from the handlers.
-			const Type &ReturnType() const {
-				ASSERT(returntype, "This event does not allow returns");
-				
-				return *returntype;
-			}
-			
-			/// Read only list of parameters
-			const ParameterList &Parameters;
-		protected:
-			/// Name of the event
-			std::string name;
-			
-			/// Help string identifying the event
-			std::string help;
-			
-			/// Parameters that every event handler should accept. 
-			ParameterList parameters;
-			
-			/// The return type of this event, if it is allowed to return a value
-			const Type *returntype;
-		};
-		
-		using EventList = Containers::Hashmap<std::string, const Event, &Event::GetName, std::map, String::CaseInsensitiveLess>;
-		
 		/** 
 		 * This class stores information about types. Types can have their own functions, members,
 		 * events and operators. Additionally some types can be converted to others, this information
@@ -966,6 +904,13 @@ namespace Gorgon {
 				
 				/// This is a type casting
 				TypeCasting
+			};
+			
+			enum SubType {
+				Regular,
+				Event,
+				Enum,
+				Library
 			};
 			
 			class Inheritance {
@@ -1007,6 +952,8 @@ namespace Gorgon {
 				return referencetype;
 			}
 			
+			virtual SubType GetSubType() const { return Regular; }
+			
 			/// Adds an inheritance parent. from and to function should handle reference and constness of the data.
 			/// Inheritance should be added in order. After using a class as a parent, no parent should be added to that
 			/// class
@@ -1028,8 +975,6 @@ namespace Gorgon {
 						   "Data member " + element->GetName() + " is already added as a function.", 1, 2);
 					ASSERT(!constants.Exists(element->GetName()), 
 						   "Data member " + element->GetName() + " is already added as a constant.", 1, 2);
-					ASSERT(!events.Exists(element->GetName()), 
-						   "Data member " + element->GetName() + " is already added as an event.", 1, 2);
 					
 					element->typecheck(this);
 					datamembers.Add(element);
@@ -1046,8 +991,6 @@ namespace Gorgon {
 						   "Function " + element->GetName() + " is already added as a function.", 1, 2);
 					ASSERT(!constants.Exists(element->GetName()), 
 						   "Function " + element->GetName() + " is already added as a constant.", 1, 2);
-					ASSERT(!events.Exists(element->GetName()), 
-						   "Function " + element->GetName() + " is already added as an event.", 1, 2);
 					ASSERT(element->parent==this,
 						   "This type should be listed as the parent of this function", 1, 2);
 					
@@ -1077,27 +1020,8 @@ namespace Gorgon {
 						"Constant " + element->GetName() + " is already added as a function.", 1, 2);
 					ASSERT(!constants.Exists(element->GetName()), 
 						"Constant " + element->GetName() + " is already added as a constant.", 1, 2);
-					ASSERT(!events.Exists(element->GetName()), 
-						"Constant " + element->GetName() + " is already added as an event.", 1, 2);
 					
 					constants.Add(element);
-				}
-			}
-			
-			/// Adds new events to the type
-			void AddEvents(std::initializer_list<Event*> elements) {
-				for(auto element : elements) {
-					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!datamembers.Exists(element->GetName()), 
-						"Event " + element->GetName() + " is already added as a data member.", 1, 2);
-					ASSERT(!functions.Exists(element->GetName()), 
-						"Event " + element->GetName() + " is already added as a function.", 1, 2);
-					ASSERT(!constants.Exists(element->GetName()), 
-						"Event " + element->GetName() + " is already added as a constant.", 1, 2);
-					ASSERT(!events.Exists(element->GetName()), 
-						"Event " + element->GetName() + " is already added as an event.", 1, 2);
-					
-					events.Add(element);
 				}
 			}
 			
@@ -1169,9 +1093,6 @@ namespace Gorgon {
 			/// Constants related with this type. Constants can be of the same type as this one.
 			const ConstantList    					&Constants;
 			
-			/// Events of this type.
-			const EventList							&Events;
-			
 			/// Parents of this type. This includes indirect parents as well
 			const std::map<const Type *, const Type *> &Parents;
 			
@@ -1221,9 +1142,6 @@ namespace Gorgon {
 			/// Constants related with this type. Constants can be of the same type as this one.
 			ConstantList    					constants;
 			
-			/// Events of this type.
-			EventList							events;
-			
 			/// Inheritance list. 
 			std::map<const Type *, Inheritance> inheritsfrom;
 			
@@ -1234,6 +1152,46 @@ namespace Gorgon {
 			std::map<const Type *, const Type *> parents;
 			
 			bool referencetype = false;
+		};
+		
+		/// Events allow an easy mechanism to program logic into actions instead of checking actions
+		/// continuously. This system is vital for UI programming. Events are basically function descriptors.
+		/// Event handlers can access the object that is the source for event using $_eventsource variable.
+		class Event : virtual public Type {
+		public:
+			Event(const std::string &name, const std::string &help, const Any &defaultvalue, 
+				  TMP::RTTH *typeinterface, Type *ret, ParameterList parameters) : 
+			Type(name, help, defaultvalue, typeinterface, true), Parameters(this->parameters), returntype(ret) {
+				using std::swap;
+				
+				swap(parameters, this->parameters);
+			}
+			
+			virtual SubType GetSubType() const override {
+				return Type::Event;
+			}
+			
+			/// Returns whether event handlers should return a value
+			bool HasReturnType() const {
+				return returntype!=nullptr;
+			}
+			
+			/// Returns the return type expected from the handlers.
+			const Type &ReturnType() const {
+				ASSERT(returntype, "This event does not allow returns");
+				
+				return *returntype;
+			}
+			
+			/// Read only list of parameters
+			const ParameterList &Parameters;
+			
+		protected:
+			/// Parameters that every event handler should accept. 
+			ParameterList parameters;
+			
+			/// The return type of this event, if it is allowed to return a value
+			const Type *returntype;
 		};
 		
 		inline std::ostream &operator <<(std::ostream &out, const Type &type) {
@@ -1253,21 +1211,20 @@ namespace Gorgon {
 			/// Constructor
 			Library(const std::string &name, const std::string &help,
 					TypeList types, FunctionList functions, 
-					ConstantList constants=ConstantList(), EventList events=EventList());
+					ConstantList constants=ConstantList());
 			
 			Library(const std::string &name, const std::string &help) : Library(name, help, {}, {}) { }
 			
 			/// For late initialization
-			Library() : Types(this->types), Functions(this->functions), Constants(this->constants),	Events(this->events) { }
+			Library() : Types(this->types), Functions(this->functions), Constants(this->constants) { }
 			
 			Library(Library &&lib) : Types(this->types), Functions(this->functions), 
-			Constants(this->constants),	Events(this->events) {
+			Constants(this->constants) {
 				using std::swap;
 				
 				swap(types, lib.types);
 				swap(functions, lib.functions);
 				swap(constants, lib.constants);
-				swap(events, lib.events);
 				swap(name, lib.name);
 				swap(help, lib.help);
 			}
@@ -1283,7 +1240,6 @@ namespace Gorgon {
 				swap(types, lib.types);
 				swap(functions, lib.functions);
 				swap(constants, lib.constants);
-				swap(events, lib.events);
 				swap(name, lib.name);
 				swap(help, lib.help);
 				
@@ -1308,14 +1264,6 @@ namespace Gorgon {
 				}
 			}
 			
-			void AddEvents(const std::initializer_list<Event*> &list) {
-				for(auto &event : list) {
-					ASSERT(!SymbolExists(event->GetName()), "Symbol "+event->GetName()+" already exists", 1, 2);
-					
-					events.Add(event);
-				}
-			}
-			
 			void AddFunctions(const std::vector<Function*> &list) {
 				for(auto &fn : list) {
 					ASSERT(!SymbolExists(fn->GetName()), "Symbol "+fn->GetName()+" already exists", 1, 2);
@@ -1334,23 +1282,14 @@ namespace Gorgon {
 				}
 			}
 			
-			void AddEvents(const std::vector<Event*> &list) {
-				for(auto &event : list) {
-					ASSERT(!SymbolExists(event->GetName()), "Symbol "+event->GetName()+" already exists", 1, 2);
-					
-					events.Add(event);
-				}
-			}
-			
 			bool SymbolExists(const std::string &name) const {
-				return types.Exists(name) || functions.Exists(name) || constants.Exists(name) || events.Exists(name);
+				return types.Exists(name) || functions.Exists(name) || constants.Exists(name);
 			}
 			
 			SymbolType TypeOf(const std::string &name) const {
 				if(functions.Exists(name)) return SymbolType::Function;
 				if(types.Exists(name)) return SymbolType::Type;
 				if(constants.Exists(name)) return SymbolType::Constant;
-				if(events.Exists(name)) return SymbolType::Event;
 				
 				return SymbolType::Unknown;
 			}
@@ -1374,16 +1313,13 @@ namespace Gorgon {
 			/// List of constants that this library contains
 			const ConstantList 	&Constants;
 			
-			/// List of events that this library contains
-			const EventList &Events;
-			
 		private:
 			std::string name;
 			std::string help;
 			TypeList 	 types;
 			FunctionList functions;
 			ConstantList constants;
-			EventList events;
+			DataMemberList datamembers;
 		};
 	}
 }

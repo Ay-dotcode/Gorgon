@@ -121,10 +121,10 @@ int main() {
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 	vm.SetSpecialIdentifierHandler(SpecHandler);
 	
-	Gorgon::Event<> ev;
-	MappedEvent<Gorgon::Event<>, void> event(ev, "", "", {});
+	//Gorgon::Event<> ev;
+	//MappedEvent<Gorgon::Event<>, void> event(ev, "", "", {});
 	
-	ev.Register([]{ std::cout<<"OK"<<std::endl; });
+	//ev.Register([]{ std::cout<<"OK"<<std::endl; });
 	
 	
 	

@@ -3,7 +3,6 @@
 #include "VirtualMachine.h"
 
 namespace Gorgon { namespace Scripting {	
-	
 	void Function::init() {
 		if(keyword) {
 			KeywordNames.insert(name);
@@ -13,16 +12,15 @@ namespace Gorgon { namespace Scripting {
 	Type *TypeType();
 	
 	Library::Library(const std::string &name, const std::string &help,
-	TypeList types, FunctionList functions, ConstantList constants, EventList events) :
+	TypeList types, FunctionList functions, ConstantList constants) :
 	name(name), help(help), Types(this->types), Functions(this->functions), 
-	Constants(this->constants), Events(this->events)
+	Constants(this->constants)
 	{
 		using std::swap;
 		
 		swap(types, this->types);
 		swap(functions, this->functions);
 		swap(constants, this->constants);
-		swap(events, this->events);
 	}
 	
 	void Library::AddTypes(const std::vector<Type*> &list) {
@@ -135,7 +133,7 @@ namespace Gorgon { namespace Scripting {
 	
 	Type::Type(const std::string& name, const std::string& help, const Any& defaultvalue, TMP::RTTH *typeinterface, bool isref):
 		name(name), help(help), DataMembers(datamembers), Functions(functions), Constructor(constructor),
-		Constants(constants), Events(events), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),
+		Constants(constants), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),
 		referencetype(isref), TypeInterface(*typeinterface), Parents(parents), InheritedSymbols(inheritedsymbols),
 		constructor("{}", "Constructs "+name, this, Containers::Collection<Function::Overload>(), StaticTag)
 	{
@@ -297,13 +295,6 @@ namespace Gorgon { namespace Scripting {
 			}
 		}
 
-		for(const auto &e : type.Events) {
-			if(events.Find(e.first)==events.end()) {
-				ASSERT(!inheritedsymbols.Find(e.first).IsValid(), "Symbol: "+e.first+" is ambiguous");
-
-				inheritedsymbols.Add(e.first, type);
-			}
-		}
 
 		for(const auto &d : type.DataMembers) {
 			if(datamembers.Find(d.first)==datamembers.end()) {
@@ -316,7 +307,6 @@ namespace Gorgon { namespace Scripting {
 		for(const auto &s : type.inheritedsymbols) {
 			if( functions.Find(s.first)==functions.end() && 
 				constants.Find(s.first)!=constants.end() &&
-				events.Find(s.first)!=events.end() &&
 				datamembers.Find(s.first)!=datamembers.end()
 			) {
 				ASSERT(!inheritedsymbols.Find(s.first).IsValid(), "Symbol: "+s.first+" is ambiguous");

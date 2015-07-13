@@ -1230,13 +1230,13 @@ namespace Scripting {
 	/// member functions which returns handler token, Unregister function accepts handler token and Fire function 
 	/// that returns R_ and accepts P_ as parameter. R_ could be void, P_ could be empty.
 	template <class E_, class R_, class ...P_>
-	class MappedEvent : public Scripting::Event {
+	class MappedEventType : public Scripting::Event {
 		using handlertype = MappedEvent_Handler<R_, P_...>;
 		
 	public:
-		MappedEvent(E_ &event, const std::string &name, const std::string &help, 
+		MappedEventType(const std::string &name, const std::string &help, 
 					const ParameterList &parameters, const Type *ret=nullptr) : 
-		Event(name, help, parameters, ret), event(event), fn(&E_::operator(), ret, parameters),
+		Event(name, help, new TMP::AbstractRTT<E_>(),parameters, ret), event(event), fn(&E_::operator(), ret, parameters),
 		f("fire", "", InternalReferenceType<E_>::type, {fn})
 		{ }
 		
