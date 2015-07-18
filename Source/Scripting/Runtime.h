@@ -46,12 +46,20 @@ namespace Gorgon {
 			/// Increases the reference count of the given object. If it is not registered, this request is ignored
 			void Increase(const Data &data) {
 				ASSERT(data.GetData().IsPointer(), "Reference keeping can only be performed for reference types, "
-					   "offender: "+data.GetType().GetName(), 1, 4);
-
+				"offender: "+data.GetType().GetName(), 1, 4);
+				
 				void *ptr=data.GetData().Pointer();
 				auto f=references.find(ptr);
 				if(f==references.end()) return;
-
+				
+				f->second++;
+			}
+			
+			/// Increases the reference count of the given object. If it is not registered, this request is ignored
+			void Increase(void *ptr) {
+				auto f=references.find(ptr);
+				if(f==references.end()) return;
+				
 				f->second++;
 			}
 			

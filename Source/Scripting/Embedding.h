@@ -1220,25 +1220,6 @@ namespace Scripting {
 		}
 	};
 	
-	template<class R_, class ...P_>
-	class MappedEvent_Handler {
-		template<class R1_, class ...P1_>
-		typename std::enable_if< std::is_same<R1_, void>::value, R1_>::type
-		h(P1_ ...) {
-			
-		}
-
-		template<class R1_, class ...P1_>
-		typename std::enable_if<!std::is_same<R1_, void>::value, R1_>::type
-		h(P1_ ...) {
-			return R1_();
-		}
-		
-	public:
-		R_ handler(P_... params) {
-			return h<R_, P_...>(std::forward<P_>(params)...);
-		}
-	};
 	
 	/// @cond INTERNAL
 	/// Automatically generates Type to be used internally, will always return same constructed type
@@ -1302,11 +1283,14 @@ namespace Scripting {
 	 * E_ should support Register function that allows member functions which returns handler token, 
 	 * Unregister function accepts handler token and Fire function that returns R_ and accepts P_ as 
 	 * parameter. R_ could be void, P_ could be empty. O_ could be void to denote its not used.
-	 * Token type for all Register variants should be the same.
 	 */
 	template <class E_, class O_, class R_, class ...P_>
 	class MappedEventType : public Scripting::Event {
-		using handlertype = MappedEvent_Handler<R_, P_...>;
+	public:
+		using TokenType = decltype(std::declval<E_>().Register(std::function<void()>()));
+		std::map<TokenType, const Function *> unregistertokens;
+		
+	private:
 		
 		template<class T_, class ...Params_>
 		void constargs(int index, std::vector<Data> &ret, const std::vector<Parameter> params, T_ arg, Params_&& ...rest) {
@@ -1317,9 +1301,111 @@ namespace Scripting {
 		
 		void constargs(int index, std::vector<Data> &ret, const std::vector<Parameter> params) {}
 		
-	public:
-		using TokenType = decltype(std::declval<E_>().Register(std::function<void()>()));
+		R_ callfn(const Function *fn, std::vector<Data> args, Function::Overload *single) {
+			using namespace Scripting;			
+			
+			auto &vm=VirtualMachine::Get();
+			
+			//try with full arguments
+			if(!single || single->Parameters.size()==args.size()-(fn->IsMember()&&!fn->IsStatic())) {
+				try {
+					return ExtractFromData<R_>(vm.ExecuteFunction(fn, args, false));
+				}
+				catch(SymbolNotFoundException &) {
+				}
+			}
+			
+			//empty one, if this fails, execution will fail
+			return ExtractFromData<R_>(vm.ExecuteFunction(fn, {}, false));
+		}
 		
+		
+		template<class OO_=O_>
+		typename std::enable_if<!std::is_same<OO_, void>::value, R_>::type
+		callfn(O_& obj, const Function *fn, std::vector<Data> args, Function::Overload *single) {
+			auto &vm=VirtualMachine::Get();
+			
+			//try with object first if exists
+			if(this->parenttype && (!single || single->Parameters.size()==args.size()+1-(fn->IsMember()&&!fn->IsStatic()))) {
+				args.insert(args.begin(), Data(this->parenttype, &obj, true, std::is_const<O_>::value));
+				
+				try {
+					return ExtractFromData<R_>(vm.ExecuteFunction(fn, args, false));
+				}
+				catch(SymbolNotFoundException &) {
+					args.erase(args.begin());
+				}
+			}
+			
+			//if not call the caller without the object
+			return callfn(fn, args, single);
+		}
+		
+		template<class OO_=O_>
+		typename std::enable_if<std::is_same<OO_, void>::value, TokenType>::type
+		registerfn(E_ *ev, const Function *fn) {
+			//checks
+			
+			//make sure that the fn stays alive
+			auto &vm=VirtualMachine::Get();
+			vm.References.Increase((void*)fn);
+			
+			auto tok=ev->Register([fn,this](P_&& ...args) {
+				//prepare parameters
+				std::vector<Data> pars;
+				constargs(0, pars, parameters, std::forward<P_...>(args)...);
+				
+				//single overload means easy way out
+				Function::Overload *overload=nullptr;
+				if(fn->Overloads.GetSize()+fn->Methods.GetSize()) {
+					if(fn->Overloads.GetSize()) 
+						overload=&fn->Overloads[0];
+					else
+						overload=&fn->Methods[0];
+				}
+				
+				return callfn(fn, pars, overload);
+			});
+			
+			unregistertokens[tok]=fn;
+
+			return tok;
+		}
+		
+		template<class OO_=O_>
+		typename std::enable_if<!std::is_same<OO_, void>::value, TokenType>::type
+		registerfn(E_ *ev, const Function *fn) {
+			using namespace Scripting;
+			//checks
+			
+			//make sure that the fn stays alive
+			auto &vm=VirtualMachine::Get();
+			vm.References.Increase((void*)fn);
+			
+			auto tok=ev->Register([fn,this](O_ &obj, P_&& ...args) {
+				//prepare parameters
+				std::vector<Data> pars;
+				constargs(0, pars, parameters, std::forward<P_...>(args)...);
+				
+				//single overload means easy way out
+				Function::Overload *overload=nullptr;
+				if(fn->Overloads.GetSize()+fn->Methods.GetSize()) {
+					if(fn->Overloads.GetSize()) 
+						overload=&fn->Overloads[0];
+					else
+						overload=&fn->Methods[0];
+				}
+				
+				return callfn(obj, fn, pars, overload);
+			});
+			
+			unregistertokens[tok]=fn;
+			return tok;
+		}
+		
+		using registerfnsig = TokenType(MappedEventType::*)(E_*,const Function*);
+		
+	public:
 		MappedEventType(const std::string &name, const std::string &help, 
 					const ParameterList &parameters={}, const Type *parenttype=nullptr, const Type *ret=nullptr) : 
 		Event(name, help, (E_*)nullptr, new TMP::AbstractRTTC<E_>(), ret, parameters), parenttype(parenttype)
@@ -1339,61 +1425,9 @@ namespace Scripting {
 					"Registers a new handler to this event",
 					this, {
 						MapFunction(
-							[this](E_ *ev, const Function *fn) -> TokenType {
-								//checks
-								
-								return ev->Register([fn,this](O_ &obj, P_&& ...args) {
-									auto params=this->parameters;
-									
-									auto p=this->parameters.begin();
-									bool v;
-									std::vector<Data> pars;
-									constargs(0, pars, params, std::forward<P_...>(args)...);
-										
-										
-									bool done=false;
-									auto &vm=VirtualMachine::Get();
-									
-									Data ret;
-									
-									bool single=fn->Overloads.GetSize()+fn->Methods.GetSize();
-									Function::Overload *overload=nullptr;
-									if(single && fn->Overloads.GetSize()) 
-										overload=&fn->Overloads[0];
-									else if(single)
-										overload=&fn->Methods[0];
-									
-									//try with object first if exists
-									if(this->parenttype && (!single || overload->Parameters.size()==pars.size()+1)) {
-										pars.insert(pars.begin(), Data(this->parenttype, &obj, true, std::is_const<O_>::value));
-										try {
-											ret=vm.ExecuteFunction(fn, pars, false);
-											done=true;
-										}
-										catch(SymbolNotFoundException &) {
-											pars.erase(pars.begin());
-										}
-									}
-									
-									//try with full arguments
-									if(!done && pars.size() && (!single || overload->Parameters.size()==pars.size())) {
-										try {
-											ret=vm.ExecuteFunction(fn, pars, false);
-											done=true;
-										}
-										catch(SymbolNotFoundException &) {
-											pars.clear();
-										}
-									}
-									
-									//finally empty one, if this fails, execution will fail
-									if(!done) {
-										ret=vm.ExecuteFunction(fn, pars, false);
-									}
-									
-									return ExtractFromData<R_>(ret);
-								});
-							}, 
+							[this](E_ *ev, const Function *fn) { 
+								return this->registerfn(ev,fn); 
+							},
 							InternalValueType<TokenType>::type, {
 								Parameter("Handler",
 									"The function to handle the event",
@@ -1401,29 +1435,19 @@ namespace Scripting {
 									ConstTag
 								)
 							}
-						),
-						MapFunction(
-							[](E_ *ev, Data d, const Function *fn) -> TokenType {
-								return TokenType();
-							},
-							InternalValueType<TokenType>::type, {
-								Parameter("Object",
-									"The object to handle the event",
-									Types::Variant()
-								),
-								Parameter("Handler",
-									"The member function to handle the event",
-									FunctionType(), ConstTag
-								)
-							}
-						),
+						)
 					}
 				),
 				new Function("Unregister",
 					"This function unregisters a given event handler token.",
 					this, {
 						MapFunction(
-							&E_::Unregister,
+							[this](E_ *event, TokenType token) {
+								event->Unregister(token);
+								auto &vm=VirtualMachine::Get();
+								vm.References.Decrease(Data(FunctionType(), this->unregistertokens[token], true, true));
+								this->unregistertokens.erase(token);
+							},
 							nullptr, {
 								Parameter("Token",
 									"Event handler token",
@@ -1457,7 +1481,6 @@ namespace Scripting {
 		
 		
 	private:
-		handlertype handler;
 		const Type *parenttype;
 	};
 	

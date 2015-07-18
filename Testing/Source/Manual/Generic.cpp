@@ -135,7 +135,7 @@ int main() {
 	>(
 		"evt", "help", {
 			Parameter("int", "int", Types::Int())
-		}, reftyp
+		}
 	);
 	
 	reftyp->MapConstructor<>({});

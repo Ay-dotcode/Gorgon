@@ -211,8 +211,6 @@ namespace Gorgon {
 			
 			/// Internal, returns pointer to the variable. Can return nullptr. Only searches in VM variables
 			Variable *getvarref(const std::string &var);
-			
-			//TODO: events
 
 			/// Allows read-only access to libraries
 			const Containers::Hashmap<std::string, const Library, &Library::GetName, std::map, String::CaseInsensitiveLess> &Libraries;
