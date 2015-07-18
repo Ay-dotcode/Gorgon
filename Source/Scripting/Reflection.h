@@ -518,6 +518,10 @@ namespace Gorgon {
 					 Tag tag, P_ ...tags) : 
 			name(name), help(help), parent(parent), Overloads(this->overloads), Methods(this->methods)
 			{
+				
+				unpacktags(tag);
+				unpacktags(tags...);
+				
 				for(auto &variant : overloads) {
 					AddOverload(variant);
 				}
@@ -526,9 +530,6 @@ namespace Gorgon {
 					AddMethod(variant);
 				}
 				
-				unpacktags(tag);
-				unpacktags(tags...);
-
 				init();
 			}
 			
@@ -538,12 +539,12 @@ namespace Gorgon {
 					 const Containers::Collection<Overload> &overloads, Tag tag, P_ ...tags) :
 			name(name), help(help), parent(parent), Overloads(this->overloads), Methods(this->methods)
 			{
-				for(auto &overload : overloads) {
-					AddOverload(overload);
-				}
-				
 				unpacktags(tag);
 				unpacktags(tags...);
+				
+				for(auto &overload : overloads) {
+					AddOverload(overload);
+				}				
 
 				init();
 			}
@@ -1106,6 +1107,9 @@ namespace Gorgon {
 			
 			virtual ~Type() {
 				delete &TypeInterface;
+				datamembers.Destroy();
+				functions.Destroy();
+				constants.Destroy();
 			}
 			
 		protected:
@@ -1157,10 +1161,10 @@ namespace Gorgon {
 		/// Events allow an easy mechanism to program logic into actions instead of checking actions
 		/// continuously. This system is vital for UI programming. Events are basically function descriptors.
 		/// Event handlers can access the object that is the source for event using $_eventsource variable.
-		class Event : virtual public Type {
+		class Event : public Type {
 		public:
 			Event(const std::string &name, const std::string &help, const Any &defaultvalue, 
-				  TMP::RTTH *typeinterface, Type *ret, ParameterList parameters) : 
+				  TMP::RTTH *typeinterface, const Type *ret, ParameterList parameters) : 
 			Type(name, help, defaultvalue, typeinterface, true), Parameters(this->parameters), returntype(ret) {
 				using std::swap;
 				
@@ -1227,6 +1231,12 @@ namespace Gorgon {
 				swap(constants, lib.constants);
 				swap(name, lib.name);
 				swap(help, lib.help);
+			}
+			
+			~Library() {
+				functions.Destroy();
+				constants.Destroy();
+				types.Destroy();
 			}
 			
 			Library &operator =(Library &&lib) {

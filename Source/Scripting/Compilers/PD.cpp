@@ -1134,9 +1134,9 @@ namespace Compilers {
 				if(token==Token::EqualSign) {//assignment
 					assignment(term, "");
 				}
-				else if(token==Token::LeftP) { //function
-					index=0; //let expression do the parsing
-					root=parseexpression(input, index);
+				else if(term->Type==ASTNode::FunctionCall) { //function
+					root=term;
+					term=nullptr;
 						
 					if( (token=consumenexttoken(input, index)) !=Token::EoS) {
 						throw ParseError{ExceptionType::UnexpectedToken, "Expected End of String.", index};

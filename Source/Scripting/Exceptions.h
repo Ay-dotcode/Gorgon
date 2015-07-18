@@ -26,6 +26,7 @@ namespace Gorgon {
 			Constant,
 			InvalidLiteral,
 			FileNotFound,
+			ReadOnly
 		};
 		
 		DefineEnumStrings(ExceptionType,
@@ -44,6 +45,7 @@ namespace Gorgon {
 			{ExceptionType::UnexpectedToken, "Unexpected token"},
 			{ExceptionType::Constant, "Identifier is constant"},
 			{ExceptionType::FileNotFound, "File not found"},
+			{ExceptionType::ReadOnly, "Member is ready only"},
 		);
 		
 		enum class SymbolType {
@@ -256,6 +258,14 @@ namespace Gorgon {
 		public:
 			explicit FileNotFoundException(const std::string& filename, const std::string &details="", long int linenumber = 0) :
 			Exception(ExceptionType::FileNotFound, "Cannot find or access file: "+filename, linenumber) {
+				this->details=details;
+			}
+		};
+		
+		class ReadOnlyException : public Exception {
+		public:
+			explicit ReadOnlyException(const std::string& member, const std::string &details="", long int linenumber = 0) :
+			Exception(ExceptionType::ReadOnly, member+" is readonly", linenumber) {
 				this->details=details;
 			}
 		};

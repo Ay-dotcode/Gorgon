@@ -115,16 +115,37 @@ Data SpecHandler(char c, std::string var) {
 	return {};
 }
 
+class evttest {
+public:
+	evttest() : ev(*this) { }
+	evttest(const evttest &) = delete;
+	
+	Gorgon::Event<evttest, int> ev;
+};
+
 int main() {
 	VirtualMachine vm;
 	Gorgon::Geometry::init_scripting();
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 	vm.SetSpecialIdentifierHandler(SpecHandler);
 	
-	//Gorgon::Event<> ev;
-	//MappedEvent<Gorgon::Event<>, void> event(ev, "", "", {});
+	auto eventtype=new MappedEventType<
+		Gorgon::Event<evttest, int>, void, void, int
+	>(
+		"evt", "help", {
+			Parameter("int", "int", Types::Int())
+		}
+	);
 	
-	//ev.Register([]{ std::cout<<"OK"<<std::endl; });
+	auto reftyp=new Gorgon::Scripting::MappedReferenceType<evttest, ToEmptyString<evttest>>("", "");
+	reftyp->MapConstructor<>({});
+	reftyp->AddDataMembers({
+		new MappedDataNoSet<evttest*, Gorgon::Event<evttest, int>>(&evttest::ev, "event", "", eventtype)
+	});
+	
+	evttest a;
+	
+	a.ev.Register([](int v){ std::cout<<"OK: "<<v<<std::endl; });
 	
 	
 	
@@ -150,10 +171,17 @@ int main() {
 	auto nulltype=new MappedReferenceType<NullTest>("NullTest", "");
 	
 	mylib.AddTypes({
-		nulltype
+		nulltype, reftyp
 	});
 
 	mylib.AddFunctions({
+		new Function("geta", "", nullptr,
+			{
+				MapFunction([&]{
+					return &a;
+				}, reftyp, {})
+			}
+		),
 		new Function("svg", "", nullptr,
 			{
 				MapFunction(&togglesvg, nullptr, {})

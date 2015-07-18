@@ -480,6 +480,12 @@ namespace Scripting {
 		
 		virtual void dochecks(bool ismethod) override {
 			Function::Overload::dochecks(ismethod);
+			
+			ASSERT(traits::Arity-(parent->IsMember()&&!parent->IsStatic()) == parameters.size(), 
+				   "Number of function parameters ("+String::From(traits::Arity-(parent->IsMember()&&!parent->IsStatic()))+") "
+				   "does not match with declared parameters ("+String::From(parameters.size())+")\n"
+				   "in function "+parent->GetName(), 4, 3
+			);
 
 			//check return type
 			//if void
@@ -788,13 +794,16 @@ namespace Scripting {
 	* parameter is the type of the object and the second is the type of the data member
 	*/
 	template<class C_, class T_>
-	class MappedData : public Scripting::DataMember {
+	class MappedDataNoSet : public Scripting::DataMember {
 	public:
 		/// Constructor
 		template<class ...P_>
-		MappedData(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
+		MappedDataNoSet(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
 		DataMember(name, help, *type, tags...), member(member) {
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
+			ASSERT(type->TypeInterface.NormalType.IsSameType<T_>(), "Reported type "+type->GetName()+
+					" ("+type->TypeInterface.NormalType.Name()+") "
+					" does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
 		}
 		
 		virtual Data Get(const Scripting::Data &data) const override {
@@ -821,19 +830,7 @@ namespace Scripting {
 		
 		/// Sets the data of the data member
 		virtual void Set(Data &source, const Data &value) const override {
-			if(source.IsConstant()) {
-				throw ConstantException("Given item");
-			}
-			
-			if(source.IsReference()) {
-				C_ &obj  = source.ReferenceValue<C_&>();
-				obj.*member = value.GetValue <T_>();
-			}
-			else {
-				C_ obj  = source.GetValue<C_>();
-				obj.*member = value.GetValue <T_>();
-				source={source.GetType(), obj};
-			}
+			throw ReadOnlyException(this->GetName());
 		}
 		
 	protected:
@@ -842,23 +839,23 @@ namespace Scripting {
 				"it has placed in.", 2, 2);
 		}
 		
-	private:
 		T_ C_::*member;
 	};
 	
 	/**
-		* This class allows a one to one mapping of a data member to a c++ data member
-		*/
+	* This class allows a one to one mapping of a data member to a c++ data member
+	*/
 	template<class C_, class T_>
-	class MappedData<C_*, T_> : public DataMember {
+	class MappedDataNoSet<C_*, T_> : public DataMember {
 	public:
 		/// Constructor
 		template<class ...P_>
-		MappedData(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
+		MappedDataNoSet(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
 		DataMember(name, help, *type, tags...), member(member) {
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
-			ASSERT(type->GetDefaultValue().TypeCheck<T_>(), "Reported type "+type->GetName()+
-					"does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
+			ASSERT(type->TypeInterface.NormalType.IsSameType<T_>(), "Reported type "+type->GetName()+
+					" ("+type->TypeInterface.NormalType.Name()+") "
+					" does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
 		}
 		
 		virtual Data Get(const Data &data) const override {
@@ -880,6 +877,54 @@ namespace Scripting {
 			d.SetParent(data);
 			return d;
 		}
+		/// Sets the data of the data member
+		virtual void Set(Data &source, const Data &value) const override {
+			throw ReadOnlyException(this->GetName());
+		}
+		
+	protected:
+		void typecheck(const Type *type) {
+			ASSERT(type->GetDefaultValue().TypeCheck<C_*>(), "The type of mapped data does not match with the type "
+			"it has placed in.", 2, 2);
+		}
+		
+		T_ C_::*member;
+	};
+	
+	/**
+	 * This class allows a one to one mapping of a data member to a c++ data member
+	 */
+	template<class C_, class T_>
+	class MappedData : public MappedDataNoSet<C_, T_> {
+	public:
+		using MappedDataNoSet<C_, T_>::MappedDataNoSet;
+		
+		/// Sets the data of the data member
+		virtual void Set(Data &source, const Data &value) const override {
+			if(source.IsConstant()) {
+				throw ConstantException("Given item");
+			}
+			
+			if(source.IsReference()) {
+				C_ &obj  = source.ReferenceValue<C_&>();
+				obj.*this->member = value.GetValue <T_>();
+			}
+			else {
+				C_ obj  = source.GetValue<C_>();
+				obj.*this->member = value.GetValue <T_>();
+				source={source.GetType(), obj};
+			}
+		}
+	};
+	
+	/**
+	 * This class allows a one to one mapping of a data member to a c++ data member
+	 */
+	template<class C_, class T_>
+	class MappedData<C_*, T_> : public MappedDataNoSet<C_*, T_> {
+	public:
+		using MappedDataNoSet<C_*, T_>::MappedDataNoSet;
+		
 		
 		/// Sets the data of the data member
 		virtual void Set(Data &source, const Data &value) const override {
@@ -889,19 +934,10 @@ namespace Scripting {
 			
 			C_ *obj=source.GetValue<C_*>();
 			if(obj==nullptr) {
-				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
+				throw NullValueException("", "The value of the object was null while accessing to " + this->GetName() + " member.");
 			}
-			obj->*member = value.GetValue <T_>();
+			obj->*this->member = value.GetValue <T_>();
 		}			
-		
-	protected:
-		void typecheck(const Type *type) {
-			ASSERT(type->GetDefaultValue().TypeCheck<C_*>(), "The type of mapped data does not match with the type "
-			"it has placed in.", 2, 2);
-		}
-		
-	private:
-		T_ C_::*member;
 	};
 	
 	
@@ -1226,47 +1262,112 @@ namespace Scripting {
 	Type *InternalValueType<T_>::type = new MappedValueType<T_>("", "");
 	/// @endcond
 	
-	/// R_: return type, P_: parameters, E_: event object type. E_ should support Register function that allows
-	/// member functions which returns handler token, Unregister function accepts handler token and Fire function 
-	/// that returns R_ and accepts P_ as parameter. R_ could be void, P_ could be empty.
-	template <class E_, class R_, class ...P_>
+	/** 
+	 * R_: return type, P_: parameters, E_: event object type. O_: is the object that contains the event.
+	 * E_ should support Register function that allows member functions which returns handler token, 
+	 * Unregister function accepts handler token and Fire function that returns R_ and accepts P_ as 
+	 * parameter. R_ could be void, P_ could be empty. O_ could be void to denote its not used.
+	 * Token type for all Register variants should be the same.
+	 */
+	template <class E_, class O_, class R_, class ...P_>
 	class MappedEventType : public Scripting::Event {
 		using handlertype = MappedEvent_Handler<R_, P_...>;
 		
 	public:
+		using TokenType = decltype(std::declval<E_>().Register(std::function<void()>()));
+		
 		MappedEventType(const std::string &name, const std::string &help, 
-					const ParameterList &parameters, const Type *ret=nullptr) : 
-		Event(name, help, new TMP::AbstractRTT<E_>(),parameters, ret), event(event), fn(&E_::operator(), ret, parameters),
-		f("fire", "", InternalReferenceType<E_>::type, {fn})
-		{ }
-		
-		
-		/// Manually fires the event, if the event is a part of an object, it should be passed as the first parameter
-		virtual R_ Fire(const std::vector<Data> &params) override {
-			std::vector<Data> p={{InternalReferenceType<E_>::type, &event}};
-			p.resize(params.size()+1);
-			std::copy(params.begin(), params.end(), p.begin()+1);
-			fn.Call(false, p);
+					const ParameterList &parameters={}, const Type *ret=nullptr) : 
+		Event(name, help, (E_*)nullptr, new TMP::AbstractRTTC<E_>(), ret, parameters)
+		{ 
+			Type *FunctionType();
+			using namespace Gorgon::Scripting;
+			AddFunctions({
+				new Function("Fire", 
+					"Fires this event", 
+					this, {
+						MapFunction(
+							&E_::operator(), ret, parameters
+						)
+					}
+				),
+				new Scripting::Function("Register", 
+					"Registers a new handler to this event",
+					this, {
+						MapFunction(
+							[](E_ *ev, const Function *fn) -> TokenType {
+								return TokenType();
+							}, 
+							InternalValueType<TokenType>::type, {
+								Parameter("Handler",
+									"The function to handle the event",
+									FunctionType(),
+									ConstTag
+								)
+							}
+						),
+						MapFunction(
+							[](E_ *ev, Data d, const Function *fn) -> TokenType {
+								return TokenType();
+							}, 
+							InternalValueType<TokenType>::type, {
+								Parameter("Object",
+									"The object to handle the event",
+									Types::Variant()
+								),
+								Parameter("Handler",
+									"The member function to handle the event",
+									FunctionType(), ConstTag
+								)
+							}
+						),
+					}
+				),
+				new Function("Unregister",
+					"This function unregisters a given event handler token.",
+					this, {
+						MapFunction(
+							&E_::Unregister,
+							nullptr, {
+								Parameter("Token",
+									"Event handler token",
+									InternalValueType<TokenType>::type
+								)
+							}
+						)
+					}
+				),
+				 
+			});
 		}
 		
-		/// Registers an event handler, can accept a single parameter if the event is a member of an object
-		virtual Data Register(const std::vector<Data> &params) override {
-			auto handlerfn = &handlertype::handler;
-			
-			return Data(InternalValueType<decltype(event.Register(handler, handlerfn))>::type, 
-						event.Register(handler, handlerfn));
+		
+		virtual std::string ToString(const Gorgon::Scripting::Data&) const override {
+			return "Event object";
 		}
 		
-		/// Unregisters an event handler, even handler id is required for this operation. If the event is a member of
-		/// an object, the it should be passed as the first parameter
-		virtual void Unregister(const std::vector<Data> &params) override {
+		virtual Data Parse(const std::string&) const override {
+			throw std::runtime_error("Events cannot be parsed from a string");
 		}
+
+	protected:
+		
+		virtual void deleteobject(const Gorgon::Scripting::Data &data) const override {
+			if(data.IsConstant()) {
+				throw Scripting::ConstantException("Given data");
+			}
+			delete data.GetValue<E_ *>();
+		}
+		
 		
 	private:
-		E_ &event;
-		MappedFunction<decltype(&E_::operator())> fn;
-		Function f;
 		handlertype handler;
 	};
+	
+	template <class E_>
+	Scripting::Event *MapGorgonEvent() {
+		//static MappedEventType<>;
+		return nullptr;
+	}
 	
 } }
