@@ -52,7 +52,10 @@ namespace Gorgon {
 			/// Executes a single statement in this virtual machine. This operation will create a new
 			/// input scope and will not affect current scope
 			bool ExecuteStatement(const std::string &code);
-
+			
+			/// Executes a function in the current scope
+			Data ExecuteFunction(const Function *fn, const std::vector<Data> &params, bool method);
+			
 			/// This method starts the virtual machine
 			void Run();
 

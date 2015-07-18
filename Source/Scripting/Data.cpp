@@ -49,7 +49,7 @@ namespace Gorgon { namespace Scripting {
 		isreference(isreference), isconstant(isconstant)
 	{
 		check();
-		ASSERT((type!=nullptr), "Data type cannot be nullptr", 1, 5);
+		ASSERT((type!=nullptr), "Data type cannot be nullptr", 1, 10);
 		
 		if(IsReference() && data.Pointer() && VirtualMachine::Exists()) {
 			VirtualMachine::Get().References.Increase(*this);
@@ -61,13 +61,13 @@ namespace Gorgon { namespace Scripting {
 			if(IsReference()) {
 				ASSERT(data.TypeInfo()==type->TypeInterface.ConstPtrType, "Given data type ("+data.GetTypeName()+
 				") does not match with: "+type->GetName()+" ("+type->TypeInterface.ConstPtrType.Name()+")"
-				, 2, 2
+				, 2, 10
 				);
 			}
 			else {
 				ASSERT(data.TypeInfo()==type->TypeInterface.ConstType, "Given data type ("+data.GetTypeName()+
 				") does not match with: "+type->GetName()+" ("+type->TypeInterface.ConstType.Name()+")"
-				, 2, 2
+				, 2, 10
 				);
 			}
 		}
@@ -75,13 +75,13 @@ namespace Gorgon { namespace Scripting {
 			if(IsReference()) {
 				ASSERT(data.TypeInfo()==type->TypeInterface.PtrType, "Given data type ("+data.GetTypeName()+
 					") does not match with: "+type->GetName()+" ("+type->TypeInterface.PtrType.Name()+")"
-					, 2, 2
+					, 2, 10
 				);
 			}
 			else {
 				ASSERT(data.TypeInfo()==type->TypeInterface.NormalType, "Given data type ("+data.GetTypeName()+
 				") does not match with: "+type->GetName()+" ("+type->TypeInterface.NormalType.Name()+")"
-				, 2, 2
+				, 2, 10
 				);
 			}
 		}

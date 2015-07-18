@@ -1260,6 +1260,41 @@ namespace Scripting {
 	
 	template <class T_>
 	Type *InternalValueType<T_>::type = new MappedValueType<T_>("", "");
+	
+	template <class R_>
+	struct ExtractFromHelper {
+		R_ operator()(const Data &d) const {
+			return d.GetValue<R_>();
+		}
+	};
+	
+	template <class R_>
+	struct ExtractFromHelper<R_*> {
+		R_ *operator()(const Data &d) const {
+			return d.ReferenceValue<R_*>();
+		}
+	};
+	
+	template <class R_>
+	struct ExtractFromHelper<R_&> {
+		R_ &operator()(const Data &d) const {
+			return d.ReferenceValue<R_&>();
+		}
+	};
+	
+	template <>
+	struct ExtractFromHelper<void> {
+		void operator()(const Data &d) const {
+			ASSERT(!d.IsValid(), "There is valid data in even though there shouldn't be.");
+		}
+	};
+	
+	template <class R_>
+	R_ ExtractFromData(const Data &d) {
+		ExtractFromHelper<R_> h;
+		return h(d);
+	}
+	
 	/// @endcond
 	
 	/** 
@@ -1273,12 +1308,21 @@ namespace Scripting {
 	class MappedEventType : public Scripting::Event {
 		using handlertype = MappedEvent_Handler<R_, P_...>;
 		
+		template<class T_, class ...Params_>
+		void constargs(int index, std::vector<Data> &ret, const std::vector<Parameter> params, T_ arg, Params_&& ...rest) {
+			auto param=params[index];
+			ret.push_back(Data(param.GetType(), arg, param.IsReference(), param.IsConstant()));
+			constargs(index+1, ret, params, std::forward(rest)...);
+		}
+		
+		void constargs(int index, std::vector<Data> &ret, const std::vector<Parameter> params) {}
+		
 	public:
 		using TokenType = decltype(std::declval<E_>().Register(std::function<void()>()));
 		
 		MappedEventType(const std::string &name, const std::string &help, 
-					const ParameterList &parameters={}, const Type *ret=nullptr) : 
-		Event(name, help, (E_*)nullptr, new TMP::AbstractRTTC<E_>(), ret, parameters)
+					const ParameterList &parameters={}, const Type *parenttype=nullptr, const Type *ret=nullptr) : 
+		Event(name, help, (E_*)nullptr, new TMP::AbstractRTTC<E_>(), ret, parameters), parenttype(parenttype)
 		{ 
 			Type *FunctionType();
 			using namespace Gorgon::Scripting;
@@ -1295,8 +1339,60 @@ namespace Scripting {
 					"Registers a new handler to this event",
 					this, {
 						MapFunction(
-							[](E_ *ev, const Function *fn) -> TokenType {
-								return TokenType();
+							[this](E_ *ev, const Function *fn) -> TokenType {
+								//checks
+								
+								return ev->Register([fn,this](O_ &obj, P_&& ...args) {
+									auto params=this->parameters;
+									
+									auto p=this->parameters.begin();
+									bool v;
+									std::vector<Data> pars;
+									constargs(0, pars, params, std::forward<P_...>(args)...);
+										
+										
+									bool done=false;
+									auto &vm=VirtualMachine::Get();
+									
+									Data ret;
+									
+									bool single=fn->Overloads.GetSize()+fn->Methods.GetSize();
+									Function::Overload *overload=nullptr;
+									if(single && fn->Overloads.GetSize()) 
+										overload=&fn->Overloads[0];
+									else if(single)
+										overload=&fn->Methods[0];
+									
+									//try with object first if exists
+									if(this->parenttype && (!single || overload->Parameters.size()==pars.size()+1)) {
+										pars.insert(pars.begin(), Data(this->parenttype, &obj, true, std::is_const<O_>::value));
+										try {
+											ret=vm.ExecuteFunction(fn, pars, false);
+											done=true;
+										}
+										catch(SymbolNotFoundException &) {
+											pars.erase(pars.begin());
+										}
+									}
+									
+									//try with full arguments
+									if(!done && pars.size() && (!single || overload->Parameters.size()==pars.size())) {
+										try {
+											ret=vm.ExecuteFunction(fn, pars, false);
+											done=true;
+										}
+										catch(SymbolNotFoundException &) {
+											pars.clear();
+										}
+									}
+									
+									//finally empty one, if this fails, execution will fail
+									if(!done) {
+										ret=vm.ExecuteFunction(fn, pars, false);
+									}
+									
+									return ExtractFromData<R_>(ret);
+								});
 							}, 
 							InternalValueType<TokenType>::type, {
 								Parameter("Handler",
@@ -1309,7 +1405,7 @@ namespace Scripting {
 						MapFunction(
 							[](E_ *ev, Data d, const Function *fn) -> TokenType {
 								return TokenType();
-							}, 
+							},
 							InternalValueType<TokenType>::type, {
 								Parameter("Object",
 									"The object to handle the event",
@@ -1362,6 +1458,7 @@ namespace Scripting {
 		
 	private:
 		handlertype handler;
+		const Type *parenttype;
 	};
 	
 	template <class E_>

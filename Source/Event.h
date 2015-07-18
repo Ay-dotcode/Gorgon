@@ -306,7 +306,7 @@ namespace Gorgon {
 			auto l=handlers.FindLocation(item);
 			if(l==-1) return;
 			
-			if(iterator.CurrentPtr()==item) {
+			if(iterator.IsValid() && iterator.CurrentPtr()==item) {
 				handlers.Delete(l);
 				
 				//Collection iterator can point element -1

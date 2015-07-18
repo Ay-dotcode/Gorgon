@@ -129,15 +129,15 @@ int main() {
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 	vm.SetSpecialIdentifierHandler(SpecHandler);
 	
+	auto reftyp=new Gorgon::Scripting::MappedReferenceType<evttest, ToEmptyString<evttest>>("", "");
 	auto eventtype=new MappedEventType<
-		Gorgon::Event<evttest, int>, void, void, int
+		Gorgon::Event<evttest, int>, evttest, void, int
 	>(
 		"evt", "help", {
 			Parameter("int", "int", Types::Int())
-		}
+		}, reftyp
 	);
 	
-	auto reftyp=new Gorgon::Scripting::MappedReferenceType<evttest, ToEmptyString<evttest>>("", "");
 	reftyp->MapConstructor<>({});
 	reftyp->AddDataMembers({
 		new MappedDataNoSet<evttest*, Gorgon::Event<evttest, int>>(&evttest::ev, "event", "", eventtype)

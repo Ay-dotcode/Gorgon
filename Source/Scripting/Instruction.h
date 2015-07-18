@@ -89,6 +89,11 @@ namespace Gorgon { namespace Scripting {
 				Literal={type, value};
 			}
 			
+			void SetLiteral(const Data &value) {
+				Type=ValueType::Literal;
+				Literal=value;
+			}
+			
 			void SetStringLiteral(const std::string &value) {
 				Type=ValueType::Literal;
 				Literal={Types::String(), {value}};

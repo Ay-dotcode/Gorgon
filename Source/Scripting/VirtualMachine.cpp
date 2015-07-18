@@ -664,7 +664,7 @@ namespace Gorgon {
 		Data VirtualMachine::getvalue(const Value &val, bool reference) {
 			switch(val.Type) {
 			case ValueType::Literal:
-				if(reference) { //literals cannot be converted to reference
+				if(reference && !val.Literal.IsReference()) { //literals cannot be converted to reference
 					throw CastException("literal", "reference");
 				}
 				return val.Literal;
@@ -810,10 +810,10 @@ namespace Gorgon {
 							}
 						}
 						else if(lib && lib->Functions.Exists(name)) {
-							return {Types::Function(), &lib->Functions[name]};
+							return {Types::Function(), &lib->Functions[name], true, true};
 						}
 						else if(lib && lib->Types.Exists(name)) {
-							return {Types::Type(), &lib->Types[name]};
+							return {Types::Type(), &lib->Types[name], true, true};
 						}
 						else { //could be a function or constant in a type which is in an unknown library
 							auto range=types.equal_range(libname);
@@ -1605,6 +1605,9 @@ namespace Gorgon {
 			
 			else if(inst->Type==InstructionType::SaveToTemp) {
 				temporaries[inst->Store+tempbase]=getvalue(inst->RHS, inst->Reference);
+				
+				if(highesttemp<inst->Store)
+					highesttemp=inst->Store;
 			}
 			
 			//function calls
@@ -1773,6 +1776,17 @@ namespace Gorgon {
 			}
 			
 			scopeinstances.back()->Jumpto(marker.GetLine());
+		}
+		
+		Data VirtualMachine::ExecuteFunction(const Function *fn, const std::vector<Data> &params, bool method) {
+			std::vector<Value> pars;
+			for(auto &d : params) {
+				Value val;
+				val.SetLiteral(d);
+				pars.push_back(val);
+			}
+			
+			return callfunction(fn, method, pars);
 		}
 
 

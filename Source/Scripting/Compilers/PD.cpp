@@ -895,7 +895,7 @@ namespace Compilers {
 					if(token==Token::LeftP) {
 						while( (token=consumenexttoken(input, index)) != Token::RightP ) {
 							//parameter name should be an identifier
-							if(token!=Token::Identifier || checknewident(token.repr)) {
+							if(token!=Token::Identifier || !checknewident(token.repr)) {
 								throw ParseError{ExceptionType::UnexpectedToken, "Expected parameter identifier, found: "+token.repr, index};
 							}
 							
