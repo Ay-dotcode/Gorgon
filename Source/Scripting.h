@@ -52,7 +52,11 @@ namespace Gorgon {
 		 * * Events
 		 * * Custom types
 		 * * Range operator (..)
-		 * 
+		 * * Function captures
+		 * * Special line splitting for functions (if nextline starts with returns, join the lines)
+		 * * () operator
+		 * * Special syntax for events
+		 * * Better checks for events
 		 */
 		
 		/** 

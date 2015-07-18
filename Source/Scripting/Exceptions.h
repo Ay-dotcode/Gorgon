@@ -18,6 +18,7 @@ namespace Gorgon {
 			FlowError,
 			MissingParameter,
 			TooManyParameters,
+			ParameterError,
 			NoReturn,
 			CastError,
 			InstructionError,
@@ -38,6 +39,7 @@ namespace Gorgon {
 			{ExceptionType::FlowError, "Flow error"},
 			{ExceptionType::MissingParameter, "Missing parameter"},
 			{ExceptionType::TooManyParameters, "Too many parameters"},
+			{ExceptionType::ParameterError, "Parameter error"},
 			{ExceptionType::NoReturn, "No return type"},
 			{ExceptionType::CastError, "Cast error"},
 			{ExceptionType::InstructionError, "Instruction error"},
@@ -218,6 +220,14 @@ namespace Gorgon {
 			}
 		};
 
+		class ParameterError : public Exception {
+		public:
+			explicit ParameterError(const std::string error, const std::string &details="", long linenumber=0) :
+				Exception(ExceptionType::ParameterError, error, linenumber) {
+
+				this->details = details;
+			}
+		};
 		class NoReturnException : public Exception {
 		public:
 			explicit NoReturnException(const std::string &function, const std::string &details="", long linenumber=0) :

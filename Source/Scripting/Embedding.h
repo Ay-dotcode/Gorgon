@@ -1344,8 +1344,19 @@ namespace Scripting {
 		template<class OO_=O_>
 		typename std::enable_if<std::is_same<OO_, void>::value, TokenType>::type
 		registerfn(E_ *ev, const Function *fn) {
-			//checks
 			
+			bool found=false;
+			for(auto &ovs : {&fn->Overloads, &fn->Methods}) {
+				for(auto &ov : *ovs) {
+					if(ov.Parameters.size()==sizeof...(P_) || ov.Parameters.size()==0) {
+						found=true;
+						break;
+					}
+				}
+				if(found) break;
+			}
+			
+			if(!found) throw ParameterError("No matching overload for the event is found.");
 			//make sure that the fn stays alive
 			auto &vm=VirtualMachine::Get();
 			vm.References.Increase((void*)fn);
@@ -1376,7 +1387,19 @@ namespace Scripting {
 		typename std::enable_if<!std::is_same<OO_, void>::value, TokenType>::type
 		registerfn(E_ *ev, const Function *fn) {
 			using namespace Scripting;
-			//checks
+			
+			bool found=false;
+			for(auto &ovs : {&fn->Overloads, &fn->Methods}) {
+				for(auto &ov : *ovs) {
+					if(ov.Parameters.size()==sizeof...(P_) || ov.Parameters.size()==sizeof...(P_)+1 || ov.Parameters.size()==0) {
+						found=true;
+						break;
+					}
+				}
+				if(found) break;
+			}
+			
+			if(!found) throw ParameterError("No matching overload for the event is found.");
 			
 			//make sure that the fn stays alive
 			auto &vm=VirtualMachine::Get();
