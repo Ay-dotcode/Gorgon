@@ -14,6 +14,7 @@ namespace Gorgon {
 		Type *FunctionType();
 		Type *ParameterType();
 		Type *ParameterTemplateType();
+		Library &FilesystemLib();
 
 		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
 		Libraries(libraries), output(&out), input(&in), 
@@ -24,6 +25,7 @@ namespace Gorgon {
 			AddLibrary(Integrals);
 			AddLibrary(Keywords);
 			AddLibrary(Reflection);
+			AddLibrary(FilesystemLib());
 		}
 		
 		void VirtualMachine::AddLibrary(const Library &library) { 
@@ -1086,7 +1088,7 @@ namespace Gorgon {
 						}
 					}
 					
-					if(var.GetParent().IsOperator() && var.Parameters[0].GetType()==var.GetParent().GetOwner() && current>0) {
+					if((var.GetParent().IsOperator()) && var.Parameters[0].GetType()==var.GetParent().GetOwner() && current>0) {
 						current-=1;
 					}
 					

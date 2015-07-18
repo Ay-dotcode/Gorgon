@@ -29,5 +29,6 @@ SET(Local
 	Types/Array.h
 	Types/Array.cpp
 	Types/Reflection.cpp
+	Types/Filesystem.cpp
 )
 

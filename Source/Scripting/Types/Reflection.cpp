@@ -5,18 +5,20 @@
 
 
 namespace Gorgon { namespace Scripting {
+	namespace {
+		template<class T_>
+		std::string GetNameOf(const T_ &val) {
+			return val.GetName();
+		}
+		
+		template<class T_>
+		std::string GetHelpOf(const T_ &val) {
+			return val.GetHelp();
+		}
 	
-	template<class T_>
-	std::string GetNameOf(const T_ &val) {
-		return val.GetName();
+		static Type *type=nullptr;	
 	}
 	
-	template<class T_>
-	std::string GetHelpOf(const T_ &val) {
-		return val.GetHelp();
-	}
-	
-	static Type *type=nullptr;	
 	
 	Type *FunctionType() {		
 		static Type *fn=nullptr;

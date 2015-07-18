@@ -187,7 +187,7 @@ namespace Gorgon {
 			}
 			if(windowhandle==0) {
 #ifdef NDEBUG
-			return;
+				return "";
 #else
 				throw std::runtime_error("Cannot copy without a window, if necessary create a hidden window");
 #endif

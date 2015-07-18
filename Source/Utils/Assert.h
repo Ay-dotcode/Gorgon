@@ -178,6 +178,7 @@ namespace Gorgon {
 		#define ASSERT_DUMP(expression, message, ...) do { if(!bool(expression)) { \
 			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::DumpOnlyTag,#expression, message, ##__VA_ARGS__)); } } while(0)
 			
+#	endif			
 #	ifdef _MSC_VER
 		__declspec(noreturn) inline void NotImplemented(const std::string &what="This feature") { ASSERT(false, what+" is not implemented.", 0, 8); }
 		
@@ -196,7 +197,6 @@ namespace Gorgon {
 			ASSERT(false, message, skip, depth);
 			throw 0;
 		}
-#	endif
 #endif
 	}
 }

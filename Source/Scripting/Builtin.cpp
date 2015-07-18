@@ -73,6 +73,10 @@ namespace Gorgon {
 			void static1(std::string name) {
 				static2(name, Data::Invalid());
 			}
+			
+			void system(std::string program) {
+				::system(program.c_str());
+			}
 
 		}
 
@@ -1295,7 +1299,31 @@ namespace Gorgon {
 							}
 						)
 					}
+				),
+				
+				new Function("Parse",
+					"This function parses a given string.", nullptr,
+					{
+						MapFunction(
+							[](const Type *type, const std::string &s) -> Data {
+								return type->Parse(s);
+							}, 
+							Types::Variant(),
+							{
+								Parameter( "type",
+									"The type of the input",
+									TypeType(), ConstTag, ReferenceTag
+								),
+				  				Parameter( "string",
+									"The string to be parsed",
+									Types::String()
+								)
+				
+							}
+						)
+					}
 				)
+
 			});
 			
 			Keywords={"Keywords", "Function like keywords.",
@@ -1313,6 +1341,21 @@ namespace Gorgon {
 									)
 								},
 								StretchTag, RepeatTag
+							)
+						}, KeywordTag
+					),
+					new Function("System",
+						"This function executes the given line as a shell command.", nullptr,
+						{
+							MapFunction(
+								system, nullptr, 
+								{
+									Parameter( "program",
+										"The line to be executed.",
+										String
+									)
+								},
+								StretchTag
 							)
 						}, KeywordTag
 					),
