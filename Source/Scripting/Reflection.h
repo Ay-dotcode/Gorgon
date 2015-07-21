@@ -23,6 +23,16 @@ namespace Gorgon {
 		class VirtualMachine;
 		
 		
+		template<class T_>
+		std::string GetNameOf(const T_ &val) {
+			return val.GetName();
+		}
+		
+		template<class T_>
+		std::string GetHelpOf(const T_ &val) {
+			return val.GetHelp();
+		}
+		
 		/// Tags define behavior of reflection objects
 		enum Tag {
 			/// Marks the object as optional
@@ -277,7 +287,79 @@ namespace Gorgon {
 		
 		using ParameterList = std::vector<Parameter>;
 		
-
+		
+		/**
+		 * Represents a member of a type. This class cannot be instantiated alone, A subtype of this class should be
+		 * instantiated. By default, every member is non-static. A member can be dynamic_cast'ed to a
+		 * type that can be determined using Type() function. A member does not necessarily belong to a Type.
+		 */
+		class Member {
+		public:
+			
+			Member(const std::string &name, const std::string &help) : 
+			name(name), help(help) { }
+			
+			virtual ~Member() { }
+			
+			/// Returns the name of this datamember.
+			std::string GetName() const {
+				return name;
+			}
+			
+			/// Returns the help string. Help strings may contain markdown notation.
+			std::string GetHelp() const {
+				return help;
+			}
+			
+			/// Returns if this member is static.
+			virtual bool IsStatic() const = 0;
+			
+			
+		protected:
+			
+			/// The name of the datamember
+			std::string name;
+			
+			/// Help string of the datamember
+			std::string help;
+		};
+		
+		class StaticMember : public Member {
+		public:
+			/// Possible member types
+			enum MemberType {
+				/// A type
+				RegularType = 1,
+				
+				/// An event type, which contains additional information about an event
+				EventType = 3,
+				
+				/// Enumeration, which is also a type
+				EnumType = 5,
+				
+				/// Namespace, which is also a type
+				Namespace = 8,
+				
+				/// Data member
+				DataMember = 10,
+				
+				/// Function, functions can also be represented as data members
+				Function = 12
+			};
+			
+			virtual bool IsStatic() const override final { return true; }
+			
+			bool IsInstanceable() const {
+				return (GetMemberType()&1) != 0;
+			}
+			
+			/// Returns the type of this member.
+			virtual MemberType GetMemberType() const = 0;
+			
+			virtual Data Get() const = 0;
+		};
+		
+		
 		/**
 		 * Represents a function. Functions contains overloads that vary in parameters and/or traits. Overloads
 		 * can be C++ functions or functions that are defined by scripting. Overloads can be added after the object
@@ -734,7 +816,7 @@ namespace Gorgon {
 		
 		//-use unordered_map
 		/// The type to store list of functions
-		using FunctionList = Containers::Hashmap<std::string, const Function, &Function::GetName, std::map, String::CaseInsensitiveLess>;
+		using FunctionList = Containers::Hashmap<std::string, const Function, GetNameOf<Function>, std::map, String::CaseInsensitiveLess>;
 		
 		/**
 		 * Constants are values that are fixed and can be accessed without $ sign. They can be a part of a
@@ -782,47 +864,22 @@ namespace Gorgon {
 		};
 		
 		/// The type to store list of constants
-		using ConstantList = Containers::Hashmap<std::string, const Constant, &Constant::GetName, std::map, String::CaseInsensitiveLess>;
+		using ConstantList = Containers::Hashmap<std::string, const Constant, GetNameOf<Constant>, std::map, String::CaseInsensitiveLess>;
+		class Type;
 		
-		/// Data members that can be accessed through an instance of the a type. 
-		class DataMember {
+		/**
+		 * 
+		 */
+		class DataMember : public Member {
 			friend class Type;
 		public:
 			/// Constructor
 			template<class ...P_>
-			DataMember(const std::string &name, const std::string &help, const Type &type, P_ ...tags) :
-			name(name), help(help), type(&type) {
-				UnpackTags(tags...);
+			DataMember(const std::string &name, const std::string &help, const Type &type) :
+			Member(name, help), type(&type) {
 			}
 			
-			/// Constructor
-			DataMember(const std::string &name, const std::string &help, const Type &type, 
-					   const std::vector<Tag> &tags) :
-			DataMember(name, help, type) {
-				for(auto tag : tags)
-					UnpackTags(tag);
-			}
 
-			/// Returns the name of this datamember.
-			std::string GetName() const {
-				return name;
-			}
-
-			/// Returns the help string. Help strings may contain markdown notation.
-			std::string GetHelp() const {
-				return help;
-			}
-			
-			/// Returns if this data member is static. Only meaningful when the function is a member.
-			bool IsStatic() const {
-				return staticmember;
-			}
-			
-			/// If this function is a member function, this function returns if it is publicly accessible
-			bool IsAccessible() const {
-				return accessible;
-			}
-			
 			/// Returns the type of this data member
 			const Type &GetType() const {
 				return *type;
@@ -832,52 +889,29 @@ namespace Gorgon {
 			virtual Data Get(const Data &source) const = 0;
 			virtual Data Get(      Data &source) const = 0;
 			
+			/// Valid only if the datamember is static
+			virtual Data Get() const = 0;
+			
 			/// Sets the data of the data member, if the source is a reference,
 			/// this function should perform in place replacement of the value
 			virtual void Set(Data &source, const Data &value) const = 0;
 			
+			/// Sets the data of the data member, this variant only works for
+			/// static members
+			virtual void Set(const Data &value) const = 0;
+
+			
 			virtual ~DataMember() { }
 			
 		protected:
-			/// @cond INTERNAL
-			void UnpackTags() { }
-			
-			template <class ...P_>
-			void UnpackTags(Tag tag, P_... rest) {
-				switch(tag) {
-					case PrivateTag:
-						accessible = false;
-						break;
-					case StaticTag:
-						staticmember = true;
-						break;
-					default:
-						ASSERT(false, "Unknown tag", 2, 16);
-				}
-				
-				UnpackTags(rest...);
-			}
-			/// @endcond
-			
+			/// Type checks the parent
 			virtual void typecheck(const Type *type) = 0;
-			
-			/// The name of the datamember
-			std::string name;
-			
-			/// Help string of the datamember
-			std::string help;
 			
 			/// Type of the datamember
 			const Type *type;
-			
-			/// Whether this member is publicly accessible
-			bool accessible = true;
-			
-			/// Whether this member is a static member that should be accessed from the type.
-			bool staticmember = false;
 		};
 		
-		using DataMemberList = Containers::Hashmap<std::string, const DataMember, &DataMember::GetName, std::map, String::CaseInsensitiveLess>;
+		using MemberList = Containers::Hashmap<std::string, const Member, GetNameOf<Member>, std::map, String::CaseInsensitiveLess>;
 		
 		/** 
 		 * This class stores information about types. Types can have their own functions, members,
@@ -967,18 +1001,16 @@ namespace Gorgon {
 			MorphType CanMorphTo(const Type &type) const;
 			
 			/// Adds new datamembers to the type
-			void AddDataMembers(std::initializer_list<DataMember*> elements) {
+			void AddMembers(std::initializer_list<Member*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!datamembers.Exists(element->GetName()), 
-						   "Data member " + element->GetName() + " is already added as a data member.", 1, 2);
-					ASSERT(!functions.Exists(element->GetName()), 
-						   "Data member " + element->GetName() + " is already added as a function.", 1, 2);
-					ASSERT(!constants.Exists(element->GetName()), 
-						   "Data member " + element->GetName() + " is already added as a constant.", 1, 2);
+					ASSERT(!members.Exists(element->GetName()), 
+						   "Data member " + element->GetName() + " is already added.", 1, 2);
 					
-					element->typecheck(this);
-					datamembers.Add(element);
+					if(!element->IsStatic())
+						dynamic_cast<DataMember*>(element)->typecheck(this);
+					
+					members.Add(element);
 				}
 			}
 			
@@ -986,8 +1018,6 @@ namespace Gorgon {
 			void AddFunctions(std::initializer_list<Function*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!datamembers.Exists(element->GetName()), 
-						   "Function " + element->GetName() + " is already added as a data member.", 1, 2);
 					ASSERT(!functions.Exists(element->GetName()), 
 						   "Function " + element->GetName() + " is already added as a function.", 1, 2);
 					ASSERT(!constants.Exists(element->GetName()), 
@@ -1015,8 +1045,6 @@ namespace Gorgon {
 			void AddConstants(std::initializer_list<Constant*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!datamembers.Exists(element->GetName()), 
-						"Constant " + element->GetName() + " is already added as a data member.", 1, 2);
 					ASSERT(!functions.Exists(element->GetName()), 
 						"Constant " + element->GetName() + " is already added as a function.", 1, 2);
 					ASSERT(!constants.Exists(element->GetName()), 
@@ -1081,7 +1109,7 @@ namespace Gorgon {
 			
 			
 			/// Data members of this type. Notice that not every type has data members.
-			const DataMemberList					&DataMembers;
+			const MemberList					&Members;
 			
 			/// Contains the functions related with this type. These functions can be operators,
 			/// or type casting functions.
@@ -1107,7 +1135,7 @@ namespace Gorgon {
 			
 			virtual ~Type() {
 				delete &TypeInterface;
-				datamembers.Destroy();
+				members.Destroy();
 				functions.Destroy();
 				constants.Destroy();
 			}
@@ -1130,8 +1158,8 @@ namespace Gorgon {
 			Any defaultvalue;
 			
 			
-			/// Data members of this type. Notice that not every type has data members.
-			DataMemberList						datamembers;
+			/// Members of this type. Members can be data members, types, functions or variants of these
+			MemberList						members;
 
 			/// Contains the functions related with this type. These functions can be operators,
 			/// or type casting functions. Functions with the name of another type are called
@@ -1160,7 +1188,6 @@ namespace Gorgon {
 		
 		/// Events allow an easy mechanism to program logic into actions instead of checking actions
 		/// continuously. This system is vital for UI programming. Events are basically function descriptors.
-		/// Event handlers can access the object that is the source for event using $_eventsource variable.
 		class Event : public Type {
 		public:
 			Event(const std::string &name, const std::string &help, const Any &defaultvalue, 
@@ -1203,7 +1230,7 @@ namespace Gorgon {
 			return out;
 		}
 		
-		using TypeList = Containers::Hashmap<std::string, const Type, &Type::GetName, std::map, String::CaseInsensitiveLess>;
+		using TypeList = Containers::Hashmap<std::string, const Type, GetNameOf<Type>, std::map, String::CaseInsensitiveLess>;
 		
 		/**
 		 * This class represents a library. Libraries can be loaded into virtual machines to be used.
@@ -1329,7 +1356,6 @@ namespace Gorgon {
 			TypeList 	 types;
 			FunctionList functions;
 			ConstantList constants;
-			DataMemberList datamembers;
 		};
 	}
 }

@@ -27,6 +27,9 @@ int main (int argc, char * const argv[]) {
 	vm.Activate();
 	
 	init_scripting();
+	
+	Gorgon::Geometry::init_scripting();
+	vm.AddLibrary(Gorgon::Geometry::LibGeometry);	
 
 	return Catch::Session().run( argc, argv );
 }	
@@ -156,7 +159,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 
 	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Overloads[0].Call(false, {{mypointtype, Point(1, 1)}, {mypointtype, Point(1, 1)}}).GetValue<float>() == 0.f);
 	REQUIRE(LibGeometry.Types["Point"].Functions["Distance"].Overloads[1].Call(false, {{mypointtype, Point(1, 0)}}).GetValue<float>() == 1.f);
-	
+	/*
 	int testval=0;
 	myvaluetype->AddDataMembers({
 		new MappedData  <A, int>(&A::bb, "bb", "bb is bla bla", Integrals.Types["Int"]),
@@ -174,8 +177,8 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	REQUIRE(testval == 4);
 	REQUIRE(myvaluetype->DataMembers["cc"].Get(datatest).GetValue<int>() == 5);
 	
-	
-	
+	*/
+	/*
 	myreftype->AddDataMembers({
 		new MappedData  <A*, int>(&A::bb, "bb", "bb is bla bla", Integrals.Types["Int"]),
 		new DataAccessor<A*, int>([](const A &a) { return 6; }, [&testval](A &a, int b) {testval=b;}, "cc", "dgfsf", Integrals.Types["Int"])
@@ -191,7 +194,7 @@ TEST_CASE("Basic scripting", "[firsttest]") {
 	myreftype->DataMembers["cc"].Set(datareftest, Data(Integrals.Types["Int"], Any(6)));
 	REQUIRE(testval == 6);
 	REQUIRE(myreftype->DataMembers["cc"].Get(datareftest).GetValue<int>() == 6);
-	
+	*/
 	
 	/*
 

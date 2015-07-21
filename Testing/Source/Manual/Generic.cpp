@@ -139,8 +139,8 @@ int main() {
 	);
 	
 	reftyp->MapConstructor<>({});
-	reftyp->AddDataMembers({
-		new MappedDataNoSet<evttest*, Gorgon::Event<evttest, int>>(&evttest::ev, "event", "", eventtype)
+	reftyp->AddMembers({
+		new MappedMemberDataRO<evttest*, Gorgon::Event<evttest, int>>(&evttest::ev, "event", "", eventtype)
 	});
 	
 	evttest a;

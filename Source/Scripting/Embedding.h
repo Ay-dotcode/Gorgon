@@ -794,11 +794,11 @@ namespace Scripting {
 	* parameter is the type of the object and the second is the type of the data member
 	*/
 	template<class C_, class T_>
-	class MappedDataNoSet : public Scripting::DataMember {
+	class MappedMemberDataRO : public Scripting::DataMember {
 	public:
 		/// Constructor
 		template<class ...P_>
-		MappedDataNoSet(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
+		MappedMemberDataRO(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
 		DataMember(name, help, *type, tags...), member(member) {
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
 			ASSERT(type->TypeInterface.NormalType.IsSameType<T_>(), "Reported type "+type->GetName()+
@@ -833,10 +833,20 @@ namespace Scripting {
 			throw ReadOnlyException(this->GetName());
 		}
 		
+		virtual Data Get() const override {
+			throw SymbolNotFoundException(GetName(), SymbolType::Member, 
+										  "Symbol is not static and requires an instance for access");
+		}
+		
+		virtual void Set(const Data &value) const override {
+			throw SymbolNotFoundException(GetName(), SymbolType::Member, 
+										  "Symbol is not static and requires an instance for access");
+		}
+		
 	protected:
-		void typecheck(const Type *type) {
-			ASSERT(type->GetDefaultValue().TypeCheck<C_>(), "The type of mapped data does not match with the type "
-				"it has placed in.", 2, 2);
+		virtual void typecheck(const Type *type) override final {
+			ASSERT(type->GetDefaultValue().TypeCheck<C_>(), "The type of the parent does not match with the type "
+			"it has placed in.", 2, 2);
 		}
 		
 		T_ C_::*member;
@@ -846,11 +856,11 @@ namespace Scripting {
 	* This class allows a one to one mapping of a data member to a c++ data member
 	*/
 	template<class C_, class T_>
-	class MappedDataNoSet<C_*, T_> : public DataMember {
+	class MappedMemberDataRO<C_*, T_> : public DataMember {
 	public:
 		/// Constructor
 		template<class ...P_>
-		MappedDataNoSet(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
+		MappedMemberDataRO(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
 		DataMember(name, help, *type, tags...), member(member) {
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
 			ASSERT(type->TypeInterface.NormalType.IsSameType<T_>(), "Reported type "+type->GetName()+
@@ -877,14 +887,25 @@ namespace Scripting {
 			d.SetParent(data);
 			return d;
 		}
+		
 		/// Sets the data of the data member
 		virtual void Set(Data &source, const Data &value) const override {
 			throw ReadOnlyException(this->GetName());
 		}
 		
+		virtual Data Get() const override {
+			throw SymbolNotFoundException(GetName(), SymbolType::Member, 
+										  "Symbol is not static and requires an instance for access");
+		}
+		
+		virtual void Set(const Data &value) const override {
+			throw SymbolNotFoundException(GetName(), SymbolType::Member, 
+										  "Symbol is not static and requires an instance for access");
+		}
+		
 	protected:
-		void typecheck(const Type *type) {
-			ASSERT(type->GetDefaultValue().TypeCheck<C_*>(), "The type of mapped data does not match with the type "
+		virtual void typecheck(const Type *type) override final {
+			ASSERT(type->GetDefaultValue().TypeCheck<C_*>(), "The type of the parent does not match with the type "
 			"it has placed in.", 2, 2);
 		}
 		
@@ -895,9 +916,9 @@ namespace Scripting {
 	 * This class allows a one to one mapping of a data member to a c++ data member
 	 */
 	template<class C_, class T_>
-	class MappedData : public MappedDataNoSet<C_, T_> {
+	class MappedMemberData : public MappedMemberDataRO<C_, T_> {
 	public:
-		using MappedDataNoSet<C_, T_>::MappedDataNoSet;
+		using MappedMemberDataRO<C_, T_>::MappedMemberDataRO;
 		
 		/// Sets the data of the data member
 		virtual void Set(Data &source, const Data &value) const override {
@@ -921,9 +942,9 @@ namespace Scripting {
 	 * This class allows a one to one mapping of a data member to a c++ data member
 	 */
 	template<class C_, class T_>
-	class MappedData<C_*, T_> : public MappedDataNoSet<C_*, T_> {
+	class MappedMemberData<C_*, T_> : public MappedMemberDataRO<C_*, T_> {
 	public:
-		using MappedDataNoSet<C_*, T_>::MappedDataNoSet;
+		using MappedMemberDataRO<C_*, T_>::MappedMemberDataRO;
 		
 		
 		/// Sets the data of the data member
@@ -937,7 +958,7 @@ namespace Scripting {
 				throw NullValueException("", "The value of the object was null while accessing to " + this->GetName() + " member.");
 			}
 			obj->*this->member = value.GetValue <T_>();
-		}			
+		}
 	};
 	
 	

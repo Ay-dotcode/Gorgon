@@ -9,7 +9,7 @@ namespace Gorgon {
 	
 	namespace Scripting {		
 		
-		Containers::Hashmap<std::thread::id, VirtualMachine, &VirtualMachine::getthread> VirtualMachine::activevms;
+		Containers::Hashmap<std::thread::id, VirtualMachine> VirtualMachine::activevms;
 		Type *TypeType();
 		Type *FunctionType();
 		Type *ParameterType();
@@ -1465,21 +1465,40 @@ namespace Gorgon {
 					//data access
 					if(inst->Parameters.size()==1) {
 						Data ret=Data::Invalid();
-						if(!data.GetType().DataMembers.Exists(functionname.substr(1))) {
+						if(!data.GetType().Members.Exists(functionname.substr(1))) {
 							//check parent symbols
 							auto it=data.GetType().InheritedSymbols.Find(functionname.substr(1));
 							
 							//if found
 							if(it.IsValid()) {
+								auto &member=it.Current().second.Members[functionname.substr(1)];
+								if(!member.IsDataMember()) {
+									throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
+								}
+								
+								auto &datamember=dynamic_cast<const DataMember&>(member);
+								
 								//cast current data to its parent and perform the data retrieval
-								ret=it.Current().second.DataMembers[functionname.substr(1)].Get(data.GetType().MorphTo(it.Current().second, data));
+								if(member.IsStatic())
+									ret=datamember.Get();
+								else
+									ret=datamember.Get(data.GetType().MorphTo(it.Current().second, data));
 							}
 							else {							
 								throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
 							}
 						}
 						else {
-							ret=data.GetType().DataMembers[functionname.substr(1)].Get(data);
+							auto &member=data.GetType().Members[functionname.substr(1)];
+							if(!member.IsDataMember()) {
+								throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
+							}
+							
+							auto &datamember=dynamic_cast<const DataMember&>(member);
+							if(member.IsStatic())
+								ret=datamember.Get();
+							else
+								ret=datamember.Get(data);
 						}
 						
 						//store the result
@@ -1510,11 +1529,11 @@ namespace Gorgon {
 						
 						//cannot store the result of assignment
 						if(inst->Store) {
-							throw NoReturnException("Data member: "+data.GetType().DataMembers[functionname.substr(1)].GetName());
+							throw NoReturnException("Data member: "+data.GetType().Members[functionname.substr(1)].GetName());
 						}
 						//else ok
 						
-						if(!data.GetType().DataMembers.Exists(functionname.substr(1))) {
+						if(!data.GetType().Members.Exists(functionname.substr(1))) {
 							//check parent symbols
 							auto it=data.GetType().InheritedSymbols.Find(functionname.substr(1));
 							
@@ -1529,7 +1548,19 @@ namespace Gorgon {
 						}
 						//else ok
 						
-						data.GetType().DataMembers[functionname.substr(1)].Set(data, getvalue(inst->Parameters[1]));
+						auto &member=data.GetType().Members[functionname.substr(1)];
+						if(!member.IsDataMember()) {
+							throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member, 
+								"The member "+functionname.substr(1)+" is not a data member."
+							);
+						}
+						
+						auto &datamember=dynamic_cast<const DataMember&>(member);
+						
+						if(member.IsStatic())
+							datamember.Set(getvalue(inst->Parameters[1]));
+						else 
+							datamember.Set(data, getvalue(inst->Parameters[1]));
 					}
 					else {
 						throw std::runtime_error("Member access or mutate requires exactly 1 and 2 parameters");

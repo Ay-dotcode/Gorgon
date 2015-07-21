@@ -30,7 +30,7 @@ namespace Gorgon {
 		 * and might not be compatible with all library functions. * operator returns a copy
 		 * of the pair, not a reference to it.
 		 */
-		template<class K_, class T_, K_ (T_::*KeyFn)() const = 0, template <class ...> class M_=std::map, class C_=std::less<K_>>
+		template<class K_, class T_, K_ (*KeyFn)(const T_&) = (K_(*)(const T_&))nullptr, template <class ...> class M_=std::map, class C_=std::less<K_>>
 		class Hashmap {
 			using MapType=M_<K_, T_*, C_, std::allocator<std::pair<const K_, T_*>>>;
 			
@@ -232,7 +232,7 @@ namespace Gorgon {
 				
 				for(auto &p : list) {
 					if(p) {
-						mapping.insert(std::make_pair((p->*KeyFn)(), p));
+						mapping.insert(std::make_pair(KeyFn(*p), p));
 					}
 				}
 			}
@@ -277,8 +277,8 @@ namespace Gorgon {
 				if( it != mapping.end() ) {
 					if(deleteprev) {
 						delete it->second;
-						it->second = &obj;
 					}
+					it->second = &obj;
 				}
 				else {
 					mapping.insert(std::make_pair(key, &obj));
@@ -294,8 +294,8 @@ namespace Gorgon {
 					if( it != mapping.end() ) {
 						if(deleteprev) {
 							delete it->second;
-							it->second = obj;
 						}
+						it->second = obj;
 					}
 					else {
 						mapping.insert(std::make_pair(key, obj));
@@ -317,7 +317,7 @@ namespace Gorgon {
 			void Add(T_ &obj, bool deleteprev=false) {
 				assert(KeyFn!=nullptr && "Key retrieval function should be set.");
 				
-				Add((obj.*KeyFn)(), obj, deleteprev);
+				Add(KeyFn(obj), obj, deleteprev);
 			}
 			
 			/// Adds the given item by retrieving the related key. If the key already exists, the object it
@@ -327,7 +327,7 @@ namespace Gorgon {
 				assert(KeyFn!=nullptr && "Key retrieval function should be set.");
 				
 				if(obj)
-					Add((obj->*KeyFn)(), obj, deleteprev);
+					Add(KeyFn(*obj), obj, deleteprev);
 				else
 					Add({}, obj, deleteprev);
 			}
@@ -502,7 +502,7 @@ namespace Gorgon {
 			MapType mapping;
 		};
 		
-		template<class K_, class T_, K_ (T_::*KeyFn)()=nullptr, template <class ...> class M_=std::map, class C_=std::less<K_>>
+		template<class K_, class T_, K_ (KeyFn)(const T_&)=nullptr, template <class ...> class M_=std::map, class C_=std::less<K_>>
 		void swap(Hashmap<K_, T_, KeyFn, M_, C_> &left, Hashmap<K_, T_, KeyFn, M_, C_> &right) {
 			left.Swap(right);
 		}

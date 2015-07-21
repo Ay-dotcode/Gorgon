@@ -213,7 +213,7 @@ namespace Gorgon {
 			Variable *getvarref(const std::string &var);
 
 			/// Allows read-only access to libraries
-			const Containers::Hashmap<std::string, const Library, &Library::GetName, std::map, String::CaseInsensitiveLess> &Libraries;
+			const Containers::Hashmap<std::string, const Library, GetNameOf<Library>, std::map, String::CaseInsensitiveLess> &Libraries;
 
 			/// This system allows objects of automatic lifetime.
 			ReferenceCounter References;
@@ -224,11 +224,10 @@ namespace Gorgon {
 			Data callvariant(const Function *fn, const Function::Overload *variant, bool method, const std::vector<Value> &params);
 			Data getvalue(const Value &val, bool reference=false);
 			void functioncall(const Instruction *inst, bool memberonly, bool method);
-			std::thread::id getthread() const { throw "this should never be called"; }
 			void activatescopeinstance(std::shared_ptr<ScopeInstance> instance);
 
 			/// All libraries that are available globally. 
-			Containers::Hashmap<std::string, const Library, &Library::GetName, std::map, String::CaseInsensitiveLess> libraries;
+			Containers::Hashmap<std::string, const Library, GetNameOf<Library>, std::map, String::CaseInsensitiveLess> libraries;
 
 			std::string alllibnames;
 			
@@ -271,11 +270,10 @@ namespace Gorgon {
 			
 			std::shared_ptr<ScopeInstance> toplevel;
 			
-
 			
 			/// List of active VMs. A VM can be active on more than one thread. But it cannot
 			/// execute two different contexts.
-			static Containers::Hashmap<std::thread::id, VirtualMachine, &VirtualMachine::getthread> activevms;
+			static Containers::Hashmap<std::thread::id, VirtualMachine> activevms;
 		};
 		
 		

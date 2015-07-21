@@ -56,9 +56,9 @@ namespace Gorgon { namespace Geometry {
 			Scripting::Parameter("x", "Y coordinate", Scripting::Types::Int())
 		});
 
-		point->AddDataMembers({
-			new Scripting::MappedData<Point, int>(&Point::X, "x", "X coordinate", Scripting::Types::Int()),
-			new Scripting::MappedData<Point, int>(&Point::Y, "y", "Y coordinate", Scripting::Types::Int())
+		point->AddMembers({
+			new Scripting::MappedMemberData<Point, int>(&Point::X, "x", "X coordinate", Scripting::Types::Int()),
+			new Scripting::MappedMemberData<Point, int>(&Point::Y, "y", "Y coordinate", Scripting::Types::Int())
 		});
 
 		LibGeometry = {

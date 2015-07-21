@@ -9,11 +9,6 @@ namespace Gorgon { namespace Scripting {
 
 	namespace {
 		
-		template<class T_>
-		std::string GetNameOf(const T_ &val) {
-			return val.GetName();
-		}
-		
 		class File : public std::fstream {
 		public:
 			File() { }

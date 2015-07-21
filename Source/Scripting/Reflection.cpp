@@ -132,7 +132,7 @@ namespace Gorgon { namespace Scripting {
 
 	
 	Type::Type(const std::string& name, const std::string& help, const Any& defaultvalue, TMP::RTTH *typeinterface, bool isref):
-		name(name), help(help), DataMembers(datamembers), Functions(functions), Constructor(constructor),
+		name(name), help(help), Members(members), Functions(functions), Constructor(constructor),
 		Constants(constants), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),
 		referencetype(isref), TypeInterface(*typeinterface), Parents(parents), InheritedSymbols(inheritedsymbols),
 		constructor("{}", "Constructs "+name, this, Containers::Collection<Function::Overload>(), StaticTag)
@@ -295,11 +295,10 @@ namespace Gorgon { namespace Scripting {
 			}
 		}
 
-
-		for(const auto &d : type.DataMembers) {
-			if(datamembers.Find(d.first)==datamembers.end()) {
+		for(const auto &d : type.Members) {
+			if(members.Find(d.first)==members.end()) {
 				ASSERT(!inheritedsymbols.Find(d.first).IsValid(), "Symbol: "+d.first+" is ambiguous");
-
+				
 				inheritedsymbols.Add(d.first, type);
 			}
 		}
@@ -307,7 +306,7 @@ namespace Gorgon { namespace Scripting {
 		for(const auto &s : type.inheritedsymbols) {
 			if( functions.Find(s.first)==functions.end() && 
 				constants.Find(s.first)!=constants.end() &&
-				datamembers.Find(s.first)!=datamembers.end()
+				members.Find(s.first)!=members.end()
 			) {
 				ASSERT(!inheritedsymbols.Find(s.first).IsValid(), "Symbol: "+s.first+" is ambiguous");
 		
