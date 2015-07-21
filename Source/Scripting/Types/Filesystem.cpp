@@ -9,6 +9,11 @@ namespace Gorgon { namespace Scripting {
 
 	namespace {
 		
+		template<class T_>
+		std::string GetNameOf(const T_ &val) {
+			return val.GetName();
+		}
+		
 		class File : public std::fstream {
 		public:
 			File() { }
@@ -149,7 +154,7 @@ namespace Gorgon { namespace Scripting {
 					file, {
 						MapFunction(
 							[](File &f, const std::string &s) -> bool {
-								return (f<<s);
+								return bool(f<<s);
 							},
 							Types::Bool(), {
 								Parameter("String", "String to be written to the file", Types::String())

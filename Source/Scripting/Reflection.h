@@ -93,8 +93,8 @@ namespace Gorgon {
 		
 		typedef std::vector<Any> OptionList;
 		
-		/**This class represents a function parameter description. It does not contain any data. 
-		 * Parameter is non-mutable after construction
+		/**
+		 * This class represents a function parameter description. Parameter is non-mutable after construction
 		 * 
 		 * A parameter can be controlled using tags. Parameters can have following tags: 
 		 * 
@@ -287,13 +287,15 @@ namespace Gorgon {
 		
 		using ParameterList = std::vector<Parameter>;
 		
+		class StaticMember;
 		
 		/**
-		 * Represents a member of a type. This class cannot be instantiated alone, A subtype of this class should be
-		 * instantiated. By default, every member is non-static. A member can be dynamic_cast'ed to a
-		 * type that can be determined using Type() function. A member does not necessarily belong to a Type.
+		 * Represents a member of a type. This serves as a code base to other member types: StaticMember and
+		 * InstanceMember
 		 */
 		class Member {
+			friend class Namespace;
+			friend class Type;
 		public:
 			
 			Member(const std::string &name, const std::string &help) : 
@@ -311,11 +313,14 @@ namespace Gorgon {
 				return help;
 			}
 			
-			/// Returns if this member is static.
-			virtual bool IsStatic() const = 0;
+			/// Returns if this member is an instance member
+			virtual bool IsInstanceMember() const = 0;
 			
 			
 		protected:
+			/// Changes the parent of the member. Subclasses may perform additional checks when the parent
+			/// is determined.
+			virtual void SetParent(const StaticMember &parent) { }
 			
 			/// The name of the datamember
 			std::string name;
@@ -324,6 +329,10 @@ namespace Gorgon {
 			std::string help;
 		};
 		
+		/**
+		 * This is the base class for all static members. Static members include Function, Type and variants, and
+		 * Namespace.
+		 */
 		class StaticMember : public Member {
 		public:
 			/// Possible member types
@@ -346,9 +355,14 @@ namespace Gorgon {
 				/// Function, functions can also be represented as data members
 				Function = 12
 			};
+
+			StaticMember(const std::string& name, const std::string& help) : Member(name, help) {
+			}
+
+			virtual bool IsInstanceMember() const override final { return false; }
 			
-			virtual bool IsStatic() const override final { return true; }
-			
+			/// Whether this member can be used to instantiate an object. Determined using
+			/// GetMemberType
 			bool IsInstanceable() const {
 				return (GetMemberType()&1) != 0;
 			}
@@ -356,9 +370,13 @@ namespace Gorgon {
 			/// Returns the type of this member.
 			virtual MemberType GetMemberType() const = 0;
 			
+			/// Returns the value of this static member. For types and functions, this function
+			/// returns type and function objects.
 			virtual Data Get() const = 0;
+			
 		};
 		
+		using StaticMemberList = Containers::Hashmap<std::string, const StaticMember, GetNameOf<StaticMember>, std::map, String::CaseInsensitiveLess>;
 		
 		/**
 		 * Represents a function. Functions contains overloads that vary in parameters and/or traits. Overloads
@@ -370,9 +388,9 @@ namespace Gorgon {
 		 * syntax based on the dialect that is effect. For instance, in programming dialect, keywords do not require
 		 * parenthesis to be called. A function can be marked as a keyword using **KeywordTag**.
 		 * 
-		 * If a owner (or parent) is set, the function will become a **member function**. Member functions becomes a part
+		 * If an owner (or parent) is set, the function will become a **member function**. Member functions becomes a part
 		 * of the owner type. A member function can also be static using **StaticTag**. A static member function do not
-		 * have this pointer and cannot be access from a member of the type. Instead it can be accessed using `Type:Fn`
+		 * have this pointer and cannot be accessed from a member of the type. Instead it can be accessed using `Type:Fn`
 		 * syntax. Constructor functions are also marked as static. Member functions can be called either by issuing 
 		 * `Object.fn(...)` or `fn(Object, ...)`. Latter case is useful for calling member functions on literals. 
 		 * 
@@ -381,7 +399,7 @@ namespace Gorgon {
 		 * has same parameter type as the owner type is favored. This solves cases where the right hand side type do
 		 * not have a specific overload but can be converted to multiple type that have overloads.
 		 */
-		class Function {
+		class Function : public StaticMember {
 			friend class Type;
 		public:
 			
@@ -667,15 +685,19 @@ namespace Gorgon {
 				overloads.Destroy();
 				methods.Destroy();
 			} 
-			
-			/// Returns the name of this function.
-			std::string GetName() const {
-				return name;
-			}
 
-			/// Returns the help string. Help strings may contain markdown notation.
-			std::string GetHelp() const {
-				return help;
+			virtual MemberType GetMemberType() const override {
+				return StaticMember::Function;
+			}
+			
+			virtual void SetParent(const StaticMember &parent) {
+				if(this->parent) {
+					ASSERT(&parent == this->parent, "Declared owner and placed owner does not match.");
+				}
+				
+				if(parent.GetMemberType() == StaticMember::Namespace) {
+					staticmember=true;
+				}
 			}
 			
 			/// Returns if this function is actually a keyword.
@@ -799,10 +821,6 @@ namespace Gorgon {
 			
 			const Type *parent = nullptr;
 			
-			std::string name;
-			
-			std::string help;
-			
 			bool keyword = false;
 			
 			bool isoperator = false;
@@ -818,88 +836,104 @@ namespace Gorgon {
 		/// The type to store list of functions
 		using FunctionList = Containers::Hashmap<std::string, const Function, GetNameOf<Function>, std::map, String::CaseInsensitiveLess>;
 		
-		/**
-		 * Constants are values that are fixed and can be accessed without $ sign. They can be a part of a
-		 * type or a part of a library.
-		 */
-		class Constant {
+		class StaticDataMember : public StaticMember {
 		public:
-			/// Constructor
-			Constant(const std::string &name, const std::string &help, 
-					 const Type *type, Any data) : 
-			name(name), help(help), data(type, data, false, true) { 
-				ASSERT(type, "Type cannot be nullptr");
+			StaticDataMember(const std::string &name, const std::string &help, const Type *type, 
+							 bool constant, bool ref, bool readonly) ü
+			{
 			}
 			
-			/// Returns the name of the constant
-			std::string GetName() const {
-				return name;
-			}
-
-			/// Returns the help related with this constant
-			std::string GetHelp() const {
-				return help;
+			virtual MemberType GetMemberType() const override {
+				return StaticMember::DataMember;
 			}
 			
-			/// Returns the type of the constant
+			/// Changes the value of this member
+			virtual void Set(const Data &newval) = 0;
+			
+			/// Returns the type of this static member
 			const Type &GetType() const {
-				return data.GetType();
+				return *type;
+			}			
+
+			/// Returns whether this member is a constant
+			bool IsConstant() const {
+				return constant;
 			}
 			
-			/// Returns the value of the constant
-			Data GetData() const {
-				return data;
+			/// Returns whether this member is a reference
+			bool IsReference() const {
+				return ref;
 			}
 			
-		private:
+			/// Returns whether this member is read-only. Read-only members cannot be
+			/// assigned to, however, their state can be altered using its data members
+			/// or functions. 
+			bool IsReadonly() const {
+				return readonly;
+			}
 			
-			/// The name of the constant
-			std::string name;
 			
-			/// Help string of the constant
-			std::string help;
+		protected:
 			
+			/// Type of the datamember
+			const Type *type;
 			
-			Data data;
+			/// This instance member is a constant
+			bool constant;
+			
+			/// This instance member is a reference
+			bool ref;
+			
+			/// Marks this instance as read-only
+			bool readonly;
 		};
-		
-		/// The type to store list of constants
-		using ConstantList = Containers::Hashmap<std::string, const Constant, GetNameOf<Constant>, std::map, String::CaseInsensitiveLess>;
-		class Type;
 		
 		/**
 		 * 
 		 */
-		class DataMember : public Member {
+		class InstanceMember : public Member {
 			friend class Type;
 		public:
+			
 			/// Constructor
-			template<class ...P_>
-			DataMember(const std::string &name, const std::string &help, const Type &type) :
-			Member(name, help), type(&type) {
+			DataMember(const std::string &name, const std::string &help, 
+					   const Type &type, bool constant=false, bool ref=false, bool readonly=false) :
+			Member(name, help), type(&type), constant(constant), ref(ref), readonly(readonly) 
+			{
 			}
 			
-
+			virtual bool IsInstanceMember() const override final { return true; }
+			
 			/// Returns the type of this data member
 			const Type &GetType() const {
 				return *type;
 			}
 			
+			//virtual Data Get(const Data &source) const = 0; //check if this one is ever called
+
 			/// Gets data from the datamember
-			virtual Data Get(const Data &source) const = 0;
 			virtual Data Get(      Data &source) const = 0;
-			
-			/// Valid only if the datamember is static
-			virtual Data Get() const = 0;
 			
 			/// Sets the data of the data member, if the source is a reference,
 			/// this function should perform in place replacement of the value
 			virtual void Set(Data &source, const Data &value) const = 0;
-			
-			/// Sets the data of the data member, this variant only works for
-			/// static members
-			virtual void Set(const Data &value) const = 0;
 
+			/// Returns whether this member is a constant
+			bool IsConstant() const {
+				return constant;
+			}
+			
+			/// Returns whether this member is a reference
+			bool IsReference() const {
+				return ref;
+			}
+			
+			/// Returns whether this member is read-only. Read-only members cannot be
+			/// assigned to, however, their state can be altered using its data members
+			/// or functions. 
+			bool IsReadonly() const {
+				return readonly;
+			}
 			
 			virtual ~DataMember() { }
 			
@@ -909,9 +943,49 @@ namespace Gorgon {
 			
 			/// Type of the datamember
 			const Type *type;
+			
+			/// This instance member is a constant
+			bool constant;
+			
+			/// This instance member is a reference
+			bool ref;
+			
+			/// Marks this instance as read-only
+			bool readonly;
 		};
 		
-		using MemberList = Containers::Hashmap<std::string, const Member, GetNameOf<Member>, std::map, String::CaseInsensitiveLess>;
+		using InstanceMemberList = Containers::Hashmap<std::string, const Member, GetNameOf<Member>, std::map, String::CaseInsensitiveLess>;
+		
+		class Namespace : public StaticMember {
+		public:
+			Namespace(const std::string &name, const std::string &help) : StaticMember(name, help), 
+			Members(members) {
+			}
+			
+			virtual MemberType GetMemberType() const override {
+				return StaticMember::DataMember;
+			}
+			
+			virtual void AddMember(const StaticMember &member) {
+				ASSERT(!members.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
+
+				members.Add(member);
+			}
+			
+			virtual void AddMember(std::initializer_list<StaticMember*> newmembers) {
+				for(auto member : newmembers) {
+					ASSERT(member!=nullptr, "Member is null");
+					ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+					
+					members.Add(member);
+				}
+			}
+			
+			const StaticMemberList Members;
+			
+		protected:
+			const StaticMemberList members; 
+		};
 		
 		/** 
 		 * This class stores information about types. Types can have their own functions, members,
@@ -923,7 +997,7 @@ namespace Gorgon {
 		 * pointers within Data objects and therefore, will not copied around. Currently, user defined
 		 * types cannot be reference type.
 		 */
-		class Type {
+		class Type : public Namespace {
 		public:
 			
 			/// There are multiple ways to morph a type to another, this enumeration holds these types
@@ -941,13 +1015,6 @@ namespace Gorgon {
 				TypeCasting
 			};
 			
-			enum SubType {
-				Regular,
-				Event,
-				Enum,
-				Library
-			};
-			
 			class Inheritance {
 				friend class Type;
 				
@@ -963,18 +1030,42 @@ namespace Gorgon {
 				ConversionFunction from, to;
 			};
 			
-			/// Constructor, unlike other reflection objects, Type is not constructed fully.
 			Type(const std::string &name, const std::string &help, const Any &defaultvalue, 
 				 TMP::RTTH *typeinterface, bool isref);
-
-			/// Returns the name of this type.
-			std::string GetName() const {
-				return name;
+			
+			virtual void AddMember(const StaticMember &member) override {
+				ASSERT(!instancemembers.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
+				
+				Namespace::AddMember(member);
 			}
-
-			/// Returns the help string. Help strings may contain markdown notation.
-			std::string GetHelp() const {
-				return help;
+			
+			virtual void AddMember(std::initializer_list<StaticMember*> newmembers) override {
+				for(auto member : newmembers) {
+					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+					
+					Namespace::AddMember(member);
+				}
+			}
+			
+			virtual void AddMember(const InstanceMember &member) {
+				member.typecheck(this);
+				
+				ASSERT(!members.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
+				ASSERT(!instancemembers.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
+				
+				instancemembers.Add(member);
+			}
+			
+			virtual void AddMember(std::initializer_list<InstanceMember*> newmembers) {
+				for(auto member : newmembers) {
+					member->typecheck(this);
+					
+					ASSERT(member!=nullptr, "Member is null");
+					ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+					
+					instancemembers.Add(member);
+				}
 			}
 			
 			/// Returns the value of the type
@@ -987,8 +1078,6 @@ namespace Gorgon {
 				return referencetype;
 			}
 			
-			virtual SubType GetSubType() const { return Regular; }
-			
 			/// Adds an inheritance parent. from and to function should handle reference and constness of the data.
 			/// Inheritance should be added in order. After using a class as a parent, no parent should be added to that
 			/// class
@@ -999,61 +1088,7 @@ namespace Gorgon {
 			
 			/// Check if it is possible to morph this type to the other
 			MorphType CanMorphTo(const Type &type) const;
-			
-			/// Adds new datamembers to the type
-			void AddMembers(std::initializer_list<Member*> elements) {
-				for(auto element : elements) {
-					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!members.Exists(element->GetName()), 
-						   "Data member " + element->GetName() + " is already added.", 1, 2);
-					
-					if(!element->IsStatic())
-						dynamic_cast<DataMember*>(element)->typecheck(this);
-					
-					members.Add(element);
-				}
-			}
-			
-			/// Adds new functions to the type
-			void AddFunctions(std::initializer_list<Function*> elements) {
-				for(auto element : elements) {
-					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!functions.Exists(element->GetName()), 
-						   "Function " + element->GetName() + " is already added as a function.", 1, 2);
-					ASSERT(!constants.Exists(element->GetName()), 
-						   "Function " + element->GetName() + " is already added as a constant.", 1, 2);
-					ASSERT(element->parent==this,
-						   "This type should be listed as the parent of this function", 1, 2);
-					
-					functions.Add(element);
 
-				}
-			}
-			
-			/// Adds new constructors to the type
-			void AddConstructors(std::initializer_list<Function::Overload*> elements) {
-				for(auto element : elements) {
-					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(element->HasReturnType() && element->GetReturnType()==this,
-						   "Given constructor should return this ("+name+") type", 1, 2);
-					
-					constructor.AddOverload(*element);
-				}
-			}
-			
-			/// Adds new constants to the type
-			void AddConstants(std::initializer_list<Constant*> elements) {
-				for(auto element : elements) {
-					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
-					ASSERT(!functions.Exists(element->GetName()), 
-						"Constant " + element->GetName() + " is already added as a function.", 1, 2);
-					ASSERT(!constants.Exists(element->GetName()), 
-						"Constant " + element->GetName() + " is already added as a constant.", 1, 2);
-					
-					constants.Add(element);
-				}
-			}
-			
 			/// Compares two types
 			bool operator ==(const Type &other) const {
 				return this==&other;
@@ -1148,6 +1183,8 @@ namespace Gorgon {
 			/// This function should compare two instances of the type. Not required for reference types as pointers
 			/// will be compared
 			virtual bool compare(const Data &l, const Data &r) const { throw std::runtime_error("These elements cannot be compared"); }
+			
+			InstanceMemberList instancemembers;
 
 
 		private:
@@ -1188,9 +1225,9 @@ namespace Gorgon {
 		
 		/// Events allow an easy mechanism to program logic into actions instead of checking actions
 		/// continuously. This system is vital for UI programming. Events are basically function descriptors.
-		class Event : public Type {
+		class EventType : public Type {
 		public:
-			Event(const std::string &name, const std::string &help, const Any &defaultvalue, 
+			EventType(const std::string &name, const std::string &help, const Any &defaultvalue, 
 				  TMP::RTTH *typeinterface, const Type *ret, ParameterList parameters) : 
 			Type(name, help, defaultvalue, typeinterface, true), Parameters(this->parameters), returntype(ret) {
 				using std::swap;
@@ -1198,8 +1235,8 @@ namespace Gorgon {
 				swap(parameters, this->parameters);
 			}
 			
-			virtual SubType GetSubType() const override {
-				return Type::Event;
+			virtual MemberType GetSubType() const override {
+				return StaticMember::EventType;
 			}
 			
 			/// Returns whether event handlers should return a value
@@ -1230,132 +1267,21 @@ namespace Gorgon {
 			return out;
 		}
 		
-		using TypeList = Containers::Hashmap<std::string, const Type, GetNameOf<Type>, std::map, String::CaseInsensitiveLess>;
-		
 		/**
 		 * This class represents a library. Libraries can be loaded into virtual machines to be used.
 		 * Libraries contains types, functions and constants. This class is constant after construction.
 		 * Name of a library is also its namespace.
 		 */
-		class Library {
+		class Library : private Namespace {
 		public:
 			/// Constructor
-			Library(const std::string &name, const std::string &help,
-					TypeList types, FunctionList functions, 
-					ConstantList constants=ConstantList());
-			
-			Library(const std::string &name, const std::string &help) : Library(name, help, {}, {}) { }
+			Library(const std::string &name, const std::string &help);
 			
 			/// For late initialization
-			Library() : Types(this->types), Functions(this->functions), Constants(this->constants) { }
-			
-			Library(Library &&lib) : Types(this->types), Functions(this->functions), 
-			Constants(this->constants) {
-				using std::swap;
-				
-				swap(types, lib.types);
-				swap(functions, lib.functions);
-				swap(constants, lib.constants);
-				swap(name, lib.name);
-				swap(help, lib.help);
-			}
+			Library() { }
 			
 			~Library() {
-				functions.Destroy();
-				constants.Destroy();
-				types.Destroy();
 			}
-			
-			Library &operator =(Library &&lib) {
-				using std::swap;
-				name="";
-				help="";
-				types.Destroy();
-				functions.Destroy();
-				constants.Destroy();
-				
-				swap(types, lib.types);
-				swap(functions, lib.functions);
-				swap(constants, lib.constants);
-				swap(name, lib.name);
-				swap(help, lib.help);
-				
-				return *this;
-			}
-
-			void AddFunctions(const std::initializer_list<Function*> &list) {
-				for(auto &fn : list) {
-					ASSERT(!SymbolExists(fn->GetName()), "Symbol "+fn->GetName()+" already exists", 1, 2);
-					
-					functions.Add(fn);
-				}
-			}
-			
-			void AddTypes(const std::initializer_list<Type*> &list);
-			
-			void AddConstants(const std::initializer_list<Constant*> &list) {
-				for(auto &constant : list) {
-					ASSERT(!SymbolExists(constant->GetName()), "Symbol "+constant->GetName()+" already exists", 1, 2);
-					
-					constants.Add(constant);
-				}
-			}
-			
-			void AddFunctions(const std::vector<Function*> &list) {
-				for(auto &fn : list) {
-					ASSERT(!SymbolExists(fn->GetName()), "Symbol "+fn->GetName()+" already exists", 1, 2);
-					
-					functions.Add(fn);
-				}
-			}
-
-			void AddTypes(const std::vector<Type*> &list);
-			
-			void AddConstants(const std::vector<Constant*> &list) {
-				for(auto &constant : list) {
-					ASSERT(!SymbolExists(constant->GetName()), "Symbol "+constant->GetName()+" already exists", 1, 2);
-					
-					constants.Add(constant);
-				}
-			}
-			
-			bool SymbolExists(const std::string &name) const {
-				return types.Exists(name) || functions.Exists(name) || constants.Exists(name);
-			}
-			
-			SymbolType TypeOf(const std::string &name) const {
-				if(functions.Exists(name)) return SymbolType::Function;
-				if(types.Exists(name)) return SymbolType::Type;
-				if(constants.Exists(name)) return SymbolType::Constant;
-				
-				return SymbolType::Unknown;
-			}
-			
-			/// Returns the name of this library. Library names are also used as namespace specifiers
-			std::string GetName() const {
-				return name;
-			}
-			
-			/// Returns the help string. Help strings may contain markdown notation.
-			std::string GetHelp() const {
-				return help;
-			}
-			
-			/// List of types that this library contains
-			const TypeList 		&Types;
-			
-			/// List of functions that this library contains
-			const FunctionList 	&Functions;
-			
-			/// List of constants that this library contains
-			const ConstantList 	&Constants;
-			
-		private:
-			std::string name;
-			std::string help;
-			TypeList 	 types;
-			FunctionList functions;
-			ConstantList constants;
 		};
 	}
 }
