@@ -89,6 +89,9 @@ namespace Gorgon {
 			
 			/// Allows a parameter to be NULL
 			AllowNullTag,
+			
+			/// Marks a data member readonly, so that it can be manipulated, but cannot be changed
+			ReadonlyTag,
 		};
 		
 		typedef std::vector<Any> OptionList;
@@ -376,6 +379,108 @@ namespace Gorgon {
 			
 		};
 		
+		class StaticDataMember : public StaticMember {
+		public:
+			StaticDataMember(const std::string &name, const std::string &help, const Type *type, 
+							 bool constant, bool ref, bool readonly) :
+			StaticMember(name, help), type(type), constant(constant), reference(ref), readonly(readonly)
+			{
+			}
+			
+			StaticDataMember(const std::string& name, const std::string& help, const Type *type) : 
+			StaticDataMember(name, help, type, false, false, false) { }
+			
+			template <class ...P_>
+			StaticDataMember(const std::string& name, const std::string& help, const Type *type, Tag first, P_ ...rest) : 
+			StaticDataMember(name, help, type, false, false, false) { 
+				UnpackTags(first);
+				UnpackTags(rest...);
+			}
+			
+			
+			virtual MemberType GetMemberType() const override {
+				return StaticMember::DataMember;
+			}
+			
+			/// Changes the value of this member
+			void Set(const Data &newval) {
+				if(readonly) {
+					throw ReadOnlyException(name);
+				}
+			}
+			
+			/// Returns the type of this static member
+			const Type &GetType() const {
+				return *type;
+			}			
+
+			/// Returns whether this member is a constant
+			bool IsConstant() const {
+				return constant;
+			}
+			
+			/// Returns whether this member is a reference
+			bool IsReference() const {
+				return reference;
+			}
+			
+			/// Returns whether this member is read-only. Read-only members cannot be
+			/// assigned to, however, their state can be altered using its data members
+			/// or functions. 
+			bool IsReadonly() const {
+				return readonly;
+			}
+			
+			
+		protected:
+			
+			/// Implementers of static data member should overload this function for assignment.
+			/// If readonly is set, this function will not be called, instead, the public set function
+			/// will throw readonly exception.
+			virtual set(const Data &newval) = 0;
+			
+			/// Type of the datamember
+			const Type *type;
+			
+			/// This instance member is a constant
+			bool constant;
+			
+			/// This instance member is a reference
+			bool reference;
+			
+			/// Marks this instance as read-only
+			bool readonly;
+			
+		private:
+			void UnpackTags() {}
+			
+			template<class ...Params_>
+			void UnpackTags(Tag tag, Params_ ...tags) {
+				switch(tag) {
+					case ConstTag:
+						constant=true;
+						break;
+						
+					case ReferenceTag:
+						reference=true;
+						break;
+						
+					case ConstTag:
+						constant=true;
+						break;
+						
+					case ReadonlyTag:
+						readonly=true;
+						break;
+						
+					default:
+						Utils::ASSERT_FALSE("Unknown tag");
+				}
+				UnpackTags(tags...);
+			}
+		};
+		
+		
 		using StaticMemberList = Containers::Hashmap<std::string, const StaticMember, GetNameOf<StaticMember>, std::map, String::CaseInsensitiveLess>;
 		
 		/**
@@ -616,7 +721,7 @@ namespace Gorgon {
 			Function(const std::string &name, const std::string &help, const Type *parent, 
 					 const Containers::Collection<Overload> &overloads, const Containers::Collection<Overload> &methods, 
 					 Tag tag, P_ ...tags) : 
-			name(name), help(help), parent(parent), Overloads(this->overloads), Methods(this->methods)
+			StaticMember(name, help), parent(parent), Overloads(this->overloads), Methods(this->methods)
 			{
 				
 				unpacktags(tag);
@@ -637,7 +742,7 @@ namespace Gorgon {
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
 					 const Containers::Collection<Overload> &overloads, Tag tag, P_ ...tags) :
-			name(name), help(help), parent(parent), Overloads(this->overloads), Methods(this->methods)
+			StaticMember(name, help), parent(parent), Overloads(this->overloads), Methods(this->methods)
 			{
 				unpacktags(tag);
 				unpacktags(tags...);
@@ -654,7 +759,7 @@ namespace Gorgon {
 			Function(const std::string &name, const std::string &help, const Type *parent,
 					 const Containers::Collection<Overload> &overloads, const Containers::Collection<Overload> &methods=Containers::Collection<Overload>()
 			) : 
-			name(name), help(help), parent(parent), Overloads(this->overloads), Methods(this->methods)
+			StaticMember(name, help), parent(parent), Overloads(this->overloads), Methods(this->methods)
 			{ 
 				for(auto &overload : overloads) {
 					AddOverload(overload);
@@ -831,63 +936,7 @@ namespace Gorgon {
 			
 			Containers::Collection<Overload> methods;
 		};
-		
-		//-use unordered_map
-		/// The type to store list of functions
-		using FunctionList = Containers::Hashmap<std::string, const Function, GetNameOf<Function>, std::map, String::CaseInsensitiveLess>;
-		
-		class StaticDataMember : public StaticMember {
-		public:
-			StaticDataMember(const std::string &name, const std::string &help, const Type *type, 
-							 bool constant, bool ref, bool readonly) ü
-			{
-			}
-			
-			virtual MemberType GetMemberType() const override {
-				return StaticMember::DataMember;
-			}
-			
-			/// Changes the value of this member
-			virtual void Set(const Data &newval) = 0;
-			
-			/// Returns the type of this static member
-			const Type &GetType() const {
-				return *type;
-			}			
 
-			/// Returns whether this member is a constant
-			bool IsConstant() const {
-				return constant;
-			}
-			
-			/// Returns whether this member is a reference
-			bool IsReference() const {
-				return ref;
-			}
-			
-			/// Returns whether this member is read-only. Read-only members cannot be
-			/// assigned to, however, their state can be altered using its data members
-			/// or functions. 
-			bool IsReadonly() const {
-				return readonly;
-			}
-			
-			
-		protected:
-			
-			/// Type of the datamember
-			const Type *type;
-			
-			/// This instance member is a constant
-			bool constant;
-			
-			/// This instance member is a reference
-			bool ref;
-			
-			/// Marks this instance as read-only
-			bool readonly;
-		};
-		
 		/**
 		 * 
 		 */
@@ -896,7 +945,7 @@ namespace Gorgon {
 		public:
 			
 			/// Constructor
-			DataMember(const std::string &name, const std::string &help, 
+			InstanceMember(const std::string &name, const std::string &help, 
 					   const Type &type, bool constant=false, bool ref=false, bool readonly=false) :
 			Member(name, help), type(&type), constant(constant), ref(ref), readonly(readonly) 
 			{
@@ -935,7 +984,7 @@ namespace Gorgon {
 				return readonly;
 			}
 			
-			virtual ~DataMember() { }
+			virtual ~InstanceMember() { }
 			
 		protected:
 			/// Type checks the parent
