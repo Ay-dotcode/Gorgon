@@ -99,7 +99,7 @@ namespace Gorgon {
 		
 		/// Allows easy and fast access to integral types
 		namespace Types {
-#define DEFTYPE(name) inline const Type &name() { static const Scripting::Type *type = Integrals.Types[#name]; return *type; }
+#define DEFTYPE(name) inline const Type &name() { static const Scripting::Type *type = Integrals.GetType(#name); return *type; }
 
 			DEFTYPE(Variant);
 			DEFTYPE(String);
@@ -115,7 +115,7 @@ namespace Gorgon {
 
 #undef DEFTYPE
 			
-#define DEFTYPE(name) inline const Scripting::Type &name() { static const Scripting::Type *type = Reflection.Types[#name]; return *type; }
+#define DEFTYPE(name) inline const Scripting::Type &name() { static const Scripting::Type *type = Reflection.GetType(#name); return *type; }
 			
 			DEFTYPE(Type);
 			DEFTYPE(Function);

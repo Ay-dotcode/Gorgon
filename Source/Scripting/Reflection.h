@@ -290,8 +290,6 @@ namespace Gorgon {
 		
 		using ParameterList = std::vector<Parameter>;
 		
-		class StaticMember;
-		
 		/**
 		 * Represents a member of a type. This serves as a code base to other member types: StaticMember and
 		 * InstanceMember
@@ -320,16 +318,25 @@ namespace Gorgon {
 			virtual bool IsInstanceMember() const = 0;
 			
 			
+			std::string GetQualifiedName() const {
+				if(!parent)
+					return name;
+				
+				return parent->GetQualifiedName()+":"+name;
+			}
+			
 		protected:
 			/// Changes the parent of the member. Subclasses may perform additional checks when the parent
-			/// is determined.
-			virtual void SetParent(const StaticMember &parent) { }
+			/// is determined. Subclass should *always* call parent class' SetParent function first
+			virtual void SetParent(const Member &parent) { this->parent=&parent; }
 			
 			/// The name of the datamember
 			std::string name;
 			
 			/// Help string of the datamember
 			std::string help;
+			
+			const Member *parent = nullptr;
 		};
 		
 		/**
@@ -437,7 +444,7 @@ namespace Gorgon {
 			/// Implementers of static data member should overload this function for assignment.
 			/// If readonly is set, this function will not be called, instead, the public set function
 			/// will throw readonly exception.
-			virtual set(const Data &newval) = 0;
+			virtual void set(const Data &newval) = 0;
 			
 			/// Type of the datamember
 			const Type *type;
@@ -795,15 +802,9 @@ namespace Gorgon {
 				return StaticMember::Function;
 			}
 			
-			virtual void SetParent(const StaticMember &parent) {
-				if(this->parent) {
-					ASSERT(&parent == this->parent, "Declared owner and placed owner does not match.");
-				}
-				
-				if(parent.GetMemberType() == StaticMember::Namespace) {
-					staticmember=true;
-				}
-			}
+			virtual Data Get() const override final;
+			
+			virtual void SetParent(const Member &parent) override final;
 			
 			/// Returns if this function is actually a keyword.
 			bool IsKeyword() const {
@@ -988,7 +989,7 @@ namespace Gorgon {
 			
 		protected:
 			/// Type checks the parent
-			virtual void typecheck(const Type *type) = 0;
+			virtual void typecheck(const Type *type) const = 0;
 			
 			/// Type of the datamember
 			const Type *type;
@@ -1015,12 +1016,16 @@ namespace Gorgon {
 				return StaticMember::DataMember;
 			}
 			
+			virtual Data Get() const override;
+				
+			/// Adds a new member to this namespace
 			virtual void AddMember(const StaticMember &member) {
 				ASSERT(!members.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
 
 				members.Add(member);
 			}
 			
+			/// Adds a list of members to this namespace
 			virtual void AddMember(std::initializer_list<StaticMember*> newmembers) {
 				for(auto member : newmembers) {
 					ASSERT(member!=nullptr, "Member is null");
@@ -1030,10 +1035,34 @@ namespace Gorgon {
 				}
 			}
 			
-			const StaticMemberList Members;
+			/// Convenience function, returns the namespace with the given name. Types are also considered as namespaces
+			/// as they are derived from it. If there is no such namespace, symbol not found
+			/// error is given.
+			const Namespace &GetNamespace(const std::string &name) const;
+			
+			/// Convenience function, returns the type with the given name. If there is no such type, symbol not found
+			/// error is given. Any class that is derived from type is also valid.
+			const Type &GetType(const std::string &name) const;
+			
+			/// Convenience function, returns the function with the given name. If there is no such function, symbol not found
+			/// error is given.
+			const Scripting::Function &GetFunction(const std::string &name) const;
+			
+			/// Convenience function, returns the value of the symbol with the given name.
+			Data ValueOf(const std::string &name) const {
+				auto elm=members.Find(name);
+				if(elm.IsValid())
+					throw SymbolNotFoundException(name, SymbolType::Identifier,"Symbol "+name+" cannot be found.");
+				
+				return elm.Current().second.Get();
+			}
+			
+			/// List of static members
+			const StaticMemberList &Members;
 			
 		protected:
-			const StaticMemberList members; 
+			
+			StaticMemberList members; 
 		};
 		
 		/** 
@@ -1082,20 +1111,25 @@ namespace Gorgon {
 			Type(const std::string &name, const std::string &help, const Any &defaultvalue, 
 				 TMP::RTTH *typeinterface, bool isref);
 			
+			virtual Data Get() const override;
+			
+			/// Adds a static member to this type
 			virtual void AddMember(const StaticMember &member) override {
 				ASSERT(!instancemembers.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
 				
 				Namespace::AddMember(member);
 			}
 			
+			/// Adds a list of static members to this type
 			virtual void AddMember(std::initializer_list<StaticMember*> newmembers) override {
 				for(auto member : newmembers) {
 					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 					
-					Namespace::AddMember(member);
+					Namespace::AddMember(*member);
 				}
 			}
 			
+			/// Adds a list of instance members to this type
 			virtual void AddMember(const InstanceMember &member) {
 				member.typecheck(this);
 				
@@ -1105,6 +1139,7 @@ namespace Gorgon {
 				instancemembers.Add(member);
 			}
 			
+			/// Adds an instance member to this type
 			virtual void AddMember(std::initializer_list<InstanceMember*> newmembers) {
 				for(auto member : newmembers) {
 					member->typecheck(this);
@@ -1161,6 +1196,9 @@ namespace Gorgon {
 				return this;
 			}
 
+			/// This function returns type casting function from a given type to this one. If type casting
+			/// is not found, this function will return nullptr. If implicit conversion requirement is set
+			/// only the constructors that are allowed to be used implicitly is considered.
 			const Function::Overload *GetTypeCastingFrom(const Type *other, bool implicit=true) const {
 				for(const auto &ctor : constructor.Overloads) {
 					if(ctor.Parameters.size()==1 && ctor.Parameters[0].GetType()==other && 
@@ -1192,19 +1230,9 @@ namespace Gorgon {
 			virtual Data Parse(const std::string &) const = 0;
 			
 			
-			/// Data members of this type. Notice that not every type has data members.
-			const MemberList					&Members;
-			
-			/// Contains the functions related with this type. These functions can be operators,
-			/// or type casting functions.
-			const FunctionList 						&Functions;
-			
 			/// Constructors of this type. They can also act like conversion from operators. Implicit
 			/// conversion constructors should have their flag set.
-			const Function	 						&Constructor;
-			
-			/// Constants related with this type. Constants can be of the same type as this one.
-			const ConstantList    					&Constants;
+			const Scripting::Function	 						&Constructor;
 			
 			/// Parents of this type. This includes indirect parents as well
 			const std::map<const Type *, const Type *> &Parents;
@@ -1215,13 +1243,16 @@ namespace Gorgon {
 			/// Inherited symbols
 			const Containers::Hashmap<std::string, const Type, nullptr, std::map, String::CaseInsensitiveLess> &InheritedSymbols;
 			
+			const InstanceMemberList &InstanceMembers;
+			
+			/// Type interface used for this type. If this type is a reference type, pointer-to-type and const pointer-to-type
+			/// are used.
 			TMP::RTTH &TypeInterface;
 			
+			/// Destructor
 			virtual ~Type() {
 				delete &TypeInterface;
-				members.Destroy();
-				functions.Destroy();
-				constants.Destroy();
+				instancemembers.Destroy();
 			}
 			
 		protected:
@@ -1233,32 +1264,16 @@ namespace Gorgon {
 			/// will be compared
 			virtual bool compare(const Data &l, const Data &r) const { throw std::runtime_error("These elements cannot be compared"); }
 			
+			/// Instance members of this type
 			InstanceMemberList instancemembers;
 
-
-		private:
-			std::string name;
-			
-			std::string help;
-			
+			/// Default value of this type. Default value is sometimes used for type checking and it is vital for the system
+			/// to work correctly
 			Any defaultvalue;
-			
-			
-			/// Members of this type. Members can be data members, types, functions or variants of these
-			MemberList						members;
 
-			/// Contains the functions related with this type. These functions can be operators,
-			/// or type casting functions. Functions with the name of another type are called
-			/// type casting functions. These functions are stored with [Library]Typename format.
-			/// However, if the library is never specified they are listed as []Typename.
-			FunctionList 						functions;
-			
 			/// Constructors of this type. They can also act like conversion from operators. Implicit
 			/// conversion constructors should have their flag set.
-			Function							constructor;
-			
-			/// Constants related with this type. Constants can be of the same type as this one.
-			ConstantList    					constants;
+			Scripting::Function							constructor;
 			
 			/// Inheritance list. 
 			std::map<const Type *, Inheritance> inheritsfrom;
@@ -1269,8 +1284,15 @@ namespace Gorgon {
 			/// This lists all parents of this type in the entire hierarchy.
 			std::map<const Type *, const Type *> parents;
 			
+			/// Whether this type is a reference type
 			bool referencetype = false;
 		};
+		
+		/// Allows printing of types
+		inline std::ostream &operator <<(std::ostream &out, const Type &type) {
+			out<<type.GetName();
+			return out;
+		}
 		
 		/// Events allow an easy mechanism to program logic into actions instead of checking actions
 		/// continuously. This system is vital for UI programming. Events are basically function descriptors.
@@ -1284,7 +1306,7 @@ namespace Gorgon {
 				swap(parameters, this->parameters);
 			}
 			
-			virtual MemberType GetSubType() const override {
+			virtual MemberType GetMemberType() const override {
 				return StaticMember::EventType;
 			}
 			
@@ -1311,25 +1333,22 @@ namespace Gorgon {
 			const Type *returntype;
 		};
 		
-		inline std::ostream &operator <<(std::ostream &out, const Type &type) {
-			out<<type.GetName();
-			return out;
-		}
-		
 		/**
 		 * This class represents a library. Libraries can be loaded into virtual machines to be used.
 		 * Libraries contains types, functions and constants. This class is constant after construction.
 		 * Name of a library is also its namespace.
 		 */
-		class Library : private Namespace {
+		class Library : public Namespace {
 		public:
 			/// Constructor
-			Library(const std::string &name, const std::string &help);
-			
-			/// For late initialization
-			Library() { }
+			Library(const std::string &name, const std::string &help) : Namespace(name, help) {
+			}
 			
 			~Library() {
+			}
+			
+			virtual void SetParent(const Member &parent) override {
+				Utils::ASSERT_FALSE("Cannot set parent of a library");
 			}
 		};
 	}

@@ -11,32 +11,6 @@ namespace Gorgon { namespace Scripting {
 	
 	Type *TypeType();
 	
-	Library::Library(const std::string &name, const std::string &help,
-	TypeList types, FunctionList functions, ConstantList constants) :
-	name(name), help(help), Types(this->types), Functions(this->functions), 
-	Constants(this->constants)
-	{
-		using std::swap;
-		
-		swap(types, this->types);
-		swap(functions, this->functions);
-		swap(constants, this->constants);
-	}
-	
-	void Library::AddTypes(const std::vector<Type*> &list) {
-		for(auto &type : list) {
-			ASSERT(!SymbolExists(type->GetName()), "Symbol "+type->GetName()+" already exists", 1, 2);
-
-			types.Add(type);
-		}
-	}
-	void Library::AddTypes(const std::initializer_list< Type* >& list) {
-		for(auto &type : list) {
-			ASSERT(!SymbolExists(type->GetName()), "Symbol "+type->GetName()+" already exists", 1, 2);
-			
-			types.Add(type);
-		}
-	}
 	
 	Data Type::Construct(const std::vector<Data> &parameters) const {
 		std::multimap<int, const Function::Overload *> rankedlist;
@@ -104,7 +78,7 @@ namespace Gorgon { namespace Scripting {
 			}
 		}
 		
-		if(rankedlist.size()==0) {
+		if(rankedlist.size()==0 || rankedlist.begin()->first!=0) {
 			std::string pnames;
 			for(const auto &param : parameters) {
 				if(pnames!="") pnames += ", ";
@@ -132,8 +106,8 @@ namespace Gorgon { namespace Scripting {
 
 	
 	Type::Type(const std::string& name, const std::string& help, const Any& defaultvalue, TMP::RTTH *typeinterface, bool isref):
-		name(name), help(help), Members(members), Functions(functions), Constructor(constructor),
-		Constants(constants), InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),
+		Namespace(name, help), InstanceMembers(instancemembers), Constructor(constructor),
+		InheritsFrom(inheritsfrom), defaultvalue(defaultvalue),
 		referencetype(isref), TypeInterface(*typeinterface), Parents(parents), InheritedSymbols(inheritedsymbols),
 		constructor("{}", "Constructs "+name, this, Containers::Collection<Function::Overload>(), StaticTag)
 	{
@@ -279,33 +253,24 @@ namespace Gorgon { namespace Scripting {
 			parents.insert(std::make_pair(t.first, &type));
 		}
 
-		for(const auto &fn : type.Functions) {
-			if(functions.Find(fn.first)==functions.end()) {
-				ASSERT(!inheritedsymbols.Find(fn.first).IsValid(), "Symbol: "+fn.first+" is ambiguous");
+		for(const auto &o : type.Members) {
+			if(members.Find(o.first)==members.end()) {
+				ASSERT(!inheritedsymbols.Find(o.first).IsValid(), "Symbol: "+o.first+" is ambiguous");
 
-				inheritedsymbols.Add(fn.first, type);
+				inheritedsymbols.Add(o.first, type);
 			}
 		}
 
-		for(const auto &c : type.Constants) {
-			if(constants.Find(c.first)==constants.end()) {
-				ASSERT(!inheritedsymbols.Find(c.first).IsValid(), "Symbol: "+c.first+" is ambiguous");
+		for(const auto &o : type.InstanceMembers) {
+			if(instancemembers.Find(o.first)==instancemembers.end()) {
+				ASSERT(!inheritedsymbols.Find(o.first).IsValid(), "Symbol: "+o.first+" is ambiguous");
 
-				inheritedsymbols.Add(c.first, type);
-			}
-		}
-
-		for(const auto &d : type.Members) {
-			if(members.Find(d.first)==members.end()) {
-				ASSERT(!inheritedsymbols.Find(d.first).IsValid(), "Symbol: "+d.first+" is ambiguous");
-				
-				inheritedsymbols.Add(d.first, type);
+				inheritedsymbols.Add(o.first, type);
 			}
 		}
 
 		for(const auto &s : type.inheritedsymbols) {
-			if( functions.Find(s.first)==functions.end() && 
-				constants.Find(s.first)!=constants.end() &&
+			if( instancemembers.Find(s.first)==instancemembers.end() && 
 				members.Find(s.first)!=members.end()
 			) {
 				ASSERT(!inheritedsymbols.Find(s.first).IsValid(), "Symbol: "+s.first+" is ambiguous");
@@ -383,5 +348,55 @@ namespace Gorgon { namespace Scripting {
 	bool Parameter::IsReference() const {
 		return reference || type->IsReferenceType();
 	}
+	void Function::SetParent(const Member& parent) {
+		if(this->parent) {
+			ASSERT(&parent == dynamic_cast<const Member*>(this->parent), "Declared owner and placed owner does not match.");
+		}
+		
+		ASSERT(!parent.IsInstanceMember(), "A function can only have static objects as parent.");
+		
+		if(dynamic_cast<const StaticMember &>(parent).GetMemberType() == StaticMember::Namespace) {
+			ASSERT(!isoperator, "Operators cannot be static members.");
+			staticmember=true;
+		}
+	}
 	
+	Data Function::Get() const {
+		Type *FunctionType();
+		return {FunctionType(), this, true, true};
+	}
+	
+	const Namespace& Namespace::GetNamespace(const std::string& name) const {
+		auto elm=members.Find(name);
+		if(elm.IsValid())
+			throw SymbolNotFoundException(name, SymbolType::Type, "Type "+name+" cannot be found.");
+		
+		if(elm.Current().second.GetMemberType() != StaticMember::Namespace || elm.Current().second.IsInstanceable()) 
+			throw SymbolNotFoundException(name, SymbolType::Type, "Symbol "+name+" is not a type.");
+		
+		return dynamic_cast<const Namespace&>(elm.Current().second);
+	}
+	
+	const Type& Namespace::GetType(const std::string& name) const {
+		auto elm=members.Find(name);
+		if(elm.IsValid())
+			throw SymbolNotFoundException(name, SymbolType::Type, "Type "+name+" cannot be found.");
+		
+		if(elm.Current().second.IsInstanceable()) 
+			throw SymbolNotFoundException(name, SymbolType::Type, "Symbol "+name+" is not a type.");
+		
+		return dynamic_cast<const Type&>(elm.Current().second);
+	}
+	
+	const Function& Namespace::GetFunction(const std::string& name) const {
+		auto elm=members.Find(name);
+		if(elm.IsValid())
+			throw SymbolNotFoundException(name, SymbolType::Function, "Function "+name+" cannot be found.");
+		
+		if(elm.Current().second.GetMemberType() != StaticMember::Function) 
+			throw SymbolNotFoundException(name, SymbolType::Function, "Symbol "+name+" is not a function.");
+		
+		return dynamic_cast<const Scripting::Function&>(elm.Current().second);
+	}
+
 } }
