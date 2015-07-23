@@ -65,7 +65,7 @@ namespace Gorgon {
 					if(IsReference())
 						return *data.Get<typename std::remove_const<typename std::remove_reference<T_>::type>::type*>();
 					else
-						return data.Get<typename std::remove_reference<T_>::type>();
+						return data.Get<typename std::remove_const<typename std::remove_reference<T_>::type>::type>();
 				}					
 			}
 			

@@ -958,8 +958,6 @@ namespace Gorgon {
 			const Type &GetType() const {
 				return *type;
 			}
-			
-			//virtual Data Get(const Data &source) const = 0; //check if this one is ever called
 
 			/// Gets data from the datamember
 			virtual Data Get(      Data &source) const = 0;
@@ -1026,7 +1024,7 @@ namespace Gorgon {
 			}
 			
 			/// Adds a list of members to this namespace
-			virtual void AddMember(std::initializer_list<StaticMember*> newmembers) {
+			virtual void AddMembers(std::initializer_list<StaticMember*> newmembers) {
 				for(auto member : newmembers) {
 					ASSERT(member!=nullptr, "Member is null");
 					ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
@@ -1121,7 +1119,7 @@ namespace Gorgon {
 			}
 			
 			/// Adds a list of static members to this type
-			virtual void AddMember(std::initializer_list<StaticMember*> newmembers) override {
+			virtual void AddMembers(std::initializer_list<StaticMember*> newmembers) override {
 				for(auto member : newmembers) {
 					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 					
@@ -1140,7 +1138,7 @@ namespace Gorgon {
 			}
 			
 			/// Adds an instance member to this type
-			virtual void AddMember(std::initializer_list<InstanceMember*> newmembers) {
+			virtual void AddMembers(std::initializer_list<InstanceMember*> newmembers) {
 				for(auto member : newmembers) {
 					member->typecheck(this);
 					
@@ -1152,6 +1150,30 @@ namespace Gorgon {
 				}
 			}
 			
+			/// Adds the given constructors
+			void AddConstructors(std::initializer_list<const Function::Overload*> elements) {
+				for(auto element : elements) {
+					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
+					ASSERT(element->HasReturnType() && element->GetReturnType()==this,
+						   "Given constructor should return this ("+name+") type", 1, 2);
+					
+					constructor.AddOverload(*element);
+				}
+			}
+			
+			/// Adds the given constructor
+			void AddConstructor(const Function::Overload &element) {
+				ASSERT(element.HasReturnType() && element.GetReturnType()==this,
+						"Given constructor should return this ("+name+") type", 1, 2);
+				
+				constructor.AddOverload(element);
+			}
+			
+			/// Adds an inheritance parent. from and to function should handle reference and constness of the data.
+			/// Inheritance should be added in order. After using a class as a parent, no parent should be added to that
+			/// class
+			void AddInheritance(const Type &type, Inheritance::ConversionFunction from, Inheritance::ConversionFunction to);
+			
 			/// Returns the value of the type
 			Any GetDefaultValue() const {
 				return defaultvalue;
@@ -1161,11 +1183,6 @@ namespace Gorgon {
 			bool IsReferenceType() const {
 				return referencetype;
 			}
-			
-			/// Adds an inheritance parent. from and to function should handle reference and constness of the data.
-			/// Inheritance should be added in order. After using a class as a parent, no parent should be added to that
-			/// class
-			void AddInheritance(const Type &type, Inheritance::ConversionFunction from, Inheritance::ConversionFunction to);
 			
 			/// Morphs the given data into the target type.
 			Data MorphTo(const Type &type, Data source, bool allowtypecast=true) const;

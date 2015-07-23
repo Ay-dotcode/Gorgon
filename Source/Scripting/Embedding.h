@@ -21,13 +21,6 @@ namespace Scripting {
 	template<class T_>
 	using ParseFn = T_(*)(const std::string &);
 	
-	template <
-	class T_, 
-	StringFromFn<T_> ToString_=String::From<T_>, 
-	ParseFn<T_> Parse_=String::To<T_>
-	>
-	class MappedValueType;
-	
 	template<class T_>
 	std::string ToEmptyString(const T_ &) {
 		return "";
@@ -35,6 +28,20 @@ namespace Scripting {
 	
 	template<class T_>
 	T_ ParseThrow(const std::string &) { throw std::runtime_error("This type cannot be parsed."); }
+	
+	template <
+	class T_, 
+	StringFromFn<T_> ToString_=String::From<T_>, 
+	ParseFn<T_> Parse_=String::To<T_>
+	>
+	class MappedValueType;
+	
+	template <
+	class T_, 
+	StringFromFn<T_> ToString_=&String::From<T_>, 
+	ParseFn<T_> Parse_=&ParseThrow<T_*>
+	>
+	class MappedReferenceType;
 
 	
 	/// This class wraps a C++ function into an overload. It can be constructed using MapFunction.
@@ -794,35 +801,65 @@ namespace Scripting {
 	* parameter is the type of the object and the second is the type of the data member
 	*/
 	template<class C_, class T_>
-	class MappedMemberDataRO : public Scripting::DataMember {
-	public:
-		/// Constructor
-		template<class ...P_>
-		MappedMemberDataRO(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
-		DataMember(name, help, *type, tags...), member(member) {
+	class MappedROInstanceMember : public Scripting::InstanceMember {
+	protected:
+		using normaltype = typename std::remove_const<typename std::remove_pointer<T_>::type>::type;
+		using classptr   = typename std::remove_pointer<T_>::type *;
+		
+		enum {
+			istypeconst = std::is_const<typename std::remove_pointer<T_>::type>::value,
+			istypeptr   = std::is_pointer<T_>::value,
+		};
+		
+		MappedROInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, bool constant, bool ref, bool readonly) :
+		InstanceMember(name, help, *type, constant, ref, readonly), member(member) {
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
-			ASSERT(type->TypeInterface.NormalType.IsSameType<T_>(), "Reported type "+type->GetName()+
-					" ("+type->TypeInterface.NormalType.Name()+") "
-					" does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
+			ASSERT(type->TypeInterface.NormalType.IsSameType<normaltype>(), "Reported type "+type->GetName()+
+				   " ("+type->TypeInterface.NormalType.Name()+") "
+				   " does not match with c++ type: "+Utils::GetTypeName<normaltype>(), 1, 2);
 		}
 		
-		virtual Data Get(const Scripting::Data &data) const override {
-			if(data.IsConstant() || !data.IsReference()) {
-				return {GetType(), data.GetValue<const C_>().*member, false, true};
-			}
-			else {
-				Data d={GetType(), &(data.ReferenceValue<C_&>().*member), true, false};
-				d.SetParent(data);
-				return d;
-			}
+		template<class T2_=T_>
+		static typename std::enable_if<istypeptr, typename std::remove_pointer<T2_>::type>::type deref(T2_ val) {
+			return *val;
 		}
+		
+		template<class T2_=T_>
+		static typename std::enable_if<!istypeptr, typename std::remove_pointer<T2_>::type>::type deref(T2_ val) {
+			return val;
+		}
+		
+	public:
+		/// Constructor
+		MappedROInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, bool constant=false) :
+		MappedROInstanceMember(member, name, help, type, constant, false, true)
+		{ }
+		
 		virtual Data Get(Scripting::Data &data) const override {
-			if(data.IsConstant()) {
-				return {GetType(), data.GetValue<const C_>().*member, false, true};
+			// we dont need to return a pointer
+			if((constant || data.IsConstant()) && !data.IsReference()) {
+				return {GetType(), (const normaltype)deref(data.GetValue<const C_>().*member), false, true};
 			}
 			else {
 				data.GetReference();
-				Data d={GetType(), &(data.ReferenceValue<C_&>().*member), true, false};
+				Data d;
+				if(data.IsConstant() || constant) {
+					if(istypeptr) {
+						d={GetType(), (const T_)data.ReferenceValue<classptr>().*member, true, true};
+					}
+					else {
+						d={GetType(), (const T_ *)&(data.ReferenceValue<classptr>().*member), true, true};
+					}
+				}
+				else {
+					if(istypeptr) {
+						d={GetType(), (data.ReferenceValue<classptr>().*member), true, false};
+					}
+					else {
+						d={GetType(), &(data.ReferenceValue<classptr>().*member), true, false};
+					}
+				}
+				
 				d.SetParent(data);
 				return d;
 			}
@@ -831,16 +868,6 @@ namespace Scripting {
 		/// Sets the data of the data member
 		virtual void Set(Data &source, const Data &value) const override {
 			throw ReadOnlyException(this->GetName());
-		}
-		
-		virtual Data Get() const override {
-			throw SymbolNotFoundException(GetName(), SymbolType::Member, 
-										  "Symbol is not static and requires an instance for access");
-		}
-		
-		virtual void Set(const Data &value) const override {
-			throw SymbolNotFoundException(GetName(), SymbolType::Member, 
-										  "Symbol is not static and requires an instance for access");
 		}
 		
 	protected:
@@ -853,72 +880,16 @@ namespace Scripting {
 	};
 	
 	/**
-	* This class allows a one to one mapping of a data member to a c++ data member
-	*/
-	template<class C_, class T_>
-	class MappedMemberDataRO<C_*, T_> : public DataMember {
-	public:
-		/// Constructor
-		template<class ...P_>
-		MappedMemberDataRO(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
-		DataMember(name, help, *type, tags...), member(member) {
-			ASSERT(type, "Type cannot be nullptr", 1, 2);
-			ASSERT(type->TypeInterface.NormalType.IsSameType<T_>(), "Reported type "+type->GetName()+
-					" ("+type->TypeInterface.NormalType.Name()+") "
-					" does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
-		}
-		
-		virtual Data Get(const Data &data) const override {
-			C_ *obj=data.GetValue<C_*>();
-			if(obj==nullptr) {
-				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
-			}
-			Data d={GetType(), &(obj->*member), true, data.IsConstant()};
-			d.SetParent(data);
-			return d;
-		}
-		
-		virtual Data Get(Data &data) const override {
-			C_ *obj=data.GetValue<C_*>();
-			if(obj==nullptr) {
-				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
-			}
-			Data d={GetType(), &(obj->*member), true, data.IsConstant()};
-			d.SetParent(data);
-			return d;
-		}
-		
-		/// Sets the data of the data member
-		virtual void Set(Data &source, const Data &value) const override {
-			throw ReadOnlyException(this->GetName());
-		}
-		
-		virtual Data Get() const override {
-			throw SymbolNotFoundException(GetName(), SymbolType::Member, 
-										  "Symbol is not static and requires an instance for access");
-		}
-		
-		virtual void Set(const Data &value) const override {
-			throw SymbolNotFoundException(GetName(), SymbolType::Member, 
-										  "Symbol is not static and requires an instance for access");
-		}
-		
-	protected:
-		virtual void typecheck(const Type *type) override final {
-			ASSERT(type->GetDefaultValue().TypeCheck<C_*>(), "The type of the parent does not match with the type "
-			"it has placed in.", 2, 2);
-		}
-		
-		T_ C_::*member;
-	};
-	
-	/**
 	 * This class allows a one to one mapping of a data member to a c++ data member
 	 */
 	template<class C_, class T_>
-	class MappedMemberData : public MappedMemberDataRO<C_, T_> {
+	class MappedInstanceMember : public MappedROInstanceMember<C_, T_> {
 	public:
-		using MappedMemberDataRO<C_, T_>::MappedMemberDataRO;
+		/// Constructor
+		MappedInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, bool constant=false, bool ref=false) :
+		MappedROInstanceMember(member, name, help, type, constant, ref, false)
+		{ }
+		
 		
 		/// Sets the data of the data member
 		virtual void Set(Data &source, const Data &value) const override {
@@ -927,37 +898,14 @@ namespace Scripting {
 			}
 			
 			if(source.IsReference()) {
-				C_ &obj  = source.ReferenceValue<C_&>();
-				obj.*this->member = value.GetValue <T_>();
+				C_ *obj  = source.ReferenceValue<classref>();
+				obj->*this->member = value.GetValue <T_>();
 			}
 			else {
 				C_ obj  = source.GetValue<C_>();
 				obj.*this->member = value.GetValue <T_>();
 				source={source.GetType(), obj};
 			}
-		}
-	};
-	
-	/**
-	 * This class allows a one to one mapping of a data member to a c++ data member
-	 */
-	template<class C_, class T_>
-	class MappedMemberData<C_*, T_> : public MappedMemberDataRO<C_*, T_> {
-	public:
-		using MappedMemberDataRO<C_*, T_>::MappedMemberDataRO;
-		
-		
-		/// Sets the data of the data member
-		virtual void Set(Data &source, const Data &value) const override {
-			if(source.IsConstant()) {
-				throw ConstantException("Given item");
-			}
-			
-			C_ *obj=source.GetValue<C_*>();
-			if(obj==nullptr) {
-				throw NullValueException("", "The value of the object was null while accessing to " + this->GetName() + " member.");
-			}
-			obj->*this->member = value.GetValue <T_>();
 		}
 	};
 	
@@ -1151,10 +1099,10 @@ namespace Scripting {
 	 */
 	template <
 	class T_, 
-	std::string(*ToString_)(const T_ &)=&String::From<T_>, 
-	T_*(*Parse_)(const std::string &)=&ParseThrow<T_*>
+	std::string(*ToString_)(const T_ &), 
+	T_*(*Parse_)(const std::string &)
 	>
-	class MappedReferenceType : public Type {
+	class MappedReferenceType : public Scripting::Type {
 	public:
 		MappedReferenceType(const std::string &name, const std::string &help, T_ *def) :
 		Type(name, help, def, new TMP::AbstractRTTC<T_>(), true)
@@ -1306,7 +1254,7 @@ namespace Scripting {
 	 * parameter. R_ could be void, P_ could be empty. O_ could be void to denote its not used.
 	 */
 	template <class E_, class O_, class R_, class ...P_>
-	class MappedEventType : public Scripting::Event {
+	class MappedEventType : public Scripting::EventType {
 	public:
 		using TokenType = decltype(std::declval<E_>().Register(std::function<void()>()));
 		std::map<TokenType, const Function *> unregistertokens;
@@ -1452,11 +1400,11 @@ namespace Scripting {
 	public:
 		MappedEventType(const std::string &name, const std::string &help, 
 					const ParameterList &parameters={}, const Type *parenttype=nullptr, const Type *ret=nullptr) : 
-		Event(name, help, (E_*)nullptr, new TMP::AbstractRTTC<E_>(), ret, parameters), parenttype(parenttype)
+		EventType(name, help, (E_*)nullptr, new TMP::AbstractRTTC<E_>(), ret, parameters), parenttype(parenttype)
 		{ 
 			Type *FunctionType();
 			using namespace Gorgon::Scripting;
-			AddFunctions({
+			AddMembers({
 				new Function("Fire", 
 					"Fires this event", 
 					this, {
