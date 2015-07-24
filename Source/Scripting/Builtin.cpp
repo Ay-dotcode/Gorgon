@@ -10,9 +10,9 @@
 namespace Gorgon {
 	namespace Scripting {
 		
-		Library Integrals;
-		Library Keywords;
-		Library Reflection;
+		Library Integrals("Integrals", "Integral types and functions");
+		Library Keywords("Keywords", "Function like keywords.");
+		extern Library Reflection;
 		
 		namespace {
 			void Print(std::vector<std::string> datav) {
@@ -88,14 +88,14 @@ namespace Gorgon {
 		void InitReflection();
 		
 		Type *ArrayType();
-		std::vector<Function*> ArrayFunctions();
+		std::vector<const StaticMember*> ArrayFunctions();
 		
 		std::string ByteToString(const Gorgon::Byte &b) {
 			return String::From((int)b);
 		}
 		
 		void init_builtin() {
-			if(Integrals.Types.GetCount()) return;
+			if(Integrals.Members.GetCount()) return;
 
 			auto Variant = new MappedValueType<Data, String::From<Data>, StringToData>("Variant",
 				"This type can contain any type.",
@@ -138,7 +138,7 @@ namespace Gorgon {
 			);
 			
 			
-			Int->AddFunctions({
+			Int->AddMembers({
 
 				new MappedOperator("+", "Adds two numbers together",
 					Int, {
@@ -236,12 +236,12 @@ namespace Gorgon {
 				MapTypecast<Gorgon::Byte, int>(Byte, Int)
 			});
 			
-			Int->AddConstants({
-				new Constant("max",  "Maximum value an integer can hold", Int, Any(std::numeric_limits<int>::max())),
-				new Constant("min",  "Minimum value an integer can hold", Int, Any(std::numeric_limits<int>::min())),				
+			Int->AddMembers({
+				new Constant("max",  "Maximum value an integer can hold", {Int, std::numeric_limits<int>::max()}),
+				new Constant("min",  "Minimum value an integer can hold", {Int, std::numeric_limits<int>::min()}),				
 			});
 			
-			Float->AddFunctions({
+			Float->AddMembers({
 				new MappedOperator("+", "Adds two numbers together",
 					Float, {
 						MapOperator(
@@ -391,13 +391,13 @@ namespace Gorgon {
 				MapTypecast<Gorgon::Byte, float>(Byte, Float)
 			});
 			
-			Float->AddConstants({
-				new Constant("max",  "Maximum value a float can hold", Float, Any(std::numeric_limits<float>::max())),
-				new Constant("min",  "Minimum value a float can hold", Float, Any(std::numeric_limits<float>::lowest())),	
-				new Constant("inf",  "Positive infinity", Float, Any(std::numeric_limits<float>::infinity()))
+			Float->AddMembers({
+				new Constant("max",  "Maximum value a float can hold", {Float, std::numeric_limits<float>::max()}),
+				new Constant("min",  "Minimum value a float can hold", {Float, std::numeric_limits<float>::lowest()}),	
+				new Constant("inf",  "Positive infinity", {Float, std::numeric_limits<float>::infinity()})
 			});
 			
-			Double->AddFunctions({
+			Double->AddMembers({
 				new MappedOperator("+", "Adds two numbers together",
 					Double, {
 						MapOperator(
@@ -535,13 +535,13 @@ namespace Gorgon {
 				MapTypecast<Gorgon::Byte, double>(Byte, Double)
 			});
 			
-			Double->AddConstants({
-				new Constant("max",  "Maximum value a double can hold", Double, Any(std::numeric_limits<double>::max())),
-				new Constant("min",  "Minimum value a double can hold", Double, Any(std::numeric_limits<double>::lowest())),	
-				new Constant("inf",  "Positive infinity", Double, Any(std::numeric_limits<double>::infinity()))			
+			Double->AddMembers({
+				new Constant("max",  "Maximum value a double can hold", {Double, std::numeric_limits<double>::max()}),
+				new Constant("min",  "Minimum value a double can hold", {Double, std::numeric_limits<double>::lowest()}),
+				new Constant("inf",  "Positive infinity", {Double, std::numeric_limits<double>::infinity()})
 			});
 
-			Unsigned->AddFunctions({
+			Unsigned->AddMembers({
 				new MappedOperator("+", "Adds two numbers together",
 					Unsigned, {
 						MapOperator(
@@ -704,12 +704,12 @@ namespace Gorgon {
 				MapTypecast<Gorgon::Byte, unsigned>(Byte, Unsigned),
 			});
 			
-			Unsigned->AddConstants({
-				new Constant("max",  "Maximum value an unsigned integer can hold", Unsigned, Any(std::numeric_limits<unsigned>::max())),
-				new Constant("min",  "Minimum value an unsigned integer can hold", Unsigned, Any(std::numeric_limits<unsigned>::min())),				
+			Unsigned->AddMembers({
+				new Constant("max",  "Maximum value an unsigned integer can hold", {Unsigned, std::numeric_limits<unsigned>::max()}),
+				new Constant("min",  "Minimum value an unsigned integer can hold", {Unsigned, std::numeric_limits<unsigned>::min()}),				
 			});
 			
-			Byte->AddFunctions({
+			Byte->AddMembers({
 				new MappedOperator("+", "Adds two numbers together",
 					Byte, {
 						MapOperator(
@@ -885,12 +885,12 @@ namespace Gorgon {
 				MapTypecast<char, Gorgon::Byte>(Char, Byte)
 			});
 			
-			Byte->AddConstants({
-				new Constant("max",  "Maximum value a byte can hold", Byte, Any(std::numeric_limits<Gorgon::Byte>::max())),
-				new Constant("min",  "Minimum value a byte can hold", Byte, Any(std::numeric_limits<Gorgon::Byte>::min())),				
+			Byte->AddMembers({
+				new Constant("max",  "Maximum value a byte can hold", {Byte, std::numeric_limits<Gorgon::Byte>::max()}),
+				new Constant("min",  "Minimum value a byte can hold", {Byte, std::numeric_limits<Gorgon::Byte>::min()}),				
 			});
 			
-			Char->AddFunctions({
+			Char->AddMembers({
 
 				new MappedOperator("+", "Adds an offset to a char",
 					Char, {
@@ -1016,7 +1016,7 @@ namespace Gorgon {
 				MapTypecast<Gorgon::Byte, char>(Byte, Char)
 			});
 			
-			Bool->AddFunctions({
+			Bool->AddMembers({
 				new MappedOperator("and", 
 					"Conjunction of two boolean values",
 					Bool, Bool, Bool, [](bool l, bool r) { return l && r; }
@@ -1046,7 +1046,7 @@ namespace Gorgon {
 				MapTypecast<int, bool>(Int, Bool),
 			});
 			
-			String->AddFunctions({
+			String->AddMembers({
 				new Function("Length",
 					"Returns the length of the string", String, 
 				 {MapFunction(&std::string::length, Unsigned, {}, ConstTag)}
@@ -1218,8 +1218,7 @@ namespace Gorgon {
 				)
 			});
 			
-			Integrals={"Integral", "Integral types and functions", 
-				TypeList {
+			Integrals.AddMembers({ 
 					Bool,
 					Int,
 					Float,
@@ -1228,18 +1227,14 @@ namespace Gorgon {
 					Byte,
 					Char,
 					String,
-					Variant
-				},
-				FunctionList{},
-				ConstantList {
-					new Constant("Pi", "Contains the value of PI", Double,             Any(3.14159265358979)),
-					new Constant("Euler",  "Contains the value of Euler's number", Double, Any(2.71828182845905)),
-				}
-			};
+					Variant,
+					new Constant("Pi", "Contains the value of PI", {Double,             3.14159265358979}),
+					new Constant("Euler",  "Contains the value of Euler's number", {Double, 2.71828182845905}),
+			});
 			
-			Integrals.AddTypes({ArrayType()});
-			Integrals.AddFunctions(ArrayFunctions());
-			Integrals.AddFunctions({
+			Integrals.AddMember(ArrayType());
+			Integrals.AddMembers(ArrayFunctions());
+			Integrals.AddMembers({
 				new Function("Print",
 					"This function prints the given parameters to the screen without a new line at the end.", nullptr,
 					{
@@ -1326,110 +1321,107 @@ namespace Gorgon {
 
 			});
 			
-			Keywords={"Keywords", "Function like keywords.",
-				TypeList {},
-				FunctionList {
-					new Function("Echo",
-						"This function prints the given parameters to the screen with a newline following them.", nullptr,
-						{
-							MapFunction(
-								Echo, nullptr, 
-								{
-									Parameter( "string",
-										"The strings that will be printed.",
-										String, OptionalTag
-									)
-								},
-								StretchTag, RepeatTag
-							)
-						}, KeywordTag
-					),
-					new Function("System",
-						"This function executes the given line as a shell command.", nullptr,
-						{
-							MapFunction(
-								system, nullptr, 
-								{
-									Parameter( "program",
-										"The line to be executed.",
-										String
-									)
-								},
-								StretchTag
-							)
-						}, KeywordTag
-					),
-					new Function("const",
-						"Makes the given variable a constant", nullptr,
-						{
-							MapFunction(
-								[](std::string varname) {
-									auto var=VirtualMachine::Get().getvarref(varname);
-									if(!var) {
-										throw SymbolNotFoundException(varname, SymbolType::Variable);
-									}
-									var->MakeConstant();
-								}, nullptr,
-								{
-									Parameter("Variable",
-										"This is the variable to become constant",
-										String, VariableTag
-									)
+			Keywords.AddMembers({
+				new Function("Echo",
+					"This function prints the given parameters to the screen with a newline following them.", nullptr,
+					{
+						MapFunction(
+							Echo, nullptr, 
+							{
+								Parameter( "string",
+									"The strings that will be printed.",
+									String, OptionalTag
+								)
+							},
+							StretchTag, RepeatTag
+						)
+					}, KeywordTag
+				),
+				new Function("System",
+					"This function executes the given line as a shell command.", nullptr,
+					{
+						MapFunction(
+							system, nullptr, 
+							{
+								Parameter( "program",
+									"The line to be executed.",
+									String
+								)
+							},
+							StretchTag
+						)
+					}, KeywordTag
+				),
+				new Function("const",
+					"Makes the given variable a constant", nullptr,
+					{
+						MapFunction(
+							[](std::string varname) {
+								auto var=VirtualMachine::Get().getvarref(varname);
+								if(!var) {
+									throw SymbolNotFoundException(varname, SymbolType::Variable);
 								}
-							)
-						},
-						KeywordTag
-					),
-					new Function("static",
-						"Creates a static variable", nullptr, 
-						{
-							MapFunction(
-								static1, nullptr,
-								{
-									Parameter(
-										"Variable",
-										"This is the variable to be declared",
-										String, VariableTag
-									)
-								}
-							),
-							MapFunction(
-								static2, nullptr,
-								{
-									Parameter(
-										"Variable",
-										"This is the variable to be declared",
-										String, VariableTag
-									),
-									Parameter(
-										"Value",
-										"This is the variable to be declared",
-										Variant
-									)
-								}
-							)
-						},
-						KeywordTag
-					),
-					new Function("unset",
-						"Unsets a given variable", nullptr,
-						{
-							MapFunction(
-								[](std::string varname) {
-									VirtualMachine::Get().UnsetVariable(varname);
-								}, nullptr,
-								{
-									Parameter("Variable",
-										"This is the variable to be unset",
-										String, VariableTag
-									)
-								}
-							)
-						},
-						KeywordTag
-					),
-				},
-			};
+								var->MakeConstant();
+							}, nullptr,
+							{
+								Parameter("Variable",
+									"This is the variable to become constant",
+									String, VariableTag
+								)
+							}
+						)
+					},
+					KeywordTag
+				),
+				new Function("static",
+					"Creates a static variable", nullptr, 
+					{
+						MapFunction(
+							static1, nullptr,
+							{
+								Parameter(
+									"Variable",
+									"This is the variable to be declared",
+									String, VariableTag
+								)
+							}
+						),
+						MapFunction(
+							static2, nullptr,
+							{
+								Parameter(
+									"Variable",
+									"This is the variable to be declared",
+									String, VariableTag
+								),
+								Parameter(
+									"Value",
+									"This is the variable to be declared",
+									Variant
+								)
+							}
+						)
+					},
+					KeywordTag
+				),
+				new Function("unset",
+					"Unsets a given variable", nullptr,
+					{
+						MapFunction(
+							[](std::string varname) {
+								VirtualMachine::Get().UnsetVariable(varname);
+							}, nullptr,
+							{
+								Parameter("Variable",
+									"This is the variable to be unset",
+									String, VariableTag
+								)
+							}
+						)
+					},
+					KeywordTag
+				),
+			});
 			
 			InitReflection();
 		}

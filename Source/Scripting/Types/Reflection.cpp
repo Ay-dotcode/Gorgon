@@ -6,7 +6,7 @@
 
 namespace Gorgon { namespace Scripting {
 	static Type *type=nullptr;	
-	
+	Library Reflection("Reflection", "This library contains reflection objects");
 	
 	Type *FunctionType() {		
 		static Type *fn=nullptr;
@@ -357,12 +357,12 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	void InitReflection() {		
-		Reflection=Library("Reflection", "This library contains reflection objects", {}, {});
-		Reflection.AddTypes( { TypeType() } );
-			
-		Reflection.AddTypes( {FunctionType(), ParameterType(), LibraryType(), ConstantType() });
 		
-		Reflection.AddFunctions({
+		Reflection.Member(TypeType());
+			
+		Reflection.AddMembers({FunctionType(), ParameterType(), LibraryType(), ConstantType()});
+		
+		Reflection.AddMembers({
 				new Function("TypeOf",
 					"This function returns the type of the given variable.", nullptr, 
 					{

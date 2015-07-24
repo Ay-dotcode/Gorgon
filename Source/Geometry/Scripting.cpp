@@ -58,8 +58,8 @@ namespace Gorgon { namespace Geometry {
 		});
 
 		point->AddMembers({
-			new Scripting::MappedMemberData<Point, int>(&Point::X, "x", "X coordinate", Scripting::Types::Int()),
-			new Scripting::MappedMemberData<Point, int>(&Point::Y, "y", "Y coordinate", Scripting::Types::Int())
+			new Scripting::MappedInstanceMember<Point, int>(&Point::X, "x", "X coordinate", Scripting::Types::Int()),
+			new Scripting::MappedInstanceMember<Point, int>(&Point::Y, "y", "Y coordinate", Scripting::Types::Int())
 		});
 
 		LibGeometry.AddMember(point);

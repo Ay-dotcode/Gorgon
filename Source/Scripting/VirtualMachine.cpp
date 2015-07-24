@@ -33,24 +33,11 @@ namespace Gorgon {
 			if(alllibnames!="") alllibnames+=", ";
 			alllibnames+=library.GetName();
 			
-			for(const auto &elm : library.Types) {
-				types.insert(std::make_pair(elm.first, &elm.second));
-			}
-			
-			for(const auto &elm : library.Constants) {
-				symbols.insert(std::make_pair(elm.first, Symbol{library.GetName(), SymbolType::Constant, &elm.second}));
-			}
-			
-			for(const auto &elm : library.Functions) {
-				symbols.insert(std::make_pair(elm.first, Symbol{library.GetName(), SymbolType::Function, &elm.second}));
-			}
-			
-			for(const auto &elm : library.Types) {
-				symbols.insert(std::make_pair(elm.first, Symbol{library.GetName(), SymbolType::Type, &elm.second}));
-			}
+			//!Update symbol table
 		}
 		
 		void VirtualMachine::RemoveLibrary(const Library &library) {
+			//! Update symbol table
 			libraries.Remove(library.GetName());
 			alllibnames="";
 			for(const auto &lib : libraries) {
@@ -66,7 +53,7 @@ namespace Gorgon {
 		void VirtualMachine::SetInput(std::istream &in) {
 			input=&in;
 		}
-		
+/*		
 		const Type &VirtualMachine::FindType(std::string name) {
 			using std::swap;
 
@@ -369,9 +356,7 @@ namespace Gorgon {
 					auto element=type->Constants.Find(name);
 					
 					if(!element.IsValid()) {
-						/*for(auto &t : type->Parents) {
-							
-						}*/
+						
 						throw SymbolNotFoundException(
 							namespc+":"+name, SymbolType::Constant, 
 							"Cannot find "+name+" constant in library "+namespc
@@ -394,7 +379,8 @@ namespace Gorgon {
 				
 			}
 		}
-		
+		*/
+
 		void VirtualMachine::Start(InputProvider &input) {
 			Begin(input);
 

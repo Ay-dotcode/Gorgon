@@ -252,7 +252,6 @@ namespace Gorgon {
 			std::vector<std::shared_ptr<ScopeInstance>> scopeinstances;
 			Containers::Collection<Scope>				scopes;
 
-			Library runtime;
 			
 			int highesttemp=0;
 			int tempbase = -1;

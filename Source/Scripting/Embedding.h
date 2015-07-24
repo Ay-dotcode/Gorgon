@@ -804,7 +804,7 @@ namespace Scripting {
 	class MappedROInstanceMember : public Scripting::InstanceMember {
 	protected:
 		using normaltype = typename std::remove_const<typename std::remove_pointer<T_>::type>::type;
-		using classptr   = typename std::remove_pointer<T_>::type *;
+		using classptr   = typename std::remove_pointer<C_>::type *;
 		
 		enum {
 			istypeconst = std::is_const<typename std::remove_pointer<T_>::type>::value,
@@ -818,7 +818,7 @@ namespace Scripting {
 			ASSERT(type->TypeInterface.NormalType.IsSameType<normaltype>(), "Reported type "+type->GetName()+
 				   " ("+type->TypeInterface.NormalType.Name()+") "
 				   " does not match with c++ type: "+Utils::GetTypeName<normaltype>(), 1, 2);
-			ASSERT(constant=istypeconst, "Constness of "+member+" does not match with its implementation");
+			ASSERT(constant=istypeconst, "Constness of "+name+" does not match with its implementation");
 		}
 		
 		template<class T2_=T_>
@@ -848,18 +848,18 @@ namespace Scripting {
 				Data d;
 				if(data.IsConstant() || constant) {
 					if(istypeptr) {
-						d={GetType(), (const T_)data.ReferenceValue<classptr>().*member, true, true};
+						d={GetType(), (const T_)(data.ReferenceValue<classptr>()->*member), true, true};
 					}
 					else {
-						d={GetType(), (const T_ *)&(data.ReferenceValue<classptr>().*member), true, true};
+						d={GetType(), (const T_ *)&(data.ReferenceValue<classptr>()->*member), true, true};
 					}
 				}
 				else {
 					if(istypeptr) {
-						d={GetType(), (data.ReferenceValue<classptr>().*member), true, false};
+						d={GetType(), (data.ReferenceValue<classptr>()->*member), true, false};
 					}
 					else {
-						d={GetType(), &(data.ReferenceValue<classptr>().*member), true, false};
+						d={GetType(), &(data.ReferenceValue<classptr>()->*member), true, false};
 					}
 				}
 				
@@ -870,9 +870,10 @@ namespace Scripting {
 		
 		
 	protected:
-		virtual void typecheck(const Type *type) override final {
-			ASSERT(type->GetDefaultValue().TypeCheck<C_>(), "The type of the parent does not match with the type "
-			"it has placed in.", 2, 2);
+		virtual void typecheck(const Scripting::Type *type) const override final {
+			ASSERT(type->TypeInterface.NormalType.IsSameType<typename std::remove_pointer<C_>::type>(), 
+				   "The type of the parent does not match with the type "
+				   "it has placed in.", 2, 2);
 		}
 		
 		virtual void set(Data &source, Data &value) const override {
@@ -900,15 +901,15 @@ namespace Scripting {
 		
 		
 	protected:
-		using classptr   = typename std::remove_pointer<T_>::type *;
+		using classptr   = typename std::remove_pointer<C_>::type *;
 		
 		template<class T2_=T_>
-		typename std::enable_if<std::is_pointer<T2_>::value, typename std::remove_pointer<T2_>::type>::type &getref(T2_ value) {
+		typename std::enable_if<std::is_pointer<T2_>::value, typename std::remove_pointer<T2_>::type>::type &getref(T2_ value) const {
 			return *value;
 		}
 		
 		template<class T2_=T_>
-		typename std::enable_if<!std::is_pointer<T2_>::value, T2_>::type &getref(T2_ &value) {
+		typename std::enable_if<!std::is_pointer<T2_>::value, T2_>::type &getref(T2_ &value) const {
 			return value;
 		}
 

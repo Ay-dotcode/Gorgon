@@ -203,7 +203,7 @@ namespace Gorgon {
 			return ret;
 		}
 		
-		std::vector<Function*> ArrayFunctions() {
+		std::vector<const StaticMember*> ArrayFunctions() {
 			return {
 				new Function("Range",
 					"Creates a range array between two numbers", nullptr,

@@ -1028,16 +1028,33 @@ namespace Gorgon {
 			}
 			
 			virtual Data Get() const override;
-				
+			
 			/// Adds a new member to this namespace
 			virtual void AddMember(const StaticMember &member) {
 				ASSERT(!members.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
 
 				members.Add(member);
 			}
+			/// Adds a new member to this namespace
+			virtual void AddMember(const StaticMember *member) {
+				ASSERT(member!=nullptr, "Member is null");
+				ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+
+				members.Add(member);
+			}
 			
 			/// Adds a list of members to this namespace
-			virtual void AddMembers(std::initializer_list<StaticMember*> newmembers) {
+			virtual void AddMembers(std::initializer_list<const StaticMember*> newmembers) {
+				for(auto member : newmembers) {
+					ASSERT(member!=nullptr, "Member is null");
+					ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+					
+					members.Add(member);
+				}
+			}
+			
+			/// Adds a list of members to this namespace
+			virtual void AddMembers(std::vector<const StaticMember*> newmembers) {
 				for(auto member : newmembers) {
 					ASSERT(member!=nullptr, "Member is null");
 					ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
@@ -1131,8 +1148,24 @@ namespace Gorgon {
 				Namespace::AddMember(member);
 			}
 			
+			/// Adds a static member to this type
+			virtual void AddMember(const StaticMember *member) override {
+				ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+				
+				Namespace::AddMember(member);
+			}
+			
 			/// Adds a list of static members to this type
-			virtual void AddMembers(std::initializer_list<StaticMember*> newmembers) override {
+			virtual void AddMembers(std::initializer_list<const StaticMember*> newmembers) override {
+				for(auto member : newmembers) {
+					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+					
+					Namespace::AddMember(*member);
+				}
+			}
+			
+			/// Adds a list of static members to this type
+			virtual void AddMembers(std::vector<const StaticMember*> newmembers) override {
 				for(auto member : newmembers) {
 					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 					
@@ -1150,8 +1183,33 @@ namespace Gorgon {
 				instancemembers.Add(member);
 			}
 			
+			/// Adds a list of instance members to this type
+			virtual void AddMember(const InstanceMember *member) {
+				member->typecheck(this);
+				
+				ASSERT(member!=nullptr, "Member is null");
+				
+				ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+				ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+				
+				instancemembers.Add(member);
+			}
+			
 			/// Adds an instance member to this type
-			virtual void AddMembers(std::initializer_list<InstanceMember*> newmembers) {
+			virtual void AddMembers(std::initializer_list<const InstanceMember*> newmembers) {
+				for(auto member : newmembers) {
+					member->typecheck(this);
+					
+					ASSERT(member!=nullptr, "Member is null");
+					ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
+					
+					instancemembers.Add(member);
+				}
+			}
+			
+			/// Adds an instance member to this type
+			virtual void AddMembers(std::vector<const InstanceMember*> newmembers) {
 				for(auto member : newmembers) {
 					member->typecheck(this);
 					
