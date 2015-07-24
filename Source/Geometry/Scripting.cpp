@@ -7,7 +7,8 @@ namespace Gorgon { namespace Geometry {
 
 
 
-	Scripting::Library LibGeometry;
+	Scripting::Library LibGeometry("Geometry",
+								   "Data types under geometry module and their member functions and operators");
 
 	void init_scripting() { 
 
@@ -18,7 +19,7 @@ namespace Gorgon { namespace Geometry {
 			"See documentation for complete list of overloaded operators and member functions"
 		);
 
-		point->AddFunctions({
+		point->AddMembers({
 			new Scripting::MappedOperator(
 				"+",
 				"Adds two point type to each other, returns a new resultant point",
@@ -61,14 +62,6 @@ namespace Gorgon { namespace Geometry {
 			new Scripting::MappedMemberData<Point, int>(&Point::Y, "y", "Y coordinate", Scripting::Types::Int())
 		});
 
-		LibGeometry = {
-			"Geometry",
-			"Data types under geometry module and their member functions and operators",
-			Scripting::TypeList {
-				point,
-			},
-			Scripting::FunctionList{},
-			Scripting::ConstantList{},
-		};
+		LibGeometry.AddMember(point);
 	}
 } }

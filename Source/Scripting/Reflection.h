@@ -363,7 +363,10 @@ namespace Gorgon {
 				DataMember = 10,
 				
 				/// Function, functions can also be represented as data members
-				Function = 12
+				Function = 12,
+				
+				/// Static fixed constant
+				Constant = 14,
 			};
 
 			StaticMember(const std::string& name, const std::string& help) : Member(name, help) {
@@ -410,10 +413,12 @@ namespace Gorgon {
 			}
 			
 			/// Changes the value of this member
-			void Set(const Data &newval) {
+			void Set(Data &newval) {
 				if(readonly) {
 					throw ReadOnlyException(name);
 				}
+				
+				set(newval);
 			}
 			
 			/// Returns the type of this static member
@@ -444,7 +449,7 @@ namespace Gorgon {
 			/// Implementers of static data member should overload this function for assignment.
 			/// If readonly is set, this function will not be called, instead, the public set function
 			/// will throw readonly exception.
-			virtual void set(const Data &newval) = 0;
+			virtual void set(Data &newval) = 0;
 			
 			/// Type of the datamember
 			const Type *type;
@@ -948,7 +953,7 @@ namespace Gorgon {
 			/// Constructor
 			InstanceMember(const std::string &name, const std::string &help, 
 					   const Type &type, bool constant=false, bool ref=false, bool readonly=false) :
-			Member(name, help), type(&type), constant(constant), ref(ref), readonly(readonly) 
+			Member(name, help), type(&type), constant(constant), reference(ref), readonly(readonly) 
 			{
 			}
 			
@@ -964,8 +969,13 @@ namespace Gorgon {
 			
 			/// Sets the data of the data member, if the source is a reference,
 			/// this function should perform in place replacement of the value
-			virtual void Set(Data &source, const Data &value) const = 0;
-
+			void Set(Data &source, Data &value) const {
+				if(readonly) {
+					throw ReadOnlyException(name);
+				}
+				
+				set(source, value);
+			}
 			/// Returns whether this member is a constant
 			bool IsConstant() const {
 				return constant;
@@ -973,7 +983,7 @@ namespace Gorgon {
 			
 			/// Returns whether this member is a reference
 			bool IsReference() const {
-				return ref;
+				return reference;
 			}
 			
 			/// Returns whether this member is read-only. Read-only members cannot be
@@ -986,6 +996,9 @@ namespace Gorgon {
 			virtual ~InstanceMember() { }
 			
 		protected:
+			/// This function should perform set operation
+			virtual void set(Data &source, Data &value) const = 0;
+			
 			/// Type checks the parent
 			virtual void typecheck(const Type *type) const = 0;
 			
@@ -996,7 +1009,7 @@ namespace Gorgon {
 			bool constant;
 			
 			/// This instance member is a reference
-			bool ref;
+			bool reference;
 			
 			/// Marks this instance as read-only
 			bool readonly;
@@ -1151,7 +1164,7 @@ namespace Gorgon {
 			}
 			
 			/// Adds the given constructors
-			void AddConstructors(std::initializer_list<const Function::Overload*> elements) {
+			void AddConstructors(std::initializer_list<Function::Overload*> elements) {
 				for(auto element : elements) {
 					ASSERT((element != nullptr), "Given element cannot be nullptr", 1, 2);
 					ASSERT(element->HasReturnType() && element->GetReturnType()==this,
@@ -1162,7 +1175,7 @@ namespace Gorgon {
 			}
 			
 			/// Adds the given constructor
-			void AddConstructor(const Function::Overload &element) {
+			void AddConstructor(Function::Overload &element) {
 				ASSERT(element.HasReturnType() && element.GetReturnType()==this,
 						"Given constructor should return this ("+name+") type", 1, 2);
 				
@@ -1303,6 +1316,34 @@ namespace Gorgon {
 			
 			/// Whether this type is a reference type
 			bool referencetype = false;
+		};
+		
+		/**
+		 * This class represents a static constant. Its value is fixed after its construction
+		 */
+		class Constant : public StaticMember {
+		public:
+			Constant(const std::string &name, const std::string &help, Data value) : 
+			StaticMember(name, help), value(value) {
+				ASSERT(value.IsValid(), "A constant cannot have an invalid value");
+				this->value.MakeConstant();
+			}
+			
+			virtual Data Get() const override final {
+				return value;
+			}
+			
+			virtual MemberType GetMemberType() const override final {
+				return StaticMember::Constant;
+			}
+			
+			/// Returns the type of the constant
+			const Type &GetType() const {
+				return value.GetType();
+			}
+			
+		protected:
+			Data value;
 		};
 		
 		/// Allows printing of types

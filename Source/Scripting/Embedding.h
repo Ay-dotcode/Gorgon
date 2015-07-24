@@ -39,7 +39,7 @@ namespace Scripting {
 	template <
 	class T_, 
 	StringFromFn<T_> ToString_=&String::From<T_>, 
-	ParseFn<T_> Parse_=&ParseThrow<T_*>
+	ParseFn<T_*> Parse_=&ParseThrow<T_*>
 	>
 	class MappedReferenceType;
 
@@ -811,27 +811,30 @@ namespace Scripting {
 			istypeptr   = std::is_pointer<T_>::value,
 		};
 		
-		MappedROInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, bool constant, bool ref, bool readonly) :
+		MappedROInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, 
+							   bool constant, bool ref, bool readonly) :
 		InstanceMember(name, help, *type, constant, ref, readonly), member(member) {
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
 			ASSERT(type->TypeInterface.NormalType.IsSameType<normaltype>(), "Reported type "+type->GetName()+
 				   " ("+type->TypeInterface.NormalType.Name()+") "
 				   " does not match with c++ type: "+Utils::GetTypeName<normaltype>(), 1, 2);
+			ASSERT(constant=istypeconst, "Constness of "+member+" does not match with its implementation");
 		}
 		
 		template<class T2_=T_>
-		static typename std::enable_if<istypeptr, typename std::remove_pointer<T2_>::type>::type deref(T2_ val) {
+		static typename std::enable_if<istypeptr, typename std::remove_pointer<T2_>::type>::type deref(const T2_ val) {
 			return *val;
 		}
 		
 		template<class T2_=T_>
-		static typename std::enable_if<!istypeptr, typename std::remove_pointer<T2_>::type>::type deref(T2_ val) {
+		static typename std::enable_if<!istypeptr, typename std::remove_pointer<T2_>::type>::type deref(const T2_ val) {
 			return val;
 		}
 		
 	public:
 		/// Constructor
-		MappedROInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, bool constant=false) :
+		MappedROInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, 
+							   const Type *type, bool constant=false) :
 		MappedROInstanceMember(member, name, help, type, constant, false, true)
 		{ }
 		
@@ -865,15 +868,14 @@ namespace Scripting {
 			}
 		}
 		
-		/// Sets the data of the data member
-		virtual void Set(Data &source, const Data &value) const override {
-			throw ReadOnlyException(this->GetName());
-		}
 		
 	protected:
 		virtual void typecheck(const Type *type) override final {
 			ASSERT(type->GetDefaultValue().TypeCheck<C_>(), "The type of the parent does not match with the type "
 			"it has placed in.", 2, 2);
+		}
+		
+		virtual void set(Data &source, Data &value) const override {
 		}
 		
 		T_ C_::*member;
@@ -887,121 +889,207 @@ namespace Scripting {
 	public:
 		/// Constructor
 		MappedInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, bool constant=false, bool ref=false) :
-		MappedROInstanceMember(member, name, help, type, constant, ref, false)
-		{ }
+		MappedROInstanceMember<C_, T_>(member, name, help, type, constant, ref, false)
+		{
+			if(ref) {
+				ASSERT(std::is_pointer<T_>::value, "Member "+name+" marked as reference but its source is not, should be a pointer");
+			}
+			
+			ASSERT(!constant || ref, "Non-reference constant instance members becomes readonly, choose a readonly embedder for "+name);
+		}
 		
 		
-		/// Sets the data of the data member
-		virtual void Set(Data &source, const Data &value) const override {
+	protected:
+		using classptr   = typename std::remove_pointer<T_>::type *;
+		
+		template<class T2_=T_>
+		typename std::enable_if<std::is_pointer<T2_>::value, typename std::remove_pointer<T2_>::type>::type &getref(T2_ value) {
+			return *value;
+		}
+		
+		template<class T2_=T_>
+		typename std::enable_if<!std::is_pointer<T2_>::value, T2_>::type &getref(T2_ &value) {
+			return value;
+		}
+
+		virtual void set(Data &source, Data &value) const override {
 			if(source.IsConstant()) {
 				throw ConstantException("Given item");
 			}
 			
+			if(value.IsConstant() && this->reference && !this->constant) {
+				throw ConstantException("Value for "+this->name, "Given value for "+this->name+" is constant");
+			}
+			
 			if(source.IsReference()) {
-				C_ *obj  = source.ReferenceValue<classref>();
-				obj->*this->member = value.GetValue <T_>();
+				C_ *obj  = source.ReferenceValue<classptr>();
+				if(this->reference) {
+					if(value.IsConstant()) {
+						obj->*this->member = value.ReferenceValue<T_>();
+					}
+					else {
+						obj->*this->member = value.ReferenceValue<const T_>();
+					}
+				}
+				else {
+					if(value.IsConstant()) {
+						obj->*this->member = this->deref(value.GetValue <const T_>());
+					}
+					else {
+						obj->*this->member = this->deref(value.GetValue <T_>());
+					}
+				}
 			}
 			else {
 				C_ obj  = source.GetValue<C_>();
-				obj.*this->member = value.GetValue <T_>();
+				
+				if(this->reference) { //T_ is sure to be ptr
+					if(value.IsConstant()) {
+						obj.*this->member = value.ReferenceValue<T_>();
+					}
+					else {
+						obj.*this->member = value.ReferenceValue<const T_>();
+					}
+				}
+				else {
+					if(value.IsConstant()) { //T_ may or may not be a ptr, if its a ptr, its value will be changed
+						getref(obj.*this->member) = value.GetValue <const T_>();
+					}
+					else {
+						getref(obj.*this->member) = value.GetValue <T_>();
+					}
+				}
+				
 				source={source.GetType(), obj};
 			}
 		}
 	};
 	
-	
-	/**
-		* This class maps a data accessor functions to a data member
-		*/
-	template <class C_, class T_>
-	class DataAccessor : public DataMember {
-	public:
+	template<class T_>
+	class MappedROStaticDataMember : public Scripting::StaticDataMember {
+	protected:
+		using normaltype = typename std::remove_const<typename std::remove_pointer<T_>::type>::type;
 		
-		/// Constructor
-		template<class ...P_>
-		DataAccessor(std::function<T_(const C_ &)> getter, std::function<void(C_ &, const T_ &)> setter, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
-		DataMember(name, help, *type, tags...), getter(getter), setter(setter) {
+		enum {
+			istypeconst = std::is_const<typename std::remove_pointer<T_>::type>::value,
+			istypeptr   = std::is_pointer<T_>::value,
+		};
+		
+		MappedROStaticDataMember(T_ value, const std::string &name, const std::string &help, const Type *type,  
+								 bool isconstant, bool ref, bool readonly) : 
+		StaticDataMember(name, help, type, constant, ref, readonly), value(value)
+		{
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
-			ASSERT(type->GetDefaultValue().TypeCheck<T_>(), "Reported type "+type->GetName()+
-					"does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
 		}
 		
-		virtual Data Get(const Data &data) const override {
-			return {GetType(), getter(data.GetValue<C_>())};
+	public:
+		/// If T_ is not a pointer, uses the value as initial value and stores the current value locally.
+		/// The stored value can be accessed using GetValue function. If T_ is a pointer, it will be modified
+		/// while modifying the value
+		MappedROStaticDataMember(T_ value, const std::string &name, const std::string &help, const Type *type,  
+								 bool isconstant=false) : 
+		MappedROStaticDataMember(name, help, type, value, constant, false, true)
+		{
 		}
+		
+		virtual Data Get() const override {
+			// we dont need to return a pointer
+			if(constant && !type->IsReferenceType() && !istypeptr) {
+				return {GetType(), (const T_)value, false, true};
+			}
+			else {
+				Data d;
+				if(constant) {
+					if(istypeptr) {
+						d={GetType(), (const T_)value, true, true};
+					}
+					else {
+						d={GetType(), (const T_ *)&(value), true, true};
+					}
+				}
+				else {
+					if(istypeptr) {
+						d={GetType(), (value), true, false};
+					}
+					else {
+						d={GetType(), &(value), true, false};
+					}
+				}
 
-		virtual Data Get(Data &data) const override {
-			return {GetType(), getter(data.GetValue<C_>())};
+				return d;
+			}
 		}
 		
-		/// Sets the data of the data member
-		virtual void Set(Data &source, const Data &value) const override {
-			C_ obj = source.GetValue<C_>();
-			setter(obj, value.GetValue<T_>());
-			source= {source.GetType(), obj};
+		/// Returns the value stored in this data
+		T_ GetValue() const {
+			return value;
+		}
+		
+		/// Returns the value stored in this data
+		T_ &GetValue() {
+			return value;
 		}
 		
 	protected:
-		void typecheck(const Type *type) {
-			ASSERT(type->GetDefaultValue().TypeCheck<C_>(), "The type of mapped data does not match with the type "
-			"it has placed in.", 2, 2);
+		
+		virtual void set(Data &source, Data &value) const override {
 		}
 		
-	private:
-		std::function<T_(const C_ &)> getter;
-		std::function<void(C_ &, const T_ &)> setter;
+		T_ value;
 	};
 	
-	/**
-		* This class maps a data accessor functions to a data member
-		*/
-	template <class C_, class T_>
-	class DataAccessor<C_*, T_> : public DataMember {
+	template<class T_>
+	class MappedStaticDataMember : public MappedROStaticDataMember<T_> {
 	public:
-		
-		/// Constructor
-		template<class ...P_>
-		DataAccessor(std::function<T_(const C_ &)> getter, std::function<void(C_ &, const T_ &)> setter, const std::string &name, const std::string &help, const Type *type, P_ ...tags) :
-		DataMember(name, help, *type, tags...), getter(getter), setter(setter) {
-			ASSERT(type, "Type cannot be nullptr", 1, 2);
-			ASSERT(type->GetDefaultValue().TypeCheck<T_>(), "Reported type "+type->GetName()+
-					"does not match with c++ type: "+Utils::GetTypeName<T_>(), 1, 2);
-		}
-		
-		virtual Data Get(const Data &data) const override {
-			C_ *obj=data.GetValue<C_*>();
-			if(obj==nullptr) {
-				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
+		/// If T_ is a non-pointer type or T_ is pointer and ref is set to true, the value would be used as initial value. 
+		/// It is possible to access current value through GetValue function. If T_ is a pointer and ref is false value 
+		/// is used as the storage.
+		MappedStaticDataMember(T_ value, const std::string &name, const std::string &help, const Type *type, 
+							   bool constant=false, bool ref=false) :
+		MappedROStaticDataMember<T_>(value, name, help, type, constant, ref, false)
+		{
+			if(ref) {
+				ASSERT(std::is_pointer<T_>::value, "Member "+name+" marked as reference but its source is not, should be a pointer");
 			}
-			return {GetType(), getter(*obj)};
+			
+			ASSERT(!constant || ref, "Non-reference constant instance members becomes readonly, choose a readonly embedder for "+name);
 		}
 		
-		virtual Data Get(Data &data) const override {
-			C_ *obj=data.GetValue<C_*>();
-			if(obj==nullptr) {
-				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
-			}
-			return {GetType(), getter(*obj)};
-		}
-		
-		/// Sets the data of the data member
-		virtual void Set(Data &source, const Data &value) const override {
-			C_ *obj = source.GetValue<C_*>();
-			if(obj==nullptr) {
-				throw NullValueException("", "The value of the object was null while accessing to " + GetName() + " member.");
-			}
-			setter(*obj, value.GetValue<T_>());
-		}
 		
 	protected:
-		void typecheck(const Type *type) {
-			ASSERT(type->GetDefaultValue().TypeCheck<C_*>(), "The type of mapped data does not match with the type "
-			"it has placed in.", 2, 2);
+		template<class T2_=T_>
+		typename std::enable_if<std::is_pointer<T2_>::value, typename std::remove_pointer<T2_>::type>::type &getref() {
+			return *(this->value);
 		}
 		
-	private:
-		std::function<T_(const C_ &)> getter;
-		std::function<void(C_ &, const T_ &)> setter;
+		template<class T2_=T_>
+		typename std::enable_if<!std::is_pointer<T2_>::value, T2_>::type &getref() {
+			return this->value;
+		}
+		
+		virtual void set(Data &value) const override {
+			
+			if(value.IsConstant() && this->reference && !this->constant) {
+				throw ConstantException("Value for "+this->name, "Given value for "+this->name+" is constant");
+			}
+			
+			if(this->reference) {
+				if(value.IsConstant()) {
+					this->value = value.ReferenceValue<T_>();
+				}
+				else {
+					this->value = value.ReferenceValue<const T_>();
+				}
+			}
+			else {
+				if(value.IsConstant()) {
+					getref() = value.GetValue <const T_>();
+				}
+				else {
+					getref() = value.GetValue <T_>();
+				}
+			}
+		}
 	};
 	
 	/**
@@ -1257,7 +1345,7 @@ namespace Scripting {
 	class MappedEventType : public Scripting::EventType {
 	public:
 		using TokenType = decltype(std::declval<E_>().Register(std::function<void()>()));
-		std::map<TokenType, const Function *> unregistertokens;
+		std::map<TokenType, const Scripting::Function *> unregistertokens;
 		
 	private:
 		
@@ -1270,7 +1358,7 @@ namespace Scripting {
 		
 		void constargs(int index, std::vector<Data> &ret, const std::vector<Parameter> params) {}
 		
-		R_ callfn(const Function *fn, std::vector<Data> args, Function::Overload *single) {
+		R_ callfn(const Scripting::Function *fn, std::vector<Data> args, Function::Overload *single) {
 			using namespace Scripting;			
 			
 			auto &vm=VirtualMachine::Get();
@@ -1291,7 +1379,7 @@ namespace Scripting {
 		
 		template<class OO_=O_>
 		typename std::enable_if<!std::is_same<OO_, void>::value, R_>::type
-		callfn(O_& obj, const Function *fn, std::vector<Data> args, Function::Overload *single) {
+		callfn(O_& obj, const Scripting::Function *fn, std::vector<Data> args, Function::Overload *single) {
 			auto &vm=VirtualMachine::Get();
 			
 			//try with object first if exists
@@ -1312,7 +1400,7 @@ namespace Scripting {
 		
 		template<class OO_=O_>
 		typename std::enable_if<std::is_same<OO_, void>::value, TokenType>::type
-		registerfn(E_ *ev, const Function *fn) {
+		registerfn(E_ *ev, const Scripting::Function *fn) {
 			
 			bool found=false;
 			for(auto &ovs : {&fn->Overloads, &fn->Methods}) {
@@ -1354,7 +1442,7 @@ namespace Scripting {
 		
 		template<class OO_=O_>
 		typename std::enable_if<!std::is_same<OO_, void>::value, TokenType>::type
-		registerfn(E_ *ev, const Function *fn) {
+		registerfn(E_ *ev, const Scripting::Function *fn) {
 			using namespace Scripting;
 			
 			bool found=false;
@@ -1395,7 +1483,7 @@ namespace Scripting {
 			return tok;
 		}
 		
-		using registerfnsig = TokenType(MappedEventType::*)(E_*,const Function*);
+		using registerfnsig = TokenType(MappedEventType::*)(E_*,const Scripting::Function*);
 		
 	public:
 		MappedEventType(const std::string &name, const std::string &help, 
@@ -1405,7 +1493,7 @@ namespace Scripting {
 			Type *FunctionType();
 			using namespace Gorgon::Scripting;
 			AddMembers({
-				new Function("Fire", 
+				new Scripting::Function("Fire", 
 					"Fires this event", 
 					this, {
 						MapFunction(
@@ -1417,7 +1505,7 @@ namespace Scripting {
 					"Registers a new handler to this event",
 					this, {
 						MapFunction(
-							[this](E_ *ev, const Function *fn) { 
+							[this](E_ *ev, const Scripting::Function *fn) { 
 								return this->registerfn(ev,fn); 
 							},
 							InternalValueType<TokenType>::type, {
@@ -1430,7 +1518,7 @@ namespace Scripting {
 						)
 					}
 				),
-				new Function("Unregister",
+				new Scripting::Function("Unregister",
 					"This function unregisters a given event handler token.",
 					this, {
 						MapFunction(
@@ -1477,7 +1565,7 @@ namespace Scripting {
 	};
 	
 	template <class E_>
-	Scripting::Event *MapGorgonEvent() {
+	Scripting::EventType *MapGorgonEvent() {
 		//static MappedEventType<>;
 		return nullptr;
 	}
