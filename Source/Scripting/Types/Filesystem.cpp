@@ -7,39 +7,31 @@
 
 namespace Gorgon { namespace Scripting {
 
-	namespace {
-		
-		template<class T_>
-		std::string GetNameOf(const T_ &val) {
-			return val.GetName();
+	class File : public std::fstream {
+	public:
+		File() { }
+		File(std::string name, std::ios_base::openmode mode) {
+			Open(name, mode);
 		}
 		
-		class File : public std::fstream {
-		public:
-			File() { }
-			File(std::string name, std::ios_base::openmode mode) {
-				Open(name, mode);
-			}
-			
-			bool Open(const std::string name, std::ios_base::openmode mode) {
-				std::fstream::open(name, mode);
-				if(is_open()) {
-					filename=name;
-					
-					return true;
-				}
+		bool Open(const std::string name, std::ios_base::openmode mode) {
+			std::fstream::open(name, mode);
+			if(is_open()) {
+				filename=name;
 				
-				return false;
+				return true;
 			}
 			
-			std::string GetName() const {
-				return filename;
-			}
-			
-		private:
-			std::string filename;
-		};
-	}
+			return false;
+		}
+		
+		std::string GetName() const {
+			return filename;
+		}
+		
+	private:
+		std::string filename;
+	};
 	
 	std::ostream &operator <<(std::ostream &out, std::ios_base::openmode mode) {
 		if(mode&std::ios::in)
@@ -69,15 +61,13 @@ namespace Gorgon { namespace Scripting {
 									String::From<std::ios_base::openmode>, 
 									ParseThrow<std::ios_base::openmode>
 							>("Filemode", "Defines the method to open a file");
-							
-			filemode->AddConstants({
-				new Constant("In", "Opens the file for input", filemode, std::ios::in),
-				new Constant("Out", "Opens the file for output", filemode, std::ios::out),
-				new Constant("Append", "Opens the file for to append to the end", filemode, std::ios::app),
-				new Constant("Binary", "Opens the file for binary operations", filemode, std::ios::binary)
-			});
+
 			
-			filemode->AddFunctions({
+			filemode->AddMembers({
+				new Constant("In", "Opens the file for input", {filemode, std::ios::in}),
+				new Constant("Out", "Opens the file for output", {filemode, std::ios::out}),
+				new Constant("Append", "Opens the file for to append to the end", {filemode, std::ios::app}),
+				new Constant("Binary", "Opens the file for binary operations", {filemode, std::ios::binary}),
 				new MappedOperator("and", "Combines two filemodes", 
 					filemode, filemode, filemode, 
 					[](std::ios_base::openmode l, std::ios_base::openmode r) {
@@ -87,14 +77,15 @@ namespace Gorgon { namespace Scripting {
 			});
 			
 			
-			auto file = new MappedReferenceType<File, &GetNameOf<File>>("file", "Allows creating and opening files.");
+			auto file = new MappedReferenceType<File, GetNameOf<File>>("file", "Allows creating and opening files.");
 			file->MapConstructor<>({});
 			file->MapConstructor<std::string, std::ios_base::openmode>({
 				Parameter("Filename", "The name of the file to be created/opened.", Types::String()),
 				Parameter("Filemode", "Opening mode of the file, Filemode constants should be used (e.g. Filemode:In)", filemode)
 			});
 			
-			file->AddFunctions({
+			file->AddMembers({
+				filemode,
 				new Function("Open",
 					"Creates/Opens the given filename for the specified filemode.",
 					file, {
@@ -164,8 +155,8 @@ namespace Gorgon { namespace Scripting {
 				),	
 			});
 			
-			lib->AddTypes({
-				filemode, file
+			lib->AddMembers({
+				file
 			});
 			
 		}

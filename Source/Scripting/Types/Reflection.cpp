@@ -15,7 +15,7 @@ namespace Gorgon { namespace Scripting {
 				"Contains information about a function, also allows them to be called. Functions are immutable."
 			);
 			
-			fn->AddFunctions({
+			fn->AddMembers({
 				new Scripting::Function("Name",
 					"Returns the name of the function", fn,
 					{
@@ -48,7 +48,7 @@ namespace Gorgon { namespace Scripting {
 				"Contains information about a constant."
 			);
 			
-			obj->AddFunctions({
+			obj->AddMembers({
 				new Scripting::Function("Name",
 					"Returns the name of the constant", obj,
 					{
@@ -73,7 +73,7 @@ namespace Gorgon { namespace Scripting {
 					"Returns the value of the constant", obj,
 					{
 						MapFunction(
-							&Constant::GetData, Types::Variant(), 
+							&Constant::Get, Types::Variant(), 
 							{ }, ConstTag
 						)
 					}
@@ -101,7 +101,7 @@ namespace Gorgon { namespace Scripting {
 				"Parameter", "A function parameter.", Parameter("", "", Types::Variant())
 			);
 
-			param->AddFunctions({
+			param->AddMembers({
 				new Scripting::Function("Name",
 				"Returns the name of the parameter", param,
 				{
@@ -146,8 +146,8 @@ namespace Gorgon { namespace Scripting {
 	Type *ArrayType();
 	
 	void InitTypeType() {
-		if(type->Functions.GetCount()==0) {				
-			type->AddFunctions({
+		if(type->InstanceMembers.GetCount()==0) {				
+			type->AddMembers({
 				new Scripting::Function{"Name",
 					"Returns the name of the type", type,
 					{
@@ -191,8 +191,10 @@ namespace Gorgon { namespace Scripting {
 							[](const Type &type) -> Array* {
 								auto arr=new Array(*FunctionType());
 								VirtualMachine::Get().References.Register(arr);
-								for(auto it=type.Functions.First(); it.IsValid(); it.Next()) {
-									arr->PushData(&it.Current().second, true, true);
+								for(auto it=type.Members.First(); it.IsValid(); it.Next()) {
+									if(it.Current().second.GetMemberType()==StaticMember::Function) {
+										arr->PushData(dynamic_cast<const Function *>(&it.Current().second), true, true);
+									}
 								}
 								
 								return arr;
@@ -209,8 +211,10 @@ namespace Gorgon { namespace Scripting {
 							[](const Type &type) -> Array* {
 								auto arr=new Array(*ConstantType());
 								VirtualMachine::Get().References.Register(arr);
-								for(auto it=type.Constants.First(); it.IsValid(); it.Next()) {
-									arr->PushData(&it.Current().second, true, true);
+								for(auto it=type.Members.First(); it.IsValid(); it.Next()) {
+									if(it.Current().second.GetMemberType()==StaticMember::Constant) {
+										arr->PushData(dynamic_cast<const Constant *>(&it.Current().second), true, true);
+									}
 								}
 								
 								return arr;
@@ -257,7 +261,7 @@ namespace Gorgon { namespace Scripting {
 				"of a library using Types, Functions, and Constants members."				
 			);
 			
-			lib->AddFunctions({
+			lib->AddMembers({
 				new Scripting::Function{"Name",
 					"Returns the name of the type", lib,
 					{
@@ -296,60 +300,6 @@ namespace Gorgon { namespace Scripting {
 					},
 					StaticTag
 				},
-				
-				new Scripting::Function{"Functions", 
-					"Returns the functions in this library", lib,
-					{
-						MapFunction(
-							[](const Library &lib) -> Array* {
-								auto arr=new Array(*FunctionType());
-								VirtualMachine::Get().References.Register(arr);
-								for(auto it=lib.Functions.First(); it.IsValid(); it.Next()) {
-									arr->PushData(&it.Current().second, true, true);
-								}
-								
-								return arr;
-							},ArrayType(),
-							{ }, ReferenceTag, ConstTag
-						)
-					}
-				},
-				
-				new Scripting::Function{"Constants", 
-					"Returns the constants in this library", lib,
-					{
-						MapFunction(
-							[](const Library &lib) -> Array* {
-								auto arr=new Array(*ConstantType());
-								VirtualMachine::Get().References.Register(arr);
-								for(auto it=lib.Constants.First(); it.IsValid(); it.Next()) {
-									arr->PushData(&it.Current().second, true, true);
-								}
-								
-								return arr;
-							},ArrayType(),
-							{ }, ReferenceTag, ConstTag
-						)
-					}
-				},
-				
-				new Scripting::Function{"Types", 
-					"Returns the types in this library", lib,
-					{
-						MapFunction(
-							[](const Library &lib) -> Array* {
-								auto arr=new Array(*TypeType());
-								VirtualMachine::Get().References.Register(arr);
-								for(auto it=lib.Types.First(); it.IsValid(); it.Next()) {
-									arr->PushData(&it.Current().second, true, true);
-								}
-								
-								return arr;
-							},ArrayType(),
-							{ }, ReferenceTag, ConstTag
-						)
-					}
-				},
 			});
 		}
 		
@@ -358,7 +308,7 @@ namespace Gorgon { namespace Scripting {
 	
 	void InitReflection() {		
 		
-		Reflection.Member(TypeType());
+		Reflection.AddMember(TypeType());
 			
 		Reflection.AddMembers({FunctionType(), ParameterType(), LibraryType(), ConstantType()});
 		

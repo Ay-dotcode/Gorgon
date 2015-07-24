@@ -77,7 +77,7 @@ namespace Gorgon {
 			if(!array) {
 				array=new MappedReferenceType<Array, ArrayToStr>("Array", "This is an array", (Array*)nullptr);
 				
-				array->AddFunctions({
+				array->AddMembers({
 					new Function("[]", 
 						"Returns the element at the given index.", array,
 						{
