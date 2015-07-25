@@ -363,7 +363,7 @@ namespace Gorgon { namespace Scripting {
 	
 	Data Function::Get() const {
 		Type *FunctionType();
-		return {FunctionType(), this, true, true};
+		return {FunctionType(), (const Function *)this, true, true};
 	}
 	
 	const Namespace& Namespace::GetNamespace(const std::string& name) const {

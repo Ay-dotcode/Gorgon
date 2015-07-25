@@ -290,7 +290,7 @@ namespace Gorgon { namespace Scripting {
 								auto arr=new Array(*lib);
 								VirtualMachine::Get().References.Register(arr);
 								for(auto it=VirtualMachine::Get().Libraries.First(); it.IsValid(); it.Next()) {
-									arr->PushData(&it.Current().second, true, true);
+									arr->PushData(it.CurrentPtr(), true, true);
 								}
 								
 								return arr;

@@ -83,7 +83,7 @@ namespace Gorgon {
 			void RemoveLibrary(const Library &library);
 
 			/// Imports symbols of a namespace to the list of global symbols
-			void UsingNamespace(const std::string &name);
+			void UsingNamespace(const Namespace &name);
 
 			/// Changes the current executing line.
 			void Jump(unsigned long line);
@@ -95,6 +95,9 @@ namespace Gorgon {
 			/// Changes current executing line. This function can jump to a previous execution point. Useful
 			/// for keywords like try/catch
 			void LongJump(SourceMarker marker);
+			
+			/// Finds the given symbol and resolves its value
+			Data FindSymbol(const std::string &original, bool reference);
 
 
 			/// Returns the current VM for this thread.
@@ -204,7 +207,7 @@ namespace Gorgon {
 			Variable *getvarref(const std::string &var);
 
 			/// Allows read-only access to libraries
-			const Containers::Hashmap<std::string, const Library, GetNameOf<Library>, std::map, String::CaseInsensitiveLess> &Libraries;
+			const Containers::Collection<const Library> &Libraries;
 
 			/// This system allows objects of automatic lifetime.
 			ReferenceCounter References;
@@ -216,9 +219,10 @@ namespace Gorgon {
 			Data getvalue(const Value &val, bool reference=false);
 			void functioncall(const Instruction *inst, bool memberonly, bool method);
 			void activatescopeinstance(std::shared_ptr<ScopeInstance> instance);
+			void addsymbol(const StaticMember &symbol);
 
 			/// All libraries that are available globally. 
-			Containers::Hashmap<std::string, const Library, GetNameOf<Library>, std::map, String::CaseInsensitiveLess> libraries;
+			Containers::Collection<const Library> libraries;
 
 			std::string alllibnames;
 			
@@ -233,20 +237,14 @@ namespace Gorgon {
 			
 			/// If a data is returned, it will be stored here
 			Data returnvalue=Data::Invalid();
-			
-			/// The list of symbols, does not include variables
-			std::map<std::string, const StaticMember*, String::CaseInsensitiveLess> symbols;
-			std::map<std::string, std::string> ambigoussymbols;
 
 			std::vector<std::shared_ptr<ScopeInstance>> scopeinstances;
 			Containers::Collection<Scope>				scopes;
 
-			
+			/// Highest temporary index used in the corrent scope
 			int highesttemp=0;
+			/// Base temp index in the current scope
 			int tempbase = -1;
-			
-			//-unordered map
-			//std::map<std::string, Variable, String::CaseInsensitiveLess>	globalvariables;
 
 			std::ostream *output;
 			std::istream *input;

@@ -215,7 +215,7 @@ namespace Gorgon { namespace Scripting {
 		/// and return is not marked as a reference, constant has no real implication
 		bool constant;
 		
-		/// Marks this return as a constant
+		/// Marks this return as a reference
 		bool reference;
 	};
 	
@@ -223,6 +223,9 @@ namespace Gorgon { namespace Scripting {
 	class ScopeInstance { 
 		friend class Scope;
 		friend class VirtualMachine;
+		
+		using variablestoragetype=std::map<std::string, Variable, String::CaseInsensitiveLess>;
+		using symbolstoragetype  =std::map<std::string, const StaticMember*, String::CaseInsensitiveLess>;
 	public:
 		
 		~ScopeInstance() {
@@ -336,13 +339,64 @@ namespace Gorgon { namespace Scripting {
 			return scope.GetPhysicalLine(current-1);
 		}
 
+		/// Returns the scope of this scope instance
 		Scope &GetScope() const { return scope; }
 		
+		/// Sets the return type of this scope instance
 		void SetReturn(Return returns) { this->returns=returns; }
+		
+		/// Adds a symbol to the symbol table of this scope
+		void AddSymbol(const StaticMember &symbol) {
+			if(symbols.count(symbol.GetName())!=0) {
+				ambiguoussymbols.insert(std::make_pair(symbol.GetName(), symbols[symbol.GetName()]->GetQualifiedName()));
+				symbols.erase(symbol.GetName());
+				ambiguoussymbols[symbol.GetName()]+=", "+symbol.GetQualifiedName();
+			}
+			else if(ambiguoussymbols.count(symbol.GetName())!=0) {
+				ambiguoussymbols[symbol.GetName()]+=", "+symbol.GetQualifiedName();
+			}
+			else {
+				symbols.insert(std::make_pair(symbol.GetName(), &symbol));
+			}
+		}
+		
+		/// Tries to find the given symbol (including variables)
+		Data FindSymbol(const std::string &name, bool reference) {
+			//check local vars first
+			variablestoragetype::iterator it;
+			if( (it=variables.find(name)) != variables.end() ) {
+				Variable &var=it->second;
+				if(reference)
+					return var.GetReference();
+				else
+					return var;
+			}
+			
+			//check ambiguity
+			if(ambiguoussymbols.count(name)!=0) {
+				throw AmbiguousSymbolException(name, SymbolType::Identifier, "Could be one of: "+ambiguoussymbols[name]);
+			}
+			
+			//check local symbols
+			symbolstoragetype::iterator sym;
+			if( (sym=symbols.find(name)) != symbols.end() ) {
+				return sym->second->Get(); //all static member symbols are reference
+			}
+			
+			//if we have a parent, try that			
+			if(scope.HasParent() && scope.GetParent().HasInstance() && !scope.IsTerminal())
+				return scope.GetParent().LastInstance().FindSymbol(name, reference);
+			else
+				return Data::Invalid();
+		}
 		
 		Data ReturnValue;
 		
 	private:
+		
+		/// The list of symbols, does not include variables
+		std::map<std::string, const StaticMember*, String::CaseInsensitiveLess> symbols;
+		std::map<std::string, std::string, String::CaseInsensitiveLess> ambiguoussymbols;
 		
 		/// Constructor requires an input source. Execution scopes can share same input source
 		ScopeInstance(Scope &scope, ScopeInstance *parent) : scope(scope), parent(parent) {

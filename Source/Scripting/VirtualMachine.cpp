@@ -33,16 +33,18 @@ namespace Gorgon {
 			if(alllibnames!="") alllibnames+=", ";
 			alllibnames+=library.GetName();
 			
-			//!Update symbol table
+			if(GetScopeInstanceCount()>0) {
+				scopeinstances.front()->AddSymbol(library);
+			}
 		}
 		
 		void VirtualMachine::RemoveLibrary(const Library &library) {
 			//! Update symbol table
-			libraries.Remove(library.GetName());
+			libraries.Remove(library);
 			alllibnames="";
 			for(const auto &lib : libraries) {
 				if(alllibnames!="") alllibnames+=", ";
-				alllibnames+=lib.first;
+				alllibnames+=lib.GetName();
 			}
 		}
 		
@@ -53,76 +55,6 @@ namespace Gorgon {
 		void VirtualMachine::SetInput(std::istream &in) {
 			input=&in;
 		}
-/*		
-		const Type &VirtualMachine::FindType(std::string name) {
-			using std::swap;
-
-			name=String::ToLower(name);
-			
-			std::string namespc=String::Extract(name, ':');
-			if(name=="") swap(namespc, name);
-			
-			
-			
-			if(namespc!="") {
-				auto lib=libraries.Find(namespc);
-				if(!lib.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc, SymbolType::Library, 
-						"Cannot find "+namespc+" library while looking for type "+name
-					);
-				}
-				
-				auto element=lib.Current().second.Types.Find(name);
-				
-				if(!element.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc+":"+name, SymbolType::Type, 
-						"Cannot find "+name+" type in library "+namespc
-					);
-				}
-				
-				return element.Current().second;
-			}
-			else { //use types table
-				const Type *foundelement=nullptr;
-				std::string foundlibnames;
-				
-				auto range=types.equal_range(name);
-				int found=0;
-				
-				for(auto it=range.first; it!=range.second; ++it) {
-					if(foundlibnames!="") foundlibnames+=", ";
-					foundlibnames+=it->first;
-					if(!foundelement || Integrals.Functions.Exists(name)) {
-						foundelement=it->second;
-						
-						found++;
-						
-						if(Integrals.Functions.Exists(name)) { //Integral library takes precedence
-							found=1;
-							break;
-						}
-					}
-				}
-				
-				if(found==0) {
-					throw SymbolNotFoundException(
-						name, SymbolType::Type, 
-						"Cannot find "+name+" type in all loaded libraries: "+alllibnames
-					);
-				}
-				else if(found>1) {
-					throw AmbiguousSymbolException(
-						name, SymbolType::Type,
-						name+" type found in following libraries: "+foundlibnames
-					);
-				}
-				
-				return *foundelement;
-			}
-		}
-*/		
 
 		void VirtualMachine::Start(InputProvider &input) {
 			Begin(input);
@@ -139,6 +71,11 @@ namespace Gorgon {
 		}
 		
 		void VirtualMachine::activatescopeinstance(std::shared_ptr<ScopeInstance> instance) {
+			if(scopeinstances.size()==0) {
+				for(auto &lib : libraries)
+					instance->AddSymbol(lib);
+			}
+			
 			tempbase+=highesttemp;
 			instance->tempbase=tempbase;
 			highesttemp=0;
@@ -251,6 +188,57 @@ namespace Gorgon {
 			}
 		}
 		
+		Data VirtualMachine::FindSymbol(const std::string &original, bool reference) {
+			ASSERT(scopeinstances.size(), "No scope instance is active");
+			
+			std::string name=original;
+			std::string cname=String::Extract(name, ':');
+			
+			Data current=CurrentScopeInstance().FindSymbol(cname, reference);
+			if(!current.IsValid()) {
+				throw SymbolNotFoundException(cname, SymbolType::Identifier, "While searching for: "+original);
+			}
+			
+			while(name!="") {
+				if(!current.GetType().CanMorphTo(Types::Namespace())) {
+					throw SymbolNotFoundException(original, SymbolType::Identifier, 
+												  "The symbol "+original.substr(0, original.length()-name.length()-1)+
+												  "is not a namespace");
+				}
+				
+				const Namespace *nmspc=current.GetType().MorphTo(Types::Namespace(), current).ReferenceValue<const Namespace *>();
+				cname=String::Extract(name, ':');
+				//check in own members
+				auto it=nmspc->Members.Find(cname);
+				if(!it.IsValid()) {
+					const Type *type=dynamic_cast<const Type*>(nmspc);
+					
+					if(!type) {
+						throw SymbolNotFoundException(original, SymbolType::Identifier, "Cannot find symbol: "+cname);
+					}
+					
+					auto it=type->InheritedSymbols.Find(cname);
+					if(!it.IsValid()) {
+						throw SymbolNotFoundException(original, SymbolType::Identifier, "Cannot find symbol: "+cname);
+					}
+					else {
+						auto it2=it.Current().second.Members.Find(cname);
+						//could be an instance member, which also is listed
+						if(!it2.IsValid()) {
+							throw SymbolNotFoundException(original, SymbolType::Identifier, "Cannot find symbol: "+cname);
+						}
+						
+						current=it2.Current().second.Get();
+					}
+				}
+				else {
+					current=it.Current().second.Get();
+				}
+			}
+			
+			return current;
+		}
+		
 		Variable VirtualMachine::GetVariable(const std::string &name) {
 			ASSERT(scopeinstances.size(), "No scope instance is active");
 			
@@ -282,19 +270,8 @@ namespace Gorgon {
 				return *var;
 			}
 			
-/*			//search globals
-			auto varit=globalvariables.find(String::ToLower(name));
 
-			//if found
-			if(varit!=globalvariables.end()) {
-				//return
-				return &varit->second;
-			}
-			//if not
-			else */{
-				//nothing more to try
-				throw SymbolNotFoundException(name, SymbolType::Variable);
-			}
+			throw SymbolNotFoundException(name, SymbolType::Variable);
 		}
 		
 		Variable *VirtualMachine::getvarref(const std::string &name) {
@@ -402,8 +379,6 @@ namespace Gorgon {
 				
 			case ValueType::Temp: {
 				auto &data=temporaries[val.Result+tempbase];
-				//std::cout<<"F> "<<val.Result+tempbase<<" = "<<data<<std::endl;
-
 				
 				if(!data.IsValid()) {
 					throw std::runtime_error("Invalid temporary.");
@@ -442,163 +417,14 @@ namespace Gorgon {
 					return GetVariable(val.Name);
 				}
 			}
+			
 			case ValueType::Identifier: {
-				bool specvar=false;
-				if(val.Name[0]=='!' || val.Name[0]=='@' || val.Name[0]=='%') {
-					if(spechandler && spechandler(val.Name[0], &val.Name[1]).IsValid())
-						specvar=true;
-				}
-				//if it is a variable
-				if(specvar || IsVariableSet(val.Name)) {
-					if(reference) {
-						Variable *var=getvarref(val.Name);
-						if(var) {
-							return var->GetReference();
-						}
-						else {
-							//last chance
-							const Variable &var=GetVariable(val.Name);
-							if(!var.IsReference()) {
-								throw CastException("non-reference special variable", "reference");
-							}
-							
-							return var;
-						}
-					}
-					else {
-						return GetVariable(val.Name);
-					}
-				}
-				else {
-					int namespcs=std::count(val.Name.begin(), val.Name.end(), ':');
-					
-					if(namespcs==2) { //function or constant in a type
-						auto name=val.Name;
-						auto lib=String::Extract(name, ':');
-						auto typ=String::Extract(name, ':');
-						
-						//-use iterators
-						if(!Libraries.Exists(lib)) {
-							throw SymbolNotFoundException(lib, SymbolType::Library);
-						}
-						if(!Libraries[lib].Types.Exists(typ)) {
-							throw SymbolNotFoundException(typ, SymbolType::Type);
-						}
-						auto &type=Libraries[lib].Types[typ];
-						if(type.Constants.Exists(name)) {
-							if(reference) {
-								auto data=type.Constants[name].GetData().GetReference();
-								data.MakeConstant();
-								
-								return data;
-							}
-							else {
-								return type.Constants[name].GetData();
-							}
-						}
-						else if(type.Functions.Exists(name)) {
-							return {Types::Function(), &type.Functions[name], true, true};
-						}
-						else {
-							throw SymbolNotFoundException(name, SymbolType::Identifier);
-						}
-					}
-					else if(namespcs==1) { //function or constant in a library
-						auto name=val.Name;
-						auto libname=String::Extract(name, ':');
-						
-						//...function or constant in a type
-						
-						//-use iterators
-						
-						const Library *lib=nullptr;
-						if(Libraries.Exists(libname))
-							lib=&Libraries[libname];
-						
-						if(lib && lib->Constants.Exists(name)) {
-							if(reference) {
-								auto data=lib->Constants[name].GetData().GetReference();
-								data.MakeConstant();
-								
-								return data;
-							}
-							else {
-								return lib->Constants[name].GetData();
-							}
-						}
-						else if(lib && lib->Functions.Exists(name)) {
-							return {Types::Function(), &lib->Functions[name], true, true};
-						}
-						else if(lib && lib->Types.Exists(name)) {
-							return {Types::Type(), &lib->Types[name], true, true};
-						}
-						else { //could be a function or constant in a type which is in an unknown library
-							auto range=types.equal_range(libname);
-							if(range.first==range.second) {
-								throw SymbolNotFoundException(libname, SymbolType::Identifier);
-							}
-							else if(range.first!=--range.second) {
-								throw AmbiguousSymbolException(libname, SymbolType::Identifier);
-							}
-							else {
-								if(range.first->second->Constants.Exists(name)) {
-									if(reference) {
-										auto data=range.first->second->Constants[name].GetData().GetReference();
-										data.MakeConstant();
-										
-										return data;
-									}
-									else {
-										return range.first->second->Constants[name].GetData();
-									}
-								}
-								else if(range.first->second->Functions.Exists(name)) {
-									return {Types::Function(), &range.first->second->Functions[name], true, true};
-								}
-								else {
-									throw SymbolNotFoundException(val.Name, SymbolType::Identifier);
-								}
-							}
-						}
-					}
-					else {
-						auto range=symbols.equal_range(val.Name);
-						if(range.first==range.second) {
-							throw SymbolNotFoundException(val.Name, SymbolType::Identifier);
-						}
-						else if(range.first!=--range.second) {
-							throw AmbiguousSymbolException(val.Name, SymbolType::Identifier);
-						}
-						else {
-							if(range.first->second.type==SymbolType::Constant) {
-								if(reference) {
-									auto data=range.first->second.object.Get<const Constant*>()->GetData().GetReference();
-									data.MakeConstant();
-									
-									return data;
-								}
-								else {
-									return range.first->second.object.Get<const Constant*>()->GetData();
-								}
-							}
-							else if(range.first->second.type==SymbolType::Function) {
-								return {Types::Function(), range.first->second.object.Get<const Function*>(), true, true};
-							}
-							else if(range.first->second.type==SymbolType::Type) {
-								return {Types::Type(), range.first->second.object.Get<const Type*>(), true, true};
-							}
-							else {
-								throw SymbolNotFoundException(val.Name, SymbolType::Identifier, "An unsupported symbol is found");
-							}
-						}
-					}
-				}
+				return FindSymbol(val.Name, reference);
 			}
 			default:
 				Utils::ASSERT_FALSE("Invalid value type.");
 			}
-		}
-		
+		}	
 		
 		/// Calls the given function with the given values.
 		Data VirtualMachine::callfunction(const Function *fn, bool method, const std::vector<Value> &incomingparams) {
@@ -1047,6 +873,7 @@ namespace Gorgon {
 			const Function *fn=nullptr;
 			std::string functionname;
 
+			//<!
 			//function call from a literal, should be a string.
 			if(inst->Name.Type==ValueType::Literal) {
 				try {
@@ -1063,10 +890,7 @@ namespace Gorgon {
 						" is a variable that do not contain a function");
 				}
 				
-				if(var.IsConstant())
-					fn=var.GetValue<const Function *>();
-				else
-					fn=var.GetValue<Function *>();
+				fn=var.GetValue<const Function *>();
 			}
 			else if(inst->Name.Type==ValueType::Identifier) {
 				functionname=inst->Name.Name;
@@ -1074,6 +898,7 @@ namespace Gorgon {
 			else {
 				throw SymbolNotFoundException(inst->Name.Name, SymbolType::Function);
 			}
+			//>
 			
 			//special functions
 			if(functionname=="return") {
@@ -1374,7 +1199,39 @@ namespace Gorgon {
 			
 			//."1" = obj.element
 			else if(inst->Type==InstructionType::MemberToTemp) {
-				temporaries[inst->Store+tempbase]=getvalue(inst->RHS, inst->Reference);
+				//extract to a function***
+				if(inst->Parameters.size()!=1)
+					throw std::runtime_error("Member access requires exactly 1 parameter");
+				
+				Data thisptr;
+				//search in the type of the first parameter, this ensures the data is a reference
+				if(inst->Parameters[0].Type==ValueType::Literal || 
+					(inst->Parameters[0].Type==ValueType::Temp && !temporaries[inst->Parameters[0].Result+tempbase].IsReference())
+				) {
+					thisptr=getvalue(inst->Parameters[0]);
+				}
+				else {
+					thisptr=getvalue(inst->Parameters[0], true);
+				}
+				//***
+				
+				//!
+				Data elm=getvalue(inst->RHS);
+				InstanceMember *member=nullptr;
+				if(elm.GetType()==Types::InstanceMember()) {
+					member=elm.GetValue<const InstanceMember*>();
+				}
+				else if(elm.GetType()==Types::String()) {
+					//thisptr.GetType().InstanceMembers.Find()...
+				}
+				temporaries[inst->Store+tempbase]=member->Get(thisptr);
+			}			
+			//$"1" = obj.element
+			else if(inst->Type==InstructionType::MemberToTemp) {
+				//!
+			}
+			else if(inst->Type==InstructionType::MemberAssignment) {
+				//!
 			}
 			
 			//removes a temporary so that it can be freed if it is a reference type
@@ -1542,6 +1399,16 @@ namespace Gorgon {
 			}
 			
 			return callfunction(fn, method, pars);
+		}
+		
+		void VirtualMachine::UsingNamespace(const Namespace &name) {
+			if(GetScopeInstanceCount()==0)
+				throw std::runtime_error("No scope is active");
+			
+			auto &current=CurrentScopeInstance();
+			for(const auto &member : name.Members) {
+				current.AddSymbol(member);
+			}
 		}
 
 

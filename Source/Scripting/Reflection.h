@@ -1027,7 +1027,10 @@ namespace Gorgon {
 				return StaticMember::DataMember;
 			}
 			
-			virtual Data Get() const override;
+			virtual Data Get() const override { 
+				//!
+				return Data::Invalid();
+			}
 			
 			/// Adds a new member to this namespace
 			virtual void AddMember(const StaticMember &member) {
@@ -1139,7 +1142,10 @@ namespace Gorgon {
 			Type(const std::string &name, const std::string &help, const Any &defaultvalue, 
 				 TMP::RTTH *typeinterface, bool isref);
 			
-			virtual Data Get() const override;
+			virtual Data Get() const override { 
+				//!
+				return Data::Invalid();
+			}
 			
 			/// Adds a static member to this type
 			virtual void AddMember(const StaticMember &member) override {
@@ -1425,6 +1431,11 @@ namespace Gorgon {
 			virtual MemberType GetMemberType() const override {
 				return StaticMember::EventType;
 			}
+			
+			virtual Data Get() const override final { 
+				//!
+				return Data::Invalid();
+			}			
 			
 			/// Returns whether event handlers should return a value
 			bool HasReturnType() const {

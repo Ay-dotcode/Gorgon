@@ -117,6 +117,8 @@ namespace Gorgon {
 			
 #define DEFTYPE(name) inline const Scripting::Type &name() { static const Scripting::Type *type = Reflection.GetType(#name); return *type; }
 			
+			DEFTYPE(InstanceMember);
+			DEFTYPE(Namespace);
 			DEFTYPE(Type);
 			DEFTYPE(Function);
 			
