@@ -18,13 +18,24 @@ namespace Gorgon { namespace Scripting {
 
 			/// Marks this instruction as a method call.
 			MethodCall,
+			
+			/// Marks this instruction as access to a member, the result is stored in the given temporary.
+			/// Member name is stored in RHS, temp index is stored in Store, and this pointer is stored in Parameters fields
+			MemberToTemp,
+			
+			/// Marks this instruction as access to a member, the result is stored in the given variable.
+			/// Member name is stored in RHS and the variable name is stored in Name fields
+			MemberToVar,
+			
+			/// Marks this instruction as member assignment. Name of the member is stored in the Name field, 
+			/// and the value to be assigned is stored in the RHS field.
+			MemberAssignment,
 
-
-			/// Marks this instruction as a member method call. This means the function is either a data member
-			/// and will return or set the value of the member or a member function that will be called.
+			/// Marks this instruction as a member method call. Function name is passed in Name field. This pointer
+			/// is the first element in the Parameters vector
 			MemberMethodCall,
 
-			/// Marks instruction as an assignment
+			/// Marks instruction as an assignment.
 			Assignment,
 			
 			/// Marks instruction as a removal of a temporary. Temporary index should be stored in the Store member
@@ -57,9 +68,6 @@ namespace Gorgon { namespace Scripting {
 			
 			/// This is a variable
 			Variable,
-			
-			/// Marks this value as a constant
-			Constant,
 			
 			/// Marks this value as an identifier, either a constant or a variable
 			Identifier,
@@ -106,11 +114,6 @@ namespace Gorgon { namespace Scripting {
 			
 			void SetIdentifier(const std::string &name) {
 				Type=ValueType::Identifier;
-				Name=name;
-			}
-			
-			void SetConstant(const std::string &name) {
-				Type=ValueType::Constant;
 				Name=name;
 			}
 			

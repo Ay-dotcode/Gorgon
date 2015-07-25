@@ -1,13 +1,12 @@
 #include "../Scope.h"
 #include "../Instruction.h"
 #include "../../Scripting.h"
+#include "../../Utils/Assert.h"
 
 namespace Gorgon { namespace Scripting { namespace Compilers {
 	
 	std::string disassemblevalue(const Value &value) {
 		switch(value.Type) {
-			case ValueType::Constant:
-				return "!\""+value.Name+"\"";
 			case ValueType::Literal: 
 			{
 				const auto &type=value.Literal.GetType();
@@ -60,11 +59,29 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		switch(instruction->Type) {
 		case InstructionType::Assignment:
-			if(instruction->Reference) 
-				return std::string("$\"")+instruction->Name.Name+"\" : "+disassemblevalue(instruction->RHS);
-			else
-				return std::string("$\"")+instruction->Name.Name+"\" = "+disassemblevalue(instruction->RHS);
-			
+			return std::string("$\"")+instruction->Name.Name+"\"" +
+				(instruction->Reference ? ":" : "=")+
+				disassemblevalue(instruction->RHS);
+		case InstructionType::MemberAssignment:
+			ASSERT(instruction->Parameters.size()==1, "Member assignment requires a single parameter");
+			return 
+				std::string("|")+disassemblevalue(instruction->Parameters[0])+" "+disassemblevalue(instruction->Name) +
+				(instruction->Reference ? ":" : "=")+
+				disassemblevalue(instruction->RHS);
+		case InstructionType::MemberToTemp:
+			ASSERT(instruction->Parameters.size()==1, "Member to temp requires a single parameter");
+			return 
+				std::string(".\"")+String::From(instruction->Store)+"\" "+
+				(instruction->Reference ? ":" : "=")+
+				" |"+disassemblevalue(instruction->Parameters[0])+" "+
+				disassemblevalue(instruction->RHS);
+		case InstructionType::MemberToVar:
+			ASSERT(instruction->Parameters.size()==1, "Member to temp requires a single parameter");
+			return 
+				std::string("$\"")+String::From(instruction->Store)+"\" "+
+				(instruction->Reference ? ":" : "=")+
+				" |"+disassemblevalue(instruction->Parameters[0])+" "+
+				disassemblevalue(instruction->RHS);
 		case InstructionType::FunctionCall:
 			fnmark="fn";
 		case InstructionType::MemberFunctionCall:
@@ -77,7 +94,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			std::string ret;
 			if(instruction->Store) {
-				ret=std::string(".\"")+String::From(instruction->Store)+"\" = " + fnmark + disassemblevalue(instruction->Name);
+				ret=std::string(".\"")+String::From(instruction->Store)+"\"" +
+					(instruction->Reference ? ":" : "=") + fnmark + disassemblevalue(instruction->Name);
 			}
 			else {
 				ret=fnmark + disassemblevalue(instruction->Name);
@@ -91,10 +109,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 		
 		case InstructionType::SaveToTemp:
-			if(instruction->Reference) 
-				return ".\""+String::From(instruction->Store)+"\" : " + disassemblevalue(instruction->RHS);
-			else
-				return ".\""+String::From(instruction->Store)+"\" = " + disassemblevalue(instruction->RHS);
+			return ".\""+String::From(instruction->Store)+"\"" +
+				(instruction->Reference ? ":" : "=")+disassemblevalue(instruction->RHS);
 			
 		case InstructionType::RemoveTemp:
 			return "x\""+String::From(instruction->Store)+"\"";

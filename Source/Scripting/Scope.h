@@ -63,12 +63,12 @@ namespace Gorgon { namespace Scripting {
 		friend class ScopeInstance;
 	public:
 		/// Constructor requires an input provider and a name to define this input source
-		Scope(InputProvider &provider, const std::string &name);
+		Scope(InputProvider &provider, const std::string &name, bool terminal=false);
 		
 		/// This constructor allows a scope without an input provider. This allows function
 		/// like constructs to have their own scopes with designated source code supplied 
 		/// from external sources
-		Scope(Scope &parent, const std::string &name);
+		Scope(Scope &parent, const std::string &name, bool terminal=false);
 		
 		/// Reads the instruction in the given line
 		const Instruction *ReadInstruction(unsigned long line);
@@ -103,11 +103,18 @@ namespace Gorgon { namespace Scripting {
 			lines.push_back({inst, pline});
 		}
 		
+		/// Saves a list of instructions to this scope
 		void SaveInstructions(const std::vector<Instruction> &insts) {
 			long pline=0;
 			for(auto &inst : insts) {
 				lines.push_back({inst, pline});
 			}
+		}
+		
+		/// Returns if this scope is terminal scope. If a scope is terminal, variable lookup to the parent 
+		/// scopes terminates at this scope
+		bool IsTerminal() const {
+			return terminal;
 		}
 		
 		std::shared_ptr<ScopeInstance> Instantiate();
@@ -158,8 +165,6 @@ namespace Gorgon { namespace Scripting {
 		
 		/// Unloads an input source by erasing all current data. Unload should only be
 		/// called when no more callbacks can be performed and no more lines are left.
-		/// Additionally, no keyword scope should be active, otherwise a potential jump 
-		/// back might cause undefined behavior.
 		void Unload() {
 			using std::swap;
 			
@@ -187,6 +192,8 @@ namespace Gorgon { namespace Scripting {
 		Compilers::Base *parser =nullptr;
 		
 		Scope *parent=nullptr;
+		
+		bool terminal;
 		
 		Containers::Collection<ScopeInstance> instances;
 		
@@ -277,7 +284,7 @@ namespace Gorgon { namespace Scripting {
 			if(var)
 				return var;
 			
-			if(scope.HasParent() && scope.GetParent().HasInstance())
+			if(scope.HasParent() && scope.GetParent().HasInstance() && !scope.IsTerminal())
 				var=scope.GetParent().LastInstance().GetVariable(name);
 			
 			return var;
@@ -299,7 +306,7 @@ namespace Gorgon { namespace Scripting {
 			if(done)
 				return true;
 			
-			if(scope.HasParent() && scope.GetParent().HasInstance())
+			if(scope.HasParent() && scope.GetParent().HasInstance() && !scope.IsTerminal())
 				done=scope.GetParent().LastInstance().UnsetVariable(name);
 			
 			return done;

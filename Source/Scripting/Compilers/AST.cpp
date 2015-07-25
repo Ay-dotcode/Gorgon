@@ -3,7 +3,7 @@
 
 #include "AST.h"
 #include "../VirtualMachine.h"
-#include "../../Scripting.h"
+// #include "../../Scripting.h"
 #include "../RuntimeFunction.h"
 #include "../Compilers.h"
 #include "../Embedding.h"
@@ -202,14 +202,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			return v;
 		}
 		
-		//constant, use as is
-		if(tree.Type==ASTNode::Constant) {
-			Value v;
-			v.Type=ValueType::Constant;
-			v.Name=tree.Text;
-			
-			return v;
-		}
 		
 		//function call
 		if(tree.Type==ASTNode::FunctionCall || tree.Type==ASTNode::MethodCall) {
@@ -311,10 +303,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			ASSERT(tree.Leaves.GetCount()==2, "Membership nodes should have two children");
 			
 			Instruction inst;
-			inst.Type=InstructionType::MemberFunctionCall;
+			inst.Type=InstructionType::MemberToTemp;
 			
 			//Member access can only be performed with names
-			inst.Name.SetStringLiteral("."+tree.Leaves[1].Text);
+			inst.RHS.SetStringLiteral(tree.Leaves[1].Text);
 			
 			//compile left tree, it may have more memberships or indexed access
 			auto accessval=compilevalue(tree.Leaves[0], list, tempind, true);
@@ -377,11 +369,11 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			else if(tree->Leaves[0].Type==ASTNode::Member) {
 				ASSERT(tree->Leaves[0].Leaves.GetCount()==2, "Membership nodes should have two children");
 				
-				inst.Name.SetStringLiteral("."+ tree->Leaves[0].Leaves[1].Text);
+				inst.Name.SetStringLiteral(tree->Leaves[0].Leaves[1].Text);
 				inst.Store=0;
 				inst.Parameters.push_back(compilevalue(tree->Leaves[0].Leaves[0], list, tempind, true));
-				inst.Parameters.push_back(compilevalue(tree->Leaves[1], list, tempind));
-				inst.Type=InstructionType::MemberFunctionCall;
+				inst.RHS=compilevalue(tree->Leaves[1], list, tempind);
+				inst.Type=InstructionType::MemberAssignment;
 			}
 			else if(tree->Leaves[0].Type==ASTNode::Index) {
 				ASSERT(tree->Leaves[0].Leaves.GetCount()>1, "Missing object");

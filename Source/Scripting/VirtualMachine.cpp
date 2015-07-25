@@ -122,264 +122,7 @@ namespace Gorgon {
 				return *foundelement;
 			}
 		}
-		
-		const Function &VirtualMachine::FindFunction(std::string name) {
-			using std::swap;
-
-			name=String::ToLower(name);
-
-			std::string namespc=String::Extract(name, ':');
-			if(name=="") swap(namespc, name);
-			
-			if(namespc=="") { //look in the symbol table
-				const Function *foundelement=nullptr;
-				std::string foundlibnames;
-				
-				auto range=symbols.equal_range(name);
-				int found=0;
-				
-				for(auto it=range.first; it!=range.second; ++it) {
-					if(it->second.type==SymbolType::Function) {
-						if(foundlibnames!="") foundlibnames+=", ";
-						foundlibnames+=it->first;
-						found++;
-
-						if(!foundelement || it->second.namespc=="Integral") {
-							foundelement=it->second.object.Get<const Function*>();
-							
-							
-							if(it->second.namespc=="Integral") { //Integral library takes precedence
-								found=1;
-								break;
-							}
-						}
-					}
-				}
-				
-				if(found==0) {
-					throw SymbolNotFoundException(
-						name, SymbolType::Function, 
-						"Cannot find "+name+" function in all loaded libraries: "+alllibnames
-					);
-				}
-				else if(found>1) {
-					throw AmbiguousSymbolException(
-						name, SymbolType::Function,
-						name+" function found in following libraries: "+foundlibnames
-					);
-				}
-				
-				return *foundelement;
-			}
-			else if(name.find_first_of(':')!=name.npos) { // both namespace and type is given
-				std::string typname = String::Extract(name, ':');
-				
-				auto lib=libraries.Find(namespc);
-				if(!lib.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc, SymbolType::Library,
-						"Cannot find "+namespc+" library while looking for function "+name
-					);
-				}
-				
-				auto type=lib.Current().second.Types.Find(typname);
-				if(!type.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc+":"+typname, SymbolType::Type, 
-						"Cannot find "+typname+" type while looking for "+name+" function in library "+namespc
-					);
-				}
-				
-				auto element=type.Current().second.Functions.Find(name);				
-				
-				if(!element.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc+":"+name, SymbolType::Function, 
-						"Cannot find "+name+" function in type "+namespc+":"+typname
-					);
-				}
-				
-				return element.Current().second;
-			}
-			else { // namespc can either be type or library
-				auto lib=libraries.Find(namespc);
-				if(!lib.IsValid()) {
-					const Type *type=nullptr;
-					
-					try {
-						type=&FindType(namespc);
-					}
-					catch(const SymbolNotFoundException &) {
-						throw SymbolNotFoundException(
-							namespc, SymbolType::Namespace, 
-							"Cannot find "+namespc+" namespace while looking for function "+name
-						);
-					}
-					catch(...) { 
-						throw;
-					}
-					
-					
-					
-					auto element=type->Functions.Find(name);
-					
-					//not in this type
-					if(!element.IsValid()) {
-						//search parents
-						for(auto t : type->Parents) {
-							if(t.first->Functions.Find(name)) {
-								
-							}
-						}
-						
-						//not found anywhere
-						throw SymbolNotFoundException(
-							namespc+":"+name, SymbolType::Function, 
-							"Cannot find "+name+" function in library "+namespc
-						);
-					}
-					
-					return element.Current().second;
-				}
-				else {				
-					auto element=lib.Current().second.Functions.Find(name);
-					
-					if(!element.IsValid()) {
-						throw SymbolNotFoundException(
-							namespc+":"+name, SymbolType::Function, 
-							"Cannot find "+name+" function in library "+namespc
-						);
-					}
-					return element.Current().second;
-				}
-				
-			}
-		}
-		
-		const Constant &VirtualMachine::FindConstant(std::string name) {
-			using std::swap;
-
-			name=String::ToLower(name);
-
-			std::string namespc=String::Extract(name, ':');
-			if(name=="") swap(namespc, name);
-			
-			if(namespc=="") { //use symbol table
-				const Constant *foundelement=nullptr;
-				std::string foundlibnames;
-				
-				auto range=symbols.equal_range(name);
-				int found=0;
-				
-				for(auto it=range.first; it!=range.second; ++it) {
-					if(it->second.type==SymbolType::Constant) {
-						if(foundlibnames!="") foundlibnames+=", ";
-						foundlibnames+=it->first;
-						found++;
-
-						if(!foundelement || it->second.namespc=="Integral") {
-							foundelement=it->second.object.Get<const Constant*>();
-							
-							
-							if(it->second.namespc=="Integral") { //Integral library takes precedence
-								found=1;
-								break;
-							}
-						}
-					}
-				}
-				
-				if(found==0) {
-					throw SymbolNotFoundException(
-						name, SymbolType::Constant, 
-						"Cannot find "+name+" constant in all loaded libraries: "+alllibnames
-					);
-				}
-				else if(found>1) {
-					throw AmbiguousSymbolException(
-						name, SymbolType::Constant,
-						name+" constant found in following libraries: "+foundlibnames
-					);
-				}
-				
-				return *foundelement;
-			}
-			else if(name.find_first_of(':')!=name.npos) { // both namespace and type is given
-				std::string typname = String::Extract(name, ':');
-				
-				auto lib=libraries.Find(namespc);
-				if(!lib.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc, SymbolType::Library, 
-						"Cannot find "+namespc+" library while looking for constant "+name
-					);
-				}
-				
-				auto type=lib.Current().second.Types.Find(typname);
-				if(!type.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc+":"+typname, SymbolType::Type, 
-						"Cannot find "+typname+" type while looking for "+name+" constant in library "+namespc
-					);
-				}
-				
-				auto element=type.Current().second.Constants.Find(name);				
-				
-				if(!element.IsValid()) {
-					throw SymbolNotFoundException(
-						namespc+":"+name, SymbolType::Constant, 
-						"Cannot find "+name+" constant in type "+namespc+":"+typname
-					);
-				}
-				
-				return element.Current().second;
-			}
-			else { // namespc can either be type or library
-				auto lib=libraries.Find(namespc);
-				if(!lib.IsValid()) {
-					const Type *type=nullptr;
-					
-					try {
-						type=&FindType(namespc);
-					}
-					catch(const SymbolNotFoundException &) {
-					}
-					catch(...) { 
-						throw;
-					}
-					
-					throw SymbolNotFoundException(
-						namespc, SymbolType::Namespace, 
-						"Cannot find "+namespc+" namespace while looking for constant "+name
-					);
-					
-					auto element=type->Constants.Find(name);
-					
-					if(!element.IsValid()) {
-						
-						throw SymbolNotFoundException(
-							namespc+":"+name, SymbolType::Constant, 
-							"Cannot find "+name+" constant in library "+namespc
-						);
-					}
-					
-					return element.Current().second;
-				}
-				else {				
-					auto element=lib.Current().second.Constants.Find(name);
-					
-					if(!element.IsValid()) {
-						throw SymbolNotFoundException(
-							namespc+":"+name, SymbolType::Constant, 
-							"Cannot find "+name+" constant in library "+namespc
-						);
-					}
-					return element.Current().second;
-				}
-				
-			}
-		}
-		*/
+*/		
 
 		void VirtualMachine::Start(InputProvider &input) {
 			Begin(input);
@@ -656,20 +399,6 @@ namespace Gorgon {
 					throw CastException("literal", "reference");
 				}
 				return val.Literal;
-				
-			case ValueType::Constant:
-				if(reference) { //constant refrence
-					auto data=FindConstant(val.Name).GetData().GetReference();
-					data.MakeConstant(); //should be constant
-					return data;
-				}
-				else {
-					auto data=FindConstant(val.Name).GetData();
-					if(data.IsReference())
-						data.MakeConstant();
-					
-					return data;
-				}
 				
 			case ValueType::Temp: {
 				auto &data=temporaries[val.Result+tempbase];
@@ -1474,7 +1203,7 @@ namespace Gorgon {
 								throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
 							}
 						}
-						else {
+						else {//statics
 							auto &member=data.GetType().Members[functionname.substr(1)];
 							if(!member.IsDataMember()) {
 								throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
@@ -1632,7 +1361,7 @@ namespace Gorgon {
 			//function calls
 			else if(inst->Type==InstructionType::FunctionCall) {
 				functioncall(inst, false, false);
-			} 
+			}
 			else if(inst->Type==InstructionType::MemberFunctionCall) {
 				functioncall(inst, true, false);
 			} 
@@ -1642,6 +1371,13 @@ namespace Gorgon {
 			else if(inst->Type==InstructionType::MemberMethodCall) {
 				functioncall(inst, true, true);
 			}
+			
+			//."1" = obj.element
+			else if(inst->Type==InstructionType::MemberToTemp) {
+				temporaries[inst->Store+tempbase]=getvalue(inst->RHS, inst->Reference);
+			}
+			
+			//removes a temporary so that it can be freed if it is a reference type
 			else if(inst->Type==InstructionType::RemoveTemp) {
 				temporaries[inst->Store+tempbase]=Data::Invalid();
 				//std::cout<<"X> "<<inst->Store+tempbase<<std::endl;

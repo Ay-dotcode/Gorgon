@@ -48,13 +48,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* $"var"
 	* @endcode
 	* 
-	* @subsection VT_Constant Constant
-	* %Constant is denoted with ! symbol. It should be followed by constant name in double quotes. %Constant can be qualified
-	* with namespace (using column for separator). Following is the constant Pi in the library `Integral`:
-	* @code
-	* !"Integral:Pi"
-	* @endcode
-	* 
 	* 
 	* @subsection VT_Identifier Identifier
 	* Since compilation step cannot always differentiate between language constructs, VM accepts identifier type and resolves it
@@ -64,7 +57,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* 
 	* @subsection VT_Temporary Temporaries
 	* Temporaries are necessary to break compound statements. There are 255 temporaries in a typical GScript Virtual Machine.
-	* Their index starts from 1. Temporary symbol is dot. and like other value constructs, temporary index should be in quotes.
+	* Their index starts from 1. Temporary symbol is dot and like other value constructs, temporary index should be in quotes.
 	* These values can be reused as soon as the old one is no longer needed. A temporary can be used multiple times and will
 	* not be unset automatically. This might cause delayed destruction of reference counted objects. Therefore, compilers are
 	* should set an instructor to unset temporaries.
@@ -104,6 +97,25 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* @code
 	* ."1" = $a
 	* @endcode
+	* 
+	* @subsection MemberToTemp Save instance member to temporary
+	* Saves the value of an instance member to a temporary. Example:
+	* @code
+	* ."1" = |$"a" s"b"
+	* @endcode
+	* 
+	* @subsection MemberToVar Save instance member to variable
+	* Saves the value of an instance member to a variable. 
+	* @code
+	* $"c" = |$"a" s"b"
+	* @endcode
+	* 
+	* @subsection MemberAssignment Sets the value of an instance member
+	* Saves the value of an instance member to a variable. 
+	* @code
+	* |$"a" s"b" = ."1"
+	* @endcode
+	* 
 	* 
 	* @subsection Call Function/Method call
 	* A function call is denoted by "f" symbol, while "m" is method call. These symbols are followed by either "n" or "m",
@@ -157,7 +169,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		
 		int ret=0;
 		
-		switch(CheckInputFor(input, ch, '#', '.', 'f', 'm', '$', 'x', 'j')) {
+		switch(CheckInputFor(input, ch, '#', '.', 'f', 'm', '$', 'x', 'j', '|')) {
 			case 0:
 				return 0;
 				
@@ -180,7 +192,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				
 			case 5: {
 				List.resize(List.size()+1);
-				auto &inst=List.back();
+				Instruction &inst=List.back();
 				inst.Type  = InstructionType::RemoveTemp;
 				inst.Store = Byte(parsetemporary(input, ch));
 				ret=1;
@@ -189,6 +201,10 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				
 			case 6:
 				this->jinst(input, ch);
+				break;
+				
+			case 7:
+				this->memberassign(input, ch);
 				break;
 		}
 		
@@ -204,29 +220,46 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		auto temp=parsetemporary(input, ch);
 		
 		eatwhite(input, ch);			
-		CheckInputFor(input, ch, '=');
+		bool isref=CheckInputFor(input, ch, '=',':')==1;
 		eatwhite(input, ch);
 		
-		if(input[ch]!='m' && input[ch]!='f') { //save to temp
+		//membertotemp
+		if(input[ch]=='|') {
 			List.resize(List.size()+1);
-			auto &inst = List.back();
+			Instruction &inst = List.back();
+			
+			inst.Type  = InstructionType::SaveToTemp;
+			inst.Store = Byte(temp);
+			inst.Parameters.push_back(parsevalue(input, ch));
+			inst.Reference=isref;
+			eatwhite(input, ch);
+			inst.RHS   = parsevalue(input, ch);
+			
+			return ;
+		}
+		
+		if(input[ch]!='m' && (input[ch]!='f' || (input.size()>ch+1 && input[ch+1]!='n' && input[ch+1]!='m'))) { //save to temp
+			List.resize(List.size()+1);
+			Instruction &inst = List.back();
 			
 			inst.Type  = InstructionType::SaveToTemp;
 			inst.Store = Byte(temp);
 			inst.RHS   = parsevalue(input, ch);
+			inst.Reference=isref;
 			
 			return ;
 		}
 		
 		fncall(input, ch, false);
 
-		auto &inst=List.back();
+		Instruction &inst=List.back();
+		inst.Reference=isref;
 		inst.Store=Byte(temp);
 	}
 	
 	void Intermediate::fncall(const std::string& input, int &ch, bool allowmethod) {
 		List.resize(List.size()+1);
-		auto &inst=List.back();
+		Instruction &inst=List.back();
 		
 		bool ismethod=CheckInputFor(input, ch, 'f', (allowmethod ? 'm' : '\0'))==1;
 		
@@ -260,7 +293,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	
 	void Intermediate::jinst(std::string input, int &ch) {
 		List.resize(List.size()+1);
-		auto &inst=List.back();
+		Instruction &inst=List.back();
 		auto type=CheckInputFor(input, ch, 'a', 't', 'f');
 		inst.JumpOffset=String::To<int>(ExtractQuotes(input,ch)); //!check wellformed
 		
@@ -283,15 +316,38 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	
 	void Intermediate::varassign(const std::string& input, int &ch) {
 		List.resize(List.size()+1);
-		auto &inst=List.back();
+		Instruction &inst=List.back();
 		inst.Type=InstructionType::Assignment;
 		
 		inst.Name.Type=ValueType::Variable;
 		inst.Name.Name=ExtractQuotes(input, ch);
 		
 		eatwhite(input, ch);
+		inst.Reference=CheckInputFor(input, ch, '=', ':')==1;
+		eatwhite(input, ch);
 		
-		CheckInputFor(input, ch, '=');
+		if(input.size()>ch && input[ch]=='|') {
+			inst.Type=InstructionType::MemberToVar;
+			inst.Parameters.push_back(parsevalue(input, ch));
+			eatwhite(input, ch);
+		}
+		
+		inst.RHS=parsevalue(input, ch);
+	}
+	
+	void Intermediate::memberassign(const std::string& input, int &ch) {
+		List.resize(List.size()+1);
+		Instruction &inst=List.back();
+		inst.Type=InstructionType::MemberAssignment;
+		
+		
+		inst.Parameters.push_back(parsevalue(input, ch));
+		eatwhite(input, ch);
+		inst.Name=parsevalue(input, ch);
+		
+		eatwhite(input, ch);
+		inst.Reference=CheckInputFor(input, ch, '=', ':')==1;
+		eatwhite(input, ch);
 		
 		inst.RHS=parsevalue(input, ch);
 	}
@@ -307,7 +363,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 
 		Value ret;
 		
-		switch(CheckInputFor(input, ch, '.', '$', '!', 'i', 'f', 'b', 's', 'c', 'n', 'd', 'u', '?')) {
+		switch(CheckInputFor(input, ch, '.', '$', 'i', 'f', 'b', 's', 'c', 'n', 'd', 'u', '?')) {
 			case 0:
 				ret.Type  =ValueType::Temp;
 				ret.Result=(Byte)parsetemporary(input, ch);
@@ -319,21 +375,16 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				return ret;
 				
 			case 2:
-				ret.Type  = ValueType::Constant;
-				ret.Name  = ExtractQuotes(input, ch);
-				return ret;
-				
-			case 3:
 				ret.Type    = ValueType::Literal;
 				ret.Literal = {Types::Int(), String::To<int>(ExtractQuotes(input, ch))};
 				return ret;
 				
-			case 4:
+			case 3:
 				ret.Type    = ValueType::Literal;
 				ret.Literal = {Types::Float(), String::To<float>(ExtractQuotes(input, ch))};
 				return ret;
 				
-			case 5:
+			case 4:
 				ret.Type    = ValueType::Literal;
 				CheckInputFor(input, ch, '"');
 				ret.Literal = {Types::Bool(), CheckInputFor(input, ch, '0', '1')};
@@ -341,32 +392,32 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				
 				return ret;
 				
-			case 6:
+			case 5:
 				ret.Type    = ValueType::Literal;
 				ret.Literal = {Types::String(), ExtractQuotes(input, ch)};
 				return ret;
 				
-			case 7:
+			case 6:
 				ret.Type    = ValueType::Literal;
 				ret.Literal = {Types::Char(), (char)String::To<int>(ExtractQuotes(input, ch))};
 				return ret;
 				
-			case 8:
+			case 7:
 				ret.Type    = ValueType::Literal;
 				ret.Literal = {Types::Byte(), (Gorgon::Byte)String::To<int>(ExtractQuotes(input, ch))};
 				return ret;
 				
-			case 9:
+			case 8:
 				ret.Type    = ValueType::Literal;
 				ret.Literal = {Types::Double(), String::To<double>(ExtractQuotes(input, ch))};
 				return ret;
 				
-			case 10:
+			case 9:
 				ret.Type    = ValueType::Literal;
 				ret.Literal = {Types::Unsigned(), String::To<unsigned>(ExtractQuotes(input, ch))};
 				return ret;
 				
-			case 11:
+			case 10:
 				ret.Type 	= ValueType::Identifier;
 				ret.Name	= ExtractQuotes(input, ch);
 		}

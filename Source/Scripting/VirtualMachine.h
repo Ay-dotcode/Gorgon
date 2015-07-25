@@ -82,17 +82,8 @@ namespace Gorgon {
 			/// Removes a library
 			void RemoveLibrary(const Library &library);
 
-			/// Finds the given type by name. Namespace information will be extracted if exists. 
-			/// This function may throw symbol not found / ambiguous symbol.
-			const Type &FindType(std::string name);
-
-			/// Finds the given type by name. Namespace information will be extracted if exists. 
-			/// This function may throw symbol not found / ambiguous symbol.
-			const Function &FindFunction(std::string name);
-
-			/// Finds the given type by name. Namespace information will be extracted if exists. 
-			/// This function may throw symbol not found / ambiguous symbol.
-			const Constant &FindConstant(std::string name);
+			/// Imports symbols of a namespace to the list of global symbols
+			void UsingNamespace(const std::string &name);
 
 			/// Changes the current executing line.
 			void Jump(unsigned long line);
@@ -243,11 +234,9 @@ namespace Gorgon {
 			/// If a data is returned, it will be stored here
 			Data returnvalue=Data::Invalid();
 			
-			/// The list of symbols
-			std::multimap<std::string, Symbol, String::CaseInsensitiveLess> symbols;
-			
-			/// List of types
-			std::multimap<std::string, const Type*, String::CaseInsensitiveLess> types;
+			/// The list of symbols, does not include variables
+			std::map<std::string, const StaticMember*, String::CaseInsensitiveLess> symbols;
+			std::map<std::string, std::string> ambigoussymbols;
 
 			std::vector<std::shared_ptr<ScopeInstance>> scopeinstances;
 			Containers::Collection<Scope>				scopes;

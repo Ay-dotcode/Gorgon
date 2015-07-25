@@ -72,6 +72,8 @@ namespace Compilers {
 		
 		void varassign(const std::string &input, int &ch);
 		
+		void memberassign(const std::string &input, int &ch);
+		
 		Value parsevalue(const std::string &input, int &ch);
 		
 		unsigned long parsetemporary(const std::string &input, int &ch);

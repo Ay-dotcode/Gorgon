@@ -42,9 +42,6 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			/// This node represents a variable identifier
 			Variable,
 			
-			/// This node represents a constant identifier
-			Constant,
-			
 			/// This node represents an operator. All operators in GorgonScript are left associative and binary
 			Operator,
 			
