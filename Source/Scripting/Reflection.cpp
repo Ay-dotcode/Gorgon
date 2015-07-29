@@ -116,6 +116,8 @@ namespace Gorgon { namespace Scripting {
 			defaultvalue.TypeInfo()==TypeInterface.PtrType.TypeInfo() : 
 			defaultvalue.TypeInfo()==TypeInterface.NormalType.TypeInfo(),
 			"Default value and the type does not match");
+		
+		AddMember(constructor);
 	}
 	
 	Data Type::MorphTo(const Type& type, Data source, bool allowtypecast) const {

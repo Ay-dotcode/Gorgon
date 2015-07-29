@@ -870,10 +870,8 @@ namespace Gorgon {
 		// !Careful there are early terminations
 		/// Handles function/method call instructions
 		void VirtualMachine::functioncall(const Instruction *inst, bool memberonly, bool method) {
-			const Function *fn=nullptr;
 			std::string functionname;
-
-			//<!
+			
 			//function call from a literal, should be a string.
 			if(inst->Name.Type==ValueType::Literal) {
 				try {
@@ -882,23 +880,12 @@ namespace Gorgon {
 					throw std::runtime_error("Invalid instruction. Function names should be string literals.");
 				}
 			}
-			else if((inst->Name.Type==ValueType::Identifier || inst->Name.Type==ValueType::Variable) && IsVariableSet(inst->Name.Name)) {
-				auto var=GetVariable(inst->Name.Name);
-				
-				if(var.GetType()!=FunctionType()) {
-					throw CastException(var.GetType().GetName(), "Function", inst->Name.Name+
-						" is a variable that do not contain a function");
-				}
-				
-				fn=var.GetValue<const Function *>();
-			}
-			else if(inst->Name.Type==ValueType::Identifier) {
+			else if(inst->Name.Type==ValueType::Identifier || inst->Name.Type==ValueType::Variable) {
 				functionname=inst->Name.Name;
 			}
 			else {
 				throw SymbolNotFoundException(inst->Name.Name, SymbolType::Function);
 			}
-			//>
 			
 			//special functions
 			if(functionname=="return") {
@@ -938,34 +925,54 @@ namespace Gorgon {
 			const std::vector<Value> *params=&inst->Parameters;
 			std::vector<Value> temp;
 			
+			const Function *fn=nullptr;
+			
 			// find requested function
 			if(!memberonly) {
+				Data member;
 				//try library functions
 				try {
-					if(!fn)
-						fn=&FindFunction(functionname);
+					member=FindSymbol(functionname, true);
+					//if not found, try member functions
 				}
-				//if not found, try member functions
 				catch(const SymbolNotFoundException &) {
 					//should have parameter for resolving
 					if(inst->Parameters.size()==0) {
 						throw;
 					}
-
+					
 					//search in the type of the first parameter
 					Data data=getvalue(inst->Parameters[0]);
-					auto fnit=data.GetType().Functions.Find(functionname);
-
+					
+					auto fnit=data.GetType().Members.Find(functionname);
+					
 					//if found
 					if(fnit.IsValid()) {
-						fn=&fnit.Current().second;
+						member=fnit.Current().second.Get();
 					} else {
 						//cannot find anywhere
 						throw;
 					}
-				} catch(...) {
-					//some other error
-					throw;
+				}
+				
+				//regular function
+				if(member.GetType()==Types::Function()) {
+					fn=member.GetValue<const Function*>();
+				}
+				//object with () operator
+				else if(member.GetType().Members.Exists("()")) {
+					member=member.GetType().Members["()"].Get();
+					
+					//() operator must be function, just to make sure
+					if(member.GetType()==Types::Function()) {
+						fn=member.GetValue<const Function*>();
+					}
+					else {
+						throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert () operator to a function");
+					}
+				}
+				else {
+					throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert "+functionname+" to a function");
 				}
 			}
 			else {
@@ -974,7 +981,7 @@ namespace Gorgon {
 				}
 				
 				Data data;
-				//search in the type of the first parameter, this ensures the data is a reference
+				//Get the data from the first parameter. If it can be converted to a reference, its also done
 				if(inst->Parameters[0].Type==ValueType::Literal || 
 					(inst->Parameters[0].Type==ValueType::Temp && !temporaries[inst->Parameters[0].Result+tempbase].IsReference())
 				) {
@@ -984,152 +991,34 @@ namespace Gorgon {
 					data=getvalue(inst->Parameters[0], true);
 				}
 
-				if(functionname=="{}") { //constructor
-					if(data.GetType()==Types::String()) {
-						data={Reflection.Types["Type"], (const Type*)(&FindType(data.GetValue<std::string>()))};
-					}
-					else if(data.GetType()!=Reflection.Types["Type"]) {
-						throw std::runtime_error("Invalid intermediate instruction, type parameter is not a type");
-					}
-					//else Reflection:Type typed variable/temporary
-					
-					//call the constructor
-					fn=&data.GetValue<const Type*>()->Constructor;
-					
-					//to remove first param
-					params=&temp;
-					temp=inst->Parameters;
-					temp.erase(temp.begin());
-				}				
-				else if(functionname[0]=='.') { //data member
-					//data access
-					if(inst->Parameters.size()==1) {
-						Data ret=Data::Invalid();
-						if(!data.GetType().Members.Exists(functionname.substr(1))) {
-							//check parent symbols
-							auto it=data.GetType().InheritedSymbols.Find(functionname.substr(1));
-							
-							//if found
-							if(it.IsValid()) {
-								auto &member=it.Current().second.Members[functionname.substr(1)];
-								if(!member.IsDataMember()) {
-									throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
-								}
-								
-								auto &datamember=dynamic_cast<const DataMember&>(member);
-								
-								//cast current data to its parent and perform the data retrieval
-								if(member.IsStatic())
-									ret=datamember.Get();
-								else
-									ret=datamember.Get(data.GetType().MorphTo(it.Current().second, data));
-							}
-							else {							
-								throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
-							}
-						}
-						else {//statics
-							auto &member=data.GetType().Members[functionname.substr(1)];
-							if(!member.IsDataMember()) {
-								throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
-							}
-							
-							auto &datamember=dynamic_cast<const DataMember&>(member);
-							if(member.IsStatic())
-								ret=datamember.Get();
-							else
-								ret=datamember.Get(data);
-						}
-						
-						//store the result
-						if(inst->Store) {
-							//variants should be casted
-							if(ret.GetType()==Types::Variant()) {
-								ret=ret.GetValue<Data>();
-							}
-							//else ok
-
-							temporaries[inst->Store+tempbase]=ret;
-							//std::cout<<"S> "<<inst->Store+tempbase<<std::endl;
-							if(highesttemp<inst->Store)
-								highesttemp=inst->Store;
-							
-							
-							//if the source is constant, then the result should be a constant too
-							if(data.IsConstant() || !data.IsReference())
-								temporaries[inst->Store+tempbase].MakeConstant();
-						}
-					}
-					//data mutate
-					else if(inst->Parameters.size()==2) {
-						if(data.IsConstant() || !data.IsReference()) {
-							throw ConstantException(inst->Parameters[0].Name, "While setting member: "+functionname.substr(1));
-						}
-						//else ok
-						
-						//cannot store the result of assignment
-						if(inst->Store) {
-							throw NoReturnException("Data member: "+data.GetType().Members[functionname.substr(1)].GetName());
-						}
-						//else ok
-						
-						if(!data.GetType().Members.Exists(functionname.substr(1))) {
-							//check parent symbols
-							auto it=data.GetType().InheritedSymbols.Find(functionname.substr(1));
-							
-							//if found
-							if(it.IsValid()) {
-								//cast current data to its parent and let the rest do the work
-								data=data.GetType().MorphTo(it.Current().second, data); //:data is reference
-							}
-							else {							
-								throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member);
-							}
-						}
-						//else ok
-						
-						auto &member=data.GetType().Members[functionname.substr(1)];
-						if(!member.IsDataMember()) {
-							throw SymbolNotFoundException(functionname.substr(1), SymbolType::Member, 
-								"The member "+functionname.substr(1)+" is not a data member."
-							);
-						}
-						
-						auto &datamember=dynamic_cast<const DataMember&>(member);
-						
-						if(member.IsStatic())
-							datamember.Set(getvalue(inst->Parameters[1]));
-						else 
-							datamember.Set(data, getvalue(inst->Parameters[1]));
-					}
-					else {
-						throw std::runtime_error("Member access or mutate requires exactly 1 and 2 parameters");
-					}
-					
-					return;
-				}
+				auto fnit=data.GetType().Members.Find(functionname);
+				
+				//if found
+				if(fnit.IsValid() && fnit.Current().second.GetMemberType()==StaticMember::Function) {
+					fn=dynamic_cast<const Function*>(&fnit.Current().second);
+				} 
+				//cannot find it
 				else {
-					auto fnit=data.GetType().Functions.Find(functionname);
-					
+					//check inherited symbols for it
+					auto it=data.GetType().InheritedSymbols.Find(functionname);
 					//if found
-					if(fnit.IsValid()) {
-						fn=&fnit.Current().second;
-					} 
-					
-					//cannot find it
-					else {
-						//check inherited symbols for it
-						auto it=data.GetType().InheritedSymbols.Find(functionname);
-						//if found
-						if(it.IsValid()) {
-							//use that function instead
-							fn=&it.Current().second.Functions[functionname];
-						}
-						else {						
-							throw SymbolNotFoundException(functionname, SymbolType::Function, 
-								"Cannot find the member function "+data.GetType().GetName()+":"+functionname);
-						}
+					if(it.IsValid()) {
+						const StaticMember *member=&(it.Current().second.Members[functionname]);
+						if(member->GetMemberType()!=StaticMember::Function)
+							throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert "+functionname+" to a function");
+						
+						//use that function instead
+						fn=dynamic_cast<const Function *>(member);
 					}
+					else {						
+						throw SymbolNotFoundException(functionname, SymbolType::Function, 
+							"Cannot find the member function "+data.GetType().GetName()+":"+functionname);
+					}
+				}
+				
+				if(fn->IsStatic()) {
+					throw SymbolNotFoundException(functionname, SymbolType::Function, 
+						functionname+" is not a non-static member function, use `Type::functionname(...)` to access static functions");
 				}
 			}
 
@@ -1217,7 +1106,7 @@ namespace Gorgon {
 				
 				//!
 				Data elm=getvalue(inst->RHS);
-				InstanceMember *member=nullptr;
+				const InstanceMember *member=nullptr;
 				if(elm.GetType()==Types::InstanceMember()) {
 					member=elm.GetValue<const InstanceMember*>();
 				}
@@ -1407,7 +1296,7 @@ namespace Gorgon {
 			
 			auto &current=CurrentScopeInstance();
 			for(const auto &member : name.Members) {
-				current.AddSymbol(member);
+				current.AddSymbol(member.second);
 			}
 		}
 
