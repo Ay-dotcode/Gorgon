@@ -1,0 +1,12 @@
+SET(Local
+    CountingText.cpp
+    CountingText.h
+    Flip.cpp
+    Flip.h
+    LayerMover.cpp
+    LayerMover.h
+    LayerResizer.cpp
+    LayerResizer.h
+    Tinting.cpp
+    Tinting.h
+)

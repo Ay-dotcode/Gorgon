@@ -1,0 +1,1 @@
+SET(Local BorderData.cpp BorderData.h Line.cpp Line.h PetContainer.h PetTextbox.h Placeholder.cpp Placeholder.h Rectangle.cpp Rectangle.h Region.cpp Region.h ResizableObjectResource.cpp ResizableObjectResource.h VirtualPanel.h WidgetLayer.h )

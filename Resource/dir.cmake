@@ -1,0 +1,1 @@
+SET(Local Animation.cpp Animation.h Base.cpp Base.h BitmapFont.cpp BitmapFont.h Blob.cpp Blob.h DataArray.cpp DataArray.h Definitions.h File.cpp File.h Folder.cpp Folder.h FontTheme.cpp FontTheme.h GRE.h Image.cpp Image.h LinkNode.cpp LinkNode.h Main.cpp Main.h NullImage.h Pointer.cpp Pointer.h ResizableObject.h Sound.cpp Sound.h Text.cpp Text.h )
