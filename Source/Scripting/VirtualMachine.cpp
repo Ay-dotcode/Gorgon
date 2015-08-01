@@ -84,6 +84,10 @@ namespace Gorgon {
 				temporaries.resize(tempbase+256);
 			
 			scopeinstances.push_back(instance);
+			if(scopeinstances.size()==1) {
+				UsingNamespace(Integrals);
+				UsingNamespace(Keywords);
+			}
 		}
 
 		void VirtualMachine::Run() {
@@ -1102,12 +1106,11 @@ namespace Gorgon {
 				else {
 					thisptr=getvalue(inst->Parameters[0], true);
 				}
-				//***
 				
 				//!
 				Data elm=getvalue(inst->RHS);
 				const InstanceMember *member=nullptr;
-				if(elm.GetType()==Types::InstanceMember()) {
+				if(elm.GetType()==Types::InstanceMember()) { //currently will never happen
 					member=elm.GetValue<const InstanceMember*>();
 				}
 				else if(elm.GetType()==Types::String()) {

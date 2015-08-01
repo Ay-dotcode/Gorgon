@@ -140,7 +140,7 @@ int main() {
 	
 	reftyp->MapConstructor<>({});
 	reftyp->AddMembers({
-		new MappedMemberDataRO<evttest*, Gorgon::Event<evttest, int>>(&evttest::ev, "event", "", eventtype)
+		new MappedROInstanceMember<evttest*, Gorgon::Event<evttest, int>>(&evttest::ev, "event", "", eventtype)
 	});
 	
 	evttest a;
@@ -170,11 +170,11 @@ int main() {
 	
 	auto nulltype=new MappedReferenceType<NullTest>("NullTest", "");
 	
-	mylib.AddTypes({
+	mylib.AddMembers({
 		nulltype, reftyp
 	});
 
-	mylib.AddFunctions({
+	mylib.AddMembers({
 		new Function("geta", "", nullptr,
 			{
 				MapFunction([&]{

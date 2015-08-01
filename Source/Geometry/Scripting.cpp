@@ -11,6 +11,7 @@ namespace Gorgon { namespace Geometry {
 								   "Data types under geometry module and their member functions and operators");
 
 	void init_scripting() { 
+		if(LibGeometry.Members.GetCount()) return;
 
 		auto point = new Scripting::MappedValueType<Point>(
 			"Point",

@@ -805,20 +805,21 @@ namespace Scripting {
 	protected:
 		using normaltype = typename std::remove_const<typename std::remove_pointer<T_>::type>::type;
 		using classptr   = typename std::remove_pointer<C_>::type *;
+		using classbase  = typename std::remove_pointer<C_>::type;
 		
 		enum {
 			istypeconst = std::is_const<typename std::remove_pointer<T_>::type>::value,
 			istypeptr   = std::is_pointer<T_>::value,
 		};
 		
-		MappedROInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, 
+		MappedROInstanceMember(T_ classbase::*member, const std::string &name, const std::string &help, const Type *type, 
 							   bool constant, bool ref, bool readonly) :
 		InstanceMember(name, help, *type, constant, ref, readonly), member(member) {
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
 			ASSERT(type->TypeInterface.NormalType.IsSameType<normaltype>(), "Reported type "+type->GetName()+
 				   " ("+type->TypeInterface.NormalType.Name()+") "
 				   " does not match with c++ type: "+Utils::GetTypeName<normaltype>(), 1, 2);
-			ASSERT(constant=istypeconst, "Constness of "+name+" does not match with its implementation");
+			ASSERT(constant==istypeconst, "Constness of "+name+" does not match with its implementation");
 		}
 		
 		template<class T2_=T_>
@@ -831,42 +832,42 @@ namespace Scripting {
 			return val;
 		}
 		
+		template<class T2_=T_>
+		static typename std::enable_if<istypeptr, T2_>::type toptr(T2_ val) {
+			return val;
+		}
+		
+		template<class T2_=T_>
+		static typename std::enable_if<!istypeptr, T2_*>::type toptr(T2_ &val) {
+			return &val;
+		}
+		
+		template<class C2_=C_>
+		static typename std::enable_if<std::is_pointer<C2_>::value, const C2_>::type clstoptr(const C2_ val) {
+			return val;
+		}
+		
+		template<class C2_=C_>
+		static typename std::enable_if<!std::is_pointer<C2_>::value, const C2_*>::type clstoptr(const C2_ &val) {
+			return &val;
+		}
+		
+		template<class T2_=T_>
+		typename std::enable_if<std::is_copy_constructible<T2_>::value, Data>::type getnonref(Data &data) const {
+			return {GetType(), (const normaltype)deref(clstoptr(data.GetValue<const C_>())->*member), false, true};
+		}
+		
+		template<class T2_=T_>
+		typename std::enable_if<!std::is_copy_constructible<T2_>::value, Data>::type getnonref(Data &data) const {
+			return {};
+		}
+		
 	public:
 		/// Constructor
-		MappedROInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, 
+		MappedROInstanceMember(T_ classbase::*member, const std::string &name, const std::string &help, 
 							   const Type *type, bool constant=false) :
 		MappedROInstanceMember(member, name, help, type, constant, false, true)
 		{ }
-		
-		virtual Data Get(Scripting::Data &data) const override {
-			// we dont need to return a pointer
-			if((constant || data.IsConstant()) && !data.IsReference()) {
-				return {GetType(), (const normaltype)deref(data.GetValue<const C_>().*member), false, true};
-			}
-			else {
-				data.GetReference();
-				Data d;
-				if(data.IsConstant() || constant) {
-					if(istypeptr) {
-						d={GetType(), (const T_)(data.ReferenceValue<classptr>()->*member), true, true};
-					}
-					else {
-						d={GetType(), (const T_ *)&(data.ReferenceValue<classptr>()->*member), true, true};
-					}
-				}
-				else {
-					if(istypeptr) {
-						d={GetType(), (data.ReferenceValue<classptr>()->*member), true, false};
-					}
-					else {
-						d={GetType(), &(data.ReferenceValue<classptr>()->*member), true, false};
-					}
-				}
-				
-				d.SetParent(data);
-				return d;
-			}
-		}
 		
 		
 	protected:
@@ -879,7 +880,27 @@ namespace Scripting {
 		virtual void set(Data &source, Data &value) const override {
 		}
 		
-		T_ C_::*member;
+		virtual Data get(Scripting::Data &data) const override {
+			// we dont need to return a pointer
+			if((constant || data.IsConstant()) && !data.IsReference() && std::is_copy_constructible<T_>::value) {
+				return getnonref(data);
+			}
+			else {
+				data.GetReference();
+				Data d;
+				if(data.IsConstant() || constant) {
+					d={GetType(), (const normaltype *)toptr(data.ReferenceValue<classptr>()->*member), true, true};
+				}
+				else {
+					d={GetType(), toptr(data.ReferenceValue<classptr>()->*member), true, false};
+				}
+				
+				d.SetParent(data);
+				return d;
+			}
+		}
+		
+		T_ classbase::*member;
 	};
 	
 	/**
@@ -887,9 +908,10 @@ namespace Scripting {
 	 */
 	template<class C_, class T_>
 	class MappedInstanceMember : public MappedROInstanceMember<C_, T_> {
+		using classbase  = typename std::remove_pointer<C_>::type;
 	public:
 		/// Constructor
-		MappedInstanceMember(T_ C_::*member, const std::string &name, const std::string &help, const Type *type, bool constant=false, bool ref=false) :
+		MappedInstanceMember(T_ classbase::*member, const std::string &name, const std::string &help, const Type *type, bool constant=false, bool ref=false) :
 		MappedROInstanceMember<C_, T_>(member, name, help, type, constant, ref, false)
 		{
 			if(ref) {
@@ -983,6 +1005,16 @@ namespace Scripting {
 			ASSERT(type, "Type cannot be nullptr", 1, 2);
 		}
 		
+		template<class T2_=T_>
+		typename std::enable_if<std::is_copy_constructible<T2_>::value, Data>::type getnonref() {
+			return {GetType(), (const T_)value, false, true};
+		}
+		
+		template<class T2_=T_>
+		typename std::enable_if<!std::is_copy_constructible<T2_>::value, Data>::type getnonref() {
+			return {};
+		}
+		
 	public:
 		/// If T_ is not a pointer, uses the value as initial value and stores the current value locally.
 		/// The stored value can be accessed using GetValue function. If T_ is a pointer, it will be modified
@@ -993,10 +1025,22 @@ namespace Scripting {
 		{
 		}
 		
-		virtual Data Get() const override {
+		/// Returns the value stored in this data
+		T_ GetValue() const {
+			return value;
+		}
+		
+		/// Returns the value stored in this data
+		T_ &GetValue() {
+			return value;
+		}
+		
+	protected:
+		
+		virtual Data get() const override {
 			// we dont need to return a pointer
-			if(constant && !type->IsReferenceType() && !istypeptr) {
-				return {GetType(), (const T_)value, false, true};
+			if(constant && !type->IsReferenceType() && !istypeptr && std::is_copy_constructible<T_>::value) {
+				return getnonref();
 			}
 			else {
 				Data d;
@@ -1016,22 +1060,10 @@ namespace Scripting {
 						d={GetType(), &(value), true, false};
 					}
 				}
-
+				
 				return d;
 			}
 		}
-		
-		/// Returns the value stored in this data
-		T_ GetValue() const {
-			return value;
-		}
-		
-		/// Returns the value stored in this data
-		T_ &GetValue() {
-			return value;
-		}
-		
-	protected:
 		
 		virtual void set(Data &source, Data &value) const override {
 		}

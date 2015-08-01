@@ -421,6 +421,16 @@ namespace Gorgon {
 				set(newval);
 			}
 			
+			/// Gets data from the datamember
+			virtual Data Get() const override {
+				Data d=get();
+				ASSERT(!reference  || d.IsReference(), "The value returned from "+name+" should be a reference");
+				if(constant)
+					d.MakeConstant();
+				
+				return d;
+			}
+			
 			/// Returns the type of this static member
 			const Type &GetType() const {
 				return *type;
@@ -450,6 +460,9 @@ namespace Gorgon {
 			/// If readonly is set, this function will not be called, instead, the public set function
 			/// will throw readonly exception.
 			virtual void set(Data &newval) = 0;
+			
+			/// This function should return the data. It is overloaded to enforce modifiers.
+			virtual Data get() const = 0;
 			
 			/// Type of the datamember
 			const Type *type;
@@ -965,7 +978,14 @@ namespace Gorgon {
 			}
 
 			/// Gets data from the datamember
-			virtual Data Get(      Data &source) const = 0;
+			Data Get(      Data &source) const {
+				Data d=get(source);
+				ASSERT(!reference  || d.IsReference(), "The value returned from "+name+" should be a reference");
+				if(constant)
+					d.MakeConstant();
+				
+				return d;
+			}
 			
 			/// Sets the data of the data member, if the source is a reference,
 			/// this function should perform in place replacement of the value
@@ -998,6 +1018,9 @@ namespace Gorgon {
 		protected:
 			/// This function should perform set operation
 			virtual void set(Data &source, Data &value) const = 0;
+			
+			/// This function should return the value of this member
+			virtual Data get(      Data &source) const = 0;
 			
 			/// Type checks the parent
 			virtual void typecheck(const Type *type) const = 0;
@@ -1141,6 +1164,8 @@ namespace Gorgon {
 			
 			Type(const std::string &name, const std::string &help, const Any &defaultvalue, 
 				 TMP::RTTH *typeinterface, bool isref);
+			
+			virtual MemberType GetMemberType() const override { return StaticMember::RegularType; }
 			
 			virtual Data Get() const override { 
 				//!

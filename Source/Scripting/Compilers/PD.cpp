@@ -902,7 +902,7 @@ namespace Compilers {
 							ParameterTemplate p;
 							p.name=token.repr;
 							//default type is variant
-							p.type.SetIdentifier("Integral:Variant");
+							p.type.SetIdentifier("Integrals:Variant");
 								
 							//after parameter name there should either be a comma, as statement, or a right parenthesis
 							token=peeknexttoken(input, index);
@@ -1023,7 +1023,7 @@ namespace Compilers {
 							root->Leaves.Insert(NewNode(ASTNode::Keyword, Token("nothing", Token::EoS, token.start)), 1);
 						}
 						else {
-							root->Leaves.Insert(NewNode(ASTNode::Identifier, Token("00Integral:Variant", Token::Identifier, token.start)), 1);
+							root->Leaves.Insert(NewNode(ASTNode::Identifier, Token("00Integrals:Variant", Token::Identifier, token.start)), 1);
 						}
 					}
 					else if(ismethod) {

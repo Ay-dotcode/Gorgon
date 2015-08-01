@@ -370,10 +370,10 @@ namespace Gorgon { namespace Scripting {
 	
 	const Namespace& Namespace::GetNamespace(const std::string& name) const {
 		auto elm=members.Find(name);
-		if(elm.IsValid())
+		if(!elm.IsValid())
 			throw SymbolNotFoundException(name, SymbolType::Type, "Type "+name+" cannot be found.");
 		
-		if(elm.Current().second.GetMemberType() != StaticMember::Namespace || elm.Current().second.IsInstanceable()) 
+		if(!elm.Current().second.GetMemberType() != StaticMember::Namespace || elm.Current().second.IsInstanceable()) 
 			throw SymbolNotFoundException(name, SymbolType::Type, "Symbol "+name+" is not a type.");
 		
 		return dynamic_cast<const Namespace&>(elm.Current().second);
@@ -381,10 +381,10 @@ namespace Gorgon { namespace Scripting {
 	
 	const Type& Namespace::GetType(const std::string& name) const {
 		auto elm=members.Find(name);
-		if(elm.IsValid())
+		if(!elm.IsValid())
 			throw SymbolNotFoundException(name, SymbolType::Type, "Type "+name+" cannot be found.");
 		
-		if(elm.Current().second.IsInstanceable()) 
+		if(!elm.Current().second.IsInstanceable()) 
 			throw SymbolNotFoundException(name, SymbolType::Type, "Symbol "+name+" is not a type.");
 		
 		return dynamic_cast<const Type&>(elm.Current().second);
@@ -392,10 +392,10 @@ namespace Gorgon { namespace Scripting {
 	
 	const Function& Namespace::GetFunction(const std::string& name) const {
 		auto elm=members.Find(name);
-		if(elm.IsValid())
+		if(!elm.IsValid())
 			throw SymbolNotFoundException(name, SymbolType::Function, "Function "+name+" cannot be found.");
 		
-		if(elm.Current().second.GetMemberType() != StaticMember::Function) 
+		if(!elm.Current().second.GetMemberType() != StaticMember::Function) 
 			throw SymbolNotFoundException(name, SymbolType::Function, "Symbol "+name+" is not a function.");
 		
 		return dynamic_cast<const Scripting::Function&>(elm.Current().second);
