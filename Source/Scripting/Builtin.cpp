@@ -1404,6 +1404,25 @@ namespace Gorgon {
 					},
 					KeywordTag
 				),
+				new Function("using",
+					"Allows using members of a given namespace without namespace name", nullptr,
+					{
+						MapFunction(
+							[](const std::vector<std::string> &names) {
+								auto &vm=VirtualMachine::Get();
+								for(auto name : names)
+									vm.UsingNamespace(name);
+							}, nullptr,
+							{
+								Parameter("Namespace",
+									"This is the namespace to be used",
+									String, VariableTag
+								)
+							}, RepeatTag
+						)
+					},
+					KeywordTag
+				),
 				new Function("unset",
 					"Unsets a given variable", nullptr,
 					{

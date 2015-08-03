@@ -192,7 +192,7 @@ namespace Gorgon {
 			}
 		}
 		
-		Data VirtualMachine::FindSymbol(const std::string &original, bool reference) {
+		Data VirtualMachine::FindSymbol(const std::string &original, bool reference, bool allownull) {
 			ASSERT(scopeinstances.size(), "No scope instance is active");
 			
 			std::string name=original;
@@ -217,6 +217,11 @@ namespace Gorgon {
 				else {
 					nmspc=current.GetType().MorphTo(Types::Namespace(), current).ReferenceValue<const Namespace *>();
 				}
+				
+				if(!nmspc) {
+					throw SymbolNotFoundException(name, SymbolType::Identifier, name+" is null");
+				}
+				
 				cname=String::Extract(name, ':');
 				//check in own members
 				auto it=nmspc->Members.Find(cname);
@@ -244,6 +249,10 @@ namespace Gorgon {
 				else {
 					current=it.Current().second.Get();
 				}
+			}
+			
+			if(!allownull && current.IsReference() && !current.GetData().Pointer()) {
+				throw SymbolNotFoundException(name, SymbolType::Identifier, name+" is null");
 			}
 			
 			return current;
@@ -1355,11 +1364,38 @@ namespace Gorgon {
 				throw std::runtime_error("No scope is active");
 			
 			auto &current=CurrentScopeInstance();
+			
+			if(current.UsedNamespaces.count(name.GetName())) return;
+			current.UsedNamespaces.insert(name.GetName());
+			
 			for(const auto &member : name.Members) {
 				current.AddSymbol(member.second);
 			}
 		}
-
+		
+		void VirtualMachine::UsingNamespace(const std::string &name) {
+			if(GetScopeInstanceCount()==0)
+				throw std::runtime_error("No scope is active");
+			
+			auto symbol=FindSymbol(name);
+			if(symbol.GetType()!=Types::Namespace() && !symbol.GetType().CanMorphTo(Types::Namespace())) {
+				throw SymbolNotFoundException(name, SymbolType::Namespace, "Symbol "+name+" is not a namespace");
+			}
+			
+			const Namespace *nmspc;
+			if(symbol.GetType()!=Types::Namespace()) {
+				nmspc=symbol.GetType().MorphTo(Types::Namespace(), symbol).ReferenceValue<const Namespace*>();
+			}
+			else {
+				nmspc=symbol.ReferenceValue<const Namespace*>();
+			}
+			if(!nmspc) {
+				throw SymbolNotFoundException(name, SymbolType::Namespace, name+" is null");
+			}
+			
+			UsingNamespace(*nmspc);
+		}
+		
 
 	}
 }

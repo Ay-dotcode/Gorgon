@@ -84,7 +84,10 @@ namespace Gorgon {
 
 			/// Imports symbols of a namespace to the list of global symbols
 			void UsingNamespace(const Namespace &name);
-
+			
+			/// Imports symbols of a namespace to the list of global symbols
+			void UsingNamespace(const std::string &name);
+			
 			/// Changes the current executing line.
 			void Jump(unsigned long line);
 
@@ -97,7 +100,7 @@ namespace Gorgon {
 			void LongJump(SourceMarker marker);
 			
 			/// Finds the given symbol and resolves its value
-			Data FindSymbol(const std::string &original, bool reference);
+			Data FindSymbol(const std::string &original, bool reference=false, bool allownull=false);
 
 
 			/// Returns the current VM for this thread.
