@@ -390,9 +390,12 @@ namespace Gorgon { namespace Scripting {
 				return Data::Invalid();
 		}
 		
+		/// Current return value of the scope. This value can be modified before actually returning from the scope
 		Data ReturnValue;
 		
 	private:
+		/// This variable is to be used by VM
+		std::set<std::string> UsedNamespaces;
 		
 		/// The list of symbols, does not include variables
 		std::map<std::string, const StaticMember*, String::CaseInsensitiveLess> symbols;

@@ -1,3 +1,4 @@
+using geometry
 y=5
 p=Point{3,y}
 echo p

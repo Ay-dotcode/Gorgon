@@ -71,17 +71,35 @@ namespace Gorgon {
 			
 			/// Returns the value of this data in the requested format
 			template <class T_>
-			typename std::enable_if<std::is_pointer<T_>::value, const typename std::remove_reference<T_>::type &>::type
+			typename std::enable_if<std::is_pointer<T_>::value && std::is_const<typename std::remove_pointer<T_>::type>::value, T_>::type
 			GetValue() const {
 				if(isconstant) {
 					if(IsReference())
-						return data.Get<typename std::remove_reference<const T_>::type>();
+						return data.Get<const typename std::remove_pointer<T_>::type *>();
 					else
 						throw CastException("Value", "Reference");
 				}
 				else {
 					if(IsReference())
-						return data.Get<typename std::remove_const<typename std::remove_reference<T_>::type>::type>();
+						return data.Get<typename std::remove_const<typename std::remove_pointer<T_>::type>::type*>();
+					else
+						throw CastException("Value", "Reference");
+				}
+			}
+			
+			/// Returns the value of this data in the requested format
+			template <class T_>
+			typename std::enable_if<std::is_pointer<T_>::value && !std::is_const<typename std::remove_pointer<T_>::type>::value, T_>::type
+			GetValue() const {
+				if(isconstant) {
+					if(IsReference())
+						throw CastException("Const reference", "Reference");
+					else
+						throw CastException("Value", "Reference");
+				}
+				else {
+					if(IsReference())
+						return data.Get<typename std::remove_const<typename std::remove_pointer<T_>::type>::type*>();
 					else
 						throw CastException("Value", "Reference");
 				}

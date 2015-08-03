@@ -89,6 +89,13 @@ namespace Scripting {
 			using inner = T_;
 		};
 		
+		template<template<class, class> class V_, class T_, class A_>
+		struct extractvector<const V_<T_, A_>&> {
+			enum { isvector = std::is_same<V_<T_, A_>, std::vector<T_, A_>>::value };
+			
+			using inner = T_;
+		};
+		
 		//checks if this type is a reference that cannot be initialized from a value
 		template<class T_>
 		struct is_nontmpref {
@@ -174,9 +181,10 @@ namespace Scripting {
 		}
 
 		template<int P_>
-		typename std::enable_if<extractvector<param<P_>>::isvector, param<P_>>::type
+		typename std::enable_if<extractvector<param<P_>>::isvector, 
+			typename std::remove_const<typename std::remove_reference<param<P_>>::type>::type>::type
 		accumulatevector(const std::vector<Data> &parameters) const {
-			param<P_> v;
+			typename std::remove_const<typename std::remove_reference<param<P_>>::type>::type v;
 			for(unsigned i=P_; i<parameters.size(); i++) {
 				v.push_back(castto<typename extractvector<param<P_>>::inner>(parameters[i]));
 			}
@@ -188,7 +196,10 @@ namespace Scripting {
 		inline typename TMP::Choose<
 		is_nontmpref<param<P_>>::value && !extractvector<param<P_>>::isvector,
 			std::reference_wrapper<typename std::remove_reference<param<P_>>::type>,
-			param<P_>
+			typename TMP::Choose<extractvector<param<P_>>::isvector,
+				typename std::remove_const<typename std::remove_reference<param<P_>>::type>::type,
+				param<P_>
+			>::Type
 		>::Type cast(const std::vector<Data> &parameters) const {
 			bool b=is_nontmpref<param<P_>>::value;
 			if(P_-(parent->IsMember() && !parent->IsStatic())==this->parameters.size()-1 && repeatlast) {
@@ -459,8 +470,7 @@ namespace Scripting {
 				
 				ASSERT(
 					(TMP::RTT<typename extractvector<T>::inner>()==param.GetType().TypeInterface.NormalType),
-					"The declared type ("+parent->GetOwner().GetName()+", "+
-					parent->GetOwner().TypeInterface.NormalType.Name()+") of "
+					"The declared type ("+param.GetType().TypeInterface.NormalType.Name()+") of "
 					"parameter #"+String::From(P_-ismember+1)+" does not match with the function type ("+
 					rtt.NormalType.Name()+")\n"+
 					"in function "+parent->GetName(), 4, 3

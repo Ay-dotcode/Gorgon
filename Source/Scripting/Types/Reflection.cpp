@@ -441,6 +441,7 @@ namespace Gorgon { namespace Scripting {
 								vm.GetOutput()<<"Name : "<<var.GetName()<<std::endl;
 								if(var.IsValid()) {
 									vm.GetOutput()<<"Type : "<<var.GetType().GetName()<<std::endl;
+									vm.GetOutput()<<"Any_t: "<<var.GetData().GetTypeName()<<std::endl;
 									vm.GetOutput()<<"Ref  : "<<(var.IsReference() ? "yes" : "no")<<std::endl;
 									vm.GetOutput()<<"Const: "<<(var.IsConstant()  ? "yes" : "no")<<std::endl;
 									vm.GetOutput()<<"Value: "<<var.GetType().ToString(var)<<std::endl;

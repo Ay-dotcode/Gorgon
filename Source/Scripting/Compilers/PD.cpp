@@ -365,6 +365,21 @@ namespace Compilers {
 					if(acc == "true" || acc == "false") {
 						return Token {acc, Token::Bool, start};
 					}
+					if(acc == "operator" || (acc.length()>9 && acc.substr(acc.length()-9)==":operator")) {
+						auto cind=index;
+						Token t=consumenexttoken(input, index, true);
+						if(t!=Token::Operator) {
+							throw ParseError{ExceptionType::UnexpectedToken, "Expected an operator.", cind};
+						}
+						
+						if(acc != "operator") {
+							acc=acc.substr(0, acc.find_last_of(':')+1);
+						}
+						else 
+							acc="";
+						
+						acc+=t.repr;
+					}
 
 					return Token {acc, /*var ? Token::Variable : */Token::Identifier, start};
 				}

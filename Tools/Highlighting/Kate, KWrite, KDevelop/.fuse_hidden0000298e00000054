@@ -19,6 +19,8 @@
 		</list>
 		
 		<list name="functions">
+			<item>integral:print</item>
+			<item>integral:varinfo</item>
 			<item>print</item>
 			<item>varinfo</item>
 		</list>
@@ -57,8 +59,10 @@
 				</keyword>
 				
 				<!-- Acceptable expressions -->
-				<RegExpr attribute="Assignment" context="assignctx" String="\b&identrx;(\.&identrx;)*\s*(\+|\-|\*|\/)?=" />
-				<RegExpr attribute="Normal Text" context="functionctx" String="\b&identrx;((:&identrx;)|(\.&identrx;))*\s*\(" />
+				<RegExpr attribute="Assignment" context="assignctx" String="\b&identrx;\s*(\+|\-|\*|\/)?=" />
+				<RegExpr attribute="Normal Text" context="functionctx" String="\b&identrx;\s*\(" />
+				<RegExpr attribute="Normal Text" context="functionctx" String="\b&identrx;:&identrx;\s*\(" />
+				<RegExpr attribute="Normal Text" context="functionctx" String="\b&identrx;:&identrx;:&identrx;\s*\(" />
 			</context>
 			
 			<context attribute="Normal Text" lineEndContext="#pop" name="normalctx">
@@ -66,6 +70,7 @@
 				<DetectChar attribute="Normal Text" context="functionctx" char="(" />
 				<DetectChar attribute="Normal Text" context="indexctx" char="[" />
 				<DetectChar attribute="Normal Text" context="constctx" char="{" />
+				<DetectChar attribute="Normal Text" context="normalctx" char="." />
 				
 				<!--Comments-->
 				<DetectChar context="singlecommentctx" char="#" />
