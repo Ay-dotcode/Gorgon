@@ -78,7 +78,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		case InstructionType::MemberToVar:
 			ASSERT(instruction->Parameters.size()==1, "Member to temp requires a single parameter");
 			return 
-				std::string("$\"")+String::From(instruction->Store)+"\" "+
+				std::string("$\"")+instruction->Name.Name+"\" "+
 				(instruction->Reference ? ":" : "=")+
 				" |"+disassemblevalue(instruction->Parameters[0])+" "+
 				disassemblevalue(instruction->RHS);

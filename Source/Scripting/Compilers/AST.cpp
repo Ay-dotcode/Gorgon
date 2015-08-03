@@ -363,6 +363,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			inst.RHS=compilevalue(tree->Leaves[1], list, tempind);
 			
 			if(tree->Leaves[0].Type==ASTNode::Identifier || tree->Leaves[0].Type==ASTNode::Variable) {
+				if(tree->Leaves[1].Type==ASTNode::Member) {
+					inst=list->back();
+					list->pop_back();
+					inst.Type=InstructionType::MemberToVar;
+					tempind--;
+				}
+				
 				inst.Name.Type=ValueType::Variable;
 				inst.Name.Name=tree->Leaves[0].Text;
 			}

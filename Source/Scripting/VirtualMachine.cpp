@@ -210,7 +210,13 @@ namespace Gorgon {
 												  "is not a namespace");
 				}
 				
-				const Namespace *nmspc=current.GetType().MorphTo(Types::Namespace(), current).ReferenceValue<const Namespace *>();
+				const Namespace *nmspc=nullptr;
+				if(current.GetType()==Types::Namespace()) {
+					nmspc=current.ReferenceValue<const Namespace*>();
+				}
+				else {
+					nmspc=current.GetType().MorphTo(Types::Namespace(), current).ReferenceValue<const Namespace *>();
+				}
 				cname=String::Extract(name, ':');
 				//check in own members
 				auto it=nmspc->Members.Find(cname);
@@ -925,7 +931,8 @@ namespace Gorgon {
 				return;
 			}
 			
-			//allows modification of params
+			//allows modification of params, safe as params will get ptr of local variables
+			//and dereferenced on use
 			const std::vector<Value> *params=&inst->Parameters;
 			std::vector<Value> temp;
 			
@@ -995,34 +1002,50 @@ namespace Gorgon {
 					data=getvalue(inst->Parameters[0], true);
 				}
 
-				auto fnit=data.GetType().Members.Find(functionname);
-				
-				//if found
-				if(fnit.IsValid() && fnit.Current().second.GetMemberType()==StaticMember::Function) {
-					fn=dynamic_cast<const Function*>(&fnit.Current().second);
-				} 
-				//cannot find it
-				else {
-					//check inherited symbols for it
-					auto it=data.GetType().InheritedSymbols.Find(functionname);
-					//if found
-					if(it.IsValid()) {
-						const StaticMember *member=&(it.Current().second.Members[functionname]);
-						if(member->GetMemberType()!=StaticMember::Function)
-							throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert "+functionname+" to a function");
-						
-						//use that function instead
-						fn=dynamic_cast<const Function *>(member);
+				if(functionname=="{}") {
+					if(data.GetType()!=Types::Type()) {
+						if(!data.GetType().CanMorphTo(*Types::Type())) {
+							throw SymbolNotFoundException(params->front().ToString(), SymbolType::Type, "Symbol "+params->front().ToString()+" should be type for construction");
+						}
+						else {
+							data=data.GetType().MorphTo(*TypeType(), data);
+						}
 					}
-					else {						
-						throw SymbolNotFoundException(functionname, SymbolType::Function, 
-							"Cannot find the member function "+data.GetType().GetName()+":"+functionname);
-					}
+					fn=&data.ReferenceValue<const Type*>()->Constructor;
+					temp.resize(params->size()-1);
+					std::copy(params->begin()+1, params->end(), temp.begin());
+					params=&temp;
 				}
-				
-				if(fn->IsStatic()) {
-					throw SymbolNotFoundException(functionname, SymbolType::Function, 
-						functionname+" is not a non-static member function, use `Type::functionname(...)` to access static functions");
+				else {
+					auto fnit=data.GetType().Members.Find(functionname);
+					
+					//if found
+					if(fnit.IsValid() && fnit.Current().second.GetMemberType()==StaticMember::Function) {
+						fn=dynamic_cast<const Function*>(&fnit.Current().second);
+					} 
+					//cannot find it
+					else {
+						//check inherited symbols for it
+						auto it=data.GetType().InheritedSymbols.Find(functionname);
+						//if found
+						if(it.IsValid()) {
+							const StaticMember *member=&(it.Current().second.Members[functionname]);
+							if(member->GetMemberType()!=StaticMember::Function)
+								throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert "+functionname+" to a function");
+							
+							//use that function instead
+							fn=dynamic_cast<const Function *>(member);
+						}
+						else {						
+							throw SymbolNotFoundException(functionname, SymbolType::Function, 
+								"Cannot find the member function "+data.GetType().GetName()+":"+functionname);
+						}
+					}
+					
+					if(fn->IsStatic()) {
+						throw SymbolNotFoundException(functionname, SymbolType::Function, 
+							functionname+" is not a non-static member function, use `Type::functionname(...)` to access static functions");
+					}
 				}
 			}
 
@@ -1091,39 +1114,73 @@ namespace Gorgon {
 			}
 			
 			//."1" = obj.element
-			else if(inst->Type==InstructionType::MemberToTemp) {
+			else if(inst->Type==InstructionType::MemberToTemp || inst->Type==InstructionType::MemberToVar || inst->Type==InstructionType::MemberAssignment) {
 				//extract to a function***
 				if(inst->Parameters.size()!=1)
 					throw std::runtime_error("Member access requires exactly 1 parameter");
 				
 				Data thisptr;
+				bool thisptrisref;
 				//search in the type of the first parameter, this ensures the data is a reference
 				if(inst->Parameters[0].Type==ValueType::Literal || 
 					(inst->Parameters[0].Type==ValueType::Temp && !temporaries[inst->Parameters[0].Result+tempbase].IsReference())
 				) {
 					thisptr=getvalue(inst->Parameters[0]);
+					thisptrisref=false;
 				}
 				else {
 					thisptr=getvalue(inst->Parameters[0], true);
+					thisptrisref=true;
 				}
 				
-				//!
-				Data elm=getvalue(inst->RHS);
+				Data elm;
+				if(inst->Type==InstructionType::MemberAssignment) {
+					elm=getvalue(inst->Name);
+				}
+				else {
+					elm=getvalue(inst->RHS);
+				}
 				const InstanceMember *member=nullptr;
+				const Type &thistype = thisptr.GetType();
 				if(elm.GetType()==Types::InstanceMember()) { //currently will never happen
 					member=elm.GetValue<const InstanceMember*>();
 				}
 				else if(elm.GetType()==Types::String()) {
-					//thisptr.GetType().InstanceMembers.Find()...
+					auto elmname=elm.GetValue<std::string>();
+					auto it=thistype.InstanceMembers.Find(elmname);
+					if(it.IsValid()) {
+						member=dynamic_cast<const InstanceMember *>(&it.Current().second);
+					}
+					else {
+						//try inheritance
+						auto it=thistype.InheritedSymbols.Find(elmname);
+						if(it.IsValid()) {
+							member=dynamic_cast<const InstanceMember *>(&it.Current().second.InstanceMembers[elmname]);
+						}
+					}
 				}
-				temporaries[inst->Store+tempbase]=member->Get(thisptr);
-			}			
-			//$"1" = obj.element
-			else if(inst->Type==InstructionType::MemberToTemp) {
-				//!
-			}
-			else if(inst->Type==InstructionType::MemberAssignment) {
-				//!
+				if(!member) {
+					throw SymbolNotFoundException(elm.ToString(), SymbolType::Member);
+				}
+				
+				if(inst->Type==InstructionType::MemberAssignment) {
+					Data val=getvalue(inst->RHS, member->IsReference());
+					member->Set(thisptr, val);
+				}
+				else if(inst->Type==InstructionType::MemberToVar) {
+					ASSERT(inst->Name.Type==ValueType::Identifier || inst->Name.Type==ValueType::Variable, 
+						   "Member to variable instruction requires a variable identifier in Name field");
+					
+					SetVariable(inst->Name.Name, member->Get(thisptr));
+				}
+				else {
+					temporaries[inst->Store+tempbase]=member->Get(thisptr);
+				}
+				
+				if(thisptr.IsReference() && !thisptrisref) {
+					throw CastException(thisptr.ToString(), "Reference", std::string("During member ")+
+					(inst->Type==InstructionType::MemberAssignment?"assignment":"read")+" operation over "+member->GetName());
+				}
 			}
 			
 			//removes a temporary so that it can be freed if it is a reference type

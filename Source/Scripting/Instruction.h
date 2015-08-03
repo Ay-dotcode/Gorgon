@@ -121,6 +121,18 @@ namespace Gorgon { namespace Scripting {
 				Type=ValueType::Temp;
 				Result=index;
 			}
+			
+			std::string ToString() const {
+				if(Type==ValueType::Temp) {
+					return String::From(Result);
+				}
+				else if(Type==ValueType::Literal) {
+					return Literal.ToString();
+				}
+				else {
+					return Name;
+				}
+			}
 		};
 		
 		/**

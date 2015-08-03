@@ -1051,8 +1051,9 @@ namespace Gorgon {
 			}
 			
 			virtual Data Get() const override { 
-				//!
-				return Data::Invalid();
+				Type *NamespaceType();
+				
+				return {NamespaceType(), dynamic_cast<const Namespace*>(this), true, true};
 			}
 			
 			/// Adds a new member to this namespace
@@ -1136,6 +1137,9 @@ namespace Gorgon {
 			enum MorphType {
 				/// Morphing is not possible
 				NotPossible,
+
+				///Already that type
+				AlreadMatching,
 				
 				/// This is an upcasting, but not a direct one
 				UpCasting,
@@ -1144,7 +1148,8 @@ namespace Gorgon {
 				DownCasting,
 				
 				/// This is a type casting
-				TypeCasting
+				TypeCasting,
+				
 			};
 			
 			class Inheritance {
@@ -1167,9 +1172,10 @@ namespace Gorgon {
 			
 			virtual MemberType GetMemberType() const override { return StaticMember::RegularType; }
 			
-			virtual Data Get() const override { 
-				//!
-				return Data::Invalid();
+			virtual Data Get() const override {
+				Type *TypeType();
+				
+				return {TypeType(), dynamic_cast<const Type*>(this), true, true};
 			}
 			
 			/// Adds a static member to this type

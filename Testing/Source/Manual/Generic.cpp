@@ -263,6 +263,7 @@ int main() {
 	Gorgon::Console::Reset();
 	
 	vm.Begin(streaminput);
+	vm.UsingNamespace(mylib);
 	//Compilers::Disassemble(input, std::cout);
 	
 	std::cout<<std::endl<<std::endl;

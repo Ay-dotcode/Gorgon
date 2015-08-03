@@ -124,6 +124,10 @@ namespace Gorgon { namespace Scripting {
 		if(type==Types::Variant()) {
 			return {Types::Variant(), source};
 		}
+		
+		if(type==this) {
+			return source;
+		}
 			
 		auto inheritance=inheritsfrom.find(type);
 		Inheritance::ConversionFunction fn;
@@ -208,6 +212,8 @@ namespace Gorgon { namespace Scripting {
 	}
 	
 	Type::MorphType Type::CanMorphTo(const Type& type) const {
+		if(type==this) return AlreadMatching;
+		
 		auto inheritance=inheritsfrom.find(type);
 		Inheritance::ConversionFunction fn;
 		bool downcasting=false;

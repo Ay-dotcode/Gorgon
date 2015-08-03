@@ -127,6 +127,67 @@ namespace Gorgon { namespace Scripting {
 		return param;
 	}
 	
+	Type *NamespaceType() {
+		static Type *obj = nullptr;
+		
+		if(!obj) {
+			obj=new MappedReferenceType<Namespace, GetNameOf<Namespace>>("Namespace", "Contains information about a namespace");
+			obj->AddMembers({
+				new Scripting::Function("Name",
+					"Returns the name of the namespace", obj,
+					{
+						MapFunction(
+							&GetNameOf<Namespace>, Types::String(),
+							{ }, ConstTag
+						)
+					}
+				),
+				
+				new Scripting::Function("Help",
+					"Returns help for the namespace", obj,
+					{
+						MapFunction(
+							&GetHelpOf<Namespace>, Types::String(), 
+							{ }, ConstTag
+						)
+					}
+				)
+			});
+		}
+		
+		return obj;
+	}
+	
+	Type *InstanceMemberType() {
+		static Type *obj = nullptr;
+		
+		if(!obj) {
+			obj=new MappedReferenceType<InstanceMember, GetNameOf<InstanceMember>>("InstanceMember", "Contains information about an instance member");
+			obj->AddMembers({
+				new Scripting::Function("Name",
+					"Returns the name of the instance member", obj,
+					{
+						MapFunction(
+							&GetNameOf<InstanceMember>, Types::String(),
+							{ }, ConstTag
+						)
+					}
+				),
+				
+				new Scripting::Function("Help",
+					"Returns help for the instance member", obj,
+					{
+						MapFunction(
+							&GetHelpOf<InstanceMember>, Types::String(), 
+							{ }, ConstTag
+						)
+					}
+				)
+			});
+		}
+		
+		return obj;
+	}
 	
 	//Initialization should be separate as Type type should be created before any types are added to
 	//libraries. Therefore, a bare type, just for the pointer of it, is created when this function
@@ -148,26 +209,7 @@ namespace Gorgon { namespace Scripting {
 	void InitTypeType() {
 		if(type->InstanceMembers.GetCount()==0) {				
 			type->AddMembers({
-				new Scripting::Function{"Name",
-					"Returns the name of the type", type,
-					{
-						MapFunction(
-							&GetNameOf<Type>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				},
-
-				new Scripting::Function{"Help",
-					"Returns help for the type", type,
-					{
-						MapFunction(
-							&GetHelpOf<Type>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				},
-
+				
 				new Scripting::Function{"[]",
 					"Creates a new array for this type.", type, 
 					{
@@ -250,6 +292,15 @@ namespace Gorgon { namespace Scripting {
 				},
 				
 			});
+			type->AddInheritance(
+				*NamespaceType(),
+				[](Data d) { 
+					return Data(*TypeType(),dynamic_cast<const Type*>(d.ReferenceValue<const Namespace*>()), true, true);
+				}, 
+				[](Data d) { 
+					return Data(*NamespaceType(),dynamic_cast<const Namespace*>(d.ReferenceValue<const Type*>()), true, true);
+				}
+			);
 		}
 	}
 	
@@ -310,7 +361,10 @@ namespace Gorgon { namespace Scripting {
 		
 		Reflection.AddMember(TypeType());
 			
-		Reflection.AddMembers({FunctionType(), ParameterType(), LibraryType(), ConstantType()});
+		Reflection.AddMembers({
+			FunctionType(), ParameterType(), LibraryType(), 
+			ConstantType(), NamespaceType(), InstanceMemberType()
+		});
 		
 		Reflection.AddMembers({
 				new Function("TypeOf",
