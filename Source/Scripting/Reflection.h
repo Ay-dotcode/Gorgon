@@ -1464,9 +1464,10 @@ namespace Gorgon {
 			}
 			
 			virtual Data Get() const override final { 
-				//!
-				return Data::Invalid();
-			}			
+				Type *EventTypeType();
+				
+				return {EventTypeType(), dynamic_cast<const EventType*>(this), true, true};
+			}
 			
 			/// Returns whether event handlers should return a value
 			bool HasReturnType() const {
@@ -1489,6 +1490,27 @@ namespace Gorgon {
 			
 			/// The return type of this event, if it is allowed to return a value
 			const Type *returntype;
+		};
+		
+		/**
+		 * 
+		 */
+		class EnumType : public Type {
+		public:
+			
+			virtual MemberType GetMemberType() const override {
+				return StaticMember::EnumType;
+			}
+			
+			virtual Data Get() const override final { 
+				Type *EnumTypeType();
+				
+				return {EnumTypeType(), dynamic_cast<const EventType*>(this), true, true};
+			}
+			
+			
+			
+		protected:
 		};
 		
 		/**

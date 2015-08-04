@@ -158,6 +158,84 @@ namespace Gorgon { namespace Scripting {
 		return obj;
 	}
 	
+	//Initialization should be separate as Type type should be created before any types are added to
+	//libraries. Therefore, a bare type, just for the pointer of it, is created when this function
+	//is first called. InitTypeType should be called after basic types are added to Integral library
+	Type *TypeType() {
+		if(type==nullptr) {
+			type=new Scripting::MappedReferenceType<Type, &GetNameOf<Type>>("Type",
+				"Contains information about a type. Also contains "
+				"functions for various purposes. Types are immutable."
+			);
+		}
+		
+		return type;
+	}
+	
+	Type *EventTypeType() {
+		static Type *obj = nullptr;
+		
+		if(!obj) {
+			obj=new MappedReferenceType<EventType, GetNameOf<EventType>>("Event", "Contains information about an event type");
+			obj->AddMembers({
+				new Scripting::Function("Name",
+					"Returns the name of the event", obj,
+					{
+						MapFunction(
+							&GetNameOf<EventType>, Types::String(),
+							{ }, ConstTag
+						)
+					}
+				),
+				
+				new Scripting::Function("Help",
+					"Returns help for the event", obj,
+					{
+						MapFunction(
+							&GetHelpOf<EventType>, Types::String(), 
+							{ }, ConstTag
+						)
+					}
+				)
+			});
+			MapDynamicInheritance<EventType, Type>(obj, TypeType());
+		}
+		
+		return obj;
+	}
+	
+	Type *EnumTypeType() {
+		static Type *obj = nullptr;
+		
+		if(!obj) {
+			obj=new MappedReferenceType<EnumType, GetNameOf<EnumType>>("Enum", "Contains information about an enum type");
+			obj->AddMembers({
+				new Scripting::Function("Name",
+					"Returns the name of the enum", obj,
+					{
+						MapFunction(
+							&GetNameOf<EnumType>, Types::String(),
+							{ }, ConstTag
+						)
+					}
+				),
+				
+				new Scripting::Function("Help",
+					"Returns help for the enum", obj,
+					{
+						MapFunction(
+							&GetHelpOf<EnumType>, Types::String(), 
+							{ }, ConstTag
+						)
+					}
+				)
+			});
+			MapDynamicInheritance<EnumType, Type>(obj, TypeType());
+		}
+		
+		return obj;
+	}
+	
 	Type *InstanceMemberType() {
 		static Type *obj = nullptr;
 		
@@ -188,22 +266,9 @@ namespace Gorgon { namespace Scripting {
 		
 		return obj;
 	}
-	
-	//Initialization should be separate as Type type should be created before any types are added to
-	//libraries. Therefore, a bare type, just for the pointer of it, is created when this function
-	//is first called. InitTypeType should be called after basic types are added to Integral library
-	Type *TypeType() {
-		if(type==nullptr) {
-			type=new Scripting::MappedReferenceType<Type, &GetNameOf<Type>>("Type",
-				"Contains information about a type. Also contains "
-				"functions for various purposes. Types are immutable."
-			);
-		}
-		
-		return type;
-	}
 
 	Array *BuildArray(const Type *type, std::vector<Data> data);
+	
 	Type *ArrayType();
 	
 	void InitTypeType() {
@@ -292,15 +357,7 @@ namespace Gorgon { namespace Scripting {
 				},
 				
 			});
-			type->AddInheritance(
-				*NamespaceType(),
-				[](Data d) { 
-					return Data(*TypeType(),dynamic_cast<const Type*>(d.ReferenceValue<const Namespace*>()), true, true);
-				}, 
-				[](Data d) { 
-					return Data(*NamespaceType(),dynamic_cast<const Namespace*>(d.ReferenceValue<const Type*>()), true, true);
-				}
-			);
+			MapDynamicInheritance<Type, Namespace>(type, NamespaceType());
 		}
 	}
 	

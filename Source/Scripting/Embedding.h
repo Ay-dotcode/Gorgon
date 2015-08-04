@@ -1613,4 +1613,25 @@ namespace Scripting {
 		return nullptr;
 	}
 	
+	template<class T_, class I_>
+	void MapDynamicInheritance(Type *type, Type *inherited) {
+		ASSERT(type && inherited, "Inheritance types cannot be nullptr");
+		
+		type->AddInheritance(
+			*inherited,
+			[=](Data d) -> Data { 
+				if(d.IsConstant())
+					return Data(*type,dynamic_cast<const T_*>(d.ReferenceValue<const I_*>()), true, true);
+				else
+					return Data(*type,dynamic_cast<T_*>(d.ReferenceValue<I_*>()), true, false);
+			}, 
+			[=](Data d) -> Data { 
+				if(d.IsConstant())
+					return Data(*inherited,dynamic_cast<const I_*>(d.ReferenceValue<const T_*>()), true, true);
+				else
+					return Data(*inherited,dynamic_cast<I_*>(d.ReferenceValue<T_*>()), true, false);
+			}
+		);	
+	}
+	
 } }
