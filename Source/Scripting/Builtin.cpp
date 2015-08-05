@@ -1321,6 +1321,8 @@ namespace Gorgon {
 
 			});
 			
+			InitReflection();
+			
 			Keywords.AddMembers({
 				new Function("Echo",
 					"This function prints the given parameters to the screen with a newline following them.", nullptr,
@@ -1408,15 +1410,15 @@ namespace Gorgon {
 					"Allows using members of a given namespace without namespace name", nullptr,
 					{
 						MapFunction(
-							[](const std::vector<std::string> &names) {
+							[](const std::vector<const Namespace *> &names) {
 								auto &vm=VirtualMachine::Get();
 								for(auto name : names)
-									vm.UsingNamespace(name);
+									vm.UsingNamespace(*name);
 							}, nullptr,
 							{
 								Parameter("Namespace",
 									"This is the namespace to be used",
-									String, VariableTag
+									Types::Namespace(), ConstTag
 								)
 							}, RepeatTag
 						)
@@ -1442,7 +1444,6 @@ namespace Gorgon {
 				),
 			});
 			
-			InitReflection();
 		}
 		
 	}

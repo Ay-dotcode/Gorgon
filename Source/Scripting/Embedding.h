@@ -468,9 +468,27 @@ namespace Scripting {
 			else if(P_-ismember==parameters.size()-1 && repeatlast) {
 				const auto &param=parameters[P_-ismember];
 				
+				TMP::RTTS *typeinf;
+				if(param.IsConstant()) {
+					if(param.IsReference()) {
+						typeinf=&param.GetType().TypeInterface.ConstPtrType;
+					}
+					else {
+						typeinf=&param.GetType().TypeInterface.ConstType;
+					}
+				}
+				else {
+					if(param.IsReference()) {
+						typeinf=&param.GetType().TypeInterface.PtrType;
+					}
+					else {
+						typeinf=&param.GetType().TypeInterface.NormalType;
+					}
+				}
+				
 				ASSERT(
-					(TMP::RTT<typename extractvector<T>::inner>()==param.GetType().TypeInterface.NormalType),
-					"The declared type ("+param.GetType().TypeInterface.NormalType.Name()+") of "
+					(TMP::RTT<typename extractvector<T>::inner>()==*typeinf),
+					"The declared type ("+typeinf->Name()+") of "
 					"parameter #"+String::From(P_-ismember+1)+" does not match with the function type ("+
 					rtt.NormalType.Name()+")\n"+
 					"in function "+parent->GetName(), 4, 3

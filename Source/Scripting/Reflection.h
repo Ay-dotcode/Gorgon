@@ -1040,6 +1040,9 @@ namespace Gorgon {
 		
 		using InstanceMemberList = Containers::Hashmap<std::string, const Member, GetNameOf<Member>, std::map, String::CaseInsensitiveLess>;
 		
+		/**
+		 * Namespace contains other static members as members. All types and library are also namespaces themselves.
+		 */
 		class Namespace : public StaticMember {
 		public:
 			Namespace(const std::string &name, const std::string &help) : StaticMember(name, help), 
@@ -1493,10 +1496,30 @@ namespace Gorgon {
 		};
 		
 		/**
-		 * 
+		 * Represents an enumeration type. Contains extra information related with the enumeration items.
+		 * Enumerations must have at least a single value to be used as default.
 		 */
 		class EnumType : public Type {
-		public:
+		public:			
+			struct ElementInitializer {
+				ElementInitializer(std::string name, std::string help, Any value) : name(name), help(help), value(value) { }
+				
+				std::string name;
+				std::string help;
+				Any value;
+			};
+			
+			EnumType(const std::string& name, const std::string& help, 
+					 const std::vector<ElementInitializer> &elements, 
+					 TMP::RTTH* typeinterface) :
+			Type(name, help, elements[0].value, typeinterface, false), Ordered(ordered)
+			{
+				for(const ElementInitializer &element : elements) {
+					auto elm=new Scripting::Constant(element.name, element.help, {this, element.value});
+					ordered.push_back(elm);
+					AddMember(elm);
+				}
+			}
 			
 			virtual MemberType GetMemberType() const override {
 				return StaticMember::EnumType;
@@ -1505,12 +1528,14 @@ namespace Gorgon {
 			virtual Data Get() const override final { 
 				Type *EnumTypeType();
 				
-				return {EnumTypeType(), dynamic_cast<const EventType*>(this), true, true};
+				return {EnumTypeType(), dynamic_cast<const EnumType*>(this), true, true};
 			}
 			
+			/// Ordered list of allowed values
+			const std::vector<const Scripting::Constant*> &Ordered;
 			
-			
-		protected:
+		private:
+			std::vector<const Scripting::Constant*> ordered;
 		};
 		
 		/**
