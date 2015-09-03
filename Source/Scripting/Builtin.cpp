@@ -1425,6 +1425,26 @@ namespace Gorgon {
 					},
 					KeywordTag
 				),
+				new Function("cast",
+					"Casts the given value to another type", nullptr,
+					{
+						MapFunction(
+							[](Data var, const Type &type) {
+								return var.GetType().MorphTo(type, var, true);
+							}, Types::Variant(),
+							{
+								Parameter("Value",
+									"This is the value to be casted",
+									Types::Variant()
+								),
+								Parameter("Target",
+									"The type that the value be casted into",
+									Types::Type()
+								),
+							}
+						)
+					}
+				),
 				new Function("unset",
 					"Unsets a given variable", nullptr,
 					{

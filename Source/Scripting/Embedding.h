@@ -1625,11 +1625,116 @@ namespace Scripting {
 		const Type *parenttype;
 	};
 	
+	/**
+	 * E_ is an enumeration with defined strings
+	 */
 	template <class E_>
-	Scripting::EventType *MapGorgonEvent() {
-		//static MappedEventType<>;
-		return nullptr;
-	}
+	class MappedStringEnum : public Scripting::EnumType {
+	public:
+		/// strings parameter should contain, name and help of enum entries. Names could be any of the 
+		/// alternative names listed in the enum strings
+		MappedStringEnum(const std::string& name, const std::string& help,
+						 const std::vector<std::pair<std::string, std::string>> &strings, E_ defval=E_(), bool binary=false) : 
+		EnumType(name, help, defval, new TMP::AbstractRTTC<E_>()) {
+			for(auto &s : strings) {
+				this->add({s.first, s.second, String::Parse<E_>(s.first)});
+			}
+			
+			//copy and default constructor
+			AddConstructors({
+				MapFunction(
+					[](E_ e) { return e; }, this,
+					{ Parameter("value", "The value to be copied", this) }
+				),
+				MapFunction(
+					[defval]() { return defval; }, this,
+					{ }
+				),
+			});
+			
+			if(binary) {
+				AddMembers({
+					new Scripting::Function("binary", "Returns binary form of this enumeration", 
+						this, {
+							MapFunction(
+								[](E_ e) -> std::string {
+									unsigned val=(unsigned)e;
+									int digits=log2((double)val)+1;
+									std::string ret(' ', digits);
+									for(unsigned i=0;i<digits;i++) {
+										ret[digits-i-1]=val&1 ? '1':'0';
+										val=val>>1;
+									}
+									
+									return ret;
+								}, Types::String(), {}, ConstTag
+							),
+  							MapFunction(
+								[](E_ e, int digits) -> std::string {
+									unsigned val=(unsigned)e;
+									std::string ret(' ', digits);
+									for(unsigned i=0;i<digits;i++) {
+										ret[digits-i-1]=val&1 ? '1':'0';
+										val=val>>1;
+									}
+									
+									return ret;
+								}, Types::String(), {
+									Parameter("digits", "Number of digits to be considered", Types::Int())
+								}, ConstTag
+							)
+						}
+					),
+			   
+					new MappedOperator("and", "Combines two enumeration entries", 
+						this, this, this, 
+						[](E_ l, E_ r) -> E_ {
+							return (E_)((unsigned)l|(unsigned)r);
+						}
+					)
+					
+				});
+			}
+		}
+		
+		/// This constructor adds all elements without any help. Consider using the constructor that enables
+		/// help text for enum items.
+		MappedStringEnum(const std::string& name, const std::string& help, E_ defval=E_(), bool binary=false) : 
+		MappedStringEnum(name, help, {}, defval, binary) {
+			for(auto e : Gorgon::Enumerate<E_>()) {
+				this->add({String::From(e), "", e});
+			}
+		}
+		
+		virtual std::string ToString(const Data &d) const {
+			return String::From(d.GetValue<E_>());
+		}
+		
+		virtual Data Parse(const std::string &s) const {
+			return {this, String::Parse<E_>(s)};
+		}
+		
+	protected:
+		virtual bool compare(const Data& l, const Data& r) const {
+			return l.GetValue<E_>() == r.GetValue<E_>();
+		}
+		
+		virtual void deleteobject(const Data &obj) const override {
+			ASSERT(obj.IsReference(), "Deleting a non reference");
+			
+			E_ *ptr;
+			if(obj.IsConstant()) {
+				//force to non-const
+				ptr=const_cast<E_*>(obj.ReferenceValue<const E_*>());
+			}
+			else {
+				ptr=obj.ReferenceValue<E_*>();
+			}
+			if(ptr!=nullptr) {
+				delete ptr;
+			}
+		}
+	};
 	
 	template<class T_, class I_>
 	void MapDynamicInheritance(Type *type, Type *inherited) {

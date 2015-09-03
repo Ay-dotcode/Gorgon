@@ -231,6 +231,7 @@ namespace Gorgon { namespace Scripting {
 				)
 			});
 			MapDynamicInheritance<EnumType, Type>(obj, TypeType());
+			MapDynamicInheritance<EnumType, Namespace>(obj, NamespaceType());
 		}
 		
 		return obj;

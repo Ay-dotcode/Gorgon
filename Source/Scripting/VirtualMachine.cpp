@@ -450,7 +450,10 @@ namespace Gorgon {
 			const Function::Overload *var=nullptr;
 			
 			int count=fn->Overloads.GetCount()+fn->Methods.GetCount();
-			ASSERT(count, "This function has no registered body.");
+			if(count==0) {
+				///... better error reporting
+				throw SymbolNotFoundException(fn->GetName(), SymbolType::Function, "This function has no overloads.");
+			}
 			
 			// easy way out, only a single variant exists
 			if(count==1) {

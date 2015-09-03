@@ -7,6 +7,7 @@
 #include <Source/Scripting/Compilers.h>
 #include <Source/Filesystem/Iterator.h>
 #include <Source/Filesystem.h>
+#include <Source/Enum.h>
 
 using namespace Gorgon::Scripting;
 
@@ -123,6 +124,41 @@ public:
 	Gorgon::Event<evttest, int> ev;
 };
 
+enum class Day {
+	Monday,
+	Tuesday,
+	Wednesday,
+	Thursday,
+	Friday,
+	Saturday,
+	Sunday
+};
+
+DefineEnumStrings(Day,
+	{Day::Monday, "Monday"},
+	{Day::Tuesday, "Tuesday"},
+	{Day::Wednesday, "Wednesday"},
+	{Day::Thursday, "Thursday"},
+	{Day::Friday, "Friday"},
+	{Day::Saturday, "Saturday"},
+	{Day::Sunday, "Sunday"}
+);
+
+
+enum class Direction {
+	None  = 0,
+	In    = 1,
+	Out   = 2,
+	InOut = 3,
+};
+
+DefineEnumStrings(Direction,
+	{Direction::None, "None"},
+	{Direction::In,   "In"},
+	{Direction::Out,  "Out"},
+	{Direction::InOut,"InOut"}
+);
+
 int main() {
 	VirtualMachine vm;
 	Gorgon::Geometry::init_scripting();
@@ -170,8 +206,11 @@ int main() {
 	
 	auto nulltype=new MappedReferenceType<NullTest>("NullTest", "");
 	
+	auto myregenum = new MappedStringEnum<Day>("Day", "");
+	auto mybinenum = new MappedStringEnum<Direction>("Direction", "", Direction::In, true);
+	
 	mylib.AddMembers({
-		nulltype, reftyp
+		nulltype, reftyp, myregenum, mybinenum
 	});
 
 	mylib.AddMembers({

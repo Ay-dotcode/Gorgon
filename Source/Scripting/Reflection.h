@@ -957,7 +957,7 @@ namespace Gorgon {
 		};
 
 		/**
-		 * 
+		 * This class represents an instance data member.
 		 */
 		class InstanceMember : public Member {
 			friend class Type;
@@ -1533,9 +1533,23 @@ namespace Gorgon {
 			
 			/// Ordered list of allowed values
 			const std::vector<const Scripting::Constant*> &Ordered;
+		
+		protected:
+			
+			EnumType(const std::string& name, const std::string& help, Any defval,
+			TMP::RTTH* typeinterface) :
+			Type(name, help, defval, typeinterface, false), Ordered(ordered)
+			{ }
+			
+			void add(const ElementInitializer &element) {
+				auto elm=new Scripting::Constant(element.name, element.help, {this, element.value});
+				ordered.push_back(elm);
+				AddMember(elm);
+			}
 			
 		private:
 			std::vector<const Scripting::Constant*> ordered;
+			
 		};
 		
 		/**
