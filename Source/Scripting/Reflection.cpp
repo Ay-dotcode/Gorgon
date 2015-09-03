@@ -140,7 +140,7 @@ namespace Gorgon { namespace Scripting {
 			
 			if(relative!=parents.end()) {
 				//it is relative parent, call parent to handle it
-				auto data=relative->second->MorphTo(type, inheritsfrom.at(relative->first).to(source));
+				auto data=relative->second->MorphTo(type, inheritsfrom.at(relative->second).to(source));
 					
 				ASSERT((data.GetType()==type), "Type casting function from "+GetName()+" to "+type.GetName()+
 					" does not perform its job. Instead it casts data to "+data.GetType().GetName());
@@ -260,7 +260,11 @@ namespace Gorgon { namespace Scripting {
 		for(auto t : type.parents) {
 			parents.insert(std::make_pair(t.first, &type));
 		}
-
+		
+		for(auto t : type.InheritsFrom) {
+			parents.insert(std::make_pair(t.first, &type));
+		}
+		
 		for(const auto &o : type.Members) {
 			if(members.Find(o.first)==members.end()) {
 				ASSERT(!inheritedsymbols.Find(o.first).IsValid(), "Symbol: "+o.first+" is ambiguous");

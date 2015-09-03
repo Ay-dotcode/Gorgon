@@ -167,6 +167,7 @@ namespace Gorgon { namespace Scripting {
 				"Contains information about a type. Also contains "
 				"functions for various purposes. Types are immutable."
 			);
+			MapDynamicInheritance<Type, Namespace>(type, NamespaceType());
 		}
 		
 		return type;
@@ -198,7 +199,6 @@ namespace Gorgon { namespace Scripting {
 					}
 				)
 			});
-			MapDynamicInheritance<EventType, Type>(obj, TypeType());
 		}
 		
 		return obj;
@@ -231,7 +231,7 @@ namespace Gorgon { namespace Scripting {
 				)
 			});
 			MapDynamicInheritance<EnumType, Type>(obj, TypeType());
-			MapDynamicInheritance<EnumType, Namespace>(obj, NamespaceType());
+			//MapDynamicInheritance<EnumType, Namespace>(obj, NamespaceType());
 		}
 		
 		return obj;
@@ -358,7 +358,7 @@ namespace Gorgon { namespace Scripting {
 				},
 				
 			});
-			MapDynamicInheritance<Type, Namespace>(type, NamespaceType());
+			//MapDynamicInheritance<Type, Namespace>(type, NamespaceType());
 		}
 	}
 	
