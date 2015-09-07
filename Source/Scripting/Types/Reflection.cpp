@@ -102,25 +102,9 @@ namespace Gorgon { namespace Scripting {
 			);
 
 			param->AddMembers({
-				new Scripting::Function("Name",
-				"Returns the name of the parameter", param,
-				{
-					MapFunction(
-						&GetNameOf<Parameter>, Types::String(),
-						{ }, ConstTag
-					)
-				}
-				),
-
-				new Scripting::Function("Help",
-				"Returns help for the parameter", param,
-				{
-					MapFunction(
-						&GetHelpOf<Parameter>, Types::String(),
-						{ }, ConstTag
-					)
-				}
-				),
+				new MappedROInstanceMember_Function(
+					&Parameter::GetName, "Name", "The name of the parameter", Types::String(), param, true, false, true
+				)
 			});
 		}
 
@@ -132,26 +116,13 @@ namespace Gorgon { namespace Scripting {
 		
 		if(!obj) {
 			obj=new MappedReferenceType<Namespace, GetNameOf<Namespace>>("Namespace", "Contains information about a namespace");
+			
 			obj->AddMembers({
-				new Scripting::Function("Name",
-					"Returns the name of the namespace", obj,
-					{
-						MapFunction(
-							&GetNameOf<Namespace>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				),
+				MapFunctionToInstanceMember(&GetNameOf<Namespace>, 
+											"Name", "The name of the namespace", Types::String(), obj),
 				
-				new Scripting::Function("Help",
-					"Returns help for the namespace", obj,
-					{
-						MapFunction(
-							&GetHelpOf<Namespace>, Types::String(), 
-							{ }, ConstTag
-						)
-					}
-				)
+				MapFunctionToInstanceMember(&GetHelpOf<Namespace>, 
+											"Help", "The name of the namespace", Types::String(), obj)
 			});
 		}
 		

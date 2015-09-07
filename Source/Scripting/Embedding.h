@@ -353,7 +353,7 @@ namespace Scripting {
 					
 					//parameter should be a reference, since type is a pointer
 					ASSERT(param.IsReference(),
-						   "Parameter #"+String::From(P_-ismember+1)+" is not declared as reference, "
+						   "Parameter #"+(String::From(P_-ismember+1)+", "+param.GetName())+" is not declared as reference, "
 						   "yet its implementation is\n"
 						   "in function "+parent->GetName(), 4, 3
 					);
@@ -361,7 +361,7 @@ namespace Scripting {
 #ifdef TEST
 					//it is ok if the parameter is not marked as constant, but this might be a mistake
 					if(!param.IsConstant()) {
-						std::cout<< "Parameter #"+String::From(P_-ismember+1)+" is not marked as const, "
+						std::cout<< "Parameter #"+(String::From(P_-ismember+1)+", "+param.GetName())+" is not marked as const, "
 						"yet its implementation requires const pointer\n"
 						"in function "+parent->GetName()<<std::endl;
 					}
@@ -400,7 +400,7 @@ namespace Scripting {
 					//if not the repeating parmeter
 					if(P_-ismember!=parameters.size()-1 || !repeatlast) {
 						ASSERT(!param.IsReference(),
-							"Parameter #"+String::From(P_-ismember+1)+" is declared as reference "
+							"Parameter #"+(String::From(P_-ismember+1)+", "+param.GetName())+" is declared as reference "
 							"yet its implementation not\n"
 							"in function "+parent->GetName(), 4, 3
 						);
@@ -408,7 +408,7 @@ namespace Scripting {
 #ifdef TEST
 						//it is ok if the parameter is not marked as constant, but this might be a mistake
 						if(!param.IsConstant()) {
-							std::cout<<"Parameter #"+String::From(P_-ismember+1)+" is not marked as const, yet its implementation requires const "
+							std::cout<<"Parameter #"+(String::From(P_-ismember+1)+", "+param.GetName())+" is not marked as const, yet its implementation requires const "
 							"value\n"
 							"in function "+parent->GetName()<<std::endl;
 						}
@@ -435,14 +435,14 @@ namespace Scripting {
 					if(P_-ismember!=parameters.size()-1 || !repeatlast) {
 						//cannot be a reference as it is passed by value
 						ASSERT(!param.IsReference(),
-							"Parameter #"+String::From(P_-ismember+1)+" is declared as reference, "
+							"Parameter #"+(String::From(P_-ismember+1)+", "+param.GetName())+" is declared as reference, "
 							"yet its implementation not\n"
 							"in function "+parent->GetName(), 4, 3
 						);
 						
 						//for the sake of clarity, if a function requires const, it should be marked as const
 						ASSERT(!param.IsConstant(),
-							"Parameter #"+String::From(P_-ismember+1)+" is declared as constant, "
+							"Parameter #"+(String::From(P_-ismember+1)+", "+param.GetName())+" is declared as constant, "
 							"yet its implementation is not const\n"
 							"in function "+parent->GetName(), 4, 3
 						);
@@ -501,7 +501,7 @@ namespace Scripting {
 				ASSERT(
 					rtt.NormalType==param.GetType().TypeInterface.NormalType,
 					"The declared type ("+param.GetType().GetName()+", "+param.GetType().TypeInterface.NormalType.Name()+") of "
-					"parameter #"+String::From(P_-ismember+1)+" does not match with the function type ("+
+					"parameter #"+(String::From(P_-ismember+1)+", "+param.GetName())+" does not match with the function type ("+
 					rtt.NormalType.Name()+")\n"
 					"in function "+parent->GetName(), 4, 3
 				);
@@ -608,6 +608,13 @@ namespace Scripting {
 	template<class F_, class ...P_>
 	Scripting::Function::Overload *MapFunction(F_ fn, const Type *returntype, ParameterList parameters, P_ ...tags) {
 		return new MappedFunction<F_>(fn, returntype, std::move(parameters), tags...);
+	}
+	
+	template<class F_, class ...P_>
+	Scripting::Function::Overload *MapFunction(F_ fn, const Type *returntype, ParameterList parameters, bool stretchlast, bool repeatlast, 
+											   bool accessible, bool constant, bool returnsref, bool returnsconst, bool implicit) {
+		return new MappedFunction<F_>(fn, returntype, std::move(parameters), stretchlast, repeatlast, accessible, 
+									  constant, returnsref, returnsconst, implicit);
 	}
 	
 	template<class F_, class ...P_>
@@ -897,6 +904,7 @@ namespace Scripting {
 		MappedROInstanceMember(member, name, help, type, constant, false, true)
 		{ }
 		
+		virtual ~MappedROInstanceMember() {}
 		
 	protected:
 		virtual void typecheck(const Scripting::Type *type) const override final {
@@ -1016,6 +1024,126 @@ namespace Scripting {
 		}
 	};
 	
+	/**
+	* This class allows mapping of a data member to c++ function data member.
+	* The given function is bound to a runtime function. If the function returns reference,
+	* this member could be changed, otherwise it would be treated as non-ref temporary.
+	* If the member is not a reference but the function returs ref, isreffn should be set to
+	* true.
+	*/
+	class MappedROInstanceMember_Function : public Scripting::InstanceMember {
+	protected:		
+		Scripting::Function fn;
+		Scripting::Function::Overload *readerfn;
+		
+		
+		template <class F_>
+		MappedROInstanceMember_Function(F_ reader, const std::string &name, const std::string &help, const Type *type, 
+							   const Type *parent, bool isconstfn, bool isreffn, bool constant, bool ref, bool readonly) :
+		InstanceMember(name, help, *type, constant, ref, readonly), fn("", "", parent, {}) {
+			ASSERT(type, "Type cannot be nullptr", 1, 2);
+			
+			ASSERT(parent, "Parent cannot be nullptr", 1, 2);
+			
+			ASSERT(type->IsReferenceType() || constant || isreffn, 
+				   "Instance member implies that it could be changed, yet its implementation does not allow "
+				   "such use. For instance member "+name);
+			
+			ASSERT(!ref || isreffn || type->IsReferenceType(),
+				   "Instance member is a reference, yet its implementation is not."
+				   "For instance member "+name);
+			
+			readerfn=MapFunction(reader, type, {}, false, false, true, isconstfn, isreffn, constant, false);
+			fn.AddOverload(readerfn);
+		}
+		
+	public:
+		/**
+		 * Constructs a new MappedROInstanceMember_Function
+		 * 
+		 * @param reader   the reader function that would be used to read the value
+		 * @param name     name of the instance member
+		 * @param help     help text of the instance member
+		 * @param type     type of the instance member
+		 * @param parent   the type contains this instance member
+		 * @param iscontfn whether the reader function is a constant member function
+		 * @param isreffn  whether the reader function is a reference returning function. Returning reference from
+		 * 				   function allows changes to the instance member.
+		 * @param constant whether this instance member can be changed. If isreffn is set to false, this must be true.
+		 */
+		template <class F_>
+		MappedROInstanceMember_Function(F_ reader, const std::string &name, const std::string &help, 
+							   const Type *type, const Type *parent, bool isconstfn, bool isreffn, bool constant=false) :
+		MappedROInstanceMember_Function(reader, name, help, type, parent, isconstfn, isreffn, constant, false, true)
+		{ }
+		
+		virtual ~MappedROInstanceMember_Function() { delete readerfn; }
+		
+	protected:
+		virtual void typecheck(const Type *type) const override { 
+			ASSERT(type == fn.GetOwner(), "Declared and placed owners do not match");
+		}
+		
+		virtual void set(Data &source, Data &value) const override {
+		}
+		
+		virtual Data get(Scripting::Data &data) const override {
+			return VirtualMachine::Get().ExecuteFunction(&fn, {data}, false);
+		}
+	};
+	
+	/**
+	 * This class allows mapping of a data member to c++ function data member. First template
+	 * parameter is the type of the object and the second is the type of the data member.
+	 * The given function is bound to a runtime function. If the function returns reference,
+	 * this member could be changed, otherwise it would be treated as non-ref temporary.
+	 * If the member is not a reference but the function returs ref, isreffn should be set to
+	 * true.
+	 */
+	class MappedInstanceMember_Function : public MappedROInstanceMember_Function {
+		Scripting::Function::Overload *writerfn;
+	public:
+		/**
+		 * Constructs a new MappedInstanceMember_Function
+		 * 
+		 * @param reader   the reader function that would be used to read the value
+		 * @param name     name of the instance member
+		 * @param help     help text of the instance member
+		 * @param type     type of the instance member
+		 * @param parent   the type contains this instance member
+		 * @param iscontfn whether the reader function is a constant member function
+		 * @param isreffn  whether the reader function is a reference returning function. Returning reference from
+		 * 				   function allows changes to the instance member.
+		 * @param constant whether this instance member can be changed. If isreffn is set to false, this must be true.
+		 */
+		template <class F1_, class F2_>
+		MappedInstanceMember_Function(F1_ reader, F2_ writer, const std::string &name, const std::string &help, 
+			const Type *type, const Type *parent, bool isconstfn, bool isreffn, bool ref, bool isgetconst, bool issetconst=false) :
+			MappedROInstanceMember_Function(reader, name, help, type, parent, isconstfn, isreffn, isgetconst, ref, false)
+		{ 
+			writerfn=MapFunction(
+				writer, nullptr, {
+					Parameter("value", "", type, Data::Invalid(), OptionList(), ref, issetconst, false, false)
+				}, false, false, true, false, false, false, false
+			);
+			this->fn.AddOverload(writerfn);
+		}
+		
+	protected:
+		virtual void set(Data &source, Data &value) const override {
+			VirtualMachine::Get().ExecuteFunction(&this->fn, {source, value}, false);
+		}
+	};
+	
+	/**
+	 * This function will map a const data returning function to a read-only, non-ref, const instance member
+	 */
+	template<class F_>
+	InstanceMember *MapFunctionToInstanceMember(F_ reader, const std::string &name, const std::string &help, 
+												const Type *membertype, const Type *parenttype) {
+		return new MappedROInstanceMember_Function(reader, name, help, membertype, parenttype, true, false, true);
+	}
+	
 	template<class T_>
 	class MappedROStaticDataMember : public Scripting::StaticDataMember {
 	protected:
@@ -1052,6 +1180,8 @@ namespace Scripting {
 		MappedROStaticDataMember(name, help, type, value, constant, false, true)
 		{
 		}
+		
+		virtual ~MappedROStaticDataMember() {}
 		
 		/// Returns the value stored in this data
 		T_ GetValue() const {

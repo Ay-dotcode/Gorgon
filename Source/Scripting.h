@@ -100,17 +100,37 @@ namespace Gorgon {
 		/// Allows easy and fast access to integral types
 		namespace Types {
 #define DEFTYPE(name) inline const Type &name() { static const Scripting::Type *type = Integrals.GetType(#name); return *type; }
-
+			/// Variant is a special data type. Variant is useful as function parameters or return type. When a value is passed to
+			/// variant parameter or returned as a variant return type, it is automatically converted to the type passed or returned
+			/// only aim of the variant type in these uses is to allow any type to be passed or returned. Its internal data type is Data
 			DEFTYPE(Variant);
+			
+			/// Regular std::string
 			DEFTYPE(String);
+			
+			/// int data type
 			DEFTYPE(Int);
+			
+			/// float data type
 			DEFTYPE(Float);
+			
+			/// bool data type
 			DEFTYPE(Bool);
+			
+			/// double data type
 			DEFTYPE(Double);
+			
+			/// char data type
 			DEFTYPE(Char);
+			
+			/// Gorgon::Byte (unsigned char) data type
 			DEFTYPE(Byte);
+			
+			/// unsigned int
 			DEFTYPE(Unsigned);
 
+			/// This type contains array, however, its not a simple std::vector. Builtin array of %Gorgon script allows any type
+			/// however, once a type is set, it cannot be changed, allowing type checking
 			DEFTYPE(Array);
 
 #undef DEFTYPE
