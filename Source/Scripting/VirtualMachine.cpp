@@ -337,7 +337,7 @@ namespace Gorgon {
 			}
 			
 			//check if it exists
-			auto var=scopeinstances.back()->GetVariable(name);
+			Variable *var=scopeinstances.back()->GetVariable(name);
 			
 			//if found
 			if(var) {

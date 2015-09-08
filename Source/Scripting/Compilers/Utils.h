@@ -67,7 +67,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					ret.push_back('\n');
 				}
 				else if(c == 't') {
-					ret.push_back('\n');
+					ret.push_back('\t');
 				}
 				else if(c >= '0' && c <= '9') {
 					escapenum++;

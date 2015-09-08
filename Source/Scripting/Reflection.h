@@ -1065,7 +1065,7 @@ namespace Gorgon {
 			bool readonly;
 		};
 		
-		using InstanceMemberList = Containers::Hashmap<std::string, const Member, GetNameOf<Member>, std::map, String::CaseInsensitiveLess>;
+		using InstanceMemberList = Containers::Hashmap<std::string, const InstanceMember, GetNameOf<InstanceMember>, std::map, String::CaseInsensitiveLess>;
 		
 		/**
 		 * Namespace contains other static members as members. All types and library are also namespaces themselves.
@@ -1509,7 +1509,7 @@ namespace Gorgon {
 			}
 			
 			/// Returns the return type expected from the handlers.
-			const Type &ReturnType() const {
+			const Type &GetReturnType() const {
 				ASSERT(returntype, "This event does not allow returns");
 				
 				return *returntype;

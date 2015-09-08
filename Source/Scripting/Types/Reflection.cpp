@@ -145,14 +145,6 @@ namespace Gorgon { namespace Scripting {
 		
 		auto function_overload = new MappedReferenceType<Function::Overload, &ToEmptyString<Function::Overload>>("Overload", "");
 		function_overload->AddMembers({
-			MapFunctionToInstanceMember(
-				[](const Function::Overload *o) -> const Type * {
-					if(o->HasReturnType()) return &o->GetReturnType();
-					else               	   return nullptr;
-				}, 
-				"ReturnType", "Return type of this overload. Returns <null> if this overload does not return a value",
-				Types::Type(), function_overload
-			),
 			MapFunctionToInstanceMember(&Function::Overload::IsConstant, "IsConstant", 
 										"Whether this overload is a constant member.", Types::Bool(), function_overload),
 			MapFunctionToInstanceMember(&Function::Overload::IsImplicit, "IsImplicit", 
@@ -169,6 +161,14 @@ namespace Gorgon { namespace Scripting {
 			MapFunctionToInstanceMember(&Function::Overload::ReturnsRef, "ReturnsRef", 
 										"Whether this overload returns a reference value.", Types::Bool(), function_overload),
 			MapFunctionToInstanceMember(
+				[](const Function::Overload *o) -> const Type * {
+					if(o->HasReturnType()) return &o->GetReturnType();
+					else               	   return nullptr;
+				}, 
+				"ReturnType", "Return type of this overload. Returns <null> if this overload does not return a value",
+				Types::Type(), function_overload
+			),
+			MapFunctionToInstanceMember(
 				[parameter](const Function::Overload *o) -> const Array* {
 					auto arr=new Array(*parameter);
 					VirtualMachine::Get().References.Register(arr);
@@ -178,7 +178,7 @@ namespace Gorgon { namespace Scripting {
 					
 					return arr;
 				}, 
-				"Parameters", "Regular overloads of this function. Does not include methods overloads.",
+				"Parameters", "Parameters of this overload.",
 				Types::Array(), function_overload
    			),
 		});
@@ -245,7 +245,13 @@ namespace Gorgon { namespace Scripting {
 				"Returns the member with the given name. Exact return type depends on the found member.", nmspace, 
 				{
 					MapFunction(
-						&Namespace::ValueOf, Types::Variant(),
+						[constant](const Namespace &n, const std::string &name) -> Data {
+							if(n.Members.Exists(name) && n.Members[name].GetMemberType()==StaticMember::Constant) {
+								return {constant, dynamic_cast<const Constant*>(&n.Members[name]), true, true};
+							}
+							else
+								return n.ValueOf(name);
+						}, Types::Variant(),
 						{
 							Parameter("Name",
 								"The name of the member.",
@@ -362,14 +368,183 @@ namespace Gorgon { namespace Scripting {
 		
 		
 		
+		/****************** InstanceMember *****************/
+		auto instancemember=new MappedReferenceType<InstanceMember, &GetNameOf<InstanceMember>>("InstanceMember" ,"");
+		
+		instancemember->AddMembers({
+			MapFunctionToInstanceMember(&InstanceMember::IsConstant, "IsConstant", 
+										"Whether this member is a constant", Types::Bool(), instancemember),
+			MapFunctionToInstanceMember(&InstanceMember::IsReference, "IsReference", 
+										"Whether this member is a reference", Types::Bool(), instancemember),
+			MapFunctionToInstanceMember(&InstanceMember::IsReadonly, "IsReadonly", 
+										"Whether this member is readonly. Readonly member can be modified through their "
+										"functions and data members. Only assignment will not be possible.", 
+									    Types::Bool(), instancemember),
+			MapFunctionToInstanceMember(&InstanceMember::GetType, "Type", 
+										"The type of this member", Types::Type(), instancemember),
+		});
+		
+		instancemember->AddMembers({
+			new Function("Get", 
+				"Returns the value of this instance member of the given object", instancemember, {
+					MapFunction(
+						[](const InstanceMember &m, Data d) -> Data {
+							d=d.GetType().MorphTo(dynamic_cast<const Type&>(*m.GetOwner()), d, false);
+							return m.Get(d);
+						}, Types::Variant(), {
+							Parameter(
+								"Object", 
+								"The object that owns the requested member value.", 
+								Types::Variant()
+							)
+						}, ConstTag
+					),
+					
+				}
+			),
+			new Function("Set", 
+				"Set the value of this instance member of the given object", instancemember, {
+					MapFunction(
+						[](const InstanceMember &m, Data d, Data v) {
+							d=d.GetType().MorphTo(dynamic_cast<const Type&>(*m.GetOwner()), d, false);
+							v=v.GetType().MorphTo(m.GetType(), v);
+							m.Set(d, v);
+						}, nullptr, {
+							Parameter(
+								"Object", 
+								"The object that owns the member to be set.", 
+								Types::Variant(), ReferenceTag
+							),
+ 							Parameter(
+								"Value", 
+								"Value to be assigned.",
+								Types::Variant()
+							)
+						}, ConstTag
+					),
+					
+				}
+			)
+		});
+		
+		MapDynamicInheritance<InstanceMember, Member>(instancemember, member);
+		Reflection.AddMember(instancemember);
+		
+		
+		
 		/****************** Type *****************/
 		auto type=TypeType();
+		
+		type->AddMembers({
+			MapFunctionToInstanceMember(
+				[](const Type &t) -> Data {
+					return {t, t.GetDefaultValue()};
+				}, "DefaultValue", 
+				"The default value of this type", Types::Variant(), type
+			),
+			MapFunctionToInstanceMember(&Type::IsReferenceType, "IsReference", "Whether this type is a reference type", Types::Bool(), type),
+			MapFunctionToInstanceMember(
+				[instancemember](const Type *t) -> const Array* {
+					auto arr=new Array(*instancemember);
+					VirtualMachine::Get().References.Register(arr);
+					for(const auto &m : t->InstanceMembers) {
+						arr->PushData(&m.second, true, true);
+					}
+					
+					return arr;
+				}, "InstanceMembers", "Contains the instance members of the type.", Types::Array(), type
+			)
+		});
+		
+		type->AddMembers({
+			new Function{"[]",
+				"Creates a new array for this type.", type, 
+				{
+					MapFunction(
+						&BuildArray, ArrayType(),
+						{
+							Parameter("Elements",
+								"The newly constructed array will be filled with these elements",
+								Types::Variant(), OptionalTag
+							)
+						},
+						RepeatTag, ConstTag, ReferenceTag
+					)
+				}
+			},
+			new Function("GetMember",
+				"Returns the member with the given name. Exact return type depends on the found member.", type, {
+					MapFunction(
+						[instancemember, constant](const Type &t, const std::string &name) -> Data {
+							if(t.InstanceMembers.Exists(name)) {
+								return {instancemember, &t.InstanceMembers[name], true, true};
+							}
+							else {
+								if(t.Members.Exists(name) && t.Members[name].GetMemberType()==StaticMember::Constant) {
+									return {constant, dynamic_cast<const Constant*>(&t.Members[name]), true, true};
+								}
+								else
+									return t.ValueOf(name);
+							}
+						}, Types::Variant(),
+						{
+							Parameter("Name",
+								"The name of the member.",
+								Types::String()
+							)
+						}, ConstTag
+					)
+				}
+			),
+			new Function("CanMorphTo",
+				"Returns whether it is possible for this type to be morphed to the destination type. "
+				"A value of true does not mean it is *always* possible to perform conversion.", type, {
+					MapFunction(
+						[](const Type &from, const Type &to) -> bool {
+							return from.CanMorphTo(to)!=Type::NotPossible;
+						}, Types::Bool(),
+						{
+							Parameter("Target",
+								"The target type",
+								Types::Type(), ConstTag
+							)
+						}, ConstTag
+					)
+				}
+			),	
+		});
+		
 		MapDynamicInheritance<Type, Namespace>(type, nmspace);
 		
 		
 		
 		/****************** EventType *****************/
 		auto eventtype=new MappedReferenceType<EventType, &GetNameOf<EventType>>("EventType" ,"");
+		
+		eventtype->AddMembers({
+			MapFunctionToInstanceMember(
+				[](const EventType *e) -> const Type * {
+					if(e->HasReturnType()) return &e->GetReturnType();
+					else               	   return nullptr;
+				}, 
+				"ReturnType", "Return type of this overload. Returns <null> if this overload does not return a value",
+				Types::Type(), eventtype
+			),
+			MapFunctionToInstanceMember(
+				[parameter](const EventType *e) -> const Array* {
+					auto arr=new Array(*parameter);
+					VirtualMachine::Get().References.Register(arr);
+					for(auto p : e->Parameters) {
+						arr->PushData(p);
+					}
+					
+					return arr;
+				}, 
+				"Parameters", "Parameter of this event.",
+				Types::Array(), eventtype
+   			),
+		});
+		
 		MapDynamicInheritance<EventType, Type>(eventtype, type);
 		Reflection.AddMember(eventtype);
 		
@@ -377,15 +552,25 @@ namespace Gorgon { namespace Scripting {
 		
 		/****************** EnumType *****************/
 		auto enumtype=new MappedReferenceType<EnumType, &GetNameOf<EnumType>>("EnumType" ,"");
+		
+		enumtype->AddMembers({
+			MapFunctionToInstanceMember(
+				[constant](const EnumType *e) -> const Array* {
+					auto arr=new Array(*constant);
+					VirtualMachine::Get().References.Register(arr);
+					for(auto o : e->Ordered) {
+						arr->PushData(o, true, true);
+					}
+					
+					return arr;
+				}, 
+				"Options", "Allowed options for this enumeration.",
+				Types::Array(), enumtype
+   			),
+		});
+		
 		MapDynamicInheritance<EnumType, Type>(enumtype, type);
 		Reflection.AddMember(enumtype);
-		
-		
-		
-		/****************** InstanceMember *****************/
-		auto instancemember=new MappedReferenceType<InstanceMember, &GetNameOf<InstanceMember>>("InstanceMember" ,"");
-		MapDynamicInheritance<InstanceMember, Member>(instancemember, member);
-		Reflection.AddMember(instancemember);
 		
 		
 		

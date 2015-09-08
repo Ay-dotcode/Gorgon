@@ -164,10 +164,10 @@ namespace Gorgon {
 						"Returns the size of the array.", array,
 						{
 							MapFunction(
-								[](Array *a) { 
+								[](const Array *a) { 
 									return a->GetSize(); 
 								}, Types::Unsigned(),
-								{ }
+								{ }, ConstTag
 							)
 						}
 					),

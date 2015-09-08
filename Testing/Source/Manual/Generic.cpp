@@ -181,7 +181,7 @@ int main() {
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 	vm.SetSpecialIdentifierHandler(SpecHandler);
 	
-	auto reftyp=new Gorgon::Scripting::MappedReferenceType<evttest, ToEmptyString<evttest>>("", "");
+	auto reftyp=new Gorgon::Scripting::MappedReferenceType<evttest, ToEmptyString<evttest>>("reftype", "");
 	auto eventtype=new MappedEventType<
 		Gorgon::Event<evttest, int>, evttest, void, int
 	>(
@@ -329,6 +329,7 @@ int main() {
 	
 	vm.Begin(streaminput);
 	vm.UsingNamespace(mylib);
+	vm.UsingNamespace(Reflection);
 	//Compilers::Disassemble(input, std::cout);
 	
 	std::cout<<std::endl<<std::endl;

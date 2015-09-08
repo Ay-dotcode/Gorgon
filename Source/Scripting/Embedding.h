@@ -438,7 +438,7 @@ namespace Scripting {
 					//if not the repeating parameter
 					if(P_-ismember!=parameters.size()-1 || !repeatlast) {
 						//cannot be a reference as it is passed by value
-						ASSERT(!param.IsReference(),
+						ASSERT(!param.IsReference() || param.GetType()==Types::Variant(),
 							"Parameter #"+(String::From(P_-ismember+1)+", "+param.GetName())+" is declared as reference, "
 							"yet its implementation not\n"
 							"in function "+parent->GetName(), 4, 3
