@@ -159,6 +159,22 @@ DefineEnumStrings(Direction,
 	{Direction::InOut,"InOut"}
 );
 
+class imtest {
+public:
+	imtest() = default;
+	imtest(std::string) { }
+	
+	operator std::string() const { return Gorgon::String::Concat(a, ",", b); }
+	
+	int a=0;
+	int b=0;
+	
+	int getb() const { return b; }
+	void setb(int v) { b=v; }
+	
+	bool operator ==(imtest l) const { return a==l.a && b==l.b; }
+};
+
 int main() {
 	VirtualMachine vm;
 	Gorgon::Geometry::init_scripting();
@@ -208,9 +224,19 @@ int main() {
 	
 	auto myregenum = new MappedStringEnum<Day>("Day", "");
 	auto mybinenum = new MappedStringEnum<Direction>("Direction", "", Direction::In, true);
+	auto imtester  = new MappedValueType<imtest>("imtest", "");
+	imtester->MapConstructor<>({});
+	imtester->AddMembers({
+		new MappedInstanceMember<imtest, int>(
+			&imtest::a, "a", "", Types::Int(), false, false
+		),
+		new MappedInstanceMember_Function(
+			&imtest::getb, &imtest::setb, "b", "", Types::Int(), imtester, true, false, false, true
+		)
+	});
 	
 	mylib.AddMembers({
-		nulltype, reftyp, myregenum, mybinenum
+		nulltype, reftyp, myregenum, mybinenum, imtester
 	});
 
 	mylib.AddMembers({

@@ -42,19 +42,17 @@ namespace Gorgon {
 		/**
 		 * @page GScript
 		 * @subpage GScript-todo
-		 * 
+		 * @subpage GScript-embedding
 		 */
 		
 		 /** 
 		 * @page GScript-todo TODO
 		 * Tasks that are left for later:
 		 * * Save compiled instructions to a file
-		 * * Events
 		 * * Custom types
 		 * * Range operator (..)
 		 * * Function captures
 		 * * Special line splitting for functions (if nextline starts with returns, join the lines)
-		 * * () operator
 		 * * Special syntax for events
 		 * * Better checks for events
 		 */
@@ -66,8 +64,6 @@ namespace Gorgon {
 		 * dynamically defined at runtime. The given code will be tokenized into lines.
 		 * Additionally, any referred files will also be parsed for errors.
 		 */
-		//!might be removed
-		std::vector<ParseError> Parse(const std::string &code);
 
 		/// @cond INTERNAL
 		void init_builtin();
@@ -99,7 +95,7 @@ namespace Gorgon {
 		
 		/// Allows easy and fast access to integral types
 		namespace Types {
-#define DEFTYPE(name) inline const Type &name() { static const Scripting::Type *type = Integrals.GetType(#name); return *type; }
+#define DEFTYPE(name) inline const Scripting::Type &name() { static const Scripting::Type *type = Integrals.GetType(#name); return *type; }
 			/// Variant is a special data type. Variant is useful as function parameters or return type. When a value is passed to
 			/// variant parameter or returned as a variant return type, it is automatically converted to the type passed or returned
 			/// only aim of the variant type in these uses is to allow any type to be passed or returned. Its internal data type is Data
@@ -137,10 +133,15 @@ namespace Gorgon {
 			
 #define DEFTYPE(name) inline const Scripting::Type &name() { static const Scripting::Type *type = Reflection.GetType(#name); return *type; }
 			
-			DEFTYPE(InstanceMember);
-			DEFTYPE(Namespace);
 			DEFTYPE(Type);
+			DEFTYPE(InstanceMember);
+			DEFTYPE(StaticDataMember);
+			DEFTYPE(Namespace);
 			DEFTYPE(Function);
+			DEFTYPE(Constant);
+			DEFTYPE(EnumType);
+			DEFTYPE(EventType);
+			DEFTYPE(Library);
 			
 #undef DEFTYPE
 		}

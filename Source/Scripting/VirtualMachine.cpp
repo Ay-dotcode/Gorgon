@@ -10,9 +10,6 @@ namespace Gorgon {
 	namespace Scripting {		
 		
 		Containers::Hashmap<std::thread::id, VirtualMachine> VirtualMachine::activevms;
-		Type *TypeType();
-		Type *FunctionType();
-		Type *ParameterType();
 		Type *ParameterTemplateType();
 		Library &FilesystemLib();
 
@@ -1020,7 +1017,7 @@ namespace Gorgon {
 							throw SymbolNotFoundException(params->front().ToString(), SymbolType::Type, "Symbol "+params->front().ToString()+" should be type for construction");
 						}
 						else {
-							data=data.GetType().MorphTo(*TypeType(), data);
+							data=data.GetType().MorphTo(Types::Type(), data);
 						}
 					}
 					fn=&data.ReferenceValue<const Type*>()->Constructor;
@@ -1234,7 +1231,7 @@ namespace Gorgon {
 				else {
 					fn=new Function(inst->Name.Name, "", nullptr, false, false, false);
 					References.Register(fn);
-					SetVariable(inst->Name.Name, {FunctionType(), fn});
+					SetVariable(inst->Name.Name, {Types::Function(), fn});
 				}
 				
 				const Type *rettype=nullptr;
@@ -1260,7 +1257,7 @@ namespace Gorgon {
 					v.Name=v.Name.substr(2);
 					auto ret=getvalue(v);
 					
-					if(ret.GetType()!=TypeType()) {
+					if(ret.GetType()!=Types::Type()) {
 						throw CastException(ret.GetType().GetName(), "Type", "Cannot convert return type to a type");
 					}
 					
@@ -1280,7 +1277,7 @@ namespace Gorgon {
 
 					ParameterTemplate ptemp=inst->Parameters[i].Literal.GetValue<ParameterTemplate>();
 					Data type=getvalue(ptemp.type);
-					if(type.GetType()!=TypeType()) {
+					if(type.GetType()!=Types::Type()) {
 						throw CastException(type.GetType().GetName(), "Type", "Function parameter types should be type identifiers");
 					}
 

@@ -9,6 +9,7 @@
 #include "../Types.h"
 #include "../Containers/Collection.h"
 #include "../Containers/Hashmap.h"
+#include "../Enum.h"
 #include "../Any.h"
 #include "../Utils/Assert.h"
 
@@ -18,9 +19,23 @@
 namespace Gorgon {
 	
 	namespace Scripting {
+		
 		class Type;
 		class Data;
 		class VirtualMachine;
+		
+		namespace Types {
+			const Scripting::Type &Type();
+			const Scripting::Type &Namespace();
+			const Scripting::Type &Constant();
+			const Scripting::Type &Function();
+			const Scripting::Type &StaticDataMember();
+			const Scripting::Type &Library();
+			const Scripting::Type &EnumType();
+			const Scripting::Type &EventType();
+			const Scripting::Type &InstanceMember();
+		}
+		
 		
 		
 		template<class T_>
@@ -304,7 +319,7 @@ namespace Gorgon {
 			
 			virtual ~Member() { }
 			
-			/// Returns the name of this datamember.
+			/// Returns the name of this member.
 			std::string GetName() const {
 				return name;
 			}
@@ -317,13 +332,15 @@ namespace Gorgon {
 			/// Returns if this member is an instance member
 			virtual bool IsInstanceMember() const = 0;
 			
-			
+			/// Returns the namespace qualified name of this member
 			std::string GetQualifiedName() const {
 				if(!parent)
 					return name;
 				
 				return parent->GetQualifiedName()+":"+name;
 			}
+			
+			const Member *GetOwner() const { return parent; }
 			
 		protected:
 			/// Changes the parent of the member. Subclasses may perform additional checks when the parent
@@ -388,6 +405,16 @@ namespace Gorgon {
 			virtual Data Get() const = 0;
 			
 		};
+		
+		DefineEnumStringsCM(StaticMember, MemberType,
+			{StaticMember::RegularType, "RegularType"},
+			{StaticMember::EventType, "EventType"},
+			{StaticMember::EnumType, "EnumType"},
+			{StaticMember::Namespace, "Namespace"},
+			{StaticMember::DataMember, "DataMember"},
+			{StaticMember::Function, "Function"},
+			{StaticMember::Constant, "Constant"},
+		);
 		
 		class StaticDataMember : public StaticMember {
 		public:
@@ -1053,43 +1080,45 @@ namespace Gorgon {
 				return StaticMember::DataMember;
 			}
 			
-			virtual Data Get() const override { 
-				Type *NamespaceType();
-				
-				return {NamespaceType(), dynamic_cast<const Namespace*>(this), true, true};
+			virtual Data Get() const override {
+				return {Types::Namespace(), dynamic_cast<const Namespace*>(this), true, true};
 			}
 			
 			/// Adds a new member to this namespace
-			virtual void AddMember(const StaticMember &member) {
+			virtual void AddMember(StaticMember &member) {
 				ASSERT(!members.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
 
 				members.Add(member);
+				member.SetParent(*this);
 			}
 			/// Adds a new member to this namespace
-			virtual void AddMember(const StaticMember *member) {
+			virtual void AddMember(StaticMember *member) {
 				ASSERT(member!=nullptr, "Member is null");
 				ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 
 				members.Add(member);
+				member->SetParent(*this);
 			}
 			
 			/// Adds a list of members to this namespace
-			virtual void AddMembers(std::initializer_list<const StaticMember*> newmembers) {
+			virtual void AddMembers(std::initializer_list<StaticMember*> newmembers) {
 				for(auto member : newmembers) {
 					ASSERT(member!=nullptr, "Member is null");
 					ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 					
 					members.Add(member);
+					member->SetParent(*this);
 				}
 			}
 			
 			/// Adds a list of members to this namespace
-			virtual void AddMembers(std::vector<const StaticMember*> newmembers) {
+			virtual void AddMembers(std::vector<StaticMember*> newmembers) {
 				for(auto member : newmembers) {
 					ASSERT(member!=nullptr, "Member is null");
 					ASSERT(!members.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 					
 					members.Add(member);
+					member->SetParent(*this);
 				}
 			}
 			
@@ -1109,7 +1138,7 @@ namespace Gorgon {
 			/// Convenience function, returns the value of the symbol with the given name.
 			Data ValueOf(const std::string &name) const {
 				auto elm=members.Find(name);
-				if(elm.IsValid())
+				if(!elm.IsValid())
 					throw SymbolNotFoundException(name, SymbolType::Identifier,"Symbol "+name+" cannot be found.");
 				
 				return elm.Current().second.Get();
@@ -1182,21 +1211,21 @@ namespace Gorgon {
 			}
 			
 			/// Adds a static member to this type
-			virtual void AddMember(const StaticMember &member) override {
+			virtual void AddMember(StaticMember &member) override {
 				ASSERT(!instancemembers.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
 				
 				Namespace::AddMember(member);
 			}
 			
 			/// Adds a static member to this type
-			virtual void AddMember(const StaticMember *member) override {
+			virtual void AddMember(StaticMember *member) override {
 				ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 				
 				Namespace::AddMember(member);
 			}
 			
 			/// Adds a list of static members to this type
-			virtual void AddMembers(std::initializer_list<const StaticMember*> newmembers) override {
+			virtual void AddMembers(std::initializer_list<StaticMember*> newmembers) override {
 				for(auto member : newmembers) {
 					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 					
@@ -1205,7 +1234,7 @@ namespace Gorgon {
 			}
 			
 			/// Adds a list of static members to this type
-			virtual void AddMembers(std::vector<const StaticMember*> newmembers) override {
+			virtual void AddMembers(std::vector<StaticMember*> newmembers) override {
 				for(auto member : newmembers) {
 					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 					
@@ -1214,17 +1243,18 @@ namespace Gorgon {
 			}
 			
 			/// Adds a list of instance members to this type
-			virtual void AddMember(const InstanceMember &member) {
+			virtual void AddMember(InstanceMember &member) {
 				member.typecheck(this);
 				
 				ASSERT(!members.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
 				ASSERT(!instancemembers.Find(member.GetName()).IsValid(), "Symbol "+member.GetName()+" is already added.");
 				
 				instancemembers.Add(member);
+				member.SetParent(*this);
 			}
 			
 			/// Adds a list of instance members to this type
-			virtual void AddMember(const InstanceMember *member) {
+			virtual void AddMember(InstanceMember *member) {
 				member->typecheck(this);
 				
 				ASSERT(member!=nullptr, "Member is null");
@@ -1233,10 +1263,11 @@ namespace Gorgon {
 				ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 				
 				instancemembers.Add(member);
+				member->SetParent(*this);
 			}
 			
 			/// Adds an instance member to this type
-			virtual void AddMembers(std::initializer_list<const InstanceMember*> newmembers) {
+			virtual void AddMembers(std::initializer_list<InstanceMember*> newmembers) {
 				for(auto member : newmembers) {
 					member->typecheck(this);
 					
@@ -1245,11 +1276,12 @@ namespace Gorgon {
 					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 					
 					instancemembers.Add(member);
+					member->SetParent(*this);
 				}
 			}
 			
 			/// Adds an instance member to this type
-			virtual void AddMembers(std::vector<const InstanceMember*> newmembers) {
+			virtual void AddMembers(std::vector<InstanceMember*> newmembers) {
 				for(auto member : newmembers) {
 					member->typecheck(this);
 					
@@ -1258,6 +1290,7 @@ namespace Gorgon {
 					ASSERT(!instancemembers.Find(member->GetName()).IsValid(), "Symbol "+member->GetName()+" is already added.");
 					
 					instancemembers.Add(member);
+					member->SetParent(*this);
 				}
 			}
 			
@@ -1466,10 +1499,8 @@ namespace Gorgon {
 				return StaticMember::EventType;
 			}
 			
-			virtual Data Get() const override final { 
-				Type *EventTypeType();
-				
-				return {EventTypeType(), dynamic_cast<const EventType*>(this), true, true};
+			virtual Data Get() const override final {
+				return {Types::EventType(), dynamic_cast<const EventType*>(this), true, true};
 			}
 			
 			/// Returns whether event handlers should return a value
@@ -1525,10 +1556,8 @@ namespace Gorgon {
 				return StaticMember::EnumType;
 			}
 			
-			virtual Data Get() const override final { 
-				Type *EnumTypeType();
-				
-				return {EnumTypeType(), dynamic_cast<const EnumType*>(this), true, true};
+			virtual Data Get() const override final {
+				return {Types::EnumType(), dynamic_cast<const EnumType*>(this), true, true};
 			}
 			
 			/// Ordered list of allowed values

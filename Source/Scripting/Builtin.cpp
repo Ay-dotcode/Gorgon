@@ -88,7 +88,7 @@ namespace Gorgon {
 		void InitReflection();
 		
 		Type *ArrayType();
-		std::vector<const StaticMember*> ArrayFunctions();
+		std::vector<StaticMember*> ArrayFunctions();
 		
 		std::string ByteToString(const Gorgon::Byte &b) {
 			return String::From((int)b);
@@ -1441,6 +1441,23 @@ namespace Gorgon {
 									"The type that the value be casted into",
 									Types::Type()
 								),
+							}
+						)
+					}
+				),
+				new Function("isnull",
+					"Returns whether the given value is null", nullptr,
+					{
+						MapFunction(
+							[](Data var) -> bool {
+								if(!var.IsReference()) return false;
+								return var.GetData().Pointer()==nullptr;
+							}, Types::Bool(),
+							{
+								Parameter("Value",
+									"The value to be checked.",
+									Types::Variant()
+								)
 							}
 						)
 					}

@@ -10,7 +10,11 @@
 #include "../Utils/Assert.h"
 #include "../TMP.h"
 
-
+/** 
+ * @page GScript-embedding Embedding GScript into C++
+ * GScript is designed to be embedded into C++ code. Embedding functions allows easy and error free mapping of
+ * C++ types and functions to scripting. In the following section, each type of mapping is covered with examples.
+ */
 
 namespace Gorgon { 
 namespace Scripting {
@@ -1702,7 +1706,7 @@ namespace Scripting {
 							InternalValueType<TokenType>::type, {
 								Parameter("Handler",
 									"The function to handle the event",
-									FunctionType(),
+									Types::Function(),
 									ConstTag
 								)
 							}
@@ -1716,7 +1720,7 @@ namespace Scripting {
 							[this](E_ *event, TokenType token) {
 								event->Unregister(token);
 								auto &vm=VirtualMachine::Get();
-								vm.References.Decrease(Data(FunctionType(), this->unregistertokens[token], true, true));
+								vm.References.Decrease(Data(Types::Function(), this->unregistertokens[token], true, true));
 								this->unregistertokens.erase(token);
 							},
 							nullptr, {

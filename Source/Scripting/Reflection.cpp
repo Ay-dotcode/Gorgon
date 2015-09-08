@@ -283,7 +283,7 @@ namespace Gorgon { namespace Scripting {
 
 		for(const auto &s : type.inheritedsymbols) {
 			if( instancemembers.Find(s.first)==instancemembers.end() && 
-				members.Find(s.first)!=members.end()
+				members.Find(s.first)==members.end()
 			) {
 				ASSERT(!inheritedsymbols.Find(s.first).IsValid(), "Symbol: "+s.first+" is ambiguous");
 		
@@ -371,11 +371,12 @@ namespace Gorgon { namespace Scripting {
 			ASSERT(!isoperator, "Operators cannot be static members.");
 			staticmember=true;
 		}
+		
+		Member::SetParent(parent);
 	}
 	
 	Data Function::Get() const {
-		Type *FunctionType();
-		return {FunctionType(), (const Function *)this, true, true};
+		return {Types::Function(), (const Function *)this, true, true};
 	}
 	
 	const Namespace& Namespace::GetNamespace(const std::string& name) const {

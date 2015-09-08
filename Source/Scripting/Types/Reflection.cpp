@@ -8,127 +8,7 @@ namespace Gorgon { namespace Scripting {
 	static Type *type=nullptr;	
 	Library Reflection("Reflection", "This library contains reflection objects");
 	
-	Type *FunctionType() {		
-		static Type *fn=nullptr;
-		if(fn==nullptr) {
-			fn=new Scripting::MappedReferenceType<Function, &GetNameOf<Function>>("Function",
-				"Contains information about a function, also allows them to be called. Functions are immutable."
-			);
-			
-			fn->AddMembers({
-				new Scripting::Function("Name",
-					"Returns the name of the function", fn,
-					{
-						MapFunction(
-							&GetNameOf<Function>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				),
-				
-				new Scripting::Function("Help",
-					"Returns help for the function", fn,
-					{
-						MapFunction(
-							&GetHelpOf<Function>, Types::String(), 
-							{ }, ConstTag
-						)
-					}
-				),
-			});
-		}
-		
-		return fn;
-	}
-	
-	Type *ConstantType() {		
-		static Type *obj=nullptr;
-		if(obj==nullptr) {
-			obj=new Scripting::MappedReferenceType<Constant, &GetNameOf<Constant>>("Constant",
-				"Contains information about a constant."
-			);
-			
-			obj->AddMembers({
-				new Scripting::Function("Name",
-					"Returns the name of the constant", obj,
-					{
-						MapFunction(
-							&GetNameOf<Constant>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				),
-				
-				new Scripting::Function("Help",
-					"Returns help for the constant", obj,
-					{
-						MapFunction(
-							&GetHelpOf<Constant>, Types::String(), 
-							{ }, ConstTag
-						)
-					}
-				),
-				
-				new Scripting::Function("Value",
-					"Returns the value of the constant", obj,
-					{
-						MapFunction(
-							&Constant::Get, Types::Variant(), 
-							{ }, ConstTag
-						)
-					}
-				),
-				
-				new Scripting::Function("Type",
-					"Returns the type of the constant", obj,
-					{
-						MapFunction(
-							&Constant::GetType, Types::Type(), 
-							{ }, ConstTag, ReturnsConstTag, ReferenceTag
-						)
-					}
-				),
-			});
-		}
-		
-		return obj;
-	}
 
-	Type *ParameterType() {
-		static Type *param = nullptr;
-		if(param==nullptr) {
-			param=new Scripting::MappedValueType<Parameter, &GetNameOf<Parameter>, ParseThrow<Parameter>>(
-				"Parameter", "A function parameter.", Parameter("", "", Types::Variant())
-			);
-
-			param->AddMembers({
-				new MappedROInstanceMember_Function(
-					&Parameter::GetName, "Name", "The name of the parameter", Types::String(), param, true, false, true
-				)
-			});
-		}
-
-		return param;
-	}
-	
-	Type *NamespaceType() {
-		static Type *obj = nullptr;
-		
-		if(!obj) {
-			obj=new MappedReferenceType<Namespace, GetNameOf<Namespace>>("Namespace", "Contains information about a namespace");
-			
-			obj->AddMembers({
-				MapFunctionToInstanceMember(&GetNameOf<Namespace>, 
-											"Name", "The name of the namespace", Types::String(), obj),
-				
-				MapFunctionToInstanceMember(&GetHelpOf<Namespace>, 
-											"Help", "The name of the namespace", Types::String(), obj)
-			});
-		}
-		
-		return obj;
-	}
-	
 	//Initialization should be separate as Type type should be created before any types are added to
 	//libraries. Therefore, a bare type, just for the pointer of it, is created when this function
 	//is first called. InitTypeType should be called after basic types are added to Integral library
@@ -138,364 +18,480 @@ namespace Gorgon { namespace Scripting {
 				"Contains information about a type. Also contains "
 				"functions for various purposes. Types are immutable."
 			);
-			MapDynamicInheritance<Type, Namespace>(type, NamespaceType());
 		}
 		
 		return type;
-	}
-	
-	Type *EventTypeType() {
-		static Type *obj = nullptr;
-		
-		if(!obj) {
-			obj=new MappedReferenceType<EventType, GetNameOf<EventType>>("Event", "Contains information about an event type");
-			obj->AddMembers({
-				new Scripting::Function("Name",
-					"Returns the name of the event", obj,
-					{
-						MapFunction(
-							&GetNameOf<EventType>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				),
-				
-				new Scripting::Function("Help",
-					"Returns help for the event", obj,
-					{
-						MapFunction(
-							&GetHelpOf<EventType>, Types::String(), 
-							{ }, ConstTag
-						)
-					}
-				)
-			});
-		}
-		
-		return obj;
-	}
-	
-	Type *EnumTypeType() {
-		static Type *obj = nullptr;
-		
-		if(!obj) {
-			obj=new MappedReferenceType<EnumType, GetNameOf<EnumType>>("Enum", "Contains information about an enum type");
-			obj->AddMembers({
-				new Scripting::Function("Name",
-					"Returns the name of the enum", obj,
-					{
-						MapFunction(
-							&GetNameOf<EnumType>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				),
-				
-				new Scripting::Function("Help",
-					"Returns help for the enum", obj,
-					{
-						MapFunction(
-							&GetHelpOf<EnumType>, Types::String(), 
-							{ }, ConstTag
-						)
-					}
-				)
-			});
-			MapDynamicInheritance<EnumType, Type>(obj, TypeType());
-			//MapDynamicInheritance<EnumType, Namespace>(obj, NamespaceType());
-		}
-		
-		return obj;
-	}
-	
-	Type *InstanceMemberType() {
-		static Type *obj = nullptr;
-		
-		if(!obj) {
-			obj=new MappedReferenceType<InstanceMember, GetNameOf<InstanceMember>>("InstanceMember", "Contains information about an instance member");
-			obj->AddMembers({
-				new Scripting::Function("Name",
-					"Returns the name of the instance member", obj,
-					{
-						MapFunction(
-							&GetNameOf<InstanceMember>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				),
-				
-				new Scripting::Function("Help",
-					"Returns help for the instance member", obj,
-					{
-						MapFunction(
-							&GetHelpOf<InstanceMember>, Types::String(), 
-							{ }, ConstTag
-						)
-					}
-				)
-			});
-		}
-		
-		return obj;
 	}
 
 	Array *BuildArray(const Type *type, std::vector<Data> data);
 	
 	Type *ArrayType();
 	
-	void InitTypeType() {
-		if(type->InstanceMembers.GetCount()==0) {				
-			type->AddMembers({
-				
-				new Scripting::Function{"[]",
-					"Creates a new array for this type.", type, 
-					{
-						MapFunction(
-							&BuildArray, ArrayType(),
-							{
-								Parameter("Elements",
-									"The newly constructed array will be filled with these elements",
-									Types::Variant(), OptionalTag
-								)
-							},
-							RepeatTag, ConstTag, ReferenceTag
-						)
-					}
-				},
-				
-				new Scripting::Function{"Functions", 
-					"Returns the functions in this type", type,
-					{
-						MapFunction(
-							[](const Type &type) -> Array* {
-								auto arr=new Array(*FunctionType());
-								VirtualMachine::Get().References.Register(arr);
-								for(auto it=type.Members.First(); it.IsValid(); it.Next()) {
-									if(it.Current().second.GetMemberType()==StaticMember::Function) {
-										arr->PushData(dynamic_cast<const Function *>(&it.Current().second), true, true);
-									}
-								}
-								
-								return arr;
-							},ArrayType(),
-							{ }, ReferenceTag, ConstTag
-						)
-					}
-				},
-				
-				new Scripting::Function{"Constants", 
-					"Returns the constants in this type", type,
-					{
-						MapFunction(
-							[](const Type &type) -> Array* {
-								auto arr=new Array(*ConstantType());
-								VirtualMachine::Get().References.Register(arr);
-								for(auto it=type.Members.First(); it.IsValid(); it.Next()) {
-									if(it.Current().second.GetMemberType()==StaticMember::Constant) {
-										arr->PushData(dynamic_cast<const Constant *>(&it.Current().second), true, true);
-									}
-								}
-								
-								return arr;
-							},ArrayType(),
-							{ }, ReferenceTag, ConstTag
-						)
-					}
-				},
-				
-				
-				new Scripting::Function{"IsReference", 
-					"Returns if this type is a reference type", type,
-					{
-						MapFunction(
-							&Type::IsReferenceType,Types::Bool(),
-							{ }, ConstTag
-						)
-					}
-				},
-				
-				new Scripting::Function{"DefaultValue", 
-					"Returns the default value of this type. Reference types might return null.", type,
-					{
-						MapFunction(
-							[](const Type *type) {
-								auto c=Data(type, type->GetDefaultValue(), type->IsReferenceType());
-								c.MakeConstant();
-								return c;
-							}, Types::Variant(),
-							{ }, ConstTag
-						)
-					}
-				},
-				
-			});
-			//MapDynamicInheritance<Type, Namespace>(type, NamespaceType());
-		}
-	}
-	
-	Type *LibraryType() {
-		static Type *lib=nullptr;
-		if(!lib) {
-			lib=new MappedReferenceType<Library, &GetNameOf<Library>>("Library",
-				"Contains information about a library. It is possible to list contents "
-				"of a library using Types, Functions, and Constants members."				
-			);
-			
-			lib->AddMembers({
-				new Scripting::Function{"Name",
-					"Returns the name of the type", lib,
-					{
-						MapFunction(
-							&GetNameOf<Library>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				},
-
-				new Scripting::Function{"Help",
-					"Returns help for the type", lib,
-					{
-						MapFunction(
-							&GetHelpOf<Library>, Types::String(),
-							{ }, ConstTag
-						)
-					}
-				},
-				
-				new Scripting::Function{"List", 
-					"Returns the list of libraries", lib,
-					{
-						MapFunction(
-							[]() -> Array* {
-								auto arr=new Array(*lib);
-								VirtualMachine::Get().References.Register(arr);
-								for(auto it=VirtualMachine::Get().Libraries.First(); it.IsValid(); it.Next()) {
-									arr->PushData(it.CurrentPtr(), true, true);
-								}
-								
-								return arr;
-							},ArrayType(),
-							{ }, ReferenceTag
-						)
-					},
-					StaticTag
-				},
-			});
-		}
-		
-		return lib;
-	}
-	
-	void InitReflection() {		
-		
+	void InitReflection() {
 		Reflection.AddMember(TypeType());
-			
-		Reflection.AddMembers({
-			FunctionType(), ParameterType(), LibraryType(), 
-			ConstantType(), NamespaceType(), InstanceMemberType()
+		
+		
+		
+		/****************** Member *****************/
+		auto member = new MappedReferenceType<Member, &GetNameOf<Member>>("Member", "...");
+		
+		member->AddMembers({
+			MapFunctionToInstanceMember(&Member::GetName, "Name", "The name of the member", Types::String(), member),
+			MapFunctionToInstanceMember(&Member::GetHelp, "Help", "The help related with this member", Types::String(), member),
+			MapFunctionToInstanceMember(&Member::IsInstanceMember, "InstanceMember", 
+										"Whether this member is an instance member", Types::Bool(), member),
+			MapFunctionToInstanceMember(&Member::GetOwner, "Parent", 
+										"The parent of this member, libraries return <null>", member, member),
 		});
 		
-		Reflection.AddMembers({
-				new Function("TypeOf",
-					"This function returns the type of the given variable.", nullptr, 
-					{
-						MapFunction(
-							[](std::string variable) -> const Type* {
-								return &VirtualMachine::Get().GetVariable(variable).GetType();
-							}, TypeType(),
-							{
-								Parameter("Variable",
-									"The variable to determine its type.",
-									Types::String(), VariableTag
-								)
-							}, ReturnsConstTag
-						)
-						
-					}
-				),				
-				new Function("Locals",
-					"This function returns the names of the local variables.", nullptr, 
-					{
-						MapFunction(
-							[]() -> Array* {
-								auto vars=VirtualMachine::Get().CurrentScopeInstance().GetLocalVariables();
-								auto arr=new Array(Types::String());
-								VirtualMachine::Get().References.Register(arr);
-								
-								for(auto var : vars) {
-									arr->PushWithoutCheck(var.first);
-								}
-								
-								return arr;
-							}, ArrayType(),
-							{ }, ReferenceTag
-						)
-					},
-					{
-						MapFunction(
-							[] {
-								auto &vm=VirtualMachine::Get();
-								auto &out=vm.GetOutput();
-								auto vars=vm.CurrentScopeInstance().GetLocalVariables();
-								
-								out<<"Local variables: "<<std::endl;
-								
-								int maxlen=0;
-								for(auto var : vars) {
-									if(maxlen<var.first.length()) maxlen=var.first.length();
-								}
-								
-								for(std::pair<std::string, Variable> var : vars) {
-									out<<std::setw(maxlen)<<var.first<<": ";
-									if(!var.second.IsValid())
-										out<<"<Invalid>";
-									else
-										out<<var.second.GetType().ToString(var.second);
-									
-									out<<std::endl;
-								}
-								out<<std::endl;
-							}, nullptr,
-							{ }
-						)
-					}
-				),
-				new Function("VarInfo",
-					"This function returns information about a variable.", nullptr, 
-					{
-						MapFunction(
-							[](std::string variable) {
-								auto &vm=VirtualMachine::Get();
-								auto var=vm.GetVariable(variable);
-								vm.GetOutput()<<"Name : "<<var.GetName()<<std::endl;
-								if(var.IsValid()) {
-									vm.GetOutput()<<"Type : "<<var.GetType().GetName()<<std::endl;
-									vm.GetOutput()<<"Any_t: "<<var.GetData().GetTypeName()<<std::endl;
-									vm.GetOutput()<<"Ref  : "<<(var.IsReference() ? "yes" : "no")<<std::endl;
-									vm.GetOutput()<<"Const: "<<(var.IsConstant()  ? "yes" : "no")<<std::endl;
-									vm.GetOutput()<<"Value: "<<var.GetType().ToString(var)<<std::endl;
-									if(var.IsReference()) {
-										vm.GetOutput()<<"Ptr  : "<<var.GetData().Pointer()<<std::endl;
-									}
-								}
-								else {
-									vm.GetOutput()<<"Value: <Invalid>"<<std::endl;
-								}
-							}, nullptr,
-							{
-								Parameter("Variable",
-									"The variable to determine its type.",
-									Types::String(), VariableTag
-								)
-							}, ReturnsConstTag
-						)
-						
-					}
+		member->AddMembers({
+			new Function("GetQualifiedName", "Returns the namespace qualified name of this member.", member, {
+				MapFunction(
+					&Member::GetQualifiedName, 
+					Types::String(), { }, ConstTag
 				)
-			}
-		);
+			})
+		});
+		Reflection.AddMember(member);
 		
-		InitTypeType();
+		
+		
+		/****************** StaticMember *****************/
+		auto staticmember = new MappedReferenceType<StaticMember, &GetNameOf<StaticMember>>("StaticMember", 
+			"Static members are bound to a type rather than an object. Even non-static functions are static members of a type.");
+		
+		auto staticmember_type = new MappedStringEnum<StaticMember::MemberType>("Type", "Type of a static member");		
+		
+		staticmember->AddMembers({
+			MapFunctionToInstanceMember(&StaticMember::IsInstanceable, "Instancable", 
+										"Whether this member can be used to instantiate an object.", Types::Bool(), staticmember),
+			MapFunctionToInstanceMember(&StaticMember::GetMemberType, "MemberType", 
+										"The type of this member.", staticmember_type, staticmember),
+		});
+		
+		staticmember->AddMembers({
+			staticmember_type,
+		});
+		
+		MapDynamicInheritance<StaticMember, Member>(staticmember, member);
+		Reflection.AddMember(staticmember);
+		
+		
+		
+		/****************** Constant *****************/
+		auto constant=new MappedReferenceType<Constant, &GetNameOf<Constant>>("Constant",
+														"This class represents a static constant.");
+		
+		constant->AddMembers({
+			MapFunctionToInstanceMember(&Constant::Get, "Value", 
+										"The value of this constant", Types::Variant(), constant),
+			MapFunctionToInstanceMember(&Constant::GetType, "Type", 
+										"The data type of this constant", Types::Type(), constant)
+		});
+		
+		MapDynamicInheritance<Constant, StaticMember>(constant, staticmember);
+		Reflection.AddMember(constant);
+		
+		
+		
+		/****************** Parameter *****************/
+		auto parameter=new MappedValueType<Parameter, &GetNameOf<Parameter>, &ParseThrow<Parameter>>(
+			"Parameter" , "", Parameter("", "", Types::Variant()));
+		
+		parameter->AddMembers({
+			MapFunctionToInstanceMember(&Parameter::GetName, "Name", 
+										"The name of the parameter", Types::String(), parameter),
+			MapFunctionToInstanceMember(&Parameter::GetHelp, "Help", 
+										"The help related with this parameter", Types::String(), parameter),
+			MapFunctionToInstanceMember(&Parameter::AllowsNull, "AllowsNull", 
+										"If true, a null reference can be passed to this parameter.", Types::Bool(), parameter),
+			MapFunctionToInstanceMember(&Parameter::GetDefaultValue, "DefaultValue", 
+										"The default value for this parameter. It is set to invalid if "
+										"the parameter is not optional", Types::Variant(), parameter),
+			MapFunctionToInstanceMember(&Parameter::GetType, "Type", 
+										"Type of the parameter.", Types::Type(), parameter),
+			MapFunctionToInstanceMember(&Parameter::IsConstant, "IsConstant", 
+										"If true, this parameter accepts constant values.", Types::Bool(), parameter),
+			MapFunctionToInstanceMember(&Parameter::IsOptional, "IsOptional", 
+										"If true, this parameter is optional and if omitted, DefaultValue "
+										"will be used in its place.", Types::Bool(), parameter),
+			MapFunctionToInstanceMember(&Parameter::IsReference, "IsReference", 
+										"If true, this parameter requires a reference.", Types::Bool(), parameter),
+			MapFunctionToInstanceMember(&Parameter::IsVariable, "IsVariable", 
+										"If true, a variable name must be passed to the parameter. This "
+										"variable could be undefined.", Types::Bool(), parameter),
+			MapFunctionToInstanceMember(
+				[](const Parameter &p) -> const Array* {
+					auto arr=new Array(Types::Variant());
+					VirtualMachine::Get().References.Register(arr);
+					for(auto o : p.Options) {
+						arr->PushData(o);
+					}
+					
+					return arr;
+				}, "Options", 
+				"The allowed values for this parameter. It may or may not be enforced.", Types::Array(), parameter),
+		});
+		
+		Reflection.AddMember(parameter);
+		
+		
+		
+		/****************** Function *****************/
+		auto function=new MappedReferenceType<Function, &GetNameOf<Function>>("Function", 
+			"Represents a function. Functions contains overloads that vary in parameters and/or traits. "
+			"Overloads can be C++ functions or functions that are defined by scripting. Overloads can be "
+			"added after the object is constructed.");
+		
+		auto function_overload = new MappedReferenceType<Function::Overload, &ToEmptyString<Function::Overload>>("Overload", "");
+		function_overload->AddMembers({
+			MapFunctionToInstanceMember(
+				[](const Function::Overload *o) -> const Type * {
+					if(o->HasReturnType()) return &o->GetReturnType();
+					else               	   return nullptr;
+				}, 
+				"ReturnType", "Return type of this overload. Returns <null> if this overload does not return a value",
+				Types::Type(), function_overload
+			),
+			MapFunctionToInstanceMember(&Function::Overload::IsConstant, "IsConstant", 
+										"Whether this overload is a constant member.", Types::Bool(), function_overload),
+			MapFunctionToInstanceMember(&Function::Overload::IsImplicit, "IsImplicit", 
+										"Whether this overload is an implicit conversion function.", 
+										Types::Bool(), function_overload),
+			MapFunctionToInstanceMember(&Function::Overload::RepeatLast, "RepeatLast", 
+										"Whether the last parameter of this overload could be repeated.", 
+										Types::Bool(), function_overload),
+			MapFunctionToInstanceMember(&Function::Overload::StretchLast, "StretchLast", 
+										"Whether the last parameter of this overload could be stretched. "
+										"Useful for console dialect", Types::Bool(), function_overload),
+			MapFunctionToInstanceMember(&Function::Overload::ReturnsConst, "ReturnsConst", 
+										"Whether this overload returns a constant value.", Types::Bool(), function_overload),
+			MapFunctionToInstanceMember(&Function::Overload::ReturnsRef, "ReturnsRef", 
+										"Whether this overload returns a reference value.", Types::Bool(), function_overload),
+			MapFunctionToInstanceMember(
+				[parameter](const Function::Overload *o) -> const Array* {
+					auto arr=new Array(*parameter);
+					VirtualMachine::Get().References.Register(arr);
+					for(auto p : o->Parameters) {
+						arr->PushData(p);
+					}
+					
+					return arr;
+				}, 
+				"Parameters", "Regular overloads of this function. Does not include methods overloads.",
+				Types::Array(), function_overload
+   			),
+		});
+		
+		function->AddMember(function_overload);
+		function->AddMembers({
+			MapFunctionToInstanceMember(
+				[](const Function *fn) -> const Type * {
+					if(fn->IsMember()) return &fn->GetOwner();
+					else               return nullptr;
+				}, 
+				"Owner", "If this function is a member function, returns the owner object.",
+				Types::Type(), function
+   			),
+			MapFunctionToInstanceMember(&Function::IsKeyword, "IsKeyword", 
+										"Whether this function is a keyword. Note: not all keywords are functions.", 
+										Types::Bool(), function),
+			MapFunctionToInstanceMember(&Function::IsMember, "IsMember", 
+										"Whether this function is a either static or regular member function.", 
+										Types::Bool(), function),
+			MapFunctionToInstanceMember(&Function::IsOperator, "IsOperator", 
+										"Whether this function is an operator.", 
+										Types::Bool(), function),
+			MapFunctionToInstanceMember(&Function::IsStatic, "IsStatic", 
+										"Whether this function is a static member function.", 
+										Types::Bool(), function),
+			MapFunctionToInstanceMember(
+				[function_overload](const Function *fn) -> const Array* {
+					auto arr=new Array(*function_overload);
+					VirtualMachine::Get().References.Register(arr);
+					for(const auto &o : fn->Overloads) {
+						arr->PushData(&o, true, true);
+					}
+					
+					return arr;
+				}, 
+				"Overloads", "Regular overloads of this function. Does not include methods overloads.",
+				Types::Array(), function
+   			),
+			MapFunctionToInstanceMember(
+				[function_overload](const Function *fn) -> const Array* {
+					auto arr=new Array(*function_overload);
+					VirtualMachine::Get().References.Register(arr);
+					for(const auto &o : fn->Methods) {
+						arr->PushData(&o, true, true);
+					}
+					
+					return arr;
+				}, 
+				"Methods", "Method overloads of this function.",
+				Types::Array(), function
+   			),
+		});
+		MapDynamicInheritance<Function, StaticMember>(function, staticmember);
+		Reflection.AddMember(function);
+
+		
+		
+		/****************** Namespace *****************/
+		auto nmspace=new MappedReferenceType<Namespace, &GetNameOf<Namespace>>("Namespace" ,"");
+		
+		nmspace->AddMembers({
+			new Function("GetMember",
+				"Returns the member with the given name. Exact return type depends on the found member.", nmspace, 
+				{
+					MapFunction(
+						&Namespace::ValueOf, Types::Variant(),
+						{
+							Parameter("Name",
+								"The name of the member.",
+								Types::String()
+							)
+						}, ConstTag
+					)
+				}
+			),
+				
+			new Function("GetFunctions", 
+				"Returns the functions in this type", nmspace,
+				{
+					MapFunction(
+						[](const Namespace &n) -> Array* {
+							auto arr=new Array(Types::Function());
+							VirtualMachine::Get().References.Register(arr);
+							for(auto it=n.Members.First(); it.IsValid(); it.Next()) {
+								if(it.Current().second.GetMemberType()==StaticMember::Function) {
+									arr->PushData(dynamic_cast<const Function *>(&it.Current().second), true, true);
+								}
+							}
+							
+							return arr;
+						},ArrayType(),
+						{ }, ReferenceTag, ConstTag
+					)
+				}
+			),
+			
+			new Function("GetConstants", 
+				"Returns the constants in this type", nmspace,
+				{
+					MapFunction(
+						[](const Namespace &n) -> Array* {
+							auto arr=new Array(Types::Constant());
+							VirtualMachine::Get().References.Register(arr);
+							for(auto it=n.Members.First(); it.IsValid(); it.Next()) {
+								if(it.Current().second.GetMemberType()==StaticMember::Constant) {
+									arr->PushData(dynamic_cast<const Constant*>(&it.Current().second), true, true);
+								}
+							}
+							
+							return arr;
+						},ArrayType(),
+						{ }, ReferenceTag, ConstTag
+					)
+				}
+			),
+			
+			new Scripting::Function("GetTypes", 
+				"Returns the constants in this type", nmspace,
+				{
+					MapFunction(
+						[](const Namespace &n) -> Array* {
+							auto arr=new Array(Types::Type());
+							VirtualMachine::Get().References.Register(arr);
+							
+							for(auto it=n.Members.First(); it.IsValid(); it.Next()) {
+								if(it.Current().second.IsInstanceable()) {
+									arr->PushData(dynamic_cast<const Type*>(&it.Current().second), true, true);
+								}
+							}
+							
+							return arr;
+						},ArrayType(),
+						{ }, ReferenceTag, ConstTag
+					)
+				}
+			),
+		});
+		
+		nmspace->AddMembers({MapFunctionToInstanceMember(
+			[staticmember](const Namespace *n) -> const Array* {
+				auto arr=new Array(*staticmember);
+				VirtualMachine::Get().References.Register(arr);
+				for(const auto &m : n->Members) {
+					arr->PushData(&m.second, true, true);
+				}
+				
+				return arr;
+			}, "Members", "Contains the members of the namespace.", Types::Array(), nmspace
+		)});
+		
+		MapDynamicInheritance<Namespace, StaticMember>(nmspace, staticmember);
+		Reflection.AddMember(nmspace);
+		
+		
+		
+		/****************** Library *****************/
+		auto library=new MappedReferenceType<Library, &GetNameOf<Library>>("Library" ,"");
+		
+		library->AddMember(new Scripting::Function("List", 
+			"Returns the list of libraries", library,
+			{
+				MapFunction(
+					[library]() -> Array* {
+						auto arr=new Array(*library);
+						VirtualMachine::Get().References.Register(arr);
+						for(auto it=VirtualMachine::Get().Libraries.First(); it.IsValid(); it.Next()) {
+							arr->PushData(it.CurrentPtr(), true, true);
+						}
+						
+						return arr;
+					},ArrayType(),
+					{ }, ReferenceTag
+				)
+			},
+			StaticTag
+		));
+		
+		MapDynamicInheritance<Library, Namespace>(library, nmspace);
+		Reflection.AddMember(library);
+		
+		
+		
+		/****************** Type *****************/
+		auto type=TypeType();
+		MapDynamicInheritance<Type, Namespace>(type, nmspace);
+		
+		
+		
+		/****************** EventType *****************/
+		auto eventtype=new MappedReferenceType<EventType, &GetNameOf<EventType>>("EventType" ,"");
+		MapDynamicInheritance<EventType, Type>(eventtype, type);
+		Reflection.AddMember(eventtype);
+		
+		
+		
+		/****************** EnumType *****************/
+		auto enumtype=new MappedReferenceType<EnumType, &GetNameOf<EnumType>>("EnumType" ,"");
+		MapDynamicInheritance<EnumType, Type>(enumtype, type);
+		Reflection.AddMember(enumtype);
+		
+		
+		
+		/****************** InstanceMember *****************/
+		auto instancemember=new MappedReferenceType<InstanceMember, &GetNameOf<InstanceMember>>("InstanceMember" ,"");
+		MapDynamicInheritance<InstanceMember, Member>(instancemember, member);
+		Reflection.AddMember(instancemember);
+		
+		
+		
+		/****************** Additional functions *****************/
+		Reflection.AddMembers({
+			new Function("TypeOf",
+				"This function returns the type of the given value.", nullptr, 
+				{
+					MapFunction(
+						[](Data variable) -> const Type* {
+							if(variable.IsValid())
+								return &variable.GetType();
+							else
+								return nullptr;
+						}, TypeType(),
+						{
+							Parameter("Value",
+								"The value to determine its type.",
+								Types::Variant()
+							)
+						}, ReturnsConstTag
+					)
+					
+				}
+			),	
+			new Function("Locals",
+				"This function returns the names of the local variables.", nullptr, 
+				{
+					MapFunction(
+						[]() -> Array* {
+							auto vars=VirtualMachine::Get().CurrentScopeInstance().GetLocalVariables();
+							auto arr=new Array(Types::String());
+							VirtualMachine::Get().References.Register(arr);
+							
+							for(auto var : vars) {
+								arr->PushWithoutCheck(var.first);
+							}
+							
+							return arr;
+						}, ArrayType(),
+						{ }, ReferenceTag
+					)
+				},
+				{ //method
+					MapFunction(
+						[] {
+							auto &vm=VirtualMachine::Get();
+							auto &out=vm.GetOutput();
+							auto vars=vm.CurrentScopeInstance().GetLocalVariables();
+							
+							out<<"Local variables: "<<std::endl;
+							
+							int maxlen=0;
+							for(auto var : vars) {
+								if(maxlen<var.first.length()) maxlen=var.first.length();
+							}
+							
+							for(std::pair<std::string, Variable> var : vars) {
+								out<<std::setw(maxlen)<<var.first<<": ";
+								if(!var.second.IsValid())
+									out<<"<Invalid>";
+								else
+									out<<var.second.GetType().ToString(var.second);
+								
+								out<<std::endl;
+							}
+							out<<std::endl;
+						}, nullptr,
+						{ }
+					)
+				}
+			),
+			new Function("VarInfo",
+				"This function returns information about a variable.", nullptr, 
+				{
+					MapFunction(
+						[](std::string variable) {
+							auto &vm=VirtualMachine::Get();
+							auto var=vm.GetVariable(variable);
+							vm.GetOutput()<<"Name : "<<var.GetName()<<std::endl;
+							if(var.IsValid()) {
+								vm.GetOutput()<<"Type : "<<var.GetType().GetName()<<std::endl;
+								vm.GetOutput()<<"Any_t: "<<var.GetData().GetTypeName()<<std::endl;
+								vm.GetOutput()<<"Ref  : "<<(var.IsReference() ? "yes" : "no")<<std::endl;
+								vm.GetOutput()<<"Const: "<<(var.IsConstant()  ? "yes" : "no")<<std::endl;
+								vm.GetOutput()<<"Value: "<<var.GetType().ToString(var)<<std::endl;
+								if(var.IsReference()) {
+									vm.GetOutput()<<"Ptr  : "<<var.GetData().Pointer()<<std::endl;
+								}
+							}
+							else {
+								vm.GetOutput()<<"Value: <Invalid>"<<std::endl;
+							}
+						}, nullptr,
+						{
+							Parameter("Variable",
+								"The variable to determine its type.",
+								Types::String(), VariableTag
+							)
+						}, ReturnsConstTag
+					)
+					
+				}
+			)
+		});			
+
 	}
 	
 	
