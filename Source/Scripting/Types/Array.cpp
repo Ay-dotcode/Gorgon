@@ -47,7 +47,7 @@ namespace Gorgon {
 					}
 				}
 				else {
-					for(int i=start; i<end; i--) {
+					for(int i=start; i>end; i--) {
 						ret->PushWithoutCheck(i);
 					}
 				}

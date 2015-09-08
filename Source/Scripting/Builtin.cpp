@@ -137,6 +137,8 @@ namespace Gorgon {
 				"Represents a truth statement. Can either be true or false."
 			);
 			
+			Integrals.AddMember(Bool);
+			
 			
 			Int->AddMembers({
 
@@ -1218,8 +1220,7 @@ namespace Gorgon {
 				)
 			});
 			
-			Integrals.AddMembers({ 
-					Bool,
+			Integrals.AddMembers({
 					Int,
 					Float,
 					Double,

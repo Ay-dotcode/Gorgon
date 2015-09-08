@@ -1390,6 +1390,9 @@ namespace Gorgon {
 			/// Parses a string into this data. This function is allowed to throw.
 			virtual Data Parse(const std::string &) const = 0;
 			
+			/// Assigns the value of the second parameter to the first, reference types can ignore this function
+			virtual void Assign(Data &l, const Data &r) const = 0;
+			
 			
 			/// Constructors of this type. They can also act like conversion from operators. Implicit
 			/// conversion constructors should have their flag set.
@@ -1513,7 +1516,11 @@ namespace Gorgon {
 				ASSERT(returntype, "This event does not allow returns");
 				
 				return *returntype;
+			}		
+			
+			virtual void Assign(Data &l, const Data &r) const override {
 			}
+			
 			
 			/// Read only list of parameters
 			const ParameterList &Parameters;

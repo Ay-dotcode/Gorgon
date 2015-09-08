@@ -33,7 +33,8 @@ namespace Gorgon { namespace Scripting {
 		
 		
 		/****************** Member *****************/
-		auto member = new MappedReferenceType<Member, &GetNameOf<Member>>("Member", "...");
+		auto member = new MappedReferenceType<Member, &GetNameOf<Member>>("Member", 
+			"A member that can be placed either in a namespace (static) or a type (instance)");
 		
 		member->AddMembers({
 			MapFunctionToInstanceMember(&Member::GetName, "Name", "The name of the member", Types::String(), member),
@@ -96,7 +97,7 @@ namespace Gorgon { namespace Scripting {
 		
 		/****************** Parameter *****************/
 		auto parameter=new MappedValueType<Parameter, &GetNameOf<Parameter>, &ParseThrow<Parameter>>(
-			"Parameter" , "", Parameter("", "", Types::Variant()));
+			"Parameter" , "Represents a function parameter.", Parameter("", "", Types::Variant()));
 		
 		parameter->AddMembers({
 			MapFunctionToInstanceMember(&Parameter::GetName, "Name", 
@@ -238,7 +239,8 @@ namespace Gorgon { namespace Scripting {
 		
 		
 		/****************** Namespace *****************/
-		auto nmspace=new MappedReferenceType<Namespace, &GetNameOf<Namespace>>("Namespace" ,"");
+		auto nmspace=new MappedReferenceType<Namespace, &GetNameOf<Namespace>>("Namespace" ,
+			"This type represents a namespace. A namespace can contain static members. All types and library are also namespaces.");
 		
 		nmspace->AddMembers({
 			new Function("GetMember",
@@ -342,7 +344,8 @@ namespace Gorgon { namespace Scripting {
 		
 		
 		/****************** Library *****************/
-		auto library=new MappedReferenceType<Library, &GetNameOf<Library>>("Library" ,"");
+		auto library=new MappedReferenceType<Library, &GetNameOf<Library>>("Library" ,
+			"Represents a library, either exported or created at runtime.");
 		
 		library->AddMember(new Scripting::Function("List", 
 			"Returns the list of libraries", library,
@@ -369,7 +372,8 @@ namespace Gorgon { namespace Scripting {
 		
 		
 		/****************** InstanceMember *****************/
-		auto instancemember=new MappedReferenceType<InstanceMember, &GetNameOf<InstanceMember>>("InstanceMember" ,"");
+		auto instancemember=new MappedReferenceType<InstanceMember, &GetNameOf<InstanceMember>>("InstanceMember",
+			"Represents a data member that can be accessed from an instance of the object.");
 		
 		instancemember->AddMembers({
 			MapFunctionToInstanceMember(&InstanceMember::IsConstant, "IsConstant", 
@@ -519,7 +523,8 @@ namespace Gorgon { namespace Scripting {
 		
 		
 		/****************** EventType *****************/
-		auto eventtype=new MappedReferenceType<EventType, &GetNameOf<EventType>>("EventType" ,"");
+		auto eventtype=new MappedReferenceType<EventType, &GetNameOf<EventType>>("EventType",
+			"Represents an event type. An event is a special type.");
 		
 		eventtype->AddMembers({
 			MapFunctionToInstanceMember(
@@ -551,7 +556,8 @@ namespace Gorgon { namespace Scripting {
 		
 		
 		/****************** EnumType *****************/
-		auto enumtype=new MappedReferenceType<EnumType, &GetNameOf<EnumType>>("EnumType" ,"");
+		auto enumtype=new MappedReferenceType<EnumType, &GetNameOf<EnumType>>("EnumType",
+			"Represents an enumeration type. An enumeration is a special type that is expected to take predefined values.");
 		
 		enumtype->AddMembers({
 			MapFunctionToInstanceMember(

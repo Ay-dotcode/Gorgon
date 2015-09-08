@@ -321,10 +321,12 @@ namespace Gorgon {
 						fixparameter(data, dat.GetType(), false, "");
 						
 						if(data.IsReference()) {
-							dat.GetData().TypeServices()->Clone(dat.GetData().UnsafeGet<void *>(), data.GetData().UnsafeGet<void *>());
+							dat.GetType().Assign(dat, data);
+							
+							VirtualMachine::Get().References.Increase(data);
 						}
 						else {
-							dat.GetData().TypeServices()->Clone(dat.GetData().UnsafeGet<void *>(), data.GetData().GetRaw());
+							dat.GetType().Assign(dat, data);
 						}
 						
 						done=true;

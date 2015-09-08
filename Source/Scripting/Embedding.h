@@ -691,7 +691,7 @@ namespace Scripting {
 	#define MAP_COMPARE(opname, op, mappedtype, cpptype) \
 		new MappedOperator( #opname, \
 			"Compares two "#mappedtype" types.", mappedtype, \
-			Bool, mappedtype, [](cpptype l, cpptype r) { return l op r; } \
+			Types::Bool(), mappedtype, [](cpptype l, cpptype r) { return l op r; } \
 		)
 	
 	/**
@@ -1332,6 +1332,23 @@ namespace Scripting {
 			return Data(this, Parse_(str));
 		}
 		
+		virtual void Assign(Data &l, const Data &r) const override {
+			if(l.GetType()!=r.GetType()) {
+				throw CastException(r.GetType().GetName(), l.GetType().GetName());
+			}
+			
+			if(l.IsReference()) {
+				if(l.IsConstant()) {
+					throw ConstantException("");
+				}
+				
+				*(l.ReferenceValue<T_*>())=r.GetValue<T_>();
+			}
+			else {
+				l={l.GetType(), r.GetValue<T_>()};
+			}
+		}
+		
 	protected:
 		virtual void deleteobject(const Data &obj) const override {
 			ASSERT(obj.IsReference(), "Deleting a non reference");
@@ -1432,6 +1449,9 @@ namespace Scripting {
 			return Data(this, Parse_(str));
 		}
 		
+		virtual void Assign(Data &l, const Data &r) const override {
+		}
+			
 	protected:
 		virtual void deleteobject(const Data &obj) const override {
 			T_ *ptr;
@@ -1786,6 +1806,8 @@ namespace Scripting {
 				),
 			});
 			
+			AddMember(MAP_COMPARE(=, ==, this, E_));
+			
 			if(binary) {
 				AddMembers({
 					new Scripting::Function("binary", "Returns binary form of this enumeration", 
@@ -1825,8 +1847,7 @@ namespace Scripting {
 						[](E_ l, E_ r) -> E_ {
 							return (E_)((unsigned)l|(unsigned)r);
 						}
-					)
-					
+					),					
 				});
 			}
 		}
@@ -1846,6 +1867,23 @@ namespace Scripting {
 		
 		virtual Data Parse(const std::string &s) const {
 			return {this, String::Parse<E_>(s)};
+		}
+		
+		virtual void Assign(Data &l, const Data &r) const override {
+			if(l.GetType()!=r.GetType()) {
+				throw CastException(r.GetType().GetName(), l.GetType().GetName());
+			}
+			
+			if(l.IsReference()) {
+				if(l.IsConstant()) {
+					throw ConstantException("");
+				}
+				
+				*(l.ReferenceValue<E_*>())=r.GetValue<E_>();
+			}
+			else {
+				l={l.GetType(), r.GetValue<E_>()};
+			}
 		}
 		
 	protected:

@@ -193,18 +193,7 @@ namespace Gorgon {
 			
 			/// Sets the data contained in this variable. If it is a reference, the value that is referenced
 			/// is updated
-			void SetReferenceable(const Data &value) {
-				if(isconstant) {
-					throw CastException("Constant", "Non-constant", "While performing assignment");
-				}
-				
-				if(value.IsReference()) {
-					data.TypeServices()->Clone(data.UnsafeGet<void *>(), value.GetData().UnsafeGet<void *>());
-				}
-				else {
-					data.TypeServices()->Clone(data.UnsafeGet<void *>(), value.GetData().GetRaw());
-				}
-			}
+			void SetReferenceable(const Data &value);
 
 			/// Returns the name of the variable
 			std::string GetName() const {
