@@ -144,6 +144,7 @@ namespace Gorgon {
 		
 		/// This class represents a variable. It contains the data and the name of the variable.
 		class Variable : public Data {
+			friend class VirtualMachine;
 		public:
 			
 			/// Creates an invalid variable
@@ -199,9 +200,11 @@ namespace Gorgon {
 			std::string GetName() const {
 				return name;
 			}
-
 			
+			bool IsReferenceAssigned() const { return ref; }
+
 		private:
+			bool ref=false;
 			std::string name;
 		};
 

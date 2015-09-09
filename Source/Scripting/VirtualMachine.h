@@ -121,7 +121,7 @@ namespace Gorgon {
 			
 			Variable GetVariable(const std::string &name);
 
-			void SetVariable(const std::string &name, Data data);
+			void SetVariable(const std::string &name, Data data, bool ref=false);
 			
 			void UnsetVariable(const std::string &name);
 

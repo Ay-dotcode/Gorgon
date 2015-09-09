@@ -301,7 +301,7 @@ namespace Gorgon {
 			return var;
 		}
 		
-		void VirtualMachine::SetVariable(const std::string &name, Data data) {
+		void VirtualMachine::SetVariable(const std::string &name, Data data, bool ref) {
 			ASSERT(scopeinstances.size(), "No scope instance is active");
 			
 			bool spec=false;
@@ -346,7 +346,9 @@ namespace Gorgon {
 			
 			//if found
 			if(var) {
-				if(var->IsValid() && var->IsReference() && !var->GetType().IsReferenceType()) {
+				if(ref) var->ref=true;
+				
+				if(var->IsValid() && var->IsReference() && var->ref && !var->GetType().IsReferenceType()) {
 					fixparameter(data, var->GetType(), false, "");
 					
 					var->SetReferenceable(data);
@@ -360,6 +362,10 @@ namespace Gorgon {
 			
 			//create a new one
 			scopeinstances.back()->SetVariable(name, data);
+			if(ref) {
+				var=scopeinstances.back()->GetVariable(name);
+				var->ref=true;
+			}
 		}
 		
 		void VirtualMachine::UnsetVariable(const std::string &name) {
@@ -1103,7 +1109,7 @@ namespace Gorgon {
 					v=v.DeReference();
 				}
 				
-				SetVariable(inst->Name.Name, v);
+				SetVariable(inst->Name.Name, v, inst->Reference);
 			}
 			
 			else if(inst->Type==InstructionType::SaveToTemp) {
@@ -1185,7 +1191,7 @@ namespace Gorgon {
 					ASSERT(inst->Name.Type==ValueType::Identifier || inst->Name.Type==ValueType::Variable, 
 						   "Member to variable instruction requires a variable identifier in Name field");
 					
-					SetVariable(inst->Name.Name, member->Get(thisptr));
+					SetVariable(inst->Name.Name, member->Get(thisptr), inst->Reference);
 				}
 				else {
 					temporaries[inst->Store+tempbase]=member->Get(thisptr);
