@@ -372,6 +372,12 @@ namespace Gorgon { namespace Scripting {
 					return var;
 			}
 			
+			//check statics too
+			auto var=scope.GetVariable(name);
+			if(var)
+				return *var;
+			
+			
 			//check ambiguity
 			if(ambiguoussymbols.count(name)!=0) {
 				throw AmbiguousSymbolException(name, SymbolType::Identifier, "Could be one of: "+ambiguoussymbols[name]);

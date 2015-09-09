@@ -352,6 +352,8 @@ namespace Gorgon { namespace Scripting {
 
 			if(!p->GetType().IsReferenceType())
 				if(p->IsReference() != otherp->IsReference()) 	return false;
+				
+			++p; ++otherp;
 		}
 
 		return true;

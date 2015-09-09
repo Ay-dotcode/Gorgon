@@ -207,8 +207,11 @@ namespace Compilers {
 			}
 			case '@': //special identifiers
 			case '%':
-			case '!':
 				specialident=true;
+				break;
+			case '!':
+				if(!expectop)
+					specialident=true;
 				break;
 			case '(':
 				return Token {"(", Token::LeftP, start};
@@ -338,7 +341,7 @@ namespace Compilers {
 					acc.push_back(c);
 				}
 				else if(op || opornumber || oporequals) {
-					if(isoperator(c)) {
+					if(isoperator(c) && acc.back()!='=') {
 						acc.push_back(c);
 					}
 					else {

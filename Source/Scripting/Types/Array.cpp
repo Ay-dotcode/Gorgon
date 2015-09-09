@@ -77,6 +77,10 @@ namespace Gorgon {
 			if(!array) {
 				array=new MappedReferenceType<Array, ArrayToStr>("Array", "This is an array", (Array*)nullptr);
 				
+				array->AddMember(MapFunctionToInstanceMember(
+					&Array::GetSize, "Size", "The size of the array", Types::Unsigned(), array
+				));
+				
 				array->AddMembers({
 					new Function("[]", 
 						"Returns the element at the given index.", array,
@@ -159,19 +163,7 @@ namespace Gorgon {
 							)
 						}
 					),
-				  
-					new Function("Size", 
-						"Returns the size of the array.", array,
-						{
-							MapFunction(
-								[](const Array *a) { 
-									return a->GetSize(); 
-								}, Types::Unsigned(),
-								{ }, ConstTag
-							)
-						}
-					),
-					
+				
 					new Function("Resize", 
 						"Changes the size of the array. New elements will have their default value.", array, 
 						{

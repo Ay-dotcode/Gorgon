@@ -134,7 +134,7 @@ namespace Gorgon {
 			bool DetachCommandConsole();
 
 			/// Redirects the output stream to the given stream
-			void SetOutput(std::ostream &out);
+			void SetOutput(std::ostream &out, bool deleteonchange=false);
 
 			/// Redirects input stream to the given stream
 			void SetInput(std::istream &in);
@@ -151,6 +151,9 @@ namespace Gorgon {
 
 			/// Resets the output stream to default stream that is given in the constructor
 			void ResetOutput() {
+				if(deleteoutonchange) delete output;
+				deleteoutonchange=false;
+				
 				output=defoutput;
 			}
 
@@ -254,6 +257,8 @@ namespace Gorgon {
 
 			std::ostream *defoutput;
 			std::istream *definput;
+			
+			bool deleteoutonchange=false;
 
 			std::vector<Data> temporaries;
 			

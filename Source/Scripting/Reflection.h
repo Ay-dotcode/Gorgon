@@ -905,11 +905,13 @@ namespace Gorgon {
 				ASSERT(!isoperator, "Operators cannot be methods\n in function "+name, 1, 3);
 				
 				overload.parent=this;
-#ifndef NDEBUG
 				for(const auto &v : methods) {
-					ASSERT(!overload.IsSame(v), "Ambiguous function variant\n in function "+name, 1, 3);
+					if(overload.IsSame(v)) {
+						throw AmbiguousSymbolException(name, SymbolType::Function, "Ambiguous function variant");
+					}
 				}
 				
+#ifndef NDEBUG
 				overload.dochecks(true);
 #endif
 				methods.Push(overload);

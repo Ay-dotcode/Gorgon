@@ -75,9 +75,17 @@ namespace Gorgon {
 			}
 			
 			void system(std::string program) {
-				::system(program.c_str());
+#ifdef _MSC_VER
+				auto popen=_popen;
+#endif
+				auto desc=popen(program.c_str(), "r");
+				char buf[64];
+				auto &out=VirtualMachine::Get().GetOutput();
+				while(!feof(desc)) {
+					int sz=fread(buf, sizeof(char), 64, desc);
+					out.write(buf, sz);
+				}
 			}
-
 		}
 
 		Type *TypeType();
@@ -1049,11 +1057,11 @@ namespace Gorgon {
 			});
 			
 			String->AddMembers({
-				new Function("Length",
-					"Returns the length of the string", String, 
-				 {MapFunction(&std::string::length, Unsigned, {}, ConstTag)}
-				),
-				
+				MapFunctionToInstanceMember(&std::string::length, "Length", "The length of the string", Unsigned, String),
+				MapFunctionToInstanceMember(&std::string::length, "Size", "The length of the string", Unsigned, String)
+			});
+			
+			String->AddMembers({
 				new Function("Substr",
 					"Returns a part of the string", String, 
 					{
@@ -1253,7 +1261,8 @@ namespace Gorgon {
 				),
 				
 				new Function("GetEnv",
-					"Returns the environment variable with the given name", nullptr,
+					"Returns the environment variable with the given name" 
+					"If it is not found, empty string is returned.", nullptr,
 					{
 						MapFunction(
 							[](const std::string &n) -> std::string {
@@ -1274,6 +1283,43 @@ namespace Gorgon {
 					}
 				),
 				
+				new Function("BufferOutput",
+					"Begins buffering output. Calling this function second time will clear the buffer", nullptr,
+					{
+						MapFunction(
+							[]() {
+								VirtualMachine::Get().SetOutput(*new std::stringstream(), true);
+							}, nullptr, { }
+						)
+					}
+				),
+				
+				new Function("GetBufferedOutput",
+					"Returns the buffered output. This function does not reset the buffer.", nullptr,
+					{
+						MapFunction(
+							[]() -> std::string {
+								auto *out=&VirtualMachine::Get().GetOutput();
+								if(dynamic_cast<std::stringstream*>(out)==nullptr) {
+									throw std::runtime_error("Not buffering output");
+								}
+								
+								return dynamic_cast<std::stringstream*>(out)->str();
+							}, String, { }
+						)
+					}
+				),
+				
+				new Function("ResetOutput",
+					"Returns output to stdout.", nullptr,
+					{
+						MapFunction(
+							[]() {
+								VirtualMachine::Get().ResetOutput();
+							}, nullptr, { }
+						)
+					}
+				),
 				
 				new Function("Read",
 					"This function reads a value from the console.", nullptr,
@@ -1353,7 +1399,7 @@ namespace Gorgon {
 							},
 							StretchTag
 						)
-					}, KeywordTag
+					}
 				),
 				new Function("const",
 					"Makes the given variable a constant", nullptr,

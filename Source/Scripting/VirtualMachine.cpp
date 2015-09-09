@@ -45,7 +45,10 @@ namespace Gorgon {
 			}
 		}
 		
-		void VirtualMachine::SetOutput(std::ostream &out) {
+		void VirtualMachine::SetOutput(std::ostream &out, bool deleteonchange) {
+			if(deleteoutonchange) delete output;
+			
+			deleteoutonchange=deleteonchange;
 			output=&out;
 		}
 		

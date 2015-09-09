@@ -624,8 +624,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			//get the current size of the array
 			Instruction callsize;
-			callsize.Type=InstructionType::MemberFunctionCall;
-			callsize.Name.SetStringLiteral("size");
+			callsize.Type=InstructionType::MemberToTemp;
+			callsize.RHS.SetStringLiteral("size");
 			callsize.Parameters.push_back({});
 			callsize.Parameters.back().SetTemp(forarr);
 			callsize.Store=tempind++;
