@@ -1,5 +1,6 @@
 /// @file OpenGL.h 
 /// @warning Exposes windows header
+/// @cond INTERNAL
 
 #pragma once
 
@@ -211,3 +212,4 @@ namespace Gorgon {
 #	undef APIENTRY
 #	undef WINGDIAPI
 #endif
+/// @endcond

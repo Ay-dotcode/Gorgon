@@ -5,3 +5,8 @@ SET(Local
 	Rectangle.h
 	Size.h
 )
+IF(${SCRIPTING})
+	LIST(APPEND Local
+		Scripting.cpp
+	)
+ENDIF()

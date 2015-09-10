@@ -1,6 +1,10 @@
 
 #include "Assert.h"
 
+#pragma warning(push)
+#pragma warning(disable:4091) //warning is in windows headers
+#pragma warning(disable:4996) //warning is in StackWalker code
+
 //******** BEGIN STACKWALKER
 #pragma region STACKWALKER
 /**********************************************************************
@@ -144,7 +148,7 @@ protected:
 		CHAR loadedImageName[STACKWALK_MAX_NAMELEN];
 	} CallstackEntry;
 
-	typedef enum CallstackEntryType { firstEntry, nextEntry, lastEntry };
+	enum CallstackEntryType { firstEntry, nextEntry, lastEntry };
 
 	virtual void OnSymInit(LPCSTR szSearchPath, DWORD symOptions, LPCSTR szUserName);
 	virtual void OnLoadModule(LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD size, DWORD result, LPCSTR symType, LPCSTR pdbName, ULONGLONG fileVersion);
@@ -612,7 +616,7 @@ public:
 	LPSTR m_szSymPath;
 
 #pragma pack(push,8)
-	typedef struct IMAGEHLP_MODULE64_V3 {
+	struct IMAGEHLP_MODULE64_V3 {
 		DWORD    SizeOfStruct;           // set to sizeof(IMAGEHLP_MODULE64)
 		DWORD64  BaseOfImage;            // base load address of module
 		DWORD    ImageSize;              // virtual size of the loaded module
@@ -640,7 +644,7 @@ public:
 		BOOL     Publics;                // contains public symbols
 	};
 
-	typedef struct IMAGEHLP_MODULE64_V2 {
+	struct IMAGEHLP_MODULE64_V2 {
 		DWORD    SizeOfStruct;           // set to sizeof(IMAGEHLP_MODULE64)
 		DWORD64  BaseOfImage;            // base load address of module
 		DWORD    ImageSize;              // virtual size of the loaded module
@@ -1552,7 +1556,7 @@ void StackWalker::OnOutput(LPCSTR buffer)
 #undef min
 namespace Gorgon {
 	namespace Utils {
-
+		
 		struct stackentry {
 			std::string file;
 			int line;
@@ -1574,7 +1578,7 @@ namespace Gorgon {
 			virtual void OnCallstackEntry(CallstackEntryType type, CallstackEntry &entry) {
 				if (entry.lineFileName[0] == 0) return;
 
-				Stack.push_back({entry.lineFileName, entry.lineNumber, entry.name});
+				Stack.push_back({entry.lineFileName, int(entry.lineNumber), entry.name});
 			}
 
 		public:
@@ -1585,9 +1589,11 @@ namespace Gorgon {
 		void CrashHandler::Backtrace() {
 			Walker walker;
 			walker.ShowCallstack();
+#ifdef TEST
+			depth=16;
+#endif			
 
-			for(int i=skip+2; i<std::min<int>(skip+depth+2,walker.Stack.size()); i++) {
-
+			auto report=[&](int i) {
 				//last directory before filename
 				std::string filename = String::Replace(walker.Stack[i].file, "\\", "/");
 				std::string dir = Filesystem::GetDirectory(filename);
@@ -1596,16 +1602,42 @@ namespace Gorgon {
 				}
 				dir = Filesystem::GetFile(dir);
 				filename = Filesystem::GetFile(filename);
-
-				std::cout << "  In function ";
-				Console::SetColor(Console::Yellow);
-				std::cout << walker.Stack[i].function;
+				
+				Console::SetColor(Console::Magenta);
+				if((i-skip-1)==1) {
+					Console::SetBold();
+				}
+				std::cout<<"  ["<<(i-skip-1)<<"] ";
+				Console::SetBold(false);
 				Console::SetColor(Console::Default);
-				std::cout << " at " << "..." << dir << "/" << filename;
+				if(walker.Stack[i].function!="") {
+					std::cout << "  In function ";
+					Console::SetColor(Console::Yellow);
+					std::cout << walker.Stack[i].function<<" ";
+				}
+				Console::SetColor(Console::Default);
+				std::cout << "at ";
+				if((i-skip-1)==1) {
+					Console::SetColor(Console::Red);
+				}
+				std::cout << "..." << dir << "/" << filename;
 				Console::SetBold();
 				std::cout << ":" << walker.Stack[i].line << std::endl;
 				Console::Reset();
+			};
+			
+#ifdef TEST
+			for(int i=2;i<skip+2;i++) {
+				report(i);
+			}
+#endif			
+			
+			for(int i=skip+2; i<std::min<int>(skip+depth+2,walker.Stack.size()); i++) {
+				report(i);
 			}
 		}
+
+		struct CrashHandler::dumponlytag CrashHandler::DumpOnlyTag;
+
 	}
 }

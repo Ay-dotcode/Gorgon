@@ -59,6 +59,28 @@ namespace Gorgon {
 			}
 		};
 		
+		/// Compares two strings case insensitive. Works similar to strcmp
+		inline int CaseInsensitiveCompare(const std::string &left, const std::string &right) {
+			unsigned len=std::min(left.length(), right.length());
+			
+			auto l=left.begin();
+			auto r=right.begin();
+			for(unsigned i=0; i<len; i++) {
+				auto lc=tolower(*l);
+				auto rc=tolower(*r);
+				if(lc<rc) {
+					return -1;
+				}
+				else if(lc>rc) {
+					return 1;
+				}
+				++l;
+				++r;
+			}
+			
+			return left.length()<right.length() ? -1 : (left.length()==right.length() ? 0 : 1);
+		}
+		
 
 #ifdef DOXYGEN
 		/// Converts a string to another type. Works for integral types and
@@ -206,6 +228,14 @@ namespace Gorgon {
 		}
 		
 		template <>
+		inline bool To<bool>(const std::string &value) {
+			if(value=="false" || value=="no" || value=="" || To<int>(value)==0)
+				return false;
+			else
+				return true;
+		}
+		
+		template <>
 		inline char To<char>(const char *value) {
 			char *n;
 			return (char)std::strtol(value, &n, 10);
@@ -278,6 +308,11 @@ namespace Gorgon {
 		template <>
 		inline long double To<long double>(const char *value) {
 			return std::atof(value);
+		}
+
+		template <>
+		inline bool To<bool>(const char *value) {
+			return To<bool>(std::string(value));
 		}
 		/// @endcond
 

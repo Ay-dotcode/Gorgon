@@ -43,6 +43,8 @@ namespace Gorgon {
 			Image &operator=(Image &&other) { 
 				Destroy();
 				Swap(other);
+				
+				return *this;
 			}
 
 			/// Destructor

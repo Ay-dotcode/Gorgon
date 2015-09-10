@@ -88,6 +88,8 @@ namespace Gorgon {
 			template<class Source_, typename... Params_>
 			struct HandlerBase {
 				virtual void Fire(std::mutex &locker, Source_ *, Params_...) = 0;
+				
+				virtual ~HandlerBase() {}
 			};
 
 			template<class Source_, typename... Params_>
@@ -118,7 +120,7 @@ namespace Gorgon {
 
 			template<class Source_, typename... Params_>
 			struct FullHandlerFn : public HandlerBase<Source_, Params_...> {
-				static_assert(!std::is_same<Source_, Empty>::value, "No source class exists for this event (Empty should not be passed around)");
+				static_assert(!std::is_same<Source_, void>::value, "No source class exists for this event (void cannot be passed around)");
 				
 				FullHandlerFn(std::function<void(Source_&, Params_...)> fn) : fn(fn) { }
 
@@ -191,7 +193,7 @@ namespace Gorgon {
 	/// 
 	/// Class members or lambda functions can also be used as event handlers. An
 	/// event handler can be registered using Register function.
-	template<class Source_=Empty, typename... Params_>
+	template<class Source_=void, typename... Params_>
 	class Event {
 	public:	
 
@@ -201,13 +203,14 @@ namespace Gorgon {
 		/// Constructor for empty source
 		Event() : source(nullptr) {
 			fire.clear();
-			static_assert( std::is_same<Source_, Empty>::value , "Empty constructor cannot be used." );
+			static_assert( std::is_same<Source_, void>::value , "Empty constructor cannot be used." );
 		}
 		
 		/// Constructor for class specific source
-		explicit Event(Source_ &source) : source(&source) {
+		template <class S_ = Source_>
+		explicit Event(typename std::enable_if<!std::is_same<S_, void>::value, S_>::type &source) : source(&source) {
 			fire.clear();
-			static_assert(!std::is_same<Source_, Empty>::value, "Filling constructor is not required, use the default.");
+			static_assert(!std::is_same<Source_, void>::value, "Filling constructor is not required, use the default.");
 		}
 		
 		/// Move constructor
@@ -303,7 +306,7 @@ namespace Gorgon {
 			auto l=handlers.FindLocation(item);
 			if(l==-1) return;
 			
-			if(iterator.CurrentPtr()==item) {
+			if(iterator.IsValid() && iterator.CurrentPtr()==item) {
 				handlers.Delete(l);
 				
 				//Collection iterator can point element -1

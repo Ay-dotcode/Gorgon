@@ -206,7 +206,8 @@ namespace Gorgon {
 			Collection &operator =(const Collection &) = delete;
 
 			/// Move constructor
-			Collection(Collection &&col) : list(std::move(col.list)) { }
+			Collection(Collection &&col) : list(std::move(col.list)) { 
+			}
 
 			/// Move assignment
 			Collection &operator=(Collection &&col) {
@@ -304,9 +305,13 @@ namespace Gorgon {
 				if(before<0 || before>(long)list.size())
 					throw std::out_of_range("Invalid location");
 
-				if(before==list.size())
+				if(before==list.size()) {
 					Add(data);
+					return;
+				}
 
+				list.resize(list.size()+1);
+				
 				for(long i=list.size()-1;i>before;i--)
 					list[i]=list[i-1];
 
@@ -348,9 +353,7 @@ namespace Gorgon {
 
 			/// this method moves the given object in the collection in front of the reference
 			void MoveBefore(unsigned index, unsigned before) {
-				if(index<0 && index>=list.size())
-					throw std::out_of_range("Invalid location");
-				if(before<0)
+				if(index>=list.size())
 					throw std::out_of_range("Invalid location");
 				if(before>list.size())
 					throw std::out_of_range("Invalid location");
@@ -595,7 +598,6 @@ namespace Gorgon {
 
 			/// Deletes and removes all elements in the collection
 			void DeleteAll() {
-				long i;
 				for(auto e : list)
 					delete e;
 
@@ -632,7 +634,7 @@ namespace Gorgon {
 			}
 
 			T_ *get_(long Index) {
-				if(Index<0 || Index>=list.size())
+				if(Index<0 || Index>=(long)list.size())
 					return NULL;
 
 				return list[Index];

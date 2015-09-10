@@ -301,14 +301,16 @@ namespace Gorgon {
 		}
 		
 		template<class T_>
-		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::string>::type From(const T_ &e) {
+		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::string>::type 
+		From(const T_ &e) {
 			std::string s;
 			if(!staticenumtraits<T_>::lookupstring(e, s)) return "";
 			return s;
 		}
 		
 		template<class T_>
-		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type Parse(const std::string &text) {
+		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type 
+		Parse(const std::string &text) {
 			T_ e;
 			if(!staticenumtraits<T_>::lookupvalue(text, e)) {
 				std::string s ="\""+text+"\" is not a valid ";

@@ -25,11 +25,17 @@ SET(Local
 	SGuid.h
 	SGuid.cpp
 	Threading.h
+	TMP.h
 	Types.h
 	Utils
 	Window.h
 	Window.cpp
 )
+IF(${SCRIPTING})
+	LIST(APPEND Local
+		Scripting
+	)
+ENDIF()
 IF(${WIN32})
 	LIST(APPEND Local
 		Console_Win32.cpp

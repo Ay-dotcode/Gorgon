@@ -9,6 +9,9 @@
 #include <algorithm>
 #include <assert.h>
 #include <tuple>
+#include <sstream>
+
+#include "../Utils/Assert.h"
 
 #include "Iterator.h"
 
@@ -27,9 +30,9 @@ namespace Gorgon {
 		 * and might not be compatible with all library functions. * operator returns a copy
 		 * of the pair, not a reference to it.
 		 */
-		template<class K_, class T_, K_ (T_::*KeyFn)() const = nullptr, template <class ...> class M_=std::map>
+		template<class K_, class T_, K_ (*KeyFn)(const T_&) = (K_(*)(const T_&))nullptr, template <class ...> class M_=std::map, class C_=std::less<K_>>
 		class Hashmap {
-			using MapType=M_<K_, T_*, std::less<K_>, std::allocator<std::pair<const K_, T_*>>>;
+			using MapType=M_<K_, T_*, C_, std::allocator<std::pair<const K_, T_*>>>;
 			
 			/// Iterators are derived from this class. Any operations on uninitialized iterators
 			/// is undefined behavior.
@@ -61,7 +64,7 @@ namespace Gorgon {
 						throw std::runtime_error("Iterator is not valid.");
 					}
 					
-					currentit=container->mapping.erase(current);
+					currentit=container->mapping.erase(current());
 				}
 				
 				/// Deletes the item pointed by this iterator from the container. 
@@ -73,9 +76,9 @@ namespace Gorgon {
 						throw std::runtime_error("Iterator is not valid.");
 					}
 					
-					typename H_::Type *item=currentit->second;
+					auto item=currentit->second;
 					
-					currentit=container->mapping.erase(current);
+					currentit=container->mapping.erase(currentit);
 					delete item;
 				}				
 				
@@ -229,7 +232,7 @@ namespace Gorgon {
 				
 				for(auto &p : list) {
 					if(p) {
-						mapping.insert(std::make_pair((p->*KeyFn)(), p));
+						mapping.insert(std::make_pair(KeyFn(*p), p));
 					}
 				}
 			}
@@ -263,6 +266,8 @@ namespace Gorgon {
 			Hashmap &operator= (Hashmap &&other) {
 				RemoveAll();
 				Swap(other);
+				
+				return *this;
 			}
 			
 			/// Adds the given item with the related key. If the key already exists, the object it
@@ -272,8 +277,8 @@ namespace Gorgon {
 				if( it != mapping.end() ) {
 					if(deleteprev) {
 						delete it->second;
-						it->second = &obj;
 					}
+					it->second = &obj;
 				}
 				else {
 					mapping.insert(std::make_pair(key, &obj));
@@ -289,8 +294,8 @@ namespace Gorgon {
 					if( it != mapping.end() ) {
 						if(deleteprev) {
 							delete it->second;
-							it->second = obj;
 						}
+						it->second = obj;
 					}
 					else {
 						mapping.insert(std::make_pair(key, obj));
@@ -312,7 +317,7 @@ namespace Gorgon {
 			void Add(T_ &obj, bool deleteprev=false) {
 				assert(KeyFn!=nullptr && "Key retrieval function should be set.");
 				
-				Add((obj.*KeyFn)(), obj, deleteprev);
+				Add(KeyFn(obj), obj, deleteprev);
 			}
 			
 			/// Adds the given item by retrieving the related key. If the key already exists, the object it
@@ -322,7 +327,7 @@ namespace Gorgon {
 				assert(KeyFn!=nullptr && "Key retrieval function should be set.");
 				
 				if(obj)
-					Add((obj->*KeyFn)(), obj, deleteprev);
+					Add(KeyFn(*obj), obj, deleteprev);
 				else
 					Add({}, obj, deleteprev);
 			}
@@ -368,7 +373,7 @@ namespace Gorgon {
 				mapping.clear();
 			}
 			
-			/// Deletes and remoInstead, Duplicateves all the elements of this map, in addition to destroying data used.
+			/// Deletes and removes all the elements of this map, in addition to destroying data used.
 			void Destroy() {
 				for(auto &p : mapping) {
 					delete p.second;
@@ -387,7 +392,7 @@ namespace Gorgon {
 				auto it = mapping.find(key);
 				
 				if(it == mapping.end()) {
-					throw std::runtime_error("Item not found");
+					properthrow(key);
 				}
 				
 				return *(it->second);
@@ -457,11 +462,48 @@ namespace Gorgon {
 			
 		private:
 			
+			
+			template<typename T>
+			class IsStreamable
+			{
+				using one = char;
+				struct two {
+					char dummy[2];
+				};
+				
+				template<class TT>
+				static one test(decltype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one(); }
+				
+				static two test(...)  { return two();  }
+				
+			public:
+				static const bool Value = sizeof( test(*(std::ostream*)nullptr) )==1;
+			};
+			
+			template<class K__>
+			typename std::enable_if<IsStreamable<K__>::Value, void>::type properthrow(const K__ &key) const {
+				std::stringstream ss;
+				ss<<"Item not found: ";
+				ss<<key;
+#ifdef TEST
+				ASSERT(false, ss.str(), 0, 8);
+#endif
+				throw std::runtime_error(ss.str());
+			}
+			
+			template<class K__>
+			typename std::enable_if<!IsStreamable<K__>::Value, void>::type properthrow(const K__ &key) const {
+#ifdef TEST
+				ASSERT(false, "Item not found", 0, 8);
+#endif
+				throw std::runtime_error("Item not found");
+			}
+			
 			MapType mapping;
 		};
 		
-		template<class K_, class T_, K_ (T_::*KeyFn)(), template <class ...> class M_=std::map>
-		void swap(Hashmap<K_, T_, KeyFn, M_> &left, Hashmap<K_, T_, KeyFn, M_> &right) {
+		template<class K_, class T_, K_ (KeyFn)(const T_&)=nullptr, template <class ...> class M_=std::map, class C_=std::less<K_>>
+		void swap(Hashmap<K_, T_, KeyFn, M_, C_> &left, Hashmap<K_, T_, KeyFn, M_, C_> &right) {
 			left.Swap(right);
 		}
 		

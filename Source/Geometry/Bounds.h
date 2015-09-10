@@ -51,7 +51,7 @@ namespace Gorgon { namespace Geometry {
 
 		/// Constructs bounds from the given coordinates and size
 		basic_Bounds(const T_ &left, const T_ &top, const basic_Size<T_> &size) : Left(left), Top(top),
-		Right(TopLeft.X+size.Width), Bottom(TopLeft.Y+size.Height) {
+		Right(TopLeft().X+size.Width), Bottom(TopLeft().Y+size.Height) {
 			Normalize();
 		}
 
@@ -78,7 +78,7 @@ namespace Gorgon { namespace Geometry {
 		}
 		
 		operator std::string() const {
-			
+			return std::string("[")+String::From(Left)+" - "+String::From(Right)+", "+String::From(Top)+" - "+String::From(Bottom)+"]";
 		}
 
 		/// Compares two bounds objects
