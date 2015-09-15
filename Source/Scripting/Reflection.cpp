@@ -9,7 +9,7 @@ namespace Gorgon { namespace Scripting {
 		}
 	}
 	
-	Type *TypeType();
+	
 	
 	
 	Data Type::Construct(const std::vector<Data> &parameters) const {

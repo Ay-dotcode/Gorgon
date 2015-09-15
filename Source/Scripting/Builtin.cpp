@@ -1,6 +1,7 @@
 #include "Embedding.h"
 #include "Exceptions.h"
 #include "Types/Array.h"
+#include "Reflection.h"
 #include <math.h>
 
 #ifdef _MSC_VER
@@ -88,7 +89,7 @@ namespace Gorgon {
 			}
 		}
 
-		Type *TypeType();
+		//Type *TypeType();
 		void InitTypeType();
 
 		Type *FunctionType();

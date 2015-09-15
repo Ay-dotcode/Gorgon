@@ -1856,8 +1856,8 @@ namespace Scripting {
 		/// help text for enum items.
 		MappedStringEnum(const std::string& name, const std::string& help, E_ defval=E_(), bool binary=false) : 
 		MappedStringEnum(name, help, {}, defval, binary) {
-			for(auto e : Gorgon::Enumerate<E_>()) {
-				this->add({String::From(e), "", e});
+			for (E_ e : Gorgon::Enumerate<E_>()) {
+				this->add({String::From(e), "", Any(e)});
 			}
 		}
 		

@@ -283,12 +283,12 @@ namespace Gorgon {
 	}
 
 	template <class T_>
-	typename std::vector<T_>::const_iterator begin(enum_type_id<T_> &) {
+	typename std::vector<T_>::const_iterator begin(enum_type_id<T_>) {
 		return staticenumtraits<T_>::begin();
 	}
 
 	template <class T_>
-	typename std::vector<T_>::const_iterator end(enum_type_id<T_> &) {
+	typename std::vector<T_>::const_iterator end(enum_type_id<T_>) {
 		return staticenumtraits<T_>::end();
 	}
 

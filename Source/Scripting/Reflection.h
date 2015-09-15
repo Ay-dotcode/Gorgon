@@ -24,6 +24,8 @@ namespace Gorgon {
 		class Data;
 		class VirtualMachine;
 		
+		Type *TypeType();
+
 		namespace Types {
 			const Scripting::Type &Type();
 			const Scripting::Type &Namespace();
