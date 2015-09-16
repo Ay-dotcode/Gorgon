@@ -4,6 +4,9 @@
 
 #include "Geometry/Point.h"
 #include "Geometry/Rectangle.h"
+#include "Containers/Collection.h"
+#include "Utils/Assert.h"
+#include "Event.h"
 
 namespace Gorgon {
 	
@@ -29,6 +32,7 @@ namespace Gorgon {
 
 			struct icondata;
 			struct pointerdata;
+			struct monitordata;
 		}
 		/// @endcond
 		
@@ -56,6 +60,79 @@ namespace Gorgon {
 			internal::pointerdata *data;
 		};
 		
+		/*
+		 * Represents a monitor.
+		 */
+		class Monitor {
+			friend struct internal::monitordata;
+		public:
+			/// Returns the size of this monitor in pixels.
+			Geometry::Size  GetSize() const {
+				return size;
+			}
+			
+			/// Returns the location of this monitor relative to the other monitors in pixels. 
+			/// This function is expected to return (0, 0) if there are no other monitors in the system.
+			Geometry::Point GetLocation() const {
+				return location;
+			}
+			
+			/// Whether this display is primary.
+			bool IsPrimary() const {
+				return isprimary;
+			}
+			
+			/// Returns the name of the monitor
+			std::string GetName() const {
+				return name;
+			}
+			
+			~Monitor();
+			
+			/// Returns the default monitor
+			static Monitor &Primary() {
+#ifndef NDEBUG
+				ASSERT(primary, "WindowManager module is not initialized or there are no connected monitors.");
+#endif
+				
+				return *primary;
+			}
+			
+			/// Returns all monitors connected to this device
+			static const Containers::Collection<Monitor> &Monitors() {
+				return monitors;
+			}
+			
+			/// Asks WindowManager to refresh the list of monitors. This may deallocate monitors and cause problems.
+			/// Calling this method raises DisplayChanged to mitigate this problem partially. This function will not
+			/// re-create monitor list if window manager determines that there are no changes in the monitors. You may
+			/// set force parameter to true to ensure monitors list is re-created.
+			static void RefreshMonitors(bool force=false);
+			
+			/// In some cases, Changed event is not supported. This function might be used to query if it works
+			/// or not. Even this event is not supported, RefreshMonitors function causes it to be raised after gathering
+			/// information.
+			static bool IsChangeEventSupported();
+			
+			/// Fires when window manager raises an event about a change in the monitor or screen layout. Additionally,
+			/// this event will be fired when RefreshMonitors causes monitor list to be re-created. If monitor pointers
+			/// are stored, this event should be listened as a call to RefreshMonitors may invalidate these pointers.
+			static Event<> Changed;
+			
+		private:
+			Monitor();
+			internal::monitordata *data;
+			
+			Geometry::Size  size = {0,0};
+			Geometry::Point location = {0,0};
+			bool            isprimary = false;
+			
+			std::string name;
+			
+			static Containers::Collection<Monitor> monitors;
+			static Monitor *primary;
+		};
+		
 		/// Initializes window manager system
 		void Initialize();
 
@@ -76,6 +153,9 @@ namespace Gorgon {
 		/// Returns the clipboard text. If there is no data or its incompatible with text, empty
 		/// string is returned. May require an existing window.
 		std::string GetClipboardText();
+		
+		/// Returns the monitors connected to this computer
+		std::vector<Monitor> GetMonitors();
 
 		/// Sets the clipboard text to given string. May require an existing window.
 		void SetClipboardText(const std::string &text);

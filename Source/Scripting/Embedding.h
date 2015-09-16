@@ -1815,7 +1815,7 @@ namespace Scripting {
 							MapFunction(
 								[](E_ e) -> std::string {
 									unsigned val=(unsigned)e;
-									int digits=log2((double)val)+1;
+									unsigned digits=int(log2((double)val)+1);
 									std::string ret(' ', digits);
 									for(unsigned i=0;i<digits;i++) {
 										ret[digits-i-1]=val&1 ? '1':'0';
@@ -1826,7 +1826,7 @@ namespace Scripting {
 								}, Types::String(), {}, ConstTag
 							),
   							MapFunction(
-								[](E_ e, int digits) -> std::string {
+								[](E_ e, unsigned digits) -> std::string {
 									unsigned val=(unsigned)e;
 									std::string ret(' ', digits);
 									for(unsigned i=0;i<digits;i++) {
@@ -1836,7 +1836,7 @@ namespace Scripting {
 									
 									return ret;
 								}, Types::String(), {
-									Parameter("digits", "Number of digits to be considered", Types::Int())
+									Parameter("digits", "Number of digits to be considered", Types::Unsigned())
 								}, ConstTag
 							)
 						}

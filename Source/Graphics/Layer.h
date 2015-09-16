@@ -3,6 +3,7 @@
 #include "../Layer.h"
 #include "TextureTargets.h"
 #include "../External/glutil/MatrixStack.h"
+#include "../Utils/Assert.h"
 
 namespace Gorgon { namespace Graphics {
 
@@ -104,8 +105,7 @@ namespace Gorgon { namespace Graphics {
 				Draw(image, location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft());
 			}
 			else {
-				assert(false);
-				//!
+				Utils::NotImplemented();
 			}
 		}
 

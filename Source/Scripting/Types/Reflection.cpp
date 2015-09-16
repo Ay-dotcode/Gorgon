@@ -629,7 +629,7 @@ namespace Gorgon { namespace Scripting {
 							
 							out<<"Local variables: "<<std::endl;
 							
-							int maxlen=0;
+							unsigned maxlen=0;
 							for(auto var : vars) {
 								if(maxlen<var.first.length()) maxlen=var.first.length();
 							}

@@ -3,14 +3,18 @@
 #include "../Time.h"
 #include "../OS.h"
 #include "../Graphics.h"
+#include "../Utils/Assert.h"
 
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/extensions/Xinerama.h>
 #include <string.h>
 #include <unistd.h>
 
 #include <GL/glx.h>
+
 
 namespace Gorgon { 
 
@@ -40,6 +44,12 @@ namespace Gorgon {
 
 		/// Blank cursor to remove WindowManager cursor
 		Cursor blank_cursor;
+		
+		/// XRandr extension to query physical monitors
+		bool xrandr = false;
+		
+		/// Xinerama extension to query physical monitors, this is for legacy systems
+		bool xinerama = false;
 		
 		/// Copied text
 		std::string copiedtext;
@@ -72,7 +82,15 @@ namespace Gorgon {
 			Gorgon::internal::windowdata *getdata(const Window &w) {
 				return w.data;
 			}
-
+			
+			struct monitordata {
+				int index = -1;
+				RROutput out = 0;
+				
+				~monitordata() {
+				}
+			};
+			
 			intptr_t context;
 
 			void switchcontext(Gorgon::internal::windowdata &data) {
@@ -127,27 +145,6 @@ namespace Gorgon {
 		}
 		/// @endcond
 		
-		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
-			Screen  *screen_data  = XScreenOfDisplay(display, monitor);
-			int screen = DefaultScreen(WindowManager::display);
-			
-			Geometry::Rectangle rect{0, 0, XWidthOfScreen(screen_data), XHeightOfScreen(screen_data)};
-			
-			return GetX4Prop(XA_NET_WORKAREA, XRootWindow(display, screen), rect);
-		}
-		
-		Geometry::Rectangle GetScreenRegion(int monitor) {
-			Geometry::Rectangle rect;
-			rect.X=0;
-			rect.Y=0;
-			
-			Screen  *screen  = XScreenOfDisplay(display, monitor);
-			rect.Width =XWidthOfScreen(screen);
-			rect.Height=XHeightOfScreen(screen);
-			
-			return rect;
-		}
-		
 		void Initialize() {
 			//get display
 			display = XOpenDisplay(NULL);
@@ -170,8 +167,36 @@ namespace Gorgon {
 			Pixmap blank = XCreateBitmapFromData (display, DefaultRootWindow(display), data, 1, 1);
 			blank_cursor = XCreatePixmapCursor(display, blank, blank, &dummy, &dummy, 0, 0);
 			XFreePixmap (display, blank);
+			
+			//detect extensions
+			int eventbase, errorbase;
+			xrandr=(bool)XRRQueryExtension(display, &eventbase, &errorbase);
+			
+			xinerama=(bool)XineramaQueryExtension(display, &eventbase, &errorbase);
+			xinerama=xinerama && (bool)XineramaIsActive(display);
+			
+			Monitor::RefreshMonitors(true);
+		}
+		
+		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
+			auto &def=Monitor::Default();
+			return {def.GetLocation(), def.GetSize()};
+		}
+		
+		Geometry::Rectangle GetScreenRegion(int monitor) {
+			Geometry::Rectangle rect;
+			rect.X=0;
+			rect.Y=0;
+			
+			Screen  *screen  = XScreenOfDisplay(display, monitor);
+			rect.Width =XWidthOfScreen(screen);
+			rect.Height=XHeightOfScreen(screen);
+			
+			return rect;
 		}
 
+		//Clipboard related
+		
 		std::string GetClipboardText() {
 			::Window owner=XGetSelectionOwner(display, XA_CLIPBOARD);
 			if(!owner)
@@ -245,14 +270,98 @@ namespace Gorgon {
 			copiedtext=text;
 			XFlush(display);
 		}
+	
+		//Monitor Related
+		
+		Monitor::Monitor() {
+			data = new internal::monitordata;
+		}
+		
+		Monitor::~Monitor() {
+			delete data;
+		}
+		
+		void Monitor::RefreshMonitors(bool force) {
+			//check if change is needed or forced
+			
+			monitors.Destroy();
+			Monitor::primary=nullptr;
+			
+			if(xrandr) {
+				auto root=XDefaultRootWindow(display);
+				XRRScreenResources* sr = XRRGetScreenResources(display, root);
+				RROutput primary = XRRGetOutputPrimary(display, root);
+				
+				if(!sr) {
+					goto failsafe;
+				}
+				
+				XRRCrtcInfo*   ci = nullptr;
+				XRROutputInfo* oi = nullptr;
+				int ind = 0;
+				try {
+					for(int i=0; i<sr->ncrtc; i++) {
+						ci = XRRGetCrtcInfo(display, sr, sr->crtcs[i]);
+						
+						for(int j=0; j<ci->noutput; j++) {
+							oi = XRRGetOutputInfo(display, sr, ci->outputs[j]);
+							
+							if(oi->connection==0) {
+								auto monitor=new Monitor();
+								monitor->data->index=ind++;
+								monitor->data->out=ci->outputs[j];
+								monitor->size={ci->width, ci->height};
+								monitor->location={ci->x, ci->y};
+								monitor->isprimary=(ci->outputs[j]==primary);
+								if(monitor->IsPrimary()) Monitor::primary=monitor;
+								monitor->name=oi->name;
+								if(monitor->IsPrimary())
+									monitors.Insert(monitor, 0);
+								else
+									monitors.Add(monitor);
+							}
+							
+							XRRFreeOutputInfo(oi);
+							oi=nullptr;
+						}
+						
+						XRRFreeCrtcInfo(ci);
+						ci=nullptr;
+					}
+				}
+				catch(...) {
+					XRRFreeScreenResources(sr);
+					if(ci) {
+						XRRFreeCrtcInfo(ci);
+					}
+					if(oi) {
+						XRRFreeOutputInfo(oi);
+					}
+					throw;
+				}
+				
+				XRRFreeScreenResources(sr);
+			}
+			
+			
+			failsafe: //this is 
+			;
+		}
+		
+		bool Monitor::IsChangeEventSupported() {
+			return false;//xrandr;
+		}
+	
+		Event<> Monitor::Changed;
+		Containers::Collection<Monitor> Monitor::monitors;
+		Monitor *Monitor::primary=nullptr;
 	}
 	
 	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) : 
 	data(new internal::windowdata) {
 		
 #ifndef NDEBUG
-		//assert(WindowManager::display || "Window manager system is not initialized.");
-		throw std::runtime_error("Window manager system is not initialized.");
+		ASSERT(WindowManager::display, "Window manager system is not initialized.");
 #endif
 		
 		windows.Add(this);
@@ -309,9 +418,6 @@ namespace Gorgon {
 		XFree(sizehints);
 		
 		XSetWMProtocols(WindowManager::display, data->handle, &WindowManager::WM_DELETE_WINDOW, 1);
-
-		//!Replace with margins
-		//auto extents=WindowManager::GetX4Prop<Geometry::Bounds>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
 		
 		if(visible) {
 			XEvent event;
