@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.h>
 
-#include <Source/Containers/GarbageCollection.h>
+#include <Source/Gorgon/Containers/GarbageCollection.h>
 #include <stdint.h>
 #include <vector>
 #include <algorithm>

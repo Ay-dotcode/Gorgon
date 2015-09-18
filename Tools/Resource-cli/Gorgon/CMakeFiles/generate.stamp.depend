@@ -1,0 +1,16 @@
+# CMake generation dependency list for this directory.
+C:/Users/cengiz/Desktop/gorgon/CMakeLists.txt
+C:/Users/cengiz/Desktop/gorgon/Scripts/Compiler.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CheckCXXCompilerFlag.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CheckCXXSourceCompiles.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake
+C:/Users/cengiz/Desktop/gorgon/Scripts/Macros.cmake
+C:/Users/cengiz/Desktop/gorgon/Source/dir.cmake
+C:/Users/cengiz/Desktop/gorgon/Scripts/Testing.cmake
+C:/Users/cengiz/Desktop/gorgon/Testing/tests.cmake
+C:/Users/cengiz/Desktop/gorgon/Scripts/Doxygen.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindDoxygen.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/FindPackageMessage.cmake
+C:/Program Files (x86)/CMake/share/cmake-3.3/Modules/CMakeParseArguments.cmake
+C:/Users/cengiz/Desktop/gorgon/Scripts/Doxyfile.in

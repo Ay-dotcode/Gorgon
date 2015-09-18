@@ -48,7 +48,7 @@ INCLUDE(Scripts/Compiler.cmake)
 
 INCLUDE(Scripts/Macros.cmake)
 
-StartSource(Source)
+StartSource(Source/Gorgon)
 
 INCLUDE(Scripts/Testing.cmake)
 

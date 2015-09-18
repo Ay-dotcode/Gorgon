@@ -4,8 +4,8 @@
 
 #include <catch.h>
 
-#include <Source/Enum.h>
-#include <Source/String.h>
+#include <Source/Gorgon/Enum.h>
+#include <Source/Gorgon/String.h>
 
 namespace String = Gorgon::String;
 

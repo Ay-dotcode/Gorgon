@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\cengiz\Desktop\gorgon\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\cengiz\Desktop\gorgon\Tools\Resource-cli\Gorgon\Doxyfile" />
+    <CustomBuild Include="C:\Users\cengiz\Desktop\gorgon\Tools\Resource-cli\build\CMakeFiles\d5282f63cd627221076baeca60378fdc\docs.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\cengiz\Desktop\gorgon\Tools\Resource-cli\Gorgon\CMakeFiles\docs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{899B8F82-90B2-4437-9E7B-4741297DA3DE}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
