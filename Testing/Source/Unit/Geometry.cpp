@@ -3,11 +3,11 @@
 #define WINDOWS_LEAN_AND_MEAN
 
 #include <catch.h>
-#include <Source/Gorgon/Geometry/Point.h>
-#include <Source/Gorgon/Geometry/Size.h>
-#include <Source/Gorgon/Geometry/Bounds.h>
-#include <Source/Gorgon/Geometry/Rectangle.h>
-#include <Source/Gorgon/String.h>
+#include <Gorgon/Geometry/Point.h>
+#include <Gorgon/Geometry/Size.h>
+#include <Gorgon/Geometry/Bounds.h>
+#include <Gorgon/Geometry/Rectangle.h>
+#include <Gorgon/String.h>
 
 #undef Rectangle
 

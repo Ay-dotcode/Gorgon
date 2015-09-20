@@ -1,8 +1,9 @@
-#include <Source/Window.h>
-#include <Source/OS.h>
-#include <Source/Resource/File.h>
-#include <Source/Resource/Image.h>
-#include <Source/Graphics/Layer.h>
+#include <Gorgon/Window.h>
+#include <Gorgon/WindowManager.h>
+#include <Gorgon/OS.h>
+#include <Gorgon/Resource/File.h>
+#include <Gorgon/Resource/Image.h>
+#include <Gorgon/Graphics/Layer.h>
 
 using namespace Gorgon;
 

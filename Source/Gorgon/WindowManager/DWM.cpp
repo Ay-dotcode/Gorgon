@@ -176,6 +176,20 @@ namespace Gorgon {
 		extern intptr_t context;
 
 		namespace internal {
+			struct monitordata {
+				int index = -1;
+				HMONITOR handle;
+
+				static BOOL CALLBACK MonitorEnumProc(
+					_In_ HMONITOR hMonitor,
+					_In_ HDC      hdcMonitor,
+					_In_ LPRECT   lprcMonitor,
+					_In_ LPARAM   dwData
+					);
+
+				~monitordata() {}
+			};
+
 			void switchcontext(Gorgon::internal::windowdata &data) {
 				wglMakeCurrent(data.device_context, data.context);
 				context=reinterpret_cast<intptr_t>(&data);
@@ -199,6 +213,8 @@ namespace Gorgon {
 
 		void Initialize() {
 			defaultcursor=LoadCursor(NULL, IDC_ARROW);
+
+			Monitor::RefreshMonitors(true);
 		}
 
 		void SetClipboardText(const std::string &text) {
@@ -225,6 +241,56 @@ namespace Gorgon {
 				return "";
 			}
 		}
+
+		//Monitor Related
+		namespace internal {
+			BOOL CALLBACK monitordata::MonitorEnumProc(
+				_In_ HMONITOR hMonitor,
+				_In_ HDC      hdcMonitor,
+				_In_ LPRECT   lprcMonitor,
+				_In_ LPARAM   dwData
+				) 
+			{
+				MONITORINFOEX mi;
+				mi.cbSize=sizeof(MONITORINFOEX);
+				GetMonitorInfo(hMonitor, &mi);
+				auto mon=new Monitor();
+				mon->data->handle=hMonitor;
+				mon->name=mi.szDevice;
+				mon->size={mi.rcMonitor.right-mi.rcMonitor.left, mi.rcMonitor.bottom-mi.rcMonitor.top};
+				mon->location={mi.rcMonitor.left, mi.rcMonitor.top};
+				mon->isprimary=(mi.dwFlags&MONITORINFOF_PRIMARY)!=0;
+				if(mon->isprimary) {
+					Monitor::primary=mon;
+					Monitor::monitors.Insert(mon, 0);
+				}
+				else {
+					Monitor::monitors.Add(mon);
+				}
+				return true;
+			}
+		}
+		Monitor::Monitor() {
+			data = new internal::monitordata;
+		}
+
+		Monitor::~Monitor() {
+			delete data;
+		}
+
+		void Monitor::RefreshMonitors(bool force) {
+			monitors.Destroy();
+			primary=nullptr;
+			EnumDisplayMonitors(nullptr, nullptr, internal::monitordata::MonitorEnumProc, 0);
+		}
+
+		bool Monitor::IsChangeEventSupported() {
+			return false;
+		}
+
+		Event<> Monitor::Changed;
+		Containers::Collection<Monitor> Monitor::monitors;
+		Monitor *Monitor::primary=nullptr;
 	}
 
 	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) :

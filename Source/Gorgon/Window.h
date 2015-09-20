@@ -1,4 +1,5 @@
-/// @file WindowManager.h contains window manager dependent functionality.
+/// @file Window.h contains Window class. The functions of the Window class is defined in respective window manager
+/// source code file (e.g WindowManager/X11.cpp)
 
 #pragma once
 

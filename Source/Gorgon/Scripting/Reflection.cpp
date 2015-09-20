@@ -386,7 +386,7 @@ namespace Gorgon { namespace Scripting {
 		if(!elm.IsValid())
 			throw SymbolNotFoundException(name, SymbolType::Type, "Type "+name+" cannot be found.");
 		
-		if(!elm.Current().second.GetMemberType() != StaticMember::Namespace || elm.Current().second.IsInstanceable()) 
+		if(elm.Current().second.GetMemberType() != StaticMember::Namespace || elm.Current().second.IsInstanceable()) 
 			throw SymbolNotFoundException(name, SymbolType::Type, "Symbol "+name+" is not a type.");
 		
 		return dynamic_cast<const Namespace&>(elm.Current().second);
@@ -408,7 +408,7 @@ namespace Gorgon { namespace Scripting {
 		if(!elm.IsValid())
 			throw SymbolNotFoundException(name, SymbolType::Function, "Function "+name+" cannot be found.");
 		
-		if(!elm.Current().second.GetMemberType() != StaticMember::Function) 
+		if(elm.Current().second.GetMemberType() != StaticMember::Function) 
 			throw SymbolNotFoundException(name, SymbolType::Function, "Symbol "+name+" is not a function.");
 		
 		return dynamic_cast<const Scripting::Function&>(elm.Current().second);

@@ -4,8 +4,8 @@
 
 #undef CreateDirectory
 
-#include <Source/Gorgon/Filesystem.h>
-#include <Source/Gorgon/Filesystem/Iterator.h>
+#include <Gorgon/Filesystem.h>
+#include <Gorgon/Filesystem/Iterator.h>
 
 #include <iostream>
 #include <string>

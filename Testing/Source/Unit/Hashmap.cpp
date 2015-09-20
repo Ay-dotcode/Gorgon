@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.h>
 
-#include <Source/Gorgon/Containers/Hashmap.h>
+#include <Gorgon/Containers/Hashmap.h>
 #include <stdint.h>
 #include <vector>
 #include <algorithm>

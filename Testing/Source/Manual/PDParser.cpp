@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
-#include <Source/Scripting/Compilers.h>
-#include "Source/Console.h"
-#include "Source/Scripting.h"
+#include <Gorgon/Scripting/Compilers.h>
+#include <Gorgon/Console.h>
+#include <Gorgon/Scripting.h>
 
 using namespace Gorgon;
 using namespace Gorgon::Scripting;

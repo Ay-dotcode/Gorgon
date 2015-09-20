@@ -4,9 +4,9 @@
 
 #include <catch.h>
 
-#include <Source/Gorgon/String.h>
-#include <Source/Gorgon/String/Tokenizer.h>
-#include <Source/Gorgon/Types.h>
+#include <Gorgon/String.h>
+#include <Gorgon/String/Tokenizer.h>
+#include <Gorgon/Types.h>
 
 using namespace Gorgon;
 

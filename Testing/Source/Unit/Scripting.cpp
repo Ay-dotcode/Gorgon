@@ -4,11 +4,10 @@
 
 #include <catch.h>
 
-#include <Source/Gorgon/Scripting/Embedding.h>
-#include <Source/Gorgon/TMP.h>
-#include "Source/Gorgon/Geometry/Point.h"
-#include <Source/Gorgon/Filesystem/Iterator.h>
-#include "Source/Gorgon/Filesystem.h"
+#include <Gorgon/Scripting/Embedding.h>
+#include <Gorgon/Geometry/Point.h>
+#include <Gorgon/Filesystem/Iterator.h>
+#include <Gorgon/Filesystem.h>
 
 namespace Gorgon { namespace Geometry {
 	extern Scripting::Library LibGeometry;

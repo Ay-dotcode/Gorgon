@@ -1,12 +1,12 @@
 #include <iostream>
 
-#include <Source/Gorgon/Event.h>
-#include <Source/Gorgon/WindowManager.h>
-#include <Source/Gorgon/Window.h>
-#include <Source/Gorgon/OS.h>
-#include <Source/Gorgon/Resource/GID.h>
-#include <Source/Gorgon/SGuid.h>
-#include <Source/Gorgon/Resource/Folder.h>
+#include <Gorgon/Event.h>
+#include <Gorgon/WindowManager.h>
+#include <Gorgon/Window.h>
+#include <Gorgon/OS.h>
+#include <Gorgon/Resource/GID.h>
+#include <Gorgon/SGuid.h>
+#include <Gorgon/Resource/Folder.h>
 
 class A {
 public:

@@ -1,13 +1,13 @@
-#include <Source/Scripting.h>
-#include <Source/Scripting/VirtualMachine.h>
-#include <Source/Scripting/Embedding.h>
+#include <Gorgon/Scripting.h>
+#include <Gorgon/Scripting/VirtualMachine.h>
+#include <Gorgon/Scripting/Embedding.h>
 #include <thread>
 #include <iostream>
-#include "../../../Source/Scripting/VirtualMachine.h"
-#include <Source/Scripting/Compilers.h>
-#include <Source/Filesystem/Iterator.h>
-#include <Source/Filesystem.h>
-#include <Source/Enum.h>
+#include <Gorgon/Scripting/VirtualMachine.h>
+#include <Gorgon/Scripting/Compilers.h>
+#include <Gorgon/Filesystem/Iterator.h>
+#include <Gorgon/Filesystem.h>
+#include <Gorgon/Enum.h>
 
 using namespace Gorgon::Scripting;
 
