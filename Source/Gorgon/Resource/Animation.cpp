@@ -46,6 +46,19 @@ namespace Gorgon { namespace Resource {
 		return anim.release();
 	}
 
+	Animation::Animation(Animation &&other) {
+		Swap(other);
+	}
+
+	void Animation::Swap(Animation &other) {
+		using std::swap;
+
+		swap(other.duration, duration);
+		swap(other.frames, frames);
+
+		this->swap(other);
+	}
+
 	unsigned Animation::FrameAt(unsigned t) const {
 		auto count=frames.size();
 
@@ -53,19 +66,19 @@ namespace Gorgon { namespace Resource {
 		assert(count!=0 && "Animation has no frames");
 #endif
 
-		if(t>=(frames.end()-1)->Start)
+		if(t>=(frames.end()-1)->GetStart())
 			return count-1;
 
 		int guessed=(int)floor( ((float)t/duration)*count );
 
-		if(frames[guessed].Start>t) {
-			while(frames[guessed].Start>t)
+		if(frames[guessed].GetStart()>t) {
+			while(frames[guessed].GetStart()>t)
 				guessed--;
 
 			return guessed;
 		}
-		else if(frames[guessed+1].Start<t) {
-			while(frames[guessed+1].Start<t)
+		else if(frames[guessed+1].GetStart()<t) {
+			while(frames[guessed+1].GetStart()<t)
 				guessed++;
 
 			return guessed;

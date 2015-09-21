@@ -58,6 +58,8 @@ namespace Gorgon { namespace Resource {
 			swap(isloaded, other.isloaded);
 
 			Graphics::Texture::Swap(other);
+
+			this->swap(other);
 		}
 
 		/// Copy assignment is disabled

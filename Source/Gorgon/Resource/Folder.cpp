@@ -74,7 +74,7 @@ namespace Gorgon { namespace Resource {
 
 		auto &file=*f;
 
-		if(!load) { 
+		if(!load || shallow) { 
 			file.KeepOpen();
 		}
 

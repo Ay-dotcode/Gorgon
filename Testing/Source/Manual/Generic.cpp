@@ -16,10 +16,6 @@ int main() {
 		std::cout<<mon.GetName()<<": "<<mon.GetSize()<<" + "<<mon.GetLocation()<<(mon.IsPrimary() ? "*" : "")<<std::endl;
 	}
 	
-	for(auto &b : f.Root()) {
-		std::cout<<b.GetGID()<<std::endl;
-	}
-	
 	Window wind({105,97}, "test");
 	wind.ClosingEvent.Register([]{exit(0);});
 

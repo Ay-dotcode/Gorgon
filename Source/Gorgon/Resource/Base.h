@@ -122,6 +122,16 @@ namespace Gorgon {
 
 		protected:
 
+			void swap(Base &other) {
+				using std::swap;
+
+				swap(other.name, name);
+				swap(other.guid, guid);
+				swap(other.parent, parent);
+				swap(other.children, children);
+				swap(other.root, root);
+			}
+
 			/// Destroys the children of this resource
 			void destroychildren();
 

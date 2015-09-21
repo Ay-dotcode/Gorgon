@@ -59,15 +59,40 @@ private:
 };
 
 
-	/// This class represents a single frame in a resource animation
+/// This class represents a single frame in a resource animation
 class AnimationFrame {
 public:
 	/// Default constructor requires image. Default duration is set to 42 denoting 24fps 
-	AnimationFrame(Image &image, unsigned duration=42, unsigned start=0) : Duration(duration), Start(start), Visual(image) {}
+	AnimationFrame(Image &image, unsigned duration=42, unsigned start=0) : duration(duration), start(start), visual(&image) {}
 
-    unsigned Duration;
-    unsigned Start;
-    Image &Visual;
+	/// Returns the duration of this frame
+    unsigned GetDuration() const {
+		return duration;
+	}
+
+	/// Returns the starting time of this frame
+    unsigned GetStart() const {
+		return start;
+	}
+
+	/// Returns the image of this frame
+    Image &GetImage() const {
+		return *visual;
+	}
+
+	/// Returns the time that ending this frame will be changed. The returned time is out of the duration of this frame
+	unsigned GetEnd() const {
+		return start+duration;
+	}
+
+	/// Returns whether the given time is within the duration of this frame
+	bool IsIn(unsigned time) const  {
+		return time>=start && time-start<duration;
+	}
+
+private:
+	Image *visual;
+	unsigned duration, start;
 };
 
 
@@ -81,7 +106,7 @@ public:
     /// Move constructor
     Animation(Animation &&other);
 
-    /// Copy constructor is disabled, use Duplicate
+    /// Copy constructor is disabled, use Duplicate or DeepDuplicate
     Animation(const Animation&) = delete;
 
     /// Move assignment
@@ -93,8 +118,14 @@ public:
     /// Swaps two animation, used for move semantics
     void Swap(Animation &other);
 
-    /// Duplicates this resource
-    void Duplicate() const;
+    /// Duplicates this resource. Does not duplicate resource related data.
+	Animation Duplicate() const {
+		Animation ret;
+		ret.frames = frames;
+		ret.duration = duration;
+
+		return ret;
+	}
 
     /// Returns the Gorgon Identifier
     virtual GID::Type GetGID() const override {
@@ -104,7 +135,7 @@ public:
     /// Returns the size of the first image
     Geometry::Size GetSize() const {
         if(frames.size()>0)
-            return frames[0].Visual.GetSize();
+            return frames[0].GetImage().GetSize();
         return {0, 0};
     }
 
@@ -133,12 +164,12 @@ public:
 #endif
         time=time%GetDuration();
 
-        return frames[FrameAt(time)].Visual;
+        return frames[FrameAt(time)].GetImage();
     }
 
     /// Returns the image at the given frame
     Image &operator [](int frame) const {
-        return frames[frame].Visual;
+        return frames[frame].GetImage();
     }
 
     /// Returns which frame is at the given time. If the given time is larger than the animation
@@ -147,7 +178,7 @@ public:
 
     /// Returns the starting time of the given frame
     unsigned StartOf(unsigned frame) const {
-        return frames[frame].Start;
+        return frames[frame].GetStart();
     }
 
     /// Returns the duration of the animation
@@ -157,7 +188,7 @@ public:
 
     /// Returns the duration of the given frame
     unsigned GetDuration(unsigned frame) const {
-        return frames[frame].Duration;
+        return frames[frame].GetDuration();
     }
 
     /// This function allows loading animation with a function to load unknown resources. The supplied function should
