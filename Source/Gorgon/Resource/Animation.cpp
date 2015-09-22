@@ -31,11 +31,11 @@ namespace Gorgon { namespace Resource {
 		}
 
 		unsigned time=0;
-		auto images = anim->begin();
+		auto images = anim->cbegin();
 		
 		for(auto &dur : durations) {
 #ifndef NDEBUG
-			assert((images!=anim->end() && images->GetGID()==GID::Image) && "Animation is empty");
+			assert((images!=anim->cend() && images->GetGID()==GID::Image) && "Animation is empty");
 #endif
 			anim->frames.emplace_back(dynamic_cast<Image&>(*images), dur, time);
 			++images;

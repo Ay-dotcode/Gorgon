@@ -179,7 +179,7 @@ namespace Gorgon {
 		}
 		
 		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
-			auto &def=Monitor::Default();
+			auto &def=Monitor::Primary();
 			return {def.GetLocation(), def.GetSize()};
 		}
 		
@@ -310,8 +310,8 @@ namespace Gorgon {
 								auto monitor=new Monitor();
 								monitor->data->index=ind++;
 								monitor->data->out=ci->outputs[j];
-								monitor->size={ci->width, ci->height};
-								monitor->location={ci->x, ci->y};
+								monitor->size={(int)ci->width, (int)ci->height};
+								monitor->location={(int)ci->x, (int)ci->y};
 								monitor->isprimary=(ci->outputs[j]==primary);
 								if(monitor->IsPrimary()) Monitor::primary=monitor;
 								monitor->name=oi->name;

@@ -102,7 +102,17 @@ namespace Gorgon {
 			const Containers::Collection<Base>::ConstIterator end() const {
 				return Children.end();
 			}
-
+			
+			/// Beginning of children
+			const Containers::Collection<Base>::ConstIterator cbegin() const {
+				return Children.begin();
+			}
+			
+			/// End of children
+			const Containers::Collection<Base>::ConstIterator cend() const {
+				return Children.end();
+			}
+			
 			/// Safely deletes the resource. If the resource is being used more a single place, this method will not
 			/// delete the resource, instead it will decrement the reference count and returns false.
 			bool DeleteResource();
