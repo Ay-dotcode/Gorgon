@@ -10,6 +10,7 @@
 #include "Base.h"
 #include "Folder.h"
 #include "../Filesystem.h"
+#include "../IO/Stream.h"
 
 
 namespace Gorgon { namespace Resource {
@@ -201,112 +202,72 @@ namespace Gorgon { namespace Resource {
 		/// Reads an enumeration as 32-bit integer from the stream.
 		template<class E_>
 		E_ ReadEnum32() {
-			int32_t r;
-			file->read(reinterpret_cast<char*>(&r), sizeof(int32_t));
-
-			return E_(r);
+			return IO::ReadEnum32<E_>(*file);
 		}
 
 		/// Reads a 32-bit integer from the stream. A long is at least 32 bits, could be more
 		/// however, only 4 bytes will be read from the stream
 		long ReadInt32() {
-			int32_t r;
-			file->read(reinterpret_cast<char*>(&r), sizeof(int32_t));
+			return IO::ReadInt32(*file);
 
-			return r;
 		}
 
 		/// Reads a 32-bit unsigned integer from the stream. An unsigned long is at least 32 bits, could be more
 		/// however, only 4 bytes will be read from the stream
 		unsigned long ReadUInt32() {
-			uint32_t r;
-			file->read(reinterpret_cast<char*>(&r), sizeof(uint32_t));
-
-			return r;
+			return IO::ReadUInt32(*file);
 		}
 
 		/// Reads a 16-bit integer from the stream. An int is at least 16 bits, could be more
 		/// however, only 2 bytes will be read from the stream
 		int ReadInt16() {
-			int16_t r;
-			file->read(reinterpret_cast<char*>(&r), sizeof(int16_t));
-
-			return r;
+			return IO::ReadInt16(*file);
 		}
 
 		/// Reads a 16-bit unsigned integer from the stream. An unsigned int is at least 32 bits, could be more
 		/// however, only 2 bytes will be read from the stream
 		unsigned ReadUInt16() {
-			uint16_t r;
-			file->read(reinterpret_cast<char*>(&r), sizeof(uint16_t));
-
-			return r;
+			return IO::ReadUInt16(*file);
 		}
 
 		/// Reads an 8-bit integer from the stream. A char is at least 8 bits, could be more
 		/// however, only 1 byte will be read from the stream
 		char ReadInt8() {
-			int8_t r;
-			file->read(reinterpret_cast<char*>(&r), sizeof(int8_t));
-
-			return r;
+			return IO::ReadInt8(*file);
 		}
 
 		/// Reads an 8-bit unsigned integer from the stream. A char is at least 8 bits, could be more
 		/// however, only 1 byte will be read from the stream
 		Byte ReadUInt8() {
-			uint8_t r;
-			file->read(reinterpret_cast<char*>(&r), sizeof(uint8_t));
-
-			return r;
+			return IO::ReadUInt8(*file);
 		}
 
 		/// Reads a 32 bit IEEE floating point number from the file. This function only works on systems that
 		/// that have native 32 bit floats.
 		float ReadFloat() {
-			static_assert(sizeof(float) == 4, "Current implementation only supports 32bit floats");
-
-			float r;
-			file->read(reinterpret_cast<char*>(&r), 4);
-
-			return r;
+			return IO::ReadFloat(*file);
 		}
 
 		/// Reads a 64 bit IEEE double precision floating point number from the file. This function only works 
 		/// on systems that have native 64 bit doubles.
 		float ReadDouble() {
-			static_assert(sizeof(double) == 8, "Current implementation only supports 64bit floats");
-
-			float r;
-			file->read(reinterpret_cast<char*>(&r), 4);
-
-			return r;
+			return IO::ReadDouble(*file);
 		}
 
 		/// Reads a boolean value. In resource 1.0, booleans are stored as 32bit integers
 		bool ReadBool() {
-			return ReadInt32() != 0;
+			return IO::ReadBool(*file);
 		}
 
 		/// Reads a string from a given stream. Assumes the size of the string is appended before the string as
 		/// 32-bit unsigned value.
 		std::string ReadString() {
-			unsigned long size;
-			std::string ret;
-			size=ReadUInt32();
-			ret.resize(size);
-			file->read(&ret[0], size);
-
-			return ret;
+			return IO::ReadString(*file);
 		}
 
 		/// Reads a string with the given size.
 		std::string ReadString(unsigned long size) {
-			std::string ret;
-			ret.resize(size);
-			file->read(&ret[0], size);
-
-			return ret;
+			return IO::ReadString(*file, size);
 		}
 
 		/// Reads an array from the file. Array type should be given a fixed size construct, otherwise
@@ -315,7 +276,7 @@ namespace Gorgon { namespace Resource {
 		/// @param  size is the number of elements to be read
 		template<class T_>
 		void ReadArray(T_ *data, unsigned long size) {
-			file->read((char*)data, size*sizeof(T_));
+			IO::ReadArray<T_>(*file, data, size);
 		}
 
 		/// Reads a GID from the given stream.
@@ -325,7 +286,7 @@ namespace Gorgon { namespace Resource {
 
 		/// Reads a GUID from the given stream.
 		SGuid ReadGuid() {
-			return SGuid(*file);
+			return IO::ReadGuid(*file);
 		}
 
 		/// Reads chunk size from a stream
