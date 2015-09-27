@@ -51,14 +51,20 @@ namespace Gorgon {
 			/// This function tests whether this object has the given SGuid
 			virtual bool IsEqual(const SGuid &guid) const { return guid==this->guid; }
 			
+
 			/// Returns the guid of the object
 			virtual SGuid GetGuid() const { return guid; }
-			
+
+			/// Changes the guid of the object
+			virtual void SetGuid(SGuid guid) { this->guid=guid; }
+
 			
 			/// Returns the name of this object.
 			/// @warning The object names are loaded only upon request
 			const std::string &GetName() const { return name; }
 			
+			/// Sets the name of the object
+			virtual void SetName(const std::string &name) { this->name=name; }
 			
 			/// Returns whether this object has a parent
 			bool HasParent() const { return parent!=nullptr; }

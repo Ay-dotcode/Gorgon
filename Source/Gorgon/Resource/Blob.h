@@ -9,6 +9,7 @@
 namespace Gorgon { namespace Resource {
 	class File;
 	class Blob;
+	class Reader;
 	
 	////This is sound resource. It may contain 22kHz or 44kHz mono or stereo wave files.
 	/// Also supports LZMA compression. No native sound compression is supported.
@@ -34,16 +35,10 @@ namespace Gorgon { namespace Resource {
 		Type GetType() const { return type; }
 
 		/// Readies the blob for data writing. Erases previous data, sets current size and type. Also
-		/// marks blob as loaded.
-		std::vector<Byte> &Ready(unsigned long size, Type type=0) {
-			data.resize(0);
-			data.resize(size);
-
-			this->type=type;
-			isloaded=true;
-			
-			return data;
-		}
+		/// marks blob as loaded. Returned vector which can be used to assign data to it. The returned
+		/// vector should not be resized even though it will work (for now). It also discards any
+		/// reader connections.
+		std::vector<Byte> &Ready(unsigned long size, Type type=0);
 		
 		/// Destroys the data stored in the blob
 		void Destroy() { 
@@ -52,7 +47,7 @@ namespace Gorgon { namespace Resource {
 			isloaded=false;
 		}
 
-		/// Loads the blob from the disk. This function should only be called if the blob is not loaded yet.
+		/// Loads the blob from the disk. If blob is already loaded, this function will return true
 		bool Load();
 
 		/// Returns whether the blob data is loaded
@@ -74,19 +69,19 @@ namespace Gorgon { namespace Resource {
 		bool AppendFile(const std::string &filename);
 
 		/// This function loads a blob resource from the given file
-		static Blob *LoadResource(File &file, std::istream &data, unsigned long size);
+		static Blob *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
 
 	protected:
 
 		/// Loads the blob from the data stream
-		bool load(std::istream &data, unsigned long size, bool forceload);
+		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 
 		/// Entry point of this resource within the physical file. This value is stored for 
 		/// late loading purposes
 		unsigned long entrypoint = -1;
 
 		/// Used to handle late loading
-		std::weak_ptr<File> file;
+		std::shared_ptr<Reader> reader;
 
 		/// Whether this blob is loaded or not
 		bool isloaded = false;

@@ -3,8 +3,8 @@ SET(Local
 #	Animation.cpp
 	Base.h
 	Base.cpp
-#	Blob.h
-#	Blob.cpp
+	Blob.h
+	Blob.cpp
 	File.h
 	File.cpp
 	Folder.h

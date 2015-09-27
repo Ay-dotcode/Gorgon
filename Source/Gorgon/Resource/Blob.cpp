@@ -4,11 +4,10 @@
 
 namespace Gorgon { namespace Resource {
 
-	Blob *Blob::LoadResource(File &file, std::istream &data, unsigned long size) {
+	Blob *Blob::LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) {
 		auto blob=new Blob;
 
-		blob->file=file.Self();
-		if(!blob->load(data, size, false)) {
+		if(!blob->load(reader, size, false)) {
 			delete blob;
 			return nullptr;
 		}
@@ -16,60 +15,71 @@ namespace Gorgon { namespace Resource {
 		return blob;
 	}
 
-	bool Blob::Load() {
-		auto f=this->file.lock();
-		if(!f) {
-			return false;
+	std::vector<Byte>& Blob::Ready(unsigned long size, Type type) {
+		data.resize(0);
+		data.resize(size);
+
+		this->type=type;
+		isloaded=true;
+
+		if(reader) {
+			reader->NoLongerNeeded();
+			reader.reset();
 		}
 
-		auto &file=*f;
-
-		std::ifstream &data=file.open();
-
-		file.Seek(entrypoint-4);
-		
-		auto size=file.ReadChunkSize();
-
-		return load(data, size, true);
+		return data;
 	}
 
-	bool Blob::load(std::istream &data, unsigned long totalsize, bool forceload) {
+	bool Blob::Load() {
+		if(!reader)				return false;
+		if(!reader->TryOpen())	return false;
+		if(isloaded)			return true;
+
+		reader->Seek(entrypoint-4);
+		
+		auto size=reader->ReadChunkSize();
+
+		auto ret=load(reader, size, true);
+
+		if(ret && isloaded) {
+			reader->NoLongerNeeded();
+			reader.reset();
+		}
+	}
+
+	bool Blob::load(std::shared_ptr<Reader> reader, unsigned long totalsize, bool forceload) {
 		bool load=false;
 
-		auto target = data.tellg()+totalsize;
+		auto target = reader->Target(totalsize);
 
-		entrypoint = (unsigned long)data.tellg();
+		entrypoint = reader->Tell();
 
-		auto f=this->file.lock();
-		if(!f) {
-			return false;
-		}
-
-		auto &file=*f;
-
-		while(data.tellg()<target) {
-			auto gid = file.ReadGID();
-			auto size= file.ReadChunkSize();
+		while(target) {
+			auto gid = reader->ReadGID();
+			auto size= reader->ReadChunkSize();
 
 			GID::Type compression;
 
 			if(gid==GID::Blob_Props) {
-				file.ReadUInt32();
-				compression=file.ReadGID();
-				type=file.ReadInt32();
+				reader->ReadUInt32();
+				compression=reader->ReadGID();
+				type=reader->ReadInt32();
 
-				load=file.ReadBool() || forceload;
-				if(!load) file.KeepOpen();
+				load=reader->ReadBool() || forceload;
+				if(!load) {
+					reader->KeepOpen();
+					this->reader=reader;
+				}
 			}
 			else if(load && gid==GID::Blob_Data) {
-				data.read((char*)&this->data[0], size);
+				reader->ReadArray(&data[0], size);
 			} else if(load && gid==GID::Blob_Cmp_Data) {
 				if(size>0) {
 					Encoding::Lzma.Decode(data, this->data);
 				}
 			}
 			else {
-				file.LoadChunk(*this, data, gid, size, true);
+				reader->ReadCommonChunk(*this, gid, size);
 			}
 		}
 

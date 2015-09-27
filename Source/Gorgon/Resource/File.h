@@ -375,6 +375,8 @@ namespace Gorgon { namespace Resource {
 			return Mark(*this, Tell()+delta);
 		}
 
+		bool ReadCommonChunk(Base &self, GID::Type gid, unsigned long size);
+
 		/// @}
 
 	protected:

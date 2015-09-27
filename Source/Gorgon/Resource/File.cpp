@@ -2,35 +2,40 @@
 #include "../Encoding/LZMA.h"
 
 #include "File.h"
-/*#include "Blob.h"
-#include "Image.h"
-#include "Animation.h"*/
+#include "Blob.h"
+//#include "Image.h"
+//#include "Animation.h"
 
 
 
 namespace Gorgon { namespace Resource {
 
 	File::File() : root(new Folder), LoadNames(false), self(this, [](File*) {}) {
-		//Loaders[GID::Blob] ={GID::Blob, Blob::LoadResource};
 		Loaders[GID::Folder] ={GID::Folder, Folder::LoadResource};
+		Loaders[GID::Blob] ={GID::Blob, Blob::LoadResource};
 		//Loaders[GID::Image] ={GID::Image, Image::LoadResource};
 		//Loaders[GID::Animation_Image] ={GID::Animation_Image, Image::LoadResource};
 		//Loaders[GID::Animation] ={GID::Animation, Animation::LoadResource};
 	}
 
+	bool Resource::Reader::ReadCommonChunk(Base &self, GID::Type gid, unsigned long size) {
+		if(gid==GID::SGuid) {
+			self.SetGuid(ReadGuid());
+			return true;
+		}
+		else if(gid==GID::Name) {
+			self.SetName(ReadString(size));
+			return true;
+		}
+
+		return false;
+	}
+
 	Base *File::LoadChunk(Base &self, GID::Type gid, unsigned long size, bool skipobjects) {
 		ASSERT(reader, "Reader is not open");
 
-		if(gid==GID::SGuid) {
-			self.guid=reader->ReadGuid();
-			return nullptr;
-		}
-		else if(gid==GID::Name) {
-			self.name=reader->ReadString(size);
-			return nullptr;
-		}
-		else if(skipobjects) {
-			reader->EatChunk(size);
+		if(skipobjects) {
+			reader->ReadCommonChunk(self, gid, size);
 			return nullptr;
 		}
 
