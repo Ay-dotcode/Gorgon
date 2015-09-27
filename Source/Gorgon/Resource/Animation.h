@@ -9,6 +9,7 @@
 
 namespace Gorgon { namespace Resource {
 	class File;
+	class Reader;
 
 	class Animation;
 
@@ -235,12 +236,12 @@ namespace Gorgon { namespace Resource {
 		
 		/// This function allows loading animation with a function to load unknown resources. The supplied function should
 		/// call LoadObject function of File class if the given GID is unknown.
-		static Animation *LoadResourceWith(File &file, std::istream &data, unsigned long size,
-										std::function<Base*(File &, std::istream&, GID::Type, unsigned long)> loadfn);
+		static Animation *LoadResourceWith(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size,
+										std::function<Base*(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, GID::Type, unsigned long)> loadfn);
 
 		/// This function loads an animation resource from the given file
-		static Animation *LoadResource(File &file, std::istream &data, unsigned long size) {
-			return LoadResourceWith(file, data, size, {});
+		static Animation *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) {
+			return LoadResourceWith(file, reader, size, {});
 		}
 
 	protected:

@@ -52,7 +52,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	void PNG::decode(png::Reader *reader,Containers::Image &buffer) {
-		unsigned char **  row_pointers;
+		unsigned char **  row_pointers=nullptr;
 		Geometry::Size size;
 
 		Graphics::ColorMode mode;

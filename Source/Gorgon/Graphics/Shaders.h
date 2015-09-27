@@ -31,6 +31,7 @@ namespace Gorgon { namespace Graphics {
 			return *this;
 		}
 		
+		/// Sets texture coordinates
 		SimpleShader &SetTextureCoords(const glm::mat4x2 &value) {
 			static int id = LocateUniform("tex_coords");
 			UpdateUniform(id, value);
@@ -38,6 +39,7 @@ namespace Gorgon { namespace Graphics {
 			return *this;
 		}
 		
+		/// Sets diffuse texture
 		SimpleShader &SetDiffuse(GLuint value) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, value);

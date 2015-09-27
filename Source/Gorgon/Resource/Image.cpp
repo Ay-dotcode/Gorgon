@@ -17,6 +17,26 @@ namespace Gorgon { namespace Resource {
 		}
 	}
 
+	bool Image::ImportPNG(const std::string &filename) {
+		auto file=std::ifstream(filename, std::ios::binary);
+
+		if(!file.is_open() || !file.good()) return false;
+
+		Destroy();
+
+		data=new Containers::Image();
+		Encoding::Png.Decode(file, *data);
+
+		if(reader) {
+			reader->NoLongerNeeded();
+			reader.reset();
+		}
+
+		isloaded=true;
+
+		return true;
+	}
+
 	Image *Image::LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) {
 		auto image=new Image;
 
@@ -46,6 +66,8 @@ namespace Gorgon { namespace Resource {
 			reader->NoLongerNeeded();
 			reader.reset();
 		}
+
+		return ret;
 	}
 
 	bool Image::load(std::shared_ptr<Reader> reader, unsigned long totalsize, bool forceload) {
@@ -96,10 +118,10 @@ namespace Gorgon { namespace Resource {
 			}
 			else if(load && gid==GID::Image_Cmp_Data) {
 				Destroy();
-				this->data=new Containers::Image();
+				data=new Containers::Image();
 
 				if(compression==GID::PNG) {
-					Encoding::Png.Decode(reader->GetStream(), *this->data);
+					Encoding::Png.Decode(reader->GetStream(), *data);
 				}
 				else {
 					throw LoadError(LoadError::Unknown, "Unknown compression type.");

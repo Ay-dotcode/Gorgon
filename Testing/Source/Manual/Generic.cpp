@@ -16,7 +16,7 @@ int main() {
 		std::cout<<mon.GetName()<<": "<<mon.GetSize()<<" + "<<mon.GetLocation()<<(mon.IsPrimary() ? "*" : "")<<std::endl;
 	}
 	
-	Window wind({105,97}, "test");
+	Window wind({200,240}, "test");
 	wind.ClosingEvent.Register([]{exit(0);});
 
 	f.Prepare();
@@ -24,6 +24,12 @@ int main() {
 	wind.Add(l);
 	f.Root().Get<Resource::Image>(1).Draw(l, 0,0);
 	std::cout<<f.Root().Get<Resource::Image>(1).GetSize()<<std::endl;
+
+
+	Resource::Image im;
+	im.ImportPNG("../Source/Manual/0.png");
+	im.Prepare();
+	im.Draw(l, 20, 80);
 
 	//Graphics::Layer l2;
 	//Window wind2({400,0,300,200}, "test2");

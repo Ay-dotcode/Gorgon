@@ -1,6 +1,6 @@
 SET(Local
-#	Animation.h
-#	Animation.cpp
+	Animation.h
+	Animation.cpp
 	Base.h
 	Base.cpp
 	Blob.h

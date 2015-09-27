@@ -88,9 +88,15 @@ namespace Gorgon { namespace Resource {
 			return img;
 		}
 
+		void Destroy() {
+			Texture::Destroy();
+			delete data;
+			data=nullptr;
+		}
+
 		/// Destroys image data
 		virtual ~Image() {
-			if(data) delete data;
+			delete data;
 		}
 
 		/// if used as animation, this object will not be deleted
@@ -310,8 +316,9 @@ namespace Gorgon { namespace Resource {
 		virtual void Discard() override;
 
 		/// Imports a PNG file to become the new data of this image resource. Notice that importing does not
-		/// prepare the data to be drawn, a separate call to Prepare function is necessary
-		void ImportPNG(const std::string &filename);
+		/// prepare the data to be drawn, a separate call to Prepare function is necessary. Returns true on
+		/// success. False if file is not found. In other cases (eg. corrupt file), it will throw. 
+		bool ImportPNG(const std::string &filename);
 
 		/// Imports a JPEG file to become the new data of this image resource. Notice that importing does not
 		/// prepare the data to be drawn, a separate call to Prepare function is necessary

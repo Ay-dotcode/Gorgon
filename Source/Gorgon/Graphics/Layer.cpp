@@ -16,7 +16,7 @@ namespace Gorgon { namespace Graphics {
 		ActivateQuad();
 		auto &shader = SimpleShader::Use();
 		for(auto &surface : surfaces) {
-			shader.SetDiffuse(1);
+			shader.SetDiffuse(surface.TextureID());
 			shader.SetVertexCoords(surface.GetVertices(Transform.Top()));
 			shader.SetTextureCoords(surface.GetTextureCoords());
 

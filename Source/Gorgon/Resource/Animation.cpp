@@ -3,25 +3,31 @@
 
 namespace Gorgon { namespace Resource {
 
-	Animation *Animation::LoadResourceWith(File &file, std::istream &data, unsigned long totalsize, std::function<Base*(File &, std::istream&, GID::Type, unsigned long)> loadfn) {
-		auto target = data.tellg()+totalsize;
+	Animation *Animation::LoadResourceWith(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize, std::function<Base*(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, GID::Type, unsigned long)> loadfn) {
+		auto target = reader->Target(totalsize);
 
 		std::unique_ptr<Animation> anim{new Animation};
 		std::vector<uint32_t> durations;
 
-		while(data.tellg()<target) {
-			auto gid = file.ReadGID();
-			auto size= file.ReadChunkSize();
+		while(!target) {
+			auto gid = reader->ReadGID();
+			auto size= reader->ReadChunkSize();
 
 			if(gid==GID::Animation_Durations) {
 				durations.resize(size/4);
-				file.ReadArray(&durations[0], durations.size());
+				reader->ReadArray(&durations[0], durations.size());
 			} else {
 				Base *obj=nullptr;
+
+				if(reader->ReadCommonChunk(*anim, gid, size)) { 
+					;
+				}
 				if(loadfn) {
-					obj=loadfn(file, data, gid, size);
-				} else {
-					obj=file.LoadChunk(*anim, data, gid, size, true);
+					obj=loadfn(file, reader, gid, size);
+				}
+				else {
+					Utils::ASSERT_FALSE("Unknown chunk: "+String::From(gid));
+					reader->EatChunk(size);
 				}
 
 				if(obj) {
@@ -34,9 +40,8 @@ namespace Gorgon { namespace Resource {
 		auto images = anim->cbegin();
 		
 		for(auto &dur : durations) {
-#ifndef NDEBUG
-			assert((images!=anim->cend() && images->GetGID()==GID::Image) && "Animation is empty");
-#endif
+			ASSERT(images!=anim->cend() && images->GetGID()==GID::Image, "Animation is empty");
+
 			anim->frames.emplace_back(dynamic_cast<Image&>(*images), dur, time);
 			++images;
 			time+=dur;
