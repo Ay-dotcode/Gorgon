@@ -7,6 +7,7 @@
 
 namespace Gorgon { namespace Resource {
 	class File;
+	class Reader;
 	class Folder;
 
  	/// This is basic folder resource, it contains other resources. 
@@ -20,6 +21,9 @@ namespace Gorgon { namespace Resource {
 		/// Constructs a folder over a specific file, it does not add the folder to
 		/// the tree of the file though
 		Folder(File &file);
+
+
+		Folder(std::weak_ptr<File> file);
 
 		/// Destructor
 		virtual ~Folder() { }
@@ -154,13 +158,13 @@ namespace Gorgon { namespace Resource {
 		virtual void Prepare() override;
 
 		////This function loads a folder resource from the given file
-		static Folder *LoadResource(File &file, std::istream &data, unsigned long size);
+		static Folder *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> data, unsigned long size);
 
 	protected:
 
 		/// This is the actual load function. This function requires already opened and precisely 
 		/// positioned input stream
-		bool load(std::istream &data, unsigned long size, bool first, bool shallow, bool load);
+		bool load(std::shared_ptr<Reader> data, unsigned long size, bool first, bool shallow, bool load);
 
 
 		/// Entry point of this resource within the physical file. This value is stored for 
@@ -179,6 +183,9 @@ namespace Gorgon { namespace Resource {
 		/// The file object that is used to load this folder. If this folder is partially loaded
 		/// this file would be used to load its contents
 		std::weak_ptr<File> file;
+
+		/// This is the reader used to read this folder. Might be empty if the folder is loaded completely
+		std::shared_ptr<Reader> reader;
 
 
 	};

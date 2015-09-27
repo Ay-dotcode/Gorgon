@@ -9,6 +9,7 @@ SET(Local
 	GL
 	Graphics
 	Input
+	IO
 	OS
 	Resource
 	String

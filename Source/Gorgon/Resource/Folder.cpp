@@ -3,8 +3,10 @@
 
 namespace Gorgon { namespace Resource {
 
-	Folder::Folder(File &file) {
-		this->file=file.Self();
+	Folder::Folder(File &file) : Folder(file.Self()) { }
+
+	Folder::Folder(std::weak_ptr<File> file) : Folder() { 
+		this->file=file;
 	}
 
 	void Folder::Prepare() {
@@ -29,13 +31,13 @@ namespace Gorgon { namespace Resource {
 
 		auto &file=*f;
 
-		std::istream &data=file.open();
+		if(!reader->TryOpen()) return false;
 
-		file.Seek(entrypoint-4);
+		reader->Seek(entrypoint-4);
 
-		auto size=file.ReadChunkSize();
+		auto size=reader->ReadChunkSize();
 
-		auto ret=load(data, size, false, shallow, true);
+		auto ret=load(reader, size, false, shallow, true);
 
 		if(ret) {
 			//update mapping
@@ -57,43 +59,47 @@ namespace Gorgon { namespace Resource {
 			}
 
 			Resolve(file);
+
+			if(fullyloaded) {
+				this->reader->NoLongerNeeded();
+				this->reader.reset();
+			}
 		}
 
 		return ret;
 	}
 
-	bool Folder::load(std::istream &data, unsigned long totalsize, bool onlyfirst, bool shallow, bool load) {
-		unsigned long target = data.tellg()+totalsize;
+	bool Folder::load(std::shared_ptr<Reader> reader, unsigned long totalsize, bool onlyfirst, bool shallow, bool load) {
+		entrypoint = (unsigned long)reader->Tell();
 
-		entrypoint = (unsigned long)data.tellg();
+		auto target=reader->Target(totalsize);
 
-		auto f=this->file.lock();
-		if(!f) {
-			return false;
+		if(!load || onlyfirst) { 
+			reader->KeepOpen();
+			this->reader=reader;
 		}
 
-		auto &file=*f;
-
-		if(!load || shallow) { 
-			file.KeepOpen();
+		auto file=this->file.lock();
+		if(!file) {
+			throw LoadError(LoadError::NoFileObject, "There is no file object related with this folder.");
 		}
 
-		while(data.tellg()<target) {
-			auto gid = file.ReadGID();
-			auto size= file.ReadChunkSize();
+		while(target) {
+			auto gid = reader->ReadGID();
+			auto size= reader->ReadChunkSize();
 
 			if(gid==GID::Folder_Names) {
-				file.EatChunk(size);
+				reader->EatChunk(size);
 			}
 			else if(gid==GID::Folder_Props) {
-				reallyloadnames=file.ReadBool();
+				reallyloadnames=reader->ReadBool();
 
-				file.EatChunk(size-4);
+				reader->EatChunk(size-4);
 			}
 			else if(load && gid==GID::Folder) {
 				auto folder = new Folder(file);
 
-				if(!folder->load(data, size, false, false, !shallow)) {
+				if(!folder->load(reader, size, false, false, !shallow)) {
 					delete folder;
 
 					return false;
@@ -102,18 +108,18 @@ namespace Gorgon { namespace Resource {
 				children.Add(folder);
 
 				if(onlyfirst) {
-					data.seekg(target);
+					reader->Seek(target);
 					break;
 				}
 			}
 			else {
-				auto resource = file.LoadChunk(*this, data, gid, size, !load);
+				auto resource = file->LoadChunk(*this, gid, size, !load);
 
 				if(resource) {
 					children.Add(resource);
 
 					if(onlyfirst) {
-						data.seekg(target);
+						reader->Seek(target);
 						break;
 					}
 				}
@@ -121,10 +127,14 @@ namespace Gorgon { namespace Resource {
 			}
 		}
 
+		if(!onlyfirst && load) {
+			fullyloaded=true;
+		}
+
 		return true;
 	}
 
-	Folder *Folder::LoadResource(File &file, std::istream &data, unsigned long size) {
+	Folder *Folder::LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> data, unsigned long size) {
 		auto folder = new Folder(file);
 
 		if(!folder->load(data, size, false, false, true)) {

@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 
+#include "../Utils/Assert.h"
 #include "Base.h"
 #include "Folder.h"
 #include "../Filesystem.h"
@@ -14,6 +15,8 @@
 
 
 namespace Gorgon { namespace Resource {
+
+	class Reader;
 
 	/// This class defines a resource loader. The set of predefined resource loaders exists within
 	/// the resource system, however, it is possible to register custom loaders for custom objects.
@@ -27,7 +30,7 @@ namespace Gorgon { namespace Resource {
 		/// should return nullptr in case of an error, otherwise it should return the newly loaded object. 
 		/// The ownership of this object will be transferred to the parent of the object and it will be 
 		/// deleted with its parent unless detached from the tree.
-		typedef std::function<Base* (File &, std::istream &, unsigned long)> LoaderFunction;
+		typedef std::function<Base* (std::weak_ptr<File>, std::shared_ptr<Reader>, unsigned long)> LoaderFunction;
 
 		/// Filling constructor
 		Loader(GID::Type gid, LoaderFunction handler) : GID(gid), Handler(handler) { }
@@ -69,6 +72,9 @@ namespace Gorgon { namespace Resource {
 
 			/// Cannot open the given file
 			FileCannotBeOpened = 6,
+
+			/// There is no file object associated with the resource. Generally thrown during late loading
+			NoFileObject = 7,
 		};
 
 		/// Regular constructor, creates error text from error number
@@ -85,9 +91,348 @@ namespace Gorgon { namespace Resource {
 		ErrorType number;
 
 		/// Strings for error codes
-		static const std::string ErrorStrings[7];
+		static const std::string ErrorStrings[8];
 	};
 
+	class Reader {
+	public:
+
+		/// Marks a target position in file. Can be checked if it is reached.
+		/// Asserts to make sure target is not passed.
+		class Mark {
+		public:
+			/// Constructs a target using a reader and absolute file position.
+			/// Prefer using Reader::Target function to create a target.
+			Mark(Reader &reader, unsigned long target) :
+			reader(&reader), target(target) { }
+
+			/// Copy constructor
+			Mark(const Mark &) = default;
+
+			/// Checks if the target is reached
+			explicit operator bool() const {
+				auto pos=reader->Tell();
+				if(pos<target) return false;
+
+				ASSERT(pos==target, "Reading operation passed the target.");					
+					
+				return true;
+			}
+
+			/// Tells the position of this mark
+			unsigned long Tell() const {
+				return target;
+			}
+
+		private:
+			Reader *reader;
+			unsigned long target;
+		};
+
+		Reader() { }
+
+		virtual ~Reader() {
+		}
+
+		/// Request reader to keep reading stream open. There is an internal counter that makes 
+		/// sure that the reader is closed when it is no longer needed.
+		void KeepOpen() {
+			keepopenrequests++;
+		}
+
+		/// Marks that this reader is no longer needed. This action will decrement requests made
+		/// to keep the stream open. If no object requires this reader, it is closed. Note that
+		/// some readers cannot be reopened.
+		void NoLongerNeeded() {
+			if(--keepopenrequests) {
+				close();
+				stream=nullptr;
+			}
+		}
+
+		/// Opens the reader. If this operation fails, it will throw LoadError.
+		void Open() {
+			if(!stream) {
+				open(true);
+			}
+
+			ASSERT(stream, "Reader did not set the stream.");
+		}
+
+		/// Checks if the stream is open
+		bool IsOpen() const {
+			return stream;
+		}
+
+		/// Checks if the stream is open and it can be read from
+		bool IsGood() const {
+			return stream && stream->good();
+		}
+
+		/// Tries to open the stream, if it fails, this function returns false.
+		/// If this function returns true, read operations can be carried.
+		bool TryOpen() {
+			if(!stream) {
+				return open(false);
+			}
+
+			return true;
+		}
+
+		/// @name Platform independent data readers
+		/// @{
+		/// These functions allow platform independent data reading capability. In worst case, where the platform
+		/// cannot be supported, they stop compilation instead of generating incorrectly working system. These functions
+		/// might differ in encoding depending on the file version. Make sure a file is open before invoking these functions
+		/// no runtime checks will be performed.
+
+		/// Reads an enumeration as 32-bit integer from the stream.
+		template<class E_>
+		E_ ReadEnum32() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadEnum32<E_>(*stream);
+		}
+
+		/// Reads a 32-bit integer from the stream. A long is at least 32 bits, could be more
+		/// however, only 4 bytes will be read from the stream
+		long ReadInt32() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadInt32(*stream);
+		}
+
+		/// Reads a 32-bit unsigned integer from the stream. An unsigned long is at least 32 bits, could be more
+		/// however, only 4 bytes will be read from the stream
+		unsigned long ReadUInt32() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadUInt32(*stream);
+		}
+
+		/// Reads a 16-bit integer from the stream. An int is at least 16 bits, could be more
+		/// however, only 2 bytes will be read from the stream
+		int ReadInt16() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadInt16(*stream);
+		}
+
+		/// Reads a 16-bit unsigned integer from the stream. An unsigned int is at least 32 bits, could be more
+		/// however, only 2 bytes will be read from the stream
+		unsigned ReadUInt16() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadUInt16(*stream);
+		}
+
+		/// Reads an 8-bit integer from the stream. A char is at least 8 bits, could be more
+		/// however, only 1 byte will be read from the stream
+		char ReadInt8() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadInt8(*stream);
+		}
+
+		/// Reads an 8-bit unsigned integer from the stream. A char is at least 8 bits, could be more
+		/// however, only 1 byte will be read from the stream
+		Byte ReadUInt8() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadUInt8(*stream);
+		}
+
+		/// Reads a 32 bit IEEE floating point number from the file. This function only works on systems that
+		/// that have native 32 bit floats.
+		float ReadFloat() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadFloat(*stream);
+		}
+
+		/// Reads a 64 bit IEEE double precision floating point number from the file. This function only works 
+		/// on systems that have native 64 bit doubles.
+		float ReadDouble() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadDouble(*stream);
+		}
+
+		/// Reads a boolean value. In resource 1.0, booleans are stored as 32bit integers
+		bool ReadBool() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadBool(*stream);
+		}
+
+		/// Reads a string from a given stream. Assumes the size of the string is appended before the string as
+		/// 32-bit unsigned value.
+		std::string ReadString() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadString(*stream);
+		}
+
+		/// Reads a string with the given size.
+		std::string ReadString(unsigned long size) {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadString(*stream, size);
+		}
+
+		/// Reads an array from the file. Array type should be given a fixed size construct, otherwise
+		/// a mismatch between binary formats will cause trouble.
+		/// @param  data is the data to be read from the file
+		/// @param  size is the number of elements to be read
+		template<class T_>
+		void ReadArray(T_ *data, unsigned long size) {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			IO::ReadArray<T_>(*stream, data, size);
+		}
+
+		/// Reads a GID from the given stream.
+		GID::Type ReadGID() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return GID::Type(ReadUInt32());
+		}
+
+		/// Reads a GUID from the given stream.
+		SGuid ReadGuid() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadGuid(*stream);
+		}
+
+		/// Reads chunk size from a stream
+		unsigned long ReadChunkSize() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return ReadUInt32();
+		}
+
+		/// Removes a chunk of data with the given size from the stream
+		void EatChunk(long size) {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			stream->seekg(size, std::ios::cur);
+		}
+
+		/// Removes a chunk of data from the stream, the size will be read from the stream
+		void EatChunk() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			long size=ReadUInt32();
+			stream->seekg(size, std::ios::cur);
+		}
+
+		/// Tells the current position
+		unsigned long Tell() const {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return (unsigned long)stream->tellg();
+		}
+
+		/// Seeks to the given position
+		void Seek(unsigned long pos) {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			stream->seekg((std::streampos)pos, std::ios::beg);
+		}
+
+		/// Seeks to the given position
+		void Seek(const Mark &pos) {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			stream->seekg((std::streampos)pos.Tell(), std::ios::beg);
+		}
+
+		/// Creates mark to the the target that is delta distance from current
+		/// point in file
+		Mark Target(unsigned long delta) {
+			return Mark(*this, Tell()+delta);
+		}
+
+		/// @}
+
+	protected:
+		/// This function should close the stream. The pointer will be unset
+		/// by Reader class
+		virtual void close() = 0;
+
+		/// This function should open the stream and set stream member. If thrw is set
+		/// to true and stream cannot be opened, a LoadError should be thrown. Otherwise
+		/// this function is not allowed to throw.
+		virtual bool open(bool thrw) = 0;
+
+		/// This is the stream that will be used to read data from. Underlying readers
+		/// can have specialized copies of this member.
+		std::istream *stream = nullptr;
+
+	private:
+		int keepopenrequests = 0;
+	};
+
+	/// This is a file reader. Allows a Gorgon Resource to be loaded from a file
+	class FileReader : public Reader {
+	public:
+		/// Constructor requires a file to be opened later.
+		FileReader(const std::string &filename) : filename(filename) {
+			try {
+				this->filename=Filesystem::Canonical(filename);
+			} catch(...) { }
+		}
+
+
+	protected:
+		virtual void close() override {
+			delete file;
+		}
+
+		virtual bool open(bool thrw) override {
+			file = new std::ifstream(filename, std::ios::binary);
+
+			if(!file->is_open()) {
+				delete file;
+				if(thrw) {
+					throw LoadError(LoadError::FileNotFound, "Cannot open file: "+filename);
+				}
+
+				return false;
+			}
+
+			stream = file;
+			this->filename=Filesystem::Canonical(filename);
+
+			return true;
+		}
+
+	private:
+		std::string filename;
+		std::ifstream *file = nullptr;
+	};
 
 	/// This class represents a logical resource file. A file class is necessary for loading a resource
 	/// file from the disk. However, it is not required to create a resource tree in memory. Notice that 
@@ -102,7 +447,6 @@ namespace Gorgon { namespace Resource {
 		/// Destroys file object. If the root is not detached, it will destroy resource tree as well.
 		virtual ~File() {
 			delete root;
-			delete file; // deleting nullptr is safe
 		}
 
 		/// Returns the root folder of the file
@@ -131,8 +475,6 @@ namespace Gorgon { namespace Resource {
 
 			decltype(mapping) temp;
 			mapping.swap(temp);
-			delete file;
-			file=nullptr;
 		}
 
 		/// Destroys the Gorgon resource tree that this file holds. This file object can still be used after
@@ -140,17 +482,10 @@ namespace Gorgon { namespace Resource {
 		void Destroy() {
 			delete root;
 			root=new Folder;
-			filename="";
 			fileversion=0;
 			filetype=GID::None;
-			isloaded=false;
-			delete file;
-			file=nullptr;
 		}
 
-
-		/// Returns the filename used for the last load operation
-		std::string GetFilename() const { return filename; }
 
 		/// Loads the given file. A prepare function call is necessary to be able to use some resources.
 		/// The file could be left open if there are objects marked to be loaded when requested.
@@ -158,14 +493,22 @@ namespace Gorgon { namespace Resource {
 		/// file and tries to load uncompressed version.
 		/// @throws LoadError
 		/// @throws std::runtime_error
-		void LoadFile(const std::string &Filename) { load(Filename, false, false); }
+		void LoadFile(const std::string &filename) { 
+			createfilereader(filename);
+
+			load(false, false); 
+		}
 
 		/// Loads only the first object of the given file. Useful to retrieve header information.
 		/// If the filename not found and there is a filename.lzma file, this function extracts the compressed
 		/// file and tries to load uncompressed version.
 		/// @throws LoadError
 		/// @throws std::runtime_error
-		void LoadFirst(const std::string &Filename) { load(Filename, true, false); }
+		void LoadFirst(const std::string &filename) { 
+			createfilereader(filename);
+
+			load(true, false);
+		}
 
 		/// Loads only the first tier of objects. Only folders refrain from loading its children. Therefore,
 		/// any other object will be loaded fully. This function should be use carefully in presence of links
@@ -176,172 +519,25 @@ namespace Gorgon { namespace Resource {
 		/// file and tries to load uncompressed version.
 		/// @throws LoadError
 		/// @throws runtime_error
-		void LoadShallow(const std::string &Filename) { load(Filename, false, true); }
+		void LoadShallow(const std::string &filename) { 
+			createfilereader(filename);
 
-		/// Returns if a file is loaded
-		bool IsLoaded() const { return isloaded; }
+			load(false, true);
+		}
 
 		/// Loads a resource object from the given file, GID and size. This function may return nullptr
 		/// in cases that the object cannot be loaded or no loader exists for the given gid. Both cases
-		/// will throw in debug mode. This behavior is different from Editing library where it throws if
-		/// an object cannot be loaded and reports a warning and stores the data of unknown object in a
-		/// special container. Also handles SGuid and name
+		/// will throw in debug mode. Also handles SGuid and name
 		/// @warning This function is intended to be used while loading a resource. It can be used for
 		///          any purpose, however, would not be very useful outside its prime use
-		Base *LoadChunk(Base &self, std::istream &data, GID::Type gid, unsigned long size, bool skipobjects=false);
+		Base *LoadChunk(Base &self, GID::Type gid, unsigned long size, bool skipobjects=false);
 
-
-
-		/// @name Platform independent data readers
-		/// @{
-		/// These functions allow platform independent data reading capability. In worst case, where the platform
-		/// cannot be supported, they stop compilation instead of generating incorrectly working system. These functions
-		/// might differ in encoding depending on the file version. Make sure a file is open before invoking these functions
-		/// no runtime checks will be performed.
-
-		/// Reads an enumeration as 32-bit integer from the stream.
-		template<class E_>
-		E_ ReadEnum32() {
-			return IO::ReadEnum32<E_>(*file);
-		}
-
-		/// Reads a 32-bit integer from the stream. A long is at least 32 bits, could be more
-		/// however, only 4 bytes will be read from the stream
-		long ReadInt32() {
-			return IO::ReadInt32(*file);
-
-		}
-
-		/// Reads a 32-bit unsigned integer from the stream. An unsigned long is at least 32 bits, could be more
-		/// however, only 4 bytes will be read from the stream
-		unsigned long ReadUInt32() {
-			return IO::ReadUInt32(*file);
-		}
-
-		/// Reads a 16-bit integer from the stream. An int is at least 16 bits, could be more
-		/// however, only 2 bytes will be read from the stream
-		int ReadInt16() {
-			return IO::ReadInt16(*file);
-		}
-
-		/// Reads a 16-bit unsigned integer from the stream. An unsigned int is at least 32 bits, could be more
-		/// however, only 2 bytes will be read from the stream
-		unsigned ReadUInt16() {
-			return IO::ReadUInt16(*file);
-		}
-
-		/// Reads an 8-bit integer from the stream. A char is at least 8 bits, could be more
-		/// however, only 1 byte will be read from the stream
-		char ReadInt8() {
-			return IO::ReadInt8(*file);
-		}
-
-		/// Reads an 8-bit unsigned integer from the stream. A char is at least 8 bits, could be more
-		/// however, only 1 byte will be read from the stream
-		Byte ReadUInt8() {
-			return IO::ReadUInt8(*file);
-		}
-
-		/// Reads a 32 bit IEEE floating point number from the file. This function only works on systems that
-		/// that have native 32 bit floats.
-		float ReadFloat() {
-			return IO::ReadFloat(*file);
-		}
-
-		/// Reads a 64 bit IEEE double precision floating point number from the file. This function only works 
-		/// on systems that have native 64 bit doubles.
-		float ReadDouble() {
-			return IO::ReadDouble(*file);
-		}
-
-		/// Reads a boolean value. In resource 1.0, booleans are stored as 32bit integers
-		bool ReadBool() {
-			return IO::ReadBool(*file);
-		}
-
-		/// Reads a string from a given stream. Assumes the size of the string is appended before the string as
-		/// 32-bit unsigned value.
-		std::string ReadString() {
-			return IO::ReadString(*file);
-		}
-
-		/// Reads a string with the given size.
-		std::string ReadString(unsigned long size) {
-			return IO::ReadString(*file, size);
-		}
-
-		/// Reads an array from the file. Array type should be given a fixed size construct, otherwise
-		/// a mismatch between binary formats will cause trouble.
-		/// @param  data is the data to be read from the file
-		/// @param  size is the number of elements to be read
-		template<class T_>
-		void ReadArray(T_ *data, unsigned long size) {
-			IO::ReadArray<T_>(*file, data, size);
-		}
-
-		/// Reads a GID from the given stream.
-		GID::Type ReadGID() {
-			return GID::Type(ReadUInt32());
-		}
-
-		/// Reads a GUID from the given stream.
-		SGuid ReadGuid() {
-			return IO::ReadGuid(*file);
-		}
-
-		/// Reads chunk size from a stream
-		unsigned long ReadChunkSize() {
-			return ReadUInt32();
-		}
-
-		/// Removes a chunk of data with the given size from the stream
-		void EatChunk(long size) {
-			file->seekg(size, std::ios::cur);
-		}
-
-		/// Removes a chunk of data from the stream, the size will be read from the stream
-		void EatChunk() {
-			long size=ReadUInt32();
-			file->seekg(size, std::ios::cur);
-		}
-
-		void Seek(unsigned long pos) {
-			file->seekg(pos, std::ios::beg);
-		}
-
-		/// @}
-
-
-		/// Keeps the file open even after loading is completed. This guarantees that the file is readable at a later
-		/// point to read more data. Discard function closes the file.
-		void KeepOpen() {
-			keepopen=true;
-		}
-
-		/// **For resource loaders**, opens the datafile for reading. A file should at least partially loaded to be able to
-		/// perform this operation. Even if the file is discarded, it will be tried to open and returned.
-		/// @throw Filesystem::PathNotFoundError if the file no longer exists
-		/// @throw std::logic_error if file is never opened in the first place
-		std::ifstream &open() {
-			if(!isloaded) throw std::logic_error("File is not opened");
-
-			if(!file) {
-				file=new std::ifstream(filename);
-				if(!file->is_open()) {
-					file=nullptr;
-					throw Filesystem::PathNotFoundError("Cannot find: "+filename);
-				}
-			}
-
-			return *file;
-		}
-
-		/// A weak_ptr tied to this file instance. A weak pointer can be queried to determine whether the object really
-		/// exists. If this object is destroyed, weak_ptr::lock will return an empty std::shared_ptr, otherwise, it will
-		/// return a std::shared_ptr to this object.
+		/// Returns a weak reference to this file. This returned reference can then be used to test if this
+		/// object is still in memory.
 		std::weak_ptr<File> Self() const {
 			return self;
 		}
+
 
 		/// Resource Loaders. You may add or remove any loaders that is necessary. Initially a file loads all
 		/// internal resources. 
@@ -359,19 +555,13 @@ namespace Gorgon { namespace Resource {
 		/// @warning Stale information.
 		mutable std::map<SGuid, Base*> mapping;
 
+
 	protected:
 		/// This is the actual load function
-		void load(const std::string &filename, bool first, bool shallow);
+		void load(bool first, bool shallow);
 
 		/// The root folder, root changes while loading a file
 		Folder *root;
-
-		/// Whether the file is loaded from the disk
-		bool isloaded;
-
-		/// Name of the file that is loaded from the disk. This should be canonicalized to avoid directory change
-		/// issues.
-		std::string filename;
 
 		/// Type of the loaded file
 		GID::Type filetype;
@@ -380,39 +570,15 @@ namespace Gorgon { namespace Resource {
 		/// point to read more data.
 		bool keepopen=false;
 
-		/// The input file, can be left open. It should be deleted and set to nullptr after closing.
-		std::ifstream *file=nullptr;
-
 		/// Version of the loaded file. Currently there is only a single version. This version does not relate to
 		/// the versions of the resources in the resource file.
 		unsigned long fileversion;
 
+		/// The reader that would be used to read the file
+		std::shared_ptr<Reader> reader;
+
 	private:
+		void createfilereader(std::string filename);
 		std::shared_ptr<File> self;
 	};
 } }
-
-/// Adds an integer to streampos
-inline long operator +(const std::streampos &l, long r) {
-	return (long)l + r;
-}
-
-/// Adds an unsigned integer to streampos
-inline unsigned long operator +(const std::streampos &l, unsigned long r) {
-	return (unsigned long)l + r;
-}
-
-/// Adds an integer to streampos
-inline long operator -(const std::streampos &l, unsigned long r) {
-	return (long)l - r;
-}
-
-/// Adds an integer to streampos
-inline long operator -(const std::streampos &l, long r) {
-	return (long)l - r;
-}
-
-/// Adds an unsigned integer to streampos
-inline long operator -(const std::streampos &l, int r) {
-	return (unsigned long)l - r;
-}
