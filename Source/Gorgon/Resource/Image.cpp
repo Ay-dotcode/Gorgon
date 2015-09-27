@@ -17,13 +17,12 @@ namespace Gorgon { namespace Resource {
 		}
 	}
 
-	Image *Image::LoadResource(File &file, std::istream &data, unsigned long size) {
+	Image *Image::LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) {
 		auto image=new Image;
 
 		image->isloaded=false;
 
-		image->file=file.Self();
-		if(!image->load(data, size, false)) {
+		if(!image->load(reader, size, false)) {
 			delete image;
 			return nullptr;
 		}
@@ -32,57 +31,56 @@ namespace Gorgon { namespace Resource {
 	}
 
 	bool Image::Load() {
-		auto f=this->file.lock();
-		if(!f) {
-			return false;
+		if(isloaded)			return true;
+		if(!reader)				return false;
+		if(!reader->TryOpen())	return false;
+
+
+		reader->Seek(entrypoint-4);
+
+		auto size=reader->ReadChunkSize();
+
+		auto ret=load(reader, size, true);
+
+		if(ret && isloaded) {
+			reader->NoLongerNeeded();
+			reader.reset();
 		}
-
-		auto &file=*f;
-
-		std::ifstream &data=file.open();
-
-		file.Seek(entrypoint-4);
-
-		auto size=file.ReadChunkSize();
-
-		return load(data, size, true);
 	}
 
-	bool Image::load(std::istream &data, unsigned long totalsize, bool forceload) {
+	bool Image::load(std::shared_ptr<Reader> reader, unsigned long totalsize, bool forceload) {
+
+		auto target = reader->Target(totalsize);
+
+		entrypoint = reader->Tell();
+
+
 		bool load=false;
-
-		auto target = data.tellg()+totalsize;
-
-		entrypoint = (unsigned long)data.tellg();
-
-		auto f=this->file.lock();
-		if(!f) {
-			return false;
-		}
-
-		auto &file=*f;
-
 		auto width=0;
 		auto height=0;
 		auto mode=Graphics::ColorMode::Invalid;
 		GID::Type compression;
 
 
-		while(data.tellg()<target) {
-			auto gid = file.ReadGID();
-			auto size= file.ReadChunkSize();
+		while(!target) {
+			auto gid = reader->ReadGID();
+			auto size= reader->ReadChunkSize();
 
 			if(gid==GID::Image_Props) {
-				width=file.ReadInt32();
-				height=file.ReadInt32();
-				mode=file.ReadEnum32<Graphics::ColorMode>();
-				compression=file.ReadGID();
+				width=reader->ReadInt32();
+				height=reader->ReadInt32();
+				mode=reader->ReadEnum32<Graphics::ColorMode>();
+				compression=reader->ReadGID();
 
-				load=!file.ReadBool() || forceload;
+				load=!reader->ReadBool() || forceload;
 
-				if(!load) file.KeepOpen();
+				if(!load) {
+					reader->KeepOpen();
+					this->reader=reader;
+				}
 
-				file.EatChunk(size-20);
+				//for future compatibility
+				reader->EatChunk(size-20);
 			}
 			else if(load && gid==GID::Image_Data) {
 				Destroy();
@@ -92,20 +90,40 @@ namespace Gorgon { namespace Resource {
 					throw std::runtime_error("Image size mismatch");
 				}
 
-				file.ReadArray(this->data->RawData(), size);
+				reader->ReadArray(this->data->RawData(), size);
+
+				isloaded=true;
 			}
 			else if(load && gid==GID::Image_Cmp_Data) {
 				Destroy();
 				this->data=new Containers::Image();
 
-				Encoding::Png.Decode(data, *this->data);
+				if(compression==GID::PNG) {
+					Encoding::Png.Decode(reader->GetStream(), *this->data);
+				}
+				else {
+					throw LoadError(LoadError::Unknown, "Unknown compression type.");
+				}
 
 				if(this->data->GetMode()!=mode || this->data->GetSize()!=Geometry::Size{width, height}) {
 					throw std::runtime_error("Image size or mode mismatch");
 				}
+
+				isloaded=true;
+			}
+			else if(gid==GID::Image_Cmp_Props) {
+				if(size>4) {
+					throw LoadError(LoadError::VersionMismatch, "Old version image compression");
+				}
+				else {
+					reader->EatChunk(size);
+				}
 			}
 			else {
-				file.LoadChunk(*this, data, gid, size, true);
+				if(!reader->ReadCommonChunk(*this, gid, size)) {
+					Utils::ASSERT_FALSE("Unknown chunk: "+String::From(gid));
+					reader->EatChunk(size);
+				}
 			}
 		}
 
@@ -113,16 +131,9 @@ namespace Gorgon { namespace Resource {
 	}
 
 	bool Image::ExportPNG(const std::string &filename) {
-#ifndef NDEBUG
-		if(!data) {
-			throw std::runtime_error("Image data does not exists");
-		}
-		if(GetMode()!=Graphics::ColorMode::RGBA) {
-			throw std::runtime_error("Unsupported color mode");
-		}
-#else
-		return false;
-#endif
+		ASSERT(data, "Image data does not exists");
+
+		ASSERT(GetMode()==Graphics::ColorMode::RGBA, "Unsupported color mode");
 
 		std::ofstream file(filename, std::ios::binary);
 		if(!file.is_open())

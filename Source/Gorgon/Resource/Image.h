@@ -11,6 +11,7 @@
 namespace Gorgon { namespace Resource {
 	class File;
 	class Image;
+	class Reader;
 
 	/// This resource contains images. It allows draw, load, import, export functionality. An image resource may work
 	/// without its data buffer. In order to be drawn, an image object should be prepared. Both data and texture
@@ -54,7 +55,7 @@ namespace Gorgon { namespace Resource {
 			swap(data, other.data);
 			swap(compression, other.compression);
 			swap(entrypoint, other.entrypoint);
-			swap(file, other.file);
+			swap(reader, other.reader);
 			swap(isloaded, other.isloaded);
 
 			Graphics::Texture::Swap(other);
@@ -376,7 +377,7 @@ namespace Gorgon { namespace Resource {
 		bool IsLoaded() const { return isloaded; }
 
 		/// This function loads a image resource from the given file
-		static Image *LoadResource(File &file, std::istream &data, unsigned long size);
+		static Image *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
 
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.
@@ -385,7 +386,7 @@ namespace Gorgon { namespace Resource {
 		using Texture::GetImageSize;
 
 		/// Loads the image from the data stream
-		bool load(std::istream &data, unsigned long size, bool forceload);
+		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 
 		/// Container for the image data, could be null indicating its discarded
 		Containers::Image *data = nullptr;
@@ -398,7 +399,7 @@ namespace Gorgon { namespace Resource {
 		unsigned long entrypoint = -1;
 
 		/// Used to handle late loading
-		std::weak_ptr<File> file;
+		std::shared_ptr<Reader> reader;
 
 		/// Whether this image resource is loaded or not
 		bool isloaded = true;

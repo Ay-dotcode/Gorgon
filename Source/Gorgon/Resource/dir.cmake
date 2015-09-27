@@ -10,6 +10,6 @@ SET(Local
 	Folder.h
 	Folder.cpp
 	GID.h
-#	Image.h
-#	Image.cpp
+	Image.h
+	Image.cpp
 )

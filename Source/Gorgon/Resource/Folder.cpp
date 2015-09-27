@@ -70,7 +70,7 @@ namespace Gorgon { namespace Resource {
 	}
 
 	bool Folder::load(std::shared_ptr<Reader> reader, unsigned long totalsize, bool onlyfirst, bool shallow, bool load) {
-		entrypoint = (unsigned long)reader->Tell();
+		entrypoint = reader->Tell();
 
 		auto target=reader->Target(totalsize);
 
@@ -84,7 +84,7 @@ namespace Gorgon { namespace Resource {
 			throw LoadError(LoadError::NoFileObject, "There is no file object related with this folder.");
 		}
 
-		while(target) {
+		while(!target) {
 			auto gid = reader->ReadGID();
 			auto size= reader->ReadChunkSize();
 

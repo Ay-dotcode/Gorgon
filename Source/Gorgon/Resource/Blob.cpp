@@ -31,9 +31,9 @@ namespace Gorgon { namespace Resource {
 	}
 
 	bool Blob::Load() {
+		if(isloaded)			return true;
 		if(!reader)				return false;
 		if(!reader->TryOpen())	return false;
-		if(isloaded)			return true;
 
 		reader->Seek(entrypoint-4);
 		
@@ -54,14 +54,15 @@ namespace Gorgon { namespace Resource {
 
 		entrypoint = reader->Tell();
 
-		while(target) {
+		unsigned long uncompressed = 0;
+		while(!target) {
 			auto gid = reader->ReadGID();
 			auto size= reader->ReadChunkSize();
 
 			GID::Type compression;
 
 			if(gid==GID::Blob_Props) {
-				reader->ReadUInt32();
+				uncompressed=reader->ReadUInt32();
 				compression=reader->ReadGID();
 				type=reader->ReadInt32();
 
@@ -73,20 +74,27 @@ namespace Gorgon { namespace Resource {
 			}
 			else if(load && gid==GID::Blob_Data) {
 				reader->ReadArray(&data[0], size);
+
+				isloaded=true;
 			} else if(load && gid==GID::Blob_Cmp_Data) {
 				if(size>0) {
-					Encoding::Lzma.Decode(data, this->data);
+					Encoding::Lzma.Decode(reader->GetStream(), data, nullptr, uncompressed);
 				}
+
+				isloaded=true;
 			}
 			else {
-				reader->ReadCommonChunk(*this, gid, size);
+				if(!reader->ReadCommonChunk(*this, gid, size)) {
+					Utils::ASSERT_FALSE("Unknown chunk: "+String::From(gid));
+					reader->EatChunk(size);
+				}
 			}
 		}
 
 		return true;
 	}
 
-	bool Blob::ImportFile(const std::string &filename, int type) {
+	bool Blob::ImportFile(const std::string &filename, Type type) {
 		data.clear();
 		this->type=type;
 
@@ -103,6 +111,13 @@ namespace Gorgon { namespace Resource {
 			data.resize(data.size()+size);
 			memcpy(&data[data.size()-size],buff,size);
 		}
+
+		isloaded=true;
+		if(reader) {
+			reader->NoLongerNeeded();
+			reader.reset();
+		}
+
 		
 		return true;
 	}

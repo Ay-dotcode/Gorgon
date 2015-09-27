@@ -179,6 +179,15 @@ namespace Gorgon { namespace Resource {
 			return true;
 		}
 
+
+		/// This should be last resort, use if the actual stream is needed.
+		std::istream &GetStream() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return *stream;
+		}
+
 		/// @name Platform independent data readers
 		/// @{
 		/// These functions allow platform independent data reading capability. In worst case, where the platform

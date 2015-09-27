@@ -3,7 +3,7 @@
 
 #include "File.h"
 #include "Blob.h"
-//#include "Image.h"
+#include "Image.h"
 //#include "Animation.h"
 
 
@@ -13,7 +13,7 @@ namespace Gorgon { namespace Resource {
 	File::File() : root(new Folder), LoadNames(false), self(this, [](File*) {}) {
 		Loaders[GID::Folder] ={GID::Folder, Folder::LoadResource};
 		Loaders[GID::Blob] ={GID::Blob, Blob::LoadResource};
-		//Loaders[GID::Image] ={GID::Image, Image::LoadResource};
+		Loaders[GID::Image] ={GID::Image, Image::LoadResource};
 		//Loaders[GID::Animation_Image] ={GID::Animation_Image, Image::LoadResource};
 		//Loaders[GID::Animation] ={GID::Animation, Animation::LoadResource};
 	}
@@ -34,8 +34,7 @@ namespace Gorgon { namespace Resource {
 	Base *File::LoadChunk(Base &self, GID::Type gid, unsigned long size, bool skipobjects) {
 		ASSERT(reader, "Reader is not open");
 
-		if(skipobjects) {
-			reader->ReadCommonChunk(self, gid, size);
+		if(reader->ReadCommonChunk(self, gid, size) || skipobjects) {
 			return nullptr;
 		}
 
