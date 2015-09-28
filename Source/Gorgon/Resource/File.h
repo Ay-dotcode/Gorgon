@@ -94,6 +94,10 @@ namespace Gorgon { namespace Resource {
 		static const std::string ErrorStrings[8];
 	};
 
+	/**
+	 * This class allows resource objects to read data from a stream. It provides functionality
+	 * to read data platform independently.
+	 */
 	class Reader {
 	public:
 
@@ -406,6 +410,14 @@ namespace Gorgon { namespace Resource {
 		int keepopenrequests = 0;
 	};
 
+	/**
+	 * This class allows resource objects to save their data to a stream. It provides functionality
+	 * to write data platform independently. This class also allows back and forth writing to easy
+	 * writing Gorgon resources.
+	 */
+	class Writer {
+	};
+	
 	/// This is a file reader. Allows a Gorgon Resource to be loaded from a file
 	class FileReader : public Reader {
 	public:

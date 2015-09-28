@@ -18,7 +18,7 @@ namespace Gorgon { namespace Resource {
 	}
 
 	bool Image::ImportPNG(const std::string &filename) {
-		auto file=std::ifstream(filename, std::ios::binary);
+		std::ifstream file(filename, std::ios::binary);
 
 		if(!file.is_open() || !file.good()) return false;
 

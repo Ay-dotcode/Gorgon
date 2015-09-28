@@ -45,6 +45,8 @@ namespace Gorgon { namespace Resource {
 			reader->NoLongerNeeded();
 			reader.reset();
 		}
+		
+		return true;
 	}
 
 	bool Blob::load(std::shared_ptr<Reader> reader, unsigned long totalsize, bool forceload) {
