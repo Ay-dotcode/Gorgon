@@ -85,7 +85,7 @@ namespace Gorgon { namespace IO {
 
 	/// Reads a 64 bit IEEE double precision floating point number from the stream. This function only works 
 	/// on systems that have native 64 bit doubles.
-	inline float ReadDouble(std::istream &stream) {
+	inline double ReadDouble(std::istream &stream) {
 		static_assert(sizeof(double) == 8, "Current implementation only supports 64bit floats");
 
 		float r;
@@ -227,7 +227,7 @@ namespace Gorgon { namespace IO {
 	/// Writes a vector to the stream. Type of vector elements should be given a fixed size construct, otherwise
 	/// a mismatch between binary formats will cause trouble.
 	template<class T_>
-	inline void WriteVector(std::ostream &stream, const std::vector<T_> &data, unsigned long size) {
+	inline void WriteVector(std::ostream &stream, const std::vector<T_> &data) {
 		stream.write((const char*)data[0], data.size()*sizeof(T_));
 	}
 	

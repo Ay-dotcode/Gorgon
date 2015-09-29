@@ -9,10 +9,11 @@
 #include "../Utils/Assert.h"
 #include "../Filesystem.h"
 #include "../IO/Stream.h"
+#include "Base.h"
 
 namespace Gorgon { namespace Resource {
 
-	/// This error is fired from a write operations
+	/// This error is fired to a write operations
 	class WriteError : public std::runtime_error {
 	public:
 		
@@ -31,7 +32,7 @@ namespace Gorgon { namespace Resource {
 		};
 		
 		
-		/// Regular constructor, creates error text from error number
+		/// Regular constructor, creates error text to error number
 		WriteError(ErrorType number=Unknown) : runtime_error(ErrorStrings[number]), number(number) {
 			
 		}
@@ -55,6 +56,18 @@ namespace Gorgon { namespace Resource {
 	*/
 	class Writer {
 	public:
+		
+		class Marker {
+			friend class Writer;
+		public:
+			Marker(const Marker &) = default;
+			
+		private:
+			Marker(unsigned long pos) : pos(pos) { }
+			
+			unsigned long pos = -1;
+		};
+		
 		/// Any writer implementation should close and set the stream to nullptr in destructor
 		virtual ~Writer() {
 			ASSERT(stream==nullptr, "Stream is not closed by the opener");
@@ -73,6 +86,23 @@ namespace Gorgon { namespace Resource {
 			return stream && stream->good();
 		}
 
+		/// Tells the current position
+		unsigned long Tell() const {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			return (unsigned long)stream->tellp();
+		}
+
+		/// Seeks to the given position
+		void Seek(unsigned long pos) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			stream->seekp((std::streampos)pos, std::ios::beg);
+		}
+
+
 		/// @name Platform independent data readers
 		/// @{
 		/// These functions allow platform independent data reading capability. In worst case, where the platform
@@ -80,13 +110,244 @@ namespace Gorgon { namespace Resource {
 		/// might differ in encoding depending on the file version. Make sure a file is open before invoking these functions
 		/// no runtime checks will be performed during release.
 
+
+		/// Writes an enumeration as 32-bit integer to the stream.
+		template<class E_>
+		void WriteEnum32(E_ value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteEnum32(*stream, value);
+		}
+
+		/// Writes a 32-bit integer to the stream. A long is at least 32 bits, could be more
+		/// however, only 4 bytes will be written to the stream
+		void WriteInt32(long value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteInt32(*stream, value);
+		}
+
+		/// Writes a 32-bit unsigned integer to the stream. An unsigned long is at least 32 bits, could be more
+		/// however, only 4 bytes will be written to the stream
+		void WriteUInt32(unsigned long value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteUInt32(*stream, value);
+		}
+
+		/// Writes a 16-bit integer to the stream. An int is at least 16 bits, could be more
+		/// however, only 2 bytes will be written to the stream
+		void WriteInt16(int value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteInt16(*stream, value);
+		}
+
+		/// Writes a 16-bit unsigned integer to the stream. An unsigned int is at least 32 bits, could be more
+		/// however, only 2 bytes will be written to the stream
+		void WriteUInt16(unsigned value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteUInt16(*stream, value);
+		}
+
+		/// Writes an 8-bit integer to the stream. A char is at least 8 bits, could be more
+		/// however, only 1 byte will be written to the stream
+		void WriteInt8(char value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteInt8(*stream, value);
+		}
+
+		/// Writes an 8-bit unsigned integer to the stream. A char is at least 8 bits, could be more
+		/// however, only 1 byte will be written to the stream
+		void WriteUInt8(Byte value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteUInt8(*stream, value);
+		}
+
+		/// Writes a 32 bit IEEE floating point number to the file. This function only works on systems that
+		/// that have native 32 bit floats.
+		void WriteFloat(float value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteFloat(*stream, value);
+		}
+
+		/// Writes a 64 bit IEEE double precision floating point number to the file. This function only works 
+		/// on systems that have native 64 bit doubles.
+		void WriteDouble(double value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteDouble(*stream, value);
+		}
+
+		/// Writes a boolean value. In resource 1.0, booleans are stored as 32bit integers
+		void WriteBool(bool value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteBool(*stream, value);
+		}
+
+		/// Writes a string from a given stream. The size of the string is appended before the string as
+		/// 32-bit unsigned value.
+		void WriteStringWithSize(const std::string &value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteStringWithSize(*stream, value);
+		}
+
+		/// Writes a string without its size.
+		void WriteString(const std::string &value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteString(*stream, value);
+		}
+
+		/// Writes an array to the file. Array type should be given a fixed size construct, otherwise
+		/// a mismatch between binary formats will cause trouble.
+		/// @param  data is the data to be written to the file
+		/// @param  size is the number of elements to be read
+		template<class T_>
+		void WriteArray(const T_ *data, unsigned long size) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteArray<T_>(*stream, data, size);
+		}
+
+		/// Writes a vector to the stream. Type of vector elements should be given a fixed size construct, otherwise
+		/// a mismatch between binary formats will cause trouble.
+		template<class T_>
+		inline void WriteVector(const std::vector<T_> &data) {
+			IO::WriteVector(*stream, data);
+		}
 		
+		/// Writes a GID to the given stream.
+		void WriteGID(GID::Type value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			WriteUInt32(value.AsInteger());
+		}
+
+		/// Writes a GUID to the given stream.
+		void WriteGuid(const SGuid &value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteGuid(*stream, value);
+		}
+		
+		/// Writes chunk size to the stream
+		void WriteChunkSize(unsigned long value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			WriteUInt32(value);
+		}
 		
 		/// @}
 		
+		
+		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
+		Marker WriteObjectStart(Base &base) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			WriteGID(base.GetGID());
+			auto pos=Tell();
+			WriteChunkSize(-1);
+
+			WriteGID(GID::SGuid);
+			WriteChunkSize(0x08);
+			WriteGuid(base.GetGuid());
+			
+			if(base.GetName()!="") {
+				WriteGID(GID::Name);
+				WriteStringWithSize(base.GetName());
+			}
+
+			return {pos};
+		}
+		
+		
+		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
+		/// This variant allows a replacement GID.
+		Marker WriteObjectStart(Base &base, GID::Type type) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			WriteGID(type);
+			auto pos=Tell();
+			WriteChunkSize(-1);
+
+			WriteGID(GID::SGuid);
+			WriteChunkSize(0x08);
+			WriteGuid(base.GetGuid());
+			
+			if(base.GetName()!="") {
+				WriteGID(GID::Name);
+				WriteStringWithSize(base.GetName());
+			}
+
+			return {pos};
+		}
+		
+		/// Writes the start of a chunk. Should have a matching WriteEnd
+		Marker WriteChunkStart(GID::Type type) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			WriteGID(type);
+			auto pos=Tell();
+			WriteChunkSize(-1);
+
+			return {pos};
+		}
+		
+		/// Writes the header of a chunk. If the size of the chunk is hard to compute, it is possible
+		/// to use WriteChunkStart
+		void WriteChunkHeader(GID::Type type, unsigned long size) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			WriteGID(type);
+			WriteChunkSize(size);
+		}
+		
+		void WriteEnd(Marker marker) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			auto pos=Tell();
+
+			ASSERT(pos>=marker.pos+4, "Seeking before the start of the file.");
+			ASSERT(marker.pos<=pos, "Marker is after the current position.");
+			
+			auto size=pos-marker.pos-4;
+			
+			Seek(marker.pos);
+			WriteChunkSize(size);
+			Seek(pos);
+		}
+		
 	protected:
 		/// This function should close the stream. The pointer will be unset
-		/// by Reader class
+		/// by Writeer class
 		virtual void close() = 0;
 
 		/// This function should open the stream and set stream member. If thrw is set

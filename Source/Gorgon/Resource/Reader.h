@@ -157,6 +157,38 @@ namespace Gorgon { namespace Resource {
 			return *stream;
 		}
 
+		/// Tells the current position
+		unsigned long Tell() const {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return (unsigned long)stream->tellg();
+		}
+
+		/// Seeks to the given position
+		void Seek(unsigned long pos) {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			stream->seekg((std::streampos)pos, std::ios::beg);
+		}
+
+		/// Seeks to the given position
+		void Seek(const Mark &pos) {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			stream->seekg((std::streampos)pos.Tell(), std::ios::beg);
+		}
+
+		/// Creates mark to the the target that is delta distance from current
+		/// point in file
+		Mark Target(unsigned long delta) {
+			return Mark(*this, Tell()+delta);
+		}
+
+		bool ReadCommonChunk(Base &self, GID::Type gid, unsigned long size);
+
 		/// @name Platform independent data readers
 		/// @{
 		/// These functions allow platform independent data reading capability. In worst case, where the platform
@@ -238,7 +270,7 @@ namespace Gorgon { namespace Resource {
 
 		/// Reads a 64 bit IEEE double precision floating point number from the file. This function only works 
 		/// on systems that have native 64 bit doubles.
-		float ReadDouble() {
+		double ReadDouble() {
 			ASSERT(stream, "Reader is not opened.");
 			ASSERT(IsGood(), "Reader is failed.");
 
@@ -322,38 +354,6 @@ namespace Gorgon { namespace Resource {
 			long size=ReadUInt32();
 			stream->seekg(size, std::ios::cur);
 		}
-
-		/// Tells the current position
-		unsigned long Tell() const {
-			ASSERT(stream, "Reader is not opened.");
-			ASSERT(IsGood(), "Reader is failed.");
-
-			return (unsigned long)stream->tellg();
-		}
-
-		/// Seeks to the given position
-		void Seek(unsigned long pos) {
-			ASSERT(stream, "Reader is not opened.");
-			ASSERT(IsGood(), "Reader is failed.");
-
-			stream->seekg((std::streampos)pos, std::ios::beg);
-		}
-
-		/// Seeks to the given position
-		void Seek(const Mark &pos) {
-			ASSERT(stream, "Reader is not opened.");
-			ASSERT(IsGood(), "Reader is failed.");
-
-			stream->seekg((std::streampos)pos.Tell(), std::ios::beg);
-		}
-
-		/// Creates mark to the the target that is delta distance from current
-		/// point in file
-		Mark Target(unsigned long delta) {
-			return Mark(*this, Tell()+delta);
-		}
-
-		bool ReadCommonChunk(Base &self, GID::Type gid, unsigned long size);
 
 		/// @}
 
