@@ -37,7 +37,7 @@ namespace Gorgon { namespace Resource {
 		}
 		
 		/// A constructor to allow custom text for the error
-		LoadError(ErrorType number, const std::string &text) : runtime_error(text), number(number) {
+		WriteError(ErrorType number, const std::string &text) : runtime_error(text), number(number) {
 			
 		}
 		
@@ -55,6 +55,34 @@ namespace Gorgon { namespace Resource {
 	*/
 	class Writer {
 	public:
+		/// Any writer implementation should close and set the stream to nullptr in destructor
+		virtual ~Writer() {
+			ASSERT(stream==nullptr, "Stream is not closed by the opener");
+		}
+		
+		/// This should be last resort, use if the actual stream is needed.
+		std::ostream &GetStream() {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			return *stream;
+		}
+		
+		/// Checks if the stream is open and it can be written to
+		bool IsGood() const {
+			return stream && stream->good();
+		}
+
+		/// @name Platform independent data readers
+		/// @{
+		/// These functions allow platform independent data reading capability. In worst case, where the platform
+		/// cannot be supported, they stop compilation instead of generating incorrectly working system. These functions
+		/// might differ in encoding depending on the file version. Make sure a file is open before invoking these functions
+		/// no runtime checks will be performed during release.
+
+		
+		
+		/// @}
 		
 	protected:
 		/// This function should close the stream. The pointer will be unset

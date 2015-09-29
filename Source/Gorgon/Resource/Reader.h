@@ -162,7 +162,7 @@ namespace Gorgon { namespace Resource {
 		/// These functions allow platform independent data reading capability. In worst case, where the platform
 		/// cannot be supported, they stop compilation instead of generating incorrectly working system. These functions
 		/// might differ in encoding depending on the file version. Make sure a file is open before invoking these functions
-		/// no runtime checks will be performed.
+		/// no runtime checks will be performed during release.
 
 		/// Reads an enumeration as 32-bit integer from the stream.
 		template<class E_>
