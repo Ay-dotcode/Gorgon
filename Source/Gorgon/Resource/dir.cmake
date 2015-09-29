@@ -12,4 +12,6 @@ SET(Local
 	GID.h
 	Image.h
 	Image.cpp
+	Reader.h
+	Writer.h
 )

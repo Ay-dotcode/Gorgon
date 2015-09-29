@@ -142,7 +142,7 @@ namespace Gorgon { namespace Resource {
 
 		reader.reset(new FileReader(filename));
 	}
-
+	
 	const std::string LoadError::ErrorStrings[] ={
 		"Unknown error", 
 		"Cannot find the file specified", 
@@ -153,5 +153,11 @@ namespace Gorgon { namespace Resource {
 		"Cannot open the file specified.",
 		"No file object is associated with this resource."
 	};
-
+	
+	const std::string WriteError::ErrorStrings[] ={
+		"Unknown error", 
+		"Cannot create the file specified", 
+		"This object has no data to save"
+	};
+	
 } }
