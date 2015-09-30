@@ -245,6 +245,9 @@ namespace Gorgon { namespace Resource {
 		}
 
 	protected:
+		
+		void save(Writer &writer) override { }
+
 		/// Frame durations
 		std::vector<AnimationFrame> frames;
 

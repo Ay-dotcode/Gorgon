@@ -332,7 +332,18 @@ namespace Gorgon { namespace Resource {
 		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it.
 		bool ExportPNG(const std::string &filename);
-
+		
+		
+		/// Changes the compression mode. It only works if this image is saved along with a file. Currently only GID::None
+		/// and GID::PNG works.
+		void SetCompression(GID::Type compression) {
+			this->compression=compression;
+		}
+		
+		/// Returns the compression mode of this image resourc
+		GID::Type GetCompression() const {
+			return compression;
+		}
 
 		virtual const Image &CreateAnimation(Gorgon::Animation::Timer &controller) const override { 
 			return *this;
@@ -349,8 +360,7 @@ namespace Gorgon { namespace Resource {
 		Image Blur(float amount, int windowsize=-1) const;
 
 		/// Creates a smooth drop shadow by using alpha channel of this image. Resultant image has Grayscale_Alpha color
-		/// mode. This function creates another image since it is not possible to apply blur in place. You may use move 
-		/// assignment to modify the original `img = img.Blur(1.2);`
+		/// mode. This function creates another image.
 		/// @param  amount is variance of the blur. This value is measured in pixels however, image will have blurred
 		///         edges more than the given amount.
 		/// @param  windowsize is the size of the effect window. If the value is -1, the window size is automatically
@@ -394,12 +404,14 @@ namespace Gorgon { namespace Resource {
 
 		/// Loads the image from the data stream
 		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
+		
+		void save(Writer &writer) override;
 
 		/// Container for the image data, could be null indicating its discarded
 		Containers::Image *data = nullptr;
 
 		/// Compression mode
-		GID::Type compression;
+		GID::Type compression = GID::PNG;
 
 		/// Entry point of this resource within the physical file. This value is stored for 
 		/// late loading purposes

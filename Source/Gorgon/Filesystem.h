@@ -146,6 +146,16 @@ namespace Gorgon {
 		/// @return the current working directory Forward slashes are 
 		///         used as directory separator
 		std::string CurrentDirectory();
+		
+		/// Joins two given paths or a path and filename
+		inline std::string Join(std::string path1, const std::string &path2) {
+			if(path1.back()!='/') {
+				path1.push_back('/');
+			}
+			path1+=path2;
+			
+			return path1;
+		}
 
 		/// Returns the directory portion of a file path. If the file path does not contain any directory
 		/// related information, this method returns current directory. This function expects the input

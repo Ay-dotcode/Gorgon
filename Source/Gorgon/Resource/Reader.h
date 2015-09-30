@@ -389,14 +389,13 @@ namespace Gorgon { namespace Resource {
 
 	protected:
 		virtual void close() override {
-			delete file;
+			file.close();
 		}
 
 		virtual bool open(bool thrw) override {
-			file = new std::ifstream(filename, std::ios::binary);
+			file.open(filename, std::ios::binary);
 
-			if(!file->is_open()) {
-				delete file;
+			if(!file.is_open()) {
 				if(thrw) {
 					throw LoadError(LoadError::FileNotFound, "Cannot open file: "+filename);
 				}
@@ -404,7 +403,7 @@ namespace Gorgon { namespace Resource {
 				return false;
 			}
 
-			stream = file;
+			stream = &file;
 			this->filename=Filesystem::Canonical(filename);
 
 			return true;
@@ -412,7 +411,7 @@ namespace Gorgon { namespace Resource {
 
 	private:
 		std::string filename;
-		std::ifstream *file = nullptr;
+		std::ifstream file;
 	};
 
 } }

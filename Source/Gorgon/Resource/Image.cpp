@@ -151,6 +151,33 @@ namespace Gorgon { namespace Resource {
 
 		return true;
 	}
+	
+	void Image::save(Writer &writer) {
+		ASSERT(data, "Image data does not exists");
+		ASSERT(GetMode()==Graphics::ColorMode::RGBA, "Unsupported color mode");
+		
+		auto start = writer.WriteObjectStart(this);
+		
+		auto propstart = writer.WriteChunkStart(GID::Image_Props);
+		writer.WriteInt32(size.Width);
+		writer.WriteInt32(size.Height);
+		writer.WriteEnum32(GetMode());
+		writer.WriteGID(compression);
+		writer.WriteBool(false);
+		writer.WriteEnd(propstart);
+		
+		if(compression==GID::None) {
+			writer.WriteChunkHeader(GID::Image_Data, data->GetTotalSize());
+			writer.WriteArray(data->RawData(), data->GetTotalSize());
+		}
+		else if(compression==GID::PNG) {
+			auto cmpdat = writer.WriteChunkStart(GID::Image_Cmp_Data);
+			Encoding::Png.Encode(*data, writer.GetStream());
+			writer.WriteEnd(cmpdat);
+		}
+		
+		writer.WriteEnd(start);
+	}
 
 	bool Image::ExportPNG(const std::string &filename) {
 		ASSERT(data, "Image data does not exists");

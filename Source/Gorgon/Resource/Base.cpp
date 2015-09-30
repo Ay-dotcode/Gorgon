@@ -1,4 +1,5 @@
 #include "Base.h"
+#include "Writer.h"
 
 
 namespace Gorgon { namespace Resource {
@@ -53,5 +54,8 @@ namespace Gorgon { namespace Resource {
 
 		children.Clear();
 	}
-
+	void Base::Save(Writer &writer) {
+		ASSERT(writer.IsGood(), "Writer is not ready for saving the resource");
+		save(writer);
+	}
 } }

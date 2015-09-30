@@ -4,6 +4,7 @@
 #include "../SGuid.h"
 
 #include "GID.h"
+#include "Writer.h"
 
 namespace Gorgon {
 	class Window;
@@ -45,7 +46,6 @@ namespace Gorgon {
 			/// after Prepare function is issued. This data can be image pixel buffer
 			/// sound data buffer. Default behavior is to pass the request to children
 			virtual void Discard();
-
 
 			
 			/// This function tests whether this object has the given SGuid
@@ -122,6 +122,9 @@ namespace Gorgon {
 			/// Safely deletes the resource. If the resource is being used more a single place, this method will not
 			/// delete the resource, instead it will decrement the reference count and returns false.
 			bool DeleteResource();
+			
+			/// Saves this object into the given writer. The writer should be open prior to this call
+			void Save(Writer &writer);
 
 			
 			/// The children this object have. The elements in const collections are modifiable,
@@ -147,6 +150,8 @@ namespace Gorgon {
 				swap(other.children, children);
 				swap(other.root, root);
 			}
+			
+			virtual void save(Writer &writer) = 0;
 
 			/// Destroys the children of this resource
 			void destroychildren();

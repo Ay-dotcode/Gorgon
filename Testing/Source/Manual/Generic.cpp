@@ -26,11 +26,20 @@ int main() {
 	std::cout<<f.Root().Get<Resource::Image>(1).GetSize()<<std::endl;
 
 
-	Resource::Image im;
-	im.ImportPNG("../Source/Manual/0.png");
-	im.Prepare();
-	im.Draw(l, 20, 80);
-
+	//Resource::Image im;
+	//im.ImportPNG("../Source/Manual/0.png");
+	//im.Prepare();
+	//im.Draw(l, 20, 80);
+	
+	Resource::File f2;
+// 	f2.Root().SetName("abc");
+// 	f2.Root().Add(im);
+// 	f2.Save("../Source/Manual/test2.gor");
+	
+// 	f2.LoadFile("../Source/Manual/test2.gor");
+// 	f2.Prepare();
+// 	f2.Root().Get<Resource::Image>(0).Draw(l, 20, 80);
+	
 	//Graphics::Layer l2;
 	//Window wind2({400,0,300,200}, "test2");
 	//wind2.Add(l2);

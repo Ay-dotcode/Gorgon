@@ -40,8 +40,17 @@ namespace Gorgon { namespace Resource {
 		/// Adds a the given resource to this folder
 		void Add(Base &resource) { children.Add(resource); }
 		
+		/// Adds a the given resource to this folder
+		void Add(Base *resource) { 
+			children.Add(resource); }
+		
 		/// Inserts a the given resource to this folder before the given index
 		void Insert(Base &resource, long before) {
+			children.Insert(resource, before); 
+		}
+		
+		/// Inserts a the given resource to this folder before the given index
+		void Insert(Base *resource, long before) {
 			children.Insert(resource, before); 
 		}
 		
@@ -166,6 +175,7 @@ namespace Gorgon { namespace Resource {
 		/// positioned input stream
 		bool load(std::shared_ptr<Reader> data, unsigned long size, bool first, bool shallow, bool load);
 
+		void save(Writer &writer) override;
 
 		/// Entry point of this resource within the physical file. This value is stored for 
 		/// late loading purposes

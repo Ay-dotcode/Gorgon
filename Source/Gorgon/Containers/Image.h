@@ -237,6 +237,7 @@ namespace Gorgon {
 				return size;
 			}
 
+			/// Total size of this image in bytes
 			unsigned long GetTotalSize() const {
 				return size.Area()*bpp;
 			}

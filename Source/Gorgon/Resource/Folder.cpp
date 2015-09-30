@@ -134,6 +134,19 @@ namespace Gorgon { namespace Resource {
 		return true;
 	}
 
+	void Folder::save(Writer &writer) {
+		auto start=writer.WriteObjectStart(this);
+		
+		writer.WriteChunkHeader(GID::Folder_Props, 4);
+		writer.WriteBool(reallyloadnames);
+		
+		for(auto &base : children) {
+			base.Save(writer);
+		}
+		
+		writer.WriteEnd(start);
+	}
+	
 	Folder *Folder::LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> data, unsigned long size) {
 		auto folder = new Folder(file);
 

@@ -10,12 +10,12 @@
 
 namespace Gorgon { namespace Resource {
 
-	File::File() : root(new Folder), LoadNames(false), self(this, [](File*) {}) {
-		Loaders[GID::Folder] ={GID::Folder, Folder::LoadResource};
-		Loaders[GID::Blob] ={GID::Blob, Blob::LoadResource};
-		Loaders[GID::Image] ={GID::Image, Image::LoadResource};
-		Loaders[GID::Animation_Image] ={GID::Animation_Image, Image::LoadResource};
-		Loaders[GID::Animation] ={GID::Animation, Animation::LoadResource};
+	File::File() : root(new Folder), self(this, [](File*) {}) {
+		Loaders[GID::Folder] 			= {GID::Folder			, Folder::LoadResource};
+		Loaders[GID::Blob] 				= {GID::Blob			, Blob::LoadResource};
+		Loaders[GID::Image]  			= {GID::Image			, Image::LoadResource};
+		Loaders[GID::Animation_Image] 	= {GID::Animation_Image	, Image::LoadResource};
+		Loaders[GID::Animation] 		= {GID::Animation		, Animation::LoadResource};
 	}
 
 	bool Resource::Reader::ReadCommonChunk(Base &self, GID::Type gid, unsigned long size) {
@@ -59,8 +59,6 @@ namespace Gorgon { namespace Resource {
 	}
 
 	void File::load(bool first, bool shallow) {
-		delete root;
-
 		reader->Open();
 		if(!reader->IsGood()) {
 			throw LoadError(LoadError::FileCannotBeOpened);
@@ -92,11 +90,14 @@ namespace Gorgon { namespace Resource {
 			unsigned long size=reader->ReadUInt32();
 
 			//Load first element
+			delete root;
 			root=new Folder(*this);
 			root->load(reader, size, first, shallow, true);
 
-			if(!root)
+			if(!root) {
+				root=new Folder(*this);
 				throw LoadError(LoadError::Containment);
+			}
 		}
 		catch(...) {
 			root=new Folder;
@@ -142,6 +143,64 @@ namespace Gorgon { namespace Resource {
 
 		reader.reset(new FileReader(filename));
 	}
+	
+	void File::save() {
+		writer->open(true);
+		
+		writer->WriteString("GORGON");
+		writer->WriteUInt32(0x00010000);
+		writer->WriteUInt32(filetype.AsInteger());
+		
+		this->root->save(*writer);		
+		
+		
+		writer->close();
+	}
+	
+	/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
+	Writer::Marker Writer::WriteObjectStart(Base &base) {
+		ASSERT(stream, "Writer is not opened.");
+		ASSERT(IsGood(), "Writer is failed.");
+
+		WriteGID(base.GetGID());
+		auto pos=Tell();
+		WriteChunkSize(-1);
+
+		WriteGID(GID::SGuid);
+		WriteChunkSize(0x08);
+		WriteGuid(base.GetGuid());
+		
+		if(base.GetName()!="") {
+			WriteGID(GID::Name);
+			WriteStringWithSize(base.GetName());
+		}
+
+		return {pos};
+	}
+	
+	
+	/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
+	/// This variant allows a replacement GID.
+	Writer::Marker Writer::WriteObjectStart(Base &base, GID::Type type) {
+		ASSERT(stream, "Writer is not opened.");
+		ASSERT(IsGood(), "Writer is failed.");
+
+		WriteGID(type);
+		auto pos=Tell();
+		WriteChunkSize(-1);
+
+		WriteGID(GID::SGuid);
+		WriteChunkSize(0x08);
+		WriteGuid(base.GetGuid());
+		
+		if(base.GetName()!="") {
+			WriteGID(GID::Name);
+			WriteStringWithSize(base.GetName());
+		}
+		
+		return {pos};
+	}
+	
 	
 	const std::string LoadError::ErrorStrings[] ={
 		"Unknown error", 

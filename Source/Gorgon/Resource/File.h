@@ -93,7 +93,7 @@ namespace Gorgon { namespace Resource {
 		/// destroy is issued
 		void Destroy() {
 			delete root;
-			root=new Folder;
+			root=new Folder(*this);
 			fileversion=0;
 			filetype=GID::None;
 		}
@@ -136,6 +136,14 @@ namespace Gorgon { namespace Resource {
 
 			load(false, true);
 		}
+		
+		/// Saves this file to the disk using the given filename. This operation will over write if the file exists.
+		/// May throw WriteError
+		void Save(const std::string &filename) {
+			writer.reset(new FileWriter(filename));
+			save();
+		}
+		
 
 		/// Loads a resource object from the given file, GID and size. This function may return nullptr
 		/// in cases that the object cannot be loaded or no loader exists for the given gid. Both cases
@@ -144,6 +152,7 @@ namespace Gorgon { namespace Resource {
 		///          any purpose, however, would not be very useful outside its prime use
 		Base *LoadChunk(Base &self, GID::Type gid, unsigned long size, bool skipobjects=false);
 
+		
 		/// Returns a weak reference to this file. This returned reference can then be used to test if this
 		/// object is still in memory.
 		std::weak_ptr<File> Self() const {
@@ -154,12 +163,7 @@ namespace Gorgon { namespace Resource {
 		/// Resource Loaders. You may add or remove any loaders that is necessary. Initially a file loads all
 		/// internal resources. 
 		std::map<GID::Type, Loader>	 Loaders;
-
-		/// Whether to load names or not. Notice that this value effects if the objects have indeed a name.
-		/// Additionally, folders will build named indexes if significant names property is set. This prevents
-		/// unnecessary traversal of non properly named directories. Even though mappings are not built, if
-		/// this variable is set, all existing names will be loaded.
-		bool LoadNames = false;
+		
 
 		/// **INTERNAL**, allows guid to object mapping. This information is not kept fresh about changes in the
 		/// tree. This information is used for link and object tracking and is consumed right after file is
@@ -171,6 +175,9 @@ namespace Gorgon { namespace Resource {
 	protected:
 		/// This is the actual load function
 		void load(bool first, bool shallow);
+		
+		/// This function performs the save operation
+		void save();
 
 		/// The root folder, root changes while loading a file
 		Folder *root;
@@ -188,6 +195,8 @@ namespace Gorgon { namespace Resource {
 
 		/// The reader that would be used to read the file
 		std::shared_ptr<Reader> reader;
+		
+		std::shared_ptr<Writer> writer;
 
 	private:
 		void createfilereader(std::string filename);

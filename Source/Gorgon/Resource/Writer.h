@@ -9,9 +9,10 @@
 #include "../Utils/Assert.h"
 #include "../Filesystem.h"
 #include "../IO/Stream.h"
-#include "Base.h"
 
 namespace Gorgon { namespace Resource {
+	
+	class Base;
 
 	/// This error is fired to a write operations
 	class WriteError : public std::runtime_error {
@@ -55,12 +56,18 @@ namespace Gorgon { namespace Resource {
 	* writing Gorgon resources.
 	*/
 	class Writer {
+		friend class File;
 	public:
 		
 		class Marker {
 			friend class Writer;
 		public:
 			Marker(const Marker &) = default;
+			
+			~Marker() { 
+				if(pos!=-1) 
+					Utils::ASSERT_FALSE("Marker is not ended.");
+			}
 			
 		private:
 			Marker(unsigned long pos) : pos(pos) { }
@@ -264,47 +271,24 @@ namespace Gorgon { namespace Resource {
 		
 		
 		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
-		Marker WriteObjectStart(Base &base) {
-			ASSERT(stream, "Writer is not opened.");
-			ASSERT(IsGood(), "Writer is failed.");
-
-			WriteGID(base.GetGID());
-			auto pos=Tell();
-			WriteChunkSize(-1);
-
-			WriteGID(GID::SGuid);
-			WriteChunkSize(0x08);
-			WriteGuid(base.GetGuid());
-			
-			if(base.GetName()!="") {
-				WriteGID(GID::Name);
-				WriteStringWithSize(base.GetName());
-			}
-
-			return {pos};
-		}
+		Marker WriteObjectStart(Base &base);
 		
 		
 		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
+		Marker WriteObjectStart(Base *base) {
+			ASSERT(base, "Object cannot be nullptr");
+			return WriteObjectStart(*base);
+		}
+		
+		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
 		/// This variant allows a replacement GID.
-		Marker WriteObjectStart(Base &base, GID::Type type) {
-			ASSERT(stream, "Writer is not opened.");
-			ASSERT(IsGood(), "Writer is failed.");
-
-			WriteGID(type);
-			auto pos=Tell();
-			WriteChunkSize(-1);
-
-			WriteGID(GID::SGuid);
-			WriteChunkSize(0x08);
-			WriteGuid(base.GetGuid());
-			
-			if(base.GetName()!="") {
-				WriteGID(GID::Name);
-				WriteStringWithSize(base.GetName());
-			}
-
-			return {pos};
+		Marker WriteObjectStart(Base &base, GID::Type type);
+		
+		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
+		/// This variant allows a replacement GID.
+		Marker WriteObjectStart(Base *base, GID::Type type) {
+			ASSERT(base, "Object cannot be nullptr");
+			return WriteObjectStart(*base, type);
 		}
 		
 		/// Writes the start of a chunk. Should have a matching WriteEnd
@@ -329,7 +313,8 @@ namespace Gorgon { namespace Resource {
 			WriteChunkSize(size);
 		}
 		
-		void WriteEnd(Marker marker) {
+		/// This function performs writes necessary to end a chunk that is represented by the marker.
+		void WriteEnd(Marker &marker) {
 			ASSERT(stream, "Writer is not opened.");
 			ASSERT(IsGood(), "Writer is failed.");
 
@@ -343,6 +328,8 @@ namespace Gorgon { namespace Resource {
 			Seek(marker.pos);
 			WriteChunkSize(size);
 			Seek(pos);
+			
+			marker.pos=-1;
 		}
 		
 	protected:
@@ -360,4 +347,45 @@ namespace Gorgon { namespace Resource {
 		std::ostream *stream = nullptr;
 
 	};
+	
+	
+	/// Allows data to be written to a file
+	class FileWriter : public Writer {
+	public:
+		/// Constructs a new object with the given filename
+		FileWriter(const std::string &filename) : filename(filename) {
+			try {
+				auto path=Filesystem::GetDirectory(filename);
+				auto file=Filesystem::GetFile(filename);
+				
+				this->filename=Filesystem::Join(Filesystem::Canonical(path), file);
+			}
+			catch(...) {}
+		}
+	
+	protected:
+		virtual void close() override {
+			file.close();
+		}
+		
+		virtual bool open(bool thrw) override {
+			file.open(filename);
+			if(!file.is_open()) {
+				if(thrw) {
+					throw WriteError(WriteError::CannotOpenFile, "Cannot open file: "+filename+" either target path does not exist or access denied.");
+				}
+				
+				return false;
+			}
+			
+			stream = &file;
+			
+			return true;
+		}
+	
+	private:
+		std::ofstream file;
+		std::string filename;
+	};
+	
 } }

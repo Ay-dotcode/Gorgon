@@ -137,7 +137,7 @@ namespace Gorgon { namespace IO {
 	/// Writes an enumeration as a 32-bit integer
 	template<class E_>
 	inline void WriteEnum32(std::ostream &stream, E_ v) {
-		int32_t r = reinterpret_cast<int32_t>(v);
+		int32_t r = (int32_t)(v);
 		stream.write(reinterpret_cast<char*>(&r), sizeof(int32_t));
 	}
 
