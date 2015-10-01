@@ -252,7 +252,7 @@ namespace Gorgon { namespace Resource {
 		std::vector<AnimationFrame> frames;
 
 		/// Total duration
-		unsigned duration;
+		unsigned duration = 0;
 
 	};
 } }

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <iostream>
 
 #include "Event.h"
 #include "Containers/Collection.h"
@@ -21,7 +22,7 @@ namespace Gorgon {
 			ControllerBase();
 
 			/// Destructor
-			~ControllerBase();
+			virtual ~ControllerBase();
 
 			/// Progresses this timer by moving the timer timepassed milliseconds forwards
 			virtual void Progress(unsigned timepassed)	= 0;
@@ -67,6 +68,10 @@ namespace Gorgon {
 		class Timer : public ControllerBase {
 		public:
 
+			virtual ~Timer() {
+				std::cout<<"!!!!"<<std::endl;
+			}
+
 			/// Progresses this timer by moving the timer timepassed milliseconds forwards
 			virtual void Progress(unsigned timepassed) override final;
 
@@ -77,6 +82,7 @@ namespace Gorgon {
 
 			/// Sets the progress of the timer to the given value.
 			virtual void SetProgress(unsigned progress) { 
+				std::cout<<progress<<std::endl;
 				this->progress=progress; 
 			}
 
@@ -260,8 +266,8 @@ namespace Gorgon {
 				if(this->controller) {
 					this->controller->Remove(*this);
 				}
-				controller.Add(*this);
 				this->controller=&controller;
+				controller.Add(*this);
 			}
 
 			/// Returns whether this animation has a controller

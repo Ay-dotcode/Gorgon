@@ -53,8 +53,8 @@ int main() {
 	im1->Prepare();
 	im2->Prepare();
 	Resource::Animation anim;
-	anim.Add(*im1, 120);
-	anim.Add(*im2, 120);
+	anim.Add(*im1, 800);
+	anim.Add(*im2, 200);
 	
 	auto &a=anim.CreateAnimation(true);
 	a.Draw(l, 0, 80);
@@ -73,7 +73,7 @@ int main() {
 	
 	while(1) {
 		Tick();
-		wind.Render();
+		Render();
 		//wind2.Render();
 		OS::processmessages();
 	}

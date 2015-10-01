@@ -48,11 +48,19 @@ namespace Gorgon { namespace Animation {
 	}
 
 	void Timer::Progress(unsigned timepassed) {
+		std::cout<<progress<<std::endl;
 		progress += timepassed;
 
-		unsigned leftover;
+		unsigned maxleftover=0;
 		for(auto &anim : animations) {
+			unsigned leftover = 0;
 			anim.Progress(leftover);
+			if(leftover>maxleftover) 
+				maxleftover=leftover;
+		}
+
+		if(maxleftover) {
+			progress=maxleftover;
 		}
 	}
 

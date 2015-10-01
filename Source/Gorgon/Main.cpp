@@ -4,6 +4,7 @@
 
 #include "Filesystem.h"
 #include "WindowManager.h"
+#include "Window.h"
 #include "OS.h"
 #include "Time.h"
 #include "Animation.h"
@@ -34,7 +35,13 @@ namespace Gorgon {
 	}
 
 	void Tick() {
+		static bool inited=false;
 		auto ctime=Time::GetTime();
+		if(!inited) {
+			Time::internal::framestart=ctime;
+			inited=true;
+		}
+
 		Time::internal::deltatime=ctime-Time::internal::framestart;
 		Time::internal::framestart=ctime;
 
@@ -44,7 +51,9 @@ namespace Gorgon {
 	}
 
 	void Render() {
-
+		for(auto &w : Window::Windows) {
+			w.Render();
+		}
 	}
 
 	void NextFrame() {
