@@ -4,11 +4,14 @@
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Image.h>
 #include <Gorgon/Resource/Blob.h>
+#include <Gorgon/Resource/Animation.h>
 #include <Gorgon/Graphics/Layer.h>
+#include <Gorgon/Main.h>
 
 using namespace Gorgon;
 
 int main() {
+	Initialize("Generic-Test");
 	WindowManager::Initialize();
 	Resource::File f;
 	f.LoadFile("../Source/Manual/test.gor");
@@ -43,6 +46,20 @@ int main() {
  	//f2.Root().Add(b);
  	//f2.Save("../Source/Manual/test2.gor");
 	
+	auto im1=new Resource::Image;
+	auto im2=new Resource::Image;
+	im1->ImportPNG("../Source/Manual/0.png");
+	im2->ImportPNG("../Source/Manual/1.png");
+	im1->Prepare();
+	im2->Prepare();
+	Resource::Animation anim;
+	anim.Add(*im1, 120);
+	anim.Add(*im2, 120);
+	
+	auto &a=anim.CreateAnimation(true);
+	a.Draw(l, 0, 80);
+	
+	
 // 	f2.LoadFile("../Source/Manual/test2.gor");
 // 	f2.Prepare();
 // 	f2.Root().Get<Resource::Image>(0).Draw(l, 20, 80);
@@ -55,6 +72,7 @@ int main() {
 	//f.Root().Get<Resource::Image>(1).Draw(l2, 0,0);
 	
 	while(1) {
+		Tick();
 		wind.Render();
 		//wind2.Render();
 		OS::processmessages();

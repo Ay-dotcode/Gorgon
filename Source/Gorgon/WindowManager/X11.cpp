@@ -341,10 +341,18 @@ namespace Gorgon {
 				}
 				
 				XRRFreeScreenResources(sr);
+				
+				if(monitors.GetCount()) {
+					if(Monitor::primary==nullptr) {
+						Monitor::primary=monitors.First().CurrentPtr();
+					}
+					
+					return;
+				}
 			}
 			
 			
-			failsafe: //this is 
+			failsafe: //this should use X11 screen as monitor
 			;
 		}
 		
