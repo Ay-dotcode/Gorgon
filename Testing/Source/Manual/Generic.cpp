@@ -3,6 +3,7 @@
 #include <Gorgon/OS.h>
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Image.h>
+#include <Gorgon/Resource/Blob.h>
 #include <Gorgon/Graphics/Layer.h>
 
 using namespace Gorgon;
@@ -31,14 +32,22 @@ int main() {
 	//im.Prepare();
 	//im.Draw(l, 20, 80);
 	
+	/*Resource::Blob b;
+	char ch=32;
+	for(auto &c : b.Ready(100)) {
+		c=ch++;
+	}*/
+	
 	Resource::File f2;
-// 	f2.Root().SetName("abc");
-// 	f2.Root().Add(im);
-// 	f2.Save("../Source/Manual/test2.gor");
+ 	//f2.Root().SetName("abc");
+ 	//f2.Root().Add(b);
+ 	//f2.Save("../Source/Manual/test2.gor");
 	
 // 	f2.LoadFile("../Source/Manual/test2.gor");
 // 	f2.Prepare();
 // 	f2.Root().Get<Resource::Image>(0).Draw(l, 20, 80);
+	
+	//std::cout<<f2.Root().Get<Resource::Blob>(0).GetData()<<std::endl;
 	
 	//Graphics::Layer l2;
 	//Window wind2({400,0,300,200}, "test2");

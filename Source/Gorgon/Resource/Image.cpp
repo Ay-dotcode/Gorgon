@@ -104,34 +104,44 @@ namespace Gorgon { namespace Resource {
 				//for future compatibility
 				reader->EatChunk(size-20);
 			}
-			else if(load && gid==GID::Image_Data) {
-				Destroy();
-				this->data=new Containers::Image({width, height}, mode);
+			else if(gid==GID::Image_Data) {
+				if(load) {
+					Destroy();
+					this->data=new Containers::Image({width, height}, mode);
 
-				if(this->data->GetTotalSize() != size) {
-					throw std::runtime_error("Image size mismatch");
-				}
+					if(this->data->GetTotalSize() != size) {
+						throw std::runtime_error("Image size mismatch");
+					}
 
-				reader->ReadArray(this->data->RawData(), size);
+					reader->ReadArray(this->data->RawData(), size);
 
-				isloaded=true;
-			}
-			else if(load && gid==GID::Image_Cmp_Data) {
-				Destroy();
-				data=new Containers::Image();
-
-				if(compression==GID::PNG) {
-					Encoding::Png.Decode(reader->GetStream(), *data);
+					isloaded=true;
 				}
 				else {
-					throw LoadError(LoadError::Unknown, "Unknown compression type.");
+					reader->EatChunk(size);
 				}
+			}
+			else if(gid==GID::Image_Cmp_Data) {
+				if(load) {
+					Destroy();
+					data=new Containers::Image();
 
-				if(this->data->GetMode()!=mode || this->data->GetSize()!=Geometry::Size{width, height}) {
-					throw std::runtime_error("Image size or mode mismatch");
+					if(compression==GID::PNG) {
+						Encoding::Png.Decode(reader->GetStream(), *data);
+					}
+					else {
+						throw LoadError(LoadError::Unknown, "Unknown compression type.");
+					}
+
+					if(this->data->GetMode()!=mode || this->data->GetSize()!=Geometry::Size{width, height}) {
+						throw std::runtime_error("Image size or mode mismatch");
+					}
+
+					isloaded=true;
 				}
-
-				isloaded=true;
+				else {
+					reader->EatChunk(size);
+				}
 			}
 			else if(gid==GID::Image_Cmp_Props) {
 				if(size>4) {
@@ -174,6 +184,9 @@ namespace Gorgon { namespace Resource {
 			auto cmpdat = writer.WriteChunkStart(GID::Image_Cmp_Data);
 			Encoding::Png.Encode(*data, writer.GetStream());
 			writer.WriteEnd(cmpdat);
+		}
+		else {
+			throw std::runtime_error("Unknown compression mode: "+String::From(compression));
 		}
 		
 		writer.WriteEnd(start);

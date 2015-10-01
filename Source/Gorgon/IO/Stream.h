@@ -228,7 +228,7 @@ namespace Gorgon { namespace IO {
 	/// a mismatch between binary formats will cause trouble.
 	template<class T_>
 	inline void WriteVector(std::ostream &stream, const std::vector<T_> &data) {
-		stream.write((const char*)data[0], data.size()*sizeof(T_));
+		stream.write((const char*)&data[0], data.size()*sizeof(T_));
 	}
 	
 

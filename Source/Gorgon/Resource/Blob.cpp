@@ -61,29 +61,38 @@ namespace Gorgon { namespace Resource {
 			auto gid = reader->ReadGID();
 			auto size= reader->ReadChunkSize();
 
-			GID::Type compression;
-
 			if(gid==GID::Blob_Props) {
 				uncompressed=reader->ReadUInt32();
 				compression=reader->ReadGID();
 				type=reader->ReadInt32();
 
-				load=reader->ReadBool() || forceload;
+				lateloading=reader->ReadBool();
+				load=!lateloading || forceload;
 				if(!load) {
 					reader->KeepOpen();
 					this->reader=reader;
 				}
 			}
-			else if(load && gid==GID::Blob_Data) {
-				reader->ReadArray(&data[0], size);
+			else if(gid==GID::Blob_Data) {
+				if(load) {
+					reader->ReadArray(&data[0], size);
 
-				isloaded=true;
-			} else if(load && gid==GID::Blob_Cmp_Data) {
-				if(size>0) {
-					Encoding::Lzma.Decode(reader->GetStream(), data, nullptr, uncompressed);
+					isloaded=true;
 				}
-
-				isloaded=true;
+				else {
+					reader->EatChunk(size);
+				}
+			} else if(gid==GID::Blob_Cmp_Data) {
+				if(load) {
+					if(size>0) {
+						Encoding::Lzma.Decode(reader->GetStream(), data, nullptr, uncompressed);
+					}
+					
+					isloaded=true;
+				}
+				else {
+					reader->EatChunk(size);
+				}
 			}
 			else {
 				if(!reader->ReadCommonChunk(*this, gid, size)) {
@@ -95,6 +104,33 @@ namespace Gorgon { namespace Resource {
 
 		return true;
 	}
+	
+	void Blob::save(Writer& writer) {
+		auto start = writer.WriteObjectStart(this);
+		
+		auto propstart = writer.WriteChunkStart(GID::Blob_Props);
+		writer.WriteUInt32(data.size());
+		writer.WriteGID(compression);
+		writer.WriteInt32(type);
+		writer.WriteBool(lateloading);
+		writer.WriteEnd(propstart);
+		
+		if(compression==GID::None) {
+			writer.WriteChunkHeader(GID::Blob_Data, data.size());
+			writer.WriteVector(data);
+		}
+		else if(compression==GID::LZMA) {
+			auto datastart = writer.WriteChunkStart(GID::Blob_Cmp_Data);
+			Encoding::Lzma.Encode(data, writer.GetStream());
+			writer.WriteEnd(datastart);
+		}
+		else {
+			throw std::runtime_error("Unknown compression mode: "+String::From(compression));
+		}
+		
+		writer.WriteEnd(start);
+	}
+
 
 	bool Blob::ImportFile(const std::string &filename, Type type) {
 		data.clear();

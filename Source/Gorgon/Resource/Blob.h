@@ -76,7 +76,7 @@ namespace Gorgon { namespace Resource {
 		/// Loads the blob from the data stream
 		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 		
-		void save(Writer &writer) override { }
+		void save(Writer &writer) override;
 
 		/// Entry point of this resource within the physical file. This value is stored for 
 		/// late loading purposes
@@ -87,6 +87,12 @@ namespace Gorgon { namespace Resource {
 
 		/// Whether this blob is loaded or not
 		bool isloaded = false;
+		
+		/// Compression mode of this blob
+		GID::Type compression = GID::LZMA;
+		
+		/// Whether to load this blob during initial loading
+		bool lateloading = false;
 
 		/// Type of the blob data
 		Type type = 0;
