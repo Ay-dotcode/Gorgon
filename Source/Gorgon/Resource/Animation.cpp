@@ -9,6 +9,8 @@ namespace Gorgon { namespace Resource {
 		std::unique_ptr<Animation> anim{new Animation};
 		std::vector<uint32_t> durations;
 
+		auto f=file.lock();
+
 		while(!target) {
 			auto gid = reader->ReadGID();
 			auto size= reader->ReadChunkSize();
@@ -19,18 +21,15 @@ namespace Gorgon { namespace Resource {
 			} else {
 				Base *obj=nullptr;
 
-				if(reader->ReadCommonChunk(*anim, gid, size)) { 
-					;
-				}
 				if(loadfn) {
 					obj=loadfn(file, reader, gid, size);
 				}
 				else {
-					Utils::ASSERT_FALSE("Unknown chunk: "+String::From(gid));
-					reader->EatChunk(size);
+					obj=f->LoadChunk(*anim, gid, size);
 				}
 
 				if(obj) {
+					ASSERT(dynamic_cast<Image*>(obj), "Image animation members should be derived from Resource::Image.");
 					anim->children.Add(obj);
 				}
 			}
@@ -49,6 +48,27 @@ namespace Gorgon { namespace Resource {
 		anim->duration = time;
 
 		return anim.release();
+	}
+
+	void Animation::savedata(Writer &writer) {
+		//durations
+		writer.WriteChunkHeader(GID::Animation_Durations, frames.size()*4);
+		for(auto &frame : frames) {
+			writer.WriteInt32(frame.GetDuration());
+		}
+
+		//images
+		for(auto &frame : frames) {
+			frame.GetImage().Save(writer);
+		}
+	}
+
+	void Animation::save(Writer &writer) {
+		auto start=writer.WriteObjectStart(this);
+
+		savedata(writer);
+
+		writer.WriteEnd(start);
 	}
 
 	Animation::Animation(Animation &&other) {

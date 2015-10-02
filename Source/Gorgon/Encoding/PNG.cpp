@@ -18,7 +18,6 @@ namespace Gorgon { namespace Encoding {
 		void WriteFile(png_struct *p, unsigned char *buf, size_t size) {
 			FileWriter *writer = (FileWriter*)(p->io_ptr);
 			writer->Buf.write((char*)buf, size);
-
 		}
 		void ReadArray(png_struct *p, unsigned char *buf, size_t size) {
 			ArrayReader *reader = (ArrayReader*)(p->io_ptr);

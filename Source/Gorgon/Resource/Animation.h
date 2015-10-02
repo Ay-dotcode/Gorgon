@@ -151,7 +151,7 @@ namespace Gorgon { namespace Resource {
 		}
 
 		/// Creates a new animation from this resource
-		virtual const ImageAnimation &CreateAnimation(bool create=false) const override {
+		virtual const ImageAnimation &CreateAnimation(bool create=true) const override {
 			return *new ImageAnimation(*this, create);
 		}
 
@@ -246,7 +246,10 @@ namespace Gorgon { namespace Resource {
 
 	protected:
 		
-		void save(Writer &writer) override { }
+		void save(Writer &writer) override;
+
+		// Two part save system allows objects that are derived from animation to exist.
+		void savedata(Writer &writer);
 
 		/// Frame durations
 		std::vector<AnimationFrame> frames;

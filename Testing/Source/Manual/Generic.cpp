@@ -11,6 +11,7 @@
 using namespace Gorgon;
 
 int main() {
+try {
 	Initialize("Generic-Test");
 	WindowManager::Initialize();
 	Resource::File f;
@@ -42,9 +43,6 @@ int main() {
 	}*/
 	
 	Resource::File f2;
- 	//f2.Root().SetName("abc");
- 	//f2.Root().Add(b);
- 	//f2.Save("../Source/Manual/test2.gor");
 	
 	auto im1=new Resource::Image;
 	auto im2=new Resource::Image;
@@ -58,11 +56,14 @@ int main() {
 	
 	auto &a=anim.CreateAnimation(true);
 	a.Draw(l, 0, 80);
+
+	//f2.Root().Add(anim);
+	//f2.Save("../Source/Manual/test2.gor");
+
 	
-	
-// 	f2.LoadFile("../Source/Manual/test2.gor");
-// 	f2.Prepare();
-// 	f2.Root().Get<Resource::Image>(0).Draw(l, 20, 80);
+ 	f2.LoadFile("../Source/Manual/test2.gor");
+ 	f2.Prepare();
+ 	f2.Root().Get<Resource::Animation>(0).CreateAnimation(true).Draw(l, 60, 80);
 	
 	//std::cout<<f2.Root().Get<Resource::Blob>(0).GetData()<<std::endl;
 	
@@ -79,4 +80,9 @@ int main() {
 	}
 	
 	return 0;
+}
+catch(const std::runtime_error &err) {
+	std::cout<<"!!!"<<err.what()<<std::endl;
+	throw;
+}
 }

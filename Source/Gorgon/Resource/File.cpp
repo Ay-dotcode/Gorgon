@@ -100,6 +100,7 @@ namespace Gorgon { namespace Resource {
 			}
 		}
 		catch(...) {
+			delete root;
 			root=new Folder;
 
 			reader.reset();

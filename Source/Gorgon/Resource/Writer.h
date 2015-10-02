@@ -369,7 +369,7 @@ namespace Gorgon { namespace Resource {
 		}
 		
 		virtual bool open(bool thrw) override {
-			file.open(filename);
+			file.open(filename, std::ios::binary);
 			if(!file.is_open()) {
 				if(thrw) {
 					throw WriteError(WriteError::CannotOpenFile, "Cannot open file: "+filename+" either target path does not exist or access denied.");

@@ -68,9 +68,7 @@ namespace Gorgon {
 		class Timer : public ControllerBase {
 		public:
 
-			virtual ~Timer() {
-				std::cout<<"!!!!"<<std::endl;
-			}
+			virtual ~Timer() { }
 
 			/// Progresses this timer by moving the timer timepassed milliseconds forwards
 			virtual void Progress(unsigned timepassed) override final;
@@ -82,7 +80,6 @@ namespace Gorgon {
 
 			/// Sets the progress of the timer to the given value.
 			virtual void SetProgress(unsigned progress) { 
-				std::cout<<progress<<std::endl;
 				this->progress=progress; 
 			}
 
@@ -230,7 +227,7 @@ namespace Gorgon {
 			/// This function should create an animation and depending on the create parameter,
 			/// it should create a timer for it. Timer creation is handled by Base class therefore
 			/// only passing this parameter to the constructor is enough.
-			virtual const Base &CreateAnimation(bool create=false) const = 0;
+			virtual const Base &CreateAnimation(bool create=true) const = 0;
 		};
 
 		/// This is the base class for all animations. It handles some common tasks and defines
