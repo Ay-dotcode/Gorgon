@@ -457,7 +457,18 @@ namespace Gorgon { namespace Scripting {
 					
 					return arr;
 				}, "InstanceMembers", "Contains the instance members of the type.", Types::Array(), type
-			)
+			),
+			MapFunctionToInstanceMember(
+				[type](const Type *t) -> const Array* {
+					auto arr=new Array(*type);
+					VirtualMachine::Get().References.Register(arr);
+					for(const auto &m : t->InheritsFrom) {
+						arr->PushData(m.first, true, true);
+					}
+					
+					return arr;
+				}, "Parents", "Contains the list of parents that this object inherits from.", Types::Array(), type
+			),
 		});
 		
 		type->AddMembers({

@@ -1096,6 +1096,41 @@ namespace Compilers {
 					root->Text=name;
 					root->Leaves.Push(proot);
 				}
+				
+				else if(token.repr=="using") {
+					int ind2=index;
+					auto namesp =consumenexttoken(input, ind2);
+					auto astk=consumenexttoken(input, ind2);
+					if(astk==Token::EoS) {
+						goto other;
+					}
+					else if(astk==Token::Identifier && String::ToLower(astk.repr)=="as") {
+						// assume input is:
+						// using a as b
+						// Create an AST for the following:
+						// b = cast(a, Reflection:Namespace)
+						
+						auto name=consumenexttoken(input, ind2);
+						if(name!=Token::Identifier || !checknewident(name.repr)) {
+							throw ParseError(ExceptionType::UnexpectedToken, "Expecting identifier for new name, found: "+astk.repr);
+						}
+						
+						root->Type=ASTNode::Assignment;
+						root->Leaves.Push(NewNode(ASTNode::Identifier, name));
+						auto castnode=new ASTNode(ASTNode::FunctionCall);
+						root->Leaves.Push(castnode);
+						auto fnname=new ASTNode(ASTNode::Identifier);
+						fnname->Text="cast";
+						castnode->Leaves.Push(fnname);
+						castnode->Leaves.Push(NewNode(ASTNode::Identifier, namesp));
+						auto castto=new ASTNode(ASTNode::Identifier);
+						castto->Text="Reflection:Namespace";
+						castnode->Leaves.Push(castto);
+					}
+					else {
+						throw ParseError(ExceptionType::UnexpectedToken, "Expecting `as` or end of line, found: "+astk.repr);
+					}
+				}
 
 				else if(token.repr=="source") {
 					token=consumenexttoken(input, index);
@@ -1129,6 +1164,7 @@ namespace Compilers {
 
 				//other keywords
 				else {
+				other:
 					token=peeknexttoken(input, index);
 						
 					while(token!=Token::EoS) {
