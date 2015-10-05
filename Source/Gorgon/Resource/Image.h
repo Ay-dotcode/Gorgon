@@ -106,23 +106,7 @@ namespace Gorgon { namespace Resource {
 
 		/// Releases the image data. The image data returned by this function is moved out. Data is passed by value, thus
 		/// if it is not moved into a Containers::Image, it will be destroyed.
-		Containers::Image ReleaseData() {
-			if(data==nullptr) {
-#ifndef NDEBUG
-				throw std::runtime_error("No data to release");
-#endif
-
-				return{ };
-			}
-			else {
-				Containers::Image temp=std::move(*data);
-
-				delete data;
-				data=nullptr;
-
-				return temp;
-			}
-		}
+		Containers::Image ReleaseData();
 
 		/// Releases the texture held by this image. Texture is passed by value, thus
 		/// if it is not moved into a Graphics::TextureImage, it will be destroyed.

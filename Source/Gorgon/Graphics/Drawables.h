@@ -360,7 +360,7 @@ namespace Gorgon { namespace Graphics {
 		virtual Geometry::Size getsize() const = 0;
 	};
 
-	/// This is a solid texture based image. It handles the drawing automatically. Does not supply implementation
+	/// This is an interface for solid texture based image. It handles the drawing automatically. Does not supply implementation
 	/// for Texture.
 	class Image : public virtual RectangularDrawable, public virtual TextureSource {
 	public:

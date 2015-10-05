@@ -205,6 +205,24 @@ namespace Gorgon { namespace Resource {
 
 		return true;
 	}
+	
+	Containers::Image Image::ReleaseData() {
+		if(data==nullptr) {
+	#ifndef NDEBUG
+			throw std::runtime_error("No data to release");
+	#endif
+
+			return { };
+		}
+		else {
+			Containers::Image temp=std::move(*data);
+
+			delete data;
+			data=nullptr;
+
+			return temp;
+		}
+	}
 
 } }
 
