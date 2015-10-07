@@ -1,9 +1,11 @@
 SET(Local
 	../Graphics.h
 	Animations.h
-	Graphics.cpp
+	Bitmap.h
+	Bitmap.cpp
 	Color.h
 	Drawables.h
+	Graphics.cpp
 	Layer.cpp
 	Layer.h
 	Shaders.h

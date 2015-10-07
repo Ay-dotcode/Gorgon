@@ -10,7 +10,6 @@ SET(Local
 	Graphics
 	Input
 	IO
-	Objects
 	OS
 	Resource
 	String

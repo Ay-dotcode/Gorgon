@@ -4,38 +4,6 @@
 
 namespace Gorgon { namespace Resource {
 
-	void Image::Prepare() {
-		if(data) {
-			Graphics::Texture::Set(*data);
-		}
-	}
-
-	void Image::Discard() {
-		if(data) {
-			delete data;
-			data=nullptr;
-		}
-	}
-
-	bool Image::ImportPNG(const std::string &filename) {
-		std::ifstream file(filename, std::ios::binary);
-
-		if(!file.is_open() || !file.good()) return false;
-
-		Destroy();
-
-		data=new Containers::Image();
-		Encoding::Png.Decode(file, *data);
-
-		if(reader) {
-			reader->NoLongerNeeded();
-			reader.reset();
-		}
-
-		isloaded=true;
-
-		return true;
-	}
 
 	Image *Image::LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) {
 		auto image=new Image;
@@ -48,6 +16,13 @@ namespace Gorgon { namespace Resource {
 		}
 
 		return image;
+	}
+	
+	void Image::loaded() {
+		if(reader) {
+			reader->NoLongerNeeded();
+			reader.reset();
+		}
 	}
 
 	bool Image::Load() {
@@ -190,38 +165,6 @@ namespace Gorgon { namespace Resource {
 		}
 		
 		writer.WriteEnd(start);
-	}
-
-	bool Image::ExportPNG(const std::string &filename) {
-		ASSERT(data, "Image data does not exists");
-
-		ASSERT(GetMode()==Graphics::ColorMode::RGBA, "Unsupported color mode");
-
-		std::ofstream file(filename, std::ios::binary);
-		if(!file.is_open())
-			return false;
-
-		Encoding::Png.Encode(*data, file);
-
-		return true;
-	}
-	
-	Containers::Image Image::ReleaseData() {
-		if(data==nullptr) {
-	#ifndef NDEBUG
-			throw std::runtime_error("No data to release");
-	#endif
-
-			return { };
-		}
-		else {
-			Containers::Image temp=std::move(*data);
-
-			delete data;
-			data=nullptr;
-
-			return temp;
-		}
 	}
 
 } }
