@@ -1,23 +1,22 @@
-#include "../Engine/OS.h"
-
-#ifdef WIN32
-#	undef APIENTRY
-#	undef WINGDIAPI
-#endif
-
-
-#include "../External/cURL/curl.h"
 #include <stdexcept>
 #include <cstring>
+#include <iostream>
+
+#include <curl/curl.h>
+
+#include "../Utils/Assert.h"
+
 #include "HTTP.h"
 
 
 
-namespace gge { namespace network {
-	namespace http {
+namespace Gorgon { namespace Network {
+	namespace HTTP {
 
+		static bool isinitialized = false;
 
 		void Initialize() {
+			if(isinitialized) return;
 			curl_global_init(CURL_GLOBAL_ALL);
 		}
 
@@ -77,8 +76,8 @@ namespace gge { namespace network {
 		std::string BlockingGetText(const std::string &URL) {
 			CURL *curl_handle = curl_easy_init();
 
-			if(!curl_handle)
-				throw std::runtime_error("Cannot create curl handle. Initialization missing?");
+			Initialize();
+			ASSERT(curl_handle, "Cannot create curl handle. Initialization failed?");
 
 			std::string s;
 
@@ -101,14 +100,13 @@ namespace gge { namespace network {
 			return s;
 		}
 
-		int threadfncall nonblockingop(void *data) {
-			Nonblocking *me=(Nonblocking*)data;
-			CURLcode res=curl_easy_perform(me->curl);
+		void Nonblocking::operation() {
+			std::lock_guard<std::mutex> guard(mtx);
+			CURLcode res=curl_easy_perform(curl);
 
-			me->err=translateerror(res);
-			me->isrunning=false;
-
-			return 0;
+			//should sync with main thread
+			err=translateerror(res);
+			isrunning=false;
 		}
 
 		void Nonblocking::GetText(const std::string &URL) {
@@ -128,7 +126,7 @@ namespace gge { namespace network {
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&tempstr);
 			curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 
-			os::RunInNewThread(&nonblockingop, this);
+			runner=std::thread(&Nonblocking::operation, this);
 		}
 
 		void Nonblocking::GetFile(const std::string &URL, const std::string &filename) {
@@ -162,7 +160,7 @@ namespace gge { namespace network {
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&stream);
 			curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 
-			os::RunInNewThread(&nonblockingop, this);
+			runner=std::thread(&Nonblocking::operation, this);
 		}
 
 		void Nonblocking::GetData(const std::string &URL) {
@@ -170,28 +168,29 @@ namespace gge { namespace network {
 				throw std::runtime_error("Running another task at the moment.");
 
 			if(currentoperation==Data) {
-				gge::utils::CheckAndDelete(tempvec);
+				tempvec.reset();
 			}
 
 			isrunning=true;
 			currentoperation=Data;
 
-			tempvec=new std::vector<Byte>;
+			tempvec.reset(new std::vector<Byte>);
 
 			getdata(URL, *tempvec);
 		}
+		
 		void Nonblocking::GetData(const std::string &URL, std::vector<Byte> &vec) {
 			if(isrunning) 
 				throw std::runtime_error("Running another task at the moment.");
 
 			if(currentoperation==Data) {
-				gge::utils::CheckAndDelete(tempvec);
+				tempvec.reset();
 			}
 
 			isrunning=true;
 			currentoperation=OwnedData;
 
-			tempvec=&vec;
+			tempvec.reset(&vec);
 
 			getdata(URL, vec);
 		}
@@ -205,50 +204,60 @@ namespace gge { namespace network {
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&vec);
 			curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 
-			os::RunInNewThread(&nonblockingop, this);
+			runner=std::thread(&Nonblocking::operation, this);
 		}
 
 		Nonblocking::Nonblocking() : isrunning(false),
-			TextTransferComplete("Text", this),
-			DataTransferComplete("Data", this),
-			FileTransferComplete("File", this) 
+			TextTransferCompletedEvent(this),
+			DataTransferCompletedEvent(this),
+			FileTransferCompletedEvent(this),
+			TransferErrorEvent(this)
 		{
-			curl=curl_easy_init();
 
-			token=gge::Main.BeforeRenderEvent.RegisterLambda([&]() {
+			Initialize();
+			
+			curl=curl_easy_init();
+			ASSERT(curl, "Cannot create curl handle. Initialization failed?");
+
+			token=BeforeFrameEvent.Register([&]() {
+				if(!mtx.try_lock()) return;
+				std::lock_guard<std::mutex> guard(mtx, std::adopt_lock);
+				
 				if(currentoperation!=None && !isrunning) {
+					
 					if(err.error!=0) {
-						TransferError(err);
+						TransferErrorEvent(err);
 					}
 					else {
 						switch(currentoperation) {
 						case Text:
-							TextTransferComplete(tempstr);
+							TextTransferCompletedEvent(tempstr);
 							break;
 						case Data:  
-							DataTransferComplete(*tempvec);
+							DataTransferCompletedEvent(*tempvec);
+							//just in case if a new transfer is started during the event handler
 							if(!isrunning) {
-								gge::utils::CheckAndDelete(tempvec);
+								tempvec.reset();
 							}
 							break;
 						case OwnedData:
-							DataTransferComplete(*tempvec);
-							tempvec=NULL;
+							DataTransferCompletedEvent(*tempvec);
+							if(!isrunning) {
+								tempvec.reset();
+							}
 							break;
 						case File:
 							tempfile.close();
-							FileTransferComplete();
+							FileTransferCompletedEvent();
 							break;
 						case Stream:
-							FileTransferComplete();
+							FileTransferCompletedEvent();
 							break;
 						}
 					}
+					currentoperation=None;
 				}
 			});
-
-			if(!curl)
-				throw std::runtime_error("Cannot create curl handle. Initialization missing?");
 		}
 
 

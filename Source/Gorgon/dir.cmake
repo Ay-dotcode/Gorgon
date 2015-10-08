@@ -10,6 +10,7 @@ SET(Local
 	Graphics
 	Input
 	IO
+	Network
 	OS
 	Resource
 	String

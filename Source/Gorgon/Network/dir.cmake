@@ -1,0 +1,22 @@
+SET(Local
+	
+)
+IF(${HTTP})
+	LIST(APPEND Local
+		HTTP.h
+		HTTP.cpp
+	)
+	
+	FIND_PACKAGE(CURL REQUIRED)
+	
+	LIST(APPEND Libs ${CURL_LIBRARIES})
+	
+	IF(NOT(${WIN32}))
+		FIND_PACKAGE(Threads REQUIRED)
+		LIST(APPEND Libs
+			${CMAKE_THREAD_LIBS_INIT}
+		)
+	ENDIF()
+
+		
+ENDIF()

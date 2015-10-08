@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "Event.h"
+
 /// Root namespace for Gorgon Game Engine.
 namespace Gorgon {
 
@@ -36,5 +38,7 @@ namespace Gorgon {
 
 	/// This method works similar to next frame, however, no delay is done. This function allows an
 	/// application to update the display and perform OS tasks while still continuing operation.
-	inline void UpdateFrame() { Render(); Tick(); }
+	inline void UpdateFrame();
+	
+	extern Event<> BeforeFrameEvent;
 }

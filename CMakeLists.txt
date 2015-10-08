@@ -19,6 +19,8 @@ OPTION(TESTMODE "Enable test mode." OFF)
 
 OPTION(DOCUMENTATION_GRAPHS "Enable graphs in documentation." OFF)
 
+OPTION(HTTP "Enable HTTP data and file transfer. Requires libcurl." ON)
+
 IF(DOCUMENTATION_GRAPHS)
 	SET(DOXYGRAPH YES)
 ENDIF()

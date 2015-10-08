@@ -7,6 +7,7 @@
 #include <Gorgon/Resource/Animation.h>
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Main.h>
+#include <Gorgon/Network/HTTP.h>
 
 using namespace Gorgon;
 
@@ -72,11 +73,14 @@ try {
 	//wind2.Add(l2);
 	//f.Root().Get<Resource::Image>(1).Draw(l2, 0,0);
 	
+	Network::HTTP::Nonblocking transfer;
+	transfer.TextTransferCompletedEvent.Register([](const std::string &str) {
+		std::cout<<str<<std::endl;
+	});
+	transfer.GetText("http://darkgaze.org/");
+	
 	while(1) {
-		Tick();
-		Render();
-		//wind2.Render();
-		OS::processmessages();
+		NextFrame();
 	}
 	
 	return 0;

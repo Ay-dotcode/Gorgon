@@ -51,147 +51,135 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	void PNG::decode(png::Reader *reader,Containers::Image &buffer) {
-		unsigned char **  row_pointers=nullptr;
+		std::unique_ptr<unsigned char *[]>  row_pointers;
+		std::unique_ptr<png::Reader> r(reader);
+		
 		Geometry::Size size;
 
 		Graphics::ColorMode mode;
 
-		try {
-			png_structp png_ptr;
-			png_infop info_ptr;
+		png_structp png_ptr;
+		png_infop info_ptr;
 
-			unsigned long width, height;
-			int bit_depth, color_type;
+		unsigned long width, height;
+		int bit_depth, color_type;
 
-			unsigned char sig[8];
+		unsigned char sig[8];
 
-			png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-			if(!png_ptr)
-				throw std::runtime_error("Cannot create PNG read struct");
+		png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+		if(!png_ptr)
+			throw std::runtime_error("Cannot create PNG read struct");
 
-			info_ptr = png_create_info_struct(png_ptr);
-			if(!info_ptr) {
-				png_destroy_read_struct(&png_ptr, NULL, NULL);
-				throw std::runtime_error("Cannot create PNG info struct");
-			}
+		info_ptr = png_create_info_struct(png_ptr);
+		if(!info_ptr) {
+			png_destroy_read_struct(&png_ptr, NULL, NULL);
+			throw std::runtime_error("Cannot create PNG info struct");
+		}
 
-			if(setjmp(png_ptr->longjmp_buffer)) {
-				png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-				throw std::runtime_error("Cannot read PNG file");
-			}
+		if(setjmp(png_ptr->longjmp_buffer)) {
+			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+			throw std::runtime_error("Cannot read PNG file");
+		}
 
-			png_set_read_fn(png_ptr, (void*)reader, reader->Read);
+		png_set_read_fn(png_ptr, (void*)reader, reader->Read);
 
-			reader->Read(png_ptr, sig, 8);
-			if(!png_check_sig(sig, 8))
-				throw std::runtime_error("PNG signature mismatch");
+		reader->Read(png_ptr, sig, 8);
+		if(!png_check_sig(sig, 8))
+			throw std::runtime_error("PNG signature mismatch");
 
-			png_set_sig_bytes(png_ptr, 8);
-			png_read_info(png_ptr, info_ptr);
+		png_set_sig_bytes(png_ptr, 8);
+		png_read_info(png_ptr, info_ptr);
 
-			png_get_IHDR(png_ptr, info_ptr, (png_uint_32*)&width, (png_uint_32*)&height, &bit_depth,
-				&color_type, NULL, NULL, NULL);
-			size.Width=width;
-			size.Height=height;
-			int pChannels = (int)png_get_channels(png_ptr, info_ptr);
+		png_get_IHDR(png_ptr, info_ptr, (png_uint_32*)&width, (png_uint_32*)&height, &bit_depth,
+			&color_type, NULL, NULL, NULL);
+		size.Width=width;
+		size.Height=height;
+		int pChannels = (int)png_get_channels(png_ptr, info_ptr);
 
-			if(color_type == PNG_COLOR_TYPE_PALETTE)
-				png_set_palette_to_rgb(png_ptr);
-			if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-				png_set_expand_gray_1_2_4_to_8(png_ptr);
-			if(png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-				png_set_tRNS_to_alpha(png_ptr); 
+		if(color_type == PNG_COLOR_TYPE_PALETTE)
+			png_set_palette_to_rgb(png_ptr);
+		if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+			png_set_expand_gray_1_2_4_to_8(png_ptr);
+		if(png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+			png_set_tRNS_to_alpha(png_ptr); 
 
-			if(color_type == PNG_COLOR_TYPE_GRAY) {
-				if(pChannels>1) {
-					mode=Graphics::ColorMode::Grayscale_Alpha;
-				}
-				else {
-					mode=Graphics::ColorMode::Grayscale;
-				}
+		if(color_type == PNG_COLOR_TYPE_GRAY) {
+			if(pChannels>1) {
+				mode=Graphics::ColorMode::Grayscale_Alpha;
 			}
 			else {
-				if(pChannels>3) {
-					mode=Graphics::ColorMode::RGBA;
-				}
-				else {
-					mode=Graphics::ColorMode::RGB;
-				}
+				mode=Graphics::ColorMode::Grayscale;
 			}
-
-			if(bit_depth == 16)
-				png_set_strip_16(png_ptr);
-
-			double gamma;
-			if(png_get_gAMA(png_ptr, info_ptr, &gamma))
-				png_set_gamma(png_ptr, 1.0, gamma);
-
-			unsigned int  i, rowbytes;
-			row_pointers=new unsigned char*[height];
-
-			png_read_update_info(png_ptr, info_ptr);
-
-			rowbytes = png_get_rowbytes(png_ptr, info_ptr);
-
-			buffer.Resize(size, mode);
-			if(rowbytes<=width*buffer.GetBytesPerPixel()) {
-				for(i = 0; i < height; ++i) {
-					row_pointers[i] = buffer.RawData()+i*rowbytes;
-				}
-				png_read_image(png_ptr, row_pointers);
+		}
+		else {
+			if(pChannels>3) {
+				mode=Graphics::ColorMode::RGBA;
 			}
-			else if(rowbytes<width*buffer.GetBytesPerPixel()*2) {
-				// if rowbytes is not equal to image stride, the last row will not
-				// fit into image buffer. instead of copying all pixels, we will only copy
-				// the last row. This method will work if only the last row will be effected.
+			else {
+				mode=Graphics::ColorMode::RGB;
+			}
+		}
 
-				int stride=width*buffer.GetBytesPerPixel();
+		if(bit_depth == 16)
+			png_set_strip_16(png_ptr);
 
-				for(i = 0; i < height-1; ++i) {
-					row_pointers[i] = buffer.RawData()+i*stride;
-				}
+		double gamma;
+		if(png_get_gAMA(png_ptr, info_ptr, &gamma))
+			png_set_gamma(png_ptr, 1.0, gamma);
+
+		unsigned int  i, rowbytes;
+		row_pointers.reset(new unsigned char*[height]);
+
+		png_read_update_info(png_ptr, info_ptr);
+
+		rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+
+		buffer.Resize(size, mode);
+		if(rowbytes<=width*buffer.GetBytesPerPixel()) {
+			for(i = 0; i < height; ++i) {
+				row_pointers[i] = buffer.RawData()+i*rowbytes;
+			}
+			png_read_image(png_ptr, row_pointers.get());
+		}
+		else if(rowbytes<width*buffer.GetBytesPerPixel()*2) {
+			// if rowbytes is not equal to image stride, the last row will not
+			// fit into image buffer. instead of copying all pixels, we will only copy
+			// the last row. This method will work if only the last row will be effected.
+
+			int stride=width*buffer.GetBytesPerPixel();
+
+			for(i = 0; i < height-1; ++i) {
+				row_pointers[i] = buffer.RawData()+i*stride;
+			}
+			row_pointers[i] = new Byte[rowbytes];
+
+			png_read_image(png_ptr, row_pointers.get());
+
+			memcpy(buffer.RawData()+i*stride, row_pointers[i], stride);
+
+			delete[] row_pointers[i];
+		}
+		else {
+			// failsafe
+
+			int stride=width*buffer.GetBytesPerPixel();
+
+			for(i = 0; i < height; ++i) {
 				row_pointers[i] = new Byte[rowbytes];
+			}
 
-				png_read_image(png_ptr, row_pointers);
+			png_read_image(png_ptr, row_pointers.get());
 
+			for(i = 0; i < height; ++i) {
 				memcpy(buffer.RawData()+i*stride, row_pointers[i], stride);
-
 				delete[] row_pointers[i];
 			}
-			else {
-				// failsafe
-
-				int stride=width*buffer.GetBytesPerPixel();
-
-				for(i = 0; i < height; ++i) {
-					row_pointers[i] = new Byte[rowbytes];
-				}
-
-				png_read_image(png_ptr, row_pointers);
-
-				for(i = 0; i < height; ++i) {
-					memcpy(buffer.RawData()+i*stride, row_pointers[i], stride);
-					delete[] row_pointers[i];
-				}
-			}
-
-			png_read_end(png_ptr, NULL);
-
-			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-
-
-		}
-		catch(...) { //in case of an exception, re-throw safely
-			delete[] row_pointers;
-
-			delete reader;
-
-			throw;
 		}
 
-		delete[] row_pointers;
+		png_read_end(png_ptr, NULL);
 
-		delete reader;
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
 	}
 	
 	void PNG::encode(const Containers::Image &buffer,png::Writer *writer) {

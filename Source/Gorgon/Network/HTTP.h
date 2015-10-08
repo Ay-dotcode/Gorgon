@@ -1,13 +1,20 @@
 #pragma once
-#include <string>
-#include "../Utils/EventChain.h"
-#include <fstream>
-#include "../Engine/GGEMain.h"
 
-namespace gge { namespace network {
-	namespace http {
+#include <string>
+#include <fstream>
+#include <bits/unique_ptr.h>
+#include <mutex>
+#include <thread>
+
+#include "../Event.h"
+#include "../Main.h"
+
+namespace Gorgon { namespace Network {
+	namespace HTTP {
+		/// Initializes HTTP networking system. It is called automatically
 		void Initialize();
 
+		///
 		std::string BlockingGetText(const std::string &URL);
 
 		class Error : public std::exception {
@@ -39,23 +46,25 @@ namespace gge { namespace network {
 			Code   error;
 		};
 		
-		int threadfncall nonblockingop(void *);
 
+		/// This class supports non-blocking HTTP operations. 
 		class Nonblocking {
-			friend int threadfncall nonblockingop(void *);
 		public:
 
 			Nonblocking();
 			~Nonblocking() { 
-				gge::Main.BeforeRenderEvent.Unregister(token); 
+				BeforeFrameEvent.Unregister(token);
 			}
 
-			utils::EventChain<Nonblocking, std::string&> TextTransferComplete;
+			Event<Nonblocking, std::string&> TextTransferCompletedEvent;
+			
 			//Given vector is temporary, it will be destroyed after used
 			//you may swap its data if you need it
-			utils::EventChain<Nonblocking, std::vector<Byte>&> DataTransferComplete;
-			utils::EventChain<Nonblocking> FileTransferComplete;
-			utils::EventChain<Nonblocking, Error> TransferError;
+			Event<Nonblocking, std::vector<Byte>&> DataTransferCompletedEvent;
+			
+			Event<Nonblocking> FileTransferCompletedEvent;
+			
+			Event<Nonblocking, Error> TransferErrorEvent;
 
 			void GetText(const std::string &URL);
 			void GetData(const std::string &URL);
@@ -67,16 +76,30 @@ namespace gge { namespace network {
 			bool IsRunning() const { return isrunning; }
 
 		protected:
-			void* curl;
-			bool isrunning;
-			std::string tempstr;
-			std::vector<Byte> *tempvec;
-			std::ofstream tempfile;
-			Error err;
-			utils::EventChain<GGEMain>::Token token;
+			void deletevec(std::vector<Byte> *vec) {
+				if(currentoperation!=OwnedData) {
+					delete vec;
+				}
+			}
+			
+			void operation();
 
 			void stream(const std::string &URL, std::ostream &stream);
 			void getdata(const std::string &URL, std::vector<Byte> &vec);
+			
+			void* curl;
+			std::string tempstr;
+			std::unique_ptr<std::vector<Byte>, std::function<void(std::vector<Byte>*)>> tempvec={nullptr, std::bind(&Nonblocking::deletevec, this, std::placeholders::_1)};
+			std::ofstream tempfile;
+			Error err;
+			Event<>::Token token;
+			
+			std::mutex mtx;
+			std::thread runner;
+			
+			bool isrunning = false;
+			
+			
 
 			enum {
 				None,

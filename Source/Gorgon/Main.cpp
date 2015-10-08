@@ -14,6 +14,8 @@
 #endif
 
 namespace Gorgon {
+	
+	Event<> BeforeFrameEvent;
 
 	namespace internal {
 		std::string systemname;
@@ -66,5 +68,19 @@ namespace Gorgon {
 		}
 
 		Tick();
+		
+		BeforeFrameEvent();
+
+		OS::processmessages();
+	}
+	
+	void UpdateFrame() {
+		Render();
+		
+		Tick();
+		
+		BeforeFrameEvent();
+
+		OS::processmessages();
 	}
 }

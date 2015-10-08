@@ -11,6 +11,7 @@
 
 #include "Types.h"
 #include "Containers/Collection.h"
+#include "Utils/Assert.h"
 
 
 namespace Gorgon {
@@ -209,6 +210,14 @@ namespace Gorgon {
 		/// Constructor for class specific source
 		template <class S_ = Source_>
 		explicit Event(typename std::enable_if<!std::is_same<S_, void>::value, S_>::type &source) : source(&source) {
+			fire.clear();
+			static_assert(!std::is_same<Source_, void>::value, "Filling constructor is not required, use the default.");
+		}
+		
+		/// Constructor for class specific source
+		template <class S_ = Source_>
+		explicit Event(typename std::enable_if<!std::is_same<S_, void>::value, S_>::type *source) : source(source) {
+			ASSERT(source, "Source cannot be nullptr");
 			fire.clear();
 			static_assert(!std::is_same<Source_, void>::value, "Filling constructor is not required, use the default.");
 		}
