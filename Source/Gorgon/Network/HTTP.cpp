@@ -101,7 +101,7 @@ namespace Gorgon { namespace Network {
 		}
 
 		void Nonblocking::operation() {
-			std::lock_guard<std::mutex> guard(mtx);
+			std::lock_guard<std::mutex> guard(mtx);	
 			CURLcode res=curl_easy_perform(curl);
 
 			//should sync with main thread
@@ -126,6 +126,9 @@ namespace Gorgon { namespace Network {
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&tempstr);
 			curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 
+			//if running is false, which it was to reach this point, 
+			//the thread is about to end, wait for it to finish
+			if(runner.joinable()) runner.join();
 			runner=std::thread(&Nonblocking::operation, this);
 		}
 
@@ -160,6 +163,8 @@ namespace Gorgon { namespace Network {
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&stream);
 			curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 
+			//if running is false, the thread is about to end, wait for it to finish
+			if(runner.joinable()) runner.join();
 			runner=std::thread(&Nonblocking::operation, this);
 		}
 
@@ -204,6 +209,8 @@ namespace Gorgon { namespace Network {
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&vec);
 			curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 
+			//if running is false, the thread is about to end, wait for it to finish
+			if(runner.joinable()) runner.join();
 			runner=std::thread(&Nonblocking::operation, this);
 		}
 
@@ -233,7 +240,7 @@ namespace Gorgon { namespace Network {
 						case Text:
 							TextTransferCompletedEvent(tempstr);
 							break;
-						case Data:  
+						case Data:
 							DataTransferCompletedEvent(*tempvec);
 							//just in case if a new transfer is started during the event handler
 							if(!isrunning) {
@@ -255,7 +262,8 @@ namespace Gorgon { namespace Network {
 							break;
 						}
 					}
-					currentoperation=None;
+					if(!isrunning)
+						currentoperation=None;
 				}
 			});
 		}

@@ -74,8 +74,12 @@ try {
 	//f.Root().Get<Resource::Image>(1).Draw(l2, 0,0);
 	
 	Network::HTTP::Nonblocking transfer;
-	transfer.TextTransferCompletedEvent.Register([](const std::string &str) {
+	transfer.TextTransferCompletedEvent.Register([&transfer](const std::string &str) {
 		std::cout<<str<<std::endl;
+		transfer.GetFile("http://www.google.com/", "index.html");
+	});
+	transfer.TransferErrorEvent.Register([&transfer](Network::HTTP::Error err) {
+		std::cout<<err.error<<": "<<err.what()<<std::endl;
 	});
 	transfer.GetText("http://darkgaze.org/");
 	
