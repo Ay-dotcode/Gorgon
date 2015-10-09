@@ -57,7 +57,8 @@ namespace Gorgon { namespace Resource {
 		static Image *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
 
 	protected:
-
+		virtual ~Image() { }
+		
 		/// Loads the image from the data stream
 		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 		

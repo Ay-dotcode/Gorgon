@@ -23,9 +23,6 @@ namespace Gorgon {
 
 			/// Default constructor
 			Base();
-			
-			/// Destructor, Always children gets destroyed first
-			virtual ~Base();
 
 
 			/// This function shall return Gorgon ID of this resource
@@ -140,16 +137,8 @@ namespace Gorgon {
 			unsigned long refcount=1;
 
 		protected:
-
-			void swap(Base &other) {
-				using std::swap;
-
-				swap(other.name, name);
-				swap(other.guid, guid);
-				swap(other.parent, parent);
-				swap(other.children, children);
-				swap(other.root, root);
-			}
+			/// Destructor, Always children gets destroyed first
+			virtual ~Base();
 			
 			virtual void save(Writer &writer) = 0;
 

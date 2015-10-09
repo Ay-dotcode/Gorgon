@@ -56,6 +56,9 @@ namespace Gorgon { namespace Resource {
 	}
 	void Base::Save(Writer &writer) {
 		ASSERT(writer.IsGood(), "Writer is not ready for saving the resource");
+		if(guid.IsEmpty())
+			guid.New();
+		
 		save(writer);
 	}
 } }

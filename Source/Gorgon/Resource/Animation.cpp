@@ -81,7 +81,7 @@ namespace Gorgon { namespace Resource {
 		swap(other.duration, duration);
 		swap(other.frames, frames);
 
-		this->swap(other);
+		throw "to be fixed";
 	}
 
 	unsigned Animation::FrameAt(unsigned t) const {

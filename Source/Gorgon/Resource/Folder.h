@@ -79,9 +79,7 @@ namespace Gorgon { namespace Resource {
 			if(resource.GetParentPtr()==this)
 				setparenttonullptr(resource);
 			
-			if( --resource.refcount == 0) {
-				delete &resource;
-			}
+			resource.DeleteResource();
 		}
 
 		/// Returns the number of items contained
