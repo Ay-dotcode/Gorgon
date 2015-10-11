@@ -19,8 +19,6 @@ OPTION(TESTMODE "Enable test mode." OFF)
 
 OPTION(DOCUMENTATION_GRAPHS "Enable graphs in documentation." OFF)
 
-OPTION(HTTP "Enable HTTP data and file transfer. Requires libcurl." ON)
-
 IF(DOCUMENTATION_GRAPHS)
 	SET(DOXYGRAPH YES)
 ENDIF()
@@ -57,5 +55,8 @@ INCLUDE(Scripts/Testing.cmake)
 INCLUDE(Scripts/Doxygen.cmake)
 
 ADD_LIBRARY(Gorgon STATIC ${All})
+INCLUDE_DIRECTORIES(Gorgon Source/External)
 
 TARGET_LINK_LIBRARIES(Gorgon ${Libs})
+TARGET_LINK_LIBRARIES(Gorgon debug ${DebugLibs})
+TARGET_LINK_LIBRARIES(Gorgon optimized ${OptimizedLibs})

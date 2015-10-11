@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <algorithm>
+#include <memory>
 
 namespace Gorgon { namespace Encoding {
 	namespace png {

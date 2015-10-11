@@ -21,5 +21,6 @@ build
 clang
 ninja
 codeblocks
+Source/External/curl/
 syntax: regexp
 .*\.kdev4(_.*)?

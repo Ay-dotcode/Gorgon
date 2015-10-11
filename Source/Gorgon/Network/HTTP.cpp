@@ -2,15 +2,34 @@
 #include <cstring>
 #include <iostream>
 
-#include <curl/curl.h>
-
 #include "../Utils/Assert.h"
 
 #include "HTTP.h"
 
 
+#define WINDOWS_LEAN_AND_MEAN
+#include <curl/curl.h>
+
 
 namespace Gorgon { namespace Network {
+
+	/**
+	 * Enables HTTP text, data and file transfer. Supports only GET operation. 
+	 * 
+	 * == Enabling ==
+	 * HTTP module requires libcurl.
+	 * 
+	 * In Linux, installation of libcurl development libraries is enough. For fedora use "sudo dnf install libcurl-devel.i686".
+	 * 
+	 * In Windows, a compatible (7.45 is tested) libcurl source tree should be downloaded. In libcurl source tree,
+	 * "projects\Windows\VC14\curl-all.sln" should be opened. There are two configurations that are required in a typical
+	 * scenario LIB Debug and LIB Release. However, before compiling these configurations, there are two settings
+	 * that needs to be changed in both configurations. From "PROJECT" -> "Properties" menu, go to 
+	 * "Configuration Properties" -> "General" and change "Character Set" to "Not Set", in the same window, go to
+	 * "C/C++" -> "Code Generation" and change library to "MT" or "MTd" for Relase and Debug builds respectively.
+	 * After compiling libraries using these setting, from libcurl tree copy "build\Win32\VC14\LIB Debug\libcurld.lib",
+	 * "build\Win32\VC14\LIB Release\libcurl.lib" and all files in "include\curl" to Gorgon tree Source/External/curl.
+	 */
 	namespace HTTP {
 
 		static bool isinitialized = false;
