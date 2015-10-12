@@ -1,3 +1,5 @@
+#include <typeinfo>
+
 #include <Gorgon/Window.h>
 #include <Gorgon/WindowManager.h>
 #include <Gorgon/OS.h>
@@ -8,10 +10,25 @@
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Main.h>
 #include <Gorgon/Network/HTTP.h>
+#include <Gorgon/Struct.h>
 
 using namespace Gorgon;
 
+struct teststruct {
+	int a;
+	char b;
+	
+	void f(int c) {}
+	
+	DefineStruct(teststruct, a, b);
+};
+
 int main() {
+	
+	teststruct t;
+	std::cout<<teststruct::Reflection().Names[1]<<": "<<Utils::GetTypeName<teststruct::ReflectionType::Member<1>::Type>()<<std::endl;
+	//std::cout<<DefineStructm(2,3,4,5)<<std::endl;
+	return 0;
 try {
 	Initialize("Generic-Test");
 	WindowManager::Initialize();
@@ -43,8 +60,6 @@ try {
 		c=ch++;
 	}*/
 	
-	Resource::File f2;
-	
 	auto im1=new Resource::Image;
 	auto im2=new Resource::Image;
 	im1->ImportPNG("../Source/Manual/0.png");
@@ -57,6 +72,8 @@ try {
 	
 	auto &a=anim.CreateAnimation(true);
 	a.Draw(l, 0, 80);
+	
+	Resource::File f2;
 
 	//f2.Root().Add(anim);
 	//f2.Save("../Source/Manual/test2.gor");

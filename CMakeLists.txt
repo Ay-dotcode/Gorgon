@@ -58,5 +58,11 @@ ADD_LIBRARY(Gorgon STATIC ${All})
 INCLUDE_DIRECTORIES(Gorgon Source/External)
 
 TARGET_LINK_LIBRARIES(Gorgon ${Libs})
-TARGET_LINK_LIBRARIES(Gorgon debug ${DebugLibs})
-TARGET_LINK_LIBRARIES(Gorgon optimized ${OptimizedLibs})
+
+IF(DebugLibs STREQUAL "")
+	TARGET_LINK_LIBRARIES(Gorgon debug ${DebugLibs})
+ENDIF()
+
+IF(OptimizedLibs STREQUAL "")
+	TARGET_LINK_LIBRARIES(Gorgon optimized ${OptimizedLibs})
+ENDIF()

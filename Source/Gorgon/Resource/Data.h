@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Base.h"
 
 namespace Gorgon { namespace Resource {

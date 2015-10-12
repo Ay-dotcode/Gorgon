@@ -136,11 +136,13 @@ namespace Gorgon {
 			return true;
 		}
 		
-		typename std::vector<T_>::const_iterator begin() const {
+		typename std::vector<T_>::const_iterator 
+		begin() const {
 			return listing.begin();
 		}
 		
-		typename std::vector<T_>::const_iterator end() const {
+		typename std::vector<T_>::const_iterator 
+		end() const {
 			return listing.end();
 		}
 		
@@ -278,12 +280,14 @@ namespace Gorgon {
 	/// }
 	/// @endcode
 	template<class T_>
-	typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, enum_type_id<T_>>::type Enumerate() {
+	typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, enum_type_id<T_>>::type 
+	Enumerate() {
 		return enum_type_id<T_>();
 	}
 
 	template <class T_>
-	typename std::vector<T_>::const_iterator begin(enum_type_id<T_>) {
+	typename std::vector<T_>::const_iterator 
+	begin(enum_type_id<T_>) {
 		return staticenumtraits<T_>::begin();
 	}
 
@@ -294,7 +298,8 @@ namespace Gorgon {
 
 	namespace String {
 		template<class T_>
-		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type To(const std::string &text) {
+		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type 
+		To(const std::string &text) {
 			T_ e;
 			if(!staticenumtraits<T_>::lookupvalue(text, e)) return T_();
 			return e;
@@ -324,7 +329,8 @@ namespace Gorgon {
 
 /// Stream writer for upgraded enums
 template<class T_>
-typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::ostream&>::type operator <<(std::ostream &out, const T_ &e) {
+typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::ostream&>::type 
+operator <<(std::ostream &out, const T_ &e) {
 	std::string s;
 	if(!Gorgon::staticenumtraits<T_>::lookupstring(e, s)) return out;
 	out<<s;
@@ -334,7 +340,8 @@ typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradeden
 
 /// Stream reader for upgraded enums
 template<class T_>
-typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::istream&>::type operator >>(std::istream &in, T_ &e) {
+typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::istream&>::type 
+operator >>(std::istream &in, T_ &e) {
 	std::string s;
 	e=T_();
 	in>>s;
@@ -346,7 +353,8 @@ typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradeden
 namespace std {
 	/// Stream reader for upgraded enums
 	template<class T_>
-	typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::istream&>::type getline(std::istream &in, T_ &e) {
+	typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::istream&>::type 
+	getline(std::istream &in, T_ &e) {
 		std::string s;
 		e=T_();
 		std::getline(in, s);
