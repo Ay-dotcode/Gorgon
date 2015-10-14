@@ -43,6 +43,8 @@ namespace Gorgon {
 			};
 			
 			const char *Names[sizeof...(MT_)];
+			
+			static constexpr int IsGorgonReflection = true;
 		};
 	};
 	
@@ -101,7 +103,22 @@ namespace Gorgon {
 #define StructDefiner_names_14(C, E, ...) #E, StructDefiner_names_13(C, __VA_ARGS__)
 #define StructDefiner_names_15(C, E, ...) #E, StructDefiner_names_14(C, __VA_ARGS__)
 #define StructDefiner_names_16(C, E, ...) #E, StructDefiner_names_15(C, __VA_ARGS__)
-	
-#define DefineStruct(C, ...) using ReflectionType = StructDefiner<C, CONC(StructDefiner_types_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>::Inner<CONC(StructDefiner_values_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>; \
+
+/// Defines a struct members with the given name. The first parameter is the name of the class.
+/// This macro should be called inside the class/struct scope. This reflection is geared towards
+/// POD objects. Might not behave as intented on polymorphic objects. After calling this function
+/// the class will have ReflectionType and Reflection() that returns reflection object with names.
+#define DefineStructMembers(C, ...) using ReflectionType = StructDefiner<C, CONC(StructDefiner_types_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>::Inner<CONC(StructDefiner_values_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>; \
 	static constexpr ReflectionType Reflection() { return {CONC(StructDefiner_names_, NARGS(__VA_ARGS__))(C, __VA_ARGS__)}; }
+	
+	
+/// Defines a struct members with the given name. The first parameter is the name of the class.
+/// This macro should be called inside the class/struct scope. This reflection is geared towards
+/// POD objects. Might not behave as intented on polymorphic objects. This variant allows naming
+/// Reflection object function and type. After calling this function the class will have 
+/// {Name}Type and {Name}() that returns reflection object with names.
+#define DefineStructMembersWithName(C, Name, ...) using Name##Type = StructDefiner<C, CONC(StructDefiner_types_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>::Inner<CONC(StructDefiner_values_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>; \
+	static constexpr Name##Type Name() { return {CONC(StructDefiner_names_, NARGS(__VA_ARGS__))(C, __VA_ARGS__)}; }
+	
+	
 }

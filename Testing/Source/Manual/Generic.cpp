@@ -5,6 +5,7 @@
 #include <Gorgon/OS.h>
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Image.h>
+#include <Gorgon/Resource/Data.h>
 #include <Gorgon/Resource/Blob.h>
 #include <Gorgon/Resource/Animation.h>
 #include <Gorgon/Graphics/Layer.h>
@@ -16,19 +17,14 @@ using namespace Gorgon;
 
 struct teststruct {
 	int a;
-	char b;
+	int b;
 	
 	void f(int c) {}
 	
-	DefineStruct(teststruct, a, b);
+	DefineStructMembers(teststruct, a, b);
 };
 
 int main() {
-	
-	teststruct t;
-	std::cout<<teststruct::Reflection().Names[1]<<": "<<Utils::GetTypeName<teststruct::ReflectionType::Member<1>::Type>()<<std::endl;
-	//std::cout<<DefineStructm(2,3,4,5)<<std::endl;
-	return 0;
 try {
 	Initialize("Generic-Test");
 	WindowManager::Initialize();
@@ -74,14 +70,20 @@ try {
 	a.Draw(l, 0, 80);
 	
 	Resource::File f2;
+	
+	//teststruct t{5, 6};
+	Resource::Data d;
+	d.Append("a", 5);
+	d.Append("b", 2);
 
-	//f2.Root().Add(anim);
-	//f2.Save("../Source/Manual/test2.gor");
+	f2.Root().Add(d);
+	f2.Save("../Source/Manual/test2.gor");
+	f2.Root().Remove(d);
 
 	
- 	f2.LoadFile("../Source/Manual/test2.gor");
+ 	//f2.LoadFile("../Source/Manual/test2.gor");
  	f2.Prepare();
- 	f2.Root().Get<Resource::Animation>(0).CreateAnimation(true).Draw(l, 60, 80);
+ 	//f2.Root().Get<Resource::Animation>(0).CreateAnimation(true).Draw(l, 60, 80);
 	
 	//std::cout<<f2.Root().Get<Resource::Blob>(0).GetData()<<std::endl;
 	

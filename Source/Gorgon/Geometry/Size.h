@@ -340,9 +340,9 @@ namespace Gorgon { namespace Geometry {
 
 
 	/// @see basic_Size
-	typedef basic_Size<int>   Size;
+	using Size = basic_Size<int>;
 
 	/// @see basic_Size
-	typedef basic_Size<Float> Sizef;
+	using Sizef = basic_Size<Float>;
 
 } }

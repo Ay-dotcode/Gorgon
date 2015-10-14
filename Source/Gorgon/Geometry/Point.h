@@ -523,10 +523,10 @@ namespace Gorgon {
 		}
 
 		/// @see basic_Point
-		typedef basic_Point<int  > Point;
+		using Point = basic_Point<int>;
 
 		/// @see basic_Point
-		typedef basic_Point<Float> Pointf;
+		using Pointf = basic_Point<Float>;
 
 		/// Performs a rounding operation over a floating point point
 		inline Pointf Round(Pointf num) {
