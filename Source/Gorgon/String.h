@@ -102,12 +102,12 @@ namespace Gorgon {
 	template<class T_>
 	struct enumupgradedhelper {
 		enum {
-			value = decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum,
+			value = decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum,
 		};
 	};
 #else
 #	define decltypetype(...) decltype(__VA_ARGS__)
-#	define ISENUMUPGRADED	decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum
+#	define ISENUMUPGRADED	decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum
 #endif
 		template <class T_>
 		typename std::enable_if<std::is_constructible<T_, std::string>::value, T_>::type
@@ -457,7 +457,7 @@ namespace Gorgon {
 		}
 
 		template<class T_> 
-		typename std::enable_if<!internal::has_stringoperator<T_>::value && !decltype(gorgon__enum_trait_locator((*(T_*)nullptr)))::isupgradedenum, std::string>::type 
+		typename std::enable_if<!internal::has_stringoperator<T_>::value && !decltype(gorgon__enum_tr_loc((*(T_*)nullptr)))::isupgradedenum, std::string>::type 
 		From(const T_ &item) {
 			std::stringstream ss;
 			ss<<item;
@@ -498,7 +498,7 @@ namespace Gorgon {
 			static const bool Value = 
 				IsStreamable<T_>::Value || 
 				internal::has_stringoperator<T_>::value || 
-				decltype(gorgon__enum_trait_locator(*((typename std::decay<T_>::type*)nullptr)))::isupgradedenum;
+				decltype(gorgon__enum_tr_loc(*((typename std::decay<T_>::type*)nullptr)))::isupgradedenum;
 		};
 		
 		/// Streams the given parameters into a stringstream and returns the result, effectively

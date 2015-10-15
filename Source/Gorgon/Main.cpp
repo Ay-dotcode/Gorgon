@@ -8,6 +8,7 @@
 #include "OS.h"
 #include "Time.h"
 #include "Animation.h"
+#include "Resource.h"
 
 #ifdef SCRIPTING
 #	include "Scripting.h"
@@ -34,6 +35,8 @@ namespace Gorgon {
 #ifdef SCRIPTING
 		Scripting::Initialize();
 #endif
+		
+		Resource::Initialize();
 	}
 
 	void Tick() {

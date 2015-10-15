@@ -79,16 +79,16 @@ try {
 	d.Append("d", "texty text");
 	d.Append("e", Geometry::Point{3, 7});
 
-	f2.Root().Add(d);
-	f2.Save("../Source/Manual/test2.gor");
-	f2.Root().Remove(d);
+	//f2.Root().Add(d);
+	//f2.Save("../Source/Manual/test2.gor");
+	//f2.Root().Remove(d);
 
 	for(auto &data : d) {
 		std::cout<<data.Name<<": "<<data<<std::endl;
 	}
 
 	
- 	//f2.LoadFile("../Source/Manual/test2.gor");
+ 	f2.LoadFile("../Source/Manual/test2.gor");
  	//f2.Prepare();
 
 	//std::cout<<"c:"<<f2.Root().Get<Resource::Data>(0).Get<float>(2)<<std::endl;
@@ -110,7 +110,7 @@ try {
 	transfer.TransferErrorEvent.Register([&transfer](Network::HTTP::Error err) {
 		std::cout<<err.error<<": "<<err.what()<<std::endl;
 	});
-	transfer.GetText("http://darkgaze.org/");
+	//transfer.GetText("http://darkgaze.org/");
 	
 	while(1) {
 		NextFrame();

@@ -76,6 +76,8 @@ namespace Gorgon { namespace Resource {
 		virtual void SaveValue(Writer &writer) override {
 			writer.WriteInt32(value);
 		}
+		
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
 
 		virtual std::string ToString() const override {
 			return String::From(value);
@@ -164,6 +166,8 @@ namespace Gorgon { namespace Resource {
 	class Data : public Base {
 	public:
 
+		using LoaderFn=std::function<DataItem *(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize)>;
+		
 		using Iterator = Containers::Collection<DataItem>::Iterator;
 
 		using ConstIterator = Containers::Collection<DataItem>::ConstIterator;
@@ -308,12 +312,18 @@ namespace Gorgon { namespace Resource {
 		void Insert(DataItem &item, int before);
 		
 		
-		static Data *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> data, unsigned long size);
+		static Data *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
+		
+		static void InitializeLoaders();
+		
+		static std::map<GID::Type, LoaderFn> DataLoaders;
 		
 	private:
 		virtual void save(Writer &writer);
 		
 		Containers::Collection<DataItem> items;
+		
+		
 	};
 
 	template<>

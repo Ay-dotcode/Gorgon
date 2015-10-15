@@ -1,4 +1,6 @@
 SET(Local
+	../Resource.h
+	Resource.cpp
 	Animation.h
 	Animation.cpp
 	Base.h

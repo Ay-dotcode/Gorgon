@@ -94,7 +94,7 @@ public:
  */
 	
 template<class T_>
-gorgon__no_enum_trait gorgon__enum_trait_locator(T_);
+gorgon__no_enum_trait gorgon__enum_tr_loc(T_);
 
 namespace Gorgon {
 
@@ -104,7 +104,7 @@ namespace Gorgon {
 	template<class T_>
 	class expandedenumtraits {
 	public:
-		static_assert(decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, "Should be an enum");
+		static_assert(decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, "Should be an enum");
 		
 		expandedenumtraits() {
 			T_ prev=traits.mapping.begin()->first;
@@ -147,7 +147,7 @@ namespace Gorgon {
 		}
 		
 	private:
-		const decltypetype(gorgon__enum_trait_locator(T_())) traits;
+		const decltypetype(gorgon__enum_tr_loc(T_())) traits;
 		std::map<std::string, T_> reversemapping;
 		std::vector<T_> listing;
 	};
@@ -156,7 +156,7 @@ namespace Gorgon {
 	template<class T_>
 	class staticenumtraits {
 	public:
-		static_assert(decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, "Should be an enum");
+		static_assert(decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, "Should be an enum");
 		
 		static bool lookupstring(T_ e, std::string &s) {
 			return traits.lookupstring(e, s);
@@ -205,7 +205,7 @@ namespace Gorgon {
 		\
 		const std::multimap<type, std::string> mapping;\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
+	gorgon_enumtraits_##type gorgon__enum_tr_loc(type);
 
 	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
@@ -228,7 +228,7 @@ namespace Gorgon {
 		\
 		const std::multimap<type, std::string> mapping;\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_trait_locator(type);
+	gorgon_enumtraits_##type gorgon__enum_tr_loc(type);
 
 	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
@@ -250,7 +250,7 @@ namespace Gorgon {
 		\
 		const std::multimap<clsname::type, std::string> mapping;\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_trait_locator(clsname::type);
+	gorgon_enumtraits_##type gorgon__enum_tr_loc(clsname::type);
 
 	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
@@ -271,7 +271,7 @@ namespace Gorgon {
 		\
 		const std::multimap<clsname::type, std::string> mapping;\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_trait_locator(clsname::type);
+	gorgon_enumtraits_##type gorgon__enum_tr_loc(clsname::type);
 	
 	/// Allows enumeration of upgraded enums using range based for.
 	/// @code
@@ -280,7 +280,7 @@ namespace Gorgon {
 	/// }
 	/// @endcode
 	template<class T_>
-	typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, enum_type_id<T_>>::type 
+	typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, enum_type_id<T_>>::type 
 	Enumerate() {
 		return enum_type_id<T_>();
 	}
@@ -298,7 +298,7 @@ namespace Gorgon {
 
 	namespace String {
 		template<class T_>
-		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type 
+		typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, T_>::type 
 		To(const std::string &text) {
 			T_ e;
 			if(!staticenumtraits<T_>::lookupvalue(text, e)) return T_();
@@ -306,7 +306,7 @@ namespace Gorgon {
 		}
 		
 		template<class T_>
-		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::string>::type 
+		typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, std::string>::type 
 		From(const T_ &e) {
 			std::string s;
 			if(!staticenumtraits<T_>::lookupstring(e, s)) return "";
@@ -314,12 +314,12 @@ namespace Gorgon {
 		}
 		
 		template<class T_>
-		typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, T_>::type 
+		typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, T_>::type 
 		Parse(const std::string &text) {
 			T_ e;
 			if(!staticenumtraits<T_>::lookupvalue(text, e)) {
 				std::string s ="\""+text+"\" is not a valid ";
-				s+=decltype(gorgon__enum_trait_locator(T_()))::name();
+				s+=decltype(gorgon__enum_tr_loc(T_()))::name();
 				throw ParseError(20001, s);
 			}
 			return e;
@@ -329,7 +329,7 @@ namespace Gorgon {
 
 /// Stream writer for upgraded enums
 template<class T_>
-typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::ostream&>::type 
+typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, std::ostream&>::type 
 operator <<(std::ostream &out, const T_ &e) {
 	std::string s;
 	if(!Gorgon::staticenumtraits<T_>::lookupstring(e, s)) return out;
@@ -340,7 +340,7 @@ operator <<(std::ostream &out, const T_ &e) {
 
 /// Stream reader for upgraded enums
 template<class T_>
-typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::istream&>::type 
+typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, std::istream&>::type 
 operator >>(std::istream &in, T_ &e) {
 	std::string s;
 	e=T_();
@@ -353,7 +353,7 @@ operator >>(std::istream &in, T_ &e) {
 namespace std {
 	/// Stream reader for upgraded enums
 	template<class T_>
-	typename std::enable_if<decltype(gorgon__enum_trait_locator(T_()))::isupgradedenum, std::istream&>::type 
+	typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, std::istream&>::type 
 	getline(std::istream &in, T_ &e) {
 		std::string s;
 		e=T_();
