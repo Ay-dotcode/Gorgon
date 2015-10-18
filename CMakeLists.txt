@@ -48,6 +48,9 @@ INCLUDE(Scripts/Compiler.cmake)
 
 INCLUDE(Scripts/Macros.cmake)
 
+SET(DebugLibs "")
+SET(OptimizedLibs "")
+
 StartSource(Source/Gorgon)
 
 INCLUDE(Scripts/Testing.cmake)
@@ -59,10 +62,10 @@ INCLUDE_DIRECTORIES(Gorgon Source/External)
 
 TARGET_LINK_LIBRARIES(Gorgon ${Libs})
 
-IF(DebugLibs STREQUAL "")
+IF(NOT DebugLibs STREQUAL "")
 	TARGET_LINK_LIBRARIES(Gorgon debug ${DebugLibs})
 ENDIF()
 
-IF(OptimizedLibs STREQUAL "")
+IF(NOT OptimizedLibs STREQUAL "")
 	TARGET_LINK_LIBRARIES(Gorgon optimized ${OptimizedLibs})
 ENDIF()

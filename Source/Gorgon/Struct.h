@@ -34,7 +34,7 @@ namespace Gorgon {
 			
 			template<class ...S_>
 			constexpr Inner(const S_ &...names) : Names{names...} {
-				static_assert(sizeof...(S_) == sizeof...(M_), "Number of element names does not match with the number of elements");
+				static_assert(sizeof...(S_) == sizeof...(MT_), "Number of element names does not match with the number of elements");
 			}
 			
 			template<int N>
@@ -47,14 +47,20 @@ namespace Gorgon {
 			static constexpr int IsGorgonReflection = true;
 		};
 	};
-	
+
+#define CALLER(F, P) CALL_(F, P)
+#define CALL_(F, P) F##P
 #define CONC(A, B) CONC_(A, B)
-#define CONC_(A, B) A##B
-#define NARGS(...) NARGS_(__VA_ARGS__, 5, 4, 3, 2, 1, 0)
-#define NARGS_(_5, _4, _3, _2, _1, N, ...) N
-	
+#define CONC_(A, B) CONC__(A, B)
+#define CONC__(A, B) CONC___(A, B)
+#define CONC___(A, B) CONC____(A, B)
+#define CONC____(A, B) A##B
+#define NARGS(...) CALL_(NARGS_,(__VA_ARGS__, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
+#define NARGS_(_16, _15, _14, _13, _12, _11, _10, _9, _8, _7, _6, _5, _4, _3, _2, _1, N, ...) N
+
+
 #define StructDefiner_types_1(C, E) decltype(&C::E)
-#define StructDefiner_types_2(C, E, ...) decltype(&C::E), StructDefiner_types_1(C, __VA_ARGS__)
+#define StructDefiner_types_2(C, E, F) decltype(&C::E), StructDefiner_types_1(C, F)
 #define StructDefiner_types_3(C, E, ...) decltype(&C::E), StructDefiner_types_2(C, __VA_ARGS__)
 #define StructDefiner_types_4(C, E, ...) decltype(&C::E), StructDefiner_types_3(C, __VA_ARGS__)
 #define StructDefiner_types_5(C, E, ...) decltype(&C::E), StructDefiner_types_4(C, __VA_ARGS__)
@@ -71,7 +77,7 @@ namespace Gorgon {
 #define StructDefiner_types_16(C, E, ...) decltype(&C::E), StructDefiner_types_15(C, __VA_ARGS__)
 
 #define StructDefiner_values_1(C, E) &C::E
-#define StructDefiner_values_2(C, E, ...) &C::E, StructDefiner_values_1(C, __VA_ARGS__)
+#define StructDefiner_values_2(C, E, F) &C::E, StructDefiner_values_1(C, F)
 #define StructDefiner_values_3(C, E, ...) &C::E, StructDefiner_values_2(C, __VA_ARGS__)
 #define StructDefiner_values_4(C, E, ...) &C::E, StructDefiner_values_3(C, __VA_ARGS__)
 #define StructDefiner_values_5(C, E, ...) &C::E, StructDefiner_values_4(C, __VA_ARGS__)
@@ -88,7 +94,7 @@ namespace Gorgon {
 #define StructDefiner_values_16(C, E, ...) &C::E, StructDefiner_values_15(C, __VA_ARGS__)
 	
 #define StructDefiner_names_1(C, E) #E
-#define StructDefiner_names_2(C, E, ...) #E, StructDefiner_names_1(C, __VA_ARGS__)
+#define StructDefiner_names_2(C, E, F) #E, StructDefiner_names_1(C, F)
 #define StructDefiner_names_3(C, E, ...) #E, StructDefiner_names_2(C, __VA_ARGS__)
 #define StructDefiner_names_4(C, E, ...) #E, StructDefiner_names_3(C, __VA_ARGS__)
 #define StructDefiner_names_5(C, E, ...) #E, StructDefiner_names_4(C, __VA_ARGS__)
@@ -108,8 +114,10 @@ namespace Gorgon {
 /// This macro should be called inside the class/struct scope. This reflection is geared towards
 /// POD objects. Might not behave as intented on polymorphic objects. After calling this function
 /// the class will have ReflectionType and Reflection() that returns reflection object with names.
-#define DefineStructMembers(C, ...) using ReflectionType = StructDefiner<C, CONC(StructDefiner_types_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>::Inner<CONC(StructDefiner_values_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>; \
-	static constexpr ReflectionType Reflection() { return {CONC(StructDefiner_names_, NARGS(__VA_ARGS__))(C, __VA_ARGS__)}; }
+#define DefineStructMembers(C, ...) \
+	using ReflectionType = StructDefiner<C, CALLER(CALL_(CONC, (StructDefiner_types_, CONC(NARGS,(__VA_ARGS__))) ),(C, __VA_ARGS__))>::\
+	Inner<CALLER(CALL_(CONC, (StructDefiner_values_, CONC(NARGS,(__VA_ARGS__))) ),(C, __VA_ARGS__))>; \
+	static constexpr ReflectionType Reflection() { return {CALLER(CALL_(CONC, (StructDefiner_names_, CONC(NARGS,(__VA_ARGS__))) ),(C, __VA_ARGS__))}; }
 	
 	
 /// Defines a struct members with the given name. The first parameter is the name of the class.
@@ -119,6 +127,7 @@ namespace Gorgon {
 /// {Name}Type and {Name}() that returns reflection object with names.
 #define DefineStructMembersWithName(C, Name, ...) using Name##Type = StructDefiner<C, CONC(StructDefiner_types_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>::Inner<CONC(StructDefiner_values_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>; \
 	static constexpr Name##Type Name() { return {CONC(StructDefiner_names_, NARGS(__VA_ARGS__))(C, __VA_ARGS__)}; }
-	
+
+#undef CALL
 	
 }
