@@ -26,6 +26,15 @@ namespace Gorgon { namespace Resource {
 			SaveValue(writer);
 			writer.WriteEnd(start);
 		}
+
+		/// Returns the contents of this data item to the requested type
+		template <class T_>
+		T_ Get() const {
+			static_assert(std::is_same<T_, int>::value, "Unknown data type.");
+		}
+
+		/// Converts the contents of this data to string
+		virtual std::string ToString() const = 0;
 		
 		/// Saves only the value of the data item to gorgon file. issizewritten controls whether the size of the object
 		/// should be written for some data types (like blob and string)
@@ -48,30 +57,117 @@ namespace Gorgon { namespace Resource {
 			T_ value = T_();
 		};
 	}
-	
+
 	class IntegerData : public DataItem, private internal::DataImp<int> {
 	public:
-		IntegerData() {  }
-		
-		IntegerData(int v) : DataImp<int>(v) { }
-		
+		IntegerData() {}
+
+		IntegerData(int v) : DataImp<int>(v) {}
+
 		IntegerData(const std::string &name, int v) : DataImp<int>(v) {
 			Name=name;
 		}
-		
+
 		virtual GID::Type GetGID() const { return GID::Data_Int; }
-		
+
 		using internal::DataImp<int>::Get;
 		using internal::DataImp<int>::Set;
-		
+
 		virtual void SaveValue(Writer &writer) override {
 			writer.WriteInt32(value);
 		}
+
+		virtual std::string ToString() const override {
+			return String::From(value);
+		}
 	};
-	
+
+	class FloatData : public DataItem, private internal::DataImp<float> {
+	public:
+		FloatData() {}
+
+		FloatData(float v) : DataImp<float>(v) {}
+
+		FloatData(const std::string &name, float v) : DataImp<float>(v) {
+			Name=name;
+		}
+
+		virtual GID::Type GetGID() const { return GID::Data_Float; }
+
+		using internal::DataImp<float>::Get;
+		using internal::DataImp<float>::Set;
+
+		virtual void SaveValue(Writer &writer) override {
+			writer.WriteFloat(value);
+		}
+
+		virtual std::string ToString() const override {
+			return String::From(value);
+		}
+	};
+
+	class PointData : public DataItem, private internal::DataImp<Geometry::Point> {
+	public:
+		PointData() {}
+
+		PointData(Geometry::Point v) : DataImp<Geometry::Point>(v) {}
+
+		PointData(const std::string &name, Geometry::Point v) : DataImp<Geometry::Point>(v) {
+			Name=name;
+		}
+
+		virtual GID::Type GetGID() const { return GID::Data_Point; }
+
+		using internal::DataImp<Geometry::Point>::Get;
+		using internal::DataImp<Geometry::Point>::Set;
+
+		virtual void SaveValue(Writer &writer) override {
+			writer.WriteInt32(value.X);
+			writer.WriteInt32(value.Y);
+		}
+
+		virtual std::string ToString() const override {
+			return String::From(value);
+		}
+	};
+
+	class StringData : public DataItem, private internal::DataImp<std::string> {
+	public:
+		StringData() {}
+
+		StringData(std::string v) : DataImp<std::string>(v) {}
+
+		StringData(const std::string &name, const std::string &v) : DataImp<std::string>(v) {
+			Name=name;
+		}
+
+		virtual GID::Type GetGID() const { return GID::Data_Text; }
+
+		using internal::DataImp<std::string>::Get;
+		using internal::DataImp<std::string>::Set;
+
+		virtual void SaveValue(Writer &writer) override {
+			writer.WriteStringWithSize(value);
+		}
+
+		virtual std::string ToString() const override {
+			return String::From(value);
+		}
+	};
+
+	inline std::ostream &operator <<(std::ostream &out, const DataItem &item) {
+		out<<item.ToString();
+
+		return out;
+	}
+
 	class Data : public Base {
 	public:
-		
+
+		using Iterator = Containers::Collection<DataItem>::Iterator;
+
+		using ConstIterator = Containers::Collection<DataItem>::ConstIterator;
+
 		/// Creates an empty Data
 		Data() { }
 		
@@ -117,21 +213,45 @@ namespace Gorgon { namespace Resource {
 		}
 		
 		void Append(int value) {
-			items.Add(new IntegerData(value));
+			Append("#"+String::From(items.GetCount()), value);
 		}
 		
 		void Append(const std::string &name, int value) {
 			items.Add(new IntegerData(name, value));
 		}
-		
-		void Append(unsigned long value);
-		
-		void Append(float value);
-		
-		void Append(double value);
-		
-		void Append(Geometry::Point p);
-		
+
+		void Append(float value) {
+			Append("#"+String::From(items.GetCount()), value);
+		}
+
+		void Append(const std::string &name, float value) {
+			items.Add(new FloatData(name, value));
+		}
+
+		void Append(const std::string &value) {
+			Append("#"+String::From(items.GetCount()), value);
+		}
+
+		void Append(const std::string &name, const std::string &value) {
+			items.Add(new StringData(name, value));
+		}
+
+		void Append(const char *value) {
+			Append("#"+String::From(items.GetCount()), value);
+		}
+
+		void Append(const std::string &name, const char *value) {
+			items.Add(new StringData(name, value));
+		}
+
+		void Append(Geometry::Point value) {
+			Append("#"+String::From(items.GetCount()), value);
+		}
+
+		void Append(const std::string &name, Geometry::Point value) {
+			items.Add(new PointData(name, value));
+		}
+
 		void Append(Geometry::Size s);
 		
 		/// Transforms the members of this resource data to the given struct. Members are matched by name. 
@@ -153,7 +273,23 @@ namespace Gorgon { namespace Resource {
 		T_ Get(const std::string &name) const {
 			static_assert(std::is_same<T_, int>::value, "Unknown data type.");
 		}
-		
+
+		ConstIterator begin() const {
+			return items.begin();
+		}
+
+		ConstIterator end() const {
+			return items.end();
+		}
+
+		Iterator begin() {
+			return items.begin();
+		}
+
+		Iterator end() {
+			return items.end();
+		}
+
 		DataItem &GetItem(int index) const;
 		
 		DataItem &GetItem(const std::string &name) const;
@@ -179,14 +315,64 @@ namespace Gorgon { namespace Resource {
 		
 		Containers::Collection<DataItem> items;
 	};
-	
+
 	template<>
 	inline int Data::Get<int>(int index) const {
 		auto item=dynamic_cast<IntegerData&>(items[index]);
-		
+
 		return item.Get();
 	}
-	
+
+	template<>
+	inline float Data::Get<float>(int index) const {
+		auto item=dynamic_cast<FloatData&>(items[index]);
+
+		return item.Get();
+	}
+
+	template<>
+	inline Geometry::Point Data::Get<Geometry::Point>(int index) const {
+		auto item=dynamic_cast<PointData&>(items[index]);
+
+		return item.Get();
+	}
+
+	template<>
+	inline std::string Data::Get<std::string>(int index) const {
+		auto item=dynamic_cast<StringData&>(items[index]);
+
+		return item.Get();
+	}
+
+
+	template<>
+	inline int DataItem::Get<int>() const {
+		auto item=dynamic_cast<const IntegerData&>(*this);
+
+		return item.Get();
+	}
+
+	template<>
+	inline float DataItem::Get<float>() const {
+		auto item=dynamic_cast<const FloatData&>(*this);
+
+		return item.Get();
+	}
+
+	template<>
+	inline Geometry::Point DataItem::Get<Geometry::Point>() const {
+		auto item=dynamic_cast<const PointData&>(*this);
+
+		return item.Get();
+	}
+
+	template<>
+	inline std::string DataItem::Get<std::string>() const {
+		auto item=dynamic_cast<const StringData&>(*this);
+
+		return item.Get();
+	}
+
 } }
 
 extern std::vector< int > v;

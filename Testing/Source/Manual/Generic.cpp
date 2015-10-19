@@ -71,18 +71,28 @@ try {
 	
 	Resource::File f2;
 	
-	//teststruct t{5, 6};
+	teststruct t;
 	Resource::Data d;
 	d.Append("a", 5);
 	d.Append("b", 2);
+	d.Append("c", 2.2f);
+	d.Append("d", "texty text");
+	d.Append("e", Geometry::Point{3, 7});
 
 	f2.Root().Add(d);
 	f2.Save("../Source/Manual/test2.gor");
 	f2.Root().Remove(d);
 
+	for(auto &data : d) {
+		std::cout<<data.Name<<": "<<data<<std::endl;
+	}
+
 	
  	//f2.LoadFile("../Source/Manual/test2.gor");
- 	f2.Prepare();
+ 	//f2.Prepare();
+
+	//std::cout<<"c:"<<f2.Root().Get<Resource::Data>(0).Get<float>(2)<<std::endl;
+
  	//f2.Root().Get<Resource::Animation>(0).CreateAnimation(true).Draw(l, 60, 80);
 	
 	//std::cout<<f2.Root().Get<Resource::Blob>(0).GetData()<<std::endl;
