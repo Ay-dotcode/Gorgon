@@ -136,8 +136,8 @@ namespace Gorgon {
 			CONSTEXPR Type Data_Int				{0x02030C02};
 			CONSTEXPR Type Data_Float			{0x02030C03};
 			CONSTEXPR Type Data_Point			{0x02030C04};
-			CONSTEXPR Type Data_Point2D			{0x02030C09};
-			CONSTEXPR Type Data_Rect			{0x02030C05};
+			CONSTEXPR Type Data_Pointf			{0x02030C09};
+			CONSTEXPR Type Data_Rectangle		{0x02030C05};
 			CONSTEXPR Type Data_Link			{0x02030C07};
 			CONSTEXPR Type Data_Names			{0x02030101};
 			CONSTEXPR Type Data_Name			{0x02030102};

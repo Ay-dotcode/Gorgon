@@ -78,18 +78,22 @@ try {
 	d.Append("c", 2.2f);
 	d.Append("d", "texty text");
 	d.Append("e", Geometry::Point{3, 7});
+	d.Append("f", Geometry::Size{11, 22});
+	d.Append("g", Geometry::Rectangle{10,10, 10,10});
+	d.Append("h", Geometry::Bounds{10,10, 20,20});
+	d.Append("i", Geometry::Margins{12,8,4,8});
 
-	//f2.Root().Add(d);
-	//f2.Save("../Source/Manual/test2.gor");
-	//f2.Root().Remove(d);
+	/*f2.Root().Add(d);
+	f2.Save("../Source/Manual/test2.gor");
+	f2.Root().Remove(d);*/
 
-	for(auto &data : d) {
+	f2.LoadFile("../Source/Manual/test2.gor");
+	f2.Prepare();
+
+	for(auto &data : f2.Root().Get<Resource::Data>(0)) {
 		std::cout<<data.Name<<": "<<data<<std::endl;
 	}
 
-	
- 	f2.LoadFile("../Source/Manual/test2.gor");
- 	//f2.Prepare();
 
 	//std::cout<<"c:"<<f2.Root().Get<Resource::Data>(0).Get<float>(2)<<std::endl;
 

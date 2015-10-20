@@ -4,6 +4,11 @@
 #include "Reader.h"
 #include "../Geometry/Point.h"
 #include "../Geometry/Size.h"
+#include "../Geometry/Rectangle.h"
+#include "../Geometry/Bounds.h"
+#include "../Geometry/Margins.h"
+
+#include <functional>
 
 namespace Gorgon { namespace Resource {
 	
@@ -103,8 +108,36 @@ namespace Gorgon { namespace Resource {
 			writer.WriteFloat(value);
 		}
 
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
+
 		virtual std::string ToString() const override {
 			return String::From(value);
+		}
+	};
+
+	class TextData : public DataItem, private internal::DataImp<std::string> {
+	public:
+		TextData() {}
+
+		TextData(std::string v) : DataImp<std::string>(v) {}
+
+		TextData(const std::string &name, const std::string &v) : DataImp<std::string>(v) {
+			Name=name;
+		}
+
+		virtual GID::Type GetGID() const { return GID::Data_Text; }
+
+		using internal::DataImp<std::string>::Get;
+		using internal::DataImp<std::string>::Set;
+
+		virtual void SaveValue(Writer &writer) override {
+			writer.WriteStringWithSize(value);
+		}
+
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
+
+		virtual std::string ToString() const override {
+			return value;
 		}
 	};
 
@@ -128,29 +161,148 @@ namespace Gorgon { namespace Resource {
 			writer.WriteInt32(value.Y);
 		}
 
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
+
 		virtual std::string ToString() const override {
 			return String::From(value);
 		}
 	};
 
-	class StringData : public DataItem, private internal::DataImp<std::string> {
+	class PointfData : public DataItem, private internal::DataImp<Geometry::Pointf> {
 	public:
-		StringData() {}
+		PointfData() {}
 
-		StringData(std::string v) : DataImp<std::string>(v) {}
+		PointfData(Geometry::Pointf v) : DataImp<Geometry::Pointf>(v) {}
 
-		StringData(const std::string &name, const std::string &v) : DataImp<std::string>(v) {
+		PointfData(const std::string &name, Geometry::Pointf v) : DataImp<Geometry::Pointf>(v) {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Text; }
+		virtual GID::Type GetGID() const { return GID::Data_Pointf; }
 
-		using internal::DataImp<std::string>::Get;
-		using internal::DataImp<std::string>::Set;
+		using internal::DataImp<Geometry::Pointf>::Get;
+		using internal::DataImp<Geometry::Pointf>::Set;
 
 		virtual void SaveValue(Writer &writer) override {
-			writer.WriteStringWithSize(value);
+			writer.WriteFloat(value.X);
+			writer.WriteFloat(value.Y);
 		}
+
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
+
+		virtual std::string ToString() const override {
+			return String::From(value);
+		}
+	};
+
+	class SizeData : public DataItem, private internal::DataImp<Geometry::Size> {
+	public:
+		SizeData() {}
+
+		SizeData(Geometry::Size v) : DataImp<Geometry::Size>(v) {}
+
+		SizeData(const std::string &name, Geometry::Size v) : DataImp<Geometry::Size>(v) {
+			Name=name;
+		}
+
+		virtual GID::Type GetGID() const { return GID::Data_Size; }
+
+		using internal::DataImp<Geometry::Size>::Get;
+		using internal::DataImp<Geometry::Size>::Set;
+
+		virtual void SaveValue(Writer &writer) override {
+			writer.WriteInt32(value.Width);
+			writer.WriteInt32(value.Height);
+		}
+
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
+
+		virtual std::string ToString() const override {
+			return String::From(value);
+		}
+	};
+
+	class RectangleData : public DataItem, private internal::DataImp<Geometry::Rectangle> {
+	public:
+		RectangleData() {}
+
+		RectangleData(Geometry::Rectangle v) : DataImp<Geometry::Rectangle>(v) {}
+
+		RectangleData(const std::string &name, Geometry::Rectangle v) : DataImp<Geometry::Rectangle>(v) {
+			Name=name;
+		}
+
+		virtual GID::Type GetGID() const { return GID::Data_Rectangle; }
+
+		using internal::DataImp<Geometry::Rectangle>::Get;
+		using internal::DataImp<Geometry::Rectangle>::Set;
+
+		virtual void SaveValue(Writer &writer) override {
+			writer.WriteInt32(value.X);
+			writer.WriteInt32(value.Y);
+			writer.WriteInt32(value.Width);
+			writer.WriteInt32(value.Height);
+		}
+
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
+
+		virtual std::string ToString() const override {
+			return String::From(value);
+		}
+	};
+
+	class BoundsData : public DataItem, private internal::DataImp<Geometry::Bounds> {
+	public:
+		BoundsData() {}
+
+		BoundsData(Geometry::Bounds v) : DataImp<Geometry::Bounds>(v) {}
+
+		BoundsData(const std::string &name, Geometry::Bounds v) : DataImp<Geometry::Bounds>(v) {
+			Name=name;
+		}
+
+		virtual GID::Type GetGID() const { return GID::Data_Bounds; }
+
+		using internal::DataImp<Geometry::Bounds>::Get;
+		using internal::DataImp<Geometry::Bounds>::Set;
+
+		virtual void SaveValue(Writer &writer) override {
+			writer.WriteInt32(value.Left);
+			writer.WriteInt32(value.Top);
+			writer.WriteInt32(value.Right);
+			writer.WriteInt32(value.Bottom);
+		}
+
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
+
+		virtual std::string ToString() const override {
+			return String::From(value);
+		}
+	};
+
+	class MarginsData : public DataItem, private internal::DataImp<Geometry::Margins> {
+	public:
+		MarginsData() {}
+
+		MarginsData(Geometry::Margins v) : DataImp<Geometry::Margins>(v) {}
+
+		MarginsData(const std::string &name, Geometry::Margins v) : DataImp<Geometry::Margins>(v) {
+			Name=name;
+		}
+
+		virtual GID::Type GetGID() const { return GID::Data_Margins; }
+
+		using internal::DataImp<Geometry::Margins>::Get;
+		using internal::DataImp<Geometry::Margins>::Set;
+
+		virtual void SaveValue(Writer &writer) override {
+			writer.WriteInt32(value.Left);
+			writer.WriteInt32(value.Top);
+			writer.WriteInt32(value.Right);
+			writer.WriteInt32(value.Bottom);
+		}
+
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
 
 		virtual std::string ToString() const override {
 			return String::From(value);
@@ -237,7 +389,7 @@ namespace Gorgon { namespace Resource {
 		}
 
 		void Append(const std::string &name, const std::string &value) {
-			items.Add(new StringData(name, value));
+			items.Add(new TextData(name, value));
 		}
 
 		void Append(const char *value) {
@@ -245,7 +397,7 @@ namespace Gorgon { namespace Resource {
 		}
 
 		void Append(const std::string &name, const char *value) {
-			items.Add(new StringData(name, value));
+			items.Add(new TextData(name, value));
 		}
 
 		void Append(Geometry::Point value) {
@@ -349,7 +501,7 @@ namespace Gorgon { namespace Resource {
 
 	template<>
 	inline std::string Data::Get<std::string>(int index) const {
-		auto item=dynamic_cast<StringData&>(items[index]);
+		auto item=dynamic_cast<TextData&>(items[index]);
 
 		return item.Get();
 	}
@@ -378,7 +530,7 @@ namespace Gorgon { namespace Resource {
 
 	template<>
 	inline std::string DataItem::Get<std::string>() const {
-		auto item=dynamic_cast<const StringData&>(*this);
+		auto item=dynamic_cast<const TextData&>(*this);
 
 		return item.Get();
 	}

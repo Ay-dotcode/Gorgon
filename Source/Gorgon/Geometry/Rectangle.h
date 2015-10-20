@@ -124,13 +124,13 @@ namespace Gorgon { namespace Geometry {
 			std::string str;
 			
 			str.push_back('<');
-			str += String::To(X);
+			str += String::From(X);
 			str.push_back(',');
-			str += String::To(Y);
+			str += String::From(Y);
 			str.push_back(' ');
-			str += String::To(Width);
+			str += String::From(Width);
 			str.push_back('x');
-			str += String::To(Height);
+			str += String::From(Height);
 			str.push_back('>');
 			
 			return str;
