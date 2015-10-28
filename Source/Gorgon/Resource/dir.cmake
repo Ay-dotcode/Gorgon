@@ -7,6 +7,8 @@ SET(Local
 	Base.cpp
 	Blob.h
 	Blob.cpp
+	DataItems.h
+	DataItems.cpp
 	Data.h
 	Data.cpp
 	File.h

@@ -1,11 +1,11 @@
 #include "../Resource.h"
-#include "Data.h"
+#include "DataItems.h"
 
 
 namespace Gorgon { namespace Resource {
 	
 	void Initialize() {
-		Data::InitializeLoaders();
+		DataItem::InitializeLoaders();
 	}
 	
 } }
