@@ -77,7 +77,7 @@ namespace Gorgon { namespace Geometry {
 			
 		}
 		
-		operator std::string() const {
+		explicit operator std::string() const {
 			return std::string("[")+String::From(Left)+" - "+String::From(Right)+", "+String::From(Top)+" - "+String::From(Bottom)+"]";
 		}
 

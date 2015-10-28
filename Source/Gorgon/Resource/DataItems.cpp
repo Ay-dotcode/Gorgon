@@ -11,6 +11,12 @@ namespace Gorgon { namespace Resource {
 		DataLoaders[GID::Data_Float] = &FloatData::Load;
 		DataLoaders[GID::Data_Text]  = &TextData::Load;
 		DataLoaders[GID::Data_Point] = &PointData::Load;
+		DataLoaders[GID::Data_Pointf] = &PointfData::Load;
+		DataLoaders[GID::Data_Size] = &SizeData::Load;
+		DataLoaders[GID::Data_Rectangle] = &RectangleData::Load;
+		DataLoaders[GID::Data_Bounds] = &BoundsData::Load;
+		DataLoaders[GID::Data_Margins] = &MarginsData::Load;
+		DataLoaders[GID::Data_Object] = &ObjectData::Load;
 	}
 
 	DataItem* IntegerData::Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, long unsigned int totalsize) {
@@ -65,7 +71,7 @@ namespace Gorgon { namespace Resource {
 
 		Geometry::Point value{x, y};
 
-		ASSERT((bool)target, "Point data size mismatch: should be 4, reported as "+String::From(totalsize));
+		ASSERT((bool)target, "Point data size mismatch");
 
 		return new PointData(name, value);
 	}
@@ -81,7 +87,7 @@ namespace Gorgon { namespace Resource {
 
 		Geometry::Pointf value{x, y};
 
-		ASSERT((bool)target, "Pointf data size mismatch: should be 4, reported as "+String::From(totalsize));
+		ASSERT((bool)target, "Pointf data size mismatch");
 
 		return new PointfData(name, value);
 	}
@@ -97,7 +103,7 @@ namespace Gorgon { namespace Resource {
 
 		Geometry::Size value{w, h};
 
-		ASSERT((bool)target, "Size data size mismatch: should be 4, reported as "+String::From(totalsize));
+		ASSERT((bool)target, "Size data size mismatch");
 
 		return new SizeData(name, value);
 	}
@@ -115,7 +121,7 @@ namespace Gorgon { namespace Resource {
 
 		Geometry::Rectangle value{x,y, w,h};
 
-		ASSERT((bool)target, "Rectangle data size mismatch: should be 4, reported as "+String::From(totalsize));
+		ASSERT((bool)target, "Rectangle data size mismatch");
 
 		return new RectangleData(name, value);
 	}
@@ -133,7 +139,7 @@ namespace Gorgon { namespace Resource {
 
 		Geometry::Bounds value{l,t,r,b};
 
-		ASSERT((bool)target, "Bounds data size mismatch: should be 4, reported as "+String::From(totalsize));
+		ASSERT((bool)target, "Bounds data size mismatch");
 
 		return new BoundsData(name, value);
 	}
@@ -151,9 +157,33 @@ namespace Gorgon { namespace Resource {
 
 		Geometry::Margins value{l,t,r,b};
 
-		ASSERT((bool)target, "Margins data size mismatch: should be 4, reported as "+String::From(totalsize));
+		ASSERT((bool)target, "Margins data size mismatch");
 
 		return new MarginsData(name, value);
+	}
+
+	DataItem* ObjectData::Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, long unsigned int totalsize) {
+#ifndef NDEBUG
+		auto target = reader->Target(totalsize);
+#endif
+
+		std::string name=reader->ReadString();
+
+		Base *value=nullptr;
+
+		if(!target) {
+			auto gid = reader->ReadGID();
+			auto size = reader->ReadChunkSize();
+
+			auto f = file.lock();
+			if(!f) throw std::runtime_error("Object data requires a file to read its payload");
+
+			value=f->LoadChunk(gid, size);
+		}
+
+		ASSERT((bool)target, "Object data size mismatch");
+
+		return new ObjectData(name, value);
 	}
 
 

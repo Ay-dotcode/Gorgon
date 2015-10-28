@@ -60,6 +60,7 @@ try {
 	auto im2=new Resource::Image;
 	im1->ImportPNG("../Source/Manual/0.png");
 	im2->ImportPNG("../Source/Manual/1.png");
+	im1->SetName("Image 1");
 	im1->Prepare();
 	im2->Prepare();
 	Resource::Animation anim;
@@ -82,10 +83,12 @@ try {
 	d.Append("g", Geometry::Rectangle{10,10, 10,10});
 	d.Append("h", Geometry::Bounds{10,10, 20,20});
 	d.Append("i", Geometry::Margins{12,8,4,8});
+	d.Append("j", im1);
 
-	/*f2.Root().Add(d);
-	f2.Save("../Source/Manual/test2.gor");
-	f2.Root().Remove(d);*/
+	//f2.Root().Add(d);
+	//f2.Save("../Source/Manual/test2.gor");
+	//f2.Root().Remove(d);
+	//dynamic_cast<Resource::ObjectData&>(d.GetItem("j")).Release();
 
 	f2.LoadFile("../Source/Manual/test2.gor");
 	f2.Prepare();
@@ -94,6 +97,8 @@ try {
 		std::cout<<data.Name<<": "<<data<<std::endl;
 	}
 
+	d.GetObject<Resource::Image>(9).Prepare();
+	d.GetObject<Resource::Image>(9).Draw(l, 0, 120);
 
 	//std::cout<<"c:"<<f2.Root().Get<Resource::Data>(0).Get<float>(2)<<std::endl;
 

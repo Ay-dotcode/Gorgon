@@ -7,13 +7,13 @@
 
 ///@cond INTERNAL
 #ifndef CONSTEXPR
-#	ifdef WIN32 
+/*#	ifdef WIN32 
 #		define CONSTEXPR	static
 #		define CONSTEXPRFN
-#	else
+#	else*/
 #		define CONSTEXPR	constexpr
 #		define CONSTEXPRFN  constexpr
-#	endif
+//#	endif
 #endif
 ///@endcond
 
@@ -145,7 +145,8 @@ namespace Gorgon {
 			CONSTEXPR Type Data_Color			{0x02030D02};
 			CONSTEXPR Type Data_Size			{0x02030D03};
 			CONSTEXPR Type Data_Bounds			{0x02030D04};
-			CONSTEXPR Type Data_Margins			{0x02030D05};
+			CONSTEXPR Type Data_Margins			{0x02030D05};			
+			CONSTEXPR Type Data_Object			{0x02030D06};
 
 			//////////////////////////////////////////////////////////////////////////
 			// Gaming resources

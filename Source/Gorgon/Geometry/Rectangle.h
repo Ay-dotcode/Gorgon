@@ -120,7 +120,7 @@ namespace Gorgon { namespace Geometry {
 		}
 		
 		/// Conversion to string
-		operator std::string() const {
+		explicit operator std::string() const {
 			std::string str;
 			
 			str.push_back('<');

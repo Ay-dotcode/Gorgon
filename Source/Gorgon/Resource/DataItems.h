@@ -35,11 +35,14 @@ namespace Gorgon { namespace Resource {
 			writer.WriteEnd(start);
 		}
 
-		/// Returns the contents of this data item to the requested type
+		/// Returns the contents of this data item to the requested type; use GetObject in order to get resource objects
 		template <class T_>
 		T_ Get() const {
 			static_assert(std::is_same<T_, int>::value, "Unknown data type.");
 		}
+
+		template <class T_>
+		T_ &GetObject() const;
 
 		/// Converts the contents of this data to string
 		virtual std::string ToString() const = 0;
@@ -318,6 +321,89 @@ namespace Gorgon { namespace Resource {
 		}
 	};
 
+	class ObjectData : public DataItem {
+	public:
+		ObjectData() {}
+
+		ObjectData(Base &v) : value(&v) {}
+
+		ObjectData(const std::string &name, Base &v) : value(&v) {
+			Name=name;
+		}
+
+		ObjectData(Base *v) : value(v) {}
+
+		ObjectData(const std::string &name, Base *v) : value(v) {
+			Name=name;
+		}
+
+		virtual	~ObjectData() {
+			if(value)
+				value->DeleteResource();
+		}
+
+		virtual GID::Type GetGID() const { return GID::Data_Object; }
+
+		virtual void SaveValue(Writer &writer) override {
+			if(value) {
+				value->Save(writer);
+			}
+		}
+
+		/// Changes the object that this data holds. Once set, the data owns the object.
+		void Set(Base &v) {
+			if(value && value!=&v)
+				value->DeleteResource();
+
+			value=&v;
+		}
+
+		/// Changes the object that this data holds. Once set, the data owns the object.
+		void Set(Base *v) {
+			if(value && value!=v)
+				value->DeleteResource();
+
+			value=v;
+		}
+
+		/// Removes the object that this data holds
+		void Unset() {
+			if(value)
+				value->DeleteResource();
+
+			value=nullptr;
+		}
+
+		/// Removes the object from this data without destroying it.
+		Base &Release() {
+			auto temp=value;
+			value=nullptr;
+
+			return *temp;
+		}
+
+		/// Returns the item contained within this object
+		template<class T_>
+		T_ &Get() const {
+			if(!value)
+				throw std::runtime_error("This data does not contain any object.");
+
+			return dynamic_cast<T_ &>(*value);
+		}
+
+		static DataItem *Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
+
+		virtual std::string ToString() const override {
+			if(value)
+				return value->GetName();
+			else
+				return "[Empty]";
+		}
+
+	private:
+		Base *value = nullptr;
+	};
+
 	inline std::ostream &operator <<(std::ostream &out, const DataItem &item) {
 		out<<item.ToString();
 
@@ -327,30 +413,71 @@ namespace Gorgon { namespace Resource {
 
 	template<>
 	inline int DataItem::Get<int>() const {
-		auto item=dynamic_cast<const IntegerData&>(*this);
+		auto &item=dynamic_cast<const IntegerData&>(*this);
 
 		return item.Get();
 	}
 
 	template<>
 	inline float DataItem::Get<float>() const {
-		auto item=dynamic_cast<const FloatData&>(*this);
-
-		return item.Get();
-	}
-
-	template<>
-	inline Geometry::Point DataItem::Get<Geometry::Point>() const {
-		auto item=dynamic_cast<const PointData&>(*this);
+		auto &item=dynamic_cast<const FloatData&>(*this);
 
 		return item.Get();
 	}
 
 	template<>
 	inline std::string DataItem::Get<std::string>() const {
-		auto item=dynamic_cast<const TextData&>(*this);
+		auto &item=dynamic_cast<const TextData&>(*this);
 
 		return item.Get();
 	}
 
+	template<>
+	inline Geometry::Point DataItem::Get<Geometry::Point>() const {
+		auto &item=dynamic_cast<const PointData&>(*this);
+
+		return item.Get();
+	}
+
+	template<>
+	inline Geometry::Pointf DataItem::Get<Geometry::Pointf>() const {
+		auto &item=dynamic_cast<const PointfData&>(*this);
+
+		return item.Get();
+	}
+
+	template<>
+	inline Geometry::Size DataItem::Get<Geometry::Size>() const {
+		auto &item=dynamic_cast<const SizeData&>(*this);
+
+		return item.Get();
+	}
+
+	template<>
+	inline Geometry::Rectangle DataItem::Get<Geometry::Rectangle>() const {
+		auto &item=dynamic_cast<const RectangleData&>(*this);
+
+		return item.Get();
+	}
+
+	template<>
+	inline Geometry::Bounds DataItem::Get<Geometry::Bounds>() const {
+		auto &item=dynamic_cast<const BoundsData&>(*this);
+
+		return item.Get();
+	}
+
+	template<>
+	inline Geometry::Margins DataItem::Get<Geometry::Margins>() const {
+		auto &item=dynamic_cast<const MarginsData&>(*this);
+
+		return item.Get();
+	}
+
+	template <class T_>
+	T_ &DataItem::GetObject() const {
+		auto &item=dynamic_cast<const ObjectData&>(*this);
+
+		return item.Get<T_>();
+	}
 } }

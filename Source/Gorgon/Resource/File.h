@@ -152,6 +152,14 @@ namespace Gorgon { namespace Resource {
 		///          any purpose, however, would not be very useful outside its prime use
 		Base *LoadChunk(Base &self, GID::Type gid, unsigned long size, bool skipobjects=false);
 
+
+		/// Loads a resource object from the given file, GID and size. This function may return nullptr
+		/// in cases that the object cannot be loaded or no loader exists for the given gid. Both cases
+		/// will throw in debug mode.
+		/// @warning This function is intended to be used while loading a resource. It can be used for
+		///          any purpose, however, would not be very useful outside its prime use
+		Base *LoadChunk(GID::Type gid, unsigned long size, bool skipobjects=false);
+
 		
 		/// Returns a weak reference to this file. This returned reference can then be used to test if this
 		/// object is still in memory.

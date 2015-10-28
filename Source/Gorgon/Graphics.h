@@ -143,7 +143,7 @@ namespace Gorgon {
 #endif
 			}
 
-			return remainder;
+			return (Geometry::Point)remainder;
 		}
 
 

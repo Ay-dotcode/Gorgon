@@ -196,7 +196,7 @@ namespace Gorgon { namespace Geometry {
 		/// Converts this size object to a point. Conversion is performed
 		/// in a manner that the resultant point is the far corner of a
 		/// rectangle that is placed at origin and the size of this object.
-		operator basic_Point<T_>() const {
+		explicit operator basic_Point<T_>() const {
 			return{Width, Height};
 		}
 

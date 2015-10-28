@@ -60,6 +60,29 @@ namespace Gorgon { namespace Resource {
 		return nullptr;
 	}
 
+	Base *File::LoadChunk(GID::Type gid, unsigned long size, bool skipobjects) {
+		ASSERT(reader, "Reader is not open");
+
+		for(auto &loader : Loaders) {
+
+			if(loader.second.GID==gid) {
+				auto obj=loader.second.Handler(this->self, reader, size);
+#ifndef NDEBUG
+				if(!obj) throw std::runtime_error("Cannot load the object with GID"+String::From(gid));
+#endif
+				return obj;
+			}
+		}
+
+#ifndef NDEBUG
+		throw std::runtime_error("No handler for GID"+String::From(gid));
+#endif
+
+		reader->EatChunk(size);
+
+		return nullptr;
+	}
+
 	void File::load(bool first, bool shallow) {
 		reader->Open();
 		if(!reader->IsGood()) {

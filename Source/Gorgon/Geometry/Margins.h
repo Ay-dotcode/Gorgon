@@ -39,7 +39,7 @@ namespace Gorgon { namespace Geometry {
 
 		/// Converts this object to a string.
 		/// TODO
-		operator std::string() const {
+		explicit operator std::string() const {
 			std::ostringstream str;
 			str<<"("<<Left<<", "<<Top<<", "<<Right<<", "<<Bottom<<")";
 
