@@ -73,7 +73,7 @@ try {
 	Resource::File f2;
 	
 	teststruct t;
-	Resource::Data d;
+	auto &d = *new Resource::Data;
 	d.Append("a", 5);
 	d.Append("b", 2);
 	d.Append("c", 2.2f);
@@ -83,12 +83,11 @@ try {
 	d.Append("g", Geometry::Rectangle{10,10, 10,10});
 	d.Append("h", Geometry::Bounds{10,10, 20,20});
 	d.Append("i", Geometry::Margins{12,8,4,8});
-	d.Append("j", im1);
+	d.Append("j", new Resource::Image(im1->Duplicate()));
 
 	//f2.Root().Add(d);
 	//f2.Save("../Source/Manual/test2.gor");
 	//f2.Root().Remove(d);
-	//dynamic_cast<Resource::ObjectData&>(d.GetItem("j")).Release();
 
 	f2.LoadFile("../Source/Manual/test2.gor");
 	f2.Prepare();
@@ -97,8 +96,10 @@ try {
 		std::cout<<data.Name<<": "<<data<<std::endl;
 	}
 
-	d.GetObject<Resource::Image>(9).Prepare();
-	d.GetObject<Resource::Image>(9).Draw(l, 0, 120);
+	f2.Root().Get<Resource::Data>(0).GetObject<Resource::Image>(9).Prepare();
+	f2.Root().Get<Resource::Data>(0).GetObject<Resource::Image>(9).Draw(l, 0, 120);
+	
+	d.DeleteResource();
 
 	//std::cout<<"c:"<<f2.Root().Get<Resource::Data>(0).Get<float>(2)<<std::endl;
 

@@ -12,9 +12,10 @@ namespace Gorgon { namespace Resource {
 	
 	class Data : public Base {
 	public:
-		
+		/// Iterator for the data resource
 		using Iterator = Containers::Collection<DataItem>::Iterator;
 
+		/// Constant iterator for the data resource
 		using ConstIterator = Containers::Collection<DataItem>::ConstIterator;
 
 		/// Creates an empty Data
@@ -24,7 +25,7 @@ namespace Gorgon { namespace Resource {
 		/// The types are tried to be matched with the built-in data resources. Second parameter
 		/// allows named reflection.
 		template<class T_, class R_ = typename T_::ReflectionType>
-		Data(const T_ &values, const R_ &reflectionobj = T_::Reflection()) {
+		explicit Data(const T_ &values, const R_ &reflectionobj = T_::Reflection()) {
 			Append(values, reflectionobj);
 		}
 		
@@ -60,101 +61,152 @@ namespace Gorgon { namespace Resource {
 		typename std::enable_if<R_::IsGorgonReflection, void>::type  Append(const T_ &values, const std::string &prefix, const R_ &reflectionobj = T_::Reflection()) {
 			static_assert(R_::IsGorgonReflection, "The template argument R_ for this constructor should be reflection type of the struct.");
 		}
+
+		/// Appends the given data to the end of this data resource
+		template<class T_>
+		typename std::enable_if<!std::is_base_of<Base, T_>::value, void>::type 
+		Append(T_ value) {
+			Insert(value, items.GetCount());
+		}
+
+		/// Appends the given resource object to the end of this data resource
+		template<class T_>
+		typename std::enable_if<std::is_base_of<Base, T_>::value, void>::type
+		Append(T_ &value) {
+			Insert(value, items.GetCount());
+		}
+
+		/// Appends the given data to the end of this data resource with the specified name
+		template<class T_>
+		typename std::enable_if<!std::is_base_of<Base, T_>::value, void>::type 
+		Append(const std::string &name, T_ value) {
+			Insert(name, value, items.GetCount());
+		}
+
+		/// Appends the given resource object to the end of this data resource with the specified name
+		template<class T_>
+		typename std::enable_if<std::is_base_of<Base, T_>::value, void>::type
+		Append(const std::string &name, T_ &value) {
+			Insert(name, value, items.GetCount());
+		}
+
+		/// Inserts a data item to the given position
+		void Insert(int value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
+		}
 		
-		void Append(int value) {
-			Append("#"+String::From(items.GetCount()), value);
-		}
-		
-		void Append(const std::string &name, int value) {
-			items.Add(new IntegerData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, int value, int before) {
+			items.Insert(new IntegerData(name, value), before);
 		}
 
-		void Append(float value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(float value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, float value) {
-			items.Add(new FloatData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, float value, int before) {
+			items.Insert(new FloatData(name, value), before);
 		}
 
-		void Append(const std::string &value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(const std::string &value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, const std::string &value) {
-			items.Add(new TextData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, const std::string &value, int before) {
+			items.Insert(new TextData(name, value), before);
 		}
 
-		void Append(const char *value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(const char *value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, const char *value) {
-			items.Add(new TextData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, const char *value, int before) {
+			items.Insert(new TextData(name, value), before);
 		}
 
-		void Append(Geometry::Point value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(Geometry::Point value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, Geometry::Point value) {
-			items.Add(new PointData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, Geometry::Point value, int before) {
+			items.Insert(new PointData(name, value), before);
 		}
 
-		void Append(Geometry::Pointf value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(Geometry::Pointf value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, Geometry::Pointf value) {
-			items.Add(new PointfData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, Geometry::Pointf value, int before) {
+			items.Insert(new PointfData(name, value), before);
 		}
 
-		void Append(Geometry::Size value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(Geometry::Size value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, Geometry::Size value) {
-			items.Add(new SizeData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, Geometry::Size value, int before) {
+			items.Insert(new SizeData(name, value), before);
 		}
 
-		void Append(Geometry::Rectangle value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(Geometry::Rectangle value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, Geometry::Rectangle value) {
-			items.Add(new RectangleData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, Geometry::Rectangle value, int before) {
+			items.Insert(new RectangleData(name, value), before);
 		}
 
-		void Append(Geometry::Bounds value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(Geometry::Bounds value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, Geometry::Bounds value) {
-			items.Add(new BoundsData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, Geometry::Bounds value, int before) {
+			items.Insert(new BoundsData(name, value), before);
 		}
 
-		void Append(Geometry::Margins value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(Geometry::Margins value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, Geometry::Margins value) {
-			items.Add(new MarginsData(name, value));
+		void Insert(const std::string &name, Geometry::Margins value, int before) {
+			items.Insert(new MarginsData(name, value), before);
 		}
 
-		void Append(Base *value) {
-			Append("#"+String::From(items.GetCount()), value);
+		/// Inserts a data item to the given position
+		void Insert(Base *value, int before) {
+			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Append(const std::string &name, Base *value) {
-			items.Add(new ObjectData(name, value));
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, Base *value, int before) {
+			items.Insert(new ObjectData(name, value), before);
 		}
 
-		void Append(Base &value) {
-			Append(&value);
+		/// Inserts a data item to the given position
+		void Insert(Base &value, int before) {
+			Insert(&value, before);
 		}
 
-		void Append(const std::string &name, Base &value) {
-			Append(name, &value);
+		/// Inserts a data item to the given position with the specified name
+		void Insert(const std::string &name, Base &value, int before) {
+			Insert(name, &value, before);
 		}
 
 		/// Transforms the members of this resource data to the given struct. Members are matched by name. 
@@ -172,12 +224,13 @@ namespace Gorgon { namespace Resource {
 			static_assert(std::is_same<T_, int>::value, "Unknown data type.");
 		}
 		
-		/// Returns the data with the given index; use GetObject in order to get resource objects.
+		/// Returns the data with the given name; use GetObject in order to get resource objects.
 		template<class T_>
 		T_ Get(const std::string &name) const {
 			static_assert(std::is_same<T_, int>::value, "Unknown data type.");
 		}
 
+		/// Returns the resource object at the given index
 		template<class T_>
 		T_ &GetObject(int index) const {
 			auto &item=dynamic_cast<ObjectData&>(items[index]);
@@ -185,31 +238,38 @@ namespace Gorgon { namespace Resource {
 			return item.Get<T_>();
 		}
 
+		/// Returns the resource object with the given name
 		template<class T_>
 		T_ &GetObject(const std::string &name) const {
 			Utils::NotImplemented();
 		}
 
+		/// Can be used to iterate over data objects
 		ConstIterator begin() const {
 			return items.begin();
 		}
 
+		/// Can be used to iterate over data objects
 		ConstIterator end() const {
 			return items.end();
 		}
 
+		/// Can be used to iterate over data objects
 		Iterator begin() {
 			return items.begin();
 		}
 
+		/// Can be used to iterate over data objects
 		Iterator end() {
 			return items.end();
 		}
 
+		/// Returns the data item with the given index
 		DataItem &GetItem(int index) const {
 			return items[index];
 		}
 		
+		/// Returns the data item with the given name
 		DataItem &GetItem(const std::string &name) const {
 			for(auto &item : items) {
 				if(item.Name==name) return item;
@@ -218,22 +278,78 @@ namespace Gorgon { namespace Resource {
 			throw std::runtime_error("Cannot find the item requested: "+name);
 		}
 		
-		int FindIndex(const std::string &name) const;
+		/// Returns the index of the data item with the given name. This function will return -1 
+		/// if there is no such data item with the specified name exists
+		int FindIndex(const std::string &name) const {
+			int ind=0;
+			for(auto &item : items) {
+				if(item.Name==name) return ind;
+				ind++;
+			}
+
+			return -1;
+		}
 		
-		int GetCount() const;
+		/// Returns the number data items in this data resource
+		int GetCount() const {
+			return items.GetCount();
+		}
 		
-		void Remove(int index);
+		/// Removes the item at the given index. The data item will be destroyed.
+		void Remove(int index) {
+			items.Delete(index);
+		}
+
+		/// Removes the item with the given name. The data item will be destroyed.
+		void Remove(const std::string &name) {
+			int ind = FindIndex(name);
+
+			if(ind==-1) {
+				throw std::runtime_error("Cannot find the item with the name: "+name);
+			}
+
+			Remove(ind);
+		}
+
+		/// Releases the data item with the given index. The data item will not be destroyed
+		DataItem &Release(int index) {
+			auto &item = items[index];
+
+			items.Remove(index);
+
+			return item;
+		}
+
+		/// Releases the data item with the given name. The data item will not be destroyed
+		DataItem &Release(const std::string &name) {
+			int ind = FindIndex(name);
+
+			if(ind==-1) {
+				throw std::runtime_error("Cannot find the item with the name: "+name);
+			}
+
+			return Release(ind);
+		}
+
+		/// Adds the given data item to this data resource. Ownership of the item is transferred to this Data
+		void Add(DataItem &item) {
+			items.Add(item);
+		}
 		
-		void Remove(const std::string &name);
+		/// Inserts the given data item to this data resource before the specified index. Ownership of the item is transferred to this Data
+		void Insert(DataItem &item, int before) {
+			items.Insert(item, before);
+		}
 		
-		/// Ownership of the item is transferred to this Data
-		void Add(DataItem &item);
-		
-		void Insert(DataItem &item, int before);
-		
-		
+		/// Loads a data resource
 		static Data *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize);
 		
+	protected:
+		/// Destructor
+		~Data() {
+			items.Destroy();
+		}
+
 	private:
 		virtual void save(Writer &writer);
 		

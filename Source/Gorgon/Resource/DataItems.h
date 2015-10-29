@@ -85,7 +85,7 @@ namespace Gorgon { namespace Resource {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Int; }
+		virtual GID::Type GetGID() const override { return GID::Data_Int; }
 
 		using internal::DataImp<int>::Get;
 		using internal::DataImp<int>::Set;
@@ -111,7 +111,7 @@ namespace Gorgon { namespace Resource {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Float; }
+		virtual GID::Type GetGID() const override { return GID::Data_Float; }
 
 		using internal::DataImp<float>::Get;
 		using internal::DataImp<float>::Set;
@@ -137,7 +137,7 @@ namespace Gorgon { namespace Resource {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Text; }
+		virtual GID::Type GetGID() const override { return GID::Data_Text; }
 
 		using internal::DataImp<std::string>::Get;
 		using internal::DataImp<std::string>::Set;
@@ -163,7 +163,7 @@ namespace Gorgon { namespace Resource {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Point; }
+		virtual GID::Type GetGID() const override { return GID::Data_Point; }
 
 		using internal::DataImp<Geometry::Point>::Get;
 		using internal::DataImp<Geometry::Point>::Set;
@@ -190,7 +190,7 @@ namespace Gorgon { namespace Resource {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Pointf; }
+		virtual GID::Type GetGID() const override { return GID::Data_Pointf; }
 
 		using internal::DataImp<Geometry::Pointf>::Get;
 		using internal::DataImp<Geometry::Pointf>::Set;
@@ -217,7 +217,7 @@ namespace Gorgon { namespace Resource {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Size; }
+		virtual GID::Type GetGID() const override { return GID::Data_Size; }
 
 		using internal::DataImp<Geometry::Size>::Get;
 		using internal::DataImp<Geometry::Size>::Set;
@@ -244,7 +244,7 @@ namespace Gorgon { namespace Resource {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Rectangle; }
+		virtual GID::Type GetGID() const override { return GID::Data_Rectangle; }
 
 		using internal::DataImp<Geometry::Rectangle>::Get;
 		using internal::DataImp<Geometry::Rectangle>::Set;
@@ -273,7 +273,7 @@ namespace Gorgon { namespace Resource {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Bounds; }
+		virtual GID::Type GetGID() const override { return GID::Data_Bounds; }
 
 		using internal::DataImp<Geometry::Bounds>::Get;
 		using internal::DataImp<Geometry::Bounds>::Set;
@@ -302,7 +302,7 @@ namespace Gorgon { namespace Resource {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Margins; }
+		virtual GID::Type GetGID() const override { return GID::Data_Margins; }
 
 		using internal::DataImp<Geometry::Margins>::Get;
 		using internal::DataImp<Geometry::Margins>::Set;
@@ -342,7 +342,7 @@ namespace Gorgon { namespace Resource {
 				value->DeleteResource();
 		}
 
-		virtual GID::Type GetGID() const { return GID::Data_Object; }
+		virtual GID::Type GetGID() const override { return GID::Data_Object; }
 
 		virtual void SaveValue(Writer &writer) override {
 			if(value) {

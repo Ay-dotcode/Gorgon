@@ -298,7 +298,8 @@ namespace Gorgon {
 				return *t;
 			}
 
-			/// this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference. You may use the size of the collection
+			/// for this function to behave like Add.
 			void Insert(T_* data, long before) {
 				if(std::find(list.begin(), list.end(), data)!=list.end()) return;
 
@@ -318,22 +319,26 @@ namespace Gorgon {
 				list[before]=data;
 			}
 
-			/// this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference. You may use the size of the collection
+			/// for this function to behave like Add.
 			void Insert(T_& data, unsigned before) {
 				Insert(&data, before);
 			}
 
-			/// this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference. You may use the size of the collection
+			/// for this function to behave like Add.
 			void Insert(T_* data, const T_ &before) {
 				Insert(data, FindLocation(before));
 			}
 
-			/// this method adds the given object in front of the reference
+			/// this method adds the given object in front of the reference. You may use the size of the collection
+			/// for this function to behave like Add.
 			void Insert(T_& data, const T_ &before) {
 				Insert(&data, FindLocation(before));
 			}
 
-			/// Creates a new item and inserts it before the given reference
+			/// Creates a new item and inserts it before the given reference. You may use the size of the collection
+			/// for this function to behave like Add.
 			template<typename... Args_>
 			T_ &InsertNew(const T_ &before, Args_... args) {
 				auto t=new T_(args...);
@@ -342,7 +347,8 @@ namespace Gorgon {
 				return *t;
 			}
 
-			/// Creates a new item and inserts it before the given reference
+			/// Creates a new item and inserts it before the given reference. You may use the size of the collection
+			/// for this function to behave like Add.
 			template<typename... Args_>
 			T_ &InsertNew(unsigned before, Args_... args) {
 				auto t=new T_(args...);

@@ -22,7 +22,12 @@ namespace Gorgon { namespace Resource {
 		public Base, public Graphics::Bitmap
 	{
 	public:
+		Image() = default;
 
+		/// Assumes the given bitmap and converts it to a resource.
+		Image(Graphics::Bitmap &&source) {
+			Swap(source);
+		}
 
 		virtual GID::Type GetGID() const { return GID::Image; }
 		
