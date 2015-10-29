@@ -26,6 +26,7 @@ SET(Local
 	Main.cpp
 	SGuid.h
 	SGuid.cpp
+	Struct.h
 	Threading.h
 	TMP.h
 	Types.h

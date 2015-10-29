@@ -74,6 +74,7 @@ try {
 	
 	teststruct t;
 	auto &d = *new Resource::Data;
+
 	d.Append("a", 5);
 	d.Append("b", 2);
 	d.Append("c", 2.2f);

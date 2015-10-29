@@ -3,6 +3,7 @@
 #include "Base.h"
 #include "Reader.h"
 #include "DataItems.h"
+#include "../TMP.h"
 
 #include <functional>
 
@@ -11,6 +12,20 @@ namespace Gorgon { namespace Resource {
 	class File;
 	
 	class Data : public Base {
+
+		template <class T_, class R_, int IND_>
+		void append(const T_ &values, const std::string &prefix, const R_ &reflectionobj) {
+			auto p=R_::Member<IND_>::MemberPointer;
+
+			Append(prefix+reflectionobj.Names[IND_], values.*R_::Member<IND_>::MemberPointer());
+		}
+
+
+		template <class T_, class R_, int ...S_>
+		void append(const T_ &values, const std::string &prefix, const R_ &reflectionobj, TMP::Sequence<S_...>) {
+			char dummy[] ={0, (append<T_, R_, S_>(values, prefix, reflectionobj),'\0')...};
+		}
+
 	public:
 		/// Iterator for the data resource
 		using Iterator = Containers::Collection<DataItem>::Iterator;
@@ -47,7 +62,8 @@ namespace Gorgon { namespace Resource {
 		/// having same member names can be saved to a single data using second parameter, which
 		/// appends a prefix to object members. Third parameter allows named reflection. 
 		template<class T_, class R_ = typename T_::ReflectionType>
-		typename std::enable_if<R_::IsGorgonReflection, void>::type Append(const T_ &values, const R_ &reflectionobj = T_::Reflection()) {
+		typename std::enable_if<R_::IsGorgonReflection, void>::type 
+		Append(const T_ &values, const R_ &reflectionobj = T_::Reflection()) {
 			static_assert(R_::IsGorgonReflection, "The template argument R_ for this constructor should be reflection type of the struct.");
 			
 			Append(values, "", reflectionobj);
@@ -58,13 +74,16 @@ namespace Gorgon { namespace Resource {
 		/// having same member names can be saved to a single data using second parameter, which
 		/// appends a prefix to object members. Third parameter allows named reflection. 
 		template<class T_, class R_ = typename T_::ReflectionType>
-		typename std::enable_if<R_::IsGorgonReflection, void>::type  Append(const T_ &values, const std::string &prefix, const R_ &reflectionobj = T_::Reflection()) {
+		typename std::enable_if<R_::IsGorgonReflection, void>::type  
+		Append(const T_ &values, const std::string &prefix, const R_ &reflectionobj = T_::Reflection()) {
 			static_assert(R_::IsGorgonReflection, "The template argument R_ for this constructor should be reflection type of the struct.");
+
+			append(values, prefix, reflectionobj, typename TMP::Generate<R_::MemberCount>::Type());
 		}
 
 		/// Appends the given data to the end of this data resource
 		template<class T_>
-		typename std::enable_if<!std::is_base_of<Base, T_>::value, void>::type 
+		typename std::enable_if<!std::is_base_of<Base, T_>::value && !T_::ReflectionType::IsGorgonReflection, void>::type
 		Append(T_ value) {
 			Insert(value, items.GetCount());
 		}

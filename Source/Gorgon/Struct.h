@@ -40,9 +40,16 @@ namespace Gorgon {
 			template<int N>
 			struct Member {
 				using Type = decltype(std::declval<C_>().*(GetElm<N, MT_...>::template Inner<M_...>::Value));
+
+				static constexpr decltype(GetElm<N, MT_...>::template Inner<M_...>::Value) 
+				MemberPointer() {
+					return std::get<N>(std::tuple<MT_...>(M_...));
+				}
 			};
 			
 			const char *Names[sizeof...(MT_)];
+
+			static constexpr int MemberCount = sizeof...(MT_);
 			
 			static constexpr int IsGorgonReflection = true;
 		};
