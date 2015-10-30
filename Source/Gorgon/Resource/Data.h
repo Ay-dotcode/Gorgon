@@ -15,9 +15,7 @@ namespace Gorgon { namespace Resource {
 
 		template <class T_, class R_, int IND_>
 		void append(const T_ &values, const std::string &prefix, const R_ &reflectionobj) {
-			auto p=R_::Member<IND_>::MemberPointer;
-
-			Append(prefix+reflectionobj.Names[IND_], values.*R_::Member<IND_>::MemberPointer());
+			Append(prefix+reflectionobj.Names[IND_], values.*(R_::template Member<IND_>::MemberPointer()) );
 		}
 
 
