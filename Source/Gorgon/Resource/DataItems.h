@@ -381,6 +381,10 @@ namespace Gorgon { namespace Resource {
 
 			return *temp;
 		}
+		
+		bool IsSet() const {
+			return value!=nullptr;
+		}
 
 		/// Returns the item contained within this object
 		template<class T_>

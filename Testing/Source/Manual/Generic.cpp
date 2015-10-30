@@ -19,9 +19,11 @@ struct teststruct {
 	int a;
 	int b;
 	
+	Resource::Image *j;
+	
 	void f(int c) {}
 	
-	DefineStructMembers(teststruct, a, b);
+	DefineStructMembers(teststruct, a, b, j);
 };
 
 int main() {
@@ -97,10 +99,17 @@ try {
 		std::cout<<data.Name<<": "<<data<<std::endl;
 	}
 
-	f2.Root().Get<Resource::Data>(0).GetObject<Resource::Image>(9).Prepare();
-	f2.Root().Get<Resource::Data>(0).GetObject<Resource::Image>(9).Draw(l, 0, 120);
+	//f2.Root().Get<Resource::Data>(0).GetObject<Resource::Image>(9).Prepare();
+	//f2.Root().Get<Resource::Data>(0).GetObject<Resource::Image>(9).Draw(l, 0, 120);
 	
 	d.DeleteResource();
+	
+	t=f2.Root().Get<Resource::Data>(0).NamedTransform<teststruct>();
+// 	std::cout<<t.a<<"::"<<t.b<<std::endl;
+// 	std::cout<<dynamic_cast<Resource::ObjectData&>(f2.Root().Get<Resource::Data>(0).GetItem("j")).IsSet()<<std::endl;
+// 	
+// 	t.j->Prepare();
+// 	t.j->Draw(l, 0, 120);
 
 	//std::cout<<"c:"<<f2.Root().Get<Resource::Data>(0).Get<float>(2)<<std::endl;
 

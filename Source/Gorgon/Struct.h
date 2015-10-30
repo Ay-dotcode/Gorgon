@@ -39,7 +39,7 @@ namespace Gorgon {
 			
 			template<int N>
 			struct Member {
-				using Type = decltype(std::declval<C_>().*(GetElm<N, MT_...>::template Inner<M_...>::Value));
+				using Type = typename TMP::RemoveRValueReference<decltype(std::declval<C_>().*(GetElm<N, MT_...>::template Inner<M_...>::Value))>::Type;
 
 				static constexpr decltype(GetElm<N, MT_...>::template Inner<M_...>::Value) 
 				MemberPointer() {

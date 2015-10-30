@@ -399,5 +399,15 @@ namespace Gorgon {
 			) 
 			{ }
 		};
+		
+		template<class T_> 
+		struct RemoveRValueReference {
+			using Type = T_;
+		};
+		
+		template<class T_> 
+		struct RemoveRValueReference<T_&&> {
+			using Type = T_;
+		};
 	}
 };

@@ -24,6 +24,35 @@ namespace Gorgon { namespace Resource {
 			char dummy[] ={0, (append<T_, R_, S_>(values, prefix, reflectionobj),'\0')...};
 		}
 
+		template <class T_, class O_, class R_, int IND_>
+		typename std::enable_if<!std::is_base_of<Base, typename std::remove_pointer<O_>::type>::value, void>::type
+		namedtransform(T_ &values, const std::string &prefix, const R_ &reflectionobj) const {
+			values.*(R_::template Member<IND_>::MemberPointer())=GetItem(prefix+reflectionobj.Names[IND_]).Get<O_>();
+		}
+
+		template <class T_, class R_, int ...S_>
+		void namedtransform(T_ &values, const std::string &prefix, const R_ &reflectionobj, TMP::Sequence<S_...>) const {
+			char dummy[] ={0, (namedtransform<T_, typename R_::template Member<S_>::Type, R_, S_>(values, prefix, reflectionobj),'\0')...};
+		}
+
+		template <class T_, class O_, class R_, int IND_>
+		typename std::enable_if<std::is_base_of<Base, typename std::remove_pointer<O_>::type>::value, void>::type
+		namedtransform(T_ &values, const std::string &prefix, const R_ &reflectionobj) {
+			values.*(R_::template Member<IND_>::MemberPointer())=&GetItem(prefix+reflectionobj.Names[IND_]).GetObject<typename std::remove_pointer<O_>::type>();
+			dynamic_cast<ObjectData&>(GetItem(prefix+reflectionobj.Names[IND_])).Release();
+		}
+
+		template <class T_, class O_, class R_, int IND_>
+		typename std::enable_if<!std::is_base_of<Base, typename std::remove_pointer<O_>::type>::value, void>::type
+		namedtransform(T_ &values, const std::string &prefix, const R_ &reflectionobj) {
+			values.*(R_::template Member<IND_>::MemberPointer())=GetItem(prefix+reflectionobj.Names[IND_]).Get<O_>();
+		}
+
+		template <class T_, class R_, int ...S_>
+		void namedtransform(T_ &values, const std::string &prefix, const R_ &reflectionobj, TMP::Sequence<S_...>) {
+			char dummy[] ={0, (namedtransform<T_, typename R_::template Member<S_>::Type, R_, S_>(values, prefix, reflectionobj),'\0')...};
+		}
+
 	public:
 		/// Iterator for the data resource
 		using Iterator = Containers::Collection<DataItem>::Iterator;
@@ -226,14 +255,39 @@ namespace Gorgon { namespace Resource {
 			Insert(name, &value, before);
 		}
 
-		/// Transforms the members of this resource data to the given struct. Members are matched by name. 
+		/// Transforms the members of this resource data to the given struct. Members are matched by name. This version
+		/// does not transfer the ownership of the object data.
 		template<class T_, class R_ = typename T_::ReflectionType>
-		T_ NamedTransform(const R_ &reflectionobj = T_::Reflection()) const;
+		T_ NamedTransform_KeepObjects(const R_ &reflectionobj = T_::Reflection()) const {
+			return NamedTransform_KeepObjects<T_, R_>("", reflectionobj);
+		}
 		
 		/// Transforms the members of this resource data to the given struct. Members are matched by name starting
-		/// with prefix.
+		/// with prefix. This version does not transfer the ownership of the object data.
 		template<class T_, class R_ = typename T_::ReflectionType>
-		T_ NamedTransform(const std::string &prefix, const R_ &reflectionobj = T_::Reflection()) const;
+		T_ NamedTransform_KeepObjects(const std::string &prefix, const R_ &reflectionobj = T_::Reflection()) const {
+			T_ t;
+			namedtransform<T_, R_>(t, prefix, reflectionobj, typename TMP::Generate<R_::MemberCount>::Type());
+			
+			return t;
+		}
+
+		/// Transforms the members of this resource data to the given struct. Members are matched by name. Any
+		/// resource objects that are transformed into the structure are released.
+		template<class T_, class R_ = typename T_::ReflectionType>
+		T_ NamedTransform(const R_ &reflectionobj = T_::Reflection()) {
+			return NamedTransform<T_, R_>("", reflectionobj);
+		}
+		
+		/// Transforms the members of this resource data to the given struct. Members are matched by name starting
+		/// with prefix. Any resource objects that are transformed into the structure are released.
+		template<class T_, class R_ = typename T_::ReflectionType>
+		T_ NamedTransform(const std::string &prefix, const R_ &reflectionobj = T_::Reflection()) {
+			T_ t;
+			namedtransform<T_, R_>(t, prefix, reflectionobj, typename TMP::Generate<R_::MemberCount>::Type());
+			
+			return t;
+		}
 		
 		/// Returns the data with the given index; use GetObject in order to get resource objects.
 		template<class T_>
@@ -437,6 +491,7 @@ namespace Gorgon { namespace Resource {
 
 		return item.Get();
 	}
+
 
 } }
 
