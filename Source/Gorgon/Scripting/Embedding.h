@@ -1705,7 +1705,6 @@ namespace Scripting {
 					const ParameterList &parameters={}, const Type *parenttype=nullptr, const Type *ret=nullptr) : 
 		EventType(name, help, (E_*)nullptr, new TMP::AbstractRTTC<E_>(), ret, parameters), parenttype(parenttype)
 		{ 
-			Type *FunctionType();
 			using namespace Gorgon::Scripting;
 			AddMembers({
 				new Scripting::Function("Fire", 

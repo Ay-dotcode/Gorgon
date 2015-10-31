@@ -494,5 +494,3 @@ namespace Gorgon { namespace Resource {
 
 
 } }
-
-extern std::vector< int > v;
