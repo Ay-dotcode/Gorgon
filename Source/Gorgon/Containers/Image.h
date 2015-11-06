@@ -41,6 +41,8 @@ namespace Gorgon {
 
 			/// Move assignment
 			Image &operator=(Image &&other) { 
+				if(this == &other) return *this;
+				
 				Destroy();
 				Swap(other);
 				
@@ -76,9 +78,10 @@ namespace Gorgon {
 				this->mode   = mode;
 				this->bpp    = Graphics::GetBytesPerPixel(mode);
 
-				if(data) {
+				if(data && data!=newdata) {
 					free(data);
 				}
+				
 				data=(Byte*)malloc(size.Area()*bpp*sizeof(Byte));
 			}
 
@@ -98,9 +101,10 @@ namespace Gorgon {
 				this->mode   = mode;
 				this->bpp    = Graphics::GetBytesPerPixel(mode);
 
-				if(data) {
+				if(data && data!=newdata) {
 					free(data);
 				}
+				
 				if(size.Area()*bpp>0) {
 					data=(Byte*)malloc(size.Area()*bpp*sizeof(Byte));
 					memcpy(data, newdata, size.Area()*bpp*sizeof(Byte));
@@ -135,9 +139,10 @@ namespace Gorgon {
 				this->mode   = mode;
 				this->bpp    = Graphics::GetBytesPerPixel(mode);
 
-				if(data) {
+				if(data && data!=newdata) {
 					free(data);
 				}
+				
 				data=newdata;
 			}
 
@@ -145,6 +150,10 @@ namespace Gorgon {
 			/// The given data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte).
 			/// This function does not perform any checks for the data size while assuming it.
 			void Assume(Byte *newdata) {
+				if(data && data!=newdata) {
+					free(data);
+				}
+				
 				data=newdata;
 			}
 
