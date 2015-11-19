@@ -18,7 +18,7 @@ namespace Gorgon { namespace Audio {
 	}
 	
 	void Initialize() {
-		pa_main = 
+		
 	}
 	
 } }
