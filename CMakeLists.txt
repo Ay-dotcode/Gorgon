@@ -9,9 +9,11 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Bin)
 SET(CMAKE_TESTING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Testing)
 SET(CMAKE_DOCUMENT_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Docs)
 
-OPTION(GORGON_FAST_ANY "Make any to work fast by removing empty checks. This will only apply to release mode." OFF)
-
 OPTION(OPENGL "Use OpenGL as underlying GL. Should be ON for now." ON)
+
+OPTION(AUDIO "Enable audio." ON)
+
+OPTION(GORGON_FAST_ANY "Make any to work fast by removing empty checks. This will only apply to release mode." OFF)
 
 OPTION(SCRIPTING "Enable scripting module." ON)
 
@@ -19,8 +21,18 @@ OPTION(TESTMODE "Enable test mode." OFF)
 
 OPTION(DOCUMENTATION_GRAPHS "Enable graphs in documentation." OFF)
 
+IF(AUDIO AND NOT AUDIOLIB)
+	IF(WIN32)
+		SET(AUDIOLIB )
+	ELSE()
+		SET(AUDIOLIB PULSE)
+	ENDIF()
+ENDIF()
+
 IF(DOCUMENTATION_GRAPHS)
 	SET(DOXYGRAPH YES)
+ELSE()
+	SET(DOXYGRAPH NO)
 ENDIF()
 
 IF(TESTMODE)

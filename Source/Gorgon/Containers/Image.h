@@ -78,7 +78,7 @@ namespace Gorgon {
 				this->mode   = mode;
 				this->bpp    = Graphics::GetBytesPerPixel(mode);
 
-				if(data && data!=newdata) {
+				if(data) {
 					free(data);
 				}
 				
