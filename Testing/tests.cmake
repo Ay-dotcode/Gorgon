@@ -15,6 +15,7 @@ SET(UnitTests
 	Geometry
 	Hashmap
 	String
+	Logging
 )
 IF(${SCRIPTING})
 	LIST(APPEND UnitTests

@@ -1,5 +1,6 @@
 SET(Local
 	Assert.h
+	Logging.h
 )
 
 

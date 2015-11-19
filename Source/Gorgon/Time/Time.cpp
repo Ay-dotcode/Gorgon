@@ -16,9 +16,25 @@ namespace Gorgon { namespace Time {
 		internal::deltatime =0;
 	}
 	
+	tm totm(const Date &d) {
+		tm a = {};
+		
+		a.tm_sec   = d.Second;
+		a.tm_min   = d.Minute;
+		a.tm_hour  = d.Hour;
+		a.tm_mday  = d.Day;
+		a.tm_mon   = d.Month-1;
+		a.tm_year  = d.Year-1900;
+		a.tm_wday  = d.Weekday;
+		a.tm_gmtoff= d.Timezone*60;
+		
+		return a;
+	}
+	
 	bool Date::Parse(std::string isodate) {
 		isodate=String::Trim(isodate);
 		
+		//!TODO Check for - and :
 		try {
 			Year   =String::To<int>(isodate.substr( 0, 4));
 			Month  =MonthType(String::To<int>(isodate.substr( 5, 2)));
@@ -279,18 +295,27 @@ namespace Gorgon { namespace Time {
 	}
 	
 	bool Date::DetermineWeekday() {
-		struct tm time = {};
-		time.tm_hour = 12;
-		time.tm_mday = Day;
-		time.tm_mon  = Month;
-		time.tm_year = Year;
+		struct tm time = totm(*this);
+		time_t t;
 		
-		if(mktime(&time)==-1) return false;
+		if( (t=mktime(&time)) == -1) return false;
+		
+		
 		
 		Weekday=WeekdayType(time.tm_wday);
 		
 		return true;
 	}
+
+	double Date::operator - (const Date &other) {
+		tm a = totm(*this), b = totm(other);
+		
+		time_t x = mktime(&a);
+		time_t y = mktime(&b);
+		
+		return difftime(x, y);
+	}
+
 	
 	namespace internal {
 		unsigned long framestart=0;

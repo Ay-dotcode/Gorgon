@@ -1,0 +1,48 @@
+#define CATCH_CONFIG_MAIN
+
+#define WINDOWS_LEAN_AND_MEAN
+
+#include <catch.h>
+
+#include <Gorgon/Utils/Logging.h>
+
+TEST_CASE( "Console test", "[Logger]") {
+	
+	Gorgon::Utils::Logger logger("Test module", true, true);
+	
+	std::stringstream ss;
+	logger.InitializeStream(ss);
+	
+	logger<<"Hello "<<5;
+	
+	sleep(1);
+	
+	logger<<"t"<<std::endl<<"a";
+	logger<<"One more log! ";
+	
+	ss.seekg(0, std::ios::beg);
+	
+	std::string s1, s2;
+	ss>>s1; //date
+	ss>>s2; //time
+	
+	Gorgon::Time::Date d(s1+"T"+s2), now = Gorgon::Time::Date::Now();
+	
+	REQUIRE( (now - d) < 2);
+	
+	ss>>s1; //section-1
+	REQUIRE(s1 == "Test");
+	ss>>s1; //section-2
+	REQUIRE(s1 == "module");
+	
+	ss>>s1; //message-1
+	REQUIRE(s1 == "Hello");
+	ss>>s1; //message-2
+	REQUIRE(s1 == "5");
+	
+	ss>>s1>>s1>>s1>>s1>>s1;
+	REQUIRE(s1 == "t");
+	char c;
+	ss.read(&c, 1);
+	REQUIRE( (c=='\n' || c=='\r') );
+}

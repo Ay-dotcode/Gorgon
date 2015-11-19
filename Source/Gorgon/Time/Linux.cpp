@@ -17,8 +17,8 @@ namespace Gorgon { namespace Time {
 		gettimeofday(&tv, NULL);
 		
 		Date ret;
-		ret.Year 	   =(int)timeinfo->tm_year;
-		ret.Month	   =Date::MonthType(timeinfo->tm_mon);
+		ret.Year 	   =(int)timeinfo->tm_year+1900;
+		ret.Month	   =Date::MonthType(timeinfo->tm_mon+1);
 		ret.Day		   =(int)timeinfo->tm_mday;
 		ret.Hour 	   =(int)timeinfo->tm_hour;
 		ret.Minute	   =(int)timeinfo->tm_min;

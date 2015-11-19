@@ -14,6 +14,12 @@ namespace Gorgon {
 		/// Initializes Time module.
 		void Initialize();
 		
+		class Date;
+		
+		/// Returns the current date. Should not be used for
+		/// performance calculations, its not guaranteed to be precise.
+		Date GetDate();
+		
 		/// This class represents a specific date including time information.
 		/// Can be obtained using GetDateTime function. An Empty month marks the
 		/// time as unset.
@@ -144,6 +150,14 @@ namespace Gorgon {
 				return Month==Empty;
 			}
 			
+			/// Returns current time
+			static Date Now() {
+				return GetDate();
+			}
+			
+			/// Gives the difference between two dates.
+			double operator - (const Date &other);
+			
 			/// Unsets the stored time
 			void Unset() {
 				Year=0;
@@ -189,11 +203,6 @@ namespace Gorgon {
 			/// has minute offset.
 			int Timezone;
 		};
-		
-		
-		/// Returns the current date. Should not be used for
-		/// performance calculations, its not guaranteed to be precise.
-		Date GetDate();
 		
 		/// Returns current time in milliseconds. 
 		/// @warning FrameStart should be used unless exact time is required.

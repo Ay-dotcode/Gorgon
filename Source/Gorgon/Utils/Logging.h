@@ -3,12 +3,108 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "UtilsBase.h"
+#include <Gorgon/Time.h>
 
-namespace gge { namespace utils {
+namespace Gorgon { namespace Utils {
+	
+	/**
+	 * Eases logging procedure by appending necessary information to the given data and streams to a standard c++ stream.
+	 * The log entries are prettified by indentation. The width of the output is determined for consoles, if not, 80
+	 * will be used as default. The lines for streams will not be broken automatically, unless a SetWidth function is
+	 * called.
+	 */
 	class Logger {
+		friend class helper;
+		
+		class helper {
+			friend class Logger;
+			
+			Logger *parent;
+			int shift;
+			bool extraenter;
+			
+			helper() : parent(nullptr) { }
+			
+			helper(Logger *parent, int shift, bool extraenter) : parent(parent), shift(shift), extraenter(extraenter) { }
+			
+			helper(helper &&h) {
+				parent=h.parent;
+				shift=h.shift;
+				extraenter=h.extraenter;
+				
+				h.parent=nullptr;
+			}
+			
+			helper &operator =(helper &&h) {
+				parent=h.parent;
+				shift=h.shift;
+				extraenter=h.extraenter;
+				
+				h.parent=nullptr;
+				
+				return *this;
+			}
+			
+		public:			
+			~helper() {
+				if(!parent) return;
+					
+				if(extraenter)
+					(*parent->stream) << "\n";
+				
+				(*parent->stream)<<std::endl;
+			}
+
+			helper &operator <<(const decltype(&std::endl<char, std::char_traits<char>>) &) {
+				if(!parent) return *this;
+				
+				(*parent->stream) << std::endl << std::string(shift, ' ');
+				
+				extraenter=true;
+				
+#ifndef NDEBUG
+				if(!(*parent->stream)) {
+					throw std::runtime_error("Logging failed");
+				}
+#endif
+				
+				return *this;
+			}
+			
+			template <class T_>
+			helper &operator <<(const T_ &v) {
+				if(!parent) return *this;
+				
+				(*parent->stream) << v;
+				
+#ifndef NDEBUG
+				if(!(*parent->stream)) {
+					throw std::runtime_error("Logging failed");
+				}
+#endif
+				
+				return *this;
+			}
+		};
+		
 	public:
-		Logger() : stream(nullptr), owner(false) { }
+		/// Default constructor. Allows you to specify a section
+		Logger(const std::string &section = "", bool marktime = true, bool markdate = false) : 
+			stream(nullptr), owner(false), section(section), marktime(marktime), markdate(markdate) 
+		{ }
+
+		/// Default constructor. Allows you to specify a section
+		Logger(const char *section = "", bool marktime = true, bool markdate = false) : 
+			Logger(std::string(section), marktime, markdate) 
+		{ }
+		
+		Logger(bool marktime, bool markdate = false) : Logger("", marktime, markdate) { }
+		
+		Logger(std::ostream &stream, const std::string &section = "", bool marktime = true, bool markdate = false) : 
+			stream(&stream), owner(false), section(section), marktime(marktime), markdate(markdate)
+		{ 
+			
+		}
 
 		~Logger() {
 			CleanUp();
@@ -20,45 +116,112 @@ namespace gge { namespace utils {
 			owner=false;
 		}
 
-		//ownership is not transferred
-		void InitializeFile(std::ofstream &file) {
+		/// Initializes the logger to direct its input to the given stream. 
+		/// Ownership is not transferred
+		void InitializeStream(std::ostream &stream) {
+#ifndef NO_LOGGING
 			CleanUp();
-			stream=&file;
+			this->stream=&stream;
 			owner=false;
+#endif
 		}
 
-		void InitializeFile(const std::string& filename) {
+		/// Opens and initializer the logger using the given filename. The file
+		/// will automatically be closed when CleanUp is performed.
+		void InitializeFile(const std::string &filename) {
+#ifndef NO_LOGGING
 			CleanUp();
 			stream=new std::ofstream(filename);
 			owner=true;
+#endif
 		}
 
+		/// Cleans the stream. If it is built by this object, it will be destroyed.
+		/// After this point nothing will be logged.
 		void CleanUp() {
 			if(owner) {
-				gge::utils::CheckAndDelete(stream);
+				delete stream;
+			}
+			
+			stream=nullptr;
+		}
+		
+		/// Sets the width to break lines from. Set to 0 to disable.
+		void SetWidth(int width) {
+			this->width = width;
+		}
+		
+		/// Streams out the given value to the underlying stream. This function will automatically 
+		/// add requested information in front. Always cascade entries. Everytime a new `logger << ...`
+		/// is called, header information will be printed out. You may use std::endl in your logs,
+		/// but a new line will be added for all entries. An extra empty line will be inserted for
+		/// multiline entries. Do not use "\n" as it will not be detected.
+		template <class T_>
+		helper operator <<(const T_ &v) {
+#ifndef NO_LOGGING
+			if(!this->stream) return {nullptr, 0, false};
+			
+			auto &stream = *this->stream;
+			
+			int headw = marktime * 8 + markdate * 10 + (markdate && marktime) * 1 + ((markdate || marktime) && !section.empty()) * 1 + section.size();
+			
+			if(headw) headw += 2;
+			
+			if(marktime || markdate) {
+				auto dt = Time::Date::Now();
+				
+				if(markdate) {
+					stream<<dt.ISODate();
+					
+					if(marktime) stream<<" ";
+				}
+				
+				if(marktime) {
+					stream<<dt.Time();
+				}
+				
+				if(!section.empty()) stream<<" ";
+			}
+			
+			if(!section.empty()) stream<<section;
+			
+			helper h;
+			
+			if(width && headw*1.25 >= width) {
+				stream<<std::endl;
+				
+				h = {this, 4, true};
+			}
+			else if(headw) {
+				stream<<"  ";
+				
+				h = {this, headw, false};
 			}
 			else {
-				stream=nullptr;
+				h = {this, 0, true};
 			}
-		}
-
-		template<class T_>
-		Logger &operator<<(const T_ &v) {
-			if(stream) {
-				(*stream)<<v;
-#ifdef _DEBUG
-				if(!(*stream)) {
-					throw std::runtime_error("Logging error!");
-				}
+			
+			return std::move(h << v);
+#else
+			return {nullptr, 0, false};
 #endif
-			}
-
-			return *this;
 		}
 
 	protected:
 		std::ostream *stream;
 		bool owner;
+		bool marktime;
+		bool markdate;
+		
+		std::string section;
+		
+		int width = 0;
 	};
+
+#ifdef NDEBUG
+#	define DEBUGONLY(action) 
+#else	
+#	define DEBUGONLY(action) action
+#endif
 
 } }
