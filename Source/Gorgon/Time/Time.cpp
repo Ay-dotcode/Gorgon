@@ -145,6 +145,7 @@ namespace Gorgon { namespace Time {
 		
 		std::stringstream ss;
 		
+		ss<<std::setfill('0');
 		ss<<setw(4)<<Year  <<"-"
 			<<setw(2)<<Month <<"-"
 			<<setw(2)<<Day   <<"T"
@@ -245,7 +246,8 @@ namespace Gorgon { namespace Time {
 		using std::setw;
 		
 		std::stringstream ss;
-		ss<<Hour<<":"<<Minute<<":"<<Second;
+		ss<<std::setfill('0');
+		ss<<setw(2)<<Hour<<":"<<setw(2)<<Minute<<":"<<setw(2)<<Second;
 		
 		return ss.str();
 	}

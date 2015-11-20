@@ -9,6 +9,7 @@
 #include "Time.h"
 #include "Animation.h"
 #include "Resource.h"
+#include "Audio.h"
 
 #ifdef SCRIPTING
 #	include "Scripting.h"
@@ -36,6 +37,7 @@ namespace Gorgon {
 		Scripting::Initialize();
 #endif
 		
+		Audio::Initialize();
 		Resource::Initialize();
 	}
 

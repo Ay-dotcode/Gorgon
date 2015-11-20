@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <Gorgon/Time.h>
+#include "../Time.h"
 
 namespace Gorgon { namespace Utils {
 	
@@ -54,8 +54,10 @@ namespace Gorgon { namespace Utils {
 				
 				(*parent->stream)<<std::endl;
 			}
+			
+			using endl_t = decltype(&std::endl<char, std::char_traits<char>>);
 
-			helper &operator <<(const decltype(&std::endl<char, std::char_traits<char>>) &) {
+			helper &operator <<(const endl_t &) {
 				if(!parent) return *this;
 				
 				(*parent->stream) << std::endl << std::string(shift, ' ');
@@ -94,7 +96,7 @@ namespace Gorgon { namespace Utils {
 		{ }
 
 		/// Default constructor. Allows you to specify a section
-		Logger(const char *section = "", bool marktime = true, bool markdate = false) : 
+		Logger(const char *section, bool marktime = true, bool markdate = false) : 
 			Logger(std::string(section), marktime, markdate) 
 		{ }
 		

@@ -2,6 +2,6 @@
 
 namespace Gorgon { namespace Audio {
 	
-	
+	Utils::Logger Log("Audio");
 	
 } }
