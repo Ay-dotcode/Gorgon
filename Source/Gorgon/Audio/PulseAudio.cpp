@@ -10,7 +10,7 @@ namespace Gorgon { namespace Audio {
 	pa_mainloop *pa_main = nullptr;
 	pa_context  *pa_ctx  = nullptr;
 
-	enum { pa_waiting, pa_ready, pa_failed, pa_timeout } pa_state=pa_waiting;
+	enum { pa_waiting, pa_connected, pa_failed, pa_timeout, pa_ready } pa_state=pa_waiting;
 	
 	void pa_wait_connection(pa_mainloop *pam, unsigned long timeout = 1000) {
 		auto start = Time::GetTime();
@@ -22,6 +22,21 @@ namespace Gorgon { namespace Audio {
 				return;
 			}
 		}
+	}
+	
+    bool wait_pa_op(pa_operation* pa_op, int timeout = 1000) {
+		auto start = Time::GetTime();
+		
+		while(pa_operation_get_state(pa_op) == PA_OPERATION_RUNNING) {
+			pa_mainloop_iterate(pa_main, 0, NULL);
+			
+			if(Time::GetTime()-start > timeout) {
+				pa_state = pa_timeout;
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
 
@@ -42,7 +57,7 @@ namespace Gorgon { namespace Audio {
 				pa_state = pa_failed;
 				break;
 			case PA_CONTEXT_READY:
-				pa_state=pa_ready;
+				pa_state=pa_connected;
 				break;
 		}
 	}
@@ -75,8 +90,8 @@ namespace Gorgon { namespace Audio {
 		
 		//wait for connection
 		pa_wait_connection(pa_main
-#ifdef PA_CONNECTION_TIMEOUT
-			, PA_CONNECTION_TIMEOUT
+#ifdef PA_TIMEOUT
+			, PA_TIMEOUT
 #endif
 		);
 		
@@ -90,7 +105,110 @@ namespace Gorgon { namespace Audio {
 			return;
 		}
 		
+		Device::Refresh();
+		
 		Log << "Pulse audio is ready and available.";
+	}
+	
+	std::vector<Device> tempdevices;
+	
+	Channel convertpachannel(pa_channel_position channel) {
+		switch(channel) {
+		case PA_CHANNEL_POSITION_FRONT_LEFT:
+		//case PA_CHANNEL_POSITION_LEFT:
+			return Channel::FrontLeft;
+		case PA_CHANNEL_POSITION_FRONT_RIGHT:
+		//case PA_CHANNEL_POSITION_RIGHT:
+			return Channel::FrontRight;
+		case PA_CHANNEL_POSITION_REAR_LEFT:
+			return Channel::BackLeft;
+		case PA_CHANNEL_POSITION_REAR_RIGHT:
+			return Channel::BackRight;
+		case PA_CHANNEL_POSITION_FRONT_CENTER:
+		//case PA_CHANNEL_POSITION_CENTER:
+			return Channel::Center;
+		case PA_CHANNEL_POSITION_MONO:
+			return Channel::Mono;
+		case PA_CHANNEL_POSITION_LFE:
+			return Channel::LowFreq;
+		default:
+			return Channel::Unknown;
+		}
+	}
+
+	void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
+		// If eol is set to a positive number, you're at the end of the list
+		if (eol > 0) {
+			return;
+		}
+		
+		Format format;
+		//currently only floating point is supported
+		switch(l->sample_spec.format) {
+		case PA_SAMPLE_FLOAT32LE:
+			format=Format::Float;
+			break;
+		default:
+			format=Format::Float;
+			break;
+		}
+		
+		std::vector<Channel> channels;
+		for(int i = 0; i<l->channel_map.channels; i++) {
+			channels.push_back(convertpachannel(l->channel_map.map[i]));
+		}
+		
+		tempdevices.push_back(Device(l->name, l->description, l->sample_spec.rate, format, channels));
+		
+		Log << "Found device: "<<l->name;
+	}
+
+	void server_info_cb(pa_context* context, const pa_server_info* info, void *nm) {
+		std::string &def_sinkname = *(std::string*)nm;
+		def_sinkname=info->default_sink_name;
+	}
+	
+	void Device::Refresh() {
+		Log << "Probing devices...";
+		tempdevices.clear();
+		
+		auto pa_op = pa_context_get_sink_info_list(pa_ctx, pa_sinklist_cb, nullptr);
+
+		bool finished = wait_pa_op(pa_op
+#ifdef PA_TIMEOUT
+			, PA_TIMEOUT
+#endif
+		);
+		pa_operation_unref(pa_op);
+		
+		using std::swap;
+		swap(tempdevices, devices);
+		
+		std::string def_sinkname = "";
+		pa_op = pa_context_get_server_info(pa_ctx, &server_info_cb, &def_sinkname);
+		finished = wait_pa_op(pa_op
+#ifdef PA_TIMEOUT
+			, PA_TIMEOUT
+#endif
+		);
+		//pa_operation_unref(pa_op);
+		
+		try {
+			def = Find(def_sinkname);
+		}
+		catch(const std::runtime_error &err) {
+			Log << err.what();
+		}
+		
+		if(!finished) {
+			Log << "Device probe is timed out.";
+		}
+		else {
+			Log << "Device probe completed.";
+		}
+		
+		//pa_operation_unref(pa_op);
+
 	}
 	
 	bool IsAvailable() {

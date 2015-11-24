@@ -107,7 +107,7 @@ namespace Gorgon {
 			/// Calling this method raises DisplayChanged to mitigate this problem partially. This function will not
 			/// re-create monitor list if window manager determines that there are no changes in the monitors. You may
 			/// set force parameter to true to ensure monitors list is re-created.
-			static void RefreshMonitors(bool force=false);
+			static void Refresh(bool force=false);
 			
 			/// In some cases, Changed event is not supported. This function might be used to query if it works
 			/// or not. Even this event is not supported, RefreshMonitors function causes it to be raised after gathering
@@ -117,7 +117,7 @@ namespace Gorgon {
 			/// Fires when window manager raises an event about a change in the monitor or screen layout. Additionally,
 			/// this event will be fired when RefreshMonitors causes monitor list to be re-created. If monitor pointers
 			/// are stored, this event should be listened as a call to RefreshMonitors may invalidate these pointers.
-			static Event<> Changed;
+			static Event<> ChangedEvent;
 			
 		private:
 			Monitor();

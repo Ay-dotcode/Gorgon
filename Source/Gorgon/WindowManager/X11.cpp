@@ -175,7 +175,7 @@ namespace Gorgon {
 			xinerama=(bool)XineramaQueryExtension(display, &eventbase, &errorbase);
 			xinerama=xinerama && (bool)XineramaIsActive(display);
 			
-			Monitor::RefreshMonitors(true);
+			Monitor::Refresh(true);
 		}
 		
 		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
@@ -281,7 +281,7 @@ namespace Gorgon {
 			delete data;
 		}
 		
-		void Monitor::RefreshMonitors(bool force) {
+		void Monitor::Refresh(bool force) {
 			//check if change is needed or forced
 			
 			monitors.Destroy();
@@ -360,7 +360,7 @@ namespace Gorgon {
 			return false;//xrandr;
 		}
 	
-		Event<> Monitor::Changed;
+		Event<> Monitor::ChangedEvent;
 		Containers::Collection<Monitor> Monitor::monitors;
 		Monitor *Monitor::primary=nullptr;
 	}

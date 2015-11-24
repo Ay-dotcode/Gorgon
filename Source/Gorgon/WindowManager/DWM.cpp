@@ -214,7 +214,7 @@ namespace Gorgon {
 		void Initialize() {
 			defaultcursor=LoadCursor(NULL, IDC_ARROW);
 
-			Monitor::RefreshMonitors(true);
+			Monitor::Refresh(true);
 		}
 
 		void SetClipboardText(const std::string &text) {
@@ -278,7 +278,7 @@ namespace Gorgon {
 			delete data;
 		}
 
-		void Monitor::RefreshMonitors(bool force) {
+		void Monitor::Refresh(bool force) {
 			monitors.Destroy();
 			primary=nullptr;
 			EnumDisplayMonitors(nullptr, nullptr, internal::monitordata::MonitorEnumProc, 0);
@@ -288,7 +288,7 @@ namespace Gorgon {
 			return false;
 		}
 
-		Event<> Monitor::Changed;
+		Event<> Monitor::ChangedEvent;
 		Containers::Collection<Monitor> Monitor::monitors;
 		Monitor *Monitor::primary=nullptr;
 	}

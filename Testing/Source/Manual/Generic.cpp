@@ -32,7 +32,10 @@ try {
 	Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
 
-
+	auto &devices = Audio::Device::Devices();
+	for(auto dev : devices) {
+		std::cout<<dev.GetName()<<std::endl;
+	}
 	
 	while(1) {
 		NextFrame();
