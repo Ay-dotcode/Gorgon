@@ -77,6 +77,11 @@ namespace Audio {
 			return channels[index];
 		}
 		
+		/// Returns if this is a valid device
+		bool IsValid() const {
+			return rate != 0;
+		}
+		
 		/// Returns the devices in the current system
 		static const std::vector<Device> &Devices() {
 			return devices;
@@ -92,12 +97,12 @@ namespace Audio {
 		
 		/// Name based device lookup. Fires std::runtime_error if the given device cannot be
 		/// found.
-		static Device Find(const std::string &name) {
+		static Device Find(const std::string &id) {
 			for(auto &dev : devices) {
-				if(dev.name == name) return dev;
+				if(dev.id == id) return dev;
 			}
 			
-			throw std::runtime_error("Cannot find device: "+name);
+			throw std::runtime_error("Cannot find device: "+id);
 		}
 		
 		/// Triggers when the audio device configuration is changed. Depending on the operating
@@ -109,7 +114,7 @@ namespace Audio {
 		std::string id;
 		std::string name;
 		
-		int rate;
+		int rate = 0;
 		Format format;
 		
 		std::vector<Channel> channels;
@@ -119,5 +124,6 @@ namespace Audio {
 	};
 	
 	extern Utils::Logger Log;
+	extern Device Current;
 }
 }

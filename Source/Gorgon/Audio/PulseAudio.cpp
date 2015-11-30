@@ -9,6 +9,7 @@ namespace Gorgon { namespace Audio {
 	
 	pa_mainloop *pa_main = nullptr;
 	pa_context  *pa_ctx  = nullptr;
+	pa_stream   *pa_strm = nullptr;
 
 	enum { pa_waiting, pa_connected, pa_failed, pa_timeout, pa_ready } pa_state=pa_waiting;
 	
@@ -62,6 +63,30 @@ namespace Gorgon { namespace Audio {
 		}
 	}
 	
+	Channel convertpachannel(pa_channel_position channel) {
+		switch(channel) {
+		case PA_CHANNEL_POSITION_FRONT_LEFT:
+		//case PA_CHANNEL_POSITION_LEFT:
+			return Channel::FrontLeft;
+		case PA_CHANNEL_POSITION_FRONT_RIGHT:
+		//case PA_CHANNEL_POSITION_RIGHT:
+			return Channel::FrontRight;
+		case PA_CHANNEL_POSITION_REAR_LEFT:
+			return Channel::BackLeft;
+		case PA_CHANNEL_POSITION_REAR_RIGHT:
+			return Channel::BackRight;
+		case PA_CHANNEL_POSITION_FRONT_CENTER:
+		//case PA_CHANNEL_POSITION_CENTER:
+			return Channel::Center;
+		case PA_CHANNEL_POSITION_MONO:
+			return Channel::Mono;
+		case PA_CHANNEL_POSITION_LFE:
+			return Channel::LowFreq;
+		default:
+			return Channel::Unknown;
+		}
+	}
+	
 	void Initialize() {
 		Log << "Starting pulse audio initialization...";
 		
@@ -107,35 +132,59 @@ namespace Gorgon { namespace Audio {
 		
 		Device::Refresh();
 		
-		Log << "Pulse audio is ready and available.";
+		if(Device::Devices().size() == 0 || !Device::Default().IsValid()) {
+			Log << "No audio device found.";
+			pa_state = pa_failed;
+			return;
+		}
+		
+		pa_sample_spec ss;
+		ss.channels = Device::Default().GetChannelCount();
+		ss.format   = PA_SAMPLE_FLOAT32LE; //only this mode is supported
+		ss.rate     = Device::Default().GetSampleRate();
+		
+		pa_strm     = pa_stream_new(pa_ctx, GetSystemName().c_str(), &ss, NULL);
+		
+		if(!pa_strm) {
+			Log << "Cannot create Pulse audio stream" << pa_strerror(pa_context_errno(pa_ctx));
+			pa_state = pa_failed;
+			return;
+		}
+		
+		
+		auto spec   = pa_stream_get_sample_spec(pa_strm);
+		auto chmap  = pa_stream_get_channel_map(pa_strm);
+		
+		std::vector<Channel> channels;
+		for(int i=0; i<chmap->channels; i++) {
+			channels.push_back(convertpachannel(chmap->map[i]));
+		}		
+		
+		pa_stream_connect_playback(pa_strm, NULL, NULL, PA_STREAM_NOFLAGS, NULL, NULL);
+		
+		auto devname = pa_stream_get_device_name(pa_strm);
+		std::string name;
+		
+		if(devname==nullptr) {
+			name = "[Default]";
+		}
+		else {
+			name=devname;
+		}
+		
+		Current = Device(
+			name, 
+			Device::Default().GetName(),
+			spec->rate,
+			Format::Float,
+			channels
+		);
+		
+		Log << "Pulse audio is ready over "<<name<<" device and available.";
 	}
 	
 	std::vector<Device> tempdevices;
 	
-	Channel convertpachannel(pa_channel_position channel) {
-		switch(channel) {
-		case PA_CHANNEL_POSITION_FRONT_LEFT:
-		//case PA_CHANNEL_POSITION_LEFT:
-			return Channel::FrontLeft;
-		case PA_CHANNEL_POSITION_FRONT_RIGHT:
-		//case PA_CHANNEL_POSITION_RIGHT:
-			return Channel::FrontRight;
-		case PA_CHANNEL_POSITION_REAR_LEFT:
-			return Channel::BackLeft;
-		case PA_CHANNEL_POSITION_REAR_RIGHT:
-			return Channel::BackRight;
-		case PA_CHANNEL_POSITION_FRONT_CENTER:
-		//case PA_CHANNEL_POSITION_CENTER:
-			return Channel::Center;
-		case PA_CHANNEL_POSITION_MONO:
-			return Channel::Mono;
-		case PA_CHANNEL_POSITION_LFE:
-			return Channel::LowFreq;
-		default:
-			return Channel::Unknown;
-		}
-	}
-
 	void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
 		// If eol is set to a positive number, you're at the end of the list
 		if (eol > 0) {
@@ -193,11 +242,20 @@ namespace Gorgon { namespace Audio {
 		);
 		//pa_operation_unref(pa_op);
 		
-		try {
-			def = Find(def_sinkname);
+		if(def_sinkname!="") {
+			try {
+				def = Find(def_sinkname);
+			}
+			catch(const std::runtime_error &err) {
+				Log << err.what();
+				
+				if(devices.size()) {
+					def=devices[0];
+				}
+			}
 		}
-		catch(const std::runtime_error &err) {
-			Log << err.what();
+		else if(devices.size()) {
+			def=devices[0];
 		}
 		
 		if(!finished) {
