@@ -43,5 +43,15 @@ INCLUDE(Scripts/Macros.cmake)
 StartSource(.)
 
 ADD_LIBRARY(GGE STATIC ${All})
+	freetype
+
+
+INCLUDE(FindFreetype)
+IF(NOT FREETYPE_FOUND)
+  FIND_LIBRARY(FREETYPE_LIBRARIES NAMES libfreetype freetype.dll PATHS "./libs/MacOS" "./libs/Windows" DOC "Freetype library")
+  FIND_PATH(FREETYPE_INCLUDE_DIRS ftbuild.h "./includes" DOC "Freetype includes")
+ENDIF(NOT FREETYPE_FOUND)
+INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(GGE ${FREETYPE_LIBRARIES})
 
 TARGET_LINK_LIBRARIES(GGE ${Libs})

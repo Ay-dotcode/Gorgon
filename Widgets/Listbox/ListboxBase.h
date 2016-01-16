@@ -303,8 +303,7 @@ namespace gge { namespace widgets {
 				if(columns!=value) {
 					columns = value;
 					organizer.SetColumns(columns);
-					if(autoheight)
-						adjustheight();
+					adjustheight();
 
 					checkelementlist();
 				}
@@ -375,7 +374,7 @@ namespace gge { namespace widgets {
 			//*****
 			//should be called
 			void itemheightchanged() {
-				if(autoheight) adjustheight();
+				adjustheight();
 				if(!autoupdate) adjustitems();
 
 				if(representations.GetCount()==0) {
@@ -396,13 +395,18 @@ namespace gge { namespace widgets {
 				organizer.SetLogicalCount(count);
 				panel.LogicalHeight=organizer.GetLogicalHeight();
 
-				if(autoheight) this->adjustheight();
+				this->adjustheight();
 				/*if(!autoupdate)*/ adjustitems();
 			}
 
 			//******
 			//could be implemented
-			virtual R_ *newelement(int index, std::function<void(IListItem&, int)> trigger) { return new R_(index,trigger); }
+			virtual R_ *newelement(int index, std::function<void(IListItem&, int)> trigger) { 
+				auto newelm=new R_(index,trigger); 
+				newelm->SetHeight(elementheight());
+
+				return newelm;
+			}
 			//should return element height
 			//element heights should be the same for everything to work smoothly
 			virtual void elementadded(R_ &element) {}
