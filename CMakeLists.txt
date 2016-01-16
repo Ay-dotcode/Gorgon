@@ -43,7 +43,7 @@ set(INSTALL_include_DIR include CACHE PATH "Installation directory for header fi
 ######################
 
 
-if(AUDIO AND NOT AUDIOLIB)
+if(AUDIO AND (NOT AUDIOLIB OR AUDIOLIB STREQUAL ""))
 	if(WIN32)
 		set(AUDIOLIB )
 	else()

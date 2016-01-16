@@ -130,6 +130,7 @@ namespace Gorgon { namespace Audio {
 			return;
 		}
 		
+		//list devices
 		Device::Refresh();
 		
 		if(Device::Devices().size() == 0 || !Device::Default().IsValid()) {
@@ -138,6 +139,7 @@ namespace Gorgon { namespace Audio {
 			return;
 		}
 		
+		//create stream
 		pa_sample_spec ss;
 		ss.channels = Device::Default().GetChannelCount();
 		ss.format   = PA_SAMPLE_FLOAT32LE; //only this mode is supported
@@ -152,6 +154,7 @@ namespace Gorgon { namespace Audio {
 		}
 		
 		
+		// obtain default device settings
 		auto spec   = pa_stream_get_sample_spec(pa_strm);
 		auto chmap  = pa_stream_get_channel_map(pa_strm);
 		
@@ -180,6 +183,7 @@ namespace Gorgon { namespace Audio {
 			channels
 		);
 		
+		//done
 		Log << "Pulse audio is ready over "<<name<<" device and available.";
 	}
 	

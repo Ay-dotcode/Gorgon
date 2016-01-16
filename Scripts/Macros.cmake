@@ -1,11 +1,11 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 MACRO(DoSource)
-	IF(${wd} MATCHES ".+")
-		MESSAGE("> Building ${wd}")
-	ELSE()
-		MESSAGE("> Building Root")
-	ENDIF()
+	#IF(${wd} MATCHES ".+")
+	#	MESSAGE("> Listing ${wd}")
+	#ELSE()
+	#	MESSAGE("> Listing Root")
+	#ENDIF()
 	
 	STRING(REGEX REPLACE "/" "\\\\" srcgrp "${wd}")
 	STRING(REGEX REPLACE "Source" "" srcgrp "${srcgrp}")
