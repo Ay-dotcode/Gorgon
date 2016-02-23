@@ -1,8 +1,13 @@
 #include "../Audio.h"
 
-#include "../Main.h"
-
 #include <pulse/pulseaudio.h>
+#include <thread>
+#include <chrono>
+#include <string.h>
+
+#include <unistd.h>
+
+#include "../Main.h"
 
 namespace Gorgon { namespace Audio {
 	///@cond Internal
@@ -84,6 +89,17 @@ namespace Gorgon { namespace Audio {
 			return Channel::LowFreq;
 		default:
 			return Channel::Unknown;
+		}
+	}
+	
+	void AudioLoop() {
+		Log << "Audio loop started";
+		
+		while(true) {
+			
+			
+			pa_mainloop_iterate(pa_main, 0, NULL);			
+			usleep(1000);
 		}
 	}
 	
@@ -183,11 +199,30 @@ namespace Gorgon { namespace Audio {
 			channels
 		);
 		
+		Log << "Starting audio loop";
+		
+		internal::audiothread = std::thread(&AudioLoop);
+		
+		struct sched_param sp = { 0 };
+		sp.sched_priority = 1;
+		
+		int result=pthread_setschedparam(internal::audiothread.native_handle(), SCHED_FIFO, &sp);
+		if(result!=0) {
+			if(errno = EPERM) {
+				Log << "Access denied while setting thread priority, there might be glitches in the audio." << std::endl
+				    << "You might want to elevate current user to allow changing process scheduling.";
+			}
+			else {
+				Log << "Error occurred while setting thread priority, there might be glitches in the audio:" << std::endl << strerror(errno);
+			}
+			
+		}
+		
 		//done
 		Log << "Pulse audio is ready over "<<name<<" device and available.";
 	}
 	
-	std::vector<Device> tempdevices;
+	static std::vector<Device> tempdevices;
 	
 	void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
 		// If eol is set to a positive number, you're at the end of the list

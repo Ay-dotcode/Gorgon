@@ -15,6 +15,164 @@ namespace Gorgon {
 		/// expensive, it is deleted against accidental use. If a copy of the object is required, use Duplicate function.
 		class Wave {
 		public:
+			
+			/**
+			 * Represents a sample in the Wave data.
+			 */
+			class Sample {
+				friend class Wave;
+			public:
+				Sample() { }
+				
+				float &Channel(unsigned channel) { 
+#ifndef NDEBUG
+					if(channel >= channels) {
+						throw std::runtime_error("Index out of bounds");
+					}
+#endif
+
+					return current[channel]; 
+				}
+				
+				float Channel(unsigned channel) const { 
+#ifndef NDEBUG
+					if(channel >= channels) {
+						throw std::runtime_error("Index out of bounds");
+					}
+#endif
+
+					return current[channel];
+				}
+				
+				float &operator[](unsigned channel) { 
+					return Channel(channel);
+				}
+				
+				float operator[](unsigned channel) const { 
+					return Channel(channel);
+				}
+				
+			private:
+				Sample(float *current, unsigned channels) : current(current), channels(channels) { }
+				
+				float *current = nullptr;
+				unsigned channels = 0;
+			};
+		
+			/**
+			* Iterates the elements of a Wave. This iterator is not checked, so modifications to Wave will not be
+			* propagated to the iterator and it will never know if it gets invalidated. This iterator does not support
+			* Gorgon Iterators. 
+			*/
+			class Iterator {
+				friend class Wave;
+			public:
+				
+				typedef unsigned long difference_type;
+				typedef Sample value_type;
+				typedef Sample& reference;
+				typedef Sample* pointer;
+				typedef std::random_access_iterator_tag iterator_category;
+
+				
+				Iterator() = default;
+				
+				Iterator& operator=(const Iterator&) = default;
+				
+				Iterator& operator++() {
+					current += channels;
+					
+					return *this;
+				}
+				
+				Iterator operator++(int) {
+					auto temp = *this;
+					
+					current += channels;
+					
+					return temp;
+				}
+				
+				Iterator& operator--() {
+					current -= channels;
+					
+					return *this;
+				}
+				
+				Iterator operator--(int) {
+					auto temp = *this;
+					
+					current -= channels;
+					
+					return temp;
+				}
+				
+				Sample operator*() const {
+					return {current, channels};
+				}
+				
+				bool operator< (const Iterator &r) {
+					return current<r.current;
+				}
+				
+				bool operator> (const Iterator &r) {
+					return current>r.current;
+				}
+				
+				bool operator<=(const Iterator &r) {
+					return current<=r.current;
+				}
+				
+				bool operator>=(const Iterator &r) {
+					return current>=r.current;
+				}
+				
+				bool operator==(const Iterator &r) {
+					return current==r.current;
+				}
+				
+				bool operator!=(const Iterator &r) {
+					return current!=r.current;
+				}
+				
+				Sample operator[](unsigned long pos) const {
+					return {current, channels};
+				}
+				
+				Iterator& operator+=(unsigned long diff) {
+					current+=diff*channels;
+					return *this;
+				}
+				
+				Iterator  operator+(unsigned long diff) const {
+					auto temp=*this;
+					temp.current+=diff*channels;
+					
+					return temp;
+				}
+				
+				Iterator& operator-=(unsigned long diff) {
+					current-=diff*channels;
+					return *this;
+				}
+				
+				Iterator  operator-(unsigned long diff) const {
+					auto temp=*this;
+					temp.current-=diff*channels;
+					
+					return temp;
+				}
+
+				unsigned long operator-(const Iterator &r) const {
+					return (current-r.current)/channels;
+				}
+				
+			private:
+				Iterator(float *current, unsigned channels) : current(current), channels(channels) {}
+					
+				float *current;
+				unsigned channels;
+			};
 
 			/// Constructs an empty wave data
 			Wave() {
@@ -23,7 +181,7 @@ namespace Gorgon {
 
 			/// Constructs a new wave data with the given number of samples and channels. This constructor 
 			/// does not initialize data inside the wave
-			Wave(unsigned long size, int channels): size(size), channels(channels) {
+			explicit Wave(unsigned long size, unsigned samplerate, unsigned channels = 1): size(size), samplerate(samplerate), channels(channels) {
 				data = (float*)malloc(size * channels * sizeof(float));
 			}
 
@@ -42,6 +200,8 @@ namespace Gorgon {
 			Wave &operator=(Wave &&other) {
 				Destroy();
 				Swap(other);
+				
+				return *this;
 			}
 
 			/// Destructor
@@ -59,7 +219,7 @@ namespace Gorgon {
 
 			/// Resizes the wave to the given size and channels. This function discards the contents
 			/// of the wave and does not perform any initialization.
-			void Resize(unsigned long size, int channels) {
+			void Resize(unsigned long size, unsigned channels) {
 				
 				this->channels = channels;
 
@@ -92,7 +252,9 @@ namespace Gorgon {
 				data = (float*)malloc(size * channels * sizeof(float));
 			}
 
-			/// 
+			/// Copies the given data assigns the new data to this object, size is the number of samples. 
+			/// Assumes number of channels stays the same. newdata should have size*channels number of
+			/// entries
 			void Assign(float *newdata, unsigned long size) {
 				this->size = size;
 
@@ -108,8 +270,9 @@ namespace Gorgon {
 				}
 			}
 			
-			/// 
-			void Assign(float *newdata, unsigned long size, int channels) {
+			/// Copies the given data assigns the new data to this object, size is the number of samples. 
+			/// newdata should have size*channels number of entries
+			void Assign(float *newdata, unsigned long size, unsigned channels) {
 				this->size = size;
 				
 				this->channels = channels;
@@ -126,12 +289,14 @@ namespace Gorgon {
 				}
 			}
 
-			/// 
+			/// Copies the given data assigns the new data to this object, size is the number of samples. 
+			/// Assumes number of channels and samples stays the same. newdata should have size*channels 
+			/// number of entries 
 			void Assign(float *newdata) {
 				memcpy(data, newdata, size * channels * sizeof(float));
 			}
 
-			/// 
+			/// Assumes the ownership of the data.
 			void Assume(float *newdata, unsigned long size) {
 				this->size = size;
 
@@ -141,14 +306,11 @@ namespace Gorgon {
 				data = newdata;
 			}
 
-			/// Assumes the ownership of the given data. This variant changes the size and
-			/// color mode of the wave. The given data should have the size of 
-			/// width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). This function
-			/// does not perform any checks for the data size while assuming it.
-			/// newdata could be nullptr however, in this case
-			/// width, height should be 0. mode is not assumed to be ColorMode::Invalid while
-			/// the wave is empty, therefore it could be specified as any value.
-			void Assume(float *newdata, unsigned long size, int channels) {
+			/// Assumes the ownership of the given data. This variant changes the size and channels of the wave.
+			/// The given data should have the size of size*channels. This function does not perform any checks 
+			/// for the data size while assuming it. newdata could be nullptr however, in this case size should 
+			/// be 0.
+			void Assume(float *newdata, unsigned long size, unsigned channels) {
 				this->size = size;
 				this->channels = channels;
 
@@ -158,9 +320,6 @@ namespace Gorgon {
 				data = newdata;
 			}
 
-			/// Assumes the ownership of the given data. The size and color mode of the wave stays the same.
-			/// The given data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte).
-			/// This function does not perform any checks for the data size while assuming it.
 			void Assume(float *newdata) {
 				if(data && newdata!=data) {
 					free(data);
@@ -180,11 +339,11 @@ namespace Gorgon {
 
 			/// Cleans the contents of the buffer by setting every byte it contains to 0.
 			void Clean() {
-				memset(data, 0.f, size * sizeof(float));
+				memset(data, 0.f, size * channels * sizeof(float));
 			}
 
-			/// Destroys this wave by setting width and height to 0 and freeing the memory
-			/// used by its data. Also color mode is set to ColorMode::Invalid
+			/// Destroys this wave by setting its size to 0 and freeing the memory
+			/// used by its data.
 			void Destroy() {
 				if(data) {
 					free(data);
@@ -198,6 +357,7 @@ namespace Gorgon {
 				using std::swap;
 
 				swap(size, other.size);
+				swap(channels, other.channels);
 				swap(data, other.data);
 			}
 
@@ -211,30 +371,30 @@ namespace Gorgon {
 				return data;
 			}
 
-			/// 
-			float &operator()(unsigned long p) {
+			/// Allows access to individual members
+			float &operator()(unsigned long p, unsigned ch) {
 #ifndef NDEBUG
-				if(p < 0 || p >= size - 1) {
+				if(p >= size || ch >= channels) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
-				return data[p];
+				return data[p*channels+ch];
 			}
 
-			/// 
-			float operator()(unsigned long p) const {
+			/// Allows access to individual members
+			float operator()(unsigned long p, unsigned ch) const {
 #ifndef NDEBUG
-				if(p < 0 || p >= size - 1) {
+				if(p >= size || ch >= channels) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
-				return data[p];
+				return data[p*channels+ch];
 			}
 
-			/// 
-			float Get(unsigned long p) const {
+			/// Allows access to individual members
+			float Get(unsigned long p, unsigned ch) const {
 #ifndef NDEBUG
-				if(p < 0 || p >= size - 1) {
+				if(p >= size || ch >= channels) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
@@ -245,24 +405,41 @@ namespace Gorgon {
 			unsigned long GetSize() const {
 				return size;
 			}
+			
+			unsigned GetChannelCount() const {
+				return channels;
+			}
 
-			/// Returns the bytes occupied by a single pixel of this wave
-			unsigned long GetSampleRate() const {
+			/// Returns the number of samples per second
+			unsigned GetSampleRate() const {
 				return samplerate;
+			}
+			
+			/// Sets the number samples per second
+			void SetSampleRate(unsigned rate) {
+				samplerate = rate;
+			}
+			
+			Iterator begin() {
+				return {data, channels};
+			}
+			
+			Iterator end() {
+				return {data+size*channels, channels};
 			}
 
 		protected:
 			/// Data that stores pixels of the wave
 			float *data = nullptr;
 
-			/// Width of the wave
-			unsigned long size;
+			/// Number of samples in the wave
+			unsigned long size = 0;
 
 			/// Number of channels
 			unsigned int channels = 0;
 
 			/// Sampling rate of the wave
-			unsigned long samplerate = 0;
+			unsigned samplerate = 0;
 		};
 
 		/// Swaps two waves. Should be used unqualified for ADL.

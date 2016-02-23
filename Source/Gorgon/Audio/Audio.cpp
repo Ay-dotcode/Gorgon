@@ -1,5 +1,6 @@
 #include "../Audio.h"
 
+
 namespace Gorgon { namespace Audio {
 	
 	Utils::Logger Log("Audio");
@@ -9,4 +10,7 @@ namespace Gorgon { namespace Audio {
 	
 	Device Device::def;
 	
+	namespace internal {
+		std::thread audiothread;
+	}
 } }

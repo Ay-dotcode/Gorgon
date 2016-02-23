@@ -13,6 +13,7 @@
 #include <Gorgon/Network/HTTP.h>
 #include <Gorgon/Struct.h>
 #include <Gorgon/Audio.h>
+#include <Gorgon/Containers/Wave.h>
 
 using namespace Gorgon;
 
@@ -36,6 +37,17 @@ try {
 	for(auto dev : devices) {
 		std::cout<<dev.GetName()<<std::endl;
 	}
+	
+	Containers::Wave wave(5 * 8000, 8000);
+	
+	int ind = 0;
+	for(auto elm : wave) {
+		elm[0] = sin(2*3.14159*ind/20);
+		ind++;
+		ind = ind % 20;
+		std::cout<<std::fixed<<std::setprecision(3)<<elm[0]<<" ";
+	}
+	std::cout<<std::endl;
 	
 	while(1) {
 		NextFrame();

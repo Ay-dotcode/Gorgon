@@ -23,5 +23,6 @@ ninja
 codeblocks
 Source/External/curl/
 Package/
+codelite/
 syntax: regexp
 .*\.kdev4(_.*)?

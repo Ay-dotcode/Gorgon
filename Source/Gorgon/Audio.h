@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string>
+#include <thread>
 
 namespace Gorgon {
 /// Contains audio subsystem. For audio primitives look into multimedia namespace.
@@ -125,5 +126,9 @@ namespace Audio {
 	
 	extern Utils::Logger Log;
 	extern Device Current;
+	
+	namespace internal {
+		extern std::thread audiothread;
+	}
 }
 }
