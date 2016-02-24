@@ -9,23 +9,23 @@ https://sourceforge.net/p/gorgon-ge/
 # GGE 3.x (default branch)
 
 ## Requirements
-On Linux:
-GCC 4.8.1+
-CMake 2.8+
-OpenAL
-X11
-pthread
-rt
+* On Linux:
+  * GCC 4.8.1+
+  * CMake 2.8+
+  * OpenAL
+  * X11
+  * pthread
+  * rt
 
-On windows:
-Visual Studio 2012 or
-Visual Studio 2013 with multi-byte patch
-OpenAL
+* On windows:
+  * Visual Studio 2013 with multi-byte patch (not tested), Visual Studio 2015
+  * OpenALSoft
+  * CMake 2.8+
 
-## Documentation
-Follow the steps in [GGE_VS_INSTALLATION_TURKISH.pdf](GGE_VS_INSTALLATION_TURKISH.pdf) (in Turkish)
+## How to
+Use the examples provided in the Examples directory.
 
-# GGE 4.x (4.x-dev branche)
+# GGE 4.x (4.x-dev branch)
 
 GGE 4.x is still in development and is not feature complete.
 
