@@ -25,16 +25,18 @@ OpenAL
 ## Documentation
 Follow the steps in [GGE_VS_INSTALLATION_TURKISH.pdf](GGE_VS_INSTALLATION_TURKISH.pdf) (in Turkish)
 
-# GGE 4.x (4.x-dev, gscript or audio branches)
+# GGE 4.x (4.x-dev branche)
 
-audio branch is not tested under Linux.
+GGE 4.x is still in development and is not feature complete.
 
 ## Requirements
-GCC 4.8.1+ / Visual Studio 2013
+GCC 4.8.1+ / Visual Studio 2015
 CMake 2.8
 X11 (Linux)
+pthreads (Linux)
 doxygen
 OpenGL
+libCurl (For HTTP transport)
 
 ## Documentation
 http://darkgaze.org/GGEDoc/index.html or can be built using doxygen
