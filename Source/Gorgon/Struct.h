@@ -203,7 +203,7 @@ namespace Gorgon {
 	/// This macro should be called inside the class/struct scope. This reflection is geared towards
 	/// POD objects. Might not behave as intented on polymorphic objects. After calling this function
 	/// the class will have ReflectionType and Reflection() that returns reflection object with names.
-	#define DefineStructMembers(C, ...) using ReflectionType = StructDefiner<C, CONC(StructDefiner_types_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>::Inner<CONC(StructDefiner_values_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>; \
+	#define DefineStructMembers(C, ...) using ReflectionType = Gorgon::StructDefiner<C, CONC(StructDefiner_types_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>::Inner<CONC(StructDefiner_values_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>; \
 		static constexpr ReflectionType Reflection() { return {CONC(StructDefiner_names_, NARGS(__VA_ARGS__))(C, __VA_ARGS__)}; }
  
 	/// Defines a struct members with the given name. The first parameter is the name of the class.
@@ -211,7 +211,7 @@ namespace Gorgon {
 	/// POD objects. Might not behave as intented on polymorphic objects. This variant allows naming
 	/// Reflection object function and type. After calling this function the class will have 
 	/// {Name}Type and {Name}() that returns reflection object with names.
-	#define DefineStructMembersWithName(C, Name, ...) using Name##Type = StructDefiner<C, CONC(StructDefiner_types_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>::Inner<CONC(StructDefiner_values_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>; \
+	#define DefineStructMembersWithName(C, Name, ...) using Name##Type = Gorgon::StructDefiner<C, CONC(StructDefiner_types_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>::Inner<CONC(StructDefiner_values_, NARGS(__VA_ARGS__)) (C, __VA_ARGS__)>; \
 		static constexpr Name##Type Name() { return {CONC(StructDefiner_names_, NARGS(__VA_ARGS__))(C, __VA_ARGS__)}; }
 
 #endif

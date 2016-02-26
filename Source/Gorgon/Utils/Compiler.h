@@ -3,6 +3,12 @@
 #include <typeinfo>
 #include <string>
 
+#ifdef _MSC_VER
+#	define WEAKINIT __declspec(selectany)
+#else
+#	define WEAKINIT __attribute__((weak))
+#endif
+
 namespace Gorgon { namespace Utils {
 		
 		/// @cond INTERNAL
