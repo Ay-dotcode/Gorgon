@@ -110,7 +110,7 @@ TEST_CASE( "Conversion from", "[From]" ) {
 	REQUIRE( String::TrimEnd(String::From(4.56 ), "0") == "4.56" );
 }
 
-TEST_CASE( "Extraction", "[Extract][ExtractOutsideQuotes]" ) {
+TEST_CASE( "Extraction", "[Extract][Extract_UseQuotes]" ) {
 	std::string data="this is a test text";
 	
 	REQUIRE( String::Extract(data, ' ') == "this" );
@@ -155,91 +155,91 @@ TEST_CASE( "Extraction", "[Extract][ExtractOutsideQuotes]" ) {
 	
 	data="this \"is a test\" text";
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "this" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "this" );
 	REQUIRE( data == "\"is a test\" text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "\"is a test\"" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "\"is a test\"" );
 	REQUIRE( data == "text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "text" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "text" );
 	REQUIRE( data == "" );
 
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "" );
 	REQUIRE( data == "" );
 	
 
 	data="this \"is a' test\" text";
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "this" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "this" );
 	REQUIRE( data == "\"is a' test\" text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "\"is a' test\"" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "\"is a' test\"" );
 	REQUIRE( data == "text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "text" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "text" );
 	REQUIRE( data == "" );
 
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "" );
 	REQUIRE( data == "" );
 	
 	
 	data="this 'is a test' text";
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "this" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "this" );
 	REQUIRE( data == "'is a test' text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "'is a test'" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "'is a test'" );
 	REQUIRE( data == "text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "text" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "text" );
 	REQUIRE( data == "" );
 
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "" );
 	REQUIRE( data == "" );
 	
 	
 	data="this 'is a\" test' text";
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "this" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "this" );
 	REQUIRE( data == "'is a\" test' text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "'is a\" test'" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "'is a\" test'" );
 	REQUIRE( data == "text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "text" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "text" );
 	REQUIRE( data == "" );
 
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ') == "" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ') == "" );
 	REQUIRE( data == "" );
 	
 
 	data="this 'is a\" test' text";
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ', String::QuoteType::Double) == "this" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Double) == "this" );
 	REQUIRE( data == "'is a\" test' text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ', String::QuoteType::Double) == "'is" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Double) == "'is" );
 	REQUIRE( data == "a\" test' text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ', String::QuoteType::Double) == "a\" test' text" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Double) == "a\" test' text" );
 	REQUIRE( data == "" );
 
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ', String::QuoteType::Double) == "" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Double) == "" );
 	REQUIRE( data == "" );
 	
 
 	data="this \"is a' test\" text";
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ', String::QuoteType::Single) == "this" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Single) == "this" );
 	REQUIRE( data == "\"is a' test\" text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ', String::QuoteType::Single) == "\"is" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Single) == "\"is" );
 	REQUIRE( data == "a' test\" text" );
 	
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ', String::QuoteType::Single) == "a' test\" text" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Single) == "a' test\" text" );
 	REQUIRE( data == "" );
 
-	REQUIRE( String::ExtractOutsideQuotes(data, ' ', String::QuoteType::Single) == "" );
+	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Single) == "" );
 	REQUIRE( data == "" );
 }
 

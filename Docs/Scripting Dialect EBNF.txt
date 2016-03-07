@@ -1,8 +1,10 @@
+(* missing: operator keyword *)
+
 (* Language Productions *)
 
 statement = keyword_call | function_call | assignment, [";" | "\n"];
 
-variable = "$", variable_identifier;
+variable = identifier;
 
 namespace = [identifier, ":"], identifier, ":"
 

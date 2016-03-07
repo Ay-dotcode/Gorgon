@@ -31,6 +31,17 @@ namespace Gorgon { namespace Time {
 		return a;
 	}
 	
+	void fromtm(Date &ret, tm timeinfo) {
+		ret.Year 	   =(int)timeinfo.tm_year+1900;
+		ret.Month	   =Date::MonthType(timeinfo.tm_mon+1);
+		ret.Day		   =(int)timeinfo.tm_mday;
+		ret.Hour 	   =(int)timeinfo.tm_hour;
+		ret.Minute	   =(int)timeinfo.tm_min;
+		ret.Second	   =(int)timeinfo.tm_sec;
+		ret.Weekday	   =Date::WeekdayType(timeinfo.tm_wday);
+		ret.Timezone   =timeinfo.tm_gmtoff/60;
+	}
+	
 	bool Date::Parse(std::string isodate) {
 		isodate=String::Trim(isodate);
 		
@@ -133,6 +144,7 @@ namespace Gorgon { namespace Time {
 		
 		std::stringstream ss;
 		
+		ss<<std::setfill('0');
 		ss<<setw(4)<<Year <<"-"
 			<<setw(2)<<Month<<"-"
 			<<setw(2)<<Day;
@@ -316,6 +328,60 @@ namespace Gorgon { namespace Time {
 		time_t y = mktime(&b);
 		
 		return difftime(x, y);
+	}
+	
+	void Date::AddYears(int years) {
+		tm a = totm(*this);
+		a.tm_year += years;
+		
+		mktime(&a);
+		
+		fromtm(*this, a);
+	}
+	
+	void Date::AddMonths(int months) {
+		tm a = totm(*this);
+		a.tm_mon += months;
+		
+		mktime(&a);
+		
+		fromtm(*this, a);
+	}
+	
+	void Date::AddDays(int days) {
+		tm a = totm(*this);
+		a.tm_mday += days;
+		
+		mktime(&a);
+		
+		fromtm(*this, a);
+	}
+	
+	void Date::AddHours(int hours) {
+		tm a = totm(*this);
+		a.tm_hour += hours;
+		
+		mktime(&a);
+		
+		fromtm(*this, a);
+	}
+	
+	void Date::AddMinutes(int minutes) {
+		tm a = totm(*this);
+		a.tm_min += minutes;
+		
+		mktime(&a);
+		
+		fromtm(*this, a);
+	}
+	
+	void Date::AddSeconds(int seconds) {
+		tm a = totm(*this);
+		a.tm_sec += seconds;
+		
+		mktime(&a);
+		
+		fromtm(*this, a);
 	}
 
 	

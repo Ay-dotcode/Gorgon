@@ -594,7 +594,7 @@ namespace Gorgon {
 		///         a marker.
 		/// @param  quotetype controls which type of quotes will be considered.
 		/// @return Extracted string. Does not contain the marker. Quotes will not be removed
-		inline std::string ExtractOutsideQuotes(std::string &original, char marker, QuoteType quotetype=QuoteType::Both) {
+		inline std::string Extract_UseQuotes(std::string &original, char marker, QuoteType quotetype=QuoteType::Both) {
 			int inquotes=0;
 			int pos=0;
 			

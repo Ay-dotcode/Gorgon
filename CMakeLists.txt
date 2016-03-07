@@ -136,7 +136,7 @@ set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/Source")
 configure_file(Scripts/GorgonConfig.cmake.in
   "${PROJECT_PACKAGE_DIR}/GorgonConfig.cmake" @ONLY)
   
-set(CONF_INCLUDE_DIRS "\${GORGON_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/Source")
 configure_file(Scripts/GorgonConfig.cmake.in
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/GorgonConfig.cmake" @ONLY)
 

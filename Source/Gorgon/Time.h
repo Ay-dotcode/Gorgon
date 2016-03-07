@@ -145,6 +145,24 @@ namespace Gorgon {
 			/// Returns the system timezone in minutes. Might be negative.
 			static int LocalTimezone();
 			
+			/// Adds specified amount of years to the date
+			void AddYears(int years);
+			
+			/// Adds specified amount of months to the date
+			void AddMonths(int months);
+			
+			/// Adds specified amount of days to the date
+			void AddDays(int days);
+			
+			/// Adds specified amount of hours to the date
+			void AddHours(int hours);
+			
+			/// Adds specified amount of minutes to the date
+			void AddMinutes(int minutes);
+			
+			/// Adds specified amount of seconds to the date
+			void AddSeconds(int seconds);
+			
 			/// Checks whether the stored time is actually set.
 			bool IsSet() const {
 				return Month==Empty;
