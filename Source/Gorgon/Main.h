@@ -4,6 +4,9 @@
 
 #include "Event.h"
 
+///@page Design
+///@htmlinclude "Design.html"
+
 /// Root namespace for Gorgon Game Engine.
 namespace Gorgon {
 

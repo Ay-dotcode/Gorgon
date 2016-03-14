@@ -1,0 +1,439 @@
+<html>
+<head><title>Gorgon Game Engine Design Document</title></head>
+
+<style>
+	my li {
+        white-space:pre;
+        font-family: monospace;
+        list-style-type: none;
+        margin-bottom:-0.75em;
+    }
+    my li:before {
+        font-size:70%;
+        font-weight:bold;
+    }
+    my li[f]:before {
+        content: "[ f]";
+    }
+    my li[m]:before {
+        content: "[ m]";
+    }    
+    my li[f][s]:before {
+        content: "[sf]";
+    }
+    my li[m][s]:before {
+        content: "[sm]";
+    }
+    my li[d] {
+        color:#280;
+    }
+    my li[x] {
+        color:#821;
+    }
+    
+    my section:before {
+		content:attr(name);
+		font-size:140%;
+		font-weight:bold;
+		margin-left:-10px;
+		counter-reset:module;
+		margin-bottom:15px;
+		display:block;
+    }
+    
+    my section {
+		padding-left: 10px;
+		display:block;
+    }
+    
+    my module:before {
+		counter-increment: module;
+		content:counter(module) ". " attr(name);
+		font-size:120%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:15px;
+		display:block;
+    }
+    
+    my module[optional]:before {
+		counter-increment: module;
+		content:counter(module) ". [o] " attr(name);
+		font-size:120%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:15px;
+		display:block;
+    }
+    
+    my module {
+		padding-left: 15px;
+		display:block;
+    }
+    
+    my namespace:before {
+		content:"[n] " attr(name);
+		font-size:100%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:5px;
+		display:block;
+		background-color:white;
+    }
+    
+    my namespace {
+		padding-left: 15px;
+		display:block;
+		list-style-type: none;
+		margin-bottom:10px;
+		background-clip: padding-box;
+		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 8px);
+    }
+   
+    my class:before {
+		content:"[c] " attr(name);
+		font-size:100%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:5px;
+		display:block;
+		background-color:white;
+    }
+    
+    my class {
+		padding-left: 15px;
+		display:block;
+        list-style-type: none;
+		margin-bottom:10px;
+		background-clip: padding-box;
+		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 8px);
+    }
+</style>
+
+<my>
+<section name="Core modules">
+
+	<module name="Operating system">
+		<namespace name="OS">
+			<li   f  > Name
+			<li   f  > Version
+			<li   f d> GetEnv
+			<li   f d> Open
+			<li   f d> OpenTerminal
+			<li   f d> Start
+			<li   f d> DisplayMessage
+			<li   f d> GetAppDataPath
+			<li   f d> GetAppSettingPath
+			<li   f  > IsInternetConnected
+			<li   f  > IsNetworkConnected
+			<li   f  > IsWifiConnected
+			<li   f  > BatteryStatus
+			<li   f  > BatterPercentage
+			<li   f  > AvailableMemory
+			<li   f  > FreeMemory
+			<li   f  > ProcessorInfo
+			<li   f  > GPUInfo
+			<li   f  > FileTypeData
+			<li   f  > SystemFonts -> vector(filename)
+			<li   f  > SystemSound -> map(tag, filename)
+			</li><br>
+
+			<class name="CPU">
+				<li   m  > Brand
+				<li   m  > Model
+				<li   m  > Speed
+				<li   m  > Cores
+				<li   m  > Threads
+			</li></class>
+
+
+			<class name="GPU">
+				<li   m  > Memory
+				<li   m  > Brand
+				<li   m  > Model
+			</li></class>
+
+
+			<class name="FileType">
+				<li m   > Name
+				<li m   > Description
+				<li m   > Icon
+			</li></class>
+
+
+			<namespace name="User">
+				<li f  d> GetName
+				<li f  d> GetUsername
+				<li f  d> GetDocumentsPath
+				<li f  d> GetHomePath
+				<li f  d> GetDataPath
+				<li f   > IsAdmin
+			</li></namespace>
+		</namespace>
+	</module>
+
+	<module name="Window manager">
+
+	</module>
+
+	<module name="Graphics related">
+
+	</module>
+
+	<module optional name="Audio">
+
+	</module>
+
+	<module optional name="Multimedia">
+
+	</module>
+
+	<module name="Animation">
+
+	</module>
+
+	<module name="Resource">
+
+	</module>
+
+	<module name="Input">
+
+	</module>
+
+</section>
+
+<section name="Supportive modules">
+	<module name="Filesystem">
+		<namespace name="Filesystem">
+			<li   f  > CreateDirectory
+			<li   f  > Delete
+			<li   f  > IsFile
+			<li   f  > IsDirectory
+			<li   f  > Exists
+			<li   f  > Cononicalize
+			<li   f  > TryCanonoicalize
+			<li   f  > GetCurrentDir
+			<li   f  > IsHidden
+			<li   f  > IsReadOnly
+			<li   f  > RelativePath
+			<li   f  > Join
+			<li   f  > GetFilename
+			<li   f  > GetDirectory
+			<li   f  > ConvertToNative
+			<li   f  > ConvertFromNative
+			<li   f  > ConvertToURI
+			<li   f  > Copy
+			<li   f  > Move
+			<li   f  > Trash
+			<li   f  > ExeDirectory
+			<li   f  > ExePath
+			<li   f  > ExeFilename
+			<li   f  > StartupDirectory
+			<li   f  > FreeSpace
+			<li   f  > TotalSpace
+			<li   f  > Drives -> map(path, name)
+			<li   f  > MakeReadonly
+			<li   f  > MakeHidden
+			<li   f  > GetSize
+			<li   f  > IsRemovable
+			<li   f  > IsNetwork
+			<li   f  > DriveType
+			<li   f  > Directory
+			</li><br>
+		
+			<class name="DirectoryIterator">
+				<pre>Standard iterator</pre>
+			</class>
+			
+			<class name="DirectoryListing">
+				<li   f  > begin
+				<li   f  > end
+			</li></class>
+		</namespace>
+	</module>
+
+	<module name="Time">
+		<namespace name="Time">
+			<li   f d> GetDate
+			<li   f  > GetTime
+			<li   f  > FrameStart
+			<li   f  > DeltaTime
+			<li   f  > Timeout
+			<li   f  > Interval
+			<li   f  > Cancel
+			<li   f  > LocalTimezone
+			</li><br>
+
+
+			<class name="Timer">
+				<li   f  > Start
+				<li   f  > Tick
+				<li   f  > Get
+				<li   f  > Set
+				<li   f  > ShowMessage
+			</li></class>
+
+			<class name="Date">
+				<li   m  >  Millisecond
+				<li   m  >  Second
+				<li   m  >  Minute
+				<li   m  >  Hour
+				<li   m  >  Day
+				<li   m  >  Month
+				<li   m  >  Year
+				<li   m  >  Timezone
+				<li   m  >  WeekDay
+				<li   f  > AddDays
+				<li   f  > AddMonths
+				<li   f  > AddYears
+				<li   f  > AddSeconds
+				<li   f  > AddMinutes
+				<li   f  > AddHours
+				<li   f  > Date_En
+				<li   f  > ISODate
+				<li   f  > ISODateTime
+				<li   f  > MonthName_En
+				<li   f  > ShortMonthName_En
+				<li   f  > WeekdayName_En
+				<li   f  > ShortWeekdayName_En
+				<li   f  > Time
+				<li   f  > ShortTime
+				<li   f  > Timezone_GMT
+				<li   f  > IsSet
+				<li   f  > Unset
+				<li   f  > Normalize
+				<li   f  > Save
+				<li   f  > Load
+				<li   f  > Timestamp
+				<li   f  > Normalize
+				<li s f  > Now
+			</li></class>
+		</namespace>
+	</module>
+
+
+	<module name="Logging">
+		<class name="Logger">
+			<li   f  > InitializeConsole
+			<li   f  > InitializeStream
+			<li   f  > InitializeFile
+			<li   f  > Cleanup
+			<li   f  > SetWidth
+			<li   f  > operator &lt;&lt;
+			<li   f  > SetSection
+			<li   f  > GetSection
+			<li   f  > SetMarkTime
+			<li   f  > GetMarkTime
+			<li   f  > SetMarkDate
+			<li   f  > GetMarkDate
+			<li   f  > EnableColorSupport
+			<li   f  > DisableColorSupport
+			<li   f  > IsColorSupportEnabled
+		</li></class>
+	</module>
+
+
+	<module name="Containers">
+
+	</module>
+
+	<module name="Encoding">
+
+	</module>
+
+	<module name="Geometry">
+
+	</module>
+
+	<module name="Template meta programming">
+
+	</module>
+
+	<module name="Compiler">
+
+	</module>
+
+	<module name="Console">
+
+	</module>
+
+	<module name="String">
+		<namespace name="String">
+			<li   f  > Trim
+			<li   f  > TrimLeft
+			<li   f  > TrimRight
+			<li   f  > TrimInplace
+			<li   f  > TrimLeftInplace
+			<li   f  > TrimRightInplace
+			<li   f  > To
+			<li   f  > From
+			<li   f  > Parse
+			<li   f  > ToLower
+			<li   f  > ToUpper
+			<li   f  > ToLowerInplace
+			<li   f  > ToUpperInplace
+			<li   f  > Replace
+			<li   f  > ReplaceInplace
+			<li   f  > Extract
+			<li   f  > Extract_UseQuotes
+			<li   f  > Split
+			<li   f  > TrimQuotes
+			<li   f  > TrimQuotesInplace
+			</li><br>
+			
+			<class name="CaseInsensitiveLess"></class><br>
+			
+			<class name="Tokenizer">
+				<pre>Forward iterator that tokenizes a string from the given delimeter.</pre>
+			</class>
+		</namespace>
+	</module>
+
+
+<section name="Additional modules">
+
+	<module name="Data services">
+
+	</module>
+
+	<module name="CGI">
+
+	</module>
+
+	<module name="Effects">
+
+	</module>
+
+	<module name="Widgets">
+
+	</module>
+
+	<module name="Network">
+
+	</module>
+
+	<module name="Scripting">
+
+	</module>
+	
+</section>
+
+<section name="Gaming">
+
+	<module name="World">
+
+	</module>
+
+	<module name="Physics">
+
+	</module>
+
+	<module name="Actors">
+
+	</module>
+
+	<module name="Additional shaders">
+
+	</module>
+</section>
+</my>
