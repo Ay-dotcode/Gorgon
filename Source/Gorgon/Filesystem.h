@@ -177,7 +177,7 @@ namespace Gorgon {
 		/// Returns the filename portion of a file path. This function expects the input to 
 		/// have / as directory separator. If path does not contain any /, it will return whole input.
 		/// @param  path path that contains the filename
-		inline std::string GetFile(std::string path) {
+		inline std::string GetFilename(std::string path) {
 			auto pos=path.find_last_of('/');
 
 			if(pos!=path.npos) {
@@ -203,7 +203,7 @@ namespace Gorgon {
 		template<template<class> class C_>
 		bool Copy(const C_<std::string> &source, const std::string &target) {
 			for(const auto &s : source) {
-				if(!Copy(s, target+"/"+GetFile(s))) return false;
+				if(!Copy(s, target+"/"+GetFilename(s))) return false;
 			}
 
 			return true;
@@ -218,7 +218,7 @@ namespace Gorgon {
 		template<template<class, class> class C_, class A_>
 		bool Copy(const C_<std::string, A_> &source, const std::string &target) {
 			for(const auto &s : source) {
-				if(!Copy(s, target+"/"+GetFile(s))) return false;
+				if(!Copy(s, target+"/"+GetFilename(s))) return false;
 			}
 
 			return true;
@@ -234,7 +234,7 @@ namespace Gorgon {
 		template<class I_>
 		bool Copy(const I_ &begin, const I_ &end, const std::string &target) {
 			for(I_ it=begin;it!=end;++it) {
-				if(!Copy(*it, target+"/"+GetFile(*it))) return false;
+				if(!Copy(*it, target+"/"+GetFilename(*it))) return false;
 			}
 
 			return true;
@@ -305,11 +305,11 @@ namespace Gorgon {
 		std::string StartupDirectory();
 		
 		/// Returns the the full path of the application
-		std::string ApplicationPath();
+		std::string ExePath();
 		
 		/// Returns the directory where the program resides. Can be used to locate resources. May not be
 		/// same as StartupDirectory
-		std::string ApplicationDirectory();
+		std::string ExeDirectory();
 		
 		/// This function returns all entry points in the current system. This function does not
 		/// perform caching and should be used sparingly. It may cause Windows systems to read 

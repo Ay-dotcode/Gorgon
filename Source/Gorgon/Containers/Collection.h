@@ -179,8 +179,8 @@ namespace Gorgon {
 			/// @warning Visual studio erroneously allows rvalues (function return values or temporaries)
 			/// to be bound to normal references. This means, its possible to pass those without getting 
 			/// an error. This problem is fixed by setting warning 4239 to cause an error. If working with
-			/// older libraries that require this behavior, @code use #pragma warning(disable: 4329) @endcode before,
-			/// including necessary header.
+			/// older libraries that require this behavior, @code use #pragma warning(disable: 4329) @endcode
+			/// before including necessary header.
 			template<typename... Args_>
 			Collection(T_ &t, Args_ &... args) {
 				list.reserve(sizeof...(Args_)+1);

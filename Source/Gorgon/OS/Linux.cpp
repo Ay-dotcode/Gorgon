@@ -97,7 +97,7 @@ namespace Gorgon { namespace OS {
 			char *v[args.size()+2];
 			int arg=1;
 			v[0]=(char*)malloc(name.length()+1);
-			strcpy(v[0], Filesystem::GetFile(name).c_str());
+			strcpy(v[0], Filesystem::GetFilename(name).c_str());
 
 			for(auto &s : args) {
 				v[arg] = (char*)malloc(s.length()+1);

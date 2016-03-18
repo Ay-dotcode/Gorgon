@@ -356,7 +356,7 @@ namespace Gorgon { namespace Resource {
 		FileWriter(const std::string &filename) : filename(filename) {
 			try {
 				auto path=Filesystem::GetDirectory(filename);
-				auto file=Filesystem::GetFile(filename);
+				auto file=Filesystem::GetFilename(filename);
 				
 				this->filename=Filesystem::Join(Filesystem::Canonical(path), file);
 			}

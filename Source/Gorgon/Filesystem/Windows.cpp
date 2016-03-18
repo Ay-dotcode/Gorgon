@@ -170,7 +170,7 @@ namespace Gorgon { namespace Filesystem {
 		return MoveFile(source.c_str(), target.c_str())!=0;
 	}
 	
-	std::string ApplicationDirectory() {
+	std::string ExeDirectory() {
 		HMODULE hModule = GetModuleHandle(NULL);
 		char path[MAX_PATH];
 		GetModuleFileName(hModule, path, MAX_PATH);
@@ -181,7 +181,7 @@ namespace Gorgon { namespace Filesystem {
 		return GetDirectory(dir);
 	}
 	
-	std::string ApplicationPath() {
+	std::string ExePath() {
 		HMODULE hModule = GetModuleHandle(NULL);
 		char path[MAX_PATH];
 		GetModuleFileName(hModule, path, MAX_PATH);

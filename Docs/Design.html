@@ -3,10 +3,9 @@
 
 <style>
 	my li {
-        white-space:pre;
         font-family: monospace;
         list-style-type: none;
-        margin-bottom:-0.75em;
+        /*margin-bottom:-0.75em;*/
     }
     my li:before {
         font-size:70%;
@@ -14,6 +13,9 @@
     }
     my li[f]:before {
         content: "[ f]";
+    }
+    my li[c]:before {
+        content: "[ct]";
     }
     my li[m]:before {
         content: "[ m]";
@@ -27,8 +29,19 @@
     my li[d] {
         color:#280;
     }
+    my li[q] {
+        color:#280;
+    }
     my li[x] {
         color:#821;
+    }
+    my li[r]::after {
+		content: " (to be removed)";
+        color:#642;
+    }
+    my li[q]::after {
+		content: " (to be analyzed)";
+        color:#462;
     }
     
     my section:before {
@@ -66,6 +79,10 @@
 		display:block;
     }
     
+    my module[done] {
+		color:#280;
+    }
+    
     my module {
 		padding-left: 15px;
 		display:block;
@@ -90,6 +107,10 @@
 		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 8px);
     }
    
+    my namespace[done] {
+		color:#280;
+    }
+    
     my class:before {
 		content:"[c] " attr(name);
 		font-size:100%;
@@ -99,6 +120,17 @@
 		display:block;
 		background-color:white;
     }
+     
+    my class[inherits]:before {
+		content:"[c] " attr(name) " (inherits: " attr(inherits) ")";
+		font-size:100%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:5px;
+		display:block;
+		background-color:white;
+    }
+ 
     
     my class {
 		padding-left: 15px;
@@ -107,6 +139,10 @@
 		margin-bottom:10px;
 		background-clip: padding-box;
 		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 8px);
+    }
+    
+    my class[done] {
+		color:#280;
     }
 </style>
 
@@ -205,47 +241,67 @@
 <section name="Supportive modules">
 	<module name="Filesystem">
 		<namespace name="Filesystem">
-			<li   f  > CreateDirectory
-			<li   f  > Delete
-			<li   f  > IsFile
-			<li   f  > IsDirectory
-			<li   f  > Exists
-			<li   f  > Cononicalize
+			<li   f d> CreateDirectory
+			<li   f d> IsFile
+			<li   f d> IsDirectory
+			<li   f d> IsExists
+			<li   f d> IsWritable
+			<li   f d> Cononical
 			<li   f  > TryCanonoicalize
-			<li   f  > GetCurrentDir
-			<li   f  > IsHidden
+			<li   f d> CurrentDirectory
+			<li   f d> IsHidden
 			<li   f  > IsReadOnly
-			<li   f  > RelativePath
-			<li   f  > Join
-			<li   f  > GetFilename
-			<li   f  > GetDirectory
+			<li   f d> Relative
+			<li   f d> ChangeDirectory
+			<li   f d> Join
+			<li   f d> GetFilename
+			<li   f d> GetDirectory
 			<li   f  > ConvertToNative
 			<li   f  > ConvertFromNative
 			<li   f  > ConvertToURI
-			<li   f  > Copy
-			<li   f  > Move
+			<li   f d> Copy
+			<li   f d> Copy (vector)
+			<li   f d> Copy (iterator)
+			<li   f d> Move
+			<li   f  > Move (vector)
+			<li   f  > Move (iterator)
+			<li   f d> Delete
+			<li   f  > Delete (vector)
+			<li   f  > Delete (iterator)
 			<li   f  > Trash
-			<li   f  > ExeDirectory
-			<li   f  > ExePath
+			<li   f  > Trash (vector)
+			<li   f  > Trash (iterator)
+			<li   f d> ExeDirectory
+			<li   f d> ExePath
 			<li   f  > ExeFilename
-			<li   f  > StartupDirectory
+			<li   f d> StartupDirectory
 			<li   f  > FreeSpace
 			<li   f  > TotalSpace
-			<li   f  > Drives -> map(path, name)
+			<li   f  > EntryPoints
 			<li   f  > MakeReadonly
 			<li   f  > MakeHidden
-			<li   f  > GetSize
+			<li   f d> Size
+			<li   f  > Size (directory)
+			<li   f d> Save
+			<li   f d> Load
 			<li   f  > IsRemovable
 			<li   f  > IsNetwork
 			<li   f  > DriveType
-			<li   f  > Directory
+			<li   f q> LocateResource
 			</li><br>
+			
+			<class name="EntryPoint" done>
+				<li   m d> Path
+				<li   m d> Readable
+				<li   m d> Writable
+				<li   m d> Name
+			</li></class>
 		
-			<class name="DirectoryIterator">
+			<class name="DirectoryIterator" done>
 				<pre>Standard iterator</pre>
 			</class>
 			
-			<class name="DirectoryListing">
+			<class name="DirectoryListing" done>
 				<li   f  > begin
 				<li   f  > end
 			</li></class>
@@ -256,8 +312,8 @@
 		<namespace name="Time">
 			<li   f d> GetDate
 			<li   f  > GetTime
-			<li   f  > FrameStart
-			<li   f  > DeltaTime
+			<li   f d> FrameStart
+			<li   f d> DeltaTime
 			<li   f  > Timeout
 			<li   f  > Interval
 			<li   f  > Cancel
@@ -266,75 +322,119 @@
 
 
 			<class name="Timer">
-				<li   f  > Start
-				<li   f  > Tick
-				<li   f  > Get
-				<li   f  > Set
-				<li   f  > ShowMessage
+				<li   f d> Start
+				<li   f d> Tick
+				<li   f d> Get
+				<li   f d> Set
+				<li   f  > ShowDialog
+				<li  sf d> operator << (ostream)
 			</li></class>
 
 			<class name="Date">
-				<li   m  >  Millisecond
-				<li   m  >  Second
-				<li   m  >  Minute
-				<li   m  >  Hour
-				<li   m  >  Day
-				<li   m  >  Month
-				<li   m  >  Year
-				<li   m  >  Timezone
-				<li   m  >  WeekDay
-				<li   f  > AddDays
-				<li   f  > AddMonths
-				<li   f  > AddYears
-				<li   f  > AddSeconds
-				<li   f  > AddMinutes
-				<li   f  > AddHours
-				<li   f  > Date_En
-				<li   f  > ISODate
-				<li   f  > ISODateTime
-				<li   f  > MonthName_En
-				<li   f  > ShortMonthName_En
-				<li   f  > WeekdayName_En
-				<li   f  > ShortWeekdayName_En
-				<li   f  > Time
-				<li   f  > ShortTime
-				<li   f  > Timezone_GMT
-				<li   f  > IsSet
-				<li   f  > Unset
+				<li   m d> Millisecond
+				<li   m d> Second
+				<li   m d> Minute
+				<li   m d> Hour
+				<li   m d> Day
+				<li   m d> Month
+				<li   m d> Year
+				<li   m d> Timezone
+				<li   m d> WeekDay
+				<li   f d> AddDays
+				<li   f d> AddMonths
+				<li   f d> AddYears
+				<li   f d> AddSeconds
+				<li   f d> AddMinutes
+				<li   f d> AddHours
+				<li   f d> Date_En
+				<li   f d> ISODate
+				<li   f d> ISODateTime
+				<li   f d> MonthName_En
+				<li   f d> ShortMonthName_En
+				<li   f d> WeekdayName_En
+				<li   f d> ShortWeekdayName_En
+				<li   f d> Time
+				<li   f d> ShortTime
+				<li   f d> Timezone_GMT
+				<li   f d> IsSet
+				<li   f d> Unset
 				<li   f  > Normalize
-				<li   f  > Save
-				<li   f  > Load
+				<li   f d> Save
+				<li   f d> Load
+				<li   f d> Parse
 				<li   f  > Timestamp
-				<li   f  > Normalize
-				<li s f  > Now
-			</li></class>
+				<li s f d> Now
+				<li s f r> LocalTimezone
+				</li>
+			</class>
 		</namespace>
 	</module>
 
 
 	<module name="Logging">
-		<class name="Logger">
-			<li   f  > InitializeConsole
-			<li   f  > InitializeStream
-			<li   f  > InitializeFile
-			<li   f  > Cleanup
-			<li   f  > SetWidth
-			<li   f  > operator &lt;&lt;
-			<li   f  > SetSection
-			<li   f  > GetSection
-			<li   f  > SetMarkTime
-			<li   f  > GetMarkTime
-			<li   f  > SetMarkDate
-			<li   f  > GetMarkDate
-			<li   f  > EnableColorSupport
-			<li   f  > DisableColorSupport
-			<li   f  > IsColorSupportEnabled
-		</li></class>
+		<namespace name="utils">
+			<class name="Logger">
+				<li   f d> InitializeConsole
+				<li   f d> InitializeStream
+				<li   f d> InitializeFile
+				<li   f d> Cleanup
+				<li   f d> SetWidth
+				<li   f d> operator &lt;&lt;
+				<li   f  > SetSection
+				<li   f  > GetSection
+				<li   f  > SetMarkTime
+				<li   f  > GetMarkTime
+				<li   f  > SetMarkDate
+				<li   f  > GetMarkDate
+				<li   f  > EnableColorSupport
+				<li   f  > DisableColorSupport
+				<li   f  > IsColorSupportEnabled
+			</li></class>
+		</namespace>
 	</module>
 
 
 	<module name="Containers">
-
+		<namespace name="Containers">
+			<class name="Collection">
+				<li   c d> Filling constructor
+				<li   c d> Move constructor
+				<li   f d> operator = (move assignment)
+				<li   f d> Swap
+				<li   f d> Duplicate
+				<li   f d> GetCount
+				<li   f d> GetSize
+				<li   f d> Add (ptr, ref)
+				<li   f d> Add (multiple items)
+				<li   f d> AddNew
+				<li   f d> Push (ptr, ref)
+				<li   f d> Pop
+				<li   f d> Insert (index, ref)
+				<li   f  > Insert (ptr)
+				<li   f d> InsertNew
+				<li   f d> MoveBefore (index, ref)
+				<li   f  > MoveBefore (ptr)
+				<li   f d> Remove (index, ref, ptr)
+				<li   f d> Delete (index, ref, ptr)
+				<li   f d> Clear
+				<li   f d> Collapse
+				<li   f d> DeleteAll
+				<li   f d> Destroy
+				<li   f d> Reserve
+				<li   f d> Find (ref, ptr) (const, non-const)
+				<li   f d> FindLocation (ref, ptr)
+				<li   f d> Sort (with, without predicate)
+				<li   f d> Get
+				<li   f d> operator []
+				<li   f d> begin
+				<li   f d> end
+				<li   f d> First
+				<li   f d> Last
+			</li></class>
+			
+			<class name="GarbageCollection" inherits="Collection">
+			</class>
+		</namespace>
 	</module>
 
 	<module name="Encoding">

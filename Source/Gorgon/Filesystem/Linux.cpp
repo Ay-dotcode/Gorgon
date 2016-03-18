@@ -217,13 +217,13 @@ namespace Gorgon { namespace Filesystem {
 		return rename(source.c_str(), target.c_str())==0;
 	}
 	
-	std::string ApplicationDirectory() {
+	std::string ExeDirectory() {
 		std::string path=Canonical("/proc/self/exe");
 		
 		return GetDirectory(path);
 	}
 	
-	std::string ApplicationPath() {
+	std::string ExePath() {
 		std::string path=Canonical("/proc/self/exe");
 		
 		return path;

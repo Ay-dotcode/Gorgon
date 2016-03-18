@@ -18,7 +18,7 @@ std::string exename;
 
 int main (int argc, char * const argv[]) {
 	fs::Initialize();
-	exename=fs::GetFile(fs::Canonical(argv[0]));
+	exename=fs::GetFilename(fs::Canonical(argv[0]));
 
 	return Catch::Session().run( argc, argv );
 }
@@ -418,13 +418,13 @@ TEST_CASE( "Startup directory", "[StartupDirectory]") {
 
 
 TEST_CASE( "Application directory", "[ApplicationDirectory]") {
-	std::string appdir=fs::ApplicationDirectory();
+	std::string appdir=fs::ExeDirectory();
 
 	REQUIRE( appdir.find_first_of('\\') == appdir.npos );
 
 	REQUIRE( fs::IsExists(appdir+"/"+exename) );
 	
-	REQUIRE( fs::ApplicationPath() == appdir+"/"+exename );
+	REQUIRE( fs::ExePath() == appdir+"/"+exename );
 }
 
 

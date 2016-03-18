@@ -63,8 +63,8 @@ namespace Gorgon { namespace Utils {
 				if(*dir.rbegin()=='/') {
 					dir.erase(dir.end()-1);
 				}
-				dir=Filesystem::GetFile(dir);
-				filename=Filesystem::GetFile(filename);
+				dir=Filesystem::GetFilename(dir);
+				filename=Filesystem::GetFilename(filename);
 				
 				Console::SetColor(Console::Magenta);
 				if((i-skip-1)==1) {
@@ -103,7 +103,7 @@ namespace Gorgon { namespace Utils {
 				dup2 (fd[1], STDERR_FILENO);
 				
 				//execlp("pwd", "pwd", nullptr);
-				execlp("addr2line", "addr2line", ptr, "-e", Filesystem::ApplicationPath().c_str(),nullptr);
+				execlp("addr2line", "addr2line", ptr, "-e", Filesystem::ExePath().c_str(),nullptr);
 				
 				perror("Addr2line is not installed.");
 				
