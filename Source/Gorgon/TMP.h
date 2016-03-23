@@ -409,5 +409,23 @@ namespace Gorgon {
 		struct RemoveRValueReference<T_&&> {
 			using Type = T_;
 		};
+		
+		template<typename T>
+		class IsStreamable
+		{
+			using one = char;
+			struct two {
+				char dummy[2];
+			};
+			
+			template<class TT>
+			static one test(decltype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one(); }
+			
+			static two test(...)  { return two();  }
+			
+		public:
+			static const bool Value = sizeof( test(*(std::ostream*)nullptr) )==1;
+		};
+		
 	}
 };

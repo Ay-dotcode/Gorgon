@@ -1,11 +1,12 @@
 <html>
-<head><title>Gorgon Game Engine Design Document</title></head>
-
+<head>
+<meta charset="utf-8" />
+<title>Gorgon Game Engine Design Document</title>
 <style>
+	body { background-color:#eee; }
 	my li {
         font-family: monospace;
         list-style-type: none;
-        /*margin-bottom:-0.75em;*/
     }
     my li:before {
         font-size:70%;
@@ -26,22 +27,38 @@
     my li[m][s]:before {
         content: "[sm]";
     }
-    my li[d] {
-        color:#280;
+    my li:before {
+        content: "[  ]";
     }
-    my li[q] {
-        color:#280;
+    my *[d] {
+        color:#260;
     }
-    my li[x] {
+    my *[q] {
+        color:#260;
+    }
+    my *[x] {
         color:#821;
     }
-    my li[r]::after {
+    my *[r]::after {
 		content: " (to be removed)";
         color:#642;
     }
-    my li[q]::after {
+    my *[q]::after {
 		content: " (to be analyzed)";
-        color:#462;
+        color:#352;
+    }
+    
+    my *[a]::before {
+		content:"[!!]" !important;
+	}
+	my task {
+        font-family: monospace;
+        display:block;
+    }
+    my task::before {
+		content:"[»t] ";
+        font-size:70%;
+        font-weight:bold;
     }
     
     my section:before {
@@ -79,10 +96,6 @@
 		display:block;
     }
     
-    my module[done] {
-		color:#280;
-    }
-    
     my module {
 		padding-left: 15px;
 		display:block;
@@ -95,7 +108,7 @@
 		margin-left:-15px;
 		margin-bottom:5px;
 		display:block;
-		background-color:white;
+		background-color:#eee;
     }
     
     my namespace {
@@ -107,10 +120,6 @@
 		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 8px);
     }
    
-    my namespace[done] {
-		color:#280;
-    }
-    
     my class:before {
 		content:"[c] " attr(name);
 		font-size:100%;
@@ -118,7 +127,7 @@
 		margin-left:-15px;
 		margin-bottom:5px;
 		display:block;
-		background-color:white;
+		background-color:#eee;
     }
      
     my class[inherits]:before {
@@ -128,7 +137,7 @@
 		margin-left:-15px;
 		margin-bottom:5px;
 		display:block;
-		background-color:white;
+		background-color:#eee;
     }
  
     
@@ -141,11 +150,11 @@
 		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 8px);
     }
     
-    my class[done] {
-		color:#280;
+    my *[done] {
+		color:#260;
     }
 </style>
-
+</head>
 <my>
 <section name="Core modules">
 
@@ -191,25 +200,26 @@
 
 
 			<class name="FileType">
-				<li m   > Name
-				<li m   > Description
-				<li m   > Icon
+				<li    m  > Name
+				<li    m  > Description
+				<li    m  > Icon
 			</li></class>
 
 
 			<namespace name="User">
-				<li f  d> GetName
-				<li f  d> GetUsername
-				<li f  d> GetDocumentsPath
-				<li f  d> GetHomePath
-				<li f  d> GetDataPath
-				<li f   > IsAdmin
+				<li   f d> GetName
+				<li   f d> GetUsername
+				<li   f d> GetDocumentsPath
+				<li   f d> GetHomePath
+				<li   f d> GetDataPath
+				<li   f  > IsAdmin
 			</li></namespace>
 		</namespace>
 	</module>
 
 	<module name="Window manager">
-
+		<class name="Window">
+		</class>
 	</module>
 
 	<module name="Graphics related">
@@ -397,7 +407,7 @@
 	<module name="Containers">
 		<namespace name="Containers">
 			<class name="Collection">
-				<li   c d> Filling constructor
+				<li   c  > Filling constructor (use init list)
 				<li   c d> Move constructor
 				<li   f d> operator = (move assignment)
 				<li   f d> Swap
@@ -432,8 +442,89 @@
 				<li   f d> Last
 			</li></class>
 			
-			<class name="GarbageCollection" inherits="Collection">
-			</class>
+			<class name="GarbageCollection" inherits="Collection" done>
+				<li   f d> Collect
+			</li></class>
+			
+			<class name="Hashmap">
+				<li   c d> Filling constructor
+				<li   c d> Move constructor
+				<li   f d> operator = (move assignment)
+				<li   f d> Swap
+				<li   f d> Duplicate
+				<li   f d> GetCount
+				<li   f  > GetSize
+				<li   f d> Add (ptr, ref) (with, without key)
+				<li   f  > Add (multiple items)
+				<li   f  > AddNew
+				<li   f d> Remove (index, ref, ptr)
+				<li   f d> Delete (index, ref, ptr)
+				<li   f  > Clear
+				<li   f d> Collapse
+				<li   f d> DeleteAll
+				<li   f d> Destroy
+				<li   f d> Find (key) (const, non-const)
+				<li   f d> Exists
+				<li   f d> operator []
+				<li   f d> begin
+				<li   f d> end
+				<li   f d> First
+				<li   f d> Last
+			</li></class>
+	
+			<class name="Image">
+				<li   c d> Empty
+				<li   c d> Resizing
+				<li   c d> Move
+				<li   f d> operator = (move assignment)
+				<li   f d> Swap
+				<li   f d> Duplicate
+				<li   f d> Resize
+				<li   f d> Assign (with/without set)
+				<li   f d> Assume (with/without set)
+				<li   f d> Release
+				<li   f d> Clean
+				<li   f d> Destroy
+				<li   f d> RawData (const/non const)
+				<li   f d> operator ()
+				<li   f d> Get
+				<li   f d> GetSize
+				<li   f d> GetTotalSize
+				<li   f d> GetMode
+				<li   f d> GetBytesPerPixel
+				<li   f  > begin/end ??
+			</li></class>
+			
+			<class name="Wave">
+				<class name="Sample">
+					<task>Make channels a debug only feature</task>
+					<li   f d> Channel
+					<li   f d> operator []
+				</class>
+				
+				<li   c d> Empty
+				<li   c d> Resizing
+				<li   c d> Move
+				<li   f d> operator = (move assignment)
+				<li   f d> Swap
+				<li   f d> Duplicate
+				<li   f d> Resize
+				<li   f d> Assign (with/without set)
+				<li   f d> Assume (with/without set)
+				<li   f d> Release
+				<li   f d> Clean
+				<li   f d> Destroy
+				<li   f d> RawData (const/non const)
+				<li   f d> operator ()
+				<li   f d> Get
+				<li   f d> GetSize
+				<li   f  > GetTotalSize
+				<li   f d> GetChannelCount
+				<li   f d> GetSampleRate
+				<li   f d> SetSampleRate
+				<li   f d> begin
+				<li   f d> end
+			</li></class>
 		</namespace>
 	</module>
 
@@ -446,48 +537,174 @@
 	</module>
 
 	<module name="Template meta programming">
-
+		<li     d> DefineStruct
+		<li     d> DefineStructMembersWithName
+		
+		<li     d> DefineEnumStrings
+		<li     d> DefineEnumStringsCM (class member)
+		<li     d> DefineEnumStringsTN (with typename)
+		<li     d> DefineEnumStringsCMTN (class member with typename) 
+		</li>
+	
+		<namespace name="TMP">
+			<li     d> Sequence
+			<li     d> Generate
+			<li     d> RemoveRValueReference
+			<li     d> IsStreamable
+			</li><br>
+			
+			<class name="FunctionTraits">
+				<li     d> ReturnType
+				<li     d> Arity
+				<li     d> IsMember
+				<li     d> Arguments&lt;int&gt;: Type
+			</li></class>
+			
+			<class name="RTTI">
+				<li   f d> IsPointer
+				<li   f d> IsReference
+				<li   f d> IsConstant
+				<li   f d> IsSameType
+				<li   f d> operator ==
+				<li   f d> operator !=
+				<li   f d> operator type_info
+				<li   f d> GetSize
+				<li   f d> TypeInfo
+				<li   f d> Name
+			</li></class>
+			
+			<class name="RRTS" inherits="RTTI">
+				<li   f d> Duplicate
+				<li   f d> Clone
+				<li   f d> Delete
+			</li></class>
+			
+			<class name="RTTH">
+				<li   m d> NormalType
+				<li   m d> ConstType
+				<li   m d> RefType
+				<li   m d> ConstRefType
+				<li   m d> PtrType
+				<li   m d> ConstPtrType
+			</li></class>
+		</li></namespace>
 	</module>
 
 	<module name="Compiler">
 
 	</module>
+	
+	<module name="Event">
+		<li   c d> Empty/filling
+		<li   c d> Move
+		<li   f  > operator = move assignment
+		<li   f  > Swap
+		<li   f  > Register (free, member function)
+		<li   f  > Unregister
+		<li   f  > operator ()
+	</li></module>
 
 	<module name="Console">
-
+		<namespace name="String">
+			<li   f d> IsColorSupported
+			<li   f d> IsStyleSupported
+			<li   f d> SetColor
+			<li   f d> SetBackground
+			<li   f d> Reset
+			<li   f d> SetBold
+			<li   f d> SetUnderline
+			<li   f d> SetItalic
+			<li   f d> SetNegative
+			<li   f  > GetWidth
+			<li   f  > GotoXY
+			<li   f  > EnableCaret
+			<li   f  > DisableCaret
+		</li></namespace>
 	</module>
 
 	<module name="String">
 		<namespace name="String">
-			<li   f  > Trim
-			<li   f  > TrimLeft
-			<li   f  > TrimRight
+			<li   f d> Trim
+			<li   f d> TrimStart
+			<li   f d> TrimEnd
 			<li   f  > TrimInplace
-			<li   f  > TrimLeftInplace
-			<li   f  > TrimRightInplace
-			<li   f  > To
-			<li   f  > From
+			<li   f  > TrimStartInplace
+			<li   f  > TrimEndInplace
+			<li   f d> To
+			<li   f d> From
 			<li   f  > Parse
-			<li   f  > ToLower
-			<li   f  > ToUpper
+			<li   f d> ToLower
+			<li   f d> ToUpper
 			<li   f  > ToLowerInplace
 			<li   f  > ToUpperInplace
-			<li   f  > Replace
+			<li   f d> Replace
 			<li   f  > ReplaceInplace
-			<li   f  > Extract
-			<li   f  > Extract_UseQuotes
+			<li   f d> Extract
+			<li   f d> Extract_UseQuotes
 			<li   f  > Split
 			<li   f  > TrimQuotes
 			<li   f  > TrimQuotesInplace
+			<li   f d> Concat
 			</li><br>
 			
-			<class name="CaseInsensitiveLess"></class><br>
+			<class name="CaseInsensitiveLess" done></class><br>
 			
-			<class name="Tokenizer">
+			<class name="Tokenizer" done>
 				<pre>Forward iterator that tokenizes a string from the given delimeter.</pre>
 			</class>
 		</namespace>
 	</module>
+	
+	<module name="Others">
+		<class name="Any">
+			<li   c d> Empty / Copy / Move constructor
+			<li   c d> Assumed / Duplicated
+			<li   f d> TypeInfo
+			<li   f d> TypeServices
+			<li   f d> operator = (copy/move)
+			<li   f d> operator = (value)
+			<li   f d> Swap
+			<li   f d> Set
+			<li   f d> Clear
+			<li   f d> GetRaw
+			<li   f d> SetRaw
+			<li   f d> AssumeRaw
+			<li   f d> Disown
+			<li   f d> SetType
+			<li   f d> Get
+			<li   f d> GetTypeName
+			<li   f d> UnsafeGet
+			<li   f d> TypeCheck
+			<li   f d> IsSameType
+			<li   f d> IsPointer
+			<li   f d> Pointer
+			<li   f d> operator ==
+			<li   f d> operator !=
+			<li   f d> IsSet
+		</li></class>
+		
+		<class name="SGuid">
+			<li   c d> Empty constructor
+			<li   c d> Create new constructor (uses tag)
+			<li   c d> Filling constructor (using array, long long, parts, stream)
+			<li   f d> operator ==, !=, <
+			<li   f d> Set
+			<li   f d> New
+			<li   f d> operator string
+			<li   f d> Load
+			<li   f d> Save
+			<li   f d> LoadLong (old full guid)
+			<li   f d> IsEmpty
+			<li   f d> operator bool
+			<li s m d> Empty
+		</li></class>
+		
+		<namespace name="Threading">
+			<li   f d> RunAsync
+			<li   f d> RunInParallel
+		</li></namespace>
+	</module>
+</section>
 
 
 <section name="Additional modules">

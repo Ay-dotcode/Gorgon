@@ -14,6 +14,7 @@
 #include "../Utils/Assert.h"
 
 #include "Iterator.h"
+#include <Gorgon/TMP.h>
 
 namespace Gorgon { 
 	namespace Containers {
@@ -212,18 +213,6 @@ namespace Gorgon {
 					mapping.insert(std::make_pair(p.first, &p.second));
 				}
 			}
-			
-			/*
-			//TODO: Add collection like adding capabilities.
-			/// Filling constructor that takes the keys using KeyFn function.
-			Hashmap(std::initializer_list<T_&> list) {
-				assert(KeyFn && "Key retrieval function should be set.");
-				
-				for(auto &p : list) {
-					mapping.insert(std::make_pair((p.*KeyFn)(), &p));
-				}
-			}
-			*/
 			
 			/// Filling constructor that takes the keys using KeyFn function. This constructor
 			/// handles nullptr entries by ignoring them.
@@ -462,26 +451,8 @@ namespace Gorgon {
 			
 		private:
 			
-			
-			template<typename T>
-			class IsStreamable
-			{
-				using one = char;
-				struct two {
-					char dummy[2];
-				};
-				
-				template<class TT>
-				static one test(decltype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one(); }
-				
-				static two test(...)  { return two();  }
-				
-			public:
-				static const bool Value = sizeof( test(*(std::ostream*)nullptr) )==1;
-			};
-			
 			template<class K__>
-			typename std::enable_if<IsStreamable<K__>::Value, void>::type properthrow(const K__ &key) const {
+			typename std::enable_if<TMP::IsStreamable<K__>::Value, void>::type properthrow(const K__ &key) const {
 				std::stringstream ss;
 				ss<<"Item not found: ";
 				ss<<key;
@@ -492,7 +463,7 @@ namespace Gorgon {
 			}
 			
 			template<class K__>
-			typename std::enable_if<!IsStreamable<K__>::Value, void>::type properthrow(const K__ &key) const {
+			typename std::enable_if<!TMP::IsStreamable<K__>::Value, void>::type properthrow(const K__ &key) const {
 #ifdef TEST
 				ASSERT(false, "Item not found", 0, 8);
 #endif
