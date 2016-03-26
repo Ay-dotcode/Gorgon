@@ -108,12 +108,12 @@ namespace Gorgon {
 		
 		/// Inserts the given layer before the given index. The newly inserted
 		/// layer will be drawn *under* the layer in the given index
-		void Insert(Layer &layer, long before) {
+		void Insert(Layer &layer, long under) {
 			if(layer.parent) 
 				layer.parent->Remove(layer);
 
 			layer.parent=this;
-			children.Insert(layer, before);
+			children.Insert(layer, under);
 			layer.located(this);
 			
 			added(layer);
@@ -121,10 +121,10 @@ namespace Gorgon {
 		
 		/// Inserts the given layer before the given index. The newly inserted
 		/// layer will be drawn *under* the layer in the given index
-		void Insert(Layer *layer, long before) {
+		void Insert(Layer *layer, long under) {
 			if(!layer) return;
 			
-			Insert(*layer, before);
+			Insert(*layer, under);
 		}
 
 		/// Removes the given layer

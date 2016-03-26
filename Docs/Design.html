@@ -18,6 +18,9 @@
     my li[c]:before {
         content: "[ct]";
     }
+    my li[e]:before {
+        content: "[ev]";
+    }
     my li[m]:before {
         content: "[ m]";
     }    
@@ -38,6 +41,9 @@
     }
     my *[x] {
         color:#821;
+    }
+    my *[p] {
+        color:#661;
     }
     my *[r]::after {
 		content: " (to be removed)";
@@ -157,6 +163,36 @@
 </head>
 <my>
 <section name="Core modules">
+	<module name="Common">
+		<class name="Layer">
+			<li   c d> Empty
+			<li   c d> Resizing
+			<li   c d> Move
+			<li   f d> Move assignment
+			<li   f d> Swap
+			<li   f d> Add
+			<li   f d> Insert (under)
+			<li   f d> Remove
+			<li   f d> HasParent
+			<li   f d> GetParent
+			<li   f d> begin/end
+			<li   f d> First/Last
+			<li   f d> PlaceBefore
+			<li   f d> PlaceToTop
+			<li   f d> PlaceToBottom
+			<li   f d> GetOrder
+			<li   f d> Move
+			<li   f d> Resize
+			<li   f d> SetBounds
+			<li   f d> GetSize
+			<li   f d> GetLocation
+			<li   f d> GetBounds
+			<li   f d> Show
+			<li   f d> Hide
+			<li   f d> IsVisible
+			<li   f d> Render
+		</li></class>
+	</module>
 
 	<module name="Operating system">
 		<namespace name="OS">
@@ -218,12 +254,81 @@
 	</module>
 
 	<module name="Window manager">
-		<class name="Window">
-		</class>
+		<class name="Window" inherits="Layer">
+			<li   c d> Automatic placement
+			<li   c d> Manual placement
+			<li   c  > Fullscreen
+			<li   f d> processmessage
+			<li   f  > activatecontext
+			<li   f d> Move
+			<li   f d> Resize
+			<li   f d> Show
+			<li   f d> Hide
+			<li   f d> IsVisible
+			<li   f d> Close
+			<li   f d> ShowPointer
+			<li   f d> HidePointer
+			<li   f d> Render
+			<li   f  > SetTitle
+			<li   f  > GetTitle
+			<li   f  > GetName
+			<li   f  > GetExteriorDimensions
+			<li   f  > GetPosition
+			<li   f  > GetScreen
+			<li   f  > IsClosed
+			<li   f  > SetIcon
+			<li   f  > GetIcon
+			<li   f  > Focus
+			<li   f  > IsFocused
+			<li   f  > Minimize
+			<li   f  > Maximize
+			<li   f  > IsMinimized
+			<li   f  > IsMaximized
+			<li   e d> ActivatedEvent
+			<li   e d> DeactivatedEvent
+			<li   e p> DestroyedEvent
+			<li   e d> ClosingEvent
+			<li   e  > MovedEvent
+			<li   e  > ResizedEvent
+			<li   e  > MinimizedEvent
+			<li   e  > RestoredEvent
+			<li   e  > InputEvent
+			<li   e d> KeyEvent
+			<li   e d> CharacterEvent
+			<li s m d> Windows
+		</li></class>
+		
+		<namespace name="WindowManager">
+			<li   f  > CurrentContext
+			<li   f q> GetUsableScreenRegion
+			<li   f q> GetScreenRegion
+			<li   f  > SetClipboardText
+			<li   f  > GetClipboardText
+			<li   f  > GetMonitors
+			</li>
+			
+			<class name="Icon">
+			</class>
+			
+			<class name="Pointer">
+			</class>
+			
+			<class name="Monitor">
+				<li   f  > GetSize
+				<li   f  > GetLocation
+				<li   f  > IsPrimary
+				<li   f  > GetName
+				<li s f  > Primary
+				<li s f  > Monitors
+				<li s f  > Refresh
+				<li s f  > IsChangeEventSupported
+				<li s e  > ChangedEvent
+			</li></class>
+		</li></namespace>
 	</module>
 
 	<module name="Graphics related">
-
+		
 	</module>
 
 	<module optional name="Audio">
@@ -529,11 +634,33 @@
 	</module>
 
 	<module name="Encoding">
-
+		
 	</module>
 
 	<module name="Geometry">
-
+		
+	</module>
+	
+	<module name="IO">
+		<li   f d> ReadEnum32
+		<li   f d> ReadInt32
+		<li   f d> ReadUInt32
+		<li   f d> ReadInt16
+		<li   f d> ReadUInt16
+		<li   f d> ReadInt8
+		<li   f d> ReadUInt8
+		<li   f d> ReadFloat
+		<li   f d> ReadDouble
+		<li   f d> ReadBool
+		<li   f d> ReadString
+		<li   f d> ReadArray
+		<li   f d> ReadGuid
+		<li   f d> WriteEnum32
+		<li   f d> WriteInt32
+		<li   f d> WriteUInt32
+		<li   f d> WriteInt16
+		<li   f d> WriteUInt16	
+		
 	</module>
 
 	<module name="Template meta programming">
@@ -591,7 +718,16 @@
 	</module>
 
 	<module name="Compiler">
-
+		<li     d> ASSERT
+		<li     d> ASSERT_ALL
+		<li     d> ASSERT_DUMP
+		<li   f d> ASSERT_FALSE
+		<li   f d> NotImplemented
+	
+		<namespace name="Utils">
+			<li   f d> GetTypeName
+			<li     d> WEAKINIT
+		</li></namespace>
 	</module>
 	
 	<module name="Event">
