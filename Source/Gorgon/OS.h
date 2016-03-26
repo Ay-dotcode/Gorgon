@@ -15,6 +15,7 @@ namespace Gorgon {
 		/// Initializes operating system module.
 		void Initialize();
 
+		/// Contains user related information and services
 		namespace User {
 			/// Returns the current username
 			std::string GetUsername();

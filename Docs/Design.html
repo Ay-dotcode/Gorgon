@@ -638,7 +638,58 @@
 	</module>
 
 	<module name="Geometry">
+		<class name="Point">
+			<li   c d> From string
+			<li   f d> operator string
+			<li s f d> FromVector
+			<li s f d> Parse
+			<li   f d> operator -
+			<li   f d> operator +
+			<li   f d> operator * (point, value)
+			<li   f d> operator * (size)
+			<li   f d> operator / (point, value)
+			<li   f d> operator / (size)
+			<li   f d> operator +=, -=
+			<li   f d> operator *=, /= (value)
+			<li   f  > operator *=, /= (size)
+			<li   f d> Distance
+			<li   f d> Angle
+			<li   f d> Slope
+			<li   f q> Compare
+			<li   f d> operator ==
+			<li   f d> operator !=
+			<li   f d> Move
+			<li s f  > Max
+			<li s f d> operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f d> Translate
+			<li s f d> Scale
+			<li s f  > Scale (size)
+			<li s f d> Rotate
+			<li s f d> SkewX/SkewY
+			<li s f d> ReflectX/ReflectY
+			<li s f d> Round
+			<li s f  > Transform
+		</li></class>
 		
+		<class name="Size">
+			<li   c d> From string
+			<li   f d> operatorstring
+			<li s f d> Parse
+			<li   f d> operator ==
+			<li   f d> operator !=
+			<li   f d> operator +
+			<li   f d> operator -
+			<li   f d> operator +=
+			<li   f d> operator -=
+			<li   f d> operator *=
+			<li   f d> operator /=
+			<li   f d> operator point
+			<li   f d> Cells
+			<li   f d> Area
+			<li   f d> IsValid
+			<li s f d> Max
+		</li></class>
 	</module>
 	
 	<module name="IO">
@@ -659,14 +710,22 @@
 		<li   f d> WriteInt32
 		<li   f d> WriteUInt32
 		<li   f d> WriteInt16
-		<li   f d> WriteUInt16	
-		
+		<li   f d> WriteUInt16
+		<li   f d> WriteInt8
+		<li   f d> WriteUInt8
+		<li   f d> WriteFloat
+		<li   f d> WriteDouble
+		<li   f d> WriteBool
+		<li   f d> WriteStringWithSize
+		<li   f d> WriteString
+		<li   f q> WriteArray
+		<li   f q> WriteVector
+		<li   f d> WriteGuid
 	</module>
 
 	<module name="Template meta programming">
 		<li     d> DefineStruct
 		<li     d> DefineStructMembersWithName
-		
 		<li     d> DefineEnumStrings
 		<li     d> DefineEnumStringsCM (class member)
 		<li     d> DefineEnumStringsTN (with typename)
