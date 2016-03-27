@@ -46,12 +46,14 @@
         color:#661;
     }
     my *[r]::after {
-		content: " (to be removed)";
-        color:#642;
+		content: "  « to be removed";
+        color:#621;
+        font-size:80%;
     }
     my *[q]::after {
-		content: " (to be analyzed)";
-        color:#352;
+		content: "  « to be analyzed";
+        color:#006;
+        font-size:80%;
     }
     
     my *[a]::before {
@@ -308,9 +310,15 @@
 			</li>
 			
 			<class name="Icon">
+				<li   c  > From data
+				<li   c  > Default from OS
+				<li   c  > From OS
 			</class>
 			
 			<class name="Pointer">
+				<li   c  > From data
+				<li   c  > Default from OS
+				<li   c  > From OS
 			</class>
 			
 			<class name="Monitor">
@@ -442,7 +450,7 @@
 				<li   f d> Get
 				<li   f d> Set
 				<li   f  > ShowDialog
-				<li  sf d> operator << (ostream)
+				<li  sf d> operator &lt;&lt; (ostream)
 			</li></class>
 
 			<class name="Date">
@@ -634,7 +642,26 @@
 	</module>
 
 	<module name="Encoding">
+		<class name="LZMA">
+			<li   f d> Encode
+			<li   f d> Decode
+			<li   f d> PropertySize
+			<li   m d> UseUncompressedSize
+		</li></class>
 		
+		<class name="PNG">
+			<li   f d> Encode
+			<li   f d> Decode
+		</li></class>
+		
+		<class name="JPG">
+			<li   f  > Encode
+			<li   f  > Decode
+		</li></class>
+		
+		<li   f q> URIEncode
+		<li   f q> URIDecode
+		</li><br>
 	</module>
 
 	<module name="Geometry">
@@ -668,13 +695,14 @@
 			<li s f d> Rotate
 			<li s f d> SkewX/SkewY
 			<li s f d> ReflectX/ReflectY
-			<li s f d> Round
 			<li s f  > Transform
+			<li s f d> Round
 		</li></class>
 		
 		<class name="Size">
 			<li   c d> From string
-			<li   f d> operatorstring
+			<li   c d> From point
+			<li   f d> operator string
 			<li s f d> Parse
 			<li   f d> operator ==
 			<li   f d> operator !=
@@ -688,7 +716,109 @@
 			<li   f d> Cells
 			<li   f d> Area
 			<li   f d> IsValid
+			<li   f  > Resize
 			<li s f d> Max
+			<li s f d> operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f d> Scale
+			<li s f  > Transform
+			<li s f  > Round
+		</li></class>
+		
+		<class name="Rectangle">
+			<li   c d> From string
+			<li   c d> From bounds
+			<li   f d> operator string
+			<li   f d> operator bounds
+			<li   f d> Parse
+			<li   f d> Right
+			<li   f d> Bottom
+			<li   f d> SetRight
+			<li   f d> SetBottom
+			<li   f d> Resize
+			<li   f d> Move
+			<li   f d> Center
+			<li   f d> TopLeft
+			<li   f d> TopRight
+			<li   f d> BottomLeft
+			<li   f d> BottomRight
+			<li   f d> GetSize
+			<li   f d> operator ==
+			<li   f d> operation !=
+			<li   f d> operator +, - (point, size)
+			<li   f d> operator *,/ (size, constant)
+			<li   f  > IsValid
+			<li s f  > operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f d> IsInside
+			<li s f  > Translate
+			<li s f  > Scale
+			<li s f  > Scale (size)
+			<li s f  > Rotate
+			<li s f  > Round
+		</li></class>
+		
+		<class name="Bounds">
+			<li   c d> From string
+			<li   f d> operator string
+			<li   f  > Parse
+			<li   f d> Width
+			<li   f d> Height
+			<li   f d> SetWidth
+			<li   f d> SetHeight
+			<li   f d> Resize
+			<li   f d> Move
+			<li   f d> Center
+			<li   f d> TopLeft
+			<li   f d> TopRight
+			<li   f d> BottomLeft
+			<li   f d> BottomRight
+			<li   f d> GetSize
+			<li   f d> operator ==
+			<li   f d> operation !=
+			<li   f d> operator |
+			<li   f d> operator &amp;
+			<li   f d> operator +, - (point)
+			<li   f  > operator +, - (size)
+			<li   f d> operator *,/ (size, constant)
+			<li   f d> Normalize
+			<li s f d> operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f d> Intersect
+			<li s f d> Union
+			<li s f d> IsColliding
+			<li s f d> IsInside
+			<li s f d> Translate
+			<li s f d> Scale
+			<li s f d> Scale (size)
+			<li s f d> Rotate
+			<li s f d> SkewX/SkewY
+			<li s f  > ReflectX/ReflectY
+			<li s f  > Transform
+			<li s f  > Round
+		</li></class>
+		
+		<class name="Margins">
+			<li   c  > From string
+			<li   f d> operator string
+			<li   f  > Parse
+			<li   f d> TotalX
+			<li   f d> TotalY
+			<li   f d> Horizontal
+			<li   f d> Vertical
+			<li   f d> operator +
+			<li   f d> operator -
+			<li   f d> operator ==
+			<li   f d> operator !=
+			<li   f q> AddToLeft (should be updated for box model)
+			<li   f q> AddToTop (should be updated for box model)
+			<li   f q> AddToRight (should be updated for box model)
+			<li   f q> AddToBottom (should be updated for box model)
+			<li   f d> TopLeft
+			<li s f d> opeartor + (size, bounds)
+			<li s f d> operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f  > Round
 		</li></class>
 	</module>
 	
