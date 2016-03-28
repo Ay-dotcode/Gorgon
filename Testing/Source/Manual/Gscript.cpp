@@ -401,17 +401,16 @@ int main() {
 			if(ex.GetDetails()!="") {
 				std::cout<<" > "<<ex.GetDetails()<<std::endl;
 			}
-
+		}
+		catch(const std::exception &ex) {
+			Gorgon::Console::SetColor(Gorgon::Console::Red);
+			Gorgon::Console::SetBold();
+			std::cout<<ex.what()<<std::endl;
+			Gorgon::Console::Reset();
+			std::cout<<std::endl<<std::endl;
+			return 3;
 		}
 	}
-	//catch(const std::exception &ex) {
-	//	Gorgon::Console::SetColor(Gorgon::Console::Red);
-	//	Gorgon::Console::SetBold();
-	//	std::cout<<ex.what()<<std::endl;
-	//	Gorgon::Console::Reset();
-	//	std::cout<<std::endl<<std::endl;
-	//	return 3;
-	//}
 
 	std::cout<<std::endl<<std::endl;
 	Gorgon::Console::SetBold();

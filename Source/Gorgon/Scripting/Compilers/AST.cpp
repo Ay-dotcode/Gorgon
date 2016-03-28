@@ -228,6 +228,12 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				
 				inst.Type=(tree.Type==ASTNode::MethodCall ? InstructionType::MemberMethodCall : InstructionType::MemberFunctionCall);
 			}
+			//for other types compile function into a temporary
+			else {
+				inst.Name=compilevalue(tree.Leaves[0], list, tempind, true);
+				
+				inst.Type=(tree.Type==ASTNode::MethodCall ? InstructionType::MethodCall : InstructionType::FunctionCall);
+			}
 			
 			//parameters
 			for(int i=1;i<tree.Leaves.GetCount();i++) {

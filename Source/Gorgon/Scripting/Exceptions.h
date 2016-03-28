@@ -96,6 +96,8 @@ namespace Gorgon {
 #endif
 			}
 			
+			virtual ~Exception() { }
+			
 			ExceptionType GetType() const {
 				return type;
 			}

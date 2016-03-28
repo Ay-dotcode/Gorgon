@@ -902,6 +902,8 @@ namespace Gorgon {
 		void VirtualMachine::functioncall(const Instruction *inst, bool memberonly, bool method) {
 			std::string functionname;
 			
+			const Function *fn=nullptr;
+			
 			//function call from a literal, should be a string.
 			if(inst->Name.Type==ValueType::Literal) {
 				try {
@@ -912,6 +914,31 @@ namespace Gorgon {
 			}
 			else if(inst->Name.Type==ValueType::Identifier || inst->Name.Type==ValueType::Variable) {
 				functionname=inst->Name.Name;
+			}
+			else if(inst->Name.Type==ValueType::Temp) {
+				Data member=getvalue(inst->Name, true);
+				
+				//regular function
+				if(member.GetType()==Types::Function()) {
+					fn=member.GetValue<const Function*>();
+				}
+				//object with () operator
+				else if(member.GetType().Members.Exists("()")) {
+					member=member.GetType().Members["()"].Get();
+					
+					//() operator must be function, just to make sure
+					if(member.GetType()==Types::Function()) {
+						fn=member.GetValue<const Function*>();
+					}
+					else {
+						throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert () operator to a function");
+					}
+				}
+				else {
+					throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert "+functionname+" to a function");
+				}
+				
+				functionname=fn->GetName();
 			}
 			else {
 				throw SymbolNotFoundException(inst->Name.Name, SymbolType::Function);
@@ -955,58 +982,57 @@ namespace Gorgon {
 			//and dereferenced on use
 			const std::vector<Value> *params=&inst->Parameters;
 			std::vector<Value> temp;
-			
-			const Function *fn=nullptr;
-			
-			// find requested function
-			if(!memberonly) {
-				Data member;
-				//try library functions
-				try {
-					member=FindSymbol(functionname, true);
-					//if not found, try member functions
-				}
-				catch(const SymbolNotFoundException &) {
-					//should have parameter for resolving
-					if(inst->Parameters.size()==0) {
-						throw;
-					}
-					
-					//search in the type of the first parameter
-					Data data=getvalue(inst->Parameters[0]);
-					
-					auto fnit=data.GetType().Members.Find(functionname);
-					
-					//if found
-					if(fnit.IsValid()) {
-						member=fnit.Current().second.Get();
-					} else {
-						//cannot find anywhere
-						throw;
-					}
-				}
 				
-				//regular function
-				if(member.GetType()==Types::Function()) {
-					fn=member.GetValue<const Function*>();
-				}
-				//object with () operator
-				else if(member.GetType().Members.Exists("()")) {
-					member=member.GetType().Members["()"].Get();
+			if(!fn) {
+				// find requested function
+				if(!memberonly) {
+					Data member;
+					//try library functions
+					try {
+						member=FindSymbol(functionname, true);
+						//if not found, try member functions
+					}
+					catch(const SymbolNotFoundException &) {
+						//should have parameter for resolving
+						if(inst->Parameters.size()==0) {
+							throw;
+						}
+						
+						//search in the type of the first parameter
+						Data data=getvalue(inst->Parameters[0]);
+						
+						auto fnit=data.GetType().Members.Find(functionname);
+						
+						//if found
+						if(fnit.IsValid()) {
+							member=fnit.Current().second.Get();
+						} else {
+							//cannot find anywhere
+							throw;
+						}
+					}
 					
-					//() operator must be function, just to make sure
+					//regular function
 					if(member.GetType()==Types::Function()) {
 						fn=member.GetValue<const Function*>();
 					}
+					//object with () operator
+					else if(member.GetType().Members.Exists("()")) {
+						member=member.GetType().Members["()"].Get();
+						
+						//() operator must be function, just to make sure
+						if(member.GetType()==Types::Function()) {
+							fn=member.GetValue<const Function*>();
+						}
+						else {
+							throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert () operator to a function");
+						}
+					}
 					else {
-						throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert () operator to a function");
+						throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert "+functionname+" to a function");
 					}
 				}
 				else {
-					throw SymbolNotFoundException(functionname, SymbolType::Function, "Cannot convert "+functionname+" to a function");
-				}
-			}
-			else {
 				if(inst->Parameters.size()==0) {
 					throw std::runtime_error("Invalid instruction, missing this parameter");
 				}
@@ -1068,7 +1094,8 @@ namespace Gorgon {
 					}
 				}
 			}
-
+			}
+			
 			// call it
 			Data ret=callfunction(fn, method, *params);
 
