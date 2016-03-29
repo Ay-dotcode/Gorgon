@@ -336,7 +336,98 @@
 	</module>
 
 	<module name="Graphics related">
-		
+		<namespace name="Graphics">
+			<li   f d> Tile
+			<li     d> Tiling
+			<li     d> Alignment
+			<li     d> TextAlignment
+			<li     d> Placement
+			<li   f d> GetHorizontal
+			<li   f d> GetVertical
+			<li   f d> CalculateOffset
+			<li     d> ColorMode
+			<li   f d> GetBytesPerPixel
+			<li   f d> 
+			</li><br>
+			
+			<class name="RGBA">
+				<li   c d> From luma, int
+				<li   f d> operator = (RGBA, luma, int)
+				<li   f d> operator ==
+				<li   f d> operator !=
+				<li   f d> Luminance
+				<li   f d> AccurateLuminance
+				<li   f d> HTMLColor
+				<li   f d> Blend
+				<li   f d> operator string
+			</li></class>
+			
+			<class name="RGBAf">
+				<li   c d> From luma, RGBA
+				<li   f d> operator = (RGBA, int)
+				<li   f  > operator = (luma)
+				<li   f d> operator ==
+				<li   f d> operator !=
+				<li   f d> operator RGBA
+				<li   f d> Convert
+				<li   f d> Luminance
+				<li   f  > AccurateLuminance
+				<li   f d> Blend
+				<li   f  > operator string
+			</li></class>
+			
+			<class name="SizeController">
+				<li     q> Tiling
+				<li   f d> CalculateSize
+				<li   f d> CalculateOffset
+				<li   f d> CalculateArea
+				<li   f d> CalculateSize
+				<li   f d> GetTiling
+				<li   m d> Horizontal
+				<li   m d> Vertical
+				<li   m d> Place
+			</li></class>
+			
+			<class name="TextureSource">
+				<li   f d> GetID
+				<li   f d> GetImageSize
+				<li   f d> GetCoordinates
+				<li   f q> IsPartial
+			</li></class>
+			
+			<class name="Bitmap">
+				<li     d> Move semantics
+				<li   f d> Duplicate
+				<li   f d> CreateAnimation
+				<li   f d> ReleaseData
+				<li   f d> HasTexture
+				<li   f d> Assign (image, bytes)
+				<li   f  > Assign (containers::image?)
+				<li   f d> Assume (image, bytes)
+				<li   f  > Assume (containers::image?)
+				<li   f d> Resize
+				<li   f d> operator ()
+				<li   f d> Get
+				<li   f d> GetBytesPerPixel
+				<li   f d> GetMode
+				<li   f d> GetSize
+				<li   f  > GetTotalSize
+				<li   f d> Prepare
+				<li   f d> Discard
+				<li   f d> ImportPNG
+				<li   f  > ImportJPG
+				<li   f  > Import
+				<li   f d> ExportPNG
+				<li   f  > Blur
+				<li   f  > Shadow
+				<li   f  > Grayscale
+				<li   f  > Resample
+				<li   f  > StripTransparency
+				<li   f  > CreateLinearAtlas
+				<li   f  > CreateAtlasImages
+			</li></class>
+			
+		</li></class>
 	</module>
 
 	<module optional name="Audio">

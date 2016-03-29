@@ -9,7 +9,7 @@
 
 namespace Gorgon { namespace Graphics {
 
-	/// This object contains an image. It allows draw, load, import, export functionality. An image may work
+	/// This object contains an bitmap image. It allows draw, load, import, export functionality. An image may work
 	/// without its data buffer. In order to be drawn, an image object should be prepared. Both data and texture
 	/// might be released from the image.
 	class Bitmap : 

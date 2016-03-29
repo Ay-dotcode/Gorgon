@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+#include <cmath>
 #include <stdint.h>
 #include <string.h>
 
@@ -33,10 +35,10 @@ namespace Gorgon {
 		};
 
 		/// Creates a Tiling class from the given horizontal, vertical tiling info.
-		inline Tiling Tile(bool hor, bool vert) {
-			return (hor ?
-				(vert ? Tiling::Both     : Tiling::Horizontal) :
-				(vert ? Tiling::Vertical : Tiling::None)
+		inline Tiling Tile(bool horizontal, bool vertical) {
+			return (horizontal ?
+				(vertical ? Tiling::Both     : Tiling::Horizontal) :
+				(vertical ? Tiling::Vertical : Tiling::None)
 			);
 		}
 
@@ -109,7 +111,8 @@ namespace Gorgon {
 		}
 
 		/// Returns the offset of the object according to the given placement rule when there is the given 
-		/// remainder between object size and the area its being drawn on.
+		/// remainder between object size and the area its being drawn on. Typical usage:
+		/// `CalculateOffset(Placement::MiddleCenter, areasize - objectsize)`
 		inline Geometry::Point CalculateOffset(Placement place, Geometry::Size remainder) {
 			switch(GetHorizontal(place)) {
 			case Alignment::Start:
@@ -354,7 +357,7 @@ namespace Gorgon {
 
 			/// Returns whether this texture uses only a part of the GL::Texture. This indicates that the tiling
 			/// operations should be performed without texture repeating method.
-			bool IsPartial() const {
+			bool IsPrtial() const {
 				return memcmp(GetCoordinates(), fullcoordinates, sizeof(fullcoordinates))!=0;
 			}
 
