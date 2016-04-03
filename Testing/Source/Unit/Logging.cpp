@@ -3,6 +3,9 @@
 #define WINDOWS_LEAN_AND_MEAN
 
 #include <catch.h>
+#include <thread>
+#include <chrono>
+#include <iostream>
 
 #include <Gorgon/Utils/Logging.h>
 
@@ -15,7 +18,7 @@ TEST_CASE( "Console test", "[Logger]") {
 	
 	logger<<"Hello "<<5;
 	
-	sleep(1);
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 	
 	logger<<"t"<<std::endl<<"a";
 	logger<<"One more log! ";

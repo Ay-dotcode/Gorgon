@@ -56,7 +56,7 @@ namespace Gorgon {
 			/// Default constructor, zero initializes the class, making it
 			/// an unset time.
 			Date() : Day(0), Month(Empty), Year(0), Hour(0), Minute(0),
-			Second(0), Millisecond(0), Weekday(Sunday)
+			Second(0), Millisecond(0), Weekday(Sunday), Timezone(LocalTimezone())
 			{ }
 			
 			/// Creates a new date object from the given ISO-8601 date string. @see Parse

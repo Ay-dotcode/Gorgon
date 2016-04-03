@@ -62,6 +62,7 @@
 	my task {
         font-family: monospace;
         display:block;
+		color:black;
     }
     my task::before {
 		content:"[»t] ";
@@ -125,7 +126,7 @@
 		list-style-type: none;
 		margin-bottom:10px;
 		background-clip: padding-box;
-		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 8px);
+		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 2px);
     }
    
     my class:before {
@@ -155,7 +156,7 @@
         list-style-type: none;
 		margin-bottom:10px;
 		background-clip: padding-box;
-		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 8px);
+		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 2px);
     }
     
     my *[done] {
@@ -307,19 +308,19 @@
 			<li   f  > SetClipboardText
 			<li   f  > GetClipboardText
 			<li   f  > GetMonitors
-			</li>
+			</li><br>
 			
 			<class name="Icon">
 				<li   c  > From data
 				<li   c  > Default from OS
 				<li   c  > From OS
-			</class>
+			</li></class>
 			
 			<class name="Pointer">
 				<li   c  > From data
 				<li   c  > Default from OS
 				<li   c  > From OS
-			</class>
+			</li></class>
 			
 			<class name="Monitor">
 				<li   f  > GetSize
@@ -347,7 +348,6 @@
 			<li   f d> CalculateOffset
 			<li     d> ColorMode
 			<li   f d> GetBytesPerPixel
-			<li   f d> 
 			</li><br>
 			
 			<class name="RGBA">
@@ -390,12 +390,31 @@
 			
 			<class name="TextureSource">
 				<li   f d> GetID
-				<li   f d> GetImageSize
+				<li   f q> GetImageSize
 				<li   f d> GetCoordinates
 				<li   f q> IsPartial
 			</li></class>
 			
-			<class name="Bitmap">
+			<class name="Texture">
+				<li   c d> Empty
+				<li   c d> Regular
+				<li   c d> Atlas
+				<li   c d> From image
+				<li   c d> Copy and move constructor
+				<li   f d> Swap
+				<li   f d> Set (image, texture and info)
+				<li   f d> GetOD
+				<li   f d> GetImageSize
+				<li   f d> GetCoordinates
+				<li   f d> Destroy
+				<li   f d> Release
+			</li></class>
+			
+			<class name="TextureImage">
+				<pre>Solid drawable image based on a texture</pre>
+			</class>
+			
+			<class name="Bitmap" inherits="Image, -Texture, TextureSource, RectangularAnimation, RectangularAnimationProvider">
 				<li     d> Move semantics
 				<li   f d> Duplicate
 				<li   f d> CreateAnimation
@@ -427,7 +446,139 @@
 				<li   f  > CreateAtlasImages
 			</li></class>
 			
-		</li></class>
+			<class name="Drawable">
+				<li   f d> Draw
+			</li></class>
+			
+			<class name="SizelessDrawable">
+				<li   f d> DrawIn
+				<li   f d> CalculateSize
+			</li></class>
+			
+			<class name="RectangularDrawable" inherits="Drawable, SizelessDrawable">
+				<li   f d> Draw
+				<li   f d> DrawStretched
+				<li   f d> DrawRotated
+				<li   f d> DrawIn
+				<li   f d> GetSize
+			</li></class>
+			
+			<class name="Image" inherits="RectangularDrawable, TextureSource" done>
+			
+			</class>
+			
+			<class name="Animation" inherits="Drawable, Gorgon::Animation::Base" done>
+			</class>
+			
+			<class name="SizelessAnimation" inherits="SizelessDrawable, Gorgon::Animation::Base" done>
+			</class>
+			
+			<class name="RectangularAnimation" inherits="Drawable, Gorgon::Animation::Base" done>
+			</class>
+			
+			<class name="AnimationProvider" inherits="Gorgon::Animation::Provider" done>
+				<li   f d> CreateAnimation
+			</li></class>
+			
+			<class name="SizelessAnimationProvider" inherits="Gorgon::Animation::Provider" done>
+				<li   f d> CreateAnimation
+			</li></class>
+
+			<class name="RectangularAnimationProvider" inherits="Gorgon::Animation::Provider" done>
+				<li   f d> CreateAnimation
+			</li></class>
+			
+			<class name="TextureTarget">
+				<li     d> DrawMode (partial)
+				<li   f d> Draw (using vertex coords, using vertex and texture coords)
+				<li   f d> Draw (tiling)
+				<li   f d> Clear
+				<li   f d> GetTargetSize
+				<li   f d> GetDrawMode
+				<li   f d> SetDrawMode
+			</li></class>
+			
+			<class name="ColorizableTarget">
+				<task>Rename to Colorizable and move somewhere else
+				<li   f d> SetCurrentColor
+				<li   f d> GetCurrentColor
+			</li></class>
+			
+			<class name="ColorizableTextureTarget" inherits="TextureTarget, ColorizableTarget">
+			</class>
+			
+			<class name="Layer" inherits="Gorgon::Layer, TextureTarget">
+				<li   f d> Draw
+				<li   f   > Draw (tiled)
+				<li   f d> Clear
+				<li   f d> Render
+				<li   f d> GetDrawMode
+				<li   f d> SetDrawMode
+				<li   f d> GetTargetSize
+				<task>Move surface to cpp</task>
+			</li></class>
+			
+			<class name="ColorizableLayer" inherits="Gorgon::Layer, TextureTarget, Colorizable">
+				<li   f  > Draw
+				<li   f  > Draw (tiled)
+				<li   f  > Clear
+				<li   f  > Render
+				<li   f  > GetDrawMode
+				<li   f  > SetDrawMode
+				<li   f  > GetTargetSize
+				<li   f  > GetColor
+				<li   f  > SetColor
+				<li   f  > GetAmbientColor
+				<li   f  > SetAmbientColor
+			</li></class>
+			
+			<class name="TransformableLayer" inherits="Gorgon::Layer, TextureTarget, Transformable">
+				<pre>This might be integrated with all layers similar to offset</pre>
+			</class>
+			
+			<class name="SimpleShader">
+				<task>Replace uint32 with GL::Texture</task>
+				<li   f d> SetVertexCoords
+				<li   f d> SetTextureCoords
+				<li   f d> SetDiffuse
+			</li></class>
+			
+			<class name="SimpleTintShader">
+				<li   f d> SetVertexCoords
+				<li   f d> SetTextureCoords
+				<li   f d> SetDiffuse
+				<li   f d> SetTint
+			</li></class>
+			
+			<class name="MaskedShader">
+				<li   f d> SetVertexCoords
+				<li   f d> SetTextureCoords
+				<li   f d> SetDiffuse
+				<li   f q> SetMask
+			</li></class>
+			
+			<class name="MaskedTintShader">
+				<li   f d> SetVertexCoords
+				<li   f d> SetTextureCoords
+				<li   f d> SetDiffuse
+				<li   f d> SetTint
+				<li   f q> SetMask
+			</li></class>
+			
+		</namespace>
+		
+		<namespace name="GL">
+			<li   f  > GenerateTexture
+			<li   f  > UpdateTexture
+			<li   f  > DestroyTexture
+			<li   f  > SetupContext
+			<li   f  > Resize
+			<li   f  > Clear
+			</li><br>
+			
+			<class name="Shader">
+			</class>
+		</namespace>
 	</module>
 
 	<module optional name="Audio">

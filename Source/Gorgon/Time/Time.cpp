@@ -26,7 +26,6 @@ namespace Gorgon { namespace Time {
 		a.tm_mon   = d.Month-1;
 		a.tm_year  = d.Year-1900;
 		a.tm_wday  = d.Weekday;
-		a.tm_gmtoff= d.Timezone*60;
 		
 		return a;
 	}
@@ -39,7 +38,6 @@ namespace Gorgon { namespace Time {
 		ret.Minute	   =(int)timeinfo.tm_min;
 		ret.Second	   =(int)timeinfo.tm_sec;
 		ret.Weekday	   =Date::WeekdayType(timeinfo.tm_wday);
-		ret.Timezone   =timeinfo.tm_gmtoff/60;
 	}
 	
 	bool Date::Parse(std::string isodate) {
@@ -305,7 +303,7 @@ namespace Gorgon { namespace Time {
 
 		
 		
-		return int(res/60);
+		return int(std::round(res/60));
 	}
 	
 	bool Date::DetermineWeekday() {

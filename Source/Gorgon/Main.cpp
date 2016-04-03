@@ -36,8 +36,9 @@ namespace Gorgon {
 #ifdef SCRIPTING
 		Scripting::Initialize();
 #endif
-		
+#ifdef AUDIO
 		Audio::Initialize();
+#endif
 		Resource::Initialize();
 	}
 

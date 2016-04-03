@@ -64,10 +64,10 @@ namespace Gorgon { namespace Scripting {
 
 			
 			filemode->AddMembers({
-				new Constant("In", "Opens the file for input", {filemode, std::ios::in}),
-				new Constant("Out", "Opens the file for output", {filemode, std::ios::out}),
-				new Constant("Append", "Opens the file for to append to the end", {filemode, std::ios::app}),
-				new Constant("Binary", "Opens the file for binary operations", {filemode, std::ios::binary}),
+				new Constant("In", "Opens the file for input", {filemode, (std::ios_base::openmode)std::ios::in}),
+				new Constant("Out", "Opens the file for output", {filemode, (std::ios_base::openmode)std::ios::out}),
+				new Constant("Append", "Opens the file for to append to the end", {filemode, (std::ios_base::openmode)std::ios::app}),
+				new Constant("Binary", "Opens the file for binary operations", {filemode, (std::ios_base::openmode)std::ios::binary}),
 				new MappedOperator("and", "Combines two filemodes", 
 					filemode, filemode, filemode, 
 					[](std::ios_base::openmode l, std::ios_base::openmode r) {

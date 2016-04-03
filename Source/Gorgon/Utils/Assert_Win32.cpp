@@ -1600,8 +1600,8 @@ namespace Gorgon {
 				if (*dir.rbegin() == '/') {
 					dir.erase(dir.end() - 1);
 				}
-				dir = Filesystem::GetFile(dir);
-				filename = Filesystem::GetFile(filename);
+				dir = Filesystem::GetFilename(dir);
+				filename = Filesystem::GetFilename(filename);
 				
 				Console::SetColor(Console::Magenta);
 				if((i-skip-1)==1) {

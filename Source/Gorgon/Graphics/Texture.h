@@ -58,7 +58,7 @@ namespace Gorgon { namespace Graphics {
 			swap(coordinates, other.coordinates);
 		}
 
-		~Texture() {
+		virtual ~Texture() {
 			Destroy();
 		}
 

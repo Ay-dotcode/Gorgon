@@ -51,6 +51,14 @@ if(AUDIO AND (NOT AUDIOLIB OR AUDIOLIB STREQUAL ""))
 	endif()
 endif()
 
+if(AUDIO)
+	add_definitions("-DAUDIO")
+endif()
+
+if(SCRIPTING)
+	add_definitions("-DSCRIPTING")
+endif()
+
 if(DOCUMENTATION_GRAPHS)
 	set(DOXYGRAPH YES)
 else()
