@@ -24,5 +24,6 @@ codeblocks
 Source/External/curl/
 Package/
 codelite/
+Docs/xml
 syntax: regexp
 .*\.kdev4(_.*)?

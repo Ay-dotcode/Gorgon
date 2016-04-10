@@ -32,6 +32,7 @@
     }
     my li:before {
         content: "[  ]";
+        white-space:pre;
     }
     my *[d] {
         color:#260;
@@ -532,6 +533,10 @@
 				<li   f  > SetAmbientColor
 			</li></class>
 			
+			<class name="CustomShadedLayer" inherits="Gorgon::Layer, TextureTarget">
+				<pre>Requires packaged shader</pre>
+			</class>
+			
 			<class name="TransformableLayer" inherits="Gorgon::Layer, TextureTarget, Transformable">
 				<pre>This might be integrated with all layers similar to offset</pre>
 			</class>
@@ -582,7 +587,7 @@
 	</module>
 
 	<module optional name="Audio">
-
+		
 	</module>
 
 	<module optional name="Multimedia">
