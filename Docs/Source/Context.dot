@@ -1,0 +1,20 @@
+graph {
+	node[shape=rectangle, spacing=1]
+	overlap=false
+	
+	Gorgon[peripheries=2, width=1.5,pos="1,0!"]
+	Application[peripheries=2, width=1.5,pos="2.5,0!"]
+	GL[pos="2,-1!"]
+	"Window manager"[pos="1,-1!"]
+	
+	Gorgon -- Audio
+	Gorgon -- OS
+	Gorgon -- Filesystem
+	Gorgon -- Networking
+	Gorgon -- Application
+	Application -- Filesystem
+	Gorgon -- "Window manager"
+	Gorgon -- GL
+	Application -- GL
+	GL -- "Window manager"
+}
