@@ -51,14 +51,14 @@ namespace Gorgon {
 			using ReturnType = R_;
 			
 			/// Number of arguments of the function
-			static const int  Arity = sizeof...(Args_);
+			static const unsigned  Arity = sizeof...(Args_);
 			
 			/// Whether this function is a member function
 			static const bool IsMember = false;
 			
 			/// This struct allow access to types of individual arguments. Do not forget to use template
 			/// keyword before arguments.
-			template<int N>
+			template<unsigned N>
 			struct Arguments {
 				static_assert(N<sizeof...(Args_), "Argument index out of bounds");
 				
@@ -90,11 +90,11 @@ namespace Gorgon {
 		public:
 			using ReturnType = typename innertype::ReturnType;
 			
-			static const int Arity = innertype::Arity - 1;
+			static const unsigned Arity = innertype::Arity - 1;
 
 			static const bool IsMember = false;
 			
-			template <int N>
+			template <unsigned N>
 			struct Arguments
 			{
 				static_assert(N<Arity, "Argument index out of bounds");

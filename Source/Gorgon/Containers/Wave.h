@@ -339,7 +339,7 @@ namespace Gorgon {
 
 			/// Cleans the contents of the buffer by setting every byte it contains to 0.
 			void Clean() {
-				memset(data, 0.f, size * channels * sizeof(float));
+				memset(data, 0, size * channels * sizeof(float));
 			}
 
 			/// Destroys this wave by setting its size to 0 and freeing the memory

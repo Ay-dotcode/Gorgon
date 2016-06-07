@@ -16,6 +16,7 @@ SET(UnitTests
 	Hashmap
 	String
 	Logging
+	URI
 )
 IF(${SCRIPTING})
 	LIST(APPEND UnitTests

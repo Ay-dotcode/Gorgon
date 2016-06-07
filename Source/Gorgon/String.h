@@ -511,6 +511,40 @@ namespace Gorgon {
 			
 			return ss.str();
 		}
+
+		/// Line ending types
+		enum class LineEnding {
+			/// None, no line endings
+			None = 0,
+
+			/// line feed \x0a
+			LF = 1,
+
+			/// line feed \x0a
+			Unix = 1,
+
+			/// carriage return \x0d
+			CR = 2,
+
+			/// carriage return \x0d
+			Mac = 2,
+
+			/// \x0d\x0a
+			CRLF = 3,
+
+			/// \x0d\x0a
+			Standard = 3,
+
+			/// \x0d\x0a
+			Windows = 3,
+
+			/// When there are multiple types of line endings present
+			Mixed = 4,
+		};
+
+		/// Fixes/changes line endings. If none is supplied, all line endings will be removed. If mixed
+		/// is set, nothing will be done.
+		std::string FixLineEndings(const std::string &in, LineEnding type = LineEnding::Standard);
 		
 		//for pretty documentation
 #ifdef DOXYGEN

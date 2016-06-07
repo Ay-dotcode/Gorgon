@@ -9,6 +9,8 @@
 #include "../Event.h"
 #include "../Main.h"
 
+//!Add info about Encoding::URI
+
 namespace Gorgon { namespace Network {
 	namespace HTTP {
 		/// Initializes HTTP networking system. It is called automatically

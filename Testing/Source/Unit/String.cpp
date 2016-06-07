@@ -274,3 +274,12 @@ TEST_CASE( "Tokenizer", "[Tokenizer]" ) {
 		i++;
 	}
 }
+
+TEST_CASE( "NewLine", "[String]" ) {
+	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--") == "--\x0d\x0a--\x0d\x0a--\x0d\x0a--");
+	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::CR) == "--\x0d--\x0d--\x0d--");
+	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::LF) == "--\x0a--\x0a--\x0a--");
+	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::Mixed) == "--\x0d--\x0a--\x0d\x0a--");
+	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::None) == "--------");
+	REQUIRE(String::FixLineEndings("--\x0c--\x0b--\x0d\x0a--") == "--\x0d\x0a--\x0d\x0a--\x0d\x0a--");
+}

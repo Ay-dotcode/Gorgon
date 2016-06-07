@@ -14,8 +14,16 @@
 #include <Gorgon/Struct.h>
 #include <Gorgon/Audio.h>
 #include <Gorgon/Containers/Wave.h>
+#include <Gorgon/Encoding/URI.h>
 
-using namespace Gorgon;
+using namespace Gorgon; 
+
+constexpr std::chrono::seconds operator ""_sec(unsigned long long s) {
+	return std::chrono::seconds(s);
+}
+constexpr std::chrono::duration<long double> operator ""_sec(long double s) {
+	return std::chrono::duration<long double>(s);
+}
 
 struct teststruct {
 	int a;
@@ -29,6 +37,9 @@ struct teststruct {
 };
 
 int main() {
+	std::cout<<Encoding::URIDecode(Encoding::URIEncode("foo @+%"))<<std::endl;
+	std::cout<<Encoding::URIDecode("ftp://user:foo%20%40%2B%25%2F@ftp.example.com/x.txt");
+	std::this_thread::sleep_for(10_sec);
 try {
 	Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
@@ -42,7 +53,7 @@ try {
 	
 	int ind = 0;
 	for(auto elm : wave) {
-		elm[0] = sin(2*3.14159*ind/20);
+		elm[0] = sin(2*3.14159f*ind/20);
 		ind++;
 		ind = ind % 20;
 		std::cout<<std::fixed<<std::setprecision(3)<<elm[0]<<" ";

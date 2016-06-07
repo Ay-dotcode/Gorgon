@@ -27,7 +27,7 @@ namespace Gorgon {
 	public:
 		/// Fullscreen tag
 		static const 
-		class FullscreenTag {
+		struct FullscreenTag {
 		} Fullscreen;
 		
 		/// Creates a new window
