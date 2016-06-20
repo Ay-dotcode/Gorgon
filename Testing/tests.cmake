@@ -5,6 +5,7 @@ SET(ManualTests
 	Gscript
 	Generic
 	PDParser
+	Window
 )
 
 SET(UnitTests
