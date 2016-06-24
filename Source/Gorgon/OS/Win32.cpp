@@ -101,7 +101,25 @@ namespace Gorgon {
 
 			return Filesystem::Canonical(path);
 		}
-	}
+		
+		bool IsAdmin() {
+			bool result;
+			DWORD rc;
+			wchar_t user_name[256];
+			
+			USER_INFO_1 *info;
+			DWORD size = sizeof( user_name );
+			GetUserNameW( user_name, &size);
+			rc = NetUserGetInfo( NULL, user_name, 1, (byte **) &info );
+			
+			if ( rc != NERR_Success )
+					return false;
+			
+			result = info->usri1_priv == USER_PRIV_ADMIN;
+			NetApiBufferFree( info );
+			
+			return result;
+		}
 
 	void OpenTerminal() {
 		int hConHandle;

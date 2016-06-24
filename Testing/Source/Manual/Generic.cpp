@@ -43,6 +43,7 @@ int main() {
 try {
 	Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
+	
 
 	auto &devices = Audio::Device::Devices();
 	for(auto dev : devices) {

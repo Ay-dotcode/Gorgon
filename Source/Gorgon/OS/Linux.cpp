@@ -48,6 +48,10 @@ namespace Gorgon { namespace OS {
 		std::string GetDataPath() {
 			return GetEnvVar("HOME");
 		}
+		
+		bool IsAdmin() {
+			return getuid() == 0;
+		}
 	}
 	
 	void Initialize() {

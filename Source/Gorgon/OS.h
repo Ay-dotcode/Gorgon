@@ -33,6 +33,13 @@ namespace Gorgon {
 			/// could simply be user's home directory. Best practice would be creating a directory
 			/// that starts with a "." such as .gorgon
 			std::string GetDataPath();
+			
+			
+			/// Check if the currently logged in user is an administrator. If you are looking to perform
+			/// an elevated operation, you best try to perform the operation without checking if the user
+			/// is an admin first. It might be possible for a regular user to have extra permissions.
+			/// Check this function afterwards before asking for elevation.
+			bool IsAdmin();
 		}
 
 		/// Opens a terminal window to display output from the stdout. This is not required
