@@ -60,6 +60,30 @@ namespace Gorgon {
 		
 		/// Returns the value of an environment variable.
 		std::string GetEnvVar(const std::string &var);
+
+		/// Returns the name of the current operating system
+		std::string GetName();
+
+		/// This structure represents the version of the operating system
+		struct Version {
+			enum Type {
+				Windows,
+				Linux
+			};
+
+			/// Identifier for the current operating system
+			Type type;
+			
+			std::string name;
+
+			int major;
+			int minor;
+			int revision;
+			int buildnumber;
+
+			int archbits;
+			std::string arch;
+		};
 		
 		/// Starts the given application. This application is searched from the installed applications
 		/// unless it includes a path. You may use `./appname` to start the appname from the current

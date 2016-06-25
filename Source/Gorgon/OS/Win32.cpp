@@ -20,6 +20,9 @@
 #include <Security.h>
 #include <Secext.h>
 
+#include <LM.h>
+#include <LMaccess.h>
+
 #ifndef WM_MOUSEWHEEL
 #	define WM_MOUSEWHEEL					0x020A
 #	define GET_WHEEL_DELTA_WPARAM(wParam)  ((short)HIWORD(wParam))
@@ -120,6 +123,7 @@ namespace Gorgon {
 			
 			return result;
 		}
+	}
 
 	void OpenTerminal() {
 		int hConHandle;
