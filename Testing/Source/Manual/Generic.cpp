@@ -38,7 +38,8 @@ struct teststruct {
 
 int main() {
 	std::cout<<Encoding::URIDecode(Encoding::URIEncode("foo @+%"))<<std::endl;
-	std::cout<<Encoding::URIDecode("ftp://user:foo%20%40%2B%25%2F@ftp.example.com/x.txt");
+	std::cout<<Encoding::URIDecode("ftp://user:foo%20%40%2B%25%2F@ftp.example.com/x.txt")<<std::endl;
+	std::cout<<Gorgon::OS::User::IsAdmin()<<std::endl;
 	std::this_thread::sleep_for(10_sec);
 try {
 	Audio::Log.InitializeConsole();
