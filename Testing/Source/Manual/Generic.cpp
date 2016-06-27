@@ -37,10 +37,6 @@ struct teststruct {
 };
 
 int main() {
-	std::cout<<Encoding::URIDecode(Encoding::URIEncode("foo @+%"))<<std::endl;
-	std::cout<<Encoding::URIDecode("ftp://user:foo%20%40%2B%25%2F@ftp.example.com/x.txt")<<std::endl;
-	std::cout<<Gorgon::OS::User::IsAdmin()<<std::endl;
-	std::this_thread::sleep_for(10_sec);
 try {
 	Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
@@ -58,9 +54,7 @@ try {
 		elm[0] = sin(2*3.14159f*ind/20);
 		ind++;
 		ind = ind % 20;
-		std::cout<<std::fixed<<std::setprecision(3)<<elm[0]<<" ";
 	}
-	std::cout<<std::endl;
 	
 	while(1) {
 		NextFrame();

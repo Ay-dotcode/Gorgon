@@ -406,6 +406,12 @@ namespace Gorgon {
 				return size;
 			}
 			
+			/// Returns the length of the wave data in seconds
+			float GetLength() const {
+				return (double)size/samplerate;
+			}
+			
+			/// Returns the number of channels that this wave data has.
 			unsigned GetChannelCount() const {
 				return channels;
 			}

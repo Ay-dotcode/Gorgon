@@ -1,6 +1,9 @@
 SET(Local
 	../Audio.h
 	Audio.cpp
+	
+	Controllers.h
+	Controllers.cpp
 )
 
 IF(AUDIOLIB STREQUAL "PULSE")
