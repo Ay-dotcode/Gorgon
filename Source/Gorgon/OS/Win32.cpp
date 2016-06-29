@@ -194,6 +194,43 @@ namespace Gorgon {
 		std::ios::sync_with_stdio();
 	}
 
+	std::string GetName() {
+		OSVERSIONINFO os ={};
+		os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+#pragma warning(push)
+#pragma warning(disable:4996)
+		GetVersionEx(&os);
+#pragma warning(pop)
+
+		if(os.dwMajorVersion == 5) {
+			switch(os.dwMinorVersion) {
+			case 0:
+				return "Windows 2000";
+			case 1:
+				return "Windows XP";
+			case 2:
+				return "Windows XP SP2";
+			}
+		}
+		else if(os.dwMajorVersion == 6) {
+			switch(os.dwMinorVersion) {
+			case 0:
+				return "Windows Vista";
+			case 1:
+				return "Windows 7";
+			case 2:
+				return "Windows 8";
+			case 3:
+				return "Windows 8.1";
+			}
+		}
+		else if(os.dwMajorVersion == 10) {
+			return "Windows 10";
+		}
+
+		return "Windows";
+	}
+
 	void DisplayMessage(const std::string &message) {
 		MessageBox(NULL, message.c_str(), GetSystemName().c_str(), 0);
 	}
