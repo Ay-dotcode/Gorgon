@@ -1,9 +1,14 @@
 #pragma once
-#include <Gorgon/Containers/Wave.h>
+
+#include <mutex>
+
+#include "../Containers/Wave.h"
+#include "../Containers/Collection.h"
 
 
 namespace Gorgon {
 	namespace Audio {
+		
 		/*
 		 * Identifies controller types. 
 		 */
@@ -15,24 +20,27 @@ namespace Gorgon {
 		 * This is the base class for all controllers. All controller use fluent interface.
 		 */
 		class Controller {
+			friend void AudioLoop();
 		public:
 			/// Default constructor
-			Controller() = default;
+			Controller();
 			
 			/// Filling constructor
-			Controller(Containers::Wave &wavedata) : wavedata(&wavedata) { datachanged(); }
+			Controller(Containers::Wave &wavedata);
+			
+			virtual ~Controller();
 			
 			/// Returns whether this controller has data
 			bool HasData() const { return wavedata != nullptr; }
 			
 			/// Releases the data being played by this controller
-			void ReleaseData() { wavedata = nullptr; datachanged(); }
+			void ReleaseData();
 			
 			/// Sets the data to be played by this controller. Timing might be percent based, thus,
 			/// when an audio data is swapped with another, playback position can be moved. Additionally,
 			/// if the timing is stored in seconds, swapping wavedata might cause playback to stop
 			/// or loop to the start immediately.
-			void SetData(Containers::Wave &wavedata) { this->wavedata = &wavedata; datachanged(); } 
+			void SetData(Containers::Wave &wavedata); 
 			
 			/// Returns the type of the controller
 			virtual ControllerType Type() const = 0;
@@ -49,6 +57,7 @@ namespace Gorgon {
 		 * Basic controller, allows non-positional playback of data buffer. Timing is stored in seconds.
 		 */
 		class BasicController : public Controller {
+			friend void AudioLoop();
 		public:
 			
 			/// Default constructor
@@ -118,6 +127,11 @@ namespace Gorgon {
 			bool playing = false; 
 			bool looping = false;
 		};
+		
+		namespace internal {
+			extern Containers::Collection<Controller> Controllers;
+			extern std::mutex ControllerMtx;
+		}
 		
 	}
 }

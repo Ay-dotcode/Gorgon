@@ -7,6 +7,7 @@
 
 #include <unistd.h>
 
+#include "Controllers.h"
 #include "../Main.h"
 
 namespace Gorgon { namespace Audio {
@@ -15,6 +16,9 @@ namespace Gorgon { namespace Audio {
 	pa_mainloop *pa_main = nullptr;
 	pa_context  *pa_ctx  = nullptr;
 	pa_stream   *pa_strm = nullptr;
+	
+	
+	void AudioLoop();
 
 	enum { pa_waiting, pa_connected, pa_failed, pa_timeout, pa_ready } pa_state=pa_waiting;
 	
@@ -91,18 +95,7 @@ namespace Gorgon { namespace Audio {
 			return Channel::Unknown;
 		}
 	}
-	
-	void AudioLoop() {
-		Log << "Audio loop started";
 		
-		while(true) {
-			
-			
-			pa_mainloop_iterate(pa_main, 0, NULL);			
-			usleep(1000);
-		}
-	}
-	
 	void Initialize() {
 		Log << "Starting pulse audio initialization...";
 		

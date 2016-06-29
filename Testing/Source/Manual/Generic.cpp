@@ -15,6 +15,7 @@
 #include <Gorgon/Audio.h>
 #include <Gorgon/Containers/Wave.h>
 #include <Gorgon/Encoding/URI.h>
+#include <Gorgon/Audio/Controllers.h>
 
 using namespace Gorgon; 
 
@@ -47,14 +48,25 @@ try {
 		std::cout<<dev.GetName()<<std::endl;
 	}
 	
-	Containers::Wave wave(5 * 8000, 8000);
+	int freq = 180;
+	int rate = 8000;
+	float duration = 2;
+	float amp = 0.5;
+	float pi = 3.1415f;
+	
+	Containers::Wave wave(duration * rate, rate);
 	
 	int ind = 0;
 	for(auto elm : wave) {
-		elm[0] = sin(2*3.14159f*ind/20);
+		elm[0] = 0.5*sin(2*pi*ind/(rate/freq));
 		ind++;
-		ind = ind % 20;
+		ind = ind % (rate/freq);
+		if(ind == 0) 
+			freq++;
 	}
+	
+	Audio::BasicController c(wave);
+	c.Loop();
 	
 	while(1) {
 		NextFrame();
