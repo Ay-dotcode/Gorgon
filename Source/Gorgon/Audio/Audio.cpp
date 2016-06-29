@@ -21,9 +21,43 @@ namespace Gorgon { namespace Audio {
 		std::thread audiothread;
 		
 		int BufferSize = 128;
+		
+		float mastervolume = 1;
+		std::vector<float> volume = {1.f, 1.f};
 	}
+	
+	void SetVolume(float volume) {
+		internal::mastervolume = volume;
+	}
+
+	void SetVolume(Channel channel, float volume) {
+		for(int i=0;i<Current.GetChannelCount(); i++) {
+			if(Current.GetChannel(i) == channel) {
+				internal::volume[i] = volume;
+				return;
+			}
+		}
 		
+		if(channel == Channel::Mono) {
+			for(int i=0;i<Current.GetChannelCount(); i++) {
+				internal::volume[i] = volume;
+			}
+		}
+	}
+	
+	float GetVolume() {
+		return internal::mastervolume;
+	}
+
+	float GetVolume(Channel channel) {
+		for(int i=0;i<Current.GetChannelCount(); i++) {
+			if(Current.GetChannel(i) == channel)
+				return internal::volume[i];
+		}
 		
+		return 0;
+	}
+	
 	void AudioLoop() {
 		Log << "Audio loop started";
 		
@@ -98,10 +132,10 @@ namespace Gorgon { namespace Audio {
 							float x1r = x2 - pos;
 							float x2r = 1  - x1r;
 							
-							float val = basic.volume * ( x1r * wavedata->Get(x1, 0) + x2r * wavedata->Get(x2, 0));
+							float val = internal::mastervolume * basic.volume * ( x1r * wavedata->Get(x1, 0) + x2r * wavedata->Get(x2, 0));
 							
 							for(int c = 0; c<channels; c++) {
-								data[s*channels+c] = val;
+								data[s*channels+c] = internal::volume[c] * val;
 							}
 							
 							basic.position += secpersample;

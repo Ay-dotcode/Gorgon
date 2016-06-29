@@ -10,12 +10,6 @@
 namespace Gorgon {
 /// Contains audio subsystem. For audio primitives look into multimedia namespace.
 namespace Audio {
-
-	/// Starts audio subsystem with the default device
-	void Initialize();
-	
-	/// Whether the audio is available
-	bool IsAvailable();
 	
 	/// Names for channels
 	enum class Channel {
@@ -36,6 +30,26 @@ namespace Audio {
 		PCM16,
 		Float
 	};
+
+	/// Starts audio subsystem with the default device
+	void Initialize();
+	
+	/// Whether the audio is available
+	bool IsAvailable();
+	
+	/// Changes the master volume
+	void SetVolume(float volume);
+	
+	/// Changes the volume of a channel. If the channel is not found, nothing is done
+	/// except if the channel is mono. In that case all channel's volume is changed.
+	void SetVolume(Channel channel, float volume);
+	
+	/// Returns the master volume
+	float GetVolume();
+	
+	/// Returns the volume of a channel. If the channel does not exists, this function
+	/// will return 0.
+	float GetVolume(Channel channel);
 	
 	/// Represents an audio device.
 	class Device {
@@ -129,6 +143,9 @@ namespace Audio {
 	
 	namespace internal {
 		extern std::thread audiothread;
+		
+		extern float mastervolume;
+		extern std::vector<float> volume;
 	}
 }
 }

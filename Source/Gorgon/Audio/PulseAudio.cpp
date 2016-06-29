@@ -95,7 +95,7 @@ namespace Gorgon { namespace Audio {
 			return Channel::Unknown;
 		}
 	}
-		
+	
 	void Initialize() {
 		Log << "Starting pulse audio initialization...";
 		
@@ -191,6 +191,9 @@ namespace Gorgon { namespace Audio {
 			Format::Float,
 			channels
 		);
+		
+		internal::volume.resize(channels.size());
+		for(auto &v : internal::volume) v = 1;
 		
 		Log << "Starting audio loop";
 		

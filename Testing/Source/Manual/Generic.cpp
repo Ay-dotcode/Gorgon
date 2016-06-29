@@ -67,6 +67,7 @@ try {
 	
 	Audio::BasicController c(wave);
 	c.Loop();
+	Audio::SetVolume(Audio::Channel::FrontLeft, 0.2);
 	
 	while(1) {
 		NextFrame();
