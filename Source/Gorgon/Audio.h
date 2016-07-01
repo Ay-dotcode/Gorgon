@@ -2,6 +2,7 @@
 
 #include "Utils/Logging.h"
 #include "Event.h"
+#include "Audio/Basic.h"
 
 #include <vector>
 #include <string>
@@ -10,26 +11,6 @@
 namespace Gorgon {
 /// Contains audio subsystem. For audio primitives look into multimedia namespace.
 namespace Audio {
-	
-	/// Names for channels
-	enum class Channel {
-		Unknown,
-		Mono,
-		FrontLeft,
-		FrontRight,
-		BackLeft,
-		BackRight,
-		Center,
-		LowFreq
-	};
-	
-	/// Sample format. For now only Float will be used and all conversions are done
-	/// by the underlying library.
-	enum class Format {
-		PCM8,
-		PCM16,
-		Float
-	};
 
 	/// Starts audio subsystem with the default device
 	void Initialize();

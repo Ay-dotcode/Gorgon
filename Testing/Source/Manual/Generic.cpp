@@ -49,25 +49,38 @@ try {
 	}
 	
 	int freq = 180;
-	int rate = 8000;
+	int rate = 22050;
 	float duration = 2;
 	float amp = 0.5;
 	float pi = 3.1415f;
 	
-	Containers::Wave wave(duration * rate, rate);
+	Containers::Wave wave(duration * rate, rate/*, {Audio::Channel::Mono, Audio::Channel::LowFreq}*/);
+	
+	Containers::Wave wave2(duration * rate * 2, rate/*, {Audio::Channel::Mono, Audio::Channel::LowFreq}*/);
 	
 	int ind = 0;
 	for(auto elm : wave) {
-		elm[0] = 0.5*sin(2*pi*ind/(rate/freq));
+		elm[0] = amp*sin(2*pi*ind/(rate/freq));
+		//elm[1] = 0.2*sin(0.2*pi*ind/(rate/freq));
 		ind++;
 		ind = ind % (rate/freq);
-		if(ind == 0) 
-			freq++;
+		/*if(ind == 0)
+			freq++;*/
+	}
+	
+	freq = 320;
+	ind = 0;
+	for(auto elm : wave2) {
+		elm[0] = 0.1*amp*sin(2*pi*ind/(rate/freq));
+		ind++;
+		ind = ind % (rate/freq);
 	}
 	
 	Audio::BasicController c(wave);
 	c.Loop();
-	Audio::SetVolume(Audio::Channel::FrontLeft, 0.2);
+	
+	Audio::BasicController c2(wave2);
+	c2.Play();
 	
 	while(1) {
 		NextFrame();

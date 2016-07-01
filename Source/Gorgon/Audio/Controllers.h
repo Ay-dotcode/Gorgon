@@ -40,7 +40,7 @@ namespace Gorgon {
 			/// when an audio data is swapped with another, playback position can be moved. Additionally,
 			/// if the timing is stored in seconds, swapping wavedata might cause playback to stop
 			/// or loop to the start immediately.
-			void SetData(Containers::Wave &wavedata); 
+			void SetData(Containers::Wave &wavedata);
 			
 			/// Returns the type of the controller
 			virtual ControllerType Type() const = 0;

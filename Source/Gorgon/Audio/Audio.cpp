@@ -20,7 +20,7 @@ namespace Gorgon { namespace Audio {
 	namespace internal {
 		std::thread audiothread;
 		
-		int BufferSize = 128;
+		int BufferSize = 400;
 		
 		float mastervolume = 1;
 		std::vector<float> volume = {1.f, 1.f};
@@ -68,17 +68,20 @@ namespace Gorgon { namespace Audio {
 		int   freq 		   = Device::Default().GetSampleRate();
 		float secpersample = 1.0f / freq;
 		
+		//std::ofstream test("test.csv");
+		
 		while(true) {
-			
-			
-	
 			int maxsize, size;
 
 			maxsize = GetWritableSize();
 			size    = maxsize / sizeof(float) / channels;
 			size    = std::min(size, internal::BufferSize);
 
-			if(!size) goto end;
+			if(!size) {
+				SkipFrame();
+				std::this_thread::yield();
+				continue;
+			}
 			
 			//zero out before starting
 			std::memset(data, 0, sizeof(float) * datasize);
@@ -90,7 +93,7 @@ namespace Gorgon { namespace Audio {
 				if(controller.Type() == ControllerType::Basic) {
 					BasicController &basic = static_cast<BasicController&>(controller);
 					
-					//Log<<basic.position<<"/"<<basic.GetDuration()<<": "<<basic.playing;
+					//std::cout<<"Playing.."<<std::endl;
 					
 					if(!basic.playing) continue;
 					
@@ -135,7 +138,7 @@ namespace Gorgon { namespace Audio {
 							float val = internal::mastervolume * basic.volume * ( x1r * wavedata->Get(x1, 0) + x2r * wavedata->Get(x2, 0));
 							
 							for(int c = 0; c<channels; c++) {
-								data[s*channels+c] = internal::volume[c] * val;
+								data[s*channels+c] += internal::volume[c] * val;
 							}
 							
 							basic.position += secpersample;
@@ -145,9 +148,13 @@ namespace Gorgon { namespace Audio {
 			}
 			
 			internal::ControllerMtx.unlock();
+
 			
-end:
-			PostData(data, size*channels*sizeof(float));
+			/*for(int i=0; i<size; i++) {
+				test<<data[i*channels]<<"\n";
+			}*/
+			//std::cout<<"Done.."<<std::endl;
+			PostData(data, size*channels);
 			std::this_thread::yield();
 		}
 	}

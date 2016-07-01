@@ -39,6 +39,10 @@ IF(${AUDIO})
 	LIST(APPEND Local
 		Audio
 	)
+ELSEIF()
+	LIST(APPEND Local
+		Audio/Basic.h
+	)
 ENDIF()
 
 IF(${SCRIPTING})

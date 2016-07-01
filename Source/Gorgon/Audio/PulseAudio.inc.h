@@ -14,7 +14,11 @@ namespace Gorgon { namespace Audio {
 	}
 	
 	void PostData(float *data, int size) {
-		pa_stream_write(pa_strm, data, size, NULL, 0, PA_SEEK_RELATIVE);
+		pa_stream_write(pa_strm, data, size*sizeof(float), NULL, 0, PA_SEEK_RELATIVE);
+		pa_mainloop_iterate(pa_main, 0, NULL);
+	}
+	
+	void SkipFrame() {
 		pa_mainloop_iterate(pa_main, 0, NULL);
 	}
 
