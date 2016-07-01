@@ -61,14 +61,14 @@ namespace Gorgon { namespace Audio {
 	void AudioLoop() {
 		Log << "Audio loop started";
 		
-		int channels = Device::Default().GetChannelCount();
+		int channels = Current.GetChannelCount();
 		int datasize = channels * internal::BufferSize;
 		
 		float data[datasize];
-		int   freq 		   = Device::Default().GetSampleRate();
+		int   freq 		   = Current.GetSampleRate();
 		float secpersample = 1.0f / freq;
 		
-		//std::ofstream test("test.csv");
+// 		std::ofstream test("test.csv");
 		
 		while(true) {
 			int maxsize, size;
@@ -127,7 +127,7 @@ namespace Gorgon { namespace Audio {
 							int x1 = pos    ;
 							int x2 = pos + 1;
 							
-							if(x2 >= wavedata->GetSize()) {
+							if(x1 >= wavedata->GetSize()) {
 								if(outofbounds()) goto recalculate;
 								else break;
 							}
@@ -135,7 +135,20 @@ namespace Gorgon { namespace Audio {
 							float x1r = x2 - pos;
 							float x2r = 1  - x1r;
 							
-							float val = internal::mastervolume * basic.volume * ( x1r * wavedata->Get(x1, 0) + x2r * wavedata->Get(x2, 0));
+							float val;
+							
+							if(x2 >= wavedata->GetSize()) {
+								if(basic.looping) {
+									val = internal::mastervolume * basic.volume * ( x1r * wavedata->Get(x1, 0) + x2r * wavedata->Get(0, 0));
+								}
+								else {
+									val = internal::mastervolume * basic.volume * ( x1r * wavedata->Get(x1, 0) );
+								}
+							}
+							else {
+								val = internal::mastervolume * basic.volume * ( x1r * wavedata->Get(x1, 0) + x2r * wavedata->Get(x2, 0));
+							}
+							
 							
 							for(int c = 0; c<channels; c++) {
 								data[s*channels+c] += internal::volume[c] * val;
@@ -150,9 +163,9 @@ namespace Gorgon { namespace Audio {
 			internal::ControllerMtx.unlock();
 
 			
-			/*for(int i=0; i<size; i++) {
-				test<<data[i*channels]<<"\n";
-			}*/
+// 			for(int i=0; i<size; i++) {
+// 				test<<data[i*channels]<<"\n";
+// 			}
 			//std::cout<<"Done.."<<std::endl;
 			PostData(data, size*channels);
 			std::this_thread::yield();

@@ -39,7 +39,7 @@ struct teststruct {
 
 int main() {
 try {
-	Audio::Log.InitializeConsole();
+	//Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
 	
 
@@ -48,8 +48,8 @@ try {
 		std::cout<<dev.GetName()<<std::endl;
 	}
 	
-	int freq = 180;
-	int rate = 22050;
+	int freq = 200;
+	int rate = 8000;
 	float duration = 2;
 	float amp = 0.5;
 	float pi = 3.1415f;

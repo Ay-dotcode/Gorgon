@@ -28,6 +28,7 @@ namespace Gorgon { namespace Utils {
 			helper() : parent(nullptr) { }
 			
 			helper(Logger *parent, int shift, bool extraenter) : parent(parent), shift(shift), extraenter(extraenter) {
+				if(!parent) return;
 				parent->mtx.lock();
 			}
 			
