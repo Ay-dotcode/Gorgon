@@ -1,10 +1,10 @@
 ﻿
-/*
+
 #include <Gorgon/Window.h>
 #include <Gorgon/Main.h>
-*/
+
 int main() {
-	/*
+	
 	Gorgon::Initialize("Window-test");
 	Gorgon::Window wind(Gorgon::Window::Fullscreen, "windowtest");
 	
@@ -20,5 +20,5 @@ int main() {
 	}
 
 	return 0;
-	*/
+	
 }

@@ -366,7 +366,6 @@ namespace Gorgon {
 
 	Window::Window(const FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
 		windows.Add(this);
-		static bool quit = false;
 
 		WNDCLASSEX wc;
 		HINSTANCE instance;
