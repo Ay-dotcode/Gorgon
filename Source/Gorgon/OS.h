@@ -33,6 +33,13 @@ namespace Gorgon {
 			/// could simply be user's home directory. Best practice would be creating a directory
 			/// that starts with a "." such as .gorgon
 			std::string GetDataPath();
+			
+			
+			/// Check if the currently logged in user is an administrator. If you are looking to perform
+			/// an elevated operation, you best try to perform the operation without checking if the user
+			/// is an admin first. It might be possible for a regular user to have extra permissions.
+			/// Check this function afterwards before asking for elevation.
+			bool IsAdmin();
 		}
 
 		/// Opens a terminal window to display output from the stdout. This is not required
@@ -53,6 +60,47 @@ namespace Gorgon {
 		
 		/// Returns the value of an environment variable.
 		std::string GetEnvVar(const std::string &var);
+
+		/// Returns the name of the current operating system in human readable form. Might change from
+		/// installation to installation.
+		std::string GetName();
+
+		/// This structure represents the version of the operating system
+		struct Info {
+			enum Type {
+				Windows,
+				Linux
+			};
+
+			/// Identifier for the current operating system
+			Type type;
+			
+			/// Name of the current operating system
+			std::string name;
+
+			/// Major version
+			int major;
+			
+			/// Minor version
+			int minor;
+			
+			/// Revision
+			int revision;
+			
+			/// Build number
+			int buildnumber;
+			
+			/// Number of bits in the architecture, this number is independent of compiled platform
+			/// of Gorgon Library
+			int archbits;
+			
+			/// The name  of the architecture, this number is independent of compiled platform
+			/// of Gorgon Library
+			std::string arch;
+		};
+		
+		/// Returns information related with the operating system, including version, name, and architecture.
+		Info GetInfo();
 		
 		/// Starts the given application. This application is searched from the installed applications
 		/// unless it includes a path. You may use `./appname` to start the appname from the current

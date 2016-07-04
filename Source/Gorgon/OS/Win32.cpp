@@ -20,6 +20,9 @@
 #include <Security.h>
 #include <Secext.h>
 
+#include <LM.h>
+#include <LMaccess.h>
+
 #ifndef WM_MOUSEWHEEL
 #	define WM_MOUSEWHEEL					0x020A
 #	define GET_WHEEL_DELTA_WPARAM(wParam)  ((short)HIWORD(wParam))
@@ -101,6 +104,25 @@ namespace Gorgon {
 
 			return Filesystem::Canonical(path);
 		}
+		
+		bool IsAdmin() {
+			bool result;
+			DWORD rc;
+			wchar_t user_name[256];
+			
+			USER_INFO_1 *info;
+			DWORD size = sizeof( user_name );
+			GetUserNameW( user_name, &size);
+			rc = NetUserGetInfo( NULL, user_name, 1, (byte **) &info );
+			
+			if ( rc != NERR_Success )
+					return false;
+			
+			result = info->usri1_priv == USER_PRIV_ADMIN;
+			NetApiBufferFree( info );
+			
+			return result;
+		}
 	}
 
 	void OpenTerminal() {
@@ -170,6 +192,43 @@ namespace Gorgon {
 		// point to console as well
 
 		std::ios::sync_with_stdio();
+	}
+
+	std::string GetName() {
+		OSVERSIONINFO os ={};
+		os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+#pragma warning(push)
+#pragma warning(disable:4996)
+		GetVersionEx(&os);
+#pragma warning(pop)
+
+		if(os.dwMajorVersion == 5) {
+			switch(os.dwMinorVersion) {
+			case 0:
+				return "Windows 2000";
+			case 1:
+				return "Windows XP";
+			case 2:
+				return "Windows XP SP2";
+			}
+		}
+		else if(os.dwMajorVersion == 6) {
+			switch(os.dwMinorVersion) {
+			case 0:
+				return "Windows Vista";
+			case 1:
+				return "Windows 7";
+			case 2:
+				return "Windows 8";
+			case 3:
+				return "Windows 8.1";
+			}
+		}
+		else if(os.dwMajorVersion == 10) {
+			return "Windows 10";
+		}
+
+		return "Windows";
 	}
 
 	void DisplayMessage(const std::string &message) {

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <mutex>
 #include "../Time.h"
 
 namespace Gorgon { namespace Utils {
@@ -15,6 +16,7 @@ namespace Gorgon { namespace Utils {
 	 */
 	class Logger {
 		friend class helper;
+		std::mutex mtx;
 		
 		class helper {
 			friend class Logger;
@@ -25,7 +27,10 @@ namespace Gorgon { namespace Utils {
 			
 			helper() : parent(nullptr) { }
 			
-			helper(Logger *parent, int shift, bool extraenter) : parent(parent), shift(shift), extraenter(extraenter) { }
+			helper(Logger *parent, int shift, bool extraenter) : parent(parent), shift(shift), extraenter(extraenter) {
+				if(!parent) return;
+				parent->mtx.lock();
+			}
 			
 			helper(helper &&h) {
 				parent=h.parent;
@@ -36,6 +41,9 @@ namespace Gorgon { namespace Utils {
 			}
 			
 			helper &operator =(helper &&h) {
+				if(parent)
+					parent->mtx.unlock();
+				
 				parent=h.parent;
 				shift=h.shift;
 				extraenter=h.extraenter;
@@ -49,6 +57,8 @@ namespace Gorgon { namespace Utils {
 			~helper() {
 				if(!parent) return;
 					
+				parent->mtx.unlock();
+				
 				if(extraenter)
 					(*parent->stream) << "\n";
 				
@@ -162,12 +172,25 @@ namespace Gorgon { namespace Utils {
 		helper operator <<(const T_ &v) {
 #ifndef NO_LOGGING
 			if(!this->stream) return {nullptr, 0, false};
-			
 			auto &stream = *this->stream;
 			
 			int headw = marktime * 8 + markdate * 10 + (markdate && marktime) * 1 + ((markdate || marktime) && !section.empty()) * 1 + section.size();
 			
 			if(headw) headw += 2;
+
+			helper h;
+			
+			if(width && headw*1.25 >= width) {
+				stream<<std::endl;
+				
+				h = {this, 4, true};
+			}
+			else if(headw) {				
+				h = {this, headw, false};
+			}
+			else {
+				h = {this, 0, true};
+			}
 			
 			if(marktime || markdate) {
 				auto dt = Time::Date::Now();
@@ -187,21 +210,7 @@ namespace Gorgon { namespace Utils {
 			
 			if(!section.empty()) stream<<section;
 			
-			helper h;
-			
-			if(width && headw*1.25 >= width) {
-				stream<<std::endl;
-				
-				h = {this, 4, true};
-			}
-			else if(headw) {
-				stream<<"  ";
-				
-				h = {this, headw, false};
-			}
-			else {
-				h = {this, 0, true};
-			}
+			if(headw) stream<<"  ";
 			
 			return std::move(h << v);
 #else

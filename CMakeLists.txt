@@ -45,7 +45,7 @@ set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header fi
 
 if(AUDIO AND (NOT AUDIOLIB OR AUDIOLIB STREQUAL ""))
 	if(WIN32)
-		set(AUDIOLIB )
+		set(AUDIOLIB WASAPI)
 	else()
 		set(AUDIOLIB PULSE)
 	endif()
@@ -53,6 +53,7 @@ endif()
 
 if(AUDIO)
 	add_definitions("-DAUDIO")
+	add_definitions("-DAUDIO_${AUDIOLIB}")
 endif()
 
 if(SCRIPTING)

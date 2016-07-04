@@ -1,5 +1,6 @@
 #include <string>
 #include <cstring>
+#include <algorithm>
 #include "URI.h"
 #include "../String.h"
 #include "../Utils/Assert.h"
@@ -631,8 +632,11 @@ namespace Gorgon { namespace Encoding {
 
 		t1.Normalize();
 		t2.Normalize();
+		
+		if(t1.segments != t2.segments)
+			return false;		
 
-		return std::equal(t1.segments.begin(), t1.segments.end(), t2.segments.begin(), t2.segments.end());
+		return std::equal(t1.segments.begin(), t1.segments.end(), t2.segments.begin());
 	}
 
 	std::ostream &operator <<(std::ostream &out, const URI &uri) {

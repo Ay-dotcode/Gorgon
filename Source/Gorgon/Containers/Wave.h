@@ -7,6 +7,8 @@
 #include "../Geometry/Size.h"
 #include "../Graphics/Color.h"
 
+#include "../Audio/Basic.h"
+
 namespace Gorgon {
 	namespace Containers {
 
@@ -181,8 +183,8 @@ namespace Gorgon {
 
 			/// Constructs a new wave data with the given number of samples and channels. This constructor 
 			/// does not initialize data inside the wave
-			explicit Wave(unsigned long size, unsigned samplerate, unsigned channels = 1): size(size), samplerate(samplerate), channels(channels) {
-				data = (float*)malloc(size * channels * sizeof(float));
+			explicit Wave(unsigned long size, unsigned samplerate, std::vector<Audio::Channel> channels = {Audio::Channel::Mono}): size(size), samplerate(samplerate), channels(channels) {
+				data = (float*)malloc(size * channels.size() * sizeof(float));
 			}
 
 			/// Copy constructor is disabled
@@ -219,9 +221,9 @@ namespace Gorgon {
 
 			/// Resizes the wave to the given size and channels. This function discards the contents
 			/// of the wave and does not perform any initialization.
-			void Resize(unsigned long size, unsigned channels) {
+			void Resize(unsigned long size, std::vector<Audio::Channel> channels) {
 				
-				this->channels = channels;
+				this->channels = std::move(channels);
 
 				// Check if resize is really necessary
 				if(this->size == size)
@@ -232,7 +234,7 @@ namespace Gorgon {
 				if(data) {
 					free(data);
 				}
-				data = (float*)malloc(size * channels * sizeof(float));
+				data = (float*)malloc(size * channels.size() * sizeof(float));
 			}
 
 			/// Resizes the wave to the given size. This function discards the contents
@@ -249,7 +251,7 @@ namespace Gorgon {
 				if(data) {
 					free(data);
 				}
-				data = (float*)malloc(size * channels * sizeof(float));
+				data = (float*)malloc(size * channels.size() * sizeof(float));
 			}
 
 			/// Copies the given data assigns the new data to this object, size is the number of samples. 
@@ -262,8 +264,8 @@ namespace Gorgon {
 					free(data);
 				}
 				if(size > 0) {
-					data = (float*)malloc(size * channels * sizeof(float));
-					memcpy(data, newdata, size * channels * sizeof(float));
+					data = (float*)malloc(size * channels.size() * sizeof(float));
+					memcpy(data, newdata, size * channels.size() * sizeof(float));
 				}
 				else {
 					data = nullptr;
@@ -272,17 +274,17 @@ namespace Gorgon {
 			
 			/// Copies the given data assigns the new data to this object, size is the number of samples. 
 			/// newdata should have size*channels number of entries
-			void Assign(float *newdata, unsigned long size, unsigned channels) {
+			void Assign(float *newdata, unsigned long size, std::vector<Audio::Channel> channels) {
 				this->size = size;
 				
-				this->channels = channels;
+				this->channels = std::move(channels);
 
 				if(data) {
 					free(data);
 				}
 				if(size > 0) {
-					data = (float*)malloc(size * channels * sizeof(float));
-					memcpy(data, newdata, size * channels * sizeof(float));
+					data = (float*)malloc(size * channels.size() * sizeof(float));
+					memcpy(data, newdata, size * channels.size() * sizeof(float));
 				}
 				else {
 					data = nullptr;
@@ -293,7 +295,7 @@ namespace Gorgon {
 			/// Assumes number of channels and samples stays the same. newdata should have size*channels 
 			/// number of entries 
 			void Assign(float *newdata) {
-				memcpy(data, newdata, size * channels * sizeof(float));
+				memcpy(data, newdata, size * channels.size() * sizeof(float));
 			}
 
 			/// Assumes the ownership of the data.
@@ -310,7 +312,7 @@ namespace Gorgon {
 			/// The given data should have the size of size*channels. This function does not perform any checks 
 			/// for the data size while assuming it. newdata could be nullptr however, in this case size should 
 			/// be 0.
-			void Assume(float *newdata, unsigned long size, unsigned channels) {
+			void Assume(float *newdata, unsigned long size, std::vector<Audio::Channel> channels) {
 				this->size = size;
 				this->channels = channels;
 
@@ -339,7 +341,7 @@ namespace Gorgon {
 
 			/// Cleans the contents of the buffer by setting every byte it contains to 0.
 			void Clean() {
-				memset(data, 0, size * channels * sizeof(float));
+				memset(data, 0, size * channels.size() * sizeof(float));
 			}
 
 			/// Destroys this wave by setting its size to 0 and freeing the memory
@@ -374,27 +376,27 @@ namespace Gorgon {
 			/// Allows access to individual members
 			float &operator()(unsigned long p, unsigned ch) {
 #ifndef NDEBUG
-				if(p >= size || ch >= channels) {
+				if(p >= size || ch >= channels.size()) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
-				return data[p*channels+ch];
+				return data[p*channels.size()+ch];
 			}
 
 			/// Allows access to individual members
 			float operator()(unsigned long p, unsigned ch) const {
 #ifndef NDEBUG
-				if(p >= size || ch >= channels) {
+				if(p >= size || ch >= channels.size()) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
-				return data[p*channels+ch];
+				return data[p*channels.size()+ch];
 			}
 
 			/// Allows access to individual members
 			float Get(unsigned long p, unsigned ch) const {
 #ifndef NDEBUG
-				if(p >= size || ch >= channels) {
+				if(p >= size || ch >= channels.size()) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
@@ -406,8 +408,31 @@ namespace Gorgon {
 				return size;
 			}
 			
+			/// Returns the length of the wave data in seconds
+			float GetLength() const {
+				return (double)size/samplerate;
+			}
+			
+			/// Returns the number of channels that this wave data has.
 			unsigned GetChannelCount() const {
-				return channels;
+				return channels.size();
+			}
+
+			/// Returns the type of the channel at the given index
+			Audio::Channel GetChannelType(int channel) const {
+				if(channel<0 || channel>=channels.size())
+					return Audio::Channel::Unknown;
+				
+				return channels[channel];
+			}
+			
+			/// Returns the index of the given channel. If the given channel does not exists, this function returns -1
+			int FindChannel(Audio::Channel channel) const {
+				for(int i=0; i<channels.size(); i++)  {
+					if(channels[i] == channel) return i;
+				}
+				
+				return -1;
 			}
 
 			/// Returns the number of samples per second
@@ -421,11 +446,11 @@ namespace Gorgon {
 			}
 			
 			Iterator begin() {
-				return {data, channels};
+				return {data, channels.size()};
 			}
 			
 			Iterator end() {
-				return {data+size*channels, channels};
+				return {data+size*channels.size(), channels.size()};
 			}
 
 		protected:
@@ -436,7 +461,7 @@ namespace Gorgon {
 			unsigned long size = 0;
 
 			/// Number of channels
-			unsigned int channels = 0;
+			std::vector<Audio::Channel> channels;
 
 			/// Sampling rate of the wave
 			unsigned samplerate = 0;

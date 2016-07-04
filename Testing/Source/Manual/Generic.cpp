@@ -15,6 +15,7 @@
 #include <Gorgon/Audio.h>
 #include <Gorgon/Containers/Wave.h>
 #include <Gorgon/Encoding/URI.h>
+#include <Gorgon/Audio/Controllers.h>
 
 using namespace Gorgon; 
 
@@ -37,28 +38,49 @@ struct teststruct {
 };
 
 int main() {
-	std::cout<<Encoding::URIDecode(Encoding::URIEncode("foo @+%"))<<std::endl;
-	std::cout<<Encoding::URIDecode("ftp://user:foo%20%40%2B%25%2F@ftp.example.com/x.txt");
-	std::this_thread::sleep_for(10_sec);
 try {
-	Audio::Log.InitializeConsole();
+	//Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
+	
 
 	auto &devices = Audio::Device::Devices();
 	for(auto dev : devices) {
 		std::cout<<dev.GetName()<<std::endl;
 	}
 	
-	Containers::Wave wave(5 * 8000, 8000);
+	int freq = 200;
+	int rate = 8000;
+	float duration = 2;
+	float amp = 0.5;
+	float pi = 3.1415f;
+	
+	Containers::Wave wave(duration * rate, rate/*, {Audio::Channel::Mono, Audio::Channel::LowFreq}*/);
+	
+	Containers::Wave wave2(duration * rate * 2, rate/*, {Audio::Channel::Mono, Audio::Channel::LowFreq}*/);
 	
 	int ind = 0;
 	for(auto elm : wave) {
-		elm[0] = sin(2*3.14159f*ind/20);
+		elm[0] = amp*sin(2*pi*ind/(rate/freq));
+		//elm[1] = 0.2*sin(0.2*pi*ind/(rate/freq));
 		ind++;
-		ind = ind % 20;
-		std::cout<<std::fixed<<std::setprecision(3)<<elm[0]<<" ";
+		ind = ind % (rate/freq);
+		/*if(ind == 0)
+			freq++;*/
 	}
-	std::cout<<std::endl;
+	
+	freq = 320;
+	ind = 0;
+	for(auto elm : wave2) {
+		elm[0] = 0.1*amp*sin(2*pi*ind/(rate/freq));
+		ind++;
+		ind = ind % (rate/freq);
+	}
+	
+	Audio::BasicController c(wave);
+	c.Loop();
+	
+	Audio::BasicController c2(wave2);
+	c2.Play();
 	
 	while(1) {
 		NextFrame();

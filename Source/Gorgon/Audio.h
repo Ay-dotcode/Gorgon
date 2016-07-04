@@ -2,6 +2,7 @@
 
 #include "Utils/Logging.h"
 #include "Event.h"
+#include "Audio/Basic.h"
 
 #include <vector>
 #include <string>
@@ -17,25 +18,19 @@ namespace Audio {
 	/// Whether the audio is available
 	bool IsAvailable();
 	
-	/// Names for channels
-	enum class Channel {
-		Unknown,
-		Mono,
-		FrontLeft,
-		FrontRight,
-		BackLeft,
-		BackRight,
-		Center,
-		LowFreq
-	};
+	/// Changes the master volume
+	void SetVolume(float volume);
 	
-	/// Sample format. For now only Float will be used and all conversions are done
-	/// by the underlying library.
-	enum class Format {
-		PCM8,
-		PCM16,
-		Float
-	};
+	/// Changes the volume of a channel. If the channel is not found, nothing is done
+	/// except if the channel is mono. In that case all channel's volume is changed.
+	void SetVolume(Channel channel, float volume);
+	
+	/// Returns the master volume
+	float GetVolume();
+	
+	/// Returns the volume of a channel. If the channel does not exists, this function
+	/// will return 0.
+	float GetVolume(Channel channel);
 	
 	/// Represents an audio device.
 	class Device {
@@ -129,6 +124,9 @@ namespace Audio {
 	
 	namespace internal {
 		extern std::thread audiothread;
+		
+		extern float mastervolume;
+		extern std::vector<float> volume;
 	}
 }
 }

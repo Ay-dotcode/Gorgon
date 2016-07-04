@@ -1,5 +1,4 @@
 SET(Local
-	Audio
 	Animation
 	Containers
 	Console.h
@@ -35,11 +34,23 @@ SET(Local
 	Window.h
 	Window.cpp
 )
+
+IF(${AUDIO})
+	LIST(APPEND Local
+		Audio
+	)
+ELSEIF()
+	LIST(APPEND Local
+		Audio/Basic.h
+	)
+ENDIF()
+
 IF(${SCRIPTING})
 	LIST(APPEND Local
 		Scripting
 	)
 ENDIF()
+
 IF(${WIN32})
 	LIST(APPEND Local
 		Console_Win32.cpp

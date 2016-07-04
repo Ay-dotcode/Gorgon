@@ -2,10 +2,15 @@
 #include "../Filesystem.h"
 #include "../Window.h"
 
-#include <unistd.h>
 #include <string.h>
-#include <pwd.h>
+#include <fstream>
+
+#include <sys/utsname.h>
+#include <unistd.h>
 #include <fcntl.h>
+#include <pwd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 namespace Gorgon { namespace OS {
 
@@ -48,11 +53,51 @@ namespace Gorgon { namespace OS {
 		std::string GetDataPath() {
 			return GetEnvVar("HOME");
 		}
+		
+		bool IsAdmin() {
+			return getuid() == 0;
+		}
 	}
 	
 	void Initialize() {
 	}
 
+	std::string GetName() {
+		
+		FILE *p = popen("lsb_release -d", "r");
+		
+		if(p!=nullptr) {
+			int len;
+			std::string line;
+			char buf[16];
+			
+			while( (len = fread(buf, 1, 16, p)) > 0 ) {
+				line.insert(line.length(), buf, len);
+			}
+			
+			if(line!="") {			
+				String::Extract(line, ':');
+				
+				return String::TrimStart(line);
+			}
+		}
+		
+		std::ifstream issuefile("/etc/issue");
+		
+		if(issuefile.is_open()) {
+			std::string line;
+			std::getline(issuefile, line);
+			
+			if(line.find_first_of('\\') != line.npos) {
+				return String::Extract(line, '\\');
+			}
+			else 
+				return line;
+		}
+		
+		return "Linux";
+	}
+	
 	void OpenTerminal() {		
 	}
 
@@ -116,6 +161,8 @@ namespace Gorgon { namespace OS {
 
 			//only arrives here if there is an error
 			write(execpipe[1], &errno, sizeof(errno));
+			close(1);
+			close(2);
 			exit(-1);
 		}
 		else {

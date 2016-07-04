@@ -283,7 +283,7 @@ TEST_CASE("URIPath", "[URI]") {
 	t.Normalize();
 
 	auto result = std::vector<std::string>{"b"};
-	REQUIRE(std::equal(t.segments.begin(), t.segments.end(), result.begin(), result.end())); 
+	REQUIRE((t.segments.size()==result.size() && std::equal(t.segments.begin(), t.segments.end(), result.begin()))); 
 
 	REQUIRE(t.Convert() == "/b");
 
@@ -292,30 +292,30 @@ TEST_CASE("URIPath", "[URI]") {
 
 
 	result = std::vector<std::string>{"a", "@b:%25", "c"};
-	REQUIRE(std::equal(t.segments.begin(), t.segments.end(), result.begin(), result.end()));
+	REQUIRE((t.segments.size()==result.size() && std::equal(t.segments.begin(), t.segments.end(), result.begin())));
 	REQUIRE(t.Convert() == "/a/@b:%25/c");
 
 
 	result = std::vector<std::string>{"a", "@b:%25", "c"};
-	REQUIRE(std::equal(t.segments.begin(), t.segments.end(), result.begin(), result.end()));
+	REQUIRE((t.segments.size()==result.size() && std::equal(t.segments.begin(), t.segments.end(), result.begin())));
 	REQUIRE(t.Convert() == "/a/@b:%25/c");
 
 	t += "..";
 	t.Normalize();
 
 	result = std::vector<std::string>{"a", "@b:%25"};
-	REQUIRE(std::equal(t.segments.begin(), t.segments.end(), result.begin(), result.end()));
+	REQUIRE((t.segments.size()==result.size() && std::equal(t.segments.begin(), t.segments.end(), result.begin())));
 
 	auto t2 = t + ".././b%";
 	t2.Normalize();
 
 	result = std::vector<std::string>{"a", "b%"};
-	REQUIRE(std::equal(t2.segments.begin(), t2.segments.end(), result.begin(), result.end()));
+	REQUIRE((t2.segments.size()==result.size() && std::equal(t2.segments.begin(), t2.segments.end(), result.begin())));
 
 	t2.Combine("c");
 
 	result = std::vector<std::string>{"a", "b%", "c"};
-	REQUIRE(std::equal(t2.segments.begin(), t2.segments.end(), result.begin(), result.end()));
+	REQUIRE((t2.segments.size()==result.size() && std::equal(t2.segments.begin(), t2.segments.end(), result.begin())));
 
 	REQUIRE(t2 != t);
 
