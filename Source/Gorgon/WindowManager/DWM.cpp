@@ -303,21 +303,21 @@ namespace Gorgon {
 		HWND hwnd;
 
 		///*Creating window class
-		windclass.cbClsExtra=0;
-		windclass.cbSize=sizeof(WNDCLASSEX);
-		windclass.cbWndExtra=0;
-		windclass.hbrBackground=(HBRUSH)16;
-		windclass.hCursor=LoadCursor(NULL, NULL);
-		windclass.hInstance=instance;
-		windclass.lpfnWndProc=WndProc;
-		windclass.lpszClassName=name.c_str();
-		windclass.lpszMenuName=NULL;
-		windclass.hIcon=(HICON)0;
-		windclass.hIconSm=(HICON)0;
-		windclass.style=3;
-		ATOM ret=RegisterClassEx(&windclass);
+		windclass.cbClsExtra = 0;
+		windclass.cbSize = sizeof(WNDCLASSEX);
+		windclass.cbWndExtra = 0;
+		windclass.hbrBackground = (HBRUSH)16;
+		windclass.hCursor = LoadCursor(NULL, NULL);
+		windclass.hInstance = instance;
+		windclass.lpfnWndProc = WndProc;
+		windclass.lpszClassName = name.c_str();
+		windclass.lpszMenuName = NULL;
+		windclass.hIcon = (HICON)0;
+		windclass.hIconSm = (HICON)0;
+		windclass.style = 3;
+		ATOM ret = RegisterClassEx(&windclass);
 
-		if(ret==0) {
+		if(ret == 0) {
 			throw std::runtime_error("Cannot create window");
 		}
 
@@ -363,9 +363,56 @@ namespace Gorgon {
 
 		createglcontext();
 	}
-	
+
 	Window::Window(const FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
+		windows.Add(this);
+		static bool quit = false;
+
+		WNDCLASSEX wc;
+		HINSTANCE instance;
+		HWND hwnd;
+		MSG msg;
+		bool visible = true;
+		ZeroMemory(&msg, sizeof(MSG));
+
+		instance = GetModuleHandle(NULL);
 		
+		wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+		wc.lpfnWndProc = WndProc;
+		wc.cbClsExtra = 0;
+		wc.cbWndExtra = 0;
+		wc.hInstance = instance;
+		wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
+		wc.hIconSm = wc.hIcon;
+		wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wc.hbrBackground = (HBRUSH)COLOR_WINDOWFRAME;
+		wc.lpszMenuName = NULL;
+		wc.lpszClassName = name.c_str();
+		wc.cbSize = (unsigned int)sizeof(WNDCLASSEX);
+
+		RegisterClassExA(&wc);
+
+		hwnd = CreateWindowEx(WS_EX_APPWINDOW, 
+			name.c_str(), title.c_str(), 
+			WS_OVERLAPPED | WS_POPUP, 0, 0, 
+			(int)GetSystemMetrics(SM_CXSCREEN), 
+			(int)GetSystemMetrics(SM_CYSCREEN), 
+			NULL, NULL, instance, NULL);
+
+		if (hwnd == INVALID_HANDLE_VALUE) {
+			throw std::runtime_error("Cannot create window");
+		}
+
+		SetWindowPos(hwnd, 0, 0, 0, (int)GetSystemMetrics(SM_CXSCREEN), (int)GetSystemMetrics(SM_CYSCREEN), 0);
+		ShowWindow(hwnd, SW_SHOW);
+		SetForegroundWindow(hwnd);
+		SetFocus(hwnd);
+		UpdateWindow(hwnd);
+
+		data->handle = hwnd;
+		data->device_context = GetDC(data->handle);
+		internal::windowdata::mapping[hwnd] = data;
+
 	}
 	
 	Window::~Window() {

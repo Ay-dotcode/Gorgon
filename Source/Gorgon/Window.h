@@ -26,9 +26,9 @@ namespace Gorgon {
 		friend struct internal::windowdata;
 	public:
 		/// Fullscreen tag
-		static const 
-		struct FullscreenTag {
-		} Fullscreen;
+		static const struct FullscreenTag {
+			
+		}Fullscreen;
 		
 		/// Creates a new window
 		/// @param  rect the position and the **interior** size of the window unless
