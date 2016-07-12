@@ -5,6 +5,7 @@
 #include "../String.h"
 #include <stdint.h>
 #include <stdexcept>
+#include <cmath>
 
 //TODO uncomment
 //#include "../Widgets/Dialogs/Message.h"

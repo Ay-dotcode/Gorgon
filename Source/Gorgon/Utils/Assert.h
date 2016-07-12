@@ -87,7 +87,10 @@ namespace Gorgon {
 				Console::Reset();
 				if(!dumponly) {
 #ifdef TEST
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wterminate"
 					throw AssertationException(message);
+#pragma GCC diagnostic pop
 #else
 					exit(1);
 #endif

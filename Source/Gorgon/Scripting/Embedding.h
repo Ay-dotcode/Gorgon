@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <type_traits>
+#include <cmath>
 
 #include "Reflection.h"
 #include "VirtualMachine.h"
@@ -1814,7 +1815,7 @@ namespace Scripting {
 							MapFunction(
 								[](E_ e) -> std::string {
 									unsigned val=(unsigned)e;
-									unsigned digits=int(log2((double)val)+1);
+									unsigned digits=int(std::log2((double)val)+1);
 									std::string ret(' ', digits);
 									for(unsigned i=0;i<digits;i++) {
 										ret[digits-i-1]=val&1 ? '1':'0';

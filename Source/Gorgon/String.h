@@ -517,25 +517,25 @@ namespace Gorgon {
 			/// None, no line endings
 			None = 0,
 
-			/// line feed \x0a
+			/// line feed \\x0a
 			LF = 1,
 
-			/// line feed \x0a
+			/// line feed \\x0a
 			Unix = 1,
 
-			/// carriage return \x0d
+			/// carriage return \\x0d
 			CR = 2,
 
-			/// carriage return \x0d
+			/// carriage return \\x0d
 			Mac = 2,
 
-			/// \x0d\x0a
+			/// \\x0d\\x0a
 			CRLF = 3,
 
-			/// \x0d\x0a
+			/// \\x0d\\x0a
 			Standard = 3,
 
-			/// \x0d\x0a
+			/// \\x0d\\x0a
 			Windows = 3,
 
 			/// When there are multiple types of line endings present

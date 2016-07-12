@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <cmath>
 
 #include "../Animation.h"
 #include "../Time.h"
