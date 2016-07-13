@@ -400,7 +400,7 @@ namespace Gorgon {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
-				return data[p];
+				return data[p*channels.size() + ch];
 			}
 
 			/// Returns the size of the wave

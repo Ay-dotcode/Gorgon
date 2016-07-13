@@ -73,6 +73,15 @@ namespace Audio {
 			return channels[index];
 		}
 		
+		/// Returns the index of the given type of channel. If that channel type does not exists, -1 is returned.
+		int FindChannel(Channel type) const {
+            for(int i = 0; i<(int)channels.size(); i++)
+                if(type==channels[i])
+                    return i;
+                
+            return -1;
+        }
+		
 		/// Returns if this is a valid device
 		bool IsValid() const {
 			return rate != 0;

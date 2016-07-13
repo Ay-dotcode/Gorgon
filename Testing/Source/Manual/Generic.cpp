@@ -54,24 +54,24 @@ try {
 	float amp = 0.5;
 	float pi = 3.1415f;
 	
-	Containers::Wave wave(duration * rate, rate/*, {Audio::Channel::Mono, Audio::Channel::LowFreq}*/);
+	Containers::Wave wave(duration * rate, rate, {Audio::Channel::LowFreq, Audio::Channel::FrontRight});
 	
-	Containers::Wave wave2(duration * rate * 2, rate/*, {Audio::Channel::Mono, Audio::Channel::LowFreq}*/);
+	Containers::Wave wave2(duration * rate * 2, rate, {Audio::Channel::FrontLeft});
 	
 	int ind = 0;
 	for(auto elm : wave) {
 		elm[0] = amp*sin(2*pi*ind/(rate/freq));
-		//elm[1] = 0.2*sin(0.2*pi*ind/(rate/freq));
+		elm[1] = amp*sin(4*pi*ind/(rate/freq));
 		ind++;
 		ind = ind % (rate/freq);
 		/*if(ind == 0)
 			freq++;*/
 	}
 	
-	freq = 320;
+	freq = 100;
 	ind = 0;
 	for(auto elm : wave2) {
-		elm[0] = 0.1*amp*sin(2*pi*ind/(rate/freq));
+		elm[0] = amp*amp*sin(2*pi*ind/(rate/freq));
 		ind++;
 		ind = ind % (rate/freq);
 	}
@@ -84,6 +84,7 @@ try {
 	
 	while(1) {
 		NextFrame();
+        std::this_thread::yield();
 	}
 	
 	return 0;
