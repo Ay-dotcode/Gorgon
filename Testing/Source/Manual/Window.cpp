@@ -10,21 +10,21 @@
 int main() {
 	
 	Gorgon::Initialize("Window-test");
-	Gorgon::Window wind(Gorgon::Window::Fullscreen, "windowtest");
+	Gorgon::Window wind({200,200}, "windowtest");
 	Gorgon::Graphics::Initialize();
 
 	Gorgon::Graphics::Layer l;
 	wind.Add(l);
 
-	Gorgon::Resource::Image *img=new Gorgon::Resource::Image;
-	img->ImportPNG("test.png");
+	Gorgon::Graphics::Bitmap img;
+	img.ImportPNG("test.png");
 
-	img->Prepare();
+	img.Prepare();
 
-	img->Draw(l, {0,0});
+	img.Draw(l, {0,0});
 	
 	wind.KeyEvent.Register([](Gorgon::Input::Key key, float amount) {
-		if (key == 27)
+		if (key == 27 || key == 65307)
 			exit(0);
 		return false;
 	});

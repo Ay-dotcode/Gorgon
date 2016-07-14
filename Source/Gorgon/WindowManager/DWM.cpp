@@ -395,7 +395,7 @@ namespace Gorgon {
 		hwnd = CreateWindowEx(WS_EX_APPWINDOW, 
 			name.c_str(), title.c_str(), 
 			WS_OVERLAPPED | WS_POPUP, 0, 0, 
-			(int)GetSystemMetrics(SM_CXSCREEN)-200, 
+			(int)GetSystemMetrics(SM_CXSCREEN),
 			(int)GetSystemMetrics(SM_CYSCREEN), 
 			NULL, NULL, instance, NULL);
 

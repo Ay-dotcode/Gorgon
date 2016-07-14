@@ -77,6 +77,8 @@ namespace Gorgon { namespace GL {
 			return GL_ALPHA;
 		case Graphics::ColorMode::Grayscale_Alpha:
 			return GL_LUMINANCE_ALPHA;
+		case Graphics::ColorMode::Grayscale:
+			return GL_LUMINANCE;
 		case Graphics::ColorMode::BGR:
 			return GL_BGR;
 		case Graphics::ColorMode::RGB:
@@ -91,6 +93,10 @@ namespace Gorgon { namespace GL {
 	}
 
 	void settexturedata(Texture tex, const Containers::Image &data) {
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        
 		glBindTexture(GL_TEXTURE_2D, tex);
 
 		GLenum colormode=getGLColorMode(data.GetMode());
@@ -100,9 +106,6 @@ namespace Gorgon { namespace GL {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, 0x0);
 		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
 		glTexImage2D(GL_TEXTURE_2D, 0, Graphics::GetBytesPerPixel(data.GetMode()), data.GetSize().Width, data.GetSize().Height, 0,
 			colormode, GL_UNSIGNED_BYTE, data.RawData());
