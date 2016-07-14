@@ -410,7 +410,7 @@ namespace Gorgon {
 			
 			/// Returns the length of the wave data in seconds
 			float GetLength() const {
-				return (double)size/samplerate;
+				return float((double)size/samplerate);
 			}
 			
 			/// Returns the number of channels that this wave data has.
@@ -420,7 +420,7 @@ namespace Gorgon {
 
 			/// Returns the type of the channel at the given index
 			Audio::Channel GetChannelType(int channel) const {
-				if(channel<0 || channel>=channels.size())
+				if(channel<0 || channel>=(int)channels.size())
 					return Audio::Channel::Unknown;
 				
 				return channels[channel];
@@ -428,7 +428,7 @@ namespace Gorgon {
 			
 			/// Returns the index of the given channel. If the given channel does not exists, this function returns -1
 			int FindChannel(Audio::Channel channel) const {
-				for(int i=0; i<channels.size(); i++)  {
+				for(int i=0; i<(int)channels.size(); i++)  {
 					if(channels[i] == channel) return i;
 				}
 				

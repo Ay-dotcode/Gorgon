@@ -69,6 +69,12 @@ public:
 	int bb;
 };
 
+std::ostream &operator <<(std::ostream &out, A a) {
+	out<<a.bb;
+
+	return out;
+}
+
 
 int bcount=0;
 
@@ -95,6 +101,12 @@ public:
 	
 	int bb;
 };
+
+std::ostream &operator <<(std::ostream &out, B a) {
+	out<<a.bb;
+
+	return out;
+}
 
 TEST_CASE("Scripts", "[scripting]") {
 	std::string scriptdir="../Source/Unit/Scripts";

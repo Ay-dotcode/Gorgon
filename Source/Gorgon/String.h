@@ -10,6 +10,7 @@
 #include <algorithm>
 #include "String/Exceptions.h"
 #include "Enum.h"
+#undef decltype
 
 namespace Gorgon { 
 	
@@ -27,7 +28,7 @@ namespace Gorgon {
 					char a[2];
 				};
 
-				template <typename C> static one test( decltype(((C*)(nullptr))->operator std::string()) aa ) {return one();}
+				template <typename C> static one test(decltype((declval(C*))->operator std::string()) aa ) {return one();}
 				template <typename C> static two test(...){return two();}
 
 			public:

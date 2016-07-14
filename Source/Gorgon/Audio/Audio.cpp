@@ -7,6 +7,9 @@
 #ifdef AUDIO_PULSE
 #	include "PulseAudio.inc.h"
 #endif
+#ifdef AUDIO_WASAPI
+#	include "WASAPI.inc.h"
+#endif
 
 namespace Gorgon { namespace Audio {
 	
@@ -64,11 +67,14 @@ namespace Gorgon { namespace Audio {
 		int channels = Current.GetChannelCount();
 		int datasize = channels * internal::BufferSize;
 		
-		float data[datasize];
+		float *data  = (float*)malloc(datasize*sizeof(float));
+
 		int   freq 		   = Current.GetSampleRate();
 		float secpersample = 1.0f / freq;
 		
-// 		std::ofstream test("test.csv");
+		std::shared_ptr<float> tempmemory(data, free);
+
+		//std::ofstream test("test.csv");
 		
 		while(true) {
 			int maxsize, size;
@@ -99,7 +105,7 @@ namespace Gorgon { namespace Audio {
 					
 					if(!basic.wavedata) continue;
 					
-					if(basic.wavedata->GetSize() < internal::BufferSize) continue;
+					if((int)basic.wavedata->GetSize() < internal::BufferSize) continue;
 					
 					auto wavedata = basic.wavedata;
 					
@@ -128,10 +134,10 @@ namespace Gorgon { namespace Audio {
                         recalculate:
                             float pos     = basic.position * wavedata->GetSampleRate();
                             
-                            int x1 = pos    ;
-                            int x2 = pos + 1;
+                            int x1 = (int)pos      ;
+                            int x2 = (int)(pos + 1);
                             
-                            if(x1 >= wavedata->GetSize()) {
+                            if(x1 >= (int)wavedata->GetSize()) {
                                 if(outofbounds()) goto recalculate;
                                 else break;
                             }
@@ -141,7 +147,7 @@ namespace Gorgon { namespace Audio {
                             
                             float val;
                             
-                            if(x2 >= wavedata->GetSize()) {
+                            if(x2 >= (int)wavedata->GetSize()) {
                                 // multiplication with basic.looping is for branch elimination. Basically, if the audio is not looping
                                 // last few values will not be interpolated but faded out.
                                 val = internal::mastervolume * basic.volume * ( x1r * wavedata->Get(x1, ind) + basic.looping * x2r * wavedata->Get(0, ind));
@@ -167,10 +173,10 @@ namespace Gorgon { namespace Audio {
                         recalculate:
                             float pos     = basic.position * wavedata->GetSampleRate();
                             
-                            int x1 = pos    ;
-                            int x2 = pos + 1;
+                            int x1 = (int)pos      ;
+                            int x2 = (int)(pos + 1);
                             
-                            if(x1 >= wavedata->GetSize()) {
+                            if(x1 >= (int)wavedata->GetSize()) {
                                 if(outofbounds()) goto recalculate;
                                 else break;
                             }
@@ -180,7 +186,7 @@ namespace Gorgon { namespace Audio {
                             
                             float val;
                             
-                            if(x2 >= wavedata->GetSize()) {
+                            if(x2 >= (int)wavedata->GetSize()) {
                                 // multiplication with basic.looping is for branch elimination. Basically, if the audio is not looping
                                 // last few values will not be interpolated but faded out.
                                 val = ( x1r * wavedata->Get(x1, src) + basic.looping * x2r * wavedata->Get(0, src));
@@ -195,7 +201,7 @@ namespace Gorgon { namespace Audio {
                         }
                     };
                     
-                    for(int c = 0; c<wavedata->GetChannelCount(); c++) {
+                    for(unsigned c = 0; c<wavedata->GetChannelCount(); c++) {
                         auto channel = wavedata->GetChannelType(c);
 
                         if(channel == Channel::Mono) { //* Mono is distributed to all channels

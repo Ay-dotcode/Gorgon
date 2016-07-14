@@ -10,6 +10,7 @@
 #include "Animation.h"
 #include "Resource.h"
 #include "Audio.h"
+#include "Graphics.h"
 
 #ifdef SCRIPTING
 #	include "Scripting.h"

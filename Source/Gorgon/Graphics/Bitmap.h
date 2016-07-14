@@ -14,7 +14,7 @@ namespace Gorgon { namespace Graphics {
 	/// might be released from the image.
 	class Bitmap : 
 		public virtual Graphics::RectangularAnimationProvider, public virtual Graphics::Image,
-		public virtual Graphics::RectangularAnimation, private virtual Graphics::Texture, public virtual Graphics::TextureSource
+		public virtual Graphics::RectangularAnimation, protected virtual Graphics::Texture, public virtual Graphics::TextureSource
 	{
 	public:
 

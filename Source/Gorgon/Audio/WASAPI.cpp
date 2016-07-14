@@ -24,8 +24,8 @@ namespace Gorgon { namespace Audio {
 		}
 
 		hr = CoCreateInstance(
-			CLSID_MMDeviceEnumerator, NULL,
-			CLSCTX_ALL, IID_IMMDeviceEnumerator,
+			__uuidof(MMDeviceEnumerator), NULL,
+			CLSCTX_ALL, __uuidof(IMMDeviceEnumerator),
 			(void**)&Enumerator);
 
 		if(FAILED(hr)) {

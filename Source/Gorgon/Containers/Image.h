@@ -196,6 +196,7 @@ namespace Gorgon {
 				swap(size,   other.size);
 				swap(bpp,    other.bpp);
 				swap(data,   other.data);
+				swap(mode,   other.mode);
 			}
 
 			/// Returns the raw data pointer
