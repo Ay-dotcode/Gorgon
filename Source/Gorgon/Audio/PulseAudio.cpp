@@ -242,7 +242,7 @@ namespace Gorgon { namespace Audio {
 			channels.push_back(convertpachannel(l->channel_map.map[i]));
 		}
 		
-		tempdevices.push_back(Device(l->name, l->description, l->sample_spec.rate, format, channels));
+		tempdevices.push_back(Device(l->name, l->description, l->sample_spec.rate, format, false, channels));
 		
 		Log << "Found device: "<<l->name;
 	}

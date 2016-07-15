@@ -536,7 +536,7 @@ namespace Gorgon {
                         file.seekg(skip, std::ios::cur);
                 }
                 
-                if(file.tellg() != target) return false;
+                if((long)file.tellg() != target) return false;
                 
                 return true;
             }

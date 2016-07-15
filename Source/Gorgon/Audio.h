@@ -38,7 +38,7 @@ namespace Audio {
 		
 		Device() = default;
 		
-		Device(const std::string &id, const std::string &name, int rate, Format format, const std::vector<Channel> &channels) : 
+		Device(const std::string &id, const std::string &name, int rate, Format format, bool headphones, const std::vector<Channel> &channels) : 
 		name(name), id(id), rate(rate), format(format), channels(channels) 
 		{ }
 		
@@ -86,6 +86,11 @@ namespace Audio {
 		bool IsValid() const {
 			return rate != 0;
 		}
+
+		/// Returns if this device is connected to headphones
+		bool IsHeadphones() const {
+			return headphones;
+		}
 		
 		/// Returns the devices in the current system
 		static const std::vector<Device> &Devices() {
@@ -118,6 +123,8 @@ namespace Audio {
 	private:
 		std::string id;
 		std::string name;
+
+		bool headphones;
 		
 		int rate = 0;
 		Format format;
