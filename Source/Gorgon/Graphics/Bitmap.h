@@ -297,12 +297,12 @@ namespace Gorgon { namespace Graphics {
 
 		/// Imports a JPEG file to become the new data of this image resource. Notice that importing does not
 		/// prepare the data to be drawn, a separate call to Prepare function is necessary
-		void ImportJPEG(const std::string &filename);
+		bool ImportJPEG(const std::string &filename);
 
 		/// Imports an image file to become the new data of this image resource. Type of the image is determined
 		/// from the extension. If the extension is not available please use either ImportPNG or ImportJPEG functions.
 		/// Notice that importing does not prepare the data to be drawn, a separate call to Prepare function is necessary
-		void Import(const std::string &filename);
+		bool Import(const std::string &filename);
 
 		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it.

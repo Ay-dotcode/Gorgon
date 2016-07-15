@@ -41,7 +41,7 @@ int main() {
 try {
 	//Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
-	
+	system("pwd");
 
 	auto &devices = Audio::Device::Devices();
 	for(auto dev : devices) {
@@ -56,8 +56,6 @@ try {
 	
 	Containers::Wave wave(duration * rate, rate, {Audio::Channel::LowFreq, Audio::Channel::FrontRight});
 	
-	Containers::Wave wave2(duration * rate * 2, rate, {Audio::Channel::FrontLeft});
-	
 	int ind = 0;
 	for(auto elm : wave) {
 		elm[0] = amp*sin(2*pi*ind/(rate/freq));
@@ -68,16 +66,12 @@ try {
 			freq++;*/
 	}
 	
-	freq = 100;
-	ind = 0;
-	for(auto elm : wave2) {
-		elm[0] = amp*amp*sin(2*pi*ind/(rate/freq));
-		ind++;
-		ind = ind % (rate/freq);
-	}
+	Containers::Wave wave2;
+    std::cout<<wave2.ImportWav("test.wav")<<std::endl;
+	
 	
 	Audio::BasicController c(wave);
-	c.Loop();
+	//c.Loop();
 	
 	Audio::BasicController c2(wave2);
 	c2.Play();

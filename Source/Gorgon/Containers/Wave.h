@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <fstream>
+#include <string>
 
 #include "../Types.h"
 #include "../Geometry/Point.h"
@@ -8,6 +10,7 @@
 #include "../Graphics/Color.h"
 
 #include "../Audio/Basic.h"
+#include "../IO/Stream.h"
 
 namespace Gorgon {
 	namespace Containers {
@@ -225,16 +228,12 @@ namespace Gorgon {
 				
 				this->channels = std::move(channels);
 
-				// Check if resize is really necessary
-				if(this->size == size)
-					return;
-
 				this->size = size;
 
 				if(data) {
 					free(data);
 				}
-				data = (float*)malloc(size * channels.size() * sizeof(float));
+				data = (float*)malloc(size * this->channels.size() * sizeof(float));
 			}
 
 			/// Resizes the wave to the given size. This function discards the contents
@@ -444,6 +443,103 @@ namespace Gorgon {
 			void SetSampleRate(unsigned rate) {
 				samplerate = rate;
 			}
+			
+			/// Imports a PCM based wav file. Leave channels empty to determine them automatically.
+			bool ImportWav(const std::string &filename, std::vector<Audio::Channel> channels = {}) {
+                std::ifstream file(filename, std::ios::binary);
+                
+                if(!file.is_open()) return false;
+                
+                if(IO::ReadString(file, 4) != "RIFF") return false;
+                
+                if(IO::ReadInt32(file) <= 36) return false;
+                
+                if(IO::ReadString(file, 4) != "WAVE") return false;
+               
+                if(IO::ReadString(file, 4) != "fmt ") return false;
+                
+                if(IO::ReadInt32(file) != 16) return false;
+                
+                if(IO::ReadInt16(file) != 1) return false; //must be PCM
+                
+                int channelcnt = IO::ReadInt16(file);
+                samplerate     = IO::ReadInt32(file);                
+                int byterate   = IO::ReadInt32(file);                
+                int blocksize  = IO::ReadInt16(file);                
+                int samplesize = IO::ReadInt16(file);
+                
+                if(samplesize != 8 && samplesize !=16) return false;
+                
+                if(byterate != samplerate*channelcnt*samplesize/8) return false;
+                
+                if(blocksize == 0) blocksize = byterate;
+                
+                if(channels.size() == 0) {
+                    if(channelcnt == 1) {
+                        channels = {Audio::Channel::Mono};
+                    }
+                    else {
+                        channels = {Audio::Channel::FrontLeft, Audio::Channel::FrontRight};
+                        
+                        if(channelcnt > 2) {
+                            channels.push_back(Audio::Channel::Center);
+                        }
+                        
+                        if(channelcnt > 3) {
+                            channels.push_back(Audio::Channel::LowFreq);
+                        }
+                        
+                        if(channelcnt > 4) {
+                            channels.push_back(Audio::Channel::BackLeft);
+                        }
+                        
+                        if(channelcnt > 5) {
+                            channels.push_back(Audio::Channel::BackRight);
+                        }
+                        
+                        if(channelcnt > 6) {
+                            channelcnt = 6;
+                            byterate  = samplerate * channelcnt * samplesize / 8;
+                        }
+                    }
+                }
+                else if(channels.size() != channelcnt) 
+                    return false;
+                
+                if(IO::ReadString(file, 4) != "data") return false;
+
+                int skip = blocksize - byterate / samplerate;
+                
+                int size = IO::ReadInt32(file);
+
+                Resize(size / blocksize, channels);
+                
+                auto target = file.tellg() + size;
+                
+                float *ptr = data;
+                
+                if(!file) return false;
+                        
+                while(!file.eof() && file.tellg() < target) {
+                    for(int c = 0; c<channelcnt; c++) {
+                        if(samplesize == 8) {
+                            *ptr++ = (IO::ReadUInt8(file) / 255.f) * 2.f - 1.f;
+                        }
+                        else {
+                            *ptr++ = IO::ReadInt16(file) / 32768.f;
+                        }
+
+                        if(!file) return false;
+                    }
+                    
+                    if(skip != 0)
+                        file.seekg(skip, std::ios::cur);
+                }
+                
+                if(file.tellg() != target) return false;
+                
+                return true;
+            }
 			
 			Iterator begin() {
 				return {data, channels.size()};

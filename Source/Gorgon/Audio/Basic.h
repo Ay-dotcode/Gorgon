@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Enum.h"
+#include "../String.h"
 
 namespace Gorgon { namespace Audio {
 	/// Sample format. For now only Float will be used and all conversions are done

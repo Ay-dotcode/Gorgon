@@ -245,6 +245,11 @@ inline long operator +(const std::streampos &l, long r) {
 	return (long)l + r;
 }
 
+/// Adds an integer to streampos
+inline long operator +(const std::streampos &l, int r) {
+	return (long)l + r;
+}
+
 /// Adds an unsigned integer to streampos
 inline unsigned long operator +(const std::streampos &l, unsigned long r) {
 	return (unsigned long)l + r;

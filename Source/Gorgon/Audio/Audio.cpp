@@ -267,7 +267,7 @@ namespace Gorgon { namespace Audio {
                                 }
                             }
                             else {
-                                Log << "Unknown channel type: " << channel;
+                                Log << "Unknown channel type: " << String::From(channel);
                             }
                         }
                     }
