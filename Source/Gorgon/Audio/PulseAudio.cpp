@@ -216,6 +216,8 @@ namespace Gorgon { namespace Audio {
 		
 		//done
 		Log << "Pulse audio is ready over "<<name<<" device and available.";
+
+		available = true;
 	}
 	
 	static std::vector<Device> tempdevices;

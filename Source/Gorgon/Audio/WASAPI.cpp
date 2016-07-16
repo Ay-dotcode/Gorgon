@@ -12,31 +12,19 @@
 
 namespace Gorgon { namespace Audio {
 
-	IMMDeviceEnumerator *Enumerator = NULL;
+	IMMDeviceEnumerator *Enumerator = nullptr;
+	IMMDevice *Device = nullptr;
+	IAudioClient *AudioClient = nullptr;
+	IAudioRenderClient *RenderClient = nullptr;
 	bool available = false;
 
-	void Initialize() {
-		HRESULT hr;
+	constexpr int REFTIMES_PER_SECONDS = 10000000;
 
-		hr = CoInitialize(NULL);
+	namespace internal {
+		extern std::thread audiothread;
 
-		if(FAILED(hr)) {
-			Log << "Cannot initialize COM subsystem.";
-			return;
-		}
-
-		hr = CoCreateInstance(
-			__uuidof(MMDeviceEnumerator), NULL,
-			CLSCTX_ALL, __uuidof(IMMDeviceEnumerator),
-			(void**)&Enumerator);
-
-		if(FAILED(hr)) {
-			Log << "Cannot create enumerator.";
-			return;
-		}
-
-		Device::Refresh();
-
+		extern int   BufferSize;
+		extern float BufferDuration;
 	}
 
 	std::vector<Channel> ToChannels(unsigned f) {
@@ -66,6 +54,126 @@ namespace Gorgon { namespace Audio {
 		return channels;
 	}
 
+	std::vector<Channel> StandardChannels(int channelcount) {
+		std::vector<Channel> channels;
+		switch(channelcount) {
+			case 1:
+				return {Channel::Mono};
+			case 2:
+				return {Channel::FrontLeft, Channel::FrontRight};
+			case 3:
+				return {Channel::FrontLeft, Channel::FrontRight, Channel::Center};
+			case 4:
+				return {Channel::FrontLeft, Channel::FrontRight, Channel::BackLeft, Channel::BackRight};
+			case 5:
+				return {Channel::FrontLeft, Channel::FrontRight, Channel::Center, Channel::BackLeft, Channel::BackRight};
+			case 6:
+				return {Channel::FrontLeft, Channel::FrontRight, Channel::Center, Channel::LowFreq, Channel::BackLeft, Channel::BackRight};
+			default:
+				return {};
+		}
+	}
+
+	void Initialize() {
+		HRESULT hr;
+
+		hr = CoInitialize(NULL);
+
+		if(FAILED(hr)) {
+			Log << "Cannot initialize COM subsystem.";
+			return;
+		}
+
+		hr = CoCreateInstance(
+			__uuidof(MMDeviceEnumerator), NULL,
+			CLSCTX_ALL, __uuidof(IMMDeviceEnumerator),
+			(void**)&Enumerator);
+
+		if(FAILED(hr)) {
+			Log << "Cannot create enumerator.";
+			return;
+		}
+
+		hr = Enumerator->GetDefaultAudioEndpoint(
+			eRender, eConsole, &Device);
+
+		if(FAILED(hr)) {
+			Log << "Cannot get default device.";
+			return;
+		}
+
+		hr = Device->Activate(
+			__uuidof(IAudioClient), CLSCTX_ALL,
+			NULL, (void**)&AudioClient);
+
+
+		if(FAILED(hr)) {
+			Log << "Cannot activate default device.";
+			return;
+		}
+
+		WAVEFORMATEX *wavefmt;
+
+		hr = AudioClient->GetMixFormat(&wavefmt);
+
+		if(FAILED(hr)) {
+			Log << "Cannot get playback format.";
+			return;
+		}
+
+		if(wavefmt->wFormatTag != WAVE_FORMAT_EXTENSIBLE) {
+			Log << "Unexpected device format.";
+			return;
+		}
+
+		WAVEFORMATEXTENSIBLE *fmt = (WAVEFORMATEXTENSIBLE *)wavefmt;
+
+		fmt->SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+
+		hr = AudioClient->Initialize(
+			AUDCLNT_SHAREMODE_SHARED,
+			0,
+			long(internal::BufferDuration * REFTIMES_PER_SECONDS),
+			0,
+			wavefmt,
+			NULL
+		);
+
+		if(FAILED(hr)) {
+			Log << "Cannot initialize audio client.";
+			return;
+		}
+
+		hr = AudioClient->GetService(
+			__uuidof(IAudioRenderClient),
+			(void**)&RenderClient);
+
+		if(FAILED(hr)) {
+			Log << "Cannot get audio stream.";
+			return;
+		}
+
+		// Get the actual size of the allocated buffer.
+		UINT32 bs = 0;
+		hr = AudioClient->GetBufferSize(&bs);
+
+		internal::BufferSize = bs;
+		
+		if(FAILED(hr) || bs == 0) {
+			Log << "Cannot obtain audio buffer size.";
+			return;
+		}
+
+		//** Create default device.
+
+		Log << "WASAPI Audio subsystem is ready.";
+
+		available = true;
+
+		Device::Refresh();
+
+	}
+
 	void Device::Refresh() {
 		//for wstring conversion
 		using convert_type=std::codecvt_utf8<wchar_t>;
@@ -74,6 +182,19 @@ namespace Gorgon { namespace Audio {
 		HRESULT hr;
 
 		IMMDeviceCollection *devs = nullptr;
+
+		IMMDevice *defaultdev = nullptr;
+		hr = Enumerator->GetDefaultAudioEndpoint(
+			eRender, eConsole, &defaultdev);
+
+		std::string defaultdevid;
+
+		wchar_t *id = nullptr;
+		defaultdev->GetId(&id);
+		if(id!=nullptr) {
+			defaultdevid = converter.to_bytes(id);
+			CoTaskMemFree(id);
+		}
 
 		devices.clear();
 
@@ -139,26 +260,7 @@ namespace Gorgon { namespace Audio {
 					channels = ToChannels(efmt.dwChannelMask);
 				}
 				else {
-					switch(fmt.nChannels) {
-					case 1:
-						channels ={Channel::Mono};
-						break;
-					case 2:
-						channels ={Channel::FrontLeft, Channel::FrontRight};
-						break;
-					case 3:
-						channels ={Channel::FrontLeft, Channel::FrontRight, Channel::Center};
-						break;
-					case 4:
-						channels ={Channel::FrontLeft, Channel::FrontRight, Channel::BackLeft, Channel::BackRight};
-						break;
-					case 5:
-						channels ={Channel::FrontLeft, Channel::FrontRight, Channel::Center, Channel::BackLeft, Channel::BackRight};
-						break;
-					case 6:
-						channels ={Channel::FrontLeft, Channel::FrontRight, Channel::Center, Channel::LowFreq, Channel::BackLeft, Channel::BackRight};
-						break;
-					}
+					channels = StandardChannels(fmt.nChannels);
 				}
 			}
 
@@ -167,11 +269,19 @@ namespace Gorgon { namespace Audio {
 				Format::Float, headphones, channels
 			));
 
+			if(devid == defaultdevid)
+				def = devices.back();
+
 			dev->Release();
 			props->Release();
 		}
 
 		devs->Release();
+	}
+
+
+	bool IsAvailable() {
+		return available;
 	}
 
 } }

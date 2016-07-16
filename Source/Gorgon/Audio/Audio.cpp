@@ -23,7 +23,8 @@ namespace Gorgon { namespace Audio {
 	namespace internal {
 		std::thread audiothread;
 		
-		int BufferSize = 400;
+		float BufferDuration = 0.009; //in seconds
+		int   BufferSize     = 0; //filled by audio loop
 		
 		float mastervolume = 1;
 		std::vector<float> volume = {1.f, 1.f};
@@ -63,14 +64,16 @@ namespace Gorgon { namespace Audio {
 	
 	void AudioLoop() {
 		Log << "Audio loop started";
-		
+
+		int   freq 		   = Current.GetSampleRate();
+		float secpersample = 1.0f / freq;
+
+		internal::BufferSize = freq * internal::BufferDuration;
+
 		int channels = Current.GetChannelCount();
 		int datasize = channels * internal::BufferSize;
 		
 		float *data  = (float*)malloc(datasize*sizeof(float));
-
-		int   freq 		   = Current.GetSampleRate();
-		float secpersample = 1.0f / freq;
 		
 		std::shared_ptr<float> tempmemory(data, free);
 

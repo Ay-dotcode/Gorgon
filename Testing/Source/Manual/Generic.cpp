@@ -39,7 +39,7 @@ struct teststruct {
 
 int main() {
 try {
-	//Audio::Log.InitializeConsole();
+	Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
 	system("pwd");
 
