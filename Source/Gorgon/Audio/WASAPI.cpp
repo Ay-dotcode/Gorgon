@@ -13,7 +13,7 @@
 namespace Gorgon { namespace Audio {
 
 	IMMDeviceEnumerator *Enumerator = nullptr;
-	IMMDevice *Device = nullptr;
+	IMMDevice *CurrentDevice = nullptr;
 	IAudioClient *AudioClient = nullptr;
 	IAudioRenderClient *RenderClient = nullptr;
 	bool available = false;
@@ -74,6 +74,69 @@ namespace Gorgon { namespace Audio {
 		}
 	}
 
+	Device GetDevice(IMMDevice *dev) {
+		using convert_type=std::codecvt_utf8<wchar_t>;
+		std::wstring_convert<convert_type, wchar_t> converter;
+
+		std::string devid, devname;
+		std::vector<Channel> channels;
+		bool headphones = false;
+
+		wchar_t *id = nullptr;
+		dev->GetId(&id);
+		if(id!=nullptr) {
+			devid = converter.to_bytes(id);
+			CoTaskMemFree(id);
+		}
+
+		IPropertyStore *props = nullptr;
+
+		dev->OpenPropertyStore(STGM_READ, &props);
+
+		if(props == nullptr) {
+			return {};
+		}
+
+		PROPVARIANT pv;
+
+		props->GetValue(PKEY_Device_FriendlyName, &pv);
+
+		devname = converter.to_bytes(pv.pwszVal);
+
+		props->GetValue(PKEY_AudioEndpoint_FormFactor, &pv);
+
+		if(pv.uintVal == 3) {
+			headphones=true;
+			channels ={Channel::FrontLeft, Channel::FrontRight};
+		}
+		else {
+			props->GetValue(PKEY_AudioEndpoint_PhysicalSpeakers, &pv);
+
+			channels = ToChannels(pv.uintVal);
+		}
+
+		props->GetValue(PKEY_AudioEngine_DeviceFormat, &pv);
+
+		auto fmt = *(WAVEFORMATEX*)pv.blob.pBlobData;
+
+		if(channels.size() == 0) {
+			if(fmt.wFormatTag==WAVE_FORMAT_EXTENSIBLE) {
+				auto efmt = *(WAVEFORMATEXTENSIBLE*)pv.blob.pBlobData;
+				channels = ToChannels(efmt.dwChannelMask);
+			}
+			else {
+				channels = StandardChannels(fmt.nChannels);
+			}
+		}
+
+		props->Release();
+
+		return Device(
+			devid, devname, fmt.nSamplesPerSec,
+			Format::Float, headphones, channels
+		);
+	}
+
 	void Initialize() {
 		HRESULT hr;
 
@@ -95,14 +158,14 @@ namespace Gorgon { namespace Audio {
 		}
 
 		hr = Enumerator->GetDefaultAudioEndpoint(
-			eRender, eConsole, &Device);
+			eRender, eConsole, &CurrentDevice);
 
 		if(FAILED(hr)) {
 			Log << "Cannot get default device.";
 			return;
 		}
 
-		hr = Device->Activate(
+		hr = CurrentDevice->Activate(
 			__uuidof(IAudioClient), CLSCTX_ALL,
 			NULL, (void**)&AudioClient);
 
@@ -164,14 +227,20 @@ namespace Gorgon { namespace Audio {
 			return;
 		}
 
-		//** Create default device.
+		Device::Refresh();
+
+		auto temp = GetDevice(CurrentDevice);
+		
+		Current = Device(
+			temp.GetID(), temp.GetName(),
+			fmt->Format.nSamplesPerSec,
+			Format::Float, temp.IsHeadphones(), 
+			ToChannels(fmt->dwChannelMask)
+		);
 
 		Log << "WASAPI Audio subsystem is ready.";
 
 		available = true;
-
-		Device::Refresh();
-
 	}
 
 	void Device::Refresh() {
@@ -212,68 +281,17 @@ namespace Gorgon { namespace Audio {
 			IMMDevice *dev = nullptr;
 			devs->Item(i, &dev);
 
-			std::string devid, devname;
-			std::vector<Channel> channels;
-			bool headphones = false;
-
-			wchar_t *id = nullptr;
-			dev->GetId(&id);
-			if(id!=nullptr) {
-				devid = converter.to_bytes(id);
-				CoTaskMemFree(id);
-			}
-
-			IPropertyStore *props = nullptr;
-
-			dev->OpenPropertyStore(STGM_READ, &props);
-
-			if(props == nullptr) {
-				dev->Release();
-				continue;
-			}
-
-			PROPVARIANT pv;
-
-			props->GetValue(PKEY_Device_FriendlyName, &pv);
-			
-			devname = converter.to_bytes(pv.pwszVal);
-
-			props->GetValue(PKEY_AudioEndpoint_FormFactor, &pv);
-
-			if(pv.uintVal == 3) {
-				headphones=true;
-				channels = {Channel::FrontLeft, Channel::FrontRight};
-			}
-			else {
-				props->GetValue(PKEY_AudioEndpoint_PhysicalSpeakers, &pv);
-
-				channels = ToChannels(pv.uintVal);
-			}
-
-			props->GetValue(PKEY_AudioEngine_DeviceFormat, &pv);
-
-			auto fmt = *(WAVEFORMATEX*)pv.blob.pBlobData;
-
-			if(channels.size() == 0) {
-				if(fmt.wFormatTag==WAVE_FORMAT_EXTENSIBLE) {
-					auto efmt = *(WAVEFORMATEXTENSIBLE*)pv.blob.pBlobData;
-					channels = ToChannels(efmt.dwChannelMask);
-				}
-				else {
-					channels = StandardChannels(fmt.nChannels);
-				}
-			}
-
-			devices.push_back(Device(
-				devid, devname, fmt.nSamplesPerSec, 
-				Format::Float, headphones, channels
-			));
-
-			if(devid == defaultdevid)
-				def = devices.back();
+			auto device = GetDevice(dev);
 
 			dev->Release();
-			props->Release();
+
+			if(device.id == "")
+				continue;
+
+			devices.push_back(device);
+
+			if(devices.back().id == defaultdevid)
+				def = devices.back();
 		}
 
 		devs->Release();

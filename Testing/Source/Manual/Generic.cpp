@@ -41,13 +41,18 @@ int main() {
 try {
 	Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
-	system("pwd");
 
 	auto &devices = Audio::Device::Devices();
 	for(auto dev : devices) {
 		std::cout<<dev.GetName()<<std::endl;
 	}
-	
+
+	std::cout<<std::endl<<"*** Current device ***"<<std::endl;
+	std::cout<<Audio::Current.GetName()<<std::endl;
+
+	std::cout<<std::endl<<"*** Default device ***"<<std::endl;
+	std::cout<<Audio::Device::Default().GetName()<<std::endl;
+
 	int freq = 200;
 	int rate = 8000;
 	float duration = 2;
