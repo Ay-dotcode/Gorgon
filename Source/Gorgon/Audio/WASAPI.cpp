@@ -18,6 +18,8 @@ namespace Gorgon { namespace Audio {
 	IAudioRenderClient *RenderClient = nullptr;
 	bool available = false;
 
+	void AudioLoop();
+
 	constexpr int REFTIMES_PER_SECONDS = 10000000;
 
 	namespace internal {
@@ -237,6 +239,19 @@ namespace Gorgon { namespace Audio {
 			Format::Float, temp.IsHeadphones(), 
 			ToChannels(fmt->dwChannelMask)
 		);
+
+		internal::volume.resize(Current.GetChannelCount());
+		for(auto &v : internal::volume) v = 1;
+
+		internal::audiothread = std::thread(&AudioLoop);
+		SetThreadPriority(internal::audiothread.native_handle(), THREAD_PRIORITY_HIGHEST);
+
+		hr = AudioClient->Start();
+
+		if(FAILED(hr)) {
+			Log << "Cannot start audio stream.";
+			return;
+		}
 
 		Log << "WASAPI Audio subsystem is ready.";
 

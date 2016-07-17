@@ -76,7 +76,7 @@ try {
 	
 	
 	Audio::BasicController c(wave);
-	//c.Loop();
+	c.Loop();
 	
 	Audio::BasicController c2(wave2);
 	c2.Play();

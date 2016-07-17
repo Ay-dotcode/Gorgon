@@ -23,7 +23,7 @@ namespace Gorgon { namespace Audio {
 	namespace internal {
 		std::thread audiothread;
 		
-		float BufferDuration = 0.009; //in seconds
+		float BufferDuration = 0.012f; //in seconds
 		int   BufferSize     = 0; //filled by audio loop
 		
 		float mastervolume = 1;
@@ -68,22 +68,20 @@ namespace Gorgon { namespace Audio {
 		int   freq 		   = Current.GetSampleRate();
 		float secpersample = 1.0f / freq;
 
-		internal::BufferSize = freq * internal::BufferDuration;
+		internal::BufferSize = int(freq * internal::BufferDuration);
 
 		int channels = Current.GetChannelCount();
 		int datasize = channels * internal::BufferSize;
 		
-		float *data  = (float*)malloc(datasize*sizeof(float));
-		
-		std::shared_ptr<float> tempmemory(data, free);
+		std::vector<float> data(datasize*sizeof(float));
 
 		//std::ofstream test("test.csv");
 		
 		while(true) {
 			int maxsize, size;
 
-			maxsize = GetWritableSize();
-			size    = maxsize / sizeof(float) / channels;
+			maxsize = GetWritableSize(channels);
+			size    = maxsize;
 			size    = std::min(size, internal::BufferSize);
 
 			if(!size) {
@@ -93,7 +91,7 @@ namespace Gorgon { namespace Audio {
 			}
 			
 			//zero out before starting
-			std::memset(data, 0, sizeof(float) * datasize);
+			std::memset(&data[0], 0, sizeof(float) * datasize);
 			
 			internal::ControllerMtx.lock();
 			
@@ -284,7 +282,7 @@ namespace Gorgon { namespace Audio {
 // 				test<<data[i*channels]<<"\n";
 // 			}
 			//std::cout<<"Done.."<<std::endl;
-			PostData(data, size*channels);
+			PostData(&data[0], size, channels);
 			std::this_thread::yield();
 		}
 	}
