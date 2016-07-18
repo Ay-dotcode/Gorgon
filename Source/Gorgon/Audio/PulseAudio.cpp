@@ -20,6 +20,10 @@ namespace Gorgon { namespace Audio {
 	bool available = false;
 	
 	
+	namespace internal {
+		extern float BufferDuration; //in seconds
+	}
+	
 	void AudioLoop();
 
 	enum { pa_waiting, pa_connected, pa_failed, pa_timeout, pa_ready } pa_state=pa_waiting;
@@ -174,7 +178,10 @@ namespace Gorgon { namespace Audio {
 			channels.push_back(convertpachannel(chmap->map[i]));
 		}		
 		
-		pa_stream_connect_playback(pa_strm, NULL, NULL, PA_STREAM_NOFLAGS, NULL, NULL);
+		pa_stream_connect_playback(pa_strm, NULL, NULL, PA_STREAM_ADJUST_LATENCY, NULL, NULL);
+        
+        pa_buffer_attr attr = {(uint32_t) -1, (uint32_t) -1, (uint32_t) -1, (uint32_t) -1, (uint32_t) -1};
+        attr.tlength = unsigned(spec->rate * internal::BufferDuration);
 		
 		auto devname = pa_stream_get_device_name(pa_strm);
 		std::string name;
@@ -191,7 +198,7 @@ namespace Gorgon { namespace Audio {
 			Device::Default().GetName(),
 			spec->rate,
 			Format::Float,
-			false,
+            Device::Default().IsHeadphones(),
 			channels
 		);
 		
@@ -247,7 +254,13 @@ namespace Gorgon { namespace Audio {
 			channels.push_back(convertpachannel(l->channel_map.map[i]));
 		}
 		
-		tempdevices.push_back(Device(l->name, l->description, l->sample_spec.rate, format, false, channels));
+		bool headphones = false;
+        if(l->active_port) {
+            std::string pname=l->active_port->name;
+            headphones = String::ToLower(pname).find("headphone") != pname.npos;
+        }
+		
+		tempdevices.push_back(Device(l->name, l->description, l->sample_spec.rate, format, headphones, channels));
 		
 		Log << "Found device: "<<l->name;
 	}

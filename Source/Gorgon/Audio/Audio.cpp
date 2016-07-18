@@ -23,7 +23,7 @@ namespace Gorgon { namespace Audio {
 	namespace internal {
 		std::thread audiothread;
 		
-		float BufferDuration = 0.012f; //in seconds
+		float BufferDuration = 0.020f; //in seconds
 		int   BufferSize     = 0; //filled by audio loop
 		
 		float mastervolume = 1;

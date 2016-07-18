@@ -50,12 +50,13 @@ try {
 
 	std::cout<<std::endl<<"*** Current device ***"<<std::endl;
 	std::cout<<Audio::Current.GetName()<<std::endl;
+	std::cout<<Audio::Current.IsHeadphones()<<std::endl;
 
 	std::cout<<std::endl<<"*** Default device ***"<<std::endl;
 	std::cout<<Audio::Device::Default().GetName()<<std::endl;
 
 	int freq = 200;
-	int rate = 8000;
+	int rate = 11000;
 	float duration = 2;
 	float amp = 0.5;
 	float pi = 3.1415f;
@@ -86,6 +87,7 @@ try {
 	//c.Loop();
 	
 	Audio::BasicController c2(wave2);
+    c2.SetVolume(0.01);
 	c2.Play();
 	
 	while(1) {
