@@ -73,9 +73,19 @@ try {
 			freq++;*/
 	}
 	
+	Encoding::Flac.Encode(wave, "out.flac", 24);
+    
+    std::vector<Byte> data;
 	std::ifstream ifile("test.flac", std::ios::binary);
-	std::cout<<"File: "<<ifile.is_open()<<std::endl;
-	Containers::Wave wave2 = Encoding::Flac.Decode(ifile);
+
+    char chr;
+    while(ifile.read(&chr, 1)) {
+        data.push_back(chr);
+        
+        if(ifile.eof()) break;
+    }
+    
+	Containers::Wave wave2 = Encoding::Flac.Decode("test.flac");
     //std::cout<<wave2.ImportWav("test.wav")<<std::endl;
 
 	//std::ofstream ofile("out.flac", std::ios::binary);

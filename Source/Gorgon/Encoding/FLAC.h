@@ -37,8 +37,17 @@ namespace Gorgon { namespace Encoding {
 		/// the caller to make it compatible with the standard layout.
 		void Encode(const Containers::Wave &input, std::vector<Byte> &output, int bps = 16);
 
-		/// Decodes given %FLAC compress data and returns a wave container.
+		/// Decodes given %FLAC compressed data and returns a wave container.
 		Containers::Wave Decode(std::istream &input);
+
+		/// Decodes given %FLAC compressed data and returns a wave container.
+		Containers::Wave Decode(const std::vector<Byte> &input);
+
+		/// Decodes given %FLAC compressed file and returns a wave container.
+		Containers::Wave Decode(const std::string &filename) {
+            std::ifstream stream(filename, std::ios::binary);
+            return Decode(stream);
+        }
 
 	private:
 		void *prepencode(const Containers::Wave &input, int bps);

@@ -12,19 +12,19 @@ namespace Gorgon { namespace Encoding {
 
 			std::size_t current;
 		};
-
-		class streamread {
-		public:
-			streamread(std::istream &stream) : stream(stream) {
+        
+        class streamdata {
+        public:
+ 			streamdata() {
 				data = (float*)malloc(sizeof(float));
 				datasize = 0;
 			}
 
-			~streamread() {
+			virtual ~streamdata() {
 				if(data)
 					free(data);
 			}
-
+			
 			void allocateupto(std::size_t size) {
 				auto newsize = currentpos + size;
 				if(newsize <= datasize)
@@ -40,9 +40,7 @@ namespace Gorgon { namespace Encoding {
 				datasize = size;
 				data = (float*)realloc(data, datasize * sizeof(float));
 			}
-
-			std::istream &stream;
-
+ 
 			float *data;
 
 			std::size_t datasize;
@@ -52,6 +50,24 @@ namespace Gorgon { namespace Encoding {
 			int channels = 0;
 
 			int rate = 0;
+        };
+
+		class streamread : public streamdata {
+		public:
+			streamread(std::istream &stream) : stream(stream) {
+			}
+
+			std::istream &stream;
+		};
+        
+		class vectorread : public streamdata {
+		public:
+			vectorread(const std::vector<Byte> &input) : input(input) {
+			}
+
+			const std::vector<Byte> &input;
+            
+            size_t readpos = 0;
 		};
 	}
 
@@ -138,11 +154,33 @@ namespace Gorgon { namespace Encoding {
 		return (input.good() ? FLAC__STREAM_DECODER_READ_STATUS_CONTINUE : FLAC__STREAM_DECODER_READ_STATUS_ABORT);
 	}
 
-	FLAC__StreamDecoderWriteStatus stream_decode_write(
+	FLAC__StreamDecoderReadStatus vector_decode_read(
+		const FLAC__StreamDecoder *decoder, FLAC__byte buffer[], 
+		size_t *bytes, void *client_data) {
+
+		auto &input = *((flac::vectorread*)client_data);
+
+        auto bytestoread = *bytes;
+        if(input.input.size()-input.readpos<bytestoread)
+            bytestoread = input.input.size()-input.readpos;
+        
+		memcpy(buffer, &input.input[input.readpos], bytestoread);
+        
+        input.readpos += bytestoread;
+
+		*bytes = bytestoread;
+
+		if(input.input.size() == input.readpos)
+			return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
+
+		return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+	}
+
+	FLAC__StreamDecoderWriteStatus decode_write(
 		const FLAC__StreamDecoder *decoder, const FLAC__Frame *frame, 
 		const FLAC__int32 *const buffer[], void *client_data) {
 
-		auto &reader = *((flac::streamread*)client_data);
+		auto &reader = *((flac::streamdata*)client_data);
 
 		reader.allocateupto(frame->header.blocksize * frame->header.channels);
 
@@ -173,8 +211,6 @@ namespace Gorgon { namespace Encoding {
 
 	void *FLAC::prepencode(const Containers::Wave &input, int bps) {
 		auto encoder = FLAC__stream_encoder_new();
-		std::shared_ptr<FLAC__StreamEncoder> enc_guard(encoder, &FLAC__stream_encoder_delete);
-
 
 		FLAC__bool ok = true;
 
@@ -291,7 +327,7 @@ namespace Gorgon { namespace Encoding {
 			dec,
 			&stream_decode_read,
 			nullptr, nullptr, nullptr, nullptr,
-			&stream_decode_write, 
+			&decode_write, 
 			nullptr, &decode_error,
 			&stream
 		);
@@ -316,6 +352,48 @@ namespace Gorgon { namespace Encoding {
 		ret.SetSampleRate(stream.rate);
 
 		stream.data=nullptr;
+
+		return ret;
+	}
+
+	Containers::Wave FLAC::Decode(const std::vector<Byte> &input) {
+		auto dec = (FLAC__StreamDecoder *)prepdecode();
+		std::shared_ptr<FLAC__StreamDecoder> dec_guard(dec, &FLAC__stream_decoder_delete);
+
+		if(!dec)
+			throw std::runtime_error("Cannot initialize FLAC decoding.");
+
+		flac::vectorread vector(input);
+
+		auto res = FLAC__stream_decoder_init_stream(
+			dec,
+			&vector_decode_read,
+			nullptr, nullptr, nullptr, nullptr,
+			&decode_write, 
+			nullptr, &decode_error,
+			&vector
+		);
+
+		if(res != FLAC__STREAM_DECODER_INIT_STATUS_OK)
+			throw std::runtime_error("Cannot start FLAC encoder stream");
+
+		FLAC__stream_decoder_process_until_end_of_metadata(dec);
+
+		FLAC__stream_decoder_process_single(dec);
+
+		auto total = FLAC__stream_decoder_get_total_samples(dec) * FLAC__stream_decoder_get_channels(dec);
+		if(total != 0) {
+			vector.allocate(std::size_t(total));
+		}
+
+		FLAC__stream_decoder_process_until_end_of_stream(dec);
+
+		Containers::Wave ret;
+
+		ret.Assume(vector.data, vector.currentpos / vector.channels, Audio::StandardChannels(vector.channels));
+		ret.SetSampleRate(vector.rate);
+
+		vector.data=nullptr;
 
 		return ret;
 	}
