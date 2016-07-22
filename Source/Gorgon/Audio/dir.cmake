@@ -1,5 +1,6 @@
 SET(Local
 	../Audio.h
+	Basic.h
 	Audio.cpp
 	
 	Controllers.h

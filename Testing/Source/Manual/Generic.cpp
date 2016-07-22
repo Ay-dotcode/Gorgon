@@ -16,6 +16,7 @@
 #include <Gorgon/Containers/Wave.h>
 #include <Gorgon/Encoding/URI.h>
 #include <Gorgon/Audio/Controllers.h>
+#include "Gorgon/Encoding/FLAC.h"
 
 using namespace Gorgon; 
 
@@ -71,12 +72,18 @@ try {
 			freq++;*/
 	}
 	
-	Containers::Wave wave2;
-    std::cout<<wave2.ImportWav("test.wav")<<std::endl;
+	std::ifstream ifile("test.flac", std::ios::binary);
+	std::cout<<"File: "<<ifile.is_open()<<std::endl;
+	Containers::Wave wave2 = Encoding::Flac.Decode(ifile);
+    //std::cout<<wave2.ImportWav("test.wav")<<std::endl;
+
+	//std::ofstream ofile("out.flac", std::ios::binary);
+	//Encoding::Flac.Encode(wave2, ofile);
+	//ofile.close();
 	
 	
 	Audio::BasicController c(wave);
-	c.Loop();
+	//c.Loop();
 	
 	Audio::BasicController c2(wave2);
 	c2.Play();

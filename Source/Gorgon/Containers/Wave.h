@@ -360,6 +360,7 @@ namespace Gorgon {
 				swap(size, other.size);
 				swap(channels, other.channels);
 				swap(data, other.data);
+				swap(samplerate, other.samplerate);
 			}
 
 			/// Returns the raw data pointer
@@ -475,33 +476,7 @@ namespace Gorgon {
                 if(blocksize == 0) blocksize = byterate;
                 
                 if(channels.size() == 0) {
-                    if(channelcnt == 1) {
-                        channels = {Audio::Channel::Mono};
-                    }
-                    else {
-                        channels = {Audio::Channel::FrontLeft, Audio::Channel::FrontRight};
-                        
-                        if(channelcnt > 2) {
-                            channels.push_back(Audio::Channel::Center);
-                        }
-                        
-                        if(channelcnt > 3) {
-                            channels.push_back(Audio::Channel::LowFreq);
-                        }
-                        
-                        if(channelcnt > 4) {
-                            channels.push_back(Audio::Channel::BackLeft);
-                        }
-                        
-                        if(channelcnt > 5) {
-                            channels.push_back(Audio::Channel::BackRight);
-                        }
-                        
-                        if(channelcnt > 6) {
-                            channelcnt = 6;
-                            byterate  = samplerate * channelcnt * samplesize / 8;
-                        }
-                    }
+					channels = Audio::StandardChannels(channelcnt);
                 }
                 else if(channels.size() != channelcnt) 
                     return false;
@@ -526,7 +501,7 @@ namespace Gorgon {
                             *ptr++ = (IO::ReadUInt8(file) / 255.f) * 2.f - 1.f;
                         }
                         else {
-                            *ptr++ = IO::ReadInt16(file) / 32768.f;
+                            *ptr++ = IO::ReadInt16(file) / 32767.f;
                         }
 
                         if(!file) return false;

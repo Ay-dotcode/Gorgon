@@ -6,3 +6,10 @@ SET(Local
 	URI.h
 	URI.cpp
 )
+
+IF(${FLAC_SUPPORT})
+	list(APPEND Local 
+		FLAC.h 
+		FLAC.cpp
+	)
+ENDIF()

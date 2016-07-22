@@ -56,26 +56,6 @@ namespace Gorgon { namespace Audio {
 		return channels;
 	}
 
-	std::vector<Channel> StandardChannels(int channelcount) {
-		std::vector<Channel> channels;
-		switch(channelcount) {
-			case 1:
-				return {Channel::Mono};
-			case 2:
-				return {Channel::FrontLeft, Channel::FrontRight};
-			case 3:
-				return {Channel::FrontLeft, Channel::FrontRight, Channel::Center};
-			case 4:
-				return {Channel::FrontLeft, Channel::FrontRight, Channel::BackLeft, Channel::BackRight};
-			case 5:
-				return {Channel::FrontLeft, Channel::FrontRight, Channel::Center, Channel::BackLeft, Channel::BackRight};
-			case 6:
-				return {Channel::FrontLeft, Channel::FrontRight, Channel::Center, Channel::LowFreq, Channel::BackLeft, Channel::BackRight};
-			default:
-				return {};
-		}
-	}
-
 	Device GetDevice(IMMDevice *dev) {
 		using convert_type=std::codecvt_utf8<wchar_t>;
 		std::wstring_convert<convert_type, wchar_t> converter;

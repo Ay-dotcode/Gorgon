@@ -34,6 +34,8 @@ option(DOCUMENTATION_GRAPHS "Enable graphs in documentation." OFF)
 
 option(UNIT_TESTS "Enable compiling of unit tests." OFF)
 
+option(FLAC_SUPPORT "Enable FLAC decoding and streaming." ON)
+
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
@@ -115,12 +117,6 @@ include(Scripts/Doxygen.cmake)
 
 add_library(Gorgon STATIC ${All})
 
-install(TARGETS Gorgon 
-	EXPORT GorgonTargets
-	ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-	PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/Gorgon"
-)
-
 include_directories(Source/External)
 include_directories(Source)
 
@@ -134,8 +130,26 @@ if(NOT OptimizedLibs STREQUAL "")
 	target_link_libraries(Gorgon optimized ${OptimizedLibs})
 endif()
 
+
+install(TARGETS Gorgon
+	EXPORT GorgonTargets
+	ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
+	PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/Gorgon"
+)
+
+
 export(TARGETS Gorgon FILE "${PROJECT_PACKAGE_DIR}/GorgonTargets.cmake")
 export(PACKAGE Gorgon)
+
+if(${FLAC_SUPPORT}) 
+	add_subdirectory(Source/External/flac)
+	
+	include_directories(Source/External/flac/include)
+
+	add_definitions("-DFLAC__NO_DLL")
+	
+	target_link_libraries(Gorgon flac)
+endif()
 
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
    "${INSTALL_INCLUDE_DIR}")

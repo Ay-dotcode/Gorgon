@@ -74,6 +74,9 @@ IF(MSVC)
       CMAKE_CXX_FLAGS_RELWITHDEBINFO
     )
 	
+	
+	add_definitions( "/D_CRT_SECURE_NO_WARNINGS /wd4068" )
+	
 	FOREACH(config ${configs})
       IF(${config} MATCHES "/MD")
         STRING(REGEX REPLACE "/MD" "/MT" ${config} "${${config}}")
