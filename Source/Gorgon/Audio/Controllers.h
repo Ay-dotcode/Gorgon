@@ -5,18 +5,21 @@
 #include "../Containers/Wave.h"
 #include "../Containers/Collection.h"
 
+#include "../Geometry/Point3D.h"
+
 
 namespace Gorgon {
 	namespace Audio {
 		
-		/*
+		/**
 		 * Identifies controller types. 
 		 */
 		enum class ControllerType {
-			Basic
+			Basic,
+            Positional
 		};
 		
-		/*
+		/**
 		 * This is the base class for all controllers. All controller use fluent interface.
 		 */
 		class Controller {
@@ -26,7 +29,7 @@ namespace Gorgon {
 			Controller();
 			
 			/// Filling constructor
-			Controller(Containers::Wave &wavedata);
+			Controller(const Containers::Wave &wavedata);
 			
 			virtual ~Controller();
 			
@@ -40,7 +43,7 @@ namespace Gorgon {
 			/// when an audio data is swapped with another, playback position can be moved. Additionally,
 			/// if the timing is stored in seconds, swapping wavedata might cause playback to stop
 			/// or loop to the start immediately.
-			void SetData(Containers::Wave &wavedata);
+			void SetData(const Containers::Wave &wavedata);
 			
 			/// Returns the type of the controller
 			virtual ControllerType Type() const = 0;
@@ -50,10 +53,10 @@ namespace Gorgon {
 			/// the constructor sets wavedata
 			virtual void datachanged() { }
 			
-			Containers::Wave *wavedata = nullptr;
+			const Containers::Wave *wavedata = nullptr;
 		};
 		
-		/*
+		/**
 		 * Basic controller, allows non-positional playback of data buffer. Timing is stored in seconds.
 		 */
 		class BasicController : public Controller {
@@ -64,7 +67,7 @@ namespace Gorgon {
 			BasicController() = default;
 			
 			/// Filling constructor
-			BasicController(Containers::Wave &wavedata) : Controller(wavedata) { }
+			BasicController(const Containers::Wave &wavedata) : Controller(wavedata) { }
 			
 			/// Plays this sound. When called, this function will unset looping flag. If there is no 
 			/// wavedata associated with this controller, nothing happens until the data is set, after
@@ -128,6 +131,40 @@ namespace Gorgon {
 			bool looping = false;
 		};
 		
+        /**
+         * Positional controller allows sounds to be played at a specific location. This helps user to identify to location of the sound source.
+         * However, in games, it would be a better idea to consider advanced positional controller as it enables sound lag due to distance
+         * and doppler shift. These would add to the realism of the sound. If there is mono channel in the audio data, this controller will
+         * exclusively use mono data and optionally low frequency data. If mono channel does not exists, this controller will mix all channels
+         * except low frequency and playback the mixed data. If there is no low frequency speaker in the config, low frequency data will be mixed
+         * into the output data.
+         */
+        class PositionalController : public BasicController {
+        public:
+			
+			/// Default constructor
+			PositionalController() = default;
+			
+			/// Filling constructor
+			PositionalController(const Containers::Wave &wavedata) : BasicController(wavedata) { }
+            
+            void Move(const Geometry::Point3Df &target) {
+                location = target;
+            }
+            
+            void Move(const Geometry::Pointf &target) {
+                location = {target, 0};
+            }
+            
+            Geometry::Point3Df GetLocation() const {
+                return location;
+            }
+			
+			virtual ControllerType Type() const override { return ControllerType::Positional; }
+        private:
+            Geometry::Point3Df location = {0, 0, 0};
+        };
+        
 		namespace internal {
 			extern Containers::Collection<Controller> Controllers;
 			extern std::mutex ControllerMtx;

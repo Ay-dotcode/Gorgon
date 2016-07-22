@@ -87,8 +87,8 @@ try {
 	//c.Loop();
 	
 	Audio::BasicController c2(wave2);
-    c2.SetVolume(0.01);
-	c2.Play();
+    c2.SetVolume(1);
+	c2.Loop();
 	
 	while(1) {
 		NextFrame();
