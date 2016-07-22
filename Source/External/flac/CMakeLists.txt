@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 include_directories(include)
+include_directories(src)
 
 add_definitions("-DFLAC__NO_DLL")
 
@@ -22,8 +23,13 @@ add_library(flac STATIC
 	src/stream_encoder.c
 	src/stream_encoder_framing.c
 	src/window.c
-	src/win_utf8_io.c
 )
+
+IF(${WIN32})
+	LIST(APPEND Local
+		src/win_utf8_io.c
+	)
+ENDIF()
 
 
 install(TARGETS flac

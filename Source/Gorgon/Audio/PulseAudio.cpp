@@ -17,6 +17,8 @@ namespace Gorgon { namespace Audio {
 	pa_context  *pa_ctx  = nullptr;
 	pa_stream   *pa_strm = nullptr;
 	
+	bool available = false;
+	
 	
 	void AudioLoop();
 
@@ -189,6 +191,7 @@ namespace Gorgon { namespace Audio {
 			Device::Default().GetName(),
 			spec->rate,
 			Format::Float,
+			false,
 			channels
 		);
 		
