@@ -40,6 +40,7 @@ struct teststruct {
 
 int main() {
 try {
+    system("pwd");
 	Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
 
@@ -50,7 +51,7 @@ try {
 
 	std::cout<<std::endl<<"*** Current device ***"<<std::endl;
 	std::cout<<Audio::Current.GetName()<<std::endl;
-	std::cout<<Audio::Current.IsHeadphones()<<std::endl;
+	std::cout<<"Headphones: "<<Audio::Current.IsHeadphones()<<std::endl;
 
 	std::cout<<std::endl<<"*** Default device ***"<<std::endl;
 	std::cout<<Audio::Device::Default().GetName()<<std::endl;
@@ -61,19 +62,19 @@ try {
 	float amp = 0.5;
 	float pi = 3.1415f;
 	
-	Containers::Wave wave(duration * rate, rate, {Audio::Channel::LowFreq, Audio::Channel::FrontRight});
+	Containers::Wave wave(duration * rate, rate, {Audio::Channel::Mono});
 	
 	int ind = 0;
 	for(auto elm : wave) {
 		elm[0] = amp*sin(2*pi*ind/(rate/freq));
-		elm[1] = amp*sin(4*pi*ind/(rate/freq));
+		//elm[1] = amp*sin(4*pi*ind/(rate/freq));
 		ind++;
 		ind = ind % (rate/freq);
 		/*if(ind == 0)
 			freq++;*/
 	}
 	
-	Encoding::Flac.Encode(wave, "out.flac", 24);
+	//Encoding::Flac.Encode(wave, "out.flac", 24);
     
     std::vector<Byte> data;
 	std::ifstream ifile("test.flac", std::ios::binary);
@@ -85,8 +86,8 @@ try {
         if(ifile.eof()) break;
     }
     
-	Containers::Wave wave2 = Encoding::Flac.Decode("test.flac");
-    //std::cout<<wave2.ImportWav("test.wav")<<std::endl;
+	Containers::Wave wave2;// = Encoding::Flac.Decode("test.flac");
+    std::cout<<"Load file: "<<wave2.ImportWav("test.wav")<<std::endl;
 
 	//std::ofstream ofile("out.flac", std::ios::binary);
 	//Encoding::Flac.Encode(wave2, ofile);
@@ -96,12 +97,20 @@ try {
 	Audio::BasicController c(wave);
 	//c.Loop();
 	
-	Audio::BasicController c2(wave2);
-    c2.SetVolume(1);
+	Audio::PositionalController c2(wave);
+    c2.SetVolume(0.5);
 	c2.Loop();
+    
+    Geometry::Point3Df loc = {2,1,0};
+    
+    c2.Move(loc);
+	
 	
 	while(1) {
 		NextFrame();
+        loc = loc - Geometry::Point3Df(Time::DeltaTime()/5000.f, 0,0);
+        std::cout<<loc.X<<std::endl;
+        c2.Move(loc);
         std::this_thread::yield();
 	}
 	

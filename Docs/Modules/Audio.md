@@ -45,10 +45,14 @@
 * Should create high priority thread for audio loop
 * Should create low priority thread to perform low pass filtering
 
+## Stretch goals
+* Audio dampening: if too loud audio is played, all sounds would be dampened for a while
+* Visual clues when audio hits clipping point.
+
 ## Public interface
 
 * Get device list
-* Get/set listener position/speed/acceleration
+* Get/set listener position/speed/acceleration/orientation
 * Get/set unit of measurement
 * Get/set volume (per channel)
 

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <iostream>
+#include <cmath>
+
+#include "../Types.h"
 #include "Point.h"
 
 namespace Gorgon { namespace Geometry {
@@ -17,7 +20,31 @@ namespace Gorgon { namespace Geometry {
         /// Filling constructor
         basic_Point3D(const basic_Point<T_> &point, const T_ &Z = T_()) : X(point.X), Y(point.Y), Z(Z) { }
         
+        Float operator *(const basic_Point3D &other) const {
+            return X*other.X + Y*other.Y + Z*other.Z;
+        }
         
+        basic_Point3D operator +(const basic_Point3D &other) const {
+            return {X+other.X, Y+other.Y, Z+other.Z};
+        }
+        
+        basic_Point3D operator -(const basic_Point3D &other) const {
+            return {X-other.X, Y-other.Y, Z-other.Z};
+        }
+        
+        basic_Point3D Normalize() const {
+            auto dist = Distance();
+            
+            return {X/dist, Y/dist, Z/dist};
+        }
+        
+        Float Distance() const {
+            return (Float)std::sqrt(X*X+Y*Y+Z*Z);
+        }
+       
+        Float ManhattanDistance() const {
+            return (Float)(std::abs(X)+std::abs(Y)+std::abs(Z));
+        }
         
         T_ X;
         T_ Y;

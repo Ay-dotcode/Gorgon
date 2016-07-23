@@ -7,28 +7,23 @@ namespace Gorgon { namespace Audio {
 		
 		internal::Controllers.Add(this);
 	}
-	
-	Controller::Controller(const Containers::Wave &wavedata) : wavedata(&wavedata) { 
-		std::lock_guard<std::mutex> guard(internal::ControllerMtx);
-		
-		internal::Controllers.Add(this);
-		datachanged(); 
-	}
 
 	Controller::~Controller() {
 		std::lock_guard<std::mutex> guard(internal::ControllerMtx);
 		
 		internal::Controllers.Remove(this);
 	}
+	
+	
 
-	void Controller::ReleaseData() {
+	void BasicController::ReleaseData() {
 		std::lock_guard<std::mutex> guard(internal::ControllerMtx);
 		
 		wavedata = nullptr;
 		datachanged();
 	}
 	
-	void Controller::SetData(const Containers::Wave &wavedata) {
+	void BasicController::SetData(const Containers::Wave &wavedata) {
 		std::lock_guard<std::mutex> guard(internal::ControllerMtx);
 		
 		this->wavedata = &wavedata;

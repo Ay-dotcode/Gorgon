@@ -1,4 +1,5 @@
 #include <cstring>
+#include "Environment.h"
 
 #include "../Audio.h"
 
@@ -74,6 +75,8 @@ namespace Gorgon { namespace Audio {
 		int datasize = channels * internal::BufferSize;
 		
 		std::vector<float> data(datasize*sizeof(float));
+        
+        std::vector<float> temp(internal::BufferSize);
 
 		//std::ofstream test("test.csv");
 		
@@ -91,14 +94,74 @@ namespace Gorgon { namespace Audio {
 			}
 			
 			//zero out before starting
-			std::memset(&data[0], 0, sizeof(float) * datasize);
+			std::memset(&data[0], 0, sizeof(float) * size * channels);
 			
 			internal::ControllerMtx.lock();
+					
+            auto outofbounds = [](BasicController &basic) {
+                //reached to the end of the stream
+                if(basic.looping) {
+                    basic.position = basic.position - basic.GetDuration();
+                    
+                    return true;
+                }
+                else {
+                    basic.position = basic.GetDuration();
+                    basic.playing = false;
+                    
+                    return false;
+                }
+            };
+            
+            auto interpolate_basic = [&outofbounds](BasicController &basic, int ch) {
+                
+                auto wavedata = basic.wavedata;
+                
+            recalculate:
+                float pos     = basic.position * wavedata->GetSampleRate();
+                
+                int x1 = (int)pos      ;
+                int x2 = (int)(pos + 1);
+                
+                if(x1 >= (int)wavedata->GetSize()) {
+                    if(outofbounds(basic)) goto recalculate;
+                    else return 0.f;
+                }
+                
+                float x1r = x2 - pos;
+                float x2r = 1  - x1r;
+                
+                float val;
+                
+                if(x2 >= (int)wavedata->GetSize()) {
+                    // multiplication with basic.looping is for branch elimination. Basically, if the audio is not looping
+                    // last few values will not be interpolated but faded out.
+                    val = ( x1r * wavedata->Get(x1, ch) + basic.looping * x2r * wavedata->Get(0, ch));
+                }
+                else {
+                    val = ( x1r * wavedata->Get(x1, ch) + x2r * wavedata->Get(x2, ch));
+                }
+                
+                return val;
+           };
+            
+            //optimization might be necessary, this function may cause cache misses for many to many mapping
+            auto sendto = [&](BasicController &basic, float org, int src, int dest) {
+                basic.position = org;
+                
+                for(int s=0; s<size; s++) {
+                    data[s*channels+dest] += internal::mastervolume * basic.volume * internal::volume[dest] * interpolate_basic(basic, src);
+                    
+                    if(basic.position == basic.GetDuration()) break;
+                    
+                    basic.position += secpersample;
+                }
+            };
 			
 			//For cache optimization we would do vertical sampling
 			for(auto &controller : internal::Controllers) {
 				if(controller.Type() == ControllerType::Basic) {
-					BasicController &basic = static_cast<BasicController&>(controller);
+					auto &basic = static_cast<BasicController&>(controller);
 					
 					//std::cout<<"Playing.."<<std::endl;
 					
@@ -106,97 +169,21 @@ namespace Gorgon { namespace Audio {
 					
 					if(!basic.wavedata) continue;
 					
-					if((int)basic.wavedata->GetSize() < internal::BufferSize) continue;
-					
 					auto wavedata = basic.wavedata;
 					
                     auto org = basic.position;
-					
-					auto outofbounds = [&]() {
-						//reached to the end of the stream
-						if(basic.looping) {
-							basic.position = 0;
-							
-							return true;
-						}
-						else {
-							basic.position = basic.GetDuration();
-							basic.playing = false;
-							
-							return false;
-						}
-					};
                     
                     auto distributetoall = [&](int ind) {
                         basic.position = org;
                         
-                        for(int s=0; s<size; s++) {
-                            
-                        recalculate:
-                            float pos     = basic.position * wavedata->GetSampleRate();
-                            
-                            int x1 = (int)pos      ;
-                            int x2 = (int)(pos + 1);
-                            
-                            if(x1 >= (int)wavedata->GetSize()) {
-                                if(outofbounds()) goto recalculate;
-                                else break;
-                            }
-                            
-                            float x1r = x2 - pos;
-                            float x2r = 1  - x1r;
-                            
-                            float val;
-                            
-                            if(x2 >= (int)wavedata->GetSize()) {
-                                // multiplication with basic.looping is for branch elimination. Basically, if the audio is not looping
-                                // last few values will not be interpolated but faded out.
-                                val = internal::mastervolume * basic.volume * ( x1r * wavedata->Get(x1, ind) + basic.looping * x2r * wavedata->Get(0, ind));
-                            }
-                            else {
-                                val = internal::mastervolume * basic.volume * ( x1r * wavedata->Get(x1, ind) + x2r * wavedata->Get(x2, ind));
-                            }
+                        for(int s=0; s<size; s++) {                            
+                            float val = internal::mastervolume * basic.volume * interpolate_basic(basic, ind);
+                    
+                            if(basic.position == basic.GetDuration()) break;
                             
                             for(int c = 0; c<channels; c++) {
                                 data[s*channels+c] += internal::volume[c] * val;
                             }
-                            
-                            basic.position += secpersample;
-                        }
-                    };
-                    
-                    //optimization might be necessary, this function may cause cache misses for many to many mapping
-                    auto sendto = [&](int src, int dest) {
-                        basic.position = org;
-                        
-                        for(int s=0; s<size; s++) {
-                            
-                        recalculate:
-                            float pos     = basic.position * wavedata->GetSampleRate();
-                            
-                            int x1 = (int)pos      ;
-                            int x2 = (int)(pos + 1);
-                            
-                            if(x1 >= (int)wavedata->GetSize()) {
-                                if(outofbounds()) goto recalculate;
-                                else break;
-                            }
-                            
-                            float x1r = x2 - pos;
-                            float x2r = 1  - x1r;
-                            
-                            float val;
-                            
-                            if(x2 >= (int)wavedata->GetSize()) {
-                                // multiplication with basic.looping is for branch elimination. Basically, if the audio is not looping
-                                // last few values will not be interpolated but faded out.
-                                val = ( x1r * wavedata->Get(x1, src) + basic.looping * x2r * wavedata->Get(0, src));
-                            }
-                            else {
-                                val = ( x1r * wavedata->Get(x1, src) + x2r * wavedata->Get(x2, src));
-                            }
-                            
-                            data[s*channels+dest] += internal::mastervolume * basic.volume * internal::volume[dest] * val;
                             
                             basic.position += secpersample;
                         }
@@ -212,56 +199,56 @@ namespace Gorgon { namespace Audio {
                             int ind = Current.FindChannel(wavedata->GetChannelType(c));
                             
                             if(channel == Channel::FrontLeft) {
-                                if(ind!=-1) sendto(c, ind);
+                                if(ind!=-1) sendto(basic, org, c, ind);
                                 
                                 ind = Current.FindChannel(Channel::BackLeft);
                                 
-                                if(ind!=-1 && !wavedata->FindChannel(Channel::BackLeft)) sendto(c, ind);
+                                if(ind!=-1 && !wavedata->FindChannel(Channel::BackLeft)) sendto(basic, org, c, ind);
                             }                            
                             else if(channel == Channel::FrontRight) {
-                                if(ind!=-1) sendto(c, ind);
+                                if(ind!=-1) sendto(basic, org, c, ind);
                                 
                                 ind = Current.FindChannel(Channel::BackRight);
                                 
-                                if(ind!=-1 && !wavedata->FindChannel(Channel::BackRight)) sendto(c, ind);
+                                if(ind!=-1 && !wavedata->FindChannel(Channel::BackRight)) sendto(basic, org, c, ind);
                             }
                             else if(channel == Channel::Center) {
                                 if(ind!=-1) {
-                                    sendto(c, ind);
+                                    sendto(basic, org, c, ind);
                                 }
                                 else {
                                     ind = Current.FindChannel(Channel::FrontLeft);
                                     
-                                    if(ind!=-1) sendto(c, ind);
+                                    if(ind!=-1) sendto(basic, org, c, ind);
                                     
                                     ind = Current.FindChannel(Channel::FrontRight);
                                     
-                                    if(ind!=-1) sendto(c, ind);
+                                    if(ind!=-1) sendto(basic, org, c, ind);
                                 }
                             }
                             else if(channel == Channel::BackLeft) {
                                 if(ind!=-1) {
-                                    sendto(c, ind);
+                                    sendto(basic, org, c, ind);
                                 }
                                 else {
                                     ind = Current.FindChannel(Channel::FrontLeft);
                                     
-                                    if(ind!=-1) sendto(c, ind);
+                                    if(ind!=-1) sendto(basic, org, c, ind);
                                 }
                             }
                             else if(channel == Channel::BackRight) {
                                 if(ind!=-1) {
-                                    sendto(c, ind);
+                                    sendto(basic, org, c, ind);
                                 }
                                 else {
                                     ind = Current.FindChannel(Channel::FrontRight);
                                     
-                                    if(ind!=-1) sendto(c, ind);
+                                    if(ind!=-1) sendto(basic, org, c, ind);
                                 }
                             }
                             else if(channel == Channel::LowFreq) {
                                 if(ind!=-1) {
-                                    sendto(c, ind);
+                                    sendto(basic, org, c, ind);
                                 }
                                 else {
                                     distributetoall(c);
@@ -273,6 +260,118 @@ namespace Gorgon { namespace Audio {
                         }
                     }
 				}
+				else if(controller.Type() == ControllerType::Positional) {
+                    auto &positional = static_cast<PositionalController&>(controller);
+					
+					if(!positional.playing) continue;
+					
+					if(!positional.wavedata) continue;
+					
+					auto wavedata = positional.wavedata;
+					
+                    auto org = positional.position;
+                    
+                    //prefered way
+                    if(wavedata->FindChannel(Channel::Mono) != -1) {
+                        int ind = wavedata->FindChannel(Channel::Mono);
+                        
+                        for(int s=0; s<size; s++) {                            
+                            float val = internal::mastervolume * positional.volume * interpolate_basic(positional, ind);
+                            
+                            temp[s] = val;
+                            
+                            positional.position += secpersample;
+                       }
+                    }
+                    else {
+                        for(int s=0; s<size; s++) {
+                            float val = 0;
+                            
+                            for(int c=0; c<wavedata->GetChannelCount(); c++) {
+                                if(wavedata->GetChannelType(c) != Channel::LowFreq) {
+                                    val += internal::mastervolume * positional.volume * interpolate_basic(positional, c);
+                                }
+                            }
+                            
+                            temp[s] = val;
+                            
+                            positional.position += secpersample;
+                       }
+                    }
+                    
+                    if(wavedata->FindChannel(Channel::LowFreq) != -1) {
+                        if(Current.FindChannel(Channel::LowFreq) != -1) {
+                            sendto(positional, org, wavedata->FindChannel(Channel::LowFreq), Current.FindChannel(Channel::LowFreq));
+                        }
+                        else {
+                            int ind = wavedata->FindChannel(Channel::LowFreq);
+                            positional.position = org;
+                            
+                            for(int s=0; s<size; s++) {                            
+                                float val = internal::mastervolume * positional.volume * interpolate_basic(positional, ind);
+                                
+                                temp[s] = val;
+                                
+                                positional.position += secpersample;
+                            }
+                        }
+                    }
+                    
+                    //surround
+                    if(Current.FindChannel(Channel::BackLeft) != -1) {
+                    }
+                    
+                    //headphones
+                    else if(Current.IsHeadphones()) {
+                        
+                        auto &env = Environment::Current;
+                        auto &lis = env.listener;
+                        
+                        float leftvol, rightvol;
+                        
+                        auto leftvec  = (positional.location - lis.LeftEar() );
+                        auto rightvec = (positional.location - lis.RightEar());
+                        
+                        if(leftvec.ManhattanDistance() == 0) {
+                            leftvol = env.maxboost;
+                        }
+                        else {
+                            auto mult = leftvec.Distance() / env.recordingdistance;
+                            mult *= mult;
+
+                            leftvol = (leftvec.Normalize() * env.left * (1 - Environment::Current.nonblocked)) + Environment::Current.nonblocked;
+                            leftvol = leftvol / mult;
+                            
+                            if(leftvol > env.maxboost) leftvol = env.maxboost;
+                        }
+                        
+                        if(rightvec.ManhattanDistance() == 0) {
+                            rightvol = env.maxboost;
+                        }
+                        else {
+                            auto mult = rightvec.Distance() / env.recordingdistance;
+                            mult *= mult;
+
+                            rightvol = (rightvec.Normalize() * env.right * (1 - Environment::Current.nonblocked)) + Environment::Current.nonblocked;
+                            rightvol = rightvol / mult;
+                            
+                            if(rightvol > env.maxboost) rightvol = env.maxboost;
+                        }
+                        
+                        int leftind = Current.FindChannel(Channel::FrontLeft);
+                        int rightind = Current.FindChannel(Channel::FrontRight);
+                        
+                        for(int s=0; s<size; s++) {
+                            data[s*channels+leftind]  += leftvol * temp[s];
+                            data[s*channels+rightind] += rightvol * temp[s];
+                        }
+                    }
+                    
+                    //stereo
+                    else {
+                    }
+                } //controller type
+                
 			}
 			
 			internal::ControllerMtx.unlock();
@@ -286,4 +385,6 @@ namespace Gorgon { namespace Audio {
 			std::this_thread::yield();
 		}
 	}
+	
+	Environment Environment::Current;
 } }

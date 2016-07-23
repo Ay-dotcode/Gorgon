@@ -31,7 +31,7 @@ namespace Audio {
 	/// Returns the volume of a channel. If the channel does not exists, this function
 	/// will return 0.
 	float GetVolume(Channel channel);
-	
+ 	
 	/// Represents an audio device.
 	class Device {
 	public:

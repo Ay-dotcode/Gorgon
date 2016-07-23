@@ -248,6 +248,16 @@ namespace Gorgon {
 				return std::sqrt( (Float)(X*X) + (Y*Y) );
 			}
 
+			/// Calculates Manhattan distance from this point to the given target
+			Float ManhattanDistance(const basic_Point &target) const {
+				return (Float)(std::abs(X-target.X) + std::abs(Y-target.Y));
+			}
+
+			/// Calculates Manhattan distance from this point to origin
+			Float ManhattanDistance() const {
+				return (Float)(std::abs(X) + std::abs(Y));
+			}
+
 			/// Calculates the angle of the line formed from the given point
 			/// to this point.
 			/// @param  origin is the starting point of the line
