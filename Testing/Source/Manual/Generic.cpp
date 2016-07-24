@@ -62,7 +62,7 @@ try {
 	float amp = 0.5;
 	float pi = 3.1415f;
 	
-	Containers::Wave wave(duration * rate, rate, {Audio::Channel::Mono});
+	Containers::Wave wave(int(duration * rate), rate, {Audio::Channel::Mono});
 	
 	int ind = 0;
 	for(auto elm : wave) {
@@ -101,7 +101,7 @@ try {
     c2.SetVolume(2);
 	c2.Loop();
     
-    Geometry::Point3Df loc = {2, 0.2, 0};
+    Geometry::Point3Df loc = {2, 0.2f, 0};
     
     c2.Move(loc);
 	

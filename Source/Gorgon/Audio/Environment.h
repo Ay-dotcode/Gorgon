@@ -76,19 +76,19 @@ namespace Gorgon { namespace Audio {
         
         float nonblocked         = 0.2f;    //amount of sound that is not blocked by head
         
-        float headradius         = 0.15;    //units, rough size of the head
+        float headradius         = 0.15f;    //units, rough size of the head
         
-        float hrtfdistance       = 0.666;   //units, rough perimeter that the sound should travel to reach other ear ²  
+        float hrtfdistance       = 0.666f;   //units, rough perimeter that the sound should travel to reach other ear ²  
         
-        float auricleangle       = 0.175;   //this angle in radians covers the angle difference caused by auircle.
+        float auricleangle       = 0.175f;   //this angle in radians covers the angle difference caused by auircle.
         
         Geometry::Point3Df left, right;     //vectors for left and right ear hearing ²
         
         Geometry::Point3Df speaker_locations[4] = {
-            {-.33, -.5, 0},
-            { .33, -.5, 0},
-            {-.33, 1  , 0},
-            { .33, 1  , 0},
+            {-.33f, -.5f, 0.f},
+            { .33f, -.5f, 0.f},
+            {-.33f, 1.f , 0.f},
+            { .33f, 1.f , 0.f},
         };
         
         Geometry::Point3Df speaker_vectors[4];

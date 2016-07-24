@@ -290,7 +290,7 @@ namespace Gorgon { namespace Audio {
                         for(int s=0; s<size; s++) {
                             float val = 0;
                             
-                            for(int c=0; c<wavedata->GetChannelCount(); c++) {
+                            for(int c=0; c<(int)wavedata->GetChannelCount(); c++) {
                                 if(wavedata->GetChannelType(c) != Channel::LowFreq) {
                                     val += internal::mastervolume * positional.volume * interpolate_basic(positional, c);
                                 }
