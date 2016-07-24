@@ -69,6 +69,8 @@ namespace Gorgon { namespace Audio {
 		int   freq 		   = Current.GetSampleRate();
 		float secpersample = 1.0f / freq;
 		int channels       = Current.GetChannelCount();
+        
+        Environment::Current.init();
 
         if(internal::BufferSize == 0)
             internal::BufferSize = int(freq * internal::BufferDuration);
@@ -147,11 +149,11 @@ namespace Gorgon { namespace Audio {
            };
             
             //optimization might be necessary, this function may cause cache misses for many to many mapping
-            auto sendto = [&](BasicController &basic, float org, int src, int dest) {
+            auto sendto = [&](BasicController &basic, float org, int src, int dest, float vol = 1.f) {
                 basic.position = org;
                 
                 for(int s=0; s<size; s++) {
-                    data[s*channels+dest] += internal::mastervolume * basic.volume * internal::volume[dest] * interpolate_basic(basic, src);
+                    data[s*channels+dest] += vol * internal::mastervolume * basic.volume * internal::volume[dest] * interpolate_basic(basic, src);
                     
                     if(basic.position == basic.GetDuration()) break;
                     
@@ -302,7 +304,8 @@ namespace Gorgon { namespace Audio {
                     
                     if(wavedata->FindChannel(Channel::LowFreq) != -1) {
                         if(Current.FindChannel(Channel::LowFreq) != -1) {
-                            sendto(positional, org, wavedata->FindChannel(Channel::LowFreq), Current.FindChannel(Channel::LowFreq));
+                            sendto(positional, org, wavedata->FindChannel(Channel::LowFreq), Current.FindChannel(Channel::LowFreq), 
+                                   std::exp(-Environment::Current.attuniationfactor * (positional.location - Environment::Current.listener.location).Distance()));
                         }
                         else {
                             int ind = wavedata->FindChannel(Channel::LowFreq);
@@ -318,12 +321,9 @@ namespace Gorgon { namespace Audio {
                         }
                     }
                     
-                    //surround
-                    if(Current.FindChannel(Channel::BackLeft) != -1) {
-                    }
                     
                     //headphones
-                    else if(Current.IsHeadphones()) {
+                    if(Current.IsHeadphones()) {
                         
                         auto &env = Environment::Current;
                         auto &lis = env.listener;
@@ -356,7 +356,7 @@ namespace Gorgon { namespace Audio {
 
                         rightvol = (rightvol * (1 - Environment::Current.nonblocked) + Environment::Current.nonblocked) * mult;
                         
-                        int leftind = Current.FindChannel(Channel::FrontLeft);
+                        int leftind  = Current.FindChannel(Channel::FrontLeft);
                         int rightind = Current.FindChannel(Channel::FrontRight);
                         
                         //std::cout<<leftvol<< " : " <<rightvol<<std::endl;
@@ -368,7 +368,8 @@ namespace Gorgon { namespace Audio {
                     }
                     
                     //stereo
-                    else {
+                    else if(Current.FindChannel(Channel::BackLeft) == -1) {
+                        
                     }
                 } //controller type
                 

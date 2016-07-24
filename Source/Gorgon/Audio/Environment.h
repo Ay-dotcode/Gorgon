@@ -60,8 +60,8 @@ namespace Gorgon { namespace Audio {
         
     private:
         void init() {
-            left  = { std::cos(-auricleangle), std::sin(-auricleangle), 0};
-            right = { std::cos( auricleangle), std::sin( auricleangle), 0};
+            left  = { std::cos(   auricleangle), -std::sin(   auricleangle), 0};
+            right = { std::cos(PI-auricleangle), -std::sin(PI-auricleangle), 0};
         }
         
         float unitspermeter      = 1;
@@ -83,6 +83,15 @@ namespace Gorgon { namespace Audio {
         float auricleangle       = 0.175;   //this angle in radians covers the angle difference caused by auircle.
         
         Geometry::Point3Df left, right;     //vectors for left and right ear hearing ²
+        
+        Geometry::Point3Df speaker_locations[4] = {
+            {-.33, -.5, 0},
+            { .33, -.5, 0},
+            {-.33, 1  , 0},
+            { .33, 1  , 0},
+        };
+        
+        Geometry::Point3Df speaker_vectors[4];
         
         // ² calculated
         

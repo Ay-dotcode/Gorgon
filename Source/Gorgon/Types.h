@@ -14,6 +14,8 @@ namespace Gorgon {
 	/// allows switching to double for precision sensitive functions.
 	typedef float Float;
 #endif
+    
+    static const Float PI = 3.141592653589793;
 	
 	/// A class that has no members and can be used as placeholder
 	class Empty {};
