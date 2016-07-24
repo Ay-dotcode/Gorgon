@@ -56,8 +56,8 @@ try {
 	std::cout<<std::endl<<"*** Default device ***"<<std::endl;
 	std::cout<<Audio::Device::Default().GetName()<<std::endl;
 
-	int freq = 200;
-	int rate = 11000;
+	int freq = 400;
+	int rate = 12000;
 	float duration = 2;
 	float amp = 0.5;
 	float pi = 3.1415f;
@@ -97,18 +97,18 @@ try {
 	Audio::BasicController c(wave);
 	//c.Loop();
 	
-	Audio::PositionalController c2(wave);
-    c2.SetVolume(0.5);
+	Audio::PositionalController c2(wave2);
+    c2.SetVolume(2);
 	c2.Loop();
     
-    Geometry::Point3Df loc = {2,1,0};
+    Geometry::Point3Df loc = {2, 0.2, 0};
     
     c2.Move(loc);
 	
 	
 	while(1) {
 		NextFrame();
-        loc = loc - Geometry::Point3Df(Time::DeltaTime()/5000.f, 0,0);
+        loc = loc - Geometry::Point3Df(Time::DeltaTime()/2000.f, 0,0);
         std::cout<<loc.X<<std::endl;
         c2.Move(loc);
         std::this_thread::yield();

@@ -24,6 +24,14 @@ namespace Gorgon { namespace Geometry {
             return X*other.X + Y*other.Y + Z*other.Z;
         }
         
+        basic_Point3D operator *(Float val) const {
+            return {X*val, Y*val, Z*val};
+        }
+       
+        basic_Point3D operator /(Float val) const {
+            return {X/val, Y/val, Z/val};
+        }
+        
         basic_Point3D operator +(const basic_Point3D &other) const {
             return {X+other.X, Y+other.Y, Z+other.Z};
         }

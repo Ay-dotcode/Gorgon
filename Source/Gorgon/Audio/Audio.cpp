@@ -24,8 +24,8 @@ namespace Gorgon { namespace Audio {
 	namespace internal {
 		std::thread audiothread;
 		
-		float BufferDuration = 0.020f; //in seconds
-		int   BufferSize     = 0; //filled by audio loop
+		float BufferDuration = 0.016f; //in seconds
+		int   BufferSize     = 0; //if left 0, filled by audio loop
 		
 		float mastervolume = 1;
 		std::vector<float> volume = {1.f, 1.f};
@@ -68,10 +68,11 @@ namespace Gorgon { namespace Audio {
 
 		int   freq 		   = Current.GetSampleRate();
 		float secpersample = 1.0f / freq;
+		int channels       = Current.GetChannelCount();
 
-		internal::BufferSize = int(freq * internal::BufferDuration);
+        if(internal::BufferSize == 0)
+            internal::BufferSize = int(freq * internal::BufferDuration);
 
-		int channels = Current.GetChannelCount();
 		int datasize = channels * internal::BufferSize;
 		
 		std::vector<float> data(datasize*sizeof(float));
@@ -329,40 +330,39 @@ namespace Gorgon { namespace Audio {
                         
                         float leftvol, rightvol;
                         
-                        auto leftvec  = (positional.location - lis.LeftEar() );
-                        auto rightvec = (positional.location - lis.RightEar());
+                        auto loc  = positional.location;
                         
-                        if(leftvec.ManhattanDistance() == 0) {
-                            leftvol = env.maxboost;
-                        }
-                        else {
-                            auto mult = leftvec.Distance() / env.recordingdistance;
-                            mult *= mult;
-
-                            leftvol = (leftvec.Normalize() * env.left * (1 - Environment::Current.nonblocked)) + Environment::Current.nonblocked;
-                            leftvol = leftvol / mult;
-                            
-                            if(leftvol > env.maxboost) leftvol = env.maxboost;
-                        }
+                        auto leftvec  = (loc - lis.LeftEar() );
+                        auto rightvec = (loc - lis.RightEar());
                         
-                        if(rightvec.ManhattanDistance() == 0) {
-                            rightvol = env.maxboost;
-                        }
-                        else {
-                            auto mult = rightvec.Distance() / env.recordingdistance;
-                            mult *= mult;
+                        leftvol = leftvec.Normalize() * env.left;
+                        leftvol += 1;
+                        leftvol /= 2;
+                        
+                        rightvol = rightvec.Normalize() * env.right;
+                        rightvol += 1;
+                        rightvol /= 2;
+                        
+                        auto total = (leftvol + rightvol);
+                        
+                        leftvol  /= total;
+                        rightvol /= total;
 
-                            rightvol = (rightvec.Normalize() * env.right * (1 - Environment::Current.nonblocked)) + Environment::Current.nonblocked;
-                            rightvol = rightvol / mult;
-                            
-                            if(rightvol > env.maxboost) rightvol = env.maxboost;
-                        }
+                        auto mult = std::exp(-env.attuniationfactor * leftvec.Distance());
+
+                        leftvol = (leftvol * (1 - Environment::Current.nonblocked) + Environment::Current.nonblocked) * mult;
+                        
+                        mult = std::exp(-env.attuniationfactor * rightvec.Distance());
+
+                        rightvol = (rightvol * (1 - Environment::Current.nonblocked) + Environment::Current.nonblocked) * mult;
                         
                         int leftind = Current.FindChannel(Channel::FrontLeft);
                         int rightind = Current.FindChannel(Channel::FrontRight);
                         
+                        //std::cout<<leftvol<< " : " <<rightvol<<std::endl;
+                        
                         for(int s=0; s<size; s++) {
-                            data[s*channels+leftind]  += leftvol * temp[s];
+                            data[s*channels+leftind]  +=  leftvol * temp[s];
                             data[s*channels+rightind] += rightvol * temp[s];
                         }
                     }

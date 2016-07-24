@@ -14,6 +14,7 @@ namespace Gorgon { namespace Audio {
      * before listener. There are no checks performed.
      */
     class Listener {
+        friend void AudioLoop();
     public:
         
         Listener(Environment &env) : env(&env) { }
@@ -59,8 +60,8 @@ namespace Gorgon { namespace Audio {
         
     private:
         void init() {
-            left  = {-1, 0, 0};
-            right = { 1, 0, 0};
+            left  = { std::cos(-auricleangle), std::sin(-auricleangle), 0};
+            right = { std::cos( auricleangle), std::sin( auricleangle), 0};
         }
         
         float unitspermeter      = 1;
@@ -69,7 +70,7 @@ namespace Gorgon { namespace Audio {
         
         float recordingdistance  = 1.f;     //units
         
-        float maxboost           = 2.f;     //highest multiplier for the sound
+        float attuniationfactor  = 0.5f;    //Higher values will attenuation more
         
         float maxdistance        = 200.f;   //units
         

@@ -17,30 +17,53 @@ namespace Gorgon { namespace Audio {
 	pa_context  *pa_ctx  = nullptr;
 	pa_stream   *pa_strm = nullptr;
 	
-	bool available = false;
-	
 	
 	namespace internal {
 		extern float BufferDuration; //in seconds
+		extern int   BufferSize;
 	}
 	
 	void AudioLoop();
 
-	enum { pa_waiting, pa_connected, pa_failed, pa_timeout, pa_ready } pa_state=pa_waiting;
+	enum { pa_waiting, pa_connected, pa_failed, pa_timeout, pa_done, pa_ready } pa_state=pa_waiting;
 	
-	void pa_wait_connection(pa_mainloop *pam, unsigned long timeout = 1000) {
+	bool pa_wait_connection(pa_mainloop *pam, unsigned long timeout = 1000) {
 		auto start = Time::GetTime();
 		while(pa_state == pa_waiting) {
 			pa_mainloop_iterate(pam, 0, NULL);
 			
 			if(Time::GetTime()-start > timeout) {
 				pa_state = pa_timeout;
-				return;
+                Log<<"A wait operation is timed out";
+				return false;
 			}
 		}
+		
+		return true;
+	}
+	
+	bool pa_wait_stream_connection(pa_mainloop *pam, pa_stream *pa_stream, unsigned long timeout = 1000) {
+		auto start = Time::GetTime();
+		while(pa_stream_get_state(pa_stream) != PA_STREAM_READY) {
+			pa_mainloop_iterate(pam, 0, NULL);
+			
+			if(Time::GetTime()-start > timeout) {
+				pa_state = pa_timeout;
+                Log<<"Stream connection is timed out";
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
     bool wait_pa_op(pa_operation* pa_op, int timeout = 1000) {
+        if(pa_op == nullptr) {
+            //pa_error
+            Log<<"A wait operation is failed: "<<pa_strerror(pa_context_errno(pa_ctx));
+            return false;
+        }
+        
 		auto start = Time::GetTime();
 		
 		while(pa_operation_get_state(pa_op) == PA_OPERATION_RUNNING) {
@@ -48,6 +71,7 @@ namespace Gorgon { namespace Audio {
 			
 			if(Time::GetTime()-start > timeout) {
 				pa_state = pa_timeout;
+                Log<<"A wait operation is timed out";
 				return false;
 			}
 		}
@@ -77,6 +101,7 @@ namespace Gorgon { namespace Audio {
 				break;
 		}
 	}
+
 	
 	Channel convertpachannel(pa_channel_position channel) {
 		switch(channel) {
@@ -177,11 +202,35 @@ namespace Gorgon { namespace Audio {
 		for(int i=0; i<chmap->channels; i++) {
 			channels.push_back(convertpachannel(chmap->map[i]));
 		}		
-		
-		pa_stream_connect_playback(pa_strm, NULL, NULL, PA_STREAM_ADJUST_LATENCY, NULL, NULL);
         
         pa_buffer_attr attr = {(uint32_t) -1, (uint32_t) -1, (uint32_t) -1, (uint32_t) -1, (uint32_t) -1};
-        attr.tlength = unsigned(spec->rate * internal::BufferDuration);
+        attr.tlength   = unsigned(spec->rate * internal::BufferDuration) * chmap->channels * sizeof(float);
+        attr.maxlength = attr.tlength * 1.5;
+		
+		int result = pa_stream_connect_playback(pa_strm, NULL, &attr, PA_STREAM_ADJUST_LATENCY, NULL, NULL);
+        
+        if(result != 0) {
+            
+            result = pa_stream_connect_playback(pa_strm, NULL, &attr, PA_STREAM_NOFLAGS, NULL, NULL);
+            
+            if(!result) {
+                Log << "Cannot connect to stream";
+                return;
+            }
+            else
+                Log << "Cannot set playback latency.";
+        }
+        
+        if(!pa_wait_stream_connection(pa_main, pa_strm
+#ifdef PA_TIMEOUT
+			, PA_TIMEOUT
+#endif
+        )) return;
+        
+        auto attrp = pa_stream_get_buffer_attr(pa_strm);
+        if(attrp) attr = *attrp;
+        
+        internal::BufferSize = attr.tlength / sizeof(float) / chmap->channels;
 		
 		auto devname = pa_stream_get_device_name(pa_strm);
 		std::string name;
@@ -212,7 +261,7 @@ namespace Gorgon { namespace Audio {
 		struct sched_param sp = { 0 };
 		sp.sched_priority = 1;
 		
-		int result=pthread_setschedparam(internal::audiothread.native_handle(), SCHED_FIFO, &sp);
+		result=pthread_setschedparam(internal::audiothread.native_handle(), SCHED_FIFO, &sp);
 		if(result!=0) {
 			if(errno = EPERM) {
 				Log << "Access denied while setting thread priority, there might be glitches in the audio." << std::endl
@@ -226,8 +275,6 @@ namespace Gorgon { namespace Audio {
 		
 		//done
 		Log << "Pulse audio is ready over "<<name<<" device and available.";
-
-		available = true;
 	}
 	
 	static std::vector<Device> tempdevices;
