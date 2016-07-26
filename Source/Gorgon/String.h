@@ -17,26 +17,6 @@ namespace Gorgon {
 	/// Contains string related functions and classes.
 	namespace String {
 		
-		/// @cond INTERNAL
-		namespace internal {
-			/// SFINAE trick to detect if class has string operator
-			template <typename T>
-			class has_stringoperator
-			{
-				typedef char one;
-				struct two {
-					char a[2];
-				};
-
-				template <typename C> static one test(decltype((std::declval<C*>())->operator std::string()) aa ) {return one();}
-				template <typename C> static two test(...){return two();}
-
-			public:
-				enum { value = sizeof(test<T>(""))==sizeof(char) };
-			};
-		}
-		/// @endcond
-		
 		struct CaseInsensitiveLess {
 			bool operator()(const std::string &left, const std::string &right) const {
 				unsigned len=std::min(left.length(), right.length());
@@ -452,13 +432,13 @@ namespace Gorgon {
 		}
 
 		template<class T_> 
-		typename std::enable_if<internal::has_stringoperator<T_>::value, std::string>::type 
+		typename std::enable_if<std::is_convertible<T_, std::string>::value, std::string>::type 
 		From(const T_ &item) {
 			return (std::string)item;
 		}
 
 		template<class T_> 
-		typename std::enable_if<!internal::has_stringoperator<T_>::value && !decltype(gorgon__enum_tr_loc((*(T_*)nullptr)))::isupgradedenum, std::string>::type 
+		typename std::enable_if<!std::is_convertible<T_, std::string>::value && !decltype(gorgon__enum_tr_loc((*(T_*)nullptr)))::isupgradedenum, std::string>::type
 		From(const T_ &item) {
 			std::stringstream ss;
 			ss<<item;
