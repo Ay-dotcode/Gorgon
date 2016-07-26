@@ -1,13 +1,11 @@
 #include "JPEG.h"
 
-#ifndef HAVE_BOOLEAN
-typedef unsigned char boolean;
-#define HAVE_BOOLEAN
-#endif
+extern "C" {
+    #include "../External/JPEG/jinclude.h"
+    #include "../External/JPEG/jpeglib.h"
+}
 
-#include "../External/JPEG/jpeglib.h"
-
-namespace gge { namespace encoding {
+namespace Gorgon { namespace Encoding {
 
 	struct myerror {
 		jpeg_error_mgr pub;
@@ -25,56 +23,66 @@ namespace gge { namespace encoding {
 
 		((myerror*)cinfo->err)->message=buffer;
 	}
+	
+	Graphics::ColorMode jpgtocolormode(const struct jpeg_decompress_struct &cinfo) {
+        if(cinfo.out_color_space == JCS_RGB) {
+            if(cinfo.out_color_components==3) {
+                return Graphics::ColorMode::RGB;
+            }
+            else if(cinfo.out_color_components==4) {
+                return Graphics::ColorMode::RGBA;
+            }
+        }
+        else if(cinfo.out_color_space == JCS_GRAYSCALE) {
+            if(cinfo.out_color_components==1) {
+                return Graphics::ColorMode::Grayscale;
+            }
+            else if(cinfo.out_color_components==2) {
+                return Graphics::ColorMode::Grayscale_Alpha;
+            }
+        }
+        
+        throw std::runtime_error("Unsupported color mode");
+    }
 
-	JPEG::Info JPEG::decode(jpg::Reader *reader,jpg::Buffer *buffer) {
-		struct jpeg_decompress_struct cinfo;
+	void JPEG::decode(jpg::Reader &reader, Containers::Image &output) {
+		struct jpeg_decompress_struct cinfo = {};
 		myerror jerr;
 
-		JPEG::Info info;
+		int w, h;
 
 		cinfo.err = jpeg_std_error(&jerr.pub);
 		cinfo.err->error_exit=&my_error_exit;
 		cinfo.err->output_message=&my_error_exit;
 		jpeg_create_decompress(&cinfo);
 
-		reader->Attach(cinfo);
+		reader.Attach(cinfo);
 
 		try {
 			jpeg_read_header(&cinfo, TRUE);
 			jpeg_start_decompress(&cinfo);
 
-			info.Width = cinfo.output_width;
-			info.Height = cinfo.output_height;
-			info.RowBytes = cinfo.output_width * cinfo.output_components ;
-			info.Color = cinfo.output_components>1;
-			info.Alpha=cinfo.output_components>3;
+			w = cinfo.output_width;
+			h = cinfo.output_height;
+            
+            output.Resize({w, h}, jpgtocolormode(cinfo));
 
-			buffer->Resize(info.RowBytes*info.Height);
-
-			int offset=0;
-			while (cinfo.output_scanline < cinfo.output_height) {
-				Byte *line=buffer->Offset(offset);
-				jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&line, 1);
-				offset+=info.RowBytes;
+			auto data = output.RawData();
+            auto stride = w * output.GetBytesPerPixel();
+            
+			while (cinfo.output_scanline < h) {
+				jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&data, 1);
+				data += stride;
 			}
 		}
 		catch(...) {
-			jpeg_finish_decompress(&cinfo);
 			jpeg_destroy_decompress(&cinfo);
-
-			delete reader;
-			delete buffer;
 
 			throw;
 		}
 
 		jpeg_finish_decompress(&cinfo);
 		jpeg_destroy_decompress(&cinfo);
-
-		delete reader;
-		delete buffer;
-
-		return info;
 	}
 
 
@@ -162,6 +170,7 @@ namespace gge { namespace encoding {
 			delete manager;
 		}
 	}
+	
 	JPEG Jpg;
 
 } }

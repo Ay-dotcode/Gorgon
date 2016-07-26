@@ -22,16 +22,12 @@ namespace Gorgon { namespace Encoding {
 		}
 		void ReadArray(png_struct *p, unsigned char *buf, size_t size) {
 			ArrayReader *reader = (ArrayReader*)(p->io_ptr);
-			std::memcpy(buf, &reader->Buf[reader->BufPos], size);
+
+            if(size + reader->BufPos > reader->Buf.size) {
+                size = reader->Buf.size - reader->BufPos;
+            }
+			std::memcpy(buf, &reader->Buf.data[reader->BufPos], size);
 			reader->BufPos += size;
-		}
-		void WriteArray(png_struct *p, unsigned char *buf, size_t size) {
-			ArrayWriter *writer = (ArrayWriter*)(p->io_ptr);
-			if (size)
-			{
-				std::memcpy(&writer->Buf[writer->BufPos], buf, size);
-				writer->BufPos+=size;
-			}
 		}
 		void ReadVector(png_struct *p, unsigned char *buf, size_t size) {
 			VectorReader *reader = (VectorReader*)(p->io_ptr);

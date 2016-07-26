@@ -314,7 +314,7 @@ namespace Gorgon { namespace Encoding {
 		encode(enc, input, bps);
 	}
 
-	Containers::Wave FLAC::Decode(std::istream &input) {
+	void FLAC::Decode(std::istream &input, Containers::Wave &wave) {
 		auto dec = (FLAC__StreamDecoder *)prepdecode();
 		std::shared_ptr<FLAC__StreamDecoder> dec_guard(dec, &FLAC__stream_decoder_delete);
 
@@ -346,17 +346,14 @@ namespace Gorgon { namespace Encoding {
 
 		FLAC__stream_decoder_process_until_end_of_stream(dec);
 
-		Containers::Wave ret;
 
-		ret.Assume(stream.data, stream.currentpos / stream.channels, Audio::StandardChannels(stream.channels));
-		ret.SetSampleRate(stream.rate);
+		wave.Assume(stream.data, stream.currentpos / stream.channels, Audio::StandardChannels(stream.channels));
+		wave.SetSampleRate(stream.rate);
 
 		stream.data=nullptr;
-
-		return ret;
 	}
 
-	Containers::Wave FLAC::Decode(const std::vector<Byte> &input) {
+	void FLAC::Decode(const std::vector<Byte> &input, Containers::Wave &wave) {
 		auto dec = (FLAC__StreamDecoder *)prepdecode();
 		std::shared_ptr<FLAC__StreamDecoder> dec_guard(dec, &FLAC__stream_decoder_delete);
 
@@ -388,14 +385,10 @@ namespace Gorgon { namespace Encoding {
 
 		FLAC__stream_decoder_process_until_end_of_stream(dec);
 
-		Containers::Wave ret;
-
-		ret.Assume(vector.data, vector.currentpos / vector.channels, Audio::StandardChannels(vector.channels));
-		ret.SetSampleRate(vector.rate);
+		wave.Assume(vector.data, vector.currentpos / vector.channels, Audio::StandardChannels(vector.channels));
+		wave.SetSampleRate(vector.rate);
 
 		vector.data=nullptr;
-
-		return ret;
 	}
 
 	FLAC Flac;

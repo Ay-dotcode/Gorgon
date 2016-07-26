@@ -1,27 +1,24 @@
 #pragma once
 
 #include <vector>
-#include "../Utils/UtilsBase.h"
+#include <Gorgon/Utils/Assert.h>
 #include <fstream>
 #include <functional>
+
+#include "../Types.h"
+#include "../Containers/Image.h"
 
 extern "C" {
 	struct jpeg_decompress_struct;
 }
 
-namespace gge { namespace encoding {
+namespace Gorgon { namespace Encoding {
 
 
 	namespace jpg {
 
 		class Reader;
 		class SourceManager;
-
-		void init_source(jpeg_decompress_struct *cinfo);
-		unsigned char fill_input_buffer(jpeg_decompress_struct *cinfo);
-		void skip_input_data(jpeg_decompress_struct *cinfo, long size);
-		unsigned char resync_to_restart(jpeg_decompress_struct *cinfo, int desired);
-		void term_source(jpeg_decompress_struct *cinfo);
 
 		class Reader {
 		public:
@@ -70,62 +67,6 @@ namespace gge { namespace encoding {
 
 		};
 
-		class Buffer {
-		public:
-			virtual ~Buffer() {}
-			
-			virtual unsigned char *Offset(int offset)=0;
-			virtual void Resize(int size)=0;
-		};
-
-
-		class VectorBuffer : public Buffer {
-		public:
-			VectorBuffer(std::vector<Byte> &vector) : vector(vector) {
-
-			}
-
-			virtual unsigned char *Offset(int offset) {
-				return &vector[offset];
-			}
-			virtual void Resize(int size) {
-				vector.resize(size);
-			}
-
-		protected:
-			std::vector<Byte> &vector;
-		};
-
-		inline Buffer *CreateBuffer(std::vector<Byte> &vector) {
-			return new VectorBuffer(vector);
-		}
-
-
-		class ArrayBuffer : public Buffer {
-		public:
-			ArrayBuffer(Byte *&array) : array(array) {
-
-			}
-
-			virtual unsigned char *Offset(int offset) {
-				return &array[offset];
-			}
-			virtual void Resize(int size) {
-				if(array)
-					array=(Byte*)std::realloc(array, size);
-				else
-					array=(Byte*)std::malloc(size);
-			}
-
-		protected:
-			Byte *&array;
-		};
-
-		inline Buffer *CreateBuffer(Byte *&array) {
-			return new ArrayBuffer(array);
-		}
-
-
 	}
 
 
@@ -135,34 +76,37 @@ namespace gge { namespace encoding {
 	class JPEG {
 	public:
 
-		class Info {
-		public:
-			int Width, Height;
-			bool Alpha;
-			bool Color;
-			int RowBytes;
-		};
-
 		JPEG() { }
 
-		////throws runtime error
 		////Using this system with arrays is extremely dangerous make sure your arrays are big enough
 		//template <class I_, class O_>
 		//void Encode(I_ &input, O_ &output, int width, int height) {
 		//	encode(jpg::CreateBuffer(input), png::ReadyWriteStruct(output), width, height);
 		//}
 
-		//throws runtime error
-		//Using this system with arrays is extremely dangerous make sure your arrays are big enough
-		template <class I_, class O_>
-		Info Decode(I_ &input, O_ &output) {
-			return decode(jpg::ReadyReadStruct(input), jpg::CreateBuffer(output));
+		/// Decodes given JPG data from the given input and creates the image.
+		/// throws runtime error
+		void Decode(std::ifstream &input, Containers::Image &output) {
+            jpg::FileReader reader(input);
+            
+			decode(reader, output);
+		}
+
+		/// Decodes given JPG data from the given input and creates the image.
+		/// throws runtime error
+		void Decode(const std::string &input, Containers::Image &output) {
+            std::ifstream file(input, std::ios::binary);
+            if(!file.is_open()) throw std::runtime_error("Cannot open file");
+            
+            jpg::FileReader reader(file);
+            
+			decode(reader, output);
 		}
 
 
 	protected:
-		void encode(jpg::Buffer *buffer,jpg::Writer *write, int width, int height) { utils::NotImplemented(); }
-		Info decode(jpg::Reader *reader,jpg::Buffer *buffer);
+		//void encode(jpg::Buffer *buffer, jpg::Writer *write, int width, int height) { Utils::NotImplemented(); }
+		void decode(jpg::Reader &reader, Containers::Image &output);
 
 	};
 

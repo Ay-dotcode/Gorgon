@@ -6,6 +6,7 @@
 #include "Gorgon/Graphics/Bitmap.h"
 #include "Gorgon/Graphics/Layer.h"
 #include "Gorgon/Resource/Image.h"
+#include "Gorgon/Encoding/JPEG.h"
 
 int main() {
 	
@@ -17,7 +18,7 @@ int main() {
 	wind.Add(l);
 
 	Gorgon::Graphics::Bitmap img;
-	img.ImportPNG("test.png");
+	img.Import("test.png");
 
 	img.Prepare();
 

@@ -69,6 +69,14 @@ namespace Gorgon { namespace Encoding {
 			return new VectorWriter(vec);
 		}
 
+		class ArrayWrapper {
+        public:
+            ArrayWrapper() = default;
+            ArrayWrapper(const Byte *data, std::size_t size) : data(data), size(size) { }
+            
+            const Byte *data = nullptr;
+            std::size_t size = 0;
+        };
 
 		//Array streamers
 		class ArrayReader;
@@ -76,40 +84,25 @@ namespace Gorgon { namespace Encoding {
 
 		class ArrayReader : public Reader {
 		public:
-			ArrayReader(const Byte *Buf) : Buf(Buf), BufPos(0) {
+			ArrayReader(ArrayWrapper Buf) : Buf(Buf), BufPos(0) {
 				Read=&ReadArray;
 			}
 
-			const Byte *Buf;
+			ArrayWrapper Buf;
 			unsigned BufPos;
 		};
-		inline Reader *ReadyReadStruct(const Byte *vec) {
-			return new ArrayReader(vec);
+		inline Reader *ReadyReadStruct(ArrayWrapper f) {
+			return new ArrayReader(f);
 		}
-		inline unsigned long long GetReadSize(const Byte *vec) {
-			return (unsigned long long)-1ll;
+		inline unsigned long long GetReadSize(const ArrayWrapper &vec) {
+			return vec.size;
 		}
 		inline void ArraySeek(Reader *r, long long addr) {
 			ArrayReader *reader=(ArrayReader *)r;
 			reader->BufPos+=(unsigned)addr;
 		}
-		inline std::function<void(Reader*, long long)> SeekFn(const Byte *vec) {
+		inline std::function<void(Reader*, long long)> SeekFn(const ArrayWrapper &) {
 			return &ArraySeek;
-		}
-
-		class ArrayWriter;
-		void WriteArray(png_struct_def *p, unsigned char *buf, size_t size);
-		class ArrayWriter : public Writer {
-		public:
-			ArrayWriter(Byte *Buf) : Buf(Buf), BufPos(0) {
-				Write=&WriteArray;
-			}
-
-			Byte *Buf;
-			unsigned BufPos;
-		};
-		inline Writer *ReadyWriteStruct(Byte *vec) {
-			return new ArrayWriter(vec);
 		}
 
 
@@ -159,33 +152,62 @@ namespace Gorgon { namespace Encoding {
 	}
 	/// @endcond
 	
-	/// Encodes or decodes PNG compression. This class only returns and creates RGB and RGBA images. This property might be
-	/// fixed along with Task #13
-	/// @see Gorgon::Encoding::LZMA for template class decisions.
+	/// Encodes or decodes PNG compression.
 	class PNG {
 	public:
 
-
-
-		/// Encodes a given input. Currently this system supports vector, array and stream
-		/// reader and writers. Both vectors and arrays are resized automatically.
+		/// Encodes a given input. This variant writes to a stream
 		/// @warning Array write buffer should either be a nullptr of type Byte or an array allocated with malloc. This system uses
 		/// realloc or malloc to resize raw arrays.
 		/// @throws runtime_error in case of an encoding error
-		template <class O_>
-		void Encode(const Containers::Image &input, O_ &output) {
+		void Encode(const Containers::Image &input, std::ostream &output) {
 			encode(input, png::ReadyWriteStruct(output));
 		}
 
-		/// Decodes the given PNG data. This function returns necessary information that is extracted from the 
-		/// data. Currently this system supports vector, array and stream reader and writers. Both vectors and 
-		/// arrays are resized automatically. Use Gorgon::Resource::Image::Import function to create an image from
-		/// the given PNG file. This function may produce an image with the following color modes: Grayscale, 
-		/// Grayscale_Alpha, RGB, RGBA
+		/// Encodes a given input. This variant opens the given file and writes on that file
+		/// @throws runtime_error in case of an encoding error
+		void Encode(const Containers::Image &input, const std::string &output) {
+            std::ofstream file(output, std::ios::binary);
+            if(!file.is_open()) throw std::runtime_error("Cannot open file");
+			encode(input, png::ReadyWriteStruct(file));
+		}
+
+		/// Encodes a given input. This variant writes data to a vector. Vector is resized automatically.
+		/// @warning Array write buffer should either be a nullptr of type Byte or an array allocated with malloc. This system uses
+		/// realloc or malloc to resize raw arrays.
+		/// @throws runtime_error in case of an encoding error
+		void Encode(const Containers::Image &input, std::vector<Byte> &output) {
+			encode(input, png::ReadyWriteStruct(output));
+		}
+
+		/// Decodes the given PNG data. This function may produce an image with the following color modes: Grayscale, 
+		/// Grayscale_Alpha, RGB, RGBA. This variant reads data from the file.
 		/// @throws runtime_error in case of a read error
-		template <class I_>
-		void Decode(I_ &input, Containers::Image &output) {
+		void Decode(std::istream &input, Containers::Image &output) {
 			return decode(png::ReadyReadStruct(input), output);
+		}
+
+		/// Decodes the given PNG data. This function may produce an image with the following color modes: Grayscale, 
+		/// Grayscale_Alpha, RGB, RGBA. This variant opens and reads data from a file.
+		/// @throws runtime_error in case of a read error
+		void Decode(const std::string &input, Containers::Image &output) {
+            std::ifstream file(input, std::ios::binary);
+            if(!file.is_open()) throw std::runtime_error("Cannot open file");
+			return decode(png::ReadyReadStruct(file), output);
+		}
+
+		/// Decodes the given PNG data. This function may produce an image with the following color modes: Grayscale, 
+		/// Grayscale_Alpha, RGB, RGBA. This variant reads data from the vector.
+		/// @throws runtime_error in case of a read error
+		void Decode(std::vector<Byte> &input, Containers::Image &output) {
+			return decode(png::ReadyReadStruct(input), output);
+		}
+
+		/// Decodes the given PNG data. This function may produce an image with the following color modes: Grayscale, 
+		/// Grayscale_Alpha, RGB, RGBA. In this variant data is read from an array.
+		/// @throws runtime_error in case of a read error
+		void Decode(const Byte *input, std::size_t size, Containers::Image &output) {
+			return decode(png::ReadyReadStruct(png::ArrayWrapper(input, size)), output);
 		}
 
 
