@@ -95,7 +95,7 @@ try {
 	
 	
 	Audio::BasicController c(wave);
-	//c.Loop();
+	c.Loop();
 	
 	Audio::PositionalController c2(wave);
     c2.SetVolume(1);

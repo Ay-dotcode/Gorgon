@@ -102,6 +102,26 @@ namespace Gorgon { namespace Audio {
 		}
 	}
 
+	pa_channel_position convertopa(Channel ch) {
+        switch(ch) {
+        case Channel::FrontLeft:
+            return PA_CHANNEL_POSITION_FRONT_LEFT;
+        case Channel::FrontRight:
+            return PA_CHANNEL_POSITION_FRONT_RIGHT;
+        case Channel::BackLeft:
+            return PA_CHANNEL_POSITION_REAR_LEFT;
+        case Channel::BackRight:
+            return PA_CHANNEL_POSITION_REAR_RIGHT;
+        case Channel::Mono:
+            return PA_CHANNEL_POSITION_MONO;
+        case Channel::LowFreq:
+            return PA_CHANNEL_POSITION_LFE;
+        case Channel::Center:
+            return PA_CHANNEL_POSITION_FRONT_CENTER;
+        default:
+            return PA_CHANNEL_POSITION_INVALID;
+        }
+    }
 	
 	Channel convertpachannel(pa_channel_position channel) {
 		switch(channel) {
@@ -184,8 +204,16 @@ namespace Gorgon { namespace Audio {
 		ss.channels = Device::Default().GetChannelCount();
 		ss.format   = PA_SAMPLE_FLOAT32LE; //only this mode is supported
 		ss.rate     = Device::Default().GetSampleRate();
+        
+        pa_channel_map chmap = {};
+        
+        chmap.channels = ss.channels;
+        
+        for(int i=0; i<chmap.channels; i++) {
+            chmap.map[i] = convertopa(Device::Default().GetChannel(i));
+        }
 		
-		pa_strm     = pa_stream_new(pa_ctx, GetSystemName().c_str(), &ss, NULL);
+		pa_strm     = pa_stream_new(pa_ctx, GetSystemName().c_str(), &ss, &chmap);
 		
 		if(!pa_strm) {
 			Log << "Cannot create Pulse audio stream" << pa_strerror(pa_context_errno(pa_ctx));
@@ -196,18 +224,12 @@ namespace Gorgon { namespace Audio {
 		
 		// obtain default device settings
 		auto spec   = pa_stream_get_sample_spec(pa_strm);
-		auto chmap  = pa_stream_get_channel_map(pa_strm);
-		
-		std::vector<Channel> channels;
-		for(int i=0; i<chmap->channels; i++) {
-			channels.push_back(convertpachannel(chmap->map[i]));
-		}		
         
         pa_buffer_attr attr = {(uint32_t) -1, (uint32_t) -1, (uint32_t) -1, (uint32_t) -1, (uint32_t) -1};
-        attr.tlength   = unsigned(spec->rate * internal::BufferDuration) * chmap->channels * sizeof(float);
+        attr.tlength   = unsigned(spec->rate * internal::BufferDuration) * spec->channels * sizeof(float);
         attr.maxlength = attr.tlength * 1.5;
 		
-		int result = pa_stream_connect_playback(pa_strm, NULL, &attr, PA_STREAM_ADJUST_LATENCY, NULL, NULL);
+		int result = pa_stream_connect_playback(pa_strm, Device::Default().GetID().c_str(), &attr, PA_STREAM_ADJUST_LATENCY, NULL, NULL);
         
         if(result != 0) {
             
@@ -230,7 +252,7 @@ namespace Gorgon { namespace Audio {
         auto attrp = pa_stream_get_buffer_attr(pa_strm);
         if(attrp) attr = *attrp;
         
-        internal::BufferSize = attr.tlength / sizeof(float) / chmap->channels;
+        internal::BufferSize = attr.tlength / sizeof(float) / spec->channels;
 		
 		auto devname = pa_stream_get_device_name(pa_strm);
 		std::string name;
@@ -241,6 +263,13 @@ namespace Gorgon { namespace Audio {
 		else {
 			name=devname;
 		}
+		
+		auto newchmap  = pa_stream_get_channel_map(pa_strm);
+		
+		std::vector<Channel> channels;
+		for(int i=0; i<newchmap->channels; i++) {
+			channels.push_back(convertpachannel(newchmap->map[i]));
+		}		
 		
 		Current = Device(
 			name, 

@@ -425,7 +425,7 @@ namespace Gorgon { namespace Audio {
                         fr /= 2;
                        
                         bl += 1;
-                        fl /= 2;
+                        bl /= 2;
                         
                         br += 1;
                         br /= 2;
@@ -447,6 +447,8 @@ namespace Gorgon { namespace Audio {
                          
                         int blind = Current.FindChannel(Channel::BackLeft);
                         int brind = Current.FindChannel(Channel::BackRight);
+                       
+                        std::cout<<fl<< " : " <<fr<<std::endl;
                         
                         for(int s=0; s<size; s++) {
                             data[s*channels+flind]  +=  fl * temp[s];
