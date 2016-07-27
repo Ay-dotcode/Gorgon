@@ -323,8 +323,7 @@ namespace Gorgon { namespace Audio {
                     
                     
                     //headphones
-                    if(Current.IsHeadphones()) {
-                        
+                    if(Current.IsHeadphones()) {                        
                         auto &env = Environment::Current;
                         auto &lis = env.listener;
                         
@@ -359,7 +358,7 @@ namespace Gorgon { namespace Audio {
                         int leftind  = Current.FindChannel(Channel::FrontLeft);
                         int rightind = Current.FindChannel(Channel::FrontRight);
                         
-                        //std::cout<<leftvol<< " : " <<rightvol<<std::endl;
+                        std::cout<<leftvol<< " : " <<rightvol<<std::endl;
                         
                         for(int s=0; s<size; s++) {
                             data[s*channels+leftind]  +=  leftvol * temp[s];
@@ -368,8 +367,93 @@ namespace Gorgon { namespace Audio {
                     }
                     
                     //stereo
-                    else if(Current.FindChannel(Channel::BackLeft) == -1) {
+                    else if(Current.FindChannel(Channel::BackLeft) == -1) {                        
+                        auto &env = Environment::Current;
+                        auto &lis = env.listener;
                         
+                        float leftvol, rightvol;
+                        
+                        auto diff = positional.location - lis.location;;
+                        auto w = diff.Normalize();
+                        
+                        leftvol  = w * env.speaker_vectors[0];                        
+                        rightvol = w * env.speaker_vectors[1];
+                        
+                        leftvol += 1;
+                        leftvol /= 2;
+                        
+                        rightvol += 1;
+                        rightvol /= 2;
+                        
+                        auto total = leftvol + rightvol;
+                        leftvol /= total;
+                        rightvol /= total;
+                        
+                        leftvol  *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[0]));
+                        rightvol *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[1]));
+                         
+                        int leftind  = Current.FindChannel(Channel::FrontLeft);
+                        int rightind = Current.FindChannel(Channel::FrontRight);
+                       
+                        std::cout<<leftvol<< " : " <<rightvol<<std::endl;
+                        
+                        for(int s=0; s<size; s++) {
+                            data[s*channels+leftind]  +=  leftvol * temp[s];
+                            data[s*channels+rightind] += rightvol * temp[s];
+                        }
+                    }
+                    
+                    //surround
+                    else {                        
+                        auto &env = Environment::Current;
+                        auto &lis = env.listener;
+                        
+                        float fl, fr, bl, br;
+                        
+                        auto diff = positional.location - lis.location;;
+                        auto w = diff.Normalize();
+                        
+                        fl = w * env.speaker_vectors[0];                        
+                        fr = w * env.speaker_vectors[1];                     
+                        bl = w * env.speaker_vectors[2];                     
+                        br = w * env.speaker_vectors[3];
+                        
+                        fl += 1;
+                        fl /= 2;
+                        
+                        fr += 1;
+                        fr /= 2;
+                       
+                        bl += 1;
+                        fl /= 2;
+                        
+                        br += 1;
+                        br /= 2;
+                        
+                        auto total = fl + fr + bl + br;
+                        fl /= total;
+                        fr /= total;
+                        bl /= total;
+                        br /= total;
+                        
+                        fl *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[0]));
+                        fr *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[1]));
+                       
+                        bl *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[2]));
+                        br *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[3]));
+                         
+                        int flind = Current.FindChannel(Channel::FrontLeft);
+                        int frind = Current.FindChannel(Channel::FrontRight);
+                         
+                        int blind = Current.FindChannel(Channel::BackLeft);
+                        int brind = Current.FindChannel(Channel::BackRight);
+                        
+                        for(int s=0; s<size; s++) {
+                            data[s*channels+flind]  +=  fl * temp[s];
+                            data[s*channels+frind]  +=  fr * temp[s];
+                            data[s*channels+blind]  +=  bl * temp[s];
+                            data[s*channels+brind]  +=  br * temp[s];
+                        }
                     }
                 } //controller type
                 

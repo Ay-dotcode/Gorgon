@@ -59,10 +59,7 @@ namespace Gorgon { namespace Audio {
         static Environment Current;
         
     private:
-        void init() {
-            left  = { std::cos(   auricleangle), -std::sin(   auricleangle), 0};
-            right = { std::cos(PI-auricleangle), -std::sin(PI-auricleangle), 0};
-        }
+        void init();
         
         float unitspermeter      = 1;
         
@@ -80,7 +77,7 @@ namespace Gorgon { namespace Audio {
         
         float hrtfdistance       = 0.666f;   //units, rough perimeter that the sound should travel to reach other ear ²  
         
-        float auricleangle       = 0.175f;   //this angle in radians covers the angle difference caused by auircle.
+        float auricleangle       = 0.10f;   //this angle in radians covers the angle difference caused by auircle.
         
         Geometry::Point3Df left, right;     //vectors for left and right ear hearing ²
         
@@ -92,6 +89,7 @@ namespace Gorgon { namespace Audio {
         };
         
         Geometry::Point3Df speaker_vectors[4];
+        float              speaker_boost[4];
         
         // ² calculated
         
@@ -99,11 +97,11 @@ namespace Gorgon { namespace Audio {
         Listener listener;
     };
     
-    Geometry::Point3Df Gorgon::Audio::Listener::LeftEar() const {
+    inline Geometry::Point3Df Gorgon::Audio::Listener::LeftEar() const {
         return location - Geometry::Point3Df(env->headradius, 0, 0);
     }
     
-    Geometry::Point3Df Gorgon::Audio::Listener::RightEar() const {
+    inline Geometry::Point3Df Gorgon::Audio::Listener::RightEar() const {
         return location + Geometry::Point3Df(env->headradius, 0, 0);
     }
 

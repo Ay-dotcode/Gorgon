@@ -97,11 +97,11 @@ try {
 	Audio::BasicController c(wave);
 	//c.Loop();
 	
-	Audio::PositionalController c2(wave2);
-    c2.SetVolume(2);
+	Audio::PositionalController c2(wave);
+    c2.SetVolume(1);
 	c2.Loop();
     
-    Geometry::Point3Df loc = {2, 0.2f, 0};
+    Geometry::Point3Df loc = {5, 0.2f, 0};
     
     c2.Move(loc);
 	

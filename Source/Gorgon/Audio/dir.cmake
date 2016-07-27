@@ -5,7 +5,9 @@ SET(Local
 	
 	Controllers.h
 	Controllers.cpp
+	
 	Environment.h
+    Environment.cpp
 )
 
 IF(AUDIOLIB STREQUAL "PULSE")
