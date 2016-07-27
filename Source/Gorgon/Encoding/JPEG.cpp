@@ -85,25 +85,94 @@ namespace Gorgon { namespace Encoding {
 		jpeg_destroy_decompress(&cinfo);
 	}
 
+	void JPEG::encode(jpg::Writer &writer, Containers::Image &input, int quality) {
+		struct jpeg_compress_struct cinfo = {};
+		myerror jerr;
+
+		cinfo.err = jpeg_std_error(&jerr.pub);
+		cinfo.err->error_exit=&my_error_exit;
+		cinfo.err->output_message=&my_error_exit;
+		jpeg_create_compress(&cinfo);
+
+		writer.Attach(cinfo);
+
+		try {
+            cinfo.image_width  = input.GetSize().Width;
+            cinfo.image_height = input.GetSize().Height;
+            switch(input.GetMode()) {
+            case Graphics::ColorMode::RGB:
+                cinfo.in_color_space = JCS_RGB;
+                cinfo.input_components = 3;
+                break;
+            case Graphics::ColorMode::Grayscale:
+                cinfo.in_color_space = JCS_GRAYSCALE;
+                cinfo.input_components = 1;
+                break;
+            default:
+                throw std::runtime_error("JPG compression does not support this color mode.");
+            }
+            jpeg_set_defaults(&cinfo);
+            jpeg_set_quality(&cinfo, quality, TRUE);
+            
+			jpeg_start_compress(&cinfo, TRUE);
+
+			auto data = input.RawData();
+            auto stride = input.GetSize().Width * input.GetBytesPerPixel();
+            
+            while (cinfo.next_scanline < cinfo.image_height) {
+                jpeg_write_scanlines(&cinfo, &data, 1);
+                data += stride;
+            }
+		}
+		catch(...) {
+			jpeg_destroy_compress(&cinfo);
+
+			throw;
+		}
+
+		jpeg_finish_compress(&cinfo);
+		jpeg_destroy_compress(&cinfo);
+	}
+
 
 	namespace jpg {
 		class SourceManager : public jpeg_source_mgr {
 		public:
 			Reader *reader;
 		};
+        
+		class DestManager : public jpeg_destination_mgr {
+		public:
+			Writer *writer;
+		};
 
 
-		void FileReader::Attach(jpeg_decompress_struct &cinfo) {
+		void Reader::Attach(jpeg_decompress_struct &cinfo) {
 			cinfo.src=this->manager;
 			cinfo.src->bytes_in_buffer=0;
 			cinfo.src->next_input_byte=NULL;
 		}
 
-		void FileReader::init_source(jpeg_decompress_struct &cinfo) {
+		bool Reader::resync_to_restart(jpeg_decompress_struct &cinfo, int desired) {
+			return jpeg_resync_to_restart(&cinfo, desired)!=0;
+		}
+
+		void Reader::term_source(jpeg_decompress_struct &cinfo) {
+		}
+		
+		void Reader::skip_input_data(jpeg_decompress_struct &cinfo, long size) {
+            if(cinfo.src->bytes_in_buffer<size)
+                size = cinfo.src->bytes_in_buffer;
+            
+            cinfo.src->bytes_in_buffer-=size;
+            cinfo.src->next_input_byte+=size;
+		}
+		
+		void StreamReader::init_source(jpeg_decompress_struct &cinfo) {
 			//do nothing file should be open and ready to read
 		}
 
-		bool FileReader::fill_input_buffer(jpeg_decompress_struct &cinfo) {
+		bool StreamReader::fill_input_buffer(jpeg_decompress_struct &cinfo) {
 			file.read((char*)buffer, 1024);
 			cinfo.src->next_input_byte=buffer;
 			if(file.bad()) {
@@ -116,7 +185,7 @@ namespace Gorgon { namespace Encoding {
 			return true;
 		}
 
-		void FileReader::skip_input_data(jpeg_decompress_struct &cinfo, long size) {
+		void StreamReader::skip_input_data(jpeg_decompress_struct &cinfo, long size) {
 			if(size>(long)cinfo.src->bytes_in_buffer) {
 				file.seekg(size-cinfo.src->bytes_in_buffer, std::ios::cur);
 				fill_input_buffer(cinfo);
@@ -127,14 +196,55 @@ namespace Gorgon { namespace Encoding {
 			}
 		}
 
-		bool FileReader::resync_to_restart(jpeg_decompress_struct &cinfo, int desired) {
-			return jpeg_resync_to_restart(&cinfo, desired)!=0;
+
+		void VectorReader::init_source(jpeg_decompress_struct &cinfo) {
+			cinfo.src->next_input_byte=&data[0];            
+            cinfo.src->bytes_in_buffer=(size_t)data.size();
 		}
 
-		void FileReader::term_source(jpeg_decompress_struct &cinfo) {
-			//do nothing, its not our duty to close the file
+		bool VectorReader::fill_input_buffer(jpeg_decompress_struct &cinfo) {
+			
+
+			return false;
 		}
 
+		
+		void ArrayReader::init_source(jpeg_decompress_struct &cinfo) {
+			cinfo.src->next_input_byte=data;
+            
+            cinfo.src->bytes_in_buffer=size;
+		}
+
+		bool ArrayReader::fill_input_buffer(jpeg_decompress_struct &cinfo) {
+			
+
+			return false;
+		}
+		
+		
+		void Writer::Attach(jpeg_compress_struct &cinfo) {
+			cinfo.dest=this->manager;
+			cinfo.dest->free_in_buffer=0;
+			cinfo.dest->next_output_byte=nullptr;
+		}
+		
+		void StreamWriter::term_destination(jpeg_compress_struct &cinfo) {
+            out.write((char*)buffer, 1024 - cinfo.dest->free_in_buffer);
+        }
+        
+        void StreamWriter::init_destination(jpeg_compress_struct &cinfo) {
+            cinfo.dest->free_in_buffer = 1024;
+            cinfo.dest->next_output_byte = buffer;
+        }
+        
+        bool StreamWriter::empty_output_buffer(jpeg_compress_struct &cinfo) {
+            out.write((char*)buffer, 1024);
+            
+            cinfo.dest->next_output_byte = buffer;
+            cinfo.dest->free_in_buffer   = 1024;
+            
+            return (out.good() ? TRUE : FALSE);
+        }
 
 		void init_source(jpeg_decompress_struct *cinfo) {
 			((SourceManager*)cinfo->src)->reader->init_source(*cinfo);
@@ -167,6 +277,30 @@ namespace Gorgon { namespace Encoding {
 		}
 
 		Reader::~Reader() {
+			delete manager;
+		}
+
+		void init_destination(jpeg_compress_struct *cinfo) {
+			((DestManager*)cinfo->dest)->writer->init_destination(*cinfo);
+		}
+
+		boolean empty_output_buffer(jpeg_compress_struct *cinfo) {
+			return ((DestManager*)cinfo->dest)->writer->empty_output_buffer(*cinfo);
+		}
+
+		void term_destination(jpeg_compress_struct *cinfo) {
+			((DestManager*)cinfo->dest)->writer->term_destination(*cinfo);
+		}
+
+		Writer::Writer() {
+			manager=new DestManager;
+			manager->writer=this;
+			manager->init_destination=&jpg::init_destination;
+			manager->empty_output_buffer=&jpg::empty_output_buffer;
+			manager->term_destination=&jpg::term_destination;
+		}
+
+		Writer::~Writer() {
 			delete manager;
 		}
 	}
