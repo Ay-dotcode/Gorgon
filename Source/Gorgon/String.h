@@ -478,7 +478,7 @@ namespace Gorgon {
 		struct CanBeStringified {
 			static const bool Value = 
 				IsStreamable<T_>::Value || 
-				internal::has_stringoperator<T_>::value || 
+				std::is_convertible<T_, std::string>::value || 
 				decltype(gorgon__enum_tr_loc(*((typename std::decay<T_>::type*)nullptr)))::isupgradedenum;
 		};
 		
