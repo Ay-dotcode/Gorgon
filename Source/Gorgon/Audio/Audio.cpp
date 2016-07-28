@@ -24,7 +24,7 @@ namespace Gorgon { namespace Audio {
 	namespace internal {
 		std::thread audiothread;
 		
-		float BufferDuration = 0.016f; //in seconds
+		float BufferDuration = 0.030f; //in seconds
 		int   BufferSize     = 0; //if left 0, filled by audio loop
 		
 		float mastervolume = 1;
@@ -418,17 +418,13 @@ namespace Gorgon { namespace Audio {
                         bl = w * env.speaker_vectors[2];                     
                         br = w * env.speaker_vectors[3];
                         
-                        fl += 1;
-                        fl /= 2;
+                        if(fl<0) fl = 0;
                         
-                        fr += 1;
-                        fr /= 2;
+                        if(fr<0) fr = 0;
                        
-                        bl += 1;
-                        bl /= 2;
+                        if(bl<0) bl = 0;
                         
-                        br += 1;
-                        br /= 2;
+                        if(br<0) br = 0;
                         
                         auto total = fl + fr + bl + br;
                         fl /= total;
@@ -448,7 +444,7 @@ namespace Gorgon { namespace Audio {
                         int blind = Current.FindChannel(Channel::BackLeft);
                         int brind = Current.FindChannel(Channel::BackRight);
                        
-                        std::cout<<fl<< " : " <<fr<<std::endl;
+                        std::cout<<fl<< " : " <<fr<<" | "<<bl<< " : " <<br<<std::endl;
                         
                         for(int s=0; s<size; s++) {
                             data[s*channels+flind]  +=  fl * temp[s];

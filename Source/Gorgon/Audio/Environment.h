@@ -67,7 +67,7 @@ namespace Gorgon { namespace Audio {
         
         float recordingdistance  = 1.f;     //units
         
-        float attuniationfactor  = 0.5f;    //Higher values will attenuation more
+        float attuniationfactor  = 0.1f;    //Higher values will attenuation more
         
         float maxdistance        = 200.f;   //units
         
@@ -82,10 +82,10 @@ namespace Gorgon { namespace Audio {
         Geometry::Point3Df left, right;     //vectors for left and right ear hearing ²
         
         Geometry::Point3Df speaker_locations[4] = {
-            {-.33f, -.5f, 0.f},
-            { .33f, -.5f, 0.f},
-            {-.33f, 1.f , 0.f},
-            { .33f, 1.f , 0.f},
+            { .1f,-.1f, 0.f},
+            {-.1f,-.1f, 0.f},
+            { .1f, .3f, 0.f},
+            {-.1f, .3f, 0.f},
         };
         
         Geometry::Point3Df speaker_vectors[4];
