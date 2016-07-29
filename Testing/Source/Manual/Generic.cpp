@@ -16,16 +16,11 @@
 #include <Gorgon/Containers/Wave.h>
 #include <Gorgon/Encoding/URI.h>
 #include <Gorgon/Audio/Controllers.h>
-#include "Gorgon/Encoding/FLAC.h"
+#include <Gorgon/Encoding/FLAC.h>
+#include <Gorgon/Geometry/Transform3D.h>
+#include "Gorgon/Audio/Environment.h"
 
 using namespace Gorgon; 
-
-constexpr std::chrono::seconds operator ""_sec(unsigned long long s) {
-	return std::chrono::seconds(s);
-}
-constexpr std::chrono::duration<long double> operator ""_sec(long double s) {
-	return std::chrono::duration<long double>(s);
-}
 
 struct teststruct {
 	int a;
@@ -40,7 +35,6 @@ struct teststruct {
 
 int main() {
 try {
-    system("pwd");
 	Audio::Log.InitializeConsole();
 	Initialize("Generic-Test");
 
@@ -98,17 +92,17 @@ try {
 	//c.Loop();
 	
 	Audio::PositionalController c2(wave);
-    c2.SetVolume(0.002);
+    c2.SetVolume(0.002f);
 	c2.Loop();
     
-    Geometry::Point3Df loc = {3.3, 0.5f-0.68, 0};
+    Geometry::Point3D loc = {3.3f, 0.5f-0.68f, 0};
     
     c2.Move(loc);
 	
 	
 	while(1) {
 		NextFrame();
-        loc = loc - Geometry::Point3Df(Time::DeltaTime()/2000.f, Time::DeltaTime()/5000.f,0);
+        loc = loc - Geometry::Point3D(Time::DeltaTime()/2000.f, Time::DeltaTime()/5000.f,0);
         std::cout<<loc.X<<std::endl;
         c2.Move(loc);
         std::this_thread::yield();

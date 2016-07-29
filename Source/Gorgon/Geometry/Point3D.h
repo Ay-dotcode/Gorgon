@@ -11,7 +11,7 @@ namespace Gorgon { namespace Geometry {
     template<class T_>
     class basic_Point3D {
     public:
-			/// Default constructor, does not zero initialize point.
+		/// Default constructor, does not zero initialize point.
         basic_Point3D() { }
 
         /// Filling constructor
@@ -53,6 +53,10 @@ namespace Gorgon { namespace Geometry {
         Float ManhattanDistance() const {
             return (Float)(std::abs(X)+std::abs(Y)+std::abs(Z));
         }
+
+		basic_Point3D CrossProduct(const basic_Point3D &other) const {
+			return {Y*other.Z - Z*other.Y, Z*other.X - X*other.Z, X*other.Y - Y*other.X};
+		}
         
         T_ X;
         T_ Y;
@@ -68,6 +72,6 @@ namespace Gorgon { namespace Geometry {
         return out;
     }
     
-    using Point3Df = basic_Point3D<float>;
+    using Point3D = basic_Point3D<Float>;
     
 } }

@@ -147,7 +147,7 @@ namespace Gorgon { namespace Audio {
         /// Filling constructor
         PositionalController(const Containers::Wave &wavedata) : BasicController(wavedata) { }
         
-        void Move(const Geometry::Point3Df &target) {
+        void Move(const Geometry::Point3D &target) {
             location = target;
         }
         
@@ -155,13 +155,13 @@ namespace Gorgon { namespace Audio {
             location = {target, 0};
         }
         
-        Geometry::Point3Df GetLocation() const {
+        Geometry::Point3D GetLocation() const {
             return location;
         }
         
         virtual ControllerType Type() const override { return ControllerType::Positional; }
     private:
-        Geometry::Point3Df location = {0, 0, 0};
+        Geometry::Point3D location = {0, 0, 0};
     };
     
     namespace internal {

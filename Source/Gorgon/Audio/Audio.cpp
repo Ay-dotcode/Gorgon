@@ -334,11 +334,11 @@ namespace Gorgon { namespace Audio {
                         auto leftvec  = (loc - lis.LeftEar() );
                         auto rightvec = (loc - lis.RightEar());
                         
-                        leftvol = leftvec.Normalize() * env.left;
+                        leftvol = leftvec.Normalize() * (lis.earfactor*-1);
                         leftvol += 1;
                         leftvol /= 2;
                         
-                        rightvol = rightvec.Normalize() * env.right;
+                        rightvol = rightvec.Normalize() * lis.earfactor;
                         rightvol += 1;
                         rightvol /= 2;
                         

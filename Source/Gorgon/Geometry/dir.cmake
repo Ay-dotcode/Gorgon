@@ -4,6 +4,8 @@ SET(Local
 	Point.h
 	Rectangle.h
 	Size.h
+	Point3D.h
+	Transform3D.h
 )
 IF(${SCRIPTING})
 	LIST(APPEND Local

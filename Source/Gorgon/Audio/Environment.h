@@ -21,22 +21,38 @@ namespace Gorgon { namespace Audio {
         
         /// Changes the current location of the listener, if automatic speed calculation is
         /// set, this function will infer speed and the location of the listener.
-        void SetLocation(const Geometry::Point3Df &location) {
+        void SetLocation(const Geometry::Point3D &location) {
             this->location = location;
         }
+
+		void SetUpDirection(const Geometry::Point3D &up, const Geometry::Point3D &orientation) {
+			this->up = up;
+			SetOrientation(orientation);
+		}
+
+		/// Changes the orientation of the listener. This function is not cheap and should not be
+		/// used if it can be avoided. In the default orientation Z is up and the listener is facing +
+		/// in the Y axis
+		void SetOrientation(const Geometry::Point3D &location) {
+			this->orientation = orientation;
+			earfactor = orientation.CrossProduct(up);
+		}
         
         /// Returns the current location of the listener.
-        Geometry::Point3Df GetLocation() const {
+        Geometry::Point3D GetLocation() const {
             return location;
         }
         
-        Geometry::Point3Df LeftEar() const;
+        Geometry::Point3D LeftEar() const;
         
-        Geometry::Point3Df RightEar() const;
+        Geometry::Point3D RightEar() const;
 
     private:
-        Geometry::Point3Df location = {0, 0, 0};
-        
+        Geometry::Point3D location    = {0, 0, 0};
+		Geometry::Point3D orientation = {0, 1, 0};
+		Geometry::Point3D up		  = {0, 0, 1};
+		Geometry::Point3D earfactor   = {1, 0, 0};
+
         Environment *env;
     };
 
@@ -77,18 +93,16 @@ namespace Gorgon { namespace Audio {
         
         float hrtfdistance       = 0.666f;   //units, rough perimeter that the sound should travel to reach other ear ²  
         
-        float auricleangle       = 0.10f;   //this angle in radians covers the angle difference caused by auircle.
+        Geometry::Point3D left, right;     //vectors for left and right ear hearing ²
         
-        Geometry::Point3Df left, right;     //vectors for left and right ear hearing ²
-        
-        Geometry::Point3Df speaker_locations[4] = {
+        Geometry::Point3D speaker_locations[4] = {
             { .1f,-.1f, 0.f},
             {-.1f,-.1f, 0.f},
             { .1f, .3f, 0.f},
             {-.1f, .3f, 0.f},
         };
         
-        Geometry::Point3Df speaker_vectors[4];
+        Geometry::Point3D speaker_vectors[4];
         float              speaker_boost[4];
         
         // ² calculated
@@ -97,12 +111,12 @@ namespace Gorgon { namespace Audio {
         Listener listener;
     };
     
-    inline Geometry::Point3Df Gorgon::Audio::Listener::LeftEar() const {
-        return location - Geometry::Point3Df(env->headradius, 0, 0);
+    inline Geometry::Point3D Gorgon::Audio::Listener::LeftEar() const {
+        return location - earfactor;
     }
     
-    inline Geometry::Point3Df Gorgon::Audio::Listener::RightEar() const {
-        return location + Geometry::Point3Df(env->headradius, 0, 0);
+    inline Geometry::Point3D Gorgon::Audio::Listener::RightEar() const {
+        return location + earfactor;
     }
 
 } }
