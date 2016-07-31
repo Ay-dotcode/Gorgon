@@ -8,7 +8,6 @@
 
 namespace Gorgon { namespace Resource {
 	class File;
-	class Blob;
 	class Reader;
 	
 	////This is sound resource. It may contain 22kHz or 44kHz mono or stereo wave files.

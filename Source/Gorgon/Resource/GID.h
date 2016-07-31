@@ -69,7 +69,10 @@ namespace Gorgon {
 			/// @{
 			/// System module GIDs
 
-			CONSTEXPR Type None{0x00000000};
+			CONSTEXPR Type None					{0x00000000};
+
+			/// Denotes this file is a game file
+			CONSTEXPR Type GameFile				{0x030100FF};
 
 			/// Folder resource
 			//, \ref Gorgon::Resource::Folder
@@ -98,9 +101,11 @@ namespace Gorgon {
 			CONSTEXPR Type SGuid				{0x00000011};
 			/// Name of a resource, names are not required to be unique
 			CONSTEXPR Type Name					{0x00000012};
-
+			
 			/// LZMA compression
 			CONSTEXPR Type LZMA					{0xF0030100};
+			/// LZMA compression
+			CONSTEXPR Type FLAC					{0xF0040100};
 			/// JPEG compression
 			CONSTEXPR Type JPEG					{0xF0030300};
 			/// PNG compression
@@ -178,7 +183,9 @@ namespace Gorgon {
 			CONSTEXPR Type Sound_Wave			{0x04010801};
 			CONSTEXPR Type Sound_Cmp_Wave		{0x04010802};
 			CONSTEXPR Type Sound_Cmp_Props		{0x04010803};
-			
+			CONSTEXPR Type Sound_Fmt			{0x04010104};
+			CONSTEXPR Type Sound_Channels		{0x04010105};
+
 			CONSTEXPR Type Blob					{0x04020000};
 			CONSTEXPR Type Blob_Props			{0x04020101};
 			CONSTEXPR Type Blob_Data			{0x04020801};

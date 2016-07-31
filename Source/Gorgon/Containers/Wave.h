@@ -217,7 +217,9 @@ namespace Gorgon {
 			/// Duplicates this wave, essentially performing the work of copy constructor
 			Wave Duplicate() const {
 				Wave data;
-				data.Assign(this->data, size);
+				data.Assign(this->data, size, channels);
+
+				data.samplerate=samplerate;
 
 				return data;
 			}
@@ -282,8 +284,8 @@ namespace Gorgon {
 					free(data);
 				}
 				if(size > 0) {
-					data = (float*)malloc(size * channels.size() * sizeof(float));
-					memcpy(data, newdata, size * channels.size() * sizeof(float));
+					data = (float*)malloc(size * this->channels.size() * sizeof(float));
+					memcpy(data, newdata, size * this->channels.size() * sizeof(float));
 				}
 				else {
 					data = nullptr;
@@ -313,7 +315,7 @@ namespace Gorgon {
 			/// be 0.
 			void Assume(float *newdata, unsigned long size, std::vector<Audio::Channel> channels) {
 				this->size = size;
-				this->channels = channels;
+				this->channels = std::move(channels);
 
 				if(data && newdata!=data) {
 					free(data);
@@ -407,7 +409,12 @@ namespace Gorgon {
 			unsigned long GetSize() const {
 				return size;
 			}
-			
+
+			/// Returns the size of the wave in bytes
+			unsigned long GetBytes() const {
+				return size * channels.size() * sizeof(float);
+			}
+
 			/// Returns the length of the wave data in seconds
 			float GetLength() const {
 				return float((double)size/samplerate);

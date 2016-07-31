@@ -62,7 +62,18 @@ namespace Gorgon { namespace Resource {
 		class Marker {
 			friend class Writer;
 		public:
-			Marker(const Marker &) = default;
+			Marker(const Marker &) = delete;
+			Marker(Marker &&other) {
+				pos = other.pos;
+				other.pos = -1;
+			}
+
+			Marker &operator =(Marker &&other) {
+				pos = other.pos;
+				other.pos = -1;
+
+				return *this;
+			}
 			
 			~Marker() { 
 				if(pos!=-1) 

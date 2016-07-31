@@ -19,5 +19,7 @@ SET(Local
 	Image.h
 	Image.cpp
 	Reader.h
+	Sound.h
+	Sound.cpp
 	Writer.h
 )

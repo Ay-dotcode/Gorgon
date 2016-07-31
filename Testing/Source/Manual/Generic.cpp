@@ -19,6 +19,8 @@
 #include <Gorgon/Encoding/FLAC.h>
 #include <Gorgon/Geometry/Transform3D.h>
 #include "Gorgon/Audio/Environment.h"
+#include "Gorgon/Resource/Sound.h"
+#include "Gorgon/Graphics/Bitmap.h"
 
 using namespace Gorgon; 
 
@@ -80,13 +82,35 @@ try {
         if(ifile.eof()) break;
     }
     
-	Containers::Wave wave2;// = Encoding::Flac.Decode("test.flac");
+	Containers::Wave wave2;
     std::cout<<"Load file: "<<wave2.ImportWav("test.wav")<<std::endl;
 
-	//std::ofstream ofile("out.flac", std::ios::binary);
-	//Encoding::Flac.Encode(wave2, ofile);
-	//ofile.close();
+	Resource::File file;
+	Resource::Sound snd;
+	snd.Assign(wave2);
+
+	file.Root().Add(snd);
+
+	Containers::Image bmp({2, 2}, Graphics::ColorMode::RGBA);
+	bmp.Clean();
+
+	bmp({0, 0}, 0) = 128;
+	bmp({0, 0}, 1) = 128;
+	bmp({0, 0}, 2) = 128;
+	bmp({0, 0}, 3) = 255;
+
+	auto &img = *new Resource::Image();
+	img.Assume(bmp);
+
+	file.Root().Add(img);
+
+	file.Save("out.gor");
+
+	/*std::ofstream ofile("out.flac", std::ios::binary);
+	Encoding::Flac.Encode(wave2, ofile);
+	ofile.close();*/
 	
+	return 0;
 	
 	Audio::BasicController c(wave);
 	//c.Loop();

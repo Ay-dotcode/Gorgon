@@ -1,70 +1,116 @@
 #pragma once
 
-#include "GRE.h"
+#include <vector>
+#include <memory>
+
+#include "../Types.h"
 #include "Base.h"
-#include "../Engine/Sound.h"
-#include "../Multimedia/Wave.h"
+#include "../Containers/Wave.h"
 
-namespace gge { namespace resource {
-	class File;
-	class Sound;
-	
-	////This function loads a sound resource from the given file
-	Sound *LoadSoundResource(File &File, std::istream &Data, int Size);
+namespace Gorgon {
+	namespace Resource {
+		class File;
+		class Reader;
 
-	////This function loads a sound resource from the given file
-	void LoadSound(Sound *snd, std::istream &Data, int Size);
+		////This is sound resource. It may contain 22kHz or 44kHz mono or stereo wave files.
+		/// Also supports LZMA compression. No native sound compression is supported.
+		class Sound : public Base {
+		public:
 
-	////This is sound resource. It may contain 22kHz or 44kHz mono or stereo wave files.
-	/// Also supports LZMA compression. No native sound compression is supported.
-	class Sound : public Base {
-		friend void LoadSound(Sound *snd, std::istream &Data, int Size);
-	public:
-    enum SoundReadError {
-      NoError=0,
-      ReadError=1, 
-      FileNotFound
-    };
-		////04010000h (Extended, Sound)
-		virtual GID::Type GetGID() const { return GID::Sound; }
+			/// Default constructor
+			Sound() {}
 
-		////Wave data
-		std::vector<Byte> Data;
-		////Format
-		gge::sound::system::WaveFormat Format;
-		////Size of the data
-		int Size;
+			/// Destructor
+			virtual ~Sound() {}
 
-		Sound() { Buffer=0; Size=0; Format.BitsPerSample=Format.Channels=0; }
+			/// 04010000h (Extended, Sound)
+			virtual GID::Type GetGID() const override { return GID::Sound; }
 
-		operator gge::sound::system::SoundBufferHandle() {
-			return Buffer;
-		}
+			const Containers::Wave &GetWave() const {
+				return data;
+			}
 
-		
-		////Destroys used data
-		void destroy();
-		////Destroys used data
-		virtual ~Sound() { destroy(); }
+			Containers::Wave &GetWave() {
+				return data;
+			}
 
-		SoundReadError ImportWave(const std::string &filename);
+			/// Destroys the data stored in the sound
+			void Destroy() {
+				isloaded=false;
+			}
 
-		void StereoToMono();
+			/// Loads the sound from the disk. If sound is already loaded, this function will return true
+			bool Load();
 
-		////When this file is prepared to be used, this value will be used to store sound buffer
-		gge::sound::system::SoundBufferHandle Buffer;
+			/// Returns whether the sound data is loaded
+			bool IsLoaded() const { return isloaded; }
 
-		gge::sound::Wave *CreateWave() { return new gge::sound::Wave(Buffer); }
+			/// This function loads a sound resource from the given file
+			static Sound *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
 
-		gge::sound::Wave *Create3DWave(float maxWaveDistance=-1) { 
-			if(maxWaveDistance==-1) 
-				maxWaveDistance=float(Main.BoundingBox.Width()+Main.BoundingBox.Height());
+			/// Assigns the sound to the copy of the given data. Ownership of the given data
+			/// is not transferred. If the given data is not required elsewhere, consider using
+			/// Assume function. Also sets IsLoaded.
+			void Assign(const Containers::Wave &wave) {
+				data=wave.Duplicate();
 
-			return new gge::sound::Wave(Buffer,	maxWaveDistance); 
-		}
+				isloaded = true;
+			}
 
-		virtual void Prepare(GGEMain &main, File &file) { Prepare(); }
+			/// Assumes the contents of the given wave as wave data. The given parameter is moved from
+			/// and will become empty. Also sets IsLoaded.
+			void Assume(Containers::Wave &wave) {
+				data = std::move(wave);
 
-		void Prepare();
-	};
-} }
+				isloaded = true;
+			}
+
+			int GetBits() const {
+				return bits;
+			}
+
+			void SetBits(int bits) {
+				if(compression == GID::FLAC) {
+					if(bits<4 || bits>24)
+						throw std::runtime_error("Unsupported bits/sample");
+				}
+				else {
+					if(bits!=8 && bits!=16)
+						throw std::runtime_error("Unsupported bits/sample");
+				}
+
+				this->bits = bits;
+			}
+
+
+		protected:
+
+			/// Loads the sound from the data stream
+			bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
+
+			void save(Writer &writer) override;
+
+			/// Entry point of this resource within the physical file. This value is stored for 
+			/// late loading purposes
+			unsigned long entrypoint = -1;
+
+			/// Used to handle late loading
+			std::shared_ptr<Reader> reader;
+
+			/// Whether this sound is loaded or not
+			bool isloaded = false;
+
+			/// Compression mode of this sound resource
+			GID::Type compression = GID::FLAC;
+
+			/// Whether to load this sound during initial loading
+			bool lateloading = false;
+			
+			/// Sound data
+			Containers::Wave data;
+
+			/// Number of bits per sample
+			int bits = 16;
+		};
+	}
+}

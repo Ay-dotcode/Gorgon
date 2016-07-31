@@ -60,6 +60,7 @@ namespace Gorgon { namespace Encoding {
 
 		int buffersize;
 		std::vector<int32_t> buffer;
+		std::streampos maxpos;
 	};
 
 	class FlacStream {

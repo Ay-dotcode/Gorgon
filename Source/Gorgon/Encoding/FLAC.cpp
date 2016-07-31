@@ -52,6 +52,12 @@ namespace Gorgon { namespace Encoding {
 			int rate = 0;
         };
 
+		struct streamwrite {
+			streamwrite(std::ostream &output, std::streampos &maxpos) : output(output), maxpos(maxpos)  { }
+			std::ostream &output;
+			std::streampos &maxpos;
+		};
+
 		class streamread : public streamdata {
 		public:
 			streamread(std::istream &stream) : stream(stream) {
@@ -75,9 +81,11 @@ namespace Gorgon { namespace Encoding {
 		const FLAC__StreamEncoder *encoder, const FLAC__byte buffer[],
 		size_t bytes, unsigned samples, unsigned current_frame, void *client_data) {
 
-		std::ostream &output = *(std::ostream*)client_data;
+		std::ostream &output = ((flac::streamwrite*)client_data)->output;
 
 		output.write((const char*)buffer, bytes);
+
+		std::cout<<"Written: "<<bytes<<std::endl;
 
 		return (output.good() ? FLAC__STREAM_ENCODER_WRITE_STATUS_OK : FLAC__STREAM_ENCODER_WRITE_STATUS_FATAL_ERROR);
 	}
@@ -85,7 +93,11 @@ namespace Gorgon { namespace Encoding {
 	FLAC__StreamEncoderSeekStatus stream_encode_seek(
 		const FLAC__StreamEncoder *encoder, FLAC__uint64 absolute_byte_offset, void *client_data) {
 
-		std::ostream &output = *(std::ostream*)client_data;
+		std::ostream &output = ((flac::streamwrite*)client_data)->output;
+
+		auto p = output.tellp();
+		if(((flac::streamwrite*)client_data)->maxpos < p)
+			((flac::streamwrite*)client_data)->maxpos = p;
 
 		output.seekp((std::streamoff)absolute_byte_offset, std::ios::beg);
 
@@ -95,7 +107,7 @@ namespace Gorgon { namespace Encoding {
 	FLAC__StreamEncoderTellStatus stream_encode_tell(
 		const FLAC__StreamEncoder *encoder, FLAC__uint64 *absolute_byte_offset, void *client_data) {
 
-		std::ostream &output = *(std::ostream*)client_data;
+		std::ostream &output = ((flac::streamwrite*)client_data)->output;
 
 		*absolute_byte_offset = output.tellp();
 
@@ -214,16 +226,11 @@ namespace Gorgon { namespace Encoding {
 
 		FLAC__bool ok = true;
 
-		//if the file is too small, disable streaming to improve encoding
-		if(input.GetSize()<10000)
-			ok &= FLAC__stream_encoder_set_streamable_subset(encoder, false);
-
-
-		ok &= FLAC__stream_encoder_set_verify(encoder, false);
+		ok &= FLAC__stream_encoder_set_verify(encoder, true);
 		ok &= FLAC__stream_encoder_set_channels(encoder, input.GetChannelCount());
 		ok &= FLAC__stream_encoder_set_bits_per_sample(encoder, bps);
 		ok &= FLAC__stream_encoder_set_sample_rate(encoder, input.GetSampleRate());
-		ok &= FLAC__stream_encoder_set_compression_level(encoder, 4);
+		ok &= FLAC__stream_encoder_set_compression_level(encoder, 5);
 		ok &= FLAC__stream_encoder_set_total_samples_estimate(encoder, input.GetSize());
 
 		if(!ok)
@@ -277,18 +284,25 @@ namespace Gorgon { namespace Encoding {
 		if(!enc)
 			throw std::runtime_error("Cannot initialize FLAC encoding.");
 
+		flac::streamwrite s{output, this->maxpos};
+
 		auto res = FLAC__stream_encoder_init_stream(
 			enc,
 			&stream_encode_write,
 			&stream_encode_seek,
 			&stream_encode_tell,
-			nullptr, &output
+			nullptr, &s
 		);
 
 		if(res != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
 			throw std::runtime_error("Cannot start FLAC encoder stream");
 
+		maxpos = 0;
 		encode(enc, input, bps);
+
+		if((int)maxpos != 0) {
+			output.seekp(maxpos, std::ios::beg);
+		}
 	}
 
 	void FLAC::Encode(const Containers::Wave &input, std::vector<Byte> &output, int bps) {

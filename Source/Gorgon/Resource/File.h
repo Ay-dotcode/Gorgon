@@ -191,7 +191,7 @@ namespace Gorgon { namespace Resource {
 		Folder *root;
 
 		/// Type of the loaded file
-		GID::Type filetype;
+		GID::Type filetype = GID::GameFile;
 
 		/// Keeps the file open even after loading is completed. This guarantees that the file is readable at a later
 		/// point to read more data.

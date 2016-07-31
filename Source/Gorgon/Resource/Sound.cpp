@@ -1,20 +1,82 @@
 #include "Sound.h"
 #include "File.h"
-#include "../Encoding/LZMA.h"
-#include "../Engine/Sound.h"
+#include "../Encoding/FLAC.h"
 
-using namespace std;
-using namespace gge::sound;
-using namespace gge::sound::system;
+namespace Gorgon { namespace Resource {
 
-namespace gge { namespace resource {
+	Sound *Sound::LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) {
+		auto snd=new Sound;
 
-	Sound *LoadSoundResource(File &File, std::istream &Data, int Size) {
+		/*if(!snd->load(reader, size, false)) {
+			delete snd;
+			return nullptr;
+		}*/
+
+		return snd;
+	}
+
+	//bool Sound::Load() {
+	//	if(isloaded)			return true;
+	//	if(!reader)				return false;
+	//	if(!reader->TryOpen())	return false;
+
+	//	reader->Seek(entrypoint-4);
+
+	//	auto size=reader->ReadChunkSize();
+
+	//	auto ret=load(reader, size, true);
+
+	//	if(ret && isloaded) {
+	//		reader->NoLongerNeeded();
+	//		reader.reset();
+	//	}
+
+	//	return true;
+	//}
+
+
+	void Sound::save(Writer& writer) {
+		auto start = writer.WriteObjectStart(this);
+
+		auto propstart = writer.WriteChunkStart(GID::Sound_Fmt);
+		writer.WriteGID(compression);
+		writer.WriteInt32(data.GetSampleRate());
+		writer.WriteEnd(propstart);
+
+		propstart = writer.WriteChunkStart(GID::Sound_Channels);
+		writer.WriteInt8((Byte)data.GetChannelCount());
+		for(unsigned i=0; i<data.GetChannelCount(); i++) {
+			writer.WriteInt32((int32_t)data.GetChannelType(i));
+		}
+		writer.WriteEnd(propstart);
+
+		if(compression==GID::None) {
+			writer.WriteChunkHeader(
+				GID::Sound_Wave, 
+				data.GetBytes()
+			);
+
+			writer.WriteArray(data.RawData(), data.GetBytes());
+		}
+		else if(compression==GID::FLAC) {
+			auto datastart = writer.WriteChunkStart(GID::Sound_Cmp_Wave);
+			Encoding::Flac.Encode(data, writer.GetStream());
+			writer.WriteEnd(datastart);
+		}
+		else {
+			throw std::runtime_error("Unknown compression mode: "+String::From(compression));
+		}
+
+		writer.WriteEnd(start);
+	}
+
+	/*Sound *LoadSoundResource(File &File, std::istream &Data, int Size) {
 		Sound *snd=new Sound;
 		LoadSound(snd, Data, Size);
 		return snd;
 	}
 
+	
 	void LoadSound(Sound *snd, istream &Data, int Size) {
 		encoding::LZMA lzma(false);
 		
@@ -73,106 +135,6 @@ namespace gge { namespace resource {
 				utils::CheckAndDeleteArray(compressionprops);
 			}
 		}
-	}
-
-	Sound::SoundReadError Sound::ImportWave(const std::string &filename) {
-		Data.clear();
-		Size=0;
-
-		std::ifstream file(filename, std::ios::binary);
-
-		if(!file.is_open())
-			return FileNotFound;
-
-		char sig[7]={};
-
-		file.read(sig, 4);
-		if(sig!=std::string("RIFF")) {
-			return ReadError;
-		}
-
-		ReadFrom<int>(file);
-
-		file.read(sig, 4);
-		if(sig!=std::string("WAVE")) {
-			return ReadError;
-		}
-
-		ReadFrom<int>(file); //fmt 
-		int formatsize=ReadFrom<int>(file);
-		if(formatsize!=16) {
-			return ReadError;
-		}
-
-		ReadFrom(file, Format);
-
-		ReadFrom<int>(file); //data
-		ReadFrom(file, Size);
-		Data.resize(Size);
-		file.read((char*)(&Data[0]), Size);
-
-    return NoError;
-	}
-
-
-	void Sound::Prepare( ) {
-    if(!Size) return;
-		Buffer=sound::system::CreateSoundBuffer(Format, &Data[0], Size);
-	}
-
-	void Sound::destroy() {
-		std::vector<Byte> empty;
-		Data.swap(empty);
-
-		if(Buffer)
-			sound::system::DestroySoundBuffer(Buffer);
-	}
-
-	void unpack(int &data, int nbits) {
-		if(nbits==32) return;
-		nbits--;
-
-		if(data & 1<<nbits) {
-			data=-(1<<nbits) + (data&~(1<<nbits));
-		}
-	}
-	
-	void pack(int &data, int nbits) {
-		if(data<0) {
-			nbits--;
-			data=(1<<nbits) + data;
-			data=data|(1<<nbits);
-		}
-
-	}
-
-	void Sound::StereoToMono() {
-		if(Format.Channels!=2 || Size==0) return;
-
-		int bps=Format.BitsPerSample/8;		
-		int samples=Size/bps;
-		samples/=2;
-
-		std::vector<gge::Byte> odata;
-		Data.swap(odata);
-		Data.resize(bps*samples);
-
-		for(int i=0;i<samples;i++) {
-			int l=0,r=0,v=0;
-			memcpy(&l, &odata[i*2*bps], bps);
-			memcpy(&r, &odata[i*2*bps+bps], bps);
-
-			unpack(l, Format.BitsPerSample);
-			unpack(r, Format.BitsPerSample);
-			v=(l+r)/2;
-			pack(v, Format.BitsPerSample);
-			memcpy(&Data[i*bps], &v, bps);
-		}
-
-		Format.Channels=1;
-		Format.BlockAlign/=2;
-		Format.AvgBytesPerSec/=2;
-		Size/=2;
-	}
+	}*/
 
 } }

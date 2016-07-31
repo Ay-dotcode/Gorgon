@@ -5,7 +5,7 @@ include_directories(src)
 
 add_definitions("-DFLAC__NO_DLL")
 
-add_library(flac STATIC 
+SET(Local 
 	src/bitmath.c
 	src/bitreader.c
 	src/bitwriter.c
@@ -30,6 +30,11 @@ IF(${WIN32})
 		src/win_utf8_io.c
 	)
 ENDIF()
+
+add_library(flac STATIC 
+	${Local}
+)
+
 
 
 install(TARGETS flac

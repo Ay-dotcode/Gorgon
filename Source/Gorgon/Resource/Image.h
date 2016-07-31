@@ -11,7 +11,6 @@
 
 namespace Gorgon { namespace Resource {
 	class File;
-	class Image;
 	class Reader;
 
 	/// This resource contains images. It allows draw, load, import, export functionality. An image resource may work
@@ -38,7 +37,7 @@ namespace Gorgon { namespace Resource {
 			this->compression=compression;
 		}
 		
-		/// Returns the compression mode of this image resourc
+		/// Returns the compression mode of this image resource
 		GID::Type GetCompression() const {
 			return compression;
 		}
