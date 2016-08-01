@@ -6,6 +6,7 @@
 #include "Image.h"
 #include "Animation.h"
 #include "Data.h"
+#include "Sound.h"
 
 
 
@@ -18,6 +19,7 @@ namespace Gorgon { namespace Resource {
 		Loaders[GID::Animation_Image] 	= {GID::Animation_Image	, Image::LoadResource};
 		Loaders[GID::Animation] 		= {GID::Animation		, Animation::LoadResource};
 		Loaders[GID::Data] 				= {GID::Data			, Data::LoadResource};
+		Loaders[GID::Sound]				= {GID::Sound  	        , Sound::LoadResource};
 	}
 
 	bool Resource::Reader::ReadCommonChunk(Base &self, GID::Type gid, unsigned long size) {

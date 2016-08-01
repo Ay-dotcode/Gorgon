@@ -144,8 +144,8 @@ namespace Gorgon { namespace Resource {
 		auto start = writer.WriteObjectStart(this);
 		
 		auto propstart = writer.WriteChunkStart(GID::Image_Props);
-		writer.WriteInt32(size.Width);
-		writer.WriteInt32(size.Height);
+		writer.WriteInt32(data->GetSize().Width);
+		writer.WriteInt32(data->GetSize().Height);
 		writer.WriteEnum32(GetMode());
 		writer.WriteGID(compression);
 		writer.WriteBool(false);

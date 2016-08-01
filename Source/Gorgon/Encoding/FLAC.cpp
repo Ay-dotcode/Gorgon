@@ -85,8 +85,6 @@ namespace Gorgon { namespace Encoding {
 
 		output.write((const char*)buffer, bytes);
 
-		std::cout<<"Written: "<<bytes<<std::endl;
-
 		return (output.good() ? FLAC__STREAM_ENCODER_WRITE_STATUS_OK : FLAC__STREAM_ENCODER_WRITE_STATUS_FATAL_ERROR);
 	}
 
@@ -254,7 +252,8 @@ namespace Gorgon { namespace Encoding {
 			
 			for(int j=0; j<tobeenc; j++) {
 				for(int c=0; c<channels; c++) {
-					buffer[j * channels + c] = (int32_t)(multiplier * input(i + j, c));
+					//+0.1 is to avoid floating point precision issues
+					buffer[j * channels + c] = (int32_t)( multiplier * input(i + j, c) + 0.1 );
 				}
 			}
 

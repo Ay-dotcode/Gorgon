@@ -7,56 +7,193 @@ namespace Gorgon { namespace Resource {
 	Sound *Sound::LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) {
 		auto snd=new Sound;
 
-		/*if(!snd->load(reader, size, false)) {
+		if(!snd->load(reader, size, false)) {
 			delete snd;
 			return nullptr;
-		}*/
+		}
 
 		return snd;
 	}
 
-	//bool Sound::Load() {
-	//	if(isloaded)			return true;
-	//	if(!reader)				return false;
-	//	if(!reader->TryOpen())	return false;
+	bool Sound::Load() {
+		if(isloaded)			return true;
+		if(!reader)				return false;
+		if(!reader->TryOpen())	return false;
 
-	//	reader->Seek(entrypoint-4);
+		reader->Seek(entrypoint-4);
 
-	//	auto size=reader->ReadChunkSize();
+		auto size=reader->ReadChunkSize();
 
-	//	auto ret=load(reader, size, true);
+		auto ret=load(reader, size, true);
 
-	//	if(ret && isloaded) {
-	//		reader->NoLongerNeeded();
-	//		reader.reset();
-	//	}
+		if(ret && isloaded) {
+			reader->NoLongerNeeded();
+			reader.reset();
+		}
 
-	//	return true;
-	//}
+		return true;
+	}
 
+
+	bool Sound::load(std::shared_ptr<Reader> reader, unsigned long totalsize, bool forceload) {
+		bool load=false;
+
+		auto target = reader->Target(totalsize);
+
+		entrypoint = reader->Tell();
+
+		data.Destroy();
+
+		unsigned long uncompressed = 0;
+		std::vector<Audio::Channel> channels;
+
+		while(!target) {
+			auto gid = reader->ReadGID();
+			auto size= reader->ReadChunkSize();
+
+			if(gid==GID::Sound_Fmt) {
+				compression = reader->ReadGID();
+				data.SetSampleRate(reader->ReadUInt32());
+				uncompressed = reader->ReadUInt32();
+				pcm = reader->ReadBool();
+				bits = reader->ReadUInt8();
+				lateloading=reader->ReadBool();
+
+				load=!lateloading || forceload;
+				if(!load) {
+					reader->KeepOpen();
+					this->reader=reader;
+				}
+                
+                checkfmt();
+			}
+			else if(gid==GID::Sound_Props) {
+				uncompressed = reader->ReadInt32();
+				channels = Audio::StandardChannels(reader->ReadInt16());
+				reader->ReadInt16();
+				bits = reader->ReadInt16();
+				data.SetSampleRate(reader->ReadInt32());
+				reader->ReadInt32();
+                reader->ReadInt16();
+                pcm = true;
+                
+                checkfmt();
+                
+                uncompressed = uncompressed / channels.size() / (bits/8);
+
+				if(size>20)
+					reader->Seek(reader->Tell() + size - 20);
+			}
+			else if(gid==GID::Sound_Channels) {
+				int cnt = reader->ReadUInt8();
+				for(int i=0; i<cnt; i++)
+					channels.push_back(reader->ReadEnum32<Audio::Channel>());
+			}
+			else if(gid==GID::Sound_Wave) {
+				if(load) {
+                    if(!pcm) {
+                        data.Resize(uncompressed, channels);
+                        reader->ReadArray(data.RawData(), data.GetSize() * data.GetChannelCount());
+                    }
+                    else {
+                        data.Resize(uncompressed, channels);
+                        float *ptr = data.RawData();
+                        
+                        for(unsigned long i=0; i<uncompressed; i++) {
+                            for(int c = 0; c<data.GetChannelCount(); c++) {
+                                if(bits == 8) {
+                                    *ptr++ = (reader->ReadUInt8() / 255.f) * 2.f - 1.f;
+                                }
+                                else {
+                                    *ptr++ = reader->ReadInt16() / 32767.f;
+                                }
+                            }
+                        }
+                    }
+
+					isloaded=true;
+				}
+				else {
+					reader->EatChunk(size);
+				}
+			}
+			else if(gid==GID::Sound_Cmp_Wave) {
+				if(load) {
+                    auto target = reader->Tell() + size;
+					if(size>0) {
+						Encoding::Flac.Decode(reader->GetStream(), data);
+                        data.SetChannels(channels);
+                        reader->GetStream().clear(std::ios::eofbit);
+                        reader->Seek(target);
+					}
+
+					isloaded=true;
+				}
+				else {
+					reader->EatChunk(size);
+				}
+			}
+			else {
+				if(!reader->ReadCommonChunk(*this, gid, size)) {
+					Utils::ASSERT_FALSE("Unknown chunk: "+String::From(gid));
+					reader->EatChunk(size);
+				}
+			}
+		}
+
+		return true;
+	}
 
 	void Sound::save(Writer& writer) {
 		auto start = writer.WriteObjectStart(this);
 
 		auto propstart = writer.WriteChunkStart(GID::Sound_Fmt);
 		writer.WriteGID(compression);
-		writer.WriteInt32(data.GetSampleRate());
+		writer.WriteUInt32(data.GetSampleRate());
+		writer.WriteUInt32(data.GetSize());
+		writer.WriteBool(pcm);
+		writer.WriteUInt8(bits);
+		writer.WriteBool(lateloading);
 		writer.WriteEnd(propstart);
 
 		propstart = writer.WriteChunkStart(GID::Sound_Channels);
-		writer.WriteInt8((Byte)data.GetChannelCount());
+		writer.WriteUInt8((Byte)data.GetChannelCount());
 		for(unsigned i=0; i<data.GetChannelCount(); i++) {
-			writer.WriteInt32((int32_t)data.GetChannelType(i));
+			writer.WriteEnum32(data.GetChannelType(i));
 		}
 		writer.WriteEnd(propstart);
 
 		if(compression==GID::None) {
-			writer.WriteChunkHeader(
-				GID::Sound_Wave, 
-				data.GetBytes()
-			);
+			if(pcm) {
+				writer.WriteChunkHeader(
+					GID::Sound_Wave,
+					data.GetSize() * data.GetChannelCount() * bits/8
+				);
 
-			writer.WriteArray(data.RawData(), data.GetBytes());
+				if(bits == 8) {
+					for(unsigned long i=0; i<data.GetSize(); i++) {
+						for(unsigned c=0; c<data.GetChannelCount(); c++) {
+							//+0.1 is to avoid floating point precision issues
+							writer.WriteUInt8(Byte( (data.Get(i, c)+1) / 2 * 255 + 0.1 ));
+						}
+					}
+				}
+				else if(bits == 16) {
+					for(unsigned long i=0; i<data.GetSize(); i++) {
+						for(unsigned c=0; c<data.GetChannelCount(); c++) 
+							//+0.1 is to avoid floating point precision issues
+							writer.WriteInt16(int16_t( data.Get(i, c) * 32767.f + 0.1 ));
+					}
+				}
+			}
+			else {
+				writer.WriteChunkHeader(
+					GID::Sound_Wave, 
+					data.GetBytes()
+				);
+
+				writer.WriteArray(data.RawData(), data.GetBytes());
+			}
 		}
 		else if(compression==GID::FLAC) {
 			auto datastart = writer.WriteChunkStart(GID::Sound_Cmp_Wave);
@@ -68,6 +205,22 @@ namespace Gorgon { namespace Resource {
 		}
 
 		writer.WriteEnd(start);
+	}
+
+	void Sound::checkfmt() const {
+		if(compression == GID::FLAC) {
+			if(bits<4 || bits>24)
+				throw std::runtime_error("Unsupported bits/sample");
+
+			if(!pcm)
+				throw std::runtime_error("FLAC compression only supports PCM data");
+		}
+		else if(compression == GID::None) {
+			if(pcm && bits!=8 && bits!=16)
+				throw std::runtime_error("Unsupported bits/sample");
+		}
+		else 
+			throw std::runtime_error("Unsupported compression");
 	}
 
 	/*Sound *LoadSoundResource(File &File, std::istream &Data, int Size) {

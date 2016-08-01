@@ -69,17 +69,39 @@ namespace Gorgon {
 				return bits;
 			}
 
+			/// Sets the number of bits per sample. Only effects saving, in memory format
+			/// is non-PCM 32bit float. Currently this does not have effect if data is saved
+			/// non-PCM fashion.
 			void SetBits(int bits) {
-				if(compression == GID::FLAC) {
-					if(bits<4 || bits>24)
-						throw std::runtime_error("Unsupported bits/sample");
-				}
-				else {
-					if(bits!=8 && bits!=16)
-						throw std::runtime_error("Unsupported bits/sample");
-				}
-
 				this->bits = bits;
+
+				checkfmt();
+			}
+
+			/// Returns if the wave data will be saved as PCM data.
+			bool IsPCM() const {
+				return pcm;
+			}
+
+			/// Set whether the wave data should be saved in PCM format. FLAC supports only 
+			/// PCM while internal saving mechanism can save wave non-PCM mode as 32bit float.
+			void SetPCM(bool pcm) {
+				this->pcm = pcm;
+
+				checkfmt();
+			}
+
+			/// Returns the compression type of this resource.
+			GID::Type GetCompression() const {
+				return compression;
+			}
+
+			/// Changes the compression type of this resource. Currently GID::None and 
+			/// GID::FLAC is supported.
+			void SetCompression(GID::Type compression) {
+				this->compression = compression;
+			
+				checkfmt();
 			}
 
 
@@ -89,6 +111,9 @@ namespace Gorgon {
 			bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 
 			void save(Writer &writer) override;
+
+			/// Checks if the format of the file is well-formed
+			void checkfmt() const;
 
 			/// Entry point of this resource within the physical file. This value is stored for 
 			/// late loading purposes
@@ -105,6 +130,8 @@ namespace Gorgon {
 
 			/// Whether to load this sound during initial loading
 			bool lateloading = false;
+
+			bool pcm = true;
 			
 			/// Sound data
 			Containers::Wave data;

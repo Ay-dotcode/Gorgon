@@ -138,6 +138,11 @@ namespace Gorgon { namespace Resource {
 			return stream && stream->good();
 		}
 
+		/// Checks if the stream is open and it can be read from
+		bool IsFailed() const {
+			return stream && stream->fail();
+		}
+
 		/// Tries to open the stream, if it fails, this function returns false.
 		/// If this function returns true, read operations can be carried.
 		bool TryOpen() {
@@ -152,7 +157,6 @@ namespace Gorgon { namespace Resource {
 		/// This should be last resort, use if the actual stream is needed.
 		std::istream &GetStream() {
 			ASSERT(stream, "Reader is not opened.");
-			ASSERT(IsGood(), "Reader is failed.");
 
 			return *stream;
 		}
@@ -160,7 +164,7 @@ namespace Gorgon { namespace Resource {
 		/// Tells the current position
 		unsigned long Tell() const {
 			ASSERT(stream, "Reader is not opened.");
-			ASSERT(IsGood(), "Reader is failed.");
+			ASSERT(!IsFailed(), "Reader is failed.");
 
 			return (unsigned long)stream->tellg();
 		}
@@ -168,7 +172,7 @@ namespace Gorgon { namespace Resource {
 		/// Seeks to the given position
 		void Seek(unsigned long pos) {
 			ASSERT(stream, "Reader is not opened.");
-			ASSERT(IsGood(), "Reader is failed.");
+			ASSERT(!IsFailed(), "Reader is failed.");
 
 			stream->seekg((std::streampos)pos, std::ios::beg);
 		}
@@ -176,7 +180,7 @@ namespace Gorgon { namespace Resource {
 		/// Seeks to the given position
 		void Seek(const Mark &pos) {
 			ASSERT(stream, "Reader is not opened.");
-			ASSERT(IsGood(), "Reader is failed.");
+			ASSERT(!IsFailed(), "Reader is failed.");
 
 			stream->seekg((std::streampos)pos.Tell(), std::ios::beg);
 		}

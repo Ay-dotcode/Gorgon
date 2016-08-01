@@ -433,6 +433,15 @@ namespace Gorgon {
 				return channels[channel];
 			}
 			
+			/// Sets the channel assignment to this wave data. This function should not
+			/// change the number of channels, failing that would throw std::runtime_error
+			void SetChannels(std::vector<Audio::Channel> channels) {
+				if(channels.size() != this->channels.size() && size)
+					throw std::runtime_error("Number of channels does not match");
+
+				this->channels = std::move(channels);
+			}
+
 			/// Returns the index of the given channel. If the given channel does not exists, this function returns -1
 			int FindChannel(Audio::Channel channel) const {
 				for(int i=0; i<(int)channels.size(); i++)  {
