@@ -85,32 +85,6 @@ try {
 	Containers::Wave wave2;
     std::cout<<"Load file: "<<wave2.ImportWav("test.wav")<<std::endl;
 
-	Resource::File file;
-// 	Resource::Sound snd;
-// 	snd.Assign(wave2);
-// 
-// 	file.Root().Add(snd);
-// 
-// 	Containers::Image bmp({2, 2}, Graphics::ColorMode::RGBA);
-// 	bmp.Clean();
-// 
-// 	bmp({0, 0}, 0) = 128;
-// 	bmp({0, 0}, 1) = 128;
-// 	bmp({0, 0}, 2) = 128;
-// 	bmp({0, 0}, 3) = 255;
-// 
-// 	auto &img = *new Resource::Image();
-// 	img.Assume(bmp);
-// 
-// 	file.Root().Add(img);
-// 
-// 	file.Save("out.gor");
-    
-    
-    file.LoadFile("out.gor");
-    auto img = file.Root().Get<Resource::Image>(1).ReleaseData();
-    std::cout<<(int)img({0,0},0)<<std::endl;
-    std::cout<<(int)img({0,0},3)<<std::endl;
 
 	/*std::ofstream ofile("out.flac", std::ios::binary);
 	Encoding::Flac.Encode(wave2, ofile);
@@ -119,18 +93,18 @@ try {
 	Audio::BasicController c(wave);
 	//c.Loop();
 
-	Audio::PositionalController c2(file.Root().Get<Resource::Sound>(0).GetWave());
+	Audio::PositionalController c2(wave);
     c2.SetVolume(0.2f);
 	c2.Loop();
     
-    Geometry::Point3D loc = {3.3f, 0.5f - 0.68f, 0};
+    Geometry::Point3D loc = {1.f, 2.f, 0};
     
     c2.Move(loc);
 	
 	
 	while(1) {
 		NextFrame();
-        loc = loc - Geometry::Point3D(Time::DeltaTime()/2000.f, Time::DeltaTime()/5000.f,0);
+        loc = loc - Geometry::Point3D(Time::DeltaTime()/1000.f, 0,0);
         std::cout<<loc.X<<std::endl;
         c2.Move(loc);
         std::this_thread::yield();

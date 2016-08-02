@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Geometry/Point3D.h"
+#include "../Geometry/Transform3D.h"
 
 
 namespace Gorgon { namespace Audio {
@@ -15,6 +16,7 @@ namespace Gorgon { namespace Audio {
      */
     class Listener {
         friend void AudioLoop();
+        friend class Environment;
     public:
         
         Listener(Environment &env) : env(&env) { }
@@ -23,45 +25,54 @@ namespace Gorgon { namespace Audio {
         /// set, this function will infer speed and the location of the listener.
         void SetLocation(const Geometry::Point3D &location) {
             this->location = location;
+            
+            poscalc();
         }
 
-		void SetUpDirection(const Geometry::Point3D &up, const Geometry::Point3D &orientation) {
+		/// Changes the orientation of the listener. This function is not cheap and should not be
+		/// used if it can be avoided. In the default orientation Z is up and the listener is facing +
+		/// in the Y axis
+		void SetOrientation(const Geometry::Point3D &up, const Geometry::Point3D &orientation) {
 			this->up = up;
-			SetOrientation(orientation);
+			this->orientation = location;
+            
+            orientcalc();
 		}
 
 		/// Changes the orientation of the listener. This function is not cheap and should not be
 		/// used if it can be avoided. In the default orientation Z is up and the listener is facing +
 		/// in the Y axis
 		void SetOrientation(const Geometry::Point3D &location) {
-			this->orientation = orientation;
-			earfactor = orientation.CrossProduct(up);
+			this->orientation = location;
+            
+            orientcalc();
 		}
         
         /// Returns the current location of the listener.
         Geometry::Point3D GetLocation() const {
             return location;
         }
-        
-        Geometry::Point3D LeftEar() const;
-        
-        Geometry::Point3D RightEar() const;
 
     private:
+        void poscalc();
+        void orientcalc();
+        
         Geometry::Point3D location    = {0, 0, 0};
 		Geometry::Point3D orientation = {0, 1, 0};
 		Geometry::Point3D up		  = {0, 0, 1};
-		Geometry::Point3D earfactor   = {1, 0, 0};
+        
+        Geometry::Transform3D transform;
+        Geometry::Transform3D invtransform;
+        
+        Geometry::Point3D leftpos, rightpos; //position of the left and right ear
 
         Environment *env;
     };
 
     
     /**
-     * The environment which the audio system works on. To change units, you should set speed of sound
-     * in units per second. Default unit is meters. All other metrics work relative to this value.
-     * Max distance is set to 1 sound second, you may want to set this value as it might be short
-     * for strategy games, or too far for rpg games.
+     * The environment which the audio system works on. Default unit is meters. Current design of enviroment would change.
+     * The final design should have replacable environment tied to playback buffers.
      */
     class Environment {
         friend void AudioLoop();
@@ -71,11 +82,48 @@ namespace Gorgon { namespace Audio {
             init();
         }
         
+        /// Changes the attunation factor, higher values will attunate sound more, causing a faster fall off.
+        void SetAttuniationFactor(float value) {
+            attuniationfactor=value;
+        }
+        
+        /// Changes the radius of the head of listener.
+        void SetHeadRadius(float value) {
+            headradius = value;
+            
+            //lis.init
+        }
+        
+        /// Changes the percent of sound not blocked by the head. This calculation might change in time.
+        void SetNonBlocked(float value) {
+            nonblocked = value;
+        }
+        
+        /// Changes the difference of hearing direction cause by the auricles.
+        void SetAuricleAngle(float value) {
+            auricleangle = value;
+            
+            left  = { std::cos(PI-auricleangle), -std::sin(PI-auricleangle), 0};
+            right = { std::cos(   auricleangle), -std::sin(   auricleangle), 0};
+       }
+        
+        /// Sets the real world location of the speakers.
+        void SetSpeakerLocation(int index, Geometry::Point3D value) {
+            if(index<0 || index>=4)
+                throw std::runtime_error("There are 4 speakers that can be configured");
+            
+            speaker_locations[index] = value;
+            
+            init();
+        }
+        
         /// Currently active environment.
         static Environment Current;
         
     private:
         void init();
+        
+        void updateorientation();
         
         float unitspermeter      = 1;
         
@@ -89,11 +137,13 @@ namespace Gorgon { namespace Audio {
         
         float nonblocked         = 0.2f;    //amount of sound that is not blocked by head
         
-        float headradius         = 0.15f;    //units, rough size of the head
+        float headradius         = 0.15f;   //units, rough size of the head
         
-        float hrtfdistance       = 0.666f;   //units, rough perimeter that the sound should travel to reach other ear ²  
+        float hrtfdistance       = 0.666f;  //units, rough perimeter that the sound should travel to reach other ear ²  
         
-        Geometry::Point3D left, right;     //vectors for left and right ear hearing ²
+        Geometry::Point3D left, right;      //vectors for left and right ear hearing ²
+        
+        float auricleangle       = 0.10f;   //this angle in radians covers the angle difference caused by auircle.
         
         Geometry::Point3D speaker_locations[4] = {
             { .1f,-.1f, 0.f},
@@ -102,8 +152,8 @@ namespace Gorgon { namespace Audio {
             {-.1f, .3f, 0.f},
         };
         
-        Geometry::Point3D speaker_vectors[4];
-        float              speaker_boost[4];
+        Geometry::Point3D speaker_vectors[4]; // ²
+        float             speaker_boost[4];   // ²
         
         // ² calculated
         
@@ -111,12 +161,10 @@ namespace Gorgon { namespace Audio {
         Listener listener;
     };
     
-    inline Geometry::Point3D Gorgon::Audio::Listener::LeftEar() const {
-        return location - earfactor;
-    }
-    
-    inline Geometry::Point3D Gorgon::Audio::Listener::RightEar() const {
-        return location + earfactor;
+    inline void Listener::poscalc() {
+        leftpos = location - transform * Geometry::Point3D(env->headradius, 0, 0);
+        rightpos= location + transform * Geometry::Point3D(env->headradius, 0, 0);
+        
     }
 
 } }
