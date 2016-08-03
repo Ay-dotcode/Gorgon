@@ -59,6 +59,8 @@ TEST_CASE("Garbage collection", "[GarbageCollector]") {
 	gc.Collect();
 
 	REQUIRE(A::ACnt() == 0);
+    
+    deleted.clear();
 
 	auto first=reinterpret_cast<intptr_t>(&gc.AddNew());
 
@@ -70,8 +72,8 @@ TEST_CASE("Garbage collection", "[GarbageCollector]") {
 
 	gc.Collect();
 
-	REQUIRE( std::find(deleted.begin(), deleted.end(), second)==deleted.end() );
-	REQUIRE(std::find(deleted.begin(), deleted.end(), first)!=deleted.end());
+	REQUIRE( std::find(deleted.begin(), deleted.end(), first)!=deleted.end() );
+	REQUIRE(std::find(deleted.begin(), deleted.end(), second)==deleted.end());
 
 	A::KillAll(1);
 	gc.Collect();
