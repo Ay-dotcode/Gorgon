@@ -101,13 +101,29 @@ try {
     
     c2.Move(loc);
 	
+    unsigned left = 2000;
+    
+    Geometry::Point3D orn(0, 1, 0);
+    Geometry::Transform3D rot30;
+    
+    rot30.Rotate(0,0,PI/6);
 	
 	while(1) {
 		NextFrame();
-        loc = loc - Geometry::Point3D(Time::DeltaTime()/1000.f, 0,0);
-        std::cout<<loc.X<<std::endl;
-        c2.Move(loc);
-        std::this_thread::yield();
+        
+        if(left<Time::DeltaTime()) {
+            if(left) {
+                left = 2000;
+                orn = rot30 * orn;
+                Audio::Environment::Current.GetListener().SetOrientation(orn);
+            }
+        }
+        else
+            left -= Time::DeltaTime();
+        
+        //loc = loc - Geometry::Point3D(Time::DeltaTime()/1000.f, 0,0);
+        //std::cout<<loc.X<<std::endl;
+        //c2.Move(loc);
 	}
 	
 	return 0;

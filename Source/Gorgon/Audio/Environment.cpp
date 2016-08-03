@@ -3,12 +3,8 @@
  
 namespace Gorgon { namespace Audio {
     void Environment::init() {
-        left  = { std::cos(PI-auricleangle), -std::sin(PI-auricleangle), 0};
-        right = { std::cos(   auricleangle), -std::sin(   auricleangle), 0};
-            
         float maxboost = 0;
         for(int i=0; i<4; i++) {
-            speaker_vectors[i] = listener.transform * (speaker_locations[i].Normalize() * -1);
             speaker_boost  [i] = speaker_locations[i].Distance();
 			if(speaker_boost[i] > maxboost) maxboost = speaker_boost[i];
         }
@@ -16,9 +12,16 @@ namespace Gorgon { namespace Audio {
 		for(int i=0; i<4; i++) {
 			speaker_boost[i] -= maxboost;
 		}
+		
+		updateorientation();
     }
     
     void Environment::updateorientation() {
+        left  = listener.invtransform * Geometry::Point3D(std::cos(PI-auricleangle), -std::sin(PI-auricleangle), 0);
+        right = listener.invtransform * Geometry::Point3D( std::cos(   auricleangle), -std::sin(   auricleangle), 0);
+        
+        std::cout<<left<<" - "<<right<<std::endl;
+            
         for(int i=0; i<4; i++) {
             speaker_vectors[i] = listener.transform * (speaker_locations[i].Normalize() * -1);
         }

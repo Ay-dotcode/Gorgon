@@ -337,12 +337,12 @@ namespace Gorgon { namespace Audio {
                         leftvol = leftvec.Normalize() * env.left;
                         leftvol += 1;
                         leftvol /= 2;
-                        leftvol *= leftvol;
+                        //leftvol *= leftvol;
                         
                         rightvol = rightvec.Normalize() * env.right;
                         rightvol += 1;
                         rightvol /= 2;
-                        leftvol *= leftvol;
+                        //rightvol *= rightvol;
                         
                         auto total = (leftvol + rightvol);
                         

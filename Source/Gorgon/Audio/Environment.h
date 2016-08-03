@@ -19,7 +19,9 @@ namespace Gorgon { namespace Audio {
         friend class Environment;
     public:
         
-        Listener(Environment &env) : env(&env) { }
+        Listener(Environment &env) : env(&env) { 
+            orientcalc();
+        }
         
         /// Changes the current location of the listener, if automatic speed calculation is
         /// set, this function will infer speed and the location of the listener.
@@ -91,7 +93,7 @@ namespace Gorgon { namespace Audio {
         void SetHeadRadius(float value) {
             headradius = value;
             
-            //lis.init
+            listener.poscalc();
         }
         
         /// Changes the percent of sound not blocked by the head. This calculation might change in time.
@@ -105,7 +107,7 @@ namespace Gorgon { namespace Audio {
             
             left  = { std::cos(PI-auricleangle), -std::sin(PI-auricleangle), 0};
             right = { std::cos(   auricleangle), -std::sin(   auricleangle), 0};
-       }
+        }
         
         /// Sets the real world location of the speakers.
         void SetSpeakerLocation(int index, Geometry::Point3D value) {
@@ -115,6 +117,11 @@ namespace Gorgon { namespace Audio {
             speaker_locations[index] = value;
             
             init();
+        }
+        
+        /// Returns the current listener object
+        Listener &GetListener() {
+            return listener;
         }
         
         /// Currently active environment.
@@ -143,7 +150,7 @@ namespace Gorgon { namespace Audio {
         
         Geometry::Point3D left, right;      //vectors for left and right ear hearing ²
         
-        float auricleangle       = 0.10f;   //this angle in radians covers the angle difference caused by auircle.
+        float auricleangle       = 0.0f;   //this angle in radians covers the angle difference caused by auircle.
         
         Geometry::Point3D speaker_locations[4] = {
             { .1f,-.1f, 0.f},
