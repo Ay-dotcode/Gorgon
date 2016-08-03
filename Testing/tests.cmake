@@ -12,6 +12,7 @@ SET(UnitTests
 	Enum
 	Event
 	Filesystem
+	FLAC
 	GarbageCollection
 	Geometry
 	Hashmap

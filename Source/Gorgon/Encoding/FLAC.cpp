@@ -252,8 +252,7 @@ namespace Gorgon { namespace Encoding {
 			
 			for(int j=0; j<tobeenc; j++) {
 				for(int c=0; c<channels; c++) {
-					//+0.1 is to avoid floating point precision issues
-					buffer[j * channels + c] = (int32_t)( multiplier * input(i + j, c) + 0.1 );
+					buffer[j * channels + c] = (int32_t)( std::round(multiplier * input(i + j, c)) );
 				}
 			}
 
@@ -261,6 +260,7 @@ namespace Gorgon { namespace Encoding {
 
 			FLAC__stream_encoder_process_interleaved(encoder, &buffer[0], tobeenc);
 		}
+		
 
 		FLAC__stream_encoder_finish(encoder);
 	}

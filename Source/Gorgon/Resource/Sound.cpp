@@ -173,16 +173,14 @@ namespace Gorgon { namespace Resource {
 				if(bits == 8) {
 					for(unsigned long i=0; i<data.GetSize(); i++) {
 						for(unsigned c=0; c<data.GetChannelCount(); c++) {
-							//+0.1 is to avoid floating point precision issues
-							writer.WriteUInt8(Byte( (data.Get(i, c)+1) / 2 * 255 + 0.1 ));
+							writer.WriteUInt8(Byte( std::round((data.Get(i, c)+1) / 2 * 255) ));
 						}
 					}
 				}
 				else if(bits == 16) {
 					for(unsigned long i=0; i<data.GetSize(); i++) {
 						for(unsigned c=0; c<data.GetChannelCount(); c++) 
-							//+0.1 is to avoid floating point precision issues
-							writer.WriteInt16(int16_t( data.Get(i, c) * 32767.f + 0.1 ));
+							writer.WriteInt16(int16_t( std::round(data.Get(i, c) * 32767.f) ));
 					}
 				}
 			}
