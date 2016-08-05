@@ -100,7 +100,7 @@ namespace Gorgon { namespace Resource {
                         float *ptr = data.RawData();
                         
                         for(unsigned long i=0; i<uncompressed; i++) {
-                            for(int c = 0; c<data.GetChannelCount(); c++) {
+                            for(unsigned c = 0; c<data.GetChannelCount(); c++) {
                                 if(bits == 8) {
                                     *ptr++ = (reader->ReadUInt8() / 255.f) * 2.f - 1.f;
                                 }

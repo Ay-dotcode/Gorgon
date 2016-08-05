@@ -360,7 +360,7 @@ namespace Gorgon { namespace Audio {
                         int leftind  = Current.FindChannel(Channel::FrontLeft);
                         int rightind = Current.FindChannel(Channel::FrontRight);
                         
-                        std::cout<<leftvol<< " : " <<rightvol<<std::endl;
+                        //std::cout<<leftvol<< " : " <<rightvol<<std::endl;
                         
                         for(int s=0; s<size; s++) {
                             data[s*channels+leftind]  +=  leftvol * temp[s];
@@ -397,7 +397,7 @@ namespace Gorgon { namespace Audio {
                         int leftind  = Current.FindChannel(Channel::FrontLeft);
                         int rightind = Current.FindChannel(Channel::FrontRight);
                        
-                        std::cout<<leftvol<< " : " <<rightvol<<std::endl;
+                        //std::cout<<leftvol<< " : " <<rightvol<<std::endl;
                         
                         for(int s=0; s<size; s++) {
                             data[s*channels+leftind]  +=  leftvol * temp[s];
@@ -446,7 +446,7 @@ namespace Gorgon { namespace Audio {
                         int blind = Current.FindChannel(Channel::BackLeft);
                         int brind = Current.FindChannel(Channel::BackRight);
                        
-                        std::cout<<fl<< " : " <<fr<<" | "<<bl<< " : " <<br<<std::endl;
+                        //std::cout<<fl<< " : " <<fr<<" | "<<bl<< " : " <<br<<std::endl;
                         
                         for(int s=0; s<size; s++) {
                             data[s*channels+flind]  +=  fl * temp[s];

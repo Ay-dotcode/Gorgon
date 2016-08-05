@@ -17,10 +17,10 @@ namespace Gorgon { namespace Audio {
     }
     
     void Environment::updateorientation() {
-        left  = listener.invtransform * Geometry::Point3D(std::cos(PI-auricleangle), -std::sin(PI-auricleangle), 0);
-        right = listener.invtransform * Geometry::Point3D( std::cos(   auricleangle), -std::sin(   auricleangle), 0);
+        left  = listener.transform * Geometry::Point3D(std::cos(PI-auricleangle), -std::sin(PI-auricleangle), 0);
+        right = listener.transform * Geometry::Point3D( std::cos(   auricleangle), -std::sin(   auricleangle), 0);
         
-        std::cout<<left<<" - "<<right<<std::endl;
+        //std::cout<<left<<" - "<<right<<std::endl;
             
         for(int i=0; i<4; i++) {
             speaker_vectors[i] = listener.transform * (speaker_locations[i].Normalize() * -1);
@@ -41,7 +41,7 @@ namespace Gorgon { namespace Audio {
         transform(1, 2) = up.Y;
         transform(2, 2) = up.Z;
         
-        invtransform = transform.Transpose();
+        //invtransform = transform.Transpose();
         
         poscalc();
         

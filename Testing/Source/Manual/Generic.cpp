@@ -97,7 +97,7 @@ try {
     c2.SetVolume(0.2f);
 	c2.Loop();
     
-    Geometry::Point3D loc = {1.f, 2.f, 0};
+    Geometry::Point3D loc = {0.f, 2.f, 0};
     
     c2.Move(loc);
 	
@@ -106,17 +106,17 @@ try {
     Geometry::Point3D orn(0, 1, 0);
     Geometry::Transform3D rot30;
     
-    rot30.Rotate(0,0,PI/6);
+    rot30.Rotate(0,0,PI/2);
 	
 	while(1) {
 		NextFrame();
         
         if(left<Time::DeltaTime()) {
-            if(left) {
+            //if(left) {
                 left = 2000;
                 orn = rot30 * orn;
                 Audio::Environment::Current.GetListener().SetOrientation(orn);
-            }
+            //}
         }
         else
             left -= Time::DeltaTime();
