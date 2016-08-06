@@ -16,6 +16,7 @@ SET(UnitTests
 	GarbageCollection
 	Geometry
 	Hashmap
+	EncodingImage
 	String
 	Logging
 	URI

@@ -930,7 +930,7 @@ TEST_CASE( "Size point interaction", "[Size][Point]" ) {
 	
 	p4=p1;
 	Scale(p4, s2);
-	REQUIRE( p4 == Point(22, 103) );
+	REQUIRE( p4 == Point(22, 104) );
 	
 	p3=p2;
 	Scale(p3, s1);

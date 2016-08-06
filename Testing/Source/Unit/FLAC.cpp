@@ -9,8 +9,8 @@ using namespace Gorgon;
 TEST_CASE("FLAC") {
 	int freq = 400;
 	int rate = 12000;
-	float duration = 0.2;
-	float amp = 0.5;
+	float duration = 0.2f;
+	float amp = 0.5f;
 	float pi = 3.1415f;
 	
 	Containers::Wave wave(int(duration * rate), rate, {Audio::Channel::Mono, Audio::Channel::LowFreq});
@@ -56,9 +56,12 @@ TEST_CASE("FLAC") {
     Encoding::Flac.Encode(wave2, "out2.flac");
     
     Containers::Wave wave3;
-    Encoding::Flac.Decode("out2.flac", wave3);
+	std::ifstream infile("out2.flac", std::ios::binary);
+    Encoding::Flac.Decode(infile, wave3);
    
-    Encoding::Flac.Encode(wave3, "out3.flac");
+	std::ofstream outfile("out3.flac", std::ios::binary);
+	Encoding::Flac.Encode(wave3, outfile);
+	outfile.close();
     
     Containers::Wave wave4;
     Encoding::Flac.Decode("out3.flac", wave4);
@@ -93,8 +96,9 @@ TEST_CASE("FLAC") {
     
     //test 8 bit
     	
-	Encoding::Flac.Encode(wave, "out.flac", 8);
-    Encoding::Flac.Decode("out.flac", wave2);
+	std::vector<Byte> vec;
+	Encoding::Flac.Encode(wave, vec, 8);
+    Encoding::Flac.Decode(vec, wave2);
     
     i = 0;
  	for(auto elm : wave) {

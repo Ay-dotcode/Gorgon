@@ -13,6 +13,8 @@
 #include "Point.h"
 #include "../String.h"
 
+#include <ctype.h>
+
 namespace Gorgon { namespace Geometry {
 
 	/// This class represents a 2D geometric size. Although negative size is meaningless,
@@ -79,6 +81,10 @@ namespace Gorgon { namespace Geometry {
 			basic_Size sz;
 			
 			auto s=str.begin();
+
+			if(s==str.end()) {
+				throw String::IllegalTokenError(s-str.begin(), 121002, "Unexpected end of input");
+			}
 			
 			while(*s==' ' || *s=='\t') s++;
 						
@@ -89,22 +95,31 @@ namespace Gorgon { namespace Geometry {
 			}
 			s+=endptr-&*s;
 			
-			while(*s==' ' || *s=='\t') s++;				
+			while(s!=str.end() && isspace(*s)) s++;
+			if(s==str.end()) {
+				throw String::IllegalTokenError(s-str.begin(), 121002, "Unexpected end of input");
+			}
 			if(*s!='x') {
 				throw String::IllegalTokenError(s-str.begin(), 121002, std::string("Illegal token: ")+*s);
 			}
 			s++;
-			
+
+			if(s==str.end()) {
+				throw String::IllegalTokenError(s-str.begin(), 121002, "Unexpected end of input");
+			}
+
 			sz.Height=T_(strtod(&*s, &endptr));			
 			if(endptr==&*s) {
 				throw String::IllegalTokenError(s-str.begin(), 121003);
 			}
 			s+=endptr-&*s;
+
+			if(s==str.end()) return sz;
 			
 			//eat white space + a single )
-			while(*s==' ' || *s=='\t') s++;
+			while(s!=str.end() && isspace(*s)) s++;
 			
-			if(*s!=0) {
+			if(s!=str.end()) {
 				throw String::IllegalTokenError(s-str.begin(), 121004, std::string("Illegal token: ")+*s);
 			}
 			

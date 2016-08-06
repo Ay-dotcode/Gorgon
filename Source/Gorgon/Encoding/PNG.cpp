@@ -100,7 +100,7 @@ namespace Gorgon { namespace Encoding {
 		if(png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
 			png_set_tRNS_to_alpha(png_ptr); 
 
-		if(color_type == PNG_COLOR_TYPE_GRAY) {
+		if(color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
 			if(pChannels>1) {
 				mode=Graphics::ColorMode::Grayscale_Alpha;
 			}
@@ -108,13 +108,16 @@ namespace Gorgon { namespace Encoding {
 				mode=Graphics::ColorMode::Grayscale;
 			}
 		}
-		else {
+		else if(color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
 			if(pChannels>3) {
 				mode=Graphics::ColorMode::RGBA;
 			}
 			else {
 				mode=Graphics::ColorMode::RGB;
 			}
+		}
+		else {
+			throw std::runtime_error("Unsupported color mode.");
 		}
 
 		if(bit_depth == 16)

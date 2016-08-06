@@ -70,7 +70,7 @@ namespace Gorgon { namespace Encoding {
 			auto data = output.RawData();
             auto stride = w * output.GetBytesPerPixel();
             
-			while (cinfo.output_scanline < h) {
+			while ((long)cinfo.output_scanline < h) {
 				jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&data, 1);
 				data += stride;
 			}
@@ -161,7 +161,7 @@ namespace Gorgon { namespace Encoding {
 		}
 		
 		void Reader::skip_input_data(jpeg_decompress_struct &cinfo, long size) {
-            if(cinfo.src->bytes_in_buffer<size)
+            if((long)cinfo.src->bytes_in_buffer<size)
                 size = cinfo.src->bytes_in_buffer;
             
             cinfo.src->bytes_in_buffer-=size;
