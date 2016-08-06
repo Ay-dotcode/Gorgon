@@ -246,6 +246,25 @@ namespace Gorgon { namespace Encoding {
             return (out.good() ? TRUE : FALSE);
         }
 
+		void VectorWriter::term_destination(jpeg_compress_struct &cinfo) {
+			out.resize(out.size() - cinfo.dest->free_in_buffer);
+		}
+
+		void VectorWriter::init_destination(jpeg_compress_struct &cinfo) {
+			out.resize(1024);
+			cinfo.dest->free_in_buffer = 1024;
+			cinfo.dest->next_output_byte = &out[0];
+		}
+
+		bool VectorWriter::empty_output_buffer(jpeg_compress_struct &cinfo) {
+			out.resize(out.size() + 1024);
+
+			cinfo.dest->next_output_byte = &out[out.size()-1024];
+			cinfo.dest->free_in_buffer   = 1024;
+
+			return TRUE;
+		}
+
 		void init_source(jpeg_decompress_struct *cinfo) {
 			((SourceManager*)cinfo->src)->reader->init_source(*cinfo);
 		}

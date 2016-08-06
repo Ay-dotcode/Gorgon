@@ -88,19 +88,31 @@ namespace Gorgon { namespace Encoding {
             
             virtual ~Writer();
 		};
-        
-        class StreamWriter : public Writer {
-        public:
-            StreamWriter(std::ostream &out) : out(out) { }
-            
+
+		class StreamWriter : public Writer {
+		public:
+			StreamWriter(std::ostream &out) : out(out) {}
+
 			virtual void init_destination(jpeg_compress_struct &cinfo);
 			virtual bool empty_output_buffer(jpeg_compress_struct &cinfo);
-            virtual void term_destination(jpeg_compress_struct &cinfo);
-            
-        private:
-            std::ostream &out;
-            Byte buffer[1024];
-        };
+			virtual void term_destination(jpeg_compress_struct &cinfo);
+
+		private:
+			std::ostream &out;
+			Byte buffer[1024];
+		};
+
+		class VectorWriter : public Writer {
+		public:
+			VectorWriter(std::vector<Byte> &out) : out(out) {}
+
+			virtual void init_destination(jpeg_compress_struct &cinfo);
+			virtual bool empty_output_buffer(jpeg_compress_struct &cinfo);
+			virtual void term_destination(jpeg_compress_struct &cinfo);
+
+		private:
+			std::vector<Byte> &out;
+		};
 
 	}
 
@@ -156,10 +168,18 @@ namespace Gorgon { namespace Encoding {
 		/// Encode given image to JPG compressed data. Quality is in percents 100 means best.
 		/// throws runtime error
 		void Encode(Containers::Image &input, const std::string &output, int quality = 90) {
-            std::ofstream file(output, std::ios::binary);
-            if(!file.is_open()) throw std::runtime_error("Cannot open file");
-            
-            Encode(input, file, quality);
+			std::ofstream file(output, std::ios::binary);
+			if(!file.is_open()) throw std::runtime_error("Cannot open file");
+
+			Encode(input, file, quality);
+		}
+
+		/// Encode given image to JPG compressed data. Quality is in percents 100 means best.
+		/// throws runtime error
+		void Encode(Containers::Image &input, std::vector<Byte> &output, int quality = 90) {
+			jpg::VectorWriter writer(output);
+
+			encode(writer, input, quality);
 		}
 
 
