@@ -21,7 +21,10 @@ TEST_CASE( "Console test", "[Logger]") {
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 	
 	logger<<"t"<<std::endl<<"a";
-	logger<<"One more log! ";
+    
+    logger.SetSection("Changed");
+    logger.SetMarkDate(false);
+	logger.Log("One more log! ");
 	
 	ss.seekg(0, std::ios::beg);
 	
@@ -48,4 +51,34 @@ TEST_CASE( "Console test", "[Logger]") {
 	char c;
 	ss.read(&c, 1);
 	REQUIRE( (c=='\n' || c=='\r') );
+    
+    ss>>s1; //a
+    
+    ss>>s1>>s1;
+    REQUIRE(s1 == "Changed");
+    ss>>s1;
+    REQUIRE(s1 == "Error!");
+    
+    ss.str("");
+    
+    logger.SetMarkTime(false);
+    logger<<"Test2";
+
+    ss>>s1;
+    REQUIRE(s1 == "Changed");
+    ss>>s1;
+    REQUIRE(s1 == "Test2");
+    
+    logger.DisableColor();
+    REQUIRE(logger.IsColorEnabled() == false);
+    
+    
+    logger.Log("Finally", Gorgon::Utils::Logger::Success);
+
+    ss>>s1;
+    REQUIRE(s1 == "Changed");
+    ss>>s1;
+    REQUIRE(s1 == "Success:");
+    ss>>s1;
+    REQUIRE(s1 == "Finally");
 }

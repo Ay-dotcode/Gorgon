@@ -4,7 +4,9 @@
 #include <fstream>
 #include <string>
 #include <mutex>
+
 #include "../Time.h"
+#include "../Console.h"
 
 namespace Gorgon { namespace Utils {
 	
@@ -63,7 +65,10 @@ namespace Gorgon { namespace Utils {
 					(*parent->stream) << "\n";
 				
 				(*parent->stream)<<std::endl;
-			}
+
+                if(parent->IsColorFunctional())
+                    Console::Reset(*parent->stream);
+            }
 			
 			using endl_t = decltype(&std::endl<char, std::char_traits<char>>);
 
@@ -100,9 +105,15 @@ namespace Gorgon { namespace Utils {
 		};
 		
 	public:
+        enum State {
+            Message,
+            Error,
+            Success
+        };
+        
 		/// Default constructor. Allows you to specify a section
 		Logger(const std::string &section = "", bool marktime = true, bool markdate = false) : 
-			stream(nullptr), owner(false), section(section), marktime(marktime), markdate(markdate) 
+			section(section), marktime(marktime), markdate(markdate) 
 		{ }
 
 		/// Default constructor. Allows you to specify a section
@@ -113,7 +124,7 @@ namespace Gorgon { namespace Utils {
 		Logger(bool marktime, bool markdate = false) : Logger("", marktime, markdate) { }
 		
 		Logger(std::ostream &stream, const std::string &section = "", bool marktime = true, bool markdate = false) : 
-			stream(&stream), owner(false), section(section), marktime(marktime), markdate(markdate)
+			stream(&stream), section(section), marktime(marktime), markdate(markdate)
 		{ 
 			
 		}
@@ -126,6 +137,7 @@ namespace Gorgon { namespace Utils {
 			CleanUp();
 			stream=&std::cout;
 			owner=false;
+            colorsupported = Console::IsColorSupported();
 		}
 
 		/// Initializes the logger to direct its input to the given stream. 
@@ -155,7 +167,8 @@ namespace Gorgon { namespace Utils {
 				delete stream;
 			}
 			
-			stream=nullptr;
+			stream    = nullptr;
+            colorsupported = false;
 		}
 		
 		/// Sets the width to break lines from. Set to 0 to disable.
@@ -167,19 +180,33 @@ namespace Gorgon { namespace Utils {
 		/// add requested information in front. Always cascade entries. Everytime a new `logger << ...`
 		/// is called, header information will be printed out. You may use std::endl in your logs,
 		/// but a new line will be added for all entries. An extra empty line will be inserted for
-		/// multiline entries. Do not use "\n" as it will not be detected.
+		/// multiline entries. Do not use "\n" as it will not be detected. Message state is used
+		/// for this case.
 		template <class T_>
 		helper operator <<(const T_ &v) {
+            return Log(v, Message);
+        }
+        
+		/// Streams out the given value to the underlying stream. This function will automatically 
+		/// add requested information in front. Always cascade entries. Everytime a new `logger << ...`
+		/// is called, header information will be printed out. You may use std::endl in your logs,
+		/// but a new line will be added for all entries. An extra empty line will be inserted for
+		/// multiline entries. Do not use "\n" as it will not be detected. ,
+		/// @code
+		/// logger.Log("Unexpected error: ", Utils::Logger::Error)<<ex.what();
+		/// @endcode
+        template <class T_>
+        helper Log(const T_ &v, State state = Error) {
 #ifndef NO_LOGGING
 			if(!this->stream) return {nullptr, 0, false};
 			auto &stream = *this->stream;
 			
 			int headw = marktime * 8 + markdate * 10 + (markdate && marktime) * 1 + ((markdate || marktime) && !section.empty()) * 1 + section.size();
-			
+// 			
 			if(headw) headw += 2;
 
 			helper h;
-			
+            
 			if(width && headw*1.25 >= width) {
 				stream<<std::endl;
 				
@@ -196,7 +223,10 @@ namespace Gorgon { namespace Utils {
 				auto dt = Time::Date::Now();
 				
 				if(markdate) {
-					stream<<dt.ISODate();
+                    if(IsColorFunctional())
+                        Console::SetColor(Console::Color::Cyan, stream);
+                        
+                    stream<<dt.ISODate();
 					
 					if(marktime) stream<<" ";
 				}
@@ -208,9 +238,29 @@ namespace Gorgon { namespace Utils {
 				if(!section.empty()) stream<<" ";
 			}
 			
+            if(IsColorFunctional()) {
+                Console::Reset(stream);
+                Console::SetBold(true, stream);
+                if(state != Message) {
+                    Console::SetColor(state == Error ? Console::Color::Red : Console::Color::Green, stream);
+                }
+            }
+            
 			if(!section.empty()) stream<<section;
 			
 			if(headw) stream<<"  ";
+
+            if(IsColorFunctional())
+                Console::Reset(stream);
+            
+            if(state != Message) {
+                if(IsColorFunctional()) {
+                    Console::SetColor(state == Error ? Console::Color::Red : Console::Color::Green, stream);
+                }
+                else {
+                    stream << (state == Error ? "Error! : " : "Success: ");
+                }
+            }
 			
 			return std::move(h << v);
 #else
@@ -218,15 +268,85 @@ namespace Gorgon { namespace Utils {
 #endif
 		}
 
+		/// Sets the section of this logger.
+		void SetSection(const std::string &value) {
+            section = value;
+        }
+        
+        /// Returns the current section of this logger.
+        std::string GetSection() const {
+            return section;
+        }
+        
+        /// Sets whether to mark the time on log output
+        void SetMarkTime(bool value) {
+            marktime = value;
+        }
+        
+        /// Returns whether time is being marked
+        bool GetMarkTime() const {
+            return marktime;
+        }
+        
+        /// Sets whether to mark the date on log output
+        void SetMarkDate(bool value) {
+            markdate = value;
+        }
+        
+        /// Returns whether date is being marked
+        bool GetMarkDate() const {
+            return markdate;
+        }
+        
+        /// Enables color support, however, if the underlying stream does not allow coloring
+        /// this will not have any effect. You may use ForceColor to output color coding to
+        /// a device that does not support color.
+        void EnableColor() {
+            color = true;
+        }
+        
+        /// Forces logger to use color even if it is not supported
+        void ForceColor() {
+            color = true;
+            colorsupported = true;
+        }
+        
+        /// Disable color output
+        void DisableColor() {
+            color = false;
+        }
+        
+        /// Sets color enabled state. If color is enabled and the underlying stream does not 
+        /// allow coloring setting coloring to true will not have any effect. You may use 
+        /// ForceColor to output color coding to a device that does not support color.
+        void SetColorEnabled(bool value) {
+            color = value;
+        }
+        
+        /// Whether color is enabled, a value of true is not a warranty that color output is
+        /// working, use IsColorFunctional to make sure.
+        bool IsColorEnabled() const {
+            return color;
+        }
+        
+        /// Returns whether the color output is currently working.
+        bool IsColorFunctional() const {
+            return color && colorsupported;
+        }
+        
+        
 	protected:
-		std::ostream *stream;
-		bool owner;
-		bool marktime;
-		bool markdate;
+		std::ostream *stream  = nullptr;
+		bool owner            = false;
+        
+		bool marktime         = true;
+		bool markdate         = true;
+        
+        bool colorsupported   = false;
+        bool color            = true;
+		int  width            = 0;
 		
 		std::string section;
-		
-		int width = 0;
 	};
 
 #ifdef NDEBUG

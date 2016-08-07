@@ -125,7 +125,7 @@ namespace Gorgon { namespace Audio {
 		hr = CoInitialize(NULL);
 
 		if(FAILED(hr)) {
-			Log << "Cannot initialize COM subsystem.";
+			Log.Log("Cannot initialize COM subsystem.");
 			return;
 		}
 
@@ -135,7 +135,7 @@ namespace Gorgon { namespace Audio {
 			(void**)&Enumerator);
 
 		if(FAILED(hr)) {
-			Log << "Cannot create enumerator.";
+			Log.Log("Cannot create enumerator.");
 			return;
 		}
 
@@ -143,7 +143,7 @@ namespace Gorgon { namespace Audio {
 			eRender, eConsole, &CurrentDevice);
 
 		if(FAILED(hr)) {
-			Log << "Cannot get default device.";
+			Log.Log("Cannot get default device.");
 			return;
 		}
 
@@ -153,7 +153,7 @@ namespace Gorgon { namespace Audio {
 
 
 		if(FAILED(hr)) {
-			Log << "Cannot activate default device.";
+			Log.Log("Cannot activate default device.");
 			return;
 		}
 
@@ -162,12 +162,12 @@ namespace Gorgon { namespace Audio {
 		hr = AudioClient->GetMixFormat(&wavefmt);
 
 		if(FAILED(hr)) {
-			Log << "Cannot get playback format.";
+			Log.Log("Cannot get playback format.");
 			return;
 		}
 
 		if(wavefmt->wFormatTag != WAVE_FORMAT_EXTENSIBLE) {
-			Log << "Unexpected device format.";
+			Log.Log("Unexpected device format.");
 			return;
 		}
 
@@ -185,7 +185,7 @@ namespace Gorgon { namespace Audio {
 		);
 
 		if(FAILED(hr)) {
-			Log << "Cannot initialize audio client.";
+			Log.Log("Cannot initialize audio client.");
 			return;
 		}
 
@@ -194,7 +194,7 @@ namespace Gorgon { namespace Audio {
 			(void**)&RenderClient);
 
 		if(FAILED(hr)) {
-			Log << "Cannot get audio stream.";
+			Log.Log("Cannot get audio stream.");
 			return;
 		}
 
@@ -205,7 +205,7 @@ namespace Gorgon { namespace Audio {
 		internal::BufferSize = bs;
 		
 		if(FAILED(hr) || bs == 0) {
-			Log << "Cannot obtain audio buffer size.";
+			Log.Log("Cannot obtain audio buffer size.");
 			return;
 		}
 
@@ -229,11 +229,11 @@ namespace Gorgon { namespace Audio {
 		hr = AudioClient->Start();
 
 		if(FAILED(hr)) {
-			Log << "Cannot start audio stream.";
+			Log.Log("Cannot start audio stream.");
 			return;
 		}
 
-		Log << "WASAPI Audio subsystem is ready.";
+		Log.Log("WASAPI Audio subsystem is ready.", Utils::Logger::Success);
 
 		available = true;
 	}

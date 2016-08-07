@@ -60,7 +60,7 @@ namespace Gorgon { namespace Audio {
     bool wait_pa_op(pa_operation* pa_op, int timeout = 1000) {
         if(pa_op == nullptr) {
             //pa_error
-            Log<<"A wait operation is failed: "<<pa_strerror(pa_context_errno(pa_ctx));
+            Log.Log("A wait operation is failed: ")<<pa_strerror(pa_context_errno(pa_ctx));
             return false;
         }
         
@@ -154,7 +154,7 @@ namespace Gorgon { namespace Audio {
 		pa_main = pa_mainloop_new();
 		
 		if(!pa_main) {
-			Log << "Pulse audio main loop creation failed.";
+			Log.Log("Pulse audio main loop creation failed.");
 			pa_state = pa_failed;
 			return;
 		}
@@ -162,7 +162,7 @@ namespace Gorgon { namespace Audio {
 		pa_ctx  = pa_context_new(pa_mainloop_get_api(pa_main), GetSystemName().c_str());
 		
 		if(!pa_ctx) {
-			Log << "Pulse audio context creation failed.";
+			Log.Log("Pulse audio context creation failed.");
 			pa_state = pa_failed;
 			return;
 		}
@@ -181,12 +181,12 @@ namespace Gorgon { namespace Audio {
 		);
 		
 		if(pa_state == pa_failed) {
-			Log << "Pulse audio connection failed: " << pa_strerror(pa_context_errno(pa_ctx));
+			Log.Log("Pulse audio connection failed: ") << pa_strerror(pa_context_errno(pa_ctx));
 			return;
 		}
 		
 		if(pa_state == pa_timeout) {
-			Log << "Pulse audio connection timed out";
+			Log.Log("Pulse audio connection timed out");
 			return;
 		}
 		
@@ -194,7 +194,7 @@ namespace Gorgon { namespace Audio {
 		Device::Refresh();
 		
 		if(Device::Devices().size() == 0 || !Device::Default().IsValid()) {
-			Log << "No audio device found.";
+			Log.Log("No audio device found.");
 			pa_state = pa_failed;
 			return;
 		}
@@ -216,7 +216,7 @@ namespace Gorgon { namespace Audio {
 		pa_strm     = pa_stream_new(pa_ctx, GetSystemName().c_str(), &ss, &chmap);
 		
 		if(!pa_strm) {
-			Log << "Cannot create Pulse audio stream" << pa_strerror(pa_context_errno(pa_ctx));
+			Log.Log("Cannot create Pulse audio stream") << pa_strerror(pa_context_errno(pa_ctx));
 			pa_state = pa_failed;
 			return;
 		}
@@ -236,7 +236,7 @@ namespace Gorgon { namespace Audio {
             result = pa_stream_connect_playback(pa_strm, NULL, &attr, PA_STREAM_NOFLAGS, NULL, NULL);
             
             if(!result) {
-                Log << "Cannot connect to stream";
+                Log.Log("Cannot connect to stream");
                 return;
             }
             else
@@ -303,7 +303,7 @@ namespace Gorgon { namespace Audio {
 		}
 		
 		//done
-		Log << "Pulse audio is ready over "<<name<<" device and available.";
+		Log.Log("Pulse audio is ready over ", Utils::Logger::Success)<<name<<" device and available.";
 	}
 	
 	static std::vector<Device> tempdevices;
