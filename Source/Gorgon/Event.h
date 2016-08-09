@@ -283,7 +283,7 @@ namespace Gorgon {
 			std::lock_guard<std::mutex> g(access);
 			handlers.Add(handler);
 
-			return reinterpret_cast<intptr_t>(&handler);
+			return reinterpret_cast<Token>(&handler);
 		}
 
 		/// Registers a new function to be called when this event is triggered. This variant is 
@@ -355,7 +355,7 @@ namespace Gorgon {
 		}
 		
 		/// value for an empty token
-		static const Token EmptyToken = 0;
+		static const Token EmptyToken;
 		
 	private:
 
@@ -365,6 +365,9 @@ namespace Gorgon {
 		Containers::Collection<internal::event::HandlerBase<Source_, Params_...>> handlers;
 		typename Containers::Collection<internal::event::HandlerBase<Source_, Params_...>>::Iterator iterator;
 	};
+    
+    template<class C_, class ...P_>
+    const typename Event<C_, P_...>::Token Event<C_, P_...>::EmptyToken = 0;
 	
 	/// Swaps two events
 	template<class Source_, class... Args_>
