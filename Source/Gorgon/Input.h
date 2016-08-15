@@ -80,19 +80,19 @@ namespace Gorgon {
 			}
 
 			template<class F_, class Source_>
-			static typename std::enable_if<Gorgon::internal::argscount<F_>::value==0, HandlerBase<Source_>&>::type 
+			static typename std::enable_if<Gorgon::TMP::argscount<F_>::value==0, HandlerBase<Source_>&>::type 
 			createhandler(F_ fn) {
 				return *new EmptyHandlerFn<Source_>(fn);
 			}
 
 			template<class F_, class Source_>
-			static typename std::enable_if<Gorgon::internal::argscount<F_>::value==2, HandlerBase<Source_>&>::type 
+			static typename std::enable_if<Gorgon::TMP::argscount<F_>::value==2, HandlerBase<Source_>&>::type 
 			createhandler(F_ fn) {
 				return *new ArgsHandlerFn<Source_>(fn);
 			}
 
 			template<class F_, class Source_>
-			static typename std::enable_if<Gorgon::internal::argscount<F_>::value==3, HandlerBase<Source_>&>::type 
+			static typename std::enable_if<Gorgon::TMP::argscount<F_>::value==3, HandlerBase<Source_>&>::type 
 			createhandler(F_ fn) {
 				return *new FullHandlerFn<Source_>(fn);
 			}
@@ -241,7 +241,7 @@ namespace Gorgon {
 			/// event handler will be called immediately in this case.
 			template<class C_, typename... A_>
 			Token Register(C_ &c, void(C_::*fn)(A_...)) {
-				std::function<void(A_...)> f=Gorgon::internal::make_func(fn, &c);
+				std::function<void(A_...)> f=Gorgon::TMP::MakeFunctionFromMember(fn, &c);
 
 				return Register(f);
 			}			

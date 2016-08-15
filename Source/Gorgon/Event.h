@@ -17,7 +17,7 @@
 namespace Gorgon {
 
 	/// @cond INTERNAL
-	namespace internal  {
+	namespace TMP  {
 
 		/// Solution by Peter Dimov-5: http://std.2283326.n4.nabble.com/bind-Possible-to-use-variadic-templates-with-bind-td2557818.html
 		template<int...> struct int_tuple { };
@@ -60,14 +60,14 @@ namespace Gorgon {
 		}
 
 		template< class T, class... Args >
-		std::function< void(Args...) > make_func(void (T::* pm) (Args...), T *
+		std::function< void(Args...) > MakeFunctionFromMember(void (T::* pm) (Args...), T *
 			that) {
 			return make_func_helper(pm, that, typename
 				make_indexes<Args...>::type());
 		}
 
 		template <typename U>
-		struct has_parop {
+		struct HasParanthesisOperator {
 			typedef char yes;
 			struct no { char _[2]; };
 			template<typename T, typename L=decltype(&T::operator())>
@@ -80,10 +80,17 @@ namespace Gorgon {
 		template <typename T>
 		struct argscount : public argscount<decltype(&T::operator())> { };
 
-		template <typename ClassType, typename ReturnType, typename... Args>
+        template <typename ClassType, typename ReturnType, typename... Args>
 		struct argscount<ReturnType(ClassType::*)(Args...) const> {
 			enum { value = sizeof...(Args) };
 		};
+
+        template <typename ClassType, typename ReturnType, typename... Args>
+		struct argscount<ReturnType(ClassType::*)(Args...)> {
+			enum { value = sizeof...(Args) };
+		};
+    }
+    namespace internal {
 
 		namespace event {
 			template<class Source_, typename... Params_>
@@ -150,36 +157,35 @@ namespace Gorgon {
 			}
 
 			template<class F_, class Source_, int N, class... Params_>
-			static typename std::enable_if<argscount<F_>::value==0, HandlerBase<Source_, Params_...>&>::type 
+			static typename std::enable_if<TMP::argscount<F_>::value==0, HandlerBase<Source_, Params_...>&>::type 
 			createhandler(F_ fn) {
 				return *new EmptyHandlerFn<Source_, Params_...>(fn);
 			}
 
 			template<class F_, class Source_, int N, typename... Params_>
-			static typename std::enable_if<argscount<F_>::value!=0 && argscount<F_>::value==N, HandlerBase<Source_, Params_...>&>::type 
+			static typename std::enable_if<TMP::argscount<F_>::value!=0 && TMP::argscount<F_>::value==N, HandlerBase<Source_, Params_...>&>::type 
 			createhandler(F_ fn) {
 				return *new ArgsHandlerFn<Source_, Params_...>(fn);
 			}
 
 			template<class F_, class Source_, int N, class... Params_>
-			static typename std::enable_if<argscount<F_>::value==N+1, HandlerBase<Source_, Params_...>&>::type 
+			static typename std::enable_if<TMP::argscount<F_>::value==N+1, HandlerBase<Source_, Params_...>&>::type 
 			createhandler(F_ fn) {
 				return *new FullHandlerFn<Source_, Params_...>(fn);
 			}
 
 			template<class F_, class Source_, class... Params_>
-			typename std::enable_if<has_parop<F_>::value, HandlerBase<Source_, Params_...>&>::type 
+			typename std::enable_if<TMP::HasParanthesisOperator<F_>::value, HandlerBase<Source_, Params_...>&>::type 
 			create_handler(F_ fn) {
 				return createhandler<F_, Source_, sizeof...(Params_), Params_...>(fn);
 			}
 
 			template<class F_, class Source_, class... Params_, typename N=void>
-			typename std::enable_if<!has_parop<F_>::value, HandlerBase<Source_, Params_...>&>::type 
+			typename std::enable_if<!TMP::HasParanthesisOperator<F_>::value, HandlerBase<Source_, Params_...>&>::type 
 			create_handler(F_ fn) {
 				return createhandlerfn<Source_, Params_...>(fn);
 			}
 		}
-
 	}
 
 	/// @endcond
@@ -297,7 +303,7 @@ namespace Gorgon {
 		/// event handler will be called immediately in this case.
 		template<class C_, typename... A_>
 		Token Register(C_ &c, void(C_::*fn)(A_...)) {
-			std::function<void(A_...)> f=internal::make_func(fn, &c);
+			std::function<void(A_...)> f=TMP::MakeFunctionFromMember(fn, &c);
 
 			return Register(f);
 		}

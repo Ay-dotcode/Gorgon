@@ -27,6 +27,10 @@ public:
     void fn() {
         sum += x;
     }
+    
+    void operator()() {
+        sum--;
+    }
 };
 
 class C2 {
@@ -104,10 +108,11 @@ TEST_CASE("Event") {
     ev2.Register([&]() {
         sum+=3;
     });
+    ev2.Register(c1);
     
     ev2();
     
-    REQUIRE(sum == 27);
+    REQUIRE(sum == 26);
     
     REQUIRE(c2.x == 6);
 }
