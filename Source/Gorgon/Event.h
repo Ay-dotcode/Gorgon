@@ -6,7 +6,6 @@
 #include <functional>
 #include <mutex>
 
-#include <assert.h>
 #include <atomic>
 
 #include "Types.h"
@@ -231,12 +230,15 @@ namespace Gorgon {
 		/// Move constructor
 		Event(Event &&event) : source(nullptr) {
 			Swap(event);
+#ifndef NDEBUG
+			event.movedout = true;
+#endif
 		}
 		
 
 		/// Destructor
 		~Event() {
-			assert(("An event cannot be destroyed while its being fired.", !fire.test_and_set()));
+			ASSERT(!fire.test_and_set(), "An event cannot be destroyed while its being fired.");
 			std::lock_guard<std::mutex> g(access);
 			
 			handlers.Destroy();
@@ -254,7 +256,7 @@ namespace Gorgon {
 
 			std::lock_guard<std::mutex> g(access);
 
-			assert(("An event cannot be moved into while its being fired.", !fire.test_and_set()));
+			ASSERT(!fire.test_and_set(), "An event cannot be moved into while its being fired.");
 
 			handlers.Destroy();
 
@@ -270,7 +272,7 @@ namespace Gorgon {
 
 			using std::swap;
 
-			assert(("An event cannot be swapped while its being fired.", !fire.test_and_set() && !other.fire.test_and_set()));
+			ASSERT(!fire.test_and_set() && !other.fire.test_and_set(), "An event cannot be swapped while its being fired.");
 
 			swap(source, other.source);
 			swap(handlers, other.handlers);
@@ -284,6 +286,9 @@ namespace Gorgon {
 		/// called immediately in this case.
 		template<class F_>
 		Token Register(F_ fn) {
+
+			ASSERT(!movedout, "This event is moved out of");
+
 			auto &handler=internal::event::create_handler<F_, Source_, Params_...>(fn);
 
 			std::lock_guard<std::mutex> g(access);
@@ -303,6 +308,9 @@ namespace Gorgon {
 		/// event handler will be called immediately in this case.
 		template<class C_, typename... A_>
 		Token Register(C_ &c, void(C_::*fn)(A_...)) {
+
+			ASSERT(!movedout, "This event is moved out of");
+
 			std::function<void(A_...)> f=TMP::MakeFunctionFromMember(fn, &c);
 
 			return Register(f);
@@ -314,6 +322,9 @@ namespace Gorgon {
 		/// is being deleted is different from the current event handler, the deleted event
 		/// handler might have already been fired. If not, it will not be fired.
 		void Unregister(Token token) {
+
+			ASSERT(!movedout, "This event is moved out of");
+			
 			std::lock_guard<std::mutex> g(access);
 
 			auto item=reinterpret_cast<internal::event::HandlerBase<Source_, Params_...>*>(token);
@@ -337,6 +348,8 @@ namespace Gorgon {
 		void operator()(Params_... args) {
 			//prevent recursion
 			if(fire.test_and_set()) return;
+
+			ASSERT(!movedout, "This event is moved out of");
 
 			try {
 				for(iterator=handlers.begin(); iterator.IsValid(); iterator.Next()) {
@@ -364,6 +377,11 @@ namespace Gorgon {
 		static const Token EmptyToken;
 		
 	private:
+
+#ifndef NDEBUG
+		bool movedout = false;
+#endif
+
 
 		std::mutex access;
 		std::atomic_flag fire;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 #include "Event.h"
 #include "Containers/Collection.h"
 

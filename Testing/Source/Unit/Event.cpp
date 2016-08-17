@@ -35,12 +35,11 @@ public:
 
 class C2 {
 public:
-    Event<C2> MakeEv() {
-        Event<C2> ev(*this);
-        t = ev.Register(*this, &C2::fired);
-        myev = &ev;
+    Event<C2> &MakeEv() {
+        myev = new Event<C2>(*this);
+        t = myev->Register(*this, &C2::fired);
         
-        return ev;
+        return *myev;
     }
     
     void fired() {
@@ -94,7 +93,7 @@ TEST_CASE("Event") {
     REQUIRE(sum == 21);
     
     C2 c2;
-    auto ev2 = c2.MakeEv();
+    auto &ev2 = c2.MakeEv();
     
     ev2.Register(&fn2);
     ev2();

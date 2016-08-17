@@ -175,7 +175,7 @@ namespace Gorgon {
 		
 	protected:
 		/// A window cannot be placed in another layer. This function always fails.
-		virtual void located() { assert( false && "A window cannot be placed in another layer"); }
+		virtual void located() { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
 
 
 	private:
