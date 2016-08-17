@@ -82,19 +82,19 @@ namespace Gorgon {
 			}
 
 			template<class F_, class Source_>
-			static typename std::enable_if<Gorgon::TMP::argscount<F_>::value==0, HandlerBase<Source_>&>::type 
+			static typename std::enable_if<Gorgon::TMP::FunctionTraits<F_>::Arity==0, HandlerBase<Source_>&>::type 
 			createhandler(F_ fn) {
 				return *new EmptyHandlerFn<Source_>(fn);
 			}
 
 			template<class F_, class Source_>
-			static typename std::enable_if<Gorgon::TMP::argscount<F_>::value==2, HandlerBase<Source_>&>::type 
+			static typename std::enable_if<Gorgon::TMP::FunctionTraits<F_>::Arity==2, HandlerBase<Source_>&>::type
 			createhandler(F_ fn) {
 				return *new ArgsHandlerFn<Source_>(fn);
 			}
 
 			template<class F_, class Source_>
-			static typename std::enable_if<Gorgon::TMP::argscount<F_>::value==3, HandlerBase<Source_>&>::type 
+			static typename std::enable_if<Gorgon::TMP::FunctionTraits<F_>::Arity==3, HandlerBase<Source_>&>::type
 			createhandler(F_ fn) {
 				return *new FullHandlerFn<Source_>(fn);
 			}

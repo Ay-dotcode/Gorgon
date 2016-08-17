@@ -6,6 +6,7 @@
 #include <tuple>
 #include <typeinfo>
 #include "Utils/Compiler.h"
+#include <functional>
 
 namespace Gorgon {
 	namespace TMP {
@@ -426,6 +427,63 @@ namespace Gorgon {
 		public:
 			static const bool Value = sizeof( test(*(std::ostream*)nullptr) )==1;
 		};
-		
+
+		/// Solution by Peter Dimov-5: http://std.2283326.n4.nabble.com/bind-Possible-to-use-variadic-templates-with-bind-td2557818.html
+
+		template<int n> struct Placeholder {};
+		template<> struct Placeholder<1> { static decltype(std::placeholders::_1) value() { return std::placeholders::_1; } };
+		template<> struct Placeholder<2> { static decltype(std::placeholders::_2) value() { return std::placeholders::_2; } };
+		template<> struct Placeholder<3> { static decltype(std::placeholders::_3) value() { return std::placeholders::_3; } };
+		template<> struct Placeholder<4> { static decltype(std::placeholders::_4) value() { return std::placeholders::_4; } };
+		template<> struct Placeholder<5> { static decltype(std::placeholders::_5) value() { return std::placeholders::_5; } };
+		template<> struct Placeholder<6> { static decltype(std::placeholders::_6) value() { return std::placeholders::_6; } };
+		template<> struct Placeholder<7> { static decltype(std::placeholders::_7) value() { return std::placeholders::_7; } };
+		template<> struct Placeholder<8> { static decltype(std::placeholders::_8) value() { return std::placeholders::_8; } };
+		template<> struct Placeholder<9> { static decltype(std::placeholders::_9) value() { return std::placeholders::_9; } };
+
+		template<int...> struct IntTuple {};
+
+		// make indexes impl is a helper for make indexes 
+		template<int I, typename IntTuple, typename... Types>
+		struct MakeIndices_impl;
+
+		template<int I, int... Indices, typename T, typename... Types>
+		struct MakeIndices_impl<I, IntTuple<Indices...>, T, Types...> {
+			typedef typename MakeIndices_impl<I+1,
+				IntTuple<Indices..., I>,
+				Types...>::type type;
+		};
+
+		template<int I, int... Indices>
+		struct MakeIndices_impl<I, IntTuple<Indices...> > {
+			typedef IntTuple<Indices...> type;
+		};
+
+		template<typename... Types>
+		struct MakeIndices : MakeIndices_impl<0, IntTuple<>, Types...> {};
+
+		template< class T, class... Args, int... Indices >
+		std::function< void(Args...) > MakeFunctionFromMember_helper(void (T::* pm) (Args...),
+																	 T * that, IntTuple< Indices... >) {
+			return std::bind(pm, that, Placeholder<Indices+1>::value()...);
+		}
+
+		template< class T_, class... Args >
+		std::function< void(Args...) > MakeFunctionFromMember(void (T_::* pm) (Args...), T_ *that) {
+			return MakeFunctionFromMember_helper(pm, that, typename MakeIndices<Args...>::type());
+		}
+
+		template <typename U>
+		struct HasParanthesisOperator {
+			typedef char yes;
+			struct no { char _[2]; };
+			template<typename T, typename L=decltype(&T::operator())>
+			static yes impl(T*) { return yes(); }
+			static no  impl(...) { return no(); }
+
+			enum { value = sizeof(impl(static_cast<U*>(0))) == sizeof(yes) };
+		};
+
+
 	}
 };
