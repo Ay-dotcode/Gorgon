@@ -210,7 +210,9 @@ namespace Gorgon {
 
 		/// Registers a new function to be called when this event is triggered. This function can
 		/// be called from event handler of the same event. The registered event handler will be
-		/// called immediately in this case.
+		/// called immediately in this case. If you register a class with a () operator, this class 
+		/// will be copied. If you require call to be made to the same instance, instead of using
+		/// `Register(a)` use `Register(a, &decltype(a)::operator())`
 		template<class F_>
 		Token Register(F_ fn) {
 
@@ -228,11 +230,11 @@ namespace Gorgon {
 		/// designed to be used with member functions. **Example:**
 		/// @code
 		/// A a;
-		/// b.ClickEvent.Register(a, A::f);
+		/// b.ClickEvent.Register(a, &A::f);
 		/// @endcode
 		///
 		/// This function can be called from event handler of the same event. The registered 
-		/// event handler will be called immediately in this case.
+		/// event handler will be called immediately in this case. 
 		template<class C_, typename... A_>
 		Token Register(C_ &c, void(C_::*fn)(A_...)) {
 

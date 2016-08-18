@@ -462,14 +462,14 @@ namespace Gorgon {
 		template<typename... Types>
 		struct MakeIndices : MakeIndices_impl<0, IntTuple<>, Types...> {};
 
-		template< class T, class... Args, int... Indices >
-		std::function< void(Args...) > MakeFunctionFromMember_helper(void (T::* pm) (Args...),
+		template< class T, class Ret_, class... Args, int... Indices >
+		std::function< Ret_(Args...) > MakeFunctionFromMember_helper(Ret_ (T::* pm) (Args...),
 																	 T * that, IntTuple< Indices... >) {
 			return std::bind(pm, that, Placeholder<Indices+1>::value()...);
 		}
 
-		template< class T_, class... Args >
-		std::function< void(Args...) > MakeFunctionFromMember(void (T_::* pm) (Args...), T_ *that) {
+		template< class T_, class Ret_, class... Args >
+		std::function< Ret_(Args...) > MakeFunctionFromMember(Ret_ (T_::* pm) (Args...), T_ *that) {
 			return MakeFunctionFromMember_helper(pm, that, typename MakeIndices<Args...>::type());
 		}
 

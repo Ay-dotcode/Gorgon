@@ -168,4 +168,61 @@ TEST_CASE("Consumable event") {
     ev(1,1);
     
     REQUIRE(sum == 10);
+    
+    ev.Disable(tok1);
+    
+    ev(1, 1);
+    
+    REQUIRE(sum == 11);
+}
+
+class C4 {
+public:
+    bool operator()(int v) {
+        if( v == y ) {
+            x++;
+        
+            return true;
+        }
+        
+        return false;
+    }
+    
+    int x = 0;
+    int y = 1;
+};
+
+TEST_CASE("FireFor") {
+    ConsumableEvent<void, int> ev;
+    
+    C4 a, b, c;
+    
+    b.y = 2;
+    c.y = 3;
+    
+    auto toka = ev.Register(a);
+    auto tokb = ev.Register(b, &decltype(b)::operator());
+    auto tokc = ev.Register(c);
+    
+    auto tok = ev(2);
+    
+    REQUIRE( tok == tokb );
+    REQUIRE( a.x == 0    );
+    REQUIRE( b.x == 1    );
+    REQUIRE( c.x == 0    );
+    
+    REQUIRE( ev.FireFor(tok, 2) );
+    REQUIRE( b.x == 2 );
+    
+    ev.Disable(tokb);
+    
+    tok = ev(2);
+    
+    REQUIRE( tok == ev.EmptyToken );
+
+    REQUIRE_FALSE( ev.FireFor(tok, 2) );
+
+    REQUIRE_FALSE( ev.FireFor(tokb, 2) );
+    
+    REQUIRE( b.x == 2 );
 }

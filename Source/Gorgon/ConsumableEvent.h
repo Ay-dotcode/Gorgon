@@ -24,6 +24,8 @@ namespace Gorgon {
                 virtual bool Fire(std::mutex &locker, Source_ *, Params_...) = 0;
                 
                 virtual ~HandlerBase() {}
+                
+                bool enabled = true;
             };
 
             template<class Source_, typename... Params_>
@@ -214,7 +216,9 @@ namespace Gorgon {
 
 		/// Registers a new function to be called when this event is triggered. This function can
 		/// be called from event handler of the same event. The registered event handler will be
-		/// called immediately in this case.
+		/// called immediately in this case. If you register a class with a () operator, this class 
+		/// will be copied. If you require call to be made to the same instance, instead of using
+		/// `Register(a)` use `Register(a, &decltype(a)::operator())`
 		template<class F_>
 		Token Register(F_ fn) {
 
@@ -232,7 +236,7 @@ namespace Gorgon {
 		/// designed to be used with member functions. **Example:**
 		/// @code
 		/// A a;
-		/// b.ClickEvent.Register(a, A::f);
+		/// b.ClickEvent.Register(a, &A::f);
 		/// @endcode
 		///
 		/// This function can be called from event handler of the same event. The registered 
@@ -276,7 +280,7 @@ namespace Gorgon {
 
 		/// Fire this event. This function will never allow recursive firing, i.e. an event handler
 		/// cannot cause this event to be fired again.
-		bool operator()(Params_... args) {
+		Token operator()(Params_... args) {
             //stops the request if it is received from a different thread.
             std::lock_guard<std::recursive_mutex> g(firemtx);
             
@@ -284,7 +288,7 @@ namespace Gorgon {
             ASSERT(!fire.test_and_set(), "Recursion detected during event execution.");
 #else
 			//prevent recursion
-			if(fire.test_and_set()) return false;
+			if(fire.test_and_set()) return EmptyToken;
 #endif
 
 			ASSERT(!movedout, "This event is moved out of");
@@ -292,13 +296,18 @@ namespace Gorgon {
 			try {
 				for(iterator=handlers.Last(); iterator.IsValid(); iterator.Previous()) {
 					access.lock();
-					// fire method will unlock access after it creates a local copy of the function
-					// this allows the fired object to be safely deleted.
-					bool res = iterator->Fire(access, source, std::forward<Params_>(args)...);
-                    
-                    if(res) {
-                        fire.clear();
-                        return true;
+                    if(iterator->enabled) {
+                        // fire method will unlock access after it creates a local copy of the function
+                        // this allows the fired object to be safely deleted.
+                        bool res = iterator->Fire(access, source, std::forward<Params_>(args)...);
+                        
+                        if(res) {
+                            fire.clear();
+                            return reinterpret_cast<Token>(iterator.CurrentPtr());
+                        }
+                    }
+                    else {
+                        access.unlock();
                     }
 				}
 			}
@@ -315,8 +324,57 @@ namespace Gorgon {
 			
 			fire.clear();
             
-            return false;
+            return EmptyToken;
 		}
+		
+		bool FireFor(Token token, Params_... args) {
+            //stops the request if it is received from a different thread.
+            std::lock_guard<std::recursive_mutex> g(firemtx);
+            
+#ifndef NDEBUG
+            ASSERT(!fire.test_and_set(), "Recursion detected during event execution.");
+#else
+			//prevent recursion
+			if(fire.test_and_set()) return false;
+#endif
+
+			ASSERT(!movedout, "This event is moved out of");
+
+			try {
+                access.lock();
+                auto pos = handlers.FindLocation(reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token));
+                
+                if(pos == -1) {
+                    access.unlock();
+                    fire.clear();
+                    return false;
+                }
+                
+                auto handler = reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token);
+                
+                if(!handler->enabled) { 
+                    access.unlock();
+                    fire.clear();
+                    return false;
+                }
+               
+                handler->Fire(access, source, args...);
+			
+                fire.clear();
+                
+                return true;
+			}
+			catch(...) {
+				//unlock everything if something goes bad
+				
+				//just in case
+				access.unlock();
+				
+				fire.clear();
+				
+				throw;
+			}
+        }
 		
 		/// Moves a handler to be the first to get fired.
 		void MoveToTop(Token token) {
@@ -325,11 +383,27 @@ namespace Gorgon {
             handlers.MoveBefore(*reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token), handlers.GetSize());
         }
 		
-		/// Moves a handler to be the first to get fired.
+		/// Moves a handler to be the last to get fired.
 		void MoveToBottom(Token token) {
 			std::lock_guard<std::mutex> g(access);
             
             handlers.MoveBefore(*reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token), 0);
+        }
+        
+        /// Disable given event handler. This functionality allows handlers to be pseudo removed without changing
+        /// their location in the hierarchy.
+        void Disable(Token token) {
+			std::lock_guard<std::mutex> g(access);
+            
+            reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token)->enabled = false;
+        }
+        
+        /// Enables given event handler. This functionality allows handlers to be pseudo removed without changing
+        /// their location in the hierarchy.
+        void Enable(Token token) {
+			std::lock_guard<std::mutex> g(access);
+            
+            reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token)->enabled = true;
         }
 		
 		/// value for an empty token
