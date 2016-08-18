@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include <catch.h>
+#include <Gorgon/ConsumableEvent.h>
 #include <typeinfo>
 
 #include <iostream>
@@ -114,4 +115,57 @@ TEST_CASE("Event") {
     REQUIRE(sum == 26);
     
     REQUIRE(c2.x == 6);
+}
+
+class C3 {
+public:
+    
+    bool operator()() {
+        return true;
+    }
+};
+
+TEST_CASE("Consumable event") {
+	ConsumableEvent<void, int, int> ev;
+    
+    sum = 0;
+    
+    auto tok1 = ev.Register([](int a, int i) {
+        sum+=a+i;
+        
+        return true;
+    });
+    
+    auto tok2 = ev.Register([&] {
+        sum++;
+        
+        return sum > 1;
+    });
+    
+    ev(2, 3);
+    
+    REQUIRE(sum == 6);
+    
+    ev(3, 3);
+    
+    REQUIRE(sum == 7);
+    
+    C3 c;
+    auto tok3 = ev.Register(c);
+    
+    ev(2, 2);
+    
+    REQUIRE(sum == 7);
+    
+    ev.MoveToBottom(tok3);
+    
+    ev(2, 2);
+    
+    REQUIRE(sum == 8);
+    
+    ev.MoveToTop(tok1);
+    
+    ev(1,1);
+    
+    REQUIRE(sum == 10);
 }

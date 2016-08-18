@@ -18,67 +18,67 @@ namespace Gorgon {
 
 	/// @cond INTERNAL
     namespace internal { 
-        namespace event {
+        namespace consumableevent {
             template<class Source_, typename... Params_>
             struct HandlerBase {
-                virtual void Fire(std::mutex &locker, Source_ *, Params_...) = 0;
+                virtual bool Fire(std::mutex &locker, Source_ *, Params_...) = 0;
                 
                 virtual ~HandlerBase() {}
             };
 
             template<class Source_, typename... Params_>
             struct EmptyHandlerFn : public HandlerBase<Source_, Params_...> {
-                EmptyHandlerFn(std::function<void()> fn) : fn(fn) { }
+                EmptyHandlerFn(std::function<bool()> fn) : fn(fn) { }
 
-                virtual void Fire(std::mutex &locker, Source_ *, Params_...) {
+                virtual bool Fire(std::mutex &locker, Source_ *, Params_...) {
                     auto f=fn;
                     locker.unlock();
-                    f();
+                    return f();
                 }
 
-                std::function<void()> fn;
+                std::function<bool()> fn;
             };
 
             template<class Source_, typename... Params_>
             struct ArgsHandlerFn : public HandlerBase<Source_, Params_...> {
-                ArgsHandlerFn(std::function<void(Params_...)> fn) : fn(fn) { }
+                ArgsHandlerFn(std::function<bool(Params_...)> fn) : fn(fn) { }
 
-                virtual void Fire(std::mutex &locker, Source_ *, Params_... args) {
+                virtual bool Fire(std::mutex &locker, Source_ *, Params_... args) {
                     auto f=fn;
                     locker.unlock();
-                    f(std::forward<Params_>(args)...);
+                    return f(std::forward<Params_>(args)...);
                 }
 
-                std::function<void(Params_...)> fn;
+                std::function<bool(Params_...)> fn;
             };
 
             template<class Source_, typename... Params_>
             struct FullHandlerFn : public HandlerBase<Source_, Params_...> {
                 static_assert(!std::is_same<Source_, void>::value, "No source class exists for this event (void cannot be passed around)");
                 
-                FullHandlerFn(std::function<void(Source_&, Params_...)> fn) : fn(fn) { }
+                FullHandlerFn(std::function<bool(Source_&, Params_...)> fn) : fn(fn) { }
 
-                virtual void Fire(std::mutex &locker, Source_ *source, Params_... args) {
+                virtual bool Fire(std::mutex &locker, Source_ *source, Params_... args) {
                     auto f=fn;
                     locker.unlock();
-                    f(*source, std::forward<Params_>(args)...);
+                    return f(*source, std::forward<Params_>(args)...);
                 }
 
-                std::function<void(Source_&, Params_...)> fn;
+                std::function<bool(Source_&, Params_...)> fn;
             };
 
             template<class Source_, class... Params_>
-            static HandlerBase<Source_, Params_...>& createhandlerfn(void(*fn)()) {
+            static HandlerBase<Source_, Params_...>& createhandlerfn(bool(*fn)()) {
                 return *new EmptyHandlerFn<Source_, Params_...>(fn);
             }
 
             template<class Source_, class... Params_>
-            static HandlerBase<Source_, Params_...>& createhandlerfn(void(*fn)(Params_...)) {
+            static HandlerBase<Source_, Params_...>& createhandlerfn(bool(*fn)(Params_...)) {
                 return *new ArgsHandlerFn<Source_, Params_...>(fn);
             }
 
             template<class Source_, class... Params_>
-            static HandlerBase<Source_, Params_...>& createhandlerfn(void(*fn)(Source_ &, Params_...)) {
+            static HandlerBase<Source_, Params_...>& createhandlerfn(bool(*fn)(Source_ &, Params_...)) {
                 return *new FullHandlerFn<Source_, Params_...>(fn);
             }
 
@@ -103,12 +103,16 @@ namespace Gorgon {
             template<class F_, class Source_, class... Params_>
             typename std::enable_if<TMP::HasParanthesisOperator<F_>::value, HandlerBase<Source_, Params_...>&>::type 
             create_handler(F_ fn) {
+                static_assert(std::is_same<typename TMP::FunctionTraits<F_>::ReturnType, bool>::value, "Function must return a bool");
+                
                 return createhandler_internal<F_, Source_, sizeof...(Params_), Params_...>(fn);
             }
 
             template<class F_, class Source_, class... Params_, typename N=void>
             typename std::enable_if<!TMP::HasParanthesisOperator<F_>::value, HandlerBase<Source_, Params_...>&>::type 
             create_handler(F_ fn) {
+                static_assert(std::is_same<typename TMP::FunctionTraits<F_>::ReturnType, bool>::value, "Function must return a bool");
+                
                 return createhandlerfn<Source_, Params_...>(fn);
             }
         }
@@ -116,55 +120,55 @@ namespace Gorgon {
 
 	/// @endcond
 	
-	/// This class provides event mechanism. Different function signatures are allowed to
+	/// This class provides event mechanism that can be consumed. Once an event is consumed by a handler
+	/// rest of the handler will not receive it. Different function signatures are allowed to
 	/// as event handlers. These are:
 	///
-	/// * <b>`void fn()`</b> neither event source nor event parameters are supplied. 
-	/// * <b>`void fn(Params_... params)`</b> parameters will be passed
-	/// * <b>`void fn(Source_ &source, Params_... params)`</b> the source and parameters
+	/// * <b>`bool fn()`</b> neither event source nor event parameters are supplied. 
+	/// * <b>`bool fn(Params_... params)`</b> parameters will be passed
+	/// * <b>`bool fn(Source_ &source, Params_... params)`</b> the source and parameters
 	///   will be passed
 	/// 
 	/// Class members or lambda functions can also be used as event handlers. An
 	/// event handler can be registered using Register function.
 	template<class Source_=void, typename... Params_>
-	class Event {
+	class ConsumableEvent {
 	public:
 
 		/// Data type for tokens
 		typedef intptr_t Token;
 		
 		/// Constructor for empty source
-		Event() : source(nullptr) {
+		ConsumableEvent() : source(nullptr) {
 			fire.clear();
 			static_assert( std::is_same<Source_, void>::value , "Empty constructor cannot be used." );
 		}
 		
 		/// Constructor for class specific source
 		template <class S_ = Source_>
-		explicit Event(typename std::enable_if<!std::is_same<S_, void>::value, S_>::type &source) : source(&source) {
+		explicit ConsumableEvent(typename std::enable_if<!std::is_same<S_, void>::value, S_>::type &source) : source(&source) {
 			fire.clear();
 			static_assert(!std::is_same<Source_, void>::value, "Filling constructor is not required, use the default.");
 		}
 		
 		/// Constructor for class specific source
 		template <class S_ = Source_>
-		explicit Event(typename std::enable_if<!std::is_same<S_, void>::value, S_>::type *source) : source(source) {
+		explicit ConsumableEvent(typename std::enable_if<!std::is_same<S_, void>::value, S_>::type *source) : source(source) {
 			ASSERT(source, "Source cannot be nullptr");
 			fire.clear();
 			static_assert(!std::is_same<Source_, void>::value, "Filling constructor is not required, use the default.");
 		}
 		
 		/// Move constructor
-		Event(Event &&event) : source(nullptr) {
+		ConsumableEvent(ConsumableEvent &&event) : source(nullptr) {
 			Swap(event);
 #ifndef NDEBUG
 			event.movedout = true;
 #endif
 		}
 		
-
 		/// Destructor
-		~Event() {
+		~ConsumableEvent() {
 			ASSERT(!fire.test_and_set(), "An event cannot be destroyed while its being fired.");
 			std::lock_guard<std::mutex> g(access);
 			
@@ -172,13 +176,13 @@ namespace Gorgon {
 		}
 		
 		/// Copy constructor is disabled
-		Event(const Event &) = delete;
+		ConsumableEvent(const ConsumableEvent &) = delete;
 		
 		/// Copy assignment is disabled
-		Event &operator =(const Event &) = delete;
+		ConsumableEvent &operator =(const ConsumableEvent &) = delete;
 
 		/// Move assignment, should be called synchronized
-		Event &operator =(const Event &&other) {
+		ConsumableEvent &operator =(const ConsumableEvent &&other) {
 			if(&other==this) return *this;
 
 			std::lock_guard<std::mutex> g(access);
@@ -194,7 +198,7 @@ namespace Gorgon {
 		}
 
 		/// Swaps two Events, used for move semantics
-		void Swap(Event &other) {
+		void Swap(ConsumableEvent &other) {
 			if(&other==this) return;
 
 			using std::swap;
@@ -216,7 +220,7 @@ namespace Gorgon {
 
 			ASSERT(!movedout, "This event is moved out of");
 
-			auto &handler=internal::event::create_handler<F_, Source_, Params_...>(fn);
+			auto &handler=internal::consumableevent::create_handler<F_, Source_, Params_...>(fn);
 
 			std::lock_guard<std::mutex> g(access);
 			handlers.Add(handler);
@@ -234,11 +238,11 @@ namespace Gorgon {
 		/// This function can be called from event handler of the same event. The registered 
 		/// event handler will be called immediately in this case.
 		template<class C_, typename... A_>
-		Token Register(C_ &c, void(C_::*fn)(A_...)) {
+		Token Register(C_ &c, bool(C_::*fn)(A_...)) {
 
 			ASSERT(!movedout, "This event is moved out of");
 
-			std::function<void(A_...)> f=TMP::MakeFunctionFromMember(fn, &c);
+			std::function<bool(A_...)> f=TMP::MakeFunctionFromMember(fn, &c);
 
 			return Register(f);
 		}
@@ -254,7 +258,7 @@ namespace Gorgon {
 			
 			std::lock_guard<std::mutex> g(access);
 
-			auto item=reinterpret_cast<internal::event::HandlerBase<Source_, Params_...>*>(token);
+			auto item=reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token);
 			
 			auto l=handlers.FindLocation(item);
 			if(l==-1) return;
@@ -270,9 +274,9 @@ namespace Gorgon {
 			}
 		}
 
-		/// Fire this event. This function will never allow recursive firing from the same thread, 
-		/// i.e. an event handler cannot cause this event to be fired again.
-		void operator()(Params_... args) {
+		/// Fire this event. This function will never allow recursive firing, i.e. an event handler
+		/// cannot cause this event to be fired again.
+		bool operator()(Params_... args) {
             //stops the request if it is received from a different thread.
             std::lock_guard<std::recursive_mutex> g(firemtx);
             
@@ -286,11 +290,16 @@ namespace Gorgon {
 			ASSERT(!movedout, "This event is moved out of");
 
 			try {
-				for(iterator=handlers.begin(); iterator.IsValid(); iterator.Next()) {
+				for(iterator=handlers.Last(); iterator.IsValid(); iterator.Previous()) {
 					access.lock();
 					// fire method will unlock access after it creates a local copy of the function
 					// this allows the fired object to be safely deleted.
-					iterator->Fire(access, source, std::forward<Params_>(args)...);
+					bool res = iterator->Fire(access, source, std::forward<Params_>(args)...);
+                    
+                    if(res) {
+                        fire.clear();
+                        return true;
+                    }
 				}
 			}
 			catch(...) {
@@ -305,7 +314,23 @@ namespace Gorgon {
 			}
 			
 			fire.clear();
+            
+            return false;
 		}
+		
+		/// Moves a handler to be the first to get fired.
+		void MoveToTop(Token token) {
+			std::lock_guard<std::mutex> g(access);
+            
+            handlers.MoveBefore(*reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token), handlers.GetSize());
+        }
+		
+		/// Moves a handler to be the first to get fired.
+		void MoveToBottom(Token token) {
+			std::lock_guard<std::mutex> g(access);
+            
+            handlers.MoveBefore(*reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token), 0);
+        }
 		
 		/// value for an empty token
 		static const Token EmptyToken;
@@ -320,17 +345,17 @@ namespace Gorgon {
 		std::mutex access;
 		std::atomic_flag fire;
 		Source_ *source;
-		Containers::Collection<internal::event::HandlerBase<Source_, Params_...>> handlers;
-		typename Containers::Collection<internal::event::HandlerBase<Source_, Params_...>>::Iterator iterator;
+		Containers::Collection<internal::consumableevent::HandlerBase<Source_, Params_...>> handlers;
+		typename Containers::Collection<internal::consumableevent::HandlerBase<Source_, Params_...>>::Iterator iterator;
         std::recursive_mutex firemtx;
 	};
     
     template<class C_, class ...P_>
-    const typename Event<C_, P_...>::Token Event<C_, P_...>::EmptyToken = 0;
+    const typename ConsumableEvent<C_, P_...>::Token ConsumableEvent<C_, P_...>::EmptyToken = 0;
 	
 	/// Swaps two events
 	template<class Source_, class... Args_>
-	void swap(Event<Source_, Args_...> &l, Event<Source_, Args_...> &r) {
+	void swap(ConsumableEvent<Source_, Args_...> &l, ConsumableEvent<Source_, Args_...> &r) {
 		l.Swap(r);
 	}
 }
