@@ -322,7 +322,7 @@ namespace Gorgon { namespace Graphics {
 		using SizelessDrawable::drawin;
 
 		/// This function should draw the object to the given point.
-		virtual void draw(TextureTarget &target, const Geometry::Point &p) const {
+		virtual void draw(TextureTarget &target, const Geometry::Point &p) const override {
 			auto size=getsize();
 			draw(target, p, {float(p.X+size.Width), float(p.Y)}, {float(p.X+size.Width), float(p.Y+size.Height)}, {float(p.X), float(p.Y+size.Height)});
 		}

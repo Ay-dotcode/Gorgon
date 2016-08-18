@@ -28,7 +28,7 @@ namespace Gorgon {
 			HGLRC context=0;
 			HDC device_context=0;
 
-			std::map<Input::Key, Input::Event<Window>::Token> handlers;
+			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 
 			LRESULT Proc(UINT message, WPARAM wParam, LPARAM lParam) {
 				switch(message) {
@@ -68,8 +68,8 @@ namespace Gorgon {
 					case WM_SYSKEYDOWN:
 					case WM_KEYDOWN: {
 						if(lParam&1<<30) {
-							if(handlers.count(wParam)>0 && handlers[wParam]!=Input::Event<Window>::EmptyToken) {
-								parent.KeyEvent(handlers[wParam], wParam, 1.f);
+							if(handlers.count(wParam)>0 && handlers[wParam]!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
+								parent.KeyEvent.FireFor(handlers[wParam], wParam, true);
 							}
 
 							return 0;
@@ -90,8 +90,8 @@ namespace Gorgon {
 							break;
 						}
 
-						auto token=parent.KeyEvent(wParam, +1.f);
-						if(token!=Input::Event<Window>::EmptyToken) {
+						auto token=parent.KeyEvent(wParam, true);
+						if(token!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
 							handlers[wParam]=token;
 							return 0;
 						}
@@ -117,12 +117,12 @@ namespace Gorgon {
 							break;
 						}
 
-						if(handlers.count(wParam)>0 && handlers[wParam]!=Input::Event<Window>::EmptyToken) {
-							parent.KeyEvent(handlers[wParam], wParam, 0.f);
-							handlers[wParam]=Input::Event<Window>::EmptyToken;
+						if(handlers.count(wParam)>0 && handlers[wParam]!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
+							parent.KeyEvent.FireFor(handlers[wParam], wParam, false);
+							handlers[wParam]=ConsumableEvent<Window, Input::Key, bool>::EmptyToken;
 						}
 						else {
-							parent.KeyEvent(wParam, 0.f);
+							parent.KeyEvent(wParam, false);
 						}
 						
 					} //Keyup
@@ -130,10 +130,13 @@ namespace Gorgon {
 
 
 					case WM_CHAR:
-						if(handlers.count(wParam)==0 || handlers[wParam]==Input::Event<Window>::EmptyToken) {
+						if(handlers.count(wParam)==0 || handlers[wParam]==ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
 							if(wParam==8 || wParam==127 || wParam==27) return 0;
 
 							parent.CharacterEvent(wParam);
+						}
+						else {
+							parent.KeyEvent.FireFor(handlers[wParam], wParam, true);
 						}
 						return 0;
 
@@ -154,7 +157,7 @@ namespace Gorgon {
 		bool ishandled(HWND hwnd, Input::Key key) { 
 			if(!windowdata::mapping[hwnd])  return false;
 
-			return windowdata::mapping[hwnd]->handlers.count(key) && windowdata::mapping[hwnd]->handlers[key]!=Input::Event<Window>::EmptyToken;
+			return windowdata::mapping[hwnd]->handlers.count(key) && windowdata::mapping[hwnd]->handlers[key]!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken;
 		}
 	}
 

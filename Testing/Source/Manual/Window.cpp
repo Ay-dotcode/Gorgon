@@ -24,10 +24,18 @@ int main() {
 
 	img.Draw(l, {0,0});
 	
-	wind.KeyEvent.Register([](Gorgon::Input::Key key, float amount) {
-		if (key == 27 || key == 65307)
+	wind.KeyEvent.Register([](Gorgon::Input::Key key, bool state) {
+		if (!state && (key == 27 || key == 65307))
 			exit(0);
 		return false;
+	});
+	
+	wind.CharacterEvent.Register([](Gorgon::Input::Key key) {
+        if(key == '\r') std::cout<<std::endl;
+		std::cout<<char(key);
+        std::cout.flush();
+        
+		return true;
 	});
 	
 	while (1) {

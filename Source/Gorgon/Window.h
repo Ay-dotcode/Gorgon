@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Geometry/Point.h"
+#include "ConsumableEvent.h"
 #include "Geometry/Rectangle.h"
 #include "Containers/Collection.h"
 #include "WindowManager.h"
@@ -162,12 +163,12 @@ namespace Gorgon {
 		/// **Key** `(Input::Key)`: The key that is pressed or released
 		/// **Amount** `(float)`: Depending on the device this can be a boolean 0 and 1, number
 		///     of successive key strokes or amount of pressure (0 to 1) in analog controllers
-		Input::Event<Window> KeyEvent{*this};
+		ConsumableEvent<Window, Input::Key, bool> KeyEvent{*this};
 
 		/// Called when a character is received. This event is raised for regular characters
 		/// that can be printed. If a key is handled in keypress event, this event will not be
 		/// fired. This event will be called multiple times when the key repeats. 
-		Event<Window, Keyboard::Char> CharacterEvent{*this};
+		ConsumableEvent<Window, Keyboard::Char> CharacterEvent{*this};
 		///@}
 
 		/// List of currently created windows
@@ -175,7 +176,7 @@ namespace Gorgon {
 		
 	protected:
 		/// A window cannot be placed in another layer. This function always fails.
-		virtual void located() { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
+		virtual void located(Layer *parent)  { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
 
 
 	private:

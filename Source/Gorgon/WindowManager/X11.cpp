@@ -28,7 +28,7 @@ namespace Gorgon {
 			bool ismapped=false;
 			GLXContext context=0;
 			
-			std::map<Input::Key, Input::Event<Window>::Token> handlers;
+			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 		};
 		
 	}
@@ -589,8 +589,8 @@ namespace Gorgon {
 							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Meta);
 							break;
 					}
-					auto token=KeyEvent(key, +1.f);
-					if(token != Input::Event<Window>::EmptyToken) {
+					auto token=KeyEvent(key, true);
+					if(token != KeyEvent.EmptyToken) {
 						data->handlers[key]=token;
 						
 						break;
@@ -605,7 +605,7 @@ namespace Gorgon {
 					);
 					
 					if(nchars==1) {
-						if((buffer[0]>=0x20 && buffer[0]<0x7f) || buffer[0] == '\t') {
+						if((buffer[0]>=0x20 && buffer[0]!=0x7f) || buffer[0] == '\t' || buffer[0] == '\r') {
 							CharacterEvent(buffer[0]);
 						}
 					}
@@ -624,10 +624,10 @@ namespace Gorgon {
 							nextevent.xkey.keycode == event.xkey.keycode
 						) {
 							
-							if(data->handlers.count(key)>0 && data->handlers[key]!=Input::Event<Window>::EmptyToken) {
-								KeyEvent(data->handlers[key], key, +1.f);
+							if(data->handlers.count(key)>0 && data->handlers[key]!=KeyEvent.EmptyToken) {
+								KeyEvent.FireFor(data->handlers[key], key, true);
 							}
-							else {							
+							else {
 								Byte buffer[2];
 						
 								int nchars = XLookupString(
@@ -675,9 +675,9 @@ namespace Gorgon {
 					}
 					
 					
-					if(data->handlers.count(key)>0 && data->handlers[key]!=Input::Event<Window>::EmptyToken) {
-						KeyEvent(data->handlers[key], key, 0.f);
-						data->handlers[key]==Input::Event<Window>::EmptyToken;
+					if(data->handlers.count(key)>0 && data->handlers[key]!=KeyEvent.EmptyToken) {
+						KeyEvent.FireFor(data->handlers[key], key, 0.f);
+						data->handlers[key]=KeyEvent.EmptyToken;
 					}
 					else {
 						KeyEvent(key, 0.f);
