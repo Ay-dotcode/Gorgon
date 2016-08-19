@@ -82,7 +82,7 @@ namespace Gorgon { namespace Geometry {
 			(*this)*=t;
 		}
 
-		/// vec should be a unit vector
+		/// Rotates around the given plane, vec should be a unit vector
 		void Rotate(const basic_Point3D<T_> &vec, T_ ang) {
 			T_ c = std::cos(ang), s = std::sin(ang);
 			T_ C = 1 - c;
@@ -98,8 +98,8 @@ namespace Gorgon { namespace Geometry {
 		}
 		
 		/// This function transposes only 3x3 portion of the matrix
-		basic_Transform3D Transpose() const {
-            return {
+		void Transpose() {
+            *this = {
                 {mat[0][0], mat[1][0], mat[2][0], mat[0][3]},
 				{mat[0][1], mat[1][1], mat[2][1], mat[1][3]},
 				{mat[0][2], mat[1][2], mat[2][2], mat[2][3]},

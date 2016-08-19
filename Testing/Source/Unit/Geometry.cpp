@@ -10,6 +10,7 @@
 #include <Gorgon/Geometry/Bounds.h>
 #include <Gorgon/Geometry/Rectangle.h>
 #include <Gorgon/String.h>
+#include <Gorgon/External/glutil/MatrixStack.h>
 
 #undef Rectangle
 
@@ -1020,6 +1021,54 @@ TEST_CASE( "Transform3D") {
     }
     
     REQUIRE(similarp(t1 * p1, p1));
+    
+    t1.Translate({1, 2, 3});
+    t2(0, 3) = 1;
+    t2(1, 3) = 2;
+    t2(2, 3) = 3;
+    
+    REQUIRE(similar(t1, t2));
+    
+    /*glutil::MatrixStack m;
+    m.SetIdentity();
+    m.Translate(1, 2, 3);
+    m.Rotate({0,0,1}, Gorgon::PI/2);
+    m.Translate(1, 2, 3);
+    for(int i=0; i<4; i++) {
+        for(int j=0; j<4; j++) {
+            std::cout<<std::fixed<<std::setprecision(1)<<std::setw(5)<<m.Top().operator[](j)[i]<<" ";
+        }
+        std::cout<<std::endl;
+    }
+    
+    glm::vec4 v(3, 3, 3, 1);
+    v = m.Top() * v;
+    
+    std::cout<<v.x<<" "<<v.y<<" "<<v.z<<std::endl;*/
+    
+    
+    t2 = {{0,-1,0,1}, {1,0,0,2},{0,0,1,3},{0,0,0,1}};
+    t1.Rotate(0, 0, Gorgon::PI/2);
+    REQUIRE(similar(t1, t2));
+    
+    t2 = {};
+    t2(0, 3) = 1;
+    t2(1, 3) = 2;
+    t2(2, 3) = 3;
+    t1 *= t2;
+    
+    t2 = {{0,-1,0,-1}, {1,0,0,3},{0,0,1,6},{0,0,0,1}};
+    REQUIRE(similar(t1, t2));
+    
+    t2 = {{1, 1, 1, 0}, {0,0,0,0},{0,0,0,0},{0,0,0,1}};
+    t2.Transpose();
+    REQUIRE(similar(t2, {{1,0,0,0}, {1,0,0,0}, {1,0,0,0}, {0,0,0,1}}));
+    
+    p1 = {3, 3, 3};
+    p1 = t1 * p1;
+    
+    std::cout<<p1<<std::endl;
+    REQUIRE(similarp(p1, {-4, 6, 9}));
 }
 
 /*
