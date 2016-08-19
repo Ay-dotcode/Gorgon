@@ -99,18 +99,6 @@ namespace Gorgon { namespace GL {
 		glUniform3fv(name, 1, (GLfloat*)glm::value_ptr(value));
 	}
 
-	void Shader::UpdateUniform(int name, const glm::vec4& value) {
-		glUniform4fv(name, 1, (GLfloat*)glm::value_ptr(value));
-	}
-
-	void Shader::UpdateUniform(int name, const glm::mat3& value) {
-		glUniformMatrix3fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
-	}
-
-	void Shader::UpdateUniform(int name, const glm::mat3x2& value) {
-		glUniformMatrix3x2fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
-	}
-
 	void Shader::UpdateUniform(int name, const glm::mat4& value) {
 		glUniformMatrix4fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
 	}

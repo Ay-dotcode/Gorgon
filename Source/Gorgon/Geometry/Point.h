@@ -307,11 +307,19 @@ namespace Gorgon {
 				Y=y;
 			}
 
-			/// X coordinate
-			T_ X;
-			
-			/// Y coordinate
-			T_ Y;
+			union {
+                struct {
+                    /// X coordinate
+                    T_ X;
+                    
+                    /// Y coordinate
+                    T_ Y;
+                };
+                
+                /// Allows this point to be accessed as a vector
+                T_ Vector[2];
+            };
+                
 		};
 
 		/// Allows streaming of point. A point will be printed inside parenthesis with

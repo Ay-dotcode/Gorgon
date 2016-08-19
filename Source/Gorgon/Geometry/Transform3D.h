@@ -25,8 +25,6 @@ namespace Gorgon { namespace Geometry {
 			}
 		}
 		
-		
-		
 		void LoadIdentity() {
 			std::memset(&mat[0], 0, 4*4*sizeof(T_));
 
@@ -108,10 +106,16 @@ namespace Gorgon { namespace Geometry {
 				{mat[3][0], mat[3][1], mat[3][2], mat[3][3]}
             };
         }
-
+        
+        T_ *Data() {
+            return vec;
+        }
 
 	private:
-		std::array<std::array<T_, 4>, 4> mat;
+        union {
+            T_ mat[4][4];
+            T_ vec[16];
+        };
 	};
 
 	template<class T_>

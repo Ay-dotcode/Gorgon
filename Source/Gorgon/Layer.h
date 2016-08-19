@@ -284,7 +284,7 @@ namespace Gorgon {
 		/// Will be called when a layer is added. This function will even be called
 		/// when the given layer was already in the children.
 		virtual void added(Layer &layer) { }
-		
+		                                              
 		/// Will be called when a layer is removed. This function will be called even
 		/// if the given layer is not a child of this layer.
 		virtual void removed(Layer &layer) { }

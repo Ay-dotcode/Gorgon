@@ -58,9 +58,15 @@ namespace Gorgon { namespace Geometry {
 			return {Y*other.Z - Z*other.Y, Z*other.X - X*other.Z, X*other.Y - Y*other.X};
 		}
         
-        T_ X;
-        T_ Y;
-        T_ Z;
+        union {
+            struct {
+                T_ X;
+                T_ Y;
+                T_ Z;
+            };
+            
+            T_ Vector[3];
+        };
     };
 
     /// Allows streaming of point. A point will be printed inside parenthesis with
