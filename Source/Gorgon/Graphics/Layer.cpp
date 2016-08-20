@@ -9,32 +9,34 @@ namespace Gorgon { namespace Graphics {
 
 		if(!isvisible) return;
 
-		Transform.Push();
+		auto prev = Transform;
 
-		Transform.Translate({bounds.Left, bounds.Top, 0});
+		Transform.Translate((Gorgon::Float)bounds.Left, (Gorgon::Float)bounds.Top, 0);
 
-		ActivateQuad();
+		ActivateQuadVertices();
 		auto &shader = SimpleShader::Use();
 		for(auto &surface : surfaces) {
-			shader.SetDiffuse(surface.TextureID());
-			shader.SetVertexCoords(surface.GetVertices(Transform.Top()));
+			//shader.SetDiffuse(surface.TextureID());
+			shader.SetVertexCoords(surface.GetVertices(Transform));
 			shader.SetTextureCoords(surface.GetTextureCoords());
 
-			DrawQuad();
+			DrawQuadVertices();
 		}
 
 		//shader.SetDiffuse(1);
 		//shader.SetVertexCoords({{0, 0, 0}, {0.8, 0, 0}, {0.8, 298/300.f, 0}, {0, 298/300.f, 0}});
 		//shader.SetTextureCoords({{0, 0}, {1, 0}, {1, 1}, {0, 1}});
-		//DrawQuad();
+		//DrawQuadVertices();
 
 		//shader.SetVertexCoords({{0, 0, 0}, {-0.4, 0, 0}, {-0.4, -0.4, 0}, {0, -0.4, 0}});
 		//shader.SetTextureCoords({{0, 0}, {1, 0}, {1, 1}, {0, 1}});
-		//DrawQuad();
+		//DrawQuadVertices();
 
-		Gorgon::Layer::Render();
+		for(auto &l : children) {
+			l.Render();
+		}
 
-		Transform.Pop();
+		Transform = prev;
 	}
 
 } }
@@ -89,7 +91,7 @@ namespace gge { namespace graphics {
 		}
 
 			
-		UnitQuad::Draw();
+		UnitQuadVertices::Draw();
 	}
 
 	// ShaderType has to inherit from ShaderBase, uses lasttexture, if there is another function to modify
@@ -124,7 +126,7 @@ namespace gge { namespace graphics {
 			
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, maskTextureID);
-		UnitQuad::Draw();
+		UnitQuadVertices::Draw();
 	}
 
 

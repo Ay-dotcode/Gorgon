@@ -61,7 +61,40 @@ namespace Gorgon { namespace Geometry {
 				{1, 0, 0, p.X},
 				{0, 1, 0, p.Y},
 				{0, 0, 1, p.Z},
-				{0, 0, 0, 1  }
+				{0, 0, 0, 1}
+			});
+
+			(*this)*=t;
+		}
+
+		void Translate(T_ x, T_ y, T_ z) {
+			basic_Transform3D t({
+				{1, 0, 0, x},
+				{0, 1, 0, y},
+				{0, 0, 1, z},
+				{0, 0, 0, 1}
+			});
+
+			(*this)*=t;
+		}
+
+		void Scale(T_ x, T_ y, T_ z) {
+			basic_Transform3D t({
+				{x, 0, 0, 0},
+				{0, y, 0, 0},
+				{0, 0, z, 0},
+				{0, 0, 0, 1}
+			});
+
+			(*this)*=t;
+		}
+
+		void Scale(T_ f) {
+			basic_Transform3D t({
+				{f, 0, 0, 0},
+				{0, f, 0, 0},
+				{0, 0, f, 0},
+				{0, 0, 0, 1}
 			});
 
 			(*this)*=t;

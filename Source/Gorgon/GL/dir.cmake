@@ -3,6 +3,7 @@ SET(Local
 	OpenGL.h
 	Shader.h
 	Shader.cpp
+	Simple.h
 )
 
 IF(${OPENGL})

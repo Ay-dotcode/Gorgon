@@ -1,13 +1,14 @@
 #include "../Graphics.h"
 #include "../GL/OpenGL.h"
 #include "../WindowManager.h"
+#include "../Geometry/Transform3D.h"
 
 namespace Gorgon { namespace Graphics {
 
 	const Geometry::Pointf TextureSource::fullcoordinates[4]={{0, 0}, {1, 0}, {1, 1}, {0, 1}};
 
 	namespace internal {
-		glutil::MatrixStack Transform;
+		Geometry::Transform3D Transform;
 
 		GL::Texture LastTexture=0;
 
@@ -19,7 +20,7 @@ namespace Gorgon { namespace Graphics {
 		GLuint quadvbo;
 		std::map<decltype(WindowManager::CurrentContext()), GLuint> vaos;
 
-		void ActivateQuad() {
+		void ActivateQuadVertices() {
 #ifndef NDEBUG
 			if(vaos.count(WindowManager::CurrentContext())==0) {
 				throw std::logic_error("Context not initialized???");
@@ -28,7 +29,7 @@ namespace Gorgon { namespace Graphics {
 			glBindVertexArray(vaos[WindowManager::CurrentContext()]);
 		}
 
-		void DrawQuad() {
+		void DrawQuadVertices() {
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
 	}
@@ -96,12 +97,12 @@ namespace gge { namespace graphics {
 	// 2 triangles (3 vertices each)
 	// Each vertex:
 	// 1 int for index
-	int UnitQuad::unit_quad[6] =
+	int UnitQuadVertices::unit_quad[6] =
 	{
 		0, 3, 1, 1, 3, 2
 	};
 
-	UnitQuad::UnitQuad()
+	UnitQuadVertices::UnitQuadVertices()
 	{
 		glGenBuffers(1, &vbo);
 
@@ -118,29 +119,29 @@ namespace gge { namespace graphics {
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
-	UnitQuad::~UnitQuad()
+	UnitQuadVertices::~UnitQuadVertices()
 	{
 		glDeleteBuffers(1, &vbo);
 		glDeleteVertexArrays(1, &vao);
 	}
-	void UnitQuad::GLDraw()
+	void UnitQuadVertices::GLDraw()
 	{
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 	}
-	void Quad::GLDraw()
+	void QuadVertices::GLDraw()
 	{
 		assert(false);
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 	}
-	void Quad::UpdateInstanceVertexData(const std::array<float,24>& data)
+	void QuadVertices::UpdateInstanceVertexData(const std::array<float,24>& data)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-		// Move offset and orphan once in a while // Don't forget to comment out and uncomment glBufferData code in the UnitQuad constructor
+		// Move offset and orphan once in a while // Don't forget to comment out and uncomment glBufferData code in the UnitQuadVertices constructor
 
 		offset += sizeof(data);
 		if (offset >= buffer_size) {

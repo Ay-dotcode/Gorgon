@@ -10,7 +10,6 @@
 #include <Gorgon/Geometry/Bounds.h>
 #include <Gorgon/Geometry/Rectangle.h>
 #include <Gorgon/String.h>
-#include <Gorgon/External/glutil/MatrixStack.h>
 
 #undef Rectangle
 

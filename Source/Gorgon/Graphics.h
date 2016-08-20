@@ -11,7 +11,7 @@
 #include "Geometry/Bounds.h"
 #include "Geometry/Rectangle.h"
 
-#include "External/glutil/MatrixStack.h"
+#include "Geometry/Transform3D.h"
 
 namespace Gorgon {
 
@@ -369,18 +369,18 @@ namespace Gorgon {
 		namespace internal {
 			
 			/// Transformation stack
-			extern glutil::MatrixStack Transform;
+			extern Geometry::Transform3D Transform;
 
 			extern GL::Texture LastTexture;
 
 			/// This should be called by the windows to reset transformation stack.
 			inline void ResetTransform(const Geometry::Size &size) {
 				Transform={};
-				Transform.SetIdentity();
-				Transform.PixelPerfectOrtho({size.Width, size.Height}, {-1, 1});
+				Transform.Translate({-1.0f, 1.0f, 0});
+				Transform.Scale(2.0f / size.Width, -2.0f / size.Height, 1.0f);
 			}
-			void ActivateQuad();
-			void DrawQuad();
+			void ActivateQuadVertices();
+			void DrawQuadVertices();
 
 		}
 	}
@@ -431,34 +431,6 @@ namespace gge { namespace graphics {
 	extern glutil::MatrixStack				ModelViewMatrixStack;
 	extern glutil::MatrixStack				ProjectionMatrixStack;
 
-	class UnitQuad
-	{
-	public:								
-		virtual								~UnitQuad();
-		static UnitQuad&					Get() { static UnitQuad me; return me; }
-		static void							Draw() { Get().GLDraw(); }		
-	protected:
-											UnitQuad();
-		void								GLDraw();		
-		static int							unit_quad[6];
-		GLuint								vbo;
-		GLuint								vao;
-
-	private:
-											UnitQuad(const UnitQuad &);
-		UnitQuad&							operator=(const UnitQuad &);
-	};
-
-	class Quad : public UnitQuad
-	{
-	public:	
-		static Quad&						Get() { static Quad me; return me; }
-		static void							Draw() { Quad::Get().GLDraw(); }
-		static void							UpdateVertexData(const std::array<float,24>& data) { Quad::Get().UpdateInstanceVertexData(data); }
-	protected:
-		void								GLDraw();
-		void								UpdateInstanceVertexData(const std::array<float,24>& data);
-	};	
 	
 	class TextureAttachment {
 	public:

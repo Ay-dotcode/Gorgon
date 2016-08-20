@@ -24,7 +24,7 @@ namespace Gorgon { namespace Graphics {
 			return me;
 		}
 		
-		SimpleShader &SetVertexCoords(const glm::mat4x3 &value) {
+		SimpleShader &SetVertexCoords(const GL::QuadVertices &value) {
 			static int id = LocateUniform("vertex_coords");
 			UpdateUniform(id, value);
 			
@@ -32,7 +32,7 @@ namespace Gorgon { namespace Graphics {
 		}
 		
 		/// Sets texture coordinates
-		SimpleShader &SetTextureCoords(const glm::mat4x2 &value) {
+		SimpleShader &SetTextureCoords(const GL::QuadTextureCoords &value) {
 			static int id = LocateUniform("tex_coords");
 			UpdateUniform(id, value);
 			
@@ -61,14 +61,14 @@ namespace Gorgon { namespace Graphics {
 		}
 		
 		
-		SimpleTintShader &SetVertexCoords(const glm::mat4x3 &value) {
+		SimpleTintShader &SetVertexCoords(const GL::QuadVertices &value) {
 			static int id = LocateUniform("vertex_coords");
 			UpdateUniform(id, value);
 			
 			return *this;
 		}
 		
-		SimpleTintShader &SetTextureCoords(const glm::mat4x2 &value) {
+		SimpleTintShader &SetTextureCoords(const GL::QuadTextureCoords &value) {
 			static int id = LocateUniform("tex_coords");
 			UpdateUniform(id, value);
 			
@@ -77,7 +77,7 @@ namespace Gorgon { namespace Graphics {
 		
 		SimpleTintShader &SetTint(const Graphics::RGBAf &value) {
 			static int id = LocateUniform("tint");
-			UpdateUniform(id, *(glm::vec4*)&value);
+			UpdateUniform(id, value);
 			
 			return *this;
 		}
@@ -92,7 +92,7 @@ namespace Gorgon { namespace Graphics {
 	private:
 		SimpleTintShader();
 	};
-
+	/*
 	class MaskedShader : public GL::Shader
 	{
 	public:
@@ -102,7 +102,7 @@ namespace Gorgon { namespace Graphics {
 			return me;
 		}
 		
-		MaskedShader &SetVertexCoords(const glm::mat4x3 &value) {
+		MaskedShader &SetVertexCoords(const GL::QuadVertices &value) {
 			static int id = LocateUniform("vertex_coords");
 			UpdateUniform(id, value);
 			
@@ -146,7 +146,7 @@ namespace Gorgon { namespace Graphics {
 			return me;
 		}
 		
-		TintedMaskedShader &SetVertexCoords(const glm::mat4x3 &value) {
+		TintedMaskedShader &SetVertexCoords(const GL::QuadVertices &value) {
 			static int id = LocateUniform("vertex_coords");
 			UpdateUniform(id, value);
 			
@@ -185,5 +185,5 @@ namespace Gorgon { namespace Graphics {
 		}
 	private:
 		TintedMaskedShader();
-	};
+	};*/
 } }

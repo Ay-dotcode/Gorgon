@@ -6,11 +6,12 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "../External/glm/gtc/type_ptr.hpp"
 #include "Shader.h"
 #include "OpenGL.h"
 #include <streambuf>
 #include <algorithm>
+
+#include "Simple.h"
 
 namespace Gorgon { namespace GL {	
 
@@ -95,7 +96,7 @@ namespace Gorgon { namespace GL {
 		glUniform1i(name, value);
 	}
 
-	void Shader::UpdateUniform(int name, const glm::vec3& value) {
+	/*void Shader::UpdateUniform(int name, const glm::vec3& value) {
 		glUniform3fv(name, 1, (GLfloat*)glm::value_ptr(value));
 	}
 
@@ -109,6 +110,18 @@ namespace Gorgon { namespace GL {
 
 	void Shader::UpdateUniform(int name, const glm::mat4x3& value) {
 		glUniformMatrix4x3fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
+	}*/
+
+	void Shader::UpdateUniform(int name, const QuadVertices& value) {
+		glUniformMatrix4x3fv(name, 1, GL_FALSE, (GLfloat*)value.Data);
+	}
+
+	void Shader::UpdateUniform(int name, const QuadTextureCoords& value) {
+		glUniformMatrix4x2fv(name, 1, GL_FALSE, (GLfloat*)value.Data);
+	}
+
+	void Shader::UpdateUniform(int name, const Graphics::RGBAf& value) {
+		glUniformMatrix4fv(name, 1, GL_FALSE, (GLfloat*)value.Vector);
 	}
 
 	void Shader::BindUBO(const std::string &name, UBOBindingPoint::Type binding_point) {

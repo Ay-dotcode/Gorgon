@@ -1,5 +1,6 @@
 #include "Animation.h"
 #include "File.h"
+#include "../Utils/Assert.h"
 
 namespace Gorgon { namespace Resource {
 
@@ -88,7 +89,7 @@ namespace Gorgon { namespace Resource {
 		auto count=frames.size();
 
 #ifndef NDEBUG
-		assert(count!=0 && "Animation has no frames");
+		ASSERT(count!=0, "Animation has no frames");
 #endif
 
 		if(t>=(frames.end()-1)->GetStart())

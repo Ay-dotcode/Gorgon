@@ -19,6 +19,7 @@ out vec2 texcoord;
 void main()
 {
 	gl_Position = vec4(vertex_coords[vertex_index], 1.0f);
+
     texcoord = tex_coords[vertex_index];
 }
 )shader";
@@ -117,7 +118,7 @@ void main()
 	{
 		InitializeWithSource(TransformVertSrcCode, SimpleTintFragSrcCode);
 	}
-
+	/*
 	MaskedShader::MaskedShader() : Shader("Gorgon::Graphics::Masked")
 	{
 	    InitializeWithSource(MaskedVertexSrcCode, MaskedFragmentSrcCode);
@@ -127,6 +128,6 @@ void main()
 	{
 	    InitializeWithSource(MaskedVertexSrcCode, TintedMaskedFragmentSrcCode);
 	}
-
+	*/
 
 } }

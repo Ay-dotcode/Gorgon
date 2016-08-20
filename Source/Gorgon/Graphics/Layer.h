@@ -2,8 +2,10 @@
 
 #include "../Layer.h"
 #include "TextureTargets.h"
-#include "../External/glutil/MatrixStack.h"
 #include "../Utils/Assert.h"
+#include "../Geometry/Point3D.h"
+#include "../Geometry/Transform3D.h"
+#include "../GL/Simple.h"
 
 namespace Gorgon { namespace Graphics {
 
@@ -22,10 +24,10 @@ namespace Gorgon { namespace Graphics {
 
 				texture      = nullptr;
 
-				vertices[0]  = {p1.X, p1.Y, 0.f, 1.f};
-				vertices[1]  = {p2.X, p2.Y, 0.f, 1.f};
-				vertices[2]  = {p3.X, p3.Y, 0.f, 1.f};
-				vertices[3]  = {p4.X, p4.Y, 0.f, 1.f};
+				vertices[0]  = p1;
+				vertices[1]  = p2;
+				vertices[2]  = p3;
+				vertices[3]  = p4;
 
 				this->source = &source;
 			}
@@ -42,11 +44,11 @@ namespace Gorgon { namespace Graphics {
 				texture [1]  = t2;
 				texture [2]  = t3;
 				texture [3]  = t4;
-
-				vertices[0]  = {p1.X, p1.Y, 0.f, 1.f};
-				vertices[1]  = {p2.X, p2.Y, 0.f, 1.f};
-				vertices[2]  = {p3.X, p3.Y, 0.f, 1.f};
-				vertices[3]  = {p4.X, p4.Y, 0.f, 1.f};
+				
+				vertices[0]  = p1;
+				vertices[1]  = p2;
+				vertices[2]  = p3;
+				vertices[3]  = p4;
 
 				this->source = &source;
 			}
@@ -55,18 +57,16 @@ namespace Gorgon { namespace Graphics {
 				return source->GetID();
 			}
 
-			glm::mat4x3 GetVertices(const glm::mat4 &transform) {
-				glm::mat4 result =transform*vertices;
-				for(int i=0; i<4; i++) result[i]/=result[i].w;
-				return{result[0].xyz(), result[1].xyz(), result[2].xyz(), result[3].xyz()};
+			GL::QuadVertices GetVertices(const Geometry::Transform3D &transform) {
+				return transform*vertices;
 			}
 
-			glm::mat4x2 GetTextureCoords() {
+			GL::QuadTextureCoords GetTextureCoords() {
 				if(texture)
-					return{{texture[0].X, texture[0].Y}, {texture[1].X, texture[1].Y}, {texture[2].X, texture[2].Y}, {texture[3].X, texture[3].Y}};
+					return {texture[0], texture[1], texture[2], texture[3]};
 				else {
 					auto texture=source->GetCoordinates();
-					return{{texture[0].X, texture[0].Y}, {texture[1].X, texture[1].Y}, {texture[2].X, texture[2].Y}, {texture[3].X, texture[3].Y}};
+					return {texture[0], texture[1], texture[2], texture[3]};
 				}
 			}
 
@@ -77,7 +77,7 @@ namespace Gorgon { namespace Graphics {
 
 		private:
 
-			glm::mat4 vertices;
+			GL::QuadVertices vertices;
 			Geometry::Pointf *texture = nullptr;
 
 			const TextureSource *source = nullptr;
