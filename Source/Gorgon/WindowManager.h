@@ -65,16 +65,27 @@ namespace Gorgon {
 		 */
 		class Monitor {
 			friend struct internal::monitordata;
+            friend void addpadding(const Monitor*, int, int, int, int);
 		public:
 			/// Returns the size of this monitor in pixels.
 			Geometry::Size  GetSize() const {
-				return size;
+				return area.GetSize();
 			}
 			
 			/// Returns the location of this monitor relative to the other monitors in pixels. 
 			/// This function is expected to return (0, 0) if there are no other monitors in the system.
 			Geometry::Point GetLocation() const {
-				return location;
+				return area.TopLeft();
+			}
+			
+			/// Returns the area of the entire monitor including shift for multihead displays.
+			Geometry::Rectangle GetArea() const {
+				return area;
+			}
+			
+			/// Returns the area usable rectangle of the monitor. This region excludes any panels on the screen.
+			Geometry::Bounds GetUsable() const {
+				return usable;
 			}
 			
 			/// Whether this display is primary.
@@ -103,6 +114,18 @@ namespace Gorgon {
 				return monitors;
 			}
 			
+			
+			/// Returns the monitor from the given location. If none found, will return nullptr.
+			static const Monitor *FromLocation(Geometry::Point location) {
+                for(auto &monitor : monitors) {
+                    if(IsInside(monitor.GetArea(), location)) {
+                        return &monitor;
+                    }
+                }
+                
+                return nullptr;
+            }
+			
 			/// Asks WindowManager to refresh the list of monitors. This may deallocate monitors and cause problems.
 			/// Calling this method raises DisplayChanged to mitigate this problem partially. This function will not
 			/// re-create monitor list if window manager determines that there are no changes in the monitors. You may
@@ -123,9 +146,9 @@ namespace Gorgon {
 			Monitor();
 			internal::monitordata *data;
 			
-			Geometry::Size  size = {0,0};
-			Geometry::Point location = {0,0};
-			bool            isprimary = false;
+			Geometry::Rectangle area        = {0,0,0,0};
+            Geometry::Bounds    usable      = {0,0,0,0};
+			bool                isprimary   = false;
 			
 			std::string name;
 			
@@ -139,24 +162,10 @@ namespace Gorgon {
 		/// Returns an identifier for the current context
 		intptr_t CurrentContext();
 
-		/// Returns the usable rectangle of the screen. Usable rectangle excludes the regions
-		/// that are occupied by taskbar or any other panel that is set not to be covered
-		/// by windows. If a window is created in these regions, behavior is window
-		/// manager defined. It may move the window out of these regions, or leave it under
-		/// or over the panel.
-		Geometry::Rectangle GetUsableScreenRegion(int monitor=0);
-
-		/// Returns the rectangle of the given screen. There might be an offset on multi-monitor
-		/// systems.
-		Geometry::Rectangle GetScreenRegion(int monitor=0);
-
 		/// Returns the clipboard text. If there is no data or its incompatible with text, empty
 		/// string is returned. May require an existing window.
 		std::string GetClipboardText();
 		
-		/// Returns the monitors connected to this computer
-		std::vector<Monitor> GetMonitors();
-
 		/// Sets the clipboard text to given string. May require an existing window.
 		void SetClipboardText(const std::string &text);
 	}

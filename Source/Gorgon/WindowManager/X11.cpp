@@ -1,4 +1,7 @@
 #include "../WindowManager.h"
+#include <thread>
+#include <Gorgon/Geometry/Margins.h>
+#include <limits.h>
 #include "../Window.h"
 #include "../Time.h"
 #include "../OS.h"
@@ -61,9 +64,13 @@ namespace Gorgon {
 		Atom XA_PROTOCOLS;
 		Atom WM_DELETE_WINDOW;
 		Atom XA_STRING;
+		Atom XA_CARDINAL;
 		Atom XA_NET_FRAME_EXTENTS;
 		Atom XA_NET_WORKAREA;
 		Atom XA_NET_REQUEST_FRAME_EXTENTS;
+        Atom XA_NET_WM_STATE;
+        Atom XA_NET_WM_STATE_FULLSCREEN;
+        Atom XA_STRUT;
 		///@}
 			
 		///@{ waits for specific events
@@ -156,10 +163,15 @@ namespace Gorgon {
 			XA_TARGETS  =XInternAtom (display, "TARGETS", 0);
 			XA_PROTOCOLS=XInternAtom(display, "WM_PROTOCOLS", 0);
 			XA_STRING   =XInternAtom(display, "STRING", 0);
+			XA_CARDINAL   =XInternAtom(display, "CARDINAL", 0);
 			WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", 0);
 			XA_NET_FRAME_EXTENTS = XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
 			XA_NET_WORKAREA = XInternAtom(display, "_NET_WORKAREA", 0);
 			XA_NET_REQUEST_FRAME_EXTENTS = XInternAtom(display, "_NET_REQUEST_FRAME_EXTENTS", 0);
+            
+            XA_NET_WM_STATE = XInternAtom(display, "_NET_WM_STATE", False);
+            XA_NET_WM_STATE_FULLSCREEN = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+            XA_STRUT = XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False);
 			
 
 			char data[1]={0};
@@ -176,23 +188,6 @@ namespace Gorgon {
 			xinerama=xinerama && (bool)XineramaIsActive(display);
 			
 			Monitor::Refresh(true);
-		}
-		
-		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
-			auto &def=Monitor::Primary();
-			return {def.GetLocation(), def.GetSize()};
-		}
-		
-		Geometry::Rectangle GetScreenRegion(int monitor) {
-			Geometry::Rectangle rect;
-			rect.X=0;
-			rect.Y=0;
-			
-			Screen  *screen  = XScreenOfDisplay(display, monitor);
-			rect.Width =XWidthOfScreen(screen);
-			rect.Height=XHeightOfScreen(screen);
-			
-			return rect;
 		}
 
 		//Clipboard related
@@ -281,6 +276,65 @@ namespace Gorgon {
 			delete data;
 		}
 		
+		void addpadding(const Monitor *monitor, int l, int t, int r, int b) {
+            Monitor *mon = nullptr;
+            
+            for(auto &mon2 : Monitor::monitors) {
+                if(&mon2 == monitor)
+                    mon = &mon2;
+            }
+            
+            if(mon) {
+                mon->usable.Left  += l;
+                mon->usable.Top   += t;
+                mon->usable.Right -= r;
+                mon->usable.Bottom-= b;
+            }
+        }
+
+        void fixmonitorworkarea(int parent = 0, int x = 0, int y = 0) {
+            ::Window* children, w;
+            
+            unsigned int child_count;
+            
+            if(parent == 0)
+                parent=XDefaultRootWindow(display);
+
+            XQueryTree(display, parent, &w, &w, &children, &child_count);
+            
+            for(int i=0; i<child_count; i++) {
+                Atom actual_type;
+                int actual_format;
+                unsigned long item_count;
+                unsigned long bytes_left;
+                Byte *data;
+                
+                XWindowAttributes xwa;
+                XGetWindowAttributes(display, children[i], &xwa);
+                
+                int status = XGetWindowProperty(
+                    display, children[i], XA_STRUT, 
+                    0, 12 * 4, 0,
+                    XA_CARDINAL, &actual_type, &actual_format,
+                    &item_count, &bytes_left, &data
+                );
+                
+                if(status == Success && item_count) {
+                    int32_t *cardinals=reinterpret_cast<int32_t*>(data);
+                    
+                    auto monitor = Monitor::FromLocation({int(x+xwa.x), int(y+xwa.y)});
+                    
+                    if(monitor) {
+                        addpadding(monitor, cardinals[0], cardinals[2], cardinals[1], cardinals[3]);
+                    }
+                    
+                    XFree(data);
+                }
+                
+                fixmonitorworkarea(children[i], x+xwa.x, y+xwa.y);
+            }
+        }
+		
 		void Monitor::Refresh(bool force) {
 			//check if change is needed or forced
 			
@@ -310,8 +364,8 @@ namespace Gorgon {
 								auto monitor=new Monitor();
 								monitor->data->index=ind++;
 								monitor->data->out=ci->outputs[j];
-								monitor->size={(int)ci->width, (int)ci->height};
-								monitor->location={(int)ci->x, (int)ci->y};
+								monitor->area={(int)ci->x, (int)ci->y, (int)ci->width, (int)ci->height};
+                                monitor->usable = monitor->area;
 								monitor->isprimary=(ci->outputs[j]==primary);
 								if(monitor->IsPrimary()) Monitor::primary=monitor;
 								monitor->name=oi->name;
@@ -347,13 +401,31 @@ namespace Gorgon {
 						Monitor::primary=monitors.First().CurrentPtr();
 					}
 					
+					fixmonitorworkarea();
 					return;
 				}
 			}
 			
+failsafe: //this should use X11 screen as monitor
+			Geometry::Rectangle rect;
+			rect.X=0;
+			rect.Y=0;
 			
-			failsafe: //this should use X11 screen as monitor
-			;
+			Screen  *screen  = XScreenOfDisplay(display, 0);
+			rect.Width       = XWidthOfScreen(screen);
+			rect.Height      = XHeightOfScreen(screen);
+			
+            auto &monitor = *new Monitor();
+            monitors.Add(monitor);
+            
+            monitor.name = "Default";
+            monitor.data->index = -1;
+            monitor.data->out   = -1;
+            monitor.area = rect;
+            monitor.usable = rect;
+            
+            Monitor::primary = &monitor;
+            fixmonitorworkarea();
 		}
 		
 		bool Monitor::IsChangeEventSupported() {
@@ -376,7 +448,7 @@ namespace Gorgon {
 		
 		//using defaults
 		int screen = DefaultScreen(WindowManager::display);
-		int depth  = DefaultDepth(WindowManager::display,screen); 
+		int depth  = DefaultDepth(WindowManager::display,screen);
 		
 		//adjust atrributes
 		XSetWindowAttributes attributes;
@@ -393,7 +465,7 @@ namespace Gorgon {
 		
 		bool autoplaced=false;
 		if(rect.TopLeft()==automaticplacement) {
-			rect.Move( (WindowManager::GetUsableScreenRegion()-rect.GetSize()).Center() );
+			rect.Move( (WindowManager::Monitor::Primary().GetUsable()-rect.GetSize()).Center() );
 			autoplaced=true;
 		}
 		
@@ -421,7 +493,10 @@ namespace Gorgon {
 		sizehints->max_width=rect.Width;
 		sizehints->min_height=rect.Height;
 		sizehints->max_height=rect.Height;
-		sizehints->flags=PMinSize | PMaxSize;
+		sizehints->flags=PMinSize | PMaxSize | PWinGravity;
+        if(autoplaced)
+            sizehints->win_gravity = CenterGravity;
+        
 		XSetWMNormalHints(WindowManager::display, data->handle, sizehints);		
 		XFree(sizehints);
 		
@@ -434,8 +509,21 @@ namespace Gorgon {
 			
 			XMapWindow(WindowManager::display,data->handle);
 			XIfEvent(WindowManager::display, &event, &WindowManager::waitfor_mapnotify, (char*)data->handle);
+            
+            XMoveWindow(WindowManager::display, data->handle, rect.X, rect.Y);
 	
-			XMoveWindow(WindowManager::display, data->handle, rect.X, rect.Y);
+            if(autoplaced) {
+                XFlush(WindowManager::display);
+                
+                std::this_thread::sleep_for(std::chrono::milliseconds(10)); //wait for a short time to ensure window frame is ready.
+                
+                auto borders = WindowManager::GetX4Prop<Geometry::Margins>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
+                std::swap(borders.Top, borders.Right);
+                rect.Move( (WindowManager::Monitor::Primary().GetUsable()-(rect.GetSize()+borders.Total())).Center() );
+            }
+            
+            XMoveWindow(WindowManager::display, data->handle, rect.X, rect.Y);
+            
 			XFlush(WindowManager::display);			
 		}
 		else {

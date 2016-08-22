@@ -58,6 +58,9 @@ namespace Gorgon { namespace Geometry {
 		/// Calculates and returns the total margins in Y axis
 		T_ Vertical() const { return Bottom+Top;  }
 
+		/// Calculates and returns the total margins in X axis
+		basic_Size<T_> Total() const  { return {Right+Left, Bottom+Top}; }
+		
 		/// Adds two margins
 		basic_Margins operator +(const basic_Margins &right) const {
 			return basic_Margins(Left+right.Left, Top+right.Top, Right+right.Right, Bottom+right.Bottom);

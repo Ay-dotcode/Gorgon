@@ -38,8 +38,8 @@ namespace Gorgon { namespace Geometry {
 		}
 
 		/// Constructs minimum bounds that includes the given points
-		basic_Bounds(const basic_Point<T_> &topleft, const basic_Point<T_> &bottomright) : Left(topleft.x), Top(topleft.y), 
-		Right(bottomright.x), Bottom(bottomright.y) {
+		basic_Bounds(const basic_Point<T_> &topleft, const basic_Point<T_> &bottomright) : Left(topleft.X), Top(topleft.Y), 
+		Right(bottomright.X), Bottom(bottomright.Y) {
 			Normalize();
 		}
 
@@ -245,6 +245,27 @@ namespace Gorgon { namespace Geometry {
 			};
 		}
 
+		/// Creates a new bounds object that is larger by given size
+		basic_Bounds operator +(const basic_Size<T_> &s) const {
+			return{
+				Left             ,
+				Top              ,
+				Right  + s.Width ,
+				Bottom + s.Height
+			};
+		}
+
+		/// Creates a new bounds object that is smaller by given size
+		/// the given point
+		basic_Bounds operator -(const basic_Size<T_> &s) const {
+			return{
+				Left             ,
+				Top              ,
+				Right  - s.Width ,
+				Bottom - s.Height
+			};
+		}
+
 		/// Creates a new bounds object that is the scaled version of this bounds
 		/// by the given size. Origin of the operation is {0, 0}
 		template<class O_>
@@ -313,6 +334,22 @@ namespace Gorgon { namespace Geometry {
 			return *this;
 		}
 
+		/// Make this bounds larger by the given size
+		basic_Bounds &operator +=(const basic_Size<T_> &s) {
+			Right  += s.Width;
+			Bottom += s.Height;
+
+			return *this;
+		}
+
+		/// Make this bounds smaller by the given size
+		basic_Bounds &operator -=(const basic_Size<T_> &s) {
+			Right  -= s.Width;
+			Bottom -= s.Height;
+
+			return *this;
+		}
+		
 		/// Resizes this bounds objects by the given size. Origin of the operation is {0, 0}
 		template<class O_>
 		basic_Bounds &operator *=(const basic_Size<O_> &s) {
@@ -375,7 +412,7 @@ namespace Gorgon { namespace Geometry {
 	/// [(l, t) - (r, b)]
 	template <class T_>
 	std::ostream &operator << (std::ostream &out, const basic_Bounds<T_> &bounds) {
-		out<<"[("<<bounds.Left<<", "<<bounds.Top<<") - ("<<bounds.Bottom<<", "<<bounds.Right<<")]";
+		out<<"[("<<bounds.Left<<", "<<bounds.Top<<") - ("<<bounds.Right<<", "<<bounds.Bottom<<")]";
 
 		return out;
 	}
