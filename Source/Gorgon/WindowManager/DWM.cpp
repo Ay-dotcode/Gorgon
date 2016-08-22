@@ -206,13 +206,6 @@ namespace Gorgon {
 		}
 		/// @endcond
 
-		Geometry::Rectangle GetUsableScreenRegion(int monitor) {
-			RECT rect;
-
-			SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
-
-			return Geometry::Bounds{rect.left, rect.top, rect.right, rect.bottom};
-		}
 
 		void Initialize() {
 			defaultcursor=LoadCursor(NULL, IDC_ARROW);
@@ -260,8 +253,8 @@ namespace Gorgon {
 				auto mon=new Monitor();
 				mon->data->handle=hMonitor;
 				mon->name=mi.szDevice;
-				mon->size={mi.rcMonitor.right-mi.rcMonitor.left, mi.rcMonitor.bottom-mi.rcMonitor.top};
-				mon->location={mi.rcMonitor.left, mi.rcMonitor.top};
+				mon->area={mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right-mi.rcMonitor.left, mi.rcMonitor.bottom-mi.rcMonitor.top};
+				mon->usable ={mi.rcWork.left, mi.rcWork.top, mi.rcWork.right-mi.rcWork.left, mi.rcWork.bottom-mi.rcWork.top};
 				mon->isprimary=(mi.dwFlags&MONITORINFOF_PRIMARY)!=0;
 				if(mon->isprimary) {
 					Monitor::primary=mon;
@@ -346,7 +339,7 @@ namespace Gorgon {
 		rect.Height+= (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top);
 
 		if(rect.TopLeft()==automaticplacement) {
-			rect.Move( (WindowManager::GetUsableScreenRegion()-rect.GetSize()).Center() );
+			rect.Move( (WindowManager::Monitor::Primary().GetUsable()-rect.GetSize()).Center() );
 		}
 
 		SetWindowPos(hwnd, 0, rect.X, rect.Y, rect.Width, rect.Height, 0);
