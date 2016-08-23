@@ -87,6 +87,7 @@ namespace Gorgon { namespace Graphics {
 
 	class Layer : public Gorgon::Layer, public Graphics::TextureTarget {
 	public:
+		using Gorgon::Layer::Layer;
 
 		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 			const Geometry::Pointf &p3, const Geometry::Pointf &p4) override {

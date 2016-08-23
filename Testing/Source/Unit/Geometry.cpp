@@ -1066,16 +1066,21 @@ TEST_CASE( "Transform3D") {
     p1 = {3, 3, 3};
     p1 = t1 * p1;
     
-    std::cout<<p1<<std::endl;
     REQUIRE(similarp(p1, {-4, 6, 9}));
+    
+    t1 = {};
+    t1.Scale(1, 2, 3);
+    p1 = {3, 3, 3};
+    p1 = t1 * p1;
+    
+    REQUIRE(similarp(p1, {3, 6, 9}));
 }
 
 /*
 TEST_CASE( "Bounds constructors", "[Bounds]" ) {
 	Bounds  b1(1.2, 2.2);
 	Boundsf b2(1.2, 2.2);
-	Bounds  b3(b2);
-	Boundsf b4(b3);
+	Bounds  b3(b2);	Boundsf b4(b3);
 	Bounds  b5;
 	Boundsf b6;
 	Boundsf b7;

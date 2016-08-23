@@ -368,17 +368,9 @@ namespace Gorgon {
 
 		namespace internal {
 			
-			/// Transformation stack
-			extern Geometry::Transform3D Transform;
 
 			extern GL::Texture LastTexture;
 
-			/// This should be called by the windows to reset transformation stack.
-			inline void ResetTransform(const Geometry::Size &size) {
-				Transform={};
-				Transform.Translate({-1.0f, 1.0f, 0});
-				Transform.Scale(2.0f / size.Width, -2.0f / size.Height, 1.0f);
-			}
 			void ActivateQuadVertices();
 			void DrawQuadVertices();
 

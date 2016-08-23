@@ -64,6 +64,14 @@ namespace Gorgon {
 						parent.DestroyedEvent();
 						break;
 
+					case WM_LBUTTONUP: {
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Click, {x, y}, Input::Mouse::Button::Left);
+					}
+					break;
+
 
 					case WM_SYSKEYDOWN:
 					case WM_KEYDOWN: {
@@ -77,16 +85,16 @@ namespace Gorgon {
 						
 						switch(wParam) {
 						case VK_CONTROL:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Ctrl);
+							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Ctrl);
 							break;
 						case VK_SHIFT:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Shift);
+							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Shift);
 							break;
 						case VK_LWIN:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Meta);
+							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Meta);
 							break;
 						case VK_RWIN:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Meta);
+							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Meta);
 							break;
 						}
 
@@ -104,16 +112,16 @@ namespace Gorgon {
 
 						switch(wParam) {
 						case VK_CONTROL:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Ctrl);
+							Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Ctrl);
 							break;
 						case VK_SHIFT:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Shift);
+							Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Shift);
 							break;
 						case VK_LWIN:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Meta);
+							Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Meta);
 							break;
 						case VK_RWIN:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Meta);
+							Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Meta);
 							break;
 						}
 

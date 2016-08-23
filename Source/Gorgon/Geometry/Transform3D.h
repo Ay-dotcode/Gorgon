@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "Point3D.h"
+#include "Point.h"
 
 namespace Gorgon { namespace Geometry {
 	template<class T_>
@@ -47,6 +48,15 @@ namespace Gorgon { namespace Geometry {
 			};
 		}
 
+		basic_Point<T_> operator *(const basic_Point<T_> &p) const {
+			auto f = p.X * mat[3][0] + p.Y * mat[3][1] + mat[3][3];
+
+			return{
+				(p.X * mat[0][0] + p.Y * mat[0][1] + mat[0][3]) / f,
+				(p.X * mat[1][0] + p.Y * mat[1][1] + mat[1][3]) / f
+			};
+		}
+
 		basic_Transform3D &operator *=(const basic_Transform3D &t) {
 			basic_Transform3D o = *this;
 			for(int i=0; i<4; i++)
@@ -67,7 +77,7 @@ namespace Gorgon { namespace Geometry {
 			(*this)*=t;
 		}
 
-		void Translate(T_ x, T_ y, T_ z) {
+		void Translate(T_ x, T_ y, T_ z = 0) {
 			basic_Transform3D t({
 				{1, 0, 0, x},
 				{0, 1, 0, y},
@@ -78,7 +88,7 @@ namespace Gorgon { namespace Geometry {
 			(*this)*=t;
 		}
 
-		void Scale(T_ x, T_ y, T_ z) {
+		void Scale(T_ x, T_ y, T_ z = 1) {
 			basic_Transform3D t({
 				{x, 0, 0, 0},
 				{0, y, 0, 0},

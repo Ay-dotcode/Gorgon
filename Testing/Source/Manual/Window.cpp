@@ -8,11 +8,15 @@
 #include "Gorgon/Graphics/Layer.h"
 #include "Gorgon/Resource/Image.h"
 #include "Gorgon/Encoding/JPEG.h"
+#include "Gorgon/Input/Layer.h"
+
 #include <chrono>
 
 using Gorgon::Window;
+using Gorgon::Geometry::Point;
 namespace Graphics = Gorgon::Graphics;
 namespace Input = Gorgon::Input;
+namespace Mouse = Gorgon::Input::Mouse;
 namespace WM = Gorgon::WindowManager;
 
 int main() {
@@ -53,6 +57,19 @@ int main() {
         std::cout.flush();
         
 		return true;
+	});
+
+	Gorgon::Input::Layer il;
+	wind.Add(il);
+
+	auto b = il.GetBounds();
+	b.Left += 25;
+	il.SetBounds(b);
+
+	il.ClickEvent.Register([] (Point location, Mouse::Button button) {
+		std::cout<<button<<": "<<location<<std::endl;
+
+		return false;
 	});
 	
 	auto p = std::chrono::high_resolution_clock::now();

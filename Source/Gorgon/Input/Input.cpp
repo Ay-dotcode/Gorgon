@@ -1,12 +1,12 @@
 #include "../Input.h"
-#include "../Keyboard.h"
+#include "Keyboard.h"
 
-namespace Gorgon {
+namespace Gorgon { namespace Input {
 	
 	namespace Keyboard {
 		Modifier CurrentModifier=Modifier::None;
 	}
-}
+} }
 
 
 #ifdef asdfas

@@ -11,7 +11,7 @@
 #include "Event.h"
 #include "Layer.h"
 #include "Input.h"
-#include "Keyboard.h"
+#include "Input/Keyboard.h"
 
 namespace Gorgon {
 	/// @cond INTERNAL
@@ -168,7 +168,7 @@ namespace Gorgon {
 		/// Called when a character is received. This event is raised for regular characters
 		/// that can be printed. If a key is handled in keypress event, this event will not be
 		/// fired. This event will be called multiple times when the key repeats. 
-		ConsumableEvent<Window, Keyboard::Char> CharacterEvent{*this};
+		ConsumableEvent<Window, Input::Keyboard::Char> CharacterEvent{*this};
 		///@}
 
 		/// List of currently created windows
@@ -178,6 +178,12 @@ namespace Gorgon {
 		/// A window cannot be placed in another layer. This function always fails.
 		virtual void located(Layer *parent)  { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
 
+
+		/// Propagates a mouse event. Some events will be called directly.
+		virtual MouseHandler propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button) override;
+
+		/// Propagates a scroll event.
+		virtual MouseHandler propagate_scrollevent(Input::Mouse::ScrollType direction, Geometry::Point location, int amount) override;
 
 	private:
 		void createglcontext();

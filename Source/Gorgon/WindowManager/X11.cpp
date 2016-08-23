@@ -656,25 +656,25 @@ failsafe: //this should use X11 screen as monitor
 					switch(key) {
 						case XK_Shift_L:
 						case XK_Shift_R:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Shift);
+							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Shift);
 							break;
 							
 						case XK_Control_L:
 						case XK_Control_R:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Ctrl);
+							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Ctrl);
 							break;
 							
 						case XK_Alt_L:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Alt);
+							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Alt);
 							break;
 							
 						case XK_Alt_R:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Alt);
+							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Alt);
 							break;
 							
 						case XK_Super_L:
 						case XK_Super_R:
-							Keyboard::CurrentModifier.Add(Keyboard::Modifier::Meta);
+							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Meta);
 							break;
 					}
 					auto token=KeyEvent(key, true);
@@ -740,25 +740,25 @@ failsafe: //this should use X11 screen as monitor
 					switch(key) {
 						case XK_Shift_L:
 						case XK_Shift_R:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Shift);
+							Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Shift);
 							break;
 							
 						case XK_Control_L:
 						case XK_Control_R:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Ctrl);
+							Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Ctrl);
 							break;
 							
 						case XK_Alt_L:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Alt);
+							Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Alt);
 							break;
 							
 						case XK_Alt_R:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Alt);
+							Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Alt);
 							break;
 							
 						case XK_Super_L:
 						case XK_Super_R:
-							Keyboard::CurrentModifier.Remove(Keyboard::Modifier::Meta);
+							Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Meta);
 							break;
 					}
 					

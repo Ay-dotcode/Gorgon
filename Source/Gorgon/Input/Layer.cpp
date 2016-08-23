@@ -1,1 +1,18 @@
-#include "Layer.h"#include "GGEMain.h"#include "Graphics.h"using namespace gge::input;using namespace gge::utils;using namespace gge::graphics::system;namespace gge {	bool InputLayer::PropagateMouseEvent(input::mouse::Event::Type event, utils::Point location, int amount) {		if(event==input::mouse::Event::Over || event==input::mouse::Event::DragOver) {			if(!(IsVisible && BoundingBox.isInside(location)))				return false;			bool ret=false;			if(EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount))				ret=true;			if(LayerBase::PropagateMouseEvent(event, location, amount))				ret=true;			return ret;		} 		else if(event==input::mouse::Event::Out || event==input::mouse::Event::DragOut) {			bool ret=false;			int isin=(IsVisible && BoundingBox.isInside(location)) ? 1 : 0;			if(LayerBase::PropagateMouseEvent(event, location, amount & isin))				ret=true;			if(ret)				isin=false;			if(EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount & isin))				ret=true;			return ret;		} 		else {			if(!(IsVisible && BoundingBox.isInside(location)) && 				!(event==input::mouse::Event::Move && input::mouse::PressedObject) &&				!(event==input::mouse::Event::DragMove)				)				return false;			if(LayerBase::PropagateMouseEvent(event, location, amount))				return true;			return EventProvider::PropagateMouseEvent(event, location-BoundingBox.TopLeft(), amount);		}	}}
+#include "Layer.h"
+
+namespace Gorgon { namespace Input {
+
+	MouseHandler Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button) {
+		Transform.Translate(-(float)bounds.Left, -(float)bounds.Top);
+
+		auto curlocation = Transform * location;
+		if(curlocation.X < 0 || curlocation.X >= bounds.Width() || curlocation.Y < 0 || curlocation.Y >= bounds.Height()) return { };
+
+		if(event == Input::Mouse::EventType::Click) {
+			ClickEvent(curlocation, button);
+		}
+
+		return { };
+	}
+
+} }

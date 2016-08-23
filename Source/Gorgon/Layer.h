@@ -1,16 +1,62 @@
 #pragma once
 
 #include "Containers/Collection.h"
+#include "ConsumableEvent.h"
 #include "Geometry/Point.h"
 #include "Geometry/Bounds.h"
+#include "Geometry/Transform3D.h"
+#include "Input/Mouse.h"
 
 namespace Gorgon {
-	/// This class is the base class for all layer types.
-	/// All common methods are implemented with a common way.
-	/// This class always implements basic processing functions.
-	/// Derived classes can override them. Unless overridden these
-	/// basic functions only propagate the call. Copying a layer is
-	/// dangerous and therefore disabled. @nosubgrouping
+    class Layer;
+    
+    /**
+     * Allows mouse events to be called back
+     */
+    class MouseHandler {
+        friend class Layer;
+        
+        Layer *layer;
+        intptr_t token;
+        
+        MouseHandler(Layer &layer, intptr_t token) : layer(&layer), token(token)
+        { }
+        
+    public:
+        
+        MouseHandler() : layer(nullptr), token(0) { }
+        
+        Layer &GetLayer() const {
+            return *layer;
+        }
+        
+        intptr_t GetToken() const {
+            return token;
+        }
+        
+        bool IsValid() const {
+            return layer != nullptr;
+        }
+    };
+
+	/// Current layer transformation, only for render and mouse 
+	extern Geometry::Transform3D Transform;
+
+	/// This should be called by the windows to reset transformation stack.
+	inline void ResetTransform(const Geometry::Size &size) {
+		Transform={};
+		Transform.Translate({-1.0f, 1.0f, 0});
+		Transform.Scale(2.0f / size.Width, -2.0f / size.Height, 1.0f);
+	}
+
+	/** 
+     * This class is the base class for all layer types.
+	 * All common methods are implemented with a common way.
+	 * This class always implements basic processing functions.
+	 * Derived classes can override them. Unless overridden these
+	 * basic functions only propagate the call. Copying a layer is
+	 * dangerous and therefore disabled. @nosubgrouping
+     */
 	class Layer {
 	public:
 		
@@ -87,16 +133,7 @@ namespace Gorgon {
 		
 		/// Adds the given layer as a child. Notice that the newly added
 		/// layer is drawn on top of others.
-		void Add(Layer &layer) {
-			if(layer.parent) 
-				layer.parent->Remove(layer);
-
-			layer.parent=this;
-			children.Add(layer);
-			layer.located(this);
-			
-			added(layer);
-		}
+		void Add(Layer &layer);
 
 		/// Adds the given layer as a child. Notice that the newly added
 		/// layer is drawn on top of others.
@@ -108,16 +145,7 @@ namespace Gorgon {
 		
 		/// Inserts the given layer before the given index. The newly inserted
 		/// layer will be drawn *under* the layer in the given index
-		void Insert(Layer &layer, long under) {
-			if(layer.parent) 
-				layer.parent->Remove(layer);
-
-			layer.parent=this;
-			children.Insert(layer, under);
-			layer.located(this);
-			
-			added(layer);
-		}
+		void Insert(Layer &layer, long under);
 		
 		/// Inserts the given layer before the given index. The newly inserted
 		/// layer will be drawn *under* the layer in the given index
@@ -269,7 +297,7 @@ namespace Gorgon {
 			return isvisible;
 		}
 		
-		////Renders the current layer, default handling is to pass
+		/// Renders the current layer, default handling is to pass
 		/// the request to the sub-layers
 		virtual void Render();
 		
@@ -281,6 +309,18 @@ namespace Gorgon {
 		static const Geometry::Bounds EntireRegion;
 
 	protected:
+        
+        /// Creates a mouse handler object
+        MouseHandler make_mousehandler(intptr_t token) {
+            return {*this, token};
+        }
+
+		/// Propagates a mouse event. Some events will be called directly.
+		virtual MouseHandler propagate_mouseevent(Input::Mouse::EventType evet, Geometry::Point location, Input::Mouse::Button button);
+
+		/// Propagates a scroll event.
+		virtual MouseHandler propagate_scrollevent(Input::Mouse::ScrollType direction, Geometry::Point location, int amount);
+
 		/// Will be called when a layer is added. This function will even be called
 		/// when the given layer was already in the children.
 		virtual void added(Layer &layer) { }

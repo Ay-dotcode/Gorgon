@@ -1,15 +1,15 @@
 #pragma once
 
 #include <map>
-#include "Input.h"
+#include "../Input.h"
 
-namespace Gorgon {
-		
+namespace Gorgon { namespace Input {
+    
 	/// Keyboard related functions and enumerations @nosubgrouping
 	namespace Keyboard {
 		
 		/// A key on the keyboard
-		typedef Input::Key  Key;
+		typedef Gorgon::Input::Key  Key;
 		
 		/// A character, future compatibility for unicode
 		typedef char 		Char; 
@@ -243,4 +243,4 @@ namespace Gorgon {
 		/// Current keyboard modifier, this is a global value.
 		extern Modifier CurrentModifier;
 	}
-}
+} }
