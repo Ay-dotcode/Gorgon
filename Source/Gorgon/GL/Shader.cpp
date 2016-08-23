@@ -113,15 +113,15 @@ namespace Gorgon { namespace GL {
 	}*/
 
 	void Shader::UpdateUniform(int name, const QuadVertices& value) {
-		glUniformMatrix4x3fv(name, 1, GL_FALSE, (GLfloat*)value.Data);
+		glUniform3fv(name, 4, (GLfloat*)value.Data);
 	}
 
 	void Shader::UpdateUniform(int name, const QuadTextureCoords& value) {
-		glUniformMatrix4x2fv(name, 1, GL_FALSE, (GLfloat*)value.Data);
+		glUniform2fv(name, 4, (GLfloat*)value.Data);
 	}
 
 	void Shader::UpdateUniform(int name, const Graphics::RGBAf& value) {
-		glUniformMatrix4fv(name, 1, GL_FALSE, (GLfloat*)value.Vector);
+		glUniform4fv(name, 1, (GLfloat*)value.Vector);
 	}
 
 	void Shader::BindUBO(const std::string &name, UBOBindingPoint::Type binding_point) {

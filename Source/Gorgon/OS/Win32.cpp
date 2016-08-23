@@ -44,6 +44,12 @@
 
 #undef GetName
 
+/*
+extern "C" {
+	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
+*/
+
 namespace Gorgon { 
 	namespace internal { bool ishandled(HWND hwnd, Input::Key key); }
 	namespace OS {

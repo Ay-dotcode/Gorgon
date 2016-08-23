@@ -8,6 +8,7 @@
 #include "Gorgon/Graphics/Layer.h"
 #include "Gorgon/Resource/Image.h"
 #include "Gorgon/Encoding/JPEG.h"
+#include <chrono>
 
 using Gorgon::Window;
 namespace Graphics = Gorgon::Graphics;
@@ -37,7 +38,8 @@ int main() {
 
 	img.Prepare();
 
-	img.Draw(l, {0,0});
+	for(int i=0;i<10;i++)
+		img.Draw(l, {0,0});
 	
 	wind.KeyEvent.Register([](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))
@@ -53,7 +55,17 @@ int main() {
 		return true;
 	});
 	
-	while (1) {
+	auto p = std::chrono::high_resolution_clock::now();
+
+	for(int i=0; i<10; i++) {
+		Gorgon::NextFrame();
+	}
+
+	auto ft = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-p).count()/10000.f;
+
+	std::cout<<"Frame time: "<<ft<<"ms, "<<1000.f/ft<<" fps"<<std::endl;
+
+	while(true) {
 		Gorgon::NextFrame();
 	}
 

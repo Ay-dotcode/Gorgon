@@ -163,9 +163,7 @@ namespace Gorgon { namespace Resource {
 	}
 
 	DataItem* ObjectData::Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, long unsigned int totalsize) {
-#ifndef NDEBUG
 		auto target = reader->Target(totalsize);
-#endif
 
 		std::string name=reader->ReadString();
 

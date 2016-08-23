@@ -282,7 +282,7 @@ namespace Gorgon {
             ASSERT(!fire.test_and_set(), "Recursion detected during event execution.");
 #else
 			//prevent recursion
-			if(fire.test_and_set()) return false;
+			if(fire.test_and_set()) return;
 #endif
 
 			ASSERT(!movedout, "This event is moved out of");

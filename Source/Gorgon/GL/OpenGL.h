@@ -133,6 +133,7 @@ typedef void *		(APIENTRYP PFNGLMAPBUFFERRANGEPROC)				(GLenum target, GLintptr 
 typedef void		(APIENTRYP PFNGLSHADERSOURCEPROC)				(GLuint shader, GLsizei count, const GLchar* const *string, const GLint *length);
 typedef void		(APIENTRYP PFNGLUNIFORM1FPROC)					(GLint location, GLfloat v0);
 typedef void		(APIENTRYP PFNGLUNIFORM1IPROC)					(GLint location, GLint v0);
+typedef void		(APIENTRYP PFNGLUNIFORM2FVPROC)					(GLint location, GLsizei count, GLfloat* v0);
 typedef void		(APIENTRYP PFNGLUNIFORM3FVPROC)					(GLint location, GLsizei count, GLfloat* v0);
 typedef void		(APIENTRYP PFNGLUNIFORM4FVPROC)					(GLint location, GLsizei count, GLfloat* v0);
 typedef void		(APIENTRYP PFNGLUNIFORMBLOCKBINDINGPROC)		(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
@@ -187,6 +188,7 @@ extern PFNGLMAPBUFFERRANGEPROC					glMapBufferRange;
 extern PFNGLSHADERSOURCEPROC					glShaderSource;
 extern PFNGLUNIFORM1FPROC						glUniform1f;
 extern PFNGLUNIFORM1IPROC						glUniform1i;
+extern PFNGLUNIFORM2FVPROC						glUniform2fv;
 extern PFNGLUNIFORM3FVPROC						glUniform3fv;
 extern PFNGLUNIFORM4FVPROC						glUniform4fv;
 extern PFNGLUNIFORMBLOCKBINDINGPROC				glUniformBlockBinding;

@@ -55,6 +55,7 @@ PFNGLMAPBUFFERRANGEPROC					glMapBufferRange;
 PFNGLSHADERSOURCEPROC					glShaderSource;
 PFNGLUNIFORM1FPROC						glUniform1f;
 PFNGLUNIFORM1IPROC						glUniform1i;
+PFNGLUNIFORM2FVPROC						glUniform2fv;
 PFNGLUNIFORM3FVPROC						glUniform3fv;
 PFNGLUNIFORM4FVPROC						glUniform4fv;
 PFNGLUNIFORMBLOCKBINDINGPROC			glUniformBlockBinding;
@@ -212,6 +213,7 @@ namespace Gorgon { namespace GL {
 		glShaderSource					= (PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource");
 		glUniform1f						= (PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f");
 		glUniform1i						= (PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i");
+		glUniform2fv					= (PFNGLUNIFORM2FVPROC)wglGetProcAddress("glUniform2fv");
 		glUniform3fv					= (PFNGLUNIFORM3FVPROC)wglGetProcAddress("glUniform3fv");
 		glUniform4fv					= (PFNGLUNIFORM4FVPROC)wglGetProcAddress("glUniform4fv");
 		glUniformBlockBinding			= (PFNGLUNIFORMBLOCKBINDINGPROC)wglGetProcAddress("glUniformBlockBinding");

@@ -11,8 +11,8 @@ namespace Gorgon { namespace Graphics {
 
 in int vertex_index;
 
-uniform mat4x3 vertex_coords;
-uniform mat4x2 tex_coords;
+uniform vec3 vertex_coords[4];
+uniform vec2 tex_coords[4];
 
 out vec2 texcoord;
 
