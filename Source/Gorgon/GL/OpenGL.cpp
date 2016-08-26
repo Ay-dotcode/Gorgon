@@ -267,6 +267,7 @@ namespace Gorgon { namespace GL {
 		glShaderSource					= (PFNGLSHADERSOURCEPROC)glXGetProcAddress((const GLubyte*)"glShaderSource");
 		glUniform1f						= (PFNGLUNIFORM1FPROC)glXGetProcAddress((const GLubyte*)"glUniform1f");
 		glUniform1i						= (PFNGLUNIFORM1IPROC)glXGetProcAddress((const GLubyte*)"glUniform1i");
+		glUniform2fv					= (PFNGLUNIFORM2FVPROC)glXGetProcAddress((const GLubyte*)"glUniform2fv");
 		glUniform3fv					= (PFNGLUNIFORM3FVPROC)glXGetProcAddress((const GLubyte*)"glUniform3fv");
 		glUniform4fv					= (PFNGLUNIFORM4FVPROC)glXGetProcAddress((const GLubyte*)"glUniform4fv");
 		glUniformBlockBinding			= (PFNGLUNIFORMBLOCKBINDINGPROC)glXGetProcAddress((const GLubyte*)"glUniformBlockBinding");

@@ -64,6 +64,7 @@ namespace Gorgon {
 		Atom XA_PROTOCOLS;
 		Atom WM_DELETE_WINDOW;
 		Atom XA_STRING;
+		Atom XA_ATOM;
 		Atom XA_CARDINAL;
 		Atom XA_NET_FRAME_EXTENTS;
 		Atom XA_NET_WORKAREA;
@@ -163,7 +164,8 @@ namespace Gorgon {
 			XA_TARGETS  =XInternAtom (display, "TARGETS", 0);
 			XA_PROTOCOLS=XInternAtom(display, "WM_PROTOCOLS", 0);
 			XA_STRING   =XInternAtom(display, "STRING", 0);
-			XA_CARDINAL   =XInternAtom(display, "CARDINAL", 0);
+			XA_CARDINAL =XInternAtom(display, "CARDINAL", 0);
+			XA_ATOM     =XInternAtom(display, "ATOM", 0);
 			WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", 0);
 			XA_NET_FRAME_EXTENTS = XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
 			XA_NET_WORKAREA = XInternAtom(display, "_NET_WORKAREA", 0);
@@ -540,6 +542,84 @@ failsafe: //this should use X11 screen as monitor
 	
 	Window::Window(const Gorgon::Window::FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata) {
 		
+#ifndef NDEBUG
+		ASSERT(WindowManager::display, "Window manager system is not initialized.");
+#endif
+		
+		windows.Add(this);
+		
+		//using defaults
+		int screen = DefaultScreen(WindowManager::display);
+		int depth  = DefaultDepth(WindowManager::display,screen);
+		
+		//adjust atrributes
+		XSetWindowAttributes attributes;
+		
+		attributes.event_mask = 
+					StructureNotifyMask |    //move resize
+					KeyPressMask |           //keyboard
+					KeyReleaseMask |
+					ButtonPressMask |        //mouse
+					ButtonReleaseMask|    
+					FocusChangeMask|         //activate/deactivate
+					SubstructureRedirectMask //??
+		;
+		
+		bool autoplaced=false;
+		
+		auto rootwin=XRootWindow(WindowManager::display,screen);
+        
+        auto &mon = WindowManager::Monitor::Primary();
+		
+		data->handle = XCreateWindow(WindowManager::display, 
+			rootwin,
+			mon.GetLocation().X,mon.GetLocation().Y,mon.GetSize().Width,mon.GetSize().Height,
+			0, depth, InputOutput, 
+			WindowManager::visual, CWEventMask, &attributes
+		);
+		
+		XClassHint *classhint=XAllocClassHint();
+		classhint->res_name=(char*)malloc(name.length()+1);
+		strcpy(classhint->res_name, name.c_str());
+		classhint->res_class=(char*)malloc(name.length()+1);
+		strcpy(classhint->res_class, name.c_str());
+		XSetClassHint(WindowManager::display, data->handle, classhint);
+		XFree(classhint);
+	
+		XStoreName(WindowManager::display, data->handle, (char*)title.c_str());
+
+		XSizeHints *sizehints=XAllocSizeHints();
+		sizehints->min_width=mon.GetSize().Width;
+		sizehints->max_width=mon.GetSize().Width;
+		sizehints->min_height=mon.GetSize().Height;
+		sizehints->max_height=mon.GetSize().Height;
+		sizehints->flags=PMinSize | PMaxSize;
+        
+		XSetWMNormalHints(WindowManager::display, data->handle, sizehints);		
+		XFree(sizehints);
+		
+		XSetWMProtocols(WindowManager::display, data->handle, &WindowManager::WM_DELETE_WINDOW, 1);
+		
+        XEvent event;
+        
+        XFlush(WindowManager::display);
+        
+        Atom flist[] = {WindowManager::XA_NET_WM_STATE_FULLSCREEN, 0};
+        
+        XChangeProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_STATE, WindowManager::XA_ATOM, 32, PropModeReplace, (Byte*)flist, 1);
+        
+        XMapWindow(WindowManager::display,data->handle);
+        XIfEvent(WindowManager::display, &event, &WindowManager::waitfor_mapnotify, (char*)data->handle);
+        
+        XMoveWindow(WindowManager::display, data->handle, mon.GetLocation().X, mon.GetLocation().Y);
+        
+        XFlush(WindowManager::display);
+		
+		data->ismapped=true;
+		
+		Layer::Resize(mon.GetSize());
+
+		createglcontext();
 	}
 	
 	Window::~Window() {
