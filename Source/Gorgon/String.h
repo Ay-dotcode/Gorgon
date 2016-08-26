@@ -544,8 +544,9 @@ namespace Gorgon {
 		/// @param  original string that will be processed. This string will be modified
 		///         by the program
 		/// @param  marker string that will be searched.
+		/// @param  trim   if set, both extracted and the remaining part of the string
 		/// @return Extracted string. Does not contain the marker.
-		inline std::string Extract(std::string &original, const std::string marker) {
+		inline std::string Extract(std::string &original, const std::string marker, bool trim = false) {
 			auto pos=original.find(marker);
 			
 			if(pos==original.npos) {
@@ -557,6 +558,11 @@ namespace Gorgon {
 			
 			std::string ret=original.substr(0, pos);
 			original=original.substr(pos+marker.length());
+            
+            if(trim) {
+                ret = TrimEnd(ret);
+                original = TrimStart(original);
+            }
 			
 			return ret;
 		}
@@ -570,8 +576,9 @@ namespace Gorgon {
 		/// @param  original string that will be processed. This string will be modified
 		///         by the program
 		/// @param  marker character that will be searched.
+		/// @param  trim   if set, both extracted and the remaining part of the string
 		/// @return Extracted string. Does not contain the marker.
-		inline std::string Extract(std::string &original, char marker) {
+		inline std::string Extract(std::string &original, char marker, bool trim = false) {
 			auto pos=original.find_first_of(marker);
 			
 			if(pos==original.npos) {
@@ -583,6 +590,11 @@ namespace Gorgon {
 			
 			std::string ret=original.substr(0, pos);
 			original=original.substr(pos+1);
+            
+            if(trim) {
+                ret = TrimEnd(ret);
+                original = TrimStart(original);
+            }
 			
 			return ret;
 		}

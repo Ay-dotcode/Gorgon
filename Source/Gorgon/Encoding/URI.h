@@ -119,6 +119,23 @@ namespace Gorgon { namespace Encoding {
 
 		/// Converts this query system to string
 		std::string Convert() const { return *this; }
+		
+		/// Returns the value that is stored within key. If key does not exist, an empty string will be returned.
+		std::string Get(const std::string &key) const {
+            if(data.count(key) == 0) return "";
+            
+            return data.at(key);
+        }
+        
+		/// Returns the value that is stored within key. If key does not exist, an empty value with the given key is created.
+        std::string &operator[](const std::string &key) {
+            return data[key];
+        }
+        
+        /// Returns if the given key exists
+        bool Exists(const std::string &key) const {
+            return data.count(key) != 0;
+        }
 
 		/// Key-value pairs for this HTTP query
 		std::map<std::string, std::string> data;
@@ -149,6 +166,32 @@ namespace Gorgon { namespace Encoding {
 
 		/// Compares two paths after normalization
 		bool operator !=(const URIPath &other) const { return !(*this==other); }
+		
+		int GetSize() const { return segments.size(); }
+		
+		/// Returns the segment at the given index
+		std::string &operator[] (int ind) { return segments[ind]; }
+		
+		/// Returns the segment at the given index. Index 0 will never cause an error, if does not exists, it will be empty string.
+		std::string Get(int ind) const { 
+            if(ind==0 && segments.size()==0) return "";
+            
+            return segments[ind]; 
+        }
+		
+		/// Returns the first segment and removes it from the list of segments. This function will never fire error. If there are no segments
+		/// it will return empty string
+		std::string StripFirst() { 
+            if(segments.size()==0) return "";
+            
+            auto ret = segments.front();
+            segments.erase(segments.begin());
+            
+            return ret; 
+        }
+		
+		/// Returns the segment at the given index
+		const std::string &operator[] (int ind) const { return segments[ind]; }
 
 		/// Converts the path to string properly escaping for URI
 		std::string Convert() const { return *this; }
