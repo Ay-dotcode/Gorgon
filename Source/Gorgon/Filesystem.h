@@ -186,6 +186,22 @@ namespace Gorgon {
 
 			return path;
 		}
+        
+        /// Returns the extension of the given path, also converts the extension to lower case
+        std::string GetExtension(std::string path);
+        
+        /// Returns the filename from the given path, without extension
+        inline std::string GetBasename(std::string path) {
+            path = GetFilename(path);
+            
+            auto pos = path.find_last_of('.');
+            
+            if(pos == path.npos) return path;
+            
+            path = path.substr(0, path.size()-pos);
+            
+            return path;
+        }
 
 		/// Copies a file or directory from the given source to destination.
 		/// Hard link sources will be copied instead of links themselves.

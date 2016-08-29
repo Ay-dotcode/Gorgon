@@ -1127,14 +1127,15 @@ namespace Gorgon {
 					"Extracts the part of the string up to the given marker", String, 
 					{
 						MapFunction(
-							(std::string(*)(std::string &, const std::string))String::Extract, String, 
+							(std::string(*)(std::string &, const std::string, bool))String::Extract, String, 
 							{
-								Parameter("Marker", "String that will be searched.", String)
+								Parameter("Marker", "String that will be searched.", String),
+                                Parameter("Trim"  , "If set true, the string will be trimmed", Bool, Data(Bool, true))
 							}
 						)
 					}
 				),
-				
+                    
 				new Function("Replace",
 					"Replaces all instances of the given substring in this string with another string", String, 
 					{

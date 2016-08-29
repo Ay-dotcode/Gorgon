@@ -1,5 +1,6 @@
 #include "../Filesystem.h"
 #include "Iterator.h"
+#include "../String.h"
 
 #include <fstream>
 #include <iostream>
@@ -136,4 +137,13 @@ namespace Gorgon { namespace Filesystem {
 		return relative;
 	}
 	
+    std::string GetExtension(std::string path) {
+        auto pos = path.find_last_of('.');
+        
+        if(pos == path.npos) return "";
+        
+        path = path.substr(pos+1);
+        
+        return String::ToLower(path);
+    }	
 } }
