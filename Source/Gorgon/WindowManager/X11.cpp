@@ -18,6 +18,8 @@
 
 #include <GL/glx.h>
 
+#undef None
+
 
 namespace Gorgon { 
 
@@ -34,6 +36,7 @@ namespace Gorgon {
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 		};
 		
+        static int None = 0;
 	}
 
 	namespace WindowManager {
@@ -217,7 +220,7 @@ namespace Gorgon {
 			
 			XEvent event;
 			
-			XConvertSelection (display, XA_CLIPBOARD, XA_STRING, None, windowhandle, CurrentTime);
+			XConvertSelection (display, XA_CLIPBOARD, XA_STRING, Gorgon::internal::None, windowhandle, CurrentTime);
 			XFlush(display);
 			
 			XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
@@ -294,7 +297,7 @@ namespace Gorgon {
             }
         }
 
-        void fixmonitorworkarea(int parent = 0, int x = 0, int y = 0) {
+        static void fixmonitorworkarea(int parent = 0, int x = 0, int y = 0) {
             ::Window* children, w;
             
             unsigned int child_count;
@@ -593,7 +596,9 @@ failsafe: //this should use X11 screen as monitor
 		sizehints->max_width=mon.GetSize().Width;
 		sizehints->min_height=mon.GetSize().Height;
 		sizehints->max_height=mon.GetSize().Height;
-		sizehints->flags=PMinSize | PMaxSize;
+		sizehints->x=mon.GetLocation().X;
+		sizehints->y=mon.GetLocation().Y;
+		sizehints->flags=PMinSize | PMaxSize | PPosition ;
         
 		XSetWMNormalHints(WindowManager::display, data->handle, sizehints);		
 		XFree(sizehints);
@@ -695,6 +700,25 @@ failsafe: //this should use X11 screen as monitor
 		XFlush(WindowManager::display);
 	}
 
+    Input::Mouse::Button buttonfromx11(unsigned btn) {
+        using Input::Mouse::Button;
+        switch(btn) {
+        case 1:
+            return Button::Left;
+        case 2:
+            return Button::Middle;
+        case 3:
+            return Button::Right;
+        case 8:
+            return Button::X1;
+        case 9:
+            return Button::X2;
+        default:
+            return Button::None;
+        }
+    }
+
+	
 	void Window::processmessages() {
 		XEvent event;
 
@@ -851,10 +875,25 @@ failsafe: //this should use X11 screen as monitor
 						KeyEvent(key, 0.f);
 					}
 					
-				} //Keypress
+				} //Keyrelease
 				break;
 					
-
+                case ButtonPress:
+                    if(event.xbutton.button==4) {
+                        propagate_mouseevent(Input::Mouse::EventType::Scroll_Vert, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), 1);
+                    }
+                    else if(event.xbutton.button==5) {
+                        propagate_mouseevent(Input::Mouse::EventType::Scroll_Vert, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), -1);
+                    }
+                    else {
+                        propagate_mouseevent(Input::Mouse::EventType::Down, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), 0);
+                    }
+                    break;
+                case ButtonRelease:
+                    if(event.xbutton.button!=4 && event.xbutton.button!=5) {
+                        propagate_mouseevent(Input::Mouse::EventType::Up, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), 0);
+                    }
+                    break;
 			}
 		}
 	}
@@ -870,7 +909,7 @@ failsafe: //this should use X11 screen as monitor
 			GLX_RED_SIZE,   1,
 			GLX_GREEN_SIZE, 1,
 			GLX_BLUE_SIZE,  1,
-			None
+			internal::None
 		};
 		
 		XVisualInfo *vi = glXChooseVisual(WindowManager::display, DefaultScreen(WindowManager::display), attributeListDbl);

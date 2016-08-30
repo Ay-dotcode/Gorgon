@@ -25,6 +25,7 @@ namespace Gorgon {
 	class Window : public Layer {
 		friend internal::windowdata *WindowManager::internal::getdata(const Window&);
 		friend struct internal::windowdata;
+        friend class Layer;
 	public:
 		/// Fullscreen tag
 		static const struct FullscreenTag {
@@ -176,14 +177,13 @@ namespace Gorgon {
 		
 	protected:
 		/// A window cannot be placed in another layer. This function always fails.
-		virtual void located(Layer *parent)  { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
+		virtual void located(Layer *) override { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
 
 
 		/// Propagates a mouse event. Some events will be called directly.
-		virtual MouseHandler propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button) override;
-
-		/// Propagates a scroll event.
-		virtual MouseHandler propagate_scrollevent(Input::Mouse::ScrollType direction, Geometry::Point location, int amount) override;
+		virtual MouseHandler propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, int amount) override;
+        
+        void deleting(Layer *layer) { if(layer==down) down = nullptr; }
 
 	private:
 		void createglcontext();
@@ -193,5 +193,7 @@ namespace Gorgon {
 		static Containers::Collection<Window> windows;
 
 		static const Geometry::Point automaticplacement;
+        
+        MouseHandler down = nullptr;
 	};
 }

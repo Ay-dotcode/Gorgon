@@ -64,11 +64,19 @@ namespace Gorgon {
 						parent.DestroyedEvent();
 						break;
 
+					case WM_LBUTTONDOWN: {
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Down, {x, y}, Input::Mouse::Button::Left, 0);
+					}
+					break;
+
 					case WM_LBUTTONUP: {
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Click, {x, y}, Input::Mouse::Button::Left);
+						parent.propagate_mouseevent(Input::Mouse::EventType::Up, {x, y}, Input::Mouse::Button::Left, 0);
 					}
 					break;
 

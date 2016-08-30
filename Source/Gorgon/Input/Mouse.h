@@ -14,19 +14,40 @@ namespace Gorgon { namespace Input {
 			Down,
 			Click,
 			Up,
+            Scroll_Vert,
+            Scroll_Hor,
+            Zoom,
 		};
 
 		enum class Button {
+            None   = 0 ,
 			Left   = 1 ,
 			Right  = 2 ,
 			Middle = 4 ,
 			X1	   = 8 ,
-			X2	   = 16
+			X2	   = 16,
+			All    = 31,
 		};
+        
+        inline Button operator |(Button l, Button r) {
+            return Button((int)l | (int)r);
+        }
+        
+        inline Button operator &(Button l, Button r) {
+            return Button((int)l & (int)r);
+        }
+        
+        inline bool operator &&(Button l, Button r) {
+            return (int)(l&r) > 0;
+        }
 
 		DefineEnumStrings(
 			Button, 
-			{Button::Left, "Left"}
+			{Button::Left, "Left"},
+			{Button::Right, "Right"},
+			{Button::Middle, "Middle"},
+			{Button::X1, "X1"},
+			{Button::X2, "X2"},
 		);
 
 		enum class ScrollType {

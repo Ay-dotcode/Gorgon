@@ -9,38 +9,14 @@
 
 namespace Gorgon {
     class Layer;
-    
-    /**
-     * Allows mouse events to be called back
-     */
-    class MouseHandler {
-        friend class Layer;
-        
-        Layer *layer;
-        intptr_t token;
-        
-        MouseHandler(Layer &layer, intptr_t token) : layer(&layer), token(token)
-        { }
-        
-    public:
-        
-        MouseHandler() : layer(nullptr), token(0) { }
-        
-        Layer &GetLayer() const {
-            return *layer;
-        }
-        
-        intptr_t GetToken() const {
-            return token;
-        }
-        
-        bool IsValid() const {
-            return layer != nullptr;
-        }
-    };
 
 	/// Current layer transformation, only for render and mouse 
 	extern Geometry::Transform3D Transform;
+    
+    /// Current clipping size, for mouse events
+    extern Geometry::Size        Clip;
+    
+    using MouseHandler = Layer *;
 
 	/// This should be called by the windows to reset transformation stack.
 	inline void ResetTransform(const Geometry::Size &size) {
@@ -62,10 +38,10 @@ namespace Gorgon {
 		
 		/// Initializing constructor
 		Layer(const Geometry::Bounds &bounds) :
+			Children(children),
 			parent(nullptr), 
 			bounds(bounds),
-			isvisible(true),
-			Children(children)
+			isvisible(true)
 		{ }
 
 		/// Constructor that sets the layer to cover entire parent, no matter how big it is. The
@@ -101,10 +77,7 @@ namespace Gorgon {
 		}
 
 		/// Destructor
-		virtual ~Layer() {
-			if(parent)
-				parent->Remove(this);
-		}
+		virtual ~Layer();
 		
 		/// Swaps two layers, mostly used for move semantics
 		void Swap(Layer &other) {
@@ -296,6 +269,9 @@ namespace Gorgon {
 			
 			return isvisible;
 		}
+
+		/// Propagates a mouse event. Some events will be called directly. Do not use this function.
+		virtual MouseHandler propagate_mouseevent(Input::Mouse::EventType evet, Geometry::Point location, Input::Mouse::Button button, int amount);
 		
 		/// Renders the current layer, default handling is to pass
 		/// the request to the sub-layers
@@ -309,22 +285,11 @@ namespace Gorgon {
 		static const Geometry::Bounds EntireRegion;
 
 	protected:
-        
-        /// Creates a mouse handler object
-        MouseHandler make_mousehandler(intptr_t token) {
-            return {*this, token};
-        }
-
-		/// Propagates a mouse event. Some events will be called directly.
-		virtual MouseHandler propagate_mouseevent(Input::Mouse::EventType evet, Geometry::Point location, Input::Mouse::Button button);
-
-		/// Propagates a scroll event.
-		virtual MouseHandler propagate_scrollevent(Input::Mouse::ScrollType direction, Geometry::Point location, int amount);
 
 		/// Will be called when a layer is added. This function will even be called
 		/// when the given layer was already in the children.
 		virtual void added(Layer &layer) { }
-		                                              
+		
 		/// Will be called when a layer is removed. This function will be called even
 		/// if the given layer is not a child of this layer.
 		virtual void removed(Layer &layer) { }

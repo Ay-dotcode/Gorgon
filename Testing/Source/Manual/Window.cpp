@@ -31,7 +31,7 @@ int main() {
     std::cout<<WM::Monitor::Primary().GetName()<<": "<<WM::Monitor::Primary().GetLocation()<<std::endl;
     //std::cout<<WM::GetScreenRegion(0)<<std::endl;
     
-	Window wind(Window::Fullscreen, "windowtest");
+	Window wind({400, 400}, "windowtest");
 	Graphics::Initialize();
 
 	Graphics::Layer l;
@@ -62,11 +62,10 @@ int main() {
 	Gorgon::Input::Layer il;
 	wind.Add(il);
 
-	auto b = il.GetBounds();
-	b.Left += 25;
-	il.SetBounds(b);
+    il.Move({25, 0});
+    il.Resize({100, 0});
 
-	il.ClickEvent.Register([] (Point location, Mouse::Button button) {
+	il.SetClick([] (Point location, Mouse::Button button) {
 		std::cout<<button<<": "<<location<<std::endl;
 
 		return false;
