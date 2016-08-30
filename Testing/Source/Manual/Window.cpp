@@ -63,12 +63,18 @@ int main() {
 	wind.Add(il);
 
     il.Move({25, 0});
-    il.Resize({100, 0});
+	il.Resize({100, 0});
 
-	il.SetClick([] (Point location, Mouse::Button button) {
+	il.SetHitCheck([](Point location) {
+		return location.X%2 != 0;
+	});
+
+	il.SetClick([](Point location, Mouse::Button button) {
 		std::cout<<button<<": "<<location<<std::endl;
+	});
 
-		return false;
+	il.SetScroll([](Point location, int amount) {
+		std::cout<<"Scrolled "<<amount<<" times at "<<location<<std::endl;
 	});
 	
 	auto p = std::chrono::high_resolution_clock::now();

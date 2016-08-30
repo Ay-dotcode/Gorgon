@@ -257,6 +257,116 @@ namespace Gorgon { namespace Input {
             void ResetClick() {
                 click = {};
             }
+
+
+
+			/// Sets scroll function.
+			void SetScroll(std::function<void(Layer &, Geometry::Point, int)> fn) {
+				vscroll = fn;
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout.
+			void SetScroll(std::function<void(Geometry::Point, int)> fn) {
+				vscroll = [fn](Layer &, Geometry::Point point, int amount) { fn(point, amount); };
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout. This variant accepts class member function.
+			template<class C_>
+			void SetScroll(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point, int)> fn) {
+				C_ *my = &c;
+				vscroll = [fn, my](Layer &layer, Geometry::Point point, int amount) { my->fn(layer, point, amount); };
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout. This variant accepts class member function.
+			template<class C_>
+			void SetScroll(C_ &c, std::function<void(C_ &, Geometry::Point, int)> fn) {
+				C_ *my = &c;
+				vscroll = [fn, my](Layer &, Geometry::Point point, int amount) { my->fn(point, amount); };
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout. This variant accepts class member function.
+			template<class C_>
+			void SetScroll(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point, int)> fn) {
+				vscroll = [fn, my](Layer &layer, Geometry::Point point, int amount) { my->fn(layer, point, amount); };
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout. This variant accepts class member function.
+			template<class C_>
+			void SetScroll(C_ *my, std::function<void(C_ &, Geometry::Point, int)> fn) {
+				vscroll = [fn, my](Layer &, Geometry::Point point, int amount) { my->fn(point, amount); };
+			}
+
+			/// Sets scroll function.
+			void SetScroll(std::function<void(Layer &, int)> fn) {
+				vscroll = [fn](Layer &layer, Geometry::Point, int amount) { fn(layer, amount); };
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout.
+			void SetScroll(std::function<void(int)> fn) {
+				vscroll = [fn](Layer &, Geometry::Point, int amount) { fn(amount); };
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout. This variant accepts class member function.
+			template<class C_>
+			void SetScroll(C_ &c, std::function<void(C_ &, Layer &, int)> fn) {
+				C_ *my = &c;
+				vscroll = [fn, my](Layer &layer, Geometry::Point, int amount) { my->fn(layer, amount); };
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout. This variant accepts class member function.
+			template<class C_>
+			void SetScroll(C_ &c, std::function<void(C_ &, int)> fn) {
+				C_ *my = &c;
+				vscroll = [fn, my](Layer &, Geometry::Point, int amount) { my->fn(amount); };
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout. This variant accepts class member function.
+			template<class C_>
+			void SetScroll(C_ *my, std::function<void(C_ &, Layer &, int)> fn) {
+				vscroll = [fn, my](Layer &layer, Geometry::Point, int amount) { my->fn(layer, amount); };
+			}
+
+			/// Sets hit check function. When set, events only occur if hit check returns
+			/// true. Events follow hit check in a sequential manner, thus, if a handler
+			/// is called, this means hit check has already succeeded in the current
+			/// layout. This variant accepts class member function.
+			template<class C_>
+			void SetScroll(C_ *my, std::function<void(C_ &, int)> fn) {
+				vscroll = [fn, my](Layer &, Geometry::Point, int amount) { my->fn(amount); };
+			}
+
+			/// Removes hit check handler, default action for hit check is to return true.
+			void ResetScroll() {
+				vscroll ={};
+			}
+
             
             ///@}
 		protected:
@@ -266,7 +376,9 @@ namespace Gorgon { namespace Input {
             std::function<void(Layer &, Geometry::Point, Input::Mouse::Button)> up;
             std::function<bool(Layer &, Geometry::Point)> move;
             std::function<void(Layer &, Geometry::Point)> over;
-            std::function<void(Layer &)> out;
+			std::function<void(Layer &)> out;
+			std::function<void(Layer &, Geometry::Point, int amount)> vscroll;
+			std::function<void(Layer &, Geometry::Point, int amount)> hscroll;
             
 
 			/// Propagates a mouse event. Some events will be called directly.

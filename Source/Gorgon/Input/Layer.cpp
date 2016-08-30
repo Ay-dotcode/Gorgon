@@ -24,11 +24,17 @@ namespace Gorgon { namespace Input {
             curlocation.Y >= Clip.Height
         )
             goto out;
+
+		if(hitcheck && !hitcheck(*this, curlocation)) 
+			return nullptr;
         
 		if(event == Input::Mouse::EventType::Click && click) {
 			click(*this, curlocation, button);
             
             return this;
+		}
+		else if(event == Input::Mouse::EventType::Scroll_Vert && vscroll) {
+			vscroll(*this, curlocation, amount);
 		}
 
     out:

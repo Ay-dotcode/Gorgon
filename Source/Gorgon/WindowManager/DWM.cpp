@@ -80,6 +80,94 @@ namespace Gorgon {
 					}
 					break;
 
+					case WM_RBUTTONDOWN: {
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Down, {x, y}, Input::Mouse::Button::Right, 0);
+					}
+					break;
+
+					case WM_RBUTTONUP: {
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Up, {x, y}, Input::Mouse::Button::Right, 0);
+					}
+					break;
+
+					case WM_MBUTTONDOWN: {
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Down, {x, y}, Input::Mouse::Button::Middle, 0);
+					}
+					break;
+
+					case WM_MBUTTONUP: {
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Up, {x, y}, Input::Mouse::Button::Middle, 0);
+					}
+					break;
+
+					case WM_XBUTTONDOWN: {
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						auto btn = Input::Mouse::Button::None;
+
+						switch(GET_XBUTTON_WPARAM(wParam)) {
+						case 1:
+							btn = Input::Mouse::Button::X1;
+							break;
+						case 2:
+							btn = Input::Mouse::Button::X2;
+							break;
+						}
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Down, {x, y}, btn, 0);
+					}
+					break;
+
+					case WM_XBUTTONUP: {
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						auto btn = Input::Mouse::Button::None;
+
+						switch(GET_XBUTTON_WPARAM(wParam)) {
+							case 1:
+								btn = Input::Mouse::Button::X1;
+								break;
+							case 2:
+								btn = Input::Mouse::Button::X2;
+								break;
+						}
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Up, {x, y}, btn, 0);
+					}
+					break;
+
+					case WM_MOUSEWHEEL:
+					{
+						//!TODO fix coordinates
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Scroll_Vert, {x, y}, Input::Mouse::Button::None, GET_WHEEL_DELTA_WPARAM(wParam)/120);
+					}
+					break;
+					case WM_MOUSEHWHEEL:
+					{
+						int x=lParam%0x10000;
+						int y=lParam>>16;
+
+						parent.propagate_mouseevent(Input::Mouse::EventType::Scroll_Hor, {x, y}, Input::Mouse::Button::None, GET_WHEEL_DELTA_WPARAM(wParam)/120);
+					}
+					break;
+
 
 					case WM_SYSKEYDOWN:
 					case WM_KEYDOWN: {
