@@ -623,20 +623,6 @@ static const int None=0;
 			return (IconHandle)img;
 		}
 		namespace input {
-			utils::Point GetMousePosition(WindowHandle Window)
-			{
-				utils::Point ret;
-				
-				int rx,ry;
-				::Window w;
-				unsigned mask;
-				
-				XQueryPointer(display, windowhandle, &w,
-                &w, &rx, &ry, &ret.x, &ret.y,
-                &mask);
-
-				return ret;
-			}
 
 		}
 

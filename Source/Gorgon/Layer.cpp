@@ -43,7 +43,7 @@ namespace Gorgon {
 		Transform = prev;
 	}
 
-	Gorgon::MouseHandler Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, int amount) {
+	void Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {
 		auto prev_t = Transform;
         auto prev_c = Clip;
 
@@ -56,17 +56,31 @@ namespace Gorgon {
         if(bounds.Height() && bounds.Height() < Clip.Height)   
             Clip.Height = bounds.Height();
 
-		for(auto &l : children) {
-			auto ret = l.propagate_mouseevent(event, location, button, amount);
+        if(event == Input::Mouse::EventType::Out) {
+            throw std::logic_error("Regular layers cannot handle mouse events.");
+        }
+        else if(event == Input::Mouse::EventType::Up) {
+            throw std::logic_error("Regular layers cannot handle mouse events.");
+        }
+        else if(event == Input::Mouse::EventType::Over) {
+            for(auto &l : children) {
+                l.propagate_mouseevent(event, location, button, amount, handlers);
+                
+                if(handlers)
+                    break;
+            }
+        }
+        else { //click/scroll/move/down
+            for(auto &l : children) {
+                l.propagate_mouseevent(event, location, button, amount, handlers);
 
-			if(ret)
-				return ret;
-		}
+                if(handlers)
+                    break;
+            }
+        }
 
 		Transform = prev_t;
         Clip = prev_c;
-
-		return nullptr;
 	}
 
     Layer::~Layer() {

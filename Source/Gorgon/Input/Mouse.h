@@ -8,8 +8,10 @@ namespace Gorgon { namespace Input {
 		/// The type of a mouse event. Out/Up occurs if Over/Down is handled. 
 		/// Click occurs only if Down is not handled. 
 		enum class EventType {
+            OverCheck, //Checks for mouse over state, always called first
 			Over,
 			Move,
+			MovePressed, //Move event while a button is pressed
 			Out,
 			Down,
 			Click,
@@ -17,6 +19,7 @@ namespace Gorgon { namespace Input {
             Scroll_Vert,
             Scroll_Hor,
             Zoom,
+            Rotate
 		};
 
 		enum class Button {
@@ -39,6 +42,10 @@ namespace Gorgon { namespace Input {
         
         inline bool operator &&(Button l, Button r) {
             return (int)(l&r) > 0;
+        }
+        
+        inline Button operator ~(Button l) {
+            return Button(~(unsigned)l);
         }
 
 		DefineEnumStrings(

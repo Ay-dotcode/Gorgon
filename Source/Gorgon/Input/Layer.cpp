@@ -2,46 +2,132 @@
 
 namespace Gorgon { namespace Input {
 
-	MouseHandler Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, int amount) {
-		auto prev_t = Transform;
-        auto prev_c = Clip;
-        
-		Transform.Translate(-(float)bounds.Left, -(float)bounds.Top);
-        Clip -= Geometry::Size(bounds.Left, bounds.Top);
-        
-        if(bounds.Width() && bounds.Width() < Clip.Width)
-            Clip.Width = bounds.Width();
-        
-        if(bounds.Height() && bounds.Height() < Clip.Height)   
-            Clip.Height = bounds.Height();
+    bool needsclip(Input::Mouse::EventType event) {
+        switch(event) {
+            case Input::Mouse::EventType::Over:
+            case Input::Mouse::EventType::Out:
+            case Input::Mouse::EventType::Up:
+            case Input::Mouse::EventType::MovePressed:
+                return false;
+            default: 
+                return true;
+        }
+    }
+    
+	void Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {   
+        if(event == Input::Mouse::EventType::OverCheck) {
+            auto prev_t = Transform;
+            
+            Transform.Translate(-(float)bounds.Left, -(float)bounds.Top);
+            
+            mytransform = Transform;
+            Transform = prev_t;
+        }
 
-		auto curlocation = Transform * location;
+		auto curlocation = mytransform * location;
         
-		if(
-            curlocation.X < 0 || 
-            curlocation.Y < 0 || 
-            curlocation.X >= Clip.Width || 
-            curlocation.Y >= Clip.Height
-        )
-            goto out;
+        if(needsclip(event)) {
+            auto prev_c = Clip;
+            
+            Clip -= Geometry::Size(bounds.Left, bounds.Top);
+            
+            if(bounds.Width() && bounds.Width() < Clip.Width)
+                Clip.Width = bounds.Width();
+            
+            if(bounds.Height() && bounds.Height() < Clip.Height)   
+                Clip.Height = bounds.Height();
+            
+            bool out = false;
+            if(
+                curlocation.X < 0 || 
+                curlocation.Y < 0 || 
+                curlocation.X >= Clip.Width || 
+                curlocation.Y >= Clip.Height
+            )
+                out = true;
+                
+            
+            Clip = prev_c;
+            
+            if(out) return;
+        }
+
+        if(event == Input::Mouse::EventType::Over) {
+            if(over)
+                over(*this);
+            
+            return;
+        }
+        else if(event == Input::Mouse::EventType::Out) {
+            if(out)
+                out(*this);
+            
+            return;
+        }
+        else if(event == Input::Mouse::EventType::Up) {
+            if(up)
+                up(*this, curlocation, button);
+            
+            return;
+        }
+        else if(event == Input::Mouse::EventType::MovePressed) {
+            if(move)
+                move(*this, curlocation);
+            
+            return;
+        }
+        else if(event == Input::Mouse::EventType::OverCheck) {
+            Gorgon::Layer::propagate_mouseevent(event, location, button, amount, handlers);
+        }
+        else { //click/scroll/move/down
+            Gorgon::Layer::propagate_mouseevent(event, location, button, amount, handlers);
+            
+            if(handlers)
+                return;
+        }
 
 		if(hitcheck && !hitcheck(*this, curlocation)) 
-			return nullptr;
+			return;
         
 		if(event == Input::Mouse::EventType::Click && click) {
 			click(*this, curlocation, button);
             
-            return this;
+            handlers.Add(this);
+		}
+		if(event == Input::Mouse::EventType::Down) {
+            if(down) {
+                down(*this, curlocation, button);
+            }
+            
+            if(down || click) {
+                handlers.Add(this);
+            }
 		}
 		else if(event == Input::Mouse::EventType::Scroll_Vert && vscroll) {
 			vscroll(*this, curlocation, amount);
-		}
 
-    out:
-		Transform = prev_t;
-        Clip = prev_c;
-        
-		return nullptr;
+            handlers.Add(this);
+		}
+		else if(event == Input::Mouse::EventType::Scroll_Hor && hscroll) {
+			hscroll(*this, curlocation, amount);
+
+            handlers.Add(this);
+		}
+		else if(event == Input::Mouse::EventType::Zoom && zoom) {
+			zoom(*this, curlocation, amount);
+
+            handlers.Add(this);
+		}
+		else if(event == Input::Mouse::EventType::Rotate && rotate) {
+			rotate(*this, curlocation, amount);
+
+            handlers.Add(this);
+		}
+		else if(event == Input::Mouse::EventType::OverCheck && over) {
+            //dont call, window will decide which layers to call
+            
+            handlers.Add(this);
+        }
 	}
 
 } }

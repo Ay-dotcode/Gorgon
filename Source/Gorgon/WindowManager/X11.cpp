@@ -433,6 +433,23 @@ failsafe: //this should use X11 screen as monitor
             fixmonitorworkarea();
 		}
 		
+		    
+        Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind) {
+            Geometry::Point ret;
+            
+            int rx,ry;
+            ::Window w;
+            unsigned mask;
+            
+            if(XQueryPointer(display, wind->handle, &w, &w, &rx, &ry, &ret.X, &ret.Y, &mask) == False) {
+                ret.X = -1;
+                ret.Y = -1;
+            }
+
+            return ret;
+        }
+
+		
 		bool Monitor::IsChangeEventSupported() {
 			return false;//xrandr;
 		}
@@ -717,10 +734,12 @@ failsafe: //this should use X11 screen as monitor
             return Button::None;
         }
     }
-
 	
 	void Window::processmessages() {
 		XEvent event;
+        
+        mouselocation = WindowManager::GetMousePosition(data);
+        mouse_location();
 
 		while(XEventsQueued(WindowManager::display, QueuedAfterReading)) {
 			XNextEvent(WindowManager::display, &event);
@@ -880,18 +899,18 @@ failsafe: //this should use X11 screen as monitor
 					
                 case ButtonPress:
                     if(event.xbutton.button==4) {
-                        propagate_mouseevent(Input::Mouse::EventType::Scroll_Vert, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), 1);
+                        mouse_event(Input::Mouse::EventType::Scroll_Vert, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), 1);
                     }
                     else if(event.xbutton.button==5) {
-                        propagate_mouseevent(Input::Mouse::EventType::Scroll_Vert, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), -1);
+                        mouse_event(Input::Mouse::EventType::Scroll_Vert, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), -1);
                     }
                     else {
-                        propagate_mouseevent(Input::Mouse::EventType::Down, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), 0);
+                        mouse_down({event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button));
                     }
                     break;
                 case ButtonRelease:
                     if(event.xbutton.button!=4 && event.xbutton.button!=5) {
-                        propagate_mouseevent(Input::Mouse::EventType::Up, {event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button), 0);
+                        mouse_up({event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button));
                     }
                     break;
 			}

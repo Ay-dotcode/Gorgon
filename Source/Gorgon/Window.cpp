@@ -18,33 +18,71 @@ namespace Gorgon {
 		WindowManager::internal::finalizerender(*data);
 	}
 
-	Gorgon::MouseHandler Window::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, int amount) {
+	void Window::mouse_down(Geometry::Point location, Input::Mouse::Button button) {
+        pressed = pressed | button;
+        
 		Transform = {};
         Clip = bounds.GetSize();
         
-        if(event == Input::Mouse::EventType::Down) {
-            down = Layer::propagate_mouseevent(event, location, button, amount);
+        down.Clear();
+        Layer::propagate_mouseevent(Input::Mouse::EventType::Down, location, button, 1, down);
+    }
+    
+    void Window::mouse_up(Geometry::Point location, Input::Mouse::Button button) {
+        pressed = pressed & ~button;
+        
+		Transform = {};
+        Clip = bounds.GetSize();
+        
+        if(down) {
+            down[0].propagate_mouseevent(Input::Mouse::EventType::Up, location, button, 0, down);
             
-            return down;
-        }
-        else if(event == Input::Mouse::EventType::Up) {
-            if(down) {
-                down->propagate_mouseevent(event, location, button, amount);
-                
-                auto temp = down;
-                
-                down = nullptr;
-                
-                return temp;
-            }
-            else {
-                return Layer::propagate_mouseevent(Input::Mouse::EventType::Click, location, button, amount);
-            }
+            down = nullptr;
         }
         else {
-            return Layer::propagate_mouseevent(event, location, button, amount);
+            MouseHandler handler;
+            Layer::propagate_mouseevent(Input::Mouse::EventType::Click, location, button, 1, handler);
         }
 	}
+	
+	void Window::mouse_event(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount) {
+		Transform = {};
+        Clip = bounds.GetSize();
 
+        MouseHandler handler;
+        Layer::propagate_mouseevent(event, location, button, amount, handler);
+    }
+
+    void Window::mouse_location() {
+		Transform = {};
+        Clip = bounds.GetSize();
+        
+        MouseHandler newover;
+        Layer::propagate_mouseevent(Input::Mouse::EventType::OverCheck, mouselocation, Input::Mouse::Button::None, 0, newover);
+        
+        //first check outs
+        for(auto &l : over.layers) {
+            if(newover.layers.Find(l) == newover.layers.end()) {
+                l.propagate_mouseevent(Input::Mouse::EventType::Out, mouselocation, Input::Mouse::Button::None, 0, newover);
+            }
+        }
+       
+        //first check outs
+        for(auto &l : newover.layers) {
+            if(over.layers.Find(l) == over.layers.end()) {
+                l.propagate_mouseevent(Input::Mouse::EventType::Over, mouselocation, Input::Mouse::Button::None, 1, newover);
+            }
+        }
+        
+        over.layers.Swap(newover.layers);
+        
+        if(down) {
+            down[0].propagate_mouseevent(Input::Mouse::EventType::Move, mouselocation, Input::Mouse::Button::None, 0, down);
+        }
+        else {
+            newover.Clear();
+            Layer::propagate_mouseevent(Input::Mouse::EventType::Move, mouselocation, Input::Mouse::Button::None, 0, newover);
+        }
+    }
 
 }

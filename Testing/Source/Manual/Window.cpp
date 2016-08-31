@@ -66,14 +66,53 @@ int main() {
 	il.Resize({100, 0});
 
 	il.SetHitCheck([](Point location) {
-		return location.X%2 != 0;
+		return (location.X/16)%2 != 0;
 	});
 
 	il.SetClick([](Point location, Mouse::Button button) {
 		std::cout<<button<<": "<<location<<std::endl;
 	});
 
-	il.SetScroll([](Point location, int amount) {
+	il.SetDown([](Point location, Mouse::Button button) {
+		std::cout<<"Down: "<<button<<": "<<location<<std::endl;
+	});
+
+	il.SetDown([](Point location, Mouse::Button button) {
+		std::cout<<"Down: "<<button<<": "<<location<<std::endl;
+	});
+
+	il.SetUp([](Point location, Mouse::Button button) {
+		std::cout<<"Up: "<<button<<": "<<location<<std::endl;
+	});
+
+	il.SetOver([&wind]() {
+		std::cout<<"Over, pressed buttons are: ";
+        if(wind.PressedButtons() == Mouse::Button::None)
+            std::cout<<"None";
+        
+        if(wind.IsLeftButtonPressed())
+            std::cout<<"Left ";
+        
+        if(wind.IsRightButtonPressed())
+            std::cout<<"Right ";
+        
+        if(wind.IsMiddleButtonPressed())
+            std::cout<<"Middle ";
+        
+        if(wind.IsX1ButtonPressed())
+            std::cout<<"X1 ";
+        
+        if(wind.IsX2ButtonPressed())
+            std::cout<<"X2 ";
+
+        std::cout<<std::endl;
+	});
+
+	il.SetOut([]() {
+		std::cout<<"Out"<<std::endl;
+	});
+
+	il.SetScroll([](Point location, float amount) {
 		std::cout<<"Scrolled "<<amount<<" times at "<<location<<std::endl;
 	});
 	

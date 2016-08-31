@@ -97,6 +97,7 @@ namespace Gorgon {
 				}
 
 				bool compare(const Iterator_ &it) const {
+                    if(!it.isvalid() && !isvalid()) return true;
 					return it.Offset==Offset;
 				}
 

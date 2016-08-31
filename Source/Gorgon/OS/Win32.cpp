@@ -809,25 +809,6 @@ namespace Gorgon {
 
 			return (IconHandle)hAlphaIcon;
 		}
-		namespace input {
-			utils::Point GetMousePosition(WindowHandle Window)
-			{
-				POINT pnt;
-				RECT winrect;
-				utils::Point ret;
-				GetWindowRect((HWND)Window, &winrect);
-				GetCursorPos(&pnt);
-
-				ret.x=pnt.x-(window::overhead.x+winrect.left);
-				ret.y=pnt.y-(window::overhead.y+winrect.top);
-
-				os::window::cursorlocation=ret;
-
-				return ret;
-			}
-
-		}
-
 
 		namespace user {
 		}

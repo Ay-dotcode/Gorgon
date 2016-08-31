@@ -16,7 +16,33 @@ namespace Gorgon {
     /// Current clipping size, for mouse events
     extern Geometry::Size        Clip;
     
-    using MouseHandler = Layer *;
+    class MouseHandler {
+    public:
+        MouseHandler(Layer *layer = nullptr) {
+            if(layer) layers.Add(layer);
+        }
+        
+        operator Layer *() const {
+            if(layers.GetSize())
+                return &layers[0];
+            else
+                return nullptr;
+        }
+        
+        operator bool() const {
+            return layers.GetCount() > 0;
+        }
+        
+        void Clear() {
+            layers.Clear();
+        }
+        
+        void Add(Layer *l) {
+            layers.Add(l);
+        }
+        
+        Containers::Collection<Layer> layers;
+    };
 
 	/// This should be called by the windows to reset transformation stack.
 	inline void ResetTransform(const Geometry::Size &size) {
@@ -270,8 +296,10 @@ namespace Gorgon {
 			return isvisible;
 		}
 
-		/// Propagates a mouse event. Some events will be called directly. Do not use this function.
-		virtual MouseHandler propagate_mouseevent(Input::Mouse::EventType evet, Geometry::Point location, Input::Mouse::Button button, int amount);
+		/// Propagates a mouse event. Some events will be called directly. Do not use this function. Direct calls should never touch handlers. 
+		/// Input layers should cache perform transformations on direct calls. Direct calls should not be clipped. button is set only for
+		/// Click/Down/Up events, amount will be set for Scroll/Zoom events.
+		virtual void propagate_mouseevent(Input::Mouse::EventType evet, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers);
 		
 		/// Renders the current layer, default handling is to pass
 		/// the request to the sub-layers

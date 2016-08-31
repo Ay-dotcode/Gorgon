@@ -17,6 +17,10 @@
 
 namespace Gorgon {
 
+	namespace WindowManager {
+		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind);
+	}
+
 	/// @cond INTERNAL
 	namespace internal {
 
@@ -27,10 +31,15 @@ namespace Gorgon {
 			Window &parent;
 			HGLRC context=0;
 			HDC device_context=0;
+			Geometry::Size overhead = {0, 0};
 
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 
 			LRESULT Proc(UINT message, WPARAM wParam, LPARAM lParam) {
+
+				parent.mouselocation = WindowManager::GetMousePosition(this);
+				parent.mouse_location();
+
 				switch(message) {
 
 					case WM_ACTIVATE: {
@@ -68,7 +77,7 @@ namespace Gorgon {
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Down, {x, y}, Input::Mouse::Button::Left, 0);
+						parent.mouse_down({x, y}, Input::Mouse::Button::Left);
 					}
 					break;
 
@@ -76,7 +85,7 @@ namespace Gorgon {
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Up, {x, y}, Input::Mouse::Button::Left, 0);
+						parent.mouse_up({x, y}, Input::Mouse::Button::Left);
 					}
 					break;
 
@@ -84,7 +93,7 @@ namespace Gorgon {
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Down, {x, y}, Input::Mouse::Button::Right, 0);
+						parent.mouse_down({x, y}, Input::Mouse::Button::Right);
 					}
 					break;
 
@@ -92,7 +101,7 @@ namespace Gorgon {
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Up, {x, y}, Input::Mouse::Button::Right, 0);
+						parent.mouse_up({x, y}, Input::Mouse::Button::Right);
 					}
 					break;
 
@@ -100,7 +109,7 @@ namespace Gorgon {
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Down, {x, y}, Input::Mouse::Button::Middle, 0);
+						parent.mouse_down({x, y}, Input::Mouse::Button::Middle);
 					}
 					break;
 
@@ -108,7 +117,7 @@ namespace Gorgon {
 						int x=lParam%0x10000;
 						int y=lParam>>16;
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Up, {x, y}, Input::Mouse::Button::Middle, 0);
+						parent.mouse_up({x, y}, Input::Mouse::Button::Middle);
 					}
 					break;
 
@@ -127,7 +136,7 @@ namespace Gorgon {
 							break;
 						}
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Down, {x, y}, btn, 0);
+						parent.mouse_down({x, y}, btn);
 					}
 					break;
 
@@ -146,28 +155,36 @@ namespace Gorgon {
 								break;
 						}
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Up, {x, y}, btn, 0);
+						parent.mouse_up({x, y}, btn);
 					}
 					break;
 
 					case WM_MOUSEWHEEL:
-					{
-						//!TODO fix coordinates
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						parent.mouse_event(Input::Mouse::EventType::Scroll_Vert, parent.mouselocation, Input::Mouse::Button::None, std::round(GET_WHEEL_DELTA_WPARAM(wParam)/120.f*16)/16);
+						break;
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Scroll_Vert, {x, y}, Input::Mouse::Button::None, GET_WHEEL_DELTA_WPARAM(wParam)/120);
-					}
-					break;
 					case WM_MOUSEHWHEEL:
-					{
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						parent.mouse_event(Input::Mouse::EventType::Scroll_Hor, parent.mouselocation, Input::Mouse::Button::None, std::round(GET_WHEEL_DELTA_WPARAM(wParam)/120.f*16)/16);
+						break;
+                        
+                    case WM_GESTURE: {
+                        GESTUREINFO gi;  
+    
+                        ZeroMemory(&gi, sizeof(GESTUREINFO));
+                        
+                        gi.cbSize = sizeof(GESTUREINFO);
 
-						parent.propagate_mouseevent(Input::Mouse::EventType::Scroll_Hor, {x, y}, Input::Mouse::Button::None, GET_WHEEL_DELTA_WPARAM(wParam)/120);
-					}
-					break;
-
+                        BOOL bResult  = GetGestureInfo((HGESTUREINFO)lParam, &gi);
+                        
+                        if(gi.dwID == GID_ZOOM) {
+                            //todo test
+                            parent.mouse_event(Input::Mouse::EventType::Zoom, parent.mouselocation, Input::Mouse::Button::None, (float)gi.ullArguments);
+						}
+                        else if(gi.dwID == GID_ROTATE) {
+                            parent.mouse_event(Input::Mouse::EventType::Zoom, parent.mouselocation, Input::Mouse::Button::None, (float)GID_ROTATE_ANGLE_FROM_ARGUMENT(gi.ullArguments));
+                        }
+                    }
+                    break;
 
 					case WM_SYSKEYDOWN:
 					case WM_KEYDOWN: {
@@ -281,6 +298,19 @@ namespace Gorgon {
 		HCURSOR defaultcursor;
 		bool pointerdisplayed;
 		extern intptr_t context;
+
+		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind) {
+			POINT pnt;
+			RECT winrect;
+			Geometry::Point ret;
+			GetWindowRect((HWND)wind->handle, &winrect);
+			GetCursorPos(&pnt);
+
+			ret.X=pnt.x-(wind->overhead.Width+winrect.left);
+			ret.Y=pnt.y-(wind->overhead.Height+winrect.top);
+
+			return ret;
+		}
 
 		namespace internal {
 			struct monitordata {
@@ -441,6 +471,9 @@ namespace Gorgon {
 
 		rect.Width += (wi.rcWindow.right-wi.rcWindow.left) - (wi.rcClient.right-wi.rcClient.left);
 		rect.Height+= (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top);
+
+		data->overhead.Width  = (wi.rcWindow.right-wi.rcWindow.left) - (wi.rcClient.right-wi.rcClient.left);
+		data->overhead.Height = (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top);
 
 		if(rect.TopLeft()==automaticplacement) {
 			rect.Move( (WindowManager::Monitor::Primary().GetUsable()-rect.GetSize()).Center() );

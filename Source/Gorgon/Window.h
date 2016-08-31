@@ -119,6 +119,43 @@ namespace Gorgon {
 
 		/// Renders the contents of the window
 		virtual void Render() override;
+        
+        /// Returns the mouse location on the window. If the cursor is outside the window and 
+        /// its position cannot be determined (-1, -1) is returned. This function can return
+        /// coordinates outside the bounds of the window.
+        Geometry::Point GetMouseLocation() const {
+            return mouselocation;
+        }
+        
+        /// Returns currently pressed buttons.
+        Input::Mouse::Button PressedButtons() const {
+            return pressed;
+        }
+        
+        /// Query whether the left mouse button is pressed
+        bool IsLeftButtonPressed() const {
+            return pressed&&Input::Mouse::Button::Left;
+        }
+        
+        /// Query whether the right mouse button is pressed
+        bool IsRightButtonPressed() const {
+            return pressed&&Input::Mouse::Button::Right;
+        }
+        
+        /// Query whether the middle mouse button is pressed
+        bool IsMiddleButtonPressed() const {
+            return pressed&&Input::Mouse::Button::Middle;
+        }
+        
+        /// Query whether the X1 mouse button is pressed
+        bool IsX1ButtonPressed() const {
+            return pressed&&Input::Mouse::Button::X1;
+        }
+        
+        /// Query whether the X2 mouse button is pressed
+        bool IsX2ButtonPressed() const {
+            return pressed&&Input::Mouse::Button::X2;
+        }
 
 		/// @name Events 
 		/// @{
@@ -178,10 +215,11 @@ namespace Gorgon {
 	protected:
 		/// A window cannot be placed in another layer. This function always fails.
 		virtual void located(Layer *) override { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
-
-
-		/// Propagates a mouse event. Some events will be called directly.
-		virtual MouseHandler propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, int amount) override;
+		
+		void mouse_down(Geometry::Point location, Input::Mouse::Button button);
+		void mouse_up(Geometry::Point location, Input::Mouse::Button button);
+		void mouse_event(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount);
+        void mouse_location();
         
         void deleting(Layer *layer) { if(layer==down) down = nullptr; }
 
@@ -194,6 +232,11 @@ namespace Gorgon {
 
 		static const Geometry::Point automaticplacement;
         
-        MouseHandler down = nullptr;
+        Input::Mouse::Button pressed = Input::Mouse::Button::None;
+        
+        MouseHandler down;
+        MouseHandler over;
+        
+        Geometry::Point mouselocation = {-1, -1};
 	};
 }
