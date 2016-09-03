@@ -97,7 +97,7 @@ namespace Gorgon { namespace GL {
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        
+
 		glBindTexture(GL_TEXTURE_2D, tex);
 
 		GLenum colormode=getGLColorMode(data.GetMode());
@@ -108,7 +108,7 @@ namespace Gorgon { namespace GL {
 		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, Graphics::GetBytesPerPixel(data.GetMode()), data.GetSize().Width, data.GetSize().Height, 0,
+		glTexImage2D(GL_TEXTURE_2D, 0, colormode, data.GetSize().Width, data.GetSize().Height, 0,
 			colormode, GL_UNSIGNED_BYTE, data.RawData());
 	}
 

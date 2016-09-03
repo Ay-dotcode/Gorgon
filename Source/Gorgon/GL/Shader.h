@@ -30,13 +30,7 @@ namespace Gorgon {
 			int  LocateUniform(const std::string& name);
 			void UpdateUniform(int name, float value);
 			void UpdateUniform(int name, int value);
-			/*void UpdateUniform(int name, const glm::vec3& value);
-			void UpdateUniform(int name, const glm::vec4& value);
-			void UpdateUniform(int name, const glm::mat3& value);
-			void UpdateUniform(int name, const glm::mat3x2& value);
-			void UpdateUniform(int name, const glm::mat4& value);
-			void UpdateUniform(int name, const glm::mat4x2& value);
-			void UpdateUniform(int name, const glm::mat4x3& value);*/
+			void UpdateUniform(int name, const Geometry::Point3D &value);
 			void UpdateUniform(int name, const QuadVertices &value);
 			void UpdateUniform(int name, const QuadTextureCoords &value);
 			void UpdateUniform(int name, const Graphics::RGBAf &value);

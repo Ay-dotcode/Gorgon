@@ -2,7 +2,9 @@
 #include "../Graphics.h"
 #include "Shaders.h"
 
-namespace Gorgon { namespace Graphics {
+namespace Gorgon { 
+	extern Graphics::RGBAf LayerColor;
+namespace Graphics {
 
 	void Layer::Render() {
 		using namespace internal;
@@ -10,33 +12,40 @@ namespace Gorgon { namespace Graphics {
 		if(!isvisible) return;
 
 		auto prev = Transform;
+		auto prevcol = LayerColor;
+
+		LayerColor *= color;
 
 		Transform.Translate((Gorgon::Float)bounds.Left, (Gorgon::Float)bounds.Top, 0);
 
 		ActivateQuadVertices();
-		auto &shader = SimpleShader::Use();
-		for(auto &surface : surfaces) {
-			//shader.SetDiffuse(surface.TextureID());
-			shader.SetVertexCoords(surface.GetVertices(Transform));
-			shader.SetTextureCoords(surface.GetTextureCoords());
+		for(auto &surface : surfaces) {            
+            if(surface.GetMode() == ColorMode::Alpha) {
+                AlphaShader::Use()
+                    .SetTint(surface.GetColor()*LayerColor)
+                    .SetAlpha(surface.TextureID())
+                    .SetVertexCoords(surface.GetVertices(Transform))
+                    .SetTextureCoords(surface.GetTextureCoords())
+                ;
+            }
+            else {
+                SimpleShader::Use()
+                    .SetTint(surface.GetColor()*LayerColor)
+                    .SetDiffuse(surface.TextureID())
+                    .SetVertexCoords(surface.GetVertices(Transform))
+                    .SetTextureCoords(surface.GetTextureCoords())
+                ;
+            }
 
 			DrawQuadVertices();
 		}
-
-		//shader.SetDiffuse(1);
-		//shader.SetVertexCoords({{0, 0, 0}, {0.8, 0, 0}, {0.8, 298/300.f, 0}, {0, 298/300.f, 0}});
-		//shader.SetTextureCoords({{0, 0}, {1, 0}, {1, 1}, {0, 1}});
-		//DrawQuadVertices();
-
-		//shader.SetVertexCoords({{0, 0, 0}, {-0.4, 0, 0}, {-0.4, -0.4, 0}, {0, -0.4, 0}});
-		//shader.SetTextureCoords({{0, 0}, {1, 0}, {1, 1}, {0, 1}});
-		//DrawQuadVertices();
 
 		for(auto &l : children) {
 			l.Render();
 		}
 
 		Transform = prev;
+		LayerColor = prevcol;
 	}
 
 } }

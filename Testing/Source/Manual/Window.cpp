@@ -38,12 +38,31 @@ int main() {
 	wind.Add(l);
 
 	Graphics::Bitmap img;
-	img.Import("test.png");
+	/*img.Import("test.png");
+
+	img.Prepare();*/
+
+	img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
+	for(int x = 0; x<200; x++)
+		for(int y = 0; y<200; y++) {
+			img({x, y}, 0) = x;
+		}
 
 	img.Prepare();
+	
+	Graphics::Bitmap img2({200, 200}, Graphics::ColorMode::RGB);
 
-	for(int i=0;i<10;i++)
-		img.Draw(l, {0,0});
+	for(int x = 0; x<200; x++)
+		for(int y = 0; y<200; y++)
+			for(int c=0;c<3;c++)
+				img2({x, y}, c) = x*c*y;
+
+	img2.Prepare();
+	img2.Draw(l, {0,0});
+
+
+//	for(int i=0;i<10;i++)
+	img.Draw(l, {50,50}, {.2f, .2f, .8f, 1.f});
 	
 	wind.KeyEvent.Register([](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))

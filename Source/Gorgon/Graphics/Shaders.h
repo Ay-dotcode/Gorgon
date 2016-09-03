@@ -19,7 +19,7 @@ namespace Gorgon { namespace Graphics {
 	{
 	public:
 		static SimpleShader &Use() {
-			static SimpleShader me;	
+			static SimpleShader me;
 			me.Shader::Use(); 
 			return me;
 		}
@@ -47,51 +47,60 @@ namespace Gorgon { namespace Graphics {
 			return *this;
 		}
 		
-	private:
-		SimpleShader();
-	};
-
-	class SimpleTintShader : public GL::Shader
-	{
-	public:
-		static SimpleTintShader& Use() { 
-			static SimpleTintShader me; 
-			me.Shader::Use(); 
-			return me;
-		}
-		
-		
-		SimpleTintShader &SetVertexCoords(const GL::QuadVertices &value) {
-			static int id = LocateUniform("vertex_coords");
-			UpdateUniform(id, value);
-			
-			return *this;
-		}
-		
-		SimpleTintShader &SetTextureCoords(const GL::QuadTextureCoords &value) {
-			static int id = LocateUniform("tex_coords");
-			UpdateUniform(id, value);
-			
-			return *this;
-		}
-		
-		SimpleTintShader &SetTint(const Graphics::RGBAf &value) {
+		SimpleShader &SetTint(const Graphics::RGBAf &value) {
 			static int id = LocateUniform("tint");
 			UpdateUniform(id, value);
 			
 			return *this;
 		}
 		
-		SimpleTintShader &SetDiffuse(GLuint value) {
+	private:
+		SimpleShader();
+	};
+
+	class AlphaShader : public GL::Shader
+	{
+	public:
+		static AlphaShader &Use() {
+			static AlphaShader me;
+			me.Shader::Use(); 
+			return me;
+		}
+		
+		AlphaShader &SetVertexCoords(const GL::QuadVertices &value) {
+			static int id = LocateUniform("vertex_coords");
+			UpdateUniform(id, value);
+			
+			return *this;
+		}
+		
+		/// Sets texture coordinates
+		AlphaShader &SetTextureCoords(const GL::QuadTextureCoords &value) {
+			static int id = LocateUniform("tex_coords");
+			UpdateUniform(id, value);
+			
+			return *this;
+		}
+		
+		/// Sets alpha texture
+		AlphaShader &SetAlpha(GLuint value) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, value);
 			
 			return *this;
 		}
 		
+		AlphaShader &SetTint(const Graphics::RGBAf &value) {
+			static int id = LocateUniform("tint");
+			UpdateUniform(id, value);
+			
+			return *this;
+		}
+		
 	private:
-		SimpleTintShader();
+		AlphaShader();
 	};
+
 	/*
 	class MaskedShader : public GL::Shader
 	{

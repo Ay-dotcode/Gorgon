@@ -1,5 +1,6 @@
 #include "Layer.h"
 #include "Window.h"
+#include "Graphics/Color.h"
 
 namespace Gorgon {
 	
@@ -93,7 +94,8 @@ namespace Gorgon {
     }
 
 	Geometry::Transform3D Transform;
-    Geometry::Size        Clip;
+	Graphics::RGBAf		  LayerColor;
+	Geometry::Size        Clip;
 
 	const Geometry::Bounds Layer::EntireRegion = {0,0,0,0};
 

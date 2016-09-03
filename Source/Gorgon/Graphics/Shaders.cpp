@@ -30,22 +30,7 @@ void main()
 in vec2 texcoord;
 
 uniform sampler2D diffuse;
-
-out vec4 output_color;
-
-void main()
-{
-    output_color = texture(diffuse, texcoord);
-}
-)shader";
-
-	const std::string SimpleTintFragSrcCode = R"shader(
-#version 130
-
-in vec2 texcoord;
-
-uniform sampler2D diffuse;
-uniform vec4 tint;
+uniform vec4      tint;
 
 out vec4 output_color;
 
@@ -55,24 +40,22 @@ void main()
 }
 )shader";
 
-	const std::string MaskedVertexSrcCode = R"shader(
+	const std::string AlphaFragSrcCode = R"shader(
 #version 130
-in int vertex_index;
 
-uniform mat4x3 vertex_coords;
-uniform mat4x4 tex_coords;
+in vec2 texcoord;
 
-out vec2 diffuse_texcoord;
-out vec2 mask_texcoord;
+uniform sampler2D diffuse;
+uniform vec4      tint;
+
+out vec4 output_color;
 
 void main()
 {
-	gl_Position = vec4(vertex_coords[vertex_index], 1.0f);
-    vec4 coords = tex_coords[vertex_index];
-    diffuse_texcoord = coords.xy;
-    mask_texcoord    = coords.zw;
+    output_color = vec4(tint.rgb, texture(diffuse, texcoord).a * tint.a);
 }
 )shader";
+
 
     const std::string MaskedFragmentSrcCode = R"shader(
 #version 130
@@ -114,10 +97,11 @@ void main()
 		InitializeWithSource(TransformVertSrcCode, SimpleFragSrcCode);
 	}
 
-	SimpleTintShader::SimpleTintShader() : Shader("Gorgon::Graphics::Tint")
+	AlphaShader::AlphaShader() : Shader("Gorgon::Graphics::Alpha")
 	{
-		InitializeWithSource(TransformVertSrcCode, SimpleTintFragSrcCode);
+		InitializeWithSource(TransformVertSrcCode, AlphaFragSrcCode);
 	}
+	
 	/*
 	MaskedShader::MaskedShader() : Shader("Gorgon::Graphics::Masked")
 	{

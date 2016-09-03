@@ -19,21 +19,21 @@ namespace Gorgon { namespace Graphics {
 
 		/// Default constructor, creates an empty texture
 		Texture() {
-			Set(0, {0, 0});
+			Set(0, ColorMode::Invalid, {0, 0});
 		}
 
 		/// Regular, full texture constructor
-		Texture(GL::Texture id, const Geometry::Size &size) {
-			Set(id, size);
+		Texture(GL::Texture id, ColorMode mode, const Geometry::Size &size) {
+			Set(id, mode, size);
 		}
 
 		/// Atlas constructor, specifies a region of the texture
-		Texture(GL::Texture id, const Geometry::Size &size, const Geometry::Bounds &location) {
-			Set(id, size, location);
+		Texture(GL::Texture id, ColorMode mode, const Geometry::Size &size, const Geometry::Bounds &location) {
+			Set(id, mode, size, location);
 		}
 
 		/// This constructor creates a new texture from the given Image
-		Texture(const Containers::Image &image) : Texture(GL::GenerateTexture(image), image.GetSize()) {
+		Texture(const Containers::Image &image) : Texture(GL::GenerateTexture(image), image.GetMode(), image.GetSize()) {
 			owner=true;
 		}
 
@@ -44,17 +44,18 @@ namespace Gorgon { namespace Graphics {
 
 		/// Moves a texture. This newly created texture object will own the texture if the other object
 		/// owns it
-		Texture(Texture &&other) : id(other.id), size(other.size), owner(other.owner) {
+		Texture(Texture &&other) : id(other.id), mode(other.mode), size(other.size), owner(other.owner) {
 			memcpy(coordinates, other.coordinates, sizeof(coordinates));
 			other.owner=false;
 		}
 
 		/// Swaps two textures
-		virtual void Swap(Texture &other) {
+		void Swap(Texture &other) {
 			using std::swap;
 
 			swap(id, other.id);
 			swap(size, other.size);
+			swap(mode, other.mode);
 			swap(coordinates, other.coordinates);
 		}
 
@@ -67,8 +68,9 @@ namespace Gorgon { namespace Graphics {
 		void Set(const Containers::Image &image) {
 			Destroy();
 
-			this->id=GL::GenerateTexture(image);
-			this->size=image.GetSize();
+			id=GL::GenerateTexture(image);
+			size=image.GetSize();
+            mode = image.GetMode();
 			owner=true;
 
 			memcpy(coordinates, fullcoordinates, sizeof(fullcoordinates));
@@ -76,11 +78,12 @@ namespace Gorgon { namespace Graphics {
 
 		/// Sets the texture to the given id with the given size. Resets the coordinates to cover entire
 		/// GL texture
-		void Set(GL::Texture id, const Geometry::Size &size) {
+		void Set(GL::Texture id, ColorMode mode, const Geometry::Size &size) {
 			Destroy();
 
 			this->id=id;
 			this->size=size;
+            this->mode=mode;
 
 			memcpy(coordinates, fullcoordinates, sizeof(fullcoordinates));
 		}
@@ -90,11 +93,12 @@ namespace Gorgon { namespace Graphics {
 		/// @param   id id of the texture, reported by the underlying GL framework
 		/// @param   size of the GL texture in pixels
 		/// @param   location is the location of this texture over GL texture in pixels.
-		void Set(GL::Texture id, const Geometry::Size &size, const Geometry::Bounds &location) {
+		void Set(GL::Texture id, ColorMode mode, const Geometry::Size &size, const Geometry::Bounds &location) {
 			Destroy();
 
 			this->id=id;
 			this->size=size;
+            this->mode=mode;
 
 			coordinates[0] ={float(location.Left)/size.Width, float(location.Top)/size.Height};
 			coordinates[1] ={float(location.Right)/size.Width, float(location.Top)/size.Height};
@@ -116,11 +120,15 @@ namespace Gorgon { namespace Graphics {
 		virtual const Geometry::Pointf *GetCoordinates() const override final {
 			return coordinates;
 		}
+		
+		ColorMode GetMode() const override {
+            return mode;
+        }
 
 		/// Remove the texture from this object. If this object is the owner of the texture, then it is destroyed.
 		void Destroy() {
 			if(owner) {
-				//GL::DestroyTexture(id);
+				GL::DestroyTexture(id);
 			}
 			id=0;
 			owner=false;
@@ -143,6 +151,9 @@ namespace Gorgon { namespace Graphics {
 
 		/// Size of the texture
 		Geometry::Size size ={0, 0};
+        
+        /// Color mode of the texture, necessary to choose correct texture
+        ColorMode mode;
 
 		/// Whether this object owns this texture
 		bool owner = false;
@@ -174,13 +185,11 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Regular, full texture constructor
-		TextureImage(GL::Texture id, const Geometry::Size &size) : Texture(id, size) {
-			Set(id, size);
+		TextureImage(GL::Texture id, ColorMode mode, const Geometry::Size &size) : Texture(id, mode, size) {
 		}
 
 		/// Atlas constructor, specifies a region of the texture
-		TextureImage(GL::Texture id, const Geometry::Size &size, const Geometry::Bounds &location) : Texture(id, size, location) {
-			Set(id, size, location);
+		TextureImage(GL::Texture id, ColorMode mode, const Geometry::Size &size, const Geometry::Bounds &location) : Texture(id, mode, size, location) {
 		}
 
 		/// This constructor creates a new texture from the given Image

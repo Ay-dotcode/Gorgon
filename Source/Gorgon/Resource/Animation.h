@@ -19,10 +19,10 @@ namespace Gorgon { namespace Resource {
 	{
 	public:
 		/// Creates a new image animation from the given parent
-			ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller);
+		ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller);
 
 		/// Creates a new image animation from the given parent
-			ImageAnimation(const Resource::Animation &parent, bool create);
+        ImageAnimation(const Resource::Animation &parent, bool create);
 
 		/// Deletes this animation object
 		virtual void DeleteAnimation() override {
@@ -31,22 +31,28 @@ namespace Gorgon { namespace Resource {
 
 		virtual bool Progress(unsigned &leftover) override;
 
-		virtual GL::Texture GetID() const {
+		virtual GL::Texture GetID() const override {
 			if(!current) return 0;
 
 			return current->GetID();
 		}
 
-			virtual Geometry::Size GetImageSize() const override {
+        virtual Geometry::Size GetImageSize() const override {
 			if(!current) return {0, 0};
 
 			return current->GetImageSize();
 		}
 
-			virtual const Geometry::Pointf *GetCoordinates() const override {
+        virtual const Geometry::Pointf *GetCoordinates() const override {
 			if(!current) return Graphics::TextureSource::fullcoordinates;
 
 			return current->GetCoordinates();
+		}
+		
+		virtual Graphics::ColorMode GetMode() const override {
+			if(!current) return Graphics::ColorMode::Invalid;
+
+			return current->GetMode();
 		}
 
 	protected:

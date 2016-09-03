@@ -12,6 +12,7 @@
 #include "Geometry/Rectangle.h"
 
 #include "Geometry/Transform3D.h"
+#include "Graphics/Color.h"
 
 namespace Gorgon {
 
@@ -348,6 +349,8 @@ namespace Gorgon {
 		public:
 			/// Should return GL::Texture to be drawn. This could be 0 to denote no texture is to be used.
 			virtual GL::Texture GetID() const = 0;
+            
+            virtual ColorMode GetMode() const = 0;
 
 			/// Should return the size of the image stored in texture. Not the whole texture size.
 			virtual Geometry::Size GetImageSize() const = 0;

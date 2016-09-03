@@ -330,9 +330,22 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Conversion to integer
-		operator int() const {
+		explicit operator int() const {
 			return int(this->operator RGBA());
 		}
+		
+		RGBAf operator *(const RGBAf &other) {
+            return {R * other.R, G * other.G, B * other.B, A * other.A};
+        }
+		
+		RGBAf &operator *=(const RGBAf &other) {
+            R *= other.R;
+            G *= other.G;
+            B *= other.B;
+            A *= other.A;
+            
+            return *this;
+        }
 
 		/// Converts this color to RGBA by clipping the values
 		RGBA Convert() const { 

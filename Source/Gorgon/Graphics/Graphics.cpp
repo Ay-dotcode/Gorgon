@@ -63,25 +63,6 @@ namespace Gorgon { namespace Graphics {
 
 #ifdef nonnnne
 
-#include "Graphics.h"
-#include "OpenGL.h"
-#include "GGEMain.h"
-
-#ifdef WIN32
-#	undef APIENTRY
-#	undef WINGDIAPI
-#endif
-
-#ifdef WIN32
-#	include <windows.h>
-#elif defined(LINUX)
-#	include <GL/glx.h>
-#	include <unistd.h>
-#endif
-
-#include "InternalShaders.h"
-
-using namespace gge::utils;
 
 namespace gge { namespace graphics {
 
@@ -100,76 +81,6 @@ namespace gge { namespace graphics {
 	{
 		0, 3, 1, 1, 3, 2
 	};
-
-	UnitQuadVertices::UnitQuadVertices()
-	{
-		glGenBuffers(1, &vbo);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(int), unit_quad, GL_STATIC_DRAW); // GL_STATIC_DRAW
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glEnableVertexAttribArray(0);
-		glVertexAttribIPointer(0, 1, GL_INT, 0, (GLvoid*) 0);
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
-	UnitQuadVertices::~UnitQuadVertices()
-	{
-		glDeleteBuffers(1, &vbo);
-		glDeleteVertexArrays(1, &vao);
-	}
-	void UnitQuadVertices::GLDraw()
-	{
-		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
-	}
-	void QuadVertices::GLDraw()
-	{
-		assert(false);
-		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
-	}
-	void QuadVertices::UpdateInstanceVertexData(const std::array<float,24>& data)
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-		// Move offset and orphan once in a while // Don't forget to comment out and uncomment glBufferData code in the UnitQuadVertices constructor
-
-		offset += sizeof(data);
-		if (offset >= buffer_size) {
-			offset = 0;
-			glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_DYNAMIC_DRAW);
-		}
-		float* map = (float*)glMapBufferRange(GL_ARRAY_BUFFER, offset, sizeof(data), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-		std::memcpy(map, data.data(), sizeof(data));
-		glUnmapBuffer(GL_ARRAY_BUFFER);
-
-		// BufferData NULL, then MapBuffer
-		/*glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_DYNAMIC_DRAW);
-		float* map = (float*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(data), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-		std::memcpy(map, data.data(), sizeof(data));
-		glUnmapBuffer(GL_ARRAY_BUFFER);*/
-
-		// BufferData NULL, then BufferSubData
-		/*glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_DYNAMIC_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(data), data.data());*/
-
-		// Invalidate map
-		/*float* map = (float*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(data), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-		std::memcpy(map, data.data(), sizeof(data));
-		glUnmapBuffer(GL_ARRAY_BUFFER);*/
-
-		// Blocking BufferSubdata
-		/*glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(data), data.data());*/
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
 
 	Size ScreenSize;
 	extern RGBfloat CurrentLayerColor;
@@ -210,22 +121,6 @@ namespace gge { namespace graphics {
 			ModelViewMatrixStack.SetIdentity();
 		}
 
-		void PreRender() {
-			///*Resetting OpenGL parameters
-			glDisable(GL_SCISSOR_TEST);
-			ModelViewMatrixStack.SetIdentity();
-
-			///*Clearing buffers
-			glClearColor(0.0,0.0,0.0,1);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			CurrentLayerColor.a=1;
-			CurrentLayerColor.r=1;
-			CurrentLayerColor.g=1;
-			CurrentLayerColor.b=1;
-
-			translate=Point(0,0);
-			scissors=utils::Rectangle(0, 0, ScreenSize);
-		}
 
 		void PostRender(os::DeviceHandle hDC, os::WindowHandle win) {
 			glFlush();
@@ -246,44 +141,6 @@ namespace gge { namespace graphics {
 	const SizeController2D SizeController2D::SingleBottomRight(Single, Single, Alignment::Bottom_Right);
 	const SizeController2D SizeController2D::SingleMiddleCenter(Single, Single, Alignment::Middle_Center);
 
-	std::array<float,24> GetVertexData(const BasicSurface& surface)
-	{
-		std::array<float,24> data;
-
-		// First triangle vertices
-		data[0] = surface.VertexCoords[0].x;
-		data[1] = surface.VertexCoords[0].y;
-		data[2] = surface.TextureCoords[0].s;
-		data[3] = surface.TextureCoords[0].t;
-
-		data[4] = surface.VertexCoords[1].x;
-		data[5] = surface.VertexCoords[1].y;
-		data[6] = surface.TextureCoords[1].s;
-		data[7] = surface.TextureCoords[1].t;
-
-		data[8] = surface.VertexCoords[3].x;
-		data[9] = surface.VertexCoords[3].y;
-		data[10] = surface.TextureCoords[3].s;
-		data[11] = surface.TextureCoords[3].t;
-
-		// Second triangle vertices
-		data[12] = data[8];
-		data[13] = data[9];
-		data[14] = data[10];
-		data[15] = data[11];
-
-		data[16] = data[4];
-		data[17] = data[5];
-		data[18] = data[6];
-		data[19] = data[7];
-
-		data[20] = surface.VertexCoords[2].x;
-		data[21] = surface.VertexCoords[2].y;
-		data[22] = surface.TextureCoords[2].s;
-		data[23] = surface.TextureCoords[2].t;
-
-		return data;
-	}
 } }
 
 #endif

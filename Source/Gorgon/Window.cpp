@@ -2,14 +2,18 @@
 #include "OS.h"
 
 #include "Graphics/Layer.h"
+#include "Graphics/Color.h"
 
 
 namespace Gorgon {
+
+	extern Graphics::RGBAf LayerColor;
 	
 
 	void Window::Render() {
 		WindowManager::internal::switchcontext(*data);
 		ResetTransform(GetSize());
+		LayerColor = Graphics::RGBAf(1.f);
 		GL::Clear();
 
 

@@ -18,7 +18,7 @@ namespace Gorgon { namespace Graphics {
 		/// Draws a simple texture to the screen. This variant allows every corner on the target to be specified. The texture target should
 		/// be cleared before the texture drawn on it is destroyed
 		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
-			const Geometry::Pointf &p3, const Geometry::Pointf &p4) = 0;
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) = 0;
 
 		/// Draws a simple texture to the screen. This variant allows every corner on the target and on the texture be specified. The texture 
 		/// target should be cleared before the texture drawn on it is destroyed
@@ -26,20 +26,20 @@ namespace Gorgon { namespace Graphics {
 			const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 			const Geometry::Pointf &p3, const Geometry::Pointf &p4, 
 			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
-			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4) = 0;
+			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color = RGBAf(1.f)) = 0;
 
-		///// Draws a simple image to the screen to the given position
-		//virtual void Draw(const TextureSource &image, const Geometry::Pointf &location) {
-		//	Draw(image, {location, image.GetImageSize()});
-		//}
+		/// Draws a simple image to the screen to the given position
+		virtual void Draw(const TextureSource &image, const Geometry::Pointf &location, RGBAf color) {
+			Draw(image, {location, image.GetImageSize()}, color);
+		}
 
-		///// Draws a simple image to the screen to the given position with the given size.
-		//virtual void Draw(const TextureSource &image, const Geometry::Rectangle &location) {
-		//	Draw(image, location.TopLeft(), location.TopRight(), location.BottomLeft(), location.BottomRight());
-		//}
+		/// Draws a simple image to the screen to the given position with the given size.
+		virtual void Draw(const TextureSource &image, const Geometry::Rectangle &location, RGBAf color = RGBAf(1.f)) {
+			Draw(image, location.TopLeft(), location.TopRight(), location.BottomLeft(), location.BottomRight(), color);
+		}
 
 		/// Draws a simple image to the screen using the given tiling method, coordinates and size
-		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectangle &location) = 0;
+		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectangle &location, RGBAf color = RGBAf(1.f)) = 0;
 
 		/// Clears drawing buffer, in layer architecture this request only affects
 		/// the layer itself, not its children

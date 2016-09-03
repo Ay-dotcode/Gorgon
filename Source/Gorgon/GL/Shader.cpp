@@ -13,7 +13,8 @@
 
 #include "Simple.h"
 
-namespace Gorgon { namespace GL {	
+namespace Gorgon { namespace GL {
+    GLuint activeprogram = -1;
 
 
 	GLuint CreateShader(GLenum type, const std::string& code, const std::string& name) {
@@ -67,7 +68,10 @@ namespace Gorgon { namespace GL {
 	}
 
 	void Shader::Use() {
-		glUseProgram(program);
+        //if(activeprogram!=program) {
+        //    activeprogram = program;
+            glUseProgram(program);
+        //}
 	}
 
 	unsigned int SetupUBO(int size, int binding_point) {
@@ -96,22 +100,6 @@ namespace Gorgon { namespace GL {
 		glUniform1i(name, value);
 	}
 
-	/*void Shader::UpdateUniform(int name, const glm::vec3& value) {
-		glUniform3fv(name, 1, (GLfloat*)glm::value_ptr(value));
-	}
-
-	void Shader::UpdateUniform(int name, const glm::mat4& value) {
-		glUniformMatrix4fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
-	}
-
-	void Shader::UpdateUniform(int name, const glm::mat4x2& value) {
-		glUniformMatrix4x2fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
-	}
-
-	void Shader::UpdateUniform(int name, const glm::mat4x3& value) {
-		glUniformMatrix4x3fv(name, 1, GL_FALSE, (GLfloat*)glm::value_ptr(value));
-	}*/
-
 	void Shader::UpdateUniform(int name, const QuadVertices& value) {
 		glUniform3fv(name, 4, (GLfloat*)value.Data);
 	}
@@ -122,6 +110,10 @@ namespace Gorgon { namespace GL {
 
 	void Shader::UpdateUniform(int name, const Graphics::RGBAf& value) {
 		glUniform4fv(name, 1, (GLfloat*)value.Vector);
+	}
+
+	void Shader::UpdateUniform(int name, const Geometry::Point3D& value) {
+		glUniform3fv(name, 1, (GLfloat*)value.Vector);
 	}
 
 	void Shader::BindUBO(const std::string &name, UBOBindingPoint::Type binding_point) {

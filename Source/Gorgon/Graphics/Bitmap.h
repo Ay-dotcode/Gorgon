@@ -103,7 +103,7 @@ namespace Gorgon { namespace Graphics {
 		/// if it is not moved into a Graphics::TextureImage, it will be destroyed.
 		Graphics::TextureImage ReleaseTexture() {
 			auto sz = Graphics::Texture::size;
-			return{Graphics::Texture::Release(), sz};
+			return {Graphics::Texture::Release(), GetMode(), sz};
 		}
 
 		/// Checks if this image resource has a data attached to it
