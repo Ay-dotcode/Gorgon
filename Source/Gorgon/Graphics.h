@@ -257,13 +257,77 @@ namespace Gorgon {
 				return objectsize;
 			}
 
+			/// Calculates the size of the object according to the tiling rules
+			Geometry::Sizef CalculateSize(Geometry::Sizef objectsize, const Geometry::Sizef &area) const {
+				switch(Horizontal) {
+					case Integral_Smaller:
+						objectsize.Width=(area.Width/objectsize.Width)*objectsize.Width;
+						break;
+					case Integral_Fill:
+						objectsize.Width=area.Width/objectsize.Width*objectsize.Width;
+						break;
+					case Integral_Best:
+						objectsize.Width=area.Width/objectsize.Width*objectsize.Width;
+						break;
+					case Stretch:
+					case Tile:
+						objectsize.Width=area.Width;
+						break;
+					case Single:
+						break;
+#ifndef NDEBUG
+					default:
+						throw std::runtime_error("Unknown mode");
+						break;
+#endif
+				}
+
+				switch(Vertical) {
+					case Integral_Smaller:
+						objectsize.Width=(area.Width/objectsize.Width)*objectsize.Width;
+						break;
+					case Integral_Fill:
+						objectsize.Width=area.Width/objectsize.Width*objectsize.Width;
+						break;
+					case Integral_Best:
+						objectsize.Width=area.Width/objectsize.Width*objectsize.Width;
+						break;
+					case Stretch:
+					case Tile:
+						objectsize.Height=area.Height;
+						break;
+					case Single:
+						break;
+#ifndef NDEBUG
+					default:
+						throw std::runtime_error("Unknown mode");
+						break;
+#endif
+				}
+
+				return objectsize;
+			}
+
+
 			/// Calculates the size of the object according to the tiling and placement rules
 			Geometry::Point CalculateOffset(const Geometry::Size &objectsize, const Geometry::Size &area) const {
 				return Graphics::CalculateOffset(Place, area-CalculateSize(objectsize, area));
 			}
 
+
+			/// Calculates the size of the object according to the tiling and placement rules
+			Geometry::Pointf CalculateOffset(const Geometry::Sizef &objectsize, const Geometry::Sizef &area) const {
+				return Graphics::CalculateOffset(Place, area-CalculateSize(objectsize, area));
+			}
+
 			/// Calculates the drawing area of the object according to the tiling and placement rules
 			Geometry::Rectangle CalculateArea(const Geometry::Size &objectsize, const Geometry::Size &area) const {
+				auto size=CalculateSize(objectsize, area);
+				return{Graphics::CalculateOffset(Place, area-size), size};
+			}
+
+			/// Calculates the drawing area of the object according to the tiling and placement rules
+			Geometry::Rectanglef CalculateArea(const Geometry::Sizef &objectsize, const Geometry::Sizef &area) const {
 				auto size=CalculateSize(objectsize, area);
 				return{Graphics::CalculateOffset(Place, area-size), size};
 			}
@@ -319,13 +383,75 @@ namespace Gorgon {
 				return repeatingsize;
 			}
 
+			/// Calculates the size of the object according to the tiling rules
+			Geometry::Sizef CalculateSize(Geometry::Sizef repeatingsize, const Geometry::Sizef &fixedsize, const Geometry::Sizef &area) const {
+				switch(Horizontal) {
+					case Integral_Smaller:
+						repeatingsize.Width=((area.Width-fixedsize.Width)/repeatingsize.Width)*repeatingsize.Width+fixedsize.Width;
+						break;
+					case Integral_Fill:
+						repeatingsize.Width=area.Width-fixedsize.Width/repeatingsize.Width*repeatingsize.Width+fixedsize.Width;
+						break;
+					case Integral_Best:
+						repeatingsize.Width=area.Width-fixedsize.Width/repeatingsize.Width*repeatingsize.Width+fixedsize.Width;
+						break;
+					case Stretch:
+					case Tile:
+						repeatingsize.Width=area.Width;
+						break;
+					case Single:
+						break;
+#ifndef NDEBUG
+					default:
+						throw std::runtime_error("Unknown mode");
+						break;
+#endif
+				}
+
+				switch(Vertical) {
+					case Integral_Smaller:
+						repeatingsize.Width=((area.Width-fixedsize.Width)/repeatingsize.Width)*repeatingsize.Width+fixedsize.Width;
+						break;
+					case Integral_Fill:
+						repeatingsize.Width=area.Width-fixedsize.Width/repeatingsize.Width*repeatingsize.Width+fixedsize.Width;
+						break;
+					case Integral_Best:
+						repeatingsize.Width=area.Width-fixedsize.Width/repeatingsize.Width*repeatingsize.Width+fixedsize.Width;
+						break;
+					case Stretch:
+					case Tile:
+						repeatingsize.Height=area.Height;
+						break;
+					case Single:
+						break;
+#ifndef NDEBUG
+					default:
+						throw std::runtime_error("Unknown mode");
+						break;
+#endif
+				}
+
+				return repeatingsize;
+			}
+
 			/// Calculates the size of the object according to the tiling and placement rules
 			Geometry::Point CalculateOffset(const Geometry::Size &repeatingsize, const Geometry::Size &fixedsize, const Geometry::Size &area) const {
 				return Graphics::CalculateOffset(Place, area-CalculateSize(repeatingsize, fixedsize, area));
 			}
 
+			/// Calculates the size of the object according to the tiling and placement rules
+			Geometry::Pointf CalculateOffset(const Geometry::Sizef &repeatingsize, const Geometry::Sizef &fixedsize, const Geometry::Sizef &area) const {
+				return Graphics::CalculateOffset(Place, area-CalculateSize(repeatingsize, fixedsize, area));
+			}
+
 			/// Calculates the drawing area of the object according to the tiling and placement rules
 			Geometry::Rectangle CalculateArea(const Geometry::Size &repeatingsize, const Geometry::Size &fixedsize, const Geometry::Size &area) const {
+				auto size=CalculateSize(repeatingsize, fixedsize, area);
+				return{Graphics::CalculateOffset(Place, area-size), size};
+			}
+
+			/// Calculates the drawing area of the object according to the tiling and placement rules
+			Geometry::Rectangle CalculateArea(const Geometry::Sizef &repeatingsize, const Geometry::Sizef &fixedsize, const Geometry::Sizef &area) const {
 				auto size=CalculateSize(repeatingsize, fixedsize, area);
 				return{Graphics::CalculateOffset(Place, area-size), size};
 			}

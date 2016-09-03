@@ -149,7 +149,7 @@ namespace Gorgon { namespace Graphics {
 			surfaces.emplace_back(image, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color);
 		}
 
-		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectangle &location, RGBAf color = RGBAf(1.f)) override {
+		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectanglef &location, RGBAf color = RGBAf(1.f)) override {
 			if(tiling==Tiling::None) {
 				Draw(image, location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft(), color);
 			}

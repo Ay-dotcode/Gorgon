@@ -158,13 +158,13 @@ namespace Gorgon { namespace Geometry {
 		/// Adds two size objects
 		template<class O_>
 		basic_Size operator +(const basic_Size<O_>  &size) const { 
-			return{size.Width+Width, size.Height+Height};
+			return basic_Size(size.Width+Width, size.Height+Height);
 		}
 
 		/// Subtracts two size objects
 		template<class O_>
 		basic_Size operator -(const basic_Size<O_>  &size) const { 
-			return{Width-size.Width, Height-size.Height};
+			return basic_Size(Width-size.Width, Height-size.Height);
 		}
 
 		/// Negation operator

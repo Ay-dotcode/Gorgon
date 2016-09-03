@@ -38,20 +38,20 @@ namespace Gorgon { namespace Geometry {
 		{ }
 			
 		/// Filling constructor using values for top left corner and size
-		basic_Rectangle(const basic_Point<T_> &position, int width, int height) : 
+		basic_Rectangle(const basic_Point<T_> &position, T_ width, T_ height) : 
 			X(position.X), Y(position.Y), Width(width), Height(height)
 		{ }
 		
 		/// Filling constructor using values for top left and bottom right corners
 		basic_Rectangle(const basic_Point<T_> &topleft, const basic_Point<T_> &bottomright) :
 			X(topleft.X), Y(topleft.Y),
-			Width(bottomright.x-topleft.x), Height(bottomright.y-topleft.y)
+			Width(bottomright.X-topleft.X), Height(bottomright.Y-topleft.Y)
 		{ }
 
 		/// Converting constructor from a different typed rectangle
 		template <class O_>
 		explicit basic_Rectangle(const basic_Rectangle<O_> &rect) : 
-			X(T_(rect.Left)), Y(T_(rect.Top)), Width(T_(rect.Width)), Height(T_(rect.Height))
+			X(T_(rect.X)), Y(T_(rect.Y)), Width(T_(rect.Width)), Height(T_(rect.Height))
 		{ }
 
 		/// Converting constructor from bounds

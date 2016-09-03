@@ -1,105 +1,41 @@
 #pragma once
 
-#include "FontRenderer.h"
-#include "../Resource/File.h"
+#include "../Geometry/Point.h"
+#include "../Geometry/Size.h"
+#include "TextureTargets.h"
+#include "Color.h"
+#include <stdint.h>
 
-namespace gge { namespace resource {
-	class FontTheme; 
-} }
+namespace Gorgon { namespace Graphics {
 
-namespace gge {
-	class FontInitiator;
-
-	class Font {
-	public:
-		enum FontStyle {
-			Normal	=0,
-			Bold	  ,
-			Italic	  ,
-			Small	  ,
-			H1		  ,
-			H2		  ,
-			H3		  ,
-		};
-
-
-
-		Font();
-		Font(const Font &);
-		Font(resource::FontTheme &Theme, graphics::RGBint Color=graphics::RGBint(0xf0001000), FontStyle Style=Normal, ShadowParams Shadow=ShadowParams());
-		Font(resource::FontTheme *Theme, graphics::RGBint Color=graphics::RGBint(0xf0001000), FontStyle Style=Normal, ShadowParams Shadow=ShadowParams());
-
-		Font &operator =(const Font &);
-		Font &operator =(const FontStyle);
-
-
-		static FontInitiator Load(resource::File &File, std::istream &Data, int Size);
-
-
-		resource::FontTheme *Theme;
-		FontStyle Style;
-		graphics::RGBint Color;
-		ShadowParams Shadow;
-
-		//Info functions
-		int FontHeight();
-		int FontBaseline();
-		int TextWidth(const std::string &Text);
-		int TextHeight(const std::string &Text, int W);
-
-
-
-		//Print Functions
-		////Prints the given text to the target using given color.
-		void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, const std::string &Text);
-		////Prints the given text to the target using given color. Text is wrapped and aligned as necessary
-		void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, int W, const std::string &Text, TextAlignment::Type Align=TextAlignment::Left);
-		////This method is extended to cover meta functionality for advanced text rendering
-		void Print(graphics::ColorizableImageTarget2D *target, int X, int Y, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left);
-		////This method is extended to cover meta functionality for advanced text rendering. This function does not render the given text
-		/// it only processes meta data
-		void Print_Test(int X, int Y, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left);
-		void Print_Test(utils::Point p, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left) {
-			Print_Test(p.x, p.y, W, Text, Data, DataLen, Align);
-		}
-
-
-		//Target references
-		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y, const std::string &Text) 
-		{ Print(&target, X, Y, Text); }
-		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y, int W, const std::string &Text, TextAlignment::Type Align=TextAlignment::Left) 
-		{ Print(&target, X, Y, W, Text, Align); }
-		void Print(graphics::ColorizableImageTarget2D &target, int X, int Y, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left)
-		{ Print(&target, X, Y, W, Text, Data, DataLen, Align); }
-
-		void Print(graphics::ColorizableImageTarget2D &target, utils::Point p, const std::string &Text) 
-		{ Print(&target, p.x, p.y, Text); }
-		void Print(graphics::ColorizableImageTarget2D &target, utils::Point p, int W, const std::string &Text, TextAlignment::Type Align=TextAlignment::Left) 
-		{ Print(&target, p.x, p.y, W, Text, Align); }
-		void Print(graphics::ColorizableImageTarget2D &target, utils::Point p, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left)
-		{ Print(&target, p.x, p.y, W, Text, Data, DataLen, Align); }
-
-		void Print(graphics::ColorizableImageTarget2D *target, utils::Point p, const std::string &Text) 
-		{ Print(target, p.x, p.y, Text); }
-		void Print(graphics::ColorizableImageTarget2D *target, utils::Point p, int W, const std::string &Text, TextAlignment::Type Align=TextAlignment::Left) 
-		{ Print(target, p.x, p.y, W, Text, Align); }
-		void Print(graphics::ColorizableImageTarget2D *target, utils::Point p, int W, const std::string &Text, EPrintData *Data, int DataLen, TextAlignment::Type Align=TextAlignment::Left)
-		{ Print(target, p.x, p.y, W, Text, Data, DataLen, Align); }
-
-		FontRenderer *getRenderer();
-	protected:
-	};
+	using Glyph = int32_t;
 	
-	class FontInitiator {
+	/**
+	 * Should be implemented by the systems aimed to render fonts on the screen.
+	 */
+	class FontRenderer {
 	public:
-		FontInitiator() : file(NULL) { }
-		utils::SGuid guid_theme;
-		Font::FontStyle Style;
-		graphics::RGBint Color;
-		ShadowParams Shadow;
-		resource::File *file;
+		/// This function should render the given character to the target at the specified location
+		/// and color. If chr does not exists, this function should perform no action. location and
+		/// color can be modified as per the needs of renderer. If the kerning returns integers
+		/// location will always be an integer.
+		virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const = 0;
 
-		operator Font();
+		/// This function should return the size of the requested glyph. If it does not exists,
+		/// 0x0 should be returned
+		virtual Geometry::Size GetSize(Glyph chr) const = 0;
+
+		/// This function should return true if this font renderer supports only 7-bit ASCII
+		virtual bool IsASCII() const = 0;
+
+		/// This function should return true if this font is fixed width. This will suppress calls
+		/// to GetSize function.
+		virtual bool IsFixedWidth() const = 0;
+		
+		/// This function should return the additional distance between given glyphs. Returned value
+		/// could be (in most cases it is) negative. Non-integer values would break pixel perfect
+		/// rendering.
+		virtual float KerningDistance(Glyph chr1, Glyph chr2) const = 0;
 	};
 
-}
+} }

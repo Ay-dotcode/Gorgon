@@ -41,7 +41,7 @@ namespace Gorgon {
         if(down) {
             down[0].propagate_mouseevent(Input::Mouse::EventType::Up, location, button, 0, down);
             
-            down = nullptr;
+            down.Clear();
         }
         else {
             MouseHandler handler;

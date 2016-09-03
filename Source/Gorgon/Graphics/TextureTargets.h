@@ -34,12 +34,12 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Draws a simple image to the screen to the given position with the given size.
-		virtual void Draw(const TextureSource &image, const Geometry::Rectangle &location, RGBAf color = RGBAf(1.f)) {
+		virtual void Draw(const TextureSource &image, const Geometry::Rectanglef &location, RGBAf color = RGBAf(1.f)) {
 			Draw(image, location.TopLeft(), location.TopRight(), location.BottomLeft(), location.BottomRight(), color);
 		}
 
 		/// Draws a simple image to the screen using the given tiling method, coordinates and size
-		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectangle &location, RGBAf color = RGBAf(1.f)) = 0;
+		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectanglef &location, RGBAf color = RGBAf(1.f)) = 0;
 
 		/// Clears drawing buffer, in layer architecture this request only affects
 		/// the layer itself, not its children

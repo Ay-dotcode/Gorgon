@@ -58,11 +58,11 @@ int main() {
 				img2({x, y}, c) = x*c*y;
 
 	img2.Prepare();
-	img2.Draw(l, {0,0});
+	img2.Draw(l, 0, 0);
 
 
 //	for(int i=0;i<10;i++)
-	img.Draw(l, {50,50}, {.2f, .2f, .8f, 1.f});
+	img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
 	
 	wind.KeyEvent.Register([](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))
