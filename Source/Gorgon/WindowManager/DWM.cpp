@@ -11,6 +11,7 @@
 #include "../Graphics.h"
 
 #include <windows.h>
+#include "../Geometry/Margins.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -31,14 +32,11 @@ namespace Gorgon {
 			Window &parent;
 			HGLRC context=0;
 			HDC device_context=0;
-			Geometry::Size overhead = {0, 0};
+			Geometry::Margins chrome = {0, 0};
 
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 
 			LRESULT Proc(UINT message, WPARAM wParam, LPARAM lParam) {
-
-				parent.mouselocation = WindowManager::GetMousePosition(this);
-				parent.mouse_location();
 
 				switch(message) {
 
@@ -306,8 +304,8 @@ namespace Gorgon {
 			GetWindowRect((HWND)wind->handle, &winrect);
 			GetCursorPos(&pnt);
 
-			ret.X=pnt.x-(wind->overhead.Width+winrect.left);
-			ret.Y=pnt.y-(wind->overhead.Height+winrect.top);
+			ret.X=pnt.x-(wind->chrome.Left+winrect.left);
+			ret.Y=pnt.y-(wind->chrome.Top+winrect.top);
 
 			return ret;
 		}
@@ -469,11 +467,8 @@ namespace Gorgon {
 
 		auto size=rect.GetSize();
 
-		rect.Width += (wi.rcWindow.right-wi.rcWindow.left) - (wi.rcClient.right-wi.rcClient.left);
-		rect.Height+= (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top);
-
-		data->overhead.Width  = (wi.rcWindow.right-wi.rcWindow.left) - (wi.rcClient.right-wi.rcClient.left);
-		data->overhead.Height = (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top);
+		data->chrome  = Geometry::Margins(wi.rcClient.left-wi.rcWindow.left, wi.rcClient.top-wi.rcWindow.top, wi.rcWindow.right-wi.rcClient.right, wi.rcWindow.bottom-wi.rcClient.bottom);
+		rect += data->chrome.Total();
 
 		if(rect.TopLeft()==automaticplacement) {
 			rect.Move( (WindowManager::Monitor::Primary().GetUsable()-rect.GetSize()).Center() );
@@ -606,7 +601,8 @@ namespace Gorgon {
 	}
 
 	void Window::processmessages() {
-		// handled by operating system
+		mouselocation = WindowManager::GetMousePosition(data);
+		mouse_location();
 	}
 
 	void Window::createglcontext() {

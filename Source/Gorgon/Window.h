@@ -211,7 +211,9 @@ namespace Gorgon {
 
 		/// List of currently created windows
 		static const Containers::Collection<Window> &Windows;
-		
+
+		static int ClickThreshold;
+
 	protected:
 		/// A window cannot be placed in another layer. This function always fails.
 		virtual void located(Layer *) override { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
@@ -236,7 +238,8 @@ namespace Gorgon {
         
         MouseHandler down;
         MouseHandler over;
-        
+
+		Geometry::Point mousedownlocation = {-1, -1};
         Geometry::Point mouselocation = {-1, -1};
 	};
 }

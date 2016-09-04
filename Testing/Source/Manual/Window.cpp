@@ -38,32 +38,37 @@ int main() {
 	wind.Add(l);
 
 	Graphics::Bitmap img;
-	/*img.Import("test.png");
+	img.Import("test.png");
 
-	img.Prepare();*/
+	img.Prepare();
 
-	img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
+	/*img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
 	for(int x = 0; x<200; x++)
 		for(int y = 0; y<200; y++) {
 			img({x, y}, 0) = x;
 		}
 
-	img.Prepare();
+	img.Prepare();*/
 	
-	Graphics::Bitmap img2({200, 200}, Graphics::ColorMode::RGB);
+	Graphics::Bitmap img2({16, 400}, Graphics::ColorMode::RGB);
 
-	for(int x = 0; x<200; x++)
-		for(int y = 0; y<200; y++)
+	for(int x = 0; x<16; x++)
+		for(int y = 0; y<400; y++)
 			for(int c=0;c<3;c++)
-				img2({x, y}, c) = x*c*y;
+				img2({x, y}, c) = 0x80;
 
 	img2.Prepare();
-	img2.Draw(l, 0, 0);
+	//img2.Draw(l, 0, 0);
 
 
-//	for(int i=0;i<10;i++)
+	for(int i=0; i<10; i++)
+		img.Draw(l, 150, 150);
+
+	for(int i=0; i<4; i++)
+		img2.Draw(l, 25+16+i*32, 0);
+
 	img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
-	
+
 	wind.KeyEvent.Register([](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))
 			exit(0);
@@ -82,7 +87,7 @@ int main() {
 	wind.Add(il);
 
     il.Move({25, 0});
-	il.Resize({100, 0});
+	il.Resize({128, 0});
 
 	il.SetHitCheck([](Point location) {
 		return (location.X/16)%2 != 0;
@@ -92,7 +97,7 @@ int main() {
 		std::cout<<button<<": "<<location<<std::endl;
 	});
 
-	il.SetDown([](Point location, Mouse::Button button) {
+	/*il.SetDown([](Point location, Mouse::Button button) {
 		std::cout<<"Down: "<<button<<": "<<location<<std::endl;
 	});
 
@@ -102,7 +107,7 @@ int main() {
 
 	il.SetUp([](Point location, Mouse::Button button) {
 		std::cout<<"Up: "<<button<<": "<<location<<std::endl;
-	});
+	});*/
 
 	il.SetOver([&wind]() {
 		std::cout<<"Over, pressed buttons are: ";

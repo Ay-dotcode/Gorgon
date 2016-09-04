@@ -14,7 +14,7 @@ namespace Gorgon { namespace Input {
         }
     }
     
-	void Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {   
+	bool Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {   
         if(event == Input::Mouse::EventType::OverCheck) {
             auto prev_t = Transform;
             
@@ -49,50 +49,50 @@ namespace Gorgon { namespace Input {
             
             Clip = prev_c;
             
-            if(out) return;
+            if(out) return false;
         }
 
         if(event == Input::Mouse::EventType::Over) {
             if(over)
                 over(*this);
             
-            return;
+            return true;
         }
         else if(event == Input::Mouse::EventType::Out) {
             if(out)
                 out(*this);
             
-            return;
+            return true;
         }
         else if(event == Input::Mouse::EventType::Up) {
             if(up)
                 up(*this, curlocation, button);
             
-            return;
+            return true;
         }
         else if(event == Input::Mouse::EventType::MovePressed) {
             if(move)
                 move(*this, curlocation);
             
-            return;
+            return true;
         }
         else if(event == Input::Mouse::EventType::OverCheck) {
-            Gorgon::Layer::propagate_mouseevent(event, location, button, amount, handlers);
+            Gorgon::Layer::propagate_mouseevent(event, curlocation, button, amount, handlers);
         }
         else { //click/scroll/move/down
-            Gorgon::Layer::propagate_mouseevent(event, location, button, amount, handlers);
-            
-            if(handlers)
-                return;
+            if(Gorgon::Layer::propagate_mouseevent(event, curlocation, button, amount, handlers))
+                return true;
         }
 
 		if(hitcheck && !hitcheck(*this, curlocation)) 
-			return;
+			return false;
         
 		if(event == Input::Mouse::EventType::Click && click) {
 			click(*this, curlocation, button);
             
             handlers.Add(this);
+
+			return true;
 		}
 		if(event == Input::Mouse::EventType::Down) {
             if(down) {
@@ -100,34 +100,45 @@ namespace Gorgon { namespace Input {
             }
             
             if(down || click) {
-                handlers.Add(this);
+                return true;
             }
 		}
 		else if(event == Input::Mouse::EventType::Scroll_Vert && vscroll) {
 			vscroll(*this, curlocation, amount);
 
             handlers.Add(this);
+
+			return true;
 		}
 		else if(event == Input::Mouse::EventType::Scroll_Hor && hscroll) {
 			hscroll(*this, curlocation, amount);
 
             handlers.Add(this);
+
+			return true;
 		}
 		else if(event == Input::Mouse::EventType::Zoom && zoom) {
 			zoom(*this, curlocation, amount);
 
             handlers.Add(this);
+
+			return true;
 		}
 		else if(event == Input::Mouse::EventType::Rotate && rotate) {
 			rotate(*this, curlocation, amount);
 
             handlers.Add(this);
+
+			return true;
 		}
 		else if(event == Input::Mouse::EventType::OverCheck && over) {
             //dont call, window will decide which layers to call
-            
             handlers.Add(this);
-        }
+
+			return true;
+		}
+
+		return false;
 	}
 
 } }

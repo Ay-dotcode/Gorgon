@@ -299,7 +299,7 @@ namespace Gorgon {
 		/// Propagates a mouse event. Some events will be called directly. Do not use this function. Direct calls should never touch handlers. 
 		/// Input layers should cache perform transformations on direct calls. Direct calls should not be clipped. button is set only for
 		/// Click/Down/Up events, amount will be set for Scroll/Zoom events.
-		virtual void propagate_mouseevent(Input::Mouse::EventType evet, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers);
+		virtual bool propagate_mouseevent(Input::Mouse::EventType evet, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers);
 		
 		/// Renders the current layer, default handling is to pass
 		/// the request to the sub-layers

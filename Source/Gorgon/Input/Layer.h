@@ -1161,7 +1161,7 @@ namespace Gorgon { namespace Input {
             
 
 			/// Propagates a mouse event. Some events will be called directly. 
-			virtual void propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) override;
+			virtual bool propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) override;
 
 			/// Propagates a scroll event.
 			//virtual MouseHandler propagate_scrollevent(Input::Mouse::ScrollType direction, Geometry::Point location, float amount) override;

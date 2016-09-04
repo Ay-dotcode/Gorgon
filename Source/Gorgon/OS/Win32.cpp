@@ -257,6 +257,10 @@ namespace Gorgon {
 	}
 
 	void processmessages() {
+		for(auto &w : Window::Windows) {
+			w.processmessages();
+		}
+
 		MSG msg;
 		while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 			GetMessage(&msg, NULL, 0, 0);

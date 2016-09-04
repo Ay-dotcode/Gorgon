@@ -27,6 +27,8 @@ namespace Gorgon {
         
 		Transform = {};
         Clip = bounds.GetSize();
+
+		mousedownlocation = location;
         
         down.Clear();
         Layer::propagate_mouseevent(Input::Mouse::EventType::Down, location, button, 1, down);
@@ -44,8 +46,10 @@ namespace Gorgon {
             down.Clear();
         }
         else {
-            MouseHandler handler;
-            Layer::propagate_mouseevent(Input::Mouse::EventType::Click, location, button, 1, handler);
+			if(mousedownlocation.Distance(location) <= ClickThreshold) {
+				MouseHandler handler;
+				Layer::propagate_mouseevent(Input::Mouse::EventType::Click, location, button, 1, handler);
+			}
         }
 	}
 	
@@ -89,4 +93,5 @@ namespace Gorgon {
         }
     }
 
+	int Window::ClickThreshold = 5;
 }
