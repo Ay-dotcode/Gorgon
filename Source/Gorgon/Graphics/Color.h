@@ -300,11 +300,14 @@ namespace Gorgon { namespace Graphics {
 		/// Constructor that sets all color channels to the given value to create a grayscale color. Alpha is set to 1.0f
 		explicit RGBAf(float lum, float a=1.0f) : RGBAf(lum, lum, lum, a) { }
 
+		/// Constructor that sets all color channels to the given value to create a grayscale color. Alpha is set to 1.0f
+		explicit RGBAf(double lum, float a=1.0f) : RGBAf(lum, lum, lum, a) { }
+
 		/// Converts a RGBA to RGBAf
 		RGBAf(const RGBA &color) : R(color.R/255.f), G(color.G/255.f), B(color.B/255.f), A(color.A/255.f) { }
 
 		/// Converts from an int
-		RGBAf(const int &color) : RGBAf(RGBA(color)) { }
+		explicit RGBAf(const int &color) : RGBAf(RGBA(color)) { }
 
 		/// Copy assignment
 		RGBAf &operator = (const RGBAf &) = default;

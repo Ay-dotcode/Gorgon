@@ -376,6 +376,11 @@ namespace Gorgon {
 				return mapping.size();
 			}
 			
+			/// Returns the number of elements in the map
+			long GetSize() const {
+				return mapping.size();
+			}
+			
 			/// If not found throws.
 			T_ &operator [](const K_ &key) const {
 				auto it = mapping.find(key);

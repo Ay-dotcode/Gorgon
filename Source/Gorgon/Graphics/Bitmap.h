@@ -332,6 +332,17 @@ namespace Gorgon { namespace Graphics {
 
 		/// This function removes transparency information from the image
 		void StripTransparency();
+        
+        /// Cleans the contents of the buffer by setting every byte it contains to 0.
+        void Clean() {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Bitmap data is not set");
+			}
+#endif
+
+            data->Clean();
+        }
 
 		/// Assumes all image heights are similar and all images have same color mode
 		std::vector<Geometry::Bounds> CreateLinearAtlas(const Containers::Collection<Bitmap> &list);
