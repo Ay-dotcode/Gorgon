@@ -7,6 +7,8 @@ SET(Local
 	Drawables.h
 	Font.h
 	Font.cpp
+	BitmapFont.h
+	BitmapFont.cpp
 	Graphics.cpp
 	Layer.cpp
 	Layer.h

@@ -6,9 +6,7 @@
 #include "../Geometry/Point.h"
 #include "../Geometry/Size.h"
 #include "TextureTargets.h"
-#include "Drawables.h"
 #include "Color.h"
-#include "Bitmap.h"
 
 namespace Gorgon { namespace Graphics {
 
@@ -95,6 +93,10 @@ namespace Gorgon { namespace Graphics {
         virtual int GetCharacterIndex(const std::string &text, Geometry::Pointf location) const = 0;
         
         virtual Geometry::Pointf GetPosition(const std::string &text, int index) const = 0;
+        
+        virtual int GetCharacterIndex(const std::string &text, float w, Geometry::Pointf location) const = 0;
+        
+        virtual Geometry::Pointf GetPosition(const std::string &text, float w, int index) const = 0;
 
     protected:
         virtual void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const = 0;
@@ -115,7 +117,7 @@ namespace Gorgon { namespace Graphics {
     public:
         BasicFont(const GlyphRenderer &renderer) : renderer(&renderer) { }
         
-        virtual Geometry::Size GetSize(const std::string &text) const override { return {0,0}; }
+        virtual Geometry::Size GetSize(const std::string &text) const override;
         
         virtual Geometry::Size GetSize(const std::string &text, float width) const override { return {0,0}; }
         
@@ -123,123 +125,18 @@ namespace Gorgon { namespace Graphics {
         
         virtual Geometry::Pointf GetPosition(const std::string &text, int index) const override { return {0.f, 0.f}; }
         
+        virtual int GetCharacterIndex(const std::string &text, float w, Geometry::Pointf location) const override { return 0; }
+        
+        virtual Geometry::Pointf GetPosition(const std::string &text, float w, int index) const override { return {0.f, 0.f}; }
+        
     protected:
         virtual void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const override;
         
         virtual void print(TextureTarget &target, const std::string &text, 
-                           Geometry::Rectanglef location, TextAlignment align, RGBAf color) const override { }
+                           Geometry::Rectanglef location, TextAlignment align, RGBAf color) const override;
          
     private:
         const GlyphRenderer *renderer;
-    };
-    
-    /**
-     * Bitmap fonts provide an easy way to render text on the screen. It is a GlyphRenderer
-     * but also acts as TextRenderer for convenience. If control over TextRenderer is required,
-     * it is best to use BitmapFont to construct a new TextRenderer and use the TextRenderer
-     * to render the text instead of using BitmapFont itself for the task. 
-     */
-    class BitmapFont : public GlyphRenderer, public TextRenderer {
-    public:
-        class GlyphDescriptor {
-        public:
-            GlyphDescriptor() { }
-            
-            GlyphDescriptor(const RectangularDrawable &image, float offset) : image(&image), offset(offset) { }
-            
-            const RectangularDrawable *image = nullptr;
-            float offset = 0;
-        };
-        
-        BitmapFont(int baseline) : baseline(baseline) { }
-        
-        BitmapFont(const BitmapFont &) = delete;
-        
-        //duplicate and move constructor
-        
-        BitmapFont &operator =(const BitmapFont &) = delete;
-        
-        ~BitmapFont() {
-            delete renderer;
-        }
-        
-        /// Changes the renderer to the requested class. You may also use bitmap
-        /// font to create a new TextRender to have more control over it.
-        template<class R_, class ...P_>
-        void ChangeRenderer(P_ &&...params) {
-            delete renderer;
-            renderer = new R_(std::forward<P_>(params)...);
-        }
-        
-        /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
-        /// Ownership of bitmap is not transferred.
-        void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, float baseline = 0);
-        
-        /// Converts invidual glyphs to a single atlas
-        void Pack();
-        
-        virtual Geometry::Size GetSize(const std::string & text) const override { return renderer->GetSize(text); }
-        
-        virtual Geometry::Size GetSize(const std::string & text, float width) const override { return renderer->GetSize(text,width); }
-        
-        virtual int GetCharacterIndex(const std::string &text, Geometry::Pointf location) const override { return renderer->GetCharacterIndex(text, location); }
-        
-        virtual Geometry::Pointf GetPosition(const std::string &text, int index) const override { return renderer->GetPosition(text, index); }
-        
-        virtual bool IsASCII() const override {
-            return isascii;
-        }
-        
-        virtual Geometry::Size GetSize(Glyph chr) const override {
-            if(glyphmap.count(chr))
-                return glyphmap.at(chr).image->GetSize();
-            else
-                return {0, 0};
-        }
-        
-        virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const override;
-
-		virtual bool IsFixedWidth() const override { return isfixedw; }
-		
-		/// todo
-		virtual float KerningDistance(Glyph chr1, Glyph chr2) const override { return spacing; }
-         
-        virtual int MaxWidth() const override { return maxwidth; }
-        
-        virtual int LineHeight() const override { return lineheight; }
-        
-        virtual int BaseLine() const override { return baseline; }
-        
-        /// Changes the spacing between glyphs
-        void SetGlyphSpacing(float spacing) { this->spacing = spacing; }
-       
-    protected:
-        virtual void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const override {
-            renderer->Print(target, text, location, color);
-        }
-        
-        virtual void print(TextureTarget &target, const std::string &text, 
-                           Geometry::Rectanglef location, TextAlignment align, RGBAf color) const override {
-            renderer->Print(target, text, location, align, color);
-        }
-                           
-                           
-        std::map<Glyph, GlyphDescriptor> glyphmap;
-        
-        bool isascii = true;
-        
-        int isfixedw = true;
-        
-        int maxwidth = 0;
-        
-        int lineheight = 0;
-        
-        int baseline;
-        
-        float spacing = 0;
-        
-    private:
-        TextRenderer *renderer = new BasicFont(*this);
     };
     
 } }

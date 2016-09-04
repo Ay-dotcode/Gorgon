@@ -9,7 +9,7 @@
 #include "Gorgon/Resource/Image.h"
 #include "Gorgon/Encoding/JPEG.h"
 #include "Gorgon/Input/Layer.h"
-#include "Gorgon/Graphics/Font.h"
+#include "Gorgon/Graphics/BitmapFont.h"
 
 #include <chrono>
 
