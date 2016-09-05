@@ -295,6 +295,41 @@ namespace Gorgon {
 		inline bool To<bool>(const char *value) {
 			return To<bool>(std::string(value));
 		}
+
+		/// Converts a hexadecimal number stored in the string to a given
+		/// integer type.
+		template <class T_>
+		T_ HexTo(const std::string &value);
+
+		template <>
+		inline int HexTo<int>(const std::string &value) {
+			return std::stoi(value, nullptr, 16);
+		}
+
+		template <>
+		inline long HexTo<long>(const std::string &value) {
+			return std::stol(value, nullptr, 16);
+		}
+
+		template <>
+		inline long long HexTo<long long>(const std::string &value) {
+			return std::stoll(value, nullptr, 16);
+		}
+
+		template <>
+		inline unsigned int HexTo<unsigned int>(const std::string &value) {
+			return (unsigned int)std::stoul(value, nullptr, 16);
+		}
+
+		template <>
+		inline unsigned long HexTo<unsigned long>(const std::string &value) {
+			return std::stoul(value, nullptr, 16);
+		}
+
+		template <>
+		inline unsigned long long HexTo<unsigned long long>(const std::string &value) {
+			return std::stoull(value, nullptr, 16);
+		}
 		/// @endcond
 
 		/// String replace that does not use regex. Works faster than regex variant.

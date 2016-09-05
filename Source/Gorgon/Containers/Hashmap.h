@@ -428,7 +428,11 @@ namespace Gorgon {
 			
 			/// returns the iterator to the last item
 			Iterator Last() {
-				return Iterator(*this, mapping.size()>0 ? mapping.end()-1 : mapping.end());
+				auto it = mapping.end();
+				if(mapping.size()>0)
+					--it;
+
+				return Iterator(*this, it);
 			}
 			
 			/// begin iterator
@@ -448,7 +452,11 @@ namespace Gorgon {
 			
 			/// returns the iterator to the last item
 			ConstIterator Last() const {
-				return ConstIterator(*this, mapping.size()>0 ? mapping.end()-1 : mapping.end());
+				auto it = mapping.end();
+				if(mapping.size()>0)
+					--it;
+
+				return ConstIterator(*this, it);
 			}
 			/// @}
 			

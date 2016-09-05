@@ -5,6 +5,7 @@
 
 #include "Font.h"
 #include "Drawables.h"
+#include "../Containers/Collection.h"
 
 
 namespace Gorgon { namespace Graphics {
@@ -41,7 +42,7 @@ namespace Gorgon { namespace Graphics {
             Hexadecimal
         };
         
-        BitmapFont(int baseline) : baseline(baseline) { }
+        explicit BitmapFont(int baseline = 0) : baseline(baseline) { }
         
         BitmapFont(const BitmapFont &) = delete;
         
@@ -51,6 +52,7 @@ namespace Gorgon { namespace Graphics {
         
         ~BitmapFont() {
             delete renderer;
+			destroylist.Destroy();
         }
         
         /// Changes the renderer to the requested class. You may also use bitmap
@@ -84,12 +86,7 @@ namespace Gorgon { namespace Graphics {
             return isascii;
         }
         
-        virtual Geometry::Size GetSize(Glyph chr) const override {
-            if(glyphmap.count(chr))
-                return glyphmap.at(chr).image->GetSize();
-            else
-                return {0, 0};
-        }
+        virtual Geometry::Size GetSize(Glyph chr) const override;
         
         virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const override;
 
@@ -102,16 +99,39 @@ namespace Gorgon { namespace Graphics {
         
         virtual int LineHeight() const override { return lineheight; }
         
-        virtual int BaseLine() const override { return baseline; }
+		virtual int BaseLine() const override { return baseline; }
+
+		/// Changes the line height of the font.
+		void SetLineHeight(int value) { lineheight = value; }
+
+		/// Changes the maximum width for a character
+		void SetMaxWidth(int value) { maxwidth = value; }
+
+		/// Searches through the currently registered glyphs to determine dimensions
+		void DetermineDimensions();
         
         /// Changes the spacing between glyphs
         void SetGlyphSpacing(float spacing) { this->spacing = spacing; }
         
-        /// Imports bitmap font images from a folder with the specified filenaming template.
+        /// Imports bitmap font images from a folder with the specified file naming template.
         /// Automatic detection will only work if there is a single bitmap font set in the
         /// folder. If baseline is set to a negative value, it would be calculated as 70%
-        /// of the font height. Only png files are considered for import.
-        bool Import(const std::string &path, ImportNamingTemplate = Automatic, const std::string &prefix = "", int baseline = -1, bool trim = false);
+        /// of the font height. Only png files are considered for import. If converttoalpha
+		/// is set, then the images read will be converted to alpha only images. Import will
+		/// import separate images, you may use Pack function to pack them to an image atlas.
+		/// If prepare is set, the imported images will be prepared and font will be ready
+		/// to be used. As of now, this function cannot deal with animated fonts. start 
+		/// parameter can be used for adjusting numeric offset. If template naming is 
+		/// automatic and the value is left as 0, it will be determined automatically so that
+		/// the imported images will be matched with printable characters. Any files that
+		/// start with . and _ is ignored, unless it is the name of the file. This function 
+		/// will return the number of images imported. Imported images will be destroyed by 
+		/// this object. Automatic conversion can cause issues with suffixes, however, if
+		/// naming is set, any additional text after the number or character is ignored.
+		/// If prepare is set to false, maxwidth and lineheight will not be set properly.
+        int ImportFolder(const std::string &path, ImportNamingTemplate naming = Automatic, int start = 0, 
+						 std::string prefix = "", int baseline = -1, bool trim = false, bool converttoalpha = false, 
+						 bool prepare = true);
        
     protected:
         virtual void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const override {
@@ -125,6 +145,7 @@ namespace Gorgon { namespace Graphics {
                            
                            
         std::map<Glyph, GlyphDescriptor> glyphmap;
+		Containers::Collection<RectangularDrawable> destroylist;
         
         bool isascii = true;
         

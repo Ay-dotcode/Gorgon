@@ -198,7 +198,7 @@ namespace Gorgon {
             
             if(pos == path.npos) return path;
             
-            path = path.substr(0, path.size()-pos);
+            path = path.substr(0, pos);
             
             return path;
         }

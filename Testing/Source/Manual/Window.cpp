@@ -70,34 +70,8 @@ int main() {
 
 	img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
-    Graphics::Bitmap chr1({10, 16}, Graphics::ColorMode::Alpha);
-    chr1.Clean();
-    chr1({1, 8}, 0) = 255;
-    chr1({2, 9}, 0) = 255;
-    chr1({3, 9}, 0) = 255;
-    chr1({4, 10}, 0) = 255;
-    chr1({4, 11}, 0) = 255;
-    chr1({5, 11}, 0) = 255;
-    chr1({6, 11}, 0) = 255;
-    chr1.Prepare();
-   
-    Graphics::Bitmap chr2({10, 16}, Graphics::ColorMode::Alpha);
-    chr2.Clean();
-    chr2({1, 8}, 0) = 255;
-    chr2({2, 9}, 0) = 255;
-    chr2({3, 9}, 0) = 255;
-    chr2({4, 10}, 0) = 255;
-    chr2({4, 11}, 0) = 255;
-    chr2({5, 11}, 0) = 255;
-    chr2({6, 11}, 0) = 255;
-    chr2({6, 10}, 0) = 255;
-    chr2({6, 9}, 0) = 255;
-    chr2({6, 8}, 0) = 255;
-    chr2.Prepare();
-    
     Graphics::BitmapFont fnt(12);
-    fnt.AddGlyph('a', chr1, 12);
-    fnt.AddGlyph('b', chr2, 10);
+	fnt.ImportFolder("VictoriaBoldLarge");
     
     fnt.Print(l, "aababba\tabb\nbba\ta", 0, 0, Graphics::RGBAf(1.0f));
 
