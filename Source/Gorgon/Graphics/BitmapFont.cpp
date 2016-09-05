@@ -11,9 +11,11 @@ namespace Gorgon { namespace Graphics {
     void BitmapFont::AddGlyph(Glyph glyph, const RectangularDrawable& bitmap, float baseline) {
 		auto size = bitmap.GetSize();
 
+		int lh = (int)std::round((size.Height+baseline-this->baseline)*1.2);
+
         if(maxwidth == 0) {
             maxwidth = size.Width;
-            lineheight = size.Height;
+            lineheight = lh;
         }
         else {
             if(size.Width != maxwidth)
@@ -22,8 +24,8 @@ namespace Gorgon { namespace Graphics {
             if(maxwidth < size.Width)
                 maxwidth = size.Width;
             
-            if(lineheight < size.Height)
-                lineheight = size.Height;
+            if(lineheight < lh)
+                lineheight = lh;
         }
         
         glyphmap[glyph] = GlyphDescriptor(bitmap, this->baseline - baseline);
@@ -55,9 +57,11 @@ namespace Gorgon { namespace Graphics {
 		for(auto &g : glyphmap) {
 			auto size = g.second.image->GetSize();
 
+			int lh = (int)std::round((size.Height+baseline-this->baseline)*1.2);
+
 			if(maxwidth == 0) {
 				maxwidth = size.Width;
-				lineheight = size.Height;
+				lineheight = lh;
 			}
 			else {
 				if(size.Width != maxwidth)
@@ -66,8 +70,8 @@ namespace Gorgon { namespace Graphics {
 				if(maxwidth < size.Width)
 					maxwidth = size.Width;
 
-				if(lineheight < size.Height)
-					lineheight = size.Height;
+				if(lineheight < lh)
+					lineheight = lh;
 			}
 		}
 	}
@@ -219,7 +223,22 @@ namespace Gorgon { namespace Graphics {
 
 		int prefixlen = prefix.length();
 
+		int maxh = 0;
+
 		for(auto p : files) {
+			auto bl = baseline;
+
+			auto h = p.second.GetSize().Height;
+
+			if(trim) {
+				auto res = p.second.Trim();
+				bl -= res.Top;
+			}
+
+			if(HasAlpha(p.second.GetMode()) && toalpha) {
+				p.second.StripRGB();
+			}
+
 			if(prepare)
 				p.second.Prepare();
 
@@ -229,19 +248,26 @@ namespace Gorgon { namespace Graphics {
 				name = name.substr(prefixlen);
 
 			if(naming == Alpha) {
-				AddGlyph(name[0], p.second, (float)baseline);
+				AddGlyph(name[0], p.second, (float)bl);
 			}
 			else if(naming == Decimal) {
-				AddGlyph((Glyph)String::To<long long>(name) + start, p.second, (float)baseline);
+				AddGlyph((Glyph)String::To<long long>(name) + start, p.second, (float)bl);
 			}
 			else {
-				AddGlyph((Glyph)String::HexTo<long long>(name) + start, p.second, (float)baseline);
+				AddGlyph((Glyph)String::HexTo<long long>(name) + start, p.second, (float)bl);
 			}
+
+			if(maxh < h)
+				maxh = h;
 		}
 
 		if(baseline == -1) {
 			baseline = int(std::round(lineheight * 0.7));
 		}
+
+		if(trim && spacing==0) spacing = 1;
+
+		lineheight = int(std::ceil(maxh * 1.2));
 
         return files.GetSize();
     }

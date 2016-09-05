@@ -39,8 +39,8 @@ int main() {
 	wind.Add(l);
 
 	Graphics::Bitmap img;
-	img.Import("test.png");
-
+	if(!img.Import("rgba32.bmp")) exit(0);
+	 
 	img.Prepare();
 
 	/*img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
@@ -62,18 +62,18 @@ int main() {
 	//img2.Draw(l, 0, 0);
 
 
-	for(int i=0; i<10; i++)
-		img.Draw(l, 150, 150);
-
 	for(int i=0; i<4; i++)
 		img2.Draw(l, 25+16+i*32, 0);
+
+	for(int i=0; i<10; i++)
+		img.Draw(l, 150, 150);
 
 	img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
     Graphics::BitmapFont fnt(12);
-	fnt.ImportFolder("VictoriaBoldLarge");
+	fnt.ImportFolder("VictoriaBoldLarge", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, true);
     
-    fnt.Print(l, "aababba\tabb\nbba\ta", 0, 0, Graphics::RGBAf(1.0f));
+	fnt.Print(l, "Name\tSurname\nCem\tKalyoncu\nDeniz\tKalyoncu\n()", 0, 0, Graphics::RGBAf(1.0f));
 
 	wind.KeyEvent.Register([](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))

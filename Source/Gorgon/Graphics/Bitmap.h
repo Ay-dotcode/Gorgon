@@ -6,6 +6,7 @@
 #include "../Graphics/Animations.h"
 #include "../Graphics/Texture.h"
 #include "../Containers/Image.h"
+#include "../Geometry/Margins.h"
 
 namespace Gorgon { namespace Graphics {
 
@@ -299,10 +300,31 @@ namespace Gorgon { namespace Graphics {
 		/// prepare the data to be drawn, a separate call to Prepare function is necessary
 		bool ImportJPEG(const std::string &filename);
 
+		/// Imports a BMP file to become the new data of this image resource. Notice that importing does not
+		/// prepare the data to be drawn, a separate call to Prepare function is necessary
+		bool ImportBMP(const std::string &filename);
+
+		/// Imports a PNG file to become the new data of this image resource. Notice that importing does not
+		/// prepare the data to be drawn, a separate call to Prepare function is necessary. Returns true on
+		/// success. False if file is not found. In other cases (eg. corrupt file), it will throw. 
+		bool ImportPNG(std::istream &file);
+
+		/// Imports a JPEG file to become the new data of this image resource. Notice that importing does not
+		/// prepare the data to be drawn, a separate call to Prepare function is necessary
+		bool ImportJPEG(std::istream &file);
+
+		/// Imports a BMP file to become the new data of this image resource. Notice that importing does not
+		/// prepare the data to be drawn, a separate call to Prepare function is necessary
+		bool ImportBMP(std::istream &file);
+
 		/// Imports an image file to become the new data of this image resource. Type of the image is determined
-		/// from the extension. If the extension is not available please use either ImportPNG or ImportJPEG functions.
-		/// Notice that importing does not prepare the data to be drawn, a separate call to Prepare function is necessary
+		/// from the extension or if extension is not present from file signature. Notice that importing does not 
+		/// prepare the data to be drawn, a separate call to Prepare function is necessary
 		bool Import(const std::string &filename);
+
+		/// Imports an image file to become the new data of this image resource. Filetype is determined from file signature.
+		/// Notice that importing does not prepare the data to be drawn, a separate call to Prepare function is necessary
+		bool Import(std::istream &file);
 
 		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it.
@@ -331,7 +353,26 @@ namespace Gorgon { namespace Graphics {
 		void Grayscale(float ratio=1.0f);
 
 		/// This function removes transparency information from the image
-		void StripTransparency();
+		void StripAlpha();
+
+		/// This function removes color channels, leaving only alpha channel.
+		void StripRGB();
+
+		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty portions. Parameters control
+		/// which sides of the image would be trimmed.
+		Geometry::Margins Trim(bool left, bool top, bool right, bool bottom);
+
+		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty portions. Trimming is performed
+		/// to all sides of the image
+		Geometry::Margins Trim() {
+			return Trim(true, true, true, true);
+		}
+
+		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty portions. Parameters control
+		/// which sides of the image would be trimmed.
+		Geometry::Margins Trim(bool horizontal, bool vertical) {
+			return Trim(horizontal, vertical, horizontal, vertical);
+		}
         
         /// Cleans the contents of the buffer by setting every byte it contains to 0.
         void Clean() {

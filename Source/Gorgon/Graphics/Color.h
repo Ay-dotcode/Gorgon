@@ -24,7 +24,7 @@ namespace Gorgon { namespace Graphics {
 		BGR = 16,
 
 		/// 8bit image with color palette. Color palette should have its own color mode. This mode
-		/// is not well supported in the system.
+		/// is not supported in the system.
 		Paletted = 2,
 
 		/// 8bit gray scale color mode
@@ -37,7 +37,6 @@ namespace Gorgon { namespace Graphics {
 		RGBA = RGB | Alpha,
 
 		/// 32bit red, green, blue and alpha channel image. Blue component is in the lowest byte order and 
-		/// alpha is in the highest byte order.
 		/// alpha is in the highest byte order.
 		BGRA = BGR | Alpha,
 
@@ -69,6 +68,26 @@ namespace Gorgon { namespace Graphics {
 			throw std::runtime_error("Unknown mode");
 #endif
 			return 0;
+		}
+	}
+
+	/// Returns if the given color mode has alpha channel
+	inline bool HasAlpha(ColorMode mode) {
+		return ((int)mode & (int)ColorMode::Alpha) != 0;
+	}
+
+	/// Returns the index of alpha channel. If alpha channel does not exists, this function returns -1.
+	inline int AlphaIndex(ColorMode mode) {
+		switch(mode) {
+			case ColorMode::Alpha:
+				return 0;
+			case ColorMode::Grayscale_Alpha:
+				return 1;
+			case ColorMode::RGBA:
+			case ColorMode::BGRA:
+				return 3;
+			default:
+				return -1;
 		}
 	}
 

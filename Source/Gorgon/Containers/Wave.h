@@ -466,6 +466,11 @@ namespace Gorgon {
                 std::ifstream file(filename, std::ios::binary);
                 
                 if(!file.is_open()) return false;
+
+				return ImportWav(file);
+			}
+
+			bool ImportWav(std::istream &file) {
                 
                 if(IO::ReadString(file, 4) != "RIFF") return false;
                 

@@ -6,6 +6,7 @@ namespace Gorgon { namespace Graphics {
 
     void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Pointf location, RGBAf color) const { 
         auto cur = location;
+		Glyph prev = 0;
         for(auto it=text.begin(); it!=text.end(); ++it) {
             Byte b = *it;
             Glyph g;
@@ -16,9 +17,16 @@ namespace Gorgon { namespace Graphics {
             else {
                 Utils::NotImplemented("Unicode support is not yet implemented.");
             }
-            
+
+			if(prev) {
+				auto dist = renderer->KerningDistance(prev, g);
+				cur.X += dist;
+			}
+
+			prev = g;
+
             if(g == '\t') {
-                auto stops = renderer->MaxWidth() * 8;
+                auto stops = renderer->GetMaxWidth() * 8;
                 cur.X += stops;
                 cur.X /= stops;
                 cur.X = std::floor(cur.X);
@@ -26,7 +34,7 @@ namespace Gorgon { namespace Graphics {
             }
             else if(g == '\n') {
                 cur.X = location.X;
-                cur.Y += renderer->LineHeight();
+                cur.Y += renderer->GetLineHeight();
             }
             else if(g > 32) {
                 renderer->Render(g, target, cur, color);
@@ -42,7 +50,7 @@ namespace Gorgon { namespace Graphics {
         Geometry::Pointf cur = {0, 0};
         int maxx = 0;
         
-        auto lh = renderer->LineHeight();
+        auto lh = renderer->GetLineHeight();
         
         for(auto it=text.begin(); it!=text.end(); ++it) {
             Byte b = *it;
@@ -56,7 +64,7 @@ namespace Gorgon { namespace Graphics {
             }
             
             if(g == '\t') {
-                auto stops = renderer->MaxWidth() * 8;
+                auto stops = renderer->GetMaxWidth() * 8;
                 cur.X += stops;
                 cur.X /= stops;
                 cur.X = std::floor(cur.X);

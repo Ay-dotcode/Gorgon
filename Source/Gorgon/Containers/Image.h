@@ -6,6 +6,7 @@
 #include "../Geometry/Point.h"
 #include "../Geometry/Size.h"
 #include "../Graphics/Color.h"
+#include "../IO/Stream.h"
 
 namespace Gorgon {
 	namespace Containers {
@@ -207,6 +208,288 @@ namespace Gorgon {
 			/// Returns the raw data pointer
 			const Byte *RawData() const {
 				return data;
+			}
+
+			/// Imports a given bitmap file. BMP RLE compression and colorspaces are not supported.
+			bool ImportBMP(const std::string &filename) {
+				std::ifstream file(filename, std::ios::binary);
+
+				if(!file.is_open()) return false;
+
+				return ImportBMP(file);
+			}
+
+			/// Imports a given bitmap file. BMP RLE compression and colorspaces are not supported.
+			bool ImportBMP(std::istream &file) {
+				using namespace IO;
+
+				if(ReadString(file, 2) != "BM") return false;
+
+				auto fsize = IO::ReadUInt32(file);
+
+				ReadUInt16(file); //reserved 1
+				ReadUInt16(file); //reserved 2
+
+				auto off = ReadUInt32(file);
+
+				auto headersize = IO::ReadUInt32(file);
+
+				int width, height;
+				int bpp;
+				bool upsidedown = false;
+				bool bitcompress = false;
+				bool grayscalepalette = true;
+				int colorsused = 0;
+				bool alpha = false;
+				int redshift, greenshift, blueshift, alphashift;
+				float redmult = 1, greenmult = 1, bluemult = 1, alphamult = 1;
+				uint32_t redmask = 0, greenmask = 0, bluemask = 0, alphamask = 0;
+
+				std::vector<Graphics::RGBA> palette;
+
+				auto shiftcalc=[](uint32_t v) {
+					int pos = 0;
+					while(v) {
+						if(v&1) return pos;
+						v=v>>1;
+						pos++;
+					}
+
+					return pos;
+				};
+
+				if(headersize == 12) { //2x bmp
+					width = ReadInt16(file);
+					height = ReadInt16(file);
+					ReadUInt16(file); //planes
+					bpp = ReadUInt16(file);
+				}
+
+				if(headersize >= 40) { //3x
+					width = ReadInt32(file);
+					height = ReadInt32(file);
+					ReadUInt16(file); //planes
+					bpp = ReadUInt16(file);
+
+					auto compress = ReadUInt32(file);
+
+					if(compress != 0 && compress != 3) return false;
+
+					bitcompress = compress != 0;
+
+					ReadUInt32(file); //size of bitmap
+
+					ReadInt32(file); //horz resolution
+					ReadInt32(file); //vert resolution
+
+					colorsused = ReadUInt32(file);
+					ReadUInt32(file); //colors important
+
+					if(bitcompress && headersize == 40) {
+						redmask = (uint32_t)ReadUInt32(file);
+						greenmask = (uint32_t)ReadUInt32(file);
+						bluemask = (uint32_t)ReadUInt32(file);
+					}
+					else if(bpp == 16) {
+						redmask   = 0x7c000000;
+						greenmask = 0x03e00000;
+						bluemask  = 0x001f0000;
+					}
+					else if(bpp == 32) {
+						redmask   = 0x00ff0000;
+						greenmask = 0x0000ff00;
+						bluemask  = 0x000000ff;
+					}
+				}
+
+				if(headersize >= 108) {
+					redmask = (uint32_t)ReadUInt32(file);
+					greenmask = (uint32_t)ReadUInt32(file);
+					bluemask = (uint32_t)ReadUInt32(file);
+					alphamask = (uint32_t)ReadUInt32(file);
+
+					file.seekg(13*4, std::ios::cur); //colorspace information
+				}
+
+				redshift = shiftcalc(redmask);
+				greenshift = shiftcalc(greenmask);
+				blueshift = shiftcalc(bluemask);
+				alphashift = shiftcalc(alphamask);
+
+				if(redmask) {
+					redmult = 255.f / (redmask>>redshift);
+				}
+				if(greenmask) {
+					greenmult = 255.f / (greenmask>>greenshift);
+				}
+				if(bluemask) {
+					bluemult = 255.f / (bluemask>>blueshift);
+				}
+				if(alphamask) {
+					alphamult = 255.f / (alphamask>>alphashift);
+				}
+
+				if(headersize > 108) {
+					file.seekg(headersize - 108, std::ios::cur);
+				}
+
+				if(height > 0)
+					upsidedown = true;
+				else
+					height *= -1;
+
+				if(bpp <= 8) { //paletted
+					if(colorsused == 0)
+						colorsused = 1 << bpp;
+
+					palette.reserve(colorsused);
+
+					for(int i=0; i<colorsused; i++) {
+						Byte r, g, b, a;
+						
+						b = ReadUInt8(file);
+						g = ReadUInt8(file);
+						r = ReadUInt8(file);
+
+						if(r!=b || b!=g) grayscalepalette = false;
+
+						if(headersize > 12) {
+							a = ReadUInt8(file); //reserved
+						}
+
+						palette.emplace_back(r, g, b, a);
+					}
+
+					for(int i=0; i<colorsused; i++) {
+						if(palette[i].A) {
+							alpha = true;
+							break;
+						}
+					}
+				}
+
+				file.seekg(off, std::ios::beg);
+
+				if((bpp == 32 || bpp == 16) && alphamask != 0) {
+					Resize({width, height}, Graphics::ColorMode::RGBA);
+					alpha = true;
+				}
+				else if(bpp <= 8 && grayscalepalette) {
+					if(alpha)
+						Resize({width, height}, Graphics::ColorMode::Grayscale_Alpha);
+					else 
+						Resize({width, height}, Graphics::ColorMode::Grayscale);
+				}
+				else if(alpha) {
+					Resize({width, height}, Graphics::ColorMode::RGBA);
+				}
+				else {
+					Resize({width, height}, Graphics::ColorMode::RGB);
+				}
+
+				int ys, ye, yc;
+
+				if(upsidedown) {
+					ys = height-1;
+					ye = -1;
+					yc = -1;
+				}
+				else {
+					ys = 0;
+					ye = height;
+					yc = 1;
+				}
+
+				if(bpp == 24) {
+					for(int y = ys; y!=ye; y += yc) {
+						int bytes = 0;
+						for(int x=0; x<width; x++) {
+							this->operator ()({x, y}, 0) = ReadUInt8(file);
+							this->operator ()({x, y}, 1) = ReadUInt8(file);
+							this->operator ()({x, y}, 2) = ReadUInt8(file);
+
+							bytes += 3;
+						}
+
+						if(bytes%4) {
+							file.seekg(4-bytes%4, std::ios::cur);
+						}
+					}
+				}
+				else if(bpp == 16 || bpp == 32) {
+					for(int y = ys; y!=ye; y += yc) {
+						int bytes = 0;
+						for(int x=0; x<width; x++) {
+							uint32_t data;
+							
+							if(bpp == 16)
+								data = ReadUInt16(file) << 16;
+							else
+								data = ReadUInt32(file);
+
+							this->operator ()({x, y}, 0) = (Byte)std::round( ((data&redmask)>>redshift) * redmult ) ;
+							this->operator ()({x, y}, 1) = (Byte)std::round( ((data&greenmask)>>greenshift) * greenmult);
+							this->operator ()({x, y}, 2) = (Byte)std::round( ((data&bluemask)>>blueshift) * bluemult);
+
+							if(alpha) {
+								this->operator ()({x, y}, 3) = (Byte)std::round(((data&alphamask)>>alphashift) * alphamult);
+							}
+							
+							bytes += bpp/8;
+						}
+
+						if(bytes%4) {
+							file.seekg(4-bytes%4, std::ios::cur);
+						}
+					}
+				}
+				else {
+					Byte bitmask = (1 << bpp) - 1;
+					bitmask = bitmask << (8-bpp);
+					for(int y = ys; y!=ye; y += yc) {
+						int bytes = 0;
+						int bits  = 0;
+						Byte v = 0;
+						for(int x=0; x<width; x++) {
+							int ind;
+							if(bits == 0) {
+								v = ReadUInt8(file);
+								bits = 8;
+								bytes++;
+							}
+
+							ind = (v&bitmask)>>(8-bpp);
+							if(ind >= colorsused)
+								continue;
+
+							auto col = palette[ind];
+							
+							if(grayscalepalette) {
+								this->operator ()({x, y}, 0) = col.R;
+
+								if(alpha)
+									this->operator ()({x, y}, 1) = col.A;
+							}
+							else {
+								this->operator ()({x, y}, 0) = col.R;
+								this->operator ()({x, y}, 1) = col.G;
+								this->operator ()({x, y}, 2) = col.B;
+
+								if(alpha)
+									this->operator ()({x, y}, 3) = col.A;
+							}
+
+							v = v<<bpp;
+							bits -= bpp;
+						}
+
+						if(bytes%4) {
+							file.seekg(4-bytes%4, std::ios::cur);
+						}
+					}
+				}
+
+				return true;
 			}
 
 			/// Provides access to the given component in x and y coordinates. This

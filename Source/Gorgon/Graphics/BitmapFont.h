@@ -95,11 +95,11 @@ namespace Gorgon { namespace Graphics {
 		/// todo
 		virtual float KerningDistance(Glyph chr1, Glyph chr2) const override { return spacing; }
          
-        virtual int MaxWidth() const override { return maxwidth; }
+        virtual int GetMaxWidth() const override { return maxwidth; }
         
-        virtual int LineHeight() const override { return lineheight; }
+        virtual int GetLineHeight() const override { return lineheight; }
         
-		virtual int BaseLine() const override { return baseline; }
+		virtual int GetBaseLine() const override { return baseline; }
 
 		/// Changes the line height of the font.
 		void SetLineHeight(int value) { lineheight = value; }
@@ -130,7 +130,7 @@ namespace Gorgon { namespace Graphics {
 		/// naming is set, any additional text after the number or character is ignored.
 		/// If prepare is set to false, maxwidth and lineheight will not be set properly.
         int ImportFolder(const std::string &path, ImportNamingTemplate naming = Automatic, int start = 0, 
-						 std::string prefix = "", int baseline = -1, bool trim = false, bool converttoalpha = false, 
+						 std::string prefix = "", int baseline = -1, bool trim = true, bool converttoalpha = true, 
 						 bool prepare = true);
        
     protected:

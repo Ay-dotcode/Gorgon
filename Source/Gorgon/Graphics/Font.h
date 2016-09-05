@@ -43,15 +43,15 @@ namespace Gorgon { namespace Graphics {
 		/// rendering.
 		virtual float KerningDistance(Glyph chr1, Glyph chr2) const = 0;
         
-        virtual int MaxWidth() const = 0;
+        virtual int GetMaxWidth() const = 0;
         
         /// Height of glyphs, actual size could be smaller but all glyphs should have the same virtual
         /// height. When drawn on the same y position, all glyphs should line up. Renderer can change
-        /// actual draw location to compansate.
-        virtual int LineHeight() const = 0;
+        /// actual draw location to compensate.
+        virtual int GetLineHeight() const = 0;
         
         /// Baseline point of glyphs from the top.
-        virtual int BaseLine() const = 0;
+        virtual int GetBaseLine() const = 0;
 	};
 
     /**
