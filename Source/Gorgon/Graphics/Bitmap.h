@@ -359,17 +359,17 @@ namespace Gorgon { namespace Graphics {
 		void StripRGB();
 
 		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty portions. Parameters control
-		/// which sides of the image would be trimmed.
+		/// which sides of the image would be trimmed. Trim operation will not be performed on empty images.
 		Geometry::Margins Trim(bool left, bool top, bool right, bool bottom);
 
 		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty portions. Trimming is performed
-		/// to all sides of the image
+		/// to all sides of the image. Trim operation will not be performed on empty images.
 		Geometry::Margins Trim() {
 			return Trim(true, true, true, true);
 		}
 
 		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty portions. Parameters control
-		/// which sides of the image would be trimmed.
+		/// which sides of the image would be trimmed. Trim operation will not be performed on empty images.
 		Geometry::Margins Trim(bool horizontal, bool vertical) {
 			return Trim(horizontal, vertical, horizontal, vertical);
 		}

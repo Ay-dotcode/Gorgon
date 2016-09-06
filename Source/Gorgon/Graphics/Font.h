@@ -83,8 +83,41 @@ namespace Gorgon { namespace Graphics {
             print(target, text, location, align, color);
         }
         
-        //...
+        void Print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, RGBAf color) const {
+            print(target, text, location, TextAlignment::Left, color);
+        }
         
+        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w, TextAlignment align, RGBAf color) const {
+            print(target, text, {location, w, 0.f}, align, color);
+        }
+        
+        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w, RGBAf color) const {
+            print(target, text, {location, w, 0.f}, TextAlignment::Left, color);
+        }
+        
+        void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, TextAlignment align, RGBAf color) const {
+            print(target, text, {Geometry::Pointf(location), float(w), 0.f}, align, color);
+        }
+        
+        void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, RGBAf color) const {
+            print(target, text, {Geometry::Pointf(location), float(w), 0.f}, TextAlignment::Left, color);
+        }
+        
+        void Print(TextureTarget &target, const std::string &text, float x, float y, float w, TextAlignment align, RGBAf color) const {
+            print(target, text, {x, y, w, 0.f}, align, color);
+        }
+        
+        void Print(TextureTarget &target, const std::string &text, float x, float y, float w, RGBAf color) const {
+            print(target, text, {x, y, w, 0.f}, TextAlignment::Left, color);
+        }
+        
+        void Print(TextureTarget &target, const std::string &text, int x, int y, int w, TextAlignment align, RGBAf color) const {
+            print(target, text, {(float)x, (float)y, float(w), 0.f}, align, color);
+        }
+        
+        void Print(TextureTarget &target, const std::string &text, int x, int y, int w, RGBAf color) const {
+            print(target, text, {(float)x, (float)y, float(w), 0.f}, TextAlignment::Left, color);
+        }
         
         virtual Geometry::Size GetSize(const std::string &text) const = 0;
         

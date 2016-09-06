@@ -299,6 +299,8 @@ namespace Gorgon { namespace Graphics {
 
 		if(ret.Total().Area() == 0) return ret;
 
+		if(ret.TotalX() >= data.GetSize().Width || ret.TotalY() >= data.GetSize().Height) return ret;
+
 		Containers::Image img(data.GetSize() - ret.Total(), GetMode());
 
 		int yy=0;

@@ -317,7 +317,7 @@ namespace Gorgon { namespace Graphics {
 		RGBAf(float r, float g, float b, float a=1.f) : R(r), G(g), B(b), A(a) { }
 
 		/// Constructor that sets all color channels to the given value to create a grayscale color. Alpha is set to 1.0f
-		explicit RGBAf(float lum, float a=1.0f) : RGBAf(lum, lum, lum, a) { }
+		RGBAf(float lum, float a=1.0f) : RGBAf(lum, lum, lum, a) { }
 
 		/// Constructor that sets all color channels to the given value to create a grayscale color. Alpha is set to 1.0f
 		explicit RGBAf(double lum, float a=1.0f) : RGBAf((float)lum, (float)lum, (float)lum, a) { }
@@ -347,7 +347,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Converts this color to RGBA without overflow checking
-		operator RGBA() const {
+		explicit operator RGBA() const {
 			return{Byte(R*255), Byte(G*255), Byte(B*255), Byte(A*255)};
 		}
 

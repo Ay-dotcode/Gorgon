@@ -232,7 +232,8 @@ namespace Gorgon { namespace Graphics {
 
 			if(trim) {
 				auto res = p.second.Trim();
-				bl -= res.Top;
+				if(res.Top != p.second.GetSize().Height)
+					bl -= res.Top;
 			}
 
 			if(HasAlpha(p.second.GetMode()) && toalpha) {
@@ -268,6 +269,18 @@ namespace Gorgon { namespace Graphics {
 		if(trim && spacing==0) spacing = 1;
 
 		lineheight = int(std::ceil(maxh * 1.2));
+
+		if(start > 0 && glyphmap.size()) {
+			if(glyphmap.count(127)) {
+				glyphmap[0] = glyphmap[127];
+			}
+			else if(glyphmap.count('?')) {
+				glyphmap[0] = glyphmap['?'];
+			}
+			else {
+				glyphmap[0] = glyphmap.begin()->second;
+			}
+		}
 
         return files.GetSize();
     }

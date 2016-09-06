@@ -93,7 +93,7 @@ namespace Gorgon { namespace Graphics {
 		virtual bool IsFixedWidth() const override { return isfixedw; }
 		
 		/// todo
-		virtual float KerningDistance(Glyph chr1, Glyph chr2) const override { return spacing; }
+		virtual float KerningDistance(Glyph chr1, Glyph chr2) const override { if(chr1 == ' ' || chr2 == ' ') return 0; else return spacing; }
          
         virtual int GetMaxWidth() const override { return maxwidth; }
         
