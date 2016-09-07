@@ -67,10 +67,12 @@ namespace Gorgon { namespace Graphics {
         /// Ownership of bitmap is not transferred.
         void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, float baseline = 0);
         
-        /// Converts invidual glyphs to a single atlas. Only the glyphs that are registered as bitmaps can be packed.
+        /// Converts individual glyphs to a single atlas. Only the glyphs that are registered as bitmaps can be packed.
         /// This function will automatically detect types and act accordingly. If the ownership of the packed images
-        /// belong to the font or deleteold parameter is set, they will be deleted automatically.
-        void Pack(bool deleteold = false);
+        /// belong to the font or deleteold parameter is set, they will be deleted automatically. If tight packing is
+		/// set, glyphs will be placed next to each other, saving space. However, if resized, they will have 
+		/// artifacts.
+        void Pack(bool tight = false, bool deleteold = false);
         
         virtual Geometry::Size GetSize(const std::string & text) const override { return renderer->GetSize(text); }
         

@@ -2,22 +2,46 @@
 #include <Gorgon/Utils/Assert.h>
 
 namespace Gorgon { namespace Graphics {
+	Glyph decode(std::string::const_iterator &it) {
+		Byte b = *it;
+		if(b < 127)
+			return b;
 
+		if((b & 0b11100000) == 0b11000000) {
+			++it;
+			Byte b2 = *it;
+			return ((b & 0b11111) << 6) + (b2 & 0xb111111);
+		}
+
+		if((b & 0b11110000) == 0b11100000) {
+			++it;
+			Byte b2 = *it;
+			++it;
+			Byte b3 = *it;
+
+			return ((b & 0b1111) << 12) + ((b2 & 0b111111) << 6) + (b3 & 0b111111);
+		}
+
+		if((b & 0b11111000) == 0b11110000) {
+			++it;
+			Byte b2 = *it;
+			++it;
+			Byte b3 = *it;
+			++it;
+			Byte b4 = *it;
+
+			return ((b & 0b1111) << 18) + ((b2 & 0b111111) << 12) + ((b3 & 0b111111) << 6) + (b4 & 0b111111);
+		}
+
+		return 0xfffd;
+	}
 
     void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Pointf location, RGBAf color) const { 
         auto cur = location;
 		Glyph prev = 0;
         
         for(auto it=text.begin(); it!=text.end(); ++it) {
-            Byte b = *it;
-            Glyph g;
-            
-            if(b<127) { //ASCII
-                g = b;
-            }
-            else {
-                Utils::NotImplemented("Unicode support is not yet implemented.");
-            }
+            Glyph g = decode(it);
 
 			if(prev) {
 				auto dist = renderer->KerningDistance(prev, g);
@@ -105,18 +129,10 @@ namespace Gorgon { namespace Graphics {
 		};
 
 		for(auto it=text.begin(); it!=text.end(); ++it) {
-			Byte b = *it;
-			Glyph g;
+			Glyph g = decode(it);
 
 			bool nl = false;
 			bool rollback = false;
-
-			if(b<127) { //ASCII
-				g = b;
-			}
-			else {
-				Utils::NotImplemented("Unicode support is not yet implemented.");
-			}
 
 			if(prev) {
 				auto dist = renderer->KerningDistance(prev, g);
@@ -191,15 +207,7 @@ namespace Gorgon { namespace Graphics {
         auto lh = renderer->GetLineHeight();
         
         for(auto it=text.begin(); it!=text.end(); ++it) {
-            Byte b = *it;
-            Glyph g;
-            
-            if(b<127) { //ASCII
-                g = b;
-            }
-            else {
-                Utils::NotImplemented("Unicode support is not yet implemented.");
-            }
+            Glyph g = decode(it);
 
 			if(prev) {
 				auto dist = renderer->KerningDistance(prev, g);

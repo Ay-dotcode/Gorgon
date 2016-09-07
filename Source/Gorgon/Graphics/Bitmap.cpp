@@ -208,7 +208,7 @@ namespace Gorgon { namespace Graphics {
 		Assume(img);
 	}
 
-    std::vector<Geometry::Bounds> Bitmap::CreateLinearAtlas(Containers::Collection<const Bitmap> list) {
+    std::vector<Geometry::Bounds> Bitmap::CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargins margins) {
         std::vector<Geometry::Bounds> ret;
         std::map<const Bitmap *, Geometry::Bounds> mapping;
         
@@ -216,17 +216,23 @@ namespace Gorgon { namespace Graphics {
         
         if(N == 0) return ret;
         if(N == 1) return {Geometry::Bounds(0, 0, list[0].GetSize())};
-        
+
+		int marginwidth = 0;
+
+		if(margins == Zero) {
+			marginwidth = 1;
+		}
+
         auto mode = list[0].GetMode();
         
-        int minw = list[0].GetWidth();
+        int minw = list[0].GetWidth() + marginwidth;
         
         std::vector<const Bitmap *> ordering;
         for(auto &bmp : list) {
             ordering.push_back(&bmp);
             
-            if(minw > bmp.GetWidth()) 
-                minw = bmp.GetWidth();
+            if(minw > bmp.GetWidth() + marginwidth)
+                minw = bmp.GetWidth() + marginwidth;
         }
         
         //first height based, so the items with similar heights would be next to each other
@@ -239,31 +245,39 @@ namespace Gorgon { namespace Graphics {
                 return l.GetHeight() > r.GetHeight();
         });
         
-        int totalw = std::accumulate(list.begin(), list.end(), 0, [](int l, const Bitmap &r) {
-            return l + r.GetWidth();
+        int totalw = std::accumulate(list.begin(), list.end(), 0, [margins](int l, const Bitmap &r) {
+            return l + r.GetWidth() + (margins == Zero ? 1 : 0);
         });
         
         int avgw = (int)std::ceil(float(totalw) / N);
         
         // average line height would be skewed towards high
         int avgh = list[int(N*2/3)].GetHeight();
+		if(margins == Zero)
+			avgh += 1;
         
-        int lines = std::round(std::sqrt(float(N)/avgh*avgw));
+        int lines = (int)std::round(std::sqrt(float(N)/avgh*avgw));
         
         int x = 0, y = 0, maxy = 0;
         int w = (int)std::ceil((float)totalw/lines);
         w += minw;
         int maxx = 0;
+
+		
+		if(margins == Zero) {
+			x = marginwidth;
+			y = marginwidth;
+		}
         
         //build positions
         for(int i=0; i<N; i++) {
             auto &bmp = *list.Last();
-            if(x + bmp.GetWidth() < w) {
+            if(x + bmp.GetWidth() + marginwidth < w) {
                 auto size = bmp.GetSize();
                 
                 mapping[&bmp] = {x, y, size};
                 
-                x += size.Width;
+                x += size.Width + marginwidth;
                 
                 if(size.Height > maxy) maxy = size.Height;
                 
@@ -274,7 +288,7 @@ namespace Gorgon { namespace Graphics {
                 
                 if(w - x > minw) { //search to find a smaller image
                     
-                    int maxw = w - x - 1;
+                    int maxw = w - x - 1 - marginwidth;
                     
                     for(auto it = list.Last(); it.IsValid(); it.Previous()) {
                         auto size = it->GetSize();
@@ -282,7 +296,7 @@ namespace Gorgon { namespace Graphics {
                         if(size.Width <= maxw) {
                             mapping[it.CurrentPtr()] = {x, y, size};
                             
-                            x += size.Width;
+                            x += size.Width + marginwidth;
                             
                             if(size.Height > maxy) maxy = size.Height;
                             
@@ -295,12 +309,16 @@ namespace Gorgon { namespace Graphics {
                 }
                 
                 if(!found) { //too small
-                    y += maxy;
+                    y += maxy + marginwidth;
                     maxy = 0;
                     
                     if(maxx < x) maxx = x;
                     
-                    x = 0;
+					if(margins == Zero)
+						x = 1;
+					else
+						x = 0;
+
                     i--;
                 }
             }
@@ -310,7 +328,11 @@ namespace Gorgon { namespace Graphics {
             y += maxy;
         }
         
-        Resize({maxx, y}, mode);
+        Resize({maxx, y + marginwidth}, mode);
+
+		if(margins == Zero) {
+			data->Clean();
+		}
         
         //channel count
         int C = GetBytesPerPixel();
@@ -334,6 +356,8 @@ namespace Gorgon { namespace Graphics {
         for(int i=0; i<N; i++) {
             ret.push_back(mapping[ordering[i]]);
         }
+
+		//ExportPNG("atlas.png");
         
         return ret;
     }

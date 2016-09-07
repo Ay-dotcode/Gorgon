@@ -19,6 +19,20 @@ namespace Gorgon { namespace Graphics {
 	{
 	public:
 
+		enum AtlasMargins {
+			/// Atlas will be tight packed
+			None, 
+
+			/// If there is transparency, transparent, otherwise black borders
+			Zero,
+
+			/// Repeats the last pixel
+			Repeat,
+
+			/// Wraps to the other side
+			Wrap
+		};
+
 		/// Default constructor will create an empty bitmap
 		Bitmap() {
 
@@ -391,8 +405,9 @@ namespace Gorgon { namespace Graphics {
 
 		/// Assumes all image heights are similar and all images have same color mode. If there is colormode problem, this function
 		/// will throw. You can either have duplicate or move your collection to this function as it needs to modify the collection
-		/// on the run. Moving would be more efficient.
-		std::vector<Geometry::Bounds> CreateLinearAtlas(Containers::Collection<const Bitmap> list);
+		/// on the run. Moving would be more efficient. Margins can be useful if the images would be drawn resized. Unless a margin
+		/// correction method is selected, textures will bleed into each other. Currently only None and Empty modes are supported.
+		std::vector<Geometry::Bounds> CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargins margins = None);
 
 		/// Creates images from the given atlas image and map. Prepares every image as well. This requires image to be prepared.
         /// Texture images can be passed around as value, but it is best to avoid that.

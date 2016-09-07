@@ -286,7 +286,7 @@ namespace Gorgon { namespace Graphics {
     }
 
 
-    void BitmapFont::Pack(bool delold) { 
+    void BitmapFont::Pack(bool tight, bool delold) { 
         Containers::Collection<const Bitmap> bitmaps;
         std::vector<std::pair<Glyph, int>> packing;
         
@@ -302,7 +302,7 @@ namespace Gorgon { namespace Graphics {
         
         auto &bmp = *new Bitmap;
         destroylist.Push(bmp);
-        auto list = bmp.CreateLinearAtlas(std::move(bitmaps));
+        auto list = bmp.CreateLinearAtlas(std::move(bitmaps), tight ? Bitmap::None : Bitmap::Zero);
         bmp.Prepare();
         auto newimgs = bmp.CreateAtlasImages(std::move(list));
         
