@@ -155,7 +155,8 @@ namespace Gorgon { namespace Graphics {
 		ASSERT(GetMode()==Graphics::ColorMode::RGB				|| 
 			   GetMode()==Graphics::ColorMode::RGB				|| 
 			   GetMode()==Graphics::ColorMode::Grayscale		||
-			   GetMode()==Graphics::ColorMode::Grayscale_Alpha, 
+			   GetMode()==Graphics::ColorMode::Grayscale_Alpha  ||
+			   GetMode()==Graphics::ColorMode::Alpha,
 			   "Unsupported color mode");
 
 		std::ofstream file(filename, std::ios::binary);
@@ -357,7 +358,7 @@ namespace Gorgon { namespace Graphics {
             ret.push_back(mapping[ordering[i]]);
         }
 
-		//ExportPNG("atlas.png");
+		ExportPNG("atlas.png");
         
         return ret;
     }

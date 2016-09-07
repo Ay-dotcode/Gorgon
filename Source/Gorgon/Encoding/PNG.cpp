@@ -212,6 +212,9 @@ namespace Gorgon { namespace Encoding {
 			case Graphics::ColorMode::Grayscale_Alpha:
 				pngcolormode=PNG_COLOR_TYPE_GRAY_ALPHA;
 				break;
+			case Graphics::ColorMode::Alpha:
+				pngcolormode=PNG_COLOR_TYPE_GRAY_ALPHA;
+				break;
 			case Graphics::ColorMode::Grayscale:
 				pngcolormode=PNG_COLOR_TYPE_GRAY;
 				break;
@@ -225,10 +228,30 @@ namespace Gorgon { namespace Encoding {
 
 
 			png_write_info(png_ptr, info_ptr);
-			int stride=buffer.GetSize().Width*buffer.GetBytesPerPixel();
-			for(int i=0; i<buffer.GetSize().Height; i++) {
-				png_write_row(png_ptr, buffer.RawData()+i*stride);
+
+			if(buffer.GetMode() == Graphics::ColorMode::Alpha) {
+				//expand to gray_alpha
+				std::unique_ptr<Byte[]> p(new Byte[buffer.GetTotalSize()*2]);
+
+				auto total = buffer.GetTotalSize();
+				auto raw = buffer.RawData();
+				for(unsigned long i=0; i<total; i++) {
+					p[i*2] = 0xff;
+					p[i*2 + 1] = raw[i];
+				}
+
+				int stride=buffer.GetSize().Width*2;
+				for(int i=0; i<buffer.GetSize().Height; i++) {
+					png_write_row(png_ptr, &p[i*stride]);
+				}
 			}
+			else {
+				int stride=buffer.GetSize().Width*buffer.GetBytesPerPixel();
+				for(int i=0; i<buffer.GetSize().Height; i++) {
+					png_write_row(png_ptr, buffer.RawData()+i*stride);
+				}
+			}
+
 			png_write_end(png_ptr, NULL);
 
 			png_destroy_write_struct(&png_ptr, &info_ptr);
