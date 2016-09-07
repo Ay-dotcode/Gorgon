@@ -358,7 +358,7 @@ namespace Gorgon { namespace Graphics {
             ret.push_back(mapping[ordering[i]]);
         }
 
-		ExportPNG("atlas.png");
+		//ExportPNG("atlas.png");
         
         return ret;
     }

@@ -1,4 +1,5 @@
 #include <cstring>
+#include <cstdlib>
 #include "Environment.h"
 
 #include "../Audio.h"
@@ -12,7 +13,10 @@
 #	include "WASAPI.inc.h"
 #endif
 
-namespace Gorgon { namespace Audio {
+namespace Gorgon { 
+	extern bool exiting;
+
+namespace Audio {
 	
 	Utils::Logger Log("Audio");
 	
@@ -29,6 +33,12 @@ namespace Gorgon { namespace Audio {
 		
 		float mastervolume = 1;
 		std::vector<float> volume = {1.f, 1.f};
+
+		void exitfn() {
+			exiting = true;
+
+			audiothread.join();
+		}
 	}
 	
 	void SetVolume(float volume) {
@@ -65,6 +75,7 @@ namespace Gorgon { namespace Audio {
 	
 	void AudioLoop() {
 		Log << "Audio loop started";
+		std::atexit(&internal::exitfn);
 
 		int   freq 		   = Current.GetSampleRate();
 		float secpersample = 1.0f / freq;
@@ -83,7 +94,7 @@ namespace Gorgon { namespace Audio {
 
 		//std::ofstream test("test.csv");
 		
-		while(true) {
+		while(!exiting) {
 			int maxsize, size;
 
 			maxsize = GetWritableSize(channels);

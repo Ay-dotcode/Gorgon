@@ -20,6 +20,8 @@ namespace Gorgon {
 	
 	Event<> BeforeFrameEvent;
 
+	bool exiting = false;
+
 	namespace internal {
 		std::string systemname;
 	}
