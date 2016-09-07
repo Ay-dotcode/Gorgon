@@ -16,6 +16,7 @@ namespace Gorgon { namespace Graphics {
 	/// to the given texture target
 	class Drawable {
 	public:
+        virtual ~Drawable() { }
 
 		/// Draw to the given coordinates
 		void Draw(TextureTarget &target, int x, int y, RGBAf color = RGBAf(1.f)) const {
@@ -46,6 +47,7 @@ namespace Gorgon { namespace Graphics {
 	/// A drawable object that does not have a size and requires a region to draw.
 	class SizelessDrawable {
 	public:
+       virtual ~SizelessDrawable() { }
 
 		/// Draw to the given area
 		void DrawIn(TextureTarget &target, int x, int y, int w, int h, RGBAf color = RGBAf(1.f)) const {

@@ -228,11 +228,11 @@ namespace Gorgon { namespace Graphics {
 		for(auto p : files) {
 			auto bl = baseline;
 
-			auto h = p.second.GetSize().Height;
+			auto h = p.second.GetHeight();
 
 			if(trim) {
 				auto res = p.second.Trim();
-				if(res.Top != p.second.GetSize().Height)
+				if(res.Top != p.second.GetHeight())
 					bl -= res.Top;
 			}
 
@@ -283,6 +283,42 @@ namespace Gorgon { namespace Graphics {
 		}
 
         return files.GetSize();
+    }
+
+
+    void BitmapFont::Pack(bool delold) { 
+        Containers::Collection<const Bitmap> bitmaps;
+        std::vector<std::pair<Glyph, int>> packing;
+        
+        for(auto &p : glyphmap) {
+            auto bmp = dynamic_cast<const Bitmap*>(p.second.image);
+            
+            if(bmp) {
+                bitmaps.Add(bmp);
+                // if an image is repeated twice, collection push won't add it second time
+                packing.push_back(std::make_pair(p.first, bitmaps.FindLocation(bmp)));
+            }
+        }
+        
+        auto &bmp = *new Bitmap;
+        destroylist.Push(bmp);
+        auto list = bmp.CreateLinearAtlas(std::move(bitmaps));
+        bmp.Prepare();
+        auto newimgs = bmp.CreateAtlasImages(std::move(list));
+        
+        for(auto g : packing) {
+            auto im = glyphmap[g.first].image;
+            auto it = destroylist.Find(im);
+            
+            if(it.IsValid())
+                it.Delete();
+            else if(delold)
+                delete im;
+            
+            auto tex = new TextureImage(std::move(newimgs[g.second]));
+            destroylist.Add(tex);
+            glyphmap[g.first].image = tex;
+        }
     }
 
 } }

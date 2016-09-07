@@ -284,6 +284,10 @@ namespace Gorgon { namespace Graphics {
 				return{0, 0};
 			}
 		}
+		
+		int GetWidth() const { return GetSize().Width; }
+		
+		int GetHeight() const { return GetSize().Height; }
 
 		/// This function prepares image for drawing
 		virtual void Prepare();
@@ -385,15 +389,18 @@ namespace Gorgon { namespace Graphics {
             data->Clean();
         }
 
-		/// Assumes all image heights are similar and all images have same color mode
-		std::vector<Geometry::Bounds> CreateLinearAtlas(const Containers::Collection<Bitmap> &list);
+		/// Assumes all image heights are similar and all images have same color mode. If there is colormode problem, this function
+		/// will throw. You can either have duplicate or move your collection to this function as it needs to modify the collection
+		/// on the run. Moving would be more efficient.
+		std::vector<Geometry::Bounds> CreateLinearAtlas(Containers::Collection<const Bitmap> list);
 
-		/// Creates images from the given atlas image and map. Prepares every image as well. This requires image to be prepared
-		Containers::Collection<Bitmap> CreateAtlasImages(const std::vector<Geometry::Bounds> &boundaries) const;
+		/// Creates images from the given atlas image and map. Prepares every image as well. This requires image to be prepared.
+        /// Texture images can be passed around as value, but it is best to avoid that.
+		std::vector<TextureImage> CreateAtlasImages(std::vector<Geometry::Bounds> boundaries) const;
 
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.
-		virtual bool Progress(unsigned &leftover) override { return true; }
+		virtual bool Progress(unsigned &) override { return true; }
 		
 		using Texture::GetImageSize;
 

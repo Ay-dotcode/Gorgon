@@ -530,6 +530,16 @@ namespace Gorgon {
 				return size;
 			}
 
+			/// Returns the width of the image
+			int GetWidth() const {
+				return size.Width;
+			}
+
+			/// Returns the height of the image
+			int GetHeight() const {
+				return size.Height;
+			}
+
 			/// Total size of this image in bytes
 			unsigned long GetTotalSize() const {
 				return size.Area()*bpp;

@@ -97,7 +97,7 @@ namespace Gorgon { namespace Graphics {
 			Destroy();
 
 			this->id=id;
-			this->size=size;
+			this->size=location.GetSize();
             this->mode=mode;
 
 			coordinates[0] ={float(location.Left)/size.Width, float(location.Top)/size.Height};
@@ -180,15 +180,17 @@ namespace Gorgon { namespace Graphics {
 			id=other.id;
 			size=other.size;
 			owner=other.owner;
+            mode=other.mode;
 			memcpy(coordinates, other.coordinates, sizeof(coordinates));
 			other.owner=false;
+            other.id = 0;
 		}
 
 		/// Regular, full texture constructor
 		TextureImage(GL::Texture id, ColorMode mode, const Geometry::Size &size) : Texture(id, mode, size) {
 		}
 
-		/// Atlas constructor, specifies a region of the texture
+		/// Atlas constructor, specifies a region of the texture, size is for the entirity of the texture
 		TextureImage(GL::Texture id, ColorMode mode, const Geometry::Size &size, const Geometry::Bounds &location) : Texture(id, mode, size, location) {
 		}
 
