@@ -63,59 +63,59 @@ namespace Gorgon { namespace Graphics {
     public:
         virtual ~TextRenderer() { }
         
-        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color = 1.f) const {
             print(target, text, location, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, Geometry::Point location, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, Geometry::Point location, RGBAf color = 1.f) const {
             print(target, text, (Geometry::Pointf)location, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, int x, int y, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, int x, int y, RGBAf color = 1.f) const {
             print(target, text, {(float)x, (float)y}, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, float x, float y, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, float x, float y, RGBAf color = 1.f) const {
             print(target, text, {x, y}, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color = 1.f) const {
             print(target, text, location, align, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, RGBAf color = 1.f) const {
             print(target, text, location, TextAlignment::Left, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w, TextAlignment align, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w, TextAlignment align, RGBAf color = 1.f) const {
             print(target, text, {location, w, 0.f}, align, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w, RGBAf color = 1.f) const {
             print(target, text, {location, w, 0.f}, TextAlignment::Left, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, TextAlignment align, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, TextAlignment align, RGBAf color = 1.f) const {
             print(target, text, {Geometry::Pointf(location), float(w), 0.f}, align, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, RGBAf color = 1.f) const {
             print(target, text, {Geometry::Pointf(location), float(w), 0.f}, TextAlignment::Left, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, float x, float y, float w, TextAlignment align, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, float x, float y, float w, TextAlignment align, RGBAf color = 1.f) const {
             print(target, text, {x, y, w, 0.f}, align, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, float x, float y, float w, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, float x, float y, float w, RGBAf color = 1.f) const {
             print(target, text, {x, y, w, 0.f}, TextAlignment::Left, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, int x, int y, int w, TextAlignment align, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, int x, int y, int w, TextAlignment align, RGBAf color = 1.f) const {
             print(target, text, {(float)x, (float)y, float(w), 0.f}, align, color);
         }
         
-        void Print(TextureTarget &target, const std::string &text, int x, int y, int w, RGBAf color) const {
+        void Print(TextureTarget &target, const std::string &text, int x, int y, int w, RGBAf color = 1.f) const {
             print(target, text, {(float)x, (float)y, float(w), 0.f}, TextAlignment::Left, color);
         }
         

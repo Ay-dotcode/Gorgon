@@ -81,6 +81,10 @@ try {
         
         if(ifile.eof()) break;
     }
+
+	ifile.close();
+
+	wave.ExportWav("test.wav", 8);
     
 	Containers::Wave wave2;
     std::cout<<"Load file: "<<wave2.ImportWav("test.wav")<<std::endl;

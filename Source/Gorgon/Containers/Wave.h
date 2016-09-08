@@ -467,10 +467,10 @@ namespace Gorgon {
                 
                 if(!file.is_open()) return false;
 
-				return ImportWav(file);
+				return ImportWav(file, std::move(channels));
 			}
 
-			bool ImportWav(std::istream &file) {
+			bool ImportWav(std::istream &file, std::vector<Audio::Channel> channels = {}) {
                 
                 if(IO::ReadString(file, 4) != "RIFF") return false;
                 
@@ -533,10 +533,73 @@ namespace Gorgon {
                 }
                 
                 if((long)file.tellg() != target) return false;
+
+				this->channels = std::move(channels);
                 
                 return true;
             }
-			
+
+			/// Exports a PCM based wav file. Bits can be 8 or 16
+			bool ExportWav(const std::string &filename, int bits = 16) {
+				std::ofstream file(filename, std::ios::binary);
+
+				if(!file.is_open()) return false;
+
+				return ExportWav(file, bits);
+			}
+
+			/// Exports a PCM based wav file. Bits can be 8 or 16
+			bool ExportWav(std::ostream &file, int bits = 16) {
+				using namespace IO;
+
+				int hs = 44, ds;
+				if(bits == 8) {
+					ds = GetSize() * GetChannelCount();
+				}
+				else if(bits == 16) {
+					ds = GetSize() * GetChannelCount() * 2;
+				}
+				else {
+					throw std::runtime_error("Invalid number of bits for wav file");
+				}
+
+				WriteString(file, "RIFF");
+				WriteInt32(file, hs+ds-8);
+
+				WriteString(file, "WAVEfmt ");
+				WriteInt32(file, 16);
+				WriteInt16(file, 1);
+
+				WriteInt16(file, GetChannelCount());
+				WriteInt32(file, GetSampleRate());
+				WriteInt32(file, GetSampleRate() * bits * GetChannelCount() / 8);
+				WriteInt16(file, bits * GetChannelCount());
+				WriteInt16(file, bits);
+
+				WriteString(file, "data");
+				WriteInt32(file, ds);
+
+				float *ptr = data;
+				float *end = data + GetChannelCount() * GetSize();
+				if(bits == 8) {
+					while(ptr<end) {
+						WriteUInt8(file, (Byte)std::round((((*ptr) + 1) / 2) * 255) );
+
+						++ptr;
+					}
+				}
+				else {
+					int16_t multiplier = (1<<(bits-1))-1;
+					while(ptr<end) {
+						WriteInt16(file, (int)std::round((*ptr) * multiplier));
+
+						++ptr;
+					}
+				}
+
+				return true;
+			}
+
 			Iterator begin() {
 				return {data, channels.size()};
 			}
