@@ -248,6 +248,31 @@ namespace Gorgon { namespace Graphics {
 			return (*data)(p, component);
 		}
 
+		/// Provides access to the given component in x and y coordinates. This function performs bounds checking 
+		/// only on debug mode. Notice that changing a pixel does not prepare the new data to be drawn, a separate 
+		/// call to Prepare function is necessary.
+		Byte &operator()(int x, int y, unsigned component=0) {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Data is not set");
+			}
+#endif
+
+			return (*data)(x, y, component);
+		}
+
+		/// Provides access to the given component in x and y coordinates. This
+		/// function performs bounds checking only on debug mode.
+		Byte operator()(int x, int y, unsigned component=0) const {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Data is not set");
+			}
+#endif
+
+			return (*data)(x, y, component);
+		}
+
 		/// Provides access to the given component in x and y coordinates. This
 		/// function returns 0 if the given coordinates are out of bounds. This
 		/// function works slower than the () operator.
@@ -272,7 +297,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Returns the color mode of the image
-		Graphics::ColorMode GetMode() const {
+		Graphics::ColorMode GetMode() const override {
 #ifndef NDEBUG
 			if(!data) {
 				throw std::runtime_error("Bitmap data is not set");
@@ -299,8 +324,12 @@ namespace Gorgon { namespace Graphics {
 			}
 		}
 		
+		/// Returns the width of the bitmap. If texture is prepared, the width of the texture is returned
+		/// otherwise width of the bitmap is returned
 		int GetWidth() const { return GetSize().Width; }
 		
+		/// Returns the height of the bitmap. If texture is prepared, the height of the texture is returned
+		/// otherwise height of the bitmap is returned
 		int GetHeight() const { return GetSize().Height; }
 
 		/// This function prepares image for drawing
@@ -391,6 +420,41 @@ namespace Gorgon { namespace Graphics {
 		Geometry::Margins Trim(bool horizontal, bool vertical) {
 			return Trim(horizontal, vertical, horizontal, vertical);
 		}
+		
+		/// Loops through all pixels of the image, giving coordinates to your function.
+		void ForAllPixels(std::function<void(int,int)> fn) {
+            for(int y=0; y<data->GetHeight(); y++) 
+                for(int x=0; x<data->GetWidth(); x++)
+                    fn(x, y);
+        }
+		
+		/// Loops through all pixels of the image, giving coordinates to your function. If you return false, looping will
+		/// stop and the function will return false.
+		bool ForPixels(std::function<bool(int,int)> fn) {
+            for(int y=0; y<data->GetHeight(); y++) 
+                for(int x=0; x<data->GetWidth(); x++)
+                    if(!fn(x, y)) return false;
+                    
+            return true;
+        }
+		
+		/// Loops through all pixels of the image, giving the specified channel value to your function.
+		void ForAllPixels(std::function<void(Byte)> fn, int channel) {
+            for(int y=0; y<data->GetHeight(); y++) 
+                for(int x=0; x<data->GetWidth(); x++)
+                    fn(this->operator()(x, y, channel));
+        }
+		
+		/// Loops through all pixels of the image, giving the specified channel value to your function. If you return false, 
+		/// looping will stop and the function will return false.
+		bool ForPixels(std::function<bool(Byte)> fn, int channel) {
+            for(int y=0; y<data->GetHeight(); y++) 
+                for(int x=0; x<data->GetWidth(); x++)
+                    if(!fn(this->operator()(x, y, channel)))
+                        return false;
+                    
+            return true;
+        }
         
         /// Cleans the contents of the buffer by setting every byte it contains to 0.
         void Clean() {
@@ -418,6 +482,10 @@ namespace Gorgon { namespace Graphics {
 		virtual bool Progress(unsigned &) override { return true; }
 		
 		using Texture::GetImageSize;
+        
+        virtual Geometry::Size getsize() const override {
+            return GetSize();
+        }
 
 		/// Container for the image data, could be null indicating its discarded
 		Containers::Image *data = nullptr;

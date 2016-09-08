@@ -224,11 +224,37 @@ namespace Gorgon { namespace Graphics {
 		int prefixlen = prefix.length();
 
 		int maxh = 0;
+        
+        //width of the space, might need adjusting if trimming
+        int spw = 0;
+        Bitmap *spim = nullptr;
 
 		for(auto p : files) {
 			auto bl = baseline;
 
 			auto h = p.second.GetHeight();
+            
+            Glyph g;
+
+			std::string name = p.first;
+
+			if(prefixlen)
+				name = name.substr(prefixlen);
+            
+			if(naming == Alpha) {
+				g = name[0];
+			}
+			else if(naming == Decimal) {
+				g = (Glyph)String::To<long long>(name) + start;
+			}
+			else {
+				g = (Glyph)String::HexTo<long long>(name) + start;
+			}
+			
+			if(g == ' ') {
+                spw = p.second.GetWidth();
+                spim = &p.second;
+            }
 
 			if(trim) {
 				auto res = p.second.Trim();
@@ -243,20 +269,7 @@ namespace Gorgon { namespace Graphics {
 			if(prepare)
 				p.second.Prepare();
 
-			std::string name = p.first;
-
-			if(prefixlen)
-				name = name.substr(prefixlen);
-
-			if(naming == Alpha) {
-				AddGlyph(name[0], p.second, (float)bl);
-			}
-			else if(naming == Decimal) {
-				AddGlyph((Glyph)String::To<long long>(name) + start, p.second, (float)bl);
-			}
-			else {
-				AddGlyph((Glyph)String::HexTo<long long>(name) + start, p.second, (float)bl);
-			}
+            AddGlyph(g, p.second, (float)bl);
 
 			if(maxh < h)
 				maxh = h;
@@ -267,6 +280,26 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		if(trim && spacing==0) spacing = 1;
+        
+        if(trim && spim && maxwidth == spw) {
+            //check if glyph is empty, if so we can resize it.
+            int alphaloc = AlphaIndex(spim->GetMode());
+            
+            bool isempty = true;
+            
+            if(alphaloc != -1) {
+                isempty = spim->ForPixels(std::bind(std::equal_to<Byte>(), 0, std::placeholders::_1), alphaloc);
+            }
+            else 
+                isempty = false;
+            
+            if(isempty) {
+                spim->Resize({maxwidth/2, 1}, spim->GetMode());
+                spim->Clean();
+                
+                if(prepare) spim->Prepare();
+            }
+        }
 
 		lineheight = int(std::ceil(maxh * 1.2));
 

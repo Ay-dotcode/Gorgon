@@ -525,6 +525,39 @@ namespace Gorgon {
 				return data[bpp*(size.Width*p.Y+p.X)+component];
 			}
 
+			/// Provides access to the given component in x and y coordinates. This
+			/// function performs bounds checking only on debug mode.
+			Byte &operator()(int x, int y, unsigned component=0) {
+#ifndef NDEBUG
+				if(x<0 || y<0 || x>=size.Width || y>=size.Height || component>=bpp) {
+					throw std::runtime_error("Index out of bounds");
+				}
+#endif
+				return data[bpp*(size.Width*y+x)+component];
+			}
+
+			/// Provides access to the given component in x and y coordinates. This
+			/// function performs bounds checking only on debug mode.
+			Byte operator()(int x, int y, unsigned component=0) const {
+#ifndef NDEBUG
+				if(x<0 || y<0 || x>=size.Width || y>=size.Height || component>=bpp) {
+					throw std::runtime_error("Index out of bounds");
+				}
+#endif
+				return data[bpp*(size.Width*y+x)+component];
+			}
+
+			/// Provides access to the given component in x and y coordinates. This
+			/// function returns 0 if the given coordinates are out of bounds. This
+			/// function works slower than the () operator.
+			Byte Get(int x, int y, unsigned component=0) const {
+				if(x<0 || y<0 || x>=size.Width || y>=size.Height || component>=bpp) {
+					return 0;
+				}
+
+				return data[bpp*(size.Width*y+x)+component];
+			}
+
 			/// Returns the size of the image
 			Geometry::Size GetSize() const {
 				return size;

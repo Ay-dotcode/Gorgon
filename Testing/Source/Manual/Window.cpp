@@ -74,7 +74,7 @@ int main() {
 	img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
     Graphics::BitmapFont fnt(12);
-	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, false);
+	fnt.ImportFolder("VictoriaBoldLarge", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, false);
     fnt.Pack();
     
 	fnt.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\ndolor sit amet, consecteturadipiscingelitseddoeiusmodtemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 120, Graphics::TextAlignment::Right, Graphics::RGBAf(1.0f));

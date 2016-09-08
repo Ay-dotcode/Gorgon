@@ -179,7 +179,7 @@ namespace Gorgon { namespace Graphics {
 
 		for(int y=0; y<data.GetHeight(); y++) {
 			for(int x=0; x<data.GetWidth(); x++) {
-				img({x, y}, 0) = data({x, y}, alpha);
+				img(x, y, 0) = data(x, y, alpha);
 			}
 		}
 
@@ -200,7 +200,7 @@ namespace Gorgon { namespace Graphics {
 				int cc = 0;
 				for(int c=0; c<(int)data.GetBytesPerPixel(); c++) {
 					if(c!=alpha) {
-						img({x, y}, cc++) = data({x, y}, c);
+						img(x, y, cc++) = data(x, y, c);
 					}
 				}
 			}
@@ -347,7 +347,7 @@ namespace Gorgon { namespace Graphics {
             for(int y=0; y<b.Height(); y++) {
                 for(int x=0; x<b.Width(); x++) {
                     for(int c=0; c<C; c++) {
-                        (*data)({x+b.Left, y+b.Top}, c) = (*p.first)({x,y}, c);
+                        (*data)(x+b.Left, y+b.Top, c) = (*p.first)(x, y, c);
                     }
                 }
             }
@@ -392,7 +392,7 @@ namespace Gorgon { namespace Graphics {
 				bool empty = true;
 
 				for(int y=0; y<data.GetHeight(); y++) {
-					if(data({x, y}, alpha) != 0) {
+					if(data(x, y, alpha) != 0) {
 						empty = false;
 						break;
 					}
@@ -412,7 +412,7 @@ namespace Gorgon { namespace Graphics {
 				bool empty = true;
 
 				for(int x=0; x<data.GetWidth(); x++) {
-					if(data({x, y}, alpha) != 0) {
+					if(data(x, y, alpha) != 0) {
 						empty = false;
 						break;
 					}
@@ -432,7 +432,7 @@ namespace Gorgon { namespace Graphics {
 				bool empty = true;
 
 				for(int y=0; y<data.GetHeight(); y++) {
-					if(data({x, y}, alpha) != 0) {
+					if(data(x, y, alpha) != 0) {
 						empty = false;
 						break;
 					}
@@ -452,7 +452,7 @@ namespace Gorgon { namespace Graphics {
 				bool empty = true;
 
 				for(int x=0; x<data.GetWidth(); x++) {
-					if(data({x, y}, alpha) != 0) {
+					if(data(x, y, alpha) != 0) {
 						empty = false;
 						break;
 					}
@@ -479,7 +479,7 @@ namespace Gorgon { namespace Graphics {
 			int xx=0;
 			for(int x=ret.Left; x<data.GetWidth() - ret.Right; x++) {
 				for(int c=0; c<(int)data.GetBytesPerPixel(); c++) {
-					img({xx, yy}, c) = data({x, y}, c);
+					img(xx, yy, c) = data(x, y, c);
 				}
 				xx++;
 			}
