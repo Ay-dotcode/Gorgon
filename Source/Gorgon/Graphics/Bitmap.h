@@ -374,9 +374,27 @@ namespace Gorgon { namespace Graphics {
 		bool Import(std::istream &file);
 
 		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
-		/// If image data is already discarded, there is no way to retrieve it.
+		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
+		/// by PNG encoding. PNG encoding allows: RGB, RGBA, Grayscale, Grayscale alpha. Additionally, Alpha only
+		/// images are saved as grayscale alpha.
 		bool ExportPNG(const std::string &filename);
-		
+
+		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
+		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
+		/// by PNG encoding. PNG encoding allows: RGB, RGBA, Grayscale, Grayscale alpha. Additionally, Alpha only
+		/// images are saved as grayscale alpha.
+		bool ExportPNG(std::ostream &out);
+
+		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
+		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
+		/// by PNG encoding. JPG encoding allows: RGB and Grayscale. Quality is between 0 and 100.
+		bool ExportJPG(const std::string &filename, int quality = 90);
+
+		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
+		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
+		/// by PNG encoding. JPG encoding allows: RGB and Grayscale. Quality is between 0 and 100.
+		bool ExportJPG(std::ostream &out, int quality = 90);
+
 		/// Creates the blurred version of this image as a new separate image. This function creates another image since
 		/// it is not possible to apply blur in place. You may use move assignment to modify the original `img = img.Blur(1.2);`
 		/// @param  amount is variance of the blur. This value is measured in pixels however, image will have blurred

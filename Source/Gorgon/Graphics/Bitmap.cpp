@@ -152,12 +152,12 @@ namespace Gorgon { namespace Graphics {
 	bool Bitmap::ExportPNG(const std::string &filename) {
 		ASSERT(data, "Image data does not exists");
 
-		ASSERT(GetMode()==Graphics::ColorMode::RGB				|| 
-			   GetMode()==Graphics::ColorMode::RGB				|| 
-			   GetMode()==Graphics::ColorMode::Grayscale		||
-			   GetMode()==Graphics::ColorMode::Grayscale_Alpha  ||
-			   GetMode()==Graphics::ColorMode::Alpha,
-			   "Unsupported color mode");
+		if(GetMode()!=Graphics::ColorMode::RGB				&&
+		   GetMode()!=Graphics::ColorMode::RGBA				&&
+		   GetMode()!=Graphics::ColorMode::Grayscale		&&
+		   GetMode()!=Graphics::ColorMode::Grayscale_Alpha  &&
+		   GetMode()!=Graphics::ColorMode::Alpha)
+			throw std::runtime_error("Unsupported color mode");
 
 		std::ofstream file(filename, std::ios::binary);
 		if(!file.is_open())
@@ -167,7 +167,56 @@ namespace Gorgon { namespace Graphics {
 
 		return true;
 	}
-	
+
+	bool Bitmap::ExportPNG(std::ostream &out) {
+		ASSERT(data, "Image data does not exists");
+
+		if(GetMode()!=Graphics::ColorMode::RGB				&&
+		   GetMode()!=Graphics::ColorMode::RGBA				&&
+		   GetMode()!=Graphics::ColorMode::Grayscale		&&
+		   GetMode()!=Graphics::ColorMode::Grayscale_Alpha  &&
+		   GetMode()!=Graphics::ColorMode::Alpha)
+			throw std::runtime_error("Unsupported color mode");
+
+		Encoding::Png.Encode(*data, out);
+
+		return true;
+	}
+
+	bool Bitmap::ExportJPG(const std::string &filename, int quality) {
+		ASSERT(data, "Image data does not exists");
+
+		if(GetMode()!=Graphics::ColorMode::RGB &&
+		   GetMode()!=Graphics::ColorMode::Grayscale)
+			throw std::runtime_error("Unsupported color mode");
+		
+		if(quality < 0 || quality > 100)
+			throw std::runtime_error("Unsupported quality");
+
+		std::ofstream file(filename, std::ios::binary);
+		if(!file.is_open())
+			return false;
+
+		Encoding::Jpg.Encode(*data, file, quality);
+
+		return true;
+	}
+
+	bool Bitmap::ExportJPG(std::ostream &out, int quality) {
+		ASSERT(data, "Image data does not exists");
+
+		if(GetMode()!=Graphics::ColorMode::RGB &&
+		   GetMode()!=Graphics::ColorMode::Grayscale)
+			throw std::runtime_error("Unsupported color mode");
+
+		if(quality < 0 || quality > 100)
+			throw std::runtime_error("Unsupported quality");
+
+		Encoding::Jpg.Encode(*data, out, quality);
+
+		return true;
+	}
+
 	void Bitmap::StripRGB() {
 		ASSERT(HasAlpha(GetMode()), "Unsupported color mode");
 
