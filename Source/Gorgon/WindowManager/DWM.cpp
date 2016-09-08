@@ -55,7 +55,6 @@ namespace Gorgon {
 					case WM_ERASEBKGND:
 						return true;
 
-
 					case WM_CLOSE: {
 						bool allow;
 						allow=true;
@@ -601,8 +600,16 @@ namespace Gorgon {
 	}
 
 	void Window::processmessages() {
+		POINT p;
+		HWND handle;
+
+		GetCursorPos(&p);
+
+		handle=WindowFromPoint(p);
+
 		mouselocation = WindowManager::GetMousePosition(data);
-		mouse_location();
+		if(handle == data->handle)
+			mouse_location();
 	}
 
 	void Window::createglcontext() {

@@ -238,6 +238,8 @@ namespace Gorgon {
         
         MouseHandler down;
         MouseHandler over;
+        
+        bool cursorover = false;
 
 		Geometry::Point mousedownlocation = {-1, -1};
         Geometry::Point mouselocation = {-1, -1};

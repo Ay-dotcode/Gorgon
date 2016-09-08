@@ -438,10 +438,10 @@ failsafe: //this should use X11 screen as monitor
             Geometry::Point ret;
             
             int rx,ry;
-            ::Window w;
+            ::Window root, child;
             unsigned mask;
             
-            if(XQueryPointer(display, wind->handle, &w, &w, &rx, &ry, &ret.X, &ret.Y, &mask) == False) {
+            if(XQueryPointer(display, wind->handle, &root, &child, &rx, &ry, &ret.X, &ret.Y, &mask) == False) {
                 ret.X = -1;
                 ret.Y = -1;
             }
@@ -482,6 +482,8 @@ failsafe: //this should use X11 screen as monitor
 					ButtonPressMask |        //mouse
 					ButtonReleaseMask|    
 					FocusChangeMask|         //activate/deactivate
+					EnterWindowMask |
+					LeaveWindowMask |
 					SubstructureRedirectMask //??
 		;
 		
@@ -739,7 +741,8 @@ failsafe: //this should use X11 screen as monitor
 		XEvent event;
         
         mouselocation = WindowManager::GetMousePosition(data);
-        mouse_location();
+        if(cursorover)
+            mouse_location();
 
 		while(XEventsQueued(WindowManager::display, QueuedAfterReading)) {
 			XNextEvent(WindowManager::display, &event);
@@ -761,7 +764,14 @@ failsafe: //this should use X11 screen as monitor
 					}
 				} // Client Message
 				break;
-				
+                
+                case EnterNotify:
+                    cursorover = true;
+                    break;
+                    
+                case LeaveNotify:
+                    cursorover = false;
+                    break;
 					
 				case FocusIn:
 					ActivatedEvent();
