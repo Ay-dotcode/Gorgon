@@ -183,6 +183,18 @@ namespace Gorgon { namespace Graphics {
 		return true;
 	}
 
+	bool Bitmap::ExportBMP(const std::string &filename) {
+		ASSERT(data, "Image data does not exists");
+
+		return data->ExportBMP(filename);
+	}
+
+	bool Bitmap::ExportBMP(std::ostream &out) {
+		ASSERT(data, "Image data does not exists");
+
+		return data->ExportBMP(out);
+	}
+
 	bool Bitmap::ExportJPG(const std::string &filename, int quality) {
 		ASSERT(data, "Image data does not exists");
 

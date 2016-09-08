@@ -291,9 +291,9 @@ namespace Gorgon {
 						bluemask = (uint32_t)ReadUInt32(file);
 					}
 					else if(bpp == 16) {
-						redmask   = 0x7c000000;
-						greenmask = 0x03e00000;
-						bluemask  = 0x001f0000;
+						redmask   = 0x7c00;
+						greenmask = 0x03e0;
+						bluemask  = 0x001f;
 					}
 					else if(bpp == 32) {
 						redmask   = 0x00ff0000;
@@ -381,7 +381,12 @@ namespace Gorgon {
 						Resize({width, height}, Graphics::ColorMode::Grayscale);
 				}
 				else if(alpha) {
-					Resize({width, height}, Graphics::ColorMode::RGBA);
+					if(redmask == 0 && greenmask == 0 && bluemask == 0) {
+						Resize({width, height}, Graphics::ColorMode::Alpha);
+					}
+					else {
+						Resize({width, height}, Graphics::ColorMode::RGBA);
+					}
 				}
 				else {
 					Resize({width, height}, Graphics::ColorMode::RGB);
@@ -423,16 +428,23 @@ namespace Gorgon {
 							uint32_t data;
 							
 							if(bpp == 16)
-								data = ReadUInt16(file) << 16;
+								data = ReadUInt16(file);
 							else
 								data = ReadUInt32(file);
 
-							this->operator ()({x, y}, 0) = (Byte)std::round( ((data&redmask)>>redshift) * redmult ) ;
-							this->operator ()({x, y}, 1) = (Byte)std::round( ((data&greenmask)>>greenshift) * greenmult);
-							this->operator ()({x, y}, 2) = (Byte)std::round( ((data&bluemask)>>blueshift) * bluemult);
+							if(redmask != 0 || greenmask != 0 || bluemask != 0) {
+								this->operator ()({x, y}, 0) = (Byte)std::round(((data&redmask)>>redshift) * redmult);
+								this->operator ()({x, y}, 1) = (Byte)std::round(((data&greenmask)>>greenshift) * greenmult);
+								this->operator ()({x, y}, 2) = (Byte)std::round(((data&bluemask)>>blueshift) * bluemult);
+							}
 
 							if(alpha) {
-								this->operator ()({x, y}, 3) = (Byte)std::round(((data&alphamask)>>alphashift) * alphamult);
+								if(redmask != 0 || greenmask != 0 || bluemask != 0) {
+									this->operator ()({x, y}, 3) = (Byte)std::round(((data&alphamask)>>alphashift) * alphamult);
+								}
+								else {
+									this->operator ()({x, y}, 0) = (Byte)std::round(((data&alphamask)>>alphashift) * alphamult);
+								}
 							}
 							
 							bytes += bpp/8;
@@ -474,9 +486,11 @@ namespace Gorgon {
 								this->operator ()({x, y}, 0) = col.R;
 								this->operator ()({x, y}, 1) = col.G;
 								this->operator ()({x, y}, 2) = col.B;
+								
 
-								if(alpha)
+								if(alpha) {
 									this->operator ()({x, y}, 3) = col.A;
+								}
 							}
 
 							v = v<<bpp;
@@ -487,6 +501,219 @@ namespace Gorgon {
 							file.seekg(4-bytes%4, std::ios::cur);
 						}
 					}
+				}
+
+				return true;
+			}
+
+			/// Exports the image as a bitmap. RGB is exported as 24-bit, RGBA, BGR, BGRA is exported
+			/// as 32-bit, Grayscale exported as 8-bit, Grayscale alpha, alpha only is exported as
+			/// 16-bit
+			bool ExportBMP(const std::string &filename) {
+				std::ofstream file(filename, std::ios::binary);
+
+				if(!file.is_open()) return false;
+
+				return ExportBMP(file);
+			}
+
+			/// Exports the image as a bitmap. RGB is exported as 24-bit, RGBA, BGR, BGRA is exported
+			/// as 32-bit, Grayscale exported as 8-bit, Grayscale alpha, alpha only is exported as
+			/// 16-bit
+			bool ExportBMP(std::ostream &file) {
+				using namespace IO;
+				using Graphics::ColorMode;
+
+				long datasize = 0;
+				long headersize = 0;
+				long extraspace = 0;
+				int bpp = 0;
+				int compression = 0;
+				int stride = 0;
+
+				switch(mode) {
+				case ColorMode::RGB:
+				case ColorMode::BGR:
+					stride = 3 * size.Width;
+					if(stride%4) stride += (4-(stride%4));
+
+					datasize = stride * size.Height;
+
+					headersize = 40;
+					bpp = 24;
+					break;
+
+				case ColorMode::RGBA:
+				case ColorMode::BGRA:
+				case ColorMode::Grayscale_Alpha:
+					stride = 4 * size.Width;
+					if(stride%4) stride += (4-(stride%4));
+
+					datasize = stride * size.Height;
+
+					headersize = 108;
+					bpp = 32;
+					compression = 3;
+					break;
+
+				case ColorMode::Grayscale:
+					stride = size.Width;
+					if(stride%4) stride += (4-(stride%4));
+
+					datasize = stride * size.Height;
+
+					headersize = 40;
+					extraspace = 256 * 4; //palette
+					bpp = 8;
+					break;
+
+				case ColorMode::Alpha:
+					stride = 2 * size.Width;
+					if(stride%4) stride += (4-(stride%4));
+
+					datasize = stride * size.Height;
+
+					headersize = 108;
+					datasize = stride * size.Height;
+					compression = 3;
+					bpp = 16;
+					break;
+
+				default:
+					throw std::runtime_error("Unsupported color mode");
+				}
+
+				
+				//header
+				WriteString(file, "BM");
+				WriteUInt32(file, 14 + headersize + extraspace + datasize);
+				WriteUInt16(file, 0); //reserved 1
+				WriteUInt16(file, 0); //reserved 2
+				WriteUInt32(file, 14 + headersize + extraspace);
+
+				WriteUInt32(file, headersize);
+				WriteInt32 (file, size.Width);
+				WriteInt32 (file, size.Height);
+				WriteUInt16(file, 1);
+				WriteUInt16(file, bpp);
+				WriteUInt32(file, compression);
+				WriteUInt32(file, datasize);
+				WriteInt32 (file, 2834);
+				WriteInt32 (file, 2834);
+				WriteInt32(file, 0); //colors used
+				WriteInt32(file, 0); //colors important
+
+				if(compression == 3) {
+					if(mode == ColorMode::Alpha) {
+						WriteUInt32(file, 0x00000001);
+						WriteUInt32(file, 0x00000002);
+						WriteUInt32(file, 0x00000004);
+					}
+					else if(mode == ColorMode::BGRA) {
+						WriteUInt32(file, 0x00ff0000);
+						WriteUInt32(file, 0x0000ff00);
+						WriteUInt32(file, 0x000000ff);
+					}
+					else {	
+						WriteUInt32(file, 0x000000ff);
+						WriteUInt32(file, 0x0000ff00);
+						WriteUInt32(file, 0x00ff0000);
+					}
+				}
+
+				if(headersize == 108) {
+					if(mode == ColorMode::Alpha) {
+						WriteUInt32(file, 0x0000ff00);
+					}
+					else {
+						WriteUInt32(file, 0xff000000);
+					}
+					WriteUInt32(file, 1); //device dependent RGB
+					for(int i=0; i<12; i++)  //color profile settings, all 0
+						WriteUInt32(file, 0);
+				}
+
+				int ostride;
+				switch(mode) {
+					case ColorMode::RGB:
+						ostride = size.Width*3;
+						for(int y=size.Height-1; y>=0; y--) {
+							WriteArray(file, data+y*ostride, ostride);
+
+							for(int j=0; j<stride-ostride; j++)
+								WriteUInt8(file, 0);
+						}
+						break;
+
+					case ColorMode::BGR:
+						ostride = size.Width*3;
+
+						for(int y=size.Height-1; y>=0; y--) {
+							WriteArray(file, data+y*ostride, ostride);
+
+							for(int j=0; j<stride-ostride; j++)
+								WriteUInt8(file, 0);
+						}
+						break;
+
+
+					case ColorMode::RGBA:
+					case ColorMode::BGRA:
+						ostride = size.Width*4;
+						for(int y=size.Height-1; y>=0; y--) {
+							WriteArray(file, data+y*ostride, ostride);
+						}
+						break;
+
+					case ColorMode::Grayscale:
+						//write palette
+						for(int i=0; i<256; i++) {
+							WriteUInt8(file, (Byte)i);
+							WriteUInt8(file, (Byte)i);
+							WriteUInt8(file, (Byte)i);
+							WriteUInt8(file, 0);
+						}
+
+						//write data
+						ostride = size.Width;
+						for(int y=size.Height-1; y>=0; y--) {
+							WriteArray(file, data+y*ostride, ostride);
+
+							for(int j=0; j<stride-ostride; j++)
+								WriteUInt8(file, 0);
+						}
+
+
+						break;
+						
+					
+					case ColorMode::Grayscale_Alpha:
+						ostride = size.Width*2;
+
+						for(int y=size.Height-1; y>=0; y--) {
+							for(int x=0; x<size.Width; x++) {
+								WriteUInt8(file, data[y*ostride+x*2]);
+								WriteUInt8(file, data[y*ostride+x*2]);
+								WriteUInt8(file, data[y*ostride+x*2]);
+								WriteUInt8(file, data[y*ostride+x*2+1]);
+							}
+						}
+						break;
+
+
+					case ColorMode::Alpha:
+						ostride = size.Width;
+
+						for(int y=size.Height-1; y>=0; y--) {
+							for(int x=0; x<size.Width; x++) {
+								WriteUInt8(file, 0xff);
+								WriteUInt8(file, data[y*ostride+x]);
+							}
+
+							for(int j=0; j<stride-ostride*2; j++)
+								WriteUInt8(file, 0);
+						}
+						break;
 				}
 
 				return true;

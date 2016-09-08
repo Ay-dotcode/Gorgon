@@ -23,10 +23,6 @@ namespace Gorgon { namespace Graphics {
 		/// 24bit red, green, blue color mode that has blue component in the lowest byte order
 		BGR = 16,
 
-		/// 8bit image with color palette. Color palette should have its own color mode. This mode
-		/// is not supported in the system.
-		Paletted = 2,
-
 		/// 8bit gray scale color mode
 		Grayscale = 4,
 
@@ -40,9 +36,6 @@ namespace Gorgon { namespace Graphics {
 		/// alpha is in the highest byte order.
 		BGRA = BGR | Alpha,
 
-		/// 16bit image color mode with a color palette and alpha channel. Alpha channel is in the high byte
-		Paletted_Alpha = Paletted | Alpha,
-
 		/// 16bit gray scale image color mode with an alpha channel. Alpha channel is in the high byte
 		Grayscale_Alpha = Grayscale | Alpha
 	};
@@ -50,11 +43,9 @@ namespace Gorgon { namespace Graphics {
 	/// Returns bytes per pixel for the given color mode
 	inline unsigned long GetBytesPerPixel(ColorMode mode) {
 		switch(mode) {
-		case ColorMode::Paletted:
 		case ColorMode::Grayscale:
 		case ColorMode::Alpha:
 			return 1;
-		case ColorMode::Paletted_Alpha:
 		case ColorMode::Grayscale_Alpha:
 			return 2;
 		case ColorMode::BGR:

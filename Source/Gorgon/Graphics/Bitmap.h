@@ -385,12 +385,24 @@ namespace Gorgon { namespace Graphics {
 		/// images are saved as grayscale alpha.
 		bool ExportPNG(std::ostream &out);
 
-		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
+		/// Exports the data of the image resource to a bitmap file. This function requires image data to be present.
+		/// If image data is already discarded, there is no way to retrieve it. All color modes are supported in BMP,
+		/// however, saving and loading the file may change the color mode. Regardless of this change when drawn,
+		/// bitmap will appear the same on the screen.
+		bool ExportBMP(const std::string &filename);
+
+		/// Exports the data of the image resource to a bitmap file. This function requires image data to be present.
+		/// If image data is already discarded, there is no way to retrieve it. All color modes are supported in BMP,
+		/// however, saving and loading the file may change the color mode. Regardless of this change when drawn,
+		/// bitmap will appear the same on the screen.
+		bool ExportBMP(std::ostream &out);
+
+		/// Exports the data of the image resource to a JPG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
 		/// by PNG encoding. JPG encoding allows: RGB and Grayscale. Quality is between 0 and 100.
 		bool ExportJPG(const std::string &filename, int quality = 90);
 
-		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
+		/// Exports the data of the image resource to a JPG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
 		/// by PNG encoding. JPG encoding allows: RGB and Grayscale. Quality is between 0 and 100.
 		bool ExportJPG(std::ostream &out, int quality = 90);
