@@ -17,7 +17,7 @@ namespace Gorgon { namespace Graphics {
      * it is best to use BitmapFont to construct a new TextRenderer and use the TextRenderer
      * to render the text instead of using BitmapFont itself for the task. 
      */
-    class BitmapFont : public GlyphRenderer, public TextRenderer {
+    class BitmapFont : public GlyphRenderer, public BasicFont {
     public:
         class GlyphDescriptor {
         public:
@@ -42,7 +42,7 @@ namespace Gorgon { namespace Graphics {
             Hexadecimal
         };
         
-        explicit BitmapFont(int baseline = 0) : baseline(baseline) { }
+        explicit BitmapFont(int baseline = 0) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)), baseline(baseline) { }
         
         BitmapFont(const BitmapFont &) = delete;
         
@@ -51,18 +51,9 @@ namespace Gorgon { namespace Graphics {
         BitmapFont &operator =(const BitmapFont &) = delete;
         
         ~BitmapFont() {
-            delete renderer;
 			destroylist.Destroy();
         }
-        
-        /// Changes the renderer to the requested class. You may also use bitmap
-        /// font to create a new TextRender to have more control over it.
-        template<class R_, class ...P_>
-        void ChangeRenderer(P_ &&...params) {
-            delete renderer;
-            renderer = new R_(std::forward<P_>(params)...);
-        }
-        
+                
         /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
         /// Ownership of bitmap is not transferred.
         void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, float baseline = 0);
@@ -73,18 +64,6 @@ namespace Gorgon { namespace Graphics {
 		/// set, glyphs will be placed next to each other, saving space. However, if resized, they will have 
 		/// artifacts.
         void Pack(bool tight = false, bool deleteold = false);
-        
-        virtual Geometry::Size GetSize(const std::string & text) const override { return renderer->GetSize(text); }
-        
-        virtual Geometry::Size GetSize(const std::string & text, float width) const override { return renderer->GetSize(text,width); }
-        
-        virtual int GetCharacterIndex(const std::string &text, Geometry::Pointf location) const override { return renderer->GetCharacterIndex(text, location); }
-        
-        virtual Geometry::Pointf GetPosition(const std::string &text, int index) const override { return renderer->GetPosition(text, index); }
-
-        virtual Geometry::Pointf GetPosition(const std::string &text, float w, int index) const override { return renderer->GetPosition(text, w, index); }
-        
-        virtual int GetCharacterIndex(const std::string &text, float w, Geometry::Pointf location) const override { return renderer->GetCharacterIndex(text, w, location); } 
         
         virtual bool IsASCII() const override {
             return isascii;
@@ -138,15 +117,6 @@ namespace Gorgon { namespace Graphics {
 						 bool prepare = true);
        
     protected:
-        virtual void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const override {
-            renderer->Print(target, text, location, color);
-        }
-        
-        virtual void print(TextureTarget &target, const std::string &text, 
-                           Geometry::Rectanglef location, TextAlignment align, RGBAf color) const override {
-            renderer->Print(target, text, location, align, color);
-        }
-                           
                            
         std::map<Glyph, GlyphDescriptor> glyphmap;
 		Containers::Collection<RectangularDrawable> destroylist;
@@ -162,9 +132,6 @@ namespace Gorgon { namespace Graphics {
         int baseline;
         
         float spacing = 0;
-        
-    private:
-        TextRenderer *renderer = new BasicFont(*this);
     };
     
 } }

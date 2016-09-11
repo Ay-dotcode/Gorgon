@@ -36,7 +36,7 @@ namespace Gorgon { namespace Graphics {
 		return 0xfffd;
 	}
 
-    void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Pointf location, RGBAf color) const { 
+    void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Pointf location, RGBAf color) const {
         auto cur = location;
 		Glyph prev = 0;
         
@@ -59,7 +59,8 @@ namespace Gorgon { namespace Graphics {
             }
             else if(g == '\n') {
                 cur.X = location.X;
-                cur.Y += renderer->GetLineHeight();
+				cur.Y += renderer->GetLineHeight();
+				prev = 0;
             }
             else if(g >= 32) {
                 renderer->Render(g, target, cur, color);
@@ -227,7 +228,8 @@ namespace Gorgon { namespace Graphics {
                 if(maxx < cur.X) maxx = (int)std::round(cur.X);
                 
                 cur.X = 0;
-                cur.Y += lh;
+				cur.Y += lh;
+				prev = 0;
             }
             else if(g >= 32) {
                 cur.X += renderer->GetSize(g).Width;
@@ -238,5 +240,48 @@ namespace Gorgon { namespace Graphics {
         
         return {maxx, (int)std::round(cur.Y + lh)};
     }
+
+	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location) const {
+		if(shadow.type == TextShadow::Flat) {
+			print(target, text, location + shadow.offset, shadow.color);
+		}
+
+		print(target, text, location, color);
+	}
+
+	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const {
+		auto cur = location;
+		Glyph prev = 0;
+
+		//strike through, underline
+
+		for(auto it=text.begin(); it!=text.end(); ++it) {
+			Glyph g = decode(it);
+
+			if(prev) {
+				auto dist = renderer->KerningDistance(prev, g) + hspace;
+				cur.X += dist;
+			}
+
+			prev = g;
+
+			if(g == '\t') {
+				auto stops = tabwidth;
+				cur.X += stops;
+				cur.X /= stops;
+				cur.X = std::floor(cur.X);
+				cur.X *= stops;
+			}
+			else if(g == '\n') {
+				cur.X = location.X;
+				cur.Y += renderer->GetLineHeight() + vspace + pspace;
+				prev = 0;
+			}
+			else if(g >= 32) {
+				renderer->Render(g, target, cur, color);
+				cur.X += renderer->GetSize(g).Width;
+			}
+		}
+	}
 
 } }
