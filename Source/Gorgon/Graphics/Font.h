@@ -9,9 +9,17 @@
 #include "Color.h"
 
 namespace Gorgon { namespace Graphics {
-
 	using Glyph = int32_t;
 	
+    namespace internal {
+        Glyph decode(std::string::const_iterator &it, std::string::const_iterator end);
+        bool isnewline(Glyph g, std::string::const_iterator &it, std::string::const_iterator end);
+        bool isspaced(Glyph g);
+		bool isspace(Glyph g);
+		bool isadjusablespace(Glyph g);
+		bool isbreaking(Glyph g);
+    }
+
 	/**
 	 * Should be implemented by the systems aimed to render fonts on the screen. Glyph renderer
      * should be capable of rendering single glyphs at the screen. These systems should also

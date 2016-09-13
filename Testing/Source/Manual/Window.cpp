@@ -82,7 +82,7 @@ int main() {
 	sty.SetColor({0.5f, 0.8f, 0.8f});
 	
     
-	fnt.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\ndolor sit amet, consecteturadipiscingelitseddoeiusmodtemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 120, Graphics::TextAlignment::Right, Graphics::RGBAf(1.0f));
+	fnt.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""dolor sit amet, consecteturadipiscingelitseddoeiusmodtemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 120, Graphics::TextAlignment::Right, Graphics::RGBAf(1.0f));
 	sty.Print(l, "abcd fgh\n1234 asdf dsgh", 250, 200);
 
 	wind.KeyEvent.Register([](Input::Key key, bool state) {

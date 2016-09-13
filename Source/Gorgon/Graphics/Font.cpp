@@ -2,48 +2,140 @@
 #include <Gorgon/Utils/Assert.h>
 
 namespace Gorgon { namespace Graphics {
-	Glyph decode(std::string::const_iterator &it) {
-		Byte b = *it;
-		if(b < 127)
-			return b;
+	namespace internal {
+		Glyph decode(std::string::const_iterator &it, std::string::const_iterator end) {
+			Byte b = *it;
+			if(b < 127)
+				return b;
+	
+			if((b & 0b11100000) == 0b11000000) {
+				++it;
+                if(it == end) return 0xfffd;
+				Byte b2 = *it;
+				
+                return ((b & 0b11111) << 6) + (b2 & 0xb111111);
+			}
+	
+			if((b & 0b11110000) == 0b11100000) {
+				++it;
+                if(it == end) return 0xfffd;
+                Byte b2 = *it;
+				
+                ++it;
+                if(it == end) return 0xfffd;
+                Byte b3 = *it;
+	
+				return ((b & 0b1111) << 12) + ((b2 & 0b111111) << 6) + (b3 & 0b111111);
+			}
+	
+			if((b & 0b11111000) == 0b11110000) {
+				++it;
+                if(it == end) return 0xfffd;
+				Byte b2 = *it;
 
-		if((b & 0b11100000) == 0b11000000) {
-			++it;
-			Byte b2 = *it;
-			return ((b & 0b11111) << 6) + (b2 & 0xb111111);
+                ++it;
+                if(it == end) return 0xfffd;
+				Byte b3 = *it;
+
+                ++it;
+                if(it == end) return 0xfffd;
+				Byte b4 = *it;
+	
+				return ((b & 0b1111) << 18) + ((b2 & 0b111111) << 12) + ((b3 & 0b111111) << 6) + (b4 & 0b111111);
+			}
+	
+			return 0xfffd;
+		}
+	
+		bool isspaced(Glyph g) {
+			return g > 0x300 && g < 0x3ff;
+		}
+		
+		bool isnewline(Glyph g, std::string::const_iterator &it, std::string::const_iterator end) {
+            if(*it == 0x0d) {
+            }
+            
+            switch(g) {
+            case 0x0d:
+                if(it+1 == end) return true;
+                
+                if(*(it+1) == 0x0a) ++it;
+                return true;
+                
+            case 0x0a: //LF
+            case 0x0b: //VTAB
+            case 0x0c: //FF
+            case 0x85: //NEL
+            case 0x2028: //LS
+            case 0x2029: //PS
+                return true;
+                
+            default:
+                return false;
+            }
+                
+        }
+
+		bool isspace(Glyph g) {
+			if(g>=0x2000 && g<=0x200b)
+				return true;
+
+			switch(g) {
+			case 0x20:
+			case 0xa0:
+			case 0x1680:
+			case 0x202F:
+			case 0x205F:
+			case 0x3000:
+			case 0xfeff:
+				return true;
+
+			default:
+				return false;
+			}
 		}
 
-		if((b & 0b11110000) == 0b11100000) {
-			++it;
-			Byte b2 = *it;
-			++it;
-			Byte b3 = *it;
+		bool isadjusablespace(Glyph g) {
+			switch(g) {
+			case 0x20:
+			case 0xa0:
+			case 0x2002:
+			case 0x2003:
+			case 0x3000:
+				return true;
 
-			return ((b & 0b1111) << 12) + ((b2 & 0b111111) << 6) + (b3 & 0b111111);
+			default:
+				return false;
+			}
 		}
 
-		if((b & 0b11111000) == 0b11110000) {
-			++it;
-			Byte b2 = *it;
-			++it;
-			Byte b3 = *it;
-			++it;
-			Byte b4 = *it;
+		bool isbreaking(Glyph g) {
+			if(g>=0x2000 && g<=0x200b)
+				return true;
 
-			return ((b & 0b1111) << 18) + ((b2 & 0b111111) << 12) + ((b3 & 0b111111) << 6) + (b4 & 0b111111);
+			switch(g) {
+				case 0x20:
+				case 0x1680:
+				case 0x2010:
+				case 0x3000:
+					return true;
+
+				default:
+					return false;
+			}
 		}
-
-		return 0xfffd;
 	}
 
     void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Pointf location, RGBAf color) const {
         auto cur = location;
 		Glyph prev = 0;
         
-        for(auto it=text.begin(); it!=text.end(); ++it) {
-            Glyph g = decode(it);
+        auto end = text.end();
+        
+        for(auto it=text.begin(); it!=end; ++it) {
+            Glyph g = internal::decode(it, end);
 
-			if(prev) {
+			if(prev && internal::isspaced(prev)) {
 				auto dist = renderer->KerningDistance(prev, g);
 				cur.X += dist;
 			}
@@ -57,14 +149,16 @@ namespace Gorgon { namespace Graphics {
                 cur.X = std::floor(cur.X);
                 cur.X *= stops;
             }
-            else if(g == '\n') {
+            else if(internal::isnewline(g, it, end)) {
                 cur.X = location.X;
 				cur.Y += renderer->GetLineHeight();
 				prev = 0;
             }
             else if(g >= 32) {
                 renderer->Render(g, target, cur, color);
-                cur.X += renderer->GetSize(g).Width;
+
+				if(internal::isspaced(g))
+					cur.X += renderer->GetSize(g).Width;
             }
         }
     }
@@ -78,6 +172,7 @@ namespace Gorgon { namespace Graphics {
 		int lastspace = 0;
 
 		float dest = location.Right();
+        auto end = text.end();
 
 		auto donewline = [&](float diff) {
 			int end = lastspace;
@@ -93,9 +188,8 @@ namespace Gorgon { namespace Graphics {
 				for(int i=0; i<end; i++) {
 					pos[i] += m;
 				}
-			}
-
-			if(align == TextAlignment::Right) {
+			} 
+			else if(align == TextAlignment::Right) {
 				float m = (dest - pos[end]);
 
 				for(int i=0; i<end; i++) {
@@ -107,7 +201,7 @@ namespace Gorgon { namespace Graphics {
 				renderer->Render(acc[i], target, {pos[i], cur.Y}, color);
 			}
 
-			if(end+1 == pos.size()) {
+			if(end+1 == pos.size()) { //if we are at the last char
 				cur.X = location.X;
 				acc.clear();
 				pos.clear();
@@ -115,7 +209,9 @@ namespace Gorgon { namespace Graphics {
 			else {
 				float shift;
 				shift = pos[end+1];
-				cur.X -= shift + diff;
+				// pull back start of the line so when the current diff is added, 
+				// it would still be at the start
+				cur.X -= shift + diff; 
 
 				acc.erase(acc.begin(), acc.begin()+end+1);
 				pos.erase(pos.begin(), pos.begin()+end+1);
@@ -129,13 +225,13 @@ namespace Gorgon { namespace Graphics {
 			cur.Y += renderer->GetLineHeight();
 		};
 
-		for(auto it=text.begin(); it!=text.end(); ++it) {
-			Glyph g = decode(it);
+		for(auto it=text.begin(); it!=end; ++it) {
+			Glyph g = internal::decode(it, end);
 
 			bool nl = false;
 			bool rollback = false;
 
-			if(prev) {
+			if(prev && internal::isspaced(prev)) {
 				auto dist = renderer->KerningDistance(prev, g);
 				cur.X += dist;
 			}
@@ -151,7 +247,7 @@ namespace Gorgon { namespace Graphics {
 				cur.X  = std::floor(cur.X);
 				cur.X *= stops;
 			}
-			else if(g == '\n') {
+			else if(internal::isnewline(g, it, end)) {
 				pos.push_back(cx);
 				acc.push_back('\n');
 				lastspace = acc.size() - 1;
@@ -160,11 +256,12 @@ namespace Gorgon { namespace Graphics {
 				continue;
 			}
 			else if(g >= 32) {
-				cur.X += renderer->GetSize(g).Width;
+				if(internal::isspaced(g))
+					cur.X += renderer->GetSize(g).Width;
 			}
 
 			if(location.Width == 0 || cur.X < dest) {
-				if(g == '\t' || g ==' ') {
+				if(g == '\t' || internal::isbreaking(g)) {
 					lastspace = acc.size();
 				}
 
@@ -173,7 +270,7 @@ namespace Gorgon { namespace Graphics {
 			}
 			else {
 				auto diff = cur.X - cx;
-				if(g == '\t' || g ==' ' || lastspace == 0) {
+				if(g == '\t' || internal::isbreaking(g) || lastspace == 0) {
 					pos.push_back(cx);
 					acc.push_back(g);
 					lastspace = acc.size() - 1;
@@ -181,7 +278,7 @@ namespace Gorgon { namespace Graphics {
 
 				donewline(diff);
 
-				if(g != '\t' && g !=' ') {
+				if(g != '\t' && !internal::isbreaking(g)) {
 					pos.push_back(cur.X);
 					acc.push_back(g);
 
@@ -206,11 +303,13 @@ namespace Gorgon { namespace Graphics {
         Glyph prev = 0;
        
         auto lh = renderer->GetLineHeight();
-        
-        for(auto it=text.begin(); it!=text.end(); ++it) {
-            Glyph g = decode(it);
 
-			if(prev) {
+		auto end = text.end();
+
+        for(auto it=text.begin(); it!=end; ++it) {
+            Glyph g = internal::decode(it, end);
+
+			if(prev && internal::isspaced(g)) {
 				auto dist = renderer->KerningDistance(prev, g);
 				cur.X += dist;
 			}
@@ -224,7 +323,7 @@ namespace Gorgon { namespace Graphics {
                 cur.X = std::floor(cur.X);
                 cur.X *= stops;
             }
-            else if(g == '\n') {
+            else if(internal::isnewline(g, it, end)) {
                 if(maxx < cur.X) maxx = (int)std::round(cur.X);
                 
                 cur.X = 0;
@@ -255,10 +354,12 @@ namespace Gorgon { namespace Graphics {
 
 		//strike through, underline
 
-		for(auto it=text.begin(); it!=text.end(); ++it) {
-			Glyph g = decode(it);
+		auto end = text.end();
 
-			if(prev) {
+		for(auto it=text.begin(); it!=end; ++it) {
+			Glyph g = internal::decode(it, end);
+
+			if(prev && internal::isspaced(g)) {
 				auto dist = renderer->KerningDistance(prev, g) + hspace;
 				cur.X += dist;
 			}
@@ -272,7 +373,7 @@ namespace Gorgon { namespace Graphics {
 				cur.X = std::floor(cur.X);
 				cur.X *= stops;
 			}
-			else if(g == '\n') {
+			else if(internal::isnewline(g, it, end)) {
 				cur.X = location.X;
 				cur.Y += renderer->GetLineHeight() + vspace + pspace;
 				prev = 0;
