@@ -18,6 +18,10 @@ namespace Gorgon { namespace Graphics {
 		bool isspace(Glyph g);
 		bool isadjusablespace(Glyph g);
 		bool isbreaking(Glyph g);
+
+		inline int ceildiv(int v, float f) { return (int)std::ceil(v/f); }
+		inline int rounddiv(int v, float f) { return (int)std::round(v/f); }
+
     }
 
 	/**
@@ -41,6 +45,9 @@ namespace Gorgon { namespace Graphics {
 		/// 0x0 should be returned
 		virtual Geometry::Size GetSize(Glyph chr) const = 0;
 
+		/// Returns true if the glyph exists
+		virtual bool Exists(Glyph g) const = 0;
+
 		/// This function should return true if this font renderer supports only 7-bit ASCII
 		virtual bool IsASCII() const = 0;
 
@@ -51,15 +58,22 @@ namespace Gorgon { namespace Graphics {
 		/// This function should return the additional distance between given glyphs. Returned value
 		/// could be (in most cases it is) negative. Non-integer values would break pixel perfect
 		/// rendering.
-		virtual float KerningDistance(Glyph chr1, Glyph chr2) const = 0;
+		virtual int KerningDistance(Glyph chr1, Glyph chr2) const = 0;
         
 		/// Returns the width of widest glyph.
-        virtual int GetMaxWidth() const = 0;
-        
-        /// Height of glyphs, actual size could be smaller but all glyphs should have the same virtual
-        /// height. When drawn on the same y position, all glyphs should line up. Renderer can change
-        /// actual draw location to compensate.
-        virtual int GetLineHeight() const = 0;
+		virtual int GetMaxWidth() const = 0;
+
+		/// Height of glyphs, actual size could be smaller but all glyphs should have the same virtual
+		/// height. When drawn on the same y position, all glyphs should line up. Renderer can change
+		/// actual draw location to compensate.
+		virtual int GetHeight() const = 0;
+
+		/// Spacing between consecutive characters.
+		virtual int GetXSpacing() const = 0;
+
+		/// Width of a digit, if digits do not have the same width, maximum should be returned. For
+		/// practical reasons, this function is expected to consider arabic numerals.
+		virtual int GetDigitWidth() const = 0;
         
         /// Baseline point of glyphs from the top.
         virtual int GetBaseLine() const = 0;
@@ -80,75 +94,47 @@ namespace Gorgon { namespace Graphics {
         }
         
         void Print(TextureTarget &target, const std::string &text, Geometry::Point location) const {
-            print(target, text, (Geometry::Pointf)location);
-        }
-        
-        void Print(TextureTarget &target, const std::string &text, int x, int y) const {
-            print(target, text, {(float)x, (float)y});
-        }
-        
-        void Print(TextureTarget &target, const std::string &text, float x, float y) const {
-            print(target, text, {x, y});
-        }
-        
-        void Print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align_override) const {
-            print(target, text, location, align_override);
-        }
-        
-        void Print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location) const {
             print(target, text, location);
         }
         
-        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w, TextAlignment align_override) const {
-            print(target, text, {location, w, 0.f}, align_override);
+        void Print(TextureTarget &target, const std::string &text, int x, int y) const {
+            print(target, text, {x, y});
         }
-        
-        void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w) const {
-            print(target, text, {location, w, 0.f});
-        }
-        
+		        
         void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, TextAlignment align_override) const {
-            print(target, text, {Geometry::Pointf(location), float(w), 0.f}, align_override);
+            print(target, text, {location, w, 0}, align_override);
         }
         
         void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w) const {
-            print(target, text, {Geometry::Pointf(location), float(w), 0.f});
+            print(target, text, {location, w, 0});
         }
-        
-        void Print(TextureTarget &target, const std::string &text, float x, float y, float w, TextAlignment align_override) const {
-            print(target, text, {x, y, w, 0.f}, align_override);
-        }
-        
-        void Print(TextureTarget &target, const std::string &text, float x, float y, float w) const {
-            print(target, text, {x, y, w, 0.f});
-        }
-        
+                
         void Print(TextureTarget &target, const std::string &text, int x, int y, int w, TextAlignment align_override) const {
-            print(target, text, {(float)x, (float)y, float(w), 0.f}, align_override);
+            print(target, text, {x, y, w, 0}, align_override);
         }
         
         void Print(TextureTarget &target, const std::string &text, int x, int y, int w) const {
-            print(target, text, {(float)x, (float)y, float(w), 0.f});
+            print(target, text, {x, y, w, 0});
         }
 
 		void Print(TextureTarget &target, const std::string &text) {
-			print(target, text, {0.f, 0.f, target.GetTargetSize()});
+			print(target, text, {0, 0, target.GetTargetSize()});
 		}
         
         virtual Geometry::Size GetSize(const std::string &text) const = 0;
         
-        virtual Geometry::Size GetSize(const std::string &text, float width) const = 0;
+        virtual Geometry::Size GetSize(const std::string &text, int width) const = 0;
         
-        virtual int GetCharacterIndex(const std::string &text, Geometry::Pointf location) const = 0;
+        virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const = 0;
         
-        virtual Geometry::Pointf GetPosition(const std::string &text, int index) const = 0;
+        virtual Geometry::Point GetPosition(const std::string &text, int index) const = 0;
         
-        virtual int GetCharacterIndex(const std::string &text, float w, Geometry::Pointf location) const = 0;
+        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const = 0;
         
-        virtual Geometry::Pointf GetPosition(const std::string &text, float w, int index) const = 0;
+        virtual Geometry::Point GetPosition(const std::string &text, int w, int index) const = 0;
 
     protected:
-        virtual void print(TextureTarget &target, const std::string &text, Geometry::Pointf location) const = 0;
+        virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const = 0;
         
         /// Should print the given text to the specified location and color. Width should be used to 
         /// align the text. Unless width is 0, text should be wrapped. Even if width is 0, the alignment
@@ -156,10 +142,10 @@ namespace Gorgon { namespace Graphics {
         /// the given location. Height of the rectangle can be left 0, thus unless explicitly requested,
 		/// it should be ignored.
 		virtual void print(TextureTarget &target, const std::string &text,
-						   Geometry::Rectanglef location, TextAlignment align_override) const = 0;
+						   Geometry::Rectangle location, TextAlignment align_override) const = 0;
 
 		virtual void print(TextureTarget &target, const std::string &text,
-						   Geometry::Rectanglef location) const = 0;
+						   Geometry::Rectangle location) const = 0;
 	};
     
     /**
@@ -175,64 +161,32 @@ namespace Gorgon { namespace Graphics {
 		using TextRenderer::Print;
 
 
-		void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const {
-			print(target, text, location, color);
-		}
-
 		void Print(TextureTarget &target, const std::string &text, RGBAf color) const {
-			print(target, text, {0.f, 0.f, target.GetTargetSize()}, color);
+			print(target, text, {0, 0, target.GetTargetSize()}, color);
 		}
 
 		void Print(TextureTarget &target, const std::string &text, Geometry::Point location, RGBAf color) const {
-			print(target, text, (Geometry::Pointf)location, color);
-		}
-
-		void Print(TextureTarget &target, const std::string &text, int x, int y, RGBAf color) const {
-			print(target, text, {(float)x, (float)y}, color);
-		}
-
-		void Print(TextureTarget &target, const std::string &text, float x, float y, RGBAf color) const {
-			print(target, text, {x, y}, color);
-		}
-
-		void Print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align_override, RGBAf color) const {
-			print(target, text, location, align_override, color);
-		}
-
-		void Print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, RGBAf color) const {
 			print(target, text, location, color);
 		}
 
-		void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w, TextAlignment align_override, RGBAf color) const {
-			print(target, text, {location, w, 0.f}, align_override, color);
+		void Print(TextureTarget &target, const std::string &text, int x, int y, RGBAf color) const {
+			print(target, text, {x, y}, color);
 		}
-
-		void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location, float w, RGBAf color) const {
-			print(target, text, {location, w, 0.f}, color);
-		}
-
+		
 		void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, TextAlignment align_override, RGBAf color) const {
-			print(target, text, {Geometry::Pointf(location), float(w), 0.f}, align_override, color);
+			print(target, text, {location, w, 0}, align_override, color);
 		}
 
 		void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, RGBAf color) const {
-			print(target, text, {Geometry::Pointf(location), float(w), 0.f}, color);
+			print(target, text, {location, w, 0}, color);
 		}
-
-		void Print(TextureTarget &target, const std::string &text, float x, float y, float w, TextAlignment align_override, RGBAf color) const {
-			print(target, text, {x, y, w, 0.f}, align_override, color);
-		}
-
-		void Print(TextureTarget &target, const std::string &text, float x, float y, float w, RGBAf color) const {
-			print(target, text, {x, y, w, 0.f}, color);
-		}
-
+		
 		void Print(TextureTarget &target, const std::string &text, int x, int y, int w, TextAlignment align_override, RGBAf color) const {
-			print(target, text, {(float)x, (float)y, float(w), 0.f}, align_override, color);
+			print(target, text, {x, y, w, 0}, align_override, color);
 		}
 
 		void Print(TextureTarget &target, const std::string &text, int x, int y, int w, RGBAf color) const {
-			print(target, text, {(float)x, (float)y, float(w), 0.f}, color);
+			print(target, text, {x, y, w, 0}, color);
 		}
 
 		/// Changes the default alignment. It is possible to override default alignment through TextRenderer interface.
@@ -257,38 +211,38 @@ namespace Gorgon { namespace Graphics {
 
         virtual Geometry::Size GetSize(const std::string &text) const override;
         
-        virtual Geometry::Size GetSize(const std::string &text, float width) const override { return {0,0}; }
+        virtual Geometry::Size GetSize(const std::string &text, int width) const override { return {0,0}; }
         
-        virtual int GetCharacterIndex(const std::string &text, Geometry::Pointf location) const override { return 0; }
+        virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override { return 0; }
         
-        virtual Geometry::Pointf GetPosition(const std::string &text, int index) const override { return {0.f, 0.f}; }
+        virtual Geometry::Point GetPosition(const std::string &text, int index) const override { return {0, 0}; }
         
-        virtual int GetCharacterIndex(const std::string &text, float w, Geometry::Pointf location) const override { return 0; }
+        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const override { return 0; }
         
-        virtual Geometry::Pointf GetPosition(const std::string &text, float w, int index) const override { return {0.f, 0.f}; }
+        virtual Geometry::Point GetPosition(const std::string &text, int w, int index) const override { return {0, 0}; }
         
     protected:
-		virtual void print(TextureTarget &target, const std::string &text, Geometry::Pointf location) const override {
+		virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override {
 			print(target, text, location, color);
 		}
 
 		virtual void print(TextureTarget &target, const std::string &text,
-						   Geometry::Rectanglef location, TextAlignment align) const override {
+						   Geometry::Rectangle location, TextAlignment align) const override {
 			print(target, text, location, align, color);
 		}
 
-		virtual void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const;
+		virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location, RGBAf color) const;
 
 		virtual void print(TextureTarget &target, const std::string &text,
-						   Geometry::Rectanglef location, TextAlignment align, RGBAf color) const;
+						   Geometry::Rectangle location, TextAlignment align, RGBAf color) const;
 
 		virtual void print(TextureTarget &target, const std::string &text,
-						   Geometry::Rectanglef location) const override {
+						   Geometry::Rectangle location) const override {
 			print(target, text, location, defaultalign);
 		}
 
 		virtual void print(TextureTarget &target, const std::string &text,
-						   Geometry::Rectanglef location, RGBAf color) const {
+						   Geometry::Rectangle location, RGBAf color) const {
 			print(target, text, location, defaultalign, color);
 		}
 
@@ -450,47 +404,37 @@ namespace Gorgon { namespace Graphics {
 		/// Sets the line spacing in pixels, this spacing is the space between
 		/// two lines, from the descender of the first line to the ascender of
 		/// the second.
-		void SetLineSpacingPixels(float value) {
-			vspace = value;
+		void SetLineSpacingPixels(int value) {
+			vspace = (float)value / renderer->GetHeight();
 		}
 		
 		/// Returns the line spacing in pixels
-		float GetLineSpacingPixels() const {
-			return vspace;
+		int GetLineSpacingPixels() const {
+			return (int)std::round(vspace * renderer->GetHeight());
 		}
 
 		/// Sets the line spacing as percentage of glyph height. A value of 
 		/// one will make the lines touch each other, where as a value of two
 		/// will leave a full line empty between two lines. Line spacing stored 
 		/// in pixels to be added to the glyph height. This will round the final
-		/// result to the nearest pixel. Unless the font is large enough, 
-		/// non-integer pixel coordinates should be avoided to keep text crisp
+		/// result to the nearest pixel. 
 		void SetLineSpacing(float value) {
-			vspace = std::round((value-1) * renderer->GetLineHeight());
+			vspace = value;
 		}
-
-		/// Sets the line spacing as percentage of glyph height. A value of 
-		/// one will make the lines touch each other, where as a value of two
-		/// will leave a full line empty between two lines. Line spacing stored 
-		/// in pixels to be added to the glyph height. This variant does not
-		/// perform rounding. Unless the font is large enough, non-integer
-		/// pixel coordinates should be avoided to keep text crisp
-		void SetLineSpacingNoRounding(float value) {
-			vspace = (value-1) * renderer->GetLineHeight();
-		}
-
+		
 		/// Returns the line spacing as percentage of glyph height
 		float GetLineSpacing() const {
-			return (vspace / renderer->GetLineHeight()) + 1;
+			return vspace;
 		}
 
-		/// Spacing between letters of the text, in pixels
-		void SetLetterSpacing(float value) {
+		/// Spacing between letters of the text, in pixels. This is in addition to
+		/// the regular character spacing.
+		void SetLetterSpacing(int value) {
 			hspace = value;
 		}
 		
 		/// Returns the spacing between the letters in pixels
-		float GetLetterSpacing() const {
+		int GetLetterSpacing() const {
 			return hspace;
 		}
 
@@ -512,37 +456,38 @@ namespace Gorgon { namespace Graphics {
 
 		/// Changes the additional space between paragraphs. A paragraph is stared by a manual
 		/// line break.
-		void SetParagraphSpacing(float value) {
+		void SetParagraphSpacing(int value) {
 			pspace = value;
 		}
 		
 		/// Get the space between paragraphs.
-		float GetParagraphSpacing() const {
+		int GetParagraphSpacing() const {
 			return pspace;
 		}
 
 		virtual Geometry::Size GetSize(const std::string &text) const override { return {0,0}; }
 
-		virtual Geometry::Size GetSize(const std::string &text, float width) const override { return{0,0}; }
+		virtual Geometry::Size GetSize(const std::string &text, int width) const override { return{0,0}; }
 
-		virtual int GetCharacterIndex(const std::string &text, Geometry::Pointf location) const override { return 0; }
+		virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override { return 0; }
 
-		virtual Geometry::Pointf GetPosition(const std::string &text, int index) const override { return{0.f, 0.f}; }
+		virtual Geometry::Point GetPosition(const std::string &text, int index) const override { return{0, 0}; }
 
-		virtual int GetCharacterIndex(const std::string &text, float w, Geometry::Pointf location) const override { return 0; }
+		virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const override { return 0; }
 
-		virtual Geometry::Pointf GetPosition(const std::string &text, float w, int index) const override { return{0.f, 0.f}; }
+		virtual Geometry::Point GetPosition(const std::string &text, int w, int index) const override { return{0, 0}; }
 
 	protected:
-		virtual void print(TextureTarget &target, const std::string &text, Geometry::Pointf location) const override;
+		virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override;
 
-		virtual void print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location) const override { }
+		virtual void print(TextureTarget &target, const std::string &text, Geometry::Rectangle location) const override { }
 
 		virtual void print(TextureTarget &target, const std::string &text, 
-						   Geometry::Rectanglef location, TextAlignment align_override) const override { }
+						   Geometry::Rectangle location, TextAlignment align_override) const override { }
 
 
 	private:
+		//internal, float to facilitate shadow offset
 		void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const;
 
 		GlyphRenderer *renderer = nullptr;
@@ -552,10 +497,10 @@ namespace Gorgon { namespace Graphics {
 		bool underline = false;
 		bool strikethrough = false;
 		TextAlignment defaultalign = TextAlignment::Left;
-		bool justify = false;
-		float vspace = 0;
-		float hspace = 0;
-		float pspace = 0;
+		bool  justify = false;
+		float vspace = 1.2f;
+		int   hspace = 0;
+		int   pspace = 0;
 		int   tabwidth = 0;
 	};
     

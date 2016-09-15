@@ -23,10 +23,10 @@ namespace Gorgon { namespace Graphics {
         public:
             GlyphDescriptor() { }
             
-            GlyphDescriptor(const RectangularDrawable &image, float offset) : image(&image), offset(offset) { }
+            GlyphDescriptor(const RectangularDrawable &image, int offset) : image(&image), offset(offset) { }
             
             const RectangularDrawable *image = nullptr;
-            float offset = 0;
+            int offset = 0;
         };
         
         enum ImportNamingTemplate {
@@ -56,8 +56,12 @@ namespace Gorgon { namespace Graphics {
                 
         /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
         /// Ownership of bitmap is not transferred.
-        void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, float baseline = 0);
-        
+        void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, int baseline = 0);
+
+		virtual bool IsASCII() const override {
+			return isascii;
+		}
+
         /// Converts individual glyphs to a single atlas. Only the glyphs that are registered as bitmaps can be packed.
         /// This function will automatically detect types and act accordingly. If the ownership of the packed images
         /// belong to the font or deleteold parameter is set, they will be deleted automatically. If tight packing is
@@ -65,27 +69,35 @@ namespace Gorgon { namespace Graphics {
 		/// artifacts.
         void Pack(bool tight = false, bool deleteold = false);
         
-        virtual bool IsASCII() const override {
-            return isascii;
-        }
-        
         virtual Geometry::Size GetSize(Glyph chr) const override;
         
         virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const override;
 
 		virtual bool IsFixedWidth() const override { return isfixedw; }
+
+		virtual bool Exists(Glyph g) const override { return glyphmap.count(g) != 0; }
 		
 		/// todo
-		virtual float KerningDistance(Glyph chr1, Glyph chr2) const override { if(chr1 == ' ' || chr2 == ' ') return 0; else return spacing; }
+		virtual int KerningDistance(Glyph chr1, Glyph chr2) const override { return 0; }
          
         virtual int GetMaxWidth() const override { return maxwidth; }
         
-        virtual int GetLineHeight() const override { return lineheight; }
+        virtual int GetHeight() const override { return height; }
         
 		virtual int GetBaseLine() const override { return baseline; }
 
+		virtual int GetXSpacing() const override { return spacing; }
+
+		virtual int GetDigitWidth() const override { return digw; }
+
+
+		/// Changes the spacing between consecutive characters
+		void SetSpacing(int value) {
+			xspace = value;
+		}
+
 		/// Changes the line height of the font.
-		void SetLineHeight(int value) { lineheight = value; }
+		void SetHeight(int value) { height = value; }
 
 		/// Changes the maximum width for a character
 		void SetMaxWidth(int value) { maxwidth = value; }
@@ -94,7 +106,7 @@ namespace Gorgon { namespace Graphics {
 		void DetermineDimensions();
         
         /// Changes the spacing between glyphs
-        void SetGlyphSpacing(float spacing) { this->spacing = spacing; }
+        void SetGlyphSpacing(int spacing) { this->spacing = spacing; }
         
         /// Imports bitmap font images from a folder with the specified file naming template.
         /// Automatic detection will only work if there is a single bitmap font set in the
@@ -121,17 +133,21 @@ namespace Gorgon { namespace Graphics {
         std::map<Glyph, GlyphDescriptor> glyphmap;
 		Containers::Collection<RectangularDrawable> destroylist;
         
-        bool isascii = true;
-        
         int isfixedw = true;
         
         int maxwidth = 0;
         
-        int lineheight = 0;
+        int height = 0;
         
         int baseline;
+
+		int digw = 0;
+
+		bool isascii = true;
+
+		int xspace = 1;
         
-        float spacing = 0;
+        int spacing = 0;
     };
     
 } }

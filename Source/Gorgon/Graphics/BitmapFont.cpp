@@ -8,14 +8,14 @@
 namespace Gorgon { namespace Graphics {
 
 
-    void BitmapFont::AddGlyph(Glyph glyph, const RectangularDrawable& bitmap, float baseline) {
+    void BitmapFont::AddGlyph(Glyph glyph, const RectangularDrawable& bitmap, int baseline) {
 		auto size = bitmap.GetSize();
 
-		int lh = (int)std::round((size.Height+baseline-this->baseline)*1.2);
+		int lh = size.Height;
 
         if(maxwidth == 0) {
             maxwidth = size.Width;
-            lineheight = lh;
+            height = lh;
         }
         else {
             if(size.Width != maxwidth)
@@ -24,9 +24,16 @@ namespace Gorgon { namespace Graphics {
             if(maxwidth < size.Width)
                 maxwidth = size.Width;
             
-            if(lineheight < lh)
-                lineheight = lh;
+            if(height < lh)
+                height = lh;
         }
+
+		if(isdigit(glyph) && digw < size.Width) {
+			digw = size.Width;
+		}
+
+		if(glyph > 127)
+			isascii = false;
         
         glyphmap[glyph] = GlyphDescriptor(bitmap, this->baseline - baseline);
     }
@@ -44,11 +51,11 @@ namespace Gorgon { namespace Graphics {
 	void BitmapFont::Render(Glyph chr, TextureTarget& target, Geometry::Pointf location, RGBAf color) const {
         if(glyphmap.count(chr)) {
             auto glyph = glyphmap.at(chr);
-            glyph.image->Draw(target, location + Geometry::Pointf(0, glyph.offset), color);
+            glyph.image->Draw(target, location + Geometry::Pointf(0, (Float)glyph.offset), color);
         }
 		else if(glyphmap.count(0)) {
 			auto glyph = glyphmap.at(0);
-			glyph.image->Draw(target, location + Geometry::Pointf(0, glyph.offset), color);
+			glyph.image->Draw(target, location + Geometry::Pointf(0, (Float)glyph.offset), color);
 		}
     }
     
@@ -57,11 +64,11 @@ namespace Gorgon { namespace Graphics {
 		for(auto &g : glyphmap) {
 			auto size = g.second.image->GetSize();
 
-			int lh = (int)std::round((size.Height+baseline-this->baseline)*1.2);
+			int lh = size.Height;
 
 			if(maxwidth == 0) {
 				maxwidth = size.Width;
-				lineheight = lh;
+				height = lh;
 			}
 			else {
 				if(size.Width != maxwidth)
@@ -70,8 +77,8 @@ namespace Gorgon { namespace Graphics {
 				if(maxwidth < size.Width)
 					maxwidth = size.Width;
 
-				if(lineheight < lh)
-					lineheight = lh;
+				if(height < lh)
+					height = lh;
 			}
 		}
 	}
@@ -269,17 +276,19 @@ namespace Gorgon { namespace Graphics {
 			if(prepare)
 				p.second.Prepare();
 
-            AddGlyph(g, p.second, (float)bl);
+            AddGlyph(g, p.second, bl);
 
 			if(maxh < h)
 				maxh = h;
 		}
 
 		if(baseline == -1) {
-			baseline = int(std::round(lineheight * 0.7));
+			baseline = int(std::round(height * 0.7));
 		}
 
 		if(trim && spacing==0) spacing = 1;
+
+		height = maxh;
         
         if(trim && spim && maxwidth == spw) {
             //check if glyph is empty, if so we can resize it.
@@ -294,14 +303,12 @@ namespace Gorgon { namespace Graphics {
                 isempty = false;
             
             if(isempty) {
-                spim->Resize({maxwidth/2, 1}, spim->GetMode());
+                spim->Resize({(int)std::ceil(height/3.f), 1}, spim->GetMode());
                 spim->Clean();
                 
                 if(prepare) spim->Prepare();
             }
         }
-
-		lineheight = int(std::ceil(maxh * 1.2));
 
 		if(start > 0 && glyphmap.size()) {
 			if(glyphmap.count(127)) {

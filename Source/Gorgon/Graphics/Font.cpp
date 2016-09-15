@@ -1,5 +1,6 @@
 #include "Font.h"
 #include <Gorgon/Utils/Assert.h>
+#include <functional>
 
 namespace Gorgon { namespace Graphics {
 	namespace internal {
@@ -48,7 +49,7 @@ namespace Gorgon { namespace Graphics {
 		}
 	
 		bool isspaced(Glyph g) {
-			return g > 0x300 && g < 0x3ff;
+			return g < 0x300 || g > 0x3ff;
 		}
 		
 		bool isnewline(Glyph g, std::string::const_iterator &it, std::string::const_iterator end) {
@@ -124,57 +125,142 @@ namespace Gorgon { namespace Graphics {
 					return false;
 			}
 		}
+
+		int defaultspace(Glyph g, const GlyphRenderer &renderer) {
+			auto em = renderer.GetHeight();
+
+			switch(g) {
+			case 0x3000:
+				return renderer.GetMaxWidth();
+
+			case 0x2001:
+			case 0x2003:
+				return em;
+
+			case 0x2000:
+			case 0x2002:
+				return rounddiv(em, 2);
+
+			case 0x2007:
+				return renderer.GetDigitWidth();
+
+			case 0x2004:
+				return rounddiv(em, 3);
+
+			case 0x20:
+			case 0xa0:
+			case 0x2005:
+			default:
+				return ceildiv(em, 4);
+
+			case 0x25f:
+				return ceildiv(em, 18.f/4.f);
+
+			case 0x2009:
+			case 0x202f:
+				return ceildiv(em, 5);
+
+			case 0x2006:
+				return ceildiv(em, 6);
+
+			case 0x200a:
+				return ceildiv(em, 8);
+
+			case 0x2008:
+				return std::max(renderer.GetSize('.').Width, 1);
+
+			case 0x180e:
+			case 0xfeff:
+			case 0x200b:
+				return 0;
+			}
+		}
+
+		template<class T_>
+		void dodefaulttab(T_ s, T_ &x, T_ w) {
+			x -= s;
+			x += w;
+			x /= w;
+			x = (T_)std::floor(x);
+			x *= w;
+			x += s;
+		}
+
+		/// helps with the simple layouts, decodes and executes unicode instructions. Offset parameter in render function
+		/// is the offset that must be used after rendering the character. If g is 0, only offset should be processed
+		void simpleprint(const GlyphRenderer &renderer, const std::string &text, std::function<int(Glyph, Glyph)> spacing,
+						 std::function<void(Glyph, int, int)> render, std::function<void()> dotab, std::function<void(Glyph)> donewline) {
+
+			Glyph prev = 0;
+			auto end = text.end();
+
+			for(auto it=text.begin(); it!=end; ++it) {
+				Glyph g = internal::decode(it, end);
+
+				if(isspace(g)) {
+					int poff = 0;
+					if(prev && isspaced(prev)) {
+						poff = spacing(prev, g);
+					}
+
+					if(renderer.Exists(g)) {
+						render(g, poff, renderer.GetSize(g).Width);
+					}
+					else {
+						render(0, poff, defaultspace(g, renderer));
+					}
+				}
+				else if(g == '\t') {
+					dotab();
+
+					prev = 0;
+				}
+				else if(isnewline(g, it, end)) {
+					donewline(g);
+					prev = 0;
+				}
+				else if(g > 32) {
+					int poff = 0;
+					if(prev && isspaced(prev)) {
+						poff = spacing(prev, g);
+					}
+
+					int sp = 0;
+					if(isspaced(g))
+						sp = renderer.GetSize(g).Width;
+
+					render(g, poff, sp);
+					prev = g;
+				}
+			}
+		}
 	}
 
-    void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Pointf location, RGBAf color) const {
-        auto cur = location;
-		Glyph prev = 0;
-        
-        auto end = text.end();
-        
-        for(auto it=text.begin(); it!=end; ++it) {
-            Glyph g = internal::decode(it, end);
-
-			if(prev && internal::isspaced(prev)) {
-				auto dist = renderer->KerningDistance(prev, g);
-				cur.X += dist;
-			}
-
-			prev = g;
-
-            if(g == '\t') {
-                auto stops = renderer->GetMaxWidth() * 8;
-                cur.X += stops;
-                cur.X /= stops;
-                cur.X = std::floor(cur.X);
-                cur.X *= stops;
-            }
-            else if(internal::isnewline(g, it, end)) {
-                cur.X = location.X;
-				cur.Y += renderer->GetLineHeight();
-				prev = 0;
-            }
-            else if(g >= 32) {
-                renderer->Render(g, target, cur, color);
-
-				if(internal::isspaced(g))
-					cur.X += renderer->GetSize(g).Width;
-            }
-        }
+    void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Point location, RGBAf color) const {
+		auto sp = renderer->GetXSpacing();
+		auto cur = location;
+		
+		internal::simpleprint(
+			*renderer, text,
+			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
+			std::bind(&internal::dodefaulttab<int>, location.X, std::ref(cur.X), renderer->GetMaxWidth() * 8),
+			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); cur.X = location.X; }
+		);
     }
 
-    void BasicFont::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color) const {
+    void BasicFont::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
 		auto cur = location.TopLeft();
 		Glyph prev = 0;
 
 		std::vector<Glyph> acc;
-		std::vector<float> pos;
+		std::vector<decltype(location.X)> pos;
 		int lastspace = 0;
 
-		float dest = location.Right();
+		auto dest = location.Right();
         auto end = text.end();
 
-		auto donewline = [&](float diff) {
+		auto donewline = [&](decltype(location.X) diff) {
 			int end = lastspace;
 
 
@@ -186,11 +272,11 @@ namespace Gorgon { namespace Graphics {
 					m=std::round(m); // make sure we land on full pixels
 
 				for(int i=0; i<end; i++) {
-					pos[i] += m;
+					pos[i] += (decltype(location.X))m;
 				}
 			} 
 			else if(align == TextAlignment::Right) {
-				float m = (dest - pos[end]);
+				auto m = (dest - pos[end]);
 
 				for(int i=0; i<end; i++) {
 					pos[i] += m;
@@ -198,7 +284,7 @@ namespace Gorgon { namespace Graphics {
 			}
 
 			for(int i=0; i<end; i++) {
-				renderer->Render(acc[i], target, {pos[i], cur.Y}, color);
+				renderer->Render(acc[i], target, {(float)pos[i], (float)cur.Y}, color);
 			}
 
 			if(end+1 == pos.size()) { //if we are at the last char
@@ -207,8 +293,7 @@ namespace Gorgon { namespace Graphics {
 				pos.clear();
 			}
 			else {
-				float shift;
-				shift = pos[end+1];
+				auto shift = pos[end+1];
 				// pull back start of the line so when the current diff is added, 
 				// it would still be at the start
 				cur.X -= shift + diff; 
@@ -222,7 +307,7 @@ namespace Gorgon { namespace Graphics {
 
 			lastspace = 0;
 
-			cur.Y += renderer->GetLineHeight();
+			cur.Y += renderer->GetHeight();
 		};
 
 		for(auto it=text.begin(); it!=end; ++it) {
@@ -236,7 +321,7 @@ namespace Gorgon { namespace Graphics {
 				cur.X += dist;
 			}
 
-			float cx = cur.X;
+			auto cx = cur.X;
 
 			prev = g;
 
@@ -244,7 +329,7 @@ namespace Gorgon { namespace Graphics {
 				auto stops  = renderer->GetMaxWidth() * 8;
 				cur.X += stops;
 				cur.X /= stops;
-				cur.X  = std::floor(cur.X);
+				cur.X  = (decltype(location.X))std::floor(cur.X);
 				cur.X *= stops;
 			}
 			else if(internal::isnewline(g, it, end)) {
@@ -298,49 +383,23 @@ namespace Gorgon { namespace Graphics {
 
 
     Geometry::Size BasicFont::GetSize(const std::string& text) const {
-        Geometry::Pointf cur = {0, 0};
-        int maxx = 0;
-        Glyph prev = 0;
-       
-        auto lh = renderer->GetLineHeight();
+		auto sp = renderer->GetXSpacing();
+		auto cur = Geometry::Point(0, 0);
 
-		auto end = text.end();
+		int maxx = 0;
 
-        for(auto it=text.begin(); it!=end; ++it) {
-            Glyph g = internal::decode(it, end);
+		internal::simpleprint(
+			*renderer, text,
+			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
+			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
+			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
+		);
 
-			if(prev && internal::isspaced(g)) {
-				auto dist = renderer->KerningDistance(prev, g);
-				cur.X += dist;
-			}
+		return {maxx, cur.Y + renderer->GetHeight()};
+	}
 
-			prev = g;
-            
-            if(g == '\t') {
-                auto stops = renderer->GetMaxWidth() * 8;
-                cur.X += stops;
-                cur.X /= stops;
-                cur.X = std::floor(cur.X);
-                cur.X *= stops;
-            }
-            else if(internal::isnewline(g, it, end)) {
-                if(maxx < cur.X) maxx = (int)std::round(cur.X);
-                
-                cur.X = 0;
-				cur.Y += lh;
-				prev = 0;
-            }
-            else if(g >= 32) {
-                cur.X += renderer->GetSize(g).Width;
-            }
-        }
-        
-        if(maxx < cur.X) maxx = (int)std::round(cur.X);
-        
-        return {maxx, (int)std::round(cur.Y + lh)};
-    }
-
-	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location) const {
+	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Point location) const {
 		if(shadow.type == TextShadow::Flat) {
 			print(target, text, location + shadow.offset, shadow.color);
 		}
@@ -349,40 +408,17 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const {
-		auto cur = location;
-		Glyph prev = 0;
-
 		//strike through, underline
+		auto sp = renderer->GetXSpacing();
+		auto cur = location;
 
-		auto end = text.end();
-
-		for(auto it=text.begin(); it!=end; ++it) {
-			Glyph g = internal::decode(it, end);
-
-			if(prev && internal::isspaced(g)) {
-				auto dist = renderer->KerningDistance(prev, g) + hspace;
-				cur.X += dist;
-			}
-
-			prev = g;
-
-			if(g == '\t') {
-				auto stops = tabwidth;
-				cur.X += stops;
-				cur.X /= stops;
-				cur.X = std::floor(cur.X);
-				cur.X *= stops;
-			}
-			else if(internal::isnewline(g, it, end)) {
-				cur.X = location.X;
-				cur.Y += renderer->GetLineHeight() + vspace + pspace;
-				prev = 0;
-			}
-			else if(g >= 32) {
-				renderer->Render(g, target, cur, color);
-				cur.X += renderer->GetSize(g).Width;
-			}
-		}
+		internal::simpleprint(
+			*renderer, text,
+			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
+			std::bind(&internal::dodefaulttab<float>, location.X, std::ref(cur.X), (float)tabwidth),
+			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace); cur.X = location.X; }
+		);
 	}
 
 } }
