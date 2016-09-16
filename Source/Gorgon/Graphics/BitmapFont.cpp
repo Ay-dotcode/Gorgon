@@ -53,7 +53,7 @@ namespace Gorgon { namespace Graphics {
             auto glyph = glyphmap.at(chr);
             glyph.image->Draw(target, location + Geometry::Pointf(0, (Float)glyph.offset), color);
         }
-		else if(glyphmap.count(0)) {
+		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr)) {
 			auto glyph = glyphmap.at(0);
 			glyph.image->Draw(target, location + Geometry::Pointf(0, (Float)glyph.offset), color);
 		}

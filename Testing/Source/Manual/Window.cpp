@@ -74,7 +74,7 @@ int main() {
 	img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
     Graphics::BitmapFont fnt;
-	fnt.ImportFolder("VictoriaBoldLarge", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, false);
+	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, false);
     fnt.Pack();
 
 	Graphics::StyledRenderer sty(fnt);

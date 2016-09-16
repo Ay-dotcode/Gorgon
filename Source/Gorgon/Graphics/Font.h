@@ -12,9 +12,11 @@ namespace Gorgon { namespace Graphics {
 	using Glyph = int32_t;
 	
     namespace internal {
+		/// Decodes a utf-8 character from the given iterator. If char is not valid 
+		/// 0xfffd is returned. \r\n is mapped to \n
         Glyph decode(std::string::const_iterator &it, std::string::const_iterator end);
-        bool isnewline(Glyph g, std::string::const_iterator &it, std::string::const_iterator end);
-        bool isspaced(Glyph g);
+		bool isnewline(Glyph g);
+		bool isspaced(Glyph g);
 		bool isspace(Glyph g);
 		bool isadjusablespace(Glyph g);
 		bool isbreaking(Glyph g);
@@ -82,7 +84,8 @@ namespace Gorgon { namespace Graphics {
     /**
      * This class allows printing text on the screen. All fonts should support basic left aligned
      * print, aligned rectangular area printing. Additionally, all fonts should support basic info
-     * functions. TextRenderers must be unicode aware.
+     //* functions. TextRenderers must be accept utf-8. internal::decode function should be preferred
+	 * to decode utf-8, among regular utf-8 decoding, this function will map \r\n to \n.
      */
     class TextRenderer {
     public:
@@ -127,11 +130,11 @@ namespace Gorgon { namespace Graphics {
         
         virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const = 0;
         
-        virtual Geometry::Point GetPosition(const std::string &text, int index) const = 0;
+        virtual Geometry::Rectangle GetPosition(const std::string &text, int index) const = 0;
         
         virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const = 0;
         
-        virtual Geometry::Point GetPosition(const std::string &text, int w, int index) const = 0;
+        virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index) const = 0;
 
     protected:
         virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const = 0;
@@ -199,7 +202,7 @@ namespace Gorgon { namespace Graphics {
 			return defaultalign;
 		}
 
-		/// Changes the the color of the text. Color can only be overriden through BasicFont interface.
+		/// Changes the the color of the text. Color can only be overridden through BasicFont interface.
 		void SetColor(RGBAf value) {
 			color = value;
 		}
@@ -211,15 +214,15 @@ namespace Gorgon { namespace Graphics {
 
         virtual Geometry::Size GetSize(const std::string &text) const override;
         
-        virtual Geometry::Size GetSize(const std::string &text, int width) const override { return {0,0}; }
+        virtual Geometry::Size GetSize(const std::string &text, int width) const override;
         
         virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override { return 0; }
         
-        virtual Geometry::Point GetPosition(const std::string &text, int index) const override { return {0, 0}; }
+        virtual Geometry::Rectangle GetPosition(const std::string &text, int index) const override { return {0, 0, 0, 0}; }
         
         virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const override { return 0; }
         
-        virtual Geometry::Point GetPosition(const std::string &text, int w, int index) const override { return {0, 0}; }
+        virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index) const override { return {0, 0, 0, 0}; }
         
     protected:
 		virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override {
@@ -465,17 +468,17 @@ namespace Gorgon { namespace Graphics {
 			return pspace;
 		}
 
-		virtual Geometry::Size GetSize(const std::string &text) const override { return {0,0}; }
+		virtual Geometry::Size GetSize(const std::string &text) const override;
 
 		virtual Geometry::Size GetSize(const std::string &text, int width) const override { return{0,0}; }
 
 		virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override { return 0; }
 
-		virtual Geometry::Point GetPosition(const std::string &text, int index) const override { return{0, 0}; }
+		virtual Geometry::Rectangle GetPosition(const std::string &text, int index) const override { return{0, 0, 0, 0}; }
 
 		virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const override { return 0; }
 
-		virtual Geometry::Point GetPosition(const std::string &text, int w, int index) const override { return{0, 0}; }
+		virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index) const override { return{0, 0, 0, 0}; }
 
 	protected:
 		virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override;
