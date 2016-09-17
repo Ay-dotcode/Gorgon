@@ -27,9 +27,32 @@ namespace Gorgon { namespace Graphics {
 				s.source  = nullptr;
 			}
 
+			Surface &operator =(const Surface &) = delete;
+
+			Surface &operator =(Surface &&s) {
+				vertices = s.vertices;
+				texture  = s.texture;
+				source   = s.source;
+				color    = s.color;
+
+				s.texture = nullptr;
+				s.source  = nullptr;
+
+				return *this;
+			}
+
 			/// Sets the source to the given source. This variant uses texture coordinates given by the source.
 			Surface(const TextureSource &source, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
-				const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) : source(&source), color(color) {
+					const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) : source(&source), color(color) {
+				vertices[0]  = p1;
+				vertices[1]  = p2;
+				vertices[2]  = p3;
+				vertices[3]  = p4;
+			}
+
+			/// Uses fill shader to fill an area with solid color.
+			Surface(const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+					const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) : color(color) {
 				vertices[0]  = p1;
 				vertices[1]  = p2;
 				vertices[2]  = p3;
@@ -53,6 +76,11 @@ namespace Gorgon { namespace Graphics {
 				vertices[1]  = p2;
 				vertices[2]  = p3;
 				vertices[3]  = p4;
+			}
+
+			/// If the source is set.
+			bool IsSet() {
+				return source != nullptr;
 			}
 
 			/// Returns the GL texture to be drawn
@@ -152,10 +180,18 @@ namespace Gorgon { namespace Graphics {
 			}
         }
 
-		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
-			const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
+		using TextureTarget::Draw;
+
+		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
 
 			surfaces.emplace_back(image, p1, p2, p3, p4, color);
+		}
+
+		virtual void Draw(const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
+
+			surfaces.emplace_back(p1, p2, p3, p4, color);
 		}
 
 		virtual void Draw(

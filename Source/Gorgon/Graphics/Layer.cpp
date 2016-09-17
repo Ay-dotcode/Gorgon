@@ -68,7 +68,13 @@ namespace Graphics {
 
 		ActivateQuadVertices();
 		for(auto &surface : surfaces) {            
-            if(surface.GetMode() == ColorMode::Alpha) {
+			if(!surface.IsSet()) {
+				FillShader::Use()
+					.SetTint(surface.GetColor()*LayerColor)
+					.SetVertexCoords(surface.GetVertices(Transform))
+				;
+			}
+            else if(surface.GetMode() == ColorMode::Alpha) {
                 AlphaShader::Use()
                     .SetTint(surface.GetColor()*LayerColor)
                     .SetAlpha(surface.TextureID())

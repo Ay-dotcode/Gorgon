@@ -101,6 +101,32 @@ namespace Gorgon { namespace Graphics {
 		AlphaShader();
 	};
 
+	class FillShader : public GL::Shader {
+	public:
+		static FillShader &Use() {
+			static FillShader me;
+			me.Shader::Use();
+			return me;
+		}
+
+		FillShader &SetVertexCoords(const GL::QuadVertices &value) {
+			static int id = LocateUniform("vertex_coords");
+			UpdateUniform(id, value);
+
+			return *this;
+		}
+
+		FillShader &SetTint(const Graphics::RGBAf &value) {
+			static int id = LocateUniform("tint");
+			UpdateUniform(id, value);
+
+			return *this;
+		}
+
+	private:
+		FillShader();
+	};
+
 	/*
 	class MaskedShader : public GL::Shader
 	{

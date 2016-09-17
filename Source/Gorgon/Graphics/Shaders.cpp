@@ -24,6 +24,19 @@ void main()
 }
 )shader";
 
+	const std::string NoTexVertSrcCode = R"shader(
+#version 130
+
+in int vertex_index;
+
+uniform vec3 vertex_coords[4];
+
+void main()
+{
+	gl_Position = vec4(vertex_coords[vertex_index], 1.0f);
+}
+)shader";
+
 	const std::string SimpleFragSrcCode = R"shader(
 #version 130
 
@@ -53,6 +66,19 @@ out vec4 output_color;
 void main()
 {
     output_color = vec4(tint.rgb, texture(diffuse, texcoord).a * tint.a);
+}
+)shader";
+
+	const std::string FillFragSrcCode = R"shader(
+#version 130
+
+uniform vec4      tint;
+
+out vec4 output_color;
+
+void main()
+{
+    output_color = tint;
 }
 )shader";
 
@@ -129,11 +155,14 @@ void main()
 		InitializeWithSource(TransformVertSrcCode, SimpleFragSrcCode);
 	}
 
-	AlphaShader::AlphaShader() : Shader("Gorgon::Graphics::Alpha")
-	{
+	AlphaShader::AlphaShader() : Shader("Gorgon::Graphics::Alpha") {
 		InitializeWithSource(TransformVertSrcCode, AlphaFragSrcCode);
 	}
-	
+
+	FillShader::FillShader() : Shader("Gorgon::Graphics::Fill") {
+		InitializeWithSource(NoTexVertSrcCode, FillFragSrcCode);
+	}
+
 	/*
 	MaskedShader::MaskedShader() : Shader("Gorgon::Graphics::Masked")
 	{

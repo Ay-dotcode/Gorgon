@@ -20,6 +20,25 @@ namespace Gorgon { namespace Graphics {
 		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 			const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) = 0;
 
+		/// Draws a textureless solid colored rectangle on the screen.
+		virtual void Draw(const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) = 0;
+
+		/// Draws a textureless solid colored rectangle on the screen.
+		virtual void Draw(const Geometry::Pointf &location, const Geometry::Sizef &size, RGBAf color = RGBAf(1.f)) {
+			Draw({location, size}, color);
+		}
+
+		/// Draws a textureless solid colored rectangle on the screen.
+		virtual void Draw(const Geometry::Rectanglef &location, RGBAf color = RGBAf(1.f)) {
+			Draw(location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft(), color);
+		}
+
+		/// Draws a textureless solid colored rectangle to cover the texture target.
+		virtual void Draw(RGBAf color = RGBAf(1.f)) {
+			Draw({0.f, 0.f}, Geometry::Sizef(GetTargetSize()), color);
+		}
+
 		/// Draws a simple texture to the screen. This variant allows every corner on the target and on the texture be specified. The texture 
 		/// target should be cleared before the texture drawn on it is destroyed
 		virtual void Draw(const TextureSource &image,
