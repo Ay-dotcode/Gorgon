@@ -195,10 +195,13 @@ namespace Gorgon { namespace Graphics {
 						 std::function<void(Glyph, int, int)> render, std::function<void()> dotab, std::function<void(Glyph)> donewline) {
 
 			Glyph prev = 0;
+			int ind = 0;
 
 			for(auto it=begin; it!=end; ++it) {
 				Glyph g = internal::decode(it, end);
 				int poff = 0;
+
+				ind++;
 
 				if(isspace(g)) {
 					if(prev && isspaced(prev)) {
@@ -228,6 +231,8 @@ namespace Gorgon { namespace Graphics {
 				else if(isnewline(g)) {
 					donewline(g);
 					prev = 0;
+
+					ind = 0;
 				}
 				else if(g > 32) {
 					if(prev && isspaced(prev)) {
@@ -241,6 +246,10 @@ namespace Gorgon { namespace Graphics {
 					render(g, poff, sp);
 					prev = g;
 				}
+			}
+
+			if(ind != 0) {
+				donewline(0);
 			}
 		}
 
@@ -427,6 +436,23 @@ namespace Gorgon { namespace Graphics {
 		);
     }
 
+	Geometry::Size BasicFont::GetSize(const std::string& text) const {
+		auto sp = renderer->GetXSpacing();
+		auto cur = Geometry::Point(0, 0);
+
+		int maxx = 0;
+
+		internal::simpleprint(
+			*renderer, text.begin(), text.end(),
+			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
+			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
+			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
+		);
+
+		return{maxx, cur.Y + renderer->GetHeight()};
+	}
+
     void BasicFont::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
 		auto y   = location.Y;
 		auto sp  = renderer->GetXSpacing();
@@ -457,24 +483,6 @@ namespace Gorgon { namespace Graphics {
 		);
 	}
 
-
-	Geometry::Size BasicFont::GetSize(const std::string& text) const {
-		auto sp = renderer->GetXSpacing();
-		auto cur = Geometry::Point(0, 0);
-
-		int maxx = 0;
-
-		internal::simpleprint(
-			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
-			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
-			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
-			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
-		);
-
-		return{maxx, cur.Y + renderer->GetHeight()};
-	}
-
 	Geometry::Size BasicFont::GetSize(const std::string& text, int w) const {
 		auto y   = 0;
 		auto sp  = renderer->GetXSpacing();
@@ -496,38 +504,79 @@ namespace Gorgon { namespace Graphics {
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Point location) const {
 		if(shadow.type == TextShadow::Flat) {
-			print(target, text, Geometry::Pointf(location) + shadow.offset, shadow.color);
+			print(target, text, Geometry::Pointf(location) + shadow.offset, shadow.color, shadow.color, shadow.color);
 		}
 
-		print(target, text, location, color);
+		print(target, text, location, color, strikecolor, underlinecolor);
 	}
 
-	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const {
+	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
 		//strike through, underline
 		auto sp = renderer->GetXSpacing();
 		auto cur = location;
+
+		if(strikecolor.R == -1)
+			strikecolor = color;
+
+		if(underlinecolor.R == -1)
+			underlinecolor = color;
 
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
 			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
 			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
 			std::bind(&internal::dodefaulttab<float>, location.X, std::ref(cur.X), (float)tabwidth),
-			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace); cur.X = location.X; }
+			[&](Glyph) { 
+				if(strike) {
+					target.Draw(location.X, cur.Y + GetStrikePosition(), cur.X - location.X, (float)renderer->GetLineThickness(), strikecolor);
+				}
+
+				if(underline) {
+					target.Draw(location.X, cur.Y + renderer->GetUnderlineOffset(), cur.X - location.X, (float)renderer->GetLineThickness(), underlinecolor);
+				}
+
+				cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace);
+				cur.X = location.X;
+			}
 		);
+
+	}
+
+	Geometry::Size StyledRenderer::GetSize(const std::string &text) const {
+		auto sp = renderer->GetXSpacing();
+		auto cur = Geometry::Point(0, 0);
+
+		int maxx = 0;
+
+		internal::simpleprint(
+			*renderer, text.begin(), text.end(),
+			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
+			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth),
+			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
+		);
+
+		return{maxx, cur.Y + renderer->GetHeight()};
 	}
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
 		if(shadow.type == TextShadow::Flat) {
-			print(target, text, Geometry::Rectanglef(location) + shadow.offset, align_override, shadow.color);
+			print(target, text, Geometry::Rectanglef(location) + shadow.offset, align_override, shadow.color, shadow.color, shadow.color);
 		}
 
-		print(target, text, location, align_override, color);
+		print(target, text, location, align_override, color, strikecolor, underlinecolor);
 	}
 
-	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color) const {
+	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
 		auto y   = location.Y;
 		auto sp  = renderer->GetXSpacing();
 		int tot  = (int)location.Width;
+
+		if(strikecolor.R == -1)
+			strikecolor = color;
+
+		if(underlinecolor.R == -1)
+			underlinecolor = color;
 
 		internal::boundedprint(
 			*renderer, text.begin(), text.end(), tot,
@@ -619,6 +668,14 @@ namespace Gorgon { namespace Graphics {
 					renderer->Render(it->g, target, {(float)it->location + off, (float)y}, color);
 				}
 
+				if(strike) {
+					target.Draw((float)begin->location + off, y + GetStrikePosition(), (float)w, (float)renderer->GetLineThickness(), strikecolor);
+				}
+
+				if(underline) {
+					target.Draw((float)begin->location + off, y + renderer->GetUnderlineOffset(), (float)w, (float)renderer->GetLineThickness(), underlinecolor);
+				}
+
 				y += (int)std::round(renderer->GetHeight() * vspace);
 
 				if(g != 0)
@@ -628,23 +685,6 @@ namespace Gorgon { namespace Graphics {
 			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);
-	}
-
-	Geometry::Size StyledRenderer::GetSize(const std::string &text) const {
-		auto sp = renderer->GetXSpacing();
-		auto cur = Geometry::Point(0, 0);
-
-		int maxx = 0;
-
-		internal::simpleprint(
-			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
-			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
-			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth),
-			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
-		);
-
-		return{maxx, cur.Y + renderer->GetHeight()};
 	}
 
 } }

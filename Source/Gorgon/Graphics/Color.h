@@ -337,6 +337,26 @@ namespace Gorgon { namespace Graphics {
 			return (*this = RGBA(color));
 		}
 
+		/// Assignment from float
+		RGBAf &operator =(float lum) {
+			R = lum;
+			G = lum;
+			B = lum;
+			A = 1;
+
+			return *this;
+		}
+
+		/// Assignment from float
+		RGBAf &operator =(double lum) {
+			R = (float)lum;
+			G = (float)lum;
+			B = (float)lum;
+			A = 1;
+
+			return *this;
+		}
+
 		/// Converts this color to RGBA without overflow checking
 		explicit operator RGBA() const {
 			return{Byte(R*255), Byte(G*255), Byte(B*255), Byte(A*255)};

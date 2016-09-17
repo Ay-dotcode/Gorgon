@@ -79,6 +79,13 @@ namespace Gorgon { namespace Graphics {
         
         /// Baseline point of glyphs from the top.
         virtual int GetBaseLine() const = 0;
+
+		/// Should return the average thickness of a line. This information can be used to contruct
+		/// underline and strike through.
+		virtual int GetLineThickness() const = 0;
+
+		/// The position of the underline, if it is to be drawn.
+		virtual int GetUnderlineOffset() const = 0;
 	};
 
     /**
@@ -334,20 +341,97 @@ namespace Gorgon { namespace Graphics {
 		void SetUnderline(bool value) {
 			underline = value;
 		}
-		
+
+		/// Underlines the text
+		void Underline() {
+			underline = true;
+		}
+
+		/// Underlines the text with the given color
+		void Underline(RGBAf color) {
+			underline = true;
+			underlinecolor = color;
+		}
+
 		/// Returns whether the text is underlined
 		bool GetUnderline() const {
 			return underline;
 		}
 
+		/// Changes the underline color of the text. By default underline color
+		/// will be the same as text color. To get default value, use
+		/// ResetUnderlineColor function
+		void SetUnderlineColor(RGBAf value) {
+			underlinecolor = value;
+		}
+
+		/// Returns the current underline color.
+		RGBAf GetUnderlineColor() const {
+			if(underlinecolor.R == -1)
+				return color;
+			else
+				return underlinecolor;
+		}
+
+		/// Sets underline color to match with text color
+		void ResetUnderlineColor() {
+			underlinecolor = -1.f;
+		}
+
 		/// Sets whether the text would be stroked
-		void SetStrikeThrough(bool value) {
-			strikethrough = value;
+		void SetStrike(bool value) {
+			strike = value;
+		}
+
+		/// Strikes the text
+		void Strike() {
+			strike = true;
+		}
+
+		/// Strikes the text with the given color
+		void Strike(RGBAf color) {
+			strike = true;
+			strikecolor = color;
+		}
+
+		/// Returns whether the text would stroked
+		bool GetStrike() const {
+			return strike;
+		}
+
+		/// Changes the strike color of the text. By default strike color
+		/// will be the same as text color. To get default value, use
+		/// ResetStrikeColor function
+		void SetStrikeColor(RGBAf value) {
+			strikecolor = value;
 		}
 		
-		/// Returns whether the text would stroked
-		bool GetStrikeThrough() const {
-			return strikethrough;
+		/// Returns the current strike color.
+		RGBAf GetStrikeColor() const {
+			if(strikecolor.R == -1)
+				return color;
+			else
+				return strikecolor;
+		}
+
+		/// Sets strike color to match with text color
+		void ResetStrikeColor() {
+			strikecolor = -1.f;
+		}
+
+		/// Changes the strike position to the given value. Default value for strike
+		/// position is automatically calculated, use ResetStrikePosition to get
+		/// back to the default
+		void SetStrikePosition(int value) {
+			strikepos = value;
+		}
+		
+		/// Returns current strike position
+		int GetStrikePosition() const {
+			if(strikepos == INT_MIN)
+				return (int)std::round( (renderer->GetHeight() - renderer->GetLineThickness()) * .6f );
+			else
+				return strikepos;
 		}
 
 		/// Sets the default alignment for the text
@@ -496,16 +580,20 @@ namespace Gorgon { namespace Graphics {
 
 	private:
 		//internal, float to facilitate shadow offset
-		void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const;
+		void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const;
 
-		void print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color) const;
+		void print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const;
 
 		GlyphRenderer *renderer = nullptr;
 
 		RGBAf color = 1.f;
+
 		TextShadow shadow = {};
 		bool underline = false;
-		bool strikethrough = false;
+		RGBAf underlinecolor = -1.f;
+		bool strike = false;
+		RGBAf strikecolor = -1.f;
+		int strikepos = INT_MIN;
 		TextAlignment defaultalign = TextAlignment::Left;
 		bool  justify = false;
 		float vspace = 1.2f;

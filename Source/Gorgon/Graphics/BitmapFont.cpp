@@ -81,6 +81,12 @@ namespace Gorgon { namespace Graphics {
 					height = lh;
 			}
 		}
+
+		if(baseline == 0) {
+			baseline = (int)std::round(height * 0.7);
+		}
+
+		underlinepos = (int)std::round((baseline + height) / 2.f);
 	}
 
 	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, int baseline, bool trim, bool toalpha, bool prepare) {
@@ -234,6 +240,8 @@ namespace Gorgon { namespace Graphics {
         
         //width of the space, might need adjusting if trimming
         int spw = 0;
+		//height of underscore
+		int uh = 0;
         Bitmap *spim = nullptr;
 
 		for(auto p : files) {
@@ -267,6 +275,10 @@ namespace Gorgon { namespace Graphics {
 				auto res = p.second.Trim();
 				if(res.Top != p.second.GetHeight())
 					bl -= res.Top;
+			}
+
+			if(g == '_') {
+				uh = p.second.GetHeight();
 			}
 
 			if(HasAlpha(p.second.GetMode()) && toalpha) {
@@ -320,6 +332,12 @@ namespace Gorgon { namespace Graphics {
 			else {
 				glyphmap[0] = glyphmap.begin()->second;
 			}
+		}
+
+		underlinepos = (int)std::round((baseline + height) / 2.f);
+
+		if(trim && uh) {
+			linethickness = uh;
 		}
 
         return files.GetSize();

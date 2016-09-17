@@ -90,23 +90,35 @@ namespace Gorgon { namespace Graphics {
 
 		virtual int GetDigitWidth() const override { return digw; }
 
+		virtual int GetLineThickness() const override { return linethickness; }
+
+		virtual int GetUnderlineOffset() const override { return underlinepos; }
+
 
 		/// Changes the spacing between consecutive characters
 		void SetSpacing(int value) {
 			xspace = value;
 		}
 
-		/// Changes the line height of the font.
+		/// Changes the line height of the font. Adding glyphs may override this value.
 		void SetHeight(int value) { height = value; }
 
-		/// Changes the maximum width for a character
+		/// Changes the maximum width for a character. Adding glyphs may override this value.
 		void SetMaxWidth(int value) { maxwidth = value; }
 
-		/// Searches through the currently registered glyphs to determine dimensions
+		/// Searches through the currently registered glyphs to determine dimensions. This 
+		/// function will calculate following values: height, max width, underline offset.
+		/// Baseline is set to 0.7 * height if it is 0.
 		void DetermineDimensions();
         
         /// Changes the spacing between glyphs
         void SetGlyphSpacing(int spacing) { this->spacing = spacing; }
+
+		/// Changes the line thickness to the specified value.
+		void SetLineThickness(int value) { linethickness = value; }
+
+		/// Changes the underline position to the specified value.
+		void SetUnderlineOffset(int value) { underlinepos = value; }
         
         /// Imports bitmap font images from a folder with the specified file naming template.
         /// Automatic detection will only work if there is a single bitmap font set in the
@@ -123,7 +135,9 @@ namespace Gorgon { namespace Graphics {
 		/// will return the number of images imported. Imported images will be destroyed by 
 		/// this object. Automatic conversion can cause issues with suffixes, however, if
 		/// naming is set, any additional text after the number or character is ignored.
-		/// If prepare is set to false, maxwidth and lineheight will not be set properly.
+		/// This function calculates the line thickness using trimmed height of the underscore.
+		/// If trimming is not set, this functionality will not work. Additionally, this 
+		/// function will set underline position to halfway between baseline and bottom.
         int ImportFolder(const std::string &path, ImportNamingTemplate naming = Automatic, int start = 0, 
 						 std::string prefix = "", int baseline = -1, bool trim = true, bool converttoalpha = true, 
 						 bool prepare = true);
@@ -148,6 +162,10 @@ namespace Gorgon { namespace Graphics {
 		int xspace = 1;
         
         int spacing = 0;
+
+		int linethickness = 1;
+
+		int underlinepos = 0;
     };
     
 } }
