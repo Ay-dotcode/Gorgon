@@ -32,7 +32,7 @@ int main() {
     std::cout<<WM::Monitor::Primary().GetName()<<": "<<WM::Monitor::Primary().GetLocation()<<std::endl;
     //std::cout<<WM::GetScreenRegion(0)<<std::endl;
     
-	Window wind({400, 400}, "windowtest");
+	Window wind({800, 800}, "windowtest");
 	Graphics::Initialize();
 
 	Graphics::Layer l;
@@ -64,7 +64,7 @@ int main() {
 	img2.Prepare();
 	//img2.Draw(l, 0, 0);
 
-
+	
 	for(int i=0; i<4; i++)
 		img2.Draw(l, 25+16+i*32, 0);
 
@@ -78,12 +78,16 @@ int main() {
     fnt.Pack();
 
 	Graphics::StyledRenderer sty(fnt);
-	sty.UseFlatShadow({0.f, 0.5f}, {2,2});
+	sty.UseFlatShadow({0.f, 1.0f}, {.75, 0});
 	sty.SetColor({0.5f, 0.8f, 0.8f});
+	sty.JustifyLeft();
 	
-    
-	fnt.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""dolor sit amet, consecteturadipiscingelitseddoeiusmodtemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 120, Graphics::TextAlignment::Right, Graphics::RGBAf(1.0f));
+	//sty.Print(l, "a", 250, 200);
+
+	sty.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""dolor sit amet, consecteturadipiscingelitseddoeiusmodtemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 120);
 	sty.Print(l, "abc\tfgh\n1234 dsda\tasdf dsgh", 250, 200);
+	sty.DisableShadow();
+	sty.Print(l, "abc\tfgh\n1234 dsda\tasdf dsgh", 250, 220);
 
 	wind.KeyEvent.Register([](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))

@@ -42,7 +42,7 @@ namespace Gorgon { namespace Graphics {
 	Geometry::Size BitmapFont::GetSize(Glyph chr) const {
 		if(glyphmap.count(chr))
 			return glyphmap.at(chr).image->GetSize();
-		else if(glyphmap.count(0))
+		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr) && chr != '\t')
 			return glyphmap.at(0).image->GetSize();
 		else
 			return{0, 0};
@@ -53,7 +53,7 @@ namespace Gorgon { namespace Graphics {
             auto glyph = glyphmap.at(chr);
             glyph.image->Draw(target, location + Geometry::Pointf(0, (Float)glyph.offset), color);
         }
-		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr)) {
+		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr) && chr != '\t') {
 			auto glyph = glyphmap.at(0);
 			glyph.image->Draw(target, location + Geometry::Pointf(0, (Float)glyph.offset), color);
 		}

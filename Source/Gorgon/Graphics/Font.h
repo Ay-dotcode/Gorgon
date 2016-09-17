@@ -18,7 +18,7 @@ namespace Gorgon { namespace Graphics {
 		bool isnewline(Glyph g);
 		bool isspaced(Glyph g);
 		bool isspace(Glyph g);
-		bool isadjusablespace(Glyph g);
+		bool isadjustablespace(Glyph g);
 		bool isbreaking(Glyph g);
 
 		inline int ceildiv(int v, float f) { return (int)std::ceil(v/f); }
@@ -315,8 +315,8 @@ namespace Gorgon { namespace Graphics {
 			shadow = value;
 		}
 
-		/// Remove text shadow
-		void RemoveShadow() {
+		/// Disables text shadow
+		void DisableShadow() {
 			shadow = TextShadow::None;
 		}
 
@@ -387,16 +387,19 @@ namespace Gorgon { namespace Graphics {
 		/// Aligns the text to the left, sets justify
 		void JustifyLeft() {
 			defaultalign = TextAlignment::Left;
+			justify = true;
 		}
 
 		/// Aligns the text to the right, sets justify
 		void JustifyRight() {
 			defaultalign  = TextAlignment::Right;
+			justify = true;
 		}
 
 		/// Aligns the text to the center, sets justify
 		void JustifyCenter() {
 			defaultalign = TextAlignment::Center;
+			justify = true;
 		}
 		
 		/// Returns whether the text would be justified
@@ -483,15 +486,19 @@ namespace Gorgon { namespace Graphics {
 	protected:
 		virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override;
 
-		virtual void print(TextureTarget &target, const std::string &text, Geometry::Rectangle location) const override { }
+		virtual void print(TextureTarget &target, const std::string &text, Geometry::Rectangle location) const override {
+			print(target, text, location, defaultalign);
+		}
 
 		virtual void print(TextureTarget &target, const std::string &text, 
-						   Geometry::Rectangle location, TextAlignment align_override) const override { }
+						   Geometry::Rectangle location, TextAlignment align_override) const override;
 
 
 	private:
 		//internal, float to facilitate shadow offset
 		void print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color) const;
+
+		void print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color) const;
 
 		GlyphRenderer *renderer = nullptr;
 

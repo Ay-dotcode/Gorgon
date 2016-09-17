@@ -99,7 +99,7 @@ namespace Gorgon { namespace Graphics {
 			}
 		}
 
-		bool isadjusablespace(Glyph g) {
+		bool isadjustablespace(Glyph g) {
 			switch(g) {
 			case 0x20:
 			case 0xa0:
@@ -249,7 +249,7 @@ namespace Gorgon { namespace Graphics {
 			Glyph g;
 		};
 
-		using markvecit = std::vector<glyphmark>::const_iterator;
+		using markvecit = std::vector<glyphmark>::iterator;
 
 		void boundedprint(
 			const GlyphRenderer &renderer, std::string::const_iterator begin, std::string::const_iterator end, int width,
@@ -408,7 +408,7 @@ namespace Gorgon { namespace Graphics {
 			}
 
 			if(!acc.empty()) {
-				doline(0, acc.begin(), acc.end(), x);
+				doline(-1, acc.begin(), acc.end(), x);
 			}
 		}
 
@@ -496,7 +496,7 @@ namespace Gorgon { namespace Graphics {
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Point location) const {
 		if(shadow.type == TextShadow::Flat) {
-			print(target, text, location + shadow.offset, shadow.color);
+			print(target, text, Geometry::Pointf(location) + shadow.offset, shadow.color);
 		}
 
 		print(target, text, location, color);
@@ -513,6 +513,120 @@ namespace Gorgon { namespace Graphics {
 			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
 			std::bind(&internal::dodefaulttab<float>, location.X, std::ref(cur.X), (float)tabwidth),
 			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace); cur.X = location.X; }
+		);
+	}
+
+	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
+		if(shadow.type == TextShadow::Flat) {
+			print(target, text, Geometry::Rectanglef(location) + shadow.offset, align_override, shadow.color);
+		}
+
+		print(target, text, location, align_override, color);
+	}
+
+	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color) const {
+		auto y   = location.Y;
+		auto sp  = renderer->GetXSpacing();
+		int tot  = (int)location.Width;
+
+		internal::boundedprint(
+			*renderer, text.begin(), text.end(), tot,
+
+			[&](Glyph g, internal::markvecit begin, internal::markvecit end, int w) {
+				auto off = location.X;
+
+				if(justify && g == 0) {
+					//count spaces and letters
+					int sps = 0;
+					int letters = 0;
+					Glyph prev = 0;
+
+					for(auto it=begin; it!=end; ++it) {
+						if(internal::isadjustablespace(it->g))
+							sps++;
+
+						//ignore before and after tabs
+						if(it->g == '\t') {
+							prev = 0;
+						}
+						else {
+							if(prev && internal::isspaced(prev))
+								letters++;
+
+							prev = it->g;
+						}
+					}
+
+					auto target = tot - w;
+					int gs = 0; //glyph spacing
+					int spsp = 0; //space spacing
+					int extraspsp = 0; //extra spaced spaces
+
+					if(letters && target/letters >= 1) { //we can increase glyph spacing
+						gs = target/letters;
+						if(gs > sp)
+							gs = sp;
+
+						target -= gs*letters;
+					}
+
+					if(sps > 0) {
+						spsp = target/sps;
+
+						//max 2em
+						if(spsp > renderer->GetHeight() * 2) {
+							spsp = renderer->GetHeight() * 2;
+							target -= spsp*sps;
+						}
+						else {
+							target -= spsp*sps;
+
+							extraspsp = target;
+							target = 0;
+						}
+					}
+
+					//go over all glyphs and set widths
+					int off = 0;
+					for(auto it=begin; it!=end; ++it) {
+						it->location += off;
+
+						if(it->g == '\t') {
+							prev = 0;
+						}
+						else if(internal::isadjustablespace(it->g)) {
+							off += spsp;
+
+							if(extraspsp--)
+								off++;
+						}
+						else if(internal::isspaced(it->g)) {
+							off += gs;
+						}
+					}
+
+					w = tot - target;
+				}
+
+				if(align == TextAlignment::Center) {
+					off += (int)std::round((tot - w) / 2.f);
+				}
+				else if(align == TextAlignment::Right) {
+					off += tot - w;
+				}
+
+				for(auto it=begin; it!=end; ++it) {
+					renderer->Render(it->g, target, {(float)it->location + off, (float)y}, color);
+				}
+
+				y += (int)std::round(renderer->GetHeight() * vspace);
+
+				if(g != 0)
+					y += pspace;
+			},
+
+			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);
 	}
 

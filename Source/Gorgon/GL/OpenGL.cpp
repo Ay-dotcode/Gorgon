@@ -104,7 +104,6 @@ namespace Gorgon { namespace GL {
 
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, 0x0);
 		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
@@ -156,8 +155,8 @@ namespace Gorgon { namespace GL {
 
 		glViewport(0, 0, size.Width, size.Height);
 
-		glCullFace(GL_NONE);
-		//glFrontFace(GL_CCW);
+		//glCullFace(GL_NONE);
+		glFrontFace(GL_CCW);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glFlush();

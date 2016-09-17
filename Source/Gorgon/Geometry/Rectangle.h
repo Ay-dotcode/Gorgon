@@ -50,7 +50,7 @@ namespace Gorgon { namespace Geometry {
 
 		/// Converting constructor from a different typed rectangle
 		template <class O_>
-		explicit basic_Rectangle(const basic_Rectangle<O_> &rect) : 
+		basic_Rectangle(const basic_Rectangle<O_> &rect) : 
 			X(T_(rect.X)), Y(T_(rect.Y)), Width(T_(rect.Width)), Height(T_(rect.Height))
 		{ }
 
