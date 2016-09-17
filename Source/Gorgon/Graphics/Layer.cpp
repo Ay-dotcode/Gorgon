@@ -6,6 +6,54 @@ namespace Gorgon {
 	extern Graphics::RGBAf LayerColor;
 namespace Graphics {
 
+	void Layer::Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectanglef &location, RGBAf color /*= RGBAf(1.f)*/) {
+		if(tiling==Tiling::None) {
+			Draw(image, location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft(), color);
+		}
+		else if(!image.IsPartial()) {			
+			if(tiling == Tiling::Both) {
+				auto texc = image.GetCoordinates();
+				auto sz   = image.GetImageSize();
+
+				Geometry::Rectanglef r ={texc[0], texc[2]};
+				auto wr = location.Width / sz.Width;
+				auto hr = location.Height / sz.Height;
+
+				Draw(image,
+					 location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft(),
+					 r.TopLeft(), {r.X + r.Width*wr, r.Y}, {r.X + r.Width*wr, r.Y + r.Height*hr}, {r.X, r.Y + r.Height*hr},
+					 color);
+			}
+			else if(tiling == Tiling::Horizontal) {
+				auto texc = image.GetCoordinates();
+				auto sz   = image.GetImageSize();
+
+				Geometry::Rectanglef r ={texc[0], texc[2]};
+				auto wr = location.Width / sz.Width;
+
+				Draw(image,
+					 location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft(),
+					 r.TopLeft(), {r.X + r.Width*wr, r.Y}, {r.X + r.Width*wr, r.Bottom()}, r.BottomLeft(),
+					 color);
+			}
+			else {
+				auto texc = image.GetCoordinates();
+				auto sz   = image.GetImageSize();
+
+				Geometry::Rectanglef r ={texc[0], texc[2]};
+				auto hr = location.Height / sz.Height;
+
+				Draw(image,
+					 location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft(),
+					 r.TopLeft(), r.TopRight(), {r.Right(), r.Y + r.Height*hr}, {r.X, r.Y + r.Height*hr},
+					 color);
+			}
+		}
+		else {
+			Utils::NotImplemented();
+		}
+	}
+
 	void Layer::Render() {
 		using namespace internal;
 

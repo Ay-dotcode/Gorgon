@@ -56,6 +56,38 @@ void main()
 }
 )shader";
 
+	const std::string TiledAtlasFragSrcCode = R"shader(
+#version 130
+
+in vec2 texcoord;
+
+uniform sampler2D diffuse;
+uniform vec4      tint;
+uniform vec2	  size;
+
+out vec4 output_color;
+
+void main()
+{
+    output_color = texture(diffuse, vec2(mod(texcoord.x, size.x), mod(texcoord.y, size.y)) * tint;
+}
+)shader";
+
+	const std::string TiledAtlasAlphaFragSrcCode = R"shader(
+#version 130
+
+in vec2 texcoord;
+
+uniform sampler2D diffuse;
+uniform vec4      tint;
+
+out vec4 output_color;
+
+void main()
+{
+    output_color = vec4(tint.rgb, texture(diffuse, vec2(mod(texcoord.x, size.x), mod(texcoord.y, size.y)).a * tint.a);
+}
+)shader";
 
     const std::string MaskedFragmentSrcCode = R"shader(
 #version 130

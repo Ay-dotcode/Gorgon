@@ -53,20 +53,32 @@ int main() {
 		}
 
 	img.Prepare();*/
-	
-	Graphics::Bitmap img2({16, 400}, Graphics::ColorMode::RGB);
 
-	for(int x = 0; x<16; x++)
-		for(int y = 0; y<400; y++)
-			for(int c=0;c<3;c++)
-				img2({x, y}, c) = 0x80;
+	Graphics::Bitmap img2({1, 1}, Graphics::ColorMode::Alpha);
+
+	for(int x = 0; x<1; x++)
+		for(int y = 0; y<1; y++)
+			for(int c=0; c<1; c++)
+				img2({x, y}, c) = 0xff;
 
 	img2.Prepare();
-	//img2.Draw(l, 0, 0);
+
+	Graphics::Bitmap img3({16, 16}, Graphics::ColorMode::Grayscale);
+
+	for(int x = 0; x<16; x++)
+		for(int y = 0; y<16; y++) {
+			if((x/8) != (y/8))
+				img3({x, y}, 0) = 0x10;
+			else
+				img3({x, y}, 0) = 0x30;
+		}
+
+	img3.Prepare();
+	img3.DrawIn(l);
 
 	
 	for(int i=0; i<4; i++)
-		img2.Draw(l, 25+16+i*32, 0);
+		img2.DrawStretched(l, 25+16+i*32, 0, 16, 400, {1.f, 1.f, 1.f, .3f});
 
 	for(int i=0; i<10; i++)
 		img.Draw(l, 150, 150);

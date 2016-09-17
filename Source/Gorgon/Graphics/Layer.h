@@ -15,6 +15,17 @@ namespace Gorgon { namespace Graphics {
 		/// This class represents a drawable surface.
 		class Surface {
 		public:
+			Surface(const Surface &) = delete;
+
+			Surface(Surface &&s) {
+				vertices = s.vertices;
+				texture  = s.texture;
+				source   = s.source;
+				color    = s.color;
+
+				s.texture = nullptr;
+				s.source  = nullptr;
+			}
 
 			/// Sets the source to the given source. This variant uses texture coordinates given by the source.
 			Surface(const TextureSource &source, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
@@ -62,6 +73,10 @@ namespace Gorgon { namespace Graphics {
 					auto texture=source->GetCoordinates();
 					return {texture[0], texture[1], texture[2], texture[3]};
 				}
+			}
+
+			bool IsPartial() {
+				return source->IsPartial();
 			}
 			
 			/// Returns the color mode of the texture
@@ -139,24 +154,21 @@ namespace Gorgon { namespace Graphics {
 
 		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 			const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
+
 			surfaces.emplace_back(image, p1, p2, p3, p4, color);
 		}
 
-		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
+		virtual void Draw(
+			const TextureSource &image, 
+			const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 			const Geometry::Pointf &p3, const Geometry::Pointf &p4, 
 			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
 			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color = RGBAf(1.f)) override {
+
 			surfaces.emplace_back(image, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color);
 		}
 
-		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectanglef &location, RGBAf color = RGBAf(1.f)) override {
-			if(tiling==Tiling::None) {
-				Draw(image, location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft(), color);
-			}
-			else {
-				Utils::NotImplemented();
-			}
-		}
+		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectanglef &location, RGBAf color = RGBAf(1.f)) override;
 
 		virtual void Clear() override {
 			surfaces.clear();
@@ -172,7 +184,7 @@ namespace Gorgon { namespace Graphics {
 		
 		virtual RGBAf GetTintColor() const { return color; }
 
-		virtual Geometry::Size GetTargetSize() const override { return Gorgon::Layer::GetSize(); }
+		virtual Geometry::Size GetTargetSize() const override { return Gorgon::Layer::GetEffectiveBounds().GetSize(); }
 
 		using Gorgon::Layer::GetSize;
 

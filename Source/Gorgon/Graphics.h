@@ -481,12 +481,12 @@ namespace Gorgon {
 			/// Should return the size of the image stored in texture. Not the whole texture size.
 			virtual Geometry::Size GetImageSize() const = 0;
 
-			/// Should returns the coordinates of the texture to be used
+			/// Should return the coordinates of the texture to be used
 			virtual const Geometry::Pointf *GetCoordinates() const = 0;
 
 			/// Returns whether this texture uses only a part of the GL::Texture. This indicates that the tiling
 			/// operations should be performed without texture repeating method.
-			bool IsPrtial() const {
+			bool IsPartial() const {
 				return memcmp(GetCoordinates(), fullcoordinates, sizeof(fullcoordinates))!=0;
 			}
 

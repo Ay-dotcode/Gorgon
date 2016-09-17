@@ -277,9 +277,38 @@ namespace Gorgon {
 			return bounds.TopLeft();
 		}
 		
-		/// Retuns the boundaries of the layer
+		/// Returns the boundaries of the layer
 		Geometry::Bounds GetBounds() const {
 			return bounds;
+		}
+
+		/// Returns the effective boundaries of the layer
+		Geometry::Bounds GetEffectiveBounds() const {
+			if(!parent)
+				return bounds;
+
+			auto p = bounds.TopLeft();
+			auto s = bounds.GetSize();
+
+			auto pb = parent->GetEffectiveBounds();
+
+			if(s == Geometry::Size(0, 0)) {
+				s = pb.GetSize();
+				s.Width  -= p.X;
+				s.Height -= p.Y;
+			}
+			else {
+				auto w = pb.Width() - p.X;
+				auto h = pb.Height() - p.Y;
+
+				if(s.Width > w)
+					s.Width = w;
+				
+				if(s.Height > h)
+					s.Height = h;
+			}
+
+			return {p, s};
 		}
 		/// @}
 
