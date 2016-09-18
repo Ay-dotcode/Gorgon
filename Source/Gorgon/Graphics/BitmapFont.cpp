@@ -344,7 +344,7 @@ namespace Gorgon { namespace Graphics {
     }
 
 
-    void BitmapFont::Pack(bool tight, bool delold) { 
+    void BitmapFont::Pack(bool tight, DeleteConstants del) {
         Containers::Collection<const Bitmap> bitmaps;
         std::vector<std::pair<Glyph, int>> packing;
         
@@ -368,9 +368,9 @@ namespace Gorgon { namespace Graphics {
             auto im = glyphmap[g.first].image;
             auto it = destroylist.Find(im);
             
-            if(it.IsValid())
+            if(del != None && it.IsValid())
                 it.Delete();
-            else if(delold)
+            else if(del == All)
                 delete im;
             
             auto tex = new TextureImage(std::move(newimgs[g.second]));

@@ -41,6 +41,12 @@ namespace Gorgon { namespace Graphics {
             /// Hexadecimal code of the character is used as filename
             Hexadecimal
         };
+
+		enum DeleteConstants {
+			None,
+			Owned,
+			All
+		};
         
         explicit BitmapFont(int baseline = 0) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)), baseline(baseline) { }
         
@@ -64,10 +70,11 @@ namespace Gorgon { namespace Graphics {
 
         /// Converts individual glyphs to a single atlas. Only the glyphs that are registered as bitmaps can be packed.
         /// This function will automatically detect types and act accordingly. If the ownership of the packed images
-        /// belong to the font or deleteold parameter is set, they will be deleted automatically. If tight packing is
-		/// set, glyphs will be placed next to each other, saving space. However, if resized, they will have 
-		/// artifacts.
-        void Pack(bool tight = false, bool deleteold = false);
+        /// belong to the font and del parameter is set to owned, owned images that are created either by import or a
+		/// previous pack will be destroyed. If it is set to all, all images that took part in packing will be destroyed
+		/// If tight packing is set, glyphs will be placed next to each other, saving space. However, if resized, they 
+		/// will have artifacts.
+        void Pack(bool tight = false, DeleteConstants del = Owned);
         
         virtual Geometry::Size GetSize(Glyph chr) const override;
         
