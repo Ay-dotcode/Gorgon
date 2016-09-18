@@ -635,26 +635,26 @@ namespace Gorgon { namespace Graphics {
 						}
 					}
 
-					//go over all glyphs and set widths
-					int off = 0;
-					for(auto it=begin; it!=end; ++it) {
-						it->location += off;
+					if(target == 0) {
+						//go over all glyphs and set widths
+						int off = 0;
+						for(auto it=begin; it!=end; ++it) {
+							it->location += off;
 
-						if(it->g == '\t') {
-							prev = 0;
-						}
-						else if(internal::isadjustablespace(it->g)) {
-							off += spsp;
+							if(internal::isadjustablespace(it->g)) {
+								off += spsp;
 
-							if(extraspsp--)
-								off++;
+								if(extraspsp-->0)
+									off++;
+							}
+
+							if(it->g != '\t' && internal::isspaced(it->g)) {
+								off += gs;
+							}
 						}
-						else if(internal::isspaced(it->g)) {
-							off += gs;
-						}
+
+						w = tot - target;
 					}
-
-					w = tot - target;
 				}
 
 				if(align == TextAlignment::Center) {

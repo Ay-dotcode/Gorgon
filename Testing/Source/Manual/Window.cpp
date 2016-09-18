@@ -63,11 +63,11 @@ int main() {
 
 	img2.Prepare();
 
-	Graphics::Bitmap img3({16, 16}, Graphics::ColorMode::Grayscale);
+	Graphics::Bitmap img3({50, 50}, Graphics::ColorMode::Grayscale);
 
-	for(int x = 0; x<16; x++)
-		for(int y = 0; y<16; y++) {
-			if((x/8) != (y/8))
+	for(int x = 0; x<img3.GetWidth(); x++)
+		for(int y = 0; y<img3.GetHeight(); y++) {
+			if((x/(img3.GetWidth()/2)) != (y/(img3.GetHeight()/2)))
 				img3({x, y}, 0) = 0x10;
 			else
 				img3({x, y}, 0) = 0x30;
@@ -91,14 +91,14 @@ int main() {
 
 	Graphics::StyledRenderer sty(fnt);
 	sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
-	sty.SetColor({0.5f, 0.8f, 0.8f});
+	sty.SetColor({0.6f, 1.f, 1.f});
 	sty.JustifyLeft();
-	sty.Strike({1.f, 0.7f, 0.3f, 1.f});
-	sty.Underline();
+	//sty.Strike({1.f, 0.7f, 0.3f, 1.f});
+	//sty.Underline();
 	
 	//sty.Print(l, "a", 250, 200);
 
-	sty.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""dolor sit amet, consecteturadipiscingelitseddoeiusmodtemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 120);
+	sty.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""folor sit amet, consecteturadipiscingelitseddoeiusmoftemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 300);
 	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 200);
 	sty.DisableShadow();
 	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 220);

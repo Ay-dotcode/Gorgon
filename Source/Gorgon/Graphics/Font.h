@@ -80,7 +80,7 @@ namespace Gorgon { namespace Graphics {
         /// Baseline point of glyphs from the top.
         virtual int GetBaseLine() const = 0;
 
-		/// Should return the average thickness of a line. This information can be used to contruct
+		/// Should return the average thickness of a line. This information can be used to construct
 		/// underline and strike through.
 		virtual int GetLineThickness() const = 0;
 
@@ -529,7 +529,8 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Distance between tab stops. This value is in pixels. Default value is
-		/// 8 * widest glyph's width.
+		/// 8 * widest glyph's width. Tabbing is only fully effective when text is
+		/// right aligned.
 		void SetTabWidth(int value) {
 			tabwidth = value;
 		}
