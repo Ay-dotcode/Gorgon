@@ -170,6 +170,7 @@ namespace Gorgon {
 			CONSTEXPR Type Font_Name			{0x03200103};
 			CONSTEXPR Type Font_Image			{0x03210000};
 			CONSTEXPR Type Font_Props			{0x03200804};
+			CONSTEXPR Type Font_Charmap_II		{0x03200805};
 
 			CONSTEXPR Type FontTheme			{0x03300000};
 			CONSTEXPR Type FontTheme_Font		{0x03301001};

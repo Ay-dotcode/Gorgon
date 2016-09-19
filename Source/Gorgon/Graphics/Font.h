@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <map>
+#include <limits.h>
 
 #include "../Geometry/Point.h"
 #include "../Geometry/Size.h"
@@ -91,7 +92,7 @@ namespace Gorgon { namespace Graphics {
     /**
      * This class allows printing text on the screen. All fonts should support basic left aligned
      * print, aligned rectangular area printing. Additionally, all fonts should support basic info
-     //* functions. TextRenderers must be accept utf-8. internal::decode function should be preferred
+     * functions. TextRenderers must be accept utf-8. internal::decode function should be preferred
 	 * to decode utf-8, among regular utf-8 decoding, this function will map \r\n to \n.
      */
     class TextRenderer {

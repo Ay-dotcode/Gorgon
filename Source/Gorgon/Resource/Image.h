@@ -28,7 +28,7 @@ namespace Gorgon { namespace Resource {
 			Swap(source);
 		}
 
-		virtual GID::Type GetGID() const { return GID::Image; }
+		virtual GID::Type GetGID() const override { return GID::Image; }
 		
 		
 		/// Changes the compression mode. It only works if this image is saved along with a file. Currently only GID::None
@@ -46,10 +46,6 @@ namespace Gorgon { namespace Resource {
 
 		virtual void Discard() override { Bitmap::Discard(); }
 
-		/// Trims the exterior empty regions of this image, returning the trimming margins. Notice that trimming image does not
-		/// prepare the new data to be drawn, a separate call to Prepare function is necessary
-		//Geometry::Margins Trim(bool left=true, bool right=true, bool top=true, bool bottom=true);
-
 		/// Loads the image from the disk. This function requires image to be tied to a resource file.
 		bool Load();
 
@@ -59,6 +55,8 @@ namespace Gorgon { namespace Resource {
 
 		/// This function loads a image resource from the given file
 		static Image *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
+        
+        static void SaveThis(const Graphics::Bitmap &bmp);
 
 	protected:
 		virtual ~Image() { }

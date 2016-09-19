@@ -5,6 +5,8 @@ SET(Local
 	Animation.cpp
 	Base.h
 	Base.cpp
+	Font.h
+	Font.cpp
 	Blob.h
 	Blob.cpp
 	DataItems.h

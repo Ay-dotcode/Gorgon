@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <Gorgon/Utils/Assert.h>
 #include <map>
 
 #include "Font.h"
@@ -52,9 +53,74 @@ namespace Gorgon { namespace Graphics {
         
         BitmapFont(const BitmapFont &) = delete;
         
-        //duplicate and move constructor
+        BitmapFont Duplicate() {
+            Utils::NotImplemented();
+        }
         
+        BitmapFont(BitmapFont &&other) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)) {
+            using std::swap;
+            
+            swap(glyphmap, other.glyphmap);
+            
+            swap(destroylist, other.destroylist);
+            
+            isfixedw = other.isfixedw;
+            
+            maxwidth = other.maxwidth;
+            
+            height = other.height;
+            
+            baseline = other.baseline;
+
+            digw = other.digw;
+
+            isascii = other.isascii;
+
+            xspace = other.xspace;
+            
+            spacing = other.spacing;
+
+            linethickness = other.linethickness;
+
+            underlinepos = other.underlinepos;
+        }
+      
         BitmapFont &operator =(const BitmapFont &) = delete;
+        
+        /// Moves another bitmap font into this one. This font will be destroyed
+        /// in this process
+        BitmapFont &operator =(BitmapFont &&other) {
+            using std::swap;
+            
+            destroylist.Destroy();
+            glyphmap.clear();
+            
+            swap(glyphmap, other.glyphmap);
+            
+            swap(destroylist, other.destroylist);
+            
+            isfixedw = other.isfixedw;
+            
+            maxwidth = other.maxwidth;
+            
+            height = other.height;
+            
+            baseline = other.baseline;
+
+            digw = other.digw;
+
+            isascii = other.isascii;
+
+            xspace = other.xspace;
+            
+            spacing = other.spacing;
+
+            linethickness = other.linethickness;
+
+            underlinepos = other.underlinepos;
+            
+            return *this;
+        }
         
         ~BitmapFont() {
 			destroylist.Destroy();
@@ -63,6 +129,8 @@ namespace Gorgon { namespace Graphics {
         /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
         /// Ownership of bitmap is not transferred.
         void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, int baseline = 0);
+        
+        //assumeglyph
 
 		virtual bool IsASCII() const override {
 			return isascii;
@@ -75,6 +143,8 @@ namespace Gorgon { namespace Graphics {
 		/// If tight packing is set, glyphs will be placed next to each other, saving space. However, if resized, they 
 		/// will have artifacts.
         void Pack(bool tight = false, DeleteConstants del = Owned);
+        
+        using BasicFont::GetSize;
         
         virtual Geometry::Size GetSize(Glyph chr) const override;
         
@@ -148,7 +218,74 @@ namespace Gorgon { namespace Graphics {
         int ImportFolder(const std::string &path, ImportNamingTemplate naming = Automatic, int start = 0, 
 						 std::string prefix = "", int baseline = -1, bool trim = true, bool converttoalpha = true, 
 						 bool prepare = true);
-       
+        
+        /// Returns the image that represents a glyph
+        const RectangularDrawable *GetImage(Glyph g) {
+            if(glyphmap.count(g))
+                return glyphmap.at(g).image;
+            else
+                return nullptr;
+        }
+        
+        /// Removes a glyph from the bitmap font. If this glyph is created by font object
+        /// and this glyph is the last user of that resource, it will be destroyed. Use
+        /// Release to prevent this from happening.
+        void Remove(Glyph g) {
+            if(glyphmap.count(g)) {
+                auto img = glyphmap.at(g).image;
+                
+                auto it = destroylist.Find(img);
+                
+                if(it.IsValid()) {
+                    
+                    int count = std::count_if(glyphmap.begin(), glyphmap.end(), 
+                                [img](decltype(*glyphmap.begin()) p){ return p.second.image == img; });
+                    
+                    if(count == 1) {
+                        it.Delete();
+                    }
+                }
+                
+                glyphmap.erase(g);
+            }
+        }
+        
+        /// If the given resource is owned by this bitmap font, its ownership will be released.
+        bool Release(RectangularDrawable &img) {
+            auto it = destroylist.Find(img);
+            
+            if(it.IsValid()) {            
+                destroylist.Remove(it);
+                
+                return true;
+            }
+            else 
+                return false;
+        }
+        
+        /// Returns if the given image is owned by this bitmap font.
+        bool IsOwned(RectangularDrawable &img) const {
+            auto it = destroylist.Find(img);
+            
+            return it.IsValid();
+        }
+        
+        std::map<Glyph, GlyphDescriptor>::iterator begin() {
+            return glyphmap.begin();
+        }
+        
+        std::map<Glyph, GlyphDescriptor>::iterator end() {
+            return glyphmap.begin();
+        }
+        
+        std::map<Glyph, GlyphDescriptor>::const_iterator begin() const {
+            return glyphmap.begin();
+        }
+        
+        std::map<Glyph, GlyphDescriptor>::const_iterator end() const {
+            return glyphmap.begin();
+        }
+        
     protected:
                            
         std::map<Glyph, GlyphDescriptor> glyphmap;
