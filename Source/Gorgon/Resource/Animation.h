@@ -252,10 +252,10 @@ namespace Gorgon { namespace Resource {
 
 	protected:
 		
-		void save(Writer &writer) override;
+		void save(Writer &writer) const override;
 
 		// Two part save system allows objects that are derived from animation to exist.
-		void savedata(Writer &writer);
+		void savedata(Writer &writer) const;
 
 		/// Frame durations
 		std::vector<AnimationFrame> frames;

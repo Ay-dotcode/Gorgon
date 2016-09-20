@@ -422,7 +422,7 @@ namespace Gorgon { namespace Resource {
 		}
 
 	private:
-		virtual void save(Writer &writer);
+		virtual void save(Writer &writer) const;
 		
 		Containers::Collection<DataItem> items;
 		

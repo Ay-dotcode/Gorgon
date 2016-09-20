@@ -5,7 +5,7 @@
 
 namespace Gorgon { namespace Resource {
 	
-	void Data::save(Writer& writer) { 
+	void Data::save(Writer& writer) const { 
 		auto start=writer.WriteObjectStart(this);
 		
 		for(auto &item : items) {

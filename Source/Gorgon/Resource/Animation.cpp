@@ -51,7 +51,7 @@ namespace Gorgon { namespace Resource {
 		return anim.release();
 	}
 
-	void Animation::savedata(Writer &writer) {
+	void Animation::savedata(Writer &writer) const {
 		//durations
 		writer.WriteChunkHeader(GID::Animation_Durations, frames.size()*4);
 		for(auto &frame : frames) {
@@ -64,7 +64,7 @@ namespace Gorgon { namespace Resource {
 		}
 	}
 
-	void Animation::save(Writer &writer) {
+	void Animation::save(Writer &writer) const {
 		auto start=writer.WriteObjectStart(this);
 
 		savedata(writer);

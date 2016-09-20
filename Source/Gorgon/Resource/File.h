@@ -185,7 +185,7 @@ namespace Gorgon { namespace Resource {
 		void load(bool first, bool shallow);
 		
 		/// This function performs the save operation
-		void save();
+		void save() const;
 
 		/// The root folder, root changes while loading a file
 		Folder *root;

@@ -75,7 +75,7 @@ namespace Gorgon { namespace Resource {
 		/// Loads the blob from the data stream
 		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 		
-		void save(Writer &writer) override;
+		void save(Writer &writer) const override;
 
 		/// Entry point of this resource within the physical file. This value is stored for 
 		/// late loading purposes

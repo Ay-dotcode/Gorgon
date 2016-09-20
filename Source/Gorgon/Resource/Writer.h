@@ -282,22 +282,22 @@ namespace Gorgon { namespace Resource {
 		
 		
 		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
-		Marker WriteObjectStart(Base &base);
+		Marker WriteObjectStart(const Base &base);
 		
 		
 		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
-		Marker WriteObjectStart(Base *base) {
+		Marker WriteObjectStart(const Base *base) {
 			ASSERT(base, "Object cannot be nullptr");
 			return WriteObjectStart(*base);
 		}
 		
 		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
 		/// This variant allows a replacement GID.
-		Marker WriteObjectStart(Base &base, GID::Type type);
+		Marker WriteObjectStart(const Base &base, GID::Type type);
 		
 		/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
 		/// This variant allows a replacement GID.
-		Marker WriteObjectStart(Base *base, GID::Type type) {
+		Marker WriteObjectStart(const Base *base, GID::Type type) {
 			ASSERT(base, "Object cannot be nullptr");
 			return WriteObjectStart(*base, type);
 		}

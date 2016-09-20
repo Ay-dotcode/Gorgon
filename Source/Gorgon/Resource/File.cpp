@@ -172,7 +172,7 @@ namespace Gorgon { namespace Resource {
 		reader.reset(new FileReader(filename));
 	}
 	
-	void File::save() {
+	void File::save() const {
 		writer->open(true);
 		
 		writer->WriteString("GORGON");
@@ -186,7 +186,7 @@ namespace Gorgon { namespace Resource {
 	}
 	
 	/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
-	Writer::Marker Writer::WriteObjectStart(Base &base) {
+	Writer::Marker Writer::WriteObjectStart(const Base &base) {
 		ASSERT(stream, "Writer is not opened.");
 		ASSERT(IsGood(), "Writer is failed.");
 
@@ -209,7 +209,7 @@ namespace Gorgon { namespace Resource {
 	
 	/// Writes the start of an object. Should have a matching WriteEnd with the returned marker.
 	/// This variant allows a replacement GID.
-	Writer::Marker Writer::WriteObjectStart(Base &base, GID::Type type) {
+	Writer::Marker Writer::WriteObjectStart(const Base &base, GID::Type type) {
 		ASSERT(stream, "Writer is not opened.");
 		ASSERT(IsGood(), "Writer is failed.");
 

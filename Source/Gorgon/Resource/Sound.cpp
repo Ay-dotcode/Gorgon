@@ -144,7 +144,7 @@ namespace Gorgon { namespace Resource {
 		return true;
 	}
 
-	void Sound::save(Writer& writer) {
+	void Sound::save(Writer& writer) const {
 		auto start = writer.WriteObjectStart(this);
 
 		auto propstart = writer.WriteChunkStart(GID::Sound_Fmt);

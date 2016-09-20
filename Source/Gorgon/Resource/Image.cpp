@@ -137,7 +137,7 @@ namespace Gorgon { namespace Resource {
 		return true;
 	}
 	
-	void Image::save(Writer &writer) {
+	void Image::save(Writer &writer) const {
 		ASSERT(data, "Image data does not exists");
 		ASSERT(GetMode()==Graphics::ColorMode::RGBA, "Unsupported color mode");
 		

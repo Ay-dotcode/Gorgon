@@ -105,7 +105,7 @@ namespace Gorgon { namespace Resource {
 		return true;
 	}
 	
-	void Blob::save(Writer& writer) {
+	void Blob::save(Writer& writer) const {
 		auto start = writer.WriteObjectStart(this);
 		
 		auto propstart = writer.WriteChunkStart(GID::Blob_Props);

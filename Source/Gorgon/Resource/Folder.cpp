@@ -134,7 +134,7 @@ namespace Gorgon { namespace Resource {
 		return true;
 	}
 
-	void Folder::save(Writer &writer) {
+	void Folder::save(Writer &writer) const {
 		auto start=writer.WriteObjectStart(this);
 		
 		writer.WriteChunkHeader(GID::Folder_Props, 4);

@@ -110,7 +110,7 @@ namespace Gorgon {
 			/// Loads the sound from the data stream
 			bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 
-			void save(Writer &writer) override;
+			void save(Writer &writer) const override;
 
 			/// Checks if the format of the file is well-formed
 			void checkfmt() const;

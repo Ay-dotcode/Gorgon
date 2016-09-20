@@ -62,7 +62,7 @@ namespace Gorgon { namespace Resource {
 		static Font *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
         
     protected:
-		void save(Writer &writer) override;
+		void save(Writer &writer) const override;
 
         Graphics::GlyphRenderer *data = nullptr;
     };

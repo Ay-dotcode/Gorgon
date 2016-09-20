@@ -173,7 +173,7 @@ namespace Gorgon { namespace Resource {
 		/// positioned input stream
 		bool load(std::shared_ptr<Reader> data, unsigned long size, bool first, bool shallow, bool load);
 
-		void save(Writer &writer) override;
+		void save(Writer &writer) const override;
 
 		/// Entry point of this resource within the physical file. This value is stored for 
 		/// late loading purposes

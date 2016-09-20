@@ -64,7 +64,7 @@ namespace Gorgon { namespace Resource {
 		/// Loads the image from the data stream
 		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 		
-		void save(Writer &writer) override;
+		void save(Writer &writer) const override;
 		
 		virtual void loaded() override;
 

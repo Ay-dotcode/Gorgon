@@ -140,7 +140,7 @@ namespace Gorgon {
 			/// Destructor, Always children gets destroyed first
 			virtual ~Base();
 			
-			virtual void save(Writer &writer) = 0;
+			virtual void save(Writer &writer) const = 0;
 
 			/// Destroys the children of this resource
 			void destroychildren();

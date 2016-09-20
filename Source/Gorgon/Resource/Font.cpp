@@ -70,7 +70,7 @@ namespace Gorgon { namespace Resource {
         data = &renderer;
     }
     
-    void Gorgon::Resource::Font::save(Gorgon::Resource::Writer& writer) {
+    void Gorgon::Resource::Font::save(Gorgon::Resource::Writer& writer) const {
         auto start = writer.WriteObjectStart(this);
 		
 		auto propstart = writer.WriteChunkStart(GID::Font_Props);

@@ -28,7 +28,7 @@ namespace Gorgon { namespace Resource {
 		std::string Name;
 
 		/// Saves the data item with header information to gorgon file
-		virtual void Save(Writer &writer) {
+		virtual void Save(Writer &writer) const {
 			auto start=writer.WriteChunkStart(GetGID());
 			writer.WriteStringWithSize(Name);
 			SaveValue(writer);
@@ -49,7 +49,7 @@ namespace Gorgon { namespace Resource {
 
 		/// Saves only the value of the data item to gorgon file. issizewritten controls whether the size of the object
 		/// should be written for some data types (like blob and string)
-		virtual void SaveValue(Writer &writer) = 0;
+		virtual void SaveValue(Writer &writer) const = 0;
 
 		/// This function will initialize data loaders
 		static void InitializeLoaders();
@@ -90,7 +90,7 @@ namespace Gorgon { namespace Resource {
 		using internal::DataImp<int>::Get;
 		using internal::DataImp<int>::Set;
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteInt32(value);
 		}
 
@@ -116,7 +116,7 @@ namespace Gorgon { namespace Resource {
 		using internal::DataImp<float>::Get;
 		using internal::DataImp<float>::Set;
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteFloat(value);
 		}
 
@@ -142,7 +142,7 @@ namespace Gorgon { namespace Resource {
 		using internal::DataImp<std::string>::Get;
 		using internal::DataImp<std::string>::Set;
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteStringWithSize(value);
 		}
 
@@ -168,7 +168,7 @@ namespace Gorgon { namespace Resource {
 		using internal::DataImp<Geometry::Point>::Get;
 		using internal::DataImp<Geometry::Point>::Set;
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteInt32(value.X);
 			writer.WriteInt32(value.Y);
 		}
@@ -195,7 +195,7 @@ namespace Gorgon { namespace Resource {
 		using internal::DataImp<Geometry::Pointf>::Get;
 		using internal::DataImp<Geometry::Pointf>::Set;
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteFloat(value.X);
 			writer.WriteFloat(value.Y);
 		}
@@ -222,7 +222,7 @@ namespace Gorgon { namespace Resource {
 		using internal::DataImp<Geometry::Size>::Get;
 		using internal::DataImp<Geometry::Size>::Set;
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteInt32(value.Width);
 			writer.WriteInt32(value.Height);
 		}
@@ -249,7 +249,7 @@ namespace Gorgon { namespace Resource {
 		using internal::DataImp<Geometry::Rectangle>::Get;
 		using internal::DataImp<Geometry::Rectangle>::Set;
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteInt32(value.X);
 			writer.WriteInt32(value.Y);
 			writer.WriteInt32(value.Width);
@@ -278,7 +278,7 @@ namespace Gorgon { namespace Resource {
 		using internal::DataImp<Geometry::Bounds>::Get;
 		using internal::DataImp<Geometry::Bounds>::Set;
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteInt32(value.Left);
 			writer.WriteInt32(value.Top);
 			writer.WriteInt32(value.Right);
@@ -307,7 +307,7 @@ namespace Gorgon { namespace Resource {
 		using internal::DataImp<Geometry::Margins>::Get;
 		using internal::DataImp<Geometry::Margins>::Set;
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteInt32(value.Left);
 			writer.WriteInt32(value.Top);
 			writer.WriteInt32(value.Right);
@@ -344,7 +344,7 @@ namespace Gorgon { namespace Resource {
 
 		virtual GID::Type GetGID() const override { return GID::Data_Object; }
 
-		virtual void SaveValue(Writer &writer) override {
+		virtual void SaveValue(Writer &writer) const override {
 			if(value) {
 				value->Save(writer);
 			}
