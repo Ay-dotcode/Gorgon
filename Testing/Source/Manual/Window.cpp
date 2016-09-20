@@ -90,14 +90,17 @@ int main() {
 
 	img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
-    Graphics::BitmapFont fnt;
-	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, true);
+    Resource::File f;
+    f.LoadFile("test.gor");
+    f.Prepare();
+    Graphics::BitmapFont fnt = std::move(dynamic_cast<Graphics::BitmapFont&>(f.Root().Get<Resource::Font>(0).GetRenderer()));
+	//fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, true);
     //fnt.Pack();
     
-    Resource::File f;
-    Resource::Font fr(fnt);
-    f.Root().Add(fr);
-    f.Save("test.gor");
+//     Resource::File f;
+//     Resource::Font fr(fnt);
+//     f.Root().Add(fr);
+//     f.Save("test.gor");
     
 
 	Graphics::StyledRenderer sty(fnt);

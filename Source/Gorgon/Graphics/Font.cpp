@@ -424,7 +424,7 @@ namespace Gorgon { namespace Graphics {
 	} //internal
 
     void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Point location, RGBAf color) const {
-		auto sp = renderer->GetXSpacing();
+		auto sp = renderer->GetGlyphSpacing();
 		auto cur = location;
 		
 		internal::simpleprint(
@@ -437,7 +437,7 @@ namespace Gorgon { namespace Graphics {
     }
 
 	Geometry::Size BasicFont::GetSize(const std::string& text) const {
-		auto sp = renderer->GetXSpacing();
+		auto sp = renderer->GetGlyphSpacing();
 		auto cur = Geometry::Point(0, 0);
 
 		int maxx = 0;
@@ -455,7 +455,7 @@ namespace Gorgon { namespace Graphics {
 
     void BasicFont::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
 		auto y   = location.Y;
-		auto sp  = renderer->GetXSpacing();
+		auto sp  = renderer->GetGlyphSpacing();
 		auto tot = location.Width;
 
 		internal::boundedprint(
@@ -485,7 +485,7 @@ namespace Gorgon { namespace Graphics {
 
 	Geometry::Size BasicFont::GetSize(const std::string& text, int w) const {
 		auto y   = 0;
-		auto sp  = renderer->GetXSpacing();
+		auto sp  = renderer->GetGlyphSpacing();
 		auto tot = w;
 
 		internal::boundedprint(
@@ -512,7 +512,7 @@ namespace Gorgon { namespace Graphics {
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
 		//strike through, underline
-		auto sp = renderer->GetXSpacing();
+		auto sp = renderer->GetGlyphSpacing();
 		auto cur = location;
 
 		if(strikecolor.R == -1)
@@ -543,7 +543,7 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	Geometry::Size StyledRenderer::GetSize(const std::string &text) const {
-		auto sp = renderer->GetXSpacing();
+		auto sp = renderer->GetGlyphSpacing();
 		auto cur = Geometry::Point(0, 0);
 
 		int maxx = 0;
@@ -569,7 +569,7 @@ namespace Gorgon { namespace Graphics {
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
 		auto y   = location.Y;
-		auto sp  = renderer->GetXSpacing();
+		auto sp  = renderer->GetGlyphSpacing();
 		int tot  = (int)location.Width;
 
 		if(strikecolor.R == -1)

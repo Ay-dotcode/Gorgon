@@ -18,6 +18,11 @@ namespace Gorgon { namespace Resource {
     public:
         Font() { }
         
+        virtual ~Font() {
+            if(isowner)
+                delete data;
+        }        
+        
         /// Filling constructor, for now can only hold Graphics::BitmapFont. All images
         /// in the renderer should be bitmaps or their derivatives with data buffers
         /// still attached.
@@ -31,13 +36,7 @@ namespace Gorgon { namespace Resource {
 
 		virtual GID::Type GetGID() const override { return GID::Font; }
         
-        /// Bitmap font requires its glyphs to be added in bitmap form. This allows them to be saved. In this
-        /// variant, given image will be wrapped with Resource::Image
-        void AddGlyph(Graphics::Bitmap &&img);
-        
-        void AddGlyph(const Image &img);        
-        
-		virtual void Prepare() override { }
+		virtual void Prepare() override;
         
 		virtual void Discard() override { }
         
@@ -55,16 +54,42 @@ namespace Gorgon { namespace Resource {
         
         /// Removes the renderer from this resource.
         void RemoveRenderer() {
+            if(isowner)
+                delete data;
+            
             data = nullptr;
+        }
+        
+        /// Changes the renderer to the given renderer
+        void SetRenderer(Graphics::GlyphRenderer &renderer);
+        
+        /// Changes the renderer to the given renderer and assumes ownership
+        void AssumeRenderer(Graphics::GlyphRenderer &renderer) {
+            SetRenderer(renderer);
+            isowner = true;
+        }
+        
+        /// Releases the renderer. If renderer is created by loading resource or 
+        /// set by assume renderer, it will be destroyed along with the resource. This
+        /// function releases the ownership of the data, removing it from the
+        /// resource.
+        Graphics::GlyphRenderer &Release() {
+            auto tmp = data;
+            data = nullptr;
+            isowner = false;
+            
+            return *tmp;
         }
         
 		/// This function loads a bitmap font resource from the given file
 		static Font *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
         
-    protected:
+    protected:        
 		void save(Writer &writer) const override;
 
         Graphics::GlyphRenderer *data = nullptr;
+        
+        bool isowner = false;
     };
 
 } }

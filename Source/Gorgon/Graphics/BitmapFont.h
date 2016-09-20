@@ -20,13 +20,20 @@ namespace Gorgon { namespace Graphics {
      */
     class BitmapFont : public GlyphRenderer, public BasicFont {
     public:
+        /// to be used internally.
         class GlyphDescriptor {
         public:
             GlyphDescriptor() { }
             
             GlyphDescriptor(const RectangularDrawable &image, int offset) : image(&image), offset(offset) { }
             
-            const RectangularDrawable *image = nullptr;
+            GlyphDescriptor(int index, int offset) : index(index), offset(offset) { }
+            
+            union {
+                const RectangularDrawable *image = nullptr;
+                int index;
+            };
+            
             int offset = 0;
         };
         
@@ -75,8 +82,6 @@ namespace Gorgon { namespace Graphics {
             digw = other.digw;
 
             isascii = other.isascii;
-
-            xspace = other.xspace;
             
             spacing = other.spacing;
 
@@ -110,8 +115,6 @@ namespace Gorgon { namespace Graphics {
             digw = other.digw;
 
             isascii = other.isascii;
-
-            xspace = other.xspace;
             
             spacing = other.spacing;
 
@@ -129,8 +132,13 @@ namespace Gorgon { namespace Graphics {
         /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
         /// Ownership of bitmap is not transferred.
         void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, int baseline = 0);
-        
-        //assumeglyph
+                
+        /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
+        /// Ownership of bitmap is not transferred.
+        void AssumeGlyph(Glyph glyph, const RectangularDrawable &bitmap, int baseline = 0) {
+            AddGlyph(glyph, bitmap, baseline);
+            destroylist.Push(bitmap);
+        }
 
 		virtual bool IsASCII() const override {
 			return isascii;
@@ -163,19 +171,13 @@ namespace Gorgon { namespace Graphics {
         
 		virtual int GetBaseLine() const override { return baseline; }
 
-		virtual int GetXSpacing() const override { return spacing; }
+		virtual int GetGlyphSpacing() const override { return spacing; }
 
 		virtual int GetDigitWidth() const override { return digw; }
 
 		virtual int GetLineThickness() const override { return linethickness; }
 
 		virtual int GetUnderlineOffset() const override { return underlinepos; }
-
-
-		/// Changes the spacing between consecutive characters
-		void SetSpacing(int value) {
-			xspace = value;
-		}
 
 		/// Changes the line height of the font. Adding glyphs may override this value.
 		void SetHeight(int value) { height = value; }
@@ -196,6 +198,9 @@ namespace Gorgon { namespace Graphics {
 
 		/// Changes the underline position to the specified value.
 		void SetUnderlineOffset(int value) { underlinepos = value; }
+		
+		/// Changes the baseline. Might cause problems if the font already has glyphs in it.
+		void SetBaseline(int value) { baseline = value; }
         
         /// Imports bitmap font images from a folder with the specified file naming template.
         /// Automatic detection will only work if there is a single bitmap font set in the
@@ -289,7 +294,7 @@ namespace Gorgon { namespace Graphics {
     protected:
                            
         std::map<Glyph, GlyphDescriptor> glyphmap;
-		Containers::Collection<RectangularDrawable> destroylist;
+		Containers::Collection<const RectangularDrawable> destroylist;
         
         int isfixedw = true;
         
@@ -302,8 +307,6 @@ namespace Gorgon { namespace Graphics {
 		int digw = 0;
 
 		bool isascii = true;
-
-		int xspace = 1;
         
         int spacing = 0;
 

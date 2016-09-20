@@ -11,7 +11,7 @@ namespace Gorgon { namespace Graphics {
     void BitmapFont::AddGlyph(Glyph glyph, const RectangularDrawable& bitmap, int baseline) {
 		auto size = bitmap.GetSize();
 
-		int lh = size.Height;
+		int lh = size.Height + baseline - this->baseline;
 
         if(maxwidth == 0) {
             maxwidth = size.Width;
@@ -377,6 +377,8 @@ namespace Gorgon { namespace Graphics {
             destroylist.Add(tex);
             glyphmap[g.first].image = tex;
         }
+        
+        bmp.ExportPNG("packed.png");
     }
 
 } }
