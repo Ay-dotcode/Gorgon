@@ -160,24 +160,24 @@ namespace Gorgon { namespace Encoding {
 		/// @warning Array write buffer should either be a nullptr of type Byte or an array allocated with malloc. This system uses
 		/// realloc or malloc to resize raw arrays.
 		/// @throws runtime_error in case of an encoding error
-		void Encode(const Containers::Image &input, std::ostream &output) {
-			encode(input, png::ReadyWriteStruct(output));
+		void Encode(const Containers::Image &input, std::ostream &output, bool replace_colormode = false) {
+			encode(input, png::ReadyWriteStruct(output), replace_colormode);
 		}
 
 		/// Encodes a given input. This variant opens the given file and writes on that file
 		/// @throws runtime_error in case of an encoding error
-		void Encode(const Containers::Image &input, const std::string &output) {
+		void Encode(const Containers::Image &input, const std::string &output, bool replace_colormode = false) {
             std::ofstream file(output, std::ios::binary);
             if(!file.is_open()) throw std::runtime_error("Cannot open file");
-			encode(input, png::ReadyWriteStruct(file));
+			encode(input, png::ReadyWriteStruct(file), replace_colormode);
 		}
 
 		/// Encodes a given input. This variant writes data to a vector. Vector is resized automatically.
 		/// @warning Array write buffer should either be a nullptr of type Byte or an array allocated with malloc. This system uses
 		/// realloc or malloc to resize raw arrays.
 		/// @throws runtime_error in case of an encoding error
-		void Encode(const Containers::Image &input, std::vector<Byte> &output) {
-			encode(input, png::ReadyWriteStruct(output));
+		void Encode(const Containers::Image &input, std::vector<Byte> &output, bool replace_colormode = false) {
+			encode(input, png::ReadyWriteStruct(output), replace_colormode);
 		}
 
 		/// Decodes the given PNG data. This function may produce an image with the following color modes: Grayscale, 
@@ -213,7 +213,7 @@ namespace Gorgon { namespace Encoding {
 
 	protected:
 		/// Performs actual encoding
-		void encode(const Containers::Image &input, png::Writer *write);
+		void encode(const Containers::Image &input, png::Writer *write, bool replace_colormode);
 
 		/// Performs actual decoding
 		void decode(png::Reader *reader, Containers::Image &output);

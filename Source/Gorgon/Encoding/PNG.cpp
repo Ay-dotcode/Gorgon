@@ -182,7 +182,7 @@ namespace Gorgon { namespace Encoding {
 
 	}
 	
-	void PNG::encode(const Containers::Image &buffer,png::Writer *writer) {
+	void PNG::encode(const Containers::Image &buffer,png::Writer *writer, bool replace_colormode) {
 		const Byte **rows=nullptr;
 		try {
 			png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -200,27 +200,57 @@ namespace Gorgon { namespace Encoding {
 
 			png_set_write_fn(png_ptr, (void*)writer, writer->Write, NULL);
 
+            
 			int pngcolormode;
 
-			switch(buffer.GetMode()) {
-			case Graphics::ColorMode::RGBA:
-				pngcolormode=PNG_COLOR_TYPE_RGBA;
-				break;
-			case Graphics::ColorMode::RGB:
-				pngcolormode=PNG_COLOR_TYPE_RGB;
-				break;
-			case Graphics::ColorMode::Grayscale_Alpha:
-				pngcolormode=PNG_COLOR_TYPE_GRAY_ALPHA;
-				break;
-			case Graphics::ColorMode::Alpha:
-				pngcolormode=PNG_COLOR_TYPE_GRAY_ALPHA;
-				break;
-			case Graphics::ColorMode::Grayscale:
-				pngcolormode=PNG_COLOR_TYPE_GRAY;
-				break;
-			default:
-				throw std::runtime_error("Unsupported color mode for PNG");
-			}
+            if(replace_colormode) {
+                switch(buffer.GetMode()) {
+                case Graphics::ColorMode::RGBA:
+                    pngcolormode=PNG_COLOR_TYPE_RGBA;
+                    break;
+                case Graphics::ColorMode::RGB:
+                    pngcolormode=PNG_COLOR_TYPE_RGB;
+                    break;
+                case Graphics::ColorMode::BGRA:
+                    pngcolormode=PNG_COLOR_TYPE_RGBA;
+                    break;
+                case Graphics::ColorMode::BGR:
+                    pngcolormode=PNG_COLOR_TYPE_RGB;
+                    break;
+                case Graphics::ColorMode::Grayscale_Alpha:
+                    pngcolormode=PNG_COLOR_TYPE_GRAY_ALPHA;
+                    break;
+                case Graphics::ColorMode::Alpha:
+                    pngcolormode=PNG_COLOR_TYPE_GRAY;
+                    break;
+                case Graphics::ColorMode::Grayscale:
+                    pngcolormode=PNG_COLOR_TYPE_GRAY;
+                    break;
+                default:
+                    throw std::runtime_error("Unsupported color mode");
+                }
+            }
+            else {
+                switch(buffer.GetMode()) {
+                case Graphics::ColorMode::RGBA:
+                    pngcolormode=PNG_COLOR_TYPE_RGBA;
+                    break;
+                case Graphics::ColorMode::RGB:
+                    pngcolormode=PNG_COLOR_TYPE_RGB;
+                    break;
+                case Graphics::ColorMode::Grayscale_Alpha:
+                    pngcolormode=PNG_COLOR_TYPE_GRAY_ALPHA;
+                    break;
+                case Graphics::ColorMode::Alpha:
+                    pngcolormode=PNG_COLOR_TYPE_GRAY_ALPHA;
+                    break;
+                case Graphics::ColorMode::Grayscale:
+                    pngcolormode=PNG_COLOR_TYPE_GRAY;
+                    break;
+                default:
+                    throw std::runtime_error("Unsupported color mode for PNG");
+                }
+            }
 
 			png_set_IHDR(png_ptr, info_ptr, buffer.GetSize().Width, buffer.GetSize().Height,
 				8, pngcolormode, PNG_INTERLACE_NONE,
@@ -229,7 +259,7 @@ namespace Gorgon { namespace Encoding {
 
 			png_write_info(png_ptr, info_ptr);
 
-			if(buffer.GetMode() == Graphics::ColorMode::Alpha) {
+			if(buffer.GetMode() == Graphics::ColorMode::Alpha && !replace_colormode) {
 				//expand to gray_alpha
 				std::unique_ptr<Byte[]> p(new Byte[buffer.GetTotalSize()*2]);
 

@@ -10,6 +10,9 @@
 #include "Gorgon/Encoding/JPEG.h"
 #include "Gorgon/Input/Layer.h"
 #include "Gorgon/Graphics/BitmapFont.h"
+#include <Gorgon/Resource/File.h>
+#include <Gorgon/Resource/Font.h>
+
 
 #include <chrono>
 
@@ -19,10 +22,12 @@ namespace Graphics = Gorgon::Graphics;
 namespace Input = Gorgon::Input;
 namespace Mouse = Gorgon::Input::Mouse;
 namespace WM = Gorgon::WindowManager;
+namespace Resource = Gorgon::Resource;
 
 int main() {
 	
 	Gorgon::Initialize("Window-test");
+    system("pwd");
     
     auto &monitors = WM::Monitor::Monitors();
     for(auto &monitor : monitors) {
@@ -86,8 +91,14 @@ int main() {
 	img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
     Graphics::BitmapFont fnt;
-	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, false);
-    fnt.Pack();
+	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, true);
+    //fnt.Pack();
+    
+    Resource::File f;
+    Resource::Font fr(fnt);
+    f.Root().Add(fr);
+    f.Save("test.gor");
+    
 
 	Graphics::StyledRenderer sty(fnt);
 	sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});

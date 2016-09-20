@@ -809,6 +809,15 @@ namespace Gorgon {
 			Graphics::ColorMode GetMode() const {
 				return mode;
 			}
+			
+			/// Changes the color mode of the image. Only works if the bits/pixel 
+			/// of the target mode is the same as the original
+			void ChangeMode(Graphics::ColorMode value) {
+                if(Graphics::GetBytesPerPixel(mode) != Graphics::GetBytesPerPixel(value))
+                    throw std::runtime_error("Modes differ in number of bits/pixel");
+                
+                mode = value;
+            }
 
 			/// Returns the bytes occupied by a single pixel of this image
 			unsigned GetBytesPerPixel() const {

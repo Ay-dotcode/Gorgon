@@ -10,6 +10,7 @@
 #include <cstring>
 #include <stdlib.h>
 #include <iomanip>
+#include <stdint.h>
 
 #include "Types.h"
 
@@ -25,7 +26,7 @@ namespace Gorgon {
 			/// Allows byte-by-byte addressing of the guid
 			Byte				Bytes[8];
 			/// Single integer value representing this guid
-			unsigned long long	Integer;
+			uint64_t	Integer;
 		};
 		
 		/// Tag to create a new GUID

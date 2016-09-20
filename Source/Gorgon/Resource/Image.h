@@ -56,7 +56,10 @@ namespace Gorgon { namespace Resource {
 		/// This function loads a image resource from the given file
 		static Image *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
         
-        static void SaveThis(const Graphics::Bitmap &bmp);
+        /// This function can be used to save a bitmap as image resource without modifying it. If given bitmap is a resource
+        /// save function of that resource is used instead. If the area of the bitmap is greater than 400 pixel it will be saved
+        /// as PNG.
+        static void SaveThis(Writer &writer, const Graphics::Bitmap &bmp, GID::Type type = GID::Image);
 
 	protected:
 		virtual ~Image() { }

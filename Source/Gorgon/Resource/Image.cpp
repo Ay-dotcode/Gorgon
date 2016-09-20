@@ -103,6 +103,7 @@ namespace Gorgon { namespace Resource {
 
 					if(compression==GID::PNG) {
 						Encoding::Png.Decode(reader->GetStream(), *data);
+                        data->ChangeMode(mode);
 					}
 					else {
 						throw LoadError(LoadError::Unknown, "Unknown compression type.");
@@ -139,7 +140,6 @@ namespace Gorgon { namespace Resource {
 	
 	void Image::save(Writer &writer) const {
 		ASSERT(data, "Image data does not exists");
-		ASSERT(GetMode()==Graphics::ColorMode::RGBA, "Unsupported color mode");
 		
 		auto start = writer.WriteObjectStart(this);
 		
@@ -157,7 +157,7 @@ namespace Gorgon { namespace Resource {
 		}
 		else if(compression==GID::PNG) {
 			auto cmpdat = writer.WriteChunkStart(GID::Image_Cmp_Data);
-			Encoding::Png.Encode(*data, writer.GetStream());
+			Encoding::Png.Encode(*data, writer.GetStream(), true);
 			writer.WriteEnd(cmpdat);
 		}
 		else {
@@ -167,5 +167,38 @@ namespace Gorgon { namespace Resource {
 		writer.WriteEnd(start);
 	}
 
+
+    void Image::SaveThis(Writer &writer, const Graphics::Bitmap &bmp, GID::Type type) { 
+        auto img = dynamic_cast<const Image*>(&bmp);
+        
+        if(img) {
+            img->save(writer);
+        }
+        else {
+            auto compress = bmp.GetData().GetSize().Area() > 400;
+            
+            auto start = writer.WriteChunkStart(type);
+            
+            auto propstart = writer.WriteChunkStart(GID::Image_Props);
+            writer.WriteInt32(bmp.GetSize().Width);
+            writer.WriteInt32(bmp.GetSize().Height);
+            writer.WriteEnum32(bmp.GetMode());
+            writer.WriteGID(compress ? GID::PNG : GID::None);
+            writer.WriteBool(false);
+            writer.WriteEnd(propstart);
+            
+            if(compress) {
+                auto cmpdat = writer.WriteChunkStart(GID::Image_Cmp_Data);
+                Encoding::Png.Encode(bmp.GetData(), writer.GetStream(), true);
+                writer.WriteEnd(cmpdat);
+            }
+            else {
+                writer.WriteChunkHeader(GID::Image_Data, bmp.GetData().GetTotalSize());
+                writer.WriteArray(bmp.GetData().RawData(), bmp.GetData().GetTotalSize());
+            }
+            
+            writer.WriteEnd(start);
+        }
+    }
 } }
 

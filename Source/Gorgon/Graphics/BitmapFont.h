@@ -275,7 +275,7 @@ namespace Gorgon { namespace Graphics {
         }
         
         std::map<Glyph, GlyphDescriptor>::iterator end() {
-            return glyphmap.begin();
+            return glyphmap.end();
         }
         
         std::map<Glyph, GlyphDescriptor>::const_iterator begin() const {
@@ -283,7 +283,7 @@ namespace Gorgon { namespace Graphics {
         }
         
         std::map<Glyph, GlyphDescriptor>::const_iterator end() const {
-            return glyphmap.begin();
+            return glyphmap.end();
         }
         
     protected:

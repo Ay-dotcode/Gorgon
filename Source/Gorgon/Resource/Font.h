@@ -37,9 +37,9 @@ namespace Gorgon { namespace Resource {
         
         void AddGlyph(const Image &img);        
         
-		virtual void Prepare() override;
+		virtual void Prepare() override { }
         
-		virtual void Discard() override;
+		virtual void Discard() override { }
         
         /// Returns true if the resource has renderer.
         bool HasRenderer() const {

@@ -126,6 +126,14 @@ namespace Gorgon { namespace Graphics {
 			return data!=nullptr;
 		}
 
+		/// Returns the data attached to this bitmap. If no data is present, this function throws
+		Containers::Image &GetData() const {
+            if(!data)
+                throw std::runtime_error("Bitmap data is not set");
+            
+			return *data;
+		}
+
 		/// Checks if this image resource has a texture attached to it.
 		bool HasTexture() const {
 			return Graphics::Texture::id!=0;

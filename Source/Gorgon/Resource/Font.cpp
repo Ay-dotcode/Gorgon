@@ -84,13 +84,39 @@ namespace Gorgon { namespace Resource {
         
         writer.WriteEnd(propstart);
         
+        auto bf = dynamic_cast<Graphics::BitmapFont*>(data);
         
-        auto mapstart = writer.WriteChunkStart(GID::Font_Charmap_II);
+        if(bf) {
+            Containers::Collection<const Graphics::RectangularDrawable> bmps;
+            
+            for(auto &p : *bf) {
+                bmps.Add(p.second.image);
+            }
+            
+            auto mapstart = writer.WriteChunkStart(GID::Font_Charmap_II);
 
+            for(auto &p : *bf) {
+                writer.WriteInt32 (p.first);
+                writer.WriteUInt32(p.second.offset);
+                writer.WriteUInt32(bmps.FindLocation(p.second.image));
+            }
+            
+            writer.WriteEnd(mapstart);
+            
+            for(auto &i : bmps) {
+                auto bmp = dynamic_cast<const Graphics::Bitmap *>(&i);
+                
+                if(!bmp || !bmp->HasData())
+                    throw std::runtime_error("Saving bitmap resource requires existing data buffers.");
+                
+                Image::SaveThis(writer, *bmp);
+            }
+        }
+        else {
+            Utils::ASSERT_FALSE("Unrecognized font type to save");
+        }
         
-        
-        writer.WriteEnd(mapstart);
-        
+        writer.WriteEnd(start);
     }
 
 } }
