@@ -36,15 +36,6 @@ namespace Gorgon {
 		/// @param  rect the position and the **interior** size of the window unless
 		///         use outer metrics is set to true
 		/// @param  name of the window
-		/// @param  title of the window
-		/// @param  visible after creation, window will be visible or invisible depending
-		///         on this value. 
-		Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible=true);
-		
-		/// Creates a new window
-		/// @param  rect the position and the **interior** size of the window unless
-		///         use outer metrics is set to true
-		/// @param  name of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(Geometry::Rectangle rect, const std::string &name, bool visible=true) :
@@ -229,6 +220,8 @@ namespace Gorgon {
 		static int ClickThreshold;
 
 	protected:
+		Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible=true);
+
 		/// A window cannot be placed in another layer. This function always fails.
 		virtual void located(Layer *) override { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
 		

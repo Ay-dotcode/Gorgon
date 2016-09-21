@@ -141,7 +141,7 @@ namespace Gorgon { namespace Resource {
                if((size/12)*12 != size)
                     throw std::runtime_error("Invalid font charmap");
                 
-                for(int i=0; i<size/12; i++) {
+                for(unsigned i=0; i<size/12; i++) {
                     auto g = reader->ReadInt32();
                     auto ind = reader->ReadUInt32();
                     auto off = reader->ReadInt32();

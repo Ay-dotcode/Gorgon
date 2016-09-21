@@ -50,19 +50,19 @@ int main() {
     }
 	 
 	img.Prepare();
+	
+	//img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
+	//for(int x = 0; x<200; x++)
+	//	for(int y = 0; y<200; y++) {
+	//		img({x, y}, 0) = x;
+	//	}
 
-	/*img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
-	for(int x = 0; x<200; x++)
-		for(int y = 0; y<200; y++) {
-			img({x, y}, 0) = x;
-		}
+	//img.Prepare();
 
-	img.Prepare();*/
+	Graphics::Bitmap img2({3, 3}, Graphics::ColorMode::Alpha);
 
-	Graphics::Bitmap img2({1, 1}, Graphics::ColorMode::Alpha);
-
-	for(int x = 0; x<1; x++)
-		for(int y = 0; y<1; y++)
+	for(int x = 0; x<3; x++)
+		for(int y = 0; y<3; y++)
 			for(int c=0; c<1; c++)
 				img2({x, y}, c) = 0xff;
 
@@ -84,19 +84,19 @@ int main() {
 	
 	for(int i=0; i<4; i++)
 		img2.DrawStretched(l, 25+16+i*32, 0, 16, 400, {1.f, 1.f, 1.f, .3f});
-
+		
 	for(int i=0; i<10; i++)
 		img.Draw(l, 150, 150);
-
-	img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
+	
+	//img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
     Resource::File f;
-    f.LoadFile("test.gor");
-    f.Prepare();
-    f.Discard();
-    Graphics::BitmapFont fnt = std::move(dynamic_cast<Graphics::BitmapFont&>(f.Root().Get<Resource::Font>(0).GetRenderer()));
-	//fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, false, true, true);
-    //fnt.Pack();
+    //f.LoadFile("test.gor");
+    //f.Prepare();
+    //f.Discard();
+    Graphics::BitmapFont fnt;// = std::move(dynamic_cast<Graphics::BitmapFont&>(f.Root().Get<Resource::Font>(0).GetRenderer()));
+	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
+    fnt.Pack();
     
     std::cout<<"digit w: "<<fnt.GetDigitWidth()<<std::endl;
     std::cout<<"x-space: "<<fnt.GetGlyphSpacing()<<std::endl;
@@ -127,7 +127,7 @@ int main() {
 	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 200);
 	sty.DisableShadow();
 	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 220);
-
+	
 	wind.KeyEvent.Register([](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))
 			exit(0);

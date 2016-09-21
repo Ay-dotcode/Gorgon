@@ -325,13 +325,12 @@ namespace Gorgon {
 			};
 
 			void switchcontext(Gorgon::internal::windowdata &data) {
+				if(context==reinterpret_cast<intptr_t>(&data)) return;
 				wglMakeCurrent(data.device_context, data.context);
 				context=reinterpret_cast<intptr_t>(&data);
 			}
 
 			void finalizerender(Gorgon::internal::windowdata &data) {
-				glFinish();
-				glFlush();
 				SwapBuffers(data.device_context);
 			}
 		}
@@ -385,7 +384,7 @@ namespace Gorgon {
 				mon->data->handle=hMonitor;
 				mon->name=mi.szDevice;
 				mon->area={mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right-mi.rcMonitor.left, mi.rcMonitor.bottom-mi.rcMonitor.top};
-				mon->usable ={mi.rcWork.left, mi.rcWork.top, mi.rcWork.right-mi.rcWork.left, mi.rcWork.bottom-mi.rcWork.top};
+				mon->usable ={mi.rcWork.left, mi.rcWork.top, mi.rcWork.right, mi.rcWork.bottom};
 				mon->isprimary=(mi.dwFlags&MONITORINFOF_PRIMARY)!=0;
 				if(mon->isprimary) {
 					Monitor::primary=mon;
@@ -420,7 +419,7 @@ namespace Gorgon {
 		Monitor *Monitor::primary=nullptr;
 	}
 
-	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) :
+	Window::Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) :
 		data(new internal::windowdata(*this)) { 
 		windows.Add(this);
 
@@ -429,7 +428,7 @@ namespace Gorgon {
 
 		HWND hwnd;
 
-		///*Creating window class
+		//Creating window class
 		windclass.cbClsExtra = 0;
 		windclass.cbSize = sizeof(WNDCLASSEX);
 		windclass.cbWndExtra = 0;
@@ -470,7 +469,7 @@ namespace Gorgon {
 		rect += data->chrome.Total();
 
 		if(rect.TopLeft()==automaticplacement) {
-			rect.Move( (WindowManager::Monitor::Primary().GetUsable()-rect.GetSize()).Center() );
+			rect.Move( (monitor.GetUsable()-rect.GetSize()).Center() );
 		}
 
 		SetWindowPos(hwnd, 0, rect.X, rect.Y, rect.Width, rect.Height, 0);
@@ -491,7 +490,7 @@ namespace Gorgon {
 		createglcontext();
 	}
 
-	Window::Window(const FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
+	Window::Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
 		windows.Add(this);
 
 		WNDCLASSEX windclass;
@@ -530,7 +529,7 @@ namespace Gorgon {
 			throw std::runtime_error("Cannot create window");
 		}
 
-		SetWindowPos(hwnd, 0, 0, 0, (int)GetSystemMetrics(SM_CXSCREEN), (int)GetSystemMetrics(SM_CYSCREEN), 0);
+		SetWindowPos(hwnd, 0, monitor.GetLocation().X, monitor.GetLocation().Y, monitor.GetSize().Width, monitor.GetSize().Height, 0);
 		if(visible)
 			::ShowWindow(hwnd, SW_SHOW);
 
@@ -542,7 +541,7 @@ namespace Gorgon {
 
 		PostMessage(hwnd, WM_ACTIVATE, -1, -1);
 
-		Layer::Resize({(int)GetSystemMetrics(SM_CXSCREEN), (int)GetSystemMetrics(SM_CYSCREEN)});
+		Layer::Resize({monitor.GetSize().Width, monitor.GetSize().Height});
 
 		createglcontext();
 	}
