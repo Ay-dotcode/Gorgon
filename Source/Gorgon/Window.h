@@ -39,7 +39,7 @@ namespace Gorgon {
 		/// @param  title of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible=true);
+		Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible=true);
 		
 		/// Creates a new window
 		/// @param  rect the position and the **interior** size of the window unless
@@ -48,7 +48,7 @@ namespace Gorgon {
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(Geometry::Rectangle rect, const std::string &name, bool visible=true) :
-			Window(rect, name, name, visible) { }
+			Window(WindowManager::Monitor::Primary(), rect, name, name, visible) { }
 
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
@@ -57,7 +57,7 @@ namespace Gorgon {
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(const Geometry::Size &size, const std::string &name, const std::string &title, bool visible=true) :
-			Window({automaticplacement, size}, name, title, visible) { }
+			Window(WindowManager::Monitor::Primary(), {automaticplacement, size}, name, title, visible) { }
 
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
@@ -65,11 +65,25 @@ namespace Gorgon {
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(const Geometry::Size &size, const std::string &name, bool visible=true) :
-			Window({automaticplacement, size}, name, name, visible) { }
+			Window(WindowManager::Monitor::Primary(), {automaticplacement, size}, name, name, visible) { }
+
+		/// Creates a new window at the center of the screen
+		/// @param  monitor that the window will be centered on
+		/// @param  size of the window
+		/// @param  name of the window
+		/// @param  visible after creation, window will be visible or invisible depending
+		///         on this value. 
+		Window(const WindowManager::Monitor &monitor, const Geometry::Size &size, const std::string &name, bool visible=true) :
+			Window(monitor, {automaticplacement, size}, name, name, visible) { }
 
 		/// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
 		/// entire screen, including any panels it contains.
-		Window(const FullscreenTag &, const std::string &name, const std::string &title="");
+		Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title="");
+
+		/// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
+		/// entire screen, including any panels it contains.
+		Window(const FullscreenTag &tag, const std::string &name, const std::string &title="") :
+            Window(tag, WindowManager::Monitor::Primary(), name, title) { }
 
 		/// Destroys this window
 		~Window();

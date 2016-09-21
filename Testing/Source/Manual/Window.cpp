@@ -37,7 +37,7 @@ int main() {
     std::cout<<WM::Monitor::Primary().GetName()<<": "<<WM::Monitor::Primary().GetLocation()<<std::endl;
     //std::cout<<WM::GetScreenRegion(0)<<std::endl;
     
-	Window wind({800, 800}, "windowtest");
+	Window wind({800, 600}, "windowtest");
 	Graphics::Initialize();
 
 	Graphics::Layer l;

@@ -459,7 +459,7 @@ failsafe: //this should use X11 screen as monitor
 		Monitor *Monitor::primary=nullptr;
 	}
 	
-	Window::Window(Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) : 
+	Window::Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) : 
 	data(new internal::windowdata) {
 		
 #ifndef NDEBUG
@@ -489,7 +489,7 @@ failsafe: //this should use X11 screen as monitor
 		
 		bool autoplaced=false;
 		if(rect.TopLeft()==automaticplacement) {
-			rect.Move( (WindowManager::Monitor::Primary().GetUsable()-rect.GetSize()).Center() );
+			rect.Move( (monitor.GetUsable()-rect.GetSize()).Center() );
 			autoplaced=true;
 		}
 		
@@ -543,7 +543,7 @@ failsafe: //this should use X11 screen as monitor
                 
                 auto borders = WindowManager::GetX4Prop<Geometry::Margins>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
                 std::swap(borders.Top, borders.Right);
-                rect.Move( (WindowManager::Monitor::Primary().GetUsable()-(rect.GetSize()+borders.Total())).Center() );
+                rect.Move( (monitor.GetUsable()-(rect.GetSize()+borders.Total())).Center() );
             }
             
             XMoveWindow(WindowManager::display, data->handle, rect.X, rect.Y);
@@ -562,7 +562,7 @@ failsafe: //this should use X11 screen as monitor
 		createglcontext();
 	}
 	
-	Window::Window(const Gorgon::Window::FullscreenTag &, const std::string &name, const std::string &title) : data(new internal::windowdata) {
+	Window::Window(const Gorgon::Window::FullscreenTag &, const WindowManager::Monitor &mon, const std::string &name, const std::string &title) : data(new internal::windowdata) {
 		
 #ifndef NDEBUG
 		ASSERT(WindowManager::display, "Window manager system is not initialized.");
@@ -590,8 +590,6 @@ failsafe: //this should use X11 screen as monitor
 		bool autoplaced=false;
 		
 		auto rootwin=XRootWindow(WindowManager::display,screen);
-        
-        auto &mon = WindowManager::Monitor::Primary();
 		
 		data->handle = XCreateWindow(WindowManager::display, 
 			rootwin,
