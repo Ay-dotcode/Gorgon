@@ -13,20 +13,14 @@ namespace Gorgon { namespace Graphics {
 
 		int lh = size.Height + baseline - this->baseline;
 
-        if(maxwidth == 0) {
+        if(size.Width != maxwidth)
+            isfixedw = false;
+        
+        if(maxwidth < size.Width)
             maxwidth = size.Width;
+        
+        if(height < lh)
             height = lh;
-        }
-        else {
-            if(size.Width != maxwidth)
-                isfixedw = false;
-            
-            if(maxwidth < size.Width)
-                maxwidth = size.Width;
-            
-            if(height < lh)
-                height = lh;
-        }
 
 		if(isdigit(glyph) && digw < size.Width) {
 			digw = size.Width;
@@ -295,7 +289,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		if(baseline == -1) {
-			baseline = int(std::round(height * 0.7));
+			this->baseline = int(std::round(height * 0.7));
 		}
 
 		if(trim && spacing==0) spacing = 1;
@@ -377,8 +371,6 @@ namespace Gorgon { namespace Graphics {
             destroylist.Add(tex);
             glyphmap[g.first].image = tex;
         }
-        
-        bmp.ExportPNG("packed.png");
     }
 
 } }

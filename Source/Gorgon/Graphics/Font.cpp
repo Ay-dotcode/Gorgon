@@ -324,7 +324,7 @@ namespace Gorgon { namespace Graphics {
 					prev = g;
 				}
 
-				if(w && x + w + pw >= width) {
+				if(x + w + pw >= width) {
 					int totw = 0;
 					// if we are placing a space
 					if(g == '\t' || isbreaking(g)) {
@@ -613,7 +613,7 @@ namespace Gorgon { namespace Graphics {
 
 					if(letters && target/letters >= 1) { //we can increase glyph spacing
 						gs = target/letters;
-						if(gs > sp)
+						if(gs > 1 && gs > sp) //1 is always usable
 							gs = sp;
 
 						target -= gs*letters;

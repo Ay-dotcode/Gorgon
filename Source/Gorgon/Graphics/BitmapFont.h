@@ -302,7 +302,7 @@ namespace Gorgon { namespace Graphics {
         
         int height = 0;
         
-        int baseline;
+        int baseline = 0;
 
 		int digw = 0;
 

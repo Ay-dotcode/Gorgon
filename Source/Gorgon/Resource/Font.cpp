@@ -92,6 +92,7 @@ namespace Gorgon { namespace Resource {
             writer.WriteInt32(data->GetHeight());
             writer.WriteInt32(data->GetLineThickness());
             writer.WriteInt32(data->GetUnderlineOffset());
+            writer.WriteInt32(data->GetMaxWidth());
             
             writer.WriteEnd(propstart);
             
@@ -132,6 +133,7 @@ namespace Gorgon { namespace Resource {
         
         auto font = new Font;
         bool recalc = false;
+        int bl = 0;
         
         Graphics::BitmapFont *bf = nullptr;
         Containers::Collection<Graphics::Bitmap> glyphs;
@@ -159,10 +161,12 @@ namespace Gorgon { namespace Resource {
                 
                 reader->ReadInt32();
                 bf->SetGlyphSpacing(reader->ReadInt32());
-                bf->SetBaseline(reader->ReadInt32());
+                bl = reader->ReadInt32();
+                bf->SetBaseline(bl);
                 bf->SetHeight(reader->ReadInt32());
                 bf->SetLineThickness(reader->ReadInt32());
                 bf->SetUnderlineOffset(reader->ReadInt32());
+                bf->SetMaxWidth(reader->ReadInt32());
             }
             else if(gid == GID::Font_Charmap) {
                if(!bf)
@@ -196,7 +200,9 @@ namespace Gorgon { namespace Resource {
                 if(!bf)
                     throw std::runtime_error("Unexpected image, either font type is wrong or is not set.");
                 
-                glyphs.Push(Image::LoadResource(file, reader, size));
+                auto img = Image::LoadResource(file, reader, size);
+                glyphs.Push(img);
+                font->children.Push(img);
             }
             else {
 				if(!reader->ReadCommonChunk(*font, gid, size)) {
@@ -210,13 +216,13 @@ namespace Gorgon { namespace Resource {
             if(p.second.index<0 || p.second.index>=glyphs.GetSize())
                 throw std::runtime_error("Invalid glyph index");
             
-            bf->AssumeGlyph(p.first, glyphs[p.second.index], p.second.offset);
+            bf->AssumeGlyph(p.first, glyphs[p.second.index], -p.second.offset + bl);
         }
 
         return font;
     }
 
-    void Font::Prepare() { 
-        
+    void Font::Prepare() {        
+        Base::Prepare();
     }
 } }

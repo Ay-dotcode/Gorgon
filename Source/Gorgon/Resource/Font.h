@@ -36,9 +36,9 @@ namespace Gorgon { namespace Resource {
 
 		virtual GID::Type GetGID() const override { return GID::Font; }
         
+        /// This function will only prepare images loaded from a resource, does not work for
+        /// images loaded later.
 		virtual void Prepare() override;
-        
-		virtual void Discard() override { }
         
         /// Returns true if the resource has renderer.
         bool HasRenderer() const {

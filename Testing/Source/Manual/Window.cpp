@@ -94,8 +94,18 @@ int main() {
     f.LoadFile("test.gor");
     f.Prepare();
     Graphics::BitmapFont fnt = std::move(dynamic_cast<Graphics::BitmapFont&>(f.Root().Get<Resource::Font>(0).GetRenderer()));
-	//fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, true, true);
+	//fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, false, true, true);
     //fnt.Pack();
+    
+    std::cout<<"digit w: "<<fnt.GetDigitWidth()<<std::endl;
+    std::cout<<"x-space: "<<fnt.GetGlyphSpacing()<<std::endl;
+    std::cout<<"height: "<<fnt.GetHeight()<<std::endl;
+    std::cout<<"line t: "<<fnt.GetLineThickness()<<std::endl;
+    std::cout<<"max w: "<<fnt.GetMaxWidth()<<std::endl;
+    std::cout<<"underline off: "<<fnt.GetUnderlineOffset()<<std::endl;
+    std::cout<<"baseline: "<<fnt.GetBaseLine()<<std::endl;
+    std::cout<<"is fixed: "<<fnt.IsFixedWidth()<<std::endl;
+    std::cout<<"is ASCII: "<<fnt.IsASCII()<<std::endl;
     
 //     Resource::File f;
 //     Resource::Font fr(fnt);
