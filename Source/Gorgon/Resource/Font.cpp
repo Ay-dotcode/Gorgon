@@ -3,51 +3,6 @@
 
 
 namespace Gorgon { namespace Resource {
-    
-/*	BitmapFont *LoadBitmapFontResource(File &File, std::istream &Data, int Size) {
-		BitmapFont *font=new BitmapFont;
-		int chmap[256]={};
-		int cpos=0,i;
-
-		font->Seperator=1;
-
-		int target=Data.tellg()+Size;
-		while(Data.tellg()<target) {
-			int gid,size;
-			ReadFrom(Data, gid);
-			ReadFrom(Data, size);
-
-			if(gid==GID::Font_Charmap) {
-				Data.read((char*)chmap, 4*256);
-			}
-			else if(gid==GID::Guid) {
-				font->guid.LoadLong(Data);
-			}
-			else if(gid==GID::SGuid) {
-				font->guid.Load(Data);
-			}
-			else if(gid==GID::Font_Image || gid==GID::Image) {
-				Image *img=LoadImageResource(File,Data,size);
-
-				for(i=0;i<256;i++)
-					if(chmap[i]==cpos)
-						font->Characters[i]=img;
-
-				font->Subitems.Add(img);
-				cpos++;
-			}
-			else if(gid==GID::Font_Props) {
-				ReadFrom(Data,font->Seperator);
-				ReadFrom(Data,font->VerticalSpacing);
-				ReadFrom(Data,font->Baseline);
-			}
-			else {
-				EatChunk(Data,size);
-			}
-		}
-
-		return font;
-	}*/
 
 
     Font::Font(Graphics::GlyphRenderer& renderer) {
@@ -224,5 +179,19 @@ namespace Gorgon { namespace Resource {
 
     void Font::Prepare() {        
         Base::Prepare();
+    }
+
+    void Font::Discard() {        
+        auto bf = dynamic_cast<Graphics::BitmapFont*>(data);
+        
+        if(bf && children.GetSize()) {
+            bf->Pack(false, Graphics::BitmapFont::None);
+            
+            for(auto &c : children) {
+                c.DeleteResource();
+            }
+            
+            children.Clear();
+        }
     }
 } }

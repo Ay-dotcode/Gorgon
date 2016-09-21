@@ -93,6 +93,7 @@ int main() {
     Resource::File f;
     f.LoadFile("test.gor");
     f.Prepare();
+    f.Discard();
     Graphics::BitmapFont fnt = std::move(dynamic_cast<Graphics::BitmapFont&>(f.Root().Get<Resource::Font>(0).GetRenderer()));
 	//fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, false, true, true);
     //fnt.Pack();

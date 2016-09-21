@@ -40,6 +40,8 @@ namespace Gorgon { namespace Resource {
         /// images loaded later.
 		virtual void Prepare() override;
         
+		virtual void Discard() override;
+        
         /// Returns true if the resource has renderer.
         bool HasRenderer() const {
             return data != nullptr;

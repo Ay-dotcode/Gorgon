@@ -373,4 +373,23 @@ namespace Gorgon { namespace Graphics {
         }
     }
 
+    Graphics::Bitmap BitmapFont::CreateAtlas(std::vector<Geometry::Bounds> &bounds, bool tight) const {
+        Containers::Collection<const Bitmap> bitmaps;
+        
+        for(auto &p : glyphmap) {
+            auto bmp = dynamic_cast<const Bitmap*>(p.second.image);
+            
+            if(bmp) {
+                bitmaps.Add(bmp);
+            }
+        }
+        
+        Bitmap bmp;
+        auto ret = bmp.CreateLinearAtlas(std::move(bitmaps), tight ? Bitmap::None : Bitmap::Zero);
+        using std::swap;
+        
+        swap(bounds, ret);
+        
+        return bmp;
+    }
 } }

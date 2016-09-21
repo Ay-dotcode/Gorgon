@@ -6,6 +6,7 @@
 
 #include "Font.h"
 #include "Drawables.h"
+#include "Bitmap.h"
 #include "../Containers/Collection.h"
 
 
@@ -151,6 +152,9 @@ namespace Gorgon { namespace Graphics {
 		/// If tight packing is set, glyphs will be placed next to each other, saving space. However, if resized, they 
 		/// will have artifacts.
         void Pack(bool tight = false, DeleteConstants del = Owned);
+        
+        /// Performs packing without changing the font itself
+        Graphics::Bitmap CreateAtlas(std::vector<Geometry::Bounds> &bounds, bool tight = false) const;
         
         using BasicFont::GetSize;
         
