@@ -37,8 +37,10 @@ int main() {
     std::cout<<WM::Monitor::Primary().GetName()<<": "<<WM::Monitor::Primary().GetLocation()<<std::endl;
     //std::cout<<WM::GetScreenRegion(0)<<std::endl;
     
-	Window wind({800, 600}, "windowtest");
+	Window wind({0, 0, 800, 600}, "windowtest");
 	Graphics::Initialize();
+
+	wind.Maximize();
 
 	Graphics::Layer l;
 	wind.Add(l);
@@ -128,12 +130,56 @@ int main() {
 	sty.DisableShadow();
 	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 220);
 	
-	wind.KeyEvent.Register([](Input::Key key, bool state) {
+	wind.KeyEvent.Register([&wind](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))
 			exit(0);
+
+		else if(state && key == 13)
+			std::cout<<wind.GetMonitor().GetName()<<std::endl;
+
+		else if(state && key == 'R')
+			wind.Restore();
+
+		else if(state && key == 'X')
+			wind.Maximize();
+
+		else if(state && key == 'N')
+			wind.Minimize();
+
 		return false;
 	});
-	
+
+	wind.MovedEvent.Register([&wind]() {
+		if(wind.IsMaximized())
+			std::cout<<"maxed"<<std::endl;
+		else
+			std::cout<<"moved to: "<<wind.GetPosition()<<std::endl;
+	});
+
+	wind.FocusedEvent.Register([&wind]() {
+		std::cout<<"focus: "<<wind.IsFocused()<<std::endl;
+	});
+
+	wind.MinimizedEvent.Register([&wind]() {
+		std::cout<<"min"<<std::endl;
+	});
+
+	wind.RestoredEvent.Register([&wind]() {
+		std::cout<<"res"<<std::endl;
+	});
+
+	wind.LostFocusEvent.Register([&wind]() {
+		std::cout<<"focus: "<<wind.IsFocused()<<std::endl;
+	});
+
+	//wind.Move({100, 100});
+
+	wind.SetTitle("This is my window");
+	std::cout<<wind.GetTitle()<<std::endl;
+	std::cout<<wind.GetExteriorBounds().GetSize()<<std::endl;
+	std::cout<<wind.GetPosition()<<std::endl;
+	std::cout<<wind.GetMonitor().GetName()<<std::endl;
+
 	wind.CharacterEvent.Register([](Input::Key key) {
         if(key == '\r') std::cout<<std::endl;
 		std::cout<<char(key);

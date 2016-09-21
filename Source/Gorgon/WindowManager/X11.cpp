@@ -462,6 +462,8 @@ failsafe: //this should use X11 screen as monitor
 	Window::Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) : 
 	data(new internal::windowdata) {
 		
+		this->name = name;
+
 #ifndef NDEBUG
 		ASSERT(WindowManager::display, "Window manager system is not initialized.");
 #endif
@@ -564,6 +566,8 @@ failsafe: //this should use X11 screen as monitor
 	
 	Window::Window(const Gorgon::Window::FullscreenTag &, const WindowManager::Monitor &mon, const std::string &name, const std::string &title) : data(new internal::windowdata) {
 		
+		this->name = name;
+
 #ifndef NDEBUG
 		ASSERT(WindowManager::display, "Window manager system is not initialized.");
 #endif

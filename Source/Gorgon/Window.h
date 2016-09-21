@@ -102,7 +102,37 @@ namespace Gorgon {
 		/// sized layers.
 		virtual void Resize(const Geometry::Size &size) override;
 
-		//+GetChrome
+		/// Returns the exterior bounding box of the window. May throw or return invalid
+		/// values if the window is not visible
+		Geometry::Bounds GetExteriorBounds() const;
+
+		/// Returns the current position of the window. This value is measured from the
+		/// (0,0) of the virtual screen to the top-left of the window chrome.
+		Geometry::Point GetPosition() const {
+			return GetExteriorBounds().TopLeft();
+		}
+
+		/// Minimizes the window. Use Restore function to return it to its previous
+		/// state.
+		void Minimize();
+
+		/// Returns if the window is minimized
+		bool IsMinimized() const;
+
+		/// Maximizes the window to cover the usable area of the screen. Use Restore function
+		/// to return the window to its previous size and position.
+		void Maximize();
+
+		/// Returns if the window is maximized
+		bool IsMaximized() const;
+
+		/// Restores a minimized or maximized window
+		void Restore();
+
+		/// Returns the monitor that the window is currently on. May throw if the window is
+		/// not visible, will throw if the window is not on any currently known monitors. 
+		/// If this case occurs consider refreshing monitor list.
+		const WindowManager::Monitor &GetMonitor() const;
 
 		/// Displays this window, may generate Activated event
 		virtual void Show() override;
@@ -113,8 +143,28 @@ namespace Gorgon {
 		/// Returns whether this layer is effectively visible
 		virtual bool IsVisible() const override { return isvisible; }
 
+		/// Focuses this window
+		void Focus();
+
+		/// Returns if this window has the focus
+		bool IsFocused() const;
+
 		/// Closes the window. After this function, any use of this object might fail.
 		void Close();
+
+		/// Changes the title of the window to the specified string
+		void SetTitle(const std::string &title);
+
+		/// Returns the current title of the window.
+		std::string GetTitle() const;
+
+		/// Returns the name of the window that is set at creation time
+		std::string GetName() const {
+			return name;
+		}
+
+		/// Whether the window is currently closed and cannot be acted on.
+		bool IsClosed() const;
 
 		/// Shows the pointer displayed by window manager
 		void ShowPointer();
@@ -165,11 +215,11 @@ namespace Gorgon {
 		/// @name Events 
 		/// @{
 		
-		/// Called when this window is activated
-		Event<Window> ActivatedEvent{*this};
+		/// Called when this window is focused
+		Event<Window> FocusedEvent{*this};
 
 		/// Called when this window is deactivated
-		Event<Window> DeactivatedEvent{*this};
+		Event<Window> LostFocusEvent{*this};
 
 		/// Called when this window is destroyed. Note that at this point, any reference
 		/// to this object may fail.
@@ -190,7 +240,7 @@ namespace Gorgon {
 		/// Called after the window is minimized, either by the user or programmatically
 		Event<Window> MinimizedEvent{*this};
 
-		/// Called after the window is restored, either by the user or programmatically
+		/// Called after the window is restored from minimized state, either by the user or programmatically
 		Event<Window> RestoredEvent{*this};
 		
 		/// Called when a key is pressed or released. This key could be a keyboard key
@@ -234,6 +284,8 @@ namespace Gorgon {
 
 	private:
 		void createglcontext();
+
+		std::string name;
 		
 		internal::windowdata *data;
 

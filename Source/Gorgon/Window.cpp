@@ -9,9 +9,12 @@ namespace Gorgon {
 
 	extern Graphics::RGBAf LayerColor;
 	
+	void Window::activatecontext() {
+		WindowManager::internal::switchcontext(*data);
+	}
 
 	void Window::Render() {
-		WindowManager::internal::switchcontext(*data);
+		activatecontext();
 		ResetTransform(GetSize());
 		LayerColor = Graphics::RGBAf(1.f);
 		GL::Clear();
@@ -92,6 +95,17 @@ namespace Gorgon {
             Layer::propagate_mouseevent(Input::Mouse::EventType::Move, mouselocation, Input::Mouse::Button::None, 0, newover);
         }
     }
+
+	const WindowManager::Monitor &Window::GetMonitor() const {
+		auto location = GetExteriorBounds().Center();
+
+		for(const auto &mon : WindowManager::Monitor::Monitors()) {
+			if(IsInside(mon.GetArea(), location))
+				return mon;
+		}
+
+		throw std::runtime_error("Window is not any monitors.");
+	}
 
 	int Window::ClickThreshold = 5;
 }

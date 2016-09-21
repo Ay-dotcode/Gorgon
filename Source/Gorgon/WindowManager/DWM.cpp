@@ -33,6 +33,7 @@ namespace Gorgon {
 			HGLRC context=0;
 			HDC device_context=0;
 			Geometry::Margins chrome = {0, 0};
+			bool min = false;
 
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 
@@ -42,11 +43,11 @@ namespace Gorgon {
 
 					case WM_ACTIVATE: {
 						if(LOWORD(wParam)) {
-							parent.ActivatedEvent();
+							parent.FocusedEvent();
 						}
 						else {
 							//ReleaseAll();
-							parent.DeactivatedEvent();
+							parent.LostFocusEvent();
 						}
 					} //Activate
 					break;
@@ -63,6 +64,17 @@ namespace Gorgon {
 							return DefWindowProc(handle, message, wParam, lParam);
 					}
 					break;
+
+
+					case WM_SYSCOMMAND:
+						if(wParam == SC_MINIMIZE) {
+							parent.MinimizedEvent();
+							min = true;
+						}
+						else if(wParam == SC_RESTORE && min) {
+							parent.RestoredEvent();
+							min = false;
+						}
 
 
 					case WM_DESTROY:
@@ -117,6 +129,11 @@ namespace Gorgon {
 						parent.mouse_up({x, y}, Input::Mouse::Button::Middle);
 					}
 					break;
+
+					case WM_MOVE: 
+						parent.MovedEvent();
+						break;
+					
 
 					case WM_XBUTTONDOWN: {
 						int x=lParam%0x10000;
@@ -423,6 +440,8 @@ namespace Gorgon {
 		data(new internal::windowdata(*this)) { 
 		windows.Add(this);
 
+		this->name = name;
+
 		WNDCLASSEX windclass;
 		HINSTANCE instance=GetModuleHandle(NULL);
 
@@ -492,6 +511,8 @@ namespace Gorgon {
 
 	Window::Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
 		windows.Add(this);
+
+		this->name = name;
 
 		WNDCLASSEX windclass;
 		HINSTANCE instance;
@@ -649,4 +670,79 @@ namespace Gorgon {
 
 		Graphics::Initialize();		
 	}
-} 
+
+	void Window::Close() {
+		DestroyWindow(data->handle);
+		data->handle = 0;
+	}
+
+	void Window::SetTitle(const std::string &title) {
+		SetWindowText(data->handle, title.c_str());
+	}
+
+	std::string Window::GetTitle() const {
+		std::string ret;
+		ret.resize(256);
+
+		auto len = GetWindowText(data->handle, &ret[0], 256);
+		ret.resize(len);
+
+		return ret;
+	}
+
+	bool Window::IsClosed() const {
+		return data->handle == 0;
+	}
+
+	Geometry::Bounds Window::GetExteriorBounds() const {
+		RECT rect;
+
+		GetWindowRect(data->handle, &rect);
+
+		return {(int)rect.left, (int)rect.top, (int)rect.right, (int)rect.bottom};
+	}
+
+	void Window::Focus() {
+		SetFocus(data->handle);
+	}
+
+	bool Window::IsFocused() const {
+		return GetForegroundWindow() == data->handle;
+	}
+
+	void Window::Minimize() {
+		ShowWindow(data->handle, SW_MINIMIZE);
+		data->min = true;
+		MinimizedEvent();
+	}
+
+	void Window::Maximize() {
+		ShowWindow(data->handle, SW_MAXIMIZE);
+
+		RECT rect;
+		GetClientRect(data->handle, &rect);
+
+		Layer::Resize({int(rect.right-rect.left), int(rect.bottom-rect.top)});
+	}
+
+	void Window::Restore() {
+		ShowWindow(data->handle, SW_RESTORE);
+		if(data->min) {
+			data->min = false;
+			RestoredEvent();
+		}
+	}
+
+	bool Window::IsMinimized() const {
+		return IsIconic(data->handle) != 0;
+	}
+
+	bool Window::IsMaximized() const {
+		WINDOWPLACEMENT p;
+		p.length = sizeof(p);
+
+		GetWindowPlacement(data->handle, &p);
+
+		return p.showCmd == SW_MAXIMIZE;
+	}
+}
