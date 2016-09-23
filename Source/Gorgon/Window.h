@@ -38,7 +38,7 @@ namespace Gorgon {
 		/// @param  name of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		Window(Geometry::Rectangle rect, const std::string &name, bool visible=true) :
+		Window(Geometry::Rectangle rect, const std::string &name, bool allowresize=false, bool visible=true) :
 			Window(WindowManager::Monitor::Primary(), rect, name, name, visible) { }
 
 		/// Creates a new window at the center of the screen
@@ -47,16 +47,16 @@ namespace Gorgon {
 		/// @param  title of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		Window(const Geometry::Size &size, const std::string &name, const std::string &title, bool visible=true) :
-			Window(WindowManager::Monitor::Primary(), {automaticplacement, size}, name, title, visible) { }
+		Window(const Geometry::Size &size, const std::string &name, const std::string &title, bool allowresize=false, bool visible=true) :
+			Window(WindowManager::Monitor::Primary(), {automaticplacement, size}, name, title, allowresize, visible) { }
 
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
 		/// @param  name of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		Window(const Geometry::Size &size, const std::string &name, bool visible=true) :
-			Window(WindowManager::Monitor::Primary(), {automaticplacement, size}, name, name, visible) { }
+		Window(const Geometry::Size &size, const std::string &name, bool allowresize=false, bool visible=true) :
+			Window(WindowManager::Monitor::Primary(), {automaticplacement, size}, name, name, allowresize, visible) { }
 
 		/// Creates a new window at the center of the screen
 		/// @param  monitor that the window will be centered on
@@ -64,8 +64,8 @@ namespace Gorgon {
 		/// @param  name of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
-		Window(const WindowManager::Monitor &monitor, const Geometry::Size &size, const std::string &name, bool visible=true) :
-			Window(monitor, {automaticplacement, size}, name, name, visible) { }
+		Window(const WindowManager::Monitor &monitor, const Geometry::Size &size, const std::string &name, bool allowresize=false, bool visible=true) :
+			Window(monitor, {automaticplacement, size}, name, name, allowresize, visible) { }
 
 		/// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
 		/// entire screen, including any panels it contains.
@@ -171,6 +171,16 @@ namespace Gorgon {
 
 		/// Hides the pointer displayed by window manager
 		void HidePointer();
+        
+        /// Centers the window to the default monitor
+        void Center() {
+            Center(WindowManager::Monitor::Primary());
+        }
+        
+        /// Centers the window to the given monitor
+        void Center(const WindowManager::Monitor &monitor) {
+            Move((monitor.GetUsable()-GetExteriorBounds().GetSize()).Center());
+        }
 
 		/// Renders the contents of the window
 		virtual void Render() override;
@@ -211,6 +221,12 @@ namespace Gorgon {
         bool IsX2ButtonPressed() const {
             return pressed&&Input::Mouse::Button::X2;
         }
+
+		/// Allows window to be resized by the user
+		void AllowResize();
+
+		/// Prevents window to be resized by the user
+		void PreventResize();
 
 		/// @name Events 
 		/// @{
@@ -270,7 +286,7 @@ namespace Gorgon {
 		static int ClickThreshold;
 
 	protected:
-		Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible=true);
+		Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool allowresize=false, bool visible=true);
 
 		/// A window cannot be placed in another layer. This function always fails.
 		virtual void located(Layer *) override { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
@@ -297,6 +313,8 @@ namespace Gorgon {
         
         MouseHandler down;
         MouseHandler over;
+        
+        bool allowresize = false;
         
         bool cursorover = false;
 

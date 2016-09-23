@@ -40,7 +40,7 @@ int main() {
     std::cout<<WM::Monitor::Primary().GetName()<<": "<<WM::Monitor::Primary().GetLocation()<<std::endl;
     //std::cout<<WM::GetScreenRegion(0)<<std::endl;
     
-	Window wind({0, 0, 800, 600}, "windowtest");
+	Window wind({0, 0, 800, 600}, "windowtest", true);
 	Graphics::Initialize();
 
 	Graphics::Layer l;
@@ -155,6 +155,18 @@ int main() {
 		else if(state && (key == 'S' || key == 's'))
 			wind.Resize({400,400});
 
+		else if(state && (key == 'C' || key == 'c'))
+			wind.Center();
+
+		else if(state && (key == 'H' || key == 'h'))
+			wind.Hide();
+
+		else if(state && (key == 'E' || key == 'e'))
+			wind.AllowResize();
+
+		else if(state && (key == 'D' || key == 'd'))
+			wind.PreventResize();
+
 		return false;
 	});
 
@@ -181,6 +193,11 @@ int main() {
 
 	wind.LostFocusEvent.Register([&wind]() {
 		std::cout<<"focus out: "<<wind.IsFocused()<<std::endl;
+	});
+    
+    wind.ResizedEvent.Register([&]() {
+		std::cout<<"resized: "<<wind.GetSize()<<std::endl;
+		//img3.DrawIn(l);
 	});
     
     //wind.Focus();

@@ -90,6 +90,15 @@ namespace Gorgon {
 					}
 					break;
 
+					case WM_SIZE: {
+						RECT rect;
+						GetClientRect(parent.data->handle, &rect);
+
+						parent.activatecontext();
+						parent.Layer::Resize({rect.right-rect.left, rect.bottom-rect.top});
+						GL::Resize({rect.right-rect.left, rect.bottom-rect.top});
+					}
+
 					case WM_LBUTTONUP: {
 						int x=lParam%0x10000;
 						int y=lParam>>16;
@@ -436,11 +445,12 @@ namespace Gorgon {
 		Monitor *Monitor::primary=nullptr;
 	}
 
-	Window::Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) :
+	Window::Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool allowresize, bool visible) :
 		data(new internal::windowdata(*this)) { 
 		windows.Add(this);
 
 		this->name = name;
+		this->allowresize = allowresize;
 
 		WNDCLASSEX windclass;
 		HINSTANCE instance=GetModuleHandle(NULL);
@@ -465,13 +475,22 @@ namespace Gorgon {
 		if(ret == 0) {
 			throw std::runtime_error("Cannot create window");
 		}
-
-		hwnd=CreateWindowExA(
-			WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, 
-			name.c_str(), title.c_str(), 
-			WS_MINIMIZEBOX | WS_SYSMENU | WS_CLIPSIBLINGS |WS_CLIPCHILDREN, 
-			CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, instance, NULL
-		);
+		if(allowresize) {
+			hwnd=CreateWindowExA(
+				WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, 
+				name.c_str(), title.c_str(), 
+				WS_TILEDWINDOW,
+				CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, instance, NULL
+			);
+		}
+		else {
+			hwnd=CreateWindowExA(
+				WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
+				name.c_str(), title.c_str(),
+				WS_MINIMIZEBOX | WS_SYSMENU | WS_CLIPSIBLINGS |WS_CLIPCHILDREN,
+				CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, instance, NULL
+			);
+		}
 
 		if(hwnd==INVALID_HANDLE_VALUE) {
 			throw std::runtime_error("Cannot create window");
@@ -613,6 +632,8 @@ namespace Gorgon {
 			size.Height+ (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top), 
 			SWP_NOMOVE | SWP_NOZORDER
 		);
+		activatecontext();
+		GL::Resize(size);
 	}
 
 	void Window::Move(const Geometry::Point &location) {
@@ -723,6 +744,8 @@ namespace Gorgon {
 		GetClientRect(data->handle, &rect);
 
 		Layer::Resize({int(rect.right-rect.left), int(rect.bottom-rect.top)});
+		activatecontext();
+		GL::Resize({int(rect.right-rect.left), int(rect.bottom-rect.top)});
 	}
 
 	void Window::Restore() {
@@ -731,6 +754,14 @@ namespace Gorgon {
 			data->min = false;
 			RestoredEvent();
 		}
+		else {
+            RECT rect;
+            GetClientRect(data->handle, &rect);
+
+            Layer::Resize({int(rect.right-rect.left), int(rect.bottom-rect.top)});
+			activatecontext();
+			GL::Resize({int(rect.right-rect.left), int(rect.bottom-rect.top)});
+        }
 	}
 
 	bool Window::IsMinimized() const {
@@ -744,5 +775,23 @@ namespace Gorgon {
 		GetWindowPlacement(data->handle, &p);
 
 		return p.showCmd == SW_MAXIMIZE;
+	}
+
+	void Window::AllowResize() {
+		auto s = GetWindowLong(data->handle, GWL_STYLE);
+		s |= WS_SIZEBOX;
+		s |= WS_MAXIMIZEBOX;
+		SetWindowLong(data->handle, GWL_STYLE, s);
+
+		allowresize = true;
+	}
+
+	void Window::PreventResize() {
+		auto s = GetWindowLong(data->handle, GWL_STYLE);
+		s &= ~WS_SIZEBOX;
+		s &= ~WS_MAXIMIZEBOX;
+		SetWindowLong(data->handle, GWL_STYLE, s);
+
+		allowresize = false;
 	}
 }

@@ -34,6 +34,7 @@ namespace Gorgon {
 			bool ismapped=false;
 			GLXContext context=0;
             bool focused = false;
+            Geometry::Point ppoint = {INT_MIN, INT_MIN};
 			
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 		};
@@ -478,10 +479,11 @@ failsafe: //this should use X11 screen as monitor
 		Monitor *Monitor::primary=nullptr;
 	}
 	
-	Window::Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool visible) : 
+	Window::Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool allowresize, bool visible) : 
 	data(new internal::windowdata) {
 		
 		this->name = name;
+        this->allowresize = allowresize;
 
 #ifndef NDEBUG
 		ASSERT(WindowManager::display, "Window manager system is not initialized.");
@@ -533,18 +535,20 @@ failsafe: //this should use X11 screen as monitor
 		XFree(classhint);
 	
 		XStoreName(WindowManager::display, data->handle, (char*)title.c_str());
-
-		XSizeHints *sizehints=XAllocSizeHints();
-		sizehints->min_width=rect.Width;
-		sizehints->max_width=rect.Width;
-		sizehints->min_height=rect.Height;
-		sizehints->max_height=rect.Height;
-		sizehints->flags=PMinSize | PMaxSize | PWinGravity;
-        if(autoplaced)
-            sizehints->win_gravity = CenterGravity;
         
-		XSetWMNormalHints(WindowManager::display, data->handle, sizehints);		
-		XFree(sizehints);
+        if(!allowresize) {
+            XSizeHints *sizehints=XAllocSizeHints();
+            sizehints->min_width=rect.Width;
+            sizehints->max_width=rect.Width;
+            sizehints->min_height=rect.Height;
+            sizehints->max_height=rect.Height;
+            sizehints->flags=PMinSize | PMaxSize | PWinGravity;
+            if(autoplaced)
+                sizehints->win_gravity = CenterGravity;
+            
+            XSetWMNormalHints(WindowManager::display, data->handle, sizehints);		
+            XFree(sizehints);
+        }
 		
 		XSetWMProtocols(WindowManager::display, data->handle, &WindowManager::WM_DELETE_WINDOW, 1);
 		
@@ -580,6 +584,7 @@ failsafe: //this should use X11 screen as monitor
 		data->ismapped=visible;
 		
 		Layer::Resize(rect.GetSize());
+        data->ppoint=rect.TopLeft();
 
 		createglcontext();
 	}
@@ -632,18 +637,6 @@ failsafe: //this should use X11 screen as monitor
 		XFree(classhint);
 	
 		XStoreName(WindowManager::display, data->handle, (char*)title.c_str());
-
-		XSizeHints *sizehints=XAllocSizeHints();
-		sizehints->min_width=mon.GetSize().Width;
-		sizehints->max_width=mon.GetSize().Width;
-		sizehints->min_height=mon.GetSize().Height;
-		sizehints->max_height=mon.GetSize().Height;
-		sizehints->x=mon.GetLocation().X;
-		sizehints->y=mon.GetLocation().Y;
-		sizehints->flags=PMinSize | PMaxSize | PPosition ;
-        
-		XSetWMNormalHints(WindowManager::display, data->handle, sizehints);		
-		XFree(sizehints);
 		
 		XSetWMProtocols(WindowManager::display, data->handle, &WindowManager::WM_DELETE_WINDOW, 1);
 		
@@ -662,7 +655,8 @@ failsafe: //this should use X11 screen as monitor
         
         XFlush(WindowManager::display);
 		
-		data->ismapped=true;
+		data->ismapped=true;        
+        data->ppoint=mon.GetLocation();
 		
 		Layer::Resize(mon.GetSize());
 
@@ -716,7 +710,7 @@ failsafe: //this should use X11 screen as monitor
 	
 	void Window::Move(const Geometry::Point &location) {
 		if(data->ismapped) {
-			XMoveWindow(WindowManager::display, data->handle, location.X, location.Y);
+ 			XMoveWindow(WindowManager::display, data->handle, location.X, location.Y);
 			XFlush(WindowManager::display);
 		}
 		else {
@@ -724,21 +718,21 @@ failsafe: //this should use X11 screen as monitor
 			data->moveto=location;
 		}
 	}
-	
+        
 	void Window::Resize(const Geometry::Size &size) {
-		XSizeHints *sizehints=XAllocSizeHints();
-		sizehints->min_width=size.Width;
-		sizehints->max_width=size.Width;
-		sizehints->min_height=size.Height;
-		sizehints->max_height=size.Height;
-		sizehints->flags=PMinSize | PMaxSize;
-		XSetWMNormalHints(WindowManager::display, data->handle, sizehints);
-		XFree(sizehints);
+        if(!allowresize) {
+            XSizeHints *sizehints=XAllocSizeHints();
+            sizehints->min_width=size.Width;
+            sizehints->max_width=size.Width;
+            sizehints->min_height=size.Height;
+            sizehints->max_height=size.Height;
+            sizehints->flags=PMinSize | PMaxSize;
+            XSetWMNormalHints(WindowManager::display, data->handle, sizehints);
+            XFree(sizehints);
+        }
 
 		XResizeWindow(WindowManager::display, data->handle, size.Width, size.Height);
 		XFlush(WindowManager::display);
-        
-		Layer::Resize(size);
 	}
 
     Input::Mouse::Button buttonfromx11(unsigned btn) {
@@ -791,9 +785,32 @@ failsafe: //this should use X11 screen as monitor
                     cursorover = true;
                     break;
                     
-                case ConfigureNotify:
-                    MovedEvent();
-                    break;
+                case ConfigureNotify: {
+                    auto xce = event.xconfigure;
+                    
+                    if(GetSize().Width != xce.width || GetSize().Height != xce.height) {
+                        Layer::Resize({(int)xce.width, (int)xce.height});
+                        
+						activatecontext();
+                        GL::Resize({(int)xce.width, (int)xce.height});
+                        
+                        ResizedEvent();
+                    }
+                    else {
+                        int x, y;
+                        ::Window r;
+                        XTranslateCoordinates(WindowManager::display, data->handle, RootWindow(WindowManager::display, XDefaultScreen(WindowManager::display)), 
+                            xce.x, xce.y, &x, &y, &r
+                        );
+                        
+                        if(data->ppoint.X != x || data->ppoint.Y != y ) {
+                            data->ppoint = {x, y};
+
+                            MovedEvent();
+                        }
+                    }
+                }
+                break;
                     
                 case LeaveNotify:
                     cursorover = false;
@@ -1072,17 +1089,11 @@ failsafe: //this should use X11 screen as monitor
         
         ::Window r;
         int x, y;
-        int tx, ty;
         unsigned w, h, bw, d;
         
         XGetGeometry(WindowManager::display, data->handle, &r, &x, &y, &w, &h, &bw, &d);
         
-        XTranslateCoordinates(
-            WindowManager::display, data->handle, RootWindow(WindowManager::display, XDefaultScreen(WindowManager::display)), 
-            x, y, &tx, &ty, &r
-        );
-        
-        return Geometry::Bounds(tx, ty, tx+w, ty+h) + borders;
+        return Geometry::Bounds(data->ppoint.X, data->ppoint.Y, data->ppoint.X+w, data->ppoint.Y+h) + borders;
     }
 
 	void Window::Focus() {
@@ -1113,16 +1124,18 @@ failsafe: //this should use X11 screen as monitor
 	}
 
 	void Window::Maximize() {
-		XSizeHints *sizehints=XAllocSizeHints();
-		sizehints->max_width=INT_MAX;
-		sizehints->max_height=INT_MAX;
-		sizehints->flags=PMaxSize;
-        XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
-        XFree(sizehints);
+        if(!allowresize) {
+            XSizeHints *sizehints=XAllocSizeHints();
+            sizehints->max_width=INT_MAX;
+            sizehints->max_height=INT_MAX;
+            sizehints->flags=PMaxSize;
+            XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+            XFree(sizehints);
         
-        XFlush(WindowManager::display);
-        
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            XFlush(WindowManager::display);
+            
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
 
         XEvent xev;
 
@@ -1146,17 +1159,17 @@ failsafe: //this should use X11 screen as monitor
        
         XGetGeometry(WindowManager::display, data->handle, &r, &x, &y, &w, &h, &bw, &d);
         
-		sizehints=XAllocSizeHints();
-		sizehints->min_width=w;
-		sizehints->max_width=w;
-		sizehints->min_height=h;
-		sizehints->max_height=h;
-		sizehints->flags=PMinSize | PMaxSize;
-        XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
-        XFlush(WindowManager::display);
-        XFree(sizehints);
-       
-		Layer::Resize({(int)w, (int)h});
+        if(!allowresize) {
+            XSizeHints *sizehints=XAllocSizeHints();
+            sizehints->min_width=w;
+            sizehints->max_width=w;
+            sizehints->min_height=h;
+            sizehints->max_height=h;
+            sizehints->flags=PMinSize | PMaxSize;
+            XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+            XFlush(WindowManager::display);
+            XFree(sizehints);
+        }
 	}
 
 	void Window::Restore() {
@@ -1181,17 +1194,19 @@ failsafe: //this should use X11 screen as monitor
             Focus();
 		}
 		else if(max) {
-            XSizeHints *sizehints=XAllocSizeHints();
-            sizehints->min_width=0;
-            sizehints->min_height=0;
-            sizehints->flags=PMinSize;
-            XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
-            XFree(sizehints);
+            if(!allowresize) {
+                XSizeHints *sizehints=XAllocSizeHints();
+                sizehints->min_width=0;
+                sizehints->min_height=0;
+                sizehints->flags=PMinSize;
+                XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+                XFree(sizehints);
+                
+                XFlush(WindowManager::display);
+                
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
             
-            XFlush(WindowManager::display);
-            
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
             XEvent xev;
 
             memset(&xev, 0, sizeof(xev));
@@ -1214,17 +1229,17 @@ failsafe: //this should use X11 screen as monitor
         
             XGetGeometry(WindowManager::display, data->handle, &r, &x, &y, &w, &h, &bw, &d);
             
-            sizehints=XAllocSizeHints();
-            sizehints->min_width=w;
-            sizehints->max_width=w;
-            sizehints->min_height=h;
-            sizehints->max_height=h;
-            sizehints->flags=PMinSize | PMaxSize;
-            XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
-            XFlush(WindowManager::display);
-            XFree(sizehints);
-        
-            Layer::Resize({(int)w, (int)h});
+            if(!allowresize) {
+                XSizeHints *sizehints=XAllocSizeHints();
+                sizehints->min_width=w;
+                sizehints->max_width=w;
+                sizehints->min_height=h;
+                sizehints->max_height=h;
+                sizehints->flags=PMinSize | PMaxSize;
+                XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+                XFlush(WindowManager::display);
+                XFree(sizehints);            
+            }
         }
         XFree(properties);
 	}
@@ -1267,5 +1282,31 @@ failsafe: //this should use X11 screen as monitor
         
         return max;
 	}
+	
+	void Gorgon::Window::AllowResize() {
+        XSizeHints *sizehints=XAllocSizeHints();
+        sizehints->min_width=0;
+        sizehints->max_width=INT_MAX;
+        sizehints->min_height=0;
+        sizehints->max_height=INT_MAX;
+        sizehints->flags=PMinSize | PMaxSize;
+        XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+        XFlush(WindowManager::display);
+        XFree(sizehints);
+    }
+	
+	void Gorgon::Window::PreventResize() {
+        auto sz = GetSize();
+        XSizeHints *sizehints=XAllocSizeHints();
+        sizehints->min_width=sz.Width;
+        sizehints->max_width=sz.Width;
+        sizehints->min_height=sz.Height;
+        sizehints->max_height=sz.Height;
+        sizehints->flags=PMinSize | PMaxSize;
+        XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+        XFlush(WindowManager::display);
+        XFree(sizehints);
+    }
+
     
 }
