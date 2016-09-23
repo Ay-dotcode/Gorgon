@@ -27,11 +27,13 @@ namespace Gorgon {
 	
 		struct windowdata {
 			::Window handle = 0;
+            bool min = false;
 			bool pointerdisplayed=true;
 			bool move=false;
 			Geometry::Point moveto;
 			bool ismapped=false;
 			GLXContext context=0;
+            bool focused = false;
 			
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 		};
@@ -67,13 +69,22 @@ namespace Gorgon {
 		Atom XA_PROTOCOLS;
 		Atom WM_DELETE_WINDOW;
 		Atom XA_STRING;
+        Atom XA_UTF8_STRING;
 		Atom XA_ATOM;
 		Atom XA_CARDINAL;
 		Atom XA_NET_FRAME_EXTENTS;
 		Atom XA_NET_WORKAREA;
 		Atom XA_NET_REQUEST_FRAME_EXTENTS;
+        Atom XA_WM_NAME;
+        Atom XA_NET_WM_NAME;
         Atom XA_NET_WM_STATE;
+        Atom XA_NET_WM_STATE_ADD = 1;
         Atom XA_NET_WM_STATE_FULLSCREEN;
+        Atom XA_NET_WM_STATE_MAXIMIZED_HORZ;
+        Atom XA_NET_WM_STATE_MAXIMIZED_VERT;
+        Atom XA_NET_WM_STATE_HIDDEN;
+        Atom XA_NET_ACTIVE_WINDOW;
+        Atom XA_WM_CHANGE_STATE;
         Atom XA_STRUT;
 		///@}
 			
@@ -167,16 +178,24 @@ namespace Gorgon {
 			XA_TARGETS  =XInternAtom (display, "TARGETS", 0);
 			XA_PROTOCOLS=XInternAtom(display, "WM_PROTOCOLS", 0);
 			XA_STRING   =XInternAtom(display, "STRING", 0);
+			XA_UTF8_STRING   =XInternAtom(display, "UTF8_STRING", 0);
 			XA_CARDINAL =XInternAtom(display, "CARDINAL", 0);
 			XA_ATOM     =XInternAtom(display, "ATOM", 0);
 			WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", 0);
 			XA_NET_FRAME_EXTENTS = XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
 			XA_NET_WORKAREA = XInternAtom(display, "_NET_WORKAREA", 0);
 			XA_NET_REQUEST_FRAME_EXTENTS = XInternAtom(display, "_NET_REQUEST_FRAME_EXTENTS", 0);
+            XA_NET_WM_STATE_MAXIMIZED_HORZ  =  XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+            XA_NET_WM_STATE_MAXIMIZED_VERT  =  XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+            XA_NET_WM_STATE_HIDDEN  = XInternAtom(display, "_NET_WM_STATE_HIDDEN", False);
+            XA_NET_ACTIVE_WINDOW = XInternAtom(display, "_NET_ACTIVE_WINDOW", False);
             
+            XA_WM_NAME  = XInternAtom(display, "WM_NAME", False);
+            XA_NET_WM_NAME  = XInternAtom(display, "_NET_WM_NAME", False);
             XA_NET_WM_STATE = XInternAtom(display, "_NET_WM_STATE", False);
             XA_NET_WM_STATE_FULLSCREEN = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
             XA_STRUT = XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False);
+            XA_WM_CHANGE_STATE = XInternAtom(display, "WM_CHANGE_STATE", False);
 			
 
 			char data[1]={0};
@@ -486,6 +505,7 @@ failsafe: //this should use X11 screen as monitor
 					FocusChangeMask|         //activate/deactivate
 					EnterWindowMask |
 					LeaveWindowMask |
+					PropertyChangeMask |
 					SubstructureRedirectMask //??
 		;
 		
@@ -587,6 +607,7 @@ failsafe: //this should use X11 screen as monitor
 					KeyReleaseMask |
 					ButtonPressMask |        //mouse
 					ButtonReleaseMask|    
+					PropertyChangeMask |
 					FocusChangeMask|         //activate/deactivate
 					SubstructureRedirectMask //??
 		;
@@ -649,6 +670,7 @@ failsafe: //this should use X11 screen as monitor
 	}
 	
 	Window::~Window() {
+        Close();
 		delete data;
 		windows.Remove(this);
 	}
@@ -693,8 +715,6 @@ failsafe: //this should use X11 screen as monitor
 	}
 	
 	void Window::Move(const Geometry::Point &location) {
-		Layer::Move(location);
-		
 		if(data->ismapped) {
 			XMoveWindow(WindowManager::display, data->handle, location.X, location.Y);
 			XFlush(WindowManager::display);
@@ -706,8 +726,6 @@ failsafe: //this should use X11 screen as monitor
 	}
 	
 	void Window::Resize(const Geometry::Size &size) {
-		Layer::Resize(size);
-
 		XSizeHints *sizehints=XAllocSizeHints();
 		sizehints->min_width=size.Width;
 		sizehints->max_width=size.Width;
@@ -719,6 +737,8 @@ failsafe: //this should use X11 screen as monitor
 
 		XResizeWindow(WindowManager::display, data->handle, size.Width, size.Height);
 		XFlush(WindowManager::display);
+        
+		Layer::Resize(size);
 	}
 
     Input::Mouse::Button buttonfromx11(unsigned btn) {
@@ -771,18 +791,62 @@ failsafe: //this should use X11 screen as monitor
                     cursorover = true;
                     break;
                     
+                case ConfigureNotify:
+                    MovedEvent();
+                    break;
+                    
                 case LeaveNotify:
                     cursorover = false;
                     break;
 					
-				case FocusIn:
-					ActivatedEvent();
-					break;
+				case FocusIn: {
+                    XEvent nextevent;
+                    nextevent.type = 0;
+                    if(XEventsQueued(WindowManager::display, QueuedAfterReading))
+                        XPeekEvent(WindowManager::display, &nextevent);
+                
+                    if(nextevent.type == FocusOut) {
+                        XNextEvent(WindowManager::display, &nextevent);
+                    }
+                    
+                    if(!data->focused) {
+                        FocusedEvent();
+                        data->focused = true;
+                    }
+                }
+				break;
 					
-				case FocusOut:
-					//ReleaseAll();
-					DeactivatedEvent();
-					break;
+				case FocusOut: {
+                    XEvent nextevent;
+                    nextevent.type = 0;
+                    if(XEventsQueued(WindowManager::display, QueuedAfterReading))
+                        XPeekEvent(WindowManager::display, &nextevent);
+                
+                    if(nextevent.type == FocusIn) {
+                        XNextEvent(WindowManager::display, &nextevent);
+                    }
+                    
+                    if(data->focused) {
+                        LostFocusEvent();
+                        data->focused = false;
+                    }
+                }
+				break;
+                    
+                case PropertyNotify:
+                    if(event.xproperty.atom == WindowManager::XA_NET_WM_STATE) {
+                        bool minstate = IsMinimized();
+                        
+                        if(minstate && !data->min) {
+                            MinimizedEvent();
+                            data->min = true;
+                        }
+                        else if(!minstate && data->min) {
+                            RestoredEvent();
+                            data->min = false;
+                        }
+                    }
+                    break;
 					
 				case KeyPress: {
 					key=XLookupKeysym(&event.xkey,0);
@@ -930,6 +994,9 @@ failsafe: //this should use X11 screen as monitor
 	}
 	
 	void Window::Close() {
+        XDestroyWindow(WindowManager::display, data->handle);
+        data->handle = 0;
+        
 		DestroyedEvent();
 	}
 	
@@ -968,4 +1035,237 @@ failsafe: //this should use X11 screen as monitor
 		glXSwapBuffers(WindowManager::display, data->handle);		
 		XFlush(WindowManager::display);
 	}
+
+	void Window::SetTitle(const std::string &title) {	
+		XStoreName(WindowManager::display, data->handle, title.c_str());
+        XFlush(WindowManager::display);
+	}
+
+	std::string Window::GetTitle() const {
+        Atom type;
+        int format;
+        unsigned long len, remainder;
+        
+        Byte *prop;
+        
+        XGetWindowProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_NAME, 0, 1024,
+                           False, WindowManager::XA_UTF8_STRING, &type, &format, &len, &remainder, &prop);
+        
+        if(!prop) {
+            XGetWindowProperty(WindowManager::display, data->handle, WindowManager::XA_WM_NAME, 0, 1024,
+                            False, AnyPropertyType, &type, &format, &len, &remainder, &prop);
+        }
+        
+        std::string ret((char*)prop, len);
+        XFree(prop);
+        
+		return ret;
+	}
+
+	bool Window::IsClosed() const {
+		return data->handle == 0;
+	}
+
+	Geometry::Bounds Window::GetExteriorBounds() const {
+        auto borders = WindowManager::GetX4Prop<Geometry::Margins>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
+        std::swap(borders.Top, borders.Right);
+        
+        ::Window r;
+        int x, y;
+        int tx, ty;
+        unsigned w, h, bw, d;
+        
+        XGetGeometry(WindowManager::display, data->handle, &r, &x, &y, &w, &h, &bw, &d);
+        
+        XTranslateCoordinates(
+            WindowManager::display, data->handle, RootWindow(WindowManager::display, XDefaultScreen(WindowManager::display)), 
+            x, y, &tx, &ty, &r
+        );
+        
+        return Geometry::Bounds(tx, ty, tx+w, ty+h) + borders;
+    }
+
+	void Window::Focus() {
+        XClientMessageEvent ev;
+        std::memset (&ev, 0, sizeof ev);
+        ev.type = ClientMessage;
+        ev.window = data->handle;
+        ev.message_type = WindowManager::XA_NET_ACTIVE_WINDOW;
+        ev.format = 32;
+        ev.data.l[0] = 1;
+        ev.data.l[1] = CurrentTime;
+        XSendEvent (WindowManager::display, RootWindow(WindowManager::display, XDefaultScreen(WindowManager::display)), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent*)&ev);
+        XFlush (WindowManager::display);  
+    }
+
+	bool Window::IsFocused() const {
+        ::Window focused;
+        int r;
+
+        XGetInputFocus(WindowManager::display, &focused, &r);
+        
+		return focused == data->handle;
+	}
+
+	void Window::Minimize() {
+        XIconifyWindow(WindowManager::display, data->handle, 0);
+        XFlush(WindowManager::display);
+	}
+
+	void Window::Maximize() {
+		XSizeHints *sizehints=XAllocSizeHints();
+		sizehints->max_width=INT_MAX;
+		sizehints->max_height=INT_MAX;
+		sizehints->flags=PMaxSize;
+        XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+        XFree(sizehints);
+        
+        XFlush(WindowManager::display);
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+        XEvent xev;
+
+        memset(&xev, 0, sizeof(xev));
+        xev.type = ClientMessage;
+        xev.xclient.window = data->handle;
+        xev.xclient.message_type = WindowManager::XA_NET_WM_STATE;
+        xev.xclient.format = 32;
+        xev.xclient.data.l[0] = WindowManager::XA_NET_WM_STATE_ADD;
+        xev.xclient.data.l[1] = WindowManager::XA_NET_WM_STATE_MAXIMIZED_HORZ;
+        xev.xclient.data.l[2] = WindowManager::XA_NET_WM_STATE_MAXIMIZED_VERT;
+
+        XSendEvent(WindowManager::display, DefaultRootWindow(WindowManager::display), False, SubstructureNotifyMask, &xev);
+        XFlush(WindowManager::display);
+        
+        ::Window r;
+        int x, y;
+        unsigned w, h, bw, d;
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); //wait for a short time to ensure window frame is ready.
+       
+        XGetGeometry(WindowManager::display, data->handle, &r, &x, &y, &w, &h, &bw, &d);
+        
+		sizehints=XAllocSizeHints();
+		sizehints->min_width=w;
+		sizehints->max_width=w;
+		sizehints->min_height=h;
+		sizehints->max_height=h;
+		sizehints->flags=PMinSize | PMaxSize;
+        XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+        XFlush(WindowManager::display);
+        XFree(sizehints);
+       
+		Layer::Resize({(int)w, (int)h});
+	}
+
+	void Window::Restore() {
+        Atom type;
+        int format;
+        unsigned long count, b;
+        unsigned char *properties = NULL;
+        
+        bool min = false, max = false;
+    
+        ::XGetWindowProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_STATE, 0, LONG_MAX, False, AnyPropertyType, &type, &format, &count, &b, &properties);
+        for(int i=0; i<count; i++) {
+            auto prop = reinterpret_cast<unsigned long *>(properties)[i];
+            if(prop == WindowManager::XA_NET_WM_STATE_HIDDEN)
+                min = true;
+            else if(prop == WindowManager::XA_NET_WM_STATE_MAXIMIZED_HORZ || prop == WindowManager::XA_NET_WM_STATE_MAXIMIZED_VERT)
+                max = true;
+        }
+            
+
+		if(min) {
+            Focus();
+		}
+		else if(max) {
+            XSizeHints *sizehints=XAllocSizeHints();
+            sizehints->min_width=0;
+            sizehints->min_height=0;
+            sizehints->flags=PMinSize;
+            XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+            XFree(sizehints);
+            
+            XFlush(WindowManager::display);
+            
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+            XEvent xev;
+
+            memset(&xev, 0, sizeof(xev));
+            xev.type = ClientMessage;
+            xev.xclient.window = data->handle;
+            xev.xclient.message_type = WindowManager::XA_NET_WM_STATE;
+            xev.xclient.format = 32;
+            xev.xclient.data.l[0] = 0;      
+            xev.xclient.data.l[1] = WindowManager::XA_NET_WM_STATE_MAXIMIZED_HORZ;
+            xev.xclient.data.l[2] = WindowManager::XA_NET_WM_STATE_MAXIMIZED_VERT;
+
+            XSendEvent(WindowManager::display, DefaultRootWindow(WindowManager::display), False, SubstructureNotifyMask, &xev);
+            XFlush(WindowManager::display);
+            
+            ::Window r;
+            int x, y;
+            unsigned w, h, bw, d;
+            
+            std::this_thread::sleep_for(std::chrono::milliseconds(10)); //wait for a short time to ensure window frame is ready.
+        
+            XGetGeometry(WindowManager::display, data->handle, &r, &x, &y, &w, &h, &bw, &d);
+            
+            sizehints=XAllocSizeHints();
+            sizehints->min_width=w;
+            sizehints->max_width=w;
+            sizehints->min_height=h;
+            sizehints->max_height=h;
+            sizehints->flags=PMinSize | PMaxSize;
+            XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
+            XFlush(WindowManager::display);
+            XFree(sizehints);
+        
+            Layer::Resize({(int)w, (int)h});
+        }
+        XFree(properties);
+	}
+
+	bool Window::IsMinimized() const {
+        Atom type;
+        int format;
+        unsigned long count, b;
+        unsigned char *properties = NULL;
+        
+        bool min = false;
+    
+        ::XGetWindowProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_STATE, 0, LONG_MAX, False, AnyPropertyType, &type, &format, &count, &b, &properties);
+        for(int i=0; i<count; i++) {
+            auto prop = reinterpret_cast<unsigned long *>(properties)[i];
+            if(prop == WindowManager::XA_NET_WM_STATE_HIDDEN)
+                min = true;
+        }
+        XFree(properties);
+        
+        return min;
+	}
+
+	bool Window::IsMaximized() const {
+        Atom type;
+        int format;
+        unsigned long count, b;
+        unsigned char *properties = NULL;
+        
+        bool min = false, max = false;
+    
+        ::XGetWindowProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_STATE, 0, LONG_MAX, False, AnyPropertyType, &type, &format, &count, &b, &properties);
+        for(int i=0; i<count; i++) {
+            auto prop = reinterpret_cast<unsigned long *>(properties)[i];
+            
+            if(prop == WindowManager::XA_NET_WM_STATE_MAXIMIZED_HORZ || prop == WindowManager::XA_NET_WM_STATE_MAXIMIZED_VERT)
+                max = true;
+        }
+        XFree(properties);
+        
+        return max;
+	}
+    
 }

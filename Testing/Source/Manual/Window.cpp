@@ -1,6 +1,7 @@
 ﻿
 
 #include <Gorgon/Window.h>
+#include <thread>
 #include <Gorgon/WindowManager.h>
 #include <Gorgon/Main.h>
 #include "Gorgon/Graphics/Texture.h"
@@ -24,6 +25,8 @@ namespace Mouse = Gorgon::Input::Mouse;
 namespace WM = Gorgon::WindowManager;
 namespace Resource = Gorgon::Resource;
 
+using namespace std::chrono_literals;
+
 int main() {
 	
 	Gorgon::Initialize("Window-test");
@@ -39,8 +42,6 @@ int main() {
     
 	Window wind({0, 0, 800, 600}, "windowtest");
 	Graphics::Initialize();
-
-	wind.Maximize();
 
 	Graphics::Layer l;
 	wind.Add(l);
@@ -115,6 +116,11 @@ int main() {
 //     f.Root().Add(fr);
 //     f.Save("test.gor");
     
+    wind.Minimize();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    wind.Restore();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    
 
 	Graphics::StyledRenderer sty(fnt);
 	sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
@@ -137,14 +143,17 @@ int main() {
 		else if(state && key == 13)
 			std::cout<<wind.GetMonitor().GetName()<<std::endl;
 
-		else if(state && key == 'R')
+		else if(state && (key == 'R' || key == 'r'))
 			wind.Restore();
 
-		else if(state && key == 'X')
+		else if(state && (key == 'X' || key == 'x'))
 			wind.Maximize();
 
-		else if(state && key == 'N')
+		else if(state && (key == 'N' || key == 'n'))
 			wind.Minimize();
+
+		else if(state && (key == 'S' || key == 's'))
+			wind.Resize({400,400});
 
 		return false;
 	});
@@ -157,28 +166,34 @@ int main() {
 	});
 
 	wind.FocusedEvent.Register([&wind]() {
-		std::cout<<"focus: "<<wind.IsFocused()<<std::endl;
+		std::cout<<"focus in: "<<wind.IsFocused()<<std::endl;
 	});
 
 	wind.MinimizedEvent.Register([&wind]() {
-		std::cout<<"min"<<std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::cout<<"min: "<<wind.IsMinimized()<<std::endl;
 	});
 
 	wind.RestoredEvent.Register([&wind]() {
-		std::cout<<"res"<<std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::cout<<"res: "<<wind.IsMinimized()<<std::endl;
 	});
 
 	wind.LostFocusEvent.Register([&wind]() {
-		std::cout<<"focus: "<<wind.IsFocused()<<std::endl;
+		std::cout<<"focus out: "<<wind.IsFocused()<<std::endl;
 	});
+    
+    //wind.Focus();
 
 	//wind.Move({100, 100});
 
 	wind.SetTitle("This is my window");
-	std::cout<<wind.GetTitle()<<std::endl;
-	std::cout<<wind.GetExteriorBounds().GetSize()<<std::endl;
-	std::cout<<wind.GetPosition()<<std::endl;
-	std::cout<<wind.GetMonitor().GetName()<<std::endl;
+	std::cout<<"title\t\t: "<<wind.GetTitle()<<std::endl;
+	std::cout<<"bounds\t\t: "<<wind.GetExteriorBounds()<<std::endl;
+	std::cout<<"exterior size\t: "<<wind.GetExteriorBounds().GetSize()<<std::endl;
+	std::cout<<"interior size\t: "<<wind.GetSize()<<std::endl;
+	std::cout<<"position\t\t: "<<wind.GetPosition()<<std::endl;
+	std::cout<<"monitor\t\t: "<<wind.GetMonitor().GetName()<<std::endl;
 
 	wind.CharacterEvent.Register([](Input::Key key) {
         if(key == '\r') std::cout<<std::endl;

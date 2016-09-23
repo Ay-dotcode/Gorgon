@@ -120,7 +120,7 @@ namespace Gorgon {
 		bool IsMinimized() const;
 
 		/// Maximizes the window to cover the usable area of the screen. Use Restore function
-		/// to return the window to its previous size and position.
+		/// to return the window to its previous size and position. Maximize might take time.
 		void Maximize();
 
 		/// Returns if the window is maximized

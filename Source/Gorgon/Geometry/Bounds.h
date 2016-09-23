@@ -142,8 +142,8 @@ namespace Gorgon { namespace Geometry {
 		}
 		
 		void Resize(const basic_Size<T_> &size) {
-			Right +=Left+size.Width;
-			Bottom+=Top +size.Height;
+			Right  = Left+size.Width;
+			Bottom = Top +size.Height;
 		}
 
 		/// Performs union operation. Returns a bounds that contains this bounds object
