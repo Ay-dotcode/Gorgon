@@ -7,6 +7,7 @@
 #include "Containers/Collection.h"
 #include "Utils/Assert.h"
 #include "Event.h"
+#include "Containers/Image.h"
 
 namespace Gorgon {
 	
@@ -38,8 +39,9 @@ namespace Gorgon {
 		
 		/// Represents an icon object that can be used as window icon.
 		class Icon {
+			friend class Window;
 		public:
-			Icon();
+			explicit Icon(const Containers::Image &image);
 			
 			~Icon();
 			

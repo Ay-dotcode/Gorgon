@@ -350,6 +350,10 @@ namespace Gorgon {
 				~monitordata() {}
 			};
 
+			struct icondata {
+				HICON icon;
+			};
+
 			void switchcontext(Gorgon::internal::windowdata &data) {
 				if(context==reinterpret_cast<intptr_t>(&data)) return;
 				wglMakeCurrent(data.device_context, data.context);
@@ -438,6 +442,66 @@ namespace Gorgon {
 
 		bool Monitor::IsChangeEventSupported() {
 			return false;
+		}
+
+		Icon::Icon(const Containers::Image &image) {
+			LONG dwWidth, dwHeight;
+			BITMAPV5HEADER bi;
+			HBITMAP hBitmap;
+			void *lpBits;
+			HICON hAlphaIcon = NULL;
+
+			dwWidth  = image.GetWidth(); 
+			dwHeight = image.GetHeight();
+
+			ZeroMemory(&bi, sizeof(BITMAPV5HEADER));
+			bi.bV5Size           = sizeof(BITMAPV5HEADER);
+			bi.bV5Width           = dwWidth;
+			bi.bV5Height          = -dwHeight;
+			bi.bV5Planes = 1;
+			bi.bV5BitCount = 32;
+			bi.bV5Compression = BI_BITFIELDS;
+			// The following mask specification specifies a supported 32 BPP
+			// alpha format for Windows XP.
+			bi.bV5RedMask   =  0x00FF0000;
+			bi.bV5GreenMask =  0x0000FF00;
+			bi.bV5BlueMask  =  0x000000FF;
+			bi.bV5AlphaMask =  0xFF000000;
+
+			HDC hdc;
+			hdc = GetDC(NULL);
+
+			// Create the DIB section with an alpha channel.
+			hBitmap = CreateDIBSection(hdc, (BITMAPINFO *)&bi, DIB_RGB_COLORS,
+				(void **)&lpBits, NULL, (DWORD)0);
+
+
+
+			// Create an empty mask bitmap.
+			HBITMAP hMonoBitmap = CreateBitmap(dwWidth, dwHeight, 1, 1, NULL);
+
+			image.CopyToBGRABuffer((Byte*)lpBits);
+
+			ICONINFO ii;
+			ii.fIcon = TRUE;  // Change fIcon to TRUE to create an alpha icon
+			ii.xHotspot = 0;
+			ii.yHotspot = 0;
+			ii.hbmMask = hMonoBitmap;
+			ii.hbmColor = hBitmap;
+
+			// Create the alpha cursor with the alpha DIB section.
+			hAlphaIcon = CreateIconIndirect(&ii);
+
+			DeleteObject(hBitmap);
+			DeleteObject(hMonoBitmap);
+
+			data = new internal::icondata;
+			data->icon = hAlphaIcon;
+		}
+
+		Icon::~Icon() {
+			DeleteObject(data->icon);
+			delete data;
 		}
 
 		Event<> Monitor::ChangedEvent;
@@ -585,7 +649,7 @@ namespace Gorgon {
 
 		createglcontext();
 	}
-	
+
 	Window::~Window() {
 		DestroyWindow(data->handle);
 		internal::windowdata::mapping[data->handle]=nullptr;
@@ -793,5 +857,9 @@ namespace Gorgon {
 		SetWindowLong(data->handle, GWL_STYLE, s);
 
 		allowresize = false;
+	}
+
+	void Window::SetIcon(const WindowManager::Icon &icon) {
+		SetClassLong(data->handle, GCL_HICON, (LONG)icon.data->icon);
 	}
 }

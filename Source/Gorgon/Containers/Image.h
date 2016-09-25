@@ -210,6 +210,229 @@ namespace Gorgon {
 				return data;
 			}
 
+			/// Converts this image data to RGBA buffer
+			void ConvertToRGBA() {
+				if(!data) return;
+
+				switch(mode) {
+				case Graphics::ColorMode::BGRA:
+					for(int i=0; i<size.Area(); i++) {
+						std::swap(data[i*4+2], data[i*4+0]);
+					}
+					break;
+
+				case Graphics::ColorMode::Grayscale_Alpha: {
+					auto pdata = data;
+					data = (Byte*)malloc(size.Area()*4);
+
+					for(int i=0; i<size.Area(); i++) {
+						data[i*4+0] = pdata[i*2+0];
+						data[i*4+1] = pdata[i*2+0];
+						data[i*4+2] = pdata[i*2+0];
+						data[i*4+3] = pdata[i*2+1];
+					}
+					delete pdata;
+				}
+				break;
+
+				case Graphics::ColorMode::Grayscale: {
+					auto pdata = data;
+					data = (Byte*)malloc(size.Area()*4);
+
+					for(int i=0; i<size.Area(); i++) {
+						data[i*4+0] = pdata[i+0];
+						data[i*4+1] = pdata[i+0];
+						data[i*4+2] = pdata[i+0];
+						data[i*4+3] = 255;
+					}
+					delete pdata;
+				}
+				break;
+
+				case Graphics::ColorMode::Alpha: {
+					auto pdata = data;
+					data = (Byte*)malloc(size.Area()*4);
+
+					for(int i=0; i<size.Area(); i++) {
+						data[i*4+0] = 255;
+						data[i*4+1] = 255;
+						data[i*4+2] = 255;
+						data[i*4+3] = pdata[i+0];
+					}
+					delete pdata;
+				}
+				break;
+
+				case Graphics::ColorMode::RGB: {
+					auto pdata = data;
+					data = (Byte*)malloc(size.Area()*4);
+
+					for(int i=0; i<size.Area(); i++) {
+						data[i*4+0] = pdata[i*3+0];
+						data[i*4+1] = pdata[i*3+1];
+						data[i*4+2] = pdata[i*3+2];
+						data[i*4+3] = 255;
+					}
+					delete pdata;
+				}
+				break;
+
+				case Graphics::ColorMode::BGR: {
+					auto pdata = data;
+					data = (Byte*)malloc(size.Area()*4);
+
+					for(int i=0; i<size.Area(); i++) {
+						data[i*4+0] = pdata[i*3+2];
+						data[i*4+1] = pdata[i*3+1];
+						data[i*4+2] = pdata[i*3+0];
+						data[i*4+3] = 255;
+					}
+					delete pdata;
+				}
+				break;
+
+				}
+
+				mode = Graphics::ColorMode::RGBA;
+			}
+
+			/// Copies this image to a RGBA buffer, buffer should be resize before calling this function
+			void CopyToRGBABuffer(Byte *buffer) const {
+				if(!data) return;
+
+				int i;
+
+				switch(mode) {
+					case Graphics::ColorMode::RGBA:
+						memcpy(buffer, data, size.Area()*4);
+						break;
+
+					case Graphics::ColorMode::BGRA:
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i*4+2];
+							buffer[i*4+1] = data[i*4+1];
+							buffer[i*4+2] = data[i*4+0];
+							buffer[i*4+3] = data[i*4+3];
+						}
+						break;
+
+					case Graphics::ColorMode::Grayscale_Alpha:
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i*2+0];
+							buffer[i*4+1] = data[i*2+0];
+							buffer[i*4+2] = data[i*2+0];
+							buffer[i*4+3] = data[i*2+1];
+						}
+						break;
+
+					case Graphics::ColorMode::Grayscale:
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i+0];
+							buffer[i*4+1] = data[i+0];
+							buffer[i*4+2] = data[i+0];
+							buffer[i*4+3] = 255;
+						}
+						break;
+
+					case Graphics::ColorMode::Alpha: {
+						for(i=0; i<size.Area(); i++) 
+							buffer[i*4+0] = 255;
+							buffer[i*4+1] = 255;
+							buffer[i*4+2] = 255;
+							buffer[i*4+3] = data[i+0];
+						}
+						break;
+
+					case Graphics::ColorMode::RGB: 
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i*3+0];
+							buffer[i*4+1] = data[i*3+1];
+							buffer[i*4+2] = data[i*3+2];
+							buffer[i*4+3] = 255;
+						}
+						break;
+
+					case Graphics::ColorMode::BGR:
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i*3+2];
+							buffer[i*4+1] = data[i*3+1];
+							buffer[i*4+2] = data[i*3+0];
+							buffer[i*4+3] = 255;
+						}
+						break;
+
+				}
+			}
+
+			/// Copies this image to a RGBA buffer, buffer should be resize before calling this function.
+			/// This function is here mostly to create icon for Win32
+			void CopyToBGRABuffer(Byte *buffer) const {
+				if(!data) return;
+
+				int i;
+
+				switch(mode) {
+					case Graphics::ColorMode::BGRA:
+						memcpy(buffer, data, size.Area()*4);
+						break;
+
+					case Graphics::ColorMode::RGBA:
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i*4+2];
+							buffer[i*4+1] = data[i*4+1];
+							buffer[i*4+2] = data[i*4+0];
+							buffer[i*4+3] = data[i*4+3];
+						}
+						break;
+
+					case Graphics::ColorMode::Grayscale_Alpha:
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i*2+0];
+							buffer[i*4+1] = data[i*2+0];
+							buffer[i*4+2] = data[i*2+0];
+							buffer[i*4+3] = data[i*2+1];
+						}
+						break;
+
+					case Graphics::ColorMode::Grayscale:
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i+0];
+							buffer[i*4+1] = data[i+0];
+							buffer[i*4+2] = data[i+0];
+							buffer[i*4+3] = 255;
+						}
+						break;
+
+					case Graphics::ColorMode::Alpha: {
+						for(i=0; i<size.Area(); i++) 
+							buffer[i*4+0] = 255;
+							buffer[i*4+1] = 255;
+							buffer[i*4+2] = 255;
+							buffer[i*4+3] = data[i+0];
+						}
+						break;
+
+					case Graphics::ColorMode::BGR: 
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i*3+0];
+							buffer[i*4+1] = data[i*3+1];
+							buffer[i*4+2] = data[i*3+2];
+							buffer[i*4+3] = 255;
+						}
+						break;
+
+					case Graphics::ColorMode::RGB:
+						for(i=0; i<size.Area(); i++) {
+							buffer[i*4+0] = data[i*3+2];
+							buffer[i*4+1] = data[i*3+1];
+							buffer[i*4+2] = data[i*3+0];
+							buffer[i*4+3] = 255;
+						}
+						break;
+
+				}
+			}
+
 			/// Imports a given bitmap file. BMP RLE compression and colorspaces are not supported.
 			bool ImportBMP(const std::string &filename) {
 				std::ifstream file(filename, std::ios::binary);
@@ -520,7 +743,7 @@ namespace Gorgon {
 			/// Exports the image as a bitmap. RGB is exported as 24-bit, RGBA, BGR, BGRA is exported
 			/// as 32-bit, Grayscale exported as 8-bit, Grayscale alpha, alpha only is exported as
 			/// 16-bit
-			bool ExportBMP(std::ostream &file) {
+			bool ExportBMP(std::ostream &file, bool usev4 = false) {
 				using namespace IO;
 				using Graphics::ColorMode;
 
@@ -621,7 +844,12 @@ namespace Gorgon {
 					}
 				}
 
-				if(headersize == 108) {
+				if(headersize == 108 || usev4) {
+					if(compression != 3) {
+						WriteUInt32(file, 0x00000001);
+						WriteUInt32(file, 0x00000002);
+						WriteUInt32(file, 0x00000004);
+					}
 					if(mode == ColorMode::Alpha) {
 						WriteUInt32(file, 0x0000ff00);
 					}

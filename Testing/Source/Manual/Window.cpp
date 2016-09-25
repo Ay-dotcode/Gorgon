@@ -40,7 +40,7 @@ int main() {
     std::cout<<WM::Monitor::Primary().GetName()<<": "<<WM::Monitor::Primary().GetLocation()<<std::endl;
     //std::cout<<WM::GetScreenRegion(0)<<std::endl;
     
-	Window wind({0, 0, 800, 600}, "windowtest", true);
+	Window wind({800, 600}, "windowtest", true);
 	Graphics::Initialize();
 
 	Graphics::Layer l;
@@ -53,6 +53,12 @@ int main() {
     }
 	 
 	img.Prepare();
+
+	Graphics::Bitmap icon;
+	icon.Import("icon.png");
+
+	WM::Icon ico(icon.GetData());
+	wind.SetIcon(ico);
 	
 	//img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
 	//for(int x = 0; x<200; x++)
@@ -158,14 +164,17 @@ int main() {
 		else if(state && (key == 'C' || key == 'c'))
 			wind.Center();
 
-		else if(state && (key == 'H' || key == 'h'))
-			wind.Hide();
-
 		else if(state && (key == 'E' || key == 'e'))
 			wind.AllowResize();
 
 		else if(state && (key == 'D' || key == 'd'))
 			wind.PreventResize();
+        
+        else if(state && (key == 'H' || key == 'h'))
+            wind.HidePointer();
+        
+        else if(!state && (key == 'H' || key == 'h'))
+            wind.ShowPointer();
 
 		return false;
 	});

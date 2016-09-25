@@ -182,6 +182,8 @@ namespace Gorgon {
             Move((monitor.GetUsable()-GetExteriorBounds().GetSize()).Center());
         }
 
+		void SetIcon(const WindowManager::Icon &icon);
+
 		/// Renders the contents of the window
 		virtual void Render() override;
         
