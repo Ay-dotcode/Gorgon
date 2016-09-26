@@ -39,9 +39,23 @@ namespace Gorgon {
 		
 		/// Represents an icon object that can be used as window icon.
 		class Icon {
-			friend class Window;
+			friend class Gorgon::Window;
 		public:
 			explicit Icon(const Containers::Image &image);
+            
+            Icon(const Icon &) = delete;
+            
+            Icon(Icon &&icon);
+            
+            Icon &operator =(const Icon &) = delete;
+            
+            Icon &operator =(Icon &&icon);
+            
+            Icon();
+            
+            void Destroy();
+            
+            void FromImage(const Containers::Image &image);
 			
 			~Icon();
 			

@@ -87,6 +87,7 @@ namespace Gorgon {
         Atom XA_NET_ACTIVE_WINDOW;
         Atom XA_WM_CHANGE_STATE;
         Atom XA_STRUT;
+        Atom XA_NET_WM_ICON;
 		///@}
 			
 		///@{ waits for specific events
@@ -113,6 +114,11 @@ namespace Gorgon {
 				~monitordata() {
 				}
 			};
+            
+            struct icondata {
+                int w = 0, h = 0;
+                Byte *data = nullptr;
+            };
 			
 			intptr_t context;
 
@@ -197,7 +203,7 @@ namespace Gorgon {
             XA_NET_WM_STATE_FULLSCREEN = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
             XA_STRUT = XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False);
             XA_WM_CHANGE_STATE = XInternAtom(display, "WM_CHANGE_STATE", False);
-			
+            XA_NET_WM_ICON = XInternAtom(display, "_NET_WM_ICON", False);
 
 			char data[1]={0};
 			XColor dummy;
@@ -473,6 +479,55 @@ failsafe: //this should use X11 screen as monitor
 		bool Monitor::IsChangeEventSupported() {
 			return false;//xrandr;
 		}
+	
+        Icon::Icon() {
+            data = new internal::icondata;
+        }
+        
+        Icon::Icon(const Containers::Image &image) {
+            data = new internal::icondata;
+            FromImage(image);
+        }
+        
+        Icon::Icon(Icon &&icon) {
+            data = new internal::icondata;
+            std::swap(data, icon.data);
+        }
+        
+        Icon &Icon::operator =(Icon &&icon) {
+            Destroy();
+            
+            std::swap(data, icon.data);
+            return *this;
+        }
+        
+        void Icon::FromImage(const Containers::Image &image) {
+			unsigned *img=new unsigned[2+image.GetWidth()*image.GetHeight()];
+			
+			img[0]=image.GetWidth();
+			img[1]=image.GetHeight();
+			
+			image.CopyToBGRABuffer((Byte*)(img+2));
+			
+			data->w = image.GetWidth();
+            data->h = image.GetHeight();
+            
+            data->data = (Byte*)img;
+        }
+        
+        void Icon::Destroy() {
+            if(data->data) {
+                delete data->data;
+                data->w = 0;
+                data->h = 0;
+            }
+        }
+        
+        Icon::~Icon() {
+            Destroy();
+            
+            delete data;
+        }
 	
 		Event<> Monitor::ChangedEvent;
 		Containers::Collection<Monitor> Monitor::monitors;
@@ -1283,7 +1338,7 @@ failsafe: //this should use X11 screen as monitor
         return max;
 	}
 	
-	void Gorgon::Window::AllowResize() {
+	void Window::AllowResize() {
         XSizeHints *sizehints=XAllocSizeHints();
         sizehints->min_width=0;
         sizehints->max_width=INT_MAX;
@@ -1295,7 +1350,7 @@ failsafe: //this should use X11 screen as monitor
         XFree(sizehints);
     }
 	
-	void Gorgon::Window::PreventResize() {
+	void Window::PreventResize() {
         auto sz = GetSize();
         XSizeHints *sizehints=XAllocSizeHints();
         sizehints->min_width=sz.Width;
@@ -1308,5 +1363,9 @@ failsafe: //this should use X11 screen as monitor
         XFree(sizehints);
     }
 
+    void Window::SetIcon(const WindowManager::Icon& icon) {
+        XChangeProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_ICON, WindowManager::XA_CARDINAL , 32, PropModeReplace, icon.data->data, icon.data->w*icon.data->h+2);
+        XSync(WindowManager::display, 1);
+    }
     
 }

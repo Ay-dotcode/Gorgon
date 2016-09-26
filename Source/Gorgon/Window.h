@@ -182,6 +182,7 @@ namespace Gorgon {
             Move((monitor.GetUsable()-GetExteriorBounds().GetSize()).Center());
         }
 
+        /// Changes the icon of the window.
 		void SetIcon(const WindowManager::Icon &icon);
 
 		/// Renders the contents of the window

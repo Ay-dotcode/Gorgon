@@ -351,7 +351,7 @@ namespace Gorgon {
 			};
 
 			struct icondata {
-				HICON icon;
+				HICON icon = 0;
 			};
 
 			void switchcontext(Gorgon::internal::windowdata &data) {
@@ -445,6 +445,30 @@ namespace Gorgon {
 		}
 
 		Icon::Icon(const Containers::Image &image) {
+			data = new internal::icondata;
+
+            data->icon = 0;
+            FromImage(image);
+		}
+		
+		Icon::Icon() {
+			data = new internal::icondata;
+            data->icon = 0;
+        }
+        
+        Icon::Icon(Icon &&icon) {
+            data = new internal::icondata;
+            std::swap(data, icon.data);
+        }
+        
+        Icon &Icon::operator =(Icon &&icon) {
+            Destroy();
+            
+            std::swap(data, icon.data);
+            return *this;
+        }
+        
+        void Icon::FromImage(const Containers::Image &image) {
 			LONG dwWidth, dwHeight;
 			BITMAPV5HEADER bi;
 			HBITMAP hBitmap;
@@ -495,12 +519,19 @@ namespace Gorgon {
 			DeleteObject(hBitmap);
 			DeleteObject(hMonoBitmap);
 
-			data = new internal::icondata;
 			data->icon = hAlphaIcon;
-		}
+        }
+        
+        void Icon::Destroy() {
+            if(data->icon) {
+                DeleteObject(data->icon);
+                data->icon = 0;
+            }
+        }
 
 		Icon::~Icon() {
-			DeleteObject(data->icon);
+            Destroy();
+            
 			delete data;
 		}
 
@@ -860,6 +891,7 @@ namespace Gorgon {
 	}
 
 	void Window::SetIcon(const WindowManager::Icon &icon) {
-		SetClassLong(data->handle, GCL_HICON, (LONG)icon.data->icon);
+        if(icon.data->icon)
+            SetClassLong(data->handle, GCL_HICON, (LONG)icon.data->icon);
 	}
 }
