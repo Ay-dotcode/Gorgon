@@ -282,8 +282,7 @@
 			<li   f d> GetPosition
 			<li   f d> GetMonitor
 			<li   f d> IsClosed
-			<li   f  > SetIcon
-			<li   f  > GetIcon
+			<li   f d> SetIcon
 			<li   f d> Focus
 			<li   f d> IsFocused
 			<li   f d> Minimize
@@ -306,17 +305,13 @@
 		
 		<namespace name="WindowManager">
 			<li   f  > CurrentContext
-			<li   f q> GetUsableScreenRegion
-			<li   f q> GetScreenRegion
-			<li   f  > SetClipboardText
-			<li   f  > GetClipboardText
-			<li   f  > GetMonitors
+			<li   f d> SetClipboardText
+			<li   f d> GetClipboardText
+			<li   f  > GetIconFor
 			</li><br>
 			
 			<class name="Icon">
-				<li   c  > From data
-				<li   c  > Default from OS
-				<li   c  > From OS
+				<li   c d> From data
 			</li></class>
 			
 			<class name="Pointer">
@@ -326,13 +321,14 @@
 			</li></class>
 			
 			<class name="Monitor">
-				<li   f  > GetSize
-				<li   f  > GetLocation
-				<li   f  > IsPrimary
-				<li   f  > GetName
-				<li s f  > Primary
-				<li s f  > Monitors
-				<li s f  > Refresh
+				<li   f d> GetSize
+				<li   f d> GetLocation
+				<li   f d> GetUsable
+				<li   f d> IsPrimary
+				<li   f d> GetName
+				<li s f d> Primary
+				<li s f d> Monitors
+				<li s f d> Refresh
 				<li s f  > IsChangeEventSupported
 				<li s e  > ChangedEvent
 			</li></class>
@@ -437,16 +433,21 @@
 				<li   f d> Prepare
 				<li   f d> Discard
 				<li   f d> ImportPNG
-				<li   f  > ImportJPG
-				<li   f  > Import
+				<li   f d> ImportJPG
+				<li   f d> ImportBMP
+				<li   f d> Import
 				<li   f d> ExportPNG
+				<li   f d> ExportJPG
+				<li   f d> ExportBMP
+				<li   f d> Export
 				<li   f  > Blur
 				<li   f  > Shadow
 				<li   f  > Grayscale
 				<li   f  > Resample
-				<li   f  > StripTransparency
-				<li   f  > CreateLinearAtlas
-				<li   f  > CreateAtlasImages
+				<li   f d> StripTransparency
+				<li   f d> StripRGB
+				<li   f d> CreateLinearAtlas
+				<li   f d> CreateAtlasImages
 			</li></class>
 			
 			<class name="Drawable">
@@ -501,39 +502,18 @@
 				<li   f d> SetDrawMode
 			</li></class>
 			
-			<class name="ColorizableTarget">
-				<task>Rename to Colorizable and move somewhere else
-				<li   f d> SetCurrentColor
-				<li   f d> GetCurrentColor
-			</li></class>
-			
-			<class name="ColorizableTextureTarget" inherits="TextureTarget, ColorizableTarget">
-			</class>
-			
 			<class name="Layer" inherits="Gorgon::Layer, TextureTarget">
 				<li   f d> Draw
-				<li   f   > Draw (tiled)
+				<li   f d> Draw (tiled)
 				<li   f d> Clear
 				<li   f d> Render
 				<li   f d> GetDrawMode
 				<li   f d> SetDrawMode
+				<li   f d> SetColor
 				<li   f d> GetTargetSize
 				<task>Move surface to cpp</task>
 			</li></class>
 			
-			<class name="ColorizableLayer" inherits="Gorgon::Layer, TextureTarget, Colorizable">
-				<li   f  > Draw
-				<li   f  > Draw (tiled)
-				<li   f  > Clear
-				<li   f  > Render
-				<li   f  > GetDrawMode
-				<li   f  > SetDrawMode
-				<li   f  > GetTargetSize
-				<li   f  > GetColor
-				<li   f  > SetColor
-				<li   f  > GetAmbientColor
-				<li   f  > SetAmbientColor
-			</li></class>
 			
 			<class name="CustomShadedLayer" inherits="Gorgon::Layer, TextureTarget">
 				<pre>Requires packaged shader</pre>
@@ -548,13 +528,6 @@
 				<li   f d> SetVertexCoords
 				<li   f d> SetTextureCoords
 				<li   f d> SetDiffuse
-			</li></class>
-			
-			<class name="SimpleTintShader">
-				<li   f d> SetVertexCoords
-				<li   f d> SetTextureCoords
-				<li   f d> SetDiffuse
-				<li   f d> SetTint
 			</li></class>
 			
 			<class name="MaskedShader">
@@ -575,12 +548,12 @@
 		</namespace>
 		
 		<namespace name="GL">
-			<li   f  > GenerateTexture
+			<li   f d> GenerateTexture
 			<li   f  > UpdateTexture
 			<li   f  > DestroyTexture
-			<li   f  > SetupContext
-			<li   f  > Resize
-			<li   f  > Clear
+			<li   f d> SetupContext
+			<li   f d> Resize
+			<li   f d> Clear
 			</li><br>
 			
 			<class name="Shader">

@@ -292,7 +292,7 @@ namespace Gorgon {
 #endif
 			}
 
-			XSetSelectionOwner (display, XA_CLIPBOARD, windowhandle, Time::GetTime());
+			XSetSelectionOwner (display, XA_CLIPBOARD, windowhandle, CurrentTime);
 			copiedtext=text;
 			XFlush(display);
 		}
@@ -904,6 +904,48 @@ failsafe: //this should use X11 screen as monitor
                     }
                 }
 				break;
+                
+                case SelectionRequest:
+                    XEvent respond;
+                    
+                    if(event.xselectionrequest.target==WindowManager::XA_STRING && event.xselectionrequest.selection==WindowManager::XA_CLIPBOARD) {
+                    
+                        XChangeProperty (WindowManager::display,
+                            event.xselectionrequest.requestor,
+                            event.xselectionrequest.property,
+                            WindowManager::XA_STRING,
+                            8,
+                            PropModeReplace,
+                            (unsigned char*) &WindowManager::copiedtext[0],
+                            (int)WindowManager::copiedtext.length());
+                        respond.xselection.property=event.xselectionrequest.property;
+                    }
+                    else if(event.xselectionrequest.target==WindowManager::XA_TARGETS && event.xselectionrequest.selection==WindowManager::XA_CLIPBOARD) {
+                        Atom supported[]={WindowManager::XA_STRING};
+                        XChangeProperty (WindowManager::display,
+                            event.xselectionrequest.requestor,
+                            event.xselectionrequest.property,
+                            WindowManager::XA_TARGETS,
+                            8,
+                            PropModeReplace,
+                            (unsigned char *)(&supported),
+                            sizeof(supported)
+                        );
+                    }
+                    else {
+                        respond.xselection.property= 0;
+                    }
+                    
+                    respond.xselection.type= SelectionNotify;
+                    respond.xselection.display= event.xselectionrequest.display;
+                    respond.xselection.requestor= event.xselectionrequest.requestor;
+                    respond.xselection.selection=event.xselectionrequest.selection;
+                    respond.xselection.target= event.xselectionrequest.target;
+                    respond.xselection.time = event.xselectionrequest.time;
+                    XSendEvent (WindowManager::display, event.xselectionrequest.requestor,0,0,&respond);
+                    XFlush (WindowManager::display);
+                    break;
+                    
                     
                 case PropertyNotify:
                     if(event.xproperty.atom == WindowManager::XA_NET_WM_STATE) {

@@ -42,6 +42,9 @@ int main() {
     
 	Window wind({800, 600}, "windowtest", true);
 	Graphics::Initialize();
+    
+    std::cout<<WM::GetClipboardText()<<std::endl;
+    WM::SetClipboardText("copied!");
 
 	Graphics::Layer l;
 	wind.Add(l);
@@ -51,8 +54,8 @@ int main() {
         std::cout<<"Test.png is not found"<<std::endl;
         exit(0);
     }
-	 
-	img.Prepare();
+
+    img.Prepare();
 
 	Graphics::Bitmap icon;
 	icon.Import("icon.png");
