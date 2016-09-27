@@ -272,6 +272,8 @@
 			<li   f d> Close
 			<li   f d> ShowPointer
 			<li   f d> HidePointer
+			<li   f d> SwitchToLocalPointers
+			<li   f d> SwitchToWMPointers
 			<li   f d> Render
 			<li   f d> SetTitle
 			<li   f d> GetTitle
@@ -300,6 +302,7 @@
 			<li   e d> InputEvent
 			<li   e d> KeyEvent
 			<li   e d> CharacterEvent
+			<li   m d> Pointers
 			<li s m d> Windows
 		</li></class>
 		
@@ -512,6 +515,26 @@
 				<li   f d> SetColor
 				<li   f d> GetTargetSize
 				<task>Move surface to cpp</task>
+			</li></class>
+			
+			<class name="Pointer" inherits="Gorgon::Graphics::Drawable">
+				<li   f d> Draw
+				<li   f d> GetImage
+				<li   f d> SetImage
+				<li   f d> HasImage
+				<li   f d> RemoveImage
+				<li   f d> Assume
+				<li   f d> Release
+			</li></class>
+			
+			<class name="PointerStack">
+				<li   f d> Add
+				<li   f d> Assume
+				<li   f d> Exists
+				<li   f d> Set
+				<li   f d> Reset
+				<li   f d> Current
+				<li   f d> IsValid
 			</li></class>
 			
 			

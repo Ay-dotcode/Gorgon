@@ -53,7 +53,9 @@ namespace Gorgon { namespace Graphics {
 
 		//Pointer(Resource::Pointer &pointer);
 
-		~Pointer();
+		~Pointer() {
+            RemoveImage();
+        }
         
         
         /// Returns if the pointer has an image
@@ -120,16 +122,61 @@ namespace Gorgon { namespace Graphics {
         bool owner = false;
 	};
 
+    /**
+     * This class manages a pointer stack that allows multiple pointers to be
+     * registered and switched. These pointers are pushed to the stack and can
+     * be reset, setting the pointer to the previous state. 
+     */
     class PointerStack {
     public:
         
-        /// Token type
-        using Token = int;
-        
-        /// Null token, if this token is returned this means there is no
-        /// pointer registered for the given type. If this token is given
-        /// to Reset function, the function will take no action.
-		static const Token NullToken = 0;
+        /// Token type, automatically pops pointer stack when goes out of scope
+        class Token {
+            friend class PointerStack;
+        public:
+            Token() { }
+            
+            Token(Token &&other) {
+                parent = other.parent;
+                ind = other.ind;
+                
+                other.parent = nullptr;
+                other.ind = 0;
+            }
+            
+            ~Token() {
+                if(parent)
+                    parent->Reset(*this);
+            }
+            
+            Token &operator =(Token &&tok) {
+                if(parent)
+                    parent->Reset(*this);
+                
+                parent = tok.parent;
+                ind = tok.ind;
+                
+                tok.parent = nullptr;
+                tok.ind = 0;
+                
+                return *this;
+            }
+            
+            /// Checks if the token is null
+            bool IsNull() const { return parent == nullptr; }
+            
+            /// Checks if the token is valid
+            explicit operator bool() const { return !IsNull(); }
+            
+            /// Checks if the token is invalid
+            bool operator !() const { return IsNull(); }
+            
+        private:
+            Token(PointerStack *parent, int ind) : parent(parent), ind(ind) { }
+            
+            PointerStack *parent = nullptr;
+            int ind = 0;
+        };
 
 		///Pointer types
 		enum PointerType {
@@ -171,32 +218,47 @@ namespace Gorgon { namespace Graphics {
         /// then it will be deleted.
         void Add(PointerType type, const Drawable &image, Geometry::Point hotspot);
         
+        /// Checks if the given pointer exists
+        bool Exists(PointerType type) {
+            if((int)type <= 0 || (int)type > (int)Drag) return false;
+            
+            return pointers[(int)type].ptr != nullptr;
+        }
+        
         /// Set the current pointer to the given type. This would return a token to
-        /// be used to reset this operation.
-		Token Set(PointerType Type);
+        /// be used to reset this operation. The token should be stored in a variable
+        /// otherwise the pointer would be reset immediately.
+		Token Set(PointerType type);
         
         /// Sets the current pointer in the stack to the given pointer. This pointer
-        /// will not be added to the list.
+        /// will not be added to the list. The token should be stored in a variable
+        /// otherwise the pointer would be reset immediately.
         Token Set(const Pointer &pointer);
         
-        /// Removes a pointer shape from the stack. If a NullToken is given, this 
-        /// function will not perform any action
-        void Reset(Token token);
+        /// Removes a pointer shape from the stack. If the given token is null or 
+        /// does not belong to this stack, nothing is done.
+        void Reset(Token &token);
         
-        /// Sets the base pointer, which will be used after all sets are reset.
-        void ChangeBase(Pointer &Pointer);
+        /// Returns the pointer on top of the stack, if no pointer is on the stack,
+        /// first pointer in the order of PointerType enums will be returned. If no
+        /// pointers are registered, this function will throw runtime_error
+        const Pointer &Current() const;
+        
+        /// Returns if the stack is valid to be used. A valid stack requires at least
+        /// one registered or pushed pointer
+        bool IsValid() const;
         
     private:
         struct Wrapper {
-            Pointer *ptr = nullptr;
+            const Pointer *ptr = nullptr;
             bool owned = false;
         };
         
         int lastind = 0;
         
-        Containers::Hashmap<int, Pointer> stack;
+        Containers::Hashmap<int, const Pointer> stack;
         
-        std::array<Wrapper, Drag+1> pointers;
+        std::array<Wrapper, Drag+1> pointers = {};
     };
     
 

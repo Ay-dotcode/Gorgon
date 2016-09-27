@@ -65,6 +65,13 @@ namespace Gorgon {
     }
 
     void Window::mouse_location() {
+        if(!iswmpointer && pointerlayer->IsVisible()) {
+            pointerlayer->Clear();
+            ASSERT(Pointers.IsValid(), "No pointer is set");
+            
+            Pointers.Current().Draw(*pointerlayer, mouselocation);
+        }
+        
 		Transform = {};
         Clip = bounds.GetSize();
         
@@ -106,6 +113,22 @@ namespace Gorgon {
 
 		throw std::runtime_error("Window is not any monitors.");
 	}
+	
+	void Window::added(Layer &) {
+        children.MoveBefore(*pointerlayer, children.GetSize());
+    }
+    
+    void Window::SwitchToLocalPointers() {
+        HidePointer();
+        iswmpointer = false;
+        ShowPointer();
+    }
+    
+    void Window::SwitchToWMPointers() {
+        HidePointer();
+        iswmpointer = true;
+        ShowPointer();
+    }
 
 	int Window::ClickThreshold = 5;
 }

@@ -8,6 +8,8 @@
 #include "../Graphics.h"
 #include "../Utils/Assert.h"
 
+#include "../Graphics/Layer.h"
+
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -539,6 +541,8 @@ failsafe: //this should use X11 screen as monitor
 		
 		this->name = name;
         this->allowresize = allowresize;
+        pointerlayer = new Graphics::Layer;
+        Add(pointerlayer);
 
 #ifndef NDEBUG
 		ASSERT(WindowManager::display, "Window manager system is not initialized.");
@@ -647,6 +651,8 @@ failsafe: //this should use X11 screen as monitor
 	Window::Window(const Gorgon::Window::FullscreenTag &, const WindowManager::Monitor &mon, const std::string &name, const std::string &title) : data(new internal::windowdata) {
 		
 		this->name = name;
+        pointerlayer = new Graphics::Layer;
+        Add(pointerlayer);
 
 #ifndef NDEBUG
 		ASSERT(WindowManager::display, "Window manager system is not initialized.");
@@ -722,7 +728,8 @@ failsafe: //this should use X11 screen as monitor
         Close();
 		delete data;
 		windows.Remove(this);
-	}
+	    delete pointerlayer;
+    }
 	
 	void Window::Show() {
 		Layer::Show();
@@ -748,19 +755,30 @@ failsafe: //this should use X11 screen as monitor
 	}
 		
 	void Window::HidePointer() {
-		if(data->pointerdisplayed) {
-			data->pointerdisplayed=false;
-			XDefineCursor(WindowManager::display, data->handle, WindowManager::blank_cursor);
-			XFlush(WindowManager::display);
-		}
+        if(iswmpointer) {
+            if(data->pointerdisplayed) {
+                data->pointerdisplayed=false;
+                XDefineCursor(WindowManager::display, data->handle, WindowManager::blank_cursor);
+                XFlush(WindowManager::display);
+            }
+        }
+        else {
+            pointerlayer->Clear();
+            pointerlayer->Hide();
+        }
 	}
 		
 	void Window::ShowPointer() {
-		if(!data->pointerdisplayed) {
-			data->pointerdisplayed=true;
-			XDefineCursor(WindowManager::display, data->handle, 0);
-			XFlush(WindowManager::display);
-		}
+        if(iswmpointer) {
+            if(!data->pointerdisplayed) {
+                data->pointerdisplayed=true;
+                XDefineCursor(WindowManager::display, data->handle, 0);
+                XFlush(WindowManager::display);
+            }
+        }
+        else {
+            pointerlayer->Show();
+        }
 	}
 	
 	void Window::Move(const Geometry::Point &location) {

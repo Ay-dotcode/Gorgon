@@ -477,15 +477,23 @@ namespace Gorgon { namespace Graphics {
         }
 		
 		/// Loops through all pixels of the image, giving the specified channel value to your function.
-		void ForAllPixels(std::function<void(Byte)> fn, int channel) {
+		void ForAllPixels(std::function<void(Byte&)> fn, int channel) {
             for(int y=0; y<data->GetHeight(); y++) 
                 for(int x=0; x<data->GetWidth(); x++)
                     fn(this->operator()(x, y, channel));
         }
 		
+		/// Loops through all pixels of the image, giving the specified channel value to your function.
+		void ForAllValues(std::function<void(Byte&)> fn) {
+            for(int y=0; y<data->GetHeight(); y++) 
+                for(int x=0; x<data->GetWidth(); x++)
+                    for(int c=0; c<GetBytesPerPixel(); c++)
+                        fn(this->operator()(x, y, c));
+        }
+		
 		/// Loops through all pixels of the image, giving the specified channel value to your function. If you return false, 
 		/// looping will stop and the function will return false.
-		bool ForPixels(std::function<bool(Byte)> fn, int channel) {
+		bool ForPixels(std::function<bool(Byte&)> fn, int channel) {
             for(int y=0; y<data->GetHeight(); y++) 
                 for(int x=0; x<data->GetWidth(); x++)
                     if(!fn(this->operator()(x, y, channel)))

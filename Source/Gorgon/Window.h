@@ -12,6 +12,7 @@
 #include "Layer.h"
 #include "Input.h"
 #include "Input/Keyboard.h"
+#include "Graphics/Pointer.h"
 
 namespace Gorgon {
 	/// @cond INTERNAL
@@ -19,6 +20,11 @@ namespace Gorgon {
 		struct windowdata;
 	}
 	/// @endcond
+	
+	namespace Graphics {
+        class Layer;
+    }
+        
 
 	/// This class represents a window. 
 	/// @nosubgrouping
@@ -166,10 +172,14 @@ namespace Gorgon {
 		/// Whether the window is currently closed and cannot be acted on.
 		bool IsClosed() const;
 
-		/// Shows the pointer displayed by window manager
+		/// Displays the pointer. If local pointers are activated, this function
+        /// will show local pointer, otherwise it will show window manager pointer
 		void ShowPointer();
 
-		/// Hides the pointer displayed by window manager
+		/// Hides the pointer. If local pointers are activated, this function
+        /// will hide local pointer, otherwise it will hide window manager pointer.
+        /// In both cases, after calling to this function, there will be no visible
+        /// pointer on the screen.
 		void HidePointer();
         
         /// Centers the window to the default monitor
@@ -230,6 +240,17 @@ namespace Gorgon {
 
 		/// Prevents window to be resized by the user
 		void PreventResize();
+        
+        /// Removes the operating system pointer and starts using Locally defined pointers.
+        /// If there are no pointers added to the Pointers object, this function will throw.
+        /// After switching, ShowPointer and HidePointer will show and hide local pointers
+        /// not OS pointers. Calling this function will show the local pointer.
+        void SwitchToLocalPointers();
+        
+        /// Stops showing local pointers and makes window manager pointer visible.
+        void SwitchToWMPointers();
+        
+        Graphics::PointerStack Pointers; 
 
 		/// @name Events 
 		/// @{
@@ -294,6 +315,8 @@ namespace Gorgon {
 		/// A window cannot be placed in another layer. This function always fails.
 		virtual void located(Layer *) override { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
 		
+		virtual void added(Layer &layer) override;
+		
 		void mouse_down(Geometry::Point location, Input::Mouse::Button button);
 		void mouse_up(Geometry::Point location, Input::Mouse::Button button);
 		void mouse_event(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount);
@@ -323,5 +346,9 @@ namespace Gorgon {
 
 		Geometry::Point mousedownlocation = {-1, -1};
         Geometry::Point mouselocation = {-1, -1};
+        
+        Graphics::Layer *pointerlayer;
+        bool iswmpointer = true;
+        bool switchbacktolocalptr = false;
 	};
 }

@@ -10,6 +10,8 @@
 #include "../GL/OpenGL.h"
 #include "../Graphics.h"
 
+#include "../Graphics/Layer.h"
+
 #include <windows.h>
 #include "../Geometry/Margins.h"
 
@@ -543,6 +545,8 @@ namespace Gorgon {
 	Window::Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool allowresize, bool visible) :
 		data(new internal::windowdata(*this)) { 
 		windows.Add(this);
+        pointerlayer = new Graphics::Layer;
+        Add(pointerlayer);
 
 		this->name = name;
 		this->allowresize = allowresize;
@@ -625,6 +629,8 @@ namespace Gorgon {
 
 	Window::Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
 		windows.Add(this);
+        pointerlayer = new Graphics::Layer;
+        Add(pointerlayer);
 
 		this->name = name;
 
@@ -686,6 +692,7 @@ namespace Gorgon {
 		internal::windowdata::mapping[data->handle]=nullptr;
 		windows.Remove(this);
 		delete data;
+        delete pointerlayer;
 	}
 
 	void Window::Show() {
@@ -699,19 +706,30 @@ namespace Gorgon {
 	}
 	
 	void Window::HidePointer() {
-		if(WindowManager::pointerdisplayed) {
-			WindowManager::pointerdisplayed=false;
-			SetCursor(NULL);
-			ShowCursor(false);
-		}
+        if(iswmpointer) {
+            if(WindowManager::pointerdisplayed) {
+                WindowManager::pointerdisplayed=false;
+                SetCursor(NULL);
+                ShowCursor(false);
+            }
+        }
+        else {
+            pointerlayer->Clear();
+            pointerlayer->Hide();
+        }
 	}
 
 	void Window::ShowPointer() {
-		if(!WindowManager::pointerdisplayed) {
-			WindowManager::pointerdisplayed=true;
-			ShowCursor(true);
-			SetCursor((HCURSOR)WindowManager::defaultcursor);
-		}
+        if(iswmpointer) {
+            if(!WindowManager::pointerdisplayed) {
+                WindowManager::pointerdisplayed=true;
+                ShowCursor(true);
+                SetCursor((HCURSOR)WindowManager::defaultcursor);
+            }
+        }
+        else {
+            pointerlayer->Show();
+        }
 	}
 
 	void Window::Resize(const Geometry::Size &size) {

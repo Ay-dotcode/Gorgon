@@ -1,6 +1,4 @@
-﻿
-
-#include <Gorgon/Window.h>
+﻿#include <Gorgon/Window.h>
 #include <thread>
 #include <Gorgon/WindowManager.h>
 #include <Gorgon/Main.h>
@@ -13,6 +11,8 @@
 #include "Gorgon/Graphics/BitmapFont.h"
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Font.h>
+
+#include <Gorgon/Graphics/Pointer.h>
 
 
 #include <chrono>
@@ -62,6 +62,60 @@ int main() {
 
 	WM::Icon ico(icon.GetData());
 	wind.SetIcon(ico);
+    
+    Graphics::Bitmap cursor1({16,16}, Graphics::ColorMode::RGBA);
+    cursor1.ForAllPixels([&](int x, int y) {
+        if(y%2 && (x == y/2 || x == cursor1.GetWidth()-y/2-1)) {
+            cursor1(x, y, 0) = 255;
+            cursor1(x, y, 1) = 255;
+            cursor1(x, y, 2) = 255;
+            cursor1(x, y, 3) = 128;
+        }
+        else if(x>=y/2 && x<=cursor1.GetWidth()-y/2-1) {
+            cursor1(x, y, 0) = 255;
+            cursor1(x, y, 1) = 255;
+            cursor1(x, y, 2) = 255;
+            cursor1(x, y, 3) = 255;
+        }
+        else {
+            cursor1(x, y, 3) = 0;
+        }
+    });
+    
+    Graphics::Bitmap cursor2({16,16}, Graphics::ColorMode::RGBA);
+    cursor2.ForAllPixels([&](int x, int y) {
+        int yy = y;
+        if(y>=8) {
+            yy = 16-y-1;
+        }
+        if(x>=yy/2 && x<=cursor2.GetWidth()-yy/2-1) {
+            cursor2(x, y, 0) = 255;
+            cursor2(x, y, 1) = 255;
+            cursor2(x, y, 2) = 255;
+            cursor2(x, y, 3) = 255;
+        }
+        else {
+            cursor2(x, y, 3) = 0;
+        }
+    });
+    
+    Graphics::Bitmap cursor3({1,16}, Graphics::ColorMode::Alpha);
+    cursor3.ForAllPixels([&](Gorgon::Byte &b) {
+        b = 255;
+    }, 0);
+    
+    cursor1.Prepare();    
+    Graphics::Pointer pointer1(cursor1, 8,15);
+    
+    cursor2.Prepare();
+    Graphics::Pointer pointer2(cursor2, 8,8);
+    
+    cursor3.Prepare();
+    Graphics::Pointer pointer3(cursor3, 1,8);
+    
+    wind.Pointers.Add(wind.Pointers.Arrow, pointer1);
+    wind.Pointers.Add(wind.Pointers.Wait, pointer2);
+    wind.Pointers.Add(wind.Pointers.Text, pointer3);
 	
 	//img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
 	//for(int x = 0; x<200; x++)
@@ -92,6 +146,13 @@ int main() {
 
 	img3.Prepare();
 	img3.DrawIn(l);
+    
+    cursor3.Draw (l, 500, 400);
+    pointer1.Draw(l, 500, 400);
+    
+    Graphics::Layer ptrlayer;
+    wind.Add(ptrlayer);
+    
 
 	
 	for(int i=0; i<4; i++)
@@ -130,6 +191,8 @@ int main() {
     wind.Restore();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     
+    Graphics::PointerStack::Token ptrtoken;
+    
 
 	Graphics::StyledRenderer sty(fnt);
 	sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
@@ -144,8 +207,29 @@ int main() {
 	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 200);
 	sty.DisableShadow();
 	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 220);
+    
+    sty.SetTabWidthInLetters(1.5f);
+    sty.SetParagraphSpacing(2);
+    sty.Print(l, 
+        "Key list:\n"
+        "x\tMaximize window\n"
+        "r\tRestore window\n"
+        "n\tMinimize window\n"
+        "s\tResize window to 400x400\n"
+        "c\tCenter window\n"
+        "e\tToggle window resize\n"
+        "h\tKeep pressed to hide pointer\n"
+        "w\tToggle local pointers\n"
+        "b\tBusy pointer (local only)\n"
+        "t\tText pointer (local only)\n"
+        "p\tPop pointer (returns to default)\n"
+        , 500, 10
+    );
 	
-	wind.KeyEvent.Register([&wind](Input::Key key, bool state) {
+	wind.KeyEvent.Register([&wind, &ptrtoken](Input::Key key, bool state) {
+        static bool localptr = false;
+        static bool resizable = false;
+        
 		if (!state && (key == 27 || key == 65307))
 			exit(0);
 
@@ -167,17 +251,42 @@ int main() {
 		else if(state && (key == 'C' || key == 'c'))
 			wind.Center();
 
-		else if(state && (key == 'E' || key == 'e'))
-			wind.AllowResize();
-
-		else if(state && (key == 'D' || key == 'd'))
-			wind.PreventResize();
+		else if(state && (key == 'E' || key == 'e')) {
+            if(resizable) {
+                wind.PreventResize();
+                resizable = false;
+            }
+            else {
+                wind.AllowResize();
+                resizable = true;
+            }
+        }
         
         else if(state && (key == 'H' || key == 'h'))
             wind.HidePointer();
         
         else if(!state && (key == 'H' || key == 'h'))
             wind.ShowPointer();
+        
+        else if(!state && (key == 'W' || key == 'w')) {
+            if(localptr) {
+                wind.SwitchToWMPointers();
+                localptr = false;
+            }
+            else {
+                wind.SwitchToLocalPointers();
+                localptr = true;
+            }
+        }
+        
+        else if(!state && (key == 'B' || key == 'b'))
+            ptrtoken = wind.Pointers.Set(wind.Pointers.Wait);
+        
+        else if(!state && (key == 'T' || key == 't'))
+            ptrtoken = wind.Pointers.Set(wind.Pointers.Text);
+
+        else if(!state && (key == 'P' || key == 'p'))
+            wind.Pointers.Reset(ptrtoken);
 
 		return false;
 	});

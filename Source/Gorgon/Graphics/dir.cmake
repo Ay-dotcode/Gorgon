@@ -13,6 +13,7 @@ SET(Local
 	Layer.cpp
 	Layer.h
 	Pointer.h
+	Pointer.cpp
 	Shaders.h
 	Shaders.cpp
 	Texture.h
