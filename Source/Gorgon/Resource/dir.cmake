@@ -20,6 +20,7 @@ SET(Local
 	GID.h
 	Image.h
 	Image.cpp
+	Pointer.h
 	Reader.h
 	Sound.h
 	Sound.cpp

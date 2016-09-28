@@ -487,7 +487,7 @@ namespace Gorgon { namespace Graphics {
 		void ForAllValues(std::function<void(Byte&)> fn) {
             for(int y=0; y<data->GetHeight(); y++) 
                 for(int x=0; x<data->GetWidth(); x++)
-                    for(int c=0; c<GetBytesPerPixel(); c++)
+                    for(unsigned c=0; c<GetBytesPerPixel(); c++)
                         fn(this->operator()(x, y, c));
         }
 		
@@ -495,7 +495,7 @@ namespace Gorgon { namespace Graphics {
 		/// looping will stop and the function will return false.
 		bool ForPixels(std::function<bool(Byte&)> fn, int channel) {
             for(int y=0; y<data->GetHeight(); y++) 
-                for(int x=0; x<data->GetWidth(); x++)
+                for(unsigned x=0; x<data->GetWidth(); x++)
                     if(!fn(this->operator()(x, y, channel)))
                         return false;
                     

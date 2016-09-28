@@ -121,6 +121,31 @@ namespace Gorgon { namespace Graphics {
         
         bool owner = false;
 	};
+    
+    ///Pointer types
+    enum class PointerType {
+        ///No pointer is selected or using default
+        None=0,
+        
+        ///Arrow / Pointer
+        Arrow=1,
+        
+        ///Wait / Hourglass
+        Wait=2,
+        
+        ///No / Not allowed
+        No=3,
+        
+        ///Text / Beam pointer
+        Text=4,
+        
+        ///Hand pointer
+        Hand=5,
+        
+        ///Drag / Closed hand pointer
+        Drag=6
+    };
+        
 
     /**
      * This class manages a pointer stack that allows multiple pointers to be
@@ -178,30 +203,6 @@ namespace Gorgon { namespace Graphics {
             int ind = 0;
         };
 
-		///Pointer types
-		enum PointerType {
-			///No pointer is selected or using default
-			None=0,
-            
-			///Arrow / Pointer
-			Arrow=1,
-            
-			///Wait / Hourglass
-			Wait=2,
-            
-			///No / Not allowed
-			No=3,
-            
-			///Text / Beam pointer
-			Text=4,
-            
-			///Hand pointer
-			Hand=5,
-            
-			///Drag / Closed hand pointer
-			Drag=6
-		};
-        
         /// Adds the given pointer to the stack. Ownership of the pointer will not
         /// be transferred. If the given pointer type exists old one will be overriden.
         /// If the old pointer is managed by this stack then it will be deleted.
@@ -220,7 +221,7 @@ namespace Gorgon { namespace Graphics {
         
         /// Checks if the given pointer exists
         bool Exists(PointerType type) {
-            if((int)type <= 0 || (int)type > (int)Drag) return false;
+            if((int)type <= 0 || (int)type > (int)PointerType::Drag) return false;
             
             return pointers[(int)type].ptr != nullptr;
         }
@@ -258,7 +259,7 @@ namespace Gorgon { namespace Graphics {
         
         Containers::Hashmap<int, const Pointer> stack;
         
-        std::array<Wrapper, Drag+1> pointers = {};
+        std::array<Wrapper, (int)PointerType::Drag+1> pointers = {};
     };
     
 

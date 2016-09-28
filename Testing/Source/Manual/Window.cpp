@@ -113,9 +113,9 @@ int main() {
     cursor3.Prepare();
     Graphics::Pointer pointer3(cursor3, 1,8);
     
-    wind.Pointers.Add(wind.Pointers.Arrow, pointer1);
-    wind.Pointers.Add(wind.Pointers.Wait, pointer2);
-    wind.Pointers.Add(wind.Pointers.Text, pointer3);
+    wind.Pointers.Add(Graphics::PointerType::Arrow, pointer1);
+    wind.Pointers.Add(Graphics::PointerType::Wait, pointer2);
+    wind.Pointers.Add(Graphics::PointerType::Text, pointer3);
 	
 	//img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
 	//for(int x = 0; x<200; x++)
@@ -280,10 +280,10 @@ int main() {
         }
         
         else if(!state && (key == 'B' || key == 'b'))
-            ptrtoken = wind.Pointers.Set(wind.Pointers.Wait);
+            ptrtoken = wind.Pointers.Set(Graphics::PointerType::Wait);
         
         else if(!state && (key == 'T' || key == 't'))
-            ptrtoken = wind.Pointers.Set(wind.Pointers.Text);
+            ptrtoken = wind.Pointers.Set(Graphics::PointerType::Text);
 
         else if(!state && (key == 'P' || key == 'p'))
             wind.Pointers.Reset(ptrtoken);

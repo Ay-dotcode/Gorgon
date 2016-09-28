@@ -3,7 +3,7 @@
 namespace Gorgon { namespace Graphics {
 
     void PointerStack::Add(PointerType type, const Pointer &pointer) {
-        ASSERT((int)type>(int)None && (int)type<=(int)Drag, "Invalid pointer type");
+        ASSERT((int)type>(int)PointerType::None && (int)type<=(int)PointerType::Drag, "Invalid pointer type");
         
         if(pointers[(int)type].ptr && pointers[(int)type].owned) {
             delete pointers[(int)type].ptr;
@@ -26,7 +26,7 @@ namespace Gorgon { namespace Graphics {
     }
 
     PointerStack::Token PointerStack::Set(PointerType type) {
-        ASSERT((int)type>(int)None && (int)type<=(int)Drag, "Invalid pointer type");
+        ASSERT((int)type>(int)PointerType::None && (int)type<=(int)PointerType::Drag, "Invalid pointer type");
        
         if(!pointers[(int)type].ptr) return Token();
         
@@ -55,7 +55,7 @@ namespace Gorgon { namespace Graphics {
             return stack.Last().Current().second;
         }
         else {
-            for(int i=(int)Arrow; i<=(int)Drag; i++) {
+            for(int i=(int)PointerType::Arrow; i<=(int)PointerType::Drag; i++) {
                 if(pointers[i].ptr)
                     return *pointers[i].ptr;
             }
@@ -69,7 +69,7 @@ namespace Gorgon { namespace Graphics {
             return true;
         }
         else {
-            for(int i=(int)Arrow; i<=(int)Drag; i++) {
+            for(int i=(int)PointerType::Arrow; i<=(int)PointerType::Drag; i++) {
                 if(pointers[i].ptr)
                     return true;
             }

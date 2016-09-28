@@ -1,81 +1,56 @@
 #pragma once
 
-#include "GRE.h"
 #include "Base.h"
-#include "../Engine/Animation.h"
-#include "Image.h"
-#include "../Resource/ResizableObject.h"
-#include "../Utils/Point2D.h"
 #include "Animation.h"
-#include "../Engine/Pointer.h"
+#include "../Graphics/Pointer.h"
+#include "../Graphics/Drawables.h"
+#include "../Graphics/Bitmap.h"
+#include "../Utils/Assert.h"
+#include "../Geometry/Point.h"
 
-#pragma warning(push)
-#pragma warning(disable:4250)
 
-namespace gge { namespace resource {
 
-	class File;
-	class Pointer;
+namespace Gorgon { namespace Resource {
 
-	Pointer *LoadPointerResource(File &File, std::istream &Data, int Size);
+    class File;
+	class Reader;
 
-	class Pointer : public Base, virtual public ResizableObjectProvider, virtual public animation::RectangularGraphic2DSequenceProvider {
-		friend Pointer *LoadPointerResource(File &file, std::istream &Data, int Size);
-	public:
-		Pointer() : animation(new Animation), Hotspot(0,0), Type(gge::Pointer::Arrow) { }
-		virtual ~Pointer() { utils::CheckAndDelete(animation); }
+    /**
+     * Pointer resource that can be used to create a new pointer to be
+     * displayed. A Pointer resource can be created from a bitmap or an
+     * animation.
+     */
+    class Pointer : public Base, public Animation::Provider {
+    public:
+        Pointer(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type);
 
-		utils::Point Hotspot;
-		gge::Pointer::PointerType Type;
+        Pointer(Graphics::ImageAnimationProvider &anim, Geometry::Point hotspot, Graphics::PointerType type);
+        
+        Pointer();
+        
+        Pointer(const Pointer &) = delete;
+        
+        Pointer &operator =(const Pointer &) = delete;
+        
+        virtual ~Pointer();
+        
+        void Set(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type);
+        
+        void Set(Graphics::ImageAnimationProvider &anim, Geometry::Point hotspot, Graphics::PointerType type);
+        
+        void Assume(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type);
+        
+        void Assume(Graphics::ImageAnimationProvider &anim, Geometry::Point hotspot, Graphics::PointerType type);
+        
+        void Remove();
+        
+        Graphics::Pointer CreatePointer() const;
+        
+        Graphics::ImageAnimation CreateAnimation(Animation::Timer &timer) const;
+        
+		/// This function loads a bitmap font resource from the given file
+		static Pointer *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
+    };
 
-		virtual ImageAnimation &CreateAnimation(animation::Timer &controller, bool owner=false) {
-			return animation->CreateResizableObject(controller, owner);
-		}
-
-		virtual ImageAnimation &CreateAnimation(bool create=false) {
-			return animation->CreateResizableObject(create);
-		}
-
-		virtual ImageAnimation &CreateResizableObject(animation::Timer &controller, bool owner=false) {
-			return animation->CreateResizableObject(controller, owner);
-		}
-
-		virtual ImageAnimation &CreateResizableObject(bool create=false) {
-			return animation->CreateResizableObject(create);
-		}
-
-		virtual Image &ImageAt(int t) { 
-			return animation->ImageAt(t); 
-		}
-
-		virtual int FrameAt(unsigned t) const {
-			return animation->FrameAt(t);
-		}
-
-		virtual int StartOf(unsigned Frame) const {
-			return animation->StartOf(Frame);
-		}
-
-		virtual int GetDuration(unsigned Frame) const {
-			return animation->GetDuration(Frame);
-		}
-		virtual int GetDuration() const {
-			return animation->GetDuration();
-		} 
-
-		virtual int GetNumberofFrames() const {
-			return animation->GetNumberofFrames();
-		}
-
-		GID::Type GetGID() const {
-			return GID::Pointer;
-		}
-
-		virtual void Prepare(GGEMain &main, File &file) { animation->Prepare(main, file); }
-
-	protected:
-		Animation *animation;
-
-	};
-
-}}
+    
+} }
