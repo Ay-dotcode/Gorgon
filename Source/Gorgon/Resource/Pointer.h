@@ -5,6 +5,7 @@
 #include "../Graphics/Pointer.h"
 #include "../Graphics/Drawables.h"
 #include "../Graphics/Bitmap.h"
+#include "../Graphics/Animations.h"
 #include "../Utils/Assert.h"
 #include "../Geometry/Point.h"
 
@@ -20,7 +21,7 @@ namespace Gorgon { namespace Resource {
      * displayed. A Pointer resource can be created from a bitmap or an
      * animation.
      */
-    class Pointer : public Base, public Animation::Provider {
+    class Pointer : public Base, public Graphics::AnimationProvider {
     public:
         Pointer(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type);
 

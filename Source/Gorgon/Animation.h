@@ -235,7 +235,7 @@ namespace Gorgon {
 		class Base {
 		public:
 			/// Sets the controller for this animation to the given controller.
-			Base(ControllerBase &controller) {
+			explicit Base(ControllerBase &controller) {
 				SetController(controller);
 			}
 
