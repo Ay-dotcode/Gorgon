@@ -52,10 +52,12 @@ namespace Gorgon { namespace Graphics {
         using FrameType  = F_;
         
 		/// Creates a new image animation from the given parent
-		basic_TextureAnimation(const ParentType &parent, Gorgon::Animation::Timer &controller);
+		basic_TextureAnimation(const ParentType &parent, Gorgon::Animation::Timer &controller) :
+		parent(&parent), Gorgon::Animation::Base(controller) { }
 
 		/// Creates a new image animation from the given parent
-        basic_TextureAnimation(const ParentType &parent, bool create);
+        basic_TextureAnimation(const ParentType &parent, bool create) :
+		parent(&parent), Gorgon::Animation::Base(create) { }
 
 		/// Deletes this animation object
 		virtual void DeleteAnimation() override {
@@ -65,24 +67,52 @@ namespace Gorgon { namespace Graphics {
 		virtual bool Progress(unsigned &leftover) override;
         
         virtual GL::Texture GetID() const override {
-            return current->GetImage().GetID();
+            if(current)
+                return current->GetImage().GetID();
+            else if(parent->GetCount()) 
+                return (*parent)[0].GetID();
+
+            Utils::ASSERT_FALSE("Animation contains no frames.");
+            
+            return 0;
         }
         
         virtual Geometry::Size GetImageSize() const override {
-            return current->GetImage().GetImageSize();
+            if(current)
+                return current->GetImage().GetImageSize();
+            else if(parent->GetCount()) 
+                return (*parent)[0].GetImageSize();
+
+            Utils::ASSERT_FALSE("Animation contains no frames.");
+            
+            return {0, 0};
         }
         
         virtual ColorMode GetMode() const override {
-            return current->GetImage().GetMode();
+            if(current)
+                return current->GetImage().GetMode();
+            else if(parent->GetCount()) 
+                return (*parent)[0].GetMode();
+
+            Utils::ASSERT_FALSE("Animation contains no frames.");
+            
+            return ColorMode::RGBA;
         }
         
         virtual const Geometry::Pointf *GetCoordinates() const override {
-            return current->GetImage().GetCoordinates();
+            if(current)
+                return current->GetImage().GetCoordinates();
+            else if(parent->GetCount()) 
+                return (*parent)[0].GetCoordinates();
+
+            Utils::ASSERT_FALSE("Animation contains no frames.");
+            
+            return nullptr;
         }
         
     private:
-        ParentType *parent = nullptr;
-        FrameType  *current = nullptr;
+        const ParentType *parent = nullptr;
+        const FrameType  *current = nullptr;
     };
     
     template<class T_, template<class, class, class> class A_, class F_>
@@ -140,7 +170,7 @@ namespace Gorgon { namespace Graphics {
             
             int i = 0;
             for(auto f : frames) {
-                if(f.GetStart() >= time)
+                if(f.GetEnd() >= time)
                     return i;
                 
                 i++;
@@ -228,6 +258,36 @@ namespace Gorgon { namespace Graphics {
         std::vector<basic_AnimationFrame<T_>> frames;
         unsigned duration = 0;
     };
+    
+    template<class T_, class P_, class F_>
+    bool basic_TextureAnimation<T_, P_, F_>::Progress(unsigned &leftover) {
+		if(!controller) return false;
+
+		if(parent->GetCount()==0) return false;
+        
+
+		unsigned progress=controller->GetProgress();
+
+
+        if(controller->IsControlled()) {
+            if(progress>parent->GetDuration()) {
+                current=&parent->FrameAt(parent->GetCount()-1);
+                leftover=progress-parent->GetDuration();
+                
+                return false;
+            }
+            else {
+                current=&parent->FrameAt(parent->FrameIndexAt(progress));
+                
+                return true;
+            }
+        }
+        else {
+            current = &parent->FrameAt(parent->FrameIndexAt(progress % parent->GetDuration()));
+            
+            return true;
+        }
+    }
     
     using BitmapAnimationProvider = basic_TextureAnimationProvider<Bitmap, basic_TextureAnimation, basic_AnimationFrame<Bitmap>>;
     
