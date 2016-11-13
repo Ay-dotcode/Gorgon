@@ -83,8 +83,10 @@ namespace Gorgon { namespace Graphics {
 		underlinepos = (int)std::round((baseline + height) / 2.f);
 	}
 
-	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, int baseline, bool trim, bool toalpha, bool prepare) {
+	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, int baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline) {
 		Containers::Hashmap<std::string, Bitmap> files; // map of file labels to bitmaps
+		
+        std::map<int, int> ghc;
 
 		Filesystem::Iterator dir;
 		try {
@@ -294,13 +296,42 @@ namespace Gorgon { namespace Graphics {
 				maxh = h;
 		}
 
+		height = maxh;
+
 		if(baseline == -1) {
-			this->baseline = int(std::round(height * 0.7));
+            if(!estimatebaseline && glyphmap.count('A')) {
+                const Bitmap *bmp = dynamic_cast<const Bitmap*>(glyphmap.at('A').image);
+                
+                if(bmp) {
+                    int a = AlphaIndex(bmp->GetMode());
+                    int pos = -1;
+                    
+                    if(a != -1) {
+                        for(int y=bmp->GetHeight()-1; y>=0; y--) {
+                            for(int x=0; x<bmp->GetWidth(); x++) {
+                                if((*bmp)(x, y, a)>127) {
+                                    pos = y;
+                                    break;
+                                }
+                            }
+                            
+                            if(pos>-1) break;
+                        }
+                        
+                        if(pos != -1)
+                            baseline = pos + glyphmap.at('A').offset;
+                    }
+                }
+            }
+            
+            if(baseline == -1) {
+                baseline = int(std::round(height * 0.75));
+            }
 		}
 
-		if(trim && spacing==0) spacing = 1;
+		this->baseline = baseline;
 
-		height = maxh;
+		if(trim && spacing==0) spacing = 1;
         
         if(trim && spim && maxwidth == spw) {
             //check if glyph is empty, if so we can resize it.
@@ -334,11 +365,11 @@ namespace Gorgon { namespace Graphics {
 			}
 		}
 
-		underlinepos = (int)std::round((baseline + height) / 2.f);
-
 		if(trim && uh) {
 			linethickness = uh;
 		}
+
+		underlinepos = baseline + linethickness + 1;
 
         return files.GetSize();
     }

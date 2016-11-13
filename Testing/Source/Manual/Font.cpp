@@ -118,11 +118,12 @@ int main() {
 	sty.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""folor sit amet, consecteturadipiscingelitseddoeiusmoftemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 300);
     
     sty.Underline();
-	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 200);
+	sty.Print(l, "Name\tSurname\nMarvin\tthe Robot\nMe\tMyself", 250, 200);
     
     sty.SetUnderline(false);
 	sty.DisableShadow();
-	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 220);
+    sty.SetColor({1.f, 0.2f, 0.2f});
+	sty.Print(l, "First text should be justified.\nPrevious text should have tabs and underlined.\nThis text should not have shadow and should be red.", 250, 240);
     
 
 	while(true) {

@@ -224,9 +224,12 @@ namespace Gorgon { namespace Graphics {
 		/// This function calculates the line thickness using trimmed height of the underscore.
 		/// If trimming is not set, this functionality will not work. Additionally, this 
 		/// function will set underline position to halfway between baseline and bottom.
+		/// If estimatebaseline is set, then the baseline position is a simple estimate instead
+		/// of a search. The search will look at A to find the lowest pixel to declare it
+		/// baseline.
         int ImportFolder(const std::string &path, ImportNamingTemplate naming = Automatic, int start = 0, 
 						 std::string prefix = "", int baseline = -1, bool trim = true, bool converttoalpha = true, 
-						 bool prepare = true);
+						 bool prepare = true, bool estimatebaseline = false);
         
         /// Returns the image that represents a glyph
         const RectangularDrawable *GetImage(Glyph g) {
