@@ -158,7 +158,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// Returns the image at the given frame
 		T_ &operator [](int frame) const {
-            ASSERT(frame>=0 && frame<frames.size(), "Index out of bounds");
+            ASSERT(frame>=0 && frame<(int)frames.size(), "Index out of bounds");
             
 			return frames[frame].GetImage();
 		}
@@ -181,7 +181,7 @@ namespace Gorgon { namespace Graphics {
         
         /// Returns the frame at specific point
         const F_ &FrameAt(int index) const {
-            ASSERT(index>=0 && index<frames.size(), "Index out of bounds");
+            ASSERT(index>=0 && index<(int)frames.size(), "Index out of bounds");
             
             return frames[index];
         }

@@ -1,0 +1,3 @@
+CC-0
+Source: http://opengameart.org/content/a-package-of-8-bit-fonts-for-grafx2-and-linux
+Creator: http://opengameart.org/users/usrshare 

@@ -142,6 +142,7 @@ namespace Gorgon { namespace Resource {
 		void Save(const std::string &filename) {
 			writer.reset(new FileWriter(filename));
 			save();
+			writer->Close();
 		}
 		
 

@@ -77,7 +77,7 @@ namespace Gorgon {
 							parent.RestoredEvent();
 							min = false;
 						}
-
+						break;
 
 					case WM_DESTROY:
 						//ReleaseAll();

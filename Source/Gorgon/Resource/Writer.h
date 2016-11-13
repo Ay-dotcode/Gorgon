@@ -104,6 +104,11 @@ namespace Gorgon { namespace Resource {
 			return stream && stream->good();
 		}
 
+		void Close() {
+			close();
+			stream = nullptr;
+		}
+
 		/// Tells the current position
 		unsigned long Tell() const {
 			ASSERT(stream, "Writer is not opened.");

@@ -37,7 +37,7 @@ namespace Gorgon {
 		static const struct FullscreenTag {
 			
 		}Fullscreen;
-		
+
 		/// Creates a new window
 		/// @param  rect the position and the **interior** size of the window unless
 		///         use outer metrics is set to true
@@ -45,7 +45,16 @@ namespace Gorgon {
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(Geometry::Rectangle rect, const std::string &name, bool allowresize=false, bool visible=true) :
-			Window(WindowManager::Monitor::Primary(), rect, name, name, visible) { }
+			Window(WindowManager::Monitor::Primary(), rect, name, name, allowresize, visible) {}
+
+		/// Creates a new window
+		/// @param  rect the position and the **interior** size of the window unless
+		///         use outer metrics is set to true
+		/// @param  name of the window
+		/// @param  visible after creation, window will be visible or invisible depending
+		///         on this value. 
+		Window(Geometry::Rectangle rect, const char *name, bool allowresize=false, bool visible=true) :
+			Window(WindowManager::Monitor::Primary(), rect, name, name, allowresize, visible) {}
 
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
@@ -59,9 +68,26 @@ namespace Gorgon {
 		/// Creates a new window at the center of the screen
 		/// @param  size of the window
 		/// @param  name of the window
+		/// @param  title of the window
+		/// @param  visible after creation, window will be visible or invisible depending
+		///         on this value. 
+		Window(const Geometry::Size &size, const char *name, const char *title, bool allowresize=false, bool visible=true) :
+			Window(WindowManager::Monitor::Primary(), {automaticplacement, size}, name, title, allowresize, visible) { }
+
+		/// Creates a new window at the center of the screen
+		/// @param  size of the window
+		/// @param  name of the window
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(const Geometry::Size &size, const std::string &name, bool allowresize=false, bool visible=true) :
+			Window(WindowManager::Monitor::Primary(), {automaticplacement, size}, name, name, allowresize, visible) { }
+
+		/// Creates a new window at the center of the screen
+		/// @param  size of the window
+		/// @param  name of the window
+		/// @param  visible after creation, window will be visible or invisible depending
+		///         on this value. 
+		Window(const Geometry::Size &size, const char *name, bool allowresize=false, bool visible=true) :
 			Window(WindowManager::Monitor::Primary(), {automaticplacement, size}, name, name, allowresize, visible) { }
 
 		/// Creates a new window at the center of the screen
@@ -71,6 +97,15 @@ namespace Gorgon {
 		/// @param  visible after creation, window will be visible or invisible depending
 		///         on this value. 
 		Window(const WindowManager::Monitor &monitor, const Geometry::Size &size, const std::string &name, bool allowresize=false, bool visible=true) :
+			Window(monitor, {automaticplacement, size}, name, name, allowresize, visible) { }
+
+		/// Creates a new window at the center of the screen
+		/// @param  monitor that the window will be centered on
+		/// @param  size of the window
+		/// @param  name of the window
+		/// @param  visible after creation, window will be visible or invisible depending
+		///         on this value. 
+		Window(const WindowManager::Monitor &monitor, const Geometry::Size &size, const char *name, bool allowresize=false, bool visible=true) :
 			Window(monitor, {automaticplacement, size}, name, name, allowresize, visible) { }
 
 		/// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
@@ -310,7 +345,7 @@ namespace Gorgon {
 		static int ClickThreshold;
 
 	protected:
-		Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool allowresize=false, bool visible=true);
+		Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool allowresize, bool visible);
 
 		/// A window cannot be placed in another layer. This function always fails.
 		virtual void located(Layer *) override { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }

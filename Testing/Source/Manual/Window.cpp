@@ -1,4 +1,7 @@
-﻿#include <Gorgon/Window.h>
+﻿//First run this file to check if window is displayed
+//Then run font test and return here for instructions.
+
+#include <Gorgon/Window.h>
 #include <thread>
 #include <Gorgon/WindowManager.h>
 #include <Gorgon/Main.h>
@@ -183,22 +186,9 @@ int main() {
 	//img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
     Resource::File f;
-    //f.LoadFile("test.gor");
-    //f.Prepare();
-    //f.Discard();
-    Graphics::BitmapFont fnt;// = std::move(dynamic_cast<Graphics::BitmapFont&>(f.Root().Get<Resource::Font>(0).GetRenderer()));
+    Graphics::BitmapFont fnt;
 	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
     fnt.Pack();
-    
-    std::cout<<"digit w: "<<fnt.GetDigitWidth()<<std::endl;
-    std::cout<<"x-space: "<<fnt.GetGlyphSpacing()<<std::endl;
-    std::cout<<"height: "<<fnt.GetHeight()<<std::endl;
-    std::cout<<"line t: "<<fnt.GetLineThickness()<<std::endl;
-    std::cout<<"max w: "<<fnt.GetMaxWidth()<<std::endl;
-    std::cout<<"underline off: "<<fnt.GetUnderlineOffset()<<std::endl;
-    std::cout<<"baseline: "<<fnt.GetBaseLine()<<std::endl;
-    std::cout<<"is fixed: "<<fnt.IsFixedWidth()<<std::endl;
-    std::cout<<"is ASCII: "<<fnt.IsASCII()<<std::endl;
     
 //     Resource::File f;
 //     Resource::Font fr(fnt);
@@ -217,15 +207,6 @@ int main() {
 	sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
 	sty.SetColor({0.6f, 1.f, 1.f});
 	sty.JustifyLeft();
-	//sty.Strike({1.f, 0.7f, 0.3f, 1.f});
-	//sty.Underline();
-	
-	//sty.Print(l, "a", 250, 200);
-
-	sty.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""folor sit amet, consecteturadipiscingelitseddoeiusmoftemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 300);
-	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 200);
-	sty.DisableShadow();
-	sty.Print(l, "abc\tfgh\n12-34 dsda\tasdf dsgh", 250, 220);
     
     sty.SetTabWidthInLetters(1.5f);
     sty.SetParagraphSpacing(2);

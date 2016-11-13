@@ -157,7 +157,7 @@ namespace Gorgon { namespace Resource {
                 
                 auto img = Image::LoadResource(file, reader, size);
                 glyphs.Push(img);
-                font->children.Push(img);
+				font->tobeprepared.Push(img);
             }
             else {
 				if(!reader->ReadCommonChunk(*font, gid, size)) {
@@ -178,20 +178,19 @@ namespace Gorgon { namespace Resource {
     }
 
     void Font::Prepare() {        
-        Base::Prepare();
+		Base::Prepare();
+
+		for(auto &img : tobeprepared)
+			img.Prepare();
     }
 
     void Font::Discard() {        
         auto bf = dynamic_cast<Graphics::BitmapFont*>(data);
         
-        if(bf && children.GetSize()) {
-            bf->Pack(false, Graphics::BitmapFont::None);
-            
-            for(auto &c : children) {
-                c.DeleteResource();
-            }
-            
-            children.Clear();
+        if(bf) {
+            bf->Pack(false);
         }
+
+		tobeprepared.Clear();
     }
 } }

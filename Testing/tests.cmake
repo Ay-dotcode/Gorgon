@@ -6,6 +6,7 @@ SET(ManualTests
 	Audio
 	PDParser
 	Window
+	Font
 )
 
 SET(UnitTests

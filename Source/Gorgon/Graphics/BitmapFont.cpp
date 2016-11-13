@@ -101,6 +101,12 @@ namespace Gorgon { namespace Graphics {
 				continue;
 
 			auto basename = Filesystem::GetBasename(name);
+            auto ext      = Filesystem::GetExtension(name);
+            
+            //ignore couple of file types that could reasonably exists in a font folder
+            if(ext == "txt" || ext == "html" || ext == "htm" || ext == "xml" || ext == "md" || (ext == "" && (name=="LICENSE" || name.substr(0,7)=="INSTALL")))
+                continue;
+            
 
 			//prefix check
 			if(prefix != "") {
@@ -337,8 +343,7 @@ namespace Gorgon { namespace Graphics {
         return files.GetSize();
     }
 
-
-    void BitmapFont::Pack(bool tight, DeleteConstants del) {
+	void BitmapFont::Pack(bool tight, DeleteConstants del) {
         Containers::Collection<const Bitmap> bitmaps;
         std::vector<std::pair<Glyph, int>> packing;
         

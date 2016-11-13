@@ -12,7 +12,7 @@ namespace Gorgon { namespace Resource {
 
     /**
      * Font resource. Can hold a bitmap font for now. Raster fonts over free
-     * type will be implmented later.
+     * type will be implemented later.
      */
     class Font : public Base {
     public:
@@ -90,6 +90,8 @@ namespace Gorgon { namespace Resource {
 		void save(Writer &writer) const override;
 
         Graphics::GlyphRenderer *data = nullptr;
+
+		Containers::Collection<Image> tobeprepared;
         
         bool isowner = false;
     };
