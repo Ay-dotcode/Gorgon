@@ -17,7 +17,7 @@ namespace Resource = Gorgon::Resource;
 
 int main() {
 	
-	Gorgon::Initialize("Window-test");
+	Gorgon::Initialize("Font-test");
 
     system("pwd");
     system("cd");

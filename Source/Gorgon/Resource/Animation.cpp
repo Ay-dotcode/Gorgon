@@ -7,7 +7,7 @@ namespace Gorgon { namespace Resource {
 	Animation *Animation::LoadResourceWith(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize, std::function<Base*(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, GID::Type, unsigned long)> loadfn) {
 		auto target = reader->Target(totalsize);
 
-		std::unique_ptr<Animation> anim{new Animation};
+		std::unique_ptr<Animation, void(*)(Animation*)> anim{new Animation, [](Animation *a) {a->DeleteResource();}};
 		std::vector<uint32_t> durations;
 
 		auto f=file.lock();
@@ -36,17 +36,13 @@ namespace Gorgon { namespace Resource {
 			}
 		}
 
-		unsigned time=0;
 		auto images = anim->cbegin();
 		
 		for(auto &dur : durations) {
 			ASSERT(images!=anim->cend() && images->GetGID()==GID::Image, "Animation is empty");
 
-			anim->frames.emplace_back(dynamic_cast<Image&>(*images), dur, time);
-			++images;
-			time+=dur;
+			anim->Add(dynamic_cast<Image&>(*images), dur);
 		}
-		anim->duration = time;
 
 		return anim.release();
 	}
@@ -60,7 +56,7 @@ namespace Gorgon { namespace Resource {
 
 		//images
 		for(auto &frame : frames) {
-			frame.GetImage().Save(writer);
+			Image::SaveThis(writer, frame.GetImage());
 		}
 	}
 
@@ -77,76 +73,12 @@ namespace Gorgon { namespace Resource {
 	}
 
 	void Animation::Swap(Animation &other) {
-		using std::swap;
+		/*using std::swap;
 
 		swap(other.duration, duration);
 		swap(other.frames, frames);
 
-		throw "to be fixed";
-	}
-
-	unsigned Animation::FrameAt(unsigned t) const {
-		auto count=frames.size();
-
-#ifndef NDEBUG
-		ASSERT(count!=0, "Animation has no frames");
-#endif
-
-		if(t>=(frames.end()-1)->GetStart())
-			return count-1;
-
-		int guessed=(int)floor( ((float)t/duration)*count );
-
-		if(frames[guessed].GetStart()>t) {
-			while(frames[guessed].GetStart()>t)
-				guessed--;
-
-			return guessed;
-		}
-		else if(frames[guessed+1].GetStart()<t) {
-			while(frames[guessed+1].GetStart()<t)
-				guessed++;
-
-			return guessed;
-		} 
-		else
-			return guessed;
-	}
-
-	ImageAnimation::ImageAnimation(const Resource::Animation &parent, Gorgon::Animation::Timer &controller) :
-		Animation::Base(controller), parent(parent)
-	{
-			if(parent.GetCount()>0)
-				current=&parent.ImageAt(0);
-			else
-				current=nullptr;
-	}
-
-	ImageAnimation::ImageAnimation( const Resource::Animation &parent, bool create ) : 
-		Animation::Base(create), parent(parent)
-	{
-			if(parent.GetCount()>0)
-				current=&parent.ImageAt(0);
-			else
-				current=nullptr;
-	}
-
-	bool ImageAnimation::Progress(unsigned &leftover) {
-		if(!controller) return false;
-
-		if(parent.GetCount()==0) return false;
-
-		unsigned progress=controller->GetProgress();
-
-		if(progress>parent.GetDuration()) {
-			current=&parent[parent.GetCount()-1];
-			leftover=progress-parent.GetDuration();
-			return false;
-		}
-		else {
-			current=&parent.ImageAt(progress);
-			return true;
-		}
+		throw "to be fixed";*/
 	}
 
 

@@ -102,6 +102,11 @@ namespace Gorgon { namespace Graphics {
 		virtual ~Bitmap() {
 			delete data;
 		}
+		
+		using Graphics::Texture::GetID;
+		using Graphics::Texture::GetMode;
+		using Graphics::Texture::GetCoordinates;
+		using Graphics::Texture::GetImageSize;
 
 		virtual const Bitmap &CreateAnimation(Gorgon::Animation::Timer &controller) const override { return *this; }
 
@@ -526,8 +531,6 @@ namespace Gorgon { namespace Graphics {
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.
 		virtual bool Progress(unsigned &) override { return true; }
-		
-		using Texture::GetImageSize;
         
         virtual Geometry::Size getsize() const override {
             return GetSize();

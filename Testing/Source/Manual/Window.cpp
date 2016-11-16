@@ -14,7 +14,6 @@
 #include "Gorgon/Graphics/BitmapFont.h"
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Font.h>
-#include <Gorgon/Graphics/ImageAnimation.h>
 #include <Gorgon/Graphics/Pointer.h>
 
 
@@ -65,24 +64,6 @@ int main() {
 
 	WM::Icon ico(icon.GetData());
 	wind.SetIcon(ico);
-    
-    Graphics::Bitmap anim1({30, 30}, Graphics::ColorMode::Alpha), anim2({30, 30}, Graphics::ColorMode::Alpha);
-    
-    anim1.Clean();
-    anim2.Clean();
-    
-    for(int i = 0; i<30; i++) {
-        anim1(i,i,0) = 255;
-        anim2(i, 30-i-1, 0) = 255;
-    }
-    anim1.Prepare();
-    anim2.Prepare();
-    
-    Graphics::ImageAnimationProvider animprov;
-    animprov.Add(anim1, 100);
-    animprov.Add(anim2, 100);
-    
-    const Graphics::RectangularAnimation &anim = animprov.CreateAnimation(true);
     
     Graphics::Bitmap cursor1({16,16}, Graphics::ColorMode::RGBA);
     cursor1.ForAllPixels([&](int x, int y) {
@@ -173,8 +154,6 @@ int main() {
     
     Graphics::Layer ptrlayer;
     wind.Add(ptrlayer);
-    
-    anim.Draw(l, 100, 100);
 
 	
 	for(int i=0; i<4; i++)

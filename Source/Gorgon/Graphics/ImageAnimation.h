@@ -122,6 +122,14 @@ namespace Gorgon { namespace Graphics {
         using ConstIterator = typename std::vector<basic_AnimationFrame<T_>>::const_iterator;
         using AnimationType = basic_TextureAnimation<T_, basic_TextureAnimationProvider<T_, A_, F_>, F_>;
         using FrameType = F_;
+        
+        basic_TextureAnimationProvider() = default;
+        
+        basic_TextureAnimationProvider(const basic_TextureAnimationProvider &) = delete;
+        
+        basic_TextureAnimationProvider(basic_TextureAnimationProvider &&other) { }
+        
+        basic_TextureAnimationProvider &operator =(const basic_TextureAnimationProvider &) = delete;
 
 		/// Returns the size of the first image
 		Geometry::Size GetSize() const {
@@ -137,12 +145,12 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Creates a new animation from this resource
-		virtual const AnimationType &CreateAnimation(Gorgon::Animation::Timer &controller) const override {
+		virtual AnimationType &CreateAnimation(Gorgon::Animation::Timer &controller) const override {
 			return *new AnimationType(*this, controller);
 		}
 
 		/// Creates a new animation from this resource
-		virtual const AnimationType &CreateAnimation(bool create=true) const override {
+		virtual AnimationType &CreateAnimation(bool create=true) const override {
 			return *new AnimationType(*this, create);
 		}
 
@@ -204,13 +212,13 @@ namespace Gorgon { namespace Graphics {
 		}
 		
 		/// Adds the given image to the end of the animation
-		void Add(Image &image, unsigned duration = 42) {
+		void Add(T_ &image, unsigned duration = 42) {
 			frames.push_back({image, duration, this->duration});
 			this->duration += duration;
 		}
 		
 		/// Inserts the given image before the given frame
-		void Insert(Image &image, unsigned before, unsigned duration = 42) {
+		void Insert(T_ &image, unsigned before, unsigned duration = 42) {
             ASSERT(before < frames.size(), "Index out of bounds");
             
 			frames.insert(frames.begin()+before, {image, duration, frames[before].GetStart()});
@@ -254,7 +262,7 @@ namespace Gorgon { namespace Graphics {
 			return frames.end();
 		}
         
-    private:
+    protected:
         std::vector<basic_AnimationFrame<T_>> frames;
         unsigned duration = 0;
     };
@@ -289,8 +297,8 @@ namespace Gorgon { namespace Graphics {
         }
     }
     
-    using BitmapAnimationProvider = basic_TextureAnimationProvider<Bitmap, basic_TextureAnimation, basic_AnimationFrame<Bitmap>>;
+    using BitmapAnimationProvider = basic_TextureAnimationProvider<const Bitmap, basic_TextureAnimation, basic_AnimationFrame<const Bitmap>>;
     
-    using ImageAnimationProvider = basic_TextureAnimationProvider<Image, basic_TextureAnimation, basic_AnimationFrame<Image>>;
+    using ImageAnimationProvider = basic_TextureAnimationProvider<const Image, basic_TextureAnimation, basic_AnimationFrame<const Image>>;
     
 } }
