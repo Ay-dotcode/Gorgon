@@ -17,32 +17,27 @@ namespace Gorgon { namespace Resource {
 
 	/// This class represents an animation resource. Image animations can be created using this object. An animation object can be moved.
 	/// Duplicate function should be used to copy an animation.
-	class Animation : public Base, public Graphics::basic_TextureAnimationProvider<Graphics::Bitmap, Graphics::basic_TextureAnimation, Graphics::basic_AnimationFrame<Graphics::Bitmap>> {
+	class Animation : public Base, public Graphics::BitmapAnimationProvider {
 	public:
 		/// Default constructor
-		Animation() : Base() { }
+		Animation() : Base() {}
 
-		/// Move constructor
-		Animation(Animation &&other);
+		/// Conversion constructor
+		Animation(Graphics::BitmapAnimationProvider &&anim) : Base(), Graphics::BitmapAnimationProvider(std::move(anim)) {
+		}
 
 		/// Copy constructor is disabled, use Duplicate or DeepDuplicate
 		Animation(const Animation&) = delete;
 
-		/// Move assignment
-		Animation &operator =(Animation &&other);
-
 		/// Copy assignment is disabled, use Duplicate
 		Animation &operator =(const Animation &other) = delete;
-
-		/// Swaps two animation, used for move semantics
-		void Swap(Animation &other);
 
 		/// Returns the Gorgon Identifier
 		virtual GID::Type GetGID() const override {
 			return GID::Animation;
 		}
 		
-		/// Moves the animation out of resource system.
+		/// Moves the animation out of the resource system.
 		Graphics::BitmapAnimationProvider MoveOut();
 		
 		/// This function allows loading animation with a function to load unknown resources. The supplied function should

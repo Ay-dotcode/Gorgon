@@ -8,11 +8,12 @@
 using Gorgon::Window;
 using Gorgon::Geometry::Point;
 namespace Graphics = Gorgon::Graphics;
+namespace Resource = Gorgon::Resource;
 
 int main() {
-    Gorgon::Initialize("Window-test");
+    Gorgon::Initialize("anim-test");
         
-	Window wind({800, 600}, "windowtest", true);
+	Window wind({800, 600}, "animtest", "Animation test", true);
 	Graphics::Initialize();
 
 	Graphics::Layer l;
@@ -48,13 +49,20 @@ int main() {
     anim1.Prepare();
     anim2.Prepare();
     
-    Graphics::ImageAnimationProvider animprov;
-    animprov.Add(anim1, 100);
-    animprov.Add(anim2, 100);
+    Graphics::BitmapAnimationProvider animprov;
+    animprov.Add(anim1, 1000);
+    animprov.Add(anim2, 1000);
     
-    const Graphics::RectangularAnimation &anim = animprov.CreateAnimation(true);
+	Resource::Animation *aa = new Resource::Animation(animprov.Duplicate());
+	Graphics::ConstBitmapAnimationProvider cbp = aa->MoveOut();
+
+	std::cout<<"!..."<<animprov.GetDuration()<<std::endl;
+	std::cout<<"!..."<<cbp.GetDuration()<<std::endl;
+
+    const Graphics::RectangularAnimation &anim = cbp.CreateAnimation(true);
     
     anim.Draw(l, 100, 100);
+
     
 	while(true) {
 		Gorgon::NextFrame();

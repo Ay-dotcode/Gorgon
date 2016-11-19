@@ -30,8 +30,6 @@ namespace Gorgon { namespace Resource {
         
         Font(const Font &) = delete;
         
-        void Swap(Font &other);
-        
         //todo duplicate
 
 		virtual GID::Type GetGID() const override { return GID::Font; }

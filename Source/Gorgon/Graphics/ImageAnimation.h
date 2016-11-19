@@ -127,9 +127,28 @@ namespace Gorgon { namespace Graphics {
         
         basic_TextureAnimationProvider(const basic_TextureAnimationProvider &) = delete;
         
-        basic_TextureAnimationProvider(basic_TextureAnimationProvider &&other) { }
-        
-        basic_TextureAnimationProvider &operator =(const basic_TextureAnimationProvider &) = delete;
+		template<class C_>
+        basic_TextureAnimationProvider(C_ &&other) { 
+			swapout(other);
+		}
+
+		basic_TextureAnimationProvider &operator =(const basic_TextureAnimationProvider &) = delete;
+
+		template<class C_>
+		basic_TextureAnimationProvider &operator =(C_ &&other) {
+			frames.clear();
+			duration = 0;
+
+			swapout(other);
+		}
+
+		basic_TextureAnimationProvider Duplicate() const {
+			basic_TextureAnimationProvider p;
+			p.frames = frames;
+			p.duration = duration;
+
+			return p;
+		}
 
 		/// Returns the size of the first image
 		Geometry::Size GetSize() const {
@@ -234,8 +253,14 @@ namespace Gorgon { namespace Graphics {
 		void Remove(int frame) {
             ASSERT(frame>=0 && frame < frames.size(), "Index out of bounds");
             
+			duration -= (frames.begin() + frame)->GetDuration();
             frames.remove(frames.begin() + frame);
         }
+
+		void Clear() {
+			frames.clear();
+			duration = 0;
+		}
         
         /// Removes an image from the animation
         void Remove(ConstIterator it) {
@@ -265,6 +290,27 @@ namespace Gorgon { namespace Graphics {
     protected:
         std::vector<basic_AnimationFrame<T_>> frames;
         unsigned duration = 0;
+
+	private:
+
+		void swapout(basic_TextureAnimationProvider &other) {
+			using std::swap;
+
+			swap(frames, other.frames);
+			swap(duration, other.duration);
+		}
+
+		template<class N_, class R_ = T_>
+		typename std::enable_if<std::is_const<R_>::value, void>::type
+		swapout(basic_TextureAnimationProvider<typename std::remove_const<T_>::type, A_, N_> &other) {
+			duration = 0;
+			
+			for(auto &frame : other)
+				Add(frame.GetImage(), frame.GetDuration());
+
+			other.Clear();
+		}
+
     };
     
     template<class T_, class P_, class F_>
@@ -296,9 +342,13 @@ namespace Gorgon { namespace Graphics {
             return true;
         }
     }
-    
-    using BitmapAnimationProvider = basic_TextureAnimationProvider<const Bitmap, basic_TextureAnimation, basic_AnimationFrame<const Bitmap>>;
-    
-    using ImageAnimationProvider = basic_TextureAnimationProvider<const Image, basic_TextureAnimation, basic_AnimationFrame<const Image>>;
-    
+
+	using BitmapAnimationProvider = basic_TextureAnimationProvider<Bitmap, basic_TextureAnimation, basic_AnimationFrame<Bitmap>>;
+
+	using ConstBitmapAnimationProvider = basic_TextureAnimationProvider<const Bitmap, basic_TextureAnimation, basic_AnimationFrame<const Bitmap>>;
+
+	using ImageAnimationProvider = basic_TextureAnimationProvider<Image, basic_TextureAnimation, basic_AnimationFrame<Image>>;
+
+	using ConstImageAnimationProvider = basic_TextureAnimationProvider<const Image, basic_TextureAnimation, basic_AnimationFrame<const Image>>;
+
 } }

@@ -68,19 +68,19 @@ namespace Gorgon { namespace Resource {
 		writer.WriteEnd(start);
 	}
 
-	Animation::Animation(Animation &&other) {
-		Swap(other);
+	Graphics::BitmapAnimationProvider Animation::MoveOut() {
+		Graphics::BitmapAnimationProvider anim;
+
+		for(auto &frame : frames) {
+			anim.Add(frame.GetImage(), frame.GetDuration());
+		}
+
+		children.Clear();
+		frames.clear();
+		duration = 0;
+
+		return anim;
 	}
-
-	void Animation::Swap(Animation &other) {
-		/*using std::swap;
-
-		swap(other.duration, duration);
-		swap(other.frames, frames);
-
-		throw "to be fixed";*/
-	}
-
 
 
 } }
