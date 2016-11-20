@@ -37,13 +37,14 @@ namespace Gorgon { namespace Resource {
 			return GID::Animation;
 		}
 		
-		/// Moves the animation out of the resource system.
+		/// Moves the animation out of the resource system. Use Prepare and Discard before moving out to avoid copying data.
 		Graphics::BitmapAnimationProvider MoveOut();
 		
 		/// This function allows loading animation with a function to load unknown resources. The supplied function should
 		/// call LoadObject function of File class if the given GID is unknown.
 		static Animation *LoadResourceWith(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size,
-										std::function<Base*(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, GID::Type, unsigned long)> loadfn);
+										   std::function<Base*(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, 
+                                                               GID::Type, unsigned long)> loadfn);
 
 		/// This function loads an animation resource from the given file
 		static Animation *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) {
@@ -52,7 +53,8 @@ namespace Gorgon { namespace Resource {
 		
 		/// Saves the given animation as a resource. If the given animation is already a resource, its own save function
         /// will be used. Extra function can be used to save extra data related with this resource.
-		static void SaveThis(Writer &writer, const Graphics::BitmapAnimationProvider &anim, GID::Type type = GID::Animation, std::function<void(Writer &writer)> extra = {});
+		static void SaveThis(Writer &writer, const Graphics::BitmapAnimationProvider &anim, GID::Type type = GID::Animation, 
+                             std::function<void(Writer &writer)> extra = {});
 
 	protected:
         virtual ~Animation() { }

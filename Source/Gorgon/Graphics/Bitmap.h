@@ -540,7 +540,5 @@ namespace Gorgon { namespace Graphics {
 		Containers::Image *data = nullptr;
 		
 		using Texture::size;
-
-		virtual void loaded() { }
 	};
 } }

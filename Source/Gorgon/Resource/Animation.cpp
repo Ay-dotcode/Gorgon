@@ -72,7 +72,15 @@ namespace Gorgon { namespace Resource {
 		Graphics::BitmapAnimationProvider anim;
 
 		for(auto &frame : frames) {
-			anim.Add(frame.GetImage(), frame.GetDuration());
+            auto bmp = &frame.GetImage();
+            auto img = dynamic_cast<Image*>(bmp);
+            
+            if(img) {
+                anim.Add(img->MoveOut(), frame.GetDuration());
+            }
+            else {
+                anim.Add(std::move(*bmp), frame.GetDuration());
+            }
 		}
 
 		children.Clear();

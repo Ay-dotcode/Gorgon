@@ -38,8 +38,7 @@ namespace Gorgon { namespace Resource {
 		auto ret=load(reader, size, true);
 
 		if(ret && isloaded) {
-			reader->NoLongerNeeded();
-			reader.reset();
+			loaded();
 		}
 
 		return ret;
@@ -199,6 +198,12 @@ namespace Gorgon { namespace Resource {
             
             writer.WriteEnd(start);
         }
+    }
+    
+    Graphics::Bitmap Image::MoveOut() {
+        Graphics::Bitmap bmp = std::move(dynamic_cast<Graphics::Bitmap&>(*this));
+        
+        return bmp;
     }
 } }
 

@@ -3,6 +3,7 @@
 #include "Animations.h"
 #include "Texture.h"
 #include "Bitmap.h"
+#include "../Containers/Collection.h"
 
 namespace Gorgon { namespace Graphics {
     
@@ -141,6 +142,10 @@ namespace Gorgon { namespace Graphics {
 
 			swapout(other);
 		}
+		
+		~basic_TextureAnimationProvider() {
+            destroylist.Destroy();
+        }
 
 		basic_TextureAnimationProvider Duplicate() const {
 			basic_TextureAnimationProvider p;
@@ -236,6 +241,15 @@ namespace Gorgon { namespace Graphics {
 			this->duration += duration;
 		}
 		
+		/// Adds the given image to the end of the animation. This version owns the given image
+		/// by moving it in the ownership list
+		void Add(T_ &&image, unsigned duration = 42) {
+            destroylist.Push(new T_(std::move(image)));
+            T_ &img = *destroylist.Last();
+			frames.push_back({img, duration, this->duration});
+			this->duration += duration;
+		}
+		
 		/// Inserts the given image before the given frame
 		void Insert(T_ &image, unsigned before, unsigned duration = 42) {
             ASSERT(before < frames.size(), "Index out of bounds");
@@ -249,6 +263,42 @@ namespace Gorgon { namespace Graphics {
 			this->duration += duration;
 		}
 		
+		/// Inserts the given image before the given frame
+		void Insert(T_ &&img, unsigned before, unsigned duration = 42) {
+            ASSERT(before < frames.size(), "Index out of bounds");
+
+            destroylist.Push(new T_(std::move(img)));
+            T_ &image = *destroylist.Last();
+            
+			frames.insert(frames.begin()+before, {image, duration, frames[before].GetStart()});
+			
+			for(unsigned i=before+1; i<frames.size(); i++) {
+				frames[i].start=frames[i-1].GetEnd();
+			}
+			
+			this->duration += duration;
+		}
+		
+		/// Moves a frame that has the index before the given position.
+		void MoveBefore(unsigned index, unsigned before) {
+            if(before >= frames.size()) {
+                auto tmp = frames[index];
+                frames.erase(frames.begin()+index);
+                frames.push_back(tmp);
+            }
+            else if(index<before) {
+                std::rotate(frames.begin()+index, frames.begin()+index+1, frames.begin()+before);
+            }
+            else if(before<index) {
+                std::rotate(frames.rbegin()+(frames.size()-1-index), frames.rbegin()+(frames.size()-1-index)+1, frames.rbegin()+(frames.size()-1-before));
+            }
+        }
+		
+		/// Owns the given image so that it would be destroyed with this animation
+		void Own(T_ &image) {
+            destroylist.Add(image);
+        }
+		
 		/// Removes an image from the animation
 		void Remove(int frame) {
             ASSERT(frame>=0 && frame < frames.size(), "Index out of bounds");
@@ -257,10 +307,16 @@ namespace Gorgon { namespace Graphics {
             frames.remove(frames.begin() + frame);
         }
 
+        /// Removes all images from the animation
 		void Clear() {
 			frames.clear();
 			duration = 0;
 		}
+		
+		/// Releases ownership of all images in the animation without destroying them
+		void ReleaseAll() {
+            destroylist.Clear();
+        }
         
         /// Removes an image from the animation
         void Remove(ConstIterator it) {
@@ -290,6 +346,7 @@ namespace Gorgon { namespace Graphics {
     protected:
         std::vector<basic_AnimationFrame<T_>> frames;
         unsigned duration = 0;
+        Containers::Collection<T_> destroylist;
 
 	private:
 
@@ -298,6 +355,7 @@ namespace Gorgon { namespace Graphics {
 
 			swap(frames, other.frames);
 			swap(duration, other.duration);
+            swap(destroylist, other.destroylist);
 		}
 
 		template<class N_, class R_ = T_>
@@ -305,9 +363,12 @@ namespace Gorgon { namespace Graphics {
 		swapout(basic_TextureAnimationProvider<typename std::remove_const<T_>::type, A_, N_> &other) {
 			duration = 0;
 			
-			for(auto &frame : other)
+			for(auto &frame : other) {
 				Add(frame.GetImage(), frame.GetDuration());
+                Own(frame.GetImage());
+            }
 
+            other.ReleaseAll();
 			other.Clear();
 		}
 

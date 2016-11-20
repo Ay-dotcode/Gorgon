@@ -45,6 +45,9 @@ namespace Gorgon { namespace Resource {
 		virtual void Prepare() override { Bitmap::Prepare(); }
 
 		virtual void Discard() override { Bitmap::Discard(); }
+		
+		/// Moves the data out of resource system. Use Prepare and Discard before moving to avoid data duplication
+		Graphics::Bitmap MoveOut();
 
 		/// Loads the image from the disk. This function requires image to be tied to a resource file.
 		bool Load();
@@ -68,8 +71,10 @@ namespace Gorgon { namespace Resource {
 		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 		
 		void save(Writer &writer) const override;
+        
+        void loaded();
 		
-		virtual void loaded() override;
+		//virtual void loaded() override { }
 
 		/// Compression mode
 		GID::Type compression = GID::PNG;
