@@ -4,6 +4,7 @@
 #include <vector>
 #include "../Types.h"
 #include "../SGuid.h"
+#include "../Geometry/Point.h"
 
 /// IO Related functionality. Stream operations in this namespace do not check the validity of the stream.
 /// it is up to the caller
@@ -236,6 +237,28 @@ namespace Gorgon { namespace IO {
 	inline void WriteGuid(std::ostream &stream, const SGuid &value) {
 		WriteArray(stream, value.Bytes, 8);
 	}
+	
+    /// Saves the point as two consecutive 32bit integers
+    inline void WritePoint(std::ostream &stream, Geometry::Point p) {
+        WriteInt32(stream, p.X);
+        WriteInt32(stream, p.Y);
+    }
+    
+    /// Saves the point as two consecutive floats (depending on the Flot data type)
+    template<class F_ = Float>
+    typename std::enable_if<std::is_same<F_, float>::value, void>::type
+    WritePoint(std::ostream &stream, Geometry::Pointf p) {
+        WriteFloat(stream, p.X);
+        WriteFloat(stream, p.Y);
+    }
+    
+    /// Saves the point as two consecutive floats (depending on the Flot data type)
+    template<class F_ = Float>
+    typename std::enable_if<!std::is_same<F_, float>::value, void>::type
+    WritePoint(std::ostream &stream, Geometry::Pointf p) {
+        WriteDouble(stream, p.X);
+        WriteDouble(stream, p.Y);
+    }
 
 } }
 

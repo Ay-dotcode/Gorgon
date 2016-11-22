@@ -27,7 +27,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
-		virtual const Animation &CreateAnimation(bool create=false) const override = 0;
+		virtual const Animation &CreateAnimation(bool create=true) const override = 0;
 	};
 
 	class SizelessAnimationProvider : public virtual Gorgon::Animation::Provider {
@@ -38,10 +38,10 @@ namespace Gorgon { namespace Graphics {
 
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
-		virtual const SizelessAnimation &CreateAnimation(bool create=false) const override = 0;
+		virtual const SizelessAnimation &CreateAnimation(bool create=true) const override = 0;
 	};
 
-	class RectangularAnimationProvider : public virtual Gorgon::Animation::Provider {
+	class RectangularAnimationProvider : public virtual AnimationProvider {
 	public:
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
@@ -49,7 +49,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
-		virtual const RectangularAnimation &CreateAnimation(bool create=false) const override = 0;
+		virtual const RectangularAnimation &CreateAnimation(bool create=true) const override = 0;
 	};
 
 } }

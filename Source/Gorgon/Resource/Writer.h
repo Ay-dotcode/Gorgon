@@ -9,6 +9,7 @@
 #include "../Utils/Assert.h"
 #include "../Filesystem.h"
 #include "../IO/Stream.h"
+#include "../Geometry/Point.h"
 
 namespace Gorgon { namespace Resource {
 	
@@ -222,6 +223,13 @@ namespace Gorgon { namespace Resource {
 
 			IO::WriteBool(*stream, value);
 		}
+		
+		void WritePoint(Geometry::Point value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WritePoint(*stream, value);
+        }
 
 		/// Writes a string from a given stream. The size of the string is appended before the string as
 		/// 32-bit unsigned value.

@@ -4,6 +4,7 @@
 #include "../Utils/Assert.h"
 #include "../Geometry/Point.h"
 #include "../Containers/Hashmap.h"
+#include "Animations.h"
 
 
 namespace Gorgon { namespace Graphics {
@@ -121,6 +122,47 @@ namespace Gorgon { namespace Graphics {
         
         bool owner = false;
 	};
+    
+    /// This class stores information that allows a pointer to be created.
+    class PointerProvider {
+    public:
+        PointerProvider(const AnimationProvider &provider, Geometry::Point hotspot = {0,0}, bool owned = false) : 
+        provider(provider), hotspot(hotspot), owned(owned) {
+        }
+        
+        /// Move constructor
+        PointerProvider(PointerProvider &&other) : 
+        provider(other.provider), hotspot(other.hotspot), owned(other.owned) {
+            other.owned = false;
+        }
+        
+        PointerProvider(const PointerProvider &) = delete;
+        
+        ~PointerProvider() {
+            if(owned)
+                delete &provider;
+        }
+        
+        /// Creates a pointer from this provider
+        Pointer CreatePointer(Gorgon::Animation::Timer &timer) const {
+            return Pointer(provider.CreateAnimation(timer), hotspot);
+        }
+        
+        /// Creates a pointer from this provider
+        Pointer CreatePointer(bool create = true) const {
+            return Pointer(provider.CreateAnimation(create), hotspot);
+        }
+        
+    protected:
+        /// Provides animation for pointer creation
+        const AnimationProvider &provider;
+        
+        /// Hotspot will be transferred to newly created pointers
+        Geometry::Point hotspot;
+        
+        /// Whether the animation is owned by this object
+        bool owned;
+    };
     
     ///Pointer types
     enum class PointerType {

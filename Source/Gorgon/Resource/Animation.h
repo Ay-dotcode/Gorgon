@@ -42,13 +42,22 @@ namespace Gorgon { namespace Resource {
 		
 		/// This function allows loading animation with a function to load unknown resources. The supplied function should
 		/// call LoadObject function of File class if the given GID is unknown.
-		static Animation *LoadResourceWith(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size,
+		static bool LoadResourceWith(Animation &anim, std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size,
 										   std::function<Base*(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, 
                                                                GID::Type, unsigned long)> loadfn);
 
 		/// This function loads an animation resource from the given file
 		static Animation *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) {
-			return LoadResourceWith(file, reader, size, {});
+            Animation *a = new Animation();
+            
+			auto res = LoadResourceWith(*a, file, reader, size, {});
+            
+            if(!res) {
+                a->DeleteResource();
+                a = nullptr;
+            }
+            
+            return a;
 		}
 		
 		/// Saves the given animation as a resource. If the given animation is already a resource, its own save function

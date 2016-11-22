@@ -14,7 +14,7 @@ namespace Gorgon { namespace Graphics {
 	
     namespace internal {
 		/// Decodes a utf-8 character from the given iterator. If char is not valid 
-		/// 0xfffd is returned. \r\n is mapped to \n
+		/// 0xfffd is returned. \\r\\n is mapped to \\n
         Glyph decode(std::string::const_iterator &it, std::string::const_iterator end);
 		bool isnewline(Glyph g);
 		bool isspaced(Glyph g);

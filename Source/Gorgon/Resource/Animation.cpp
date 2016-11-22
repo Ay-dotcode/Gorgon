@@ -4,10 +4,11 @@
 
 namespace Gorgon { namespace Resource {
 
-	Animation *Animation::LoadResourceWith(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize, std::function<Base*(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, GID::Type, unsigned long)> loadfn) {
+	bool Animation::LoadResourceWith(Animation &a, std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long totalsize, std::function<Base*(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, GID::Type, unsigned long)> loadfn) {
+        Animation *anim = &a;
+        
 		auto target = reader->Target(totalsize);
 
-		std::unique_ptr<Animation, void(*)(Animation*)> anim{new Animation, [](Animation *a) {a->DeleteResource();}};
 		std::vector<uint32_t> durations;
 
 		auto f=file.lock();
@@ -44,7 +45,7 @@ namespace Gorgon { namespace Resource {
 			anim->Add(dynamic_cast<Image&>(*images), dur);
 		}
 
-		return anim.release();
+		return true;
 	}
 
 	void Animation::savedata(Writer &writer) const {

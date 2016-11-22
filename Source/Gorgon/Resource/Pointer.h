@@ -6,9 +6,9 @@
 #include "../Graphics/Drawables.h"
 #include "../Graphics/Bitmap.h"
 #include "../Graphics/Animations.h"
+#include "../Graphics/ImageAnimation.h"
 #include "../Utils/Assert.h"
 #include "../Geometry/Point.h"
-
 
 
 namespace Gorgon { namespace Resource {
@@ -21,36 +21,46 @@ namespace Gorgon { namespace Resource {
      * displayed. A Pointer resource can be created from a bitmap or an
      * animation.
      */
-    class Pointer : public Base, public Graphics::AnimationProvider {
+    class Pointer : public Base, public Graphics::BitmapAnimationProvider, public Graphics::PointerProvider {
     public:
         Pointer(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type);
 
         Pointer(Graphics::ImageAnimationProvider &anim, Geometry::Point hotspot, Graphics::PointerType type);
         
-        Pointer();
+        Pointer() : Graphics::PointerProvider(dynamic_cast<Graphics::BitmapAnimationProvider&>(*this)) { }
         
         Pointer(const Pointer &) = delete;
         
         Pointer &operator =(const Pointer &) = delete;
         
-        virtual ~Pointer();
+        GID::Type GetGID() const override { return GID::Pointer; }
         
-        void Set(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type);
+        /// Returns the type of the pointer
+        Graphics::PointerType GetType() const {
+            return type;
+        }
         
-        void Set(Graphics::ImageAnimationProvider &anim, Geometry::Point hotspot, Graphics::PointerType type);
+        /// Sets the type of the pointer
+        void SetType(Graphics::PointerType value) {
+            type = value;
+        }
         
-        void Assume(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type);
-        
-        void Assume(Graphics::ImageAnimationProvider &anim, Geometry::Point hotspot, Graphics::PointerType type);
-        
-        void Remove();
-        
-        Graphics::Pointer CreatePointer() const;
-        
-        Graphics::ImageAnimation CreateAnimation(Animation::Timer &timer) const;
+        /// Moves the pointer provider out of resource system. Use Prepare and Discard before calling this function to
+        /// avoid data duplication
+        Graphics::PointerProvider MoveOut();
         
 		/// This function loads a bitmap font resource from the given file
 		static Pointer *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
+        
+		/// This function loads a bitmap font resource from the given file
+		static Pointer *LoadLegacy(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
+        
+    protected:
+        Graphics::PointerType type = Graphics::PointerType::Arrow;
+         
+        virtual ~Pointer();
+		
+		void save(Writer &writer) const override;
     };
 
     

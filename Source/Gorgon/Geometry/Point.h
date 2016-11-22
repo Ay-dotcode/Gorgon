@@ -8,6 +8,7 @@
 #include <limits>
 #include <cmath>
 #include <sstream>
+#include <type_traits>
 
 #include "../Types.h"
 #include "../String.h"

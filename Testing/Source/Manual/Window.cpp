@@ -106,7 +106,7 @@ int main() {
         b = 255;
     }, 0);
     
-    cursor1.Prepare();    
+    cursor1.Prepare();
     Graphics::Pointer pointer1(cursor1, 8,15);
     
     cursor2.Prepare();

@@ -161,8 +161,11 @@ namespace Gorgon {
 			CONSTEXPR Type Animation_Names		{0x03100102};
 			CONSTEXPR Type Animation_Name		{0x03100103};
 
-			CONSTEXPR Type Pointer				{0x03D10000};
-			CONSTEXPR Type Pointer_Props		{0x03D10101};
+			CONSTEXPR Type LegacyPointer		{0x03D10000};
+			CONSTEXPR Type LegacyPointer_Props	{0x03D10101};
+
+            CONSTEXPR Type Pointer		        {0x03D20000};
+			CONSTEXPR Type Pointer_Props	    {0x03D20101};
 
 			CONSTEXPR Type Font					{0x03200000};
 			CONSTEXPR Type Font_Charmap			{0x03200101};
