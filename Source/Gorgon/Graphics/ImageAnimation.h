@@ -141,6 +141,8 @@ namespace Gorgon { namespace Graphics {
 			duration = 0;
 
 			swapout(other);
+            
+            return *this;
 		}
 		
 		~basic_TextureAnimationProvider() {

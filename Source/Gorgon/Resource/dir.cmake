@@ -21,6 +21,7 @@ SET(Local
 	Image.h
 	Image.cpp
 	Pointer.h
+	Pointer.cpp
 	Reader.h
 	Sound.h
 	Sound.cpp

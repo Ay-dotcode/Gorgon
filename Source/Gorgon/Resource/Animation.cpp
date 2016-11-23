@@ -68,6 +68,30 @@ namespace Gorgon { namespace Resource {
 
 		writer.WriteEnd(start);
 	}
+	
+	void Animation::SaveThis(Writer &writer, const Graphics::BitmapAnimationProvider &anim, GID::Type type, std::function<void(Writer &writer)> extra) {
+        const Animation *a = dynamic_cast<const Animation*>(&anim);
+        
+        if(a) {
+            a->save(writer);
+        }
+        else {
+            auto start=writer.WriteChunkStart(type);
+
+            //durations
+            writer.WriteChunkHeader(GID::Animation_Durations, anim.GetCount()*4);
+            for(auto &frame : anim) {
+                writer.WriteInt32(frame.GetDuration());
+            }
+
+            //images
+            for(auto &frame : anim) {
+                Image::SaveThis(writer, frame.GetImage());
+            }
+
+            writer.WriteEnd(start);
+        }
+    }
 
 	Graphics::BitmapAnimationProvider Animation::MoveOut() {
 		Graphics::BitmapAnimationProvider anim;

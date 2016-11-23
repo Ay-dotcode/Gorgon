@@ -133,6 +133,13 @@ namespace Gorgon { namespace IO {
 	inline SGuid ReadGuid(std::istream &stream) {
 		return SGuid(stream);
 	}
+	
+	inline Geometry::Point ReadPoint(std::istream &stream) {
+        auto x = ReadInt32(stream);
+        auto y = ReadInt32(stream);
+        
+        return {x, y};
+    }
 
 	
 	/// Writes an enumeration as a 32-bit integer

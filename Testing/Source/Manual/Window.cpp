@@ -14,6 +14,7 @@
 #include "Gorgon/Graphics/BitmapFont.h"
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Font.h>
+#include <Gorgon/Resource/Pointer.h>
 #include <Gorgon/Graphics/Pointer.h>
 
 
@@ -115,9 +116,24 @@ int main() {
     cursor3.Prepare();
     Graphics::Pointer pointer3(cursor3, 1,8);
     
-    wind.Pointers.Add(Graphics::PointerType::Arrow, pointer1);
+    Resource::File f;
+    f.LoadFile("ptrtest.gor");
+    f.Prepare();
+    
+    wind.Pointers.Add(Graphics::PointerType::Arrow, f.Root().Get<Resource::Pointer>(0).CreatePointer());
+    //wind.Pointers.Add(Graphics::PointerType::Arrow, pointer1);
     wind.Pointers.Add(Graphics::PointerType::Wait, pointer2);
     wind.Pointers.Add(Graphics::PointerType::Text, pointer3);
+    
+    /*Resource::File f;
+    auto ptr = new Resource::Pointer;
+    
+    ptr->Add(cursor1);
+    ptr->SetType(Graphics::PointerType::Arrow);
+    f.Root().Add(ptr);
+    f.Save("ptrtest.gor");*/
+    
+
 	
 	//img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
 	//for(int x = 0; x<200; x++)
@@ -164,15 +180,9 @@ int main() {
 	
 	//img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
-    Resource::File f;
     Graphics::BitmapFont fnt;
 	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
     fnt.Pack();
-    
-//     Resource::File f;
-//     Resource::Font fr(fnt);
-//     f.Root().Add(fr);
-//     f.Save("test.gor");
     
     wind.Minimize();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));

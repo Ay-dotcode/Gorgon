@@ -153,6 +153,16 @@ namespace Gorgon { namespace Graphics {
             return Pointer(provider.CreateAnimation(create), hotspot);
         }
         
+        /// Returns the hotspot of the provider
+        Geometry::Point GetHotspot() const {
+            return hotspot;
+        }
+        
+        /// Sets the hotspot of the pointer
+        void SetHotspot(Geometry::Point value) {
+            hotspot = value;
+        }
+        
     protected:
         /// Provides animation for pointer creation
         const AnimationProvider &provider;

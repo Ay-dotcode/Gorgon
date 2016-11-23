@@ -334,6 +334,14 @@ namespace Gorgon { namespace Resource {
 			return IO::ReadGuid(*stream);
 		}
 
+		/// Reads a GUID from the given stream.
+		Geometry::Point ReadPoint() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadPoint(*stream);
+		}
+
 		/// Reads chunk size from a stream
 		unsigned long ReadChunkSize() {
 			ASSERT(stream, "Reader is not opened.");

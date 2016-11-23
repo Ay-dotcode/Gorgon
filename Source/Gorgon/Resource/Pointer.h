@@ -23,11 +23,21 @@ namespace Gorgon { namespace Resource {
      */
     class Pointer : public Base, public Graphics::BitmapAnimationProvider, public Graphics::PointerProvider {
     public:
-        Pointer(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type);
+        Pointer(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type) : 
+        Graphics::PointerProvider(dynamic_cast<Graphics::BitmapAnimationProvider&>(*this), hotspot), type(type) { 
+            Add(bmp);
+        }
 
-        Pointer(Graphics::ImageAnimationProvider &anim, Geometry::Point hotspot, Graphics::PointerType type);
+        Pointer(Graphics::BitmapAnimationProvider &&anim, Geometry::Point hotspot, Graphics::PointerType type) :
+        Graphics::BitmapAnimationProvider(std::move(anim)),
+        Graphics::PointerProvider(dynamic_cast<Graphics::BitmapAnimationProvider&>(*this), hotspot), type(type) { 
+            
+        }
         
-        Pointer() : Graphics::PointerProvider(dynamic_cast<Graphics::BitmapAnimationProvider&>(*this)) { }
+        explicit Pointer(Graphics::PointerType type = Graphics::PointerType::None) : Graphics::PointerProvider(dynamic_cast<Graphics::BitmapAnimationProvider&>(*this)),
+        type(type) { 
+            
+        }
         
         Pointer(const Pointer &) = delete;
         
@@ -50,15 +60,15 @@ namespace Gorgon { namespace Resource {
         Graphics::PointerProvider MoveOut();
         
 		/// This function loads a bitmap font resource from the given file
-		static Pointer *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
-        
+		static Resource::Pointer* LoadResource(std::weak_ptr< Gorgon::Resource::File > file, std::shared_ptr< Gorgon::Resource::Reader > reader, long unsigned int size);
+		
 		/// This function loads a bitmap font resource from the given file
-		static Pointer *LoadLegacy(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
+		static Pointer *LoadLegacy(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) { Utils::NotImplemented(); }
         
     protected:
         Graphics::PointerType type = Graphics::PointerType::Arrow;
          
-        virtual ~Pointer();
+        virtual ~Pointer() { }
 		
 		void save(Writer &writer) const override;
     };
