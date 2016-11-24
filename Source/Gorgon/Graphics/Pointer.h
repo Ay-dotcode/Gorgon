@@ -255,11 +255,36 @@ namespace Gorgon { namespace Graphics {
             int ind = 0;
         };
 
+		PointerStack() = default;
+
+		PointerStack(const PointerStack &) = delete;
+
+		PointerStack(PointerStack &&other) {
+			using std::swap;
+
+			swap(lastind, other.lastind);
+			swap(stack, other.stack);
+			swap(pointers, other.pointers);
+
+		}
+
+		~PointerStack() {
+			for(auto &w : pointers) {
+				if(w.owned)
+					delete w.ptr;
+			}
+		}
+
         /// Adds the given pointer to the stack. Ownership of the pointer will not
         /// be transferred. If the given pointer type exists old one will be overriden.
         /// If the old pointer is managed by this stack then it will be deleted.
-        void Add(PointerType type, const Pointer &pointer);
-        
+		void Add(PointerType type, const Pointer &pointer);
+
+		/// Move variant that maps to assume
+		void Add(PointerType type, const Pointer &&pointer) {
+			Assume(type, pointer);
+		}
+
         /// Adds the given pointer to the stack. Ownership of the pointer will be
         /// transferred. If the given pointer type exists old one will be overriden.
         /// If the old pointer is managed by this stack then it will be deleted.
@@ -267,10 +292,12 @@ namespace Gorgon { namespace Graphics {
         
         /// Creates and adds a new pointer. Life time of this new pointer will be
         /// bound to the life time of the stack. If the given pointer type exists
-        /// old one will be overriden. If the old pointer is managed by this stack
+        /// old one will be overridden. If the old pointer is managed by this stack
         /// then it will be deleted.
-        void Add(PointerType type, const Drawable &image, Geometry::Point hotspot);
-        
+		void Add(PointerType type, const Drawable &image, Geometry::Point hotspot);
+
+		void Add(PointerType type, const Drawable &&image, Geometry::Point hotspot) = delete;
+
         /// Checks if the given pointer exists
         bool Exists(PointerType type) {
             if((int)type <= 0 || (int)type > (int)PointerType::Drag) return false;

@@ -393,6 +393,9 @@ namespace Gorgon {
 			HANDLE clip;
 			if(OpenClipboard(NULL)) {
 				clip = GetClipboardData(CF_TEXT);
+				if(clip == nullptr)
+					return "";
+
 				return std::string((char*)clip);
 			}
 			else {

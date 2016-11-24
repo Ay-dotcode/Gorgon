@@ -120,7 +120,8 @@ int main() {
     f.LoadFile("ptrtest.gor");
     f.Prepare();
     
-    wind.Pointers.Add(Graphics::PointerType::Arrow, f.Root().Get<Resource::Pointer>(0).CreatePointer());
+	auto ptr = f.Root().Get<Resource::Pointer>(0).CreatePointer();
+    wind.Pointers.Add(Graphics::PointerType::Arrow, ptr);
     //wind.Pointers.Add(Graphics::PointerType::Arrow, pointer1);
     wind.Pointers.Add(Graphics::PointerType::Wait, pointer2);
     wind.Pointers.Add(Graphics::PointerType::Text, pointer3);
