@@ -4,6 +4,7 @@ SET(ManualTests
     Animation
 	Filesystem
 	Gscript
+	Generic
 	Audio
 	PDParser
 	Window

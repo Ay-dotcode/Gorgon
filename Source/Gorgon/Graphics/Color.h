@@ -316,8 +316,14 @@ namespace Gorgon { namespace Graphics {
 		/// Converts a RGBA to RGBAf
 		RGBAf(const RGBA &color) : R(color.R/255.f), G(color.G/255.f), B(color.B/255.f), A(color.A/255.f) { }
 
-		/// Converts from an int
-		explicit RGBAf(const int &color) : RGBAf(RGBA(color)) { }
+		/// Converts from an unsigned int
+		RGBAf(unsigned color) : RGBAf(RGBA(color)) { }
+
+		/// Converts from an unsigned int
+		RGBAf(int) = delete;
+
+		/// Converts from an unsigned int
+		RGBAf(bool) = delete;
 
 		/// Copy assignment
 		RGBAf &operator = (const RGBAf &) = default;
