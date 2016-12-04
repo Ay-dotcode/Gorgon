@@ -2,6 +2,7 @@
 
 #include "Base.h"
 #include "Animation.h"
+#include "AnimationStorage.h"
 #include "../Graphics/Pointer.h"
 #include "../Graphics/Drawables.h"
 #include "../Graphics/Bitmap.h"
@@ -21,20 +22,18 @@ namespace Gorgon { namespace Resource {
      * displayed. A Pointer resource can be created from a bitmap or an
      * animation.
      */
-    class Pointer : public Base, public Graphics::BitmapAnimationProvider, public Graphics::PointerProvider {
+    class Pointer : public RectangularAnimationStorage, public Graphics::BitmapPointerProvider {
     public:
         Pointer(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type) : 
-        Graphics::PointerProvider(dynamic_cast<Graphics::BitmapAnimationProvider&>(*this), hotspot), type(type) { 
+        Graphics::BitmapPointerProvider(anim, hotspot), type(type) {
             Add(bmp);
         }
 
         Pointer(Graphics::BitmapAnimationProvider &&anim, Geometry::Point hotspot, Graphics::PointerType type) :
-        Graphics::BitmapAnimationProvider(std::move(anim)),
-        Graphics::PointerProvider(dynamic_cast<Graphics::BitmapAnimationProvider&>(*this), hotspot), type(type) { 
-            
+        Graphics::BitmapPointerProvider(anim, hotspot), type(type), anim(std::move(anim)) {
         }
         
-        explicit Pointer(Graphics::PointerType type = Graphics::PointerType::None) : Graphics::PointerProvider(dynamic_cast<Graphics::BitmapAnimationProvider&>(*this)),
+        explicit Pointer(Graphics::PointerType type = Graphics::PointerType::None) : Graphics::BitmapPointerProvider(anim),
         type(type) { 
             
         }
@@ -57,7 +56,7 @@ namespace Gorgon { namespace Resource {
         
         /// Moves the pointer provider out of resource system. Use Prepare and Discard before calling this function to
         /// avoid data duplication
-        Graphics::PointerProvider MoveOut();
+        Graphics::BitmapPointerProvider MoveOut();
         
 		/// This function loads a bitmap font resource from the given file
 		static Resource::Pointer* LoadResource(std::weak_ptr< Gorgon::Resource::File > file, std::shared_ptr< Gorgon::Resource::Reader > reader, long unsigned int size);
@@ -67,7 +66,11 @@ namespace Gorgon { namespace Resource {
         
     protected:
         Graphics::PointerType type = Graphics::PointerType::Arrow;
-         
+
+		Graphics::BitmapAnimationProvider anim;
+
+		virtual Graphics::RectangularAnimationStorage animmoveout() override;
+
         virtual ~Pointer() { }
 		
 		void save(Writer &writer) const override;

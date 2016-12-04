@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include "AnimationStorage.h"
 #include "../Animation.h"
 #include "Image.h"
 #include "../Graphics/ImageAnimation.h"
@@ -17,13 +18,13 @@ namespace Gorgon { namespace Resource {
 
 	/// This class represents an animation resource. Image animations can be created using this object. An animation object can be moved.
 	/// Duplicate function should be used to copy an animation.
-	class Animation : public Base, public Graphics::BitmapAnimationProvider {
+	class Animation : public Graphics::BitmapAnimationProvider, public RectangularAnimationStorage {
 	public:
 		/// Default constructor
-		Animation() : Base() {}
+		Animation() {}
 
 		/// Conversion constructor
-		Animation(Graphics::BitmapAnimationProvider &&anim) : Base(), Graphics::BitmapAnimationProvider(std::move(anim)) {
+		Animation(Graphics::BitmapAnimationProvider &&anim) : Graphics::BitmapAnimationProvider(std::move(anim)) {
 		}
 
 		/// Copy constructor is disabled, use Duplicate or DeepDuplicate
@@ -67,7 +68,9 @@ namespace Gorgon { namespace Resource {
 
 	protected:
         virtual ~Animation() { }
-		
+
+		virtual Graphics::RectangularAnimationStorage animmoveout() override;
+
 		void save(Writer &writer) const override;
 
 		// Two part save system allows objects that are derived from animation to exist.

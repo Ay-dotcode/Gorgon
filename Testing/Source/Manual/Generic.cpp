@@ -25,8 +25,8 @@ Graphics::Bitmap Circle(int r) {
     
     for(int y=0; y<b.GetHeight(); y++) {
         for(int x=0; x<b.GetWidth(); x++) {
-            float xx = x - (r+1);
-            float yy = y - (r+1);
+            float xx = float(x - (r+1));
+            float yy = float(y - (r+1));
             
             float ds = xx*xx + yy*yy;
             
@@ -36,7 +36,7 @@ Graphics::Bitmap Circle(int r) {
                 v = 0xff;
             }
             else if(ds <= ro) {
-                v = 0xff * (1 - (sqrt(ds) - (r-0.5)));
+                v = int(0xff * (1 - (sqrt(ds) - (r-0.5))));
             }
             else {
                 v = 0;
@@ -60,7 +60,7 @@ Graphics::Bitmap Triangle(int w, int h) {
                 b(x,y,0) = 255;
             }
             else if(x>w-ceil(cw) && x<w+ceil(cw)) {
-                    b(x,y,0) = 255*(cw-floor(cw));
+                    b(x,y,0) = Gorgon::Byte(255*(cw-floor(cw)));
             }
             else {
                 b(x,y,0) = 0;
@@ -84,7 +84,7 @@ Graphics::Bitmap Triangle1(int w, int h) {
                 b(x,y,0) = 255;
             }
             else if(x<ceil(cw)) {
-                    b(x,y,0) = 255*(cw-floor(cw));
+                    b(x,y,0) = Gorgon::Byte(255*(cw-floor(cw)));
             }
             else {
                 b(x,y,0) = 0;
@@ -108,7 +108,7 @@ Graphics::Bitmap Triangle2(int w, int h) {
                 b(x,y,0) = 255;
             }
             else if(x>w-ceil(cw)) {
-                    b(x,y,0) = 255*(cw-floor(cw));
+                    b(x,y,0) = Gorgon::Byte(255*(cw-floor(cw)));
             }
             else {
                 b(x,y,0) = 0;
@@ -131,7 +131,7 @@ Graphics::Bitmap Triangle4(int w, int h) {
                 b(x,h-y-1,0) = 255;
             }
             else if(x<ceil(cw)) {
-                    b(x,h-y-1,0) = 255*(cw-floor(cw));
+                    b(x,h-y-1,0) = Gorgon::Byte(255*(cw-floor(cw)));
             }
             else {
                 b(x,h-y-1,0) = 0;
@@ -155,7 +155,7 @@ Graphics::Bitmap Triangle3(int w, int h) {
                 b(x,h-y-1,0) = 255;
             }
             else if(x>w-ceil(cw)) {
-                    b(x,h-y-1,0) = 255*(cw-floor(cw));
+                    b(x,h-y-1,0) = Gorgon::Byte(255*(cw-floor(cw)));
             }
             else {
                 b(x,h-y-1,0) = 0;

@@ -108,13 +108,13 @@ int main() {
     }, 0);
     
     cursor1.Prepare();
-    Graphics::Pointer pointer1(cursor1, 8,15);
+    Graphics::DrawablePointer pointer1(cursor1, 8,15);
     
     cursor2.Prepare();
-    Graphics::Pointer pointer2(cursor2, 8,8);
+    Graphics::DrawablePointer pointer2(cursor2, 8,8);
     
     cursor3.Prepare();
-    Graphics::Pointer pointer3(cursor3, 1,8);
+    Graphics::DrawablePointer pointer3(cursor3, 1,8);
     
     Resource::File f;
     f.LoadFile("ptrtest.gor");

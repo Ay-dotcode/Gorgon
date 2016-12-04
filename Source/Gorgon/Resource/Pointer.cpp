@@ -54,13 +54,13 @@ namespace Gorgon { namespace Resource {
 			}
 		}
 
-		dynamic_cast<Graphics::BitmapAnimationProvider&>(*p) = std::move(*dynamic_cast<Animation*>(obj));
+		p->anim = dynamic_cast<Animation*>(obj)->MoveOut();
         
         return p;
     }
     
-    Graphics::PointerProvider Pointer::MoveOut() {
-        return Graphics::PointerProvider(*new Graphics::BitmapAnimationProvider(std::move(*this)), hotspot, true);        
+    Graphics::BitmapPointerProvider Pointer::MoveOut() {
+        return Graphics::BitmapPointerProvider(*new Graphics::BitmapAnimationProvider(std::move(*this)), hotspot, true);        
     }
 
 	void Pointer::save(Writer &writer) const {
@@ -70,9 +70,15 @@ namespace Gorgon { namespace Resource {
         writer.WritePoint(hotspot);
         writer.WriteEnum32(type);
         
-        Animation::SaveThis(writer, *this);
+        Animation::SaveThis(writer, anim);
 
 		writer.WriteEnd(start);
+	}
+
+	Graphics::RectangularAnimationStorage Pointer::animmoveout() {
+		Graphics::BitmapPointerProvider &anim = *new Graphics::BitmapPointerProvider(*new Graphics::BitmapAnimationProvider(std::move(*this)), hotspot, true);
+
+		return Graphics::RectangularAnimationStorage(anim, true);
 	}
 
 }}

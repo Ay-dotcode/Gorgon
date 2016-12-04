@@ -5,154 +5,228 @@
 #include "../Geometry/Point.h"
 #include "../Containers/Hashmap.h"
 #include "Animations.h"
+#include "ImageAnimation.h"
 
 
 namespace Gorgon { namespace Graphics {
 
     /**
-     * Represents a pointer. When drawn, pointer will move the image so that the hotspot
+     * Represents a pointer. When drawn, pointer should move the image so that the hotspot
      * will be on the given point. If desired, ownership of the image can be transferred
      * to the pointer.
      */
-	class Pointer : public Drawable {
+	class Pointer : virtual public Drawable {
 	public:
-        
-        Pointer() = default;
 
-		/// Initializes a pointer. Ownership of the drawable is not transferred. Use Assume function 
-        /// after invoking default constructor to transfer ownership.
-		Pointer(const Drawable &image, int x, int y) : Pointer(image, {x, y}) { }
-
-		/// Initializes a pointer. Ownership of the drawable is not transferred. Use Assume function 
-        /// after invoking default constructor to transfer ownership.
-		Pointer(const Drawable &image, Geometry::Point hotspot) :
-		image(&image), hotspot(hotspot) {
+		virtual ~Pointer() {
 		}
-		
-		Pointer(const Pointer &other) = delete;
         
-        Pointer(Pointer &&other) : 
-        image(other.image), hotspot(other.hotspot), owner(other.owner)
-        {
-            other.image = nullptr;
-            other.owner = false;
-        }
-        
-        Pointer &operator =(const Pointer &) = delete;
+    protected:
+	};
 
-        Pointer &operator =(Pointer &&other) {
-            RemoveImage();
-            image   = other.image;
-            owner   = other.owner;
-            hotspot = other.hotspot;
-            
-            other.image = nullptr;
-            other.owner = false;
-            
-            return *this;
-        }
+	/// This class turns a drawable into a pointer
+	class DrawablePointer : public Pointer {
+	public:
+		DrawablePointer() = default;
+
+		/// Initializes a pointer. Ownership of the drawable is not transferred. Use Assume function 
+		/// after invoking default constructor to transfer ownership.
+		DrawablePointer(const Drawable &image, int x, int y) : DrawablePointer(image, {x, y}) {}
+
+		/// Initializes a pointer. Ownership of the drawable is not transferred. Use Assume function 
+		/// after invoking default constructor to transfer ownership.
+		DrawablePointer(const Drawable &image, Geometry::Point hotspot) :
+			image(&image), hotspot(hotspot) {}
+
+		DrawablePointer(const DrawablePointer &other) = delete;
+
+		DrawablePointer(DrawablePointer &&other) :
+			image(other.image), hotspot(other.hotspot), owner(other.owner) {
+			other.image = nullptr;
+			other.owner = false;
+		}
+
+		DrawablePointer &operator =(const DrawablePointer &) = delete;
+
+		DrawablePointer &operator =(DrawablePointer &&other) {
+			RemoveImage();
+			image   = other.image;
+			owner   = other.owner;
+			hotspot = other.hotspot;
+
+			other.image = nullptr;
+			other.owner = false;
+
+			return *this;
+		}
 
 		//Pointer(Resource::Pointer &pointer);
 
-		~Pointer() {
-            RemoveImage();
-        }
-        
-        
-        /// Returns if the pointer has an image
-        bool HasImage() const {
-            return image != nullptr;
-        }
-        
-        /// Returns the image contained in this pointer. You should check HasImage
-        /// before accessing to the image
-        const Drawable &GetImage() const {
-            ASSERT(image, "Pointer image is not set");
-            
-            return *image;
-        }
-        
-        /// Changes the image of this pointer 
-        void SetImage(const Drawable &value) {
-            RemoveImage();
+		~DrawablePointer() {
+			RemoveImage();
+		}
 
-            image = &value;
-        }
-        
-        /// Changes the image of the pointer by assuming the ownership of the given
-        /// image
-        void Assume(const Drawable &value) {
-            RemoveImage();
 
-            image = &value;
-            owner = true;
-        }
-        
-        /// Removes the image from the pointer
-        void RemoveImage() {
-            if(owner) {
-                delete image;
-                owner = false;
-            }
-            
-            image = nullptr;
-        }
-        
-        /// Releases the ownership of the drawable and removes it from the pointer
-        const Drawable &Release() {
-            auto img = image;
-            
-            owner = false;
-            image = nullptr;
-            
-            return *img;
-        }
-            
-        
-    protected:
-        void draw(Gorgon::Graphics::TextureTarget &target, const Geometry::Pointf &p, Gorgon::Graphics::RGBAf color) const override {
-            if(!image) return;
-            
-            image->Draw(target, p-hotspot, color);
-        }
-        
-    private:        
+		/// Returns if the pointer has an image
+		bool HasImage() const {
+			return image != nullptr;
+		}
+
+		/// Returns the image contained in this pointer. You should check HasImage
+		/// before accessing to the image
+		const Drawable &GetImage() const {
+			ASSERT(image, "Pointer image is not set");
+
+			return *image;
+		}
+
+		/// Changes the image of this pointer 
+		void SetImage(const Drawable &value) {
+			RemoveImage();
+
+			image = &value;
+		}
+
+		/// Changes the image of the pointer by assuming the ownership of the given
+		/// image
+		void Assume(const Drawable &value) {
+			RemoveImage();
+
+			image = &value;
+			owner = true;
+		}
+
+		/// Removes the image from the pointer
+		void RemoveImage() {
+			if(owner) {
+				delete image;
+				owner = false;
+			}
+
+			image = nullptr;
+		}
+
+		/// Releases the ownership of the drawable and removes it from the pointer
+		const Drawable &Release() {
+			auto img = image;
+
+			owner = false;
+			image = nullptr;
+
+			return *img;
+		}
+
+
+	protected:
+		void draw(Gorgon::Graphics::TextureTarget &target, const Geometry::Pointf &p, Gorgon::Graphics::RGBAf color) const override {
+			if(!image) return;
+
+			image->Draw(target, p-hotspot, color);
+		}
+
+	private:
 		const Drawable *image = nullptr;
-        Geometry::Point hotspot = {0, 0};
-        
-        bool owner = false;
+		Geometry::Point hotspot ={0, 0};
+
+		bool owner = false;
+	};
+
+	template<class A_>
+	class basic_PointerProvider;
+
+	/// Represents animated pointer.
+	template<class A_>
+	class basic_AnimatedPointer : public virtual Pointer, public virtual A_::AnimationType {
+	public:
+		basic_AnimatedPointer(const basic_PointerProvider<A_> &parent, typename A_::AnimationType &anim) :
+			A_::AnimationType(parent, false), anim(&anim), parent(parent)
+		{ }
+
+		basic_AnimatedPointer(const basic_AnimatedPointer &) = delete;
+
+		basic_AnimatedPointer(basic_AnimatedPointer &&other) : Gorgon:Animation::Base(false), anim(other.anim), parent(other.parent) {
+			other.anim = nullptr;
+		}
+
+		~basic_AnimatedPointer() {
+			if(anim)
+				anim->DeleteAnimation();
+		}
+
+		void SetController(Gorgon::Animation::ControllerBase &controller) override {
+			ASSERT(anim, "Try to use a moved out pointer");
+
+			anim->SetController(controller);
+		}
+		
+		bool HasController() const override {
+			ASSERT(anim, "Try to use a moved out pointer");
+
+			return anim->HasController();
+		}
+
+		Gorgon::Animation::ControllerBase &GetController() const {
+			ASSERT(anim, "Try to use a moved out pointer");
+
+			return anim->GetController();
+		}
+
+		void RemoveController() const {
+			ASSERT(anim, "Try to use a moved out pointer");
+
+			anim->RemoveController();
+		}
+
+	protected:
+		void draw(Gorgon::Graphics::TextureTarget &target, const Geometry::Pointf &p, Gorgon::Graphics::RGBAf color) const override;
+
+		const basic_PointerProvider<A_> &parent;
+		typename A_::AnimationType *anim;
 	};
     
-    /// This class stores information that allows a pointer to be created.
-    class PointerProvider {
+    /// This class stores information that allows an animated pointer to be created.
+	template<class A_>
+    class basic_PointerProvider : public A_ {
     public:
-        PointerProvider(const AnimationProvider &provider, Geometry::Point hotspot = {0,0}, bool owned = false) : 
+		using AnimationType = basic_AnimatedPointer<A_>;
+
+		basic_PointerProvider(const A_ &provider, Geometry::Point hotspot = {0,0}, bool owned = false) :
         provider(provider), hotspot(hotspot), owned(owned) {
         }
         
         /// Move constructor
-        PointerProvider(PointerProvider &&other) : 
+		basic_PointerProvider(basic_PointerProvider &&other) :
         provider(other.provider), hotspot(other.hotspot), owned(other.owned) {
             other.owned = false;
         }
         
-        PointerProvider(const PointerProvider &) = delete;
+		basic_PointerProvider(const basic_PointerProvider &) = delete;
         
-        ~PointerProvider() {
+        ~basic_PointerProvider() {
             if(owned)
                 delete &provider;
         }
-        
-        /// Creates a pointer from this provider
-        Pointer CreatePointer(Gorgon::Animation::Timer &timer) const {
-            return Pointer(provider.CreateAnimation(timer), hotspot);
-        }
-        
-        /// Creates a pointer from this provider
-        Pointer CreatePointer(bool create = true) const {
-            return Pointer(provider.CreateAnimation(create), hotspot);
-        }
-        
+
+		/// Creates a pointer from this provider
+		AnimationType CreatePointer(Gorgon::Animation::Timer &timer) const {
+			return AnimationType(*this, provider.CreateAnimation(timer));
+		}
+
+		/// Creates a pointer from this provider, just a rename for CreateAnimation
+		AnimationType CreatePointer(bool create = true) const {
+			return AnimationType(*this, provider.CreateAnimation(create));
+		}
+
+		/// Creates a pointer from this provider
+		AnimationType &CreateAnimation(Gorgon::Animation::Timer &timer) const override {
+			return *new basic_AnimatedPointer<A_>(*this, provider.CreateAnimation(timer));
+		}
+
+		/// Creates a pointer from this provider
+		AnimationType &CreateAnimation(bool create = true) const override {
+			return *new basic_AnimatedPointer<A_>(*this, provider.CreateAnimation(create));
+		}
+
         /// Returns the hotspot of the provider
         Geometry::Point GetHotspot() const {
             return hotspot;
@@ -165,7 +239,7 @@ namespace Gorgon { namespace Graphics {
         
     protected:
         /// Provides animation for pointer creation
-        const AnimationProvider &provider;
+        const A_ &provider;
         
         /// Hotspot will be transferred to newly created pointers
         Geometry::Point hotspot;
@@ -173,7 +247,11 @@ namespace Gorgon { namespace Graphics {
         /// Whether the animation is owned by this object
         bool owned;
     };
-    
+
+	using PointerProvider = basic_PointerProvider<AnimationProvider>;
+	using BitmapPointerProvider = basic_PointerProvider<BitmapAnimationProvider>;
+	using ConstBitmapPointerProvider = basic_PointerProvider<ConstBitmapAnimationProvider>;
+
     ///Pointer types
     enum class PointerType {
         ///No pointer is selected or using default
@@ -276,7 +354,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
         /// Adds the given pointer to the stack. Ownership of the pointer will not
-        /// be transferred. If the given pointer type exists old one will be overriden.
+        /// be transferred. If the given pointer type exists old one will be overridden.
         /// If the old pointer is managed by this stack then it will be deleted.
 		void Add(PointerType type, const Pointer &pointer);
 
@@ -286,7 +364,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
         /// Adds the given pointer to the stack. Ownership of the pointer will be
-        /// transferred. If the given pointer type exists old one will be overriden.
+        /// transferred. If the given pointer type exists old one will be overridden.
         /// If the old pointer is managed by this stack then it will be deleted.
         void Assume(PointerType type, const Pointer &pointer);
         
@@ -341,5 +419,12 @@ namespace Gorgon { namespace Graphics {
         std::array<Wrapper, (int)PointerType::Drag+1> pointers = {};
     };
     
+
+	template<class A_>
+	void basic_AnimatedPointer<A_>::draw(Gorgon::Graphics::TextureTarget &target, const Geometry::Pointf &p, Gorgon::Graphics::RGBAf color) const {
+		ASSERT(anim, "Try to use a moved out pointer");
+
+		anim->Draw(target, p-parent.GetHotspot(), color);
+	}
 
 } }

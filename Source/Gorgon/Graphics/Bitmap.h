@@ -10,6 +10,37 @@
 
 namespace Gorgon { namespace Graphics {
 
+	class Bitmap;
+
+	/// This class creates a non-const animation from a const bitmap
+	class BitmapWrapper : public virtual Graphics::RectangularAnimation {
+	public:
+		BitmapWrapper(const Bitmap &bmp) : bmp(bmp) {}
+
+	protected:
+		bool Progress(unsigned &) override { return true; }
+
+		Geometry::Size getsize() const override;
+
+
+		void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+				  const Geometry::Pointf &p3, const Geometry::Pointf &p4,
+				  const Geometry::Pointf &tex1, const Geometry::Pointf &tex2,
+				  const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const override;
+
+		void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+				  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const override;
+
+		void drawin(TextureTarget &target, const SizeController &size, 
+					const Geometry::Rectanglef &rect, RGBAf color) const;
+
+		Geometry::Size calculatesize(const Geometry::Size &) const;
+
+		Geometry::Size calculatesize(const SizeController &sz, const Geometry::Size &s) const;
+	private:
+		const Bitmap &bmp;
+	};
+
 	/// This object contains an bitmap image. It allows draw, load, import, export functionality. An image may work
 	/// without its data buffer. In order to be drawn, an image object should be prepared. Both data and texture
 	/// might be released from the image.
@@ -17,6 +48,7 @@ namespace Gorgon { namespace Graphics {
 		public virtual Graphics::RectangularAnimationProvider, public virtual Graphics::Image,
 		public virtual Graphics::RectangularAnimation, protected virtual Graphics::Texture, public virtual Graphics::TextureSource
 	{
+		friend class BitmapWrapper;
 	public:
 
 		enum AtlasMargins {
@@ -108,12 +140,12 @@ namespace Gorgon { namespace Graphics {
 		using Graphics::Texture::GetCoordinates;
 		using Graphics::Texture::GetImageSize;
 
-		virtual const Bitmap &CreateAnimation(Gorgon::Animation::Timer &controller) const override { return *this; }
+		BitmapWrapper &CreateAnimation(Gorgon::Animation::Timer &controller) const override { return *new BitmapWrapper(*this); }
 
-		virtual const Bitmap &CreateAnimation(bool create=false) const override { return *this; }
+		BitmapWrapper &CreateAnimation(bool create=false) const override { return *new BitmapWrapper(*this); }
 
 		/// if used as animation, this object will not be deleted
-		virtual void DeleteAnimation() override { }
+		virtual void DeleteAnimation() const override { }
 
 		/// Releases the image data. The image data returned by this function is moved out. Data is passed by value, thus
 		/// if it is not moved into a Containers::Image, it will be destroyed.
@@ -530,9 +562,9 @@ namespace Gorgon { namespace Graphics {
 
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.
-		virtual bool Progress(unsigned &) override { return true; }
+		bool Progress(unsigned &) override { return true; }
         
-        virtual Geometry::Size getsize() const override {
+        Geometry::Size getsize() const override {
             return GetSize();
         }
 

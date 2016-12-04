@@ -61,7 +61,7 @@ namespace Gorgon { namespace Graphics {
 		parent(&parent), Gorgon::Animation::Base(create) { }
 
 		/// Deletes this animation object
-		virtual void DeleteAnimation() override {
+		virtual void DeleteAnimation() const override {
 			delete this;
 		}
         

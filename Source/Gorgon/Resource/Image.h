@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "Base.h"
+#include "AnimationStorage.h"
 #include "../Graphics/Animations.h"
 #include "../Graphics/Texture.h"
 #include "../Containers/Image.h"
@@ -18,7 +19,7 @@ namespace Gorgon { namespace Resource {
 	/// might be released from the image resource. This allows safe destruction of the file tree without destroying
 	/// the necessary information.
 	class Image : 
-		public Base, public Graphics::Bitmap
+		public Graphics::Bitmap, public RectangularAnimationStorage
 	{
 	public:
 		Image() = default;
@@ -66,7 +67,9 @@ namespace Gorgon { namespace Resource {
 
 	protected:
 		virtual ~Image() { }
-		
+
+		virtual Graphics::RectangularAnimationStorage animmoveout() override;
+
 		/// Loads the image from the data stream
 		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);
 		

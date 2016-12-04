@@ -218,16 +218,18 @@ namespace Gorgon {
 		/// This interface marks a class as animation provider
 		class Provider {
 		public:
+			using AnimationType = Base;
+
 			/// Virtual destructor
 			virtual ~Provider() { }
 		
 			/// This function should create a new animation with the given controller
-			virtual const Base &CreateAnimation(Timer &timer) const = 0;
+			virtual Base &CreateAnimation(Timer &timer) const = 0;
 
 			/// This function should create an animation and depending on the create parameter,
 			/// it should create a timer for it. Timer creation is handled by Base class therefore
 			/// only passing this parameter to the constructor is enough.
-			virtual const Base &CreateAnimation(bool create=true) const = 0;
+			virtual Base &CreateAnimation(bool create=true) const = 0;
 		};
 
 		/// This is the base class for all animations. It handles some common tasks and defines
@@ -237,6 +239,11 @@ namespace Gorgon {
 			/// Sets the controller for this animation to the given controller.
 			explicit Base(ControllerBase &controller) {
 				SetController(controller);
+			}
+
+			/// Copies the animation
+			Base(const Base &base) {
+				SetController(base.GetController());
 			}
 
 			/// This constructor creates a new controller depending on the create parameter. Animation has the
@@ -268,10 +275,10 @@ namespace Gorgon {
 			}
 
 			/// Returns whether this animation has a controller
-			bool HasController() const { return controller!=nullptr; }
+			virtual bool HasController() const { return controller!=nullptr; }
 
 			/// Returns the controller of this animation
-			ControllerBase &GetController() const {
+			virtual ControllerBase &GetController() const {
 #ifndef NDEBUG
 				if(!controller) {
 					throw std::runtime_error("Animation does not have a controller");
@@ -281,7 +288,7 @@ namespace Gorgon {
 			}
 			
 			/// Removes the controller of this animation.
-			void RemoveController() {
+			virtual void RemoveController() {
 				if(controller) {
 					controller->Remove(*this);
 				}
@@ -298,7 +305,7 @@ namespace Gorgon {
 			/// Deletes this animation. Please note that some animations are also the animation provider. In these
 			/// cases trying to delete the animation will delete the provider as well. This function should be called
 			/// instead of delete operator to ensure no such problem occurs.
-			virtual void DeleteAnimation() { 
+			virtual void DeleteAnimation() const { 
 				delete this; 
 			}
 

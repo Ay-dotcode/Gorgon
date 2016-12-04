@@ -4,6 +4,7 @@
 
 #include "Drawables.h"
 #include "../Animation.h"
+#include "../Animation/Storage.h"
 
 namespace Gorgon { namespace Graphics { 
 
@@ -21,35 +22,45 @@ namespace Gorgon { namespace Graphics {
 
 	class AnimationProvider : public virtual Gorgon::Animation::Provider {
 	public:
+		using AnimationType = Animation;
+
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
-		virtual const Animation &CreateAnimation(Gorgon::Animation::Timer &timer) const override = 0;
+		virtual Animation &CreateAnimation(Gorgon::Animation::Timer &timer) const override = 0;
 
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
-		virtual const Animation &CreateAnimation(bool create=true) const override = 0;
+		virtual Animation &CreateAnimation(bool create=true) const override = 0;
 	};
 
 	class SizelessAnimationProvider : public virtual Gorgon::Animation::Provider {
 	public:
+		using AnimationType = SizelessAnimation;
+
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
-		virtual const SizelessAnimation &CreateAnimation(Gorgon::Animation::Timer &timer) const override = 0;
+		virtual SizelessAnimation &CreateAnimation(Gorgon::Animation::Timer &timer) const override = 0;
 
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
-		virtual const SizelessAnimation &CreateAnimation(bool create=true) const override = 0;
+		virtual SizelessAnimation &CreateAnimation(bool create=true) const override = 0;
 	};
 
 	class RectangularAnimationProvider : public virtual AnimationProvider {
 	public:
+		using AnimationType = RectangularAnimation;
+
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
-		virtual const RectangularAnimation &CreateAnimation(Gorgon::Animation::Timer &timer) const override = 0;
+		virtual RectangularAnimation &CreateAnimation(Gorgon::Animation::Timer &timer) const override = 0;
 
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
-		virtual const RectangularAnimation &CreateAnimation(bool create=true) const override = 0;
+		virtual RectangularAnimation &CreateAnimation(bool create=true) const override = 0;
 	};
+
+	using AnimationStorage = Gorgon::Animation::basic_Storage<AnimationProvider>;
+	using SizelessAnimationStorage = Gorgon::Animation::basic_Storage<SizelessAnimationProvider>;
+	using RectangularAnimationStorage = Gorgon::Animation::basic_Storage<RectangularAnimationProvider>;
 
 } }

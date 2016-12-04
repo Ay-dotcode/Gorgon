@@ -19,7 +19,7 @@ namespace Gorgon { namespace Graphics {
     }
     
     void PointerStack::Add(PointerType type, const Drawable &image, Geometry::Point hotspot) {
-        auto ptr = new Pointer(image, hotspot);
+        auto ptr = new DrawablePointer(image, hotspot);
         
         Add(type, *ptr);
         pointers[(int)type].owned = true;
