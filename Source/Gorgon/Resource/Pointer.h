@@ -25,15 +25,16 @@ namespace Gorgon { namespace Resource {
     class Pointer : public RectangularAnimationStorage, public Graphics::BitmapPointerProvider {
     public:
         Pointer(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type) : 
-        Graphics::BitmapPointerProvider(anim, hotspot), type(type) {
+        Graphics::BitmapPointerProvider(hotspot), type(type) {
             Add(bmp);
         }
 
         Pointer(Graphics::BitmapAnimationProvider &&anim, Geometry::Point hotspot, Graphics::PointerType type) :
-        Graphics::BitmapPointerProvider(anim, hotspot), type(type), anim(std::move(anim)) {
+        Graphics::BitmapPointerProvider(hotspot), type(type) {
+            dynamic_cast<Graphics::BitmapAnimationProvider&>(*this) = std::move(anim);
         }
         
-        explicit Pointer(Graphics::PointerType type = Graphics::PointerType::None) : Graphics::BitmapPointerProvider(anim),
+        explicit Pointer(Graphics::PointerType type = Graphics::PointerType::None) : 
         type(type) { 
             
         }
@@ -54,6 +55,8 @@ namespace Gorgon { namespace Resource {
             type = value;
         }
         
+        void Prepare() override;
+        
         /// Moves the pointer provider out of resource system. Use Prepare and Discard before calling this function to
         /// avoid data duplication
         Graphics::BitmapPointerProvider MoveOut();
@@ -66,8 +69,6 @@ namespace Gorgon { namespace Resource {
         
     protected:
         Graphics::PointerType type = Graphics::PointerType::Arrow;
-
-		Graphics::BitmapAnimationProvider anim;
 
 		virtual Graphics::RectangularAnimationStorage animmoveout() override;
 

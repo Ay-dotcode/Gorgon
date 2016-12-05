@@ -144,7 +144,7 @@ namespace Gorgon { namespace Graphics {
 
 		basic_AnimatedPointer(const basic_AnimatedPointer &) = delete;
 
-		basic_AnimatedPointer(basic_AnimatedPointer &&other) : Gorgon:Animation::Base(false), anim(other.anim), parent(other.parent) {
+		basic_AnimatedPointer(basic_AnimatedPointer &&other) : A_::AnimationType(other.parent, false), anim(other.anim), parent(other.parent) {
 			other.anim = nullptr;
 		}
 
@@ -190,41 +190,39 @@ namespace Gorgon { namespace Graphics {
     public:
 		using AnimationType = basic_AnimatedPointer<A_>;
 
-		basic_PointerProvider(const A_ &provider, Geometry::Point hotspot = {0,0}, bool owned = false) :
-        provider(provider), hotspot(hotspot), owned(owned) {
+		explicit basic_PointerProvider(Geometry::Point hotspot = {0,0}) :
+        hotspot(hotspot) {
         }
         
         /// Move constructor
 		basic_PointerProvider(basic_PointerProvider &&other) :
-        provider(other.provider), hotspot(other.hotspot), owned(other.owned) {
+        hotspot(other.hotspot), owned(other.owned) {
             other.owned = false;
         }
         
 		basic_PointerProvider(const basic_PointerProvider &) = delete;
         
-        ~basic_PointerProvider() {
-            if(owned)
-                delete &provider;
+        virtual ~basic_PointerProvider() {
         }
 
 		/// Creates a pointer from this provider
 		AnimationType CreatePointer(Gorgon::Animation::Timer &timer) const {
-			return AnimationType(*this, provider.CreateAnimation(timer));
+			return AnimationType(*this, A_::CreateAnimation(timer));
 		}
 
 		/// Creates a pointer from this provider, just a rename for CreateAnimation
 		AnimationType CreatePointer(bool create = true) const {
-			return AnimationType(*this, provider.CreateAnimation(create));
+			return AnimationType(*this, A_::CreateAnimation(create));
 		}
 
 		/// Creates a pointer from this provider
 		AnimationType &CreateAnimation(Gorgon::Animation::Timer &timer) const override {
-			return *new basic_AnimatedPointer<A_>(*this, provider.CreateAnimation(timer));
+			return *new basic_AnimatedPointer<A_>(*this, A_::CreateAnimation(timer));
 		}
 
 		/// Creates a pointer from this provider
 		AnimationType &CreateAnimation(bool create = true) const override {
-			return *new basic_AnimatedPointer<A_>(*this, provider.CreateAnimation(create));
+			return *new basic_AnimatedPointer<A_>(*this, A_::CreateAnimation(create));
 		}
 
         /// Returns the hotspot of the provider
@@ -237,10 +235,7 @@ namespace Gorgon { namespace Graphics {
             hotspot = value;
         }
         
-    protected:
-        /// Provides animation for pointer creation
-        const A_ &provider;
-        
+    protected:        
         /// Hotspot will be transferred to newly created pointers
         Geometry::Point hotspot;
         

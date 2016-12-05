@@ -129,8 +129,8 @@ namespace Gorgon { namespace GL {
 
 	void SetupContext(const Geometry::Size &size) {
 		std::string gl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-		if(String::To<float>(gl_version)<3.0) {
-			OS::DisplayMessage("OpenGL version 3.0 and above is required. Your OpenGL version is "+gl_version);
+		if(String::To<float>(gl_version)<2.09) {
+			OS::DisplayMessage("OpenGL version 2.1 and above is required. Your OpenGL version is "+gl_version);
 			exit(2);
 		}
 

@@ -23,8 +23,7 @@ namespace Gorgon { namespace Resource {
 		return pointer;
 	}*/
     
-    Resource::Pointer* Pointer::LoadResource(std::weak_ptr< Gorgon::Resource::File > file, std::shared_ptr< Gorgon::Resource::Reader > reader, long unsigned int totalsize)
-{
+    Resource::Pointer* Pointer::LoadResource(std::weak_ptr< Gorgon::Resource::File > file, std::shared_ptr< Gorgon::Resource::Reader > reader, long unsigned int totalsize) {
         Pointer *p = new Pointer();
         
 		auto target = reader->Target(totalsize);
@@ -52,15 +51,21 @@ namespace Gorgon { namespace Resource {
 					p->children.Add(obj);
 				}
 			}
+			else {
+				if(!reader->ReadCommonChunk(*p, gid, size)) {
+					Utils::ASSERT_FALSE("Unknown chunk: "+String::From(gid));
+					reader->EatChunk(size);
+				}
+			}
 		}
 
-		p->anim = dynamic_cast<Animation*>(obj)->MoveOut();
+		dynamic_cast<Graphics::BitmapAnimationProvider&>(*p) = dynamic_cast<Animation*>(obj)->MoveOut();
         
         return p;
     }
     
     Graphics::BitmapPointerProvider Pointer::MoveOut() {
-        return Graphics::BitmapPointerProvider(*new Graphics::BitmapAnimationProvider(std::move(*this)), hotspot, true);        
+        return Graphics::BitmapPointerProvider(std::move(*this));
     }
 
 	void Pointer::save(Writer &writer) const {
@@ -70,13 +75,19 @@ namespace Gorgon { namespace Resource {
         writer.WritePoint(hotspot);
         writer.WriteEnum32(type);
         
-        Animation::SaveThis(writer, anim);
+        Animation::SaveThis(writer, dynamic_cast<const Graphics::BitmapAnimationProvider&>(*this));
 
 		writer.WriteEnd(start);
 	}
+	
+	void Pointer::Prepare() {
+        for(auto frame : frames) {
+            frame.GetImage().Prepare();
+        }
+    }
 
 	Graphics::RectangularAnimationStorage Pointer::animmoveout() {
-		Graphics::BitmapPointerProvider &anim = *new Graphics::BitmapPointerProvider(*new Graphics::BitmapAnimationProvider(std::move(*this)), hotspot, true);
+		Graphics::BitmapPointerProvider &anim = *new Graphics::BitmapPointerProvider(std::move(*this));
 
 		return Graphics::RectangularAnimationStorage(anim, true);
 	}

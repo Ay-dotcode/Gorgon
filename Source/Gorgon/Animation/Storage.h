@@ -24,8 +24,8 @@ namespace Gorgon { namespace Animation {
 		basic_Storage(const basic_Storage &) = delete;
 
 		/// Move constructor
-		basic_Storage(basic_Storage &&other) : anim(other.anim), owner(other.owner) {
-			other.owner = false;
+		basic_Storage(basic_Storage &&other) : anim(other.anim), isowned(other.isowned) {
+			other.isowned = false;
 			other.anim  = nullptr;
 		}
 
@@ -35,9 +35,9 @@ namespace Gorgon { namespace Animation {
 		/// Move assignment
 		basic_Storage &operator =(basic_Storage &&other) {
 			RemoveAnimation();
-			owner = other.owner;
+			isowned = other.isowned;
 			anim = other.anim;
-			other.owner = false;
+			other.isowned = false;
 			other.anim = nullptr;
 		}
 
@@ -60,17 +60,17 @@ namespace Gorgon { namespace Animation {
 			RemoveAnimation();
 
 			anim = value;
-			this->owner = owner;
+			this->isowned = owner;
 		}
 
 		/// Removes the animation stored in the container, if the container owns
 		/// the animation, it will be destroyed. Use Release to release resource
 		/// without destroying it
 		void RemoveAnimation() {
-			if(owner)
+			if(isowned)
 				delete anim;
 
-			owner = false;
+			isowned = false;
 			anim = nullptr;
 		}
 
@@ -78,7 +78,7 @@ namespace Gorgon { namespace Animation {
 		const A_ *Release() {
 			auto temp = anim;
 			
-			owned = false;
+			isowned = false;
 
 			RemoveAnimation();
 
