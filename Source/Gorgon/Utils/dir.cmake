@@ -1,16 +1,20 @@
 SET(Local
+    Console.h
 	Assert.h
 	Logging.h
 )
 
 
+
 IF(${WIN32})
 	LIST(APPEND Local
 		Assert_Win32.cpp
+		Console_Win32.cpp
 	)
 ELSE()
 	LIST(APPEND Local
 		Assert_Linux.cpp
+		Console_Nix.cpp
 	)
 ENDIF()
 

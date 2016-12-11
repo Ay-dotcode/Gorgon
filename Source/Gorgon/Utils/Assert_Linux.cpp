@@ -14,6 +14,8 @@ namespace Gorgon { namespace Utils {
 		
 		char **messages = (char **)NULL;
 		messages = backtrace_symbols(trace, traced);
+
+		auto console = StdConsole();
 		
 		auto report=[&](int i) {
 			std::string message=messages[i];
@@ -66,32 +68,32 @@ namespace Gorgon { namespace Utils {
 				dir=Filesystem::GetFilename(dir);
 				filename=Filesystem::GetFilename(filename);
 				
-				Console::SetColor(Console::Magenta);
+				console.SetColor(Console::Magenta);
 				if((i-skip-1)==1) {
-					Console::SetBold();
+					console.SetBold();
 				}
 				std::cout<<"  ["<<(i-skip-1)<<"] ";
-				Console::SetBold(false);
-				Console::SetColor(Console::Default);
+				console.SetBold(false);
+				console.SetColor(Console::Default);
 				if(!demangled.empty()) {
 					std::cout<<"In function ";
-					Console::SetColor(Console::Yellow);
+					console.SetColor(Console::Yellow);
 					std::cout<<demangled<<" ";
 				}
 				else if(!name.empty()) {
 					std::cout<<"In function ";
-					Console::SetColor(Console::Yellow);
+					console.SetColor(Console::Yellow);
 					std::cout<<name<<" ";
 				}
-				Console::SetColor(Console::Default);
+				console.SetColor(Console::Default);
 				std::cout<<"at ";
 				if((i-skip-1)==1) {
-					Console::SetColor(Console::Red);
+					console.SetColor(Console::Red);
 				}
 				std::cout<<"..."<<dir<<"/"<<filename;
-				Console::SetBold();
+				console.SetBold();
 				std::cout<<":"<<linenum<<std::endl;
-				Console::Reset();
+				console.Reset();
 			}
 			else {
 				errno=0;

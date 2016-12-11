@@ -495,6 +495,23 @@
 				<li   f d> CreateAnimation
 			</li></class>
 			
+			<class name="TextureAnimation">
+				<li   f d> Add / Insert / Own
+				<li   f d> begin / end
+				<li   f d> Clear
+				<li   f d> CreateAnimation
+				<li   f d> Duplicate
+				<li   f d> FrameAt
+				<li   f d> FrameIndexAt
+				<li   f d> GetCount
+				<li   f d> GetDuration (total, frame)
+				<li   f d> GetSize
+				<li   f d> GetImageAt
+				<li   f d> ReleaseAll
+				<li   f d> Remove
+				<li   f d> StartOf
+			</li></class>
+			
 			<class name="TextureTarget">
 				<li     d> DrawMode (partial)
 				<li   f d> Draw (using vertex coords, using vertex and texture coords)
@@ -614,7 +631,23 @@
 	</module>
 
 	<module name="Input">
-
+		<class name="File"> </class>
+		<class name="Blob"> </class>
+		<class name="Data"> </class>
+		<class name="DataTable"> </class>
+		<class name="DataItem"> </class>
+		<class name="Folder"> </class>
+		<class name="Font"> </class>
+		<class name="FontTheme ?"> </class>
+		<class name="Image"> </class>
+		<class name="Pointer"> </class>
+		<class name="Sound"> </class>
+		<class name="Link"> </class>
+		<class name="Line"> </class>
+		<class name="Rectange"> </class>
+		<class name="Region"> </class>
+		<class name="SizableObject"> </class>
+		<class name="Placeholder"> </class>
 	</module>
 
 </section>
@@ -867,7 +900,7 @@
 				<li   f d> GetTotalSize
 				<li   f d> GetMode
 				<li   f d> GetBytesPerPixel
-				<li   f  > begin/end ??
+				<li   f d> ForeachPixel
 			</li></class>
 			
 			<class name="Wave">
@@ -893,7 +926,7 @@
 				<li   f d> operator ()
 				<li   f d> Get
 				<li   f d> GetSize
-				<li   f  > GetTotalSize
+				<li   f d> GetBytes
 				<li   f d> GetChannelCount
 				<li   f d> GetSampleRate
 				<li   f d> SetSampleRate
@@ -1189,10 +1222,9 @@
 		<li   f  > Register (free, member function)
 		<li   f  > Unregister
 		<li   f  > operator ()
-	</li></module>
+	</li></module><br/>
 
 	<module name="Console">
-		<namespace name="String">
 			<li   f d> IsColorSupported
 			<li   f d> IsStyleSupported
 			<li   f d> SetColor
@@ -1202,12 +1234,12 @@
 			<li   f d> SetUnderline
 			<li   f d> SetItalic
 			<li   f d> SetNegative
-			<li   f  > GetWidth
-			<li   f  > GotoXY
-			<li   f  > EnableCaret
-			<li   f  > DisableCaret
+			<li   f d> GetWidth
+			<li   f d> GotoXY
+			<li   f d> EnableCaret
+			<li   f d> DisableCaret
 		</li></namespace>
-	</module>
+	</module><br/>
 
 	<module name="String">
 		<namespace name="String">

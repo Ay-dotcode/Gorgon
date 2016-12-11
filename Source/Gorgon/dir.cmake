@@ -1,7 +1,6 @@
 SET(Local
 	Animation
 	Containers
-	Console.h
 	Encoding
 	External
 	Filesystem
@@ -47,12 +46,6 @@ ENDIF()
 IF(${SCRIPTING})
 	LIST(APPEND Local
 		Scripting
-	)
-ENDIF()
-
-IF(${WIN32})
-	LIST(APPEND Local
-		Console_Win32.cpp
 	)
 ENDIF()
 

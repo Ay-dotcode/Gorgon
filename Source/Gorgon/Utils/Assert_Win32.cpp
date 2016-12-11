@@ -1602,28 +1602,30 @@ namespace Gorgon {
 				}
 				dir = Filesystem::GetFilename(dir);
 				filename = Filesystem::GetFilename(filename);
+
+				auto console = StdConsole();
 				
-				Console::SetColor(Console::Magenta);
+				console.SetColor(Console::Magenta);
 				if((i-skip-1)==1) {
-					Console::SetBold();
+					console.SetBold();
 				}
 				std::cout<<"  ["<<(i-skip-1)<<"] ";
-				Console::SetBold(false);
-				Console::SetColor(Console::Default);
+				console.SetBold(false);
+				console.SetColor(Console::Default);
 				if(walker.Stack[i].function!="") {
 					std::cout << "  In function ";
-					Console::SetColor(Console::Yellow);
+					console.SetColor(Console::Yellow);
 					std::cout << walker.Stack[i].function<<" ";
 				}
-				Console::SetColor(Console::Default);
+				console.SetColor(Console::Default);
 				std::cout << "at ";
 				if((i-skip-1)==1) {
-					Console::SetColor(Console::Red);
+					console.SetColor(Console::Red);
 				}
 				std::cout << "..." << dir << "/" << filename;
-				Console::SetBold();
+				console.SetBold();
 				std::cout << ":" << walker.Stack[i].line << std::endl;
-				Console::Reset();
+				console.Reset();
 			};
 			
 #ifdef TEST

@@ -7,7 +7,7 @@
 
 #include "../String.h"
 #include "../OS.h"
-#include "../Console.h"
+#include "../Utils/Console.h"
 #include "Compiler.h"
 
 namespace Gorgon {
@@ -59,32 +59,32 @@ namespace Gorgon {
 			
 			
 			~CrashHandler() {
-				Console::SetColor(Console::Red);
-				Console::SetBold();
+				//Console::SetColor(Console::Red);
+				//Console::SetBold();
 				
 				std::cout<<"Assertation failed: ";
-				Console::SetColor(Console::Default);
+				//Console::SetColor(Console::Default);
 				std::cout<<message<<std::endl;
-				Console::Reset();
+				//Console::Reset();
 				
 				if(show_original) {
 					std::cout<<"  "<<original;
-					Console::SetColor(Console::Red);
+					//Console::SetColor(Console::Red);
 					std::cout<<" evaluates to false"<<std::endl;
-					Console::Reset();
+					//Console::Reset();
 				}
 				
 				if(show_expanded) {
-					Console::SetColor(Console::Green);
+					//Console::SetColor(Console::Green);
 					std::cout<<"  "<<expanded;
-					Console::SetColor(Console::Red);
+					//Console::SetColor(Console::Red);
 					std::cout<<"  ==>  FALSE"<<std::endl;
-					Console::Reset();
+					//Console::Reset();
 				}
 
 				Backtrace();
 				
-				Console::Reset();
+				//Console::Reset();
 				if(!dumponly) {
 #ifdef TEST
 #pragma GCC diagnostic push

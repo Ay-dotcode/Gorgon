@@ -6,7 +6,7 @@
 #include <mutex>
 
 #include "../Time.h"
-#include "../Console.h"
+#include "../Utils/Console.h"
 
 namespace Gorgon { namespace Utils {
 	
@@ -67,7 +67,7 @@ namespace Gorgon { namespace Utils {
 				(*parent->stream)<<std::endl;
 
                 if(parent->IsColorFunctional())
-                    Console::Reset(*parent->stream);
+                    parent->reset(*parent->stream);
             }
 			
 			using endl_t = decltype(&std::endl<char, std::char_traits<char>>);
@@ -137,7 +137,7 @@ namespace Gorgon { namespace Utils {
 			CleanUp();
 			stream=&std::cout;
 			owner=false;
-            colorsupported = Console::IsColorSupported();
+            console = StdConsole();
 		}
 
 		/// Initializes the logger to direct its input to the given stream. 
@@ -168,7 +168,7 @@ namespace Gorgon { namespace Utils {
 			}
 			
 			stream    = nullptr;
-            colorsupported = false;
+            console   = Console();
 		}
 		
 		/// Sets the width to break lines from. Set to 0 to disable.
@@ -177,7 +177,7 @@ namespace Gorgon { namespace Utils {
 		}
 		
 		/// Streams out the given value to the underlying stream. This function will automatically 
-		/// add requested information in front. Always cascade entries. Everytime a new `logger << ...`
+		/// add requested information in front. Always cascade entries. Every time a new `logger << ...`
 		/// is called, header information will be printed out. You may use std::endl in your logs,
 		/// but a new line will be added for all entries. An extra empty line will be inserted for
 		/// multiline entries. Do not use "\n" as it will not be detected. Message state is used
@@ -188,7 +188,7 @@ namespace Gorgon { namespace Utils {
         }
         
 		/// Streams out the given value to the underlying stream. This function will automatically 
-		/// add requested information in front. Always cascade entries. Everytime a new `logger << ...`
+		/// add requested information in front. Always cascade entries. Every time a new `logger << ...`
 		/// is called, header information will be printed out. You may use std::endl in your logs,
 		/// but a new line will be added for all entries. An extra empty line will be inserted for
 		/// multiline entries. Do not use "\n" as it will not be detected. ,
@@ -202,7 +202,7 @@ namespace Gorgon { namespace Utils {
 			auto &stream = *this->stream;
 			
 			int headw = marktime * 8 + markdate * 10 + (markdate && marktime) * 1 + ((markdate || marktime) && !section.empty()) * 1 + section.size();
-// 			
+ 			
 			if(headw) headw += 2;
 
 			helper h;
@@ -224,7 +224,7 @@ namespace Gorgon { namespace Utils {
 				
 				if(markdate) {
                     if(IsColorFunctional())
-                        Console::SetColor(Console::Color::Cyan, stream);
+						console.SetColor(Console::Color::Cyan);
                         
                     stream<<dt.ISODate();
 					
@@ -239,10 +239,10 @@ namespace Gorgon { namespace Utils {
 			}
 			
             if(IsColorFunctional()) {
-                Console::Reset(stream);
-                Console::SetBold(true, stream);
+                reset(stream);
+				console.SetBold(true);
                 if(state != Message) {
-                    Console::SetColor(state == Error ? Console::Color::Red : Console::Color::Green, stream);
+					console.SetColor(state == Error ? Console::Color::Red : Console::Color::Green);
                 }
             }
             
@@ -251,11 +251,11 @@ namespace Gorgon { namespace Utils {
 			if(headw) stream<<"  ";
 
             if(IsColorFunctional())
-                Console::Reset(stream);
+                reset(stream);
             
             if(state != Message) {
                 if(IsColorFunctional()) {
-                    Console::SetColor(state == Error ? Console::Color::Red : Console::Color::Green, stream);
+                    console.SetColor(state == Error ? Console::Color::Red : Console::Color::Green);
                 }
                 else {
                     stream << (state == Error ? "Error! : " : "Success: ");
@@ -305,11 +305,6 @@ namespace Gorgon { namespace Utils {
             color = true;
         }
         
-        /// Forces logger to use color even if it is not supported
-        void ForceColor() {
-            color = true;
-            colorsupported = true;
-        }
         
         /// Disable color output
         void DisableColor() {
@@ -331,18 +326,26 @@ namespace Gorgon { namespace Utils {
         
         /// Returns whether the color output is currently working.
         bool IsColorFunctional() const {
-            return color && colorsupported;
+            return color && hasconsole && console.IsColorSupported();
         }
         
         
 	protected:
+        
+        void reset(std::ostream &stream) {
+			if(console)
+				console.Reset();
+        }
+
+		Console console;
+        
 		std::ostream *stream  = nullptr;
 		bool owner            = false;
         
 		bool marktime         = true;
 		bool markdate         = true;
         
-        bool colorsupported   = false;
+        bool hasconsole		  = false;
         bool color            = true;
 		int  width            = 0;
 		

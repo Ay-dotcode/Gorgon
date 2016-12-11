@@ -114,13 +114,15 @@ TEST_CASE("Scripts", "[scripting]") {
 		scriptdir="../Testing/Source/Unit/Scripts";
 	}
 	Gorgon::Filesystem::Iterator dir(scriptdir);
+
+	auto console = Gorgon::Utils::StdConsole();
 		
 	for( ; dir.IsValid(); dir.Next()) {
 		std::ifstream file(scriptdir+"/"+dir.Current());
-		Gorgon::Console::SetBold();
-		Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+		console.SetBold();
+		console.SetColor(Gorgon::Utils::Console::Yellow);
 		std::cout<<"File: "<<dir.Current()<<std::endl;
-		Gorgon::Console::Reset();
+		console.Reset();
 		std::string line;
 		bool outputmode=false;
 		std::string code;
@@ -149,17 +151,17 @@ TEST_CASE("Scripts", "[scripting]") {
 			vm.Run();
 		}
 		catch(const Exception &ex) {
-			Gorgon::Console::SetBold();
-			Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+			console.SetBold();
+			console.SetColor(Gorgon::Utils::Console::Yellow);
 			std::cout<<"ERROR: "<<dir.Current()<<std::endl;
-			Gorgon::Console::Reset();
+			console.Reset();
 			
-			Gorgon::Console::SetBold();
+			console.SetBold();
 			std::cout<<"At line "<<ex.GetLine();
-			Gorgon::Console::SetBold(false);
-			Gorgon::Console::SetColor(Gorgon::Console::Red);
+			console.SetBold(false);
+			console.SetColor(Gorgon::Utils::Console::Red);
 			std::cout<<": "<<ex.GetType();
-			Gorgon::Console::SetColor(Gorgon::Console::Default);
+			console.SetColor(Gorgon::Utils::Console::Default);
 			std::cout<<": "<<ex.GetMessage()<<std::endl;
 			if(ex.GetDetails()!="") {
 				std::cout<<" > "<<ex.GetDetails()<<std::endl;

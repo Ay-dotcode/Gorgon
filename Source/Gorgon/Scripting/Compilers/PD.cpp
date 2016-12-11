@@ -14,7 +14,7 @@
 #include "../Runtime.h"
 
 #ifndef _NDEBUG
-#	include "../../Console.h"
+#	include "../../Utils/Console.h"
 #endif
 
 #pragma warning(disable:4018)
@@ -422,10 +422,10 @@ namespace Compilers {
 				}
 				
 #ifndef _NDEBUG
-				Gorgon::Console::SetColor(Gorgon::Console::Yellow);
-				Gorgon::Console::SetBold();
+				//Gorgon::Console::SetColor(Gorgon::Console::Yellow);
+				//Gorgon::Console::SetBold();
 				std::cout << String::From(token.type) << ": ";
-				Gorgon::Console::SetBold(false);
+				//Gorgon::Console::SetBold(false);
 				std::cout << token.repr << std::endl;
 				std::cout << input << std::endl;
 				for(int j = 0; j < index; j++) {

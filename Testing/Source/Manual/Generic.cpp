@@ -4,6 +4,7 @@
 #include <Gorgon/Window.h>
 #include <Gorgon/WindowManager.h>
 #include <Gorgon/Main.h>
+#include <Gorgon/Utils/Console.h>
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/BitmapFont.h>
@@ -187,6 +188,8 @@ int main() {
     
 	Window wind({800, 600}, "windowtest");
 	Graphics::Initialize();
+    
+    wind.ClosingEvent.Register([]{ exit(0); });
 
 	Graphics::Layer l;
 	wind.Add(l);
@@ -204,6 +207,18 @@ int main() {
         WM::Icon ico(icon.GetData());
         wind.SetIcon(ico);
     }
+    
+	auto console = Gorgon::Utils::StdConsole();
+    std::cout<<console.GetSize()<<std::endl;
+	console.GotoXY({20,20});
+	//console.SetColor({255, 150, 80});
+	console.SetBackground({80,20,0});
+    console.ClearScreen();
+	console.SetBold();
+	console.ShowCaret();
+	//console.HideCaret();
+	std::cout<<"XXX"<<std::endl;
+	//console.Reset();
 
 	Graphics::Bitmap bgimage({50, 50}, Graphics::ColorMode::Grayscale);
 
