@@ -3,7 +3,15 @@
 #include "Graphics/Color.h"
 
 namespace Gorgon {
-	
+
+
+	std::vector<Geometry::Transform3D> prev_Transform;
+	std::vector<Geometry::Bounds>      prev_Clip;
+
+	extern Geometry::Transform3D Transform;
+	extern Graphics::RGBAf		  LayerColor;
+	extern Geometry::Bounds      Clip;
+
 	void Layer::Add(Layer &layer) {
 		if(layer.parent)
 			layer.parent->Remove(layer);
@@ -33,31 +41,20 @@ namespace Gorgon {
 	}
 
 	void Layer::Render() {
-		auto prev = Transform;
-
-		Transform.Translate((float)bounds.Left, (float)bounds.Top);
+		dotransformandclip();
 
 		for(auto &l : children) {
 			l.Render();
 		}
 
-		Transform = prev;
+		reverttransformandclip();
 	}
 
 	bool Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {
-		auto prev_t = Transform;
-        auto prev_c = Clip;
 
 		bool ret = false;
 
-		Transform.Translate(-(float)bounds.Left, -(float)bounds.Top);
-        Clip -= Geometry::Size(bounds.Left, bounds.Top);
-        
-        if(bounds.Width() && bounds.Width() < Clip.Width)
-            Clip.Width = bounds.Width();
-        
-        if(bounds.Height() && bounds.Height() < Clip.Height)   
-            Clip.Height = bounds.Height();
+		dotransformandclip(true);
 
         if(event == Input::Mouse::EventType::Out) {
             throw std::logic_error("Regular layers cannot handle mouse events.");
@@ -74,10 +71,47 @@ namespace Gorgon {
             }
         }
 
-		Transform = prev_t;
-        Clip = prev_c;
+		reverttransformandclip();
 
 		return ret;
+	}
+
+	void Layer::dotransformandclip(bool inverse) {
+		prev_Transform.push_back(Transform);
+		prev_Clip.push_back(Clip);
+
+		if(inverse)
+			Transform.Translate(-(Gorgon::Float)bounds.Left, -(Gorgon::Float)bounds.Top, 0);
+		else
+			Transform.Translate((Gorgon::Float)bounds.Left, (Gorgon::Float)bounds.Top, 0);
+
+		if(bounds.Left > 0)
+			Clip.Left -= bounds.Left;
+
+		if(bounds.Top > 0)
+			Clip.Top  -= bounds.Top;
+
+		int ebw = bounds.Width();
+		if(bounds.Width() && bounds.Left < 0)
+			ebw += bounds.Left;
+
+		int ebh = bounds.Height();
+		if(bounds.Height() && bounds.Top < 0)
+			ebh += bounds.Top;
+
+		if(bounds.Width() && ebw < Clip.Width())
+			Clip.SetWidth(ebw);
+
+		if(bounds.Height() && ebh < Clip.Height())
+			Clip.SetHeight(ebh);
+	}
+
+	void Layer::reverttransformandclip() {
+		Transform = prev_Transform.back();
+		Clip = prev_Clip.back();
+
+		prev_Transform.pop_back();
+		prev_Clip.pop_back();
 	}
 
     Layer::~Layer() {
@@ -91,7 +125,7 @@ namespace Gorgon {
 
 	Geometry::Transform3D Transform;
 	Graphics::RGBAf		  LayerColor;
-	Geometry::Size        Clip;
+	Geometry::Bounds      Clip;
 
 	const Geometry::Bounds Layer::EntireRegion = {0,0,0,0};
 

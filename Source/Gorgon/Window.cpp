@@ -8,6 +8,7 @@
 namespace Gorgon {
 
 	extern Graphics::RGBAf LayerColor;
+	Geometry::Size ScreenSize;
 	
 	void Window::activatecontext() {
 		WindowManager::internal::switchcontext(*data);
@@ -18,7 +19,8 @@ namespace Gorgon {
 		ResetTransform(GetSize());
 		LayerColor = Graphics::RGBAf(1.f);
 		GL::Clear();
-
+		ScreenSize = bounds.GetSize();
+		Clip = bounds;
 
 		Layer::Render();
 
@@ -29,7 +31,7 @@ namespace Gorgon {
         pressed = pressed | button;
         
 		Transform = {};
-        Clip = bounds.GetSize();
+        Clip = bounds;
 
 		mousedownlocation = location;
         
@@ -41,7 +43,7 @@ namespace Gorgon {
         pressed = pressed & ~button;
         
 		Transform = {};
-        Clip = bounds.GetSize();
+        Clip = bounds;
         
         if(down) {
             down[0].propagate_mouseevent(Input::Mouse::EventType::Up, location, button, 0, down);
@@ -58,7 +60,7 @@ namespace Gorgon {
 	
 	void Window::mouse_event(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount) {
 		Transform = {};
-        Clip = bounds.GetSize();
+        Clip = bounds;
 
         MouseHandler handler;
         Layer::propagate_mouseevent(event, location, button, amount, handler);
@@ -73,7 +75,7 @@ namespace Gorgon {
         }
         
 		Transform = {};
-        Clip = bounds.GetSize();
+        Clip = bounds;
         
         MouseHandler newover;
         Layer::propagate_mouseevent(Input::Mouse::EventType::OverCheck, mouselocation, Input::Mouse::Button::None, 0, newover);

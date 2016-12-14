@@ -133,6 +133,23 @@ namespace Gorgon { namespace Graphics {
 	}
 	/// @endcond
 
+	/**
+	 * This layer allows drawing texture images on. Any graphics that are drawn over a layer stays there unless
+	 * Clear function is called. This allows static layers to be drawn only once. Layers stack, and child layers
+	 * are drawn on top of parent. Clearing parent layer will not clear child layers.
+	 * 
+	 * It is possible to draw surfaces without a texture to this layer. 
+	 * Graphics clipping is optional and disabled by default. This means any texture falling outside the layer will
+	 * still be visible. Use EnableClipping to change this behavior. Additionally, this layer allows tinting the 
+	 * textures given to it. Use SetTintColor to change the tinting color. Tint color is multiplicatively effective
+	 * to the underlying layers. This means if you set tint color of a layer, you don't need to set it separately for
+	 * its children. It is better to use Draw functions of the images or animations instead of Draw functions of the 
+	 * layer. 
+	 *
+	 * #### Drawing modes
+	 * Currently only Normal drawing mode is supported. There will be at least two more drawing mode to control
+	 * alpha source.
+	 */
 	class Layer : public Gorgon::Layer, public Graphics::TextureTarget {
 	public:
 		
@@ -182,18 +199,21 @@ namespace Gorgon { namespace Graphics {
 
 		using TextureTarget::Draw;
 
+		/// Prefer using Draw functions of image or animations
 		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
 
 			surfaces.emplace_back(image, p1, p2, p3, p4, color);
 		}
 
+		/// Prefer using Draw functions of image or animations
 		virtual void Draw(const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
 
 			surfaces.emplace_back(p1, p2, p3, p4, color);
 		}
 
+		/// Prefer using Draw functions of image or animations
 		virtual void Draw(
 			const TextureSource &image, 
 			const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
@@ -204,164 +224,55 @@ namespace Gorgon { namespace Graphics {
 			surfaces.emplace_back(image, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color);
 		}
 
+		/// Prefer using Draw functions of image or animations
 		virtual void Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectanglef &location, RGBAf color = RGBAf(1.f)) override;
 
 		virtual void Clear() override {
 			surfaces.clear();
 		}
 
+		/// Render this layer to the GL. This function is used internally and not necessary to be called
 		virtual void Render() override;
 
+		///Get current drawing mode. See Layer page to see available drawing modes
 		virtual DrawMode GetDrawMode() const override { return mode; }
 
+		/// Change current drawing mode. See Layer page to see available drawing modes
 		virtual void SetDrawMode(DrawMode mode) override { this->mode=mode; }
 		
+		/// Changes the tint color of the layer, every image pixel will be multiplied by this color
 		virtual void SetTintColor(RGBAf color) { this->color = color; }
 		
+		/// Returns the tint color of the layer, every image pixel will be multiplied by this color
 		virtual RGBAf GetTintColor() const { return color; }
 
 		virtual Geometry::Size GetTargetSize() const override { return Gorgon::Layer::GetEffectiveBounds().GetSize(); }
+
+		/// Enables graphics clipping from the visible borders of the layer
+		void EnableClipping() {
+			clippingenabled = true;
+		}
+
+		/// Disables graphics clipping
+		void DisableClipping() {
+			clippingenabled = false;
+		}
+
+		/// Returns if the clipping is enabled
+		 bool IsClippingEnabled() const {
+			return clippingenabled;
+		}
 
 		using Gorgon::Layer::GetSize;
 
 	private:
 		std::vector<internal::Surface> surfaces;
 
+		bool clippingenabled = false;
+
 		DrawMode mode;
         RGBAf color = RGBAf(1.f);
 	};
 	 
-	class ColorizableLayer {
-
-	};
 
 } }
-
-#ifdef aaaaa
-
-#include "GGE.h"
-#include "Layer.h"
-#include "../Utils/PAClassList.h"
-#include "Graphics.h"
-#include "GraphicTargets2D.h"
-
-namespace gge { namespace graphics {
-	////_private
-	struct ColorizableSurface : public BasicSurface {
-		RGBfloat Color; 
-	};
-
-	////_private
-	struct RawSurface : public BasicSurface {
-		Byte *Data;
-		ColorMode::Type Mode;
-		int Width;
-		int Height;
-	};
-
-	////This layer is a 2D graphics target and also has colorization support
-	class Colorizable2DLayer : public ColorizableImageTarget2D, public LayerBase {
-	public:
-		////Whether or not enable clipping
-		bool ClippingEnabled;
-		BasicSurface::DrawMode DrawMode;
-		////Default constructor to initialize variables
-
-		Colorizable2DLayer() : LayerBase() { init(); }
-
-		Colorizable2DLayer(const utils::Bounds &b) : LayerBase(b) { init(); }
-
-		Colorizable2DLayer(int L, int T, int R, int B) : LayerBase(L,T,R,B) { init(); }
-
-		Colorizable2DLayer(int X,int Y) : LayerBase(X,Y) { init(); }
-
-		Colorizable2DLayer(const utils::Point &p) : LayerBase(p) { init(); }
-
-		void init() {
-			Ambient=RGBint(0xffffffff);
-			CurrentColor=RGBint(0xffffffff);
-			IsVisible=true;
-			ClippingEnabled=false;
-			DrawMode=BasicSurface::Normal;
-		}
-
-		////This list contains surfaces to be drawn
-		PAClassList<ColorizableSurface> Surfaces;
-
-		////Draws a simple image to the screen.
-		/// In this draw function every corner can be specified
-		/// thus various transformations can be made
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		///@X1		: top-left corner
-		///@Y1		: top-left corner
-		///@X2		: top-right corner
-		///@Y2		: top-right corner
-		///@X3		: bottom-right corner
-		///@Y3		: bottom-right corner
-		///@X4		: bottom-left corner
-		///@Y4		: bottom-left corner
-		virtual void Draw(const GLTexture *Image,float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4);
-
-		virtual void Draw(const GLTexture *Image,float X1,float Y1,float X2,float Y2,float X3,float Y3,float X4,float Y4, float S1,float U1, float S2,float U2,float S3,float U3,float S4,float U4);
-
-		virtual void Draw(const GLTexture *Image, int X, int Y, int W, int H) { Draw(Image, (float)X,(float)Y, (float)X+W,(float)Y, (float)X+W,(float)Y+H, (float)X,(float)Y+H); }
-
-		virtual void Draw(const GLTexture *Image, Tiling2D::Type Tiling, int X, int Y, int W, int H) {
-			switch(Tiling) {
-			case Tiling2D::None:
-				Draw(Image,X,Y, W,H);
-				break;
-			case Tiling2D::Horizontal:
-				DrawHTiled(Image,X,Y, W,H);
-				break;
-			case Tiling2D::Vertical:
-				DrawVTiled(Image,X,Y, W,H);
-				break;
-			case Tiling2D::Both:
-				DrawTiled(Image,X,Y, W,H);
-				break;
-			}
-		}
-
-		////Draws a tiled image to the screen
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		void DrawTiled(const GLTexture *Image,int X,int Y,int W,int H);
-		////Draws a horizontally tiled image to the screen
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		void DrawHTiled(const GLTexture *Image,int X,int Y,int W,int H);
-		////Draws a vertically tiled image to the screen
-		///@Image	: image texture to be drawn, this can be obtained
-		/// using generate texture function
-		///@W		: the width of the image to be drawn
-		/// if it is more than the size of the image
-		void DrawVTiled(const GLTexture *Image,int X,int Y,int W,int H);
-
-
-
-		////Renders the current layer, default handling is to pass
-		/// the request to the sub-layers
-		virtual void Render();
-		virtual void Clear() { Surfaces.Clear(); }
-
-
-		virtual int GetWidth() const { return BoundingBox.Width(); }
-		virtual int GetHeight() const { return BoundingBox.Height(); }
-
-		RGBint Ambient;
-
-		virtual void SetCurrentColor(RGBfloat color) { CurrentColor=color; }
-		virtual RGBint GetCurrentColor() { return CurrentColor; }
-
-		virtual BasicSurface::DrawMode GetDrawMode() const { return DrawMode; }
-		virtual void SetDrawMode(BasicSurface::DrawMode mode) { DrawMode=mode; }
-
-	protected:
-		RGBfloat CurrentColor;
-	};
-
-} }
-
-#endif

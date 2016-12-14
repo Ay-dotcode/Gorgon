@@ -193,6 +193,8 @@ int main() {
 
 	Graphics::Layer l;
 	wind.Add(l);
+	l.Resize(800,150);
+	l.EnableClipping();
 
 	Graphics::Bitmap img;
 	if(!img.Import("test.png")) {

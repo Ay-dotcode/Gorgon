@@ -16,38 +16,28 @@ namespace Gorgon { namespace Input {
     
 	bool Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {   
         if(event == Input::Mouse::EventType::OverCheck) {
-            auto prev_t = Transform;
-            
-            Transform.Translate(-(float)bounds.Left, -(float)bounds.Top);
+			dotransformandclip(true);
             
             mytransform = Transform;
-            Transform = prev_t;
+            
+			reverttransformandclip();
         }
 
 		auto curlocation = mytransform * location;
         
         if(needsclip(event)) {
-            auto prev_c = Clip;
-            
-            Clip -= Geometry::Size(bounds.Left, bounds.Top);
-            
-            if(bounds.Width() && bounds.Width() < Clip.Width)
-                Clip.Width = bounds.Width();
-            
-            if(bounds.Height() && bounds.Height() < Clip.Height)   
-                Clip.Height = bounds.Height();
-            
+			dotransformandclip(true);
+
             bool out = false;
             if(
                 curlocation.X < 0 || 
                 curlocation.Y < 0 || 
-                curlocation.X >= Clip.Width || 
-                curlocation.Y >= Clip.Height
+                curlocation.X >= Clip.Width() || 
+                curlocation.Y >= Clip.Height()
             )
                 out = true;
                 
-            
-            Clip = prev_c;
+			reverttransformandclip();
             
             if(out) return false;
         }

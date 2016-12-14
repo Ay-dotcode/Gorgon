@@ -4,6 +4,7 @@
 
 namespace Gorgon { 
 	extern Graphics::RGBAf LayerColor;
+	extern Geometry::Size ScreenSize;
 namespace Graphics {
 
 	void Layer::Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectanglef &location, RGBAf color /*= RGBAf(1.f)*/) {
@@ -50,7 +51,7 @@ namespace Graphics {
 			}
 		}
 		else {
-			Utils::NotImplemented();
+			Utils::NotImplemented("Tiled atlas rendering");
 		}
 	}
 
@@ -59,12 +60,19 @@ namespace Graphics {
 
 		if(!isvisible) return;
 
-		auto prev = Transform;
-		auto prevcol = LayerColor;
-
+		auto prev_col = LayerColor;
 		LayerColor *= color;
 
-		Transform.Translate((Gorgon::Float)bounds.Left, (Gorgon::Float)bounds.Top, 0);
+		dotransformandclip();
+
+		bool isclipset = false;
+
+		if(clippingenabled) {
+			isclipset = glIsEnabled(GL_SCISSOR_TEST);
+			glEnable(GL_SCISSOR_TEST);
+
+			glScissor(Clip.Left, (ScreenSize.Height-Clip.Top)-Clip.Height(), Clip.Width(), Clip.Height());
+		}
 
 		ActivateQuadVertices();
 		for(auto &surface : surfaces) {            
@@ -98,8 +106,13 @@ namespace Graphics {
 			l.Render();
 		}
 
-		Transform = prev;
-		LayerColor = prevcol;
+		if(clippingenabled) {
+			if(!isclipset)
+				glDisable(GL_SCISSOR_TEST);
+		}
+
+		reverttransformandclip();
+		LayerColor = prev_col;
 	}
 
 } }

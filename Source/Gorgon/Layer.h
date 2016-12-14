@@ -14,7 +14,7 @@ namespace Gorgon {
 	extern Geometry::Transform3D Transform;
     
     /// Current clipping size, for mouse events
-    extern Geometry::Size        Clip;
+    extern Geometry::Bounds        Clip;
     
     class MouseHandler {
     public:
@@ -182,6 +182,18 @@ namespace Gorgon {
 			
 			return *parent;
 		}
+
+		const Layer &GetTopLevel() const {
+			if(!parent) return *this;
+
+			return parent->GetTopLevel();
+		}
+
+		Layer &GetTopLevel() {
+			if(!parent) return *this;
+
+			return parent->GetTopLevel();
+		}
 		/// @}
 		
 		/// @name Iterator related functions
@@ -262,6 +274,11 @@ namespace Gorgon {
 			bounds.Resize(size);
 		}
 
+		/// Resizes the layer to the given size
+		virtual void Resize(int width, int height) {
+			bounds.Resize({width, height});
+		}
+
 		/// Sets the boundaries of this layer.
 		void SetBounds(const Geometry::Bounds &bounds) {
 			this->bounds=bounds;
@@ -327,18 +344,17 @@ namespace Gorgon {
 
 		/// Propagates a mouse event. Some events will be called directly. Do not use this function. Direct calls should never touch handlers. 
 		/// Input layers should cache perform transformations on direct calls. Direct calls should not be clipped. button is set only for
-		/// Click/Down/Up events, amount will be set for Scroll/Zoom events.
+		/// Click/Down/Up events, amount will be set for Scroll/Zoom events. Mouse event system is not thread safe.
 		virtual bool propagate_mouseevent(Input::Mouse::EventType evet, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers);
 		
-		/// Renders the current layer, default handling is to pass
-		/// the request to the sub-layers
+		/// Renders the current layer, default handling is to pass the request to the sub-layers. Rendering is not thread safe.
 		virtual void Render();
 		
 		/// Sub-layers that this layer holds, all the sub-layers are
 		/// considered to be above current layer
 		const Containers::Collection<Layer> &Children;
 		
-		/// When used as bounds, represents the entire region its placed in.
+		/// When used as layer bounds, represents the entire region its placed in.
 		static const Geometry::Bounds EntireRegion;
 
 	protected:
@@ -353,6 +369,12 @@ namespace Gorgon {
 		
 		/// Will be called when this layer is added to another.
 		virtual void located(Layer *parent) { }
+
+		/// Performs transformation and clipping. Use inverse for reverse mapping for mouse events
+		void dotransformandclip(bool inverse = false);
+
+		/// Reverts previously done transformation
+		void reverttransformandclip();
 		
 		/// Child layers that this layer holds, all child layers are
 		/// considered to be above current layer
