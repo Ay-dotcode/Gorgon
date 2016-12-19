@@ -166,7 +166,7 @@ namespace Gorgon {
 						}
 					}
  
- 					throw ex;
+ 					throw;
  				}
 			}
 		}

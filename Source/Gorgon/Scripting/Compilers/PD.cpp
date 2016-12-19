@@ -1197,6 +1197,7 @@ namespace Compilers {
 					}
 				}
 				else {
+                    delete term;
 					throw ParseError{ExceptionType::UnexpectedToken, "Invalid expression.", index};
 				}
 			}

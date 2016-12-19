@@ -85,7 +85,7 @@ namespace Gorgon {
 			
 			explicit Exception(ExceptionType type, const std::string &message, long linenumber=0) : linenumber(linenumber), 
 				std::runtime_error(message), type(type) { 
-#ifdef TEST
+#ifndef NDEBUG
 				std::streambuf* oldbuf = std::cout.rdbuf();
 				std::ostringstream newbuf;
 				std::cout.rdbuf( newbuf.rdbuf() );
@@ -107,7 +107,7 @@ namespace Gorgon {
 			}
 			
 			virtual std::string GetDetails() const {
-#ifdef TEST
+#ifndef NDEBUG
 				return details+"\n"+dump;
 #else
 				return details;
@@ -138,7 +138,7 @@ namespace Gorgon {
 			std::string details;
 			std::string sourcename;
 			
-#ifdef TEST
+#ifndef NDEBUG
 			std::string dump;
 #endif
 			long linenumber;

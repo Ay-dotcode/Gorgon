@@ -2,6 +2,7 @@
 #include <errno.h>
 
 #include <unistd.h>
+#include <wait.h>
 
 #include "Assert.h"
 #include "../Filesystem.h"
@@ -32,7 +33,7 @@ namespace Gorgon { namespace Utils {
 			
 			if(int pid=fork()) {
 				if(pid<0) return;
-				wait();
+				wait(nullptr);
 				
 				close(fd[1]);
 				char line[1024];

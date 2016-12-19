@@ -59,32 +59,33 @@ namespace Gorgon {
 			
 			
 			~CrashHandler() {
-				//Console::SetColor(Console::Red);
-				//Console::SetBold();
+                auto console = Utils::StdConsole();
+				console.SetColor(console.Red);
+				console.SetBold();
 				
 				std::cout<<"Assertation failed: ";
-				//Console::SetColor(Console::Default);
+				console.SetColor(console.Default);
 				std::cout<<message<<std::endl;
-				//Console::Reset();
+				console.Reset();
 				
 				if(show_original) {
 					std::cout<<"  "<<original;
-					//Console::SetColor(Console::Red);
+					console.SetColor(console.Red);
 					std::cout<<" evaluates to false"<<std::endl;
-					//Console::Reset();
+					console.Reset();
 				}
 				
 				if(show_expanded) {
-					//Console::SetColor(Console::Green);
+					console.SetColor(console.Green);
 					std::cout<<"  "<<expanded;
-					//Console::SetColor(Console::Red);
+					console.SetColor(console.Red);
 					std::cout<<"  ==>  FALSE"<<std::endl;
-					//Console::Reset();
+					console.Reset();
 				}
 
 				Backtrace();
 				
-				//Console::Reset();
+				console.Reset();
 				if(!dumponly) {
 #ifdef TEST
 #pragma GCC diagnostic push
