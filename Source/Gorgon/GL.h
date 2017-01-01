@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #include "Geometry/Size.h"
-#include "../Graphics/Color.h"
+#include "Graphics/Color.h"
 
 namespace Gorgon {
 	

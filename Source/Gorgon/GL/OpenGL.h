@@ -151,14 +151,15 @@ typedef GLenum		(APIENTRYP PFNGLCHECKFRAMEBUFFERSTATUSPROC)		(GLenum);
 typedef void		(APIENTRYP PFNGLDELETEFRAMEBUFFERSPROC)			(GLsizei, const GLuint *);
 typedef void		(APIENTRYP PFNGLFRAMEBUFFERTEXTURE2DPROC)		(GLenum, GLenum, GLenum, GLuint, GLint);
 typedef void		(APIENTRYP PFNGLGENFRAMEBUFFERSPROC)			(int, GLuint*);
+
+extern PFNGLACTIVETEXTUREPROC					glActiveTexture;
+#endif
+
 typedef void		(APIENTRYP PFNGLFRAMEBUFFERRENDERBUFFER)		(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 typedef void		(APIENTRYP PFNGLRENDERBUFFERSTORAGE)			(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
 typedef void		(APIENTRYP PFNGLGENRENDERBUFFERS)               (GLsizei n, GLuint  *renderbuffers);
 typedef void        (APIENTRYP PFNGLDELETERENDERBUFFERS)            (GLsizei n, const GLuint *renderbuffers);
 typedef void		(APIENTRYP PFNGLBINDRENDERBUFFER)               (GLenum target, GLuint renderbuffer);
-
-extern PFNGLACTIVETEXTUREPROC					glActiveTexture;
-#endif
 
 extern PFNGLDRAWBUFFERSPROC 					glDrawBuffers;
 extern PFNGLGETATTRIBLOCATIONPROC				glGetAttribLocation;
