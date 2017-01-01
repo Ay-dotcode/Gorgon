@@ -80,18 +80,21 @@
 #define GL_LINK_STATUS                  0x8B82
 #define GL_INFO_LOG_LENGTH              0x8B84
 #define GL_GEOMETRY_SHADER              0x8DD9
-
+#define GL_COLOR_ATTACHMENT0            0x8CE0
+#define GL_COLOR_ATTACHMENT1            0x8CE1
+#define GL_COLOR_ATTACHMENT2            0x8CE2
+#define GL_COLOR_ATTACHMENT3            0x8CE3
+#define GL_COLOR_ATTACHMENT4            0x8CE4
+#define GL_GENERATE_MIPMAP              0x8191
+#define GL_DEPTH_ATTACHMENT               0x8D00
+#define GL_STENCIL_ATTACHMENT             0x8D20
+#define GL_FRAMEBUFFER                    0x8D40
+#define GL_RENDERBUFFER                   0x8D41
 
 
 typedef char							GLchar;
 typedef ptrdiff_t						GLsizeiptr;
 typedef ptrdiff_t						GLintptr;
-
-#ifndef GL_FRAMEBUFFER
-const GLenum						GL_FRAMEBUFFER=0x8D40;
-const GLenum						GL_COLOR_ATTACHMENT0=0x8CE0;
-const GLenum						GL_GENERATE_MIPMAP=0x8191;
-#endif
 
 #ifndef LINUX
 typedef void 		(APIENTRYP PFNGLDRAWBUFFERSPROC) 				(GLsizei n, GLenum *bufs);
@@ -101,25 +104,20 @@ typedef void		(APIENTRYP PFNGLACTIVETEXTUREPROC)				(GLenum texture);
 typedef void		(APIENTRYP PFNGLATTACHSHADERPROC)				(GLuint program, GLuint shader);
 typedef void		(APIENTRYP PFNGLBINDBUFFERPROC)					(GLenum target, GLuint buffer);
 typedef void		(APIENTRYP PFNGLBINDBUFFERBASEPROC)				(GLenum target, GLuint index, GLuint buffer);
-typedef void		(APIENTRYP PFNGLBINDFRAMEBUFFERPROC)			(GLenum target, GLuint framebuffer);
 typedef void		(APIENTRYP PFNGLBINDVERTEXARRAYPROC)			(GLuint array);
 typedef void		(APIENTRYP PFNGLBUFFERDATAPROC)					(GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage);
 typedef void		(APIENTRYP PFNGLBUFFERSUBDATAPROC)				(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
-typedef GLenum		(APIENTRYP PFNGLCHECKFRAMEBUFFERSTATUSPROC)		(GLenum);
 typedef void		(APIENTRYP PFNGLCOMPILESHADERPROC)				(GLuint shader);
 typedef GLuint		(APIENTRYP PFNGLCREATEPROGRAMPROC)				(void);
 typedef GLuint		(APIENTRYP PFNGLCREATESHADERPROC)				(GLenum type);
 typedef void		(APIENTRYP PFNGLDELETEBUFFERSPROC)				(GLsizei n, const GLuint *buffers);
-typedef void		(APIENTRYP PFNGLDELETEFRAMEBUFFERSPROC)			(GLsizei, const GLuint *);
 typedef void		(APIENTRYP PFNGLDELETEVERTEXARRAYSPROC)			(GLsizei n, const GLuint *arrays);
 typedef void		(APIENTRYP PFNGLDELETEPROGRAMPROC)				(GLuint program);
 typedef void		(APIENTRYP PFNGLDELETESHADERPROC)				(GLuint shader);
 typedef void		(APIENTRYP PFNGLDETACHSHADERPROC)				(GLuint program, GLuint shader);
 typedef void		(APIENTRYP PFNGLENABLEVERTEXATTRIBARRAYPROC)	(GLuint index);
-typedef void		(APIENTRYP PFNGLFRAMEBUFFERTEXTURE2DPROC)		(GLenum, GLenum, GLenum, GLuint, GLint);
 typedef void		(APIENTRYP PFNGLGENBUFFERSPROC)					(GLsizei n, GLuint *buffers);
 typedef void		(APIENTRYP PFNGLGENERATEMIPMAPPROC)				(GLenum);
-typedef void		(APIENTRYP PFNGLGENFRAMEBUFFERSPROC)			(int, GLuint*);
 typedef void		(APIENTRYP PFNGLGENVERTEXARRAYSPROC)			(GLsizei n, GLuint *arrays);
 typedef void		(APIENTRYP PFNGLGETPROGRAMINFOLOGPROC)			(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 typedef void		(APIENTRYP PFNGLGETPROGRAMIVPROC)				(GLuint program, GLenum pname, GLint *params);
@@ -147,6 +145,18 @@ typedef void		(APIENTRYP PFNGLUSEPROGRAMPROC)					(GLuint program);
 typedef void		(APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC)		(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void		(APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC)		(GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 
+//frame buffer
+typedef void		(APIENTRYP PFNGLBINDFRAMEBUFFERPROC)			(GLenum target, GLuint framebuffer);
+typedef GLenum		(APIENTRYP PFNGLCHECKFRAMEBUFFERSTATUSPROC)		(GLenum);
+typedef void		(APIENTRYP PFNGLDELETEFRAMEBUFFERSPROC)			(GLsizei, const GLuint *);
+typedef void		(APIENTRYP PFNGLFRAMEBUFFERTEXTURE2DPROC)		(GLenum, GLenum, GLenum, GLuint, GLint);
+typedef void		(APIENTRYP PFNGLGENFRAMEBUFFERSPROC)			(int, GLuint*);
+typedef void		(APIENTRYP PFNGLFRAMEBUFFERRENDERBUFFER)		(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+typedef void		(APIENTRYP PFNGLRENDERBUFFERSTORAGE)			(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+typedef void		(APIENTRYP PFNGLGENRENDERBUFFERS)               (GLsizei n, GLuint  *renderbuffers);
+typedef void        (APIENTRYP PFNGLDELETERENDERBUFFERS)            (GLsizei n, const GLuint *renderbuffers);
+typedef void		(APIENTRYP PFNGLBINDRENDERBUFFER)               (GLenum target, GLuint renderbuffer);
+
 extern PFNGLACTIVETEXTUREPROC					glActiveTexture;
 #endif
 
@@ -156,25 +166,20 @@ extern PFNGLBINDATTRIBLOCATIONPROC				glBindAttribLocation;
 extern PFNGLATTACHSHADERPROC					glAttachShader;
 extern PFNGLBINDBUFFERPROC						glBindBuffer;
 extern PFNGLBINDBUFFERBASEPROC					glBindBufferBase;
-extern PFNGLBINDFRAMEBUFFERPROC					glBindFramebuffer;
 extern PFNGLBINDVERTEXARRAYPROC					glBindVertexArray;
 extern PFNGLBUFFERDATAPROC						glBufferData;
 extern PFNGLBUFFERSUBDATAPROC					glBufferSubData;
-extern PFNGLCHECKFRAMEBUFFERSTATUSPROC			glCheckFramebufferStatus;
 extern PFNGLCOMPILESHADERPROC					glCompileShader;
 extern PFNGLCREATEPROGRAMPROC					glCreateProgram;
 extern PFNGLCREATESHADERPROC					glCreateShader;
 extern PFNGLDELETEBUFFERSPROC					glDeleteBuffers;
-extern PFNGLDELETEFRAMEBUFFERSPROC				glDeleteFramebuffers;
 extern PFNGLDELETEVERTEXARRAYSPROC				glDeleteVertexArrays;
 extern PFNGLDELETEPROGRAMPROC					glDeleteProgram;
 extern PFNGLDELETESHADERPROC					glDeleteShader;
 extern PFNGLDETACHSHADERPROC					glDetachShader;
 extern PFNGLENABLEVERTEXATTRIBARRAYPROC			glEnableVertexAttribArray;
-extern PFNGLFRAMEBUFFERTEXTURE2DPROC			glFramebufferTexture2D;
 extern PFNGLGENBUFFERSPROC						glGenBuffers;
 extern PFNGLGENERATEMIPMAPPROC					glGenerateMipmap;
-extern PFNGLGENFRAMEBUFFERSPROC					glGenFramebuffers;
 extern PFNGLGENVERTEXARRAYSPROC					glGenVertexArrays;
 extern PFNGLGETPROGRAMINFOLOGPROC				glGetProgramInfoLog;
 extern PFNGLGETPROGRAMIVPROC					glGetProgramiv;
@@ -201,6 +206,18 @@ extern PFNGLUNMAPBUFFERPROC						glUnmapBuffer;
 extern PFNGLUSEPROGRAMPROC						glUseProgram;
 extern PFNGLVERTEXATTRIBPOINTERPROC				glVertexAttribPointer;
 extern PFNGLVERTEXATTRIBIPOINTERPROC			glVertexAttribIPointer;
+
+//frame buffer
+extern PFNGLBINDFRAMEBUFFERPROC					glBindFramebuffer;
+extern PFNGLCHECKFRAMEBUFFERSTATUSPROC			glCheckFramebufferStatus;
+extern PFNGLDELETEFRAMEBUFFERSPROC				glDeleteFramebuffers;
+extern PFNGLFRAMEBUFFERTEXTURE2DPROC			glFramebufferTexture2D;
+extern PFNGLGENFRAMEBUFFERSPROC					glGenFramebuffers;
+extern PFNGLBINDRENDERBUFFER					glBindRenderbuffer;
+extern PFNGLRENDERBUFFERSTORAGE					glRenderbufferStorage;
+extern PFNGLGENRENDERBUFFERS					glGenRenderbuffers;
+extern PFNGLFRAMEBUFFERRENDERBUFFER				glFramebufferRenderbuffer;
+extern PFNGLDELETERENDERBUFFERS					glDeleteRenderbuffers;
 
 namespace Gorgon {
 	namespace GL {

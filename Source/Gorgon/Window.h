@@ -284,6 +284,9 @@ namespace Gorgon {
         
         /// Stops showing local pointers and makes window manager pointer visible.
         void SwitchToWMPointers();
+
+		/// Returns the minimum size required to fit any window inside.
+		static Geometry::Size GetMinimumRequiredSize();
         
         Graphics::PointerStack Pointers; 
 

@@ -1,5 +1,7 @@
 SET(Local
 	../GL.h
+	FrameBuffer.h
+	FrameBuffer.cpp
 	OpenGL.h
 	Shader.h
 	Shader.cpp

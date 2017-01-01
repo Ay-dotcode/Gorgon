@@ -1,6 +1,7 @@
 
 
 #include "OpenGL.h"
+#include "FrameBuffer.h"
 
 #ifdef LINUX
 #	include <GL/glx.h>
@@ -23,25 +24,20 @@ PFNGLBINDATTRIBLOCATIONPROC				glBindAttribLocation;
 PFNGLATTACHSHADERPROC					glAttachShader;
 PFNGLBINDBUFFERPROC						glBindBuffer;
 PFNGLBINDBUFFERBASEPROC					glBindBufferBase;
-PFNGLBINDFRAMEBUFFERPROC				glBindFramebuffer;
 PFNGLBINDVERTEXARRAYPROC				glBindVertexArray;
 PFNGLBUFFERDATAPROC						glBufferData;
 PFNGLBUFFERSUBDATAPROC					glBufferSubData;
-PFNGLCHECKFRAMEBUFFERSTATUSPROC			glCheckFramebufferStatus;
 PFNGLCOMPILESHADERPROC					glCompileShader;
 PFNGLCREATEPROGRAMPROC					glCreateProgram;
 PFNGLCREATESHADERPROC					glCreateShader;
 PFNGLDELETEBUFFERSPROC					glDeleteBuffers;
-PFNGLDELETEFRAMEBUFFERSPROC				glDeleteFramebuffers;
 PFNGLDELETEVERTEXARRAYSPROC				glDeleteVertexArrays;
 PFNGLDELETEPROGRAMPROC					glDeleteProgram;
 PFNGLDELETESHADERPROC					glDeleteShader;
 PFNGLDETACHSHADERPROC					glDetachShader;
 PFNGLENABLEVERTEXATTRIBARRAYPROC		glEnableVertexAttribArray;
-PFNGLFRAMEBUFFERTEXTURE2DPROC			glFramebufferTexture2D;
 PFNGLGENBUFFERSPROC						glGenBuffers;
 PFNGLGENERATEMIPMAPPROC					glGenerateMipmap;
-PFNGLGENFRAMEBUFFERSPROC				glGenFramebuffers;
 PFNGLGENVERTEXARRAYSPROC				glGenVertexArrays;
 PFNGLGETPROGRAMINFOLOGPROC				glGetProgramInfoLog;
 PFNGLGETPROGRAMIVPROC					glGetProgramiv;
@@ -68,6 +64,16 @@ PFNGLUNMAPBUFFERPROC					glUnmapBuffer;
 PFNGLUSEPROGRAMPROC						glUseProgram;
 PFNGLVERTEXATTRIBPOINTERPROC			glVertexAttribPointer;
 PFNGLVERTEXATTRIBIPOINTERPROC			glVertexAttribIPointer;
+PFNGLBINDFRAMEBUFFERPROC				glBindFramebuffer;
+PFNGLCHECKFRAMEBUFFERSTATUSPROC			glCheckFramebufferStatus;
+PFNGLDELETEFRAMEBUFFERSPROC				glDeleteFramebuffers;
+PFNGLFRAMEBUFFERTEXTURE2DPROC			glFramebufferTexture2D;
+PFNGLGENFRAMEBUFFERSPROC				glGenFramebuffers;
+PFNGLBINDRENDERBUFFER					glBindRenderbuffer;
+PFNGLRENDERBUFFERSTORAGE				glRenderbufferStorage;
+PFNGLGENRENDERBUFFERS					glGenRenderbuffers;
+PFNGLFRAMEBUFFERRENDERBUFFER			glFramebufferRenderbuffer;
+PFNGLDELETERENDERBUFFERS				glDeleteRenderbuffers;
 
 
 namespace Gorgon { namespace GL {
@@ -119,12 +125,36 @@ namespace Gorgon { namespace GL {
 		return tex;
 	}
 
+	Texture GenerateEmptyTexture(const Geometry::Size &size, Graphics::ColorMode mode) {
+		Texture tex;
+
+		glGenTextures(1, &tex);
+		glBindTexture(GL_TEXTURE_2D, tex);
+
+		GLenum colormode=getGLColorMode(mode);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, colormode, size.Width, size.Height, 0, colormode, GL_UNSIGNED_BYTE, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		return tex;
+	}
+
 	void UpdateTexture(Texture tex, const Containers::Image &data) {
 		settexturedata(tex, data);
 	}
 
 	void DestroyTexture(Texture tex) {
 		glDeleteTextures(1, &tex);
+	}
+
+	void RenderToTexture(FrameBuffer &buffer) {
+		buffer.Use();
+	}
+
+	void RenderToScreen() {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void SetupContext(const Geometry::Size &size) {
@@ -180,25 +210,20 @@ namespace Gorgon { namespace GL {
 		glAttachShader					= (PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader");
 		glBindBuffer					= (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
 		glBindBufferBase				= (PFNGLBINDBUFFERBASEPROC)wglGetProcAddress("glBindBufferBase");
-		glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 		glBindVertexArray				= (PFNGLBINDVERTEXARRAYPROC)wglGetProcAddress("glBindVertexArray");
 		glBufferData					= (PFNGLBUFFERDATAPROC)wglGetProcAddress("glBufferData");
 		glBufferSubData					= (PFNGLBUFFERSUBDATAPROC)wglGetProcAddress("glBufferSubData");
-		glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)wglGetProcAddress("glCheckFramebufferStatus");
 		glCompileShader					= (PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader");
 		glCreateProgram					= (PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram");
 		glCreateShader					= (PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader");
 		glDeleteBuffers					= (PFNGLDELETEBUFFERSPROC)wglGetProcAddress("glDeleteBuffers");
-		glDeleteFramebuffers			= (PFNGLDELETEFRAMEBUFFERSPROC)wglGetProcAddress("glDeleteFramebuffers");
 		glDeleteVertexArrays			= (PFNGLDELETEVERTEXARRAYSPROC)wglGetProcAddress("glDeleteVertexArrays");
 		glDeleteProgram					= (PFNGLDELETEPROGRAMPROC)wglGetProcAddress("glDeleteProgram");
 		glDeleteShader					= (PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader");
 		glDetachShader					= (PFNGLDETACHSHADERPROC)wglGetProcAddress("glDetachShader");
 		glEnableVertexAttribArray		= (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
-		glFramebufferTexture2D			= (PFNGLFRAMEBUFFERTEXTURE2DPROC)wglGetProcAddress("glFramebufferTexture2D");
 		glGenBuffers					= (PFNGLGENBUFFERSPROC)wglGetProcAddress("glGenBuffers");
 		glGenerateMipmap				= (PFNGLGENERATEMIPMAPPROC)wglGetProcAddress("glGenerateMipmap");
-		glGenFramebuffers				= (PFNGLGENFRAMEBUFFERSPROC)wglGetProcAddress("glGenFramebuffers");
 		glGenVertexArrays				= (PFNGLGENVERTEXARRAYSPROC)wglGetProcAddress("glGenVertexArrays");
 		glGetProgramInfoLog				= (PFNGLGETPROGRAMINFOLOGPROC)wglGetProcAddress("glGetProgramInfoLog");
 		glGetProgramiv					= (PFNGLGETPROGRAMIVPROC)wglGetProcAddress("glGetProgramiv");
@@ -225,6 +250,35 @@ namespace Gorgon { namespace GL {
 		glUseProgram					= (PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram");
 		glVertexAttribPointer			= (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
 		glVertexAttribIPointer			= (PFNGLVERTEXATTRIBIPOINTERPROC)wglGetProcAddress("glVertexAttribIPointer");
+
+		glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
+		glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)wglGetProcAddress("glCheckFramebufferStatus");
+		glDeleteFramebuffers			= (PFNGLDELETEFRAMEBUFFERSPROC)wglGetProcAddress("glDeleteFramebuffers");
+		glFramebufferTexture2D			= (PFNGLFRAMEBUFFERTEXTURE2DPROC)wglGetProcAddress("glFramebufferTexture2D");
+		glGenFramebuffers				= (PFNGLGENFRAMEBUFFERSPROC)wglGetProcAddress("glGenFramebuffers");
+		if(!glBindFramebuffer) {
+			glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebufferExt");
+			glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)wglGetProcAddress("glCheckFramebufferStatusExt");
+			glDeleteFramebuffers			= (PFNGLDELETEFRAMEBUFFERSPROC)wglGetProcAddress("glDeleteFramebuffersExt");
+			glFramebufferTexture2D			= (PFNGLFRAMEBUFFERTEXTURE2DPROC)wglGetProcAddress("glFramebufferTexture2DExt");
+			glGenFramebuffers				= (PFNGLGENFRAMEBUFFERSPROC)wglGetProcAddress("glGenFramebuffersExt");
+		}
+		if(glBindFramebuffer)
+			FrameBuffer::HardwareSupport = true;
+
+		glBindRenderbuffer				= (PFNGLBINDRENDERBUFFER)wglGetProcAddress("glBindRenderbuffer");
+		glRenderbufferStorage			= (PFNGLRENDERBUFFERSTORAGE)wglGetProcAddress("glRenderbufferStorage");
+		glGenRenderbuffers				= (PFNGLGENRENDERBUFFERS)wglGetProcAddress("glGenRenderbuffers");
+		glFramebufferRenderbuffer		= (PFNGLFRAMEBUFFERRENDERBUFFER)wglGetProcAddress("glFramebufferRenderbuffer");
+		glDeleteRenderbuffers			= (PFNGLDELETERENDERBUFFERS)wglGetProcAddress("glDeleteRenderbuffers");
+		if(!glBindRenderbuffer) {
+			glBindRenderbuffer				= (PFNGLBINDRENDERBUFFER)wglGetProcAddress("glBindRenderbufferExt");
+			glRenderbufferStorage			= (PFNGLRENDERBUFFERSTORAGE)wglGetProcAddress("glRenderbufferStorageExt");
+			glGenRenderbuffers				= (PFNGLGENRENDERBUFFERS)wglGetProcAddress("glGenRenderbuffersExt");
+			glFramebufferRenderbuffer		= (PFNGLFRAMEBUFFERRENDERBUFFER)wglGetProcAddress("glFramebufferRenderbufferExt");
+			glDeleteRenderbuffers			= (PFNGLDELETERENDERBUFFERS)wglGetProcAddress("glDeleteRenderbuffersExt");
+		}
+
 #elif defined(LINUX)
 		//= ()wglGetProcAddress("gl");
 		//glActiveTexture					= (PFNGLACTIVETEXTUREPROC)glXGetProcAddress((const GLubyte*)"glActiveTexture");
@@ -234,25 +288,20 @@ namespace Gorgon { namespace GL {
 		glAttachShader					= (PFNGLATTACHSHADERPROC)glXGetProcAddress((const GLubyte*)"glAttachShader");
 		glBindBuffer					= (PFNGLBINDBUFFERPROC)glXGetProcAddress((const GLubyte*)"glBindBuffer");
 		glBindBufferBase				= (PFNGLBINDBUFFERBASEPROC)glXGetProcAddress((const GLubyte*)"glBindBufferBase");
-		glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)glXGetProcAddress((const GLubyte*)"glBindFramebuffer");
 		glBindVertexArray				= (PFNGLBINDVERTEXARRAYPROC)glXGetProcAddress((const GLubyte*)"glBindVertexArray");
 		glBufferData					= (PFNGLBUFFERDATAPROC)glXGetProcAddress((const GLubyte*)"glBufferData");
 		glBufferSubData					= (PFNGLBUFFERSUBDATAPROC)glXGetProcAddress((const GLubyte*)"glBufferSubData");
-		glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)glXGetProcAddress((const GLubyte*)"glCheckFramebufferStatus");
 		glCompileShader					= (PFNGLCOMPILESHADERPROC)glXGetProcAddress((const GLubyte*)"glCompileShader");
 		glCreateProgram					= (PFNGLCREATEPROGRAMPROC)glXGetProcAddress((const GLubyte*)"glCreateProgram");
 		glCreateShader					= (PFNGLCREATESHADERPROC)glXGetProcAddress((const GLubyte*)"glCreateShader");
 		glDeleteBuffers					= (PFNGLDELETEBUFFERSPROC)glXGetProcAddress((const GLubyte*)"glDeleteBuffers");
-		glDeleteFramebuffers			= (PFNGLDELETEFRAMEBUFFERSPROC)glXGetProcAddress((const GLubyte*)"glDeleteFramebuffers");
 		glDeleteVertexArrays			= (PFNGLDELETEVERTEXARRAYSPROC)glXGetProcAddress((const GLubyte*)"glDeleteVertexArrays");
 		glDeleteProgram					= (PFNGLDELETEPROGRAMPROC)glXGetProcAddress((const GLubyte*)"glDeleteProgram");
 		glDeleteShader					= (PFNGLDELETESHADERPROC)glXGetProcAddress((const GLubyte*)"glDeleteShader");
 		glDetachShader					= (PFNGLDETACHSHADERPROC)glXGetProcAddress((const GLubyte*)"glDetachShader");
 		glEnableVertexAttribArray		= (PFNGLENABLEVERTEXATTRIBARRAYPROC)glXGetProcAddress((const GLubyte*)"glEnableVertexAttribArray");
-		glFramebufferTexture2D			= (PFNGLFRAMEBUFFERTEXTURE2DPROC)glXGetProcAddress((const GLubyte*)"glFramebufferTexture2D");
 		glGenBuffers					= (PFNGLGENBUFFERSPROC)glXGetProcAddress((const GLubyte*)"glGenBuffers");
 		glGenerateMipmap				= (PFNGLGENERATEMIPMAPPROC)glXGetProcAddress((const GLubyte*)"glGenerateMipmap");
-		glGenFramebuffers				= (PFNGLGENFRAMEBUFFERSPROC)glXGetProcAddress((const GLubyte*)"glGenFramebuffers");
 		glGenVertexArrays				= (PFNGLGENVERTEXARRAYSPROC)glXGetProcAddress((const GLubyte*)"glGenVertexArrays");
 		glGetProgramInfoLog				= (PFNGLGETPROGRAMINFOLOGPROC)glXGetProcAddress((const GLubyte*)"glGetProgramInfoLog");
 		glGetProgramiv					= (PFNGLGETPROGRAMIVPROC)glXGetProcAddress((const GLubyte*)"glGetProgramiv");
@@ -279,6 +328,36 @@ namespace Gorgon { namespace GL {
 		glUseProgram					= (PFNGLUSEPROGRAMPROC)glXGetProcAddress((const GLubyte*)"glUseProgram");
 		glVertexAttribPointer			= (PFNGLVERTEXATTRIBPOINTERPROC)glXGetProcAddress((const GLubyte*)"glVertexAttribPointer");
 		glVertexAttribIPointer			= (PFNGLVERTEXATTRIBIPOINTERPROC)glXGetProcAddress((const GLubyte*)"glVertexAttribIPointer");
+
+		glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)glXGetProcAddress((const GLubyte*)"glBindFramebuffer");
+		glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)glXGetProcAddress((const GLubyte*)"glCheckFramebufferStatus");
+		glDeleteFramebuffers			= (PFNGLDELETEFRAMEBUFFERSPROC)glXGetProcAddress((const GLubyte*)"glDeleteFramebuffers");
+		glFramebufferTexture2D			= (PFNGLFRAMEBUFFERTEXTURE2DPROC)glXGetProcAddress((const GLubyte*)"glFramebufferTexture2D");
+		glGenFramebuffers				= (PFNGLGENFRAMEBUFFERSPROC)glXGetProcAddress((const GLubyte*)"glGenFramebuffers");
+		if(!glBindFramebuffer) {
+			glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)glXGetProcAddress((const GLubyte*)"glBindFramebufferExt");
+			glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)glXGetProcAddress((const GLubyte*)"glCheckFramebufferStatusExt");
+			glDeleteFramebuffers			= (PFNGLDELETEFRAMEBUFFERSPROC)glXGetProcAddress((const GLubyte*)"glDeleteFramebuffersExt");
+			glFramebufferTexture2D			= (PFNGLFRAMEBUFFERTEXTURE2DPROC)glXGetProcAddress((const GLubyte*)"glFramebufferTexture2DExt");
+			glGenFramebuffers				= (PFNGLGENFRAMEBUFFERSPROC)glXGetProcAddress((const GLubyte*)"glGenFramebuffersExt");
+		}
+		if(glBindFramebuffer)
+			FrameBuffer::HardwareSupport = true;
+
+
+		glBindRenderbuffer				= (PFNGLBINDRENDERBUFFER)glXGetProcAddress((const GLubyte*)"glBindRenderbuffer");
+		glRenderbufferStorage			= (PFNGLRENDERBUFFERSTORAGE)glXGetProcAddress((const GLubyte*)"glRenderbufferStorage");
+		glGenRenderbuffers				= (PFNGLGENRENDERBUFFERS)glXGetProcAddress((const GLubyte*)"glGenRenderbuffers");
+		glFramebufferRenderbuffer		= (PFNGLFRAMEBUFFERRENDERBUFFER)glXGetProcAddress((const GLubyte*)"glFramebufferRenderbuffer");
+		glDeleteRenderbuffers			= (PFNGLDELETERENDERBUFFERS)glXGetProcAddress((const GLubyte*)"glDeleteRenderbuffers");
+		if(!glBindRenderbuffer) {
+			glBindRenderbuffer				= (PFNGLBINDRENDERBUFFER)glXGetProcAddress((const GLubyte*)"glBindRenderbufferExt");
+			glRenderbufferStorage			= (PFNGLRENDERBUFFERSTORAGE)glXGetProcAddress((const GLubyte*)"glRenderbufferStorageExt");
+			glGenRenderbuffers				= (PFNGLGENRENDERBUFFERS)glXGetProcAddress((const GLubyte*)"glGenRenderbuffersExt");
+			glFramebufferRenderbuffer		= (PFNGLFRAMEBUFFERRENDERBUFFER)glXGetProcAddress((const GLubyte*)"glFramebufferRenderbufferExt");
+			glDeleteRenderbuffers			= (PFNGLDELETERENDERBUFFERS)glXGetProcAddress((const GLubyte*)"glDeleteRenderbuffersExt");
+		}
+
 #endif
 	}
 
