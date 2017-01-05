@@ -38,7 +38,6 @@ void main()
 )shader";
 
 	const std::string SimpleFragSrcCode = R"shader(
-#version 130
 
 in vec2 texcoord;
 
@@ -150,8 +149,7 @@ void main()
 }
 )shader";
 
-	SimpleShader::SimpleShader() : Shader("Gorgon::Graphics::Simple")
-	{
+	SimpleShader::SimpleShader() : Shader("Gorgon::Graphics::Simple") {
 		InitializeWithSource(TransformVertSrcCode, SimpleFragSrcCode);
 	}
 

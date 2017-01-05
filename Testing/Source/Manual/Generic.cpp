@@ -9,6 +9,7 @@
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/BitmapFont.h>
 #include <Gorgon/GL/FrameBuffer.h>
+#include <Gorgon/GL.h>
 
 
 
@@ -186,6 +187,8 @@ int main() {
 	
 	Gorgon::Initialize("Generic-test");
     system("pwd");
+    
+    Gorgon::GL::log.InitializeConsole();
     
 	Window wind({800, 600}, "windowtest");
 	Graphics::Initialize();

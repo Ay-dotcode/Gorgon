@@ -12,9 +12,11 @@
 #include <algorithm>
 
 #include "Simple.h"
+#include "../Utils/Logging.h"
 
 namespace Gorgon { namespace GL {
     GLuint activeprogram = -1;
+    extern Gorgon::Utils::Logger log;
 
 
 	GLuint CreateShader(GLenum type, const std::string& code, const std::string& name) {
@@ -31,18 +33,28 @@ namespace Gorgon { namespace GL {
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
 			GLchar* shader_log_message = new GLchar[log_length];
 			glGetShaderInfoLog(shader, log_length, nullptr, shader_log_message);
-			//log << shaderName << " shader failed to compile: " << shader_log_message << '\n';
+			log << name << " shader failed to compile: " << shader_log_message;
 			delete[] shader_log_message;
 		}
-		//log << "Compiled shader: " << shaderName << '\n';
+		log << "Compiled shader: " << name;
 		return shader;
 	}
 
 	void InsertDefines(std::string& code, const std::string& shader_defines) {
+        if(shader_defines=="") return;
+        
 		std::string::size_type pos = code.find("#version");
 		if(pos==std::string::npos) {
 			pos=0;
 		}
+		else {
+            //find the end of the line
+            while(code.length()>pos && code[pos]!='\n') pos++;
+            
+            //after that
+            pos++;
+        }
+        
 		int linesbefore=std::count_if(code.begin(), code.begin()+pos, [](char c) { return c=='\n'; });
 
 		const std::string insert_me = shader_defines + "#line " + std::to_string(linesbefore+1) + "\n";
@@ -172,20 +184,17 @@ namespace Gorgon { namespace GL {
 			definesstring+="#define "+p.first+"\t"+p.second+"\n";
 		}
 		
-		if(definesstring!="")
-			InsertDefines(vertexsrc, definesstring);
+		InsertDefines(vertexsrc, definesstring);
 		glAttachShader(program, CreateShader(GL_VERTEX_SHADER, vertexsrc, "[vertex]"+name));
 
 		if(fragmentsrc!="") {
-			if(definesstring!="")
-				InsertDefines(fragmentsrc, definesstring);
+			InsertDefines(fragmentsrc, definesstring);
 
 			glAttachShader(program, CreateShader(GL_FRAGMENT_SHADER, fragmentsrc, "[fragment]"+name));
 		}
-
+		
 		if(geometrysrc!="") {
-			if(definesstring!="")
-				InsertDefines(geometrysrc, definesstring);
+            InsertDefines(geometrysrc, definesstring);
 
 			glAttachShader(program, CreateShader(GL_GEOMETRY_SHADER, geometrysrc, "[geometry]"+name));
 		}
@@ -200,10 +209,10 @@ namespace Gorgon { namespace GL {
 			GLchar* program_log_message = new GLchar[log_length];
 			glGetProgramInfoLog(program, log_length, nullptr, program_log_message);
 
-			//log << "Shader program failed to link: " << program_log_message << '\n'; PrintSeparator();
+			log << "Shader program "<< name <<" failed to link: " << std::endl << program_log_message;
 			delete[] program_log_message;
 		}
-		//log << "Shader program successfully linked.\n"; PrintSeparator();
+		log << "Shader program " << name << " successfully linked.\n";
 	}
 
 } }

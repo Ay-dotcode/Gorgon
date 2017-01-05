@@ -49,10 +49,10 @@ namespace Gorgon {
 			std::string name;
 
 		private:
+			unsigned int					program;
 			unsigned int					vertexshader;
 			unsigned int					geometryshader;
 			unsigned int					fragmentshader;
-			unsigned int					program;
 
 
 			//void Initialize(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader,

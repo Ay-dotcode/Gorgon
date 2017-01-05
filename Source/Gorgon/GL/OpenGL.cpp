@@ -7,6 +7,7 @@
 #	include <GL/glx.h>
 #endif
 
+#include "../Utils/Logging.h"
 
 
 
@@ -359,5 +360,6 @@ namespace Gorgon { namespace GL {
 
 #endif
 	}
-
+	
+    Gorgon::Utils::Logger log;
 } }

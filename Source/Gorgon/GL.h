@@ -4,6 +4,7 @@
 
 #include "Geometry/Size.h"
 #include "Graphics/Color.h"
+#include "Utils/Logging.h"
 
 namespace Gorgon {
 	
@@ -52,5 +53,7 @@ namespace Gorgon {
 
 		/// Clears the window pointed by the active context
 		void Clear();
+        
+        extern Gorgon::Utils::Logger log;
 	}
 }
