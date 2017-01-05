@@ -23,13 +23,14 @@ namespace Gorgon { namespace GL {
 		}
 
 		/// Generates a frame buffer. If software frame buffer does not work, this will
-		/// create only a texture. Use UpdateTexture to update the texture.
+		/// create only a texture. Use UpdateTexture to update the texture. See Generate.
 		explicit FrameBuffer(bool depth) : FrameBuffer() {
 			Generate(depth);
 		}
 
 		/// Generates a frame buffer. If software frame buffer does not work, this will
-		/// create only a texture. Use UpdateTexture to update the texture.
+		/// create only a texture. Use UpdateTexture to update the texture. This function
+		/// will cause the system to switch to render to screen.
 		void Generate(bool depth);
 
 		/// Destroys the frame buffer

@@ -8,6 +8,7 @@
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/BitmapFont.h>
+#include <Gorgon/GL/FrameBuffer.h>
 
 
 
@@ -209,18 +210,6 @@ int main() {
         WM::Icon ico(icon.GetData());
         wind.SetIcon(ico);
     }
-    
-	auto console = Gorgon::Utils::StdConsole();
-    std::cout<<console.GetSize()<<std::endl;
-	console.GotoXY({20,20});
-	//console.SetColor({255, 150, 80});
-	console.SetBackground({80,20,0});
-    console.ClearScreen();
-	console.SetBold();
-	console.ShowCaret();
-	//console.HideCaret();
-	std::cout<<"XXX"<<std::endl;
-	//console.Reset();
 
 	Graphics::Bitmap bgimage({50, 50}, Graphics::ColorMode::Grayscale);
 
@@ -276,11 +265,11 @@ int main() {
     
     sty.SetTabWidthInLetters(1.5f);
     sty.SetParagraphSpacing(2);
-    sty.Print(l, 
+    /*sty.Print(l, 
         "Key list:\n"
         "esc\tClose\n"
         , 500, 10
-    );
+    );*/
 	
 	wind.KeyEvent.Register([&wind](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))
@@ -291,6 +280,16 @@ int main() {
 
 		return false;
 	});
+    
+    Gorgon::GL::FrameBuffer buffer(true);
+    buffer.Use();
+    
+    Gorgon::NextFrame();
+    buffer.RenderToScreen();
+    
+    Gorgon::Graphics::TextureImage tex(buffer.GetTexture(), Gorgon::Graphics::ColorMode::RGBA, Gorgon::Window::GetMinimumRequiredSize());
+    //l.Clear();
+    tex.Draw(l, 0, 200);
 
 	while(true) {
 		Gorgon::NextFrame();
