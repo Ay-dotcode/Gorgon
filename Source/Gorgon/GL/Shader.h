@@ -40,11 +40,21 @@ namespace Gorgon {
 
 			Shader(const std::string &name) : name(name), program(0), vertexshader(0), geometryshader(0), fragmentshader(0) {}
 
-			void InitializeWithSource(std::string vertexsrc, std::string fragmentsrc = "",
-				std::string geometrysrc = "", std::map<std::string, std::string> defines={});
+			void InitializeWithSource(std::string vertexsrc, std::string fragmentsrc,
+									  std::string geometrysrc = "", std::map<std::string, std::string> defines={});
 
-			void InitializeFromFiles(const std::string& vertexfile, const std::string& fragmentfile = "",
-				const std::string& geometryfile = "", std::map<std::string, std::string> defines={});
+			void InitializeWithSource(std::string vertexsrc, std::string fragmentsrc,
+									  std::map<std::string, std::string> defines) {
+				InitializeWithSource(vertexsrc, fragmentsrc, "", defines);
+			}
+
+			void InitializeFromFiles(const std::string& vertexfile, const std::string& fragmentfile,
+									 const std::string& geometryfile = "", std::map<std::string, std::string> defines={});
+
+			void InitializeFromFiles(const std::string& vertexfile, const std::string& fragmentfile,
+									 std::map<std::string, std::string> defines) {
+				InitializeFromFiles(vertexfile, fragmentfile, "", defines);
+			}
 
 			std::string name;
 

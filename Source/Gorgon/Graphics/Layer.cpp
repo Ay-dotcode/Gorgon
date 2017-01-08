@@ -7,7 +7,7 @@ namespace Gorgon {
 	extern Geometry::Size ScreenSize;
 namespace Graphics {
 
-	void Layer::Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectanglef &location, RGBAf color /*= RGBAf(1.f)*/) {
+	void Layer::Draw(const TextureSource &image, Tiling tiling, const Geometry::Rectanglef &location, RGBAf color) {
 		if(tiling==Tiling::None) {
 			Draw(image, location.TopLeft(), location.TopRight(), location.BottomRight(), location.BottomLeft(), color);
 		}
@@ -82,22 +82,30 @@ namespace Graphics {
 					.SetVertexCoords(surface.GetVertices(Transform))
 				;
 			}
-            else if(surface.GetMode() == ColorMode::Alpha) {
-                AlphaShader::Use()
-                    .SetTint(surface.GetColor()*LayerColor)
-                    .SetAlpha(surface.TextureID())
-                    .SetVertexCoords(surface.GetVertices(Transform))
-                    .SetTextureCoords(surface.GetTextureCoords())
-                ;
-            }
             else {
-                SimpleShader::Use()
-                    .SetTint(surface.GetColor()*LayerColor)
-                    .SetDiffuse(surface.TextureID())
-                    .SetVertexCoords(surface.GetVertices(Transform))
-                    .SetTextureCoords(surface.GetTextureCoords())
-                ;
-            }
+				auto tex=surface.GetTextureCoords();
+
+				if(surface.GetDrawMode()==FrameBuffer) {
+					tex.FlipY();
+				}
+
+				if(surface.GetMode() == ColorMode::Alpha) {
+					AlphaShader::Use()
+						.SetTint(surface.GetColor()*LayerColor)
+						.SetAlpha(surface.TextureID())
+						.SetVertexCoords(surface.GetVertices(Transform))
+						.SetTextureCoords(tex)
+					;
+				}
+				else {
+					SimpleShader::Use()
+						.SetTint(surface.GetColor()*LayerColor)
+						.SetDiffuse(surface.TextureID())
+						.SetVertexCoords(surface.GetVertices(Transform))
+						.SetTextureCoords(tex)
+					;
+				}
+			}
 
 			DrawQuadVertices();
 		}

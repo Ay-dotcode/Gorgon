@@ -144,6 +144,7 @@ typedef GLboolean	(APIENTRYP PFNGLUNMAPBUFFERPROC)				(GLenum target);
 typedef void		(APIENTRYP PFNGLUSEPROGRAMPROC)					(GLuint program);
 typedef void		(APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC)		(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void		(APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC)		(GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+typedef void		(APIENTRYP PFNGLBLENDFUNCSEPARATEPROC)			(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
 
 //frame buffer
 typedef void		(APIENTRYP PFNGLBINDFRAMEBUFFERPROC)			(GLenum target, GLuint framebuffer);
@@ -207,6 +208,7 @@ extern PFNGLUNMAPBUFFERPROC						glUnmapBuffer;
 extern PFNGLUSEPROGRAMPROC						glUseProgram;
 extern PFNGLVERTEXATTRIBPOINTERPROC				glVertexAttribPointer;
 extern PFNGLVERTEXATTRIBIPOINTERPROC			glVertexAttribIPointer;
+extern PFNGLBLENDFUNCSEPARATEPROC				glBlendFuncSeparate;
 
 //frame buffer
 extern PFNGLBINDFRAMEBUFFERPROC					glBindFramebuffer;

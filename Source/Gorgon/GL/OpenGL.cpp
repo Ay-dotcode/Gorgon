@@ -65,6 +65,8 @@ PFNGLUNMAPBUFFERPROC					glUnmapBuffer;
 PFNGLUSEPROGRAMPROC						glUseProgram;
 PFNGLVERTEXATTRIBPOINTERPROC			glVertexAttribPointer;
 PFNGLVERTEXATTRIBIPOINTERPROC			glVertexAttribIPointer;
+PFNGLBLENDFUNCSEPARATEPROC				glBlendFuncSeparate;
+
 PFNGLBINDFRAMEBUFFERPROC				glBindFramebuffer;
 PFNGLCHECKFRAMEBUFFERSTATUSPROC			glCheckFramebufferStatus;
 PFNGLDELETEFRAMEBUFFERSPROC				glDeleteFramebuffers;
@@ -165,7 +167,7 @@ namespace Gorgon { namespace GL {
 		}
 
 		glShadeModel(GL_SMOOTH);
-		glClearColor(0.4f, 0.2f, 0.0f, 1.0f);
+		glClearColor(0.4f, 0.2f, 0.0f, 0.0f);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 		glClearDepth(1.0f);
@@ -173,7 +175,7 @@ namespace Gorgon { namespace GL {
 		glDepthFunc(GL_LEQUAL);
 
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
 
 		glEnable(GL_TEXTURE_2D);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -250,6 +252,7 @@ namespace Gorgon { namespace GL {
 		glUseProgram					= (PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram");
 		glVertexAttribPointer			= (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
 		glVertexAttribIPointer			= (PFNGLVERTEXATTRIBIPOINTERPROC)wglGetProcAddress("glVertexAttribIPointer");
+		glBlendFuncSeparate				= (PFNGLBLENDFUNCSEPARATEPROC)wglGetProcAddress("glBlendFuncSeparate");
 
 		glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 		glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)wglGetProcAddress("glCheckFramebufferStatus");
@@ -328,6 +331,7 @@ namespace Gorgon { namespace GL {
 		glUseProgram					= (PFNGLUSEPROGRAMPROC)glXGetProcAddress((const GLubyte*)"glUseProgram");
 		glVertexAttribPointer			= (PFNGLVERTEXATTRIBPOINTERPROC)glXGetProcAddress((const GLubyte*)"glVertexAttribPointer");
 		glVertexAttribIPointer			= (PFNGLVERTEXATTRIBIPOINTERPROC)glXGetProcAddress((const GLubyte*)"glVertexAttribIPointer");
+		glBlendFuncSeparate				= (PFNGLBLENDFUNCSEPARATEPROC)glXGetProcAddress((const GLubyte*)"glBlendFuncSeparate");
 
 		glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)glXGetProcAddress((const GLubyte*)"glBindFramebuffer");
 		glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)glXGetProcAddress((const GLubyte*)"glCheckFramebufferStatus");

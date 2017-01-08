@@ -1,7 +1,6 @@
 #include "FrameBuffer.h"
 #include "OpenGL.h"
 #include "../Window.h"
-#include <GL/glu.h>
 
 namespace Gorgon { namespace GL {
 

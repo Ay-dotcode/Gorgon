@@ -803,9 +803,9 @@ namespace Gorgon {
 			exit(0);
 		}
 
-		GL::SetupContext(bounds.GetSize());
+		Graphics::Initialize();
 
-		Graphics::Initialize();		
+		GL::SetupContext(bounds.GetSize());
 	}
 
 	void Window::Close() {

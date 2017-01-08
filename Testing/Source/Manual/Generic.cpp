@@ -197,8 +197,8 @@ int main() {
 
 	Graphics::Layer l;
 	wind.Add(l);
-	l.Resize(800,150);
-	l.EnableClipping();
+	l.Resize(150,150);
+	//l.EnableClipping();
 
 	Graphics::Bitmap img;
 	if(!img.Import("test.png")) {
@@ -229,32 +229,32 @@ int main() {
     
     auto circle = Circle(30);
     circle.Prepare();
-    circle.Draw(l, 25,25, 0x800000ff);
+    circle.Draw(l, 25,25, 0x80ffffff);
     
     auto trig = Triangle(25, 100);
     trig.Prepare();
-    trig.Draw(l, 100,25, 0x800000ff);
+    trig.Draw(l, 100,25, 0x80ffffff);
     
     auto rect = Rectangle(25, 100);
     rect.Prepare();
-    rect.Draw(l, 175,25, 0x800000ff);
+    rect.Draw(l, 175,25, 0x80ffffff);
     
     auto trig1 = Triangle1(25, 100);
     trig1.Prepare();
-    trig1.Draw(l, 225,25, 0x800000ff);
+    trig1.Draw(l, 225,25, 0x80ffffff);
     
     auto trig2 = Triangle2(25, 100);
     trig2.Prepare();
-    trig2.Draw(l, 275,25, 0x800000ff);
+    trig2.Draw(l, 275,25, 0x80ffffff);
     
     auto trig3 = Triangle3(25, 100);
     trig3.Prepare();
-    trig3.Draw(l, 325,25, 0x800000ff);
+    trig3.Draw(l, 325,25, 0x80ffffff);
     
     
     auto trig4 = Triangle4(25, 100);
     trig4.Prepare();
-    trig4.Draw(l, 375,25, 0x800000ff);
+    trig4.Draw(l, 375,25, 0x80ffffff);
     
     Graphics::BitmapFont fnt;
 	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
@@ -268,11 +268,11 @@ int main() {
     
     sty.SetTabWidthInLetters(1.5f);
     sty.SetParagraphSpacing(2);
-    /*sty.Print(l, 
+    sty.Print(l, 
         "Key list:\n"
         "esc\tClose\n"
         , 500, 10
-    );*/
+    );
 	
 	wind.KeyEvent.Register([&wind](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))
@@ -292,12 +292,12 @@ int main() {
     
     Gorgon::Graphics::TextureImage tex(buffer.GetTexture(), Gorgon::Graphics::ColorMode::RGBA, Gorgon::Window::GetMinimumRequiredSize());
     //l.Clear();
-    tex.Draw(l, 0, 200);
+	l.SetDrawMode(l.FrameBuffer);
+    tex.Draw(l, 0, 70);
 
 	while(true) {
 		Gorgon::NextFrame();
 	}
 
 	return 0;
-	
 }

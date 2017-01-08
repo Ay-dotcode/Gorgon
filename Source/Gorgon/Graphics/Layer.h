@@ -43,7 +43,9 @@ namespace Gorgon { namespace Graphics {
 
 			/// Sets the source to the given source. This variant uses texture coordinates given by the source.
 			Surface(const TextureSource &source, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
-					const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) : source(&source), color(color) {
+					const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color, TextureTarget::DrawMode drawmode) : 
+				source(&source), color(color), drawmode(drawmode) {
+
 				vertices[0]  = p1;
 				vertices[1]  = p2;
 				vertices[2]  = p3;
@@ -52,7 +54,8 @@ namespace Gorgon { namespace Graphics {
 
 			/// Uses fill shader to fill an area with solid color.
 			Surface(const Geometry::Pointf &p1, const Geometry::Pointf &p2,
-					const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) : color(color) {
+					const Geometry::Pointf &p3, const Geometry::Pointf &p4, 
+					RGBAf color, TextureTarget::DrawMode drawmode) : color(color), drawmode(drawmode) {
 				vertices[0]  = p1;
 				vertices[1]  = p2;
 				vertices[2]  = p3;
@@ -63,7 +66,8 @@ namespace Gorgon { namespace Graphics {
 			Surface(const TextureSource &source, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 				const Geometry::Pointf &p3, const Geometry::Pointf &p4,
 				const Geometry::Pointf &t1, const Geometry::Pointf &t2,
-				const Geometry::Pointf &t3, const Geometry::Pointf &t4, RGBAf color) : source(&source), color(color) {
+				const Geometry::Pointf &t3, const Geometry::Pointf &t4, 
+				RGBAf color, TextureTarget::DrawMode drawmode) : source(&source), color(color), drawmode(drawmode) {
 
 				texture = new Geometry::Pointf[4];
 
@@ -117,12 +121,21 @@ namespace Gorgon { namespace Graphics {
                 return color;
             }
 
+			TextureTarget::DrawMode GetDrawMode() const {
+				return drawmode;
+			}
+
+			void SetDrawMode(TextureTarget::DrawMode value) {
+				drawmode = value;
+			}
+
 			~Surface() {
 				if(texture) delete[] texture;
 				texture      = nullptr;
 			}
 
 		private:
+			TextureTarget::DrawMode drawmode = TextureTarget::Normal;
 
 			GL::QuadVertices vertices;
 			Geometry::Pointf *texture = nullptr;
@@ -203,14 +216,14 @@ namespace Gorgon { namespace Graphics {
 		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
 
-			surfaces.emplace_back(image, p1, p2, p3, p4, color);
+			surfaces.emplace_back(image, p1, p2, p3, p4, color, mode);
 		}
 
 		/// Prefer using Draw functions of image or animations
 		virtual void Draw(const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
 
-			surfaces.emplace_back(p1, p2, p3, p4, color);
+			surfaces.emplace_back(p1, p2, p3, p4, color, mode);
 		}
 
 		/// Prefer using Draw functions of image or animations
@@ -221,7 +234,7 @@ namespace Gorgon { namespace Graphics {
 			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
 			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color = RGBAf(1.f)) override {
 
-			surfaces.emplace_back(image, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color);
+			surfaces.emplace_back(image, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color, mode);
 		}
 
 		/// Prefer using Draw functions of image or animations

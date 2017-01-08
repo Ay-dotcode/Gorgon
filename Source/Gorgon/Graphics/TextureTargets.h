@@ -13,6 +13,7 @@ namespace Gorgon { namespace Graphics {
 	public:
 		enum DrawMode {
 			Normal,
+			FrameBuffer
 		};
 
 		/// Draws a simple texture to the screen. This variant allows every corner on the target to be specified. The texture target should

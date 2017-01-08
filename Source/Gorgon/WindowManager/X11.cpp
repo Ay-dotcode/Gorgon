@@ -1159,9 +1159,9 @@ failsafe: //this should use X11 screen as monitor
 			exit(1);
 		}
 
-		GL::SetupContext(bounds.GetSize());
-
 		Graphics::Initialize();
+
+		GL::SetupContext(bounds.GetSize());
 
 		// test code
 		glXSwapBuffers(WindowManager::display, data->handle);		

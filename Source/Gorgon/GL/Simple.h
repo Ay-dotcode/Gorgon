@@ -60,6 +60,13 @@ namespace Gorgon { namespace GL {
 			return Coords[ind];
 		}
 
+		void FlipY() {
+			Coords[0].Y = 1-Coords[0].Y;
+			Coords[1].Y = 1-Coords[1].Y;
+			Coords[2].Y = 1-Coords[2].Y;
+			Coords[3].Y = 1-Coords[3].Y;
+		}
+
 		union {
 			Geometry::Pointf Coords[4];
 			float Data[8];

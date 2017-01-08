@@ -38,6 +38,7 @@ void main()
 )shader";
 
 	const std::string SimpleFragSrcCode = R"shader(
+#version 130
 
 in vec2 texcoord;
 
@@ -48,7 +49,7 @@ out vec4 output_color;
 
 void main()
 {
-    output_color = texture(diffuse, texcoord) * tint;
+	output_color = texture(diffuse, texcoord) * tint;
 }
 )shader";
 
