@@ -6,6 +6,7 @@
 #include "../Geometry/Point3D.h"
 #include "../Geometry/Transform3D.h"
 #include "../GL/Simple.h"
+#include "../GL/FrameBuffer.h"
 
 namespace Gorgon { namespace Graphics {
 
@@ -160,10 +161,16 @@ namespace Gorgon { namespace Graphics {
 	 * layer. 
 	 *
 	 * #### Drawing modes
-	 * Currently only Normal drawing mode is supported. There will be at least two more drawing mode to control
-	 * alpha source.
+	 * Currently Normal, and FrameBuffer modes are supported.
 	 */
 	class Layer : public Gorgon::Layer, public Graphics::TextureTarget {
+		struct Operation {
+			enum {
+				NewMask
+			} type;
+
+			std::size_t index;
+		};
 	public:
 		
 		/// Initializing constructor
@@ -252,6 +259,12 @@ namespace Gorgon { namespace Graphics {
 
 		/// Change current drawing mode. See Layer page to see available drawing modes
 		virtual void SetDrawMode(DrawMode mode) override { this->mode=mode; }
+
+		/// Queues the start of a new mask. Only one mask buffer exists and it will be cleared and reused.
+		void NewMask() {
+			Operation op = {Operation::NewMask, surfaces.size()+operations.size()};
+			operations.push_back(op);
+		}
 		
 		/// Changes the tint color of the layer, every image pixel will be multiplied by this color
 		virtual void SetTintColor(RGBAf color) { this->color = color; }
@@ -280,11 +293,14 @@ namespace Gorgon { namespace Graphics {
 
 	private:
 		std::vector<internal::Surface> surfaces;
+		std::vector<Operation> operations;
 
 		bool clippingenabled = false;
 
 		DrawMode mode;
         RGBAf color = RGBAf(1.f);
+
+		static GL::FrameBuffer mask;
 	};
 	 
 

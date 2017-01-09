@@ -115,6 +115,27 @@ void main()
 }
 )shader";
 
+	const std::string MaskedVertSrcCode = R"shader(
+#version 130
+
+in int vertex_index;
+
+uniform vec3 vertex_coords[4];
+uniform vec2 tex_coords[4];
+uniform vec2 mask_coords[4];
+
+out vec2 diffuse_texcoord;
+out vec2 mask_texcoord;
+
+void main()
+{
+	gl_Position = vec4(vertex_coords[vertex_index], 1.0f);
+
+    diffuse_texcoord = tex_coords[vertex_index];
+    mask_texcoord = mask_coords[vertex_index];
+}
+)shader";
+
     const std::string MaskedFragmentSrcCode = R"shader(
 #version 130
 
@@ -128,27 +149,10 @@ out vec4 output_color;
 
 void main()
 {
-    output_color = vec4(texture(diffuse, diffuse_texcoord).rgb, texture(diffuse, diffuse_texcoord).a*texture(mask, mask_texcoord).a);
-}
-)shader";
-
-    const std::string TintedMaskedFragmentSrcCode = R"shader(
-#version 130
-
-in vec2 diffuse_texcoord;
-in vec2 mask_texcoord;
-
-uniform sampler2D diffuse;
-uniform sampler2D mask;
-uniform vec4 tint;
-
-out vec4 output_color;
-
-void main()
-{
     output_color = tint * vec4(texture(diffuse, diffuse_texcoord).rgb, texture(diffuse, diffuse_texcoord).a*texture(mask, mask_texcoord).a);
 }
 )shader";
+
 
 	SimpleShader::SimpleShader() : Shader("Gorgon::Graphics::Simple") {
 		InitializeWithSource(TransformVertSrcCode, SimpleFragSrcCode);

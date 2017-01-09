@@ -53,7 +53,14 @@ namespace Gorgon {
 
 		/// Clears the window pointed by the active context
 		void Clear();
-        
+
+		/// Sets default clear parameters as current.
+		void SetDefaultClear();
+
+		/// Sets default blending parameters as current.
+		void SetDefaultBlending();
+
+		/// The logger that is used for GL operations. Default is unset and will not log anything. Use Initialize... to begin logging.
         extern Gorgon::Utils::Logger log;
 	}
 }

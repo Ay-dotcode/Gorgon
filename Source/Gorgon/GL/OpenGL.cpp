@@ -161,21 +161,21 @@ namespace Gorgon { namespace GL {
 
 	void SetupContext(const Geometry::Size &size) {
 		std::string gl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-		if(String::To<float>(gl_version)<2.09) {
+		if(std::round(String::To<float>(gl_version)*10)<21) {
 			OS::DisplayMessage("OpenGL version 2.1 and above is required. Your OpenGL version is "+gl_version);
 			exit(2);
 		}
 
 		glShadeModel(GL_SMOOTH);
-		glClearColor(0.4f, 0.2f, 0.0f, 0.0f);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-		glClearDepth(1.0f);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 
 		glEnable(GL_BLEND);
-		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+
+		SetDefaultClear();
+		SetDefaultBlending();
 
 		glEnable(GL_TEXTURE_2D);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -185,14 +185,21 @@ namespace Gorgon { namespace GL {
 		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-		glViewport(0, 0, size.Width, size.Height);
-
-		//glCullFace(GL_NONE);
 		glFrontFace(GL_CCW);
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		Resize(size);
+		Clear();
 		glFlush();
 		glFinish();
+	}
+
+	void SetDefaultBlending() {
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+	}
+
+	void SetDefaultClear() {
+		glClearColor(0.4f, 0.2f, 0.0f, 0.0f);
+		glClearDepth(1.0f);
 	}
 
 	void Resize(const Geometry::Size &size) {

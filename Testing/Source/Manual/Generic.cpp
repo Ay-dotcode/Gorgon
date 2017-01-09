@@ -283,17 +283,6 @@ int main() {
 
 		return false;
 	});
-    
-    Gorgon::GL::FrameBuffer buffer(true);
-    buffer.Use();
-    
-    Gorgon::NextFrame();
-    buffer.RenderToScreen();
-    
-    Gorgon::Graphics::TextureImage tex(buffer.GetTexture(), Gorgon::Graphics::ColorMode::RGBA, Gorgon::Window::GetMinimumRequiredSize());
-    //l.Clear();
-	l.SetDrawMode(l.FrameBuffer);
-    tex.Draw(l, 0, 70);
 
 	while(true) {
 		Gorgon::NextFrame();
