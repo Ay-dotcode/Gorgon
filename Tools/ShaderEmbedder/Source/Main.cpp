@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 	}
 	
 	std::string outputfilename = argv[1];
-	std::ofstream out(outputfilename);
+	std::ofstream out(outputfilename, std::ios::binary);
 	
 	if(!out.is_open()) {
 		std::cerr << "Cannot open output file \"" << outputfilename << "\" to write." << std::endl;
@@ -44,9 +44,11 @@ int main(int argc, char* argv[]) {
 		auto &inputfile = *file.stream;
 		
 		auto name = file.name;
+
 		if(name.find_last_of('/') != name.npos) {
-			name = name.substr(name.find_last_not_of('/'));
+			name = name.substr(name.find_last_of('/')+1);
 		}
+
 		name = name.substr(0, name.find_first_of('.'));
 		
 		out << std::endl << "const std::string " << name << " = R\"thisisalongtoken(";

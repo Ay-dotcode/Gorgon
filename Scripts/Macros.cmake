@@ -13,23 +13,29 @@ MACRO(DoSource)
 	
 	IF(${wd} MATCHES ".+")
 		SET(LocalFixed)
+		SET(LocalShaders)
 		FOREACH(L ${Local}) 
 			IF(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}/${L}")
+			ELSEIF(L MATCHES ".*\\.glsl")
+				LIST(APPEND LocalShaders "${wd}/${L}")
 			ELSE()
 				LIST(APPEND LocalFixed "${wd}/${L}")
 			ENDIF()
 		ENDFOREACH()
 	ELSE()
 		SET(LocalFixed)
+		SET(LocalShaders)
 		FOREACH(L ${Local}) 
 			IF(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}/${L}")
+			ELSEIF(L MATCHES ".*\\.glsl")
+				LIST(APPEND LocalShaders ${L})
 			ELSE()
 				LIST(APPEND LocalFixed ${L})
 			ENDIF()
 		ENDFOREACH()
 	ENDIF()
 
-	LIST(APPEND All ${LocalFixed})
+	LIST(APPEND All ${LocalFixed} ${LocalShaders})
 	LIST(LENGTH LocalFixed len)
 	IF(len GREATER 7)
 		SET(headergrpfiles)
@@ -48,6 +54,8 @@ MACRO(DoSource)
 	ELSE()
 		SOURCE_GROUP("${srcgrp}" FILES ${LocalFixed})
 	ENDIF()
+	
+	SOURCE_GROUP("${srcgrp}\\Shaders" FILES ${LocalShaders})
 	
 	FOREACH(S ${Local})
 		IF(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}/${S}")
@@ -78,7 +86,9 @@ MACRO(StartSource src)
 	DoSource()
 ENDMACRO()
 
-MACRO(EmbedShader out)
+list(APPEND deps ShaderEmbedder)
+
+MACRO(EmbedShaders out for) #inputs
 	set(listv)
 	
 	foreach(a ${ARGN})
@@ -87,17 +97,14 @@ MACRO(EmbedShader out)
 	
 	add_custom_command(
 		OUTPUT ${CMAKE_SOURCE_DIR}/${wd}/${out}
-		COMMAND "${CMAKE_SOURCE_DIR}/Tools/ShaderEmbedder/Bin/ShaderEmbedder" ${CMAKE_SOURCE_DIR}/${wd}/${out} ${ARGN}
-		DEPENDS ${listv}
+		COMMAND "${CMAKE_SOURCE_DIR}/Tools/ShaderEmbedder/Bin/ShaderEmbedder" ${out} ${ARGN}
+		DEPENDS ShaderEmbedder ${listv}
 		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}"
 		COMMENT "Embedding shaders into ${out}"
 	)
 	
-	STRING(REPLACE "/" "_" myd ${wd})
+	list(APPEND Local ${ARGN})
+	list(APPEND Local ${out})
 	
-	add_custom_target("${myd}_${out}"
-		DEPENDS "${CMAKE_SOURCE_DIR}/Tools/ShaderEmbedder/Bin/ShaderEmbedder" ${CMAKE_SOURCE_DIR}/${wd}/${out} ${listv}
-	)
-	
-	list(APPEND deps "${myd}_${out}")
+	set_property(SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} APPEND PROPERTY OBJECT_DEPENDS ${CMAKE_SOURCE_DIR}/${wd}/${out})
 ENDMACRO()
