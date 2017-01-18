@@ -19,4 +19,9 @@ SET(Local
 	Shaders.cpp
 	Texture.h
 	TextureTargets.h
+	Shaders/Simple_V.glsl
+	
+	ShaderSrc.cpi
 )
+
+EmbedShader(ShaderSrc.cpi "Shaders/Simple_V.glsl")

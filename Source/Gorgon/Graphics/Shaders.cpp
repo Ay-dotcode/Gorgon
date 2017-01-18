@@ -5,26 +5,17 @@
 
 namespace Gorgon { namespace Graphics {
 
-
-	const std::string TransformVertSrcCode = R"shader(
-#version 130
-
-in int vertex_index;
-
-uniform vec3 vertex_coords[4];
-uniform vec2 tex_coords[4];
-
-out vec2 texcoord;
-
-void main()
-{
-	gl_Position = vec4(vertex_coords[vertex_index], 1.0f);
-
-    texcoord = tex_coords[vertex_index];
-}
+//#include "ShaderSrc.cpi"
+	const std::string Simple_V = R"shader(
+#version 130
+in int vertex_index;
+uniform vec3 vertex_coords[4];uniform vec2 tex_coords[4];
+out vec2 texcoord;
+void mainx(){	gl_Position = vec4(vertex_coords[vertex_index], 1.0f);
+    texcoord = tex_coords[vertex_index];}
 )shader";
 
-	const std::string NoTexVertSrcCode = R"shader(
+	const std::string NoTex_V = R"shader(
 #version 130
 
 in int vertex_index;
@@ -37,7 +28,7 @@ void main()
 }
 )shader";
 
-	const std::string SimpleFragSrcCode = R"shader(
+	const std::string Simple_F = R"shader(
 #version 130
 
 in vec2 texcoord;
@@ -53,7 +44,7 @@ void main()
 }
 )shader";
 
-	const std::string AlphaFragSrcCode = R"shader(
+	const std::string Alpha_F = R"shader(
 #version 130
 
 in vec2 texcoord;
@@ -69,7 +60,7 @@ void main()
 }
 )shader";
 
-	const std::string FillFragSrcCode = R"shader(
+	const std::string Fill_F = R"shader(
 #version 130
 
 uniform vec4      tint;
@@ -155,15 +146,15 @@ void main()
 
 
 	SimpleShader::SimpleShader() : Shader("Gorgon::Graphics::Simple") {
-		InitializeWithSource(TransformVertSrcCode, SimpleFragSrcCode);
+		InitializeWithSource(Simple_V, Simple_F);
 	}
 
 	AlphaShader::AlphaShader() : Shader("Gorgon::Graphics::Alpha") {
-		InitializeWithSource(TransformVertSrcCode, AlphaFragSrcCode);
+		InitializeWithSource(Simple_V, Alpha_F);
 	}
 
 	FillShader::FillShader() : Shader("Gorgon::Graphics::Fill") {
-		InitializeWithSource(NoTexVertSrcCode, FillFragSrcCode);
+		InitializeWithSource(NoTex_V, Fill_F);
 	}
 
 	/*

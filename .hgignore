@@ -25,5 +25,6 @@ Source/External/curl/
 Package/
 codelite/
 Docs/xml
+Source/Gorgon/Graphics/ShaderSrc.cpi
 syntax: regexp
 .*\.kdev4(_.*)?

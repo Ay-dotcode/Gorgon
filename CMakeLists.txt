@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 
 project(Gorgon)
 
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Tools/ShaderEmbedder")
+
 set(GORGON_MAJOR_VERSION 4)
 set(GORGON_MINOR_VERSION 0)
 set(GORGON_PATCH_VERSION 0)
@@ -116,6 +118,11 @@ endif()
 include(Scripts/Doxygen.cmake)
 
 add_library(Gorgon STATIC ${All})
+
+if(NOT ${deps} STREQUAL "")
+	add_dependencies(Gorgon ${deps})
+endif()
+
 
 include_directories(Source/External)
 include_directories(Source)

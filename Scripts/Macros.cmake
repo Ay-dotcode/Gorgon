@@ -74,5 +74,30 @@ MACRO(StartSource src)
 	SET(testid 0)
 	SET(Local ${src})
 	SET(ExcludeDoc)
+	SET(deps)
 	DoSource()
+ENDMACRO()
+
+MACRO(EmbedShader out)
+	set(listv)
+	
+	foreach(a ${ARGN})
+		list(APPEND listv ${CMAKE_SOURCE_DIR}/${wd}/${a})
+	endforeach()
+	
+	add_custom_command(
+		OUTPUT ${CMAKE_SOURCE_DIR}/${wd}/${out}
+		COMMAND "${CMAKE_SOURCE_DIR}/Tools/ShaderEmbedder/Bin/ShaderEmbedder" ${CMAKE_SOURCE_DIR}/${wd}/${out} ${ARGN}
+		DEPENDS ${listv}
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}"
+		COMMENT "Embedding shaders into ${out}"
+	)
+	
+	STRING(REPLACE "/" "_" myd ${wd})
+	
+	add_custom_target("${myd}_${out}"
+		DEPENDS "${CMAKE_SOURCE_DIR}/Tools/ShaderEmbedder/Bin/ShaderEmbedder" ${CMAKE_SOURCE_DIR}/${wd}/${out} ${listv}
+	)
+	
+	list(APPEND deps "${myd}_${out}")
 ENDMACRO()
