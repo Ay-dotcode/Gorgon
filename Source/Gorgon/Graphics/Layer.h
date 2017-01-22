@@ -23,6 +23,7 @@ namespace Gorgon { namespace Graphics {
 				texture  = s.texture;
 				source   = s.source;
 				color    = s.color;
+                drawmode = s.drawmode;
 
 				s.texture = nullptr;
 				s.source  = nullptr;
@@ -35,6 +36,7 @@ namespace Gorgon { namespace Graphics {
 				texture  = s.texture;
 				source   = s.source;
 				color    = s.color;
+                drawmode = s.drawmode;
 
 				s.texture = nullptr;
 				s.source  = nullptr;
@@ -171,6 +173,7 @@ namespace Gorgon { namespace Graphics {
 
 			std::size_t index;
 		};
+        friend void Initialize();
 	public:
 		
 		/// Initializing constructor

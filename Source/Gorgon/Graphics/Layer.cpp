@@ -85,12 +85,14 @@ namespace Graphics {
 		if(nextop != operations.end())
 			nextopind = nextop->index;
 
+		DrawMode current = Normal;
+
 		for(auto &surface : surfaces) {            
 			while(ind == nextopind) {
 				switch(nextop->type) {
 				case Operation::NewMask:
 					mask.Use();
-					glClearColor(0, 0, 0, 1.0f);
+					glClearColor(1.0f, 0, 0, 0);
 					GL::Clear();
 					GL::SetDefaultClear();
 					mask.RenderToScreen();
@@ -106,11 +108,32 @@ namespace Graphics {
 				ind++;
 			}
 
+			if(surface.GetDrawMode() == ToMask && current != ToMask) {
+				glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_ONE, GL_ZERO);
+				mask.Use();
+			}
+
+			if(surface.GetDrawMode() != ToMask && current == ToMask) {
+				GL::SetDefaultBlending();
+				mask.RenderToScreen();
+			}
+
+			current = surface.GetDrawMode();
+
 			if(!surface.IsSet()) {
-				FillShader::Use()
-					.SetTint(surface.GetColor()*LayerColor)
-					.SetVertexCoords(surface.GetVertices(Transform))
-				;
+                if(surface.GetDrawMode() == UseMask) {
+                     MaskedFillShader::Use()
+                        .SetTint(surface.GetColor()*LayerColor)
+                        .SetVertexCoords(surface.GetVertices(Transform))
+						.SetMask(mask.GetTexture())
+                    ;
+               }
+                else {
+                    FillShader::Use(surface.GetDrawMode() == ToMask ? ShaderMode::ToMask : ShaderMode::Normal)
+                        .SetTint(surface.GetColor()*LayerColor)
+                        .SetVertexCoords(surface.GetVertices(Transform))
+                    ;
+                }
 			}
             else {
 				auto tex=surface.GetTextureCoords();
@@ -120,26 +143,53 @@ namespace Graphics {
 				}
 
 				if(surface.GetMode() == ColorMode::Alpha) {
-					AlphaShader::Use()
-						.SetTint(surface.GetColor()*LayerColor)
-						.SetAlpha(surface.TextureID())
-						.SetVertexCoords(surface.GetVertices(Transform))
-						.SetTextureCoords(tex)
-					;
+					if(surface.GetDrawMode() == UseMask) {
+						MaskedAlphaShader::Use()
+							.SetTint(surface.GetColor()*LayerColor)
+							.SetAlpha(surface.TextureID())
+							.SetVertexCoords(surface.GetVertices(Transform))
+							.SetTextureCoords(tex)
+							.SetMask(mask.GetTexture())
+						;
+					}
+					else {
+						AlphaShader::Use(surface.GetDrawMode() == ToMask ? ShaderMode::ToMask : ShaderMode::Normal)
+							.SetTint(surface.GetColor()*LayerColor)
+							.SetAlpha(surface.TextureID())
+							.SetVertexCoords(surface.GetVertices(Transform))
+							.SetTextureCoords(tex)
+						;
+					}
 				}
 				else {
-					SimpleShader::Use()
-						.SetTint(surface.GetColor()*LayerColor)
-						.SetDiffuse(surface.TextureID())
-						.SetVertexCoords(surface.GetVertices(Transform))
-						.SetTextureCoords(tex)
-					;
+					if(surface.GetDrawMode() == UseMask) {
+						MaskedShader::Use()
+							.SetTint(surface.GetColor()*LayerColor)
+							.SetDiffuse(surface.TextureID())
+							.SetVertexCoords(surface.GetVertices(Transform))
+							.SetTextureCoords(tex)
+							.SetMask(mask.GetTexture())
+						;
+					}
+					else {
+						SimpleShader::Use(surface.GetDrawMode() == ToMask ? ShaderMode::ToMask : ShaderMode::Normal)
+							.SetTint(surface.GetColor()*LayerColor)
+							.SetDiffuse(surface.TextureID())
+							.SetVertexCoords(surface.GetVertices(Transform))
+							.SetTextureCoords(tex)
+						;
+					}
 				}
 			}
 
 			DrawQuadVertices();
 			ind++;
 		}
+		
+        if(current == ToMask) {
+            GL::SetDefaultBlending();
+            mask.RenderToScreen();
+        }
 
 		for(auto &l : children) {
 			l.Render();
@@ -154,6 +204,6 @@ namespace Graphics {
 		LayerColor = prev_col;
 	}
 
-	GL::FrameBuffer Layer::mask(true);
+	GL::FrameBuffer Layer::mask;
 
 } }

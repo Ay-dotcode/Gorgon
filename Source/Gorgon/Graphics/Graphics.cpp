@@ -2,6 +2,7 @@
 #include "../GL/OpenGL.h"
 #include "../WindowManager.h"
 #include "../Geometry/Transform3D.h"
+#include "Layer.h"
 
 namespace Gorgon { namespace Graphics {
 
@@ -45,6 +46,8 @@ namespace Gorgon { namespace Graphics {
 
 			glBindBuffer(GL_ARRAY_BUFFER, quadvbo);
 			glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(int), quadvertexindex, GL_STATIC_DRAW);
+
+			Layer::mask.Generate(true);
 		}
 
 		if(vaos.count(WindowManager::CurrentContext())==0) {
@@ -55,6 +58,7 @@ namespace Gorgon { namespace Graphics {
 			glEnableVertexAttribArray(0);
 			glVertexAttribIPointer(0, 1, GL_INT, 0, (GLvoid*)0);
 		}
+		
 	}
 
 } }

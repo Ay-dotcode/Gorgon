@@ -14,14 +14,30 @@
 
 
 namespace Gorgon { namespace Graphics {
+	enum class ShaderMode {
+		Normal,
+		ToMask
+	};
 
-	class SimpleShader : public GL::Shader
+	class SimpleShader : private GL::Shader
 	{
 	public:
-		static SimpleShader &Use() {
-			static SimpleShader me;
-			me.Shader::Use(); 
-			return me;
+		static SimpleShader &Use(ShaderMode mode = ShaderMode::Normal) {
+			static SimpleShader 
+				normal(ShaderMode::Normal),
+				tomask(ShaderMode::ToMask)
+			;
+
+			switch(mode) {
+			case ShaderMode::Normal:
+				normal.Shader::Use();
+				return normal;
+			case ShaderMode::ToMask:
+				tomask.Shader::Use();
+				return tomask;
+			default:
+				throw std::runtime_error("Unknown simple shader mode");
+			}
 		}
 		
 		SimpleShader &SetVertexCoords(const GL::QuadVertices &value) {
@@ -40,7 +56,7 @@ namespace Gorgon { namespace Graphics {
 		}
 		
 		/// Sets diffuse texture
-		SimpleShader &SetDiffuse(GLuint value) {
+		SimpleShader &SetDiffuse(GL::Texture value) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, value);
 			
@@ -55,16 +71,81 @@ namespace Gorgon { namespace Graphics {
 		}
 		
 	private:
-		SimpleShader();
+		SimpleShader(ShaderMode mode);
 	};
 
-	class AlphaShader : public GL::Shader
+	class MaskedShader : private GL::Shader
 	{
 	public:
-		static AlphaShader &Use() {
-			static AlphaShader me;
-			me.Shader::Use(); 
+		static MaskedShader &Use() {
+			static MaskedShader me;
+
+			me.Shader::Use();
 			return me;
+		}
+		
+		MaskedShader &SetVertexCoords(const GL::QuadVertices &value) {
+			static int id = LocateUniform("vertex_coords");
+			UpdateUniform(id, value);
+			
+			return *this;
+		}
+		
+		/// Sets texture coordinates
+		MaskedShader &SetTextureCoords(const GL::QuadTextureCoords &value) {
+			static int id = LocateUniform("tex_coords");
+			UpdateUniform(id, value);
+			
+			return *this;
+		}
+		
+		/// Sets diffuse texture
+		MaskedShader &SetDiffuse(GL::Texture value) {
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, value);
+			
+			return *this;
+		}
+		
+		MaskedShader &SetTint(const Graphics::RGBAf &value) {
+			static int id = LocateUniform("tint");
+			UpdateUniform(id, value);
+			
+			return *this;
+		}
+
+		MaskedShader &SetMask(GL::Texture value) {
+			static int id = BindTexture("mask", 1);
+
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, value);
+
+			return *this;
+		}
+
+	private:
+		MaskedShader();
+	};
+
+	class AlphaShader : private GL::Shader
+	{
+	public:
+
+		static AlphaShader &Use(ShaderMode mode = ShaderMode::Normal) {
+			static AlphaShader 
+				normal(ShaderMode::Normal),
+				tomask(ShaderMode::ToMask);
+
+			switch(mode) {
+			case ShaderMode::Normal:
+				normal.Shader::Use();
+				return normal;
+			case ShaderMode::ToMask:
+				tomask.Shader::Use();
+				return tomask;
+			default:
+				throw std::runtime_error("Unknown alpha shader mode");
+			}
 		}
 		
 		AlphaShader &SetVertexCoords(const GL::QuadVertices &value) {
@@ -81,15 +162,15 @@ namespace Gorgon { namespace Graphics {
 			
 			return *this;
 		}
-		
+
 		/// Sets alpha texture
-		AlphaShader &SetAlpha(GLuint value) {
+		AlphaShader &SetAlpha(GL::Texture value) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, value);
-			
+
 			return *this;
 		}
-		
+
 		AlphaShader &SetTint(const Graphics::RGBAf &value) {
 			static int id = LocateUniform("tint");
 			UpdateUniform(id, value);
@@ -98,15 +179,82 @@ namespace Gorgon { namespace Graphics {
 		}
 		
 	private:
-		AlphaShader();
+		AlphaShader(ShaderMode mode);
 	};
 
-	class FillShader : public GL::Shader {
+	class MaskedAlphaShader : private GL::Shader
+	{
 	public:
-		static FillShader &Use() {
-			static FillShader me;
+
+		static MaskedAlphaShader &Use() {
+			static MaskedAlphaShader me;
+
 			me.Shader::Use();
 			return me;
+		}
+		
+		MaskedAlphaShader &SetVertexCoords(const GL::QuadVertices &value) {
+			static int id = LocateUniform("vertex_coords");
+			UpdateUniform(id, value);
+			
+			return *this;
+		}
+		
+		/// Sets texture coordinates
+		MaskedAlphaShader &SetTextureCoords(const GL::QuadTextureCoords &value) {
+			static int id = LocateUniform("tex_coords");
+			UpdateUniform(id, value);
+			
+			return *this;
+		}
+
+		/// Sets alpha texture
+		MaskedAlphaShader &SetAlpha(GL::Texture value) {
+			static int id = BindTexture("diffuse", 0);
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, value);
+
+			return *this;
+		}
+
+		MaskedAlphaShader &SetTint(const Graphics::RGBAf &value) {
+			static int id = LocateUniform("tint");
+			UpdateUniform(id, value);
+			
+			return *this;
+		}
+
+		MaskedAlphaShader &SetMask(GL::Texture value) {
+			static int id = BindTexture("mask", 1);
+
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, value);
+
+			return *this;
+		}
+	private:
+		MaskedAlphaShader();
+	};
+
+	class FillShader : private GL::Shader {
+	public:
+		static FillShader &Use(ShaderMode mode = ShaderMode::Normal) {
+			static FillShader 
+				normal(ShaderMode::Normal),
+				tomask(ShaderMode::ToMask);
+
+			switch(mode) {
+			case ShaderMode::Normal:
+				normal.Shader::Use();
+				return normal;
+			case ShaderMode::ToMask:
+				tomask.Shader::Use();
+				return tomask;
+			default:
+				throw std::runtime_error("Unknown fill shader mode");
+			}
+
 		}
 
 		FillShader &SetVertexCoords(const GL::QuadVertices &value) {
@@ -124,101 +272,44 @@ namespace Gorgon { namespace Graphics {
 		}
 
 	private:
-		FillShader();
+		FillShader(ShaderMode mode);
 	};
 
-	/*
-	class MaskedShader : public GL::Shader
-	{
+	class MaskedFillShader : private GL::Shader {
 	public:
-        static MaskedShader& Use() { 
-			static MaskedShader me; 
-			me.Shader::Use(); 
-			return me;
-		}
-		
-		MaskedShader &SetVertexCoords(const GL::QuadVertices &value) {
-			static int id = LocateUniform("vertex_coords");
-			UpdateUniform(id, value);
-			
-			return *this;
-		}
-		
-		MaskedShader &SetTextureCoords(const glm::mat4x4 &value) {
-			static int id = LocateUniform("tex_coords");
-			UpdateUniform(id, value);
-			
-			return *this;
-		}
-		
-		MaskedShader &SetDiffuse(GLuint value) {
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, value);
-			
-			return *this;
-		}
-		
-		MaskedShader &SetMask(GLuint value) {
-			static int id = LocateUniform("mask");
-			UpdateUniform(id, 1);
-			
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, value);
-			
-			return *this;
-		}
-	private:
-		MaskedShader();
-	};
-	
+		static MaskedFillShader &Use() {
+			static MaskedFillShader me;
 
-	class TintedMaskedShader : public GL::Shader
-	{
-	public:
-        static TintedMaskedShader& Use() {
-			static TintedMaskedShader me;
 			me.Shader::Use();
 			return me;
 		}
-		
-		TintedMaskedShader &SetVertexCoords(const GL::QuadVertices &value) {
+
+		MaskedFillShader &SetVertexCoords(const GL::QuadVertices &value) {
 			static int id = LocateUniform("vertex_coords");
 			UpdateUniform(id, value);
-			
+
 			return *this;
 		}
-		
-		TintedMaskedShader &SetTextureCoords(const glm::mat4x4 &value) {
-			static int id = LocateUniform("tex_coords");
-			UpdateUniform(id, value);
-			
-			return *this;
-		}
-		
-		TintedMaskedShader &SetTint(const Graphics::RGBAf &value) {
+
+		MaskedFillShader &SetTint(const Graphics::RGBAf &value) {
 			static int id = LocateUniform("tint");
-			UpdateUniform(id, *(glm::vec4*)&value);
-			
+			UpdateUniform(id, value);
+
 			return *this;
 		}
-		
-		TintedMaskedShader &SetDiffuse(GLuint value) {
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, value);
-			
-			return *this;
-		}
-		
-		TintedMaskedShader &SetMask(GLuint value) {
-			static int id = LocateUniform("mask");
-			UpdateUniform(id, 1);
-			
+
+		MaskedFillShader &SetMask(GL::Texture value) {
+			static int id = BindTexture("mask", 1);
+
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, value);
-			
+
 			return *this;
 		}
+
 	private:
-		TintedMaskedShader();
-	};*/
+		MaskedFillShader();
+	};
+
+
 } }

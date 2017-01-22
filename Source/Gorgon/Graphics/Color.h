@@ -372,6 +372,14 @@ namespace Gorgon { namespace Graphics {
 		explicit operator int() const {
 			return int(this->operator RGBA());
 		}
+
+		operator std::string() const {
+			std::stringstream ss;
+
+			ss<<"("<<R<<", "<<G<<", "<<B<<", "<<A<<")";
+
+			return ss.str();
+		}
 		
 		RGBAf operator *(const RGBAf &other) {
             return {R * other.R, G * other.G, B * other.B, A * other.A};
@@ -456,6 +464,13 @@ namespace Gorgon { namespace Graphics {
 		// Maximum value for this color type, activate after c++14 support
 		// static const float Max = 1.0f;
 	};
+
+	/// Prints the given color to the stream
+	inline std::ostream &operator <<(std::ostream &stream, const RGBAf &color) {
+		stream<<(std::string)color;
+
+		return stream;
+	}
 
 	/// Contains commonly used colors. These colors are adjusted for perceived values and are not pure.
 	namespace Color {

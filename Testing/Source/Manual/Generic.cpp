@@ -184,9 +184,16 @@ Graphics::Bitmap Rectangle(int w, int h) {
 }
 
 int main() {
-	
+
+	std::cout<<"Current working directory: ";
+#ifdef WIN32
+	system("cd");
+#else
+	system("pwd");
+#endif
+	std::cout<<std::endl;
+
 	Gorgon::Initialize("Generic-test");
-    system("pwd");
     
     Gorgon::GL::log.InitializeConsole();
     
@@ -235,18 +242,27 @@ int main() {
     trig.Prepare();
     trig.Draw(l, 100,25, 0x80ffffff);
     
-    auto rect = Rectangle(25, 100);
-    rect.Prepare();
-    rect.Draw(l, 175,25, 0x80ffffff);
-    
+    l.NewMask();
+    l.SetDrawMode(l.ToMask);
     auto trig1 = Triangle1(25, 100);
     trig1.Prepare();
-    trig1.Draw(l, 225,25, 0x80ffffff);
+    trig1.Draw(l, 225,25, 0xffffffff);
     
     auto trig2 = Triangle2(25, 100);
     trig2.Prepare();
     trig2.Draw(l, 275,25, 0x80ffffff);
+
+	img.Draw(l, 250, 20);
     
+    l.SetDrawMode(l.UseMask);
+    auto rect = Rectangle(300, 50);
+    rect.Prepare();
+    rect.Draw(l, 210,25, 0xff80ffff);
+
+	l.Draw(225, 85, 100, 60);
+	img.Draw(l, 225, 90);
+
+    l.SetDrawMode(l.Normal);
     auto trig3 = Triangle3(25, 100);
     trig3.Prepare();
     trig3.Draw(l, 325,25, 0x80ffffff);
@@ -268,11 +284,11 @@ int main() {
     
     sty.SetTabWidthInLetters(1.5f);
     sty.SetParagraphSpacing(2);
-    sty.Print(l, 
+    /*sty.Print(l, 
         "Key list:\n"
         "esc\tClose\n"
         , 500, 10
-    );
+    );*/
 	
 	wind.KeyEvent.Register([&wind](Input::Key key, bool state) {
 		if (!state && (key == 27 || key == 65307))

@@ -26,6 +26,8 @@ namespace Gorgon { namespace GL {
         GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
         glDrawBuffers(1, DrawBuffers);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		log << "Frame buffer texture name " << texture << ", depth name " << depth;
 	}
 
 	void FrameBuffer::Destroy() {

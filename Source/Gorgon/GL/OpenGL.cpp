@@ -13,6 +13,7 @@
 
 #	define GL_BGR	0x80E0
 #	define GL_BGRA	0x80E1
+#	define GL_DEBUG_OUTPUT 0x92E0
 
 
 
@@ -66,6 +67,7 @@ PFNGLUSEPROGRAMPROC						glUseProgram;
 PFNGLVERTEXATTRIBPOINTERPROC			glVertexAttribPointer;
 PFNGLVERTEXATTRIBIPOINTERPROC			glVertexAttribIPointer;
 PFNGLBLENDFUNCSEPARATEPROC				glBlendFuncSeparate;
+PFNGLDEBUGMESSAGECALLBACKPROC			glDebugMessageCallback;
 
 PFNGLBINDFRAMEBUFFERPROC				glBindFramebuffer;
 PFNGLCHECKFRAMEBUFFERSTATUSPROC			glCheckFramebufferStatus;
@@ -80,6 +82,27 @@ PFNGLDELETERENDERBUFFERS				glDeleteRenderbuffers;
 
 
 namespace Gorgon { namespace GL {
+	Gorgon::Utils::Logger log;
+
+	 void 
+#ifdef WIN32
+	 _stdcall 
+#endif
+	 debug_proc(GLenum source,
+                GLenum type,
+                GLuint id,
+                GLenum severity,
+                GLsizei length,
+                const GLchar *message,
+                const void *) {
+
+		switch(id) {
+		case 131218: // NVIDIA: "shader will be recompiled due to GL state mismatches"
+			return;
+		}
+
+		log << message;
+	}
 
 	GLenum getGLColorMode(Graphics::ColorMode mode) {
 		switch(mode) {
@@ -187,6 +210,11 @@ namespace Gorgon { namespace GL {
 
 		glFrontFace(GL_CCW);
 
+#ifndef NDEBUG
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(&debug_proc, nullptr);
+#endif
+
 		Resize(size);
 		Clear();
 		glFlush();
@@ -260,6 +288,8 @@ namespace Gorgon { namespace GL {
 		glVertexAttribPointer			= (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
 		glVertexAttribIPointer			= (PFNGLVERTEXATTRIBIPOINTERPROC)wglGetProcAddress("glVertexAttribIPointer");
 		glBlendFuncSeparate				= (PFNGLBLENDFUNCSEPARATEPROC)wglGetProcAddress("glBlendFuncSeparate");
+
+		glDebugMessageCallback			= (PFNGLDEBUGMESSAGECALLBACKPROC)wglGetProcAddress("glDebugMessageCallback");
 
 		glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 		glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)wglGetProcAddress("glCheckFramebufferStatus");
@@ -340,6 +370,8 @@ namespace Gorgon { namespace GL {
 		glVertexAttribIPointer			= (PFNGLVERTEXATTRIBIPOINTERPROC)glXGetProcAddress((const GLubyte*)"glVertexAttribIPointer");
 		glBlendFuncSeparate				= (PFNGLBLENDFUNCSEPARATEPROC)glXGetProcAddress((const GLubyte*)"glBlendFuncSeparate");
 
+		glDebugMessageCallback			= (PFNGLDEBUGMESSAGECALLBACKPROC)glXGetProcAddress((const GLubyte*)"glDebugMessageCallback");
+
 		glBindFramebuffer				= (PFNGLBINDFRAMEBUFFERPROC)glXGetProcAddress((const GLubyte*)"glBindFramebuffer");
 		glCheckFramebufferStatus		= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)glXGetProcAddress((const GLubyte*)"glCheckFramebufferStatus");
 		glDeleteFramebuffers			= (PFNGLDELETEFRAMEBUFFERSPROC)glXGetProcAddress((const GLubyte*)"glDeleteFramebuffers");
@@ -372,5 +404,4 @@ namespace Gorgon { namespace GL {
 #endif
 	}
 	
-    Gorgon::Utils::Logger log;
 } }

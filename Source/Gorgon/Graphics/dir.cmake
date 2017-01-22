@@ -27,4 +27,14 @@ EmbedShaders(ShaderSrc.strings.gen Shaders.cpp
 	"Shaders/Simple_F.glsl"	
 	"Shaders/Alpha_F.glsl"	
 	"Shaders/Fill_F.glsl"	
+	"Shaders/ToMask_F.glsl"	
+	"Shaders/ToMaskFill_F.glsl"	
+)
+
+EmbedShaders(MaskedShaderSrc.strings.gen Shaders.cpp 
+	"Shaders/Masked_V.glsl"
+	"Shaders/MaskedAlpha_F.glsl"	
+	"Shaders/MaskedNoTex_V.glsl"	
+	"Shaders/MaskedFill_F.glsl"
+	"Shaders/Masked_F.glsl"
 )

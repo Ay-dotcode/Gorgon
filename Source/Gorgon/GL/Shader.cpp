@@ -74,9 +74,14 @@ namespace Gorgon { namespace GL {
 			glDeleteShader(fragmentshader);
 		}
 
-		glDetachShader(program, vertexshader);
-		glDeleteShader(vertexshader);
-		glDeleteProgram(program);
+		if(vertexshader) {
+            glDetachShader(program, vertexshader);
+            glDeleteShader(vertexshader);
+        }
+        
+        if(program) {   
+            glDeleteProgram(program);
+        }
 	}
 
 	void Shader::Use() {
@@ -104,33 +109,76 @@ namespace Gorgon { namespace GL {
 		return glGetUniformLocation(program, name.data());
 	}
 
+
+	int Shader::BindTexture(const std::string& name, int location) {
+		int ret = glGetUniformLocation(program, name.data());
+		glUniform1i(ret, location);
+
+		return ret;
+	}
+
 	void Shader::UpdateUniform(int name, float value) {
 		glUniform1f(name, value);
+#ifndef NDEBUG
+		if(glGetError()!=0) {
+			log << this->name << " update uniform " << name << " failed with value " << value;
+		}
+#endif
 	}
 
 	void Shader::UpdateUniform(int name, int value) {
 		glUniform1i(name, value);
+#ifndef NDEBUG
+		if(glGetError()!=0) {
+			log << this->name << " update uniform " << name << " failed with value " << value;
+		}
+#endif
 	}
 
 	void Shader::UpdateUniform(int name, const QuadVertices& value) {
 		glUniform3fv(name, 4, (GLfloat*)value.Data);
+#ifndef NDEBUG
+		if(glGetError()!=0) {
+			log << this->name << " update uniform " << name << " failed.";
+		}
+#endif
 	}
 
 	void Shader::UpdateUniform(int name, const QuadTextureCoords& value) {
 		glUniform2fv(name, 4, (GLfloat*)value.Data);
+#ifndef NDEBUG
+		if(glGetError()!=0) {
+			log << this->name << " update uniform " << name << " failed.";
+		}
+#endif
 	}
 
 	void Shader::UpdateUniform(int name, const Graphics::RGBAf& value) {
 		glUniform4fv(name, 1, (GLfloat*)value.Vector);
+#ifndef NDEBUG
+		if(glGetError()!=0) {
+			log << this->name << " update uniform " << name << " failed with value " << value;
+		}
+#endif
 	}
 
 	void Shader::UpdateUniform(int name, const Geometry::Point3D& value) {
 		glUniform3fv(name, 1, (GLfloat*)value.Vector);
+#ifndef NDEBUG
+		if(glGetError()!=0) {
+			log << this->name << " update uniform " << name << " failed with value " << value;
+		}
+#endif
 	}
 
 	void Shader::BindUBO(const std::string &name, UBOBindingPoint::Type binding_point) {
 		auto index = glGetUniformBlockIndex(program, name.data());
 		glUniformBlockBinding(program, index, binding_point);
+#ifndef NDEBUG
+		if(glGetError()!=0) {
+			log << this->name << " update uniform " << name << " failed with value " << binding_point;
+		}
+#endif
 	}
 
 	void Shader::InitializeFromFiles(const std::string& vertexfile, const std::string& fragmentfile,
@@ -185,18 +233,22 @@ namespace Gorgon { namespace GL {
 		}
 		
 		InsertDefines(vertexsrc, definesstring);
-		glAttachShader(program, CreateShader(GL_VERTEX_SHADER, vertexsrc, "[vertex]"+name));
+        
+        vertexshader = CreateShader(GL_VERTEX_SHADER, vertexsrc, "[vertex]"+name);
+		glAttachShader(program, vertexshader);
 
 		if(fragmentsrc!="") {
 			InsertDefines(fragmentsrc, definesstring);
 
-			glAttachShader(program, CreateShader(GL_FRAGMENT_SHADER, fragmentsrc, "[fragment]"+name));
+            fragmentshader = CreateShader(GL_FRAGMENT_SHADER, fragmentsrc, "[fragment]"+name);
+			glAttachShader(program, fragmentshader);
 		}
 		
 		if(geometrysrc!="") {
             InsertDefines(geometrysrc, definesstring);
 
-			glAttachShader(program, CreateShader(GL_GEOMETRY_SHADER, geometrysrc, "[geometry]"+name));
+            geometryshader = CreateShader(GL_GEOMETRY_SHADER, geometrysrc, "[geometry]"+name);
+			glAttachShader(program, geometryshader);
 		}
 
 		glLinkProgram(program);

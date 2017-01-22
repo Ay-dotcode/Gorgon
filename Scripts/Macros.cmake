@@ -106,5 +106,6 @@ MACRO(EmbedShaders out for) #inputs
 	list(APPEND Local ${ARGN})
 	list(APPEND Local ${out})
 	
-	set_property(SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} APPEND PROPERTY OBJECT_DEPENDS ${CMAKE_SOURCE_DIR}/${wd}/${out})
+	set(cur get_property(SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} PROPERTY OBJECT_DEPENDS))
+	set_property(SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} APPEND PROPERTY OBJECT_DEPENDS "${cur};${CMAKE_SOURCE_DIR}/${wd}/${out}")
 ENDMACRO()

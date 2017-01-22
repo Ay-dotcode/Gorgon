@@ -22,12 +22,16 @@ namespace Gorgon {
 		protected:
 			~Shader();
 
+			Shader(const std::string &name) : name(name), program(0), vertexshader(0), geometryshader(0), fragmentshader(0) {}
+
 			Shader(const Shader&) = delete;
+
 			Shader&operator=(const Shader&) = delete;
 
 			void Use();
 			bool IsInitialized();
 			int  LocateUniform(const std::string& name);
+			int  BindTexture(const std::string &name, int location);
 			void UpdateUniform(int name, float value);
 			void UpdateUniform(int name, int value);
 			void UpdateUniform(int name, const Geometry::Point3D &value);
@@ -35,10 +39,6 @@ namespace Gorgon {
 			void UpdateUniform(int name, const QuadTextureCoords &value);
 			void UpdateUniform(int name, const Graphics::RGBAf &value);
 			void BindUBO(const std::string& name, UBOBindingPoint::Type bindingPoint);
-
-		protected:
-
-			Shader(const std::string &name) : name(name), program(0), vertexshader(0), geometryshader(0), fragmentshader(0) {}
 
 			void InitializeWithSource(std::string vertexsrc, std::string fragmentsrc,
 									  std::string geometrysrc = "", std::map<std::string, std::string> defines={});
@@ -63,10 +63,6 @@ namespace Gorgon {
 			unsigned int					vertexshader;
 			unsigned int					geometryshader;
 			unsigned int					fragmentshader;
-
-
-			//void Initialize(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader,
-			//	const std::string& shaderDefines, InitializeShaderFunc initializeShaderFunc);
 		};
 
 	}

@@ -96,6 +96,13 @@ typedef char							GLchar;
 typedef ptrdiff_t						GLsizeiptr;
 typedef ptrdiff_t						GLintptr;
 
+typedef void (APIENTRY *DEBUGPROC)(GLenum source,
+								   GLenum type,
+								   GLuint id,
+								   GLenum severity,
+								   GLsizei length,
+								   const GLchar *message,
+								   const void *userParam);
 #ifndef LINUX
 typedef void 		(APIENTRYP PFNGLDRAWBUFFERSPROC) 				(GLsizei n, GLenum *bufs);
 typedef GLint		(APIENTRYP PFNGLGETATTRIBLOCATIONPROC)			(GLuint program, const GLchar *name);
@@ -145,6 +152,8 @@ typedef void		(APIENTRYP PFNGLUSEPROGRAMPROC)					(GLuint program);
 typedef void		(APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC)		(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void		(APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC)		(GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void		(APIENTRYP PFNGLBLENDFUNCSEPARATEPROC)			(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
+
+typedef void		(APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC)		(DEBUGPROC callback, void * userParam);
 
 //frame buffer
 typedef void		(APIENTRYP PFNGLBINDFRAMEBUFFERPROC)			(GLenum target, GLuint framebuffer);
@@ -209,6 +218,8 @@ extern PFNGLUSEPROGRAMPROC						glUseProgram;
 extern PFNGLVERTEXATTRIBPOINTERPROC				glVertexAttribPointer;
 extern PFNGLVERTEXATTRIBIPOINTERPROC			glVertexAttribIPointer;
 extern PFNGLBLENDFUNCSEPARATEPROC				glBlendFuncSeparate;
+
+extern PFNGLDEBUGMESSAGECALLBACKPROC			glDebugMessageCallback;
 
 //frame buffer
 extern PFNGLBINDFRAMEBUFFERPROC					glBindFramebuffer;
