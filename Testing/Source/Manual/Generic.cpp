@@ -183,6 +183,40 @@ Graphics::Bitmap Rectangle(int w, int h) {
     return b;
 }
 
+Graphics::Bitmap Rotate90(const Graphics::Bitmap &src) {
+	Graphics::Bitmap target(src.GetHeight(), src.GetWidth(), src.GetMode());
+
+	int h = target.GetHeight();
+	src.ForAllPixels([&](int x, int y, int c) {
+		target(y, h - x - 1, c) = src(x, y, c);
+	});
+
+	return target;
+}
+
+Graphics::Bitmap Rotate180(const Graphics::Bitmap &src) {
+	Graphics::Bitmap target(src.GetSize(), src.GetMode());
+
+	int h = target.GetHeight();
+	int w = target.GetWidth();
+	src.ForAllPixels([&](int x, int y, int c) {
+		target(w - x - 1, h - y - 1, c) = src(x, y, c);
+	});
+
+	return target;
+}
+
+Graphics::Bitmap Rotate270(const Graphics::Bitmap &src) {
+	Graphics::Bitmap target(src.GetHeight(), src.GetWidth(), src.GetMode());
+
+	int w = target.GetWidth();
+	src.ForAllPixels([&](int x, int y, int c) {
+		target(w - y - 1, x, c) = src(x, y, c);
+	});
+
+	return target;
+}
+
 int main() {
 
 	std::cout<<"Current working directory: ";
@@ -271,7 +305,19 @@ int main() {
     auto trig4 = Triangle4(25, 100);
     trig4.Prepare();
     trig4.Draw(l, 375,25, 0x80ffffff);
-    
+
+	auto trig5 = trig.Rotate90();
+	trig5.Prepare();
+	trig5.Draw(l, 100, 125);
+
+	auto trig6 = trig.Rotate180();
+	trig6.Prepare();
+	trig6.Draw(l, 200, 125);
+
+	auto trig7 = trig.Rotate270();
+	trig7.Prepare();
+	trig7.Draw(l, 100, 175);
+
     Graphics::BitmapFont fnt;
 	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
     fnt.Pack();

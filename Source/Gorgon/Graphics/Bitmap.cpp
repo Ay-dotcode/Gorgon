@@ -270,7 +270,7 @@ namespace Gorgon { namespace Graphics {
 		Assume(img);
 	}
 
-    std::vector<Geometry::Bounds> Bitmap::CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargins margins) {
+	std::vector<Geometry::Bounds> Bitmap::CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargins margins) {
         std::vector<Geometry::Bounds> ret;
         std::map<const Bitmap *, Geometry::Bounds> mapping;
         
@@ -554,9 +554,9 @@ namespace Gorgon { namespace Graphics {
 
 	Containers::Image Bitmap::ReleaseData() {
 		if(data==nullptr) {
-	#ifndef NDEBUG
-			throw std::runtime_error("No data to release");
-	#endif
+#ifndef NDEBUG
+			ASSERT_DUMP(false, "No data to release");
+#endif
 
 			return { };
 		}
@@ -568,6 +568,46 @@ namespace Gorgon { namespace Graphics {
 
 			return temp;
 		}
+	}
+
+	Graphics::Bitmap Bitmap::Rotate90() const {
+		ASSERT(data, "Bitmap data is not set");
+
+		Graphics::Bitmap target(GetHeight(), GetWidth(), GetMode());
+
+		int h = target.GetHeight();
+		ForAllPixels([&](int x, int y, int c) {
+			target(y, h - x - 1, c) = (*this)(x, y, c);
+		});
+
+		return target;
+	}
+
+	Graphics::Bitmap Bitmap::Rotate180() const {
+		ASSERT(data, "Bitmap data is not set");
+
+		Graphics::Bitmap target(GetSize(), GetMode());
+
+		int h = target.GetHeight();
+		int w = target.GetWidth();
+		ForAllPixels([&](int x, int y, int c) {
+			target(w - x - 1, h - y - 1, c) = (*this)(x, y, c);
+		});
+
+		return target;
+	}
+
+	Graphics::Bitmap Bitmap::Rotate270() {
+		ASSERT(data, "Bitmap data is not set");
+
+		Graphics::Bitmap target(GetHeight(), GetWidth(), GetMode());
+
+		int w = target.GetWidth();
+		ForAllPixels([&](int x, int y, int c) {
+			target(w - y - 1, x, c) = (*this)(x, y, c);
+		});
+
+		return target;
 	}
 
 

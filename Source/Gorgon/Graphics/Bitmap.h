@@ -82,6 +82,8 @@ namespace Gorgon { namespace Graphics {
 #endif
 		}
 
+		Bitmap(int width, int height, Graphics::ColorMode mode) : Bitmap({width, height}, mode) { }
+
 		/// Copy constructor is disabled. 
 		Bitmap(const Bitmap &) = delete;
 
@@ -332,7 +334,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Returns the bytes occupied by a single pixel of this image
-		unsigned GetBytesPerPixel() const {
+		int GetBytesPerPixel() const {
 #ifndef NDEBUG
 			if(!data) {
 				throw std::runtime_error("Bitmap data is not set");
@@ -495,58 +497,107 @@ namespace Gorgon { namespace Graphics {
 		Geometry::Margins Trim(bool horizontal, bool vertical) {
 			return Trim(horizontal, vertical, horizontal, vertical);
 		}
-		
+
 		/// Loops through all pixels of the image, giving coordinates to your function.
-		void ForAllPixels(std::function<void(int,int)> fn) {
-            for(int y=0; y<data->GetHeight(); y++) 
-                for(int x=0; x<data->GetWidth(); x++)
-                    fn(x, y);
-        }
-		
+		void ForAllPixels(std::function<void(int, int)> fn) const {
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					fn(x, y);
+		}
+
+		/// Loops through all pixels and channels of the image, giving coordinates to your function.
+		void ForAllPixels(std::function<void(int, int, int)> fn) const {
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					for(int c=0; c<GetBytesPerPixel(); c++)
+						fn(x, y, c);
+		}
+
 		/// Loops through all pixels of the image, giving coordinates to your function. If you return false, looping will
 		/// stop and the function will return false.
-		bool ForPixels(std::function<bool(int,int)> fn) {
-            for(int y=0; y<data->GetHeight(); y++) 
-                for(int x=0; x<data->GetWidth(); x++)
-                    if(!fn(x, y)) return false;
-                    
-            return true;
-        }
-		
+		bool ForPixels(std::function<bool(int, int)> fn) const {
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					if(!fn(x, y)) return false;
+
+			return true;
+		}
+
+		/// Loops through all pixels of the image, giving coordinates to your function. If you return false, looping will
+		/// stop and the function will return false.
+		bool ForPixels(std::function<bool(int, int, int)> fn) const {
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					for(int c=0; c<GetBytesPerPixel(); c++)
+							if(!fn(x, y, c)) return false;
+
+			return true;
+		}
+
 		/// Loops through all pixels of the image, giving the specified channel value to your function.
 		void ForAllPixels(std::function<void(Byte&)> fn, int channel) {
-            for(int y=0; y<data->GetHeight(); y++) 
-                for(int x=0; x<data->GetWidth(); x++)
-                    fn(this->operator()(x, y, channel));
-        }
-		
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					fn(this->operator()(x, y, channel));
+		}
+
 		/// Loops through all pixels of the image, giving the specified channel value to your function.
+		void ForAllPixels(std::function<void(Byte)> fn, int channel) const {
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					fn(this->operator()(x, y, channel));
+		}
+
+		/// Loops through all channels of all pixels of the image
 		void ForAllValues(std::function<void(Byte&)> fn) {
-            for(int y=0; y<data->GetHeight(); y++) 
-                for(int x=0; x<data->GetWidth(); x++)
-                    for(unsigned c=0; c<GetBytesPerPixel(); c++)
-                        fn(this->operator()(x, y, c));
-        }
-		
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					for(int c=0; c<GetBytesPerPixel(); c++)
+						fn(this->operator()(x, y, c));
+		}
+
+		/// Loops through all channels of all pixels of the image
+		void ForAllValues(std::function<void(Byte)> fn) const {
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					for(int c=0; c<GetBytesPerPixel(); c++)
+						fn(this->operator()(x, y, c));
+		}
+
 		/// Loops through all pixels of the image, giving the specified channel value to your function. If you return false, 
 		/// looping will stop and the function will return false.
 		bool ForPixels(std::function<bool(Byte&)> fn, int channel) {
-            for(int y=0; y<data->GetHeight(); y++) 
-                for(int x=0; x<data->GetWidth(); x++)
-                    if(!fn(this->operator()(x, y, channel)))
-                        return false;
-                    
-            return true;
-        }
-        
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					if(!fn(this->operator()(x, y, channel)))
+						return false;
+
+			return true;
+		}
+
+		/// Loops through all pixels of the image, giving the specified channel value to your function. If you return false, 
+		/// looping will stop and the function will return false.
+		bool ForPixels(std::function<bool(Byte)> fn, int channel) const {
+			for(int y=0; y<data->GetHeight(); y++)
+				for(int x=0; x<data->GetWidth(); x++)
+					if(!fn(this->operator()(x, y, channel)))
+						return false;
+
+			return true;
+		}
+
+		/// Rotates image data without any losses
+		Graphics::Bitmap Rotate90() const;
+
+		/// Rotates image data without any losses
+		Graphics::Bitmap Rotate180() const;
+
+		/// Rotates image data without any losses
+		Graphics::Bitmap Rotate270();
+
         /// Cleans the contents of the buffer by setting every byte it contains to 0.
         void Clean() {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Bitmap data is not set");
-			}
-#endif
-
+			ASSERT(data, "Bitmap data is not set");
             data->Clean();
         }
 
