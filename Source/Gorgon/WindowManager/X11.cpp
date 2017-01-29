@@ -646,6 +646,7 @@ failsafe: //this should use X11 screen as monitor
         data->ppoint=rect.TopLeft();
 
 		createglcontext();
+		glsize = rect.GetSize();
 	}
 	
 	Window::Window(const Gorgon::Window::FullscreenTag &, const WindowManager::Monitor &mon, const std::string &name, const std::string &title) : data(new internal::windowdata) {
@@ -722,6 +723,7 @@ failsafe: //this should use X11 screen as monitor
 		Layer::Resize(mon.GetSize());
 
 		createglcontext();
+		glsize = mon.GetSize();
 	}
 	
 	Window::~Window() {

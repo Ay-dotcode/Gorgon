@@ -234,6 +234,7 @@ int main() {
     Gorgon::GL::log.InitializeConsole();
     
 	Window wind({800, 600}, "windowtest");
+	wind.AllowResize();
 	Graphics::Initialize();
     
     wind.ClosingEvent.Register([]{ exit(0); });
@@ -273,12 +274,14 @@ int main() {
 	Graphics::BitmapLineProvider lineprov(Graphics::Orientation::Vertical, new Graphics::Bitmap(Circle(8)), new Graphics::Bitmap(Triangle(10,8)), new Graphics::Bitmap(Circle(8)));
 	lineprov.SetTiling(true);
 	lineprov.Prepare();
-
+	l.NewMask();
+	l.SetDrawMode(l.ToMask);
 	auto &line = lineprov.CreateAnimation(true);
 	Graphics::SizeController s(Graphics::SizeController::Single, Graphics::SizeController::Integral_Best, Graphics::Placement::MiddleCenter);
 	line.DrawIn(l, s, 0,140, 300,300);
     
-    auto circle = Circle(30);
+	l.SetDrawMode(l.UseMask);
+	auto circle = Circle(30);
     circle.Prepare();
     circle.Draw(l, 25,25, 0x80ffffff);
     
@@ -286,8 +289,8 @@ int main() {
     trig.Prepare();
     trig.Draw(l, 100,25, 0x80ffffff);
     
-    l.NewMask();
-    l.SetDrawMode(l.ToMask);
+    //l.NewMask();
+    //l.SetDrawMode(l.ToMask);
     auto trig1 = Triangle1(25, 100);
     trig1.Prepare();
     trig1.Draw(l, 225,25, 0xffffffff);
@@ -298,7 +301,7 @@ int main() {
 
 	img.Draw(l, 250, 20);
     
-    l.SetDrawMode(l.UseMask);
+    //l.SetDrawMode(l.UseMask);
     auto rect = Rectangle(300, 50);
     rect.Prepare();
     rect.Draw(l, 210,25, 0xff80ffff);
@@ -306,7 +309,7 @@ int main() {
 	l.Draw(225, 85, 100, 60);
 	img.Draw(l, 225, 90);
 
-    l.SetDrawMode(l.Normal);
+    //l.SetDrawMode(l.Normal);
     auto trig3 = Triangle3(25, 100);
     trig3.Prepare();
     trig3.Draw(l, 325,25, 0x80ffffff);

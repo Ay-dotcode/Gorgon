@@ -388,5 +388,7 @@ namespace Gorgon {
         Graphics::Layer *pointerlayer;
         bool iswmpointer = true;
         bool switchbacktolocalptr = false;
+
+		Geometry::Size glsize;
 	};
 }

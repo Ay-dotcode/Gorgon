@@ -19,7 +19,6 @@ namespace Gorgon { namespace GL {
 
 		/// Does not perform any action, allows late generation of buffers.
 		FrameBuffer() {
-			buffers.Add(this);
 		}
 
 		/// Generates a frame buffer. If software frame buffer does not work, this will
@@ -60,6 +59,9 @@ namespace Gorgon { namespace GL {
 		/// Stop using this buffer and render to screen instead
 		void RenderToScreen();
 
+		/// Updates the size of all framebuffers
+		static void UpdateSizes();
+
 		/// Whether hardware supports frame buffers. If it does not, using frame buffer
 		/// has no effect. However, frame buffer will generate a screen sized texture
 		/// keeping it updated with the screen resolution. Thus, even if operation is
@@ -74,6 +76,6 @@ namespace Gorgon { namespace GL {
 #endif
 
 		//this is used to resize buffer on a geometry change.
-		Containers::Collection<FrameBuffer> buffers;
+		static Containers::Collection<FrameBuffer> buffers;
 	};
 } }

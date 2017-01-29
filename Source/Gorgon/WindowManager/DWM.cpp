@@ -628,6 +628,7 @@ namespace Gorgon {
 		Layer::Resize(size);
 
 		createglcontext();
+		glsize = size;
 	}
 
 	Window::Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
@@ -688,6 +689,7 @@ namespace Gorgon {
 		Layer::Resize({monitor.GetSize().Width, monitor.GetSize().Height});
 
 		createglcontext();
+		glsize = monitor.GetSize();
 	}
 
 	Window::~Window() {

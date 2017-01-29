@@ -6,6 +6,7 @@ namespace Gorgon { namespace GL {
 
 	void FrameBuffer::Generate(bool gendepth) {
 		if(!glBindFramebuffer) return;
+		buffers.Add(this);
 
 		auto sz = Window::GetMinimumRequiredSize();
 
@@ -28,6 +29,18 @@ namespace Gorgon { namespace GL {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		log << "Frame buffer texture name " << texture << ", depth name " << depth;
+	}
+
+	void FrameBuffer::UpdateSizes() {
+		auto sz = Window::GetMinimumRequiredSize();
+
+		for(FrameBuffer &buffer : buffers) {
+			ResizeTexture(buffer.GetTexture(), sz, Graphics::ColorMode::RGBA);
+			if(buffer.depth) {
+				glBindRenderbuffer(GL_RENDERBUFFER, buffer.depth);
+				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, sz.Width, sz.Height);
+			}
+		}
 	}
 
 	void FrameBuffer::Destroy() {
@@ -60,6 +73,6 @@ namespace Gorgon { namespace GL {
 	}
 
 	bool FrameBuffer::HardwareSupport = false;
-
+	Containers::Collection<FrameBuffer> FrameBuffer::buffers;
 }
 }

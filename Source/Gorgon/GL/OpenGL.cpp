@@ -166,6 +166,14 @@ namespace Gorgon { namespace GL {
 		return tex;
 	}
 
+	void ResizeTexture(Texture tex, const Geometry::Size &size, Graphics::ColorMode mode) {
+
+		GLenum colormode=getGLColorMode(mode);
+
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, colormode, size.Width, size.Height, 0, colormode, GL_UNSIGNED_BYTE, NULL);
+	}
+
 	void UpdateTexture(Texture tex, const Containers::Image &data) {
 		settexturedata(tex, data);
 	}

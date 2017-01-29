@@ -33,11 +33,15 @@ namespace Gorgon {
 		/// This function generates a texture from the given image data.
 		Texture GenerateEmptyTexture(const Geometry::Size &size, Graphics::ColorMode mode);
 
+		/// Resizes the given texture to the specified size. The data in the texture cannot 
+		/// be trusted after this call.
+		void ResizeTexture(Texture texture, const Geometry::Size &size, Graphics::ColorMode mode);
+
 		/// Updates the given texture to contain the given data
-		void UpdateTexture(Texture texure, const Containers::Image &data);
+		void UpdateTexture(Texture texture, const Containers::Image &data);
 
 		/// Destroys the given texture
-		void DestroyTexture(Texture texure);
+		void DestroyTexture(Texture texture);
 
 		/// Begins using the given frame buffer. 
 		void RenderToTexture(FrameBuffer &buffer);

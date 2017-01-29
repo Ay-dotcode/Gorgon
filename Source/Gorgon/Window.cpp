@@ -3,6 +3,7 @@
 
 #include "Graphics/Layer.h"
 #include "Graphics/Color.h"
+#include "GL/FrameBuffer.h"
 
 
 namespace Gorgon {
@@ -16,6 +17,10 @@ namespace Gorgon {
 
 	void Window::Render() {
 		activatecontext();
+		if(glsize != bounds.GetSize()) {
+			GL::FrameBuffer::UpdateSizes();
+			glsize = bounds.GetSize();
+		}
 		ResetTransform(GetSize());
 		LayerColor = Graphics::RGBAf(1.f);
 		GL::Clear();

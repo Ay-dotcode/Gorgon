@@ -34,6 +34,7 @@ int main() {
 	
 	Gorgon::Initialize("Window-test");
     system("pwd");
+	Gorgon::GL::log.InitializeConsole();
     
     auto &monitors = WM::Monitor::Monitors();
     for(auto &monitor : monitors) {
