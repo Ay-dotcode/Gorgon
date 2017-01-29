@@ -6,6 +6,7 @@ SET(Local
 	ImageAnimation.h
 	Color.h
 	Drawables.h
+	EmptyImage.h
 	Font.h
 	Font.cpp
 	BitmapFont.h

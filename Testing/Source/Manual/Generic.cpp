@@ -20,6 +20,7 @@ namespace Input = Gorgon::Input;
 namespace Mouse = Gorgon::Input::Mouse;
 namespace WM = Gorgon::WindowManager;
 
+
 Graphics::Bitmap Circle(int r) {
     Graphics::Bitmap b({r*2+3, r*2+3}, Graphics::ColorMode::Alpha);
     
@@ -267,6 +268,8 @@ int main() {
 
 	bgimage.Prepare();
 	bgimage.DrawIn(l);
+
+	//Graphics::EmptyImage empty;
     
     auto circle = Circle(30);
     circle.Prepare();

@@ -408,10 +408,18 @@ namespace Gorgon { namespace Graphics {
 
 	using BitmapAnimationProvider = basic_TextureAnimationProvider<Bitmap, basic_TextureAnimation, basic_AnimationFrame<Bitmap>>;
 
+	using BitmapAnimation = BitmapAnimationProvider::AnimationType;
+
 	using ConstBitmapAnimationProvider = basic_TextureAnimationProvider<const Bitmap, basic_TextureAnimation, basic_AnimationFrame<const Bitmap>>;
+
+	using ConstBitmapAnimation = ConstBitmapAnimationProvider::AnimationType;
 
 	using ImageAnimationProvider = basic_TextureAnimationProvider<Image, basic_TextureAnimation, basic_AnimationFrame<Image>>;
 
+	using ImageAnimation = ImageAnimationProvider::AnimationType;
+
 	using ConstImageAnimationProvider = basic_TextureAnimationProvider<const Image, basic_TextureAnimation, basic_AnimationFrame<const Image>>;
+
+	using ConstImageAnimation = ConstImageAnimationProvider::AnimationType;
 
 } }
