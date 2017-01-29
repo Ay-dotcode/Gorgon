@@ -443,7 +443,11 @@ namespace Gorgon { namespace Graphics {
 			return getsize();
 		}
 
+		/// Returns the width of the drawable
+		int GetWidth() { return getsize().Width; }
 
+		/// Returns the height of the drawable
+		int GetHeight() { return getsize().Height; }
 
 	protected:
 

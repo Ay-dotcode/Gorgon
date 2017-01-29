@@ -49,10 +49,12 @@ namespace Gorgon { namespace Graphics {
 
 
 		virtual Geometry::Size calculatesize(const Geometry::Size &area) const override final {
+			return{0,0};
 		}
 
 
 		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override final {
+			return {0,0};
 		}
 
 

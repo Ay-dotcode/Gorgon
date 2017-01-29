@@ -35,6 +35,12 @@ namespace Gorgon {
 			Both		= 3,
 		};
 
+		/// 2D orientation constants
+		enum class Orientation {
+			Horizontal = 1,
+			Vertical   = 2
+		};
+
 		/// Creates a Tiling class from the given horizontal, vertical tiling info.
 		inline Tiling Tile(bool horizontal, bool vertical) {
 			return (horizontal ?
@@ -261,13 +267,13 @@ namespace Gorgon {
 			Geometry::Sizef CalculateSize(Geometry::Sizef objectsize, const Geometry::Sizef &area) const {
 				switch(Horizontal) {
 					case Integral_Smaller:
-						objectsize.Width=(area.Width/objectsize.Width)*objectsize.Width;
+						objectsize.Width=floor(area.Width/objectsize.Width)*objectsize.Width;
 						break;
 					case Integral_Fill:
-						objectsize.Width=area.Width/objectsize.Width*objectsize.Width;
+						objectsize.Width=ceil(area.Width/objectsize.Width)*objectsize.Width;
 						break;
 					case Integral_Best:
-						objectsize.Width=area.Width/objectsize.Width*objectsize.Width;
+						objectsize.Width=round(area.Width/objectsize.Width)*objectsize.Width;
 						break;
 					case Stretch:
 					case Tile:
@@ -284,13 +290,13 @@ namespace Gorgon {
 
 				switch(Vertical) {
 					case Integral_Smaller:
-						objectsize.Width=(area.Width/objectsize.Width)*objectsize.Width;
+						objectsize.Height=floor(area.Height/objectsize.Height)*objectsize.Height;
 						break;
 					case Integral_Fill:
-						objectsize.Width=area.Width/objectsize.Width*objectsize.Width;
+						objectsize.Height=ceil(area.Height/objectsize.Height)*objectsize.Height;
 						break;
 					case Integral_Best:
-						objectsize.Width=area.Width/objectsize.Width*objectsize.Width;
+						objectsize.Height=round(area.Height/objectsize.Height)*objectsize.Height;
 						break;
 					case Stretch:
 					case Tile:
@@ -359,13 +365,13 @@ namespace Gorgon {
 
 				switch(Vertical) {
 				case Integral_Smaller:
-					repeatingsize.Width=((area.Width-fixedsize.Width)/repeatingsize.Width)*repeatingsize.Width+fixedsize.Width;
+					repeatingsize.Height=((area.Height-fixedsize.Height)/repeatingsize.Height)*repeatingsize.Height+fixedsize.Height;
 					break;
 				case Integral_Fill:
-					repeatingsize.Width=int(std::ceil(float(area.Width-fixedsize.Width)/repeatingsize.Width))*repeatingsize.Width+fixedsize.Width;
+					repeatingsize.Height=int(std::ceil(float(area.Height-fixedsize.Height)/repeatingsize.Height))*repeatingsize.Height+fixedsize.Height;
 					break;
 				case Integral_Best:
-					repeatingsize.Width=int(std::round(float(area.Width-fixedsize.Width)/repeatingsize.Width))*repeatingsize.Width+fixedsize.Width;
+					repeatingsize.Height=int(std::round(float(area.Height-fixedsize.Height)/repeatingsize.Height))*repeatingsize.Height+fixedsize.Height;
 					break;
 				case Stretch:
 				case Tile:

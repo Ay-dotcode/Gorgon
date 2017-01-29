@@ -14,6 +14,8 @@ SET(Local
 	Graphics.cpp
 	Layer.cpp
 	Layer.h
+	Line.h
+	Line.cpp
 	Pointer.h
 	Pointer.cpp
 	Shaders.h

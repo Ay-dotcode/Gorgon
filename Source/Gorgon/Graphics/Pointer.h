@@ -154,25 +154,25 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		void SetController(Gorgon::Animation::ControllerBase &controller) override {
-			ASSERT(anim, "Try to use a moved out pointer");
+			ASSERT(anim, "Trying to use a moved out pointer");
 
 			anim->SetController(controller);
 		}
 		
 		bool HasController() const override {
-			ASSERT(anim, "Try to use a moved out pointer");
+			ASSERT(anim, "Trying to use a moved out pointer");
 
 			return anim->HasController();
 		}
 
 		Gorgon::Animation::ControllerBase &GetController() const {
-			ASSERT(anim, "Try to use a moved out pointer");
+			ASSERT(anim, "Trying to use a moved out pointer");
 
 			return anim->GetController();
 		}
 
 		void RemoveController() const {
-			ASSERT(anim, "Try to use a moved out pointer");
+			ASSERT(anim, "Trying to use a moved out pointer");
 
 			anim->RemoveController();
 		}

@@ -8,6 +8,7 @@
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/BitmapFont.h>
+#include <Gorgon/Graphics/Line.h>
 #include <Gorgon/GL/FrameBuffer.h>
 #include <Gorgon/GL.h>
 
@@ -269,7 +270,13 @@ int main() {
 	bgimage.Prepare();
 	bgimage.DrawIn(l);
 
-	//Graphics::EmptyImage empty;
+	Graphics::BitmapLineProvider lineprov(Graphics::Orientation::Vertical, new Graphics::Bitmap(Circle(8)), new Graphics::Bitmap(Triangle(10,8)), new Graphics::Bitmap(Circle(8)));
+	lineprov.SetTiling(true);
+	lineprov.Prepare();
+
+	auto &line = lineprov.CreateAnimation(true);
+	Graphics::SizeController s(Graphics::SizeController::Single, Graphics::SizeController::Integral_Best, Graphics::Placement::MiddleCenter);
+	line.DrawIn(l, s, 0,140, 300,300);
     
     auto circle = Circle(30);
     circle.Prepare();

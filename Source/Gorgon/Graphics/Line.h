@@ -1,0 +1,198 @@
+#pragma once
+
+#include "Animations.h"
+#include "ImageAnimation.h"
+#include "EmptyImage.h"
+#include "Bitmap.h"
+
+namespace Gorgon { namespace Graphics {
+	/// Interface for LineProviders
+	class ILineProvider : public SizelessAnimationProvider {
+	public:
+		ILineProvider(Orientation orientation) : orientation(orientation) 
+		{ }
+
+		/// Creates a start animation without controller. This function should always return an animation
+		virtual RectangularAnimation &CreateStart() const = 0;
+
+		/// Creates a start animation without controller. This function should always return an animation
+		virtual RectangularAnimation &CreateMiddle() const = 0;
+
+		/// Creates a start animation without controller. This function should always return an animation
+		virtual RectangularAnimation &CreateEnd() const = 0;
+
+		/// Changes the orientation of the provider. Instances will require redrawing before this change is
+		/// reflected.
+		void SetOrientation(Orientation value) {
+			orientation = value;
+		}
+
+		/// Returns the orientation of the line provider
+		Orientation GetOrientation() const {
+			return orientation;
+		}
+
+		/// Sets whether the middle part would be tiled. If set to false it will be stretched to fit the
+		/// given area. Instances will require redrawing before this change is reflected.
+		void SetTiling(bool value) {
+			tiling = value;
+		}
+
+		/// Returns if the middle part will be tiled.
+		bool GetTiling() const {
+			return tiling;
+		}
+
+	private:
+		Orientation orientation;
+		bool tiling = true;
+	};
+
+	/**
+	 * This class allows drawing a line like image that is made out of three parts. Lines can be scaled
+	 * along its orientation.
+	 * See basic_LineProvider for details.
+	 */
+	class Line : public SizelessAnimation {
+	public:
+		Line(const ILineProvider &prov, Gorgon::Animation::Timer &timer);
+
+		Line(const ILineProvider &prov, bool create = true);
+
+		virtual bool Progress(unsigned &leftover) override {
+			return true; //individual parts will work automatically
+		}
+
+	protected:
+		virtual void drawin(TextureTarget &target, const Geometry::Rectanglef &r, RGBAf color) const override;
+
+		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectanglef &r, RGBAf color) const override;
+
+		virtual Geometry::Size calculatesize(const Geometry::Size &area) const override {
+			if(prov.GetOrientation() == Orientation::Horizontal) {
+				return { area.Width, getsize() };
+			}
+			else {
+				return { getsize(), area.Height };
+			}
+		}
+
+		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override {
+			if(prov.GetOrientation() == Orientation::Horizontal) {
+				return controller.CalculateSize({middle.GetWidth(), getsize()}, {start.GetWidth()+end.GetWidth(), 0}, s);
+			}
+			else {
+				return controller.CalculateSize({getsize(), middle.GetHeight()}, {0, start.GetHeight()+end.GetHeight()}, s);
+			}
+		}
+
+		/// Returns the largest size in the non-scalable direction
+		int getsize() const {
+			if(prov.GetOrientation() == Orientation::Horizontal) {
+				return std::max(std::max(start.GetHeight(), middle.GetHeight()), end.GetHeight());
+			}
+			else {
+				return std::max(std::max(start.GetWidth(), middle.GetWidth()), end.GetWidth());
+			}
+		}
+
+	private:
+		RectangularAnimation &start;
+		RectangularAnimation &middle;
+		RectangularAnimation &end;
+
+		const ILineProvider &prov;
+
+	};
+
+	/**
+	 * This class allows instancing of a line like image that is made out of three 
+	 * parts. The first part is the start of the line, the second part is the middle 
+	 * and the third part is the end of the line. Middle part can be repeated or
+	 * stretched. A line provider can have empty animations. Provider will use 
+	 * EmptyImage for missing parts. A_ must derive from RectangularAnimationProvider.
+	 * For best results, try to keep height of parts same for horizontal, widths same
+	 * for vertical lines.
+	 */
+	template<class A_>
+	class basic_LineProvider : public ILineProvider {
+	public:
+		using AnimationType = Line;
+
+		/// Empty constructor, line can be instanced even if it is completely empty
+		explicit basic_LineProvider(Orientation orientation = Orientation::Horizontal) : ILineProvider(orientation)
+		{ }
+
+		/// Filling constructor
+		basic_LineProvider(Orientation orientation, A_  &start, A_ &middle, A_ &end) : ILineProvider(orientation),
+			start(&start), middle(&middle), end(&end) {}
+
+		/// Filling constructor, nullptr is acceptable
+		basic_LineProvider(Orientation orientation, A_ *start, A_ *middle, A_ *end) : ILineProvider(orientation),
+			start(start), middle(middle), end(end) {}
+
+		Line &CreateAnimation(Gorgon::Animation::Timer &timer) const {
+			return *new Line(*this, timer);
+		}
+
+		~basic_LineProvider() {
+			if(owned) {
+				delete start;
+				delete middle;
+				delete end;
+			}
+		}
+
+		Line &CreateAnimation(bool create = true) const {
+			return *new Line(*this, create);
+		}
+
+		virtual RectangularAnimation &CreateStart() const override {
+			if(start)
+				return start->CreateAnimation(false);
+			else
+				return EmptyImage::Instance();
+		}
+
+		virtual RectangularAnimation &CreateMiddle() const override {
+			if(middle)
+				return middle->CreateAnimation(false);
+			else
+				return EmptyImage::Instance();
+		}
+
+		virtual RectangularAnimation &CreateEnd() const override {
+			if(end)
+				return end->CreateAnimation(false);
+			else
+				return EmptyImage::Instance();
+		}
+
+		/// Prepares all animation providers if the they support Prepare function.
+		void Prepare() {
+			if(start)
+				start->Prepare();
+			if(middle)
+				middle->Prepare();
+			if(end)
+				end->Prepare();
+		}
+
+		/// Issuing this function will make this line to own its providers
+		/// destroying them when they are done.
+		void OwnProviders() {
+			owned = true;
+		}
+
+	private:
+		A_ *start = nullptr;
+		A_ *middle = nullptr;
+		A_ *end = nullptr;
+
+		bool owned = false;
+	};
+
+	using LineProvider = basic_LineProvider<RectangularAnimationProvider>;
+	using BitmapLineProvider = basic_LineProvider<Bitmap>;
+	using AnimatedBitmapLineProvider = basic_LineProvider<BitmapAnimationProvider>;
+}}
