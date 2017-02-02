@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 MACRO(DoSource)
 	#IF(${wd} MATCHES ".+")
@@ -106,6 +106,6 @@ MACRO(EmbedShaders out for) #inputs
 	list(APPEND Local ${ARGN})
 	list(APPEND Local ${out})
 	
-	set(cur get_property(SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} PROPERTY OBJECT_DEPENDS))
+	get_property(cur SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} PROPERTY OBJECT_DEPENDS)
 	set_property(SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} APPEND PROPERTY OBJECT_DEPENDS "${cur};${CMAKE_SOURCE_DIR}/${wd}/${out}")
 ENDMACRO()

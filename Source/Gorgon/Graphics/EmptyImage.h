@@ -119,10 +119,10 @@ namespace Gorgon { namespace Graphics {
 		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectanglef &r, RGBAf color) const override final {}
 
 
-		virtual Geometry::Size calculatesize(const Geometry::Size &area) const override final {}
+		virtual Geometry::Size calculatesize(const Geometry::Size &area) const override final { return {0,0}; }
 
 
-		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override final {}
+		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override final { return {0,0}; }
 
 
 		virtual void drawin(TextureTarget &target, const Geometry::Rectanglef &r, RGBAf color) const override {
