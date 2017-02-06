@@ -92,7 +92,7 @@ namespace Gorgon { namespace Animation {
 
 		/// This function creates a new animation from the stored animation provider. If
 		/// there is no animation provider stored, it will throw std::runtime_error
-		virtual typename A_::AnimationType &CreateAnimation(Timer &timer) const override {
+		virtual typename A_::AnimationType &CreateAnimation(ControllerBase &timer) const override {
 			if(anim)
 				return anim->CreateAnimation(timer);
 			else

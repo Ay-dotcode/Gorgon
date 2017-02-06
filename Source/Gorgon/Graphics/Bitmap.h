@@ -142,7 +142,7 @@ namespace Gorgon { namespace Graphics {
 		using Graphics::Texture::GetCoordinates;
 		using Graphics::Texture::GetImageSize;
 
-		BitmapWrapper &CreateAnimation(Gorgon::Animation::Timer &controller) const override { return *new BitmapWrapper(*this); }
+		BitmapWrapper &CreateAnimation(Gorgon::Animation::ControllerBase &controller) const override { return *new BitmapWrapper(*this); }
 
 		BitmapWrapper &CreateAnimation(bool create=false) const override { return *new BitmapWrapper(*this); }
 

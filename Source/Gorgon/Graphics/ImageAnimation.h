@@ -53,7 +53,7 @@ namespace Gorgon { namespace Graphics {
         using FrameType  = F_;
         
 		/// Creates a new image animation from the given parent
-		basic_TextureAnimation(const ParentType &parent, Gorgon::Animation::Timer &controller) :
+		basic_TextureAnimation(const ParentType &parent, Gorgon::Animation::ControllerBase &controller) :
 		parent(&parent), Gorgon::Animation::Base(controller) { }
 
 		/// Creates a new image animation from the given parent
@@ -171,7 +171,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Creates a new animation from this resource
-		virtual AnimationType &CreateAnimation(Gorgon::Animation::Timer &controller) const override {
+		virtual AnimationType &CreateAnimation(Gorgon::Animation::ControllerBase &controller) const override {
 			return *new AnimationType(*this, controller);
 		}
 

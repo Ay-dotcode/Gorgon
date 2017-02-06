@@ -224,7 +224,7 @@ namespace Gorgon {
 			virtual ~Provider() { }
 		
 			/// This function should create a new animation with the given controller
-			virtual Base &CreateAnimation(Timer &timer) const = 0;
+			virtual Base &CreateAnimation(ControllerBase &timer) const = 0;
 
 			/// This function should create an animation and depending on the create parameter,
 			/// it should create a timer for it. Timer creation is handled by Base class therefore

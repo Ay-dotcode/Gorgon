@@ -216,7 +216,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Creates a pointer from this provider
-		AnimationType &CreateAnimation(Gorgon::Animation::Timer &timer) const override {
+		AnimationType &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
 			return *new basic_AnimatedPointer<A_>(*this, A_::CreateAnimation(timer));
 		}
 
