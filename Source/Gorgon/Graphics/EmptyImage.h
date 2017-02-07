@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Animations.h"
 
 namespace Gorgon { namespace Graphics {
@@ -8,7 +10,9 @@ namespace Gorgon { namespace Graphics {
 	 * one EmptyImage is enough but this is not enforced. This class is separated into
 	 * two due to a bug in Visual Studio
 	 */
-	class EmptyImage : public virtual RectangularAnimation, public RectangularAnimationProvider 
+	class EmptyImage : 
+		public virtual RectangularAnimation, public virtual RectangularAnimationProvider, 
+		public virtual SizelessAnimation, public virtual SizelessAnimationProvider
 	{
 	public:
 
@@ -20,12 +24,12 @@ namespace Gorgon { namespace Graphics {
 			return true;
 		}
 
-		virtual EmptyImage &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
+		virtual Gorgon::Animation::Base &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
 			return const_cast<EmptyImage&>(*this);
 		}
 
 
-		virtual EmptyImage &CreateAnimation(bool create=true) const override {
+		virtual Gorgon::Animation::Base &CreateAnimation(bool create=true) const override {
 			return const_cast<EmptyImage&>(*this);
 		}
 
@@ -57,46 +61,6 @@ namespace Gorgon { namespace Graphics {
 
 		virtual Geometry::Size getsize() const override final {
 			return {0, 0};
-		}
-	};
-
-	/**
-	* This class is an empty image that will not draw anything if drawn on a layer.
-	* Its size is always 0x0 and it satisfies the requirements for animation. Only
-	* one EmptyImage is enough but this is not enforced. This class is separated into
-	* two due to a bug in Visual Studio
-	*/
-	class EmptySizelessImage : public virtual SizelessAnimation, public SizelessAnimationProvider {
-	public:
-		void DeleteAnimation() const override {}
-
-		virtual bool Progress(unsigned &leftover) override {
-			return true;
-		}
-
-		virtual EmptySizelessImage &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
-			return const_cast<EmptySizelessImage&>(*this);
-		}
-
-
-		virtual EmptySizelessImage &CreateAnimation(bool create=true) const override {
-			return const_cast<EmptySizelessImage&>(*this);
-		}
-
-		/// Returns the instance for empty image. Only one instance is enough.
-		static EmptySizelessImage &Instance() { static EmptySizelessImage me; return me; }
-
-	protected:
-		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectanglef &r, RGBAf color) const override final {}
-
-
-		virtual Geometry::Size calculatesize(const Geometry::Size &area) const override final { return {0,0}; }
-
-
-		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override final { return {0,0}; }
-
-
-		virtual void drawin(TextureTarget &target, const Geometry::Rectanglef &r, RGBAf color) const override {
 		}
 	};
 

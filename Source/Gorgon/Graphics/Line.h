@@ -33,7 +33,8 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Sets whether the middle part would be tiled. If set to false it will be stretched to fit the
-		/// given area. Instances will require redrawing before this change is reflected.
+		/// given area. Instances will require redrawing before this change is reflected. Tiling is 
+		/// recommended for all applications.
 		void SetTiling(bool value) {
 			tiling = value;
 		}
@@ -47,31 +48,6 @@ namespace Gorgon { namespace Graphics {
 		Orientation orientation;
 		bool tiling = true;
 	};
-    
-    /// Interface for masked lines
-    class IMaskedLineProvider : public SizelessAnimationProvider {
-    public:
-        virtual const ILineProvider &Base() const = 0;
-        virtual const ILineProvider *Mask() const = 0;
-
-		/// Changes the orientation of the provider. Instances will require redrawing before this change is
-		/// reflected.
-		void SetOrientation(Orientation value) {
-			getbase().SetOrientation(value);
-            auto mask = getmask();
-            if(mask)
-                mask->SetOrientation(value);
-		}
-
-		/// Returns the orientation of the line provider
-		Orientation GetOrientation() const {
-			return Base().GetOrientation();
-		}
-		
-    private:
-        virtual ILineProvider &getbase() = 0;
-        virtual ILineProvider *getmask() = 0;
-    };
 
 	/**
 	 * This class allows drawing a line like image that is made out of three parts. Lines can be scaled
@@ -157,7 +133,8 @@ namespace Gorgon { namespace Graphics {
 		basic_LineProvider(Orientation orientation, A_  &start, A_ &middle, A_ &end) : ILineProvider(orientation),
 			start(&start), middle(&middle), end(&end) {}
 
-		/// Filling constructor, nullptr is acceptable
+		/// Filling constructor, nullptr is acceptable, however, it is not adviced to use only one side, that is
+		/// a waste of resources, a regular image can also be tiled or strected to fit to an area.
 		basic_LineProvider(Orientation orientation, A_ *start, A_ *middle, A_ *end) : ILineProvider(orientation),
 			start(start), middle(middle), end(end) {}
 
@@ -222,108 +199,7 @@ namespace Gorgon { namespace Graphics {
 		bool owned = false;
 	};
 
-	/** 
-     * This class represents a line with a mask. The mask is simply another line.
-     * This system uses masked drawing to achive masking on the line. Drawing a
-     * masked line that is smaller than its caps could still produce a good looking
-     * line
-     */
-	class MaskedLine : public Line {
-    public:
-        MaskedLine(const ILineProvider &base, const ILineProvider &mask, Gorgon::Animation::ControllerBase &timer) : 
-            MaskedLine(base, &mask, timer) 
-        { }
-            
-        MaskedLine(const ILineProvider &base, Gorgon::Animation::ControllerBase &timer) :
-            MaskedLine(base, nullptr, timer)
-        { }
-        
-        MaskedLine(const ILineProvider &base, const ILineProvider &mask, bool create = false) :
-            MaskedLine(base, &mask, create)
-        { }
-        
-        MaskedLine(const ILineProvider &base, bool create = false) :
-            MaskedLine(base, nullptr, create)
-        { }
-        
-        MaskedLine(const IMaskedLineProvider &provider, Gorgon::Animation::ControllerBase &timer) :
-            MaskedLine(provider.Base(), provider.Mask(), timer)
-        { }
-        
-        MaskedLine(const IMaskedLineProvider &provider, bool create = false) : 
-            MaskedLine(provider.Base(), provider.Mask(), create)
-        { }
-
-		virtual bool Progress(unsigned &) override {
-			return true; //individual parts will work automatically
-		}
-
-	protected:
-        MaskedLine(const ILineProvider &base, const ILineProvider *mask, Gorgon::Animation::ControllerBase &timer);
-        
-        MaskedLine(const ILineProvider &base, const ILineProvider *mask, bool create = false);
-
-        virtual void drawin(TextureTarget &target, const Geometry::Rectanglef &r, RGBAf color) const override;
-
-		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectanglef &r, RGBAf color) const override;
-
-		virtual Geometry::Size calculatesize(const Geometry::Size &area) const override {
-			return Line::calculatesize(area);
-		}
-
-		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override {
-			return Line::calculatesize(controller, s);
-		}
-        
-    private:
-        Line *mask;
-	};
-
-
-	template<class A_>
-	class basic_MaskedLineProvider : IMaskedLineProvider {
-    public:
-        using ProviderType = basic_LineProvider<A_>;
-
-        basic_MaskedLineProvider(ProviderType &base) : base(base) { }
-        basic_MaskedLineProvider(ProviderType &base, ProviderType &mask) : base(base), mask(&mask) { }
-        
-        virtual const ProviderType &Base() const override {
-            return base;
-        }
-        
-        virtual const ProviderType *Mask() const override {
-            return mask;
-        }
-        
-		MaskedLine &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
-			return *new MaskedLine(*this, timer);
-		}
-
-		MaskedLine &CreateAnimation(bool create = true) const override {
-			return *new MaskedLine(*this, create);
-		}
-        
-    protected:
-                
-        virtual ProviderType &getbase() override {
-            return base;
-        }
-        
-        virtual ProviderType *getmask() override {
-            return mask;
-        }
-
-    private:
-        ProviderType &base;
-        ProviderType *mask = nullptr;
-	};
-
 	using LineProvider = basic_LineProvider<RectangularAnimationProvider>;
 	using BitmapLineProvider = basic_LineProvider<Bitmap>;
 	using AnimatedBitmapLineProvider = basic_LineProvider<BitmapAnimationProvider>;
-
-	using MaskedLineProvider = basic_MaskedLineProvider<RectangularAnimationProvider>;
-	using MaskedBitmapLineProvider = basic_MaskedLineProvider<Bitmap>;
-	using AnimatedMaskedBitmapLineProvider = basic_MaskedLineProvider<BitmapAnimationProvider>;
 }}

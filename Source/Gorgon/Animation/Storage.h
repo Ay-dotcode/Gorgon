@@ -94,7 +94,7 @@ namespace Gorgon { namespace Animation {
 		/// there is no animation provider stored, it will throw std::runtime_error
 		virtual typename A_::AnimationType &CreateAnimation(ControllerBase &timer) const override {
 			if(anim)
-				return anim->CreateAnimation(timer);
+				return dynamic_cast<typename A_::AnimationType &>(anim->CreateAnimation(timer));
 			else
 				throw std::runtime_error("Storage contains no animation");
 		}
@@ -103,7 +103,7 @@ namespace Gorgon { namespace Animation {
 		/// there is no animation provider stored, it will throw std::runtime_error
 		virtual typename A_::AnimationType &CreateAnimation(bool create=true) const override {
 			if(anim)
-				return anim->CreateAnimation(create);
+				return dynamic_cast<typename A_::AnimationType &>(anim->CreateAnimation(create));
 			else
 				throw std::runtime_error("Storage contains no animation");
 		}

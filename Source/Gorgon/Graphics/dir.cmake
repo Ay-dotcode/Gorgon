@@ -18,6 +18,8 @@ SET(Local
 	Line.cpp
 	Pointer.h
 	Pointer.cpp
+	Rectangle.h
+	Rectangle.cpp
 	Shaders.h
 	Shaders.cpp
 	Texture.h

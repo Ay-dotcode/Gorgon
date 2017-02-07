@@ -9,6 +9,7 @@
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/BitmapFont.h>
 #include <Gorgon/Graphics/Line.h>
+#include <Gorgon/Graphics/Rectangle.h>
 #include <Gorgon/GL/FrameBuffer.h>
 #include <Gorgon/GL.h>
 
@@ -233,16 +234,13 @@ int main() {
     
     Gorgon::GL::log.InitializeConsole();
     
-	Window wind({800, 600}, "windowtest");
-	wind.AllowResize();
+	Window wind({800, 600}, "windowtest", true);
 	Graphics::Initialize();
     
     wind.ClosingEvent.Register([]{ exit(0); });
 
 	Graphics::Layer l;
 	wind.Add(l);
-	l.Resize(150,150);
-	//l.EnableClipping();
 
 	Graphics::Bitmap img;
 	if(!img.Import("test.png")) {
@@ -271,66 +269,6 @@ int main() {
 	bgimage.Prepare();
 	bgimage.DrawIn(l);
 
-    Graphics::BitmapLineProvider maskp = {Graphics::Orientation::Vertical, new Graphics::Bitmap(Triangle(16, 16)), new Graphics::Bitmap(Rectangle(32,16)), new Graphics::Bitmap(Triangle(16, 16).Rotate180())};
-    Graphics::BitmapLineProvider basep = {Graphics::Orientation::Vertical, nullptr, &img, nullptr};
-	Graphics::MaskedBitmapLineProvider lineprov(basep, maskp);
-    //maskp.OwnProviders();
-	maskp.SetTiling(true);
-	maskp.Prepare();
-	auto &line = lineprov.CreateAnimation(true);
-	Graphics::SizeController s(Graphics::SizeController::Single, Graphics::SizeController::Integral_Best, Graphics::Placement::MiddleCenter);
-	line.DrawIn(l, 400,140, 300,120);
-    
-	auto circle = Circle(30);
-    circle.Prepare();
-    circle.Draw(l, 25,25, 0x80ffffff);
-    
-    auto trig = Triangle(25, 100);
-    trig.Prepare();
-    trig.Draw(l, 100,25, 0x80ffffff);
-    
-    l.NewMask();
-    l.SetDrawMode(l.ToMask);
-    auto trig1 = Triangle1(25, 100);
-    trig1.Prepare();
-    trig1.Draw(l, 225,25, 0xffffffff);
-    
-    auto trig2 = Triangle2(25, 100);
-    trig2.Prepare();
-    trig2.Draw(l, 275,25, 0x80ffffff);
-
-	img.Draw(l, 250, 20);
-    
-    l.SetDrawMode(l.UseMask);
-    auto rect = Rectangle(300, 50);
-    rect.Prepare();
-    rect.Draw(l, 210,25, 0xff80ffff);
-
-	l.Draw(225, 85, 100, 60);
-	img.Draw(l, 225, 90);
-
-    l.SetDrawMode(l.Normal);
-    auto trig3 = Triangle3(25, 100);
-    trig3.Prepare();
-    trig3.Draw(l, 325,25, 0x80ffffff);
-    
-    
-    auto trig4 = Triangle4(25, 100);
-    trig4.Prepare();
-    trig4.Draw(l, 375,25, 0x80ffffff);
-
-	auto trig5 = trig.Rotate90();
-	trig5.Prepare();
-	trig5.Draw(l, 100, 125);
-
-	auto trig6 = trig.Rotate180();
-	trig6.Prepare();
-	trig6.Draw(l, 200, 125);
-
-	auto trig7 = trig.Rotate270();
-	trig7.Prepare();
-	trig7.Draw(l, 100, 175);
-
     Graphics::BitmapFont fnt;
 	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
     fnt.Pack();
@@ -358,6 +296,19 @@ int main() {
 
 		return false;
 	});
+    
+    using Graphics::Bitmap;
+    
+    Graphics::BitmapRectangleProvider rectp(
+        new Bitmap(Triangle2(8,8)), new Bitmap(Rectangle(8,8)), new Bitmap(Triangle1(8,8)),
+        new Bitmap(Circle(4)), new Bitmap(Rectangle(8,8)), new Bitmap(Circle(4)),
+        new Bitmap(Triangle3(8,8)), new Bitmap(Rectangle(8,8)), new Bitmap(Triangle4(8,8)));
+    
+    rectp.OwnProviders();
+    rectp.Prepare();
+    auto &r = rectp.CreateAnimation();
+    
+    r.DrawIn(l, 100,100, 200,200);
 
 	while(true) {
 		Gorgon::NextFrame();
