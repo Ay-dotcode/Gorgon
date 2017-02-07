@@ -90,6 +90,9 @@ namespace Gorgon { namespace Graphics {
 
 		/// Sets current draw mode
 		virtual void SetDrawMode(DrawMode mode) = 0 ;
+
+		/// Should queue the start of a new mask. Only one mask buffer exists and it will be cleared and reused.
+		virtual void NewMask() = 0;
 	};
 
 	/// This interface defines a target that can change the color of drawings on it

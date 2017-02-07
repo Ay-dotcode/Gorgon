@@ -10,6 +10,7 @@
 #include <Gorgon/Graphics/BitmapFont.h>
 #include <Gorgon/Graphics/Line.h>
 #include <Gorgon/Graphics/Rectangle.h>
+#include <Gorgon/Graphics/MaskedObject.h>
 #include <Gorgon/GL/FrameBuffer.h>
 #include <Gorgon/GL.h>
 
@@ -267,7 +268,7 @@ int main() {
 		}
 
 	bgimage.Prepare();
-	bgimage.DrawIn(l);
+	//bgimage.DrawIn(l);
 
     Graphics::BitmapFont fnt;
 	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
@@ -301,12 +302,15 @@ int main() {
     
     Graphics::BitmapRectangleProvider rectp(
         new Bitmap(Triangle2(8,8)), new Bitmap(Rectangle(8,8)), new Bitmap(Triangle1(8,8)),
-        new Bitmap(Circle(4)), new Bitmap(Rectangle(8,8)), new Bitmap(Circle(4)),
+        new Bitmap(Rectangle(8,8)), new Bitmap(Rectangle(8,8)), new Bitmap(Rectangle(8,8)),
         new Bitmap(Triangle3(8,8)), new Bitmap(Rectangle(8,8)), new Bitmap(Triangle4(8,8)));
     
     rectp.OwnProviders();
     rectp.Prepare();
-    auto &r = rectp.CreateAnimation();
+    
+    Graphics::MaskedObjectProvider mop(bgimage, rectp);
+    
+    auto &r = mop.CreateAnimation();
     
     r.DrawIn(l, 100,100, 200,200);
 

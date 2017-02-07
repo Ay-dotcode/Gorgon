@@ -264,7 +264,7 @@ namespace Gorgon { namespace Graphics {
 		virtual void SetDrawMode(DrawMode mode) override { this->mode=mode; }
 
 		/// Queues the start of a new mask. Only one mask buffer exists and it will be cleared and reused.
-		void NewMask() {
+		virtual void NewMask() override {
 			Operation op = {Operation::NewMask, surfaces.size()+operations.size()};
 			operations.push_back(op);
 		}

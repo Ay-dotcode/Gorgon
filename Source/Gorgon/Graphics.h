@@ -207,8 +207,8 @@ namespace Gorgon {
 
 			/// Creates a new size controller with the given tiling options and placement
 			SizeController(Graphics::Tiling tile, Placement p=Placement::TopLeft) :
-				Horizontal(tile==Graphics::Tiling::Horizontal ? Tile : Stretch),
-				Vertical  (tile==Graphics::Tiling::Vertical   ? Tile : Stretch),
+				Horizontal(int(tile)&int(Graphics::Tiling::Horizontal) ? Tile : Stretch),
+				Vertical  (int(tile)&int(Graphics::Tiling::Vertical)   ? Tile : Stretch),
 				Place(p)
 			{ }
 

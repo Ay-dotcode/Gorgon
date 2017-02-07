@@ -352,6 +352,11 @@ namespace Gorgon { namespace Geometry {
 		l.Width = T_(l.Width*size.Width);
 		l.Height = T_(l.Height*size.Height);
 	}
+	
+	template <class T_>
+	basic_Size<T_> Union(const basic_Size<T_> &l, const basic_Size<T_> &r) {
+        return {std::min(l.Width, r.Width), std::min(l.Height, r.Height)};
+    }
 
 
 	/// @see basic_Size

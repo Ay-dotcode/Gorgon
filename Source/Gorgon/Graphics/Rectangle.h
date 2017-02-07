@@ -11,31 +11,31 @@ namespace Gorgon { namespace Graphics {
 	public:
 		IRectangleProvider() {}
 
-		/// Creates a start animation without controller. This function should always return an animation
+		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateTL() const = 0;
 
-		/// Creates a start animation without controller. This function should always return an animation
+		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateTM() const = 0;
 
-		/// Creates a start animation without controller. This function should always return an animation
+		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateTR() const = 0;
 
-		/// Creates a start animation without controller. This function should always return an animation
+		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateML() const = 0;
 
-		/// Creates a start animation without controller. This function should always return an animation
+		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateMM() const = 0;
 
-		/// Creates a start animation without controller. This function should always return an animation
+		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateMR() const = 0;
 
-		/// Creates a start animation without controller. This function should always return an animation
+		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateBL() const = 0;
 
-		/// Creates a start animation without controller. This function should always return an animation
+		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateBM() const = 0;
 
-		/// Creates a start animation without controller. This function should always return an animation
+		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateBR() const = 0;
 
 		/// Sets whether the middle parts would be tiled. If set to false it will be stretched to fit the
