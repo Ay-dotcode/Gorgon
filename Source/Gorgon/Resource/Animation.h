@@ -13,8 +13,6 @@ namespace Gorgon { namespace Resource {
 	class File;
 	class Reader;
 
-	class Animation;
-
 
 	/// This class represents an animation resource. Image animations can be created using this object. An animation object can be moved.
 	/// Duplicate function should be used to copy an animation.
@@ -24,7 +22,7 @@ namespace Gorgon { namespace Resource {
 		Animation() {}
 
 		/// Conversion constructor
-		Animation(Graphics::BitmapAnimationProvider &&anim) : Graphics::BitmapAnimationProvider(std::move(anim)) {
+		explicit Animation(Graphics::BitmapAnimationProvider &&anim) : Graphics::BitmapAnimationProvider(std::move(anim)) {
 		}
 
 		/// Copy constructor is disabled, use Duplicate or DeepDuplicate

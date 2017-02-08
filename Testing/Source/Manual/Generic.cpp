@@ -13,6 +13,8 @@
 #include <Gorgon/Graphics/MaskedObject.h>
 #include <Gorgon/GL/FrameBuffer.h>
 #include <Gorgon/GL.h>
+#include "Gorgon/Resource/Line.h"
+#include "Gorgon/Resource/File.h"
 
 
 
@@ -313,6 +315,23 @@ int main() {
     auto &r = mop.CreateAnimation();
     
     r.DrawIn(l, 100,100, 200,200);
+
+	Graphics::BitmapLineProvider linep(
+		Graphics::Orientation::Vertical,
+		new Bitmap(Triangle(4,4)), new Bitmap(Rectangle(8,8)), new Bitmap(Triangle(4,4).Rotate180())
+	);
+
+	Gorgon::Resource::File f;
+	/*auto liner = new Gorgon::Resource::Line(linep);
+	f.Root().Add(liner);
+	f.Save("linetest.gor");
+	*/
+	f.LoadFile("linetest.gor");
+	f.Prepare();
+	auto &line = f.Root().Get<Gorgon::Resource::Line>(0).CreateAnimation(false);
+
+	line.DrawIn(l, 10, 200, 8, 100);
+
 
 	while(true) {
 		Gorgon::NextFrame();

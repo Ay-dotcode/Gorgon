@@ -21,9 +21,13 @@ SET(Local
 	GID.h
 	Image.h
 	Image.cpp
+	Line.h
+	Line.cpp
 	Pointer.h
 	Pointer.cpp
 	Reader.h
+	Rectangle.h
+	Rectangle.cpp
 	Sound.h
 	Sound.cpp
 	Writer.h

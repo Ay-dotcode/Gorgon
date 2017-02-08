@@ -6,6 +6,8 @@
 #include "Bitmap.h"
 
 namespace Gorgon { namespace Graphics {
+	class Line;
+
 	/// Interface for LineProviders
 	class ILineProvider : public SizelessAnimationProvider {
 	public:
@@ -23,24 +25,24 @@ namespace Gorgon { namespace Graphics {
 
 		/// Changes the orientation of the provider. Instances will require redrawing before this change is
 		/// reflected.
-		void SetOrientation(Orientation value) {
+		virtual void SetOrientation(Orientation value) {
 			orientation = value;
 		}
 
 		/// Returns the orientation of the line provider
-		Orientation GetOrientation() const {
+		virtual Orientation GetOrientation() const {
 			return orientation;
 		}
 
 		/// Sets whether the middle part would be tiled. If set to false it will be stretched to fit the
 		/// given area. Instances will require redrawing before this change is reflected. Tiling is 
 		/// recommended for all applications.
-		void SetTiling(bool value) {
+		virtual void SetTiling(bool value) {
 			tiling = value;
 		}
 
 		/// Returns if the middle part will be tiled.
-		bool GetTiling() const {
+		virtual bool GetTiling() const {
 			return tiling;
 		}
 
@@ -133,10 +135,26 @@ namespace Gorgon { namespace Graphics {
 		basic_LineProvider(Orientation orientation, A_  &start, A_ &middle, A_ &end) : ILineProvider(orientation),
 			start(&start), middle(&middle), end(&end) {}
 
+		/// Filling constructor. This variant will move in the animations, freeing them with this item.
+		basic_LineProvider(Orientation orientation, A_  &&start, A_ &&middle, A_ &&end) : ILineProvider(orientation),
+			start(new A_(std::move(start))), middle(new A_(std::move(middle))), end(new A_(std::move(end))) {}
+
 		/// Filling constructor, nullptr is acceptable, however, it is not adviced to use only one side, that is
-		/// a waste of resources, a regular image can also be tiled or strected to fit to an area.
+		/// a waste of resources, a regular image can also be tiled or strected to fit to an area. 
 		basic_LineProvider(Orientation orientation, A_ *start, A_ *middle, A_ *end) : ILineProvider(orientation),
-			start(start), middle(middle), end(end) {}
+			start(start), middle(middle), end(end), owned(true) {}
+
+		/// Move constructor
+		basic_LineProvider(basic_LineProvider &&other) : 
+			start(other.start), middle(other.middle), end(other.end), owned(other.owned) 
+		{
+			other.owned = false;
+			other.start = nullptr;
+			other.middle = nullptr;
+			other.end = nullptr;
+		}
+
+		basic_LineProvider(const basic_LineProvider &) = delete;
 
 		~basic_LineProvider() {
 			if(owned) {
@@ -173,6 +191,21 @@ namespace Gorgon { namespace Graphics {
 				return end->CreateAnimation(false);
 			else
 				return EmptyImage::Instance();
+		}
+
+		/// Returns the start animation, might return nullptr
+		A_ *GetStart() const {
+			return start;
+		}
+
+		/// Returns the middle animation, might return nullptr
+		A_ *GetMiddle() const {
+			return middle;
+		}
+
+		/// Returns the end animation, might return nullptr
+		A_ * GetEnd() const {
+			return end;
 		}
 
 		/// Prepares all animation providers if the they support Prepare function.
