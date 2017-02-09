@@ -10,23 +10,64 @@ namespace Gorgon { namespace Resource {
 
 	class Rectangle : public Graphics::IRectangleProvider, public SizelessAnimationStorage {
 	public:
+        /// Creates a new rectangle using another rectangle provider
 		explicit Rectangle(Graphics::BitmapRectangleProvider &prov);
 
+        /// Creates a new rectangle using another rectangle provider
 		explicit Rectangle(Graphics::AnimatedBitmapRectangleProvider &prov);
 
-		Rectangle() = default;
+        /// Creates a new rectangle using another rectangle provider
+		explicit Rectangle(Graphics::BitmapRectangleProvider &&prov) : Rectangle(*new Graphics::BitmapRectangleProvider(std::move(prov))) {
+            own = true;
+        }
 
+        /// Creates a new rectangle using another rectangle provider
+		explicit Rectangle(Graphics::AnimatedBitmapRectangleProvider &&prov) :  Rectangle(*new Graphics::AnimatedBitmapRectangleProvider(std::move(prov))) {
+            own = true;
+        }
+
+        /// Creates an empty rectangle
+		Rectangle() = default;
+        
 		GID::Type GetGID() const override {
 			return GID::Rectangle;
 		}
-
+        
+        /// Changes provider to the given provider, ownership will not be transferred
 		void SetProvider(Graphics::BitmapRectangleProvider &value) {
+            RemoveProvider();
 			prov = &value;
 		}
 
+        /// Changes provider to the given provider, ownership will not be transferred
 		void SetProvider(Graphics::AnimatedBitmapRectangleProvider &value) {
+            RemoveProvider();
 			prov = &value;
 		}
+		
+		/// Changes the provider stored in this line, ownership will be transferred
+		void AssumeProvider(Graphics::BitmapRectangleProvider &value) {
+            RemoveProvider();
+			prov = &value;
+            own = true;
+		}
+
+		/// Changes the provider stored in this line, ownership will be transferred
+		void AssumeProvider(Graphics::AnimatedBitmapRectangleProvider &value) {
+            RemoveProvider();
+			prov = &value;
+            own = true;
+		}
+		
+		/// Removes the provider, if it is own by this resource it will be deleted.
+		void RemoveProvider() {
+            if(own)
+                delete prov;
+            
+            own = false;
+            
+            prov = nullptr;
+        }
 
 		virtual Graphics::RectangularAnimation &CreateTL() const override {
 			if(!prov)
@@ -131,7 +172,13 @@ namespace Gorgon { namespace Resource {
 	protected:
 		void save(Writer &writer) const override;
 
-		virtual Graphics::SizelessAnimationStorage animmoveout() override { Utils::NotImplemented(); }
+        /// Saves a provider directly
+		static void savethis(Writer &writer, const Graphics::BitmapRectangleProvider &rectangle);
+
+		/// Saves a provider directlys
+		static void savethis(Writer &writer, const Graphics::AnimatedBitmapRectangleProvider &rectangle);
+
+		virtual Graphics::SizelessAnimationStorage sizelessanimmoveout() override;
 
 	private:
 		virtual ~Rectangle() { 

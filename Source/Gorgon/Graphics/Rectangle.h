@@ -132,7 +132,8 @@ namespace Gorgon { namespace Graphics {
 			bl(&bl), bm(&bm), br(&br) 
         { }
 
-		/// Filling constructor
+		/// Filling constructor using move semantics, rectangle will create and own
+		/// new objects. The given objects will be moved to these new objects.
 		basic_RectangleProvider(
 			A_  &&tl, A_ &&tm, A_ &&tr,
 			A_  &&ml, A_ &&mm, A_ &&mr,
@@ -141,7 +142,7 @@ namespace Gorgon { namespace Graphics {
 			tl(new A_(std::move(tl))), tm(new A_(std::move(tm))), tr(new A_(std::move(tr))),
 			ml(new A_(std::move(ml))), mm(new A_(std::move(mm))), mr(new A_(std::move(mr))),
 			bl(new A_(std::move(bl))), bm(new A_(std::move(bm))), br(new A_(std::move(br))),
-			owned(true)
+			own(true)
         { }
 
 		/// Filling constructor, nullptr is acceptable
@@ -156,7 +157,7 @@ namespace Gorgon { namespace Graphics {
         { }
 
 		~basic_RectangleProvider() {
-			if(owned) {
+			if(own) {
 				delete tl;
 				delete tm;
 				delete tr;
@@ -294,6 +295,77 @@ namespace Gorgon { namespace Graphics {
 		A_ *GetBR() const {
             return br;
         }
+		/// Changes the TL animation, ownership semantics will not change
+		void SetTL(A_ *value) {
+            if(own)
+                delete tl;
+            
+            tl = value;
+        }
+
+		/// Changes the TM animation, ownership semantics will not change
+		void SetTM(A_ *value) {
+            if(own)
+                delete tm;
+            
+            tm = value;
+        }
+
+		/// Changes the TR animation, ownership semantics will not change
+		void SetTR(A_ *value) {
+            if(own)
+                delete tr;
+            
+            tr = value;
+        }
+
+		/// Changes the ML animation, ownership semantics will not change
+		void SetML(A_ *value) {
+            if(own)
+                delete ml;
+            
+            ml = value;
+        }
+
+		/// Changes the MM animation, ownership semantics will not change
+		void SetMM(A_ *value) {
+            if(own)
+                delete mm;
+            
+            mm = value;
+        }
+
+		/// Changes the MR animation, ownership semantics will not change
+		void SetMR(A_ *value) {
+            if(own)
+                delete mr;
+            
+            mr = value;
+        }
+
+		/// Changes the BL animation, ownership semantics will not change
+		void SetBL(A_ *value) {
+            if(own)
+                delete bl;
+            
+            bl = value;
+        }
+
+		/// Changes the BM animation, ownership semantics will not change
+		void SetBM(A_ *value) {
+            if(own)
+                delete bm;
+            
+            bm = value;
+        }
+
+		/// Changes the BR animation, ownership semantics will not change
+		void SetBR(A_ *value) {
+            if(own)
+                delete br;
+            
+            br = value;
+        }
 
 		/// Prepares all animation providers if the they support Prepare function.
 		void Prepare() {
@@ -319,10 +391,10 @@ namespace Gorgon { namespace Graphics {
 				br->Prepare();
 		}
 
-		/// Issuing this function will make this rectangle to own its providers
-		/// destroying them when they are done.
+		/// Issuing this function will make this rectangle to own its providers,
+		/// destroying them along with itself.
 		void OwnProviders() {
-			owned = true;
+			own = true;
 		}
 
 	private:
@@ -338,7 +410,7 @@ namespace Gorgon { namespace Graphics {
 		A_ *bm = nullptr;
 		A_ *br = nullptr;
 
-		bool owned = false;
+		bool own = false;
 	};
 
 	using RectangleProvider = basic_RectangleProvider<RectangularAnimationProvider>;

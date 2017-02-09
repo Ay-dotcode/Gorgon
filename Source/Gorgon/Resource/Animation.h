@@ -16,7 +16,7 @@ namespace Gorgon { namespace Resource {
 
 	/// This class represents an animation resource. Image animations can be created using this object. An animation object can be moved.
 	/// Duplicate function should be used to copy an animation.
-	class Animation : public Graphics::BitmapAnimationProvider, public RectangularAnimationStorage {
+	class Animation : public Graphics::BitmapAnimationProvider, public RectangularAnimationStorage, public SizelessAnimationStorage {
 	public:
 		/// Default constructor
 		Animation() {}
@@ -67,7 +67,9 @@ namespace Gorgon { namespace Resource {
 	protected:
         virtual ~Animation() { }
 
-		virtual Graphics::RectangularAnimationStorage animmoveout() override;
+		virtual Graphics::RectangularAnimationStorage rectanimmoveout() override;
+
+		virtual Graphics::SizelessAnimationStorage sizelessanimmoveout() override;
 
 		void save(Writer &writer) const override;
 

@@ -144,192 +144,398 @@ namespace Gorgon { namespace Resource {
 		}
 		//else empty rectangle
 
+		rectangle->own = true;
 		return rectangle;
 	}
 
 	void Rectangle::save(Writer &writer) const {
 		auto start = writer.WriteObjectStart(this);
 
-		if(prov) {
-			writer.WriteChunkHeader(GID::Rectangle_Props_II, 4);
-			writer.WriteBool(GetTiling());
-
-			if(dynamic_cast<Graphics::BitmapRectangleProvider*>(prov)) {
-				auto provider = dynamic_cast<Graphics::BitmapRectangleProvider*>(prov);
-
-                auto tl = provider->GetTL();
-                auto tm = provider->GetTM();
-                auto tr = provider->GetTR();
-                auto ml = provider->GetML();
-                auto mm = provider->GetMM();
-                auto mr = provider->GetMR();
-                auto bl = provider->GetBL();
-                auto bm = provider->GetBM();
-                auto br = provider->GetBR();
-
-				if(tm && ml && mr && bm && !tl && !tr && !bl && !br) {
-					Image::SaveThis(writer, *tm);
-					Image::SaveThis(writer, *ml);
-					if(mm)
-						Image::SaveThis(writer, *mm);
-					Image::SaveThis(writer, *mr);
-                    Image::SaveThis(writer, *bm);
-				}
-				else if(tm && ml && mr && bm && tl && tr && bl && br) {
-					Image::SaveThis(writer, *tl);
-					Image::SaveThis(writer, *tm);
-					Image::SaveThis(writer, *tr);
-					Image::SaveThis(writer, *ml);
-					if(mm)
-						Image::SaveThis(writer, *mm);
-					Image::SaveThis(writer, *mr);
-					Image::SaveThis(writer, *bl);
-					Image::SaveThis(writer, *bm);
-					Image::SaveThis(writer, *br);
-				}
-				else if(!tr && !tm && !tr && !ml && !mr && !bl && !bm && !br) {
-                    if(mm)
-                        Image::SaveThis(writer, *mm);
-				}
-				else {
-					//non standard
-
-					if(tl)
-						Image::SaveThis(writer, *tl);
-					else
-						Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
-
-					if(tm)
-						Image::SaveThis(writer, *tm);
-					else
-						Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
-
-					if(tr)
-						Image::SaveThis(writer, *tr);
-					else
-						Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
-
-					if(ml)
-						Image::SaveThis(writer, *ml);
-					else
-						Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
-
-					if(mm)
-						Image::SaveThis(writer, *mm);
-					else
-						Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
-
-					if(mr)
-						Image::SaveThis(writer, *mr);
-					else
-						Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
-
-					if(bl)
-						Image::SaveThis(writer, *bl);
-					else
-						Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
-
-					if(bm)
-						Image::SaveThis(writer, *bm);
-					else
-						Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
-
-					if(br)
-						Image::SaveThis(writer, *br);
-					else
-						Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
-                }
-			}
-			else if(dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov)) {
-				auto provider = dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov);
-
-                auto tl = provider->GetTL();
-                auto tm = provider->GetTM();
-                auto tr = provider->GetTR();
-                auto ml = provider->GetML();
-                auto mm = provider->GetMM();
-                auto mr = provider->GetMR();
-                auto bl = provider->GetBL();
-                auto bm = provider->GetBM();
-                auto br = provider->GetBR();
-
-				if(tm && ml && mr && bm && !tl && !tr && !bl && !br) {
-					Animation::SaveThis(writer, *tm);
-					Animation::SaveThis(writer, *ml);
-					if(mm)
-						Animation::SaveThis(writer, *mm);
-					Animation::SaveThis(writer, *mr);
-                    Animation::SaveThis(writer, *bm);
-				}
-				else if(tm && ml && mr && bm && tl && tr && bl && br) {
-					Animation::SaveThis(writer, *tl);
-					Animation::SaveThis(writer, *tm);
-					Animation::SaveThis(writer, *tr);
-					Animation::SaveThis(writer, *ml);
-					if(mm)
-						Animation::SaveThis(writer, *mm);
-					Animation::SaveThis(writer, *mr);
-					Animation::SaveThis(writer, *bl);
-					Animation::SaveThis(writer, *bm);
-					Animation::SaveThis(writer, *br);
-				}
-				else if(!tr && !tm && !tr && !ml && !mr && !bl && !bm && !br) {
-                    if(mm)
-                        Animation::SaveThis(writer, *mm);
-				}
-				else {
-					//non standard
-
-					if(tl)
-						Animation::SaveThis(writer, *tl);
-					else
-						Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-					if(tm)
-						Animation::SaveThis(writer, *tm);
-					else
-						Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-					if(tr)
-						Animation::SaveThis(writer, *tr);
-					else
-						Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-					if(ml)
-						Animation::SaveThis(writer, *ml);
-					else
-						Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-					if(mm)
-						Animation::SaveThis(writer, *mm);
-					else
-						Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-					if(mr)
-						Animation::SaveThis(writer, *mr);
-					else
-						Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-					if(bl)
-						Animation::SaveThis(writer, *bl);
-					else
-						Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-					if(bm)
-						Animation::SaveThis(writer, *bm);
-					else
-						Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-					if(br)
-						Animation::SaveThis(writer, *br);
-					else
-						Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-                }
-            }
-		}
-
+        if(dynamic_cast<Graphics::BitmapRectangleProvider*>(prov)) {
+            savethis(writer, *dynamic_cast<Graphics::BitmapRectangleProvider*>(prov));
+        }
+        else if(dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov)) {
+            savethis(writer, *dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov));
+        }
+        
 		writer.WriteEnd(start);
 	}
+	
+	void Rectangle::SaveThis(Writer &writer, const Graphics::BitmapRectangleProvider &provider) {
+        auto start = writer.WriteChunkStart(GID::Rectangle);
+        
+        savethis(writer, provider);
 
-}
-}
+		writer.WriteEnd(start);
+    }
+	
+	void Rectangle::savethis(Writer &writer, const Graphics::BitmapRectangleProvider &provider) {
+        writer.WriteChunkHeader(GID::Rectangle_Props_II, 4);
+        writer.WriteBool(provider.GetTiling());
+
+        auto tl = provider.GetTL();
+        auto tm = provider.GetTM();
+        auto tr = provider.GetTR();
+        auto ml = provider.GetML();
+        auto mm = provider.GetMM();
+        auto mr = provider.GetMR();
+        auto bl = provider.GetBL();
+        auto bm = provider.GetBM();
+        auto br = provider.GetBR();
+
+        if(tm && ml && mr && bm && !tl && !tr && !bl && !br) {
+            Image::SaveThis(writer, *tm);
+            Image::SaveThis(writer, *ml);
+            if(mm)
+                Image::SaveThis(writer, *mm);
+            Image::SaveThis(writer, *mr);
+            Image::SaveThis(writer, *bm);
+        }
+        else if(tm && ml && mr && bm && tl && tr && bl && br) {
+            Image::SaveThis(writer, *tl);
+            Image::SaveThis(writer, *tm);
+            Image::SaveThis(writer, *tr);
+            Image::SaveThis(writer, *ml);
+            if(mm)
+                Image::SaveThis(writer, *mm);
+            Image::SaveThis(writer, *mr);
+            Image::SaveThis(writer, *bl);
+            Image::SaveThis(writer, *bm);
+            Image::SaveThis(writer, *br);
+        }
+        else if(!tr && !tm && !tr && !ml && !mr && !bl && !bm && !br) {
+            if(mm)
+                Image::SaveThis(writer, *mm);
+        }
+        else {
+            //non standard
+
+            if(tl)
+                Image::SaveThis(writer, *tl);
+            else
+                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+
+            if(tm)
+                Image::SaveThis(writer, *tm);
+            else
+                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+
+            if(tr)
+                Image::SaveThis(writer, *tr);
+            else
+                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+
+            if(ml)
+                Image::SaveThis(writer, *ml);
+            else
+                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+
+            if(mm)
+                Image::SaveThis(writer, *mm);
+            else
+                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+
+            if(mr)
+                Image::SaveThis(writer, *mr);
+            else
+                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+
+            if(bl)
+                Image::SaveThis(writer, *bl);
+            else
+                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+
+            if(bm)
+                Image::SaveThis(writer, *bm);
+            else
+                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+
+            if(br)
+                Image::SaveThis(writer, *br);
+            else
+                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+        }
+    }
+	
+	void Rectangle::SaveThis(Writer &writer, const Graphics::AnimatedBitmapRectangleProvider &provider) {
+        auto start = writer.WriteChunkStart(GID::Rectangle);
+        
+        savethis(writer, provider);
+
+		writer.WriteEnd(start);
+    }
+	
+	void Rectangle::savethis(Writer &writer, const Graphics::AnimatedBitmapRectangleProvider &provider) {
+        writer.WriteChunkHeader(GID::Rectangle_Props_II, 4);
+        writer.WriteBool(provider.GetTiling());
+
+        auto tl = provider.GetTL();
+        auto tm = provider.GetTM();
+        auto tr = provider.GetTR();
+        auto ml = provider.GetML();
+        auto mm = provider.GetMM();
+        auto mr = provider.GetMR();
+        auto bl = provider.GetBL();
+        auto bm = provider.GetBM();
+        auto br = provider.GetBR();
+
+        if(tm && ml && mr && bm && !tl && !tr && !bl && !br) {
+            Animation::SaveThis(writer, *tm);
+            Animation::SaveThis(writer, *ml);
+            if(mm)
+                Animation::SaveThis(writer, *mm);
+            Animation::SaveThis(writer, *mr);
+            Animation::SaveThis(writer, *bm);
+        }
+        else if(tm && ml && mr && bm && tl && tr && bl && br) {
+            Animation::SaveThis(writer, *tl);
+            Animation::SaveThis(writer, *tm);
+            Animation::SaveThis(writer, *tr);
+            Animation::SaveThis(writer, *ml);
+            if(mm)
+                Animation::SaveThis(writer, *mm);
+            Animation::SaveThis(writer, *mr);
+            Animation::SaveThis(writer, *bl);
+            Animation::SaveThis(writer, *bm);
+            Animation::SaveThis(writer, *br);
+        }
+        else if(!tr && !tm && !tr && !ml && !mr && !bl && !bm && !br) {
+            if(mm)
+                Animation::SaveThis(writer, *mm);
+        }
+        else {
+            //non standard
+
+            if(tl)
+                Animation::SaveThis(writer, *tl);
+            else
+                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
+
+            if(tm)
+                Animation::SaveThis(writer, *tm);
+            else
+                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
+
+            if(tr)
+                Animation::SaveThis(writer, *tr);
+            else
+                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
+
+            if(ml)
+                Animation::SaveThis(writer, *ml);
+            else
+                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
+
+            if(mm)
+                Animation::SaveThis(writer, *mm);
+            else
+                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
+
+            if(mr)
+                Animation::SaveThis(writer, *mr);
+            else
+                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
+
+            if(bl)
+                Animation::SaveThis(writer, *bl);
+            else
+                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
+
+            if(bm)
+                Animation::SaveThis(writer, *bm);
+            else
+                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
+
+            if(br)
+                Animation::SaveThis(writer, *br);
+            else
+                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
+        }
+    }
+    
+    Graphics::SizelessAnimationStorage Rectangle::sizelessanimmoveout() {        
+        if(!prov)
+            throw std::runtime_error("Provider is not set");
+        
+        IRectangleProvider *p = nullptr;
+        
+        
+        if(dynamic_cast<Graphics::BitmapRectangleProvider*>(prov)) {
+            auto provider = dynamic_cast<Graphics::BitmapRectangleProvider*>(prov);
+            auto bp = new Graphics::BitmapRectangleProvider;
+            p = bp;
+            bp->SetTiling(prov->GetTiling());
+            
+            auto tl = provider->GetTL();
+            auto tm = provider->GetTM();
+            auto tr = provider->GetTR();
+            auto ml = provider->GetML();
+            auto mm = provider->GetMM();
+            auto mr = provider->GetMR();
+            auto bl = provider->GetBL();
+            auto bm = provider->GetBM();
+            auto br = provider->GetBR();
+
+            if(tl) {
+                if(dynamic_cast<Image*>(tl))
+                    bp->SetTL(new Graphics::Bitmap(dynamic_cast<Image*>(tl)->MoveOut()));
+                else
+                    bp->SetTL(new Graphics::Bitmap(std::move(*tl)));
+            }
+
+            if(tm) {
+                if(dynamic_cast<Image*>(tm))
+                    bp->SetTM(new Graphics::Bitmap(dynamic_cast<Image*>(tm)->MoveOut()));
+                else
+                    bp->SetTM(new Graphics::Bitmap(std::move(*tm)));
+            }
+
+            if(tr) {
+                if(dynamic_cast<Image*>(tr))
+                    bp->SetTR(new Graphics::Bitmap(dynamic_cast<Image*>(tr)->MoveOut()));
+                else
+                    bp->SetTR(new Graphics::Bitmap(std::move(*tr)));
+            }
+
+            if(ml) {
+                if(dynamic_cast<Image*>(ml))
+                    bp->SetML(new Graphics::Bitmap(dynamic_cast<Image*>(ml)->MoveOut()));
+                else
+                    bp->SetML(new Graphics::Bitmap(std::move(*ml)));
+            }
+
+            if(mm) {
+                if(dynamic_cast<Image*>(mm))
+                    bp->SetMM(new Graphics::Bitmap(dynamic_cast<Image*>(mm)->MoveOut()));
+                else
+                    bp->SetMM(new Graphics::Bitmap(std::move(*mm)));
+            }
+
+            if(mr) {
+                if(dynamic_cast<Image*>(mr))
+                    bp->SetMR(new Graphics::Bitmap(dynamic_cast<Image*>(mr)->MoveOut()));
+                else
+                    bp->SetMR(new Graphics::Bitmap(std::move(*mr)));
+            }
+
+            if(bl) {
+                if(dynamic_cast<Image*>(bl))
+                    bp->SetBL(new Graphics::Bitmap(dynamic_cast<Image*>(bl)->MoveOut()));
+                else
+                    bp->SetBL(new Graphics::Bitmap(std::move(*bl)));
+            }
+
+            if(bm) {
+                if(dynamic_cast<Image*>(bm))
+                    bp->SetBM(new Graphics::Bitmap(dynamic_cast<Image*>(bm)->MoveOut()));
+                else
+                    bp->SetBM(new Graphics::Bitmap(std::move(*bm)));
+            }
+
+            if(br) {
+                if(dynamic_cast<Image*>(br))
+                    bp->SetBR(new Graphics::Bitmap(dynamic_cast<Image*>(br)->MoveOut()));
+                else
+                    bp->SetBR(new Graphics::Bitmap(std::move(*br)));
+            }
+            
+            bp->OwnProviders();
+        }
+        else if(dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov)) {
+            auto provider = dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov);
+            auto bp = new Graphics::AnimatedBitmapRectangleProvider;
+            p = bp;
+            bp->SetTiling(prov->GetTiling());
+            
+            auto tl = provider->GetTL();
+            auto tm = provider->GetTM();
+            auto tr = provider->GetTR();
+            auto ml = provider->GetML();
+            auto mm = provider->GetMM();
+            auto mr = provider->GetMR();
+            auto bl = provider->GetBL();
+            auto bm = provider->GetBM();
+            auto br = provider->GetBR();
+
+            if(tl) {
+                if(dynamic_cast<Image*>(tl))
+                    bp->SetTL(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(tl)->MoveOut()));
+                else
+                    bp->SetTL(new Graphics::BitmapAnimationProvider(std::move(*tl)));
+            }
+
+            if(tm) {
+                if(dynamic_cast<Image*>(tm))
+                    bp->SetTM(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(tm)->MoveOut()));
+                else
+                    bp->SetTM(new Graphics::BitmapAnimationProvider(std::move(*tm)));
+            }
+
+            if(tr) {
+                if(dynamic_cast<Image*>(tr))
+                    bp->SetTR(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(tr)->MoveOut()));
+                else
+                    bp->SetTR(new Graphics::BitmapAnimationProvider(std::move(*tr)));
+            }
+
+            if(ml) {
+                if(dynamic_cast<Image*>(ml))
+                    bp->SetML(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(ml)->MoveOut()));
+                else
+                    bp->SetML(new Graphics::BitmapAnimationProvider(std::move(*ml)));
+            }
+
+            if(mm) {
+                if(dynamic_cast<Image*>(mm))
+                    bp->SetMM(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(mm)->MoveOut()));
+                else
+                    bp->SetMM(new Graphics::BitmapAnimationProvider(std::move(*mm)));
+            }
+
+            if(mr) {
+                if(dynamic_cast<Image*>(mr))
+                    bp->SetMR(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(mr)->MoveOut()));
+                else
+                    bp->SetMR(new Graphics::BitmapAnimationProvider(std::move(*mr)));
+            }
+
+            if(bl) {
+                if(dynamic_cast<Image*>(bl))
+                    bp->SetBL(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(bl)->MoveOut()));
+                else
+                    bp->SetBL(new Graphics::BitmapAnimationProvider(std::move(*bl)));
+            }
+
+            if(bm) {
+                if(dynamic_cast<Image*>(bm))
+                    bp->SetBM(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(bm)->MoveOut()));
+                else
+                    bp->SetBM(new Graphics::BitmapAnimationProvider(std::move(*bm)));
+            }
+
+            if(br) {
+                if(dynamic_cast<Image*>(br))
+                    bp->SetBR(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(br)->MoveOut()));
+                else
+                    bp->SetBR(new Graphics::BitmapAnimationProvider(std::move(*br)));
+            }             
+            
+            bp->OwnProviders();
+        }
+
+        if(!p)
+            throw std::runtime_error("Provider is not set");
+        
+		for(auto &child : children) {
+            child.DeleteResource();
+        }
+
+        children.Clear();
+        
+        if(!p)
+            throw std::runtime_error("Provider is not set");
+        
+        return Graphics::SizelessAnimationStorage(*p, true);
+    }
+
+} }

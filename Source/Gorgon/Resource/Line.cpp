@@ -104,21 +104,19 @@ namespace Gorgon { namespace Resource {
 		}
 		//else empty line
 
-		line->owned = true;
+		line->own = true;
 		return line;
 	}
 
 	void Line::save(Writer &writer) const {
 		auto start = writer.WriteObjectStart(this);
 
-		if(prov) {
-			if(dynamic_cast<Graphics::BitmapLineProvider*>(prov)) {
-                savethis(writer, *dynamic_cast<Graphics::BitmapLineProvider*>(prov));
-			}
-			else if(dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov)) {
-                savethis(writer, *dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov));
-			}
-		}
+        if(dynamic_cast<Graphics::BitmapLineProvider*>(prov)) {
+            savethis(writer, *dynamic_cast<Graphics::BitmapLineProvider*>(prov));
+        }
+        else if(dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov)) {
+            savethis(writer, *dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov));
+        }
 
 		writer.WriteEnd(start);
 	}
@@ -217,11 +215,12 @@ namespace Gorgon { namespace Resource {
         }
     }
     
-    Graphics::SizelessAnimationStorage Line::animmoveout() {        
+    Graphics::SizelessAnimationStorage Line::sizelessanimmoveout() {        
         if(!prov)
             throw std::runtime_error("Provider is not set");
         
         ILineProvider *p = nullptr;
+        
         
         if(dynamic_cast<Graphics::BitmapLineProvider*>(prov)) {
             auto provider = dynamic_cast<Graphics::BitmapLineProvider*>(prov);
@@ -229,26 +228,30 @@ namespace Gorgon { namespace Resource {
             p = bp;
             bp->SetTiling(prov->GetTiling());
             
-            if(provider->GetStart()) {
-                if(dynamic_cast<Image*>(provider->GetStart()))
-                    bp->SetStart(new Graphics::Bitmap(dynamic_cast<Image*>(provider->GetStart())->MoveOut()));
+            auto s = provider->GetStart();
+            auto m = provider->GetMiddle();
+            auto e = provider->GetEnd();
+
+            if(s) {
+                if(dynamic_cast<Image*>(s))
+                    bp->SetStart(new Graphics::Bitmap(dynamic_cast<Image*>(s)->MoveOut()));
                 else
-                    bp->SetStart(new Graphics::Bitmap(std::move(*provider->GetStart())));
+                    bp->SetStart(new Graphics::Bitmap(std::move(*s)));
             }
             
-            if(provider->GetMiddle()) {
-                if(dynamic_cast<Image*>(provider->GetMiddle()))
-                    bp->SetMiddle(new Graphics::Bitmap(dynamic_cast<Image*>(provider->GetMiddle())->MoveOut()));
+            if(m) {
+                if(dynamic_cast<Image*>(m))
+                    bp->SetMiddle(new Graphics::Bitmap(dynamic_cast<Image*>(m)->MoveOut()));
                 else
-                    bp->SetMiddle(new Graphics::Bitmap(std::move(*provider->GetMiddle())));
+                    bp->SetMiddle(new Graphics::Bitmap(std::move(*m)));
             }
             
-            if(provider->GetEnd()) {
-                if(dynamic_cast<Image*>(provider->GetEnd()))
-                    bp->SetEnd(new Graphics::Bitmap(dynamic_cast<Image*>(provider->GetEnd())->MoveOut()));
+            if(e) {
+                if(dynamic_cast<Image*>(e))
+                    bp->SetEnd(new Graphics::Bitmap(dynamic_cast<Image*>(e)->MoveOut()));
                 else
-                    bp->SetEnd(new Graphics::Bitmap(std::move(*provider->GetEnd())));
-            }
+                    bp->SetEnd(new Graphics::Bitmap(std::move(*e)));
+            }            
             
             bp->OwnProviders();
         }
@@ -258,26 +261,30 @@ namespace Gorgon { namespace Resource {
             p = bp;
             bp->SetTiling(prov->GetTiling());
             
-            if(provider->GetStart()) {
-                if(dynamic_cast<Animation*>(provider->GetStart()))
-                    bp->SetStart(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(provider->GetStart())->MoveOut()));
+            auto s = provider->GetStart();
+            auto m = provider->GetMiddle();
+            auto e = provider->GetEnd();
+
+            if(s) {
+                if(dynamic_cast<Image*>(s))
+                    bp->SetStart(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(s)->MoveOut()));
                 else
-                    bp->SetStart(new Graphics::BitmapAnimationProvider(std::move(*provider->GetStart())));
+                    bp->SetStart(new Graphics::BitmapAnimationProvider(std::move(*s)));
             }
             
-            if(provider->GetMiddle()) {
-                if(dynamic_cast<Animation*>(provider->GetMiddle()))
-                    bp->SetMiddle(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(provider->GetMiddle())->MoveOut()));
+            if(m) {
+                if(dynamic_cast<Image*>(m))
+                    bp->SetMiddle(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(m)->MoveOut()));
                 else
-                    bp->SetMiddle(new Graphics::BitmapAnimationProvider(std::move(*provider->GetMiddle())));
+                    bp->SetMiddle(new Graphics::BitmapAnimationProvider(std::move(*m)));
             }
             
-            if(provider->GetEnd()) {
-                if(dynamic_cast<Animation*>(provider->GetEnd()))
-                    bp->SetEnd(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(provider->GetEnd())->MoveOut()));
+            if(e) {
+                if(dynamic_cast<Image*>(e))
+                    bp->SetEnd(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(e)->MoveOut()));
                 else
-                    bp->SetEnd(new Graphics::BitmapAnimationProvider(std::move(*provider->GetEnd())));
-            }
+                    bp->SetEnd(new Graphics::BitmapAnimationProvider(std::move(*e)));
+            }            
             
             bp->OwnProviders();
         }

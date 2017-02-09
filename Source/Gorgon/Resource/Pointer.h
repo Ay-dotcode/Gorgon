@@ -70,7 +70,7 @@ namespace Gorgon { namespace Resource {
     protected:
         Graphics::PointerType type = Graphics::PointerType::Arrow;
 
-		virtual Graphics::RectangularAnimationStorage animmoveout() override;
+		virtual Graphics::RectangularAnimationStorage rectanimmoveout() override;
 
         virtual ~Pointer() { }
 		

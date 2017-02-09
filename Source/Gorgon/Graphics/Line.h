@@ -246,7 +246,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Issuing this function will make this line to own its providers
-		/// destroying them when they are done.
+		/// destroying them along with itself
 		void OwnProviders() {
 			owned = true;
 		}

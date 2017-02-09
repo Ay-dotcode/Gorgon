@@ -86,7 +86,7 @@ namespace Gorgon { namespace Resource {
         }
     }
 
-	Graphics::RectangularAnimationStorage Pointer::animmoveout() {
+	Graphics::RectangularAnimationStorage Pointer::rectanimmoveout() {
 		Graphics::BitmapPointerProvider &anim = *new Graphics::BitmapPointerProvider(std::move(*this));
 
 		return Graphics::RectangularAnimationStorage(anim, true);

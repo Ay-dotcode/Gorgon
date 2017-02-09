@@ -319,6 +319,8 @@ int main() {
 	);
 
     Gorgon::Resource::File f;
+    auto imgr = new Gorgon::Resource::Image(Rectangle(8,8));
+    f.Root().Add(imgr);
 	auto liner = new Gorgon::Resource::Line(linep);
 	f.Root().Add(liner);
     auto rectr = new Gorgon::Resource::Rectangle(rectp);
@@ -327,20 +329,14 @@ int main() {
 
 	f.LoadFile("linetest.gor");
 	f.Prepare();
-    
-    Graphics::MaskedObjectProvider mop(bgimage, dynamic_cast<Gorgon::Graphics::SizelessAnimationProvider&>(f.Root().Get<Gorgon::Resource::Rectangle>(1)));
+
+    auto rp = f.Root().Get<Gorgon::Resource::SizelessAnimationStorage>(2).MoveOut();
+
+    Graphics::MaskedObjectProvider mop(bgimage, rp);
     
     auto &r = mop.CreateAnimation();
     
     r.DrawIn(l, 100,100, 300,200);
-
-	auto linerp = f.Root().Get<Gorgon::Resource::Line>(0).MoveOut();
-    
-	auto &line = linerp.CreateAnimation(false);
-
-	line.DrawIn(l, 10, 200, 8, 100);
-    
-    //dynamic_cast<Gorgon::Resource::Image&>(f.Root().Get<Gorgon::Resource::Base>(1).Children[1]).Draw(l, 100, 10);
 
 
 	while(true) {
