@@ -16,7 +16,7 @@ namespace Gorgon { namespace Resource {
 
 		Line() : ILineProvider(Graphics::Orientation::Horizontal) { }
 
-		GID::Type GetGID() const {
+		GID::Type GetGID() const override {
 			return GID::Line;
 		}
 

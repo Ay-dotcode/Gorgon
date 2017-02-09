@@ -1,5 +1,6 @@
 #include "Image.h"
 #include "File.h"
+#include "../Graphics/EmptyImage.h"
 #include "../Encoding/PNG.h"
 
 namespace Gorgon { namespace Resource {
@@ -207,9 +208,14 @@ namespace Gorgon { namespace Resource {
     }
 
 	Graphics::RectangularAnimationStorage Image::animmoveout() {
-		Graphics::Bitmap &bmp = *new Graphics::Bitmap(MoveOut());
+        if(!HasData() || GetSize() == Geometry::Size(0,0)) {
+            return Graphics::EmptyImage::Instance();
+        }
+        else {
+            Graphics::Bitmap &bmp = *new Graphics::Bitmap(MoveOut());
 
-		return Graphics::RectangularAnimationStorage(bmp, true);
+            return Graphics::RectangularAnimationStorage(bmp, true);
+        }
 	}
 
 } }

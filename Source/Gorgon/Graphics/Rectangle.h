@@ -41,12 +41,12 @@ namespace Gorgon { namespace Graphics {
 		/// Sets whether the middle parts would be tiled. If set to false it will be stretched to fit the
 		/// given area. Instances will require redrawing before this change is reflected. This effects the
 		/// entire system. Tiling is recommended for all applications.
-		void SetTiling(bool value) {
+		virtual void SetTiling(bool value) {
 			tiling = value;
 		}
 
 		/// Returns if the middle part will be tiled.
-		bool GetTiling() const {
+		virtual bool GetTiling() const {
 			return tiling;
 		}
 
@@ -237,6 +237,51 @@ namespace Gorgon { namespace Graphics {
 			else
 				return EmptyImage::Instance();
 		}
+
+		/// Returns TL provider, may return nullptr.
+		A_ *GetTL() const {
+            return tl;
+        }
+
+		/// Returns TM provider, may return nullptr.
+		A_ *GetTM() const {
+            return tm;
+        }
+
+		/// Returns TR provider, may return nullptr.
+		A_ *GetTR() const {
+            return tr;
+        }
+
+		/// Returns ML provider, may return nullptr.
+		A_ *GetML() const {
+            return ml;
+        }
+
+		/// Returns MM provider, may return nullptr.
+		A_ *GetMM() const {
+            return mm;
+        }
+
+		/// Returns MR provider, may return nullptr.
+		A_ *GetMR() const {
+            return mr;
+        }
+
+		/// Returns BL provider, may return nullptr.
+		A_ *GetBL() const {
+            return bl;
+        }
+
+		/// Returns BM provider, may return nullptr.
+		A_ *GetBM() const {
+            return bm;
+        }
+
+		/// Returns BR provider, may return nullptr.
+		A_ *GetBR() const {
+            return br;
+        }
 
 		/// Prepares all animation providers if the they support Prepare function.
 		void Prepare() {

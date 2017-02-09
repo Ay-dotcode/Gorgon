@@ -191,6 +191,7 @@ namespace Gorgon {
 
 			constexpr Type Rectangle			{0x05120000};
 			constexpr Type Rectangle_Props		{0x05120101};
+			constexpr Type Rectangle_PropsII	{0x05120102};
 		}
 	}
 	

@@ -128,10 +128,9 @@ namespace Gorgon { namespace Resource {
 						Image::SaveThis(writer, *m);
 					Image::SaveThis(writer, *e);
 				}
-				else if(m && !s && !e) {
-					Image::SaveThis(writer, *m);
-				}
-				else if(!m && !s && !e) {
+				else if(!s && !e) {
+					if(m)
+						Image::SaveThis(writer, *m);
 				}
 				else {
 					//non standard
@@ -165,10 +164,9 @@ namespace Gorgon { namespace Resource {
 						Animation::SaveThis(writer, *m);
 					Animation::SaveThis(writer, *e);
 				}
-				else if(m && !s && !e) {
-					Animation::SaveThis(writer, *m);
-				}
-				else if(!m && !s && !e) {
+				else if(!s && !e) {
+                    if(m)
+                        Animation::SaveThis(writer, *m);
 				}
 				else {
 					//non standard

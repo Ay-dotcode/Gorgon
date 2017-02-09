@@ -10,6 +10,7 @@
 #include "Font.h"
 #include "Pointer.h"
 #include "Line.h"
+#include "Rectangle.h"
 
 
 
@@ -26,6 +27,7 @@ namespace Gorgon { namespace Resource {
 		Loaders[GID::Font]				= {GID::Font  	        , Font::LoadResource};
 		Loaders[GID::Pointer]			= {GID::Pointer	        , Pointer::LoadResource};
 		Loaders[GID::Line]				= {GID::Line	        , Line::LoadResource};
+		Loaders[GID::Rectangle]			= {GID::Rectangle       , Rectangle::LoadResource};
 	}
 
 	bool Resource::Reader::ReadCommonChunk(Base &self, GID::Type gid, unsigned long size) {
