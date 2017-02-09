@@ -132,6 +132,18 @@ namespace Gorgon { namespace Graphics {
 			bl(&bl), bm(&bm), br(&br) 
         { }
 
+		/// Filling constructor
+		basic_RectangleProvider(
+			A_  &&tl, A_ &&tm, A_ &&tr,
+			A_  &&ml, A_ &&mm, A_ &&mr,
+			A_  &&bl, A_ &&bm, A_ &&br
+		) : 
+			tl(new A_(std::move(tl))), tm(new A_(std::move(tm))), tr(new A_(std::move(tr))),
+			ml(new A_(std::move(ml))), mm(new A_(std::move(mm))), mr(new A_(std::move(mr))),
+			bl(new A_(std::move(bl))), bm(new A_(std::move(bm))), br(new A_(std::move(br))),
+			owned(true)
+        { }
+
 		/// Filling constructor, nullptr is acceptable
 		basic_RectangleProvider(
 			A_  *tl, A_ *tm, A_ *tr,

@@ -137,21 +137,24 @@ namespace Gorgon { namespace Graphics {
 
 		/// Filling constructor. This variant will move in the animations, freeing them with this item.
 		basic_LineProvider(Orientation orientation, A_  &&start, A_ &&middle, A_ &&end) : ILineProvider(orientation),
-			start(new A_(std::move(start))), middle(new A_(std::move(middle))), end(new A_(std::move(end))) {}
+			start(new A_(std::move(start))), middle(new A_(std::move(middle))), end(new A_(std::move(end))),
+			owned(true)
+        { }
 
 		/// Filling constructor, nullptr is acceptable, however, it is not adviced to use only one side, that is
 		/// a waste of resources, a regular image can also be tiled or strected to fit to an area. 
 		basic_LineProvider(Orientation orientation, A_ *start, A_ *middle, A_ *end) : ILineProvider(orientation),
-			start(start), middle(middle), end(end), owned(true) {}
+			start(start), middle(middle), end(end) {}
 
 		/// Move constructor
-		basic_LineProvider(basic_LineProvider &&other) : 
-			start(other.start), middle(other.middle), end(other.end), owned(other.owned) 
+		basic_LineProvider(basic_LineProvider &&other) : ILineProvider(other.GetOrientation()),
+			start(other.start), middle(other.middle), end(other.end), owned(other.owned)
 		{
 			other.owned = false;
 			other.start = nullptr;
 			other.middle = nullptr;
 			other.end = nullptr;
+            SetTiling(other.GetTiling());
 		}
 
 		basic_LineProvider(const basic_LineProvider &) = delete;
@@ -204,9 +207,33 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Returns the end animation, might return nullptr
-		A_ * GetEnd() const {
+		A_ *GetEnd() const {
 			return end;
 		}
+		
+		/// Changes the start animation, ownership semantics will not change
+		void SetStart(A_ *value) {
+            if(owned)
+                delete start;
+            
+            start = value;
+        }
+		
+		/// Changes the middle animation, ownership semantics will not change
+		void SetMiddle(A_ *value) {
+            if(owned)
+                delete middle;
+            
+            middle = value;
+        }
+		
+		/// Changes the end animation, ownership semantics will not change
+		void SetEnd(A_ *value) {
+            if(owned)
+                delete end;
+            
+            end = value;
+        }
 
 		/// Prepares all animation providers if the they support Prepare function.
 		void Prepare() {

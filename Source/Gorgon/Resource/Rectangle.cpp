@@ -37,7 +37,7 @@ namespace Gorgon { namespace Resource {
                 reader->ReadBool();
                 reader->ReadBool();
 			}
-			else if(gid == GID::Rectangle_PropsII) {
+			else if(gid == GID::Rectangle_Props_II) {
 				tile = reader->ReadBool();
             }
 			else {
@@ -151,7 +151,7 @@ namespace Gorgon { namespace Resource {
 		auto start = writer.WriteObjectStart(this);
 
 		if(prov) {
-			writer.WriteChunkHeader(GID::Rectangle_PropsII, 4);
+			writer.WriteChunkHeader(GID::Rectangle_Props_II, 4);
 			writer.WriteBool(GetTiling());
 
 			if(dynamic_cast<Graphics::BitmapRectangleProvider*>(prov)) {

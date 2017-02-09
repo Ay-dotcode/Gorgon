@@ -305,16 +305,17 @@ int main() {
     using Graphics::Bitmap;
     
     Graphics::BitmapRectangleProvider rectp(
-        new Bitmap(Triangle2(8,8)), new Bitmap(Rectangle(8,8)), new Bitmap(Triangle1(8,8)),
-        new Bitmap(Rectangle(8,8)), new Bitmap(Rectangle(8,8)), new Bitmap(Rectangle(8,8)),
-        new Bitmap(Triangle3(8,8)), new Bitmap(Rectangle(8,8)), new Bitmap(Triangle4(8,8)));
+        Triangle2(8,8), Rectangle(8,8), Triangle1(8,8),
+        Rectangle(8,8), Rectangle(8,8), Rectangle(8,8),
+        Triangle3(8,8), Rectangle(8,8), Triangle4(8,8)
+    );
     
     rectp.OwnProviders();
 
 
 	Graphics::BitmapLineProvider linep(
 		Graphics::Orientation::Vertical,
-		new Bitmap(Triangle(4,4)), new Bitmap(Rectangle(8,8)), new Bitmap(Triangle(4,4).Rotate180())
+		Triangle(4,4), Rectangle(8,8), Triangle(4,4).Rotate180()
 	);
 
     Gorgon::Resource::File f;
@@ -327,14 +328,15 @@ int main() {
 	f.LoadFile("linetest.gor");
 	f.Prepare();
     
-    Graphics::MaskedObjectProvider mop(bgimage, dynamic_cast<Gorgon::Graphics::SizelessAnimationProvider&>(f.Root().Get<Gorgon::Resource::Base>(1).Children[1]));
+    Graphics::MaskedObjectProvider mop(bgimage, dynamic_cast<Gorgon::Graphics::SizelessAnimationProvider&>(f.Root().Get<Gorgon::Resource::Rectangle>(1)));
     
     auto &r = mop.CreateAnimation();
     
-    r.DrawIn(l, 100,100, 200,200);
+    r.DrawIn(l, 100,100, 300,200);
 
-	
-	auto &line = f.Root().Get<Gorgon::Resource::Line>(0).CreateAnimation(false);
+	auto linerp = f.Root().Get<Gorgon::Resource::Line>(0).MoveOut();
+    
+	auto &line = linerp.CreateAnimation(false);
 
 	line.DrawIn(l, 10, 200, 8, 100);
     

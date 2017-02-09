@@ -10,23 +10,64 @@ namespace Gorgon { namespace Resource {
 
 	class Line : public Graphics::ILineProvider, public SizelessAnimationStorage {
 	public:
+        /// Creates a new line using another line provider.
 		explicit Line(Graphics::BitmapLineProvider &prov);
 
+        /// Creates a new line using another line provider.
 		explicit Line(Graphics::AnimatedBitmapLineProvider &prov);
+        
+        /// Creates a new line using another line provider.
+		explicit Line(Graphics::BitmapLineProvider &&prov) : Line(*new Graphics::BitmapLineProvider(std::move(prov))) {
+            owned = true;
+        }
 
+        /// Creates a new line using another line provider.
+		explicit Line(Graphics::AnimatedBitmapLineProvider &&prov) : Line(*new Graphics::AnimatedBitmapLineProvider(std::move(prov))) {
+            owned = true;
+        }
+        
+        /// Creates a new empty line
 		Line() : ILineProvider(Graphics::Orientation::Horizontal) { }
 
 		GID::Type GetGID() const override {
 			return GID::Line;
 		}
 
+		/// Changes the provider stored in this line, ownership will not be transferred
 		void SetProvider(Graphics::BitmapLineProvider &value) {
+            RemoveProvider();
 			prov = &value;
 		}
 
+		/// Changes the provider stored in this line, ownership will not be transferred
 		void SetProvider(Graphics::AnimatedBitmapLineProvider &value) {
+            RemoveProvider();
 			prov = &value;
 		}
+		
+		/// Changes the provider stored in this line, ownership will be transferred
+		void AssumeProvider(Graphics::BitmapLineProvider &value) {
+            RemoveProvider();
+			prov = &value;
+            owned = true;
+		}
+
+		/// Changes the provider stored in this line, ownership will be transferred
+		void AssumeProvider(Graphics::AnimatedBitmapLineProvider &value) {
+            RemoveProvider();
+			prov = &value;
+            owned = true;
+		}
+		
+		/// Removes the provider, if it is owned by this resource it will be deleted.
+		void RemoveProvider() {
+            if(owned)
+                delete prov;
+            
+            owned = false;
+            
+            prov = nullptr;
+        }
 
 		virtual Graphics::RectangularAnimation &CreateStart() const override {
 			if(!prov)
@@ -90,7 +131,7 @@ namespace Gorgon { namespace Resource {
 
 			return dynamic_cast<Gorgon::Graphics::Line &>(prov->CreateAnimation(create));
 		}
-
+        
 		/// This function loads a line resource from the file
 		static Line *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
 
@@ -99,21 +140,28 @@ namespace Gorgon { namespace Resource {
 
 		/// Saves a provider directly
 		static void SaveThis(Writer &writer, const Graphics::AnimatedBitmapLineProvider &line);
+        
 
 	protected:
 		void save(Writer &writer) const override;
 
-		virtual Graphics::SizelessAnimationStorage animmoveout() override { Utils::NotImplemented(); }
+        /// Saves a provider directly
+		static void savethis(Writer &writer, const Graphics::BitmapLineProvider &line);
+
+		/// Saves a provider directly
+		static void savethis(Writer &writer, const Graphics::AnimatedBitmapLineProvider &line);
+
+		virtual Graphics::SizelessAnimationStorage animmoveout() override;
 
 	private:
 		virtual ~Line() { 
-			if(own) 
+			if(owned) 
 				delete prov;
 		}
 
 		ILineProvider *prov = nullptr;
 		
-		bool own = false;
+		bool owned = false;
 	};
 
 } }

@@ -107,6 +107,10 @@ namespace Gorgon { namespace Resource {
                 anim.Add(std::move(*bmp), frame.GetDuration());
             }
 		}
+		
+		for(auto &child : children) {
+            child.DeleteResource();
+        }
 
 		children.Clear();
 		frames.clear();

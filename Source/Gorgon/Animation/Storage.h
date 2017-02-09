@@ -11,7 +11,7 @@ namespace Gorgon { namespace Animation {
 	* a value rather than a reference.
 	*/
 	template<class A_>
-	class basic_Storage : public virtual Provider {
+	class basic_Storage : public virtual Provider, public virtual A_ {
 	public:
 
 		/// Empty constructor
