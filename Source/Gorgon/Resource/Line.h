@@ -8,6 +8,11 @@ namespace Gorgon { namespace Resource {
 	class File;
 	class Reader;
 
+    /**
+     * This is a line resource, it stores a Graphics::LineProvider. This resource can work with
+     * Graphics::LineProvider, Graphics::BitmapLineProvider and Graphics::AnimatedBitmapLineProvider.
+     * @see Gorgon::Graphics::basic_LineProvider for details
+     */
 	class Line : public Graphics::ILineProvider, public SizelessAnimationStorage {
 	public:
         /// Creates a new line using another line provider.
@@ -15,6 +20,9 @@ namespace Gorgon { namespace Resource {
 
         /// Creates a new line using another line provider.
 		explicit Line(Graphics::AnimatedBitmapLineProvider &prov);
+
+        /// Creates a new line using another line provider.
+		explicit Line(Graphics::LineProvider &prov);
         
         /// Creates a new line using another line provider.
 		explicit Line(Graphics::BitmapLineProvider &&prov) : Line(*new Graphics::BitmapLineProvider(std::move(prov))) {
@@ -23,6 +31,11 @@ namespace Gorgon { namespace Resource {
 
         /// Creates a new line using another line provider.
 		explicit Line(Graphics::AnimatedBitmapLineProvider &&prov) : Line(*new Graphics::AnimatedBitmapLineProvider(std::move(prov))) {
+            own = true;
+        }
+
+        /// Creates a new line using another line provider.
+		explicit Line(Graphics::LineProvider &&prov) : Line(*new Graphics::LineProvider(std::move(prov))) {
             own = true;
         }
         
@@ -44,6 +57,12 @@ namespace Gorgon { namespace Resource {
             RemoveProvider();
 			prov = &value;
 		}
+
+		/// Changes the provider stored in this line, ownership will not be transferred
+		void SetProvider(Graphics::LineProvider &value) {
+            RemoveProvider();
+			prov = &value;
+		}
 		
 		/// Changes the provider stored in this line, ownership will be transferred
 		void AssumeProvider(Graphics::BitmapLineProvider &value) {
@@ -54,6 +73,13 @@ namespace Gorgon { namespace Resource {
 
 		/// Changes the provider stored in this line, ownership will be transferred
 		void AssumeProvider(Graphics::AnimatedBitmapLineProvider &value) {
+            RemoveProvider();
+			prov = &value;
+            own = true;
+		}
+
+		/// Changes the provider stored in this line, ownership will be transferred
+		void AssumeProvider(Graphics::LineProvider &value) {
             RemoveProvider();
 			prov = &value;
             own = true;
@@ -134,22 +160,10 @@ namespace Gorgon { namespace Resource {
         
 		/// This function loads a line resource from the file
 		static Line *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
-
-		/// Saves a provider directly
-		static void SaveThis(Writer &writer, const Graphics::BitmapLineProvider &line);
-
-		/// Saves a provider directly
-		static void SaveThis(Writer &writer, const Graphics::AnimatedBitmapLineProvider &line);
         
 
 	protected:
 		void save(Writer &writer) const override;
-
-        /// Saves a provider directly
-		static void savethis(Writer &writer, const Graphics::BitmapLineProvider &line);
-
-		/// Saves a provider directly
-		static void savethis(Writer &writer, const Graphics::AnimatedBitmapLineProvider &line);
 
 		virtual Graphics::SizelessAnimationStorage sizelessanimmoveout() override;
 

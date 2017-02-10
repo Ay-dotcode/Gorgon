@@ -45,11 +45,10 @@ namespace Gorgon { namespace Graphics {
 		/// it should create its own timer.
 		virtual Gorgon::Animation::Base &CreateAnimation(bool create=true) const override = 0;
 	};
-
-	class RectangularAnimationProvider : public virtual AnimationProvider, public virtual SizelessAnimationProvider {
+    
+    ///workaround for visual studio
+    class RectangularAnimationProviderBase : public virtual AnimationProvider, public virtual SizelessAnimationProvider {
 	public:
-		using AnimationType = RectangularAnimation;
-
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
 		virtual Gorgon::Animation::Base &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override = 0;
@@ -57,6 +56,19 @@ namespace Gorgon { namespace Graphics {
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
 		virtual Gorgon::Animation::Base &CreateAnimation(bool create=true) const override = 0;
+	};
+
+	class RectangularAnimationProvider : public RectangularAnimationProviderBase {
+	public:
+		using AnimationType = RectangularAnimation;
+
+		/// This function should create a new animation with the given controller and
+		/// if owner parameter is set to true, it should assume ownership of the controller
+		virtual RectangularAnimation &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override = 0;
+
+		/// This function should create and animation and depending on the create parameter,
+		/// it should create its own timer.
+		virtual RectangularAnimation &CreateAnimation(bool create=true) const override = 0;
 	};
 
 	using AnimationStorage = Gorgon::Animation::basic_Storage<AnimationProvider>;

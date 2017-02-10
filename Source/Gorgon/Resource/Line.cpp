@@ -3,6 +3,7 @@
 #include "Image.h"
 #include "File.h"
 #include "Reader.h"
+#include "Null.h"
 
 namespace Gorgon { namespace Resource {
 
@@ -13,6 +14,29 @@ namespace Gorgon { namespace Resource {
 	Line::Line(Graphics::AnimatedBitmapLineProvider &prov) : prov(&prov), ILineProvider(Graphics::Orientation::Horizontal)
 	{ }
 
+	template<class T_>
+	static Graphics::basic_LineProvider<T_> &fillfrom(Containers::Collection<Base> &children, Graphics::Orientation orient) {
+		T_ *s = nullptr, *m = nullptr, *e = nullptr;
+
+		if(children.GetCount() == 1) {
+			m = dynamic_cast<T_*>(&children[0]);
+		}
+		else if(children.GetCount() == 2) {
+			s = dynamic_cast<T_*>(&children[0]);
+			e = dynamic_cast<T_*>(&children[1]);
+		}
+		else {
+			if(children[0].GetGID() != GID::Null)
+				s = dynamic_cast<T_*>(&children[0]);
+			if(children[1].GetGID() != GID::Null)
+				m = dynamic_cast<T_*>(&children[1]);
+			if(children[2].GetGID() != GID::Null)
+				e = dynamic_cast<T_*>(&children[2]);
+		}
+
+		return *new Graphics::basic_LineProvider<T_>(orient, s, m, e);
+	}
+
 	Line *Line::LoadResource(std::weak_ptr<File> f, std::shared_ptr<Reader> reader, unsigned long totalsize) {
 		auto target = reader->Target(totalsize);
 
@@ -22,7 +46,7 @@ namespace Gorgon { namespace Resource {
 		bool tile;
 		Graphics::Orientation orient;
 		enum {
-			unknown, img, anim
+			unknown, img, anim, mixed
 		} type = unknown;
 		int c = 0;
 
@@ -42,14 +66,14 @@ namespace Gorgon { namespace Resource {
 						if(type == unknown)
 							type = img;
 						else if(type == anim)
-							throw std::runtime_error("Animations and images cannot be mixed in a line.");
+							type = mixed;
 
 					}
 					else if(resource->GetGID() == GID::Animation) {
 						if(type == unknown)
 							type = anim;
 						else if(type == img)
-							throw std::runtime_error("Animations and images cannot be mixed in a line.");
+							type = mixed;
 					}
 					else {
 						throw std::runtime_error("Line can only contain images or animations");
@@ -65,48 +89,66 @@ namespace Gorgon { namespace Resource {
 		}
 
 		if(type == anim) {
-			Animation *s = nullptr, *m = nullptr, *e = nullptr;
-			if(line->children.GetCount() == 1) {
-				m = dynamic_cast<Animation*>(line->children.First().CurrentPtr());
-			}
-			else if(line->children.GetCount() == 2) {
-				s = dynamic_cast<Animation*>(line->children.First().CurrentPtr());
-				e = dynamic_cast<Animation*>(line->children.Last().CurrentPtr());
-			}
-			else {
-				s = dynamic_cast<Animation*>(line->children.First().CurrentPtr());
-				m = dynamic_cast<Animation*>(&line->children[1]);
-				e = dynamic_cast<Animation*>(line->children.Last().CurrentPtr());
-			}
 			line->SetProvider(
-				*new Graphics::AnimatedBitmapLineProvider(orient, s, m, e)
+				fillfrom<Graphics::BitmapAnimationProvider>(line->children, orient)
 			);
-			line->SetTiling(tile);
 		}
 		else if(type == img) {
-			Image *s = nullptr, *m = nullptr, *e = nullptr;
-			if(line->children.GetCount() == 1) {
-				m = dynamic_cast<Image*>(line->children.First().CurrentPtr());
-			}
-			else if(line->children.GetCount() == 2) {
-				s = dynamic_cast<Image*>(line->children.First().CurrentPtr());
-				e = dynamic_cast<Image*>(line->children.Last().CurrentPtr());
-			}
-			else {
-				s = dynamic_cast<Image*>(line->children.First().CurrentPtr());
-				m = dynamic_cast<Image*>(&line->children[1]);
-				e = dynamic_cast<Image*>(line->children.Last().CurrentPtr());
-			}
 			line->SetProvider(
-				*new Graphics::BitmapLineProvider(orient, s, m, e)
+				fillfrom<Graphics::Bitmap>(line->children, orient)
 			);
-			line->SetTiling(tile);
+		}
+		else if(type == mixed) {
+			line->SetProvider(
+				fillfrom<Graphics::RectangularAnimationProvider>(line->children, orient)
+			);
 		}
 		//else empty line
+
+		if(type != unknown)
+			line->SetTiling(tile);
 
 		line->own = true;
 		return line;
 	}
+
+	static void savethis(Writer &writer, const Graphics::RectangularAnimationProvider *part) {
+        if(part == nullptr)
+            Null::SaveThis(writer);
+        else if(dynamic_cast<const Graphics::Bitmap*>(part))
+            Image::SaveThis(writer, *dynamic_cast<const Graphics::Bitmap*>(part));
+        else if(dynamic_cast<const Graphics::BitmapAnimationProvider*>(part))
+            Animation::SaveThis(writer, *dynamic_cast<const Graphics::BitmapAnimationProvider*>(part));
+        else
+            throw std::runtime_error("Unknown animation provider in line");
+        
+    }
+	
+	template <class T_>
+	static void savethis(Writer &writer, const Graphics::basic_LineProvider<T_> &provider) {
+        writer.WriteChunkHeader(GID::Line_Props, 2 * 4);
+        writer.WriteBool(provider.GetTiling());
+        writer.WriteEnum32(provider.GetOrientation());
+
+        auto s = provider.GetStart();
+        auto m = provider.GetMiddle();
+        auto e = provider.GetEnd();
+
+        if(s && e) {
+            savethis(writer, s);
+            if(m)
+                savethis(writer, m);
+            savethis(writer, e);
+        }
+        else if(!s && !e) {
+            savethis(writer, m);
+        }
+        else {
+            savethis(writer, s);
+            savethis(writer, m);
+            savethis(writer, e);
+        }
+    }
 
 	void Line::save(Writer &writer) const {
 		auto start = writer.WriteObjectStart(this);
@@ -117,104 +159,69 @@ namespace Gorgon { namespace Resource {
         else if(dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov)) {
             savethis(writer, *dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov));
         }
+        else if(dynamic_cast<Graphics::LineProvider*>(prov)) {
+            savethis(writer, *dynamic_cast<Graphics::LineProvider*>(prov));
+        }
 
 		writer.WriteEnd(start);
 	}
-	
-	void Line::SaveThis(Writer &writer, const Graphics::BitmapLineProvider &provider) {
-        auto start = writer.WriteChunkStart(GID::Line);
-        
-        savethis(writer, provider);
 
-		writer.WriteEnd(start);
-    }
-	
-	void Line::savethis(Writer &writer, const Graphics::BitmapLineProvider &provider) {
-        writer.WriteChunkHeader(GID::Line_Props, 2 * 4);
-        writer.WriteBool(provider.GetTiling());
-        writer.WriteEnum32(provider.GetOrientation());
+	template<class T_, class F_>
+	static void setthis(F_ f, Graphics::basic_LineProvider<T_> *provider, T_ *o) {
+		Utils::ASSERT_FALSE("Should not run");
+	}
 
-        auto s = provider.GetStart();
-        auto m = provider.GetMiddle();
-        auto e = provider.GetEnd();
+	template<class F_>
+	static void setthis(F_ f, Graphics::BitmapLineProvider *provider, Graphics::Bitmap *o) {
+		if(dynamic_cast<Image*>(o))
+			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOut()))();
+		else
+			std::bind(f, provider, new Graphics::Bitmap(std::move(*o)))();
+	}
 
-        if(s && e) {
-            Image::SaveThis(writer, *s);
-            if(m)
-                Image::SaveThis(writer, *m);
-            Image::SaveThis(writer, *e);
-        }
-        else if(!s && !e) {
-            if(m)
-                Image::SaveThis(writer, *m);
-        }
-        else {
-            //non standard
+	template<class F_>
+	static void setthis(F_ f, Graphics::AnimatedBitmapLineProvider *provider, Graphics::BitmapAnimationProvider *o) {
+		if(dynamic_cast<Image*>(o))
+			std::bind(f, provider, new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(o)->MoveOut()))();
+		else
+			std::bind(f, provider, new Graphics::BitmapAnimationProvider(std::move(*o)))();
+	}
 
-            if(s)
-                Image::SaveThis(writer, *s);
-            else
-                Image::SaveThis(writer, Graphics::Bitmap(0,0,Graphics::ColorMode::RGBA));
+	template<class F_>
+	static void setthis(F_ f, Graphics::AnimatedBitmapLineProvider *provider, Graphics::RectangularAnimationProvider *o) {
+		if(dynamic_cast<Image*>(o))
+			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOut()))();
+		if(dynamic_cast<Animation*>(o))
+			std::bind(f, provider, new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(s)->MoveOut()))();
+		else
+			f(provider, new Graphics::RectangularAnimationProvider(std::move(*o)));
+	}
 
-            if(m)
-                Image::SaveThis(writer, *m);
-            else
-                Image::SaveThis(writer, Graphics::Bitmap(0, 0, Graphics::ColorMode::RGBA));
+	template<class T_>
+	static void moveout(Graphics::basic_LineProvider<T_> *provider, Graphics::ILineProvider *&p) {
+		auto bp = new Graphics::basic_LineProvider<T_>(provider->GetOrientation());
+		p = bp;
+		bp->SetTiling(provider->GetTiling());
 
-            if(e)
-                Image::SaveThis(writer, *e);
-            else
-                Image::SaveThis(writer, Graphics::Bitmap(0, 0, Graphics::ColorMode::RGBA));
-        }
-    }
-	
-	void Line::SaveThis(Writer &writer, const Graphics::AnimatedBitmapLineProvider &provider) {
-        auto start = writer.WriteChunkStart(GID::Line);
-        
-        savethis(writer, provider);
+		auto s = provider->GetStart();
+		auto m = provider->GetMiddle();
+		auto e = provider->GetEnd();
 
-		writer.WriteEnd(start);
-    }
-	
-	void Line::savethis(Writer &writer, const Graphics::AnimatedBitmapLineProvider &provider) {
-        writer.WriteChunkHeader(GID::Line_Props, 2 * 4);
-        writer.WriteBool(provider.GetTiling());
-        writer.WriteEnum32(provider.GetOrientation());
+		if(s) {
+			setthis(&Graphics::basic_LineProvider<T_>::SetStart, bp, s);
+		}
 
-        auto s = provider.GetStart();
-        auto m = provider.GetMiddle();
-        auto e = provider.GetEnd();
+		if(m) {
+			setthis(&Graphics::basic_LineProvider<T_>::SetMiddle, bp, m);
+		}
 
-        if(s && e) {
-            Animation::SaveThis(writer, *s);
-            if(m)
-                Animation::SaveThis(writer, *m);
-            Animation::SaveThis(writer, *e);
-        }
-        else if(!s && !e) {
-            if(m)
-                Animation::SaveThis(writer, *m);
-        }
-        else {
-            //non standard
+		if(e) {
+			setthis(&Graphics::basic_LineProvider<T_>::SetEnd, bp, e);
+		}
 
-            if(s)
-                Animation::SaveThis(writer, *s);
-            else
-                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-            if(m)
-                Animation::SaveThis(writer, *m);
-            else
-                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-
-            if(e)
-                Animation::SaveThis(writer, *e);
-            else
-                Animation::SaveThis(writer, Graphics::BitmapAnimationProvider());
-        }
-    }
-    
+		bp->OwnProviders();
+	}
+	   
     Graphics::SizelessAnimationStorage Line::sizelessanimmoveout() {        
         if(!prov)
             throw std::runtime_error("Provider is not set");
@@ -224,70 +231,16 @@ namespace Gorgon { namespace Resource {
         
         if(dynamic_cast<Graphics::BitmapLineProvider*>(prov)) {
             auto provider = dynamic_cast<Graphics::BitmapLineProvider*>(prov);
-            auto bp = new Graphics::BitmapLineProvider(prov->GetOrientation());
-            p = bp;
-            bp->SetTiling(prov->GetTiling());
-            
-            auto s = provider->GetStart();
-            auto m = provider->GetMiddle();
-            auto e = provider->GetEnd();
-
-            if(s) {
-                if(dynamic_cast<Image*>(s))
-                    bp->SetStart(new Graphics::Bitmap(dynamic_cast<Image*>(s)->MoveOut()));
-                else
-                    bp->SetStart(new Graphics::Bitmap(std::move(*s)));
-            }
-            
-            if(m) {
-                if(dynamic_cast<Image*>(m))
-                    bp->SetMiddle(new Graphics::Bitmap(dynamic_cast<Image*>(m)->MoveOut()));
-                else
-                    bp->SetMiddle(new Graphics::Bitmap(std::move(*m)));
-            }
-            
-            if(e) {
-                if(dynamic_cast<Image*>(e))
-                    bp->SetEnd(new Graphics::Bitmap(dynamic_cast<Image*>(e)->MoveOut()));
-                else
-                    bp->SetEnd(new Graphics::Bitmap(std::move(*e)));
-            }            
-            
-            bp->OwnProviders();
+			moveout(provider, p);
         }
-        else if(dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov)) {
-            auto provider = dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov);
-            auto bp = new Graphics::AnimatedBitmapLineProvider(prov->GetOrientation());
-            p = bp;
-            bp->SetTiling(prov->GetTiling());
-            
-            auto s = provider->GetStart();
-            auto m = provider->GetMiddle();
-            auto e = provider->GetEnd();
-
-            if(s) {
-                if(dynamic_cast<Image*>(s))
-                    bp->SetStart(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(s)->MoveOut()));
-                else
-                    bp->SetStart(new Graphics::BitmapAnimationProvider(std::move(*s)));
-            }
-            
-            if(m) {
-                if(dynamic_cast<Image*>(m))
-                    bp->SetMiddle(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(m)->MoveOut()));
-                else
-                    bp->SetMiddle(new Graphics::BitmapAnimationProvider(std::move(*m)));
-            }
-            
-            if(e) {
-                if(dynamic_cast<Image*>(e))
-                    bp->SetEnd(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(e)->MoveOut()));
-                else
-                    bp->SetEnd(new Graphics::BitmapAnimationProvider(std::move(*e)));
-            }            
-            
-            bp->OwnProviders();
-        }
+		else if(dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov)) {
+			auto provider = dynamic_cast<Graphics::AnimatedBitmapLineProvider*>(prov);
+			moveout(provider, p);
+		}
+		else if(dynamic_cast<Graphics::LineProvider*>(prov)) {
+			auto provider = dynamic_cast<Graphics::LineProvider*>(prov);
+			moveout(provider, p);
+		}
 
         if(!p)
             throw std::runtime_error("Provider is not set");

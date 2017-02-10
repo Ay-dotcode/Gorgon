@@ -23,6 +23,8 @@ SET(Local
 	Image.cpp
 	Line.h
 	Line.cpp
+	Null.h
+	Null.cpp
 	Pointer.h
 	Pointer.cpp
 	Reader.h

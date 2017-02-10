@@ -77,6 +77,8 @@ namespace Gorgon {
 			constexpr Type LinkNode				{0x01020000};
 			/// Stores the target of the link
 			constexpr Type LinkNode_Target		{0x01020010};
+            /// Null resource
+            constexpr Type Null                 {0x01030000};
 			/// @}
 
 			/// @name Special

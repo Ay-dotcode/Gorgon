@@ -11,8 +11,7 @@ namespace Gorgon { namespace Graphics {
 	 * two due to a bug in Visual Studio
 	 */
 	class EmptyImage : 
-		public virtual RectangularAnimation, public virtual RectangularAnimationProvider, 
-		public virtual SizelessAnimation, public virtual SizelessAnimationProvider
+		public virtual RectangularAnimation, public virtual RectangularAnimationProvider
 	{
 	public:
 
@@ -24,12 +23,12 @@ namespace Gorgon { namespace Graphics {
 			return true;
 		}
 
-		virtual Gorgon::Animation::Base &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
+		virtual EmptyImage &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
 			return const_cast<EmptyImage&>(*this);
 		}
 
 
-		virtual Gorgon::Animation::Base &CreateAnimation(bool create=true) const override {
+		virtual EmptyImage &CreateAnimation(bool create=true) const override {
 			return const_cast<EmptyImage&>(*this);
 		}
 
