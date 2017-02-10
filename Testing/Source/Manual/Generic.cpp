@@ -338,6 +338,9 @@ int main() {
     
     r.DrawIn(l, 100,100, 300,200);
 
+	Graphics::BlankImage b(50, 50, 0.5f);
+
+	b.Draw(l, 700, 10);
 
 	while(true) {
 		Gorgon::NextFrame();

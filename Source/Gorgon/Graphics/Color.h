@@ -381,7 +381,7 @@ namespace Gorgon { namespace Graphics {
 			return ss.str();
 		}
 		
-		RGBAf operator *(const RGBAf &other) {
+		RGBAf operator *(const RGBAf &other) const {
             return {R * other.R, G * other.G, B * other.B, A * other.A};
         }
 		

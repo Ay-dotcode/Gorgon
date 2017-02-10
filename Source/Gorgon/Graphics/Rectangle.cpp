@@ -82,24 +82,22 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	void Rectangle::drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectanglef &r, RGBAf color) const {
-/*		SizeController c = controller;
-		if(prov.GetOrientation() == Orientation::Horizontal) {
-			if(!prov.GetTiling())
-				c.Horizontal =  c.Stretch;
+		SizeController c = controller;
 
-			float w = r.Width - start.GetWidth() - end.GetWidth();
-			start.DrawIn(target, c, r.X, r.Y, (Float)start.GetWidth(), r.Height);
-			middle.DrawIn(target, c, r.X + start.GetWidth(), r.Y, w, r.Height);
-			end.DrawIn(target, c, r.Right() - end.GetWidth(), r.Y, (Float)end.GetWidth(), r.Height);
+		if(!prov.GetTiling()) {
+			c.Horizontal =  c.Stretch;
+			c.Vertical =  c.Stretch;
 		}
-		else {
-			if(!prov.GetTiling())
-				c.Vertical =  c.Stretch;
 
-			float h = r.Height - start.GetHeight() - end.GetHeight();
-			start.DrawIn(target, c, r.X, r.Y, r.Height, (Float)start.GetHeight());
-			middle.DrawIn(target, c, r.X, r.Y + start.GetHeight(), r.Width, h);
-			end.DrawIn(target, c, r.X, r.Bottom() - end.GetHeight(), r.Width, (Float)end.GetHeight());
-		}*/
+		float maxt = (float)std::max(std::max(tl.GetHeight(), tm.GetHeight()), tr.GetHeight());
+		float maxb = (float)std::max(std::max(bl.GetHeight(), bm.GetHeight()), br.GetHeight());
+
+		float maxl = (float)std::max(std::max(tl.GetWidth(), ml.GetWidth()), bl.GetWidth());
+		float maxr = (float)std::max(std::max(tr.GetWidth(), mr.GetWidth()), br.GetWidth());
+
+		auto newr = c.CalculateArea(Geometry::Sizef(mm.GetSize()), {maxl+maxr, maxt+maxb}, r.GetSize());
+		newr = newr + r.TopLeft();
+
+		drawin(target, newr, color);
 	}
 } }
