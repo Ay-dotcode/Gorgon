@@ -100,6 +100,13 @@ namespace Gorgon { namespace Graphics {
 
 			Graphics::Texture::Swap(other);
 		}
+		
+        //types are derived not to type the same code for every class
+		virtual auto MoveOutProvider() -> decltype(*this) override {
+            auto ret = new std::remove_reference<decltype(*this)>::type(std::move(*this));
+            
+            return *ret;
+        }
 
 		/// Copy assignment is disabled
 		Bitmap &operator=(Bitmap &) = delete;

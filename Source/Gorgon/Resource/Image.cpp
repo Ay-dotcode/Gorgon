@@ -201,7 +201,7 @@ namespace Gorgon { namespace Resource {
         }
     }
     
-    Graphics::Bitmap Image::MoveOut() {
+    Graphics::Bitmap Image::MoveOutAsBitmap() {
         Graphics::Bitmap bmp = std::move(dynamic_cast<Graphics::Bitmap&>(*this));
         
         return bmp;
@@ -212,7 +212,7 @@ namespace Gorgon { namespace Resource {
             return Graphics::EmptyImage::Instance();
         }
         else {
-            Graphics::Bitmap &bmp = *new Graphics::Bitmap(MoveOut());
+            Graphics::Bitmap &bmp = *new Graphics::Bitmap(MoveOutAsBitmap());
 
             return Graphics::RectangularAnimationStorage(bmp, true);
         }
@@ -223,7 +223,7 @@ namespace Gorgon { namespace Resource {
             return Graphics::EmptyImage::Instance();
         }
         else {
-            Graphics::Bitmap &bmp = *new Graphics::Bitmap(MoveOut());
+            Graphics::Bitmap &bmp = *new Graphics::Bitmap(MoveOutAsBitmap());
 
             return Graphics::SizelessAnimationStorage(bmp, true);
         }

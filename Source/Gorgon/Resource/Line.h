@@ -41,6 +41,13 @@ namespace Gorgon { namespace Resource {
         
         /// Creates a new empty line
 		Line() : ILineProvider(Graphics::Orientation::Horizontal) { }
+		
+		Gorgon::Animation::Provider &MoveOutProvider() override {
+			if(!prov)
+				throw std::runtime_error("Provider is not set.");
+
+            return prov->MoveOutProvider();
+        }
 
 		GID::Type GetGID() const override {
 			return GID::Line;

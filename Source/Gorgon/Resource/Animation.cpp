@@ -93,7 +93,7 @@ namespace Gorgon { namespace Resource {
         }
     }
 
-	Graphics::BitmapAnimationProvider Animation::MoveOut() {
+	Graphics::BitmapAnimationProvider Animation::MoveOutAsBitmap() {
 		Graphics::BitmapAnimationProvider anim;
 
 		for(auto &frame : frames) {
@@ -101,7 +101,7 @@ namespace Gorgon { namespace Resource {
             auto img = dynamic_cast<Image*>(bmp);
             
             if(img) {
-                anim.Add(img->MoveOut(), frame.GetDuration());
+                anim.Add(img->MoveOutAsBitmap(), frame.GetDuration());
             }
             else {
                 anim.Add(std::move(*bmp), frame.GetDuration());
@@ -120,13 +120,13 @@ namespace Gorgon { namespace Resource {
 	}
 
 	Graphics::RectangularAnimationStorage Animation::rectanimmoveout() {
-		Graphics::BitmapAnimationProvider &anim = *new Graphics::BitmapAnimationProvider(MoveOut());
+		Graphics::BitmapAnimationProvider &anim = *new Graphics::BitmapAnimationProvider(MoveOutAsBitmap());
 
 		return Graphics::RectangularAnimationStorage(anim, true);
 	}
 
 	Graphics::SizelessAnimationStorage Animation::sizelessanimmoveout() {
-		Graphics::BitmapAnimationProvider &anim = *new Graphics::BitmapAnimationProvider(MoveOut());
+		Graphics::BitmapAnimationProvider &anim = *new Graphics::BitmapAnimationProvider(MoveOutAsBitmap());
 
 		return Graphics::SizelessAnimationStorage(anim, true);
 	}

@@ -59,7 +59,7 @@ namespace Gorgon { namespace Resource {
 			}
 		}
 
-		dynamic_cast<Graphics::BitmapAnimationProvider&>(*p) = dynamic_cast<Animation*>(obj)->MoveOut();
+		dynamic_cast<Graphics::BitmapAnimationProvider&>(*p) = dynamic_cast<Animation*>(obj)->MoveOutAsBitmap();
         
         return p;
     }

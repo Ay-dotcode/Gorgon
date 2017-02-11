@@ -219,6 +219,10 @@ namespace Gorgon {
 		class Provider {
 		public:
 			using AnimationType = Base;
+            
+            /// This function moves this animation provider into a new provider. Ownership of this new object belongs
+            /// to the caller and this object could be destroyed safely.
+            virtual Provider &MoveOutProvider() = 0;
 
 			/// Virtual destructor
 			virtual ~Provider() { }

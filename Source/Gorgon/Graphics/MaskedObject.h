@@ -50,7 +50,21 @@ namespace Gorgon { namespace Graphics {
         MaskedObjectProvider(SizelessAnimationProvider &base, SizelessAnimationProvider &mask) : 
             base(&base), mask(&mask) 
         { }
-        
+		
+        MaskedObjectProvider(MaskedObjectProvider &&other) : 
+            base(other.base), mask(other.mask) 
+        { 
+            other.base = nullptr;
+            other.mask = nullptr;
+        }
+ 
+        //types are derived not to type the same code for every class
+		virtual auto MoveOutProvider() -> decltype(*this) override {
+            auto ret = new typename std::remove_reference<decltype(*this)>::type(std::move(*this));
+            
+            return *ret;
+        }
+       
         MaskedObject &CreateAnimation(bool create = true) const override {
             return *new MaskedObject(*this, create);
         }
@@ -77,6 +91,12 @@ namespace Gorgon { namespace Graphics {
             else {
                 return EmptyImage::Instance();
             }
+        }
+        
+        /// Sets the providers in this object
+        void SetProviders(SizelessAnimationProvider &base, SizelessAnimationProvider &mask) {
+            this->base = &base;
+            this->mask = &mask;
         }
         
     private:

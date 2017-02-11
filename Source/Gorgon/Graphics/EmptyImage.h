@@ -16,6 +16,10 @@ namespace Gorgon { namespace Graphics {
 	public:
 
 		virtual ~EmptyImage() { }
+		
+		virtual EmptyImage &MoveOutProvider() override {
+            return *new EmptyImage;
+        }
 
 		void DeleteAnimation() const override { }
 
@@ -73,19 +77,23 @@ namespace Gorgon { namespace Graphics {
 	public:
 		explicit BlankImage(Geometry::Size size, RGBAf color = 1.f) : size(size), color(color) {}
 
-		BlankImage(int w, int h, RGBAf color = 1.f) : size(w, h), color(color) {}
+		BlankImage(int w, int h, RGBAf color = 1.f) : BlankImage({w, h}, color) {}
 
 		explicit BlankImage(RGBAf color = 1.f) : color(color) {}
+		
+		virtual BlankImage &MoveOutProvider() override {
+            return *new BlankImage(size, color);
+        }
 
-		virtual BlankImage &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
+		virtual BlankImage &CreateAnimation(Gorgon::Animation::ControllerBase &) const override {
 			return const_cast<BlankImage&>(*this);
 		}
 
-		virtual BlankImage &CreateAnimation(bool create=true) const override {
+		virtual BlankImage &CreateAnimation(bool =true) const override {
 			return const_cast<BlankImage&>(*this);
 		}
 
-		virtual bool Progress(unsigned &leftover) override {
+		virtual bool Progress(unsigned &) override {
 			return true;
 		}
 

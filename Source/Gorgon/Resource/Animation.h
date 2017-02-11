@@ -4,7 +4,7 @@
 #include "AnimationStorage.h"
 #include "../Animation.h"
 #include "Image.h"
-#include "../Graphics/ImageAnimation.h"
+#include "../Graphics/TextureAnimation.h"
 
 #pragma warning(push)
 #pragma warning(disable:4250)
@@ -37,7 +37,7 @@ namespace Gorgon { namespace Resource {
 		}
 		
 		/// Moves the animation out of the resource system. Use Prepare and Discard before moving out to avoid copying data.
-		Graphics::BitmapAnimationProvider MoveOut();
+		Graphics::BitmapAnimationProvider MoveOutAsBitmap();
 		
 		/// This function allows loading animation with a function to load unknown resources. The supplied function should
 		/// call LoadObject function of File class if the given GID is unknown.
@@ -64,6 +64,7 @@ namespace Gorgon { namespace Resource {
 		static void SaveThis(Writer &writer, const Graphics::BitmapAnimationProvider &anim, GID::Type type = GID::Animation, 
                              std::function<void(Writer &writer)> extra = {});
 
+        using RectangularAnimationStorage::MoveOut;
 	protected:
         virtual ~Animation() { }
 

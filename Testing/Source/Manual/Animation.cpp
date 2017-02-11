@@ -1,6 +1,6 @@
 #include <Gorgon/Main.h>
 #include <Gorgon/Window.h>
-#include <Gorgon/Graphics/ImageAnimation.h>
+#include <Gorgon/Graphics/TextureAnimation.h>
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Animation.h>
@@ -54,7 +54,7 @@ int main() {
     animprov.Add(anim2, 1000);
     
 	Resource::Animation *aa = new Resource::Animation(animprov.Duplicate());
-	Graphics::ConstBitmapAnimationProvider cbp = aa->MoveOut();
+	Graphics::ConstBitmapAnimationProvider cbp = aa->MoveOutAsBitmap();
 
 	std::cout<<"!..."<<animprov.GetDuration()<<std::endl;
 	std::cout<<"!..."<<cbp.GetDuration()<<std::endl;

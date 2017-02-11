@@ -50,8 +50,8 @@ namespace Gorgon { namespace Graphics {
     class basic_TextureAnimation : public virtual Image, public virtual RectangularAnimation {
     public:
         using ParentType = P_;
-        using FrameType  = F_;
-        
+        using FrameType  = F_;        
+
 		/// Creates a new image animation from the given parent
 		basic_TextureAnimation(const ParentType &parent, Gorgon::Animation::ControllerBase &controller) :
 		parent(&parent), Gorgon::Animation::Base(controller) { }
@@ -132,6 +132,13 @@ namespace Gorgon { namespace Graphics {
         basic_TextureAnimationProvider(C_ &&other) { 
 			swapout(other);
 		}
+		
+        //types are derived not to type the same code for every class
+		virtual auto MoveOutProvider() -> decltype(*this) override {
+            auto ret = new typename std::remove_reference<decltype(*this)>::type(std::move(*this));
+            
+            return *ret;
+        }
 
 		basic_TextureAnimationProvider &operator =(const basic_TextureAnimationProvider &) = delete;
 

@@ -23,6 +23,10 @@ namespace Gorgon { namespace Graphics {
 	class AnimationProvider : public virtual Gorgon::Animation::Provider {
 	public:
 		using AnimationType = Animation;
+        
+        /// This function moves this animation provider into a new provider. Ownership of this new object belongs
+        /// to the caller and this object could be destroyed safely.
+        virtual Gorgon::Animation::Provider &MoveOutProvider() override = 0;
 
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
@@ -36,6 +40,10 @@ namespace Gorgon { namespace Graphics {
 	class SizelessAnimationProvider : public virtual Gorgon::Animation::Provider {
 	public:
 		using AnimationType = SizelessAnimation;
+        
+        /// This function moves this animation provider into a new provider. Ownership of this new object belongs
+        /// to the caller and this object could be destroyed safely.
+        virtual Gorgon::Animation::Provider &MoveOutProvider() override = 0;
 
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
@@ -49,6 +57,11 @@ namespace Gorgon { namespace Graphics {
     ///workaround for visual studio
     class RectangularAnimationProviderBase : public virtual AnimationProvider, public virtual SizelessAnimationProvider {
 	public:
+        
+        /// This function moves this animation provider into a new provider. Ownership of this new object belongs
+        /// to the caller and this object could be destroyed safely.
+        virtual Gorgon::Animation::Provider &MoveOutProvider() override = 0;
+        
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller
 		virtual Gorgon::Animation::Base &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override = 0;
@@ -61,6 +74,10 @@ namespace Gorgon { namespace Graphics {
 	class RectangularAnimationProvider : public RectangularAnimationProviderBase {
 	public:
 		using AnimationType = RectangularAnimation;
+        
+        /// This function moves this animation provider into a new provider. Ownership of this new object belongs
+        /// to the caller and this object could be destroyed safely.
+        virtual RectangularAnimationProvider &MoveOutProvider() override = 0;
 
 		/// This function should create a new animation with the given controller and
 		/// if owner parameter is set to true, it should assume ownership of the controller

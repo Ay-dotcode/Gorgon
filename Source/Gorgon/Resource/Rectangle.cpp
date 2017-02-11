@@ -378,63 +378,63 @@ namespace Gorgon { namespace Resource {
 
             if(tl) {
                 if(dynamic_cast<Image*>(tl))
-                    bp->SetTL(new Graphics::Bitmap(dynamic_cast<Image*>(tl)->MoveOut()));
+                    bp->SetTL(new Graphics::Bitmap(dynamic_cast<Image*>(tl)->MoveOutAsBitmap()));
                 else
                     bp->SetTL(new Graphics::Bitmap(std::move(*tl)));
             }
 
             if(tm) {
                 if(dynamic_cast<Image*>(tm))
-                    bp->SetTM(new Graphics::Bitmap(dynamic_cast<Image*>(tm)->MoveOut()));
+                    bp->SetTM(new Graphics::Bitmap(dynamic_cast<Image*>(tm)->MoveOutAsBitmap()));
                 else
                     bp->SetTM(new Graphics::Bitmap(std::move(*tm)));
             }
 
             if(tr) {
                 if(dynamic_cast<Image*>(tr))
-                    bp->SetTR(new Graphics::Bitmap(dynamic_cast<Image*>(tr)->MoveOut()));
+                    bp->SetTR(new Graphics::Bitmap(dynamic_cast<Image*>(tr)->MoveOutAsBitmap()));
                 else
                     bp->SetTR(new Graphics::Bitmap(std::move(*tr)));
             }
 
             if(ml) {
                 if(dynamic_cast<Image*>(ml))
-                    bp->SetML(new Graphics::Bitmap(dynamic_cast<Image*>(ml)->MoveOut()));
+                    bp->SetML(new Graphics::Bitmap(dynamic_cast<Image*>(ml)->MoveOutAsBitmap()));
                 else
                     bp->SetML(new Graphics::Bitmap(std::move(*ml)));
             }
 
             if(mm) {
                 if(dynamic_cast<Image*>(mm))
-                    bp->SetMM(new Graphics::Bitmap(dynamic_cast<Image*>(mm)->MoveOut()));
+                    bp->SetMM(new Graphics::Bitmap(dynamic_cast<Image*>(mm)->MoveOutAsBitmap()));
                 else
                     bp->SetMM(new Graphics::Bitmap(std::move(*mm)));
             }
 
             if(mr) {
                 if(dynamic_cast<Image*>(mr))
-                    bp->SetMR(new Graphics::Bitmap(dynamic_cast<Image*>(mr)->MoveOut()));
+                    bp->SetMR(new Graphics::Bitmap(dynamic_cast<Image*>(mr)->MoveOutAsBitmap()));
                 else
                     bp->SetMR(new Graphics::Bitmap(std::move(*mr)));
             }
 
             if(bl) {
                 if(dynamic_cast<Image*>(bl))
-                    bp->SetBL(new Graphics::Bitmap(dynamic_cast<Image*>(bl)->MoveOut()));
+                    bp->SetBL(new Graphics::Bitmap(dynamic_cast<Image*>(bl)->MoveOutAsBitmap()));
                 else
                     bp->SetBL(new Graphics::Bitmap(std::move(*bl)));
             }
 
             if(bm) {
                 if(dynamic_cast<Image*>(bm))
-                    bp->SetBM(new Graphics::Bitmap(dynamic_cast<Image*>(bm)->MoveOut()));
+                    bp->SetBM(new Graphics::Bitmap(dynamic_cast<Image*>(bm)->MoveOutAsBitmap()));
                 else
                     bp->SetBM(new Graphics::Bitmap(std::move(*bm)));
             }
 
             if(br) {
                 if(dynamic_cast<Image*>(br))
-                    bp->SetBR(new Graphics::Bitmap(dynamic_cast<Image*>(br)->MoveOut()));
+                    bp->SetBR(new Graphics::Bitmap(dynamic_cast<Image*>(br)->MoveOutAsBitmap()));
                 else
                     bp->SetBR(new Graphics::Bitmap(std::move(*br)));
             }
@@ -459,63 +459,63 @@ namespace Gorgon { namespace Resource {
 
             if(tl) {
                 if(dynamic_cast<Image*>(tl))
-                    bp->SetTL(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(tl)->MoveOut()));
+                    bp->SetTL(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(tl)->MoveOutAsBitmap()));
                 else
                     bp->SetTL(new Graphics::BitmapAnimationProvider(std::move(*tl)));
             }
 
             if(tm) {
                 if(dynamic_cast<Image*>(tm))
-                    bp->SetTM(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(tm)->MoveOut()));
+                    bp->SetTM(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(tm)->MoveOutAsBitmap()));
                 else
                     bp->SetTM(new Graphics::BitmapAnimationProvider(std::move(*tm)));
             }
 
             if(tr) {
                 if(dynamic_cast<Image*>(tr))
-                    bp->SetTR(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(tr)->MoveOut()));
+                    bp->SetTR(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(tr)->MoveOutAsBitmap()));
                 else
                     bp->SetTR(new Graphics::BitmapAnimationProvider(std::move(*tr)));
             }
 
             if(ml) {
                 if(dynamic_cast<Image*>(ml))
-                    bp->SetML(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(ml)->MoveOut()));
+                    bp->SetML(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(ml)->MoveOutAsBitmap()));
                 else
                     bp->SetML(new Graphics::BitmapAnimationProvider(std::move(*ml)));
             }
 
             if(mm) {
                 if(dynamic_cast<Image*>(mm))
-                    bp->SetMM(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(mm)->MoveOut()));
+                    bp->SetMM(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(mm)->MoveOutAsBitmap()));
                 else
                     bp->SetMM(new Graphics::BitmapAnimationProvider(std::move(*mm)));
             }
 
             if(mr) {
                 if(dynamic_cast<Image*>(mr))
-                    bp->SetMR(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(mr)->MoveOut()));
+                    bp->SetMR(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(mr)->MoveOutAsBitmap()));
                 else
                     bp->SetMR(new Graphics::BitmapAnimationProvider(std::move(*mr)));
             }
 
             if(bl) {
                 if(dynamic_cast<Image*>(bl))
-                    bp->SetBL(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(bl)->MoveOut()));
+                    bp->SetBL(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(bl)->MoveOutAsBitmap()));
                 else
                     bp->SetBL(new Graphics::BitmapAnimationProvider(std::move(*bl)));
             }
 
             if(bm) {
                 if(dynamic_cast<Image*>(bm))
-                    bp->SetBM(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(bm)->MoveOut()));
+                    bp->SetBM(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(bm)->MoveOutAsBitmap()));
                 else
                     bp->SetBM(new Graphics::BitmapAnimationProvider(std::move(*bm)));
             }
 
             if(br) {
                 if(dynamic_cast<Image*>(br))
-                    bp->SetBR(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(br)->MoveOut()));
+                    bp->SetBR(new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(br)->MoveOutAsBitmap()));
                 else
                     bp->SetBR(new Graphics::BitmapAnimationProvider(std::move(*br)));
             }             

@@ -174,7 +174,7 @@ namespace Gorgon { namespace Resource {
 	template<class F_>
 	static void setthis(F_ f, Graphics::BitmapLineProvider *provider, Graphics::Bitmap *o) {
 		if(dynamic_cast<Image*>(o))
-			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOut()))();
+			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOutAsBitmap()))();
 		else
 			std::bind(f, provider, new Graphics::Bitmap(std::move(*o)))();
 	}
@@ -182,7 +182,7 @@ namespace Gorgon { namespace Resource {
 	template<class F_>
 	static void setthis(F_ f, Graphics::AnimatedBitmapLineProvider *provider, Graphics::BitmapAnimationProvider *o) {
 		if(dynamic_cast<Image*>(o))
-			std::bind(f, provider, new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(o)->MoveOut()))();
+			std::bind(f, provider, new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(o)->MoveOutAsBitmap()))();
 		else
 			std::bind(f, provider, new Graphics::BitmapAnimationProvider(std::move(*o)))();
 	}
@@ -190,11 +190,11 @@ namespace Gorgon { namespace Resource {
 	template<class F_>
 	static void setthis(F_ f, Graphics::AnimatedBitmapLineProvider *provider, Graphics::RectangularAnimationProvider *o) {
 		if(dynamic_cast<Image*>(o))
-			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOut()))();
+			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOutAsBitmap()))();
 		if(dynamic_cast<Animation*>(o))
-			std::bind(f, provider, new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(s)->MoveOut()))();
+			std::bind(f, provider, new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(o)->MoveOutAsBitmap()))();
 		else
-			f(provider, new Graphics::RectangularAnimationProvider(std::move(*o)));
+			std::bind(f, provider, o->MoveOutProvider())();
 	}
 
 	template<class T_>
@@ -250,6 +250,12 @@ namespace Gorgon { namespace Resource {
         }
 
         children.Clear();
+        
+        if(own)
+            delete prov;
+        
+        prov = nullptr;
+        
         
         if(!p)
             throw std::runtime_error("Provider is not set");

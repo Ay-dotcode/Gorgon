@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Animations.h"
-#include "ImageAnimation.h"
+#include "TextureAnimation.h"
 #include "EmptyImage.h"
 #include "Bitmap.h"
 
@@ -156,6 +156,30 @@ namespace Gorgon { namespace Graphics {
 			bl(bl), bm(bm), br(br) 
         { }
 
+		/// Move constructor
+		basic_RectangleProvider(basic_RectangleProvider &&other) :
+			tl(other.tl), tm(other.tm), tr(other.tr), 
+			ml(other.ml), mm(other.mm), mr(other.mr), 
+			bl(other.bl), bm(other.bm), br(other.br), 
+			own(other.own)
+		{
+			other.own = false;
+            
+			other.tl = nullptr;
+			other.tm = nullptr;
+			other.tr = nullptr;
+            
+			other.ml = nullptr;
+			other.mm = nullptr;
+			other.mr = nullptr;
+            
+			other.bl = nullptr;
+			other.bm = nullptr;
+			other.br = nullptr;
+            
+            SetTiling(other.GetTiling());
+		}
+
 		~basic_RectangleProvider() {
 			if(own) {
 				delete tl;
@@ -171,6 +195,13 @@ namespace Gorgon { namespace Graphics {
 				delete br;
             }
 		}
+
+        //types are derived not to type the same code for every class
+		virtual auto MoveOutProvider() -> decltype(*this) override {
+            auto ret = new typename std::remove_reference<decltype(*this)>::type(std::move(*this));
+            
+            return *ret;
+        }
 
 		Rectangle &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
 			return *new Rectangle(*this, timer);

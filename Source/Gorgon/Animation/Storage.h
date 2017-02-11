@@ -28,6 +28,13 @@ namespace Gorgon { namespace Animation {
 			other.isowned = false;
 			other.anim  = nullptr;
 		}
+		
+        //types are derived not to type the same code for every class
+		virtual auto MoveOutProvider() -> decltype(*this) override {
+            auto ret = new typename std::remove_reference<decltype(*this)>::type(std::move(*this));
+            
+            return *ret;
+        }
 
 		/// Copy assignment
 		basic_Storage &operator =(const basic_Storage &) = delete;

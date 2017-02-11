@@ -48,7 +48,7 @@ namespace Gorgon { namespace Resource {
 		virtual void Discard() override { Bitmap::Discard(); }
 		
 		/// Moves the data out of resource system. Use Prepare and Discard before moving to avoid data duplication
-		Graphics::Bitmap MoveOut();
+		Graphics::Bitmap MoveOutAsBitmap();
 
 		/// Loads the image from the disk. This function requires image to be tied to a resource file.
 		bool Load();
@@ -64,6 +64,8 @@ namespace Gorgon { namespace Resource {
         /// save function of that resource is used instead. If the area of the bitmap is greater than 400 pixel it will be saved
         /// as PNG.
         static void SaveThis(Writer &writer, const Graphics::Bitmap &bmp, GID::Type type = GID::Image);
+
+        using RectangularAnimationStorage::MoveOut;
 
 	protected:
 		virtual ~Image() { }

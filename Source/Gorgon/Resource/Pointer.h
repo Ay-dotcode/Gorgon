@@ -7,7 +7,7 @@
 #include "../Graphics/Drawables.h"
 #include "../Graphics/Bitmap.h"
 #include "../Graphics/Animations.h"
-#include "../Graphics/ImageAnimation.h"
+#include "../Graphics/TextureAnimation.h"
 #include "../Utils/Assert.h"
 #include "../Geometry/Point.h"
 

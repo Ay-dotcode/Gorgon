@@ -5,7 +5,7 @@
 #include "../Geometry/Point.h"
 #include "../Containers/Hashmap.h"
 #include "Animations.h"
-#include "ImageAnimation.h"
+#include "TextureAnimation.h"
 
 
 namespace Gorgon { namespace Graphics {

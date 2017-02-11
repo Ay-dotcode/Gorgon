@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Animations.h"
-#include "ImageAnimation.h"
+#include "TextureAnimation.h"
 #include "EmptyImage.h"
 #include "Bitmap.h"
 
@@ -138,7 +138,7 @@ namespace Gorgon { namespace Graphics {
 		/// Filling constructor. This variant will move in the animations, freeing them with this item.
 		basic_LineProvider(Orientation orientation, A_  &&start, A_ &&middle, A_ &&end) : ILineProvider(orientation),
 			start(new A_(std::move(start))), middle(new A_(std::move(middle))), end(new A_(std::move(end))),
-			owned(true)
+			own(true)
         { }
 
 		/// Filling constructor, nullptr is acceptable, however, it is not adviced to use only one side, that is
@@ -148,9 +148,9 @@ namespace Gorgon { namespace Graphics {
 
 		/// Move constructor
 		basic_LineProvider(basic_LineProvider &&other) : ILineProvider(other.GetOrientation()),
-			start(other.start), middle(other.middle), end(other.end), owned(other.owned)
+			start(other.start), middle(other.middle), end(other.end), own(other.own)
 		{
-			other.owned = false;
+			other.own = false;
 			other.start = nullptr;
 			other.middle = nullptr;
 			other.end = nullptr;
@@ -159,8 +159,15 @@ namespace Gorgon { namespace Graphics {
 
 		basic_LineProvider(const basic_LineProvider &) = delete;
 
+        //types are derived not to type the same code for every class
+		virtual auto MoveOutProvider() -> decltype(*this) override {
+            auto ret = new typename std::remove_reference<decltype(*this)>::type(std::move(*this));
+            
+            return *ret;
+        }
+        
 		~basic_LineProvider() {
-			if(owned) {
+			if(own) {
 				delete start;
 				delete middle;
 				delete end;
@@ -213,7 +220,7 @@ namespace Gorgon { namespace Graphics {
 		
 		/// Changes the start animation, ownership semantics will not change
 		void SetStart(A_ *value) {
-            if(owned)
+            if(own)
                 delete start;
             
             start = value;
@@ -221,7 +228,7 @@ namespace Gorgon { namespace Graphics {
 		
 		/// Changes the middle animation, ownership semantics will not change
 		void SetMiddle(A_ *value) {
-            if(owned)
+            if(own)
                 delete middle;
             
             middle = value;
@@ -229,7 +236,7 @@ namespace Gorgon { namespace Graphics {
 		
 		/// Changes the end animation, ownership semantics will not change
 		void SetEnd(A_ *value) {
-            if(owned)
+            if(own)
                 delete end;
             
             end = value;
@@ -248,7 +255,16 @@ namespace Gorgon { namespace Graphics {
 		/// Issuing this function will make this line to own its providers
 		/// destroying them along with itself
 		void OwnProviders() {
-			owned = true;
+			own = true;
+		}
+
+		/// Issuing this function will make this line to disown its providers
+		/// and set them to nullptr
+		void ReleaseProviders() {
+			own = false;
+            start = nullptr;
+            middle = nullptr;
+            end = nullptr;
 		}
 
 	private:
@@ -256,7 +272,7 @@ namespace Gorgon { namespace Graphics {
 		A_ *middle = nullptr;
 		A_ *end = nullptr;
 
-		bool owned = false;
+		bool own = false;
 	};
 
 	using LineProvider = basic_LineProvider<RectangularAnimationProvider>;

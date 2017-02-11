@@ -3,7 +3,6 @@ SET(Local
 	Animations.h
 	Bitmap.h
 	Bitmap.cpp
-	ImageAnimation.h
 	Color.h
 	Drawables.h
 	EmptyImage.h
@@ -25,6 +24,7 @@ SET(Local
 	Shaders.h
 	Shaders.cpp
 	Texture.h
+	TextureAnimation.h
 	TextureTargets.h
 )
 

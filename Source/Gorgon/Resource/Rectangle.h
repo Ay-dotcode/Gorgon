@@ -28,6 +28,13 @@ namespace Gorgon { namespace Resource {
 
         /// Creates an empty rectangle
 		Rectangle() = default;
+		
+		Gorgon::Animation::Provider &MoveOutProvider() override {
+			if(!prov)
+				throw std::runtime_error("Provider is not set.");
+
+            return prov->MoveOutProvider();
+        }
         
 		GID::Type GetGID() const override {
 			return GID::Rectangle;
