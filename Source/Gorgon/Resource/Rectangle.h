@@ -13,18 +13,25 @@ namespace Gorgon { namespace Resource {
         /// Creates a new rectangle using another rectangle provider
 		explicit Rectangle(Graphics::BitmapRectangleProvider &prov);
 
-        /// Creates a new rectangle using another rectangle provider
+		/// Creates a new rectangle using another rectangle provider
 		explicit Rectangle(Graphics::AnimatedBitmapRectangleProvider &prov);
+
+		/// Creates a new rectangle using another rectangle provider
+		explicit Rectangle(Graphics::RectangleProvider &prov);
 
         /// Creates a new rectangle using another rectangle provider
 		explicit Rectangle(Graphics::BitmapRectangleProvider &&prov) : Rectangle(*new Graphics::BitmapRectangleProvider(std::move(prov))) {
             own = true;
         }
 
-        /// Creates a new rectangle using another rectangle provider
-		explicit Rectangle(Graphics::AnimatedBitmapRectangleProvider &&prov) :  Rectangle(*new Graphics::AnimatedBitmapRectangleProvider(std::move(prov))) {
-            own = true;
-        }
+		/// Creates a new rectangle using another rectangle provider
+		explicit Rectangle(Graphics::AnimatedBitmapRectangleProvider &&prov) : Rectangle(*new Graphics::AnimatedBitmapRectangleProvider(std::move(prov))) {
+			own = true;
+		}
+		/// Creates a new rectangle using another rectangle provider
+		explicit Rectangle(Graphics::RectangleProvider &&prov) : Rectangle(*new Graphics::RectangleProvider(std::move(prov))) {
+			own = true;
+		}
 
         /// Creates an empty rectangle
 		Rectangle() = default;
@@ -46,12 +53,18 @@ namespace Gorgon { namespace Resource {
 			prov = &value;
 		}
 
-        /// Changes provider to the given provider, ownership will not be transferred
+		/// Changes provider to the given provider, ownership will not be transferred
 		void SetProvider(Graphics::AnimatedBitmapRectangleProvider &value) {
-            RemoveProvider();
+			RemoveProvider();
 			prov = &value;
 		}
-		
+
+		/// Changes provider to the given provider, ownership will not be transferred
+		void SetProvider(Graphics::RectangleProvider &value) {
+			RemoveProvider();
+			prov = &value;
+		}
+
 		/// Changes the provider stored in this line, ownership will be transferred
 		void AssumeProvider(Graphics::BitmapRectangleProvider &value) {
             RemoveProvider();
@@ -61,9 +74,16 @@ namespace Gorgon { namespace Resource {
 
 		/// Changes the provider stored in this line, ownership will be transferred
 		void AssumeProvider(Graphics::AnimatedBitmapRectangleProvider &value) {
-            RemoveProvider();
+			RemoveProvider();
 			prov = &value;
-            own = true;
+			own = true;
+		}
+
+		/// Changes the provider stored in this line, ownership will be transferred
+		void AssumeProvider(Graphics::RectangleProvider &value) {
+			RemoveProvider();
+			prov = &value;
+			own = true;
 		}
 		
 		/// Removes the provider, if it is own by this resource it will be deleted.
@@ -170,20 +190,8 @@ namespace Gorgon { namespace Resource {
 		/// This function loads a rectangle resource from the file
 		static Rectangle *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
 
-		/// Saves a provider directly
-		static void SaveThis(Writer &writer, const Graphics::BitmapRectangleProvider &rectangle);
-
-		/// Saves a provider directly
-		static void SaveThis(Writer &writer, const Graphics::AnimatedBitmapRectangleProvider &rectangle);
-
 	protected:
 		void save(Writer &writer) const override;
-
-        /// Saves a provider directly
-		static void savethis(Writer &writer, const Graphics::BitmapRectangleProvider &rectangle);
-
-		/// Saves a provider directlys
-		static void savethis(Writer &writer, const Graphics::AnimatedBitmapRectangleProvider &rectangle);
 
 		virtual Graphics::SizelessAnimationStorage sizelessanimmoveout() override;
 

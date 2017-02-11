@@ -75,6 +75,9 @@ namespace Gorgon { namespace Resource {
 						else if(type == img)
 							type = mixed;
 					}
+					else if(resource->GetGID() == GID::Null) {
+						//null is allowed
+					}
 					else {
 						throw std::runtime_error("Line can only contain images or animations");
 					}
@@ -173,6 +176,8 @@ namespace Gorgon { namespace Resource {
 
 	template<class F_>
 	static void setthis(F_ f, Graphics::BitmapLineProvider *provider, Graphics::Bitmap *o) {
+		if(!o) return; // do nothing
+
 		if(dynamic_cast<Image*>(o))
 			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOutAsBitmap()))();
 		else
@@ -181,6 +186,8 @@ namespace Gorgon { namespace Resource {
 
 	template<class F_>
 	static void setthis(F_ f, Graphics::AnimatedBitmapLineProvider *provider, Graphics::BitmapAnimationProvider *o) {
+		if(!o) return; // do nothing
+
 		if(dynamic_cast<Image*>(o))
 			std::bind(f, provider, new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(o)->MoveOutAsBitmap()))();
 		else
@@ -189,6 +196,8 @@ namespace Gorgon { namespace Resource {
 
 	template<class F_>
 	static void setthis(F_ f, Graphics::AnimatedBitmapLineProvider *provider, Graphics::RectangularAnimationProvider *o) {
+		if(!o) return; // do nothing
+
 		if(dynamic_cast<Image*>(o))
 			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOutAsBitmap()))();
 		if(dynamic_cast<Animation*>(o))
@@ -207,17 +216,9 @@ namespace Gorgon { namespace Resource {
 		auto m = provider->GetMiddle();
 		auto e = provider->GetEnd();
 
-		if(s) {
-			setthis(&Graphics::basic_LineProvider<T_>::SetStart, bp, s);
-		}
-
-		if(m) {
-			setthis(&Graphics::basic_LineProvider<T_>::SetMiddle, bp, m);
-		}
-
-		if(e) {
-			setthis(&Graphics::basic_LineProvider<T_>::SetEnd, bp, e);
-		}
+		setthis(&Graphics::basic_LineProvider<T_>::SetStart, bp, s);
+		setthis(&Graphics::basic_LineProvider<T_>::SetMiddle, bp, m);
+		setthis(&Graphics::basic_LineProvider<T_>::SetEnd, bp, e);
 
 		bp->OwnProviders();
 	}

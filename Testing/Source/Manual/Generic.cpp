@@ -330,7 +330,7 @@ int main() {
 	f.LoadFile("linetest.gor");
 	f.Prepare();
 
-    auto rp = f.Root().Get<Gorgon::Resource::SizelessAnimationStorage>(1).MoveOut();
+    auto rp = f.Root().Get<Gorgon::Resource::SizelessAnimationStorage>(2).MoveOut();
 
     Graphics::MaskedObjectProvider mop(bgimage, rp);
     
