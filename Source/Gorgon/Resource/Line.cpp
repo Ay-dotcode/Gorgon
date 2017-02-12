@@ -246,7 +246,7 @@ namespace Gorgon { namespace Resource {
 		bp->OwnProviders();
 	}
 	   
-    Graphics::SizelessAnimationStorage Line::sizelessanimmoveout() {        
+    Graphics::RectangularAnimationStorage Line::animmoveout() {
         if(!prov)
             throw std::runtime_error("Provider is not set");
         
@@ -284,7 +284,7 @@ namespace Gorgon { namespace Resource {
         if(!p)
             throw std::runtime_error("Provider is not set");
         
-        return Graphics::SizelessAnimationStorage(*p, true);
+        return Graphics::RectangularAnimationStorage(*p, true);
     }
 
 } }

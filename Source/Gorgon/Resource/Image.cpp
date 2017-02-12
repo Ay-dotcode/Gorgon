@@ -207,7 +207,7 @@ namespace Gorgon { namespace Resource {
         return bmp;
     }
 
-	Graphics::RectangularAnimationStorage Image::rectanimmoveout() {
+	Graphics::RectangularAnimationStorage Image::animmoveout() {
         if(!HasData() || GetSize() == Geometry::Size(0,0)) {
             return Graphics::EmptyImage::Instance();
         }
@@ -215,17 +215,6 @@ namespace Gorgon { namespace Resource {
             Graphics::Bitmap &bmp = *new Graphics::Bitmap(MoveOutAsBitmap());
 
             return Graphics::RectangularAnimationStorage(bmp, true);
-        }
-	}
-
-	Graphics::SizelessAnimationStorage Image::sizelessanimmoveout() {
-        if(!HasData() || GetSize() == Geometry::Size(0,0)) {
-            return Graphics::EmptyImage::Instance();
-        }
-        else {
-            Graphics::Bitmap &bmp = *new Graphics::Bitmap(MoveOutAsBitmap());
-
-            return Graphics::SizelessAnimationStorage(bmp, true);
         }
 	}
 

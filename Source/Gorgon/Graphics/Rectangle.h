@@ -7,9 +7,11 @@
 
 namespace Gorgon { namespace Graphics {
 	/// Interface for RectangleProviders
-	class IRectangleProvider : public SizelessAnimationProvider {
+	class IRectangleProvider : public RectangularAnimationProvider {
 	public:
 		IRectangleProvider() {}
+
+		virtual IRectangleProvider &MoveOutProvider() override = 0;
 
 		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateTL() const = 0;
@@ -59,7 +61,7 @@ namespace Gorgon { namespace Graphics {
 	* freely without loss of quality.
 	* See basic_RectangleProvider for details.
 	*/
-	class Rectangle : public SizelessAnimation {
+	class Rectangle : public RectangularAnimation {
 	public:
 		Rectangle(const IRectangleProvider &prov, Gorgon::Animation::ControllerBase &timer);
 
@@ -93,6 +95,19 @@ namespace Gorgon { namespace Graphics {
 		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override {
 			return controller.CalculateSize({mm.GetSize()}, {ml.GetWidth()+mr.GetWidth(), tm.GetHeight()+bm.GetHeight()}, s);
 		}
+
+		virtual Geometry::Size getsize() const override;
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+						  const Geometry::Pointf &p3, const Geometry::Pointf &p4,
+						  const Geometry::Pointf &tex1, const Geometry::Pointf &tex2,
+						  const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const override;
+
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const override;
+
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p, RGBAf color) const override;
 
 	private:
 		RectangularAnimation &tl, &tm, &tr;

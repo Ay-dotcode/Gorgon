@@ -8,7 +8,7 @@ namespace Gorgon { namespace Resource {
 	class File;
 	class Reader;
 
-	class Rectangle : public Graphics::IRectangleProvider, public SizelessAnimationStorage {
+	class Rectangle : public Graphics::IRectangleProvider, public AnimationStorage {
 	public:
         /// Creates a new rectangle using another rectangle provider
 		explicit Rectangle(Graphics::BitmapRectangleProvider &prov);
@@ -36,7 +36,7 @@ namespace Gorgon { namespace Resource {
         /// Creates an empty rectangle
 		Rectangle() = default;
 		
-		Gorgon::Animation::Provider &MoveOutProvider() override {
+		Graphics::IRectangleProvider &MoveOutProvider() override {
 			if(!prov)
 				throw std::runtime_error("Provider is not set.");
 
@@ -196,7 +196,7 @@ namespace Gorgon { namespace Resource {
 	protected:
 		void save(Writer &writer) const override;
 
-		virtual Graphics::SizelessAnimationStorage sizelessanimmoveout() override;
+		virtual Graphics::RectangularAnimationStorage animmoveout() override;
 
 	private:
 		virtual ~Rectangle() { 

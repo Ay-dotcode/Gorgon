@@ -171,7 +171,7 @@ namespace Gorgon { namespace Resource {
 		else if(dynamic_cast<const Graphics::BitmapAnimationProvider*>(part))
 			Animation::SaveThis(writer, *dynamic_cast<const Graphics::BitmapAnimationProvider*>(part));
 		else
-			throw std::runtime_error("Unknown animation provider in line");
+			throw std::runtime_error("Unknown animation provider in rectangle");
 
 	}
 
@@ -336,7 +336,7 @@ namespace Gorgon { namespace Resource {
 		bp->OwnProviders();
 	}
 
-	Graphics::SizelessAnimationStorage Rectangle::sizelessanimmoveout() {
+	Graphics::RectangularAnimationStorage Rectangle::animmoveout() {
 		if(!prov)
 			throw std::runtime_error("Provider is not set");
 
@@ -374,7 +374,7 @@ namespace Gorgon { namespace Resource {
 		if(!p)
 			throw std::runtime_error("Provider is not set");
 
-		return Graphics::SizelessAnimationStorage(*p, true);
+		return Graphics::RectangularAnimationStorage(*p, true);
 	}
 
 } }

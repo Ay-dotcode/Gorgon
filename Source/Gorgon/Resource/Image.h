@@ -19,7 +19,7 @@ namespace Gorgon { namespace Resource {
 	/// might be released from the image resource. This allows safe destruction of the file tree without destroying
 	/// the necessary information.
 	class Image : 
-		public Graphics::Bitmap, public RectangularAnimationStorage, public SizelessAnimationStorage
+		public Graphics::Bitmap, public AnimationStorage
 	{
 	public:
 		Image() = default;
@@ -65,14 +65,12 @@ namespace Gorgon { namespace Resource {
         /// as PNG.
         static void SaveThis(Writer &writer, const Graphics::Bitmap &bmp, GID::Type type = GID::Image);
 
-        using RectangularAnimationStorage::MoveOut;
+        using AnimationStorage::MoveOut;
 
 	protected:
 		virtual ~Image() { }
 
-		virtual Graphics::RectangularAnimationStorage rectanimmoveout() override;
-
-		virtual Graphics::SizelessAnimationStorage sizelessanimmoveout() override;
+		virtual Graphics::RectangularAnimationStorage animmoveout() override;
 
 		/// Loads the image from the data stream
 		bool load(std::shared_ptr<Reader> reader, unsigned long size, bool forceload);

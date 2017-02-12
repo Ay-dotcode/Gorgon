@@ -13,7 +13,7 @@ namespace Gorgon { namespace Resource {
      * Graphics::LineProvider, Graphics::BitmapLineProvider and Graphics::AnimatedBitmapLineProvider.
      * @see Gorgon::Graphics::basic_LineProvider for details
      */
-	class Line : public Graphics::ILineProvider, public SizelessAnimationStorage {
+	class Line : public Graphics::ILineProvider, public AnimationStorage {
 	public:
         /// Creates a new line using another line provider.
 		explicit Line(Graphics::BitmapLineProvider &prov);
@@ -42,7 +42,7 @@ namespace Gorgon { namespace Resource {
         /// Creates a new empty line
 		Line() : ILineProvider(Graphics::Orientation::Horizontal) { }
 		
-		Gorgon::Animation::Provider &MoveOutProvider() override {
+		ILineProvider &MoveOutProvider() override {
 			if(!prov)
 				throw std::runtime_error("Provider is not set.");
 
@@ -173,7 +173,7 @@ namespace Gorgon { namespace Resource {
 	protected:
 		void save(Writer &writer) const override;
 
-		virtual Graphics::SizelessAnimationStorage sizelessanimmoveout() override;
+		virtual Graphics::RectangularAnimationStorage animmoveout() override;
 
 	private:
 		virtual ~Line() { 

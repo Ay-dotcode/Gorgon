@@ -22,7 +22,7 @@ namespace Gorgon { namespace Resource {
      * displayed. A Pointer resource can be created from a bitmap or an
      * animation.
      */
-    class Pointer : public RectangularAnimationStorage, public Graphics::BitmapPointerProvider {
+    class Pointer : public AnimationStorage, public Graphics::BitmapPointerProvider {
     public:
         Pointer(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type) : 
         Graphics::BitmapPointerProvider(hotspot), type(type) {
@@ -70,7 +70,7 @@ namespace Gorgon { namespace Resource {
     protected:
         Graphics::PointerType type = Graphics::PointerType::Arrow;
 
-		virtual Graphics::RectangularAnimationStorage rectanimmoveout() override;
+		virtual Graphics::RectangularAnimationStorage animmoveout() override;
 
         virtual ~Pointer() { }
 		

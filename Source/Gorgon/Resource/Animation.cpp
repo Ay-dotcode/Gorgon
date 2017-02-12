@@ -119,16 +119,10 @@ namespace Gorgon { namespace Resource {
 		return anim;
 	}
 
-	Graphics::RectangularAnimationStorage Animation::rectanimmoveout() {
+	Graphics::RectangularAnimationStorage Animation::animmoveout() {
 		Graphics::BitmapAnimationProvider &anim = *new Graphics::BitmapAnimationProvider(MoveOutAsBitmap());
 
 		return Graphics::RectangularAnimationStorage(anim, true);
-	}
-
-	Graphics::SizelessAnimationStorage Animation::sizelessanimmoveout() {
-		Graphics::BitmapAnimationProvider &anim = *new Graphics::BitmapAnimationProvider(MoveOutAsBitmap());
-
-		return Graphics::SizelessAnimationStorage(anim, true);
 	}
 
 } }

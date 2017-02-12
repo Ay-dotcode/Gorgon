@@ -9,10 +9,12 @@ namespace Gorgon { namespace Graphics {
 	class Line;
 
 	/// Interface for LineProviders
-	class ILineProvider : public SizelessAnimationProvider {
+	class ILineProvider : public RectangularAnimationProvider {
 	public:
 		ILineProvider(Orientation orientation) : orientation(orientation) 
 		{ }
+
+		virtual ILineProvider &MoveOutProvider() override = 0;
 
 		/// Creates a start animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateStart() const = 0;
@@ -56,7 +58,7 @@ namespace Gorgon { namespace Graphics {
 	 * along its orientation.
 	 * See basic_LineProvider for details.
 	 */
-	class Line : public SizelessAnimation {
+	class Line : public RectangularAnimation {
 	public:
 		Line(const ILineProvider &prov, Gorgon::Animation::ControllerBase &timer);
 
@@ -79,24 +81,33 @@ namespace Gorgon { namespace Graphics {
 
 		virtual Geometry::Size calculatesize(const Geometry::Size &area) const override {
 			if(prov.GetOrientation() == Orientation::Horizontal) {
-				return { area.Width, getsize() };
+				return{area.Width, getfixedsize()};
 			}
 			else {
-				return { getsize(), area.Height };
+				return{getfixedsize(), area.Height};
+			}
+		}
+
+		virtual Geometry::Size getsize() const override {
+			if(prov.GetOrientation() == Orientation::Horizontal) {
+				return{start.GetWidth()+middle.GetWidth()+end.GetWidth(), getfixedsize()};
+			}
+			else {
+				return{getfixedsize(), start.GetHeight()+middle.GetHeight()+end.GetHeight()};
 			}
 		}
 
 		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override {
 			if(prov.GetOrientation() == Orientation::Horizontal) {
-				return controller.CalculateSize({middle.GetWidth(), getsize()}, {start.GetWidth()+end.GetWidth(), 0}, s);
+				return controller.CalculateSize({middle.GetWidth(), getfixedsize()}, {start.GetWidth()+end.GetWidth(), 0}, s);
 			}
 			else {
-				return controller.CalculateSize({getsize(), middle.GetHeight()}, {0, start.GetHeight()+end.GetHeight()}, s);
+				return controller.CalculateSize({getfixedsize(), middle.GetHeight()}, {0, start.GetHeight()+end.GetHeight()}, s);
 			}
 		}
 
 		/// Returns the largest size in the non-scalable direction
-		int getsize() const {
+		int getfixedsize() const {
 			if(prov.GetOrientation() == Orientation::Horizontal) {
 				return std::max(std::max(start.GetHeight(), middle.GetHeight()), end.GetHeight());
 			}
@@ -104,6 +115,17 @@ namespace Gorgon { namespace Graphics {
 				return std::max(std::max(start.GetWidth(), middle.GetWidth()), end.GetWidth());
 			}
 		}
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
+						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, 
+						  const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
+						  const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const override;
+
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const override;
+
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p, RGBAf color) const override;
 
 	private:
 		RectangularAnimation &start;
@@ -141,8 +163,8 @@ namespace Gorgon { namespace Graphics {
 			own(true)
         { }
 
-		/// Filling constructor, nullptr is acceptable, however, it is not adviced to use only one side, that is
-		/// a waste of resources, a regular image can also be tiled or strected to fit to an area. 
+		/// Filling constructor, nullptr is acceptable, however, it is not advised to use only one side, that is
+		/// a waste of resources, a regular image can also be tiled or stretched to fit to an area. 
 		basic_LineProvider(Orientation orientation, A_ *start, A_ *middle, A_ *end) : ILineProvider(orientation),
 			start(start), middle(middle), end(end) {}
 

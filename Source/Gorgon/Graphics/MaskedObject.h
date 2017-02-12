@@ -7,7 +7,7 @@ namespace Gorgon { namespace Graphics {
     
     class MaskedObjectProvider;
     
-    class MaskedObject : public virtual SizelessAnimation {
+    class MaskedObject : public virtual RectangularAnimation {
     public:
         MaskedObject(const MaskedObjectProvider &parent, bool create = true);
         
@@ -34,20 +34,32 @@ namespace Gorgon { namespace Graphics {
 		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override {
             return Union(base.CalculateSize(controller, s), mask.CalculateSize(controller, s));
 		}        
-		
-    private:
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
+						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, 
+						  const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
+						  const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const override;
+
+
+		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
+						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const override;
+
+
+		virtual Geometry::Size getsize() const override;
+
+	private:
         const MaskedObjectProvider &parent;
-        SizelessAnimation &base, &mask;
+		RectangularAnimation &base, &mask;
     };
 
     /**
-     * This object creates a masked object from two sizeless animations. Rectangular animations
-     * can also act like sizeless animations as they can be tiled. Additionally, static images
-     * can be used as single frame animations. Thus this class can cover most cases.
+     * This object creates a masked object from two rectangular animations. Static images
+     * can be used as single frame animations. While drawing, color only affects the base
+	 * image.
      */
-    class MaskedObjectProvider : public SizelessAnimationProvider {
+    class MaskedObjectProvider : public RectangularAnimationProvider {
     public:
-        MaskedObjectProvider(SizelessAnimationProvider &base, SizelessAnimationProvider &mask) : 
+        MaskedObjectProvider(RectangularAnimationProvider &base, RectangularAnimationProvider &mask) :
             base(&base), mask(&mask) 
         { }
 		
@@ -74,9 +86,9 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Creates a base animation without controller.
-        SizelessAnimation &CreateBase() const {
+		RectangularAnimation &CreateBase() const {
             if(base) {
-                return dynamic_cast<SizelessAnimation&>(base->CreateAnimation(false));
+                return base->CreateAnimation(false);
             }
             else {
                 return EmptyImage::Instance();
@@ -84,9 +96,9 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Creates a mask animation without controller.
-        SizelessAnimation &CreateMask() const {
+		RectangularAnimation &CreateMask() const {
             if(mask) {
-                return dynamic_cast<SizelessAnimation&>(mask->CreateAnimation(false));
+                return mask->CreateAnimation(false);
             }
             else {
                 return EmptyImage::Instance();
@@ -94,14 +106,14 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Sets the providers in this object
-        void SetProviders(SizelessAnimationProvider &base, SizelessAnimationProvider &mask) {
+        void SetProviders(RectangularAnimationProvider &base, RectangularAnimationProvider &mask) {
             this->base = &base;
             this->mask = &mask;
         }
         
     private:
-        SizelessAnimationProvider *base;
-        SizelessAnimationProvider *mask;
+		RectangularAnimationProvider *base;
+		RectangularAnimationProvider *mask;
     };
 
     
