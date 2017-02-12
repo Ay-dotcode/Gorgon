@@ -234,13 +234,39 @@ namespace Gorgon { namespace Resource {
 	void Rectangle::save(Writer &writer) const {
 		auto start = writer.WriteObjectStart(this);
 
-        if(dynamic_cast<Graphics::BitmapRectangleProvider*>(prov)) {
-            savethis(writer, *dynamic_cast<Graphics::BitmapRectangleProvider*>(prov));
-        }
-        else if(dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov)) {
-            savethis(writer, *dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov));
-        }
-        
+		if(dynamic_cast<Graphics::BitmapRectangleProvider*>(prov)) {
+			savethis(writer, *dynamic_cast<Graphics::BitmapRectangleProvider*>(prov));
+		}
+		else if(dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov)) {
+			savethis(writer, *dynamic_cast<Graphics::AnimatedBitmapRectangleProvider*>(prov));
+		}
+		else if(dynamic_cast<Graphics::RectangleProvider*>(prov)) {
+			savethis(writer, *dynamic_cast<Graphics::RectangleProvider*>(prov));
+		}
+		else if(prov != nullptr) {
+			throw std::runtime_error("Unknown line provider");
+		}
+
+		writer.WriteEnd(start);
+	}
+
+	void Rectangle::SaveThis(Writer &writer, const Graphics::IRectangleProvider &provider) {
+		auto start = writer.WriteChunkStart(GID::Rectangle);
+		auto prov = &provider;
+
+		if(dynamic_cast<const Graphics::BitmapRectangleProvider*>(prov)) {
+			savethis(writer, *dynamic_cast<const Graphics::BitmapRectangleProvider*>(prov));
+		}
+		else if(dynamic_cast<const Graphics::AnimatedBitmapRectangleProvider*>(prov)) {
+			savethis(writer, *dynamic_cast<const Graphics::AnimatedBitmapRectangleProvider*>(prov));
+		}
+		else if(dynamic_cast<const Graphics::RectangleProvider*>(prov)) {
+			savethis(writer, *dynamic_cast<const Graphics::RectangleProvider*>(prov));
+		}
+		else {
+			throw std::runtime_error("Unknown line provider");
+		}
+
 		writer.WriteEnd(start);
 	}
 

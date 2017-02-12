@@ -168,6 +168,7 @@ namespace Gorgon { namespace Resource {
 		/// This function loads a line resource from the file
 		static Line *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
         
+		static void SaveThis(Writer &writer, const Graphics::ILineProvider &provider);
 
 	protected:
 		void save(Writer &writer) const override;

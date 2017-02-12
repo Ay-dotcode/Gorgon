@@ -165,6 +165,29 @@ namespace Gorgon { namespace Resource {
         else if(dynamic_cast<Graphics::LineProvider*>(prov)) {
             savethis(writer, *dynamic_cast<Graphics::LineProvider*>(prov));
         }
+		else if(prov != nullptr) {
+			throw std::runtime_error("Unknown line provider");
+		}
+
+		writer.WriteEnd(start);
+	}
+
+	void Line::SaveThis(Writer &writer, const Graphics::ILineProvider &provider) {
+		auto start = writer.WriteChunkStart(GID::Line);
+		auto prov = &provider;
+
+		if(dynamic_cast<const Graphics::BitmapLineProvider*>(prov)) {
+			savethis(writer, *dynamic_cast<const Graphics::BitmapLineProvider*>(prov));
+		}
+		else if(dynamic_cast<const Graphics::AnimatedBitmapLineProvider*>(prov)) {
+			savethis(writer, *dynamic_cast<const Graphics::AnimatedBitmapLineProvider*>(prov));
+		}
+		else if(dynamic_cast<const Graphics::LineProvider*>(prov)) {
+			savethis(writer, *dynamic_cast<const Graphics::LineProvider*>(prov));
+		}
+		else {
+			throw std::runtime_error("Unknown line provider");
+		}
 
 		writer.WriteEnd(start);
 	}

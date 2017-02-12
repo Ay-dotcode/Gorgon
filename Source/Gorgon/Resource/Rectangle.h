@@ -190,6 +190,9 @@ namespace Gorgon { namespace Resource {
 		/// This function loads a rectangle resource from the file
 		static Rectangle *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
 
+		static void SaveThis(Writer &writer, const Graphics::IRectangleProvider &provider);
+
+
 	protected:
 		void save(Writer &writer) const override;
 
