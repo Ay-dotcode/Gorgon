@@ -318,5 +318,6 @@ namespace Gorgon {
 			/// Controller of this animation
 			ControllerBase *controller = nullptr;
 		};
+
 	}
 }

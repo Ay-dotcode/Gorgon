@@ -10,36 +10,6 @@
 
 namespace Gorgon { namespace Graphics {
 
-	class Bitmap;
-
-	/// This class creates a non-const animation from a const bitmap
-	class BitmapWrapper : public virtual Graphics::RectangularAnimation {
-	public:
-		BitmapWrapper(const Bitmap &bmp) : bmp(bmp) {}
-
-	protected:
-		bool Progress(unsigned &) override { return true; }
-
-		Geometry::Size getsize() const override;
-
-
-		void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
-				  const Geometry::Pointf &p3, const Geometry::Pointf &p4,
-				  const Geometry::Pointf &tex1, const Geometry::Pointf &tex2,
-				  const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const override;
-
-		void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
-				  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const override;
-
-		void drawin(TextureTarget &target, const SizeController &size, 
-					const Geometry::Rectanglef &rect, RGBAf color) const;
-
-		Geometry::Size calculatesize(const Geometry::Size &) const;
-
-		Geometry::Size calculatesize(const SizeController &sz, const Geometry::Size &s) const;
-	private:
-		const Bitmap &bmp;
-	};
 
 	/// This object contains an bitmap image. It allows draw, load, import, export functionality. An image may work
 	/// without its data buffer. In order to be drawn, an image object should be prepared. Both data and texture
@@ -50,6 +20,8 @@ namespace Gorgon { namespace Graphics {
 	{
 		friend class BitmapWrapper;
 	public:
+        
+        using AnimationType = Bitmap;
 
 		enum AtlasMargins {
 			/// Atlas will be tight packed
@@ -149,9 +121,9 @@ namespace Gorgon { namespace Graphics {
 		using Graphics::Texture::GetCoordinates;
 		using Graphics::Texture::GetImageSize;
 
-		BitmapWrapper &CreateAnimation(Gorgon::Animation::ControllerBase &controller) const override { return *new BitmapWrapper(*this); }
+		Bitmap &CreateAnimation(Gorgon::Animation::ControllerBase &) const override { return const_cast<Bitmap &>(*this); }
 
-		BitmapWrapper &CreateAnimation(bool create=false) const override { return *new BitmapWrapper(*this); }
+		Bitmap &CreateAnimation(bool =false) const override { return const_cast<Bitmap &>(*this); }
 
 		/// if used as animation, this object will not be deleted
 		virtual void DeleteAnimation() const override { }

@@ -611,30 +611,4 @@ namespace Gorgon { namespace Graphics {
 	}
 
 
-	Geometry::Size BitmapWrapper::getsize() const {
-		return bmp.GetSize();
-	}
-
-	void BitmapWrapper::draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, const Geometry::Pointf &p3, const Geometry::Pointf &p4, const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const {
-		bmp.draw(target, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color);
-	}
-
-	void BitmapWrapper::draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const {
-		bmp.draw(target, p1, p2, p3, p4, color);
-	}
-
-	void BitmapWrapper::drawin(Gorgon::Graphics::TextureTarget &target, const Gorgon::Graphics::SizeController &size, const Gorgon::Geometry::Rectanglef &rect, Gorgon::Graphics::RGBAf color) const {
-		bmp.drawin(target, size, rect, color);
-	}
-
-
-	Geometry::Size BitmapWrapper::calculatesize(const Geometry::Size &s) const {
-		return bmp.calculatesize(s);
-	}
-
-
-	Geometry::Size BitmapWrapper::calculatesize(const SizeController &sz, const Geometry::Size &s) const {
-		return bmp.calculatesize(sz, s);
-	}
-
 } }

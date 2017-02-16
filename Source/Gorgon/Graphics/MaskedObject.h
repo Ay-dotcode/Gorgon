@@ -2,18 +2,21 @@
 
 #include "EmptyImage.h"
 #include "Animations.h"
+#include "TextureAnimation.h"
 
 namespace Gorgon { namespace Graphics {
     
-    class MaskedObjectProvider;
+	template<class A_>
+    class basic_MaskedObjectProvider;
     
-    class MaskedObject : public virtual RectangularAnimation {
+	template<class A_>
+    class basic_MaskedObject : public virtual A_::AnimationType {
     public:
-        MaskedObject(const MaskedObjectProvider &parent, bool create = true);
+		basic_MaskedObject(const basic_MaskedObjectProvider<A_> &parent, bool create = true);
         
-        MaskedObject(const MaskedObjectProvider &parent, Gorgon::Animation::ControllerBase &timer);
+		basic_MaskedObject(const basic_MaskedObjectProvider<A_> &parent, Gorgon::Animation::ControllerBase &timer);
         
-        ~MaskedObject() {
+        ~basic_MaskedObject() {
             base.DeleteAnimation();
             mask.DeleteAnimation();
         }
@@ -48,22 +51,23 @@ namespace Gorgon { namespace Graphics {
 		virtual Geometry::Size getsize() const override;
 
 	private:
-        const MaskedObjectProvider &parent;
+        const basic_MaskedObjectProvider<A_> &parent;
 		RectangularAnimation &base, &mask;
     };
 
     /**
-     * This object creates a masked object from two rectangular animations. Static images
-     * can be used as single frame animations. While drawing, color only affects the base
-	 * image.
+     * This object creates a masked object from two graphics object. 
      */
-    class MaskedObjectProvider : public RectangularAnimationProvider {
+	template<class A_>
+    class basic_MaskedObjectProvider : public RectangularAnimationProvider {
     public:
-        MaskedObjectProvider(RectangularAnimationProvider &base, RectangularAnimationProvider &mask) :
+		using AnimationType = typename A_::AnimationType;
+
+		basic_MaskedObjectProvider(A_ &base, A_ &mask) :
             base(&base), mask(&mask) 
         { }
 		
-        MaskedObjectProvider(MaskedObjectProvider &&other) : 
+		basic_MaskedObjectProvider(basic_MaskedObjectProvider &&other) :
             base(other.base), mask(other.mask) 
         { 
             other.base = nullptr;
@@ -77,12 +81,12 @@ namespace Gorgon { namespace Graphics {
             return *ret;
         }
        
-        MaskedObject &CreateAnimation(bool create = true) const override {
-            return *new MaskedObject(*this, create);
+        basic_MaskedObject<A_> &CreateAnimation(bool create = true) const override {
+            return *new basic_MaskedObject<A_>(*this, create);
         }
         
-        MaskedObject &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
-            return *new MaskedObject(*this, timer);
+		basic_MaskedObject<A_> &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
+            return *new basic_MaskedObject<A_>(*this, timer);
         }
         
         /// Creates a base animation without controller.
@@ -106,15 +110,126 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Sets the providers in this object
-        void SetProviders(RectangularAnimationProvider &base, RectangularAnimationProvider &mask) {
+        void SetProviders(A_ &base, A_ &mask) {
             this->base = &base;
             this->mask = &mask;
         }
         
     private:
-		RectangularAnimationProvider *base;
-		RectangularAnimationProvider *mask;
+		A_ *base;
+		A_ *mask;
     };
 
-    
+	template<class A_>
+    basic_MaskedObject<A_>::basic_MaskedObject(const basic_MaskedObjectProvider<A_> &parent, bool create) :
+        Gorgon::Animation::Base(create), parent(parent),
+        base(parent.CreateBase()), mask(parent.CreateMask())
+    {
+        if(this->HasController()) {
+            base.SetController(this->GetController());
+            mask.SetController(this->GetController());
+        }
+    }
+        
+	template<class A_>
+	basic_MaskedObject<A_>::basic_MaskedObject(const basic_MaskedObjectProvider<A_> &parent, Gorgon::Animation::ControllerBase &timer) :
+        Gorgon::Animation::Base(timer), parent(parent),
+        base(parent.CreateBase()), mask(parent.CreateMask())
+    {
+        if(this->HasController()) {
+            base.SetController(this->GetController());
+            mask.SetController(this->GetController());
+        }
+    }
+        
+	template<class A_>
+	void basic_MaskedObject<A_>::drawin(TextureTarget &target, const Geometry::Rectanglef &r, RGBAf color) const {
+        auto prev = target.GetDrawMode();
+			
+		if(prev != target.ToMask)
+			target.NewMask();
+
+        target.SetDrawMode(target.ToMask);
+        mask.DrawIn(target, r);
+			
+		if(prev != target.ToMask)
+			target.SetDrawMode(target.UseMask);
+
+        base.DrawIn(target, r, color);
+        target.SetDrawMode(prev);
+    }
+
+	template<class A_>
+	void basic_MaskedObject<A_>::drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectanglef &r, RGBAf color) const {
+		auto prev = target.GetDrawMode();
+
+		if(prev != target.ToMask)
+			target.NewMask();
+
+		target.SetDrawMode(target.ToMask);
+		mask.DrawIn(target, controller, r);
+
+		if(prev != target.ToMask)
+			target.SetDrawMode(target.UseMask);
+
+		base.DrawIn(target, controller, r, color);
+		target.SetDrawMode(prev);
+	}
+
+        
+        
+	template<class A_>
+	void basic_MaskedObject<A_>::draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+							const Geometry::Pointf &p3, const Geometry::Pointf &p4, 
+							const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
+							const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const 
+	{
+		auto prev = target.GetDrawMode();
+
+		if(prev != target.ToMask)
+			target.NewMask();
+
+		target.SetDrawMode(target.ToMask);
+		mask.Draw(target, p1, p2, p3, p4, tex1, tex2, tex3, tex4);
+
+		if(prev != target.ToMask)
+			target.SetDrawMode(target.UseMask);
+
+		base.Draw(target, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color);
+		target.SetDrawMode(prev);
+	}
+
+
+	template<class A_>
+	void basic_MaskedObject<A_>::draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const {
+		auto prev = target.GetDrawMode();
+
+		if(prev != target.ToMask)
+			target.NewMask();
+
+		target.SetDrawMode(target.ToMask);
+		mask.Draw(target, p1, p2, p3, p4);
+
+		if(prev != target.ToMask)
+			target.SetDrawMode(target.UseMask);
+
+		base.Draw(target, p1, p2, p3, p4, color);
+		target.SetDrawMode(prev);
+	}
+
+
+	template<class A_>
+	Geometry::Size basic_MaskedObject<A_>::getsize() const {
+		return base.GetSize();
+	}
+
+	using MaskedObject = basic_MaskedObject<RectangularAnimationProvider>;
+	using MaskedObjectProvider = basic_MaskedObjectProvider<RectangularAnimationProvider>;
+
+	using MaskedBitmapAnimation = basic_MaskedObject<BitmapAnimationProvider>;
+	using MaskedBitmapAnimationProvider = basic_MaskedObjectProvider<BitmapAnimationProvider>;
+
+	using MaskedBitmap = basic_MaskedObject<Bitmap>;
+	using MaskedBitmapProvider = basic_MaskedObjectProvider<Bitmap>;
+
 } }
