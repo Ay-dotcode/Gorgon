@@ -183,25 +183,16 @@ namespace Gorgon {
 			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::DumpOnlyTag,#expression, message, ##__VA_ARGS__)); } } while(0)
 			
 #	endif			
-#	ifdef _MSC_VER
-		__declspec(noreturn) inline void NotImplemented(const std::string &what="This feature") { ASSERT(false, what+" is not implemented.", 0, 8); }
 		
-		__declspec(noreturn) inline void ASSERT_FALSE(const std::string &message, int skip=1, int depth=4) {
-			ASSERT(false, message, skip, depth); 		
-		}
-#	else
-		void NotImplemented (const std::string &what="This feature") __attribute__((noreturn));
-		void ASSERT_FALSE(const std::string &message, int skip=1, int depth=4) __attribute__((noreturn));
-		
-		inline void NotImplemented (const std::string &what) { 
+		[[noreturn]] inline void NotImplemented (const std::string &what = "This feature") { 
 			ASSERT(false, what+" is not implemented.", 0, 8); 
 			throw 0;
 		}
-		inline void ASSERT_FALSE(const std::string &message, int skip, int depth) { 
+		
+		[[noreturn]] inline void ASSERT_FALSE(const std::string &message, int skip = 1, int depth = 4) { 
 			ASSERT(false, message, skip, depth);
 			throw 0;
 		}
-#endif
 	}
 }
 #pragma warning(pop)

@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 OPTION(IGNORE_COMPILER_VERSION "Ignore compiler version check" OFF)
 OPTION(IGNORE_COMPILER_VENDOR "Ignore compiler vendor check" OFF)
 
+set(CMAKE_CXX_STANDARD 14)
+
 #compiler check
 IF(CMAKE_COMPILER_IS_GNUCXX)
 	EXECUTE_PROCESS(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)

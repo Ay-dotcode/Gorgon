@@ -85,7 +85,7 @@ namespace Gorgon { namespace Resource {
 		auto file = f.lock();
 
 		auto rectangle = new Rectangle();
-		bool tile;
+		bool ctile, stile;
 		enum {
 			unknown, img, anim, mixed
 		} type = unknown;
@@ -96,15 +96,16 @@ namespace Gorgon { namespace Resource {
 			auto size= reader->ReadChunkSize();
 
 			if(gid == GID::Rectangle_Props) {
-				tile = reader->ReadBool();
+				ctile = reader->ReadBool();
                 reader->ReadBool(); //unused
-                reader->ReadBool();
+                stile = reader->ReadBool();
                 reader->ReadBool();
                 reader->ReadBool();
                 reader->ReadBool();
 			}
 			else if(gid == GID::Rectangle_Props_II) {
-				tile = reader->ReadBool();
+				ctile = reader->ReadBool();
+				stile = reader->ReadBool();
             }
 			else {
 				auto resource = file->LoadChunk(*rectangle, gid, size, false);
@@ -156,8 +157,10 @@ namespace Gorgon { namespace Resource {
 		}
 		//else empty rectangle
 
-		if(type != unknown)
-			rectangle->SetTiling(tile);
+		if(type != unknown) {
+			rectangle->SetCenterTiling(ctile);
+			rectangle->SetSideTiling(stile);
+        }
 
 		rectangle->own = true;
 		return rectangle;
@@ -177,8 +180,9 @@ namespace Gorgon { namespace Resource {
 
 	template <class T_>
 	static void savethis(Writer &writer, const Graphics::basic_RectangleProvider<T_> &provider) {
-		writer.WriteChunkHeader(GID::Rectangle_Props_II, 4);
-		writer.WriteBool(provider.GetTiling());
+		writer.WriteChunkHeader(GID::Rectangle_Props_II, 2 * 4);
+		writer.WriteBool(provider.GetCenterTiling());
+		writer.WriteBool(provider.GetSideTiling());
 
 		auto tl = provider.GetTL();
 		auto tm = provider.GetTM();
@@ -311,7 +315,8 @@ namespace Gorgon { namespace Resource {
 	static void moveout(Graphics::basic_RectangleProvider<T_> *provider, Graphics::IRectangleProvider *&p) {
 		auto bp = new Graphics::basic_RectangleProvider<T_>;
 		p = bp;
-		bp->SetTiling(provider->GetTiling());
+		bp->SetCenterTiling(provider->GetCenterTiling());
+		bp->SetSideTiling(provider->GetSideTiling());
 
 		auto tl = provider->GetTL();
 		auto tm = provider->GetTM();

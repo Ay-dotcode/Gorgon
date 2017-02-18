@@ -68,24 +68,24 @@ namespace Gorgon { namespace Graphics {
         int maxr = std::max(std::max(tr.GetWidth(), mr.GetWidth()), br.GetWidth());
         
         tl.Draw(target, r.X + maxl - tl.GetWidth(), r.Y + maxt - tl.GetHeight(), color);
-        tm.DrawIn(target, prov.GetTiling() ? Tiling::Horizontal : Tiling::None, 
+        tm.DrawIn(target, prov.GetSideTiling() ? Tiling::Horizontal : Tiling::None, 
                   Geometry::Rectanglef(r.X + maxl, r.Y + maxt - tm.GetHeight(), r.Width-maxl-maxr, (Float)tm.GetHeight()),
                   color);
         tr.Draw(target, r.Right() - maxr, r.Y + maxt - tr.GetHeight());
 
-        ml.DrawIn(target, prov.GetTiling() ? Tiling::Vertical : Tiling::None, 
+        ml.DrawIn(target, prov.GetSideTiling() ? Tiling::Vertical : Tiling::None, 
                   Geometry::Rectanglef(r.X + maxl - ml.GetWidth(), r.Y + maxt, (Float)ml.GetWidth(), r.Height-maxt-maxb),
                   color);        
-        mm.DrawIn(target, prov.GetTiling() ? Tiling::Both : Tiling::None, 
+        mm.DrawIn(target, prov.GetCenterTiling() ? Tiling::Both : Tiling::None, 
                   Geometry::Rectanglef(r.X + maxl, r.Y + maxt, r.Width-maxl-maxr, r.Height-maxt-maxb),
                   color);
-        mr.DrawIn(target, prov.GetTiling() ? Tiling::Vertical : Tiling::None, 
+        mr.DrawIn(target, prov.GetSideTiling() ? Tiling::Vertical : Tiling::None, 
                   Geometry::Rectanglef(r.Right() - maxr, r.Y + maxt, (Float)ml.GetWidth(), r.Height-maxt-maxb),
                   color);
         
         
         bl.Draw(target, r.X + maxl - bl.GetWidth(), r.Bottom() - maxb, color);
-        bm.DrawIn(target, prov.GetTiling() ? Tiling::Horizontal : Tiling::None, 
+        bm.DrawIn(target, prov.GetSideTiling() ? Tiling::Horizontal : Tiling::None, 
                   Geometry::Rectanglef(r.X + maxl, r.Bottom() - maxb, r.Width-maxl-maxr, (Float)bm.GetHeight()),
                   color);
         br.Draw(target, r.Right() - maxr, r.Bottom() - maxb);
@@ -94,7 +94,7 @@ namespace Gorgon { namespace Graphics {
 	void Rectangle::drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectanglef &r, RGBAf color) const {
 		SizeController c = controller;
 
-		if(!prov.GetTiling()) {
+		if(!prov.GetCenterTiling()) {
 			c.Horizontal =  c.Stretch;
 			c.Vertical =  c.Stretch;
 		}
@@ -113,14 +113,14 @@ namespace Gorgon { namespace Graphics {
 
 	void Rectangle::draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 					const Geometry::Pointf &p3, const Geometry::Pointf &p4,
-					const Geometry::Pointf &tex1, const Geometry::Pointf &tex2,
-					const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const {
+					const Geometry::Pointf &, const Geometry::Pointf &,
+					const Geometry::Pointf &, const Geometry::Pointf &, RGBAf color) const {
 		draw(target, p1, p2, p3, p4, color);
 	}
 
 	void Rectangle::draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 					const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const {
-		throw std::logic_error("The method or operation is not implemented.");
+		Utils::NotImplemented();
 	}
 
 	void Rectangle::draw(TextureTarget &target, const Geometry::Pointf &p, RGBAf color) const {

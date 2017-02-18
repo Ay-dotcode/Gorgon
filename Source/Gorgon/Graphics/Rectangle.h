@@ -40,20 +40,33 @@ namespace Gorgon { namespace Graphics {
 		/// Creates an animation without controller. This function should always return an animation
 		virtual RectangularAnimation &CreateBR() const = 0;
 
-		/// Sets whether the middle parts would be tiled. If set to false it will be stretched to fit the
-		/// given area. Instances will require redrawing before this change is reflected. This effects the
-		/// entire system. Tiling is recommended for all applications.
-		virtual void SetTiling(bool value) {
-			tiling = value;
+		/// Sets whether the middle part would be tiled. If set to false it will be stretched to fit the
+		/// given area. Instances will require redrawing before this change is reflected. This effects
+		/// both dimensions. Tiling is recommended for all applications.
+		virtual void SetCenterTiling(bool value) {
+			ctiling = value;
 		}
 
 		/// Returns if the middle part will be tiled.
-		virtual bool GetTiling() const {
-			return tiling;
+		virtual bool GetCenterTiling() const {
+			return ctiling;
+		}
+
+		/// Sets whether the side parts (tm, ml, mr, bm) would be tiled. If set to false it will be stretched 
+		/// to fit the given area. Instances will require redrawing before this change is reflected. Tiling is 
+		/// recommended for all applications.
+		virtual void SetSideTiling(bool value) {
+			stiling = value;
+		}
+
+		/// Returns if the middle part will be tiled.
+		virtual bool GetSideTiling() const {
+			return stiling;
 		}
 
 	private:
-		bool tiling = true;
+		bool ctiling = true;
+        bool stiling = true;
 	};
 
 	/**
@@ -192,7 +205,8 @@ namespace Gorgon { namespace Graphics {
 			other.bm = nullptr;
 			other.br = nullptr;
             
-            SetTiling(other.GetTiling());
+            SetCenterTiling(other.GetCenterTiling());
+            SetSideTiling(other.GetSideTiling());
 		}
 
 		~basic_RectangleProvider() {

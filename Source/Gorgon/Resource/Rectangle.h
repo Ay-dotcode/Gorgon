@@ -159,20 +159,34 @@ namespace Gorgon { namespace Resource {
 			return prov->CreateBR();
 		}
 
-		virtual void SetTiling(bool value) override {
+		virtual void SetCenterTiling(bool value) override {
 			if(!prov)
 				throw std::runtime_error("Provider is not set.");
 
-			prov->SetTiling(value);
+			prov->SetCenterTiling(value);
 		}
 
-		virtual bool GetTiling() const override {
+		virtual bool GetCenterTiling() const override {
 			if(!prov)
 				throw std::runtime_error("Provider is not set.");
 
-			return prov->GetTiling();
+			return prov->GetCenterTiling();
 		}
 
+		virtual void SetSideTiling(bool value) override {
+			if(!prov)
+				throw std::runtime_error("Provider is not set.");
+
+			prov->SetSideTiling(value);
+		}
+
+		virtual bool GetSideTiling() const override {
+			if(!prov)
+				throw std::runtime_error("Provider is not set.");
+
+			return prov->GetSideTiling();
+		}
+		
 		virtual Gorgon::Graphics::Rectangle &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
 			if(!prov)
 				throw std::runtime_error("Provider is not set.");

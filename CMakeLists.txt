@@ -119,6 +119,8 @@ include(Scripts/Doxygen.cmake)
 
 add_library(Gorgon STATIC ${All})
 
+set_property(TARGET Gorgon PROPERTY CXX_STANDARD 14)
+
 if(NOT ${deps} STREQUAL "")
 	add_dependencies(Gorgon ${deps})
 endif()

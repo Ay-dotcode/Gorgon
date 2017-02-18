@@ -63,8 +63,8 @@ namespace Gorgon { namespace Graphics {
 
 	void Line::draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 					const Geometry::Pointf &p3, const Geometry::Pointf &p4, 
-					const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
-					const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const 
+					const Geometry::Pointf &, const Geometry::Pointf &,
+					const Geometry::Pointf &, const Geometry::Pointf &, RGBAf color) const 
 	{
 		draw(target, p1, p2, p3, p4, color);
 	}
@@ -72,7 +72,7 @@ namespace Gorgon { namespace Graphics {
 	void Line::draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 					const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const 
 	{
-		throw std::logic_error("The method or operation is not implemented.");
+		Utils::NotImplemented();
 	}
 
 	void Line::draw(TextureTarget &target, const Geometry::Pointf &p, RGBAf color) const {

@@ -140,11 +140,12 @@ namespace Gorgon {
 			constexpr Type Data_Color			{0x02030D02};
 			constexpr Type Data_Size			{0x02030D03};
 			constexpr Type Data_Bounds			{0x02030D04};
-			constexpr Type Data_Margins			{0x02030D05};			
+			constexpr Type Data_Margins			{0x02030D05};
 			constexpr Type Data_Object			{0x02030D06};
+            /// @}
 
-			//////////////////////////////////////////////////////////////////////////
-			// Gaming resources
+			/// @name Gaming resources
+            /// @{
 			constexpr Type Animation			{0x03100000};
 			constexpr Type Animation_Image		{0x03110000};
 			constexpr Type Animation_Durations	{0x03100101};
@@ -158,7 +159,7 @@ namespace Gorgon {
 			constexpr Type Pointer_Props	    {0x03D20101};
 
 			constexpr Type Font					{0x03200000};
-			constexpr Type Font_Charmap			{0x03200101};
+            constexpr Type Font_Charmap			{0x03200101};
 			constexpr Type Font_Names			{0x03200102};
 			constexpr Type Font_Name			{0x03200103};
 			constexpr Type Font_Image			{0x03210000};
@@ -170,9 +171,10 @@ namespace Gorgon {
 			constexpr Type FontTheme_Font		{0x03301001};
 			constexpr Type FontTheme_Shadow		{0x03301002};
 			constexpr Type FontTheme_Props		{0x03300804};
+            /// @}
 
-			//////////////////////////////////////////////////////////////////////////
-			// Extended resources
+			/// @name Extended resources
+            /// @{
 			constexpr Type Sound				{0x04010000};
 			constexpr Type Sound_Props			{0x04010101};
 			constexpr Type Sound_Wave			{0x04010801};
@@ -185,15 +187,16 @@ namespace Gorgon {
 			constexpr Type Blob_Props			{0x04020101};
 			constexpr Type Blob_Data			{0x04020801};
 			constexpr Type Blob_Cmp_Data		{0x04020802};
+            /// @}
 
-			//////////////////////////////////////////////////////////////////////////
-			// Basic Widget resources
+			/// @name Basic Widget resources
 			constexpr Type Line					{0x05110000};
 			constexpr Type Line_Props			{0x05110101};
 
 			constexpr Type Rectangle			{0x05120000};
-			constexpr Type Rectangle_Props		{0x05120101};
+            constexpr Type Rectangle_Props		{0x05120101};
 			constexpr Type Rectangle_Props_II	{0x05120102};
+            /// @}
 		}
 	}
 	

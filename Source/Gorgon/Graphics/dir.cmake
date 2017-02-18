@@ -16,7 +16,6 @@ SET(Local
 	Line.h
 	Line.cpp
 	MaskedObject.h
-	MaskedObject.cpp
 	Pointer.h
 	Pointer.cpp
 	Rectangle.h
