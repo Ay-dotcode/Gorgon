@@ -11,6 +11,7 @@
 #include "Pointer.h"
 #include "Line.h"
 #include "Rectangle.h"
+#include "MaskedObject.h"
 
 
 
@@ -28,6 +29,7 @@ namespace Gorgon { namespace Resource {
 		Loaders[GID::Pointer]			= {GID::Pointer	        , Pointer::LoadResource};
 		Loaders[GID::Line]				= {GID::Line	        , Line::LoadResource};
 		Loaders[GID::Rectangle]			= {GID::Rectangle       , Rectangle::LoadResource};
+		Loaders[GID::MaskedObject]		= {GID::MaskedObject    , MaskedObject::LoadResource};
 	}
 
 	bool Resource::Reader::ReadCommonChunk(Base &self, GID::Type gid, unsigned long size) {

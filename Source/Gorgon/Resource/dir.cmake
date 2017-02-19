@@ -23,6 +23,8 @@ SET(Local
 	Image.cpp
 	Line.h
 	Line.cpp
+	MaskedObject.h
+	MaskedObject.cpp
 	Null.h
 	Null.cpp
 	Pointer.h

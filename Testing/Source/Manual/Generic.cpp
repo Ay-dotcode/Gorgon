@@ -15,6 +15,7 @@
 #include <Gorgon/GL.h>
 #include "Gorgon/Resource/Line.h"
 #include "Gorgon/Resource/Rectangle.h"
+#include "Gorgon/Resource/MaskedObject.h"
 #include "Gorgon/Resource/Image.h"
 #include "Gorgon/Resource/File.h"
 
@@ -318,6 +319,10 @@ int main() {
 		Triangle(4,4), Rectangle(8,8), Triangle(4,4).Rotate180()
 	);
 
+	Graphics::MaskedBitmapProvider maskp(
+		Triangle(4, 4), Triangle(4,4).Rotate180()
+	);
+
     Gorgon::Resource::File f;
     auto imgr = new Gorgon::Resource::Image(Rectangle(8,8));
     f.Root().Add(imgr);
@@ -325,12 +330,14 @@ int main() {
 	f.Root().Add(liner);
     auto rectr = new Gorgon::Resource::Rectangle(rectp);
     f.Root().Add(rectr);
+	auto maskr = new Gorgon::Resource::MaskedObject(maskp);
+	f.Root().Add(maskr);
 	f.Save("linetest.gor");
 
 	f.LoadFile("linetest.gor");
 	f.Prepare();
 
-    auto rp = f.Root().Get<Gorgon::Resource::AnimationStorage>(2).MoveOut();
+    auto rp = f.Root().Get<Gorgon::Resource::AnimationStorage>(3).MoveOut();
 
     Graphics::MaskedObjectProvider mop(bgimage, rp);
     

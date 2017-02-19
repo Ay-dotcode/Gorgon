@@ -10,8 +10,11 @@ namespace Gorgon { namespace Resource {
 	
 	Line::Line(Graphics::BitmapLineProvider &prov) : prov(&prov), ILineProvider(Graphics::Orientation::Horizontal) 
 	{ }
-
+	
 	Line::Line(Graphics::AnimatedBitmapLineProvider &prov) : prov(&prov), ILineProvider(Graphics::Orientation::Horizontal)
+	{ }
+
+	Line::Line(Graphics::LineProvider &prov) : prov(&prov), ILineProvider(Graphics::Orientation::Horizontal)
 	{ }
 
 	template<class T_>
@@ -55,6 +58,11 @@ namespace Gorgon { namespace Resource {
 			auto size= reader->ReadChunkSize();
 
 			if(gid == GID::Line_Props) {
+				reader->ReadGuid(); //mask is ignored
+				tile = reader->ReadBool();
+				orient = reader->ReadEnum32<Graphics::Orientation>();
+			}
+			else if(gid == GID::Line_Props_II) {
 				tile = reader->ReadBool();
 				orient = reader->ReadEnum32<Graphics::Orientation>();
 			}
@@ -114,22 +122,10 @@ namespace Gorgon { namespace Resource {
 		line->own = true;
 		return line;
 	}
-
-	static void savethis(Writer &writer, const Graphics::RectangularAnimationProvider *part) {
-        if(part == nullptr)
-            Null::SaveThis(writer);
-        else if(dynamic_cast<const Graphics::Bitmap*>(part))
-            Image::SaveThis(writer, *dynamic_cast<const Graphics::Bitmap*>(part));
-        else if(dynamic_cast<const Graphics::BitmapAnimationProvider*>(part))
-            Animation::SaveThis(writer, *dynamic_cast<const Graphics::BitmapAnimationProvider*>(part));
-        else
-            throw std::runtime_error("Unknown animation provider in line");
-        
-    }
 	
 	template <class T_>
 	static void savethis(Writer &writer, const Graphics::basic_LineProvider<T_> &provider) {
-        writer.WriteChunkHeader(GID::Line_Props, 2 * 4);
+        writer.WriteChunkHeader(GID::Line_Props_II, 2 * 4);
         writer.WriteBool(provider.GetTiling());
         writer.WriteEnum32(provider.GetOrientation());
 
@@ -138,18 +134,18 @@ namespace Gorgon { namespace Resource {
         auto e = provider.GetEnd();
 
         if(s && e) {
-            savethis(writer, s);
+			SaveAnimation(writer, s);
             if(m)
-                savethis(writer, m);
-            savethis(writer, e);
+				SaveAnimation(writer, m);
+			SaveAnimation(writer, e);
         }
         else if(!s && !e) {
-            savethis(writer, m);
+			SaveAnimation(writer, m);
         }
         else {
-            savethis(writer, s);
-            savethis(writer, m);
-            savethis(writer, e);
+			SaveAnimation(writer, s);
+			SaveAnimation(writer, m);
+			SaveAnimation(writer, e);
         }
     }
 

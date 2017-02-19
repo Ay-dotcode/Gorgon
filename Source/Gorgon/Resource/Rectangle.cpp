@@ -96,6 +96,7 @@ namespace Gorgon { namespace Resource {
 			auto size= reader->ReadChunkSize();
 
 			if(gid == GID::Rectangle_Props) {
+				reader->ReadGuid();
 				ctile = reader->ReadBool();
                 reader->ReadBool(); //unused
                 stile = reader->ReadBool();
@@ -166,18 +167,6 @@ namespace Gorgon { namespace Resource {
 		return rectangle;
 	}
 
-	static void savethis(Writer &writer, const Graphics::RectangularAnimationProvider *part) {
-		if(part == nullptr)
-			Null::SaveThis(writer);
-		else if(dynamic_cast<const Graphics::Bitmap*>(part))
-			Image::SaveThis(writer, *dynamic_cast<const Graphics::Bitmap*>(part));
-		else if(dynamic_cast<const Graphics::BitmapAnimationProvider*>(part))
-			Animation::SaveThis(writer, *dynamic_cast<const Graphics::BitmapAnimationProvider*>(part));
-		else
-			throw std::runtime_error("Unknown animation provider in rectangle");
-
-	}
-
 	template <class T_>
 	static void savethis(Writer &writer, const Graphics::basic_RectangleProvider<T_> &provider) {
 		writer.WriteChunkHeader(GID::Rectangle_Props_II, 2 * 4);
@@ -195,43 +184,43 @@ namespace Gorgon { namespace Resource {
 		auto br = provider.GetBR();
 
 		if(tm && ml && mr && bm && !tl && !tr && !bl && !br) {
-			savethis(writer, tm);
-			savethis(writer, ml);
+			SaveAnimation(writer, tm);
+			SaveAnimation(writer, ml);
 			if(mm)
-				savethis(writer, mm);
-			savethis(writer, mr);
-			savethis(writer, bm);
+				SaveAnimation(writer, mm);
+			SaveAnimation(writer, mr);
+			SaveAnimation(writer, bm);
 		}
 		else if(tm && ml && mr && bm && tl && tr && bl && br) {
-			savethis(writer, tl);
-			savethis(writer, tm);
-			savethis(writer, tr);
-			savethis(writer, ml);
+			SaveAnimation(writer, tl);
+			SaveAnimation(writer, tm);
+			SaveAnimation(writer, tr);
+			SaveAnimation(writer, ml);
 			if(mm)
-				savethis(writer, mm);
-			savethis(writer, mr);
-			savethis(writer, bl);
-			savethis(writer, bm);
-			savethis(writer, br);
+				SaveAnimation(writer, mm);
+			SaveAnimation(writer, mr);
+			SaveAnimation(writer, bl);
+			SaveAnimation(writer, bm);
+			SaveAnimation(writer, br);
 		}
 		else if(!tr && !tm && !tr && !ml && !mr && !bl && !bm && !br) {
 			if(mm)
-				savethis(writer, mm);
+				SaveAnimation(writer, mm);
 		}
 		else {
 			//non standard
 
-			savethis(writer, tl);
-			savethis(writer, tm);
-			savethis(writer, tr);
+			SaveAnimation(writer, tl);
+			SaveAnimation(writer, tm);
+			SaveAnimation(writer, tr);
 
-			savethis(writer, ml);
-			savethis(writer, mm);
-			savethis(writer, mr);
+			SaveAnimation(writer, ml);
+			SaveAnimation(writer, mm);
+			SaveAnimation(writer, mr);
 
-			savethis(writer, bl);
-			savethis(writer, bm);
-			savethis(writer, br);
+			SaveAnimation(writer, bl);
+			SaveAnimation(writer, bm);
+			SaveAnimation(writer, br);
 		}
 	}
 

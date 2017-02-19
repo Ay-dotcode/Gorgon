@@ -6,15 +6,56 @@
 
 namespace Gorgon { namespace Graphics {
     
+    /// For ease of use in resource system
+    class IMaskedObjectProvider : public RectangularAnimationProvider {
+    public:
+        virtual RectangularAnimation &CreateBase() const = 0;
+        virtual RectangularAnimation &CreateMask() const = 0;
+        
+        virtual IMaskedObjectProvider &MoveOutProvider() override = 0;
+    };
+    
 	template<class A_>
     class basic_MaskedObjectProvider;
     
 	template<class A_>
-    class basic_MaskedObject : public virtual A_::AnimationType {
+    class basic_MaskedObject : public virtual RectangularAnimation {
     public:
 		basic_MaskedObject(const basic_MaskedObjectProvider<A_> &parent, bool create = true);
         
 		basic_MaskedObject(const basic_MaskedObjectProvider<A_> &parent, Gorgon::Animation::ControllerBase &timer);
+        
+        /// Creates a masked object from two animations, these animations should not have controllers attached to them.
+        /// Any attached controllers will be replaced or removed. A non-const version cannot work as this object needs
+        /// to control the controllers of these animations.
+		basic_MaskedObject(RectangularAnimation &base, RectangularAnimation &mask, bool create = true) : 
+            Gorgon::Animation::Base(create), base(base), mask(mask) 
+        {
+            if(this->HasController()) {
+                base.SetController(this->GetController());
+                mask.SetController(this->GetController());
+            }
+            else {
+                base.RemoveController();
+                mask.RemoveController();
+            }
+        }
+        
+        /// Creates a masked object from two animations, these animations should not have controllers attached to them
+        /// Any attached controllers will be replaced or removed. A non-const version cannot work as this object needs
+        /// to control the controllers of these animations.
+		basic_MaskedObject(RectangularAnimation &base, RectangularAnimation &mask, Gorgon::Animation::ControllerBase &timer) : 
+            Gorgon::Animation::Base(timer), base(base), mask(mask)
+        {
+            if(this->HasController()) {
+                base.SetController(this->GetController());
+                mask.SetController(this->GetController());
+            }
+            else {
+                base.RemoveController();
+                mask.RemoveController();
+            }
+        }
         
         ~basic_MaskedObject() {
             base.DeleteAnimation();
@@ -59,12 +100,25 @@ namespace Gorgon { namespace Graphics {
      * This object creates a masked object from two graphics object. 
      */
 	template<class A_>
-    class basic_MaskedObjectProvider : public RectangularAnimationProvider {
+    class basic_MaskedObjectProvider : public IMaskedObjectProvider {
     public:
 		using AnimationType = typename A_::AnimationType;
 
+		/// Empty constructor
+		basic_MaskedObjectProvider() = default;
+
+		/// Filling constructor
 		basic_MaskedObjectProvider(A_ &base, A_ &mask) :
             base(&base), mask(&mask) 
+        { }
+
+		/// Filling constructor, nullptr is allowed but not recommended
+		basic_MaskedObjectProvider(A_ *base, A_ *mask) :
+            base(base), mask(mask) 
+        { }
+
+		basic_MaskedObjectProvider(A_ &&base, A_ &&mask) :
+            base(new A_(std::move(base))), mask(new A_(std::move(mask))), own(true)
         { }
 		
 		basic_MaskedObjectProvider(basic_MaskedObjectProvider &&other) :
@@ -73,6 +127,13 @@ namespace Gorgon { namespace Graphics {
             other.base = nullptr;
             other.mask = nullptr;
         }
+
+		~basic_MaskedObjectProvider() {
+			if(own) {
+				delete this->base;
+				delete this->mask;
+			}
+		}
  
         //types are derived not to type the same code for every class
 		virtual auto MoveOutProvider() -> decltype(*this) override {
@@ -90,7 +151,7 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Creates a base animation without controller.
-		RectangularAnimation &CreateBase() const {
+		RectangularAnimation &CreateBase() const override {
             if(base) {
                 return base->CreateAnimation(false);
             }
@@ -100,7 +161,7 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Creates a mask animation without controller.
-		RectangularAnimation &CreateMask() const {
+		RectangularAnimation &CreateMask() const override {
             if(mask) {
                 return mask->CreateAnimation(false);
             }
@@ -108,16 +169,53 @@ namespace Gorgon { namespace Graphics {
                 return EmptyImage::Instance();
             }
         }
-        
+
+		/// Returns the base component. Could return nullptr
+		A_ *GetBase() const {
+			return base;
+		}
+
+		/// Returns the mask component. Could return nullptr
+		A_ *GetMask() const {
+			return mask;
+		}
+
+		/// Sets the base provider, ownership semantics will not be changed
+		void SetBase(A_ *value) {
+			if(own)
+				delete base;
+
+			base = value;
+		}
+
+		/// Sets the mask provider, ownership semantics will not be changed
+		void SetMask(A_ *value) {
+			if(own)
+				delete mask;
+
+			mask = value;
+		}
+
         /// Sets the providers in this object
         void SetProviders(A_ &base, A_ &mask) {
+			if(own) {
+				delete this->base;
+				delete this->mask;
+			}
             this->base = &base;
             this->mask = &mask;
         }
+
+		/// Assumes the ownership of the providers
+		void OwnProviders() {
+			own = true;
+		}
         
     private:
-		A_ *base;
-		A_ *mask;
+		A_ *base = nullptr;
+		A_ *mask = nullptr;
+
+		bool own = false;
     };
 
 	template<class A_>

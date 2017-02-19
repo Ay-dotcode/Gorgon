@@ -192,10 +192,13 @@ namespace Gorgon {
 			/// @name Basic Widget resources
 			constexpr Type Line					{0x05110000};
 			constexpr Type Line_Props			{0x05110101};
+			constexpr Type Line_Props_II		{0x05110102};
 
 			constexpr Type Rectangle			{0x05120000};
             constexpr Type Rectangle_Props		{0x05120101};
 			constexpr Type Rectangle_Props_II	{0x05120102};
+
+            constexpr Type MaskedObject			{0x05170000};
             /// @}
 		}
 	}
