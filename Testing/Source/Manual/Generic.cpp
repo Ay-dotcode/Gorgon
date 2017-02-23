@@ -11,6 +11,9 @@
 #include <Gorgon/Graphics/Line.h>
 #include <Gorgon/Graphics/Rectangle.h>
 #include <Gorgon/Graphics/MaskedObject.h>
+#include <Gorgon/Graphics/ScalableObject.h>
+#include <Gorgon/Graphics/TintedObject.h>
+#include <Gorgon/Graphics/StackedObject.h>
 #include <Gorgon/GL/FrameBuffer.h>
 #include <Gorgon/GL.h>
 #include "Gorgon/Resource/Line.h"
@@ -192,40 +195,6 @@ Graphics::Bitmap Rectangle(int w, int h) {
     return b;
 }
 
-Graphics::Bitmap Rotate90(const Graphics::Bitmap &src) {
-	Graphics::Bitmap target(src.GetHeight(), src.GetWidth(), src.GetMode());
-
-	int h = target.GetHeight();
-	src.ForAllPixels([&](int x, int y, int c) {
-		target(y, h - x - 1, c) = src(x, y, c);
-	});
-
-	return target;
-}
-
-Graphics::Bitmap Rotate180(const Graphics::Bitmap &src) {
-	Graphics::Bitmap target(src.GetSize(), src.GetMode());
-
-	int h = target.GetHeight();
-	int w = target.GetWidth();
-	src.ForAllPixels([&](int x, int y, int c) {
-		target(w - x - 1, h - y - 1, c) = src(x, y, c);
-	});
-
-	return target;
-}
-
-Graphics::Bitmap Rotate270(const Graphics::Bitmap &src) {
-	Graphics::Bitmap target(src.GetHeight(), src.GetWidth(), src.GetMode());
-
-	int w = target.GetWidth();
-	src.ForAllPixels([&](int x, int y, int c) {
-		target(w - y - 1, x, c) = src(x, y, c);
-	});
-
-	return target;
-}
-
 int main() {
 
 	std::cout<<"Current working directory: ";
@@ -273,7 +242,7 @@ int main() {
 		}
 
 	bgimage.Prepare();
-	//bgimage.DrawIn(l);
+	bgimage.DrawIn(l);
 
     Graphics::BitmapFont fnt;
 	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
@@ -303,51 +272,16 @@ int main() {
 		return false;
 	});
     
-    using Graphics::Bitmap;
+    using namespace Gorgon::Graphics;
     
-    Graphics::BitmapRectangleProvider rectp(
-        Triangle2(8,8), Rectangle(8,8), Triangle1(8,8),
-        Rectangle(8,8), Rectangle(8,8), Rectangle(8,8),
-        Triangle3(8,8), Rectangle(8,8), Triangle4(8,8)
-    );
-    
-    rectp.OwnProviders();
-
-
-	Graphics::BitmapLineProvider linep(
-		Graphics::Orientation::Vertical,
-		Triangle(4,4), Rectangle(8,8), Triangle(4,4).Rotate180()
-	);
-
-	Graphics::MaskedBitmapProvider maskp(
-		Triangle(4, 4), Triangle(4,4).Rotate180()
-	);
-
-    Gorgon::Resource::File f;
-    auto imgr = new Gorgon::Resource::Image(Rectangle(8,8));
-    f.Root().Add(imgr);
-	auto liner = new Gorgon::Resource::Line(linep);
-	f.Root().Add(liner);
-    auto rectr = new Gorgon::Resource::Rectangle(rectp);
-    f.Root().Add(rectr);
-	auto maskr = new Gorgon::Resource::MaskedObject(maskp);
-	f.Root().Add(maskr);
-	f.Save("linetest.gor");
-
-	f.LoadFile("linetest.gor");
-	f.Prepare();
-
-    auto rp = f.Root().Get<Gorgon::Resource::AnimationStorage>(3).MoveOut();
-
-    Graphics::MaskedObjectProvider mop(bgimage, rp);
-    
-    auto &r = mop.CreateAnimation();
-    
-    r.DrawIn(l, 100,100, 300,200);
-
-	Graphics::BlankImage b(50, 50, 0.5f);
-
-	b.Draw(l, 700, 10);
+    TintedBitmapProvider tbp{Triangle(10, 20), 0xff6040ff};
+    tbp.Prepare();
+    ScalableObjectProvider sbp{tbp, {SizeController::Integral_Smaller, SizeController::Integral_Smaller, Placement::MiddleLeft}};
+    auto cc = new Bitmap(Circle(20));
+    cc->Prepare();
+    StackedObjectProvider stbp{*cc, sbp, {10,10}};
+    auto sb = stbp.CreateAnimation();
+    sb.DrawIn(l, 100,100,50,50);
 
 	while(true) {
 		Gorgon::NextFrame();

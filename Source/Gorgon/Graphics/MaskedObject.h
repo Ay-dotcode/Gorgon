@@ -210,6 +210,13 @@ namespace Gorgon { namespace Graphics {
 		void OwnProviders() {
 			own = true;
 		}
+		
+		/// Prepares the providers. Provider type should support this operation, otherwise
+		/// this function will cause a compile time error.
+		void Prepare() {
+            if(base) base->Prepare();
+            if(mask) mask->Prepare();
+        }
         
     private:
 		A_ *base = nullptr;

@@ -20,11 +20,14 @@ SET(Local
 	Pointer.cpp
 	Rectangle.h
 	Rectangle.cpp
+	ScalableObject.h
+	StackedObject.h
 	Shaders.h
 	Shaders.cpp
 	Texture.h
 	TextureAnimation.h
 	TextureTargets.h
+	TintedObject.h
 )
 
 EmbedShaders(ShaderSrc.strings.gen Shaders.cpp 
