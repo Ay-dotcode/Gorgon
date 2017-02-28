@@ -5,6 +5,8 @@
 #include "../Types.h"
 #include "../SGuid.h"
 #include "../Geometry/Point.h"
+#include "../Geometry/Size.h"
+#include "../Graphics/Color.h"
 
 /// IO Related functionality. Stream operations in this namespace do not check the validity of the stream.
 /// it is up to the caller
@@ -99,6 +101,30 @@ namespace Gorgon { namespace IO {
 	inline bool ReadBool(std::istream &stream) {
 		return ReadInt32(stream) != 0;
 	}
+	
+	/// Reads a RGBA color, R will be read first
+	inline Graphics::RGBA ReadRGBA(std::istream &stream) {
+        Graphics::RGBA color;
+        
+        color.R = ReadUInt8(stream);
+        color.G = ReadUInt8(stream);
+        color.B = ReadUInt8(stream);
+        color.A = ReadUInt8(stream);
+        
+		return color;
+	}
+	
+	/// Reads a RGBAf color, R will be read first
+	inline Graphics::RGBAf ReadRGBAf(std::istream &stream) {
+        Graphics::RGBAf color;
+        
+        color.R = ReadFloat(stream);
+        color.G = ReadFloat(stream);
+        color.B = ReadFloat(stream);
+        color.A = ReadFloat(stream);
+        
+		return color;
+	}
 
 	/// Reads a string from a given stream. Assumes the size of the string is appended before the string as
 	/// 32-bit unsigned value.
@@ -139,6 +165,20 @@ namespace Gorgon { namespace IO {
         auto y = ReadInt32(stream);
         
         return {x, y};
+    }
+    
+	inline Geometry::Pointf ReadPointf(std::istream &stream) {
+        auto x = ReadFloat(stream);
+        auto y = ReadFloat(stream);
+        
+        return {x, y};
+    }
+    
+	inline Geometry::Size ReadSize(std::istream &stream) {
+        auto w = ReadInt32(stream);
+        auto h = ReadInt32(stream);
+        
+        return {w, h};
     }
 
 	
@@ -206,7 +246,23 @@ namespace Gorgon { namespace IO {
 
 	/// Writes a boolean value. In resource 1.0, booleans are stored as 32bit integers
 	inline void WriteBool(std::ostream &stream, bool value) {
-		return WriteInt32(stream, value);
+		WriteInt32(stream, value);
+	}
+	
+	/// Writes a RGBA color, R will be saved first
+	inline void WriteRGBA(std::ostream &stream, Graphics::RGBA value) {
+		WriteUInt8(stream, value.R);
+		WriteUInt8(stream, value.G);
+		WriteUInt8(stream, value.B);
+		WriteUInt8(stream, value.A);
+	}
+	
+	/// Writes a RGBAf color, R will be saved first
+	inline void WriteRGBAf(std::ostream &stream, Graphics::RGBAf value) {
+		WriteFloat(stream, value.R);
+		WriteFloat(stream, value.G);
+		WriteFloat(stream, value.B);
+		WriteFloat(stream, value.A);
 	}
 
 	/// Writes a string from a given stream. The size of the string is appended before the string as
@@ -251,22 +307,19 @@ namespace Gorgon { namespace IO {
         WriteInt32(stream, p.Y);
     }
     
-    /// Saves the point as two consecutive floats (depending on the Flot data type)
+    /// Saves the point as two consecutive floats. This function will not work if float type is double
     template<class F_ = Float>
     typename std::enable_if<std::is_same<F_, float>::value, void>::type
-    WritePoint(std::ostream &stream, Geometry::Pointf p) {
+    WritePointf(std::ostream &stream, Geometry::Pointf p) {
         WriteFloat(stream, p.X);
         WriteFloat(stream, p.Y);
     }
-    
-    /// Saves the point as two consecutive floats (depending on the Flot data type)
-    template<class F_ = Float>
-    typename std::enable_if<!std::is_same<F_, float>::value, void>::type
-    WritePoint(std::ostream &stream, Geometry::Pointf p) {
-        WriteDouble(stream, p.X);
-        WriteDouble(stream, p.Y);
-    }
 
+    /// Saves the size as two consecutive 32bit integers
+    inline void WriteSize(std::ostream &stream, Geometry::Size s) {
+        WriteInt32(stream, s.Width);
+        WriteInt32(stream, s.Height);
+    }
 } }
 
 

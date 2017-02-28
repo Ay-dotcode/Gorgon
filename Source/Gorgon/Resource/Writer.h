@@ -223,12 +223,37 @@ namespace Gorgon { namespace Resource {
 
 			IO::WriteBool(*stream, value);
 		}
+
+		/// Writes a RGBA color, R will be saved first. RGBA takes 4 x 1 bytes
+		void WriteRGBA(Graphics::RGBA value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteRGBA(*stream, value);
+		}
+
+		/// Writes a RGBAf color, R will be saved first. RGBAf takes 4 x 4 bytes
+		void WriteRGBAf(Graphics::RGBAf value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteRGBAf(*stream, value);
+		}
 		
+		/// Writes a point to the stream, point takes 2 x 4 bytes
 		void WritePoint(Geometry::Point value) {
 			ASSERT(stream, "Writer is not opened.");
 			ASSERT(IsGood(), "Writer is failed.");
 
 			IO::WritePoint(*stream, value);
+        }
+		
+		/// Writes a size to the stream, size takes 2 x 4 bytes
+		void WriteSize(Geometry::Size value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WriteSize(*stream, value);
         }
 
 		/// Writes a string from a given stream. The size of the string is appended before the string as

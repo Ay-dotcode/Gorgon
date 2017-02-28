@@ -245,9 +245,12 @@ namespace Gorgon { namespace Graphics {
 		}
 		
 		/// Adds the given image to the end of the animation
-		void Add(T_ &image, unsigned duration = 42) {
+		void Add(T_ &image, unsigned duration = 42, bool own = false) {
 			frames.push_back({image, duration, this->duration});
 			this->duration += duration;
+            
+            if(own)
+                destroylist.Push(image);
 		}
 		
 		/// Adds the given image to the end of the animation. This version owns the given image

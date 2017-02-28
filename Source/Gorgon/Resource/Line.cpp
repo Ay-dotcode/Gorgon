@@ -4,17 +4,18 @@
 #include "File.h"
 #include "Reader.h"
 #include "Null.h"
+#include "AnimationServices.h"
 
 namespace Gorgon { namespace Resource {
 
 	
-	Line::Line(Graphics::BitmapLineProvider &prov) : prov(&prov), ILineProvider(Graphics::Orientation::Horizontal) 
+	Line::Line(Graphics::BitmapLineProvider &prov) : ILineProvider(Graphics::Orientation::Horizontal), prov(&prov) 
 	{ }
 	
-	Line::Line(Graphics::AnimatedBitmapLineProvider &prov) : prov(&prov), ILineProvider(Graphics::Orientation::Horizontal)
+	Line::Line(Graphics::AnimatedBitmapLineProvider &prov) : ILineProvider(Graphics::Orientation::Horizontal), prov(&prov)
 	{ }
 
-	Line::Line(Graphics::LineProvider &prov) : prov(&prov), ILineProvider(Graphics::Orientation::Horizontal)
+	Line::Line(Graphics::LineProvider &prov) : ILineProvider(Graphics::Orientation::Horizontal), prov(&prov)
 	{ }
 
 	template<class T_>
@@ -85,6 +86,9 @@ namespace Gorgon { namespace Resource {
 					}
 					else if(resource->GetGID() == GID::Null) {
 						//null is allowed
+					}
+					else if(IsAnimation(resource->GetGID())) {
+						type = mixed;
 					}
 					else {
 						throw std::runtime_error("Line can only contain images or animations");
@@ -195,34 +199,17 @@ namespace Gorgon { namespace Resource {
 
 	template<class F_>
 	static void setthis(F_ f, Graphics::BitmapLineProvider *provider, Graphics::Bitmap *o) {
-		if(!o) return; // do nothing
-
-		if(dynamic_cast<Image*>(o))
-			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOutAsBitmap()))();
-		else
-			std::bind(f, provider, new Graphics::Bitmap(std::move(*o)))();
+		CallBitmapAnimationSetter(f, provider, o);
 	}
 
 	template<class F_>
 	static void setthis(F_ f, Graphics::AnimatedBitmapLineProvider *provider, Graphics::BitmapAnimationProvider *o) {
-		if(!o) return; // do nothing
-
-		if(dynamic_cast<Image*>(o))
-			std::bind(f, provider, new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(o)->MoveOutAsBitmap()))();
-		else
-			std::bind(f, provider, new Graphics::BitmapAnimationProvider(std::move(*o)))();
+		CallBitmapAnimationAnimationSetter(f, provider, o);
 	}
 
 	template<class F_>
-	static void setthis(F_ f, Graphics::AnimatedBitmapLineProvider *provider, Graphics::RectangularAnimationProvider *o) {
-		if(!o) return; // do nothing
-
-		if(dynamic_cast<Image*>(o))
-			std::bind(f, provider, new Graphics::Bitmap(dynamic_cast<Image*>(o)->MoveOutAsBitmap()))();
-		if(dynamic_cast<Animation*>(o))
-			std::bind(f, provider, new Graphics::BitmapAnimationProvider(dynamic_cast<Animation*>(o)->MoveOutAsBitmap()))();
-		else
-			std::bind(f, provider, o->MoveOutProvider())();
+	static void setthis(F_ f, Graphics::LineProvider *provider, Graphics::RectangularAnimationProvider *o) {
+		CallGenericAnimationSetter(f, provider, o);
 	}
 
 	template<class T_>
@@ -243,6 +230,10 @@ namespace Gorgon { namespace Resource {
 	}
 	   
     Graphics::RectangularAnimationStorage Line::animmoveout() {
+        return Graphics::RectangularAnimationStorage(MoveOutProvider(), true);
+    }
+    
+    Graphics::ILineProvider &Line::MoveOutProvider() {
         if(!prov)
             throw std::runtime_error("Provider is not set");
         
@@ -280,7 +271,7 @@ namespace Gorgon { namespace Resource {
         if(!p)
             throw std::runtime_error("Provider is not set");
         
-        return Graphics::RectangularAnimationStorage(*p, true);
+        return *p;
     }
 
 } }

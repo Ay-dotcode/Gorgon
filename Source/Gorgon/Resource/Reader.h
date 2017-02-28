@@ -289,6 +289,22 @@ namespace Gorgon { namespace Resource {
 			return IO::ReadBool(*stream);
 		}
 
+		/// Reads a RGBA color, R will be read first
+		Graphics::RGBA ReadRGBA() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadRGBA(*stream);
+		}
+
+		/// Reads a RGBAf color, R will be read first
+		Graphics::RGBAf ReadRGBAf() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadRGBAf(*stream);
+		}
+
 		/// Reads a string from a given stream. Assumes the size of the string is appended before the string as
 		/// 32-bit unsigned value.
 		std::string ReadString() {
@@ -334,12 +350,28 @@ namespace Gorgon { namespace Resource {
 			return IO::ReadGuid(*stream);
 		}
 
-		/// Reads a GUID from the given stream.
+		/// Reads a Point from the given stream.
 		Geometry::Point ReadPoint() {
 			ASSERT(stream, "Reader is not opened.");
 			ASSERT(IsGood(), "Reader is failed.");
 
 			return IO::ReadPoint(*stream);
+		}
+		
+		/// Reads a Pointf from the given stream.
+		Geometry::Point ReadPointf() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadPointf(*stream);
+		}
+		
+		/// Reads a Size from the given stream.
+		Geometry::Size ReadSize() {
+			ASSERT(stream, "Reader is not opened.");
+			ASSERT(IsGood(), "Reader is failed.");
+
+			return IO::ReadSize(*stream);
 		}
 
 		/// Reads chunk size from a stream

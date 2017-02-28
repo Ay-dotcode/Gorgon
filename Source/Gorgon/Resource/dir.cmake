@@ -34,5 +34,11 @@ SET(Local
 	Rectangle.cpp
 	Sound.h
 	Sound.cpp
+	StackedObject.h
+	StackedObject.cpp
+	ScalableObject.h
+	ScalableObject.cpp
+	TintedObject.h
+	TintedObject.cpp
 	Writer.h
 )

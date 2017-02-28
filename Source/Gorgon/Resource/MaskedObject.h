@@ -41,12 +41,7 @@ namespace Gorgon { namespace Resource {
         /// Creates a new empty masked object
 		MaskedObject() { }
 		
-		IMaskedObjectProvider &MoveOutProvider() override {
-			if(!prov)
-				throw std::runtime_error("Provider is not set.");
-
-            return prov->MoveOutProvider();
-        }
+		IMaskedObjectProvider &MoveOutProvider() override;
 
 		GID::Type GetGID() const override {
 			return GID::MaskedObject;

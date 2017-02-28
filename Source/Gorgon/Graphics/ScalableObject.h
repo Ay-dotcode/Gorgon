@@ -14,6 +14,8 @@ namespace Gorgon { namespace Graphics {
         
         virtual SizeController GetController() const = 0;
         
+        virtual void SetController(const SizeController &value) = 0;
+        
         virtual IScalableObjectProvider &MoveOutProvider() override = 0;
     };
     
@@ -176,17 +178,17 @@ namespace Gorgon { namespace Graphics {
             return ctrl;
         }
 
+		/// Sets the controller
+		void SetController(const SizeController &value) override {
+			ctrl = value;
+		}
+
 		/// Sets the base provider, ownership semantics will not be changed
 		void SetBase(A_ *value) {
 			if(own)
 				delete base;
 
 			base = value;
-		}
-
-		/// Sets the mask provider, ownership semantics will not be changed
-		void SetController(const SizeController &value) {
-			ctrl = value;
 		}
 
 		/// Assumes the ownership of the providers

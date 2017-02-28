@@ -13,6 +13,7 @@ namespace Gorgon { namespace Graphics {
         virtual RectangularAnimation &CreateBottom() const = 0;
         
         virtual Geometry::Point GetOffset() const = 0;
+        virtual void SetOffset(const Geometry::Point&) = 0;
         
         virtual IStackedObjectProvider &MoveOutProvider() override = 0;
     };
@@ -206,7 +207,7 @@ namespace Gorgon { namespace Graphics {
         }
         
         ///Sets the offset of the top image
-        void SetOffset(const Geometry::Point &value) {
+        void SetOffset(const Geometry::Point &value) override {
             offset = value;
         }
 
@@ -242,8 +243,9 @@ namespace Gorgon { namespace Graphics {
 
 	template<class A_>
     basic_StackedObject<A_>::basic_StackedObject(const basic_StackedObjectProvider<A_> &parent, bool create) :
-        Gorgon::Animation::Base(create), offset(parent.GetOffset()), 
-        top(parent.CreateTop()), bottom(parent.CreateBottom())
+        Gorgon::Animation::Base(create), 
+        top(parent.CreateTop()), bottom(parent.CreateBottom()), 
+        offset(parent.GetOffset())
     {
         if(this->HasController()) {
             top.SetController(this->GetController());
@@ -253,8 +255,9 @@ namespace Gorgon { namespace Graphics {
         
 	template<class A_>
 	basic_StackedObject<A_>::basic_StackedObject(const basic_StackedObjectProvider<A_> &parent, Gorgon::Animation::ControllerBase &timer) :
-        Gorgon::Animation::Base(timer), offset(parent.GetOffset()),
-        top(parent.CreateTop()), bottom(parent.CreateBottom())
+        Gorgon::Animation::Base(timer),
+        top(parent.CreateTop()), bottom(parent.CreateBottom()), 
+        offset(parent.GetOffset())
     {
         if(this->HasController()) {
             top.SetController(this->GetController());

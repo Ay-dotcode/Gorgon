@@ -199,6 +199,15 @@ namespace Gorgon {
 			constexpr Type Rectangle_Props_II	{0x05120102};
 
             constexpr Type MaskedObject			{0x05170000};
+            
+            constexpr Type TintedObject			{0x05180000};
+            constexpr Type TintedObject_Props	{0x05180101};
+            
+            constexpr Type ScalableObject		{0x05190000};
+            constexpr Type ScalableObject_Props	{0x05190101};
+            
+            constexpr Type StackedObject		{0x051A0000};
+            constexpr Type StackedObject_Props	{0x051A0101};
             /// @}
 		}
 	}

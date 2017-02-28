@@ -353,9 +353,16 @@ namespace Gorgon { namespace Geometry {
 		l.Height = T_(l.Height*size.Height);
 	}
 	
+	/// Returns the maximum size that can fit into both size objects
 	template <class T_>
 	basic_Size<T_> Union(const basic_Size<T_> &l, const basic_Size<T_> &r) {
         return {std::min(l.Width, r.Width), std::min(l.Height, r.Height)};
+    }
+    
+    /// Returns the minimum required size that can hold both size objects
+	template <class T_>
+	basic_Size<T_> Combine(const basic_Size<T_> &l, const basic_Size<T_> &r) {
+        return {std::max(l.Width, r.Width), std::max(l.Height, r.Height)};
     }
 
 

@@ -30,6 +30,8 @@ namespace Gorgon { namespace Resource {
 
 		/// Copy assignment is disabled, use Duplicate
 		Animation &operator =(const Animation &other) = delete;
+        
+		Graphics::BitmapAnimationProvider &MoveOutProvider() override;
 
 		/// Returns the Gorgon Identifier
 		virtual GID::Type GetGID() const override {

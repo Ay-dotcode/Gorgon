@@ -12,6 +12,9 @@
 #include "Line.h"
 #include "Rectangle.h"
 #include "MaskedObject.h"
+#include "TintedObject.h"
+#include "ScalableObject.h"
+#include "StackedObject.h"
 
 
 
@@ -30,6 +33,9 @@ namespace Gorgon { namespace Resource {
 		Loaders[GID::Line]				= {GID::Line	        , Line::LoadResource};
 		Loaders[GID::Rectangle]			= {GID::Rectangle       , Rectangle::LoadResource};
 		Loaders[GID::MaskedObject]		= {GID::MaskedObject    , MaskedObject::LoadResource};
+		Loaders[GID::TintedObject]		= {GID::TintedObject    , TintedObject::LoadResource};
+		Loaders[GID::ScalableObject]	= {GID::ScalableObject  , ScalableObject::LoadResource};
+		Loaders[GID::StackedObject]		= {GID::StackedObject   , StackedObject::LoadResource};
 	}
 
 	bool Resource::Reader::ReadCommonChunk(Base &self, GID::Type gid, unsigned long size) {
@@ -51,6 +57,9 @@ namespace Gorgon { namespace Resource {
 		if(reader->ReadCommonChunk(self, gid, size) || skipobjects) {
 			return nullptr;
 		}
+		
+		if(gid == GID::Null)
+            return nullptr;
 
 		for(auto &loader : Loaders) {
 
@@ -72,8 +81,11 @@ namespace Gorgon { namespace Resource {
 		return nullptr;
 	}
 
-	Base *File::LoadChunk(GID::Type gid, unsigned long size, bool skipobjects) {
+	Base *File::LoadChunk(GID::Type gid, unsigned long size) {
 		ASSERT(reader, "Reader is not open");
+		
+		if(gid == GID::Null)
+            return nullptr;
 
 		for(auto &loader : Loaders) {
 

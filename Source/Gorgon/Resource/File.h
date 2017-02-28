@@ -159,7 +159,7 @@ namespace Gorgon { namespace Resource {
 		/// will throw in debug mode.
 		/// @warning This function is intended to be used while loading a resource. It can be used for
 		///          any purpose, however, would not be very useful outside its prime use
-		Base *LoadChunk(GID::Type gid, unsigned long size, bool skipobjects=false);
+		Base *LoadChunk(GID::Type gid, unsigned long size);
 
 		
 		/// Returns a weak reference to this file. This returned reference can then be used to test if this

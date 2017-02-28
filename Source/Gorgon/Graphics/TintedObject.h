@@ -12,7 +12,9 @@ namespace Gorgon { namespace Graphics {
     public:
         virtual RectangularAnimation &CreateBase() const = 0;
         
-        virtual RGBAf GetController() const = 0;
+        virtual RGBAf GetColor() const = 0;
+        
+        virtual void SetColor(const RGBAf &value) = 0;
         
         virtual ITintedObjectProvider &MoveOutProvider() override = 0;
     };
@@ -34,7 +36,7 @@ namespace Gorgon { namespace Graphics {
             Gorgon::Animation::Base(create), base(base), color(color) 
         {
             if(this->HasController()) {
-                base.SetController(this->GetController());
+                base.SetController(this->GetColor());
             }
             else {
                 base.RemoveController();
@@ -48,7 +50,7 @@ namespace Gorgon { namespace Graphics {
             Gorgon::Animation::Base(timer), base(base), color(color) 
         {
             if(this->HasController()) {
-                base.SetController(this->GetController());
+                base.SetController(this->GetColor());
             }
             else {
                 base.RemoveController();
@@ -60,12 +62,12 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Changes the size controller used in this scalable object
-        void SetRGBAf(RGBAf value) {
+        void SetColor(RGBAf value) {
             color = value;
         }
         
         /// Returns the size controller used in this scalable object
-        RGBAf GetRGBAf() const {
+        RGBAf GetColor() const {
             return color;
         }
         
@@ -121,12 +123,12 @@ namespace Gorgon { namespace Graphics {
 		basic_TintedObjectProvider() = default;
 
 		/// Filling constructor
-		explicit basic_TintedObjectProvider(A_ &base, const RGBAf &controller = Tiling::Both) :
-            base(&base), color(controller) 
+		explicit basic_TintedObjectProvider(A_ &base, const RGBAf &color = 1.f) :
+            base(&base), color(color) 
         { }
 
-		explicit basic_TintedObjectProvider(A_ &&base, const RGBAf &controller = Tiling::Both) :
-            base(new A_(std::move(base))), color(controller), own(true)
+		explicit basic_TintedObjectProvider(A_ &&base, const RGBAf &color = 1.f) :
+            base(new A_(std::move(base))), color(color), own(true)
         { }
 		
 		basic_TintedObjectProvider(basic_TintedObjectProvider &&other) :
@@ -171,10 +173,15 @@ namespace Gorgon { namespace Graphics {
 			return base;
 		}
 
-        /// Returns the size controller
-        RGBAf GetController() const override {
+        /// Returns the tint color
+        RGBAf GetColor() const override {
             return color;
         }
+
+		/// Sets the tint color of the object
+		void SetColor(const RGBAf &value) override {
+			color = value;
+		}
 
 		/// Sets the base provider, ownership semantics will not be changed
 		void SetBase(A_ *value) {
@@ -182,11 +189,6 @@ namespace Gorgon { namespace Graphics {
 				delete base;
 
 			base = value;
-		}
-
-		/// Sets the mask provider, ownership semantics will not be changed
-		void SetController(const RGBAf &value) {
-			color = value;
 		}
 
 		/// Assumes the ownership of the providers
@@ -210,7 +212,7 @@ namespace Gorgon { namespace Graphics {
 	template<class A_>
     basic_TintedObject<A_>::basic_TintedObject(const basic_TintedObjectProvider<A_> &parent, bool create) :
         Gorgon::Animation::Base(create),
-        base(parent.CreateBase()), color(parent.GetController())
+        base(parent.CreateBase()), color(parent.GetColor())
     {
         if(this->HasController()) {
             base.SetController(this->GetController());
@@ -220,7 +222,7 @@ namespace Gorgon { namespace Graphics {
 	template<class A_>
 	basic_TintedObject<A_>::basic_TintedObject(const basic_TintedObjectProvider<A_> &parent, Gorgon::Animation::ControllerBase &timer) :
         Gorgon::Animation::Base(timer), 
-        base(parent.CreateBase()), color(parent.GetController())
+        base(parent.CreateBase()), color(parent.GetColor())
     {
         if(this->HasController()) {
             base.SetController(this->GetController());

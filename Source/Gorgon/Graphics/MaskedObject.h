@@ -72,11 +72,11 @@ namespace Gorgon { namespace Graphics {
 		virtual void drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectanglef &r, RGBAf color) const override;
 
 		virtual Geometry::Size calculatesize(const Geometry::Size &area) const override {
-            return Union(base.CalculateSize(area), mask.CalculateSize(area));
+            return base.CalculateSize(area);
 		}
 
 		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override {
-            return Union(base.CalculateSize(controller, s), mask.CalculateSize(controller, s));
+            return base.CalculateSize(controller, s);
 		}        
 
 		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 

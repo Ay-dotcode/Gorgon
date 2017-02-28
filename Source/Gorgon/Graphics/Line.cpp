@@ -29,7 +29,8 @@ namespace Gorgon { namespace Graphics {
 	void Line::drawin(TextureTarget &target, const Geometry::Rectanglef &r, RGBAf color) const {
 		if(prov.GetOrientation() == Orientation::Horizontal) {
 			start.Draw(target, r.TopLeft(), color);
-			middle.DrawIn(target, prov.GetTiling() ? Tiling::Horizontal : Tiling::None, Geometry::Rectanglef(r.X + start.GetWidth(), r.Y, r.Width-start.GetWidth()-end.GetWidth(), (Float)middle.GetHeight()), color);
+			middle.DrawIn(target, prov.GetTiling() ? Tiling::Horizontal : Tiling::None, 
+                          Geometry::Rectanglef(r.X + start.GetWidth(), r.Y, r.Width-start.GetWidth()-end.GetWidth(), (Float)middle.GetHeight()), color);
 			end.Draw(target, r.Right()-end.GetWidth(), r.Y, color);
 		}
 		else {

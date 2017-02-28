@@ -104,7 +104,7 @@ namespace Gorgon { namespace Resource {
                 anim.Add(img->MoveOutAsBitmap(), frame.GetDuration());
             }
             else {
-                anim.Add(std::move(*bmp), frame.GetDuration());
+                anim.Add(*bmp, frame.GetDuration(), true);
             }
 		}
 		
@@ -118,6 +118,10 @@ namespace Gorgon { namespace Resource {
 
 		return anim;
 	}
+	
+	Graphics::BitmapAnimationProvider &Animation::MoveOutProvider() {
+        return *new Graphics::BitmapAnimationProvider(MoveOutAsBitmap());
+    }
 
 	Graphics::RectangularAnimationStorage Animation::animmoveout() {
 		Graphics::BitmapAnimationProvider &anim = *new Graphics::BitmapAnimationProvider(MoveOutAsBitmap());
