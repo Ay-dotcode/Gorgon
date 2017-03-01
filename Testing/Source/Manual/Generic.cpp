@@ -4,28 +4,14 @@
 #include <Gorgon/Window.h>
 #include <Gorgon/WindowManager.h>
 #include <Gorgon/Main.h>
-#include <Gorgon/Utils/Console.h>
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/BitmapFont.h>
-#include <Gorgon/Graphics/Line.h>
-#include <Gorgon/Graphics/Rectangle.h>
-#include <Gorgon/Graphics/MaskedObject.h>
-#include <Gorgon/Graphics/ScalableObject.h>
-#include <Gorgon/Graphics/TintedObject.h>
-#include <Gorgon/Graphics/StackedObject.h>
-#include <Gorgon/GL/FrameBuffer.h>
-#include <Gorgon/GL.h>
-#include "Gorgon/Resource/Line.h"
-#include "Gorgon/Resource/Rectangle.h"
-#include "Gorgon/Resource/MaskedObject.h"
-#include "Gorgon/Resource/StackedObject.h"
-#include "Gorgon/Resource/Image.h"
-#include "Gorgon/Resource/File.h"
 
+#include <Gorgon/UI/Components/Object.h>
 
+using namespace Gorgon;
 
-using Gorgon::Window;
 using Gorgon::Geometry::Point;
 namespace Graphics = Gorgon::Graphics;
 namespace Input = Gorgon::Input;
@@ -211,7 +197,7 @@ Graphics::Bitmap BGImage(int w, int h, Gorgon::Byte col1 = 0x10, Gorgon::Byte co
     return bgimage;
 }
 
-int main() {
+void Init() {
 
 	std::cout<<"Current working directory: ";
 #ifdef WIN32
@@ -222,55 +208,55 @@ int main() {
 	std::cout<<std::endl;
 
 	Gorgon::Initialize("Generic-test");
-    
-    Gorgon::GL::log.InitializeConsole();
-    
-	Window wind({800, 600}, "windowtest", true);
+
+	Gorgon::GL::log.InitializeConsole();
+
+	Window wind({800, 600}, "generictest", true);
 	Graphics::Initialize();
-    
-    wind.ClosingEvent.Register([]{ exit(0); });
+
+	wind.ClosingEvent.Register([] { exit(0); });
 
 	Graphics::Layer l;
 	wind.Add(l);
 
 	Graphics::Bitmap img;
 	if(!img.Import("test.png")) {
-        std::cout<<"Test.png is not found"<<std::endl;
-        exit(0);
-    }
+		std::cout<<"Test.png is not found"<<std::endl;
+		exit(0);
+	}
 
-    img.Prepare();
+	img.Prepare();
 
 	Graphics::Bitmap icon;
 	if(icon.Import("icon.png")) {
-        WM::Icon ico(icon.GetData());
-        wind.SetIcon(ico);
-    }
+		WM::Icon ico(icon.GetData());
+		wind.SetIcon(ico);
+	}
 
-    auto bgimage = BGImage(25,25);
+	auto bgimage = BGImage(25, 25);
 	bgimage.Prepare();
-	//bgimage.DrawIn(l);
+	bgimage.DrawIn(l);
 
-    Graphics::BitmapFont fnt;
+	Graphics::BitmapFont fnt;
 	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
-    fnt.Pack();
-    
+	fnt.Pack();
+
 
 	Graphics::StyledRenderer sty(fnt);
 	sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
 	sty.SetColor({0.6f, 1.f, 1.f});
 	sty.JustifyLeft();
-    
-    sty.SetTabWidthInLetters(1.5f);
-    sty.SetParagraphSpacing(2);
-    sty.Print(l, 
-        "Key list:\n"
-        "esc\tClose\n"
-        , 500, 10
-    );
-	
+
+	sty.SetTabWidthInLetters(1.5f);
+	sty.SetParagraphSpacing(2);
+	sty.Print(l,
+			  "Key list:\n"
+			  "esc\tClose\n"
+			  , 500, 10
+	);
+
 	wind.KeyEvent.Register([&wind](Input::Key key, bool state) {
-		if (!state && (key == 27 || key == 65307))
+		if(!state && (key == 27 || key == 65307))
 			exit(0);
 
 		else if(state && key == 13)
@@ -278,69 +264,16 @@ int main() {
 
 		return false;
 	});
+}
+
+int main() {
+	Init();
+
+	Graphics::Layer l;
+	auto &wind = Gorgon::Window::Windows[0];
+	wind.Add(l);
 
 
-
-	using Graphics::Bitmap;
-
-	Graphics::BitmapRectangleProvider rectp(
-		Triangle2(8, 8), Rectangle(8, 8), Triangle1(8, 8),
-		Rectangle(8, 8), Rectangle(8, 8), Rectangle(8, 8),
-		Triangle3(8, 8), Rectangle(8, 8), Triangle4(8, 8)
-	);
-
-    using namespace Gorgon::Graphics;
-
-    rectp.OwnProviders();
-    rectp.Prepare();
-
-    auto c = Circle(4);
-    c.Prepare();
-    auto c2 = Circle(2);
-    c.Prepare();
-	Graphics::MaskedObjectProvider maskp(
-		c, c2
-	);
-
-	Graphics::LineProvider linep(
-		Graphics::Orientation::Vertical,
-		*new Bitmap(Triangle(4, 4)), rectp, *new Bitmap(Triangle(4, 4).Rotate180())
-	);
-    
-    TintedBitmapProvider tbp{Triangle(10, 20), 0xff6040ff};
-    tbp.Prepare();
-    ScalableObjectProvider sp{tbp, {SizeController::Integral_Smaller, SizeController::Integral_Smaller, Placement::MiddleLeft}};
-    auto cc = new Bitmap(Circle(20));
-    cc->Prepare();
-    StackedObjectProvider stp{*cc, sp, {10,10}};
-
-	Gorgon::Resource::File f;
-	auto imgr = new Gorgon::Resource::Image(::Rectangle(8, 8));
-	f.Root().Add(imgr);
-	auto liner = new Gorgon::Resource::Line(linep);
-	f.Root().Add(liner);
-	auto rectr = new Gorgon::Resource::Rectangle(rectp);
-	f.Root().Add(rectr);
-	auto maskr = new Gorgon::Resource::MaskedObject(maskp);
-	f.Root().Add(maskr);
-    auto stbr = new Gorgon::Resource::StackedObject(stp);
-    f.Root().Add(stbr);
-	f.Save("linetest.gor");
-
-	f.LoadFile("linetest.gor");
-	f.Prepare();
-
-	auto rp = f.Root().Get<Gorgon::Resource::AnimationStorage>(4).MoveOut();
-
-	Graphics::MaskedObjectProvider mop(bgimage, rp);
-
-	auto &r = rp.CreateAnimation();
-
-	r.DrawIn(l, 100, 100, 300, 200);
-
-	Graphics::BlankImage b(50, 50, 0.5f);
-
-	b.Draw(l, 700, 10);
 
 
 	while(true) {

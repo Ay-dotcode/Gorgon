@@ -1,6 +1,6 @@
 #include "../WindowManager.h"
 #include <thread>
-#include <Gorgon/Geometry/Margins.h>
+#include <Gorgon/Geometry/Margin.h>
 #include <limits.h>
 #include "../Window.h"
 #include "../Time.h"
@@ -626,7 +626,7 @@ failsafe: //this should use X11 screen as monitor
                 
                 std::this_thread::sleep_for(std::chrono::milliseconds(10)); //wait for a short time to ensure window frame is ready.
                 
-                auto borders = WindowManager::GetX4Prop<Geometry::Margins>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
+                auto borders = WindowManager::GetX4Prop<Geometry::Margin>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
                 std::swap(borders.Top, borders.Right);
                 rect.Move( (monitor.GetUsable()-(rect.GetSize()+borders.Total())).Center() );
             }
@@ -1201,7 +1201,7 @@ failsafe: //this should use X11 screen as monitor
 	}
 
 	Geometry::Bounds Window::GetExteriorBounds() const {
-        auto borders = WindowManager::GetX4Prop<Geometry::Margins>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
+        auto borders = WindowManager::GetX4Prop<Geometry::Margin>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
         std::swap(borders.Top, borders.Right);
         
         ::Window r;

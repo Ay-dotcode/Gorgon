@@ -13,7 +13,7 @@
 #include "../Graphics/Layer.h"
 
 #include <windows.h>
-#include "../Geometry/Margins.h"
+#include "../Geometry/Margin.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -34,7 +34,7 @@ namespace Gorgon {
 			Window &parent;
 			HGLRC context=0;
 			HDC device_context=0;
-			Geometry::Margins chrome = {0, 0};
+			Geometry::Margin chrome = {0, 0};
 			bool min = false;
 
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
@@ -605,7 +605,7 @@ namespace Gorgon {
 
 		auto size=rect.GetSize();
 
-		data->chrome  = Geometry::Margins(wi.rcClient.left-wi.rcWindow.left, wi.rcClient.top-wi.rcWindow.top, wi.rcWindow.right-wi.rcClient.right, wi.rcWindow.bottom-wi.rcClient.bottom);
+		data->chrome  = Geometry::Margin(wi.rcClient.left-wi.rcWindow.left, wi.rcClient.top-wi.rcWindow.top, wi.rcWindow.right-wi.rcClient.right, wi.rcWindow.bottom-wi.rcClient.bottom);
 		rect += data->chrome.Total();
 
 		if(rect.TopLeft()==automaticplacement) {

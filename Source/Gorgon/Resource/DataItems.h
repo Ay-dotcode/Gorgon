@@ -6,7 +6,7 @@
 #include "../Geometry/Size.h"
 #include "../Geometry/Rectangle.h"
 #include "../Geometry/Bounds.h"
-#include "../Geometry/Margins.h"
+#include "../Geometry/Margin.h"
 
 #include <functional>
 
@@ -292,20 +292,20 @@ namespace Gorgon { namespace Resource {
 		}
 	};
 
-	class MarginsData : public DataItem, private internal::DataImp<Geometry::Margins> {
+	class MarginData : public DataItem, private internal::DataImp<Geometry::Margin> {
 	public:
-		MarginsData() {}
+		MarginData() {}
 
-		MarginsData(Geometry::Margins v) : DataImp<Geometry::Margins>(v) {}
+		MarginData(Geometry::Margin v) : DataImp<Geometry::Margin>(v) {}
 
-		MarginsData(const std::string &name, Geometry::Margins v) : DataImp<Geometry::Margins>(v) {
+		MarginData(const std::string &name, Geometry::Margin v) : DataImp<Geometry::Margin>(v) {
 			Name=name;
 		}
 
-		virtual GID::Type GetGID() const override { return GID::Data_Margins; }
+		virtual GID::Type GetGID() const override { return GID::Data_Margin; }
 
-		using internal::DataImp<Geometry::Margins>::Get;
-		using internal::DataImp<Geometry::Margins>::Set;
+		using internal::DataImp<Geometry::Margin>::Get;
+		using internal::DataImp<Geometry::Margin>::Set;
 
 		virtual void SaveValue(Writer &writer) const override {
 			writer.WriteInt32(value.Left);
@@ -472,8 +472,8 @@ namespace Gorgon { namespace Resource {
 	}
 
 	template<>
-	inline Geometry::Margins DataItem::Get<Geometry::Margins>() const {
-		auto &item=dynamic_cast<const MarginsData&>(*this);
+	inline Geometry::Margin DataItem::Get<Geometry::Margin>() const {
+		auto &item=dynamic_cast<const MarginData&>(*this);
 
 		return item.Get();
 	}

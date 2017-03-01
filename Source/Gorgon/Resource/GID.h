@@ -140,7 +140,7 @@ namespace Gorgon {
 			constexpr Type Data_Color			{0x02030D02};
 			constexpr Type Data_Size			{0x02030D03};
 			constexpr Type Data_Bounds			{0x02030D04};
-			constexpr Type Data_Margins			{0x02030D05};
+			constexpr Type Data_Margin			{0x02030D05};
 			constexpr Type Data_Object			{0x02030D06};
             /// @}
 

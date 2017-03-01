@@ -270,7 +270,7 @@ namespace Gorgon { namespace Graphics {
 		Assume(img);
 	}
 
-	std::vector<Geometry::Bounds> Bitmap::CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargins margins) {
+	std::vector<Geometry::Bounds> Bitmap::CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargin margins) {
         std::vector<Geometry::Bounds> ret;
         std::map<const Bitmap *, Geometry::Bounds> mapping;
         
@@ -437,12 +437,12 @@ namespace Gorgon { namespace Graphics {
         return ret;
     }
 
-	Geometry::Margins Bitmap::Trim(bool left, bool top, bool right, bool bottom) {
+	Geometry::Margin Bitmap::Trim(bool left, bool top, bool right, bool bottom) {
 		ASSERT(data, "Image data does not exists");
 
 		ASSERT(HasAlpha(GetMode()), "Unsupported color mode");
 
-		Geometry::Margins ret(0, 0, 0, 0);
+		Geometry::Margin ret(0, 0, 0, 0);
 
 		int alpha = AlphaIndex(GetMode());
 

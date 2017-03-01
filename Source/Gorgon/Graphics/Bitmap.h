@@ -6,7 +6,7 @@
 #include "../Graphics/Animations.h"
 #include "../Graphics/Texture.h"
 #include "../Containers/Image.h"
-#include "../Geometry/Margins.h"
+#include "../Geometry/Margin.h"
 
 namespace Gorgon { namespace Graphics {
 
@@ -23,7 +23,7 @@ namespace Gorgon { namespace Graphics {
         
         using AnimationType = Bitmap;
 
-		enum AtlasMargins {
+		enum AtlasMargin {
 			/// Atlas will be tight packed
 			None, 
 
@@ -463,17 +463,17 @@ namespace Gorgon { namespace Graphics {
 
 		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty portions. Parameters control
 		/// which sides of the image would be trimmed. Trim operation will not be performed on empty images.
-		Geometry::Margins Trim(bool left, bool top, bool right, bool bottom);
+		Geometry::Margin Trim(bool left, bool top, bool right, bool bottom);
 
 		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty portions. Trimming is performed
 		/// to all sides of the image. Trim operation will not be performed on empty images.
-		Geometry::Margins Trim() {
+		Geometry::Margin Trim() {
 			return Trim(true, true, true, true);
 		}
 
 		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty portions. Parameters control
 		/// which sides of the image would be trimmed. Trim operation will not be performed on empty images.
-		Geometry::Margins Trim(bool horizontal, bool vertical) {
+		Geometry::Margin Trim(bool horizontal, bool vertical) {
 			return Trim(horizontal, vertical, horizontal, vertical);
 		}
 
@@ -582,9 +582,9 @@ namespace Gorgon { namespace Graphics {
 
 		/// Assumes all image heights are similar and all images have same color mode. If there is colormode problem, this function
 		/// will throw. You can either have duplicate or move your collection to this function as it needs to modify the collection
-		/// on the run. Moving would be more efficient. Margins can be useful if the images would be drawn resized. Unless a margin
+		/// on the run. Moving would be more efficient. Margin can be useful if the images would be drawn resized. Unless a margin
 		/// correction method is selected, textures will bleed into each other. Currently only None and Empty modes are supported.
-		std::vector<Geometry::Bounds> CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargins margins = None);
+		std::vector<Geometry::Bounds> CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargin margins = None);
 
 		/// Creates images from the given atlas image and map. Prepares every image as well. This requires image to be prepared.
         /// Texture images can be passed around as value, but it is best to avoid that.

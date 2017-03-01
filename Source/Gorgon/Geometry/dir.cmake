@@ -1,6 +1,6 @@
 SET(Local
 	Bounds.h
-	Margins.h
+	Margin.h
 	Point.h
 	Rectangle.h
 	Size.h

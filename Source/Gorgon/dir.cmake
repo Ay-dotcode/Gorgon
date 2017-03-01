@@ -49,3 +49,10 @@ IF(${SCRIPTING})
 	)
 ENDIF()
 
+
+IF(${UI})
+	LIST(APPEND Local
+		UI
+	)
+ENDIF()
+

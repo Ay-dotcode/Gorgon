@@ -227,12 +227,12 @@ namespace Gorgon { namespace Resource {
 		}
 
 		/// Inserts a data item to the given position
-		void Insert(Geometry::Margins value, int before) {
+		void Insert(Geometry::Margin value, int before) {
 			Insert("#"+String::From(items.GetCount()), value, before);
 		}
 
-		void Insert(const std::string &name, Geometry::Margins value, int before) {
-			items.Insert(new MarginsData(name, value), before);
+		void Insert(const std::string &name, Geometry::Margin value, int before) {
+			items.Insert(new MarginData(name, value), before);
 		}
 
 		/// Inserts a data item to the given position
@@ -486,8 +486,8 @@ namespace Gorgon { namespace Resource {
 	}
 
 	template<>
-	inline Geometry::Margins Data::Get<Geometry::Margins>(int index) const {
-		auto &item=dynamic_cast<MarginsData&>(items[index]);
+	inline Geometry::Margin Data::Get<Geometry::Margin>(int index) const {
+		auto &item=dynamic_cast<MarginData&>(items[index]);
 
 		return item.Get();
 	}

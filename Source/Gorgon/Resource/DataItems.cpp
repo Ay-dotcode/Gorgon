@@ -15,7 +15,7 @@ namespace Gorgon { namespace Resource {
 		DataLoaders[GID::Data_Size] = &SizeData::Load;
 		DataLoaders[GID::Data_Rectangle] = &RectangleData::Load;
 		DataLoaders[GID::Data_Bounds] = &BoundsData::Load;
-		DataLoaders[GID::Data_Margins] = &MarginsData::Load;
+		DataLoaders[GID::Data_Margin] = &MarginData::Load;
 		DataLoaders[GID::Data_Object] = &ObjectData::Load;
 	}
 
@@ -144,7 +144,7 @@ namespace Gorgon { namespace Resource {
 		return new BoundsData(name, value);
 	}
 
-	DataItem* MarginsData::Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, long unsigned int totalsize) {
+	DataItem* MarginData::Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, long unsigned int totalsize) {
 #ifndef NDEBUG
 		auto target = reader->Target(totalsize);
 #endif
@@ -155,11 +155,11 @@ namespace Gorgon { namespace Resource {
 		int r=reader->ReadInt32();
 		int b=reader->ReadInt32();
 
-		Geometry::Margins value{l,t,r,b};
+		Geometry::Margin value{l,t,r,b};
 
-		ASSERT((bool)target, "Margins data size mismatch");
+		ASSERT((bool)target, "Margin data size mismatch");
 
-		return new MarginsData(name, value);
+		return new MarginData(name, value);
 	}
 
 	DataItem* ObjectData::Load(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, long unsigned int totalsize) {

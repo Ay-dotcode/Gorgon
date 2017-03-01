@@ -24,6 +24,10 @@ SET(UnitTests
 	Logging
 	URI
 )
+
+
+option(UNIT_TESTS "Enable all unit tests." OFF)
+
 IF(${SCRIPTING})
 	LIST(APPEND UnitTests
 		Scripting

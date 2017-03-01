@@ -34,9 +34,11 @@ option(TESTMODE "Enable test mode." OFF)
 
 option(DOCUMENTATION_GRAPHS "Enable graphs in documentation." OFF)
 
-option(UNIT_TESTS "Enable compiling of unit tests." OFF)
+option(TESTS "Enable compiling of test applications." OFF)
 
 option(FLAC_SUPPORT "Enable FLAC decoding and streaming." ON)
+
+option(UI "Enable UI subsystem." ON)
 
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 
@@ -111,7 +113,7 @@ set(OptimizedLibs "")
 
 StartSource(Source/Gorgon)
 
-if(UNIT_TESTS)
+if(TESTS)
 	include(Scripts/Testing.cmake)
 endif()
 
