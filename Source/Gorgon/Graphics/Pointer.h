@@ -333,12 +333,15 @@ namespace Gorgon { namespace Graphics {
 		PointerStack(const PointerStack &) = delete;
 
 		PointerStack(PointerStack &&other) {
+			Swap(other);
+		}
+
+		void Swap(PointerStack &other) {
 			using std::swap;
 
 			swap(lastind, other.lastind);
 			swap(stack, other.stack);
 			swap(pointers, other.pointers);
-
 		}
 
 		~PointerStack() {

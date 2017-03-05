@@ -18,6 +18,16 @@ namespace Gorgon {
     
     class MouseHandler {
     public:
+        MouseHandler(MouseHandler &&other) {
+            layers.Swap(other.layers);
+        }
+        
+        MouseHandler &operator =(MouseHandler &&other) {
+            layers.Swap(other.layers);
+            
+            return *this;
+        }
+        
         MouseHandler(Layer *layer = nullptr) {
             if(layer) layers.Add(layer);
         }
@@ -39,6 +49,10 @@ namespace Gorgon {
         
         void Add(Layer *l) {
             layers.Add(l);
+        }
+        
+        void Swap(MouseHandler &other) {
+            layers.Swap(other.layers);
         }
         
         Containers::Collection<Layer> layers;

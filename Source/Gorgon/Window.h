@@ -37,6 +37,11 @@ namespace Gorgon {
 		static const struct FullscreenTag {
 			
 		}Fullscreen;
+        
+        /// Empty constructor creates a non-initialized window. This constructor is there
+        /// support move semantics. Any action on non-initialized window may result in a
+        /// crash.
+        Window() { }
 
 		/// Creates a new window
 		/// @param  rect the position and the **interior** size of the window unless
@@ -117,8 +122,31 @@ namespace Gorgon {
 		Window(const FullscreenTag &tag, const std::string &name, const std::string &title="") :
             Window(tag, WindowManager::Monitor::Primary(), name, title) { }
 
+        /// Copy constructor is not allowed
+        Window(const Window &) = delete;
+        
+        /// Move constructor
+        Window(Window &&other) {
+            Swap(other);
+        }
+            
 		/// Destroys this window
-		~Window();
+		~Window() { Destroy(); }
+        
+        /// Destroys this window
+        void Destroy();
+        
+        /// Moves another window into this one
+        Window &operator =(Window &&other) {
+            Swap(other);
+            
+            other.Destroy();
+            
+            return *this;
+        }
+        
+        /// Used for move semantics
+        void Swap(Window &other);
 
 		/// This method is automatically called by the system.Unless its necessary, do not use it.
 		/// 
@@ -365,9 +393,11 @@ namespace Gorgon {
 	private:
 		void createglcontext();
 
+		void updatedataowner();
+
 		std::string name;
 		
-		internal::windowdata *data;
+		internal::windowdata *data = nullptr;
 
 		static Containers::Collection<Window> windows;
 
@@ -385,10 +415,10 @@ namespace Gorgon {
 		Geometry::Point mousedownlocation = {-1, -1};
         Geometry::Point mouselocation = {-1, -1};
         
-        Graphics::Layer *pointerlayer;
+        Graphics::Layer *pointerlayer = nullptr;
         bool iswmpointer = true;
         bool switchbacktolocalptr = false;
 
-		Geometry::Size glsize;
+		Geometry::Size glsize = {0, 0};
 	};
 }

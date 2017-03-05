@@ -726,11 +726,18 @@ failsafe: //this should use X11 screen as monitor
 		glsize = mon.GetSize();
 	}
 	
-	Window::~Window() {
-        Close();
-		delete data;
+	void Window::Destroy() {
+        if(data) {
+            Close();
+        }
+        
 		windows.Remove(this);
-	    delete pointerlayer;
+
+        delete pointerlayer;
+        pointerlayer = nullptr;
+
+        delete data;
+        data = nullptr;
     }
 	
 	void Window::Show() {
@@ -1429,5 +1436,8 @@ failsafe: //this should use X11 screen as monitor
         XChangeProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_ICON, WindowManager::XA_CARDINAL , 32, PropModeReplace, icon.data->data, icon.data->w*icon.data->h+2);
         XSync(WindowManager::display, 1);
     }
+
+	void Window::updatedataowner() {
+	}
     
 }

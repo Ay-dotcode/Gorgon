@@ -1,6 +1,6 @@
 #pragma once
-#include "../../Geometry/Margin.h"
-#include "../../Geometry/Size.h"
+#include "../Geometry/Margin.h"
+#include "../Geometry/Size.h"
 
 namespace Gorgon { namespace UI {
 

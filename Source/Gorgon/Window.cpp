@@ -10,6 +10,41 @@ namespace Gorgon {
 
 	extern Graphics::RGBAf LayerColor;
 	Geometry::Size ScreenSize;
+    
+    void Window::Swap(Window &other) {
+        using std::swap;
+        swap(data, other.data);
+
+        swap(pressed, other.pressed);
+        down.Swap(other.down);
+        over.Swap(other.over);
+        swap(allowresize, other.allowresize);
+        swap(cursorover, other.cursorover);
+        swap(mousedownlocation, other.mousedownlocation);
+        swap(mouselocation, other.mouselocation);
+        
+        swap(pointerlayer, other.pointerlayer);
+        
+        swap(iswmpointer, other.iswmpointer);
+        swap(switchbacktolocalptr, other.switchbacktolocalptr);
+        swap(glsize, other.glsize);
+
+		Pointers.Swap(other.Pointers);
+
+        if(data)
+            windows.Add(this);
+        else
+            windows.Remove(this);
+        
+        if(other.data)
+            windows.Add(other);
+        else
+            windows.Remove(other);
+
+		updatedataowner();
+        
+        Layer::Swap(other);
+    }
 	
 	void Window::activatecontext() {
 		WindowManager::internal::switchcontext(*data);
