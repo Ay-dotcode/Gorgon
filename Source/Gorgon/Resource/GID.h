@@ -49,7 +49,19 @@ namespace Gorgon {
 				/// For std::less
 				constexpr bool operator < (const Type &type) const { return type.value<value; }
 
-			private:
+				constexpr Byte Module() const {
+                    return value>>24;
+                }
+                
+                constexpr Byte Object() const {
+                    return (value>>16) & 0xff;
+                }
+                
+                constexpr Byte Property() const {
+                    return value & 0xffff;
+                }
+
+            private:
 				uint32_t value;
 			};
 			
@@ -57,7 +69,11 @@ namespace Gorgon {
 			/// @{
 			/// System module GIDs
 
+            /// Empty, different from Null resource
 			constexpr Type None					{0x00000000};
+            
+            /// File
+			constexpr Type File					{0x000000FF};
 
 			/// Denotes this file is a game file
 			constexpr Type GameFile				{0x030100FF};
@@ -106,7 +122,7 @@ namespace Gorgon {
 			/// @{
 			/// Contains GIDs for basic resources
 			
-			/// @deprecated Used to store text data
+			/// Stores text data, no longer a resource
 			constexpr Type Text					{0x02010000};
 
 			/// Image resource
