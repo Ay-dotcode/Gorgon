@@ -116,6 +116,10 @@ namespace Gorgon {
 
 	/// @endcond
 	
+	
+	/// Generic type to store event tokens.
+    typedef intptr_t EventToken;
+	
 	/// This class provides event mechanism. Different function signatures are allowed to
 	/// as event handlers. These are:
 	///

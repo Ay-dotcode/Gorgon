@@ -369,7 +369,7 @@ namespace Gorgon {
 		/// @endcond
 
 
-		void Initialize() {
+		void init() {
 			defaultcursor=LoadCursor(NULL, IDC_ARROW);
 
 			Monitor::Refresh(true);

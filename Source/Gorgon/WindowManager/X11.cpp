@@ -176,7 +176,7 @@ namespace Gorgon {
 		}
 		/// @endcond
 		
-		void Initialize() {
+		void init() {
 			//get display
 			display = XOpenDisplay(NULL);
 			visual = XDefaultVisualOfScreen(DefaultScreenOfDisplay(display));

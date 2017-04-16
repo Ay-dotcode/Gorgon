@@ -15,7 +15,7 @@ namespace Gorgon { namespace Input {
     }
     
 	bool Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {   
-        if(event == Input::Mouse::EventType::OverCheck) {
+        if(event == Input::Mouse::EventType::HitCheck) {
 			dotransformandclip(true);
             
             mytransform = Transform;
@@ -66,7 +66,7 @@ namespace Gorgon { namespace Input {
             
             return true;
         }
-        else if(event == Input::Mouse::EventType::OverCheck) {
+        else if(event == Input::Mouse::EventType::HitCheck) {
             Gorgon::Layer::propagate_mouseevent(event, curlocation, button, amount, handlers);
         }
         else { //click/scroll/move/down
@@ -121,8 +121,8 @@ namespace Gorgon { namespace Input {
 
 			return true;
 		}
-		else if(event == Input::Mouse::EventType::OverCheck && over) {
-            //dont call, window will decide which layers to call
+		else if(event == Input::Mouse::EventType::HitCheck && over) {
+            //don't call, window will decide which layers to call
             handlers.Add(this);
 
 			return true;

@@ -4,6 +4,7 @@
 
 #include "./Layer.h"
 #include "../Resource/GID.h"
+#include "../Event.h"
 
 
 namespace Gorgon { 
@@ -129,7 +130,7 @@ namespace Input {
      * very similarly to a regular input layer. However, it will not invoke any actions unless
      * an object is being dragged. If the event is starting within the system, a drag source can
 	 * be created to capture events about the drag operation. This allows source to receive events
-	 * without any connection to the target.
+	 * without any connection to the target. 
 	 * 
      * While drag continues, source event will keep receiving move event. Targeted mouse event
      * will receive over event if hit test succeeds. If it accepts over event, target layer 
@@ -142,6 +143,13 @@ namespace Input {
 	 * no longer be dropped over it and out event of the source is called. If destination returns 
 	 * false to drop event, drag operation will be canceled. If an operation is canceled and if
 	 * the object is over a layer, out event is called before cancel event.
+	 *
+	 * During drag operation, only layers derived from DropTarget will receive over events. This
+	 * will prevent any layers changing the mouse cursor during the drag operation. For full drag
+	 * with symbol and cursor, source should set the cursor to drag, and keep symbol drawn on a
+	 * high level layer on move event. Targets should change the cursor whether they can accept
+	 * the drop. Targets will receive out event even if they reject over, allowing them to set
+	 * back cursor to original.
      */
 
    
@@ -326,21 +334,21 @@ namespace Input {
 
 
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		void SetMove(std::function<bool(DropTarget &, DragInfo &, Geometry::Point)> fn) {
 			move = fn;
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		void SetMove(std::function<bool(DragInfo &, Geometry::Point)> fn) {
 			move = [fn](DropTarget &, DragInfo &data, Geometry::Point p) { return fn(data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		/// This variant accepts class member function.
@@ -350,7 +358,7 @@ namespace Input {
 			move = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		/// This variant accepts class member function.
@@ -360,7 +368,7 @@ namespace Input {
 			move = [fn, my](DropTarget &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		/// This variant accepts class member function.
@@ -369,7 +377,7 @@ namespace Input {
 			move = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		/// This variant accepts class member function.
@@ -378,21 +386,21 @@ namespace Input {
 			move = [fn, my](DropTarget &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		void SetMove(std::function<bool(DropTarget &, DragInfo &)> fn) {
 			move = [fn](DropTarget &layer, DragInfo &data, Geometry::Point p) { return fn(layer, data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		void SetMove(std::function<bool(DragInfo &)> fn) {
 			move = [fn](DropTarget &, DragInfo &data, Geometry::Point p) { return fn(data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		/// This variant accepts class member function.
@@ -402,7 +410,7 @@ namespace Input {
 			move = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		/// This variant accepts class member function.
@@ -412,7 +420,7 @@ namespace Input {
 			move = [fn, my](DropTarget &, DragInfo &data, Geometry::Point p) { return my->fn(data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		/// This variant accepts class member function.
@@ -421,7 +429,7 @@ namespace Input {
 			move = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
+		/// Sets move function. If set, called repeatedly as long as the object is over this layer.
 		/// Returning false from this event's handler will cause drag operation to move out of
 		/// this layer.
 		/// This variant accepts class member function.
@@ -597,27 +605,34 @@ namespace Input {
 		std::function<bool(DropTarget &, DragInfo &, Geometry::Point)>  move;
 		std::function<bool(DropTarget &, DragInfo &, Geometry::Point)>  drop;
 		std::function<void(DropTarget &, DragInfo &)>					cancel;
+
+		Geometry::Transform3D mytransform;
+
+
+		/// Propagates a mouse event. Some events will be called directly. 
+		virtual bool propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) override;
 	};
     
 	class DragSource {
+        friend class DropTarget;
     public:
 		/// @name Event handling
 		/// @{
 
-		/// Sets over function. If set, called whenever an object is dragged over this layer.
-		/// If event handler returns true, source will receive over event as well.
+		/// Sets over function. If set, called whenever an object is dragged over to a target
+        /// and the target accepts over event.
 		void SetOver(std::function<bool(DragSource &, DragInfo &)> fn) {
 			over = fn;
 		}
 
-		/// Sets over function. If set, called whenever an object is dragged over this layer.
-		/// If event handler returns true, source will receive over event as well.
+		/// Sets over function. If set, called whenever an object is dragged over to a target
+        /// and the target accepts over event.
 		void SetOver(std::function<bool(DragInfo &)> fn) {
 			over = [fn](DragSource &, DragInfo &data) { return fn(data); };
 		}
 
-		/// Sets over function. If set, called whenever an object is dragged over this layer.
-		/// If event handler returns true, source will receive over event as well.
+		/// Sets over function. If set, called whenever an object is dragged over to a target
+        /// and the target accepts over event.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetOver(C_ &c, std::function<bool(C_ &, DragSource &, DragInfo &)> fn) {
@@ -625,8 +640,8 @@ namespace Input {
 			over = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
-		/// Sets over function. If set, called whenever an object is dragged over this layer.
-		/// If event handler returns true, source will receive over event as well.
+		/// Sets over function. If set, called whenever an object is dragged over to a target
+        /// and the target accepts over event.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetOver(C_ &c, std::function<bool(C_ &, DragInfo &)> fn) {
@@ -634,16 +649,16 @@ namespace Input {
 			over = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
 
-		/// Sets over function. If set, called whenever an object is dragged over this layer.
-		/// If event handler returns true, source will receive over event as well.
+		/// Sets over function. If set, called whenever an object is dragged over to a target
+        /// and the target accepts over event.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetOver(C_ *my, std::function<bool(C_ &, DragSource &, DragInfo &)> fn) {
 			over = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
-		/// Sets over function. If set, called whenever an object is dragged over this layer.
-		/// If event handler returns true, source will receive over event as well.
+		/// Sets over function. If set, called whenever an object is dragged over to a target
+        /// and the target accepts over event.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetOver(C_ *my, std::function<bool(C_ &, DragInfo &)> fn) {
@@ -657,20 +672,20 @@ namespace Input {
 
 
 
-		/// Sets out function. If set, called whenever an object is dragged out of this layer.
-		/// This event is called even if over returns false.
+		/// Sets out function. If set, called whenever an object is dragged out of the layer
+		/// that accepted over event.
 		void SetOut(std::function<void(DragSource &, DragInfo &)> fn) {
 			out = fn;
 		}
 
-		/// Sets out function. If set, called whenever an object is dragged out of this layer.
-		/// This event is called even if over returns false.
+		/// Sets out function. If set, called whenever an object is dragged out of the layer
+		/// that accepted over event.
 		void SetOut(std::function<void(DragInfo &)> fn) {
 			out = [fn](DragSource &, DragInfo &data) { return fn(data); };
 		}
 
-		/// Sets out function. If set, called whenever an object is dragged out of this layer.
-		/// This event is called even if over returns false.
+		/// Sets out function. If set, called whenever an object is dragged out of the layer
+		/// that accepted over event.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetOut(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
@@ -678,8 +693,8 @@ namespace Input {
 			out = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
-		/// Sets out function. If set, called whenever an object is dragged out of this layer.
-		/// This event is called even if over returns false.
+		/// Sets out function. If set, called whenever an object is dragged out of the layer
+		/// that accepted over event.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetOut(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
@@ -687,16 +702,16 @@ namespace Input {
 			out = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
 
-		/// Sets out function. If set, called whenever an object is dragged out of this layer.
-		/// This event is called even if over returns false.
+		/// Sets out function. If set, called whenever an object is dragged out of the layer
+		/// that accepted over event.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetOut(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
 			out = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
-		/// Sets out function. If set, called whenever an object is dragged out of this layer.
-		/// This event is called even if over returns false.
+		/// Sets out function. If set, called whenever an object is dragged out of the layer
+		/// that accepted over event.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetOut(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
@@ -710,107 +725,83 @@ namespace Input {
 
 
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
-		void SetMove(std::function<bool(DragSource &, DragInfo &, Geometry::Point)> fn) {
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
+		void SetMove(std::function<void(DragSource &, DragInfo &, Geometry::Point)> fn) {
 			move = fn;
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
-		void SetMove(std::function<bool(DragInfo &, Geometry::Point)> fn) {
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
+		void SetMove(std::function<void(DragInfo &, Geometry::Point)> fn) {
 			move = [fn](DragSource &, DragInfo &data, Geometry::Point p) { return fn(data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<bool(C_ &, DragSource &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &, Geometry::Point)> fn) {
 			C_ *my = &c;
 			move = [fn, my](DragSource &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<bool(C_ &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ &c, std::function<void(C_ &, DragInfo &, Geometry::Point)> fn) {
 			C_ *my = &c;
 			move = [fn, my](DragSource &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<bool(C_ &, DragSource &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &, Geometry::Point)> fn) {
 			move = [fn, my](DragSource &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<bool(C_ &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ *my, std::function<void(C_ &, DragInfo &, Geometry::Point)> fn) {
 			move = [fn, my](DragSource &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
-		void SetMove(std::function<bool(DragSource &, DragInfo &)> fn) {
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
+		void SetMove(std::function<void(DragSource &, DragInfo &)> fn) {
 			move = [fn](DragSource &layer, DragInfo &data, Geometry::Point p) { return fn(layer, data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
-		void SetMove(std::function<bool(DragInfo &)> fn) {
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
+		void SetMove(std::function<void(DragInfo &)> fn) {
 			move = [fn](DragSource &, DragInfo &data, Geometry::Point p) { return fn(data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<bool(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetMove(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
 			C_ *my = &c;
 			move = [fn, my](DragSource &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetMove(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
 			C_ *my = &c;
 			move = [fn, my](DragSource &, DragInfo &data, Geometry::Point p) { return my->fn(data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<bool(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetMove(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
 			move = [fn, my](DragSource &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data); };
 		}
 
-		/// Sets move function. If set, called whenever an object is dragged move of this layer.
-		/// Returning false from this event's handler will cause drag operation to move out of
-		/// this layer.
+		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetMove(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
 			move = [fn, my](DragSource &, DragInfo &data, Geometry::Point p) { return my->fn(data); };
 		}
 
@@ -821,20 +812,17 @@ namespace Input {
 
 
 
-		/// Sets accept function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is accepted.
+		/// Sets accept function. If set, called whenever drag operation is accepted.
 		void SetAccept(std::function<void(DragSource &, DragInfo &)> fn) {
 			accept = fn;
 		}
 
-		/// Sets accept function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is accepted.
+		/// Sets accept function. If set, called whenever drag operation is accepted.
 		void SetAccept(std::function<void(DragInfo &)> fn) {
 			accept = [fn](DragSource &, DragInfo &data) { return fn(data); };
 		}
 
-		/// Sets accept function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is accepted.
+		/// Sets accept function. If set, called whenever drag operation is accepted.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetAccept(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
@@ -842,8 +830,7 @@ namespace Input {
 			accept = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
-		/// Sets accept function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is accepted.
+		/// Sets accept function. If set, called whenever drag operation is accepted.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetAccept(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
@@ -851,16 +838,14 @@ namespace Input {
 			accept = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
 
-		/// Sets accept function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is accepted.
+		/// Sets accept function. If set, called whenever drag operation is accepted.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetAccept(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
 			accept = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
-		/// Sets accept function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is accepted.
+		/// Sets accept function. If set, called whenever drag operation is accepted.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetAccept(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
@@ -873,20 +858,17 @@ namespace Input {
 		}
 
 
-		/// Sets cancel function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is canceled.
+		/// Sets accept function. If set, called whenever drag operation is canceled.
 		void SetCancel(std::function<void(DragSource &, DragInfo &)> fn) {
 			cancel = fn;
 		}
 
-		/// Sets cancel function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is canceled.
+		/// Sets accept function. If set, called whenever drag operation is canceled.
 		void SetCancel(std::function<void(DragInfo &)> fn) {
 			cancel = [fn](DragSource &, DragInfo &data) { return fn(data); };
 		}
 
-		/// Sets cancel function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is canceled.
+		/// Sets accept function. If set, called whenever drag operation is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetCancel(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
@@ -894,8 +876,7 @@ namespace Input {
 			cancel = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
-		/// Sets cancel function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is canceled.
+		/// Sets accept function. If set, called whenever drag operation is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetCancel(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
@@ -903,16 +884,14 @@ namespace Input {
 			cancel = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
 
-		/// Sets cancel function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is canceled.
+		/// Sets accept function. If set, called whenever drag operation is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetCancel(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
 			cancel = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
-		/// Sets cancel function. If set, called whenever the DnD event that is accepted to be over
-		/// this layer is canceled.
+		/// Sets accept function. If set, called whenever drag operation is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
 		void SetCancel(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
@@ -929,7 +908,7 @@ namespace Input {
     private:
 		std::function<bool(DragSource &, DragInfo &)>					over;
 		std::function<void(DragSource &, DragInfo &)>					out;
-		std::function<bool(DragSource &, DragInfo &, Geometry::Point)>  move;
+		std::function<void(DragSource &, DragInfo &, Geometry::Point)>  move;
 		std::function<void(DragSource &, DragInfo &)>                   accept;
 		std::function<void(DragSource &, DragInfo &)>					cancel;
 	};
@@ -1016,4 +995,77 @@ namespace Input {
         DropTarget *active = nullptr;
     };
 
+	/// Current Drag operation, could be nullptr, denoting there is none. It is
+    /// better to use GetDragOperation function.
+	extern DragInfo *DragOperation;
+
+	/// This event is fired whenever a drag operation begins
+	extern Event<void, DragInfo &> DragStarted;
+
+	/// This event is fired whenever a drag operation ends. Second parameter
+	/// is set to true if the drag is accepted, if canceled it will be set to 
+	/// false.
+	extern Event<void, DragInfo &, bool> DragEnded;
+
+	///@cond never
+
+	void begindrag(DragSource &source);
+	void begindrag();
+
+	template<class D_, class ...A_>
+	void begindrag(D_ &&data, A_&& ... rest) {
+		begindrag(std::forward<A_>(rest)...);
+
+		DragOperation->AddData(std::forward<D_>(data));
+	}
+
+	template<class D_, class ...A_>
+	void begindrag(DragSource &source, D_ &&data, A_&& ... rest) {
+		begindrag(source, std::forward<A_>(rest)...);
+
+		DragOperation->AddData(std::forward<D_>(data));
+	}
+
+	///@endcond
+
+	/// Begins a drag operation using the given source and data. Data should 
+	/// be assigned immediately for events to work properly. Additional data items
+	/// can be added later if additional data become available at a later time.
+	template<class ...A_>
+	DragInfo &BeginDrag(DragSource &source, A_&& ... data) {
+		begindrag(source, std::forward<A_>(data)...);
+        
+        DragStarted(*DragOperation);
+        
+		return *DragOperation;
+	}
+
+	/// Begins a drag operation using the given data, without a source. Data should 
+	/// be assigned immediately for events to work properly. Additional data items
+	/// can be added later if additional data become available at a later time.
+	/// It is not possible to receive any drag related events without a source.
+	template<class ...A_>
+	inline DragInfo &BeginDrag(A_&& ... data) {
+		begindrag(std::forward<A_&&>(data)...);
+        
+        DragStarted(*DragOperation);
+
+		return *DragOperation;
+	}
+
+	/// Returns whether a drag operation is in progress
+	inline bool IsDragging() {
+		return DragOperation != nullptr;
+	}
+	
+	/// Returns the current drag operation
+	inline DragInfo &GetDragOperation() {
+        if(!DragOperation)
+            throw std::runtime_error("No current drag operation is in progress");
+        
+        return *DragOperation;
+    }
+
+	/// Cancel the current drag operation.
+	void CancelDrag();
 } }

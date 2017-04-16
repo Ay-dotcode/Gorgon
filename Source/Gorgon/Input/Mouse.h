@@ -8,7 +8,7 @@ namespace Gorgon { namespace Input {
 		/// The type of a mouse event. Out/Up occurs if Over/Down is handled. 
 		/// Click occurs only if Down is not handled. 
 		enum class EventType {
-            OverCheck, //Checks for mouse over state, always called first
+            HitCheck, //Checks if the coordinate hits the layer, always called first
 			Over,
 			Move,
 			MovePressed, //Move event while a button is pressed

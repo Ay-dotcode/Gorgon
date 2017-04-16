@@ -1,5 +1,6 @@
 #include "../WindowManager.h"
 #include "../Window.h"
+#include "../Input/DnD.h"
 
 namespace Gorgon { 
 
@@ -33,6 +34,12 @@ namespace Gorgon {
 		intptr_t CurrentContext() {
 			return context;
 		}
+		
+		void init();
+        
+        void Initialize() {
+            init();
+        }
 	}
 }
 

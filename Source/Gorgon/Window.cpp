@@ -118,18 +118,18 @@ namespace Gorgon {
         Clip = bounds;
         
         MouseHandler newover;
-        Layer::propagate_mouseevent(Input::Mouse::EventType::OverCheck, mouselocation, Input::Mouse::Button::None, 0, newover);
+        Layer::propagate_mouseevent(Input::Mouse::EventType::HitCheck, mouselocation, Input::Mouse::Button::None, 0, newover);
         
         //first check outs
         for(auto &l : over.layers) {
-            if(newover.layers.Find(l) == newover.layers.end()) {
+            if(newover.layers.Find(l) == newover.layers.end() || (IsDragging() && !dynamic_cast<Input::DropTarget*>(&l))) {
                 l.propagate_mouseevent(Input::Mouse::EventType::Out, mouselocation, Input::Mouse::Button::None, 0, newover);
             }
         }
        
-        //first check outs
+        //then signal new overs
         for(auto &l : newover.layers) {
-            if(over.layers.Find(l) == over.layers.end()) {
+            if(over.layers.Find(l) == over.layers.end() && !(IsDragging() && !dynamic_cast<Input::DropTarget*>(&l))) {
                 l.propagate_mouseevent(Input::Mouse::EventType::Over, mouselocation, Input::Mouse::Button::None, 1, newover);
             }
         }
