@@ -87,6 +87,7 @@ namespace Gorgon { namespace Input {
 		if(event == Input::Mouse::EventType::Down) {
             if(down) {
                 down(*this, curlocation, button);
+				handlers.Add(this);
             }
             
             if(down || click) {
@@ -118,6 +119,13 @@ namespace Gorgon { namespace Input {
 			rotate(*this, curlocation, amount);
 
             handlers.Add(this);
+
+			return true;
+		}
+		else if(event == Input::Mouse::EventType::Move && move) {
+			move(*this, curlocation);
+
+			handlers.Add(this);
 
 			return true;
 		}

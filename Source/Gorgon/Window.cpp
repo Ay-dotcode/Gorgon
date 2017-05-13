@@ -160,7 +160,7 @@ namespace Gorgon {
         over.layers.Swap(newover.layers);
         
         if(down && !Input::IsDragging()) {
-            down[0].propagate_mouseevent(Input::Mouse::EventType::Move, mouselocation, Input::Mouse::Button::None, 0, down);
+            down[0].propagate_mouseevent(Input::Mouse::EventType::MovePressed, mouselocation, Input::Mouse::Button::None, 0, down);
         }
         else {
             newover.Clear();
