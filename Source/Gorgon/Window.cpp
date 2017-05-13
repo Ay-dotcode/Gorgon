@@ -80,8 +80,12 @@ namespace Gorgon {
 			//to support dragging without the need of holding mouse down (start the event after click)
 		}
 		else {
-			down.Clear();
-			Layer::propagate_mouseevent(Input::Mouse::EventType::Down, location, button, 1, down);
+			if(down) {
+				down[0].propagate_mouseevent(Input::Mouse::EventType::DownPressed, location, button, 1, down);
+			}
+			else {
+				Layer::propagate_mouseevent(Input::Mouse::EventType::Down, location, button, 1, down);
+			}
 		}
     }
     
@@ -103,14 +107,16 @@ namespace Gorgon {
 			if(down) {
 				down[0].propagate_mouseevent(Input::Mouse::EventType::Up, location, button, 0, down);
 
-				down.Clear();
+				if(pressed == Input::Mouse::Button::None)
+					down.Clear();
 			}
 		}
 		else {
 			if(down) {
 				down[0].propagate_mouseevent(Input::Mouse::EventType::Up, location, button, 0, down);
             
-				down.Clear();
+				if(pressed == Input::Mouse::Button::None)
+					down.Clear();
 			}
 			else {
 				if(mousedownlocation.Distance(location) <= ClickThreshold) {

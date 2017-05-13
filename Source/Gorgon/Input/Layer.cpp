@@ -6,8 +6,9 @@ namespace Gorgon { namespace Input {
         switch(event) {
             case Input::Mouse::EventType::Over:
             case Input::Mouse::EventType::Out:
-            case Input::Mouse::EventType::Up:
-            case Input::Mouse::EventType::MovePressed:
+			case Input::Mouse::EventType::Up:
+			case Input::Mouse::EventType::MovePressed:
+			case Input::Mouse::EventType::DownPressed:
                 return false;
             default: 
                 return true;
@@ -66,7 +67,17 @@ namespace Gorgon { namespace Input {
             
             return true;
         }
-        else if(event == Input::Mouse::EventType::HitCheck) {
+		else if(event == Input::Mouse::EventType::DownPressed) {
+			if(down) {
+				down(*this, curlocation, button);
+				handlers.Add(this);
+			}
+
+			if(down || click) {
+				return true;
+			}
+		}
+		else if(event == Input::Mouse::EventType::HitCheck) {
             Gorgon::Layer::propagate_mouseevent(event, curlocation, button, amount, handlers);
         }
         else { //click/scroll/move/down

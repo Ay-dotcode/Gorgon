@@ -14,6 +14,7 @@ namespace Gorgon { namespace Input {
 			MovePressed, //Move event while a button is pressed
 			Out,
 			Down,
+			DownPressed, //Down event while a button is already pressed
 			Click,
 			Up,
             Scroll_Vert,
