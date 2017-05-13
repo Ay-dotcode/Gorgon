@@ -277,10 +277,15 @@ namespace Gorgon {
 		/// @name Geometry related functions
 		/// @{
 		/// These functions modify or return the boundaries of this layer
-		
+
 		/// Moves this layer to the given location
 		virtual void Move(const Geometry::Point &location) {
 			bounds.Move(location);
+		}
+
+		/// Moves this layer to the given location
+		virtual void Move(int x, int y) {
+			bounds.Move({x, y});
 		}
 
 		/// Resizes the layer to the given size

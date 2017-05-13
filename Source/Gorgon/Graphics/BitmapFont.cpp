@@ -347,7 +347,7 @@ namespace Gorgon { namespace Graphics {
             
             if(isempty) {
                 spim->Resize({(int)std::ceil(height/3.f), 1}, spim->GetMode());
-                spim->Clean();
+                spim->Clear();
                 
                 if(prepare) spim->Prepare();
             }

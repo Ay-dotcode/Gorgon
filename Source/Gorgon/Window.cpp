@@ -182,7 +182,7 @@ namespace Gorgon {
 				return mon;
 		}
 
-		throw std::runtime_error("Window is not any monitors.");
+		throw std::runtime_error("Window is not on any monitors.");
 	}
 	
 	void Window::added(Layer &) {

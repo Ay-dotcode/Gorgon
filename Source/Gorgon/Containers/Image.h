@@ -168,7 +168,7 @@ namespace Gorgon {
 			}
 
 			/// Cleans the contents of the buffer by setting every byte it contains to 0.
-			void Clean() {
+			void Clear() {
 #ifndef NDEBUG
 				if(!data) {
 					throw std::runtime_error("Image data is empty");

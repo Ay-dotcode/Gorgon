@@ -1,5 +1,7 @@
 #pragma once
 
+#include <numeric>
+
 namespace Gorgon {
 
 
@@ -16,6 +18,11 @@ namespace Gorgon {
 
 		/// Should return the type id of the data
 		virtual Resource::GID::Type Type() const = 0;
+
+		/// Should return the textual representation of the data. A datatype can simply return its typename
+		virtual std::string			Text() const {
+			return Name();
+		}
 	};
 
 	/**
@@ -37,6 +44,10 @@ namespace Gorgon {
 
 		virtual std::string Name() const override {
 			return "Text";
+		}
+
+		virtual std::string Text() const override {
+			return text;
 		}
 
 		virtual Resource::GID::Type Type() const override {
@@ -107,6 +118,10 @@ namespace Gorgon {
 
 		virtual Resource::GID::Type Type() const override {
 			return Resource::GID::File;
+		}
+
+		virtual std::string Text() const override {
+			return std::accumulate(files.begin(), files.end(), std::string(""), [](auto l, auto r) { return l.empty() ? r : l + ", " + r; });
 		}
 
 	private:

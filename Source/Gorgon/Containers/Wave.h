@@ -341,7 +341,7 @@ namespace Gorgon {
 			}
 
 			/// Cleans the contents of the buffer by setting every byte it contains to 0.
-			void Clean() {
+			void Clear() {
 				memset(data, 0, size * channels.size() * sizeof(float));
 			}
 

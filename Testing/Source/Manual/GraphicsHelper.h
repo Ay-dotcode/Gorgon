@@ -231,15 +231,32 @@ inline Graphics::Bitmap Triangle3(int w, int h) {
 }
 
 inline Graphics::Bitmap Rectangle(int w, int h) {
-    Graphics::Bitmap b({w, h}, Graphics::ColorMode::Alpha);
+	Graphics::Bitmap b({w, h}, Graphics::ColorMode::Alpha);
 
-    for(int y=0; y<h; y++) {
-        for(int x=0; x<w; x++) {
-            b(x,y,0) = 255;
-        }
-    }
-    
-    return b;
+	for(int y=0; y<h; y++) {
+		for(int x=0; x<w; x++) {
+			b(x, y, 0) = 255;
+		}
+	}
+
+	return b;
+}
+
+inline Graphics::Bitmap Pattern(int f) {
+	Graphics::Bitmap b({2, 2}, Graphics::ColorMode::Alpha);
+
+	b.Clear();
+
+	if(f>0)
+		b(0, 0, 0) = 255;
+	if(f>1)
+		b(1, 1, 0) = 255;
+	if(f>2)
+		b(1, 0, 0) = 255;
+	if(f>3)
+		b(0, 1, 0) = 255;
+
+	return b;
 }
 
 inline Graphics::Bitmap BGImage(int w, int h, Byte col1, Byte col2) {

@@ -393,7 +393,7 @@ namespace Gorgon { namespace Graphics {
         Resize({maxx, y + marginwidth}, mode);
 
 		if(margins == Zero) {
-			data->Clean();
+			data->Clear();
 		}
         
         //channel count

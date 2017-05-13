@@ -918,11 +918,38 @@ namespace Gorgon { namespace Input {
 		DragOperation->AddData(std::forward<D_>(data));
 	}
 
+	template<class ...A_>
+	void begindrag(const std::string &data, A_&& ... rest) {
+		begindrag(std::forward<A_>(rest)...);
+
+		DragOperation->AddTextData(data);
+	}
+	template<class ...A_>
+	void begindrag(const char *data, A_&& ... rest) {
+		begindrag(std::forward<A_>(rest)...);
+
+		DragOperation->AddTextData(data);
+	}
+
 	template<class D_, class ...A_>
 	void begindrag(DragSource &source, D_ &&data, A_&& ... rest) {
 		begindrag(source, std::forward<A_>(rest)...);
 
 		DragOperation->AddData(std::forward<D_>(data));
+	}
+
+	template<class ...A_>
+	void begindrag(DragSource &source, const std::string &data, A_&& ... rest) {
+		begindrag(source, std::forward<A_>(rest)...);
+
+		DragOperation->AddData(data);
+	}
+
+	template<class ...A_>
+	void begindrag(DragSource &source, const char *data, A_&& ... rest) {
+		begindrag(source, std::forward<A_>(rest)...);
+
+		DragOperation->AddData(data);
 	}
 
 	///@endcond

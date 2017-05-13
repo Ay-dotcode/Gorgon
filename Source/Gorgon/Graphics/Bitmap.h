@@ -575,9 +575,9 @@ namespace Gorgon { namespace Graphics {
 		Graphics::Bitmap Rotate270();
 
         /// Cleans the contents of the buffer by setting every byte it contains to 0.
-        void Clean() {
+        void Clear() {
 			ASSERT(data, "Bitmap data is not set");
-            data->Clean();
+            data->Clear();
         }
 
 		/// Assumes all image heights are similar and all images have same color mode. If there is colormode problem, this function

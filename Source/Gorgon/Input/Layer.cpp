@@ -73,7 +73,7 @@ namespace Gorgon { namespace Input {
 				handlers.Add(this);
 			}
 
-			if(down || click) {
+			if(down || click || up) {
 				return true;
 			}
 		}
@@ -101,7 +101,7 @@ namespace Gorgon { namespace Input {
 				handlers.Add(this);
             }
             
-            if(down || click) {
+            if(down || click || up) {
                 return true;
             }
 		}

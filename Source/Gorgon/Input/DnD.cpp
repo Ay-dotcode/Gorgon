@@ -144,7 +144,13 @@ namespace Gorgon { namespace Input {
 		else if(event == Input::Mouse::EventType::Down) {
 			return true;
 		}
-		
+
+		else if(event == Input::Mouse::EventType::HitCheck) {
+			//don't call, window will decide which layers to call
+			handlers.Add(this);
+
+			return true;
+		}
 
 		//no other event can occur during drag
 		return false;
