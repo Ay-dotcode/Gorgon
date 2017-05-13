@@ -94,22 +94,116 @@ namespace Gorgon { namespace Input {
 			return false;
 
 		if(event == Input::Mouse::EventType::Over) {
+			bool ret = true;
 			if(over) {
-				bool ret = over(*this, op);
-                if(ret && op.HasSource() && op.GetSource().over) {
-                    op.GetSource().over(op.GetSource(), op);
-                }
+				 ret = over(*this, op);
             }
+
+			if(ret && op.HasSource() && op.GetSource().over) {
+				op.GetSource().over(op.GetSource(), op);
+			}
+
+			op.SetTarget(*this);
 
 			return true;
 		}
+		else if(event == Input::Mouse::EventType::Out) {
+			if(out)
+				out(*this, op);
 
+			if(op.HasSource() && op.GetSource().out) {
+				op.GetSource().out(op.GetSource(), op);
+			}
+
+			op.RemoveTarget();
+
+			return true;
+		}
+		else if(event == Input::Mouse::EventType::Move) {
+			bool ret = true;
+
+			if(move)
+				ret = move(*this, op, curlocation);
+
+			if(ret) {
+				if(op.HasSource() && op.GetSource().move) {
+					op.GetSource().move(op.GetSource(), op, curlocation);
+				}
+			}
+			else { //if false, out event should occur
+				propagate_mouseevent(Mouse::EventType::Out, location, button, amount, handlers);
+			}
+
+			return true;
+		}
+		else if(event == Input::Mouse::EventType::Up) {
+			Drop(curlocation);
+
+			return true;
+		}
+		else if(event == Input::Mouse::EventType::Down) {
+			return true;
+		}
+		
+
+		//no other event can occur during drag
 		return false;
+	}
+
+	void finishdrag(bool success) {
+		if(!IsDragging()) return;
+
+		auto &op = GetDragOperation();
+
+		DragEnded(op, success);
+
+		delete DragOperation;
+		DragOperation = nullptr;
+	}
+
+	void Drop(Geometry::Point location) {
+		if(!IsDragging()) return;
+
+		auto &op = GetDragOperation();
+
+		if(!op.HasTarget())
+			CancelDrag();
+
+		bool ret = true;
+
+		if(op.GetTarget().drop) {
+			ret = op.GetTarget().drop(op.GetTarget(), op, location);
+		}
+
+		if(ret) {
+			if(op.HasSource() && op.GetSource().accept) {
+				op.GetSource().accept(op.GetSource(), op);
+			}
+
+			finishdrag(true);
+		}
+		else {
+			CancelDrag();
+		}
+	}
+
+	void CancelDrag() {
+		if(!IsDragging()) return;
+
+		auto &op = GetDragOperation();
+
+		if(op.HasTarget() && op.GetTarget().cancel)
+			op.GetTarget().cancel(op.GetTarget(), op);
+
+		if(op.HasSource() && op.GetSource().cancel)
+			op.GetSource().cancel(op.GetSource(), op);
+
+		finishdrag(false);
 	}
 
 	DragInfo *DragOperation = nullptr;
     
-	extern Event<void, DragInfo &> DragStarted;
+	Event<void, DragInfo &> DragStarted;
     
-	extern Event<void, DragInfo &, bool> DragEnded;
+	Event<void, DragInfo &, bool> DragEnded;
 } }

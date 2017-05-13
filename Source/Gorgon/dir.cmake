@@ -14,10 +14,12 @@ SET(Local
 	Resource
 	String
 	Time
+	Utils
 	WindowManager
 	Any.h
 	Enum.h
 	Event.h
+	DataExchange.h
 	Layer.h
 	Layer.cpp
 	Main.h
@@ -28,7 +30,6 @@ SET(Local
 	Threading.h
 	TMP.h
 	Types.h
-	Utils
 	Window.h
 	Window.cpp
 )

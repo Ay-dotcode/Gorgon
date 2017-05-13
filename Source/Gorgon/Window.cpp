@@ -4,6 +4,7 @@
 #include "Graphics/Layer.h"
 #include "Graphics/Color.h"
 #include "GL/FrameBuffer.h"
+#include "Input/DnD.h"
 
 
 namespace Gorgon {
@@ -75,8 +76,13 @@ namespace Gorgon {
 
 		mousedownlocation = location;
         
-        down.Clear();
-        Layer::propagate_mouseevent(Input::Mouse::EventType::Down, location, button, 1, down);
+		if(Input::IsDragging()) {
+			//to support dragging without the need of holding mouse down (start the event after click)
+		}
+		else {
+			down.Clear();
+			Layer::propagate_mouseevent(Input::Mouse::EventType::Down, location, button, 1, down);
+		}
     }
     
     void Window::mouse_up(Geometry::Point location, Input::Mouse::Button button) {
@@ -84,18 +90,35 @@ namespace Gorgon {
         
 		Transform = {};
         Clip = bounds;
-        
-        if(down) {
-            down[0].propagate_mouseevent(Input::Mouse::EventType::Up, location, button, 0, down);
-            
-            down.Clear();
-        }
-        else {
-			if(mousedownlocation.Distance(location) <= ClickThreshold) {
+
+		if(Input::IsDragging()) {
+			if(Input::GetDragOperation().HasTarget()) {
 				MouseHandler handler;
-				Layer::propagate_mouseevent(Input::Mouse::EventType::Click, location, button, 1, handler);
+				Input::GetDragOperation().GetTarget().propagate_mouseevent(Input::Mouse::EventType::Up, location, button, 0, handler);
 			}
-        }
+			else {
+				Input::CancelDrag();
+			}
+
+			if(down) {
+				down[0].propagate_mouseevent(Input::Mouse::EventType::Up, location, button, 0, down);
+
+				down.Clear();
+			}
+		}
+		else {
+			if(down) {
+				down[0].propagate_mouseevent(Input::Mouse::EventType::Up, location, button, 0, down);
+            
+				down.Clear();
+			}
+			else {
+				if(mousedownlocation.Distance(location) <= ClickThreshold) {
+					MouseHandler handler;
+					Layer::propagate_mouseevent(Input::Mouse::EventType::Click, location, button, 1, handler);
+				}
+			}
+		}
 	}
 	
 	void Window::mouse_event(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount) {
@@ -122,21 +145,21 @@ namespace Gorgon {
         
         //first check outs
         for(auto &l : over.layers) {
-            if(newover.layers.Find(l) == newover.layers.end() || (IsDragging() && !dynamic_cast<Input::DropTarget*>(&l))) {
+            if(newover.layers.Find(l) == newover.layers.end() || (Input::IsDragging() && !dynamic_cast<Input::DropTarget*>(&l))) {
                 l.propagate_mouseevent(Input::Mouse::EventType::Out, mouselocation, Input::Mouse::Button::None, 0, newover);
             }
         }
        
         //then signal new overs
         for(auto &l : newover.layers) {
-            if(over.layers.Find(l) == over.layers.end() && !(IsDragging() && !dynamic_cast<Input::DropTarget*>(&l))) {
+            if(over.layers.Find(l) == over.layers.end() && !(Input::IsDragging() && !dynamic_cast<Input::DropTarget*>(&l))) {
                 l.propagate_mouseevent(Input::Mouse::EventType::Over, mouselocation, Input::Mouse::Button::None, 1, newover);
             }
         }
         
         over.layers.Swap(newover.layers);
         
-        if(down) {
+        if(down && !Input::IsDragging()) {
             down[0].propagate_mouseevent(Input::Mouse::EventType::Move, mouselocation, Input::Mouse::Button::None, 0, down);
         }
         else {
