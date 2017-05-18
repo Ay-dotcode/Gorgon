@@ -11,17 +11,154 @@
 #include "../Graphics.h"
 
 #include "../Graphics/Layer.h"
+#include "../Geometry/Margin.h"
+
+#include "../Input/DnD.h"
 
 #include <windows.h>
-#include "../Geometry/Margin.h"
+#include <ShlObj.h>
 
 #	undef CreateWindow
 #	undef Rectangle
 
 namespace Gorgon {
 
+	namespace OS {
+		std::string winslashtonormal(const std::string &);
+	}
+
 	namespace WindowManager {
 		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind);
+
+		class GGEDropTarget {
+		public:
+			GGEDropTarget(Window &wind) : m_lRefCount(0), parent(wind) {
+			}
+
+			// IUnknown implementation
+			HRESULT __stdcall QueryInterface(REFIID iid, void ** ppvObject) { return S_OK; }
+			ULONG   __stdcall AddRef(void) { return ++m_lRefCount; }
+			ULONG   __stdcall Release(void) { return --m_lRefCount; }
+
+			// IDropTarget implementation
+			HRESULT __stdcall DragEnter(IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
+				// does the data object contain data we want?
+				FORMATETC fileformat ={CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+				FORMATETC textformat ={CF_TEXT, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+
+				if(pDataObject->QueryGetData(&fileformat)==S_OK) {
+					islocal = parent.IsLocalPointer();
+					if(islocal)
+						parent.SwitchToWMPointers();
+
+					auto data=new FileData();
+
+					STGMEDIUM stgmed;
+					std::string name;
+					pDataObject->GetData(&fileformat, &stgmed);
+					DROPFILES *fdata=(DROPFILES*)GlobalLock(stgmed.hGlobal);
+
+
+					wchar_t *widetext=(wchar_t*)((char*)(fdata)+fdata->pFiles);
+
+					/*while(widetext[0]) {
+						name.resize(wcslen(widetext));
+
+						wcstombs(&name[0], widetext, wcslen(widetext)+1);
+						winslashtonormal(name);
+						data->data.push_back(name);
+
+						widetext+=wcslen(widetext)+1;
+					}*/
+
+					GlobalUnlock(stgmed.hGlobal);
+					ReleaseStgMedium(&stgmed);
+
+
+					//gge::input::mouse::BeginDrag(*data, *object);
+					*pdwEffect = DROPEFFECT_MOVE;
+				}
+				else if(pDataObject->QueryGetData(&textformat) == S_OK) {
+					islocal = parent.IsLocalPointer();
+					if(islocal)
+						parent.SwitchToWMPointers();
+
+//					auto data=new gge::input::mouse::TextDragData();
+
+					STGMEDIUM stgmed;
+					std::string name;
+					pDataObject->GetData(&textformat, &stgmed);
+					char *text=(char*)GlobalLock(stgmed.hGlobal);
+
+					name=text;
+
+					//data->data=name;
+
+
+					GlobalUnlock(stgmed.hGlobal);
+					ReleaseStgMedium(&stgmed);
+
+
+					//gge::input::mouse::BeginDrag(*data, *object);
+					*pdwEffect = DROPEFFECT_COPY;
+				}
+				else {
+					*pdwEffect = DROPEFFECT_NONE;
+				}
+
+				return S_OK;
+			}
+			HRESULT __stdcall DragOver(DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
+				/*if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
+					auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
+
+					if(data.GetAction()==data.Move)
+						*pdwEffect=DROPEFFECT_MOVE;
+					else
+						*pdwEffect=DROPEFFECT_COPY;
+				}
+				else if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::TextDragData*>(&gge::input::mouse::GetDraggedObject())) {
+					*pdwEffect=DROPEFFECT_COPY;
+				}
+				else {
+					*pdwEffect=DROPEFFECT_NONE;
+				}*/
+
+				return S_OK;
+			}
+			HRESULT __stdcall DragLeave(void) {
+				/*gge::input::mouse::CancelDrag();*/
+				if(islocal)
+					parent.SwitchToLocalPointers();
+				return S_OK;
+			}
+			HRESULT __stdcall Drop(IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
+				//gge::input::mouse::DropDrag();
+				if(islocal)
+					parent.SwitchToLocalPointers();
+
+				return S_OK;
+			}
+
+			virtual ~GGEDropTarget() {}
+
+		private:
+			void dragfinished() {
+				/*if(dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
+					auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
+
+					delete &data;
+				}*/
+			}
+
+			long   m_lRefCount;
+			Window &parent;
+
+			Input::DragSource source;
+
+			bool islocal = false;
+
+		};
 	}
 
 	/// @cond INTERNAL
@@ -723,25 +860,34 @@ namespace Gorgon {
                 WindowManager::pointerdisplayed=false;
                 SetCursor(NULL);
                 ShowCursor(false);
-            }
+			
+				SetCursor(NULL);
+				ShowCursor(false);
+			}
         }
         else {
             pointerlayer->Clear();
             pointerlayer->Hide();
         }
+		showptr = false;
 	}
 
 	void Window::ShowPointer() {
         if(iswmpointer) {
             if(!WindowManager::pointerdisplayed) {
                 WindowManager::pointerdisplayed=true;
-                ShowCursor(true);
-                SetCursor((HCURSOR)WindowManager::defaultcursor);
-            }
+				ShowCursor(true);
+				SetCursor((HCURSOR)WindowManager::defaultcursor);
+
+				ShowCursor(true);
+				SetCursor((HCURSOR)WindowManager::defaultcursor);
+			}
         }
         else {
             pointerlayer->Show();
         }
+
+		showptr = true;
 	}
 
 	void Window::Resize(const Geometry::Size &size) {

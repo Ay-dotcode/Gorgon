@@ -27,8 +27,8 @@ int main() {
 
 	Graphics::BlankImage bg;
 
-	bg.DrawIn(l, 40, 40, 100, 100, 0xff606060);
-	bmp.DrawIn(l, 40, 40, 100, 100, 0xffffa090);
+	bg.DrawIn(l, 40, 40, 100, 100, 0xffffa090);
+	bmp.DrawIn(l, 40, 40, 100, 100, 0x80000000);
 
 	bg.DrawIn(l, 200, 200, 100, 100, 0xff606060);
 

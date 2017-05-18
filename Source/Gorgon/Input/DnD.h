@@ -954,19 +954,23 @@ namespace Gorgon { namespace Input {
 
 	///@endcond
 
-	/// Begins a drag operation using the given source and data. Data should 
+	///@cond internal
+	void startdrag();
+	///@endcond
+
+	/// Begins a drag operation using the given source and data. Data will 
 	/// be assigned immediately for events to work properly. Additional data items
 	/// can be added later if additional data become available at a later time.
 	template<class ...A_>
 	DragInfo &BeginDrag(DragSource &source, A_&& ... data) {
 		begindrag(source, std::forward<A_>(data)...);
         
-        DragStarted(*DragOperation);
+        startdrag();
         
 		return *DragOperation;
 	}
 
-	/// Begins a drag operation using the given data, without a source. Data should 
+	/// Begins a drag operation using the given data, without a source. Data will 
 	/// be assigned immediately for events to work properly. Additional data items
 	/// can be added later if additional data become available at a later time.
 	/// It is not possible to receive any drag related events without a source.
@@ -974,17 +978,58 @@ namespace Gorgon { namespace Input {
 	inline DragInfo &BeginDrag(A_&& ... data) {
 		begindrag(std::forward<A_&&>(data)...);
         
-        DragStarted(*DragOperation);
+        startdrag();
 
 		return *DragOperation;
 	}
 
+	void initdrag();
+
+	/// Prepares the drag operation. This function does not fully start
+	/// the drag operation. You should call StartDrag after setting
+	/// the data of the drag object
+	inline DragInfo &PrepareDrag(DragSource &source) {
+		DragOperation = new DragInfo(source);
+
+		initdrag();
+
+		return *DragOperation;
+	}
+
+	/// Prepares the drag operation. This function does not fully start
+	/// the drag operation. You should call StartDrag after setting
+	/// the data of the drag object
+	inline DragInfo &PrepareDrag() {
+		DragOperation = new DragInfo();
+
+		initdrag();
+
+		return *DragOperation;
+	}
+
+	/// Starts the drag operation. You should first call PrepareDrag 
+	/// and set the data before starting the drag operation.
+	inline DragInfo &StartDrag() {
+		startdrag();
+
+		return *DragOperation;
+	}
+
+	///@cond internal
+	extern bool dragstarted;
+	///@endcond
+
 	/// Returns whether a drag operation is in progress
 	inline bool IsDragging() {
+		return DragOperation != nullptr && dragstarted;
+	}
+
+	/// Returns whether a drag operation is available
+	inline bool IsDragPrepared() {
 		return DragOperation != nullptr;
 	}
-	
-	/// Returns the current drag operation
+
+	/// Returns the current drag operation, throws if IsDragPrepared is false
 	inline DragInfo &GetDragOperation() {
         if(!DragOperation)
             throw std::runtime_error("No current drag operation is in progress");

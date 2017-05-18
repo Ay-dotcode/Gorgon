@@ -341,6 +341,16 @@ namespace Gorgon {
 		return (int)ShellExecute(nullptr, "open", file.c_str(), nullptr, nullptr, SW_SHOWNORMAL)>32;
 	}
 
+	void winslashtonormal(std::string &s) {
+		for(unsigned i=0; i<s.length(); i++)
+			if(s[i]=='\\') s[i]='/';
+	}
+
+	void normalslashtowin(std::string &s) {
+		for(unsigned i=0; i<s.length(); i++)
+			if(s[i]=='/') s[i]='\\';
+	}
+
 } }
 /*	HINSTANCE Instance;
 

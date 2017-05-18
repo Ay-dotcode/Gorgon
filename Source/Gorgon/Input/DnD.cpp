@@ -45,6 +45,13 @@ namespace Gorgon { namespace Input {
         
     }
 
+	void startdrag() {
+		ASSERT(IsDragPrepared(), "Drag is not prepared.");
+
+		dragstarted = true;
+		DragStarted(*DragOperation);
+	}
+
 	void begindrag() {
 		DragOperation = new DragInfo();
         
@@ -161,6 +168,8 @@ namespace Gorgon { namespace Input {
 
 		auto &op = GetDragOperation();
 
+		dragstarted = false;
+
 		DragEnded(op, success);
 
 		delete DragOperation;
@@ -208,6 +217,8 @@ namespace Gorgon { namespace Input {
 	}
 
 	DragInfo *DragOperation = nullptr;
+
+	bool dragstarted = false;
     
 	Event<void, DragInfo &> DragStarted;
     

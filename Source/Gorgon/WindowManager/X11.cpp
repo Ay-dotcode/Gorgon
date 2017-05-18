@@ -775,6 +775,7 @@ failsafe: //this should use X11 screen as monitor
             pointerlayer->Clear();
             pointerlayer->Hide();
         }
+		showptr = false;
 	}
 		
 	void Window::ShowPointer() {
@@ -788,6 +789,7 @@ failsafe: //this should use X11 screen as monitor
         else {
             pointerlayer->Show();
         }
+		showptr = true;
 	}
 	
 	void Window::Move(const Geometry::Point &location) {

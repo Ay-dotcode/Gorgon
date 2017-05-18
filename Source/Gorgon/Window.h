@@ -244,7 +244,12 @@ namespace Gorgon {
         /// In both cases, after calling to this function, there will be no visible
         /// pointer on the screen.
 		void HidePointer();
-        
+
+		/// Returns whether the pointer is visible
+		bool IsPointerVisible() const {
+			return showptr;
+		}
+
         /// Centers the window to the default monitor
         void Center() {
             Center(WindowManager::Monitor::Primary());
@@ -312,6 +317,11 @@ namespace Gorgon {
         
         /// Stops showing local pointers and makes window manager pointer visible.
         void SwitchToWMPointers();
+
+		/// Returns whether the current pointer is a local pointer
+		bool IsLocalPointer() const {
+			return !iswmpointer;
+		}
 
 		/// Returns the minimum size required to fit any window inside.
 		static Geometry::Size GetMinimumRequiredSize();
@@ -412,11 +422,13 @@ namespace Gorgon {
         
         bool cursorover = false;
 
+
 		Geometry::Point mousedownlocation = {-1, -1};
         Geometry::Point mouselocation = {-1, -1};
         
         Graphics::Layer *pointerlayer = nullptr;
-        bool iswmpointer = true;
+		bool iswmpointer = true;
+		bool showptr = true;
         bool switchbacktolocalptr = false;
 
 		Geometry::Size glsize = {0, 0};
