@@ -24,13 +24,13 @@
 namespace Gorgon {
 
 	namespace OS {
-		std::string winslashtonormal(const std::string &);
+		void winslashtonormal(std::string &);
 	}
 
 	namespace WindowManager {
 		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind);
 
-		class GGEDropTarget {
+		class GGEDropTarget : public IDropTarget {
 		public:
 			GGEDropTarget(Window &wind) : m_lRefCount(0), parent(wind) {
 			}
@@ -61,29 +61,30 @@ namespace Gorgon {
 
 					wchar_t *widetext=(wchar_t*)((char*)(fdata)+fdata->pFiles);
 
-					/*while(widetext[0]) {
+					while(widetext[0]) {
 						name.resize(wcslen(widetext));
 
 						wcstombs(&name[0], widetext, wcslen(widetext)+1);
-						winslashtonormal(name);
-						data->data.push_back(name);
+						OS::winslashtonormal(name);
+						data->AddFile(name);
 
 						widetext+=wcslen(widetext)+1;
-					}*/
+					}
 
 					GlobalUnlock(stgmed.hGlobal);
 					ReleaseStgMedium(&stgmed);
 
 
-					//gge::input::mouse::BeginDrag(*data, *object);
+					auto &drag = Input::PrepareDrag();
+					drag.AssumeData(*data);
+					Input::StartDrag();
+
 					*pdwEffect = DROPEFFECT_MOVE;
 				}
 				else if(pDataObject->QueryGetData(&textformat) == S_OK) {
 					islocal = parent.IsLocalPointer();
 					if(islocal)
 						parent.SwitchToWMPointers();
-
-//					auto data=new gge::input::mouse::TextDragData();
 
 					STGMEDIUM stgmed;
 					std::string name;
@@ -92,14 +93,11 @@ namespace Gorgon {
 
 					name=text;
 
-					//data->data=name;
-
+					Input::BeginDrag(name);
 
 					GlobalUnlock(stgmed.hGlobal);
 					ReleaseStgMedium(&stgmed);
 
-
-					//gge::input::mouse::BeginDrag(*data, *object);
 					*pdwEffect = DROPEFFECT_COPY;
 				}
 				else {
@@ -108,32 +106,43 @@ namespace Gorgon {
 
 				return S_OK;
 			}
-			HRESULT __stdcall DragOver(DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
-				/*if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
-					auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
 
-					if(data.GetAction()==data.Move)
+			HRESULT __stdcall DragOver(DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
+				if(!Input::IsDragging()) { 
+					*pdwEffect = DROPEFFECT_NONE;
+				}
+
+				auto &drag = Input::GetDragOperation();
+
+				if(drag.HasData(Resource::GID::File)) {
+					auto &data=dynamic_cast<FileData&>(drag.GetData(Resource::GID::File));
+
+					if(data.Action==data.Move)
 						*pdwEffect=DROPEFFECT_MOVE;
 					else
 						*pdwEffect=DROPEFFECT_COPY;
 				}
-				else if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::TextDragData*>(&gge::input::mouse::GetDraggedObject())) {
+				else if(drag.HasData(Resource::GID::Text)) {
 					*pdwEffect=DROPEFFECT_COPY;
 				}
 				else {
 					*pdwEffect=DROPEFFECT_NONE;
-				}*/
+				}
 
 				return S_OK;
 			}
+
 			HRESULT __stdcall DragLeave(void) {
-				/*gge::input::mouse::CancelDrag();*/
+				Input::CancelDrag();
+
 				if(islocal)
 					parent.SwitchToLocalPointers();
+
 				return S_OK;
 			}
 			HRESULT __stdcall Drop(IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
-				//gge::input::mouse::DropDrag();
+				Input::Drop(parent.GetMouseLocation());
+
 				if(islocal)
 					parent.SwitchToLocalPointers();
 
@@ -143,21 +152,12 @@ namespace Gorgon {
 			virtual ~GGEDropTarget() {}
 
 		private:
-			void dragfinished() {
-				/*if(dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
-					auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
-
-					delete &data;
-				}*/
-			}
+			void dragfinished() { }
 
 			long   m_lRefCount;
 			Window &parent;
 
-			Input::DragSource source;
-
 			bool islocal = false;
-
 		};
 	}
 
@@ -165,7 +165,7 @@ namespace Gorgon {
 	namespace internal {
 
 		struct windowdata {
-			windowdata(Window &parent) : parent(&parent) { }
+			windowdata(Window &parent) : parent(&parent), target(parent) { }
 
 			HWND handle = 0;
 			Window *parent;
@@ -173,6 +173,8 @@ namespace Gorgon {
 			HDC device_context=0;
 			Geometry::Margin chrome = {0, 0};
 			bool min = false;
+
+			WindowManager::GGEDropTarget target;
 
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 
@@ -766,6 +768,9 @@ namespace Gorgon {
 
 		createglcontext();
 		glsize = size;
+
+		OleInitialize(NULL);
+		RegisterDragDrop(hwnd, &data->target);
 	}
 
 	Window::Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
@@ -827,6 +832,9 @@ namespace Gorgon {
 
 		createglcontext();
 		glsize = monitor.GetSize();
+
+		OleInitialize(NULL);
+		RegisterDragDrop(hwnd, &data->target);
 	}
 
 	void Window::Destroy() {

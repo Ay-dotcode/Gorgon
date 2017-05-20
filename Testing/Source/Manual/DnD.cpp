@@ -50,6 +50,9 @@ int main() {
 		if(info.HasData(GID::Text)) {
 			std::cout<<info.GetData(GID::Text).Text()<<std::endl;
 		}
+		else if(info.HasData(GID::File)) {
+			std::cout<<info.GetData(GID::File).Text()<<std::endl;
+		}
 		else {
 			throw std::logic_error("A problem with data exchange.");
 		}
@@ -59,6 +62,9 @@ int main() {
 		std::cout<<"Drag operation has "<<(status ? "successfully finished":"failed")<<" with ";
 		if(info.HasData(GID::Text)) {
 			std::cout<<info.GetData(GID::Text).Text()<<std::endl;
+		}
+		else if(info.HasData(GID::File)) {
+			std::cout<<info.GetData(GID::File).Text()<<std::endl;
 		}
 		else {
 			throw std::logic_error("A problem with data exchange.");
@@ -81,7 +87,12 @@ int main() {
 	});
 
 	target.SetDrop([](Input::DragInfo &info) {
-		std::cout<<"Accepted: "<<info.GetData(GID::Text).Text()<<std::endl;
+		if(info.HasData(GID::Text)) {
+			std::cout<<"Accepted: "<<info.GetData(GID::Text).Text()<<std::endl;
+		}
+		else if(info.HasData(GID::File)) {
+			std::cout<<"Accepted: "<<info.GetData(GID::File).Text()<<std::endl;
+		}
 
 		return true;
 	});

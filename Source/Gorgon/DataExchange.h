@@ -63,6 +63,11 @@ namespace Gorgon {
 	*/
 	class FileData : public ExchangeData {
 	public:
+		enum ExchangeAction {
+			Move,
+			Copy
+		};
+
 		explicit FileData(std::vector<std::string> files ={}) : files(std::move(files)) {}
 
 		explicit FileData(std::string file) : files({file}) {}
@@ -121,8 +126,10 @@ namespace Gorgon {
 		}
 
 		virtual std::string Text() const override {
-			return std::accumulate(files.begin(), files.end(), std::string(""), [](auto l, auto r) { return l.empty() ? r : l + ", " + r; });
+			return String::Join(files, "; ");
 		}
+
+		ExchangeAction Action = Copy;
 
 	private:
 		std::vector<std::string> files;

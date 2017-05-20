@@ -570,6 +570,42 @@ namespace Gorgon {
 		template<class T_>
 		std::string From(const T_ &item) { return ""; }
 #endif
+
+		/// Joins a list of strings to a single string using the given glue text.
+		template<class T_>
+		std::string Join(const T_ &vec, const std::string &glue = ", ") {
+			int totalsize = 0;
+			int gluesize = glue.size();
+
+			for(const std::string &s : vec) {
+				if(totalsize)
+					totalsize += gluesize;
+
+				totalsize += s.size();
+			}
+
+			std::string ret;
+			ret.resize(totalsize);
+			bool first = true;
+
+			char *data = &ret[0];
+			const char *gluedata = glue.data();
+
+			for(const std::string &s : vec) {
+				if(!first) {
+					memcpy(data, gluedata, gluesize);
+					data += gluesize;
+				}
+				
+				memcpy(data, s.data(), s.size());
+
+				data += s.size();
+
+				first = false;
+			}
+
+			return ret;
+		}
 		
 		/// Extracts the part of the string up to the given marker. Extracted string and
 		/// the marker is removed from the original string. If the given string does not

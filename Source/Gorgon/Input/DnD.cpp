@@ -181,8 +181,10 @@ namespace Gorgon { namespace Input {
 
 		auto &op = GetDragOperation();
 
-		if(!op.HasTarget())
+		if(!op.HasTarget()) {
 			CancelDrag();
+			return;
+		}
 
 		bool ret = true;
 

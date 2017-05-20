@@ -931,6 +931,20 @@ namespace Gorgon { namespace Input {
 		DragOperation->AddTextData(data);
 	}
 
+	template<class ...A_>
+	void begindrag(std::string &data, A_&& ... rest) {
+		begindrag(std::forward<A_>(rest)...);
+
+		DragOperation->AddTextData(data);
+	}
+	template<class ...A_>
+	void begindrag(char *data, A_&& ... rest) {
+		begindrag(std::forward<A_>(rest)...);
+
+		DragOperation->AddTextData(data);
+	}
+
+
 	template<class D_, class ...A_>
 	void begindrag(DragSource &source, D_ &&data, A_&& ... rest) {
 		begindrag(source, std::forward<A_>(rest)...);
@@ -942,14 +956,28 @@ namespace Gorgon { namespace Input {
 	void begindrag(DragSource &source, const std::string &data, A_&& ... rest) {
 		begindrag(source, std::forward<A_>(rest)...);
 
-		DragOperation->AddData(data);
+		DragOperation->AddTextData(data);
+	}
+
+	template<class ...A_>
+	void begindrag(DragSource &source, std::string &data, A_&& ... rest) {
+		begindrag(source, std::forward<A_>(rest)...);
+
+		DragOperation->AddTextData(data);
+	}
+
+	template<class ...A_>
+	void begindrag(DragSource &source, char *data, A_&& ... rest) {
+		begindrag(source, std::forward<A_>(rest)...);
+
+		DragOperation->AddTextData(data);
 	}
 
 	template<class ...A_>
 	void begindrag(DragSource &source, const char *data, A_&& ... rest) {
 		begindrag(source, std::forward<A_>(rest)...);
 
-		DragOperation->AddData(data);
+		DragOperation->AddTextData(data);
 	}
 
 	///@endcond
