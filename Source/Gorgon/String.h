@@ -4,6 +4,8 @@
 #pragma once
 
 #include <string>
+#include <cstring>
+#include <string>
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
@@ -593,11 +595,11 @@ namespace Gorgon {
 
 			for(const std::string &s : vec) {
 				if(!first) {
-					memcpy(data, gluedata, gluesize);
+					std::memcpy(data, gluedata, gluesize);
 					data += gluesize;
 				}
 				
-				memcpy(data, s.data(), s.size());
+				std::memcpy(data, s.data(), s.size());
 
 				data += s.size();
 

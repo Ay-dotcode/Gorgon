@@ -11,8 +11,8 @@ std::string helptext =
     "Key list:\n"
 	"esc\tClose\n"
 ;
+using namespace Gorgon;
 
-namespace Input = Gorgon::Input;
 namespace GID = Gorgon::Resource::GID;
 
 int main() {
@@ -96,8 +96,14 @@ int main() {
 
 		return true;
 	});
+    
+    Graphics::Layer l2;
+    app.wind.Add(l2);
 
 	while(true) {
+        l2.Clear();
+        app.sty.Print(l2, String::From(app.wind.GetMouseLocation()),0,0);
+        
 		Gorgon::NextFrame();
 	}
 

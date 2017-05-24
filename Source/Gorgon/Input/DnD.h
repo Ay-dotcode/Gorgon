@@ -7,6 +7,9 @@
 #include "../Event.h"
 #include "../DataExchange.h"
 
+namespace Gorgon {
+    class Window;
+}
 
 namespace Gorgon { namespace Input {
     
@@ -54,7 +57,7 @@ namespace Gorgon { namespace Input {
     class DropTarget : public Gorgon::Layer {
 		friend void Drop(Geometry::Point location);
 		friend void CancelDrag();
-		friend class Window;
+		friend class Gorgon::Window;
 	public:
         using Gorgon::Layer::Layer;
 

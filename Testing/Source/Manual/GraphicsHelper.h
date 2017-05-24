@@ -50,8 +50,6 @@ public:
 		fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
 		fnt.Pack();
 
-
-		Graphics::StyledRenderer sty(fnt);
 		sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
 		sty.SetColor({0.6f, 1.f, 1.f});
 		sty.JustifyLeft();
@@ -75,6 +73,7 @@ public:
 	Graphics::Layer l;
 	Bitmap bgimage, icon;
 	Graphics::BitmapFont fnt;
+    Graphics::StyledRenderer sty = {fnt};
 
 	std::string appname;
 };
