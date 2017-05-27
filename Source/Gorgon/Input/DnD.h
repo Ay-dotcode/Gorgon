@@ -46,6 +46,10 @@ namespace Gorgon { namespace Input {
 	 * operation after a click or a mouse up. It will work without any problems. Droping requires
 	 * clicking in this case. The target will not receive a click event if drag is dropped this
 	 * way.
+     * 
+     * If the data is coming from OS, do not trust it to be available until drop time. Even if it
+     * is provided, it might be incomplete. Thus, re-check the data if it is arriving from the OS.
+     * You may check if the drag operation is coming from the OS using FromOS function of DragInfo.
      */
 
    
@@ -882,6 +886,16 @@ namespace Gorgon { namespace Input {
 			if(!source) throw std::runtime_error("There is no source.");
 			return *source;
 		}
+		
+		/// Marks this DnD operation coming from OS
+		void MarkAsOS() {
+            os = true;
+        }
+        
+        /// Returns whether the DnD operation is coming from OS.
+        bool FromOS() {
+            return os;
+        }
 
         
         /// Destructor
@@ -894,6 +908,8 @@ namespace Gorgon { namespace Input {
         
         DragSource *source = nullptr;
         DropTarget *active = nullptr;
+        
+        bool os = false;
     };
 
 	/// Current Drag operation, could be nullptr, denoting there is none. It is

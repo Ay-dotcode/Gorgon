@@ -78,6 +78,7 @@ namespace Gorgon {
 					auto &drag = Input::PrepareDrag();
 					drag.AssumeData(*data);
 					Input::StartDrag();
+                    Input::GetDragOperation().MarkAsOS();
 
 					*pdwEffect = DROPEFFECT_MOVE;
 				}
@@ -94,6 +95,7 @@ namespace Gorgon {
 					name=text;
 
 					Input::BeginDrag(name);
+                    Input::GetDragOperation().MarkAsOS();
 
 					GlobalUnlock(stgmed.hGlobal);
 					ReleaseStgMedium(&stgmed);

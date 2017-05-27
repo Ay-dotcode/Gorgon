@@ -42,6 +42,15 @@ namespace Gorgon {
             Geometry::Point ppoint = {INT_MIN, INT_MIN};
 			
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
+            
+            struct xdnddata {
+                bool filelist = false;
+                bool utf8 = false;
+                bool string = false;
+                
+                bool requested = false;
+                bool drop = false;
+            } xdnd;
 		};
 		
         static int None = 0;
@@ -153,7 +162,7 @@ namespace Gorgon {
 			}
 			
 			void XdndInit(::Gorgon::internal::windowdata *w) {
-				int version=5;
+				Atom version = 5;
 				
 				XChangeProperty(display, w->handle, XdndAware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&version, 1);
 			}
@@ -914,13 +923,15 @@ failsafe: //this should use X11 screen as monitor
                         Atom type;
                         int format;
                         
+                        this->data->xdnd.drop = false;
+                        this->data->xdnd.requested = false;
+                        
                         cursorover = true;
                         
-                        std::vector<Atom> atoms;
+                        auto xdnd_version = ( event.xclient.data.l[1] >> 24);
+                        std::cout<<"Version: "<<xdnd_version <<std::endl;
                         
-                        for(int i=2; i<=4; i++)
-                            if(event.xclient.data.l[i] != internal::None)
-                                atoms.push_back(event.xclient.data.l[i]);
+                        std::vector<Atom> atoms;
                         
                         if(event.xclient.data.l[1] & 1) {
                             //get the length
@@ -940,94 +951,20 @@ failsafe: //this should use X11 screen as monitor
                                     atoms.push_back(atomlist[i]);
                             }
                         }
-                       
+                        else {
+                            for(int i=2; i<=4; i++)
+                                if(event.xclient.data.l[i] != internal::None)
+                                    atoms.push_back(event.xclient.data.l[i]);
+                        }
+                        
                         for(auto atom : atoms) {
                             std::cout<<WindowManager::GetAtomName(atom)<<std::endl;
-                            
-                            if(atom==WindowManager::XA_Filelist) {
-                                /*gge::Pointers.Hide();*/
-                                
-                                XEvent ev;
-                                auto dragdata=new FileData();
-
-                                XConvertSelection(WindowManager::display, WindowManager::XdndSelection, WindowManager::XA_Filelist, WindowManager::XA_PRIMARY, this->data->handle, event.xclient.data.l[0]);
-                                XFlush(WindowManager::display);
-                                
-                                XIfEvent(WindowManager::display, &ev, WindowManager::waitfor_selectionnotify, (char*)this->data->handle);
-                                
-                                /*Atom type;
-                                unsigned long len, bytes = 0, dummy;
-                                unsigned char *data;
-                                int format;*/
-                                
-                                bytes = 0;
-
-                                if(ev.xselection.property != internal::None)
-                                    XGetWindowProperty(WindowManager::display, this->data->handle, ev.xselection.property, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
-
-                                if(bytes) {
-                                    XGetWindowProperty (WindowManager::display, this->data->handle, 
-                                            ev.xselection.property, 0,bytes,0,
-                                            AnyPropertyType, &type, &format,
-                                            &len, &dummy, &data);
-                                    
-                                    
-                                    int p=0;
-                                    for(int i=0;i<(int)len+1;i++) {
-                                        if(i==(int)len || (char)data[i]=='\n') {
-                                            if(i-p>1) {
-                                                std::string s((char*)(data+p), (int)(i-p));
-                                                if(s.length()>6 && s.substr(0, 7)=="file://") 
-                                                    s=s.substr(7);
-                                                if(s[s.length()-1]=='\r')
-                                                    s.resize(s.length()-1);
-                                                
-                                                dragdata->AddFile(Encoding::URIDecode(s));
-                                                p=i+1;
-                                            }
-                                        }
-                                    }
-                                    
-                                    XFree(data);
-
-                                    auto &drag = Input::PrepareDrag();
-                                    drag.AssumeData(*dragdata);
-                                    Input::StartDrag();
-                                }
-                                else {
-                                }
-                            }
-                            else if(atom==WindowManager::XA_STRING) {
-                                /*gge::Pointers.Hide();*/
-                                XEvent ev;
-                                
-                                XConvertSelection(WindowManager::display, WindowManager::XdndSelection, WindowManager::XA_STRING, WindowManager::XA_PRIMARY, this->data->handle, event.xclient.data.l[0]);
-                                XFlush(WindowManager::display);
-                                
-                                
-                                XIfEvent(WindowManager::display, &ev, WindowManager::waitfor_selectionnotify, (char*)this->data->handle);
-                                
-                                if (ev.xselection.property != (unsigned)internal::None) {
-                                    Atom type;
-                                    unsigned long len, bytes, dummy;
-                                    unsigned char *data;
-                                    int format;
-                                
-                                    XGetWindowProperty(WindowManager::display, this->data->handle, ev.xselection.property, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
-
-                                    if(bytes) {
-                                        XGetWindowProperty (WindowManager::display, this->data->handle, 
-                                                ev.xselection.property, 0,bytes,0,
-                                                AnyPropertyType, &type, &format,
-                                                &len, &dummy, &data);
-                                        
-                                        std::string tmp((char*)data, bytes);
-                                        XFree(data);
-                                        
-                                        Input::BeginDrag(tmp);
-                                    }
-                                }
-                            }
+                            if(atom == WindowManager::XA_Filelist)
+                                this->data->xdnd.filelist = true;
+                            else if(atom == WindowManager::XA_UTF8_STRING)
+                                this->data->xdnd.utf8 = true;
+                            else if(atom == WindowManager::XA_STRING)
+                                this->data->xdnd.string = true;
                         }
                     }
                     else if(event.xclient.message_type==WindowManager::XdndPosition) {
@@ -1039,11 +976,11 @@ failsafe: //this should use X11 screen as monitor
                         m.message_type = WindowManager::XdndStatus;
                         m.format=32;
                         m.data.l[0] = data->handle;
-                        m.data.l[1] = 1;//gge::input::mouse::HasDragTarget() && gge::input::mouse::IsDragging();
+                        m.data.l[1] = this->data->xdnd.filelist || this->data->xdnd.utf8 || this->data->xdnd.string;
                         m.data.l[2] = 0;
-                        m.data.l[3] = 0;
+                        m.data.l[3] = 0; 
                         
-                        if(!Input::IsDragging()) { 
+                        if(!Input::IsDragging() || !Input::GetDragOperation().HasTarget()) { 
                             m.data.l[4] = internal::None;
                         }
                         else {
@@ -1063,11 +1000,44 @@ failsafe: //this should use X11 screen as monitor
                             else {
                                 m.data.l[4] = internal::None;
                             }
-                        }                        
-
+                        }
+                        
                         XSendEvent(WindowManager::display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
-                        XFlush(WindowManager::display);
-                        //gge::Pointers.Hide();
+
+                        if(!Input::IsDragging()) {
+                            if(this->data->xdnd.filelist) {
+                                /*gge::Pointers.Hide();*/
+
+                                if(this->data->xdnd.requested) {
+                                    auto &drag = Input::PrepareDrag();
+                                    drag.AssumeData(*new FileData);
+                                    Input::StartDrag();
+                                    Input::GetDragOperation().MarkAsOS();
+                                }
+                                else {
+                                    XConvertSelection(WindowManager::display, WindowManager::XdndSelection, 
+                                                    WindowManager::XA_Filelist, WindowManager::XA_PRIMARY, 
+                                                    this->data->handle, event.xclient.data.l[2]);
+                                }
+                            }
+                            else if(this->data->xdnd.utf8 || this->data->xdnd.string) {
+                                /*gge::Pointers.Hide();*/
+
+                                if(this->data->xdnd.requested) {
+                                    Input::BeginDrag("");
+                                    Input::GetDragOperation().MarkAsOS();
+                                }
+                                else {
+                                    XConvertSelection(WindowManager::display, WindowManager::XdndSelection, 
+                                                    WindowManager::XA_STRING, WindowManager::XA_PRIMARY, 
+                                                    this->data->handle, event.xclient.data.l[2]);
+                                }
+                            }
+                            
+                            this->data->xdnd.requested = true;
+
+                        }
+                         //gge::Pointers.Hide();
                     }
                     else if(event.xclient.message_type == WindowManager::XdndLeave) {
                         cursorover = true;
@@ -1075,49 +1045,131 @@ failsafe: //this should use X11 screen as monitor
                         Input::CancelDrag();
                         //gge::Pointers.Show();
                     }
-                    else if(event.xclient.message_type == WindowManager::XdndDrop) {                        
-                        if(!Input::IsDragging())
-                            return;
+                    else if(event.xclient.message_type == WindowManager::XdndDrop) {
+                        std::cout<<"Drop"<<std::endl;
                         
-                        auto &drag = Input::GetDragOperation();
-
+                        this->data->xdnd.drop = true;
                         
-                        if(drag.HasData(Resource::GID::File)) {
-                            XClientMessageEvent m;
-                            memset(&m, sizeof(m), 0);
-                            m.type = ClientMessage;
-                            m.display = WindowManager::display;
-                            m.window = event.xclient.data.l[0];
-                            m.message_type = WindowManager::XdndFinished;
-                            m.format=32;
-                            m.data.l[0] = this->data->handle;
-                            m.data.l[1] = 1;
-                            m.data.l[2] = WindowManager::XdndActionCopy; //We only ever copy.
+                        if(this->data->xdnd.filelist) {
+                            /*gge::Pointers.Hide();*/
 
-                            //Reply that all is well.
-                            XSendEvent(WindowManager::display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+                            XConvertSelection(WindowManager::display, WindowManager::XdndSelection, WindowManager::XA_Filelist, WindowManager::XA_PRIMARY, this->data->handle, event.xclient.data.l[2]);
                         }
-                        else if(drag.HasData(Resource::GID::Text)) {                               
-                            XClientMessageEvent m;
-                            memset(&m, sizeof(m), 0);
-                            m.type = ClientMessage;
-                            m.display = WindowManager::display;
-                            m.window = event.xclient.data.l[0];
-                            m.message_type = WindowManager::XdndFinished;
-                            m.format=32;
-                            m.data.l[0] = this->data->handle;
-                            m.data.l[1] = 1;
-                            m.data.l[2] = WindowManager::XdndActionCopy; //We only ever copy.
-
-                            //Reply that all is well.
-                            XSendEvent(WindowManager::display, event.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+                        else if(this->data->xdnd.utf8 || this->data->xdnd.string) {
+                            /*gge::Pointers.Hide();*/
                             
-                            Input::Drop(mouselocation);
+                            XConvertSelection(WindowManager::display, WindowManager::XdndSelection, 
+                                            WindowManager::XA_STRING, 
+                                            WindowManager::XA_PRIMARY, this->data->handle, event.xclient.data.l[2]);
                         }
+                       
                         //gge::Pointers.Show();
                     }
 				} // Client Message
 				break;
+                
+                case SelectionNotify:
+                    if (event.xselection.property != (unsigned)internal::None) {
+                        if(this->data->xdnd.filelist) {
+                            unsigned long len, bytes, dummy;
+                            unsigned char *data=NULL;
+                            Atom type;
+                            int format;
+                            
+                            FileData *dragdata = nullptr;
+                            if(Input::IsDragging()) {
+                                if(Input::GetDragOperation().HasData(Resource::GID::File)) {
+                                    dragdata = dynamic_cast<FileData*>(&Input::GetDragOperation().GetData(Resource::GID::File));
+                                }
+                            }
+                            else {
+                                dragdata = new FileData();
+                            }
+                            
+                            if(!dragdata)
+                                return;
+                            
+                            bytes = 0;
+
+                            if(event.xselection.property != internal::None)
+                                XGetWindowProperty(WindowManager::display, this->data->handle, event.xselection.property, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+
+                            if(bytes) {
+                                XGetWindowProperty(WindowManager::display, this->data->handle, 
+                                        event.xselection.property, 0,bytes,0,
+                                        AnyPropertyType, &type, &format,
+                                        &len, &dummy, &data);
+                                
+                                
+                                dragdata->Clear();
+                                
+                                int p=0;
+                                for(int i=0;i<(int)len+1;i++) {
+                                    if(i==(int)len || (char)data[i]=='\n') {
+                                        if(i-p>1) {
+                                            std::string s((char*)(data+p), (int)(i-p));
+                                            if(s.length()>6 && s.substr(0, 7)=="file://") 
+                                                s=s.substr(7);
+                                            if(s[s.length()-1]=='\r')
+                                                s.resize(s.length()-1);
+                                            
+                                            dragdata->AddFile(Encoding::URIDecode(s));
+                                            p=i+1;
+                                        }
+                                    }
+                                }
+                                
+                                XFree(data);
+                                XDeleteProperty(WindowManager::display, this->data->handle, event.xselection.property);
+
+                                if(!Input::IsDragging()) {
+                                    auto &drag = Input::PrepareDrag();
+                                    drag.AssumeData(*dragdata);
+                                    Input::StartDrag();
+                                    Input::GetDragOperation().MarkAsOS();
+                                }
+                            }
+                        }
+                        else if(this->data->xdnd.utf8 || this->data->xdnd.string) {
+                            Atom type;
+                            unsigned long len, bytes, dummy;
+                            unsigned char *data;
+                            int format;
+                        
+                            XGetWindowProperty(WindowManager::display, this->data->handle, event.xselection.property, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+
+                            if(bytes) {
+                                XGetWindowProperty (WindowManager::display, this->data->handle, 
+                                        event.xselection.property, 0,bytes,0,
+                                        AnyPropertyType, &type, &format,
+                                        &len, &dummy, &data);
+                                
+                                std::string tmp((char*)data, bytes);
+                                
+                                XFree(data);
+                                XDeleteProperty(WindowManager::display, this->data->handle, event.xselection.property);
+                                
+                                if(Input::IsDragging()) {
+                                    TextData *dragdata = nullptr;
+                                    if(Input::GetDragOperation().HasData(Resource::GID::Text)) {
+                                        dragdata = dynamic_cast<TextData*>(&Input::GetDragOperation().GetData(Resource::GID::Text));
+                                    }
+                                    
+                                    if(dragdata)
+                                        dragdata->SetText(tmp);
+                                }
+                                else {
+                                    Input::BeginDrag(tmp);
+                                    Input::GetDragOperation().MarkAsOS();
+                                }
+                            }
+                        }
+                    }
+                    if(this->data->xdnd.drop) {
+                        Input::Drop(mouselocation);
+                        this->data->xdnd = decltype(this->data->xdnd)();
+                    }
+                    break;
                 
                 case EnterNotify:
                     cursorover = true;
