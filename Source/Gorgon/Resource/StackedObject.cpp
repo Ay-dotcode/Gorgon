@@ -19,7 +19,7 @@ namespace Gorgon { namespace Resource {
     { }
 
     template<class T_>
-    static Graphics::basic_StackedObjectProvider<T_> &fillfrom(Containers::Collection<Base> &children) {
+    static Graphics::basic_StackedObjectProvider<T_> &fillfrom(Containers::Collection<Base> &children, Geometry::Point offset) {
         T_ *t = nullptr, *b = nullptr;
 
         if(children.GetCount() == 1) {
@@ -30,7 +30,7 @@ namespace Gorgon { namespace Resource {
             b = dynamic_cast<T_*>(&children[1]);
         }
 
-        return *new Graphics::basic_StackedObjectProvider<T_>(t, b);
+        return *new Graphics::basic_StackedObjectProvider<T_>(b, t, offset);
     }
 
     StackedObject *StackedObject::LoadResource(std::weak_ptr<File> f, std::shared_ptr<Reader> reader, unsigned long totalsize) {
@@ -93,17 +93,17 @@ namespace Gorgon { namespace Resource {
 
         if(type == anim) {
             stacked->SetProvider(
-                fillfrom<Graphics::BitmapAnimationProvider>(stacked->children)
+                fillfrom<Graphics::BitmapAnimationProvider>(stacked->children, offset)
             );
         }
         else if(type == img) {
             stacked->SetProvider(
-                fillfrom<Graphics::Bitmap>(stacked->children)
+                fillfrom<Graphics::Bitmap>(stacked->children, offset)
             );
         }
         else if(type == mixed) {
             stacked->SetProvider(
-                fillfrom<Graphics::RectangularAnimationProvider>(stacked->children)
+                fillfrom<Graphics::RectangularAnimationProvider>(stacked->children, offset)
             );
         }
         //else empty stacked object

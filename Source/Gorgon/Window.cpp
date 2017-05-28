@@ -25,24 +25,28 @@ namespace Gorgon {
         swap(mouselocation, other.mouselocation);
         
         swap(pointerlayer, other.pointerlayer);
-        
-        swap(iswmpointer, other.iswmpointer);
+
+		swap(iswmpointer, other.iswmpointer);
+		swap(showptr, other.showptr);
         swap(switchbacktolocalptr, other.switchbacktolocalptr);
         swap(glsize, other.glsize);
 
 		Pointers.Swap(other.Pointers);
 
-        if(data)
+        if(data) {
             windows.Add(this);
+		}
         else
             windows.Remove(this);
         
-        if(other.data)
-            windows.Add(other);
+        if(other.data) {
+			windows.Add(other);
+		}
         else
             windows.Remove(other);
 
 		updatedataowner();
+		other.updatedataowner();
         
         Layer::Swap(other);
     }

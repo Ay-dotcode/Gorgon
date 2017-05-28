@@ -32,7 +32,7 @@ namespace Gorgon {
 
 		class GGEDropTarget : public IDropTarget {
 		public:
-			GGEDropTarget(Window &wind) : m_lRefCount(0), parent(wind) {
+			GGEDropTarget(Window *wind) : m_lRefCount(0), parent(wind) {
 			}
 
 			// IUnknown implementation
@@ -47,9 +47,9 @@ namespace Gorgon {
 				FORMATETC textformat ={CF_TEXT, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 
 				if(pDataObject->QueryGetData(&fileformat)==S_OK) {
-					islocal = parent.IsLocalPointer();
+					islocal = parent->IsLocalPointer();
 					if(islocal)
-						parent.SwitchToWMPointers();
+						parent->SwitchToWMPointers();
 
 					auto data=new FileData();
 
@@ -83,9 +83,9 @@ namespace Gorgon {
 					*pdwEffect = DROPEFFECT_MOVE;
 				}
 				else if(pDataObject->QueryGetData(&textformat) == S_OK) {
-					islocal = parent.IsLocalPointer();
+					islocal = parent->IsLocalPointer();
 					if(islocal)
-						parent.SwitchToWMPointers();
+						parent->SwitchToWMPointers();
 
 					STGMEDIUM stgmed;
 					std::string name;
@@ -110,25 +110,26 @@ namespace Gorgon {
 			}
 
 			HRESULT __stdcall DragOver(DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
-				if(!Input::IsDragging()) { 
+				if(!Input::IsDragging() || !Input::GetDragOperation().HasTarget()) { 
 					*pdwEffect = DROPEFFECT_NONE;
 				}
-
-				auto &drag = Input::GetDragOperation();
-
-				if(drag.HasData(Resource::GID::File)) {
-					auto &data=dynamic_cast<FileData&>(drag.GetData(Resource::GID::File));
-
-					if(data.Action==data.Move)
-						*pdwEffect=DROPEFFECT_MOVE;
-					else
-						*pdwEffect=DROPEFFECT_COPY;
-				}
-				else if(drag.HasData(Resource::GID::Text)) {
-					*pdwEffect=DROPEFFECT_COPY;
-				}
 				else {
-					*pdwEffect=DROPEFFECT_NONE;
+					auto &drag = Input::GetDragOperation();
+
+					if(drag.HasData(Resource::GID::File)) {
+						auto &data=dynamic_cast<FileData&>(drag.GetData(Resource::GID::File));
+
+						if(data.Action==data.Move)
+							*pdwEffect=DROPEFFECT_MOVE;
+						else
+							*pdwEffect=DROPEFFECT_COPY;
+					}
+					else if(drag.HasData(Resource::GID::Text)) {
+						*pdwEffect=DROPEFFECT_COPY;
+					}
+					else {
+						*pdwEffect=DROPEFFECT_NONE;
+					}
 				}
 
 				return S_OK;
@@ -138,26 +139,26 @@ namespace Gorgon {
 				Input::CancelDrag();
 
 				if(islocal)
-					parent.SwitchToLocalPointers();
+					parent->SwitchToLocalPointers();
 
 				return S_OK;
 			}
 			HRESULT __stdcall Drop(IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
-				Input::Drop(parent.GetMouseLocation());
+				Input::Drop(parent->GetMouseLocation());
 
 				if(islocal)
-					parent.SwitchToLocalPointers();
+					parent->SwitchToLocalPointers();
 
 				return S_OK;
 			}
 
 			virtual ~GGEDropTarget() {}
 
-		private:
+		//private:
 			void dragfinished() { }
 
 			long   m_lRefCount;
-			Window &parent;
+			Window *parent;
 
 			bool islocal = false;
 		};
@@ -167,13 +168,14 @@ namespace Gorgon {
 	namespace internal {
 
 		struct windowdata {
-			windowdata(Window &parent) : parent(&parent), target(parent) { }
+			windowdata(Window &parent) : parent(&parent), target(&parent) { }
 
 			HWND handle = 0;
 			Window *parent;
 			HGLRC context=0;
 			HDC device_context=0;
 			Geometry::Margin chrome = {0, 0};
+			bool pointerdisplayed = true;
 			bool min = false;
 
 			WindowManager::GGEDropTarget target;
@@ -462,7 +464,6 @@ namespace Gorgon {
 
 		/// @cond INTERNAL
 		HCURSOR defaultcursor;
-		bool pointerdisplayed;
 		extern intptr_t context;
 
 		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind) {
@@ -866,8 +867,8 @@ namespace Gorgon {
 	
 	void Window::HidePointer() {
         if(iswmpointer) {
-            if(WindowManager::pointerdisplayed) {
-                WindowManager::pointerdisplayed=false;
+            if(data->pointerdisplayed) {
+                data->pointerdisplayed=false;
                 SetCursor(NULL);
                 ShowCursor(false);
 			
@@ -884,8 +885,8 @@ namespace Gorgon {
 
 	void Window::ShowPointer() {
         if(iswmpointer) {
-            if(!WindowManager::pointerdisplayed) {
-                WindowManager::pointerdisplayed=true;
+            if(!data->pointerdisplayed) {
+				data->pointerdisplayed=true;
 				ShowCursor(true);
 				SetCursor((HCURSOR)WindowManager::defaultcursor);
 
@@ -1082,6 +1083,9 @@ namespace Gorgon {
 	}
 
 	void Window::updatedataowner() {
-		data->parent = this;
+		if(data) {
+			data->parent = this;
+			data->target.parent = this;
+		}
 	}
 }

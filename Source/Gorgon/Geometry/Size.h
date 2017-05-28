@@ -247,26 +247,26 @@ namespace Gorgon { namespace Geometry {
 	};
 
 	/// Multiplies a size with a scalar, effectively resizing it.
-	template<class T_, class O_>
-	basic_Size<T_> operator *(const basic_Size<T_> &size, const O_ &factor) {
+	template<class T_>
+	basic_Size<T_> operator *(const basic_Size<T_> &size, double factor) {
 		return{T_(size.Width*factor), T_(size.Height*factor)};
 	}
 
 	/// Multiplies a size with a scalar, effectively resizing it.
-	template<class T_, class O_>
-	basic_Size<T_> operator *(const O_ &factor, const basic_Size<T_> &size) {
+	template<class T_>
+	basic_Size<T_> operator *(double factor, const basic_Size<T_> &size) {
 		return operator*(size, factor);
 	}
 
 	/// Divides a size with a scalar, effectively resizing it.
-	template<class T_, class O_>
-	basic_Size<T_> operator /(const basic_Size<T_> &size, const O_ &factor) {
+	template<class T_>
+	basic_Size<T_> operator /(const basic_Size<T_> &size, double factor) {
 		return{T_(size.Width/factor), T_(size.Height/factor)};
 	}
 
 	/// Divides a size with a scalar, effectively resizing it.
-	template<class T_, class O_>
-	basic_Size<T_> operator /(const O_ &factor, const basic_Size<T_> &size) {
+	template<class T_>
+	basic_Size<T_> operator /(double factor, const basic_Size<T_> &size) {
 		return operator/(size, factor);
 	}
 

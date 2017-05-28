@@ -112,16 +112,16 @@ namespace Gorgon { namespace Graphics {
 		basic_StackedObjectProvider() = default;
 
 		/// Filling constructor
-		basic_StackedObjectProvider(A_ &top, A_ &bottom, const Geometry::Point &offset = {0,0}) :
+		basic_StackedObjectProvider(A_ &bottom, A_ &top, const Geometry::Point &offset = {0,0}) :
             top(&top), bottom(&bottom), offset(offset)
         { }
 
 		/// Filling constructor, nullptr is allowed but not recommended
-		basic_StackedObjectProvider(A_ *top, A_ *bottom, const Geometry::Point &offset = {0,0}) :
+		basic_StackedObjectProvider(A_ *bottom, A_ *top, const Geometry::Point &offset = {0,0}) :
             top(top), bottom(bottom), offset(offset)
         { }
 
-		basic_StackedObjectProvider(A_ &&top, A_ &&bottom, const Geometry::Point &offset = {0,0}) :
+		basic_StackedObjectProvider(A_ &&bottom, A_ &&top, const Geometry::Point &offset = {0,0}) :
             top(new A_(std::move(top))), bottom(new A_(std::move(bottom))), offset(offset), own(true)
         { }
 		
@@ -285,7 +285,12 @@ namespace Gorgon { namespace Graphics {
 							const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
 							const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color) const 
 	{
-		bottom.Draw(target, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color);
+		auto f = Geometry::Sizef((float)bottom.GetSize().Width/top.GetSize().Width, (float)bottom.GetSize().Height/top.GetSize().Height);
+		auto bp2 = p1 + (p2-p1) * f;
+		auto bp3 = p1 + (p3-p1) * f;
+		auto bp4 = p1 + (p4-p1) * f;
+
+		bottom.Draw(target, p1, bp2, bp3, bp4, tex1, tex2, tex3, tex4, color);
 		top.Draw(target, p1+offset, p2+offset, p3+offset, p4+offset, tex1, tex2, tex3, tex4, color);
 	}
 
@@ -294,7 +299,11 @@ namespace Gorgon { namespace Graphics {
 	void basic_StackedObject<A_>::draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
                                        const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color) const 
     {
-		bottom.Draw(target, p1, p2, p3, p4, color);
+		auto f = Geometry::Sizef((float)bottom.GetSize().Width/top.GetSize().Width, (float)bottom.GetSize().Height/top.GetSize().Height);
+		auto bp2 = p1 + (p2-p1) * f;
+		auto bp3 = p1 + (p3-p1) * f;
+		auto bp4 = p1 + (p4-p1) * f;
+		bottom.Draw(target, p1, bp2, bp3, bp4, color);
 		top.Draw(target, p1+offset, p2+offset, p3+offset, p4+offset, color);
 	}
 

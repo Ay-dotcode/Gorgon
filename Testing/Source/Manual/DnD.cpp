@@ -3,6 +3,8 @@
 #include <Gorgon/Input/Layer.h>
 #include <Gorgon/Input/DnD.h>
 #include <Gorgon/Resource/GID.h>
+#include <Gorgon/Graphics/StackedObject.h>
+#include <Gorgon/Graphics/TintedObject.h>
 
 
 void Init();
@@ -21,6 +23,18 @@ int main() {
 	Graphics::Layer l;
     app.wind.Add(l);
 
+	auto cursorhead = Triangle1(12, 12);
+	cursorhead.Prepare();
+	auto cursortail_img = Triangle1(8, 8);
+	cursortail_img.Prepare();
+	Graphics::TintedBitmapProvider cursortail(cursortail_img, 0xff000000);
+	Graphics::StackedObjectProvider cursor(cursorhead, cursortail, {1, 4});
+
+
+	Graphics::DrawablePointer ptr(cursor.CreateAnimation(), 0,0);
+
+	app.wind.Pointers.Add(Graphics::PointerType::Arrow, ptr);
+	app.wind.SwitchToLocalPointers();
 
 	auto bmp = Pattern(2);
 	bmp.Prepare();
