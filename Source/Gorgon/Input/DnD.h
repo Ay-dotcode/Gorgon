@@ -847,6 +847,13 @@ namespace Gorgon { namespace Input {
         /// Check whether this drag info has the given data
         bool HasData(Resource::GID::Type type) const;
         
+        /// Marks drag data as ready.
+        void DataReady() {
+            dataready = true;
+        }
+        
+        
+        
         /// Returns the data associated with the given type, throws runtime_error
         /// if data does not exists.
         ExchangeData &GetData(Resource::GID::Type type) const;
@@ -910,6 +917,7 @@ namespace Gorgon { namespace Input {
         DropTarget *active = nullptr;
         
         bool os = false;
+        bool dataready = false;
     };
 
 	/// Current Drag operation, could be nullptr, denoting there is none. It is
@@ -918,7 +926,7 @@ namespace Gorgon { namespace Input {
 
 	/// This event is fired whenever a drag operation begins
 	extern Event<void, DragInfo &> DragStarted;
-
+    
 	/// This event is fired whenever a drag operation ends. Second parameter
 	/// is set to true if the drag is accepted, if canceled it will be set to 
 	/// false. First parameter might not be reliable as this event is called 
@@ -1014,6 +1022,9 @@ namespace Gorgon { namespace Input {
         
         startdrag();
         
+        if(sizeof...(data) > 0)
+            DragOperation->DataReady();
+        
 		return *DragOperation;
 	}
 
@@ -1026,6 +1037,9 @@ namespace Gorgon { namespace Input {
 		begindrag(std::forward<A_&&>(data)...);
         
         startdrag();
+        
+        if(sizeof...(data) > 0)
+            DragOperation->DataReady();
 
 		return *DragOperation;
 	}

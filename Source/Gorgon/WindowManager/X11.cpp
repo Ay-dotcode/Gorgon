@@ -1008,7 +1008,7 @@ failsafe: //this should use X11 screen as monitor
                             if(this->data->xdnd.filelist) {
                                 /*gge::Pointers.Hide();*/
 
-                                if(this->data->xdnd.requested) {
+                                if(this->data->xdnd.requested || OS::GetEnvVar("XDG_CURRENT_DESKTOP") == "KDE") {
                                     auto &drag = Input::PrepareDrag();
                                     drag.AssumeData(*new FileData);
                                     Input::StartDrag();
@@ -1023,7 +1023,7 @@ failsafe: //this should use X11 screen as monitor
                             else if(this->data->xdnd.utf8 || this->data->xdnd.string) {
                                 /*gge::Pointers.Hide();*/
 
-                                if(this->data->xdnd.requested) {
+                                if(this->data->xdnd.requested || OS::GetEnvVar("XDG_CURRENT_DESKTOP") == "KDE") {
                                     Input::BeginDrag("");
                                     Input::GetDragOperation().MarkAsOS();
                                 }
@@ -1053,7 +1053,9 @@ failsafe: //this should use X11 screen as monitor
                         if(this->data->xdnd.filelist) {
                             /*gge::Pointers.Hide();*/
 
-                            XConvertSelection(WindowManager::display, WindowManager::XdndSelection, WindowManager::XA_Filelist, WindowManager::XA_PRIMARY, this->data->handle, event.xclient.data.l[2]);
+                            XConvertSelection(WindowManager::display, WindowManager::XdndSelection, 
+                                              WindowManager::XA_Filelist, WindowManager::XA_PRIMARY, 
+                                              this->data->handle, event.xclient.data.l[2]);
                         }
                         else if(this->data->xdnd.utf8 || this->data->xdnd.string) {
                             /*gge::Pointers.Hide();*/
