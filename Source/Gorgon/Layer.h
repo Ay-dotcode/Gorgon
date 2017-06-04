@@ -122,10 +122,18 @@ namespace Gorgon {
 		/// Swaps two layers, mostly used for move semantics
 		void Swap(Layer &other) {
 			using std::swap;
+            
+            if(this == &other) return;
 			
 			swap(bounds, other.bounds);
 			swap(isvisible, other.isvisible);
 			swap(children, other.children);
+			
+			for(auto &l : children)
+                l.parent = this;
+			
+			for(auto &l : other.children)
+                l.parent = &other;
 			
 			if(parent==other.parent) return;
 			

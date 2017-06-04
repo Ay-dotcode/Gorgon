@@ -25,7 +25,7 @@ namespace Gorgon {
         swap(mouselocation, other.mouselocation);
         
         swap(pointerlayer, other.pointerlayer);
-
+        
 		swap(iswmpointer, other.iswmpointer);
 		swap(showptr, other.showptr);
         swap(switchbacktolocalptr, other.switchbacktolocalptr);
