@@ -49,7 +49,9 @@ namespace Gorgon {
                 bool string = false;
                 
                 bool requested = false;
-                bool drop = false;
+                int  drop = 0;
+                
+                bool localpointer = false;
             } xdnd;
 		};
 		
@@ -732,7 +734,7 @@ failsafe: //this should use X11 screen as monitor
 					SubstructureRedirectMask //??
 		;
 		
-		bool autoplaced=false;
+		bool autoplaced = false;
 		
 		auto rootwin=XRootWindow(WindowManager::display,screen);
 		
@@ -929,7 +931,7 @@ failsafe: //this should use X11 screen as monitor
                         cursorover = true;
                         
                         auto xdnd_version = ( event.xclient.data.l[1] >> 24);
-                        std::cout<<"Version: "<<xdnd_version <<std::endl;
+                        //std::cout<<"Version: "<<xdnd_version <<std::endl;
                         
                         std::vector<Atom> atoms;
                         
@@ -958,14 +960,19 @@ failsafe: //this should use X11 screen as monitor
                         }
                         
                         for(auto atom : atoms) {
-                            std::cout<<WindowManager::GetAtomName(atom)<<std::endl;
+                            //std::cout<<WindowManager::GetAtomName(atom)<<std::endl;
+                            
                             if(atom == WindowManager::XA_Filelist)
                                 this->data->xdnd.filelist = true;
-                            else if(atom == WindowManager::XA_UTF8_STRING)
+                            
+                            if(atom == WindowManager::XA_UTF8_STRING)
                                 this->data->xdnd.utf8 = true;
                             else if(atom == WindowManager::XA_STRING)
                                 this->data->xdnd.string = true;
                         }
+                        
+                        this->data->xdnd.localpointer = this->IsLocalPointer();
+                        this->SwitchToWMPointers();
                     }
                     else if(event.xclient.message_type==WindowManager::XdndPosition) {
                         XClientMessageEvent m;
@@ -1006,8 +1013,6 @@ failsafe: //this should use X11 screen as monitor
 
                         if(!Input::IsDragging()) {
                             if(this->data->xdnd.filelist) {
-                                /*gge::Pointers.Hide();*/
-
                                 if(this->data->xdnd.requested || OS::GetEnvVar("XDG_CURRENT_DESKTOP") == "KDE") {
                                     auto &drag = Input::PrepareDrag();
                                     drag.AssumeData(*new FileData);
@@ -1020,11 +1025,12 @@ failsafe: //this should use X11 screen as monitor
                                                     this->data->handle, event.xclient.data.l[2]);
                                 }
                             }
-                            else if(this->data->xdnd.utf8 || this->data->xdnd.string) {
-                                /*gge::Pointers.Hide();*/
-
+                            
+                            if(this->data->xdnd.utf8 || this->data->xdnd.string) {
                                 if(this->data->xdnd.requested || OS::GetEnvVar("XDG_CURRENT_DESKTOP") == "KDE") {
-                                    Input::BeginDrag("");
+                                    auto &drag = Input::PrepareDrag();
+                                    drag.AddTextData("");
+                                    Input::StartDrag();
                                     Input::GetDragOperation().MarkAsOS();
                                 }
                                 else {
@@ -1037,35 +1043,37 @@ failsafe: //this should use X11 screen as monitor
                             this->data->xdnd.requested = true;
 
                         }
-                         //gge::Pointers.Hide();
                     }
                     else if(event.xclient.message_type == WindowManager::XdndLeave) {
                         cursorover = true;
 
                         Input::CancelDrag();
-                        //gge::Pointers.Show();
+                        if(this->data->xdnd.localpointer)
+                            SwitchToLocalPointers();
                     }
                     else if(event.xclient.message_type == WindowManager::XdndDrop) {
-                        std::cout<<"Drop"<<std::endl;
-                        
-                        this->data->xdnd.drop = true;
+                        //std::cout<<"Drop"<<std::endl;
+
+                        this->data->xdnd.drop = 0;
                         
                         if(this->data->xdnd.filelist) {
-                            /*gge::Pointers.Hide();*/
-
                             XConvertSelection(WindowManager::display, WindowManager::XdndSelection, 
                                               WindowManager::XA_Filelist, WindowManager::XA_PRIMARY, 
                                               this->data->handle, event.xclient.data.l[2]);
-                        }
-                        else if(this->data->xdnd.utf8 || this->data->xdnd.string) {
-                            /*gge::Pointers.Hide();*/
                             
+                            this->data->xdnd.drop++;
+                        }
+                        
+                        if(this->data->xdnd.utf8 || this->data->xdnd.string) {
                             XConvertSelection(WindowManager::display, WindowManager::XdndSelection, 
                                             WindowManager::XA_STRING, 
                                             WindowManager::XA_PRIMARY, this->data->handle, event.xclient.data.l[2]);
+                            
+                            this->data->xdnd.drop++;
                         }
                        
-                        //gge::Pointers.Show();
+                        if(this->data->xdnd.localpointer)
+                            SwitchToLocalPointers();
                     }
 				} // Client Message
 				break;
@@ -1079,17 +1087,12 @@ failsafe: //this should use X11 screen as monitor
                             int format;
                             
                             FileData *dragdata = nullptr;
-                            if(Input::IsDragging()) {
-                                if(Input::GetDragOperation().HasData(Resource::GID::File)) {
-                                    dragdata = dynamic_cast<FileData*>(&Input::GetDragOperation().GetData(Resource::GID::File));
-                                }
+                            if(Input::IsDragging() && Input::GetDragOperation().HasData(Resource::GID::File)) {
+                                dragdata = dynamic_cast<FileData*>(&Input::GetDragOperation().GetData(Resource::GID::File));
                             }
                             else {
                                 dragdata = new FileData();
                             }
-                            
-                            if(!dragdata)
-                                return;
                             
                             bytes = 0;
 
@@ -1129,6 +1132,18 @@ failsafe: //this should use X11 screen as monitor
                                     drag.AssumeData(*dragdata);
                                     Input::StartDrag();
                                     Input::GetDragOperation().MarkAsOS();
+                                    Input::GetDragOperation().DataReady();
+                                }
+                                else if(!Input::GetDragOperation().HasData(Resource::GID::File)) {
+                                    auto &drag = Input::GetDragOperation();
+                                    drag.AssumeData(*dragdata);
+                                    Input::GetDragOperation().DataReady();
+                                }
+                                else if(!Input::IsDragging() || !Input::GetDragOperation().HasData(Resource::GID::File)) {
+                                    delete dragdata;
+                                }
+                                else {
+                                    Input::GetDragOperation().DataReady();
                                 }
                             }
                         }
@@ -1151,26 +1166,32 @@ failsafe: //this should use X11 screen as monitor
                                 XFree(data);
                                 XDeleteProperty(WindowManager::display, this->data->handle, event.xselection.property);
                                 
-                                if(Input::IsDragging()) {
-                                    TextData *dragdata = nullptr;
-                                    if(Input::GetDragOperation().HasData(Resource::GID::Text)) {
-                                        dragdata = dynamic_cast<TextData*>(&Input::GetDragOperation().GetData(Resource::GID::Text));
-                                    }
-                                    
-                                    if(dragdata)
-                                        dragdata->SetText(tmp);
+                                if(Input::IsDragging() && Input::GetDragOperation().HasData(Resource::GID::Text)) {
+                                    auto &dragdata = dynamic_cast<TextData&>(Input::GetDragOperation().GetData(Resource::GID::Text));
+                                    dragdata.SetText(tmp);
+                                    Input::GetDragOperation().DataReady();
                                 }
                                 else {
-                                    Input::BeginDrag(tmp);
-                                    Input::GetDragOperation().MarkAsOS();
+                                    if(Input::IsDragging()) {
+                                        Input::GetDragOperation().AddTextData(tmp);
+                                        Input::GetDragOperation().DataReady();
+                                    }
+                                    else {
+                                        Input::BeginDrag(tmp);
+                                        Input::GetDragOperation().MarkAsOS();
+                                        Input::GetDragOperation().DataReady();
+                                    }
                                 }
                             }
                         }
                     }
-                    if(this->data->xdnd.drop) {
+                    if(this->data->xdnd.drop == 1) {
                         Input::Drop(mouselocation);
                         this->data->xdnd = decltype(this->data->xdnd)();
                     }
+                    else if(this->data->xdnd.drop)
+                        this->data->xdnd.drop--;
+                    
                     break;
                 
                 case EnterNotify:

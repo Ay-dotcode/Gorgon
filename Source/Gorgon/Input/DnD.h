@@ -49,7 +49,9 @@ namespace Gorgon { namespace Input {
      * 
      * If the data is coming from OS, do not trust it to be available until drop time. Even if it
      * is provided, it might be incomplete. Thus, re-check the data if it is arriving from the OS.
-     * You may check if the drag operation is coming from the OS using FromOS function of DragInfo.
+     * You may check if the drag operation is coming from the OS using IsFromOS function of DragInfo.
+     * Additionally, you should check IsDataReady function if you are to use the data before it
+     * is dropped. This function will return true if the data is really available to use.
      */
 
    
@@ -849,10 +851,24 @@ namespace Gorgon { namespace Input {
         
         /// Marks drag data as ready.
         void DataReady() {
+            std::cout<<"Ready!"<<std::endl;
             dataready = true;
         }
         
+        /// Check wheather the drag data is ready
+        bool IsDataReady() const {
+            return dataready;
+        }
         
+        /// For range based iteration
+        Containers::Collection<ExchangeData>::Iterator begin() {
+            return data.begin();
+        }
+        
+        /// For range based iteration
+        Containers::Collection<ExchangeData>::Iterator end() {
+            return data.end();
+        }
         
         /// Returns the data associated with the given type, throws runtime_error
         /// if data does not exists.
@@ -900,10 +916,9 @@ namespace Gorgon { namespace Input {
         }
         
         /// Returns whether the DnD operation is coming from OS.
-        bool FromOS() {
+        bool IsFromOS() {
             return os;
         }
-
         
         /// Destructor
         ~DragInfo() {

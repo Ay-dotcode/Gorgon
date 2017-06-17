@@ -60,29 +60,27 @@ int main() {
 	});
 
 	Input::DragStarted.Register([](Input::DragInfo &info) {
-		std::cout<<"Drag operation has started with ";
-		if(info.HasData(GID::Text)) {
-			std::cout<<info.GetData(GID::Text).Text()<<std::endl;
-		}
-		else if(info.HasData(GID::File)) {
-			std::cout<<info.GetData(GID::File).Text()<<std::endl;
-		}
-		else {
-			throw std::logic_error("A problem with data exchange.");
-		}
+		std::cout<<"Drag operation has started with: "<<std::endl;
+        
+        for(auto &data : info) {
+            std::cout<<"   "<<data.Name();
+            if(info.IsDataReady()) 
+                std::cout<<": "<<data.Text()<<std::endl;
+            else
+                std::cout<<": [Data not ready!]"<<std::endl;
+        }
 	});
 
 	Input::DragEnded.Register([](Input::DragInfo &info, bool status) {
-		std::cout<<"Drag operation has "<<(status ? "successfully finished":"failed")<<" with ";
-		if(info.HasData(GID::Text)) {
-			std::cout<<info.GetData(GID::Text).Text()<<std::endl;
-		}
-		else if(info.HasData(GID::File)) {
-			std::cout<<info.GetData(GID::File).Text()<<std::endl;
-		}
-		else {
-			throw std::logic_error("A problem with data exchange.");
-		}
+		std::cout<<"Drag operation has "<<(status ? "successfully finished":"failed")<<" with:"<<std::endl;
+        
+        for(auto &data : info) {
+            std::cout<<"   "<<data.Name();
+            if(info.IsDataReady()) 
+                std::cout<<": "<<data.Text()<<std::endl;
+            else
+                std::cout<<": [Data not ready!]"<<std::endl;
+        }
 	});
 
 	Input::DropTarget target;

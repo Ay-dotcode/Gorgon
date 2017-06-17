@@ -77,25 +77,34 @@ namespace Gorgon {
 
 					auto &drag = Input::PrepareDrag();
 					drag.AssumeData(*data);
-					Input::StartDrag();
                     Input::GetDragOperation().MarkAsOS();
+					Input::GetDragOperation().DataReady();
+					Input::StartDrag();
 
 					*pdwEffect = DROPEFFECT_MOVE;
 				}
-				else if(pDataObject->QueryGetData(&textformat) == S_OK) {
+				
+				if(pDataObject->QueryGetData(&textformat) == S_OK) {
 					islocal = parent->IsLocalPointer();
 					if(islocal)
 						parent->SwitchToWMPointers();
 
 					STGMEDIUM stgmed;
-					std::string name;
+					std::string textdata;
 					pDataObject->GetData(&textformat, &stgmed);
 					char *text=(char*)GlobalLock(stgmed.hGlobal);
 
-					name=text;
+					textdata=text;
 
-					Input::BeginDrag(name);
-                    Input::GetDragOperation().MarkAsOS();
+                    if(Input::IsDragging()) {
+                        auto &drag = Input::GetDragOperation();
+                        drag.AddTextData(textdata);
+                    }
+                    else {
+                        Input::BeginDrag(textdata);
+                        Input::GetDragOperation().MarkAsOS();
+                        Input::GetDragOperation().DataReady();
+                    }
 
 					GlobalUnlock(stgmed.hGlobal);
 					ReleaseStgMedium(&stgmed);
