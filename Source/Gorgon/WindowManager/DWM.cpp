@@ -31,6 +31,7 @@ namespace Gorgon {
 
 	namespace WindowManager {
 		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind);
+		std::vector<HGLOBAL> clipbuffers;
 
 		class GGEDropTarget : public IDropTarget {
 		public:
@@ -220,6 +221,14 @@ namespace Gorgon {
 							return DefWindowProc(handle, message, wParam, lParam);
 					}
 					break;
+
+					case WM_DESTROYCLIPBOARD:
+						for(auto g : WindowManager::clipbuffers)
+							GlobalFree(g);
+
+						WindowManager::clipbuffers.empty();
+
+						break;
 
 
 					case WM_SYSCOMMAND:
@@ -522,6 +531,34 @@ namespace Gorgon {
 		}
 		/// @endcond
 
+		//Modified from https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
+		std::string MByteToUnicode(const std::string &multiByteStr) {
+			// Get the required size of the buffer that receives the Unicode string. 
+			DWORD minSize;
+			minSize = MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, NULL, 0);
+
+			std::string ret;
+			ret.resize(minSize*2);
+
+			// Convert string from multi-byte to Unicode.
+			MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, (LPWSTR)&ret[0], minSize);
+
+			return ret;
+		}
+
+		//https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
+		std::string UnicodeToMByte(LPWSTR unicodeStr) {
+			// Get the required size of the buffer that receives the multiByte string. 
+			DWORD minSize;
+			minSize = WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, NULL, 0, NULL, FALSE);
+
+			std::string ret;
+			ret.resize(minSize);
+			
+			// Convert string from Unicode to multi-byte.
+			WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, &ret[0], minSize, NULL, FALSE);
+			return ret;
+		}
 
 		void init() {
 			defaultcursor=LoadCursor(NULL, IDC_ARROW);
@@ -564,6 +601,40 @@ namespace Gorgon {
 				else if(format == CF_TEXT || format == CF_UNICODETEXT) {
 					Containers::PushBackUnique(ret, Resource::GID::Text);
 				}
+				else {
+					/*std::cout<<"Unknown type: ";
+					switch(format) {
+						case CF_TEXT: std::cout<<"CF_TEXT"<<std::endl; break;
+						case CF_BITMAP: std::cout<<"CF_BITMAP"<<std::endl; break;
+						case CF_METAFILEPICT: std::cout<<"CF_METAFILEPICT"<<std::endl; break;
+						case CF_SYLK: std::cout<<"CF_SYLK"<<std::endl; break;
+						case CF_DIF: std::cout<<"CF_DIF"<<std::endl; break;
+						case CF_TIFF: std::cout<<"CF_TIFF"<<std::endl; break;
+						case CF_OEMTEXT: std::cout<<"CF_OEMTEXT"<<std::endl; break;
+						case CF_DIB: std::cout<<"CF_DIB"<<std::endl; break;
+						case CF_PALETTE: std::cout<<"CF_PALETTE"<<std::endl; break;
+						case CF_PENDATA: std::cout<<"CF_PENDATA"<<std::endl; break;
+						case CF_RIFF: std::cout<<"CF_RIFF"<<std::endl; break;
+						case CF_WAVE: std::cout<<"CF_WAVE"<<std::endl; break;
+						case CF_UNICODETEXT: std::cout<<"CF_UNICODETEXT"<<std::endl; break;
+						case CF_ENHMETAFILE: std::cout<<"CF_ENHMETAFILE"<<std::endl; break;
+						case CF_HDROP: std::cout<<"CF_HDROP"<<std::endl; break;
+						case CF_LOCALE: std::cout<<"CF_LOCALE"<<std::endl; break;
+						case CF_DIBV5: std::cout<<"CF_DIBV5"<<std::endl; break;
+						case CF_MAX: std::cout<<"CF_MAX"<<std::endl; break;
+						case CF_OWNERDISPLAY: std::cout<<"CF_OWNERDISPLAY"<<std::endl; break;
+						case CF_DSPTEXT: std::cout<<"CF_DSPTEXT"<<std::endl; break;
+						case CF_DSPBITMAP: std::cout<<"CF_DSPBITMAP"<<std::endl; break;
+						case CF_DSPMETAFILEPICT: std::cout<<"CF_DSPMETAFILEPICT"<<std::endl; break;
+						case CF_DSPENHMETAFILE: std::cout<<"CF_DSPENHMETAFILE"<<std::endl; break;
+						default: {
+							char name[256];
+							int l = GetClipboardFormatName(format, name, 254);
+							name[l] = 0;
+							std::cout<<name<<std::endl;
+						}
+					}*/
+				}
 			}
 
 			CloseClipboard();
@@ -571,32 +642,115 @@ namespace Gorgon {
 			return ret;
 		}
 
-		void SetClipboardText(const std::string &text) {
+		void SetClipboardText(const std::string &text, Resource::GID::Type type, bool unicode, bool append) {
 			if(OpenClipboard(NULL)) {
-				HGLOBAL clipbuffer;
-				char * buffer;
-				EmptyClipboard();
-				clipbuffer = GlobalAlloc(GMEM_DDESHARE, text.length()+1);
-				buffer = (char*)GlobalLock(clipbuffer);
-				strcpy_s(buffer, text.length()+1, text.c_str());
-				GlobalUnlock(clipbuffer);
-				SetClipboardData(CF_TEXT, clipbuffer);
+				if(!append)
+					EmptyClipboard();
+
+				if(type == Resource::GID::Text) {
+					char * buffer;
+					clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, text.length()+1));
+					auto clipbuffer = clipbuffers.back();
+
+					buffer = (char*)GlobalLock(clipbuffer);
+					strncpy_s(buffer, text.length()+1, text.c_str(), text.length());
+					buffer[text.length()] = 0;
+					GlobalUnlock(clipbuffer);
+
+					if(unicode) {
+						auto unicode = MByteToUnicode(text);
+
+						char *cbu;
+						clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, unicode.length()));
+						auto clipbuffer = clipbuffers.back();
+
+						cbu = (char*)GlobalLock(clipbuffer);
+						memcpy(cbu, unicode.c_str(), unicode.length());
+						GlobalUnlock(clipbuffer);
+
+						SetClipboardData(CF_UNICODETEXT, cbu);
+					}
+
+					SetClipboardData(CF_TEXT, clipbuffer);
+				}
+				else if(type == Resource::GID::HTML) {
+					auto htmltxt = 
+						"Version:0.9\r\n"
+						"StartHTML:00000097\r\n"
+						"EndHTML:"+String::PadStart(String::From(161+text.length()), 8, '0')+"\r\n"
+						"StartFragment:00000129\r\n"
+						"EndFragment:"+String::PadStart(String::From(129+text.length()), 8, '0')+"\r\n"
+						"<html><body><!--StartFragment-->"+text+"<!--EndFragment--></body></html>";
+
+					char * buffer;
+					clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, htmltxt.length()+1));
+					auto clipbuffer = clipbuffers.back();
+
+					buffer = (char*)GlobalLock(clipbuffer);
+					memcpy(buffer, htmltxt.c_str(), htmltxt.length());
+					buffer[htmltxt.length()] = 0;
+					GlobalUnlock(clipbuffer);
+
+					SetClipboardData(cf_html, clipbuffer);
+				}
 				CloseClipboard();
 			}
 		}
 		
-		std::string GetClipboardText() {
+		std::string GetClipboardText(Resource::GID::Type type) {
 			HANDLE clip;
 			if(OpenClipboard(NULL)) {
-				clip = GetClipboardData(CF_UNICODETEXT);
+				bool unicode = false;
+				if(type == Resource::GID::Text) {
+					unicode = true;
 
-				if(clip == nullptr)
-					clip = GetClipboardData(CF_TEXT);
+					clip = GetClipboardData(CF_UNICODETEXT);
+
+					if(clip == nullptr) {
+						unicode = false;
+						clip = GetClipboardData(CF_TEXT);
+					}
+				}
+				else if(type == Resource::GID::HTML) {
+					clip = GetClipboardData(cf_html);
+				}
 
 				if(clip == nullptr)
 					return "";
 
-				return std::string((char*)clip);
+				if(unicode) {
+					auto s = UnicodeToMByte((LPWSTR)clip);
+					return s;
+				}
+				else {
+					std::string s = (char*)clip;
+					if(type == Resource::GID::HTML && s.length() > 11) {
+						if(s.substr(0, 11) != "Version:0.9") goto bail;
+
+						auto p = s.find("StartFragment:");
+
+						if(p==s.npos) goto bail;
+
+						auto p2 = s.find("EndFragment:");
+
+						if(p2==s.npos) goto bail;
+
+						auto start = String::To<unsigned long>(s.substr(p+14, s.find_first_of('\n', p)));
+
+						if(start <= p2)
+							goto bail;
+
+						auto end = String::To<unsigned long>(s.substr(p2+12, s.find_first_of('\n', p2)));
+
+						if(end <= p2)
+							goto bail;
+
+						s = s.substr(start, end-start);
+					}
+
+					bail:
+					return s;
+				}
 			}
 			else {
 				return "";

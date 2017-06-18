@@ -16,7 +16,7 @@
 
 namespace Gorgon { 
 	
-	/// Contains string related functions and classes.
+	/// Contains string related functions and classes. This namespace is not yet utf8 aware.
 	namespace String {
 		
 		struct CaseInsensitiveLess {
@@ -334,7 +334,24 @@ namespace Gorgon {
 		}
 		/// @endcond
 
-		/// String replace that does not use regex. Works faster than regex variant.
+		/// Pads the string to the given number of characters from the start. This function is
+		/// not utf aware.
+		inline std::string PadStart(std::string str, std::size_t len, char pad = ' ') {
+			if(len > str.size())
+				str.insert(0, len - str.size(), pad);
+
+			return str;
+		}
+
+		/// Pads the string to the given number of characters from the start. This function is
+		/// not utf aware.
+		inline std::string PadEnd(std::string str, std::size_t len, char pad = ' ') {
+			if(len > str.size())
+				str.insert(str.end(), len - str.size(), pad);
+		}
+
+		/// String replace that does not use regex. Works faster than regex variant. This function is
+		/// not utf aware.
 		/// @param  str is the string to process
 		/// @param  find is the substrings to be replaced
 		/// @param  replace is the string to place instead of find. Can be empty string.
@@ -355,7 +372,8 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// Strips whitespace around the given string both from start and end.
+		/// Strips whitespace around the given string both from start and end. This function is
+		/// not utf aware.
 		/// @param  str is the string to process
 		/// @param  chars is the characters to be considered as whitespace
 		inline std::string Trim(std::string str, const std::string &chars=" \t\n\r") {
@@ -374,7 +392,8 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// Strips the whitespace from the start of a string.
+		/// Strips the whitespace from the start of a string. This function is
+		/// not utf aware.
 		/// @param  str is the string to process
 		/// @param  chars is the characters to be considered as whitespace
 		inline std::string TrimStart(std::string str, const std::string &chars=" \t\n\r") {
@@ -389,7 +408,8 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// Strips the whitespace at the end of a string.
+		/// Strips the whitespace at the end of a string. This function is
+		/// not utf aware.
 		/// @param  str is the string to process
 		/// @param  chars is the characters to be considered as whitespace
 		inline std::string TrimEnd(std::string str, const std::string &chars=" \t\n\r") {
@@ -400,7 +420,8 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// Converts the given string to lowercase.
+		/// Converts the given string to lowercase. This function is
+		/// not utf aware.
 		inline std::string ToLower(std::string str) {
 			for(auto it=str.begin();it!=str.end();++it) {
 				*it=tolower(*it);
@@ -409,7 +430,8 @@ namespace Gorgon {
 			return str;
 		}
 
-		/// Converts the given string to uppercase
+		/// Converts the given string to uppercase. This function is
+		/// not utf aware.
 		inline std::string ToUpper(std::string str) {
 			for(auto it=str.begin();it!=str.end();++it) {
 				*it=toupper(*it);

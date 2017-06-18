@@ -190,10 +190,17 @@ namespace Gorgon {
 		std::vector<Resource::GID::Type> GetClipboardFormats();
 
 		/// Returns the clipboard text. If there is no data or its incompatible with text, empty
-		/// string is returned. May require an existing window.
-		std::string GetClipboardText();
+		/// string is returned. May require an existing window. This function will prioritize Unicode
+		/// text if it exists. type refers to the clipboard type. Currently Text and HTML are supported.
+		std::string GetClipboardText(Resource::GID::Type type = Resource::GID::Text);
 		
-		/// Sets the clipboard text to given string. May require an existing window.
-		void SetClipboardText(const std::string &text);
+		/// Sets the clipboard text to given string. May require an existing window. Currently Text and HTML 
+		/// are supported. If append is set, instead of clearing the clipboard, it will add the given text to 
+		/// the list of clipboard data. This function will copy the text, thus is not suitable if the data is 
+		/// too large. If unicode is true, both unicode and regular text would be set to the given data.
+		/// If you wish to advertise non-unicode text, you should do it after setting unicode text by setting
+		/// unicode to false and append to true.
+		void SetClipboardText(const std::string &text, Resource::GID::Type type = Resource::GID::Text, 
+							  bool unicode = true, bool append = false);
 	}
 }
