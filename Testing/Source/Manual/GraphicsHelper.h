@@ -54,7 +54,7 @@ public:
 		sty.SetColor({0.6f, 1.f, 1.f});
 		sty.JustifyLeft();
 
-		sty.SetTabWidthInLetters(1.5f);
+		sty.SetTabWidthInLetters(6.f);
 		sty.SetParagraphSpacing(2);
 		sty.Print(l,
 				  helptext

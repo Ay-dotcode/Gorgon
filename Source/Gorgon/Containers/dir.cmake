@@ -4,5 +4,6 @@ SET(Local
 	Hashmap.h
 	Image.h
 	Iterator.h
+	Vector.h
 	Wave.h
 )

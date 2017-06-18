@@ -8,6 +8,7 @@
 #include "Utils/Assert.h"
 #include "Event.h"
 #include "Containers/Image.h"
+#include "Resource/GID.h"
 
 namespace Gorgon {
 	
@@ -177,6 +178,16 @@ namespace Gorgon {
 
 		/// Returns an identifier for the current context
 		intptr_t CurrentContext();
+
+		/// Returns the list of formats that is in the clipboard supported by the Gorgon Library.
+		/// Use GetAllClipboardFormats to get OS dependent clipboard format list. The following
+		/// list is the currently supported formats:
+		/// * Image_Data: This is a Graphics::Bitmap object, this can be constructed from PNG, JPG,
+		///               BMP, OS Bitmap formats (BMP, DIB), [Gorgon]Bitmap format which is copied
+		///               from Graphics::Bitmap. Use GetClipboardBitmap
+		/// * Text: Text data. Use GetClipboardText
+		/// * HTML: HTML data. Use GetClipboardText
+		std::vector<Resource::GID::Type> GetClipboardFormats();
 
 		/// Returns the clipboard text. If there is no data or its incompatible with text, empty
 		/// string is returned. May require an existing window.

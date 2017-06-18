@@ -18,7 +18,8 @@ namespace Gorgon {
 		namespace GID {
 			
 			/// Type to store GID information. This class is necessary to require explicit
-			/// cast from and to integer. It also allows String::From and printing to streams
+			/// cast from and to integer. It also allows String::From and printing to streams.
+			/// GIDs are not only for Resource, they are also used for data exchange.
 			class Type {
 			public:
 				/// Default constructor creates an empty type
@@ -49,17 +50,24 @@ namespace Gorgon {
 				/// For std::less
 				constexpr bool operator < (const Type &type) const { return type.value<value; }
 
+				/// Returns the module identifier
 				constexpr Byte Module() const {
                     return value>>24;
                 }
                 
+				/// Returns the object identifier
                 constexpr Byte Object() const {
                     return (value>>16) & 0xff;
                 }
                 
+				/// Returns the property part of the GID
                 constexpr Byte Property() const {
                     return value & 0xffff;
                 }
+
+				/// Return the name of a known GID. If this is an unknown GID, its ID will be
+				/// returned in hex format.
+				std::string Name() const;
 
             private:
 				uint32_t value;
@@ -125,6 +133,9 @@ namespace Gorgon {
 			/// Stores text data, no longer a resource
 			constexpr Type Text					{0x02010000};
 
+			/// HTML data, not a resource
+			constexpr Type HTML					{0x02010100};
+
 			/// Image resource
 			constexpr Type Image				{0x02020000};
 			/// Image properties
@@ -143,6 +154,9 @@ namespace Gorgon {
 			/// Data resource
 			constexpr Type Data					{0x02030000};
 			
+			constexpr Type Data_Names			{0x02030101};
+			constexpr Type Data_Name			{0x02030102};
+
 			constexpr Type Data_Text			{0x02030C01};
 			constexpr Type Data_Int				{0x02030C02};
 			constexpr Type Data_Float			{0x02030C03};
@@ -150,8 +164,6 @@ namespace Gorgon {
 			constexpr Type Data_Pointf			{0x02030C09};
 			constexpr Type Data_Rectangle		{0x02030C05};
 			constexpr Type Data_Link			{0x02030C07};
-			constexpr Type Data_Names			{0x02030101};
-			constexpr Type Data_Name			{0x02030102};
 			constexpr Type Data_Font			{0x03300C01};
 			constexpr Type Data_Color			{0x02030D02};
 			constexpr Type Data_Size			{0x02030D03};
@@ -253,6 +265,102 @@ namespace Gorgon {
 				out<<String::From(value);
 				
 				return out;
+			}
+
+			inline std::string Type::Name() const {
+				//use the following regex to translate list of gids to the following code: 
+				// constexpr Type ([^\s]+)\s*\{(0x[0-9A-Fa-f]+)\};
+				// case \2: return "\1";
+				switch(value) {
+					case 0x00000000: return "None";
+					case 0x000000FF: return "File";
+					case 0x030100FF: return "GameFile";
+					case 0x01010000: return "Folder";
+					case 0x01010101: return "Folder Names";
+					case 0x01010102: return "Folder Name";
+					case 0x01010103: return "Folder Props";
+					case 0x01020000: return "LinkNode";
+					case 0x01020010: return "LinkNode Target";
+					case 0x01030000: return "Null";
+					case 0x00000010: return "Guid";
+					case 0x00000011: return "SGuid";
+					case 0x00000012: return "Name";
+					case 0xF0030100: return "LZMA";
+					case 0xF0040100: return "FLAC";
+					case 0xF0030300: return "JPEG";
+					case 0xF0030400: return "PNG";
+					case 0x02010000: return "Text";
+					case 0x02010100: return "HTML";
+					case 0x02020000: return "Image";
+					case 0x02020101: return "Image Props";
+					case 0x02020102: return "Image Cmp Props";
+					case 0x02020501: return "Image Data";
+					case 0x02020601: return "Image Cmp Data";
+					case 0x02020502: return "Image Palette";
+					case 0x0202A100: return "Image NULL";
+					case 0x02030000: return "Data";
+					case 0x02030101: return "Data Names";
+					case 0x02030102: return "Data Name";
+					case 0x02030C01: return "Data Text";
+					case 0x02030C02: return "Data Int";
+					case 0x02030C03: return "Data Float";
+					case 0x02030C04: return "Data Point";
+					case 0x02030C09: return "Data Pointf";
+					case 0x02030C05: return "Data Rectangle";
+					case 0x02030C07: return "Data Link";
+					case 0x03300C01: return "Data Font";
+					case 0x02030D02: return "Data Color";
+					case 0x02030D03: return "Data Size";
+					case 0x02030D04: return "Data Bounds";
+					case 0x02030D05: return "Data Margin";
+					case 0x02030D06: return "Data Object";
+					case 0x03100000: return "Animation";
+					case 0x03110000: return "Animation Image";
+					case 0x03100101: return "Animation Durations";
+					case 0x03100102: return "Animation Names";
+					case 0x03100103: return "Animation Name";
+					case 0x03D10000: return "LegacyPointer";
+					case 0x03D10101: return "LegacyPointer Props";
+					case 0x03D20000: return "Pointer";
+					case 0x03D20101: return "Pointer Props";
+					case 0x03200000: return "Font";
+					case 0x03200101: return "Font Charmap";
+					case 0x03200102: return "Font Names";
+					case 0x03200103: return "Font Name";
+					case 0x03210000: return "Font Image";
+					case 0x03200804: return "Font Props";
+					case 0x03200805: return "Font Charmap II";
+					case 0x03200806: return "Font BitmapProps";
+					case 0x03300000: return "FontTheme";
+					case 0x03301001: return "FontTheme Font";
+					case 0x03301002: return "FontTheme Shadow";
+					case 0x03300804: return "FontTheme Props";
+					case 0x04010000: return "Sound";
+					case 0x04010101: return "Sound Props";
+					case 0x04010801: return "Sound Wave";
+					case 0x04010802: return "Sound Cmp Wave";
+					case 0x04010803: return "Sound Cmp Props";
+					case 0x04010104: return "Sound Fmt";
+					case 0x04010105: return "Sound Channels";
+					case 0x04020000: return "Blob";
+					case 0x04020101: return "Blob Props";
+					case 0x04020801: return "Blob Data";
+					case 0x04020802: return "Blob Cmp Data";
+					case 0x05110000: return "Line";
+					case 0x05110101: return "Line Props";
+					case 0x05110102: return "Line Props II";
+					case 0x05120000: return "Rectangle";
+					case 0x05120101: return "Rectangle Props";
+					case 0x05120102: return "Rectangle Props II";
+					case 0x05170000: return "MaskedObject";
+					case 0x05180000: return "TintedObject";
+					case 0x05180101: return "TintedObject Props";
+					case 0x05190000: return "ScalableObject";
+					case 0x05190101: return "ScalableObject Props";
+					case 0x051A0000: return "StackedObject";
+					case 0x051A0101: return "StackedObject Props";
+					default: return String::From(*this);
+				}
 			}
 		}
 	}

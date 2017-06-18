@@ -15,6 +15,8 @@
 
 #include "../Input/DnD.h"
 
+#include "../Containers/Vector.h"
+
 #include <windows.h>
 #include <ShlObj.h>
 
@@ -474,6 +476,7 @@ namespace Gorgon {
 		/// @cond INTERNAL
 		HCURSOR defaultcursor;
 		extern intptr_t context;
+		UINT cf_png, cf_jpg, cf_jpeg, cf_g_bmp, cf_html;
 
 		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind) {
 			POINT pnt;
@@ -524,6 +527,48 @@ namespace Gorgon {
 			defaultcursor=LoadCursor(NULL, IDC_ARROW);
 
 			Monitor::Refresh(true);
+
+			cf_png = RegisterClipboardFormat("PNG");
+			cf_jpg = RegisterClipboardFormat("JPEG");
+			cf_jpeg = RegisterClipboardFormat("JPG");
+			cf_jpeg = RegisterClipboardFormat("HTML");
+			cf_g_bmp = RegisterClipboardFormat("[Gorgon]Bitmap");
+			cf_html = RegisterClipboardFormat("HTML Format");
+		}
+
+		std::vector<Resource::GID::Type> GetClipboardFormats() {
+			int format = 0;
+
+			std::vector<Resource::GID::Type> ret;
+
+			if(!OpenClipboard(NULL))
+				return ret;
+
+			while(true) {
+				format = EnumClipboardFormats(format);
+				
+				if(!format)
+					break;
+
+				if(format == cf_png  || 
+				   format == cf_jpg  ||
+				   format == cf_jpeg ||
+				   format == cf_g_bmp||
+				   format == CF_DIB
+				  ) {
+					Containers::PushBackUnique(ret, Resource::GID::Image_Data);
+				}
+				else if(format == cf_html) {
+					Containers::PushBackUnique(ret, Resource::GID::HTML);
+				}
+				else if(format == CF_TEXT || format == CF_UNICODETEXT) {
+					Containers::PushBackUnique(ret, Resource::GID::Text);
+				}
+			}
+
+			CloseClipboard();
+
+			return ret;
 		}
 
 		void SetClipboardText(const std::string &text) {
@@ -543,7 +588,11 @@ namespace Gorgon {
 		std::string GetClipboardText() {
 			HANDLE clip;
 			if(OpenClipboard(NULL)) {
-				clip = GetClipboardData(CF_TEXT);
+				clip = GetClipboardData(CF_UNICODETEXT);
+
+				if(clip == nullptr)
+					clip = GetClipboardData(CF_TEXT);
+
 				if(clip == nullptr)
 					return "";
 
