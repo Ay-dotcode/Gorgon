@@ -348,6 +348,8 @@ namespace Gorgon {
 		inline std::string PadEnd(std::string str, std::size_t len, char pad = ' ') {
 			if(len > str.size())
 				str.insert(str.end(), len - str.size(), pad);
+            
+            return str;
 		}
 
 		/// String replace that does not use regex. Works faster than regex variant. This function is

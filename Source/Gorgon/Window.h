@@ -326,6 +326,7 @@ namespace Gorgon {
 		/// Returns the minimum size required to fit any window inside.
 		static Geometry::Size GetMinimumRequiredSize();
         
+        /// Pointer system to be used within the window
         Graphics::PointerStack Pointers; 
 
 		/// @name Events 

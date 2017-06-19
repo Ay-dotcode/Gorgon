@@ -25,6 +25,8 @@ int main() {
 	app.wind.Add(l2);
 
 	std::vector<Resource::GID::Type> list;
+    
+    WindowManager::GetClipboardText();
 
 	app.wind.CharacterEvent.Register([&](Input::Keyboard::Char key) {
 		if(key == 0x20) {

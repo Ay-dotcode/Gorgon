@@ -87,6 +87,7 @@ namespace Gorgon {
 		Atom WM_DELETE_WINDOW;
 		Atom XA_STRING;
         Atom XA_UTF8_STRING;
+        Atom XA_TEXT_HTML;
 		Atom XA_ATOM;
 		Atom XA_CARDINAL;
 		Atom XA_NET_FRAME_EXTENTS;
@@ -105,6 +106,7 @@ namespace Gorgon {
         Atom XA_STRUT;
         Atom XA_NET_WM_ICON;
         Atom XA_PRIMARY;
+        Atom XA_CP_PROP;
         Atom XdndAware;
         Atom XdndSelection;
         Atom XdndEnter;
@@ -233,6 +235,9 @@ namespace Gorgon {
             XA_NET_WM_STATE_HIDDEN  = XInternAtom(display, "_NET_WM_STATE_HIDDEN", False);
             XA_NET_ACTIVE_WINDOW = XInternAtom(display, "_NET_ACTIVE_WINDOW", False);
             
+            XA_TEXT_HTML = XInternAtom(display, "text/html", False);
+            XA_CP_PROP = XInternAtom(display, "GORGON_CP_PROP", False);
+            
             XA_WM_NAME  = XInternAtom(display, "WM_NAME", False);
             XA_NET_WM_NAME  = XInternAtom(display, "_NET_WM_NAME", False);
             XA_NET_WM_STATE = XInternAtom(display, "_NET_WM_STATE", False);
@@ -278,7 +283,13 @@ namespace Gorgon {
         }
 		//Clipboard related
 		
-		std::string GetClipboardText() {
+		std::vector<Resource::GID::Type> GetClipboardFormats() {
+            std::vector<Resource::GID::Type> ret;
+            
+            return ret;
+        }
+		
+		std::string GetClipboardText(Resource::GID::Type type) {
 			::Window owner=XGetSelectionOwner(display, XA_CLIPBOARD);
 			if(!owner)
 				return "";
@@ -299,13 +310,45 @@ namespace Gorgon {
 #endif
 			}
 			
-			XEvent event;
+			Atom request = XA_STRING;
 			
-			XConvertSelection (display, XA_CLIPBOARD, XA_STRING, Gorgon::internal::None, windowhandle, CurrentTime);
+			XEvent event;
+            
+            XConvertSelection (display, XA_CLIPBOARD, XA_TARGETS, XA_CP_PROP, windowhandle, CurrentTime);
+            XFlush(display);
+            
+            XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
+            
+            if(event.xselection.property == XA_CP_PROP) {
+                //process targets
+				Atom type;
+				unsigned long len, bytes, dummy;
+				unsigned char *data;
+				int format;
+
+				XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, 0, 0, XA_ATOM, &type, &format, &len, &bytes, &data);
+				
+				if(bytes) {
+					XGetWindowProperty (display, windowhandle, 
+							XA_CP_PROP, 0,bytes,0,
+							XA_ATOM, &type, &format,
+							&len, &dummy, &data);
+					
+                    Atom *atoms = (Atom*)data;
+                    
+                    for(int i=0;i<bytes/4;i++) {
+                        std::cout<<GetAtomName(atoms[i])<<std::endl;
+                    }
+					
+					XFree(data);
+				}
+            }
+			
+			XConvertSelection (display, XA_CLIPBOARD, request, Gorgon::internal::None, windowhandle, CurrentTime);
 			XFlush(display);
 			
 			XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
-			if (event.xselection.property == XA_STRING) {
+			if (event.xselection.property == request) {
 				Atom type;
 				unsigned long len, bytes, dummy;
 				unsigned char *data;
@@ -324,13 +367,12 @@ namespace Gorgon {
 
 					return tmp;
 				}
-				
 			}
 			
 			return "";
 		}
 
-		void SetClipboardText(const std::string &text) {
+		void SetClipboardText(const std::string &text, Resource::GID::Type type, bool unicode, bool append) {
 			::Window windowhandle=0;
 			for(auto &w : Window::Windows) {
 				auto data=internal::getdata(w);

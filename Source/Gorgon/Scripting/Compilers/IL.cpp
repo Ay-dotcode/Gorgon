@@ -28,7 +28,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 	* Following is a simple assignment that performs `var = 3 + i`
 	* @code
 	* #var = 3 + i
-	* ."1"   = fms"+" i"3" "i"
+	* ."1"   = fms"+" i"3" ?"i"
 	* $"var" = ."1"
 	* @endcode
 	* 
