@@ -12,6 +12,7 @@
 
 #include "../Encoding/URI.h"
 #include "../Input/DnD.h"
+#include "../Containers/Vector.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -286,13 +287,9 @@ namespace Gorgon {
 		std::vector<Resource::GID::Type> GetClipboardFormats() {
             std::vector<Resource::GID::Type> ret;
             
-            return ret;
-        }
-		
-		std::string GetClipboardText(Resource::GID::Type type) {
 			::Window owner=XGetSelectionOwner(display, XA_CLIPBOARD);
 			if(!owner)
-				return "";
+				return ret;
 			
 			::Window windowhandle=0;
 			for(auto &w : Window::Windows) {
@@ -304,13 +301,11 @@ namespace Gorgon {
 			}
 			if(windowhandle==0) {
 #ifdef NDEBUG
-				return "";
+				return ret;
 #else
 				throw std::runtime_error("Cannot copy without a window, if necessary create a hidden window");
 #endif
 			}
-			
-			Atom request = XA_STRING;
 			
 			XEvent event;
             
@@ -337,33 +332,113 @@ namespace Gorgon {
                     Atom *atoms = (Atom*)data;
                     
                     for(int i=0;i<bytes/4;i++) {
-                        std::cout<<GetAtomName(atoms[i])<<std::endl;
+                        if(atoms[i] == XA_STRING || atoms[i] == XA_UTF8_STRING)
+                            Containers::PushBackUnique(ret, Resource::GID::Text);
+                        else if(atoms[i] == XA_TEXT_HTML)
+                            Containers::PushBackUnique(ret, Resource::GID::HTML);
+                        else
+                            std::cout<<GetAtomName(atoms[i])<<std::endl;
                     }
 					
 					XFree(data);
+                    XDeleteProperty(display, windowhandle, XA_CP_PROP);
 				}
             }
 			
-			XConvertSelection (display, XA_CLIPBOARD, request, Gorgon::internal::None, windowhandle, CurrentTime);
-			XFlush(display);
+            
+            return ret;
+        }
+		
+		std::string GetClipboardText(Resource::GID::Type requesttype) {
+			::Window owner=XGetSelectionOwner(display, XA_CLIPBOARD);
+			if(!owner)
+				return "";
 			
-			XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
-			if (event.xselection.property == request) {
+			::Window windowhandle=0;
+			for(auto &w : Window::Windows) {
+				auto data=internal::getdata(w);
+				if(data && data->handle) {
+					windowhandle=data->handle;
+					break;
+				}
+			}
+			if(windowhandle==0) {
+#ifdef NDEBUG
+				return "";
+#else
+				throw std::runtime_error("Cannot copy without a window, if necessary create a hidden window");
+#endif
+			}
+			
+			Atom request = 0;
+			
+			XEvent event;
+            
+            XConvertSelection (display, XA_CLIPBOARD, XA_TARGETS, XA_CP_PROP, windowhandle, CurrentTime);
+            XFlush(display);
+            
+            XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
+            
+            if(event.xselection.property == XA_CP_PROP) {
+                //process targets
 				Atom type;
 				unsigned long len, bytes, dummy;
 				unsigned char *data;
 				int format;
 
-				XGetWindowProperty(display, windowhandle, XA_STRING, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+				XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, 0, 0, XA_ATOM, &type, &format, &len, &bytes, &data);
 				
 				if(bytes) {
 					XGetWindowProperty (display, windowhandle, 
-							XA_STRING, 0,bytes,0,
+							XA_CP_PROP, 0,bytes,0,
+							XA_ATOM, &type, &format,
+							&len, &dummy, &data);
+					
+                    Atom *atoms = (Atom*)data;
+                    
+                    for(int i=0;i<bytes/4;i++) {
+                        if(requesttype == Resource::GID::Text && atoms[i] == XA_UTF8_STRING)  {
+                            request = XA_UTF8_STRING;
+                            break; //perfect match no need to continue
+                        }
+                        else if(requesttype == Resource::GID::Text && atoms[i] == XA_STRING) {
+                            request = XA_STRING;
+                            //utf8 is better, search for it
+                        }
+                        else if(requesttype == Resource::GID::HTML && atoms[i] == XA_TEXT_HTML) {
+                            request = XA_TEXT_HTML;
+                            break; //perfect match no need to continue
+                        }
+                    }
+					
+					XFree(data);
+                    XDeleteProperty(display, windowhandle, XA_CP_PROP);
+				}
+            }
+            
+            if(request == 0) return "";
+			
+			XConvertSelection (display, XA_CLIPBOARD, request, XA_CP_PROP, windowhandle, CurrentTime);
+			XFlush(display);
+			
+			XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
+			if (event.xselection.property == XA_CP_PROP) {
+				Atom type;
+				unsigned long len, bytes, dummy;
+				unsigned char *data;
+				int format;
+
+				XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+				
+				if(bytes) {
+					XGetWindowProperty (display, windowhandle, 
+							XA_CP_PROP, 0,bytes,0,
 							AnyPropertyType, &type, &format,
 							&len, &dummy, &data);
 					
 					std::string tmp((char*)data, bytes);
 					XFree(data);
+                    XDeleteProperty(display, windowhandle, XA_CP_PROP);
 
 					return tmp;
 				}

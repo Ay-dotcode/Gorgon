@@ -187,12 +187,16 @@ namespace Gorgon {
 		///               from Graphics::Bitmap. Use GetClipboardBitmap
 		/// * Text: Text data. Use GetClipboardText
 		/// * HTML: HTML data. Use GetClipboardText
+        /// This function might hang the program if the owner of the clipboard does not respond.
+        /// In the future, there might be an asynchronous version of this function.
 		std::vector<Resource::GID::Type> GetClipboardFormats();
 
 		/// Returns the clipboard text. If there is no data or its incompatible with text, empty
 		/// string is returned. May require an existing window. This function will prioritize Unicode
 		/// text if it exists. type refers to the clipboard type. Currently Text and HTML are supported.
-		std::string GetClipboardText(Resource::GID::Type type = Resource::GID::Text);
+        /// This function might hang the program if the owner of the clipboard does not respond.
+        /// In the future, there might be an asynchronous version of this function.
+        std::string GetClipboardText(Resource::GID::Type type = Resource::GID::Text);
 		
 		/// Sets the clipboard text to given string. May require an existing window. Currently Text and HTML 
 		/// are supported. If append is set, instead of clearing the clipboard, it will add the given text to 
