@@ -1,6 +1,7 @@
 ﻿#include "GraphicsHelper.h"
 
 #include <Gorgon/UI/Components.h>
+#include <regex>
 
 
 void Init();
@@ -10,8 +11,7 @@ std::string helptext =
 	"esc\tClose\n"
 	"space\tList formats\n"
 	"1-9\tShow data\n"
-	"t\tCopy text, from console\n"
-	"h\tCopy html, from console\n"
+	"t, h, u\tCopy text, html, url from console\n"
 ;
 
 
@@ -47,20 +47,31 @@ int main() {
 		}
 		else if(key > '0' && key < '1'+list.size()) {
 			auto fmt = list[key-'1'];
-			if(fmt == Resource::GID::Text || fmt == Resource::GID::HTML) {
+			if(fmt == Resource::GID::Text || fmt == Resource::GID::HTML || fmt == Resource::GID::URL) {
 				l2.Clear();
 				app.sty.Print(l2, WindowManager::GetClipboardText(fmt), 100, 100);
 			}
 		}
 		else if(key == 't') {
-			std::string s;
+			std::string s = "sasdfasfd";
 			std::getline(std::cin, s);
 			WindowManager::SetClipboardText(s);
 		}
 		else if(key == 'h') {
-			std::string s;
+			std::string s = "<b>asdf</b> aa";
 			std::getline(std::cin, s);
 			WindowManager::SetClipboardText(s, Resource::GID::HTML);
+            std::regex tags("<[^<]*>");
+            std::string output;
+
+            std::regex_replace(std::back_inserter(output), s.begin(), s.end(), tags, "");
+            
+			WindowManager::SetClipboardText(output, Resource::GID::Text, true, true);
+		}
+		else if(key == 'u') {
+			std::string s;
+			std::getline(std::cin, s);
+			WindowManager::SetClipboardText(s, Resource::GID::URL);
 			WindowManager::SetClipboardText(s, Resource::GID::Text, true, true);
 		}
 		else if(key == 'H') {

@@ -644,8 +644,9 @@ namespace Gorgon {
 
 		void SetClipboardText(const std::string &text, Resource::GID::Type type, bool unicode, bool append) {
 			if(OpenClipboard(NULL)) {
-				if(!append)
+				if(!append) {
 					EmptyClipboard();
+				}
 
 				if(type == Resource::GID::Text) {
 					char * buffer;

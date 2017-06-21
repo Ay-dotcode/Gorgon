@@ -19,6 +19,17 @@ namespace Gorgon { namespace Graphics {
 				else
 					return b;
 			}
+			
+			if(b == 255) {
+				++it;
+                if(it == end) return 0xfffd;
+				Byte b2 = *it;
+                
+                if(b2 == 254) return 0; //bom
+                
+                --it;
+                return 0xfffd;
+            }
 	
 			if((b & 0b11100000) == 0b11000000) {
 				++it;

@@ -135,6 +135,9 @@ namespace Gorgon {
 
 			/// HTML data, not a resource
 			constexpr Type HTML					{0x02010100};
+            
+			/// URL data, not a resource
+			constexpr Type URL					{0x02010200};
 
 			/// Image resource
 			constexpr Type Image				{0x02020000};
@@ -291,6 +294,7 @@ namespace Gorgon {
 					case 0xF0030400: return "PNG";
 					case 0x02010000: return "Text";
 					case 0x02010100: return "HTML";
+					case 0x02010200: return "URL";
 					case 0x02020000: return "Image";
 					case 0x02020101: return "Image Props";
 					case 0x02020102: return "Image Cmp Props";
