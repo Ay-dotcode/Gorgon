@@ -446,6 +446,10 @@ namespace Gorgon {
                     Containers::PushBackUnique(ret, Resource::GID::URL);
                 else if(atom == XA_PNG || atom == XA_JPG || atom == XA_BMP)
                     Containers::PushBackUnique(ret, Resource::GID::Image_Data);
+                else if(atom == XA_Filelist) {
+                    Containers::PushBackUnique(ret, Resource::GID::FileList);
+                    Containers::PushBackUnique(ret, Resource::GID::URIList);
+                }
                 else
                     std::cout<<GetAtomName(atom)<<std::endl;
             }
@@ -598,6 +602,110 @@ namespace Gorgon {
 			
 			XSetSelectionOwner(display, XA_CLIPBOARD, windowhandle, CurrentTime);
 			XFlush(display);
+		}
+		
+		std::vector<std::string> GetClipboardList(Resource::GID::Type requesttype) {
+            std::vector<std::string> ret;
+            
+			::Window owner=XGetSelectionOwner(display, XA_CLIPBOARD);
+			if(!owner)
+				return ret;
+			
+			::Window windowhandle = getanywindow();
+			if(windowhandle==0) {
+				return ret;
+			}
+			
+			Atom request = 0;
+			
+			XEvent event;
+            
+            auto list = getclipboardformats();
+            for(auto atom : list) {
+                if((requesttype == Resource::GID::FileList || requesttype == Resource::GID::URIList) && atom == XA_Filelist)  {
+                    request = XA_Filelist;
+                    break; //perfect match no need to continue
+                }
+            }
+            
+            if(request == 0) return ret;
+            
+            
+			//check if we own the clipboard
+			for(auto &w : Window::Windows) {
+				auto data=internal::getdata(w);
+				if(data && data->handle == owner) {
+					//we are the owner!
+                    
+                    //get the data from our own buffer and be done with it
+                    for(auto &d : clipboard_entries) {
+                        if(d.type == request) {
+                            if( d.type == WindowManager::XA_Filelist ) {
+                                //todo
+                                //return d.data->GetData<std::string>();
+                            }
+                            else {
+                                return ret;
+                            }
+                        }
+                    }
+                    
+                    return ret;
+				}
+			}
+			
+			XConvertSelection (display, XA_CLIPBOARD, request, XA_CP_PROP, windowhandle, CurrentTime);
+			XFlush(display);
+			
+			XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
+			if (event.xselection.property == XA_CP_PROP) {
+				Atom type;
+				unsigned long len, bytes, dummy;
+				unsigned char *data;
+				int format;
+
+				XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+				
+				if(bytes) {
+					XGetWindowProperty (display, windowhandle, 
+							XA_CP_PROP, 0,bytes,0,
+							AnyPropertyType, &type, &format,
+							&len, &dummy, &data);
+
+                    
+                    int p=0;
+                    for(int i=0;i<(int)len+1;i++) {
+                        if(i==(int)len || (char)data[i]=='\n') {
+                            if(i-p>1) {
+                                std::string s((char*)(data+p), (int)(i-p));
+                                if(requesttype == Resource::GID::FileList) {
+                                    if(s.length()>6 && s.substr(0, 7)=="file://") 
+                                        s=s.substr(7);
+                                    else
+                                        continue;
+                                    
+                                    if(s[s.length()-1]=='\r')
+                                        s.resize(s.length()-1);
+                                }
+                                else if(requesttype == Resource::GID::URIList) {
+                                    if(s[s.length()-1]=='\r')
+                                        s.resize(s.length()-1);
+                                }
+                                
+                                ret.push_back(Encoding::URIDecode(s));
+                                p=i+1;
+                            }
+                        }
+                    }
+                    
+					XFree(data);
+                    XDeleteProperty(display, windowhandle, XA_CP_PROP);
+
+					return ret;
+				}
+			}
+			
+			return ret;
 		}
 	
 		//Monitor Related
