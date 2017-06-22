@@ -206,5 +206,11 @@ namespace Gorgon {
 		/// unicode to false and append to true.
 		void SetClipboardText(const std::string &text, Resource::GID::Type type = Resource::GID::Text, 
 							  bool unicode = true, bool append = false);
+		
+		/// Returns a list of strings from the clipboard. If FileList is supplied, it will specifically be
+		/// files copied from clipboard. If your application can handle remote resources, it would be
+		/// better to use URIList, as URIList can contain list of any resources, including internet
+		/// sources like HTTP/FTP/SFTP. 
+		std::vector<std::string> GetClipboardList(Resource::GID::Type type = Resource::GID::FileList);
 	}
 }

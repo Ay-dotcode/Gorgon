@@ -134,10 +134,16 @@ namespace Gorgon {
 			constexpr Type Text					{0x02010000};
 
 			/// HTML data, not a resource
-			constexpr Type HTML					{0x02010100};
+			constexpr Type HTML					{0x02010101};
             
 			/// URL data, not a resource
-			constexpr Type URL					{0x02010200};
+			constexpr Type URL					{0x02010102};
+            
+			/// List of local files, not a resource
+			constexpr Type FileList				{0x02010103};
+
+			/// List of URIs, not a resource
+			constexpr Type URIList				{0x02010104};
 
 			/// Image resource
 			constexpr Type Image				{0x02020000};
@@ -173,6 +179,7 @@ namespace Gorgon {
 			constexpr Type Data_Bounds			{0x02030D04};
 			constexpr Type Data_Margin			{0x02030D05};
 			constexpr Type Data_Object			{0x02030D06};
+
             /// @}
 
 			/// @name Gaming resources
@@ -293,8 +300,10 @@ namespace Gorgon {
 					case 0xF0030300: return "JPEG";
 					case 0xF0030400: return "PNG";
 					case 0x02010000: return "Text";
-					case 0x02010100: return "HTML";
-					case 0x02010200: return "URL";
+					case 0x02010101: return "HTML";
+					case 0x02010102: return "URL";
+					case 0x02010103: return "File list";
+					case 0x02010104: return "URI list";
 					case 0x02020000: return "Image";
 					case 0x02020101: return "Image Props";
 					case 0x02020102: return "Image Cmp Props";

@@ -51,6 +51,17 @@ int main() {
 				l2.Clear();
 				app.sty.Print(l2, WindowManager::GetClipboardText(fmt), 100, 100);
 			}
+			else if(fmt == Resource::GID::FileList || fmt == Resource::GID::URIList) {
+				l2.Clear();
+
+				auto list = WindowManager::GetClipboardList(fmt);
+
+				int y = 100;
+				for(const auto &s : list) {
+					app.sty.Print(l2, s, 100, y);
+					y += app.sty.GetLineSpacingPixels();
+				}
+			}
 		}
 		else if(key == 't') {
 			std::string s = "sasdfasfd";

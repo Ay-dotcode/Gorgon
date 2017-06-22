@@ -573,20 +573,37 @@ namespace Gorgon {
 			cf_html = RegisterClipboardFormat("HTML Format");
 		}
 
+		///this function opens the clipboard but not closes it, you must ensure the clipboard
+		///is closed, otherwise, clipboard for the entire system will be locked down until the
+		///application is closed.
+		std::vector<int> getclipboardformats() {
+			std::vector<int> ret;
+
+			if(!OpenClipboard(NULL))
+				return ret;
+
+			int format = 0;
+
+			while(true) {
+				format = EnumClipboardFormats(format);
+
+				if(!format)
+					break;
+
+				ret.push_back(format);
+			}
+
+			return ret;
+		}
+
 		std::vector<Resource::GID::Type> GetClipboardFormats() {
 			int format = 0;
 
 			std::vector<Resource::GID::Type> ret;
 
-			if(!OpenClipboard(NULL))
-				return ret;
+			auto formats = getclipboardformats();
 
-			while(true) {
-				format = EnumClipboardFormats(format);
-				
-				if(!format)
-					break;
-
+			for(auto format : formats) {				
 				if(format == cf_png  || 
 				   format == cf_jpg  ||
 				   format == cf_jpeg ||
@@ -598,11 +615,15 @@ namespace Gorgon {
 				else if(format == cf_html) {
 					Containers::PushBackUnique(ret, Resource::GID::HTML);
 				}
+				else if(format == CF_HDROP) {
+					Containers::PushBackUnique(ret, Resource::GID::FileList);
+					Containers::PushBackUnique(ret, Resource::GID::URIList);
+				}
 				else if(format == CF_TEXT || format == CF_UNICODETEXT) {
 					Containers::PushBackUnique(ret, Resource::GID::Text);
 				}
 				else {
-					/*std::cout<<"Unknown type: ";
+					std::cout<<"Unknown type: ";
 					switch(format) {
 						case CF_TEXT: std::cout<<"CF_TEXT"<<std::endl; break;
 						case CF_BITMAP: std::cout<<"CF_BITMAP"<<std::endl; break;
@@ -633,7 +654,7 @@ namespace Gorgon {
 							name[l] = 0;
 							std::cout<<name<<std::endl;
 						}
-					}*/
+					}
 				}
 			}
 
@@ -756,6 +777,62 @@ namespace Gorgon {
 			else {
 				return "";
 			}
+		}
+
+		std::vector<std::string> GetClipboardList(Resource::GID::Type type) {
+			std::vector<std::string> ret;
+
+			if(!OpenClipboard(NULL))
+				return ret;
+
+			if(type == Resource::GID::FileList) {
+				auto clip = GetClipboardData(CF_HDROP);
+
+				if(clip != nullptr) {
+
+					DROPFILES *fdata=(DROPFILES*)GlobalLock(clip);
+
+					wchar_t *widetext=(wchar_t*)((char*)(fdata)+fdata->pFiles);
+
+					std::string name;
+					while(widetext[0]) {
+						name.resize(wcslen(widetext));
+
+						wcstombs(&name[0], widetext, wcslen(widetext)+1);
+						OS::winslashtonormal(name);
+						ret.push_back(name);
+
+						widetext+=wcslen(widetext)+1;
+					}
+				}
+			}
+			else if(type == Resource::GID::URIList) {
+				//try other options first
+
+				auto clip = GetClipboardData(CF_HDROP);
+
+				if(clip != nullptr) {
+
+					DROPFILES *fdata=(DROPFILES*)GlobalLock(clip);
+
+					wchar_t *widetext=(wchar_t*)((char*)(fdata)+fdata->pFiles);
+
+					std::string name;
+					while(widetext[0]) {
+						name.resize(wcslen(widetext));
+
+						wcstombs(&name[0], widetext, wcslen(widetext)+1);
+						OS::winslashtonormal(name);
+						ret.push_back("file://" + name);
+
+						widetext+=wcslen(widetext)+1;
+					}
+				}
+			}
+
+			CloseClipboard();
+
+			return ret;
 		}
 
 		//Monitor Related
