@@ -26,5 +26,13 @@ Package/
 codelite/
 Docs/xml
 *.gen
+
+# produced by doxygen
+*.db
+
+# ignore backup files
+*.orig
+*.backup
+
 syntax: regexp
 .*\.kdev4(_.*)?

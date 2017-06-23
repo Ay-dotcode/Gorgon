@@ -11,6 +11,7 @@ SET(ManualTests
 	PDParser
 	Window
 	Font
+	StyledFontRenderer
 )
 
 SET(UnitTests
