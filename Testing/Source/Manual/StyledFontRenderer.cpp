@@ -1,68 +1,44 @@
-#include <Gorgon/Main.h>
+//Copy Resources/Testing/Victoria to Testing/Runtime (in VS you need to fix running directory)
+
 #include <Gorgon/Window.h>
-#include <Gorgon/Graphics/TextureAnimation.h>
-#include <Gorgon/Graphics/Layer.h>
+#include <Gorgon/Main.h>
+#include "Gorgon/Graphics/Bitmap.h"
+#include "Gorgon/Graphics/Layer.h"
 #include <Gorgon/Resource/File.h>
-#include <Gorgon/Resource/Animation.h>
+#include <Gorgon/Resource/Font.h>
+
 
 using Gorgon::Window;
 using Gorgon::Geometry::Point;
 namespace Graphics = Gorgon::Graphics;
+namespace Input = Gorgon::Input;
 namespace Resource = Gorgon::Resource;
 
-int main() {
-    Gorgon::Initialize("anim-test");
-        
-	Window wind({800, 600}, "animtest", "Animation test", true);
-	Graphics::Initialize();
 
-	Graphics::Layer l;
-	wind.Add(l);
+int main() {
+	
+	Gorgon::Initialize("HTMLRenderer-test");
+        
+	Window wind({800, 600}, "htmlrenderertest", "HTML Renderer Test");
+	Graphics::Initialize();
 
 	wind.DestroyedEvent.Register([]{
 		exit(0);
 	});
 
-	Graphics::Bitmap img3({50, 50}, Graphics::ColorMode::Grayscale);
-
-	for(int x = 0; x<img3.GetWidth(); x++)
-		for(int y = 0; y<img3.GetHeight(); y++) {
-			if((x/(img3.GetWidth()/2)) != (y/(img3.GetHeight()/2)))
-				img3({x, y}, 0) = 0x10;
-			else
-				img3({x, y}, 0) = 0x30;
-		}
-
-	img3.Prepare();
-	img3.DrawIn(l);
-
-        
-    Graphics::Bitmap anim1({30, 30}, Graphics::ColorMode::Alpha), anim2({30, 30}, Graphics::ColorMode::Alpha);
+	Graphics::Layer l;
+	wind.Add(l);
     
-    //anim1.Clean();
-    //anim2.Clean();
+    //load to use
+    Resource::File f2;
+    f2.LoadFile("font-test.gor");
+    f2.Prepare();
+    f2.Discard();
     
-    for(int i = 0; i<30; i++) {
-        anim1(i,i,0) = 255;
-        anim2(i, 30-i-1, 0) = 255;
-    }
-    anim1.Prepare();
-    anim2.Prepare();
+    Graphics::BitmapFont fnt = std::move(dynamic_cast<Graphics::BitmapFont&>(f2.Root().Get<Resource::Font>(0).GetRenderer()));
     
-    Graphics::BitmapAnimationProvider animprov;
-    animprov.Add(anim1, 1000);
-    animprov.Add(anim2, 1000);
-    
-	Resource::Animation *aa = new Resource::Animation(animprov.Duplicate());
-	Graphics::ConstBitmapAnimationProvider cbp = aa->MoveOutAsBitmap();
-
-	std::cout<<"!..."<<animprov.GetDuration()<<std::endl;
-	std::cout<<"!..."<<cbp.GetDuration()<<std::endl;
-
-    const Graphics::RectangularAnimation &anim = cbp.CreateAnimation(true);
-    
-    anim.Draw(l, 100, 100);
-
+	Graphics::HTMLRenderer sty(fnt);
+	sty.Print(l, "<u>CENGIZ </u>KANDEMIR", 250, 240);
     
 	while(true) {
 		Gorgon::NextFrame();

@@ -29,6 +29,7 @@ Docs/xml
 
 # produced by doxygen
 *.db
+*.tmp
 
 # ignore backup files
 *.orig
