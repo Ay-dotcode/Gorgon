@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <map>
 #include <limits.h>
-#include <stack>
 
 #include "../Geometry/Point.h"
 #include "../Geometry/Size.h"
