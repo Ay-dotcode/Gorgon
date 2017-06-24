@@ -11,6 +11,7 @@ std::string helptext =
 	"esc\tClose\n"
 	"space\tList formats\n"
 	"1-9\tShow data\n"
+	"f\tCopy filelist\n"
 	"t, h, u\tCopy text, html, url from console\n"
 ;
 
@@ -27,6 +28,10 @@ int main() {
 	std::vector<Resource::GID::Type> list;
     
     WindowManager::GetClipboardText();
+
+	Graphics::Bitmap bmp;
+
+	auto mybmp = BGImage(50, 50);
 
 	app.wind.CharacterEvent.Register([&](Input::Keyboard::Char key) {
 		if(key == 0x20) {
@@ -45,7 +50,7 @@ int main() {
 
 			return true;
 		}
-		else if(key > '0' && key < '1'+list.size()) {
+		else if(key > '0' && key < '1'+(int)list.size()) {
 			auto fmt = list[key-'1'];
 			if(fmt == Resource::GID::Text || fmt == Resource::GID::HTML || fmt == Resource::GID::URL) {
 				l2.Clear();
@@ -62,11 +67,31 @@ int main() {
 					y += app.sty.GetLineSpacingPixels();
 				}
 			}
+			else if(fmt == Resource::GID::Image_Data) {
+				l2.Clear();
+				bmp.Assign(WindowManager::GetClipboardBitmap());
+				bmp.Prepare();
+				bmp.Draw(l2, 100, 100);
+			}
 		}
 		else if(key == 't') {
 			std::string s = "sasdfasfd";
 			std::getline(std::cin, s);
 			WindowManager::SetClipboardText(s);
+		}
+		else if(key == 'f') {
+			std::string s;
+			std::vector<std::string> vec;
+			while(true) {
+				std::getline(std::cin, s);
+				if(s=="") break;
+
+				vec.push_back(s);
+			}
+			WindowManager::SetClipboardList(vec);
+		}
+		else if(key == 'i') {
+			WindowManager::SetClipboardBitmap(mybmp.GetData());
 		}
 		else if(key == 'h') {
 			std::string s = "<b>asdf</b> aa";

@@ -64,6 +64,11 @@ namespace Gorgon { namespace Graphics {
 			Swap(other);
 		}
 
+		/// Move constructor
+		Bitmap(Containers::Image &&imagedata) : data(new Containers::Image) {
+			data->Swap(imagedata);
+		}
+
 		/// Swaps two images, mostly used for move constructor,
 		virtual void Swap(Bitmap &other) {
 			using std::swap;
