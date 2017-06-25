@@ -28,6 +28,8 @@ SET(Local
 	TextureAnimation.h
 	TextureTargets.h
 	TintedObject.h
+	HTMLRenderer.h
+	HTMLRenderer.cpp
 )
 
 EmbedShaders(ShaderSrc.strings.gen Shaders.cpp 

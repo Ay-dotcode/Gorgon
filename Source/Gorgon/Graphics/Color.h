@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdint.h>
+#include <stdexcept>
 
 #include "../Types.h"
 

@@ -2,11 +2,10 @@
 
 #include <Gorgon/Window.h>
 #include <Gorgon/Main.h>
-#include "Gorgon/Graphics/Bitmap.h"
+#include "Gorgon/Graphics/BitmapFont.h"
 #include "Gorgon/Graphics/Layer.h"
-#include <Gorgon/Resource/File.h>
-#include <Gorgon/Resource/Font.h>
 
+#include "Gorgon/Graphics/HTMLRenderer.h"
 
 using Gorgon::Window;
 using Gorgon::Geometry::Point;
@@ -29,18 +28,17 @@ int main() {
 	Graphics::Layer l;
 	wind.Add(l);
     
-    //load to use
-    Resource::File f2;
-    f2.LoadFile("font-test.gor");
-    f2.Prepare();
-    f2.Discard();
+    Graphics::BitmapFont victoria, vicbold;
+    victoria.ImportFolder("Victoria");
+    vicbold.ImportFolder("VictoriaBold");
     
-    Graphics::BitmapFont fnt = std::move(dynamic_cast<Graphics::BitmapFont&>(f2.Root().Get<Resource::Font>(0).GetRenderer()));
     
-	Graphics::HTMLRenderer sty(fnt);
+	Graphics::HTMLRenderer sty(vicbold);
 	sty.Print(l, "<u>CENGIZ </u>KANDEMIR", 250, 240);
     
 	while(true) {
 		Gorgon::NextFrame();
 	}
+	
+	return 0;
 }

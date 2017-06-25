@@ -11,7 +11,7 @@ SET(ManualTests
 	PDParser
 	Window
 	Font
-	StyledFontRenderer
+	HTMLRenderer
 )
 
 SET(UnitTests
