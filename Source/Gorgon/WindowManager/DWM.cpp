@@ -16,6 +16,9 @@
 #include "../Input/DnD.h"
 
 #include "../Containers/Vector.h"
+#include "../Encoding/PNG.h"
+#include "../Encoding/JPEG.h"
+#include "../IO/MemoryStream.h"
 
 #include <windows.h>
 #include <ShlObj.h>
@@ -27,6 +30,7 @@ namespace Gorgon {
 
 	namespace OS {
 		void winslashtonormal(std::string &);
+		void normalslashtowin(std::string &s);
 	}
 
 	namespace WindowManager {
@@ -485,7 +489,7 @@ namespace Gorgon {
 		/// @cond INTERNAL
 		HCURSOR defaultcursor;
 		extern intptr_t context;
-		UINT cf_png, cf_jpg, cf_jpeg, cf_g_bmp, cf_html;
+		UINT cf_png, cf_jpg, cf_jpeg, cf_g_bmp, cf_html, cf_urilist;
 
 		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind) {
 			POINT pnt;
@@ -569,6 +573,7 @@ namespace Gorgon {
 			cf_jpg = RegisterClipboardFormat("JPEG");
 			cf_jpeg = RegisterClipboardFormat("JPG");
 			cf_jpeg = RegisterClipboardFormat("HTML");
+			cf_urilist = RegisterClipboardFormat("URIList");
 			cf_g_bmp = RegisterClipboardFormat("[Gorgon]Bitmap");
 			cf_html = RegisterClipboardFormat("HTML Format");
 		}
@@ -604,7 +609,7 @@ namespace Gorgon {
 			auto formats = getclipboardformats();
 
 			for(auto format : formats) {				
-				if(format == cf_png  || 
+				if(format == cf_png || 
 				   format == cf_jpg  ||
 				   format == cf_jpeg ||
 				   format == cf_g_bmp||
@@ -617,6 +622,9 @@ namespace Gorgon {
 				}
 				else if(format == CF_HDROP) {
 					Containers::PushBackUnique(ret, Resource::GID::FileList);
+					Containers::PushBackUnique(ret, Resource::GID::URIList);
+				}
+				else if(format == cf_urilist) {
 					Containers::PushBackUnique(ret, Resource::GID::URIList);
 				}
 				else if(format == CF_TEXT || format == CF_UNICODETEXT) {
@@ -747,7 +755,7 @@ namespace Gorgon {
 				else {
 					std::string s = (char*)clip;
 					if(type == Resource::GID::HTML && s.length() > 11) {
-						if(s.substr(0, 11) != "Version:0.9") goto bail;
+						if(s.substr(0, 11) != "Version:0.9" && s.substr(0, 11) != "Version:1.0") goto bail;
 
 						auto p = s.find("StartFragment:");
 
@@ -807,9 +815,30 @@ namespace Gorgon {
 				}
 			}
 			else if(type == Resource::GID::URIList) {
-				//try other options first
+				auto clip = GetClipboardData(cf_urilist);
 
-				auto clip = GetClipboardData(CF_HDROP);
+				if(clip != nullptr) {
+					std::string data = (char*)GlobalLock(clip);
+					int last = 0;
+
+					for(int i=0; i<(int)data.length(); i++) {
+						if(data[i] == '\n' && i-last > 0) {
+							ret.push_back(data.substr(last, i-last));
+							last = i + 1;
+						}
+						else if(data[i] == '\r') {
+							ret.push_back(data.substr(last, i-last));
+							last = i + 1;
+						}
+					}
+					if(last<(int)data.length()) {
+						ret.push_back(data.substr(last, data.length()-last));
+					}
+
+					return ret;
+				}
+
+				clip = GetClipboardData(CF_HDROP);
 
 				if(clip != nullptr) {
 
@@ -833,6 +862,148 @@ namespace Gorgon {
 			CloseClipboard();
 
 			return ret;
+		}
+
+		void SetClipboardList(std::vector<std::string> list, Resource::GID::Type type, bool append) {
+			if(OpenClipboard(NULL)) {
+				if(!append) {
+					EmptyClipboard();
+				}
+
+				if(type == Resource::GID::FileList) {
+					size_t len;
+
+
+					len = 0;
+					for(const auto &e : list)
+						len += e.length() + 9;
+
+					clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, len+1));
+					auto uri = clipbuffers.back();
+					char *str = (char*)GlobalLock(uri);
+					bool first = true;
+					for(auto &e : list) {
+						if(!first) {
+							*str++ = '\r';
+							*str++ = '\n';
+						}
+
+						memcpy(str, "file://", 7);
+						str += 7;
+						memcpy(str, &e[0], e.length());
+						str += e.length();
+					}
+					*str = 0;
+					GlobalUnlock(uri);
+					SetClipboardData(cf_urilist, uri);
+
+					len = 0;
+					for(const auto &e : list)
+						len += e.length() + 1;
+
+					clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, len*2+sizeof(DROPFILES)+2));
+					auto clipbuffer = clipbuffers.back();
+
+					DROPFILES *files = (DROPFILES *)GlobalLock(clipbuffer);
+					files->fNC = false;
+					files->fWide = true;
+					files->pt.x = 0;
+					files->pt.y = 0;
+					files->pFiles = sizeof(DROPFILES);
+
+					wchar_t *buffer = (wchar_t*)((char*)(files)+files->pFiles);
+					for(auto &e : list) {
+						OS::normalslashtowin(e);
+						auto s = MByteToUnicode(e);
+						memcpy(buffer, &s[0], s.length());
+						buffer += s.length()/2;
+					}
+					buffer[0] = 0;
+					buffer[1] = 0;
+					GlobalUnlock(clipbuffer);
+
+					SetClipboardData(CF_HDROP, clipbuffer);
+				}
+				else if(type == Resource::GID::FileList) {
+				}
+			}
+
+			CloseClipboard();
+		}
+
+		Containers::Image GetClipboardBitmap() {
+			Containers::Image ret;
+			
+			if(!OpenClipboard(NULL)) return ret;
+
+			auto clip = GetClipboardData(cf_g_bmp);
+
+			if(clip) {
+				//not yet
+				CloseClipboard();
+				return ret;
+			}
+
+			clip = GetClipboardData(cf_jpg);
+			if(!clip)
+				clip = GetClipboardData(cf_jpeg);
+
+			if(clip) {
+				auto sz = GlobalSize(clip);
+				Byte *data = (Byte*)GlobalLock(clip);
+				Encoding::Jpg.Decode(data, sz, ret);
+				GlobalUnlock(clip);
+				CloseClipboard();
+				return ret;
+			}
+
+			clip = GetClipboardData(cf_png);
+
+			if(clip) {
+				auto sz = GlobalSize(clip);
+				Byte *data = (Byte*)GlobalLock(clip);
+				Encoding::Png.Decode(data, sz, ret);
+				GlobalUnlock(clip);
+				CloseClipboard();
+				return ret;
+			}
+
+			clip = GetClipboardData(CF_DIB);
+
+			if(clip) {
+				auto sz = GlobalSize(clip);
+				char *data = (char*)GlobalLock(clip);
+				IO::MemoryInputStream ms(data, data+sz);
+				ret.ImportBMP(ms, true);
+				GlobalUnlock(clip);
+				CloseClipboard();
+				return ret;
+			}
+
+			CloseClipboard();
+			return ret;
+		}
+
+		void SetClipboardBitmap(Containers::Image img, bool append) {
+			if(!OpenClipboard(NULL)) return;
+
+			if(!append) {
+				EmptyClipboard();
+			}
+
+			std::vector<Byte> png;
+			Encoding::Png.Encode(img, png);
+
+			clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, png.size()));
+			auto clipbuffer = clipbuffers.back();
+			Byte *str = (Byte*)GlobalLock(clipbuffer);
+			memcpy(str, &png[0], png.size());
+
+			GlobalUnlock(clipbuffer);
+
+			SetClipboardData(cf_png, clipbuffer);
+
+			CloseClipboard();
 		}
 
 		//Monitor Related

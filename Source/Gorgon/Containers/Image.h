@@ -434,26 +434,30 @@ namespace Gorgon {
 			}
 
 			/// Imports a given bitmap file. BMP RLE compression and colorspaces are not supported.
-			bool ImportBMP(const std::string &filename) {
+			bool ImportBMP(const std::string &filename, bool dib = false) {
 				std::ifstream file(filename, std::ios::binary);
 
 				if(!file.is_open()) return false;
 
-				return ImportBMP(file);
+				return ImportBMP(file, dib);
 			}
 
 			/// Imports a given bitmap file. BMP RLE compression and colorspaces are not supported.
-			bool ImportBMP(std::istream &file) {
+			bool ImportBMP(std::istream &file, bool dib = false) {
 				using namespace IO;
 
-				if(ReadString(file, 2) != "BM") return false;
+				unsigned long off = 0;
 
-				auto fsize = IO::ReadUInt32(file);
+				if(!dib) {
+					if(ReadString(file, 2) != "BM") return false;
 
-				ReadUInt16(file); //reserved 1
-				ReadUInt16(file); //reserved 2
+					auto fsize = IO::ReadUInt32(file);
 
-				auto off = ReadUInt32(file);
+					ReadUInt16(file); //reserved 1
+					ReadUInt16(file); //reserved 2
+
+					off = ReadUInt32(file);
+				}
 
 				auto headersize = IO::ReadUInt32(file);
 
@@ -591,7 +595,8 @@ namespace Gorgon {
 					}
 				}
 
-				file.seekg(off, std::ios::beg);
+				if(!dib)
+					file.seekg(off, std::ios::beg);
 
 				if((bpp == 32 || bpp == 16) && alphamask != 0) {
 					Resize({width, height}, Graphics::ColorMode::RGBA);
@@ -732,18 +737,18 @@ namespace Gorgon {
 			/// Exports the image as a bitmap. RGB is exported as 24-bit, RGBA, BGR, BGRA is exported
 			/// as 32-bit, Grayscale exported as 8-bit, Grayscale alpha, alpha only is exported as
 			/// 16-bit
-			bool ExportBMP(const std::string &filename) {
+			bool ExportBMP(const std::string &filename, bool dib = false) {
 				std::ofstream file(filename, std::ios::binary);
 
 				if(!file.is_open()) return false;
 
-				return ExportBMP(file);
+				return ExportBMP(file, dib);
 			}
 
 			/// Exports the image as a bitmap. RGB is exported as 24-bit, RGBA, BGR, BGRA is exported
 			/// as 32-bit, Grayscale exported as 8-bit, Grayscale alpha, alpha only is exported as
 			/// 16-bit
-			bool ExportBMP(std::ostream &file, bool usev4 = false) {
+			bool ExportBMP(std::ostream &file, bool usev4 = false, bool dib = false) {
 				using namespace IO;
 				using Graphics::ColorMode;
 
@@ -808,11 +813,13 @@ namespace Gorgon {
 
 				
 				//header
-				WriteString(file, "BM");
-				WriteUInt32(file, 14 + headersize + extraspace + datasize);
-				WriteUInt16(file, 0); //reserved 1
-				WriteUInt16(file, 0); //reserved 2
-				WriteUInt32(file, 14 + headersize + extraspace);
+				if(!dib) {
+					WriteString(file, "BM");
+					WriteUInt32(file, 14 + headersize + extraspace + datasize);
+					WriteUInt16(file, 0); //reserved 1
+					WriteUInt16(file, 0); //reserved 2
+					WriteUInt32(file, 14 + headersize + extraspace);
+				}
 
 				WriteUInt32(file, headersize);
 				WriteInt32 (file, size.Width);

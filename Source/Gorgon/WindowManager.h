@@ -212,5 +212,21 @@ namespace Gorgon {
 		/// better to use URIList, as URIList can contain list of any resources, including internet
 		/// sources like HTTP/FTP/SFTP. 
 		std::vector<std::string> GetClipboardList(Resource::GID::Type type = Resource::GID::FileList);
+
+		/// Sets a list of strings to the clipboard. URIList can work in some operating systems to copy
+		/// files from internet resources to other applications. But it is not available in all systems
+		/// thus it is best to use FileList to copy files.
+		void SetClipboardList(std::vector<std::string> list, Resource::GID::Type type = Resource::GID::FileList, bool append = false);
+
+		/// Returns a bitmap from the clipboard. This function chooses the best fitting image from the
+		/// clipboard. However, in Windows it is not always possible to get a transparent image from
+		/// browsers. If necessary, it is possible to get HTML code, then fetch the image from the internet
+		/// using Network module. If the image size is large, it might not be transferred as IStream
+        /// or INCR interfaces are not implemented yet.
+		Containers::Image GetClipboardBitmap();
+
+		/// Changes the clipboard to the given image. Right now not very efficient in Windows. Depending on
+        /// size of the image, this operation might not work for now.
+		void SetClipboardBitmap(Containers::Image img, bool append = false);
 	}
 }
