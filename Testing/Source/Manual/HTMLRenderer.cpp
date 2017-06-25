@@ -33,8 +33,12 @@ int main() {
     vicbold.ImportFolder("VictoriaBold");
     
     
-	Graphics::HTMLRenderer sty(vicbold);
-	sty.Print(l, "<u>CENGIZ </u>KANDEMIR", 250, 240);
+    Graphics::FontFamily family({{&victoria, Graphics::FontFamily::Style::Normal}, {&vicbold, Graphics::FontFamily::Style::Bold}});
+    
+    family.GetGlyphRenderer(Graphics::FontFamily::Style::Bold);
+    
+	Graphics::HTMLRenderer sty(family);
+	sty.Print(l, "<u>ABC<b>AAA</b></u>", 250, 240);
     
 	while(true) {
 		Gorgon::NextFrame();

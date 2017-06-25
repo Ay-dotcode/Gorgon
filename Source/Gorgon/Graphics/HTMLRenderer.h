@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <initializer_list>
+#include <cassert>
 
 #include "Color.h"
 #include "Font.h"
@@ -8,16 +10,36 @@
 
 namespace Gorgon { namespace Graphics {
 
+// !!! find a better place?
+class FontFamily {
+public:
+    
+    enum class Style: unsigned int {
+        Normal = 0,
+        Italic,
+        Bold,
+        End
+    };
+    
+    FontFamily(std::initializer_list<std::pair<GlyphRenderer *, Style>> list);
+    
+    GlyphRenderer& GetGlyphRenderer(Style style);
+    
+
+private:
+    std::vector<std::pair<GlyphRenderer *, Style>> fonts;
+};
+    
 class HTMLRenderer {
         
         enum class Tag: unsigned int {
-            Underlined,
+            Underlined = 0,
             Bold,
             End
         };
         
     public:
-        HTMLRenderer(GlyphRenderer &glyphrend, RGBAf color = 1.f, TextShadow shadow = {});
+        HTMLRenderer(FontFamily &fontfamily, RGBAf color = 1.f, TextShadow shadow = {});
         
         void Print(TextureTarget &target, const std::string &text, int x, int y);
         
@@ -30,7 +52,7 @@ class HTMLRenderer {
         
         void removestyle(const std::string &str);
         
-        GlyphRenderer &glyphrend;
+        FontFamily &fontfamily;
         StyledRenderer renderer;
     };
     

@@ -4,10 +4,24 @@
 
 namespace Gorgon { namespace Graphics {
 
+FontFamily::FontFamily(std::initializer_list<std::pair<GlyphRenderer *, Style>> list)
+    : fonts(list)
+{}
 
-HTMLRenderer::HTMLRenderer(GlyphRenderer &glyphrend, RGBAf color, TextShadow shadow):
-    glyphrend(glyphrend),
-    renderer(glyphrend, color, shadow)
+GlyphRenderer& FontFamily::GetGlyphRenderer(Style style) {
+    for(const auto &font: fonts) {
+        if(font.second == style) {
+            return *(font.first);
+        }
+    }
+    
+    // !!! better error handling is needed
+    assert(false);
+}
+
+HTMLRenderer::HTMLRenderer(FontFamily &fontfamily, RGBAf color, TextShadow shadow)
+    : fontfamily(fontfamily),
+      renderer(fontfamily.GetGlyphRenderer(FontFamily::Style::Normal))
 {}
 
 void HTMLRenderer::Print(TextureTarget &target, const std::string &text, int x, int y) {
@@ -63,8 +77,8 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
         }
         else {
             auto start = str.begin() + i;
-            offset += glyphrend.GetSize(internal::decode(start, str.end())).Width;
-            offset += glyphrend.GetGlyphSpacing();
+            offset += renderer.GetGlyphRenderer()->GetSize(internal::decode(start, str.end())).Width;
+            offset += renderer.GetGlyphRenderer()->GetGlyphSpacing();
             text += current;
         }
     }
@@ -76,7 +90,7 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
 
 HTMLRenderer::Tag HTMLRenderer::string2tag(const std::string &tag) {
     if(tag == "u") { return Tag::Underlined; }
-    else if(tag == "i") { return Tag::Bold; }
+    else if(tag == "b") { return Tag::Bold; }
     else { assert(false); }
 }
 
@@ -87,7 +101,7 @@ void HTMLRenderer::applystyle(const std::string &str) {
             renderer.SetUnderline(true);
             break;
         case Tag::Bold:
-            //!!! italic implementation comes here
+            renderer.SetGlyphRenderer(&fontfamily.GetGlyphRenderer(FontFamily::Style::Bold));
             break;
         default:
             assert(false);
@@ -102,7 +116,7 @@ void HTMLRenderer::removestyle(const std::string &str) {
             renderer.SetUnderline(false);
             break;
         case Tag::Bold:
-            //!!! italic implementation comes here
+            renderer.SetGlyphRenderer(&fontfamily.GetGlyphRenderer(FontFamily::Style::Normal));
             break;
         default:
             assert(false);

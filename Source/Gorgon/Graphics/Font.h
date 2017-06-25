@@ -308,6 +308,14 @@ namespace Gorgon { namespace Graphics {
 			tabwidth = renderer.GetMaxWidth() * 8;
 		}
 
+		GlyphRenderer* GetGlyphRenderer() {
+            return renderer;
+        }
+        
+        void SetGlyphRenderer(GlyphRenderer *renderer) {
+            this->renderer = renderer;
+        }
+		
         /// Changes the color of the text
         void SetColor(RGBAf value) {
         	color = value;
