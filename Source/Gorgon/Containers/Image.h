@@ -737,12 +737,12 @@ namespace Gorgon {
 			/// Exports the image as a bitmap. RGB is exported as 24-bit, RGBA, BGR, BGRA is exported
 			/// as 32-bit, Grayscale exported as 8-bit, Grayscale alpha, alpha only is exported as
 			/// 16-bit
-			bool ExportBMP(const std::string &filename) {
+			bool ExportBMP(const std::string &filename, bool dib = false) {
 				std::ofstream file(filename, std::ios::binary);
 
 				if(!file.is_open()) return false;
 
-				return ExportBMP(file);
+				return ExportBMP(file, dib);
 			}
 
 			/// Exports the image as a bitmap. RGB is exported as 24-bit, RGBA, BGR, BGRA is exported

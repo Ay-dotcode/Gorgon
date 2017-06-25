@@ -12,8 +12,10 @@ std::string helptext =
 	"space\tList formats\n"
 	"1-9\tShow data\n"
 	"f\tCopy filelist\n"
+    "i, I\tCopy image (with, without alpha)\n"
 	"t, h, u\tCopy text, html, url from console\n"
 ;
+
 
 
 int main() {
@@ -31,7 +33,17 @@ int main() {
 
 	Graphics::Bitmap bmp;
 
-	auto mybmp = BGImage(50, 50);
+	Graphics::Bitmap mybmp(50, 50, Graphics::ColorMode::RGBA);
+    mybmp.Clear();
+    std::vector<std::vector<Byte>> colors = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}, {255, 255, 0, 255}, {255, 0, 255, 255}};
+    for(int i=0; i<50; i++) {
+        for(int j=0; j<5; j++) {
+            for(int c=0; c<4; c++) {
+                if(i + j*3 < 50)
+                    mybmp(i + j*3, i, c) = colors[j][c];
+            }
+        }
+    }
 
 	app.wind.CharacterEvent.Register([&](Input::Keyboard::Char key) {
 		if(key == 0x20) {
@@ -59,19 +71,22 @@ int main() {
 			else if(fmt == Resource::GID::FileList || fmt == Resource::GID::URIList) {
 				l2.Clear();
 
-				auto list = WindowManager::GetClipboardList(fmt);
+				auto filelist = WindowManager::GetClipboardList(fmt);
 
 				int y = 100;
-				for(const auto &s : list) {
+				for(const auto &s : filelist) {
 					app.sty.Print(l2, s, 100, y);
 					y += app.sty.GetLineSpacingPixels();
 				}
 			}
 			else if(fmt == Resource::GID::Image_Data) {
-				l2.Clear();
-				bmp.Assign(WindowManager::GetClipboardBitmap());
-				bmp.Prepare();
-				bmp.Draw(l2, 100, 100);
+                try {
+                    l2.Clear();
+                    bmp.Assign(WindowManager::GetClipboardBitmap());
+                    bmp.Prepare();
+                    bmp.Draw(l2, 100, 100);
+                }
+                catch(...) {}
 			}
 		}
 		else if(key == 't') {
@@ -91,7 +106,10 @@ int main() {
 			WindowManager::SetClipboardList(vec);
 		}
 		else if(key == 'i') {
-			WindowManager::SetClipboardBitmap(mybmp.GetData());
+			WindowManager::SetClipboardBitmap(mybmp.GetData().Duplicate());
+		}
+		else if(key == 'I') {
+			WindowManager::SetClipboardBitmap(std::move(BGImage(50, 50).GetData()));
 		}
 		else if(key == 'h') {
 			std::string s = "<b>asdf</b> aa";

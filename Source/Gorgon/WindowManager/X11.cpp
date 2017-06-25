@@ -13,6 +13,9 @@
 #include "../Encoding/URI.h"
 #include "../Input/DnD.h"
 #include "../Containers/Vector.h"
+#include "../Encoding/PNG.h"
+#include "../Encoding/JPEG.h"
+#include "../IO/MemoryStream.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -560,21 +563,9 @@ namespace Gorgon {
 		}
 
 		void SetClipboardText(const std::string &text, Resource::GID::Type type, bool unicode, bool append) {
-			::Window windowhandle=0;
-			for(auto &w : Window::Windows) {
-				auto data=internal::getdata(w);
-				if(data && data->handle) {
-					windowhandle=data->handle;
-					break;
-				}
-			}
-			if(windowhandle==0) {
-#ifdef NDEBUG
-			return;
-#else
-				throw std::runtime_error("Cannot copy without a window, if necessary create a hidden window");
-#endif
-			}
+			::Window windowhandle=getanywindow();
+            
+            if(!windowhandle) return;
 			
 			if(!append)
                 clipboard_entries.clear();
@@ -630,41 +621,44 @@ namespace Gorgon {
             
             if(request == 0) return ret;
             
+            unsigned long len = 0, bytes = 0, dummy;
+            unsigned char *data = nullptr;
             
 			//check if we own the clipboard
 			for(auto &w : Window::Windows) {
-				auto data=internal::getdata(w);
-				if(data && data->handle == owner) {
+				auto wdata=internal::getdata(w);
+				if(wdata && wdata->handle == owner) {
 					//we are the owner!
                     
                     //get the data from our own buffer and be done with it
                     for(auto &d : clipboard_entries) {
                         if(d.type == request) {
                             if( d.type == WindowManager::XA_Filelist ) {
-                                //todo
-                                //return d.data->GetData<std::string>();
-                            }
-                            else {
-                                return ret;
+                                auto &str = d.data->GetData<std::string>();
+                                data = (unsigned char*)&str[0];
+                                len = str.length();
                             }
                         }
                     }
                     
-                    return ret;
+                    if(!data) return ret;
 				}
 			}
 			
-			XConvertSelection (display, XA_CLIPBOARD, request, XA_CP_PROP, windowhandle, CurrentTime);
-			XFlush(display);
 			
-			XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
-			if (event.xselection.property == XA_CP_PROP) {
+			if(!data) {
+                XConvertSelection (display, XA_CLIPBOARD, request, XA_CP_PROP, windowhandle, CurrentTime);
+                XFlush(display);
+                
+                XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
+            }
+            
+			if (data || event.xselection.property == XA_CP_PROP) {
 				Atom type;
-				unsigned long len, bytes, dummy;
-				unsigned char *data;
 				int format;
 
-				XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+                if(!data)
+                    XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
 				
 				if(bytes) {
 					XGetWindowProperty (display, windowhandle, 
@@ -672,7 +666,8 @@ namespace Gorgon {
 							AnyPropertyType, &type, &format,
 							&len, &dummy, &data);
 
-                    
+                }
+                if(data) {
                     int p=0;
                     for(int i=0;i<(int)len+1;i++) {
                         if(i==(int)len || (char)data[i]=='\n') {
@@ -698,8 +693,10 @@ namespace Gorgon {
                         }
                     }
                     
-					XFree(data);
-                    XDeleteProperty(display, windowhandle, XA_CP_PROP);
+                    if(bytes) {
+                        XFree(data);
+                        XDeleteProperty(display, windowhandle, XA_CP_PROP);
+                    }
 
 					return ret;
 				}
@@ -709,18 +706,159 @@ namespace Gorgon {
 		}
 	
         void SetClipboardList(std::vector<std::string> list, Resource::GID::Type type, bool append) {
+			::Window windowhandle=getanywindow();
+            
+            if(!windowhandle) return;
+			
+			if(!append)
+                clipboard_entries.clear();
+
             if(type == Resource::GID::FileList) {
+                std::string txt;
                 
+                for(auto &e : list) {
+                    if(!txt.empty())
+                        txt += "\n";
+                    
+                    txt = txt + "file://" + e;
+                }
+                
+                auto d = make_clipboarddata(std::move(txt));
+                Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_Filelist, d});
+                Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_UTF8_STRING, d});
+                Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_STRING, d});
+                Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_TEXT, d});
+                
+                XSetSelectionOwner(display, XA_CLIPBOARD, windowhandle, CurrentTime);
+                XFlush(display);
+            }
+            else if(type == Resource::GID::URIList) {
+                std::string txt;
+                
+                for(auto &e : list) {
+                    if(!txt.empty())
+                        txt += "\n";
+                    
+                    txt = txt + e;
+                }
+                
+                auto d = make_clipboarddata(std::move(txt));
+                Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_Filelist, d});
+                Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_UTF8_STRING, d});
+                Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_STRING, d});
+                Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_TEXT, d});
+                
+                XSetSelectionOwner(display, XA_CLIPBOARD, windowhandle, CurrentTime);
+                XFlush(display);
             }
         }
         
         Containers::Image GetClipboardBitmap() {
             Containers::Image ret;
             
+			::Window owner=XGetSelectionOwner(display, XA_CLIPBOARD);
+			if(!owner)
+				return ret;
+			
+			::Window windowhandle = getanywindow();
+			if(windowhandle==0) {
+				return ret;
+			}
+            
+			//check if we own the clipboard
+			for(auto &w : Window::Windows) {
+				auto wdata=internal::getdata(w);
+				if(wdata && wdata->handle == owner) {
+					//we are the owner!
+                    
+                    //get the data from our own buffer and be done with it
+                    for(auto &d : clipboard_entries) {
+                        if(d.type == XA_PNG || d.type == XA_BMP || d.type == XA_JPG) {
+                            auto &data = d.data->GetData<Containers::Image>();
+                            return data.Duplicate();
+                        }
+                    }
+                    
+                    return ret;
+				}
+			}
+			
+			Atom request = 0;
+			
+			XEvent event;
+			
+            auto list = getclipboardformats();
+            for(auto atom : list) {
+                if(atom == XA_PNG)  { //best tı go for png, as most systems do not add alpha on other types
+                    request = XA_PNG;
+                    break; //perfect match no need to continue
+                }
+                else if(atom == XA_BMP) {
+                    request = XA_BMP;
+                }
+                else if(request == 0 && atom == XA_JPG) {
+                    request = XA_JPG;
+                    //this is the worst case
+                }
+            }
+						
+			XConvertSelection (display, XA_CLIPBOARD, request, XA_CP_PROP, windowhandle, CurrentTime);
+			XFlush(display);
+			
+			XIfEvent(display, &event, waitfor_selectionnotify, (char*)windowhandle);
+			if (event.xselection.property == XA_CP_PROP) {
+				Atom type;
+				unsigned long len, bytes, dummy;
+				unsigned char *data;
+				int format;
+
+				XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
+                std::cout<<GetAtomName(type)<<std::endl;
+				
+				if(bytes) {
+					XGetWindowProperty (display, windowhandle, 
+							XA_CP_PROP, 0,bytes,0,
+							AnyPropertyType, &type, &format,
+							&len, &dummy, &data);
+					
+					if(request == XA_PNG) {
+                        Encoding::Png.Decode(data, bytes, ret);
+                    }
+                    else if(request == XA_BMP) {
+                        IO::MemoryInputStream stream((char *)data, (char *)data+bytes);
+                        ret.ImportBMP(stream);
+                    }
+                    else if(request == XA_JPG) {
+                        Encoding::Jpg.Decode(data, bytes, ret);
+                    }
+                    
+					XFree(data);
+                    XDeleteProperty(display, windowhandle, XA_CP_PROP);
+				}
+			}
+			
             return ret;
         }
         
-        void SetClipboardBitmap(const Containers::Image &img, bool append) {
+        void SetClipboardBitmap(Containers::Image img, bool append) {
+			::Window windowhandle=getanywindow();
+            
+            if(!windowhandle) return;
+			
+			if(!append)
+                clipboard_entries.clear();
+
+            Graphics::ColorMode mode = img.GetMode();
+            
+            auto d = make_clipboarddata(std::move(img));
+            //believe or not BMPv5 is a better fit, allows alpha only images
+            Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_BMP, d}); 
+            Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_PNG, d});
+            if(!Graphics::HasAlpha(mode))
+                Containers::PushBackOrUpdate(clipboard_entries, clipboardentry{XA_JPG, d});
+            
+            XSetSelectionOwner(display, XA_CLIPBOARD, windowhandle, CurrentTime);
+            XFlush(display);
         }
 	
 		//Monitor Related
@@ -1608,6 +1746,7 @@ failsafe: //this should use X11 screen as monitor
                                     entry->type == WindowManager::XA_TEXT || 
                                     entry->type == WindowManager::XA_UTF8_STRING || 
                                     entry->type == WindowManager::XA_TEXT_HTML || 
+                                    entry->type == WindowManager::XA_Filelist || 
                                     entry->type == WindowManager::XA_URL) 
                                 {
                                     std::string &str = entry->data->GetData<std::string>();
@@ -1620,6 +1759,60 @@ failsafe: //this should use X11 screen as monitor
                                         PropModeReplace,
                                         (unsigned char*) &str[0],
                                         (int)str.length()
+                                    );
+                                    
+                                    respond.xselection.property=proptoset;
+                                }
+                                else if(entry->type == WindowManager::XA_PNG) {
+                                    Containers::Image &img = entry->data->GetData<Containers::Image>();
+                                    
+                                    std::vector<Byte> data;
+                                    Encoding::Png.Encode(img, data);
+                                    
+                                    XChangeProperty (WindowManager::display,
+                                        event.xselectionrequest.requestor,
+                                        proptoset,
+                                        entry->type,
+                                        8,
+                                        PropModeReplace,
+                                        &data[0],
+                                        (int)data.size()
+                                    );
+                                    
+                                    respond.xselection.property=proptoset;
+                                }
+                                else if(entry->type == WindowManager::XA_JPG) {
+                                    Containers::Image &img = entry->data->GetData<Containers::Image>();
+                                    
+                                    std::vector<Byte> data;
+                                    Encoding::Jpg.Encode(img, data);
+                                    
+                                    XChangeProperty (WindowManager::display,
+                                        event.xselectionrequest.requestor,
+                                        proptoset,
+                                        entry->type,
+                                        8,
+                                        PropModeReplace,
+                                        &data[0],
+                                        (int)data.size()
+                                    );
+                                    
+                                    respond.xselection.property=proptoset;
+                                }
+                                else if(entry->type == WindowManager::XA_BMP) {
+                                    Containers::Image &img = entry->data->GetData<Containers::Image>();
+                                    
+                                    std::ostringstream data;
+                                    img.ExportBMP(data);
+                                    
+                                    XChangeProperty (WindowManager::display,
+                                        event.xselectionrequest.requestor,
+                                        proptoset,
+                                        entry->type,
+                                        8,
+                                        PropModeReplace,
+                                        (Byte*)&data.str()[0],
+                                        (int)data.str().size()
                                     );
                                     
                                     respond.xselection.property=proptoset;

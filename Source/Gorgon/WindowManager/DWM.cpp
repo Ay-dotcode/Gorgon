@@ -984,7 +984,7 @@ namespace Gorgon {
 			return ret;
 		}
 
-		void SetClipboardBitmap(const Containers::Image &img, bool append) {
+		void SetClipboardBitmap(Containers::Image img, bool append) {
 			if(!OpenClipboard(NULL)) return;
 
 			if(!append) {
