@@ -708,6 +708,21 @@ namespace Gorgon {
 			return ret;
 		}
 	
+        void SetClipboardList(std::vector<std::string> list, Resource::GID::Type type, bool append) {
+            if(type == Resource::GID::FileList) {
+                
+            }
+        }
+        
+        Containers::Image GetClipboardBitmap() {
+            Containers::Image ret;
+            
+            return ret;
+        }
+        
+        void SetClipboardBitmap(const Containers::Image &img, bool append) {
+        }
+	
 		//Monitor Related
 		
 		Monitor::Monitor() {
