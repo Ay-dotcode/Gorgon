@@ -225,8 +225,8 @@ namespace Gorgon {
         /// or INCR interfaces are not implemented yet.
 		Containers::Image GetClipboardBitmap();
 
-		/// Changes the clipboard to the given image. Right now not very efficient in Windows. Depending on
-        /// size of the image, this operation might not work for now.
+		/// Changes the clipboard to the given image. Depending on size of the image, this operation might not work 
+		/// on X11 for now.
 		void SetClipboardBitmap(Containers::Image img, bool append = false);
 	}
 }

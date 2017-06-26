@@ -28,6 +28,7 @@ namespace Gorgon {
 	/// can also be removed if it causes bottleneck. Define GORGON_FAST_ANY
 	/// to remove these checks.
 	/// 
+	/// Currently cannot work with object without copy constructor.
 	class Any {
 	public:
 		/// Default constructor.
@@ -413,6 +414,50 @@ namespace Gorgon {
 		TMP::RTTS *type;
 	};
 	
+
+	///@cond internal
+	struct CopyFreeAny {
+		virtual ~CopyFreeAny() {}
+
+		template<class T_>
+		T_ &GetData() const {
+			return *reinterpret_cast<T_*>(data);
+		}
+
+		void *data;
+	};
+
+	template<class T_>
+	struct CopyFreeAny_impl : public CopyFreeAny {
+		CopyFreeAny_impl(T_ data) : mydata(std::move(data)) {
+			this->data = &mydata;
+		}
+
+		CopyFreeAny_impl(const CopyFreeAny_impl &) = delete;
+
+		CopyFreeAny_impl(CopyFreeAny_impl &&other) {
+			mydata = std::move(other.data);
+		}
+
+		CopyFreeAny_impl &operator =(CopyFreeAny_impl &&other) {
+			mydata = std::move(other.data);
+
+			return *this;
+		}
+
+		CopyFreeAny_impl &operator =(const CopyFreeAny_impl &other) = delete;
+
+		virtual ~CopyFreeAny_impl() {}
+
+		T_ mydata;
+	};
+
+	/// This function returns a reference!
+	template<class T_>
+	CopyFreeAny &MakeCopyFreeAny(T_ data) {
+		return *new CopyFreeAny_impl<T_>(std::move(data));
+	}
+	///@endcond
 
 
 }

@@ -4,6 +4,7 @@
 #include "../Window.h"
 #include "../Input.h"
 #include "../OS.h"
+#include "../Any.h"
 
 #define WINDOWS_LEAN_AND_MEAN
 
@@ -35,7 +36,6 @@ namespace Gorgon {
 
 	namespace WindowManager {
 		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind);
-		std::vector<HGLOBAL> clipbuffers;
 
 		class GGEDropTarget : public IDropTarget {
 		public:
@@ -178,6 +178,28 @@ namespace Gorgon {
 
 			bool islocal = false;
 		};
+
+		///@cond internal
+		UINT cf_png, cf_g_bmp, cf_html, cf_urilist;
+		std::vector<HGLOBAL> clipbuffers;
+
+		template<class T_>
+		std::shared_ptr<CopyFreeAny> make_clipboarddata(T_ data) {
+			auto a = &MakeCopyFreeAny(std::move(data));
+			return std::shared_ptr<CopyFreeAny>{a};
+		}
+
+		struct clipboardentry {
+			UINT type;
+			std::shared_ptr<CopyFreeAny> data;
+
+			bool operator ==(const clipboardentry &other) const {
+				return type == other.type;
+			}
+		};
+
+		std::vector<clipboardentry> clipboard_entries;
+		///@endcond
 	}
 
 	/// @cond INTERNAL
@@ -227,13 +249,47 @@ namespace Gorgon {
 					break;
 
 					case WM_DESTROYCLIPBOARD:
-						for(auto g : WindowManager::clipbuffers)
-							GlobalFree(g);
-
 						WindowManager::clipbuffers.empty();
+						WindowManager::clipboard_entries.clear();
 
 						break;
 
+					case WM_RENDERFORMAT: {
+						auto type = (UINT)wParam;
+
+						for(auto &e : WindowManager::clipboard_entries) {
+							if(e.type == type) {
+								if(e.type == WindowManager::cf_png) {
+									std::vector<Byte> data;
+									Encoding::Png.Encode(e.data->GetData<Containers::Image>(), data);
+									WindowManager::clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, data.size()));
+									auto clipbuffer = WindowManager::clipbuffers.back();
+
+									auto buff = GlobalLock(clipbuffer);
+									memcpy(buff, &data[0], data.size());
+									GlobalUnlock(clipbuffer);
+
+									SetClipboardData(type, clipbuffer);
+									break;
+								}
+								else if(e.type == CF_DIB) {
+									std::ostringstream data;
+									e.data->GetData<Containers::Image>().ExportBMP(data, false, true);
+
+									WindowManager::clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, data.str().size()));
+									auto clipbuffer = WindowManager::clipbuffers.back();
+
+									auto buff = GlobalLock(clipbuffer);
+									memcpy(buff, &data.str()[0], data.str().size());
+									GlobalUnlock(clipbuffer);
+
+									SetClipboardData(type, clipbuffer);
+									break;
+								}
+							}
+						}
+					}
+					break;
 
 					case WM_SYSCOMMAND:
 						if(wParam == SC_MINIMIZE) {
@@ -489,7 +545,6 @@ namespace Gorgon {
 		/// @cond INTERNAL
 		HCURSOR defaultcursor;
 		extern intptr_t context;
-		UINT cf_png, cf_jpg, cf_jpeg, cf_g_bmp, cf_html, cf_urilist;
 
 		Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind) {
 			POINT pnt;
@@ -532,6 +587,11 @@ namespace Gorgon {
 			void finalizerender(Gorgon::internal::windowdata &data) {
 				SwapBuffers(data.device_context);
 			}
+
+			Gorgon::internal::windowdata *getdata(const Window &w) {
+				return w.data;
+			}
+
 		}
 		/// @endcond
 
@@ -570,9 +630,6 @@ namespace Gorgon {
 			Monitor::Refresh(true);
 
 			cf_png = RegisterClipboardFormat("PNG");
-			cf_jpg = RegisterClipboardFormat("JPEG");
-			cf_jpeg = RegisterClipboardFormat("JPG");
-			cf_jpeg = RegisterClipboardFormat("HTML");
 			cf_urilist = RegisterClipboardFormat("URIList");
 			cf_g_bmp = RegisterClipboardFormat("[Gorgon]Bitmap");
 			cf_html = RegisterClipboardFormat("HTML Format");
@@ -610,10 +667,9 @@ namespace Gorgon {
 
 			for(auto format : formats) {				
 				if(format == cf_png || 
-				   format == cf_jpg  ||
-				   format == cf_jpeg ||
 				   format == cf_g_bmp||
-				   format == CF_DIB
+				   format == CF_DIB||
+				   format == CF_DIBV5
 				  ) {
 					Containers::PushBackUnique(ret, Resource::GID::Image_Data);
 				}
@@ -675,6 +731,7 @@ namespace Gorgon {
 			if(OpenClipboard(NULL)) {
 				if(!append) {
 					EmptyClipboard();
+					clipboard_entries.clear();
 				}
 
 				if(type == Resource::GID::Text) {
@@ -868,6 +925,7 @@ namespace Gorgon {
 			if(OpenClipboard(NULL)) {
 				if(!append) {
 					EmptyClipboard();
+					clipboard_entries.clear();
 				}
 
 				if(type == Resource::GID::FileList) {
@@ -933,6 +991,21 @@ namespace Gorgon {
 
 		Containers::Image GetClipboardBitmap() {
 			Containers::Image ret;
+
+			auto owner = GetClipboardOwner();
+
+			for(const auto &w : Window::Windows) {
+				auto d = internal::getdata(w);
+				if(d && d->handle == owner) {
+					//we own the data, no need to get it from clipboard
+					for(auto &e : clipboard_entries) {
+						if(e.type == cf_png) {
+							ret = e.data->GetData<Containers::Image>().Duplicate();
+							return ret;
+						}
+					}
+				}
+			}
 			
 			if(!OpenClipboard(NULL)) return ret;
 
@@ -944,25 +1017,24 @@ namespace Gorgon {
 				return ret;
 			}
 
-			clip = GetClipboardData(cf_jpg);
-			if(!clip)
-				clip = GetClipboardData(cf_jpeg);
-
-			if(clip) {
-				auto sz = GlobalSize(clip);
-				Byte *data = (Byte*)GlobalLock(clip);
-				Encoding::Jpg.Decode(data, sz, ret);
-				GlobalUnlock(clip);
-				CloseClipboard();
-				return ret;
-			}
-
 			clip = GetClipboardData(cf_png);
 
 			if(clip) {
 				auto sz = GlobalSize(clip);
 				Byte *data = (Byte*)GlobalLock(clip);
 				Encoding::Png.Decode(data, sz, ret);
+				GlobalUnlock(clip);
+				CloseClipboard();
+				return ret;
+			}
+
+			clip = GetClipboardData(CF_DIBV5);
+
+			if(clip) {
+				auto sz = GlobalSize(clip);
+				char *data = (char*)GlobalLock(clip);
+				IO::MemoryInputStream ms(data, data+sz);
+				ret.ImportBMP(ms, true);
 				GlobalUnlock(clip);
 				CloseClipboard();
 				return ret;
@@ -985,23 +1057,38 @@ namespace Gorgon {
 		}
 
 		void SetClipboardBitmap(Containers::Image img, bool append) {
-			if(!OpenClipboard(NULL)) return;
+			HWND wind = NULL;
+
+			for(const auto &w : Window::Windows) {
+				auto d = internal::getdata(w);
+				if(d && d->handle) {
+					wind = d->handle;
+					break;
+				}
+			}
+
+			CloseClipboard();
+
+			if(!OpenClipboard(wind)) return;
 
 			if(!append) {
 				EmptyClipboard();
+				clipboard_entries.clear();
 			}
 
-			std::vector<Byte> png;
-			Encoding::Png.Encode(img, png);
+			auto mode = img.GetMode();
 
-			clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, png.size()));
-			auto clipbuffer = clipbuffers.back();
-			Byte *str = (Byte*)GlobalLock(clipbuffer);
-			memcpy(str, &png[0], png.size());
 
-			GlobalUnlock(clipbuffer);
+			auto data = make_clipboarddata(std::move(img));
 
-			SetClipboardData(cf_png, clipbuffer);
+			clipboard_entries.push_back({cf_png, data});
+			clipboard_entries.push_back({CF_DIB, data});
+
+			SetClipboardData(cf_png, nullptr);
+			SetClipboardData(CF_DIB, nullptr);
+			//jpg does not work on windows
+
+			//add file data later
 
 			CloseClipboard();
 		}
