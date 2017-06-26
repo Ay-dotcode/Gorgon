@@ -221,8 +221,7 @@ namespace Gorgon {
 		/// Returns a bitmap from the clipboard. This function chooses the best fitting image from the
 		/// clipboard. However, in Windows it is not always possible to get a transparent image from
 		/// browsers. If necessary, it is possible to get HTML code, then fetch the image from the internet
-		/// using Network module. If the image size is large, it might not be transferred as IStream
-        /// or INCR interfaces are not implemented yet.
+		/// using Network module.
 		Containers::Image GetClipboardBitmap();
 
 		/// Changes the clipboard to the given image. Depending on size of the image, this operation might not work 

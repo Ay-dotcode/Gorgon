@@ -16,6 +16,7 @@
 #include "../Encoding/PNG.h"
 #include "../Encoding/JPEG.h"
 #include "../IO/MemoryStream.h"
+#include "../Any.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -96,6 +97,7 @@ namespace Gorgon {
         Atom XA_BMP;
 		Atom XA_ATOM;
 		Atom XA_CARDINAL;
+		Atom XA_INCR;
 		Atom XA_NET_FRAME_EXTENTS;
 		Atom XA_NET_WORKAREA;
 		Atom XA_NET_REQUEST_FRAME_EXTENTS;
@@ -134,6 +136,10 @@ namespace Gorgon {
 		
 		static int waitfor_propertynotify(Display *d, XEvent *e, char *arg) {
 			return (e->type == PropertyNotify) && (e->xproperty.window == (::Window)arg);
+		}
+		
+		static int waitfor_cppropertynotify(Display *d, XEvent *e, char *arg) {
+			return (e->type == PropertyNotify) && (e->xproperty.atom == XA_CP_PROP) && (e->xproperty.window == (::Window)arg);
 		}
 		
 		static int waitfor_selectionnotify(Display *d, XEvent *e, char *arg) {
@@ -248,6 +254,7 @@ namespace Gorgon {
             XA_JPG = XInternAtom(display, "image/jpeg", False);
             XA_BMP = XInternAtom(display, "image/bmp", False);
             XA_CP_PROP = XInternAtom(display, "GORGON_CP_PROP", False);
+            XA_INCR= XInternAtom(display, "INCR", False);
             
             XA_WM_NAME  = XInternAtom(display, "WM_NAME", False);
             XA_NET_WM_NAME  = XInternAtom(display, "_NET_WM_NAME", False);
@@ -294,51 +301,15 @@ namespace Gorgon {
         }
 		//Clipboard related
         
-        ///@cond internal
-        struct clipboarddata {
-            virtual ~clipboarddata() { }
-            
-            template<class T_>
-            T_ &GetData() const {
-                return *reinterpret_cast<T_*>(data);
-            }
-            
-            void *data;
-        };
-        
+        ///@cond internal        
         template<class T_>
-        struct clipboarddata_impl : public clipboarddata {
-            clipboarddata_impl(T_ data) : mydata(std::move(data)) {
-                this->data = &mydata;
-            }
-            
-            clipboarddata_impl(const clipboarddata_impl &) = delete;
-            
-            clipboarddata_impl(clipboarddata_impl &&other) {
-                mydata = std::move(other.data);
-            }
-            
-            clipboarddata_impl &operator =(clipboarddata_impl &&other) {
-                mydata = std::move(other.data);
-                
-                return *this;
-            }
-            
-            clipboarddata_impl &operator =(const clipboarddata_impl &other) = delete;
-            
-            virtual ~clipboarddata_impl() { }
-            
-            T_ mydata;
-        };
-        
-        template<class T_>
-        std::shared_ptr<clipboarddata> make_clipboarddata(T_ data) {
-            return std::shared_ptr<clipboarddata>{new clipboarddata_impl<T_>(std::move(data))};            
+        std::shared_ptr<CopyFreeAny> make_clipboarddata(T_ data) {
+            return std::shared_ptr<CopyFreeAny>{new CopyFreeAny_impl<T_>(std::move(data))};            
         }
        
         struct clipboardentry {
             Atom type;
-            std::shared_ptr<clipboarddata> data;
+            std::shared_ptr<CopyFreeAny> data;
             
             bool operator ==(const clipboardentry &other) const {
                 return type == other.type;
@@ -812,15 +783,56 @@ namespace Gorgon {
 				unsigned char *data;
 				int format;
 
-				XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes, &data);
-                std::cout<<GetAtomName(type)<<std::endl;
-				
-				if(bytes) {
-					XGetWindowProperty (display, windowhandle, 
-							XA_CP_PROP, 0,bytes,0,
-							AnyPropertyType, &type, &format,
-							&len, &dummy, &data);
-					
+				XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, (unsigned long)-1, 1, AnyPropertyType, &type, &format, &bytes, &dummy, &data);
+                bytes *= format/8;
+                
+                if(type == XA_INCR) {
+                    std::vector<Byte> imgdata;
+                    std::cout<<"Starting INCR"<<std::endl;
+                    unsigned long initsize = *(int32_t*)data;
+                    
+                    while(true) {                        
+                        while(XCheckIfEvent(display, &event, waitfor_cppropertynotify, (char*)windowhandle) == False) {
+                            XFlush(display);
+                            std::this_thread::yield();
+                        }
+                        
+                        XFlush(display);
+                        XGetWindowProperty(display, windowhandle, XA_CP_PROP, 0, (unsigned long)-1, 1, AnyPropertyType, &type, &format, &bytes, &dummy, &data);
+                        
+                        if(!bytes) {
+                            if(imgdata.size()<initsize)
+                                continue;
+                            else
+                                break;
+                        }
+                        
+                        if(type == 0)
+                            continue;
+                        
+                        bytes *= format/8;
+                        
+                        auto cur = imgdata.size();
+                        imgdata.resize(imgdata.size()+bytes);
+                        
+                        memcpy(&imgdata[cur], data, bytes);
+                        XFree(data);
+                    }
+                    std::cout<<"INCR done: "<<imgdata.size()<<std::endl;
+                   
+					if(request == XA_PNG) {
+                        Encoding::Png.Decode(imgdata, ret);
+                    }
+                    else if(request == XA_BMP) {
+                        IO::MemoryInputStream stream((char *)&imgdata[0], (char *)&imgdata[0]+imgdata.size());
+                        ret.ImportBMP(stream);
+                    }
+                    else if(request == XA_JPG) {
+                        Encoding::Jpg.Decode(imgdata, ret);
+                    }
+                    std::cout<<"Decode done"<<std::endl;
+                }
+				else if(bytes) {					
 					if(request == XA_PNG) {
                         Encoding::Png.Decode(data, bytes, ret);
                     }
@@ -833,7 +845,6 @@ namespace Gorgon {
                     }
                     
 					XFree(data);
-                    XDeleteProperty(display, windowhandle, XA_CP_PROP);
 				}
 			}
 			
