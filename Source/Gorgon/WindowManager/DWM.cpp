@@ -23,6 +23,7 @@
 
 #include <windows.h>
 #include <ShlObj.h>
+#include "../Utils/ScopeGuard.h"
 
 #	undef CreateWindow
 #	undef Rectangle
@@ -641,6 +642,8 @@ namespace Gorgon {
 		std::vector<int> getclipboardformats() {
 			std::vector<int> ret;
 
+			Utils::ScopeGuard g(&CloseClipboard);
+
 			if(!OpenClipboard(NULL))
 				return ret;
 
@@ -729,6 +732,9 @@ namespace Gorgon {
 
 		void SetClipboardText(const std::string &text, Resource::GID::Type type, bool unicode, bool append) {
 			if(OpenClipboard(NULL)) {
+
+				Utils::ScopeGuard g(&CloseClipboard);
+
 				if(!append) {
 					EmptyClipboard();
 					clipboard_entries.clear();
@@ -780,13 +786,15 @@ namespace Gorgon {
 
 					SetClipboardData(cf_html, clipbuffer);
 				}
-				CloseClipboard();
 			}
 		}
 		
 		std::string GetClipboardText(Resource::GID::Type type) {
 			HANDLE clip;
 			if(OpenClipboard(NULL)) {
+
+				Utils::ScopeGuard g(&CloseClipboard);
+
 				bool unicode = false;
 				if(type == Resource::GID::Text) {
 					unicode = true;
@@ -850,6 +858,9 @@ namespace Gorgon {
 			if(!OpenClipboard(NULL))
 				return ret;
 
+			Utils::ScopeGuard g(&CloseClipboard);
+
+
 			if(type == Resource::GID::FileList) {
 				auto clip = GetClipboardData(CF_HDROP);
 
@@ -879,9 +890,13 @@ namespace Gorgon {
 					int last = 0;
 
 					for(int i=0; i<(int)data.length(); i++) {
-						if(data[i] == '\n' && i-last > 0) {
-							ret.push_back(data.substr(last, i-last));
-							last = i + 1;
+						if(data[i] == '\n') {
+							if(i-last > 0) {
+								ret.push_back(data.substr(last, i-last));
+								last = i + 1;
+							}
+							else 
+								last++;
 						}
 						else if(data[i] == '\r') {
 							ret.push_back(data.substr(last, i-last));
@@ -916,13 +931,14 @@ namespace Gorgon {
 				}
 			}
 
-			CloseClipboard();
-
 			return ret;
 		}
 
 		void SetClipboardList(std::vector<std::string> list, Resource::GID::Type type, bool append) {
 			if(OpenClipboard(NULL)) {
+
+				Utils::ScopeGuard g(&CloseClipboard);
+
 				if(!append) {
 					EmptyClipboard();
 					clipboard_entries.clear();
@@ -950,6 +966,8 @@ namespace Gorgon {
 						str += 7;
 						memcpy(str, &e[0], e.length());
 						str += e.length();
+
+						first = false;
 					}
 					*str = 0;
 					GlobalUnlock(uri);
@@ -985,8 +1003,6 @@ namespace Gorgon {
 				else if(type == Resource::GID::FileList) {
 				}
 			}
-
-			CloseClipboard();
 		}
 
 		Containers::Image GetClipboardBitmap() {
@@ -1008,6 +1024,8 @@ namespace Gorgon {
 			}
 			
 			if(!OpenClipboard(NULL)) return ret;
+
+			Utils::ScopeGuard g(&CloseClipboard);
 
 			auto clip = GetClipboardData(cf_g_bmp);
 
@@ -1052,7 +1070,6 @@ namespace Gorgon {
 				return ret;
 			}
 
-			CloseClipboard();
 			return ret;
 		}
 
@@ -1067,9 +1084,9 @@ namespace Gorgon {
 				}
 			}
 
-			CloseClipboard();
-
 			if(!OpenClipboard(wind)) return;
+
+			Utils::ScopeGuard g(&CloseClipboard);
 
 			if(!append) {
 				EmptyClipboard();
@@ -1089,8 +1106,6 @@ namespace Gorgon {
 			//jpg does not work on windows
 
 			//add file data later
-
-			CloseClipboard();
 		}
 
 		//Monitor Related
