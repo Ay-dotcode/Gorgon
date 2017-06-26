@@ -2,6 +2,7 @@ SET(Local
     Console.h
 	Assert.h
 	Logging.h
+	ScopeGuard.h
 )
 
 

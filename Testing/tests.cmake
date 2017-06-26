@@ -23,6 +23,7 @@ SET(UnitTests
 	Geometry
 	Hashmap
 	EncodingImage
+	ScopeGuard
 	String
 	Logging
 	URI
