@@ -287,6 +287,25 @@ namespace Gorgon {
 									SetClipboardData(type, clipbuffer);
 									break;
 								}
+								else if(e.type == WindowManager::cf_g_bmp) {
+									std::ostringstream data;
+									Containers::Image &img = e.data->GetData<Containers::Image>();
+
+									WindowManager::clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, img.GetTotalSize()+4*3));
+									auto clipbuffer = WindowManager::clipbuffers.back();
+
+									auto buff = GlobalLock(clipbuffer);
+									((int32_t*)buff)[0] = img.GetWidth();
+									((int32_t*)buff)[1] = img.GetHeight();
+									((int32_t*)buff)[2] = (int32_t)img.GetMode();
+
+									memcpy((Byte*)buff+3*4, img.RawData(), img.GetTotalSize());
+
+									GlobalUnlock(clipbuffer);
+
+									SetClipboardData(type, clipbuffer);
+									break;
+								}
 							}
 						}
 					}
@@ -1000,7 +1019,32 @@ namespace Gorgon {
 
 					SetClipboardData(CF_HDROP, clipbuffer);
 				}
-				else if(type == Resource::GID::FileList) {
+				else if(type == Resource::GID::URIList) {
+					size_t len;
+
+
+					len = 0;
+					for(const auto &e : list)
+						len += e.length() + 2;
+
+					clipbuffers.push_back(GlobalAlloc(GMEM_DDESHARE, len+1));
+					auto uri = clipbuffers.back();
+					char *str = (char*)GlobalLock(uri);
+					bool first = true;
+					for(auto &e : list) {
+						if(!first) {
+							*str++ = '\r';
+							*str++ = '\n';
+						}
+
+						memcpy(str, &e[0], e.length());
+						str += e.length();
+
+						first = false;
+					}
+					*str = 0;
+					GlobalUnlock(uri);
+					SetClipboardData(cf_urilist, uri);
 				}
 			}
 		}
@@ -1030,7 +1074,15 @@ namespace Gorgon {
 			auto clip = GetClipboardData(cf_g_bmp);
 
 			if(clip) {
-				//not yet
+				auto sz = GlobalSize(clip);
+				Byte *data = (Byte*)GlobalLock(clip);
+				int w = ((uint32_t*)data)[0], h = ((uint32_t*)data)[1];
+				Graphics::ColorMode mode = (Graphics::ColorMode)((uint32_t*)data)[2];
+
+				ret.Resize({w, h}, mode);
+				memcpy(ret.RawData(), data+3*4, ret.GetTotalSize());
+
+				GlobalUnlock(clip);
 				CloseClipboard();
 				return ret;
 			}
@@ -1098,9 +1150,11 @@ namespace Gorgon {
 
 			auto data = make_clipboarddata(std::move(img));
 
+			clipboard_entries.push_back({cf_g_bmp, data});
 			clipboard_entries.push_back({cf_png, data});
 			clipboard_entries.push_back({CF_DIB, data});
 
+			SetClipboardData(cf_g_bmp, nullptr);
 			SetClipboardData(cf_png, nullptr);
 			SetClipboardData(CF_DIB, nullptr);
 			//jpg does not work on windows
