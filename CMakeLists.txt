@@ -162,6 +162,12 @@ if(${FLAC_SUPPORT})
 	target_link_libraries(Gorgon flac)
 endif()
 
+if(WIN32)
+	add_definitions("-DDWM")
+else()
+	add_definitions("-DX11")
+endif()
+
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
    "${INSTALL_INCLUDE_DIR}")
 

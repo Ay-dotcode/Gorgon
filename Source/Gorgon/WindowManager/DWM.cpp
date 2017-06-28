@@ -221,6 +221,194 @@ namespace Gorgon {
 
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
 
+			Input::Keyboard::Key maposkey(WPARAM wParam, LPARAM lParam) {
+				switch(wParam) {
+					case VK_SHIFT://Input::Keyboard::
+						//if(lParam)
+						return Input::Keyboard::Shift;
+					case VK_CONTROL:
+						return Input::Keyboard::Control;
+					case VK_MENU:
+						return Input::Keyboard::Alt;
+					case VK_LWIN:
+						return Input::Keyboard::Meta;
+
+					case VK_HOME:
+						return Input::Keyboard::Home;
+					case VK_END:
+						return Input::Keyboard::End;
+					case VK_INSERT:
+						return Input::Keyboard::Insert;
+					case VK_DELETE:
+						return Input::Keyboard::Delete;
+					case VK_PRIOR:
+						return Input::Keyboard::PageUp;
+					case VK_NEXT:
+						return Input::Keyboard::PageDown;
+
+					case VK_LEFT:
+						return Input::Keyboard::Left;
+					case VK_UP:
+						return Input::Keyboard::Up;
+					case VK_RIGHT:
+						return Input::Keyboard::Right;
+					case VK_DOWN:
+						return Input::Keyboard::Down;
+
+					case VK_SNAPSHOT:
+						return Input::Keyboard::PrintScreen;
+					case VK_PAUSE:
+						return Input::Keyboard::Pause;
+
+					case VK_APPS:
+						return Input::Keyboard::Menu;
+
+					case VK_CAPITAL:
+						return Input::Keyboard::CapsLock;
+
+					case VK_RETURN: //Input::Keyboard::Numpad_Enter
+						return Input::Keyboard::Enter;
+					case VK_TAB:
+						return Input::Keyboard::Tab;
+					case VK_BACK:
+						return Input::Keyboard::Backspace;
+					case VK_SPACE:
+						return Input::Keyboard::Space;
+					case VK_ESCAPE:
+						return Input::Keyboard::Escape;
+
+					case VK_F1:
+						return Input::Keyboard::F1;
+					case VK_F2:
+						return Input::Keyboard::F2;
+					case VK_F3:
+						return Input::Keyboard::F3;
+					case VK_F4:
+						return Input::Keyboard::F4;
+					case VK_F5:
+						return Input::Keyboard::F5;
+					case VK_F6:
+						return Input::Keyboard::F6;
+					case VK_F7:
+						return Input::Keyboard::F7;
+					case VK_F8:
+						return Input::Keyboard::F8;
+					case VK_F9:
+						return Input::Keyboard::F9;
+					case VK_F10:
+						return Input::Keyboard::F10;
+					case VK_F11:
+						return Input::Keyboard::F11;
+					case VK_F12:
+						return Input::Keyboard::F12;
+
+					case 'A':
+						return Input::Keyboard::A;
+					case 'B':
+						return Input::Keyboard::B;
+					case 'C':
+						return Input::Keyboard::C;
+					case 'D':
+						return Input::Keyboard::D;
+					case 'E':
+						return Input::Keyboard::E;
+					case 'F':
+						return Input::Keyboard::F;
+					case 'G':
+						return Input::Keyboard::G;
+					case 'H':
+						return Input::Keyboard::H;
+					case 'I':
+						return Input::Keyboard::I;
+					case 'J':
+						return Input::Keyboard::J;
+					case 'K':
+						return Input::Keyboard::K;
+					case 'L':
+						return Input::Keyboard::L;
+					case 'M':
+						return Input::Keyboard::M;
+					case 'N':
+						return Input::Keyboard::N;
+					case 'O':
+						return Input::Keyboard::O;
+					case 'P':
+						return Input::Keyboard::P;
+					case 'Q':
+						return Input::Keyboard::Q;
+					case 'R':
+						return Input::Keyboard::R;
+					case 'S':
+						return Input::Keyboard::S;
+					case 'T':
+						return Input::Keyboard::T;
+					case 'U':
+						return Input::Keyboard::U;
+					case 'V':
+						return Input::Keyboard::V;
+					case 'W':
+						return Input::Keyboard::W;
+					case 'X':
+						return Input::Keyboard::X;
+					case 'Y':
+						return Input::Keyboard::Y;
+					case 'Z':
+						return Input::Keyboard::Z;
+
+					case '1':
+						return Input::Keyboard::Number_1;
+					case '2':
+						return Input::Keyboard::Number_2;
+					case '3':
+						return Input::Keyboard::Number_3;
+					case '4':
+						return Input::Keyboard::Number_4;
+					case '5':
+						return Input::Keyboard::Number_5;
+					case '6':
+						return Input::Keyboard::Number_6;
+					case '7':
+						return Input::Keyboard::Number_7;
+					case '8':
+						return Input::Keyboard::Number_8;
+					case '9':
+						return Input::Keyboard::Number_9;
+					case '0':
+						return Input::Keyboard::Number_0;
+
+					case VK_NUMPAD1:
+						return Input::Keyboard::Numpad_1;
+					case VK_NUMPAD2:
+						return Input::Keyboard::Numpad_2;
+					case VK_NUMPAD3:
+						return Input::Keyboard::Numpad_3;
+					case VK_NUMPAD4:
+						return Input::Keyboard::Numpad_4;
+					case VK_NUMPAD5:
+						return Input::Keyboard::Numpad_5;
+					case VK_NUMPAD6:
+						return Input::Keyboard::Numpad_6;
+					case VK_NUMPAD7:
+						return Input::Keyboard::Numpad_7;
+					case VK_NUMPAD8:
+						return Input::Keyboard::Numpad_8;
+					case VK_NUMPAD9:
+						return Input::Keyboard::Numpad_9;
+					case VK_ADD:
+						return Input::Keyboard::Numpad_Plus;
+					case VK_SUBTRACT:
+						return Input::Keyboard::Numpad_Minus;
+					case VK_MULTIPLY:
+						return Input::Keyboard::Numpad_Mult;
+					case VK_DIVIDE:
+						return Input::Keyboard::Numpad_Div;
+					case VK_DECIMAL:
+						return Input::Keyboard::Numpad_Decimal;
+					case VK_NUMLOCK:
+						return Input::Keyboard::Numlock;
+				}
+			}
+
 			LRESULT Proc(UINT message, WPARAM wParam, LPARAM lParam) {
 
 				switch(message) {
