@@ -11,11 +11,16 @@ namespace Keyboard {
 	/// A key on the keyboard
 	typedef Gorgon::Input::Key  Key;
 
-	/// @name Keycodes
-	///       Contains the codes for keys. These should be used
-	///       instead of ASCII codes as these codes are different
-	///       than ASCII codes apart from letters and numbers.
-	///       Letters are lower case.
+    /**
+	 * @name Keycodes
+     * Contains the codes for keys. These should be used instead of ASCII 
+     * codes as these codes are different than ASCII codes apart from letters 
+     * and numbers. Letters are lower case. This is more or less a safe list, 
+     * many keys such as dot or comma depends on keyboard locale and should 
+     * not be trusted. Similarly Numpad, right modifier keys, PrintScreen, 
+     * Pause, menu, numlock, insert keys might be missing in some keyboards.
+     * This list of keycodes will always be transformed.
+     */
 	/// @{
 	constexpr Key Shift         = 0b100000001;
 	constexpr Key Control       = 0b100000010;
@@ -121,6 +126,9 @@ namespace Keyboard {
 	constexpr Key Numpad_Enter  = 0b101101101;
 	constexpr Key Numpad_Plus   = 0b101101110;
 	constexpr Key Numpad_Minus  = 0b101101111;
+    
+    /// Keycodes that are transported from OS.
+	constexpr Key OSTransport   = 0b1000000000;
 	/// @}
 
 	/// A character, future compatibility for Unicode

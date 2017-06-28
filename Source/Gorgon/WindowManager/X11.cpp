@@ -27,6 +27,8 @@
 
 #include <GL/glx.h>
 
+#include "X11Keysym.h"
+
 
 #undef None
 
@@ -299,7 +301,7 @@ namespace Gorgon {
             else 
                 return XGetAtomName(WindowManager::display, atom);
         }
-		//Clipboard related
+		//BEGIN Clipboard related
         
         ///@cond internal        
         template<class T_>
@@ -425,9 +427,9 @@ namespace Gorgon {
                     Containers::PushBackUnique(ret, Resource::GID::URIList);
                 }
                 else
-                    std::cout<<GetAtomName(atom)<<std::endl;
+                    ;//std::cout<<GetAtomName(atom)<<std::endl;
             }
-            std::cout<<std::endl;
+            //std::cout<<std::endl;
             
             return ret;
         }
@@ -788,7 +790,7 @@ namespace Gorgon {
                 
                 if(type == XA_INCR) {
                     std::vector<Byte> imgdata;
-                    std::cout<<"Starting INCR"<<std::endl;
+                    //std::cout<<"Starting INCR"<<std::endl;
                     unsigned long initsize = *(int32_t*)data;
                     
                     while(true) {                        
@@ -818,7 +820,7 @@ namespace Gorgon {
                         memcpy(&imgdata[cur], data, bytes);
                         XFree(data);
                     }
-                    std::cout<<"INCR done: "<<imgdata.size()<<std::endl;
+                    //std::cout<<"INCR done: "<<imgdata.size()<<std::endl;
                    
 					if(request == XA_PNG) {
                         Encoding::Png.Decode(imgdata, ret);
@@ -830,7 +832,7 @@ namespace Gorgon {
                     else if(request == XA_JPG) {
                         Encoding::Jpg.Decode(imgdata, ret);
                     }
-                    std::cout<<"Decode done"<<std::endl;
+                    //std::cout<<"Decode done"<<std::endl;
                 }
 				else if(bytes) {					
 					if(request == XA_PNG) {
@@ -871,8 +873,9 @@ namespace Gorgon {
             XSetSelectionOwner(display, XA_CLIPBOARD, windowhandle, CurrentTime);
             XFlush(display);
         }
+        //END
 	
-		//Monitor Related
+		//BEGIN Monitor Related
 		
 		Monitor::Monitor() {
 			data = new internal::monitordata;
@@ -1034,6 +1037,12 @@ failsafe: //this should use X11 screen as monitor
             fixmonitorworkarea();
 		}
 		
+		bool Monitor::IsChangeEventSupported() {
+			return false;//xrandr;
+		}
+		
+		//END
+		
 		    
         Geometry::Point GetMousePosition(Gorgon::internal::windowdata *wind) {
             Geometry::Point ret;
@@ -1050,10 +1059,6 @@ failsafe: //this should use X11 screen as monitor
             return ret;
         }
 
-		
-		bool Monitor::IsChangeEventSupported() {
-			return false;//xrandr;
-		}
 	
         Icon::Icon() {
             data = new internal::icondata;
@@ -1414,6 +1419,37 @@ failsafe: //this should use X11 screen as monitor
         }
     }
 	
+	Input::Keyboard::Key mapx11key(KeySym key, unsigned int keycode) {
+        if(key >= 'a' && key <='Z')
+            return key;
+        
+        if(key >= '0' && key <='9')
+            return key;
+        
+        if(key >= 'A' && key <='Z')
+            return key + ('a' - 'A');
+        
+        switch(key) {
+            case XK_Shift_L:
+                return Input::Keyboard::Shift;
+            case XK_Shift_R:
+                return Input::Keyboard::RShift;
+            case XK_Control_L:
+                return Input::Keyboard::Control;
+            case XK_Control_R:
+                return Input::Keyboard::RControl;
+            case XK_Alt_L:
+                return Input::Keyboard::Alt;
+            case XK_Alt_R:
+                return Input::Keyboard::RAlt;
+            case XK_Super_L:
+                return Input::Keyboard::Meta;
+            case XK_Super_R:
+                return Input::Keyboard::RMeta;
+        }
+        return keycode + Input::Keyboard::OSTransport;
+    }
+	
 	void Window::processmessages() {
 		XEvent event;
         
@@ -1449,9 +1485,6 @@ failsafe: //this should use X11 screen as monitor
                         this->data->xdnd.requested = false;
                         
                         cursorover = true;
-                        
-                        auto xdnd_version = ( event.xclient.data.l[1] >> 24);
-                        //std::cout<<"Version: "<<xdnd_version <<std::endl;
                         
                         std::vector<Atom> atoms;
                         
@@ -1718,7 +1751,7 @@ failsafe: //this should use X11 screen as monitor
                     WindowManager::clipboard_entries.clear();
                     break;
                 
-                case SelectionRequest:
+                case SelectionRequest: {
                     XEvent respond;
                     respond.xselection.property= 0;
                     
@@ -1840,7 +1873,8 @@ failsafe: //this should use X11 screen as monitor
                     respond.xselection.time = event.xselectionrequest.time;
                     XSendEvent (WindowManager::display, event.xselectionrequest.requestor,0,0,&respond);
                     XFlush (WindowManager::display);
-                    break;
+                }
+                break;
                  
                 case EnterNotify:
                     cursorover = true;
@@ -1962,11 +1996,11 @@ failsafe: //this should use X11 screen as monitor
 						break;
 					}
 					
-					Byte buffer[2];
+					char buffer[40];
 					
 					int nchars = XLookupString(
 						&(event.xkey),
-						(char*)&buffer, 2, 
+						buffer, 40, 
 						(KeySym*)&key, nullptr 
 					);
 					
@@ -1994,11 +2028,11 @@ failsafe: //this should use X11 screen as monitor
 								KeyEvent.FireFor(data->handlers[key], key, true);
 							}
 							else {
-								Byte buffer[2];
+								char buffer[2];
 						
 								int nchars = XLookupString(
 									&(event.xkey),
-									(char*)&buffer, 2, 
+									buffer, 2, 
 									(KeySym*)&key, nullptr 
 								);
 								

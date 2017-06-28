@@ -10,6 +10,7 @@ IF(${WIN32})
 ELSE()
 	LIST(APPEND Local
 		X11.cpp
+		X11Keysym.h
 	)
 	
 	#INCLUDE(${CMAKE_CURRENT_LIST_DIR}/XRANDR.cmake)
