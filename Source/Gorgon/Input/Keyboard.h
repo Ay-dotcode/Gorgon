@@ -19,116 +19,136 @@ namespace Keyboard {
      * many keys such as dot or comma depends on keyboard locale and should 
      * not be trusted. Similarly Numpad, right modifier keys, PrintScreen, 
      * Pause, menu, numlock, insert keys might be missing in some keyboards.
-     * This list of keycodes will always be transformed.
+     * This list of keycodes will always be transformed. To ease the using of
+	 * keycodes, use the following statement in the event handler:
+	 * @code
+	 * namespace Keycodes = Gorgon::Input::Keyboard::Keycodes;
+	 * @endcode
      */
 	/// @{
-	constexpr Key Shift         = 0b100000001;
-	constexpr Key Control       = 0b100000010;
-	constexpr Key Alt           = 0b100000100;
-	constexpr Key Meta          = 0b100001000;
+	namespace Keycodes {
+		constexpr Key Shift         = 0b100000001;
+		constexpr Key Control       = 0b100000010;
+		constexpr Key Alt           = 0b100000100;
+		constexpr Key Meta          = 0b100001000;
 
-	constexpr Key RShift        = 0b110000001;
-	constexpr Key RControl      = 0b110000010;
-	constexpr Key RAlt          = 0b110000100;
-	constexpr Key RMeta         = 0b110001000;
+		constexpr Key RShift        = 0b110000001;
+		constexpr Key RControl      = 0b110000010;
+		constexpr Key RAlt          = 0b110000100;
+		constexpr Key RMeta         = 0b110001000;
 
-	constexpr Key Home          = 0b100010001;
-	constexpr Key End           = 0b100010010;
-	constexpr Key Insert        = 0b100010011;
-	constexpr Key Delete        = 0b100010100;
-	constexpr Key PageUp        = 0b100010101;
-	constexpr Key PageDown      = 0b100010110;
+		constexpr Key Home          = 0b100010001;
+		constexpr Key End           = 0b100010010;
+		constexpr Key Insert        = 0b100010011;
+		constexpr Key Delete        = 0b100010100;
+		constexpr Key PageUp        = 0b100010101;
+		constexpr Key PageDown      = 0b100010110;
 
-	constexpr Key PrintScreen   = 0b100010111;
-	constexpr Key Pause         = 0b100011000;
+		constexpr Key PrintScreen   = 0b100010111;
+		constexpr Key Pause         = 0b100011000;
 
-	constexpr Key Menu          = 0b100011001;
+		constexpr Key Menu          = 0b100011001;
 
-	constexpr Key CapsLock      = 0b100011010;
-	constexpr Key Numlock       = 0b100011011;
-	constexpr Key ScrollLock    = 0b100011100;
+		constexpr Key CapsLock      = 0b100011010;
+		constexpr Key Numlock       = 0b100011011;
+		constexpr Key ScrollLock    = 0b100011100;
 
-	constexpr Key Enter         = 0x0D;
-	constexpr Key Tab           = 0x0B;
-	constexpr Key Backspace     = 0x08;
-	constexpr Key Space         = 0x20;
-	constexpr Key Escape        = 0x1B;
+		constexpr Key Enter         = 0x0D;
+		constexpr Key Tab           = 0x0B;
+		constexpr Key Backspace     = 0x08;
+		constexpr Key Space         = 0x20;
+		constexpr Key Escape        = 0x1B;
 
-	constexpr Key Left          = 0b100100000;
-	constexpr Key Up            = 0b100100001;
-	constexpr Key Right         = 0b100100010;
-	constexpr Key Down          = 0b100100011;
+		constexpr Key Left          = 0b100100000;
+		constexpr Key Up            = 0b100100001;
+		constexpr Key Right         = 0b100100010;
+		constexpr Key Down          = 0b100100011;
 
-	constexpr Key F1            = 0b101000000 + 1;
-	constexpr Key F2            = 0b101000000 + 2;
-	constexpr Key F3            = 0b101000000 + 3;
-	constexpr Key F4            = 0b101000000 + 4;
-	constexpr Key F5            = 0b101000000 + 5;
-	constexpr Key F6            = 0b101000000 + 6;
-	constexpr Key F7            = 0b101000000 + 7;
-	constexpr Key F8            = 0b101000000 + 8;
-	constexpr Key F9            = 0b101000000 + 9;
-	constexpr Key F10           = 0b101000000 + 10;
-	constexpr Key F11           = 0b101000000 + 11;
-	constexpr Key F12           = 0b101000000 + 12;
+		constexpr Key F1            = 0b101000000 + 1;
+		constexpr Key F2            = 0b101000000 + 2;
+		constexpr Key F3            = 0b101000000 + 3;
+		constexpr Key F4            = 0b101000000 + 4;
+		constexpr Key F5            = 0b101000000 + 5;
+		constexpr Key F6            = 0b101000000 + 6;
+		constexpr Key F7            = 0b101000000 + 7;
+		constexpr Key F8            = 0b101000000 + 8;
+		constexpr Key F9            = 0b101000000 + 9;
+		constexpr Key F10           = 0b101000000 + 10;
+		constexpr Key F11           = 0b101000000 + 11;
+		constexpr Key F12           = 0b101000000 + 12;
 
-	constexpr Key A             = 'a';
-	constexpr Key B             = 'b';
-	constexpr Key C             = 'c';
-	constexpr Key D             = 'd';
-	constexpr Key E             = 'e';
-	constexpr Key F             = 'f';
-	constexpr Key G             = 'g';
-	constexpr Key H             = 'h';
-	constexpr Key I             = 'i';
-	constexpr Key J             = 'j';
-	constexpr Key K             = 'k';
-	constexpr Key L             = 'l';
-	constexpr Key M             = 'm';
-	constexpr Key N             = 'n';
-	constexpr Key O             = 'o';
-	constexpr Key P             = 'p';
-	constexpr Key Q             = 'q';
-	constexpr Key R             = 'r';
-	constexpr Key S             = 's';
-	constexpr Key T             = 't';
-	constexpr Key U             = 'u';
-	constexpr Key V             = 'v';
-	constexpr Key W             = 'w';
-	constexpr Key X             = 'x';
-	constexpr Key Y             = 'y';
-	constexpr Key Z             = 'z';
+		constexpr Key A             = 'a';
+		constexpr Key B             = 'b';
+		constexpr Key C             = 'c';
+		constexpr Key D             = 'd';
+		constexpr Key E             = 'e';
+		constexpr Key F             = 'f';
+		constexpr Key G             = 'g';
+		constexpr Key H             = 'h';
+		constexpr Key I             = 'i';
+		constexpr Key J             = 'j';
+		constexpr Key K             = 'k';
+		constexpr Key L             = 'l';
+		constexpr Key M             = 'm';
+		constexpr Key N             = 'n';
+		constexpr Key O             = 'o';
+		constexpr Key P             = 'p';
+		constexpr Key Q             = 'q';
+		constexpr Key R             = 'r';
+		constexpr Key S             = 's';
+		constexpr Key T             = 't';
+		constexpr Key U             = 'u';
+		constexpr Key V             = 'v';
+		constexpr Key W             = 'w';
+		constexpr Key X             = 'x';
+		constexpr Key Y             = 'y';
+		constexpr Key Z             = 'z';
 
-	constexpr Key Number_1      = '1';
-	constexpr Key Number_2      = '2';
-	constexpr Key Number_3      = '3';
-	constexpr Key Number_4      = '4';
-	constexpr Key Number_5      = '5';
-	constexpr Key Number_6      = '6';
-	constexpr Key Number_7      = '7';
-	constexpr Key Number_8      = '8';
-	constexpr Key Number_9      = '9';
-	constexpr Key Number_0      = '0';
+		constexpr Key Number_1      = '1';
+		constexpr Key Number_2      = '2';
+		constexpr Key Number_3      = '3';
+		constexpr Key Number_4      = '4';
+		constexpr Key Number_5      = '5';
+		constexpr Key Number_6      = '6';
+		constexpr Key Number_7      = '7';
+		constexpr Key Number_8      = '8';
+		constexpr Key Number_9      = '9';
+		constexpr Key Number_0      = '0';
 
-	constexpr Key Numpad_0      = 0b101100000 + 0;
-	constexpr Key Numpad_1      = 0b101100000 + 1;
-	constexpr Key Numpad_2      = 0b101100000 + 2;
-	constexpr Key Numpad_3      = 0b101100000 + 3;
-	constexpr Key Numpad_4      = 0b101100000 + 4;
-	constexpr Key Numpad_5      = 0b101100000 + 5;
-	constexpr Key Numpad_6      = 0b101100000 + 6;
-	constexpr Key Numpad_7      = 0b101100000 + 7;
-	constexpr Key Numpad_8      = 0b101100000 + 8;
-	constexpr Key Numpad_9      = 0b101100000 + 9;
-	constexpr Key Numpad_Decimal= 0b101101010;
-	constexpr Key Numpad_Div    = 0b101101011;
-	constexpr Key Numpad_Mult   = 0b101101100;
-	constexpr Key Numpad_Enter  = 0b101101101;
-	constexpr Key Numpad_Plus   = 0b101101110;
-	constexpr Key Numpad_Minus  = 0b101101111;
+		constexpr Key Numpad_0      = 0b101100000 + 0;
+		constexpr Key Numpad_1      = 0b101100000 + 1;
+		constexpr Key Numpad_2      = 0b101100000 + 2;
+		constexpr Key Numpad_3      = 0b101100000 + 3;
+		constexpr Key Numpad_4      = 0b101100000 + 4;
+		constexpr Key Numpad_5      = 0b101100000 + 5;
+		constexpr Key Numpad_6      = 0b101100000 + 6;
+		constexpr Key Numpad_7      = 0b101100000 + 7;
+		constexpr Key Numpad_8      = 0b101100000 + 8;
+		constexpr Key Numpad_9      = 0b101100000 + 9;
+		constexpr Key Numpad_Decimal= 0b101101010;
+		constexpr Key Numpad_Div    = 0b101101011;
+		constexpr Key Numpad_Mult   = 0b101101100;
+		constexpr Key Numpad_Enter  = 0b101101101;
+		constexpr Key Numpad_Plus   = 0b101101110;
+		constexpr Key Numpad_Minus  = 0b101101111;
     
-    /// Keycodes that are transported from OS.
-	constexpr Key OSTransport   = 0b1000000000;
+		/// Keycodes that are transported from OS.
+		constexpr Key OSTransport   = 0b1000000000;
+
+		/// Returns if the key is an enter key
+		inline constexpr bool IsEnter(Key key) {
+			return key == Enter || key == Numpad_Enter;
+		}
+
+		/// Returns if the given key is a known modifier
+		inline constexpr bool IsModifier(Key key) {
+			return 
+				key == Shift || key == RShift || 
+				key == Control || key == RControl || 
+				key == Alt || key == RAlt ||
+				key == Meta || key == RMeta;
+		}
+	}
 	/// @}
 
 	/// A character, future compatibility for Unicode
@@ -145,13 +165,13 @@ namespace Keyboard {
 			/// No modifier is pressed
 			None		= 0,
 			/// Only shift modifier is pressed
-			Shift		= Keyboard::Shift,
+			Shift		= Keycodes::Shift,
 			/// Only control modifier is pressed
-			Ctrl		= Keyboard::Control,
+			Ctrl		= Keycodes::Control,
 			/// Only alt modifier is pressed
-			Alt			= Keyboard::Alt,
+			Alt			= Keycodes::Alt,
 			/// Only meta/super/window modifier is pressed
-			Meta		= Keyboard::Meta,
+			Meta		= Keycodes::Meta,
 
 			/// Shift and control
 			ShiftCtrl	= Shift | Ctrl ,				
@@ -190,32 +210,32 @@ namespace Keyboard {
 			
 		/// Adds the given keyboard key to modifiers
 		void Add(Key key) {
-			if(key == Keyboard::Shift) {
+			if(key == Keycodes::Shift || key == Keycodes::RShift) {
 				Key = Type(Key | Shift);
 			}
-			else if(key == Keyboard::Control) {
+			else if(key == Keycodes::Control || key == Keycodes::RControl) {
 				Key = Type(Key | Ctrl);
 			}
-			else if(key == Keyboard::Alt) {
+			else if(key == Keycodes::Alt || key == Keycodes::RAlt) {
 				Key = Type(Key | Alt);
 			}
-			else if(key == Keyboard::Meta) {
+			else if(key == Keycodes::Meta || key == Keycodes::RMeta) {
 				Key = Type(Key | Meta);
 			}
 		}
 			
 		/// Removes the given keyboard key from modifiers
 		void Remove(Key key) {
-			if(key == Keyboard::Shift) {
+			if(key == Keycodes::Shift || key == Keycodes::RShift) {
 				Key = Type(Key & ~Shift);
 			}
-			else if(key == Keyboard::Control) {
+			else if(key == Keycodes::Control || key == Keycodes::RControl) {
 				Key = Type(Key & ~Ctrl);
 			}
-			else if(key == Keyboard::Alt) {
+			else if(key == Keycodes::Alt || key == Keycodes::RAlt) {
 				Key = Type(Key & ~Alt);
 			}
-			else if(key == Keyboard::Meta) {
+			else if(key == Keycodes::Meta || key == Keycodes::RMeta) {
 				Key = Type(Key & ~Meta);
 			}
 		}

@@ -220,64 +220,69 @@ int main() {
 	wind.KeyEvent.Register([&wind, &ptrtoken](Input::Key key, bool state) {
         static bool localptr = false;
         static bool resizable = false;
+
+		namespace Keycodes = Gorgon::Input::Keyboard::Keycodes;
         
-		if (!state && (key == 27 || key == 65307))
+		if (!state && (key == Keycodes::Escape))
 			exit(0);
 
-		else if(state && key == 13)
+		if(!state)
+			return true;
+
+		else if(Keycodes::IsEnter(key))
 			std::cout<<wind.GetMonitor().GetName()<<std::endl;
 
-		else if(state && (key == 'R' || key == 'r'))
+		else if(key == Keycodes::R)
 			wind.Restore();
 
-		else if(state && (key == 'X' || key == 'x'))
+		else if(key == Keycodes::X)
 			wind.Maximize();
 
-		else if(state && (key == 'N' || key == 'n'))
+		else if(key == Keycodes::N)
 			wind.Minimize();
 
-		else if(state && (key == 'S' || key == 's'))
+		else if(key == Keycodes::S)
 			wind.Resize({400,400});
 
-		else if(state && (key == 'C' || key == 'c'))
+		else if(key == Keycodes::C)
 			wind.Center();
 
-		else if(state && (key == 'E' || key == 'e')) {
-            if(resizable) {
-                wind.PreventResize();
-                resizable = false;
-            }
-            else {
-                wind.AllowResize();
-                resizable = true;
-            }
-        }
-        
-        else if(state && (key == 'H' || key == 'h'))
-            wind.HidePointer();
-        
-        else if(!state && (key == 'H' || key == 'h'))
-            wind.ShowPointer();
-        
-        else if(!state && (key == 'W' || key == 'w')) {
-            if(localptr) {
-                wind.SwitchToWMPointers();
-                localptr = false;
-            }
-            else {
-                wind.SwitchToLocalPointers();
-                localptr = true;
-            }
-        }
-        
-        else if(!state && (key == 'B' || key == 'b'))
-            ptrtoken = wind.Pointers.Set(Graphics::PointerType::Wait);
-        
-        else if(!state && (key == 'T' || key == 't'))
-            ptrtoken = wind.Pointers.Set(Graphics::PointerType::Text);
+		else if(key == Keycodes::E) {
+			if(resizable) {
+				wind.PreventResize();
+				resizable = false;
+			}
+			else {
+				wind.AllowResize();
+				resizable = true;
+			}
+		}
 
-        else if(!state && (key == 'P' || key == 'p'))
-            wind.Pointers.Reset(ptrtoken);
+		else if(key == Keycodes::H)
+			wind.HidePointer();
+
+		else if(key == Keycodes::H)
+			wind.ShowPointer();
+
+		else if(key == Keycodes::W) {
+			if(localptr) {
+				wind.SwitchToWMPointers();
+				localptr = false;
+			}
+			else {
+				wind.SwitchToLocalPointers();
+				localptr = true;
+			}
+		}
+
+		else if(key == Keycodes::B)
+			ptrtoken = wind.Pointers.Set(Graphics::PointerType::Wait);
+
+		else if(key == Keycodes::T)
+			ptrtoken = wind.Pointers.Set(Graphics::PointerType::Text);
+
+		else if(key == Keycodes::P)
+			wind.Pointers.Reset(ptrtoken);
 
 		return false;
 	});
