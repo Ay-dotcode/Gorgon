@@ -161,6 +161,10 @@ namespace Gorgon {
 			};
             
             struct icondata {
+                ~icondata() {
+                    delete[] data;
+                }
+                
                 int w = 0, h = 0;
                 Byte *data = nullptr;
             };
@@ -1420,7 +1424,7 @@ failsafe: //this should use X11 screen as monitor
     }
 	
 	Input::Keyboard::Key mapx11key(KeySym key, unsigned int keycode) {
-        if(key >= 'a' && key <='Z')
+        if(key >= 'a' && key <='z')
             return key;
         
         if(key >= '0' && key <='9')
@@ -1431,24 +1435,269 @@ failsafe: //this should use X11 screen as monitor
         
         switch(key) {
             case XK_Shift_L:
-                return Input::Keyboard::Shift;
+                return Input::Keyboard::Keycodes::Shift;
             case XK_Shift_R:
-                return Input::Keyboard::RShift;
+                return Input::Keyboard::Keycodes::RShift;
             case XK_Control_L:
-                return Input::Keyboard::Control;
+                return Input::Keyboard::Keycodes::Control;
             case XK_Control_R:
-                return Input::Keyboard::RControl;
+                return Input::Keyboard::Keycodes::RControl;
             case XK_Alt_L:
-                return Input::Keyboard::Alt;
+                return Input::Keyboard::Keycodes::Alt;
             case XK_Alt_R:
-                return Input::Keyboard::RAlt;
+                return Input::Keyboard::Keycodes::RAlt;
             case XK_Super_L:
-                return Input::Keyboard::Meta;
+                return Input::Keyboard::Keycodes::Meta;
             case XK_Super_R:
-                return Input::Keyboard::RMeta;
+                return Input::Keyboard::Keycodes::RMeta;
+                
+            case XK_Home:
+                return Input::Keyboard::Keycodes::Home;
+            case XK_End:
+                return Input::Keyboard::Keycodes::End;
+            case XK_Insert:
+                return Input::Keyboard::Keycodes::Insert;
+            case XK_Delete:
+                return Input::Keyboard::Keycodes::Delete;
+            case XK_Prior:
+                return Input::Keyboard::Keycodes::PageUp;
+            case XK_Next:
+                return Input::Keyboard::Keycodes::PageDown;
+
+            case XK_Print:
+                return Input::Keyboard::Keycodes::PrintScreen;
+            case XK_Pause:
+                return Input::Keyboard::Keycodes::Pause;
+
+            case XK_Menu:
+                return Input::Keyboard::Keycodes::Menu;
+
+            case XK_Caps_Lock:
+                return Input::Keyboard::Keycodes::CapsLock;
+            case XK_Num_Lock:
+                return Input::Keyboard::Keycodes::Numlock;
+            case XK_Scroll_Lock:
+                return Input::Keyboard::Keycodes::ScrollLock;
+
+            case XK_Return:
+                return Input::Keyboard::Keycodes::Enter;
+            case XK_Tab:
+                return Input::Keyboard::Keycodes::Tab;
+            case XK_BackSpace:
+                return Input::Keyboard::Keycodes::Backspace;
+            case XK_space:
+                return Input::Keyboard::Keycodes::Space;
+            case XK_Escape:
+                return Input::Keyboard::Keycodes::Escape;
+
+            case XK_Left:
+                return Input::Keyboard::Keycodes::Left;
+            case XK_Up:
+                return Input::Keyboard::Keycodes::Up;
+            case XK_Right:
+                return Input::Keyboard::Keycodes::Right;
+            case XK_Down:
+                return Input::Keyboard::Keycodes::Down;
+
+            case XK_F1:
+                return Input::Keyboard::Keycodes::F1;
+            case XK_F2:
+                return Input::Keyboard::Keycodes::F2;
+            case XK_F3:
+                return Input::Keyboard::Keycodes::F3;
+            case XK_F4:
+                return Input::Keyboard::Keycodes::F4;
+            case XK_F5:
+                return Input::Keyboard::Keycodes::F5;
+            case XK_F6:
+                return Input::Keyboard::Keycodes::F6;
+            case XK_F7:
+                return Input::Keyboard::Keycodes::F7;
+            case XK_F8:
+                return Input::Keyboard::Keycodes::F8;
+            case XK_F9:
+                return Input::Keyboard::Keycodes::F9;
+            case XK_F10:
+                return Input::Keyboard::Keycodes::F10;
+            case XK_F11:
+                return Input::Keyboard::Keycodes::F11;
+            case XK_F12:
+                return Input::Keyboard::Keycodes::F12;
+
+
+            case XK_KP_0:
+            case XK_KP_Insert:
+                return Input::Keyboard::Keycodes::Numpad_0;
+            case XK_KP_1:
+            case XK_KP_End:
+                return Input::Keyboard::Keycodes::Numpad_1;
+            case XK_KP_2:
+            case XK_KP_Down:
+                return Input::Keyboard::Keycodes::Numpad_2;
+            case XK_KP_3:
+            case XK_KP_Next:
+                return Input::Keyboard::Keycodes::Numpad_3;
+            case XK_KP_4:
+            case XK_KP_Left:
+                return Input::Keyboard::Keycodes::Numpad_4;
+            case XK_KP_5:
+            case XK_KP_Begin:
+                return Input::Keyboard::Keycodes::Numpad_5;
+            case XK_KP_6:
+            case XK_KP_Right:
+                return Input::Keyboard::Keycodes::Numpad_6;
+            case XK_KP_7:
+            case XK_KP_Home:
+                return Input::Keyboard::Keycodes::Numpad_7;
+            case XK_KP_8:
+            case XK_KP_Up:
+                return Input::Keyboard::Keycodes::Numpad_8;
+            case XK_KP_9:
+            case XK_KP_Prior:
+                return Input::Keyboard::Keycodes::Numpad_9;
+            case XK_KP_Decimal:
+                return Input::Keyboard::Keycodes::Numpad_Decimal;
+            case XK_KP_Divide:
+                return Input::Keyboard::Keycodes::Numpad_Div;
+            case XK_KP_Multiply:
+                return Input::Keyboard::Keycodes::Numpad_Mult;
+            case XK_KP_Enter:
+                return Input::Keyboard::Keycodes::Numpad_Enter;
+            case XK_KP_Add:
+                return Input::Keyboard::Keycodes::Numpad_Plus;
+            case XK_KP_Subtract:
+                return Input::Keyboard::Keycodes::Numpad_Minus;
         }
-        return keycode + Input::Keyboard::OSTransport;
+        return keycode + Input::Keyboard::Keycodes::OSTransport;
     }
+	
+    namespace Input { namespace Keyboard { namespace Keycodes {
+    std::string GetName(Key key) {
+        if(key>='a' && key<='z')
+            return std::string(1, toupper(key));
+        
+        if(key>='0' && key<='9')
+            return std::string(1, key);        
+        
+        if(key>=F1 && key<=F12)
+            return "F" +  std::string(1, key-F1+'1');
+        
+        //these are better than KP_0 ...
+        if(key>=Numpad_0 && key<=Numpad_9)
+            return "Numpad " + std::string(1, key-Numpad_0+'0');
+        
+        switch(key) {
+            case Numpad_Decimal:
+                return "Numpad .";
+            case Numpad_Div:
+                return "Numpad /";
+            case Numpad_Mult:
+                return "Numpad *";
+            case Numpad_Enter:
+                return "Numpad Enter";
+            case Numpad_Plus:
+                return "Numpad +";
+            case Numpad_Minus:
+                return "Numpad -";;
+        }
+        
+        
+        KeySym ks = 0;
+        
+        if(key == Shift)
+            ks = XK_Shift_L;
+        
+        /*
+            case XK_Shift_L:
+                return Input::Keyboard::Keycodes::Shift;
+            case XK_Shift_R:
+                return Input::Keyboard::Keycodes::RShift;
+            case XK_Control_L:
+                return Input::Keyboard::Keycodes::Control;
+            case XK_Control_R:
+                return Input::Keyboard::Keycodes::RControl;
+            case XK_Alt_L:
+                return Input::Keyboard::Keycodes::Alt;
+            case XK_Alt_R:
+                return Input::Keyboard::Keycodes::RAlt;
+            case XK_Super_L:
+                return Input::Keyboard::Keycodes::Meta;
+            case XK_Super_R:
+                return Input::Keyboard::Keycodes::RMeta;
+                
+            case XK_Home:
+                return Input::Keyboard::Keycodes::Home;
+            case XK_End:
+                return Input::Keyboard::Keycodes::End;
+            case XK_Insert:
+                return Input::Keyboard::Keycodes::Insert;
+            case XK_Delete:
+                return Input::Keyboard::Keycodes::Delete;
+            case XK_Prior:
+                return Input::Keyboard::Keycodes::PageUp;
+            case XK_Next:
+                return Input::Keyboard::Keycodes::PageDown;
+
+            case XK_Print:
+                return Input::Keyboard::Keycodes::PrintScreen;
+            case XK_Pause:
+                return Input::Keyboard::Keycodes::Pause;
+
+            case XK_Menu:
+                return Input::Keyboard::Keycodes::Menu;
+
+            case XK_Caps_Lock:
+                return Input::Keyboard::Keycodes::CapsLock;
+            case XK_Num_Lock:
+                return Input::Keyboard::Keycodes::Numlock;
+            case XK_Scroll_Lock:
+                return Input::Keyboard::Keycodes::ScrollLock;
+
+            case XK_Return:
+                return Input::Keyboard::Keycodes::Enter;
+            case XK_Tab:
+                return Input::Keyboard::Keycodes::Tab;
+            case XK_BackSpace:
+                return Input::Keyboard::Keycodes::Backspace;
+            case XK_space:
+                return Input::Keyboard::Keycodes::Space;
+            case XK_Escape:
+                return Input::Keyboard::Keycodes::Escape;
+
+            case XK_Left:
+                return Input::Keyboard::Keycodes::Left;
+            case XK_Up:
+                return Input::Keyboard::Keycodes::Up;
+            case XK_Right:
+                return Input::Keyboard::Keycodes::Right;
+            case XK_Down:
+                return Input::Keyboard::Keycodes::Down;
+        */
+        int n = 0;
+        
+        if(!ks) {
+            KeySym *keysym = XGetKeyboardMapping(
+                WindowManager::display,
+                key - Input::Keyboard::Keycodes::OSTransport,
+                1,
+                &n
+            );
+            
+            if(n > 0)
+                ks = *keysym;
+            else
+                return "";
+
+            XFree(keysym);
+        }
+        
+        char *name = XKeysymToString(ks);
+        if(name)
+            return name;
+        else
+            return "";
+    }
+    }}}
 	
 	void Window::processmessages() {
 		XEvent event;
@@ -1989,9 +2238,10 @@ failsafe: //this should use X11 screen as monitor
 							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Meta);
 							break;
 					}
-					auto token=KeyEvent(key, true);
+					auto ggekey = mapx11key(key, event.xkey.keycode);
+					auto token=KeyEvent(ggekey, true);
 					if(token != KeyEvent.EmptyToken) {
-						data->handlers[key]=token;
+						data->handlers[ggekey]=token;
 						
 						break;
 					}
@@ -2015,17 +2265,19 @@ failsafe: //this should use X11 screen as monitor
 					
 				case KeyRelease: {
 					key=XLookupKeysym(&event.xkey,0);
+                        
+                    auto ggekey = mapx11key(key, event.xkey.keycode);
 						
 					if(XEventsQueued(WindowManager::display, QueuedAfterReading)) {
 						XEvent nextevent;
 						XPeekEvent(WindowManager::display, &nextevent);
-					
+                        
 						if(nextevent.type == KeyPress && nextevent.xkey.time == event.xkey.time && 
 							nextevent.xkey.keycode == event.xkey.keycode
 						) {
 							
-							if(data->handlers.count(key)>0 && data->handlers[key]!=KeyEvent.EmptyToken) {
-								KeyEvent.FireFor(data->handlers[key], key, true);
+							if(data->handlers.count(ggekey)>0 && data->handlers[ggekey]!=KeyEvent.EmptyToken) {
+								KeyEvent.FireFor(data->handlers[ggekey], ggekey, true);
 							}
 							else {
 								char buffer[2];
@@ -2075,12 +2327,12 @@ failsafe: //this should use X11 screen as monitor
 					}
 					
 					
-					if(data->handlers.count(key)>0 && data->handlers[key]!=KeyEvent.EmptyToken) {
-						KeyEvent.FireFor(data->handlers[key], key, 0.f);
-						data->handlers[key]=KeyEvent.EmptyToken;
+					if(data->handlers.count(ggekey)>0 && data->handlers[ggekey]!=KeyEvent.EmptyToken) {
+						KeyEvent.FireFor(data->handlers[ggekey], ggekey, 0.f);
+						data->handlers[ggekey]=KeyEvent.EmptyToken;
 					}
 					else {
-						KeyEvent(key, 0.f);
+						KeyEvent(ggekey, 0.f);
 					}
 					
 				} //Keyrelease

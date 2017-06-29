@@ -148,6 +148,11 @@ namespace Keyboard {
 				key == Alt || key == RAlt ||
 				key == Meta || key == RMeta;
 		}
+		
+		/// Returns the name of the key. This function returns
+		/// capital letters for printable letter keys and
+		/// OS dependent names of other keys.
+		std::string GetName(Key key);
 	}
 	/// @}
 

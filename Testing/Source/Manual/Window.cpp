@@ -283,6 +283,8 @@ int main() {
 
 		else if(key == Keycodes::P)
 			wind.Pointers.Reset(ptrtoken);
+        
+        std::cout<<Keycodes::GetName(key)<<std::endl;
 
 		return false;
 	});
