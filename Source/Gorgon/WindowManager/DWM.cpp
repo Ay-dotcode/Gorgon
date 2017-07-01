@@ -1,4 +1,4 @@
-#include <map>
+﻿#include <map>
 
 #include "../WindowManager.h"
 #include "../Window.h"
@@ -29,6 +29,35 @@
 #	undef Rectangle
 
 namespace Gorgon {
+
+	//Modified from https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
+	static std::string MByteToUnicode(const std::string &multiByteStr) {
+		// Get the required size of the buffer that receives the Unicode string. 
+		DWORD minSize;
+		minSize = MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, NULL, 0);
+
+		std::string ret;
+		ret.resize(minSize*2);
+
+		// Convert string from multi-byte to Unicode.
+		MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, (LPWSTR)&ret[0], minSize);
+
+		return ret;
+	}
+
+	//https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
+	static std::string UnicodeToMByte(LPWSTR unicodeStr) {
+		// Get the required size of the buffer that receives the multiByte string. 
+		DWORD minSize;
+		minSize = WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, NULL, 0, NULL, FALSE);
+
+		std::string ret;
+		ret.resize(minSize);
+
+		// Convert string from Unicode to multi-byte.
+		WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, &ret[0], minSize, NULL, FALSE);
+		return ret;
+	}
 
 	namespace OS {
 		void winslashtonormal(std::string &);
@@ -199,6 +228,25 @@ namespace Gorgon {
 			}
 		};
 
+		//only for unknown keynames
+		std::string osgetkeyname(Input::Keyboard::Key key) {
+			wchar_t str[32];
+			wchar_t strupper[64];
+			int l = GetKeyNameTextW(key<<16, str, 32);
+
+			auto h = GetKeyboardLayout(NULL);
+			LCID ll = (LCID)((int)GetKeyboardLayout(NULL)>>16);
+			if((ll == 0x41f || ll == 0x42c) && str[0] == L'i' && str[1] == 0) { //tr, az keyboards should have i => İ
+				strupper[0] = L'İ';
+				strupper[1] = 0;
+			}
+			else {
+				l = LCMapStringW(LOCALE_USER_DEFAULT, LCMAP_UPPERCASE, str, l, strupper, 64);
+				strupper[l] = 0;
+			}
+			return UnicodeToMByte(strupper);//unicode toupper
+		}
+
 		std::vector<clipboardentry> clipboard_entries;
 		///@endcond
 	}
@@ -227,7 +275,7 @@ namespace Gorgon {
 				switch(wParam) {
 					case VK_SHIFT:
 						WPARAM n;
-						n = MapVirtualKey((lParam&0x00ff0000), MAPVK_VSC_TO_VK_EX);
+						n = MapVirtualKey((lParam&0x00ff0000)>>16, MAPVK_VSC_TO_VK_EX);
 						if(n == VK_RSHIFT)
 							return Input::Keyboard::Keycodes::RShift;
 						else
@@ -248,29 +296,61 @@ namespace Gorgon {
 						return Input::Keyboard::Keycodes::RMeta;
 
 					case VK_HOME:
-						return Input::Keyboard::Keycodes::Home;
+						if(ext)
+							return Input::Keyboard::Keycodes::Home;
+						else
+							return Input::Keyboard::Keycodes::Numpad_7;
 					case VK_END:
-						return Input::Keyboard::Keycodes::End;
+						if(ext)
+							return Input::Keyboard::Keycodes::End;
+						else
+							return Input::Keyboard::Keycodes::Numpad_1;
 					case VK_INSERT:
-						return Input::Keyboard::Keycodes::Insert;
+						if(ext)
+							return Input::Keyboard::Keycodes::Insert;
+						else
+							return Input::Keyboard::Keycodes::Numpad_0;
 					case VK_DELETE:
-						return Input::Keyboard::Keycodes::Delete;
+						if(ext)
+							return Input::Keyboard::Keycodes::Delete;
+						else
+							return Input::Keyboard::Keycodes::Numpad_Decimal;
 					case VK_PRIOR:
-						return Input::Keyboard::Keycodes::PageUp;
+						if(ext)
+							return Input::Keyboard::Keycodes::PageUp;
+						else
+							return Input::Keyboard::Keycodes::Numpad_9;
 					case VK_NEXT:
-						return Input::Keyboard::Keycodes::PageDown;
+						if(ext)
+							return Input::Keyboard::Keycodes::PageDown;
+						else
+							return Input::Keyboard::Keycodes::Numpad_3;
 
 					case VK_LEFT:
-						return Input::Keyboard::Keycodes::Left;
+						if(ext)
+							return Input::Keyboard::Keycodes::Left;
+						else
+							return Input::Keyboard::Keycodes::Numpad_4;
 					case VK_UP:
-						return Input::Keyboard::Keycodes::Up;
+						if(ext)
+							return Input::Keyboard::Keycodes::Up;
+						else
+							return Input::Keyboard::Keycodes::Numpad_8;
 					case VK_RIGHT:
-						return Input::Keyboard::Keycodes::Right;
+						if(ext)
+							return Input::Keyboard::Keycodes::Right;
+						else
+							return Input::Keyboard::Keycodes::Numpad_6;
 					case VK_DOWN:
-						return Input::Keyboard::Keycodes::Down;
+						if(ext)
+							return Input::Keyboard::Keycodes::Down;
+						else
+							return Input::Keyboard::Keycodes::Numpad_2;
 
 					case VK_SNAPSHOT:
 						return Input::Keyboard::Keycodes::PrintScreen;
+					case VK_SCROLL:
+						return Input::Keyboard::Keycodes::ScrollLock;
 					case VK_PAUSE:
 						return Input::Keyboard::Keycodes::Pause;
 
@@ -393,6 +473,8 @@ namespace Gorgon {
 					case '0':
 						return Input::Keyboard::Keycodes::Number_0;
 
+					case VK_NUMPAD0:
+						return Input::Keyboard::Keycodes::Numpad_0;
 					case VK_NUMPAD1:
 						return Input::Keyboard::Keycodes::Numpad_1;
 					case VK_NUMPAD2:
@@ -402,6 +484,7 @@ namespace Gorgon {
 					case VK_NUMPAD4:
 						return Input::Keyboard::Keycodes::Numpad_4;
 					case VK_NUMPAD5:
+					case VK_CLEAR:
 						return Input::Keyboard::Keycodes::Numpad_5;
 					case VK_NUMPAD6:
 						return Input::Keyboard::Keycodes::Numpad_6;
@@ -424,7 +507,7 @@ namespace Gorgon {
 					case VK_NUMLOCK:
 						return Input::Keyboard::Keycodes::Numlock;
 					default:
-						return (lParam&0x00ff0000) >> 16;
+						return ((lParam&0x00ff0000) >> 16) + Input::Keyboard::Keycodes::OSTransport;
 				}
 			}
 
@@ -663,14 +746,8 @@ namespace Gorgon {
 
 					case WM_SYSKEYDOWN:
 					case WM_KEYDOWN: {
-						if(lParam&1<<30) {
-							if(handlers.count(wParam)>0 && handlers[wParam]!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
-								parent->KeyEvent.FireFor(handlers[wParam], wParam, true);
-							}
+						Input::Keyboard::Key key = maposkey(wParam, lParam);
 
-							return 0;
-						}
-						
 						switch(wParam) {
 						case VK_CONTROL:
 							Input::Keyboard::CurrentModifier.Add(Input::Keyboard::Modifier::Ctrl);
@@ -686,12 +763,14 @@ namespace Gorgon {
 							break;
 						}
 
-						Input::Keyboard::Key key = maposkey(wParam, lParam);
+						//if the key is repeating, do not repeat keyevent.
+						if(!(lParam&1<<30)) {
+							auto token=parent->KeyEvent(key, true);
+							if(token!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
+								handlers[key]=token;
 
-						auto token=parent->KeyEvent(key, true);
-						if(token!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
-							handlers[key]=token;
-							return 0;
+								return 0;
+							}
 						}
 					} //Keydown
 					return 0;
@@ -730,14 +809,15 @@ namespace Gorgon {
 
 
 					case WM_CHAR:
-						if(handlers.count(wParam)==0 || handlers[wParam]==ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
+						Input::Keyboard::Key key;
+						key = maposkey(wParam, lParam);
+
+						if(handlers.count(key)==0 || handlers[key]==ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
 							if(wParam==8 || wParam==127 || wParam==27) return 0;
 
 							parent->CharacterEvent(wParam);
 						}
-						else {
-							parent->KeyEvent.FireFor(handlers[wParam], wParam, true);
-						}
+
 						return 0;
 
 					default:
@@ -825,35 +905,6 @@ namespace Gorgon {
 
 		}
 		/// @endcond
-
-		//Modified from https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
-		std::string MByteToUnicode(const std::string &multiByteStr) {
-			// Get the required size of the buffer that receives the Unicode string. 
-			DWORD minSize;
-			minSize = MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, NULL, 0);
-
-			std::string ret;
-			ret.resize(minSize*2);
-
-			// Convert string from multi-byte to Unicode.
-			MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, (LPWSTR)&ret[0], minSize);
-
-			return ret;
-		}
-
-		//https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
-		std::string UnicodeToMByte(LPWSTR unicodeStr) {
-			// Get the required size of the buffer that receives the multiByte string. 
-			DWORD minSize;
-			minSize = WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, NULL, 0, NULL, FALSE);
-
-			std::string ret;
-			ret.resize(minSize);
-			
-			// Convert string from Unicode to multi-byte.
-			WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, &ret[0], minSize, NULL, FALSE);
-			return ret;
-		}
 
 		void init() {
 			defaultcursor=LoadCursor(NULL, IDC_ARROW);

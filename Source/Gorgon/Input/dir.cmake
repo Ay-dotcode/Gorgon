@@ -6,5 +6,6 @@ SET(Local
 	Layer.h
 	Layer.cpp
 	Keyboard.h
+	Keyboard.cpp
 	Mouse.h
 )
