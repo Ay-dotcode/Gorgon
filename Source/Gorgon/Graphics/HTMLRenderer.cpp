@@ -21,7 +21,8 @@ GlyphRenderer& FontFamily::GetGlyphRenderer(Style style) {
 
 HTMLRenderer::HTMLRenderer(FontFamily &fontfamily, RGBAf color, TextShadow shadow)
     : fontfamily(fontfamily),
-      renderer(fontfamily.GetGlyphRenderer(FontFamily::Style::Normal))
+      renderer(fontfamily.GetGlyphRenderer(FontFamily::Style::Normal)),
+      underlined(false)
 {}
 
 void HTMLRenderer::Print(TextureTarget &target, const std::string &text, int x, int y) {
@@ -29,13 +30,17 @@ void HTMLRenderer::Print(TextureTarget &target, const std::string &text, int x, 
 }
 
 void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, int y) {
+    offset = 0;
+    start = x;
+    this->x = x;
+    
     bool intag = false;
     bool tagtaken = false;
     bool remove = false;
     int tagcnt = 0; // !!! debug
-    unsigned int offset = 0;
     char current;
     std::string text, tag;
+    
     for(std::size_t i = 0; i < str.length(); i++) {
         current = str[i];
         if(current == '<') {
@@ -50,9 +55,20 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
         }
         else if(current == '>') {
             if(remove) {
+                remove = false;
                 removestyle(tag);
+                if(underlined) {
+                    std::cout << "underliend" << std::endl;
+                    std::cout << x << std::endl;
+                    std::cout << this->x << std::endl;
+                    underlined = false;
+                    target.Draw(this->x, y + renderer.GetGlyphRenderer()->GetUnderlineOffset(),
+                                (float)(x  - this->x),
+                                (float)renderer.GetGlyphRenderer()->GetLineThickness());
+                }
             }
             else {
+                this->x = x;
                 applystyle(tag);
             }
             tag.clear();
@@ -77,8 +93,10 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
         }
         else {
             auto start = str.begin() + i;
-            offset += renderer.GetGlyphRenderer()->GetSize(internal::decode(start, str.end())).Width;
-            offset += renderer.GetGlyphRenderer()->GetGlyphSpacing();
+            int width = renderer.GetGlyphRenderer()->GetSize(internal::decode(start, str.end())).Width;
+            int spacing = renderer.GetGlyphRenderer()->GetGlyphSpacing();
+            offset += width;
+            offset += spacing;
             text += current;
         }
     }
@@ -98,7 +116,6 @@ void HTMLRenderer::applystyle(const std::string &str) {
     Tag tag = string2tag(str);
     switch(tag) {
         case Tag::Underlined:
-            renderer.SetUnderline(true);
             break;
         case Tag::Bold:
             renderer.SetGlyphRenderer(&fontfamily.GetGlyphRenderer(FontFamily::Style::Bold));
@@ -113,7 +130,8 @@ void HTMLRenderer::removestyle(const std::string &str) {
     Tag tag = string2tag(str);
     switch(tag) {
         case Tag::Underlined:
-            renderer.SetUnderline(false);
+            underlined = true;
+            //end = x;
             break;
         case Tag::Bold:
             renderer.SetGlyphRenderer(&fontfamily.GetGlyphRenderer(FontFamily::Style::Normal));

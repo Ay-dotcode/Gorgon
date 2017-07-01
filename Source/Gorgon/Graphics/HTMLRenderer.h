@@ -54,6 +54,11 @@ class HTMLRenderer {
         
         FontFamily &fontfamily;
         StyledRenderer renderer;
+        bool underlined;
+        unsigned int offset;
+        unsigned int start;
+        unsigned int end;
+        unsigned int x;
     };
     
 }}

@@ -38,7 +38,7 @@ int main() {
     family.GetGlyphRenderer(Graphics::FontFamily::Style::Bold);
     
 	Graphics::HTMLRenderer sty(family);
-	sty.Print(l, "<u>ABC<b>AAA</b></u>", 250, 240);
+	sty.Print(l, "<u><b>AAAA</b>abc</u>0000000000<u>lulz</u>", 250, 240);
     
 	while(true) {
 		Gorgon::NextFrame();
