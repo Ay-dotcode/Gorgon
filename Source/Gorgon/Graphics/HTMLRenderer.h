@@ -34,6 +34,7 @@ class HTMLRenderer {
         
         enum class Tag: unsigned int {
             Underlined = 0,
+            Striked,
             Bold,
             End
         };
@@ -54,11 +55,10 @@ class HTMLRenderer {
         
         FontFamily &fontfamily;
         StyledRenderer renderer;
-        bool underlined;
-        unsigned int offset;
-        unsigned int start;
-        unsigned int end;
-        unsigned int x;
+        bool drawunderlined;
+        bool drawstriked;
+        unsigned int underlinedstart;
+        unsigned int strikedstart;
     };
     
 }}

@@ -22,7 +22,8 @@ GlyphRenderer& FontFamily::GetGlyphRenderer(Style style) {
 HTMLRenderer::HTMLRenderer(FontFamily &fontfamily, RGBAf color, TextShadow shadow)
     : fontfamily(fontfamily),
       renderer(fontfamily.GetGlyphRenderer(FontFamily::Style::Normal)),
-      underlined(false)
+      drawunderlined(false),
+      drawstriked(false)
 {}
 
 void HTMLRenderer::Print(TextureTarget &target, const std::string &text, int x, int y) {
@@ -30,17 +31,13 @@ void HTMLRenderer::Print(TextureTarget &target, const std::string &text, int x, 
 }
 
 void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, int y) {
-    offset = 0;
-    start = x;
-    this->x = x;
-    
+    unsigned int offset = 0;
+    int tagcnt = 0; // !!! debug
     bool intag = false;
     bool tagtaken = false;
     bool remove = false;
-    int tagcnt = 0; // !!! debug
     char current;
     std::string text, tag;
-    
     for(std::size_t i = 0; i < str.length(); i++) {
         current = str[i];
         if(current == '<') {
@@ -57,18 +54,24 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
             if(remove) {
                 remove = false;
                 removestyle(tag);
-                if(underlined) {
-                    std::cout << "underliend" << std::endl;
-                    std::cout << x << std::endl;
-                    std::cout << this->x << std::endl;
-                    underlined = false;
-                    target.Draw(this->x, y + renderer.GetGlyphRenderer()->GetUnderlineOffset(),
-                                (float)(x  - this->x),
+                if(drawunderlined) {
+                    drawunderlined = false;
+                    // @TODO handle properties of underlined tag
+                    target.Draw((float)underlinedstart, (float)(y + renderer.GetGlyphRenderer()->GetUnderlineOffset()),
+                                (float)(x  - underlinedstart),
+                                (float)renderer.GetGlyphRenderer()->GetLineThickness());
+                }
+                if(drawstriked) {
+                    drawstriked = false;
+                    // @TODO: handle properties of strike tag
+                    target.Draw((float)strikedstart, (float)(y + renderer.GetStrikePosition()),
+                                (float)(x  - strikedstart),
                                 (float)renderer.GetGlyphRenderer()->GetLineThickness());
                 }
             }
             else {
-                this->x = x;
+                underlinedstart = x;
+                strikedstart = x;
                 applystyle(tag);
             }
             tag.clear();
@@ -108,6 +111,7 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
 
 HTMLRenderer::Tag HTMLRenderer::string2tag(const std::string &tag) {
     if(tag == "u") { return Tag::Underlined; }
+    else if(tag == "strike") { return Tag::Striked; }
     else if(tag == "b") { return Tag::Bold; }
     else { assert(false); }
 }
@@ -116,6 +120,8 @@ void HTMLRenderer::applystyle(const std::string &str) {
     Tag tag = string2tag(str);
     switch(tag) {
         case Tag::Underlined:
+            break;
+        case Tag::Striked:
             break;
         case Tag::Bold:
             renderer.SetGlyphRenderer(&fontfamily.GetGlyphRenderer(FontFamily::Style::Bold));
@@ -130,8 +136,10 @@ void HTMLRenderer::removestyle(const std::string &str) {
     Tag tag = string2tag(str);
     switch(tag) {
         case Tag::Underlined:
-            underlined = true;
-            //end = x;
+            drawunderlined = true;
+            break;
+        case Tag::Striked:
+            drawstriked = true;
             break;
         case Tag::Bold:
             renderer.SetGlyphRenderer(&fontfamily.GetGlyphRenderer(FontFamily::Style::Normal));
