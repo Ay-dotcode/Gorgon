@@ -878,7 +878,11 @@ namespace Gorgon {
             XFlush(display);
         }
         //END
-	
+
+		std::string osgetkeyname(Input::Keyboard::Key key) {
+			return "";
+		}
+
 		//BEGIN Monitor Related
 		
 		Monitor::Monitor() {
@@ -1571,7 +1575,7 @@ failsafe: //this should use X11 screen as monitor
         return keycode + Input::Keyboard::Keycodes::OSTransport;
     }
 	
-    namespace Input { namespace Keyboard { namespace Keycodes {
+    /*namespace Input { namespace Keyboard { namespace Keycodes {
     std::string GetName(Key key) {
         if(key>='a' && key<='z')
             return std::string(1, toupper(key));
@@ -1672,7 +1676,7 @@ failsafe: //this should use X11 screen as monitor
                 return Input::Keyboard::Keycodes::Right;
             case XK_Down:
                 return Input::Keyboard::Keycodes::Down;
-        */
+        
         int n = 0;
         
         if(!ks) {
@@ -1697,7 +1701,7 @@ failsafe: //this should use X11 screen as monitor
         else
             return "";
     }
-    }}}
+    }}}*/
 	
 	void Window::processmessages() {
 		XEvent event;

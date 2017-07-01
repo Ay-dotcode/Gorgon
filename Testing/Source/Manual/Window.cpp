@@ -227,7 +227,7 @@ int main() {
 			exit(0);
 
 		if(!state)
-			return true;
+			return false;
 
 		else if(Keycodes::IsEnter(key))
 			std::cout<<wind.GetMonitor().GetName()<<std::endl;

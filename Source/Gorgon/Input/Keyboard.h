@@ -150,8 +150,8 @@ namespace Keyboard {
 		}
 		
 		/// Returns the name of the key. This function returns
-		/// capital letters for printable letter keys and
-		/// OS dependent names of other keys.
+		/// capital letters for printable letter keys, names of
+		/// known keys and OS dependent names for other keys.
 		std::string GetName(Key key);
 	}
 	/// @}
