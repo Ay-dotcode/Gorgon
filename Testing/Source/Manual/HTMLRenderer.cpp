@@ -1,4 +1,5 @@
 //Copy Resources/Testing/Victoria to Testing/Runtime (in VS you need to fix running directory)
+#include <map>
 
 #include <Gorgon/Window.h>
 #include <Gorgon/Main.h>
@@ -32,8 +33,11 @@ int main() {
     victoria.ImportFolder("Victoria");
     vicbold.ImportFolder("VictoriaBold");
     
-    
-    Graphics::FontFamily family({{&victoria, Graphics::FontFamily::Style::Normal}, {&vicbold, Graphics::FontFamily::Style::Bold}});
+    std::map<Graphics::FontFamily::Style, Graphics::GlyphRenderer*> fonts = 
+        { {Graphics::FontFamily::Style::Normal, &victoria},
+          {Graphics::FontFamily::Style::Bold,   &vicbold,} };
+          
+    Graphics::FontFamily family(fonts);
     
     family.GetGlyphRenderer(Graphics::FontFamily::Style::Bold);
     
