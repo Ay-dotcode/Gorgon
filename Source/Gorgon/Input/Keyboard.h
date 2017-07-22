@@ -77,32 +77,32 @@ namespace Keyboard {
 		constexpr Key F11           = 0b101000000 + 11;
 		constexpr Key F12           = 0b101000000 + 12;
 
-		constexpr Key A             = 'a';
-		constexpr Key B             = 'b';
-		constexpr Key C             = 'c';
-		constexpr Key D             = 'd';
-		constexpr Key E             = 'e';
-		constexpr Key F             = 'f';
-		constexpr Key G             = 'g';
-		constexpr Key H             = 'h';
-		constexpr Key I             = 'i';
-		constexpr Key J             = 'j';
-		constexpr Key K             = 'k';
-		constexpr Key L             = 'l';
-		constexpr Key M             = 'm';
-		constexpr Key N             = 'n';
-		constexpr Key O             = 'o';
-		constexpr Key P             = 'p';
-		constexpr Key Q             = 'q';
-		constexpr Key R             = 'r';
-		constexpr Key S             = 's';
-		constexpr Key T             = 't';
-		constexpr Key U             = 'u';
-		constexpr Key V             = 'v';
-		constexpr Key W             = 'w';
-		constexpr Key X             = 'x';
-		constexpr Key Y             = 'y';
-		constexpr Key Z             = 'z';
+		constexpr Key A             = 'A';
+		constexpr Key B             = 'B';
+		constexpr Key C             = 'C';
+		constexpr Key D             = 'D';
+		constexpr Key E             = 'E';
+		constexpr Key F             = 'F';
+		constexpr Key G             = 'G';
+		constexpr Key H             = 'H';
+		constexpr Key I             = 'I';
+		constexpr Key J             = 'J';
+		constexpr Key K             = 'K';
+		constexpr Key L             = 'L';
+		constexpr Key M             = 'M';
+		constexpr Key N             = 'N';
+		constexpr Key O             = 'O';
+		constexpr Key P             = 'P';
+		constexpr Key Q             = 'Q';
+		constexpr Key R             = 'R';
+		constexpr Key S             = 'S';
+		constexpr Key T             = 'T';
+		constexpr Key U             = 'U';
+		constexpr Key V             = 'V';
+		constexpr Key W             = 'W';
+		constexpr Key X             = 'X';
+		constexpr Key Y             = 'Y';
+		constexpr Key Z             = 'Z';
 
 		constexpr Key Number_1      = '1';
 		constexpr Key Number_2      = '2';
@@ -156,8 +156,9 @@ namespace Keyboard {
 	}
 	/// @}
 
-	/// A character, future compatibility for Unicode
-	typedef char 		Char; 
+	/// A Unicode character, use String::Append to append this character
+	/// to an std::string.
+	typedef Gorgon::Char 		Char;
 		
 	/// MOVETO -> Window?
 	extern std::map<Key, bool> PressedKeys;
@@ -187,12 +188,18 @@ namespace Keyboard {
 				
 			/// Shift control alt together
 			ShiftCtrlAlt= Shift | Ctrl | Alt ,
+            
+            /// Modifier mask to check if the key is modified
+            ModMask = Ctrl | Alt | Meta,
+            
+            /// Modifier mask to check if the key is modified
+            ModCompare = Ctrl & Alt & Meta,
 		};
 			
 		/// Constructs a new modifier from the given modifier key
 		Modifier(Type key=None) : 
 		Key(key)
-		{ }			
+		{ }
 
 		/// Assignment operator
 		Modifier &operator =(const Modifier &) = default;
@@ -200,7 +207,7 @@ namespace Keyboard {
 		/// Checks if this modifier really modifies the key state so
 		/// that no printable characters can be formed
 		bool IsModified() const {
-			return Key>3;
+			return Key != 0 && Key != Shift;
 		}
 			
 		/// Removes the modifier key

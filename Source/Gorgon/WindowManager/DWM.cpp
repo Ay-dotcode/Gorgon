@@ -28,36 +28,14 @@
 #	undef CreateWindow
 #	undef Rectangle
 
+#include <locale>
+#include <codecvt>
+
 namespace Gorgon {
 
-	//Modified from https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
-	static std::string MByteToUnicode(const std::string &multiByteStr) {
-		// Get the required size of the buffer that receives the Unicode string. 
-		DWORD minSize;
-		minSize = MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, NULL, 0);
+	std::string MByteToUnicode(const std::string &multiByteStr);
 
-		std::string ret;
-		ret.resize(minSize*2);
-
-		// Convert string from multi-byte to Unicode.
-		MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, (LPWSTR)&ret[0], minSize);
-
-		return ret;
-	}
-
-	//https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
-	static std::string UnicodeToMByte(LPWSTR unicodeStr) {
-		// Get the required size of the buffer that receives the multiByte string. 
-		DWORD minSize;
-		minSize = WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, NULL, 0, NULL, FALSE);
-
-		std::string ret;
-		ret.resize(minSize);
-
-		// Convert string from Unicode to multi-byte.
-		WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, &ret[0], minSize, NULL, FALSE);
-		return ret;
-	}
+	std::string UnicodeToMByte(LPWSTR unicodeStr);
 
 	namespace OS {
 		void winslashtonormal(std::string &);
@@ -807,7 +785,6 @@ namespace Gorgon {
 					} //Keyup
 					return 0;
 
-
 					case WM_CHAR:
 						Input::Keyboard::Key key;
 						key = maposkey(wParam, lParam);
@@ -911,10 +888,10 @@ namespace Gorgon {
 
 			Monitor::Refresh(true);
 
-			cf_png = RegisterClipboardFormat("PNG");
-			cf_urilist = RegisterClipboardFormat("URIList");
-			cf_g_bmp = RegisterClipboardFormat("[Gorgon]Bitmap");
-			cf_html = RegisterClipboardFormat("HTML Format");
+			cf_png = RegisterClipboardFormat(L"PNG");
+			cf_urilist = RegisterClipboardFormat(L"URIList");
+			cf_g_bmp = RegisterClipboardFormat(L"[Gorgon]Bitmap");
+			cf_html = RegisterClipboardFormat(L"HTML Format");
 		}
 
 		///this function opens the clipboard but not closes it, you must ensure the clipboard
@@ -997,7 +974,7 @@ namespace Gorgon {
 						case CF_DSPMETAFILEPICT: std::cout<<"CF_DSPMETAFILEPICT"<<std::endl; break;
 						case CF_DSPENHMETAFILE: std::cout<<"CF_DSPENHMETAFILE"<<std::endl; break;
 						default: {
-							char name[256];
+							wchar_t name[256];
 							int l = GetClipboardFormatName(format, name, 254);
 							name[l] = 0;
 							std::cout<<name<<std::endl;
@@ -1438,7 +1415,7 @@ namespace Gorgon {
 				GetMonitorInfo(hMonitor, &mi);
 				auto mon=new Monitor();
 				mon->data->handle=hMonitor;
-				mon->name=mi.szDevice;
+				mon->name=UnicodeToMByte(mi.szDevice);
 				mon->area={mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right-mi.rcMonitor.left, mi.rcMonitor.bottom-mi.rcMonitor.top};
 				mon->usable ={mi.rcWork.left, mi.rcWork.top, mi.rcWork.right, mi.rcWork.bottom};
 				mon->isprimary=(mi.dwFlags&MONITORINFOF_PRIMARY)!=0;
@@ -1575,10 +1552,13 @@ namespace Gorgon {
 		this->name = name;
 		this->allowresize = allowresize;
 
-		WNDCLASSEX windclass;
+		WNDCLASSEXW windclass;
 		HINSTANCE instance=GetModuleHandle(NULL);
 
 		HWND hwnd;
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto namew = converter.from_bytes(name);
+		auto titlew = converter.from_bytes(title);
 
 		//Creating window class
 		windclass.cbClsExtra = 0;
@@ -1588,7 +1568,7 @@ namespace Gorgon {
 		windclass.hCursor = LoadCursor(NULL, NULL);
 		windclass.hInstance = instance;
 		windclass.lpfnWndProc = WndProc;
-		windclass.lpszClassName = name.c_str();
+		windclass.lpszClassName = namew.c_str();
 		windclass.lpszMenuName = NULL;
 		windclass.hIcon = (HICON)0;
 		windclass.hIconSm = (HICON)0;
@@ -1599,17 +1579,17 @@ namespace Gorgon {
 			throw std::runtime_error("Cannot create window");
 		}
 		if(allowresize) {
-			hwnd=CreateWindowExA(
+			hwnd=CreateWindowEx(
 				WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, 
-				name.c_str(), title.c_str(), 
+				namew.c_str(), titlew.c_str(),
 				WS_TILEDWINDOW,
 				CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, instance, NULL
 			);
 		}
 		else {
-			hwnd=CreateWindowExA(
+			hwnd=CreateWindowExW(
 				WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
-				name.c_str(), title.c_str(),
+				namew.c_str(), titlew.c_str(),
 				WS_MINIMIZEBOX | WS_SYSMENU | WS_CLIPSIBLINGS |WS_CLIPCHILDREN,
 				CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, instance, NULL
 			);
@@ -1661,6 +1641,9 @@ namespace Gorgon {
         Add(pointerlayer);
 
 		this->name = name;
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto namew = converter.from_bytes(name);
+		auto titlew = converter.from_bytes(title);
 
 		WNDCLASSEX windclass;
 		HINSTANCE instance;
@@ -1678,18 +1661,18 @@ namespace Gorgon {
 		windclass.hCursor = LoadCursor(NULL, NULL);
 		windclass.hInstance = instance;
 		windclass.lpfnWndProc = WndProc;
-		windclass.lpszClassName = name.c_str();
+		windclass.lpszClassName = namew.c_str();
 		windclass.lpszMenuName = NULL;
 		windclass.hIcon = (HICON)0;
 		windclass.hIconSm = (HICON)0;
 		windclass.style = CS_HREDRAW | CS_VREDRAW;
 		windclass.cbSize = (unsigned int)sizeof(WNDCLASSEX);
 
-		RegisterClassExA(&windclass);
+		RegisterClassEx(&windclass);
 
-		hwnd = CreateWindowEx(WS_EX_APPWINDOW, 
-			name.c_str(), title.c_str(), 
-			WS_OVERLAPPED | WS_POPUP, 0, 0, 
+		hwnd = CreateWindowEx(WS_EX_APPWINDOW,
+			namew.c_str(), titlew.c_str(),
+			WS_OVERLAPPED | WS_POPUP, 0, 0,
 			(int)GetSystemMetrics(SM_CXSCREEN),
 			(int)GetSystemMetrics(SM_CYSCREEN), 
 			NULL, NULL, instance, NULL);
@@ -1859,17 +1842,17 @@ namespace Gorgon {
 	}
 
 	void Window::SetTitle(const std::string &title) {
-		SetWindowText(data->handle, title.c_str());
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto titlew = converter.from_bytes(title);
+		SetWindowText(data->handle, titlew.c_str());
 	}
 
 	std::string Window::GetTitle() const {
-		std::string ret;
-		ret.resize(256);
+		wchar_t ret[256];
 
 		auto len = GetWindowText(data->handle, &ret[0], 256);
-		ret.resize(len);
 
-		return ret;
+		return UnicodeToMByte(ret);
 	}
 
 	bool Window::IsClosed() const {

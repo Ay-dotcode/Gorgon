@@ -1,5 +1,3 @@
-#pragma once
-
 #include "HTMLRenderer.h"
 
 namespace Gorgon { namespace Graphics {

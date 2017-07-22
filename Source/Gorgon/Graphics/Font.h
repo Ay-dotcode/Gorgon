@@ -4,13 +4,14 @@
 #include <map>
 #include <limits.h>
 
+#include "../Types.h"
 #include "../Geometry/Point.h"
 #include "../Geometry/Size.h"
 #include "TextureTargets.h"
 #include "Color.h"
 
 namespace Gorgon { namespace Graphics {
-	using Glyph = int32_t;
+	using Glyph = Gorgon::Char;
 	
     namespace internal {
 		/// Decodes a utf-8 character from the given iterator. If char is not valid 

@@ -331,10 +331,16 @@ int main() {
 	std::cout<<"position\t\t: "<<wind.GetPosition()<<std::endl;
 	std::cout<<"monitor\t\t: "<<wind.GetMonitor().GetName()<<std::endl;
 
-	wind.CharacterEvent.Register([](Input::Key key) {
-        if(key == '\r') std::cout<<std::endl;
-		std::cout<<char(key);
-        std::cout.flush();
+	std::ofstream outfile("test.txt");
+
+	wind.CharacterEvent.Register([&outfile](Gorgon::Char key) {
+        if(key == '\r') 
+            std::cout<<std::endl;
+        
+        std::string s="\"";
+        Gorgon::String::AppendUnicode(s, key);
+        
+		std::cout<<s<<"\""<<std::endl;
         
 		return true;
 	});

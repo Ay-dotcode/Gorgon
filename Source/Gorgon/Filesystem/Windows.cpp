@@ -10,6 +10,9 @@
 #include <shlobj.h>
 #include "Iterator.h"
 
+#include <locale>
+#include <codecvt>
+
 #undef CreateDirectory
 
 namespace Gorgon { namespace Filesystem {
@@ -29,12 +32,28 @@ namespace Gorgon { namespace Filesystem {
 	}
 
 	bool IsDirectory(const std::string &path) {
-		if ( _access(path.c_str(), 0) )
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto wpath = converter.from_bytes(path);
+
+		if(_waccess(wpath.c_str(), 0))
 			return false;
 
-		struct stat status;
+		struct _stat status;
 
-		stat( path.c_str(), &status );
+		_wstat(wpath.c_str(), &status);
+
+		if(status.st_mode & S_IFDIR)
+			return true;
+		else
+			return false;
+	}
+	bool IsDirectory(const std::wstring &wpath) {
+		if(_waccess(wpath.c_str(), 0))
+			return false;
+
+		struct _stat status;
+
+		_wstat(wpath.c_str(), &status);
 
 		if(status.st_mode & S_IFDIR)
 			return true;
@@ -65,7 +84,10 @@ namespace Gorgon { namespace Filesystem {
 	}
 
 	bool IsHidden(const std::string &path) {
-		unsigned long attr=GetFileAttributes(path.c_str());
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto wpath = converter.from_bytes(path);
+
+		unsigned long attr=GetFileAttributes(wpath.c_str());
 		
 		if(attr==INVALID_FILE_ATTRIBUTES) return false;
 
@@ -77,22 +99,27 @@ namespace Gorgon { namespace Filesystem {
 	}
 
 	std::string Canonical(const std::string &path) {
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto wpath = converter.from_bytes(path);
+
 		if(!IsExists(path)) {
 			throw PathNotFoundError("Cannot canonicalize the given path: "+path);
 		}
 
-		char newpath[1024];
-		if(GetFullPathName(path.c_str(), 1024, newpath, NULL) == 0) {
+		wchar_t newpath[1024];
+		if(GetFullPathName(wpath.c_str(), 1024, newpath, NULL) == 0) {
 			throw PathNotFoundError("Cannot canonicalize the given path: "+path);
 		}
 
-		std::string ret(newpath);
+		std::string ret = converter.to_bytes(newpath);
 		fixwinslashes(ret);
 		
 		return ret;
 	}
 
 	bool Delete(const std::string &path) {
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
 		if(IsDirectory(path)) {
 			std::vector<std::string> open, dir;
 			open.push_back(path);
@@ -119,10 +146,12 @@ namespace Gorgon { namespace Filesystem {
 					// if this is the directory to be erased
 					if(dir.back()==path) {
 						dir.pop_back();
-						if(RemoveDirectory(path.c_str())==0) return false;
+						auto wpath = converter.from_bytes(path);
+						if(RemoveDirectory(wpath.c_str())==0) return false;
 					}
 					else {
-						if(remove(path.c_str())!=0) return false;
+						auto wpath = converter.from_bytes(path);
+						if(DeleteFile(wpath.c_str())!=0) return false;
 					}
 					open.pop_back();
 				}
@@ -131,70 +160,86 @@ namespace Gorgon { namespace Filesystem {
 			return true;
 		}
 		else {
-			return remove(path.c_str())==0;
+			auto wpath = converter.from_bytes(path);
+			return DeleteFile(wpath.c_str())==0;
 		}
 	}
 
 	bool ChangeDirectory(const std::string &path) {
-		return _chdir(path.c_str())==0;
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto wpath = converter.from_bytes(path);
+
+		return _wchdir(wpath.c_str())==0;
 	}
 	
 	std::string CurrentDirectory() {
-		char path[1024];
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+		wchar_t path[1024];
 		GetCurrentDirectory(MAX_PATH, path);
 		
-		std::string ret(path);
+		std::string ret=converter.to_bytes(path);
 		fixwinslashes(ret);
 		
 		return ret;
 	}
 	
 	bool Copy(const std::string &source, const std::string &target) {
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto wsource = converter.from_bytes(source);
+		auto wtarget = converter.from_bytes(target);
+
 		SHFILEOPSTRUCT s = { };
 		s.hwnd = NULL;
 		s.wFunc = FO_COPY;
 		s.fFlags = FOF_SILENT | FOF_NOCONFIRMMKDIR | FOF_MULTIDESTFILES | FOF_NOERRORUI | FOF_NOCONFIRMATION;
 		
-		std::string src=source;
-		std::string trg=target;
 		
-		src.push_back(0);
-		trg.push_back(0);
+		wsource.push_back(0);
+		wtarget.push_back(0);
 		
-		s.pTo = trg.c_str();
-		s.pFrom = src.c_str();
+		s.pTo = wsource.c_str();
+		s.pFrom = wtarget.c_str();
 		return SHFileOperation(&s)==0;
 	}
 	
 	bool Move(const std::string &source, const std::string &target) {
-		return MoveFile(source.c_str(), target.c_str())!=0;
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto wsource = converter.from_bytes(source);
+		auto wtarget = converter.from_bytes(target);
+		return MoveFile(wsource.c_str(), wtarget.c_str())!=0;
 	}
 	
 	std::string ExeDirectory() {
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
 		HMODULE hModule = GetModuleHandle(NULL);
-		char path[MAX_PATH];
+		wchar_t path[MAX_PATH];
 		GetModuleFileName(hModule, path, MAX_PATH);
 		
-		std::string dir=path;
+		std::string dir=converter.to_bytes(path);
 		fixwinslashes(dir);
 		
 		return GetDirectory(dir);
 	}
 	
 	std::string ExePath() {
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 		HMODULE hModule = GetModuleHandle(NULL);
-		char path[MAX_PATH];
+		wchar_t path[MAX_PATH];
 		GetModuleFileName(hModule, path, MAX_PATH);
 		
-		std::string dir=path;
+		std::string dir=converter.to_bytes(path);
 		fixwinslashes(dir);
 		
 		return dir;
 	}
 	
 	std::vector<EntryPoint> EntryPoints() {
-		char drvs[512], name[128];
-		char *drives=drvs;
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+		wchar_t drvs[512], name[128];
+		wchar_t *drives=drvs;
 		unsigned long serial, flags;
 
 		unsigned result=GetLogicalDriveStrings(512, drives);
@@ -205,12 +250,12 @@ namespace Gorgon { namespace Filesystem {
 		
 		EntryPoint e;
 		
-		CHAR my_documents[MAX_PATH];
+		WCHAR my_documents[MAX_PATH];
 		my_documents[0]=0;
 
 		SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, SHGFP_TYPE_CURRENT, my_documents);
 		
-		e.Path=my_documents;
+		e.Path=converter.to_bytes(my_documents);
 		e.Name="Home";
 		e.Readable=true;
 		e.Writable=IsWritable(e.Path);		
@@ -219,19 +264,19 @@ namespace Gorgon { namespace Filesystem {
 		
 		while(*drives) {
 			
-			e.Path=drives;
+			e.Path=converter.to_bytes(drives);
 			if(e.Path.back()!='\\') e.Path.push_back('/');
 			fixwinslashes(e.Path);
 			name[0]=0;
 			if(GetVolumeInformation(drives, name, 128, &serial, NULL, &flags, NULL, 0)) {
-				e.Name=name;
+				e.Name=converter.to_bytes(name);
 				if(e.Name.empty())
 					e.Name=e.Path;
 				e.Writable=!(flags&FILE_READ_ONLY_VOLUME);
 				e.Readable=true;
 				entries.push_back(e);
 			}
-			drives+=std::strlen(drives)+1;
+			drives+=std::wcslen(drives)+1;
 		}
 
 		return entries;

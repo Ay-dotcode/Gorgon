@@ -12,6 +12,8 @@
 #include <algorithm>
 #include "String/Exceptions.h"
 #include "Enum.h"
+#include "Types.h"
+
 #undef decltype
 
 namespace Gorgon { 
@@ -553,6 +555,73 @@ namespace Gorgon {
 			
 			return ss.str();
 		}
+		
+		/// Returns the number of bytes used by the next UTF8 codepoint
+		inline int UTF8Bytes(char c) {
+            if((c & 0b10000000) == 0b00000000) return 1;
+            
+            if((c & 0b11100000) == 0b11000000) return 2;
+            
+            if((c & 0b11110000) == 0b11100000) return 3;
+            
+            if((c & 0b11111000) == 0b11110000) return 4;
+            
+            //we are probably at the middle of a code point, just return 
+            // 1 so that the stream can sync.
+            return 1; 
+        }
+		
+		inline int UnicodeUTF8Bytes(Char c) {
+            if(c < 0x80) return 1;
+
+            if(c < 0x800) return 2;
+
+            if(c < 0x10000) return 3;
+            
+            if(c < 0x0010FFFF) return 4;
+            
+            return 3; //replacement: 0xfffd
+        }
+		
+		/// Appends a unicode code point to the string. If the given char
+		/// is valid, this function will return true. Otherwise, it will place
+		/// a three byte long replacement character and returns false.
+		inline bool AppendUnicode(std::string &s, Char c) {
+            if(c > 0x10FFFF) {
+                s += "\xEF\xBF\xBD";
+                return false;
+            }
+
+            int bytes = UnicodeUTF8Bytes(c);
+            s.resize(bytes);
+            
+            auto it = s.rbegin();
+            int cur = 0;
+            
+            while(cur < bytes-1) {
+                *it = (c & 0b00111111) | 0b10000000;
+                it++;
+                cur++;
+                c = c >> 6;
+            }
+            
+            if(bytes == 1) {
+                *it = c;
+            }
+            else if(bytes == 2) {
+                *it = c | 0b11000000;
+            }
+            else if(bytes == 3) {
+                *it = c | 0b11100000;
+            }
+            else if(bytes == 4) {
+                *it = c | 0b11110000;
+            }
+            else
+                return false; // future proofing
+            
+            return true;
+        }
 
 		/// Line ending types
 		enum class LineEnding {

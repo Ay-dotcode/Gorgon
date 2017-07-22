@@ -22,6 +22,8 @@
 
 #include <LM.h>
 #include <LMaccess.h>
+#include <locale>
+#include <codecvt>
 
 #ifndef WM_MOUSEWHEEL
 #	define WM_MOUSEWHEEL					0x020A
@@ -51,6 +53,37 @@ extern "C" {
 */
 
 namespace Gorgon { 
+
+
+	//Modified from https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
+	std::string MByteToUnicode(const std::string &multiByteStr) {
+		// Get the required size of the buffer that receives the Unicode string. 
+		DWORD minSize;
+		minSize = MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, NULL, 0);
+
+		std::string ret;
+		ret.resize(minSize*2);
+
+		// Convert string from multi-byte to Unicode.
+		MultiByteToWideChar(CP_UTF8, 0, multiByteStr.c_str(), -1, (LPWSTR)&ret[0], minSize);
+
+		return ret;
+	}
+
+	//https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
+	std::string UnicodeToMByte(LPWSTR unicodeStr) {
+		// Get the required size of the buffer that receives the multiByte string. 
+		DWORD minSize;
+		minSize = WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, NULL, 0, NULL, FALSE);
+
+		std::string ret;
+		ret.resize(minSize);
+
+		// Convert string from Unicode to multi-byte.
+		WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, &ret[0], minSize, NULL, FALSE);
+		return ret;
+	}
+
 	namespace internal { bool ishandled(HWND hwnd, Input::Key key); }
 	namespace OS {
 	
@@ -59,56 +92,50 @@ namespace Gorgon {
 
 	namespace User {
 		std::string GetUsername() {
-			CHAR username[256];
+			WCHAR username[256];
 			username[0]=0;
 
 			DWORD s=256;
 			GetUserName(username, &s);
 
-			return username;
+			return UnicodeToMByte(username);
 		}
 
 		std::string GetName() {
-			CHAR name[256];
-			name[0]=0;
+			WCHAR name[256];
+			name[0]=0; 
 
 			DWORD s=256;
 			GetUserNameEx(NameDisplay, name, &s);
 
-			return name;
+			return UnicodeToMByte(name);
 		}
 
 		std::string GetDocumentsPath() {
-			CHAR my_documents[MAX_PATH];
+			WCHAR my_documents[MAX_PATH];
 			my_documents[0]=0;
 
 			SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
 
-			std::string s=my_documents;
-
-			return Filesystem::Canonical(my_documents);
+			return Filesystem::Canonical(UnicodeToMByte(my_documents));
 		}
 
 		std::string GetHomePath() {
-			CHAR profile[MAX_PATH];
+			WCHAR profile[MAX_PATH];
 			profile[0]=0;
 
 			SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, SHGFP_TYPE_CURRENT, profile);
 
-			std::string s=profile;
-
-			return Filesystem::Canonical(profile);
+			return Filesystem::Canonical(UnicodeToMByte(profile));
 		}
 
 		std::string GetDataPath() {
-			CHAR path[MAX_PATH];
+			WCHAR path[MAX_PATH];
 			path[0]=0;
 
 			SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, path);
 
-			std::string s=path;
-
-			return Filesystem::Canonical(path);
+			return Filesystem::Canonical(UnicodeToMByte(path));
 		}
 		
 		bool IsAdmin() {
@@ -238,18 +265,16 @@ namespace Gorgon {
 	}
 
 	void DisplayMessage(const std::string &message) {
-		MessageBox(NULL, message.c_str(), GetSystemName().c_str(), 0);
+		MessageBox(NULL, (LPCWSTR)MByteToUnicode(message).data(), (LPCWSTR)MByteToUnicode(GetSystemName()).data(), 0);
 	}
 
 	std::string GetAppDataPath() {
-		CHAR path[MAX_PATH];
+		WCHAR path[MAX_PATH];
 		path[0]=0;
 
 		SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, path);
 
-		std::string s=path;
-
-		return Filesystem::Canonical(path);
+		return Filesystem::Canonical(UnicodeToMByte(path));
 	}
 
 	std::string GetAppSettingPath() {
@@ -277,6 +302,9 @@ namespace Gorgon {
 		STARTUPINFO si;
 		memset(&si, 0, sizeof(si));
 
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		std::wstring wname = converter.from_bytes(name);
+
 		PROCESS_INFORMATION pi;
 
 		bool usepath=name.find_first_of("/")==name.npos;
@@ -288,30 +316,31 @@ namespace Gorgon {
 		}
 
 		//build command line
-		char *cmd=new char[size];
+		wchar_t *cmd=new wchar_t[size];
 		int current=0;
 
 		if(usepath) {
 			//application to run
 			cmd[current++]='"';
-			strcpy(cmd+current, name.c_str());
-			current+=name.size();
+			wcscpy(cmd+current, wname.c_str());
+			current+=wname.size();
 			cmd[current++]='"';
 			cmd[current++]=' ';
 		}
 
 		//application name as first arg
 		cmd[current++]='"';
-		strcpy(cmd, name.c_str());
-		current+=name.size();
+		wcscpy(cmd, wname.c_str());
+		current+=wname.size();
 		cmd[current++]='"';
 		cmd[current++]=' ';
 
 		//arguments
 		for(auto arg : args) {
+			std::wstring warg = converter.from_bytes(arg);
 			cmd[current++]='"';
-			strcpy(cmd, arg.c_str());
-			current+=arg.size();
+			wcscpy(cmd, warg.c_str());
+			current+=warg.size();
 			cmd[current++]='"';
 			cmd[current++]=' ';
 		}
@@ -323,7 +352,7 @@ namespace Gorgon {
 			ret=CreateProcess(nullptr, cmd, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi)!=0;
 		}
 		else {
-			ret=CreateProcess(name.c_str(), cmd, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi)!=0;
+			ret=CreateProcess(wname.c_str(), cmd, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi)!=0;
 		}
 
 		if(ret) {
@@ -338,7 +367,7 @@ namespace Gorgon {
 	}
 	
 	bool Open(const std::string &file) {
-		return (int)ShellExecute(nullptr, "open", file.c_str(), nullptr, nullptr, SW_SHOWNORMAL)>32;
+		return (int)ShellExecute(nullptr, L"open", (LPCWSTR)MByteToUnicode(file).data(), nullptr, nullptr, SW_SHOWNORMAL)>32;
 	}
 
 	void normalslashtowin(std::string &s) {

@@ -15,6 +15,8 @@ namespace Gorgon {
 	typedef float Float;
 #endif
     
+    typedef uint32_t Char;
+    
     static const Float PI = (Float)3.141592653589793;
 	
 	/// A class that has no members and can be used as placeholder

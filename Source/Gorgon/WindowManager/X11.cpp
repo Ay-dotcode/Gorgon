@@ -21,6 +21,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrandr.h>
+#include <X11/XKBlib.h>
 #include <X11/extensions/Xinerama.h>
 #include <string.h>
 #include <unistd.h>
@@ -880,7 +881,29 @@ namespace Gorgon {
         //END
 
 		std::string osgetkeyname(Input::Keyboard::Key key) {
-			return "";
+            int keycount;
+            
+            KeySym *keys = XGetKeyboardMapping(display,
+                key,
+                1,
+                &keycount
+            );
+            
+            if(keycount < 1) return "";
+            
+            KeySym keysym;
+            
+            if(keycount > 1) keysym = keys[1]; //capital key
+            else keysym = keys[0];
+            
+            
+            XFree(keys);
+            
+            std::string ret;
+            Char c = keysym2ucs(keysym);
+            String::AppendUnicode(ret, c);
+            
+			return ret;
 		}
 
 		//BEGIN Monitor Related
@@ -1428,6 +1451,25 @@ failsafe: //this should use X11 screen as monitor
     }
 	
 	Input::Keyboard::Key mapx11key(KeySym key, unsigned int keycode) {
+        if(key == 'i') {
+            int keycount;
+            
+            KeySym *keys = XGetKeyboardMapping(WindowManager::display,
+                keycode,
+                1,
+                &keycount
+            );
+            
+            if(keycount < 2) return 'I';
+            
+            KeySym keysym;
+            
+            keysym = keys[1]; //capital key
+            
+            if(keysym != 'I')
+                return keycode + Input::Keyboard::Keycodes::OSTransport;
+        }
+        
         if(key >= 'a' && key <='z')
             return key;
         
@@ -1575,134 +1617,6 @@ failsafe: //this should use X11 screen as monitor
         return keycode + Input::Keyboard::Keycodes::OSTransport;
     }
 	
-    /*namespace Input { namespace Keyboard { namespace Keycodes {
-    std::string GetName(Key key) {
-        if(key>='a' && key<='z')
-            return std::string(1, toupper(key));
-        
-        if(key>='0' && key<='9')
-            return std::string(1, key);        
-        
-        if(key>=F1 && key<=F12)
-            return "F" +  std::string(1, key-F1+'1');
-        
-        //these are better than KP_0 ...
-        if(key>=Numpad_0 && key<=Numpad_9)
-            return "Numpad " + std::string(1, key-Numpad_0+'0');
-        
-        switch(key) {
-            case Numpad_Decimal:
-                return "Numpad .";
-            case Numpad_Div:
-                return "Numpad /";
-            case Numpad_Mult:
-                return "Numpad *";
-            case Numpad_Enter:
-                return "Numpad Enter";
-            case Numpad_Plus:
-                return "Numpad +";
-            case Numpad_Minus:
-                return "Numpad -";;
-        }
-        
-        
-        KeySym ks = 0;
-        
-        if(key == Shift)
-            ks = XK_Shift_L;
-        
-        /*
-            case XK_Shift_L:
-                return Input::Keyboard::Keycodes::Shift;
-            case XK_Shift_R:
-                return Input::Keyboard::Keycodes::RShift;
-            case XK_Control_L:
-                return Input::Keyboard::Keycodes::Control;
-            case XK_Control_R:
-                return Input::Keyboard::Keycodes::RControl;
-            case XK_Alt_L:
-                return Input::Keyboard::Keycodes::Alt;
-            case XK_Alt_R:
-                return Input::Keyboard::Keycodes::RAlt;
-            case XK_Super_L:
-                return Input::Keyboard::Keycodes::Meta;
-            case XK_Super_R:
-                return Input::Keyboard::Keycodes::RMeta;
-                
-            case XK_Home:
-                return Input::Keyboard::Keycodes::Home;
-            case XK_End:
-                return Input::Keyboard::Keycodes::End;
-            case XK_Insert:
-                return Input::Keyboard::Keycodes::Insert;
-            case XK_Delete:
-                return Input::Keyboard::Keycodes::Delete;
-            case XK_Prior:
-                return Input::Keyboard::Keycodes::PageUp;
-            case XK_Next:
-                return Input::Keyboard::Keycodes::PageDown;
-
-            case XK_Print:
-                return Input::Keyboard::Keycodes::PrintScreen;
-            case XK_Pause:
-                return Input::Keyboard::Keycodes::Pause;
-
-            case XK_Menu:
-                return Input::Keyboard::Keycodes::Menu;
-
-            case XK_Caps_Lock:
-                return Input::Keyboard::Keycodes::CapsLock;
-            case XK_Num_Lock:
-                return Input::Keyboard::Keycodes::Numlock;
-            case XK_Scroll_Lock:
-                return Input::Keyboard::Keycodes::ScrollLock;
-
-            case XK_Return:
-                return Input::Keyboard::Keycodes::Enter;
-            case XK_Tab:
-                return Input::Keyboard::Keycodes::Tab;
-            case XK_BackSpace:
-                return Input::Keyboard::Keycodes::Backspace;
-            case XK_space:
-                return Input::Keyboard::Keycodes::Space;
-            case XK_Escape:
-                return Input::Keyboard::Keycodes::Escape;
-
-            case XK_Left:
-                return Input::Keyboard::Keycodes::Left;
-            case XK_Up:
-                return Input::Keyboard::Keycodes::Up;
-            case XK_Right:
-                return Input::Keyboard::Keycodes::Right;
-            case XK_Down:
-                return Input::Keyboard::Keycodes::Down;
-        
-        int n = 0;
-        
-        if(!ks) {
-            KeySym *keysym = XGetKeyboardMapping(
-                WindowManager::display,
-                key - Input::Keyboard::Keycodes::OSTransport,
-                1,
-                &n
-            );
-            
-            if(n > 0)
-                ks = *keysym;
-            else
-                return "";
-
-            XFree(keysym);
-        }
-        
-        char *name = XKeysymToString(ks);
-        if(name)
-            return name;
-        else
-            return "";
-    }
-    }}}*/
-	
 	void Window::processmessages() {
 		XEvent event;
         
@@ -1712,7 +1626,7 @@ failsafe: //this should use X11 screen as monitor
 
 		while(XEventsQueued(WindowManager::display, QueuedAfterReading)) {
 			XNextEvent(WindowManager::display, &event);
-			unsigned key;
+			KeySym key;
 			switch(event.type) {
 				case ClientMessage: {
 					if (event.xclient.message_type == WindowManager::XA_PROTOCOLS
@@ -2250,19 +2164,16 @@ failsafe: //this should use X11 screen as monitor
 						break;
 					}
 					
-					char buffer[40];
-					
-					int nchars = XLookupString(
-						&(event.xkey),
-						buffer, 40, 
-						(KeySym*)&key, nullptr 
-					);
-					
-					if(nchars==1) {
-						if((buffer[0]>=0x20 && buffer[0]!=0x7f) || buffer[0] == '\t' || buffer[0] == '\r') {
-							CharacterEvent(buffer[0]);
-						}
-					}
+					if(!Input::Keyboard::CurrentModifier.IsModified()) {
+                        XLookupString(&event.xkey, nullptr, 0, &key, nullptr); //append shift and other mods                    
+                        Input::Keyboard::Char c = keysym2ucs(key);
+                        
+                        if(c != 0xfffd) {
+                            if( (c>=0x20 || c == '\t' || c =='\n') && (c < 0x7f || c > 0x9f)) { //exclude c0 & c1 but keep enter and tab
+                                CharacterEvent(c);
+                            }
+                        }
+                    }
 				} //Keypress
 				break;
 					
@@ -2281,22 +2192,18 @@ failsafe: //this should use X11 screen as monitor
 						) {
 							
 							if(data->handlers.count(ggekey)>0 && data->handlers[ggekey]!=KeyEvent.EmptyToken) {
-								KeyEvent.FireFor(data->handlers[ggekey], ggekey, true);
+								//if keypress handled, key will not be repeated.
+                                //what about backspace, arrow keys and delete?
 							}
-							else {
-								char buffer[2];
-						
-								int nchars = XLookupString(
-									&(event.xkey),
-									buffer, 2, 
-									(KeySym*)&key, nullptr 
-								);
-								
-								if(nchars==1) {
-									if((buffer[0]>=0x20 && buffer[0]<0x7f) || buffer[0] == '\t') {
-										CharacterEvent(buffer[0]);
-									}
-								}
+							else if(!Input::Keyboard::CurrentModifier.IsModified()) {
+                                XLookupString(&event.xkey, nullptr, 0, &key, nullptr);
+                                Input::Keyboard::Char c = keysym2ucs(key);
+                                
+                                if(c != 0xfffd) {
+                                    if( (c>=0x20 || c == '\t' || c =='\n') && (c < 0x7f || c > 0x9f)) { //exclude c0 & c1 but keep enter and tab
+                                        CharacterEvent(c);
+                                    }
+                                }
 							}
 					
 							XNextEvent(WindowManager::display, &nextevent);
