@@ -132,7 +132,7 @@ TEST_CASE( "Check if a file is writable", "[IsWritable]" ) {
 #ifdef LINUX
 	system("chmod 444 testfile.txt");
 #else
-	SetFileAttributes("testfile.txt", FILE_ATTRIBUTE_READONLY);
+	SetFileAttributes(L"testfile.txt", FILE_ATTRIBUTE_READONLY);
 #endif	
 
 	REQUIRE_FALSE( fs::IsWritable("testfile.txt") );
@@ -140,7 +140,7 @@ TEST_CASE( "Check if a file is writable", "[IsWritable]" ) {
 #ifdef LINUX
 	system("chmod 644 testfile.txt");
 #else
-	SetFileAttributes("testfile.txt", FILE_ATTRIBUTE_NORMAL);
+	SetFileAttributes(L"testfile.txt", FILE_ATTRIBUTE_NORMAL);
 #endif
 	
 	fs::Delete("testfile.txt");
@@ -165,13 +165,13 @@ TEST_CASE( "Check if a file is hidden", "[IsHidden]") {
 	testfile.close();
 
 #ifdef WIN32
-	SetFileAttributes(".testfile", FILE_ATTRIBUTE_HIDDEN);
+	SetFileAttributes(L".testfile", FILE_ATTRIBUTE_HIDDEN);
 #endif	
 
 	REQUIRE( fs::IsHidden(".testfile") );
 
 #ifdef WIN32
-	SetFileAttributes(".testfile", FILE_ATTRIBUTE_NORMAL);
+	SetFileAttributes(L".testfile", FILE_ATTRIBUTE_NORMAL);
 #endif	
 
 	fs::Delete(".testfile");
