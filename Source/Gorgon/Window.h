@@ -373,7 +373,7 @@ namespace Gorgon {
 		/// **Key** `(Input::Key)`: The key that is pressed or released
 		/// **Amount** `(float)`: Depending on the device this can be a boolean 0 and 1, number
 		///     of successive key strokes or amount of pressure (0 to 1) in analog controllers
-		ConsumableEvent<Window, Input::Key, bool> KeyEvent{*this};
+		ConsumableEvent<Window, Input::Key, float> KeyEvent{*this};
 
 		/// Called when a character is received. This event is raised for regular characters
 		/// that can be printed. If a key is handled in keypress event, this event will not be

@@ -46,6 +46,8 @@ namespace Gorgon { namespace Animation {
 			anim = other.anim;
 			other.isowned = false;
 			other.anim = nullptr;
+
+			return *this;
 		}
 
 		/// Check if this storage has an animation
