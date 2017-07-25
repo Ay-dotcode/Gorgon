@@ -43,6 +43,7 @@ namespace Gorgon { namespace Resource {
 			ASSERT(images!=anim->cend() && images->GetGID()==GID::Image, "Animation is empty");
 
 			anim->Add(dynamic_cast<Image&>(*images), dur);
+			images++;
 		}
 
 		return true;

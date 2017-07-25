@@ -329,6 +329,9 @@ namespace Gorgon { namespace Graphics {
 
 		/// Returns the color mode of the image
 		Graphics::ColorMode GetMode() const override {
+			if(Graphics::Texture::id!=0) {
+				return Graphics::Texture::GetMode();
+			}
 #ifndef NDEBUG
 			if(!data) {
 				throw std::runtime_error("Bitmap data is not set");
