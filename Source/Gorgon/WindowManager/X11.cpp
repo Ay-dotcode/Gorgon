@@ -1471,13 +1471,13 @@ failsafe: //this should use X11 screen as monitor
         }
         
         if(key >= 'a' && key <='z')
-            return key;
+            return key + ('A' - 'a');
         
         if(key >= '0' && key <='9')
             return key;
         
         if(key >= 'A' && key <='Z')
-            return key + ('a' - 'A');
+            return key;
         
         switch(key) {
             case XK_Shift_L:
