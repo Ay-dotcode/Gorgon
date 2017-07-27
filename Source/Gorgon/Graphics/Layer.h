@@ -300,7 +300,7 @@ namespace Gorgon { namespace Graphics {
 
 		bool clippingenabled = false;
 
-		DrawMode mode;
+		DrawMode mode = Graphics::TextureTarget::Normal;
         RGBAf color = RGBAf(1.f);
 
 		static GL::FrameBuffer mask;
