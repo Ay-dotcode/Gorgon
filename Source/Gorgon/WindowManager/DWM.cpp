@@ -819,7 +819,10 @@ namespace Gorgon {
 	}
 
 	LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-		if(internal::windowdata::mapping.count(hWnd)) {
+		if(internal::windowdata::mapping.size() == 0)
+			return DefWindowProc(hWnd, message, wParam, lParam);
+
+		if(internal::windowdata::mapping.count(hWnd) && internal::windowdata::mapping[hWnd]) {
 			return internal::windowdata::mapping[hWnd]->Proc(message, wParam, lParam);
 		}
 		else {

@@ -98,7 +98,9 @@ namespace Gorgon {
 			DWORD s=256;
 			GetUserName(username, &s);
 
-			return UnicodeToMByte(username);
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+			return converter.to_bytes(username);
 		}
 
 		std::string GetName() {
@@ -108,7 +110,9 @@ namespace Gorgon {
 			DWORD s=256;
 			GetUserNameEx(NameDisplay, name, &s);
 
-			return UnicodeToMByte(name);
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+			return converter.to_bytes(name);
 		}
 
 		std::string GetDocumentsPath() {
@@ -117,7 +121,9 @@ namespace Gorgon {
 
 			SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
 
-			return Filesystem::Canonical(UnicodeToMByte(my_documents));
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+			return Filesystem::Canonical(converter.to_bytes(my_documents));
 		}
 
 		std::string GetHomePath() {
@@ -126,7 +132,9 @@ namespace Gorgon {
 
 			SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, SHGFP_TYPE_CURRENT, profile);
 
-			return Filesystem::Canonical(UnicodeToMByte(profile));
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+			return Filesystem::Canonical(converter.to_bytes(profile));
 		}
 
 		std::string GetDataPath() {
@@ -135,7 +143,9 @@ namespace Gorgon {
 
 			SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, path);
 
-			return Filesystem::Canonical(UnicodeToMByte(path));
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+			return Filesystem::Canonical(converter.to_bytes(path));
 		}
 		
 		bool IsAdmin() {
