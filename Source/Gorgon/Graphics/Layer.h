@@ -275,7 +275,12 @@ namespace Gorgon { namespace Graphics {
 		/// Returns the tint color of the layer, every image pixel will be multiplied by this color
 		virtual RGBAf GetTintColor() const { return color; }
 
-		virtual Geometry::Size GetTargetSize() const override { return Gorgon::Layer::GetEffectiveBounds().GetSize(); }
+		virtual Geometry::Size GetTargetSize() const override {
+            if(bounds.Width() != 0 && bounds.Height() != 0)
+                return bounds.GetSize();
+            else
+                return Gorgon::Layer::GetEffectiveBounds().GetSize(); 
+        }
 
 		/// Enables graphics clipping from the visible borders of the layer
 		void EnableClipping() {

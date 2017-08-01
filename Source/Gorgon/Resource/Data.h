@@ -27,7 +27,7 @@ namespace Gorgon { namespace Resource {
 		template <class T_, class O_, class R_, int IND_>
 		typename std::enable_if<!std::is_base_of<Base, typename std::remove_pointer<O_>::type>::value, void>::type
 		namedtransform(T_ &values, const std::string &prefix, const R_ &reflectionobj) const {
-			values.*(R_::template Member<IND_>::MemberPointer())=GetItem(prefix+reflectionobj.Names[IND_]).Get<O_>();
+			values.*(R_::template Member<IND_>::MemberPointer())=GetItem(prefix+reflectionobj.Names[IND_]).template Get<O_>();
 		}
 
 		template <class T_, class R_, int ...S_>
@@ -38,14 +38,14 @@ namespace Gorgon { namespace Resource {
 		template <class T_, class O_, class R_, int IND_>
 		typename std::enable_if<std::is_base_of<Base, typename std::remove_pointer<O_>::type>::value, void>::type
 		namedtransform(T_ &values, const std::string &prefix, const R_ &reflectionobj) {
-			values.*(R_::template Member<IND_>::MemberPointer())=&GetItem(prefix+reflectionobj.Names[IND_]).GetObject<typename std::remove_pointer<O_>::type>();
+			values.*(R_::template Member<IND_>::MemberPointer())=&GetItem(prefix+reflectionobj.Names[IND_]).template GetObject<typename std::remove_pointer<O_>::type>();
 			dynamic_cast<ObjectData&>(GetItem(prefix+reflectionobj.Names[IND_])).Release();
 		}
 
 		template <class T_, class O_, class R_, int IND_>
 		typename std::enable_if<!std::is_base_of<Base, typename std::remove_pointer<O_>::type>::value, void>::type
 		namedtransform(T_ &values, const std::string &prefix, const R_ &reflectionobj) {
-			values.*(R_::template Member<IND_>::MemberPointer())=GetItem(prefix+reflectionobj.Names[IND_]).Get<O_>();
+			values.*(R_::template Member<IND_>::MemberPointer())=GetItem(prefix+reflectionobj.Names[IND_]).template Get<O_>();
 		}
 
 		template <class T_, class R_, int ...S_>

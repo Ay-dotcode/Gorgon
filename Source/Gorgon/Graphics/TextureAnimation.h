@@ -165,6 +165,22 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Returns the size of the first image
+		int GetWidth() const {
+			if(frames.size()>0)
+				return frames[0].GetImage().GetWidth();
+            
+			return 0;
+		}
+
+		/// Returns the size of the first image
+		int GetHeight() const {
+			if(frames.size()>0)
+				return frames[0].GetImage().GetHeight();
+            
+			return 0;
+		}
+
+		/// Returns the size of the first image
 		Geometry::Size GetSize() const {
 			if(frames.size()>0)
 				return frames[0].GetImage().GetSize();

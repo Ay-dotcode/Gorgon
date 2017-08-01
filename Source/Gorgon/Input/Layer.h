@@ -50,9 +50,9 @@ namespace Gorgon { namespace Input {
             /// is called, this means hit check has already succeeded in the current
             /// layout. This variant accepts class member function.
             template<class C_>
-            void SetHitCheck(C_ &c, std::function<bool(C_ &, Layer &, Geometry::Point)> fn) {
+            void SetHitCheck(C_ &c, bool(C_::*fn)(Layer &, Geometry::Point)) {
                 C_ *my = &c;
-                hitcheck = [fn, my](Layer &layer, Geometry::Point point) { return my->fn(layer, point); };
+                hitcheck = [fn, my](Layer &layer, Geometry::Point point) { return (my->*fn)(layer, point); };
             }
             
             /// Sets hit check function. When set, events only occur if hit check returns
@@ -60,9 +60,9 @@ namespace Gorgon { namespace Input {
             /// is called, this means hit check has already succeeded in the current
             /// layout. This variant accepts class member function.
             template<class C_>
-            void SetHitCheck(C_ &c, std::function<bool(C_ &, Geometry::Point)> fn) {
+            void SetHitCheck(C_ &c, bool(C_::*fn)(Geometry::Point)) {
                 C_ *my = &c;
-                hitcheck = [fn, my](Layer &, Geometry::Point point) { return my->fn(point); };
+                hitcheck = [fn, my](Layer &, Geometry::Point point) { return (my->*fn)(point); };
             }
 
             /// Sets hit check function. When set, events only occur if hit check returns
@@ -70,8 +70,8 @@ namespace Gorgon { namespace Input {
             /// is called, this means hit check has already succeeded in the current
             /// layout. This variant accepts class member function.
             template<class C_>
-            void SetHitCheck(C_ *my, std::function<bool(C_ &, Layer &, Geometry::Point)> fn) {
-                hitcheck = [fn, my](Layer &layer, Geometry::Point point) { return my->fn(layer, point); };
+            void SetHitCheck(C_ *my, bool(C_::*fn)(Layer &, Geometry::Point)) {
+                hitcheck = [fn, my](Layer &layer, Geometry::Point point) { return (my->*fn)(layer, point); };
             }
             
             /// Sets hit check function. When set, events only occur if hit check returns
@@ -79,8 +79,8 @@ namespace Gorgon { namespace Input {
             /// is called, this means hit check has already succeeded in the current
             /// layout. This variant accepts class member function.
             template<class C_>
-            void SetHitCheck(C_ *my, std::function<bool(C_ &, Geometry::Point)> fn) {
-                hitcheck = [fn, my](Layer &, Geometry::Point point) { return my->fn(point); };
+            void SetHitCheck(C_ *my, bool(C_::*fn)(Geometry::Point)) {
+                hitcheck = [fn, my](Layer &, Geometry::Point point) { return (my->*fn)(point); };
             }
             
             /// Removes hit check handler, default action for hit check is to return true.
@@ -105,31 +105,31 @@ namespace Gorgon { namespace Input {
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point, Input::Mouse::Button)> fn) {
+            void SetClick(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, Input::Mouse::Button)) {
                 C_ *my = &c;
-                click = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { my->fn(layer, point, btn); };
+                click = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(layer, point, btn); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ &c, std::function<void(C_ &, Geometry::Point, Input::Mouse::Button)> fn) {
+            void SetClick(C_ &c, void(C_::*fn)(Geometry::Point, Input::Mouse::Button)) {
                 C_ *my = &c;
-                click = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { my->fn(point, btn); };
+                click = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(point, btn); };
             }
 
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point, Input::Mouse::Button)> fn) {
-                click = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { my->fn(layer, point, btn); };
+            void SetClick(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, Input::Mouse::Button)) {
+                click = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(layer, point, btn); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ *my, std::function<void(C_ &, Geometry::Point, Input::Mouse::Button)> fn) {
-                click = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { my->fn(point, btn); };
+            void SetClick(C_ *my, void(C_::*fn)(Geometry::Point, Input::Mouse::Button)) {
+                click = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(point, btn); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
@@ -147,31 +147,31 @@ namespace Gorgon { namespace Input {
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ &c, std::function<void(C_ &, Layer &, Input::Mouse::Button)> fn) {
+            void SetClick(C_ &c, void(C_::*fn)(Layer &, Input::Mouse::Button)) {
                 C_ *my = &c;
-                click = [fn, my](Layer &layer, Input::Mouse::Button btn) { my->fn(layer, btn); };
+                click = [fn, my](Layer &layer, Input::Mouse::Button btn) { (my->*fn)(layer, btn); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ &c, std::function<void(C_ &, Input::Mouse::Button)> fn) {
+            void SetClick(C_ &c, void(C_::*fn)(Input::Mouse::Button)) {
                 C_ *my = &c;
-                click = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { my->fn(btn); };
+                click = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { (my->*fn)(btn); };
             }
 
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ *my, std::function<void(C_ &, Layer &, Input::Mouse::Button)> fn) {
-                click = [fn, my](Layer &layer, Input::Mouse::Button btn) { my->fn(layer, btn); };
+            void SetClick(C_ *my, void(C_::*fn)(Layer &, Input::Mouse::Button)) {
+                click = [fn, my](Layer &layer, Input::Mouse::Button btn) { (my->*fn)(layer, btn); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ *my, std::function<void(C_ &, Input::Mouse::Button)> fn) {
-                click = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { my->fn(btn); };
+            void SetClick(C_ *my, void(C_::*fn)(Input::Mouse::Button)) {
+                click = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { (my->*fn)(btn); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
@@ -189,31 +189,31 @@ namespace Gorgon { namespace Input {
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+            void SetClick(C_ &c, void(C_::*fn)(Layer &, Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                click = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(layer, point); };
+                click = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer, point); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ &c, std::function<void(C_ &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+            void SetClick(C_ &c, void(C_::*fn)(Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                click = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(point); };
+                click = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(point); };
             }
  
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                click = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(layer, point); };
+            void SetClick(C_ *my, void(C_::*fn)(Layer &, Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+                click = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer, point); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ *my, std::function<void(C_ &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                click = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(point); };
+            void SetClick(C_ *my, void(C_::*fn)(Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+                click = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(point); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
@@ -231,9 +231,9 @@ namespace Gorgon { namespace Input {
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ &c, std::function<void(C_ &, Layer &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+            void SetClick(C_ &c, void(C_::*fn)(Layer &), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                click = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) my->fn(layer); };
+                click = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
@@ -241,21 +241,21 @@ namespace Gorgon { namespace Input {
             template<class C_>
             void SetClick(C_ &c, std::function<void(C_ &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                click = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) my->fn(); };
+                click = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(); };
             }
 
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetClick(C_ *my, std::function<void(C_ &, Layer &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                click = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) my->fn(layer); };
+            void SetClick(C_ *my, void(C_::*fn)(Layer &), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+                click = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer); };
             }
             
             /// Sets click handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
             void SetClick(C_ *my, std::function<void(C_ &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                click = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) my->fn(); };
+                click = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(); };
             }
             
             /// Removes click handler
@@ -280,31 +280,31 @@ namespace Gorgon { namespace Input {
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point, Input::Mouse::Button)> fn) {
+            void SetDown(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, Input::Mouse::Button)) {
                 C_ *my = &c;
-                down = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { my->fn(layer, point, btn); };
+                down = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(layer, point, btn); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ &c, std::function<void(C_ &, Geometry::Point, Input::Mouse::Button)> fn) {
+            void SetDown(C_ &c, void(C_::*fn)(Geometry::Point, Input::Mouse::Button)) {
                 C_ *my = &c;
-                down = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { my->fn(point, btn); };
+                down = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(point, btn); };
             }
 
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point, Input::Mouse::Button)> fn) {
-                down = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { my->fn(layer, point, btn); };
+            void SetDown(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, Input::Mouse::Button)) {
+                down = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(layer, point, btn); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ *my, std::function<void(C_ &, Geometry::Point, Input::Mouse::Button)> fn) {
-                down = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { my->fn(point, btn); };
+            void SetDown(C_ *my, void(C_::*fn)(Geometry::Point, Input::Mouse::Button)) {
+                down = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(point, btn); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
@@ -322,31 +322,31 @@ namespace Gorgon { namespace Input {
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ &c, std::function<void(C_ &, Layer &, Input::Mouse::Button)> fn) {
+            void SetDown(C_ &c, void(C_::*fn)(Layer &, Input::Mouse::Button)) {
                 C_ *my = &c;
-                down = [fn, my](Layer &layer, Input::Mouse::Button btn) { my->fn(layer, btn); };
+                down = [fn, my](Layer &layer, Input::Mouse::Button btn) { (my->*fn)(layer, btn); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ &c, std::function<void(C_ &, Input::Mouse::Button)> fn) {
+            void SetDown(C_ &c, void(C_::*fn)(Input::Mouse::Button)) {
                 C_ *my = &c;
-                down = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { my->fn(btn); };
+                down = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { (my->*fn)(btn); };
             }
 
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ *my, std::function<void(C_ &, Layer &, Input::Mouse::Button)> fn) {
-                down = [fn, my](Layer &layer, Input::Mouse::Button btn) { my->fn(layer, btn); };
+            void SetDown(C_ *my, void(C_::*fn)(Layer &, Input::Mouse::Button)) {
+                down = [fn, my](Layer &layer, Input::Mouse::Button btn) { (my->*fn)(layer, btn); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ *my, std::function<void(C_ &, Input::Mouse::Button)> fn) {
-                down = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { my->fn(btn); };
+            void SetDown(C_ *my, void(C_::*fn)(Input::Mouse::Button)) {
+                down = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { (my->*fn)(btn); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
@@ -364,31 +364,31 @@ namespace Gorgon { namespace Input {
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+            void SetDown(C_ &c, void(C_::*fn)(Layer &, Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                down = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(layer, point); };
+                down = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer, point); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ &c, std::function<void(C_ &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+            void SetDown(C_ &c, void(C_::*fn)(Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                down = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(point); };
+                down = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(point); };
             }
  
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                down = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(layer, point); };
+            void SetDown(C_ *my, void(C_::*fn)(Layer &, Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+                down = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer, point); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ *my, std::function<void(C_ &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                down = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(point); };
+            void SetDown(C_ *my, void(C_::*fn)(Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+                down = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(point); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
@@ -406,9 +406,9 @@ namespace Gorgon { namespace Input {
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ &c, std::function<void(C_ &, Layer &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+            void SetDown(C_ &c, void(C_::*fn)(Layer &), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                down = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) my->fn(layer); };
+                down = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
@@ -416,21 +416,21 @@ namespace Gorgon { namespace Input {
             template<class C_>
             void SetDown(C_ &c, std::function<void(C_ &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                down = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) my->fn(); };
+                down = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(); };
             }
 
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
-            void SetDown(C_ *my, std::function<void(C_ &, Layer &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                down = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) my->fn(layer); };
+            void SetDown(C_ *my, void(C_::*fn)(Layer &), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+                down = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer); };
             }
             
             /// Sets mouse down handler. If hit check function is set, this event is only called
             /// if hit check returns true. This variant accepts class member function.
             template<class C_>
             void SetDown(C_ *my, std::function<void(C_ &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                down = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) my->fn(); };
+                down = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(); };
             }
             
             /// Removes mouse down handler
@@ -455,31 +455,31 @@ namespace Gorgon { namespace Input {
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point, Input::Mouse::Button)> fn) {
+            void SetUp(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, Input::Mouse::Button)) {
                 C_ *my = &c;
-                up = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { my->fn(layer, point, btn); };
+                up = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(layer, point, btn); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ &c, std::function<void(C_ &, Geometry::Point, Input::Mouse::Button)> fn) {
+            void SetUp(C_ &c, void(C_::*fn)(Geometry::Point, Input::Mouse::Button)) {
                 C_ *my = &c;
-                up = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { my->fn(point, btn); };
+                up = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(point, btn); };
             }
 
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point, Input::Mouse::Button)> fn) {
-                up = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { my->fn(layer, point, btn); };
+            void SetUp(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, Input::Mouse::Button)) {
+                up = [fn, my](Layer &layer, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(layer, point, btn); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ *my, std::function<void(C_ &, Geometry::Point, Input::Mouse::Button)> fn) {
-                up = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { my->fn(point, btn); };
+            void SetUp(C_ *my, void(C_::*fn)(Geometry::Point, Input::Mouse::Button)) {
+                up = [fn, my](Layer &, Geometry::Point point, Input::Mouse::Button btn) { (my->*fn)(point, btn); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
@@ -497,31 +497,31 @@ namespace Gorgon { namespace Input {
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ &c, std::function<void(C_ &, Layer &, Input::Mouse::Button)> fn) {
+            void SetUp(C_ &c, void(C_::*fn)(Layer &, Input::Mouse::Button)) {
                 C_ *my = &c;
-                up = [fn, my](Layer &layer, Input::Mouse::Button btn) { my->fn(layer, btn); };
+                up = [fn, my](Layer &layer, Input::Mouse::Button btn) { (my->*fn)(layer, btn); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ &c, std::function<void(C_ &, Input::Mouse::Button)> fn) {
+            void SetUp(C_ &c, void(C_::*fn)(Input::Mouse::Button)) {
                 C_ *my = &c;
-                up = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { my->fn(btn); };
+                up = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { (my->*fn)(btn); };
             }
 
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ *my, std::function<void(C_ &, Layer &, Input::Mouse::Button)> fn) {
-                up = [fn, my](Layer &layer, Input::Mouse::Button btn) { my->fn(layer, btn); };
+            void SetUp(C_ *my, void(C_::*fn)(Layer &, Input::Mouse::Button)) {
+                up = [fn, my](Layer &layer, Input::Mouse::Button btn) { (my->*fn)(layer, btn); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ *my, std::function<void(C_ &, Input::Mouse::Button)> fn) {
-                up = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { my->fn(btn); };
+            void SetUp(C_ *my, void(C_::*fn)(Input::Mouse::Button)) {
+                up = [fn, my](Layer &, Geometry::Point, Input::Mouse::Button btn) { (my->*fn)(btn); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
@@ -539,31 +539,31 @@ namespace Gorgon { namespace Input {
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+            void SetUp(C_ &c, void(C_::*fn)(Layer &, Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                up = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(layer, point); };
+                up = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer, point); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ &c, std::function<void(C_ &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+            void SetUp(C_ &c, void(C_::*fn)(Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                up = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(point); };
+                up = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(point); };
             }
  
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                up = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(layer, point); };
+            void SetUp(C_ *my, void(C_::*fn)(Layer &, Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+                up = [fn, my, btn](Layer &layer, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer, point); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ *my, std::function<void(C_ &, Geometry::Point)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                up = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) my->fn(point); };
+            void SetUp(C_ *my, void(C_::*fn)(Geometry::Point), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+                up = [fn, my, btn](Layer &, Geometry::Point point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(point); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
@@ -581,9 +581,9 @@ namespace Gorgon { namespace Input {
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ &c, std::function<void(C_ &, Layer &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+            void SetUp(C_ &c, void(C_::*fn)(Layer &), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                up = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) my->fn(layer); };
+                up = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
@@ -591,21 +591,21 @@ namespace Gorgon { namespace Input {
             template<class C_>
             void SetUp(C_ &c, std::function<void(C_ &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 C_ *my = &c;
-                up = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) my->fn(); };
+                up = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(); };
             }
 
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
-            void SetUp(C_ *my, std::function<void(C_ &, Layer &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                up = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) my->fn(layer); };
+            void SetUp(C_ *my, void(C_::*fn)(Layer &), Input::Mouse::Button btn = Input::Mouse::Button::Left) {
+                up = [fn, my, btn](Layer &layer, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(layer); };
             }
             
             /// Sets mouse up handler. If hit check function is set, this event is only called
             /// if hit check returns true and mouse down is also handled. This variant accepts class member function.
             template<class C_>
             void SetUp(C_ *my, std::function<void(C_ &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
-                up = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) my->fn(); };
+                up = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(); };
             }
             
             /// Removes mouse up handler
@@ -630,31 +630,31 @@ namespace Gorgon { namespace Input {
             /// Sets mouse move handler. This function will be called every frame when the mouse is over the
             /// layer, even if the mouse does not move.
             template<class C_>
-            void SetMove(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point)> fn) {
+            void SetMove(C_ &c, void(C_::*fn)(Layer &, Geometry::Point)) {
                 C_ *my = &c;
-                move = [fn, my](Layer &layer, Geometry::Point point) { my->fn(layer, point); };
+                move = [fn, my](Layer &layer, Geometry::Point point) { (my->*fn)(layer, point); };
             }
             
             /// Sets mouse move handler. This function will be called every frame when the mouse is over the
             /// layer, even if the mouse does not move.
             template<class C_>
-            void SetMove(C_ &c, std::function<void(C_ &, Geometry::Point)> fn) {
+            void SetMove(C_ &c, void(C_::*fn)(Geometry::Point)) {
                 C_ *my = &c;
-                move = [fn, my](Layer &, Geometry::Point point) { my->fn(point); };
+                move = [fn, my](Layer &, Geometry::Point point) { (my->*fn)(point); };
             }
 
             /// Sets mouse move handler. This function will be called every frame when the mouse is over the
             /// layer, even if the mouse does not move.
             template<class C_>
-            void SetMove(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point)> fn) {
-                move = [fn, my](Layer &layer, Geometry::Point point) { my->fn(layer, point); };
+            void SetMove(C_ *my, void(C_::*fn)(Layer &, Geometry::Point)) {
+                move = [fn, my](Layer &layer, Geometry::Point point) { (my->*fn)(layer, point); };
             }
             
             /// Sets mouse move handler. This function will be called every frame when the mouse is over the
             /// layer, even if the mouse does not move.
             template<class C_>
-            void SetMove(C_ *my, std::function<void(C_ &, Geometry::Point)> fn) {
-                move = [fn, my](Layer &, Geometry::Point point) { my->fn(point); };
+            void SetMove(C_ *my, void(C_::*fn)(Geometry::Point)) {
+                move = [fn, my](Layer &, Geometry::Point point) { (my->*fn)(point); };
             }
             
             /// Removes mouse move handler
@@ -682,34 +682,34 @@ namespace Gorgon { namespace Input {
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point, float)> fn) {
+			void SetScroll(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, float)) {
 				C_ *my = &c;
-				vscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { my->fn(layer, point, amount); };
+				vscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ &c, std::function<void(C_ &, Geometry::Point, float)> fn) {
+			void SetScroll(C_ &c, void(C_::*fn)(Geometry::Point, float)) {
 				C_ *my = &c;
-				vscroll = [fn, my](Layer &, Geometry::Point point, float amount) { my->fn(point, amount); };
+				vscroll = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point, float)> fn) {
-				vscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { my->fn(layer, point, amount); };
+			void SetScroll(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, float)) {
+				vscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ *my, std::function<void(C_ &, Geometry::Point, float)> fn) {
-				vscroll = [fn, my](Layer &, Geometry::Point point, float amount) { my->fn(point, amount); };
+			void SetScroll(C_ *my, void(C_::*fn)(Geometry::Point, float)) {
+				vscroll = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
@@ -730,34 +730,34 @@ namespace Gorgon { namespace Input {
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ &c, std::function<void(C_ &, Layer &, float)> fn) {
+			void SetScroll(C_ &c, void(C_::*fn)(Layer &, float)) {
 				C_ *my = &c;
-				vscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { my->fn(layer, amount); };
+				vscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ &c, std::function<void(C_ &, float)> fn) {
+			void SetScroll(C_ &c, void(C_::*fn)(float)) {
 				C_ *my = &c;
-				vscroll = [fn, my](Layer &, Geometry::Point, float amount) { my->fn(amount); };
+				vscroll = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ *my, std::function<void(C_ &, Layer &, float)> fn) {
-				vscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { my->fn(layer, amount); };
+			void SetScroll(C_ *my, void(C_::*fn)(Layer &, float)) {
+				vscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ *my, std::function<void(C_ &, float)> fn) {
-				vscroll = [fn, my](Layer &, Geometry::Point, float amount) { my->fn(amount); };
+			void SetScroll(C_ *my, void(C_::*fn)(float)) {
+				vscroll = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
 			}
 
 			/// Removes scroll handler
@@ -785,34 +785,34 @@ namespace Gorgon { namespace Input {
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point, float)> fn) {
+			void SetHScroll(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, float)) {
 				C_ *my = &c;
-				hscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { my->fn(layer, point, amount); };
+				hscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ &c, std::function<void(C_ &, Geometry::Point, float)> fn) {
+			void SetHScroll(C_ &c, void(C_::*fn)(Geometry::Point, float)) {
 				C_ *my = &c;
-				hscroll = [fn, my](Layer &, Geometry::Point point, float amount) { my->fn(point, amount); };
+				hscroll = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point, float)> fn) {
-				hscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { my->fn(layer, point, amount); };
+			void SetHScroll(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, float)) {
+				hscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ *my, std::function<void(C_ &, Geometry::Point, float)> fn) {
-				hscroll = [fn, my](Layer &, Geometry::Point point, float amount) { my->fn(point, amount); };
+			void SetHScroll(C_ *my, void(C_::*fn)(Geometry::Point, float)) {
+				hscroll = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
@@ -833,34 +833,34 @@ namespace Gorgon { namespace Input {
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ &c, std::function<void(C_ &, Layer &, float)> fn) {
+			void SetHScroll(C_ &c, void(C_::*fn)(Layer &, float)) {
 				C_ *my = &c;
-				hscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { my->fn(layer, amount); };
+				hscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ &c, std::function<void(C_ &, float)> fn) {
+			void SetHScroll(C_ &c, void(C_::*fn)(float)) {
 				C_ *my = &c;
-				hscroll = [fn, my](Layer &, Geometry::Point, float amount) { my->fn(amount); };
+				hscroll = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ *my, std::function<void(C_ &, Layer &, float)> fn) {
-				hscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { my->fn(layer, amount); };
+			void SetHScroll(C_ *my, void(C_::*fn)(Layer &, float)) {
+				hscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ *my, std::function<void(C_ &, float)> fn) {
-				hscroll = [fn, my](Layer &, Geometry::Point, float amount) { my->fn(amount); };
+			void SetHScroll(C_ *my, void(C_::*fn)(float)) {
+				hscroll = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
 			}
 
 			/// Removes horizontal scroll handler
@@ -885,31 +885,31 @@ namespace Gorgon { namespace Input {
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point, float)> fn) {
+			void SetZoom(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, float)) {
 				C_ *my = &c;
-				zoom = [fn, my](Layer &layer, Geometry::Point point, float amount) { my->fn(layer, point, amount); };
+				zoom = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ &c, std::function<void(C_ &, Geometry::Point, float)> fn) {
+			void SetZoom(C_ &c, void(C_::*fn)(Geometry::Point, float)) {
 				C_ *my = &c;
-				zoom = [fn, my](Layer &, Geometry::Point point, float amount) { my->fn(point, amount); };
+				zoom = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point, float)> fn) {
-				zoom = [fn, my](Layer &layer, Geometry::Point point, float amount) { my->fn(layer, point, amount); };
+			void SetZoom(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, float)) {
+				zoom = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ *my, std::function<void(C_ &, Geometry::Point, float)> fn) {
-				zoom = [fn, my](Layer &, Geometry::Point point, float amount) { my->fn(point, amount); };
+			void SetZoom(C_ *my, void(C_::*fn)(Geometry::Point, float)) {
+				zoom = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
@@ -927,31 +927,31 @@ namespace Gorgon { namespace Input {
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ &c, std::function<void(C_ &, Layer &, float)> fn) {
+			void SetZoom(C_ &c, void(C_::*fn)(Layer &, float)) {
 				C_ *my = &c;
-				zoom = [fn, my](Layer &layer, Geometry::Point, float amount) { my->fn(layer, amount); };
+				zoom = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ &c, std::function<void(C_ &, float)> fn) {
+			void SetZoom(C_ &c, void(C_::*fn)(float)) {
 				C_ *my = &c;
-				zoom = [fn, my](Layer &, Geometry::Point, float amount) { my->fn(amount); };
+				zoom = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ *my, std::function<void(C_ &, Layer &, float)> fn) {
-				zoom = [fn, my](Layer &layer, Geometry::Point, float amount) { my->fn(layer, amount); };
+			void SetZoom(C_ *my, void(C_::*fn)(Layer &, float)) {
+				zoom = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ *my, std::function<void(C_ &, float)> fn) {
-				zoom = [fn, my](Layer &, Geometry::Point, float amount) { my->fn(amount); };
+			void SetZoom(C_ *my, void(C_::*fn)(float)) {
+				zoom = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
 			}
 
 			/// Removes zoom handler
@@ -976,31 +976,31 @@ namespace Gorgon { namespace Input {
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ &c, std::function<void(C_ &, Layer &, Geometry::Point, float)> fn) {
+			void SetRotate(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, float)) {
 				C_ *my = &c;
-				rotate = [fn, my](Layer &layer, Geometry::Point point, float amount) { my->fn(layer, point, amount); };
+				rotate = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ &c, std::function<void(C_ &, Geometry::Point, float)> fn) {
+			void SetRotate(C_ &c, void(C_::*fn)(Geometry::Point, float)) {
 				C_ *my = &c;
-				rotate = [fn, my](Layer &, Geometry::Point point, float amount) { my->fn(point, amount); };
+				rotate = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ *my, std::function<void(C_ &, Layer &, Geometry::Point, float)> fn) {
-				rotate = [fn, my](Layer &layer, Geometry::Point point, float amount) { my->fn(layer, point, amount); };
+			void SetRotate(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, float)) {
+				rotate = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ *my, std::function<void(C_ &, Geometry::Point, float)> fn) {
-				rotate = [fn, my](Layer &, Geometry::Point point, float amount) { my->fn(point, amount); };
+			void SetRotate(C_ *my, void(C_::*fn)(Geometry::Point, float)) {
+				rotate = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
@@ -1018,31 +1018,31 @@ namespace Gorgon { namespace Input {
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ &c, std::function<void(C_ &, Layer &, float)> fn) {
+			void SetRotate(C_ &c, void(C_::*fn)(Layer &, float)) {
 				C_ *my = &c;
-				rotate = [fn, my](Layer &layer, Geometry::Point, float amount) { my->fn(layer, amount); };
+				rotate = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ &c, std::function<void(C_ &, float)> fn) {
+			void SetRotate(C_ &c, void(C_::*fn)(float)) {
 				C_ *my = &c;
-				rotate = [fn, my](Layer &, Geometry::Point, float amount) { my->fn(amount); };
+				rotate = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ *my, std::function<void(C_ &, Layer &, float)> fn) {
-				rotate = [fn, my](Layer &layer, Geometry::Point, float amount) { my->fn(layer, amount); };
+			void SetRotate(C_ *my, void(C_::*fn)(Layer &, float)) {
+				rotate = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ *my, std::function<void(C_ &, float)> fn) {
-				rotate = [fn, my](Layer &, Geometry::Point, float amount) { my->fn(amount); };
+			void SetRotate(C_ *my, void(C_::*fn)(float)) {
+				rotate = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
 			}
 
 			/// Removes rotate handler.
@@ -1067,9 +1067,9 @@ namespace Gorgon { namespace Input {
             /// Sets mouse over handler. Mouse over occurs for parent layers of a layer as well. However,
             /// If two siblings overlap, only one will receive it.
             template<class C_>
-            void SetOver(C_ &c, std::function<void(C_ &, Layer &)> fn) {
+            void SetOver(C_ &c, void(C_::*fn)(Layer &)) {
                 C_ *my = &c;
-                over = [fn, my](Layer &layer) { my->fn(layer); };
+                over = [fn, my](Layer &layer) { (my->*fn)(layer); };
             }
             
             /// Sets mouse over handler. Mouse over occurs for parent layers of a layer as well. However,
@@ -1077,21 +1077,21 @@ namespace Gorgon { namespace Input {
             template<class C_>
             void SetOver(C_ &c, std::function<void(C_ &)> fn) {
                 C_ *my = &c;
-                over = [fn, my](Layer &) { my->fn(); };
+                over = [fn, my](Layer &) { (my->*fn)(); };
             }
 
             /// Sets mouse over handler. Mouse over occurs for parent layers of a layer as well. However,
             /// If two siblings overlap, only one will receive it.
             template<class C_>
-            void SetOver(C_ *my, std::function<void(C_ &, Layer &)> fn) {
-                over = [fn, my](Layer &layer) { my->fn(layer); };
+            void SetOver(C_ *my, void(C_::*fn)(Layer &)) {
+                over = [fn, my](Layer &layer) { (my->*fn)(layer); };
             }
             
             /// Sets mouse over handler. Mouse over occurs for parent layers of a layer as well. However,
             /// If two siblings overlap, only one will receive it.
             template<class C_>
             void SetOver(C_ *my, std::function<void(C_ &)> fn) {
-                over = [fn, my](Layer &) { my->fn(); };
+                over = [fn, my](Layer &) { (my->*fn)(); };
             }
             
             /// Removes mouse over handler
@@ -1113,28 +1113,28 @@ namespace Gorgon { namespace Input {
 
             /// Sets mouse out handler.
             template<class C_>
-            void SetOut(C_ &c, std::function<void(C_ &, Layer &)> fn) {
+            void SetOut(C_ &c, void(C_::*fn)(Layer &)) {
                 C_ *my = &c;
-                out = [fn, my](Layer &layer) { my->fn(layer); };
+                out = [fn, my](Layer &layer) { (my->*fn)(layer); };
             }
             
             /// Sets mouse out handler.
             template<class C_>
             void SetOut(C_ &c, std::function<void(C_ &)> fn) {
                 C_ *my = &c;
-                out = [fn, my](Layer &) { my->fn(); };
+                out = [fn, my](Layer &) { (my->*fn)(); };
             }
 
             /// Sets mouse out handler.
             template<class C_>
-            void SetOut(C_ *my, std::function<void(C_ &, Layer &)> fn) {
-                out = [fn, my](Layer &layer) { my->fn(layer); };
+            void SetOut(C_ *my, void(C_::*fn)(Layer &)) {
+                out = [fn, my](Layer &layer) { (my->*fn)(layer); };
             }
             
             /// Sets mouse out handler.
             template<class C_>
             void SetOut(C_ *my, std::function<void(C_ &)> fn) {
-                out = [fn, my](Layer &) { my->fn(); };
+                out = [fn, my](Layer &) { (my->*fn)(); };
             }
             
             /// Removes mouse out handler
