@@ -9,6 +9,7 @@ SET(ManualTests
 	Generic
 	Audio
 	PDParser
+	Scene
 	Window
 	Font
 	HTMLRenderer

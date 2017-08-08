@@ -39,7 +39,7 @@ public:
 		wind.Add(l);
 
 		if(icon.Import("icon.png")) {
-			WM::Icon ico(icon.GetData());
+			ico = WM::Icon{icon.GetData()};
 			wind.SetIcon(ico);
 		}
 
@@ -74,6 +74,7 @@ public:
 	Bitmap bgimage, icon;
 	Graphics::BitmapFont fnt;
     Graphics::StyledRenderer sty = {fnt};
+    WM::Icon ico;
 
 	std::string appname;
 };
