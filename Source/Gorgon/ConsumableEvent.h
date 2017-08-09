@@ -393,6 +393,7 @@ namespace Gorgon {
         /// Disable given event handler. This functionality allows handlers to be pseudo removed without changing
         /// their location in the hierarchy.
         void Disable(Token token) {
+			if(!token) return;
 			std::lock_guard<std::mutex> g(access);
             
             reinterpret_cast<internal::consumableevent::HandlerBase<Source_, Params_...>*>(token)->enabled = false;

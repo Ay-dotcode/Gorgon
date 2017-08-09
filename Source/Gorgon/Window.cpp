@@ -49,7 +49,7 @@ namespace Gorgon {
 		other.updatedataowner();
         
         Layer::Swap(other);
-    }
+	}
 	
 	void Window::activatecontext() {
 		WindowManager::internal::switchcontext(*data);

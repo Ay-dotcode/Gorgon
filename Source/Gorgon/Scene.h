@@ -15,6 +15,11 @@
 
 #include <stdexcept>
 
+/**
+ * @page Scene System
+ * 
+ */
+
 namespace Gorgon {
     /// Can be used to identify scenes
     using SceneID = int;
@@ -24,12 +29,12 @@ namespace Gorgon {
     static constexpr SceneID NoSceneID = -1;
 
     /**
-    * This class represents a scene in the game like menu screen
-    * in game, post game, pause or different game modes. Scenes
-    * can be swapped on the fly and some scenes can be linked to 
-    * others. Scene class is abstract, it must be derived by
-    * other classes in order to work.
-    */
+	 * This class represents a scene in the game like menu screen
+	 * in game, post game, pause or different game modes. Scenes
+	 * can be swapped on the fly and some scenes can be linked to
+	 * others. Scene class is abstract, it must be derived by
+	 * other classes in order to work.
+	 */
     class Scene {
         friend class SceneManager;
     public:
@@ -43,7 +48,7 @@ namespace Gorgon {
         }
 
         /// Sets the parent layer so that the scene can be activated.
-        explicit Scene(Gorgon::Layer &parent, SceneID id = NoSceneID, bool mouseinput = true) : Scene(id, mouseinput) {
+        explicit Scene(SceneManager &parent, SceneID id = NoSceneID, bool mouseinput = true) : Scene(id, mouseinput) {
             this->parent = &parent;
         }
 
@@ -102,73 +107,34 @@ namespace Gorgon {
         /// it will not be functional.
         Gorgon::Input::Layer    mouse;
 
+		/// The parent window for the scene. Unless you are explicitly
+		/// requesting a parent, this member could be nullptr.
+		SceneManager *parent = nullptr;
+
     private:
 
-        void activate_scene() {
-            if(isactive) return;
+        void activate_scene();
 
-            if(!parent)
-                throw std::runtime_error("This scene has no parent layer");
-
-            parent->Add(main);
-
-            isactive = true;
-
-            activate();
-
-            ActivatedEvent();
-        }
-
-        void deactivate_scene() {
-            if(!isactive) return;
-
-            deactivate();
-
-            if(main.HasParent())
-                main.GetParent().Remove(main);
-
-            isactive = false;
-
-            DeactivatedEvent();
-        }
+        void deactivate_scene();
         
-        Gorgon::Layer *parent = nullptr;
         Gorgon::Layer  main;
         bool mouseinput = false;
         bool isactive = false;
     };
 
     /**
-    * This class manages the scenes, allows swapping between them
-    * and manages the input. Acts as a layer so that it can be placed
-    * on another layer. Requires an input source event to redirect
-    * input to scenes. If no scene that requires input is active,
-    * this object will disable its keyboard input so that the keys
-    * will be redirected to another event. As soon as a scene is
-    * activated, this object will carry its event handler to the top.
-    * If necessary, use ActivateKeyboard function to manually carry
-    * event handler to the top.
-    */
-    class SceneManager : public Gorgon::Layer {
+     * This class is a Window that manages scenes, allowing swapping,
+	 * handling input and game loop. This runner is most suitable for
+	 * games where there would be multiple scenes (intro, how to play,
+	 * game, pause screen, etc...) that compete with each other for
+	 * input and rendering.
+     */
+    class SceneManager : public Window, public Runner {
     public:
-        /// Default constructor, supply a window for key events
-        SceneManager(Gorgon::Window &window) : 
-            event(&window.KeyEvent),
-            inputtoken(ConsumableEvent<Window, Gorgon::Input::Key, float>::EmptyToken)
-        {
-            inputtoken = event->Register([this](Gorgon::Input::Key key, float amount) {
-                if(active && active->RequiresKeyInput())
-                    active->KeyEvent(key, amount);
+		using Window::Window;
 
-                return true;
-            });
-
-            event->Disable(inputtoken);
-        }
-
-        SceneManager() :
-            inputtoken(ConsumableEvent<Window, Gorgon::Input::Key, float>::EmptyToken)
-        { }
+		SceneManager() : Window() {
+		}
 
         ~SceneManager() {
             scenes.Destroy();
@@ -193,12 +159,8 @@ namespace Gorgon {
             active = &scenes[scene];
             active->activate_scene();
             if(active->RequiresKeyInput()) {
-                ASSERT(event, "Scene requires key input, but no keysource is given.");
-
-                if(event) {
-                    event->Enable(inputtoken);
-                    event->MoveToTop(inputtoken);
-                }
+				KeyEvent.Enable(inputtoken);
+				KeyEvent.MoveToTop(inputtoken);
             }
 
             ActivatedEvent(*active);
@@ -212,43 +174,23 @@ namespace Gorgon {
 
             active = nullptr;
 
-            if(event)
-                event->Disable(inputtoken);
+            KeyEvent.Disable(inputtoken);
         }
 
-        /// Sets the source window for key events
-        void SetKeyEventSource(Window &window) {
-            if(event)
-                event->Unregister(inputtoken);
-
-            event = &window.KeyEvent;
-
-            inputtoken = event->Register([this](Gorgon::Input::Key key, float amount) {
-                if(active && active->RequiresKeyInput())
-                    active->KeyEvent(key, amount);
-
-                return true;
-            });
-
-            if(!active || !active->RequiresKeyInput())
-                event->Disable(inputtoken);
-        }
         
         /// Moves keyboard input event to the top if there is a layer
         /// that accepts keyboard input.
         void ActivateKeyboard() {
             if(active && active->RequiresKeyInput()) {
-                if(event) {
-                    event->Enable(inputtoken);
-                    event->MoveToTop(inputtoken);
-                }
+				KeyEvent.Enable(inputtoken);
+				KeyEvent.MoveToTop(inputtoken);
             }
         }
         
         /// Runs the application by running the active scene, 
         /// progressing OS events and rendering mechanism. This
         /// function will run until Quit is called.
-        void Run() {
+        void Run() override {
             while(!quiting) {
                 if(active) {
                     active->doframe(Time::DeltaTime());
@@ -265,7 +207,7 @@ namespace Gorgon {
         /// point where Run function is called. It allows current
         /// frame to be completed before quiting. It also deactives
         /// the current scene.
-        void Quit() {
+        void Quit() override {
             quiting = true;
         }
 
@@ -288,7 +230,7 @@ namespace Gorgon {
         ///
         /// class GameScene : public Scene {
         /// public:
-        ///		GameScene(Gorgon::Layer &parent, SceneID id, int players);
+        ///		GameScene(Gorgon::SceneManager &parent, SceneID id, int players);
         ///
         /// //...
         /// };
@@ -313,11 +255,53 @@ namespace Gorgon {
         /// This event will be fired whenever a scene is activated.
         Gorgon::Event<SceneManager, Scene&> ActivatedEvent{*this};
 
-    private:
+	protected:
+		decltype(KeyEvent)::Token init() {
+			inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
+				if(active && active->RequiresKeyInput())
+					active->KeyEvent(key, amount);
+
+				return true;
+			});
+
+			KeyEvent.Disable(inputtoken);
+
+			return inputtoken;
+		}
+
         Gorgon::Containers::Hashmap<SceneID, Scene> scenes;
         Scene *active = nullptr;
-        Gorgon::ConsumableEvent<Window, Input::Key, float> *event = nullptr;
-        Gorgon::ConsumableEvent<Window, Input::Key, float>::Token inputtoken;
+        decltype(KeyEvent)::Token inputtoken = init(); //to initialize token after window got constructed
         bool quiting = false;
     };
+
+
+	inline void Scene::activate_scene() {
+		if(isactive) return;
+
+		if(!parent)
+			throw std::runtime_error("This scene has no parent");
+
+		parent->Add(main);
+
+		isactive = true;
+
+		activate();
+
+		ActivatedEvent();
+	}
+
+	inline void Scene::deactivate_scene() {
+		if(!isactive) return;
+
+		deactivate();
+
+		if(main.HasParent())
+			main.GetParent().Remove(main);
+
+		isactive = false;
+
+		DeactivatedEvent();
+	}
+
 }

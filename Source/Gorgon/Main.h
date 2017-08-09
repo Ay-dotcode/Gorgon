@@ -16,6 +16,17 @@ namespace Gorgon {
 	}
 	/// @endcond
 
+	/// Defines the abstract class of Runner. Runners takes the control of the code
+	/// execution, calling any necessary functions as the events occur.
+	class Runner {
+	public:
+		/// Takes the control of the execution until Quit is called.
+		virtual void Run() = 0;
+
+		/// Should quit after the current frame is completed for a graceful exit.
+		virtual void Quit() = 0;
+	};
+
 	/// Initializes the entire system
 	void Initialize(const std::string &systemname);
 

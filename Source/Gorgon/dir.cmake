@@ -24,6 +24,7 @@ SET(Local
 	Layer.cpp
 	Main.h
 	Main.cpp
+	Scene.h
 	SGuid.h
 	SGuid.cpp
 	Struct.h
