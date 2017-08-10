@@ -27,7 +27,9 @@ namespace Gorgon {
     /// Used to denote there is no explicit scene id given to a
     /// scene.
     static constexpr SceneID NoSceneID = -1;
-
+    
+    class SceneManager;
+    
     /**
 	 * This class represents a scene in the game like menu screen
 	 * in game, post game, pause or different game modes. Scenes
