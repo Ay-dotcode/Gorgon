@@ -24,6 +24,7 @@ SET(UnitTests
 	Geometry
 	Hashmap
 	EncodingImage
+	Scene
 	ScopeGuard
 	String
 	Logging

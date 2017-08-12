@@ -38,6 +38,15 @@ namespace Gorgon { namespace Graphics {
 		DrawablePointer(const Drawable &image, Geometry::Point hotspot) :
 			image(&image), hotspot(hotspot) {}
 
+		/// Initializes a pointer. Ownership of the drawable is not transferred. Use Assume function 
+		/// after invoking default constructor to transfer ownership.
+		DrawablePointer(const AssumeOwnershipTag &tag, const Drawable &image, int x, int y) : DrawablePointer(tag, image, {x, y}) {}
+
+		/// Initializes a pointer. Ownership of the drawable is not transferred. Use Assume function 
+		/// after invoking default constructor to transfer ownership.
+		DrawablePointer(const AssumeOwnershipTag &, const Drawable &image, Geometry::Point hotspot) :
+			image(&image), hotspot(hotspot) { owner = true; }
+
 		DrawablePointer(const DrawablePointer &other) = delete;
 
 		DrawablePointer(DrawablePointer &&other) :
@@ -94,6 +103,26 @@ namespace Gorgon { namespace Graphics {
 
 			image = &value;
 			owner = true;
+		}
+
+		/// Changes the image of the pointer by assuming the ownership of the given
+		/// image
+		void Assume(const Drawable &value, Geometry::Point hotspot) {
+			RemoveImage();
+
+			image = &value;
+			owner = true;
+			this->hotspot = hotspot;
+		}
+
+		/// Changes the image of the pointer by assuming the ownership of the given
+		/// image
+		void Assume(const Drawable &value, int x, int y) {
+			RemoveImage();
+
+			image = &value;
+			owner = true;
+			this->hotspot = {x, y};
 		}
 
 		/// Removes the image from the pointer

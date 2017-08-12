@@ -1,6 +1,9 @@
 ﻿#include "GraphicsHelper.h"
 
 #include <Gorgon/Scene.h>
+#include "Gorgon/Graphics/TintedObject.h"
+#include "Gorgon/Graphics/StackedObject.h"
+#include "Gorgon/Graphics/Pointer.h"
 
 
 void Init();
@@ -20,7 +23,20 @@ public:
 	InitScene(Gorgon::SceneManager &parent, SceneID id,
 			  const Graphics::Bitmap &bg, Graphics::StyledRenderer &renderer) :
 		Scene(parent, id),
-		bg(bg), renderer(renderer) {}
+		bg(bg), renderer(renderer) {
+
+		auto &cursorhead = *new Gorgon::Graphics::Bitmap(Triangle1(12, 12));
+		cursorhead.Prepare();
+		auto cursortail_img = Triangle1(8, 8);
+		cursortail_img.Prepare();
+		Gorgon::Graphics::TintedBitmapProvider &cursortail = *new Gorgon::Graphics::TintedBitmapProvider(std::move(cursortail_img), 0xff000000);
+		cursor = Gorgon::Graphics::StackedObjectProvider{Gorgon::AssumeOwnership, cursorhead, cursortail, {1, 4}};
+
+
+		ptr={Gorgon::AssumeOwnership, cursor.CreateAnimation(), 0, 0};
+
+		parent.Pointers.Add(Graphics::PointerType::Arrow, ptr);
+	}
 
 	virtual bool RequiresKeyInput() const override {
 		return true;
@@ -39,7 +55,11 @@ public:
 
 protected:
 	virtual void activate() override {
+		parent->SwitchToLocalPointers();
+	}
 
+	virtual void deactivate() override {
+		parent->SwitchToWMPointers();
 	}
 
 
@@ -57,6 +77,8 @@ protected:
 
 	const Graphics::Bitmap &bg;
 	Graphics::StyledRenderer &renderer;
+	Gorgon::Graphics::StackedObjectProvider cursor;
+	Graphics::DrawablePointer ptr;
 };
 
 class NextScene : public Gorgon::Scene {

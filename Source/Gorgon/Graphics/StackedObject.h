@@ -112,14 +112,20 @@ namespace Gorgon { namespace Graphics {
 		basic_StackedObjectProvider() = default;
 
 		/// Filling constructor
-		basic_StackedObjectProvider(A_ &bottom, A_ &top, const Geometry::Point &offset = {0,0}) :
-            top(&top), bottom(&bottom), offset(offset)
-        { }
+		basic_StackedObjectProvider(A_ &bottom, A_ &top, const Geometry::Point &offset ={0,0}) :
+			top(&top), bottom(&bottom), offset(offset) {}
 
 		/// Filling constructor, nullptr is allowed but not recommended
-		basic_StackedObjectProvider(A_ *bottom, A_ *top, const Geometry::Point &offset = {0,0}) :
-            top(top), bottom(bottom), offset(offset)
-        { }
+		basic_StackedObjectProvider(A_ *bottom, A_ *top, const Geometry::Point &offset ={0,0}) :
+			top(top), bottom(bottom), offset(offset) {}
+
+		/// Filling constructor
+		basic_StackedObjectProvider(const AssumeOwnershipTag &, A_ &bottom, A_ &top, const Geometry::Point &offset ={0,0}) :
+			top(&top), bottom(&bottom), offset(offset) { own = true; }
+
+		/// Filling constructor, nullptr is allowed but not recommended
+		basic_StackedObjectProvider(const AssumeOwnershipTag &, A_ *bottom, A_ *top, const Geometry::Point &offset ={0,0}) :
+			top(top), bottom(bottom), offset(offset) { own = true; }
 
 		basic_StackedObjectProvider(A_ &&bottom, A_ &&top, const Geometry::Point &offset = {0,0}) :
             top(new A_(std::move(top))), bottom(new A_(std::move(bottom))), offset(offset), own(true)
@@ -131,7 +137,8 @@ namespace Gorgon { namespace Graphics {
             other.top = nullptr;
             other.bottom = nullptr;
             other.offset = {0, 0};
-        }
+			other.own = false;
+		}
 
 		~basic_StackedObjectProvider() {
 			if(own) {
@@ -139,7 +146,27 @@ namespace Gorgon { namespace Graphics {
 				delete this->bottom;
 			}
 		}
- 
+
+		basic_StackedObjectProvider &operator =(basic_StackedObjectProvider &&other) {
+			if(own) {
+				delete this->top;
+				delete this->bottom;
+			}
+
+			top = other.top;
+			bottom = other.bottom;
+			offset = other.offset;
+			own = other.own;
+
+			other.top = nullptr;
+			other.bottom = nullptr;
+			other.offset ={0, 0};
+			other.own = false;
+
+			return *this;
+		}
+
+
         //types are derived not to type the same code for every class
 		virtual auto MoveOutProvider() -> decltype(*this) override {
             auto ret = new typename std::remove_reference<decltype(*this)>::type(std::move(*this));

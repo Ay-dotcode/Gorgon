@@ -21,5 +21,11 @@ namespace Gorgon {
 	
 	/// A class that has no members and can be used as placeholder
 	class Empty {};
-	
+
+
+	/// Where acceptable, denotes that the object will assume the ownership
+	class AssumeOwnershipTag { };
+
+	/// Where acceptable, denotes that the object will assume the ownership
+	static constexpr AssumeOwnershipTag AssumeOwnership;
 }

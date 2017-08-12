@@ -188,23 +188,95 @@ namespace Gorgon {
 				KeyEvent.MoveToTop(inputtoken);
             }
         }
-        
-        /// Runs the application by running the active scene, 
-        /// progressing OS events and rendering mechanism. This
-        /// function will run until Quit is called.
-        void Run() override {
-            while(!quiting) {
-                if(active) {
-                    active->doframe(Time::DeltaTime());
-                    active->render();
-                }
-                
-                Gorgon::NextFrame();
-            }
-            
-            SwitchScene(NoSceneID);
-        }
-        
+
+		/// Runs the application by running the active scene, 
+		/// progressing OS events and rendering mechanism. This
+		/// function will run until Quit is called.
+		void Run() override {
+			while(!quiting) {
+				if(active) {
+					active->doframe(Time::DeltaTime());
+					active->render();
+				}
+
+				Gorgon::NextFrame();
+			}
+
+			SwitchScene(NoSceneID);
+		}
+
+		/// Steps the application by running the active scene, 
+		/// progressing OS events and rendering mechanism.
+		void Step() override {
+			if(active) {
+				active->doframe(Time::DeltaTime());
+				active->render();
+			}
+
+			Gorgon::NextFrame();
+		}
+
+		/// Returns the number of scenes registered
+		int GetSceneCount() const {
+			return scenes.GetCount();
+		}
+
+		/// Returns if the given scene exists
+		bool SceneExists(SceneID id) const {
+			return scenes.Exists(id);
+		}
+
+		/// Returns the requested scene. If it does not exist, this
+		/// function will throw runtime error.
+		Scene &GetScene(SceneID scene) {
+			return scenes[scene];
+		}
+
+		/// Deletes the given scene, nothing is done if the scene is
+		/// not found
+		void DeleteScene(SceneID scene) {
+			scenes.Delete(scene);
+		}
+
+		/// Releases the ownership of the scene with the given ID,
+		/// removing it from the manager. Using scene while it does
+		/// not have parent might cause problems.
+		Scene &Release(SceneID id) {
+			auto &scene = scenes[id];
+
+			scenes.Remove(id);
+			scene.parent = nullptr;
+
+			return scene;
+		}
+
+		/// Assumes the ownership of the the given scene, adding it
+		/// to the list of scenes.
+		void Assume(Scene &scene) {
+			scene.parent = this;
+			scenes.Add(scene.id, scene);
+		}
+
+		/// Returns iterator to the first scene.
+		auto begin() {
+			return scenes.begin();
+		}
+
+		/// Returns iterator to the first scene.
+		auto begin() const {
+			return scenes.begin();
+		}
+
+		/// Returns iterator to the end of scenes.
+		auto end()  {
+			return scenes.end();
+		}
+
+		/// Returns iterator to the end of scenes.
+		auto end() const {
+			return scenes.end();
+		}
+
         /// Quits the scene manager, returning the execution to the
         /// point where Run function is called. It allows current
         /// frame to be completed before quiting. It also deactives

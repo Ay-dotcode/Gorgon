@@ -23,6 +23,9 @@ namespace Gorgon {
 		/// Takes the control of the execution until Quit is called.
 		virtual void Run() = 0;
 
+		/// Runs a single frame
+		virtual void Step() = 0;
+
 		/// Should quit after the current frame is completed for a graceful exit.
 		virtual void Quit() = 0;
 	};
