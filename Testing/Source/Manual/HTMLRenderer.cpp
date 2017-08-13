@@ -42,7 +42,8 @@ int main() {
     family.GetGlyphRenderer(Graphics::FontFamily::Style::Bold);
     
 	Graphics::HTMLRenderer sty(family);
-	sty.Print(l, "<strike><b>AAAA</b>abc</strike><u>0000000000</u><strike>lulz</strike>", 250, 240);
+	//sty.Print(l, "<strike><b>AAAA</b>abc</strike><u>0000000000</u><strike>lulz</strike>", 250, 240);
+    sty.Print(l, "<b aaa=\"aaaa\" bbb=\"rofl\"><strike ccc=\"ccc\">AAAA</strike> BBBB</b>", 250, 280);
     
 	while(true) {
 		Gorgon::NextFrame();

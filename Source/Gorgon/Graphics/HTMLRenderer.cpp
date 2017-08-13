@@ -1,15 +1,21 @@
 #include "HTMLRenderer.h"
 
+#include <utility>
+#include <vector>
+#include <string>
+
 namespace Gorgon { namespace Graphics {
 
 void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, int y) {
     unsigned int offset = 0;
     int tagcnt = 0; // !!! debug
     bool intag = false;
-    bool tagtaken = false;
     bool remove = false;
+    bool inquote = false;
+    bool parseattrbts = false;
     char current;
-    std::string text, tag;
+    std::string text, tag, attribute, attval;
+    std::vector<std::pair<std::string, std::string>> attributes;
     for(std::size_t i = 0; i < str.length(); i++) {
         current = str[i];
         if(current == '<') {
@@ -42,29 +48,74 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
                 }
             }
             else {
+                parseattrbts = false;
+                if(!attribute.empty()) {
+                    attributes.emplace_back(std::pair<std::string, std::string>(attribute, attval));
+                    attribute.clear();
+                    attval.clear();
+                }
+                // !!! debug
+                std::cout << attributes.size() << std::endl;
+                for(auto attr : attributes) {
+                    std::cout << attr.first << " = \"" << attr.second << "\"" << std::endl;
+                }
+                std::cout << "=======" << std::endl;
+                
                 underlinedstart = x;
                 strikedstart = x;
                 applystyle(tag);
             }
             tag.clear();
-            tagtaken = false;
             intag = false;
             tagcnt++; // !!! debug
+            attributes.clear();
             continue;
         }
         else if(current == '/') {
             remove = true;
             continue;
         }
-
+        else if(current == '\"' || current == '\'') {
+            if(inquote) {
+                inquote = false;
+            }
+            else {
+                inquote = true;
+            }
+            continue;
+        }
+        
         if(intag) {
-            if(!tagtaken) {
-                if(internal::isspace(current)) {
-                    tagtaken = true;
+            // start parsing attributes once we encounter a space while parsing tag
+            if(internal::isspace(current) && !parseattrbts) {
+                parseattrbts = true;
+                continue;
+            }
+            if(parseattrbts) {
+                // ignore assignment character
+                if(current == '=') {
                     continue;
                 }
+                // keep filling attribute vector as we encounter spaces while parsing attributes
+                else if(internal::isspace(current)) {
+                    attributes.emplace_back(std::pair<std::string, std::string>(attribute, attval));
+                    attribute.clear();
+                    attval.clear();
+                }
+                // if we are inside quote, accumulate into attribute value string
+                // otherwise, use attirubte string
+                else {
+                    if(inquote) {
+                        attval += current;
+                    }
+                    else {
+                        attribute += current;
+                    }
+                }
             }
-            tag += current; 
+            else {
+                tag += current;
+            }
         }
         else {
             auto start = str.begin() + i;
