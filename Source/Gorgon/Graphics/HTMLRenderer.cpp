@@ -54,6 +54,7 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
                     attribute.clear();
                     attval.clear();
                 }
+                
                 // !!! debug
                 std::cout << attributes.size() << std::endl;
                 for(auto attr : attributes) {
@@ -61,6 +62,7 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
                 }
                 std::cout << "=======" << std::endl;
                 
+                attributes.clear();
                 underlinedstart = x;
                 strikedstart = x;
                 applystyle(tag);
@@ -68,7 +70,6 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
             tag.clear();
             intag = false;
             tagcnt++; // !!! debug
-            attributes.clear();
             continue;
         }
         else if(current == '/') {
