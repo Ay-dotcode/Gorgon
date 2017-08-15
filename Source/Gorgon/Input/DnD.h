@@ -93,7 +93,7 @@ namespace Gorgon { namespace Input {
         /// is called, this means hit check has already succeeded in the current
         /// layout. This variant accepts class member function.
         template<class C_>
-        void SetHitCheck(C_ &c, std::function<bool(C_ &, DropTarget &, Geometry::Point)> fn) {
+        void SetHitCheck(C_ &c, bool(C_::*fn)(DropTarget &, Geometry::Point)) {
             C_ *my = &c;
             hitcheck = [fn, my](DropTarget &layer, Geometry::Point point) { return my->fn(layer, point); };
         }
@@ -103,7 +103,7 @@ namespace Gorgon { namespace Input {
         /// is called, this means hit check has already succeeded in the current
         /// layout. This variant accepts class member function.
         template<class C_>
-        void SetHitCheck(C_ &c, std::function<bool(C_ &, Geometry::Point)> fn) {
+        void SetHitCheck(C_ &c, bool(C_::*fn)(Geometry::Point)) {
             C_ *my = &c;
             hitcheck = [fn, my](DropTarget &, Geometry::Point point) { return my->fn(point); };
         }
@@ -113,7 +113,7 @@ namespace Gorgon { namespace Input {
         /// is called, this means hit check has already succeeded in the current
         /// layout. This variant accepts class member function.
         template<class C_>
-        void SetHitCheck(C_ *my, std::function<bool(C_ &, DropTarget &, Geometry::Point)> fn) {
+        void SetHitCheck(C_ *my, bool(C_::*fn)(DropTarget &, Geometry::Point)) {
             hitcheck = [fn, my](DropTarget &layer, Geometry::Point point) { return my->fn(layer, point); };
         }
         
@@ -122,7 +122,7 @@ namespace Gorgon { namespace Input {
         /// is called, this means hit check has already succeeded in the current
         /// layout. This variant accepts class member function.
         template<class C_>
-        void SetHitCheck(C_ *my, std::function<bool(C_ &, Geometry::Point)> fn) {
+        void SetHitCheck(C_ *my, bool(C_::*fn)(Geometry::Point)) {
             hitcheck = [fn, my](DropTarget &, Geometry::Point point) { return my->fn(point); };
         }
         
@@ -149,7 +149,7 @@ namespace Gorgon { namespace Input {
 		/// If event handler returns true, source will receive over event as well.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOver(C_ &c, std::function<bool(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetOver(C_ &c, bool(C_::*fn)(DropTarget &, DragInfo &)) {
 			C_ *my = &c;
 			over = [fn, my](DropTarget &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
@@ -158,7 +158,7 @@ namespace Gorgon { namespace Input {
 		/// If event handler returns true, source will receive over event as well.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOver(C_ &c, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetOver(C_ &c, bool(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			over = [fn, my](DropTarget &, DragInfo &data) { return my->fn(data); };
 		}
@@ -167,7 +167,7 @@ namespace Gorgon { namespace Input {
 		/// If event handler returns true, source will receive over event as well.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOver(C_ *my, std::function<bool(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetOver(C_ *my, bool(C_::*fn)(DropTarget &, DragInfo &)) {
 			over = [fn, my](DropTarget &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
@@ -175,7 +175,7 @@ namespace Gorgon { namespace Input {
 		/// If event handler returns true, source will receive over event as well.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOver(C_ *my, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetOver(C_ *my, bool(C_::*fn)(DragInfo &)) {
 			over = [fn, my](DropTarget &, DragInfo &data) { return my->fn(data); };
 		}
 
@@ -202,7 +202,7 @@ namespace Gorgon { namespace Input {
 		/// This event is called even if over returns false.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOut(C_ &c, std::function<void(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetOut(C_ &c, void(C_::*fn)(DropTarget &, DragInfo &)) {
 			C_ *my = &c;
 			out = [fn, my](DropTarget &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
@@ -211,7 +211,7 @@ namespace Gorgon { namespace Input {
 		/// This event is called even if over returns false.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOut(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetOut(C_ &c, void(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			out = [fn, my](DropTarget &, DragInfo &data) { return my->fn(data); };
 		}
@@ -220,7 +220,7 @@ namespace Gorgon { namespace Input {
 		/// This event is called even if over returns false.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOut(C_ *my, std::function<void(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetOut(C_ *my, void(C_::*fn)(DropTarget &, DragInfo &)) {
 			out = [fn, my](DropTarget &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
@@ -228,7 +228,7 @@ namespace Gorgon { namespace Input {
 		/// This event is called even if over returns false.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOut(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetOut(C_ *my, void(C_::*fn)(DragInfo &)) {
 			out = [fn, my](DropTarget &, DragInfo &data) { return my->fn(data); };
 		}
 
@@ -258,7 +258,7 @@ namespace Gorgon { namespace Input {
 		/// this layer.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<bool(C_ &, DropTarget &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ &c, bool(C_::*fn)(DropTarget &, DragInfo &, Geometry::Point)) {
 			C_ *my = &c;
 			move = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
@@ -268,7 +268,7 @@ namespace Gorgon { namespace Input {
 		/// this layer.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<bool(C_ &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ &c, bool(C_::*fn)(DragInfo &, Geometry::Point)) {
 			C_ *my = &c;
 			move = [fn, my](DropTarget &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
@@ -278,7 +278,7 @@ namespace Gorgon { namespace Input {
 		/// this layer.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<bool(C_ &, DropTarget &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ *my, bool(C_::*fn)(DropTarget &, DragInfo &, Geometry::Point)) {
 			move = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
 
@@ -287,7 +287,7 @@ namespace Gorgon { namespace Input {
 		/// this layer.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<bool(C_ &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ *my, bool(C_::*fn)(DragInfo &, Geometry::Point)) {
 			move = [fn, my](DropTarget &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
 
@@ -310,7 +310,7 @@ namespace Gorgon { namespace Input {
 		/// this layer.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<bool(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetMove(C_ &c, bool(C_::*fn)(DropTarget &, DragInfo &)) {
 			C_ *my = &c;
 			move = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data); };
 		}
@@ -320,7 +320,7 @@ namespace Gorgon { namespace Input {
 		/// this layer.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetMove(C_ &c, bool(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			move = [fn, my](DropTarget &, DragInfo &data, Geometry::Point p) { return my->fn(data); };
 		}
@@ -330,7 +330,7 @@ namespace Gorgon { namespace Input {
 		/// this layer.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<bool(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetMove(C_ *my, bool(C_::*fn)(DropTarget &, DragInfo &)) {
 			move = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data); };
 		}
 
@@ -339,7 +339,7 @@ namespace Gorgon { namespace Input {
 		/// this layer.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetMove(C_ *my, bool(C_::*fn)(DragInfo &)) {
 			move = [fn, my](DropTarget &, DragInfo &data, Geometry::Point p) { return my->fn(data); };
 		}
 
@@ -366,7 +366,7 @@ namespace Gorgon { namespace Input {
 		/// Returning false from this event's handler will cause drag operation to be canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetDrop(C_ &c, std::function<bool(C_ &, DropTarget &, DragInfo &, Geometry::Point)> fn) {
+		void SetDrop(C_ &c, bool(C_::*fn)(DropTarget &, DragInfo &, Geometry::Point)) {
 			C_ *my = &c;
 			drop = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
@@ -375,7 +375,7 @@ namespace Gorgon { namespace Input {
 		/// Returning false from this event's handler will cause drag operation to be canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetDrop(C_ &c, std::function<bool(C_ &, DragInfo &, Geometry::Point)> fn) {
+		void SetDrop(C_ &c, bool(C_::*fn)(DragInfo &, Geometry::Point)) {
 			C_ *my = &c;
 			drop = [fn, my](DropTarget &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
@@ -384,7 +384,7 @@ namespace Gorgon { namespace Input {
 		/// Returning false from this event's handler will cause drag operation to be canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetDrop(C_ *my, std::function<bool(C_ &, DropTarget &, DragInfo &, Geometry::Point)> fn) {
+		void SetDrop(C_ *my, bool(C_::*fn)(DropTarget &, DragInfo &, Geometry::Point)) {
 			drop = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
 
@@ -392,7 +392,7 @@ namespace Gorgon { namespace Input {
 		/// Returning false from this event's handler will cause drag operation to be canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetDrop(C_ *my, std::function<bool(C_ &, DragInfo &, Geometry::Point)> fn) {
+		void SetDrop(C_ *my, bool(C_::*fn)(DragInfo &, Geometry::Point)) {
 			drop = [fn, my](DropTarget &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
 
@@ -412,7 +412,7 @@ namespace Gorgon { namespace Input {
 		/// Returning false from this event's handler will cause drag operation to be canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetDrop(C_ &c, std::function<bool(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetDrop(C_ &c, bool(C_::*fn)(DropTarget &, DragInfo &)) {
 			C_ *my = &c;
 			drop = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point) { return my->fn(layer, data); };
 		}
@@ -421,7 +421,7 @@ namespace Gorgon { namespace Input {
 		/// Returning false from this event's handler will cause drag operation to be canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetDrop(C_ &c, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetDrop(C_ &c, bool(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			drop = [fn, my](DropTarget &, DragInfo &data, Geometry::Point) { return my->fn(data); };
 		}
@@ -430,7 +430,7 @@ namespace Gorgon { namespace Input {
 		/// Returning false from this event's handler will cause drag operation to be canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetDrop(C_ *my, std::function<bool(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetDrop(C_ *my, bool(C_::*fn)(DropTarget &, DragInfo &)) {
 			drop = [fn, my](DropTarget &layer, DragInfo &data, Geometry::Point) { return my->fn(layer, data); };
 		}
 
@@ -438,7 +438,7 @@ namespace Gorgon { namespace Input {
 		/// Returning false from this event's handler will cause drag operation to be canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetDrop(C_ *my, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetDrop(C_ *my, bool(C_::*fn)(DragInfo &)) {
 			drop = [fn, my](DropTarget &, DragInfo &data, Geometry::Point) { return my->fn(data); };
 		}
 
@@ -465,7 +465,7 @@ namespace Gorgon { namespace Input {
 		/// this layer is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetCancel(C_ &c, std::function<void(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetCancel(C_ &c, void(C_::*fn)(DropTarget &, DragInfo &)) {
 			C_ *my = &c;
 			cancel = [fn, my](DropTarget &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
@@ -474,7 +474,7 @@ namespace Gorgon { namespace Input {
 		/// this layer is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetCancel(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetCancel(C_ &c, void(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			cancel = [fn, my](DropTarget &, DragInfo &data) { return my->fn(data); };
 		}
@@ -483,7 +483,7 @@ namespace Gorgon { namespace Input {
 		/// this layer is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetCancel(C_ *my, std::function<void(C_ &, DropTarget &, DragInfo &)> fn) {
+		void SetCancel(C_ *my, void(C_::*fn)(DropTarget &, DragInfo &)) {
 			cancel = [fn, my](DropTarget &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
@@ -491,7 +491,7 @@ namespace Gorgon { namespace Input {
 		/// this layer is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetCancel(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetCancel(C_ *my, void(C_::*fn)(DragInfo &)) {
 			cancel = [fn, my](DropTarget &, DragInfo &data) { return my->fn(data); };
 		}
 
@@ -542,7 +542,7 @@ namespace Gorgon { namespace Input {
         /// and the target accepts over event.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOver(C_ &c, std::function<bool(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetOver(C_ &c, bool(C_::*fn)(DragSource &, DragInfo &)) {
 			C_ *my = &c;
 			over = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
@@ -551,7 +551,7 @@ namespace Gorgon { namespace Input {
         /// and the target accepts over event.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOver(C_ &c, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetOver(C_ &c, bool(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			over = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
@@ -560,7 +560,7 @@ namespace Gorgon { namespace Input {
         /// and the target accepts over event.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOver(C_ *my, std::function<bool(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetOver(C_ *my, bool(C_::*fn)(DragSource &, DragInfo &)) {
 			over = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
@@ -568,7 +568,7 @@ namespace Gorgon { namespace Input {
         /// and the target accepts over event.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOver(C_ *my, std::function<bool(C_ &, DragInfo &)> fn) {
+		void SetOver(C_ *my, bool(C_::*fn)(DragInfo &)) {
 			over = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
 
@@ -595,7 +595,7 @@ namespace Gorgon { namespace Input {
 		/// that accepted over event.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOut(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetOut(C_ &c, void(C_::*fn)(DragSource &, DragInfo &)) {
 			C_ *my = &c;
 			out = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
@@ -604,7 +604,7 @@ namespace Gorgon { namespace Input {
 		/// that accepted over event.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOut(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetOut(C_ &c, void(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			out = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
@@ -613,7 +613,7 @@ namespace Gorgon { namespace Input {
 		/// that accepted over event.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOut(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetOut(C_ *my, void(C_::*fn)(DragSource &, DragInfo &)) {
 			out = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
@@ -621,7 +621,7 @@ namespace Gorgon { namespace Input {
 		/// that accepted over event.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetOut(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetOut(C_ *my, void(C_::*fn)(DragInfo &)) {
 			out = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
 
@@ -645,7 +645,7 @@ namespace Gorgon { namespace Input {
 		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ &c, void(C_::*fn)(DragSource &, DragInfo &, Geometry::Point)) {
 			C_ *my = &c;
 			move = [fn, my](DragSource &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
@@ -653,7 +653,7 @@ namespace Gorgon { namespace Input {
 		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<void(C_ &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ &c, void(C_::*fn)(DragInfo &, Geometry::Point)) {
 			C_ *my = &c;
 			move = [fn, my](DragSource &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
@@ -661,14 +661,14 @@ namespace Gorgon { namespace Input {
 		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ *my, void(C_::*fn)(DragSource &, DragInfo &, Geometry::Point)) {
 			move = [fn, my](DragSource &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data, p); };
 		}
 
 		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<void(C_ &, DragInfo &, Geometry::Point)> fn) {
+		void SetMove(C_ *my, void(C_::*fn)(DragInfo &, Geometry::Point)) {
 			move = [fn, my](DragSource &, DragInfo &data, Geometry::Point p) { return my->fn(data, p); };
 		}
 
@@ -685,7 +685,7 @@ namespace Gorgon { namespace Input {
 		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetMove(C_ &c, void(C_::*fn)(DragSource &, DragInfo &)) {
 			C_ *my = &c;
 			move = [fn, my](DragSource &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data); };
 		}
@@ -693,7 +693,7 @@ namespace Gorgon { namespace Input {
 		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetMove(C_ &c, void(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			move = [fn, my](DragSource &, DragInfo &data, Geometry::Point p) { return my->fn(data); };
 		}
@@ -701,14 +701,14 @@ namespace Gorgon { namespace Input {
 		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetMove(C_ *my, void(C_::*fn)(DragSource &, DragInfo &)) {
 			move = [fn, my](DragSource &layer, DragInfo &data, Geometry::Point p) { return my->fn(layer, data); };
 		}
 
 		/// Sets move handler. If set, called continuously until the drag operation is complete.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetMove(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetMove(C_ *my, void(C_::*fn)(DragInfo &)) {
 			move = [fn, my](DragSource &, DragInfo &data, Geometry::Point p) { return my->fn(data); };
 		}
 
@@ -732,7 +732,7 @@ namespace Gorgon { namespace Input {
 		/// Sets accept function. If set, called whenever drag operation is accepted.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetAccept(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetAccept(C_ &c, void(C_::*fn)(DragSource &, DragInfo &)) {
 			C_ *my = &c;
 			accept = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
@@ -740,7 +740,7 @@ namespace Gorgon { namespace Input {
 		/// Sets accept function. If set, called whenever drag operation is accepted.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetAccept(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetAccept(C_ &c, void(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			accept = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
@@ -748,14 +748,14 @@ namespace Gorgon { namespace Input {
 		/// Sets accept function. If set, called whenever drag operation is accepted.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetAccept(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetAccept(C_ *my, void(C_::*fn)(DragSource &, DragInfo &)) {
 			accept = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
 		/// Sets accept function. If set, called whenever drag operation is accepted.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetAccept(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetAccept(C_ *my, void(C_::*fn)(DragInfo &)) {
 			accept = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
 
@@ -778,7 +778,7 @@ namespace Gorgon { namespace Input {
 		/// Sets accept function. If set, called whenever drag operation is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetCancel(C_ &c, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetCancel(C_ &c, void(C_::*fn)(DragSource &, DragInfo &)) {
 			C_ *my = &c;
 			cancel = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
@@ -786,7 +786,7 @@ namespace Gorgon { namespace Input {
 		/// Sets accept function. If set, called whenever drag operation is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetCancel(C_ &c, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetCancel(C_ &c, void(C_::*fn)(DragInfo &)) {
 			C_ *my = &c;
 			cancel = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
@@ -794,14 +794,14 @@ namespace Gorgon { namespace Input {
 		/// Sets accept function. If set, called whenever drag operation is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetCancel(C_ *my, std::function<void(C_ &, DragSource &, DragInfo &)> fn) {
+		void SetCancel(C_ *my, void(C_::*fn)(DragSource &, DragInfo &)) {
 			cancel = [fn, my](DragSource &layer, DragInfo &data) { return my->fn(layer, data); };
 		}
 
 		/// Sets accept function. If set, called whenever drag operation is canceled.
 		/// This variant accepts class member function.
 		template<class C_>
-		void SetCancel(C_ *my, std::function<void(C_ &, DragInfo &)> fn) {
+		void SetCancel(C_ *my, void(C_::*fn)(DragInfo &)) {
 			cancel = [fn, my](DragSource &, DragInfo &data) { return my->fn(data); };
 		}
 
