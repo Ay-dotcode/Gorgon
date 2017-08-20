@@ -15,12 +15,32 @@
 
 #include <stdexcept>
 
-/**
- * @page Scene System
- * 
- */
 
 namespace Gorgon {
+	/**
+	* @page scene Scene Mechanism
+	* Scene mechanism in Gorgon Library help with rapid game development. In games there are multiple scenes or
+	* stages. Designing switching mechanisms between these scenes require time. Specially, in smaller games,
+	* this development time becomes significant. %Scene system is designed to remove the need to code scene
+	* switching and management work, speeding up the development of games.
+	*
+	* SceneManager is the manager of the system. It is also a Window and a Runner. Before creating a manager,
+	* Gorgon Library modules should be initialized using Initialize() function. A manager itself is not very useful.
+	* In order to have any functionality, you need to create scene classes that are derived from Scene and add them
+	* to the manager using SceneManager::NewScene function. While adding the scene to the manager, you should
+	* specify a SceneID, this number will be used to switch between scenes. Once the scenes are ready and the
+	* initial scene is activated using SceneManager::SwitchScene function, you can call SceneManager::Run function to
+	* transfer execution to the manager. The manager will call Scene::doframe and Scene::render functions of the
+	* active scene and then will call NextFrame() function to handle frame tasks such as rendering and input handling.
+	*
+	* A scene could use Scene::parent member to access to its manager. However, if your workflow includes running
+	* scenes without a manager, scenes should check whether parent member is nullptr. All scenes have precreated
+	* layers that will be managed automatically. Thus you should use these layers for graphics and mouse input.
+	* Once the scene is deactivated, these layers will be made invisible. Additionally, inactive layers will not
+	* receive doframe calls, thus will effectively be paused.
+	*/
+
+
     /// Can be used to identify scenes
     using SceneID = int;
 

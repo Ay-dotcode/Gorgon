@@ -16,7 +16,7 @@ namespace Gorgon {
 	}
 	/// @endcond
 
-	/// Defines the abstract class of Runner. Runners takes the control of the code
+	/// Defines the abstract class of Runner. Runners take the control of the code
 	/// execution, calling any necessary functions as the events occur.
 	class Runner {
 	public:

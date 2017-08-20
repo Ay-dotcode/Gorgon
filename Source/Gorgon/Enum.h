@@ -22,81 +22,81 @@ public:
 };
 /// @endcond
 
-/** @page Enum
- * 
- * Gorgon Library supports stream-able, parsable and enumerable enumerations. A single macro call with
- * enum type and enum value - name pairs is all that is required. There is no need to modify original 
- * enum definition. Additionally, this system allows multiple names for a single enum value which will
- * be used while parsing a string to the enum type. If there are multiple names, first one is used
- * while converting enum to string.
- * 
- * There are some restrictions to the use of macros supplied with this system. First restrictions is 
- * that the macro call should be done in the same namespace as the original enum. Both regular enum and 
- * enum class is supported. For a simple namespace enum or enum class, DefineEnumStrings macro should be 
- * used. This macro requires only the name of the enum along with the value - name pairs. Enum type 
- * supplied to the DefineEnumStrings macro cannot contain scope resolution operator. This eliminates the 
- * possibility of using class member enums with this macro. However, for this specific purpose, 
- * DefineEnumStringsCM macro is created. This macro allows class member enums to be used by suppling class
- * name as the first parameter.
- * 
- * String::Parse method requires name of the type, which is automatically deduced from the typename. If 
- * this is not desired DefineEnumStringsTN macro could be used. This macro has a parameter after the type
- * which will be used as the type name. Additionally DefineEnumStringsCMTN is also defined to be used with
- * class member enums.
- * 
- * **Example**
- * @code
- * 
- * #include <iostream>
- * #include <Gorgon/Enum.h>
- * 
- * //...
- * 
- * enum class Days {
- *     Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
- * };
- * 
- * DefineEnumStrings( Days,
- *     {Days::Monday, "Monday"},
- *     {Days::Tuesday, "Tuesday"},
- *     {Days::Wednesday, "Wednesday"},
- *     {Days::Thursday, "Thursday"},
- *     {Days::Friday, "Friday"},
- *     {Days::Saturday, "Saturday"},
- *     {Days::Sunday, "Sunday"}
- *     {Days::Monday, "Mon"},
- *     //...
- * );
- * 
- * //...
- * 
- * Days day;
- * std::cin>>day; //user enters "mon"
- * std::cout<<"Today is "<<day<<std::endl; //output will be "Today is Monday"
- * std::getline(cin, day); //this is also possible
- * 
- * try {
- *     Gorgon::String::Parse<Days>("not valid");
- * }
- * catch(const Gorgon::String::ParseError &ex) {
- *     std::cout<<ex.what();<<std::endl;
- *     
- *     std::cout<<"Days of week are: "<<std::endl;
- *     for(auto e : Gorgon::Enumerate<Days>()) {
- *         std::cout<<e<<std::endl;
- *     }
- * }
- * 
- * //...
- * 
- * @endcode
- * 
- */
-	
 template<class T_>
 gorgon__no_enum_trait gorgon__enum_tr_loc(T_);
 
 namespace Gorgon {
+
+	/** @page Enum
+	*
+	* Gorgon Library supports stream-able, parsable and enumerable enumerations. A single macro call with
+	* enum type and enum value - name pairs is all that is required. There is no need to modify original
+	* enum definition. Additionally, this system allows multiple names for a single enum value which will
+	* be used while parsing a string to the enum type. If there are multiple names, first one is used
+	* while converting enum to string.
+	*
+	* There are some restrictions to the use of macros supplied with this system. First restrictions is
+	* that the macro call should be done in the same namespace as the original enum. Both regular enum and
+	* enum class is supported. For a simple namespace enum or enum class, #DefineEnumStrings macro should be
+	* used. This macro requires only the name of the enum along with the value - name pairs. Enum type
+	* supplied to the DefineEnumStrings macro cannot contain scope resolution operator. This eliminates the
+	* possibility of using class member enums with this macro. However, for this specific purpose,
+	* #DefineEnumStringsCM macro is created. This macro allows class member enums to be used by suppling class
+	* name as the first parameter.
+	*
+	* @ref String::Parse() method requires name of the type, which is automatically deduced from the typename. If
+	* this is not desired #DefineEnumStringsTN macro could be used. This macro has a parameter after the type
+	* which will be used as the type name. Additionally #DefineEnumStringsCMTN is also defined to be used with
+	* class member enums.
+	*
+	* **Example**
+	* @code
+	*
+	* #include <iostream>
+	* #include <Gorgon/Enum.h>
+	*
+	* //...
+	*
+	* enum class Days {
+	*     Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+	* };
+	*
+	* DefineEnumStrings( Days,
+	*     {Days::Monday, "Monday"},
+	*     {Days::Tuesday, "Tuesday"},
+	*     {Days::Wednesday, "Wednesday"},
+	*     {Days::Thursday, "Thursday"},
+	*     {Days::Friday, "Friday"},
+	*     {Days::Saturday, "Saturday"},
+	*     {Days::Sunday, "Sunday"}
+	*     {Days::Monday, "Mon"},
+	*     //...
+	* );
+	*
+	* //...
+	*
+	* Days day;
+	* std::cin>>day; //user enters "mon"
+	* std::cout<<"Today is "<<day<<std::endl; //output will be "Today is Monday"
+	* std::getline(cin, day); //this is also possible
+	*
+	* try {
+	*     Gorgon::String::Parse<Days>("not valid");
+	* }
+	* catch(const Gorgon::String::ParseError &ex) {
+	*     std::cout<<ex.what();<<std::endl;
+	*
+	*     std::cout<<"Days of week are: "<<std::endl;
+	*     for(auto e : Gorgon::Enumerate<Days>()) {
+	*         std::cout<<e<<std::endl;
+	*     }
+	* }
+	*
+	* //...
+	*
+	* @endcode
+	*
+	*/
 
 	/// @cond INTERNAL
 

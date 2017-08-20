@@ -14,7 +14,7 @@ IF(BUILD_DOCUMENTATION)
 	SET(AllStr "")
 	
 	FOREACH(s ${All})
-		IF(NOT ${s} MATCHES "^Source/External")
+		IF(NOT ${s} MATCHES "(^Source/External)|(^Source/Gorgon/External)")
 			SET(AllStr "${AllStr} \"../${s}\"")
 		ENDIF()
 	ENDFOREACH()
