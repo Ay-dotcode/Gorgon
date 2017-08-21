@@ -9,6 +9,8 @@
 #include "Font.h"
 #include "TextureTargets.h"
 
+#include "../Utils/Assert.h"
+
 namespace Gorgon { namespace Graphics {
 
 // !!! find a better place?
@@ -26,21 +28,24 @@ public:
     FontFamily(const std::map<Style, GlyphRenderer *> fonts): fonts(fonts)
     {}
     
-    GlyphRenderer& GetGlyphRenderer(Style style) {
+    GlyphRenderer* GetGlyphRenderer(Style style) {
         if(fonts.count(style)) {
-            return *(fonts[style]);
+            return fonts[style];
         }
         
         const unsigned int start = static_cast<unsigned int>(Style::Normal);
         const unsigned int end = static_cast<unsigned int>(Style::End);
         for(unsigned int i = start; i < end; i++) {
             if(fonts.count(static_cast<Style>(i))) {
-                return *(fonts[static_cast<Style>(i)]);
+                return fonts[static_cast<Style>(i)];
             }
         }
         
-        // !!! empty map
-        assert(false);
+        // !!! we do not want to return a nullptr, let it crash
+        ASSERT(false, "empty font family map");
+        
+        // !!! silence compiler warnings
+        return nullptr;
     }
     
     void AddFont(Style style, GlyphRenderer * renderer) {
@@ -71,7 +76,7 @@ class HTMLRenderer {
     public:
         HTMLRenderer(FontFamily &fontfamily, RGBAf color = 1.f, TextShadow shadow = {}):
             fontfamily(fontfamily),
-            renderer(fontfamily.GetGlyphRenderer(FontFamily::Style::Normal)),
+            renderer(*fontfamily.GetGlyphRenderer(FontFamily::Style::Normal)),
             drawunderlined(false),
             drawstriked(false)
         {}
@@ -84,10 +89,10 @@ class HTMLRenderer {
         void print(TextureTarget &target, const std::string &str, int x, int y);
         
         Tag string2tag(const std::string &tag) {
-            if(tag == "u") { return Tag::Underlined; }
+            if(tag == "u")           { return Tag::Underlined; }
             else if(tag == "strike") { return Tag::Striked; }
-            else if(tag == "b") { return Tag::Bold; }
-            else { assert(false); }
+            else if(tag == "b")      { return Tag::Bold; }
+            else                     { ASSERT(false, "unsupported tag" + tag); return Tag::End; }
         }
 
         void applystyle(const std::string &str) {
@@ -98,10 +103,10 @@ class HTMLRenderer {
                 case Tag::Striked:
                     break;
                 case Tag::Bold:
-                    renderer.SetGlyphRenderer(&fontfamily.GetGlyphRenderer(FontFamily::Style::Bold));
+                    renderer.SetGlyphRenderer(fontfamily.GetGlyphRenderer(FontFamily::Style::Bold));
                     break;
                 default:
-                    assert(false);
+                    ASSERT(false, "unsupported tag: " + str);
                     break;
             }
         }
@@ -116,10 +121,10 @@ class HTMLRenderer {
                     drawstriked = true;
                     break;
                 case Tag::Bold:
-                    renderer.SetGlyphRenderer(&fontfamily.GetGlyphRenderer(FontFamily::Style::Normal));
+                    renderer.SetGlyphRenderer(fontfamily.GetGlyphRenderer(FontFamily::Style::Normal));
                     break;
                 default:
-                    assert(false);
+                    ASSERT(false, "unsupported tag: " + str);
                     break;
             }
         }
