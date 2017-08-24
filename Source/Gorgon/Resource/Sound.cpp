@@ -80,7 +80,7 @@ namespace Gorgon { namespace Resource {
                 
                 checkfmt();
                 
-                uncompressed = uncompressed / channels.size() / (bits/8);
+                uncompressed = (unsigned long)(uncompressed / channels.size() / (bits/8));
 
 				if(size>20)
 					reader->Seek(reader->Tell() + size - 20);

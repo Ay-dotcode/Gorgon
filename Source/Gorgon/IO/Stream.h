@@ -268,7 +268,7 @@ namespace Gorgon { namespace IO {
 	/// Writes a string from a given stream. The size of the string is appended before the string as
 	/// 32-bit unsigned value.
 	inline void WriteStringWithSize(std::ostream &stream, const std::string &value) {
-		WriteUInt32(stream, value.size());
+		WriteUInt32(stream, (unsigned long)value.size());
 		
 		stream.write(&value[0], value.size());
 	}

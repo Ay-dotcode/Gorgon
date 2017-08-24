@@ -55,7 +55,7 @@ namespace Gorgon { namespace GL {
             pos++;
         }
         
-		int linesbefore=std::count_if(code.begin(), code.begin()+pos, [](char c) { return c=='\n'; });
+		int linesbefore=(int)std::count_if(code.begin(), code.begin()+pos, [](char c) { return c=='\n'; });
 
 		const std::string insert_me = shader_defines + "#line " + std::to_string(linesbefore+1) + "\n";
 

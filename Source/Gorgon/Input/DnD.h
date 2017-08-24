@@ -878,7 +878,7 @@ namespace Gorgon { namespace Input {
         ExchangeData &operator [](int ind) const { return data[ind]; }
         
         /// Returns the number of data stored in this object
-        int GetSize() const { return data.GetSize(); }
+        int GetSize() const { return (int)data.GetSize(); }
         
         /// If this drag operation has a target. The target should accept drag over
         /// event for it to be registered

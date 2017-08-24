@@ -1634,7 +1634,7 @@ namespace Gorgon {
 			}
 #endif			
 			
-			for(int i=skip+2; i<std::min<int>(skip+depth+2,walker.Stack.size()); i++) {
+			for(int i=skip+2; i<std::min<int>(skip+depth+2,(int)walker.Stack.size()); i++) {
 				report(i);
 			}
 		}

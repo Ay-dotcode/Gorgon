@@ -167,7 +167,7 @@ namespace Gorgon { namespace Encoding {
 		/// Compares two paths after normalization
 		bool operator !=(const URIPath &other) const { return !(*this==other); }
 		
-		int GetSize() const { return segments.size(); }
+		int GetSize() const { return (int)segments.size(); }
 		
 		/// Returns the segment at the given index
 		std::string &operator[] (int ind) { return segments[ind]; }

@@ -169,7 +169,7 @@ namespace Gorgon {
 				}
 
 				unsigned long operator-(const Iterator &r) const {
-					return (current-r.current)/channels;
+					return (unsigned long)((current-r.current)/channels);
 				}
 				
 			private:
@@ -412,7 +412,7 @@ namespace Gorgon {
 
 			/// Returns the size of the wave in bytes
 			unsigned long GetBytes() const {
-				return size * channels.size() * sizeof(float);
+				return (unsigned int)(size * channels.size() * sizeof(float));
 			}
 
 			/// Returns the length of the wave data in seconds
@@ -422,7 +422,7 @@ namespace Gorgon {
 			
 			/// Returns the number of channels that this wave data has.
 			unsigned GetChannelCount() const {
-				return channels.size();
+				return (unsigned int)channels.size();
 			}
 
 			/// Returns the type of the channel at the given index
@@ -601,11 +601,11 @@ namespace Gorgon {
 			}
 
 			Iterator begin() {
-				return {data, channels.size()};
+				return Iterator(data, (unsigned int)channels.size());
 			}
 			
 			Iterator end() {
-				return {data+size*channels.size(), channels.size()};
+				return Iterator(data+size*channels.size(), (unsigned int)channels.size());
 			}
 
 		protected:

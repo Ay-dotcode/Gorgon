@@ -89,7 +89,7 @@ namespace Gorgon {
 
 		/// Returns the number of files in the list
 		int GetSize() const {
-			return files.size();
+			return (int)files.size();
 		}
 
 		/// Returns the file at the given index

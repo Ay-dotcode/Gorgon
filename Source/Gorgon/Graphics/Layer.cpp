@@ -83,7 +83,7 @@ namespace Graphics {
 		auto nextop = operations.begin();
 		int nextopind = -1;
 		if(nextop != operations.end())
-			nextopind = nextop->index;
+			nextopind = (int)nextop->index;
 
 		DrawMode current = Normal;
 
@@ -101,7 +101,7 @@ namespace Graphics {
 
 				++nextop;
 				if(nextop != operations.end())
-					nextopind = nextop->index;
+					nextopind = (int)nextop->index;
 				else
 					nextopind = -1;
 

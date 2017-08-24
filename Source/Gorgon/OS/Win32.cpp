@@ -171,7 +171,7 @@ namespace Gorgon {
 	void OpenTerminal() {
 		int hConHandle;
 
-		long lStdHandle;
+		HANDLE lStdHandle;
 
 		CONSOLE_SCREEN_BUFFER_INFO coninfo;
 
@@ -195,9 +195,9 @@ namespace Gorgon {
 
 		// redirect unbuffered STDOUT to the console
 
-		lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+		lStdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
-		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+		hConHandle = _open_osfhandle((intptr_t)lStdHandle, _O_TEXT);
 
 		fp = _fdopen(hConHandle, "w");
 
@@ -207,9 +207,9 @@ namespace Gorgon {
 
 		// redirect unbuffered STDIN to the console
 
-		lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+		lStdHandle = GetStdHandle(STD_INPUT_HANDLE);
 
-		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+		hConHandle = _open_osfhandle((intptr_t)lStdHandle, _O_TEXT);
 
 		fp = _fdopen(hConHandle, "r");
 
@@ -219,9 +219,9 @@ namespace Gorgon {
 
 		// redirect unbuffered STDERR to the console
 
-		lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+		lStdHandle = GetStdHandle(STD_ERROR_HANDLE);
 
-		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+		hConHandle = _open_osfhandle((intptr_t)lStdHandle, _O_TEXT);
 
 		fp = _fdopen(hConHandle, "w");
 
@@ -302,7 +302,7 @@ namespace Gorgon {
 
 			DispatchMessage(&msg);
 
-			if(msg.message!=WM_KEYDOWN || !internal::ishandled(msg.hwnd, msg.wParam)) {
+			if(msg.message!=WM_KEYDOWN || !internal::ishandled(msg.hwnd, (Gorgon::Input::Key)msg.wParam)) {
 				TranslateMessage(&msg);
 			}
 		}
@@ -319,10 +319,10 @@ namespace Gorgon {
 
 		bool usepath=name.find_first_of("/")==name.npos;
 		int size=0;
-		size=name.length()+3;
+		size=(int)name.length()+3;
 		if(usepath) size*=2;
 		for(auto &arg : args) {
-			size+=arg.size()+3;
+			size+=(int)arg.size()+3;
 		}
 
 		//build command line
@@ -333,7 +333,7 @@ namespace Gorgon {
 			//application to run
 			cmd[current++]='"';
 			wcscpy(cmd+current, wname.c_str());
-			current+=wname.size();
+			current+=(int)wname.size();
 			cmd[current++]='"';
 			cmd[current++]=' ';
 		}
@@ -341,7 +341,7 @@ namespace Gorgon {
 		//application name as first arg
 		cmd[current++]='"';
 		wcscpy(cmd, wname.c_str());
-		current+=wname.size();
+		current+=(int)wname.size();
 		cmd[current++]='"';
 		cmd[current++]=' ';
 
@@ -350,7 +350,7 @@ namespace Gorgon {
 			std::wstring warg = converter.from_bytes(arg);
 			cmd[current++]='"';
 			wcscpy(cmd, warg.c_str());
-			current+=warg.size();
+			current+=(int)warg.size();
 			cmd[current++]='"';
 			cmd[current++]=' ';
 		}
@@ -377,7 +377,7 @@ namespace Gorgon {
 	}
 	
 	bool Open(const std::string &file) {
-		return (int)ShellExecute(nullptr, L"open", (LPCWSTR)MByteToUnicode(file).data(), nullptr, nullptr, SW_SHOWNORMAL)>32;
+		return (intptr_t)ShellExecute(nullptr, L"open", (LPCWSTR)MByteToUnicode(file).data(), nullptr, nullptr, SW_SHOWNORMAL)>32;
 	}
 
 	void normalslashtowin(std::string &s) {

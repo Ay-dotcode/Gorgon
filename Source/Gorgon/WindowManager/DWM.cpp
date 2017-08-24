@@ -213,7 +213,7 @@ namespace Gorgon {
 			int l = GetKeyNameTextW(key<<16, str, 32);
 
 			auto h = GetKeyboardLayout(NULL);
-			LCID ll = (LCID)((int)GetKeyboardLayout(NULL)>>16);
+			LCID ll = (LCID)((intptr_t)GetKeyboardLayout(NULL)>>16);
 			if((ll == 0x41f || ll == 0x42c) && str[0] == L'i' && str[1] == 0) { //tr, az keyboards should have i => İ
 				strupper[0] = L'İ';
 				strupper[1] = 0;
@@ -596,8 +596,8 @@ namespace Gorgon {
 						break;
 
 					case WM_LBUTTONDOWN: {
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						int x=int(lParam%0x10000);
+						int y=int(lParam>>16);
 
 						parent->mouse_down({x, y}, Input::Mouse::Button::Left);
 					}
@@ -613,40 +613,40 @@ namespace Gorgon {
 					}
 
 					case WM_LBUTTONUP: {
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						int x=int(lParam%0x10000);
+						int y=int(lParam>>16);
 
 						parent->mouse_up({x, y}, Input::Mouse::Button::Left);
 					}
 					break;
 
 					case WM_RBUTTONDOWN: {
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						int x=int(lParam%0x10000);
+						int y=int(lParam>>16);
 
 						parent->mouse_down({x, y}, Input::Mouse::Button::Right);
 					}
 					break;
 
 					case WM_RBUTTONUP: {
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						int x=int(lParam%0x10000);
+						int y=int(lParam>>16);
 
 						parent->mouse_up({x, y}, Input::Mouse::Button::Right);
 					}
 					break;
 
 					case WM_MBUTTONDOWN: {
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						int x=int(lParam%0x10000);
+						int y=int(lParam>>16);
 
 						parent->mouse_down({x, y}, Input::Mouse::Button::Middle);
 					}
 					break;
 
 					case WM_MBUTTONUP: {
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						int x=int(lParam%0x10000);
+						int y=int(lParam>>16);
 
 						parent->mouse_up({x, y}, Input::Mouse::Button::Middle);
 					}
@@ -658,8 +658,8 @@ namespace Gorgon {
 					
 
 					case WM_XBUTTONDOWN: {
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						int x=int(lParam%0x10000);
+						int y=int(lParam>>16);
 
 						auto btn = Input::Mouse::Button::None;
 
@@ -677,8 +677,8 @@ namespace Gorgon {
 					break;
 
 					case WM_XBUTTONUP: {
-						int x=lParam%0x10000;
-						int y=lParam>>16;
+						int x=int(lParam%0x10000);
+						int y=int(lParam>>16);
 
 						auto btn = Input::Mouse::Button::None;
 
@@ -792,7 +792,7 @@ namespace Gorgon {
 						if(handlers.count(key)==0 || handlers[key]==ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
 							if(wParam==8 || wParam==127 || wParam==27) return 0;
 
-							parent->CharacterEvent(wParam);
+							parent->CharacterEvent((Input::Keyboard::Char)wParam);
 						}
 
 						return 0;
@@ -1944,7 +1944,7 @@ namespace Gorgon {
 
 	void Window::SetIcon(const WindowManager::Icon &icon) {
         if(icon.data->icon)
-            SetClassLong(data->handle, GCL_HICON, (LONG)icon.data->icon);
+			SetClassLongPtr(data->handle, GCLP_HICON, (LONG_PTR)icon.data->icon);
 	}
 
 	void Window::updatedataowner() {

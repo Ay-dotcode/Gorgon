@@ -289,7 +289,7 @@ namespace Gorgon { namespace Graphics {
 				int w = 0, pw = 0;
 
 				if(isbreaking(g)) {
-					lastbreak = acc.size();
+					lastbreak = (int)acc.size();
 				}
 
 				if(isspace(g)) {
@@ -339,7 +339,7 @@ namespace Gorgon { namespace Graphics {
 					int totw = 0;
 					// if we are placing a space
 					if(g == '\t' || isbreaking(g)) {
-						lastbreak = acc.size();
+						lastbreak = (int)acc.size();
 						totw = x;
 					}
 					else if(lastbreak == 0) {
@@ -357,7 +357,7 @@ namespace Gorgon { namespace Graphics {
 						}
 
 						totw = x;
-						lastbreak = acc.size();
+						lastbreak = (int)acc.size();
 					}
 					else {
 						acc.push_back({x, g});

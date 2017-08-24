@@ -162,7 +162,7 @@ namespace Gorgon { namespace Encoding {
 		
 		void Reader::skip_input_data(jpeg_decompress_struct &cinfo, long size) {
             if((long)cinfo.src->bytes_in_buffer<size)
-                size = cinfo.src->bytes_in_buffer;
+                size = (long)cinfo.src->bytes_in_buffer;
             
             cinfo.src->bytes_in_buffer-=size;
             cinfo.src->next_input_byte+=size;

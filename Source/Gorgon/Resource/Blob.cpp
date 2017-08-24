@@ -109,14 +109,14 @@ namespace Gorgon { namespace Resource {
 		auto start = writer.WriteObjectStart(this);
 		
 		auto propstart = writer.WriteChunkStart(GID::Blob_Props);
-		writer.WriteUInt32(data.size());
+		writer.WriteUInt32((unsigned long)data.size());
 		writer.WriteGID(compression);
 		writer.WriteInt32(type);
 		writer.WriteBool(lateloading);
 		writer.WriteEnd(propstart);
 		
 		if(compression==GID::None) {
-			writer.WriteChunkHeader(GID::Blob_Data, data.size());
+			writer.WriteChunkHeader(GID::Blob_Data, (unsigned long)data.size());
 			writer.WriteVector(data);
 		}
 		else if(compression==GID::LZMA) {

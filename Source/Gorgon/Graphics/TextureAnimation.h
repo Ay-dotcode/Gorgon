@@ -196,7 +196,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// Returns number of frames
 		int GetCount() const override {
-			return frames.size();
+			return (int)frames.size();
 		}
 
 		/// Creates a new animation from this resource
@@ -337,9 +337,9 @@ namespace Gorgon { namespace Graphics {
 			auto frame = frm;
 
 			if(before < 0)
-				before += frames.size();
+				before += (int)frames.size();
 
-			if((unsigned)before > frames.size()) before = frames.size();
+			if((unsigned)before > frames.size()) before = (int)frames.size();
 
 			if((unsigned)before == frames.size())
 				frame.start = duration;
@@ -366,7 +366,7 @@ namespace Gorgon { namespace Graphics {
 		/// Moves a frame that has the index before the given position.
 		void MoveBefore(unsigned index, int before) override {
 			if(before < 0)
-				before += frames.size();
+				before += (int)frames.size();
 
 			if((unsigned)before >= frames.size()) {
                 auto tmp = frames[index];

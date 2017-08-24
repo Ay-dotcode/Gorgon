@@ -234,12 +234,12 @@ namespace Gorgon {
 
 			/// Returns number of elements
 			long GetCount() const {
-				return list.size();
+				return (long)list.size();
 			}
 
 			/// Returns number of elements
 			long GetSize() const {
-				return list.size();
+				return (long)list.size();
 			}
 
 
@@ -314,7 +314,7 @@ namespace Gorgon {
 
 				list.resize(list.size()+1);
 				
-				for(long i=list.size()-1;i>before;i--)
+				for(long i=(long)list.size()-1;i>before;i--)
 					list[i]=list[i-1];
 
 				list[before]=data;
@@ -495,7 +495,7 @@ namespace Gorgon {
 				if(it==list.end())
 					return -1;
 				else
-					return it-list.begin();
+					return long(it-list.begin());
 			}
 
 			/// Searches the position of a given item, if not found -1 is returned
@@ -555,7 +555,7 @@ namespace Gorgon {
 
 			/// end iterator
 			Iterator end() {
-				return Iterator(*this, list.size());
+				return Iterator(*this, (long)list.size());
 			}
 
 			/// returns the iterator to the first item
@@ -565,7 +565,7 @@ namespace Gorgon {
 
 			/// returns the iterator to the last item
 			Iterator Last() {
-				return Iterator(*this, list.size()-1);
+				return Iterator(*this, long(list.size()-1));
 			}
 
 			/// begin iterator
@@ -575,7 +575,7 @@ namespace Gorgon {
 
 			/// end iterator
 			ConstIterator end() const {
-				return ConstIterator(*this, list.size());
+				return ConstIterator(*this, (long)list.size());
 			}
 
 			/// returns the iterator to the first item
@@ -585,7 +585,7 @@ namespace Gorgon {
 
 			/// returns the iterator to the last item
 			ConstIterator Last() const {
-				return ConstIterator(*this, list.size()-1);
+				return ConstIterator(*this, long(list.size()-1));
 			}
 			/// @}
 

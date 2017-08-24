@@ -135,7 +135,7 @@ namespace Gorgon { namespace Encoding {
 			inBuf.resize(BUF_SIZE);
 
 			ELzmaStatus status;
-			unsigned outPos = 0, inPos=LZMA_PROPS_SIZE;
+			size_t outPos = 0, inPos=LZMA_PROPS_SIZE;
 			if(UseUncompressedSize) inPos+=8;
 			while(outPos < fullsize) {
 				size_t destLen = (size_t)std::min<unsigned long long>(BUF_SIZE, fullsize - outPos);

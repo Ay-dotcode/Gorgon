@@ -27,20 +27,20 @@ namespace Gorgon { namespace Encoding {
                 size = reader->Buf.size - reader->BufPos;
             }
 			std::memcpy(buf, &reader->Buf.data[reader->BufPos], size);
-			reader->BufPos += size;
+			reader->BufPos += (unsigned)size;
 		}
 		void ReadVector(png_struct *p, unsigned char *buf, size_t size) {
 			VectorReader *reader = (VectorReader*)(p->io_ptr);
 			size = std::min(size, reader->Buf.size() - reader->BufPos);
 			if (size)
 				std::memcpy(buf, &reader->Buf[reader->BufPos], size);
-			reader->BufPos += size;
+			reader->BufPos += (unsigned)size;
 		}
 		void WriteVector(png_struct *p, unsigned char *buf, size_t size) {
 			VectorWriter *writer = (VectorWriter*)(p->io_ptr);
 			if (size)
 			{
-				unsigned oldSize = writer->Buf.size();
+				unsigned oldSize = (unsigned)writer->Buf.size();
 				writer->Buf.resize(oldSize + size);
 				std::memcpy(&writer->Buf[oldSize], buf, size);
 			}
@@ -132,7 +132,7 @@ namespace Gorgon { namespace Encoding {
 
 		png_read_update_info(png_ptr, info_ptr);
 
-		rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+		rowbytes = (unsigned)png_get_rowbytes(png_ptr, info_ptr);
 
 		buffer.Resize(size, mode);
 		if(rowbytes<=width*buffer.GetBytesPerPixel()) {

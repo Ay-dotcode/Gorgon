@@ -250,7 +250,7 @@ namespace Gorgon { namespace Graphics {
                 
                 if(it.IsValid()) {
                     
-                    int count = std::count_if(glyphmap.begin(), glyphmap.end(), 
+                    int count = (int)std::count_if(glyphmap.begin(), glyphmap.end(),
                                 [img](decltype(*glyphmap.begin()) p){ return p.second.image == img; });
                     
                     if(count == 1) {

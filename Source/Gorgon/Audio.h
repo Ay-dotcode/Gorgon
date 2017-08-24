@@ -65,7 +65,7 @@ namespace Audio {
 		
 		/// Returns the number of channels available
 		int GetChannelCount() const {
-			return channels.size();
+			return (int)channels.size();
 		}
 		
 		/// Returns the channel type with the given index

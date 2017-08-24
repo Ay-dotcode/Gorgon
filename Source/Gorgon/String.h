@@ -23,7 +23,7 @@ namespace Gorgon {
 		
 		struct CaseInsensitiveLess {
 			bool operator()(const std::string &left, const std::string &right) const {
-				unsigned len=std::min(left.length(), right.length());
+				unsigned len=(unsigned int)std::min(left.length(), right.length());
 				
 				auto l=left.begin();
 				auto r=right.begin();
@@ -46,7 +46,7 @@ namespace Gorgon {
 		
 		/// Compares two strings case insensitive. Works similar to strcmp
 		inline int CaseInsensitiveCompare(const std::string &left, const std::string &right) {
-			unsigned len=std::min(left.length(), right.length());
+			unsigned len=(unsigned int)std::min(left.length(), right.length());
 			
 			auto l=left.begin();
 			auto r=right.begin();
@@ -670,13 +670,13 @@ namespace Gorgon {
 		template<class T_>
 		std::string Join(const T_ &vec, const std::string &glue = ", ") {
 			int totalsize = 0;
-			int gluesize = glue.size();
+			int gluesize = (int)glue.size();
 
 			for(const std::string &s : vec) {
 				if(totalsize)
 					totalsize += gluesize;
 
-				totalsize += s.size();
+				totalsize += (int)s.size();
 			}
 
 			std::string ret;

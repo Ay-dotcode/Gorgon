@@ -172,7 +172,7 @@ namespace Gorgon { namespace Graphics {
 				}
 			}
 
-			int prefixlen = prefix.length();
+			int prefixlen = (int)prefix.length();
 
 			for(auto p : files) {
 				std::string name = p.first;
@@ -236,7 +236,7 @@ namespace Gorgon { namespace Graphics {
 			}
 		}
 
-		int prefixlen = prefix.length();
+		int prefixlen = (int)prefix.length();
 
 		int maxh = 0;
         

@@ -23,7 +23,7 @@ namespace Gorgon { namespace Encoding {
 
 		class Writer {
 		public:
-			int (*Write)(void *p, const void *buf, size_t size);
+			std::size_t (*Write)(void *p, const void *buf, size_t size);
 		};
 
 
@@ -39,7 +39,7 @@ namespace Gorgon { namespace Encoding {
 			}
 
 			const std::vector<Byte> &Buf;
-			unsigned BufPos;
+			std::size_t BufPos;
 		};
 		inline Reader *ReadyReadStruct(const std::vector<Byte> &vec) {
 			return new VectorReader(vec);
@@ -64,7 +64,7 @@ namespace Gorgon { namespace Encoding {
 		}
 
 		class VectorWriter;
-		int WriteVector(void *p, const void *buf, size_t size);
+		std::size_t WriteVector(void *p, const void *buf, size_t size);
 		class VectorWriter : public Writer {
 		public:
 			VectorWriter(std::vector<Byte> &Buf) : Buf(Buf) {
@@ -76,11 +76,11 @@ namespace Gorgon { namespace Encoding {
 		inline Writer *ReadyWriteStruct(std::vector<Byte> &vec) {
 			return new VectorWriter(vec);
 		}
-		inline int WriteVector(void *p, const void *buf, size_t size) {
+		inline std::size_t WriteVector(void *p, const void *buf, size_t size) {
 			VectorWriter *writer = (VectorWriter*)p;
 			if (size)
 			{
-				unsigned oldSize = writer->Buf.size();
+				std::size_t oldSize = writer->Buf.size();
 				writer->Buf.resize(oldSize + size);
 				std::memcpy(&writer->Buf[oldSize], buf, size);
 			}
@@ -99,7 +99,7 @@ namespace Gorgon { namespace Encoding {
 			}
 
 			const Byte *Buf;
-			unsigned BufPos;
+			std::size_t BufPos;
 		};
 		inline Reader *ReadyReadStruct(const Byte *vec) {
 			return new ArrayReader(vec);
@@ -122,7 +122,7 @@ namespace Gorgon { namespace Encoding {
 		}
 
 		class ArrayWriter;
-		int WriteArray(void *p, const void *buf, size_t size);
+		std::size_t WriteArray(void *p, const void *buf, size_t size);
 		class ArrayWriter : public Writer {
 		public:
 			ArrayWriter(Byte *Buf) : Buf(Buf), BufPos(0) {
@@ -130,12 +130,12 @@ namespace Gorgon { namespace Encoding {
 			}
 
 			Byte *Buf;
-			unsigned BufPos;
+			std::size_t BufPos;
 		};
 		inline Writer *ReadyWriteStruct(Byte *vec) {
 			return new ArrayWriter(vec);
 		}
-		inline int WriteArray(void *p, const void *buf, size_t size) {
+		inline std::size_t WriteArray(void *p, const void *buf, size_t size) {
 			ArrayWriter *writer = (ArrayWriter*)p;
 			if (size)
 			{
@@ -157,7 +157,7 @@ namespace Gorgon { namespace Encoding {
 			}
 
 			const std::string &Buf;
-			unsigned BufPos;
+			std::size_t BufPos;
 		};
 		inline Reader *ReadyReadStruct(const std::string &vec) {
 			return new StringReader(vec);
@@ -182,7 +182,7 @@ namespace Gorgon { namespace Encoding {
 		}
 
 		class StringWriter;
-		int WriteString(void *p, const void *buf, size_t size);
+		std::size_t WriteString(void *p, const void *buf, size_t size);
 		class StringWriter : public Writer {
 		public:
 			StringWriter(std::string &Buf) : Buf(Buf), BufPos(0) {
@@ -190,16 +190,16 @@ namespace Gorgon { namespace Encoding {
 			}
 
 			std::string &Buf;
-			unsigned BufPos;
+			std::size_t BufPos;
 		};
 		inline Writer *ReadyWriteStruct(std::string &vec) {
 			return new StringWriter(vec);
 		}
-		inline int WriteString(void *p, const void *buf, size_t size) {
+		inline std::size_t WriteString(void *p, const void *buf, size_t size) {
 			StringWriter *writer = (StringWriter*)p;
 			if (size)
 			{
-				unsigned oldSize = writer->Buf.size();
+				std::size_t oldSize = writer->Buf.size();
 				writer->Buf.resize(oldSize + size);
 				std::memcpy(&writer->Buf[oldSize], buf, size);
 			}
@@ -245,7 +245,7 @@ namespace Gorgon { namespace Encoding {
 		}
 
 		class FileWriter;
-		int WriteFile(void *p, const void *buf, size_t size);
+		std::size_t WriteFile(void *p, const void *buf, size_t size);
 		class FileWriter : public Writer {
 		public:
 			FileWriter(std::ostream &Buf) : Buf(Buf) {
@@ -257,7 +257,7 @@ namespace Gorgon { namespace Encoding {
 		inline Writer *ReadyWriteStruct(std::ostream &f) {
 			return new FileWriter(f);
 		}
-		inline int WriteFile(void *p, const void *buf, size_t size) {
+		inline std::size_t WriteFile(void *p, const void *buf, size_t size) {
 			FileWriter *writer = (FileWriter*)p;
 			writer->Buf.write((char*)buf, size);
 

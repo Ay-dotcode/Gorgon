@@ -378,7 +378,7 @@ namespace Gorgon {
 			
 			/// Returns the number of elements in the map
 			long GetSize() const {
-				return mapping.size();
+				return (long)mapping.size();
 			}
 			
 			/// If not found throws.

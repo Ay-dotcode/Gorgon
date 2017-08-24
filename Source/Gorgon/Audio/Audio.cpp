@@ -97,7 +97,7 @@ namespace Audio {
 		while(!exiting) {
 			int maxsize, size;
 
-			maxsize = GetWritableSize(channels);
+			maxsize = (int)GetWritableSize(channels);
 			size    = maxsize;
 			size    = std::min(size, internal::BufferSize);
 

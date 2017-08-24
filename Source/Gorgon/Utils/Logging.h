@@ -201,7 +201,7 @@ namespace Gorgon { namespace Utils {
 			if(!this->stream) return {nullptr, 0, false};
 			auto &stream = *this->stream;
 			
-			int headw = marktime * 8 + markdate * 10 + (markdate && marktime) * 1 + ((markdate || marktime) && !section.empty()) * 1 + section.size();
+			int headw = marktime * 8 + markdate * 10 + (markdate && marktime) * 1 + ((markdate || marktime) && !section.empty()) * 1 + (int)section.size();
  			
 			if(headw) headw += 2;
 

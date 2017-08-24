@@ -24,7 +24,7 @@ namespace Gorgon { namespace Resource {
 
 			if(gid==GID::Animation_Durations) {
 				durations.resize(size/4);
-				reader->ReadArray(&durations[0], durations.size());
+				reader->ReadArray(&durations[0], (unsigned long)durations.size());
 			} else {
 				Base *resource=nullptr;
 
@@ -78,7 +78,7 @@ namespace Gorgon { namespace Resource {
 
 	void Animation::savedata(Writer &writer) const {
 		//durations
-		writer.WriteChunkHeader(GID::Animation_Durations, frames.size()*4);
+		writer.WriteChunkHeader(GID::Animation_Durations, (unsigned long)frames.size()*4);
 		for(auto &frame : frames) {
 			writer.WriteInt32(frame.GetDuration());
 		}

@@ -28,7 +28,7 @@ namespace Gorgon { namespace Resource {
 		virtual GID::Type GetGID() const override { return GID::Blob; }
 
 		/// Size of the blob
-		unsigned long GetSize() const { return data.size(); }
+		unsigned long GetSize() const { return (unsigned long)data.size(); }
 
 		/// Returns the type of the blob
 		Type GetType() const { return type; }
