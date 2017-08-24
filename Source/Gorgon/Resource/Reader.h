@@ -41,6 +41,9 @@ namespace Gorgon { namespace Resource {
 
 			/// There is no file object associated with the resource. Generally thrown during late loading
 			NoFileObject = 7,
+
+			/// If the compression type in the file is not supported.
+			UnsupportedCompression = 8,
 		};
 
 		/// Regular constructor, creates error text from error number

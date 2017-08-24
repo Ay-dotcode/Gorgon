@@ -97,7 +97,8 @@ namespace Gorgon {
 			}
 
 			/// Changes the compression type of this resource. Currently GID::None and 
-			/// GID::FLAC is supported.
+			/// GID::FLAC is supported. If Flac support is disabled, GID::FLAC will cause
+			/// a runtime_error during save.
 			void SetCompression(GID::Type compression) {
 				this->compression = compression;
 			

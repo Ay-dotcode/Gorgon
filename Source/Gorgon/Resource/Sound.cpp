@@ -51,6 +51,7 @@ namespace Gorgon { namespace Resource {
 			auto gid = reader->ReadGID();
 			auto size= reader->ReadChunkSize();
 
+		tryagain:
 			if(gid==GID::Sound_Fmt) {
 				compression = reader->ReadGID();
 				data.SetSampleRate(reader->ReadUInt32());
@@ -121,10 +122,21 @@ namespace Gorgon { namespace Resource {
 				if(load) {
                     auto target = reader->Tell() + size;
 					if(size>0) {
-						Encoding::Flac.Decode(reader->GetStream(), data);
-                        data.SetChannels(channels);
-                        reader->GetStream().clear(std::ios::eofbit);
-                        reader->Seek(target);
+						if(compression == GID::None) {
+							gid=GID::Sound_Wave;
+							goto tryagain;
+						}
+#ifdef FLAC_SUPPORT
+						else if(compression == GID::FLAC) {
+							Encoding::Flac.Decode(reader->GetStream(), data);
+							data.SetChannels(channels);
+							reader->GetStream().clear(std::ios::eofbit);
+							reader->Seek(target);
+						}
+#endif
+						else {
+							throw LoadError(LoadError::UnsupportedCompression, "Unknown compression type: "+String::From(compression));
+						}
 					}
 
 					isloaded=true;
@@ -193,11 +205,13 @@ namespace Gorgon { namespace Resource {
 				writer.WriteArray(data.RawData(), data.GetBytes());
 			}
 		}
+#ifdef FLAC_SUPPORT
 		else if(compression==GID::FLAC) {
 			auto datastart = writer.WriteChunkStart(GID::Sound_Cmp_Wave);
 			Encoding::Flac.Encode(data, writer.GetStream());
 			writer.WriteEnd(datastart);
 		}
+#endif
 		else {
 			throw std::runtime_error("Unknown compression mode: "+String::From(compression));
 		}
@@ -220,72 +234,5 @@ namespace Gorgon { namespace Resource {
 		else 
 			throw std::runtime_error("Unsupported compression");
 	}
-
-	/*Sound *LoadSoundResource(File &File, std::istream &Data, int Size) {
-		Sound *snd=new Sound;
-		LoadSound(snd, Data, Size);
-		return snd;
-	}
-
-	
-	void LoadSound(Sound *snd, istream &Data, int Size) {
-		encoding::LZMA lzma(false);
-		
-		int target=Data.tellg()+Size;
-		int buffersize=0;
-		Byte *compressionprops=NULL;
-
-		while(Data.tellg()<target) {
-			int gid,size,compression=0;
-			ReadFrom(Data, gid);
-			ReadFrom(Data, size);
-
-			if(gid==GID::Sound_Props) {
-				ReadFrom(Data, buffersize);
-				ReadFrom(Data, snd->Format.Channels);
-				ReadFrom(Data, snd->Format.BlockAlign);
-				ReadFrom(Data, snd->Format.BitsPerSample);
-				ReadFrom(Data, snd->Format.SamplesPerSec);
-				ReadFrom(Data, snd->Format.AvgBytesPerSec);
-				ReadFrom(Data, snd->Format.FormatTag);
-
-				if(size>20)
-					Data.seekg(size-20,ios::cur);
-			} 
-			else if(gid==GID::Guid) {
-				snd->guid.LoadLong(Data);
-			}
-			else if(gid==GID::SGuid) {
-				snd->guid.Load(Data);
-			}
-			else if(gid==GID::Sound_Wave) {
-				snd->Size=size;
-				snd->Data.resize(size);
-
-				Data.read((char*)&snd->Data[0], size);
-			} else if(gid==GID::Sound_Cmp_Props) {
-				ReadFrom(Data, compression);
-
-				if(compression==GID::LZMA) {
-					if(size>4) {
-						compressionprops=new Byte[lzma.PropertySize()];
-						Data.read((char*)compressionprops,lzma.PropertySize());
-					}
-				}
-			} else if(gid==GID::Sound_Cmp_Wave) {
-				//snd->Data.resize(buffersize);
-				snd->Size=buffersize;
-				
-				if(buffersize>0) {
-					if(compressionprops!=NULL)
-						lzma.Decode(Data, snd->Data, compressionprops, buffersize);
-					else
-						encoding::Lzma.Decode(Data, snd->Data);
-				}
-
-				utils::CheckAndDeleteArray(compressionprops);
-			}
-		}
-	}*/
 
 } }
