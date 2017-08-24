@@ -22,8 +22,12 @@ namespace Gorgon { namespace Resource {
 		Animation() {}
 
 		/// Conversion constructor
-		explicit Animation(Graphics::BitmapAnimationProvider &&anim) : Graphics::BitmapAnimationProvider(std::move(anim)) {
+		explicit Animation(Graphics::BitmapAnimationProvider &&anim) : Graphics::BitmapAnimationProvider(std::move(anim)) {//!
 		}
+
+		/// Conversion constructor
+/*		explicit Animation(Graphics::RectangularAnimationProvider &&anim) : Graphics::BitmapAnimationProvider(std::move(anim)) {//!
+		}*/
 
 		/// Copy constructor is disabled, use Duplicate or DeepDuplicate
 		Animation(const Animation&) = delete;
@@ -38,7 +42,7 @@ namespace Gorgon { namespace Resource {
 			return GID::Animation;
 		}
 		
-		/// Moves the animation out of the resource system. Use Prepare and Discard before moving out to avoid copying data.
+		/// Moves the animation out of the resource system. Use Prepare and Discard before moving out to avoid copying data. !!!
 		Graphics::BitmapAnimationProvider MoveOutAsBitmap();
 		
 		/// This function allows loading animation with a function to load unknown resources. The supplied function should
@@ -76,6 +80,8 @@ namespace Gorgon { namespace Resource {
 
 		// Two part save system allows objects that are derived from animation to exist.
 		void savedata(Writer &writer) const;
+
+		Graphics::RectangularAnimationProvider *data;
 	};
 } }
 

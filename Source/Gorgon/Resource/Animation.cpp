@@ -1,6 +1,7 @@
 #include "Animation.h"
 #include "File.h"
 #include "../Utils/Assert.h"
+#include "AnimationServices.h"
 
 namespace Gorgon { namespace Resource {
 
@@ -13,6 +14,10 @@ namespace Gorgon { namespace Resource {
 
 		auto f=file.lock();
 
+		enum {
+			unknown, img, anim_only, mixed
+		} type = unknown;
+
 		while(!target) {
 			auto gid = reader->ReadGID();
 			auto size= reader->ReadChunkSize();
@@ -21,18 +26,40 @@ namespace Gorgon { namespace Resource {
 				durations.resize(size/4);
 				reader->ReadArray(&durations[0], durations.size());
 			} else {
-				Base *obj=nullptr;
+				Base *resource=nullptr;
 
 				if(loadfn) {
-					obj=loadfn(file, reader, gid, size);
+					resource=loadfn(file, reader, gid, size);
 				}
 				else {
-					obj=f->LoadChunk(*anim, gid, size);
+					resource=f->LoadChunk(*anim, gid, size);
 				}
 
-				if(obj) {
-					ASSERT(dynamic_cast<Image*>(obj), "Image animation members should be derived from Resource::Image.");
-					anim->children.Add(obj);
+				if(resource) {
+					if(resource->GetGID() == GID::Image) {
+						if(type == unknown)
+							type = anim_only;
+						else if(type == anim_only)
+							type = mixed;
+
+					}
+					else if(resource->GetGID() == GID::Animation) {
+						if(type == unknown)
+							type = anim_only;
+						else if(type == img)
+							type = mixed;
+					}
+					else if(resource->GetGID() == GID::Null) {
+						//null is allowed
+					}
+					else if(IsAnimation(resource->GetGID())) {
+						type = mixed;
+					}
+					else {
+						throw std::runtime_error("Animation can only contain images or animations");
+					}
+
+					anim->children.Add(resource);
 				}
 			}
 		}

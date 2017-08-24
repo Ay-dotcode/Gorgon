@@ -11,28 +11,30 @@ namespace Gorgon { namespace Graphics {
     class basic_TextureAnimationProvider;
     
     template<class T_>
-    class basic_AnimationFrame {
+    class basic_AnimationFrame : public Gorgon::Animation::Frame {
+		template<class T_, template<class, class, class> class A_, class F_>
+		friend class basic_TextureAnimationProvider;
     public:
         basic_AnimationFrame(T_ &image, unsigned duration = 42, unsigned start = 0) :
         image(&image), duration(duration), start(start) { }
         
         /// Returns the duration of this frame
-        unsigned GetDuration() const {
+        unsigned GetDuration() const override {
             return duration;
         }
         
         /// Returns the starting time of this frame
-        unsigned GetStart() const {
+        unsigned GetStart() const override {
             return start;
         }
         
         /// Returns the ending time of this frame
-        unsigned GetEnd() const {
+        unsigned GetEnd() const override {
             return start + duration;
         }
         
         /// Returns if the given time is within this frame
-        bool IsIn(unsigned time) const {
+        bool IsIn(unsigned time) const override {
             return time >= start && time < start + duration;
         }
         
@@ -47,7 +49,7 @@ namespace Gorgon { namespace Graphics {
     };
     
     template<class T_, class P_, class F_>
-    class basic_TextureAnimation : public virtual Image, public virtual RectangularAnimation {
+    class basic_TextureAnimation : public virtual Image, public virtual RectangularAnimation, public virtual Gorgon::Animation::DiscreteAnimation {
     public:
         using ParentType = P_;
         using FrameType  = F_;        
@@ -68,8 +70,8 @@ namespace Gorgon { namespace Graphics {
 		virtual bool Progress(unsigned &leftover) override;
         
         virtual GL::Texture GetID() const override {
-            if(current)
-                return current->GetImage().GetID();
+			if(current < (unsigned)parent->GetCount())
+				return (*parent)[current].GetID();
             else if(parent->GetCount()) 
                 return (*parent)[0].GetID();
 
@@ -79,8 +81,8 @@ namespace Gorgon { namespace Graphics {
         }
         
         virtual Geometry::Size GetImageSize() const override {
-            if(current)
-                return current->GetImage().GetImageSize();
+			if(current < (unsigned)parent->GetCount())
+				return (*parent)[current].GetImageSize();
             else if(parent->GetCount()) 
                 return (*parent)[0].GetImageSize();
 
@@ -90,8 +92,8 @@ namespace Gorgon { namespace Graphics {
         }
         
         virtual ColorMode GetMode() const override {
-            if(current)
-                return current->GetImage().GetMode();
+			if(current < (unsigned)parent->GetCount())
+				return (*parent)[current].GetMode();
             else if(parent->GetCount()) 
                 return (*parent)[0].GetMode();
 
@@ -101,8 +103,8 @@ namespace Gorgon { namespace Graphics {
         }
         
         virtual const Geometry::Pointf *GetCoordinates() const override {
-            if(current)
-                return current->GetImage().GetCoordinates();
+            if(current < (unsigned)parent->GetCount())
+                return (*parent)[current].GetCoordinates();
             else if(parent->GetCount()) 
                 return (*parent)[0].GetCoordinates();
 
@@ -110,14 +112,18 @@ namespace Gorgon { namespace Graphics {
             
             return nullptr;
         }
+
+		unsigned CurrentFrame() const override {
+			return current;
+		}
         
     private:
         const ParentType *parent = nullptr;
-        const FrameType  *current = nullptr;
+        unsigned current = NoFrame;
     };
     
     template<class T_, template<class, class, class> class A_, class F_>
-    class basic_TextureAnimationProvider : public RectangularAnimationProvider {
+    class basic_TextureAnimationProvider : public virtual RectangularAnimationProvider, public virtual Gorgon::Animation::DiscreteProvider {
     public:
         using Iterator = typename std::vector<basic_AnimationFrame<T_>>::iterator;
         using ConstIterator = typename std::vector<basic_AnimationFrame<T_>>::const_iterator;
@@ -189,7 +195,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Returns number of frames
-		int GetCount() const {
+		int GetCount() const override {
 			return frames.size();
 		}
 
@@ -237,24 +243,24 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Returns the frame at specific point
-        const F_ &FrameAt(int index) const {
+        const F_ &FrameAt(int index) const override {
             ASSERT(index>=0 && index<(int)frames.size(), "Index out of bounds");
             
             return frames[index];
         }
 
 		/// Returns the starting time of the given frame
-		unsigned StartOf(unsigned frame) const {
+		unsigned StartOf(unsigned frame) const override {
 			return frames[frame].GetStart();
 		}
 
 		/// Returns the duration of the animation
-		unsigned GetDuration() const {
+		unsigned GetDuration() const override {
 			return duration;
 		}
 
 		/// Returns the duration of the given frame
-		unsigned GetDuration(unsigned frame) const {
+		unsigned GetDuration(unsigned frame) const override {
             ASSERT(frame>=0 && frame<frames.size(), "Index out of bounds");
             
 			return frames[frame].GetDuration();
@@ -277,11 +283,27 @@ namespace Gorgon { namespace Graphics {
 			frames.push_back({img, duration, this->duration});
 			this->duration += duration;
 		}
+
+		void Add(const F_ &frame) {
+			frames.push_back(frame);
+			frames.back().start = duration;
+			duration += frame.duration;
+		}
+
+		void Add(const Gorgon::Animation::Frame &frame) override {
+			if(dynamic_cast<const F_*>(&frame) == nullptr)
+				throw std::runtime_error("Wrong frame type.");
+
+			Add(dynamic_cast<const F_&>(frame));
+		}
 		
 		/// Inserts the given image before the given frame
-		void Insert(T_ &image, unsigned before, unsigned duration = 42) {
-            ASSERT(before < frames.size(), "Index out of bounds");
-            
+		void Insert(T_ &image, int before, unsigned duration = 42) {
+			if(before < 0)
+				before += frames.size();
+
+			if(before > frames.size()) before = frames.size();
+
 			frames.insert(frames.begin()+before, {image, duration, frames[before].GetStart()});
 			
 			for(unsigned i=before+1; i<frames.size(); i++) {
@@ -292,8 +314,11 @@ namespace Gorgon { namespace Graphics {
 		}
 		
 		/// Inserts the given image before the given frame
-		void Insert(T_ &&img, unsigned before, unsigned duration = 42) {
-            ASSERT(before < frames.size(), "Index out of bounds");
+		void Insert(T_ &&img, int before, unsigned duration = 42) {
+			if(before < 0)
+				before += frames.size();
+
+			if(before > frames.size()) before = frames.size();
 
             destroylist.Push(new T_(std::move(img)));
             T_ &image = *destroylist.Last();
@@ -306,18 +331,52 @@ namespace Gorgon { namespace Graphics {
 			
 			this->duration += duration;
 		}
-		
+
+		/// Inserts the given image before the given frame
+		void Insert(const F_ &frm, int before) {
+			auto frame = frm;
+
+			if(before < 0)
+				before += frames.size();
+
+			if((unsigned)before > frames.size()) before = frames.size();
+
+			if((unsigned)before == frames.size())
+				frame.start = duration;
+			else
+				frame.start = frames[before].start;
+
+			frames.insert(frames.begin()+before, frame);
+
+			for(unsigned i=before+1; i<frames.size(); i++) {
+				frames[i].start=frames[i-1].GetEnd();
+			}
+
+			this->duration += duration;
+		}
+
+		/// Inserts the given image before the given frame
+		void Insert(const Gorgon::Animation::Frame &frame, int before) override {
+			if(dynamic_cast<const F_*>(&frame) == nullptr)
+				throw std::runtime_error("Wrong frame type.");
+
+			Insert(dynamic_cast<const F_&>(frame), before);
+		}
+
 		/// Moves a frame that has the index before the given position.
-		void MoveBefore(unsigned index, unsigned before) {
-            if(before >= frames.size()) {
+		void MoveBefore(unsigned index, int before) override {
+			if(before < 0)
+				before += frames.size();
+
+			if((unsigned)before >= frames.size()) {
                 auto tmp = frames[index];
                 frames.erase(frames.begin()+index);
                 frames.push_back(tmp);
             }
-            else if(index<before) {
+            else if(index < (unsigned)before) {
                 std::rotate(frames.begin()+index, frames.begin()+index+1, frames.begin()+before);
             }
-            else if(before<index) {
+            else if((unsigned)before < index) {
                 std::rotate(frames.rbegin()+(frames.size()-1-index), frames.rbegin()+(frames.size()-1-index)+1, frames.rbegin()+(frames.size()-1-before));
             }
         }
@@ -328,15 +387,15 @@ namespace Gorgon { namespace Graphics {
         }
 		
 		/// Removes an image from the animation
-		void Remove(int frame) {
+		void Remove(unsigned frame) override {
             ASSERT(frame>=0 && frame < frames.size(), "Index out of bounds");
             
 			duration -= (frames.begin() + frame)->GetDuration();
-            frames.remove(frames.begin() + frame);
+            frames.erase(frames.begin() + frame);
         }
 
         /// Removes all images from the animation
-		void Clear() {
+		void Clear() override {
 			frames.clear();
 			duration = 0;
 		}
@@ -414,19 +473,19 @@ namespace Gorgon { namespace Graphics {
 
         if(controller->IsControlled()) {
             if(progress>parent->GetDuration()) {
-                current=&parent->FrameAt(parent->GetCount()-1);
+                current=parent->GetCount()-1;
                 leftover=progress-parent->GetDuration();
                 
                 return false;
             }
             else {
-                current=&parent->FrameAt(parent->FrameIndexAt(progress));
+                current=parent->FrameIndexAt(progress);
                 
                 return true;
             }
         }
         else {
-            current = &parent->FrameAt(parent->FrameIndexAt(progress % parent->GetDuration()));
+            current = parent->FrameIndexAt(progress % parent->GetDuration());
             
             return true;
         }

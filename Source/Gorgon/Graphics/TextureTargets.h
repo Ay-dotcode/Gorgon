@@ -95,18 +95,4 @@ namespace Gorgon { namespace Graphics {
 		virtual void NewMask() = 0;
 	};
 
-	/// This interface defines a target that can change the color of drawings on it
-	class ColorizableTarget {
-	public:
-		/// Changes current drawing color
-		virtual void SetCurrentColor(const RGBAf &color) = 0;
-
-		/// Returns current drawing color
-		virtual RGBAf GetCurrentColor() = 0;
-	};
-
-	/// This interface defines a texture target that can change the color of drawings on it
-	class ColorizableTextureTarget : public TextureTarget, public ColorizableTarget {
-	};
-
 } }

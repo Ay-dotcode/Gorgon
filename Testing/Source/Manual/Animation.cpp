@@ -39,8 +39,8 @@ int main() {
         
     Graphics::Bitmap anim1({30, 30}, Graphics::ColorMode::Alpha), anim2({30, 30}, Graphics::ColorMode::Alpha);
     
-    anim1.Clean();
-    anim2.Clean();
+    anim1.Clear();
+    anim2.Clear();
     
     for(int i = 0; i<30; i++) {
         anim1(i,i,0) = 255;
