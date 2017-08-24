@@ -49,7 +49,7 @@ namespace Gorgon { namespace Graphics {
     };
     
     template<class T_, class P_, class F_>
-    class basic_TextureAnimation : public virtual Image, public virtual RectangularAnimation, public virtual Gorgon::Animation::DiscreteAnimation {
+    class basic_TextureAnimation : public virtual Image, public virtual DiscreteAnimation {
     public:
         using ParentType = P_;
         using FrameType  = F_;        
@@ -123,7 +123,7 @@ namespace Gorgon { namespace Graphics {
     };
     
     template<class T_, template<class, class, class> class A_, class F_>
-    class basic_TextureAnimationProvider : public virtual RectangularAnimationProvider, public virtual Gorgon::Animation::DiscreteProvider {
+    class basic_TextureAnimationProvider : public virtual DiscreteAnimationProvider {
     public:
         using Iterator = typename std::vector<basic_AnimationFrame<T_>>::iterator;
         using ConstIterator = typename std::vector<basic_AnimationFrame<T_>>::const_iterator;

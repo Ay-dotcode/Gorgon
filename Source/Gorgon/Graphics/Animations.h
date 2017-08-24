@@ -8,14 +8,21 @@
 
 namespace Gorgon { namespace Graphics { 
 
+	/// A regular drawable animation
 	class Animation : public virtual Drawable, public virtual Gorgon::Animation::Base {
 
 	};
 	
+	/// Rectangular drawable animation
 	class RectangularAnimation : public virtual RectangularDrawable, public virtual Animation {
 
 	};
 
+	/// A discrete rectangular animation, this is most suitable for bitmap or texture animations
+	class DiscreteAnimation: public virtual Graphics::RectangularAnimation, public virtual Gorgon::Animation::DiscreteAnimation {
+	};
+
+	/// A regular drawable animation provider
 	class AnimationProvider : public virtual Gorgon::Animation::Provider {
 	public:
 		using AnimationType = Animation;
@@ -33,6 +40,7 @@ namespace Gorgon { namespace Graphics {
 		virtual Animation &CreateAnimation(bool create=true) const override = 0;
 	};
 
+	/// This class provides rectangular animations
 	class RectangularAnimationProvider : public AnimationProvider {
 	public:
 		using AnimationType = RectangularAnimation;
@@ -48,6 +56,10 @@ namespace Gorgon { namespace Graphics {
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
 		virtual RectangularAnimation &CreateAnimation(bool create=true) const override = 0;
+	};
+
+	/// This class provides discrete and rectangular animation which is suitable for bitmap and texture animations
+	class DiscreteAnimationProvider : public virtual Graphics::RectangularAnimationProvider, public virtual Gorgon::Animation::DiscreteProvider {
 	};
 
 	using AnimationStorage = Gorgon::Animation::basic_Storage<AnimationProvider>;

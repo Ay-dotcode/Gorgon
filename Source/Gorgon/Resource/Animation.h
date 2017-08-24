@@ -22,12 +22,8 @@ namespace Gorgon { namespace Resource {
 		Animation() {}
 
 		/// Conversion constructor
-		explicit Animation(Graphics::BitmapAnimationProvider &&anim) : Graphics::BitmapAnimationProvider(std::move(anim)) {//!
+		explicit Animation(Graphics::BitmapAnimationProvider &&anim) : Graphics::BitmapAnimationProvider(std::move(anim)) {
 		}
-
-		/// Conversion constructor
-/*		explicit Animation(Graphics::RectangularAnimationProvider &&anim) : Graphics::BitmapAnimationProvider(std::move(anim)) {//!
-		}*/
 
 		/// Copy constructor is disabled, use Duplicate or DeepDuplicate
 		Animation(const Animation&) = delete;
@@ -80,8 +76,6 @@ namespace Gorgon { namespace Resource {
 
 		// Two part save system allows objects that are derived from animation to exist.
 		void savedata(Writer &writer) const;
-
-		Graphics::RectangularAnimationProvider *data;
 	};
 } }
 
