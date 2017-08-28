@@ -28,4 +28,10 @@ namespace Gorgon {
 
 	/// Where acceptable, denotes that the object will assume the ownership
 	static constexpr AssumeOwnershipTag AssumeOwnership;
+    
+#ifdef DOXYGEN
+#   define ENUMCLASS enum
+#else
+#   define ENUMCLASS enum class
+#endif
 }

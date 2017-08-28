@@ -1,6 +1,5 @@
 ﻿#include "GraphicsHelper.h"
 
-#include <Gorgon/UI/Components.h>
 #include <regex>
 
 

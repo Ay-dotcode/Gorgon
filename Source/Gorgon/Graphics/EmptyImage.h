@@ -36,6 +36,10 @@ namespace Gorgon { namespace Graphics {
 			return const_cast<EmptyImage&>(*this);
 		}
 
+		Geometry::Size GetSize() const override {
+			return {0, 0};
+		}
+
 		/// Returns the instance for empty image. Only one instance is enough.
 		static EmptyImage &Instance() { static EmptyImage me; return me; }
 
@@ -113,6 +117,10 @@ namespace Gorgon { namespace Graphics {
 		/// Sets the size of this blank image
 		void SetSize(Geometry::Size value) {
 			size = value;
+		}
+
+		Geometry::Size GetSize() const override {
+			return size;
 		}
 
 	protected:

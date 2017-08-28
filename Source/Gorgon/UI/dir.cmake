@@ -1,3 +1,6 @@
 SET(Local
-	Components.h
+	Component.h
+	ComponentStack.h
+	Template.h
+	Template.cpp
 )

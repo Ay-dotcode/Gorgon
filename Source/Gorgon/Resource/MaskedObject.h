@@ -123,7 +123,14 @@ namespace Gorgon { namespace Resource {
 
 			return dynamic_cast<Gorgon::Graphics::MaskedObject &>(prov->CreateAnimation(create));
 		}
-        
+
+		virtual Geometry::Size GetSize() const override {
+			if(!prov)
+				throw std::runtime_error("Provider is not set.");
+
+			return prov->GetSize();
+		}
+
 		/// This function loads a masked object resource from the file
 		static MaskedObject *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
         

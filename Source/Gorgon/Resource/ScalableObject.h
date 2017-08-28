@@ -131,6 +131,13 @@ namespace Gorgon {
 				return dynamic_cast<Gorgon::Graphics::ScalableObject &>(prov->CreateAnimation(create));
 			}
 
+			virtual Geometry::Size GetSize() const override {
+				if(!prov)
+					throw std::runtime_error("Provider is not set.");
+
+				return prov->GetSize();
+			}
+
 			/// This function loads a tinted object resource from the file
 			static ScalableObject *LoadResource(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size);
 

@@ -342,7 +342,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// Returns the size of this image resource. It is possible for an image to become unsynchronized due to
 		/// a modification to the image data. Image texture size takes precedence if this happens.
-		Geometry::Size GetSize() const {
+		Geometry::Size GetSize() const override {
 			if(Graphics::Texture::id!=0) {
 				return Graphics::Texture::GetImageSize();
 			}

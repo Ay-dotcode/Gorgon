@@ -1,3 +1,5 @@
+/// @file
+
 #pragma once
 #include "../Enum.h"
 
@@ -7,14 +9,14 @@ namespace Gorgon { namespace Input {
 
 		/// The type of a mouse event. Out/Up occurs if Over/Down is handled. 
 		/// Click occurs only if Down is not handled. 
-		enum class EventType {
-            HitCheck, //Checks if the coordinate hits the layer, always called first
+		ENUMCLASS EventType {
+            HitCheck, ///< Checks if the coordinate hits the layer, always called first
 			Over,
 			Move,
-			MovePressed, //Move event while a button is pressed
+			MovePressed, ///< Move event while a button is pressed
 			Out,
 			Down,
-			DownPressed, //Down event while a button is already pressed
+			DownPressed, ///< Down event while a button is already pressed
 			Click,
 			Up,
             Scroll_Vert,
@@ -23,7 +25,8 @@ namespace Gorgon { namespace Input {
             Rotate
 		};
 
-		enum class Button {
+        /// Lists the mouse button constants
+		ENUMCLASS Button {
             None   = 0 ,
 			Left   = 1 ,
 			Right  = 2 ,
@@ -58,7 +61,7 @@ namespace Gorgon { namespace Input {
 			{Button::X2, "X2"},
 		);
 
-		enum class ScrollType {
+		ENUMCLASS ScrollType {
 			Vertical,
 			Horizontal,
 			Zoom

@@ -117,6 +117,13 @@ namespace Gorgon { namespace Animation {
 				throw std::runtime_error("Storage contains no animation");
 		}
 
+		virtual decltype( ((A_*)(nullptr))->GetSize() ) GetSize() const override {
+			if(anim)
+				return anim->GetSize();
+			else
+				throw std::runtime_error("Storage contains no animation");
+		}
+
 	private:
 		const A_ *anim = nullptr;
 		bool isowned = false;

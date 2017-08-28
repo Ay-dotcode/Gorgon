@@ -12,7 +12,7 @@ namespace Gorgon { namespace Graphics {
     
     template<class T_>
     class basic_AnimationFrame : public Gorgon::Animation::Frame {
-		template<class T_, template<class, class, class> class A_, class F_>
+		template<class T__, template<class, class, class> class A_, class F_>
 		friend class basic_TextureAnimationProvider;
     public:
         basic_AnimationFrame(T_ &image, unsigned duration = 42, unsigned start = 0) :
@@ -187,7 +187,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Returns the size of the first image
-		Geometry::Size GetSize() const {
+		Geometry::Size GetSize() const override {
 			if(frames.size()>0)
 				return frames[0].GetImage().GetSize();
             

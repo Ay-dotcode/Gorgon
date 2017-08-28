@@ -457,6 +457,30 @@ namespace Gorgon { namespace Graphics {
 			own = true;
 		}
 
+		Geometry::Size GetSize() const override {
+			int maxt = std::max(std::max(
+				tl ? tl->GetHeight() : 0 , 
+				tm ? tm->GetHeight() : 0), 
+				tr ? tr->GetHeight() : 0);
+
+			int maxb = std::max(std::max(
+				bl ? bl->GetHeight() : 0 , 
+				bm ? bm->GetHeight() : 0), 
+				br ? br->GetHeight() : 0);
+
+			int maxl = std::max(std::max(
+				tl ? tl->GetWidth() : 0 , 
+				ml ? ml->GetWidth() : 0), 
+				bl ? bl->GetWidth() : 0);
+
+			int maxr = std::max(std::max(
+				tr ? tr->GetWidth() : 0 , 
+				mr ? mr->GetWidth() : 0), 
+				br ? br->GetWidth() : 0);
+
+			return{maxl+maxr+(mm ? mm->GetWidth() : 0), maxt+maxb+(mm ? mm->GetHeight() : 0)};
+		}
+
 	private:
 		A_ *tl = nullptr;
 		A_ *tm = nullptr;

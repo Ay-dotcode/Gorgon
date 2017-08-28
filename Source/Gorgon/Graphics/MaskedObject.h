@@ -217,7 +217,11 @@ namespace Gorgon { namespace Graphics {
             if(base) base->Prepare();
             if(mask) mask->Prepare();
         }
-        
+
+		Geometry::Size GetSize() const override {
+			return base ? base->GetSize() : Geometry::Size{0, 0};
+		}
+
     private:
 		A_ *base = nullptr;
 		A_ *mask = nullptr;

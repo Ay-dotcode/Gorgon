@@ -289,6 +289,54 @@ namespace Gorgon { namespace Graphics {
             end = nullptr;
 		}
 
+		Geometry::Size GetSize() const override {
+			int w = 0;
+			int h = 0;
+
+			if(GetOrientation() == Orientation::Horizontal) {
+				if(start) {
+					auto sz = start->GetSize();
+					w += sz.Width;
+					if(h < sz.Height)
+						h = sz.Height;
+				}
+				if(middle) {
+					auto sz = middle->GetSize();
+					w += sz.Width;
+					if(h < sz.Height)
+						h = sz.Height;
+				}
+				if(end) {
+					auto sz = end->GetSize();
+					w += sz.Width;
+					if(h < sz.Height)
+						h = sz.Height;
+				}
+			}
+			else {
+				if(start) {
+					auto sz = start->GetSize();
+					h += sz.Height;
+					if(w < sz.Width)
+						w = sz.Width;
+				}
+				if(middle) {
+					auto sz = middle->GetSize();
+					h += sz.Height;
+					if(w < sz.Width)
+						w = sz.Width;
+				}
+				if(end) {
+					auto sz = end->GetSize();
+					h += sz.Height;
+					if(w < sz.Width)
+						w = sz.Width;
+				}
+			}
+
+			return {w, h};
+		}
+
 	private:
 		A_ *start = nullptr;
 		A_ *middle = nullptr;

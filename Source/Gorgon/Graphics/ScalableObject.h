@@ -201,7 +201,11 @@ namespace Gorgon { namespace Graphics {
 		void Prepare() {
             if(base) base->Prepare();
         }
-        
+
+		Geometry::Size GetSize() const override {
+			return base ? base->GetSize() : Geometry::Size{0, 0};
+		}
+
     private:
 		A_ *base = nullptr;
 		SizeController ctrl = {Tiling::Both};

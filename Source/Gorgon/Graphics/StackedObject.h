@@ -259,7 +259,11 @@ namespace Gorgon { namespace Graphics {
             if(top) top->Prepare();
             if(bottom) bottom->Prepare();
         }
-        
+
+		Geometry::Size GetSize() const override {
+			return top ? top->GetSize() : Geometry::Size{0, 0};
+		}
+
     private:
 		A_ *top = nullptr;
 		A_ *bottom = nullptr;

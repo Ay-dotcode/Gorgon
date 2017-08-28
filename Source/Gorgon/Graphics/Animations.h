@@ -56,6 +56,11 @@ namespace Gorgon { namespace Graphics {
 		/// This function should create and animation and depending on the create parameter,
 		/// it should create its own timer.
 		virtual RectangularAnimation &CreateAnimation(bool create=true) const override = 0;
+
+		virtual Geometry::Size GetSize() const = 0;
+
+		int GetWidth() const { return GetSize().Width; }
+		int GetHeight() const { return GetSize().Height; }
 	};
 
 	/// This class provides discrete and rectangular animation which is suitable for bitmap and texture animations
