@@ -122,12 +122,9 @@ namespace Gorgon {
 	* [Might need rewording.]
 	*/
 
-	// Do getters and setters, expose changed events.
 	// TextPlaceholder
-	// Separate Providers from instances
 	// TextPlaceholder should have its own layer (same for others?)
 	// Obtained size, position, think about animation frame
-	// Containers being horizontal, vertical ?
 	// 
 
 	/// Anchor position
@@ -330,6 +327,20 @@ namespace Gorgon {
      */
 	class Template {
 	public:
+
+		/// Size mode of the template, will be applied separately to X and Y dimensions
+		enum SizeMode {
+			/// This template can be freely resized
+			Free,
+
+			/// Size of the template is fixed and should not be modified
+			Fixed,
+
+			/// Size of the template should be incremented at the multiples of the size
+			/// and addition size should be added to it.
+			Multiples
+		};
+
         /// Destructor
         ~Template() {
             components.Destroy();
@@ -370,13 +381,82 @@ namespace Gorgon {
         ComponentTemplate &Get(int index) const {
             return components[index];
         }
-        
+
+		/// Changes the size mode of the template
+		void SetSizing(SizeMode x, SizeMode y) {
+			xsizing = x;
+			ysizing = y;
+			ChangedEvent();
+		}
+
+		/// Returns the sizing mode
+		SizeMode GetXSizing() const {
+			return xsizing;
+		}
+
+		/// Returns the sizing mode
+		SizeMode GetYSizing() const {
+			return ysizing;
+		}
+
+		/// Changes the size of the template
+		void SetSize(int w, int h) {
+			size = {w, h};
+			ChangedEvent();
+		}
+
+		/// Changes the size of the template
+		void SetSize(Geometry::Size value) {
+			size = value;
+			ChangedEvent();
+		}
+
+		/// Returns the size of the template
+		Geometry::Size GetSize() const {
+			return size;
+		}
+
+		/// Returns the size of the template
+		int GetWidth() const {
+			return size.Width;
+		}
+
+		/// Returns the size of the template
+		int GetHeight() const {
+			return size.Height;
+		}
+
+		/// Changes the additional size of the template. This value should only be set and
+		/// used if the size mode is multiple
+		void SetAdditionalSize(int w, int h) {
+			additional = {w, h};
+			ChangedEvent();
+		}
+
+		/// Changes the additional size of the template. This value should only be set and
+		/// used if the size mode is multiple
+		void SetAdditionalSize(Geometry::Size value) {
+			additional = value;
+			ChangedEvent();
+		}
+
+		/// Returns the additional size. This value should only be set and
+		/// used if the size mode is multiple
+		Geometry::Size GetAdditionalSize() const {
+			return additional;
+		}
+
+
         /// This event is fired whenever template or its components are changed.
         Event<Template> ChangedEvent = Event<Template>{*this};
         
 	private:
 		Containers::Collection<ComponentTemplate> components;
         std::vector<Event<ComponentTemplate>::Token> tokens;
+
+		SizeMode xsizing, ysizing;
+		Geometry::Size size;
+		Geometry::Size additional;
 	};
 
 	/// Defines an object according to the Box Model.
@@ -693,26 +773,17 @@ namespace Gorgon {
         //font, style, etc...
 	};
 
-	/// Defines a visual component. RelativeToContents sizing mode is selected if no drawable 
-	/// is supplied, the relative size will be taken as 0x0. If the drawable has no size
-	/// information, object will be treated as RelativeToContainer and size will be taken
-	/// as 100%. This component can either work with animation providers, which are meant to
-	/// be instantiated or drawable which will directly be used.
-	class GraphicsTemplate : public ComponentTemplate {
+	class VisualProvider {
 	public:
+		VisualProvider(Event<ComponentTemplate> &changed) : changed(&changed) { }
 
-		/// Default constructor.
-		GraphicsTemplate() = default;
-		
-		/// Filling constructor, might cause ambiguous call due to most drawables being
-		/// AnimationProviders as well. You might typecast or use SetDrawable function
-		GraphicsTemplate(const Graphics::Drawable &content) : drawable(&content) {
-		}
+		VisualProvider(Event<ComponentTemplate> &changed, const Graphics::AnimationProvider &content) :
+			changed(&changed), provider(&content) 
+		{ }
 
-		/// Filling constructor, might cause ambiguous call due to most drawables being
-		/// AnimationProviders as well. You might typecast or use SetDrawable function
-		GraphicsTemplate(const Graphics::AnimationProvider &content) : provider(&content) {
-		}
+		VisualProvider(Event<ComponentTemplate> &changed, const Graphics::Drawable &content) : 
+			changed(&changed), drawable(&content) 
+		{ }
 
 		/// If this drawable has any content
 		bool HasContent() const {
@@ -751,31 +822,187 @@ namespace Gorgon {
 		void SetDrawable(const Graphics::Drawable &value) {
 			drawable = &value;
 			provider = nullptr;
+
+			(*changed)();
 		}
 
 		/// Sets the content from an animation provider
 		void SetAnimation(const Graphics::AnimationProvider &value) {
 			drawable = nullptr;
 			provider = &value;
+
+			(*changed)();
 		}
 
 	private:
-		
 		const Graphics::Drawable *drawable = nullptr;
 		const Graphics::AnimationProvider *provider = nullptr;
+
+		Event<ComponentTemplate> *changed;
+	};
+
+	/// Defines a visual component. RelativeToContents sizing mode is selected if no drawable 
+	/// is supplied, the relative size will be taken as 0x0. If the drawable has no size
+	/// information, object will be treated as RelativeToContainer and size will be taken
+	/// as 100%. This component can either work with animation providers, which are meant to
+	/// be instantiated or drawable which will directly be used.
+	class GraphicsTemplate : public ComponentTemplate {
+	public:
+
+		/// Default constructor.
+		GraphicsTemplate() = default;
+		
+		/// Filling constructor, might cause ambiguous call due to most drawables being
+		/// AnimationProviders as well. You might typecast or use Content.SetDrawable function
+		GraphicsTemplate(const Graphics::Drawable &content) : Content(ChangedEvent, content) {
+		}
+
+		/// Filling constructor, might cause ambiguous call due to most drawables being
+		/// AnimationProviders as well. You might typecast or use Content.SetDrawable function
+		GraphicsTemplate(const Graphics::AnimationProvider &content) : Content(ChangedEvent, content) {
+		}
+
+		/// Graphical representation of the template
+		VisualProvider Content = {ChangedEvent};
+
+	private:
+		
 
 	};
 	
 	/// Container class that defines an area according to the Box Model.
 	/// It can contain other objects.
 	class ContainerTemplate : public ComponentTemplate {
+	public:
         
-        
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(int value, Dimension::Unit unit = Dimension::Pixel) { padding ={{value, unit}}; ChangedEvent(); }
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(int hor, int ver, Dimension::Unit unit = Dimension::Pixel) { padding ={{hor, unit},{ver, unit}}; ChangedEvent(); }
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(int left, int top, int right, int bottom, Dimension::Unit unit = Dimension::Pixel) {
+			padding ={{left, unit},{top, unit},{right, unit},{bottom, unit}};
+			ChangedEvent();
+		}
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(Geometry::Margin value, Dimension::Unit unit = Dimension::Pixel) {
+			padding ={{value.Left, unit},{value.Top, unit},{value.Right, unit},{value.Bottom, unit}};
+			ChangedEvent();
+		}
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(Dimension value) { padding ={value}; ChangedEvent(); }
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(Dimension hor, Dimension ver) { padding ={hor, ver}; ChangedEvent(); }
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(Dimension left, Dimension top, Dimension right, Dimension bottom) { padding = {left, top, right, bottom}; ChangedEvent(); }
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(Margin value) { padding = value; ChangedEvent(); }
+
+		/// Returns the padding.
+		Margin GetPadding() const { return padding; }
+
+
+
+		/// Changes the border size of the component. Border size stays within the object area, but excluded
+		/// from the interior area.
+		void SetBorderSize(int value) { padding ={value}; ChangedEvent(); }
+
+		/// Changes the border size of the component. Border size stays within the object area, but excluded
+		/// from the interior area.
+		void SetBorderSize(int hor, int ver) { bordersize ={hor, ver}; ChangedEvent(); }
+
+		/// Changes the border size of the component. Border size stays within the object area, but excluded
+		/// from the interior area.
+		void SetBorderSize(int left, int top, int right, int bottom) { bordersize = {left, top, right, bottom}; ChangedEvent(); }
+
+		/// Changes the border size of the component. Border size stays within the object area, but excluded
+		/// from the interior area.
+		void SetBorderSize(Geometry::Margin value) { bordersize = value; ChangedEvent(); }
+
+		/// Returns the border size
+		Geometry::Margin GetBorderSize() const { return bordersize; }
+
+
+		/// Changes the shadow extent of the component. Shadow extent stays within the object area, but excluded
+		/// from the interior area.
+		void SetShadowExtent(int value) { padding ={value}; ChangedEvent(); }
+
+		/// Changes the shadow extent of the component. Shadow extent stays within the object area, but excluded
+		/// from the interior area.
+		void SetShadowExtent(int hor, int ver) { shadowextent ={hor, ver}; ChangedEvent(); }
+
+		/// Changes the shadow extent of the component. Shadow extent stays within the object area, but excluded
+		/// from the interior area.
+		void SetShadowExtent(int left, int top, int right, int bottom) { shadowextent = {left, top, right, bottom}; ChangedEvent(); }
+
+		/// Changes the shadow extent of the component. Shadow extent stays within the object area, but excluded
+		/// from the interior area.
+		void SetShadowExtent(Geometry::Margin value) { shadowextent = value; ChangedEvent(); }
+
+		/// Returns the shadow extent
+		Geometry::Margin GetShadowExtent() const { return shadowextent; }
+
+
+
+		/// Changes the overlay extent of the component. Overlay extent stays within the object area, but excluded
+		/// from the interior area.
+		void SetOverlayExtent(int value) { padding ={value}; ChangedEvent(); }
+
+		/// Changes the overlay extent of the component. Overlay extent stays within the object area, but excluded
+		/// from the interior area.
+		void SetOverlayExtent(int hor, int ver) { overlayextent ={hor, ver}; ChangedEvent(); }
+
+		/// Changes the overlay extent of the component. Overlay extent stays within the object area, but excluded
+		/// from the interior area.
+		void SetOverlayExtent(int left, int top, int right, int bottom) { overlayextent = {left, top, right, bottom}; ChangedEvent(); }
+
+		/// Changes the overlay extent of the component. Overlay extent stays within the object area, but excluded
+		/// from the interior area.
+		void SetOverlayExtent(Geometry::Margin value) { overlayextent = value; ChangedEvent(); }
+
+		/// Returns the overlay extent
+		Geometry::Margin GetOverlayExtent() const { return overlayextent; }
+
+		/// Adds an index to the container. The components will be drawn in order. THus the components that are added
+		/// later will be drawn on top. Multiple indexes will not cause any crashes, however, same component will be drawn 
+		/// multiple times on top of itself.
+		void AddIndex(int componentindex) {
+			indices.push_back(componentindex);
+			ChangedEvent();
+		}
+
+		/// Insert an index to the specified location in the container. The components will be drawn in order. THus the 
+		/// components that are added later will be drawn on top. Multiple indexes will not cause any crashes, however, 
+		/// same component will be drawn multiple times on top of itself.
+		void InsertIndex(int before, int componentindex) {
+			indices.insert(indices.begin() + before, componentindex);
+			ChangedEvent();
+		}
+
+		/// Removes the index at the given position.
+		void RemoveIndexAt(int index) {
+			indices.erase(indices.begin() + index);
+			ChangedEvent();
+		}
+
+		/// Background graphics
+		VisualProvider Background = {ChangedEvent};
+
+		/// Overlay graphics, overlay will be drawn on top of the contents.
+		VisualProvider Overlay    = {ChangedEvent};
+
     private:
 		Margin padding;
 		Geometry::Margin bordersize, shadowextent, overlayextent;
-
-		Graphics::Drawable *bg, *overlay;
+		std::vector<int> indices;
 	};
 
 } }
