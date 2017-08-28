@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "../Types.h"
 #include "../Geometry/Margin.h"
 #include "../Geometry/Size.h"
 #include "../Event.h"
@@ -13,11 +14,88 @@ namespace Gorgon {
     /// This namespace contains User interface related functionality.
     namespace UI {
 
+
+	/**
+	 * @page components Components
+	 * 
+	 * Components are the building blocks of widgets. They are the visual elements
+	 * that makes up most of the visual aspect of a widget. Components have templates,
+	 * which they use as basis for their placement and drawing. ComponentTemplate is 
+	 * the base class for all component templates. Components have component index
+	 * and component condition (see ComponentCondition) to control which components
+	 * will be visible at a given instance. Components have the same component indices
+	 * but only one will be shown at a time. The components that have more specific
+	 * condition will have precedence. For instance, if two components have index of 2
+	 * and one has condition of ComponentCondition::Always and the other has condition
+	 * of ComponentCondition::Focused, first component will be displayed unless the
+	 * widget has received focus, in that case the second one will be shown.
+	 * 
+	 * 
+	 * Every widget requires a container component at index 0 as the root. If this
+	 * component has a non-0 size, the widget size will be fixed [this might change
+	 * in the future].
+	 * 
+	 * 
+	 * Components can be modified by the widget data. This is controlled through data
+	 * effect. Various data effects exist to suit different type of widgets. See the
+	 * widget documentation for specific data exported by them.
+	 * 
+	 * See @ref boxmodel to learn how the components are spaced out.
+	 * 
+	 * 
+	 * ### How to create a simple button using components
+	 * Create the following templates:
+	 * 
+	 * @code
+	 * ContainerTemplate, index = 0, background = bg image, set size, children = 1, 2
+	 * TextholderTemplate, index = 2, set font, data effect = Text
+	 * @endcode
+	 * 
+	 * These two templates will create a very simple button that has the background and
+	 * it will display the text that is set by the programmer. If you wish to change the
+	 * color of the text when the user moves mouse into the button, add the following
+	 * template as well:
+	 * 
+	 * @code
+	 * TextholderTemplate index = 2, set font, data effect = Text, condition = Hover
+	 * @endcode
+	 * 
+	 * This component will override the previous if the mouse is over the button. In order
+	 * to change the background when the user clicks the button, add the following:
+	 * 
+	 * @code
+	 * ContainerTemplate, index = 0, background = pressed, set size, condition = Down, 
+	 * children = 1, 2
+	 * @endcode
+	 * 
+	 * This will change the background when the user presses the mouse button. Both hover and
+	 * down conditions can occur at the same time. If user uses mouse to press the button
+	 * they will both be active at the same time, however, if the user uses space bar to
+	 * press the button when it is focused, only Down condition will be satisfied. In addition
+	 * to these, it is helpful to provide a visual clue when the widget is focused. This
+	 * is generally done by adding a focus rectangle like the following:
+	 * 
+	 * @code
+	 * VisualTemplate, index = 1, Drawable = focus rectangle, Positioning = Absolute, 
+	 * Size = 100, 100, Unit::Percent, set margin, condition = Focused
+	 * @endcode
+	 * 
+	 * This last piece will only be shown when the button is focused. There will be no errors
+	 * when it is invisible even when the container lists this template as its child.
+	 * 
+	 * 
+	 * ###See also:
+	 * 
+	 * @subpage boxmodel
+	 */
+
+
 	/**
 	* @page boxmodel Box Model
-	* Object defines any component that can be placed on a widget. This includes
+	* 
+	* Component template defines any component that can be placed on a widget. This includes
 	* non-visual elements, fixed and user defined visual elements, and containers.
-	* Container object defines an area that can contain more objects and optionally 
+	* Container components defines an area that can contain more objects and optionally 
 	* has a background and an overlay. This object also has margin to control how it
 	* will be placed in relation to other objects at the same level. Shadow extension
 	* control the drawing of background, while overlay extension controls the drawing
@@ -40,6 +118,8 @@ namespace Gorgon {
 	* padding of container and there is indent to control distance from edges. 
 	* All objects have margin and indent while only containers have extensions, 
 	* border size, and padding.
+	* 
+	* [Might need rewording.]
 	*/
 
 	// Do getters and setters, expose changed events.
@@ -98,7 +178,7 @@ namespace Gorgon {
 
 			/// Dimension will be relative to the parent and given in percent.
 			/// If higher resolution is necessary use BasisPoint.
-			PerCent,
+			Percent,
 
 			/// Dimension will be relative to the parent and given in 1/10000.
 			BasisPoint,
@@ -117,7 +197,7 @@ namespace Gorgon {
 		/// Returns the calculated dimension in pixels
 		int operator ()(int parentwidth, int emwidth = 10) {
 			switch(unit) {
-				case PerCent:
+				case Percent:
 					return int(std::round((double)value * parentwidth / 100));
 				case BasisPoint:
 					return int(std::round((double)value * parentwidth / 10000));

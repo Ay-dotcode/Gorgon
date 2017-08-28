@@ -1,4 +1,5 @@
 ///@file Types.h contains type definitions for Gorgon system
+#include <stdint.h>
 
 #pragma once
 
