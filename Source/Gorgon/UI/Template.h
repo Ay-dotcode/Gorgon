@@ -161,6 +161,13 @@ namespace Gorgon {
 		BaselineRight
 	};
 
+	ENUMCLASS ComponentType{
+		Placeholder,
+		Textholder,
+		Graphics,
+		Container,
+	};
+
     /// Dimension data for components. Allows relative position and sizing.
 	class Dimension {
 	public:
@@ -532,6 +539,8 @@ namespace Gorgon {
 			Frame
 		};
 
+		/// Returns the type of the component.
+		virtual ComponentType GetType() const noexcept = 0;
         
         /// Changes the coordinates of the component to the given position. 
 		void SetPosition(int x, int y, Dimension::Unit unit = Dimension::Pixel) { position = {{x, unit}, {y, unit}}; ChangedEvent(); }
@@ -794,12 +803,23 @@ namespace Gorgon {
 	/// a visual component.
 	class PlaceholderTemplate : public ComponentTemplate {
 	public:
+
+		/// Returns the type of the component.
+		virtual ComponentType GetType() const noexcept override {
+			return ComponentType::Placeholder;
+		}
+
 	};
 
 	class TextholderTemplate : public ComponentTemplate {
 	public:
         //font, style, etc...
-        
+
+		/// Returns the type of the component.
+		virtual ComponentType GetType() const noexcept override {
+			return ComponentType::Textholder;
+		}
+
 	};
 
 	class VisualProvider {
@@ -893,6 +913,11 @@ namespace Gorgon {
 
 		/// Graphical representation of the template
 		VisualProvider Content = {ChangedEvent};
+
+		/// Returns the type of the component.
+		virtual ComponentType GetType() const noexcept override {
+			return ComponentType::Graphics;
+		}
 
 	private:
 		
@@ -1021,7 +1046,27 @@ namespace Gorgon {
 			indices.erase(indices.begin() + index);
 			ChangedEvent();
 		}
-		
+
+		/// Returns the number of component indices stored in this container
+		int GetCount() const {
+			return indices.size();
+		}
+
+		/// Returns the component index at the given location
+		int operator[] (int index) const {
+			return indices[index];
+		}
+
+		/// Returns the component index at the given location
+		int &operator[] (int index) {
+			return indices[index];
+		}
+
+		/// Returns the type of the component.
+		virtual ComponentType GetType() const noexcept override {
+			return ComponentType::Container;
+		}
+
 
 		/// Background graphics
 		VisualProvider Background = {ChangedEvent};

@@ -27,10 +27,12 @@ namespace Gorgon { namespace UI {
             swap(left.temp  , right.temp  );
         }
         
+
         /// If necessary a layer will be assigned to this component
         Graphics::Layer *layer = nullptr;
-        
-        bool needupdate = false;
+
+		Geometry::Point location;
+		Geometry::Size size;
         
     private:
         const ComponentTemplate *temp;
