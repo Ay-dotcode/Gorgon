@@ -314,6 +314,9 @@ namespace Gorgon {
 		Normal__Closed,
 		Closed__Normal,
 		Closed__Opened,
+        
+        /// Do not use this condition, this is to size the arrays.
+        Max,
 	};
     
 	
@@ -379,6 +382,12 @@ namespace Gorgon {
         /// Returns the component at the given index. This index is not component
         /// index, but rather the location of the component in the template.
         ComponentTemplate &Get(int index) const {
+            return components[index];
+        }
+        
+        /// Returns the component at the given index. This index is not component
+        /// index, but rather the location of the component in the template.
+        ComponentTemplate &operator[](int index) const {
             return components[index];
         }
 
@@ -711,6 +720,20 @@ namespace Gorgon {
 
 		/// Returns the current component condition
 		ComponentCondition GetCondition() const { return condition; }
+		
+		
+		/// Whether to clip the contents of this container, default value is false. Due to shadows, it is advicable
+		/// not to set clipping on the outer most container. Activating clipping creates a new layer for the 
+		/// component, requiring additional memory. If clipping is on, a component cannot be drawn more than once
+		/// in different containers.
+		void SetClip(bool value) {
+            clip = value;
+        }
+        
+        /// Returns whether currently clipping the contents
+        bool GetClip() const {
+            return clip;
+        }
 
 
 		/// This event will be fired whenever any property is changed. Can be used to update widget
@@ -718,6 +741,11 @@ namespace Gorgon {
 		Event<ComponentTemplate> ChangedEvent = Event<ComponentTemplate>{*this};
 
 	protected:
+        
+        /// If set to true, will clip the contents of the component to the bounds.
+        bool clip = false;
+        
+        
         /// Condition when this component will be visible
 		ComponentCondition condition = ComponentCondition::Always;
 
@@ -771,6 +799,7 @@ namespace Gorgon {
 	class TextholderTemplate : public ComponentTemplate {
 	public:
         //font, style, etc...
+        
 	};
 
 	class VisualProvider {
@@ -835,10 +864,10 @@ namespace Gorgon {
 		}
 
 	private:
+		Event<ComponentTemplate> *changed;
+        
 		const Graphics::Drawable *drawable = nullptr;
 		const Graphics::AnimationProvider *provider = nullptr;
-
-		Event<ComponentTemplate> *changed;
 	};
 
 	/// Defines a visual component. RelativeToContents sizing mode is selected if no drawable 
@@ -992,6 +1021,7 @@ namespace Gorgon {
 			indices.erase(indices.begin() + index);
 			ChangedEvent();
 		}
+		
 
 		/// Background graphics
 		VisualProvider Background = {ChangedEvent};
