@@ -6,7 +6,17 @@
 
 namespace Gorgon { namespace Graphics {
 
-void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, int y) {
+void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, int x, int y) {
+    
+    // clear previous state
+    drawunderlined = false;
+    drawstriked = false;
+    underlinedstart = 0;
+    strikedstart = 0;
+    baselineoffset = 0;
+    xx = x;
+    yy = y;
+    
     unsigned int offset = 0;
     int tagcnt = 0; // !!! debug
     bool intag = false;
@@ -16,12 +26,13 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
     char current;
     std::string text, tag, attribute, attval;
     std::vector<std::pair<std::string, std::string>> attributes;
+    
     for(std::size_t i = 0; i < str.length(); i++) {
         current = str[i];
         if(current == '<') {
             if(!intag && !text.empty()) {
-                renderer.Print(target, text, x, y);
-                x += offset;
+                print(target, text, xx, yy);
+                xx += offset;
                 offset = 0;
                 text.clear();
             }
@@ -34,16 +45,18 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
                 removestyle(tag);
                 if(drawunderlined) {
                     drawunderlined = false;
+                    // !!! do we need baselineoffset here? it's always zero (or is it?)
                     // @TODO handle properties of underlined tag
-                    target.Draw((float)underlinedstart, (float)(y + renderer.GetGlyphRenderer()->GetUnderlineOffset()),
-                                (float)(x  - underlinedstart),
+                    target.Draw((float)underlinedstart, (float)(yy + renderer.GetGlyphRenderer()->GetUnderlineOffset() /*+ baselineoffset*/),
+                                (float)(xx  - underlinedstart),
                                 (float)renderer.GetGlyphRenderer()->GetLineThickness());
                 }
                 if(drawstriked) {
                     drawstriked = false;
+                    // !!! do we need baselineoffset here? it's always zero (or is it?)
                     // @TODO: handle properties of strike tag
-                    target.Draw((float)strikedstart, (float)(y + renderer.GetStrikePosition()),
-                                (float)(x  - strikedstart),
+                    target.Draw((float)strikedstart, (float)(yy + renderer.GetStrikePosition()  /*+ baselineoffset*/),
+                                (float)(xx  - strikedstart),
                                 (float)renderer.GetGlyphRenderer()->GetLineThickness());
                 }
             }
@@ -55,16 +68,7 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
                     attval.clear();
                 }
                 
-                // !!! debug
-                std::cout << attributes.size() << std::endl;
-                for(auto attr : attributes) {
-                    std::cout << attr.first << " = \"" << attr.second << "\"" << std::endl;
-                }
-                std::cout << "=======" << std::endl;
-                
                 attributes.clear();
-                underlinedstart = x;
-                strikedstart = x;
                 applystyle(tag);
             }
             tag.clear();
@@ -129,7 +133,7 @@ void HTMLRenderer::print(TextureTarget &target, const std::string &str, int x, i
     }
     
     if(!text.empty()) {
-        renderer.Print(target, text, x, y);
+        print(target, text, xx, yy);
     }
 }
         
