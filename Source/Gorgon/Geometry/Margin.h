@@ -45,7 +45,18 @@ namespace Gorgon { namespace Geometry {
 
 			return str.str();
 		}
+		
+		/// Combines two margins that are inside each other, basically taking the maximum margin from each side
+		basic_Margin CombinePadding(const basic_Margin &other) const {
+            return {std::max(Left, other.Left), std::max(Top, other.Top), std::max(Right, other.Right), std::max(Bottom, other.Bottom)};
+        }
 
+		/// Combines two margins that are next to each other, basically taking the maximum margin from each side with its opposite.
+		/// Only one of the values should be used.
+        basic_Margin CombineMargins(const basic_Margin &other) const {
+            return {std::max(Left, other.Right), std::max(Top, other.Bottom), std::max(Right, other.Left), std::max(Bottom, other.Top)};
+        }
+		
 		/// Calculates and returns the total Margin in X axis
 		T_ TotalX() const  { return Right+Left; }
 		

@@ -19,6 +19,22 @@ namespace Gorgon { namespace UI {
         return *obj;
     }
 
+    ContainerTemplate& Template::AddContainer(int index, ComponentCondition condition){ 
+        auto obj = new ContainerTemplate();
+        components.Add(obj);
+        
+        obj->SetIndex(index);
+        obj->SetCondition(condition);
+        
+        tokens.push_back(
+            obj->ChangedEvent.Register(ChangedEvent, &Event<Template>::operator ())
+        );
+        
+        ChangedEvent();
+        
+        return *obj;
+    }
+
     TextholderTemplate& Template::AddTextholder(int index, ComponentCondition condition){ 
         auto obj = new TextholderTemplate();
         components.Add(obj);

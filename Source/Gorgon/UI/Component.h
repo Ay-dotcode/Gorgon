@@ -23,19 +23,39 @@ namespace Gorgon { namespace UI {
         static void Swap(Component &left, Component &right) {
             using std::swap;
             
-            swap(left.layer , right.layer );
-            swap(left.temp  , right.temp  );
+            swap(left.temp     , right.temp     );
+            swap(left.location , right.location );
+            swap(left.size     , right.size     );
+            swap(left.innersize, right.innersize);
         }
         
 
-        /// If necessary a layer will be assigned to this component
-        Graphics::Layer *layer = nullptr;
-
 		Geometry::Point location;
+        
 		Geometry::Size size;
+        
+        //for containers
+		Geometry::Size innersize;
         
     private:
         const ComponentTemplate *temp;
+	};
+
+	/// This class stores component related data. It will be instantiated whenever a new 
+	/// template is instantiated and will be preserved even after the component is destroyed.
+	/// This prevents constant construction and destruction of objects.
+	class ComponentStorage {
+	public:
+		/// Primary drawable is either background for container or the graphics for the graphic
+		/// template
+		const Graphics::Drawable *primary   = nullptr;
+
+		/// Secondary is for container overlay.
+		const Graphics::Drawable *secondary = nullptr;
+                
+        /// If necessary a layer will be assigned to this component
+        Graphics::Layer *layer = nullptr;
+
 	};
 
 }}

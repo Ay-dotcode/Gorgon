@@ -13,6 +13,12 @@ namespace Gorgon { namespace UI {
 		/// should handle instantiation as well
 		explicit ComponentStack(const Template &temp, Geometry::Size size);
 		
+		~ComponentStack() {
+			for(auto &p : storage) {
+				delete p.second;
+			}
+		}
+
         /// Adds the given component to the top of the stack
 		void AddToStack(const ComponentTemplate &temp);
         
@@ -29,12 +35,21 @@ namespace Gorgon { namespace UI {
 		/// Notifies the stack about a size change
 		void SetSize(Geometry::Size value) {
 			size = value;
-			update();
+			Update();
 		}
 
 		/// Returns the template used by this stack
 		const Template &GetTemplate() const {
 			return temp;
+		}		
+
+		/// Updates the layour of the component stack
+		void Update();
+
+		void Render() override;
+
+		void ResetAnimation() {
+			controller.Reset();
 		}
         
 	private:
@@ -46,11 +61,13 @@ namespace Gorgon { namespace UI {
 			return data[ind + stack * indices];
 		}
 
-        void grow();
-
 		void update();
 
 		void update(Component &parent);
+
+		void render(Component &component, Graphics::Layer &parentlayer);
+
+        void grow();
         
 		Component *data = nullptr;
         std::vector<int> stacksizes;
@@ -62,9 +79,17 @@ namespace Gorgon { namespace UI {
         
         int indices = 0;
 
+		bool updaterequired = false;
+
 		Geometry::Size size;
         
         const Template &temp;
+
+		std::map<const ComponentTemplate*, ComponentStorage*> storage;
+
+		Animation::Timer controller;
+        
+        Graphics::Layer base;
 	};
 
 }}

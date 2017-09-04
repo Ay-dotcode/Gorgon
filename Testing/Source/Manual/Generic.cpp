@@ -1,9 +1,6 @@
 ﻿#include "GraphicsHelper.h"
 
-#include <Gorgon/UI/Template.h>
 
-
-void Init();
 
 std::string helptext = 
     "Key list:\n"
@@ -42,9 +39,4 @@ int main() {
 	}
 
 	return 0;
-}
-
-
-void Init() {
-
 }

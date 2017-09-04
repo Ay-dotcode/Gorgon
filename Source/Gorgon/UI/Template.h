@@ -153,14 +153,73 @@ namespace Gorgon {
         
         /// Baseline left, for text, this aligns to the baseline of
         /// the last line; if there is no text related data, this will
+        /// align to the middle left.
+		FirstBaselineLeft,
+        /// Baseline right, for text, this aligns to the baseline of
+        /// the last line; if there is no text related data, this will
+        /// align to the middle right.
+		FirstBaselineRight,
+		
+        /// Baseline left, for text, this aligns to the baseline of
+        /// the last line; if there is no text related data, this will
         /// align to the bottom left.
-		BaselineLeft,
+		LastBaselineLeft,
+        
         /// Baseline right, for text, this aligns to the baseline of
         /// the last line; if there is no text related data, this will
         /// align to the bottom right.
-		BaselineRight
+		LastBaselineRight,
 	};
 
+	inline bool IsLeft(Anchor a) {
+		switch(a) {
+			case Anchor::TopLeft:
+			case Anchor::BottomLeft:
+			case Anchor::MiddleLeft:
+			case Anchor::FirstBaselineLeft:
+			case Anchor::LastBaselineLeft:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	inline bool IsRight(Anchor a) {
+		switch(a) {
+			case Anchor::TopRight:
+			case Anchor::BottomRight:
+			case Anchor::MiddleRight:
+			case Anchor::FirstBaselineRight:
+			case Anchor::LastBaselineRight:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	inline bool IsTop(Anchor a) {
+		switch(a) {
+			case Anchor::TopRight:
+			case Anchor::TopLeft:
+			case Anchor::TopCenter:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	inline bool IsBottom(Anchor a) {
+		switch(a) {
+			case Anchor::BottomLeft:
+			case Anchor::BottomRight:
+			case Anchor::BottomCenter:
+			case Anchor::LastBaselineLeft:
+			case Anchor::LastBaselineRight:
+				return true;
+			default:
+				return false;
+		}
+	}
 	ENUMCLASS ComponentType{
 		Placeholder,
 		Textholder,
@@ -192,6 +251,8 @@ namespace Gorgon {
 			/// found, 10px will be used for EM dash. Thus, 1 unit will be 0.1
 			/// pixels.
 			EM,
+            
+            //todo add line height
 		};
 
 		/// Constructs a new dimension or type casts integer to dimension		 
@@ -199,7 +260,7 @@ namespace Gorgon {
 		}
 
 		/// Returns the calculated dimension in pixels
-		int operator ()(int parentwidth, int emwidth = 10) {
+		int operator ()(int parentwidth, int emwidth = 10) const {
 			switch(unit) {
 				case Percent:
 					return int(std::round((double)value * parentwidth / 100));
@@ -248,6 +309,21 @@ namespace Gorgon {
 
 	/// This class stores the margin information for a box object
 	using Margin = Geometry::basic_Margin<Dimension>;
+    
+    /// Converts a dimension based point to pixel based point
+    inline Geometry::Point Convert(const Point &p, const Geometry::Size &parent, int emwidth = 10) {
+        return {p.X(parent.Width, emwidth), p.Y(parent.Height, emwidth)};
+    }
+    
+    /// Converts a dimension based size to pixel based size
+    inline Geometry::Size Convert(const Size &s, const Geometry::Size &parent, int emwidth = 10) {
+        return {s.Width(parent.Width, emwidth), s.Height(parent.Height, emwidth)};
+    }
+    
+    /// Converts a dimension based margin to pixel based margin
+    inline Geometry::Margin Convert(const Margin &m, const Geometry::Size &parent, int emwidth = 10) {
+        return {m.Left(parent.Width, emwidth), m.Top(parent.Height, emwidth), m.Right(parent.Width, emwidth), m.Bottom(parent.Height, emwidth), };
+    }
 
 	/// Controls the condition when the components are visible.
     /// Components with the same ID will replace a previous one. If there is a
@@ -331,6 +407,7 @@ namespace Gorgon {
 	class PlaceholderTemplate;
     class TextholderTemplate;
     class GraphicsTemplate;
+    class ContainerTemplate;
 
     /**
      * This class stores visual information about a widget template.
@@ -367,6 +444,10 @@ namespace Gorgon {
         /// This will create a new drawable and return it. The ownership will stay
         /// with the template. Index is the component index not the order in the template.
 		GraphicsTemplate &AddGraphics(int index, ComponentCondition condition);
+
+        /// This will create a new drawable and return it. The ownership will stay
+        /// with the template. Index is the component index not the order in the template.
+		ContainerTemplate &AddContainer(int index, ComponentCondition condition);
         
         /// Removes the component at the given index.
         void Remove(int index) {
@@ -703,10 +784,21 @@ namespace Gorgon {
 
 
         /// Changes the anchor of the component to the given values.
-		void SetAnchor(Anchor previous, Anchor my) { this->previous = previous; this->my = my; ChangedEvent(); }
+		void SetAnchor(Anchor previous, Anchor container, Anchor my) { 
+            this->previous = previous; 
+            this->container = container;
+            this->my = my; 
+            
+            ChangedEvent(); 
+        }
 
-        /// Returns the anchor point of the previous component that this component will attach to.
+        /// Returns the anchor point of the previous component that this component will attach to. This value
+        /// will be used if this component attaches to another of its siblings.
 		Anchor GetPreviousAnchor() const { return previous; }
+		
+        /// Returns the anchor point of the container that this component will attach to. This value will be
+        /// used if this component attaches to its container.
+		Anchor GetContainerAnchor() const { return container; }
 
         /// Returns the anchor point of this component.
 		Anchor GetMyAnchor() const { return my; }
@@ -768,35 +860,39 @@ namespace Gorgon {
 		PositionType positioning = Relative;
 
         /// Position of the component
-		Point position;
+		Point position = {0, 0};
 
         /// Sizing mode
 		SizingMode sizing = Fixed;
 
 		/// Size of the object.
-		Size size;
+		Size size = {0, 0};
 
 		/// Margin around the object, will be collapsed with other object margins
 		/// and padding
-		Margin margin;
+		Margin margin = {0};
 
 		/// Indent is added to the margin and padding on the edge of the container
-		Margin indent;
+		Margin indent = {0};
 
         /// Anchor point of the previous component that this component will be attached
         /// to. If the component positioning is absolute or this is the first component, 
-        /// it will be anchored to the container 
-		Anchor previous = Anchor::BaselineRight;
+        /// it will be anchored to the container and parent anchor point will be used.
+		Anchor previous = Anchor::FirstBaselineRight;
+        
+        /// Anchor point of the container that this component will be attached to, if it
+        /// is attaching to its parent.
+		Anchor container = Anchor::MiddleLeft;
 
         /// Anchor point of the current component. This point will be matched to the
         /// previous component's anchor point
-		Anchor my = Anchor::BaselineLeft;
+		Anchor my = Anchor::FirstBaselineLeft;
 
         /// Component index. Only one component can exist for a specific index position.
         /// The ordering and visibility of the components will be determined from the condition.
         /// Components will be laid out according to this index. Z-ordering is performed using
         /// the order of components in container.
-		int index;
+		int index = 0;
 	};
 
 	/// Defines a placeholder according to the Box Model. Placeholder is replaced with
@@ -867,6 +963,17 @@ namespace Gorgon {
 			return *drawable;
 		}
 
+		const Graphics::Drawable &Instantiate(Animation::ControllerBase &controller) const {
+			if(drawable)
+				return *drawable;
+			else if(provider) {
+				return provider->CreateAnimation(controller);
+			}
+			else {
+				throw std::runtime_error("Visual provider is empty.");
+			}
+		}
+
 		/// Sets the content from a drawable
 		void SetDrawable(const Graphics::Drawable &value) {
 			drawable = &value;
@@ -911,13 +1018,13 @@ namespace Gorgon {
 		GraphicsTemplate(const Graphics::AnimationProvider &content) : Content(ChangedEvent, content) {
 		}
 
-		/// Graphical representation of the template
-		VisualProvider Content = {ChangedEvent};
-
 		/// Returns the type of the component.
 		virtual ComponentType GetType() const noexcept override {
 			return ComponentType::Graphics;
 		}
+
+		/// Graphical representation of the template
+		VisualProvider Content = {ChangedEvent};
 
 	private:
 		
@@ -928,8 +1035,6 @@ namespace Gorgon {
 	/// It can contain other objects.
 	class ContainerTemplate : public ComponentTemplate {
 	public:
-        
-
 		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
 		void SetPadding(int value, Dimension::Unit unit = Dimension::Pixel) { padding ={{value, unit}}; ChangedEvent(); }
 
@@ -1024,6 +1129,12 @@ namespace Gorgon {
 
 		/// Returns the overlay extent
 		Geometry::Margin GetOverlayExtent() const { return overlayextent; }
+		
+		/// Changes the orientation of the template
+		void SetOrientation(Graphics::Orientation value) { orientation = value; ChangedEvent(); }
+		
+		/// Returns the current orientation of the container
+		Graphics::Orientation GetOrientation() const { return orientation; }
 
 		/// Adds an index to the container. The components will be drawn in order. THus the components that are added
 		/// later will be drawn on top. Multiple indexes will not cause any crashes, however, same component will be drawn 
@@ -1066,7 +1177,7 @@ namespace Gorgon {
 		virtual ComponentType GetType() const noexcept override {
 			return ComponentType::Container;
 		}
-
+		
 
 		/// Background graphics
 		VisualProvider Background = {ChangedEvent};
@@ -1078,6 +1189,7 @@ namespace Gorgon {
 		Margin padding;
 		Geometry::Margin bordersize, shadowextent, overlayextent;
 		std::vector<int> indices;
+        Graphics::Orientation orientation = Graphics::Orientation::Horizontal;
 	};
 
 } }

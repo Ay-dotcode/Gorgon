@@ -265,9 +265,9 @@ inline Graphics::Bitmap BGImage(int w, int h, Byte col1, Byte col2) {
 	for(int x = 0; x<w*2; x++) {
 		for(int y = 0; y<h*2; y++) {
 			if((x/w) != (y/h))
-				bgimage({x, y}, 0) = 0x10;
+				bgimage({x, y}, 0) = col1;
 			else
-				bgimage({x, y}, 0) = 0x30;
+				bgimage({x, y}, 0) = col2;
 		}
     }
     
