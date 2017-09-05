@@ -5,6 +5,7 @@
 
 #include "Template.h"
 #include "Component.h"
+#include "../Input/Layer.h"
 
 namespace Gorgon { namespace UI {
 
@@ -32,8 +33,13 @@ namespace Gorgon { namespace UI {
         /// the stack for condition changes. This variant supports string based data.
         void SetData(ComponentTemplate::DataEffect effect, const std::string &text);
 
+        using Layer::Resize;
+        
 		/// Notifies the stack about a size change
-		void SetSize(Geometry::Size value) {
+		virtual void Resize(const Geometry::Size &value) override {
+            Layer::Resize(value);
+            mouse.Resize(value);
+            
 			size = value;
 			Update();
 		}
@@ -51,6 +57,10 @@ namespace Gorgon { namespace UI {
 		void ResetAnimation() {
 			controller.Reset();
 		}
+		
+		/// This function instructs stack to handle mouse to automatically change hover/down
+		/// states, unless disabled state is active.
+		void HandleMouse(Input::Mouse::Button accepted = Input::Mouse::Button::All);
         
 	private:
 		Component &get(int ind, int stack = -1) {
@@ -90,6 +100,8 @@ namespace Gorgon { namespace UI {
 		Animation::Timer controller;
         
         Graphics::Layer base;
+        Input::Layer mouse;
+        Input::Mouse::Button mousebuttonaccepted;
 	};
 
 }}

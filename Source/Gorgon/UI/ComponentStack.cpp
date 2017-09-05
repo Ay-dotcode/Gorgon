@@ -21,6 +21,28 @@ namespace Gorgon { namespace UI {
         Add(base);
         
         AddCondition(ComponentCondition::Always);
+        
+        mouse.SetOver([this]{
+            AddCondition(ComponentCondition::Hover);
+        });
+        
+        mouse.SetOut([this]{
+            RemoveCondition(ComponentCondition::Hover);
+        });
+        
+        mouse.SetDown([this](Input::Mouse::Button btn) {
+            if(btn && mousebuttonaccepted) {
+                AddCondition(ComponentCondition::Down);
+            }
+        });
+        
+        mouse.SetUp([this](Input::Mouse::Button btn) {
+            if(btn && mousebuttonaccepted) {
+                RemoveCondition(ComponentCondition::Down);
+            }
+        });
+        
+        Resize(size);
     }
 
     void ComponentStack::AddToStack(const ComponentTemplate& temp) {
@@ -410,6 +432,11 @@ namespace Gorgon { namespace UI {
 
 		Gorgon::Layer::Render();
 	}
+	
+	void ComponentStack::HandleMouse(Input::Mouse::Button accepted) {
+        Add(mouse);
+        mousebuttonaccepted=accepted;
+    }
     
     
 } }
