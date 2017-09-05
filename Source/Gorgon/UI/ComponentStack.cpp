@@ -287,41 +287,41 @@ namespace Gorgon { namespace UI {
 				break;
 
 			case Anchor::TopCenter:
-				pp = {margin.Left + maxsize.Width / 2, margin.Top};
+				pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top};
 				break;
 
 			case Anchor::TopRight:
-				pp = {margin.Left + maxsize.Width, margin.Top};
+				pp = { -margin.Right + maxsize.Width, margin.Top};
 				break;
 
 
 			case Anchor::MiddleLeft:
 			case Anchor::FirstBaselineLeft:
-				pp = {margin.Left, margin.Top + maxsize.Height / 2};
+				pp = {margin.Left, margin.Top - margin.Bottom + maxsize.Height / 2};
 				break;
 
 			case Anchor::MiddleCenter:
-				pp = {margin.Left + maxsize.Width / 2, margin.Top + maxsize.Height / 2};
+				pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top - margin.Bottom + maxsize.Height / 2};
 				break;
 
 			case Anchor::MiddleRight:
 			case Anchor::FirstBaselineRight:
-				pp = {margin.Left + maxsize.Width, margin.Top + maxsize.Height / 2};
+				pp = { -margin.Right + maxsize.Width, margin.Top - margin.Bottom + maxsize.Height / 2};
 				break;
 
         
 			case Anchor::BottomLeft:
             case Anchor::LastBaselineLeft:
-				pp = {margin.Left, margin.Top + maxsize.Height};
+				pp = {margin.Left, -margin.Bottom + maxsize.Height};
 				break;
 
 			case Anchor::BottomCenter:
-				pp = {margin.Left + maxsize.Width / 2, margin.Top + maxsize.Height};
+				pp = {margin.Left - margin.Right + maxsize.Width / 2, -margin.Bottom + maxsize.Height};
 				break;
 
 			case Anchor::BottomRight:
             case Anchor::LastBaselineRight:
-				pp = {margin.Left + maxsize.Width, margin.Top + maxsize.Height};
+				pp = { -margin.Right + maxsize.Width, -margin.Bottom + maxsize.Height};
 				break;
 
         }
@@ -376,6 +376,133 @@ namespace Gorgon { namespace UI {
         
         comp.location = pp - cp;
     }
+
+    bool IsIn(Anchor left, Anchor right) {
+        bool ret = true;
+        
+        if(IsLeft(left) == IsRight(right) && !IsCenter(left) && !IsCenter(right))
+            ret = false;
+        
+        if(IsTop(left) == IsBottom(right) && !IsMiddle(left) && !IsMiddle(right))
+            ret = false;
+        
+        return ret;
+    }
+    
+	void anchortoother(Component &comp, const ComponentTemplate &temp, 
+                        Geometry::Point offset, Geometry::Margin margin, Component &other, Graphics::Orientation orientation) {
+        
+        Anchor pa = temp.GetPreviousAnchor();
+        Anchor ca = temp.GetMyAnchor();
+        
+        Geometry::Point pp, cp;
+        
+        auto asize = other.size;
+        
+        if(IsIn(pa, ca))
+            margin = 0;
+        
+        if(orientation == Graphics::Orientation::Horizontal) 
+            margin.Top = margin.Bottom = 0;
+        else
+            margin.Left = margin.Right = 0;
+        
+        switch(pa) {
+            default:
+			case Anchor::TopLeft:
+				pp = {-margin.Right,- margin.Bottom};
+				break;
+
+			case Anchor::TopCenter:
+				pp = {asize.Width / 2, -margin.Bottom};
+				break;
+
+			case Anchor::TopRight:
+				pp = {margin.Left + asize.Width, -margin.Bottom};
+				break;
+
+
+			case Anchor::MiddleLeft:
+			case Anchor::FirstBaselineLeft:
+				pp = {-margin.Right, asize.Height / 2};
+				break;
+
+			case Anchor::MiddleCenter:
+				pp = {asize.Width / 2, asize.Height / 2};
+				break;
+
+			case Anchor::MiddleRight:
+			case Anchor::FirstBaselineRight:
+				pp = {margin.Left + asize.Width, asize.Height / 2};
+				break;
+
+        
+			case Anchor::BottomLeft:
+            case Anchor::LastBaselineLeft:
+				pp = {-margin.Right, margin.Top + asize.Height};
+				break;
+
+			case Anchor::BottomCenter:
+				pp = {asize.Width / 2, margin.Top + asize.Height};
+				break;
+
+			case Anchor::BottomRight:
+            case Anchor::LastBaselineRight:
+				pp = {margin.Left + asize.Width, margin.Top + asize.Height};
+				break;
+
+        }
+        
+        auto csize = comp.size;
+        
+        switch(ca) {
+            default:
+			case Anchor::TopLeft:
+				cp = {-offset.X, -offset.Y};
+				break;
+
+			case Anchor::TopCenter:
+				cp = {-offset.X + csize.Width / 2, -offset.Y};
+				break;
+
+			case Anchor::TopRight:
+				cp = { offset.X + csize.Width, -offset.Y};
+				break;
+
+
+			case Anchor::MiddleLeft:
+			case Anchor::FirstBaselineLeft:
+				cp = {-offset.X, csize.Height / 2 - offset.Y};
+				break;
+
+			case Anchor::MiddleCenter:
+				cp = {-offset.X + csize.Width / 2, csize.Height / 2 - offset.Y};
+				break;
+
+			case Anchor::MiddleRight:
+			case Anchor::FirstBaselineRight:
+				cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
+				break;
+
+        
+			case Anchor::BottomLeft:
+            case Anchor::LastBaselineLeft:
+				cp = {-offset.X, csize.Height + offset.Y};
+				break;
+
+			case Anchor::BottomCenter:
+				cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
+				break;
+
+			case Anchor::BottomRight:
+            case Anchor::LastBaselineRight:
+				cp = { offset.X + csize.Width, csize.Height + offset.Y};
+				break;
+
+        }
+        
+        comp.location = pp - cp + other.location;
+    }
 	
 	void ComponentStack::update(Component &parent) {
 		const ComponentTemplate &ctemp = parent.GetTemplate();
@@ -389,6 +516,7 @@ namespace Gorgon { namespace UI {
 		Component *prev = nullptr, *next = nullptr;
 
 		for(int i=0; i<cont.GetCount(); i++) {
+            
 			int ci = cont[i];
 
             if(ci >= indices) continue;
@@ -405,7 +533,7 @@ namespace Gorgon { namespace UI {
             //check anchor object by observing temp.GetPreviousAnchor and direction
 			Component *anch = nullptr;
 			if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-				if(IsLeft(temp.GetPreviousAnchor())) {
+ 				if(IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor())) {
 					anch = prev;
 				}
 				else {
@@ -413,7 +541,7 @@ namespace Gorgon { namespace UI {
 				}
 			}
 			else {
-				if(IsTop(temp.GetPreviousAnchor())) {
+				if(IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor())) {
 					anch = prev;
 				}
 				else {
@@ -421,47 +549,60 @@ namespace Gorgon { namespace UI {
 				}
 			}
             
-            if(temp.GetPositioning() == temp.Absolute || !anch) { //absolute means anchor is to the parent
-                auto margin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
-                
-                auto maxsize = parent.innersize - margin;
-                
-                if(temp.GetSizing() == temp.Fixed) {
-                    comp.size = Convert(temp.GetSize(), maxsize, emsize);
-                }
-                else {
-                    //todo
-                }
-                
-                auto offset = Convert(temp.GetPosition(), maxsize, emsize);
-                
-                anchortoparent(comp, temp, offset, margin, maxsize);
-
-				//Which anchor side is to be changed
-				if(temp.GetPositioning() != temp.Absolute) {
-					if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-						if(IsRight(temp.GetMyAnchor())) {
-							prev = &comp;
-						}
-						else {
-							next = &comp;
-						}
-					}
-					else {
-						if(IsBottom(temp.GetMyAnchor())) {
-							prev = &comp;
-						}
-						else {
-							next = &comp;
-						}
-					}
-				}
+            //if absolute, nothing to anchor to but to parent
+            if(temp.GetPositioning() == temp.Absolute)
+                anch = nullptr;
+            
+            auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
+            
+            Geometry::Margin margin;
+            
+            if(anch) {
+                margin = Convert(temp.GetMargin(), parent.innersize, emsize).CombineMargins(Convert(anch->GetTemplate().GetMargin(), parent.innersize, emsize));
+            }
+            else {
+                margin = parentmargin;
+            }
+            
+            auto maxsize = parent.innersize - parentmargin;
+            
+            if(temp.GetSizing() == temp.Fixed) {
+                comp.size = Convert(temp.GetSize(), maxsize, emsize);
             }
             else {
                 //todo
             }
-		}
+            
+            auto offset = Convert(temp.GetPosition(), maxsize, emsize);
+            
+            if(anch) {
+                anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
+            }
+            else {
+                anchortoparent(comp, temp, offset, margin, maxsize);
+            }
 
+            //Which anchor side is to be changed
+            if(temp.GetPositioning() != temp.Absolute) {
+                if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                    if(IsRight(temp.GetMyAnchor())) {
+                        prev = &comp;
+                    }
+                    else {
+                        next = &comp;
+                    }
+                }
+                else {
+                    if(IsBottom(temp.GetMyAnchor())) {
+                        prev = &comp;
+                    }
+                    else {
+                        next = &comp;
+                    }
+                }
+            }
+            
+		}//for indices
 	}
 
 	void ComponentStack::Render() {

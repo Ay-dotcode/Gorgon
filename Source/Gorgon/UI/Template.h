@@ -197,6 +197,17 @@ namespace Gorgon {
 		}
 	}
 
+	inline bool IsCenter(Anchor a) {
+		switch(a) {
+			case Anchor::TopCenter:
+			case Anchor::BottomCenter:
+			case Anchor::MiddleCenter:
+				return true;
+			default:
+				return false;
+		}
+	}
+
 	inline bool IsTop(Anchor a) {
 		switch(a) {
 			case Anchor::TopRight:
@@ -220,6 +231,20 @@ namespace Gorgon {
 				return false;
 		}
 	}
+
+	inline bool IsMiddle(Anchor a) {
+		switch(a) {
+			case Anchor::MiddleLeft:
+			case Anchor::MiddleRight:
+			case Anchor::MiddleCenter:
+			case Anchor::FirstBaselineLeft:
+			case Anchor::FirstBaselineRight:
+				return true;
+			default:
+				return false;
+		}
+	}
+	
 	ENUMCLASS ComponentType{
 		Placeholder,
 		Textholder,
