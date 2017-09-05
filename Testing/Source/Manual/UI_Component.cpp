@@ -9,7 +9,7 @@
 
 std::string helptext = 
     "Key list:\n"
-    "h\tHover state\n"
+    "d\tToggle disabled\n"
 	"esc\tClose\n"
 ;
 
@@ -20,9 +20,14 @@ int main() {
     app.wind.Add(l);
     
     Graphics::BlankImage border_col(1, 1, 0xff000000);
-    auto border_bg = BGImage(16, 16, 0xa0, 0xd0);
+    auto border_bg = BGImage(16, 16, 0x20, 0x80);
     border_bg.Prepare();
     Graphics::RectangleProvider rect(border_col, border_col, border_col, border_col, border_bg, border_col, border_col, border_col, border_col);
+    
+    Graphics::BlankImage border_col2(1, 1, 0xffffffff);
+    auto border_bg2 = BGImage(16, 16, 0xa0, 0xd0);
+    border_bg2.Prepare();
+    Graphics::RectangleProvider rect2(border_col2, border_col2, border_col2, border_col2, border_bg2, border_col2, border_col2, border_col2, border_col2);
     
     auto circle = Circle(15);
     circle.Prepare();
@@ -53,6 +58,15 @@ int main() {
     
     outer_normal.AddIndex(1);
     outer_normal.AddIndex(2);
+    
+    auto &outer_disabled = temp.AddContainer(0, UI::ComponentCondition::Disabled); 
+
+    outer_disabled.Background.SetAnimation(rect2);
+    outer_disabled.SetBorderSize(1);
+    outer_disabled.SetPadding(5);
+    
+    outer_disabled.AddIndex(1);
+    outer_disabled.AddIndex(2);
 
     UI::ComponentStack stack(temp, {160, 80});
     stack.HandleMouse();
@@ -62,11 +76,11 @@ int main() {
     bool hover = false;
     app.wind.KeyEvent.Register([&](Input::Key key, bool state) {
         namespace Keycodes = Input::Keyboard::Keycodes;
-        if(key == Keycodes::H) {
+        if(key == Keycodes::D && state) {
             if(hover)
-                stack.RemoveCondition(UI::ComponentCondition::Hover);
+                stack.RemoveCondition(UI::ComponentCondition::Disabled);
             else
-                stack.AddCondition(UI::ComponentCondition::Hover);
+                stack.AddCondition(UI::ComponentCondition::Disabled);
             
             hover = !hover;
             

@@ -22,23 +22,35 @@ namespace Gorgon { namespace UI {
         
         AddCondition(ComponentCondition::Always);
         
-        mouse.SetOver([this]{
-            AddCondition(ComponentCondition::Hover);
+        mouse.SetOver([this]{        
+            if(conditions.count(ComponentCondition::Disabled) && mouse.HasParent()) {
+                disabled.insert(ComponentCondition::Hover);
+            }
+            else {
+                AddCondition(ComponentCondition::Hover);
+            }
         });
         
         mouse.SetOut([this]{
             RemoveCondition(ComponentCondition::Hover);
+            disabled.erase(ComponentCondition::Hover);
         });
         
         mouse.SetDown([this](Input::Mouse::Button btn) {
             if(btn && mousebuttonaccepted) {
-                AddCondition(ComponentCondition::Down);
+                if(conditions.count(ComponentCondition::Disabled) && mouse.HasParent()) {
+                    disabled.insert(ComponentCondition::Down);
+                }
+                else {
+                    AddCondition(ComponentCondition::Down);
+                }
             }
         });
         
         mouse.SetUp([this](Input::Mouse::Button btn) {
             if(btn && mousebuttonaccepted) {
                 RemoveCondition(ComponentCondition::Down);
+                disabled.erase(ComponentCondition::Down);
             }
         });
         
@@ -98,6 +110,18 @@ namespace Gorgon { namespace UI {
         
         conditions.insert(condition);
         
+        if(condition == ComponentCondition::Disabled && mouse.HasParent()) {
+            if(conditions.count(ComponentCondition::Hover)) {
+                disabled.insert(ComponentCondition::Hover);
+                RemoveCondition(ComponentCondition::Hover);
+            }
+            
+            if(conditions.count(ComponentCondition::Down)) {
+                disabled.insert(ComponentCondition::Down);
+                RemoveCondition(ComponentCondition::Down);
+            }
+        }
+        
         bool updatereq = false;
         
         for(int i=0; i<temp.GetCount(); i++) {
@@ -115,7 +139,7 @@ namespace Gorgon { namespace UI {
         if(!conditions.count(condition)) return;
         
         conditions.erase(condition);
-        
+         
         bool updatereq = false;
         
         for(int i=0; i<indices; i++) {
@@ -139,6 +163,18 @@ namespace Gorgon { namespace UI {
                         get(i, stacksizes[i]).~Component();
                     }
                 }
+            }
+        }
+       
+        if(condition == ComponentCondition::Disabled && mouse.HasParent()) {
+            if(disabled.count(ComponentCondition::Hover)) {
+                AddCondition(ComponentCondition::Hover);
+                disabled.erase(ComponentCondition::Hover);
+            }
+            
+            if(disabled.count(ComponentCondition::Down)) {
+                AddCondition(ComponentCondition::Down);
+                disabled.erase(ComponentCondition::Down);
             }
         }
         
@@ -212,6 +248,7 @@ namespace Gorgon { namespace UI {
             }
             
             for(int i=0; i<cont.GetCount(); i++) {
+                if(cont[i] >= indices) continue;
                 if(stacksizes[cont[i]])
                     render(get(cont[i]), target ? *target : parent);
             }
@@ -354,7 +391,9 @@ namespace Gorgon { namespace UI {
 		for(int i=0; i<cont.GetCount(); i++) {
 			int ci = cont[i];
 
+            if(ci >= indices) continue;
 			if(!stacksizes[ci]) continue;
+
 
             auto &comp = get(cont[i]);
             

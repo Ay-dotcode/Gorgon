@@ -82,6 +82,7 @@ namespace Gorgon { namespace UI {
 		Component *data = nullptr;
         std::vector<int> stacksizes;
         
+        std::set<ComponentCondition> disabled;
         std::set<ComponentCondition> conditions;
 		std::map<ComponentTemplate::DataEffect, std::string> stringdata;
         
