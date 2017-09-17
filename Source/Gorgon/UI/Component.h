@@ -37,6 +37,9 @@ namespace Gorgon { namespace UI {
         //for containers
 		Geometry::Size innersize;
         
+        //for horizontal this means right, for vertical this means bottom.
+        bool anchorotherside = false;
+        
     private:
         const ComponentTemplate *temp;
 	};

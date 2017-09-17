@@ -217,6 +217,8 @@ namespace Gorgon { namespace UI {
 
 		updaterequired = false;
 
+        base.Clear();
+        
 		//draw everything
 		render(get(0), base);
 	}
@@ -512,9 +514,63 @@ namespace Gorgon { namespace UI {
 		const ContainerTemplate &cont = dynamic_cast<const ContainerTemplate&>(ctemp);
         
         parent.innersize = parent.size - cont.GetBorderSize();
+        
+        if(parent.innersize.Width <= 0) return;
+        if(parent.innersize.Height <= 0) return;
+
+        bool requiresrepass = false;
+        bool repassdone = false;
+        
+        int spaceleft = 0;
+
+realign:
+        // first pass for size, second pass will cover the sizes that are percent based.
+		for(int i=0; i<cont.GetCount(); i++) {
+            
+			int ci = cont[i];
+
+            if(ci >= indices) continue;
+			if(!stacksizes[ci]) continue;
+
+
+            auto &comp = get(cont[i]);
+            
+            const auto &temp = comp.GetTemplate();        
+            
+            //check if textholder and if so use emsize from the font
+			int emsize = 10;
+           
+            auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
+            
+            auto maxsize = parent.innersize - parentmargin;
+            
+            if(temp.GetPositioning() != temp.Absolute) {
+                if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
+                    maxsize.Width = spaceleft;
+                else
+                    maxsize.Height = spaceleft;
+            }
+            
+            if(temp.GetSizing() == temp.Fixed) {
+                comp.size = Convert(temp.GetSize(), maxsize, emsize);
+                
+                if(
+                    (cont.GetOrientation() == Graphics::Orientation::Horizontal && 
+                        (temp.GetSize().Width.GetUnit() == Dimension::Percent || temp.GetSize().Width.GetUnit() == Dimension::BasisPoint)) ||
+                    (cont.GetOrientation() == Graphics::Orientation::Vertical && 
+                        (temp.GetSize().Height.GetUnit() == Dimension::Percent || temp.GetSize().Height.GetUnit() == Dimension::BasisPoint))
+                )
+                    requiresrepass = true;
+                
+            }
+            else {
+                //todo: separate for text, graphics, placeholder and container
+            }
+        }
 
 		Component *prev = nullptr, *next = nullptr;
 
+        //second pass will align everything
 		for(int i=0; i<cont.GetCount(); i++) {
             
 			int ci = cont[i];
@@ -535,6 +591,7 @@ namespace Gorgon { namespace UI {
 			if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
  				if(IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor())) {
 					anch = prev;
+                    comp.anchorotherside = true;
 				}
 				else {
 					anch = next;
@@ -543,6 +600,7 @@ namespace Gorgon { namespace UI {
 			else {
 				if(IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor())) {
 					anch = prev;
+                    comp.anchorotherside = true;
 				}
 				else {
 					anch = next;
@@ -566,20 +624,13 @@ namespace Gorgon { namespace UI {
             
             auto maxsize = parent.innersize - parentmargin;
             
-            if(temp.GetSizing() == temp.Fixed) {
-                comp.size = Convert(temp.GetSize(), maxsize, emsize);
-            }
-            else {
-                //todo
-            }
-            
             auto offset = Convert(temp.GetPosition(), maxsize, emsize);
             
             if(anch) {
                 anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
             }
             else {
-                anchortoparent(comp, temp, offset, margin, maxsize);
+                anchortoparent(comp, temp, offset, margin, parent.innersize);
             }
 
             //Which anchor side is to be changed
@@ -603,6 +654,44 @@ namespace Gorgon { namespace UI {
             }
             
 		}//for indices
+		
+		if(requiresrepass && !repassdone) {
+            if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                int rightused = 0, leftused = 0;
+                
+                for(int i=0; i<cont.GetCount(); i++) {
+                    
+                    int ci = cont[i];
+
+                    if(ci >= indices) continue;
+                    if(!stacksizes[ci]) continue;
+
+                    auto &comp = get(cont[i]);
+                    const auto &temp = comp.GetTemplate();
+                    
+                    //check if textholder and if so use emsize from the font
+                    int emsize = 10;
+
+                    if(temp.GetPositioning() != temp.Absolute) {
+                        if(comp.anchorotherside) {
+                            rightused = parent.innersize.Width - comp.location.X;
+                        }
+                        else {
+                            leftused = (   
+                                comp.location.X + comp.size.Width + 
+                                std::max(temp.GetMargin().Right(parent.innersize.Width, emsize), cont.GetPadding().Right(parent.size.Width, emsize))
+                                
+                            );
+                        }
+                    }
+                }
+                
+                spaceleft = parent.innersize.Width - rightused - leftused;
+            }
+
+            repassdone = true;
+            goto realign;
+        }
 	}
 
 	void ComponentStack::Render() {
