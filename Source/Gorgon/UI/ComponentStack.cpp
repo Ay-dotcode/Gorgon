@@ -1,5 +1,7 @@
 #include "ComponentStack.h"
 
+#include "../Graphics/Font.h"
+
 
 namespace Gorgon { namespace UI {
     
@@ -55,6 +57,17 @@ namespace Gorgon { namespace UI {
         });
         
         Resize(size);
+        
+        for(int i=0; i<temp.GetCount(); i++) {
+            if(temp[i].GetType() == ComponentType::Textholder) {
+                const auto &th = dynamic_cast<const TextholderTemplate&>(temp[i]);
+                
+                if(th.IsReady()) {
+                    emsize = th.GetRenderer().GetEMSize();
+                    break;
+                }
+            }
+        }
     }
 
     void ComponentStack::AddToStack(const ComponentTemplate& temp) {
@@ -86,7 +99,7 @@ namespace Gorgon { namespace UI {
 					storage->secondary = &ctemp.Overlay.Instantiate(controller);
 				}
 			}
-			if(temp.GetType() == ComponentType::Graphics) {
+			else if(temp.GetType() == ComponentType::Graphics) {
 				const auto &gtemp = dynamic_cast<const GraphicsTemplate&>(temp);
 
 				if(gtemp.Content.HasContent()) {
@@ -102,7 +115,15 @@ namespace Gorgon { namespace UI {
     void ComponentStack::grow() { 
         stackcapacity += 2;
         
-        data = (Component*)realloc(data, sizeof(Component) * indices * stackcapacity);
+        auto ndata = (Component*)realloc(data, sizeof(Component) * indices * stackcapacity);
+        
+        if(ndata)
+            data = ndata;
+        else {
+            free(data);
+            
+            throw std::bad_alloc();
+        }
     }
     
     void ComponentStack::AddCondition(ComponentCondition condition) {
@@ -192,8 +213,6 @@ namespace Gorgon { namespace UI {
 				const ComponentTemplate &temp = get(i).GetTemplate();
 
 				if(temp.GetDataEffect() == effect) {
-					//do text related stuff
-
 					updatereq = true;
 				}
 			}
@@ -212,6 +231,20 @@ namespace Gorgon { namespace UI {
 
         get(0).size = size;
         get(0).location = {0,0};
+        
+        //calculate common emsize        
+		for(int i=0; i<indices; i++) {
+			if(stacksizes[i] > 0) {
+                if(get(i).GetTemplate().GetType() == ComponentType::Textholder) {
+                    const auto &th = dynamic_cast<const TextholderTemplate&>(get(i).GetTemplate());
+                    
+                    if(th.IsReady()) {
+                        emsize = th.GetRenderer().GetEMSize();
+                        break;
+                    }
+                }
+            }
+        }
         
 		update(get(0));
 
@@ -270,6 +303,13 @@ namespace Gorgon { namespace UI {
                     rectangular->DrawIn(*target, comp.location, comp.size);
                 else
                     st.primary->Draw(*target, comp.location);
+            }
+        }
+        else if(temp.GetType() == ComponentType::Textholder) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
+            
+            if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
+                th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location, comp.size.Width);
             }
         }
 	}
@@ -505,7 +545,20 @@ namespace Gorgon { namespace UI {
         
         comp.location = pp - cp + other.location;
     }
+    
+    int ComponentStack::getemsize(const Component &comp) {
+        if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(comp.GetTemplate());
+            
+            if(th.IsReady()) {
+                return th.GetRenderer().GetEMSize();
+            }
+        }
+        
+        return emsize;
+    }
 	
+	//location depends on the container location
 	void ComponentStack::update(Component &parent) {
 		const ComponentTemplate &ctemp = parent.GetTemplate();
 
@@ -538,7 +591,7 @@ realign:
             const auto &temp = comp.GetTemplate();        
             
             //check if textholder and if so use emsize from the font
-			int emsize = 10;
+			int emsize = getemsize(comp);
            
             auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
             
@@ -584,7 +637,7 @@ realign:
             const auto &temp = comp.GetTemplate();            
             
             //check if textholder and if so use emsize from the font
-			int emsize = 10;
+			int emsize = getemsize(comp);
             
             //check anchor object by observing temp.GetPreviousAnchor and direction
 			Component *anch = nullptr;
@@ -670,7 +723,7 @@ realign:
                     const auto &temp = comp.GetTemplate();
                     
                     //check if textholder and if so use emsize from the font
-                    int emsize = 10;
+                    int emsize = getemsize(comp);
 
                     if(temp.GetPositioning() != temp.Absolute) {
                         if(comp.anchorotherside) {

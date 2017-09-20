@@ -37,6 +37,7 @@ namespace Gorgon { namespace Graphics {
 	public:
 		virtual ~GlyphRenderer() { }
 
+        
 		/// This function should render the given character to the target at the specified location
 		/// and color. If chr does not exists, this function should perform no action. location and
 		/// color can be modified as per the needs of renderer. If the kerning returns integers
@@ -63,6 +64,9 @@ namespace Gorgon { namespace Graphics {
 		/// could be (in most cases it is) negative. Non-integer values would break pixel perfect
 		/// rendering.
 		virtual int KerningDistance(Glyph chr1, Glyph chr2) const = 0;
+        
+        /// Returns the size of the EM dash
+        virtual int GetEMSize() const = 0;
         
 		/// Returns the width of widest glyph.
 		virtual int GetMaxWidth() const = 0;
@@ -100,6 +104,9 @@ namespace Gorgon { namespace Graphics {
     public:
         virtual ~TextRenderer() { }
         
+        /// Whether the render can render text
+        virtual bool IsReady() const = 0;
+        
 		/// Prints the given text to the target
 		void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location) const {
             print(target, text, location);
@@ -132,6 +139,9 @@ namespace Gorgon { namespace Graphics {
 		void Print(TextureTarget &target, const std::string &text) {
 			print(target, text, {0, 0, target.GetTargetSize()});
 		}
+        
+        /// Returns the size of the EM dash
+        virtual int GetEMSize() const = 0;
         
         virtual Geometry::Size GetSize(const std::string &text) const = 0;
         
@@ -220,6 +230,14 @@ namespace Gorgon { namespace Graphics {
 		RGBAf GetColor() const {
 			return color;
 		}
+		
+		virtual bool IsReady() const override {
+            return renderer != nullptr;
+        }
+        
+		virtual int GetEMSize() const override {
+            return renderer->GetEMSize();
+        }
 
         virtual Geometry::Size GetSize(const std::string &text) const override;
         
@@ -565,6 +583,14 @@ namespace Gorgon { namespace Graphics {
 		int GetParagraphSpacing() const {
 			return pspace;
 		}
+		
+		virtual bool IsReady() const override {
+            return renderer != nullptr;
+        }
+        
+		virtual int GetEMSize() const override {
+            return renderer->GetEMSize();
+        }
 
 		virtual Geometry::Size GetSize(const std::string &text) const override;
 

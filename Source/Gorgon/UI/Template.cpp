@@ -1,5 +1,6 @@
 
 #include "Template.h"
+#include "../Graphics/Font.h"
 
 namespace Gorgon { namespace UI {
 
@@ -89,6 +90,11 @@ namespace Gorgon { namespace UI {
         );
         
         ChangedEvent();
+    }
+    
+    /// Returns if this text holder can perform rendering
+    bool TextholderTemplate::IsReady() const {
+        return renderer != nullptr && renderer->IsReady();
     }
     
 } }

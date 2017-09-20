@@ -11,6 +11,10 @@
 #include "../Graphics/Animations.h"
 
 namespace Gorgon { 
+    namespace Graphics {
+        class TextRenderer;
+    }
+    
     /// This namespace contains User interface related functionality.
     namespace UI {
 
@@ -934,13 +938,30 @@ namespace Gorgon {
 
 	class TextholderTemplate : public ComponentTemplate {
 	public:
-        //font, style, etc...
+        
 
 		/// Returns the type of the component.
 		virtual ComponentType GetType() const noexcept override {
 			return ComponentType::Textholder;
 		}
-
+		
+		/// Returns if this text holder can perform rendering
+		bool IsReady() const;
+		
+		/// Changes the renderer
+		void SetRenderer(const Graphics::TextRenderer &value) {
+            renderer = &value;
+        }
+        
+        /// Returns the renderer for this textholder
+        const Graphics::TextRenderer &GetRenderer() const {
+            ASSERT(renderer, "Renderer is not set.");
+            
+            return *renderer;
+        }
+    
+    private:
+        const Graphics::TextRenderer *renderer = nullptr;
 	};
 
 	class VisualProvider {

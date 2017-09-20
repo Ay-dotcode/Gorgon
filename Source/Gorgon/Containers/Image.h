@@ -290,6 +290,13 @@ namespace Gorgon {
 					delete pdata;
 				}
 				break;
+                
+                case Graphics::ColorMode::RGBA:
+                    //do nothing
+                    break;
+                    
+                default:
+                    throw std::runtime_error("Invalid color mode");
 
 				}
 
@@ -360,7 +367,9 @@ namespace Gorgon {
 							buffer[i*4+3] = 255;
 						}
 						break;
-
+                    
+                    default:
+                        throw std::runtime_error("Invalid mode");
 				}
 			}
 
@@ -429,6 +438,9 @@ namespace Gorgon {
 							buffer[i*4+3] = 255;
 						}
 						break;
+                    
+                    default:
+                        throw std::runtime_error("Invalid mode");
 
 				}
 			}
@@ -451,7 +463,7 @@ namespace Gorgon {
 				if(!dib) {
 					if(ReadString(file, 2) != "BM") return false;
 
-					auto fsize = IO::ReadUInt32(file);
+					IO::ReadUInt32(file);
 
 					ReadUInt16(file); //reserved 1
 					ReadUInt16(file); //reserved 2
@@ -572,7 +584,7 @@ namespace Gorgon {
 					palette.reserve(colorsused);
 
 					for(int i=0; i<colorsused; i++) {
-						Byte r, g, b, a;
+						Byte r, g, b, a = 255;
 						
 						b = ReadUInt8(file);
 						g = ReadUInt8(file);
@@ -949,6 +961,9 @@ namespace Gorgon {
 								WriteUInt8(file, 0);
 						}
 						break;
+                    
+                    default:
+                        throw std::runtime_error("Invalid mode");
 				}
 
 				return true;

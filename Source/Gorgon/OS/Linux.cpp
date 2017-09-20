@@ -139,7 +139,7 @@ namespace Gorgon { namespace OS {
 			close(execpipe[0]);
 
 			//build args
-			char *v[args.size()+2];
+			char *v[args.size()+2] = {};
 			int arg=1;
 			v[0]=(char*)malloc(name.length()+1);
 			strcpy(v[0], Filesystem::GetFilename(name).c_str());

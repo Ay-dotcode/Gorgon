@@ -98,7 +98,7 @@ namespace gge { namespace widgets {
 
 			Add(option);
 
-			return option;
+			return *option;
 		}
 
 		virtual void Remove(O_ &option) {

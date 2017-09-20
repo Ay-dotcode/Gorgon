@@ -33,6 +33,9 @@ int main() {
     circle.Prepare();
     Graphics::TintedObjectProvider t(circle, 0xff000000);
 
+    auto circle2 = Circle(25);
+    circle2.Prepare();
+    
     UI::Template temp;
     
     
@@ -50,13 +53,13 @@ int main() {
     icon2.Content.SetAnimation(t);
     icon2.SetSize(32, 32);
     
-    auto &icon3 = temp.AddGraphics(2, UI::ComponentCondition::Hover);
+    auto &icon3 = temp.AddGraphics(2, UI::ComponentCondition::Down);
     icon3.Content.SetAnimation(circle);
     icon3.SetPositioning(icon3.Absolute);
     //icon3.SetMargin(80);
-    icon3.SetAnchor(UI::Anchor::MiddleLeft, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
-    icon3.SetSize(100, 100, UI::Dimension::Percent);
-    //icon3.SetSize(16, 16);
+    icon3.SetAnchor(UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft, UI::Anchor::BottomLeft);
+    //icon3.SetSize(100, 100, UI::Dimension::Percent);
+    icon3.SetSize(16, 16);
     
     outer_normal.AddIndex(1);
     outer_normal.AddIndex(2);

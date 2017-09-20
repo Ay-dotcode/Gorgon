@@ -58,6 +58,11 @@ namespace Gorgon { namespace UI {
 			controller.Reset();
 		}
 		
+		/// Changes the default emsize of 10. This value can be overridden.
+		void SetEMSize(int value) {
+            emsize = value;
+        }
+		
 		/// This function instructs stack to handle mouse to automatically change hover/down
 		/// states, unless disabled state is active.
 		void HandleMouse(Input::Mouse::Button accepted = Input::Mouse::Button::All);
@@ -78,6 +83,10 @@ namespace Gorgon { namespace UI {
 		void render(Component &component, Graphics::Layer &parentlayer);
 
         void grow();
+        
+        int getemsize(const Component &comp);
+        
+        int emsize = 10;
         
 		Component *data = nullptr;
         std::vector<int> stacksizes;

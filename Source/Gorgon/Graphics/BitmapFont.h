@@ -169,6 +169,9 @@ namespace Gorgon { namespace Graphics {
 		/// todo
 		virtual int KerningDistance(Glyph chr1, Glyph chr2) const override { return 0; }
          
+        
+		virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetMaxWidth(); }
+
         virtual int GetMaxWidth() const override { return maxwidth; }
         
         virtual int GetHeight() const override { return height; }
