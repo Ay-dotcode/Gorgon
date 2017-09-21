@@ -410,7 +410,6 @@ int main() {
 			std::cout<<ex.what()<<std::endl;
 			console.Reset();
 			std::cout<<std::endl<<std::endl;
-			return 3;
 		}
 	}
 

@@ -133,6 +133,9 @@ namespace Gorgon {
 
 	/// Anchor position
 	ENUMCLASS Anchor {
+        /// This anchor position should not be used
+        None = 0,
+        
         /// Top left
 		TopLeft,
         /// Top center

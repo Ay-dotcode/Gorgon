@@ -53,7 +53,7 @@ int main() {
     icon2.Content.SetAnimation(t);
     icon2.SetSize(32, 32);
     
-    auto &icon3 = temp.AddGraphics(2, UI::ComponentCondition::Down);
+    auto &icon3 = temp.AddGraphics(2, UI::ComponentCondition::Hover);
     icon3.Content.SetAnimation(circle);
     icon3.SetPositioning(icon3.Absolute);
     //icon3.SetMargin(80);
@@ -61,8 +61,16 @@ int main() {
     //icon3.SetSize(100, 100, UI::Dimension::Percent);
     icon3.SetSize(16, 16);
     
+    auto &text = temp.AddTextholder(3, UI::ComponentCondition::Always);
+    text.SetDataEffect(text.Text);
+    text.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::FirstBaselineLeft);
+    text.SetSize({100, UI::Dimension::Percent}, {-100, UI::Dimension::EM});
+    text.SetMargin(100, UI::Dimension::EM);
+    text.SetRenderer(app.sty);
+    
     outer_normal.AddIndex(1);
     outer_normal.AddIndex(2);
+    outer_normal.AddIndex(3);
     
     auto &outer_disabled = temp.AddContainer(0, UI::ComponentCondition::Disabled); 
 
@@ -75,6 +83,7 @@ int main() {
 
     UI::ComponentStack stack(temp, {160, 80});
     stack.HandleMouse();
+    stack.SetData(text.Text, "Hello there!!!\nHow uncivilized.");
     
     app.wind.Add(stack);
     

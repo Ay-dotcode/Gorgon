@@ -370,6 +370,27 @@ namespace Gorgon { namespace UI {
         
         auto csize = comp.size;
         
+        if(temp.GetType() == ComponentType::Textholder && 
+            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight)
+        ) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
+            
+            if(th.IsReady()) {
+                
+                switch(ca) {
+                case Anchor::FirstBaselineLeft:
+                    cp = {-offset.X, -offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    break;
+                    
+                case Anchor::FirstBaselineRight:
+                    cp = {-offset.X + csize.Width, -offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    break;
+                }
+                
+                ca = Anchor::None;
+            }
+        }
+        
         switch(ca) {
             default:
 			case Anchor::TopLeft:
@@ -449,7 +470,32 @@ namespace Gorgon { namespace UI {
         else
             margin.Left = margin.Right = 0;
         
+        
+        if(other.GetTemplate().GetType() == ComponentType::Textholder && 
+            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight)
+        ) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(other.GetTemplate());
+            
+            if(th.IsReady()) {
+                
+                switch(ca) {
+                case Anchor::FirstBaselineLeft:
+                    pp = {-margin.Right, -margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    break;
+                    
+                case Anchor::FirstBaselineRight:
+                    pp = {margin.Left + asize.Width, - margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    break;
+                }
+                
+                pa = Anchor::None;
+            }
+        }
+        
         switch(pa) {
+            case Anchor::None: //do nothing
+                break;
+                
             default:
 			case Anchor::TopLeft:
 				pp = {-margin.Right,- margin.Bottom};
@@ -496,8 +542,32 @@ namespace Gorgon { namespace UI {
         }
         
         auto csize = comp.size;
+       
+        if(temp.GetType() == ComponentType::Textholder && 
+            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight)
+        ) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
+            
+            if(th.IsReady()) {
+                
+                switch(ca) {
+                case Anchor::FirstBaselineLeft:
+                    cp = {-offset.X, -offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    break;
+                    
+                case Anchor::FirstBaselineRight:
+                    cp = {-offset.X + csize.Width, -offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    break;
+                }
+                
+                ca = Anchor::None;
+            }
+        }
         
         switch(ca) {
+            case Anchor::None: //do nothing
+                break;
+                
             default:
 			case Anchor::TopLeft:
 				cp = {-offset.X, -offset.Y};

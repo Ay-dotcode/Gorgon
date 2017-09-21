@@ -285,6 +285,10 @@ namespace Gorgon { namespace Graphics {
             return it.IsValid();
         }
         
+        virtual const GlyphRenderer &GetGlyphRenderer() const {
+            return *this;
+        }
+        
         std::map<Glyph, GlyphDescriptor>::iterator begin() {
             return glyphmap.begin();
         }

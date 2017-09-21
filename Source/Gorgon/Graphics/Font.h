@@ -104,9 +104,6 @@ namespace Gorgon { namespace Graphics {
     public:
         virtual ~TextRenderer() { }
         
-        /// Whether the render can render text
-        virtual bool IsReady() const = 0;
-        
 		/// Prints the given text to the target
 		void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location) const {
             print(target, text, location);
@@ -139,6 +136,13 @@ namespace Gorgon { namespace Graphics {
 		void Print(TextureTarget &target, const std::string &text) {
 			print(target, text, {0, 0, target.GetTargetSize()});
 		}
+        
+        /// Whether the render can render text
+        virtual bool IsReady() const = 0;
+
+        /// Returns the glyphrenderer that is used byt his text renderer. It might be the text renderer itself. It is only safe
+        /// to call this function if IsReady function has returned true.
+        virtual const GlyphRenderer &GetGlyphRenderer() const = 0;
         
         /// Returns the size of the EM dash
         virtual int GetEMSize() const = 0;
@@ -233,6 +237,10 @@ namespace Gorgon { namespace Graphics {
 		
 		virtual bool IsReady() const override {
             return renderer != nullptr;
+        }
+        
+        virtual const GlyphRenderer &GetGlyphRenderer() const override {
+            return *renderer;
         }
         
 		virtual int GetEMSize() const override {
@@ -590,6 +598,10 @@ namespace Gorgon { namespace Graphics {
         
 		virtual int GetEMSize() const override {
             return renderer->GetEMSize();
+        }
+        
+        virtual const GlyphRenderer &GetGlyphRenderer() const override {
+            return *renderer;
         }
 
 		virtual Geometry::Size GetSize(const std::string &text) const override;
