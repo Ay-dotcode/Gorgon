@@ -203,6 +203,25 @@ namespace Gorgon { namespace UI {
             Update();
     }
     
+	void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image) {
+        imagedata.Add(effect, image);
+        
+		bool updatereq = false;
+
+		for(int i=0; i<indices; i++) {
+			if(stacksizes[i] > 0) {
+				const ComponentTemplate &temp = get(i).GetTemplate();
+
+				if(temp.GetDataEffect() == effect) {
+					updatereq = true;
+				}
+			}
+		}
+
+		if(updatereq)
+			Update();
+    }
+    
 	void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const std::string &text) {
 		stringdata[effect] = text;
 
@@ -310,6 +329,19 @@ namespace Gorgon { namespace UI {
             
             if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
                 th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location, comp.size.Width);
+            }
+        }
+        else if(temp.GetType() == ComponentType::Placeholder) {
+            const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
+            
+            if(imagedata.Exists(ph.GetDataEffect())) {
+                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
+                if(rectangular) {
+                    rectangular->DrawIn(*target, comp.location, comp.size);
+                }
+                else {
+                    imagedata[ph.GetDataEffect()].Draw(*target, comp.location);
+                }
             }
         }
 	}
@@ -712,7 +744,9 @@ realign:
             //check anchor object by observing temp.GetPreviousAnchor and direction
 			Component *anch = nullptr;
 			if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
- 				if(IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor())) {
+ 				if(IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor()) || 
+                    (temp.GetPreviousAnchor() == Anchor::None && IsRight(temp.GetContainerAnchor()))) 
+                {
 					anch = prev;
                     comp.anchorotherside = true;
 				}
@@ -721,7 +755,9 @@ realign:
 				}
 			}
 			else {
-				if(IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor())) {
+				if(IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor()) || 
+                    (temp.GetPreviousAnchor() == Anchor::None && IsBottom(temp.GetContainerAnchor()))) 
+                {
 					anch = prev;
                     comp.anchorotherside = true;
 				}
@@ -731,7 +767,7 @@ realign:
 			}
             
             //if absolute, nothing to anchor to but to parent
-            if(temp.GetPositioning() == temp.Absolute)
+            if(temp.GetPositioning() == temp.Absolute || temp.GetPreviousAnchor() == Anchor::None)
                 anch = nullptr;
             
             auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);

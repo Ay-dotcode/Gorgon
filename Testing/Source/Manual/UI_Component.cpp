@@ -32,6 +32,7 @@ int main() {
     auto circle = Circle(15);
     circle.Prepare();
     Graphics::TintedObjectProvider t(circle, 0xff000000);
+    Graphics::TintedObjectProvider t2(circle, 0xff00ff00);
 
     auto circle2 = Circle(25);
     circle2.Prepare();
@@ -53,13 +54,19 @@ int main() {
     icon2.Content.SetAnimation(t);
     icon2.SetSize(32, 32);
     
-    auto &icon3 = temp.AddGraphics(2, UI::ComponentCondition::Hover);
+    auto &icon3 = temp.AddGraphics(2, UI::ComponentCondition::Down);
     icon3.Content.SetAnimation(circle);
     icon3.SetPositioning(icon3.Absolute);
     //icon3.SetMargin(80);
     icon3.SetAnchor(UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft, UI::Anchor::BottomLeft);
     //icon3.SetSize(100, 100, UI::Dimension::Percent);
     icon3.SetSize(16, 16);
+    
+    auto &iconplace = temp.AddPlaceholder(4, UI::ComponentCondition::Always);
+    iconplace.SetDataEffect(iconplace.Icon);
+    iconplace.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
+    iconplace.SetSizing(iconplace.Fixed);
+    iconplace.SetSize(16,16);
     
     auto &text = temp.AddTextholder(3, UI::ComponentCondition::Always);
     text.SetDataEffect(text.Text);
@@ -71,6 +78,7 @@ int main() {
     outer_normal.AddIndex(1);
     outer_normal.AddIndex(2);
     outer_normal.AddIndex(3);
+    outer_normal.AddIndex(4);
     
     auto &outer_disabled = temp.AddContainer(0, UI::ComponentCondition::Disabled); 
 
@@ -80,13 +88,16 @@ int main() {
     
     outer_disabled.AddIndex(1);
     outer_disabled.AddIndex(2);
+    outer_disabled.AddIndex(4);
 
     UI::ComponentStack stack(temp, {160, 80});
     stack.HandleMouse();
     stack.SetData(text.Text, "Hello there!!!\nHow uncivilized.");
     
-    app.wind.Add(stack);
+    stack.SetData(iconplace.Icon, t2.CreateAnimation());
     
+    app.wind.Add(stack);
+        
     bool hover = false;
     app.wind.KeyEvent.Register([&](Input::Key key, bool state) {
         namespace Keycodes = Input::Keyboard::Keycodes;
@@ -103,7 +114,7 @@ int main() {
         
         return false;
     });
-
+    
 
 	while(true) {
 		Gorgon::NextFrame();

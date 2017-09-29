@@ -5,6 +5,7 @@
 
 #include "Template.h"
 #include "Component.h"
+#include "../Containers/Hashmap.h"
 #include "../Input/Layer.h"
 
 namespace Gorgon { namespace UI {
@@ -32,6 +33,11 @@ namespace Gorgon { namespace UI {
         /// Sets the data for a specific data component. This value will be cached by
         /// the stack for condition changes. This variant supports string based data.
         void SetData(ComponentTemplate::DataEffect effect, const std::string &text);
+        
+        /// Sets the data for a specific data component. This value will be cached by
+        /// the stack for condition changes. This variant supports image based data.
+        /// Ownership of the image stays with the caller.
+        void SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image);
 
         using Layer::Resize;
         
@@ -94,6 +100,7 @@ namespace Gorgon { namespace UI {
         std::set<ComponentCondition> disabled;
         std::set<ComponentCondition> conditions;
 		std::map<ComponentTemplate::DataEffect, std::string> stringdata;
+		Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
         
         int stackcapacity = 2;
         

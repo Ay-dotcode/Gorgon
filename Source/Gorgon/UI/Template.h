@@ -133,7 +133,10 @@ namespace Gorgon {
 
 	/// Anchor position
 	ENUMCLASS Anchor {
-        /// This anchor position should not be used
+        /// This anchor position should is only used to denote object will
+        /// not be anchored to a previous object, only to its parent. If
+        /// used as parent anchor it will be ignored and default anchor
+        /// will be used instead.
         None = 0,
         
         /// Top left
@@ -649,7 +652,10 @@ namespace Gorgon {
 
 			/// Data will affect the frame of the animation. Will only work for Objects
 			/// with animations. For now, this effect is disabled.
-			Frame
+			Frame,
+			
+			/// Data will effect the displayed graphics
+            Icon,
 		};
 
 		/// Returns the type of the component.
@@ -928,15 +934,17 @@ namespace Gorgon {
 	};
 
 	/// Defines a placeholder according to the Box Model. Placeholder is replaced with
-	/// a visual component.
+	/// a visual component. Default sizing mode for a placeholder is Automatic.
 	class PlaceholderTemplate : public ComponentTemplate {
 	public:
+        PlaceholderTemplate() {
+            sizing = Automatic;
+        }
 
 		/// Returns the type of the component.
 		virtual ComponentType GetType() const noexcept override {
 			return ComponentType::Placeholder;
 		}
-
 	};
 
 	class TextholderTemplate : public ComponentTemplate {

@@ -421,7 +421,7 @@ namespace Gorgon {
         
         bool allowresize = false;
         
-        bool cursorover = false;
+        bool cursorover = true;
 
 
 		Geometry::Point mousedownlocation = {-1, -1};
