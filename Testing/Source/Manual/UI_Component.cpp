@@ -64,16 +64,17 @@ int main() {
     
     auto &iconplace = temp.AddPlaceholder(4, UI::ComponentCondition::Always);
     iconplace.SetDataEffect(iconplace.Icon);
-    iconplace.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
-    iconplace.SetSizing(iconplace.Fixed);
-    iconplace.SetSize(16,16);
+	iconplace.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
+	iconplace.SetSizing(UI::ComponentTemplate::Automatic);
+	iconplace.SetSize(16, 16);
     
     auto &text = temp.AddTextholder(3, UI::ComponentCondition::Always);
     text.SetDataEffect(text.Text);
-    text.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::FirstBaselineLeft);
+    text.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
     text.SetSize({100, UI::Dimension::Percent}, {-100, UI::Dimension::EM});
     text.SetMargin(100, UI::Dimension::EM);
-    text.SetRenderer(app.sty);
+    text.SetRenderer(app.fnt);
+	text.SetSizing(UI::ComponentTemplate::Automatic);
     
     outer_normal.AddIndex(1);
     outer_normal.AddIndex(2);

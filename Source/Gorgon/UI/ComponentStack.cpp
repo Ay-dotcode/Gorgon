@@ -281,6 +281,8 @@ namespace Gorgon { namespace UI {
         Graphics::Layer *target = nullptr;
         auto &st = *storage[&temp];
         
+		//todo layer offset!
+
         if(st.layer) {
             target = st.layer;
             parent.Add(*target);
@@ -331,7 +333,7 @@ namespace Gorgon { namespace UI {
                 th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location, comp.size.Width);
             }
         }
-        else if(temp.GetType() == ComponentType::Placeholder) {
+        else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
             const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
             
             if(imagedata.Exists(ph.GetDataEffect())) {
@@ -706,21 +708,91 @@ realign:
                     maxsize.Height = spaceleft;
             }
             
-            if(temp.GetSizing() == temp.Fixed) {
-                comp.size = Convert(temp.GetSize(), maxsize, emsize);
+            comp.size = Convert(temp.GetSize(), maxsize, emsize);
                 
-                if(
-                    (cont.GetOrientation() == Graphics::Orientation::Horizontal && 
-                        (temp.GetSize().Width.GetUnit() == Dimension::Percent || temp.GetSize().Width.GetUnit() == Dimension::BasisPoint)) ||
-                    (cont.GetOrientation() == Graphics::Orientation::Vertical && 
-                        (temp.GetSize().Height.GetUnit() == Dimension::Percent || temp.GetSize().Height.GetUnit() == Dimension::BasisPoint))
-                )
-                    requiresrepass = true;
+            if(
+                (cont.GetOrientation() == Graphics::Orientation::Horizontal && 
+                    (temp.GetSize().Width.GetUnit() == Dimension::Percent || temp.GetSize().Width.GetUnit() == Dimension::BasisPoint)) ||
+                (cont.GetOrientation() == Graphics::Orientation::Vertical && 
+                    (temp.GetSize().Height.GetUnit() == Dimension::Percent || temp.GetSize().Height.GetUnit() == Dimension::BasisPoint))
+            )
+                requiresrepass = true;
                 
-            }
-            else {
-                //todo: separate for text, graphics, placeholder and container
-            }
+			if(temp.GetSizing() != temp.Fixed) {
+				auto &st = *storage[&temp];
+
+				auto orgsize = comp.size;
+
+				if(temp.GetType() == ComponentType::Container) {
+					const auto &cont = dynamic_cast<const ContainerTemplate&>(temp);
+					//todo
+				}
+				else if(temp.GetType() == ComponentType::Graphics) {
+					if(st.primary) {
+						auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
+						if(rectangular)
+							comp.size = rectangular->GetSize();
+					}
+					else {
+						comp.size = {0, 0};
+					}
+				}
+				else if(temp.GetType() == ComponentType::Textholder) {
+					const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
+
+					if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
+						auto s = temp.GetSize().Width(maxsize.Width, emsize);
+
+						if(s)
+							comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()], s);
+						else
+							comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()]);
+
+					}
+				}
+				else if(temp.GetType() == ComponentType::Placeholder) {
+					const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
+
+					if(imagedata.Exists(ph.GetDataEffect())) {
+						auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
+						if(rectangular) {
+							comp.size = rectangular->GetSize();
+						}
+					}
+					else {
+						comp.size = {0, 0};
+					}
+				}
+
+				if(temp.GetSizing() == ComponentTemplate::GrowOnly) {
+					if(comp.size.Width < orgsize.Width)
+						comp.size.Width = orgsize.Width;
+
+					if(comp.size.Height < orgsize.Height)
+						comp.size.Height = orgsize.Height;
+				}
+				else if(temp.GetSizing() == ComponentTemplate::ShrinkOnly) {
+					if(comp.size.Width > orgsize.Width)
+						comp.size.Width = orgsize.Width;
+
+					if(comp.size.Height > orgsize.Height)
+						comp.size.Height = orgsize.Height;
+				}
+
+				if(
+					(cont.GetOrientation() == Graphics::Orientation::Horizontal &&
+					(temp.GetSize().Width.GetUnit() == Dimension::Percent || temp.GetSize().Width.GetUnit() == Dimension::BasisPoint)) ||
+					 (cont.GetOrientation() == Graphics::Orientation::Vertical &&
+					 (temp.GetSize().Height.GetUnit() == Dimension::Percent || temp.GetSize().Height.GetUnit() == Dimension::BasisPoint))
+					)
+				{
+					if(maxsize.Width == 0)
+						comp.size.Width = 0;
+					if(maxsize.Height == 0)
+						comp.size.Height = 0;
+				}
+
+			}
         }
 
 		Component *prev = nullptr, *next = nullptr;

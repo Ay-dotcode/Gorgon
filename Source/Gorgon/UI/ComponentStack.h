@@ -55,7 +55,7 @@ namespace Gorgon { namespace UI {
 			return temp;
 		}		
 
-		/// Updates the layour of the component stack
+		/// Updates the layout of the component stack
 		void Update();
 
 		void Render() override;

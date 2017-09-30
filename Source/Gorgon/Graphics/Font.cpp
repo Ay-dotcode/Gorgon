@@ -371,7 +371,7 @@ namespace Gorgon { namespace Graphics {
 					int sp = 0;
 					while(acc.rbegin()+sp != acc.rend() && isspace((acc.rbegin()+sp)->g)) sp++;
 
-					if(totw == 0) //in the middle
+					if(totw == 0 && acc.size()) //in the middle
 						totw = (acc.begin()+lastbreak)->location;
 
 					doline(0, acc.begin(), acc.begin()+lastbreak-sp, totw);
@@ -422,9 +422,10 @@ namespace Gorgon { namespace Graphics {
 			//last line
 			if(autobreak) {
 				int sp = 0;
-				while(isspace((acc.begin()+sp)->g)) sp++;
+				while(acc.size() && isspace((acc.begin()+sp)->g)) sp++;
 
-				acc.erase(acc.begin(), acc.begin() + sp);
+				if(acc.size())
+					acc.erase(acc.begin(), acc.begin() + sp);
 			}
 
 			if(!acc.empty()) {
