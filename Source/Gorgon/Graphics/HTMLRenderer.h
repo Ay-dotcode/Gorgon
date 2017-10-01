@@ -100,7 +100,6 @@ public:
         parseandprint(target, text, x, y);
     }
     
-    static Utils::Logger Logger;
 private:
     enum class Tag: unsigned int {
         Underlined = 0,
