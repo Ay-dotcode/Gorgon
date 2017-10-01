@@ -108,6 +108,7 @@ namespace Gorgon { namespace Utils {
         enum State {
             Message,
             Error,
+            Notice,
             Success
         };
         
@@ -241,9 +242,7 @@ namespace Gorgon { namespace Utils {
             if(IsColorFunctional()) {
                 reset(stream);
 				console.SetBold(true);
-                if(state != Message) {
-					console.SetColor(state == Error ? Console::Color::Red : Console::Color::Green);
-                }
+                colorize(state);
             }
             
 			if(!section.empty()) stream<<section;
@@ -255,7 +254,7 @@ namespace Gorgon { namespace Utils {
             
             if(state != Message) {
                 if(IsColorFunctional()) {
-                    console.SetColor(state == Error ? Console::Color::Red : Console::Color::Green);
+                    colorize(state);
                 }
                 else {
                     stream << (state == Error ? "Error! : " : "Success: ");
@@ -350,6 +349,17 @@ namespace Gorgon { namespace Utils {
 		int  width            = 0;
 		
 		std::string section;
+        
+    private:
+        void colorize(State state) {
+            switch(state) {
+                case Message: /*do nothing*/                            break;
+                case Error:   console.SetColor(Console::Color::Red );   break;
+                case Notice:  console.SetColor(Console::Color::Yellow); break;
+                case Success: console.SetColor(Console::Color::Green);  break;
+                default:      console.SetColor(Console::Color::White);  break;
+            }
+        }
 	};
 
 #ifdef NDEBUG

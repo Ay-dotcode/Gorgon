@@ -6,6 +6,11 @@
 
 namespace Gorgon { namespace Graphics {
 
+namespace HTMLRendererInternal {
+Utils::Logger Logger;
+}
+
+    
 void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, int x, int y) {
     
     // clear previous state

@@ -19,7 +19,7 @@ namespace Resource = Gorgon::Resource;
 int main() {
 	
 	Gorgon::Initialize("HTMLRenderer-test");
-        
+    Graphics::HTMLRendererInternal::Logger.InitializeConsole();
 	Window wind({800, 600}, "htmlrenderertest", "HTML Renderer Test");
 	Graphics::Initialize();
 
@@ -37,12 +37,14 @@ int main() {
     
     std::map<Graphics::FontFamily::Style, Graphics::GlyphRenderer*> fonts = 
         { {Graphics::FontFamily::Style::Normal, &victoria},
-         //{Graphics::FontFamily::Style::Bold,   &vicbold,},
-          {Graphics::FontFamily::Style::Bold, &vicboldlarge,} };
+          /*{Graphics::FontFamily::Style::Bold,   &vicbold},
+          {Graphics::FontFamily::Style::Bold,   &vicboldlarge}*/ };
           
     Graphics::FontFamily family(fonts);
     
     Graphics::HTMLRenderer sty(family);
+
+    
     sty.Print(layer, "<u><b>AAAA</b> BBBB</u> <strike><b>CCCC</b> DDDD</strike>", 250, 270);
     sty.Print(layer, "<u>AAAA <b>BBBB</b></u> <strike>CCCC <b>DDDD</b></strike>", 250, 300);
     
@@ -58,6 +60,7 @@ int main() {
     
     sty.Print(layer, "the quick brown fox jumps over the lazy dog", 250, 480);
     sty.Print(layer, "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", 250, 510);
+    
     
     Graphics::BlankImage bimg(1, 1);
     bimg.Draw(layer, 245, 270);
