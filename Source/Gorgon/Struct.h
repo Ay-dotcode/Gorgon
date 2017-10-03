@@ -145,8 +145,8 @@ namespace Gorgon {
 #else
 	#define CONC(A, B) CONC_(A, B)
 	#define CONC_(A, B) A##B
-	#define NARGS(...) NARGS_(__VA_ARGS__, 5, 4, 3, 2, 1, 0)
-	#define NARGS_(_5, _4, _3, _2, _1, N, ...) N
+	#define NARGS(...) NARGS_(__VA_ARGS__, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+	#define NARGS_(_16, _15, _14, _13, _12, _11, _10, _9, _8, _7, _6, _5, _4, _3, _2, _1, N, ...) N
 	
 	#define StructDefiner_types_1(C, E) decltype(&C::E)
 	#define StructDefiner_types_2(C, E, ...) decltype(&C::E), StructDefiner_types_1(C, __VA_ARGS__)
