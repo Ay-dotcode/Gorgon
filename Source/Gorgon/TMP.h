@@ -28,6 +28,16 @@ namespace Gorgon {
 		{};
 		
 		///@endcond
+        
+        
+        constexpr bool static_strequal_helper(const char * a, const char * b, unsigned len) {
+            return (len == 0) ? true : ((*a == *b) ? static_strequal_helper(a + 1, b + 1, len - 1) : false);
+        }
+
+        template <unsigned N1_, unsigned N2_>
+        constexpr bool StaticStrEqual(const char (&str1)[N1_], const char (&str2)[N2_]) {
+            return (N1_ == N2_) ? static_strequal_helper(&(str1[0]), &(str2[0]), N1_) : false;
+        }
 		
 		/** 
 		 * Determines traits of a function. Works with regular, member and std::function.

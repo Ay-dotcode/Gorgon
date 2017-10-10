@@ -24,7 +24,7 @@ namespace Gorgon {
 			static constexpr auto Value = GetElm<N-1, T_...>::template Inner<V_...>::Value;
 		};
 	};
-	
+    
 	
 	template<class C_, class ...MT_>
 	class StructDefiner {
