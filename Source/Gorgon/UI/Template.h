@@ -172,12 +172,14 @@ namespace Gorgon {
 		
         /// Baseline left, for text, this aligns to the baseline of
         /// the last line; if there is no text related data, this will
-        /// align to the bottom left.
+        /// align to the bottom left. This mode only works properly if
+        /// Sizing is set to automatic.
 		LastBaselineLeft,
         
         /// Baseline right, for text, this aligns to the baseline of
         /// the last line; if there is no text related data, this will
-        /// align to the bottom right.
+        /// align to the bottom right. This mode only works properly if
+        /// Sizing is set to automatic.
 		LastBaselineRight,
 	};
 
@@ -437,6 +439,136 @@ namespace Gorgon {
         Max,
 	};
     
+    /// Returns  if the given condition is transition.
+    inline bool IsTransition(ComponentCondition condition) {
+        switch(condition) {
+            case ComponentCondition::Normal__Disabled:
+            case ComponentCondition::Disabled__Normal:
+            case ComponentCondition::Normal__Focused:
+            case ComponentCondition::Focused__Normal:
+            case ComponentCondition::Normal__Hover:
+            case ComponentCondition::Hover__Normal:
+            case ComponentCondition::Hover__Down:
+            case ComponentCondition::Normal__Down:
+            case ComponentCondition::Down__Hover:
+            case ComponentCondition::Down__Normal:
+            case ComponentCondition::Normal__State2:
+            case ComponentCondition::State2__Normal:
+            case ComponentCondition::State2__State3:
+            case ComponentCondition::State2__State4:
+            case ComponentCondition::Normal__State3:
+            case ComponentCondition::State3__Normal:
+            case ComponentCondition::State3__State2:
+            case ComponentCondition::State3__State4:
+            case ComponentCondition::Normal__State4:
+            case ComponentCondition::State4__Normal:
+            case ComponentCondition::State4__State2:
+            case ComponentCondition::State4__State3:
+            case ComponentCondition::Normal__Opened:
+            case ComponentCondition::Opened__Normal:
+            case ComponentCondition::Opened__Closed:
+            case ComponentCondition::Normal__Closed:
+            case ComponentCondition::Closed__Normal:
+            case ComponentCondition::Closed__Opened:
+                return true;
+                
+            default:
+                return false;
+        }
+    }
+    
+    /// Returns the ending condition for a transition condition. Will return Always
+    /// if no condition should replace the current one.
+    inline ComponentCondition TransitionEnd(ComponentCondition condition) {
+        switch(condition) {
+            case ComponentCondition::Normal__Disabled:
+				return ComponentCondition::Disabled;
+            case ComponentCondition::Disabled__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Normal__Focused:
+				return ComponentCondition::Focused;
+            case ComponentCondition::Focused__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Normal__Hover:
+				return ComponentCondition::Hover;
+            case ComponentCondition::Hover__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Hover__Down:
+				return ComponentCondition::Down;
+            case ComponentCondition::Normal__Down:
+				return ComponentCondition::Down;
+            case ComponentCondition::Down__Hover:
+				return ComponentCondition::Hover;
+            case ComponentCondition::Down__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Normal__State2:
+				return ComponentCondition::State2;
+            case ComponentCondition::State2__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::State2__State3:
+				return ComponentCondition::State3;
+            case ComponentCondition::State2__State4:
+				return ComponentCondition::State4;
+            case ComponentCondition::Normal__State3:
+				return ComponentCondition::State3;
+            case ComponentCondition::State3__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::State3__State2:
+				return ComponentCondition::State2;
+            case ComponentCondition::State3__State4:
+				return ComponentCondition::State4;
+            case ComponentCondition::Normal__State4:
+				return ComponentCondition::State4;
+            case ComponentCondition::State4__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::State4__State2:
+				return ComponentCondition::State2;
+            case ComponentCondition::State4__State3:
+				return ComponentCondition::State3;
+            case ComponentCondition::Normal__Opened:
+				return ComponentCondition::Opened;
+            case ComponentCondition::Opened__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Opened__Closed:
+				return ComponentCondition::Closed;
+            case ComponentCondition::Normal__Closed:
+				return ComponentCondition::Closed;
+            case ComponentCondition::Closed__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Closed__Opened:
+				return ComponentCondition::Opened;
+            default:
+                return ComponentCondition::Always;
+        }
+    }
+    
+    inline bool IsDisabled(ComponentCondition condition) {
+        switch(condition) {
+            case ComponentCondition::Disabled:
+            case ComponentCondition::Normal__Disabled:
+            case ComponentCondition::Disabled__Normal:
+				return true;
+            default:
+                return false;
+        }
+    }
+    
+    inline bool IsMouseRelated(ComponentCondition condition) {
+        switch(condition) {
+            case ComponentCondition::Normal__Hover:
+            case ComponentCondition::Hover__Normal:
+            case ComponentCondition::Hover__Down:
+            case ComponentCondition::Normal__Down:
+            case ComponentCondition::Down__Hover:
+            case ComponentCondition::Down__Normal:
+            case ComponentCondition::Hover:
+            case ComponentCondition::Down:
+				return true;
+            default:
+                return false;
+        }
+    }
+    
 	
 	class ComponentTemplate;
 	class PlaceholderTemplate;
@@ -462,6 +594,10 @@ namespace Gorgon {
 			/// and addition size should be added to it.
 			Multiples
 		};
+        
+        Template() {
+            memset(durations, 0, sizeof(int) * (int)ComponentCondition::Max);
+        }
 
         /// Destructor
         ~Template() {
@@ -577,6 +713,18 @@ namespace Gorgon {
 		Geometry::Size GetAdditionalSize() const {
 			return additional;
 		}
+		
+		/// Changes the duration of a component condition. Durations on final conditions are 
+		/// ignored, only transition condition durations are used. Duration is in milliseconds
+		void SetConditionDuration(ComponentCondition condition, int duration) {
+            durations[(int)condition] = duration;
+            ChangedEvent();
+        }
+        
+        /// Returns the duration of the component condition
+        int GetConditionDuration(ComponentCondition condition) const {
+            return durations[(int)condition];
+        }
 
 
         /// This event is fired whenever template or its components are changed.
@@ -585,6 +733,7 @@ namespace Gorgon {
 	private:
 		Containers::Collection<ComponentTemplate> components;
         std::vector<Event<ComponentTemplate>::Token> tokens;
+        int durations[(int)ComponentCondition::Max];
 
 		SizeMode xsizing, ysizing;
 		Geometry::Size size;

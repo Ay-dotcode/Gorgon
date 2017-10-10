@@ -33,11 +33,13 @@ int main() {
     circle.Prepare();
     Graphics::TintedObjectProvider t(circle, 0xff000000);
     Graphics::TintedObjectProvider t2(circle, 0xff00ff00);
+    Graphics::TintedObjectProvider t3(circle, 0xff0000ff);
 
     auto circle2 = Circle(25);
     circle2.Prepare();
     
     UI::Template temp;
+    temp.SetConditionDuration(UI::ComponentCondition::Normal__Disabled, 2000);
     
     
     auto &outer_normal = temp.AddContainer(0, UI::ComponentCondition::Always);
@@ -49,6 +51,10 @@ int main() {
     auto &icon1 = temp.AddGraphics(1, UI::ComponentCondition::Always);
     icon1.Content.SetDrawable(circle);
     icon1.SetSize(32, 32);
+    
+    auto &icon1_nd = temp.AddGraphics(2, UI::ComponentCondition::Normal__Disabled);
+    icon1_nd.Content.SetAnimation(t3);
+    icon1_nd.SetSize(16, 16);
     
     auto &icon2 = temp.AddGraphics(1, UI::ComponentCondition::Hover);
     icon2.Content.SetAnimation(t);
@@ -106,7 +112,7 @@ int main() {
             if(hover)
                 stack.RemoveCondition(UI::ComponentCondition::Disabled);
             else
-                stack.AddCondition(UI::ComponentCondition::Disabled);
+                stack.AddCondition(UI::ComponentCondition::Normal__Disabled);
             
             hover = !hover;
             

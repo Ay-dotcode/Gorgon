@@ -28,7 +28,7 @@ namespace Gorgon { namespace UI {
 		void AddCondition(ComponentCondition condition);
         
         /// Removes a condition and its associated components
-        void RemoveCondition(ComponentCondition condition);
+        void RemoveCondition(ComponentCondition condition, bool check = true);
 
         /// Sets the data for a specific data component. This value will be cached by
         /// the stack for condition changes. This variant supports string based data.
@@ -64,6 +64,11 @@ namespace Gorgon { namespace UI {
 			controller.Reset();
 		}
 		
+		/// Returns if this component stack is disabled. Both disabling and enabling animations are counted as disabled.
+		bool IsDisabled() const {
+            return conditions.count(ComponentCondition::Disabled) || conditions.count(ComponentCondition::Normal__Disabled) || conditions.count(ComponentCondition::Disabled__Normal);
+        }
+		
 		/// Changes the default emsize of 10. This value can be overridden.
 		void SetEMSize(int value) {
             emsize = value;
@@ -86,7 +91,7 @@ namespace Gorgon { namespace UI {
 
 		void update(Component &parent);
 
-		void render(Component &component, Graphics::Layer &parentlayer);
+		void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset);
 
         void grow();
         
@@ -101,6 +106,7 @@ namespace Gorgon { namespace UI {
         std::set<ComponentCondition> conditions;
 		std::map<ComponentTemplate::DataEffect, std::string> stringdata;
 		Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
+        unsigned long conditionstart[(int)ComponentCondition::Max];
         
         int stackcapacity = 2;
         

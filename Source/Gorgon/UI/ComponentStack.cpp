@@ -1,6 +1,7 @@
 #include "ComponentStack.h"
 
 #include "../Graphics/Font.h"
+#include "../Time.h"
 
 
 namespace Gorgon { namespace UI {
@@ -25,26 +26,43 @@ namespace Gorgon { namespace UI {
         AddCondition(ComponentCondition::Always);
         
         mouse.SetOver([this]{        
-            if(conditions.count(ComponentCondition::Disabled) && mouse.HasParent()) {
-                disabled.insert(ComponentCondition::Hover);
+            auto c = ComponentCondition::Hover;
+            
+            if(this->temp.GetConditionDuration(ComponentCondition::Normal__Hover))
+                c = ComponentCondition::Normal__Hover;
+            
+            if(IsDisabled()) {
+                disabled.insert(c);
             }
             else {
-                AddCondition(ComponentCondition::Hover);
+                AddCondition(c);
             }
         });
         
         mouse.SetOut([this]{
             RemoveCondition(ComponentCondition::Hover);
             disabled.erase(ComponentCondition::Hover);
+            
+            RemoveCondition(ComponentCondition::Normal__Hover);
+            disabled.erase(ComponentCondition::Normal__Hover);
+            
+            if(!IsDisabled() && this->temp.GetConditionDuration(ComponentCondition::Hover__Normal)) {
+                AddCondition(ComponentCondition::Hover__Normal);
+            }
         });
         
         mouse.SetDown([this](Input::Mouse::Button btn) {
             if(btn && mousebuttonaccepted) {
-                if(conditions.count(ComponentCondition::Disabled) && mouse.HasParent()) {
-                    disabled.insert(ComponentCondition::Down);
+                auto c = ComponentCondition::Down;
+                
+                if(this->temp.GetConditionDuration(ComponentCondition::Normal__Down))
+                    c = ComponentCondition::Normal__Down;
+            
+                if(IsDisabled()) {
+                    disabled.insert(c);
                 }
                 else {
-                    AddCondition(ComponentCondition::Down);
+                    AddCondition(c);
                 }
             }
         });
@@ -53,6 +71,10 @@ namespace Gorgon { namespace UI {
             if(btn && mousebuttonaccepted) {
                 RemoveCondition(ComponentCondition::Down);
                 disabled.erase(ComponentCondition::Down);
+            }
+            
+            if(!IsDisabled() && this->temp.GetConditionDuration(ComponentCondition::Down__Normal)) {
+                AddCondition(ComponentCondition::Down__Normal);
             }
         });
         
@@ -131,15 +153,20 @@ namespace Gorgon { namespace UI {
         
         conditions.insert(condition);
         
-        if(condition == ComponentCondition::Disabled && mouse.HasParent()) {
-            if(conditions.count(ComponentCondition::Hover)) {
-                disabled.insert(ComponentCondition::Hover);
-                RemoveCondition(ComponentCondition::Hover);
-            }
-            
-            if(conditions.count(ComponentCondition::Down)) {
-                disabled.insert(ComponentCondition::Down);
-                RemoveCondition(ComponentCondition::Down);
+        if(IsTransition(condition)) {
+            conditionstart[(int)condition] = Time::FrameStart();
+        }
+        
+        if(UI::IsDisabled(condition) && mouse.HasParent()) {
+            for(auto iter = conditions.begin(); iter != conditions.end();) {
+                auto c = *iter;
+                if(IsMouseRelated(c)) {
+                    disabled.insert(c);
+                    iter = conditions.erase(iter);
+                    RemoveCondition(c, false);
+                }
+                else
+                    ++iter;
             }
         }
         
@@ -156,8 +183,8 @@ namespace Gorgon { namespace UI {
             Update();
     }
     
-    void ComponentStack::RemoveCondition(ComponentCondition condition){ 
-        if(!conditions.count(condition)) return;
+    void ComponentStack::RemoveCondition(ComponentCondition condition, bool check){ 
+        if(check && !conditions.count(condition)) return;
         
         conditions.erase(condition);
          
@@ -187,16 +214,11 @@ namespace Gorgon { namespace UI {
             }
         }
        
-        if(condition == ComponentCondition::Disabled && mouse.HasParent()) {
-            if(disabled.count(ComponentCondition::Hover)) {
-                AddCondition(ComponentCondition::Hover);
-                disabled.erase(ComponentCondition::Hover);
-            }
+        if(UI::IsDisabled(condition) && mouse.HasParent()) {
+            for(auto d : disabled)
+                AddCondition(d);
             
-            if(disabled.count(ComponentCondition::Down)) {
-                AddCondition(ComponentCondition::Down);
-                disabled.erase(ComponentCondition::Down);
-            }
+            disabled.clear();
         }
         
         if(updatereq)
@@ -272,21 +294,21 @@ namespace Gorgon { namespace UI {
         base.Clear();
         
 		//draw everything
-		render(get(0), base);
+		render(get(0), base, {0,0});
 	}
 
-	void ComponentStack::render(Component &comp, Graphics::Layer &parent) {
+	void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset) {
 		const ComponentTemplate &temp = comp.GetTemplate();
 
         Graphics::Layer *target = nullptr;
         auto &st = *storage[&temp];
         
-		//todo layer offset!
-
         if(st.layer) {
             target = st.layer;
             parent.Add(*target);
             target->Resize(comp.size);
+            target->Move(comp.location);
+            offset -= comp.location;
         }
         else {
             target = &parent;
@@ -298,39 +320,39 @@ namespace Gorgon { namespace UI {
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, comp.location, comp.size);
+                    rectangular->DrawIn(*target, comp.location+offset, comp.size);
                 else
-                    st.primary->Draw(*target, comp.location);
+                    st.primary->Draw(*target, comp.location+offset);
             }
             
             for(int i=0; i<cont.GetCount(); i++) {
                 if(cont[i] >= indices) continue;
                 if(stacksizes[cont[i]])
-                    render(get(cont[i]), target ? *target : parent);
+                    render(get(cont[i]), target ? *target : parent, offset);
             }
             
             if(st.secondary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.secondary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, comp.location, comp.size);
+                    rectangular->DrawIn(*target, comp.location+offset, comp.size);
                 else
-                    st.secondary->Draw(*target, comp.location);
+                    st.secondary->Draw(*target, comp.location+offset);
             }
 		}
 		else if(temp.GetType() == ComponentType::Graphics) {
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, comp.location, comp.size);
+                    rectangular->DrawIn(*target, comp.location+offset, comp.size);
                 else
-                    st.primary->Draw(*target, comp.location);
+                    st.primary->Draw(*target, comp.location+offset);
             }
         }
         else if(temp.GetType() == ComponentType::Textholder) {
             const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
             
             if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
-                th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location, comp.size.Width);
+                th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
             }
         }
         else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
@@ -339,10 +361,10 @@ namespace Gorgon { namespace UI {
             if(imagedata.Exists(ph.GetDataEffect())) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
                 if(rectangular) {
-                    rectangular->DrawIn(*target, comp.location, comp.size);
+                    rectangular->DrawIn(*target, comp.location+offset, comp.size);
                 }
                 else {
-                    imagedata[ph.GetDataEffect()].Draw(*target, comp.location);
+                    imagedata[ph.GetDataEffect()].Draw(*target, comp.location+offset);
                 }
             }
         }
@@ -405,7 +427,7 @@ namespace Gorgon { namespace UI {
         auto csize = comp.size;
         
         if(temp.GetType() == ComponentType::Textholder && 
-            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight)
+            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
         ) {
             const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
             
@@ -418,6 +440,14 @@ namespace Gorgon { namespace UI {
                     
                 case Anchor::FirstBaselineRight:
                     cp = {-offset.X + csize.Width, -offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    break;
+                    
+                case Anchor::LastBaselineLeft:
+                    cp = {-offset.X, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
+                    break;
+                    
+                case Anchor::LastBaselineRight:
+                    cp = {-offset.X + csize.Width, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
                     break;
                 }
                 
@@ -506,7 +536,7 @@ namespace Gorgon { namespace UI {
         
         
         if(other.GetTemplate().GetType() == ComponentType::Textholder && 
-            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight)
+            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
         ) {
             const auto &th = dynamic_cast<const TextholderTemplate&>(other.GetTemplate());
             
@@ -519,6 +549,14 @@ namespace Gorgon { namespace UI {
                     
                 case Anchor::FirstBaselineRight:
                     pp = {margin.Left + asize.Width, - margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    break;
+                    
+                case Anchor::LastBaselineLeft:
+                    cp = {-margin.Right, - margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height};
+                    break;
+                    
+                case Anchor::LastBaselineRight:
+                    cp = {margin.Left + asize.Width, - margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height};
                     break;
                 }
                 
@@ -578,7 +616,7 @@ namespace Gorgon { namespace UI {
         auto csize = comp.size;
        
         if(temp.GetType() == ComponentType::Textholder && 
-            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight)
+            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
         ) {
             const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
             
@@ -591,6 +629,14 @@ namespace Gorgon { namespace UI {
                     
                 case Anchor::FirstBaselineRight:
                     cp = {-offset.X + csize.Width, -offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    break;
+                    
+                case Anchor::LastBaselineLeft:
+                    cp = {-offset.X, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
+                    break;
+                    
+                case Anchor::LastBaselineRight:
+                    cp = {-offset.X + csize.Width, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
                     break;
                 }
                 
@@ -672,8 +718,10 @@ namespace Gorgon { namespace UI {
         
         parent.innersize = parent.size - cont.GetBorderSize();
         
-        if(parent.innersize.Width <= 0) return;
-        if(parent.innersize.Height <= 0) return;
+        if(cont.GetSizing() == cont.Fixed) {
+            if(parent.innersize.Width <= 0) return;
+            if(parent.innersize.Height <= 0) return;
+        }
 
         bool requiresrepass = false;
         bool repassdone = false;
@@ -724,8 +772,8 @@ realign:
 				auto orgsize = comp.size;
 
 				if(temp.GetType() == ComponentType::Container) {
-					const auto &cont = dynamic_cast<const ContainerTemplate&>(temp);
-					//todo
+                    comp.size = {0, 0};
+                    update(comp);
 				}
 				else if(temp.GetType() == ComponentType::Graphics) {
 					if(st.primary) {
@@ -792,6 +840,10 @@ realign:
 						comp.size.Height = 0;
 				}
 
+				if(comp.size.Width < 0)
+                    comp.size.Width = 0;
+                if(comp.size.Height < 0)
+                    comp.size.Height = 0;
 			}
         }
 
@@ -925,7 +977,20 @@ realign:
         }
 	}
 
-	void ComponentStack::Render() {
+	void ComponentStack::Render() {        
+        for(auto iter = conditions.begin(); iter != conditions.end();) {
+            auto c = *iter;
+            if(IsTransition(c) && temp.GetConditionDuration(c) < Time::FrameStart()-conditionstart[(int)c]) {
+                iter = conditions.erase(iter);
+                RemoveCondition(c, false);
+                auto nc = TransitionEnd(c);
+                if(nc != ComponentCondition::Always)
+                    AddCondition(nc);
+            }
+            else
+                ++iter;
+        }
+        
 		if(updaterequired)
 			update();
 
