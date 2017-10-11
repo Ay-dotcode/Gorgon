@@ -30,14 +30,18 @@ namespace Gorgon { namespace UI {
         /// Removes a condition and its associated components
         void RemoveCondition(ComponentCondition condition, bool check = true);
 
-        /// Sets the data for a specific data component. This value will be cached by
+        /// Sets the data for a specific data effect. This value will be cached by
         /// the stack for condition changes. This variant supports string based data.
         void SetData(ComponentTemplate::DataEffect effect, const std::string &text);
         
-        /// Sets the data for a specific data component. This value will be cached by
+        /// Sets the data for a specific data effect. This value will be cached by
         /// the stack for condition changes. This variant supports image based data.
         /// Ownership of the image stays with the caller.
         void SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image);
+        
+        /// Sets the value for this stack. Value of the stack can affect various
+        /// properties of components.
+        void SetValue(float val);
 
         using Layer::Resize;
         
@@ -104,8 +108,11 @@ namespace Gorgon { namespace UI {
         
         std::set<ComponentCondition> disabled;
         std::set<ComponentCondition> conditions;
+        
 		std::map<ComponentTemplate::DataEffect, std::string> stringdata;
 		Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
+		float value = 0;
+        
         unsigned long conditionstart[(int)ComponentCondition::Max];
         
         int stackcapacity = 2;

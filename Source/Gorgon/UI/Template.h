@@ -774,20 +774,10 @@ namespace Gorgon {
 			ShrinkOnly
 		};
 
-		/// Which property will the data of the widget affect. It will be scaled between
-		/// datamin and datamax.
+		/// Which property will the data of the widget affect. 
 		enum DataEffect {
 			/// Nothing will be affected
 			None,
-
-			/// Position of this component will be affected by the data. Data will be
-			/// given as a percent and will modify Position property. Useful for sliders,
-			/// scrollbars and progress bars.
-			ModifyPosition,
-
-			/// Size of this component will be affected. Data will be given as a percent
-			/// and will modify Size property. Useful for sliders and progress bars.
-			ModifySize,
 
 			/// Works only for TextholderTemplate, data will affect the text that is displayed.
 			/// If the Widget does not have text but states, the number of the state
@@ -806,6 +796,30 @@ namespace Gorgon {
 			/// Data will effect the displayed graphics
             Icon,
 		};
+        
+        /// Which property will the value of the widget affect. It will be scaled between
+		/// valuemin and valuemax.
+        enum ValueModification {
+            /// Nothing will be modified
+            NoModification,
+            
+			/// Position of this component will be affected by the data. Data will be
+			/// given as a percent and will modify Position property. Useful for sliders,
+			/// scrollbars and progress bars. The direction of the container is used to 
+            /// determine which axis will get affected.
+			ModifyPosition,
+
+			/// Size of this component will be affected. Data will be given as a percent
+			/// and will modify Size property. Useful for sliders and progress bars. Both 
+            /// width and height is affected, use container to limit the size in any direction.
+			ModifyScale,
+            
+			/// Size of this component will be affected. Data will be given as a percent
+			/// and will modify Size property. Useful for sliders and progress bars. The direction
+            /// of the container is used to determine which axis will get affected.
+			ModifySize,
+
+        };
 
 		/// Returns the type of the component.
 		virtual ComponentType GetType() const noexcept = 0;
@@ -941,12 +955,19 @@ namespace Gorgon {
 
 
 
-		/// Sets the data effect for this component. Default is None. If min and max is specified
-		/// incoming data will be scaled accordingly. 
-		void SetDataEffect(DataEffect effect, float min = 0, float max = 1) {
+		/// Sets the data effect for this component. Default is None.
+		void SetDataEffect(DataEffect effect) {
             dataeffect = effect;
-            datamin = min;
-            datamax = max;
+            
+            ChangedEvent(); 
+        }
+        
+		/// Sets the property that will be affected by the value of the widget. Default is NoModification. 
+		/// If min and max is specified incoming value will be scaled accordingly. 
+		void SetValueModification(ValueModification mod, float min = 0, float max = 1) {
+            valuemod = mod;
+            valuemin = min;
+            valuemax = max;
             
             ChangedEvent(); 
         }
@@ -954,8 +975,8 @@ namespace Gorgon {
         /// Changes the data range, which scales the data effect on the component. Not all effects
         /// are affected by the range.
 		void SetDataRange(float min, float max) {
-            datamin = min;
-            datamax = max;
+            valuemin = min;
+            valuemax = max;
             
             ChangedEvent(); 
         }
@@ -963,11 +984,17 @@ namespace Gorgon {
         /// Returns how the data will affect this component
 		DataEffect GetDataEffect() const { return dataeffect; }
 
-		/// Returns the data scale minimum.
-		float GetDataMin() const { return datamin; }
+        /// Returns which property of this component will be modified by the value
+		ValueModification GetValueModification() const { return valuemod; }
 
-		/// Returns the data scale maximum.
-		float GetDataMax() const { return datamax; }
+		/// Returns the value scale minimum.
+		float GetValueMin() const { return valuemin; }
+		
+		/// Returns the range of the value scale.
+		float GetValueRange() const { return valuemax-valuemin; }
+
+		/// Returns the value scale maximum.
+		float GetValueMax() const { return valuemax; }
 
 
         /// Changes the anchor of the component to the given values.
@@ -1039,9 +1066,12 @@ namespace Gorgon {
 
         /// The effect that the data will have on this component
 		DataEffect dataeffect = None;
+        
+        /// The property of the component that will be affected by the value
+		ValueModification valuemod = NoModification;
 
         /// If required, can be used to scale incoming data
-		float datamin = 0, datamax = 1;
+		float valuemin = 0, valuemax = 1;
         
         /// Positioning mode
 		PositionType positioning = Relative;
@@ -1212,7 +1242,9 @@ namespace Gorgon {
 	public:
 
 		/// Default constructor.
-		GraphicsTemplate() = default;
+		GraphicsTemplate() {
+            sizing = Automatic;
+        }
 		
 		/// Filling constructor, might cause ambiguous call due to most drawables being
 		/// AnimationProviders as well. You might typecast or use Content.SetDrawable function
@@ -1278,7 +1310,7 @@ namespace Gorgon {
 
 		/// Changes the border size of the component. Border size stays within the object area, but excluded
 		/// from the interior area.
-		void SetBorderSize(int value) { padding ={value}; ChangedEvent(); }
+		void SetBorderSize(int value) { bordersize ={value}; ChangedEvent(); }
 
 		/// Changes the border size of the component. Border size stays within the object area, but excluded
 		/// from the interior area.

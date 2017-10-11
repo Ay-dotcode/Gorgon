@@ -335,7 +335,7 @@ namespace Gorgon { namespace Graphics {
 					prev = g;
 				}
 
-				if(x + w + pw >= width) {
+				if(x + w + pw > width) {
 					int totw = 0;
 					// if we are placing a space
 					if(g == '\t' || isbreaking(g)) {
@@ -462,7 +462,7 @@ namespace Gorgon { namespace Graphics {
 			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
 		);
 
-		return{maxx, cur.Y + renderer->GetHeight()};
+		return{maxx, cur.Y};
 	}
 
     void BasicFont::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {

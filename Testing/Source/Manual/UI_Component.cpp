@@ -38,6 +38,8 @@ int main() {
     auto circle2 = Circle(25);
     circle2.Prepare();
     
+    auto blank = Graphics::BlankImage(16, 16, 0xff000000);
+    
     UI::Template temp;
     temp.SetConditionDuration(UI::ComponentCondition::Normal__Disabled, 2000);
     
@@ -46,9 +48,20 @@ int main() {
     
     outer_normal.Background.SetAnimation(rect);
     outer_normal.SetBorderSize(1);
-    outer_normal.SetPadding(5);
+    outer_normal.SetPadding(16);
+    //outer_normal.SetOrientation(Graphics::Orientation::Vertical);
     
-    auto &icon1 = temp.AddGraphics(1, UI::ComponentCondition::Always);
+    auto &gauge = temp.AddGraphics(1, UI::ComponentCondition::Always);
+    gauge.Content.SetDrawable(blank);
+    gauge.SetValueModification(gauge.ModifyPosition, 0, 1);
+    gauge.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+    gauge.SetPositioning(gauge.Absolute);
+    
+    
+    outer_normal.AddIndex(1);
+    outer_normal.AddIndex(2);
+    
+    /*auto &icon1 = temp.AddGraphics(1, UI::ComponentCondition::Always);
     icon1.Content.SetDrawable(circle);
     icon1.SetSize(32, 32);
     
@@ -72,17 +85,17 @@ int main() {
     iconplace.SetDataEffect(iconplace.Icon);
 	iconplace.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
 	iconplace.SetSizing(UI::ComponentTemplate::Automatic);
-	iconplace.SetSize(16, 16);
+	iconplace.SetSize(16, 16);*/
     
-    auto &text = temp.AddTextholder(3, UI::ComponentCondition::Always);
+    auto &text = temp.AddTextholder(2, UI::ComponentCondition::Always);
     text.SetDataEffect(text.Text);
-    text.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-    text.SetSize({100, UI::Dimension::Percent}, {-100, UI::Dimension::EM});
-    text.SetMargin(100, UI::Dimension::EM);
+    text.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+    //text.SetSize({100, UI::Dimension::Percent}, {-100, UI::Dimension::EM});
+    //text.SetMargin(100, UI::Dimension::EM);
     text.SetRenderer(app.fnt);
 	text.SetSizing(UI::ComponentTemplate::Automatic);
     
-    outer_normal.AddIndex(1);
+    /*outer_normal.AddIndex(1);
     outer_normal.AddIndex(2);
     outer_normal.AddIndex(3);
     outer_normal.AddIndex(4);
@@ -95,13 +108,17 @@ int main() {
     
     outer_disabled.AddIndex(1);
     outer_disabled.AddIndex(2);
-    outer_disabled.AddIndex(4);
+    outer_disabled.AddIndex(4);*/
 
-    UI::ComponentStack stack(temp, {160, 80});
+    UI::ComponentStack stack(temp, {16*8+2, 16*8+2});
     stack.HandleMouse();
-    stack.SetData(text.Text, "Hello there!!!\nHow uncivilized.");
+    stack.SetData(UI::ComponentTemplate::Text, "50");
     
-    stack.SetData(iconplace.Icon, t2.CreateAnimation());
+    stack.SetData(UI::ComponentTemplate::Icon, t2.CreateAnimation());
+    
+    float v = 0.5;
+    
+    stack.SetValue(v);
     
     app.wind.Add(stack);
         
@@ -117,6 +134,16 @@ int main() {
             hover = !hover;
             
             return true;
+        }
+        else if(key == Keycodes::Number_1 && state) {
+            v += 0.1;
+            stack.SetValue(v);
+            stack.SetData(UI::ComponentTemplate::Text, String::From(int(100*v)));
+        }
+        else if(key == Keycodes::Number_2 && state) {
+            v -= 0.1;
+            stack.SetValue(v);
+            stack.SetData(UI::ComponentTemplate::Text, String::From(int(100*v)));
         }
         
         return false;
