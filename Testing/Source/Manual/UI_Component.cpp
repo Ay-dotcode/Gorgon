@@ -48,12 +48,12 @@ int main() {
     
     outer_normal.Background.SetAnimation(rect);
     outer_normal.SetBorderSize(1);
-    outer_normal.SetPadding(16);
+    outer_normal.SetPadding(0);
     //outer_normal.SetOrientation(Graphics::Orientation::Vertical);
     
     auto &gauge = temp.AddGraphics(1, UI::ComponentCondition::Always);
     gauge.Content.SetDrawable(blank);
-    gauge.SetValueModification(gauge.ModifyPosition, 0, 1);
+    gauge.SetValueModification(gauge.ModifySize, 0, 1);
     gauge.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
     gauge.SetPositioning(gauge.Absolute);
     
@@ -110,7 +110,7 @@ int main() {
     outer_disabled.AddIndex(2);
     outer_disabled.AddIndex(4);*/
 
-    UI::ComponentStack stack(temp, {16*8+2, 16*8+2});
+    UI::ComponentStack stack(temp, {16*6+2, 16*6+2});
     stack.HandleMouse();
     stack.SetData(UI::ComponentTemplate::Text, "50");
     

@@ -783,10 +783,7 @@ realign:
             
             auto curval = value*temp.GetValueRange()+temp.GetValueMin();
             
-            if(temp.GetValueModification() == temp.ModifyScale) {
-                size = {{int(curval*10000), Dimension::BasisPoint}, {int(curval*10000), Dimension::BasisPoint}};
-            }
-            else if(temp.GetValueModification() == temp.ModifySize) {
+            if(temp.GetValueModification() == temp.ModifySize) {
                 if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
                     size = {{int(curval*10000), Dimension::BasisPoint}, size.Height};
                 }
@@ -871,9 +868,6 @@ realign:
                         comp.size.Width = orgsize.Width;
                     else
                         comp.size.Height = orgsize.Height;
-                }
-                else if(temp.GetValueModification() == temp.ModifyScale) {
-                    comp.size = orgsize;
                 }
 
 				if(

@@ -435,6 +435,29 @@ namespace Gorgon {
 		Closed__Normal,
 		Closed__Opened,
         
+        Active,
+        Normal__Active,
+        Active__Normal,
+        
+        HScroll,
+        Normal__HScroll,
+        HScroll__Normal,
+        HScroll__VScroll,
+        HScroll__HVScroll,
+        
+        VScroll,
+        Normal__VScroll,
+        VScroll__Normal,
+        VScroll__HScroll,
+        VScroll__HVScroll,
+        
+        HVScroll,
+        Normal__HVScroll,
+        HVScroll__Normal,
+        HVScroll__HScroll,
+        HVScroll__VScroll,
+        
+        
         /// Do not use this condition, this is to size the arrays.
         Max,
 	};
@@ -755,6 +778,12 @@ namespace Gorgon {
 
 			/// Absolute positioning, coordinates will start from the container
 			Absolute,
+            
+            /// The given coordinates are polar coordinates, The radius is given 
+            /// in pixels and angle is specified in degrees. Parent's center point
+            /// is used as pole. X component is used as radius and Y component is
+            /// used as angle.
+            PolarAbsolute,
 		};
 
 		/// Controls how the size is affected from the contents of the object
@@ -784,11 +813,6 @@ namespace Gorgon {
 			/// will be translated into a string and will be passed.
 			Text,
 
-			/// Data affects the rotation of the component. Rotation angle will start from 0 degrees
-			/// for 0, 360 degrees for 1. You may use min and max to modify this. For instance, if max
-			/// is set to 0.5, the degrees will go up to 180. For now, this effect is not in use.
-			Rotation,
-
 			/// Data will affect the frame of the animation. Will only work for Objects
 			/// with animations. For now, this effect is disabled.
 			Frame,
@@ -808,17 +832,102 @@ namespace Gorgon {
 			/// scrollbars and progress bars. The direction of the container is used to 
             /// determine which axis will get affected.
 			ModifyPosition,
-
-			/// Size of this component will be affected. Data will be given as a percent
-			/// and will modify Size property. Useful for sliders and progress bars. Both 
-            /// width and height is affected, use container to limit the size in any direction.
-			ModifyScale,
             
+            /// Value modifies the opacity of the component. If used on a container, it will effect
+            /// all components in that container
+            ModifyAlpha,
+            
+            /// Value modifies the color of the component. If used on a container, it will tint
+            /// all components in that container
+            ModifyColor, 
+            
+			/// Data affects the rotation of the component. Rotation angle will start from 0 degrees
+			/// for 0, 360 degrees for 1. You may use min and max to modify this. For instance, if max
+			/// is set to 0.5, the degrees will go up to 180. For now, this effect is not in use.
+			ModifyRotation,
+
 			/// Size of this component will be affected. Data will be given as a percent
 			/// and will modify Size property. Useful for sliders and progress bars. The direction
             /// of the container is used to determine which axis will get affected.
 			ModifySize,
+        };
+        
+        /// Which data channels should be used as the value, common combinations are listed, however, all
+        /// combinations are valid. LCh is for circular La*b* color system. 
+        enum ValueSource {
+            UseFirst = 1,
+            UseX = UseFirst,
+            UseWidth = UseFirst,
+            /// Red or radius for polar coordinates
+            UseR = UseFirst,
+            
+            UseSecond = 2,
+            UseY = UseSecond,
+            UseHeight = UseSecond,
+            UseG = UseSecond,
+            /// Tetha for polar coordinates
+            UseT = UseSecond,
+            
+            UseThird = 4,
+            UseZ = UseThird,
+            UseB = UseThird,
+            UseW = UseThird,
+            
+            UseFourth = 8,
+            UseA = UseFourth,
+            
+            /// Lightness
+            UseL = 16,
+            
+            /// Hue
+            UseH = 32, 
+            
+            /// Chromacity
+            UseC = 64,
+            
+            UseXY   = UseFirst | UseSecond,
+            UseSize = UseFirst | UseSecond,
+            UseRG   = UseFirst | UseSecond,
+            
+            UseYZ = UseSecond | UseThird,
+            UseGB = UseSecond | UseThird,
+            
+            UseXZ = UseFirst | UseThird,
+            UseRB = UseFirst | UseThird,
+            
+            UseXYZ = UseFirst | UseSecond | UseThird,
+            UseRGB = UseFirst | UseSecond | UseThird,
+            
+            UseLH = UseL | UseH,
+            UseLC = UseL | UseC,
+            UseCH = UseC | UseH,
 
+            UseLCH  = UseL | UseH | UseC,
+            UseLCHA = UseL | UseH | UseC | UseA,
+            
+            UseRGBA = UseFirst | UseSecond | UseThird | UseFourth,
+        };
+        
+        /// Tags mark a component to be modified in a way meaningful to specific widgets
+        enum Tag {
+            NoTag,
+            TickTag,
+            XTickTag,
+            YTickTag,
+            HScrollTag,
+            VScrollTag,
+            DragTag,
+            XDragTag,
+            YDragTag,
+            MinimapTag,
+            IncrementTag,
+            DecrementTag,
+            LeftTag,
+            RightTag,
+            TopTag,
+            BottomTag,
+            ExpandTag,
+            ToggleTag,
         };
 
 		/// Returns the type of the component.
@@ -845,6 +954,22 @@ namespace Gorgon {
 
 		/// Returns the positioning method of the component
 		PositionType GetPositioning() const { return positioning; }
+		
+		/// Changes the center coordinate that will be used in rotation
+		void SetCenter(int x, int y, Dimension::Unit unit = Dimension::Pixel) { center = {{x, unit}, {y, unit}}; ChangedEvent(); }
+
+		/// Changes the center coordinate that will be used in rotation
+		void SetCenter(Geometry::Point pos, Dimension::Unit unit = Dimension::Pixel) { center = {{pos.X, unit}, {pos.Y, unit}}; ChangedEvent(); }
+
+		/// Changes the center coordinate that will be used in rotation
+		void SetCenter(Dimension x, Dimension y) { center = {x, y}; ChangedEvent(); }
+
+		/// Changes the center coordinate that will be used in rotation
+		void SetCenter(Point value) { center = value; ChangedEvent(); }
+		
+		/// Returns the center point that would be used for rotation
+		Point GetCenter() const { return center; }
+
 
 
         /// Changes the size of the component. The given values are ignored if the sizing mode is Automatic.
@@ -986,6 +1111,32 @@ namespace Gorgon {
 
         /// Returns which property of this component will be modified by the value
 		ValueModification GetValueModification() const { return valuemod; }
+		
+		/// Returns the value source that will be used
+		void SetValueSource(ValueSource value) {
+            source = value;
+            
+            ChangedEvent(); 
+        }
+        
+        /// Returns the value source that will be used
+        ValueSource GetValueSource() const {
+            return source;
+        }
+        
+        /// Changes the tag of this component
+        void SetTag(Tag value) {
+            tag = value;
+            
+            ChangedEvent(); 
+        }
+        
+        /// Returns the tag of the component
+        Tag GetTag() const {
+            return tag;
+        }
+        
+        
 
 		/// Returns the value scale minimum.
 		float GetValueMin() const { return valuemin; }
@@ -1069,9 +1220,16 @@ namespace Gorgon {
         
         /// The property of the component that will be affected by the value
 		ValueModification valuemod = NoModification;
+        
+        /// The value that will be used for this component
+        ValueSource source = UseFirst;
 
         /// If required, can be used to scale incoming data
 		float valuemin = 0, valuemax = 1;
+        
+        /// Tag identifies a component for various modifications depending on the
+        /// widget.
+        Tag tag = NoTag;
         
         /// Positioning mode
 		PositionType positioning = Relative;
@@ -1091,6 +1249,9 @@ namespace Gorgon {
 
 		/// Indent is added to the margin and padding on the edge of the container
 		Margin indent = {0};
+        
+        /// Center point for rotation
+        Point center = {0, 0};
 
         /// Anchor point of the previous component that this component will be attached
         /// to. If the component positioning is absolute or this is the first component, 
