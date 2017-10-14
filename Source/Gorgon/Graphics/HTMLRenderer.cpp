@@ -12,7 +12,6 @@ Utils::Logger Logger;
 
     
 void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, int x, int y) {
-    
     // clear previous state
     drawunderlined = false;
     drawstriked = false;
@@ -31,11 +30,15 @@ void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, 
     char current;
     std::string text, tag, attribute, attval;
     std::vector<std::pair<std::string, std::string>> attributes;
+    Tag tagenum;
     
     for(std::size_t i = 0; i < str.length(); i++) {
         current = str[i];
+
         if(current == '<') {
+            // if not inside a tag currently, and got some text accumulated, print them
             if(!intag && !text.empty()) {
+                HR_LOG_NOTICE("printing text: \"" + text + "\"");
                 print(target, text, xx, yy);
                 xx += offset;
                 offset = 0;
@@ -45,36 +48,46 @@ void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, 
             continue;
         }
         else if(current == '>') {
+            tagenum = string2tag(tag);
             if(remove) {
                 remove = false;
-                removestyle(tag);
+                removetag(tagenum);
                 if(drawunderlined) {
+                    HR_LOG_NOTICE("about to draw underline");
                     drawunderlined = false;
                     // !!! do we need baselineoffset here? it's always zero (or is it?)
-                    // @TODO handle properties of underlined tag
-                    target.Draw((float)underlinedstart, (float)(yy + renderer.GetGlyphRenderer()->GetUnderlineOffset() /*+ baselineoffset*/),
+                    // !!! TODO handle properties of underlined tag
+                    target.Draw((float)underlinedstart,
+                                (float)(yy + renderer.GetGlyphRenderer()->GetUnderlineOffset() /*+ baselineoffset*/),
                                 (float)(xx  - underlinedstart),
-                                (float)renderer.GetGlyphRenderer()->GetLineThickness());
+                                (float)renderer.GetGlyphRenderer()->GetLineThickness(),
+                                ucolor);
                 }
                 if(drawstriked) {
+                    HR_LOG_NOTICE("about to draw strike line");
                     drawstriked = false;
                     // !!! do we need baselineoffset here? it's always zero (or is it?)
-                    // @TODO: handle properties of strike tag
-                    target.Draw((float)strikedstart, (float)(yy + renderer.GetStrikePosition()  /*+ baselineoffset*/),
+                    // !!! TODO: handle properties of strike tag
+                    target.Draw((float)strikedstart,
+                                (float)(yy + renderer.GetStrikePosition()  /*+ baselineoffset*/),
                                 (float)(xx  - strikedstart),
-                                (float)renderer.GetGlyphRenderer()->GetLineThickness());
+                                (float)renderer.GetGlyphRenderer()->GetLineThickness(),
+                                scolor);
                 }
+                clearattributes(tagenum);
             }
             else {
                 parseattrbts = false;
                 if(!attribute.empty()) {
+                    HR_LOG_NOTICE("extracting accumulated attribute string before style application");
                     attributes.emplace_back(std::pair<std::string, std::string>(attribute, attval));
                     attribute.clear();
                     attval.clear();
                 }
-                
+                HR_LOG_NOTICE("attribute count: " + std::to_string(attributes.size()));
+                applytag(tagenum);
+                applyattributes(tagenum, attributes);
                 attributes.clear();
-                applystyle(tag);
             }
             tag.clear();
             intag = false;
@@ -138,6 +151,7 @@ void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, 
     }
     
     if(!text.empty()) {
+        HR_LOG_NOTICE("about to print text");
         print(target, text, xx, yy);
     }
 }

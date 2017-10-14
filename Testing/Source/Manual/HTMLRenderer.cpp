@@ -45,7 +45,8 @@ int main() {
     Graphics::HTMLRenderer sty(family);
 
     
-    sty.Print(layer, "<u><b>AAAA</b> BBBB</u> <strike><b>CCCC</b> DDDD</strike>", 250, 270);
+    sty.Print(layer, "<u color=\"black\"><b>AAAA</b> BBBB</u> <strike color=\"green\"><b>CCCC</b> DDDD</strike>", 250, 270);
+    
     sty.Print(layer, "<u>AAAA <b>BBBB</b></u> <strike>CCCC <b>DDDD</b></strike>", 250, 300);
     
     
@@ -60,7 +61,6 @@ int main() {
     
     sty.Print(layer, "the quick brown fox jumps over the lazy dog", 250, 480);
     sty.Print(layer, "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", 250, 510);
-    
     
     Graphics::BlankImage bimg(1, 1);
     bimg.Draw(layer, 245, 270);

@@ -18,6 +18,9 @@
 #define HR_LOG_NOTICE(string)       HR_LOG(string, Utils::Logger::State::Notice)
 #define HR_LOG_MESSAGE(string)      HR_LOG(string, Utils::Logger::State::Message)
 
+#define HR_BTWSOR_TAG_ATTR_PAIR(tag, attribute) \
+    (static_cast<unsigned int>(tag) | static_cast<unsigned int>(attribute))
+
 namespace Gorgon { namespace Graphics {
 
 namespace HTMLRendererInternal {
@@ -84,6 +87,12 @@ private:
 
 }; // end of class FontFamily
 
+class Tag {
+public:
+private:
+};
+
+
 class HTMLRenderer {
 public:
     HTMLRenderer(FontFamily &fontfamily, RGBAf color = 1.f, TextShadow shadow = {}):
@@ -93,7 +102,9 @@ public:
         drawstriked(false),
         underlinedstart(0),
         strikedstart(0),
-        baselineoffset(0)
+        baselineoffset(0),
+        ucolor(1.f),
+        scolor(1.f)
     {}
 
     void Print(TextureTarget &target, const std::string &text, int x, int y) {
@@ -102,9 +113,14 @@ public:
     
 private:
     enum class Tag: unsigned int {
-        Underlined = 0,
-        Striked,
-        Bold,
+        Underlined = 0x00000000,
+        Striked    = 0x00000001,
+        Bold       = 0x00000002,
+        End
+    };
+    
+    enum class Attribute: unsigned int {
+        Color = 0x00010000,
         End
     };
     
@@ -118,6 +134,9 @@ private:
     int xx;
     int yy;
     
+    RGBAf ucolor; // underlined
+    RGBAf scolor; // strike
+    
     
     
     // private methods
@@ -129,9 +148,15 @@ private:
         else if(tag == "b")      { return Tag::Bold; }
         else                     { ASSERT(false, "unsupported tag: " + tag); return Tag::End; }
     }
+    
+    Attribute string2attribute(const std::string &attribute) {
+        if(attribute == "color") { return Attribute::Color; }
+        else                     { ASSERT(false, "unsupported attribute: " + attribute); return Attribute::End; }
+    }
 
-    void applystyle(const std::string &str) {
-        Tag tag = string2tag(str);
+    void applytag(Tag tag) {
+        // !!! TODO tag2string function
+        HR_LOG_NOTICE("applying tag: " + std::to_string(static_cast<unsigned int>(tag)));
         switch(tag) {
             case Tag::Underlined:
                 underlinedstart = xx;
@@ -143,13 +168,34 @@ private:
                 changeglyphrenderer(FontFamily::Style::Bold);
                 break;
             default:
-                ASSERT(false, "unsupported tag: " + str);
+                // !!! TODO tag2string function
+                ASSERT(false, "unsupported tag: " + std::to_string(static_cast<unsigned int>(tag)));
                 break;
         }
     }
 
-    void removestyle(const std::string &str) {
-        Tag tag = string2tag(str);
+    // !!! TODO find a way to merge this function with removetag
+    // !!! the problem is underline and strike application is done
+    // !!! after removetag is called
+    void clearattributes(Tag tag) {
+        switch(tag) {
+            case Tag::Underlined:
+                HR_LOG_NOTICE("clearing underline attributes");
+                ucolor = RGBAf(1.f);
+                break;
+            case Tag::Striked:
+                HR_LOG_NOTICE("clearing strike attributes");
+                scolor = RGBAf(1.f);
+                break;
+            default:
+                return;
+        }
+    }
+    
+    
+    void removetag(Tag tag) {
+        // !!! TODO tag2string function
+        HR_LOG_NOTICE("removing tag: " + std::to_string(static_cast<unsigned int>(tag)));
         switch(tag) {
             case Tag::Underlined:
                 drawunderlined = true;
@@ -161,8 +207,46 @@ private:
                 changeglyphrenderer(FontFamily::Style::Normal);
                 break;
             default:
-                ASSERT(false, "unsupported tag: " + str);
+                // !!! TODO tag2string function
+                ASSERT(false, "unsupported tag: " + std::to_string(static_cast<unsigned int>(tag)));
                 break;
+        }
+    }
+    
+    RGBAf extractcolor(const std::string color) {
+        if(color == "white")      { return RGBAf(1.f); }
+        else if(color == "black") { return RGBAf(0.f); }
+        else if(color == "green") { return RGBAf(0.f, 1.f, 0.f, 1.f); }
+        else {
+            HR_LOG_NOTICE("could not extract given color, using white");
+            return RGBAf(1.f); 
+        }
+    }
+    
+    void applyattributes(Tag tag, const std::vector<std::pair<std::string, std::string>> &attributes) {
+        Attribute attribute;
+        for(const auto &attstr: attributes) {
+            attribute = string2attribute(attstr.first);
+            unsigned int mappedval = (static_cast<unsigned int>(attribute) & static_cast<unsigned int>(tag));
+            if(/*issupported(tag, attribute)*/true) {
+                switch(HR_BTWSOR_TAG_ATTR_PAIR(tag, attribute)) {
+                    case HR_BTWSOR_TAG_ATTR_PAIR(Tag::Underlined, Attribute::Color):
+                        HR_LOG_NOTICE("changing underline color");
+                        ucolor = extractcolor(attstr.second);
+                        break;
+                    case HR_BTWSOR_TAG_ATTR_PAIR(Tag::Striked, Attribute::Color):
+                        HR_LOG_NOTICE("changing strike color");
+                        scolor = extractcolor(attstr.second);
+                        break;
+                    default:
+                        ASSERT(false, "unsupported attribute: " + attstr.first);
+                        break;
+                }
+            }
+            else {
+                // !!! TODO tag2string function
+                HR_LOG_NOTICE("attribute is not part of tag (" + std::to_string(static_cast<unsigned int>(tag)) + ")");
+            }
         }
     }
     
