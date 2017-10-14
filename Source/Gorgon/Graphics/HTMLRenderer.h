@@ -87,12 +87,6 @@ private:
 
 }; // end of class FontFamily
 
-class Tag {
-public:
-private:
-};
-
-
 class HTMLRenderer {
 public:
     HTMLRenderer(FontFamily &fontfamily, RGBAf color = 1.f, TextShadow shadow = {}):
