@@ -124,7 +124,7 @@ namespace Gorgon { namespace UI {
 
 		void update(Component &parent);
 
-		void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset);
+		void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset, Graphics::RGBAf color = 1.f);
 
         void grow();
         

@@ -38,7 +38,7 @@ int main() {
     auto circle2 = Circle(25);
     circle2.Prepare();
     
-    auto blank = Graphics::BlankImage(16, 16, 0xff000000);
+    auto blank = Graphics::BlankImage(16, 16, 0xffffffff);
     
     UI::Template temp;
     temp.SetConditionDuration(UI::ComponentCondition::Normal__Disabled, 2000);
@@ -53,7 +53,7 @@ int main() {
     
     auto &gauge = temp.AddGraphics(1, UI::ComponentCondition::Always);
     gauge.Content.SetDrawable(blank);
-    gauge.SetValueModification(gauge.ModifyPosition, UI::ComponentTemplate::UseRGBA);
+    gauge.SetValueModification(gauge.ModifyColor, UI::ComponentTemplate::UseRGBA);
     gauge.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::MiddleCenter);
     gauge.SetPositioning(gauge.Absolute);
     

@@ -318,7 +318,7 @@ namespace Gorgon { namespace UI {
 		render(get(0), base, {0,0});
 	}
 
-	void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset) {
+	void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color) {
 		const ComponentTemplate &temp = comp.GetTemplate();
 
         Graphics::Layer *target = nullptr;
@@ -334,18 +334,35 @@ namespace Gorgon { namespace UI {
         else {
             target = &parent;
         }
-        
+
+		if(temp.GetValueModification() == ComponentTemplate::ModifyColor) {
+			if(NumberOfSetBits(temp.GetValueSource()) == 1) {
+				color *= Graphics::RGBAf(calculatevalue(0, comp));
+			}
+			else if(NumberOfSetBits(temp.GetValueSource()) == 2) {
+				color *= Graphics::RGBAf(calculatevalue(0, comp), calculatevalue(1, comp));
+			}
+			else if(NumberOfSetBits(temp.GetValueSource()) == 3) {
+				color *= Graphics::RGBAf(calculatevalue(0, comp), calculatevalue(1, comp), calculatevalue(2, comp), 1.f);
+			}
+			else
+				color *= Graphics::RGBAf(calculatevalue(0, comp), calculatevalue(1, comp), calculatevalue(2, comp), calculatevalue(3, comp));
+		}
+		else if(temp.GetValueModification() == ComponentTemplate::ModifyAlpha)
+			color *= Graphics::RGBAf(1.f, calculatevalue(0, comp));
+
 		if(temp.GetType() == ComponentType::Container) {
             const auto &cont = dynamic_cast<const ContainerTemplate&>(temp);
             
             offset += cont.GetBorderSize().TopLeft();
-            
+			offset += comp.location;
+
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, comp.location+offset-cont.GetBorderSize().TopLeft(), comp.size);
+                    rectangular->DrawIn(*target, comp.location+offset-cont.GetBorderSize().TopLeft(), comp.size, color);
                 else
-                    st.primary->Draw(*target, comp.location+offset-cont.GetBorderSize().TopLeft());
+                    st.primary->Draw(*target, comp.location+offset-cont.GetBorderSize().TopLeft(), color);
             }
             
             for(int i=0; i<cont.GetCount(); i++) {
@@ -357,9 +374,9 @@ namespace Gorgon { namespace UI {
             if(st.secondary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.secondary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, comp.location+offset-cont.GetOverlayExtent().TopLeft(), comp.size);
+                    rectangular->DrawIn(*target, comp.location+offset-cont.GetOverlayExtent().TopLeft(), comp.size, color);
                 else
-                    st.secondary->Draw(*target, comp.location+offset-cont.GetOverlayExtent().TopLeft());
+                    st.secondary->Draw(*target, comp.location+offset-cont.GetOverlayExtent().TopLeft(), color);
             }
             
             offset -= cont.GetBorderSize().TopLeft();
@@ -368,28 +385,30 @@ namespace Gorgon { namespace UI {
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, comp.location+offset, comp.size);
+                    rectangular->DrawIn(*target, comp.location+offset, comp.size, color);
                 else
-                    st.primary->Draw(*target, comp.location+offset);
+                    st.primary->Draw(*target, comp.location+offset, color);
             }
         }
         else if(temp.GetType() == ComponentType::Textholder) {
             const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
             
+			target->SetTintColor(color);
             if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
                 th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
             }
-        }
+			target->SetTintColor(1.f);
+		}
         else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
             const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
             
             if(imagedata.Exists(ph.GetDataEffect())) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
                 if(rectangular) {
-                    rectangular->DrawIn(*target, comp.location+offset, comp.size);
+                    rectangular->DrawIn(*target, comp.location+offset, comp.size, color);
                 }
                 else {
-                    imagedata[ph.GetDataEffect()].Draw(*target, comp.location+offset);
+                    imagedata[ph.GetDataEffect()].Draw(*target, comp.location+offset, color);
                 }
             }
         }
