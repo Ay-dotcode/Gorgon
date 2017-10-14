@@ -7,6 +7,7 @@
 #include "Component.h"
 #include "../Containers/Hashmap.h"
 #include "../Input/Layer.h"
+#include "../Geometry/Point3D.h"
 
 namespace Gorgon { namespace UI {
 
@@ -37,11 +38,39 @@ namespace Gorgon { namespace UI {
         /// Sets the data for a specific data effect. This value will be cached by
         /// the stack for condition changes. This variant supports image based data.
         /// Ownership of the image stays with the caller.
-        void SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image);
-        
-        /// Sets the value for this stack. Value of the stack can affect various
-        /// properties of components.
-        void SetValue(float val);
+		void SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image);
+
+		/// Sets the value for this stack. Value of the stack can affect various
+		/// properties of components. This will set the individual channels separately.
+		/// Values should be between 0 and 1.
+		void SetValue(float first) { SetValue(first, value[1], value[2], value[3]); }
+
+		/// Sets the value for this stack. Value of the stack can affect various
+		/// properties of components. This will set the individual channels separately.
+		/// Values should be between 0 and 1.
+		void SetValue(float first, float second) { SetValue(first, second, value[2], value[3]); }
+
+		/// Sets the value for this stack. Value of the stack can affect various
+		/// properties of components. This will set the individual channels separately.
+		/// Values should be between 0 and 1.
+		void SetValue(float first, float second, float third) { SetValue(first, second, third, value[3]); }
+
+		/// Sets the value for this stack. Value of the stack can affect various
+		/// properties of components. This will set the individual channels separately.
+		/// Values should be between 0 and 1.
+		void SetValue(float first, float second, float third, float fourth);
+
+		/// Sets the value for the stack using a point in coordinate system
+		void SetValue(Geometry::Pointf pos) { SetValue(pos.X, pos.Y); }
+
+		/// Sets the value for the stack using a point in coordinate system
+		void SetValue(Geometry::Point3D pos) { SetValue(pos.X, pos.Y, pos.Z); }
+
+		/// Sets the value for the stack using a color
+		void SetValue(Graphics::RGBAf color) { SetValue(color.R, color.G, color.B, color.A); }
+
+		/// Sets the value for the stack using a color
+		void SetValue(Graphics::RGBA color) { SetValue((Graphics::RGBAf)color); }
 
         using Layer::Resize;
         
@@ -100,7 +129,9 @@ namespace Gorgon { namespace UI {
         void grow();
         
         int getemsize(const Component &comp);
-        
+
+		float calculatevalue(int channel, const Component &comp) const;
+
         int emsize = 10;
         
 		Component *data = nullptr;
@@ -111,7 +142,7 @@ namespace Gorgon { namespace UI {
         
 		std::map<ComponentTemplate::DataEffect, std::string> stringdata;
 		Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
-		float value = 0;
+		std::array<float, 4> value;
         
         unsigned long conditionstart[(int)ComponentCondition::Max];
         

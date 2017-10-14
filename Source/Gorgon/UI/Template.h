@@ -493,6 +493,20 @@ namespace Gorgon {
             case ComponentCondition::Normal__Closed:
             case ComponentCondition::Closed__Normal:
             case ComponentCondition::Closed__Opened:
+			case ComponentCondition::Normal__Active:
+			case ComponentCondition::Active__Normal:
+			case ComponentCondition::Normal__HScroll:
+			case ComponentCondition::HScroll__Normal:
+			case ComponentCondition::HScroll__VScroll:
+			case ComponentCondition::HScroll__HVScroll:
+			case ComponentCondition::Normal__VScroll:
+			case ComponentCondition::VScroll__Normal:
+			case ComponentCondition::VScroll__HScroll:
+			case ComponentCondition::VScroll__HVScroll:
+			case ComponentCondition::Normal__HVScroll:
+			case ComponentCondition::HVScroll__Normal:
+			case ComponentCondition::HVScroll__HScroll:
+			case ComponentCondition::HVScroll__VScroll:
                 return true;
                 
             default:
@@ -560,7 +574,27 @@ namespace Gorgon {
 				return ComponentCondition::Always;
             case ComponentCondition::Closed__Opened:
 				return ComponentCondition::Opened;
-            default:
+			case ComponentCondition::Normal__Active:
+				return ComponentCondition::Active;
+			case ComponentCondition::Normal__HScroll:
+				return ComponentCondition::HScroll;
+			case ComponentCondition::HScroll__VScroll:
+				return ComponentCondition::VScroll;
+			case ComponentCondition::HScroll__HVScroll:
+				return ComponentCondition::HVScroll;
+			case ComponentCondition::Normal__VScroll:
+				return ComponentCondition::VScroll;
+			case ComponentCondition::VScroll__HScroll:
+				return ComponentCondition::HScroll;
+			case ComponentCondition::VScroll__HVScroll:
+				return ComponentCondition::HVScroll;
+			case ComponentCondition::Normal__HVScroll:
+				return ComponentCondition::HVScroll;
+			case ComponentCondition::HVScroll__HScroll:
+				return ComponentCondition::HScroll;
+			case ComponentCondition::HVScroll__VScroll:
+				return ComponentCondition::VScroll;
+			default:
                 return ComponentCondition::Always;
         }
     }
@@ -853,7 +887,9 @@ namespace Gorgon {
         };
         
         /// Which data channels should be used as the value, common combinations are listed, however, all
-        /// combinations are valid. LCh is for circular La*b* color system. 
+        /// combinations are valid. LCh is for circular La*b* color system. Color can also be mapped to
+        /// coordinate system. Particularly, CH can be mapped to polar coordinates to create a color map.
+        /// LCh color system is not yet working
         enum ValueSource {
             UseFirst = 1,
             UseX = UseFirst,
@@ -865,25 +901,31 @@ namespace Gorgon {
             UseY = UseSecond,
             UseHeight = UseSecond,
             UseG = UseSecond,
-            /// Tetha for polar coordinates
+            /// Theta for polar coordinates
             UseT = UseSecond,
             
             UseThird = 4,
             UseZ = UseThird,
             UseB = UseThird,
-            UseW = UseThird,
             
             UseFourth = 8,
             UseA = UseFourth,
-            
-            /// Lightness
-            UseL = 16,
+			UseW = UseFourth,
+
+			/// Grayscale value of color
+			UseGray = 16,
+
+			/// Lightness
+			UseL = 32,
             
             /// Hue
-            UseH = 32, 
+            UseH = 64, 
             
             /// Chromacity
-            UseC = 64,
+            UseC = 128,
+
+			/// Maximum power of two
+			ValueSourceMaxPower = 7,
             
             UseXY   = UseFirst | UseSecond,
             UseSize = UseFirst | UseSecond,
@@ -899,8 +941,10 @@ namespace Gorgon {
             UseRGB = UseFirst | UseSecond | UseThird,
             
             UseLH = UseL | UseH,
-            UseLC = UseL | UseC,
-            UseCH = UseC | UseH,
+			UseLC = UseL | UseC,
+			UseCH = UseC | UseH,
+
+			UseGrayAlpha = UseGray | UseA,
 
             UseLCH  = UseL | UseH | UseC,
             UseLCHA = UseL | UseH | UseC | UseA,
@@ -1085,29 +1129,41 @@ namespace Gorgon {
             dataeffect = effect;
             
             ChangedEvent(); 
-        }
+		}
+
+		/// Returns how the data will affect this component
+		DataEffect GetDataEffect() const { return dataeffect; }
         
 		/// Sets the property that will be affected by the value of the widget. Default is NoModification. 
 		/// If min and max is specified incoming value will be scaled accordingly. 
-		void SetValueModification(ValueModification mod, float min = 0, float max = 1) {
+		void SetValueModification(ValueModification mod, ValueSource source = UseFirst, std::array<float, 4> min = {0, 0, 0, 0}, std::array<float, 4> max = {1, 1, 1, 1}) {
             valuemod = mod;
             valuemin = min;
             valuemax = max;
+			this->source = source;
             
             ChangedEvent(); 
         }
 
-        /// Changes the data range, which scales the data effect on the component. Not all effects
-        /// are affected by the range.
-		void SetDataRange(float min, float max) {
-            valuemin = min;
-            valuemax = max;
-            
-            ChangedEvent(); 
-        }
+		/// Changes the data range, which scales the data effect on the component. Not all effects
+		/// are affected by the range.
+		void SetValueRange(std::array<float, 4> min, std::array<float, 4> max) {
+			valuemin = min;
+			valuemax = max;
 
-        /// Returns how the data will affect this component
-		DataEffect GetDataEffect() const { return dataeffect; }
+			ChangedEvent();
+		}
+
+		/// Changes the data range, which scales the data effect on the component. Not all effects
+		/// are affected by the range.
+		void SetValueRange(int channel, float min, float max) {
+			ASSERT(channel>=0 && channel<4, "Channel index out of bounds");
+
+			valuemin[channel] = min;
+			valuemax[channel] = max;
+
+			ChangedEvent();
+		}
 
         /// Returns which property of this component will be modified by the value
 		ValueModification GetValueModification() const { return valuemod; }
@@ -1136,16 +1192,36 @@ namespace Gorgon {
             return tag;
         }
         
-        
 
 		/// Returns the value scale minimum.
-		float GetValueMin() const { return valuemin; }
-		
+		std::array<float, 4> GetValueMin() const { return valuemin; }
+
 		/// Returns the range of the value scale.
-		float GetValueRange() const { return valuemax-valuemin; }
+		std::array<float, 4> GetValueRange() const { return {valuemax[0]-valuemin[0], valuemax[1]-valuemin[1], valuemax[2]-valuemin[2], valuemax[3]-valuemin[3]}; }
 
 		/// Returns the value scale maximum.
-		float GetValueMax() const { return valuemax; }
+		std::array<float, 4> GetValueMax() const { return valuemax; }
+
+		/// Returns the value scale minimum.
+		float GetValueMin(int channel) const {
+			ASSERT(channel>=0 && channel<4, "Channel index out of bounds");
+
+			return valuemin[channel];
+		}
+		
+		/// Returns the range of the value scale.
+		float GetValueRange(int channel) const {
+			ASSERT(channel>=0 && channel<4, "Channel index out of bounds");
+
+			return valuemax[channel]-valuemin[channel];
+		}
+
+		/// Returns the value scale maximum.
+		float GetValueMax(int channel) const {
+			ASSERT(channel>=0 && channel<4, "Channel index out of bounds");
+
+			return valuemax[channel];
+		}
 
 
         /// Changes the anchor of the component to the given values.
@@ -1225,7 +1301,7 @@ namespace Gorgon {
         ValueSource source = UseFirst;
 
         /// If required, can be used to scale incoming data
-		float valuemin = 0, valuemax = 1;
+		std::array<float, 4> valuemin = {}, valuemax = {1, 1, 1, 1};
         
         /// Tag identifies a component for various modifications depending on the
         /// widget.
@@ -1272,6 +1348,10 @@ namespace Gorgon {
         /// the order of components in container.
 		int index = 0;
 	};
+
+	inline ComponentTemplate::ValueSource operator | (ComponentTemplate::ValueSource l, ComponentTemplate::ValueSource r) {
+		return ComponentTemplate::ValueSource((int)l | (int)r);
+	}
 
 	/// Defines a placeholder according to the Box Model. Placeholder is replaced with
 	/// a visual component. Default sizing mode for a placeholder is Automatic.

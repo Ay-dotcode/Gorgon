@@ -10,6 +10,8 @@ namespace Gorgon { namespace UI {
 
     ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : temp(temp), size(size) {
         int maxindex = 0;
+
+		value[0] = value[1] = value[2] = value[3] = 0;
         
         for(int i=0; i<temp.GetCount(); i++) {
             if(maxindex < temp[i].GetIndex())
@@ -263,8 +265,8 @@ namespace Gorgon { namespace UI {
 			Update();
 	}
     
-	void ComponentStack::SetValue(float val) {
-        value = val;
+	void ComponentStack::SetValue(float first, float second, float third, float fourth) {
+		value = {first, second, third, fourth};
         
 		bool updatereq = false;
 
@@ -731,6 +733,53 @@ namespace Gorgon { namespace UI {
         return emsize;
     }
 	
+	float ComponentStack::calculatevalue(int channel, const Component &comp) const {
+		const auto &temp = comp.GetTemplate();
+
+		int vs = temp.GetValueSource();
+		ComponentTemplate::ValueSource src = (ComponentTemplate::ValueSource)(1<<channel);
+
+		int c = channel;
+		int i=0;
+		while(c >= 0 && i <= ComponentTemplate::ValueSourceMaxPower) {
+			if(vs & (1<<i)) {
+				if(!c) {
+					src = (ComponentTemplate::ValueSource)(1<<i);
+				}
+
+				c--;
+			}
+
+			i++;
+		}
+
+		float v = 0;
+
+		switch(src) {
+			case ComponentTemplate::UseFirst:
+				v = value[0];
+				break;
+
+			case ComponentTemplate::UseSecond:
+				v = value[1];
+				break;
+
+			case ComponentTemplate::UseThird:
+				v = value[2];
+				break;
+
+			case ComponentTemplate::UseFourth:
+				v = value[3];
+				break;
+
+			case ComponentTemplate::UseGray:
+				v = value[0] * 0.2126f + value[1] * 0.7152f + value[2] * 0.0722f;
+				break;
+		}
+
+		return v * temp.GetValueRange(channel) + temp.GetValueMin(channel);
+	}
+
 	//location depends on the container location
 	void ComponentStack::update(Component &parent) {
 		const ComponentTemplate &ctemp = parent.GetTemplate();
@@ -781,15 +830,19 @@ realign:
             
             auto size = temp.GetSize();
             
-            auto curval = value*temp.GetValueRange()+temp.GetValueMin();
             
             if(temp.GetValueModification() == temp.ModifySize) {
-                if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                    size = {{int(curval*10000), Dimension::BasisPoint}, size.Height};
-                }
-                else {
-                    size = {size.Width, {int(curval*10000), Dimension::BasisPoint}};
-                }
+				if(NumberOfSetBits(temp.GetValueSource()) == 1) {
+					if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+						size = {{int(calculatevalue(0, comp)*10000), Dimension::BasisPoint}, size.Height};
+					}
+					else {
+						size = {size.Width, {int(calculatevalue(0, comp)*10000), Dimension::BasisPoint}};
+					}
+				}
+				else {
+					size ={{int(calculatevalue(0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(1, comp)*10000), Dimension::BasisPoint}};
+				}
             }
             
             comp.size = Convert(size, maxsize, emsize);
@@ -802,7 +855,9 @@ realign:
             )
                 requiresrepass = true;
                 
-			if(temp.GetSizing() != temp.Fixed) {
+			if(temp.GetSizing() != temp.Fixed && 
+			   !(temp.GetValueModification() == temp.ModifySize &&  NumberOfSetBits(temp.GetValueSource()) > 1)
+			) {
 				auto &st = *storage[&temp];
 
 				auto orgsize = comp.size;
@@ -864,10 +919,10 @@ realign:
 				}
 				
 				if(temp.GetValueModification() == temp.ModifySize) {
-                    if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
-                        comp.size.Width = orgsize.Width;
-                    else
-                        comp.size.Height = orgsize.Height;
+					if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
+						comp.size.Width = orgsize.Width;
+					else
+						comp.size.Height = orgsize.Height;
                 }
 
 				if(
@@ -952,20 +1007,22 @@ realign:
             
             auto pos = temp.GetPosition();
             
-            auto curval = value*temp.GetValueRange()+temp.GetValueMin();
-            
             if(temp.GetValueModification() == temp.ModifyPosition) {
-                if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                    pos = {{int(curval*10000), Dimension::BasisPoint}, pos.Y};
-                }
-                else {
-                    pos = {pos.X, {int(curval*10000), Dimension::BasisPoint}};
-                }
+				if(NumberOfSetBits(temp.GetValueSource()) == 1) {
+					if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+						pos = {{int(calculatevalue(0, comp)*10000), Dimension::BasisPoint}, pos.Y};
+					}
+					else {
+						pos = {pos.X, {int(calculatevalue(0, comp)*10000), Dimension::BasisPoint}};
+					}
+				}
+				else {
+					pos ={{int(calculatevalue(0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(1, comp)*10000), Dimension::BasisPoint}};
+				}
             }
             
             auto offset = Convert(pos, maxsize-comp.size, emsize);
 
-            
             if(anch) {
                 anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
             }
@@ -1069,7 +1126,7 @@ realign:
 	void ComponentStack::Render() {        
         for(auto iter = conditions.begin(); iter != conditions.end();) {
             auto c = *iter;
-            if(IsTransition(c) && temp.GetConditionDuration(c) < Time::FrameStart()-conditionstart[(int)c]) {
+            if(IsTransition(c) && (unsigned)temp.GetConditionDuration(c) < Time::FrameStart()-conditionstart[(int)c]) {
                 iter = conditions.erase(iter);
                 RemoveCondition(c, false);
                 auto nc = TransitionEnd(c);

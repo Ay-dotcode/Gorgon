@@ -53,8 +53,8 @@ int main() {
     
     auto &gauge = temp.AddGraphics(1, UI::ComponentCondition::Always);
     gauge.Content.SetDrawable(blank);
-    gauge.SetValueModification(gauge.ModifySize, 0, 1);
-    gauge.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+    gauge.SetValueModification(gauge.ModifyPosition, UI::ComponentTemplate::UseRGBA);
+    gauge.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::MiddleCenter);
     gauge.SetPositioning(gauge.Absolute);
     
     
@@ -116,9 +116,9 @@ int main() {
     
     stack.SetData(UI::ComponentTemplate::Icon, t2.CreateAnimation());
     
-    float v = 0.5;
+    float v1 = 0.5, v2 = 0.5;
     
-    stack.SetValue(v);
+    stack.SetValue(v1, v2, 0.3f, 1.f);
     
     app.wind.Add(stack);
         
@@ -135,17 +135,25 @@ int main() {
             
             return true;
         }
-        else if(key == Keycodes::Number_1 && state) {
-            v += 0.1;
-            stack.SetValue(v);
-            stack.SetData(UI::ComponentTemplate::Text, String::From(int(100*v)));
-        }
-        else if(key == Keycodes::Number_2 && state) {
-            v -= 0.1;
-            stack.SetValue(v);
-            stack.SetData(UI::ComponentTemplate::Text, String::From(int(100*v)));
-        }
-        
+		else if(key == Keycodes::Number_1 && state) {
+			v1 -= 0.1f;
+			stack.SetValue(v1, v2);
+			stack.SetData(UI::ComponentTemplate::Text, String::From(int(std::round(100*v1))));
+		}
+		else if(key == Keycodes::Number_2 && state) {
+			v1 += 0.1f;
+			stack.SetValue(v1, v2);
+			stack.SetData(UI::ComponentTemplate::Text, String::From(int(std::round(100*v1))));
+		}
+		else if(key == Keycodes::Number_3 && state) {
+			v2 += 0.1f;
+			stack.SetValue(v1, v2);
+		}
+		else if(key == Keycodes::Number_4 && state) {
+			v2 -= 0.1f;
+			stack.SetValue(Geometry::Pointf(v1,v2));
+		}
+
         return false;
     });
     
