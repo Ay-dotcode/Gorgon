@@ -33,22 +33,41 @@ int main() {
     circle.Prepare();
     Graphics::TintedObjectProvider t(circle, 0xff000000);
     Graphics::TintedObjectProvider t2(circle, 0xff00ff00);
+    Graphics::TintedObjectProvider t3(circle, 0xff0000ff);
 
     auto circle2 = Circle(25);
     circle2.Prepare();
     
+    auto blank = Graphics::BlankImage(16, 16, 0xff000000);
+    
     UI::Template temp;
+    temp.SetConditionDuration(UI::ComponentCondition::Normal__Disabled, 2000);
     
     
     auto &outer_normal = temp.AddContainer(0, UI::ComponentCondition::Always);
     
     outer_normal.Background.SetAnimation(rect);
     outer_normal.SetBorderSize(1);
-    outer_normal.SetPadding(5);
+    outer_normal.SetPadding(0);
+    //outer_normal.SetOrientation(Graphics::Orientation::Vertical);
     
-    auto &icon1 = temp.AddGraphics(1, UI::ComponentCondition::Always);
+    auto &gauge = temp.AddGraphics(1, UI::ComponentCondition::Always);
+    gauge.Content.SetDrawable(blank);
+    gauge.SetValueModification(gauge.ModifyPosition, UI::ComponentTemplate::UseRGBA);
+    gauge.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::MiddleCenter);
+    gauge.SetPositioning(gauge.Absolute);
+    
+    
+    outer_normal.AddIndex(1);
+    outer_normal.AddIndex(2);
+    
+    /*auto &icon1 = temp.AddGraphics(1, UI::ComponentCondition::Always);
     icon1.Content.SetDrawable(circle);
     icon1.SetSize(32, 32);
+    
+    auto &icon1_nd = temp.AddGraphics(2, UI::ComponentCondition::Normal__Disabled);
+    icon1_nd.Content.SetAnimation(t3);
+    icon1_nd.SetSize(16, 16);
     
     auto &icon2 = temp.AddGraphics(1, UI::ComponentCondition::Hover);
     icon2.Content.SetAnimation(t);
@@ -66,17 +85,17 @@ int main() {
     iconplace.SetDataEffect(iconplace.Icon);
 	iconplace.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
 	iconplace.SetSizing(UI::ComponentTemplate::Automatic);
-	iconplace.SetSize(16, 16);
+	iconplace.SetSize(16, 16);*/
     
-    auto &text = temp.AddTextholder(3, UI::ComponentCondition::Always);
+    auto &text = temp.AddTextholder(2, UI::ComponentCondition::Always);
     text.SetDataEffect(text.Text);
-    text.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-    text.SetSize({100, UI::Dimension::Percent}, {-100, UI::Dimension::EM});
-    text.SetMargin(100, UI::Dimension::EM);
+    text.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+    //text.SetSize({100, UI::Dimension::Percent}, {-100, UI::Dimension::EM});
+    //text.SetMargin(100, UI::Dimension::EM);
     text.SetRenderer(app.fnt);
 	text.SetSizing(UI::ComponentTemplate::Automatic);
     
-    outer_normal.AddIndex(1);
+    /*outer_normal.AddIndex(1);
     outer_normal.AddIndex(2);
     outer_normal.AddIndex(3);
     outer_normal.AddIndex(4);
@@ -89,13 +108,17 @@ int main() {
     
     outer_disabled.AddIndex(1);
     outer_disabled.AddIndex(2);
-    outer_disabled.AddIndex(4);
+    outer_disabled.AddIndex(4);*/
 
-    UI::ComponentStack stack(temp, {160, 80});
+    UI::ComponentStack stack(temp, {16*6+2, 16*6+2});
     stack.HandleMouse();
-    stack.SetData(text.Text, "Hello there!!!\nHow uncivilized.");
+    stack.SetData(UI::ComponentTemplate::Text, "50");
     
-    stack.SetData(iconplace.Icon, t2.CreateAnimation());
+    stack.SetData(UI::ComponentTemplate::Icon, t2.CreateAnimation());
+    
+    float v1 = 0.5, v2 = 0.5;
+    
+    stack.SetValue(v1, v2, 0.3f, 1.f);
     
     app.wind.Add(stack);
         
@@ -106,13 +129,31 @@ int main() {
             if(hover)
                 stack.RemoveCondition(UI::ComponentCondition::Disabled);
             else
-                stack.AddCondition(UI::ComponentCondition::Disabled);
+                stack.AddCondition(UI::ComponentCondition::Normal__Disabled);
             
             hover = !hover;
             
             return true;
         }
-        
+		else if(key == Keycodes::Number_1 && state) {
+			v1 -= 0.1f;
+			stack.SetValue(v1, v2);
+			stack.SetData(UI::ComponentTemplate::Text, String::From(int(std::round(100*v1))));
+		}
+		else if(key == Keycodes::Number_2 && state) {
+			v1 += 0.1f;
+			stack.SetValue(v1, v2);
+			stack.SetData(UI::ComponentTemplate::Text, String::From(int(std::round(100*v1))));
+		}
+		else if(key == Keycodes::Number_3 && state) {
+			v2 += 0.1f;
+			stack.SetValue(v1, v2);
+		}
+		else if(key == Keycodes::Number_4 && state) {
+			v2 -= 0.1f;
+			stack.SetValue(Geometry::Pointf(v1,v2));
+		}
+
         return false;
     });
     

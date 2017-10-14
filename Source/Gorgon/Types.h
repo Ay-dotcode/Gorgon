@@ -27,6 +27,13 @@ namespace Gorgon {
 	/// Where acceptable, denotes that the object will assume the ownership
 	class AssumeOwnershipTag { };
 
+	/// Returns the number of bits that are 1 in a number
+	inline int NumberOfSetBits(uint32_t i) {
+		i = i - ((i >> 1) & 0x55555555);
+		i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+		return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+	}
+
 	/// Where acceptable, denotes that the object will assume the ownership
 	static constexpr AssumeOwnershipTag AssumeOwnership;
     

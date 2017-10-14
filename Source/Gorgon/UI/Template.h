@@ -172,12 +172,14 @@ namespace Gorgon {
 		
         /// Baseline left, for text, this aligns to the baseline of
         /// the last line; if there is no text related data, this will
-        /// align to the bottom left.
+        /// align to the bottom left. This mode only works properly if
+        /// Sizing is set to automatic.
 		LastBaselineLeft,
         
         /// Baseline right, for text, this aligns to the baseline of
         /// the last line; if there is no text related data, this will
-        /// align to the bottom right.
+        /// align to the bottom right. This mode only works properly if
+        /// Sizing is set to automatic.
 		LastBaselineRight,
 	};
 
@@ -433,9 +435,196 @@ namespace Gorgon {
 		Closed__Normal,
 		Closed__Opened,
         
+        Active,
+        Normal__Active,
+        Active__Normal,
+        
+        HScroll,
+        Normal__HScroll,
+        HScroll__Normal,
+        HScroll__VScroll,
+        HScroll__HVScroll,
+        
+        VScroll,
+        Normal__VScroll,
+        VScroll__Normal,
+        VScroll__HScroll,
+        VScroll__HVScroll,
+        
+        HVScroll,
+        Normal__HVScroll,
+        HVScroll__Normal,
+        HVScroll__HScroll,
+        HVScroll__VScroll,
+        
+        
         /// Do not use this condition, this is to size the arrays.
         Max,
 	};
+    
+    /// Returns  if the given condition is transition.
+    inline bool IsTransition(ComponentCondition condition) {
+        switch(condition) {
+            case ComponentCondition::Normal__Disabled:
+            case ComponentCondition::Disabled__Normal:
+            case ComponentCondition::Normal__Focused:
+            case ComponentCondition::Focused__Normal:
+            case ComponentCondition::Normal__Hover:
+            case ComponentCondition::Hover__Normal:
+            case ComponentCondition::Hover__Down:
+            case ComponentCondition::Normal__Down:
+            case ComponentCondition::Down__Hover:
+            case ComponentCondition::Down__Normal:
+            case ComponentCondition::Normal__State2:
+            case ComponentCondition::State2__Normal:
+            case ComponentCondition::State2__State3:
+            case ComponentCondition::State2__State4:
+            case ComponentCondition::Normal__State3:
+            case ComponentCondition::State3__Normal:
+            case ComponentCondition::State3__State2:
+            case ComponentCondition::State3__State4:
+            case ComponentCondition::Normal__State4:
+            case ComponentCondition::State4__Normal:
+            case ComponentCondition::State4__State2:
+            case ComponentCondition::State4__State3:
+            case ComponentCondition::Normal__Opened:
+            case ComponentCondition::Opened__Normal:
+            case ComponentCondition::Opened__Closed:
+            case ComponentCondition::Normal__Closed:
+            case ComponentCondition::Closed__Normal:
+            case ComponentCondition::Closed__Opened:
+			case ComponentCondition::Normal__Active:
+			case ComponentCondition::Active__Normal:
+			case ComponentCondition::Normal__HScroll:
+			case ComponentCondition::HScroll__Normal:
+			case ComponentCondition::HScroll__VScroll:
+			case ComponentCondition::HScroll__HVScroll:
+			case ComponentCondition::Normal__VScroll:
+			case ComponentCondition::VScroll__Normal:
+			case ComponentCondition::VScroll__HScroll:
+			case ComponentCondition::VScroll__HVScroll:
+			case ComponentCondition::Normal__HVScroll:
+			case ComponentCondition::HVScroll__Normal:
+			case ComponentCondition::HVScroll__HScroll:
+			case ComponentCondition::HVScroll__VScroll:
+                return true;
+                
+            default:
+                return false;
+        }
+    }
+    
+    /// Returns the ending condition for a transition condition. Will return Always
+    /// if no condition should replace the current one.
+    inline ComponentCondition TransitionEnd(ComponentCondition condition) {
+        switch(condition) {
+            case ComponentCondition::Normal__Disabled:
+				return ComponentCondition::Disabled;
+            case ComponentCondition::Disabled__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Normal__Focused:
+				return ComponentCondition::Focused;
+            case ComponentCondition::Focused__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Normal__Hover:
+				return ComponentCondition::Hover;
+            case ComponentCondition::Hover__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Hover__Down:
+				return ComponentCondition::Down;
+            case ComponentCondition::Normal__Down:
+				return ComponentCondition::Down;
+            case ComponentCondition::Down__Hover:
+				return ComponentCondition::Hover;
+            case ComponentCondition::Down__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Normal__State2:
+				return ComponentCondition::State2;
+            case ComponentCondition::State2__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::State2__State3:
+				return ComponentCondition::State3;
+            case ComponentCondition::State2__State4:
+				return ComponentCondition::State4;
+            case ComponentCondition::Normal__State3:
+				return ComponentCondition::State3;
+            case ComponentCondition::State3__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::State3__State2:
+				return ComponentCondition::State2;
+            case ComponentCondition::State3__State4:
+				return ComponentCondition::State4;
+            case ComponentCondition::Normal__State4:
+				return ComponentCondition::State4;
+            case ComponentCondition::State4__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::State4__State2:
+				return ComponentCondition::State2;
+            case ComponentCondition::State4__State3:
+				return ComponentCondition::State3;
+            case ComponentCondition::Normal__Opened:
+				return ComponentCondition::Opened;
+            case ComponentCondition::Opened__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Opened__Closed:
+				return ComponentCondition::Closed;
+            case ComponentCondition::Normal__Closed:
+				return ComponentCondition::Closed;
+            case ComponentCondition::Closed__Normal:
+				return ComponentCondition::Always;
+            case ComponentCondition::Closed__Opened:
+				return ComponentCondition::Opened;
+			case ComponentCondition::Normal__Active:
+				return ComponentCondition::Active;
+			case ComponentCondition::Normal__HScroll:
+				return ComponentCondition::HScroll;
+			case ComponentCondition::HScroll__VScroll:
+				return ComponentCondition::VScroll;
+			case ComponentCondition::HScroll__HVScroll:
+				return ComponentCondition::HVScroll;
+			case ComponentCondition::Normal__VScroll:
+				return ComponentCondition::VScroll;
+			case ComponentCondition::VScroll__HScroll:
+				return ComponentCondition::HScroll;
+			case ComponentCondition::VScroll__HVScroll:
+				return ComponentCondition::HVScroll;
+			case ComponentCondition::Normal__HVScroll:
+				return ComponentCondition::HVScroll;
+			case ComponentCondition::HVScroll__HScroll:
+				return ComponentCondition::HScroll;
+			case ComponentCondition::HVScroll__VScroll:
+				return ComponentCondition::VScroll;
+			default:
+                return ComponentCondition::Always;
+        }
+    }
+    
+    inline bool IsDisabled(ComponentCondition condition) {
+        switch(condition) {
+            case ComponentCondition::Disabled:
+            case ComponentCondition::Normal__Disabled:
+            case ComponentCondition::Disabled__Normal:
+				return true;
+            default:
+                return false;
+        }
+    }
+    
+    inline bool IsMouseRelated(ComponentCondition condition) {
+        switch(condition) {
+            case ComponentCondition::Normal__Hover:
+            case ComponentCondition::Hover__Normal:
+            case ComponentCondition::Hover__Down:
+            case ComponentCondition::Normal__Down:
+            case ComponentCondition::Down__Hover:
+            case ComponentCondition::Down__Normal:
+            case ComponentCondition::Hover:
+            case ComponentCondition::Down:
+				return true;
+            default:
+                return false;
+        }
+    }
     
 	
 	class ComponentTemplate;
@@ -462,6 +651,10 @@ namespace Gorgon {
 			/// and addition size should be added to it.
 			Multiples
 		};
+        
+        Template() {
+            memset(durations, 0, sizeof(int) * (int)ComponentCondition::Max);
+        }
 
         /// Destructor
         ~Template() {
@@ -577,6 +770,18 @@ namespace Gorgon {
 		Geometry::Size GetAdditionalSize() const {
 			return additional;
 		}
+		
+		/// Changes the duration of a component condition. Durations on final conditions are 
+		/// ignored, only transition condition durations are used. Duration is in milliseconds
+		void SetConditionDuration(ComponentCondition condition, int duration) {
+            durations[(int)condition] = duration;
+            ChangedEvent();
+        }
+        
+        /// Returns the duration of the component condition
+        int GetConditionDuration(ComponentCondition condition) const {
+            return durations[(int)condition];
+        }
 
 
         /// This event is fired whenever template or its components are changed.
@@ -585,6 +790,7 @@ namespace Gorgon {
 	private:
 		Containers::Collection<ComponentTemplate> components;
         std::vector<Event<ComponentTemplate>::Token> tokens;
+        int durations[(int)ComponentCondition::Max];
 
 		SizeMode xsizing, ysizing;
 		Geometry::Size size;
@@ -606,6 +812,12 @@ namespace Gorgon {
 
 			/// Absolute positioning, coordinates will start from the container
 			Absolute,
+            
+            /// The given coordinates are polar coordinates, The radius is given 
+            /// in pixels and angle is specified in degrees. Parent's center point
+            /// is used as pole. X component is used as radius and Y component is
+            /// used as angle.
+            PolarAbsolute,
 		};
 
 		/// Controls how the size is affected from the contents of the object
@@ -625,30 +837,15 @@ namespace Gorgon {
 			ShrinkOnly
 		};
 
-		/// Which property will the data of the widget affect. It will be scaled between
-		/// datamin and datamax.
+		/// Which property will the data of the widget affect. 
 		enum DataEffect {
 			/// Nothing will be affected
 			None,
-
-			/// Position of this component will be affected by the data. Data will be
-			/// given as a percent and will modify Position property. Useful for sliders,
-			/// scrollbars and progress bars.
-			ModifyPosition,
-
-			/// Size of this component will be affected. Data will be given as a percent
-			/// and will modify Size property. Useful for sliders and progress bars.
-			ModifySize,
 
 			/// Works only for TextholderTemplate, data will affect the text that is displayed.
 			/// If the Widget does not have text but states, the number of the state
 			/// will be translated into a string and will be passed.
 			Text,
-
-			/// Data affects the rotation of the component. Rotation angle will start from 0 degrees
-			/// for 0, 360 degrees for 1. You may use min and max to modify this. For instance, if max
-			/// is set to 0.5, the degrees will go up to 180. For now, this effect is not in use.
-			Rotation,
 
 			/// Data will affect the frame of the animation. Will only work for Objects
 			/// with animations. For now, this effect is disabled.
@@ -657,6 +854,125 @@ namespace Gorgon {
 			/// Data will effect the displayed graphics
             Icon,
 		};
+        
+        /// Which property will the value of the widget affect. It will be scaled between
+		/// valuemin and valuemax.
+        enum ValueModification {
+            /// Nothing will be modified
+            NoModification,
+            
+			/// Position of this component will be affected by the data. Data will be
+			/// given as a percent and will modify Position property. Useful for sliders,
+			/// scrollbars and progress bars. The direction of the container is used to 
+            /// determine which axis will get affected.
+			ModifyPosition,
+            
+            /// Value modifies the opacity of the component. If used on a container, it will effect
+            /// all components in that container
+            ModifyAlpha,
+            
+            /// Value modifies the color of the component. If used on a container, it will tint
+            /// all components in that container
+            ModifyColor, 
+            
+			/// Data affects the rotation of the component. Rotation angle will start from 0 degrees
+			/// for 0, 360 degrees for 1. You may use min and max to modify this. For instance, if max
+			/// is set to 0.5, the degrees will go up to 180. For now, this effect is not in use.
+			ModifyRotation,
+
+			/// Size of this component will be affected. Data will be given as a percent
+			/// and will modify Size property. Useful for sliders and progress bars. The direction
+            /// of the container is used to determine which axis will get affected.
+			ModifySize,
+        };
+        
+        /// Which data channels should be used as the value, common combinations are listed, however, all
+        /// combinations are valid. LCh is for circular La*b* color system. Color can also be mapped to
+        /// coordinate system. Particularly, CH can be mapped to polar coordinates to create a color map.
+        /// LCh color system is not yet working
+        enum ValueSource {
+            UseFirst = 1,
+            UseX = UseFirst,
+            UseWidth = UseFirst,
+            /// Red or radius for polar coordinates
+            UseR = UseFirst,
+            
+            UseSecond = 2,
+            UseY = UseSecond,
+            UseHeight = UseSecond,
+            UseG = UseSecond,
+            /// Theta for polar coordinates
+            UseT = UseSecond,
+            
+            UseThird = 4,
+            UseZ = UseThird,
+            UseB = UseThird,
+            
+            UseFourth = 8,
+            UseA = UseFourth,
+			UseW = UseFourth,
+
+			/// Grayscale value of color
+			UseGray = 16,
+
+			/// Lightness
+			UseL = 32,
+            
+            /// Hue
+            UseH = 64, 
+            
+            /// Chromacity
+            UseC = 128,
+
+			/// Maximum power of two
+			ValueSourceMaxPower = 7,
+            
+            UseXY   = UseFirst | UseSecond,
+            UseSize = UseFirst | UseSecond,
+            UseRG   = UseFirst | UseSecond,
+            
+            UseYZ = UseSecond | UseThird,
+            UseGB = UseSecond | UseThird,
+            
+            UseXZ = UseFirst | UseThird,
+            UseRB = UseFirst | UseThird,
+            
+            UseXYZ = UseFirst | UseSecond | UseThird,
+            UseRGB = UseFirst | UseSecond | UseThird,
+            
+            UseLH = UseL | UseH,
+			UseLC = UseL | UseC,
+			UseCH = UseC | UseH,
+
+			UseGrayAlpha = UseGray | UseA,
+
+            UseLCH  = UseL | UseH | UseC,
+            UseLCHA = UseL | UseH | UseC | UseA,
+            
+            UseRGBA = UseFirst | UseSecond | UseThird | UseFourth,
+        };
+        
+        /// Tags mark a component to be modified in a way meaningful to specific widgets
+        enum Tag {
+            NoTag,
+            TickTag,
+            XTickTag,
+            YTickTag,
+            HScrollTag,
+            VScrollTag,
+            DragTag,
+            XDragTag,
+            YDragTag,
+            MinimapTag,
+            IncrementTag,
+            DecrementTag,
+            LeftTag,
+            RightTag,
+            TopTag,
+            BottomTag,
+            ExpandTag,
+            ToggleTag,
+        };
 
 		/// Returns the type of the component.
 		virtual ComponentType GetType() const noexcept = 0;
@@ -682,6 +998,22 @@ namespace Gorgon {
 
 		/// Returns the positioning method of the component
 		PositionType GetPositioning() const { return positioning; }
+		
+		/// Changes the center coordinate that will be used in rotation
+		void SetCenter(int x, int y, Dimension::Unit unit = Dimension::Pixel) { center = {{x, unit}, {y, unit}}; ChangedEvent(); }
+
+		/// Changes the center coordinate that will be used in rotation
+		void SetCenter(Geometry::Point pos, Dimension::Unit unit = Dimension::Pixel) { center = {{pos.X, unit}, {pos.Y, unit}}; ChangedEvent(); }
+
+		/// Changes the center coordinate that will be used in rotation
+		void SetCenter(Dimension x, Dimension y) { center = {x, y}; ChangedEvent(); }
+
+		/// Changes the center coordinate that will be used in rotation
+		void SetCenter(Point value) { center = value; ChangedEvent(); }
+		
+		/// Returns the center point that would be used for rotation
+		Point GetCenter() const { return center; }
+
 
 
         /// Changes the size of the component. The given values are ignored if the sizing mode is Automatic.
@@ -792,33 +1124,104 @@ namespace Gorgon {
 
 
 
-		/// Sets the data effect for this component. Default is None. If min and max is specified
-		/// incoming data will be scaled accordingly. 
-		void SetDataEffect(DataEffect effect, float min = 0, float max = 1) {
+		/// Sets the data effect for this component. Default is None.
+		void SetDataEffect(DataEffect effect) {
             dataeffect = effect;
-            datamin = min;
-            datamax = max;
             
             ChangedEvent(); 
-        }
+		}
 
-        /// Changes the data range, which scales the data effect on the component. Not all effects
-        /// are affected by the range.
-		void SetDataRange(float min, float max) {
-            datamin = min;
-            datamax = max;
-            
-            ChangedEvent(); 
-        }
-
-        /// Returns how the data will affect this component
+		/// Returns how the data will affect this component
 		DataEffect GetDataEffect() const { return dataeffect; }
+        
+		/// Sets the property that will be affected by the value of the widget. Default is NoModification. 
+		/// If min and max is specified incoming value will be scaled accordingly. 
+		void SetValueModification(ValueModification mod, ValueSource source = UseFirst, std::array<float, 4> min = {0, 0, 0, 0}, std::array<float, 4> max = {1, 1, 1, 1}) {
+            valuemod = mod;
+            valuemin = min;
+            valuemax = max;
+			this->source = source;
+            
+            ChangedEvent(); 
+        }
 
-		/// Returns the data scale minimum.
-		float GetDataMin() const { return datamin; }
+		/// Changes the data range, which scales the data effect on the component. Not all effects
+		/// are affected by the range.
+		void SetValueRange(std::array<float, 4> min, std::array<float, 4> max) {
+			valuemin = min;
+			valuemax = max;
 
-		/// Returns the data scale maximum.
-		float GetDataMax() const { return datamax; }
+			ChangedEvent();
+		}
+
+		/// Changes the data range, which scales the data effect on the component. Not all effects
+		/// are affected by the range.
+		void SetValueRange(int channel, float min, float max) {
+			ASSERT(channel>=0 && channel<4, "Channel index out of bounds");
+
+			valuemin[channel] = min;
+			valuemax[channel] = max;
+
+			ChangedEvent();
+		}
+
+        /// Returns which property of this component will be modified by the value
+		ValueModification GetValueModification() const { return valuemod; }
+		
+		/// Returns the value source that will be used
+		void SetValueSource(ValueSource value) {
+            source = value;
+            
+            ChangedEvent(); 
+        }
+        
+        /// Returns the value source that will be used
+        ValueSource GetValueSource() const {
+            return source;
+        }
+        
+        /// Changes the tag of this component
+        void SetTag(Tag value) {
+            tag = value;
+            
+            ChangedEvent(); 
+        }
+        
+        /// Returns the tag of the component
+        Tag GetTag() const {
+            return tag;
+        }
+        
+
+		/// Returns the value scale minimum.
+		std::array<float, 4> GetValueMin() const { return valuemin; }
+
+		/// Returns the range of the value scale.
+		std::array<float, 4> GetValueRange() const { return {valuemax[0]-valuemin[0], valuemax[1]-valuemin[1], valuemax[2]-valuemin[2], valuemax[3]-valuemin[3]}; }
+
+		/// Returns the value scale maximum.
+		std::array<float, 4> GetValueMax() const { return valuemax; }
+
+		/// Returns the value scale minimum.
+		float GetValueMin(int channel) const {
+			ASSERT(channel>=0 && channel<4, "Channel index out of bounds");
+
+			return valuemin[channel];
+		}
+		
+		/// Returns the range of the value scale.
+		float GetValueRange(int channel) const {
+			ASSERT(channel>=0 && channel<4, "Channel index out of bounds");
+
+			return valuemax[channel]-valuemin[channel];
+		}
+
+		/// Returns the value scale maximum.
+		float GetValueMax(int channel) const {
+			ASSERT(channel>=0 && channel<4, "Channel index out of bounds");
+
+			return valuemax[channel];
+		}
 
 
         /// Changes the anchor of the component to the given values.
@@ -890,9 +1293,19 @@ namespace Gorgon {
 
         /// The effect that the data will have on this component
 		DataEffect dataeffect = None;
+        
+        /// The property of the component that will be affected by the value
+		ValueModification valuemod = NoModification;
+        
+        /// The value that will be used for this component
+        ValueSource source = UseFirst;
 
         /// If required, can be used to scale incoming data
-		float datamin = 0, datamax = 1;
+		std::array<float, 4> valuemin = {}, valuemax = {1, 1, 1, 1};
+        
+        /// Tag identifies a component for various modifications depending on the
+        /// widget.
+        Tag tag = NoTag;
         
         /// Positioning mode
 		PositionType positioning = Relative;
@@ -912,6 +1325,9 @@ namespace Gorgon {
 
 		/// Indent is added to the margin and padding on the edge of the container
 		Margin indent = {0};
+        
+        /// Center point for rotation
+        Point center = {0, 0};
 
         /// Anchor point of the previous component that this component will be attached
         /// to. If the component positioning is absolute or this is the first component, 
@@ -932,6 +1348,10 @@ namespace Gorgon {
         /// the order of components in container.
 		int index = 0;
 	};
+
+	inline ComponentTemplate::ValueSource operator | (ComponentTemplate::ValueSource l, ComponentTemplate::ValueSource r) {
+		return ComponentTemplate::ValueSource((int)l | (int)r);
+	}
 
 	/// Defines a placeholder according to the Box Model. Placeholder is replaced with
 	/// a visual component. Default sizing mode for a placeholder is Automatic.
@@ -1063,7 +1483,9 @@ namespace Gorgon {
 	public:
 
 		/// Default constructor.
-		GraphicsTemplate() = default;
+		GraphicsTemplate() {
+            sizing = Automatic;
+        }
 		
 		/// Filling constructor, might cause ambiguous call due to most drawables being
 		/// AnimationProviders as well. You might typecast or use Content.SetDrawable function
@@ -1129,7 +1551,7 @@ namespace Gorgon {
 
 		/// Changes the border size of the component. Border size stays within the object area, but excluded
 		/// from the interior area.
-		void SetBorderSize(int value) { padding ={value}; ChangedEvent(); }
+		void SetBorderSize(int value) { bordersize ={value}; ChangedEvent(); }
 
 		/// Changes the border size of the component. Border size stays within the object area, but excluded
 		/// from the interior area.
