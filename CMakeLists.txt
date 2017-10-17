@@ -158,6 +158,7 @@ if(${FLAC_SUPPORT})
 	include_directories(Source/External/flac/include)
 
 	add_definitions("-DFLAC__NO_DLL")
+	add_definitions("-DFLAC_SUPPORT")
 	
 	target_link_libraries(Gorgon flac)
 endif()
