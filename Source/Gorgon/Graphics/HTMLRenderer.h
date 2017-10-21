@@ -2,7 +2,6 @@
 
 #include <string>
 #include <cassert>
-#include <map>
 #include <utility>
 #include <unordered_map>
 
@@ -35,11 +34,18 @@ public:
         Normal = 0,
         Italic,
         Bold,
+        Large,
         Custom,
         End
     };
     
-    FontFamily(const std::map<Style, GlyphRenderer *> fonts): fonts(fonts)
+    struct HashType {
+        unsigned int operator()(Style style) const {
+            return static_cast<unsigned int>(style);
+        }
+    };
+    
+    FontFamily(const std::unordered_map<Style, GlyphRenderer*, HashType> fonts): fonts(fonts)
     {}
     
     GlyphRenderer* GetGlyphRenderer(Style style) {
@@ -84,7 +90,7 @@ public:
     }
 
 private:
-    std::map<Style, GlyphRenderer*> fonts;
+    std::unordered_map<Style, GlyphRenderer*, HashType> fonts;
 
 }; // end of class FontFamily
 
@@ -115,11 +121,15 @@ private:
         Underlined = 0x00000000,
         Striked    = 0x00000001,
         Bold       = 0x00000002,
+        Strong     = 0x00000003,
+        Italic     = 0x00000004,
+        Emphasized = 0x00000005,
+        H1         = 0x00000006,
         End
     };
     
     enum class Attribute: unsigned int {
-        Color = 0x00010000,
+        Color = 0x00000000,
         End
     };
     
@@ -150,6 +160,10 @@ private:
         if(tag == "u")           { return Tag::Underlined; }
         else if(tag == "strike") { return Tag::Striked; }
         else if(tag == "b")      { return Tag::Bold; }
+        else if(tag == "strong") { return Tag::Strong; }
+        else if(tag == "i")      { return Tag::Italic; }
+        else if(tag == "em")     { return Tag::Emphasized; }
+        else if(tag == "h1")     { return Tag::H1; }
         else                     { ASSERT(false, "unsupported tag: " + tag); return Tag::End; }
     }
     
@@ -169,7 +183,15 @@ private:
                 strikedstart = xx;
                 break;
             case Tag::Bold:
+            case Tag::Strong:
                 changeglyphrenderer(FontFamily::Style::Bold);
+                break;
+            case Tag::Italic:
+            case Tag::Emphasized:
+                changeglyphrenderer(FontFamily::Style::Italic);
+                break;
+            case Tag::H1:
+                changeglyphrenderer(FontFamily::Style::Large);
                 break;
             default:
                 // !!! TODO tag2string function
@@ -208,6 +230,10 @@ private:
                 drawstriked = true;
                 break;
             case Tag::Bold:
+            case Tag::Strong:
+            case Tag::Italic:
+            case Tag::Emphasized:
+            case Tag::H1:
                 changeglyphrenderer(FontFamily::Style::Normal);
                 break;
             default:

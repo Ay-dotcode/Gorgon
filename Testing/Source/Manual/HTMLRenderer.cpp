@@ -1,5 +1,5 @@
 //Copy Resources/Testing/Victoria to Testing/Runtime (in VS you need to fix running directory)
-#include <map>
+#include <unordered_map>
 
 #include <Gorgon/Window.h>
 #include <Gorgon/Main.h>
@@ -35,28 +35,31 @@ int main() {
     vicbold.ImportFolder("VictoriaBold");
     vicboldlarge.ImportFolder("VictoriaBoldLarge");
     
-    std::map<Graphics::FontFamily::Style, Graphics::GlyphRenderer*> fonts = 
-        { {Graphics::FontFamily::Style::Normal, &victoria},
-          {Graphics::FontFamily::Style::Bold,   &vicbold}/*,
-          {Graphics::FontFamily::Style::Bold,   &vicboldlarge}*/ };
+    std::unordered_map<Graphics::FontFamily::Style,
+                      Graphics::GlyphRenderer*,
+                      Graphics::FontFamily::HashType> fonts;
           
+    fonts.emplace(Graphics::FontFamily::Style::Normal, &victoria);
+    fonts.emplace(Graphics::FontFamily::Style::Bold, &vicbold);
+    fonts.emplace(Graphics::FontFamily::Style::Large, &vicboldlarge);
+    
     Graphics::FontFamily family(fonts);
     
     Graphics::HTMLRenderer sty(family);
 
+    sty.Print(layer, "<h1> Annie, I bet you are okay...</h1>", 250, 230);
+    sty.Print(layer, "<u color=\"black\"><strong>AAAA</strong> BBBB</u> <strike color=\"green\"><strong>CCCC</strong> DDDD</strike>", 250, 270);
     
-    sty.Print(layer, "<u color=\"black\"><b>AAAA</b> BBBB</u> <strike color=\"green\"><b>CCCC</b> DDDD</strike>", 250, 270);
-    
-    sty.Print(layer, "<u>AAAA <b>BBBB</b></u> <strike>CCCC <b>DDDD</b></strike>", 250, 300);
+    sty.Print(layer, "<u>AAAA <strong>BBBB</strong></u> <strike>CCCC <strong>DDDD</strong></strike>", 250, 300);
     
     
-    sty.Print(layer, "<b>ABCDEFG</b>", 250, 330);
-    sty.Print(layer, "<strike><b>Annie, are you okay?</b></strike>", 250, 360);
+    sty.Print(layer, "<strong>ABCDEFG</strong>", 250, 330);
+    sty.Print(layer, "<strike><strong>Annie, are you okay?</strong></strike>", 250, 360);
     
-    sty.Print(layer, "<u><strike><b>Are you okay Annie?</b></strike></u>", 250, 390);
+    sty.Print(layer, "<u><strike><strong>Are you okay Annie?</strong></strike></u>", 250, 390);
     
-    sty.Print(layer, "<b>the<b/> <u><strike>quick <b>brown</b></strike> fox</u> jumps over the lazy dog", 250, 420);
-    sty.Print(layer, "<u>the <b>quick brown <strike>fox jumps</b> over the lazy</u> dog</strike>", 250, 450);
+    sty.Print(layer, "<strong>the<b/> <u><strike>quick <strong>brown</strong></strike> fox</u> jumps over the lazy dog", 250, 420);
+    sty.Print(layer, "<u>the <strong>quick brown <strike>fox jumps</strong> over the lazy</u> dog</strike>", 250, 450);
     
     
     sty.Print(layer, "the quick brown fox jumps over the lazy dog", 250, 480);
