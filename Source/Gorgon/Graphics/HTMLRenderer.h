@@ -4,6 +4,7 @@
 #include <cassert>
 #include <map>
 #include <utility>
+#include <unordered_map>
 
 #include "Color.h"
 #include "Font.h"
@@ -99,7 +100,11 @@ public:
         baselineoffset(0),
         ucolor(1.f),
         scolor(1.f)
-    {}
+    {
+        if(attsupport.size() == 0) {
+            fillsupportedatts();
+        }
+    }
 
     void Print(TextureTarget &target, const std::string &text, int x, int y) {
         parseandprint(target, text, x, y);
@@ -131,7 +136,12 @@ private:
     RGBAf ucolor; // underlined
     RGBAf scolor; // strike
     
+    static std::unordered_map<unsigned int, bool> attsupport;
     
+    static void fillsupportedatts() {
+        attsupport.emplace(HR_BTWSOR_TAG_ATTR_PAIR(Tag::Underlined, Attribute::Color), true);
+        attsupport.emplace(HR_BTWSOR_TAG_ATTR_PAIR(Tag::Striked, Attribute::Color), true);
+    }
     
     // private methods
     void parseandprint(TextureTarget &target, const std::string &str, int x, int y);
@@ -221,9 +231,9 @@ private:
         Attribute attribute;
         for(const auto &attstr: attributes) {
             attribute = string2attribute(attstr.first);
-            unsigned int mappedval = (static_cast<unsigned int>(attribute) & static_cast<unsigned int>(tag));
-            if(/*issupported(tag, attribute)*/true) {
-                switch(HR_BTWSOR_TAG_ATTR_PAIR(tag, attribute)) {
+            unsigned int mappedval = HR_BTWSOR_TAG_ATTR_PAIR(tag, attribute);
+            if(attsupport.count(mappedval) && attsupport.at(mappedval)) {
+                switch(mappedval) {
                     case HR_BTWSOR_TAG_ATTR_PAIR(Tag::Underlined, Attribute::Color):
                         HR_LOG_NOTICE("changing underline color");
                         ucolor = extractcolor(attstr.second);

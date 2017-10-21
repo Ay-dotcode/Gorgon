@@ -10,6 +10,8 @@ namespace HTMLRendererInternal {
 Utils::Logger Logger;
 }
 
+std::unordered_map<unsigned int, bool> HTMLRenderer::attsupport;
+
     
 void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, int x, int y) {
     // clear previous state

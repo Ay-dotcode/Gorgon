@@ -37,7 +37,7 @@ int main() {
     
     std::map<Graphics::FontFamily::Style, Graphics::GlyphRenderer*> fonts = 
         { {Graphics::FontFamily::Style::Normal, &victoria},
-          /*{Graphics::FontFamily::Style::Bold,   &vicbold},
+          {Graphics::FontFamily::Style::Bold,   &vicbold}/*,
           {Graphics::FontFamily::Style::Bold,   &vicboldlarge}*/ };
           
     Graphics::FontFamily family(fonts);

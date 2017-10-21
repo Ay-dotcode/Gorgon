@@ -1301,7 +1301,7 @@ namespace Gorgon {
         ValueSource source = UseFirst;
 
         /// If required, can be used to scale incoming data
-		std::array<float, 4> valuemin = {}, valuemax = {1, 1, 1, 1};
+		std::array<float, 4> valuemin = {}, valuemax = {{1, 1, 1, 1}};
         
         /// Tag identifies a component for various modifications depending on the
         /// widget.
