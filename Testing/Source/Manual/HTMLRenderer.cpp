@@ -48,7 +48,7 @@ int main() {
     Graphics::HTMLRenderer sty(family);
 
     sty.Print(layer, "<h1> Annie, I bet you are okay...</h1>", 250, 230);
-    sty.Print(layer, "<u color=\"black\"><strong>AAAA</strong> BBBB</u> <strike color=\"green\"><strong>CCCC</strong> DDDD</strike>", 250, 270);
+    sty.Print(layer, "<u color=\"black\"><b>AAAA</b> BBBB</u> <strike color=\"green\"><strong>CCCC</strong> DDDD</strike>", 250, 270);
     
     sty.Print(layer, "<u>AAAA <strong>BBBB</strong></u> <strike>CCCC <strong>DDDD</strong></strike>", 250, 300);
     

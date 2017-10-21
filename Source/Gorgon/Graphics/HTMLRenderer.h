@@ -107,8 +107,9 @@ public:
         ucolor(1.f),
         scolor(1.f)
     {
-        if(attsupport.size() == 0) {
-            fillsupportedatts();
+        if(!initialized) {
+            initialize();
+            initialized = true;
         }
     }
 
@@ -125,12 +126,19 @@ private:
         Italic     = 0x00000004,
         Emphasized = 0x00000005,
         H1         = 0x00000006,
+        Break      = 0x00000007,
         End
     };
     
     enum class Attribute: unsigned int {
         Color = 0x00000000,
         End
+    };
+    
+    struct HashType {
+        unsigned int operator()(Tag tag) const {
+            return static_cast<unsigned int>(tag);
+        }
     };
     
     FontFamily &fontfamily;
@@ -146,11 +154,17 @@ private:
     RGBAf ucolor; // underlined
     RGBAf scolor; // strike
     
-    static std::unordered_map<unsigned int, bool> attsupport;
+    static bool initialized;
+    static std::unordered_map<unsigned int, bool> attsupportmap;
+    static std::unordered_map<Tag, std::string, HashType> emptytagmap;
     
-    static void fillsupportedatts() {
-        attsupport.emplace(HR_BTWSOR_TAG_ATTR_PAIR(Tag::Underlined, Attribute::Color), true);
-        attsupport.emplace(HR_BTWSOR_TAG_ATTR_PAIR(Tag::Striked, Attribute::Color), true);
+    static void initialize() {
+        // fill attribute support list
+        attsupportmap.emplace(HR_BTWSOR_TAG_ATTR_PAIR(Tag::Underlined, Attribute::Color), true);
+        attsupportmap.emplace(HR_BTWSOR_TAG_ATTR_PAIR(Tag::Striked, Attribute::Color), true);
+        
+        // fill self-closing tags
+        emptytagmap.emplace(Tag::Break, "br");
     }
     
     // private methods
@@ -164,6 +178,7 @@ private:
         else if(tag == "i")      { return Tag::Italic; }
         else if(tag == "em")     { return Tag::Emphasized; }
         else if(tag == "h1")     { return Tag::H1; }
+        else if(tag == "br")     { return Tag::Break; }
         else                     { ASSERT(false, "unsupported tag: " + tag); return Tag::End; }
     }
     
@@ -192,6 +207,9 @@ private:
                 break;
             case Tag::H1:
                 changeglyphrenderer(FontFamily::Style::Large);
+                break;
+            case Tag::Break:
+                // !!! TODO apply line break here
                 break;
             default:
                 // !!! TODO tag2string function
@@ -236,6 +254,9 @@ private:
             case Tag::H1:
                 changeglyphrenderer(FontFamily::Style::Normal);
                 break;
+            case Tag::Break:
+                // !!! TODO remove line break here
+                break;
             default:
                 // !!! TODO tag2string function
                 ASSERT(false, "unsupported tag: " + std::to_string(static_cast<unsigned int>(tag)));
@@ -258,7 +279,7 @@ private:
         for(const auto &attstr: attributes) {
             attribute = string2attribute(attstr.first);
             unsigned int mappedval = HR_BTWSOR_TAG_ATTR_PAIR(tag, attribute);
-            if(attsupport.count(mappedval) && attsupport.at(mappedval)) {
+            if(attsupportmap.count(mappedval) && attsupportmap.at(mappedval)) {
                 switch(mappedval) {
                     case HR_BTWSOR_TAG_ATTR_PAIR(Tag::Underlined, Attribute::Color):
                         HR_LOG_NOTICE("changing underline color");
