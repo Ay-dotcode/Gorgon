@@ -266,7 +266,7 @@ namespace Gorgon { namespace UI {
 	}
     
 	void ComponentStack::SetValue(float first, float second, float third, float fourth) {
-		value = {first, second, third, fourth};
+		value = {{first, second, third, fourth}};
         
 		bool updatereq = false;
 
@@ -368,7 +368,7 @@ namespace Gorgon { namespace UI {
             for(int i=0; i<cont.GetCount(); i++) {
                 if(cont[i] >= indices) continue;
                 if(stacksizes[cont[i]])
-                    render(get(cont[i]), target ? *target : parent, offset);
+                    render(get(cont[i]), target ? *target : parent, offset, color);
             }
             
             if(st.secondary && target) {
@@ -493,6 +493,7 @@ namespace Gorgon { namespace UI {
                 case Anchor::LastBaselineRight:
                     cp = {-offset.X + csize.Width, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
                     break;
+                default: ;//to silence warnings
                 }
                 
                 ca = Anchor::None;
@@ -602,6 +603,7 @@ namespace Gorgon { namespace UI {
                 case Anchor::LastBaselineRight:
                     cp = {margin.Left + asize.Width, - margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height};
                     break;
+                default: ;//to silence warnings
                 }
                 
                 pa = Anchor::None;
@@ -682,6 +684,7 @@ namespace Gorgon { namespace UI {
                 case Anchor::LastBaselineRight:
                     cp = {-offset.X + csize.Width, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
                     break;
+                default: ;//to silence warnings
                 }
                 
                 ca = Anchor::None;
@@ -794,6 +797,10 @@ namespace Gorgon { namespace UI {
 			case ComponentTemplate::UseGray:
 				v = value[0] * 0.2126f + value[1] * 0.7152f + value[2] * 0.0722f;
 				break;
+                
+            //missing: L C H
+            
+            default: ;//to silence warnings
 		}
 
 		return v * temp.GetValueRange(channel) + temp.GetValueMin(channel);
@@ -984,32 +991,33 @@ realign:
             
             //check anchor object by observing temp.GetPreviousAnchor and direction
 			Component *anch = nullptr;
-			if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
- 				if(IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor()) || 
-                    (temp.GetPreviousAnchor() == Anchor::None && IsRight(temp.GetContainerAnchor()))) 
-                {
-					anch = prev;
-                    comp.anchorotherside = true;
-				}
-				else {
-					anch = next;
-				}
-			}
-			else {
-				if(IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor()) || 
-                    (temp.GetPreviousAnchor() == Anchor::None && IsBottom(temp.GetContainerAnchor()))) 
-                {
-					anch = prev;
-                    comp.anchorotherside = true;
-				}
-				else {
-					anch = next;
-				}
-			}
+            
             
             //if absolute, nothing to anchor to but to parent
-            if(temp.GetPositioning() == temp.Absolute || temp.GetPreviousAnchor() == Anchor::None)
-                anch = nullptr;
+            if(temp.GetPositioning() == temp.Relative && temp.GetPreviousAnchor() != Anchor::None) {
+                if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                    if((IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor())) || 
+                        (temp.GetPreviousAnchor() == Anchor::None && IsRight(temp.GetContainerAnchor()))) 
+                    {
+                        anch = prev;
+                        comp.anchorotherside = true;
+                    }
+                    else {
+                        anch = next;
+                    }
+                }
+                else {
+                    if((IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor())) || 
+                        (temp.GetPreviousAnchor() == Anchor::None && IsBottom(temp.GetContainerAnchor()))) 
+                    {
+                        anch = prev;
+                        comp.anchorotherside = true;
+                    }
+                    else {
+                        anch = next;
+                    }
+                }
+            }
             
             auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
             
@@ -1040,17 +1048,31 @@ realign:
 				}
             }
             
-            auto offset = Convert(pos, maxsize-comp.size, emsize);
+            if(temp.GetPositioning() == temp.PolarAbsolute) {
+                auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
+				auto center  = Geometry::Pointf(temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize));
 
-            if(anch) {
-                anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
+				auto r = pos.X.CalculateFloat(Geometry::Point(maxsize).Distance()/(float)sqrt(2), (float)emsize);
+
+				auto a = pos.Y.CalculateFloat(360, PI);
+
+				a *= PI / 180.0f;
+
+				comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X)), int(std::round(r * sin(a) + pcenter.Y - center.Y))};
             }
             else {
-                anchortoparent(comp, temp, offset, margin, parent.innersize);
+                auto offset = Convert(pos, maxsize-comp.size, emsize);
+            
+                if(anch) {
+                    anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
+                }
+                else {
+                    anchortoparent(comp, temp, offset, margin, parent.innersize);
+                }
             }
 
             //Which anchor side is to be changed
-            if(temp.GetPositioning() != temp.Absolute) {
+            if(temp.GetPositioning() == temp.Relative) {
                 if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
                     if(IsRight(temp.GetMyAnchor())) {
                         prev = &comp;
@@ -1140,6 +1162,24 @@ realign:
             repassdone = true;
             goto realign;
         }
+
+
+		for(int i=0; i<cont.GetCount(); i++) {
+
+			int ci = cont[i];
+
+			if(ci >= indices) continue;
+			if(!stacksizes[ci]) continue;
+
+
+			auto &comp = get(cont[i]);
+
+			const auto &temp = comp.GetTemplate();
+
+			if(temp.GetType() == ComponentType::Container) {
+				update(comp);
+			}
+		}
 	}
 
 	void ComponentStack::Render() {        

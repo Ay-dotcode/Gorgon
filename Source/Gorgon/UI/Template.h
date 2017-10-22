@@ -280,6 +280,10 @@ namespace Gorgon {
 			/// If higher resolution is necessary use BasisPoint.
 			Percent,
 
+			/// 1/1000th of a pixel, there are only few places that this will be used.
+			/// Currently only rotation center use non-integer pixels
+			MilliPixel,
+
 			/// Dimension will be relative to the parent and given in 1/10000.
 			BasisPoint,
 
@@ -298,9 +302,16 @@ namespace Gorgon {
 
 		/// Returns the calculated dimension in pixels
 		int operator ()(int parentwidth, int emwidth = 10) const {
+			return Calculate(parentwidth, emwidth);
+		}
+
+		/// Returns the calculated dimension in pixels
+		int Calculate(int parentwidth, int emwidth = 10) const {
 			switch(unit) {
 				case Percent:
 					return int(std::round((double)value * parentwidth / 100));
+				case MilliPixel:
+					return int(std::round((double)value / 1000));
 				case BasisPoint:
 					return int(std::round((double)value * parentwidth / 10000));
 				case EM:
@@ -308,6 +319,23 @@ namespace Gorgon {
 				case Pixel:
 				default:
 					return value;
+			}
+		}
+
+		/// Returns the calculated dimension in pixels
+		float CalculateFloat(float parentwidth, float emwidth = 10) const {
+			switch(unit) {
+				case Percent:
+					return (float)value * parentwidth / 100.f;
+				case BasisPoint:
+					return (float)value * parentwidth / 10000.f;
+				case MilliPixel:
+					return (float)value / 1000;
+				case EM:
+					return (float)value * emwidth / 100.f;
+				case Pixel:
+				default:
+					return (float)value;
 			}
 		}
 
@@ -846,10 +874,6 @@ namespace Gorgon {
 			/// If the Widget does not have text but states, the number of the state
 			/// will be translated into a string and will be passed.
 			Text,
-
-			/// Data will affect the frame of the animation. Will only work for Objects
-			/// with animations. For now, this effect is disabled.
-			Frame,
 			
 			/// Data will effect the displayed graphics
             Icon,
@@ -879,6 +903,10 @@ namespace Gorgon {
 			/// for 0, 360 degrees for 1. You may use min and max to modify this. For instance, if max
 			/// is set to 0.5, the degrees will go up to 180. For now, this effect is not in use.
 			ModifyRotation,
+
+			/// Data will affect the frame of the animation. Will only work for Objects
+			/// with animations. For now, this effect is disabled.
+			Frame,
 
 			/// Size of this component will be affected. Data will be given as a percent
 			/// and will modify Size property. Useful for sliders and progress bars. The direction
@@ -1136,7 +1164,7 @@ namespace Gorgon {
         
 		/// Sets the property that will be affected by the value of the widget. Default is NoModification. 
 		/// If min and max is specified incoming value will be scaled accordingly. 
-		void SetValueModification(ValueModification mod, ValueSource source = UseFirst, std::array<float, 4> min = {0, 0, 0, 0}, std::array<float, 4> max = {1, 1, 1, 1}) {
+		void SetValueModification(ValueModification mod, ValueSource source = UseFirst, std::array<float, 4> min = {{0, 0, 0, 0}}, std::array<float, 4> max = {{1, 1, 1, 1}}) {
             valuemod = mod;
             valuemin = min;
             valuemax = max;
@@ -1197,7 +1225,7 @@ namespace Gorgon {
 		std::array<float, 4> GetValueMin() const { return valuemin; }
 
 		/// Returns the range of the value scale.
-		std::array<float, 4> GetValueRange() const { return {valuemax[0]-valuemin[0], valuemax[1]-valuemin[1], valuemax[2]-valuemin[2], valuemax[3]-valuemin[3]}; }
+		std::array<float, 4> GetValueRange() const { return {{valuemax[0]-valuemin[0], valuemax[1]-valuemin[1], valuemax[2]-valuemin[2], valuemax[3]-valuemin[3]}}; }
 
 		/// Returns the value scale maximum.
 		std::array<float, 4> GetValueMax() const { return valuemax; }
@@ -1301,13 +1329,15 @@ namespace Gorgon {
         ValueSource source = UseFirst;
 
         /// If required, can be used to scale incoming data
-		std::array<float, 4> valuemin = {}, valuemax = {{1, 1, 1, 1}};
+		std::array<float, 4> valuemin = {{0, 0, 0, 0}}, valuemax = {{1, 1, 1, 1}};
         
         /// Tag identifies a component for various modifications depending on the
         /// widget.
         Tag tag = NoTag;
         
         /// Positioning mode
+        
+        
 		PositionType positioning = Relative;
 
         /// Position of the component

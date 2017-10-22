@@ -45,21 +45,28 @@ int main() {
     
     
     auto &outer_normal = temp.AddContainer(0, UI::ComponentCondition::Always);
-    
     outer_normal.Background.SetAnimation(rect);
     outer_normal.SetBorderSize(1);
     outer_normal.SetPadding(0);
     //outer_normal.SetOrientation(Graphics::Orientation::Vertical);
-    
-    auto &gauge = temp.AddGraphics(1, UI::ComponentCondition::Always);
+
+	auto &outer2 = temp.AddContainer(1, UI::ComponentCondition::Always);
+	outer2.SetSize(100, 100, UI::Dimension::Percent);
+	outer2.SetCenter(50, 50, UI::Dimension::Percent);
+	outer2.SetValueModification(outer2.ModifyColor, UI::ComponentTemplate::UseRGB);
+
+    auto &gauge = temp.AddGraphics(2, UI::ComponentCondition::Always);
     gauge.Content.SetDrawable(blank);
-    gauge.SetValueModification(gauge.ModifyColor, UI::ComponentTemplate::UseRGBA);
-    gauge.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::MiddleCenter);
-    gauge.SetPositioning(gauge.Absolute);
+    gauge.SetValueModification(gauge.ModifyPosition, UI::ComponentTemplate::UseXY);
+    gauge.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+    gauge.SetPositioning(gauge.PolarAbsolute);
+	gauge.SetValueRange(0, 0, 0.5);
+	gauge.SetCenter(50, 50, UI::Dimension::Percent);
     
     
     outer_normal.AddIndex(1);
-    outer_normal.AddIndex(2);
+	outer2.AddIndex(2);
+	outer2.AddIndex(3);
     
     /*auto &icon1 = temp.AddGraphics(1, UI::ComponentCondition::Always);
     icon1.Content.SetDrawable(circle);
@@ -87,7 +94,7 @@ int main() {
 	iconplace.SetSizing(UI::ComponentTemplate::Automatic);
 	iconplace.SetSize(16, 16);*/
     
-    auto &text = temp.AddTextholder(2, UI::ComponentCondition::Always);
+    auto &text = temp.AddTextholder(3, UI::ComponentCondition::Always);
     text.SetDataEffect(text.Text);
     text.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
     //text.SetSize({100, UI::Dimension::Percent}, {-100, UI::Dimension::EM});
@@ -116,7 +123,7 @@ int main() {
     
     stack.SetData(UI::ComponentTemplate::Icon, t2.CreateAnimation());
     
-    float v1 = 0.5, v2 = 0.5;
+    float v1 = 0.5, v2 = 0;
     
     stack.SetValue(v1, v2, 0.3f, 1.f);
     
@@ -146,11 +153,11 @@ int main() {
 			stack.SetData(UI::ComponentTemplate::Text, String::From(int(std::round(100*v1))));
 		}
 		else if(key == Keycodes::Number_3 && state) {
-			v2 += 0.1f;
+			v2 += 1.f/16;
 			stack.SetValue(v1, v2);
 		}
 		else if(key == Keycodes::Number_4 && state) {
-			v2 -= 0.1f;
+			v2 -= 1.f/16;
 			stack.SetValue(Geometry::Pointf(v1,v2));
 		}
 
