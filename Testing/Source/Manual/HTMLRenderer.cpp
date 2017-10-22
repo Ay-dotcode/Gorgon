@@ -47,7 +47,8 @@ int main() {
     
     Graphics::HTMLRenderer sty(family);
 
-    sty.Print(layer, "<h1> Annie, I bet you are okay...</h1>", 250, 230);
+    sty.Print(layer, "<b>Annie, I bet you are okay...<br>Ann</b>ie?\?\?</br><b>Woaaaaa wth?\?\?\?</b>", 250, 230);
+    
     sty.Print(layer, "<u color=\"black\"><b>AAAA</b> BBBB</u> <strike color=\"green\"><strong>CCCC</strong> DDDD</strike>", 250, 270);
     
     sty.Print(layer, "<u>AAAA <strong>BBBB</strong></u> <strike>CCCC <strong>DDDD</strong></strike>", 250, 300);
@@ -58,7 +59,7 @@ int main() {
     
     sty.Print(layer, "<u><strike><strong>Are you okay Annie?</strong></strike></u>", 250, 390);
     
-    sty.Print(layer, "<strong>the<b/> <u><strike>quick <strong>brown</strong></strike> fox</u> jumps over the lazy dog", 250, 420);
+    sty.Print(layer, "<strong>the </strong><u><strike>quick <strong>brown</strong></strike> fox</u> jumps over the lazy dog", 250, 420);
     sty.Print(layer, "<u>the <strong>quick brown <strike>fox jumps</strong> over the lazy</u> dog</strike>", 250, 450);
     
     

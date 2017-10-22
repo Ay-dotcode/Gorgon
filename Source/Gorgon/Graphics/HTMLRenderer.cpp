@@ -15,14 +15,16 @@ std::unordered_map<HTMLRenderer::Tag, std::string, HTMLRenderer::HashType> HTMLR
 bool HTMLRenderer::initialized = false;
     
 void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, int x, int y) {
+    this->target = &target;
+    
     // clear previous state
     drawunderlined = false;
     drawstriked = false;
     underlinedstart = 0;
     strikedstart = 0;
     baselineoffset = 0;
-    xx = x;
-    yy = y;
+    orgx = xx = x;
+    orgy = yy = y;
     
     unsigned int offset = 0;
     int tagcnt = 0; // !!! debug
@@ -52,30 +54,30 @@ void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, 
         }
         else if(current == '>') {
             tagenum = string2tag(tag);
-            if(remove) {
+            // if it's an empty tag, like <br> or </br>, just apply and move one
+            if(emptytagmap.count(tagenum)) {
+                HR_LOG_NOTICE("about to apply empty tag");
+                applytag(tagenum);
+                remove = false; // to handle empty tags with closing character
+            }
+            else if(remove) {
                 remove = false;
                 removetag(tagenum);
+                // end positions for underline and strike are not known when the tags are first seen
+                // therefore, we need to apply (aka draw) these lines at the closure
                 if(drawunderlined) {
                     HR_LOG_NOTICE("about to draw underline");
                     drawunderlined = false;
                     // !!! do we need baselineoffset here? it's always zero (or is it?)
                     // !!! TODO handle properties of underlined tag
-                    target.Draw((float)underlinedstart,
-                                (float)(yy + renderer.GetGlyphRenderer()->GetUnderlineOffset() /*+ baselineoffset*/),
-                                (float)(xx  - underlinedstart),
-                                (float)renderer.GetGlyphRenderer()->GetLineThickness(),
-                                ucolor);
+                    drawline(LineType::Underline);
                 }
                 if(drawstriked) {
                     HR_LOG_NOTICE("about to draw strike line");
                     drawstriked = false;
                     // !!! do we need baselineoffset here? it's always zero (or is it?)
                     // !!! TODO: handle properties of strike tag
-                    target.Draw((float)strikedstart,
-                                (float)(yy + renderer.GetStrikePosition()  /*+ baselineoffset*/),
-                                (float)(xx  - strikedstart),
-                                (float)renderer.GetGlyphRenderer()->GetLineThickness(),
-                                scolor);
+                    drawline(LineType::Strike);
                 }
                 clearattributes(tagenum);
             }

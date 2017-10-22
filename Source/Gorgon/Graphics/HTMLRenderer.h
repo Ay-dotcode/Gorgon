@@ -105,7 +105,8 @@ public:
         strikedstart(0),
         baselineoffset(0),
         ucolor(1.f),
-        scolor(1.f)
+        scolor(1.f),
+        target(nullptr)
     {
         if(!initialized) {
             initialize();
@@ -135,6 +136,12 @@ private:
         End
     };
     
+    enum class LineType: unsigned int {
+        Underline = 0,
+        Strike,
+        End,
+    };
+    
     struct HashType {
         unsigned int operator()(Tag tag) const {
             return static_cast<unsigned int>(tag);
@@ -143,16 +150,12 @@ private:
     
     FontFamily &fontfamily;
     StyledRenderer renderer;
-    bool drawunderlined;
-    bool drawstriked;
-    unsigned int underlinedstart;
-    unsigned int strikedstart;
-    int baselineoffset;
-    int xx;
-    int yy;
-    
+    bool drawunderlined, drawstriked;
+    unsigned int underlinedstart, strikedstart;
+    int baselineoffset, xx, yy, orgx, orgy;
     RGBAf ucolor; // underlined
     RGBAf scolor; // strike
+    TextureTarget *target;
     
     static bool initialized;
     static std::unordered_map<unsigned int, bool> attsupportmap;
@@ -167,10 +170,7 @@ private:
         emptytagmap.emplace(Tag::Break, "br");
     }
     
-    // private methods
-    void parseandprint(TextureTarget &target, const std::string &str, int x, int y);
-    
-    Tag string2tag(const std::string &tag) {
+    static Tag string2tag(const std::string &tag) {
         if(tag == "u")           { return Tag::Underlined; }
         else if(tag == "strike") { return Tag::Striked; }
         else if(tag == "b")      { return Tag::Bold; }
@@ -182,11 +182,24 @@ private:
         else                     { ASSERT(false, "unsupported tag: " + tag); return Tag::End; }
     }
     
-    Attribute string2attribute(const std::string &attribute) {
+    static Attribute string2attribute(const std::string &attribute) {
         if(attribute == "color") { return Attribute::Color; }
         else                     { ASSERT(false, "unsupported attribute: " + attribute); return Attribute::End; }
     }
-
+    
+    static RGBAf extractcolor(const std::string color) {
+        if(color == "white")      { return RGBAf(1.f); }
+        else if(color == "black") { return RGBAf(0.f); }
+        else if(color == "green") { return RGBAf(0.f, 1.f, 0.f, 1.f); }
+        else {
+            HR_LOG_NOTICE("could not extract given color, using white");
+            return RGBAf(1.f); 
+        }
+    }
+    
+    // private methods
+    void parseandprint(TextureTarget &target, const std::string &str, int x, int y);
+    
     void applytag(Tag tag) {
         // !!! TODO tag2string function
         HR_LOG_NOTICE("applying tag: " + std::to_string(static_cast<unsigned int>(tag)));
@@ -209,7 +222,13 @@ private:
                 changeglyphrenderer(FontFamily::Style::Large);
                 break;
             case Tag::Break:
-                // !!! TODO apply line break here
+                /*
+                if(drawunderlined) { drawline(LineType::Underline); }
+                if(drawstriked) { drawline(LineType::Strike); }
+                */
+                // TODO what should be the offset?
+                yy += renderer.GetGlyphRenderer()->GetHeight() + 1;
+                xx = orgx;
                 break;
             default:
                 // !!! TODO tag2string function
@@ -255,22 +274,13 @@ private:
                 changeglyphrenderer(FontFamily::Style::Normal);
                 break;
             case Tag::Break:
-                // !!! TODO remove line break here
+                // !!! this shouldn't be a case
+                ASSERT(false, "attempting to remove tag Break" + std::to_string(static_cast<unsigned int>(tag)));
                 break;
             default:
                 // !!! TODO tag2string function
                 ASSERT(false, "unsupported tag: " + std::to_string(static_cast<unsigned int>(tag)));
                 break;
-        }
-    }
-    
-    RGBAf extractcolor(const std::string color) {
-        if(color == "white")      { return RGBAf(1.f); }
-        else if(color == "black") { return RGBAf(0.f); }
-        else if(color == "green") { return RGBAf(0.f, 1.f, 0.f, 1.f); }
-        else {
-            HR_LOG_NOTICE("could not extract given color, using white");
-            return RGBAf(1.f); 
         }
     }
     
@@ -298,6 +308,28 @@ private:
                 // !!! TODO tag2string function
                 HR_LOG_NOTICE("attribute is not part of tag (" + std::to_string(static_cast<unsigned int>(tag)) + ")");
             }
+        }
+    }
+    
+    void drawline(LineType linetype) {
+        ASSERT(target, "texture target is null");
+        
+        if(linetype == LineType::Underline) {
+            target->Draw((float)underlinedstart,
+                         (float)(yy + renderer.GetGlyphRenderer()->GetUnderlineOffset() /*+ baselineoffset*/),
+                         (float)(xx  - underlinedstart),
+                         (float)renderer.GetGlyphRenderer()->GetLineThickness(),
+                         ucolor);
+        }
+        else if(linetype == LineType::Strike) {
+            target->Draw((float)strikedstart,
+                         (float)(yy + renderer.GetStrikePosition() + baselineoffset),
+                         (float)(xx  - strikedstart),
+                         (float)renderer.GetGlyphRenderer()->GetLineThickness(),
+                         scolor);
+        }
+        else {
+            ASSERT(false, "invalid line type");
         }
     }
     
