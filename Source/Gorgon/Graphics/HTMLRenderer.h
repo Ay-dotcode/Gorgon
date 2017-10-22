@@ -206,8 +206,10 @@ private:
         switch(tag) {
             case Tag::Underlined:
                 underlinedstart = xx;
+                drawunderlined = true;
                 break;
             case Tag::Striked:
+                drawstriked = true;
                 strikedstart = xx;
                 break;
             case Tag::Bold:
@@ -222,10 +224,8 @@ private:
                 changeglyphrenderer(FontFamily::Style::Large);
                 break;
             case Tag::Break:
-                /*
                 if(drawunderlined) { drawline(LineType::Underline); }
                 if(drawstriked) { drawline(LineType::Strike); }
-                */
                 // TODO what should be the offset?
                 yy += renderer.GetGlyphRenderer()->GetHeight() + 1;
                 xx = orgx;
@@ -236,35 +236,18 @@ private:
                 break;
         }
     }
-
-    // !!! TODO find a way to merge this function with removetag
-    // !!! the problem is underline and strike application is done
-    // !!! after removetag is called
-    void clearattributes(Tag tag) {
-        switch(tag) {
-            case Tag::Underlined:
-                HR_LOG_NOTICE("clearing underline attributes");
-                ucolor = RGBAf(1.f);
-                break;
-            case Tag::Striked:
-                HR_LOG_NOTICE("clearing strike attributes");
-                scolor = RGBAf(1.f);
-                break;
-            default:
-                return;
-        }
-    }
-    
     
     void removetag(Tag tag) {
         // !!! TODO tag2string function
         HR_LOG_NOTICE("removing tag: " + std::to_string(static_cast<unsigned int>(tag)));
         switch(tag) {
             case Tag::Underlined:
-                drawunderlined = true;
+                drawunderlined = false;
+                drawline(LineType::Underline);
                 break;
             case Tag::Striked:
-                drawstriked = true;
+                drawstriked = false;
+                drawline(LineType::Strike);
                 break;
             case Tag::Bold:
             case Tag::Strong:
@@ -283,7 +266,7 @@ private:
                 break;
         }
     }
-    
+
     void applyattributes(Tag tag, const std::vector<std::pair<std::string, std::string>> &attributes) {
         Attribute attribute;
         for(const auto &attstr: attributes) {
@@ -311,10 +294,29 @@ private:
         }
     }
     
+    // !!! TODO find a way to merge this function with removetag
+    // !!! the problem is underline and strike application is done
+    // !!! after removetag is called
+    void clearattributes(Tag tag) {
+        switch(tag) {
+            case Tag::Underlined:
+                HR_LOG_NOTICE("clearing underline attributes");
+                ucolor = RGBAf(1.f);
+                break;
+            case Tag::Striked:
+                HR_LOG_NOTICE("clearing strike attributes");
+                scolor = RGBAf(1.f);
+                break;
+            default:
+                return;
+        }
+    }
+    
     void drawline(LineType linetype) {
         ASSERT(target, "texture target is null");
         
         if(linetype == LineType::Underline) {
+            HR_LOG_NOTICE("drawing underline");  
             target->Draw((float)underlinedstart,
                          (float)(yy + renderer.GetGlyphRenderer()->GetUnderlineOffset() /*+ baselineoffset*/),
                          (float)(xx  - underlinedstart),
@@ -322,8 +324,9 @@ private:
                          ucolor);
         }
         else if(linetype == LineType::Strike) {
+            HR_LOG_NOTICE("drawing strike");            
             target->Draw((float)strikedstart,
-                         (float)(yy + renderer.GetStrikePosition() + baselineoffset),
+                         (float)(yy + renderer.GetStrikePosition() /*+ baselineoffset*/),
                          (float)(xx  - strikedstart),
                          (float)renderer.GetGlyphRenderer()->GetLineThickness(),
                          scolor);

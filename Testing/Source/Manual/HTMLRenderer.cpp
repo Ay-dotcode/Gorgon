@@ -47,6 +47,7 @@ int main() {
     
     Graphics::HTMLRenderer sty(family);
 
+    
     sty.Print(layer, "<b>Annie, I bet you are okay...<br>Ann</b>ie?\?\?</br><b>Woaaaaa wth?\?\?\?</b>", 250, 230);
     
     sty.Print(layer, "<u color=\"black\"><b>AAAA</b> BBBB</u> <strike color=\"green\"><strong>CCCC</strong> DDDD</strike>", 250, 270);
@@ -63,8 +64,12 @@ int main() {
     sty.Print(layer, "<u>the <strong>quick brown <strike>fox jumps</strong> over the lazy</u> dog</strike>", 250, 450);
     
     
-    sty.Print(layer, "the quick brown fox jumps over the lazy dog", 250, 480);
-    sty.Print(layer, "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", 250, 510);
+    sty.Print(layer, "<u>the <strong>quick brown <strike>fox <br>jumps</strong> over the lazy</u> dog</strike>", 250, 480);
+    
+    
+    sty.Print(layer, "the quick brown fox jumps over the lazy dog", 250, 510);
+    sty.Print(layer, "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", 250, 540);
+    
     
     Graphics::BlankImage bimg(1, 1);
     bimg.Draw(layer, 245, 270);
@@ -76,6 +81,8 @@ int main() {
     bimg.Draw(layer, 245, 450);
     bimg.Draw(layer, 245, 480);
     bimg.Draw(layer, 245, 510);
+    bimg.Draw(layer, 245, 540);
+    
     
     while(true) {
 		Gorgon::NextFrame();

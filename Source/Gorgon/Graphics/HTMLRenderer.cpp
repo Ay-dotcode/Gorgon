@@ -63,22 +63,6 @@ void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, 
             else if(remove) {
                 remove = false;
                 removetag(tagenum);
-                // end positions for underline and strike are not known when the tags are first seen
-                // therefore, we need to apply (aka draw) these lines at the closure
-                if(drawunderlined) {
-                    HR_LOG_NOTICE("about to draw underline");
-                    drawunderlined = false;
-                    // !!! do we need baselineoffset here? it's always zero (or is it?)
-                    // !!! TODO handle properties of underlined tag
-                    drawline(LineType::Underline);
-                }
-                if(drawstriked) {
-                    HR_LOG_NOTICE("about to draw strike line");
-                    drawstriked = false;
-                    // !!! do we need baselineoffset here? it's always zero (or is it?)
-                    // !!! TODO: handle properties of strike tag
-                    drawline(LineType::Strike);
-                }
                 clearattributes(tagenum);
             }
             else {
