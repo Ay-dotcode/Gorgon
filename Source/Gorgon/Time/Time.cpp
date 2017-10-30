@@ -49,11 +49,17 @@ namespace Gorgon { namespace Time {
 			Year   =String::To<int>(isodate.substr( 0, 4));
 			Month  =MonthType(String::To<int>(isodate.substr( 5, 2)));
 			Day    =String::To<int>(isodate.substr( 8, 2));
-			Hour   =String::To<int>(isodate.substr(11, 2));
-			Minute =String::To<int>(isodate.substr(14, 2));
-			Second =String::To<int>(isodate.substr(17, 2));
-			
-			if(isodate.length()==19) {
+            
+            if(isodate.length()>10) {
+                Hour   =String::To<int>(isodate.substr(11, 2));
+                Minute =String::To<int>(isodate.substr(14, 2));
+                Second =String::To<int>(isodate.substr(17, 2));
+            }
+            else {
+                Hour = Minute = Second = 0;
+            }
+            
+			if(isodate.length()<=19) {
 				Timezone=LocalTimezone();
 			}
 			else if(isodate[19]=='Z') {
