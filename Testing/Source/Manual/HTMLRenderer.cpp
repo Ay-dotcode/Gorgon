@@ -4,6 +4,7 @@
 #include <Gorgon/Window.h>
 #include <Gorgon/Main.h>
 #include "Gorgon/Graphics/BitmapFont.h"
+#include "Gorgon/Graphics/Font.h"
 #include "Gorgon/Graphics/Layer.h"
 #include "Gorgon/Graphics/EmptyImage.h"
 
@@ -43,8 +44,42 @@ int main() {
     fonts.emplace(Graphics::FontFamily::Style::Bold, &vicbold);
     fonts.emplace(Graphics::FontFamily::Style::Large, &vicboldlarge);
     
+    std::string str = "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG";
+    
+    Graphics::StyledRenderer renderer(victoria);
+    auto styledsize = renderer.GetSize(str);
+    auto styledsizewrap = renderer.GetSize(str, 300);
+    auto basicfontsize = victoria.GetSize(str);
+    auto basicfontsizewrap = victoria.GetSize(str, 50);
+    
+    Graphics::BlankImage bimg;
+    bimg.SetColor(0.f);
+    
+    bimg.SetSize(styledsize);
+    bimg.Draw(layer, 250, 250);
+    renderer.Print(layer, str, 250, 250);
+    
+    bimg.SetSize(basicfontsize);
+    bimg.Draw(layer, 250, 270);
+    victoria.Print(layer, str, 250, 270);
+    
+    /*
+    bimg.SetSize(styledsizewrap);
+    bimg.Draw(layer, 250, 400);
+    renderer.Print(layer, str, 250, 300, 50, 1.f);
+    */
+    
+    bimg.SetSize(basicfontsizewrap);
+    bimg.Draw(layer, 250, 290);
+    victoria.Print(layer, str, 250, 290, 50, 1.f);
+    
+    std::cout << "styled         : " << styledsize << std::endl;
+    std::cout << "styled wrap    : " << styledsizewrap << std::endl;
+    std::cout << "basic font     : " << basicfontsize << std::endl;
+    std::cout << "basic font wrap: " << basicfontsizewrap << std::endl;
     Graphics::FontFamily family(fonts);
     
+    /*
     Graphics::HTMLRenderer sty(family);
 
     
@@ -82,8 +117,7 @@ int main() {
     bimg.Draw(layer, 245, 480);
     bimg.Draw(layer, 245, 510);
     bimg.Draw(layer, 245, 540);
-    
-    
+    */
     while(true) {
 		Gorgon::NextFrame();
 	}

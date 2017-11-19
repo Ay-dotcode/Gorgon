@@ -606,7 +606,7 @@ namespace Gorgon { namespace Graphics {
 
 		virtual Geometry::Size GetSize(const std::string &text) const override;
 
-		virtual Geometry::Size GetSize(const std::string &text, int width) const override { return{0,0}; }
+		virtual Geometry::Size GetSize(const std::string &text, int width) const override;
 
 		virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override { return 0; }
 

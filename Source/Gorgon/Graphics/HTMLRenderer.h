@@ -28,6 +28,7 @@ extern Utils::Logger Logger;
 }
 
 // !!! find a better place?
+// !!! TODO implement or remove move and copy constructors
 class FontFamily {
 public:
     enum class Style: unsigned int{
@@ -226,8 +227,7 @@ private:
             case Tag::Break:
                 if(drawunderlined) { drawline(LineType::Underline); }
                 if(drawstriked) { drawline(LineType::Strike); }
-                // TODO what should be the offset?
-                yy += renderer.GetGlyphRenderer()->GetHeight() + 1;
+                yy += renderer.GetGlyphRenderer()->GetHeight() * 1.2f; // magic number from Font.cpp
                 xx = orgx;
                 break;
             default:

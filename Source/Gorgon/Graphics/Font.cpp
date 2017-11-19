@@ -202,9 +202,11 @@ namespace Gorgon { namespace Graphics {
 
 		/// helps with the simple layouts, decodes and executes unicode instructions. Offset parameter in render function
 		/// is the offset that must be used after rendering the character. If g is 0, only offset should be processed
-		void simpleprint(const GlyphRenderer &renderer, std::string::const_iterator begin, std::string::const_iterator end, std::function<int(Glyph, Glyph)> spacing,
-						 std::function<void(Glyph, int, int)> render, std::function<void()> dotab, std::function<void(Glyph)> donewline) {
-
+		void simpleprint(
+		const GlyphRenderer &renderer, std::string::const_iterator begin, std::string::const_iterator end,
+		std::function<int(Glyph, Glyph)> spacing,
+		std::function<void(Glyph, int, int)> render,
+        std::function<void()> dotab, std::function<void(Glyph)> donewline) {
 			Glyph prev = 0;
 			int ind = 0;
 
@@ -272,10 +274,10 @@ namespace Gorgon { namespace Graphics {
 		using markvecit = std::vector<glyphmark>::iterator;
 
 		void boundedprint(
-			const GlyphRenderer &renderer, std::string::const_iterator begin, std::string::const_iterator end, int width,
-			std::function<void(Glyph/*terminator, 0 => wrap*/, markvecit/*begin*/, markvecit/*end*/, int/*totalwidth*/)> doline,
-			std::function<int(Glyph, Glyph)> spacing, std::function<void(int &)> dotab) {
-
+        const GlyphRenderer &renderer, std::string::const_iterator begin, std::string::const_iterator end, int width,
+        std::function<void(Glyph/*terminator, 0 => wrap*/, markvecit/*begin*/, markvecit/*end*/, int/*totalwidth*/)> doline,
+        std::function<int(Glyph, Glyph)> spacing,
+        std::function<void(int &)> dotab) {
 			std::vector<glyphmark> acc;
 			int lastbreak = 0;
 			int ind = 0;
@@ -435,19 +437,7 @@ namespace Gorgon { namespace Graphics {
 
 	} //internal
 
-    void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Point location, RGBAf color) const {
-		auto sp = renderer->GetGlyphSpacing();
-		auto cur = location;
-		
-		internal::simpleprint(
-			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
-			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
-			std::bind(&internal::dodefaulttab<int>, location.X, std::ref(cur.X), renderer->GetMaxWidth() * 8),
-			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); cur.X = location.X; }
-		);
-    }
-
+	
 	Geometry::Size BasicFont::GetSize(const std::string& text) const {
 		auto sp = renderer->GetGlyphSpacing();
 		auto cur = Geometry::Point(0, 0);
@@ -464,6 +454,38 @@ namespace Gorgon { namespace Graphics {
 
 		return{maxx, cur.Y};
 	}
+	
+	Geometry::Size BasicFont::GetSize(const std::string& text, int w) const {
+		auto y   = 0;
+		auto sp  = renderer->GetGlyphSpacing();
+		auto tot = w;
+
+		internal::boundedprint(
+			*renderer, text.begin(), text.end(), tot,
+
+			[&](Glyph, internal::markvecit begin, internal::markvecit end, int w) {			
+				y += (int)std::round(renderer->GetHeight() * 1.2);
+			},
+
+			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
+		);
+
+		return {w, y};
+	}
+	
+    void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Point location, RGBAf color) const {
+		auto sp = renderer->GetGlyphSpacing();
+		auto cur = location;
+		
+		internal::simpleprint(
+			*renderer, text.begin(), text.end(),
+			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
+			std::bind(&internal::dodefaulttab<int>, location.X, std::ref(cur.X), renderer->GetMaxWidth() * 8),
+			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); cur.X = location.X; }
+		);
+    }
 
     void BasicFont::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
 		auto y   = location.Y;
@@ -493,25 +515,6 @@ namespace Gorgon { namespace Graphics {
 			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
 		);
-	}
-
-	Geometry::Size BasicFont::GetSize(const std::string& text, int w) const {
-		auto y   = 0;
-		auto sp  = renderer->GetGlyphSpacing();
-		auto tot = w;
-
-		internal::boundedprint(
-			*renderer, text.begin(), text.end(), tot,
-
-			[&](Glyph, internal::markvecit begin, internal::markvecit end, int w) {			
-				y += (int)std::round(renderer->GetHeight() * 1.2);
-			},
-
-			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
-			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
-		);
-
-		return {w, y};
 	}
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Point location) const {
@@ -568,8 +571,26 @@ namespace Gorgon { namespace Graphics {
 			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
 		);
 
-		return{maxx, cur.Y + renderer->GetHeight()};
+		return{maxx, cur.Y};
 	}
+	
+    Geometry::Size StyledRenderer::GetSize(const std::string &text, int width) const {
+        auto y   = 0;
+		auto sp  = renderer->GetGlyphSpacing();
+		auto tot = width;
+
+		internal::boundedprint(
+			*renderer, text.begin(), text.end(), tot,
+			[&](Glyph, internal::markvecit begin, internal::markvecit end, int width) {			
+				y += (int)std::round(renderer->GetHeight() * vspace + pspace);
+			},
+			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
+		);
+
+        // !!! TODO pick min(width, maxX)??
+		return {width, y};
+    }
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
 		if(shadow.type == TextShadow::Flat) {
