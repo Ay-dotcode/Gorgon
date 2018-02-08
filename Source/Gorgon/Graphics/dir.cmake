@@ -3,6 +3,7 @@ SET(Local
 	Animations.h
 	Bitmap.h
 	Bitmap.cpp
+	BlankImage.h
 	Color.h
 	Drawables.h
 	EmptyImage.h

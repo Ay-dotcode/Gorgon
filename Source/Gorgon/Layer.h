@@ -315,10 +315,30 @@ namespace Gorgon {
 		Geometry::Size GetSize() const {
 			return bounds.GetSize();
 		}
-		
+
+		/// Returns the width of the layer
+		int GetWidth() const {
+			return bounds.Width();
+		}
+
+		/// Returns the height of the layer
+		int GetHeight() const {
+			return bounds.Height();
+		}
+
 		/// Returns the current location of the layer
 		Geometry::Point GetLocation() const {
 			return bounds.TopLeft();
+		}
+
+		/// Returns the current location of the layer
+		int GetLeft() const {
+			return bounds.Left;
+		}
+
+		/// Returns the current location of the layer
+		int GetTop() const {
+			return bounds.Top;
 		}
 		
 		/// Returns the boundaries of the layer
@@ -331,8 +351,8 @@ namespace Gorgon {
 			if(!parent)
 				return bounds;
 
-			auto p = bounds.TopLeft();
-			auto s = bounds.GetSize();
+			auto p = GetLocation();
+			auto s = GetSize();
 
 			auto pb = parent->GetEffectiveBounds();
 

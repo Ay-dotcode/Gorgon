@@ -3,6 +3,7 @@
 #include <Gorgon/UI/Template.h>
 #include <Gorgon/UI/ComponentStack.h>
 #include <Gorgon/Graphics/EmptyImage.h>
+#include <Gorgon/Graphics/BlankImage.h>
 #include <Gorgon/Graphics/Rectangle.h>
 #include <Gorgon/Graphics/TintedObject.h>
 

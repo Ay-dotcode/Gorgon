@@ -28,6 +28,7 @@ SET(UnitTests
 	Scene
 	ScopeGuard
 	String
+	Layer
 	Logging
 	URI
 )

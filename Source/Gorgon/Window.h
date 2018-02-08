@@ -163,6 +163,11 @@ namespace Gorgon {
 		/// Moves the window to the given position
 		virtual void Move(const Geometry::Point &position) override;
 
+		/// Moves the window to the given position
+		virtual void Move(int x, int y) override {
+			Move({x, y});
+		}
+
 		/// Resizes the window to the given size. The given size is considered as the
 		/// interior region of the window. The restrictions for the smallest
 		/// sized window might change depending on the window manager or theme.
@@ -170,6 +175,16 @@ namespace Gorgon {
 		/// this size does not exclude window chrome. This function resizes all window
 		/// sized layers.
 		virtual void Resize(const Geometry::Size &size) override;
+
+		/// Resizes the window to the given size. The given size is considered as the
+		/// interior region of the window. The restrictions for the smallest
+		/// sized window might change depending on the window manager or theme.
+		/// Largest window size can be obtained using UsableScreenRegion however,
+		/// this size does not exclude window chrome. This function resizes all window
+		/// sized layers.
+		virtual void Resize(int width, int height) override {
+			Resize({width, height});
+		}
 
 		/// Returns the exterior bounding box of the window. May throw or return invalid
 		/// values if the window is not visible
