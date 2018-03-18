@@ -58,7 +58,7 @@ namespace Gorgon { namespace Encoding {
 		png_structp png_ptr;
 		png_infop info_ptr;
 
-		unsigned long width, height;
+		unsigned int width, height;
 		int bit_depth, color_type;
 
 		unsigned char sig[8];

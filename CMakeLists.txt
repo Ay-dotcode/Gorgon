@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 project(Gorgon)
-
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Tools/ShaderEmbedder")
 
 set(GORGON_MAJOR_VERSION 4)
@@ -40,6 +39,8 @@ option(FLAC_SUPPORT "Enable FLAC decoding and streaming." ON)
 
 option(UI "Enable UI subsystem." ON)
 
+OPTION(FORCE_32_BIT "Force 32 bit compilation" OFF)
+
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
@@ -47,6 +48,13 @@ set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
 
 ######################
+
+if(NOT(${FORCE_32_BIT}))
+    set(FIND_LIBRARY_USE_LIB64_PATHS ON)
+    if(NOT WIN32)
+        list(INSERT 0 CMAKE_SYSTEM_LIBRARY_PATH /usr/lib64)
+    endif()
+endif()
 
 
 if(AUDIO AND (NOT AUDIOLIB OR AUDIOLIB STREQUAL ""))

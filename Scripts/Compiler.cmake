@@ -36,32 +36,30 @@ ELSE()
 	ENDIF()
 ENDIF()
 
-OPTION(ENABLE_64_BIT "Enable 64 bit compilation" OFF)
 
 #enable C++14 and 32-bit compilation
 INCLUDE(CheckCXXCompilerFlag)
 IF(CMAKE_COMPILER_IS_GNUCXX)
-	IF(${ENABLE_64_BIT})
-		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-	ELSE()
+	IF(${FORCE_32_BIT})
 		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -m32")
 		SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+	ELSE()
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 	ENDIF()
 ENDIF()
 
 IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-	IF(${ENABLE_64_BIT})
-		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-	ELSE()
+	IF(${FORCE_32_BIT})
 		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -m32")
 		SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+	ELSE()
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 	ENDIF()
 ENDIF()
 
 #MACRO(FixProject) 
 #ENDMACRO()
 
-#make sure 64bits cannot be activated
 IF(MSVC)
 	ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 	
@@ -88,7 +86,7 @@ IF(MSVC)
       ENDIF()
     ENDFOREACH()
 	
-	IF(${CMAKE_CL_64} AND NOT(${ENABLE_64_BIT}))
-		MESSAGE(FATAL_ERROR "Gorgon Library works only 32bits")
+	IF(${CMAKE_CL_64} AND ${FORCE_32_BIT})
+		MESSAGE(FATAL_ERROR "Gorgon Library is configured for 32 bits.")
 	ENDIF()
 ENDIF()

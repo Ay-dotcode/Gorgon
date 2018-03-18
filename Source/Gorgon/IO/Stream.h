@@ -48,7 +48,7 @@ namespace Gorgon { namespace IO {
 		return r;
 	}
 
-	/// Reads a 16-bit unsigned integer from the stream. An unsigned int is at least 32 bits, could be more
+	/// Reads a 16-bit unsigned integer from the stream. An unsigned int is at least 16 bits, could be more
 	/// however, only 2 bytes will be read from the stream
 	inline unsigned ReadUInt16(std::istream &stream) {
 		uint16_t r;
@@ -164,7 +164,7 @@ namespace Gorgon { namespace IO {
         auto x = ReadInt32(stream);
         auto y = ReadInt32(stream);
         
-        return {x, y};
+        return {(int)x, (int)y};
     }
     
 	inline Geometry::Pointf ReadPointf(std::istream &stream) {
@@ -178,7 +178,7 @@ namespace Gorgon { namespace IO {
         auto w = ReadInt32(stream);
         auto h = ReadInt32(stream);
         
-        return {w, h};
+        return {(int)w, (int)h};
     }
 
 	

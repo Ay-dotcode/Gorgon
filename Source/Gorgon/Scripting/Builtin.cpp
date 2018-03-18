@@ -128,6 +128,10 @@ namespace Gorgon {
 			auto Unsigned = new MappedValueType<unsigned>( "Unsigned",
 				"Unsigned integer. Supports bit operations."
 			);
+            
+			auto SizeType = new MappedValueType<std::size_t>( "SizeType",
+				"Size type integer. Used for compatibility."
+			);
 			
 			auto Byte = new MappedValueType<Gorgon::Byte, ByteToString>( "Byte",
 				"Represents a single byte in a memory. This is a binary data type. *Char* should be "
@@ -719,7 +723,75 @@ namespace Gorgon {
 				new Constant("max",  "Maximum value an unsigned integer can hold", {Unsigned, std::numeric_limits<unsigned>::max()}),
 				new Constant("min",  "Minimum value an unsigned integer can hold", {Unsigned, std::numeric_limits<unsigned>::min()}),				
 			});
+
+			SizeType->AddMembers({
+
+				new MappedOperator("+", "Adds two numbers together",
+					SizeType, {
+						MapOperator(
+							[](std::size_t l, std::size_t r) { return std::size_t(l+r); }, 
+							SizeType, SizeType
+						),
+						MapOperator(
+							[](std::size_t l, int r) { return std::size_t(l+r); },
+							SizeType, Int
+						),
+					}
+				),
+				
+				new MappedOperator("-", "Subtracts a number from this one",
+					SizeType, {
+						MapOperator(
+							[](std::size_t l, std::size_t r) { return std::size_t(l-r); }, 
+							SizeType, SizeType
+						),
+						MapOperator(
+							[](std::size_t l, int r) { return std::size_t(l-r); },
+							SizeType, Int
+						),
+					}
+				),
+				
+				new MappedOperator("*", "Multiplies two numbers together",
+					SizeType, {
+						MapOperator(
+							[](std::size_t l, std::size_t r) { return std::size_t(l*r); }, 
+							SizeType, SizeType
+						),
+						MapOperator(
+							[](std::size_t l, int r) { return int(l*r); },
+							Int, Int
+						),
+					}
+				),
+
+				new MappedOperator( "/",
+					"Divides this number to the given one. Division operation is performed in double type",
+					SizeType, Double, Double, [](std::size_t l, double r) { return double(l)/r; }
+				),
+				
+				
+				MAP_COMPARE( =, ==, SizeType, std::size_t),
+				MAP_COMPARE(>=, >=, SizeType, std::size_t),
+				MAP_COMPARE(<=, <=, SizeType, std::size_t),
+				MAP_COMPARE(!=, !=, SizeType, std::size_t),
+				MAP_COMPARE( >, >,  SizeType, std::size_t),
+				MAP_COMPARE( <, <,  SizeType, std::size_t),
+			});
 			
+			SizeType->AddConstructors({
+				MapTypecast<float, std::size_t>(Float, SizeType),
+				MapTypecast<double, std::size_t>(Double, SizeType),
+				MapTypecast<int, std::size_t>(Int, SizeType),
+				MapTypecast<unsigned, std::size_t>(Unsigned, SizeType),
+				MapTypecast<Gorgon::Byte, std::size_t>(Byte, SizeType)
+			});
+			
+			SizeType->AddMembers({
+				new Constant("max",  "Maximum value an std::size_teger can hold", {SizeType, std::numeric_limits<std::size_t>::max()}),
+				new Constant("min",  "Minimum value an std::size_teger can hold", {SizeType, std::numeric_limits<std::size_t>::min()}),				
+			});
+						
 			Byte->AddMembers({
 				new MappedOperator("+", "Adds two numbers together",
 					Byte, {
@@ -1058,8 +1130,8 @@ namespace Gorgon {
 			});
 			
 			String->AddMembers({
-				MapFunctionToInstanceMember(&std::string::length, "Length", "The length of the string", Unsigned, String),
-				MapFunctionToInstanceMember(&std::string::length, "Size", "The length of the string", Unsigned, String)
+				MapFunctionToInstanceMember(&std::string::length, "Length", "The length of the string", SizeType, String),
+				MapFunctionToInstanceMember(&std::string::length, "Size", "The length of the string", SizeType, String)
 			});
 			
 			String->AddMembers({
@@ -1069,9 +1141,9 @@ namespace Gorgon {
 						MapFunction(
 							&std::string::substr, String, 
 							{
-								Parameter("Start", "Start of the substring, first element is at 0", Unsigned),
-								Parameter("Length", "Length of the substring to be returned", Unsigned, 
-										  Data(Unsigned, std::string::npos), OptionalTag)
+								Parameter("Start", "Start of the substring, first element is at 0", SizeType),
+								Parameter("Length", "Length of the substring to be returned", SizeType, 
+										  Data(SizeType, std::string::npos), OptionalTag)
 							},
 							ConstTag
 						)
@@ -1082,12 +1154,12 @@ namespace Gorgon {
 					"Returns the position of a given string", String, 
 					{
 						MapFunction(
-							(std::size_t(std::string::*)(const std::string &, std::size_t) const)&std::string::find, Unsigned, 
+							(std::size_t(std::string::*)(const std::string &, std::size_t) const)&std::string::find, SizeType, 
 							{
 								Parameter("Search", "The string to be searched", String),
 								Parameter("Start", "Starting point of the search, "
-									"if not specified search will start from the beginning", Unsigned, 
-									Data(Unsigned, 0u), OptionalTag
+									"if not specified search will start from the beginning", SizeType, 
+									Data(SizeType, std::size_t(0)), OptionalTag
  								),
 							},
 							ConstTag
@@ -1155,22 +1227,22 @@ namespace Gorgon {
 					"Accesses individual characters of the string", String,
 					{
 						MapFunction(
-							[](const std::string &str, unsigned index) {
+							[](const std::string &str, size_t index) {
 								//...out of bounds error
 								return str[index];
 							}, Char,
 							{
-								Parameter("Index", "Index of the element to be retrieved", Unsigned)
+								Parameter("Index", "Index of the element to be retrieved", SizeType)
 							},
 							ConstTag
 						),
 						MapFunction(
-							[](std::string &str, unsigned index) -> char& {
+							[](std::string &str, size_t index) -> char& {
 								//...out of bounds error
 								return str[index];
 							}, Char,
 							{
-								Parameter("Index", "Index of the element to be retrieved", Unsigned)
+								Parameter("Index", "Index of the element to be retrieved", SizeType)
 							},
 							ReferenceTag
 						),
@@ -1181,12 +1253,12 @@ namespace Gorgon {
 					"Changes individual characters of the string", String,
 					{
 						MapFunction(
-							[](std::string &str, unsigned index, char c) {
+							[](std::string &str, size_t index, char c) {
 								//...out of bounds error
 								str[index]=c;
 							}, nullptr,
 							{
-								Parameter("Index", "Index of the element to be retrieved", Unsigned),
+								Parameter("Index", "Index of the element to be retrieved", SizeType),
 								Parameter("Value", "Value to be assigned to the element", Char)
 							}
 						),						
@@ -1235,6 +1307,7 @@ namespace Gorgon {
 					Float,
 					Double,
 					Unsigned,
+                    SizeType,
 					Byte,
 					Char,
 					String,
