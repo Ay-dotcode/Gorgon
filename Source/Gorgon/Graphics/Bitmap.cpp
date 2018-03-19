@@ -440,9 +440,10 @@ namespace Gorgon { namespace Graphics {
 	Geometry::Margin Bitmap::Trim(bool left, bool top, bool right, bool bottom) {
 		ASSERT(data, "Image data does not exists");
 
-		ASSERT(HasAlpha(GetMode()), "Unsupported color mode");
-
 		Geometry::Margin ret(0, 0, 0, 0);
+
+		if(!HasAlpha(GetMode())) 
+            return ret;
 
 		int alpha = AlphaIndex(GetMode());
 
