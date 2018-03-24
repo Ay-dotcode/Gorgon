@@ -187,9 +187,19 @@ TEST_CASE("Window", "[Layer]") {
 
 	REQUIRE(l1.GetEffectiveBounds() == Bounds(0, 0, 200, 300));
 
-	l1.Move(10, 15);
+	l1.Move(150, 100);
+    
+#ifdef X11
+    //wait a little
+    for(auto i=0; i<10; i++) {
+        NextFrame();
+        usleep(5000);
+    }
+#endif
 
-	REQUIRE(l1.GetPosition() == Point(10, 15));
+    //Window manager might reposition the window as it wants,
+    //but should get it close to where we want.
+	REQUIRE(l1.GetPosition().Distance(Point(150, 100)) < 20);
 
 	//moving window should not move it as a layer, window (0,0) is always
 	//the start of the window layer.

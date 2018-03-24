@@ -20,6 +20,8 @@ int main() {
 	Graphics::Layer l;
     app.wind.Add(l);
     
+    app.wind.Move(100,100);
+    
     Graphics::BlankImage border_col(1, 1, 0xff000000);
     auto border_bg = BGImage(16, 16, 0x20, 0x80);
     border_bg.Prepare();

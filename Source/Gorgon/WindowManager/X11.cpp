@@ -215,13 +215,13 @@ namespace Gorgon {
 			
 			if(item_count<4 || actual_format!=32) return def;
 			
-			int32_t *cardinals=reinterpret_cast<int32_t*>(data);
+			long *cardinals=reinterpret_cast<long*>(data);
 			
 			T_ ret={
-				cardinals[0],
-				cardinals[1],
-				cardinals[2],
-				cardinals[3]
+				(int)cardinals[0],
+				(int)cardinals[1],
+				(int)cardinals[2],
+				(int)cardinals[3]
 			};
 			
 			XFree(data);
@@ -960,7 +960,7 @@ namespace Gorgon {
                 );
                 
                 if(status == Success && item_count) {
-                    int32_t *cardinals=reinterpret_cast<int32_t*>(data);
+                    long *cardinals=reinterpret_cast<long*>(data);
                     
                     auto monitor = Monitor::FromLocation({int(x+xwa.x), int(y+xwa.y)});
                     
@@ -1407,7 +1407,10 @@ failsafe: //this should use X11 screen as monitor
 	
 	void Window::Move(const Geometry::Point &location) {
 		if(data->ismapped) {
- 			XMoveWindow(WindowManager::display, data->handle, location.X, location.Y);
+            auto borders = WindowManager::GetX4Prop<Geometry::Margin>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
+            std::swap(borders.Top, borders.Right);
+
+ 			XMoveWindow(WindowManager::display, data->handle, location.X+borders.Left, location.Y+borders.Top);
 			XFlush(WindowManager::display);
 		}
 		else {
@@ -1415,7 +1418,7 @@ failsafe: //this should use X11 screen as monitor
 			data->moveto=location;
 		}
 	}
-        
+    
 	void Window::Resize(const Geometry::Size &size) {
         if(!allowresize) {
             XSizeHints *sizehints=XAllocSizeHints();
@@ -2346,13 +2349,15 @@ failsafe: //this should use X11 screen as monitor
         auto borders = WindowManager::GetX4Prop<Geometry::Margin>(WindowManager::XA_NET_FRAME_EXTENTS, data->handle, {0,0,0,0});
         std::swap(borders.Top, borders.Right);
         
-        ::Window r;
+        ::Window r, c;
         int x, y;
         unsigned w, h, bw, d;
         
         XGetGeometry(WindowManager::display, data->handle, &r, &x, &y, &w, &h, &bw, &d);
         
-        return Geometry::Bounds(data->ppoint.X, data->ppoint.Y, data->ppoint.X+w, data->ppoint.Y+h) + borders;
+        XTranslateCoordinates( WindowManager::display, data->handle, r, 0, 0, &x, &y, &c );
+        
+        return Geometry::Bounds(x, y, x+w, y+h) + borders;
     }
 
 	void Window::Focus() {
