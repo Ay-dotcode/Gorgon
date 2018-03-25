@@ -90,7 +90,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	FLAC__StreamEncoderWriteStatus stream_encode_write(
-		const FLAC__StreamEncoder */*encoder*/, const FLAC__byte buffer[],
+		const FLAC__StreamEncoder * /*encoder*/, const FLAC__byte buffer[],
 		size_t bytes, unsigned /*samples*/, unsigned /*current_frame*/, void *client_data) {
 
 		std::ostream &output = ((flac::streamwrite*)client_data)->output;
@@ -101,7 +101,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	FLAC__StreamEncoderSeekStatus stream_encode_seek(
-		const FLAC__StreamEncoder */*encoder*/, FLAC__uint64 absolute_byte_offset, void *client_data) {
+		const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 absolute_byte_offset, void *client_data) {
 
 		std::ostream &output = ((flac::streamwrite*)client_data)->output;
 
@@ -115,7 +115,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	FLAC__StreamEncoderTellStatus stream_encode_tell(
-		const FLAC__StreamEncoder */*encoder*/, FLAC__uint64 *absolute_byte_offset, void *client_data) {
+		const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 *absolute_byte_offset, void *client_data) {
 
 		std::ostream &output = ((flac::streamwrite*)client_data)->output;
 
@@ -125,7 +125,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	FLAC__StreamEncoderWriteStatus vector_encode_write(
-		const FLAC__StreamEncoder */*encoder*/, const FLAC__byte buffer[],
+		const FLAC__StreamEncoder * /*encoder*/, const FLAC__byte buffer[],
 		size_t bytes, unsigned /*samples*/, unsigned /*current_frame*/, void *client_data) {
 
 		auto &output = *(flac::vectorio*)client_data;
@@ -138,7 +138,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	FLAC__StreamEncoderSeekStatus vector_encode_seek(
-		const FLAC__StreamEncoder */*encoder*/, FLAC__uint64 absolute_byte_offset, void *client_data) {
+		const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 absolute_byte_offset, void *client_data) {
 
 		auto &output = *(flac::vectorio*)client_data;
 
@@ -151,7 +151,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	FLAC__StreamEncoderTellStatus vector_encode_tell(
-		const FLAC__StreamEncoder */*encoder*/, FLAC__uint64 *absolute_byte_offset, void *client_data) {
+		const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 *absolute_byte_offset, void *client_data) {
 
 		auto &output = *(flac::vectorio*)client_data;
 
@@ -161,7 +161,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	FLAC__StreamDecoderReadStatus stream_decode_read(
-		const FLAC__StreamDecoder */*decoder*/, FLAC__byte buffer[], 
+		const FLAC__StreamDecoder * /*decoder*/, FLAC__byte buffer[], 
 		size_t *bytes, void *client_data) {
 
 		auto &input = ((flac::streamread*)client_data)->stream;
@@ -177,7 +177,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	FLAC__StreamDecoderReadStatus vector_decode_read(
-		const FLAC__StreamDecoder */*decoder*/, FLAC__byte buffer[], 
+		const FLAC__StreamDecoder * /*decoder*/, FLAC__byte buffer[], 
 		size_t *bytes, void *client_data) {
 
 		auto &input = *((flac::vectorread*)client_data);
@@ -199,7 +199,7 @@ namespace Gorgon { namespace Encoding {
 	}
 
 	FLAC__StreamDecoderWriteStatus decode_write(
-		const FLAC__StreamDecoder */*decoder*/, const FLAC__Frame *frame, 
+		const FLAC__StreamDecoder * /*decoder*/, const FLAC__Frame *frame, 
 		const FLAC__int32 *const buffer[], void *client_data) {
 
 		auto &reader = *((flac::streamdata*)client_data);
@@ -227,7 +227,7 @@ namespace Gorgon { namespace Encoding {
 		return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 	}
 
-	void decode_error(const FLAC__StreamDecoder */*decoder*/, FLAC__StreamDecoderErrorStatus /*status*/, void */*client_data*/) {
+	void decode_error(const FLAC__StreamDecoder * /*decoder*/, FLAC__StreamDecoderErrorStatus /*status*/, void * /*client_data*/) {
 		throw std::runtime_error("Invalid FLAC file");
 	}
 

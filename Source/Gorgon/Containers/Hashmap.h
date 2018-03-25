@@ -373,7 +373,7 @@ namespace Gorgon {
 			
 			/// Returns the number of elements in the map
 			long GetCount() const {
-				return mapping.size();
+				return (long)mapping.size();
 			}
 			
 			/// Returns the number of elements in the map

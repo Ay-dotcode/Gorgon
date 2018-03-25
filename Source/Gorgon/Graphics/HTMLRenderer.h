@@ -227,7 +227,7 @@ private:
             case Tag::Break:
                 if(drawunderlined) { drawline(LineType::Underline); }
                 if(drawstriked) { drawline(LineType::Strike); }
-                yy += renderer.GetGlyphRenderer()->GetHeight() * 1.2f; // magic number from Font.cpp
+                yy += (int)std::round(renderer.GetGlyphRenderer()->GetHeight() * 1.2f); // magic number from Font.cpp
                 xx = orgx;
                 break;
             default:

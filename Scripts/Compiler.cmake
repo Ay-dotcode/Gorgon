@@ -78,7 +78,7 @@ IF(MSVC)
     )
 	
 	
-	add_definitions( "/D_CRT_SECURE_NO_WARNINGS /wd4068" )
+	add_definitions( "/D_CRT_SECURE_NO_WARNINGS /wd4068 /bigobj" )
 	
 	FOREACH(config ${configs})
       IF(${config} MATCHES "/MD")

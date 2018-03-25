@@ -29,6 +29,8 @@ IF(${WIN32})
 	LIST(APPEND Local
 		src/win_utf8_io.c
 	)
+	
+	add_definitions( "/wd4267 /wd4334 /wd4996" )
 ENDIF()
 
 add_library(flac STATIC 

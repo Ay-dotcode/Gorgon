@@ -20,14 +20,14 @@ namespace Gorgon {
 			
 			Data GetItemData(unsigned index) const {
 				if(index>=elements.size()) {
-					throw OutofBoundsException(index, elements.size(), "Array");
+					throw OutofBoundsException(index, (long)elements.size(), "Array");
 				}
 				return elements[index];
 			}
 			
 			Data GetItemData(unsigned index) {
 				if(index>=elements.size()) {
-					throw OutofBoundsException(index, elements.size(), "Array");
+					throw OutofBoundsException(index, (long)elements.size(), "Array");
 				}
 				
 				return elements[index].GetReference();
@@ -35,7 +35,7 @@ namespace Gorgon {
 			
 			void SetItemData(unsigned index, Data data) {
 				if(index>=elements.size()) {
-					throw OutofBoundsException(index, elements.size(), "Array");
+					throw OutofBoundsException(index, (long)elements.size(), "Array");
 				}
 				if(type!=&data.GetType()) {
 					data=data.GetType().MorphTo(*type, data);
@@ -62,7 +62,7 @@ namespace Gorgon {
 			
 			Data PopData() {
 				if(!elements.size()) {
-					throw OutofBoundsException(0, elements.size(), "Array");
+					throw OutofBoundsException(0, (long)elements.size(), "Array");
 				}
 				
 				Data d=elements.back();
@@ -76,7 +76,7 @@ namespace Gorgon {
 			}
 			
 			unsigned GetSize() const {
-				return elements.size();
+				return (unsigned)elements.size();
 			}
 			
 			const Type &GetType() const {

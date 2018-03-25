@@ -451,7 +451,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 		
 		
-		return list->size()-sz;
+		return (unsigned)list->size()-sz;
 	}
 	
 	bool ASTCompiler::compilekeyword(ASTNode *tree, Byte &tempind) {
@@ -499,8 +499,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			
 			//update the if (or elseif) instruction to jump to else, since ja is already inserted
 			//this jump will skip ja
-			(*list)[scopes.back().indices.back()].JumpOffset=list->size()-scopes.back().indices.back();
-			scopes.back().indices.back()=list->size()-1;
+			(*list)[scopes.back().indices.back()].JumpOffset=(int)list->size()-scopes.back().indices.back();
+			scopes.back().indices.back()=(int)list->size()-1;
 			scopes.back().passed=true;
 			
 			return true;
@@ -525,8 +525,8 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			list->push_back(ja);
 			
 			//previous if or elseif should jump here
-			(*list)[scopes.back().indices.back()].JumpOffset=list->size()-scopes.back().indices.back();
-			scopes.back().indices.back()=list->size()-1;
+			(*list)[scopes.back().indices.back()].JumpOffset=(int)list->size()-scopes.back().indices.back();
+			scopes.back().indices.back()=(int)list->size()-1;
 			
 			if(scopes.back().clear!=-1) {
 				Instruction remtemp;
@@ -547,7 +547,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 				scopes.back().clear=jf.RHS.Result;
 			
 			//which will be determined later
-			scopes.back().indices.push_back(list->size());
+			scopes.back().indices.push_back((int)list->size());
 			list->push_back(jf);
 			
 			return true;
@@ -822,7 +822,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			VirtualMachine::Get().References.Register(instlist);
 			Data instlistd{instructionlisttype, instlist};
 			scopes.push_back({tree->Text=="method" ? scope::methodkeyword : scope::functionkeyword,instlistd});
-			scopes.back().indices.push_back(list->size());
+			scopes.back().indices.push_back((int)list->size());
 			scopes.back().state=tree->Leaves[1].Type==ASTNode::Identifier;
 			
 			Instruction inst;
@@ -926,7 +926,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			switch(scopes.back().type) {
 				case scope::ifkeyword:
 					for(auto &index : scopes.back().indices) {
-						(*list)[index].JumpOffset=list->size()-index;
+						(*list)[index].JumpOffset=(int)list->size()-index;
 					}
 					break;
 				
@@ -935,13 +935,13 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					
 					Instruction ja;
 					ja.Type=InstructionType::Jump;
-					ja.JumpOffset=start-list->size();
+					ja.JumpOffset=(int)start-list->size();
 					list->push_back(ja);
 					
 					auto elm=scopes.back().indices.size();
 					for(unsigned i=1; i<elm; i++) {
 						auto index=scopes.back().indices[i];
-						(*list)[index].JumpOffset=list->size()-index;
+						(*list)[index].JumpOffset=(int)list->size()-index;
 					}
 					for(auto &index : scopes.back().indices2) {
 						(*list)[index].JumpOffset=start-index;
@@ -970,14 +970,14 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					
 					Instruction ja;
 					ja.Type=InstructionType::Jump;
-					ja.JumpOffset=start-list->size();
+					ja.JumpOffset=(int)start-list->size();
 					list->push_back(ja);
 					
 					
 					auto elm=scopes.back().indices.size();
 					for(unsigned i=1; i<elm; i++) {
 						auto index=scopes.back().indices[i];
-						(*list)[index].JumpOffset=list->size()-index;
+						(*list)[index].JumpOffset=(int)list->size()-index;
 					}
 					for(auto &index : scopes.back().indices2) {
 						(*list)[index].JumpOffset=start-index;

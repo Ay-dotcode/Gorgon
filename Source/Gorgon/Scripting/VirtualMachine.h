@@ -171,7 +171,7 @@ namespace Gorgon {
 			/// Returns the number of active execution scopes. If this number is 0, VM cannot be started without
 			/// providing additional code source.
 			unsigned GetScopeInstanceCount() const {
-				return scopeinstances.size();
+				return (unsigned)scopeinstances.size();
 			}
 			
 			/// Returns the current exection scope

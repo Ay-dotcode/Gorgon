@@ -1384,12 +1384,12 @@ namespace Compilers {
 		waiting=0;
 		
 		while(left.length()) { //parse until we run out of data
-			int totalinput=left.size();
+			int totalinput=(int)left.size();
 			std::string process;
 			
 			extractline(left, process);
 			
-			int prevsz=List.size();
+			int prevsz=(int)List.size();
 			ASTNode* ret;
 			try {
 				ret=parse(process);
@@ -1402,7 +1402,7 @@ namespace Compilers {
 				
 				throw;
 			}
-			elements+=List.size()-prevsz;
+			elements+=(int)List.size()-prevsz;
 
 			//ASTToSVG(input, *ret, {}, true);
 			
@@ -1427,7 +1427,7 @@ namespace Compilers {
 			if(!process.empty() && !left.empty()) {
 				ASSERT(linemarkers.size()>1, "there shouldnt be any more data left");
 				
-				int p=totalinput-left.size();
+				int p=(int)totalinput-left.size();
 				
 				auto it=linemarkers.end()-1;
 				while(true) {

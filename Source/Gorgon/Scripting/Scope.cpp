@@ -48,7 +48,7 @@ namespace Gorgon { namespace Scripting {
 					throw;
 				}
 				
-				for(unsigned i=parser->List.size()-compiled;i<parser->List.size();i++) {
+				for(unsigned i=(unsigned)parser->List.size()-compiled;i<parser->List.size();i++) {
 					lines.push_back({parser->List[i], pline});
 				}
 				

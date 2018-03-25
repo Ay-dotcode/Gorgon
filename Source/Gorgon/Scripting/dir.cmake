@@ -31,4 +31,3 @@ SET(Local
 	Types/Reflection.cpp
 	Types/Filesystem.cpp
 )
-

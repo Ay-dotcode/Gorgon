@@ -1669,7 +1669,7 @@ namespace Gorgon {
 
 		/// Returns the number of component indices stored in this container
 		int GetCount() const {
-			return indices.size();
+			return (int)indices.size();
 		}
 
 		/// Returns the component index at the given location

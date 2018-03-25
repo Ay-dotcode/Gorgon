@@ -83,7 +83,7 @@ namespace Gorgon {
 				char buf[64];
 				auto &out=VirtualMachine::Get().GetOutput();
 				while(!feof(desc)) {
-					int sz=fread(buf, sizeof(char), 64, desc);
+					int sz=(int)fread(buf, sizeof(char), 64, desc);
 					out.write(buf, sz);
 				}
 			}

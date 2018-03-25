@@ -92,7 +92,7 @@ namespace Gorgon { namespace Scripting {
 		
 		/// Current number of instructions that are prepared
 		unsigned ReadyInstructionCount() const {
-			return lines.size();
+			return (unsigned)lines.size();
 		}
 		
 		/// Returns the name of this scope
