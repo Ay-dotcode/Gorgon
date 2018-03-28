@@ -82,7 +82,7 @@ namespace Gorgon { namespace UI {
 			size = value;
 			Update();
 		}
-
+		
 		/// Returns the template used by this stack
 		const Template &GetTemplate() const {
 			return temp;

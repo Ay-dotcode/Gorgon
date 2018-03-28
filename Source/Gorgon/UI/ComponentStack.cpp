@@ -776,26 +776,29 @@ namespace Gorgon { namespace UI {
 		}
 
 		float v = 0;
+        
+        const auto &valueordering = temp.GetValueOrdering();
+
 
 		switch(src) {
 			case ComponentTemplate::UseFirst:
-				v = value[0];
+				v = value[valueordering[0]];
 				break;
 
 			case ComponentTemplate::UseSecond:
-				v = value[1];
+				v = value[valueordering[1]];
 				break;
 
 			case ComponentTemplate::UseThird:
-				v = value[2];
+				v = value[valueordering[2]];
 				break;
 
 			case ComponentTemplate::UseFourth:
-				v = value[3];
+				v = value[valueordering[3]];
 				break;
 
 			case ComponentTemplate::UseGray:
-				v = value[0] * 0.2126f + value[1] * 0.7152f + value[2] * 0.0722f;
+				v = value[valueordering[0]] * 0.2126f + value[valueordering[1]] * 0.7152f + value[valueordering[2]] * 0.0722f;
 				break;
                 
             //missing: L C H

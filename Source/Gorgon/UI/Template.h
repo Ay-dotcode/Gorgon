@@ -1162,6 +1162,18 @@ namespace Gorgon {
 		/// Returns how the data will affect this component
 		DataEffect GetDataEffect() const { return dataeffect; }
         
+		/// Changes the ordering of the values. This allows swaps like X-Y. 
+		void SetValueOrdering(int first, int second, int third, int fourth) {
+            valueordering = {{first, second, third, fourth}};
+            
+            ChangedEvent();
+        }
+        
+        /// Returns the ordering of value channels.
+        std::array<int, 4> GetValueOrdering() const {
+            return valueordering;
+        }
+		
 		/// Sets the property that will be affected by the value of the widget. Default is NoModification. 
 		/// If min and max is specified incoming value will be scaled accordingly. 
 		void SetValueModification(ValueModification mod, ValueSource source = UseFirst, std::array<float, 4> min = {{0, 0, 0, 0}}, std::array<float, 4> max = {{1, 1, 1, 1}}) {
@@ -1327,6 +1339,9 @@ namespace Gorgon {
         
         /// The value that will be used for this component
         ValueSource source = UseFirst;
+        
+        /// Changes the ordering of the value source
+        std::array<int, 4>   valueordering{0,1,2,3};
 
         /// If required, can be used to scale incoming data
 		std::array<float, 4> valuemin = {{0, 0, 0, 0}}, valuemax = {{1, 1, 1, 1}};
@@ -1336,8 +1351,6 @@ namespace Gorgon {
         Tag tag = NoTag;
         
         /// Positioning mode
-        
-        
 		PositionType positioning = Relative;
 
         /// Position of the component
