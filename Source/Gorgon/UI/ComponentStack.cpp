@@ -394,8 +394,10 @@ namespace Gorgon { namespace UI {
             const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
             
 			target->SetTintColor(color);
-            if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
-                th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+            if(th.IsReady()) {
+				if(stringdata.count(temp.GetDataEffect())) {
+					th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+				}
             }
 			target->SetTintColor(1.f);
 		}

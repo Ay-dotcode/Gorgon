@@ -874,9 +874,24 @@ namespace Gorgon {
 			/// If the Widget does not have text but states, the number of the state
 			/// will be translated into a string and will be passed.
 			Text,
+
+			Title,
+
+			Label,
 			
+			State1Text,
+			State2Text,
+			State3Text,
+			State4Text,
+
 			/// Data will effect the displayed graphics
             Icon,
+			Icon1 = Icon,
+			Icon2, 
+			State1Icon,
+			State2Icon,
+			State3Icon,
+			State4Icon,
 		};
         
         /// Which property will the value of the widget affect. It will be scaled between
