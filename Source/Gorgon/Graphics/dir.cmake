@@ -33,6 +33,17 @@ SET(Local
 	HTMLRenderer.cpp
 )
 
+if(${FREETYPE})
+    list(APPEND Local FreeType.h FreeType.cpp)
+
+	find_package(Freetype REQUIRED)
+
+	list(APPEND Libs ${FREETYPE_LIBRARIES})   
+	
+	include_directories(${FREETYPE_INCLUDE_DIRS})
+	
+endif()
+
 EmbedShaders(ShaderSrc.strings.gen Shaders.cpp 
 	"Shaders/Simple_V.glsl"
 	"Shaders/NoTex_V.glsl"	

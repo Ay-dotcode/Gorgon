@@ -168,7 +168,8 @@ namespace Gorgon { namespace Graphics {
 		
 		/// todo
 		virtual int KerningDistance(Glyph chr1, Glyph chr2) const override { return 0; }
-         
+		
+		virtual int GetCursorAdvance(Glyph g) const override { return internal::isspaced(g) ? GetSize(g).Width : 0; }         
         
 		virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetMaxWidth(); }
 
@@ -285,7 +286,7 @@ namespace Gorgon { namespace Graphics {
             return it.IsValid();
         }
         
-        virtual const GlyphRenderer &GetGlyphRenderer() const {
+        virtual const GlyphRenderer &GetGlyphRenderer() const override {
             return *this;
         }
         

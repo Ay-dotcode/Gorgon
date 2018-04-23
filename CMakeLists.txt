@@ -39,6 +39,8 @@ option(FLAC_SUPPORT "Enable FLAC decoding and streaming." ON)
 
 option(UI "Enable UI subsystem." ON)
 
+option(FREETYPE "Enable FreeType font support" OFF)
+
 OPTION(FORCE_32_BIT "Force 32 bit compilation" OFF)
 
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
@@ -68,6 +70,10 @@ endif()
 if(AUDIO)
 	add_definitions("-DAUDIO")
 	add_definitions("-DAUDIO_${AUDIOLIB}")
+endif()
+
+if(FREETYPE)
+    add_definitions("-DFREETYPE")
 endif()
 
 if(SCRIPTING)

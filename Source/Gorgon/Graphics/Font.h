@@ -13,6 +13,8 @@
 namespace Gorgon { namespace Graphics {
 	using Glyph = Gorgon::Char;
 	
+    /// Functions inside this namespace is designed for internal use, however, they might be used
+    /// externally and will not have any impact on inner workings of the system.
     namespace internal {
 		/// Decodes a utf-8 character from the given iterator. If char is not valid 
 		/// 0xfffd is returned. \\r\\n is mapped to \\n
@@ -49,6 +51,10 @@ namespace Gorgon { namespace Graphics {
 		/// This function should return the size of the requested glyph. If it does not exists,
 		/// 0x0 should be returned
 		virtual Geometry::Size GetSize(Glyph chr) const = 0;
+        
+        /// This function should return the number of pixels the cursor should advance after this
+        /// glyph. This value will be added to kerning distance.
+        virtual int GetCursorAdvance(Glyph g) const = 0;
 
 		/// Returns true if the glyph exists
 		virtual bool Exists(Glyph g) const = 0;
@@ -61,8 +67,7 @@ namespace Gorgon { namespace Graphics {
 		virtual bool IsFixedWidth() const = 0;
 		
 		/// This function should return the additional distance between given glyphs. Returned value
-		/// could be (in most cases it is) negative. Non-integer values would break pixel perfect
-		/// rendering.
+		/// could be (in most cases it is) negative.
 		virtual int KerningDistance(Glyph chr1, Glyph chr2) const = 0;
         
         /// Returns the size of the EM dash
@@ -104,7 +109,8 @@ namespace Gorgon { namespace Graphics {
     public:
         virtual ~TextRenderer() { }
         
-		/// Prints the given text to the target
+		/// Prints the given text to the target. y coordinate is the top if the text. However, depending
+		/// on the font, this value might exclude uppercase accents.
 		void Print(TextureTarget &target, const std::string &text, Geometry::Pointf location) const {
             print(target, text, location);
         }

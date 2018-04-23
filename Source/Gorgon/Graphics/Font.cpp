@@ -205,6 +205,7 @@ namespace Gorgon { namespace Graphics {
 		void simpleprint(
 		const GlyphRenderer &renderer, std::string::const_iterator begin, std::string::const_iterator end,
 		std::function<int(Glyph, Glyph)> spacing,
+		std::function<int(Glyph)> advance,
 		std::function<void(Glyph, int, int)> render,
         std::function<void()> dotab, std::function<void(Glyph)> donewline) {
 			Glyph prev = 0;
@@ -217,7 +218,7 @@ namespace Gorgon { namespace Graphics {
 				ind++;
 
 				if(isspace(g)) {
-					if(prev && isspaced(prev)) {
+					if(prev) {
 						poff = spacing(prev, g);
 					}
 
@@ -231,7 +232,7 @@ namespace Gorgon { namespace Graphics {
 					prev = g;
 				}
 				else if(g == '\t') {
-					if(prev && isspaced(prev)) {
+					if(prev) {
 						poff = spacing(prev, g);
 					}
 
@@ -248,13 +249,12 @@ namespace Gorgon { namespace Graphics {
 					ind = 0;
 				}
 				else if(g > 32) {
-					if(prev && isspaced(prev)) {
+					if(prev) {
 						poff = spacing(prev, g);
 					}
 
 					int sp = 0;
-					if(isspaced(g))
-						sp = renderer.GetSize(g).Width;
+                    sp = advance(g);
 
 					render(g, poff, sp);
 					prev = g;
@@ -277,6 +277,7 @@ namespace Gorgon { namespace Graphics {
         const GlyphRenderer &renderer, std::string::const_iterator begin, std::string::const_iterator end, int width,
         std::function<void(Glyph/*terminator, 0 => wrap*/, markvecit/*begin*/, markvecit/*end*/, int/*totalwidth*/)> doline,
         std::function<int(Glyph, Glyph)> spacing,
+		std::function<int(Glyph)> advance,
         std::function<void(int &)> dotab) {
 			std::vector<glyphmark> acc;
 			int lastbreak = 0;
@@ -288,23 +289,22 @@ namespace Gorgon { namespace Graphics {
 			for(auto it=begin; it!=end; ++it) {
 				Glyph g = internal::decode(it, end);
 
-				int w = 0, pw = 0;
+				int cur_spacing = 0, prev_gw = 0;
 
 				if(isbreaking(g)) {
 					lastbreak = (int)acc.size();
 				}
 
 				if(isspace(g)) {
-					int poff = 0;
-					if(prev && isspaced(prev)) {
-						w = spacing(prev, g);
+					if(prev) {
+						cur_spacing = spacing(prev, g);
 					}
 
 					if(renderer.Exists(g)) {
-						w += renderer.GetSize(g).Width;
+						cur_spacing += advance(g);
 					}
 					else {
-						w += defaultspace(g, renderer);
+						cur_spacing += defaultspace(g, renderer);
 					}
 
 					prev = g;
@@ -312,7 +312,7 @@ namespace Gorgon { namespace Graphics {
 				else if(g == '\t') {
 					auto px = x;
 					dotab(x);
-					w = x - px;
+					cur_spacing = x - px;
 					x = px;
 
 					prev = 0;
@@ -328,16 +328,16 @@ namespace Gorgon { namespace Graphics {
 					continue;
 				}
 				else if(g > 32) {
-					if(prev && isspaced(prev)) {
-						w = spacing(prev, g);
+					if(prev) {
+						cur_spacing = spacing(prev, g);
 					}
 
-					pw = renderer.GetSize(g).Width;
+					prev_gw = advance(g);
 
 					prev = g;
 				}
 
-				if(x + w + pw > width) {
+				if(x + cur_spacing + prev_gw > width) {
 					int totw = 0;
 					// if we are placing a space
 					if(g == '\t' || isbreaking(g)) {
@@ -350,9 +350,8 @@ namespace Gorgon { namespace Graphics {
 						if(ind == 0) {
 							acc.push_back({x, g});
 
-							x += w;
-							if(isspaced(g))
-								x += pw;
+							x += cur_spacing;
+                            x += prev_gw;
 						}
 						else {
 							it--;
@@ -361,12 +360,11 @@ namespace Gorgon { namespace Graphics {
 						totw = x;
 						lastbreak = (int)acc.size();
 					}
-					else {
+					else { //regular break
 						acc.push_back({x, g});
 
-						x += w;
-						if(isspaced(g))
-							x += pw;
+						x += cur_spacing;
+                        x += prev_gw;
 					}
 
 					//if exists rollback spaces at the end
@@ -386,7 +384,8 @@ namespace Gorgon { namespace Graphics {
 						acc.erase(acc.begin(), acc.begin()+lastbreak+1);
 					}
 
-					//remove trailing spaces
+					//remove spaces from start
+					//!??
 					sp = 0;
 					while(acc.begin() + sp != acc.end() && isspace((acc.begin() + sp)->g)) sp++;
 
@@ -413,9 +412,8 @@ namespace Gorgon { namespace Graphics {
 				else if(!autobreak || ind != 0 || !isspace(g)) { 
 					acc.push_back({x, g});
 
-					x += w;
-					if(isspaced(g))
-						x += pw;
+					x += cur_spacing;
+                    x += prev_gw;
 
 					ind++;
 				}
@@ -423,7 +421,8 @@ namespace Gorgon { namespace Graphics {
 
 			//last line
 			if(autobreak) {
-				int sp = 0;
+                //!??
+				int sp = 0; //ignore spaces at the start
 				while(acc.size() && isspace((acc.begin()+sp)->g)) sp++;
 
 				if(acc.size())
@@ -447,6 +446,7 @@ namespace Gorgon { namespace Graphics {
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
 			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+            std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
 			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
 			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
@@ -468,6 +468,7 @@ namespace Gorgon { namespace Graphics {
 			},
 
 			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+            std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
 		);
 
@@ -481,6 +482,7 @@ namespace Gorgon { namespace Graphics {
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
 			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+            std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
 			std::bind(&internal::dodefaulttab<int>, location.X, std::ref(cur.X), renderer->GetMaxWidth() * 8),
 			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); cur.X = location.X; }
@@ -513,6 +515,7 @@ namespace Gorgon { namespace Graphics {
 			},
 
 			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+            std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
 		);
 	}
@@ -539,6 +542,7 @@ namespace Gorgon { namespace Graphics {
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
 			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+            std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
 			std::bind(&internal::dodefaulttab<float>, location.X, std::ref(cur.X), (float)tabwidth),
 			[&](Glyph) { 
@@ -566,6 +570,7 @@ namespace Gorgon { namespace Graphics {
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
 			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+            std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
 			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth),
 			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
@@ -585,6 +590,7 @@ namespace Gorgon { namespace Graphics {
 				y += (int)std::round(renderer->GetHeight() * vspace + pspace);
 			},
 			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+            std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);
 
@@ -716,6 +722,7 @@ namespace Gorgon { namespace Graphics {
 			},
 
 			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+            std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);
 	}

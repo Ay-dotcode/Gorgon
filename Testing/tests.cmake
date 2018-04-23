@@ -5,6 +5,7 @@ SET(ManualTests
 	Clipboard
 	DnD
 	Filesystem
+	FreeType
 	Gscript
 	Generic
 	Audio
