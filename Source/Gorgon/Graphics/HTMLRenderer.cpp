@@ -131,10 +131,8 @@ void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, 
         }
         else {
             auto start = str.begin() + i;
-            int width = renderer.GetGlyphRenderer()->GetSize(internal::decode(start, str.end())).Width;
-            int spacing = renderer.GetGlyphRenderer()->GetGlyphSpacing();
+            int width = renderer.GetGlyphRenderer()->GetCursorAdvance(internal::decode(start, str.end()));
             offset += width;
-            offset += spacing;
             text += current;
         }
     }

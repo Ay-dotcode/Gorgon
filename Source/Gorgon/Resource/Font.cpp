@@ -42,12 +42,12 @@ namespace Gorgon { namespace Resource {
             auto propstart = writer.WriteChunkStart(GID::Font_BitmapProps);
 
             writer.WriteInt32(2); //h-sep, not used anymore
-            writer.WriteInt32(data->GetGlyphSpacing());
-            writer.WriteInt32(data->GetBaseLine());
-            writer.WriteInt32(data->GetHeight());
-            writer.WriteInt32(data->GetLineThickness());
-            writer.WriteInt32(data->GetUnderlineOffset());
-            writer.WriteInt32(data->GetMaxWidth());
+            writer.WriteInt32(bf->GetGlyphSpacing());
+            writer.WriteInt32(bf->GetBaseLine());
+            writer.WriteInt32(bf->GetHeight());
+            writer.WriteInt32(bf->GetLineThickness());
+            writer.WriteInt32(bf->GetUnderlineOffset());
+            writer.WriteInt32(bf->GetMaxWidth());
             
             writer.WriteEnd(propstart);
             

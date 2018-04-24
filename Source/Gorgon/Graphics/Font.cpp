@@ -438,14 +438,13 @@ namespace Gorgon { namespace Graphics {
 
 	
 	Geometry::Size BasicFont::GetSize(const std::string& text) const {
-		auto sp = renderer->GetGlyphSpacing();
 		auto cur = Geometry::Point(0, 0);
 
 		int maxx = 0;
 
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next); },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
 			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
@@ -457,7 +456,6 @@ namespace Gorgon { namespace Graphics {
 	
 	Geometry::Size BasicFont::GetSize(const std::string& text, int w) const {
 		auto y   = 0;
-		auto sp  = renderer->GetGlyphSpacing();
 		auto tot = w;
 
 		internal::boundedprint(
@@ -467,7 +465,7 @@ namespace Gorgon { namespace Graphics {
 				y += (int)std::round(renderer->GetHeight() * 1.2);
 			},
 
-			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next); },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
 		);
@@ -476,12 +474,11 @@ namespace Gorgon { namespace Graphics {
 	}
 	
     void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Point location, RGBAf color) const {
-		auto sp = renderer->GetGlyphSpacing();
 		auto cur = location;
 		
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next); },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
 			std::bind(&internal::dodefaulttab<int>, location.X, std::ref(cur.X), renderer->GetMaxWidth() * 8),
@@ -491,7 +488,6 @@ namespace Gorgon { namespace Graphics {
 
     void BasicFont::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
 		auto y   = location.Y;
-		auto sp  = renderer->GetGlyphSpacing();
 		auto tot = location.Width;
 
 		internal::boundedprint(
@@ -514,7 +510,7 @@ namespace Gorgon { namespace Graphics {
 				y += (int)std::round(renderer->GetHeight() * 1.2);
 			},
 
-			[&](Glyph prev, Glyph next) { return sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next); },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
 		);
@@ -530,7 +526,6 @@ namespace Gorgon { namespace Graphics {
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
 		//strike through, underline
-		auto sp = renderer->GetGlyphSpacing();
 		auto cur = location;
 
 		if(strikecolor.R == -1)
@@ -541,7 +536,7 @@ namespace Gorgon { namespace Graphics {
 
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next); },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
 			std::bind(&internal::dodefaulttab<float>, location.X, std::ref(cur.X), (float)tabwidth),
@@ -562,14 +557,13 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	Geometry::Size StyledRenderer::GetSize(const std::string &text) const {
-		auto sp = renderer->GetGlyphSpacing();
 		auto cur = Geometry::Point(0, 0);
 
 		int maxx = 0;
 
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next); },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
 			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth),
@@ -581,7 +575,6 @@ namespace Gorgon { namespace Graphics {
 	
     Geometry::Size StyledRenderer::GetSize(const std::string &text, int width) const {
         auto y   = 0;
-		auto sp  = renderer->GetGlyphSpacing();
 		auto tot = width;
 
 		internal::boundedprint(
@@ -589,7 +582,7 @@ namespace Gorgon { namespace Graphics {
 			[&](Glyph, internal::markvecit begin, internal::markvecit end, int width) {			
 				y += (int)std::round(renderer->GetHeight() * vspace + pspace);
 			},
-			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next); },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);
@@ -608,7 +601,6 @@ namespace Gorgon { namespace Graphics {
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
 		auto y   = location.Y;
-		auto sp  = renderer->GetGlyphSpacing();
 		int tot  = (int)location.Width;
 
 		if(strikecolor.R == -1)
@@ -652,8 +644,8 @@ namespace Gorgon { namespace Graphics {
 
 					if(letters && target/letters >= 1) { //we can increase glyph spacing
 						gs = target/letters;
-						if(gs > 1 && gs > sp) //1 is always usable
-							gs = sp;
+						if(gs > 1 && gs > renderer->GetHeight()/2) //1 is always usable
+							gs = renderer->GetHeight()/2;
 
 						target -= gs*letters;
 					}
@@ -721,7 +713,7 @@ namespace Gorgon { namespace Graphics {
 					y += pspace;
 			},
 
-			[&](Glyph prev, Glyph next) { return hspace + sp + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next); },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);

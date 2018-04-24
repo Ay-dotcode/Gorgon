@@ -81,9 +81,6 @@ namespace Gorgon { namespace Graphics {
 		/// actual draw location to compensate.
 		virtual int GetHeight() const = 0;
 
-		/// Spacing between consecutive characters.
-		virtual int GetGlyphSpacing() const = 0;
-
 		/// Width of a digit, if digits do not have the same width, maximum should be returned. For
 		/// practical reasons, this function is expected to consider arabic numerals.
 		virtual int GetDigitWidth() const = 0;

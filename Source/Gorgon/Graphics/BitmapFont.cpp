@@ -81,6 +81,10 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		underlinepos = (int)std::round((baseline + height) / 2.f);
+                    
+        linethickness = height / 10;
+        
+        if(linethickness < 1) linethickness = 1;
 	}
 
 	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, int baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline) {

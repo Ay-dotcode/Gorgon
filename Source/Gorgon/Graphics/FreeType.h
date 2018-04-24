@@ -127,6 +127,77 @@ namespace Gorgon { namespace Graphics {
         /// function will return true.
         bool IsReady() const;
         
+        /// Returns whether the font is a symbol only font
+        bool IsSymbolOnly() const {
+            return issymbol;
+        }
+        
+        /// Returns the name of the font
+        std::string GetFamilyName() const;
+        
+        /// Returns the style name of the font
+        std::string GetStyleName() const;
+        
+        //convert to bitmap
+        
+        //packing options
+        
+        
+		/// This function should render the given character to the target at the specified location
+		/// and color. If chr does not exists, this function should perform no action. location and
+		/// color can be modified as per the needs of renderer. If the kerning returns integers
+		/// location will always be an integer. Additionally, text renderers will place glyphs on
+        /// 0 y position from the top. It is glyph renderer's task to ensure baseline of glyphs to 
+        /// line up. 
+		virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const override { }
+
+		/// This function should return the size of the requested glyph. If it does not exists,
+		/// 0x0 should be returned
+		virtual Geometry::Size GetSize(Glyph chr) const override { return {0,0}; }
+        
+        /// This function should return the number of pixels the cursor should advance after this
+        /// glyph. This value will be added to kerning distance.
+        virtual int GetCursorAdvance(Glyph g) const override { return 0; }
+
+		/// Returns true if the glyph exists
+		virtual bool Exists(Glyph g) const override { return false; }
+
+		/// This function should return true if this font renderer supports only 7-bit ASCII
+		virtual bool IsASCII() const override { return isascii; }
+
+		/// This function should return true if this font is fixed width. This will suppress calls
+		/// to GetSize function.
+		virtual bool IsFixedWidth() const override { return isfixedw; }
+		
+		/// This function should return the additional distance between given glyphs. Returned value
+		/// could be (in most cases it is) negative.
+		virtual int KerningDistance(Glyph chr1, Glyph chr2) const override { return 0; }
+        
+        /// Returns the size of the EM dash
+        virtual int GetEMSize() const override { return height; }
+        
+		/// Returns the width of widest glyph.
+		virtual int GetMaxWidth() const override { return maxwidth; }
+
+		/// Height of glyphs, actual size could be smaller but all glyphs should have the same virtual
+		/// height. When drawn on the same y position, all glyphs should line up. Renderer can change
+		/// actual draw location to compensate.
+		virtual int GetHeight() const override { return height; }
+
+		/// Width of a digit, if digits do not have the same width, maximum should be returned. For
+		/// practical reasons, this function is expected to consider arabic numerals.
+		virtual int GetDigitWidth() const override { return 0; }
+        
+        /// Baseline point of glyphs from the top.
+        virtual int GetBaseLine() const override { return baseline; }
+
+		/// Should return the average thickness of a line. This information can be used to construct
+		/// underline and strike through.
+		virtual int GetLineThickness() const override { return linethickness; }
+
+		/// The position of the underline, if it is to be drawn.
+		virtual int GetUnderlineOffset() const override { return underlinepos; }
+        
         /// Discards intermediate files. New glyphs cannot be loaded
         /// automatically after this function is issued.
         void Discard();
@@ -146,9 +217,9 @@ namespace Gorgon { namespace Graphics {
 
 		int digw = 0;
 
-		bool isascii = true;
+		bool isascii = false;
         
-        int spacing = 0;
+        bool issymbol = false;
 
 		int linethickness = 1;
 

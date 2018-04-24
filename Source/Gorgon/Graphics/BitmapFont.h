@@ -169,7 +169,7 @@ namespace Gorgon { namespace Graphics {
 		/// todo
 		virtual int KerningDistance(Glyph chr1, Glyph chr2) const override { return 0; }
 		
-		virtual int GetCursorAdvance(Glyph g) const override { return internal::isspaced(g) ? GetSize(g).Width : 0; }         
+		virtual int GetCursorAdvance(Glyph g) const override { return internal::isspaced(g) ? GetSize(g).Width + spacing : 0; }         
         
 		virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetMaxWidth(); }
 
@@ -179,7 +179,6 @@ namespace Gorgon { namespace Graphics {
         
 		virtual int GetBaseLine() const override { return baseline; }
 
-		virtual int GetGlyphSpacing() const override { return spacing; }
 
 		virtual int GetDigitWidth() const override { return digw; }
 
@@ -200,6 +199,9 @@ namespace Gorgon { namespace Graphics {
         
         /// Changes the spacing between glyphs
         void SetGlyphSpacing(int spacing) { this->spacing = spacing; }
+		
+		/// Returns the spacing between glyphs
+		int GetGlyphSpacing() const { return spacing; }
 
 		/// Changes the line thickness to the specified value.
 		void SetLineThickness(int value) { linethickness = value; }
