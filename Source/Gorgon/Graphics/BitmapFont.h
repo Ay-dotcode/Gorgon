@@ -32,10 +32,10 @@ namespace Gorgon { namespace Graphics {
             
             union {
                 const RectangularDrawable *image = nullptr;
-                int index;
+                int index; //for use in resource loading
             };
             
-            int offset = 0;
+            int offset = 0;//update offset to be x and y as well as a seperate advance field
         };
         
         enum ImportNamingTemplate {
@@ -171,7 +171,7 @@ namespace Gorgon { namespace Graphics {
 		
 		virtual int GetCursorAdvance(Glyph g) const override { return internal::isspaced(g) ? GetSize(g).Width + spacing : 0; }         
         
-		virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetMaxWidth(); }
+		virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetHeight(); }
 
         virtual int GetMaxWidth() const override { return maxwidth; }
         

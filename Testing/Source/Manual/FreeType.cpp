@@ -14,9 +14,9 @@ int main() {
 	Graphics::Layer l;
     app.wind.Add(l);
     
-    using Gorgon::Graphics::FreeType;
+    using namespace Gorgon::Graphics;
     
-    FreeType f("/usr/share/fonts/liberation/LiberationSans-Regular.ttf");
+    FreeType f("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf");
     f.LoadMetrics(12);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;
@@ -28,7 +28,7 @@ int main() {
     std::cout<<"Underline: "<<f.GetUnderlineOffset()<<std::endl;
     std::cout<<"Line thickness: "<<f.GetLineThickness()<<std::endl;
     
-    f.LoadMetrics(15);
+    f.LoadMetrics(48);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;
     std::cout<<"Preset sizes: "<<f.GetPresetSizes().size()<<std::endl;
@@ -38,7 +38,12 @@ int main() {
     std::cout<<"Baseline: "<<f.GetBaseLine()<<std::endl;
     std::cout<<"Underline: "<<f.GetUnderlineOffset()<<std::endl;
     std::cout<<"Line thickness: "<<f.GetLineThickness()<<std::endl;
-
+    
+    f.LoadGlyphs(32, 127);
+    
+    BasicFont r(f);
+    
+    r.Print(l, "This is a test text", 100, 0);
 
 	while(true) {
 		Gorgon::NextFrame();

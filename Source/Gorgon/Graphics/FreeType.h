@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Font.h"
+#include "Drawables.h"
+#include "../Geometry/Point.h"
+#include "../Containers/Collection.h"
 
 
 namespace Gorgon { namespace Graphics {
@@ -26,6 +29,14 @@ namespace Gorgon { namespace Graphics {
         /// to be used internally.
         class GlyphDescriptor {
         public:
+            GlyphDescriptor() { }
+            
+            GlyphDescriptor(const RectangularDrawable &image, int advance, Geometry::Point offset) :
+                image(&image), advance(advance), offset(offset) { }
+            
+            const RectangularDrawable *image = nullptr;
+            int advance = 0;
+            Geometry::Point offset = {0, 0};
         };
         
     public:
@@ -94,19 +105,28 @@ namespace Gorgon { namespace Graphics {
         /// allowed.
         bool LoadMetrics(int size);
         
-        /// Loads the glyphs in the given range. It is best to use single 
-        /// LoadGlyphs function call for optimal character packing. However,
-        /// it is possible to LoadGlyphs functions multiple times. If a
-        /// glyph in the given range is already loaded, it will not be loaded
-        /// again.
-        bool LoadGlyphs(Glyph start, Glyph end);
+        /// Loads the glyphs in the given range. It is possible to LoadGlyphs 
+        /// functions multiple times. If a glyph in the given range is already
+        /// loaded, it will not be loaded again.
+        bool LoadGlyphs(GlyphRange range, bool prepare = true);
         
-        /// Loads the glyphs in the given range. It is best to use single 
-        /// LoadGlyphs function call for optimal character packing. However,
-        /// it is possible to LoadGlyphs functions multiple times. If a
-        /// glyph in the given range is already loaded, it will not be loaded
-        /// again. This overload will load all ranges given in the vector.
-        bool LoadGlyphs(std::vector<std::pair<Glyph, Glyph>> ranges);
+        /// Loads the glyphs in the given range. It is possible to LoadGlyphs 
+        /// functions multiple times. If a glyph in the given range is already
+        /// loaded, it will not be loaded again.
+        bool LoadGlyphs(Glyph start, Glyph end, bool prepare = true) { return LoadGlyphs(GlyphRange{start, end}, prepare); }
+        
+        /// Loads the glyphs in the given range. It is possible to LoadGlyphs 
+        /// functions multiple times. If a glyph in the given range is already
+        /// loaded, it will not be loaded again. This overload will load all 
+        /// ranges given in the vector. It terminates at first error.
+        bool LoadGlyphs(const std::vector<GlyphRange> &ranges, bool prepare = true) {
+            for(auto r : ranges) {
+                if(!LoadGlyphs(r, prepare))
+                    return false;
+            }
+            
+            return true;
+        }
         
         /// Returns if the loaded font is scalable. This information is not
         /// very useful once the glyphs are loaded, however, you may check this
@@ -142,6 +162,10 @@ namespace Gorgon { namespace Graphics {
         
         //packing options
         
+        //auto loading glyphs
+        
+        //clear
+        
         
 		/// This function should render the given character to the target at the specified location
 		/// and color. If chr does not exists, this function should perform no action. location and
@@ -149,18 +173,18 @@ namespace Gorgon { namespace Graphics {
 		/// location will always be an integer. Additionally, text renderers will place glyphs on
         /// 0 y position from the top. It is glyph renderer's task to ensure baseline of glyphs to 
         /// line up. 
-		virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const override { }
+		virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const override;
 
 		/// This function should return the size of the requested glyph. If it does not exists,
 		/// 0x0 should be returned
-		virtual Geometry::Size GetSize(Glyph chr) const override { return {0,0}; }
+		virtual Geometry::Size GetSize(Glyph chr) const override;
         
         /// This function should return the number of pixels the cursor should advance after this
         /// glyph. This value will be added to kerning distance.
-        virtual int GetCursorAdvance(Glyph g) const override { return 0; }
+        virtual int GetCursorAdvance(Glyph g) const override;
 
 		/// Returns true if the glyph exists
-		virtual bool Exists(Glyph g) const override { return false; }
+		virtual bool Exists(Glyph g) const override;
 
 		/// This function should return true if this font renderer supports only 7-bit ASCII
 		virtual bool IsASCII() const override { return isascii; }
@@ -174,7 +198,7 @@ namespace Gorgon { namespace Graphics {
 		virtual int KerningDistance(Glyph chr1, Glyph chr2) const override { return 0; }
         
         /// Returns the size of the EM dash
-        virtual int GetEMSize() const override { return height; }
+        virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetHeight(); }
         
 		/// Returns the width of widest glyph.
 		virtual int GetMaxWidth() const override { return maxwidth; }
@@ -205,7 +229,12 @@ namespace Gorgon { namespace Graphics {
     private:
         ftlib *lib;
         
-        std::map<Glyph, GlyphDescriptor> glyphmap;
+        std::map<Glyph, GlyphDescriptor> glyphmap ;
+        
+        //this exists to speed up loading glyphs that are already read.
+        std::map<unsigned int, Glyph>    ft_to_map;
+        
+		Containers::Collection<const RectangularDrawable> destroylist;
 
         int isfixedw = false;
         
@@ -224,6 +253,8 @@ namespace Gorgon { namespace Graphics {
 		int linethickness = 1;
 
 		int underlinepos = 0;
+        
+        bool haskerning = false;
     };
     
 } }

@@ -141,7 +141,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		int defaultspace(Glyph g, const GlyphRenderer &renderer) {
-			auto em = renderer.GetHeight();
+			auto em = renderer.GetEMSize();
 
 			switch(g) {
 			case 0x3000:
@@ -181,7 +181,7 @@ namespace Gorgon { namespace Graphics {
 				return ceildiv(em, 8);
 
 			case 0x2008:
-				return std::max(renderer.GetSize('.').Width, 1);
+				return std::max(renderer.GetCursorAdvance('.'), 1);
 
 			case 0x180e:
 			case 0xfeff:
@@ -223,7 +223,7 @@ namespace Gorgon { namespace Graphics {
 					}
 
 					if(renderer.Exists(g)) {
-						render(g, poff, renderer.GetSize(g).Width);
+						render(g, poff, renderer.GetCursorAdvance(g));
 					}
 					else {
 						render(0, poff, defaultspace(g, renderer));
@@ -236,7 +236,7 @@ namespace Gorgon { namespace Graphics {
 						poff = spacing(prev, g);
 					}
 
-					render(g, 0, renderer.GetSize(g).Width);
+					render(g, 0, renderer.GetCursorAdvance(g));
 
 					dotab();
 

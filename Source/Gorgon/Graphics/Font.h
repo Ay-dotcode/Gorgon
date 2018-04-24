@@ -11,7 +11,36 @@
 #include "Color.h"
 
 namespace Gorgon { namespace Graphics {
+    /// Glyph is a symbol for a character. In Gorgon, glyphs are UTF32 chars.
 	using Glyph = Gorgon::Char;
+    
+    /// This class represents a range of glyphs. Both start and end is included.
+    class GlyphRange {
+    public:        
+        /// Creates a range that includes a single item. Value 0 is not a valid
+        /// code point 
+        /*implicit*/ GlyphRange(Glyph value = 0xFFFF) : Start(value), End(value) { }
+        
+        GlyphRange(Glyph start, Glyph end) : Start(start), End(end) { }
+        
+        /// Returns the number of the glyphs in the range
+        int Count() const { 
+            if(Start == -1) return 0; 
+            
+            return End - Start + 1; 
+        }
+        
+        void Normalize() {
+            if(Start > End)
+                std::swap(Start, End);
+        }
+        
+        /// Start point of the range
+        Glyph Start;
+        
+        /// End point of the range. This value is included in the range
+        Glyph End;
+    };
 	
     /// Functions inside this namespace is designed for internal use, however, they might be used
     /// externally and will not have any impact on inner workings of the system.

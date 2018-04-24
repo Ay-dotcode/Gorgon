@@ -1,3 +1,4 @@
+#include "Bitmap.h"
 #include "FreeType.h"
 
 #include <ft2build.h>
@@ -36,6 +37,8 @@ namespace Gorgon { namespace Graphics {
     
     FreeType::~FreeType() {
         delete lib;
+        
+        destroylist.Destroy();
     }
     
     bool FreeType::LoadFile(const std::string &filename) {
@@ -81,6 +84,8 @@ namespace Gorgon { namespace Graphics {
             }
         }
         
+        haskerning = FT_HAS_KERNING(lib->face);
+        
         return true;
     }
     
@@ -97,11 +102,6 @@ namespace Gorgon { namespace Graphics {
             return true;
     }
     
-    
-    bool FreeType::LoadGlyphs(Glyph start, Glyph end) {
-        return true;
-    }
-
     
     bool FreeType::LoadMetrics(int size) {
         if(!lib->face)
@@ -166,6 +166,60 @@ namespace Gorgon { namespace Graphics {
     }
     
     
+    bool FreeType::LoadGlyphs(GlyphRange range, bool prepare) {
+        if(!lib->face)
+            return false;
+        
+        int done = 0;
+                    
+        auto slot = lib->face->glyph;
+
+        for(Glyph g = range.Start; g <= range.End; g++) {
+            done++; //already loaded glyphs are also counted as done
+            
+            //we already have this glyph
+            if(glyphmap.count(g)) continue;
+
+            auto index = FT_Get_Char_Index(lib->face, g);
+            
+            //check if glyph is already loaded. if so use the same
+            if(ft_to_map.count(index) && glyphmap.count(ft_to_map[index])) {
+                glyphmap[g] = glyphmap[ft_to_map[index]];
+                continue;
+            }
+            
+            auto error = FT_Load_Glyph(lib->face, index, FT_LOAD_RENDER);
+            
+            if(error != FT_Err_Ok) {
+                if(range.Count() > 1) {
+                    //error, this one is not done
+                    done--;
+                    continue;
+                }
+                else
+                    return false;
+            }
+            
+            auto &ftbmp = slot->bitmap;
+            
+            auto &bmp = *new Bitmap(ftbmp.width, ftbmp.rows, ColorMode::Alpha);
+
+            //FT and Gorgon ColorMode::Alpha has same binary representation.
+            bmp.Assign(ftbmp.buffer);
+            
+            destroylist.Add(bmp);
+            
+            glyphmap[g] = {bmp, (int)std::round(slot->advance.x/64.f), {(int)slot->bitmap_left, (int)-slot->bitmap_top}};
+            ft_to_map[index] = g;
+            
+            if(prepare)
+                bmp.Prepare();
+        }
+        
+        return done > 0;
+    }
+
+    
     bool FreeType::IsScalable() const {
         if(!lib->face)
             return false;
@@ -213,4 +267,49 @@ namespace Gorgon { namespace Graphics {
     bool FreeType::IsReady() const {
         return height != 0 && (lib->face != nullptr || !glyphmap.empty());
     }
+
+    Geometry::Size FreeType::GetSize(Glyph chr) const {
+		if(glyphmap.count(chr))
+			return glyphmap.at(chr).image->GetSize();
+		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr) && chr != '\t')
+			return glyphmap.at(0).image->GetSize();
+		else
+			return{0, 0};
+	}
+
+    int FreeType::GetCursorAdvance(Glyph chr) const  {
+		if(glyphmap.count(chr))
+			return glyphmap.at(chr).advance;
+        else if(chr == '\t')
+            return height;
+        else if(internal::isspace(chr))
+            return height / 4;
+		else if(glyphmap.count(0))
+			return glyphmap.at(0).advance;
+		else
+			return 0;
+	}
+	
+	bool FreeType::Exists(Glyph g) const {
+        if(glyphmap.count(g))
+			return true;
+        
+        //if(!lib->face)
+            return false;
+        
+        //return FT_Get_Char_Index(lib->face, g) != 0;
+    }
+    
+    void FreeType::Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const {
+        //todo load additional glyphs when necessary
+        if(glyphmap.count(chr)) {
+            auto glyph = glyphmap.at(chr);
+            glyph.image->Draw(target, location + glyph.offset + Geometry::Pointf(0.f, (float)baseline), color);
+        }
+		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr) && chr != '\t') {
+			auto glyph = glyphmap.at(0);
+			glyph.image->Draw(target, location + glyph.offset + Geometry::Pointf(0.f, (float)baseline), color);
+		}
+    }
+    
 } }
