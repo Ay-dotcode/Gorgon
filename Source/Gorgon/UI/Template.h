@@ -999,8 +999,6 @@ namespace Gorgon {
         enum Tag {
             NoTag,
             TickTag,
-            XTickTag,
-            YTickTag,
             HScrollTag,
             VScrollTag,
             DragTag,
@@ -1015,6 +1013,39 @@ namespace Gorgon {
             BottomTag,
             ExpandTag,
             ToggleTag,
+        };
+        
+        /// Some components are reapeated along some axis, this property controls how they will be
+        /// repeated. Use X direction if there is no direction. Y is the angular direction on
+        /// polar systems. Repeated components will have their values set to the values specified
+        /// by their position.
+        enum RepeatMode {
+            NoRepeat       = 0,
+
+            Minor           = 1,
+            Major           = 2,
+
+            XGrid           = 4,
+            YGrid           = 8,
+            PolarGrid       = 12,
+
+            XTick           = 16,
+            YTick           = 20,
+            PolarTick       = 24,
+            
+            XMinorGrid      = 5,
+            YMinorGrid      = 9,
+            PolarMinorGrid  = 13,
+            XMajorGrid      = 6,
+            YMajorGrid      = 10,
+            PolarMajorGrid  = 14,
+            
+            XMinorTick      = 17,
+            YMinorTick      = 21,
+            PolarMinorTick  = 25,
+            XMajorTick      = 18,
+            YMajorTick      = 22,
+            PolarMajorTick  = 26,
         };
 
 		/// Returns the type of the component.
@@ -1247,6 +1278,19 @@ namespace Gorgon {
             return tag;
         }
         
+        /// Changes the repeat mode of this component. If the consumer of the component
+        /// does not know about this repeat mode, this component will be ignored
+        void SetRepeatMode(RepeatMode value) {
+            repeat = value;
+            
+            ChangedEvent();
+        }
+        
+        /// Returns the repeat mode of this component.
+        RepeatMode GetRepeatMode() const {
+            return repeat;
+        }
+        
 
 		/// Returns the value scale minimum.
 		std::array<float, 4> GetValueMin() const { return valuemin; }
@@ -1364,6 +1408,10 @@ namespace Gorgon {
         /// Tag identifies a component for various modifications depending on the
         /// widget.
         Tag tag = NoTag;
+        
+        /// Whether the component will be repeated along an axis. If an item will
+        /// 
+        RepeatMode repeat = NoRepeat;
         
         /// Positioning mode
 		PositionType positioning = Relative;
