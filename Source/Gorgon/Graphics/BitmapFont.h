@@ -167,9 +167,9 @@ namespace Gorgon { namespace Graphics {
 		virtual bool Exists(Glyph g) const override { return glyphmap.count(g) != 0; }
 		
 		/// todo
-		virtual int KerningDistance(Glyph chr1, Glyph chr2) const override { return 0; }
+		virtual Geometry::Pointf KerningDistance(Glyph chr1, Glyph chr2) const override { return {0.f, 0.f}; }
 		
-		virtual int GetCursorAdvance(Glyph g) const override { return internal::isspaced(g) ? GetSize(g).Width + spacing : 0; }         
+		virtual float GetCursorAdvance(Glyph g) const override { return internal::isspaced(g) ? GetSize(g).Width + spacing : 0; }         
         
 		virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetHeight(); }
 
@@ -177,8 +177,9 @@ namespace Gorgon { namespace Graphics {
         
         virtual int GetHeight() const override { return height; }
         
-		virtual int GetBaseLine() const override { return baseline; }
+		virtual float GetBaseLine() const override { return baseline; }
 
+		virtual float GetLineGap() const override { return linegap; }
 
 		virtual int GetDigitWidth() const override { return digw; }
 
@@ -210,7 +211,10 @@ namespace Gorgon { namespace Graphics {
 		void SetUnderlineOffset(int value) { underlinepos = value; }
 		
 		/// Changes the baseline. Might cause problems if the font already has glyphs in it.
-		void SetBaseline(int value) { baseline = value; }
+		void SetBaseline(float value) { baseline = value; }
+		
+		/// Changes the distance between two lines. Non-integer values are not recommended.
+		void SetLineGap(float value) { linegap = value; }
         
         /// Imports bitmap font images from a folder with the specified file naming template.
         /// Automatic detection will only work if there is a single bitmap font set in the
@@ -319,7 +323,7 @@ namespace Gorgon { namespace Graphics {
         
         int height = 0;
         
-        int baseline = 0;
+        float baseline = 0;
 
 		int digw = 0;
 
@@ -330,6 +334,8 @@ namespace Gorgon { namespace Graphics {
 		int linethickness = 1;
 
 		int underlinepos = 0;
+        
+        float linegap = 0;
     };
     
 } }

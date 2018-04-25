@@ -77,14 +77,16 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		if(baseline == 0) {
-			baseline = (int)std::round(height * 0.7);
+			baseline = std::round(height * 0.75f);
 		}
-
-		underlinepos = (int)std::round((baseline + height) / 2.f);
                     
         linethickness = height / 10;
         
         if(linethickness < 1) linethickness = 1;
+
+		underlinepos = (int)std::round(baseline + linethickness + 1);
+        
+        linegap = std::round(height * 1.2f);
 	}
 
 	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, int baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline) {
@@ -372,9 +374,17 @@ namespace Gorgon { namespace Graphics {
 		if(trim && uh) {
 			linethickness = uh;
 		}
+		else {
+            linethickness = height / 10;
+            
+            if(linethickness < 1)
+                linethickness = 1;
+        }
 
 		underlinepos = baseline + linethickness + 1;
 
+        linegap = std::round(height * 1.2f);
+        
         return files.GetSize();
     }
 

@@ -31,12 +31,13 @@ namespace Gorgon { namespace Graphics {
         public:
             GlyphDescriptor() { }
             
-            GlyphDescriptor(const RectangularDrawable &image, int advance, Geometry::Point offset) :
-                image(&image), advance(advance), offset(offset) { }
+            GlyphDescriptor(const RectangularDrawable &image, float advance, Geometry::Point offset, unsigned int ftind) :
+                image(&image), advance(advance), offset(offset), ftindex(ftind) { }
             
             const RectangularDrawable *image = nullptr;
-            int advance = 0;
+            float advance = 0;
             Geometry::Point offset = {0, 0};
+            unsigned int ftindex = 0;
         };
         
     public:
@@ -181,7 +182,7 @@ namespace Gorgon { namespace Graphics {
         
         /// This function should return the number of pixels the cursor should advance after this
         /// glyph. This value will be added to kerning distance.
-        virtual int GetCursorAdvance(Glyph g) const override;
+        virtual float GetCursorAdvance(Glyph g) const override;
 
 		/// Returns true if the glyph exists
 		virtual bool Exists(Glyph g) const override;
@@ -195,7 +196,7 @@ namespace Gorgon { namespace Graphics {
 		
 		/// This function should return the additional distance between given glyphs. Returned value
 		/// could be (in most cases it is) negative.
-		virtual int KerningDistance(Glyph chr1, Glyph chr2) const override { return 0; }
+		virtual Geometry::Pointf KerningDistance(Glyph chr1, Glyph chr2) const override;
         
         /// Returns the size of the EM dash
         virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetHeight(); }
@@ -213,7 +214,10 @@ namespace Gorgon { namespace Graphics {
 		virtual int GetDigitWidth() const override { return 0; }
         
         /// Baseline point of glyphs from the top.
-        virtual int GetBaseLine() const override { return baseline; }
+        virtual float GetBaseLine() const override { return baseline; }
+        
+        /// Returns the spacing between the lines.
+        virtual float GetLineGap() const override { return linegap; }
 
 		/// Should return the average thickness of a line. This information can be used to construct
 		/// underline and strike through.
@@ -222,7 +226,7 @@ namespace Gorgon { namespace Graphics {
 		/// The position of the underline, if it is to be drawn.
 		virtual int GetUnderlineOffset() const override { return underlinepos; }
         
-        /// Discards intermediate files. New glyphs cannot be loaded
+        /// Discards intermediate files. New glyphs cannot be packed
         /// automatically after this function is issued.
         void Discard();
         
@@ -255,6 +259,8 @@ namespace Gorgon { namespace Graphics {
 		int underlinepos = 0;
         
         bool haskerning = false;
+        
+        float linegap = 0;
     };
     
 } }

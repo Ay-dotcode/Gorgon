@@ -83,7 +83,7 @@ namespace Gorgon { namespace Graphics {
         
         /// This function should return the number of pixels the cursor should advance after this
         /// glyph. This value will be added to kerning distance.
-        virtual int GetCursorAdvance(Glyph g) const = 0;
+        virtual float GetCursorAdvance(Glyph g) const = 0;
 
 		/// Returns true if the glyph exists
 		virtual bool Exists(Glyph g) const = 0;
@@ -97,7 +97,7 @@ namespace Gorgon { namespace Graphics {
 		
 		/// This function should return the additional distance between given glyphs. Returned value
 		/// could be (in most cases it is) negative.
-		virtual int KerningDistance(Glyph chr1, Glyph chr2) const = 0;
+		virtual Geometry::Pointf KerningDistance(Glyph chr1, Glyph chr2) const = 0;
         
         /// Returns the size of the EM dash
         virtual int GetEMSize() const = 0;
@@ -115,7 +115,11 @@ namespace Gorgon { namespace Graphics {
 		virtual int GetDigitWidth() const = 0;
         
         /// Baseline point of glyphs from the top.
-        virtual int GetBaseLine() const = 0;
+        virtual float GetBaseLine() const = 0;
+        
+        /// This is the default distance between two consecutive lines. This distance can be modified
+        /// by text renderers
+        virtual float GetLineGap() const = 0;
 
 		/// Should return the average thickness of a line. This information can be used to construct
 		/// underline and strike through.
@@ -571,16 +575,15 @@ namespace Gorgon { namespace Graphics {
 			return (int)std::round(vspace * renderer->GetHeight());
 		}
 
-		/// Sets the line spacing as percentage of glyph height. A value of 
-		/// one will make the lines touch each other, where as a value of two
-		/// will leave a full line empty between two lines. Line spacing stored 
-		/// in pixels to be added to the glyph height. This will round the final
+		/// Sets the line spacing as percentage of line gap. A value of 
+		/// one will use the default state by the font, where as a value of two
+		/// will leave a large gap between two lines. This will round the final
 		/// result to the nearest pixel. 
 		void SetLineSpacing(float value) {
 			vspace = value;
 		}
 		
-		/// Returns the line spacing as percentage of glyph height
+		/// Returns the line spacing as percentage of line gap
 		float GetLineSpacing() const {
 			return vspace;
 		}
@@ -598,7 +601,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// Distance between tab stops. This value is in pixels. Default value is
 		/// 8 * widest glyph's width. Tabbing is only fully effective when text is
-		/// right aligned.
+		/// left aligned.
 		void SetTabWidth(int value) {
 			tabwidth = value;
 		}
@@ -677,7 +680,7 @@ namespace Gorgon { namespace Graphics {
 		int strikepos = INT_MIN;
 		TextAlignment defaultalign = TextAlignment::Left;
 		bool  justify = false;
-		float vspace = 1.2f;
+		float vspace = 1.0f;
 		int   hspace = 0;
 		int   pspace = 0;
 		int   tabwidth = 0;

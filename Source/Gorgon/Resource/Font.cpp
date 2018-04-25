@@ -122,6 +122,8 @@ namespace Gorgon { namespace Resource {
                 bf->SetLineThickness(reader->ReadInt32());
                 bf->SetUnderlineOffset(reader->ReadInt32());
                 bf->SetMaxWidth(reader->ReadInt32());
+                
+                bf->SetLineGap(std::round(bf->GetHeight() * 1.2f));//temporary solution
             }
             else if(gid == GID::Font_Charmap) {
                if(!bf)

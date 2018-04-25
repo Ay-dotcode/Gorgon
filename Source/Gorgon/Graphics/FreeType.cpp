@@ -120,6 +120,8 @@ namespace Gorgon { namespace Graphics {
             height   = (int)std::round(FT_MulFix((lib->face->bbox.yMax-lib->face->bbox.yMin), yscale)/64.f);
             
             baseline = (int)std::round(lib->face->size->metrics.ascender/64.f);
+            
+            linegap = std::round(lib->face->size->metrics.height/64.f);
            
             underlinepos  = baseline - (int)std::round(FT_MulFix((lib->face->underline_position),yscale)/64.f);
             linethickness = (int)std::round(FT_MulFix((lib->face->underline_thickness),xscale)/64.f);
@@ -158,6 +160,8 @@ namespace Gorgon { namespace Graphics {
             underlinepos = (int)std::round((baseline + height) / 2.f);
             
             linethickness = height / 10;
+            
+            linegap = std::round(lib->face->size->metrics.height/64.f);
             
             if(linethickness < 1) linethickness = 1;
         }
@@ -203,13 +207,25 @@ namespace Gorgon { namespace Graphics {
             auto &ftbmp = slot->bitmap;
             
             auto &bmp = *new Bitmap(ftbmp.width, ftbmp.rows, ColorMode::Alpha);
-
-            //FT and Gorgon ColorMode::Alpha has same binary representation.
-            bmp.Assign(ftbmp.buffer);
+            
+            if(ftbmp.pitch < 0) {
+                for(int y=0; y<ftbmp.rows; y++) {
+                    for(int x=0; x<ftbmp.width; x++) {
+                        bmp(x, ftbmp.rows - y - 1, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
+                    }
+                }
+            }
+            else {
+                for(int y=0; y<ftbmp.rows; y++) {
+                    for(int x=0; x<ftbmp.width; x++) {
+                        bmp(x, y, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
+                    }
+                }
+            }
             
             destroylist.Add(bmp);
             
-            glyphmap[g] = {bmp, (int)std::round(slot->advance.x/64.f), {(int)slot->bitmap_left, (int)-slot->bitmap_top}};
+            glyphmap[g] = {bmp, std::round(slot->advance.x/64.f), {(int)slot->bitmap_left, (int)-slot->bitmap_top}, (unsigned int)index};
             ft_to_map[index] = g;
             
             if(prepare)
@@ -277,13 +293,13 @@ namespace Gorgon { namespace Graphics {
 			return{0, 0};
 	}
 
-    int FreeType::GetCursorAdvance(Glyph chr) const  {
+    float FreeType::GetCursorAdvance(Glyph chr) const  {
 		if(glyphmap.count(chr))
 			return glyphmap.at(chr).advance;
         else if(chr == '\t')
-            return height;
+            return (float)height;
         else if(internal::isspace(chr))
-            return height / 4;
+            return float(height / 4);
 		else if(glyphmap.count(0))
 			return glyphmap.at(0).advance;
 		else
@@ -302,6 +318,7 @@ namespace Gorgon { namespace Graphics {
     
     void FreeType::Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const {
         //todo load additional glyphs when necessary
+        
         if(glyphmap.count(chr)) {
             auto glyph = glyphmap.at(chr);
             glyph.image->Draw(target, location + glyph.offset + Geometry::Pointf(0.f, (float)baseline), color);
@@ -312,4 +329,18 @@ namespace Gorgon { namespace Graphics {
 		}
     }
     
+    Geometry::Pointf FreeType::KerningDistance(Glyph chr1, Glyph chr2) const {
+        if(!lib->face || !haskerning || !glyphmap.count(chr1) || !glyphmap.count(chr2))
+            return {0.f, 0.f};
+
+        //todo load additional glyphs when necessary
+        
+        FT_Vector p;
+        FT_Get_Kerning(lib->face, glyphmap.at(chr1).ftindex, glyphmap.at(chr2).ftindex, FT_KERNING_DEFAULT, &p);
+        
+        if(p.x != 0)
+            p.x = p.x;
+
+        return {std::round(p.x / 64.f), std::round(p.y / 64.f)};
+    }
 } }

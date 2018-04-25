@@ -181,7 +181,7 @@ namespace Gorgon { namespace Graphics {
 				return ceildiv(em, 8);
 
 			case 0x2008:
-				return std::max(renderer.GetCursorAdvance('.'), 1);
+				return std::max(renderer.GetCursorAdvance('.'), 1.f);
 
 			case 0x180e:
 			case 0xfeff:
@@ -444,11 +444,11 @@ namespace Gorgon { namespace Graphics {
 
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next).X; },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
 			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
-			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
+			[&](Glyph) { cur.Y += renderer->GetLineGap(); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
 		);
 
 		return{maxx, cur.Y};
@@ -462,10 +462,10 @@ namespace Gorgon { namespace Graphics {
 			*renderer, text.begin(), text.end(), tot,
 
 			[&](Glyph, internal::markvecit begin, internal::markvecit end, int w) {			
-				y += (int)std::round(renderer->GetHeight() * 1.2);
+				y += renderer->GetLineGap();
 			},
 
-			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next).X; },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
 		);
@@ -478,11 +478,11 @@ namespace Gorgon { namespace Graphics {
 		
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next).X; },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
 			std::bind(&internal::dodefaulttab<int>, location.X, std::ref(cur.X), renderer->GetMaxWidth() * 8),
-			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * 1.2); cur.X = location.X; }
+			[&](Glyph) { cur.Y += renderer->GetLineGap(); cur.X = location.X; }
 		);
     }
 
@@ -507,10 +507,10 @@ namespace Gorgon { namespace Graphics {
 					renderer->Render(it->g, target, {(float)it->location + off, (float)y}, color);
 				}
 
-				y += (int)std::round(renderer->GetHeight() * 1.2);
+				y += renderer->GetLineGap();
 			},
 
-			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return renderer->KerningDistance(prev, next).X; },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
 		);
@@ -536,7 +536,7 @@ namespace Gorgon { namespace Graphics {
 
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next).X; },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += off; },
 			std::bind(&internal::dodefaulttab<float>, location.X, std::ref(cur.X), (float)tabwidth),
@@ -549,7 +549,7 @@ namespace Gorgon { namespace Graphics {
 					target.Draw(location.X, cur.Y + renderer->GetUnderlineOffset(), cur.X - location.X, (float)renderer->GetLineThickness(), underlinecolor);
 				}
 
-				cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace);
+				cur.Y += (int)std::round(renderer->GetLineGap() * vspace + pspace);
 				cur.X = location.X;
 			}
 		);
@@ -563,11 +563,11 @@ namespace Gorgon { namespace Graphics {
 
 		internal::simpleprint(
 			*renderer, text.begin(), text.end(),
-			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next).X; },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			[&](Glyph g, int poff, int off) { cur.X += poff; cur.X += off; },
 			std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth),
-			[&](Glyph) { cur.Y += (int)std::round(renderer->GetHeight() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
+			[&](Glyph) { cur.Y += (int)std::round(renderer->GetLineGap() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
 		);
 
 		return{maxx, cur.Y};
@@ -580,9 +580,9 @@ namespace Gorgon { namespace Graphics {
 		internal::boundedprint(
 			*renderer, text.begin(), text.end(), tot,
 			[&](Glyph, internal::markvecit begin, internal::markvecit end, int width) {			
-				y += (int)std::round(renderer->GetHeight() * vspace + pspace);
+				y += (int)std::round(renderer->GetLineGap() * vspace + pspace);
 			},
-			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next).X; },
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);
@@ -707,13 +707,13 @@ namespace Gorgon { namespace Graphics {
 					target.Draw((float)begin->location + off, y + renderer->GetUnderlineOffset(), (float)w, (float)renderer->GetLineThickness(), underlinecolor);
 				}
 
-				y += (int)std::round(renderer->GetHeight() * vspace);
+				y += (int)std::round(renderer->GetLineGap() * vspace);
 
 				if(g != 0)
 					y += pspace;
 			},
 
-			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next); },
+			[&](Glyph prev, Glyph next) { return hspace + renderer->KerningDistance(prev, next).X; }, //modify this system to allow horizontal kerning
             std::bind(&GlyphRenderer::GetCursorAdvance, renderer, std::placeholders::_1),
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);
