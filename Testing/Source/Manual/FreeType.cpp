@@ -16,7 +16,7 @@ int main() {
     
     using namespace Gorgon::Graphics;
     
-    FreeType f("/usr/share/fonts/liberation/LiberationSans-Regular.ttf");
+    FreeType f("/usr/share/fonts/gnu-free/FreeSans.ttf");
     f.LoadMetrics(12);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;
@@ -28,11 +28,11 @@ int main() {
     std::cout<<"Underline: "<<f.GetUnderlineOffset()<<std::endl;
     std::cout<<"Line thickness: "<<f.GetLineThickness()<<std::endl;
     
-    f.LoadGlyphs(32, 127);
+    //f.LoadGlyphs(32, 127);
     
     BasicFont r(f);
     
-    r.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta", 100, 0, 300, TextAlignment::Right);
+    r.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 100, 0, 300, TextAlignment::Right);
 
 	while(true) {
 		Gorgon::NextFrame();

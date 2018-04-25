@@ -1,5 +1,8 @@
-#include "Bitmap.h"
 #include "FreeType.h"
+
+#include <set>
+
+#include "Bitmap.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -170,7 +173,7 @@ namespace Gorgon { namespace Graphics {
     }
     
     
-    bool FreeType::LoadGlyphs(GlyphRange range, bool prepare) {
+    bool FreeType::loadglyphs(GlyphRange range, bool prepare) const {
         if(!lib->face)
             return false;
         
@@ -307,18 +310,20 @@ namespace Gorgon { namespace Graphics {
 	}
 	
 	bool FreeType::Exists(Glyph g) const {
+        return glyphmap.count(g);
+    }
+    
+    bool FreeType::Available(Glyph g) const {
         if(glyphmap.count(g))
 			return true;
         
-        //if(!lib->face)
+        if(!lib->face)
             return false;
         
-        //return FT_Get_Char_Index(lib->face, g) != 0;
+        return FT_Get_Char_Index(lib->face, g) != 0;
     }
     
     void FreeType::Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const {
-        //todo load additional glyphs when necessary
-        
         if(glyphmap.count(chr)) {
             auto glyph = glyphmap.at(chr);
             glyph.image->Draw(target, location + glyph.offset + Geometry::Pointf(0.f, (float)baseline), color);
@@ -332,8 +337,6 @@ namespace Gorgon { namespace Graphics {
     Geometry::Pointf FreeType::KerningDistance(Glyph chr1, Glyph chr2) const {
         if(!lib->face || !haskerning || !glyphmap.count(chr1) || !glyphmap.count(chr2))
             return {0.f, 0.f};
-
-        //todo load additional glyphs when necessary
         
         FT_Vector p;
         FT_Get_Kerning(lib->face, glyphmap.at(chr1).ftindex, glyphmap.at(chr2).ftindex, FT_KERNING_DEFAULT, &p);
@@ -342,5 +345,51 @@ namespace Gorgon { namespace Graphics {
             p.x = p.x;
 
         return {std::round(p.x / 64.f), std::round(p.y / 64.f)};
+    }
+
+    void FreeType::Prepare(const std::string& text) const { 
+        std::set<Glyph> list;
+        
+        for(auto it=text.begin(); it!=text.end(); it++) {
+            auto g = internal::decode(it, text.end());
+            if(!Exists(g))
+                list.insert(g);
+        }
+        
+        auto it = list.begin();
+        auto prev = list.begin();
+        
+        std::vector<GlyphRange> ranges;
+        
+        while(it != list.end()) {
+            it = std::adjacent_find(it, list.end(), [](int l, int r) { return l+1<r; });
+            
+            if(it == list.end()) {
+                ranges.push_back({*prev, *list.rbegin()});
+                break;
+            }
+            else {
+                ranges.push_back({*prev, *(it)});
+            }
+            
+            it++;
+            prev = it;
+        }
+        
+        for(auto r : ranges) {
+            if(r.Start > 127 || r.Start <= 32) {
+                if(r.Start == r.End)
+                    std::cout<<"U"<<std::hex<<(r.Start)<<std::endl;
+                else
+                    std::cout<<"U"<<std::hex<<(r.Start)<<" - "<<"U"<<(r.End)<<std::endl;
+            }
+            else if(r.Start == r.End)
+                std::cout<<((char)r.Start)<<std::endl;
+            else
+                std::cout<<((char)r.Start)<<" - "<<((char)r.End)<<std::endl;
+        }
+        
+        for(auto &range : ranges) 
+            loadglyphs(range, true);
     }
 } }

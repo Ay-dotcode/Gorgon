@@ -36,7 +36,7 @@ namespace Gorgon { namespace Graphics {
                 if(it == end) return 0xfffd;
 				Byte b2 = *it;
 				
-                return ((b & 0b11111) << 6) + (b2 & 0xb111111);
+                return ((b & 0b11111) << 6) | (b2 & 0b111111);
 			}
 	
 			if((b & 0b11110000) == 0b11100000) {
@@ -438,6 +438,9 @@ namespace Gorgon { namespace Graphics {
 
 	
 	Geometry::Size BasicFont::GetSize(const std::string& text) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
 		auto cur = Geometry::Point(0, 0);
 
 		int maxx = 0;
@@ -455,6 +458,9 @@ namespace Gorgon { namespace Graphics {
 	}
 	
 	Geometry::Size BasicFont::GetSize(const std::string& text, int w) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
 		auto y   = 0;
 		auto tot = w;
 
@@ -474,6 +480,9 @@ namespace Gorgon { namespace Graphics {
 	}
 	
     void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Point location, RGBAf color) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
 		auto cur = location;
 		
 		internal::simpleprint(
@@ -487,6 +496,9 @@ namespace Gorgon { namespace Graphics {
     }
 
     void BasicFont::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
 		auto y   = location.Y;
 		auto tot = location.Width;
 
@@ -525,6 +537,9 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
 		//strike through, underline
 		auto cur = location;
 
@@ -557,6 +572,9 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	Geometry::Size StyledRenderer::GetSize(const std::string &text) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
 		auto cur = Geometry::Point(0, 0);
 
 		int maxx = 0;
@@ -574,6 +592,9 @@ namespace Gorgon { namespace Graphics {
 	}
 	
     Geometry::Size StyledRenderer::GetSize(const std::string &text, int width) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
         auto y   = 0;
 		auto tot = width;
 
@@ -592,6 +613,9 @@ namespace Gorgon { namespace Graphics {
     }
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
 		if(shadow.type == TextShadow::Flat) {
 			print(target, text, Geometry::Rectanglef(location) + shadow.offset, align_override, shadow.color, shadow.color, shadow.color);
 		}
@@ -600,6 +624,9 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
 		auto y   = location.Y;
 		int tot  = (int)location.Width;
 

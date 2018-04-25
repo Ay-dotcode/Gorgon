@@ -127,6 +127,13 @@ namespace Gorgon { namespace Graphics {
 
 		/// The position of the underline, if it is to be drawn.
 		virtual int GetUnderlineOffset() const = 0;
+        
+        /// Should return if the glyph renderer requires preparation regarding the text given.
+        virtual bool NeedsPrepare() const { return false; }
+        
+        /// Notifies glyph renderer about a text to be rendered. If renderers require modification
+        /// to their internal structures, they should mark them 
+        virtual void Prepare(const std::string &text) const { }
 	};
 
     /**

@@ -109,7 +109,7 @@ namespace Gorgon { namespace Graphics {
         /// Loads the glyphs in the given range. It is possible to LoadGlyphs 
         /// functions multiple times. If a glyph in the given range is already
         /// loaded, it will not be loaded again.
-        bool LoadGlyphs(GlyphRange range, bool prepare = true);
+        bool LoadGlyphs(GlyphRange range, bool prepare = true) { return loadglyphs(range, prepare); }
         
         /// Loads the glyphs in the given range. It is possible to LoadGlyphs 
         /// functions multiple times. If a glyph in the given range is already
@@ -163,8 +163,6 @@ namespace Gorgon { namespace Graphics {
         
         //packing options
         
-        //auto loading glyphs
-        
         //clear
         
         
@@ -186,6 +184,10 @@ namespace Gorgon { namespace Graphics {
 
 		/// Returns true if the glyph exists
 		virtual bool Exists(Glyph g) const override;
+
+		/// Returns true if the glyph is available in the font. Exists will return true if it is
+        /// already loaded.
+		bool Available(Glyph g) const;
 
 		/// This function should return true if this font renderer supports only 7-bit ASCII
 		virtual bool IsASCII() const override { return isascii; }
@@ -226,19 +228,30 @@ namespace Gorgon { namespace Graphics {
 		/// The position of the underline, if it is to be drawn.
 		virtual int GetUnderlineOffset() const override { return underlinepos; }
         
+        /// Should return if the glyph renderer requires preparation regarding the text given.
+        virtual bool NeedsPrepare() const { return true; }
+        
+        /// Notifies glyph renderer about a text to be rendered. If renderers require modification
+        /// to their internal structures, they should mark them 
+        virtual void Prepare(const std::string &text) const;
+		
+        
         /// Discards intermediate files. New glyphs cannot be packed
         /// automatically after this function is issued.
         void Discard();
         
     private:
-        ftlib *lib;
+        bool loadglyphs(GlyphRange range, bool prepare) const;
         
-        std::map<Glyph, GlyphDescriptor> glyphmap ;
+        // automatic loading requires these functions to be mutable
+        mutable ftlib *lib;
+        
+        mutable std::map<Glyph, GlyphDescriptor> glyphmap ;
         
         //this exists to speed up loading glyphs that are already read.
-        std::map<unsigned int, Glyph>    ft_to_map;
+        mutable std::map<unsigned int, Glyph>    ft_to_map;
         
-		Containers::Collection<const RectangularDrawable> destroylist;
+		mutable Containers::Collection<const RectangularDrawable> destroylist;
 
         int isfixedw = false;
         
