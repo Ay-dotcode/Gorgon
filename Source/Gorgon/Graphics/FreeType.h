@@ -59,44 +59,59 @@ namespace Gorgon { namespace Graphics {
             LoadFile(filename, size, loadascii);
         }
         
+        /// No copy constructor
+        FreeType(const FreeType &) = delete;
+        
+        /// No copy assignment
+        FreeType &operator =(const FreeType &) = delete;
+        
         /// Destructor
         virtual ~FreeType();
         
         /// Loads the given file. Unloads the previous file, if it exists.
-        /// This operation will not unloaded loaded glyphs. Use Clear function
+        /// This operation will not unload loaded glyphs. Use Clear function
         /// to unload already loaded glyphs. After this step
         /// only generic information about the font file will be provided.
         /// You may continue loading by LoadMetrics function.
         bool LoadFile(const std::string &filename);
         
         /// Loads the given file. Unloads the previous file, if it exists.
-        /// This operation will not unloaded loaded glyphs. Use Clear function
+        /// This operation will not unload loaded glyphs. Use Clear function
         /// to unload already loaded glyphs.
         bool LoadFile(const std::string &filename, int size, bool loadascii = true);
         
         /// Loads the given data. Unloads the previous file, if it exists.
-        /// This operation will not unloaded loaded glyphs. Use Clear function
+        /// This operation will not unload loaded glyphs. Use Clear function
         /// to unload already loaded glyphs. After this step
         /// only generic information about the font file will be provided.
-        /// You may continue loading by LoadMetrics function.
+        /// You may continue loading by LoadMetrics function. Data will be
+        /// required for the life time of this object. See assume for
+        /// transferring ownership of the data.
         bool Load(const std::vector<Byte> &data);
         
         /// Loads the given data. Unloads the previous file, if it exists.
-        /// This operation will not unloaded loaded glyphs. Use Clear function
-        /// to unload already loaded glyphs.
-        bool Load(const std::vector<Byte> &data, int size, bool loadascii = true);
-        
-        /// Loads the given data. Unloads the previous file, if it exists.
-        /// This operation will not unloaded loaded glyphs. Use Clear function
+        /// This operation will not unload loaded glyphs. Use Clear function
         /// to unload already loaded glyphs. After this step
         /// only generic information about the font file will be provided.
         /// You may continue loading by LoadMetrics function.
-        bool Load(const Byte *data, int datasize);
+        bool Load(const Byte *data, long datasize);
         
         /// Loads the given data. Unloads the previous file, if it exists.
-        /// This operation will not unloaded loaded glyphs. Use Clear function
-        /// to unload already loaded glyphs.
-        bool Load(const Byte *data, int datasize, int size, bool loadascii = true);
+        /// This operation will not unload loaded glyphs. Use Clear function
+        /// to unload already loaded glyphs. After this step
+        /// only generic information about the font file will be provided.
+        /// You may continue loading by LoadMetrics function. This function
+        /// will keep the copy of the data for further operations. The data of 
+        /// the vector given to this function will be moved out of it.
+        bool Assume(std::vector<Byte> &data);
+        
+        /// Loads the given data. Unloads the previous file, if it exists.
+        /// This operation will not unload loaded glyphs. Use Clear function
+        /// to unload already loaded glyphs. After this step
+        /// only generic information about the font file will be provided.
+        /// You may continue loading by LoadMetrics function. After this object
+        /// is done with the data, it will destroy it.
+        bool Assume(const Byte *data, long datasize);
         
         /// Continues loading a file by setting font size and obtaining
         /// necessary information. If the given size is invalid, this
@@ -229,11 +244,11 @@ namespace Gorgon { namespace Graphics {
 		virtual int GetUnderlineOffset() const override { return underlinepos; }
         
         /// Should return if the glyph renderer requires preparation regarding the text given.
-        virtual bool NeedsPrepare() const { return true; }
+        virtual bool NeedsPrepare() const override { return true; }
         
         /// Notifies glyph renderer about a text to be rendered. If renderers require modification
         /// to their internal structures, they should mark them 
-        virtual void Prepare(const std::string &text) const;
+        virtual void Prepare(const std::string &text) const override;
 		
         
         /// Discards intermediate files. New glyphs cannot be packed
@@ -242,6 +257,8 @@ namespace Gorgon { namespace Graphics {
         
     private:
         bool loadglyphs(GlyphRange range, bool prepare) const;
+        
+        bool finalizeload();
         
         // automatic loading requires these functions to be mutable
         mutable ftlib *lib;
@@ -252,6 +269,14 @@ namespace Gorgon { namespace Graphics {
         mutable std::map<unsigned int, Glyph>    ft_to_map;
         
 		mutable Containers::Collection<const RectangularDrawable> destroylist;
+        
+        //these are here for saving the font
+        std::string filename;
+        
+        const std::vector<Byte> *vecdata = nullptr;
+        const Byte *data = nullptr;
+        long datasize = 0;
+
 
         int isfixedw = false;
         

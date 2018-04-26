@@ -16,7 +16,15 @@ int main() {
     
     using namespace Gorgon::Graphics;
     
-    FreeType f("/usr/share/fonts/gnu-free/FreeSans.ttf");
+    /*std::vector<Byte> data;
+    std::ifstream ttf("/usr/share/fonts/gnu-free/FreeSans.ttf");
+    
+    char b;
+    while(ttf.read(&b, 1))
+        data.push_back(b);*/
+    
+    FreeType f;
+    f.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf");
     f.LoadMetrics(12);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;

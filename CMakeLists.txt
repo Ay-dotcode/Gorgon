@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
+cmake_policy(VERSION 3.0)
 
 project(Gorgon)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Tools/ShaderEmbedder")
@@ -78,6 +79,10 @@ endif()
 
 if(SCRIPTING)
 	add_definitions("-DSCRIPTING")
+endif()
+
+if(OPENGL)
+    set(OpenGL_GL_PREFERENCE "LEGACY")
 endif()
 
 if(DOCUMENTATION_GRAPHS)

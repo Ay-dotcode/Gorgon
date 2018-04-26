@@ -3,6 +3,7 @@
 #include <set>
 
 #include "Bitmap.h"
+#include "../Filesystem.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -19,7 +20,15 @@ namespace Gorgon { namespace Graphics {
             if(face)
                 FT_Done_Face(face);
             
+            delete[] data;
+            
             face = nullptr;
+            data = nullptr;
+            
+            if(!vecdata.empty()) {
+                std::vector<Byte> n;
+                std::swap(vecdata, n);
+            }
         }
         
         ~ftlib() {
@@ -31,6 +40,8 @@ namespace Gorgon { namespace Graphics {
         
         FT_Library library;
         FT_Face    face = nullptr;
+        std::vector<Byte> vecdata; //if we own our data
+        const Byte *data = nullptr;
     };
     
     
@@ -44,19 +55,12 @@ namespace Gorgon { namespace Graphics {
         destroylist.Destroy();
     }
     
-    bool FreeType::LoadFile(const std::string &filename) {
-        lib->destroyface();
-        
-        auto error = FT_New_Face(lib->library, filename.c_str(), 0, &lib->face );
-        
-        if(error != FT_Err_Ok || lib->face == nullptr)
-            return false;
-        
+    bool FreeType::finalizeload() {
         isfixedw = (lib->face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) != 0;
         
         //no unicode charmap table
         if(lib->face->charmap == nullptr) {
-            error = FT_Select_Charmap(lib->face, FT_ENCODING_APPLE_ROMAN);
+            auto error = FT_Select_Charmap(lib->face, FT_ENCODING_APPLE_ROMAN);
             
             if(error != FT_Err_Ok)
                 error = FT_Select_Charmap(lib->face, FT_ENCODING_ADOBE_LATIN_1);
@@ -89,8 +93,30 @@ namespace Gorgon { namespace Graphics {
         
         haskerning = FT_HAS_KERNING(lib->face);
         
+        filename = "";
+        vecdata = nullptr;
+        data = nullptr;
+        
         return true;
     }
+    
+    
+    bool FreeType::LoadFile(const std::string &filename) {
+        lib->destroyface();
+        
+        auto error = FT_New_Face(lib->library, filename.c_str(), 0, &lib->face);
+        
+        if(error != FT_Err_Ok || lib->face == nullptr)
+            return false;
+        
+        if(!finalizeload())
+            return false;
+        
+        this->filename = Filesystem::Canonical(filename);
+        
+        return true;
+    }
+    
     
     bool FreeType::LoadFile(const std::string &filename, int size, bool loadascii) {
         if(!LoadFile(filename))
@@ -103,6 +129,80 @@ namespace Gorgon { namespace Graphics {
             return LoadGlyphs(0x20, 0x7f);
         else
             return true;
+    }
+    
+    
+    bool FreeType::Load(const std::vector<Byte> &data) {
+        lib->destroyface();
+        
+        auto error = FT_New_Memory_Face(lib->library, &data[0], data.size(), 0, &lib->face);
+        
+        if(error != FT_Err_Ok || lib->face == nullptr)
+            return false;
+        
+        if(!finalizeload())
+            return false;
+        
+        vecdata = &data;
+        
+        return true;
+    }
+    
+        
+    bool FreeType::Load(const Byte *data, long datasize) {
+        lib->destroyface();
+        
+        auto error = FT_New_Memory_Face(lib->library, data, datasize, 0, &lib->face);
+        
+        if(error != FT_Err_Ok || lib->face == nullptr)
+            return false;
+        
+        if(!finalizeload())
+            return false;
+        
+        this->data = data;
+        this->datasize = datasize;
+        
+        return true;
+    }
+    
+    
+    bool FreeType::Assume(std::vector<Byte> &data) {
+        lib->destroyface();
+        
+        std::swap(lib->vecdata, data);
+        
+        auto error = FT_New_Memory_Face(lib->library, &lib->vecdata[0], lib->vecdata.size(), 0, &lib->face);
+        
+        if(error != FT_Err_Ok || lib->face == nullptr)
+            return false;
+        
+        if(!finalizeload())
+            return false;
+        
+        this->vecdata = &lib->vecdata;
+        
+        return true;
+    }
+    
+    
+    bool FreeType::Assume(const Byte *data, long datasize) {
+        lib->destroyface();
+        
+        lib->data = data;
+        
+        auto error = FT_New_Memory_Face(lib->library, data, datasize, 0, &lib->face);
+        
+        if(error != FT_Err_Ok || lib->face == nullptr)
+            return false;
+        
+        if(!finalizeload())
+            return false;
+        
+        this->data = data;
+        this->datasize = datasize;
+        
+        return true;
     }
     
     
