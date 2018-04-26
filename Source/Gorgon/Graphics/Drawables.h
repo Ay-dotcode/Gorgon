@@ -445,10 +445,10 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Returns the width of the drawable
-		int GetWidth() { return getsize().Width; }
+		int GetWidth() const { return getsize().Width; }
 
 		/// Returns the height of the drawable
-		int GetHeight() { return getsize().Height; }
+		int GetHeight() const { return getsize().Height; }
 
 	protected:
 

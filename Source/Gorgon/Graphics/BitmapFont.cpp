@@ -7,8 +7,7 @@
 
 namespace Gorgon { namespace Graphics {
 
-
-    void BitmapFont::AddGlyph(Glyph glyph, const RectangularDrawable& bitmap, int baseline) {
+    void BitmapFont::AddGlyph(Glyph glyph, const RectangularDrawable& bitmap, Geometry::Pointf offset, float advance) {
 		auto size = bitmap.GetSize();
 
 		int lh = size.Height + baseline - this->baseline;
@@ -29,7 +28,7 @@ namespace Gorgon { namespace Graphics {
 		if(glyph > 127)
 			isascii = false;
         
-        glyphmap[glyph] = GlyphDescriptor(bitmap, this->baseline - baseline);
+        glyphmap[glyph] = GlyphDescriptor(bitmap, offset, advance);
     }
 
 
@@ -45,11 +44,11 @@ namespace Gorgon { namespace Graphics {
 	void BitmapFont::Render(Glyph chr, TextureTarget& target, Geometry::Pointf location, RGBAf color) const {
         if(glyphmap.count(chr)) {
             auto glyph = glyphmap.at(chr);
-            glyph.image->Draw(target, location + Geometry::Pointf(0, (Float)glyph.offset), color);
+            glyph.image->Draw(target, location + glyph.offset, color);
         }
 		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr) && chr != '\t') {
 			auto glyph = glyphmap.at(0);
-			glyph.image->Draw(target, location + Geometry::Pointf(0, (Float)glyph.offset), color);
+			glyph.image->Draw(target, location + glyph.offset, color);
 		}
     }
     
@@ -325,7 +324,7 @@ namespace Gorgon { namespace Graphics {
                         }
                         
                         if(pos != -1)
-                            baseline = pos + glyphmap.at('A').offset;
+                            baseline = pos + glyphmap.at('A').offset.Y;
                     }
                 }
             }

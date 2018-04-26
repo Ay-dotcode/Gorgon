@@ -26,16 +26,19 @@ namespace Gorgon { namespace Graphics {
         public:
             GlyphDescriptor() { }
             
-            GlyphDescriptor(const RectangularDrawable &image, int offset) : image(&image), offset(offset) { }
+            GlyphDescriptor(const RectangularDrawable &image, Geometry::Pointf offset, float advance) : 
+            image(&image), offset(offset), advance(advance) { }
             
-            GlyphDescriptor(int index, int offset) : index(index), offset(offset) { }
+            GlyphDescriptor(int index, Geometry::Pointf offset, float advance) : 
+            index(index), offset(offset), advance(advance) { }
             
             union {
                 const RectangularDrawable *image = nullptr;
                 int index; //for use in resource loading
             };
             
-            int offset = 0;//update offset to be x and y as well as a seperate advance field
+            Geometry::Pointf offset;//update offset to be x and y as well as a seperate advance field
+            float advance;
         };
         
         enum ImportNamingTemplate {
@@ -132,12 +135,25 @@ namespace Gorgon { namespace Graphics {
                 
         /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
         /// Ownership of bitmap is not transferred.
-        void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, int baseline = 0);
+        void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, int baseline = 0) {
+            AddGlyph(glyph, bitmap, {0, this->baseline - baseline}, bitmap.GetWidth() + spacing);
+        }
                 
+        /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
+        /// Ownership of bitmap is not transferred.
+        void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, Geometry::Pointf offset, float advance);
+        
         /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
         /// Ownership of bitmap is not transferred.
         void AssumeGlyph(Glyph glyph, const RectangularDrawable &bitmap, int baseline = 0) {
             AddGlyph(glyph, bitmap, baseline);
+            destroylist.Push(bitmap);
+        }
+        
+        /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
+        /// Ownership of bitmap is not transferred.
+        void AssumeGlyph(Glyph glyph, const RectangularDrawable &bitmap, Geometry::Pointf offset, float advance) {
+            AddGlyph(glyph, bitmap, offset, advance);
             destroylist.Push(bitmap);
         }
 

@@ -247,6 +247,13 @@ namespace Gorgon { namespace Resource {
 
 			IO::WritePoint(*stream, value);
         }
+		/// Writes a point to the stream, point takes 2 x 4 bytes
+		void WritePointf(Geometry::Pointf value) {
+			ASSERT(stream, "Writer is not opened.");
+			ASSERT(IsGood(), "Writer is failed.");
+
+			IO::WritePointf(*stream, value);
+        }
 		
 		/// Writes a size to the stream, size takes 2 x 4 bytes
 		void WriteSize(Geometry::Size value) {

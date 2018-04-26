@@ -62,7 +62,8 @@ namespace Gorgon { namespace Resource {
             for(auto &p : *bf) {
                 writer.WriteInt32 (p.first);
                 writer.WriteUInt32(bmps.FindLocation(p.second.image));
-                writer.WriteInt32(p.second.offset);
+                writer.WritePointf(p.second.offset);
+                writer.WriteFloat(p.second.advance);
             }
             
             writer.WriteEnd(mapstart);
@@ -133,23 +134,24 @@ namespace Gorgon { namespace Resource {
                     throw std::runtime_error("Invalid font charmap");
                 
                 for(int i=0; i<256; i++) {
-                    descs.insert(std::make_pair(i, Graphics::BitmapFont::GlyphDescriptor(reader->ReadInt32(), 0)));
+                    descs.insert(std::make_pair(i, Graphics::BitmapFont::GlyphDescriptor(reader->ReadInt32(), {0, 0}, 0)));
                 }
             }
             else if(gid == GID::Font_Charmap_II) {
                if(!bf)
                     throw std::runtime_error("Unexpected image, either font type is wrong or is not set.");
 
-               if((size/12)*12 != size)
+               if((size/20)*20 != size)
                     throw std::runtime_error("Invalid font charmap");
                 
-                for(unsigned i=0; i<size/12; i++) {
+                for(unsigned i=0; i<size/20; i++) {
                     auto g = reader->ReadInt32();
                     auto ind = reader->ReadUInt32();
-                    auto off = reader->ReadInt32();
+                    auto off = reader->ReadPointf();
+                    auto adv = reader->ReadFloat();
                     descs.insert(std::make_pair(
                         g, Graphics::BitmapFont::GlyphDescriptor(
-                        ind, off
+                        ind, off, adv
                     )));
                 }
             }
@@ -173,7 +175,7 @@ namespace Gorgon { namespace Resource {
             if(p.second.index<0 || p.second.index>=glyphs.GetSize())
                 throw std::runtime_error("Invalid glyph index");
             
-            bf->AssumeGlyph(p.first, glyphs[p.second.index], -p.second.offset + bl);
+            bf->AssumeGlyph(p.first, glyphs[p.second.index], p.second.offset, p.second.advance);
         }
 
         return font;

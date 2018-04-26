@@ -24,8 +24,8 @@ int main() {
         data.push_back(b);*/
     
     FreeType f;
-    f.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf");
-    f.LoadMetrics(12);
+    f.LoadFile("/usr/share/fonts/urw-base35/NimbusRoman-Regular.otf");
+    f.LoadMetrics(16);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;
     std::cout<<"Preset sizes: "<<f.GetPresetSizes().size()<<std::endl;
@@ -40,7 +40,7 @@ int main() {
     
     BasicFont r(f);
     
-    r.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 100, 0, 300, TextAlignment::Right);
+    r.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 100, 10, 300, TextAlignment::Right);
 
 	while(true) {
 		Gorgon::NextFrame();

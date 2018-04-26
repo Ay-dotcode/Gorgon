@@ -5,6 +5,8 @@
 #include "../Geometry/Point.h"
 #include "../Containers/Collection.h"
 
+namespace Gorgon { namespace Resource { class Font; } }
+
 
 namespace Gorgon { namespace Graphics {
     
@@ -26,6 +28,8 @@ namespace Gorgon { namespace Graphics {
      * images require invokation from graphics thread.
      */
     class FreeType : public GlyphRenderer { 
+        friend class ::Gorgon::Resource::Font;
+        
         /// to be used internally.
         class GlyphDescriptor {
         public:
@@ -180,6 +184,8 @@ namespace Gorgon { namespace Graphics {
         
         //clear
         
+        //digit width
+        
         
 		/// This function should render the given character to the target at the specified location
 		/// and color. If chr does not exists, this function should perform no action. location and
@@ -286,7 +292,7 @@ namespace Gorgon { namespace Graphics {
         
         int baseline = 0;
 
-		int digw = 0;
+		mutable int digw = 0;
 
 		bool isascii = false;
         

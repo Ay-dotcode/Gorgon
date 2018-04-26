@@ -331,6 +331,9 @@ namespace Gorgon { namespace Graphics {
             glyphmap[g] = {bmp, std::round(slot->advance.x/64.f), {(int)slot->bitmap_left, (int)-slot->bitmap_top}, (unsigned int)index};
             ft_to_map[index] = g;
             
+            if(isdigit(g) && digw < bmp.GetWidth())
+                digw = bmp.GetWidth();
+            
             if(prepare)
                 bmp.Prepare();
         }
@@ -476,7 +479,7 @@ namespace Gorgon { namespace Graphics {
             prev = it;
         }
         
-        for(auto r : ranges) {
+        /*for(auto r : ranges) {
             if(r.Start > 127 || r.Start <= 32) {
                 if(r.Start == r.End)
                     std::cout<<"U"<<std::hex<<(r.Start)<<std::endl;
@@ -487,7 +490,7 @@ namespace Gorgon { namespace Graphics {
                 std::cout<<((char)r.Start)<<std::endl;
             else
                 std::cout<<((char)r.Start)<<" - "<<((char)r.End)<<std::endl;
-        }
+        }*/
         
         for(auto &range : ranges) 
             loadglyphs(range, true);
