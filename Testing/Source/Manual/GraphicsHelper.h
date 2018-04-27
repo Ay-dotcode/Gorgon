@@ -29,7 +29,7 @@ public:
 
 		wind ={{800, 600}, appname, title, true};
 
-		Gorgon::GL::log.InitializeConsole();
+		//Gorgon::GL::log.InitializeConsole();
 
 		Graphics::Initialize();
 

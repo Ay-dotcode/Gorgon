@@ -41,11 +41,9 @@ int main() {
     
     auto f2 = f.CopyToBitmap();
     
-    BasicFont r(f);
-    
     f2.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 300, 100, 300, TextAlignment::Right);
 
-    r.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 0, 100, 300, TextAlignment::Right);
+    f.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 0, 100, 300, TextAlignment::Right);
 
 	while(true) {
 		Gorgon::NextFrame();

@@ -28,7 +28,7 @@ namespace Gorgon { namespace Graphics {
      * from multiple threads. However, preparing and creating atlas from
      * images require invokation from graphics thread.
      */
-    class FreeType : public GlyphRenderer { 
+    class FreeType : public GlyphRenderer, public BasicFont { 
         friend class ::Gorgon::Resource::Font;
         
         /// to be used internally.
@@ -201,10 +201,7 @@ namespace Gorgon { namespace Graphics {
         /// copies of glyphs. This function will work even if the font is packed.
         BitmapFont MoveOutBitmap();
         
-        //basic text renderer
-        
         //packing options
-        
         
 		/// This function should render the given character to the target at the specified location
 		/// and color. If chr does not exists, this function should perform no action. location and
