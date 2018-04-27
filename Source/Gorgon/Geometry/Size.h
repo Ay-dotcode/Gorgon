@@ -228,7 +228,7 @@ namespace Gorgon { namespace Geometry {
 
 		/// Returns whether the size is valid, i.e. both dimensions are positive.
 		bool IsValid() const {
-			return Width>0 && Height>0;
+			return Width>=0 && Height>=0;
 		}
 		
 		/// Returns the maximum representable size. This function requires T_ to be

@@ -24,8 +24,8 @@ int main() {
         data.push_back(b);*/
     
     FreeType f;
-    f.LoadFile("/usr/share/fonts/urw-base35/NimbusRoman-Regular.otf");
-    f.LoadMetrics(16);
+    f.LoadFile("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf");
+    f.LoadMetrics(12);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;
     std::cout<<"Preset sizes: "<<f.GetPresetSizes().size()<<std::endl;
@@ -35,12 +35,17 @@ int main() {
     std::cout<<"Baseline: "<<f.GetBaseLine()<<std::endl;
     std::cout<<"Underline: "<<f.GetUnderlineOffset()<<std::endl;
     std::cout<<"Line thickness: "<<f.GetLineThickness()<<std::endl;
+    std::cout<<"Kerning: "<<f.HasKerning()<<std::endl;
     
-    //f.LoadGlyphs(32, 127);
+    f.LoadGlyphs({0, {32, 127}});
+    
+    auto f2 = f.CopyToBitmap();
     
     BasicFont r(f);
     
-    r.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 100, 10, 300, TextAlignment::Right);
+    f2.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 300, 100, 300, TextAlignment::Right);
+
+    r.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 0, 100, 300, TextAlignment::Right);
 
 	while(true) {
 		Gorgon::NextFrame();

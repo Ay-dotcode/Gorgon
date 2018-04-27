@@ -126,7 +126,7 @@ namespace Gorgon { namespace Graphics {
             return false;
         
         if(loadascii)
-            return LoadGlyphs(0x20, 0x7f);
+            return LoadGlyphs({0, {0x20, 0x7f}});
         else
             return true;
     }
@@ -494,5 +494,68 @@ namespace Gorgon { namespace Graphics {
         
         for(auto &range : ranges) 
             loadglyphs(range, true);
+    }
+    
+    
+    BitmapFont FreeType::CopyToBitmap(bool prepare) const {
+        BitmapFont font;
+        
+        font.SetBaseline(baseline);
+        font.SetLineThickness(linethickness);
+        font.SetUnderlineOffset(underlinepos);
+        font.SetLineGap(linegap);
+        //transfer kerning!!
+        
+        std::map<const RectangularDrawable*, Bitmap*> newmapping;
+        
+        for(auto &g : glyphmap) {
+            auto img = dynamic_cast<const Bitmap*>(g.second.image);
+            if(!img)
+                continue;
+            
+            if(newmapping.count(img) == 0) {
+                newmapping[img] = new Bitmap(img->Duplicate());
+                
+                if(prepare)
+                    newmapping[img]->Prepare();
+            }
+            
+            font.AssumeGlyph(g.first, *newmapping[img], g.second.offset + Geometry::Point(0, baseline), g.second.advance);
+        }
+        
+        return font;
+    }
+    
+    
+    BitmapFont FreeType::MoveOutBitmap() {
+        BitmapFont font;
+        
+        font.SetBaseline(baseline);
+        font.SetLineThickness(linethickness);
+        font.SetUnderlineOffset(underlinepos);
+        font.SetLineGap(linegap);
+        //transfer kerning!!
+        
+        for(auto &g : glyphmap) {
+            font.AddGlyph(g.first, *g.second.image, g.second.offset + Geometry::Point(0, baseline), g.second.advance);
+        }
+        
+        for(const auto &i : destroylist) {
+            font.Adopt(i);
+        }
+        
+        destroylist.Clear(); //clear to ensure they wont be destroyed
+        
+        Clear();
+        
+        return font;
+    }
+    
+
+    void FreeType::Clear(){
+        glyphmap.clear();
+        destroylist.DeleteAll();
+        
+		digw = 0;
     }
 } }

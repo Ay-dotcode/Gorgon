@@ -185,7 +185,7 @@ namespace Gorgon { namespace Graphics {
 		/// todo
 		virtual Geometry::Pointf KerningDistance(Glyph chr1, Glyph chr2) const override { return {0.f, 0.f}; }
 		
-		virtual float GetCursorAdvance(Glyph g) const override { return internal::isspaced(g) ? GetSize(g).Width + spacing : 0; }         
+		virtual float GetCursorAdvance(Glyph g) const override;         
         
 		virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetHeight(); }
 
@@ -265,28 +265,12 @@ namespace Gorgon { namespace Graphics {
                 return nullptr;
         }
         
+        using GlyphRenderer::Prepare;
+        
         /// Removes a glyph from the bitmap font. If this glyph is created by font object
         /// and this glyph is the last user of that resource, it will be destroyed. Use
         /// Release to prevent this from happening.
-        void Remove(Glyph g) {
-            if(glyphmap.count(g)) {
-                auto img = glyphmap.at(g).image;
-                
-                auto it = destroylist.Find(img);
-                
-                if(it.IsValid()) {
-                    
-                    int count = (int)std::count_if(glyphmap.begin(), glyphmap.end(),
-                                [img](decltype(*glyphmap.begin()) p){ return p.second.image == img; });
-                    
-                    if(count == 1) {
-                        it.Delete();
-                    }
-                }
-                
-                glyphmap.erase(g);
-            }
-        }
+        void Remove(Glyph g);
         
         /// If the given resource is owned by this bitmap font, its ownership will be released.
         bool Release(RectangularDrawable &img) {
@@ -302,11 +286,18 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Returns if the given image is owned by this bitmap font.
-        bool IsOwned(RectangularDrawable &img) const {
+        bool IsOwned(const RectangularDrawable &img) const {
             auto it = destroylist.Find(img);
             
             return it.IsValid();
         }
+        
+        /// This will add the given image to the list of images that will be destroyed
+        /// with this object.
+        void Adopt(const RectangularDrawable &img) {
+            destroylist.Add(img);
+        }
+            
         
         virtual const GlyphRenderer &GetGlyphRenderer() const override {
             return *this;

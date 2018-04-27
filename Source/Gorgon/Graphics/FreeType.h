@@ -2,6 +2,7 @@
 
 #include "Font.h"
 #include "Drawables.h"
+#include "BitmapFont.h"
 #include "../Geometry/Point.h"
 #include "../Containers/Collection.h"
 
@@ -172,19 +173,37 @@ namespace Gorgon { namespace Graphics {
             return issymbol;
         }
         
+        /// Returns whether this font contains kerning table
+        bool HasKerning() const {
+            return haskerning;
+        }
+        
         /// Returns the name of the font
         std::string GetFamilyName() const;
         
         /// Returns the style name of the font
         std::string GetStyleName() const;
         
-        //convert to bitmap
+        /// Clears the glyphs that are loaded
+        void Clear();
+        
+        /// Copy the loaded glyphs into a new bitmap font. Only the glyphs that are already loaded
+        /// will be copied into the bitmap font. This object will keep its loaded glyphs after a 
+        /// call to this function. Use MoveOutBitmap to convert this font to bitmap to move out
+        /// bitmaps, avoiding copying. For now this function will not work if the font is packed.
+        /// This function will skip any glyphs that are not proper bitmaps.
+        BitmapFont CopyToBitmap(bool prepare = true) const;
+        
+        
+        /// Moves the loaded glyphs into a new bitmap font. Only the glyphs that are already loaded
+        /// will be copied into the bitmap font. This object will loose its glyphs but will be able
+        /// to reload them if requested. Use CopyToBitmap to convert this font to bitmap with the
+        /// copies of glyphs. This function will work even if the font is packed.
+        BitmapFont MoveOutBitmap();
+        
+        //basic text renderer
         
         //packing options
-        
-        //clear
-        
-        //digit width
         
         
 		/// This function should render the given character to the target at the specified location
@@ -256,7 +275,6 @@ namespace Gorgon { namespace Graphics {
         /// to their internal structures, they should mark them 
         virtual void Prepare(const std::string &text) const override;
 		
-        
         /// Discards intermediate files. New glyphs cannot be packed
         /// automatically after this function is issued.
         void Discard();

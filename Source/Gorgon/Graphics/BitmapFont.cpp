@@ -90,7 +90,9 @@ namespace Gorgon { namespace Graphics {
 
 	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, int baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline) {
 		Containers::Hashmap<std::string, Bitmap> files; // map of file labels to bitmaps
-		
+
+		if(trim && spacing==0) spacing = 1;
+        
         std::map<int, int> ghc;
 
 		Filesystem::Iterator dir;
@@ -295,7 +297,7 @@ namespace Gorgon { namespace Graphics {
 			if(prepare)
 				p.second.Prepare();
 
-            AddGlyph(g, p.second, bl);
+            AddGlyph(g, p.second, {0, this->baseline - bl}, p.second.GetWidth() + spacing);
 
 			if(maxh < h)
 				maxh = h;
@@ -336,7 +338,6 @@ namespace Gorgon { namespace Graphics {
 
 		this->baseline = baseline;
 
-		if(trim && spacing==0) spacing = 1;
         
         if(trim && spim && maxwidth == spw) {
             //check if glyph is empty, if so we can resize it.
@@ -440,5 +441,40 @@ namespace Gorgon { namespace Graphics {
         swap(bounds, ret);
         
         return bmp;
+    }
+
+    void BitmapFont::Remove(Glyph g) {
+        if(glyphmap.count(g)) {
+            auto img = glyphmap.at(g).image;
+            
+            auto it = destroylist.Find(img);
+            
+            if(it.IsValid()) {
+                
+                int count = (int)std::count_if(glyphmap.begin(), glyphmap.end(),
+                            [img](decltype(*glyphmap.begin()) p){ return p.second.image == img; });
+                
+                if(count == 1) {
+                    it.Delete();
+                }
+            }
+            
+            glyphmap.erase(g);
+        }
+    }
+
+
+    float BitmapFont::GetCursorAdvance(Glyph chr) const { 
+		if(glyphmap.count(chr))
+			return glyphmap.at(chr).advance;
+		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr) && chr != '\t')
+			return glyphmap.at(0).advance;
+		else {
+            auto s = GetSize(chr).Width;
+            if(s)
+                return s + spacing;
+            else
+                return 0;
+        }
     }
 } }
