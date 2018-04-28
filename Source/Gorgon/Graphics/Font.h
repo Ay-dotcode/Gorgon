@@ -96,8 +96,9 @@ namespace Gorgon { namespace Graphics {
 		virtual bool IsFixedWidth() const = 0;
 		
 		/// This function should return the additional distance between given glyphs. Returned value
-		/// could be (in most cases it is) negative.
-		virtual Geometry::Pointf KerningDistance(Glyph chr1, Glyph chr2) const = 0;
+		/// could be (in most cases it is) negative. Left and right are visual locations, they will
+        /// not be reverted for right to left rendering.
+		virtual Geometry::Pointf KerningDistance(Glyph left, Glyph right) const = 0;
         
         /// Returns the size of the EM dash
         virtual int GetEMSize() const = 0;

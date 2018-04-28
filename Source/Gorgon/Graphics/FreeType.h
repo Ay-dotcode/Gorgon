@@ -166,7 +166,7 @@ namespace Gorgon { namespace Graphics {
         /// Returns if the FreeType is ready to work. If the metrics are set
         /// and either the file is loaded or there are loaded glyphs this 
         /// function will return true.
-        bool IsReady() const;
+        bool IsReady() const override;
         
         /// Returns whether the font is a symbol only font
         bool IsSymbolOnly() const {

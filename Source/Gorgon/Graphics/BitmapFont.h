@@ -9,6 +9,8 @@
 #include "Bitmap.h"
 #include "../Containers/Collection.h"
 
+namespace Gorgon { namespace Resource { class Font; } }
+
 
 namespace Gorgon { namespace Graphics {
 
@@ -20,6 +22,7 @@ namespace Gorgon { namespace Graphics {
      * to render the text instead of using BitmapFont itself for the task. 
      */
     class BitmapFont : public GlyphRenderer, public BasicFont {
+        friend class Resource::Font;
     public:
         /// to be used internally.
         class GlyphDescriptor {
@@ -160,6 +163,14 @@ namespace Gorgon { namespace Graphics {
 		virtual bool IsASCII() const override {
 			return isascii;
 		}
+		
+		void SetKerning(Glyph left, Glyph right, Geometry::Pointf kern) {
+            kerning[{left, right}] = kern;
+        }
+		
+		void SetKerning(Glyph left, Glyph right, float x) {
+            kerning[{left, right}] = {x, 0.f};
+        }
 
         /// Converts individual glyphs to a single atlas. Only the glyphs that are registered as bitmaps can be packed.
         /// This function will automatically detect types and act accordingly. If the ownership of the packed images
@@ -183,7 +194,13 @@ namespace Gorgon { namespace Graphics {
 		virtual bool Exists(Glyph g) const override { return glyphmap.count(g) != 0; }
 		
 		/// todo
-		virtual Geometry::Pointf KerningDistance(Glyph chr1, Glyph chr2) const override { return {0.f, 0.f}; }
+		virtual Geometry::Pointf KerningDistance(Glyph chr1, Glyph chr2) const override { 
+            auto f = kerning.find({chr1, chr2});
+            
+            if(f != kerning.end())
+                return f->second;
+            else
+                return {0.f, 0.f}; }
 		
 		virtual float GetCursorAdvance(Glyph g) const override;         
         
@@ -320,9 +337,16 @@ namespace Gorgon { namespace Graphics {
         }
         
     protected:
-                           
+        
         std::map<Glyph, GlyphDescriptor> glyphmap;
 		Containers::Collection<const RectangularDrawable> destroylist;
+        
+        struct gtog {
+            Glyph left, right;
+            bool operator <(const gtog &other) const { if(left == other.left) return right < other.right; else return left < other.left; }
+        };
+        
+        std::map<gtog, Geometry::Pointf> kerning;
         
         int isfixedw = true;
         

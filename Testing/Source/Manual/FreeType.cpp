@@ -1,5 +1,7 @@
 ﻿#include "GraphicsHelper.h"
 #include <Gorgon/Graphics/FreeType.h>
+#include <Gorgon/Resource/File.h>
+#include <Gorgon/Resource/Font.h>
 
 
 std::string helptext = 
@@ -25,7 +27,7 @@ int main() {
     
     FreeType f;
     f.LoadFile("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf");
-    f.LoadMetrics(12);
+    f.LoadMetrics(24);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;
     std::cout<<"Preset sizes: "<<f.GetPresetSizes().size()<<std::endl;
@@ -41,7 +43,21 @@ int main() {
     
     auto f2 = f.CopyToBitmap();
     
-    f2.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 300, 100, 300, TextAlignment::Right);
+
+    Resource::File file;
+    Resource::Font fr(f2);
+    file.Root().Add(fr);
+    file.Save("freetype-test.gor");
+    file.Root().Remove(fr);
+    
+    file.Destroy();
+    file.LoadFile("freetype-test.gor");
+    auto &ff = file.Root().Get<Resource::Font>(0).GetRenderer();
+    file.Prepare();
+    
+    BasicFont f3(ff);
+    
+    f3.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 300, 100, 300, TextAlignment::Right);
 
     f.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 0, 100, 300, TextAlignment::Right);
 

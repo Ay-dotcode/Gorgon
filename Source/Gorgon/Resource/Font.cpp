@@ -41,7 +41,7 @@ namespace Gorgon { namespace Resource {
         if(bf) {            
             auto propstart = writer.WriteChunkStart(GID::Font_BitmapProps);
 
-            writer.WriteInt32(2); //h-sep, not used anymore
+            writer.WriteInt32(bf->GetLineGap());
             writer.WriteInt32(bf->GetGlyphSpacing());
             writer.WriteInt32(bf->GetBaseLine());
             writer.WriteInt32(bf->GetHeight());
@@ -50,6 +50,18 @@ namespace Gorgon { namespace Resource {
             writer.WriteInt32(bf->GetMaxWidth());
             
             writer.WriteEnd(propstart);
+            
+            if(!bf->kerning.empty()) {
+                auto kernstart = writer.WriteChunkStart(GID::Font_BitmapKerning);
+                
+                for(auto &k : bf->kerning) {
+                    writer.WriteInt32(k.first.left);
+                    writer.WriteInt32(k.first.right);
+                    writer.WritePointf(k.second);
+                }
+
+                writer.WriteEnd(kernstart);
+            }
             
             Containers::Collection<const Graphics::RectangularDrawable> bmps;
             
@@ -104,9 +116,10 @@ namespace Gorgon { namespace Resource {
                 
                 font->AssumeRenderer(*bf);
                 
-                reader->ReadInt32();
+                bf->SetLineGap(reader->ReadInt32());
                 bf->SetGlyphSpacing(reader->ReadInt32());
                 bf->SetBaseline(reader->ReadInt32());
+                bf->SetLineGap(bf->GetBaseLine() + bf->GetLineGap());
                 
                 recalc = true;
             }
@@ -115,7 +128,7 @@ namespace Gorgon { namespace Resource {
                 
                 font->AssumeRenderer(*bf);
                 
-                reader->ReadInt32();
+                bf->SetLineGap(reader->ReadInt32());
                 bf->SetGlyphSpacing(reader->ReadInt32());
                 bl = reader->ReadInt32();
                 bf->SetBaseline(bl);
@@ -123,8 +136,17 @@ namespace Gorgon { namespace Resource {
                 bf->SetLineThickness(reader->ReadInt32());
                 bf->SetUnderlineOffset(reader->ReadInt32());
                 bf->SetMaxWidth(reader->ReadInt32());
+            }
+            else if(gid == GID::Font_BitmapKerning) {
+                auto kerntarget = reader->Target(size);
                 
-                bf->SetLineGap(std::round(bf->GetHeight() * 1.2f));//temporary solution
+                while(!kerntarget) {
+                    auto left = reader->ReadInt32();
+                    auto right = reader->ReadInt32();
+                    auto kern = reader->ReadPointf();
+                    
+                    bf->SetKerning(left, right, kern);
+                }
             }
             else if(gid == GID::Font_Charmap) {
                if(!bf)

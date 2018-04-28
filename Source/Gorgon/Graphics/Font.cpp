@@ -2,6 +2,8 @@
 #include <Gorgon/Utils/Assert.h>
 #include <functional>
 
+//!todo y-kerning support
+
 namespace Gorgon { namespace Graphics {
 	namespace internal {
 		Glyph decode(std::string::const_iterator &it, std::string::const_iterator end) {
@@ -298,6 +300,7 @@ namespace Gorgon { namespace Graphics {
 				if(isspace(g)) {
 					if(prev) {
 						cur_spacing = spacing(prev, g);
+                        acc.back().location += cur_spacing;
 					}
 
 					if(renderer.Exists(g)) {
@@ -410,7 +413,7 @@ namespace Gorgon { namespace Graphics {
 				}
 				//if we wrapped, ignore spaces at start
 				else if(!autobreak || ind != 0 || !isspace(g)) { 
-					acc.push_back({x, g});
+					acc.push_back({x+cur_spacing, g});
 
 					x += cur_spacing;
                     x += prev_gw;

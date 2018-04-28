@@ -348,8 +348,8 @@ namespace Gorgon { namespace Graphics {
         
         return (lib->face->face_flags & FT_FACE_FLAG_SCALABLE) != 0;
     }
-     
-     
+    
+    
     std::vector<int> FreeType::GetPresetSizes() const {
         if(!lib->face)
             return {};
@@ -504,7 +504,19 @@ namespace Gorgon { namespace Graphics {
         font.SetLineThickness(linethickness);
         font.SetUnderlineOffset(underlinepos);
         font.SetLineGap(linegap);
-        //transfer kerning!!
+        
+        //copy kerning table
+        if(haskerning) {
+            for(auto &l : glyphmap) {
+                for(auto &r : glyphmap) {
+                    auto p = KerningDistance(l.first, r.first);
+                    
+                    if(p.X != 0 || p.Y != 0) {
+                        font.SetKerning(l.first, r.first, p);
+                    }
+                }
+            }
+        }
         
         std::map<const RectangularDrawable*, Bitmap*> newmapping;
         
@@ -534,17 +546,32 @@ namespace Gorgon { namespace Graphics {
         font.SetLineThickness(linethickness);
         font.SetUnderlineOffset(underlinepos);
         font.SetLineGap(linegap);
-        //transfer kerning!!
         
+        //copy kerning table
+        if(haskerning) {
+            for(auto &l : glyphmap) {
+                for(auto &r : glyphmap) {
+                    auto p = KerningDistance(l.first, r.first);
+                    
+                    if(p.X != 0 || p.Y != 0) {
+                        font.SetKerning(l.first, r.first, p);
+                    }
+                }
+            }
+        }
+
+        //add glpyhs
         for(auto &g : glyphmap) {
             font.AddGlyph(g.first, *g.second.image, g.second.offset + Geometry::Point(0, baseline), g.second.advance);
         }
         
+        //transfer ownership
         for(const auto &i : destroylist) {
             font.Adopt(i);
         }
         
-        destroylist.Clear(); //clear to ensure they wont be destroyed
+        //clear to ensure they wont be destroyed
+        destroylist.Clear(); 
         
         Clear();
         

@@ -87,11 +87,10 @@ namespace Gorgon { namespace Graphics {
         
         linegap = std::round(height * 1.2f);
 	}
+	
 
 	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, int baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline) {
 		Containers::Hashmap<std::string, Bitmap> files; // map of file labels to bitmaps
-
-		if(trim && spacing==0) spacing = 1;
         
         std::map<int, int> ghc;
 
@@ -252,6 +251,9 @@ namespace Gorgon { namespace Graphics {
 		//height of underscore
 		int uh = 0;
         Bitmap *spim = nullptr;
+        
+        //to visit them after loading finishes
+        std::vector<Glyph> added;
 
 		for(auto p : files) {
 			auto bl = baseline;
@@ -297,7 +299,9 @@ namespace Gorgon { namespace Graphics {
 			if(prepare)
 				p.second.Prepare();
 
-            AddGlyph(g, p.second, {0, this->baseline - bl}, p.second.GetWidth() + spacing);
+            AddGlyph(g, p.second, {0, this->baseline - bl}, p.second.GetWidth());
+            
+            added.push_back(g);
 
 			if(maxh < h)
 				maxh = h;
@@ -381,6 +385,17 @@ namespace Gorgon { namespace Graphics {
                 linethickness = 1;
         }
 
+		if(trim && spacing==0) {
+            spacing = (int)std::floor(height/10.f);
+            
+            if(spacing == 0)
+                spacing = 1;
+        }
+        
+        //add spacing to advances
+        for(auto g : added)
+            glyphmap[g].advance += spacing;
+        
 		underlinepos = baseline + linethickness + 1;
 
         linegap = std::round(height * 1.2f);
@@ -388,6 +403,7 @@ namespace Gorgon { namespace Graphics {
         return files.GetSize();
     }
 
+    
 	void BitmapFont::Pack(bool tight, DeleteConstants del) {
         Containers::Collection<const Bitmap> bitmaps;
         std::vector<std::pair<Glyph, int>> packing;
@@ -423,6 +439,7 @@ namespace Gorgon { namespace Graphics {
         }
     }
 
+    
     Graphics::Bitmap BitmapFont::CreateAtlas(std::vector<Geometry::Bounds> &bounds, bool tight) const {
         Containers::Collection<const Bitmap> bitmaps;
         
@@ -443,6 +460,7 @@ namespace Gorgon { namespace Graphics {
         return bmp;
     }
 
+    
     void BitmapFont::Remove(Glyph g) {
         if(glyphmap.count(g)) {
             auto img = glyphmap.at(g).image;
@@ -463,7 +481,7 @@ namespace Gorgon { namespace Graphics {
         }
     }
 
-
+    
     float BitmapFont::GetCursorAdvance(Glyph chr) const { 
 		if(glyphmap.count(chr))
 			return glyphmap.at(chr).advance;
