@@ -50,21 +50,26 @@ int main() {
     
 
     Resource::File file;
-    Resource::Font fr(f2);
-    file.Root().Add(fr);
-    file.Save("freetype-test.gor");
-    file.Root().Remove(fr);
-    
+	Resource::Font fr(f2);
+	Resource::Font fr2(f);
+	file.Root().Add(fr);
+	file.Root().Add(fr2);
+	file.Save("freetype-test.gor");
+	file.Root().Remove(fr);
+	file.Root().Remove(fr2);
+
     file.Destroy();
     file.LoadFile("freetype-test.gor");
-    auto &ff = file.Root().Get<Resource::Font>(0).GetRenderer();
-    file.Prepare();
+	auto &ff = file.Root().Get<Resource::Font>(0).GetRenderer();
+	auto &ff2 = file.Root().Get<Resource::Font>(1).GetRenderer();
+	file.Prepare();
     
-    BasicFont f3(ff);
-    
+	BasicFont f3(ff);
+	BasicFont f4(ff2);
+
     f3.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 300, 100, 300, TextAlignment::Right);
 
-    f.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 0, 100, 300, TextAlignment::Right);
+    f4.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 0, 100, 300, TextAlignment::Right);
 
 	std::cout<<f2.GetLineGap()<<std::endl;
 

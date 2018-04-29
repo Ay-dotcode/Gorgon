@@ -205,7 +205,8 @@ namespace Gorgon {
 			constexpr Type Font_Charmap_II		{0x03200805};
 			constexpr Type Font_BitmapProps		{0x03200806};
 			constexpr Type Font_BitmapKerning	{0x03200807};
-			constexpr Type Font_FreeTypeData	{0x03200104};
+			constexpr Type Font_FreeTypeProps	{0x03200104};
+			constexpr Type Font_FreeTypeData	{0x03200105};
 
 			constexpr Type FontTheme			{0x03300000};
 			constexpr Type FontTheme_Font		{0x03301001};

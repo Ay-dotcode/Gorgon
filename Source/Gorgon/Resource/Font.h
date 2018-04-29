@@ -3,7 +3,6 @@
 #include "Base.h"
 #include "Image.h"
 #include "../Graphics/Font.h"
-#include "../Graphics/BitmapFont.h"
 #include "../Utils/Assert.h"
 
 namespace Gorgon { namespace Resource {

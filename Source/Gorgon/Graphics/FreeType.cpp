@@ -99,6 +99,7 @@ namespace Gorgon { namespace Graphics {
         
         return true;
     }
+
     
     
     bool FreeType::LoadFile(const std::string &filename) {
@@ -205,7 +206,34 @@ namespace Gorgon { namespace Graphics {
         return true;
     }
     
-    
+
+	bool FreeType::savedata(std::ostream &stream) {
+		if(!vecdata && !data && filename == "")
+			return false;
+
+		if(vecdata)
+			IO::WriteVector(stream, *vecdata);
+		else if(data)
+			IO::WriteArray(stream, data, datasize);
+		else {
+			std::ifstream file(filename, std::ios::binary);
+
+			if(!file.is_open())
+				return false;
+
+			char buffer[1024];
+			while(!file.read(buffer, 1024).bad()) {
+				if(file.gcount() <= 0)
+					break;
+
+				IO::WriteArray(stream, buffer, (unsigned long)file.gcount());
+			}
+		}
+
+		return true;
+	}
+
+
     bool FreeType::LoadMetrics(int size) {
         if(!lib->face)
             return false;
@@ -269,6 +297,7 @@ namespace Gorgon { namespace Graphics {
             if(linethickness < 1) linethickness = 1;
         }
         
+		this->size = (float)size;
         return true;
     }
     

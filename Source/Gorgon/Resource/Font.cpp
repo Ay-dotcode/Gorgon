@@ -1,6 +1,8 @@
 #include "Font.h"
 #include "File.h"
 
+#include "../Graphics/BitmapFont.h"
+#include "../Graphics/FreeType.h"
 
 namespace Gorgon { namespace Resource {
 
@@ -13,7 +15,7 @@ namespace Gorgon { namespace Resource {
         if(isowner)
             delete data;
         
-        ASSERT(dynamic_cast<Graphics::BitmapFont*>(&renderer), "Font resource can only be a bitmapfont (for now)");
+        ASSERT(dynamic_cast<Graphics::BitmapFont*>(&renderer) || dynamic_cast<Graphics::FreeType*>(&renderer), "Font resource can only be a bitmapfont or freetype font");
         
 #ifndef NDEBUG
         auto br = dynamic_cast<Graphics::BitmapFont*>(&renderer);
@@ -23,6 +25,9 @@ namespace Gorgon { namespace Resource {
                 if(dynamic_cast<const Graphics::Bitmap*>(p.second.image)) {
                     ASSERT(dynamic_cast<const Graphics::Bitmap*>(p.second.image)->HasData(), "You shouldn't discard bitmap data for Font resource to work.");
                 }
+				else if(dynamic_cast<Graphics::FreeType*>(&renderer)) {
+					//nothing to check right now
+				}
                 else
                     Utils::ASSERT_FALSE("Bitmap resource images should be bitmaps.");
             }
@@ -35,15 +40,16 @@ namespace Gorgon { namespace Resource {
     
     void Gorgon::Resource::Font::save(Gorgon::Resource::Writer& writer) const {
         auto start = writer.WriteObjectStart(this);
-        
-        auto bf = dynamic_cast<Graphics::BitmapFont*>(data);
+
+		auto bf = dynamic_cast<Graphics::BitmapFont*>(data);
+		auto ft = dynamic_cast<Graphics::FreeType*>(data);
         
         if(bf) {            
             auto propstart = writer.WriteChunkStart(GID::Font_BitmapProps);
 
-            writer.WriteInt32(bf->GetLineGap());
+            writer.WriteFloat(bf->GetLineGap());
             writer.WriteInt32(bf->GetGlyphSpacing());
-            writer.WriteInt32(bf->GetBaseLine());
+            writer.WriteFloat(bf->GetBaseLine());
             writer.WriteInt32(bf->GetHeight());
             writer.WriteInt32(bf->GetLineThickness());
             writer.WriteInt32(bf->GetUnderlineOffset());
@@ -89,6 +95,17 @@ namespace Gorgon { namespace Resource {
                 Image::SaveThis(writer, *bmp);
             }
         }
+		else if(ft) {
+			writer.WriteChunkHeader(GID::Font_FreeTypeProps, 4);
+			writer.WriteFloat(ft->size);
+
+			auto datastart = writer.WriteChunkStart(GID::Font_FreeTypeData);
+
+			if(!ft->savedata(writer.GetStream()))
+				throw std::runtime_error("Cannot save freetype font, is data discarded?");
+
+			writer.WriteEnd(datastart);
+		}
         else if(data) {
             Utils::ASSERT_FALSE("Unrecognized font type to save");
         }
@@ -101,9 +118,12 @@ namespace Gorgon { namespace Resource {
         
         auto font = new Font;
         bool recalc = false;
-        int bl = 0;
-        
-        Graphics::BitmapFont *bf = nullptr;
+        float bl = 0;
+		float sz = 0;
+
+		Graphics::BitmapFont *bf = nullptr;
+		Graphics::FreeType *ft = nullptr;
+
         Containers::Collection<Graphics::Bitmap> glyphs;
         std::map<Graphics::Glyph, Graphics::BitmapFont::GlyphDescriptor> descs;
         
@@ -116,21 +136,35 @@ namespace Gorgon { namespace Resource {
                 
                 font->AssumeRenderer(*bf);
                 
-                bf->SetLineGap(reader->ReadInt32());
+                bf->SetLineGap((float)reader->ReadInt32());
                 bf->SetGlyphSpacing(reader->ReadInt32());
-                bf->SetBaseline(reader->ReadInt32());
+                bf->SetBaseline((float)reader->ReadInt32());
                 bf->SetLineGap(bf->GetBaseLine() + bf->GetLineGap());
                 
                 recalc = true;
             }
+			else if(gid == GID::Font_FreeTypeData) {
+				ft = new Graphics::FreeType();
+				font->AssumeRenderer(*ft);
+
+				auto data = new Byte[size];
+				reader->ReadArray(data, size);
+
+				ft->Assume(data, size);
+				ft->LoadMetrics((int)sz);
+				ft->LoadGlyphs({0, {32, 127}});
+			}
+			else if(gid == GID::Font_FreeTypeProps) {
+				sz = reader->ReadFloat();
+			}
             else if(gid == GID::Font_BitmapProps) {
                 bf = new Graphics::BitmapFont;
                 
                 font->AssumeRenderer(*bf);
                 
-                bf->SetLineGap(reader->ReadInt32());
+                bf->SetLineGap(reader->ReadFloat());
                 bf->SetGlyphSpacing(reader->ReadInt32());
-                bl = reader->ReadInt32();
+                bl = reader->ReadFloat();
                 bf->SetBaseline(bl);
                 bf->SetHeight(reader->ReadInt32());
                 bf->SetLineThickness(reader->ReadInt32());
@@ -138,6 +172,9 @@ namespace Gorgon { namespace Resource {
                 bf->SetMaxWidth(reader->ReadInt32());
             }
             else if(gid == GID::Font_BitmapKerning) {
+				if(!bf)
+					throw std::runtime_error("Unexpected image, either font type is wrong or is not set.");
+
                 auto kerntarget = reader->Target(size);
                 
                 while(!kerntarget) {
