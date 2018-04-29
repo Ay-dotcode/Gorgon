@@ -1,4 +1,4 @@
-﻿#include "GraphicsHelper.h"
+#include "GraphicsHelper.h"
 #include <Gorgon/Graphics/FreeType.h>
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Font.h>
@@ -26,8 +26,12 @@ int main() {
         data.push_back(b);*/
     
     FreeType f;
-    f.LoadFile("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf");
-    f.LoadMetrics(24);
+#ifdef WIN32
+    f.LoadFile("C:/Windows/Fonts/arial.ttf");
+#else
+	f.LoadFile("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf");
+#endif
+    f.LoadMetrics(12);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;
     std::cout<<"Preset sizes: "<<f.GetPresetSizes().size()<<std::endl;
@@ -35,8 +39,9 @@ int main() {
     std::cout<<"Height: "<<f.GetHeight()<<std::endl;
     std::cout<<"Max width: "<<f.GetMaxWidth()<<std::endl;
     std::cout<<"Baseline: "<<f.GetBaseLine()<<std::endl;
-    std::cout<<"Underline: "<<f.GetUnderlineOffset()<<std::endl;
-    std::cout<<"Line thickness: "<<f.GetLineThickness()<<std::endl;
+	std::cout<<"Underline: "<<f.GetUnderlineOffset()<<std::endl;
+	std::cout<<"Line thickness: "<<f.GetLineThickness()<<std::endl;
+	std::cout<<"Line gap: "<<f.GetLineGap()<<std::endl;
     std::cout<<"Kerning: "<<f.HasKerning()<<std::endl;
     
     f.LoadGlyphs({0, {32, 127}});
@@ -60,6 +65,8 @@ int main() {
     f3.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 300, 100, 300, TextAlignment::Right);
 
     f.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 0, 100, 300, TextAlignment::Right);
+
+	std::cout<<f2.GetLineGap()<<std::endl;
 
 	while(true) {
 		Gorgon::NextFrame();

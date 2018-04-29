@@ -63,7 +63,7 @@ namespace Gorgon { namespace Graphics {
 			All
 		};
         
-        explicit BitmapFont(int baseline = 0) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)), baseline(baseline) { }
+        explicit BitmapFont(float baseline = 0) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)), baseline(baseline) { }
         
         BitmapFont(const BitmapFont &) = delete;
         
@@ -77,6 +77,8 @@ namespace Gorgon { namespace Graphics {
             swap(glyphmap, other.glyphmap);
             
             swap(destroylist, other.destroylist);
+
+			swap(kerning, other.kerning);
             
             isfixedw = other.isfixedw;
             
@@ -95,6 +97,8 @@ namespace Gorgon { namespace Graphics {
             linethickness = other.linethickness;
 
             underlinepos = other.underlinepos;
+
+			linegap = other.linegap;
         }
       
         BitmapFont &operator =(const BitmapFont &) = delete;
@@ -106,11 +110,14 @@ namespace Gorgon { namespace Graphics {
             
             destroylist.Destroy();
             glyphmap.clear();
+			kerning.clear();
             
             swap(glyphmap, other.glyphmap);
             
             swap(destroylist, other.destroylist);
-            
+
+			swap(kerning, other.kerning);
+
             isfixedw = other.isfixedw;
             
             maxwidth = other.maxwidth;
@@ -128,7 +135,9 @@ namespace Gorgon { namespace Graphics {
             linethickness = other.linethickness;
 
             underlinepos = other.underlinepos;
-            
+
+			linegap = other.linegap;
+
             return *this;
         }
         
@@ -139,7 +148,7 @@ namespace Gorgon { namespace Graphics {
         /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
         /// Ownership of bitmap is not transferred.
         void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, int baseline = 0) {
-            AddGlyph(glyph, bitmap, {0, this->baseline - baseline}, bitmap.GetWidth() + spacing);
+            AddGlyph(glyph, bitmap, {0, this->baseline - baseline}, float(bitmap.GetWidth() + spacing));
         }
                 
         /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
@@ -271,7 +280,7 @@ namespace Gorgon { namespace Graphics {
 		/// of a search. The search will look at A to find the lowest pixel to declare it
 		/// baseline.
         int ImportFolder(const std::string &path, ImportNamingTemplate naming = Automatic, int start = 0, 
-						 std::string prefix = "", int baseline = -1, bool trim = true, bool converttoalpha = true, 
+						 std::string prefix = "", float baseline = -1, bool trim = true, bool converttoalpha = true, 
 						 bool prepare = true, bool estimatebaseline = false);
         
         /// Returns the image that represents a glyph

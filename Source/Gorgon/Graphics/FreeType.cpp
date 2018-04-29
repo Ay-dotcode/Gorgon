@@ -135,7 +135,7 @@ namespace Gorgon { namespace Graphics {
     bool FreeType::Load(const std::vector<Byte> &data) {
         lib->destroyface();
         
-        auto error = FT_New_Memory_Face(lib->library, &data[0], data.size(), 0, &lib->face);
+        auto error = FT_New_Memory_Face(lib->library, &data[0], (long)data.size(), 0, &lib->face);
         
         if(error != FT_Err_Ok || lib->face == nullptr)
             return false;
@@ -152,7 +152,7 @@ namespace Gorgon { namespace Graphics {
     bool FreeType::Load(const Byte *data, long datasize) {
         lib->destroyface();
         
-        auto error = FT_New_Memory_Face(lib->library, data, datasize, 0, &lib->face);
+        auto error = FT_New_Memory_Face(lib->library, data, (long)datasize, 0, &lib->face);
         
         if(error != FT_Err_Ok || lib->face == nullptr)
             return false;
@@ -172,7 +172,7 @@ namespace Gorgon { namespace Graphics {
         
         std::swap(lib->vecdata, data);
         
-        auto error = FT_New_Memory_Face(lib->library, &lib->vecdata[0], lib->vecdata.size(), 0, &lib->face);
+        auto error = FT_New_Memory_Face(lib->library, &lib->vecdata[0], (long)lib->vecdata.size(), 0, &lib->face);
         
         if(error != FT_Err_Ok || lib->face == nullptr)
             return false;
@@ -222,11 +222,11 @@ namespace Gorgon { namespace Graphics {
             maxwidth = (int)std::round(FT_MulFix((lib->face->bbox.xMax-lib->face->bbox.xMin), xscale)/64.f);
             height   = (int)std::round(FT_MulFix((lib->face->bbox.yMax-lib->face->bbox.yMin), yscale)/64.f);
             
-            baseline = (int)std::round(lib->face->size->metrics.ascender/64.f);
+            baseline = std::round(lib->face->size->metrics.ascender/64.f);
             
             linegap = std::round(lib->face->size->metrics.height/64.f);
            
-            underlinepos  = baseline - (int)std::round(FT_MulFix((lib->face->underline_position),yscale)/64.f);
+            underlinepos  = (int)std::round(baseline - FT_MulFix((lib->face->underline_position),yscale)/64.f);
             linethickness = (int)std::round(FT_MulFix((lib->face->underline_thickness),xscale)/64.f);
          }
         else {
@@ -255,7 +255,7 @@ namespace Gorgon { namespace Graphics {
             if(error != FT_Err_Ok)
                 return false;
             
-            baseline = (int)std::round(lib->face->size->metrics.ascender/64.f);
+            baseline = std::round(lib->face->size->metrics.ascender/64.f);
         
             maxwidth = s.width;
             height   = s.height;
@@ -312,15 +312,15 @@ namespace Gorgon { namespace Graphics {
             auto &bmp = *new Bitmap(ftbmp.width, ftbmp.rows, ColorMode::Alpha);
             
             if(ftbmp.pitch < 0) {
-                for(int y=0; y<ftbmp.rows; y++) {
-                    for(int x=0; x<ftbmp.width; x++) {
+                for(unsigned y=0; y<ftbmp.rows; y++) {
+                    for(unsigned x=0; x<ftbmp.width; x++) {
                         bmp(x, ftbmp.rows - y - 1, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
                     }
                 }
             }
             else {
-                for(int y=0; y<ftbmp.rows; y++) {
-                    for(int x=0; x<ftbmp.width; x++) {
+                for(unsigned y=0; y<ftbmp.rows; y++) {
+                    for(unsigned x=0; x<ftbmp.width; x++) {
                         bmp(x, y, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
                     }
                 }
@@ -331,7 +331,7 @@ namespace Gorgon { namespace Graphics {
             glyphmap[g] = {bmp, std::round(slot->advance.x/64.f), {(int)slot->bitmap_left, (int)-slot->bitmap_top}, (unsigned int)index};
             ft_to_map[index] = g;
             
-            if(isdigit(g) && digw < bmp.GetWidth())
+            if(g < 127 && isdigit(g) && digw < bmp.GetWidth())
                 digw = bmp.GetWidth();
             
             if(prepare)
@@ -532,7 +532,7 @@ namespace Gorgon { namespace Graphics {
                     newmapping[img]->Prepare();
             }
             
-            font.AssumeGlyph(g.first, *newmapping[img], g.second.offset + Geometry::Point(0, baseline), g.second.advance);
+            font.AssumeGlyph(g.first, *newmapping[img], g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
         }
         
         return font;
@@ -562,7 +562,7 @@ namespace Gorgon { namespace Graphics {
 
         //add glpyhs
         for(auto &g : glyphmap) {
-            font.AddGlyph(g.first, *g.second.image, g.second.offset + Geometry::Point(0, baseline), g.second.advance);
+            font.AddGlyph(g.first, *g.second.image, g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
         }
         
         //transfer ownership

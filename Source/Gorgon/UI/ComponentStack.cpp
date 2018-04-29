@@ -481,19 +481,19 @@ namespace Gorgon { namespace UI {
                 
                 switch(ca) {
                 case Anchor::FirstBaselineLeft:
-                    cp = {-offset.X, -offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    cp = {-offset.X, int(-offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
                     break;
                     
                 case Anchor::FirstBaselineRight:
-                    cp = {-offset.X + csize.Width, -offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    cp = {-offset.X + csize.Width, int(-offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
                     break;
                     
                 case Anchor::LastBaselineLeft:
-                    cp = {-offset.X, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
+                    cp = {-offset.X, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
                     break;
                     
                 case Anchor::LastBaselineRight:
-                    cp = {-offset.X + csize.Width, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
+                    cp = {-offset.X + csize.Width, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
                     break;
                 default: ;//to silence warnings
                 }
@@ -591,19 +591,19 @@ namespace Gorgon { namespace UI {
                 
                 switch(ca) {
                 case Anchor::FirstBaselineLeft:
-                    pp = {-margin.Right, -margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    pp = {-margin.Right, int(-margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
                     break;
                     
                 case Anchor::FirstBaselineRight:
-                    pp = {margin.Left + asize.Width, - margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    pp = {margin.Left + asize.Width, int(-margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
                     break;
                     
                 case Anchor::LastBaselineLeft:
-                    cp = {-margin.Right, - margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height};
+                    cp = {-margin.Right, int(-margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height)};
                     break;
                     
                 case Anchor::LastBaselineRight:
-                    cp = {margin.Left + asize.Width, - margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height};
+                    cp = {margin.Left + asize.Width, int(-margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height)};
                     break;
                 default: ;//to silence warnings
                 }
@@ -672,19 +672,19 @@ namespace Gorgon { namespace UI {
                 
                 switch(ca) {
                 case Anchor::FirstBaselineLeft:
-                    cp = {-offset.X, -offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    cp = {-offset.X, int(-offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
                     break;
                     
                 case Anchor::FirstBaselineRight:
-                    cp = {-offset.X + csize.Width, -offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()};
+                    cp = {-offset.X + csize.Width, int(-offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
                     break;
                     
                 case Anchor::LastBaselineLeft:
-                    cp = {-offset.X, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
+                    cp = {-offset.X, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
                     break;
                     
                 case Anchor::LastBaselineRight:
-                    cp = {-offset.X + csize.Width, offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height};
+                    cp = {-offset.X + csize.Width, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
                     break;
                 default: ;//to silence warnings
                 }

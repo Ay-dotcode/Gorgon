@@ -10,7 +10,7 @@ namespace Gorgon { namespace Graphics {
     void BitmapFont::AddGlyph(Glyph glyph, const RectangularDrawable& bitmap, Geometry::Pointf offset, float advance) {
 		auto size = bitmap.GetSize();
 
-		int lh = size.Height + baseline - this->baseline;
+		int lh = int(size.Height + baseline - this->baseline);
 
         if(size.Width != maxwidth)
             isfixedw = false;
@@ -89,7 +89,7 @@ namespace Gorgon { namespace Graphics {
 	}
 	
 
-	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, int baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline) {
+	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, float baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline) {
 		Containers::Hashmap<std::string, Bitmap> files; // map of file labels to bitmaps
         
         std::map<int, int> ghc;
@@ -299,7 +299,7 @@ namespace Gorgon { namespace Graphics {
 			if(prepare)
 				p.second.Prepare();
 
-            AddGlyph(g, p.second, {0, this->baseline - bl}, p.second.GetWidth());
+            AddGlyph(g, p.second, {0, this->baseline - bl}, float(p.second.GetWidth()));
             
             added.push_back(g);
 
@@ -336,7 +336,7 @@ namespace Gorgon { namespace Graphics {
             }
             
             if(baseline == -1) {
-                baseline = int(std::round(height * 0.75));
+                baseline = std::round(height * 0.75f);
             }
 		}
 
@@ -396,7 +396,7 @@ namespace Gorgon { namespace Graphics {
         for(auto g : added)
             glyphmap[g].advance += spacing;
         
-		underlinepos = baseline + linethickness + 1;
+		underlinepos = int(baseline + linethickness + 1);
 
         linegap = std::round(height * 1.2f);
         
@@ -490,7 +490,7 @@ namespace Gorgon { namespace Graphics {
 		else {
             auto s = GetSize(chr).Width;
             if(s)
-                return s + spacing;
+                return float(s + spacing);
             else
                 return 0;
         }

@@ -40,7 +40,7 @@ option(FLAC_SUPPORT "Enable FLAC decoding and streaming." ON)
 
 option(UI "Enable UI subsystem." ON)
 
-option(FREETYPE "Enable FreeType font support" OFF)
+option(FREETYPE "Enable FreeType font support" ON)
 
 OPTION(FORCE_32_BIT "Force 32 bit compilation" OFF)
 
