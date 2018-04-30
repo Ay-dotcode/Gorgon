@@ -202,14 +202,14 @@ namespace Gorgon { namespace Graphics {
 
 		virtual bool Exists(Glyph g) const override { return glyphmap.count(g) != 0; }
 		
-		/// todo
 		virtual Geometry::Pointf KerningDistance(Glyph chr1, Glyph chr2) const override { 
             auto f = kerning.find({chr1, chr2});
             
             if(f != kerning.end())
                 return f->second;
             else
-                return {0.f, 0.f}; }
+                return {0.f, 0.f}; 
+		}
 		
 		virtual float GetCursorAdvance(Glyph g) const override;         
         
@@ -281,8 +281,19 @@ namespace Gorgon { namespace Graphics {
 		/// baseline.
         int ImportFolder(const std::string &path, ImportNamingTemplate naming = Automatic, int start = 0, 
 						 std::string prefix = "", float baseline = -1, bool trim = true, bool converttoalpha = true, 
-						 bool prepare = true, bool estimatebaseline = false);
+						 bool prepare = true, bool estimatebaseline = false, bool automatickerning = true);
         
+		/// Automatically calculates kerning distances between glyphs. This operation might take
+		/// a while depending on the number of glyphs that are loaded. This function uses glyph
+		/// spacing. This function is optimized for pixel fonts without fractional alpha. Glyphs 
+		/// should be bitmaps for this function to work properly. Additionally, this function 
+		/// either needs the Y-offset of capital letters, or the letter A should be present. 
+		/// This data will be used to determine accent symbols which should not be kerned. A 
+		/// value of -1 means use A to determine. If A is not present or the value is 0, this 
+		/// feature is disabled. The function takes glyph offsets are into account. However,
+		/// x offsets can cause issues.
+		void AutoKern(Byte opaquelevel = 64, int reduce = 1, int capitaloffset = -1);
+
         /// Returns the image that represents a glyph
         const RectangularDrawable *GetImage(Glyph g) {
             if(glyphmap.count(g))

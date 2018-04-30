@@ -317,6 +317,18 @@ namespace Gorgon { namespace Graphics {
 			return (*data)(p, component);
 		}
 
+		/// Returns the alpha at the given location. If the given location does not exits
+		/// this function will return 0. If there is no alpha channel, image is assumed
+		/// to be opaque.
+		Byte GetAlphaAt(int x, int y) const {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Bitmap data is not set");
+			}
+#endif
+			return data->GetAlphaAt(x, y);
+		}
+
 		/// Returns the bytes occupied by a single pixel of this image
 		int GetBytesPerPixel() const {
 #ifndef NDEBUG
@@ -357,7 +369,29 @@ namespace Gorgon { namespace Graphics {
 				return{0, 0};
 			}
 		}
-		
+
+		/// Returns if this image has alpha channel
+		bool HasAlpha() const {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Bitmap data is not set");
+			}
+#endif
+
+			return data->HasAlpha();
+		}
+
+		/// Returns the index of alpha channel. Value of -1 denotes no alpha channel
+		int GetAlphaIndex() const {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Bitmap data is not set");
+			}
+#endif
+
+			return data->GetAlphaIndex();
+		}
+
 		/// Returns the width of the bitmap. If texture is prepared, the width of the texture is returned
 		/// otherwise width of the bitmap is returned
 		int GetWidth() const { return GetSize().Width; }

@@ -230,9 +230,9 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	void Bitmap::StripRGB() {
-		ASSERT(HasAlpha(GetMode()), "Unsupported color mode");
+		ASSERT(HasAlpha(), "Unsupported color mode");
 
-		int alpha = AlphaIndex(GetMode());
+		int alpha = GetAlphaIndex();
 
 		auto &data = *this->data;
 
@@ -248,9 +248,9 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	void Bitmap::StripAlpha() {
-		if(!HasAlpha(GetMode())) return;
+		if(!HasAlpha()) return;
 
-		int alpha = AlphaIndex(GetMode());
+		int alpha = GetAlphaIndex();
 
 		auto &data = *this->data;
 
@@ -442,10 +442,10 @@ namespace Gorgon { namespace Graphics {
 
 		Geometry::Margin ret(0, 0, 0, 0);
 
-		if(!HasAlpha(GetMode())) 
+		if(!HasAlpha()) 
             return ret;
 
-		int alpha = AlphaIndex(GetMode());
+		int alpha = GetAlphaIndex();
 
 		auto &data = *this->data;
 

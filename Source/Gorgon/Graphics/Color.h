@@ -70,7 +70,7 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	/// Returns the index of alpha channel. If alpha channel does not exists, this function returns -1.
-	inline int AlphaIndex(ColorMode mode) {
+	inline int GetAlphaIndex(ColorMode mode) {
 		switch(mode) {
 			case ColorMode::Alpha:
 				return 0;

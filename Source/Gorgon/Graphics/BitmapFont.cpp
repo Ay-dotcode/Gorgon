@@ -89,7 +89,7 @@ namespace Gorgon { namespace Graphics {
 	}
 	
 
-	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, float baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline) {
+	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, float baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline, bool automatickerning) {
 		Containers::Hashmap<std::string, Bitmap> files; // map of file labels to bitmaps
         
         std::map<int, int> ghc;
@@ -256,7 +256,7 @@ namespace Gorgon { namespace Graphics {
         std::vector<Glyph> added;
 
 		for(auto p : files) {
-			auto bl = baseline;
+			auto bl = 0;
 
 			auto h = p.second.GetHeight();
             
@@ -285,7 +285,7 @@ namespace Gorgon { namespace Graphics {
 			if(trim) {
 				auto res = p.second.Trim();
 				if(res.Top != p.second.GetHeight())
-					bl -= res.Top;
+					bl = res.Top;
 			}
 
 			if(g == '_') {
@@ -299,7 +299,7 @@ namespace Gorgon { namespace Graphics {
 			if(prepare)
 				p.second.Prepare();
 
-            AddGlyph(g, p.second, {0, this->baseline - bl}, float(p.second.GetWidth()));
+            AddGlyph(g, p.second, {0, float(bl)}, float(p.second.GetWidth()));
             
             added.push_back(g);
 
@@ -314,7 +314,7 @@ namespace Gorgon { namespace Graphics {
                 const Bitmap *bmp = dynamic_cast<const Bitmap*>(glyphmap.at('A').image);
                 
                 if(bmp) {
-                    int a = AlphaIndex(bmp->GetMode());
+                    int a = GetAlphaIndex(bmp->GetMode());
                     int pos = -1;
                     
                     if(a != -1) {
@@ -345,7 +345,7 @@ namespace Gorgon { namespace Graphics {
         
         if(trim && spim && maxwidth == spw) {
             //check if glyph is empty, if so we can resize it.
-            int alphaloc = AlphaIndex(spim->GetMode());
+            int alphaloc = GetAlphaIndex(spim->GetMode());
             
             bool isempty = true;
             
@@ -399,9 +399,171 @@ namespace Gorgon { namespace Graphics {
 		underlinepos = int(baseline + linethickness + 1);
 
         linegap = std::round(height * 1.2f);
+
+		if(automatickerning)
+			AutoKern();
         
         return files.GetSize();
     }
+
+	void BitmapFont::AutoKern(Byte opaquelevel, int reduce, int capitaloffset) {
+		struct glyphdata {
+			std::vector<int> leftfree;
+			std::vector<int> rightfree;
+			int totw;
+			bool accent = false;
+		};
+
+		std::map<Glyph, glyphdata> data;
+
+		if(capitaloffset == -1) {
+			if(!glyphmap.count('A')) {
+				capitaloffset = 0;
+			}
+			else {
+				auto bmp = dynamic_cast<const Bitmap*>(glyphmap['A'].image);
+				capitaloffset = int(std::round(glyphmap['A'].offset.Y));
+
+				if(bmp) {
+					auto &b = *bmp;
+					auto pos = GetHeight();
+
+					for(int y=0; y<b.GetHeight(); y++) {
+						bool empty = true;
+						for(int x=0; x<b.GetWidth(); x++) {
+							if( b.GetAlphaAt(x, y) > opaquelevel ) {
+								empty = false;
+								break;
+							}
+						}
+
+						if(!empty) {
+							pos = y;
+						}
+					}
+
+					capitaloffset += pos;
+				}
+			}
+		}
+
+		//determine left and right spaces as well as whether a glyph is an accent
+		for(auto &g : glyphmap) {
+			if(internal::isspace(g.first) || !internal::isspaced(g.first)) continue;
+
+			auto bmp = dynamic_cast<const Bitmap*>(g.second.image);
+
+			auto &my = data[g.first];
+
+			int y, yoff = (int)std::round(g.second.offset.Y), xoff = (int)std::round(g.second.offset.X);
+			int w=bmp->GetWidth(), h=bmp->GetHeight();
+
+			//after import offset x is probably 0. just in case, we wont modify it. 
+			//this mechanism requires debugging
+			int totw = w + xoff;
+			my.totw = totw;
+
+			//fill as if image is fully opaque
+			for(y=0; y<yoff; y++) {
+				my.leftfree.push_back(totw);
+				my.rightfree.push_back(totw);
+			}
+
+			for(; y<yoff + h; y++) {
+				my.leftfree.push_back(0);
+				my.rightfree.push_back(0);
+			}
+
+			for(; y<height; y++) {
+				my.leftfree.push_back(totw);
+				my.rightfree.push_back(totw);
+			}
+
+			//check accent before finding empty lines
+			if(h + yoff < capitaloffset)
+				my.accent = true;
+
+			//if the image has no alpha, simply skip checking alpha
+			if(bmp->HasAlpha()) {
+				for(int y=0; y<h; y++) {
+					int x;
+					for(x=0; x<w; x++) {
+						if(bmp->GetAlphaAt(x, y) > opaquelevel)
+							break;
+					}
+
+					if(x > totw || x==w)
+						x = totw;
+
+					my.leftfree[yoff + y] = x;
+
+					for(x=0; x<w; x++) {
+						if(bmp->GetAlphaAt(w - x - 1, y) > opaquelevel)
+							break;
+					}
+
+					if(x == w || x>totw)
+						x = totw;
+
+					my.rightfree[yoff + y] = x;
+				}
+
+				for(y=0; y<yoff+h; y++) {
+					if(my.leftfree[y] < totw)
+						break;
+				}
+
+				if(y < capitaloffset)
+					my.accent = true;
+			}
+
+			//reset advance
+			g.second.advance = float(w + spacing);
+		}
+
+		for(auto &l : glyphmap) {
+			if(internal::isspace(l.first) || !internal::isspaced(l.first)) continue;
+
+			for(auto &r : glyphmap) {
+				if(internal::isspace(r.first) || !internal::isspaced(r.first)) continue;
+
+				int advance = 0;
+
+				auto left = data[l.first];
+				auto right= data[r.first];
+
+				for(int y=0; y<height; y++) {
+					//l is positive offset, r is negative
+					int l = 0, r = -right.totw;
+					for(int yy = std::max(0, y-spacing); yy<=y; yy++) {
+						int w;
+
+						w = left.totw - left.rightfree[yy];
+						if(w > l)
+							l = w;
+
+						if(-right.leftfree[yy] > r)
+							r = -right.leftfree[yy];
+					}
+
+					int a = l + r + spacing;
+
+					if(a > advance)
+						advance = a;
+				}
+
+				auto k = int(advance - l.second.advance);
+				k += reduce;
+
+				//do not let kerning be more than the width of the character
+				if(k < -right.totw)
+					k = -right.totw + reduce;
+
+				if(k < 0)
+					SetKerning(l.first, r.first, float(k));
+			}
+		}
+	}
 
     
 	void BitmapFont::Pack(bool tight, DeleteConstants del) {

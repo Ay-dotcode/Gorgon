@@ -19,7 +19,6 @@ namespace Gorgon {
 
 			/// Constructs an empty image data
 			Image() {
-				
 			}
 
 			/// Constructs a new image data with the given width, height and color mode. This constructor 
@@ -27,6 +26,8 @@ namespace Gorgon {
 			Image(const Geometry::Size &size, Graphics::ColorMode mode) : size(size), mode(mode) {
 				bpp=Graphics::GetBytesPerPixel(mode);
 				data=(Byte*)malloc(size.Area()*bpp*sizeof(Byte));
+
+				alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
 			}
 
 			/// Copy constructor is disabled
@@ -75,9 +76,10 @@ namespace Gorgon {
 				if(this->size==size && this->bpp==Graphics::GetBytesPerPixel(mode))
 					return;
 
-				this->size   = size;
-				this->mode   = mode;
-				this->bpp    = Graphics::GetBytesPerPixel(mode);
+				this->size     = size;
+				this->mode     = mode;
+				this->bpp      = Graphics::GetBytesPerPixel(mode);
+				this->alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
 
 				if(data) {
 					free(data);
@@ -98,9 +100,10 @@ namespace Gorgon {
 				if(!size.IsValid())
 					throw std::runtime_error("Image size cannot be negative");
 #endif
-				this->size   = size;
-				this->mode   = mode;
-				this->bpp    = Graphics::GetBytesPerPixel(mode);
+				this->size     = size;
+				this->mode     = mode;
+				this->bpp      = Graphics::GetBytesPerPixel(mode);
+				this->alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
 
 				if(data && data!=newdata) {
 					free(data);
@@ -139,6 +142,7 @@ namespace Gorgon {
 				this->size   = size;
 				this->mode   = mode;
 				this->bpp    = Graphics::GetBytesPerPixel(mode);
+				this->alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
 
 				if(data && data!=newdata) {
 					free(data);
@@ -194,10 +198,11 @@ namespace Gorgon {
 			void Swap(Image &other) {
 				using std::swap;
 
-				swap(size,   other.size);
-				swap(bpp,    other.bpp);
-				swap(data,   other.data);
-				swap(mode,   other.mode);
+				swap(size,     other.size);
+				swap(bpp,      other.bpp);
+				swap(alphaloc, other.alphaloc);
+				swap(data,     other.data);
+				swap(mode,     other.mode);
 			}
 
 			/// Returns the raw data pointer
@@ -1035,6 +1040,20 @@ namespace Gorgon {
 				return data[bpp*(size.Width*y+x)+component];
 			}
 
+			/// Returns the alpha at the given location. If the given location does not exits
+			/// this function will return 0. If there is no alpha channel, image is assumed
+			/// to be opaque.
+			Byte GetAlphaAt(int x, int y) const {
+				if(x<0 || y<0 || x>=size.Width || y>=size.Height) {
+					return 0;
+				}
+
+				if(alphaloc == -1)
+					return 255;
+
+				return data[bpp*(size.Width*y+x)+alphaloc];
+			}
+
 			/// Returns the size of the image
 			Geometry::Size GetSize() const {
 				return size;
@@ -1067,11 +1086,22 @@ namespace Gorgon {
                     throw std::runtime_error("Modes differ in number of bits/pixel");
                 
                 mode = value;
-            }
+				this->alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
+			}
 
 			/// Returns the bytes occupied by a single pixel of this image
 			unsigned GetBytesPerPixel() const {
 				return bpp;
+			}
+
+			/// Returns if this image has alpha channel
+			bool HasAlpha() const {
+				return alphaloc != -1;
+			}
+
+			/// Returns the index of alpha channel. Value of -1 denotes no alpha channel
+			int GetAlphaIndex() const {
+				return alphaloc;
 			}
 
 		protected:
@@ -1086,6 +1116,9 @@ namespace Gorgon {
 
 			/// Bytes per pixel information
 			unsigned bpp = 0;
+
+			/// Location of the alpha channel, -1 means it does not exits
+			int alphaloc = -1;
 		};
 
 		/// Swaps two images. Should be used unqualified for ADL.
