@@ -70,10 +70,10 @@ namespace Gorgon { namespace Graphics {
             
             if(error != FT_Err_Ok)
                 error = FT_Select_Charmap(lib->face, FT_ENCODING_ADOBE_EXPERT);
-            
-            if(error != FT_Err_Ok)
-                error = FT_Select_Charmap(lib->face, FT_ENCODING_ADOBE_CUSTOM);
-            
+
+			if(error != FT_Err_Ok)
+				error = FT_Select_Charmap(lib->face, FT_ENCODING_ADOBE_CUSTOM);
+
             if(error == FT_Err_Ok) {
                 isascii = true;
             }
@@ -84,9 +84,17 @@ namespace Gorgon { namespace Graphics {
                     issymbol = true;
                 }
                 else {
-                    lib->destroyface();
+					if(lib->face->num_charmaps > 0) {
+						error = FT_Set_Charmap(lib->face, lib->face->charmaps[0]);
+
+						isascii = true;
+					}
+
+					if(error != FT_Err_Ok) {
+						lib->destroyface();
                     
-                    return false;
+						return false;
+					}
                 }
             }
         }
@@ -341,18 +349,52 @@ namespace Gorgon { namespace Graphics {
             auto &bmp = *new Bitmap(ftbmp.width, ftbmp.rows, ColorMode::Alpha);
             
             if(ftbmp.pitch < 0) {
-                for(unsigned y=0; y<ftbmp.rows; y++) {
-                    for(unsigned x=0; x<ftbmp.width; x++) {
-                        bmp(x, ftbmp.rows - y - 1, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
-                    }
-                }
+				if(ftbmp.pixel_mode == FT_PIXEL_MODE_MONO) {
+					for(unsigned y=0; y<ftbmp.rows; y++) {
+						int b = 7, B = 0; //bit, byte
+
+						for(unsigned x=0; x<ftbmp.width; x++) {
+							bmp(x, ftbmp.rows - y - 1, 0) = ftbmp.buffer[B + y*ftbmp.pitch]&(1<<b) ? 255 : 0;
+
+							b--;
+							if(b<0) {
+								b = 0;
+								B++;
+							}
+						}
+					}
+				}
+				else {
+					for(unsigned y=0; y<ftbmp.rows; y++) {
+						for(unsigned x=0; x<ftbmp.width; x++) {
+							bmp(x, ftbmp.rows - y - 1, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
+						}
+					}
+				}
             }
             else {
-                for(unsigned y=0; y<ftbmp.rows; y++) {
-                    for(unsigned x=0; x<ftbmp.width; x++) {
-                        bmp(x, y, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
-                    }
-                }
+				if(ftbmp.pixel_mode == FT_PIXEL_MODE_MONO) {
+					for(unsigned y=0; y<ftbmp.rows; y++) {
+						int b = 7, B = 0; //bit, byte
+
+						for(unsigned x=0; x<ftbmp.width; x++) {
+							bmp(x, y, 0) = ftbmp.buffer[B + y*ftbmp.pitch]&(1<<b) ? 255 : 0;
+
+							b--;
+							if(b<0) {
+								b = 0;
+								B++;
+							}
+						}
+					}
+				}
+				else {
+					for(unsigned y=0; y<ftbmp.rows; y++) {
+						for(unsigned x=0; x<ftbmp.width; x++) {
+							bmp(x, y, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
+						}
+					}
+				}
             }
             
             destroylist.Add(bmp);
@@ -528,11 +570,29 @@ namespace Gorgon { namespace Graphics {
     
     BitmapFont FreeType::CopyToBitmap(bool prepare) const {
         BitmapFont font;
+
+		//determine glyph spacing
+		GlyphDescriptor d;
+		int gs = int(GetHeight() / 10);
+
+		if(glyphmap.count('0') && glyphmap['0'].advance != 0 && glyphmap['0'].image != nullptr)
+			d = glyphmap['0'];
+		else if(glyphmap.count('A') && glyphmap['A'].advance != 0 && glyphmap['A'].image != nullptr)
+			d = glyphmap['A'];
+		else if(glyphmap.count('_') && glyphmap['_'].advance != 0 && glyphmap['_'].image != nullptr)
+			d = glyphmap['_'];
+		
+		if(d.advance != 0 && d.image != nullptr)
+			gs = (int)std::round(d.advance - d.image->GetWidth() + glyphmap['0'].offset.X);
+
+		if(gs < 1)
+			gs = 1;
         
         font.SetBaseline(baseline);
         font.SetLineThickness(linethickness);
         font.SetUnderlineOffset(underlinepos);
         font.SetLineGap(linegap);
+		font.SetGlyphSpacing(gs);
         
         //copy kerning table
         if(haskerning) {
@@ -570,11 +630,29 @@ namespace Gorgon { namespace Graphics {
     
     BitmapFont FreeType::MoveOutBitmap() {
         BitmapFont font;
-        
+
+		//determine glyph spacing
+		GlyphDescriptor d;
+		int gs = int(GetHeight() / 10);
+
+		if(glyphmap.count('0') && glyphmap['0'].advance != 0 && glyphmap['0'].image != nullptr)
+			d = glyphmap['0'];
+		else if(glyphmap.count('A') && glyphmap['A'].advance != 0 && glyphmap['A'].image != nullptr)
+			d = glyphmap['A'];
+		else if(glyphmap.count('_') && glyphmap['_'].advance != 0 && glyphmap['_'].image != nullptr)
+			d = glyphmap['_'];
+
+		if(d.advance != 0 && d.image != nullptr)
+			gs = (int)std::round(d.advance - d.image->GetWidth() + glyphmap['0'].offset.X);
+
+		if(gs < 1)
+			gs = 1;
+
         font.SetBaseline(baseline);
         font.SetLineThickness(linethickness);
-        font.SetUnderlineOffset(underlinepos);
-        font.SetLineGap(linegap);
+		font.SetUnderlineOffset(underlinepos);
+		font.SetLineGap(linegap);
+		font.SetGlyphSpacing(gs);
         
         //copy kerning table
         if(haskerning) {

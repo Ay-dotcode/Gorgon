@@ -290,8 +290,8 @@ namespace Gorgon { namespace Graphics {
 		/// either needs the Y-offset of capital letters, or the letter A should be present. 
 		/// This data will be used to determine accent symbols which should not be kerned. A 
 		/// value of -1 means use A to determine. If A is not present or the value is 0, this 
-		/// feature is disabled. The function takes glyph offsets are into account. However,
-		/// x offsets can cause issues.
+		/// feature is disabled. The function takes glyph offsets into account. However, x 
+		/// offsets can cause issues.
 		void AutoKern(Byte opaquelevel = 64, int reduce = 1, int capitaloffset = -1);
 
         /// Returns the image that represents a glyph

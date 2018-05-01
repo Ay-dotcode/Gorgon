@@ -27,7 +27,7 @@ int main() {
     
     FreeType f;
 #ifdef WIN32
-    f.LoadFile("C:/Windows/Fonts/arial.ttf");
+    f.LoadFile("C:/Windows/Fonts/tahoma.ttf");
 #else
 	f.LoadFile("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf");
 #endif
@@ -47,7 +47,8 @@ int main() {
     f.LoadGlyphs({0, {32, 127}});
     
     auto f2 = f.CopyToBitmap();
-    
+	if(!f.HasKerning())
+		f2.AutoKern();
 
     Resource::File file;
 	Resource::Font fr(f2);
@@ -63,7 +64,7 @@ int main() {
 	auto &ff = file.Root().Get<Resource::Font>(0).GetRenderer();
 	auto &ff2 = file.Root().Get<Resource::Font>(1).GetRenderer();
 	file.Prepare();
-    
+
 	BasicFont f3(ff);
 	BasicFont f4(ff2);
 

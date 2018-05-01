@@ -151,8 +151,10 @@ namespace Gorgon { namespace Resource {
 				reader->ReadArray(data, size);
 
 				ft->Assume(data, size);
-				ft->LoadMetrics((int)sz);
-				ft->LoadGlyphs({0, {32, 127}});
+				if(sz) {
+					ft->LoadMetrics((int)sz);
+					ft->LoadGlyphs({0, {32, 127}});
+				}
 			}
 			else if(gid == GID::Font_FreeTypeProps) {
 				sz = reader->ReadFloat();

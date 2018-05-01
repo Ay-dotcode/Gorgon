@@ -449,7 +449,7 @@ namespace Gorgon { namespace Graphics {
 
 		//determine left and right spaces as well as whether a glyph is an accent
 		for(auto &g : glyphmap) {
-			if(internal::isspace(g.first) || !internal::isspaced(g.first)) continue;
+			if(internal::isspace(g.first) || !internal::isspaced(g.first) || g.first == 0) continue;
 
 			auto bmp = dynamic_cast<const Bitmap*>(g.second.image);
 
@@ -522,10 +522,10 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		for(auto &l : glyphmap) {
-			if(internal::isspace(l.first) || !internal::isspaced(l.first)) continue;
+			if(internal::isspace(l.first) || !internal::isspaced(l.first) || l.first == 0) continue;
 
 			for(auto &r : glyphmap) {
-				if(internal::isspace(r.first) || !internal::isspaced(r.first)) continue;
+				if(internal::isspace(r.first) || !internal::isspaced(r.first) || r.first == 0) continue;
 
 				int advance = 0;
 
