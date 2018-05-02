@@ -219,6 +219,10 @@ namespace Gorgon { namespace Graphics {
         /// copies of glyphs. This function will work even if the font is packed.
         BitmapFont MoveOutBitmap();
         
+        /// Packs current glyphs into a single atlas. If keeppacked is selected, any call to LoadGlyph
+        /// function pack the loaded asset immediately.
+        void Pack(bool keeppacked = true, bool tight = true);
+        
         //packing options
         
 		/// This function should render the given character to the target at the specified location
@@ -229,6 +233,8 @@ namespace Gorgon { namespace Graphics {
         /// line up. 
 		virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const override;
 
+        using BasicFont::GetSize;
+        
 		/// This function should return the size of the requested glyph. If it does not exists,
 		/// 0x0 should be returned
 		virtual Geometry::Size GetSize(Glyph chr) const override;
@@ -317,6 +323,15 @@ namespace Gorgon { namespace Graphics {
         const std::vector<Byte> *vecdata = nullptr;
         const Byte *data = nullptr;
         long datasize = 0;
+        
+        //stores the glyph atlas. could be empty if packing is not used
+        Texture atlas;
+        
+        //stores which pixels are used within the atlas
+        std::vector<bool> used;
+        
+        //stores first free pixel location
+        Geometry::Point firstfree;
 
 
         int isfixedw = false;

@@ -105,6 +105,35 @@ namespace Gorgon { namespace Graphics {
 			coordinates[2] ={float(location.Right)/size.Width, float(location.Bottom)/size.Height};
 			coordinates[3] ={float(location.Left)/size.Width, float(location.Bottom)/size.Height};
 		}
+		
+
+		/// Sets the texture to the given id with the given size. Resets the coordinates to cover entire
+		/// GL texture. Transfers the ownership of the texture.
+		void Assume(GL::Texture id, ColorMode mode, const Geometry::Size &size) {
+			Set(id, mode, size);
+            
+            owner = true;
+		}
+
+		/// Sets the texture to the given id with the given size. Calculates the texture coordinates
+		/// for the specified location in pixels. Transfers the ownership of the texture
+		/// @param   id id of the texture, reported by the underlying GL framework
+		/// @param   size of the GL texture in pixels
+		/// @param   location is the location of this texture over GL texture in pixels.
+		void Assume(GL::Texture id, ColorMode mode, const Geometry::Size &size, const Geometry::Bounds &location) {
+			Set(id, mode, size, location);
+            
+            owner = true;
+		}
+		
+		/// Create an empty texture.
+		void CreateEmpty(const Geometry::Size &size, ColorMode mode) {
+            id = GL::GenerateEmptyTexture(size, mode);
+            this->size = size;
+            this->mode = mode;
+            
+            owner = true;
+        }
 
 		/// Returns GL::Texture to be drawn. Declared final to allow inlining.
 		virtual GL::Texture GetID() const override final {

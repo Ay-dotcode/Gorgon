@@ -178,6 +178,38 @@ namespace Gorgon { namespace GL {
 		settexturedata(tex, data);
 	}
 
+	void CopyToTexture(Texture tex, const Containers::Image &data, Geometry::Point target) {
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+		glBindTexture(GL_TEXTURE_2D, tex);
+
+		GLenum colormode=getGLColorMode(data.GetMode());
+
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 
+                        target.X, target.Y, data.GetWidth(), data.GetHeight(), 
+                        colormode, GL_UNSIGNED_BYTE, data.RawData());
+	}
+
+	void CopyToTexture(Texture tex, const Containers::Image &data, Geometry::Bounds source, Geometry::Point target) {
+		glPixelStorei(GL_UNPACK_ALIGNMENT,   1);
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, source.Left);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS,   source.Top);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH,  data.GetWidth());
+        
+
+		glBindTexture(GL_TEXTURE_2D, tex);
+
+		GLenum colormode=getGLColorMode(data.GetMode());
+
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 
+                        target.X, target.Y, source.Width(), source.Height(), 
+                        colormode, GL_UNSIGNED_BYTE, data.RawData());
+        
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS,   0);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH,  0);
+	}
+
 	void DestroyTexture(Texture tex) {
 		glDeleteTextures(1, &tex);
 	}

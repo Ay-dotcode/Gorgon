@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 
+#include "Geometry/Point.h"
 #include "Geometry/Size.h"
+#include "Geometry/Bounds.h"
 #include "Graphics/Color.h"
 #include "Utils/Logging.h"
 
@@ -39,6 +41,12 @@ namespace Gorgon {
 
 		/// Updates the given texture to contain the given data
 		void UpdateTexture(Texture texture, const Containers::Image &data);
+
+		/// Updates the given texture to contain the given data
+		void CopyToTexture(Texture texture, const Containers::Image &data, Geometry::Point target);
+
+		/// Updates the given texture to contain the given data
+		void CopyToTexture(Texture texture, const Containers::Image &data, Geometry::Bounds source, Geometry::Point target);
 
 		/// Destroys the given texture
 		void DestroyTexture(Texture texture);

@@ -31,7 +31,7 @@ int main() {
 #else
 	f.LoadFile("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf");
 #endif
-    f.LoadMetrics(12);
+    f.LoadMetrics(15);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;
     std::cout<<"Preset sizes: "<<f.GetPresetSizes().size()<<std::endl;
@@ -72,6 +72,16 @@ int main() {
     f4.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 0, 100, 300, TextAlignment::Right);
 
 	std::cout<<f2.GetLineGap()<<std::endl;
+    
+    //texture copy test for packing
+    auto trig = Triangle(20, 10);
+    
+    TextureImage t;
+    t.CreateEmpty({100, 100}, ColorMode::Alpha);
+    GL::CopyToTexture(t.GetID(), trig.GetData(), {25, 25});
+    GL::CopyToTexture(t.GetID(), trig.GetData(), {20, 0, 40, 10}, {50, 50});
+    
+    t.Draw(l, 0, 200);
 
 	while(true) {
 		Gorgon::NextFrame();
