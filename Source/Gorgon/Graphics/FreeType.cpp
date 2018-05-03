@@ -552,6 +552,9 @@ namespace Gorgon { namespace Graphics {
         
         for(auto &range : ranges) 
             loadglyphs(range, true);
+        
+        if(keeppacked)
+            pack();
     }
     
     
@@ -681,7 +684,7 @@ namespace Gorgon { namespace Graphics {
     }
     
     
-    void FreeType::setatlassize(unsigned size) {
+    void FreeType::setatlassize(unsigned size) const {
         int w = CeilToPowerOf2(unsigned(sqrt(float(size))));
         int h = CeilToPowerOf2((int)ceil(size / w));
         
@@ -696,19 +699,28 @@ namespace Gorgon { namespace Graphics {
                 
             std::swap(used, nu);
             
-            
-            Texture t;
-            t.CreateEmpty({w, h}, ColorMode::Alpha);
-            GL::CopyToTexture(t.GetID(), atlasdata, {0, 0});
-            
-            atlas.Swap(t);
+            for(auto &g : glyphmap) {
+                if(g.second.image && dynamic_cast<const TextureImage*>(g.second.image)) {
+                    //cast away constness, we need to update them as their base is modified
+                    auto im = const_cast<TextureImage*>(dynamic_cast<const TextureImage*>(g.second.image));
+                    auto c = im->GetCoordinates();
+                        
+                    int l = (int)std::round(c[0].X*ow);
+                    int t = (int)std::round(c[0].Y*oh);
+                    int r = (int)std::round(c[2].X*ow);
+                    int b = (int)std::round(c[2].Y*oh);
+                    
+                    im->Set(im->GetID(), im->GetMode(), {w, h}, {l, t, r, b});
+                }
+            }
             
             
             Containers::Image ni({w, h}, ColorMode::Alpha);
             atlasdata.CopyTo(ni, {0, 0});
             atlasdata.Swap(ni);
-            
-            firstfree = {ow, 0};
+
+            GL::UpdateTexture(atlas.GetID(), atlasdata);
+            atlas.Set(atlas.GetID(), atlas.GetMode(), {w, h});
         }
         else {
             used.resize(w*h);
@@ -718,12 +730,11 @@ namespace Gorgon { namespace Graphics {
     }
     
     
-    void FreeType::Pack(bool keeppacked, bool tight, float extrasize) {
-        this->keeppacked = keeppacked;
-        
+    void FreeType::pack(float extrasize) const {
         int cursize = 0;
+        bool cpeach = true;
         if(atlas.GetID()) {
-            cursize = atlas.GetImageSize().Area();
+            cursize = rowsused * atlas.GetImageSize().Width;
         }
         
         //collect images
@@ -733,11 +744,14 @@ namespace Gorgon { namespace Graphics {
                 images.Add(dynamic_cast<const Bitmap*>(g.second.image));
         }
         
-        //determine collective size, add 20% extra for inefficiency
+        //determine collective size, add 2% extra for inefficiency
         //of packing
         for(auto &i : images) {
-            cursize += i.GetSize().Area() * 1.2 + (tight ? i.GetWidth() + i.GetHeight() : 0) * 2;
+            cursize += i.GetSize().Area() * 1.2 + (tightpack ? 0 : i.GetWidth() + i.GetHeight());
         }
+        
+        if(images.GetCount() > 5)
+            cpeach = false;
         
         if(atlas.GetID()) {
             if(cursize > atlas.GetImageSize().Area()) {
@@ -747,8 +761,11 @@ namespace Gorgon { namespace Graphics {
                 setatlassize(cursize);
             }
         }
-        else
+        else {
+            cursize *= 1 + extrasize;
+
             setatlassize(cursize);
+        }
         
         //sort by height then width
         images.Sort([](const Bitmap &l, const Bitmap &r) {
@@ -760,12 +777,19 @@ namespace Gorgon { namespace Graphics {
         
         auto aw = atlasdata.GetWidth(), ah = atlasdata.GetHeight();
         
+        std::map<const RectangularDrawable *, TextureImage *> replacements;
+        
         //this is not the best algorithm for the job, but it gets the deed done
         for(auto &b : images) {
         retry:
-            auto cur = firstfree;
+            Geometry::Point cur = {0, 0};
             
             auto w = b.GetWidth(), h = b.GetHeight();
+            
+            if(!tightpack) {
+                w++;
+                h++;
+            }
             
             bool found = false;
             while(!found) {
@@ -779,6 +803,21 @@ namespace Gorgon { namespace Graphics {
                 if(cur.Y + h > ah) { 
                     cursize *= 1.2;
                     setatlassize(cursize);
+                    
+                    for(auto &img : replacements) {
+                        auto im = img.second;
+                        auto c = im->GetCoordinates();
+                        
+                        int l = (int)std::round(c[0].X*aw);
+                        int t = (int)std::round(c[0].Y*ah);
+                        int r = (int)std::round(c[2].X*aw);
+                        int b = (int)std::round(c[2].Y*ah);
+                        im->Set(im->GetID(), im->GetMode(), atlasdata.GetSize(), {l, t, r, b});
+                    }
+                    aw = atlasdata.GetWidth();
+                    ah = atlasdata.GetHeight();
+                    
+                    
                     goto retry;
                 }
                 
@@ -809,11 +848,26 @@ namespace Gorgon { namespace Graphics {
                     continue;
                 }
                 
+                for(int y=cur.Y; y<cur.Y+h; y++) {
+                    for(int x=cur.X; x<cur.X+w; x++) {
+                        used[x+y*aw] = true;
+                    }
+                }
+                
                 //found our place
                 b.GetData().CopyTo(atlasdata, cur);
-                GL::CopyToTexture(atlas.GetID(), b.GetData(), cur);
+                if(cpeach) {
+                    GL::CopyToTexture(atlas.GetID(), b.GetData(), cur);
+                }
                 
-                //replace!
+                auto tex = new TextureImage(atlas.GetID(), ColorMode::Alpha, atlas.GetImageSize(), {cur, b.GetSize()});
+                
+                if(cur.Y + h > rowsused)
+                    rowsused = cur.Y + h;
+                
+                replacements.insert({&b, tex});
+                
+                destroylist.Add(tex);
                 
                 found = true;
             }
@@ -821,5 +875,45 @@ namespace Gorgon { namespace Graphics {
             if(!found) //useless
                 return;
         }
+        
+        if(!cpeach) {
+            GL::UpdateTexture(atlas.GetID(), atlasdata);
+        }
+        
+        //to test if the atlas is good
+        //Bitmap ad;
+        //ad.Assign(atlasdata);
+        //ad.ExportPNG("test.png");
+        
+        //replace images
+        for(auto &g : glyphmap) {
+            if(replacements.count(g.second.image))
+                g.second.image = replacements[g.second.image];
+        }
+        
+        //destroy old images
+        images.Destroy();
+    }
+
+    bool FreeType::LoadGlyphs(const std::vector< Gorgon::Graphics::GlyphRange >& ranges, bool prepare) {
+        for(auto r : ranges) {
+            if(!loadglyphs(r, prepare))
+                return false;
+        }
+        
+        if(keeppacked)
+            pack();
+        
+        return true;
+    }
+
+    bool FreeType::LoadGlyphs(GlyphRange range, bool prepare) { 
+        if(!loadglyphs(range, prepare))
+            return false;
+        
+        if(keeppacked)
+            pack();
+        
+        return true;
     }
 } }

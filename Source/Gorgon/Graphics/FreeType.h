@@ -147,7 +147,7 @@ namespace Gorgon { namespace Graphics {
         /// Loads the glyphs in the given range. It is possible to LoadGlyphs 
         /// functions multiple times. If a glyph in the given range is already
         /// loaded, it will not be loaded again.
-        bool LoadGlyphs(GlyphRange range, bool prepare = true) { return loadglyphs(range, prepare); }
+        bool LoadGlyphs(GlyphRange range, bool prepare = true);
         
         /// Loads the glyphs in the given range. It is possible to LoadGlyphs 
         /// functions multiple times. If a glyph in the given range is already
@@ -158,14 +158,7 @@ namespace Gorgon { namespace Graphics {
         /// functions multiple times. If a glyph in the given range is already
         /// loaded, it will not be loaded again. This overload will load all 
         /// ranges given in the vector. It terminates at first error.
-        bool LoadGlyphs(const std::vector<GlyphRange> &ranges, bool prepare = true) {
-            for(auto r : ranges) {
-                if(!LoadGlyphs(r, prepare))
-                    return false;
-            }
-            
-            return true;
-        }
+        bool LoadGlyphs(const std::vector<GlyphRange> &ranges, bool prepare = true);
         
         /// Returns if the loaded font is scalable. This information is not
         /// very useful once the glyphs are loaded, however, you may check this
@@ -221,9 +214,12 @@ namespace Gorgon { namespace Graphics {
         
         /// Packs current glyphs into a single atlas. If keeppacked is selected, any call to LoadGlyph
         /// function pack the loaded asset immediately.
-        void Pack(bool keeppacked = true, bool tight = true, float extrasize = 0.2);
-        
-        //packing options
+        void Pack(bool keeppacked = true, bool tight = true, float extrasize = 0.2) {
+            this->keeppacked = keeppacked;
+            this->tightpack  = tight;
+            
+            pack(extrasize);
+        }
         
 		/// This function should render the given character to the target at the specified location
 		/// and color. If chr does not exists, this function should perform no action. location and
@@ -301,13 +297,15 @@ namespace Gorgon { namespace Graphics {
         void Discard();
         
     private:
+        void pack(float extrasize = 0.2) const;
+        
         bool loadglyphs(GlyphRange range, bool prepare) const;
         
         bool finalizeload();
 
 		bool savedata(std::ostream &stream);
         
-        void setatlassize(unsigned size);
+        void setatlassize(unsigned size) const;
         
         // automatic loading requires these functions to be mutable
         mutable ftlib *lib;
@@ -327,17 +325,18 @@ namespace Gorgon { namespace Graphics {
         long datasize = 0;
         
         //stores the glyph atlas. could be empty if packing is not used
-        Texture atlas;
+        mutable Texture atlas;
         //stores atlas pixel data
-        Containers::Image atlasdata;
+        mutable Containers::Image atlasdata;
         
         //stores which pixels are used within the atlas
-        std::vector<bool> used;
+        mutable std::vector<bool> used;
         
         //stores first free pixel location
-        Geometry::Point firstfree = {0, 0};
+        mutable int rowsused = 0;
         
         bool keeppacked = false;
+        bool tightpack  = true;
 
 
         int isfixedw = false;
