@@ -260,7 +260,7 @@ namespace Gorgon { namespace GL {
 		glFlush();
 		glFinish();
 	}
-
+	
 	void SetDefaultBlending() {
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
 	}

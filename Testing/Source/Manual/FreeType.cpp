@@ -68,11 +68,11 @@ int main() {
 	BasicFont f3(ff);
 	BasicFont f4(ff2);
 
-    f3.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 300, 100, 300, TextAlignment::Right);
+    f3.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 
+             300, 100, 300, TextAlignment::Right);
 
-    f4.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 0, 100, 300, TextAlignment::Right);
-
-	std::cout<<f2.GetLineGap()<<std::endl;
+    f4.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 
+             0, 100, 300, TextAlignment::Right);
     
     //texture copy test for packing
     auto trig = Triangle(20, 10);

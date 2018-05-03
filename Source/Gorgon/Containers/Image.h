@@ -198,11 +198,11 @@ namespace Gorgon {
 			void Swap(Image &other) {
 				using std::swap;
 
+				swap(data,     other.data);
 				swap(size,     other.size);
+				swap(mode,     other.mode);
 				swap(bpp,      other.bpp);
 				swap(alphaloc, other.alphaloc);
-				swap(data,     other.data);
-				swap(mode,     other.mode);
 			}
 
 			/// Returns the raw data pointer
@@ -307,6 +307,37 @@ namespace Gorgon {
 
 				mode = Graphics::ColorMode::RGBA;
 			}
+			
+			/// Copies data from one image to another. This operation does not perform
+			/// blending. Additionally, color modes should be the same. However, this
+			/// function will do clipping. Will return false if nothing is copied.
+			bool CopyTo(Image &dest, Geometry::Point target) const {
+                if(dest.GetMode() != mode || size.Area() == 0 || dest.GetSize().Area() == 0) 
+                    return false;
+                
+                if(target.X > dest.GetWidth()) return false;
+                
+                if(target.Y > dest.GetHeight()) return false;
+                
+                int dw = dest.GetWidth(), dh = dest.GetHeight();
+                Byte *dd = dest.RawData();
+                const Byte *sd = RawData();
+                
+                for(int y=0; y<GetHeight(); y++) {
+                    //out of pixels to copy
+                    if(y+target.Y >= dh)
+                        break;
+                    
+                    int si = y * bpp * size.Width;
+                    int di = (y+target.Y) * bpp * dw + target.X * bpp;
+                    
+                    int cs = std::min(size.Width, dw - target.X) * bpp;
+                    
+                    memcpy(dd + di, sd + si, cs);
+                }
+                
+                return true;
+            }
 
 			/// Copies this image to a RGBA buffer, buffer should be resize before calling this function
 			void CopyToRGBABuffer(Byte *buffer) const {

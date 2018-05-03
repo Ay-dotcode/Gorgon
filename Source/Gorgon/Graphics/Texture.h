@@ -57,6 +57,7 @@ namespace Gorgon { namespace Graphics {
 			swap(size, other.size);
 			swap(mode, other.mode);
 			swap(coordinates, other.coordinates);
+			swap(owner, other.owner);
 		}
 
 		virtual ~Texture() {
@@ -74,6 +75,17 @@ namespace Gorgon { namespace Graphics {
 			owner=true;
 
 			memcpy(coordinates, fullcoordinates, sizeof(fullcoordinates));
+		}
+
+		/// Sets the texture to the given id without any modification to size or color mode. Use this
+		/// function to change atlas base.
+		void Set(GL::Texture id) {
+			if(owner) {
+				GL::DestroyTexture(id);
+			}
+			
+			owner = false;
+			this->id=id;
 		}
 
 		/// Sets the texture to the given id with the given size. Resets the coordinates to cover entire
@@ -161,6 +173,7 @@ namespace Gorgon { namespace Graphics {
 			}
 			id=0;
 			owner=false;
+			size={0, 0};
 		}
 
 		/// Releases the texture id that might be owned by this object without destroying it

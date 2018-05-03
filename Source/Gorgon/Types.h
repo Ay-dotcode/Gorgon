@@ -23,17 +23,29 @@ namespace Gorgon {
 	/// A class that has no members and can be used as placeholder
 	class Empty {};
 
-
-	/// Where acceptable, denotes that the object will assume the ownership
-	class AssumeOwnershipTag { };
-
 	/// Returns the number of bits that are 1 in a number
 	inline int NumberOfSetBits(uint32_t i) {
 		i = i - ((i >> 1) & 0x55555555);
 		i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
 		return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
 	}
+	
+	/// Calculate the smalllest power of two larger than this value
+	inline uint32_t CeilToPowerOf2(uint32_t v) {
+        v--;
+        v |= v >> 1;
+        v |= v >> 2;
+        v |= v >> 4;
+        v |= v >> 8;
+        v |= v >> 16;
+        v++;
+        
+        return v;
+    }
 
+	/// Where acceptable, denotes that the object will assume the ownership
+	class AssumeOwnershipTag { };
+    
 	/// Where acceptable, denotes that the object will assume the ownership
 	static constexpr AssumeOwnershipTag AssumeOwnership;
     

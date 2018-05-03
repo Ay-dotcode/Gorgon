@@ -221,7 +221,7 @@ namespace Gorgon { namespace Graphics {
         
         /// Packs current glyphs into a single atlas. If keeppacked is selected, any call to LoadGlyph
         /// function pack the loaded asset immediately.
-        void Pack(bool keeppacked = true, bool tight = true);
+        void Pack(bool keeppacked = true, bool tight = true, float extrasize = 0.2);
         
         //packing options
         
@@ -307,6 +307,8 @@ namespace Gorgon { namespace Graphics {
 
 		bool savedata(std::ostream &stream);
         
+        void setatlassize(unsigned size);
+        
         // automatic loading requires these functions to be mutable
         mutable ftlib *lib;
         
@@ -326,12 +328,16 @@ namespace Gorgon { namespace Graphics {
         
         //stores the glyph atlas. could be empty if packing is not used
         Texture atlas;
+        //stores atlas pixel data
+        Containers::Image atlasdata;
         
         //stores which pixels are used within the atlas
         std::vector<bool> used;
         
         //stores first free pixel location
-        Geometry::Point firstfree;
+        Geometry::Point firstfree = {0, 0};
+        
+        bool keeppacked = false;
 
 
         int isfixedw = false;

@@ -550,19 +550,6 @@ namespace Gorgon { namespace Graphics {
             prev = it;
         }
         
-        /*for(auto r : ranges) {
-            if(r.Start > 127 || r.Start <= 32) {
-                if(r.Start == r.End)
-                    std::cout<<"U"<<std::hex<<(r.Start)<<std::endl;
-                else
-                    std::cout<<"U"<<std::hex<<(r.Start)<<" - "<<"U"<<(r.End)<<std::endl;
-            }
-            else if(r.Start == r.End)
-                std::cout<<((char)r.Start)<<std::endl;
-            else
-                std::cout<<((char)r.Start)<<" - "<<((char)r.End)<<std::endl;
-        }*/
-        
         for(auto &range : ranges) 
             loadglyphs(range, true);
     }
@@ -691,5 +678,148 @@ namespace Gorgon { namespace Graphics {
         destroylist.DeleteAll();
         
 		digw = 0;
+    }
+    
+    
+    void FreeType::setatlassize(unsigned size) {
+        int w = CeilToPowerOf2(unsigned(sqrt(float(size))));
+        int h = CeilToPowerOf2((int)ceil(size / w));
+        
+        if(atlas.GetID()) {
+            //resize and copy everything
+            
+            std::vector<bool> nu(w*h);
+            int ow = atlasdata.GetWidth(), oh = atlasdata.GetHeight();
+            for(int y=0; y<oh; y++)
+                for(int x=0; x<ow; x++)
+                    nu[y*w+x] = used[y*ow+x];
+                
+            std::swap(used, nu);
+            
+            
+            Texture t;
+            t.CreateEmpty({w, h}, ColorMode::Alpha);
+            GL::CopyToTexture(t.GetID(), atlasdata, {0, 0});
+            
+            atlas.Swap(t);
+            
+            
+            Containers::Image ni({w, h}, ColorMode::Alpha);
+            atlasdata.CopyTo(ni, {0, 0});
+            atlasdata.Swap(ni);
+            
+            firstfree = {ow, 0};
+        }
+        else {
+            used.resize(w*h);
+            atlas.CreateEmpty({w, h}, ColorMode::Alpha);
+            atlasdata.Resize ({w, h}, ColorMode::Alpha);
+        }
+    }
+    
+    
+    void FreeType::Pack(bool keeppacked, bool tight, float extrasize) {
+        this->keeppacked = keeppacked;
+        
+        int cursize = 0;
+        if(atlas.GetID()) {
+            cursize = atlas.GetImageSize().Area();
+        }
+        
+        //collect images
+        Containers::Collection<const Bitmap> images;
+        for(auto &g : glyphmap) {
+            if(dynamic_cast<const Bitmap*>(g.second.image))
+                images.Add(dynamic_cast<const Bitmap*>(g.second.image));
+        }
+        
+        //determine collective size, add 20% extra for inefficiency
+        //of packing
+        for(auto &i : images) {
+            cursize += i.GetSize().Area() * 1.2 + (tight ? i.GetWidth() + i.GetHeight() : 0) * 2;
+        }
+        
+        if(atlas.GetID()) {
+            if(cursize > atlas.GetImageSize().Area()) {
+                //enlarge for future glyphs
+                cursize *= 1 + extrasize;
+                
+                setatlassize(cursize);
+            }
+        }
+        else
+            setatlassize(cursize);
+        
+        //sort by height then width
+        images.Sort([](const Bitmap &l, const Bitmap &r) {
+            if(l.GetHeight() == r.GetHeight())
+                return l.GetWidth() < r.GetWidth();
+            else
+                return l.GetHeight() < r.GetHeight();
+        });
+        
+        auto aw = atlasdata.GetWidth(), ah = atlasdata.GetHeight();
+        
+        //this is not the best algorithm for the job, but it gets the deed done
+        for(auto &b : images) {
+        retry:
+            auto cur = firstfree;
+            
+            auto w = b.GetWidth(), h = b.GetHeight();
+            
+            bool found = false;
+            while(!found) {
+                //run out of width, start over from the next row
+                if(cur.X + w > aw) { 
+                    cur.Y++;
+                    cur.X = 0;
+                }
+
+                //run out of space, resize and retry
+                if(cur.Y + h > ah) { 
+                    cursize *= 1.2;
+                    setatlassize(cursize);
+                    goto retry;
+                }
+                
+                bool full = false;
+                //check horizontal free
+                for(int x=cur.X; x<cur.X+w; x++) {
+                    if(used[x + cur.Y * aw]) {
+                        full = true;
+                        break;
+                    }
+                }
+                
+                if(full) {
+                    cur.X++;
+                    continue;
+                }
+                
+                //check vertical free
+                for(int y=cur.Y; y<cur.Y+h; y++) {
+                    if(used[cur.X + y * aw]) {
+                        full = true;
+                        break;
+                    }
+                }
+                
+                if(full) {
+                    cur.X++;
+                    continue;
+                }
+                
+                //found our place
+                b.GetData().CopyTo(atlasdata, cur);
+                GL::CopyToTexture(atlas.GetID(), b.GetData(), cur);
+                
+                //replace!
+                
+                found = true;
+            }
+            
+            if(!found) //useless
+                return;
+        }
     }
 } }

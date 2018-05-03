@@ -42,10 +42,10 @@ namespace Gorgon {
 		/// Updates the given texture to contain the given data
 		void UpdateTexture(Texture texture, const Containers::Image &data);
 
-		/// Updates the given texture to contain the given data
+		/// Copies the data from the given image to the texture starting from the given target
 		void CopyToTexture(Texture texture, const Containers::Image &data, Geometry::Point target);
 
-		/// Updates the given texture to contain the given data
+		/// Copies the data from the given image to the texture starting from specified boundary of the given target
 		void CopyToTexture(Texture texture, const Containers::Image &data, Geometry::Bounds source, Geometry::Point target);
 
 		/// Destroys the given texture
