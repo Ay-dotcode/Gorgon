@@ -5,6 +5,7 @@
 #include "../Types.h"
 #include "../Geometry/Point.h"
 #include "../Geometry/Size.h"
+#include "../Geometry/Bounds.h"
 #include "../Graphics/Color.h"
 #include "../IO/Stream.h"
 
@@ -310,8 +311,9 @@ namespace Gorgon {
 			
 			/// Copies data from one image to another. This operation does not perform
 			/// blending. Additionally, color modes should be the same. However, this
-			/// function will do clipping. Will return false if nothing is copied.
-			bool CopyTo(Image &dest, Geometry::Point target) const {
+			/// function will do clipping for overflows. Do not use negative values for
+			/// target. Will return false if nothing is copied.
+			bool CopyTo(Image &dest, Geometry::Point target = {0, 0}) const {
                 if(dest.GetMode() != mode || size.Area() == 0 || dest.GetSize().Area() == 0) 
                     return false;
                 
@@ -332,6 +334,52 @@ namespace Gorgon {
                     int di = (y+target.Y) * bpp * dw + target.X * bpp;
                     
                     int cs = std::min(size.Width, dw - target.X) * bpp;
+                    
+                    memcpy(dd + di, sd + si, cs);
+                }
+                
+                return true;
+            }
+			
+			/// Copies data from one image to another. This operation does not perform
+			/// blending. Additionally, color modes should be the same. However, this
+			/// function will do clipping. Source bounds should be within the image.
+			/// Will return false if nothing is copied.
+			bool CopyTo(Image &dest, Geometry::Bounds source, Geometry::Point target = {0, 0}) const {
+                if(dest.GetMode() != mode || size.Area() == 0 || dest.GetSize().Area() == 0) 
+                    return false;
+                
+                if(target.X < 0) {
+                    source.Left -= target.X;
+                    target.X = 0;
+                }
+                
+                if(target.Y < 0) {
+                    source.Top -= target.Y;
+                    target.Y = 0;
+                }
+                
+                if(target.X + source.Width() > dest.GetWidth()) {
+                    source.Right -= target.X + source.Width() - dest.GetWidth();
+                }
+                if(target.Y + source.Height() > dest.GetHeight()) {
+                    source.Bottom -= target.Y + source.Height() - dest.GetHeight();
+                }
+                
+                if(source.Left >= source.Right) return false;
+                
+                if(source.Top  >= source.Bottom) return false;
+                
+                int dw = dest.GetWidth(), dh = dest.GetHeight();
+                int sw = source.Width();
+                Byte *dd = dest.RawData();
+                const Byte *sd = RawData();
+                
+                for(int y=source.Top; y<source.Bottom; y++) {
+                    int si = (y * size.Width + source.Left) * bpp;
+                    int di = ((y - source.Top + target.Y) * dw + target.X) * bpp;
+                    
+                    int cs = sw * bpp;
                     
                     memcpy(dd + di, sd + si, cs);
                 }

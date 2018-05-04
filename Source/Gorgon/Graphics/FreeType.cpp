@@ -600,25 +600,47 @@ namespace Gorgon { namespace Graphics {
         std::map<const RectangularDrawable*, Bitmap*> newmapping;
         
         for(auto &g : glyphmap) {
-            auto img = dynamic_cast<const Bitmap*>(g.second.image);
-            if(!img)
-                continue;
-            
-            if(newmapping.count(img) == 0) {
-                newmapping[img] = new Bitmap(img->Duplicate());
-                
-                if(prepare)
-                    newmapping[img]->Prepare();
+            if(!newmapping.count(g.second.image)) {
+                if(dynamic_cast<const Bitmap*>(g.second.image)) {
+                    auto img = dynamic_cast<const Bitmap*>(g.second.image);
+                    
+                    newmapping[img] = new Bitmap(img->Duplicate());
+                    
+                    if(prepare)
+                        newmapping[img]->Prepare();
+                }
+                else if(dynamic_cast<const TextureImage*>(g.second.image) && atlasdata.GetTotalSize() > 0 && 
+                        dynamic_cast<const TextureImage*>(g.second.image)->GetID() == atlas.GetID()) {
+                    auto img = dynamic_cast<const TextureImage*>(g.second.image);
+                    
+                    //create a new bitmap
+                    auto bmp = new Bitmap(g.second.image->GetSize(), atlasdata.GetMode());
+                    
+                    //copy atlas data back to it
+                    auto c = img->GetCoordinates();
+                    int left   = (int)std::round(c[0].X * atlasdata.GetWidth());
+                    int right  = (int)std::round(c[2].X * atlasdata.GetWidth());
+                    int top    = (int)std::round(c[0].Y * atlasdata.GetHeight());
+                    int bottom = (int)std::round(c[2].Y * atlasdata.GetHeight());
+                    
+                    atlasdata.CopyTo(bmp->GetData(), {left, top, right, bottom});
+                    if(prepare)
+                        bmp->Prepare();
+                    
+                    newmapping.insert({img, bmp});
+                }
             }
             
-            font.AssumeGlyph(g.first, *newmapping[img], g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+            if(newmapping.count(g.second.image)) {
+                font.AssumeGlyph(g.first, *newmapping[g.second.image], g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+            }
         }
         
         return font;
     }
     
     
-    BitmapFont FreeType::MoveOutBitmap() {
+    BitmapFont FreeType::MoveOutBitmap(bool unpack, bool prepare) {
         BitmapFont font;
 
 		//determine glyph spacing
@@ -657,14 +679,65 @@ namespace Gorgon { namespace Graphics {
             }
         }
 
-        //add glpyhs
-        for(auto &g : glyphmap) {
-            font.AddGlyph(g.first, *g.second.image, g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+        //if there is no atlasdata, there is no way or reason to unpack
+        if(unpack && atlasdata.GetTotalSize() != 0) {
+            std::map<const RectangularDrawable*, Bitmap *> map;
+
+            for(auto &g : glyphmap) {
+                // already bitmap no need to do anything
+                if(dynamic_cast<const Bitmap*>(g.second.image)) {
+                    font.AddGlyph(g.first, *g.second.image, g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+                }
+                else {
+                    //just to be sure
+                    auto img = dynamic_cast<const TextureImage*>(g.second.image);
+                    
+                    //if the glyph is not transformed and can be transformed
+                    if(!map.count(g.second.image) && img && img->GetID() == atlas.GetID()) {
+                        //create a new bitmap
+                        auto bmp = new Bitmap(g.second.image->GetSize(), atlasdata.GetMode());
+                        
+                        font.Adopt(*bmp);
+                        
+                        //copy atlas data back to it
+                        auto c = img->GetCoordinates();
+                        int left   = (int)std::round(c[0].X * atlasdata.GetWidth());
+                        int right  = (int)std::round(c[2].X * atlasdata.GetWidth());
+                        int top    = (int)std::round(c[0].Y * atlasdata.GetHeight());
+                        int bottom = (int)std::round(c[2].Y * atlasdata.GetHeight());
+                        
+                        atlasdata.CopyTo(bmp->GetData(), {left, top, right, bottom}, {0, 0});
+                        if(prepare)
+                            bmp->Prepare();
+                        
+                        map.insert({img, bmp});
+                        
+                        delete img;
+                    }
+                    
+                    if(map.count(g.second.image)) {
+                        font.AddGlyph(g.first, *map[g.second.image], g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+                    }
+                }
+            }
         }
-        
-        //transfer ownership
-        for(const auto &i : destroylist) {
-            font.Adopt(i);
+        else {
+            //add glpyhs
+            for(auto &g : glyphmap) {
+                font.AddGlyph(g.first, *g.second.image, g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+            }
+            
+            //transfer ownership
+            for(const auto &i : destroylist) {
+                font.Adopt(i);
+            }
+            
+            //if we have atlas
+            if(atlas.GetID()) {
+                //adopt and release it
+                font.Adopt(*new TextureImage(atlas.GetID(), atlas.GetMode(), atlas.GetImageSize()));
+                atlas.Release();
+            }
         }
         
         //clear to ensure they wont be destroyed
@@ -679,7 +752,13 @@ namespace Gorgon { namespace Graphics {
     void FreeType::Clear(){
         glyphmap.clear();
         destroylist.DeleteAll();
+
+        atlasdata.Destroy();
         
+        std::vector<bool> e;
+        std::swap(used, e);
+        rowsused = 0;
+            
 		digw = 0;
     }
     
@@ -702,7 +781,7 @@ namespace Gorgon { namespace Graphics {
             for(auto &g : glyphmap) {
                 if(g.second.image && dynamic_cast<const TextureImage*>(g.second.image)) {
                     //cast away constness, we need to update them as their base is modified
-                    auto im = const_cast<TextureImage*>(dynamic_cast<const TextureImage*>(g.second.image));
+                    auto im = dynamic_cast<TextureImage*>(g.second.image);
                     auto c = im->GetCoordinates();
                         
                     int l = (int)std::round(c[0].X*ow);
@@ -915,5 +994,22 @@ namespace Gorgon { namespace Graphics {
             pack();
         
         return true;
+    }
+    
+    void FreeType::Discard() {
+        atlasdata.Destroy();
+        
+        for(auto &g : glyphmap) {
+            auto bmp = dynamic_cast<Bitmap*>(g.second.image);
+            
+            if(bmp)
+                bmp->Discard();
+        }
+        
+        lib->destroyface();
+        filename = "";
+        vecdata  = nullptr;
+        data     = nullptr;
+        datasize = 0;
     }
 } }

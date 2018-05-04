@@ -54,10 +54,10 @@ namespace Gorgon { namespace Graphics {
         public:
             GlyphDescriptor() { }
             
-            GlyphDescriptor(const RectangularDrawable &image, float advance, Geometry::Point offset, unsigned int ftind) :
+            GlyphDescriptor(RectangularDrawable &image, float advance, Geometry::Point offset, unsigned int ftind) :
                 image(&image), advance(advance), offset(offset), ftindex(ftind) { }
             
-            const RectangularDrawable *image = nullptr;
+            RectangularDrawable *image = nullptr;
             float advance = 0;
             Geometry::Point offset = {0, 0};
             unsigned int ftindex = 0;
@@ -201,16 +201,18 @@ namespace Gorgon { namespace Graphics {
         /// Copy the loaded glyphs into a new bitmap font. Only the glyphs that are already loaded
         /// will be copied into the bitmap font. This object will keep its loaded glyphs after a 
         /// call to this function. Use MoveOutBitmap to convert this font to bitmap to move out
-        /// bitmaps, avoiding copying. For now this function will not work if the font is packed.
-        /// This function will skip any glyphs that are not proper bitmaps.
+        /// bitmaps, avoiding copying. This function will automatically unpack glyphs if discard is
+        /// not called.
         BitmapFont CopyToBitmap(bool prepare = true) const;
         
         
         /// Moves the loaded glyphs into a new bitmap font. Only the glyphs that are already loaded
         /// will be copied into the bitmap font. This object will loose its glyphs but will be able
         /// to reload them if requested. Use CopyToBitmap to convert this font to bitmap with the
-        /// copies of glyphs. This function will work even if the font is packed.
-        BitmapFont MoveOutBitmap();
+        /// copies of glyphs. If requested this function can unpack glyphs to create a bitmap font
+        /// with bitmaps as glyphs, which then can be saved. However, this functionality will not
+        /// work if discard is called. Prepare parameter is used if the font is unpacked.
+        BitmapFont MoveOutBitmap(bool unpack = false, bool prepare = true);
         
         /// Packs current glyphs into a single atlas. If keeppacked is selected, any call to LoadGlyph
         /// function pack the loaded asset immediately.
@@ -219,6 +221,12 @@ namespace Gorgon { namespace Graphics {
             this->tightpack  = tight;
             
             pack(extrasize);
+        }
+        
+        /// Stops packing new glyphs. This will not unpack already packed glyphs. Use Pack function
+        /// to pack all glyphs and set packing for future glyphs.
+        void StopPacking() {
+            keeppacked = false;
         }
         
 		/// This function should render the given character to the target at the specified location
@@ -292,8 +300,9 @@ namespace Gorgon { namespace Graphics {
         /// to their internal structures, they should mark them 
         virtual void Prepare(const std::string &text) const override;
 		
-        /// Discards intermediate files. New glyphs cannot be packed
-        /// automatically after this function is issued.
+        /// Discards intermediate files. Font will continue to work and will take less resources,
+        /// however, new glyphs cannot be loaded and packed after this function is issued. 
+        /// Additionally, bitmap font copying and unpacking option in moving out will not work.
         void Discard();
         
     private:
@@ -315,7 +324,7 @@ namespace Gorgon { namespace Graphics {
         //this exists to speed up loading glyphs that are already read.
         mutable std::map<unsigned int, Glyph>    ft_to_map;
         
-		mutable Containers::Collection<const RectangularDrawable> destroylist;
+		mutable Containers::Collection<RectangularDrawable> destroylist;
         
         //these are here for saving the font
         std::string filename;
@@ -335,7 +344,7 @@ namespace Gorgon { namespace Graphics {
         //stores first free pixel location
         mutable int rowsused = 0;
         
-        bool keeppacked = false;
+        bool keeppacked = true;
         bool tightpack  = true;
 
 
