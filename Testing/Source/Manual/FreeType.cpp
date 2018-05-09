@@ -78,12 +78,12 @@ int main() {
     //texture copy test for packing
     auto trig = Triangle(20, 10);
     
-    TextureImage t;
-    t.CreateEmpty({100, 100}, ColorMode::Alpha);
-    GL::CopyToTexture(t.GetID(), trig.GetData(), {25, 25});
-    GL::CopyToTexture(t.GetID(), trig.GetData(), {20, 0, 40, 10}, {50, 50});
-    
-    t.Draw(l, 0, 200);
+    //TextureImage t;
+    //t.CreateEmpty({100, 100}, ColorMode::Alpha);
+    //GL::CopyToTexture(t.GetID(), trig.GetData(), {25, 25});
+    //GL::CopyToTexture(t.GetID(), trig.GetData(), {20, 0, 40, 10}, {50, 50});
+    //
+    //t.Draw(l, 0, 200);
 
 	while(true) {
 		Gorgon::NextFrame();

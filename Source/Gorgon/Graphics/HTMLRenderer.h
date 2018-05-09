@@ -339,13 +339,13 @@ private:
     // !!! further cases can ben covered in a switch-case/if-else block
     void changeglyphrenderer(FontFamily::Style newstyle) {
         // store previous baseline
-        int prevbaselineoffset = renderer.GetGlyphRenderer()->GetBaseLine();
+        int prevbaselineoffset = (int)renderer.GetGlyphRenderer()->GetBaseLine();
         
         renderer.SetGlyphRenderer(fontfamily.GetGlyphRenderer(newstyle));
         
         // calculate the baseline offset if there is a difference in baselines
         if((prevbaselineoffset - renderer.GetGlyphRenderer()->GetBaseLine()) < 0) {
-            baselineoffset =  prevbaselineoffset - renderer.GetGlyphRenderer()->GetBaseLine();
+            baselineoffset =  (int)std::round(prevbaselineoffset - renderer.GetGlyphRenderer()->GetBaseLine());
         }
         else {
             baselineoffset = 0;

@@ -826,7 +826,7 @@ namespace Gorgon { namespace Graphics {
         //determine collective size, add 2% extra for inefficiency
         //of packing
         for(auto &i : images) {
-            cursize += i.GetSize().Area() * 1.2 + (tightpack ? 0 : i.GetWidth() + i.GetHeight());
+            cursize += (int)ceil(i.GetSize().Area() * 1.2 + (tightpack ? 0 : i.GetWidth() + i.GetHeight()));
         }
         
         if(images.GetCount() > 5)
@@ -835,13 +835,13 @@ namespace Gorgon { namespace Graphics {
         if(atlas.GetID()) {
             if(cursize > atlas.GetImageSize().Area()) {
                 //enlarge for future glyphs
-                cursize *= 1 + extrasize;
+                cursize = (int)std::ceil(cursize * (1 + extrasize));
                 
                 setatlassize(cursize);
             }
         }
         else {
-            cursize *= 1 + extrasize;
+			cursize = (int)std::ceil(cursize * (1 + extrasize));
 
             setatlassize(cursize);
         }
@@ -880,7 +880,7 @@ namespace Gorgon { namespace Graphics {
 
                 //run out of space, resize and retry
                 if(cur.Y + h > ah) { 
-                    cursize *= 1.2;
+                    cursize = (int)std::ceil(cursize * 1.2);
                     setatlassize(cursize);
                     
                     for(auto &img : replacements) {
