@@ -528,6 +528,61 @@ namespace Gorgon {
 
 				}
 			}
+			/// Copies this image to a RGBA buffer, buffer should be resize before calling this function.
+			/// This function is here mostly to create icon for X11
+			void CopyToBGRABufferLong(unsigned long *buffer) const {
+				if(!data) return;
+
+				int i;
+
+				switch(mode) {
+					case Graphics::ColorMode::BGRA:
+						for(i=0; i<size.Area(); i++) {
+                            buffer[i] = (data[i*4+0]<<0) | (data[i*4+1]<<8) | (data[i*4+2]<<16) | (data[i*4+3]<<24);
+                        }
+						break;
+
+					case Graphics::ColorMode::RGBA:
+						for(i=0; i<size.Area(); i++) {
+                            buffer[i] = (data[i*4+2]<<0) | (data[i*4+1]<<8) | (data[i*4+0]<<16) | (data[i*4+3]<<24);
+                        }
+						break;
+
+					case Graphics::ColorMode::Grayscale_Alpha:
+						for(i=0; i<size.Area(); i++) {
+                            buffer[i] = (data[i*2+0]<<0) | (data[i*2+0]<<8) | (data[i*2+0]<<16) | (data[i*2+1]<<24);
+                        }
+						break;
+
+					case Graphics::ColorMode::Grayscale:
+						for(i=0; i<size.Area(); i++) {
+                            buffer[i] = (data[i*1+0]<<0) | (data[i*1+0]<<8) | (data[i*1+0]<<16) | (255<<24);
+                        }
+						break;
+
+					case Graphics::ColorMode::Alpha: 
+						for(i=0; i<size.Area(); i++) {
+                            buffer[i] = (255<<0) | (255<<8) | (255<<16) | (data[i*1+0]<<24);
+						}
+						break;
+
+					case Graphics::ColorMode::BGR: 
+						for(i=0; i<size.Area(); i++) {
+                            buffer[i] = (data[i*3+0]<<0) | (data[i*3+1]<<8) | (data[i*3+2]<<16) | (255<<24);
+						}
+						break;
+
+					case Graphics::ColorMode::RGB:
+						for(i=0; i<size.Area(); i++) {
+                            buffer[i] = (data[i*3+2]<<0) | (data[i*3+1]<<8) | (data[i*3+0]<<16) | (255<<24);
+						}
+						break;
+                    
+                    default:
+                        throw std::runtime_error("Invalid mode");
+
+				}
+			}
 
 			/// Imports a given bitmap file. BMP RLE compression and colorspaces are not supported.
 			bool ImportBMP(const std::string &filename, bool dib = false) {

@@ -166,7 +166,7 @@ namespace Gorgon {
                     delete[] data;
                 }
                 
-                int w = 0, h = 0;
+                long w = 0, h = 0;
                 Byte *data = nullptr;
             };
 			
@@ -1113,12 +1113,12 @@ failsafe: //this should use X11 screen as monitor
         }
         
         void Icon::FromImage(const Containers::Image &image) {
-			unsigned *img=new unsigned[2+image.GetWidth()*image.GetHeight()];
+			unsigned long*img=new unsigned long[2+image.GetWidth()*image.GetHeight()];
 			
 			img[0]=image.GetWidth();
 			img[1]=image.GetHeight();
 			
-			image.CopyToBGRABuffer((Byte*)(img+2));
+			image.CopyToBGRABufferLong(img+2);
 			
 			data->w = image.GetWidth();
             data->h = image.GetHeight();
@@ -2573,7 +2573,7 @@ failsafe: //this should use X11 screen as monitor
     }
 
     void Window::SetIcon(const WindowManager::Icon& icon) {
-        XChangeProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_ICON, WindowManager::XA_CARDINAL , 32, PropModeReplace, icon.data->data, icon.data->w*icon.data->h+2);
+        XChangeProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_ICON, WindowManager::XA_CARDINAL , 32, PropModeReplace, icon.data->data, icon.data->w*icon.data->h+4);
         XSync(WindowManager::display, 1);
     }
 

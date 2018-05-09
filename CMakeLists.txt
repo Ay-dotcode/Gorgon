@@ -52,6 +52,8 @@ set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header fi
 
 ######################
 
+set(ADDITIONAL_CLIENT_FLAGS )
+
 if(NOT(${FORCE_32_BIT}))
     set(FIND_LIBRARY_USE_LIB64_PATHS ON)
     if(NOT WIN32)
@@ -71,14 +73,18 @@ endif()
 if(AUDIO)
 	add_definitions("-DAUDIO")
 	add_definitions("-DAUDIO_${AUDIOLIB}")
+    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DAUDIO")
+    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DAUDIO_${AUDIOLIB}")
 endif()
 
 if(FREETYPE)
     add_definitions("-DFREETYPE")
+    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFREETYPE")
 endif()
 
 if(SCRIPTING)
 	add_definitions("-DSCRIPTING")
+    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DSCRIPTING")
 endif()
 
 if(OPENGL)

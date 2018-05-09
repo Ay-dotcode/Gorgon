@@ -1,20 +1,14 @@
-# - Config file for the FooBar package
+# - Config file for the Gorgon package
 # It defines the following variables
-#  GORGON_INCLUDE_DIRS - include directories for FooBar
+#  GORGON_INCLUDE_DIRS - include directories for Gorgon Library
 #  GORGON_LIBRARIES    - libraries to link against
-#  FOOBAR_EXECUTABLE   - the bar executable
  
 include("${CMAKE_CURRENT_LIST_DIR}/GorgonTargets.cmake")
 
 # Compute paths
 get_filename_component(GORGON_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(GORGON_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
- 
-# Our library dependencies (contains definitions for IMPORTED targets)
-#if(NOT TARGET foo AND NOT FooBar_BINARY_DIR)
-#  include("${FOOBAR_CMAKE_DIR}/FooBarTargets.cmake")
-#endif()
- 
+
 # These are IMPORTED targets created by GorgonTargets.cmake
 set(GORGON_LIBRARIES Gorgon)
 set(GORGON_EXECUTABLE )
@@ -29,7 +23,7 @@ MACRO(compilersetup)
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLM_SWIZZLE -DGLM_FORCE_RADIANS")
 
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENGL")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENGL @ADDITIONAL_CLIENT_FLAGS@")
 
 	#compiler check
 	IF(CMAKE_COMPILER_IS_GNUCXX)
