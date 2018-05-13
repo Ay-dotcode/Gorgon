@@ -8,13 +8,18 @@
 
 int main() {
     //Initialize everything with the system name of EmptyWindow
-    Gorgon::Initialize("EmptyWindow");
+    Gorgon::Initialize("HelloWorld");
     
     //Create our window, this will immediately show it
-    Gorgon::Window window({400, 300}, "Empty window");
+    Gorgon::Window window({400, 300}, "Hello");
     
     
-    //Load Icon.png
+    //Load Icon.png, this step might fail in debugger due to using
+	//a different path for debugging. For instance, in Visual Studio
+	//default debugging path is the build directory. You can change
+	//this setting or you might simply copy the following file into
+	//your build directory. The file will be copied to bin directory
+	//automatically.
     Gorgon::Graphics::Bitmap icon;
     icon.Import("Icon.png");
 
@@ -27,11 +32,13 @@ int main() {
     
     //You probably should ship your project with a .ttf file
     //or wait until font enumeration is finished. This checks
-    //for the current platform. Fonts will be created with
-    //20px and 11px high
+    //for the current platform. Windows is almost guaranteed
+    //to be shipped with tahoma but same cannot be told for
+    //Linux as there are many different configurations for it.
+    //Fonts will be created with 20px and 11px high
 #ifdef WIN32
-    font.LoadFile("C:/Windows/Fonts/tahoma.ttf", 20);
-    smallfont.LoadFile("C:/Windows/Fonts/tahoma.ttf", 11);
+    font.LoadFile(Gorgon::OS::GetEnvVar("windir")+"/Fonts/tahoma.ttf", 20);
+    smallfont.LoadFile(Gorgon::OS::GetEnvVar("windir")+"/Fonts/tahoma.ttf", 11);
 #else
     font.LoadFile("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf", 20);
     smallfont.LoadFile("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf", 11);

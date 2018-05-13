@@ -1564,17 +1564,15 @@ namespace Gorgon {
 		auto titlew = converter.from_bytes(title);
 
 		//Creating window class
-		windclass.cbClsExtra = 0;
+		ZeroMemory(&windclass, sizeof(windclass));
+
 		windclass.cbSize = sizeof(WNDCLASSEX);
-		windclass.cbWndExtra = 0;
 		windclass.hbrBackground = (HBRUSH)16;
 		windclass.hCursor = LoadCursor(NULL, NULL);
 		windclass.hInstance = instance;
 		windclass.lpfnWndProc = WndProc;
 		windclass.lpszClassName = namew.c_str();
-		windclass.lpszMenuName = NULL;
-		windclass.hIcon = (HICON)0;
-		windclass.hIconSm = (HICON)0;
+		windclass.hCursor = (HCURSOR)WindowManager::defaultcursor;
 		windclass.style = 3;
 		ATOM ret = RegisterClassEx(&windclass);
 
@@ -1654,20 +1652,16 @@ namespace Gorgon {
 		MSG msg;
 		bool visible = true;
 		ZeroMemory(&msg, sizeof(MSG));
+		ZeroMemory(&windclass, sizeof(windclass));
 
 		instance = GetModuleHandle(NULL);
 		
-		windclass.cbClsExtra = 0;
-		windclass.cbSize = sizeof(WNDCLASSEX);
-		windclass.cbWndExtra = 0;
 		windclass.hbrBackground = (HBRUSH)16;
 		windclass.hCursor = LoadCursor(NULL, NULL);
 		windclass.hInstance = instance;
 		windclass.lpfnWndProc = WndProc;
 		windclass.lpszClassName = namew.c_str();
-		windclass.lpszMenuName = NULL;
-		windclass.hIcon = (HICON)0;
-		windclass.hIconSm = (HICON)0;
+		windclass.hCursor = (HCURSOR)WindowManager::defaultcursor;
 		windclass.style = CS_HREDRAW | CS_VREDRAW;
 		windclass.cbSize = (unsigned int)sizeof(WNDCLASSEX);
 

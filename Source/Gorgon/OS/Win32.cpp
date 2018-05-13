@@ -84,9 +84,18 @@ namespace Gorgon {
 		return ret;
 	}
 
+
 	namespace internal { bool ishandled(HWND hwnd, Input::Key key); }
 	namespace OS {
-	
+
+	std::string GetEnvVar(const std::string &var) {
+		auto ret=getenv(var.c_str());
+		if(!ret)
+			return "";
+		else
+			return ret;
+	}
+
 	void Initialize() {
 	}
 
