@@ -7,7 +7,7 @@
 #include <Gorgon/Input/Keyboard.h>
 
 int main() {
-    //Initialize everything with the system name of EmptyWindow
+    //Initialize everything with the system name of HelloWorld
     Gorgon::Initialize("HelloWorld");
     
     //Create our window, this will immediately show it

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(PROJECT_NAME "Your project name")
+set(PROJECT_NAME WIN32 "GreenShooter")
 
 project(${PROJECT_NAME})
 
@@ -20,4 +20,5 @@ linkgorgon(${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
-#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Resource/Data.gor ${CMAKE_CURRENT_SOURCE_DIR}/Bin/Data.gor COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Resource/Icon.png ${CMAKE_CURRENT_SOURCE_DIR}/Bin/Icon.png COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Resource/Boxy-Bold.ttf ${CMAKE_CURRENT_SOURCE_DIR}/Bin/Boxy-Bold.ttf COPYONLY)
