@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(PROJECT_NAME WIN32 "GreenShooter")
+set(PROJECT_NAME "GreenShooter")
 
 project(${PROJECT_NAME})
 
@@ -12,7 +12,7 @@ find_package(Gorgon REQUIRED)
 
 add_compile_options(-std=c++14)
 
-add_executable(${PROJECT_NAME}
+add_executable(${PROJECT_NAME} WIN32
     Source/Main.cpp
 )
 

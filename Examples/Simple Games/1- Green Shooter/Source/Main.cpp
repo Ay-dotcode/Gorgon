@@ -29,8 +29,10 @@ int main() {
     window.SetIcon(ico);
     
     //Load a font to display some text
-    Gorgon::Graphics::FreeType font;    
+    Gorgon::Graphics::FreeType font;
+    font.DisableAntiAliasing();
     font.LoadFile("Boxy-Bold.ttf", 20);
+    
     
     
     //Terminate the application when the window is closed

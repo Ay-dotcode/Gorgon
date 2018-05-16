@@ -332,7 +332,7 @@ namespace Gorgon { namespace Graphics {
                 continue;
             }
             
-            auto error = FT_Load_Glyph(lib->face, index, FT_LOAD_RENDER);
+            auto error = FT_Load_Glyph(lib->face, index, FT_LOAD_RENDER|(aa ? 0 : FT_LOAD_MONOCHROME));
             
             if(error != FT_Err_Ok) {
                 if(range.Count() > 1) {
@@ -358,7 +358,7 @@ namespace Gorgon { namespace Graphics {
 
 							b--;
 							if(b<0) {
-								b = 0;
+								b = 7;
 								B++;
 							}
 						}
@@ -382,7 +382,7 @@ namespace Gorgon { namespace Graphics {
 
 							b--;
 							if(b<0) {
-								b = 0;
+								b = 7;
 								B++;
 							}
 						}

@@ -189,6 +189,18 @@ namespace Gorgon { namespace Graphics {
             return haskerning;
         }
         
+        /// Disables anti aliasing. Does not affect already loaded glyphs. If necessary call
+        /// Clear before calling this function.
+        void DisableAntiAliasing() {
+            aa = false;
+        }
+        
+        /// Enables anti aliasing. Does not affect already loaded glyphs. If necessary call
+        /// Clear before calling this function.
+        void EnableAntiAliasing() {
+            aa = true;
+        }
+        
         /// Returns the name of the font
         std::string GetFamilyName() const;
         
@@ -355,6 +367,8 @@ namespace Gorgon { namespace Graphics {
         int height = 0;
         
         float baseline = 0;
+        
+        bool aa = true;
 
 		mutable int digw = 0;
 

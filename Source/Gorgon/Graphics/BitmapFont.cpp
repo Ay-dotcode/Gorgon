@@ -453,7 +453,8 @@ namespace Gorgon { namespace Graphics {
 
 			auto bmp = dynamic_cast<const Bitmap*>(g.second.image);
 
-			auto &my = data[g.first];
+            data.insert({g.first, {}});
+			auto &my = data.at(g.first);
 
 			int y, yoff = (int)std::round(g.second.offset.Y), xoff = (int)std::round(g.second.offset.X);
 			int w=bmp->GetWidth(), h=bmp->GetHeight();
@@ -462,7 +463,7 @@ namespace Gorgon { namespace Graphics {
 			//this mechanism requires debugging
 			int totw = w + xoff;
 			my.totw = totw;
-
+            
 			//fill as if image is fully opaque
 			for(y=0; y<yoff; y++) {
 				my.leftfree.push_back(totw);
@@ -485,7 +486,7 @@ namespace Gorgon { namespace Graphics {
 
 			//if the image has no alpha, simply skip checking alpha
 			if(bmp->HasAlpha()) {
-				for(int y=0; y<h; y++) {
+				for(int y=std::max(0, -yoff); y<h; y++) {
 					int x;
 					for(x=0; x<w; x++) {
 						if(bmp->GetAlphaAt(x, y) > opaquelevel)

@@ -2573,7 +2573,7 @@ failsafe: //this should use X11 screen as monitor
     }
 
     void Window::SetIcon(const WindowManager::Icon& icon) {
-        XChangeProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_ICON, WindowManager::XA_CARDINAL , 32, PropModeReplace, icon.data->data, icon.data->w*icon.data->h+4);
+        XChangeProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_ICON, WindowManager::XA_CARDINAL , 32, PropModeReplace, icon.data->data, icon.data->w*icon.data->h+2);
         XSync(WindowManager::display, 1);
     }
 

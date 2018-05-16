@@ -26,12 +26,13 @@ int main() {
         data.push_back(b);*/
     
     FreeType f;
+    f.DisableAntiAliasing();
 #ifdef WIN32
     f.LoadFile("C:/Windows/Fonts/tahoma.ttf");
 #else
-	f.LoadFile("/usr/share/fonts/liberation/LiberationSerif-Regular.ttf");
+	f.LoadFile("Boxy-Bold.ttf");
 #endif
-    f.LoadMetrics(15);
+    f.LoadMetrics(16);
     
     std::cout<<f.GetFamilyName()<<": "<<f.GetStyleName()<<std::endl;
     std::cout<<"Preset sizes: "<<f.GetPresetSizes().size()<<std::endl;
