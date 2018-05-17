@@ -12,18 +12,161 @@
     //using Gorgon Game Engine. The way to handle game events and to structure
     //game logic shown in this example is not recommended, even for small games.
     //In this example we aim for minimum 
-
     
-/*#ifdef WIN32
+    //The way game works is very simple. We create a new box at a random place at
+    //random time intervals. Each object is created with a specific duration.
+    //When the duration is completed, it is removed.
+    
+    //All are blank images. Colors are picked to have similar brightness
+    Gorgon::Graphics::BlankImage object_images[] = {
+        {40, 40, 0xff193d19},
+        {40, 40, {0.2f}},
+        {40, 40, 0xff26265e},
+        {40, 40, 0xff573523},
+    };
+    
+    //Game variables. These should be in a separate place. However, for
+    //simplicity we will keep them here in this example.
+    
+    //number of greens hit - wrong hits
+    int score = 0;
+    
+    //wrong hits, or not hitting a green will cause you to loose a life
+    int lives = 3;
+    
+    //time to next spawn
+    int timetonext = 1000;
+    
+    //spawn time would be 0 to 1000.
+    const int maxtime = 1000;
+    
+    //these are percentages and cumulative
+    const int black_chance = 2;
+    
+    const int green_chance = 42;
+    
+    //lifetime of created objects
+    const int max_lifetime = 5000;
+    const int min_lifetime = 1000;
+    
+    //see design
+    const Gorgon::Geometry::Size object_size = { 40,  40};
+    const Gorgon::Geometry::Size game_size   = {400, 400};
+
+    /**
+     * This is the objects that will be popuping up during game.
+     */
+    class Object {
+    public:
+        
+        void Random() {
+            //random number between 0 and 99
+            int dice = rand()%100;
+            
+            //decide on color
+            if(dice < black_chance) {
+                color = Black;
+            }
+            else if(dice < green_chance) {
+                color = Green;
+            }
+            else {
+                //red and blue are equally likely
+                if(rand()%2) {
+                    color = Red;
+                }
+                else {
+                    color = Blue;
+                }
+            }
+            
+            lifetime = rand()%(max_lifetime-min_lifetime) + min_lifetime;
+            
+            //random location within game area
+            location.X = rand()%(game_size.Width - object_size.Width);
+            location.Y = rand()%(game_size.Height - object_size.Height);
+        }
+        
+        ///Color determines if this object is an enemy. Additionally, draw 
+        ///function finds the correct image using the color. Green is enemy
+        ///black will add a life and will appear only if lives is < 5.
+        enum Color {
+            Green  = 0,
+            Black  = 1,
+            Red    = 2,
+            Blue   = 3, 
+        };
+        
+        ///To seperate implementation
+        bool IsEnemy() const {
+            return color == Green;
+        }
+        
+        ///Draws on the given layer
+        void Draw(Gorgon::Graphics::Layer &target) {
+            //Draw the image at the destination. If less than 1s
+            //lifetime left, fade out.
+            if(lifetime > 1000)
+                object_images[color].Draw(target, location);
+            else                                           //lightness, alpha
+                object_images[color].Draw(target, location, {1.f, lifetime/1000.f});
+        }
+        
+        ///Reduce the life time of the object by the elapsed time. If lifetime
+        ///goes down to 0, perform the necessary action and wait to be removed
+        ///by the main loop.
+        void Elapsed(unsigned time) {
+            if(lifetime <= time) {
+                lifetime = 0;
+                
+                if(color == Green) {
+                    lives--;
+                }
+                else if(color == Black && lives < 5) {
+                    lives++;
+                }
+            }
+            else {
+                lifetime -= time;
+            }
+        }
+        
+        ///This object got hit
+        void Hit() {
+            if(color == Black) //black: reduce life
+                lives--;
+            else if(color == Green) //green: add score
+                score++;
+            else //red or blue: reduce score
+                score--;
+            
+            //wait to be culled
+            lifetime = 0;
+        }
+        
+        ///Where this object is located
+        Gorgon::Geometry::Point location;
+        
+        ///How long this object has left to live (in msec)
+        int lifetime;
+        
+        ///The color of the object
+        Color color;
+    };
+    
+    std::vector<Object> objects;
+    
+    
+#ifdef WIN32
 int CALLBACK WinMain(
   _In_ HINSTANCE hInstance,
   _In_ HINSTANCE hPrevInstance,
   _In_ LPSTR     lpCmdLine,
   _In_ int       nCmdShow
 ) {
-#else*/
+#else
 int main() {
-//#endif
+#endif
     
     //Initialize everything with the system name of GreenShooter
     Gorgon::Initialize("GreenShooter");
@@ -101,19 +244,47 @@ int main() {
     ui_bg.DrawIn(background_layer, 2, 2, 400, 38);
     
     
-    //Game variables. These should be in a separate place. However, for
-    //simplicity we will keep them here in this example.
-    
-    //number of greens hit - wrong hits
-    int score = 0;
-    
-    //wrong hits, or not hitting a green will cause you to loose a life
-    int lives = 3;
-    
     //until we call quit
     while(true) {
+        //This will give us the time passed in a frame. We will run the game
+        //according to the time passed.
+        auto delta = Gorgon::Time::DeltaTime();
         
-        //display ui
+        //update lifetime of the objects
+        for(auto &o : objects) {
+            o.Elapsed(delta);
+        }
+
+        //Remove objects with 0 lifetime
+        for(auto it = objects.begin(); it != objects.end(); ) {
+            if(it->lifetime == 0)
+                it = objects.erase(it);
+            else
+                ++it;
+        }
+        
+        //time to add new piece
+        if(timetonext <= delta) {
+            //add new blank object
+            objects.resize(objects.size()+1);
+            
+            //randomize this new object
+            objects.back().Random();
+            
+            timetonext = rand()%maxtime;
+        }
+        else {
+            timetonext -= delta; //remove the time passed
+        }
+        
+        //Render the game
+        game_layer.Clear();
+        
+        for(auto &o : objects) {
+            o.Draw(game_layer);
+        }
+        
+        //Display ui
         ui_layer.Clear();
         //11, 11 is position and 400 - 22 is the width of the area
         font.Print(ui_layer, Gorgon::String::Concat("Score: ", score), 11, 11, 400 - 22, 0.0f);
