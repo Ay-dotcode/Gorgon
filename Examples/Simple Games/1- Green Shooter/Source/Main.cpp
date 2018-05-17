@@ -58,7 +58,7 @@
      */
     class Object {
     public:
-        
+        ///Fill this object with random data
         void Random() {
             //random number between 0 and 99
             int dice = rand()%100;
@@ -116,6 +116,10 @@
         ///goes down to 0, perform the necessary action and wait to be removed
         ///by the main loop.
         void Elapsed(unsigned time) {
+            //if lifetime is -1, the object is already got it.
+            if(lifetime == -1)
+                return;
+            
             if(lifetime <= time) {
                 lifetime = 0;
                 
@@ -137,11 +141,11 @@
                 lives--;
             else if(color == Green) //green: add score
                 score++;
-            else //red or blue: reduce score
-                score--;
+            else //red or blue: reduce score by 5
+                score -= 5;
             
             //wait to be culled
-            lifetime = 0;
+            lifetime = -1;
         }
         
         ///Where this object is located
@@ -243,43 +247,76 @@ int main() {
     game_bg.DrawIn(background_layer, 2, 42, 400, 400);
     ui_bg.DrawIn(background_layer, 2, 2, 400, 38);
     
+    //The following function call registers the mouse event to the input layer.
+    //We use lambda function for this purpose. It is possible to register a
+    //regular function too. It is also possible to have a parameter to get which
+    //mouse button is clicked. Since it is not specified, as default, only left
+    //click events will fire this event. Given location is from the top-left of
+    //the game area.
+    input_layer.SetClick([](Gorgon::Geometry::Point location){
+        //no lives, don't do anything
+        if(!lives) return;
+        
+        //check every object
+        for(auto &o : objects) {
+            //create boundary of the object
+            Gorgon::Geometry::Bounds object_bounds(o.location, object_size);
+            
+            //if the mouse location is inside object bounds
+            if(IsInside(object_bounds, location)) {
+                //object is hit
+                o.Hit();
+                
+                //we found a target, nothing else to do
+                return;
+            }
+        }
+        
+        //nothing is hit so -1 points
+        score--;
+    });
+    
     
     //until we call quit
     while(true) {
-        //This will give us the time passed in a frame. We will run the game
-        //according to the time passed.
-        auto delta = Gorgon::Time::DeltaTime();
+        //do nothing if we do not have any lives left
+        if(lives) {
+            //This will give us the time passed in a frame. We will run the game
+            //according to the time passed.
+            auto delta = Gorgon::Time::DeltaTime();
         
-        //update lifetime of the objects
-        for(auto &o : objects) {
-            o.Elapsed(delta);
-        }
+            //update lifetime of the objects
+            for(auto &o : objects) {
+                o.Elapsed(delta);
+            }
 
-        //Remove objects with 0 lifetime
-        for(auto it = objects.begin(); it != objects.end(); ) {
-            if(it->lifetime == 0)
-                it = objects.erase(it);
-            else
-                ++it;
-        }
-        
-        //time to add new piece
-        if(timetonext <= delta) {
-            //add new blank object
-            objects.resize(objects.size()+1);
+            //Remove objects with 0 lifetime
+            for(auto it = objects.begin(); it != objects.end(); ) {
+                if(it->lifetime <= 0)
+                    it = objects.erase(it);
+                else
+                    ++it;
+            }
             
-            //randomize this new object
-            objects.back().Random();
-            
-            timetonext = rand()%maxtime;
-        }
-        else {
-            timetonext -= delta; //remove the time passed
+            //time to add new piece
+            if(timetonext <= delta) {
+                //add new blank object
+                objects.resize(objects.size()+1);
+                
+                //randomize this new object
+                objects.back().Random();
+                
+                timetonext = rand()%maxtime;
+            }
+            else {
+                timetonext -= delta; //remove the time passed
+            }
         }
         
         //Render the game
         game_layer.Clear();
         
+        //Call draw of every object
         for(auto &o : objects) {
             o.Draw(game_layer);
         }

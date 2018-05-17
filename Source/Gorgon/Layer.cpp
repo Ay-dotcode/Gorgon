@@ -86,10 +86,10 @@ namespace Gorgon {
 			Transform.Translate((Gorgon::Float)bounds.Left, (Gorgon::Float)bounds.Top, 0);
 
 		if(bounds.Left > 0)
-			Clip.Left -= bounds.Left;
+			Clip.Left += bounds.Left;
 
 		if(bounds.Top > 0)
-			Clip.Top  -= bounds.Top;
+			Clip.Top  += bounds.Top;
 
 		int ebw = bounds.Width();
 		if(bounds.Width() && bounds.Left < 0)

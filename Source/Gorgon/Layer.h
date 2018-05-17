@@ -13,7 +13,7 @@ namespace Gorgon {
 	/// Current layer transformation, only for render and mouse 
 	extern Geometry::Transform3D Transform;
     
-    /// Current clipping size, for mouse events
+    /// Current clipping size, for mouse and clipping events
     extern Geometry::Bounds        Clip;
     
     class MouseHandler {
