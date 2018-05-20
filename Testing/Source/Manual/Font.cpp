@@ -137,6 +137,12 @@ int main() {
     std::cout<<"Imported "<<fixedsize_repack.ImportAtlas("fixed-font.bmp", {7, 9}, 0x20, true, options)<<" glyphs."<<std::endl;
     fixedsize_repack.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 6+fixedsize_original.GetLineGap() * 2);
     
+    Graphics::BitmapFont auto_repack;
+    options.spacing = 0;
+    options.automatickerning = false;
+    std::cout<<"Imported "<<auto_repack.ImportAtlas("boxy_bold.png", {0, 0}, 0x20, true, options)<<" glyphs."<<std::endl;
+    auto_repack.Print(l, "Hello!, auto detect import is working.\nKerning example: Ta, T.", 350, 10+fixedsize_original.GetLineGap() * 4);
+    
 
 	while(true) {
 		Gorgon::NextFrame();

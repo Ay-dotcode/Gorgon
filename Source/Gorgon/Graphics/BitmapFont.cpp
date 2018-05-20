@@ -448,7 +448,9 @@ namespace Gorgon { namespace Graphics {
                 linethickness = 1;
         }
 
-		if(options.trim && spacing==0) {
+        if(options.spacing != -1)
+            spacing = options.spacing;
+		else if(options.trim && spacing==0) {
             spacing = (int)std::floor(height/10.f);
             
             if(spacing == 0)
@@ -483,7 +485,7 @@ namespace Gorgon { namespace Graphics {
 		//height of underscore
 		int uh = 0;
         
-        
+        //find glyph positions
         if(grid.Area()) {
             height = grid.Height;
             
@@ -499,14 +501,89 @@ namespace Gorgon { namespace Graphics {
             }
         }
         else {
+            //cannot work with atlas images without alpha channel
+            if(!bmp.HasAlpha())
+                return 0;
+            
             //skip spaces
             while(internal::isspace(start)) {
                 start++;
             }
+            
+            bool lastempty = true;
+            int starty;
+            std::vector<std::pair<int, int>> rows;
+            
+            //find rows
+            //= to consider last row ending at the image border
+            for(int y=0; y<=bmp.GetHeight(); y++) {
+                bool empty = true;
+                
+                //check if this row is empty, even tough asking for
+                //pixels outside the image area works, its waste of
+                //processing time
+                if(y < bmp.GetHeight()) {
+                    for(int x=0; x<bmp.GetWidth(); x++) {
+                        if(bmp.GetAlphaAt(x, y) > 0) {
+                            empty = false;
+                            break;
+                        }
+                    }
+                }
+                
+                //empty to non-empty: starting new row
+                if(lastempty && !empty) {
+                    lastempty = false;
+                    starty = y;
+                }
+                //non empty to empty: ending the row
+                else if(!lastempty && empty) {
+                    lastempty = true;
+                    int h = y - starty;
+                    
+                    if(height < h)
+                        height = h;
+                    
+                    rows.push_back({starty, y});
+                }
+            }
+            
+            for(auto row : rows) {
+                //detect columns
+                bool lastempty = true;
+                int  startx;
+                for(int x=0; x<=bmp.GetWidth(); x++) {
+                    
+                    bool empty = true;
+                    if(x != bmp.GetWidth()) {
+                        for(int y=row.first; y<row.second; y++) {
+                            if(bmp.GetAlphaAt(x, y) > 0) {
+                                empty = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if(lastempty && !empty) {
+                        lastempty = false;
+                        startx = x;
+                    }
+                    else if(!lastempty && empty) {
+                        lastempty = true;
+                        
+                        bounds.push_back({startx, row.first, x, row.second});
+                        offsets.push_back({0, 0});
+                    }
+                }
+            }
         }
         
-        spacing = (int)std::floor(height / 10);
-        if(spacing < 1) spacing = 1;
+        if(options.spacing == -1) {
+            spacing = (int)std::floor(height / 10);
+            if(spacing < 1) spacing = 1;
+        }
+        else
+            spacing = options.spacing;
         
         if(options.converttoalpha == YesNoAuto::Auto) {
             if(!bmp.HasAlpha()) {
@@ -583,12 +660,17 @@ namespace Gorgon { namespace Graphics {
                             uh = b.Height();
                     }
                     
+                    if(b.Width() > maxwidth)
+                        maxwidth = b.Width();
+                    
                     if(start == 'A')
                         a_bounds = b;
                 }
                 
                 i++;
                 start++;
+                if(grid.Area() == 0)
+                    while(internal::isspace(start)) start++;
             }
         }
         else {
@@ -614,12 +696,18 @@ namespace Gorgon { namespace Graphics {
                             uh = b.Height();
                     }
                     
+                    if(b.Width() > maxwidth)
+                        maxwidth = b.Width();
+                    
                     if(start == 'A')
                         a_bounds = b;
                 }
                 
                 i++;
                 start++;
+                
+                if(grid.Area() == 0)
+                    while(internal::isspace(start)) start++;
             }
         }
             

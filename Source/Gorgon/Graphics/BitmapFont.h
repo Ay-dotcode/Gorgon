@@ -73,7 +73,8 @@ namespace Gorgon { namespace Graphics {
                 YesNoAuto converttoalpha = YesNoAuto::Yes,
                 bool prepare = true,
                 bool estimatebaseline = false,
-                bool automatickerning = true
+                bool automatickerning = true,
+                int spacing = -1
             ) :
                 pack(pack),
                 baseline(baseline),
@@ -81,7 +82,8 @@ namespace Gorgon { namespace Graphics {
                 converttoalpha(converttoalpha),
                 prepare(prepare),
                 estimatebaseline(estimatebaseline),
-                automatickerning(automatickerning)            
+                automatickerning(automatickerning),
+                spacing(spacing)
             { 
             }
             
@@ -117,6 +119,9 @@ namespace Gorgon { namespace Graphics {
             
             /// Whether to apply automatic kerning after import is completed.
             bool automatickerning = true;
+            
+            ///Spaces between characters, -1 activates auto detection.
+            int spacing = -1;
         };
         
         explicit BitmapFont(float baseline = 0) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)), baseline(baseline) { }
@@ -288,6 +293,11 @@ namespace Gorgon { namespace Graphics {
         /// glyphs. If you intend to save this font as a resource, you need to set expand
         /// to true. Space characters cannot be detected in automatic mode, thus they will 
         /// be skipped. However, renderer has default space widths generated from font height.
+        ///
+        /// Automatic detection can fail for double quotes and any other glyphs that are
+        /// horizontally separate. Using ImportAtlas with automatic detection is difficult.
+        /// you may need to modify atlas images to suit the function. Make sure there is at
+        /// least 1px space between rows and glyphs are ordered as they should.
         int ImportAtlas(Bitmap &&bmp, Geometry::Size grid = {0, 0}, Glyph start = 0x20, bool expand = false, ImportOptions options = ImportOptions{});
         
         /// Imports the given bitmap as atlas image. The given bitmap will be duplicated.
