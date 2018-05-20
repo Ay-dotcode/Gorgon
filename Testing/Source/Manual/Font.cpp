@@ -6,6 +6,7 @@
 #include "Gorgon/Graphics/Layer.h"
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Font.h>
+#include "Gorgon/Graphics/BitmapFont.h"
 
 
 using Gorgon::Window;
@@ -50,18 +51,19 @@ int main() {
     //destruction tests
     {
         Graphics::BitmapFont fnt;
-        fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
+        fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", false);
     }
     {
         Graphics::BitmapFont fnt;
-        fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
-        fnt.Pack();
+        fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "");
     }
 
     //save to load later
     {
+        Graphics::BitmapFont::ImportOptions options;
+        options.pack = false;
         Graphics::BitmapFont fnt;
-        fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
+        fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", options);
         
         std::cout<<"digit w: "<<fnt.GetDigitWidth()<<std::endl;
         std::cout<<"x-space: "<<fnt.GetGlyphSpacing()<<std::endl;
@@ -122,8 +124,18 @@ int main() {
     
     sty.SetUnderline(false);
 	sty.DisableShadow();
-    sty.SetColor({1.f, 0.2f, 0.2f});
+    sty.SetColor({1.f, 0.4f, 0.4f});
 	sty.Print(l, "First text should be justified.\nPrevious text should have tabs and underlined.\nThis text should not have shadow and should be red.", 250, 240);
+    
+    Graphics::BitmapFont fixedsize_original;
+    Graphics::BitmapFont::ImportOptions options;
+    options.converttoalpha = Gorgon::YesNoAuto::Auto;
+    std::cout<<"Imported "<<fixedsize_original.ImportAtlas("fixed-font.bmp", {7, 9}, 0x20, false, options)<<" glyphs."<<std::endl;
+    fixedsize_original.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 2);
+    
+    Graphics::BitmapFont fixedsize_repack;
+    std::cout<<"Imported "<<fixedsize_repack.ImportAtlas("fixed-font.bmp", {7, 9}, 0x20, true, options)<<" glyphs."<<std::endl;
+    fixedsize_repack.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 6+fixedsize_original.GetLineGap() * 2);
     
 
 	while(true) {

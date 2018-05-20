@@ -56,12 +56,68 @@ namespace Gorgon { namespace Graphics {
             /// Hexadecimal code of the character is used as filename
             Hexadecimal
         };
-
+        
 		enum DeleteConstants {
 			None,
 			Owned,
 			All
 		};
+        
+        
+        /// Use this structure to specify options for import operations
+        struct ImportOptions {
+            ImportOptions(
+                bool pack = true,
+                float baseline = -1,
+                bool trim = true,
+                YesNoAuto converttoalpha = YesNoAuto::Yes,
+                bool prepare = true,
+                bool estimatebaseline = false,
+                bool automatickerning = true
+            ) :
+                pack(pack),
+                baseline(baseline),
+                trim(trim),
+                converttoalpha(converttoalpha),
+                prepare(prepare),
+                estimatebaseline(estimatebaseline),
+                automatickerning(automatickerning)            
+            { 
+            }
+            
+            /// Packs the bitmap font. This is optimal for rendering. However, packed
+            /// fonts cannot be saved as resource.
+            bool pack = true;
+            
+            /// Set baseline to specific height. Use of non-integer values may caused
+            /// blurriness in font rendering. Value of -1 means automatically detect
+            /// according to estimatebaseline option.
+            float baseline = -1;
+            
+            /// Whether to trim whitespace around the glyphs. This will also trigger
+            /// automatic advance calculation. It is best to set this to true if using
+            /// automatic kerning
+            bool trim = true;
+            
+            /// Whether to convert imported images to alpha only images. Conversion to
+            /// alpha only is helpful to speed up text rendering, allows fonts that are
+            /// represented with a different color than white to work properly. However,
+            /// colored fonts will not work. Setting this to Auto will detect if conversion
+            /// is safe by checking whether all pixels have the same color. However, this
+            /// process is very slow.
+            YesNoAuto converttoalpha = YesNoAuto::Yes; 
+            
+            /// Prepares the loaded bitmaps. If pack option is set, this option is ignored.
+            bool prepare = true;
+            
+            /// If baseline is set to -1 (auto), setting this to true will use cheap
+            /// baseline calculation instead of searching it in letter A. If letter A does
+            /// not exists, this option is enforced.
+            bool estimatebaseline = false;
+            
+            /// Whether to apply automatic kerning after import is completed.
+            bool automatickerning = true;
+        };
         
         explicit BitmapFont(float baseline = 0) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)), baseline(baseline) { }
         
@@ -71,75 +127,13 @@ namespace Gorgon { namespace Graphics {
             Utils::NotImplemented();
         }
         
-        BitmapFont(BitmapFont &&other) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)) {
-            using std::swap;
-            
-            swap(glyphmap, other.glyphmap);
-            
-            swap(destroylist, other.destroylist);
-
-			swap(kerning, other.kerning);
-            
-            isfixedw = other.isfixedw;
-            
-            maxwidth = other.maxwidth;
-            
-            height = other.height;
-            
-            baseline = other.baseline;
-
-            digw = other.digw;
-
-            isascii = other.isascii;
-            
-            spacing = other.spacing;
-
-            linethickness = other.linethickness;
-
-            underlinepos = other.underlinepos;
-
-			linegap = other.linegap;
-        }
+        BitmapFont(BitmapFont &&other);
       
         BitmapFont &operator =(const BitmapFont &) = delete;
         
         /// Moves another bitmap font into this one. This font will be destroyed
         /// in this process
-        BitmapFont &operator =(BitmapFont &&other) {
-            using std::swap;
-            
-            destroylist.Destroy();
-            glyphmap.clear();
-			kerning.clear();
-            
-            swap(glyphmap, other.glyphmap);
-            
-            swap(destroylist, other.destroylist);
-
-			swap(kerning, other.kerning);
-
-            isfixedw = other.isfixedw;
-            
-            maxwidth = other.maxwidth;
-            
-            height = other.height;
-            
-            baseline = other.baseline;
-
-            digw = other.digw;
-
-            isascii = other.isascii;
-            
-            spacing = other.spacing;
-
-            linethickness = other.linethickness;
-
-            underlinepos = other.underlinepos;
-
-			linegap = other.linegap;
-
-            return *this;
-        }
+        BitmapFont &operator =(BitmapFont &&other);
         
         ~BitmapFont() {
 			destroylist.Destroy();
@@ -278,10 +272,39 @@ namespace Gorgon { namespace Graphics {
 		/// function will set underline position to halfway between baseline and bottom.
 		/// If estimatebaseline is set, then the baseline position is a simple estimate instead
 		/// of a search. The search will look at A to find the lowest pixel to declare it
-		/// baseline.
-        int ImportFolder(const std::string &path, ImportNamingTemplate naming = Automatic, int start = 0, 
-						 std::string prefix = "", float baseline = -1, bool trim = true, bool converttoalpha = true, 
-						 bool prepare = true, bool estimatebaseline = false, bool automatickerning = true);
+		/// baseline. Returns number of glyphs that are imported.
+        int ImportFolder(const std::string &path, ImportNamingTemplate naming = Automatic, Glyph start = 0, 
+						 std::string prefix = "", ImportOptions options = ImportOptions{});
+        
+        
+        /// Imports the given bitmap as atlas image. The bitmap data will be copied out of
+        /// the given bitmap. If grid is not specified or specified as zero size, glyph
+        /// locations will be determined automatically. This automatic detection requires
+        /// glyphs to be arranged in lines and there must be at least 1px space between
+        /// the lines and the glyphs. If saved, atlas images packed loosely by bitmap font 
+        /// will work with ImportAtlas function. However, packing algorithm of FreeType 
+        /// produces atlases with variable line height, making it impossible to determine
+        /// glyph locations. packing options can be used to control the final result of
+        /// glyphs. If you intend to save this font as a resource, you need to set expand
+        /// to true. Space characters cannot be detected in automatic mode, thus they will 
+        /// be skipped. However, renderer has default space widths generated from font height.
+        int ImportAtlas(Bitmap &&bmp, Geometry::Size grid = {0, 0}, Glyph start = 0x20, bool expand = false, ImportOptions options = ImportOptions{});
+        
+        /// Imports the given bitmap as atlas image. The given bitmap will be duplicated.
+        /// See ImportAtlas(Bitmap &&) for details.
+        int ImportAtlas(const Bitmap &bmp, Geometry::Size grid = {0, 0}, Glyph start = 0x20, bool expand = false, ImportOptions options = ImportOptions{}) { 
+            return ImportAtlas(bmp.Duplicate(), grid, start, expand, options); 
+        }
+        
+        /// Imports the given file as atlas image. See ImportAtlas(Bitmap &&) for details.
+        int ImportAtlas(const std::string &filename, Geometry::Size grid = {0, 0}, Glyph start = 0x20, bool expand = false, ImportOptions options = ImportOptions{}) {
+            Bitmap bmp;
+            
+            if(!bmp.Import(filename))
+                return 0;
+            
+            return ImportAtlas(std::move(bmp), grid, start, expand, options);
+        }
         
 		/// Automatically calculates kerning distances between glyphs. This operation might take
 		/// a while depending on the number of glyphs that are loaded. This function uses glyph

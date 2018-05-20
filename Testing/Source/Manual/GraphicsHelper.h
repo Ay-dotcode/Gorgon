@@ -47,8 +47,7 @@ public:
 		bgimage.Prepare();
 		bgimage.DrawIn(l);
 
-		fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
-		fnt.Pack();
+		fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "");
 
 		sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
 		sty.SetColor({0.6f, 1.f, 1.f});

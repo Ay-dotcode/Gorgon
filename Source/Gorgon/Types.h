@@ -22,6 +22,14 @@ namespace Gorgon {
 	
 	/// A class that has no members and can be used as placeholder
 	class Empty {};
+    
+    /// This enumeration helps with systems that has boolena parameters
+    /// that can be detected automatically, but can also be overriden.
+    enum class YesNoAuto {
+        No = 0,
+        Yes = 1,
+        Auto = 2
+    };
 
 	/// Returns the number of bits that are 1 in a number
 	inline int NumberOfSetBits(uint32_t i) {

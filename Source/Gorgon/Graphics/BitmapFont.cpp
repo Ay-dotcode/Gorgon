@@ -7,6 +7,36 @@
 
 namespace Gorgon { namespace Graphics {
 
+    BitmapFont::BitmapFont(Graphics::BitmapFont&& other) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)) {
+        using std::swap;
+        
+        swap(glyphmap, other.glyphmap);
+        
+        swap(destroylist, other.destroylist);
+
+        swap(kerning, other.kerning);
+        
+        isfixedw = other.isfixedw;
+        
+        maxwidth = other.maxwidth;
+        
+        height = other.height;
+        
+        baseline = other.baseline;
+
+        digw = other.digw;
+
+        isascii = other.isascii;
+        
+        spacing = other.spacing;
+
+        linethickness = other.linethickness;
+
+        underlinepos = other.underlinepos;
+
+        linegap = other.linegap;
+    }
+
     void BitmapFont::AddGlyph(Glyph glyph, const RectangularDrawable& bitmap, Geometry::Pointf offset, float advance) {
 		auto size = bitmap.GetSize();
 
@@ -89,7 +119,7 @@ namespace Gorgon { namespace Graphics {
 	}
 	
 
-	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, int start, std::string prefix, float baseline, bool trim, bool toalpha, bool prepare, bool estimatebaseline, bool automatickerning) {
+	int BitmapFont::ImportFolder(const std::string& path, ImportNamingTemplate naming, Glyph start, std::string prefix, ImportOptions options) {
 		Containers::Hashmap<std::string, Bitmap> files; // map of file labels to bitmaps
         
         std::map<int, int> ghc;
@@ -254,6 +284,36 @@ namespace Gorgon { namespace Graphics {
         
         //to visit them after loading finishes
         std::vector<Glyph> added;
+        
+        bool toalpha = options.converttoalpha != YesNoAuto::No;   
+        
+        RGBA prevcolor = {0,0,0,0};
+        
+        if(options.converttoalpha == YesNoAuto::Auto) {
+            for(auto p : files) {
+                if(p.second.HasAlpha() && p.second.GetMode() != ColorMode::Alpha) {
+                    //go through the glyph to check if it has any other pixel color
+                    //other than the previous, unless it has 0 alpha
+                    p.second.ForAllPixels([&](int x, int y) {
+                        if(p.second.GetAlphaAt(x, y) >= 0) {
+                            if(prevcolor.A == 0) {
+                                prevcolor = p.second.GetRGBAAt(x, y);
+                            }
+                            else if(prevcolor != p.second.GetRGBAAt(x, y)) {
+                                toalpha = false;
+                                options.converttoalpha = YesNoAuto::No;
+                                return false;
+                            }
+                        }
+                        
+                        return true;
+                    });
+                }
+            
+                //we have found our answer
+                if(options.converttoalpha != YesNoAuto::Auto) break;
+            }
+        }
 
 		for(auto p : files) {
 			auto bl = 0;
@@ -282,7 +342,7 @@ namespace Gorgon { namespace Graphics {
                 spim = &p.second;
             }
 
-			if(trim) {
+			if(options.trim) {
 				auto res = p.second.Trim();
 				if(res.Top != p.second.GetHeight())
 					bl = res.Top;
@@ -291,12 +351,13 @@ namespace Gorgon { namespace Graphics {
 			if(g == '_') {
 				uh = p.second.GetHeight();
 			}
-
-			if(HasAlpha(p.second.GetMode()) && toalpha) {
+			
+			
+			if(p.second.HasAlpha() && toalpha) {
 				p.second.StripRGB();
 			}
 
-			if(prepare)
+			if(options.prepare && !options.pack)
 				p.second.Prepare();
 
             AddGlyph(g, p.second, {0, float(bl)}, float(p.second.GetWidth()));
@@ -309,8 +370,8 @@ namespace Gorgon { namespace Graphics {
 
 		height = maxh;
 
-		if(baseline == -1) {
-            if(!estimatebaseline && glyphmap.count('A')) {
+		if(options.baseline == -1) {
+            if(!options.estimatebaseline && glyphmap.count('A')) {
                 const Bitmap *bmp = dynamic_cast<const Bitmap*>(glyphmap.at('A').image);
                 
                 if(bmp) {
@@ -330,20 +391,20 @@ namespace Gorgon { namespace Graphics {
                         }
                         
                         if(pos != -1)
-                            baseline = pos + glyphmap.at('A').offset.Y;
+                            options.baseline = pos + glyphmap.at('A').offset.Y;
                     }
                 }
             }
             
-            if(baseline == -1) {
-                baseline = std::round(height * 0.75f);
+            if(options.baseline == -1) {
+                options.baseline = std::round(height * 0.75f);
             }
 		}
 
-		this->baseline = baseline;
+		this->baseline = options.baseline;
 
         
-        if(trim && spim && maxwidth == spw) {
+        if(options.trim && spim && maxwidth == spw) {
             //check if glyph is empty, if so we can resize it.
             int alphaloc = GetAlphaIndex(spim->GetMode());
             
@@ -359,7 +420,9 @@ namespace Gorgon { namespace Graphics {
                 spim->Resize({(int)std::ceil(height/3.f), 1}, spim->GetMode());
                 spim->Clear();
                 
-                if(prepare) spim->Prepare();
+                if(options.prepare && !options.pack) {
+                    spim->Prepare();
+                }
             }
         }
 
@@ -375,7 +438,7 @@ namespace Gorgon { namespace Graphics {
 			}
 		}
 
-		if(trim && uh) {
+		if(options.trim && uh) {
 			linethickness = uh;
 		}
 		else {
@@ -385,7 +448,7 @@ namespace Gorgon { namespace Graphics {
                 linethickness = 1;
         }
 
-		if(trim && spacing==0) {
+		if(options.trim && spacing==0) {
             spacing = (int)std::floor(height/10.f);
             
             if(spacing == 0)
@@ -398,12 +461,208 @@ namespace Gorgon { namespace Graphics {
         
 		underlinepos = int(baseline + linethickness + 1);
 
-        linegap = std::round(height * 1.2f);
+        linegap = height + spacing * 2;
 
-		if(automatickerning)
+		if(options.automatickerning)
 			AutoKern();
         
+        if(options.pack)
+            Pack();
+        
         return files.GetSize();
+    }
+    
+    int BitmapFont::ImportAtlas(Bitmap &&bmp, Geometry::Size grid, Glyph start, bool expand, ImportOptions options) {
+        std::vector<Geometry::Bounds> bounds;
+        std::vector<Geometry::Point>  offsets;
+        
+        //bounds for A might be used to determine baseline
+        Geometry::Bounds a_bounds = {0, 0, 0, 0};
+        
+        int imported = 0;
+		//height of underscore
+		int uh = 0;
+        
+        
+        if(grid.Area()) {
+            height = grid.Height;
+            
+            //ignore any non-full glyphs
+            auto searchsize = bmp.GetSize() - grid;
+            
+            //put everything into the vector
+            for(int y=0; y<=searchsize.Height; y+= grid.Height) {
+                for(int x=0; x<=searchsize.Width; x+= grid.Width) {
+                    bounds.push_back({x, y, grid});
+                    offsets.push_back({0, 0});
+                }
+            }
+        }
+        else {
+            //skip spaces
+            while(internal::isspace(start)) {
+                start++;
+            }
+        }
+        
+        spacing = (int)std::floor(height / 10);
+        if(spacing < 1) spacing = 1;
+        
+        if(options.converttoalpha == YesNoAuto::Auto) {
+            if(!bmp.HasAlpha()) {
+                options.converttoalpha = YesNoAuto::No;
+            }
+            else if(bmp.GetMode() == ColorMode::Alpha) {
+                options.converttoalpha = YesNoAuto::No;
+            }
+            else {
+                RGBA prevcolor = {0,0,0,0};
+                
+                bmp.ForAllPixels([&](int x, int y) {
+                    auto c = bmp.GetRGBAAt(x, y);
+                    
+                    if(c.A) {
+                        if(prevcolor.A == 0) {
+                            prevcolor = c;
+                        }
+                        else if(prevcolor != c) {
+                            options.converttoalpha = YesNoAuto::No;
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                });
+                
+                if(options.converttoalpha == YesNoAuto::Auto) 
+                    options.converttoalpha = YesNoAuto::Yes;
+            }
+        }
+            
+        if(options.trim) {
+            int i = 0;
+            for(auto &b : bounds) {
+                auto margins = bmp.Trim(b);
+                
+                if(margins.TotalX() >= b.Width())
+                    b = {0,0,0,0};
+                else if(margins.TotalY() >= b.Height())
+                    b = {0,0,0,0};
+                else {
+                    b = b - margins;
+                    
+                    offsets[i].Y = margins.Top;
+                }
+                
+                i++;
+            }
+        }
+        
+        if(expand) {
+            if(options.converttoalpha == YesNoAuto::Yes) {
+                bmp.StripRGB();
+            }
+            
+            int i = 0;
+            for(auto b : bounds) {
+                if(!bmp.IsEmpty(b)) {
+                    auto img = new Bitmap(b.GetSize(), bmp.GetMode());
+                    bmp.GetData().CopyTo(img->GetData(), b);
+                    
+                    if(options.prepare && !options.pack)
+                        bmp.Prepare();
+                    
+                    destroylist.Add(img);
+                    AddGlyph(start, *img, offsets[i], b.Width() + (options.trim ? spacing : 0));
+                    imported++;
+                    
+                    if(start == '_') {
+                        if(!options.trim)
+                            uh = (b - bmp.Trim(b)).Height();
+                        else 
+                            uh = b.Height();
+                    }
+                    
+                    if(start == 'A')
+                        a_bounds = b;
+                }
+                
+                i++;
+                start++;
+            }
+        }
+        else {
+            if(options.converttoalpha == YesNoAuto::Yes) {
+                bmp.StripRGB();
+                bmp.Prepare();
+            }
+            else if(bmp.GetID() == 0)
+                bmp.Prepare();
+            
+            int i = 0;
+            for(auto b : bounds) {
+                if(!bmp.IsEmpty(b)) {
+                    auto img = new TextureImage(bmp.GetID(), bmp.GetMode(), bmp.GetSize(), b);
+                    destroylist.Add(img);
+                    AddGlyph(start, *img, offsets[i], b.Width() + (options.trim ? spacing : 0));
+                    imported++;
+                    
+                    if(start == '_') {
+                        if(!options.trim)
+                            uh = (b - bmp.Trim(b)).Height();
+                        else 
+                            uh = b.Height();
+                    }
+                    
+                    if(start == 'A')
+                        a_bounds = b;
+                }
+                
+                i++;
+                start++;
+            }
+        }
+            
+        if(options.baseline == -1) {
+            if((options.trim || !options.estimatebaseline) && glyphmap.count('A')) {
+                //if trimmed no need to search again
+                if(options.trim) {
+                    auto &a = glyphmap['A'];
+                    options.baseline = a.image->GetHeight() + a.offset.Y;
+                }
+                else {
+                    options.baseline = height - bmp.Trim(a_bounds, false, false, false, true).Bottom;
+                }
+            }
+            else {
+                options.baseline = std::round(height * 0.75f);
+            }
+        }
+
+		if(uh) {
+			linethickness = uh;
+		}
+		else {
+            linethickness = height / 10;
+            
+            if(linethickness < 1)
+                linethickness = 1;
+        }
+        
+        linegap = height + spacing * 2;
+
+		if(options.automatickerning)
+			AutoKern();
+        
+        if(expand) {
+            if(options.pack)
+                Pack();
+        }
+        else
+            destroylist.Add(new Bitmap(std::move(bmp))); //keep the original
+            
+        
+        return imported;
     }
 
 	void BitmapFont::AutoKern(Byte opaquelevel, int reduce, int capitaloffset) {
@@ -457,7 +716,7 @@ namespace Gorgon { namespace Graphics {
 			auto &my = data.at(g.first);
 
 			int y, yoff = (int)std::round(g.second.offset.Y), xoff = (int)std::round(g.second.offset.X);
-			int w=bmp->GetWidth(), h=bmp->GetHeight();
+			int w=g.second.image->GetWidth(), h=g.second.image->GetHeight();
 
 			//after import offset x is probably 0. just in case, we wont modify it. 
 			//this mechanism requires debugging
@@ -483,6 +742,9 @@ namespace Gorgon { namespace Graphics {
 			//check accent before finding empty lines
 			if(h + yoff < capitaloffset)
 				my.accent = true;
+            
+            //TODO add support to kern atlas glyphs where the atlas bmp is available
+            if(!bmp) continue;
 
 			//if the image has no alpha, simply skip checking alpha
 			if(bmp->HasAlpha()) {
@@ -657,5 +919,41 @@ namespace Gorgon { namespace Graphics {
             else
                 return 0;
         }
+    }
+
+    Graphics::BitmapFont& BitmapFont::operator=(Graphics::BitmapFont&& other) {
+        using std::swap;
+        
+        destroylist.Destroy();
+        glyphmap.clear();
+        kerning.clear();
+        
+        swap(glyphmap, other.glyphmap);
+        
+        swap(destroylist, other.destroylist);
+
+        swap(kerning, other.kerning);
+
+        isfixedw = other.isfixedw;
+        
+        maxwidth = other.maxwidth;
+        
+        height = other.height;
+        
+        baseline = other.baseline;
+
+        digw = other.digw;
+
+        isascii = other.isascii;
+        
+        spacing = other.spacing;
+
+        linethickness = other.linethickness;
+
+        underlinepos = other.underlinepos;
+
+        linegap = other.linegap;
+
+        return *this;
     }
 } }

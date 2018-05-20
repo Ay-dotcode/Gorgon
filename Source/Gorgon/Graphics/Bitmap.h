@@ -329,6 +329,35 @@ namespace Gorgon { namespace Graphics {
 			return data->GetAlphaAt(x, y);
 		}
 
+		/// Returns the alpha at the given location. If the given location does not exits
+		/// this function will return 0. If there is no alpha channel, image is assumed
+		/// to be opaque.
+		RGBA GetRGBAAt(int x, int y) const {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Bitmap data is not set");
+			}
+#endif
+            switch(data->GetMode()) {
+                case ColorMode::Alpha:
+                    return {255, 255, 255, (*data)(x, y, 0)};
+                case ColorMode::Grayscale_Alpha:
+                    return {(*data)(x, y, 0), (*data)(x, y, 0), (*data)(x, y, 0), (*data)(x, y, 1)};
+                case ColorMode::Grayscale:
+                    return {(*data)(x, y, 0), (*data)(x, y, 0), (*data)(x, y, 0), 255};
+                case ColorMode::RGB:
+                    return {(*data)(x, y, 0), (*data)(x, y, 1), (*data)(x, y, 2), 255};
+                case ColorMode::BGR:
+                    return {(*data)(x, y, 2), (*data)(x, y, 1), (*data)(x, y, 0), 255};
+                case ColorMode::RGBA:
+                    return {(*data)(x, y, 0), (*data)(x, y, 1), (*data)(x, y, 2), (*data)(x, y, 3)};
+                case ColorMode::BGRA:
+                    return {(*data)(x, y, 2), (*data)(x, y, 1), (*data)(x, y, 0), (*data)(x, y, 3)};
+                default:
+                    return 0;
+            }
+		}
+
 		/// Returns the bytes occupied by a single pixel of this image
 		int GetBytesPerPixel() const {
 #ifndef NDEBUG
@@ -518,6 +547,25 @@ namespace Gorgon { namespace Graphics {
 		Geometry::Margin Trim(bool horizontal, bool vertical) {
 			return Trim(horizontal, vertical, horizontal, vertical);
 		}
+		
+		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty potions. This variant performs
+		/// the check within the specified region and thus suitable for atlas images. This trim operation will not actually
+		/// modify the image.
+		Geometry::Margin Trim(Geometry::Bounds bounds, bool left, bool top, bool right, bool bottom);
+        
+		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty potions. This variant performs
+		/// the check within the specified region and thus suitable for atlas images. This trim operation will not actually
+		/// modify the image.
+        Geometry::Margin Trim(Geometry::Bounds bounds, bool horizontal, bool vertical) {
+            return Trim(bounds, horizontal, vertical, horizontal, vertical);
+        }
+        
+		/// Trims the empty parts of the image, alpha channel = 0 is used to determine empty potions. This variant performs
+		/// the check within the specified region and thus suitable for atlas images. This trim operation will not actually
+		/// modify the image.
+        Geometry::Margin Trim(Geometry::Bounds bounds) {
+            return Trim(bounds, true, true, true, true);
+        }
 
 		/// Loops through all pixels of the image, giving coordinates to your function.
 		void ForAllPixels(std::function<void(int, int)> fn) const {
@@ -606,6 +654,14 @@ namespace Gorgon { namespace Graphics {
 
 			return true;
 		}
+		
+        /// Checks if the given region of this bitmap is completely transparent.
+		bool IsEmpty(Geometry::Bounds bounds) const;
+
+        /// Checks if this bitmap is empty: either 0x0 in size or completely transparent.
+		bool IsEmpty() const {
+            return IsEmpty({0,0, GetSize()});
+        }
 
 		/// Rotates image data without any losses
 		Graphics::Bitmap Rotate90() const;

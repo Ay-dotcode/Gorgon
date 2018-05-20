@@ -440,94 +440,9 @@ namespace Gorgon { namespace Graphics {
 	Geometry::Margin Bitmap::Trim(bool left, bool top, bool right, bool bottom) {
 		ASSERT(data, "Image data does not exists");
 
-		Geometry::Margin ret(0, 0, 0, 0);
-
-		if(!HasAlpha()) 
-            return ret;
-
-		int alpha = GetAlphaIndex();
+		auto ret = Trim({0, 0, GetSize()}, left, top, right, bottom);
 
 		auto &data = *this->data;
-
-		if(left) {
-			for(int x=0; x<data.GetWidth(); x++) {
-				bool empty = true;
-
-				for(int y=0; y<data.GetHeight(); y++) {
-					if(data(x, y, alpha) != 0) {
-						empty = false;
-						break;
-					}
-				}
-
-				if(empty) {
-					ret.Left++;
-				}
-				else {
-					break;
-				}
-			}
-		}
-
-		if(top) {
-			for(int y=0; y<data.GetHeight(); y++) {
-				bool empty = true;
-
-				for(int x=0; x<data.GetWidth(); x++) {
-					if(data(x, y, alpha) != 0) {
-						empty = false;
-						break;
-					}
-				}
-
-				if(empty) {
-					ret.Top++;
-				}
-				else {
-					break;
-				}
-			}
-		}
-
-		if(right) {
-			for(int x=data.GetWidth()-1; x>=0; x--) {
-				bool empty = true;
-
-				for(int y=0; y<data.GetHeight(); y++) {
-					if(data(x, y, alpha) != 0) {
-						empty = false;
-						break;
-					}
-				}
-
-				if(empty) {
-					ret.Right++;
-				}
-				else {
-					break;
-				}
-			}
-		}
-
-		if(bottom) {
-			for(int y=data.GetHeight()-1; y>=0; y--) {
-				bool empty = true;
-
-				for(int x=0; x<data.GetWidth(); x++) {
-					if(data(x, y, alpha) != 0) {
-						empty = false;
-						break;
-					}
-				}
-
-				if(empty) {
-					ret.Bottom++;
-				}
-				else {
-					break;
-				}
-			}
-		}
 
 		if(ret.TotalX() == 0 && ret.TotalY() == 0) return ret;
 
@@ -553,6 +468,101 @@ namespace Gorgon { namespace Graphics {
 		return ret;
 	}
 
+	Geometry::Margin Bitmap::Trim(Geometry::Bounds bounds, bool left, bool top, bool right, bool bottom) {
+		ASSERT(data, "Image data does not exists");
+
+		Geometry::Margin ret(0, 0, 0, 0);
+
+		if(!HasAlpha()) 
+            return ret;
+
+		int alpha = GetAlphaIndex();
+
+		auto &data = *this->data;
+
+		if(left) {
+			for(int x=bounds.Left; x<bounds.Right; x++) {
+				bool empty = true;
+
+				for(int y=bounds.Top; y<bounds.Bottom; y++) {
+					if(data(x, y, alpha) != 0) {
+						empty = false;
+						break;
+					}
+				}
+
+				if(empty) {
+					ret.Left++;
+				}
+				else {
+					break;
+				}
+			}
+		}
+
+		if(top) {
+			for(int y=bounds.Top; y<bounds.Bottom; y++) {
+				bool empty = true;
+
+				for(int x=bounds.Left; x<bounds.Right; x++) {
+					if(data(x, y, alpha) != 0) {
+						empty = false;
+						break;
+					}
+				}
+
+				if(empty) {
+					ret.Top++;
+				}
+				else {
+					break;
+				}
+			}
+		}
+
+		if(right) {
+			for(int x=bounds.Right-1; x>=bounds.Left; x--) {
+				bool empty = true;
+
+				for(int y=bounds.Top; y<bounds.Bottom; y++) {
+					if(data(x, y, alpha) != 0) {
+						empty = false;
+						break;
+					}
+				}
+
+				if(empty) {
+					ret.Right++;
+				}
+				else {
+					break;
+				}
+			}
+		}
+
+		if(bottom) {
+			for(int y=bounds.Bottom-1; y>=bounds.Top; y--) {
+				bool empty = true;
+
+				for(int x=bounds.Left; x<bounds.Right; x++) {
+					if(data(x, y, alpha) != 0) {
+						empty = false;
+						break;
+					}
+				}
+
+				if(empty) {
+					ret.Bottom++;
+				}
+				else {
+					break;
+				}
+			}
+		}
+
+		return ret;
+	}
+
 	Containers::Image Bitmap::ReleaseData() {
 		if(data==nullptr) {
 #ifndef NDEBUG
@@ -570,6 +580,27 @@ namespace Gorgon { namespace Graphics {
 			return temp;
 		}
 	}
+	
+	bool Bitmap::IsEmpty(Geometry::Bounds bounds) const {
+        if(bounds.GetSize().Area() == 0)
+            return true;
+
+		if(!HasAlpha()) 
+            return false;
+
+		int alpha = GetAlphaIndex();
+
+		auto &data = *this->data;
+
+        for(int y=bounds.Top; y<bounds.Bottom; y++) {
+            for(int x=bounds.Left; x<bounds.Right; x++) {
+                if(data(x, y, alpha) > 0)
+                    return false;
+            }
+        }
+        
+        return true;
+    }
 
 	Graphics::Bitmap Bitmap::Rotate90() const {
 		ASSERT(data, "Bitmap data is not set");

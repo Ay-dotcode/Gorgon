@@ -183,8 +183,7 @@ int main() {
 	//img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
     Graphics::BitmapFont fnt;
-	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
-    fnt.Pack();
+	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "");
     
     wind.Minimize();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
