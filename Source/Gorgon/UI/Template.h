@@ -183,6 +183,7 @@ namespace Gorgon {
 		LastBaselineRight,
 	};
 
+    /// Returns if an anchor is on the left
 	inline bool IsLeft(Anchor a) {
 		switch(a) {
 			case Anchor::TopLeft:
@@ -196,6 +197,7 @@ namespace Gorgon {
 		}
 	}
 
+    /// Returns if an anchor is on the right
 	inline bool IsRight(Anchor a) {
 		switch(a) {
 			case Anchor::TopRight:
@@ -209,6 +211,7 @@ namespace Gorgon {
 		}
 	}
 
+    /// Returns if an anchor is centered horizontally
 	inline bool IsCenter(Anchor a) {
 		switch(a) {
 			case Anchor::TopCenter:
@@ -220,6 +223,7 @@ namespace Gorgon {
 		}
 	}
 
+	/// Returns if the given anchor is at top
 	inline bool IsTop(Anchor a) {
 		switch(a) {
 			case Anchor::TopRight:
@@ -231,6 +235,7 @@ namespace Gorgon {
 		}
 	}
 
+	/// Returns if the given anchor is at bottom
 	inline bool IsBottom(Anchor a) {
 		switch(a) {
 			case Anchor::BottomLeft:
@@ -244,6 +249,7 @@ namespace Gorgon {
 		}
 	}
 
+	/// Returns if the given anchor is at middle vertically
 	inline bool IsMiddle(Anchor a) {
 		switch(a) {
 			case Anchor::MiddleLeft:
@@ -257,6 +263,7 @@ namespace Gorgon {
 		}
 	}
 	
+	/// Types of components, see respective classes for details.
 	ENUMCLASS ComponentType{
 		Placeholder,
 		Textholder,
@@ -903,8 +910,16 @@ namespace Gorgon {
 			/// Position of this component will be affected by the data. Data will be
 			/// given as a percent and will modify Position property. Useful for sliders,
 			/// scrollbars and progress bars. The direction of the container is used to 
-            /// determine which axis will get affected.
+            /// determine which axis will get affected if only one channel is used.
 			ModifyPosition,
+            
+            /// Modifies the X coordinate of the component regardless of the container
+            /// direction.
+            ModifyX,
+            
+            /// Modifies the Y coordinate of the component regardless of the container
+            /// direction.
+            ModifyY,
             
             /// Value modifies the opacity of the component. If used on a container, it will effect
             /// all components in that container
@@ -1027,25 +1042,19 @@ namespace Gorgon {
 
             XGrid           = 4,
             YGrid           = 8,
-            PolarGrid       = 12,
 
             XTick           = 16,
             YTick           = 20,
-            PolarTick       = 24,
             
             XMinorGrid      = 5,
             YMinorGrid      = 9,
-            PolarMinorGrid  = 13,
             XMajorGrid      = 6,
             YMajorGrid      = 10,
-            PolarMajorGrid  = 14,
             
             XMinorTick      = 17,
             YMinorTick      = 21,
-            PolarMinorTick  = 25,
             XMajorTick      = 18,
             YMajorTick      = 22,
-            PolarMajorTick  = 26,
         };
 
 		/// Returns the type of the component.

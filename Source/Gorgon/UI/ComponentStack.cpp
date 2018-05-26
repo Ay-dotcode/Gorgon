@@ -1052,6 +1052,12 @@ realign:
 					pos ={{int(calculatevalue(0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(1, comp)*10000), Dimension::BasisPoint}};
 				}
             }
+            else if(temp.GetValueModification() == temp.ModifyX) {
+                pos = {{int(calculatevalue(0, comp)*10000), Dimension::BasisPoint}, pos.Y};
+            }
+            else if(temp.GetValueModification() == temp.ModifyY) {
+                pos = {pos.X, {int(calculatevalue(0, comp)*10000), Dimension::BasisPoint}};
+            }
             
             if(temp.GetPositioning() == temp.PolarAbsolute) {
                 auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));

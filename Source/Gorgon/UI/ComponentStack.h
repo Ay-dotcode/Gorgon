@@ -71,6 +71,57 @@ namespace Gorgon { namespace UI {
 
 		/// Sets the value for the stack using a color
 		void SetValue(Graphics::RGBA color) { SetValue((Graphics::RGBAf)color); }
+		
+		/// Sets the repeat with the given mode to the given vector. Use std::move(data) for
+		/// efficient transfer
+		void SetRepeat(ComponentTemplate::RepeatMode mode, std::vector<std::array<float, 4>> data) {
+            repeats[mode] = std::move(data);
+        }
+		
+        /// Adds a new repeating point to the given mode. Empty values will be set as 0.
+		void AddRepeat(ComponentTemplate::RepeatMode mode, float first) {
+            repeats[mode].push_back({{first, 0,0,0}});
+        }
+		
+        /// Adds a new repeating point to the given mode. Empty values will be set as 0.
+		void AddRepeat(ComponentTemplate::RepeatMode mode, float first, float second) {
+            repeats[mode].push_back({{first, second, 0,0}});
+        }
+		
+        /// Adds a new repeating point to the given mode. Empty values will be set as 0.
+		void AddRepeat(ComponentTemplate::RepeatMode mode, float first, float second, float third) {
+            repeats[mode].push_back({{first, second, third, 0}});
+        }
+		
+        /// Adds a new repeating point to the given mode.
+		void AddRepeat(ComponentTemplate::RepeatMode mode, float first, float second, float third, float fourth) {
+            repeats[mode].push_back({{first, second, third, fourth}});
+        }
+		
+        /// Adds a new repeating point to the given mode. Empty values will be set as 0.
+		void AddRepeat(ComponentTemplate::RepeatMode mode, Geometry::Pointf pos) {
+            repeats[mode].push_back({{pos.X, pos.Y, 0, 0}});
+        }
+		
+        /// Adds a new repeating point to the given mode. Empty values will be set as 0.
+		void AddRepeat(ComponentTemplate::RepeatMode mode, Geometry::Point3D pos) {
+            repeats[mode].push_back({{pos.X, pos.Y, pos.Z, 0}});
+        }
+		
+        /// Adds a new repeating point to the given mode.
+		void AddRepeat(ComponentTemplate::RepeatMode mode, Graphics::RGBAf color) {
+            repeats[mode].push_back({{color.R, color.G, color.B, color.A}});
+        }
+		
+        /// Adds a new repeating point to the given mode.
+		void AddRepeat(ComponentTemplate::RepeatMode mode, Graphics::RGBA color) {
+            AddRepeat(mode, (Graphics::RGBAf)color);
+        }
+
+        /// Removes all repeat points from the given mode
+		void RemoveRepeats(ComponentTemplate::RepeatMode mode) {
+            repeats.erase(mode);
+        }
 
         using Layer::Resize;
         
@@ -142,6 +193,7 @@ namespace Gorgon { namespace UI {
         
 		std::map<ComponentTemplate::DataEffect, std::string> stringdata;
 		Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
+        std::map<ComponentTemplate::RepeatMode, std::vector<std::array<float, 4>>> repeats;
 		std::array<float, 4> value;
         
         unsigned long conditionstart[(int)ComponentCondition::Max];

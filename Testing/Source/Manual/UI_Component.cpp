@@ -11,6 +11,7 @@
 std::string helptext = 
     "Key list:\n"
     "d\tToggle disabled\n"
+    "1-4\tChange Values\n"
 	"esc\tClose\n"
 ;
 
@@ -42,6 +43,7 @@ int main() {
     circle2.Prepare();
     
     auto blank = Graphics::BlankImage(16, 16, 0xffffffff);
+    auto dot = Graphics::BlankImage(2, 2, 0xff000000);
     
     UI::Template temp;
     temp.SetConditionDuration(UI::ComponentCondition::Normal__Disabled, 2000);
@@ -58,7 +60,16 @@ int main() {
 	outer2.SetCenter(50, 50, UI::Dimension::Percent);
 	outer2.SetValueModification(outer2.ModifyColor, UI::ComponentTemplate::UseRGB);
 
-    auto &gauge = temp.AddGraphics(2, UI::ComponentCondition::Always);
+    auto &ticks = temp.AddGraphics(2, UI::ComponentCondition::Always);
+    ticks.Content.SetDrawable(dot);
+    ticks.SetValueModification(ticks.ModifyY, UI::ComponentTemplate::UseY);
+    ticks.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+    ticks.SetPositioning(ticks.PolarAbsolute);
+	ticks.SetValueRange(0, 0, 0.5);
+	ticks.SetCenter(50, 50, UI::Dimension::Percent);
+    ticks.SetRepeatMode(ticks.YMajorTick);
+
+    auto &gauge = temp.AddGraphics(3, UI::ComponentCondition::Always);
     gauge.Content.SetDrawable(blank);
     gauge.SetValueModification(gauge.ModifyPosition, UI::ComponentTemplate::UseXY);
     gauge.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
@@ -67,9 +78,11 @@ int main() {
 	gauge.SetCenter(50, 50, UI::Dimension::Percent);
     
     
+    
     outer_normal.AddIndex(1);
 	outer2.AddIndex(2);
 	outer2.AddIndex(3);
+	outer2.AddIndex(4);
     
     /*auto &icon1 = temp.AddGraphics(1, UI::ComponentCondition::Always);
     icon1.Content.SetDrawable(circle);
@@ -97,7 +110,7 @@ int main() {
 	iconplace.SetSizing(UI::ComponentTemplate::Automatic);
 	iconplace.SetSize(16, 16);*/
     
-    auto &text = temp.AddTextholder(3, UI::ComponentCondition::Always);
+    auto &text = temp.AddTextholder(4, UI::ComponentCondition::Always);
     text.SetDataEffect(text.Text);
     text.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
     //text.SetSize({100, UI::Dimension::Percent}, {-100, UI::Dimension::EM});
@@ -129,6 +142,9 @@ int main() {
     float v1 = 0.5, v2 = 0;
     
     stack.SetValue(v1, v2, 0.3f, 1.f);
+    
+    for(int i=0; i<6; i++)
+        stack.AddRepeat(UI::ComponentTemplate::YMajorTick, i/6.f);
     
     app.wind.Add(stack);
         
