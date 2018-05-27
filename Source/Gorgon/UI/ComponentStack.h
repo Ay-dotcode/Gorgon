@@ -76,41 +76,43 @@ namespace Gorgon { namespace UI {
 		/// efficient transfer
 		void SetRepeat(ComponentTemplate::RepeatMode mode, std::vector<std::array<float, 4>> data) {
             repeats[mode] = std::move(data);
-        }
+			checkrepeatupdate(mode);
+		}
 		
         /// Adds a new repeating point to the given mode. Empty values will be set as 0.
 		void AddRepeat(ComponentTemplate::RepeatMode mode, float first) {
-            repeats[mode].push_back({{first, 0,0,0}});
+			AddRepeat(mode, first, 0, 0, 0);
         }
 		
         /// Adds a new repeating point to the given mode. Empty values will be set as 0.
 		void AddRepeat(ComponentTemplate::RepeatMode mode, float first, float second) {
-            repeats[mode].push_back({{first, second, 0,0}});
+			AddRepeat(mode, first, second, 0, 0);
         }
 		
         /// Adds a new repeating point to the given mode. Empty values will be set as 0.
 		void AddRepeat(ComponentTemplate::RepeatMode mode, float first, float second, float third) {
-            repeats[mode].push_back({{first, second, third, 0}});
+			AddRepeat(mode, first, second, third, 0);
         }
 		
         /// Adds a new repeating point to the given mode.
 		void AddRepeat(ComponentTemplate::RepeatMode mode, float first, float second, float third, float fourth) {
             repeats[mode].push_back({{first, second, third, fourth}});
+			checkrepeatupdate(mode);
         }
 		
         /// Adds a new repeating point to the given mode. Empty values will be set as 0.
 		void AddRepeat(ComponentTemplate::RepeatMode mode, Geometry::Pointf pos) {
-            repeats[mode].push_back({{pos.X, pos.Y, 0, 0}});
+			AddRepeat(mode, pos.X, pos.Y, 0, 0);
         }
 		
         /// Adds a new repeating point to the given mode. Empty values will be set as 0.
 		void AddRepeat(ComponentTemplate::RepeatMode mode, Geometry::Point3D pos) {
-            repeats[mode].push_back({{pos.X, pos.Y, pos.Z, 0}});
+			AddRepeat(mode, pos.X, pos.Y, pos.Z, 0);
         }
 		
         /// Adds a new repeating point to the given mode.
 		void AddRepeat(ComponentTemplate::RepeatMode mode, Graphics::RGBAf color) {
-            repeats[mode].push_back({{color.R, color.G, color.B, color.A}});
+			AddRepeat(mode, color.R, color.G, color.B, color.A);
         }
 		
         /// Adds a new repeating point to the given mode.
@@ -121,7 +123,8 @@ namespace Gorgon { namespace UI {
         /// Removes all repeat points from the given mode
 		void RemoveRepeats(ComponentTemplate::RepeatMode mode) {
             repeats.erase(mode);
-        }
+			checkrepeatupdate(mode);
+		}
 
         using Layer::Resize;
         
@@ -179,9 +182,13 @@ namespace Gorgon { namespace UI {
 
         void grow();
         
-        int getemsize(const Component &comp);
+		int getemsize(const Component &comp);
 
-		float calculatevalue(int channel, const Component &comp) const;
+		float calculatevalue(int channel, const Component &comp) const { return calculatevalue(value, channel, comp); }
+
+		float calculatevalue(const std::array<float, 4> &data, int channel, const Component &comp) const;
+
+		void checkrepeatupdate(ComponentTemplate::RepeatMode mode);
 
         int emsize = 10;
         
@@ -209,6 +216,7 @@ namespace Gorgon { namespace UI {
         const Template &temp;
 
 		std::map<const ComponentTemplate*, ComponentStorage*> storage;
+		std::map<const ComponentTemplate*, std::vector<Component>> repeated;
 
 		Animation::Timer controller;
         

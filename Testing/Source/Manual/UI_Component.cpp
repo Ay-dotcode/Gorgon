@@ -43,7 +43,7 @@ int main() {
     circle2.Prepare();
     
     auto blank = Graphics::BlankImage(16, 16, 0xffffffff);
-    auto dot = Graphics::BlankImage(2, 2, 0xff000000);
+    auto dot = Graphics::BlankImage(2, 2, 0xffffffff);
     
     UI::Template temp;
     temp.SetConditionDuration(UI::ComponentCondition::Normal__Disabled, 2000);
@@ -51,23 +51,26 @@ int main() {
     
     auto &outer_normal = temp.AddContainer(0, UI::ComponentCondition::Always);
     outer_normal.Background.SetAnimation(rect);
-    outer_normal.SetBorderSize(1);
-    outer_normal.SetPadding(0);
+    outer_normal.SetBorderSize(4);
+	//outer_normal.SetPadding(8);
+	outer_normal.SetCenter(50, 50, UI::Dimension::Percent);
     //outer_normal.SetOrientation(Graphics::Orientation::Vertical);
 
 	auto &outer2 = temp.AddContainer(1, UI::ComponentCondition::Always);
 	outer2.SetSize(100, 100, UI::Dimension::Percent);
 	outer2.SetCenter(50, 50, UI::Dimension::Percent);
+	outer2.SetPositioning(outer2.Absolute);
 	outer2.SetValueModification(outer2.ModifyColor, UI::ComponentTemplate::UseRGB);
 
     auto &ticks = temp.AddGraphics(2, UI::ComponentCondition::Always);
     ticks.Content.SetDrawable(dot);
-    ticks.SetValueModification(ticks.ModifyY, UI::ComponentTemplate::UseY);
+    ticks.SetValueModification(ticks.ModifyPosition, UI::ComponentTemplate::UseXY);
     ticks.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
     ticks.SetPositioning(ticks.PolarAbsolute);
-	ticks.SetValueRange(0, 0, 0.5);
 	ticks.SetCenter(50, 50, UI::Dimension::Percent);
+	ticks.SetValueRange(0, 0, 0.5);
     ticks.SetRepeatMode(ticks.YMajorTick);
+	ticks.SetPosition(35, 0, UI::Dimension::Percent);
 
     auto &gauge = temp.AddGraphics(3, UI::ComponentCondition::Always);
     gauge.Content.SetDrawable(blank);
@@ -79,8 +82,8 @@ int main() {
     
     
     
-    outer_normal.AddIndex(1);
-	outer2.AddIndex(2);
+	outer_normal.AddIndex(1);
+	outer_normal.AddIndex(2);
 	outer2.AddIndex(3);
 	outer2.AddIndex(4);
     
@@ -135,7 +138,7 @@ int main() {
 
     UI::ComponentStack stack(temp, {16*6+2, 16*6+2});
     stack.HandleMouse();
-    stack.SetData(UI::ComponentTemplate::Text, "50");
+    stack.SetData(UI::ComponentTemplate::Text, "0");
     
     stack.SetData(UI::ComponentTemplate::Icon, t2.CreateAnimation());
     
@@ -143,8 +146,9 @@ int main() {
     
     stack.SetValue(v1, v2, 0.3f, 1.f);
     
-    for(int i=0; i<6; i++)
-        stack.AddRepeat(UI::ComponentTemplate::YMajorTick, i/6.f);
+	for(int j=1; j<=2; j++)
+    for(int i=0; i<8; i++)
+        stack.AddRepeat(UI::ComponentTemplate::YMajorTick, j/2.f, i/8.f);
     
     app.wind.Add(stack);
         
@@ -164,12 +168,10 @@ int main() {
 		else if(key == Keycodes::Number_1 && state) {
 			v1 -= 0.1f;
 			stack.SetValue(v1, v2);
-			stack.SetData(UI::ComponentTemplate::Text, String::From(int(std::round(100*v1))));
 		}
 		else if(key == Keycodes::Number_2 && state) {
 			v1 += 0.1f;
 			stack.SetValue(v1, v2);
-			stack.SetData(UI::ComponentTemplate::Text, String::From(int(std::round(100*v1))));
 		}
 		else if(key == Keycodes::Number_3 && state) {
 			v2 += 1.f/16;
@@ -179,6 +181,7 @@ int main() {
 			v2 -= 1.f/16;
 			stack.SetValue(Geometry::Pointf(v1,v2));
 		}
+		stack.SetData(UI::ComponentTemplate::Text, String::From(int(std::round(100*v2))));
 
         return false;
     });
