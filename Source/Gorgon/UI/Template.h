@@ -882,6 +882,14 @@ namespace Gorgon {
 			/// will be translated into a string and will be passed.
 			Text,
 
+			ValueText1,
+
+			ValueText2,
+
+			ValueText3,
+
+			ValueText4,
+
 			Title,
 
 			Label,

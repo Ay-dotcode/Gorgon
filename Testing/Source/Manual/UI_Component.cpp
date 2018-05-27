@@ -51,15 +51,14 @@ int main() {
     
     auto &outer_normal = temp.AddContainer(0, UI::ComponentCondition::Always);
     outer_normal.Background.SetAnimation(rect);
-    outer_normal.SetBorderSize(4);
-	//outer_normal.SetPadding(8);
+    outer_normal.SetBorderSize(1);
+	outer_normal.SetPadding(8);
 	outer_normal.SetCenter(50, 50, UI::Dimension::Percent);
     //outer_normal.SetOrientation(Graphics::Orientation::Vertical);
 
 	auto &outer2 = temp.AddContainer(1, UI::ComponentCondition::Always);
 	outer2.SetSize(100, 100, UI::Dimension::Percent);
 	outer2.SetCenter(50, 50, UI::Dimension::Percent);
-	outer2.SetPositioning(outer2.Absolute);
 	outer2.SetValueModification(outer2.ModifyColor, UI::ComponentTemplate::UseRGB);
 
     auto &ticks = temp.AddGraphics(2, UI::ComponentCondition::Always);

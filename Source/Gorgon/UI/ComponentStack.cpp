@@ -374,9 +374,9 @@ namespace Gorgon { namespace UI {
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, comp.location+offset-cont.GetBorderSize().TopLeft(), comp.size, color);
+                    rectangular->DrawIn(*target, offset-cont.GetBorderSize().TopLeft(), comp.size, color);
                 else
-                    st.primary->Draw(*target, comp.location+offset-cont.GetBorderSize().TopLeft(), color);
+                    st.primary->Draw(*target, offset-cont.GetBorderSize().TopLeft(), color);
             }
             
             for(int i=0; i<cont.GetCount(); i++) {
@@ -397,9 +397,9 @@ namespace Gorgon { namespace UI {
             if(st.secondary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.secondary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, comp.location+offset-cont.GetOverlayExtent().TopLeft(), comp.size, color);
+                    rectangular->DrawIn(*target, offset-cont.GetBorderSize().TopLeft()+cont.GetOverlayExtent().TopLeft(), comp.size, color);
                 else
-                    st.secondary->Draw(*target, comp.location+offset-cont.GetOverlayExtent().TopLeft(), color);
+                    st.secondary->Draw(*target, offset-cont.GetBorderSize().TopLeft()+cont.GetOverlayExtent().TopLeft(), color);
             }
             
             offset -= cont.GetBorderSize().TopLeft();
@@ -908,11 +908,11 @@ realign:
             
 				auto maxsize = parent.innersize - parentmargin;
             
-				if(temp.GetPositioning() != temp.Absolute) {
+				if(temp.GetPositioning() != temp.Absolute || temp.GetPositioning() != temp.PolarAbsolute) {
 					if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
-						maxsize.Width = spaceleft;
+						maxsize.Width = spaceleft - parentmargin.TotalX();
 					else
-						maxsize.Height = spaceleft;
+						maxsize.Height = spaceleft - parentmargin.TotalY();
 				}
             
 				auto size = temp.GetSize();
@@ -1135,6 +1135,8 @@ realign:
 					auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
 					auto center  = Geometry::Pointf(temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize));
 
+					pcenter += parentmargin.TopLeft();
+
 					auto r = pos.X.CalculateFloat(Geometry::Point(maxsize).Distance()/(float)sqrt(2), (float)emsize);
 
 					auto a = pos.Y.CalculateFloat(360, PI);
@@ -1187,24 +1189,40 @@ realign:
                     if(ci >= indices) continue;
                     if(!stacksizes[ci]) continue;
 
-                    auto &comp = get(cont[i]);
-                    const auto &temp = comp.GetTemplate();
-                    
-                    //check if textholder and if so use emsize from the font
-                    int emsize = getemsize(comp);
+                    auto &compparent = get(cont[i]);
+                    const auto &temp = compparent.GetTemplate();
 
-                    if(temp.GetPositioning() != temp.Absolute) {
-                        if(comp.anchorotherside) {
-                            rightused = parent.innersize.Width - comp.location.X;
-                        }
-                        else if(comp.size.Width) {
-                            leftused = (   
-                                comp.location.X + comp.size.Width + 
-                                std::max(temp.GetMargin().Right(parent.innersize.Width, emsize), cont.GetPadding().Right(parent.size.Width, emsize))
+					for(int j = 0; temp.GetRepeatMode() == temp.NoRepeat ? j == 0 : repeats.count(temp.GetRepeatMode()) && j < repeats[temp.GetRepeatMode()].size(); j++) {
+						Component *compptr;
+						const std::array<float, 4> *val;
+
+						if(temp.GetRepeatMode() == temp.NoRepeat) {
+							compptr = &compparent;
+							val     = &value;
+						}
+						else {
+							compptr = &repeated[&temp][j];
+							val     = &repeats[temp.GetRepeatMode()][j];
+						}
+
+						auto &comp = *compptr;
+
+						//check if textholder and if so use emsize from the font
+						int emsize = getemsize(comp);
+
+						if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
+							if(comp.anchorotherside) {
+								rightused = parent.innersize.Width - comp.location.X;
+							}
+							else if(comp.size.Width) {
+								leftused = (   
+									comp.location.X + comp.size.Width + 
+									std::max(temp.GetMargin().Right(parent.innersize.Width, emsize), cont.GetPadding().Right(parent.size.Width, emsize))
                                 
-                            );
-                        }
-                    }
+								);
+							}
+						}
+					}
                 }
                 
                 spaceleft = parent.innersize.Width - rightused - leftused;
@@ -1225,7 +1243,7 @@ realign:
                     //check if textholder and if so use emsize from the font
                     int emsize = getemsize(comp);
 
-                    if(temp.GetPositioning() != temp.Absolute) {
+                    if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
                         if(comp.anchorotherside) {
                             bottomused = parent.innersize.Height - comp.location.X;
                         }
