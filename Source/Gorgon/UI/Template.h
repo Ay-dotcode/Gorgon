@@ -1108,16 +1108,21 @@ namespace Gorgon {
 
 
         /// Changes the size of the component. The given values are ignored if the sizing mode is Automatic.
-		void SetSize(int w, int h, Dimension::Unit unit = Dimension::Pixel) { size = {{w, unit}, {h, unit}}; ChangedEvent(); }
+		void SetSize(int w, int h, Dimension::Unit unit = Dimension::Pixel) { SetSize({{w, unit}, {h, unit}}); }
 
         /// Changes the size of the component. The given values are ignored if the sizing mode is Automatic.
-		void SetSize(Geometry::Size size, Dimension::Unit unit = Dimension::Pixel) { this->size = {{size.Width, unit}, {size.Height, unit}}; ChangedEvent(); }
+		void SetSize(Geometry::Size size, Dimension::Unit unit = Dimension::Pixel) { SetSize({{size.Width, unit}, {size.Height, unit}}); }
 
-        /// Changes the size of the component. The given values are ignored if the sizing mode is Automatic.
-		void SetSize(Dimension w, Dimension h) { this->size = {w, h}; ChangedEvent(); }
+        /// Changes the size of the component. If sizing mode is automatic, it will be set to fixed.
+		void SetSize(Dimension w, Dimension h) { SetSize({w, h}); }
 
-        /// Changes the size of the component. The given values are ignored if the sizing mode is Automatic.
-		void SetSize(Size size) { this->size = size; ChangedEvent(); }
+        /// Changes the size of the component. If sizing mode is automatic, it will be set to fixed.
+		void SetSize(Size size) { 
+            this->size = size; 
+            if(sizing == Automatic)
+                sizing = Fixed;
+            ChangedEvent(); 
+        }
 
 		/// Changes the sizing mode of the component.
 		void SetSizing(SizingMode value) { sizing = value; ChangedEvent(); }
@@ -1624,12 +1629,25 @@ namespace Gorgon {
 		virtual ComponentType GetType() const noexcept override {
 			return ComponentType::Graphics;
 		}
+		
+		/// Set to true if you want to fill the region with the given graphics. This will
+		/// only work if the given animation/drawable is rectangular
+		void SetFillArea(bool value) {
+            fill = value;
+            
+            ChangedEvent();
+        }
+        
+        /// Returns whether this graphics will fill the component area
+        bool GetFillArea() const {
+            return fill;
+        }
 
 		/// Graphical representation of the template
 		VisualProvider Content = {ChangedEvent};
 
 	private:
-		
+		bool fill = true;
 
 	};
 	

@@ -407,7 +407,7 @@ namespace Gorgon { namespace UI {
 		else if(temp.GetType() == ComponentType::Graphics) {
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
-                if(rectangular)
+                if(rectangular && dynamic_cast<const GraphicsTemplate&>(temp).GetFillArea())
                     rectangular->DrawIn(*target, comp.location+offset, comp.size, color);
                 else
                     st.primary->Draw(*target, comp.location+offset, color);

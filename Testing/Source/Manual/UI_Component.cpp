@@ -11,7 +11,7 @@
 std::string helptext = 
     "Key list:\n"
     "d\tToggle disabled\n"
-    "1-4\tChange Values\n"
+    "1-2\tChange Values\n"
 	"esc\tClose\n"
 ;
 
@@ -21,133 +21,82 @@ int main() {
 	Graphics::Layer l;
     app.wind.Add(l);
     
-    app.wind.Move(100,100);
-    
     Graphics::BlankImage border_col(1, 1, 0xff000000);
-    auto border_bg = BGImage(16, 16, 0x20, 0x80);
-    border_bg.Prepare();
+    Graphics::BlankImage border_bg(0.8f);
     Graphics::RectangleProvider rect(border_col, border_col, border_col, border_col, border_bg, border_col, border_col, border_col, border_col);
-    
-    Graphics::BlankImage border_col2(1, 1, 0xffffffff);
-    auto border_bg2 = BGImage(16, 16, 0xa0, 0xd0);
-    border_bg2.Prepare();
-    Graphics::RectangleProvider rect2(border_col2, border_col2, border_col2, border_col2, border_bg2, border_col2, border_col2, border_col2, border_col2);
-    
-    auto circle = Circle(15);
-    circle.Prepare();
-    Graphics::TintedObjectProvider t(circle, 0xff000000);
-    Graphics::TintedObjectProvider t2(circle, 0xff00ff00);
-    Graphics::TintedObjectProvider t3(circle, 0xff0000ff);
 
-    auto circle2 = Circle(25);
-    circle2.Prepare();
-    
-    auto blank = Graphics::BlankImage(16, 16, 0xffffffff);
-    auto dot = Graphics::BlankImage(2, 2, 0xffffffff);
+    Graphics::BlankImage btn_bg(0.2f);
+    Graphics::BlankImage tick(0.4f);
+
+    auto trig = Triangle(6, 10);
+    auto trig1 =trig.Rotate90();
+    auto trig2 =trig.Rotate270();
+    trig1.Prepare();
+    trig2.Prepare();
     
     UI::Template temp;
-    temp.SetConditionDuration(UI::ComponentCondition::Normal__Disabled, 2000);
     
     
-    auto &outer_normal = temp.AddContainer(0, UI::ComponentCondition::Always);
-    outer_normal.Background.SetAnimation(rect);
-    outer_normal.SetBorderSize(1);
-	outer_normal.SetPadding(8);
-	outer_normal.SetCenter(50, 50, UI::Dimension::Percent);
-    //outer_normal.SetOrientation(Graphics::Orientation::Vertical);
+    auto &outer = temp.AddContainer(0, UI::ComponentCondition::Always);
+    outer.Background.SetAnimation(rect);
+    outer.SetBorderSize(1);
+    
+    auto &btnleft_n = temp.AddContainer(1, UI::ComponentCondition::Always);
+    btnleft_n.Background.SetDrawable(btn_bg);
+    btnleft_n.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+    btnleft_n.SetMargin(0, 0, 1, 0);
+    outer.AddIndex(1);
+    
+    auto &btn_left_trig = temp.AddGraphics(2, UI::ComponentCondition::Always);
+    btn_left_trig.Content.SetDrawable(trig1);
+    btn_left_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+    btnleft_n.AddIndex(2);
 
-	auto &outer2 = temp.AddContainer(1, UI::ComponentCondition::Always);
-	outer2.SetSize(100, 100, UI::Dimension::Percent);
-	outer2.SetCenter(50, 50, UI::Dimension::Percent);
-	outer2.SetValueModification(outer2.ModifyColor, UI::ComponentTemplate::UseRGB);
+    auto &indicator_n = temp.AddContainer(3, UI::ComponentCondition::Always);
+    indicator_n.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+    outer.AddIndex(3);
 
-    auto &ticks = temp.AddGraphics(2, UI::ComponentCondition::Always);
-    ticks.Content.SetDrawable(dot);
-    ticks.SetValueModification(ticks.ModifyPosition, UI::ComponentTemplate::UseXY);
-    ticks.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-    ticks.SetPositioning(ticks.PolarAbsolute);
-	ticks.SetCenter(50, 50, UI::Dimension::Percent);
-	ticks.SetValueRange(0, 0, 0.5);
-    ticks.SetRepeatMode(ticks.YMajorTick);
-	ticks.SetPosition(35, 0, UI::Dimension::Percent);
+    
+    auto &indicator_sym = temp.AddGraphics(4, UI::ComponentCondition::Always);
+    indicator_sym.Content.SetDrawable(btn_bg);
+    indicator_sym.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+    indicator_sym.SetValueModification(indicator_sym.ModifyX);
+    indicator_sym.SetPositioning(indicator_sym.Absolute);
+    indicator_sym.SetPosition(0, 0);
+    indicator_sym.SetMargin(0, 1, 0, 1);
+    indicator_n.AddIndex(4);
+    
 
-    auto &gauge = temp.AddGraphics(3, UI::ComponentCondition::Always);
-    gauge.Content.SetDrawable(blank);
-    gauge.SetValueModification(gauge.ModifyPosition, UI::ComponentTemplate::UseXY);
-    gauge.SetAnchor(UI::Anchor::None, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-    gauge.SetPositioning(gauge.PolarAbsolute);
-	gauge.SetValueRange(0, 0, 0.5);
-	gauge.SetCenter(50, 50, UI::Dimension::Percent);
-    
-    
-    
-	outer_normal.AddIndex(1);
-	outer_normal.AddIndex(2);
-	outer2.AddIndex(3);
-	outer2.AddIndex(4);
-    
-    /*auto &icon1 = temp.AddGraphics(1, UI::ComponentCondition::Always);
-    icon1.Content.SetDrawable(circle);
-    icon1.SetSize(32, 32);
-    
-    auto &icon1_nd = temp.AddGraphics(2, UI::ComponentCondition::Normal__Disabled);
-    icon1_nd.Content.SetAnimation(t3);
-    icon1_nd.SetSize(16, 16);
-    
-    auto &icon2 = temp.AddGraphics(1, UI::ComponentCondition::Hover);
-    icon2.Content.SetAnimation(t);
-    icon2.SetSize(32, 32);
-    
-    auto &icon3 = temp.AddGraphics(2, UI::ComponentCondition::Down);
-    icon3.Content.SetAnimation(circle);
-    icon3.SetPositioning(icon3.Absolute);
-    //icon3.SetMargin(80);
-    icon3.SetAnchor(UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft, UI::Anchor::BottomLeft);
-    //icon3.SetSize(100, 100, UI::Dimension::Percent);
-    icon3.SetSize(16, 16);
-    
-    auto &iconplace = temp.AddPlaceholder(4, UI::ComponentCondition::Always);
-    iconplace.SetDataEffect(iconplace.Icon);
-	iconplace.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
-	iconplace.SetSizing(UI::ComponentTemplate::Automatic);
-	iconplace.SetSize(16, 16);*/
-    
-    auto &text = temp.AddTextholder(4, UI::ComponentCondition::Always);
-    text.SetDataEffect(text.Text);
-    text.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-    //text.SetSize({100, UI::Dimension::Percent}, {-100, UI::Dimension::EM});
-    //text.SetMargin(100, UI::Dimension::EM);
-    text.SetRenderer(app.fnt);
-	text.SetSizing(UI::ComponentTemplate::Automatic);
-    
-    /*outer_normal.AddIndex(1);
-    outer_normal.AddIndex(2);
-    outer_normal.AddIndex(3);
-    outer_normal.AddIndex(4);
-    
-    auto &outer_disabled = temp.AddContainer(0, UI::ComponentCondition::Disabled); 
+    auto &tickn = temp.AddGraphics(7, UI::ComponentCondition::Always);
+    tickn.Content.SetDrawable(tick);
+    tickn.SetSize({2, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+    tickn.SetMargin(9, 2, 9, 2);
+    tickn.SetRepeatMode(tickn.XTick);
+    tickn.SetPositioning(tickn.Absolute);
+    tickn.SetValueModification(tickn.ModifyX);
+    indicator_n.AddIndex(7);
 
-    outer_disabled.Background.SetAnimation(rect2);
-    outer_disabled.SetBorderSize(1);
-    outer_disabled.SetPadding(5);
     
-    outer_disabled.AddIndex(1);
-    outer_disabled.AddIndex(2);
-    outer_disabled.AddIndex(4);*/
+    auto &btnright_n = temp.AddContainer(5, UI::ComponentCondition::Always);
+    btnright_n.Background.SetDrawable(btn_bg);
+    btnright_n.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+    btnright_n.SetMargin(1, 0, 0, 0);
+    outer.AddIndex(5);
+    
+    auto &btn_right_trig = temp.AddGraphics(6, UI::ComponentCondition::Always);
+    btn_right_trig.Content.SetDrawable(trig2);
+    btn_right_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+    btnright_n.AddIndex(6);
+    
 
-    UI::ComponentStack stack(temp, {16*6+2, 16*6+2});
+    UI::ComponentStack stack(temp, {300, 20});
     stack.HandleMouse();
-    stack.SetData(UI::ComponentTemplate::Text, "0");
     
-    stack.SetData(UI::ComponentTemplate::Icon, t2.CreateAnimation());
+    for(auto i = 0; i<=10; i++) {
+        stack.AddRepeat(tickn.XTick, i/10.f);
+    }
     
-    float v1 = 0.5, v2 = 0;
-    
-    stack.SetValue(v1, v2, 0.3f, 1.f);
-    
-	for(int j=1; j<=2; j++)
-    for(int i=0; i<8; i++)
-        stack.AddRepeat(UI::ComponentTemplate::YMajorTick, j/2.f, i/8.f);
+    float v1 = 0;
     
     app.wind.Add(stack);
         
@@ -166,21 +115,12 @@ int main() {
         }
 		else if(key == Keycodes::Number_1 && state) {
 			v1 -= 0.1f;
-			stack.SetValue(v1, v2);
+			stack.SetValue(v1);
 		}
 		else if(key == Keycodes::Number_2 && state) {
 			v1 += 0.1f;
-			stack.SetValue(v1, v2);
+			stack.SetValue(v1);
 		}
-		else if(key == Keycodes::Number_3 && state) {
-			v2 += 1.f/16;
-			stack.SetValue(v1, v2);
-		}
-		else if(key == Keycodes::Number_4 && state) {
-			v2 -= 1.f/16;
-			stack.SetValue(Geometry::Pointf(v1,v2));
-		}
-		stack.SetData(UI::ComponentTemplate::Text, String::From(int(std::round(100*v2))));
 
         return false;
     });
@@ -188,6 +128,9 @@ int main() {
 
 	while(true) {
 		Gorgon::NextFrame();
+		
+		l.Clear();
+        app.sty.Print(l, String::Concat("v1: ", std::round(v1*100), "\n"), 10, 200);
 	}
 
 	return 0;
