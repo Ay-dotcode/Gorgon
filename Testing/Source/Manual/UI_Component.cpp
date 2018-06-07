@@ -26,7 +26,9 @@ int main() {
     Graphics::RectangleProvider rect(border_col, border_col, border_col, border_col, border_bg, border_col, border_col, border_col, border_col);
 
     Graphics::BlankImage btn_bg(0.2f);
+    Graphics::BlankImage btn_bgh(0.0f);
     Graphics::BlankImage tick(0.4f);
+    Graphics::BlankImage tickhg(0.6f);
 
     auto trig = Triangle(6, 10);
     auto trig1 =trig.Rotate90();
@@ -66,6 +68,14 @@ int main() {
     indicator_sym.SetMargin(0, 1, 0, 1);
     indicator_n.AddIndex(4);
     
+    auto &indicatorh_sym = temp.AddGraphics(4, UI::ComponentCondition::Hover);
+    indicatorh_sym.Content.SetDrawable(btn_bgh);
+    indicatorh_sym.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+    indicatorh_sym.SetValueModification(indicatorh_sym.ModifyX);
+    indicatorh_sym.SetPositioning(indicatorh_sym.Absolute);
+    indicatorh_sym.SetPosition(0, 0);
+    indicatorh_sym.SetMargin(0, 1, 0, 1);
+    
 
     auto &tickn = temp.AddGraphics(7, UI::ComponentCondition::Always);
     tickn.Content.SetDrawable(tick);
@@ -75,6 +85,14 @@ int main() {
     tickn.SetPositioning(tickn.Absolute);
     tickn.SetValueModification(tickn.ModifyX);
     indicator_n.AddIndex(7);
+
+    /*auto &tickh = temp.AddGraphics(7, UI::ComponentCondition::Hover);
+    tickh.Content.SetDrawable(tickhg);
+    tickh.SetSize({2, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+    tickh.SetMargin(9, 2, 9, 2);
+    tickh.SetRepeatMode(tickh.XTick);
+    tickh.SetPositioning(tickh.Absolute);
+    tickh.SetValueModification(tickh.ModifyX);*/
 
     
     auto &btnright_n = temp.AddContainer(5, UI::ComponentCondition::Always);
@@ -104,11 +122,11 @@ int main() {
     app.wind.KeyEvent.Register([&](Input::Key key, bool state) {
         namespace Keycodes = Input::Keyboard::Keycodes;
         if(key == Keycodes::D && state) {
-            if(hover)
+            /*if(hover)
                 stack.RemoveCondition(UI::ComponentCondition::Disabled);
             else
                 stack.AddCondition(UI::ComponentCondition::Normal__Disabled);
-            
+            */
             hover = !hover;
             
             return true;

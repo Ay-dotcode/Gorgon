@@ -401,64 +401,39 @@ namespace Gorgon {
     /// Components with the same ID will replace a previous one. If there is a
     /// condition that is satisfied, the component at the specific index will 
     /// be replaced with that one, otherwise, if a component with condition
-    /// always exists, it will be used. Items with __ are transitions
+    /// always exists, it will be used.
 	ENUMCLASS ComponentCondition {
         /// Component is always active
 		Always,
         
         /// Component is always disabled
 		Never, 
+        
+        None = Never,
 
         /// Component is visible when the widget is disabled.
 		Disabled,
-        /// Transition from Normal to disabled
-		Normal__Disabled,
-        /// Transition from disabled to normal
-		Disabled__Normal,
 
         
 		Focused,
-		Normal__Focused,
-		Focused__Normal,
 
         
 		Hover,
-		Normal__Hover,
-		Hover__Normal,
-		Hover__Down,
         
 		Down,
-		Normal__Down,
-		Down__Hover,
-		Down__Normal,
 		
 
 		State2,
-		Normal__State2,
-		State2__Normal,
-		State2__State3,
-		State2__State4,
 
 		State3,
-		Normal__State3,
-        State3__Normal,
-		State3__State2,
-		State3__State4,
 
         State4,
-        Normal__State4,
-		State4__Normal,
-		State4__State2,
-		State4__State3,
 
         /// This condition is triggered when the widget is opened like a combobox
         /// showing its list part. For widgets which are "opened" by default like 
 		/// window, this condition will never be satisfied. Instead of this condition, 
 		/// use Always for the base state.
         Opened,
-		Normal__Opened,
-		Opened__Normal,
-		Opened__Closed,
 
 		/// This condition is triggered when the widget is closed like a 
 		/// tree view item that is folded, or a window that is rolled.
@@ -466,193 +441,70 @@ namespace Gorgon {
 		/// condition will never be satisfied. Instead of this condition, use Always 
 		/// for the base state.
 		Closed,
-		Normal__Closed,
-		Closed__Normal,
-		Closed__Opened,
         
         Active,
-        Normal__Active,
-        Active__Normal,
         
         HScroll,
-        Normal__HScroll,
-        HScroll__Normal,
-        HScroll__VScroll,
-        HScroll__HVScroll,
         
         VScroll,
-        Normal__VScroll,
-        VScroll__Normal,
-        VScroll__HScroll,
-        VScroll__HVScroll,
         
         HVScroll,
-        Normal__HVScroll,
-        HVScroll__Normal,
-        HVScroll__HScroll,
-        HVScroll__VScroll,
-        
-        
+
+		/// Channel 1 value is 0, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch1V0,
+
+		/// Channel 1 value is 0.5, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch1V05,
+
+		/// Channel 1 value is 1, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch1V1,
+
+		/// Channel 2 value is 0, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch2V0,
+
+		/// Channel 2 value is 0.5, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch2V05,
+
+		/// Channel 2 value is 1, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch2V1,
+
+		/// Channel 3 value is 0, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch3V0,
+
+		/// Channel 3 value is 0.5, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch3V05,
+
+		/// Channel 3 value is 1, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch3V1,
+
+		/// Channel 4 value is 0, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch4V0,
+
+		/// Channel 4 value is 0.5, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch4V05,
+
+		/// Channel 4 value is 1, the value will be
+		/// rounded to 4 decimal points before comparison
+		Ch4V1,
+
+
         /// Do not use this condition, this is to size the arrays.
         Max,
 	};
     
-    /// Returns  if the given condition is transition.
-    inline bool IsTransition(ComponentCondition condition) {
-        switch(condition) {
-            case ComponentCondition::Normal__Disabled:
-            case ComponentCondition::Disabled__Normal:
-            case ComponentCondition::Normal__Focused:
-            case ComponentCondition::Focused__Normal:
-            case ComponentCondition::Normal__Hover:
-            case ComponentCondition::Hover__Normal:
-            case ComponentCondition::Hover__Down:
-            case ComponentCondition::Normal__Down:
-            case ComponentCondition::Down__Hover:
-            case ComponentCondition::Down__Normal:
-            case ComponentCondition::Normal__State2:
-            case ComponentCondition::State2__Normal:
-            case ComponentCondition::State2__State3:
-            case ComponentCondition::State2__State4:
-            case ComponentCondition::Normal__State3:
-            case ComponentCondition::State3__Normal:
-            case ComponentCondition::State3__State2:
-            case ComponentCondition::State3__State4:
-            case ComponentCondition::Normal__State4:
-            case ComponentCondition::State4__Normal:
-            case ComponentCondition::State4__State2:
-            case ComponentCondition::State4__State3:
-            case ComponentCondition::Normal__Opened:
-            case ComponentCondition::Opened__Normal:
-            case ComponentCondition::Opened__Closed:
-            case ComponentCondition::Normal__Closed:
-            case ComponentCondition::Closed__Normal:
-            case ComponentCondition::Closed__Opened:
-			case ComponentCondition::Normal__Active:
-			case ComponentCondition::Active__Normal:
-			case ComponentCondition::Normal__HScroll:
-			case ComponentCondition::HScroll__Normal:
-			case ComponentCondition::HScroll__VScroll:
-			case ComponentCondition::HScroll__HVScroll:
-			case ComponentCondition::Normal__VScroll:
-			case ComponentCondition::VScroll__Normal:
-			case ComponentCondition::VScroll__HScroll:
-			case ComponentCondition::VScroll__HVScroll:
-			case ComponentCondition::Normal__HVScroll:
-			case ComponentCondition::HVScroll__Normal:
-			case ComponentCondition::HVScroll__HScroll:
-			case ComponentCondition::HVScroll__VScroll:
-                return true;
-                
-            default:
-                return false;
-        }
-    }
-    
-    /// Returns the ending condition for a transition condition. Will return Always
-    /// if no condition should replace the current one.
-    inline ComponentCondition TransitionEnd(ComponentCondition condition) {
-        switch(condition) {
-            case ComponentCondition::Normal__Disabled:
-				return ComponentCondition::Disabled;
-            case ComponentCondition::Disabled__Normal:
-				return ComponentCondition::Always;
-            case ComponentCondition::Normal__Focused:
-				return ComponentCondition::Focused;
-            case ComponentCondition::Focused__Normal:
-				return ComponentCondition::Always;
-            case ComponentCondition::Normal__Hover:
-				return ComponentCondition::Hover;
-            case ComponentCondition::Hover__Normal:
-				return ComponentCondition::Always;
-            case ComponentCondition::Hover__Down:
-				return ComponentCondition::Down;
-            case ComponentCondition::Normal__Down:
-				return ComponentCondition::Down;
-            case ComponentCondition::Down__Hover:
-				return ComponentCondition::Hover;
-            case ComponentCondition::Down__Normal:
-				return ComponentCondition::Always;
-            case ComponentCondition::Normal__State2:
-				return ComponentCondition::State2;
-            case ComponentCondition::State2__Normal:
-				return ComponentCondition::Always;
-            case ComponentCondition::State2__State3:
-				return ComponentCondition::State3;
-            case ComponentCondition::State2__State4:
-				return ComponentCondition::State4;
-            case ComponentCondition::Normal__State3:
-				return ComponentCondition::State3;
-            case ComponentCondition::State3__Normal:
-				return ComponentCondition::Always;
-            case ComponentCondition::State3__State2:
-				return ComponentCondition::State2;
-            case ComponentCondition::State3__State4:
-				return ComponentCondition::State4;
-            case ComponentCondition::Normal__State4:
-				return ComponentCondition::State4;
-            case ComponentCondition::State4__Normal:
-				return ComponentCondition::Always;
-            case ComponentCondition::State4__State2:
-				return ComponentCondition::State2;
-            case ComponentCondition::State4__State3:
-				return ComponentCondition::State3;
-            case ComponentCondition::Normal__Opened:
-				return ComponentCondition::Opened;
-            case ComponentCondition::Opened__Normal:
-				return ComponentCondition::Always;
-            case ComponentCondition::Opened__Closed:
-				return ComponentCondition::Closed;
-            case ComponentCondition::Normal__Closed:
-				return ComponentCondition::Closed;
-            case ComponentCondition::Closed__Normal:
-				return ComponentCondition::Always;
-            case ComponentCondition::Closed__Opened:
-				return ComponentCondition::Opened;
-			case ComponentCondition::Normal__Active:
-				return ComponentCondition::Active;
-			case ComponentCondition::Normal__HScroll:
-				return ComponentCondition::HScroll;
-			case ComponentCondition::HScroll__VScroll:
-				return ComponentCondition::VScroll;
-			case ComponentCondition::HScroll__HVScroll:
-				return ComponentCondition::HVScroll;
-			case ComponentCondition::Normal__VScroll:
-				return ComponentCondition::VScroll;
-			case ComponentCondition::VScroll__HScroll:
-				return ComponentCondition::HScroll;
-			case ComponentCondition::VScroll__HVScroll:
-				return ComponentCondition::HVScroll;
-			case ComponentCondition::Normal__HVScroll:
-				return ComponentCondition::HVScroll;
-			case ComponentCondition::HVScroll__HScroll:
-				return ComponentCondition::HScroll;
-			case ComponentCondition::HVScroll__VScroll:
-				return ComponentCondition::VScroll;
-			default:
-                return ComponentCondition::Always;
-        }
-    }
-    
-    inline bool IsDisabled(ComponentCondition condition) {
-        switch(condition) {
-            case ComponentCondition::Disabled:
-            case ComponentCondition::Normal__Disabled:
-            case ComponentCondition::Disabled__Normal:
-				return true;
-            default:
-                return false;
-        }
-    }
-    
     inline bool IsMouseRelated(ComponentCondition condition) {
         switch(condition) {
-            case ComponentCondition::Normal__Hover:
-            case ComponentCondition::Hover__Normal:
-            case ComponentCondition::Hover__Down:
-            case ComponentCondition::Normal__Down:
-            case ComponentCondition::Down__Hover:
-            case ComponentCondition::Down__Normal:
             case ComponentCondition::Hover:
             case ComponentCondition::Down:
 				return true;
@@ -688,7 +540,6 @@ namespace Gorgon {
 		};
         
         Template() {
-            memset(durations, 0, sizeof(int) * (int)ComponentCondition::Max);
         }
 
         /// Destructor
@@ -698,19 +549,35 @@ namespace Gorgon {
 
         /// This will create a new placeholder and return it. The ownership will stay
         /// with the template. Index is the component index not the order in the template.
-        PlaceholderTemplate &AddPlaceholder(int index, ComponentCondition condition);
+        PlaceholderTemplate &AddPlaceholder(int index, ComponentCondition cond) { return AddPlaceholder(index, cond, ComponentCondition::None); }
+
+        /// This will create a new placeholder and return it. The ownership will stay
+        /// with the template. Index is the component index not the order in the template.
+        PlaceholderTemplate &AddPlaceholder(int index, ComponentCondition from, ComponentCondition to);
 
         /// This will create a new textholder and return it. The ownership will stay
         /// with the template. Index is the component index not the order in the template.
-        TextholderTemplate &AddTextholder(int index, ComponentCondition condition);
+        TextholderTemplate &AddTextholder(int index, ComponentCondition cond) { return AddTextholder(index, cond, ComponentCondition::None); }
+
+        /// This will create a new textholder and return it. The ownership will stay
+        /// with the template. Index is the component index not the order in the template.
+        TextholderTemplate &AddTextholder(int index, ComponentCondition from, ComponentCondition to);
 
         /// This will create a new drawable and return it. The ownership will stay
         /// with the template. Index is the component index not the order in the template.
-		GraphicsTemplate &AddGraphics(int index, ComponentCondition condition);
+		GraphicsTemplate &AddGraphics(int index, ComponentCondition cond) { return AddGraphics(index, cond, ComponentCondition::None); }
 
         /// This will create a new drawable and return it. The ownership will stay
         /// with the template. Index is the component index not the order in the template.
-		ContainerTemplate &AddContainer(int index, ComponentCondition condition);
+		GraphicsTemplate &AddGraphics(int index, ComponentCondition from, ComponentCondition to);
+
+        /// This will create a new drawable and return it. The ownership will stay
+        /// with the template. Index is the component index not the order in the template.
+		ContainerTemplate &AddContainer(int index, ComponentCondition cond) { return AddContainer(index, cond, ComponentCondition::None); }
+
+        /// This will create a new drawable and return it. The ownership will stay
+        /// with the template. Index is the component index not the order in the template.
+		ContainerTemplate &AddContainer(int index, ComponentCondition from, ComponentCondition to);
         
         /// Removes the component at the given index.
         void Remove(int index) {
@@ -808,14 +675,17 @@ namespace Gorgon {
 		
 		/// Changes the duration of a component condition. Durations on final conditions are 
 		/// ignored, only transition condition durations are used. Duration is in milliseconds
-		void SetConditionDuration(ComponentCondition condition, int duration) {
-            durations[(int)condition] = duration;
+		void SetConditionDuration(ComponentCondition from, ComponentCondition to, int duration) {
+            durations[{from, to}] = duration;
             ChangedEvent();
         }
         
         /// Returns the duration of the component condition
-        int GetConditionDuration(ComponentCondition condition) const {
-            return durations[(int)condition];
+        int GetConditionDuration(ComponentCondition from, ComponentCondition to) const {
+            if(durations.count({from, to}))
+                return durations.at({from, to});
+            else
+                return 0;
         }
 
 
@@ -825,7 +695,7 @@ namespace Gorgon {
 	private:
 		Containers::Collection<ComponentTemplate> components;
         std::vector<Event<ComponentTemplate>::Token> tokens;
-        int durations[(int)ComponentCondition::Max];
+        std::map<std::pair<ComponentCondition, ComponentCondition>, int> durations;
 
 		SizeMode xsizing, ysizing;
 		Geometry::Size size;
@@ -1379,10 +1249,19 @@ namespace Gorgon {
 		/// Sets the condition when this component will be visible. The visibility also depens on whether there
 		/// are other visible components at the same component index. If that is the case, most specific condition
 		/// will be rendered.
-		void SetCondition(ComponentCondition value) { condition = value; }
+		void SetCondition(ComponentCondition value) { condition = value; condition_to = ComponentCondition::None; ChangedEvent(); }
+
+		/// Sets the condition when this component will be visible. This variant will create a transition condition.
+		void SetCondition(ComponentCondition from, ComponentCondition to) { condition = from; condition_to = to; ChangedEvent(); }
 
 		/// Returns the current component condition
 		ComponentCondition GetCondition() const { return condition; }
+		
+		/// Returns the target component condition
+		ComponentCondition GetTargetCondition() const { return condition_to; }
+		
+		/// Returns whether this component is a transition component
+		bool IsTransition() const { return condition_to != ComponentCondition::None; }
 		
 		
 		/// Whether to clip the contents of this container, default value is false. Due to shadows, it is advicable
@@ -1411,6 +1290,10 @@ namespace Gorgon {
         
         /// Condition when this component will be visible
 		ComponentCondition condition = ComponentCondition::Always;
+        
+        /// Condition when this component will be visible, setting condition_to will
+        /// create a transition component.
+		ComponentCondition condition_to = ComponentCondition::None;
 
         /// The effect that the data will have on this component
 		DataEffect dataeffect = None;

@@ -31,13 +31,20 @@ IF(${WIN32})
 	)
 	
 	add_definitions( "/wd4267 /wd4334 /wd4996" )
+
 ENDIF()
 
 add_library(flac STATIC 
 	${Local}
 )
 
-
+IF(WIN32)
+	set_target_properties(flac PROPERTIES 
+		DEBUG_OUTPUT_NAME flac_d
+		RELWITHDEBINFO_OUTPUT_NAME  flac_rd
+		MINSIZEREL_OUTPUT_NAME  flac_min
+	)
+ENDIF()
 
 install(TARGETS flac
 	EXPORT GorgonTargets

@@ -4,12 +4,12 @@
 
 namespace Gorgon { namespace UI {
 
-    PlaceholderTemplate& Template::AddPlaceholder(int index, ComponentCondition condition){ 
+    PlaceholderTemplate& Template::AddPlaceholder(int index, ComponentCondition from, ComponentCondition to){ 
         auto obj = new PlaceholderTemplate();
         components.Add(obj);
         
         obj->SetIndex(index);
-        obj->SetCondition(condition);
+        obj->SetCondition(from, to);
         
         tokens.push_back(
             obj->ChangedEvent.Register(ChangedEvent, &Event<Template>::operator ())
@@ -20,12 +20,12 @@ namespace Gorgon { namespace UI {
         return *obj;
     }
 
-    ContainerTemplate& Template::AddContainer(int index, ComponentCondition condition){ 
+    ContainerTemplate& Template::AddContainer(int index, ComponentCondition from, ComponentCondition to){ 
         auto obj = new ContainerTemplate();
         components.Add(obj);
         
         obj->SetIndex(index);
-        obj->SetCondition(condition);
+        obj->SetCondition(from, to);
         
         tokens.push_back(
             obj->ChangedEvent.Register(ChangedEvent, &Event<Template>::operator ())
@@ -36,12 +36,12 @@ namespace Gorgon { namespace UI {
         return *obj;
     }
 
-    TextholderTemplate& Template::AddTextholder(int index, ComponentCondition condition){ 
+    TextholderTemplate& Template::AddTextholder(int index, ComponentCondition from, ComponentCondition to){ 
         auto obj = new TextholderTemplate();
         components.Add(obj);
         
         obj->SetIndex(index);
-        obj->SetCondition(condition);
+        obj->SetCondition(from, to);
         
         tokens.push_back(
             obj->ChangedEvent.Register(ChangedEvent, &Event<Template>::operator ())
@@ -52,12 +52,12 @@ namespace Gorgon { namespace UI {
         return *obj;
     }
 
-	GraphicsTemplate& Template::AddGraphics(int index, ComponentCondition condition){
+	GraphicsTemplate& Template::AddGraphics(int index, ComponentCondition from, ComponentCondition to){
         auto obj = new GraphicsTemplate();
         components.Add(obj);
         
         obj->SetIndex(index);
-        obj->SetCondition(condition);
+        obj->SetCondition(from, to);
         
         tokens.push_back(
             obj->ChangedEvent.Register(ChangedEvent, &Event<Template>::operator ())

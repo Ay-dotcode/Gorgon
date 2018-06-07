@@ -26,10 +26,13 @@ namespace Gorgon { namespace UI {
 		void AddToStack(const ComponentTemplate &temp);
         
         /// Adds a condition and its associated components to the stack
-		void AddCondition(ComponentCondition condition);
+		void AddCondition(ComponentCondition condition, bool transition = true) { ReplaceCondition(ComponentCondition::Always, condition, transition); }
+        
+        /// Replaces a condition with another one
+		void ReplaceCondition(ComponentCondition from, ComponentCondition to, bool transition = true);
         
         /// Removes a condition and its associated components
-        void RemoveCondition(ComponentCondition condition, bool check = true);
+        void RemoveCondition(ComponentCondition condition, bool transition = true)  { ReplaceCondition(condition, ComponentCondition::Always, transition); }
 
         /// Sets the data for a specific data effect. This value will be cached by
         /// the stack for condition changes. This variant supports string based data.
@@ -153,7 +156,9 @@ namespace Gorgon { namespace UI {
 		
 		/// Returns if this component stack is disabled. Both disabling and enabling animations are counted as disabled.
 		bool IsDisabled() const {
-            return conditions.count(ComponentCondition::Disabled) || conditions.count(ComponentCondition::Normal__Disabled) || conditions.count(ComponentCondition::Disabled__Normal);
+            return conditions.count(ComponentCondition::Disabled) || 
+                   transitions.count({ComponentCondition::Always, ComponentCondition::Disabled}) || 
+                   transitions.count({ComponentCondition::Disabled, ComponentCondition::Always});
         }
 		
 		/// Changes the default emsize of 10. This value can be overridden.
@@ -189,6 +194,12 @@ namespace Gorgon { namespace UI {
 		float calculatevalue(const std::array<float, 4> &data, int channel, const Component &comp) const;
 
 		void checkrepeatupdate(ComponentTemplate::RepeatMode mode);
+        
+        //to should contain the final condition even if there is no transition
+        bool addcondition(ComponentCondition from, ComponentCondition to, ComponentCondition hint = ComponentCondition::None);
+
+        //to should contain the final condition to be removed
+        bool removecondition(ComponentCondition from, ComponentCondition to);
 
         int emsize = 10;
         
@@ -197,13 +208,14 @@ namespace Gorgon { namespace UI {
         
         std::set<ComponentCondition> disabled;
         std::set<ComponentCondition> conditions;
+        std::map<ComponentCondition, ComponentCondition> future_transitions;
         
 		std::map<ComponentTemplate::DataEffect, std::string> stringdata;
 		Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
         std::map<ComponentTemplate::RepeatMode, std::vector<std::array<float, 4>>> repeats;
 		std::array<float, 4> value;
         
-        unsigned long conditionstart[(int)ComponentCondition::Max];
+        std::map<std::pair<ComponentCondition, ComponentCondition>, unsigned long> transitions;
         
         int stackcapacity = 2;
         

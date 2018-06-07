@@ -23,58 +23,37 @@ namespace Gorgon { namespace UI {
         
         Add(base);
         
-        AddCondition(ComponentCondition::Always);
+        addcondition(ComponentCondition::None, ComponentCondition::Always);
         
         mouse.SetOver([this]{        
-            auto c = ComponentCondition::Hover;
-            
-            if(this->temp.GetConditionDuration(ComponentCondition::Normal__Hover))
-                c = ComponentCondition::Normal__Hover;
-            
             if(IsDisabled()) {
-                disabled.insert(c);
+                disabled.insert(ComponentCondition::Hover);
             }
             else {
-                AddCondition(c);
+                AddCondition(ComponentCondition::Hover);
             }
         });
         
         mouse.SetOut([this]{
-            RemoveCondition(ComponentCondition::Hover);
+            RemoveCondition(ComponentCondition::Hover, !IsDisabled());
             disabled.erase(ComponentCondition::Hover);
-            
-            RemoveCondition(ComponentCondition::Normal__Hover);
-            disabled.erase(ComponentCondition::Normal__Hover);
-            
-            if(!IsDisabled() && this->temp.GetConditionDuration(ComponentCondition::Hover__Normal)) {
-                AddCondition(ComponentCondition::Hover__Normal);
-            }
         });
         
         mouse.SetDown([this](Input::Mouse::Button btn) {
             if(btn && mousebuttonaccepted) {
-                auto c = ComponentCondition::Down;
-                
-                if(this->temp.GetConditionDuration(ComponentCondition::Normal__Down))
-                    c = ComponentCondition::Normal__Down;
-            
                 if(IsDisabled()) {
-                    disabled.insert(c);
+                    disabled.insert(ComponentCondition::Down);
                 }
                 else {
-                    AddCondition(c);
+                    AddCondition(ComponentCondition::Down);
                 }
             }
         });
         
         mouse.SetUp([this](Input::Mouse::Button btn) {
             if(btn && mousebuttonaccepted) {
-                RemoveCondition(ComponentCondition::Down);
+                RemoveCondition(ComponentCondition::Down, !IsDisabled());
                 disabled.erase(ComponentCondition::Down);
-            }
-            
-            if(!IsDisabled() && this->temp.GetConditionDuration(ComponentCondition::Down__Normal)) {
-                AddCondition(ComponentCondition::Down__Normal);
             }
         });
         
@@ -158,16 +137,31 @@ namespace Gorgon { namespace UI {
         }
     }
     
-    void ComponentStack::AddCondition(ComponentCondition condition) {
-        if(conditions.count(condition)) return;
-        
-        conditions.insert(condition);
-        
-        if(IsTransition(condition)) {
-            conditionstart[(int)condition] = Time::FrameStart();
+    bool ComponentStack::addcondition(ComponentCondition from, ComponentCondition to, ComponentCondition hint) {        
+        if(IsMouseRelated(to) && IsDisabled()) {
+            disabled.insert(to);
+            return false;
         }
         
-        if(UI::IsDisabled(condition) && mouse.HasParent()) {
+        if(from != ComponentCondition::None && temp.GetConditionDuration(from, to) == 0) {
+            hint = from;
+            from = ComponentCondition::None;
+        }
+        
+        if(from != ComponentCondition::None) {
+            if(transitions.count({from, to}))
+                return false;
+            
+            transitions[{from, to}] = Time::FrameStart();
+        }
+        else {
+            if(conditions.count(to))
+                return false;
+            
+            conditions.insert(to);
+        }
+        
+        if(to == ComponentCondition::Disabled && mouse.HasParent()) {
             for(auto iter = conditions.begin(); iter != conditions.end();) {
                 auto c = *iter;
                 if(IsMouseRelated(c)) {
@@ -182,57 +176,184 @@ namespace Gorgon { namespace UI {
         
         bool updatereq = false;
         
-        for(int i=0; i<temp.GetCount(); i++) {
-            if(temp[i].GetCondition() == condition) {
-                updatereq = true;
-                AddToStack(temp[i]);
+        //no transition
+        if(from == ComponentCondition::None) {
+            //direct search: perfect fit
+            std::set<int> indicesdone;
+            for(int i=0; i<temp.GetCount(); i++) {
+                if(temp[i].GetCondition() == to && !temp[i].IsTransition()) {
+                    updatereq = true;
+                    AddToStack(temp[i]);
+                    indicesdone.insert(temp[i].GetIndex());
+                }
+            }
+            
+            //if an index does not contain condition in from field and an empty to field
+            //it might still have it as a transition from the previous condition to our condition. 
+            //In this case we should take this non-perfect fit.
+            if(hint != ComponentCondition::None) {
+                for(int i=0; i<temp.GetCount(); i++) {
+                    if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to) {
+                        updatereq = true;
+                        AddToStack(temp[i]);
+                    }
+                }
+            }
+        }
+        else {
+            for(int i=0; i<temp.GetCount(); i++) {
+                if(temp[i].GetCondition() == from && temp[i].GetTargetCondition() == to) {
+                    updatereq = true;
+                    AddToStack(temp[i]);
+                }
             }
         }
         
         if(updatereq)
             Update();
+        
+        return updatereq;
     }
-    
-    void ComponentStack::RemoveCondition(ComponentCondition condition, bool check){ 
-        if(check && !conditions.count(condition)) return;
         
-        conditions.erase(condition);
-         
+    bool ComponentStack::removecondition(ComponentCondition from, ComponentCondition to) {
         bool updatereq = false;
+        bool erased = false;
         
-        for(int i=0; i<indices; i++) {
-            for(int j=stacksizes[i]-1; j>=0; j--) {
-                if(data[i + j*indices].GetTemplate().GetCondition() == condition) {
-                    if(j == stacksizes[i]-1) {
-                        //optimize: check if update really needed
-                        
-                        updatereq = true;
-                        stacksizes[i]--;
-                        get(i, j).~Component();
-                    }
-                    else {
-                        //bubble the item to be deleted to the top of stack.
-                        for(int k=j; k<stacksizes[i]-1; k++) {
-                            using std::swap;
-                            swap(get(i, k), get(i, k+1));
+        if(to == ComponentCondition::Always)
+            return false;
+        
+        if(transitions.count({from, to})) {
+            transitions.erase({from, to});
+            erased = true;
+        }
+        
+        if(conditions.count(to)) {
+            conditions.erase(to);
+            erased = true;
+        }
+        
+        if(erased) {
+            for(int i=0; i<indices; i++) {
+                for(int j=stacksizes[i]-1; j>=0; j--) {
+                    const auto &temp = data[i + j*indices].GetTemplate();
+                    bool remove = false;
+                    
+                    if(from == ComponentCondition::Never)
+                        remove = temp.GetCondition() == to;
+                    else
+                        remove = temp.GetCondition() == from && temp.GetTargetCondition() == to;
+                    
+                    if(remove) {                            
+                        if(j == stacksizes[i]-1) {
+                            updatereq = true;
+                            stacksizes[i]--;
+                            get(i, j).~Component();
                         }
-                        
-                        stacksizes[i]--;
-                        get(i, stacksizes[i]).~Component();
+                        else {
+                            //bubble the item to be deleted to the top of stack.
+                            for(int k=j; k<stacksizes[i]-1; k++) {
+                                using std::swap;
+                                swap(get(i, k), get(i, k+1));
+                            }
+                            
+                            stacksizes[i]--;
+                            get(i, stacksizes[i]).~Component();
+                            
+                            //no need to update
+                        }
                     }
                 }
             }
         }
        
-        if(UI::IsDisabled(condition) && mouse.HasParent()) {
+        if(to == ComponentCondition::Disabled && mouse.HasParent()) {
             for(auto d : disabled)
-                AddCondition(d);
+                ReplaceCondition(ComponentCondition::Disabled, d);
             
             disabled.clear();
+        }
+
+        if(from == ComponentCondition::None) {
+            //also remove any transitions going to to
+            
+            for(const auto &t : transitions) {
+                if(t.first.second == to) {
+                    if(removecondition(t.first.first, to))
+                        updatereq = true;
+                }
+            }
         }
         
         if(updatereq)
             Update();
+        
+        return erased || updatereq;
+    }
+    
+    void ComponentStack::ReplaceCondition(ComponentCondition from, ComponentCondition to, bool transition) {
+        //the transition exists, nothing to do
+        if(transitions.count({from, to}) || (future_transitions.count(from) && future_transitions[from] == to))
+            return;
+
+        //the condition already exists
+        if(conditions.count(to) || to == ComponentCondition::Always) {
+            //source condition does not exist, thus there is nothing to do
+            if(!conditions.count(from))
+                return;
+            //else try animating from to to. this should not happen unless to is Always
+        }
+        
+        //if a reverse animation exists, reverse the direction, reverse the time
+        if(transitions.count({to, from})) {
+            if(transition && temp.GetConditionDuration(from, to)) {
+                auto elapsed = Time::FrameStart() - transitions[{to, from}];
+                auto completion = 1.0 - (double)elapsed / temp.GetConditionDuration(to, from);
+                
+                removecondition(to, from);
+                
+                addcondition(from, to);
+                transitions[{from, to}] = Time::FrameStart() - (unsigned long)(completion * temp.GetConditionDuration(from, to));
+            }
+            else {
+                removecondition(to, from);
+
+                addcondition(ComponentCondition::None, to);
+            }
+        }
+        
+        if(!conditions.count(from) && from != ComponentCondition::Always) {
+            for(const auto &t : transitions) {
+                if(t.first.second == from) {
+                    if(transition && temp.GetConditionDuration(t.first.first, to)) {
+                        addcondition(t.first.first, to);
+                    }
+                    else if(transition && temp.GetConditionDuration(ComponentCondition::Always, to)) {
+                        addcondition(ComponentCondition::Always, to);
+                    }
+                    else if(transition && temp.GetConditionDuration(from, to)) {
+                        future_transitions.insert({from, to});
+                    }
+                    else {
+                        addcondition(ComponentCondition::None, to);
+                    }
+                }
+            }
+        }
+        
+        if(transition && temp.GetConditionDuration(from, to)) {
+            addcondition(from, to);
+            removecondition(ComponentCondition::None, from);
+        }
+        else {
+            if(from != ComponentCondition::Always) {
+                removecondition(ComponentCondition::None, from);
+                removecondition(ComponentCondition::Always, from);
+            }
+            
+            if(to != ComponentCondition::Always) {
+                addcondition(ComponentCondition::Always, to);
+            }
+        }
     }
     
 	void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image) {
@@ -1283,23 +1404,30 @@ realign:
 		}
 	}
 
-	void ComponentStack::Render() {        
-        for(auto iter = conditions.begin(); iter != conditions.end();) {
+	void ComponentStack::Render() {
+        std::vector<std::pair<ComponentCondition, ComponentCondition>> tobereplaced;
+        for(auto iter = transitions.begin(); iter != transitions.end();) {
             auto c = *iter;
-            if(IsTransition(c) && (unsigned)temp.GetConditionDuration(c) < Time::FrameStart()-conditionstart[(int)c]) {
-                iter = conditions.erase(iter);
-                RemoveCondition(c, false);
-                auto nc = TransitionEnd(c);
-                if(nc != ComponentCondition::Always)
-                    AddCondition(nc);
+            if((unsigned)temp.GetConditionDuration(c.first.first, c.first.second) < Time::FrameStart() - c.second) {
+                iter = transitions.erase(iter);
+                if(future_transitions.count(c.first.second)) {
+                    tobereplaced.push_back({c.first.second, future_transitions[c.first.second]});
+                    future_transitions.erase(c.first.second);
+                }
+                else {
+                    removecondition(c.first.first, c.first.second);
+                    addcondition(ComponentCondition::None, c.first.second);
+                }
             }
             else
                 ++iter;
         }
         
+        for(auto it : tobereplaced)
+            ReplaceCondition(it.first, it.second);
+        
 		if(updaterequired)
 			update();
-
 
 		Gorgon::Layer::Render();
 	}
