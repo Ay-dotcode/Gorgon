@@ -528,10 +528,12 @@ namespace Gorgon { namespace UI {
 		else if(temp.GetType() == ComponentType::Graphics) {
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
-                if(rectangular && dynamic_cast<const GraphicsTemplate&>(temp).GetFillArea())
-                    rectangular->DrawIn(*target, comp.location+offset, comp.size, color);
+                const auto &gt = dynamic_cast<const GraphicsTemplate&>(temp);
+                
+                if(rectangular && gt.GetFillArea())
+                    rectangular->DrawIn(*target, comp.location+offset+gt.GetPadding().TopLeft(), comp.size, color);
                 else
-                    st.primary->Draw(*target, comp.location+offset, color);
+                    st.primary->Draw(*target, comp.location+offset+gt.GetPadding().TopLeft(), color);
             }
         }
         else if(temp.GetType() == ComponentType::Textholder) {
@@ -1078,10 +1080,10 @@ realign:
 						if(st.primary) {
 							auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
 							if(rectangular)
-								comp.size = rectangular->GetSize();
+								comp.size = rectangular->GetSize() + dynamic_cast<const GraphicsTemplate&>(temp).GetPadding();
 						}
 						else {
-							comp.size = {0, 0};
+							comp.size = dynamic_cast<const GraphicsTemplate&>(temp).GetPadding().Total();
 						}
 					}
 					else if(temp.GetType() == ComponentType::Textholder) {

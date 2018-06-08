@@ -888,13 +888,15 @@ namespace Gorgon {
             UseRGBA = UseFirst | UseSecond | UseThird | UseFourth,
         };
         
-        /// Tags mark a component to be modified in a way meaningful to specific widgets
+        /// Tags mark a component to be modified in a way meaningful to specific widgets. Components can be
+        /// queried for their size and positions from the component stack using their tag.
         enum Tag {
             NoTag,
             TickTag,
             HScrollTag,
             VScrollTag,
             DragTag,
+            DragBarTag,
             XDragTag,
             YDragTag,
             MinimapTag,
@@ -908,7 +910,7 @@ namespace Gorgon {
             ToggleTag,
         };
         
-        /// Some components are reapeated along some axis, this property controls how they will be
+        /// Some components are repeated along some axis, this property controls how they will be
         /// repeated. Use X direction if there is no direction. Y is the angular direction on
         /// polar systems. Repeated components will have their values set to the values specified
         /// by their position.
@@ -1376,6 +1378,16 @@ namespace Gorgon {
 		virtual ComponentType GetType() const noexcept override {
 			return ComponentType::Placeholder;
 		}
+		
+		/// Sub template handling...
+		void SetTemplate(const Template &temp);
+        
+        bool HasTemplate() const;
+        
+        const Template &GetTemplate() const;
+		
+    private:
+        const Template *temp = nullptr;
 	};
 
 	class TextholderTemplate : public ComponentTemplate {
@@ -1513,6 +1525,25 @@ namespace Gorgon {
 			return ComponentType::Graphics;
 		}
 		
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(int value) { padding = {value}; ChangedEvent(); }
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(int hor, int ver) { padding = {hor, ver}; ChangedEvent(); }
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(int left, int top, int right, int bottom) {
+			padding ={left, top, right, bottom};
+			ChangedEvent();
+		}
+
+		/// Changes the padding of the component. Padding is the minimum spacing inside the component.
+		void SetPadding(Geometry::Margin value) { padding = value; ChangedEvent(); }
+
+		/// Returns the padding.
+		Geometry::Margin GetPadding() const { return padding; }
+
+		
 		/// Set to true if you want to fill the region with the given graphics. This will
 		/// only work if the given animation/drawable is rectangular
 		void SetFillArea(bool value) {
@@ -1531,7 +1562,7 @@ namespace Gorgon {
 
 	private:
 		bool fill = true;
-
+		Geometry::Margin padding;
 	};
 	
 	/// Container class that defines an area according to the Box Model.
@@ -1639,17 +1670,17 @@ namespace Gorgon {
 		/// Returns the current orientation of the container
 		Graphics::Orientation GetOrientation() const { return orientation; }
 
-		/// Adds an index to the container. The components will be drawn in order. THus the components that are added
-		/// later will be drawn on top. Multiple indexes will not cause any crashes, however, same component will be drawn 
+		/// Adds an index to the container. The components will be drawn in order. Thus the components that are added
+		/// later will be drawn on top. Multiple indexes will not cause any crashes, however, same component might be drawn 
 		/// multiple times on top of itself.
 		void AddIndex(int componentindex) {
 			indices.push_back(componentindex);
 			ChangedEvent();
 		}
 
-		/// Insert an index to the specified location in the container. The components will be drawn in order. THus the 
+		/// Insert an index to the specified location in the container. The components will be drawn in order. Thus the 
 		/// components that are added later will be drawn on top. Multiple indexes will not cause any crashes, however, 
-		/// same component will be drawn multiple times on top of itself.
+		/// same component might be drawn multiple times on top of itself.
 		void InsertIndex(int before, int componentindex) {
 			indices.insert(indices.begin() + before, componentindex);
 			ChangedEvent();
@@ -1681,6 +1712,12 @@ namespace Gorgon {
 			return ComponentType::Container;
 		}
 		
+		/// Mouse reporting allows component stack to report mouse events over this container to be reported separately.
+		/// Setting a tag with this property will help distinguishing between multiple regions.
+		void SetReportMouse(bool value);
+        
+        bool GetReportMouse() const;
+		
 
 		/// Background graphics
 		VisualProvider Background = {ChangedEvent};
@@ -1693,6 +1730,7 @@ namespace Gorgon {
 		Geometry::Margin bordersize, shadowextent, overlayextent;
 		std::vector<int> indices;
         Graphics::Orientation orientation = Graphics::Orientation::Horizontal;
+        bool reportmouse = false;
 	};
 
 } }
