@@ -1379,12 +1379,24 @@ namespace Gorgon {
 			return ComponentType::Placeholder;
 		}
 		
-		/// Sub template handling...
-		void SetTemplate(const Template &temp);
+		/// Sets the sub template for this placeholder.
+		void SetTemplate(const Template &value) {
+			temp = &value;
+			ChangedEvent();
+		}
         
-        bool HasTemplate() const;
+		/// Returns if this placeholder has a sub template
+        bool HasTemplate() const {
+			return temp != nullptr;
+		}
         
-        const Template &GetTemplate() const;
+		/// Returns the sub template of this placeholder. If the template does 
+		/// not exists, assertation violation will be fired, thus it is advisable
+		/// to check if the template exists using HasTemplate function.
+        const Template &GetTemplate() const {
+			ASSERT(temp, "Template is empty.");
+			return *temp;
+		}
 		
     private:
         const Template *temp = nullptr;
@@ -1562,7 +1574,7 @@ namespace Gorgon {
 
 	private:
 		bool fill = true;
-		Geometry::Margin padding;
+		Geometry::Margin padding = {0, 0, 0, 0};
 	};
 	
 	/// Container class that defines an area according to the Box Model.

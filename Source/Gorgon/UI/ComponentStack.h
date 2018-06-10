@@ -20,6 +20,8 @@ namespace Gorgon { namespace UI {
 			for(auto &p : storage) {
 				delete p.second;
 			}
+
+			substacks.Destroy();
 		}
 
         /// Adds the given component to the top of the stack
@@ -136,8 +138,10 @@ namespace Gorgon { namespace UI {
             Layer::Resize(value);
             mouse.Resize(value);
             
-			size = value;
-			Update();
+			if(size != value) {
+				size = value;
+				Update();
+			}
 		}
 		
 		/// Returns the template used by this stack
@@ -226,6 +230,8 @@ namespace Gorgon { namespace UI {
 		Geometry::Size size;
         
         const Template &temp;
+
+		Containers::Hashmap<const ComponentTemplate *, ComponentStack> substacks;
 
 		std::map<const ComponentTemplate*, ComponentStorage*> storage;
 		std::map<const ComponentTemplate*, std::vector<Component>> repeated;

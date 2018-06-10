@@ -36,23 +36,35 @@ int main() {
     trig1.Prepare();
     trig2.Prepare();
     
-    UI::Template temp;
-    
-    
-    auto &outer = temp.AddContainer(0, UI::ComponentCondition::Always);
+    UI::Template lbtn;
+	lbtn.SetSize({20, 20});
+	auto &btnleft_n = lbtn.AddContainer(0, UI::ComponentCondition::Always);
+	btnleft_n.Background.SetDrawable(btn_bg);
+	btnleft_n.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+
+	lbtn.SetSize({20, 20});
+	auto &btnleft_h = lbtn.AddContainer(0, UI::ComponentCondition::Hover);
+	btnleft_h.Background.SetDrawable(btn_bgh);
+	btnleft_h.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+
+	auto &btn_left_trig = lbtn.AddGraphics(1, UI::ComponentCondition::Always);
+	btn_left_trig.Content.SetDrawable(trig1);
+	btn_left_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+	btnleft_n.AddIndex(1);
+	btnleft_h.AddIndex(1);
+
+	UI::Template temp;
+	
+	auto &outer = temp.AddContainer(0, UI::ComponentCondition::Always);
     outer.Background.SetAnimation(rect);
     outer.SetBorderSize(1);
-    
-    auto &btnleft_n = temp.AddContainer(1, UI::ComponentCondition::Always);
-    btnleft_n.Background.SetDrawable(btn_bg);
-    btnleft_n.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
-    btnleft_n.SetMargin(0, 0, 1, 0);
-    outer.AddIndex(1);
-    
-    auto &btn_left_trig = temp.AddGraphics(2, UI::ComponentCondition::Always);
-    btn_left_trig.Content.SetDrawable(trig1);
-    btn_left_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-    btnleft_n.AddIndex(2);
+
+	auto &lbtn_p = temp.AddPlaceholder(1, UI::ComponentCondition::Always);
+	lbtn_p.SetTemplate(lbtn);
+	lbtn_p.SetMargin(0, 0, 1, 0);
+	lbtn_p.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+	lbtn_p.SetTag(UI::ComponentTemplate::DecrementTag);
+	outer.AddIndex(1);
 
     auto &indicator_n = temp.AddContainer(3, UI::ComponentCondition::Always);
     indicator_n.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});

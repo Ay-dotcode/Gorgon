@@ -104,12 +104,30 @@ namespace Gorgon { namespace UI {
 					storage->secondary = &ctemp.Overlay.Instantiate(controller);
 				}
 			}
+			else if(temp.GetType() == ComponentType::Placeholder) {
+				const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
+
+				if(ptemp.HasTemplate()) {
+					auto s = new ComponentStack(ptemp.GetTemplate(), {0, 0});
+					substacks.Add(&temp, s);
+					if(mouse.HasParent())
+						s->HandleMouse(mousebuttonaccepted);
+				}
+			}
 			else if(temp.GetType() == ComponentType::Graphics) {
 				const auto &gtemp = dynamic_cast<const GraphicsTemplate&>(temp);
 
 				if(gtemp.Content.HasContent()) {
 					storage->primary = &gtemp.Content.Instantiate(controller);
 				}
+			}
+		}
+
+		if(temp.GetType() == ComponentType::Placeholder) {
+			const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
+
+			if(ptemp.HasTemplate()) {
+				base.Add(substacks[&temp]);
 			}
 		}
 		
@@ -247,6 +265,15 @@ namespace Gorgon { namespace UI {
                         if(j == stacksizes[i]-1) {
                             updatereq = true;
                             stacksizes[i]--;
+
+							if(temp.GetType() == ComponentType::Placeholder) {
+								const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
+
+								if(ptemp.HasTemplate() && substacks[&temp].HasParent()) {
+									substacks[&temp].GetParent().Remove(substacks[&temp]);
+								}
+							}
+
                             get(i, j).~Component();
                         }
                         else {
@@ -550,6 +577,13 @@ namespace Gorgon { namespace UI {
         else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
             const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
             
+			if(ph.HasTemplate()) {
+				auto &stack = substacks[&temp];
+				target->Add(stack);
+				stack.Move(comp.location + offset);
+				stack.Resize(comp.size);
+			}
+
             if(imagedata.Exists(ph.GetDataEffect())) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
                 if(rectangular) {
@@ -1435,8 +1469,12 @@ realign:
 	}
 	
 	void ComponentStack::HandleMouse(Input::Mouse::Button accepted) {
-        Add(mouse);
-        mousebuttonaccepted=accepted;
+		mousebuttonaccepted=accepted;
+
+		for(auto s : substacks)
+			s.second.HandleMouse(mousebuttonaccepted);
+
+		Add(mouse);
     }
     
 } }
