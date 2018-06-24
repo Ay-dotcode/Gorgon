@@ -174,6 +174,23 @@ namespace Gorgon { namespace UI {
 		/// states, unless disabled state is active.
 		void HandleMouse(Input::Mouse::Button accepted = Input::Mouse::Button::All);
         
+        bool TagHasSubStack(ComponentTemplate::Tag) const;
+        
+        std::array<float, 4> CoordinateToValue(ComponentTemplate::Tag, Geometry::Point) const;
+        
+        Geometry::Bounds TagBounds();
+        
+        Input::Layer &GetInputLayer();
+        
+        Input::Layer &GetInputLayer(ComponentTemplate::Tag);
+        
+        
+        
+        /*/// This event will be fired as soon as any mouse event that is marked to be passed on occurs.
+        /// Use PassMouseEvent function to set mouse events that will be passed down. Some events do not
+        /// use location or button. You should ignore them in this case. See Input::Layer for more info.
+        Event<ComponentStack, Input::Mouse::EventType, Geometry::Point, Input::Mouse::Button, ComponentTemplate::Tag> MouseEvent;*/
+        
 	private:
 		Component &get(int ind, int stack = -1) {
 			if(stack == -1) {
