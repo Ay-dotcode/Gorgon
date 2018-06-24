@@ -68,6 +68,7 @@ int main() {
 
     auto &indicator_n = temp.AddContainer(3, UI::ComponentCondition::Always);
     indicator_n.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+    indicator_n.SetTag(UI::ComponentTemplate::DragBarTag);
     outer.AddIndex(3);
 
     
@@ -78,6 +79,7 @@ int main() {
     indicator_sym.SetPositioning(indicator_sym.Absolute);
     indicator_sym.SetPosition(0, 0);
     indicator_sym.SetMargin(0, 1, 0, 1);
+    indicator_sym.SetTag(UI::ComponentTemplate::DragTag);
     indicator_n.AddIndex(4);
     
     auto &indicatorh_sym = temp.AddGraphics(4, UI::ComponentCondition::Hover);
@@ -85,6 +87,7 @@ int main() {
     indicatorh_sym.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
     indicatorh_sym.SetValueModification(indicatorh_sym.ModifyX);
     indicatorh_sym.SetPositioning(indicatorh_sym.Absolute);
+    indicatorh_sym.SetTag(UI::ComponentTemplate::DragTag);
     indicatorh_sym.SetPosition(0, 0);
     indicatorh_sym.SetMargin(0, 1, 0, 1);
     
@@ -128,8 +131,15 @@ int main() {
     
     float v1 = 0;
     
+    
+    std::array<float, 4> vs = {{0, 0, 0, 0}};
+    auto &stinlay = stack.GetInputLayer(UI::ComponentTemplate::DragBarTag);
+    stinlay.SetMove([&](Geometry::Point pnt) {
+        vs = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, pnt);
+    });
+    
     app.wind.Add(stack);
-        
+    
     bool hover = false;
     app.wind.KeyEvent.Register([&](Input::Key key, bool state) {
         namespace Keycodes = Input::Keyboard::Keycodes;
@@ -160,7 +170,7 @@ int main() {
 		Gorgon::NextFrame();
 		
 		l.Clear();
-        app.sty.Print(l, String::Concat("v1: ", std::round(v1*100), "\n"), 10, 200);
+        app.sty.Print(l, String::Concat("v1: ", std::round(v1*100), "\n", "p: ", std::round(vs[0]*100)), 10, 200);
 	}
 
 	return 0;

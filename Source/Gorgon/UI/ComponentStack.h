@@ -174,25 +174,55 @@ namespace Gorgon { namespace UI {
 		/// states, unless disabled state is active.
 		void HandleMouse(Input::Mouse::Button accepted = Input::Mouse::Button::All);
         
-        bool TagHasSubStack(ComponentTemplate::Tag) const;
+        /// Returns whether the component marked with the tag has a substack. If multiple components
+        /// are marked to have substack, only the first one is considered.
+        bool TagHasSubStack(ComponentTemplate::Tag tag) const {
+            auto comp = gettag(tag);
+            
+            if(!comp)
+                return false;
+            else
+                return substacks.Exists(&comp->GetTemplate());
+        }
         
-        std::array<float, 4> CoordinateToValue(ComponentTemplate::Tag, Geometry::Point) const;
+        /// Translates the given coordinates back to values using value scaling and channel mapping.
+        /// Only works if the value affects the component location or size.
+        std::array<float, 4> CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location);
         
-        Geometry::Bounds TagBounds();
+        /// Translates the given coordinates to component space from 0 to 1.
+        Geometry::Pointf TranslateCoordinates(ComponentTemplate::Tag tag, Geometry::Point location);
         
-        Input::Layer &GetInputLayer();
+        /// Translates the given coordinates to component space from 0 to 1.
+        Geometry::Pointf TranslateCoordinates(int ind, Geometry::Point location);
         
-        Input::Layer &GetInputLayer(ComponentTemplate::Tag);
+        /// Returns the boundaries of the component marked with the given tag. This function may cause
+        /// update thus may take time to execute.
+        Geometry::Bounds TagBounds(ComponentTemplate::Tag tag);
         
+        /// Returns the boundaries of the component with the given index.
+        Geometry::Bounds BoundsOf(int ind);
         
+        /// Returns the index of the component at the given location.
+        int ComponentAt(Geometry::Point location);
         
-        /*/// This event will be fired as soon as any mouse event that is marked to be passed on occurs.
-        /// Use PassMouseEvent function to set mouse events that will be passed down. Some events do not
-        /// use location or button. You should ignore them in this case. See Input::Layer for more info.
-        Event<ComponentStack, Input::Mouse::EventType, Geometry::Point, Input::Mouse::Button, ComponentTemplate::Tag> MouseEvent;*/
+        /// Returns the input layer for this component stack.
+        Input::Layer &GetInputLayer() { return mouse; }
+        
+        /// Returns the input layer for the component marked with the given tag. If the component
+        /// has a substack then the returned layer will be for the substack. Otherwise, this function
+        /// will return the input layer of this stack.
+        Input::Layer &GetInputLayer(ComponentTemplate::Tag tag) { 
+            if(TagHasSubStack(tag)) {
+                auto comp = gettag(tag);
+                
+                return substacks[&comp->GetTemplate()].GetInputLayer();
+            }
+            else
+                return mouse;
+        }
         
 	private:
-		Component &get(int ind, int stack = -1) {
+		Component &get(int ind, int stack = -1) const {
 			if(stack == -1) {
 				stack = stacksizes[ind]-1;
 			}
@@ -221,6 +251,19 @@ namespace Gorgon { namespace UI {
 
         //to should contain the final condition to be removed
         bool removecondition(ComponentCondition from, ComponentCondition to);
+        
+        Component *gettag(ComponentTemplate::Tag tag) const {
+            for(int i=0; i<indices; i++) {
+                if(stacksizes[i] > 0) {
+                    auto &comp = get(i);
+                    
+                    if(comp.GetTemplate().GetTag() == tag)
+                        return &comp;
+                }
+            }
+            
+            return nullptr;
+        }
 
         int emsize = 10;
         
@@ -243,6 +286,8 @@ namespace Gorgon { namespace UI {
         int indices = 0;
 
 		bool updaterequired = false;
+        
+        bool handlingmouse = false;
 
 		Geometry::Size size;
         

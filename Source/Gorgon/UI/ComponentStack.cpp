@@ -22,6 +22,7 @@ namespace Gorgon { namespace UI {
         stacksizes.resize(indices);
         
         Add(base);
+        Add(mouse);
         
         addcondition(ComponentCondition::None, ComponentCondition::Always);
         
@@ -110,7 +111,7 @@ namespace Gorgon { namespace UI {
 				if(ptemp.HasTemplate()) {
 					auto s = new ComponentStack(ptemp.GetTemplate(), {0, 0});
 					substacks.Add(&temp, s);
-					if(mouse.HasParent())
+					if(handlingmouse)
 						s->HandleMouse(mousebuttonaccepted);
 				}
 			}
@@ -179,7 +180,7 @@ namespace Gorgon { namespace UI {
             conditions.insert(to);
         }
         
-        if(to == ComponentCondition::Disabled && mouse.HasParent()) {
+        if(to == ComponentCondition::Disabled && handlingmouse) {
             for(auto iter = conditions.begin(); iter != conditions.end();) {
                 auto c = *iter;
                 if(IsMouseRelated(c)) {
@@ -293,7 +294,7 @@ namespace Gorgon { namespace UI {
             }
         }
        
-        if(to == ComponentCondition::Disabled && mouse.HasParent()) {
+        if(to == ComponentCondition::Disabled && handlingmouse) {
             for(auto d : disabled)
                 ReplaceCondition(ComponentCondition::Disabled, d);
             
@@ -924,6 +925,84 @@ namespace Gorgon { namespace UI {
         
         comp.location = pp - cp + other.location;
     }
+
+    Geometry::Bounds ComponentStack::TagBounds(ComponentTemplate::Tag tag) {
+        Component *comp  = gettag(tag);
+        
+        if(!comp)
+            return {0, 0, 0, 0};
+        
+        //update needed?
+        if(updaterequired)
+            update();
+        
+        return {comp->location, comp->size};
+    }
+
+    Geometry::Bounds ComponentStack::BoundsOf(int ind) {
+        if(stacksizes[ind] == 0)
+            return {0, 0, 0, 0};
+        
+        //update needed?
+        if(updaterequired)
+            update();
+        
+        auto &comp = get(ind);
+        
+        return {comp.location, comp.size};
+    }
+
+    Geometry::Pointf ComponentStack::TranslateCoordinates(ComponentTemplate::Tag tag, Geometry::Point location) { 
+        Component *comp  = gettag(tag);
+        
+        if(!comp)
+            return {0, 0};
+        
+        int ind  = comp->GetTemplate().GetIndex();
+        int pind = -1;
+        
+        for(int i=0; i<indices; i++) {
+            if(stacksizes[i] > 0 && get(i).GetTemplate().GetType() == ComponentType::Container) {
+                const auto &cont = dynamic_cast<const ContainerTemplate &>(get(i).GetTemplate());
+                for(int j=0; j<cont.GetCount(); j++)
+                    if(cont[j] == ind) {
+                        pind = cont.GetIndex();
+                        break;
+                    }
+            }
+        }
+        
+        //move this to coordinate to value
+        Geometry::Bounds bounds;
+        if(pind > -1)
+            bounds = BoundsOf(pind);
+        else
+            bounds = BoundsOf(ind);
+        
+        if(pind > -1) {
+            if(substacks.Exists(&temp.Get(pind)))
+                bounds.Move(0, 0);
+        }
+        else if(substacks.Exists(&comp->GetTemplate()))
+            bounds.Move(0, 0);
+        
+        location -= bounds.TopLeft();
+        
+        return {float(location.X) / bounds.Width(), float(location.Y) / bounds.Height()};
+    }
+
+    std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
+        Component *comp  = gettag(tag);
+        
+        if(!comp)
+            return {{0.f, 0.f, 0.f, 0.f}};
+        
+        auto pnt = TranslateCoordinates(tag, location);
+        
+        //do checks, if is not a supported mapping, use default
+        
+        return {{pnt.X, pnt.Y, 0.f, 0.f}};
+    }
     
     int ComponentStack::getemsize(const Component &comp) {
         if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
@@ -1474,7 +1553,7 @@ realign:
 		for(auto s : substacks)
 			s.second.HandleMouse(mousebuttonaccepted);
 
-		Add(mouse);
+		handlingmouse = true;
     }
     
 } }
