@@ -189,11 +189,17 @@ namespace Gorgon { namespace UI {
         /// Only works if the value affects the component location or size.
         std::array<float, 4> CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location);
         
-        /// Translates the given coordinates to component space from 0 to 1.
-        Geometry::Pointf TranslateCoordinates(ComponentTemplate::Tag tag, Geometry::Point location);
+        /// Translates the given coordinates to component space in pixels.
+        Geometry::Point TranslateCoordinates(ComponentTemplate::Tag tag, Geometry::Point location);
+        
+        /// Translates the given coordinates to component space in pixels.
+        Geometry::Point TranslateCoordinates(int ind, Geometry::Point location);
         
         /// Translates the given coordinates to component space from 0 to 1.
-        Geometry::Pointf TranslateCoordinates(int ind, Geometry::Point location);
+        Geometry::Pointf TransformCoordinates(ComponentTemplate::Tag tag, Geometry::Point location);
+        
+        /// Translates the given coordinates to component space from 0 to 1.
+        Geometry::Pointf TransformCoordinates(int ind, Geometry::Point location);
         
         /// Returns the boundaries of the component marked with the given tag. This function may cause
         /// update thus may take time to execute.

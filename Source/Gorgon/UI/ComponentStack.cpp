@@ -952,13 +952,59 @@ namespace Gorgon { namespace UI {
         return {comp.location, comp.size};
     }
 
-    Geometry::Pointf ComponentStack::TranslateCoordinates(ComponentTemplate::Tag tag, Geometry::Point location) { 
+    Geometry::Point ComponentStack::TranslateCoordinates(int ind, Geometry::Point location) {
+        Geometry::Bounds bounds = BoundsOf(ind);
+        
+        if(substacks.Exists(&temp.Get(ind)))
+            bounds.Move(0, 0);
+        
+        location -= bounds.TopLeft();
+        
+        return location;
+    }
+    
+    Geometry::Point ComponentStack::TranslateCoordinates(ComponentTemplate::Tag tag, Geometry::Point location) {
         Component *comp  = gettag(tag);
         
         if(!comp)
             return {0, 0};
         
         int ind  = comp->GetTemplate().GetIndex();
+        
+        return TranslateCoordinates(ind, location);
+    }
+
+
+    Geometry::Pointf ComponentStack::TransformCoordinates(int ind, Geometry::Point location) {
+        Geometry::Bounds bounds = BoundsOf(ind);
+        
+        if(substacks.Exists(&temp.Get(ind)))
+            bounds.Move(0, 0);
+        
+        location -= bounds.TopLeft();
+        
+        return {float(location.X) / bounds.Width(), float(location.Y) / bounds.Height()};
+    }
+    
+    Geometry::Pointf ComponentStack::TransformCoordinates(ComponentTemplate::Tag tag, Geometry::Point location) {
+        Component *comp  = gettag(tag);
+        
+        if(!comp)
+            return {0, 0};
+        
+        int ind  = comp->GetTemplate().GetIndex();
+        
+        return TransformCoordinates(ind, location);
+    }
+
+    std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
+        Component *comp  = gettag(tag);
+        
+        if(!comp)
+            return {{0.f, 0.f, 0.f, 0.f}};
+        
+        const auto &ct = comp->GetTemplate();
+        int ind  = ct.GetIndex();
         int pind = -1;
         
         for(int i=0; i<indices; i++) {
@@ -972,36 +1018,162 @@ namespace Gorgon { namespace UI {
             }
         }
         
-        //move this to coordinate to value
-        Geometry::Bounds bounds;
-        if(pind > -1)
-            bounds = BoundsOf(pind);
-        else
-            bounds = BoundsOf(ind);
+        std::array<float, 4> val = {{0, 0, 0, 0}}, ret = {{0, 0, 0, 0}};
         
-        if(pind > -1) {
-            if(substacks.Exists(&temp.Get(pind)))
-                bounds.Move(0, 0);
-        }
-        else if(substacks.Exists(&comp->GetTemplate()))
+        auto pnt    = TranslateCoordinates(pind, location);
+        auto bounds = BoundsOf(pind);
+        
+        if(substacks.Exists(&temp.Get(pind)))
             bounds.Move(0, 0);
         
-        location -= bounds.TopLeft();
-        
-        return {float(location.X) / bounds.Width(), float(location.Y) / bounds.Height()};
-    }
+        switch(ct.GetValueModification()) {
+            //default is position modification, if the mode is not valid
+            //for mouse coordinates, this will be used. We will assume
+            //absolute positioning.
+            default: {
+                bounds.Right -= comp->size.Width;
+                bounds.Bottom -= comp->size.Height;
+                
+				int emsize = getemsize(*comp);
+                pnt -=  Convert(ct.GetCenter(), comp->size, emsize);
+                
+                val[0] = float(pnt.X) / bounds.Width();
+                val[1] = float(pnt.Y) / bounds.Height();
+                
+                if(ct.GetValueModification() == ContainerTemplate::ModifyX)
+                    val[1] = 0;
+                else if(ct.GetValueModification() == ContainerTemplate::ModifyY) {
+                    val[0] = val[1];
+                    val[1] = 0;
+                }
+                break;
+            }
+            
+            case ComponentTemplate::ModifyRotation:
+                //todo
+                break;
+                
+            case ComponentTemplate::ModifySize:
+                if(IsLeft(ct.GetContainerAnchor())) {
+                    val[0] = pnt.X;
+                }
+                else if(IsCenter(ct.GetContainerAnchor())) {
+                    val[0] = abs(pnt.X - bounds.Width()) * 2;
+                }
+                else if(IsRight(ct.GetContainerAnchor())) {
+                    val[0] = bounds.Width() - pnt.X;
+                }
 
-    std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
-        Component *comp  = gettag(tag);
+                if(IsTop(ct.GetContainerAnchor())) {
+                    val[1] = pnt.Y;
+                }
+                else if(IsMiddle(ct.GetContainerAnchor())) {
+                    val[1] = abs(pnt.Y - bounds.Height()) * 2;
+                }
+                else if(IsBottom(ct.GetContainerAnchor())) {
+                    val[1] = bounds.Height() - pnt.Y;
+                }
+                
+                val[0] = float(val[0]) / bounds.Width();
+                val[1] = float(val[1]) / bounds.Height();
+                
+                break;
+        }
         
-        if(!comp)
-            return {{0.f, 0.f, 0.f, 0.f}};
+        if((ct.GetValueModification() == ComponentTemplate::ModifyPosition || ct.GetValueModification() == ComponentTemplate::ModifySize) && NumberOfSetBits(ct.GetValueSource()) == 1) {
+            if(dynamic_cast<const ContainerTemplate&>(temp.Get(pind)).GetOrientation() == Graphics::Orientation::Vertical) {
+                val[0] = val[1];
+                val[1] = 0;
+            }
+        }
         
-        auto pnt = TranslateCoordinates(tag, location);
+        //do channel mapping
+        switch(ct.GetValueSource()) {
+            case ComponentTemplate::UseFirst:
+                val[1] = 0;
+                break;
+                
+            case ComponentTemplate::UseSecond:
+                val[1] = val[0];
+                break;
+                
+            case ComponentTemplate::UseThird:
+                val[2] = val[0];
+                val[1] = 0;
+                break;
+                
+            case ComponentTemplate::UseFourth:
+                val[3] = val[0];
+                val[1] = 0;
+                break;
+                
+            case ComponentTemplate::UseXY:
+            case ComponentTemplate::UseXYZ:
+            case ComponentTemplate::UseRGA:
+            case ComponentTemplate::UseRGBA:
+                //do nothing
+                break;
+                
+            case ComponentTemplate::UseYZ:
+            case ComponentTemplate::UseGBA:
+                val[2] = val[1];
+                val[1] = val[0];
+                val[0] = 0;
+                break;
+                
+            case ComponentTemplate::UseXZ:
+            case ComponentTemplate::UseRBA:
+                val[2] = val[1];
+                val[1] = 0;
+                
+                break;
+                
+            case ComponentTemplate::UseRA:
+                val[3] = val[1];
+                val[1] = 0;
+                break;
+                
+            case ComponentTemplate::UseBA:
+                val[3] = val[1];
+                val[2] = val[0];
+                val[1] = 0;
+                val[0] = 0;                
+                break;
+                
+            case ComponentTemplate::UseGA:
+                val[3] = val[1];
+                val[1] = val[0];
+                val[0] = 0;                
+                break;
+                
+            case ComponentTemplate::UseGray:
+                val = {{val[0], val[0], val[0], val[0]}};
+                break;
+                
+            case ComponentTemplate::UseGrayAlpha:
+                val = {{val[0], val[0], val[0], val[1]}};
+                break;
+                
+            case ComponentTemplate::UseL:
+            case ComponentTemplate::UseC:
+            case ComponentTemplate::UseH:
+            case ComponentTemplate::UseLC:
+            case ComponentTemplate::UseCH:
+            case ComponentTemplate::UseLH:
+            case ComponentTemplate::UseLCH:
+            case ComponentTemplate::UseLCHA:
+                //todo
+                break;
+        }
         
-        //do checks, if is not a supported mapping, use default
+        //do ordering transformation
+        const auto valueordering = ct.GetValueOrdering();
+        ret[valueordering[0]] = val[0];
+        ret[valueordering[1]] = val[1];
+        ret[valueordering[2]] = val[2];
+        ret[valueordering[3]] = val[3];
         
-        return {{pnt.X, pnt.Y, 0.f, 0.f}};
+        return ret;
     }
     
     int ComponentStack::getemsize(const Component &comp) {
@@ -1038,7 +1210,7 @@ namespace Gorgon { namespace UI {
 
 		float v = 0;
         
-        const auto &valueordering = temp.GetValueOrdering();
+        const auto valueordering = temp.GetValueOrdering();
 
 
 		switch(src) {

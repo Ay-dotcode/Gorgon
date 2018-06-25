@@ -823,9 +823,10 @@ namespace Gorgon {
         };
         
         /// Which data channels should be used as the value, common combinations are listed, however, all
-        /// combinations are valid. LCh is for circular La*b* color system. Color can also be mapped to
-        /// coordinate system. Particularly, CH can be mapped to polar coordinates to create a color map.
-        /// LCh color system is not yet working
+        /// combinations are valid except when they are used for mouse mapping. Only the values listed here
+        /// that use two channels will work fully with mouse mapping. LCh is for circular La*b* color system.
+        /// Color can also be mapped to coordinate system. Particularly, CH can be mapped to polar coordinates 
+        /// to create a color map. LCh color system is not yet working
         enum ValueSource {
             UseFirst = 1,
             UseX = UseFirst,
@@ -873,8 +874,16 @@ namespace Gorgon {
             UseXZ = UseFirst | UseThird,
             UseRB = UseFirst | UseThird,
             
+            UseRA = UseFirst  | UseFourth,
+            UseBA = UseSecond | UseFourth,
+            UseGA = UseThird  | UseFourth,
+            
             UseXYZ = UseFirst | UseSecond | UseThird,
             UseRGB = UseFirst | UseSecond | UseThird,
+
+            UseRGA = UseFirst  | UseSecond | UseFourth,
+            UseRBA = UseFirst  | UseThird  | UseFourth,
+            UseGBA = UseSecond | UseThird  | UseFourth,
             
             UseLH = UseL | UseH,
 			UseLC = UseL | UseC,
