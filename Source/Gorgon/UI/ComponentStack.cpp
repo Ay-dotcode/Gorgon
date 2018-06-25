@@ -51,11 +51,13 @@ namespace Gorgon { namespace UI {
             }
         });
         
-        mouse.SetUp([this](Input::Mouse::Button btn) {
+        mouse.SetUp([this](Geometry::Point location, Input::Mouse::Button btn) {
             if(btn && mousebuttonaccepted) {
                 RemoveCondition(ComponentCondition::Down, !IsDisabled());
                 disabled.erase(ComponentCondition::Down);
             }
+            
+            mouse.FireClick(location, btn);
         });
         
         Resize(size);

@@ -1141,6 +1141,13 @@ namespace Gorgon { namespace Input {
             void ResetOut() {
                 out = {};
             }
+            
+            /// Fires the click event manually, allowing both mouse up and click events
+            /// to happen at the same time.
+            void FireClick(Geometry::Point location, Input::Mouse::Button button) {
+                if(click)
+                    click(*this, location, button);
+            }
 			
             
             ///@}

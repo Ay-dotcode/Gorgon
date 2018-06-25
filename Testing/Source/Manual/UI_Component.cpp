@@ -139,6 +139,10 @@ int main() {
     stinlay.SetMove([&](Geometry::Point pnt) {
         vs = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, pnt);
     });
+    stinlay.SetClick([&]() {
+        FitInto(vs[0], 0.f, 1.f);
+        stack.SetValue(vs[0]);
+    });
     
     app.wind.Add(stack);
     

@@ -50,6 +50,14 @@ namespace Gorgon {
         
         return v;
     }
+    
+    /// Performs clamping on the given value.
+    template<class T_>
+    void FitInto(T_ &v, T_ min, T_ max) {
+        //replace with std::clamp once C++17 is enforced
+        
+        v = v < min ? min : (v > max ? max : v);
+    }
 
 	/// Where acceptable, denotes that the object will assume the ownership
 	class AssumeOwnershipTag { };
