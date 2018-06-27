@@ -227,6 +227,135 @@ namespace Gorgon { namespace UI {
                 return mouse;
         }
         
+        /** @name Mouse Events
+         * These function will allow handling mouse events. If the mouse event is originating from a
+         * substack, it will have a tag other than NoTag. If the tag for the substack is set NoTag,
+         * handler will receive UnknownTag. It is possible to obtain the tag and index under the
+         * mouse using GetTagAt and GetIndexAt functions. Along with TranslateCoordinates or 
+         * TransformCoordinates functions, it is possible to get the location of a mouse event on a
+         * specific component.
+         * 
+         * @{
+         */
+        
+        /// Sets the mouse down event. If HandleMouse function is called, this function will first
+        /// perform mouse event transition, then it will call this handler.
+        void SetMouseDownEvent(std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> handler) {
+            down_fn = handler;
+            
+            for(auto stack : substacks) {
+                stack.second.SetMouseDownEvent([stack, this](ComponentTemplate::Tag tag, Geometry::Point point, Input::Mouse::Button btn) {
+                    down_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), point, btn);
+                });
+            }
+        }
+        
+        /// Sets the mouse up event. If HandleMouse function is called, this function will first
+        /// perform mouse event transition, then it will call this handler. This event will be
+        /// called even if mouse down is not handled.
+        void SetMouseUpEvent(std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> handler) {
+            up_fn = handler;
+             
+            for(auto stack : substacks) {
+                stack.second.SetMouseUpEvent([stack, this](ComponentTemplate::Tag tag, Geometry::Point point, Input::Mouse::Button btn) {
+                    up_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), point, btn);
+                });
+            }
+       }
+        
+        /// Sets the mouse down event. If HandleMouse function is called, this function will first
+        /// perform mouse event transition, then it will call this handler.
+        void SetClickEvent(std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> handler) {
+            click_fn = handler;
+            
+            for(auto stack : substacks) {
+                stack.second.SetClickEvent([stack, this](ComponentTemplate::Tag tag, Geometry::Point point, Input::Mouse::Button btn) {
+                    click_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), point, btn);
+                });
+            }
+        }
+        
+        /// Sets the mouse mvoe event. If HandleMouse function is called, this function will first
+        /// perform mouse event transition, then it will call this handler. If this event is not handled
+        /// mouse move event of the layer will not be handled too.
+        void SetMouseMoveEvent(std::function<void(ComponentTemplate::Tag, Geometry::Point)> handler) {
+            move_fn = handler;
+            
+            mouse.SetMove([this] (Geometry::Point location){
+                if(move_fn)
+                    move_fn(ComponentTemplate::NoTag, location);
+            });
+            
+            for(auto stack : substacks) {
+                stack.second.SetMouseMoveEvent([stack, this](ComponentTemplate::Tag tag, Geometry::Point point) {
+                    move_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), point);
+                });
+            }
+        }
+        
+        /// Sets the mouse over event that is fired when the mouse moves over the component stack or a substack.
+        /// it will not be fired for mouse moving over a specific component. If HandleMouse function is called, 
+        /// this function will first perform mouse event transition, then it will call this handler.
+        void SetMouseOverEvent(std::function<void(ComponentTemplate::Tag)> handler) {
+            over_fn = handler;
+            
+            for(auto stack : substacks) {
+                stack.second.SetMouseOverEvent([stack, this](ComponentTemplate::Tag tag) {
+                    over_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag());
+                });
+            }
+        }
+        
+        /// Sets the mouse out event that is fired when the mouse moves over the component stack or a substack.
+        /// it will not be fired for mouse moving over a specific component. If HandleMouse function is called, 
+        /// this function will first perform mouse event transition, then it will call this handler. This event 
+        /// will be called even if mouse over is not handled.
+        void SetMouseOutEvent(std::function<void(ComponentTemplate::Tag)> handler) {
+            out_fn = handler;
+            
+            for(auto stack : substacks) {
+                stack.second.SetMouseOutEvent([stack, this](ComponentTemplate::Tag tag) {
+                    out_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag());
+                });
+            }
+        }
+        
+        /// Sets the handler for scroll (HScroll or VScroll), zoom and rotate events. All these events depend on 
+        /// specific hardware and may not be available.
+        void SetOtherMouseEvent(std::function<void(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> handler) {
+            other_fn = handler;
+            
+            mouse.SetScroll([this] (Geometry::Point location, float amount){
+                if(other_fn)
+                    other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Vert, location, amount);
+            });
+            
+            mouse.SetHScroll([this] (Geometry::Point location, float amount){
+                if(other_fn)
+                    other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Hor, location, amount);
+            });
+            
+            mouse.SetRotate([this] (Geometry::Point location, float amount){
+                if(other_fn)
+                    other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Rotate, location, amount);
+            });
+            
+            mouse.SetZoom([this] (Geometry::Point location, float amount){
+                if(other_fn)
+                    other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Zoom, location, amount);
+            });
+            
+            for(auto stack : substacks) {
+                stack.second.SetOtherMouseEvent([stack, this](ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point point, float amount) {
+                    other_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), type, point, amount);
+                });
+            }
+        }
+
+        
+        /// @}
+        
+        
 	private:
 		Component &get(int ind, int stack = -1) const {
 			if(stack == -1) {
@@ -309,6 +438,14 @@ namespace Gorgon { namespace UI {
         Graphics::Layer base;
         Input::Layer mouse;
         Input::Mouse::Button mousebuttonaccepted;
+        
+        std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> down_fn;
+        std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> click_fn;
+        std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> up_fn;
+        std::function<void(ComponentTemplate::Tag, Geometry::Point)> move_fn;
+        std::function<void(ComponentTemplate::Tag)> over_fn;
+        std::function<void(ComponentTemplate::Tag)> out_fn;
+        std::function<void(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> other_fn; //scroll, zoom, rotate
 	};
 
 }}

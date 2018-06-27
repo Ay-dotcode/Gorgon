@@ -33,14 +33,20 @@ namespace Gorgon { namespace UI {
             else {
                 AddCondition(ComponentCondition::Hover);
             }
+                
+            if(over_fn)
+                over_fn(ComponentTemplate::NoTag);
         });
         
         mouse.SetOut([this]{
             RemoveCondition(ComponentCondition::Hover, !IsDisabled());
             disabled.erase(ComponentCondition::Hover);
+                
+            if(out_fn)
+                out_fn(ComponentTemplate::NoTag);
         });
         
-        mouse.SetDown([this](Input::Mouse::Button btn) {
+        mouse.SetDown([this](Geometry::Point location, Input::Mouse::Button btn) {
             if(btn && mousebuttonaccepted) {
                 if(IsDisabled()) {
                     disabled.insert(ComponentCondition::Down);
@@ -49,6 +55,9 @@ namespace Gorgon { namespace UI {
                     AddCondition(ComponentCondition::Down);
                 }
             }
+            
+            if(down_fn)
+                down_fn(ComponentTemplate::NoTag, location, btn);
         });
         
         mouse.SetUp([this](Geometry::Point location, Input::Mouse::Button btn) {
@@ -57,7 +66,11 @@ namespace Gorgon { namespace UI {
                 disabled.erase(ComponentCondition::Down);
             }
             
-            mouse.FireClick(location, btn);
+            if(up_fn)
+                up_fn(ComponentTemplate::NoTag, location, btn);
+            
+            if(click_fn)
+                click_fn(ComponentTemplate::NoTag, location, btn);
         });
         
         Resize(size);
@@ -976,7 +989,6 @@ namespace Gorgon { namespace UI {
         return TranslateCoordinates(ind, location);
     }
 
-
     Geometry::Pointf ComponentStack::TransformCoordinates(int ind, Geometry::Point location) {
         Geometry::Bounds bounds = BoundsOf(ind);
         
@@ -1024,9 +1036,6 @@ namespace Gorgon { namespace UI {
         
         auto pnt    = TranslateCoordinates(pind, location);
         auto bounds = BoundsOf(pind);
-        
-        if(substacks.Exists(&temp.Get(pind)))
-            bounds.Move(0, 0);
         
         switch(ct.GetValueModification()) {
             //default is position modification, if the mode is not valid

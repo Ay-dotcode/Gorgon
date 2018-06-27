@@ -139,7 +139,11 @@ int main() {
     stinlay.SetMove([&](Geometry::Point pnt) {
         vs = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, pnt);
     });
-    stinlay.SetClick([&]() {
+    stack.SetClickEvent([&](UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button btn) {
+        if(btn != Input::Mouse::Button::Left || tag != UI::ComponentTemplate::NoTag) 
+            return;
+        
+        vs = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location);
         FitInto(vs[0], 0.f, 1.f);
         stack.SetValue(vs[0]);
     });

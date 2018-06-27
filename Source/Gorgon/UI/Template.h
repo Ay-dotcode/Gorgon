@@ -901,6 +901,9 @@ namespace Gorgon {
         /// queried for their size and positions from the component stack using their tag.
         enum Tag {
             NoTag,
+            
+            /// Do not use this tag for regular components, it is used to identify substacks without a tag
+            UnknownTag,
             TickTag,
             HScrollTag,
             VScrollTag,
