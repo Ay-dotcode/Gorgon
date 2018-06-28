@@ -135,17 +135,36 @@ int main() {
     
     
     std::array<float, 4> vs = {{0, 0, 0, 0}};
-    auto &stinlay = stack.GetInputLayer(UI::ComponentTemplate::DragBarTag);
-    stinlay.SetMove([&](Geometry::Point pnt) {
+
+	stack.SetMouseMoveEvent([&](UI::ComponentTemplate::Tag tag, Geometry::Point pnt) {
         vs = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, pnt);
     });
+
     stack.SetClickEvent([&](UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button btn) {
-        if(btn != Input::Mouse::Button::Left || tag != UI::ComponentTemplate::NoTag) 
+		std::cout<<"Click at "<<location<<std::endl;
+
+        if(btn != Input::Mouse::Button::Left) 
             return;
+
+		if(tag == UI::ComponentTemplate::NoTag) {
+			int ind = stack.ComponentAt(location);
+
+			if(stack.ComponentExists(ind))
+				tag = stack.GetTemplate(ind).GetTag();
+		}
         
-        vs = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location);
-        FitInto(vs[0], 0.f, 1.f);
-        stack.SetValue(vs[0]);
+		if(tag == UI::ComponentTemplate::DragBarTag) {
+			vs = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location);
+			FitInto(vs[0], 0.f, 1.f);
+			vs[0] = round(vs[0]*20)/20;
+			stack.SetValue(vs[0]);
+		}
+		else if(tag == UI::ComponentTemplate::DecrementTag) {
+			float v = stack.GetValue()[0];
+			v -= 0.1f;
+			FitInto(v, 0.f, 1.f);
+			stack.SetValue(v);
+		}
     });
     
     app.wind.Add(stack);

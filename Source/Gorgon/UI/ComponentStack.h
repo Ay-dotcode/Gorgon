@@ -76,6 +76,9 @@ namespace Gorgon { namespace UI {
 
 		/// Sets the value for the stack using a color
 		void SetValue(Graphics::RGBA color) { SetValue((Graphics::RGBAf)color); }
+
+		/// Returns the value of the stack
+		std::array<float, 4> GetValue() const { return value; }
 		
 		/// Sets the repeat with the given mode to the given vector. Use std::move(data) for
 		/// efficient transfer
@@ -207,25 +210,29 @@ namespace Gorgon { namespace UI {
         
         /// Returns the boundaries of the component with the given index.
         Geometry::Bounds BoundsOf(int ind);
-        
-        /// Returns the index of the component at the given location.
-        int ComponentAt(Geometry::Point location);
-        
-        /// Returns the input layer for this component stack.
-        Input::Layer &GetInputLayer() { return mouse; }
-        
-        /// Returns the input layer for the component marked with the given tag. If the component
-        /// has a substack then the returned layer will be for the substack. Otherwise, this function
-        /// will return the input layer of this stack.
-        Input::Layer &GetInputLayer(ComponentTemplate::Tag tag) { 
-            if(TagHasSubStack(tag)) {
-                auto comp = gettag(tag);
-                
-                return substacks[&comp->GetTemplate()].GetInputLayer();
-            }
-            else
-                return mouse;
-        }
+
+		/// Returns the index of the component at the given location.
+		int ComponentAt(Geometry::Point location) {
+			Geometry::Bounds b;
+
+			return ComponentAt(location, b);
+		}
+
+		/// Returns the index of the component at the given location while returning the bounds
+		/// of the component. 
+		int ComponentAt(Geometry::Point location, Geometry::Bounds &bounds);
+
+		/// Returns if a component at ind exists. If ind is negative or out of range, this function simply
+		/// returns false.
+		bool ComponentExists(int ind) const {
+			return Between(ind, 0, indices) && stacksizes[ind];
+		}
+
+		/// Returns the template at the given index. If the index does not exists, this function may crash
+		/// use ComponentExists function to check if it is safe to use the index.
+		const ComponentTemplate &GetTemplate(int ind) const {
+			return get(ind).GetTemplate();
+		}
         
         /** @name Mouse Events
          * These function will allow handling mouse events. If the mouse event is originating from a
@@ -322,35 +329,7 @@ namespace Gorgon { namespace UI {
         
         /// Sets the handler for scroll (HScroll or VScroll), zoom and rotate events. All these events depend on 
         /// specific hardware and may not be available.
-        void SetOtherMouseEvent(std::function<void(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> handler) {
-            other_fn = handler;
-            
-            mouse.SetScroll([this] (Geometry::Point location, float amount){
-                if(other_fn)
-                    other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Vert, location, amount);
-            });
-            
-            mouse.SetHScroll([this] (Geometry::Point location, float amount){
-                if(other_fn)
-                    other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Hor, location, amount);
-            });
-            
-            mouse.SetRotate([this] (Geometry::Point location, float amount){
-                if(other_fn)
-                    other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Rotate, location, amount);
-            });
-            
-            mouse.SetZoom([this] (Geometry::Point location, float amount){
-                if(other_fn)
-                    other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Zoom, location, amount);
-            });
-            
-            for(auto stack : substacks) {
-                stack.second.SetOtherMouseEvent([stack, this](ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point point, float amount) {
-                    other_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), type, point, amount);
-                });
-            }
-        }
+        void SetOtherMouseEvent(std::function<void(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> handler);
 
         
         /// @}

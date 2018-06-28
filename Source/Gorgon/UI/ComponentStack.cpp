@@ -3,7 +3,6 @@
 #include "../Graphics/Font.h"
 #include "../Time.h"
 
-
 namespace Gorgon { namespace UI {
 
     ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : temp(temp), size(size) {
@@ -465,6 +464,7 @@ namespace Gorgon { namespace UI {
 
         get(0).size = size;
         get(0).location = {0,0};
+		get(0).parent = -1;
 
 		//update repeat counts
 		for(auto &r : repeated) {
@@ -961,10 +961,24 @@ namespace Gorgon { namespace UI {
         //update needed?
         if(updaterequired)
             update();
+
         
         auto &comp = get(ind);
-        
-        return {comp.location, comp.size};
+
+		Component *t = &comp;
+
+		Geometry::Point off = {0, 0};
+
+		while(t->parent != -1) {
+			if(stacksizes[t->parent] == 0)
+				break;
+
+			t = &get(t->parent);
+
+			off += t->location;
+		}
+
+        return {comp.location + off, comp.size};
     }
 
     Geometry::Point ComponentStack::TranslateCoordinates(int ind, Geometry::Point location) {
@@ -1066,23 +1080,23 @@ namespace Gorgon { namespace UI {
                 
             case ComponentTemplate::ModifySize:
                 if(IsLeft(ct.GetContainerAnchor())) {
-                    val[0] = pnt.X;
+                    val[0] = float(pnt.X);
                 }
                 else if(IsCenter(ct.GetContainerAnchor())) {
-                    val[0] = abs(pnt.X - bounds.Width()) * 2;
+                    val[0] = float(abs(pnt.X - bounds.Width()) * 2);
                 }
                 else if(IsRight(ct.GetContainerAnchor())) {
-                    val[0] = bounds.Width() - pnt.X;
+                    val[0] = float(bounds.Width() - pnt.X);
                 }
 
                 if(IsTop(ct.GetContainerAnchor())) {
-                    val[1] = pnt.Y;
+                    val[1] = float(pnt.Y);
                 }
                 else if(IsMiddle(ct.GetContainerAnchor())) {
-                    val[1] = abs(pnt.Y - bounds.Height()) * 2;
+                    val[1] = float(abs(pnt.Y - bounds.Height()) * 2);
                 }
                 else if(IsBottom(ct.GetContainerAnchor())) {
-                    val[1] = bounds.Height() - pnt.Y;
+                    val[1] = float(bounds.Height() - pnt.Y);
                 }
                 
                 val[0] = float(val[0]) / bounds.Width();
@@ -1186,6 +1200,55 @@ namespace Gorgon { namespace UI {
         
         return ret;
     }
+
+	int ComponentStack::ComponentAt(Geometry::Point location, Geometry::Bounds &bounds) {
+		if(!stacksizes[0]) return -1;
+
+		std::vector<std::pair<int, bool>> todo;
+		todo.push_back({0, false});
+
+		Geometry::Point off = {0, 0};
+
+		while(todo.size()) {
+			if(stacksizes[todo.back().first] == 0) {
+				todo.pop_back();
+				continue;
+			}
+
+			auto &comp = get(todo.back().first);
+			const auto &temp = comp.GetTemplate();
+
+			if(dynamic_cast<const ContainerTemplate *>(&temp) && !todo.back().second) {
+				auto &cont = dynamic_cast<const ContainerTemplate &>(temp);
+				todo.back().second = true;
+
+				for(int i=0; i<cont.GetCount(); i++) {
+					if(cont[i] >= indices) continue;
+					if(stacksizes[cont[i]]) {
+						todo.push_back({cont[i], false});
+					}
+				}
+
+				off += comp.location;
+			}
+			else {
+				if(dynamic_cast<const ContainerTemplate *>(&temp)) {
+					off -= comp.location;
+				}
+
+				Geometry::Bounds b = {comp.location + off, comp.size};
+				if(IsInside(b, location)) {
+					bounds = b;
+
+					return temp.GetIndex();
+				}
+
+				todo.pop_back();
+			}
+		}
+
+		return -1;
+	}
     
     int ComponentStack::getemsize(const Component &comp) {
         if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
@@ -1319,6 +1382,8 @@ realign:
 				}
 
 				auto &comp = *compptr;
+
+				comp.parent = cont.GetIndex();
 
 				//check if textholder and if so use emsize from the font
 				int emsize = getemsize(comp);
@@ -1738,5 +1803,34 @@ realign:
 
 		handlingmouse = true;
     }
-    
+
+	void ComponentStack::SetOtherMouseEvent(std::function<void(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> handler) {
+		other_fn = handler;
+
+		mouse.SetScroll([this](Geometry::Point location, float amount) {
+			if(other_fn)
+				other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Vert, location, amount);
+		});
+
+		mouse.SetHScroll([this](Geometry::Point location, float amount) {
+			if(other_fn)
+				other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Hor, location, amount);
+		});
+
+		mouse.SetRotate([this](Geometry::Point location, float amount) {
+			if(other_fn)
+				other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Rotate, location, amount);
+		});
+
+		mouse.SetZoom([this](Geometry::Point location, float amount) {
+			if(other_fn)
+				other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Zoom, location, amount);
+		});
+
+		for(auto stack : substacks) {
+			stack.second.SetOtherMouseEvent([stack, this](ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point point, float amount) {
+				other_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), type, point, amount);
+			});
+		}
+	}
 } }

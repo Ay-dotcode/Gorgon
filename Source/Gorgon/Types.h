@@ -15,6 +15,33 @@ namespace Gorgon {
 	/// allows switching to double for precision sensitive functions.
 	typedef float Float;
 #endif
+
+	/// This class represents a range of values. Generally, start is
+	/// assumed to be included while end is excluded.
+	template<class T_>
+	class Range {
+	public:
+		Range() = default;
+		Range(T_ start, T_ end) : Start(start), End(end) { }
+
+		/// Normalizes the range ensuring Start is less than or equal
+		/// to the end.
+		void Normalize() {
+			if(Start > End) {
+				auto t = End;
+				End = Start;
+				Start = t;
+			}
+		}
+
+		/// Returns the difference between start and end
+		T_ Difference() const { 
+			return End - Start;
+		}
+
+		T_ Start = T_();
+		T_ End   = T_();
+	};
     
     typedef uint32_t Char;
     
@@ -58,6 +85,27 @@ namespace Gorgon {
         
         v = v < min ? min : (v > max ? max : v);
     }
+
+	/// Returns if the given number is within the given range including min
+	/// but excluding max
+	template<class T_>
+	bool Between(T_ v, T_ min, T_ max) {
+		return v >= min && v < max;
+	}
+
+	/// Returns if the given number is within the given range including min
+	/// but excluding max
+	template<class T_>
+	bool Between(Range<T_> range, T_ v) {
+		return v >= range.Start && v < range.End;
+	}
+
+	/// Returns if the given number is within the given range including min
+	/// and max
+	template<class T_>
+	bool BetweenInclusive(T_ v, T_ min, T_ max) {
+		return v >= min && v <= max;
+	}
 
 	/// Where acceptable, denotes that the object will assume the ownership
 	class AssumeOwnershipTag { };

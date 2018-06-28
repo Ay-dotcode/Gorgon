@@ -451,7 +451,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 		
 		
-		return (unsigned)list->size()-sz;
+		return (unsigned)(list->size() - sz);
 	}
 	
 	bool ASTCompiler::compilekeyword(ASTNode *tree, Byte &tempind) {
@@ -885,7 +885,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 			return true;
 		}
 		else if(tree->Text=="return" && scopes.size()) {
-			for(unsigned i=scopes.size()-1; i>=0; i--) {
+			for(size_t i=scopes.size()-1; i>=0; i--) {
 				if(scopes[i].type==scope::functionkeyword) {
 					if(scopes[i].state>0) {
 						if(tree->Leaves.GetSize()==0) {
@@ -935,7 +935,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					
 					Instruction ja;
 					ja.Type=InstructionType::Jump;
-					ja.JumpOffset=(int)start-list->size();
+					ja.JumpOffset = (int)start - (int)list->size();
 					list->push_back(ja);
 					
 					auto elm=scopes.back().indices.size();
@@ -970,7 +970,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 					
 					Instruction ja;
 					ja.Type=InstructionType::Jump;
-					ja.JumpOffset=(int)start-list->size();
+					ja.JumpOffset=(int)start-(int)list->size();
 					list->push_back(ja);
 					
 					

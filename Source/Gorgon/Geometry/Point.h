@@ -105,7 +105,7 @@ namespace Gorgon {
 				
 				auto s=str.begin();
 				
-				int par=-1;
+				size_t par=-1;
 				
 				while(s!=str.end() && (*s==' ' || *s=='\t')) s++;
 				

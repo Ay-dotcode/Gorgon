@@ -39,6 +39,8 @@ namespace Gorgon { namespace UI {
         
         //for horizontal this means right, for vertical this means bottom.
         bool anchorotherside = false;
+
+		int parent = -1;
         
     private:
         const ComponentTemplate *temp;

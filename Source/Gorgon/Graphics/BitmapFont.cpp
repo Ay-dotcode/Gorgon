@@ -463,7 +463,7 @@ namespace Gorgon { namespace Graphics {
         
 		underlinepos = int(baseline + linethickness + 1);
 
-        linegap = height + spacing * 2;
+        linegap = float(height + spacing * 2);
 
 		if(options.automatickerning)
 			AutoKern();
@@ -650,7 +650,7 @@ namespace Gorgon { namespace Graphics {
                         bmp.Prepare();
                     
                     destroylist.Add(img);
-                    AddGlyph(start, *img, offsets[i], b.Width() + (options.trim ? spacing : 0));
+                    AddGlyph(start, *img, offsets[i], float(b.Width() + (options.trim ? spacing : 0)));
                     imported++;
                     
                     if(start == '_') {
@@ -686,7 +686,7 @@ namespace Gorgon { namespace Graphics {
                 if(!bmp.IsEmpty(b)) {
                     auto img = new TextureImage(bmp.GetID(), bmp.GetMode(), bmp.GetSize(), b);
                     destroylist.Add(img);
-                    AddGlyph(start, *img, offsets[i], b.Width() + (options.trim ? spacing : 0));
+                    AddGlyph(start, *img, offsets[i], float(b.Width() + (options.trim ? spacing : 0)));
                     imported++;
                     
                     if(start == '_') {
@@ -719,7 +719,7 @@ namespace Gorgon { namespace Graphics {
                     options.baseline = a.image->GetHeight() + a.offset.Y;
                 }
                 else {
-                    options.baseline = height - bmp.Trim(a_bounds, false, false, false, true).Bottom;
+                    options.baseline = float(height - bmp.Trim(a_bounds, false, false, false, true).Bottom);
                 }
             }
             else {
@@ -737,7 +737,7 @@ namespace Gorgon { namespace Graphics {
                 linethickness = 1;
         }
         
-        linegap = height + spacing * 2;
+        linegap = float(height + spacing * 2);
 
 		if(options.automatickerning)
 			AutoKern();
