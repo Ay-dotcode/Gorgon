@@ -52,6 +52,23 @@ int main() {
 	btn_left_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
 	btnleft_n.AddIndex(1);
 	btnleft_h.AddIndex(1);
+    
+    UI::Template rbtn;
+	rbtn.SetSize({20, 20});
+	auto &btnright_n = rbtn.AddContainer(0, UI::ComponentCondition::Always);
+	btnright_n.Background.SetDrawable(btn_bg);
+	btnright_n.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+
+	rbtn.SetSize({20, 20});
+	auto &btnright_h = rbtn.AddContainer(0, UI::ComponentCondition::Hover);
+	btnright_h.Background.SetDrawable(btn_bgh);
+	btnright_h.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+
+	auto &btn_right_trig = rbtn.AddGraphics(1, UI::ComponentCondition::Always);
+	btn_right_trig.Content.SetDrawable(trig2);
+	btn_right_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+	btnright_n.AddIndex(1);
+	btnright_h.AddIndex(1);
 
 	UI::Template temp;
 	
@@ -111,7 +128,7 @@ int main() {
     tickh.SetPositioning(tickh.Absolute);
     tickh.SetValueModification(tickh.ModifyX);*/
 
-    
+    /*
     auto &btnright_n = temp.AddContainer(5, UI::ComponentCondition::Always);
     btnright_n.Background.SetDrawable(btn_bg);
     btnright_n.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
@@ -122,7 +139,15 @@ int main() {
     btn_right_trig.Content.SetDrawable(trig2);
     btn_right_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
     btnright_n.AddIndex(6);
+    */
     
+	auto &rbtn_p = temp.AddPlaceholder(5, UI::ComponentCondition::Always);
+	rbtn_p.SetTemplate(rbtn);
+	rbtn_p.SetMargin(1, 0, 0, 0);
+	rbtn_p.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+	rbtn_p.SetTag(UI::ComponentTemplate::IncrementTag);
+	outer.AddIndex(5);
+
 
     UI::ComponentStack stack(temp, {300, 20});
     stack.HandleMouse();
@@ -162,6 +187,12 @@ int main() {
 		else if(tag == UI::ComponentTemplate::DecrementTag) {
 			float v = stack.GetValue()[0];
 			v -= 0.1f;
+			FitInto(v, 0.f, 1.f);
+			stack.SetValue(v);
+		}
+		else if(tag == UI::ComponentTemplate::IncrementTag) {
+			float v = stack.GetValue()[0];
+			v += 0.1f;
 			FitInto(v, 0.f, 1.f);
 			stack.SetValue(v);
 		}
