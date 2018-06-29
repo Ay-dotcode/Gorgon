@@ -57,9 +57,8 @@ int main() {
 	rbtn.SetSize({20, 20});
 	auto &btnright_n = rbtn.AddContainer(0, UI::ComponentCondition::Always);
 	btnright_n.Background.SetDrawable(btn_bg);
-	btnright_n.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+	btnright_n.SetSize(100, 100, UI::Dimension::Percent);
 
-	rbtn.SetSize({20, 20});
 	auto &btnright_h = rbtn.AddContainer(0, UI::ComponentCondition::Hover);
 	btnright_h.Background.SetDrawable(btn_bgh);
 	btnright_h.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
@@ -128,6 +127,17 @@ int main() {
 	tickh.SetPositioning(tickh.Absolute);
 	tickh.SetValueModification(tickh.ModifyX);
 
+    auto styc = app.sty;
+    styc.AlignCenter();
+	auto &tickt = temp.AddTextholder(8, UI::ComponentCondition::Always);
+	tickt.SetRenderer(styc);
+    tickt.SetDataEffect(tickt.ValueText1);
+	tickt.SetSize({12, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+	tickt.SetMargin(4, 2, 4, 7);
+	tickt.SetRepeatMode(tickt.XTick);
+	tickt.SetPositioning(tickt.Absolute);
+	tickt.SetValueModification(tickt.ModifyX);
+	indicator_n.AddIndex(8);
     
 	auto &rbtn_p = temp.AddPlaceholder(5, UI::ComponentCondition::Always);
 	rbtn_p.SetTemplate(rbtn);
@@ -135,17 +145,24 @@ int main() {
 	rbtn_p.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
 	rbtn_p.SetTag(UI::ComponentTemplate::IncrementTag);
 	outer.AddIndex(5);
+    
+    UI::ComponentStack button(rbtn, {30, 30});
+    button.Move(0, 100);
+    app.wind.Add(button);
 
 
     UI::ComponentStack stack(temp, {300, 20});
     stack.HandleMouse();
     
-    for(auto i = 0; i<=10; i++) {
-        stack.AddRepeat(tickn.XTick, i/10.f);
+    for(auto i = 0; i<=20; i++) {
+        stack.AddRepeat(tickn.XTick, i/20.f);
     }
     
-    float v1 = 0;
+    stack.SetValueToText([](auto, auto, auto val) {
+        return std::to_string((int)std::round(val[0]*10));
+    });
     
+    float v1 = 0;
     
     std::array<float, 4> vs = {{0, 0, 0, 0}};
 

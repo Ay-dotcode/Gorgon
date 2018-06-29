@@ -365,6 +365,10 @@ namespace Gorgon { namespace UI {
         
         /// @}
         
+        void SetValueToText(std::function<std::string(int ind, ComponentTemplate::DataEffect, const std::array<float, 4> &value)> handler) {
+            valuetotext = handler;
+        }
+        
         
 	private:
 		Component &get(int ind, int stack = -1) const {
@@ -384,7 +388,7 @@ namespace Gorgon { namespace UI {
 
 		void update(Component &parent);
 
-		void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset, Graphics::RGBAf color = 1.f, int ind = 0);
+		void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset, Graphics::RGBAf color = 1.f, int ind = -1);
 
         void grow();
         
@@ -462,6 +466,8 @@ namespace Gorgon { namespace UI {
         std::function<void(ComponentTemplate::Tag)> over_fn;
         std::function<void(ComponentTemplate::Tag)> out_fn;
         std::function<void(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> other_fn; //scroll, zoom, rotate
+        
+        std::function<std::string(int ind, ComponentTemplate::DataEffect, const std::array<float, 4> &value)> valuetotext;
 	};
 
 }}

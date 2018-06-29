@@ -542,6 +542,7 @@ namespace Gorgon { namespace UI {
 	void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
 		const ComponentTemplate &tempp = comp.GetTemplate();
 		auto tempptr = &tempp;
+        std::array<float, 4> val = value;
 
 		if(tempp.GetRepeatMode() != ComponentTemplate::NoRepeat) {
 			ComponentCondition rc = ComponentCondition::Always;
@@ -549,6 +550,9 @@ namespace Gorgon { namespace UI {
 				rc = repeatconditions[tempp.GetRepeatMode()][ind];
 
 			tempptr = &get(tempp.GetIndex(), rc).GetTemplate();
+            
+            val = repeats[tempp.GetRepeatMode()][ind];
+            
 		}
 
 		const auto &temp = *tempptr;
@@ -639,7 +643,10 @@ namespace Gorgon { namespace UI {
             
 			target->SetTintColor(color);
             if(th.IsReady()) {
-				if(stringdata.count(temp.GetDataEffect())) {
+                if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
+                    th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
+                }
+				else if(stringdata.count(temp.GetDataEffect())) {
 					th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
 				}
             }

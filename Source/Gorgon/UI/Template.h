@@ -748,8 +748,6 @@ namespace Gorgon {
 			None,
 
 			/// Works only for TextholderTemplate, data will affect the text that is displayed.
-			/// If the Widget does not have text but states, the number of the state
-			/// will be translated into a string and will be passed.
 			Text,
 
 			ValueText1,
