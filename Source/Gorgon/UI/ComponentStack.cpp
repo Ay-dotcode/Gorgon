@@ -84,12 +84,30 @@ namespace Gorgon { namespace UI {
                 }
             }
         }
-    }
+
+		//this is here to simplify the update process, we are making sure that always is
+		//at the top of the stack
+		for(int i=0; i<temp.GetCount(); i++) {
+			const auto &t = temp[i];
+
+			if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() != ComponentCondition::Always) {
+				AddToStack(temp[i]);
+			}
+		}
+
+		for(int i=0; i<temp.GetCount(); i++) {
+			const auto &t = temp[i];
+
+			if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() == ComponentCondition::Always) {
+				AddToStack(temp[i]);
+			}
+		}
+	}
 
     void ComponentStack::AddToStack(const ComponentTemplate& temp) {
         int ind = temp.GetIndex();
 		
-		if(&get(ind).GetTemplate() != &temp) {
+		if(stacksizes[ind] == 0 || &get(ind).GetTemplate() != &temp) {
 			int si = stacksizes[ind];
         
 			if(si == stackcapacity) {
@@ -147,7 +165,7 @@ namespace Gorgon { namespace UI {
 		}
 		
 		//handle repeat storage
-		if(temp.GetRepeatMode() != temp.NoRepeat && !repeated.count(&temp)) {
+		if(temp.GetRepeatMode() != temp.NoRepeat && !repeated.count(&temp) && temp.GetCondition() == ComponentCondition::Always) {
 			repeated.insert({&temp, {}});
 		}
 		else if(temp.GetRepeatMode() == temp.NoRepeat && repeated.count(&temp)) {
@@ -214,6 +232,9 @@ namespace Gorgon { namespace UI {
             //direct search: perfect fit
             std::set<int> indicesdone;
             for(int i=0; i<temp.GetCount(); i++) {
+				if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+					continue;
+
                 if(temp[i].GetCondition() == to && !temp[i].IsTransition()) {
                     updatereq = true;
                     AddToStack(temp[i]);
@@ -226,7 +247,10 @@ namespace Gorgon { namespace UI {
             //In this case we should take this non-perfect fit.
             if(hint != ComponentCondition::None) {
                 for(int i=0; i<temp.GetCount(); i++) {
-                    if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to) {
+					if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+						continue;
+
+					if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to) {
                         updatereq = true;
                         AddToStack(temp[i]);
                     }
@@ -235,7 +259,10 @@ namespace Gorgon { namespace UI {
         }
         else {
             for(int i=0; i<temp.GetCount(); i++) {
-                if(temp[i].GetCondition() == from && temp[i].GetTargetCondition() == to) {
+				if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+					continue;
+
+				if(temp[i].GetCondition() == from && temp[i].GetTargetCondition() == to) {
                     updatereq = true;
                     AddToStack(temp[i]);
                 }
@@ -270,6 +297,10 @@ namespace Gorgon { namespace UI {
                 for(int j=stacksizes[i]-1; j>=0; j--) {
                     const auto &temp = data[i + j*indices].GetTemplate();
                     bool remove = false;
+
+					//do not remove repeating components
+					if(temp.GetRepeatMode() != ComponentTemplate::NoRepeat)
+						continue;
                     
                     if(from == ComponentCondition::Never)
                         remove = temp.GetCondition() == to;
@@ -459,6 +490,18 @@ namespace Gorgon { namespace UI {
 		updaterequired = true;
 	}
 
+
+	Component &ComponentStack::get(int ind, ComponentCondition condition) const {
+		ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
+
+		for(int i=stacksizes[ind]-1; i>=0; i--) {
+			if(data[ind + i * indices].GetTemplate().GetCondition() == condition)
+				return data[ind + i * indices];
+		}
+
+		return data[ind + (stacksizes[ind]-1) * indices];
+	}
+
 	void ComponentStack::update() {
 		if(!stacksizes[0]) return;
 
@@ -496,8 +539,19 @@ namespace Gorgon { namespace UI {
 		render(get(0), base, {0,0});
 	}
 
-	void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color) {
-		const ComponentTemplate &temp = comp.GetTemplate();
+	void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
+		const ComponentTemplate &tempp = comp.GetTemplate();
+		auto tempptr = &tempp;
+
+		if(tempp.GetRepeatMode() != ComponentTemplate::NoRepeat) {
+			ComponentCondition rc = ComponentCondition::Always;
+			if(repeatconditions[tempp.GetRepeatMode()].count(ind))
+				rc = repeatconditions[tempp.GetRepeatMode()][ind];
+
+			tempptr = &get(tempp.GetIndex(), rc).GetTemplate();
+		}
+
+		const auto &temp = *tempptr;
 
         Graphics::Layer *target = nullptr;
         auto &st = *storage[&temp];
@@ -552,8 +606,9 @@ namespace Gorgon { namespace UI {
 						render(compparent, target ? *target : parent, offset, color);
 					}
 					else if(repeats.count(temp.GetRepeatMode())) {
+						int index = 0;
 						for(auto &r : repeated[&temp])
-							render(r, target ? *target : parent, offset, color);
+							render(r, target ? *target : parent, offset, color, index++);
 					}
 				}
             }
@@ -1364,24 +1419,34 @@ realign:
 
 
             auto &compparent = get(cont[i]);
-            
-            const auto &temp = compparent.GetTemplate();
+
+			const auto &tempparent = compparent.GetTemplate();
             
 			
-			for(int j = 0; temp.GetRepeatMode() == temp.NoRepeat ? j == 0 : repeats.count(temp.GetRepeatMode()) && j < repeats[temp.GetRepeatMode()].size(); j++) {
+			for(int j = 0; tempparent.GetRepeatMode() == tempparent.NoRepeat ? j == 0 : repeats.count(tempparent.GetRepeatMode()) && j < repeats[tempparent.GetRepeatMode()].size(); j++) {
 				Component *compptr;
+				const ComponentTemplate *tempptr;
+
 				const std::array<float, 4> *val;
 
-				if(temp.GetRepeatMode() == temp.NoRepeat) {
+				if(tempparent.GetRepeatMode() == tempparent.NoRepeat) {
 					compptr = &compparent;
+					tempptr = &tempparent;
 					val     = &value;
 				}
 				else {
-					compptr = &repeated[&temp][j];
-					val     = &repeats[temp.GetRepeatMode()][j];
+					compptr = &repeated[&tempparent][j];
+					ComponentCondition rc = ComponentCondition::Always;
+
+					if(repeatconditions[tempparent.GetRepeatMode()].count(j))
+						rc = repeatconditions[tempparent.GetRepeatMode()][j];
+
+					tempptr = &get(ci, rc).GetTemplate();
+					val     = &repeats[tempparent.GetRepeatMode()][j];
 				}
 
 				auto &comp = *compptr;
+				const auto &temp = *tempptr;
 
 				comp.parent = cont.GetIndex();
 

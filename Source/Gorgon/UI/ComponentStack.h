@@ -80,6 +80,18 @@ namespace Gorgon { namespace UI {
 		/// Returns the value of the stack
 		std::array<float, 4> GetValue() const { return value; }
 		
+		/**
+		 * @name Repeating components
+		 * It is possible to repeat components automatically. For this, template should
+		 * have components marked with the respective RepeatMode and you need to set the
+		 * repeat points. Repeat points uses the same system as value. Repeating components
+		 * should have at least Always condition to work properly. It is possible to set
+		 * the condition of each repeat individually. This system uses indexes of repeat
+		 * points instead of values to speed up rendering.
+		 * 
+		 * @{
+		 */
+
 		/// Sets the repeat with the given mode to the given vector. Use std::move(data) for
 		/// efficient transfer
 		void SetRepeat(ComponentTemplate::RepeatMode mode, std::vector<std::array<float, 4>> data) {
@@ -128,11 +140,30 @@ namespace Gorgon { namespace UI {
             AddRepeat(mode, (Graphics::RGBAf)color);
         }
 
-        /// Removes all repeat points from the given mode
+        /// Removes all repeat points from the given mode. Call RemoveAllConditions along with
+		/// this function if you are using conditions for repeats.
 		void RemoveRepeats(ComponentTemplate::RepeatMode mode) {
             repeats.erase(mode);
 			checkrepeatupdate(mode);
 		}
+
+		/// Sets the condition of a specific repeat index. Nothing will happen if index is
+		/// out of bounds or condition does not exist. Setting condition to always will simply
+		/// remove the condition.
+		void SetConditionOf(ComponentTemplate::RepeatMode mode, int index, ComponentCondition condition) {
+			if(repeatconditions[mode][index] != condition) {
+				repeatconditions[mode][index] = condition;
+				checkrepeatupdate(mode);
+			}
+		}
+
+		/// Removes all conditions for a repeat mode.
+		void RemoveAllConditionsOf(ComponentTemplate::RepeatMode mode) {
+			repeatconditions[mode].clear();
+			checkrepeatupdate(mode);
+		}
+
+		/// @}
 
         using Layer::Resize;
         
@@ -238,7 +269,7 @@ namespace Gorgon { namespace UI {
          * These function will allow handling mouse events. If the mouse event is originating from a
          * substack, it will have a tag other than NoTag. If the tag for the substack is set NoTag,
          * handler will receive UnknownTag. It is possible to obtain the tag and index under the
-         * mouse using GetTagAt and GetIndexAt functions. Along with TranslateCoordinates or 
+         * mouse using ComponentAt functions. Along with TranslateCoordinates or 
          * TransformCoordinates functions, it is possible to get the location of a mouse event on a
          * specific component.
          * 
@@ -337,6 +368,8 @@ namespace Gorgon { namespace UI {
         
 	private:
 		Component &get(int ind, int stack = -1) const {
+			ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
+
 			if(stack == -1) {
 				stack = stacksizes[ind]-1;
 			}
@@ -344,11 +377,14 @@ namespace Gorgon { namespace UI {
 			return data[ind + stack * indices];
 		}
 
+		//returns top of stack if condition does not exist
+		Component &get(int ind, ComponentCondition condition) const;
+
 		void update();
 
 		void update(Component &parent);
 
-		void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset, Graphics::RGBAf color = 1.f);
+		void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset, Graphics::RGBAf color = 1.f, int ind = 0);
 
         void grow();
         
@@ -391,11 +427,12 @@ namespace Gorgon { namespace UI {
 		std::map<ComponentTemplate::DataEffect, std::string> stringdata;
 		Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
         std::map<ComponentTemplate::RepeatMode, std::vector<std::array<float, 4>>> repeats;
+		std::map<ComponentTemplate::RepeatMode, std::map<int, ComponentCondition>> repeatconditions; 
 		std::array<float, 4> value;
         
         std::map<std::pair<ComponentCondition, ComponentCondition>, unsigned long> transitions;
         
-        int stackcapacity = 2;
+        int stackcapacity = 3;
         
         int indices = 0;
 

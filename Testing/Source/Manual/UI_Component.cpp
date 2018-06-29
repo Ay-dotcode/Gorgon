@@ -26,9 +26,9 @@ int main() {
     Graphics::RectangleProvider rect(border_col, border_col, border_col, border_col, border_bg, border_col, border_col, border_col, border_col);
 
     Graphics::BlankImage btn_bg(0.2f);
-    Graphics::BlankImage btn_bgh(0.0f);
-    Graphics::BlankImage tick(0.4f);
-    Graphics::BlankImage tickhg(0.6f);
+	Graphics::BlankImage btn_bgh(0.0f);
+	Graphics::BlankImage tick(0.4f);
+	Graphics::BlankImage tick_h(Graphics::RGBAf{0.8f, 0.f, 0.f});
 
     auto trig = Triangle(6, 10);
     auto trig1 =trig.Rotate90();
@@ -111,35 +111,23 @@ int main() {
     indicatorh_sym.SetMargin(0, 1, 0, 1);
     
 
-    auto &tickn = temp.AddGraphics(7, UI::ComponentCondition::Always);
-    tickn.Content.SetDrawable(tick);
-    tickn.SetSize({2, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
-    tickn.SetMargin(9, 2, 9, 2);
-    tickn.SetRepeatMode(tickn.XTick);
-    tickn.SetPositioning(tickn.Absolute);
-    tickn.SetValueModification(tickn.ModifyX);
-    indicator_n.AddIndex(7);
+	auto &tickn = temp.AddGraphics(7, UI::ComponentCondition::Always);
+	tickn.Content.SetDrawable(tick);
+	tickn.SetSize({2, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+	tickn.SetMargin(9, 2, 9, 2);
+	tickn.SetRepeatMode(tickn.XTick);
+	tickn.SetPositioning(tickn.Absolute);
+	tickn.SetValueModification(tickn.ModifyX);
+	indicator_n.AddIndex(7);
 
-    /*auto &tickh = temp.AddGraphics(7, UI::ComponentCondition::Hover);
-    tickh.Content.SetDrawable(tickhg);
-    tickh.SetSize({2, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
-    tickh.SetMargin(9, 2, 9, 2);
-    tickh.SetRepeatMode(tickh.XTick);
-    tickh.SetPositioning(tickh.Absolute);
-    tickh.SetValueModification(tickh.ModifyX);*/
+	auto &tickh = temp.AddGraphics(7, UI::ComponentCondition::Hover);
+	tickh.Content.SetDrawable(tick_h);
+	tickh.SetSize({2, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+	tickh.SetMargin(9, 2, 9, 7);
+	tickh.SetRepeatMode(tickh.XTick);
+	tickh.SetPositioning(tickh.Absolute);
+	tickh.SetValueModification(tickh.ModifyX);
 
-    /*
-    auto &btnright_n = temp.AddContainer(5, UI::ComponentCondition::Always);
-    btnright_n.Background.SetDrawable(btn_bg);
-    btnright_n.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
-    btnright_n.SetMargin(1, 0, 0, 0);
-    outer.AddIndex(5);
-    
-    auto &btn_right_trig = temp.AddGraphics(6, UI::ComponentCondition::Always);
-    btn_right_trig.Content.SetDrawable(trig2);
-    btn_right_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-    btnright_n.AddIndex(6);
-    */
     
 	auto &rbtn_p = temp.AddPlaceholder(5, UI::ComponentCondition::Always);
 	rbtn_p.SetTemplate(rbtn);
@@ -162,8 +150,32 @@ int main() {
     std::array<float, 4> vs = {{0, 0, 0, 0}};
 
 	stack.SetMouseMoveEvent([&](UI::ComponentTemplate::Tag tag, Geometry::Point pnt) {
-        vs = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, pnt);
-    });
+		if(tag == UI::ComponentTemplate::NoTag) {
+			int ind = stack.ComponentAt(pnt);
+
+			if(stack.ComponentExists(ind))
+				tag = stack.GetTemplate(ind).GetTag();
+		}
+
+		vs = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, pnt);
+		FitInto(vs[0], 0.f, 1.f);
+		vs[0] = round(vs[0]*20)/20;
+
+		stack.RemoveAllConditionsOf(tickn.XTick);
+		if(tag == UI::ComponentTemplate::DragBarTag) {
+			int v = int(std::round(vs[0] * 20));
+			if(v%2) {
+				stack.SetConditionOf(tickn.XTick, v/2, UI::ComponentCondition::Hover);
+				stack.SetConditionOf(tickn.XTick, v/2+1, UI::ComponentCondition::Hover);
+			}
+			else
+				stack.SetConditionOf(tickn.XTick, v/2, UI::ComponentCondition::Hover);
+		}
+	});
+
+	stack.SetMouseOutEvent([&](UI::ComponentTemplate::Tag tag) {
+		stack.RemoveAllConditionsOf(tickn.XTick);
+	});
 
     stack.SetClickEvent([&](UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button btn) {
 		std::cout<<"Click at "<<location<<std::endl;
@@ -204,11 +216,6 @@ int main() {
     app.wind.KeyEvent.Register([&](Input::Key key, bool state) {
         namespace Keycodes = Input::Keyboard::Keycodes;
         if(key == Keycodes::D && state) {
-            /*if(hover)
-                stack.RemoveCondition(UI::ComponentCondition::Disabled);
-            else
-                stack.AddCondition(UI::ComponentCondition::Normal__Disabled);
-            */
             hover = !hover;
             
             return true;
