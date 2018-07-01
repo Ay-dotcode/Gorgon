@@ -10,3 +10,4 @@ GGE 4.x is still in development and is not feature complete.
 * doxygen
 * OpenGL
 * libCurl (For HTTP transport)
+* FreeType2 (For font support, bitmap fonts do not need freetype)
