@@ -106,6 +106,10 @@ namespace Gorgon {
 	bool BetweenInclusive(T_ v, T_ min, T_ max) {
 		return v >= min && v <= max;
 	}
+	template <typename T_>
+	int Sign(T_ val) {
+		return (T_{} < val) - (val < T_{});
+	}
 
 	/// Where acceptable, denotes that the object will assume the ownership
 	class AssumeOwnershipTag { };

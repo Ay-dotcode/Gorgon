@@ -154,13 +154,15 @@ int main() {
     UI::ComponentStack stack(temp, {300, 20});
     stack.HandleMouse();
     
-    for(auto i = 0; i<=20; i++) {
-        stack.AddRepeat(tickn.XTick, i/20.f);
+    for(auto i = 0; i<=10; i++) {
+        stack.AddRepeat(tickn.XTick, i/10.f);
     }
     
     stack.SetValueToText([](auto, auto, auto val) {
         return std::to_string((int)std::round(val[0]*10));
     });
+
+	stack.SetValueTransitionSpeed({{2, 0, 0, 0}});
     
     float v1 = 0;
     

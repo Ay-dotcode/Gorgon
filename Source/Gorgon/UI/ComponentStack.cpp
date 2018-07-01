@@ -7,8 +7,6 @@ namespace Gorgon { namespace UI {
 
     ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : temp(temp), size(size) {
         int maxindex = 0;
-
-		value[0] = value[1] = value[2] = value[3] = 0;
         
         for(int i=0; i<temp.GetCount(); i++) {
             if(maxindex < temp[i].GetIndex())
@@ -468,8 +466,32 @@ namespace Gorgon { namespace UI {
 	}
     
 	void ComponentStack::SetValue(float first, float second, float third, float fourth) {
-		value = {{first, second, third, fourth}};
+		if(targetvalue[0] == first && targetvalue[1] == second && targetvalue[2]== third && targetvalue[3] == fourth)
+			return;
+
+		targetvalue = {{first, second, third, fourth}};
+
+		bool changed = false;
+		auto tm = Time::DeltaTime();
+		for(int i=0; i<4; i++) {
+			if(targetvalue[i] != value[i]) {
+				if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < valuespeed[i] * tm / 1000) {
+					value[i] = targetvalue[i];
+				}
+				else {
+					value[i] += Sign(targetvalue[i] - value[i]) * valuespeed[i] * tm / 1000;
+				}
+
+				changed = true;
+			}
+		}
+
+		if(!changed)
+			return;
         
+		if(value_fn)
+			value_fn();
+
 		bool updatereq = false;
 
 		for(int i=0; i<indices; i++) {
@@ -484,6 +506,8 @@ namespace Gorgon { namespace UI {
 
 		if(updatereq)
 			Update();
+		else
+			value = targetvalue;
     }
 
 	void ComponentStack::Update() {
@@ -1857,6 +1881,29 @@ realign:
             else
                 ++iter;
         }
+
+		bool changed = false;
+		auto tm = Time::DeltaTime();
+		for(int i=0; i<4; i++) {
+			if(targetvalue[i] != value[i]) {
+				if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < valuespeed[i] * tm / 1000) {
+					value[i] = targetvalue[i];
+				}
+				else {
+					value[i] += Sign(targetvalue[i] - value[i]) * valuespeed[i] * tm / 1000;
+				}
+
+				changed = true;
+			}
+		}
+
+		if(changed) {
+			updaterequired = true;
+
+			if(!returntarget && value_fn)
+				value_fn();
+		}
+
         
         for(auto it : tobereplaced)
             ReplaceCondition(it.first, it.second);

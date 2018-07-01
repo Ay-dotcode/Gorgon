@@ -77,9 +77,36 @@ namespace Gorgon { namespace UI {
 		/// Sets the value for the stack using a color
 		void SetValue(Graphics::RGBA color) { SetValue((Graphics::RGBAf)color); }
 
+		/// Changes the value transition speed. A speed of 0 will disable smooth transition.
+		void SetValueTransitionSpeed(std::array<float, 4> val) {
+			valuespeed = val;
+		}
+
+		/// GetValue returns the current transitional value, this will also enable value event
+		/// to be called every time transitional value is updated
+		void ReturnTransitionalValue() {
+			returntarget = false;
+		}
+
+		/// GetValue returns the target value. This is the default mode.
+		void ReturnTargetValue() {
+			returntarget = true;
+		}
+
+		/// Sets the function that will be called whenever the value is changed
+		void SetValueEvent(std::function<void()> handler) {
+			value_fn = handler;
+		}
+
 		/// Returns the value of the stack
-		std::array<float, 4> GetValue() const { return value; }
-		
+		std::array<float, 4> GetValue() const { return returntarget ? targetvalue : value; }
+
+		/// Sets the function that will be used to convert a value to a string. The handler will receive the value channel, data effect
+		/// that is causing the translation and the value that needs to be transformed.
+		void SetValueToText(std::function<std::string(int, ComponentTemplate::DataEffect, const std::array<float, 4> &)> handler) {
+			valuetotext = handler;
+		}
+
 		/**
 		 * @name Repeating components
 		 * It is possible to repeat components automatically. For this, template should
@@ -365,10 +392,6 @@ namespace Gorgon { namespace UI {
         
         /// @}
         
-        void SetValueToText(std::function<std::string(int ind, ComponentTemplate::DataEffect, const std::array<float, 4> &value)> handler) {
-            valuetotext = handler;
-        }
-        
         
 	private:
 		Component &get(int ind, int stack = -1) const {
@@ -432,8 +455,15 @@ namespace Gorgon { namespace UI {
 		Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
         std::map<ComponentTemplate::RepeatMode, std::vector<std::array<float, 4>>> repeats;
 		std::map<ComponentTemplate::RepeatMode, std::map<int, ComponentCondition>> repeatconditions; 
-		std::array<float, 4> value;
-        
+		std::array<float, 4> value ={{0.f, 0.f, 0.f, 0.f}};
+
+		//for animation
+		std::array<float, 4> targetvalue = {{0.f, 0.f, 0.f, 0.f}};
+		//value speed = 0 disables animation
+		std::array<float, 4> valuespeed = {{0.f, 0.f, 0.f, 0.f}};
+		bool returntarget = false;
+
+
         std::map<std::pair<ComponentCondition, ComponentCondition>, unsigned long> transitions;
         
         int stackcapacity = 3;
@@ -466,6 +496,7 @@ namespace Gorgon { namespace UI {
         std::function<void(ComponentTemplate::Tag)> over_fn;
         std::function<void(ComponentTemplate::Tag)> out_fn;
         std::function<void(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> other_fn; //scroll, zoom, rotate
+		std::function<void()> value_fn;
         
         std::function<std::string(int ind, ComponentTemplate::DataEffect, const std::array<float, 4> &value)> valuetotext;
 	};
