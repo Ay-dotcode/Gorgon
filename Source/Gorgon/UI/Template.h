@@ -858,6 +858,11 @@ namespace Gorgon {
             
             /// Chromacity
             UseC = 128,
+            
+            /// This channel will give the progress of a transition. It will be set
+            /// to 1 for non-transitional components. Use this channel alone, do not
+            /// combine it with others.
+            UseTransition = 0x10000,
 
 			/// Maximum power of two
 			ValueSourceMaxPower = 7,
@@ -1275,6 +1280,12 @@ namespace Gorgon {
 		/// Returns whether this component is a transition component
 		bool IsTransition() const { return condition_to != ComponentCondition::None; }
 		
+		/// Sets whether the component transition can be reversed. Can be used to simplify from - to - from animations.
+		void SetReversible(bool value) { reversible = value; ChangedEvent(); }
+		
+		/// Returns whether this component transition can be reversed.
+		bool IsReversible() const { return reversible; }
+		
 		
 		/// Whether to clip the contents of this container, default value is false. Due to shadows, it is advicable
 		/// not to set clipping on the outer most container. Activating clipping creates a new layer for the 
@@ -1298,6 +1309,8 @@ namespace Gorgon {
         
         /// If set to true, will clip the contents of the component to the bounds.
         bool clip = false;
+        
+        bool reversible = false;
         
         
         /// Condition when this component will be visible

@@ -89,7 +89,7 @@ namespace Gorgon { namespace UI {
 			const auto &t = temp[i];
 
 			if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() != ComponentCondition::Always) {
-				AddToStack(temp[i]);
+				AddToStack(temp[i], false);
 			}
 		}
 
@@ -97,13 +97,14 @@ namespace Gorgon { namespace UI {
 			const auto &t = temp[i];
 
 			if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() == ComponentCondition::Always) {
-				AddToStack(temp[i]);
+				AddToStack(temp[i], false);
 			}
 		}
 	}
 
-    void ComponentStack::AddToStack(const ComponentTemplate& temp) {
+    void ComponentStack::AddToStack(const ComponentTemplate& temp, bool reversed) {
         int ind = temp.GetIndex();
+        std::cout<<"Adding "<<ind<<std::endl;
 		
 		if(stacksizes[ind] == 0 || &get(ind).GetTemplate() != &temp) {
 			int si = stacksizes[ind];
@@ -113,8 +114,12 @@ namespace Gorgon { namespace UI {
 			}
         
 			new (data + (ind + si*indices)) Component(temp);
+            data[ind + si*indices].reversed = reversed;
 			stacksizes[ind]++;
 		}
+		else {
+            get(ind).reversed = reversed;
+        }
 
 		if(!storage.count(&temp)) {
 			auto storage = new ComponentStorage;
@@ -235,7 +240,7 @@ namespace Gorgon { namespace UI {
 
                 if(temp[i].GetCondition() == to && !temp[i].IsTransition()) {
                     updatereq = true;
-                    AddToStack(temp[i]);
+                    AddToStack(temp[i], false);
                     indicesdone.insert(temp[i].GetIndex());
                 }
             }
@@ -250,7 +255,7 @@ namespace Gorgon { namespace UI {
 
 					if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to) {
                         updatereq = true;
-                        AddToStack(temp[i]);
+                        AddToStack(temp[i], false);
                     }
                 }
             }
@@ -262,7 +267,20 @@ namespace Gorgon { namespace UI {
 
 				if(temp[i].GetCondition() == from && temp[i].GetTargetCondition() == to) {
                     updatereq = true;
-                    AddToStack(temp[i]);
+                    AddToStack(temp[i], false);
+                    break;
+                }
+            }
+            
+            //search for reversed
+            for(int i=0; i<temp.GetCount(); i++) {
+				if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+					continue;
+
+				if(temp[i].IsReversible() && temp[i].GetCondition() == to && temp[i].GetTargetCondition() == from) {
+                    updatereq = true;
+                    AddToStack(temp[i], true);
+                    break;
                 }
             }
         }
@@ -281,7 +299,8 @@ namespace Gorgon { namespace UI {
             return false;
         
         if(transitions.count({from, to})) {
-            transitions.erase({from, to});
+            //caller should erase transition
+            //transitions.erase({from, to});
             erased = true;
         }
         
@@ -307,8 +326,8 @@ namespace Gorgon { namespace UI {
                     
                     if(remove) {                            
                         if(j == stacksizes[i]-1) {
+                            std::cout<<"Removing "<<i<<std::endl;
                             updatereq = true;
-                            stacksizes[i]--;
 
 							if(temp.GetType() == ComponentType::Placeholder) {
 								const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
@@ -319,16 +338,19 @@ namespace Gorgon { namespace UI {
 							}
 
                             get(i, j).~Component();
+                            stacksizes[i]--;
                         }
                         else {
+                            std::cout<<"Removing "<<i<<std::endl;
+                            
                             //bubble the item to be deleted to the top of stack.
                             for(int k=j; k<stacksizes[i]-1; k++) {
                                 using std::swap;
                                 swap(get(i, k), get(i, k+1));
                             }
                             
-                            stacksizes[i]--;
                             get(i, stacksizes[i]).~Component();
+                            stacksizes[i]--;
                             
                             //no need to update
                         }
@@ -367,7 +389,7 @@ namespace Gorgon { namespace UI {
             return;
 
         //the condition already exists
-        if(conditions.count(to) || to == ComponentCondition::Always) {
+        if(!transitions.count({to, from}) && (conditions.count(to) || to == ComponentCondition::Always)) {
             //source condition does not exist, thus there is nothing to do
             if(!conditions.count(from))
                 return;
@@ -381,18 +403,19 @@ namespace Gorgon { namespace UI {
                 auto completion = 1.0 - (double)elapsed / temp.GetConditionDuration(to, from);
                 
                 removecondition(to, from);
+                transitions.erase({to, from});
                 
                 addcondition(from, to);
                 transitions[{from, to}] = Time::FrameStart() - (unsigned long)(completion * temp.GetConditionDuration(from, to));
             }
             else {
                 removecondition(to, from);
+                transitions.erase({to, from});
 
                 addcondition(ComponentCondition::None, to);
             }
         }
-        
-        if(!conditions.count(from) && from != ComponentCondition::Always) {
+        else if(!conditions.count(from) && from != ComponentCondition::Always) {
             for(const auto &t : transitions) {
                 if(t.first.second == from) {
                     if(transition && temp.GetConditionDuration(t.first.first, to)) {
@@ -409,11 +432,10 @@ namespace Gorgon { namespace UI {
                     }
                 }
             }
-        }
-        
-        if(transition && temp.GetConditionDuration(from, to)) {
-            addcondition(from, to);
+        }        
+        else if(transition && temp.GetConditionDuration(from, to)) {
             removecondition(ComponentCondition::None, from);
+            addcondition(from, to);
         }
         else {
             if(from != ComponentCondition::Always) {
@@ -528,6 +550,8 @@ namespace Gorgon { namespace UI {
 
 	void ComponentStack::update() {
 		if(!stacksizes[0]) return;
+        
+        //std::cout<<"Updating..."<<std::endl;
 
         get(0).size = size;
         get(0).location = {0,0};
@@ -1350,54 +1374,82 @@ namespace Gorgon { namespace UI {
 	
 	float ComponentStack::calculatevalue(const std::array<float, 4> &value, int channel, const Component &comp) const {
 		const auto &temp = comp.GetTemplate();
-
 		int vs = temp.GetValueSource();
-		ComponentTemplate::ValueSource src = (ComponentTemplate::ValueSource)(1<<channel);
-
-		int c = channel;
-		int i=0;
-		while(c >= 0 && i <= ComponentTemplate::ValueSourceMaxPower) {
-			if(vs & (1<<i)) {
-				if(!c) {
-					src = (ComponentTemplate::ValueSource)(1<<i);
-				}
-
-				c--;
-			}
-
-			i++;
-		}
 
 		float v = 0;
         
-        const auto valueordering = temp.GetValueOrdering();
-
-
-		switch(src) {
-			case ComponentTemplate::UseFirst:
-				v = value[valueordering[0]];
-				break;
-
-			case ComponentTemplate::UseSecond:
-				v = value[valueordering[1]];
-				break;
-
-			case ComponentTemplate::UseThird:
-				v = value[valueordering[2]];
-				break;
-
-			case ComponentTemplate::UseFourth:
-				v = value[valueordering[3]];
-				break;
-
-			case ComponentTemplate::UseGray:
-				v = value[valueordering[0]] * 0.2126f + value[valueordering[1]] * 0.7152f + value[valueordering[2]] * 0.0722f;
-				break;
-                
-            //missing: L C H
+        if(vs == ComponentTemplate::UseTransition) {
+            auto dur = this->temp.GetConditionDuration(temp.GetCondition(), temp.GetTargetCondition());
+            auto cur = dur;
+            if(!comp.reversed) {
+                if(transitions.count({temp.GetCondition(), temp.GetTargetCondition()})) {
+                    cur = Time::FrameStart() - transitions.at({temp.GetCondition(), temp.GetTargetCondition()});
+                }
+            }
+            else {
+                if(transitions.count({temp.GetTargetCondition(), temp.GetCondition()})) {
+                    cur = Time::FrameStart() - transitions.at({temp.GetTargetCondition(), temp.GetCondition()});
+                }
+                else {
+                    cur = 0;
+                }
+            }
             
-            default: ;//to silence warnings
-		}
+            const auto valueordering = temp.GetValueOrdering();
+            
+            if(valueordering[channel] == 0)
+                v = float(cur) / dur;
+            
+            if(comp.reversed)
+                v = 1 - v;
+            
+            std::cout<<v<<std::endl;
+        }
+        else {
+            ComponentTemplate::ValueSource src = (ComponentTemplate::ValueSource)(1<<channel);
+
+            int c = channel;
+            int i=0;
+            while(c >= 0 && i <= ComponentTemplate::ValueSourceMaxPower) {
+                if(vs & (1<<i)) {
+                    if(!c) {
+                        src = (ComponentTemplate::ValueSource)(1<<i);
+                    }
+
+                    c--;
+                }
+
+                i++;
+            }
+            
+            const auto valueordering = temp.GetValueOrdering();
+
+            switch(src) {
+                case ComponentTemplate::UseFirst:
+                    v = value[valueordering[0]];
+                    break;
+
+                case ComponentTemplate::UseSecond:
+                    v = value[valueordering[1]];
+                    break;
+
+                case ComponentTemplate::UseThird:
+                    v = value[valueordering[2]];
+                    break;
+
+                case ComponentTemplate::UseFourth:
+                    v = value[valueordering[3]];
+                    break;
+
+                case ComponentTemplate::UseGray:
+                    v = value[valueordering[0]] * 0.2126f + value[valueordering[1]] * 0.7152f + value[valueordering[2]] * 0.0722f;
+                    break;
+                    
+                //missing: L C H
+                
+                default: ;//to silence warnings
+            }
+        }
 
 		return v * temp.GetValueRange(channel) + temp.GetValueMin(channel);
 	}
@@ -1488,7 +1540,7 @@ realign:
             
 				auto maxsize = parent.innersize - parentmargin;
             
-				if(temp.GetPositioning() != temp.Absolute || temp.GetPositioning() != temp.PolarAbsolute) {
+				if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
 					if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
 						maxsize.Width = spaceleft - parentmargin.TotalX();
 					else
@@ -1710,7 +1762,7 @@ realign:
 				else if(temp.GetValueModification() == temp.ModifyY) {
 					pos = {pos.X, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
 				}
-            
+                
 				if(temp.GetPositioning() == temp.PolarAbsolute) {
 					auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
 					auto center  = Geometry::Pointf(temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize));
@@ -1867,19 +1919,30 @@ realign:
         std::vector<std::pair<ComponentCondition, ComponentCondition>> tobereplaced;
         for(auto iter = transitions.begin(); iter != transitions.end();) {
             auto c = *iter;
-            if((unsigned)temp.GetConditionDuration(c.first.first, c.first.second) < Time::FrameStart() - c.second) {
-                iter = transitions.erase(iter);
+            auto delta = Time::FrameStart() - c.second;
+            auto dur = (unsigned)temp.GetConditionDuration(c.first.first, c.first.second);
+            if(dur < delta) {
                 if(future_transitions.count(c.first.second)) {
                     tobereplaced.push_back({c.first.second, future_transitions[c.first.second]});
                     future_transitions.erase(c.first.second);
                 }
                 else {
                     removecondition(c.first.first, c.first.second);
-                    addcondition(ComponentCondition::None, c.first.second);
+                    addcondition(ComponentCondition::None, c.first.second, c.first.first);
                 }
+                iter = transitions.erase(iter);
             }
-            else
+            else {
+                for(int i=0; i<indices; i++)  {
+                    if(!stacksizes[i]) continue;
+                    
+                    if(get(i).GetTemplate().GetValueSource() == ComponentTemplate::UseTransition) {
+                        updaterequired = true;
+                    }
+                }
+                        
                 ++iter;
+            }
         }
 
 		bool changed = false;

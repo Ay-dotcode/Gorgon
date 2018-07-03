@@ -25,7 +25,7 @@ namespace Gorgon { namespace UI {
 		}
 
         /// Adds the given component to the top of the stack
-		void AddToStack(const ComponentTemplate &temp);
+		void AddToStack(const ComponentTemplate &temp, bool reversed);
         
         /// Adds a condition and its associated components to the stack
 		void AddCondition(ComponentCondition condition, bool transition = true) { ReplaceCondition(ComponentCondition::Always, condition, transition); }
@@ -427,6 +427,7 @@ namespace Gorgon { namespace UI {
         bool addcondition(ComponentCondition from, ComponentCondition to, ComponentCondition hint = ComponentCondition::None);
 
         //to should contain the final condition to be removed
+        //caller should erase transition
         bool removecondition(ComponentCondition from, ComponentCondition to);
         
         Component *gettag(ComponentTemplate::Tag tag) const {

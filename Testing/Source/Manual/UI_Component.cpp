@@ -37,21 +37,31 @@ int main() {
     trig2.Prepare();
     
     UI::Template lbtn;
+    lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Hover, 200);
+    lbtn.SetConditionDuration(UI::ComponentCondition::Hover, UI::ComponentCondition::Always, 200);
 	lbtn.SetSize({20, 20});
+    
+    
 	auto &btnleft_n = lbtn.AddContainer(0, UI::ComponentCondition::Always);
 	btnleft_n.Background.SetDrawable(btn_bg);
 	btnleft_n.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
 
-	lbtn.SetSize({20, 20});
-	auto &btnleft_h = lbtn.AddContainer(0, UI::ComponentCondition::Hover);
-	btnleft_h.Background.SetDrawable(btn_bgh);
-	btnleft_h.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+    //this handles normal to hover, hover and hover to normal
+	auto &btnleft_n_h = lbtn.AddContainer(2, UI::ComponentCondition::Always, UI::ComponentCondition::Hover);
+	btnleft_n_h.Background.SetDrawable(btn_bgh);
+    btnleft_n_h.SetValueModification(btnleft_n_h.ModifySize, btnleft_n_h.UseTransition);
+    btnleft_n_h.SetPositioning(btnleft_n_h.Absolute);
+	btnleft_n_h.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+	btnleft_n_h.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
+    btnleft_n_h.SetReversible(true);
 
 	auto &btn_left_trig = lbtn.AddGraphics(1, UI::ComponentCondition::Always);
 	btn_left_trig.Content.SetDrawable(trig1);
 	btn_left_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+    
+	btnleft_n.AddIndex(2);
 	btnleft_n.AddIndex(1);
-	btnleft_h.AddIndex(1);
+	//btnleft_h.AddIndex(1);
     
     UI::Template rbtn;
 	rbtn.SetSize({20, 20});
@@ -146,7 +156,7 @@ int main() {
 	rbtn_p.SetTag(UI::ComponentTemplate::IncrementTag);
 	outer.AddIndex(5);
     
-    UI::ComponentStack button(rbtn, {30, 30});
+    UI::ComponentStack button(lbtn, {30, 30});
     button.Move(0, 100);
     app.wind.Add(button);
 
