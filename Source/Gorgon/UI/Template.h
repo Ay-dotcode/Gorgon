@@ -804,6 +804,13 @@ namespace Gorgon {
             /// Value modifies the color of the component. If used on a container, it will tint
             /// all components in that container
             ModifyColor, 
+
+			/// In text and graphics templates, this setting will blend the color to target color.
+			/// If there is only one value source, all channels will be blended using the given factor.
+			/// Two value sources will have separate blending factor RGB and A. Three sources will
+			/// cause R, G, and B to have separate blender factors. A of the original color will be
+			/// used. Four channels will have four separate blending factors.
+			BlendColor,
             
 			/// Data affects the rotation of the component. Rotation angle will start from 0 degrees
 			/// for 0, 360 degrees for 1. You may use min and max to modify this. For instance, if max
@@ -1448,9 +1455,36 @@ namespace Gorgon {
             
             return *renderer;
         }
+
+		/// Changes the color that will override default color of the text drawn.
+		void SetColor(Graphics::RGBAf value) {
+			color = value;
+
+			ChangedEvent();
+		}
+
+		/// Returns current color.
+		Graphics::RGBAf GetColor() const {
+			return color;
+		}
+
+
+		/// Sets the target color for BlendColor value modification.
+		void SetTargetColor(Graphics::RGBAf value) {
+			targetcolor = value;
+
+			ChangedEvent();
+		}
+
+		/// Returns the target color that will be used for BlendColor value modification.
+		Graphics::RGBAf GetTargetColor() const {
+			return targetcolor;
+		}
     
     private:
         const Graphics::TextRenderer *renderer = nullptr;
+		Graphics::RGBAf color = 1.0f;
+		Graphics::RGBAf targetcolor = 0.f;
 	};
 
 	class VisualProvider {
@@ -1592,12 +1626,38 @@ namespace Gorgon {
             return fill;
         }
 
+		/// Changes the color that will set tint of the drawn graphics.
+		void SetColor(Graphics::RGBAf value) {
+			color = value;
+
+			ChangedEvent();
+		}
+
+		/// Returns current tint color.
+		Graphics::RGBAf GetColor() const {
+			return color;
+		}
+
+		/// Sets the target tint color for BlendColor value modification.
+		void SetTargetColor(Graphics::RGBAf value) {
+			targetcolor = value;
+
+			ChangedEvent();
+		}
+
+		/// Returns the target tint color that will be used for BlendColor value modification.
+		Graphics::RGBAf GetTargetColor() const {
+			return targetcolor;
+		}
+
 		/// Graphical representation of the template
 		VisualProvider Content = {ChangedEvent};
 
 	private:
 		bool fill = true;
 		Geometry::Margin padding = {0, 0, 0, 0};
+		Graphics::RGBAf color = 1.0f;
+		Graphics::RGBAf targetcolor = 0.f;
 	};
 	
 	/// Container class that defines an area according to the Box Model.

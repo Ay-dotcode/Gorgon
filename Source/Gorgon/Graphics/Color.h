@@ -444,6 +444,36 @@ namespace Gorgon { namespace Graphics {
 			}
 		}
 
+		/// Blends the given color into this one with the given factor that is applied to all channels
+		void Blend(const RGBAf &color, float factor) {
+			auto m = 1 - factor;
+
+			R = m * R + factor * color.R;
+			G = m * G + factor * color.G;
+			B = m * B + factor * color.B;
+			A = m * A + factor * color.A;
+		}
+
+		/// Blends the given color into this one with the given factor that is applied to color and alpha
+		/// channels separately
+		void Blend(const RGBAf &color, float factor_color, float factor_alpha) {
+			auto mc = 1 - factor_color;
+			auto ma = 1 - factor_alpha;
+
+			R = mc * R + factor_color * color.R;
+			G = mc * G + factor_color * color.G;
+			B = mc * B + factor_color * color.B;
+			A = ma * A + factor_alpha * color.A;
+		}
+
+		/// Blends the given color into this one with the given color as blending factor
+		void Blend(const RGBAf &color, const RGBAf &factor) {
+			R = (1 - factor.R) * R + factor.R * color.R;
+			G = (1 - factor.G) * G + factor.G * color.G;
+			B = (1 - factor.B) * B + factor.B * color.B;
+			A = (1 - factor.A) * A + factor.A * color.A;
+		}
+
 		union {
 			struct {
 				/// Red channel

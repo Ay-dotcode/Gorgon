@@ -37,8 +37,10 @@ int main() {
     trig2.Prepare();
     
     UI::Template lbtn;
-    lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Hover, 200);
-    lbtn.SetConditionDuration(UI::ComponentCondition::Hover, UI::ComponentCondition::Always, 200);
+	lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Hover, 250);
+	lbtn.SetConditionDuration(UI::ComponentCondition::Hover, UI::ComponentCondition::Always, 250);
+	lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Down, 250);
+	lbtn.SetConditionDuration(UI::ComponentCondition::Down, UI::ComponentCondition::Always, 250);
 	lbtn.SetSize({20, 20});
     
     
@@ -58,7 +60,15 @@ int main() {
 	auto &btn_left_trig = lbtn.AddGraphics(1, UI::ComponentCondition::Always);
 	btn_left_trig.Content.SetDrawable(trig1);
 	btn_left_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-    
+
+	auto &btn_left_trig_d = lbtn.AddGraphics(1, UI::ComponentCondition::Always, UI::ComponentCondition::Down);
+	btn_left_trig_d.Content.SetDrawable(trig1);
+	btn_left_trig_d.SetColor(1.f);
+	btn_left_trig_d.SetValueModification(UI::ComponentTemplate::BlendColor, UI::ComponentTemplate::UseTransition);
+	btn_left_trig_d.SetTargetColor({1.f, 0.2f, 0.1f});
+	btn_left_trig_d.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+	btn_left_trig_d.SetReversible(true);
+
 	btnleft_n.AddIndex(2);
 	btnleft_n.AddIndex(1);
 	//btnleft_h.AddIndex(1);
@@ -157,6 +167,7 @@ int main() {
 	outer.AddIndex(5);
     
     UI::ComponentStack button(lbtn, {30, 30});
+	button.HandleMouse();
     button.Move(0, 100);
     app.wind.Add(button);
 

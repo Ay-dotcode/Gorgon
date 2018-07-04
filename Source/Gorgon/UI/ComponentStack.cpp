@@ -23,45 +23,53 @@ namespace Gorgon { namespace UI {
         
         addcondition(ComponentCondition::None, ComponentCondition::Always);
         
-        mouse.SetOver([this]{        
-            if(IsDisabled()) {
-                disabled.insert(ComponentCondition::Hover);
-            }
-            else {
-                AddCondition(ComponentCondition::Hover);
-            }
+        mouse.SetOver([this]{
+			if(handlingmouse) {
+				if(IsDisabled()) {
+					disabled.insert(ComponentCondition::Hover);
+				}
+				else {
+					AddCondition(ComponentCondition::Hover);
+				}
+			}
                 
             if(over_fn)
                 over_fn(ComponentTemplate::NoTag);
         });
         
-        mouse.SetOut([this]{
-            RemoveCondition(ComponentCondition::Hover, !IsDisabled());
-            disabled.erase(ComponentCondition::Hover);
-                
+		mouse.SetOut([this] {
+			if(handlingmouse) {
+				RemoveCondition(ComponentCondition::Hover, !IsDisabled());
+				disabled.erase(ComponentCondition::Hover);
+			}
+
             if(out_fn)
                 out_fn(ComponentTemplate::NoTag);
         });
         
-        mouse.SetDown([this](Geometry::Point location, Input::Mouse::Button btn) {
-            if(btn && mousebuttonaccepted) {
-                if(IsDisabled()) {
-                    disabled.insert(ComponentCondition::Down);
-                }
-                else {
-                    AddCondition(ComponentCondition::Down);
-                }
-            }
-            
+		mouse.SetDown([this](Geometry::Point location, Input::Mouse::Button btn) {
+			if(handlingmouse) {
+				if(btn && mousebuttonaccepted) {
+					if(IsDisabled()) {
+						disabled.insert(ComponentCondition::Down);
+					}
+					else {
+						AddCondition(ComponentCondition::Down);
+					}
+				}
+			}
+
             if(down_fn)
                 down_fn(ComponentTemplate::NoTag, location, btn);
         });
         
-        mouse.SetUp([this](Geometry::Point location, Input::Mouse::Button btn) {
-            if(btn && mousebuttonaccepted) {
-                RemoveCondition(ComponentCondition::Down, !IsDisabled());
-                disabled.erase(ComponentCondition::Down);
-            }
+		mouse.SetUp([this](Geometry::Point location, Input::Mouse::Button btn) {
+			if(handlingmouse) {
+				if(btn && mousebuttonaccepted) {
+					RemoveCondition(ComponentCondition::Down, !IsDisabled());
+					disabled.erase(ComponentCondition::Down);
+				}
+			}
             
             if(up_fn)
                 up_fn(ComponentTemplate::NoTag, location, btn);
@@ -295,16 +303,13 @@ namespace Gorgon { namespace UI {
         bool updatereq = false;
         bool erased = false;
         
-        if(to == ComponentCondition::Always)
-            return false;
-        
         if(transitions.count({from, to})) {
             //caller should erase transition
             //transitions.erase({from, to});
             erased = true;
         }
         
-        if(conditions.count(to)) {
+        if(conditions.count(to) && to != ComponentCondition::Always) {
             conditions.erase(to);
             erased = true;
         }
@@ -312,7 +317,8 @@ namespace Gorgon { namespace UI {
         if(erased) {
             for(int i=0; i<indices; i++) {
                 for(int j=stacksizes[i]-1; j>=0; j--) {
-                    const auto &temp = data[i + j*indices].GetTemplate();
+					auto &comp = data[i + j*indices];
+                    const auto &temp = comp.GetTemplate();
                     bool remove = false;
 
 					//do not remove repeating components
@@ -320,9 +326,13 @@ namespace Gorgon { namespace UI {
 						continue;
                     
                     if(from == ComponentCondition::Never)
-                        remove = temp.GetCondition() == to;
-                    else
-                        remove = temp.GetCondition() == from && temp.GetTargetCondition() == to;
+                        remove = temp.GetCondition() == to || temp.GetTargetCondition() == to;
+                    else {
+						if(comp.reversed)
+							remove = temp.GetCondition() == to && temp.GetTargetCondition() == from;
+						else
+							remove = temp.GetCondition() == from && temp.GetTargetCondition() == to;
+					}
                     
                     if(remove) {                            
                         if(j == stacksizes[i]-1) {
@@ -621,19 +631,19 @@ namespace Gorgon { namespace UI {
 
 		if(temp.GetValueModification() == ComponentTemplate::ModifyColor) {
 			if(NumberOfSetBits(temp.GetValueSource()) == 1) {
-				color *= Graphics::RGBAf(calculatevalue(0, comp));
+				color *= Graphics::RGBAf(calculatevalue(val, 0, comp));
 			}
 			else if(NumberOfSetBits(temp.GetValueSource()) == 2) {
-				color *= Graphics::RGBAf(calculatevalue(0, comp), calculatevalue(1, comp));
+				color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
 			}
 			else if(NumberOfSetBits(temp.GetValueSource()) == 3) {
-				color *= Graphics::RGBAf(calculatevalue(0, comp), calculatevalue(1, comp), calculatevalue(2, comp), 1.f);
+				color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 1.f);
 			}
 			else
-				color *= Graphics::RGBAf(calculatevalue(0, comp), calculatevalue(1, comp), calculatevalue(2, comp), calculatevalue(3, comp));
+				color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp));
 		}
 		else if(temp.GetValueModification() == ComponentTemplate::ModifyAlpha)
-			color *= Graphics::RGBAf(1.f, calculatevalue(0, comp));
+			color *= Graphics::RGBAf(1.f, calculatevalue(val, 0, comp));
 
 		if(temp.GetType() == ComponentType::Container) {
             const auto &cont = dynamic_cast<const ContainerTemplate&>(temp);
@@ -679,17 +689,69 @@ namespace Gorgon { namespace UI {
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                 const auto &gt = dynamic_cast<const GraphicsTemplate&>(temp);
+
+				auto c = gt.GetColor();
+
+				if(temp.GetValueModification() == temp.BlendColor)  {
+					auto c2 = gt.GetTargetColor();
+					switch(NumberOfSetBits(temp.GetValueSource())) {
+						case 1:
+							c.Blend(c2, calculatevalue(val, 0, comp));
+							break;
+
+						case 2:
+							c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+							break;
+
+						case 3:
+							c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
+							break;
+
+						case 4:
+							c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
+							break;
+
+						default:
+							break;
+					}
+				}
                 
                 if(rectangular && gt.GetFillArea())
-                    rectangular->DrawIn(*target, comp.location+offset+gt.GetPadding().TopLeft(), comp.size, color);
+                    rectangular->DrawIn(*target, comp.location+offset+gt.GetPadding().TopLeft(), comp.size, color * c);
                 else
-                    st.primary->Draw(*target, comp.location+offset+gt.GetPadding().TopLeft(), color);
+                    st.primary->Draw(*target, comp.location+offset+gt.GetPadding().TopLeft(), color * c);
             }
         }
         else if(temp.GetType() == ComponentType::Textholder) {
             const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
-            
-			target->SetTintColor(color);
+
+			auto c = th.GetColor();
+
+			if(temp.GetValueModification() == temp.BlendColor) {
+				auto c2 = th.GetTargetColor();
+				switch(NumberOfSetBits(temp.GetValueSource())) {
+					case 1:
+						c.Blend(c2, calculatevalue(val, 0, comp));
+						break;
+
+					case 2:
+						c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+						break;
+
+					case 3:
+						c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
+						break;
+
+					case 4:
+						c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			target->SetTintColor(color * c);
             if(th.IsReady()) {
                 if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
                     th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
