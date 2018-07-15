@@ -43,19 +43,38 @@ namespace Gorgon {
 			
 			/// Conversion from string
 			explicit basic_Point(const std::string &str) {
+				T_ x, y;
 				auto s=str.begin();
-				
+
+				if(s==str.end())
+					return;
+
 				while(*s==' ' || *s=='\t') s++;
-				
+
+				if(s==str.end())
+					return;
+
 				if(*s=='(') s++;
-				
-				X=String::To<T_>(&str[s-str.begin()]);
+
+				if(s==str.end())
+					return;
+
+				x=String::To<T_>(&str[s-str.begin()]);
 				
 				while(*s!=',' && s!=str.end()) s++;
+
+				if(s==str.end())
+					return;
 				
 				if(*s==',') s++;
-				
-				Y=String::To<T_>(&str[s-str.begin()]);
+
+				if(s==str.end())
+					return;
+
+				y=String::To<T_>(&str[s-str.begin()]);
+
+				X = x;
+				Y = y;
 			}
 
 			/// Assignment from a different point type
