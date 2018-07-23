@@ -106,7 +106,7 @@ namespace Gorgon { namespace Encoding {
 
 		double gamma;
 		if(png_get_gAMA(png_ptr, info_ptr, &gamma))
-			png_set_gamma(png_ptr, 1.0, gamma);
+			png_set_gamma(png_ptr, 2.2, gamma);
 
 		unsigned int  i, rowbytes;
 		row_pointers.reset(new unsigned char*[height]);
