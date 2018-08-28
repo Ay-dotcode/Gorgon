@@ -378,6 +378,9 @@ namespace Gorgon {
 
 			/// Returns the frame at specific point
 			virtual const Frame &FrameAt(int index) const = 0;
+            
+			/// Returns the frame at specific point
+            const Frame &operator[](int index) const { return FrameAt(index); }
 
 			/// Returns the starting time of the given frame
 			virtual unsigned StartOf(unsigned frame) const = 0;

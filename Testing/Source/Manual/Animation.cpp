@@ -36,25 +36,24 @@ int main() {
 	img3.Prepare();
 	img3.DrawIn(l);
 
-        
-    Graphics::Bitmap anim1({30, 30}, Graphics::ColorMode::Alpha), anim2({30, 30}, Graphics::ColorMode::Alpha);
-    
-    anim1.Clear();
-    anim2.Clear();
-    
-    for(int i = 0; i<30; i++) {
-        anim1(i,i,0) = 255;
-        anim2(i, 30-i-1, 0) = 255;
-    }
-    anim1.Prepare();
-    anim2.Prepare();
-    
     Graphics::BitmapAnimationProvider animprov;
-    animprov.Add(anim1, 1000);
-    animprov.Add(anim2, 1000);
+
+    for(int i=0; i<15; i++) {
+        Graphics::Bitmap bmp({30,30}, Graphics::ColorMode::Alpha);;
+        bmp.Clear();
+        for(int y = 0; y<i; y++) {
+            for(int x = 0; x<30; x++) {
+                bmp(x, y, 0) = 255;
+            }
+        }
+        
+        animprov.Add(std::move(bmp), 60);
+    }
     
-	Resource::Animation *aa = new Resource::Animation(animprov.Duplicate());
-	Graphics::ConstBitmapAnimationProvider cbp = aa->MoveOutAsBitmap();
+    animprov.Prepare();
+    
+	Resource::AnimationStorage *aa = new Resource::Animation(animprov.Duplicate());
+	auto cbp = Gorgon::Animation::AnimationCast<Graphics::DiscreteAnimationProvider>(aa->MoveOut());
 
 	std::cout<<"!..."<<animprov.GetDuration()<<std::endl;
 	std::cout<<"!..."<<cbp.GetDuration()<<std::endl;
@@ -65,6 +64,12 @@ int main() {
 
     
 	while(true) {
+        l.Clear();
+        
+        for(int i=0; i<20; i++)
+            for(int j=0; j<20; j++)
+                anim.Draw(l, 10+35*i, 10+35*j);
+        
 		Gorgon::NextFrame();
 	}
 }

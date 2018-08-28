@@ -6,19 +6,26 @@
 
 namespace Gorgon { namespace Animation {
 
+    /**
+     * Specializing this class allows code injection to animation storages
+     */
+    template<class T_>
+    class basic_StorageInjection {
+    };
+    
 	/**
 	* This class stores animations as a part of itself so that it can be moved around as
 	* a value rather than a reference.
 	*/
 	template<class A_>
-	class basic_Storage : public virtual Provider, public virtual A_ {
+	class basic_Storage : public virtual Provider, public basic_StorageInjection<A_> {
 	public:
 
 		/// Empty constructor
 		basic_Storage() = default;
 
 		/// Filling constructor
-		basic_Storage(const A_ &anim, bool owner = false) : anim(&anim), isowned(owner) { }
+		basic_Storage(A_ &anim, bool owner = false) : anim(&anim), isowned(owner) { }
 
 		/// Copy constructor is disabled for ownership reasons
 		basic_Storage(const basic_Storage &) = delete;
@@ -31,7 +38,7 @@ namespace Gorgon { namespace Animation {
 		
         //types are derived not to type the same code for every class
 		virtual auto MoveOutProvider() -> decltype(*this) override {
-            auto ret = new typename std::remove_reference<decltype(*this)>::type(std::move(*this));
+            auto ret = new basic_Storage(std::move(*this));
             
             return *ret;
         }
@@ -57,7 +64,7 @@ namespace Gorgon { namespace Animation {
 
 		/// Returns the animation stored in the object. If
 		/// there is no animation provider stored, it will throw std::runtime_error
-		const A_ &GetAnimation() const {
+		A_ &GetAnimation() const {
 			if(anim)
 				return *anim;
 			else
@@ -65,11 +72,19 @@ namespace Gorgon { namespace Animation {
 		}
 
 		/// Sets the animation stored in this container
-		void SetAnimation(const A_ &value, bool owner = false) {
+		void SetAnimation(A_ &value, bool owner = false) {
 			RemoveAnimation();
 
-			anim = value;
+			anim = &value;
 			this->isowned = owner;
+		}
+
+		/// Sets the animation stored in this container
+		void SetAnimation(A_ &&value) {
+			RemoveAnimation();
+
+			anim = new A_(std::move(value));
+			this->isowned = true;
 		}
 
 		/// Removes the animation stored in the container, if the container owns
@@ -84,7 +99,7 @@ namespace Gorgon { namespace Animation {
 		}
 
 		/// Removes the animation from the storage without destroying it.
-		const A_ *Release() {
+		A_ *Release() {
 			auto temp = anim;
 			
 			isowned = false;
@@ -116,16 +131,9 @@ namespace Gorgon { namespace Animation {
 			else
 				throw std::runtime_error("Storage contains no animation");
 		}
-
-		virtual decltype( ((A_*)(nullptr))->GetSize() ) GetSize() const override {
-			if(anim)
-				return anim->GetSize();
-			else
-				throw std::runtime_error("Storage contains no animation");
-		}
-
+        
 	private:
-		const A_ *anim = nullptr;
+		A_ *anim = nullptr;
 		bool isowned = false;
 	};
 
@@ -135,13 +143,16 @@ namespace Gorgon { namespace Animation {
 		basic_Storage<Target_> target;
 
 		bool owned = original.IsOwner();
-		Target_ &anim = dynamic_cast<Target_&>(original.Release());
-		target.Set(anim, owned);
+		Target_ *anim = dynamic_cast<Target_*>(original.Release());
+        if(!anim)
+            throw std::runtime_error("Animation types are not compatible");
+        
+		target.SetAnimation(*anim, owned);
 
 		return target;
 	}
 
 	/// Basic animation storage, can store all types of animation and can be moved around as a value.
-	using Storage = basic_Storage<Provider>;
+	using Storage = basic_Storage<const Provider>;
 
 } }

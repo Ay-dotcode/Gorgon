@@ -7,6 +7,13 @@
 
 namespace Gorgon { namespace Graphics {
     
+    template<class T_>
+    class basic_TextureAnimationInjection {
+    public:
+        virtual ~basic_TextureAnimationInjection() { }
+    };
+    
+    
     template<class T_, template<class, class, class> class A_, class F_>
     class basic_TextureAnimationProvider;
     
@@ -123,7 +130,7 @@ namespace Gorgon { namespace Graphics {
     };
     
     template<class T_, template<class, class, class> class A_, class F_>
-    class basic_TextureAnimationProvider : public virtual DiscreteAnimationProvider {
+    class basic_TextureAnimationProvider : public virtual DiscreteAnimationProvider, public basic_TextureAnimationInjection<T_> {
     public:
         using Iterator = typename std::vector<basic_AnimationFrame<T_>>::iterator;
         using ConstIterator = typename std::vector<basic_AnimationFrame<T_>>::const_iterator;
@@ -490,6 +497,21 @@ namespace Gorgon { namespace Graphics {
             return true;
         }
     }
+    
+    template<>
+    class basic_TextureAnimationInjection<Bitmap> {
+    public:
+        virtual ~basic_TextureAnimationInjection() { }
+        
+        void Prepare() {
+            auto &me = dynamic_cast<DiscreteAnimationProvider&>(*this);
+            int c = me.GetCount();
+            for(int i=0; i<c; i++) {
+                auto img = dynamic_cast<const basic_AnimationFrame<Bitmap>&>(me[i]);
+                img.GetImage().Prepare();
+            }
+        }
+    };
 
 	using BitmapAnimationProvider = basic_TextureAnimationProvider<Bitmap, basic_TextureAnimation, basic_AnimationFrame<Bitmap>>;
 
