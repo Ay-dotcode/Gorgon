@@ -27,6 +27,7 @@ int main() {
 
     Graphics::BlankImage btn_bg(0.2f);
 	Graphics::BlankImage btn_bgh(0.0f);
+	Graphics::BlankImage btn_bghr({0.8f, 0.f, 0.f, 1.f});
 	Graphics::BlankImage tick(0.4f);
 	Graphics::BlankImage tick_h(Graphics::RGBAf{0.8f, 0.f, 0.f});
 
@@ -37,7 +38,7 @@ int main() {
     trig2.Prepare();
     
     UI::Template lbtn;
-	lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Hover, 250);
+	lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Hover, 2500);
 	lbtn.SetConditionDuration(UI::ComponentCondition::Hover, UI::ComponentCondition::Always, 250);
 	lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Down, 250);
 	lbtn.SetConditionDuration(UI::ComponentCondition::Down, UI::ComponentCondition::Always, 250);
@@ -57,6 +58,11 @@ int main() {
 	btnleft_n_h.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
     btnleft_n_h.SetReversible(true);
 
+	/*auto &btnleft_h = lbtn.AddContainer(2, UI::ComponentCondition::Hover);
+	btnleft_h.Background.SetDrawable(btn_bghr);
+	btnleft_h.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
+	btnleft_h.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);*/
+    
 	auto &btn_left_trig = lbtn.AddGraphics(1, UI::ComponentCondition::Always);
 	btn_left_trig.Content.SetDrawable(trig1);
 	btn_left_trig.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);

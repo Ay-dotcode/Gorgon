@@ -175,6 +175,14 @@ namespace Gorgon { namespace UI {
 			}
 		}
 		
+		auto primaryanim = dynamic_cast<const Graphics::Animation*>(storage.at(&temp)->primary);
+        if(primaryanim) {
+            if(primaryanim->HasController())
+                primaryanim->GetController().Reset();
+            
+            std::cout<<"!!"<<std::endl;
+        }
+		
 		//handle repeat storage
 		if(temp.GetRepeatMode() != temp.NoRepeat && !repeated.count(&temp) && temp.GetCondition() == ComponentCondition::Always) {
 			repeated.insert({&temp, {}});
@@ -256,7 +264,7 @@ namespace Gorgon { namespace UI {
             //if an index does not contain condition in from field and an empty to field
             //it might still have it as a transition from the previous condition to our condition. 
             //In this case we should take this non-perfect fit.
-            if(hint != ComponentCondition::None) {
+            if(!updatereq && hint != ComponentCondition::None) {
                 for(int i=0; i<temp.GetCount(); i++) {
 					if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
 						continue;
@@ -1455,6 +1463,7 @@ namespace Gorgon { namespace UI {
                 else {
                     cur = 0;
                 }
+                dur = this->temp.GetConditionDuration(temp.GetTargetCondition(), temp.GetCondition());
             }
             
             const auto valueordering = temp.GetValueOrdering();
@@ -1465,7 +1474,7 @@ namespace Gorgon { namespace UI {
             if(comp.reversed)
                 v = 1 - v;
             
-            std::cout<<v<<std::endl;
+            //std::cout<<v<<std::endl;
         }
         else {
             ComponentTemplate::ValueSource src = (ComponentTemplate::ValueSource)(1<<channel);

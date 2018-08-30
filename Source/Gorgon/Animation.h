@@ -53,6 +53,10 @@ namespace Gorgon {
 			/// Resets the flag that will automatically destroy this controller whenever it has no animations left
 			/// to control
 			void Keep() { collectable=false; }
+			
+			/// Resets the animation to the start. Animation controllers that do not support this request should
+			/// silently ignore it.
+			virtual void Reset() = 0;
 
 		protected:
 			/// Whether this controller should be collected by the garbage collector when its task is finished
@@ -74,7 +78,7 @@ namespace Gorgon {
 			virtual void Progress(unsigned timepassed) override final;
 
 			/// Resets the timer, basically starting the animation from the start.
-			virtual void Reset() { 
+			virtual void Reset() override { 
 				progress=0; 
 			}
 
@@ -126,7 +130,7 @@ namespace Gorgon {
 
 			/// Resets the controller to start from the beginning. Also resets finished and paused status and
 			/// modifies the speed to be 1.
-			virtual void Reset();
+			virtual void Reset() override;
 			/// @}
 
 			/// @name Progress control functions
