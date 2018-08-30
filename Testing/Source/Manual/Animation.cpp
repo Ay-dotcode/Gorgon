@@ -39,7 +39,7 @@ int main() {
     Graphics::BitmapAnimationProvider animprov;
 
     for(int i=0; i<15; i++) {
-        Graphics::Bitmap bmp({30,30}, Graphics::ColorMode::Alpha);;
+        Graphics::Bitmap bmp({30, i + 1}, Graphics::ColorMode::Alpha);
         bmp.Clear();
         for(int y = 0; y<i; y++) {
             for(int x = 0; x<30; x++) {
@@ -58,7 +58,7 @@ int main() {
 	std::cout<<"!..."<<animprov.GetDuration()<<std::endl;
 	std::cout<<"!..."<<cbp.GetDuration()<<std::endl;
 
-    const Graphics::RectangularAnimation &anim = cbp.CreateAnimation(true);
+    Graphics::Instance anim = cbp.CreateAnimation(true);
     
     anim.Draw(l, 100, 100);
 

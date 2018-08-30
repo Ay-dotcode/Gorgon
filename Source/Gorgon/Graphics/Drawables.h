@@ -453,7 +453,6 @@ namespace Gorgon { namespace Graphics {
 	protected:
 
 		/// This function should draw the object to the given point.
-		//!todo: replace this function so that size can be left automatic
 		virtual void draw(TextureTarget &target, const Geometry::Pointf &p, RGBAf color) const override {
 			auto size=getsize();
 			draw(target, p, {float(p.X+size.Width), float(p.Y)}, {p.X+size.Width, p.Y+size.Height}, {p.X, p.Y+size.Height}, color);

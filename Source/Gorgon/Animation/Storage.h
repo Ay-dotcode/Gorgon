@@ -48,7 +48,7 @@ namespace Gorgon { namespace Animation {
 
 		/// Move assignment
 		basic_Storage &operator =(basic_Storage &&other) {
-			RemoveAnimation();
+			Remove();
 			isowned = other.isowned;
 			anim = other.anim;
 			other.isowned = false;
@@ -70,10 +70,20 @@ namespace Gorgon { namespace Animation {
 			else
 				throw std::runtime_error("Storage contains no animation");
 		}
+		
+		/// Alias for GetAnimation
+		A_ &operator *() const {
+            return GetAnimation();
+        }
+        
+		/// Alias for GetAnimation
+        A_ *operator ->() const {
+            return &GetAnimation();
+        }
 
 		/// Sets the animation stored in this container
 		void SetAnimation(A_ &value, bool owner = false) {
-			RemoveAnimation();
+			Remove();
 
 			anim = &value;
 			this->isowned = owner;
@@ -81,34 +91,34 @@ namespace Gorgon { namespace Animation {
 
 		/// Sets the animation stored in this container
 		void SetAnimation(A_ &&value) {
-			RemoveAnimation();
+			Remove();
 
-			anim = new A_(std::move(value));
+			anim = &value.MoveOutProvider();
 			this->isowned = true;
 		}
 
 		/// Removes the animation stored in the container, if the container owns
 		/// the animation, it will be destroyed. Use Release to release resource
 		/// without destroying it
-		void RemoveAnimation() {
+		void Remove() {
 			if(isowned)
 				delete anim;
 
 			isowned = false;
 			anim = nullptr;
 		}
-
+        
 		/// Removes the animation from the storage without destroying it.
 		A_ *Release() {
 			auto temp = anim;
 			
 			isowned = false;
 
-			RemoveAnimation();
+			Remove();
 
 			return temp;
 		}
-
+        
 		/// Whether the stored animation is owned by this container
 		bool IsOwner() const {
 			return isowned;
@@ -141,6 +151,10 @@ namespace Gorgon { namespace Animation {
 	template<class Target_, class Original_>
 	basic_Storage<Target_> AnimationCast(basic_Storage<Original_> &&original) {
 		basic_Storage<Target_> target;
+
+        if(!original.HasAnimation())
+            return target;
+        
 
 		bool owned = original.IsOwner();
 		Target_ *anim = dynamic_cast<Target_*>(original.Release());

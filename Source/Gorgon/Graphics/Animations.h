@@ -4,6 +4,7 @@
 
 #include "Drawables.h"
 #include "../Animation.h"
+#include "../Animation/Instance.h"
 #include "../Animation/Storage.h"
 
 namespace Gorgon { namespace Graphics { 
@@ -112,7 +113,7 @@ namespace Animation {
 		virtual Geometry::Size GetSize() const override {
             auto &me = dynamic_cast<const basic_Storage<Graphics::RectangularAnimationProvider>&>(*this);
             if(me.HasAnimation())
-                return me.GetAnimation().GetSize();
+                return me->GetSize();
             else
                 return {0, 0};
         }
@@ -145,7 +146,7 @@ namespace Animation {
 		virtual Geometry::Size GetSize() const override {
             auto &me = dynamic_cast<const basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-                return me.GetAnimation().GetSize();
+                return me->GetSize();
             else
                 return {0, 0};
         }
@@ -154,31 +155,31 @@ namespace Animation {
         virtual void Add(const Frame &frame) override {
             auto &me = dynamic_cast<basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-                me.GetAnimation().Add(frame);
+                me->Add(frame);
 		}
 
         virtual void Insert(const Frame &frame, int before) override {
             auto &me = dynamic_cast<basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-                me.GetAnimation().Insert(frame, before);
+                me->Insert(frame, before);
 		}
 
         virtual void MoveBefore(unsigned index, int before) override {
             auto &me = dynamic_cast<basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-			    me.GetAnimation().MoveBefore(index, before);
+			    me->MoveBefore(index, before);
 		}
 
         virtual void Remove(unsigned index) override {
             auto &me = dynamic_cast<basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-			    me.GetAnimation().Remove(index);
+			    me->Remove(index);
 		}
 
         virtual const Frame &FrameAt(int index) const override {
             auto &me = dynamic_cast<const basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-			    return me.GetAnimation().FrameAt(index);
+			    return me->FrameAt(index);
             else
                 throw std::runtime_error("Animation storage is empty");
 		}
@@ -186,7 +187,7 @@ namespace Animation {
         virtual unsigned StartOf(unsigned frame) const override {
             auto &me = dynamic_cast<const basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-			    return me.GetAnimation().StartOf(frame);
+			    return me->StartOf(frame);
             else
                 return -1;
 		}
@@ -194,7 +195,7 @@ namespace Animation {
         virtual unsigned GetDuration() const override {
             auto &me = dynamic_cast<const basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-			    return me.GetAnimation().GetDuration();
+			    return me->GetDuration();
             else
                 return 0;
 		}
@@ -202,7 +203,7 @@ namespace Animation {
         virtual unsigned GetDuration(unsigned frame) const override {
             auto &me = dynamic_cast<const basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-                return me.GetAnimation().GetDuration(frame);
+                return me->GetDuration(frame);
             else
                 return 0;
 		}
@@ -210,13 +211,13 @@ namespace Animation {
         virtual void Clear() override {
             auto &me = dynamic_cast<basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-                me.GetAnimation().Clear();
+                me->Clear();
 		}
 
         virtual int GetCount() const override {
             auto &me = dynamic_cast<const basic_Storage<Graphics::DiscreteAnimationProvider>&>(*this);
             if(me.HasAnimation())
-                return me.GetAnimation().GetCount();
+                return me->GetCount();
             else
                 return 0;
 		}
@@ -226,6 +227,86 @@ namespace Animation {
 		int GetHeight() const { return GetSize().Height; }
     };
     
+    template<>
+    class basic_InstanceInjection<Graphics::RectangularAnimation> : public Graphics::RectangularAnimation {
+    public:
+        virtual bool Progress(unsigned &leftover) override {
+           auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                return me->Progress(leftover);
+            else
+                return true;
+        }
+        
+    protected:
+		virtual void draw(Graphics::TextureTarget &target, const Geometry::Pointf &p, Graphics::RGBAf color) const override {
+           auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                me->Draw(target, p, color);
+        }
+
+		virtual void draw(Graphics::TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4,
+			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2,
+			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, Graphics::RGBAf color) const 
+        {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                me->Draw(target, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color);
+        }
+
+		virtual void draw(Graphics::TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4, Graphics::RGBAf color) const
+        {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                me->Draw(target, p1, p2, p3, p4);
+        }
+
+		virtual void drawstretched(Graphics::TextureTarget &target, const Geometry::Rectanglef &r, Graphics::RGBAf color) const {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                me->DrawStretched(target, r, color);
+		}
+
+		virtual void drawin(Graphics::TextureTarget &target, const Geometry::Rectanglef &r, Graphics::RGBAf color) const { 
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                me->DrawIn(target, r, color);
+		}
+
+		virtual void drawin(Graphics::TextureTarget &target, const Graphics::SizeController &controller, const Geometry::Rectanglef &r, Graphics::RGBAf color) const {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                me->DrawIn(target, controller, r, color);
+        }
+
+		virtual Geometry::Size calculatesize(const Geometry::Size &area) const {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                return me->CalculateSize(area);
+            else
+                return {0, 0};
+        }
+
+		virtual Geometry::Size calculatesize(const Graphics::SizeController &controller, const Geometry::Size &s) const {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                return me->CalculateSize(controller, s);
+            else
+                return {0, 0};
+        }
+
+		virtual Geometry::Size getsize() const {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                return me->GetSize();
+            else
+                return {0, 0};
+        }
+        
+    };
+    
 } 
 
 namespace Graphics { 
@@ -233,5 +314,6 @@ namespace Graphics {
 	using AnimationStorage = Gorgon::Animation::basic_Storage<AnimationProvider>;
 	using RectangularAnimationStorage = Gorgon::Animation::basic_Storage<RectangularAnimationProvider>;
 	using DiscreteAnimationStorage = Gorgon::Animation::basic_Storage<DiscreteAnimationProvider>;
+    using Instance = Gorgon::Animation::basic_Instance<RectangularAnimation>;
 
 } }
