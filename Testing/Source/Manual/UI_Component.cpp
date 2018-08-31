@@ -117,24 +117,26 @@ int main() {
     auto &indicator_sym = temp.AddGraphics(4, UI::ComponentCondition::Always);
     indicator_sym.Content.SetDrawable(btn_bg);
     indicator_sym.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
-    indicator_sym.SetValueModification(indicator_sym.ModifyX);
+	indicator_sym.SetSizing(UI::ComponentTemplate::GrowOnly, UI::ComponentTemplate::Fixed);
+    indicator_sym.SetValueModification(indicator_sym.ModifyHeight);
     indicator_sym.SetPositioning(indicator_sym.Absolute);
     indicator_sym.SetPosition(0, 0);
     indicator_sym.SetMargin(0, 1, 0, 1);
     indicator_sym.SetCenter(50, 50, UI::Dimension::Percent);
-    indicator_sym.SetTag(UI::ComponentTemplate::DragTag);
-    indicator_n.AddIndex(4);
+	indicator_sym.SetTag(UI::ComponentTemplate::DragTag);
+	indicator_n.AddIndex(4);
     
     auto &indicatorh_sym = temp.AddGraphics(4, UI::ComponentCondition::Hover);
     indicatorh_sym.Content.SetDrawable(btn_bgh);
-    indicatorh_sym.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+	indicatorh_sym.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+	indicatorh_sym.SetSizing(UI::ComponentTemplate::GrowOnly, UI::ComponentTemplate::Fixed);
     indicatorh_sym.SetValueModification(indicatorh_sym.ModifyX);
     indicatorh_sym.SetPositioning(indicatorh_sym.Absolute);
     indicatorh_sym.SetTag(UI::ComponentTemplate::DragTag);
     indicatorh_sym.SetCenter(50, 50, UI::Dimension::Percent);
     indicatorh_sym.SetPosition(0, 0);
     indicatorh_sym.SetMargin(0, 1, 0, 1);
-    
+	
 
 	auto &tickn = temp.AddGraphics(7, UI::ComponentCondition::Always);
 	tickn.Content.SetDrawable(tick);

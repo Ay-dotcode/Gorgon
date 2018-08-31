@@ -1255,8 +1255,10 @@ namespace Gorgon { namespace UI {
             case ComponentTemplate::ModifyRotation:
                 //todo
                 break;
-                
-            case ComponentTemplate::ModifySize:
+
+			case ComponentTemplate::ModifySize:
+			case ComponentTemplate::ModifyWidth:
+			case ComponentTemplate::ModifyHeight:
                 if(IsLeft(ct.GetContainerAnchor())) {
                     val[0] = float(pnt.X);
                 }
@@ -1279,12 +1281,19 @@ namespace Gorgon { namespace UI {
                 
                 val[0] = float(val[0]) / bounds.Width();
                 val[1] = float(val[1]) / bounds.Height();
-                
+
+				if(ct.GetValueModification() == ContainerTemplate::ModifyWidth)
+					val[1] = 0;
+				else if(ct.GetValueModification() == ContainerTemplate::ModifyHeight) {
+					val[0] = val[1];
+					val[1] = 0;
+				}
+
                 break;
         }
         
         if((ct.GetValueModification() == ComponentTemplate::ModifyPosition || ct.GetValueModification() == ComponentTemplate::ModifySize) && NumberOfSetBits(ct.GetValueSource()) == 1) {
-            if(dynamic_cast<const ContainerTemplate&>(temp.Get(pind)).GetOrientation() == Graphics::Orientation::Vertical) {
+            if(stacksizes[pind] && dynamic_cast<const ContainerTemplate&>(get(pind).GetTemplate()).GetOrientation() == Graphics::Orientation::Vertical) {
                 val[0] = val[1];
                 val[1] = 0;
             }
@@ -1550,10 +1559,8 @@ namespace Gorgon { namespace UI {
         
         parent.innersize = parent.size - cont.GetBorderSize();
         
-        if(cont.GetSizing() == cont.Fixed) {
-            if(parent.innersize.Width <= 0) return;
-            if(parent.innersize.Height <= 0) return;
-        }
+        if(cont.GetHorizontalSizing() == cont.Fixed && parent.innersize.Width <= 0) return;
+        if(cont.GetVerticalSizing() == cont.Fixed && parent.innersize.Height <= 0) return;
 
         bool requiresrepass = false;
         bool repassdone = false;
@@ -1632,7 +1639,13 @@ realign:
 						size ={{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(*val, 1, comp)*10000), Dimension::BasisPoint}};
 					}
 				}
-            
+				else if(temp.GetValueModification() == temp.ModifyWidth) {
+					size ={{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, size.Height};
+				}
+				else if(temp.GetValueModification() == temp.ModifyHeight) {
+					size ={size.Width, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
+				}
+
 				comp.size = Convert(size, maxsize, emsize);
             
 				if(
@@ -1643,7 +1656,7 @@ realign:
 				)
 					requiresrepass = true;
                 
-				if(temp.GetSizing() != temp.Fixed && 
+				if((temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed) &&
 				   !(temp.GetValueModification() == temp.ModifySize &&  NumberOfSetBits(temp.GetValueSource()) > 1)
 				) {
 					auto &st = *storage[&temp];
@@ -1691,26 +1704,35 @@ realign:
 						}
 					}
 
-					if(temp.GetSizing() == ComponentTemplate::GrowOnly) {
+					if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
 						if(comp.size.Width < orgsize.Width)
 							comp.size.Width = orgsize.Width;
+					}
+					else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
+						if(comp.size.Width > orgsize.Width)
+							comp.size.Width = orgsize.Width;
+					}
 
+					if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
 						if(comp.size.Height < orgsize.Height)
 							comp.size.Height = orgsize.Height;
 					}
-					else if(temp.GetSizing() == ComponentTemplate::ShrinkOnly) {
-						if(comp.size.Width > orgsize.Width)
-							comp.size.Width = orgsize.Width;
-
+					else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
 						if(comp.size.Height > orgsize.Height)
 							comp.size.Height = orgsize.Height;
 					}
-				
+
 					if(temp.GetValueModification() == temp.ModifySize) {
 						if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
 							comp.size.Width = orgsize.Width;
 						else
 							comp.size.Height = orgsize.Height;
+					}
+					else if(temp.GetValueModification() == temp.ModifyWidth) {
+						comp.size.Width = orgsize.Width;
+					}
+					else if(temp.GetValueModification() == temp.ModifyHeight) {
+						comp.size.Height = orgsize.Height;
 					}
 
 					if(

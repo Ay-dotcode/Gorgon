@@ -823,9 +823,19 @@ namespace Gorgon {
 
 			/// Size of this component will be affected. Data will be given as a percent
 			/// and will modify Size property. Useful for sliders and progress bars. The direction
-            /// of the container is used to determine which axis will get affected.
+			/// of the container is used to determine which axis will get affected.
 			ModifySize,
-        };
+
+			/// Width of this component will be affected. Data will be given as a percent
+			/// and will modify Size property. Useful for sliders and progress bars. The direction
+			/// of the container is used to determine which axis will get affected. 
+			ModifyWidth,
+
+			/// Height of this component will be affected. Data will be given as a percent
+			/// and will modify Size property. Useful for sliders and progress bars. The direction
+			/// of the container is used to determine which axis will get affected.
+			ModifyHeight,
+		};
         
         /// Which data channels should be used as the value, common combinations are listed, however, all
         /// combinations are valid except when they are used for mouse mapping. Only the values listed here
@@ -1012,21 +1022,32 @@ namespace Gorgon {
 
         /// Changes the size of the component. If sizing mode is automatic, it will be set to fixed.
 		void SetSize(Size size) { 
-            this->size = size; 
-            if(sizing == Automatic)
-                sizing = Fixed;
+			this->size = size;
+
+			if(sizingw == Automatic && size.Width.GetValue() != 0)
+				sizingw = Fixed;
+
+			if(sizingh == Automatic && size.Width.GetValue() != 0)
+				sizingh = Fixed;
+
             ChangedEvent(); 
         }
 
 		/// Changes the sizing mode of the component.
-		void SetSizing(SizingMode value) { sizing = value; ChangedEvent(); }
+		void SetSizing(SizingMode value) { sizingw = sizingh = value; ChangedEvent(); }
+
+		/// Changes the sizing mode of the component.
+		void SetSizing(SizingMode hor, SizingMode vert) { sizingw = hor; sizingh = vert; ChangedEvent(); }
 
 		/// Returns the size of the component. This value is *not* absolute final size as
 		/// it cannot be determined before the component is rendered in a widget.
 		Size GetSize() const { return size; }
 
-		/// Returns the sizing mode of the component.
-		SizingMode GetSizing() const { return sizing; }
+		/// Returns the horizontal sizing mode of the component.
+		SizingMode GetHorizontalSizing() const { return sizingw; }
+
+		/// Returns the horizontal sizing mode of the component.
+		SizingMode GetVerticalSizing() const { return sizingh; }
 
 
         /// Changes the margin of the component. Margin is the minimum spacing around the component. Negative 
@@ -1357,7 +1378,7 @@ namespace Gorgon {
 		Point position = {0, 0};
 
         /// Sizing mode
-		SizingMode sizing = Fixed;
+		SizingMode sizingw = Fixed, sizingh = Fixed;
 
 		/// Size of the object.
 		Size size = {0, 0};
@@ -1401,8 +1422,9 @@ namespace Gorgon {
 	class PlaceholderTemplate : public ComponentTemplate {
 	public:
         PlaceholderTemplate() {
-            sizing = Automatic;
-        }
+			sizingw = Automatic;
+			sizingh = Automatic;
+		}
 
 		/// Returns the type of the component.
 		virtual ComponentType GetType() const noexcept override {
@@ -1576,8 +1598,9 @@ namespace Gorgon {
 
 		/// Default constructor.
 		GraphicsTemplate() {
-            sizing = Automatic;
-        }
+			sizingw = Automatic;
+			sizingh = Automatic;
+		}
 		
 		/// Filling constructor, might cause ambiguous call due to most drawables being
 		/// AnimationProviders as well. You might typecast or use Content.SetDrawable function
