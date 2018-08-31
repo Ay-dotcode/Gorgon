@@ -38,19 +38,22 @@ namespace Gorgon {
 
 			///
 			/// Default constructor
-			EntryPoint() : Readable(), Writable() { }
+			EntryPoint() { }
 
 			/// The path of the entry point
 			std::string Path;
 
 			/// Whether the entry point is readable. Currently all entry points are readable
-			bool Readable;
+			bool Readable = false;
 
 			/// Whether the entry point is writable. Notice that even an entry point is writable
 			/// it doesn't mean that the immediate path of the entry point is writable. It is 
 			/// possible that the user has no write access to the root of the entry point. If false
 			/// this denotes the entry point is fully read-only (like a CDROM)
-			bool Writable;
+			bool Writable = false;
+            
+            /// Whether the device is removable.
+            bool Removable = false;
 
 			/// Name or label of the entry point.
 			std::string Name;

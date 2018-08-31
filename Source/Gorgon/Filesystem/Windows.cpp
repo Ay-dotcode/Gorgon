@@ -274,6 +274,9 @@ namespace Gorgon { namespace Filesystem {
 					e.Name=e.Path;
 				e.Writable=!(flags&FILE_READ_ONLY_VOLUME);
 				e.Readable=true;
+				if(GetDriveTypeW(drives) == DRIVE_REMOVABLE)
+					e.Removable = true;
+
 				entries.push_back(e);
 			}
 			drives+=std::wcslen(drives)+1;
@@ -285,13 +288,13 @@ namespace Gorgon { namespace Filesystem {
 	namespace internal {
 		class iterator_data {
 		public:
-			iterator_data() : data(new WIN32_FIND_DATAA) { }
+			iterator_data() : data(new WIN32_FIND_DATAW) { }
 			~iterator_data() {
 				FindClose(search_handle);
 				delete data;
 			}
 			
-			WIN32_FIND_DATAA *data;
+			WIN32_FIND_DATAW *data;
 			HANDLE search_handle;
 			std::string pattern;
 		};
@@ -300,18 +303,29 @@ namespace Gorgon { namespace Filesystem {
 	Iterator::Iterator(const std::string &directory, const std::string &pattern) : 
 	data(new internal::iterator_data), basedir(directory) {
 		std::string src=directory;
-		if(src[src.length()-1]!='\\') src+="\\";
-		src+=pattern;
-		
-		data->search_handle=FindFirstFileA(src.c_str(), data->data);
+		if(src.length() && src[src.length()-1]!='\\') src+="\\";
+
+		if(pattern == "")
+			src += "*.*";
+		else
+			src += pattern;
+
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		auto wpath = converter.from_bytes(src);
+
+		data->search_handle=FindFirstFileW(wpath.c_str(), data->data);
 		data->pattern=pattern;
 		
 		if(data->search_handle==INVALID_HANDLE_VALUE) {
+			auto le = GetLastError();
 			Destroy();
-			throw PathNotFoundError("Cannot open directory for reading");
+			if(le == ERROR_FILE_NOT_FOUND)
+				return;
+			else
+				throw PathNotFoundError("Cannot open directory for reading");
 		}
 		
-		current=data->data->cFileName;
+		current=converter.to_bytes(data->data->cFileName);
 		if(current=="." || current=="..") Next();
 	}
 	
@@ -322,13 +336,18 @@ namespace Gorgon { namespace Filesystem {
 		}
 		
 		data=new internal::iterator_data;
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 		
 		std::string src=other.basedir;
-		if(src[src.length()-1]!='\\') src+="\\";
-		src+=other.data->pattern;
+		if(src.length() && src[src.length()-1]!='\\') src+="\\";
 		data->pattern=other.data->pattern;
+
+		if(data->pattern == "")
+			src += "*.*";
+		else
+			src += data->pattern;
 		
-		data->search_handle=FindFirstFileA(src.c_str(), data->data);
+		data->search_handle=FindFirstFileW(converter.from_bytes(src).c_str(), data->data);
 		
 		if(data->search_handle==INVALID_HANDLE_VALUE) {
 			Destroy();
@@ -339,8 +358,8 @@ namespace Gorgon { namespace Filesystem {
 		current=other.current;
 		
 		//move to the other's position
-		while(data->data->cFileName!=current) {
-			if(FindNextFileA(data->search_handle, data->data) == FALSE) {
+		while(converter.to_bytes(data->data->cFileName) != current) {
+			if(FindNextFileW(data->search_handle, data->data) == FALSE) {
 				Destroy();
 				break;
 			}
@@ -361,12 +380,14 @@ namespace Gorgon { namespace Filesystem {
 		}
 #endif
 
-		if (FindNextFileA (data->search_handle, data->data) == FALSE) {
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+		if (FindNextFileW (data->search_handle, data->data) == FALSE) {
 			Destroy();
 			return false;
 		}
 		else {
-			current=data->data->cFileName;
+			current=converter.to_bytes(data->data->cFileName);
 		}
 		
 		if(current=="." || current=="..") return Next();

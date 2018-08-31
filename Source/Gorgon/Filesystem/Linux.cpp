@@ -271,8 +271,14 @@ namespace Gorgon { namespace Filesystem {
 			if (statvfs(fs->mnt_dir, & vfs) != 0) {
 				continue;
 			}
+			
+			e.Path=std::string(fs->mnt_dir);
+            
+			if(e.Path == "/" || e.Path == "/boot" || e.Path == "/tmp")
+                continue;
 
 			bool ok=false;
+            bool removable = false;
 			try {
 				std::string device=fs->mnt_fsname;
 				auto pos=device.find_last_of('/');
@@ -280,20 +286,22 @@ namespace Gorgon { namespace Filesystem {
 				std::string ddir="/sys/block/"+device;
 				
 				if(IsDirectory(ddir)) {
-					if(Load(ddir+"/removable")[0]=='1') ok=true;
+					if(Load(ddir+"/removable")[0]=='1') removable=true;
 				}
 				else {
 					ddir=ddir.substr(0, ddir.length()-1);
 					if(IsDirectory(ddir)) {
-						if(Load(ddir+"/removable")[0]=='1') ok=true;
+						if(Load(ddir+"/removable")[0]=='1') removable=true;
 					}
 				}
+				
+				ok = true;
 			}
 			catch(...) { }
 			
 			if(!ok) continue;
 	
-			e.Path=std::string(fs->mnt_dir);
+            e.Removable = removable;
 			
 			if(mapping.count(fs->mnt_fsname))
 				e.Name=mapping[fs->mnt_fsname];
@@ -340,7 +348,8 @@ namespace Gorgon { namespace Filesystem {
 		return entries;
 	}
 
-	static int WildMatch(char *pat, char *str) {
+    //public domain by C/C++ Users Journal
+	static int WildMatch(const char *pat, const char *str) {
 		int i, star;
 
 new_segment:
@@ -441,7 +450,11 @@ test_match:
 		
 		current=ret->d_name;
 		
-		if(current=="." || current=="..") return Next();
+		if(current=="." || current=="..") 
+            return Next();
+        
+        if(data->pattern != "" && !WildMatch(data->pattern.c_str(), current.c_str()))
+            return Next();
 		
 		return true;
 	}
