@@ -179,8 +179,6 @@ namespace Gorgon { namespace UI {
         if(primaryanim) {
             if(primaryanim->HasController())
                 primaryanim->GetController().Reset();
-            
-            std::cout<<"!!"<<std::endl;
         }
 		
 		//handle repeat storage

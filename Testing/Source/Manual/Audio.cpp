@@ -51,6 +51,7 @@ try {
 
 	std::cout<<std::endl<<"*** Default device ***"<<std::endl;
 	std::cout<<Audio::Device::Default().GetName()<<std::endl;
+	std::cout<<"Audio available: "<<Audio::IsAvailable()<<std::endl;
 
 	int freq = 400;
 	int rate = 12000;

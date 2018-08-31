@@ -38,7 +38,7 @@ int main() {
     trig2.Prepare();
     
     UI::Template lbtn;
-	lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Hover, 2500);
+	lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Hover, 250);
 	lbtn.SetConditionDuration(UI::ComponentCondition::Hover, UI::ComponentCondition::Always, 250);
 	lbtn.SetConditionDuration(UI::ComponentCondition::Always, UI::ComponentCondition::Down, 250);
 	lbtn.SetConditionDuration(UI::ComponentCondition::Down, UI::ComponentCondition::Always, 250);
