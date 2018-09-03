@@ -18,15 +18,19 @@
 namespace Gorgon { namespace Filesystem {
 
 	bool CreateDirectory(const std::string &name) {
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 		auto pos=name.length();
 
 		pos=name.find_last_of("\\/",std::string::npos);
 		if(pos!=std::string::npos) {
-			if(!IsDirectory(name.substr(0,pos)))
-				CreateDirectory(name.substr(0,pos));
+			if(!IsDirectory(name.substr(0, pos))) {
+                auto wpath = converter.from_bytes(name.substr(0, pos));
+				CreateDirectory(name.substr(0, pos));
+            }
 		}
 
-		CreateDirectoryA(name.c_str(), NULL);
+		auto wpath = converter.from_bytes(name.substr(0, pos));
+		CreateDirectoryW(wpath.c_str(), NULL);
 
 		return IsDirectory(name);
 	}
