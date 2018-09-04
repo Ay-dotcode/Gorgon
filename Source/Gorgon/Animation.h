@@ -14,12 +14,61 @@ namespace Gorgon {
 	namespace Animation {
 
 		class Base;
+        class ControllerBase;
+        
+        /**
+         * This class governs the progress of animations. There might be multiple governors.
+         * There is always an active governor. Unless overridden, active governor will progress
+         * the animations by the deltatime of the current frame. A governor that is destroyed 
+         * will move its controllers to the currently active governor. If this governor is 
+         * active, it will automatically activate the default governor.
+         */
+        class Governor {
+            friend class ControllerBase;
+        public:
+            
+            /// Destroys this governor. If it is the active governor, default governor will be activated.
+            virtual ~Governor();
+            
+            /// Activates this governor, replacing current one.
+            virtual void Activate() {
+                active = this;
+            }
+            
+            /// Animates the animations within this governor. This function for the animator is called
+            /// every frame by the main system. Thus calling it second time within the same frame will
+            /// cause animations to progress twice.
+            virtual void Animate() const;
+            
+            /// Returns the default governor.
+            static Governor &Default() {
+                static Governor def;
+                
+                return def;
+            }
+            
+            /// Returns the current governor. If there is no current active governor, default governor 
+            /// will be returned.
+            static Governor &Active() {
+                if(active)
+                    return *active;
+                else
+                    return Default();
+            }
+            
+        private:
+            static Governor *active;
+            Containers::Collection<ControllerBase> controllers;
+        };
 
 		/// Controllers are required to progress animations
 		class ControllerBase {
 		public:
 			/// Default constructor
 			ControllerBase();
+
+			/// 
+			explicit ControllerBase(Governor &governor);
 
 			/// Destructor
 			virtual ~ControllerBase();
@@ -57,10 +106,15 @@ namespace Gorgon {
 			/// Resets the animation to the start. Animation controllers that do not support this request should
 			/// silently ignore it.
 			virtual void Reset() = 0;
+            
+            /// Changes the governor of this controller
+            virtual void SetGovernor(Governor &governor);
 
 		protected:
 			/// Whether this controller should be collected by the garbage collector when its task is finished
 			bool collectable = false;
+            
+            Governor *governor = nullptr;
 
 			/// List of animations this controller holds
 			Containers::Collection<Base> animations;

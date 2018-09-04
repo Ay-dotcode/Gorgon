@@ -255,6 +255,7 @@ namespace Gorgon { namespace Graphics {
             auto xscale = lib->face->size->metrics.x_scale;
             auto yscale = lib->face->size->metrics.y_scale;
             
+            maxadvance = (int)std::round(FT_MulFix(lib->face->bbox.xMax, xscale)/64.f);
             maxwidth = (int)std::round(FT_MulFix((lib->face->bbox.xMax-lib->face->bbox.xMin), xscale)/64.f);
             height   = (int)std::round(FT_MulFix((lib->face->bbox.yMax-lib->face->bbox.yMin), yscale)/64.f);
             
@@ -764,6 +765,8 @@ namespace Gorgon { namespace Graphics {
     
     
     void FreeType::setatlassize(unsigned size) const {
+        if(size < 1) return;
+        
         int w = CeilToPowerOf2(unsigned(sqrt(float(size))));
         int h = CeilToPowerOf2((int)ceil(size / w));
         
@@ -823,13 +826,17 @@ namespace Gorgon { namespace Graphics {
                 images.Add(dynamic_cast<const Bitmap*>(g.second.image));
         }
         
+        if(images.GetSize() == 0)
+            return;
+        
         //determine collective size, add 2% extra for inefficiency
         //of packing
         for(auto &i : images) {
             cursize += (int)ceil(i.GetSize().Area() * 1.2 + (tightpack ? 0 : i.GetWidth() + i.GetHeight()));
         }
         
-        if(images.GetCount() > 5)
+        //Copying each image separately is not working properly, thus it is disabled for now
+        //if(images.GetCount() > 5)
             cpeach = false;
         
         if(atlas.GetID()) {

@@ -280,8 +280,8 @@ namespace Gorgon { namespace Graphics {
         /// Returns the size of the EM dash
         virtual int GetEMSize() const override { return Exists(0x2004) ? GetSize(0x2004).Width : GetHeight(); }
         
-		/// Returns the width of widest glyph.
-		virtual int GetMaxWidth() const override { return maxwidth; }
+		/// Returns the advance the of widest glyph.
+		virtual int GetMaxWidth() const override { return maxadvance; }
 
 		/// Height of glyphs, actual size could be smaller but all glyphs should have the same virtual
 		/// height. When drawn on the same y position, all glyphs should line up. Renderer can change
@@ -363,6 +363,8 @@ namespace Gorgon { namespace Graphics {
         int isfixedw = false;
         
         int maxwidth = 0;
+        
+        int maxadvance = 0;
         
         int height = 0;
         

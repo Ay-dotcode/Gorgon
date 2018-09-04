@@ -57,7 +57,7 @@ namespace Gorgon {
 	 * others. Scene class is abstract, it must be derived by
 	 * other classes in order to work.
 	 */
-    class Scene {
+    class Scene : public Animation::Governor {
         friend class SceneManager;
     public:
 
@@ -76,6 +76,9 @@ namespace Gorgon {
 
         /// Whether this scene requires keyboard input.
         virtual bool RequiresKeyInput() const = 0;
+        
+        /// Activates the current scene
+        virtual void Activate() override;
 
         /// Returns the ID of the current scene
         SceneID GetID() const {
@@ -96,8 +99,13 @@ namespace Gorgon {
         Gorgon::Event<Scene> DeactivatedEvent{*this};
 
     protected:
-        /// Called after activation
-        virtual void activate() = 0;
+        /// Called only for the first time this scene is activated.
+        /// Allocate your resources here.
+        virtual void first_activation() { }
+        
+        /// Called after very activation. first_activation will be called
+        /// before activate.
+        virtual void activate() { }
 
         /// Called *before* deactivation
         virtual void deactivate() { }
@@ -142,6 +150,7 @@ namespace Gorgon {
         Gorgon::Layer  main;
         bool mouseinput = false;
         bool isactive = false;
+        bool first    = true;
     };
 
     /**
@@ -377,9 +386,17 @@ namespace Gorgon {
 			throw std::runtime_error("This scene has no parent");
 
 		parent->Add(main);
+        main.Add(graphics);
+        
+        Animation::Governor::Activate();
 
 		isactive = true;
 
+        if(first) {
+            first = false;
+            first_activation();
+        }
+        
 		activate();
 
 		ActivatedEvent();
@@ -392,10 +409,17 @@ namespace Gorgon {
 
 		if(main.HasParent())
 			main.GetParent().Remove(main);
+        
+        Animation::Governor::Default().Activate();
 
 		isactive = false;
 
 		DeactivatedEvent();
 	}
+	
+	inline void Scene::Activate() {
+        if(parent)
+            parent->SwitchScene(id);
+    }
 
 }

@@ -4,6 +4,7 @@
 #include "Gorgon/Graphics/TintedObject.h"
 #include "Gorgon/Graphics/StackedObject.h"
 #include "Gorgon/Graphics/Pointer.h"
+#include <Gorgon/Graphics/FreeType.h>
 
 
 void Init();
@@ -21,9 +22,9 @@ enum Scenes {
 class InitScene : public Gorgon::Scene {
 public:
 	InitScene(Gorgon::SceneManager &parent, SceneID id,
-			  const Graphics::Bitmap &bg, Graphics::StyledRenderer &renderer) :
+			  const Graphics::Bitmap &bg, Graphics::StyledRenderer &renderer, Graphics::RectangularAnimationProvider &prov) :
 		Scene(parent, id),
-		bg(bg), renderer(renderer) {
+		bg(bg), renderer(renderer), prov(prov) {
 
 		auto &cursorhead = *new Gorgon::Graphics::Bitmap(Triangle1(12, 12));
 		cursorhead.Prepare();
@@ -41,6 +42,10 @@ public:
 	virtual bool RequiresKeyInput() const override {
 		return true;
 	}
+	
+	Graphics::Layer &GetGraphics() {
+        return graphics;
+    }
 
 
 	virtual void KeyEvent(Gorgon::Input::Key key, float status) override {
@@ -54,6 +59,11 @@ public:
 	}
 
 protected:
+    
+    virtual void first_activation() override {
+        anim = prov.CreateAnimation(true);
+    }
+    
 	virtual void activate() override {
 		parent->SwitchToLocalPointers();
 	}
@@ -72,6 +82,7 @@ protected:
 		graphics.Clear();
 
 		bg.DrawIn(graphics);
+        anim.Draw(graphics, 400, 0);
 		renderer.Print(graphics, helptext + "n\tNext scene\n");
 	}
 
@@ -79,6 +90,8 @@ protected:
 	Graphics::StyledRenderer &renderer;
 	Gorgon::Graphics::StackedObjectProvider cursor;
 	Graphics::DrawablePointer ptr;
+    Graphics::Instance anim;
+    Graphics::RectangularAnimationStorage prov;
 };
 
 class NextScene : public Gorgon::Scene {
@@ -109,7 +122,8 @@ public:
 
 protected:
 	virtual void activate() override {
-
+        graphics.GetParent().Add(dynamic_cast<InitScene&>(parent->GetScene(SCENE_INIT)).GetGraphics());
+        graphics.PlaceToTop();
 	}
 
 
@@ -121,8 +135,8 @@ protected:
 	virtual void render() override {
 		graphics.Clear();
 
-		bg.DrawIn(graphics);
-		renderer.Print(graphics, helptext + "click\tInitial scene\n");
+		//bg.DrawIn(graphics);
+		renderer.Print(graphics, helptext + "click\tInitial scene\n", 0, 200);
 	}
 
 	const Graphics::Bitmap &bg;
@@ -141,24 +155,34 @@ int main() {
 	Gorgon::Initialize("scenetest");
 	SceneManager wind({800, 600}, "Scene test");
 
-	Graphics::BitmapFont fnt;
-	Graphics::StyledRenderer sty ={fnt};
 	Bitmap bgimage;
 
 	bgimage = BGImage(25, 25);
 	bgimage.Prepare();
+    
+    Graphics::FreeType f;
+#ifdef WIN32
+    f.LoadFile("C:/Windows/Fonts/tahoma.ttf");
+#else
+	f.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf");
+#endif
+    f.LoadMetrics(16);
+    f.Pack();
 
-	fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "", -1, true, false, false);
-	fnt.Pack();
-
+	Graphics::StyledRenderer sty ={f};
 	sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
 	sty.SetColor({0.6f, 1.f, 1.f});
 	sty.JustifyLeft();
 
-	sty.SetTabWidthInLetters(6.f);
+	sty.SetTabWidthInLetters(4.f);
 	sty.SetParagraphSpacing(2);
+    
+    Graphics::BitmapAnimationProvider prov;
+    prov.Add(BGImage(10, 10, 0x80, 0xa0), 100);
+    prov.Add(BGImage(10, 10, 0xa0, 0xe0), 100);
+    prov.Prepare();
 
-	wind.NewScene<InitScene>(SCENE_INIT, bgimage, sty);
+	wind.NewScene<InitScene>(SCENE_INIT, bgimage, sty, prov);
 	wind.NewScene<NextScene>(NEXT_SCENE, bgimage, sty);
 	wind.SwitchScene(SCENE_INIT);
 

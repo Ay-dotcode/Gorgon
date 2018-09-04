@@ -7,25 +7,57 @@
 
 namespace Gorgon { namespace Animation {
 
-	Containers::Collection<ControllerBase> controllers;
+    Governor *Governor::active = nullptr;
 
-	void Animate() {
+    Governor::~Governor() {
+        if(active == this)
+            active = nullptr;
+        
+		for(auto &c : controllers)
+            c.SetGovernor(Active());
+        
+        controllers.Clear();
+    }
+    
+    void Animate() {
+        Governor::Active().Animate();
+    }
+    
+	void Governor::Animate() const {
 		if(Time::DeltaTime()==0) return;
 
 		auto progress=Time::DeltaTime();
 
 		for(auto &c : controllers)
 			c.Progress(progress);
-
 	}
 
 	ControllerBase::ControllerBase() {
-		controllers.Add(this);
+		Governor::Active().controllers.Add(this);
+        this->governor = &Governor::Active();
+	}
+	
+	ControllerBase::ControllerBase(Governor &governor) {
+		governor.controllers.Add(this);
+        this->governor = &governor;
 	}
 
 	ControllerBase::~ControllerBase() {
-		controllers.Remove(this);
+        if(governor)
+            governor->controllers.Remove(this);
+        else //try removing from active one
+            Governor::Active().controllers.Remove(this);
 	}
+	
+	void ControllerBase::SetGovernor(Governor &governor) {
+        if(this->governor)
+            this->governor->controllers.Remove(this);
+        else //try removing from active one
+            Governor::Active().controllers.Remove(this);
+        
+		governor.controllers.Add(this);
+        this->governor = &governor;
+    }
 
 	void ControllerBase::Add(Base &animation) {
 		animations.Add(animation);
@@ -39,6 +71,9 @@ namespace Gorgon { namespace Animation {
 			item.Remove();
 			anim.RemoveController();
 		}
+		
+		if(animations.GetSize() == 0 && collectable)
+            delete this;
 	}
 
 	void ControllerBase::Delete(Base &animation) {
@@ -149,6 +184,4 @@ namespace Gorgon { namespace Animation {
 	void Controller::Pause() {
 		ispaused=true;
 	}
-
-
 } }

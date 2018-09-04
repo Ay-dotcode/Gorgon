@@ -238,7 +238,7 @@ namespace Gorgon { namespace Graphics {
 						poff = spacing(prev, g);
 					}
 
-					render(g, 0, renderer.GetCursorAdvance(g));
+					//render(g, 0, renderer.GetCursorAdvance(g));
 
 					dotab();
 
@@ -726,7 +726,8 @@ namespace Gorgon { namespace Graphics {
 				}
 
 				for(auto it=begin; it!=end; ++it) {
-					renderer->Render(it->g, target, {(float)it->location + off, (float)y}, color);
+                    if(it->g != '\t')
+                        renderer->Render(it->g, target, {(float)it->location + off, (float)y}, color);
 				}
 
 				if(strike) {
@@ -745,7 +746,7 @@ namespace Gorgon { namespace Graphics {
 
 			[&](Glyph prev, Glyph next) { return int(hspace + renderer->KerningDistance(prev, next).X); }, //modify this system to allow horizontal kerning
 			[&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
-			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
+			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth ? tabwidth : 16)
 		);
 	}
 
